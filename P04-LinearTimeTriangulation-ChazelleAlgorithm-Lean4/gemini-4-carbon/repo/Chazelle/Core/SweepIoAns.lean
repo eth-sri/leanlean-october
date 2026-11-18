@@ -47,7 +47,7 @@ theorem seesInWhole_hit (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × ℕ) {z : Poi
     {h pz pw lp rp : ℕ} (hR : RecordData J Q z σ T h pz pw lp rp) :
     SeesInWhole J Q i q (1, h, lp, rp) := by
   obtain ⟨hh, hz, hw, hAz, hAw, hl, hr⟩ := hR
-  have hσ : σ = 1 ∨ σ = -1 := hσq ▸ dirOf_cases q.2.2
+  have hσ := hσq ▸ dirOf_cases q.2.2
   obtain ⟨hT0, -, -⟩ := Merge.hit_of_freeAt J.whole hzt hσ hhit.1
   rw [hhit.2] at hT0
   obtain ⟨hs, hat⟩ := record_ok (chainModel J.whole) Q hσ hT0 hh hz hw hAz hAw ⟨hl, hr⟩
@@ -120,7 +120,7 @@ theorem not_sideLeft_horizontal {W : Polygon} {p : ℕ} {t : ℝ} (ht0 : 0 < t) 
   have hBX : sideCross (b - v) (rayPt v σ 1 - v) = 0 := by unfold sideCross; rw [eB2, eX2]; ring
   have hdot : sideDot (b - v) (a - v) ≤ 0 := by
     unfold sideDot; rw [eB1, eB2, eA1, eA2]
-    have h1 : 0 ≤ (1 - t) * t := mul_nonneg (by linarith) ht0.le
+    have h1 : 0 ≤ (1 - t) * t := mul_nonneg by_l ht0.le
     nlinarith [sq_nonneg (b.1 - a.1)]
   unfold sideCcw at hs
   rw [hBA, hBX] at hs
@@ -150,7 +150,7 @@ theorem param_of_arrival (Q : Polygon) {p : ℕ} {t : ℝ} (ht0 : 0 ≤ t) (ht1 
   · unfold Model.param
     simp only
     rw [ite_eq_right hh, hy]
-    have : (M.wb p).2 - (M.wa p).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hh)
+    have := sub_ne_zero.2 (Ne.symm hh)
     have e : (sidePt M.W p t).2 = (M.wa p).2 + t * ((M.wb p).2 - (M.wa p).2) := rfl
     rw [e]
     field_simp
@@ -202,8 +202,8 @@ theorem recordData_of_arrival (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
   refine ⟨hh, ?_, ?_, ?_, ?_, fun h1 => ?_, fun h1 => ?_⟩
   · rw [pos_of_arrival Q htz0 htz1 hyz hsz, hptz]
   · rw [pos_of_arrival Q htw0 htw1 hyw hsw, hptw]
-  · rw [ez]; exact att_z
-  · rw [ew]; exact att_w
+  · rwa [ez]
+  · rwa [ew]
   · simp [h1]
   · have : σ ≠ 1 := by rw [h1]; norm_num
     simp [this]

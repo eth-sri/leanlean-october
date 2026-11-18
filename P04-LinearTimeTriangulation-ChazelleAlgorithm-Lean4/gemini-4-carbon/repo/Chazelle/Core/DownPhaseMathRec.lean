@@ -102,10 +102,10 @@ theorem arc_pos (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L)
     ChordPos (buildNF (interiorModel Q) Q L E) ((buildNF (interiorModel Q) Q L E).arc j).s ∧
       ChordPos (buildNF (interiorModel Q) Q L E) ((buildNF (interiorModel Q) Q L E).arc j).e := by
   set N := buildNF (interiorModel Q) Q L E
-  have hnc : N.nChords = L.length := nChords_build hQ hL hperm hsort
+  have hnc := nChords_build hQ hL hperm hsort
   have hlen : N.arcs.length = (gapStarts (interiorModel Q) Q L E).length := by
     rw [DownDrv.buildNF_arcs hK, List.length_map]
-  have hj' : j < (gapStarts (interiorModel Q) Q L E).length := hlen ▸ hj
+  have hj' := hlen ▸ hj
   have harc := DownDrv.buildNF_arc (M := interiorModel Q) (Q := Q) (E := E) hK hj'
   have hE : E.length = 2 * L.length := by rw [hperm.length_eq, List.length_range]
   set m := (gapStarts (interiorModel Q) Q L E).getD j 0 with hm
@@ -118,7 +118,7 @@ theorem arc_pos (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L)
     have hc : E.getD u 0 < 2 * L.length := by
       rw [List.getD_eq_getElem _ _ hu]
       exact List.mem_range.1 (hperm.mem_iff.1 (List.getElem_mem hu))
-    have hc' : E.getD u 0 / 2 < L.length := by omega
+    have hc' : E.getD u 0 / 2 < L.length := by_o
     refine ⟨E.getD u 0 / 2, hnc ▸ hc', ?_⟩
     have hchord : N.chord (E.getD u 0 / 2) = BuildNF.chordRec (interiorModel Q) Q L E
         (E.getD u 0 / 2) := by
@@ -136,7 +136,7 @@ theorem arc_pos (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L)
   · rw [show (N.arc j).s = wposOf L (E.getD m 0) by rw [he]]
     exact hpos m hmE
   · rw [show (N.arc j).e = wposOf L (E.getD ((m + 1) % E.length) 0) by rw [he]]
-    exact hpos _ (Nat.mod_lt _ (by omega))
+    exact hpos _ (Nat.mod_lt _ by_o)
 
 end
 

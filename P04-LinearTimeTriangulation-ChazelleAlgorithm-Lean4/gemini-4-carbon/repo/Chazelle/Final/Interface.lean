@@ -89,8 +89,8 @@ theorem not_vtx_on_side {P : Polygon} (D : TrapData P) {y : ℝ}
     {m : ℕ} (hm : m < P.n) (hmp : P.vtx m = (x, y)) : False := by
   have e1 : (P.vtx m).1 = x := by rw [hmp]
   have e2 : (P.vtx m).2 = y := by rw [hmp]
-  exact D.isTrap.no_vertex m hm (by rw [e2]; exact h1) (by rw [e2]; exact h2)
-    (by rw [e1, e2]; exact hx1) (by rw [e1, e2]; exact hx2)
+  exact D.isTrap.no_vertex m hm (by rwa [e2]) (by rwa [e2])
+    (by rwa [e1, e2]) (by rwa [e1, e2])
 
 /-- A point of two distinct edges of a simple polygon is a vertex. -/
 theorem exists_vtx_of_mem_two_edges {P : Polygon} (hP : P.Simple) {a b : ℕ} (ha : a < P.n)
@@ -100,13 +100,13 @@ theorem exists_vtx_of_mem_two_edges {P : Polygon} (hP : P.Simple) {a b : ℕ} (h
     rw [← simple_edge_inter hP ha hb hab]; exact ⟨hpa, hpb⟩
   rcases hc.1 with e | e
   · exact ⟨a, ha, e.symm⟩
-  · exact ⟨(a + 1) % P.n, Nat.mod_lt _ (by omega), e.symm⟩
+  · exact ⟨(a + 1) % P.n, Nat.mod_lt _ by_o, e.symm⟩
 
 /-- **The left side edge depends only on the region.** -/
 theorem left_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
     (h : D.region = D'.region) : D.i = D'.i := by
   obtain ⟨hy1, hy2⟩ := heights_eq_of_region_eq hP D D' h
-  have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
+  have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   set y := (D.y₁ + D.y₂) / 2 with hydef
   have hyl : D.y₁ < y := by rw [hydef]; linarith
   have hyr : y < D.y₂ := by rw [hydef]; linarith
@@ -114,7 +114,7 @@ theorem left_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
   have hy' : y ∈ Icc D'.y₁ D'.y₂ := by rw [← hy1, ← hy2]; exact hy
   have e1 := D.isTrap.left_le_of_subset hP D.free D'.isTrap h.subset y hy
   have e2 := D'.isTrap.left_le_of_subset hP D'.free D.isTrap h.symm.subset y hy'
-  have heq : edgeX P D.i y = edgeX P D'.i y := le_antisymm e2 e1
+  have heq := le_antisymm e2 e1
   by_contra hne
   have hp1 : ((edgeX P D.i y, y) : Point) ∈ P.edge D.i := D.isTrap.mem_edgeL hy.1 hy.2 rfl
   have hp2 : ((edgeX P D.i y, y) : Point) ∈ P.edge D'.i :=
@@ -127,7 +127,7 @@ theorem left_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
 theorem right_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
     (h : D.region = D'.region) : D.j = D'.j := by
   obtain ⟨hy1, hy2⟩ := heights_eq_of_region_eq hP D D' h
-  have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
+  have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   set y := (D.y₁ + D.y₂) / 2 with hydef
   have hyl : D.y₁ < y := by rw [hydef]; linarith
   have hyr : y < D.y₂ := by rw [hydef]; linarith
@@ -135,7 +135,7 @@ theorem right_eq_of_region_eq {P : Polygon} (hP : P.Simple) (D D' : TrapData P)
   have hy' : y ∈ Icc D'.y₁ D'.y₂ := by rw [← hy1, ← hy2]; exact hy
   have e1 := D.isTrap.right_le_of_subset hP D.free D'.isTrap h.subset y hy
   have e2 := D'.isTrap.right_le_of_subset hP D'.free D.isTrap h.symm.subset y hy'
-  have heq : edgeX P D.j y = edgeX P D'.j y := le_antisymm e1 e2
+  have heq := le_antisymm e1 e2
   by_contra hne
   have hp1 : ((edgeX P D.j y, y) : Point) ∈ P.edge D.j := D.isTrap.mem_edgeR hy.1 hy.2 rfl
   have hp2 : ((edgeX P D.j y, y) : Point) ∈ P.edge D'.j :=
@@ -261,9 +261,9 @@ theorem sortPair_eq_iff {e d : ℕ × ℕ} (he : e.1 ≠ e.2) :
   constructor
   · rintro ⟨rfl, rfl⟩
     rcases lt_or_gt_of_ne he with h | h
-    · refine ⟨by rw [min_eq_left h.le, max_eq_right h.le]; exact h, Or.inl ?_⟩
+    · refine ⟨by rwa [min_eq_left h.le, max_eq_right h.le], Or.inl ?_⟩
       rw [min_eq_left h.le, max_eq_right h.le]; exact ⟨rfl, rfl⟩
-    · refine ⟨by rw [min_eq_right h.le, max_eq_left h.le]; exact h, Or.inr ?_⟩
+    · refine ⟨by rwa [min_eq_right h.le, max_eq_left h.le], Or.inr ?_⟩
       rw [min_eq_right h.le, max_eq_left h.le]; exact ⟨rfl, rfl⟩
   · rintro ⟨hxy, ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩⟩
     · exact ⟨min_eq_left hxy.le, max_eq_right hxy.le⟩
@@ -296,12 +296,11 @@ theorem mem_trapPairs_iff {P : Polygon} (hP : P.Simple) {T : TrapTable} (hT : Is
     rw [List.mem_filter] at hr
     obtain ⟨D, rfl⟩ := hT.exists_of_mem hr.1
     refine ⟨D, ?_, rfl⟩
-    have h : decide (D.bot ≠ (D.top + 1) % P.n ∧ D.top ≠ (D.bot + 1) % P.n) = true := hr.2
+    have h := hr.2
     have h2 := of_decide_eq_true h
     exact h2
   · rintro ⟨D, hD, rfl⟩
     refine ⟨trapRecOf D, List.mem_filter.2 ⟨hT.mem_of_trapData hP D, ?_⟩, rfl⟩
-    show decide (D.bot ≠ (D.top + 1) % P.n ∧ D.top ≠ (D.bot + 1) % P.n) = true
     exact decide_eq_true hD
 
 /-- The chord pairs of a valid table are exactly the vertex-to-vertex chords. -/

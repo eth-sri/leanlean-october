@@ -41,7 +41,7 @@ theorem repFrom_single {li : Bool} {s : SymPt} {i : ℕ}
     (h : RepPt li Q S R (i % nk (interiorModel Q) S R) s) : RepFrom li Q S R [s] i := by
   intro j hj
   simp only [List.length_singleton] at hj
-  obtain rfl : j = 0 := by omega
+  obtain rfl : j = 0 := by_o
   simpa using h
 
 theorem repFrom_append {li : Bool} {L L' : List SymPt} {i : ℕ} (h : RepFrom li Q S R L i)
@@ -51,7 +51,7 @@ theorem repFrom_append {li : Bool} {L L' : List SymPt} {i : ℕ} (h : RepFrom li
   rcases Nat.lt_or_ge j L.length with hjL | hjL
   · rw [List.getD_append _ _ _ _ hjL]; exact h j hjL
   · rw [List.getD_append_right _ _ _ _ hjL]
-    have := h' (j - L.length) (by omega)
+    have := h' (j - L.length) by_o
     rwa [show i + L.length + (j - L.length) = i + j by omega] at this
 
 /-- The length of the group of host keys of arc `t`: its `d t + 1` keys from the start to the
@@ -63,10 +63,10 @@ theorem repFrom_flatMap {li : Bool} (G : ℕ → List SymPt) (d J : ℕ → ℕ)
   induction k with
   | zero => exact ⟨repFrom_nil li i, by simp [grpOff]⟩
   | succ k ih =>
-    obtain ⟨h1, h2⟩ := ih fun t ht => hG t (by omega)
-    obtain ⟨h3, h4⟩ := hG k (by omega)
+    obtain ⟨h1, h2⟩ := ih fun t ht => hG t by_o
+    obtain ⟨h3, h4⟩ := hG k by_o
     rw [List.range_succ, List.flatMap_append, List.flatMap_singleton]
-    refine ⟨repFrom_append h1 (by rw [h2]; exact h3), ?_⟩
+    refine ⟨repFrom_append h1 (by rwa [h2]), ?_⟩
     rw [List.length_append, h2, h4, grpOff_succ]
 
 theorem repFrom_rotate {li : Bool} {L : List SymPt} {i : ℕ}
@@ -74,9 +74,9 @@ theorem repFrom_rotate {li : Bool} {L : List SymPt} {i : ℕ}
     RepFrom li Q S R (L.rotate m) (i + m) := by
   intro j hj
   rw [List.length_rotate] at hj
-  have hpos : 0 < L.length := by omega
+  have hpos : 0 < L.length := by_o
   have hjm := h ((j + m) % L.length) (Nat.mod_lt _ hpos)
-  rw [List.getD_eq_getElem _ _ (by rw [List.length_rotate]; exact hj), List.getElem_rotate,
+  rw [List.getD_eq_getElem _ _ (by rwa [List.length_rotate]), List.getElem_rotate,
     ← List.getD_eq_getElem _ (.vtx 0) (Nat.mod_lt _ hpos)]
   have e : (i + (j + m) % L.length) % nk (interiorModel Q) S R =
       (i + m + j) % nk (interiorModel Q) S R := by
@@ -115,10 +115,10 @@ theorem runCnt_arith {n x c y : ℕ} (hx : x < n) (hc : 1 ≤ c) (hcn : c ≤ n)
   subst hy
   by_cases h : x + c < n
   · rw [Nat.mod_eq_of_lt h, show x + c + n - 1 - x = (c - 1) + n by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega)]
+      Nat.mod_eq_of_lt by_o]
   · have e : (x + c) % n = x + c - n := by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-    rw [e, show x + c - n + n - 1 - x = c - 1 by omega, Nat.mod_eq_of_lt (by omega)]
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
+    rw [e, show x + c - n + n - 1 - x = c - 1 by omega, Nat.mod_eq_of_lt by_o]
 
 /-- The points of a run of `c` walk vertices from `x + 1` on, in walk order. -/
 theorem run_wpts {li : Bool} {n x c : ℕ} (_hn : 0 < n) (hx : x < n) (hc : c < n) (hc0 : 0 < c) :
@@ -141,18 +141,18 @@ theorem run_wpts {li : Bool} {n x c : ℕ} (_hn : 0 < n) (hx : x < n) (hc : c < 
     -- `(n - 1 - (x + c) % n + (c - 1 - m)) % n = n - 1 - (x + (m + 1)) % n`
     by_cases h1 : x + c < n
     · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt (show x + (m + 1) < n by omega),
-        Nat.mod_eq_of_lt (by omega)]
+        Nat.mod_eq_of_lt by_o]
       omega
     · have e1 : (x + c) % n = x + c - n := by
-        rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+        rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
       rw [e1]
       by_cases h2 : x + (m + 1) < n
       · rw [Nat.mod_eq_of_lt h2, show n - 1 - (x + c - n) + (c - 1 - m) = (n - 2 - x - m) + n
-          by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+          by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
         omega
       · have e2 : (x + (m + 1)) % n = x + (m + 1) - n := by
-          rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-        rw [e2, Nat.mod_eq_of_lt (by omega)]
+          rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
+        rw [e2, Nat.mod_eq_of_lt by_o]
         omega
   · simp only [items, ite_true, List.flatMap_singleton, wpts, HostItem.pts]
     refine ⟨by simp; omega, fun m hm => ?_⟩

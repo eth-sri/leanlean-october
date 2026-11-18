@@ -15,8 +15,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
-
 section step3
 
 variable {R K D : ℕ} {up dn ord pos prg pch isdn chOf : ℕ → ℕ}
@@ -68,25 +66,25 @@ theorem next_i1 : ∀ e, e < K → (σ').rem e = 1 →
       by_cases hp : σ.pend e = 1
       · rw [ite_eq_left hp]
       · rw [ite_eq_right hp]
-    refine ⟨g1, g2, g3, by omega, g5, ?_⟩
-    rw [hdpar, root_next_pos h hch hT hB hI (by omega)]
+    refine ⟨g1, g2, g3, by_o, g5, ?_⟩
+    rw [hdpar, root_next_pos h hch hT hB hI by_o]
     rcases g6 with ⟨a1, a2, a3, a4⟩ | ⟨p, hp, hrp, a1, a2, a3⟩
     · exact Or.inl ⟨a1, a2, a3, a4⟩
     · refine Or.inr ⟨p, hp, rem_mono h hch hT hB hI hrp, a1, ?_, ?_⟩
-      · rw [cr_old h hch hT hB hI hrp]; exact a2
-      · rw [gc_old h hch hT hB hI hrp]; exact a3
+      · rwa [cr_old h hch hT hB hI hrp]
+      · rwa [gc_old h hch hT hB hI hrp]
   · -- a chord cut now
     obtain ⟨t1, t2, t3, t4, t5, t6, t7, c1, c2, c3, c4⟩ := chosen_facts h hch hT hB hI he hc
     rw [gc_new h hch hT hB hI he hc, cr_new h hch hT hB hI he hc]
     have h2 := two_le_sz h hch hT hB hI c1 t7 t5
     have h6 := (hI.i6 _ t1 t2 t3).1
-    have hj : j < rounds D K := lt_rounds (by omega)
+    have hj : j < rounds D K := lt_rounds by_o
     have hprg : AncX R prg pch σ.rem (top (chOf e)) (prg (chOf e)) := by
       rcases (AncX.back_iff h).1 t7 with e' | ⟨-, -, -, hh⟩
       · exact absurd e'.symm t5
       · exact hh
     refine ⟨fun v hv => by rw [mem_sub] at hv; exact Finset.mem_range.2 hv.1,
-      (mem_sub).2 ⟨c1, t7⟩, (mem_sub).2 ⟨h.prg_lt _ c1 c2, hprg⟩, by omega, hj, ?_⟩
+      (mem_sub).2 ⟨c1, t7⟩, (mem_sub).2 ⟨h.prg_lt _ c1 c2, hprg⟩, by_o, hj, ?_⟩
     have hdpar : (σ').dpar e = (if σ.side (top (chOf e)) = 2 then 2 * e
         else 2 * σ.cpar (top (chOf e))) := by
       simp only [next, ite_eq_left he, ite_eq_right c4, ite_eq_left hc]
@@ -98,7 +96,7 @@ theorem next_i1 : ∀ e, e < K → (σ').rem e = 1 →
       simp only [next, ite_eq_left a0, ite_eq_left s0', code]
       rw [← s0, t4, ite_eq_right t5, c3]
     · right
-      have hs2 : σ.side (top (chOf e)) ≠ 2 := by omega
+      have hs2 : σ.side (top (chOf e)) ≠ 2 := by_o
       set p := σ.cpar (top (chOf e)) with hpdef
       have hrp := hI.i0 p s2 s3
       refine ⟨p, s2, rem_mono h hch hT hB hI hrp, by rw [hdpar, ite_eq_right hs2], ?_, ?_⟩
@@ -113,7 +111,7 @@ theorem next_i2 : ∀ e, e < K → (σ').rem e = 1 → (σ').pend e ≠ 1 → �
   intro e he hr' hp' s hs
   have hnc : ¬ Chosen σ top best chOf e := fun hh =>
     hp' ((pend_next h hch hT hB hI he).2 hh)
-  have hr : σ.rem e = 1 := ((rem_next h hch hT hB hI he).1 hr').resolve_right hnc
+  have hr := ((rem_next h hch hT hB hI he).1 hr').resolve_right hnc
   rw [gc_old h hch hT hB hI hr]
   by_cases hp : σ.pend e = 1
   · -- the chord was cut in the previous round: its slots are filled now
@@ -131,7 +129,7 @@ theorem next_i2 : ∀ e, e < K → (σ').rem e = 1 → (σ').pend e ≠ 1 → �
     rw [hx]
     obtain ⟨v1, v2, v3⟩ := code_next h hch hT hB hI ht htop hact
     refine ⟨v1, by rw [v2, hsub], ?_⟩
-    rw [v3, ite_eq_right (by omega), hcpar]
+    rw [v3, ite_eq_right by_o, hcpar]
   · -- the slots were filled earlier
     have hx : (if s = 0 then (σ').dlo e else (σ').dhi e) =
         (if s = 0 then σ.dlo e else σ.dhi e) := by
@@ -147,13 +145,13 @@ theorem next_i3 : ∀ e, e < K → (σ').pend e = 1 → cr' e + 1 = j + 1 ∧ �
     IsTop pch (σ').rem t ∧ (σ').act t = 1 ∧ (σ').cpar t = e ∧ (σ').side t = s ∧
     sub R prg pch (σ').rem t = gc' e ∩ sideSet R prg pch isdn chOf s e := by
   intro e he hp'
-  have hc : Chosen σ top best chOf e := (pend_next h hch hT hB hI he).1 hp'
+  have hc := (pend_next h hch hT hB hI he).1 hp'
   refine ⟨by rw [cr_new h hch hT hB hI he hc], fun s hs => ?_⟩
   obtain ⟨t1, t2, t3, t4, t5, t6, t7, c1, c2, c3, c4⟩ := chosen_facts h hch hT hB hI he hc
   obtain ⟨sc, sp⟩ := sub_new_sides h hch hT hB hI (s := s) he hc
   obtain ⟨n1, n2, n3⟩ := new_top_facts h hch hT hB hI he hc
   by_cases hcond : (isdn (chOf e) = 1 ↔ s = 0)
-  · refine ⟨chOf e, c1, (istop_next h hch hT hB hI c1).2 (Or.inr ⟨c2, by rw [c3]; exact hc⟩),
+  · refine ⟨chOf e, c1, (istop_next h hch hT hB hI c1).2 (Or.inr ⟨c2, by rwa [c3]⟩),
       n1, n2, ?_, sc hcond⟩
     rw [n3]
     by_cases hd : isdn (chOf e) = 1
@@ -163,7 +161,7 @@ theorem next_i3 : ∀ e, e < K → (σ').pend e = 1 → cr' e + 1 = j + 1 ∧ �
       omega
   · have hbt : best (top (chOf e)) ≠ top (chOf e) := by rw [t4]; exact t5
     refine ⟨top (chOf e), t1, (istop_next h hch hT hB hI t1).2 (Or.inl t2), ?_, ?_, ?_, sp hcond⟩
-    · rw [act_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt]; exact t3
+    · rwa [act_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt]
     · rw [cpar_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt, t4, c3]
     · rw [side_top h hch hT hB hI t1 t2, ite_eq_left t3, ite_eq_right hbt, t4]
       by_cases hd : isdn (chOf e) = 1
@@ -188,7 +186,7 @@ theorem next_i4 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t = 1 →
       by_contra hh; rw [ite_eq_right hh] at hact'; exact hh hact'
     rw [ite_eq_left hact] at hact'
     have hbt : best t ≠ t := by
-      intro hh; rw [ite_eq_left hh] at hact'; exact absurd hact' (by norm_num)
+      intro hh; rw [ite_eq_left hh] at hact'; exact absurd hact' by_n
     obtain ⟨b1, b2, b3, b4, b5, b6, b7, b8⟩ := cut_chosen h hch hT hB hI ht htop hact hbt
     have hcp : (σ').cpar t = pch (best t) := by
       rw [cpar_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_right hbt]
@@ -200,7 +198,7 @@ theorem next_i4 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t = 1 →
     rw [b5, b6] at this
     apply this
     by_cases hd : isdn (best t) = 1
-    · rw [ite_eq_left hd]; exact fun hh => absurd (hh.1 hd) (by norm_num)
+    · rw [ite_eq_left hd]; exact fun hh => absurd (hh.1 hd) by_n
     · rw [ite_eq_right hd]; exact fun hh => hd (hh.2 rfl)
   · -- a new top
     obtain ⟨ht0, hc⟩ := ((istop_next h hch hT hB hI ht).1 htop').resolve_left htop
@@ -215,7 +213,7 @@ theorem next_i4 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t = 1 →
     apply this
     by_cases hd : isdn t = 1
     · rw [ite_eq_left hd]; exact ⟨fun _ => rfl, fun _ => hd⟩
-    · rw [ite_eq_right hd]; exact ⟨fun hh => absurd hh hd, fun hh => absurd hh (by norm_num)⟩
+    · rw [ite_eq_right hd]; exact ⟨fun hh => absurd hh hd, fun hh => absurd hh by_n⟩
 
 theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 →
     sub R prg pch (σ').rem t = {t} ∧
@@ -253,7 +251,7 @@ theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 �
         simp only [next, ite_eq_left hact, ite_eq_left s2, code, ite_eq_left hbt]
       · right
         have hrp := hI.i0 _ s2 s3
-        refine ⟨σ.cpar t, s2, rem_mono h hch hT hB hI hrp, by rw [hlp, ite_eq_right (by omega)],
+        refine ⟨σ.cpar t, s2, rem_mono h hch hT hB hI hrp, by rw [hlp, ite_eq_right by_o],
           ?_, ?_⟩
         · rw [cr_old h hch hT hB hI hrp, (hI.i3 _ s2 s3).1]
           obtain ⟨-, -, -, -, h5, -⟩ := hI.i1 _ s2 hrp
@@ -276,13 +274,13 @@ theorem next_i5 : ∀ t, t < R → IsTop pch (σ').rem t → (σ').act t ≠ 1 �
         · -- at round `0` the only top is the active root
           have := (hI.i7 hj).2.1
           have hR := h.hR
-          have ht0 : t = 0 := by omega
+          have ht0 : t = 0 := by_o
           rw [ht0] at hact; exact absurd this hact
-        · rw [root_next_pos h hch hT hB hI hj]; exact a2
+        · rwa [root_next_pos h hch hT hB hI hj]
       · right
         refine ⟨p, hp, rem_mono h hch hT hB hI hrp, a1, ?_, ?_⟩
-        · rw [cr_old h hch hT hB hI hrp]; exact a2
-        · rw [gc_old h hch hT hB hI hrp]; exact a3
+        · rwa [cr_old h hch hT hB hI hrp]
+        · rwa [gc_old h hch hT hB hI hrp]
   · obtain ⟨ht0, hc⟩ := ((istop_next h hch hT hB hI ht).1 htop').resolve_left htop
     have hpk := h.pch_lt t ht ht0
     have hco := chOf_pch h hch hT hB hI ht ht0
@@ -315,20 +313,20 @@ theorem next_i6 (hdeg : ∀ v, v < R → (kids R prg pch rem0 v).card + (if v = 
     have hm : sz R prg pch σ.rem (best t) + (sz R prg pch σ.rem t - sz R prg pch σ.rem (best t)) - 1 ≤
         D * min (sz R prg pch σ.rem (best t)) (sz R prg pch σ.rem t - sz R prg pch σ.rem (best t)) := by
       have : sz R prg pch σ.rem (best t) + (sz R prg pch σ.rem t - sz R prg pch σ.rem (best t)) =
-          sz R prg pch σ.rem t := by omega
+          sz R prg pch σ.rem t := by_o
       rw [this]
       exact hgood.trans (Nat.mul_le_mul_left _ hmax)
     have ha := sz_pos h (rem := σ.rem) b1
-    obtain ⟨s1, s2⟩ := split_bound hD ha (by omega) hm
+    obtain ⟨s1, s2⟩ := split_bound hD ha by_o hm
     have e1 : sz R prg pch σ.rem (best t) + (sz R prg pch σ.rem t - sz R prg pch σ.rem (best t)) - 1 =
-        sz R prg pch σ.rem t - 1 := by omega
+        sz R prg pch σ.rem t - 1 := by_o
     rw [e1] at s1 s2
     have m1 := le_hstep hD s1
     have m2 := le_hstep hD s2
     have m3 := hstep_mono D (show sz R prg pch σ.rem t - 1 ≤ (hstep D)^[j] K by omega)
     have m4 : hstep D (sz R prg pch σ.rem t - 1) ≤ (hstep D)^[j + 1] K := by
       rw [Function.iterate_succ_apply']; exact m3
-    refine ⟨?_, ?_, by omega⟩
+    refine ⟨?_, ?_, by_o⟩
     · omega
     · omega
   intro t ht htop' hact'
@@ -338,7 +336,7 @@ theorem next_i6 (hdeg : ∀ v, v < R → (kids R prg pch rem0 v).card + (if v = 
       by_contra hh; rw [ite_eq_right hh] at hact'; exact hh hact'
     rw [ite_eq_left hact] at hact'
     have hbt : best t ≠ t := by
-      intro hh; rw [ite_eq_left hh] at hact'; exact absurd hact' (by norm_num)
+      intro hh; rw [ite_eq_left hh] at hact'; exact absurd hact' by_n
     obtain ⟨k1, -, k3⟩ := key t ht htop hact hbt
     exact ⟨k1, Or.inr (by simpa using k3)⟩
   · obtain ⟨ht0, hc⟩ := ((istop_next h hch hT hB hI ht).1 htop').resolve_left htop
@@ -391,7 +389,7 @@ theorem next_i9 : (σ').fin =
         exact absurd n1 hact'
     · rintro (⟨ht, htop, hact⟩ | ⟨ht, htt, hact, hbt⟩)
       · refine ⟨ht, (istop_next h hch hT hB hI ht).2 (Or.inl htop), ?_⟩
-        rw [act_top h hch hT hB hI ht htop, ite_eq_right hact]; exact hact
+        rwa [act_top h hch hT hB hI ht htop, ite_eq_right hact]
       · have htop := (top_iff h hch hT hB hI ht).1 htt
         refine ⟨ht, (istop_next h hch hT hB hI ht).2 (Or.inl htop), ?_⟩
         rw [act_top h hch hT hB hI ht htop, ite_eq_left hact, ite_eq_left hbt]; norm_num
@@ -406,15 +404,14 @@ theorem next_i9 : (σ').fin =
 /-- **Preservation of the round invariant.** -/
 theorem rinv_next (hdeg : ∀ v, v < R → (kids R prg pch rem0 v).card + (if v = 0 then 0 else 1) ≤ D) :
     RInv R K D prg pch isdn chOf (j + 1) (σ') gc' cr' where
-  i0 e he hp := by
-    exact (rem_next h hch hT hB hI he).2 (Or.inr ((pend_next h hch hT hB hI he).1 hp))
+  i0 e he hp := (rem_next h hch hT hB hI he).2 (Or.inr ((pend_next h hch hT hB hI he).1 hp))
   i1 := next_i1 h hch hT hB hI
   i2 := next_i2 h hch hT hB hI
   i3 := next_i3 h hch hT hB hI
   i4 := next_i4 h hch hT hB hI
   i5 := next_i5 h hch hT hB hI
   i6 := next_i6 h hch hT hB hI hdeg
-  i7 hj := absurd hj (by omega)
+  i7 hj := absurd hj by_o
   i8 := next_i8 h hch hT hB hI
   i9 := next_i9 h hch hT hB hI
 

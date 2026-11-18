@@ -57,15 +57,14 @@ theorem hit_exact {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀) (hTF : 
     hV hE.x_top harr hnear hlo hhi hfh
   have hσ := dir_pm (c₀.nreg 83008)
   have ht := hfh.1
-  have hposf' : M.pos (Qof P) ⟨c'.nreg 83012, c'.nreg 83013⟩ =
-      rayPt (M.pos (Qof P) (xOf c₀)) (dirOf (c₀.nreg 83008)) t := hposf.trans hpos0
+  have hposf' := hposf.trans hpos0
   refine ⟨t, ht, hstr, hout, hposf', hpe, hpp, hadm, ?_, ?_, hcnt⟩
   · exact attach_start hE.hxe hE.hxp.1 hE.hxp.2.1 hσ ht hV.2.1
   · rcases hE.kind with ⟨-, C, hM⟩ | ⟨-, hM, -⟩
     · have ha := harrv C hM
       rw [hpos0] at ha
       exact attach_end ha.1 ha.2.1 ha.2.2.1 hσ ht ha.2.2.2.1 (by rw [ha.2.2.2.1]; exact ha.2.2.2.2)
-    · have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hE.hG.1
+    · have hQ := (shearInvariance (epsOf P) P).1 hE.hG.1
       have hWs : M.W.Simple := by rw [hM]; exact (FactsInterior.interiorWalk_spec hQ).1
       exact attach_far_simple hWs hatt hw' hpe hpp.1 hpp.2.1 hposf'
 
@@ -89,22 +88,22 @@ theorem record_ok {Q : Polygon} {x f : WPos} {h σb lp rp : ℕ} {T : ℝ} (_hσ
     have hd : dirOf σb = 1 := by rw [h1]; rfl
     have e : (recOf (h, x.edge, f.edge)).toSet M Q = chordOf (M.pos Q x) (dirOf σb) T := by
       show Visibility.hseg (Q.vtx h).2 (M.pos Q ⟨x.edge, h + 1⟩).1 (M.pos Q ⟨f.edge, h + 1⟩).1 = _
-      rw [px, pf, chordOf, hfx, hd, hy, min_eq_left (by linarith), max_eq_right (by linarith)]
+      rw [px, pf, chordOf, hfx, hd, hy, min_eq_left by_l, max_eq_right by_l]
     refine ⟨e, ?_, ?_⟩
     · show SideAttach M.W _ x.edge (M.param Q ⟨x.edge, h + 1⟩)
-      rw [qx, e]; exact hA
+      rwa [qx, e]
     · show SideAttach M.W _ f.edge (M.param Q ⟨f.edge, h + 1⟩)
-      rw [qf, e]; exact hB
+      rwa [qf, e]
   · obtain ⟨rfl, rfl⟩ := hlr.2 h1
     have hd : dirOf σb = -1 := by unfold dirOf; rw [ite_eq_right h1]
     have e : (recOf (h, f.edge, x.edge)).toSet M Q = chordOf (M.pos Q x) (dirOf σb) T := by
       show Visibility.hseg (Q.vtx h).2 (M.pos Q ⟨f.edge, h + 1⟩).1 (M.pos Q ⟨x.edge, h + 1⟩).1 = _
-      rw [px, pf, chordOf, hfx, hd, hy, min_eq_right (by linarith), max_eq_left (by linarith)]
+      rw [px, pf, chordOf, hfx, hd, hy, min_eq_right by_l, max_eq_left by_l]
     refine ⟨e, ?_, ?_⟩
     · show SideAttach M.W _ f.edge (M.param Q ⟨f.edge, h + 1⟩)
-      rw [qf, e]; exact hB
+      rwa [qf, e]
     · show SideAttach M.W _ x.edge (M.param Q ⟨x.edge, h + 1⟩)
-      rw [qx, e]; exact hA
+      rwa [qx, e]
 
 
 /-- The candidate and a point of its ray at a positive parameter differ. -/
@@ -171,12 +170,12 @@ theorem test_post {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀)
     obtain ⟨m, B, hs', A, -, -, -, -, hyes, -⟩ := h5 h10
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, htri⟩ := hyes h11
     obtain ⟨t15, t1, t2⟩ := htri hs
-    have hy : (M.pos (Qof P) (xOf c₀)).2 = ((Qof P).vtx (c₀.nreg 83007)).2 := hE.hy.symm
+    have hy := hE.hy.symm
     obtain ⟨he, hat⟩ := record_ok (lp := c'.nreg 83016) (rp := c'.nreg 83017) hE.hσ hT hy hposf
       hA hB ⟨t1, t2⟩
     rw [t15]
     have hQn : (Qof P).n = P.n := shear_n _ _
-    refine ⟨hat, by rw [hQn]; exact hE.hh, by rw [he]; exact hadm, ?_⟩
+    refine ⟨hat, by rw [hQn]; exact hE.hh, by rwa [he], ?_⟩
     rw [he]
     have hAB : sidePt M.W (xOf c₀).edge (M.param (Qof P) (xOf c₀)) ≠
         sidePt M.W (c'.nreg 83012) (M.param (Qof P) ⟨c'.nreg 83012, c'.nreg 83013⟩) := by
@@ -189,9 +188,9 @@ theorem test_post {W : ℕ} {c₀ c' : Config} (hE : TGood P W M N c₀)
       hit_exact hE ⟨b10, hiv, b11, b14, i11, i14, h5⟩ hregs h10 h11
     exact ⟨T, hT, hstr, hposf, hpe, hpp, hadm, hA, hB, hcnt.trans (hcount _)⟩
   · -- completeness
-    have hV : ValidB M P N (c₀.nreg 83002) (xOf c₀) (c₀.nreg 83008) :=
+    have hV :=
       valid_compl hGM hNF hregs hr hE.hxp hE.hxe hch hL hT hdom hadm hnF hsub
-    have h10 : c'.nreg 83010 = 1 := hiv.2 hV
+    have h10 := hiv.2 hV
     refine ⟨h10, ?_⟩
     by_contra h11
     obtain ⟨m, B, hs', A, harr, hnear, hlo, -, -, hno⟩ := h5 h10
@@ -217,7 +216,7 @@ theorem testK_le {A D d Fg : ℕ} (hA : A ≤ d + 1) (hD : D ≤ d) :
     testK A D Fg ≤ testκ d * (Fg + 1) := by
   rw [testK_split]
   have h1 := testK_mono hA hD
-  have h2 : (A + 1) * (16 * Fg) ≤ 16 * (d + 2) * Fg := by nlinarith
+  have h2 : (A + 1) * (16 * Fg) ≤ 16 * (d + 2) * Fg := by_nl
   unfold testκ
   nlinarith
 
@@ -246,17 +245,17 @@ theorem testOK {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs Bo
   dsimp only at hroom ⊢
   obtain ⟨hG, hW, hX, hcap, hwf, hreg, hsimp, hσ, M, N, hMD, hGM, hOk, hNw, hNF, hdeg, hsg, hr,
     hxe, hxp, hxc, hkind, hxC, hh, hy⟩ := pre
-  have hE : TGood P W M N c := tgood_of hG hW hMD hwf hreg hsimp hkind hGM hNw hNF hr hxe hxp
+  have hE := tgood_of hG hW hMD hwf hreg hsimp hkind hGM hNw hNF hr hxe hxp
     hxc hxC hh hy hσ
   obtain ⟨reg₀, hregs₀⟩ := hE.regs
-  have hdg : M.deg (N.F M (Qof P)) (reg₀ (c.nreg 83002)) ≤ c.nreg 83009 :=
+  have hdg :=
     hdeg _ (hregs₀.1.1 _ hr)
   have hA := arcs_le_deg hGM hNF hregs₀ hr
   have hD := chords_le_deg hNF hregs₀ hr
   have hK := testK_le (Fg := F (c.nreg 83003)) (show (N.region (c.nreg 83002)).arcs.length ≤
     c.nreg 83009 + 1 by omega) (show (N.region (c.nreg 83002)).chords.length ≤ c.nreg 83009 by omega)
   obtain ⟨c', k, ex, hk, hI, hrf, hTF⟩ := testS_rsb hsh hBs hXl hB8 hBo hw hE hX hcap hOk hsg
-    (by omega)
+    by_o
   have hsub : dBands ∪ Bo ⊆ restoreBands ∪ Bo := by
     intro b hb
     simp only [dBands, Finset.mem_union] at hb ⊢
@@ -266,11 +265,11 @@ theorem testOK {X : MemCtx} {Ok : Polygon → Model → Prop} {sh : Stmt} {Bs Bo
     · exact Or.inr h
   refine ⟨c', k, ex, le_trans hk hK, ?_, (RF.to_frame hrf).mono hsub le_rfl⟩
   obtain ⟨b10, hiv, b11, b14, i11, i14, h5⟩ := hTF
-  refine ⟨fun q hq hq' => hI.hin q (by unfold bandOf bRestore at hq; omega) (by omega), b10, b11,
+  refine ⟨fun q hq hq' => hI.hin q (by unfold bandOf bRestore at hq; omega) by_o, b10, b11,
     b14, fun M' N' reg hMD' hNA' hNF' hregs' => ?_⟩
-  have eM : M = M' := (NFLoc.modelDesc_unique hMD' hMD).symm
+  have eM := (NFLoc.modelDesc_unique hMD' hMD).symm
   subst eM
-  have hNA : NFAt c.nmem (c.nreg 83001) N := hNw.holds
+  have hNA := hNw.holds
   have e := nf_patch hNA hNA'
   have hregs : NFRegs M (Qof P) N reg := by
     have h : NFRegs M (Qof P) (patch N N') reg := hregs'

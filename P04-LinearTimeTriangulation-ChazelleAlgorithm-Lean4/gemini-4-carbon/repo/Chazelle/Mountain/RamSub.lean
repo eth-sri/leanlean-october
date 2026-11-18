@@ -85,7 +85,7 @@ theorem stk_shift_push (g : ℕ → ℕ) (s t v : ℕ) :
     funext i
     by_cases h : i = t
     · subst h; rw [Machine.upd_same, Machine.upd_same]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ h]
+    · rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ h]
   rw [e, stk_push]
 
 /-- The layout hypothesis: the index table `base … base + m - 1` and the stack region
@@ -121,11 +121,11 @@ theorem sFrame_trans {c₀ c₁ c₂ : Config} (h₁ : SFrame c₀ c₁) (h₂ :
     SFrame c₀ c₂ := by
   obtain ⟨n₁, r₁, m₁, q₁⟩ := h₁
   obtain ⟨n₂, r₂, m₂, q₂⟩ := h₂
-  have e61 : c₁.nreg 61 = c₀.nreg 61 := n₁ 61 (by omega)
-  have e62 : c₁.nreg 62 = c₀.nreg 62 := n₁ 62 (by omega)
+  have e61 : c₁.nreg 61 = c₀.nreg 61 := n₁ 61 by_o
+  have e62 : c₁.nreg 62 = c₀.nreg 62 := n₁ 62 by_o
   refine ⟨fun r hr => by rw [n₂ r hr, n₁ r hr], fun r hr => by rw [r₂ r hr, r₁ r hr],
     fun a ha => ?_, by rw [q₂, q₁]⟩
-  rw [m₂ a (by rw [e61, e62]; exact ha), m₁ a ha]
+  rw [m₂ a (by rwa [e61, e62]), m₁ a ha]
 
 /-- A step that changes nothing but the natural registers `63 … 74`, the real registers
 `61 … 72` and the output keeps the frame. -/
@@ -223,18 +223,18 @@ theorem subTestStmt_exec (c : Config) (hc : WordsBounded W c) (h65 : c.nreg 65 =
   refine spec_seq ?_
   exec_block
   · exact hs
-  · config_simp; rw [h65]; exact hcb
-  · config_simp; rw [h65]; exact hbb
+  · config_simp; rwa [h65]
+  · config_simp; rwa [h65]
   · config_simp; exact hkb
-  refine spec_seq (spec_use (detInto_exec (P := P) 67 68 69 61 62 63 64 65 66 (by decide)
-    (by decide) (by decide)
+  refine spec_seq (spec_use (detInto_exec (P := P) 67 68 69 61 62 63 64 65 66 by_d
+    by_d by_d
     (fun r hr => by rcases hr with rfl | rfl | rfl | rfl | rfl | rfl <;> decide) _ ‹_›) ?_)
   rintro c₁ k₁ hk₁ hw₁ ⟨hdet, hfr, hn, hnm, hrm, hout⟩
   refine spec_instr (Exec.mulR hw₁ 71 70 67) fun hw₂ => ?_
   config_simp at hdet
   have e70 : c₁.rreg 70 = c.rreg 70 := by
-    rw [hfr 70 (by decide) (by decide) (by decide)]; config_simp
-  refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+    rw [hfr 70 by_d by_d by_d]; config_simp
+  refine ⟨by_o, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · config_simp; rw [hn]; config_simp; rw [h65]
   · config_simp; rw [hn]; config_simp; rw [h65]
   · config_simp; rw [hn]; config_simp
@@ -243,7 +243,7 @@ theorem subTestStmt_exec (c : Config) (hc : WordsBounded W c) (h65 : c.nreg 65 =
     config_simp; rw [hn]; simp [h66, h67, h71, h72, h73, h74]
   · intro r hr h71
     config_simp
-    rw [Machine.upd_other _ _ _ h71, hfr r (by omega) (by omega) (by omega)]
+    rw [Machine.upd_other _ _ _ h71, hfr r by_o by_o by_o]
     simp [show r ≠ 61 by omega, show r ≠ 62 by omega, show r ≠ 63 by omega,
       show r ≠ 64 by omega, show r ≠ 65 by omega, show r ≠ 66 by omega]
   · config_simp; rw [hnm]
@@ -302,21 +302,21 @@ theorem sInnerInv_pop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.Tr
       stk (fun i => c.nmem (c.nreg 61 + i)) (c.nreg 63 - 2) := by
     unfold stackS
     rw [e61, e63, enm, stk_pop (f := fun i => c.nmem (c.nreg 61 + i)) (t := c.nreg 63 - 1)
-      (by omega), show c.nreg 63 - 1 - 1 = c.nreg 63 - 2 by omega]
+      by_o, show c.nreg 63 - 1 - 1 = c.nreg 63 - 2 by omega]
   have hpl : popLoop (subPoly P l) σ k (stackS c) =
       ((c.nmem (c.nreg 61 + (c.nreg 63 - 2)), c.nmem (c.nreg 61 + (c.nreg 63 - 1)), k) ::
           (popLoop (subPoly P l) σ k (stackS c')).1,
         (popLoop (subPoly P l) σ k (stackS c')).2.1,
         (popLoop (subPoly P l) σ k (stackS c')).2.2 + 1) := by
     rw [hs, hs', popLoop_cons_cons, ite_eq_left hconv]
-  refine ⟨⟨hw', hC', hT', hF', by rw [e64, h64], by omega, ?_, Or.inl ⟨e69, ?_, ?_⟩⟩, ?_⟩
+  refine ⟨⟨hw', hC', hT', hF', by rw [e64, h64], by_o, ?_, Or.inl ⟨e69, ?_, ?_⟩⟩, ?_⟩
   · intro x hx
     rw [hs'] at hx
     exact hlt x (by rw [hs]; exact List.mem_cons_of_mem _ hx)
   · rw [eout, List.append_assoc, List.singleton_append, ← hout, hpl, List.map_cons]
   · rw [← hst, hpl]
   · unfold subInnerPot
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), hpl, List.length_cons]
+    rw [ite_eq_right by_o, ite_eq_right by_o, hpl, List.length_cons]
     omega
 
 /-- **Stopping re-establishes the invariant** (flag `0`) when the pop loop emits nothing more
@@ -333,8 +333,8 @@ theorem sInnerInv_stop {σ : ℝ} {k : ℕ} {c₀ : Config} {oF : List Polygon.T
     (e64 : c'.nreg 64 = c.nreg 64) (e69 : c'.nreg 69 = 0) (enm : c'.nmem = c.nmem)
     (eout : c'.output = c.output) :
     SInnerInv P W l base sbase σ k c₀ oF sF c' ∧ subInnerPot P l σ k c' = 0 := by
-  have hs' : stackS c' = stackS c := stackS_congr e61 e63 enm
-  refine ⟨⟨hw', hC', hT', hF', by rw [e64, h64], by omega, by rw [hs']; exact hlt,
+  have hs' := stackS_congr e61 e63 enm
+  refine ⟨⟨hw', hC', hT', hF', by rw [e64, h64], by_o, by rwa [hs'],
     Or.inr ⟨e69, ?_, ?_⟩⟩, ?_⟩
   · rw [eout, ← hout, hpl, List.map_nil, List.append_nil]
   · rw [hs', ← hst, hpl2]
@@ -360,23 +360,23 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
     · omega
   have hpot : subInnerPot P l σ k c =
       32 * ((popLoop (subPoly P l) σ k (stackS c)).1.length + 1) := by
-    unfold subInnerPot; rw [ite_eq_right (by omega)]
+    unfold subInnerPot; rw [ite_eq_right by_o]
   unfold subInnerBody
   by_cases hlt2 : c.nreg 63 < 2
   · -- fewer than two entries: stop
     have hpl : popLoop (subPoly P l) σ k (stackS c) = ([], stackS c, 0) := by
       unfold stackS
-      obtain h | h : c.nreg 63 = 0 ∨ c.nreg 63 = 1 := by omega
+      obtain h | h : c.nreg 63 = 0 ∨ c.nreg 63 = 1 := by_o
       · rw [h]; exact popLoop_nil _ σ k
       · rw [h]; exact popLoop_singleton _ σ k _
-    refine spec_ifLtN_true (by rw [h68]; exact hlt2)
+    refine spec_ifLtN_true (by rwa [h68])
       (spec_instr (Exec.constN hw 69 0 (Nat.zero_le _)) fun hw' => ?_)
     obtain ⟨hI', hp'⟩ := sInnerInv_stop (P := P) (W := W) (c₀ := c₀) hw'
       ⟨by config_simp; exact h60, by config_simp; exact h61, by config_simp; exact h62,
         by config_simp; exact h65, by config_simp; exact h68, by config_simp; exact h70,
         by config_simp; exact hr70, by config_simp; exact hr72⟩
       hT (sFrame_trans hF (sFrame_of_regs
-        (fun r hr => by config_simp; exact Machine.upd_other _ _ _ (by omega))
+        (fun r hr => by config_simp; exact Machine.upd_other _ _ _ by_o)
         (fun r _ => rfl) rfl rfl))
       h64 htop hlt (by rw [hpl]) (by rw [hpl]) hout hst (by config_simp) (by config_simp)
       (by config_simp) (by config_simp) rfl rfl
@@ -391,9 +391,9 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
       hlt _ (by rw [hs]; exact List.mem_cons_self)
     have hbm : c.nmem (c.nreg 61 + (c.nreg 63 - 2)) < l.length :=
       hlt _ (by rw [hs]; exact List.mem_cons_of_mem _ List.mem_cons_self)
-    have ea1 : c.nreg 61 + c.nreg 63 - 1 = c.nreg 61 + (c.nreg 63 - 1) := by omega
-    have ea2 : c.nreg 61 + c.nreg 63 - 1 - 1 = c.nreg 61 + (c.nreg 63 - 2) := by omega
-    refine spec_ifLtN_false (by rw [h68]; exact hlt2) ?_
+    have ea1 : c.nreg 61 + c.nreg 63 - 1 = c.nreg 61 + (c.nreg 63 - 1) := by_o
+    have ea2 : c.nreg 61 + c.nreg 63 - 1 - 1 = c.nreg 61 + (c.nreg 63 - 2) := by_o
+    refine spec_ifLtN_false (by rwa [h68]) ?_
     refine spec_seq (spec_use (subTestStmt_exec (P := P) c hw h65 (by rw [h61]; omega)
       (by rw [ea1, h60]; omega) (by rw [ea2, h60]; omega) (by rw [h60, h64]; omega)) ?_)
     rintro c₁ k₁ hk₁ hw₁ ⟨e72, e73, e74, e71, efr, erf, enm, erm, eout⟩
@@ -402,28 +402,28 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
     rw [h60, h64, hT _ hk] at e74
     rw [ea2, ea1, h60, hT _ hbm, hT _ hcm, h64, hT _ hk] at e71
     have n60 : c₁.nreg 60 = c.nreg 60 :=
-      efr 60 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      efr 60 by_d by_d by_d by_d by_d by_d
     have n61 : c₁.nreg 61 = c.nreg 61 :=
-      efr 61 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      efr 61 by_d by_d by_d by_d by_d by_d
     have n62 : c₁.nreg 62 = c.nreg 62 :=
-      efr 62 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      efr 62 by_d by_d by_d by_d by_d by_d
     have n63 : c₁.nreg 63 = c.nreg 63 :=
-      efr 63 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      efr 63 by_d by_d by_d by_d by_d by_d
     have n64 : c₁.nreg 64 = c.nreg 64 :=
-      efr 64 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      efr 64 by_d by_d by_d by_d by_d by_d
     have n65 : c₁.nreg 65 = c.nreg 65 :=
-      efr 65 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      efr 65 by_d by_d by_d by_d by_d by_d
     have n68 : c₁.nreg 68 = c.nreg 68 :=
-      efr 68 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      efr 68 by_d by_d by_d by_d by_d by_d
     have n69 : c₁.nreg 69 = c.nreg 69 :=
-      efr 69 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+      efr 69 by_d by_d by_d by_d by_d by_d
     have n70 : c₁.nreg 70 = c.nreg 70 :=
-      efr 70 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-    have r70 : c₁.rreg 70 = c.rreg 70 := erf 70 (by omega) (by decide)
-    have r72 : c₁.rreg 72 = c.rreg 72 := erf 72 (by omega) (by decide)
-    have hF₁ : SFrame c c₁ := sFrame_of_regs
-      (fun r hr => efr r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega))
-      (fun r hr => erf r (by omega) (by omega)) enm erm
+      efr 70 by_d by_d by_d by_d by_d by_d
+    have r70 : c₁.rreg 70 = c.rreg 70 := erf 70 by_o by_d
+    have r72 : c₁.rreg 72 = c.rreg 72 := erf 72 by_o by_d
+    have hF₁ := sFrame_of_regs
+      (fun r hr => efr r by_o by_o by_o by_o by_o by_o)
+      (fun r hr => erf r by_o by_o) enm erm
     by_cases hconv : 0 < σ * det ((subPoly P l).vtx (c.nmem (c.nreg 61 + (c.nreg 63 - 2))))
         ((subPoly P l).vtx (c.nmem (c.nreg 61 + (c.nreg 63 - 1)))) ((subPoly P l).vtx k)
     · -- a convex corner: pop
@@ -440,13 +440,13 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
           by config_simp; rw [r70, hr70], by config_simp; rw [r72, hr72]⟩
         (fun i hi => by config_simp; rw [enm]; exact hT i hi)
         (sFrame_trans hF (sFrame_trans hF₁ (sFrame_of_regs
-          (fun r hr => by config_simp; exact Machine.upd_other _ _ _ (by omega))
+          (fun r hr => by config_simp; exact Machine.upd_other _ _ _ by_o)
           (fun r _ => by config_simp) (by config_simp) (by config_simp))))
         h64 htop hge hf hlt hconv hout hst (by config_simp; rw [n61])
         (by config_simp; rw [n63, n65, h65]) (by config_simp; rw [n64])
         (by config_simp; rw [n69, hf]) (by config_simp; rw [enm])
         (by config_simp; rw [eout, e73, e72, e74]; rfl)
-      exact ⟨hI', by omega⟩
+      exact ⟨hI', by_o⟩
     · -- not convex: stop
       have hconv' := hconv
       rw [vtx_subPoly_getD P l hbm, vtx_subPoly_getD P l hcm, vtx_subPoly_getD P l hk]
@@ -462,7 +462,7 @@ theorem subInnerBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
           by config_simp; rw [r70, hr70], by config_simp; rw [r72, hr72]⟩
         (fun i hi => by config_simp; rw [enm]; exact hT i hi)
         (sFrame_trans hF (sFrame_trans hF₁ (sFrame_of_regs
-          (fun r hr => by config_simp; exact Machine.upd_other _ _ _ (by omega))
+          (fun r hr => by config_simp; exact Machine.upd_other _ _ _ by_o)
           (fun r _ => rfl) rfl rfl)))
         h64 htop hlt (by rw [hpl]) (by rw [hpl]) hout hst (by config_simp; rw [n61])
         (by config_simp; rw [n63]) (by config_simp; rw [n64]) (by config_simp)
@@ -499,7 +499,7 @@ theorem subInnerLoop_exec (hL : SLayout W base sbase l.length) {σ : ℝ} {k : �
   obtain ⟨-, hC', hT', hF', h64', htop', hlt', hflag'⟩ := hI'
   have hpot : subInnerPot P l σ k c =
       32 * ((popLoop (subPoly P l) σ k (stackS c)).1.length + 1) := by
-    unfold subInnerPot; rw [ite_eq_right (by omega)]
+    unfold subInnerPot; rw [ite_eq_right by_o]
   rcases hflag' with ⟨hf', -, -⟩ | ⟨-, hout', hst'⟩
   · exfalso; apply hexit; rw [hf', hC'.2.2.2.2.2.1]; omega
   · exact ⟨c', k', ex, by rw [← hpot]; exact hk', hC', hT', hF', h64', htop', hlt', hout', hst'⟩

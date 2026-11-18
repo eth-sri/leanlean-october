@@ -134,11 +134,11 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
     · obtain ⟨w, hwin, hwc⟩ := hw
       obtain ⟨f, hfK, hfa, hfgap⟩ := exists_succ_gap hK hcaF hcbF hab
       obtain ⟨g, hgK, hgb, hggap⟩ := exists_pred_gap hK hcbF hcaF (Ne.symm hab)
-      have hfin' : sideInArc a b f := cyc_succ_in hwin (hfgap w hwc) hfa
-      have hgin' : sideInArc a b g := cyc_pred_in hwin (hggap w hwc) hgb
-      have hfI : lo ≤ f ∧ f ≤ hi :=
+      have hfin' := cyc_succ_in hwin (hfgap w hwc) hfa
+      have hgin' := cyc_pred_in hwin (hggap w hwc) hgb
+      have hfI :=
         (hcut f hfK).resolve_left (harc.2.2.2.2.2.1 f hfin')
-      have hgI : lo ≤ g ∧ g ≤ hi :=
+      have hgI :=
         (hcut g hgK).resolve_left (harc.2.2.2.2.2.1 g hgin')
       obtain ⟨X₁, hX₁, harc₁⟩ := hM.arc_of_gap hF hfin hcaF hfK (Ne.symm hfa)
         (fun k hk hc => hfgap k hc hk)
@@ -149,7 +149,7 @@ theorem semigranular_drop (hM : WalkAx M) {F F' : Set (Set Point)} (hF : F ⊆ M
       calc M.arcWt a b ≤ M.arcWt a f + M.arcWt g b := arcWt_le_add fun p hc t ht0 _ hx =>
             cyc_pieces hfI hgI ha hb hfin' hgin' (Or.inr (hkey p t hc ht0)) hx
         _ ≤ γ + γ := Nat.add_le_add (key X₁ hX₁ _ _ harc₁) (key X₂ hX₂ _ _ harc₂)
-        _ = 2 * γ := by ring
+        _ = 2 * γ := by_r
     · push Not at hw
       obtain ⟨X, hX, harcX⟩ := hM.arc_of_gap hF hfin hcaF hcbF hab (fun k hk hc => hw k hk hc)
       have := key X hX a b harcX

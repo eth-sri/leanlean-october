@@ -55,9 +55,9 @@ theorem walk_vtx (i : ℕ) (hi : i ≤ 2 * C.m) :
 theorem sideE_up {i d : ℕ} (hJ : tJ C i + d ≤ C.m) :
     sideE C.m (tJ C (i + d)) = sideE C.m (tJ C i) + d := by
   have h1 := C.one_le
-  rw [tJ_add C (by omega)]
+  rw [tJ_add C by_o]
   unfold sideE
-  rw [ite_eq_left hJ, ite_eq_left (by omega)]
+  rw [ite_eq_left hJ, ite_eq_left by_o]
 
 /-- The chain index at tour position `i + d` when the tour descends. -/
 theorem sideE_down {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : tJ C i + d ≤ 2 * C.m) :
@@ -91,18 +91,18 @@ theorem run_up (hP : C.P = H.poly Q) {i d : ℕ} (hJ : tJ C i + d ≤ C.m) (hi :
   -- host index
   have hidx : (C.s + sideE C.m (tJ C (i + d))) % C.P.n = NFLoc.preLen Q.n H r + (t + d) := by
     rw [sideE_up C hJ, ← Nat.add_assoc, Nat.add_mod, hu, Nat.mod_eq_of_lt (show d < C.P.n by omega)]
-    rw [Nat.mod_eq_of_lt (by omega)]
+    rw [Nat.mod_eq_of_lt by_o]
     omega
   have hpt : (H.pts Q.n)[(C.s + sideE C.m (tJ C (i + d))) % C.P.n]? =
       some (SymPt.vtx ((a + (t + d)) % Q.n)) := by
-    rw [hidx, NFLoc.pts_getElem? Q.n H hr (by omega) (by rw [hrun]; simp [NFLoc.itemCnt]; omega),
+    rw [hidx, NFLoc.pts_getElem? Q.n H hr by_o (by rw [hrun]; simp [NFLoc.itemCnt]; omega),
       hrun, show NFLoc.preLen Q.n H r + (t + d) - NFLoc.preLen Q.n H r = t + d by omega,
       NFLoc.run_pts_getElem? _ _ _ ht]
   rw [show i + d + 6 = (i + d) + 6 by ring, walk_vtx C _ hi,
     NFLoc.chain_vertex_host C hP _ hpt]
   show Q.vtx _ = _
   congr 1
-  have hn : 0 < Q.n := by omega
+  have hn : 0 < Q.n := by_o
   rw [← Nat.add_assoc, Nat.add_mod, Nat.mod_eq_of_lt (show d < Q.n by omega),
     Nat.mod_eq_of_lt hq]
 
@@ -126,25 +126,25 @@ theorem run_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
     split_ifs at * <;> omega
   have hidx : (C.s + sideE C.m (tJ C (i + d))) % C.P.n = NFLoc.preLen Q.n H r + (t - d) := by
     rw [sideE_down C hm hJ]
-    have hpos : 0 < C.P.n := C.n_pos
+    have hpos := C.n_pos
     have e := Nat.div_add_mod (C.s + sideE C.m (tJ C i)) C.P.n
     rw [hu] at e
     have e2 : C.s + (sideE C.m (tJ C i) - d) =
         C.P.n * ((C.s + sideE C.m (tJ C i)) / C.P.n) + (NFLoc.preLen Q.n H r + (t - d)) := by
       omega
-    rw [e2, Nat.mul_add_mod, Nat.mod_eq_of_lt (by omega)]
+    rw [e2, Nat.mul_add_mod, Nat.mod_eq_of_lt by_o]
   have hpt : (H.pts Q.n)[(C.s + sideE C.m (tJ C (i + d))) % C.P.n]? =
       some (SymPt.vtx ((a + (t - d)) % Q.n)) := by
-    rw [hidx, NFLoc.pts_getElem? (p := NFLoc.preLen Q.n H r + (t - d)) Q.n H hr (by omega)
+    rw [hidx, NFLoc.pts_getElem? (p := NFLoc.preLen Q.n H r + (t - d)) Q.n H hr by_o
         (by rw [hrun]; simp only [NFLoc.itemCnt]; omega),
       hrun, show NFLoc.preLen Q.n H r + (t - d) - NFLoc.preLen Q.n H r = t - d by omega,
-      NFLoc.run_pts_getElem? _ _ _ (by omega)]
+      NFLoc.run_pts_getElem? _ _ _ by_o]
   rw [show i + d + 6 = (i + d) + 6 by ring, walk_vtx C _ hi,
     NFLoc.chain_vertex_host C hP _ hpt]
   show Q.vtx _ = _
   congr 1
   have e := Nat.div_add_mod (a + t) Q.n
-  have e2 : a + (t - d) = Q.n * ((a + t) / Q.n) + ((a + t) % Q.n - d) := by omega
+  have e2 : a + (t - d) = Q.n * ((a + t) / Q.n) + ((a + t) % Q.n - d) := by_o
   rw [e2, Nat.mul_add_mod, Nat.mod_eq_of_lt (by have := Nat.mod_lt (a + t) hn; omega)]
 
 end Run
@@ -156,7 +156,7 @@ theorem grade_vertex {Q : Polygon} {Cα : Chain} (hP : Cα.P = Q) (hx : Cα.s + 
     (hd : d ≤ Cα.m) : Cα.vertex d = Q.vtx (Cα.s + d) := by
   unfold Chain.vertex Chain.edgeIdx
   subst hP
-  rw [Nat.mod_eq_of_lt (by omega)]
+  rw [Nat.mod_eq_of_lt by_o]
 
 end ShootCut
 

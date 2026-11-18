@@ -35,9 +35,9 @@ theorem twin_leaf {P : Polygon} {H : Host} {CQ CH : Chain} {a : ℕ} (hQ : CQ.P 
     (hsm : CH.s + CH.m < (H.pts P.n).length) (han : a + CH.m < P.n)
     (hpt : ∀ k, k ≤ CH.m → pt H P.n (CH.s + k) = .vtx (a + k)) : BoxT.Twin CQ CH := by
   refine ⟨hm, fun k hk => ?_⟩
-  rw [hchain_vertex_lt hCH (by omega), hpt k (by omega)]
+  rw [hchain_vertex_lt hCH by_o, hpt k by_o]
   show CQ.P.vtx ((CQ.s + k) % CQ.P.n) = _
-  rw [hQ, hsQ, qof_n, Nat.mod_eq_of_lt (by omega)]
+  rw [hQ, hsQ, qof_n, Nat.mod_eq_of_lt by_o]
   rfl
 
 /-- **The transported list of a leaf.** -/
@@ -61,7 +61,7 @@ theorem conn_list {P : Polygon} {CH : Chain} {γ : ℕ} (hP' : CH.P.Simple) (h2m
   have he : famOf (chainModel CH) (Qof P) [] = ∅ := by
     ext c; simp [famOf]
   have hM := walkAx_chainModel hP'
-  refine ⟨⟨⟨?_, ?_, ?_⟩, by simp, by simp, by simp⟩, ?_, ?_⟩
+  refine ⟨⟨⟨?_, ?_, ?_⟩, by_s, by_s, by_s⟩, ?_, ?_⟩
   · have : {c | ∃ x ∈ ([] : List (ℕ × ℕ × ℕ)), c = (recOf x).toSet (chainModel CH) (Qof P)} =
         (∅ : Set (Set Point)) := by ext c; simp
     rw [this]; exact finite_empty

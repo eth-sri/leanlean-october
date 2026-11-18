@@ -49,7 +49,7 @@ theorem pos_abs_lt (C : Chain) (Q : Polygon) {n : ℕ} {x : WPos}
   · rw [hpos, h, b5]; simp only; rw [abs_lt]; constructor <;> nlinarith
   · have hmem : (chainModel C).pos Q x ∈ C.set := by
       rw [hpos, show x.edge = (x.edge - 6) + 6 by omega]
-      exact C.sideWalk_tour_pt_mem C.sideBeta (by omega) (fun h' => by omega) hp.1 ht1
+      exact C.sideWalk_tour_pt_mem C.sideBeta by_o (fun h' => by omega) hp.1 ht1
     exact lt_of_le_of_lt (C.abs_le_coordBound_of_mem_set hmem).2 C.coordBound_lt_radius
   · rw [hpos, h, b6]; simp only; rw [abs_lt]; constructor <;> nlinarith
 
@@ -76,7 +76,7 @@ theorem nArc_piece {C : Chain} (hP : C.P.Simple) {N : NF} (hNF : IsNF (chainMode
             (Restore.normOf (chainModel C) (Qof P) u))) := by
     intro u hu hue
     obtain ⟨hN, he', hpos', -, hcase⟩ := Restore.normOf_facts hu
-    refine ⟨hN, by rw [he']; exact hue, ?_⟩
+    refine ⟨hN, by rwa [he'], ?_⟩
     rcases hcase with h | h
     · exact Or.inl h
     · right
@@ -85,7 +85,7 @@ theorem nArc_piece {C : Chain} (hP : C.P.Simple) {N : NF} (hNF : IsNF (chainMode
       have hb : v.edge ≠ 0 ∧ v.edge ≠ 2 ∧ v.edge ≠ 4 := by
         refine ⟨fun h0 => ?_, fun h0 => ?_, fun h0 => ?_⟩ <;>
         · have := Model.param_horizontal (M := chainModel C) (Q := Qof P) (x := v)
-            (ShootCut.box_horizontal (C := C) (by omega))
+            (ShootCut.box_horizontal (C := C) by_o)
           linarith
       exact Restore.innerPt_chain_walk C (Qof P) hve hN.1.1 hN.1.2.1.le
         (pos_abs_lt C (Qof P) hve hN.1 h hb)
@@ -109,8 +109,8 @@ theorem boxHole_ok (C : Chain) (hP : C.P.Simple) (Q : Polygon) {e h : ℕ} (he :
   have kv : ∀ q : ℕ, (chainModel C).key Q ⟨q, 0⟩ = q := fun q => by
     show (q : ℝ) + (chainModel C).param Q ⟨q, 0⟩ = q
     rw [show (chainModel C).param Q ⟨q, 0⟩ = 0 from rfl, add_zero]
-  have k0 : (chainModel C).key Q ⟨e, 0⟩ = e := kv e
-  have k1 : (chainModel C).key Q ⟨e + 1, 0⟩ = ((e + 1 : ℕ) : ℝ) := kv (e + 1)
+  have k0 := kv e
+  have k1 := kv (e + 1)
   refine ⟨fun p t hp ht0 ht1 hz => ?_, fun g hg p τ hp hτ0 hτ1 hc => ?_⟩
   · obtain ⟨rfl, rfl⟩ := SweepPrim.wall_unique C hP he h0 h1 hp ht0 ht1 hz
     refine ⟨_, List.mem_singleton_self _, ?_⟩
@@ -118,15 +118,15 @@ theorem boxHole_ok (C : Chain) (hP : C.P.Simple) (Q : Polygon) {e h : ℕ} (he :
     rw [k0, k1]
     unfold sideInArc
     push_cast
-    rw [ite_eq_left (by linarith)]
+    rw [ite_eq_left by_l]
     constructor <;> linarith
   · simp only [List.mem_singleton] at hg
     subst hg
     simp only at hc
     rw [k0, k1] at hc
-    obtain ⟨t₂, h20, h21, h2⟩ := Restore.edge_keys (chainModel C).W (e := e) (by omega) hp hτ0 hτ1
-      (by rw [Nat.mod_eq_of_lt hen]; exact hc)
-    exact ⟨e, by omega, ⟨_, h0.le, h1.le, rfl⟩, t₂, h20, h21, h2⟩
+    obtain ⟨t₂, h20, h21, h2⟩ := Restore.edge_keys (chainModel C).W (e := e) by_o hp hτ0 hτ1
+      (by rwa [Nat.mod_eq_of_lt hen])
+    exact ⟨e, by_o, ⟨_, h0.le, h1.le, rfl⟩, t₂, h20, h21, h2⟩
 
 /-! ## The shot as a run step -/
 
@@ -158,7 +158,7 @@ theorem shot_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     ⟨fun r hr hra => f1 r (hio r hr).1 hra (hio r hr).2, fun r hr => f2 r (hio r hr).1 (hio r hr).2,
       f5, f6, f7⟩, hpost, fun r hr hra hw => f1 r hr hra hw, f6, f3⟩
   unfold IFix at hq
-  rw [f1 q (not_oracle_sw (by omega) (by omega)) (by unfold ALLOC; omega)
+  rw [f1 q (not_oracle_sw by_o by_o) by_ao
     (by unfold RS; omega)]
   exact hI.hin q hq
 
@@ -180,12 +180,12 @@ theorem LCtx.transport {C : Chain} {N : NF} {E : ℕ} {c c' : Config} (h : LCtx 
   swap
   · rw [hm0] at h1; omega
   obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep hmwf hm0 hC' hm hA
-  refine ⟨hG, hWh, hctx.transport rCD hm hA, by rw [rCD, rMD, hcd], ?_, by rw [rMD]; exact w1,
-    by rw [rMD]; exact w2, hP, by rw [rNF]; exact hNW.transport (fun a ha => hm a (by omega)),
-    by omega, hNF, fun j hj => ?_, by rw [rTL]; exact hbig, by rw [rTB]; exact hTB,
+  refine ⟨hG, hWh, hctx.transport rCD hm hA, by rw [rCD, rMD, hcd], ?_, by rwa [rMD],
+    by rwa [rMD], hP, by rw [rNF]; exact hNW.transport (fun a ha => hm a by_o),
+    by_o, hNF, fun j hj => ?_, by rwa [rTL], by rwa [rTB],
     by rw [rTB, rTL]; omega⟩
   · rw [rMD]; exact Or.inl ⟨w2, H, C', w3, hMC⟩
-  · rw [rTL] at hj; rw [rTB, hm _ (by omega)]; exact htab j hj
+  · rw [rTL] at hj; rw [rTB, hm _ by_o]; exact htab j hj
 
 /-! ## The gather of the three regions -/
 
@@ -213,10 +213,10 @@ theorem lhGather_irs {C : Chain} {N : NF} {E : ℕ} {rs : List ℕ} (hI : IInv W
       (∀ r, bandOf r ∉ oracleBands → ¬ GCall r → r ≠ ALLOC → c'.nreg r = c.nreg r)) := by
   have hK₀ := hK.fix hI
   have hok : okB W c.nmem [.copyN gNF lNF, .copyN gL lL, .copyN gC K3] c.nreg :=
-    ⟨iscr_sw (by unfold gNF sw; norm_num) (by unfold gNF sw; norm_num),
-      iscr_sw (by unfold gL sw; norm_num) (by unfold gL sw; norm_num),
-      iscr_sw (by unfold gC sw; norm_num) (by unfold gC sw; norm_num), trivial⟩
-  refine IRS.seq (K₂ := gatherK N rs) (IRS.block _ hI hok) ?_ |>.mono (by simp) (fun _ h => h)
+    ⟨iscr_sw by_d by_d,
+      iscr_sw by_d by_d,
+      iscr_sw by_d by_d, trivial⟩
+  refine IRS.seq (K₂ := gatherK N rs) (IRS.block _ hI hok) ?_ |>.mono by_s (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   have v1 : c₁.nreg gNF = c.nreg lNF ∧ c₁.nreg gL = c.nreg lL ∧ c₁.nreg gC = 3 := by
     rw [hc1]
@@ -236,17 +236,17 @@ theorem lhGather_irs {C : Chain} {N : NF} {E : ℕ} {rs : List ℕ} (hI : IInv W
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1 _ (by unfold gNF ALLOC sw; omega)
     (by unfold gL ALLOC sw; omega) (by unfold gC ALLOC sw; omega)
-  have hL1 : LCtx P W C N E c₁ := hL.transport (fun r hr => k1 r
+  have hL1 := hL.transport (fun r hr => k1 r
     (by rcases hr with rfl | rfl | rfl | rfl | rfl <;> unfold gNF <;> simp [lMD, lCD, lNF, TBR, TLR, sw])
     (by rcases hr with rfl | rfl | rfl | rfl | rfl <;> unfold gL <;> simp [lMD, lCD, lNF, TBR, TLR, sw])
     (by rcases hr with rfl | rfl | rfl | rfl | rfl <;> unfold gC <;> simp [lMD, lCD, lNF, TBR, TLR, sw]))
     (fun a _ => by rw [hm1]) hA1.ge
   refine (gather_irs (rs := rs) hI₁ hK hL1.hctx ⟨by unfold lCD sw; norm_num, by unfold lCD sw; norm_num,
     fun h => by unfold GSet lCD sw at h; omega⟩ hL1.hP hL1.hNF (B := c₁.nreg lNF) hL1.hNW
-    (by rw [v1.1, k1 lNF (by unfold lNF gNF sw; norm_num) (by unfold lNF gL sw; norm_num)
-      (by unfold lNF gC sw; norm_num)]) hL1.hE hrs
+    (by rw [v1.1, k1 lNF by_d by_d
+      by_d]) hL1.hE hrs
     (fun j hj => by rw [hm1, v1.2.1]; rw [hrs3] at hj; exact hlist j hj)
-    (by rw [v1.2.1, hA1, hrs3]; exact hLA) (by rw [v1.2.2, hrs3])
+    (by rwa [v1.2.1, hA1, hrs3]) (by rw [v1.2.2, hrs3])
     (by rw [hA1]; omega)).mono le_rfl ?_
   rintro c' ⟨⟨w1, w2, w3, w4, w5, w6, -, -, -⟩, -⟩
   rw [hA1] at w1 w3 w4 w5
@@ -291,7 +291,7 @@ theorem lhHoles_irs {C : Chain} (hI : IInv W c₀ c) (hK : Consts c₀) (hctx : 
   set x : WPos := ⟨c.nreg lE, c.nreg lH⟩ with hx
   have hn : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
   have hm1 := C.one_le
-  have hnW : 2 * C.m + 7 ≤ W := hctx.2.2.2.2.2
+  have hnW := hctx.2.2.2.2.2
   unfold lhHoles
   by_cases hbox : c.nreg lE < c.nreg K6
   · rw [k6] at hbox
@@ -299,15 +299,15 @@ theorem lhHoles_irs {C : Chain} (hI : IInv W c₀ c) (hK : Consts c₀) (hctx : 
       rcases hloc with h | ⟨h, -⟩
       · exact h
       · omega
-    have hpar0 : 0 < (chainModel C).param (Qof P) x := ShootCut.box_param_pos' C (Qof P) hbox hpp.1 hy
+    have hpar0 := ShootCut.box_param_pos' C (Qof P) hbox hpp.1 hy
     have hok : okB W c.nmem boxL c.nreg := by
       simp only [boxL, okB, okI, regI, upd, lE, K1, sw]
       simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_false]
       have e1 : c.nreg 240611 = 1 := k1
       have eE : c.nreg 241103 = c.nreg lE := rfl
-      refine ⟨⟨iscr_sw (by norm_num) (by norm_num), by omega⟩, iscr_sw (by norm_num) (by norm_num),
-        ⟨iscr_sw (by norm_num) (by norm_num), by rw [e1, eE]; omega⟩, trivial⟩
-    refine (IRS.ifT (by rw [k6]; exact hbox) (IRS.block _ hI hok)).mono (by simp [boxL]) ?_
+      refine ⟨⟨iscr_sw by_n by_n, by_o⟩, iscr_sw by_n by_n,
+        ⟨iscr_sw by_n by_n, by rw [e1, eE]; omega⟩, trivial⟩
+    refine (IRS.ifT (by rwa [k6]) (IRS.block _ hI hok)).mono (by simp [boxL]) ?_
     rintro c' rfl
     have e1 : c.nreg 240611 = 1 := k1
     have v9 : regB c.nmem boxL c.nreg 241309 = 1 := by
@@ -320,7 +320,7 @@ theorem lhHoles_irs {C : Chain} (hI : IInv W c₀ c) (hK : Consts c₀) (hctx : 
       fun r h1 h2 h3 => regB_other _ _ _ (fun i hi => by
         simp only [boxL, List.mem_cons, List.not_mem_nil, or_false] at hi
         rcases hi with rfl | rfl | rfl <;> simp only [dstI] <;> omega)
-    set c' : Config := { c with nreg := regB c.nmem boxL c.nreg } with hc'
+    set c' := { c with nreg := regB c.nmem boxL c.nreg } with hc'
     have hl : ShotList.holeList c' 241300 = [(⟨c.nreg lE, 0⟩, ⟨c.nreg lE + 1, 0⟩)] := by
       rw [holeList_one _ v9]
       simp only [ShotList.holeAt]
@@ -330,30 +330,30 @@ theorem lhHoles_irs {C : Chain} (hI : IInv W c₀ c) (hK : Consts c₀) (hctx : 
       rw [c10, c11]
     obtain ⟨hcov, hnear⟩ := boxHole_ok C hctx.2.2.2.2.1 (Qof P) hb hpar0 hpp.2.1
     have c9 : c'.nreg 241309 = 1 := v9
-    refine ⟨⟨by rw [c9]; norm_num, fun j hj => ?_, by rw [hl]; exact hcov, by rw [hl]; exact hnear⟩,
+    refine ⟨⟨by rw [c9]; norm_num, fun j hj => ?_, by rwa [hl], by rwa [hl]⟩,
       fun r hr hh hra => ?_, ?_, rfl⟩
     · rw [c9] at hj
-      have : j = 0 := by omega
+      have : j = 0 := by_o
       subst this
       show regB c.nmem boxL c.nreg 241310 < _ ∧ regB c.nmem boxL c.nreg 241311 < _ ∧
         regB c.nmem boxL c.nreg 241310 ≠ regB c.nmem boxL c.nreg 241311
       rw [v10, v11]
-      refine ⟨he, by rcases hb with h | h <;> omega, by omega⟩
-    · exact vo r (fun h => hh (Or.inl (by omega))) (fun h => hh (Or.inl (by omega)))
-        (fun h => hh (Or.inl (by omega)))
-    · exact vo ALLOC (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+      refine ⟨he, by rcases hb with h | h <;> omega, by_o⟩
+    · exact vo r (fun h => hh (Or.inl by_o)) (fun h => hh (Or.inl by_o))
+        (fun h => hh (Or.inl by_o))
+    · exact vo ALLOC by_ao by_ao by_ao
   · -- a point of the chain: `chainH`
     rw [k6] at hbox
-    have h6 : 6 ≤ c.nreg lE := by omega
+    have h6 : 6 ≤ c.nreg lE := by_o
     have hxC : (chainModel C).pos (Qof P) x ∈ C.set := by
       rcases hloc with h | ⟨-, h⟩
       · omega
       · exact h
-    refine (IRS.ifF (by rw [k6]; exact hbox) ?_).mono (K := 11198) (by omega) (fun _ h => h)
+    refine (IRS.ifF (by rwa [k6]) ?_).mono (K := 11198) by_o (fun _ h => h)
     -- copy the position
     have hok1 : okB W c.nmem [.copyN 243005 lE, .copyN 243006 lH] c.nreg :=
-      ⟨iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num), trivial⟩
-    refine IRS.seq (IRS.block _ hI hok1) ?_ |>.mono (K := 2 + (11015 + (3 + 100))) (by omega)
+      ⟨iscr_sw by_n by_n, iscr_sw by_n by_n, trivial⟩
+    refine IRS.seq (IRS.block _ hI hok1) ?_ |>.mono (K := 2 + (11015 + (3 + 100))) by_o
       (fun _ h => h)
     rintro c₁ hI₁ - - hc1
     have v15 : c₁.nreg 243005 = c.nreg lE := by
@@ -368,19 +368,19 @@ theorem lhHoles_irs {C : Chain} (hI : IInv W c₀ c) (hK : Consts c₀) (hctx : 
         simp only [List.mem_cons, List.not_mem_nil, or_false] at hi
         rcases hi with rfl | rfl <;> simp only [dstI] <;> omega)
     have hm1 : c₁.nmem = c.nmem := by rw [hc1]
-    have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1o _ (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+    have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := k1o _ by_ao by_ao
     have hctx1 : ChainCtx P W c₁ lCD C := hctx.transport (k1o _ (by unfold lCD sw; omega)
       (by unfold lCD sw; omega)) (fun a _ => by rw [hm1]) hA1.ge
     -- normalise it
     have hpp1 : ProperPos (chainModel C) (Qof P) P.n ⟨c₁.nreg 243005, c₁.nreg 243006⟩ := by
       rw [v15, v16]; exact hpp
     refine IRS.seq (normS_exact (normS_irs (dsc := lCD) (pe := 243005) (ph := 243006) (o := lO) hI₁
-      (hK.fix hI₁) hctx1 ⟨by unfold lCD sw; norm_num, by unfold lCD sw; norm_num, by norm_num,
-        by norm_num, by norm_num, by norm_num⟩
+      (hK.fix hI₁) hctx1 ⟨by unfold lCD sw; norm_num, by unfold lCD sw; norm_num, by_n,
+        by_n, by_n, by_n⟩
       ⟨by unfold lO sw; norm_num, by unfold lO sw; norm_num, by unfold lO sw; norm_num,
-        by unfold lO sw; norm_num, by unfold lO sw; norm_num, by unfold lO sw; norm_num, by norm_num⟩
-      (by rw [v15]; exact he) hpp1 (fun h' => by rw [v15] at h'; omega)
-      (by rw [hA1]; omega)) ⟨by norm_num, by unfold lO sw; norm_num⟩) ?_
+        by unfold lO sw; norm_num, by unfold lO sw; norm_num, by unfold lO sw; norm_num, by_n⟩
+      (by rwa [v15]) hpp1 (fun h' => by rw [v15] at h'; omega)
+      (by rw [hA1]; omega)) ⟨by_n, by unfold lO sw; norm_num⟩) ?_
     rintro c₂ hI₂ - - ⟨⟨n25, n26, k2, -, -⟩, hA2, hm2⟩
     obtain ⟨hNP, hne, hnpos, -, hncase⟩ := Restore.normOf_facts hpp
     have hu2 : (⟨c₂.nreg 243005, c₂.nreg 243006⟩ : WPos) = Restore.normOf (chainModel C) (Qof P) x := by
@@ -389,16 +389,15 @@ theorem lhHoles_irs {C : Chain} (hI : IInv W c₀ c) (hK : Consts c₀) (hctx : 
       rw [hn'] at hne; simp only at hne ⊢; rw [hne]
     have hh6 : c₂.nreg 243006 = (Restore.normOf (chainModel C) (Qof P) x).hgt := by
       rw [n26, v15, v16]; rfl
-    have k2o : ∀ r, bandOf r ∉ oracleBands → r ≠ 243006 → r ≠ lO → r ≠ lO + 1 → r ≠ ALLOC →
-        c₂.nreg r = c₁.nreg r := k2
-    have hctx2 : ChainCtx P W c₂ lCD C := hctx1.transport
-      (k2o _ (not_oracle_sw (by unfold lCD sw; norm_num) (by unfold lCD sw; norm_num))
+    have k2o := k2
+    have hctx2 := hctx1.transport
+      (k2o _ by_d
         (by unfold lCD sw; omega) (by unfold lCD lO sw; omega) (by unfold lCD lO sw; omega)
         (by unfold lCD ALLOC sw; omega)) (fun a _ => by rw [hm2]) hA2.ge
     -- the descriptor and the constants
     have hok3 : okB W c₂.nmem [.copyN 243020 lCD, .constN 243022 0, .constN 243023 1] c₂.nreg :=
-      ⟨iscr_sw (by norm_num) (by norm_num), ⟨iscr_sw (by norm_num) (by norm_num), Nat.zero_le _⟩,
-        ⟨iscr_sw (by norm_num) (by norm_num), by omega⟩, trivial⟩
+      ⟨iscr_sw by_n by_n, ⟨iscr_sw by_n by_n, Nat.zero_le _⟩,
+        ⟨iscr_sw by_n by_n, by_o⟩, trivial⟩
     refine IRS.seq (IRS.block _ hI₂ hok3) ?_
     rintro c₃ hI₃ - - hc3
     have v20 : c₃.nreg 243020 = c₂.nreg lCD := by
@@ -416,28 +415,28 @@ theorem lhHoles_irs {C : Chain} (hI : IInv W c₀ c) (hK : Consts c₀) (hctx : 
         simp only [List.mem_cons, List.not_mem_nil, or_false] at hi
         rcases hi with rfl | rfl | rfl <;> simp only [dstI] <;> omega)
     have hm3 : c₃.nmem = c₂.nmem := by rw [hc3]
-    have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := k3o _ (by unfold ALLOC; omega) (by unfold ALLOC; omega)
-      (by unfold ALLOC; omega)
-    have h35 : c₃.nreg 243005 = c₂.nreg 243005 := k3o _ (by norm_num) (by norm_num) (by norm_num)
-    have h36 : c₃.nreg 243006 = c₂.nreg 243006 := k3o _ (by norm_num) (by norm_num) (by norm_num)
+    have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := k3o _ by_ao by_ao
+      by_ao
+    have h35 : c₃.nreg 243005 = c₂.nreg 243005 := k3o _ by_n by_n by_n
+    have h36 : c₃.nreg 243006 = c₂.nreg 243006 := k3o _ by_n by_n by_n
     obtain ⟨-, -, hwf, ⟨H, hCD, -⟩, hP, hWm⟩ := hctx2
     -- the holes
     obtain ⟨c', k, ex, hk, hout, hOut⟩ := chainH_exec (P := P) (W := W) (c := c₃) hI₃.hw (H := H) (C := C)
-      (by rw [v20, hm3]; exact hCD) (by rw [v20, hA3]; exact hwf.1) hP hWm v22 v23
-      (by rw [h35, h36, hu2]; exact hNP.1) (by rw [h35, n25, v15]; exact he)
-      (by rw [h35, h36, hu2, hh6]; exact hncase) (by rw [h35, h36, hu2, hnpos]; exact hxC)
+      (by rwa [v20, hm3]) (by rw [v20, hA3]; exact hwf.1) hP hWm v22 v23
+      (by rw [h35, h36, hu2]; exact hNP.1) (by rwa [h35, n25, v15])
+      (by rwa [h35, h36, hu2, hh6]) (by rwa [h35, h36, hu2, hnpos])
     have hHL : ∀ r, r ∈ holeL → HSet r := by
       intro r hr
       simp only [holeL, chainHL, List.mem_append, List.mem_cons, List.not_mem_nil, or_false] at hr
       unfold HSet; omega
-    refine IRS.ofExec hI₃ ex (by omega) (fun r hr hra => hOut.1 r (fun h => hr (by
+    refine IRS.ofExec hI₃ ex by_o (fun r hr hra => hOut.1 r (fun h => hr (by
       have := hHL r h; unfold HSet lO sw at this
-      rcases this with h | h | h | h <;> exact iscr_sw (by omega) (by omega)))) hOut.2.1
+      rcases this with h | h | h | h <;> exact iscr_sw by_o by_o))) hOut.2.1
       (fun a _ => by rw [hOut.2.2.1]) hOut.2.2.2.1 hOut.2.2.2.2
       (by rw [hOut.1 ALLOC (fun h => by have := hHL _ h; unfold HSet ALLOC lO sw at this; omega)])
       (by rw [hOut.1 ALLOC (fun h => by have := hHL _ h; unfold HSet ALLOC lO sw at this; omega)];
           omega) ⟨?_, fun r hr hh hra => ?_, ?_, ?_⟩
-    · rw [h35, h36, hu2, hnpos] at hout; exact hout
+    · rwa [h35, h36, hu2, hnpos] at hout
     · rw [hOut.1 r (fun h => hh (hHL r h)), k3o r (fun h => hh (by unfold HSet; omega))
         (fun h => hh (by unfold HSet; omega)) (fun h => hh (by unfold HSet; omega)),
         k2o r hr (fun h => hh (by unfold HSet; omega)) (fun h => hh (Or.inr (Or.inr (Or.inl h))))
@@ -539,11 +538,11 @@ theorem lhShotOffer_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
   -- 1. prepare the shot block
   have hok : okB W c.nmem shPrepL c.nreg := by
     simp only [shPrepL, okB, okI]
-    exact ⟨iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-      iscr_sw (by norm_num) (by norm_num), ⟨iscr_sw (by norm_num) (by norm_num), hW2⟩,
-      iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-      iscr_sw (by norm_num) (by norm_num), iscr_sw (by norm_num) (by norm_num),
-      iscr_sw (by norm_num) (by norm_num), trivial⟩
+    exact ⟨iscr_sw by_n by_n, iscr_sw by_n by_n,
+      iscr_sw by_n by_n, ⟨iscr_sw by_n by_n, hW2⟩,
+      iscr_sw by_n by_n, iscr_sw by_n by_n,
+      iscr_sw by_n by_n, iscr_sw by_n by_n,
+      iscr_sw by_n by_n, trivial⟩
   refine IRS.seq (K₂ := ShotList.shotCost (F (c₀.nreg (sw 5))) K + (offerFK + 2))
     (IRS.block shPrepL hI hok) ?_ |>.mono (by simp [shPrepL, shotOfferK]) (fun _ h => h)
   rintro c₁ hI₁ - - hc1
@@ -551,7 +550,7 @@ theorem lhShotOffer_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
   have hm1 : c₁.nmem = c.nmem := by rw [hc1]
   have q1 : ∀ q, (q < 241300 ∨ 241308 < q) → c₁.nreg q = c.nreg q := fun q hq => by
     rw [hc1]; exact po q hq
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := q1 _ (by unfold ALLOC; omega)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := q1 _ by_ao
   have c0 : c₁.nreg RS = c.nreg lMD := by rw [hc1]; exact p0
   have c1' : c₁.nreg (RS + 1) = c.nreg gBase := by rw [hc1]; exact p1
   have c2' : c₁.nreg (RS + 2) = K := by rw [hc1]; show regB _ _ _ 241302 = _; rw [p2, hgK]
@@ -567,14 +566,14 @@ theorem lhShotOffer_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
     rw [q1 (RS + 10 + 2 * j) (by unfold RS; omega), q1 (RS + 11 + 2 * j) (by unfold RS; omega)]
   have hori : OriginIn c₁ (RS + 3) (.walk x) := by
     refine ⟨?_, ?_, ?_⟩
-    · rw [hc1]; exact p3
-    · rw [hc1]; exact p4
-    · rw [hc1]; exact p5
+    · rwa [hc1]
+    · rwa [hc1]
+    · rwa [hc1]
   -- 2. the precondition of the shot
   have hL1 : LCtx P W C N E c₁ := hL.transport (fun r hr => q1 r (by
       rcases hr with rfl | rfl | rfl | rfl | rfl <;> simp [lMD, lCD, lNF, TBR, TLR, sw]))
     (fun a _ => by rw [hm1]) hA1.ge
-  have hlow : ∀ a, a < c₀.nreg ALLOC → c₁.nmem a = c₀.nmem a := hI₁.hm
+  have hlow := hI₁.hm
   have hX1 : X.holds P c₁.nmem (c₁.nreg (RS + 8)) (c₁.nreg ALLOC) := by
     rw [c8]
     exact X.mono _ _ _ _ _ hI₁.hA (X.local_ _ _ _ _ _ (fun a ha => (hlow a ha).symm) hX)
@@ -590,15 +589,15 @@ theorem lhShotOffer_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
   have h9 : c₁.nreg (RS + 9) = c.nreg 241309 := q1 _ (by unfold RS; omega)
   have hRS1 : c₁.nreg RS + 1 = c₁.nreg lCD := by rw [hcd1, c0, q1 lMD (by unfold lMD sw; omega)]
   have pre : ShotList.ShotPre X Ok RS P W c₁ := by
-    refine ⟨hL.hG, hWh, hX1, hcap1, by rw [c0, ← q1 lMD (by unfold lMD sw; omega)]; exact hmwf,
-      by rw [c0, ← q1 lMD (by unfold lMD sw; omega)]; exact hm0,
-      by rw [c1', c2', hA1]; exact hAB, by rw [h9]; exact ho3, H, C, by rw [hRS1]; exact hCD,
-      by rw [hRS1]; exact hreg, hOk, hWm, fun j hj => ?_, fun j hj => ?_, .walk x, hori,
+    refine ⟨hL.hG, hWh, hX1, hcap1, by rwa [c0, ← q1 lMD (by unfold lMD sw; omega)],
+      by rwa [c0, ← q1 lMD (by unfold lMD sw; omega)],
+      by rwa [c1', c2', hA1], by rwa [h9], H, C, by rwa [hRS1],
+      by rwa [hRS1], hOk, hWm, fun j hj => ?_, fun j hj => ?_, .walk x, hori,
       ⟨he, hpp.2.2⟩, Or.inr ⟨Restore.innerPt_chain_walk C (Qof P) he hpp.1 hpp.2.1.le hy,
         fun x' hx' => by cases hx'; exact hpp⟩, hy, ?_⟩
     · rw [c2'] at hj
       rw [c1', hm1, harcs j hj, c7]
-      have hmem : (regArcs N rs).getD j 0 ∈ regArcs N rs := getD_mem_of_lt hj
+      have hmem := getD_mem_of_lt hj
       exact nArc_piece hP hL.hNF hsg (hrs _ hmem)
     · rw [h9] at hj
       rw [q1 (RS + 10 + 2 * j) (by unfold RS; omega), q1 (RS + 11 + 2 * j) (by unfold RS; omega)]
@@ -635,27 +634,27 @@ theorem lhShotOffer_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
     exact Sweep.arcSet_subset_compl_dom C hP _ _ hj
   -- registers after the shot
   have keep2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ (RS ≤ r ∧ r < RS + 300) → c₂.nreg r = c₁.nreg r :=
-    fun r h1 h2 h3 => k2 r (not_oracle_sw h1 h2) (by unfold ALLOC; omega) h3
+    fun r h1 h2 h3 => k2 r (not_oracle_sw h1 h2) by_ao h3
   have keepc : ∀ r, 240000 ≤ r → r < 250000 → (r < RS ∨ RS + 299 < r) → c₂.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => (keep2 r h1 h2 (by omega)).trans (q1 r (by unfold RS at h3; omega))
-  have t2 : c₂.nreg lT = c.nreg lT := keepc _ (by unfold lT sw; norm_num) (by unfold lT sw; norm_num)
+    fun r h1 h2 h3 => (keep2 r h1 h2 by_o).trans (q1 r (by unfold RS at h3; omega))
+  have t2 : c₂.nreg lT = c.nreg lT := keepc _ by_d by_d
     (by unfold lT RS sw; omega)
-  have d2 : c₂.nreg lD = c.nreg lD := keepc _ (by unfold lD sw; norm_num) (by unfold lD sw; norm_num)
+  have d2 : c₂.nreg lD = c.nreg lD := keepc _ by_d by_d
     (by unfold lD RS sw; omega)
-  have n2 : c₂.nreg lN = c.nreg lN := keepc _ (by unfold lN sw; norm_num) (by unfold lN sw; norm_num)
+  have n2 : c₂.nreg lN = c.nreg lN := keepc _ by_d by_d
     (by unfold lN RS sw; omega)
-  have cd2 : c₂.nreg lCD = c.nreg lCD := keepc _ (by unfold lCD sw; norm_num) (by unfold lCD sw; norm_num)
+  have cd2 : c₂.nreg lCD = c.nreg lCD := keepc _ by_d by_d
     (by unfold lCD RS sw; omega)
   have a2 : ∀ j, j ≤ 12 → c₂.nreg (accA + j) = c.nreg (accA + j) := fun j hj =>
     keepc _ (by unfold accA sw; omega) (by unfold accA sw; omega) (by unfold accA RS sw; omega)
-  have hacc2 : AccOK P accA Mod R₀ z σ L c₂ := hacc.transport a2
-  have hA2' : c.nreg ALLOC ≤ c₂.nreg ALLOC := hA1 ▸ hA2
+  have hacc2 := hacc.transport a2
+  have hA2' := hA1 ▸ hA2
   have hm2' : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [hm2 a (by omega), hm1]
+    rw [hm2 a by_o, hm1]
   have hctx2 : ChainCtx P W c₂ lCD C := by
     have := hL.hctx
     exact this.transport cd2 hm2' hA2'
-  have k0₂ : c₂.nreg K0 = 0 := (hK.fix hI₂).1
+  have k0₂ := (hK.fix hI₂).1
   -- the completeness of the shot
   have complete : Merge.FreeAt C z σ → z.2 ≤ C.top.2 →
       rayPt z σ (C.hitParam z σ) ∈
@@ -671,18 +670,18 @@ theorem lhShotOffer_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
   have hfl' : c₂.nreg 241320 ≤ 1 := hfl
   by_cases hflag : c₂.nreg K0 < c₂.nreg 241320
   · rw [k0₂] at hflag
-    have h1 : c₂.nreg 241320 = 1 := by omega
+    have h1 : c₂.nreg 241320 = 1 := by_o
     obtain ⟨t, hFH, hpp2, he2, hpos2⟩ := hyes h1
     have hroom2 : c₂.nreg ALLOC + offerFK ≤ W := by
       rw [c7, c2', hA1] at hAb; unfold shotOfferK at hroom; omega
-    refine (IRS.ifT (by rw [k0₂]; exact hflag) (offerF_irs (L := L) (τ := t) (Mod := Mod) hI₂ hK hL.hG
+    refine (IRS.ifT (by rwa [k0₂]) (offerF_irs (L := L) (τ := t) (Mod := Mod) hI₂ hK hL.hG
       (by unfold hostWords at hWh; omega)
       ⟨by unfold accA sw; norm_num, by unfold accA sw; norm_num⟩
-      ⟨by unfold lCD sw; norm_num, by unfold lCD sw; norm_num, by norm_num, by norm_num, by norm_num,
-        by norm_num, by unfold lT sw; norm_num, by unfold lT sw; norm_num, by unfold lD sw; norm_num,
+      ⟨by unfold lCD sw; norm_num, by unfold lCD sw; norm_num, by_n, by_n, by_n,
+        by_n, by unfold lT sw; norm_num, by unfold lT sw; norm_num, by unfold lD sw; norm_num,
         by unfold lD sw; norm_num, by unfold lN sw; norm_num, by unfold lN sw; norm_num,
         by unfold lO sw; norm_num, by unfold lO sw; norm_num⟩
-      ⟨by norm_num, by unfold lO sw; norm_num, by unfold lO sw; norm_num, by unfold lO sw; norm_num,
+      ⟨by_n, by unfold lO sw; norm_num, by unfold lO sw; norm_num, by unfold lO sw; norm_num,
         by unfold lO sw; norm_num, by unfold lO lT sw; norm_num, by unfold lO lD sw; norm_num,
         by unfold lO lN sw; norm_num, by unfold lT sw; norm_num, by unfold lD sw; norm_num,
         by unfold lN sw; norm_num, by unfold lO lCD sw; norm_num, by unfold lCD sw; norm_num,
@@ -690,14 +689,14 @@ theorem lhShotOffer_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
         by unfold lO lCD sw; norm_num⟩
       ⟨by unfold lCD accA sw; omega, by unfold accA sw; omega, by unfold accA sw; omega,
         by unfold lT accA sw; omega, by unfold lD accA sw; omega, by unfold lO accA sw; omega⟩
-      (by rw [d2]; exact hacc2) (by rw [t2]; exact htag) (by rw [t2, hMod]; exact hctx2)
-      (by rw [t2, hMod]; exact hR) (by rw [n2, hn, t2, hMod]) (by rw [t2, hMod]; exact he2)
-      (by rw [t2, hMod]; exact hpp2) (by rw [t2, hMod, d2]; exact hpos2) (by rw [hR] at hy; exact hy)
-      hroom2)).mono (by omega) ?_
+      (by rwa [d2]) (by rwa [t2]) (by rwa [t2, hMod])
+      (by rwa [t2, hMod]) (by rw [n2, hn, t2, hMod]) (by rwa [t2, hMod])
+      (by rwa [t2, hMod]) (by rwa [t2, hMod, d2]) (by rwa [hR] at hy)
+      hroom2)).mono by_o ?_
     rintro c' ⟨⟨L', hacc', hL', hcomp⟩, k3, hA3, hm3⟩
     simp only [d2, t2, hMod] at hacc' hL' hcomp
     refine ⟨L', hacc', ?_, fun hf hzt hlo' => ?_, fun r hr hrs hra hro hro1 hrA => ?_,
-      hA2'.trans hA3, fun a ha => by rw [hm3 a (by omega)]; exact hm2' a ha⟩
+      hA2'.trans hA3, fun a ha => by rw [hm3 a by_o]; exact hm2' a ha⟩
     · rcases hL' with h | ⟨h, hg⟩
       · exact Or.inl h
       · exact Or.inr ⟨t, h, hFH.1, hg⟩
@@ -708,9 +707,9 @@ theorem lhShotOffer_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : Mem
         k2 r hr hrA hrs]
       exact q1 r (by unfold RS at hrs; omega)
   · refine (IRS.ifF hflag (IRS.skip (K := offerFK) hI₂ ⟨L, hacc2, Or.inl rfl, fun hf hzt hlo' => ?_,
-      fun r hr hrs hra hro hro1 hrA => ?_, hA2', hm2'⟩)).mono (by omega) (fun _ h => h)
+      fun r hr hrs hra hro hro1 hrA => ?_, hA2', hm2'⟩)).le
     · rw [k0₂] at hflag
-      exact absurd (complete hf hzt hlo').1 (by omega)
+      exact absurd (complete hf hzt hlo').1 by_o
     · rw [k2 r hr hrA hrs]
       exact q1 r (by unfold RS at hrs; omega)
 

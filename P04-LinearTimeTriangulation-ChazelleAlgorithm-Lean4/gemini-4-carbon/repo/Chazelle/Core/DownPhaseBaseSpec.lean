@@ -119,13 +119,13 @@ theorem dBit_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {b : ℕ}
     by_cases hb0 : 0 < b
     · have t2 : c.nreg 200101 < c.nreg 200106 := by rw [h101, h106]; exact hb0
       have e := Exec.constN (P := P) hw 200103 1 hW
-      exact ⟨_, _, .ifLtN_true t1 (.ifLtN_true t2 e), by omega,
+      exact ⟨_, _, .ifLtN_true t1 (.ifLtN_true t2 e), by_o,
         by simp [show b = 1 by omega], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
     · have t2 : ¬ c.nreg 200101 < c.nreg 200106 := by rw [h101, h106]; exact hb0
-      exact ⟨c, _, .ifLtN_true t1 (.ifLtN_false t2 (.skip hw)), by omega,
+      exact ⟨c, _, .ifLtN_true t1 (.ifLtN_false t2 (.skip hw)), by_o,
         by rw [h103]; simp [show b ≠ 1 by omega], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   · have t1 : ¬ c.nreg 200106 < c.nreg 200105 := by rw [h106, h105]; exact hb1
-    exact ⟨c, _, .ifLtN_false t1 (.skip hw), by omega,
+    exact ⟨c, _, .ifLtN_false t1 (.skip hw), by_o,
       by rw [h103]; simp [show b ≠ 1 by omega], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
 
 set_option maxHeartbeats 4000000 in

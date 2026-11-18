@@ -70,8 +70,8 @@ theorem scanned_succ (C : Chain) (nW se t : ℕ) :
     · exact Or.inl ⟨k, h, hx⟩
     · exact Or.inr hx
   · rintro (⟨k, hk, hx⟩ | hx)
-    · exact ⟨k, by omega, hx⟩
-    · exact ⟨t, by omega, hx⟩
+    · exact ⟨k, by_o, hx⟩
+    · exact ⟨t, by_o, hx⟩
 
 /-- **The invariant of the loop of `arcScan`.** -/
 structure AInv (P : Polygon) (W : ℕ) (C : Chain) (V : QV) (z : Point) (c₀ : Config) (S : Set Point)
@@ -97,12 +97,12 @@ theorem arcBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
     have := C.m_lt; rw [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this; exact this
   set t := c.nreg 120085 with ht_def
   have htl : t < len + 1 := by rw [h.lim] at ht; exact ht
-  obtain ⟨c₁, k₁, e₁, hk₁, f₁, hb₁, v₁⟩ := wstep_exec (P := P) hG (by omega) hs.hD hv c h.wb h.q h.b
-  have R₁ : ∀ r, BW r = false → c₁.nreg r = c.nreg r := f₁.1
-  have x85 : c₁.nreg 120085 = t := R₁ _ (by decide)
-  have x70 : c₁.nreg 120070 = scanW (2 * V.m + 7) se t := (R₁ _ (by decide)).trans h.w
-  have hq₁ : QConst P V c₁ := h.q.frame f₁ BW_const
-  have hwn : scanW (2 * V.m + 7) se t < 2 * V.m + 7 := Nat.mod_lt _ (by omega)
+  obtain ⟨c₁, k₁, e₁, hk₁, f₁, hb₁, v₁⟩ := wstep_exec (P := P) hG by_o hs.hD hv c h.wb h.q h.b
+  have R₁ := f₁.1
+  have x85 : c₁.nreg 120085 = t := R₁ _ by_d
+  have x70 : c₁.nreg 120070 = scanW (2 * V.m + 7) se t := (R₁ _ by_d).trans h.w
+  have hq₁ := h.q.frame f₁ BW_const
+  have hwn : scanW (2 * V.m + 7) se t < 2 * V.m + 7 := Nat.mod_lt _ by_o
   obtain ⟨c₂, k₂, e₂, hk₂, v₂⟩ : ∃ c₂ k₂, Exec P W
       (block [.addN 120085 120085 120011, .addN 120070 120070 120011]) c₁ c₂ k₂ ∧ k₂ = 2 ∧
       (c₂.nreg 120085 = t + 1 ∧ c₂.nreg 120070 = scanW (2 * V.m + 7) se t + 1 ∧
@@ -113,14 +113,14 @@ theorem arcBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
     have hb2 : scanW (2 * V.m + 7) se t + 1 ≤ W := by
       have := h.wb.1 120020; rw [h.q.nW] at this; omega
     exec_block
-    · rw [x85, hq₁.one]; exact hb1
-    · config_simp; rw [x70, hq₁.one]; exact hb2
+    · rwa [x85, hq₁.one]
+    · config_simp; rwa [x70, hq₁.one]
     · refine ⟨rfl, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
       · config_simp; rw [x85, hq₁.one]
       · config_simp; rw [x70, hq₁.one]
       · config_simp; upd_solve
   obtain ⟨v85, v70, r₂, m₂, rr₂, rm₂, o₂⟩ := v₂
-  have hq₂ : QConst P V c₂ := hq₁.congr fun r h1 h2 => r₂ r (by omega) (by omega)
+  have hq₂ : QConst P V c₂ := hq₁.congr fun r h1 h2 => r₂ r by_o by_o
   -- wrap around
   obtain ⟨c₃, k₃, e₃, hk₃, v₃, r₃, m₃, rr₃, rm₃, o₃⟩ : ∃ c₃ k₃, Exec P W
       (.ifLtN 120070 120020 .skip (.instr (.constN 120070 0))) c₂ c₃ k₃ ∧ k₃ ≤ 3 ∧
@@ -133,11 +133,11 @@ theorem arcBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
       rw [show se + (2 * V.m + 7) - 1 + (t + 1) = (se + (2 * V.m + 7) - 1 + t) + 1 by omega,
         Nat.add_mod (se + (2 * V.m + 7) - 1 + t) 1, Nat.mod_eq_of_lt (show 1 < 2 * V.m + 7 by omega)]
     by_cases hlt : scanW (2 * V.m + 7) se t + 1 < 2 * V.m + 7
-    · refine ⟨c₂, _, .ifLtN_true (by rw [v70, hq₂.nW]; exact hlt) (.skip e₂.wb_right), by omega,
+    · refine ⟨c₂, _, .ifLtN_true (by rwa [v70, hq₂.nW]) (.skip e₂.wb_right), by_o,
         ?_, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
       rw [v70, hsucc, Nat.mod_eq_of_lt hlt]
-    · refine ⟨_, _, .ifLtN_false (by rw [v70, hq₂.nW]; exact hlt)
-        (Exec.constN e₂.wb_right 120070 0 (by omega)), by omega, ?_, fun r hr => ?_, rfl, rfl,
+    · refine ⟨_, _, .ifLtN_false (by rwa [v70, hq₂.nW])
+        (Exec.constN e₂.wb_right 120070 0 by_o), by_o, ?_, fun r hr => ?_, rfl, rfl,
         rfl, rfl⟩
       · config_simp
         rw [hsucc, show scanW (2 * V.m + 7) se t + 1 = 2 * V.m + 7 by omega, Nat.mod_self]
@@ -152,21 +152,20 @@ theorem arcBody_inv {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
   have fb₁ : FrameB BA c c₁ := by
     refine ⟨fun r hr => f₁.1 r ?_, fun r hr => f₁.2.1 r ?_, f₁.2.2.1, f₁.2.2.2.1, f₁.2.2.2.2⟩ <;>
       · simp only [BA, Bool.or_eq_false_iff] at hr; exact hr.1.1
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, hq₂.congr fun r h1 h2 => r₃ r (by omega),
-    ?_, ?_, ?_, ?_, ?_, h.fr.trans (fb₁.trans fb₂₃)⟩, by omega, ?_⟩
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ⟨e₃.wb_right, hq₂.congr fun r h1 h2 => r₃ r by_o,
+    ?_, ?_, ?_, ?_, ?_, h.fr.trans (fb₁.trans fb₂₃)⟩, by_o, ?_⟩
   · unfold BestOK
-    rw [R₂₃ 120050 (by decide) (by decide), R₂₃ 120051 (by decide) (by decide),
-      R₂₃ 120052 (by decide) (by decide)]
-    exact hb₁
-  · rw [r₃ _ (by decide), v85]; omega
-  · rw [R₂₃ _ (by decide) (by decide), R₁ _ (by decide)]; exact h.lim
-  · rw [v₃, r₃ _ (by decide), v85]
+    rwa [R₂₃ 120050 by_d by_d, R₂₃ 120051 by_d by_d,
+      R₂₃ 120052 by_d by_d]
+  · rw [r₃ _ by_d, v85]; omega
+  · rw [R₂₃ _ by_d by_d, R₁ _ by_d]; exact h.lim
+  · rw [v₃, r₃ _ by_d, v85]
   · have hbo : bestOf c₃ = bestOf c₁ := by
       unfold bestOf
-      rw [R₂₃ 120050 (by decide) (by decide), R₂₃ 120052 (by decide) (by decide)]
-    rw [hbo, v₁, r₃ _ (by decide), v85, scanned_succ, ← Set.union_assoc, h.w]
+      rw [R₂₃ 120050 by_d by_d, R₂₃ 120052 by_d by_d]
+    rw [hbo, v₁, r₃ _ by_d, v85, scanned_succ, ← Set.union_assoc, h.w]
     exact wupd_step hs h.hit _
-  · rw [r₃ _ (by decide), v85]; omega
+  · rw [r₃ _ by_d, v85]; omega
 
 /-- The number of scanned walk edges of an arc, minus one, as the program computes it. -/
 def lenOf (A nW se ee p : ℕ) : ℕ := (if p + 1 < A then ee - se else ee + nW - se) + 2
@@ -189,8 +188,8 @@ theorem arcScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
   have hv := hs.hv
   have hmn : C.m < P.n := by
     have := C.m_lt; rw [hv.CQ, show (Qof P).n = P.n from shear_n _ _] at this; exact this
-  have hVm : V.m = C.m := hv.m
-  have hAW : V.A ≤ W := by have := hw.1 120030; rw [hq.A] at this; exact this
+  have hVm := hv.m
+  have hAW : V.A ≤ W := by have := hw.1 120030; rwa [hq.A] at this
   -- 1. the head
   obtain ⟨c₁, k₁, e₁, hk₁, v₁⟩ : ∃ c₁ k₁, Exec P W arcHead c c₁ k₁ ∧ k₁ = 11 ∧
       (c₁.nreg 120081 = se ∧ c₁.nreg 120082 = ee ∧ c₁.nreg 120083 = p ∧
@@ -213,12 +212,12 @@ theorem arcScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
       · config_simp; rw [hq.AB, hq.one, ← hse]; congr 1; ring
       · config_simp; rw [hq.AB, hq.one, hq.two]
         rw [← hee]; congr 1; ring
-      · config_simp; rw [hq.POS]; exact hp
+      · config_simp; rwa [hq.POS]
       · config_simp; rw [hq.POS, hq.one, hp]
       · config_simp; upd_solve
   obtain ⟨x81, x82, x83, x87, r₁, m₁, rr₁, rm₁, o₁⟩ := v₁
-  have hq₁ : QConst P V c₁ := hq.congr fun r h1 h2 => r₁ r (by omega) (by omega) (by omega)
-    (by omega) (by omega)
+  have hq₁ : QConst P V c₁ := hq.congr fun r h1 h2 => r₁ r by_o by_o by_o
+    by_o by_o
   have w₁ := e₁.wb_right
   -- 2. the length
   set L0 := (if p + 1 < V.A then ee - se else ee + (2 * V.m + 7) - se) with hL0
@@ -226,7 +225,7 @@ theorem arcScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
       c₂.nreg 120084 = L0 ∧ (∀ r, r ≠ 120084 → c₂.nreg r = c₁.nreg r) := by
     unfold arcLen
     by_cases hlt : p + 1 < V.A
-    · refine ⟨_, _, .ifLtN_true (by rw [x87, hq₁.A]; exact hlt) (Exec.subN w₁ _ _ _), by omega,
+    · refine ⟨_, _, .ifLtN_true (by rwa [x87, hq₁.A]) (Exec.subN w₁ _ _ _), by_o,
         ?_, fun r hr => ?_⟩
       · config_simp; rw [x82, x81, hL0, ite_eq_left hlt]
       · config_simp; upd_solve
@@ -239,10 +238,10 @@ theorem arcScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
         · refine ⟨rfl, ?_, fun r hr => ?_⟩
           · config_simp; rw [x82, hq₁.nW, x81]
           · config_simp; upd_solve
-      exact ⟨c₂, _, .ifLtN_false (by rw [x87, hq₁.A]; exact hlt) e₂, by omega,
+      exact ⟨c₂, _, .ifLtN_false (by rwa [x87, hq₁.A]) e₂, by_o,
         by rw [v₂.1, hL0, ite_eq_right hlt], v₂.2⟩
   have w₂ := e₂.wb_right
-  have hq₂ : QConst P V c₂ := hq₁.congr fun r h1 h2 => r₂ r (by omega)
+  have hq₂ : QConst P V c₂ := hq₁.congr fun r h1 h2 => r₂ r by_o
   have hL0le : L0 ≤ 2 * (2 * V.m + 7) := by rw [hL0]; split_ifs <;> omega
   -- 3. the initialisation
   obtain ⟨c₃, k₃, e₃, hk₃, v₃⟩ : ∃ c₃ k₃, Exec P W
@@ -251,17 +250,17 @@ theorem arcScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
         ∀ r, r ≠ 120084 → r ≠ 120070 → c₃.nreg r = c₂.nreg r) := by
     exec_block
     · rw [v₂, hq₂.two]; have := hq.m; omega
-    · config_simp; rw [r₂ _ (by decide), x81, hq₂.nW]; have := hq.m; omega
+    · config_simp; rw [r₂ _ by_d, x81, hq₂.nW]; have := hq.m; omega
     · refine ⟨rfl, ?_, ?_, fun r h1 h2 => ?_⟩
       · config_simp; rw [v₂, hq₂.two]
-      · config_simp; rw [r₂ _ (by decide), x81, hq₂.nW, hq₂.one]
+      · config_simp; rw [r₂ _ by_d, x81, hq₂.nW, hq₂.one]
       · config_simp; upd_solve
   obtain ⟨v84, v70, r₃⟩ := v₃
-  have hq₃ : QConst P V c₃ := hq₂.congr fun r h1 h2 => r₃ r (by omega) (by omega)
+  have hq₃ : QConst P V c₃ := hq₂.congr fun r h1 h2 => r₃ r by_o by_o
   obtain ⟨c₄, k₄, e₄, hk₄, v₄, r₄, -⟩ := modSub_exec (P := P) (r := 120070) (nr := 120020)
-    (by decide) c₃ e₃.wb_right (by rw [v70, hq₃.nW]; omega)
+    by_d c₃ e₃.wb_right (by rw [v70, hq₃.nW]; omega)
   rw [v70, hq₃.nW] at v₄
-  have hq₄ : QConst P V c₄ := hq₃.congr fun r h1 h2 => r₄ r (by omega)
+  have hq₄ : QConst P V c₄ := hq₃.congr fun r h1 h2 => r₄ r by_o
   obtain ⟨c₅, k₅, e₅, hk₅, v₅⟩ : ∃ c₅ k₅, Exec P W
       (block [.constN 120085 0, .addN 120088 120084 120011]) c₄ c₅ k₅ ∧ k₅ = 2 ∧
       (c₅.nreg 120085 = 0 ∧ c₅.nreg 120088 = L0 + 2 + 1 ∧
@@ -270,9 +269,9 @@ theorem arcScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
     have w₄ := e₄.wb_right
     exec_block
     · omega
-    · config_simp; rw [r₄ _ (by decide), v84, hq₄.one]; have := hq.m; omega
+    · config_simp; rw [r₄ _ by_d, v84, hq₄.one]; have := hq.m; omega
     · refine ⟨rfl, by config_simp, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
-      · config_simp; rw [r₄ _ (by decide), v84, hq₄.one]
+      · config_simp; rw [r₄ _ by_d, v84, hq₄.one]
       · config_simp; upd_solve
   obtain ⟨v85, v88, r₅, m₅, rr₅, rm₅, o₅⟩ := v₅
   have hlen : lenOf V.A (2 * V.m + 7) se ee p = L0 + 2 := rfl
@@ -280,22 +279,21 @@ theorem arcScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
   have ex₀ : Exec P W (.seq arcHead (.seq arcLen arcInit)) c c₅ (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   have f₀' := exec_frameB ex₀ (B := fun r => decide (r = 120070) ||
-    decide (120081 ≤ r ∧ r ≤ 120088)) (by decide)
+    decide (120081 ≤ r ∧ r ≤ 120088)) by_d
   have f₀ : FrameB BA c c₅ := FrameB.mono f₀' fun r hr => by
     simp only [BA, Bool.or_eq_true, decide_eq_true_eq] at hr ⊢; tauto
   have I₀ : AInv P W C V z c S se (L0 + 2) c₅ := by
-    refine ⟨e₅.wb_right, hq₄.congr fun r h1 h2 => r₅ r (by omega) (by omega), ?_, by omega, v88,
+    refine ⟨e₅.wb_right, hq₄.congr fun r h1 h2 => r₅ r by_o by_o, ?_, by_o, v88,
       ?_, ?_, f₀⟩
     · unfold BestOK
-      rw [f₀'.1 120050 (by decide), f₀'.1 120051 (by decide), f₀'.1 120052 (by decide)]
-      exact hb
-    · rw [r₅ _ (by decide) (by decide), v₄, v85]; rfl
+      rwa [f₀'.1 120050 by_d, f₀'.1 120051 by_d, f₀'.1 120052 by_d]
+    · rw [r₅ _ by_d by_d, v₄, v85]; rfl
     · have hbo : bestOf c₅ = bestOf c := by
-        unfold bestOf; rw [f₀'.1 120050 (by decide), f₀'.1 120052 (by decide)]
+        unfold bestOf; rw [f₀'.1 120050 by_d, f₀'.1 120052 by_d]
       rw [hbo, v85]
       have : scanned C (2 * V.m + 7) se 0 = ∅ := by
         ext x; simp [scanned]
-      rw [this, Set.union_empty]; exact hS
+      rwa [this, Set.union_empty]
   -- 4. the loop
   obtain ⟨c₆, k₆, e₆, I₆, hex, hk₆⟩ := Exec.whileLtN_bounded (a := 120085) (b := 120088)
     (AInv P W C V z c S se (L0 + 2)) (fun d => L0 + 2 + 1 - d.nreg 120085) 1130
@@ -310,7 +308,7 @@ theorem arcScan_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32
     rw [hlen]; omega
   · have := I₆.hit
     rw [ht6] at this
-    rw [hlen]; exact this
+    rwa [hlen]
 
 end
 

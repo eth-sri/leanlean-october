@@ -47,14 +47,14 @@ theorem nmem {c0 c : Config} (h : PFr Rg Am c0 c) {a x : ℕ} (ha : Am a) :
     PFr Rg Am c0 { c with nmem := upd c.nmem a x } :=
   ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, fun b hb => by
     show upd c.nmem a x b = c0.nmem b
-    rw [Machine.upd_other _ _ _ (fun e => hb (by rw [e]; exact ha))]; exact h.2.2.2.2 b hb⟩
+    rw [Machine.upd_other _ _ _ (fun e => hb (by rwa [e]))]; exact h.2.2.2.2 b hb⟩
 
 theorem nreg_nmem {c0 c : Config} (h : PFr Rg Am c0 c) {f : ℕ → ℕ}
     (hf : ∀ r, ¬ Rg r → f r = c.nreg r) {a x : ℕ} (ha : Am a) :
     PFr Rg Am c0 { c with nreg := f, nmem := upd c.nmem a x } :=
   ⟨fun r hr => (hf r hr).trans (h.1 r hr), h.2.1, h.2.2.1, h.2.2.2.1, fun b hb => by
     show upd c.nmem a x b = c0.nmem b
-    rw [Machine.upd_other _ _ _ (fun e => hb (by rw [e]; exact ha))]; exact h.2.2.2.2 b hb⟩
+    rw [Machine.upd_other _ _ _ (fun e => hb (by rwa [e]))]; exact h.2.2.2.2 b hb⟩
 
 theorem of_eq {c0 c : Config} (h : PFr Rg Am c0 c) {f g : ℕ → ℕ}
     (hf : ∀ r, ¬ Rg r → f r = c.nreg r) (hg : ∀ a, ¬ Am a → g a = c.nmem a) :
@@ -87,7 +87,7 @@ theorem fillStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001
     ∃ c' k, Exec P W fillStmt c c' k ∧ k ≤ 5 * c.nreg 130151 + 3 ∧
       PFr FillScr (fun a => c.nreg 130150 ≤ a ∧ a < c.nreg 130150 + c.nreg 130151) c c' ∧
       ∀ i, i < c.nreg 130151 → c'.nmem (c.nreg 130150 + i) = c.nreg 130152 := by
-  have e0 := Exec.constN (P := P) hw 130153 0 (by omega)
+  have e0 := Exec.constN (P := P) hw 130153 0 by_o
   set c1 := { c with nreg := upd c.nreg 130153 0 }
   obtain ⟨c', k, e, hk, hI⟩ := forN (P := P) (W := W) (ri := 130153) (rn := 130151)
     (body := fillCell)
@@ -113,11 +113,11 @@ theorem fillStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001
           rw [Machine.upd_apply]
           split_ifs with h
           · rfl
-          · exact hm2 i (by omega))
+          · exact hm2 i by_o)
     (j₀ := 0) ⟨e0.wb_right, by simp [c1], by simp [c1], PFr.nreg (PFr.refl c) (fun r hr => by
       simp only [Machine.upd_apply]; unfold FillScr at hr; split_ifs <;> omega),
       fun i hi => by omega⟩ (Nat.zero_le _)
-  exact ⟨c', 1 + k, .seq e0 e, by omega, hI.2.2.2.1, hI.2.2.2.2⟩
+  exact ⟨c', 1 + k, .seq e0 e, by_o, hI.2.2.2.1, hI.2.2.2.2⟩
 
 end fill
 

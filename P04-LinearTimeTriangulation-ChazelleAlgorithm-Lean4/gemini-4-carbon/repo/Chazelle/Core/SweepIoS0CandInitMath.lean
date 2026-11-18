@@ -66,13 +66,13 @@ theorem search_exact {P : Polygon} {J : Merge.Junction} {N : NF} {S₂ : Set (Se
       oW J ((es.getD a (0, 0, ∅)).1 + (es.getD a (0, 0, ∅)).2.1) <
         oW J ((es.getD b (0, 0, ∅)).1 + (es.getD b (0, 0, ∅)).2.1) := by
     intro a b hab hb
-    have ha' : a < es.length := by omega
-    have hb' : b < es.length := by omega
+    have ha' : a < es.length := by_o
+    have hb' : b < es.length := by_o
     rw [List.getD_eq_getElem _ _ ha', List.getD_eq_getElem _ _ hb']
     exact List.pairwise_iff_getElem.1 hsort a b ha' hb' hab
   refine ⟨fun a b hab hb h => ?_, fun i hi he hp t h1 h2 => ?_⟩
   · rcases hab.lt_or_eq with hab | rfl
-    · rw [hpr a (by omega)]
+    · rw [hpr a by_o]
       rw [hpr b hb] at h
       exact lt_trans (hlt a b hab hb) h
     · exact h
@@ -91,8 +91,8 @@ theorem search_exact {P : Polygon} {J : Merge.Junction} {N : NF} {S₂ : Set (Se
       rw [← iniLogKey P J N hrec hi, ← hki]; rfl
     rcases lt_trichotomy t i with h | h | h
     · exfalso
-      apply h2 t le_rfl (by omega)
-      rw [hpr t (by omega), ← hKi]
+      apply h2 t le_rfl by_o
+      rw [hpr t by_o, ← hKi]
       exact hlt t i h hi
     · exact h
     · exact absurd (h1 i h) hni
@@ -131,11 +131,11 @@ def slotW (m : ℕ → ℕ) (B t s e h : ℕ) : ℕ → ℕ :=
 theorem slotW_other {m : ℕ → ℕ} {B t s e h a : ℕ} (ha : a < slotA B t s ∨ slotA B t s + 2 < a) :
     slotW m B t s e h a = m a := by
   unfold slotW
-  rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega)]
+  rw [upd_other _ _ _ by_o, upd_other _ _ _ by_o, upd_other _ _ _ by_o]
 
 theorem slotW_flag {m : ℕ → ℕ} {B t s e h : ℕ} : slotW m B t s e h (slotA B t s) = 1 := by
   unfold slotW
-  rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_same]
+  rw [upd_other _ _ _ by_o, upd_other _ _ _ by_o, upd_same]
 
 /-- Two different slots do not overlap. -/
 theorem slot_sep {B i s t s' d : ℕ} (hs : s ≤ 1) (hs' : s' ≤ 1) (hd : d < 3)
@@ -163,7 +163,7 @@ theorem slotOK_store {P : Polygon} {J : Merge.Junction} {m : ℕ → ℕ} {B AL 
   · obtain ⟨rfl, rfl⟩ := hit
     have f0 : slotW m B i s' e h (slotA B i s') = 1 := slotW_flag
     have f1 : slotW m B i s' e h (slotA B i s' + 1) = e := by
-      unfold slotW; rw [upd_other _ _ _ (by omega), upd_same]
+      unfold slotW; rw [upd_other _ _ _ by_o, upd_same]
     have f2 : slotW m B i s' e h (slotA B i s' + 2) = h := by
       unfold slotW; rw [upd_same]
     unfold SlotOK
@@ -172,9 +172,9 @@ theorem slotOK_store {P : Polygon} {J : Merge.Junction} {m : ℕ → ℕ} {B AL 
   · have g : ∀ d, d < 3 → slotW m B t s e h (slotA B i s' + d) = m (slotA B i s' + d) :=
       fun d hd => slotW_other (slot_sep hs' hs hd hit)
     have g0 : slotW m B t s e h (slotA B i s') = m (slotA B i s') := by
-      simpa using g 0 (by norm_num)
+      simpa using g 0 by_n
     unfold SlotOK
-    rw [g0, g 1 (by norm_num), g 2 (by norm_num), hL i hi]
+    rw [g0, g 1 by_n, g 2 by_n, hL i hi]
     exact hok i hi s' hs'
 
 /-! ## Origin positions -/
@@ -208,10 +208,10 @@ theorem endPos_facts {P : Polygon} {J : Merge.Junction} {N : NF}
     · exact hA.1.1
     · exact hA.2.1
   obtain ⟨n1, -, n3, n4⟩ := nhgt_facts hp
-  have hj : 2 * k + s < 2 * N.nChords := by omega
+  have hj : 2 * k + s < 2 * N.nChords := by_o
   obtain ⟨o1, -⟩ := endOrigin_eq J hN hj
-  have e1 : (2 * k + s) / 2 = k := by omega
-  have e2 : (2 * k + s) % 2 = s := by omega
+  have e1 : (2 * k + s) / 2 = k := by_o
+  have e2 : (2 * k + s) % 2 = s := by_o
   rw [e1, e2] at o1
   exact ⟨he, n1, by rw [n3, o1], n4⟩
 

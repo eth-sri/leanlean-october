@@ -81,10 +81,10 @@ theorem AncX.pos_le {a b : ℕ} (hab : AncX R prg pch rem a b) (hb : b < R) :
   | tail hax hxc ih =>
     rename_i x c
     obtain ⟨hc, hc0, hpc, -⟩ := hxc
-    have hxR : x < R := hpc ▸ h.prg_lt c hc hc0
-    have hlt : pos x < pos c := hpc ▸ h.pos_prg c hc hc0
+    have hxR := hpc ▸ h.prg_lt c hc hc0
+    have hlt := hpc ▸ h.pos_prg c hc hc0
     obtain ⟨ha, hle, -⟩ := ih hxR
-    exact ⟨ha, by omega, fun _ => by omega⟩
+    exact ⟨ha, by_o, fun _ => by omega⟩
 
 theorem AncX.antisymm {a b : ℕ} (hab : AncX R prg pch rem a b) (hba : AncX R prg pch rem b a)
     (hb : b < R) : a = b := by
@@ -180,12 +180,12 @@ theorem AncX.of_keep {rem' : ℕ → ℕ} {a b : ℕ} (hab : AncX R prg pch rem 
   | refl => exact ReflTransGen.refl
   | tail hax hxc ih =>
     rename_i x c
-    have hc : AncX R prg pch rem a c := hax.tail hxc
+    have hc := hax.tail hxc
     refine (ih fun w hw1 hw2 hw3 => hkeep w hw1 (hw2.tail hxc) hw3).tail ?_
     obtain ⟨h1, h2, h3, _⟩ := hxc
     refine ⟨h1, h2, h3, hkeep c hc ReflTransGen.refl ?_⟩
     intro hca
-    have hxR : x < R := h3 ▸ h.prg_lt c h1 h2
+    have hxR := h3 ▸ h.prg_lt c h1 h2
     have h5 := (AncX.pos_le h hax hxR).2.1
     have h6 := h.pos_prg c h1 h2
     rw [h3, hca] at h6
@@ -234,11 +234,11 @@ theorem Rooted.pch_inj {s s' : ℕ} (hs : s < R) (hs' : s' < R) (h0 : s ≠ 0) (
     rcases h.ends s' hs' h0' with ⟨b1, b2⟩ | ⟨b1, b2⟩ <;> rw [he] at a1 a2
   · exact hne (a2.symm.trans b2)
   · -- `s = prg s'` and `s' = prg s`
-    have e1 : s = prg s' := a2.symm.trans b2
-    have e2 : s' = prg s := b1.symm.trans a1
+    have e1 := a2.symm.trans b2
+    have e2 := b1.symm.trans a1
     rw [← e1] at p2; rw [← e2] at p1; omega
-  · have e1 : s = prg s' := a1.symm.trans b1
-    have e2 : s' = prg s := b2.symm.trans a2
+  · have e1 := a1.symm.trans b1
+    have e2 := b2.symm.trans a2
     rw [← e1] at p2; rw [← e2] at p1; omega
   · exact hne (a1.symm.trans b1)
 
@@ -388,13 +388,13 @@ theorem pigeon {s : Finset ℕ} (f : ℕ → ℕ) (u m D : ℕ) (e : Prop) [Deci
   by_contra hno
   simp only [not_or, not_exists, not_and, not_le] at hno
   obtain ⟨h1, h2⟩ := hno
-  have hs : ∑ c ∈ s, D * f c ≤ ∑ c ∈ s, m := Finset.sum_le_sum fun c hc => (h1 c hc).le
+  have hs := Finset.sum_le_sum fun c hc => (h1 c hc).le
   rw [← Finset.mul_sum, Finset.sum_const, smul_eq_mul] at hs
   by_cases he : e
   · have h2' := h2 he
     rw [ite_eq_left he] at hcard
     have : D * m = D * (∑ c ∈ s, f c) + D * u := by rw [← hsum]; ring
-    have h3 : D * m < (s.card + 1) * m := by nlinarith
+    have h3 : D * m < (s.card + 1) * m := by_nl
     have h4 : (s.card + 1) * m ≤ D * m := Nat.mul_le_mul_right _ hcard
     omega
   · have hu0 := hu he
@@ -404,7 +404,7 @@ theorem pigeon {s : Finset ℕ} (f : ℕ → ℕ) (u m D : ℕ) (e : Prop) [Deci
       rcases Finset.eq_empty_or_nonempty s with h0 | h0
       · rw [h0, Finset.sum_empty] at hsum; omega
       · exact h0
-    have hs' : ∑ c ∈ s, D * f c < ∑ c ∈ s, m := Finset.sum_lt_sum_of_nonempty hne h1
+    have hs' := Finset.sum_lt_sum_of_nonempty hne h1
     rw [← Finset.mul_sum, Finset.sum_const, smul_eq_mul, hsum] at hs'
     have h4 : s.card * m ≤ D * m := Nat.mul_le_mul_right _ hcard
     omega
@@ -429,7 +429,7 @@ theorem exists_good
   set V := (range R).filter (fun v => AncX R prg pch rem t v ∧ n < 2 * sz R prg pch rem v) with hV
   have htV : t ∈ V := by
     rw [hV, Finset.mem_filter, Finset.mem_range]
-    exact ⟨ht, ReflTransGen.refl, by omega⟩
+    exact ⟨ht, ReflTransGen.refl, by_o⟩
   obtain ⟨v, hvV, hvmax⟩ := Finset.exists_max_image V pos ⟨t, htV⟩
   rw [hV, Finset.mem_filter, Finset.mem_range] at hvV
   obtain ⟨hvR, htv, hvbig⟩ := hvV
@@ -440,7 +440,7 @@ theorem exists_good
     by_contra hbig
     have hcV : c ∈ V := by
       rw [hV, Finset.mem_filter, Finset.mem_range]
-      exact ⟨hc.1, htv.tail hc, by omega⟩
+      exact ⟨hc.1, htv.tail hc, by_o⟩
     have := hvmax c hcV
     have h4 := h.pos_prg c hc.1 hc.2.1
     rw [hc.2.2.1] at h4
@@ -476,7 +476,7 @@ theorem exists_good
     · rw [ite_eq_left e]
       omega
   rcases pigeon (fun c => sz R prg pch rem c) _ (n - 1) D (v ≠ t) hsum hcard
-    (fun hh => ite_eq_right hh) (by omega) with
+    (fun hh => ite_eq_right hh) by_o with
     ⟨c, hc, hc'⟩ | ⟨hne, hu⟩
   · have hc2 := hsmall c hc
     rw [mem_kids] at hc
@@ -488,13 +488,13 @@ theorem exists_good
       have := (htv.pos_le h hvR).2.1
       omega
     · have : min (sz R prg pch rem c) (n - sz R prg pch rem c) = sz R prg pch rem c :=
-        min_eq_left (by omega)
+        min_eq_left by_o
       rw [this]; exact hc'
   · rw [ite_eq_left hne] at hu
     refine ⟨v, hvR, htv, hne, ?_⟩
     have : min (sz R prg pch rem v) (n - sz R prg pch rem v) = n - sz R prg pch rem v :=
-      min_eq_right (by omega)
-    rw [this]; exact hu
+      min_eq_right by_o
+    rwa [this]
 
 end sep
 

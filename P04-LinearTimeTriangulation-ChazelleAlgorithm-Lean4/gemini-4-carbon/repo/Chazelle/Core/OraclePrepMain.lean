@@ -203,6 +203,9 @@ theorem prep_meets : Meets prepMainS prepBands
     rw [hcK, hcm]
     have hk : kA + (kB + (kK + (kO + (kH + kP)))) ≤ 100000000 * F := by
       rw [hz] at hkB
+      have fa2 := FA.2.2.2.2.2.2
+      clear FA GB GK FO RH RP PLA hgok hN hcan hNF hNFw hD hG mPA mP0 mPO mPK kO12 mHO agA
+        hclF hordF hdrH chltA chinjA chsA pfA tabA mdcA pairsB hnd hmem hall hw ex
       unfold κq at *
       omega
     unfold κq; nlinarith

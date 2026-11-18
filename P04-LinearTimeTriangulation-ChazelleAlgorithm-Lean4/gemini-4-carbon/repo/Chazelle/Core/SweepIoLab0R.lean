@@ -82,14 +82,14 @@ theorem put1_irs (hI : IInv W c₀ c) (hK : Consts c) (hroom : c.nreg ALLOC + 1 
       simp only [upd, ite_eq_right hr]
     · config_simp
   obtain ⟨c', k, ex, hk, h1, h2, h3, h4, h5, h6⟩ := ex
-  refine IRS.ofExec hI ex (by omega) (fun r _ hr => h2 r hr) h4 (fun a ha => ?_) h5 h6
+  refine IRS.ofExec hI ex by_o (fun r _ hr => h2 r hr) h4 (fun a ha => ?_) h5 h6
     (by show c.nreg 9999 ≤ c'.nreg 9999; omega) (by show c'.nreg 9999 ≤ c.nreg 9999 + k; omega)
     ⟨h1, h2, h3⟩
   rw [h3]
   have h0 : c₀.nreg 9999 ≤ c.nreg 9999 := hI.hA
   have ha' : a < c₀.nreg 9999 := ha
   simp only [upd]
-  rw [ite_eq_right (by omega)]
+  rw [ite_eq_right by_o]
 
 /-- The registers of a slot. -/
 def SlotW (r : ℕ) : Prop := r = sV ∨ r = sA ∨ r = sX ∨ r = sN ∨ r = sE
@@ -101,7 +101,7 @@ theorem addrL_val (m f : ℕ → ℕ) (e : ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3
   have hk3' : f 240616 = 3 := hk3
   simp only [addrL, regB, regI, upd, sA, sX, sN, sE, K2, K3, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk2', hk3']
-  exact ⟨by ring, congrArg m (by ring)⟩
+  exact ⟨by_r, congrArg m by_r⟩
 
 theorem addrL_other (m f : ℕ → ℕ) (e : ℕ) {q : ℕ} (hq : ¬ SlotW q) : regB m (addrL e) f q = f q :=
   regB_other m (addrL e) f (fun i hi => by
@@ -116,14 +116,14 @@ theorem addrL_ok (m f : ℕ → ℕ) (e : ℕ) (hk2 : f K2 = 2) (hk3 : f K3 = 3)
   have hk3' : f 240616 = 3 := hk3
   have hb' : f 240300 + 7 * f e + 3 ≤ W := hb
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
+    iscr_sw by_o by_o
   simp only [addrL, okB, okI, regI, upd, sA, sX, sN, sE, K2, K3, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, hk2', hk3']
-  exact ⟨s 4037 (by norm_num) (by norm_num), ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4034 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, ⟨s 4035 (by norm_num) (by norm_num), by omega⟩,
-    s 4036 (by norm_num) (by norm_num), ⟨s 4034 (by norm_num) (by norm_num), by omega⟩, trivial⟩
+  exact ⟨s 4037 by_n by_n, ⟨s 4034 by_n by_n, by_o⟩,
+    ⟨s 4034 by_n by_n, by_o⟩, ⟨s 4034 by_n by_n, by_o⟩,
+    ⟨s 4034 by_n by_n, by_o⟩, ⟨s 4034 by_n by_n, by_o⟩,
+    ⟨s 4034 by_n by_n, by_o⟩, ⟨s 4035 by_n by_n, by_o⟩,
+    s 4036 by_n by_n, ⟨s 4034 by_n by_n, by_o⟩, trivial⟩
 
 theorem labL_val (m f : ℕ → ℕ) (k : ℕ) :
     regB m (labL k) f sV = m (f sA + f k) := by
@@ -138,9 +138,9 @@ theorem labL_other (m f : ℕ → ℕ) (k : ℕ) {q : ℕ} (hq : ¬ SlotW q) : r
 
 theorem labL_ok (m f : ℕ → ℕ) (k : ℕ) (hb : f sA + f k ≤ W) : okB W m (labL k) f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
+    iscr_sw by_o by_o
   simp only [labL, okB, okI, sA, sV, sw] at hb ⊢
-  exact ⟨⟨s 4034 (by norm_num) (by norm_num), hb⟩, s 4033 (by norm_num) (by norm_num), trivial⟩
+  exact ⟨⟨s 4034 by_n by_n, hb⟩, s 4033 by_n by_n, trivial⟩
 
 set_option maxHeartbeats 1000000 in
 /-- **One slot**: its value is stored at the allocator. -/
@@ -158,15 +158,15 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
     rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
       rcases h with h | h | h | h | h <;> simp [ALLOC, gL, K1, K2, K3, sV, sA, sX, sN, sE, sw] at h
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
+    iscr_sw by_o by_o
   set v := slotVal c.nmem (c.nreg (sw 300)) (c.nreg (sw 301)) (c.nmem (c.nreg gL)) (c.nreg e)
     (c.nreg k) with hv
   unfold slotS slotK
   unfold slotK at hroom
   refine IRS.seq (K₁ := 1) (K₂ := 16 + 2)
-    (IRS.block [.loadN sV gL] hI ⟨s 4033 (by norm_num) (by norm_num), trivial⟩) ?_
+    (IRS.block [.loadN sV gL] hI ⟨s 4033 by_n by_n, trivial⟩) ?_
   rintro c₁ hI₁ hA₁ hA₁' rfl
-  set c₁ : Config := { c with nreg := regB c.nmem [.loadN sV gL] c.nreg } with hc₁
+  set c₁ := { c with nreg := regB c.nmem [.loadN sV gL] c.nreg } with hc₁
   have v1 : c₁.nreg sV = c.nmem (c.nreg gL) := by
     simp only [hc₁, regB, regI, upd, sV, sw]; simp
   have o1 : ∀ q, ¬ SlotW q → c₁.nreg q = c.nreg q := fun q hq =>
@@ -177,14 +177,14 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
   refine IRS.seq (K₁ := 16) (K₂ := 2) (Q₁ := fun c₂ => c₂.nreg sV = v ∧
       (∀ q, ¬ SlotW q → c₂.nreg q = c.nreg q) ∧ c₂.nmem = c.nmem) ?_ ?_
   · refine IRS.ite (K := 14) (fun hlt => ?_) (fun hlt => ?_)
-    · rw [o1 e he, o1 _ (nW _ (by simp))] at hlt
+    · rw [o1 e he, o1 _ (nW _ by_s)] at hlt
       have hb : c₁.nreg (sw 300) + 7 * c₁.nreg e + 3 ≤ W := by
-        rw [o1 e he, o1 _ (nW _ (by simp))]; omega
+        rw [o1 e he, o1 _ (nW _ by_s)]; omega
       refine IRS.seq (K₁ := 10) (K₂ := 4)
         (IRS.block (addrL e) hI₁ (addrL_ok _ _ e hK₁.2.2.2.2.2.1
           hK₁.2.2.2.2.2.2 hb)) ?_
       rintro c₃ hI₃ hA₃ hA₃' rfl
-      set c₃ : Config := { c₁ with nreg := regB c₁.nmem (addrL e) c₁.nreg } with hc₃
+      set c₃ := { c₁ with nreg := regB c₁.nmem (addrL e) c₁.nreg } with hc₃
       obtain ⟨a1, a2⟩ := addrL_val c₁.nmem c₁.nreg e hK₁.2.2.2.2.2.1
         hK₁.2.2.2.2.2.2
       have o3 : ∀ q, ¬ SlotW q → c₃.nreg q = c.nreg q := fun q hq => by
@@ -193,10 +193,10 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
       have m3 : c₃.nmem = c.nmem := rfl
       have eA : c₃.nreg sA = c.nreg (sw 300) + 7 * c.nreg e + 3 := by
         show regB c₁.nmem (addrL e) c₁.nreg sA = _
-        rw [a1, o1 e he, o1 _ (nW _ (by simp))]
+        rw [a1, o1 e he, o1 _ (nW _ by_s)]
       have eN : c₃.nreg sN = c.nmem (c.nreg (sw 300) + 7 * c.nreg e + 2) := by
         show regB c₁.nmem (addrL e) c₁.nreg sN = _
-        rw [a2, o1 e he, o1 _ (nW _ (by simp))]
+        rw [a2, o1 e he, o1 _ (nW _ by_s)]
       refine IRS.ite (K := 2) (fun hlt' => ?_) (fun hlt' => ?_)
       · rw [o3 k hk, eN] at hlt'
         refine (IRS.block (labL k) hI₃ (labL_ok _ _ k (by rw [eA, o3 k hk]; omega))).mono
@@ -218,14 +218,14 @@ theorem slot_irs (hI : IInv W c₀ c) (hK : Consts c₀) {e k : ℕ} (he : ¬ Sl
             simp [dstI, sV, sA, sX, sN, sE, sw]), v1, hv]
         unfold slotVal
         rw [ite_eq_right (fun h => hlt' h.2)]
-    · rw [o1 e he, o1 _ (nW _ (by simp))] at hlt
+    · rw [o1 e he, o1 _ (nW _ by_s)] at hlt
       refine IRS.skip hI₁ ⟨?_, o1, rfl⟩
       rw [v1, hv]
       unfold slotVal
       rw [ite_eq_right (fun h => hlt h.1)]
   · rintro c₂ hI₂ hA₂ hA₂' ⟨v2, o2, m2⟩
     have hK₂ := hK.fix hI₂
-    have eA2 : c₂.nreg ALLOC = c.nreg ALLOC := o2 _ (nW _ (by simp))
+    have eA2 : c₂.nreg ALLOC = c.nreg ALLOC := o2 _ (nW _ by_s)
     refine (put1_irs hI₂ hK₂ (by rw [eA2]; omega)).mono le_rfl ?_
     rintro c' ⟨p1, p2, p3⟩
     refine ⟨by rw [p1, eA2], fun r hr hrA => by rw [p2 r hrA, o2 r hr], ?_⟩
@@ -248,7 +248,7 @@ theorem slotVal_congr {m m' : ℕ → ℕ} {AL E g e k : ℕ} (hk : k ≤ 3)
     slotVal m' AL E g e k = slotVal m AL E g e k := by
   unfold slotVal
   by_cases he : e < E
-  · rw [h _ (by omega), h _ (by omega)]
+  · rw [h _ by_o, h _ by_o]
   · simp [he]
 
 set_option maxHeartbeats 1000000 in
@@ -271,7 +271,7 @@ theorem slots_irs : ∀ (l : List (ℕ × ℕ)) {c : Config}, IInv W c₀ c → 
     have hAW : c.nreg ALLOC ≤ W := hI.hw.1 _
     simp only [List.length_cons] at hroom ⊢
     refine (IRS.seq (K₁ := slotK) (K₂ := slotK * l.length)
-      (slot_irs hI hK he hk hk3 (by omega) (by nlinarith)) ?_).mono (by ring_nf; omega)
+      (slot_irs hI hK he hk hk3 by_o by_nl) ?_).mono (by ring_nf; omega)
       (fun _ h => h)
     rintro c₁ hI₁ hA₁ hA₁' ⟨e1, o1, m1⟩
     have nW : ∀ q, (q = ALLOC ∨ q = gL ∨ q = sw 300 ∨ q = sw 301) → ¬ SlotW q := by
@@ -280,23 +280,23 @@ theorem slots_irs : ∀ (l : List (ℕ × ℕ)) {c : Config}, IInv W c₀ c → 
       rcases hq with rfl | rfl | rfl | rfl <;>
         rcases h with h | h | h | h | h <;> simp [ALLOC, gL, sV, sA, sX, sN, sE, sw] at h
     have r300 : c₁.nreg (sw 300) = c.nreg (sw 300) :=
-      o1 _ (nW _ (by simp)) (by unfold ALLOC sw; omega)
+      o1 _ (nW _ by_s) by_so
     have r301 : c₁.nreg (sw 301) = c.nreg (sw 301) :=
-      o1 _ (nW _ (by simp)) (by unfold ALLOC sw; omega)
-    have rgL : c₁.nreg gL = c.nreg gL := o1 _ (nW _ (by simp)) (by unfold ALLOC gL sw; omega)
+      o1 _ (nW _ by_s) by_so
+    have rgL : c₁.nreg gL = c.nreg gL := o1 _ (nW _ by_s) (by unfold ALLOC gL sw; omega)
     have hmlow : ∀ a, a < c.nreg ALLOC → c₁.nmem a = c.nmem a := fun a ha => by
-      rw [m1]; simp only [upd]; rw [ite_eq_right (by omega)]
+      rw [m1]; simp only [upd]; rw [ite_eq_right by_o]
     have hl' : ∀ q ∈ l, ¬ SlotW q.1 ∧ ¬ SlotW q.2 ∧ q.1 ≠ ALLOC ∧ q.2 ≠ ALLOC ∧
         c₁.nreg q.2 ≤ 3 := fun q hq => by
       obtain ⟨a, b, d, f, g⟩ := hl q (List.mem_cons_of_mem _ hq)
-      exact ⟨a, b, d, f, by rw [o1 _ b f]; exact g⟩
+      exact ⟨a, b, d, f, by rwa [o1 _ b f]⟩
     refine (slots_irs l hI₁ hK hl' (by rw [r300, r301, e1]; omega) (by rw [rgL, e1]; omega)
       (by rw [e1]; nlinarith)).mono le_rfl ?_
     rintro c' ⟨f1, f2, f3, f4⟩
     refine ⟨by rw [f1, e1]; ring, fun r hr hrA => by rw [f2 r hr hrA, o1 r hr hrA],
-      fun a ha => by rw [f3 a (by omega), hmlow a ha], fun i hi => ?_⟩
+      fun a ha => by rw [f3 a by_o, hmlow a ha], fun i hi => ?_⟩
     rcases i with _ | i
-    · rw [f3 _ (by omega), m1]
+    · rw [f3 _ by_o, m1]
       simp only [upd, add_zero, ite_true, List.getD_cons_zero]
     · have hi' : i < l.length := by simp at hi; omega
       rw [show c.nreg ALLOC + (i + 1) = c₁.nreg ALLOC + i by rw [e1]; ring, f4 i hi',
@@ -306,7 +306,7 @@ theorem slots_irs : ∀ (l : List (ℕ × ℕ)) {c : Config}, IInv W c₀ c → 
         rw [List.getD_eq_getElem _ _ hi']; exact List.getElem_mem _
       obtain ⟨a, b, d, f, g⟩ := hl _ (List.mem_cons_of_mem _ hmem)
       rw [o1 _ a d, o1 _ b f]
-      exact slotVal_congr g (fun a ha => hmlow a (by omega))
+      exact slotVal_congr g (fun a ha => hmlow a by_o)
 
 end
 

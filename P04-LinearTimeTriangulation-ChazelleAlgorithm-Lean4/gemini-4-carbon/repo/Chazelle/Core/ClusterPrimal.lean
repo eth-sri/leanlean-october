@@ -116,8 +116,8 @@ theorem reach_of_walk (h : MapArrays m bO bR bV μ N M) (hdb : ∀ d, d < N → 
   induction w with
   | nil => exact Relation.ReflTransGen.refl
   | @cons a b c hadj w ih =>
-    have ha : m (bVB + a) ≠ 1 := hw a (by simp)
-    have hb : m (bVB + b) ≠ 1 := hw b (by simp)
+    have ha : m (bVB + a) ≠ 1 := hw a by_s
+    have hb : m (bVB + b) ≠ 1 := hw b by_s
     have hrest := ih (fun x hx => hw x (by simp [hx]))
     have hstep : (primalEnv m bO bR bV bF bDB bVB μ N).Step a b := by
       obtain ⟨-, hd⟩ := hadj
@@ -143,8 +143,7 @@ theorem reach_of_walk (h : MapArrays m bO bR bV μ N M) (hdb : ∀ d, d < N → 
         · simp only [primalEnv, view_lt ho]; exact hdb _ ho
         · simp only [primalEnv, view_lt ho]; exact h2
         · show view m bV N (view m bO N (m (bO + d))) = _
-          rw [view_lt ho, hoo, view_lt hd]
-          exact h1
+          rwa [view_lt ho, hoo, view_lt hd]
         · simp only [primalEnv, view_lt a.2]; exact ha
         · simp only [primalEnv, view_lt b.2]; exact hb
     exact Relation.ReflTransGen.head hstep hrest

@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Short
+
 public import Chazelle.Spec
 
 /-!
@@ -175,7 +177,7 @@ theorem BoundedRun.add {a b : ℕ} {c c₁ : Config} (h₁ : BoundedRun prog P W
   by_cases hia : i ≤ a
   · exact h₁ i hia
   · obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le (Nat.le_of_not_le hia)
-    obtain ⟨c', hc, hw⟩ := h₂ d (by omega)
+    obtain ⟨c', hc, hw⟩ := h₂ d by_o
     exact ⟨c', by rw [run_add_of_run hr, hc], hw⟩
 
 theorem RunsTo.wb_start {k : ℕ} {c c' : Config} (h : RunsTo prog P W k c c') :

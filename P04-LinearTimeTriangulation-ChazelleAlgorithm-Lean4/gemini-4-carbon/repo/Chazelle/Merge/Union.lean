@@ -71,7 +71,7 @@ theorem rayHitSet_bddBelow (r : ℝ) (A : Set Point) (v : Point) (σ : ℝ) :
 /-- A horizontal ray eventually leaves every box. -/
 theorem rayHitSet_nonempty (r : ℝ) (A : Set Point) (v : Point) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     (rayHitSet r A v σ).Nonempty := by
-  refine ⟨|r| + |v.1| + 1, by positivity, Or.inl ?_⟩
+  refine ⟨|r| + |v.1| + 1, by_p, Or.inl ?_⟩
   intro hbox
   have hx := abs_lt.1 hbox.1
   simp only [rayPt_fst] at hx
@@ -185,7 +185,7 @@ theorem hitSet_eq_rayHitSet (C : Chain) {v : Point} (hv : v.2 ≤ C.top.2) (σ :
     C.hitSet v σ = rayHitSet C.radius C.set v σ := by
   ext t
   simp only [Chain.hitSet, rayHitSet, mem_ofPred_eq, mem_compl_iff]
-  rw [not_mem_dom_iff C (by rw [rayPt_snd]; exact hv)]
+  rw [not_mem_dom_iff C (by rwa [rayPt_snd])]
 
 /-- The first-hit parameter of a chain ignores the slit below the top. -/
 theorem hitParam_eq_rayHit (C : Chain) {v : Point} (hv : v.2 ≤ C.top.2) (σ : ℝ) :
@@ -202,14 +202,14 @@ theorem vertex_inj (C : Chain) (hP : C.P.Simple) {a b : ℕ} (ha : a ≤ C.m) (h
     (h : C.vertex a = C.vertex b) : a = b := by
   have hm := C.m_lt
   have h1 := simple_vtx_inj hP (C.edgeIdx_lt a) (C.edgeIdx_lt b) h
-  have h2 : a ≡ b [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h1
+  have h2 := Nat.ModEq.add_left_cancel' C.s h1
   unfold Nat.ModEq at h2
-  rwa [Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)] at h2
+  rwa [Nat.mod_eq_of_lt by_o, Nat.mod_eq_of_lt by_o] at h2
 
 /-- Distinct chain edges have distinct indices in the polygon. -/
 theorem edgeIdx_inj (C : Chain) {a b : ℕ} (ha : a < C.P.n) (hb : b < C.P.n)
     (h : C.edgeIdx a = C.edgeIdx b) : a = b := by
-  have h2 : a ≡ b [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h
+  have h2 := Nat.ModEq.add_left_cancel' C.s h
   unfold Nat.ModEq at h2
   rwa [Nat.mod_eq_of_lt ha, Nat.mod_eq_of_lt hb] at h2
 
@@ -327,7 +327,7 @@ theorem whole_set : J.whole.set = J.left.set ∪ J.right.set := by
     · exact Or.inl ⟨k, hk1, hp⟩
     · right
       refine ⟨k - J.m₁, by rw [right_m]; omega, ?_⟩
-      have hk' : k = J.m₁ + (k - J.m₁) := by omega
+      have hk' : k = J.m₁ + (k - J.m₁) := by_o
       rw [hk', whole_chainEdge_add] at hp
       exact hp
   · rintro (⟨k, hk, hp⟩ | ⟨j, hj, hp⟩)
@@ -369,21 +369,21 @@ theorem left_inter_right (hP : J.P.Simple) : J.left.set ∩ J.right.set = {J.sha
     rw [left_m] at hk
     rw [right_m] at hj
     have hn := J.add_le
-    have hpk' : p ∈ J.whole.chainEdge k := hpk
+    have hpk' := hpk
     have hpj' : p ∈ J.whole.chainEdge (J.m₁ + j) := by rw [whole_chainEdge_add]; exact hpj
-    have hwP : J.whole.P.Simple := hP
+    have hwP := hP
     obtain ⟨h1, h2⟩ := mem_chainEdge_inter J.whole hwP (a := k) (b := J.m₁ + j)
-      (by show k < J.P.n; omega) (by show J.m₁ + j < J.P.n; omega) (by omega) hpk' hpj'
+      (by show k < J.P.n; omega) (by show J.m₁ + j < J.P.n; omega) by_o hpk' hpj'
     have hinj : ∀ a b, a ≤ J.m₁ + J.m₂ → b ≤ J.m₁ + J.m₂ → J.whole.vertex a = J.whole.vertex b →
         a = b := fun a b ha hb h => vertex_inj J.whole hwP ha hb h
     rw [mem_singleton_iff]
     rcases h1 with h1 | h1 <;> rcases h2 with h2 | h2
-    · have := hinj _ _ (by omega) (by omega) (h1.symm.trans h2); omega
-    · have := hinj _ _ (by omega) (by omega) (h1.symm.trans h2); omega
-    · have := hinj _ _ (by omega) (by omega) (h1.symm.trans h2)
+    · have := hinj _ _ by_o by_o (h1.symm.trans h2); omega
+    · have := hinj _ _ by_o by_o (h1.symm.trans h2); omega
+    · have := hinj _ _ by_o by_o (h1.symm.trans h2)
       rw [h1, show k + 1 = J.m₁ by omega]
       rfl
-    · have := hinj _ _ (by omega) (by omega) (h1.symm.trans h2); omega
+    · have := hinj _ _ by_o by_o (h1.symm.trans h2); omega
   · rintro p rfl
     exact ⟨J.shared_mem_left, J.shared_mem_right⟩
 

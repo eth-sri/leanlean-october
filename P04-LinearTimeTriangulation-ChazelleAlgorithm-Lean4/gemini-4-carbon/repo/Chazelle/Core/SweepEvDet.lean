@@ -63,19 +63,19 @@ theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
   have hL0 : (0 : ℝ) ≤ Lst J := Nat.cast_nonneg _
   -- a non-cut position just before `K*`, after `K`
   obtain ⟨Rb, hRb, -, w, u, hw, hu, hncw, hfw, h1, h2, hgw⟩ := before_region_exists' hP hS₂a hS₂f
-    hpK htK0 htK1 (by linarith) (show 0 < oW J (pK + tK) - oK by linarith)
-  have hpos := hInv w u hw hu hncw (by linarith) (fun e' he' q s hQ h3 h4 =>
-    absurd ⟨h3, by linarith⟩ (hgap e' he' q s hQ))
+    hpK htK0 htK1 by_l (show 0 < oW J (pK + tK) - oK by linarith)
+  have hpos := hInv w u hw hu hncw by_l (fun e' he' q s hQ h3 h4 =>
+    absurd ⟨h3, by_l⟩ (hgap e' he' q s hQ))
   rcases hpos with hE | hval
   · -- enclosed: every chord at `K*` is a stop chord
     left
     obtain ⟨e', he', qa, qb, sa, sb, hA, hB, hAB, hLa, hay, hby⟩ := hE
     have hqa : oW J (qa + sa) ≤ oK := by
-      by_contra h; push Not at h; exact hgap e' he' qa sa hA ⟨h, by linarith⟩
+      by_contra h; push Not at h; exact hgap e' he' qa sa hA ⟨h, by_l⟩
     rcases hby with hby | hby
     · -- a bracket
       have hqb : oW J (pK + tK) ≤ oW J (qb + sb) := by
-        by_contra h; push Not at h; exact hgap e' he' qb sb hB ⟨by linarith, h⟩
+        by_contra h; push Not at h; exact hgap e' he' qb sb hB ⟨by_l, h⟩
       rcases hqb.lt_or_eq with hqb | hqb
       · -- `K*` strictly inside: `e` is a bracket
         refine ⟨e, he, heK, stop_of_out hP hS₂a hS₂f he fun q s hQ h => ?_⟩
@@ -83,7 +83,7 @@ theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         · subst hee
           rcases key_of_two hM (hC.hF he') hA hB hAB hQ with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;>
             linarith [h.2]
-        · have := closed_nested hP hS₂a hS₂f he' he hee hA hB (by linarith) heK (by linarith) hqb hQ
+        · have := closed_nested hP hS₂a hS₂f he' he hee hA hB by_l heK by_l hqb hQ
           linarith [this.1, h.2]
       · -- `K*` is the closer: the bracket chord itself is a stop
         obtain ⟨rfl, rfl⟩ := pos_eq_of_oW hP hS₂a hS₂f hB.1 hpK hB.2.1 hB.2.2.1 htK0 htK1 hqb.symm
@@ -96,7 +96,7 @@ theorem det_of_evInv (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
         rintro rfl
         rcases key_of_two hM (hC.hF he') hA hB hAB heK with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> linarith
       -- the other attachment of `e` in `(0, Lst)` would put `K*` inside `[0, A]`
-      have := closed_nested hP hS₂a hS₂f he' he hee hB hA (by linarith) hQ (by linarith [h.1])
+      have := closed_nested hP hS₂a hS₂f he' he hee hB hA by_l hQ (by linarith [h.1])
         (by linarith [h.2]) heK
       linarith [this.2]
   · -- a valid label: the next event of `next_event_origin`
@@ -140,7 +140,7 @@ theorem partner_of_parent (hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨c', hc', hec', he'c'⟩ := tie_parent J hP hS₂ he he' (Ne.symm hne) hA hA' hD
   -- two distinct points of `e`
   obtain ⟨pb, tb, hB, hBne⟩ := hC.hM.other_attach (hC.hF he) hA
-  have hcc : c' = c := parent_unique hS₂ hc' hc hBne (hec' hB.2.2.2.1) (hec' hA.2.2.2.1)
+  have hcc := parent_unique hS₂ hc' hc hBne (hec' hB.2.2.2.1) (hec' hA.2.2.2.1)
     (hec hB.2.2.2.1) (hec hA.2.2.2.1)
   subst hcc
   exact piece_of_parent J hP hS₂ he' hc' he'c' hA' hD

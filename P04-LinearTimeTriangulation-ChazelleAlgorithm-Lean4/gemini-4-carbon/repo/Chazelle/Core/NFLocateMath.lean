@@ -88,8 +88,8 @@ theorem seq_lt {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {i : ℕ}
     (hi : i < N.arcs.length) : N.seq.getD i 0 < N.arcs.length := by
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
   have hl := seq_length h
-  rw [getD_of_lt 0 (by omega)]
-  have hm : N.seq[i]'(by omega) ∈ List.range N.arcs.length := hS.1.subset (List.getElem_mem _)
+  rw [getD_of_lt 0 by_o]
+  have hm : N.seq[i]' by_o ∈ List.range N.arcs.length := hS.1.subset (List.getElem_mem _)
   exact List.mem_range.1 hm
 
 /-- Every arc index occurs in the arc-sequence table. -/
@@ -97,9 +97,9 @@ theorem seq_surj {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {j : ℕ}
     (hj : j < N.arcs.length) : ∃ i, i < N.arcs.length ∧ N.seq.getD i 0 = j := by
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
   have hl := seq_length h
-  have hm : j ∈ N.seq := hS.1.symm.subset (List.mem_range.2 hj)
+  have hm := hS.1.symm.subset (List.mem_range.2 hj)
   obtain ⟨i, hi, e⟩ := List.mem_iff_getElem.1 hm
-  exact ⟨i, by omega, by rw [getD_of_lt 0 hi, e]⟩
+  exact ⟨i, by_o, by rw [getD_of_lt 0 hi, e]⟩
 
 /-- **The table is sorted** by start keys. -/
 theorem seq_sorted {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {i i' : ℕ} (hii : i ≤ i')
@@ -108,8 +108,8 @@ theorem seq_sorted {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) {i i' : �
   obtain ⟨-, -, -, hS⟩ := isNF_arcs h
   have hl := seq_length h
   rcases lt_or_eq_of_le hii with hlt | rfl
-  · rw [getD_of_lt 0 (by omega), getD_of_lt 0 (by omega)]
-    exact List.pairwise_iff_getElem.1 hS.2 i i' (by omega) (by omega) hlt
+  · rw [getD_of_lt 0 by_o, getD_of_lt 0 by_o]
+    exact List.pairwise_iff_getElem.1 hS.2 i i' by_o by_o hlt
   · exact le_rfl
 
 /-- `KeyPred` bounds the key from above, its negation from below. -/
@@ -143,7 +143,7 @@ theorem pick_gap {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) (x : WPos) 
   by_cases h0 : 0 < t
   · rw [ite_eq_left h0]
     set a := M.key Q (N.arc (N.seq.getD (t - 1) 0)).s
-    have haq : a ≤ q := keyPred_le (hpre (t - 1) (by omega))
+    have haq : a ≤ q := keyPred_le (hpre (t - 1) by_o)
     rcases eq_or_lt_of_le haq with he | hlt
     · exact Or.inl he
     right
@@ -152,18 +152,18 @@ theorem pick_gap {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) (x : WPos) 
     rw [ite_eq_left hlt] at hin
     obtain ⟨i, hi, rfl⟩ := seq_surj h hj
     by_cases hit : i < t
-    · have := seq_sorted h (show i ≤ t - 1 by omega) (by omega)
+    · have := seq_sorted h (show i ≤ t - 1 by omega) by_o
       linarith [hin.1]
-    · have hk := le_of_not_keyPred (hpost (by omega))
+    · have hk := le_of_not_keyPred (hpost by_o)
       have := seq_sorted h (show t ≤ i by omega) hi
       linarith [hin.2]
   · rw [ite_eq_right h0]
-    have ht0 : t = 0 := by omega
+    have ht0 : t = 0 := by_o
     subst ht0
     set a := M.key Q (N.arc (N.seq.getD (N.arcs.length - 1) 0)).s
     have hall : ∀ i, i < N.arcs.length → q ≤ M.key Q (N.arc (N.seq.getD i 0)).s := fun i hi =>
       (le_of_not_keyPred (hpost hA)).trans (seq_sorted h (Nat.zero_le i) hi)
-    have hqa : q ≤ a := hall _ (by omega)
+    have hqa : q ≤ a := hall _ by_o
     rcases eq_or_lt_of_le hqa with he | hlt
     · exact Or.inl he.symm
     right
@@ -172,7 +172,7 @@ theorem pick_gap {M : Model} {Q : Polygon} {N : NF} (h : IsNF M Q N) (x : WPos) 
     rw [ite_eq_right (not_lt.2 hlt.le)] at hin
     obtain ⟨i, hi, rfl⟩ := seq_surj h hj
     have h1 := hall i hi
-    have h2 := seq_sorted h (show i ≤ N.arcs.length - 1 by omega) (by omega)
+    have h2 := seq_sorted h (show i ≤ N.arcs.length - 1 by omega) by_o
     rcases hin with hin | hin <;> linarith
 
 /-- **Correctness of the pick** (the post of `LocateSpec` for the model and normal form of the
@@ -191,7 +191,7 @@ theorem locate_pick {M : Model} {Q : Polygon} {N : NF} (hcov : ∀ y : ℝ, M.Is
   intro j
   have hpos : (if 0 < t then t - 1 else N.arcs.length - 1) < N.arcs.length := by
     split_ifs <;> omega
-  have hj : j < N.arcs.length := seq_lt h hpos
+  have hj := seq_lt h hpos
   refine ⟨hj, ?_⟩
   have hgap := pick_gap h x hA ht hpre hpost
   obtain ⟨U, hU⟩ := isArc_of_listed h hj
@@ -219,7 +219,7 @@ theorem locate_pick {M : Model} {Q : Polygon} {N : NF} (hcov : ∀ y : ℝ, M.Is
     have hin := sideInArc_swap hab haq hcon.2.1 hcon.1
     obtain ⟨V, hV, b', hb'⟩ := hcov b hcb
     obtain ⟨j', hj', hs', -⟩ := listed_of_isArc h hV hb'
-    exact hgap' j' hj' (by rw [hs']; exact hin)
+    exact hgap' j' hj' (by rwa [hs'])
   refine ⟨fun hq => ?_, fun hq => ?_⟩
   · rcases claim with c1 | c1 | c1
     · exact Or.inr c1

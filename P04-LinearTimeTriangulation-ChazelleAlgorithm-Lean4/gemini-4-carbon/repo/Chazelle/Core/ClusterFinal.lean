@@ -35,7 +35,7 @@ theorem reach_items {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp)
     obtain ⟨hadj, h1, h2, h3, h4⟩ := hstep _ _ hst
     obtain ⟨q, hq, hbq, hcq⟩ := hI.edge _ _ hadj h1 h2 h3 h4
     by_cases hqp : q = p
-    · rw [← hqp]; exact hcq
+    · rwa [← hqp]
     · exact absurd (Finset.disjoint_left.mp (hI.disj q p hq (Or.inr hp) hqp) hbq) (not_not.mpr ih)
 
 /-- **A label class has at most `s` vertices.** -/
@@ -49,7 +49,7 @@ theorem class_card {G : Env} (hI : SInv μ k s H slab Adj act [] fin D nsp)
     simp only [Finset.mem_filter] at hx0
     obtain ⟨hμ0, hH0, hD0⟩ := hX x0 hx0.1
     obtain ⟨p, hp, hxp⟩ := hI.cover x0 hμ0 hH0 hD0
-    have hpf : p ∈ fin := hp.resolve_left (by simp)
+    have hpf : p ∈ fin := hp.resolve_left by_s
     have hsub : X.filter (fun v => lab v = l) ⊆ items act p := fun v hv => by
       simp only [Finset.mem_filter] at hv
       exact reach_items hI hstep hpf hxp (hlab x0 hx0.1 v hv.1 (hx0.2.trans hv.2.symm))
@@ -68,7 +68,7 @@ theorem mod_light {l k ρ : ℕ} (hk : 0 < k) (hρ : ρ < k) :
   generalize l % k = r at h ⊢
   by_cases hr : r + (k - 1 - ρ) < k
   · rw [Nat.mod_eq_of_lt hr]; omega
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+  · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]; omega
 
 /-- **The least frequent residue class is small.** -/
 theorem minres_card {μ k ρ : ℕ} {f : ℕ → ℕ} (_hk : 0 < k) (hf : ∀ v, v < μ → f v < k)
@@ -90,23 +90,23 @@ theorem dstar_bound {μ k k' s D H : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : 
     subst e
     have hH' : H ≤ k' ^ 2 := by
       have : k' * H ≤ k' * k' ^ 2 := by
-        have e3 : k' * k' ^ 2 = k' ^ 3 := by ring
+        have e3 : k' * k' ^ 2 = k' ^ 3 := by_r
         omega
-      exact Nat.le_of_mul_le_mul_left this (by omega)
+      exact Nat.le_of_mul_le_mul_left this by_o
     have hD' : D ≤ 6 * k' ^ 2 := by
       rcases Nat.le_total (k' * k') μ with h | h
       · rw [hs, min_eq_left h] at hD
         have : k' * k' * D ≤ k' * k' * (6 * k' ^ 2) := by
           calc k' * k' * D ≤ 6 * k' * μ := hD
             _ ≤ 6 * k' * k' ^ 3 := Nat.mul_le_mul_left _ hμk
-            _ = k' * k' * (6 * k' ^ 2) := by ring
-        exact Nat.le_of_mul_le_mul_left this (Nat.mul_pos (by omega) (by omega))
+            _ = k' * k' * (6 * k' ^ 2) := by_r
+        exact Nat.le_of_mul_le_mul_left this (Nat.mul_pos by_o by_o)
       · rw [hs, min_eq_right h] at hD
         have : μ * D ≤ μ * (6 * k') := by
           calc μ * D ≤ 6 * k' * μ := hD
-            _ = μ * (6 * k') := by ring
+            _ = μ * (6 * k') := by_r
         have := Nat.le_of_mul_le_mul_left this hμ
-        have : k' ≤ k' ^ 2 := by nlinarith
+        have : k' ≤ k' ^ 2 := by_nl
         omega
     omega
   · have e : k' = μ := by rw [hk']; exact min_eq_right hkμ
@@ -116,19 +116,19 @@ theorem dstar_bound {μ k k' s D H : ℕ} (hk : 1 ≤ k) (hμ : 0 < μ) (hμk : 
     have hD' : D ≤ 6 * k' := by
       have : k' * D ≤ k' * (6 * k') := by
         calc k' * D ≤ 6 * k' * k' := hD
-          _ = k' * (6 * k') := by ring
+          _ = k' * (6 * k') := by_r
       exact Nat.le_of_mul_le_mul_left this hμ
     have hH' : H ≤ 1 := by
-      have : k' * H ≤ k' * 1 := by omega
+      have : k' * H ≤ k' * 1 := by_o
       exact Nat.le_of_mul_le_mul_left this hμ
-    have : k ≤ k ^ 2 := by nlinarith
+    have : k ≤ k ^ 2 := by_nl
     omega
 
 /-- The cluster size is at most `k²`. -/
 theorem s_le_sq {μ k k' s : ℕ} (hk' : k' = min k μ) (hs : s = min (k' * k') μ) : s ≤ k ^ 2 := by
   have h1 : k' ≤ k := by rw [hk']; exact min_le_left _ _
   have h2 : s ≤ k' * k' := by rw [hs]; exact min_le_left _ _
-  have : k' * k' ≤ k * k := Nat.mul_le_mul h1 h1
+  have := Nat.mul_le_mul h1 h1
   rw [sq]; omega
 
 end

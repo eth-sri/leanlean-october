@@ -125,7 +125,7 @@ namespace BGood
 variable {E : BEnv}
 
 theorem pts_pos {r : ℕ} (hK : 0 < E.K) : E.pts r = regPts E.li E.Q.n E.N r := by
-  have : E.L.length ≠ 0 := Nat.pos_iff_ne_zero.1 hK
+  have := Nat.pos_iff_ne_zero.1 hK
   simp only [BEnv.pts, ptsB, this, ↓reduceIte]
 
 theorem pts_zero {r : ℕ} (hK : E.K = 0) :
@@ -167,7 +167,7 @@ theorem pts_lt {r : ℕ} (hr : r < E.K + 1) : ∀ s ∈ E.pts r, s.Lt E.Q.n := b
   rcases Nat.eq_zero_or_pos E.K with hK | hK
   · rw [pts_zero hK]; exact run_pts_lt hE.hQ
   · rw [pts_pos hK]
-    exact (region_facts ((hE.ctx hK).rc (by rw [hE.nRegions]; exact hr)) hE.hli).2
+    exact (region_facts ((hE.ctx hK).rc (by rwa [hE.nRegions])) hE.hli).2
 
 /-- **The shooting polygon of a region.** -/
 theorem regOK {r : ℕ} (hr : r < E.K + 1) :
@@ -179,7 +179,7 @@ theorem regOK {r : ℕ} (hr : r < E.K + 1) :
     rw [pts_zero hK]; exact regOK0 hE.hQ hE.hli
   · refine ⟨_, E.reg r, (hE.ctx hK).fam, ?_⟩
     rw [pts_pos hK]
-    exact (region_facts ((hE.ctx hK).rc (by rw [hE.nRegions]; exact hr)) hE.hli).1
+    exact (region_facts ((hE.ctx hK).rc (by rwa [hE.nRegions])) hE.hli).1
 
 end BGood
 
@@ -210,7 +210,7 @@ theorem BRegs.congr {E : BEnv} {c c' : Config} (h : BRegs E c)
     (hc : ∀ q, FixB q → c'.nreg q = c.nreg q) : BRegs E c' := by
   obtain ⟨a0, a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hc _ (by unfold FixB; omega)]; assumption)
+    (rwa [hc _ (by unfold FixB; omega)])
 
 /-- **The output so far**: the records of `T` at `B₂`, their buckets at `BK`, the memory below
 `B₂` the initial one. -/

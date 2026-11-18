@@ -50,8 +50,8 @@ theorem fr_rD {r : ℕ} (h : ¬ (sw 700 ≤ r ∧ r < sw 2200)) : r < sw 1100 �
 theorem fr_rC {q : ℕ} (h : sw 4110 ≤ q ∧ q ≤ sw 4113) :
     bandOf q ∉ oracleBands ∧ q ≠ frA ∧ (q < sw 1100 ∨ sw 1207 < q) ∧ q ≠ ALLOC := by
   unfold sw at h
-  exact ⟨not_oracle_sw (by omega) (by omega), by unfold frA sw; omega,
-    Or.inr (by unfold sw; omega), by unfold ALLOC; omega⟩
+  exact ⟨not_oracle_sw by_o by_o, by unfold frA sw; omega,
+    Or.inr by_so, by unfold ALLOC; omega⟩
 
 theorem fr_le1 {a K W : ℕ} (h : a + (K + 22100) ≤ W) : a + K ≤ W :=
   le_trans (Nat.add_le_add_left (Nat.le_add_right _ _) a) h
@@ -71,9 +71,9 @@ theorem fr_noncut {C : Chain} {N : NF} (hP : C.P.Simple)
     (hv : ¬ (6 ≤ x.edge ∧ nhgt (chainModel C) (Qof P) x = 0)) :
     ¬ (chainModel C).IsCut (N.F (chainModel C) (Qof P)) ((chainModel C).key (Qof P) x) := by
   rcases hpre with h0 | h
-  · have hn : nhgt (chainModel C) (Qof P) x = 0 := (nhgt_zero_iff x).2 h0
+  · have hn := (nhgt_zero_iff x).2 h0
     have he : x.edge < 6 := by
-      by_contra hc; exact hv ⟨by omega, hn⟩
+      by_contra hc; exact hv ⟨by_o, hn⟩
     rw [fr_key, h0, add_zero]
     exact frc_box_noncut hP hN he
   · exact h
@@ -93,7 +93,7 @@ theorem frSideA_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
       AfterFaces (chainModel J.right) (c.nreg fpE)
         ((chainModel J.right).param (Qof P) ⟨c.nreg fpE, c.nreg fpH⟩)
         (regOf (chainModel J.right) (Qof P) N₂ (c'.nreg frA)) ∧ FrSideFr frA c c') := by
-  have hP₂ : J.right.P.Simple := E.hP
+  have hP₂ := E.hP
   have hNF := E.hNF₂
   unfold frSide
   refine IRS.seq (frLoc_irs E hI (pe := fpE) (ph := fpH)
@@ -102,15 +102,13 @@ theorem frSideA_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   rintro c₁ hI₁ hA₁ hA₁' ⟨j, hj, hl1, hl2, r0, r1, r2, vSE, vSH, vEE, vEH, hm1, hAl1, hk1⟩
   have hsj := NFLoc.seq_lt hNF hj
   obtain ⟨-, ⟨ppe, hee, hey⟩⟩ := arc_end_facts hP₂ hNF hsj
-  have k1e : c₁.nreg fpE = c.nreg fpE := hk1 _ (not_oracle_sw (by unfold fpE sw; norm_num)
-    (by unfold fpE sw; norm_num)) (Or.inr (by unfold fpE sw; norm_num))
-  have k1h : c₁.nreg fpH = c.nreg fpH := hk1 _ (not_oracle_sw (by unfold fpH sw; norm_num)
-    (by unfold fpH sw; norm_num)) (Or.inr (by unfold fpH sw; norm_num))
+  have k1e : c₁.nreg fpE = c.nreg fpE := hk1 _ by_d (Or.inr by_d)
+  have k1h : c₁.nreg fpH = c.nreg fpH := hk1 _ by_d (Or.inr by_d)
   refine (frTail_irs E hI₁ (pe := fpE) (ph := fpH) (dst := frA) (ye := fEE) (yh := fEH) (src := lR2)
     ⟨by simp [fpE, sw], by simp [fpE, sw]⟩ ⟨by simp [fpH, sw], by simp [fpH, sw]⟩
     (Or.inl rfl) ⟨by simp [fEE, sw], by simp [fEE, sw]⟩
     ⟨by simp [fEH, sw], by simp [fEH, sw]⟩ (by simp [fEE, fEH, sw]) (Or.inr rfl)
-    vEE vEH ppe hee hey (by rw [k1e]; exact hfe) (by rw [k1e, k1h]; exact hpp)
+    vEE vEH ppe hee hey (by rwa [k1e]) (by rwa [k1e, k1h])
     (by rw [hAl1]; exact fr_le2 hroom)).mono le_rfl ?_
   rintro c₂ ⟨vd, fr2, hA2, hm2⟩
   rw [k1e, k1h, r1, r2] at vd
@@ -124,7 +122,7 @@ theorem frSideA_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     · exact hR _ (OracleQ.succP_lt hj)
     · exact hR _ hj
   · by_cases hv : 6 ≤ x.edge ∧ nhgt (chainModel J.right) (Qof P) x = 0
-    · have ht : (chainModel J.right).param (Qof P) x = 0 := (nhgt_zero_iff x).1 hv.2
+    · have ht := (nhgt_zero_iff x).1 hv.2
       have hk : (chainModel J.right).key (Qof P) x = (c.nreg fpE : ℝ) := by
         rw [fr_key, ht, add_zero]
       rw [hk] at hl1 hl2
@@ -138,7 +136,7 @@ theorem frSideA_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     · have hc := fr_noncut hP₂ hNF hpre hv
       rw [vd, ite_eq_right (fun h => hv ⟨h.1, h.2.1⟩)]
       exact frc_after hNF hj hfe ht0 ht1 (hl1 hc)
-  · rw [hm2 a (by rw [hAl1]; exact ha), hm1]
+  · rw [hm2 a (by rwa [hAl1]), hm1]
   · rw [fr2 r h1 h2 (fr_rA h3) h4]
     exact hk1 r h1 (fr_rB h3)
 
@@ -157,7 +155,7 @@ theorem frSideB_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
       BeforeFaces (chainModel J.right) (c.nreg fqE)
         ((chainModel J.right).param (Qof P) ⟨c.nreg fqE, c.nreg fqH⟩)
         (regOf (chainModel J.right) (Qof P) N₂ (c'.nreg frB)) ∧ FrSideFr frB c c') := by
-  have hP₂ : J.right.P.Simple := E.hP
+  have hP₂ := E.hP
   have hNF := E.hNF₂
   unfold frSide
   refine IRS.seq (frLoc_irs E hI (pe := fqE) (ph := fqH)
@@ -166,15 +164,13 @@ theorem frSideB_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   rintro c₁ hI₁ hA₁ hA₁' ⟨j, hj, hl1, hl2, r0, r1, r2, vSE, vSH, vEE, vEH, hm1, hAl1, hk1⟩
   have hsj := NFLoc.seq_lt hNF hj
   obtain ⟨⟨pps, hse, hsy⟩, -⟩ := arc_end_facts hP₂ hNF hsj
-  have k1e : c₁.nreg fqE = c.nreg fqE := hk1 _ (not_oracle_sw (by unfold fqE sw; norm_num)
-    (by unfold fqE sw; norm_num)) (Or.inr (by unfold fqE sw; norm_num))
-  have k1h : c₁.nreg fqH = c.nreg fqH := hk1 _ (not_oracle_sw (by unfold fqH sw; norm_num)
-    (by unfold fqH sw; norm_num)) (Or.inr (by unfold fqH sw; norm_num))
+  have k1e : c₁.nreg fqE = c.nreg fqE := hk1 _ by_d (Or.inr by_d)
+  have k1h : c₁.nreg fqH = c.nreg fqH := hk1 _ by_d (Or.inr by_d)
   refine (frTail_irs E hI₁ (pe := fqE) (ph := fqH) (dst := frB) (ye := fSE) (yh := fSH) (src := lR0)
     ⟨by simp [fqE, sw], by simp [fqE, sw]⟩ ⟨by simp [fqH, sw], by simp [fqH, sw]⟩
     (Or.inr rfl) ⟨by simp [fSE, sw], by simp [fSE, sw]⟩
     ⟨by simp [fSH, sw], by simp [fSH, sw]⟩ (by simp [fSE, fSH, sw]) (Or.inl rfl)
-    vSE vSH pps hse hsy (by rw [k1e]; exact hfe) (by rw [k1e, k1h]; exact hpp)
+    vSE vSH pps hse hsy (by rwa [k1e]) (by rwa [k1e, k1h])
     (by rw [hAl1]; exact fr_le2 hroom)).mono le_rfl ?_
   rintro c₂ ⟨vd, fr2, hA2, hm2⟩
   rw [k1e, k1h, r1, r0] at vd
@@ -188,7 +184,7 @@ theorem frSideB_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     · exact hR _ (OracleQ.predP_lt hj)
     · exact hR _ hj
   · by_cases hv : 6 ≤ x.edge ∧ nhgt (chainModel J.right) (Qof P) x = 0
-    · have ht : (chainModel J.right).param (Qof P) x = 0 := (nhgt_zero_iff x).1 hv.2
+    · have ht := (nhgt_zero_iff x).1 hv.2
       have hk : (chainModel J.right).key (Qof P) x = (c.nreg fqE : ℝ) := by
         rw [fr_key, ht, add_zero]
       rw [hk] at hl1 hl2
@@ -202,7 +198,7 @@ theorem frSideB_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     · have hc := fr_noncut hP₂ hNF hpre hv
       rw [vd, ite_eq_right (fun h => hv ⟨h.1, h.2.1⟩)]
       exact frc_before hNF hj hfe ht0 ht1 (hl1 hc)
-  · rw [hm2 a (by rw [hAl1]; exact ha), hm1]
+  · rw [hm2 a (by rwa [hAl1]), hm1]
   · rw [fr2 r h1 h2 (fr_rA h3) h4]
     exact hk1 r h1 (fr_rB h3)
 
@@ -210,9 +206,9 @@ set_option maxRecDepth 20000 in
 theorem fr_cost (L : ℕ) : (faceLocK L + 22100) + (faceLocK L + 22100) ≤ 60000 * (L + 1) := by
   unfold faceLocK
   have h1 : 5500 * (L + 1) + 9 + 60 + 22100 + (5500 * (L + 1) + 9 + 60 + 22100) =
-      11000 * (L + 1) + 44338 := by ring
+      11000 * (L + 1) + 44338 := by_r
   rw [h1]
-  have h2 : 60000 * (L + 1) = 11000 * (L + 1) + 49000 * (L + 1) := by ring
+  have h2 : 60000 * (L + 1) = 11000 * (L + 1) + 49000 * (L + 1) := by_r
   rw [h2]
   have h3 : 49000 ≤ 49000 * (L + 1) := Nat.le_mul_of_pos_right _ (Nat.succ_pos L)
   generalize 11000 * (L + 1) = A at *
@@ -231,9 +227,7 @@ set_option maxRecDepth 20000 in
 theorem faceRTask : FaceRTask := by
   refine ⟨frProg, fun _ => 60000, ?_⟩
   intro sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hpe hppp hprep hqe hppq hpreq hroom
-  replace hroom : c.nreg ALLOC + 60000 * (c₀.nreg TLR + 1) ≤ W := hroom
   have hr := fr_room hroom
-  show IRS P W c₀ frProg c (60000 * (c₀.nreg TLR + 1)) (FaceROut P J N₂ c)
   unfold frProg
   refine IRS.mono (IRS.seq (frSideA_irs E hI hpe hppp hprep
       (le_trans (Nat.le_add_right _ _) hr)) ?_) (fr_cost _)
@@ -244,15 +238,14 @@ theorem faceRTask : FaceRTask := by
     exact hk1 q a b d e
   have e1 := keep fqE ⟨by simp [fqE, sw], by simp [fqE, sw]⟩
   have e2 := keep fqH ⟨by simp [fqH, sw], by simp [fqH, sw]⟩
-  refine (frSideB_irs E hI₁ (by rw [e1]; exact hqe) (by rw [e1, e2]; exact hppq)
-    (by rw [e1, e2]; exact hpreq) (le_trans (Nat.add_le_add_right hA₁' _) hr)).mono
+  refine (frSideB_irs E hI₁ (by rwa [e1]) (by rwa [e1, e2])
+    (by rwa [e1, e2]) (le_trans (Nat.add_le_add_right hA₁' _) hr)).mono
     le_rfl ?_
   rintro c₂ ⟨vB, hBf, hm2, hAl2, hk2⟩
   rw [e1, e2] at hBf
-  have hAA : c₂.nreg frA = c₁.nreg frA := hk2 _ (not_oracle_sw (by simp [frA, sw])
-    (by simp [frA, sw])) (by simp [frA, frB, sw])
+  have hAA : c₂.nreg frA = c₁.nreg frA := hk2 _ by_d (by simp [frA, frB, sw])
     (Or.inr (by simp [frA, sw])) (by simp [frA, ALLOC, sw])
-  refine ⟨by rw [hAA]; exact vA, vB, by rw [hAA]; exact hAf, hBf, fun a ha => ?_,
+  refine ⟨by rwa [hAA], vB, by rwa [hAA], hBf, fun a ha => ?_,
     le_trans hAl1 hAl2, fun r h1 h2 h3 => ?_⟩
   · rw [hm2 a (lt_of_lt_of_le ha hAl1), hm1 a ha]
   · have hFR : ¬ (sw 700 ≤ r ∧ r < sw 2200) := fun h => h2 (Or.inl h)

@@ -23,7 +23,7 @@ open SortL (seg)
 theorem inDrv_BL : DrvD.InDrv BL := by
   intro r hr
   simp only [BL, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨DrvD.mem_drvBands by_o by_o, by unfold ALLOC; omega⟩
 
 theorem BL_mono {B : ℕ → Bool} (h : ∀ r, B r = true → BL r = true) {c c' : Config}
     (hf : FrameM B c c') : FrameM BL c c' := hf.mono h
@@ -45,7 +45,7 @@ theorem ltInit_exec (c : Config) (hw : WordsBounded W c) (hW : 3 ≤ W) :
     exec_block
     all_goals try omega
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp; rfl
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex by_d⟩
 
 /-- The registers of the reservation. -/
 def Bres (r : ℕ) : Bool := decide (r = 211111) || decide (r = 9999)
@@ -69,20 +69,20 @@ theorem ltRes_exec {c : Config} (hw : WordsBounded W c) {K₂ : ℕ} (h12 : c.nr
       exec_block
       all_goals try (config_simp; (try simp only [h1, h3, h4']); omega)
       refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [h1, h3, h4']; omega
-    have hf' : FrameB Bres e e' := exec_frameB ex (by decide)
+    have hf' : FrameB Bres e e' := exec_frameB ex by_d
     have hnot : ∀ r, bandOf r ∉ DrvR.drvBands → r ≠ ALLOC → Bres r = false := fun r hr hra => by
       simp only [Bres, Bool.or_eq_false_iff, decide_eq_false_iff_not]
-      refine ⟨fun h => hr (by rw [h]; exact DrvD.mem_drvBands (by norm_num) (by norm_num)), hra⟩
-    refine ⟨e', k, ex, ⟨ex.wb_right, q.1, (hf'.1 _ (by decide)).trans h2,
-      (hf'.1 _ (by decide)).trans h3, by show e'.nreg 9999 = _; rw [q.2], hf.trans hf', hj⟩,
+      refine ⟨fun h => hr (by rw [h]; exact DrvD.mem_drvBands by_n by_n), hra⟩
+    refine ⟨e', k, ex, ⟨ex.wb_right, q.1, (hf'.1 _ by_d).trans h2,
+      (hf'.1 _ by_d).trans h3, by show e'.nreg 9999 = _; rw [q.2], hf.trans hf', hj⟩,
       ⟨fun r hr hra => hf'.1 r (hnot r hr hra), fun r _ =>
-        WalkKey.exec_rframe ex (B := fun _ => false) (by decide) r rfl, fun a _ => by rw [hf'.2.2.1],
+        WalkKey.exec_rframe ex (B := fun _ => false) by_d r rfl, fun a _ => by rw [hf'.2.2.1],
         fun a _ => by rw [hf'.2.2.2.1], hf'.2.2.2.2, ?_, ?_⟩, hk⟩
     · show e.nreg 9999 ≤ e'.nreg 9999
       rw [q.2, h4']; omega
     · show e'.nreg 9999 ≤ e.nreg 9999 + k
       rw [q.2, h4', hk]; omega
-  have I0 : Inv 0 c := ⟨hw, h11, h12, h00, by simp, FrameB.refl _ _, Nat.zero_le _⟩
+  have I0 : Inv 0 c := ⟨hw, h11, h12, h00, by_s, FrameB.refl _ _, Nat.zero_le _⟩
   obtain ⟨c', k, ex, ⟨j, w', h1, h2, -, h4, hf, hjle⟩, hx, RFl, hk⟩ := Restore.whileLtN_frame
     (P := P) (W := W) (a := 211111) (b := 211012) (body := ltResBody) (B := DrvR.drvBands)
     (A₀ := A₀) (fun e => ∃ j, Inv j e) (fun e => K₂ - e.nreg 211111) 6 (fun e ⟨_, h⟩ => h.1)
@@ -90,7 +90,7 @@ theorem ltRes_exec {c : Config} (hw : WordsBounded W c) {K₂ : ℕ} (h12 : c.nr
       obtain ⟨hw, h1, h2, -⟩ := id hI
       rw [h1, h2] at ht
       obtain ⟨e', k, ex, hI', RF', hk⟩ := key j e ht hI
-      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by omega, by rw [h1, hI'.2.1]; omega⟩) ⟨0, I0⟩
+      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by_o, by rw [h1, hI'.2.1]; omega⟩) ⟨0, I0⟩
   have hjR : j = K₂ := by rw [h1, h2] at hx; omega
   subst hjR
   refine ⟨c', k, ex, ?_, h4, h1, hf, RFl⟩
@@ -114,7 +114,7 @@ theorem ltMid_exec (c : Config) (hw : WordsBounded W c) {K₂ A T : ℕ}
     all_goals try (config_simp; (try simp only [h12, h10, h09]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> (try simp only [h12, h10, h09]) <;>
       omega
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex by_d⟩
 
 /-- The registers `ltB1` writes. -/
 def B1 (r : ℕ) : Bool := decide (211140 ≤ r ∧ r ≤ 211145) || decide (210061 ≤ r ∧ r ≤ 210063)
@@ -137,7 +137,7 @@ theorem ltB1_exec (e : Config) (hw : WordsBounded W e) {p D : ℕ} (h31 : e.nreg
     all_goals try (config_simp; (try simp only [h31, h00, h13]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
       (try simp only [h31, h00, h13]) <;> (try omega)
-  have hf := exec_frameB ex (B := B1) (by decide)
+  have hf := exec_frameB ex (B := B1) by_d
   exact ⟨e', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
     q.2.2.2.2.2.2, hf.2.2.1, hf⟩
 
@@ -159,7 +159,7 @@ theorem ltB2_exec (e : Config) (hw : WordsBounded W e) {a ℓ b D₂ : ℕ}
     all_goals try (config_simp; (try simp only [h13, h44, h45, h43, h14]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
       (try simp only [h13, h44, h45, h43, h14])
-  have hf := exec_frameB ex (B := B2) (by decide)
+  have hf := exec_frameB ex (B := B2) by_d
   exact ⟨e', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, hf.2.2.1, hf⟩
 
 /-- The registers `ltB3` writes. -/
@@ -180,7 +180,7 @@ theorem ltB3_exec (e : Config) (hw : WordsBounded W e) {D₂ ℓ p j : ℕ}
     all_goals try (config_simp; (try simp only [h14, h45, h31, h01, h30, h00]); omega)
     refine ⟨rfl, ?_, ?_, ?_⟩ <;> config_simp <;>
       (try simp only [h14, h45, h31, h01, h30, h00])
-  have hf := exec_frameB ex (B := B3) (by decide)
+  have hf := exec_frameB ex (B := B3) by_d
   exact ⟨e', k, ex, hk, q.1, q.2.1, q.2.2, hf.2.2.1, hf⟩
 
 set_option maxHeartbeats 2000000 in
@@ -201,7 +201,7 @@ theorem ltArgs_exec (c : Config) (hw : WordsBounded W c) {A K₂ BB K M : ℕ}
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
       (try simp only [h10, h12, h112, h03, h13, h01]) <;> (try omega)
   have hf := exec_frameB ex
-    (B := fun r => decide ((210020 ≤ r ∧ r ≤ 210024) ∨ r = 211150 ∨ r = 211151)) (by decide)
+    (B := fun r => decide ((210020 ≤ r ∧ r ≤ 210024) ∨ r = 211150 ∨ r = 211151)) by_d
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, hf.2.2.1, hf⟩
 
 set_option maxHeartbeats 1000000 in
@@ -215,7 +215,7 @@ theorem ltRd_exec (c : Config) (hw : WordsBounded W c) (hW : 134 ≤ W) :
     exec_block
     all_goals try omega
     refine ⟨rfl, ?_, ?_⟩ <;> config_simp
-  have hf := exec_frameB ex (B := fun r => decide (r = 216000 ∨ r = 216001)) (by decide)
+  have hf := exec_frameB ex (B := fun r => decide (r = 216000 ∨ r = 216001)) by_d
   exact ⟨c', k, ex, hk, q.1, q.2, hf.2.2.1, hf⟩
 
 end exec

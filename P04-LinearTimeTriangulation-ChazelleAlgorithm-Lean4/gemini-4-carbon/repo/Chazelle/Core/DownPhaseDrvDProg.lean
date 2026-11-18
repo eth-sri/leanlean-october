@@ -148,8 +148,8 @@ def Bscan (r : ℕ) : Bool :=
 /-- A register frame for fewer registers is one for more. -/
 theorem fbMono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
+  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr by_s),
+    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr by_s),
     h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
 
 /-- The registers `ldArc` writes. -/
@@ -157,9 +157,9 @@ def BldArc (r : ℕ) : Bool :=
   decide (r = 216045) || decide (r = 216046) || decide (r = 216054) || decide (r = 216055) ||
     decide (42100 ≤ r ∧ r ≤ 42105)
 
-theorem wr_ldArc : wr BldArc ldArc = true := by decide
+theorem wr_ldArc : wr BldArc ldArc = true := by_d
 
-theorem wr_decS : wr (fun r => decide (r = 216053)) decS = true := by decide
+theorem wr_decS : wr (fun r => decide (r = 216053)) decS = true := by_d
 
 theorem bldArc_scan (r : ℕ) (h : BldArc r = true) : Bscan r = true := by
   simp only [BldArc, Bscan, Bool.or_eq_true, decide_eq_true_eq] at h ⊢; omega

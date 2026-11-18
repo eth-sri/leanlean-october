@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Short
+
 public import Mathlib.Data.Nat.Log
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.Linarith

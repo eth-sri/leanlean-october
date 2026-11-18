@@ -52,13 +52,13 @@ theorem cand_prep {J : Merge.Junction} (hP : J.P.Simple) {S₂ : Set (Set Point)
   obtain ⟨hfr, -, -, hR, -, -⟩ := right_hit_end (hS₂ hch) ha
   have hfree := whole_free_end hP haR hav hfr
   obtain ⟨hg, d, hd⟩ := map_complete hP ha₁ hσ hfree h1 h2 h3 h4
-  exact ⟨hg, by rw [← hR]; exact h5, d, hd⟩
+  exact ⟨hg, by rwa [← hR], d, hd⟩
 
 theorem mod_back {n b d : ℕ} (hb : b < n) (hd : d < n) : ((b + d) % n + n - b) % n = d := by
   rcases Nat.lt_or_ge (b + d) n with h | h
   · rw [Nat.mod_eq_of_lt h, show b + d + n - b = d + n by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt hd]
-  · have e : (b + d) % n = b + d - n := by rw [Nat.mod_eq_sub_mod h, Nat.mod_eq_of_lt (by omega)]
+  · have e : (b + d) % n = b + d - n := by rw [Nat.mod_eq_sub_mod h, Nat.mod_eq_of_lt by_o]
     rw [e, show b + d - n + n - b = d by omega, Nat.mod_eq_of_lt hd]
 
 /-- Same key and best candidate. -/
@@ -77,7 +77,7 @@ theorem offerRel_lift {P : Polygon} {J : Merge.Junction} {c c₃ c' : Config} {e
   have eBF := hB _ (Or.inl rfl)
   have eBE := hB _ (Or.inr (Or.inl rfl))
   have eBH := hB _ (Or.inr (Or.inr (Or.inl rfl)))
-  have eLb : lblOf c₃ bN bL = lblOf c bN bL :=
+  have eLb :=
     lblOf_congr (fun q hq => hB q (Or.inr (Or.inr (Or.inr hq))))
   obtain ⟨o1, o2, o3, o4, o5, o6⟩ := hO
   rw [eKE, eKH] at o3 o4 o5 o6
@@ -91,19 +91,19 @@ theorem tabUpd_congr {m m' : ℕ → ℕ} {T j e h x : ℕ}
     (hm : x ≠ T + 3 * j → x ≠ T + 3 * j + 1 → x ≠ T + 3 * j + 2 → m' x = m x) :
     tabUpd m' T j e h x = tabUpd m T j e h x := by
   unfold tabUpd upd
-  split_ifs <;> first | rfl | exact hm (by omega) (by omega) (by omega)
+  split_ifs <;> first | rfl | exact hm by_o by_o by_o
 
 theorem accAt_lift {P : Polygon} {J : Merge.Junction} {S₂ : Set (Set Point)} {T j u d : ℕ}
     {a : Point} {σ : ℝ} {c c₃ c' : Config} {e h : ℕ} (hs : SameKB c c₃)
     (hA : c.nreg ALLOC ≤ c₃.nreg ALLOC) (hm : ∀ x, x < c.nreg ALLOC → c₃.nmem x = c.nmem x)
     (hacc : AccAt P J S₂ T j u d a σ c₃ c' e h) : AccAt P J S₂ T j u d a σ c c' e h :=
   ⟨hacc.1, fun x hx => by
-    rw [hacc.2.1 x (by omega)]
+    rw [hacc.2.1 x by_o]
     exact tabUpd_congr (fun _ _ _ => hm x hx), offerRel_lift hs hacc.2.2⟩
 
 theorem rejAt_lift {c c₃ c' : Config} (hs : SameKB c c₃) (hA : c.nreg ALLOC ≤ c₃.nreg ALLOC)
     (hm : ∀ x, x < c.nreg ALLOC → c₃.nmem x = c.nmem x) (hr : RejAt c₃ c') : RejAt c c' :=
-  ⟨fun x hx => (hr.1 x (by omega)).trans (hm x hx), bestSame_lift hs hr.2⟩
+  ⟨fun x hx => (hr.1 x by_o).trans (hm x hx), bestSame_lift hs hr.2⟩
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {P : Polygon} {W : ℕ} {c₀ c : Config} {J : Merge.Junction} {N₁ N₂ : NF}
@@ -139,8 +139,8 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       (∀ r, bandOf r ∉ oracleBands → ¬ CandR r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC) := by
   have hP := E.hP
-  have hS₂ : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := E.hNF₂.1.2.1
-  have hS₂f : (N₂.F (chainModel J.right) (Qof P)).Finite := E.hNF₂.1.1
+  have hS₂ := E.hNF₂.1.2.1
+  have hS₂f := E.hNF₂.1.1
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
   set σ := dirOf (c.nreg oD) with hσd
   have hσ : σ = 1 ∨ σ = -1 := by rw [hσd]; unfold dirOf; split_ifs <;> simp
@@ -178,9 +178,9 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       hm0 (E.ctx1' hI) hcd hL hgK hAB harcs hsym hsl haR hav ha₁ hD hroom1) ?_)
     (by unfold evCandK; omega) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨⟨f1, f2, f3⟩, fr1⟩
-  have k01 : c₁.nreg K0 = 0 := (E.hK.fix hI₁).1
+  have k01 := (E.hK.fix hI₁).1
   have keep1 : ∀ r, 240000 ≤ r → r < 250000 → ¬ ShW r → c₁.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => fr1.1 r (not_oracle_sw h1 h2) h3 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => fr1.1 r (not_oracle_sw h1 h2) h3 by_ao
   have nShW : ∀ r, ShW r → CandR r := fun r hr => by
     unfold ShW RS eF eNo sw at hr; unfold CandR sw; omega
   have best1 : ∀ r, BestR r → c₁.nreg r = c.nreg r := fun r hr => keep1 r
@@ -194,35 +194,35 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     cand_prep (S₂ := S₂) hP hS₂ hch ha haR hav ha₁ (p := p) (t := t) h1 h2 h3 h4 h5
   by_cases hF : c₁.nreg K0 < c₁.nreg eF
   · rw [k01] at hF
-    have hF1 : c₁.nreg eF = 1 := by omega
+    have hF1 : c₁.nreg eF = 1 := by_o
     obtain ⟨τ, hτ, huq, hAle, hA1, hA0⟩ := f3 hF1
-    refine IRS.mono (K := KG + 56498 + 2) (IRS.ifT (by rw [k01]; exact hF) ?_) (by omega)
+    refine IRS.mono (K := KG + 56498 + 2) (IRS.ifT (by rwa [k01]) ?_) by_o
       (fun _ h => h)
     by_cases hAr : c₁.nreg K0 < c₁.nreg eA
     · rw [k01] at hAr
-      have hA11 : c₁.nreg eA = 1 := by omega
+      have hA11 : c₁.nreg eA = 1 := by_o
       obtain ⟨hpe, hppA, hArr, hnorm⟩ := hA1 hA11
-      refine IRS.mono (K := KG + 56496 + 2) (IRS.ifT (by rw [k01]; exact hAr) ?_) (by omega)
+      refine IRS.mono (K := KG + 56496 + 2) (IRS.ifT (by rwa [k01]) ?_) by_o
         (fun _ h => h)
       -- 2. the genuineness check
-      have eD1 : c₁.nreg oD = c.nreg oD := keep1 _ (by unfold oD sw; norm_num) (by unfold oD sw; norm_num)
+      have eD1 : c₁.nreg oD = c.nreg oD := keep1 _ by_d by_d
         (by unfold ShW RS oD eF eNo sw; omega)
-      have habs1 : AbsRec P c₁ oAbsA (s.eval (Qof P)).1 J.left.radius := ShotList.absRec_copy habs
-        (keep1 _ (by unfold oAbsA sw; norm_num) (by unfold oAbsA sw; norm_num)
+      have habs1 := ShotList.absRec_copy habs
+        (keep1 _ by_d by_d
           (by unfold ShW RS oAbsA eF eNo sw; omega))
-        (keep1 _ (by unfold oAbsA sw; norm_num) (by unfold oAbsA sw; norm_num)
+        (keep1 _ by_d by_d
           (by unfold ShW RS oAbsA eF eNo sw; omega))
-        (keep1 _ (by unfold oAbsA sw; norm_num) (by unfold oAbsA sw; norm_num)
+        (keep1 _ by_d by_d
           (by unfold ShW RS oAbsA eF eNo sw; omega))
-        (keep1 _ (by unfold oAbsA sw; norm_num) (by unfold oAbsA sw; norm_num)
+        (keep1 _ by_d by_d
           (by unfold ShW RS oAbsA eF eNo sw; omega))
       have hroomG : c₁.nreg ALLOC + KG ≤ W := by unfold evCandK at hroom; omega
       refine IRS.seq (K₁ := KG) (K₂ := 56496) (hgen c₁ (s.eval (Qof P)) σ τ hI₁ hroomG
-        (by rw [eD1]; exact hD) (by rw [eD1]) habs1 haR hav ha₁ hτ hpe hppA hArr) ?_
+        (by rwa [eD1]) (by rw [eD1]) habs1 haR hav ha₁ hτ hpe hppA hArr) ?_
       rintro c₂ hI₂ hA₂ hA₂' ⟨hbG, frG⟩
-      have k02 : c₂.nreg K0 = 0 := (E.hK.fix hI₂).1
+      have k02 := (E.hK.fix hI₂).1
       have keep2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ ShW r → ¬ GR r → c₂.nreg r = c.nreg r :=
-        fun r h1 h2 h3 h4 => (frG.1 r (not_oracle_sw h1 h2) h4 (by unfold ALLOC; omega)).trans
+        fun r h1 h2 h3 h4 => (frG.1 r (not_oracle_sw h1 h2) h4 by_ao).trans
           (keep1 r h1 h2 h3)
       have keep2' : ∀ r, (sw 2200 ≤ r ∧ r < sw 2240) ∨ (sw 2283 < r ∧ r < sw 3000) →
           c₂.nreg r = c.nreg r := fun r hr => keep2 r (by unfold sw at hr; omega)
@@ -240,16 +240,16 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
           (by unfold BestR LblR bF bE bH bN bL sw at hr; omega))
           (by unfold BestR LblR bF bE bH bN bL at hr; unfold GR cG sw at *; omega)
           (by unfold BestR LblR bF bE bH bN bL ALLOC sw at *; omega)
-      have hA2c : c.nreg ALLOC ≤ c₂.nreg ALLOC := hA₁.trans frG.2.1
+      have hA2c := hA₁.trans frG.2.1
       have hm2c : ∀ x, x < c.nreg ALLOC → c₂.nmem x = c.nmem x := fun x hx =>
-        (frG.2.2 x (by omega)).trans (fr1.2.2 x hx)
+        (frG.2.2 x by_o).trans (fr1.2.2 x hx)
       by_cases hGb : c₂.nreg K0 < c₂.nreg cG
       · rw [k02] at hGb
         have hgen1 : Genuine J.left (s.eval (Qof P)) σ τ := hbG.2.1 (by have := hbG.1; omega)
-        refine IRS.mono (K := 56494 + 2) (IRS.ifT (by rw [k02]; exact hGb) ?_) (by omega) (fun _ h => h)
+        refine IRS.mono (K := 56494 + 2) (IRS.ifT (by rwa [k02]) ?_) by_o (fun _ h => h)
         -- 3. the far-end test
-        have eE1 := keepA2 (eA + 1) (by omega) (by omega)
-        have eE2 := keepA2 (eA + 2) (by omega) (by omega)
+        have eE1 := keepA2 (eA + 1) by_o by_o
+        have eE2 := keepA2 (eA + 2) by_o by_o
         have eFE : c₂.nreg oFE = c.nreg oFE := keep2' _ (Or.inl ⟨by unfold oFE sw; omega,
           by unfold oFE sw; omega⟩)
         have eFC : c₂.nreg oFC = c.nreg oFC := keep2' _ (Or.inl ⟨by unfold oFC sw; omega,
@@ -275,9 +275,9 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         have hroomF : c₂.nreg ALLOC + 34000 ≤ W := by
           have := frG.2.1; unfold evCandK at hroom; omega
         refine IRS.seq (K₁ := 34000) (K₂ := 22494) (farChk_irs hI₂ E.hK (E.ctx1' hI₂) (E.ctx2' hI₂)
-          (by rw [eE1]; exact hpe) (by rw [eE1, eE2]; exact hppA) (by rw [eE1, eE2]; exact hy1)
-          (by rw [eFE]; exact hfe) (by rw [eFE, eFC]; exact hfp) (by rw [eFE, eFC]; exact hy2)
-          (by rw [eD2]; exact hD) hroomF) ?_
+          (by rwa [eE1]) (by rwa [eE1, eE2]) (by rwa [eE1, eE2])
+          (by rwa [eFE]) (by rwa [eFE, eFC]) (by rwa [eFE, eFC])
+          (by rwa [eD2]) hroomF) ?_
         rintro c₃ hI₃ hA₃ hA₃' ⟨hbF', frF⟩
         rw [eE1, eE2, eFE, eFC, eD2, hw, hfar] at hbF'
         -- the bit is the far-end condition
@@ -295,7 +295,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
             rw [ite_eq_right hd1, ite_eq_right hd1, Visibility.rayPt_fst, h1, h2]
             constructor <;> intro h <;> linarith
         have hbFr := hbF'.congr hfarIff
-        have k03 : c₃.nreg K0 = 0 := (E.hK.fix hI₃).1
+        have k03 := (E.hK.fix hI₃).1
         have keep3 : ∀ r, ¬ (cAW ≤ r ∧ r ≤ cFr) → bandOf r ∉ oracleBands → r ≠ ALLOC →
             c₃.nreg r = c₂.nreg r := fun r h1 h2 h3 => frF.1 r h2 h1 h3
         have nF : ∀ r, cAW ≤ r ∧ r ≤ cFr → CandR r := fun r hr => by
@@ -308,46 +308,46 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
             (not_oracle_sw (by unfold BestR LblR bF bE bH bN bL sw at hr; omega)
               (by unfold BestR LblR bF bE bH bN bL sw at hr; omega))
             (by unfold BestR LblR bF bE bH bN bL ALLOC sw at *; omega)
-        have hA3c : c.nreg ALLOC ≤ c₃.nreg ALLOC := hA2c.trans frF.2.1
+        have hA3c := hA2c.trans frF.2.1
         have hm3c : ∀ x, x < c.nreg ALLOC → c₃.nmem x = c.nmem x := fun x hx =>
-          (frF.2.2 x (by omega)).trans (hm2c x hx)
+          (frF.2.2 x by_o).trans (hm2c x hx)
         by_cases hFr : c₃.nreg K0 < c₃.nreg cFr
         · rw [k03] at hFr
           have hlt : τ < (Merge.rend ch).1 - (Merge.lend ch).1 := hbFr.2.1 (by have := hbFr.1; omega)
-          refine IRS.mono (K := 22300 + 2) (IRS.ifT (by rw [k03]; exact hFr) ?_) (by omega)
+          refine IRS.mono (K := 22300 + 2) (IRS.ifT (by rwa [k03]) ?_) by_o
             (fun _ h => h)
           -- 4. the accepting tail
           have kc3 : ∀ r, (sw 2200 ≤ r ∧ r < sw 2240) ∨ (sw 2283 < r ∧ r < sw 3000) →
               c₃.nreg r = c.nreg r := fun r hr => by
             rw [keep3 r (by unfold cAW cFr sw at *; omega)
               (not_oracle_sw (by unfold sw at hr; omega) (by unfold sw at hr; omega))
-              (by unfold ALLOC sw at *; omega)]
+              by_so]
             exact keep2' r hr
           have kA3 : ∀ r, eA ≤ r → r ≤ eA + 2 → c₃.nreg r = c₁.nreg r := fun r h1 h2 => by
             rw [keep3 r (by unfold cAW cFr eA sw at *; omega)
               (not_oracle_sw (by unfold eA sw at h1; omega) (by unfold eA sw at h2; omega))
               (by unfold ALLOC eA sw at *; omega)]
             exact keepA2 r h1 h2
-          have e31 := kA3 (eA + 1) (by omega) (by omega)
-          have e32 := kA3 (eA + 2) (by omega) (by omega)
+          have e31 := kA3 (eA + 1) by_o by_o
+          have e32 := kA3 (eA + 2) by_o by_o
           have hs3 : SameKB c c₃ := ⟨kc3 _ (Or.inr ⟨by unfold kE sw; omega, by unfold kE sw; omega⟩),
             kc3 _ (Or.inr ⟨by unfold kH sw; omega, by unfold kH sw; omega⟩), best3⟩
           have eK3 : c₃.nreg oK = c.nreg oK := kc3 _ (Or.inl ⟨by unfold oK sw; omega, by unfold oK sw; omega⟩)
           have eS3 : c₃.nreg oS = c.nreg oS := kc3 _ (Or.inl ⟨by unfold oS sw; omega, by unfold oS sw; omega⟩)
           have eU3 : c₃.nreg oUp = c.nreg oUp := kc3 _ (Or.inl ⟨by unfold oUp sw; omega, by unfold oUp sw; omega⟩)
           have eN3 : c₃.nreg oDn = c.nreg oDn := kc3 _ (Or.inl ⟨by unfold oDn sw; omega, by unfold oDn sw; omega⟩)
-          have eT3 : c₃.nreg cTB = c.nreg cTB := (E.tb' hI₃).trans (E.tb' hI).symm
+          have eT3 := (E.tb' hI₃).trans (E.tb' hI).symm
           have hTW3 : c₃.nreg cTB + 3 * (2 * c₃.nreg oK + c₃.nreg oS) + 2 ≤ W := by
             rw [E.tb' hI₃, eK3, eS3]; have := E.hTW; omega
           have hroomA : c₃.nreg ALLOC + 22300 ≤ W := by
             have := frF.2.1; have := frG.2.1; unfold evCandK at hroom; omega
           refine (evAccT_irs (S₂ := S₂) hI₃ E.hK E.hM hP hS₂ hS₂f hch ha haR hav ha₁ hgen1 hlt
-            (by rw [e31]; exact hpe) (by rw [e31, e32]; exact hppA) (by rw [e31, e32]; exact hnorm)
-            (by rw [e31, e32]; exact hArr) E.ctxW E.hgw (by rw [hs3.1, hs3.2.1]; exact hk)
-            (by rw [hs3.2.2 _ (Or.inl rfl), hs3.2.2 _ (Or.inr (Or.inl rfl)),
-              hs3.2.2 _ (Or.inr (Or.inr (Or.inl rfl)))]; exact hb)
-            (by rw [hs3.2.2 _ (Or.inl rfl)]; exact hbF)
-            (by rw [hs3.2.2 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))]; exact hbN)
+            (by rwa [e31]) (by rwa [e31, e32]) (by rwa [e31, e32])
+            (by rwa [e31, e32]) E.ctxW E.hgw (by rwa [hs3.1, hs3.2.1])
+            (by rwa [hs3.2.2 _ (Or.inl rfl), hs3.2.2 _ (Or.inr (Or.inl rfl)),
+              hs3.2.2 _ (Or.inr (Or.inr (Or.inl rfl)))])
+            (by rwa [hs3.2.2 _ (Or.inl rfl)])
+            (by rwa [hs3.2.2 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))])
             (by rw [E.tb' hI₃]; exact E.hT) hTW3 E.hWn hroomA).mono le_rfl ?_
           rintro c' ⟨hacc, hrej, hfr4, hA4⟩
           rw [e31, e32, eT3, eK3, eS3, eU3, eN3] at hacc
@@ -361,9 +361,9 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
             obtain ⟨hg, -, d₀, hv₀, hpd, harr₀⟩ := prep p t h1 h2 h3 h4 h5
             have hτT := huq _ hg h6
             subst hτT
-            have ha₁' : (s.eval (Qof P)).2 ≤ J.left.top.2 := ha₁
+            have ha₁' := ha₁
             obtain ⟨hpq, htq⟩ := arrival_unique hP ha₁' hσ hg hArr harr₀
-            have hd₀ : d₀ < (chainModel J.left).W.n := lt_of_lt_of_le hv₀.1 (E₁_le hP)
+            have hd₀ := lt_of_lt_of_le hv₀.1 (E₁_le hP)
             have hdd : (c₁.nreg (eA + 1) + (chainModel J.left).W.n - b₁ J) %
                 (chainModel J.left).W.n = d₀ := by
               rw [hpq]
@@ -372,17 +372,17 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
                 (chainModel J.left).W.n) (c₁.nreg (eA + 2)) := by
               rw [hdd]
               refine ⟨hv₀.1, hv₀.2.1, fun h => hv₀.2.2.1 ⟨h.1, h.2.1, fun ht0 => h.2.2 ?_⟩⟩
-              exact hnorm.2 (by rw [htq]; exact ht0)
+              exact hnorm.2 (by rwa [htq])
             have hacc' := accAt_lift hs3 hA3c hm3c (hacc hMV)
             rw [hdd, hpd] at hacc'
             refine ⟨_, ?_, hacc'⟩
-            have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+            have hM := FactsChain.walkAx J.whole hP
             obtain ⟨-, hmem, hS, hpt, -⟩ := hacc'.1
             exact (hM.attach_unique (F₂plus_subset J hS₂ hmem) hS h1 (by rw [hpt, h2])).2
         · rw [k03] at hFr
           have hnlt : ¬ τ < (Merge.rend ch).1 - (Merge.lend ch).1 := fun h => by
             have := hbFr.2.2 h; omega
-          refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k03]; exact hFr) (IRS.skip hI₃ rfl)) (by omega) ?_
+          refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k03]) (IRS.skip hI₃ rfl)) by_o ?_
           rintro c' rfl
           refine rejQ c₃ frR3 hA3c hm3c best3 ?_
           intro p t h1 h2 h3 h4 h5 h6
@@ -392,7 +392,7 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
           exact hnlt hlt'
       · rw [k02] at hGb
         have hng : ¬ Genuine J.left (s.eval (Qof P)) σ τ := fun h => by have := hbG.2.2 h; omega
-        refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k02]; exact hGb) (IRS.skip hI₂ rfl)) (by omega) ?_
+        refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k02]) (IRS.skip hI₂ rfl)) by_o ?_
         rintro c' rfl
         refine rejQ c₂ frR2 hA2c hm2c best2 ?_
         intro p t h1 h2 h3 h4 h5 h6
@@ -401,8 +401,8 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         subst this
         exact hng hg
     · rw [k01] at hAr
-      have hA0' : c₁.nreg eA ≠ 1 := by omega
-      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact hAr) (IRS.skip hI₁ rfl)) (by omega) ?_
+      have hA0' : c₁.nreg eA ≠ 1 := by_o
+      refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k01]) (IRS.skip hI₁ rfl)) by_o ?_
       rintro c' rfl
       refine rejQ c₁ frR1 hA₁ (fun x hx => fr1.2.2 x hx) best1 ?_
       intro p t h1 h2 h3 h4 h5 h6
@@ -411,8 +411,8 @@ theorem evCand_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       subst this
       exact hA0 hA0' _ _ harr
   · rw [k01] at hF
-    have hF0 : c₁.nreg eF ≠ 1 := by omega
-    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rw [k01]; exact hF) (IRS.skip hI₁ rfl)) (by omega) ?_
+    have hF0 : c₁.nreg eF ≠ 1 := by_o
+    refine IRS.mono (K := 0 + 2) (IRS.ifF (by rwa [k01]) (IRS.skip hI₁ rfl)) by_o ?_
     rintro c' rfl
     refine rejQ c₁ frR1 hA₁ (fun x hx => fr1.2.2 x hx) best1 ?_
     intro p t h1 h2 h3 h4 h5 h6

@@ -130,8 +130,8 @@ theorem splitAll_induction {motive : List ℕ → List (ℕ × ℕ) → Prop}
     | nil => exact nil l
     | cons d D =>
       rw [List.length_cons] at hD
-      exact cons l d D (ih _ _ ((List.length_filter_le _ _).trans (by omega)))
-        (ih _ _ ((List.length_filter_le _ _).trans (by omega)))
+      exact cons l d D (ih _ _ ((List.length_filter_le _ _).trans by_o))
+        (ih _ _ ((List.length_filter_le _ _).trans by_o))
 
 /-! ### Diagonal systems -/
 

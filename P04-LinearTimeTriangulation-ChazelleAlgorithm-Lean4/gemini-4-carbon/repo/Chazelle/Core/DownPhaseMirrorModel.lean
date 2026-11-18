@@ -39,7 +39,7 @@ theorem hseg_mir (y a b : ℝ) : mir '' hseg y a b = hseg y (-b) (-a) := by
   ext x
   rw [mem_image_mir]
   simp only [hseg, mem_ofPred_eq, mir_fst, mir_snd]
-  constructor <;> rintro ⟨h1, h2, h3⟩ <;> exact ⟨h1, by linarith, by linarith⟩
+  constructor <;> rintro ⟨h1, h2, h3⟩ <;> exact ⟨h1, by_l, by_l⟩
 
 /-- **Horizontal chords of the mirrored domain.** -/
 theorem isHChordIn_mir {D : Set Point} {y a b : ℝ} :
@@ -48,16 +48,16 @@ theorem isHChordIn_mir {D : Set Point} {y a b : ℝ} :
   · intro h
     refine ⟨by linarith [h.lt], fun hm => h.right_not ?_, fun hm => h.left_not ?_,
       fun x h1 h2 => ?_⟩
-    · rw [mem_image_mir, mir_pt, neg_neg]; exact hm
-    · rw [mem_image_mir, mir_pt, neg_neg]; exact hm
-    · have := h.open_mem (-x) (by linarith) (by linarith)
+    · rwa [mem_image_mir, mir_pt, neg_neg]
+    · rwa [mem_image_mir, mir_pt, neg_neg]
+    · have := h.open_mem (-x) by_l by_l
       rwa [mem_image_mir, mir_pt, neg_neg] at this
   · intro h
     refine ⟨by linarith [h.lt], fun hm => h.right_not ?_, fun hm => h.left_not ?_,
       fun x h1 h2 => ?_⟩
     · rwa [mem_image_mir, mir_pt, neg_neg] at hm
     · rwa [mem_image_mir, mir_pt, neg_neg] at hm
-    · rw [mem_image_mir, mir_pt]; exact h.open_mem (-x) (by linarith) (by linarith)
+    · rw [mem_image_mir, mir_pt]; exact h.open_mem (-x) by_l by_l
 
 theorem closure_mir (U : Set Point) : closure (mir '' U) = mir '' closure U :=
   (mirHomeo.image_closure U).symm
@@ -183,10 +183,10 @@ theorem arcWt_self (M : Model) (a : ℝ) :
     unfold sideInArc
     simp only [lt_irrefl, ite_false]
     by_cases h : (p : ℝ) + 1 / 2 = a
-    · exact ⟨1 / 4, by norm_num, by norm_num, Or.inr (by linarith)⟩
+    · exact ⟨1 / 4, by_n, by_n, Or.inr by_l⟩
     · rcases lt_or_gt_of_ne h with h | h
-      · exact ⟨1 / 2, by norm_num, by norm_num, Or.inr h⟩
-      · exact ⟨1 / 2, by norm_num, by norm_num, Or.inl h⟩
+      · exact ⟨1 / 2, by_n, by_n, Or.inr h⟩
+      · exact ⟨1 / 2, by_n, by_n, Or.inl h⟩
 
 namespace ModelMir
 
@@ -209,7 +209,7 @@ theorem deg (F : Set (Set Point)) (U : Set Point) : M'.deg (mirF F) (mir '' U) =
     · rintro ⟨he, ht⟩
       refine ⟨mir '' e', ⟨mem_mirF.1 he, ?_⟩, image_mir_image_mir e'⟩
       rw [h.D] at ht
-      rw [← touchesIn_mir, image_mir_image_mir]; exact ht
+      rwa [← touchesIn_mir, image_mir_image_mir]
     · rintro ⟨e, ⟨he, ht⟩, rfl⟩
       exact ⟨⟨e, he, rfl⟩, by rw [h.D]; exact touchesIn_mir.2 ht⟩
   rw [e, Set.ncard_image_of_injective _ mirF_injective]
@@ -223,12 +223,12 @@ theorem isCut (F : Set (Set Point)) {x' : ℝ} (hx0 : 0 ≤ x') (hxn : x' < M.W.
     M'.IsCut (mirF F) x' ↔ M.IsCut F (rk M.W.n c x') := by
   constructor
   · rintro ⟨e', he', p', t', hA, rfl⟩
-    have hp : p' < M.W.n := h.n_eq ▸ hA.1
+    have hp := h.n_eq ▸ hA.1
     have hA' : SideAttach M'.W (mir '' (mir '' e')) p' t' := by rwa [image_mir_image_mir]
     rw [h.walk.sideAttach_mir hp hA.2.1 hA.2.2.1] at hA'
     exact ⟨_, mem_mirF.1 he', _, _, hA', (posMir_key h.walk.c_lt hp hA.2.1 hA.2.2.1).symm⟩
   · rintro ⟨e, he, p, t, hA, hx⟩
-    have hp : p < M'.W.n := h.n_eq.symm ▸ hA.1
+    have hp := h.n_eq.symm ▸ hA.1
     have hA' : SideAttach M.W (mir '' (mir '' e)) p t := by rwa [image_mir_image_mir]
     rw [h.walk.symm.sideAttach_mir hp hA.2.1 hA.2.2.1] at hA'
     refine ⟨_, ⟨e, he, rfl⟩, _, _, hA', ?_⟩
@@ -252,11 +252,11 @@ theorem faces_all (U : Set Point) :
   rw [h.n_eq]
   constructor
   · intro H p t hp ht0 ht1
-    have := H _ (1 - t) (Nat.mod_lt (c + 2 * M.W.n - 1 - p) hn) (by linarith) (by linarith)
+    have := H _ (1 - t) (Nat.mod_lt (c + 2 * M.W.n - 1 - p) hn) by_l by_l
     rwa [h.faces (Nat.mod_lt _ hn), idx_q_invol hc hp, sub_sub_cancel] at this
   · intro H p' t' hp ht0 ht1
     rw [h.faces hp]
-    exact H _ _ (Nat.mod_lt _ hn) (by linarith) (by linarith)
+    exact H _ _ (Nat.mod_lt _ hn) by_l by_l
 
 theorem rk_lt {x : ℝ} (hx0 : 0 ≤ x) (hxn : x < M.W.n) :
     0 ≤ rk M.W.n c x ∧ rk M.W.n c x < M.W.n := rk_bounds h.walk.c_lt hx0 hxn
@@ -272,8 +272,8 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
   set n := M.W.n with hn_def
   obtain ⟨ra0, ran⟩ := h.rk_lt ha0 han
   obtain ⟨rb0, rbn⟩ := h.rk_lt hb0 hbn
-  have hF' : mirF F ≠ ∅ := (mirF_nonempty.2 hF).ne_empty
-  have hF0 : F ≠ ∅ := hF.ne_empty
+  have hF' := (mirF_nonempty.2 hF).ne_empty
+  have hF0 := hF.ne_empty
   have hcut : ((M'.IsCut (mirF F) a' ∧ M'.IsCut (mirF F) b' ∧ a' ≠ b') ∨
       (mirF F = ∅ ∧ a' = 0 ∧ b' = 0)) ↔
       ((M.IsCut F (rk n c b') ∧ M.IsCut F (rk n c a') ∧ rk n c b' ≠ rk n c a') ∨
@@ -300,8 +300,8 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
       obtain ⟨hx0, hxn⟩ := isCut_bounds hcx
       obtain ⟨r0, rn⟩ := h.rk_lt hx0 hxn
       apply H (rk n c x)
-      · rw [sideInArc_rk hc ha0 han hb0 hbn r0 rn, rk_rk hc hx0 hxn]; exact hx
-      · rw [h.isCut F r0 rn, rk_rk hc hx0 hxn]; exact hcx
+      · rwa [sideInArc_rk hc ha0 han hb0 hbn r0 rn, rk_rk hc hx0 hxn]
+      · rwa [h.isCut F r0 rn, rk_rk hc hx0 hxn]
     · intro H x' hx' hcx'
       obtain ⟨hx0, hxn⟩ := isCut_bounds hcx'
       rw [h.n_eq] at hxn
@@ -316,23 +316,23 @@ theorem isArc {F : Set (Set Point)} (hF : F.Nonempty) (U : Set Point) {a' b' : �
       have hq := Nat.mod_lt (c + 2 * n - 1 - p) hn
       have hq' : ((c + 2 * n - 1 - p) % n : ℕ) < (n : ℝ) := by exact_mod_cast hq
       have hql : (((c + 2 * n - 1 - p) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast hq
-      have := H _ (1 - t) hq (by linarith) (by linarith) ?_
+      have := H _ (1 - t) hq by_l by_l ?_
       · rwa [h.faces hq, idx_q_invol hc hp, sub_sub_cancel] at this
-      · rw [sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith),
-          rk_edge hc hq (by linarith) (by linarith), idx_q_invol hc hp, sub_sub_cancel]
+      · rw [sideInArc_rk hc ha0 han hb0 hbn by_p by_l,
+          rk_edge hc hq by_l by_l, idx_q_invol hc hp, sub_sub_cancel]
         exact hin
     · intro H p' t' hp ht0 ht1 hin
       have hpl : (p' : ℝ) + 1 ≤ n := by exact_mod_cast hp
       rw [h.faces hp]
-      apply H _ _ (Nat.mod_lt _ hn) (by linarith) (by linarith)
+      apply H _ _ (Nat.mod_lt _ hn) by_l by_l
       rw [← rk_edge hc hp ht0 ht1]
-      exact (sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith)).1 hin
+      exact (sideInArc_rk hc ha0 han hb0 hbn by_p by_l).1 hin
   unfold Model.IsArc
   constructor
   · rintro ⟨-, -, -, -, h1, h2, h3⟩
     exact ⟨rb0, rbn, ra0, ran, hcut.1 h1, hnocut.1 h2, hfaces.1 h3⟩
   · rintro ⟨-, -, -, -, h1, h2, h3⟩
-    exact ⟨ha0, by rw [h.n_eq]; exact han, hb0, by rw [h.n_eq]; exact hbn, hcut.2 h1, hnocut.2 h2,
+    exact ⟨ha0, by rwa [h.n_eq], hb0, by rwa [h.n_eq], hcut.2 h1, hnocut.2 h2,
       hfaces.2 h3⟩
 
 /-- **Arc weights correspond.** -/
@@ -346,20 +346,20 @@ theorem arcWt {a' b' : ℝ} (ha0 : 0 ≤ a') (han : a' < M.W.n) (hb0 : 0 ≤ b')
   refine Set.ncard_congr (fun p' _ => (c + 2 * n - 1 - p') % n) ?_ ?_ ?_
   · rintro p' ⟨hp, hcnt, t', ht0, ht1, hin⟩
     have hpl : (p' : ℝ) + 1 ≤ n := by exact_mod_cast hp
-    refine ⟨Nat.mod_lt _ hn, (h.counted p' hp).1 hcnt, 1 - t', by linarith, by linarith, ?_⟩
+    refine ⟨Nat.mod_lt _ hn, (h.counted p' hp).1 hcnt, 1 - t', by_l, by_l, ?_⟩
     rw [← rk_edge hc hp ht0 ht1]
-    exact (sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith)).1 hin
+    exact (sideInArc_rk hc ha0 han hb0 hbn by_p by_l).1 hin
   · rintro p₁ p₂ ⟨hp₁, -⟩ ⟨hp₂, -⟩ e
     rw [← idx_q_invol hc hp₁, ← idx_q_invol hc hp₂]
     exact congrArg (fun q => (c + 2 * n - 1 - q) % n) e
   · rintro p ⟨hp, hcnt, t, ht0, ht1, hin⟩
     have hq := Nat.mod_lt (c + 2 * n - 1 - p) hn
     have hql : (((c + 2 * n - 1 - p) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast hq
-    refine ⟨(c + 2 * n - 1 - p) % n, ⟨hq, ?_, 1 - t, by linarith, by linarith, ?_⟩,
+    refine ⟨(c + 2 * n - 1 - p) % n, ⟨hq, ?_, 1 - t, by_l, by_l, ?_⟩,
       idx_q_invol hc hp⟩
-    · rw [h.counted _ hq, idx_q_invol hc hp]; exact hcnt
-    · rw [sideInArc_rk hc ha0 han hb0 hbn (by positivity) (by linarith),
-        rk_edge hc hq (by linarith) (by linarith), idx_q_invol hc hp, sub_sub_cancel]
+    · rwa [h.counted _ hq, idx_q_invol hc hp]
+    · rw [sideInArc_rk hc ha0 han hb0 hbn by_p by_l,
+        rk_edge hc hq by_l by_l, idx_q_invol hc hp, sub_sub_cancel]
       exact hin
 
 /-- **Weights correspond.** -/

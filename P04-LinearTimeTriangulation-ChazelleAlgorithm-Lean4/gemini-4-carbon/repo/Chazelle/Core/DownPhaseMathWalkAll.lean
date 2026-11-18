@@ -55,7 +55,7 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
   have e := key k
   rw [h1, h2, hk0, hf0] at e
   -- the concatenation starts with `A 0`
-  obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
+  obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by_o⟩
   obtain ⟨W', hW'⟩ : ∃ W', (List.range (k' + 1)).flatMap (fun t => A t ++ B t) = A 0 ++ W' := by
     rw [List.range_succ_eq_map, List.flatMap_cons]
     exact ⟨B 0 ++ List.flatMap (fun t => A t ++ B t) (List.map Nat.succ (List.range k')),
@@ -69,7 +69,7 @@ theorem flatMap_rot {α : Type*} (A B : ℕ → List α) {k : ℕ} (hk : 0 < k) 
 theorem exists_arc {Q : Polygon} {S : Set (Set Point)} {R : Set Point} (hQ : Q.Simple)
     (hFam : (interiorModel Q).ChordFamily Q S) (hne : S.Nonempty)
     (hR : R ∈ (interiorModel Q).regions S) : ∃ a b, (interiorModel Q).IsArc S R a b := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   obtain ⟨p, t, hp, ht0, ht1, hnc, hfac⟩ := DownHost.exists_faces_nc hM hFam.2.1 hFam.1 hR
   obtain ⟨X, hX, l, r', harc, hin⟩ := hM.arc_around hFam.2.1 hFam.1 hne hnc
   have hfacX := harc.2.2.2.2.2.2 p t hp ht0 ht1 hin
@@ -114,16 +114,16 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
   set K := nk I S R with hK
   have hQ := X.hQ
   have hdh := X.hdh
-  have hN : IsNF I Q N := isNF_build X.hQ X.hL X.hperm X.hsort
-  have hFam : I.ChordFamily Q S := hN.1
-  have hnc : N.nChords = L.length := nChords_build X.hQ X.hL X.hperm X.hsort
+  have hN := isNF_build X.hQ X.hL X.hperm X.hsort
+  have hFam := hN.1
+  have hnc := nChords_build X.hQ X.hL X.hperm X.hsort
   have hne : S.Nonempty :=
-    ⟨_, (chordPos_attach hN (show 0 < N.nChords by rw [hnc]; exact X.hK) (Or.inl rfl)).1⟩
-  have hR : R ∈ I.regions S := X.hregs.1.1 r X.hr
+    ⟨_, (chordPos_attach hN (by rw [hnc]; exact X.hK) (Or.inl rfl)).1⟩
+  have hR := X.hregs.1.1 r X.hr
   have hRC := (X.hregs.2.2.2 r X.hr).1
-  have hM : WalkAx I := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have h3 : 3 ≤ K := three_le_nk hQ hFam hne hR
-  have hn3 : 3 ≤ Q.n := Chazelle.Jordan.simple_three_le hQ
+  have hn3 := Chazelle.Jordan.simple_three_le hQ
   obtain ⟨hAarc, hAsort, hAcomp⟩ := regArcs_facts (E := E) X.hQ X.hL X.hperm X.hsort X.hK
     X.hregs X.hr
   set as := (N.region r).arcs with has
@@ -188,7 +188,7 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
     simp only [hA, List.length_append, List.length_singleton, h3']
     have := (hD 0 hk1).hd0
     omega
-  refine ⟨i 0 + (A 0).length, (i 0 + d 0) % K, ?_, ?_, Nat.mod_lt _ (by omega),
+  refine ⟨i 0 + (A 0).length, (i 0 + d 0) % K, ?_, ?_, Nat.mod_lt _ by_o,
     (hgrp 0 hk1).2.2.2.1, ?_, ?_⟩
   · rw [hWP]; exact repFrom_rotate hWlen hWrep _
   · rw [hWP, List.length_rotate, hWlen]
@@ -209,11 +209,10 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
       intro x b hx
       obtain ⟨c, hc, hxc⟩ := hx
       obtain ⟨-, hAx, -, eh, hh, -⟩ := chordPos_attach hN hc hxc
-      have hxn : x.edge < Q.n := walk_n Q ▸ hAx.1
-      show qE li Q.n _ < Q.n ∧ x.hgt - 1 < Q.n
+      have hxn := walk_n Q ▸ hAx.1
       refine ⟨qE_lt li ?_, by rw [eh]; simpa using hh⟩
       split_ifs
-      · exact Nat.mod_lt _ (by omega)
+      · exact Nat.mod_lt _ by_o
       · exact hxn
     unfold arcItems at hit
     simp only [List.mem_append, List.mem_singleton] at hit
@@ -230,13 +229,13 @@ theorem walk_rep {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {re
         obtain ⟨-, hAx, -, -, -, -⟩ := chordPos_attach hN hc hxc
         exact walk_n Q ▸ hAx.1
       have hcn : runCnt li Q.n (N.arc (as.getD ((t + 1) % k) 0)).s
-          (N.arc (as.getD ((t + 1) % k) 0)).e < Q.n := Nat.mod_lt _ (by omega)
+          (N.arc (as.getD ((t + 1) % k) 0)).e < Q.n := Nat.mod_lt _ by_o
       split_ifs at hrun with h0 h1
       · simp at hrun
       · rw [List.mem_singleton] at hrun; subst hrun
-        exact ⟨Nat.mod_lt _ (by omega), by omega⟩
+        exact ⟨Nat.mod_lt _ by_o, by_o⟩
       · rw [List.mem_singleton] at hrun; subst hrun
-        exact ⟨by omega, by omega⟩
+        exact ⟨by_o, by_o⟩
     · exact hptI _ _ (hpos _ (Nat.mod_lt (t + 1) hk1)).2
 
 end

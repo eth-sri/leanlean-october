@@ -85,12 +85,12 @@ theorem touch_sep (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {c : Set 
   have hs := hM.hsep (hF hc) hcab hab hy hopen
   rw [← hcab] at hs
   set z := lerp a b (1 / 2) with hz
-  have hzc : z ∈ c := by rw [hcab]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-  have hzD : z ∈ M.D := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
+  have hzc : z ∈ c := by rw [hcab]; exact lerp_mem_segment _ _ by_n by_n
+  have hzD : z ∈ M.D := hopen (1 / 2) ⟨by_n, by_n⟩
   set d := b.1 - a.1 with hd
   have hd0 : d ≠ 0 := by
     intro h; apply hab; exact point_ext (by rw [hd] at h; linarith) hy
-  have hdpos : 0 < |d| := abs_pos.2 hd0
+  have hdpos := abs_pos.2 hd0
   obtain ⟨ε₀, hε₀, hs'⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hs
   obtain ⟨ε₁, hε₁, hside'⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 (hside z hzc hzD)
   rw [mem_Ioi] at hε₀ hε₁
@@ -100,7 +100,7 @@ theorem touch_sep (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {c : Set 
   have hδ2 : δ * |d| < ε₁ := by
     have h1 : δ < ε₁ / |d| := by
       have := min_le_right ε₀ (ε₁ / |d|)
-      have h2 : 0 < ε₁ / |d| := div_pos hε₁ hdpos
+      have h2 := div_pos hε₁ hdpos
       rw [hδ]; linarith
     rwa [lt_div_iff₀ hdpos] at h1
   have hneq := hs' ⟨hδ0, hδ1⟩
@@ -119,8 +119,8 @@ theorem touch_sep (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {c : Set 
   rw [e1, e2]
   rcases lt_or_gt_of_ne hd0 with hneg | hpos
   · rw [abs_of_neg hneg] at hpt
-    have e3 : z.2 + δ * d = z.2 - δ * -d := by ring
-    have e4 : z.2 - δ * d = z.2 + δ * -d := by ring
+    have e3 : z.2 + δ * d = z.2 - δ * -d := by_r
+    have e4 : z.2 - δ * d = z.2 + δ * -d := by_r
     rw [e3, e4, hmem _ (Or.inr hpt.2), hmem _ (Or.inl hpt.1)]
   · rw [abs_of_pos hpos] at hpt
     rw [hmem _ (Or.inl hpt.1), hmem _ (Or.inr hpt.2)]
@@ -133,8 +133,8 @@ theorem eq_up_of_above (hM : WalkAx M) (hF : F ⊆ M.Adm) (_hfin : F.Finite)
     (hX : X ∈ M.regions F) (hA : M.AboveOf c X) : X = Up := by
   obtain ⟨a, b, hab, hcab, -, hopen, -, -⟩ := hM.ends c (hF hc)
   have hzc : lerp a b (1 / 2) ∈ c := by
-    rw [hcab]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-  have hzD := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
+    rw [hcab]; exact lerp_mem_segment _ _ by_n by_n
+  have hzD := hopen (1 / 2) ⟨by_n, by_n⟩
   obtain ⟨δ, h1, h2⟩ := ((hA _ hzc hzD).and (hside _ hzc hzD)).exists
   rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hUp with h | h
   · exact h
@@ -148,8 +148,8 @@ theorem eq_dn_of_below (hM : WalkAx M) (hF : F ⊆ M.Adm) (_hfin : F.Finite)
     (hX : X ∈ M.regions F) (hB : M.BelowOf c X) : X = Dn := by
   obtain ⟨a, b, hab, hcab, -, hopen, -, -⟩ := hM.ends c (hF hc)
   have hzc : lerp a b (1 / 2) ∈ c := by
-    rw [hcab]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-  have hzD := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
+    rw [hcab]; exact lerp_mem_segment _ _ by_n by_n
+  have hzD := hopen (1 / 2) ⟨by_n, by_n⟩
   obtain ⟨δ, h1, h2⟩ := ((hB _ hzc hzD).and (hside _ hzc hzD)).exists
   rcases Chazelle.Chain.regionsIn_eq_or_disjoint hX hDn with h | h
   · exact h
@@ -161,9 +161,9 @@ theorem eventually_before_vertex {n p : ℕ} (hp : p < n) {l : ℝ} (hl0 : 0 ≤
     (hln : l < n) (hlp : l ≠ p) :
     ∀ᶠ t' in 𝓝[<] (1 : ℝ), sideInArc l p (((p + n - 1) % n : ℕ) + t') := by
   rcases Nat.eq_zero_or_pos p with rfl | hp0
-  · have e : (0 + n - 1) % n = n - 1 := by rw [zero_add, Nat.mod_eq_of_lt (by omega)]
+  · have e : (0 + n - 1) % n = n - 1 := by rw [zero_add, Nat.mod_eq_of_lt by_o]
     rw [e]
-    have hn1 : ((n - 1 : ℕ) : ℝ) = n - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hn1 : ((n - 1 : ℕ) : ℝ) = n - 1 := by rw [Nat.cast_sub by_o]; simp
     filter_upwards [Ioo_mem_nhdsLT (show l - (n - 1) < (1 : ℝ) by linarith)] with t ht
     unfold sideInArc
     rw [hn1]
@@ -171,16 +171,16 @@ theorem eventually_before_vertex {n p : ℕ} (hp : p < n) {l : ℝ} (hl0 : 0 ≤
     · simp at h; linarith
     · left; linarith [ht.1]
   · have e : (p + n - 1) % n = p - 1 := by
-      rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     rw [e]
-    have hp1 : ((p - 1 : ℕ) : ℝ) = p - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hp1 : ((p - 1 : ℕ) : ℝ) = p - 1 := by rw [Nat.cast_sub by_o]; simp
     rw [hp1]
     unfold sideInArc
     split_ifs with h
     · filter_upwards [Ioo_mem_nhdsLT (show l - (p - 1) < (1 : ℝ) by linarith),
         self_mem_nhdsWithin] with t ht ht1
       have : t < 1 := ht1
-      exact ⟨by linarith [ht.1], by linarith⟩
+      exact ⟨by linarith [ht.1], by_l⟩
     · filter_upwards [self_mem_nhdsWithin] with t ht
       have : t < 1 := ht
       right; linarith
@@ -222,7 +222,7 @@ theorem gap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonemp
       exact absurd ⟨c₁, hc₁, p₀, t₀, hA₁, rfl⟩ (harc.2.2.2.2.2.1 _ hkin)
   obtain ⟨c₀, hc₀, ht₀, p₁, t₁, hA₀, ha₀⟩ := haex
   obtain ⟨rfl, rfl⟩ := key_inj hA₁.2.1 hA₁.2.2.1 hA₀.2.1 hA₀.2.2.1 ha₀
-  have hUne : U.Nonempty := Chazelle.Chain.regionsIn_nonempty hU
+  have hUne := Chazelle.Chain.regionsIn_nonempty hU
   -- the finishing argument, for a suitable exit chord `c` at `a`
   have finish : ∀ c ∈ F, TouchesIn M.D c U → SideAttach M.W c p₀ t₀ →
       (∀ k₁ k₂ : Point, X ⊆ connectedComponentIn (M.D \ c) k₁ →
@@ -237,17 +237,17 @@ theorem gap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonemp
     obtain ⟨K₁, K₂, hK12, ⟨k₁, rfl⟩, ⟨k₂, rfl⟩, hK₁, hK₂⟩ := hM.split (hF hc) hA hB hAB
     have hfa : (pb : ℝ) + tb ≠ p₀ + t₀ := fun h => WalkAx.key_ne_of_pt_ne hA hB hAB h.symm
     have hfcut : M.IsCut F ((pb : ℝ) + tb) := ⟨c, hc, pb, tb, hB, rfl⟩
-    have hXs : X ⊆ connectedComponentIn (M.D \ c) k₁ :=
+    have hXs :=
       arc_in_side hM hne hX harcX hc (fun x hx =>
         cyc_sub_start hx (fun h => harcX.2.2.2.2.2.1 _ h hfcut) hfa) hK₁
-    have hYs : Y ⊆ connectedComponentIn (M.D \ c) k₂ :=
+    have hYs :=
       arc_in_side hM hne hY harcY hc (fun x hx =>
         cyc_sub hx (fun h => harcY.2.2.2.2.2.1 _ h hfcut) hfa) hK₂
     have hnot := hoff k₁ k₂ hXs hYs hK12
     have hfh : (pb : ℝ) + tb ∈ hostKeys M F U := Or.inl ⟨c, hc, htc, pb, tb, hB, rfl⟩
     have hnone : ∀ x ∈ hostKeys M F U, ¬ sideInArc ((p₀ : ℝ) + t₀) (pb + tb) x :=
       fun x hx hin => hnot (host_side hM hF hfin hU hc hA hB hAB hK₁ hx hin)
-    have hbf : b = pb + tb := cyc_first hab (Ne.symm hfa) (hnone b hb) (hgap _ hfh)
+    have hbf := cyc_first hab (Ne.symm hfa) (hnone b hb) (hgap _ hfh)
     exact ⟨c, hc, p₀, pb, t₀, tb, hA, hB, rfl, hbf, hAB⟩
   -- components met by a nonempty region are equal
   have hcomp : ∀ (c : Set Point) (k₁ k₂ : Point), U ⊆ connectedComponentIn (M.D \ c) k₁ →
@@ -277,15 +277,15 @@ theorem gap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonemp
     intro ce cw hce hcw hAe hAw hE hW hc0
     obtain ⟨ht0, hhor, -⟩ := hM.tie_shape hF hce hcw hAe hAw hE hW
     subst ht0
-    have hp₀ : p₀ < M.W.n := hAe.1
-    have hl0 : 0 ≤ l := harcY.1
-    have hln : l < M.W.n := harcY.2.1
-    have hlp : l ≠ (p₀ : ℝ) + 0 := (WalkAx.arc_cuts hne harcY).2.2
+    have hp₀ := hAe.1
+    have hl0 := harcY.1
+    have hln := harcY.2.1
+    have hlp := (WalkAx.arc_cuts hne harcY).2.2
     -- the region faced just after `a` is `X`, just before is `Y`
     have hafter : ∀ Z ∈ M.regions F, (∃ δ > (0 : ℝ), ∀ t', 0 < t' → t' < δ → M.Faces p₀ t' Z) →
         Z = X := by
       rintro Z hZ ⟨δ, hδ, hf⟩
-      have hra : (p₀ : ℝ) + 0 ≠ r := (WalkAx.arc_cuts hne harcX).2.2
+      have hra := (WalkAx.arc_cuts hne harcX).2.2
       obtain ⟨ε, ⟨hε0, hε1⟩, hin⟩ := ((ev_Ioo (lt_min hδ one_pos)).and
         (WalkAx.eventually_after_start hra)).exists
       have hin' : sideInArc ((p₀ : ℝ) + 0) r (p₀ + ε) := by simpa using hin
@@ -298,7 +298,7 @@ theorem gap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonemp
       obtain ⟨t', ⟨ht'1, ht'2⟩, ht'3, hin⟩ := ((ev_Ioo_lt (show 1 - min δ 1 < (1 : ℝ) by
         linarith [lt_min hδ one_pos])).and ((ev_Ioo_lt (show (0 : ℝ) < 1 by norm_num)).and
         (eventually_before_vertex hp₀ hl0 hln hlp'))).exists
-      have hq : (p₀ + M.W.n - 1) % M.W.n < M.W.n := Nat.mod_lt _ (by omega)
+      have hq : (p₀ + M.W.n - 1) % M.W.n < M.W.n := Nat.mod_lt _ by_o
       have hin' : sideInArc l ((p₀ : ℝ) + 0) (((p₀ + M.W.n - 1) % M.W.n : ℕ) + t') := by
         rwa [add_zero]
       exact WalkAx.faces_unique hZ hY
@@ -324,8 +324,8 @@ theorem gap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonemp
         · rcases (htouchw U hU).1 ht₀ with h | h
           · exact h.trans e4.symm
           · exact absurd (h.trans e3.symm) hUY
-      have htU : TouchesIn M.D ce U := (htouche U hU).2 (Or.inl (hUR.trans e2))
-      have htX : TouchesIn M.D ce Ua := (htouche Ua hUa).2 (Or.inr e1)
+      have htU := (htouche U hU).2 (Or.inl (hUR.trans e2))
+      have htX := (htouche Ua hUa).2 (Or.inr e1)
       exact finish ce hce htU hAe fun k₁ k₂ hXs _ _ hU₁ =>
         touch_sep hM hF hfin hce hUa hU hXU htX htU hXs hU₁
     · obtain ⟨-, Ua, Vb, R, hUa, hVb, hR, hAw', hAe', hBe, hBw, hfa, hfb, -⟩ :=
@@ -345,8 +345,8 @@ theorem gap (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonemp
         · rcases (htouchw U hU).1 ht₀ with h | h
           · exact absurd (h.trans e1.symm) (fun h' => hXU h'.symm)
           · exact h.trans e2.symm
-      have htU : TouchesIn M.D cw U := (htouchw U hU).2 (Or.inr (hUR.trans e2))
-      have htX : TouchesIn M.D cw Ua := (htouchw Ua hUa).2 (Or.inl e1)
+      have htU := (htouchw U hU).2 (Or.inr (hUR.trans e2))
+      have htX := (htouchw Ua hUa).2 (Or.inl e1)
       exact finish cw hcw htU hAw fun k₁ k₂ hXs _ _ hU₁ =>
         touch_sep hM hF hfin hcw hUa hU hXU htX htU hXs hU₁
   rcases hM.tie_pair hF hc₀ hc' (Ne.symm hc'0) hA₀ hA' with ⟨hE, hW⟩ | ⟨hW, hE⟩

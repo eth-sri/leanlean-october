@@ -136,7 +136,7 @@ theorem det_smul_add_smul_add_smul (a b p q r : Point) (u v w : ℝ) (huvw : u +
     det a b (u • p + v • q + w • r) = u * det a b p + v * det a b q + w * det a b r := by
   unfold det
   simp only [add_fst, add_snd, smul_fst, smul_snd]
-  have hw : w = 1 - u - v := by linarith
+  have hw : w = 1 - u - v := by_l
   subst hw; ring
 
 end

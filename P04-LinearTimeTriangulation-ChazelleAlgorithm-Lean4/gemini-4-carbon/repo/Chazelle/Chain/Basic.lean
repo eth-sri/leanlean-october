@@ -124,7 +124,7 @@ theorem vertex_succ_mem_chainEdge (k : ℕ) : C.vertex (k + 1) ∈ C.chainEdge k
 theorem vertex_mem_set {k : ℕ} (hk : k ≤ C.m) : C.vertex k ∈ C.set := by
   rcases Nat.lt_or_ge k C.m with h | h
   · exact ⟨k, h, C.vertex_mem_chainEdge k⟩
-  · have hkm : k = C.m := le_antisymm hk h
+  · have hkm := le_antisymm hk h
     subst hkm
     refine ⟨C.m - 1, by have := C.one_le; omega, ?_⟩
     have := C.vertex_succ_mem_chainEdge (C.m - 1)
@@ -136,7 +136,7 @@ theorem abs_le_coordBound_of_mem_set {p : Point} (hp : p ∈ C.set) :
   abs_le_coordBound_of_mem_boundary C.P (C.set_subset_boundary hp)
 
 theorem coordBound_nonneg : 0 ≤ coordBound C.P :=
-  Finset.sum_nonneg fun _ _ => by positivity
+  Finset.sum_nonneg fun _ _ => by_p
 
 /-! ### The missing edge -/
 
@@ -149,8 +149,8 @@ theorem missingIdx_lt : C.missingIdx < C.P.n := C.edgeIdx_lt _
 theorem edgeIdx_ne_missingIdx {k : ℕ} (hk : k < C.m) : C.edgeIdx k ≠ C.missingIdx := by
   intro h
   unfold missingIdx edgeIdx at h
-  have h1 : C.s + k ≡ C.s + C.m [MOD C.P.n] := h
-  have h2 : k ≡ C.m [MOD C.P.n] := Nat.ModEq.add_left_cancel' C.s h1
+  have h1 := h
+  have h2 := Nat.ModEq.add_left_cancel' C.s h1
   have := Nat.ModEq.eq_of_lt_of_lt h2 (by have := C.m_lt; omega) C.m_lt
   omega
 
@@ -166,29 +166,29 @@ noncomputable def missingMid : Point :=
   lerp (C.P.vtx C.missingIdx) (C.P.vtx ((C.missingIdx + 1) % C.P.n)) (1 / 2)
 
 theorem missingMid_mem_boundary : C.missingMid ∈ C.P.boundary :=
-  ⟨C.missingIdx, C.missingIdx_lt, Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)⟩
+  ⟨C.missingIdx, C.missingIdx_lt, Geometry.lerp_mem_segment _ _ by_n by_n⟩
 
 theorem missingMid_not_mem_set (hP : C.P.Simple) : C.missingMid ∉ C.set :=
-  C.missing_open_not_mem_set hP ⟨by norm_num, by norm_num⟩
+  C.missing_open_not_mem_set hP ⟨by_n, by_n⟩
 
 /-! ### Connectedness of the complement -/
 
 /-- **The complement of a simple open chain is connected.** -/
 theorem compl_connected (hP : C.P.Simple) : IsPreconnected C.setᶜ := by
-  set q := C.missingMid with hq
-  have hqb : q ∈ C.P.boundary := C.missingMid_mem_boundary
-  have hqC : q ∉ C.set := C.missingMid_not_mem_set hP
-  set I := C.P.filled \ C.P.boundary with hI
-  set E := C.P.filledᶜ with hE
-  have hIq : IsPreconnected (I ∪ {q}) :=
+  set q := C.missingMid
+  have hqb := C.missingMid_mem_boundary
+  have hqC := C.missingMid_not_mem_set hP
+  set I := C.P.filled \ C.P.boundary
+  set E := C.P.filledᶜ
+  have hIq :=
     (filled_sdiff_boundary_connected hP).subset_closure subset_union_left
       (union_subset subset_closure
         (singleton_subset_iff.2 (boundary_subset_closure_interior hP hqb)))
-  have hEq : IsPreconnected (E ∪ {q}) :=
+  have hEq :=
     (filled_compl_connected hP).subset_closure subset_union_left
       (union_subset subset_closure (singleton_subset_iff.2 (boundary_subset_closure_compl hP hqb)))
   have hU : IsPreconnected (I ∪ {q} ∪ (E ∪ {q})) :=
-    hIq.union q (by simp) (by simp) hEq
+    hIq.union q by_s by_s hEq
   refine hU.subset_closure ?_ ?_
   · rintro p ((hp | hp) | (hp | hp))
     · exact fun h => hp.2 (C.set_subset_boundary h)
@@ -207,7 +207,7 @@ theorem compl_connected (hP : C.P.Simple) : IsPreconnected C.setᶜ := by
 
 theorem exists_top : ∃ k, k ≤ C.m ∧ ∀ j, j ≤ C.m → (C.vertex j).2 ≤ (C.vertex k).2 := by
   obtain ⟨k, hk, hmax⟩ := Finset.exists_max_image (Finset.range (C.m + 1))
-    (fun k => (C.vertex k).2) ⟨0, by simp⟩
+    (fun k => (C.vertex k).2) ⟨0, by_s⟩
   refine ⟨k, by simpa [Nat.lt_succ_iff] using hk, fun j hj => hmax j ?_⟩
   simp [hj]
 
@@ -245,9 +245,8 @@ theorem snd_le_top_of_mem_set {p : Point} (hp : p ∈ C.set) : p.2 ≤ C.top.2 :
   obtain ⟨k, hk, hp⟩ := hp
   rw [chainEdge_eq] at hp
   obtain ⟨s, hs0, hs1, rfl⟩ := hp
-  have h1 := C.vertex_snd_le_top (j := k) (by omega)
-  have h2 := C.vertex_snd_le_top (j := k + 1) (by omega)
-  show (C.vertex k).2 + s * ((C.vertex (k + 1)).2 - (C.vertex k).2) ≤ C.top.2
+  have h1 := C.vertex_snd_le_top (j := k) by_o
+  have h2 := C.vertex_snd_le_top (j := k + 1) by_o
   nlinarith
 
 /-! ### The box -/
@@ -278,7 +277,7 @@ theorem continuous_clampR (r : ℝ) : Continuous (clampR r) :=
 theorem abs_clampR_le {r : ℝ} (hr : 0 ≤ r) (a : ℝ) : |clampR r a| ≤ r := by
   unfold clampR
   rw [abs_le]
-  exact ⟨le_max_left _ _, max_le (by linarith) (min_le_left _ _)⟩
+  exact ⟨le_max_left _ _, max_le by_l (min_le_left _ _)⟩
 
 theorem clampR_eq_self {r a : ℝ} (h : |a| ≤ r) : clampR r a = a := by
   unfold clampR
@@ -288,8 +287,8 @@ theorem clampR_eq_self {r a : ℝ} (h : |a| ≤ r) : clampR r a = a := by
 theorem abs_clampR_eq {r a : ℝ} (hr : 0 ≤ r) (h : r < |a|) : |clampR r a| = r := by
   unfold clampR
   rcases lt_abs.1 h with h | h
-  · rw [min_eq_left h.le, max_eq_right (by linarith), abs_of_nonneg hr]
-  · rw [min_eq_right (by linarith), max_eq_left (by linarith), abs_neg, abs_of_nonneg hr]
+  · rw [min_eq_left h.le, max_eq_right by_l, abs_of_nonneg hr]
+  · rw [min_eq_right by_l, max_eq_left by_l, abs_neg, abs_of_nonneg hr]
 
 /-- Clamp a point into the closed square of half-side `r`. -/
 def clampPt (r : ℝ) (p : Point) : Point := (clampR r p.1, clampR r p.2)
@@ -307,13 +306,13 @@ bound: clamping maps the connected set `C.setᶜ` into `box r \ C.set`. -/
 theorem box_sdiff_set_connected (hP : C.P.Simple) {r : ℝ} (hr : coordBound C.P < r) :
     IsPreconnected (box r \ C.set) := by
   refine isPreconnected_of_forall_pair fun x hx y hy => ?_
-  set B := coordBound C.P with hB
+  set B := coordBound C.P
   set r' := (max (max |x.1| |x.2|) (max (max |y.1| |y.2|) B) + r) / 2 with hr'
-  have hx1 : |x.1| < r := hx.1.1
-  have hx2 : |x.2| < r := hx.1.2
-  have hy1 : |y.1| < r := hy.1.1
-  have hy2 : |y.2| < r := hy.1.2
-  have hmax : max (max |x.1| |x.2|) (max (max |y.1| |y.2|) B) < r :=
+  have hx1 := hx.1.1
+  have hx2 := hx.1.2
+  have hy1 := hy.1.1
+  have hy2 := hy.1.2
+  have hmax :=
     max_lt (max_lt hx1 hx2) (max_lt (max_lt hy1 hy2) hr)
   have hr'r : r' < r := by rw [hr']; linarith
   have hBr' : B < r' := by
@@ -334,7 +333,7 @@ theorem box_sdiff_set_connected (hP : C.P.Simple) {r : ℝ} (hr : coordBound C.P
     rw [hr']
     linarith [((le_max_right |y.1| |y.2|).trans (le_max_left (max |y.1| |y.2|) B)).trans
       (le_max_right (max |x.1| |x.2|) (max (max |y.1| |y.2|) B))]
-  have hr'0 : 0 ≤ r' := (C.coordBound_nonneg.trans hBr'.le)
+  have hr'0 := (C.coordBound_nonneg.trans hBr'.le)
   refine ⟨clampPt r' '' C.setᶜ, ?_, ?_, ?_,
     (C.compl_connected hP).image _ (continuous_clampPt r').continuousOn⟩
   · rintro _ ⟨p, hp, rfl⟩
@@ -438,8 +437,8 @@ theorem dom_nonempty : C.dom.Nonempty := by
   have hBr := C.coordBound_lt_radius
   have htop := (abs_le.1 (C.abs_le_coordBound_of_mem_set C.top_mem_set).1).2
   refine C.mem_dom_of_high ⟨?_, ?_⟩ (by simp only; linarith) (by simp only; linarith)
-  · simp only; rw [abs_of_nonneg (by linarith)]; linarith
-  · simp only; rw [abs_of_nonneg (by linarith)]; linarith
+  · simp only; rw [abs_of_nonneg by_l]; linarith
+  · simp only; rw [abs_of_nonneg by_l]; linarith
 
 /-! ### Corridors of the box around the chain -/
 
@@ -579,7 +578,7 @@ theorem slit_mem_closure_upperL {p : Point} (hp : p ∈ box C.radius) (hp1 : p.1
   have hcont : Continuous fun δ : ℝ => ((p.1 - δ, p.2) : Point) := by fun_prop
   have htend : Tendsto (fun δ : ℝ => ((p.1 - δ, p.2) : Point)) (𝓝[>] 0) (𝓝 p) := by
     have := hcont.tendsto 0
-    simp only [sub_zero] at this
+    simp at this
     exact this.mono_left nhdsWithin_le_nhds
   refine mem_closure_of_tendsto htend ?_
   have hε : 0 < C.radius - |p.1| := by linarith [hp.1]
@@ -663,7 +662,7 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
       exact this
     · -- `p` is in the upper corridor and off the slit: in one of the two halves
       have hslit := C.not_mem_slit_of_mem_dom hpD
-      have hy : C.top.2 < p.2 := hpu.2
+      have hy := hpu.2
       have hx : p.1 ≠ C.top.1 := by
         intro hx
         exact hslit (C.mem_slit_iff.2 ⟨hx, hy.le, (abs_le.1 hpu.1.2.le).2⟩)
@@ -696,16 +695,16 @@ theorem dom_connected_aux (hP : C.P.Simple) {u v : Set Point} (hu : IsOpen u) (h
 theorem dom_connected (hP : C.P.Simple) : IsPreconnected C.dom := by
   intro u v hu hv hcov hneu hnev
   by_contra hempty'
-  have hempty : C.dom ∩ (u ∩ v) = ∅ := not_nonempty_iff_eq_empty.1 hempty'
+  have hempty := not_nonempty_iff_eq_empty.1 hempty'
   -- the chain of corridors lies on one side
   have hchain : ∀ w w' : Set Point, IsOpen w → IsOpen w' → C.dom ⊆ w ∪ w' →
       C.dom ∩ (w ∩ w') = ∅ → C.upperL ⊆ w → C.upperR ⊆ w := by
     intro w w' hw hw' hcov' hempty' hL
-    have h1 : C.corrL ⊆ w := convex_same_side hw hw' C.convex_corrL C.corrL_subset_dom hcov'
+    have h1 := convex_same_side hw hw' C.convex_corrL C.corrL_subset_dom hcov'
       hempty' C.upperL_inter_corrL hL C.upperL_subset_dom
-    have h2 : C.corrB ⊆ w := convex_same_side hw hw' C.convex_corrB C.corrB_subset_dom hcov'
+    have h2 := convex_same_side hw hw' C.convex_corrB C.corrB_subset_dom hcov'
       hempty' C.corrL_inter_corrB h1 C.corrL_subset_dom
-    have h3 : C.corrR ⊆ w := convex_same_side hw hw' C.convex_corrR C.corrR_subset_dom hcov'
+    have h3 := convex_same_side hw hw' C.convex_corrR C.corrR_subset_dom hcov'
       hempty' C.corrB_inter_corrR h2 C.corrB_subset_dom
     exact convex_same_side hw hw' C.convex_upperR C.upperR_subset_dom hcov' hempty'
       C.corrR_inter_upperR h3 C.corrR_subset_dom

@@ -44,13 +44,13 @@ theorem chain_n : (chainModel C).W.n = 2 * C.m + 7 := Chain.sideWalk_n _ _
 
 theorem Shift.next_chain (_H : Shift Q C c₀) {j : ℕ} (hj : j < C.m) (h6 : c₀ + C.m ≤ 2 * C.m + 6) :
     (j + c₀ + 1) % (C.sideWalk C.sideBeta).n = (j + 1) + c₀ := by
-  rw [Chain.sideWalk_n, Nat.mod_eq_of_lt (by omega)]; ring
+  rw [Chain.sideWalk_n, Nat.mod_eq_of_lt by_o]; ring
 
 theorem Shift.prev_chain (_H : Shift Q C c₀) {j : ℕ} (hj0 : 1 ≤ j) (hj : j ≤ C.m) :
     (j + c₀ + (C.sideWalk C.sideBeta).n - 1) % (C.sideWalk C.sideBeta).n = (j - 1) + c₀ := by
   have := _H.le
   rw [Chain.sideWalk_n, show j + c₀ + (2 * C.m + 7) - 1 = (j - 1 + c₀) + (2 * C.m + 7) by omega,
-    Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+    Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
 
 theorem next_W (T : Top Q C) {j : ℕ} (hj : j < C.m) :
     (j + 1) % (interiorWalk Q).n = j + 1 := by
@@ -60,7 +60,7 @@ theorem prev_W (T : Top Q C) {j : ℕ} (hj0 : 1 ≤ j) (hj : j ≤ C.m) :
     (j + (interiorWalk Q).n - 1) % (interiorWalk Q).n = j - 1 := by
   have := T.hm
   rw [iw_n, show j + Q.n - 1 = (j - 1) + Q.n by omega, Nat.add_mod_right,
-    Nat.mod_eq_of_lt (by omega)]
+    Nat.mod_eq_of_lt by_o]
 
 /-- **The points agree.** -/
 theorem Shift.pt_eq (H : Shift Q C c₀) (T : Top Q C) {j : ℕ} (hj : j < C.m) (s : ℝ) :
@@ -86,7 +86,7 @@ theorem Shift.sec_eq (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) {j : ℕ
     have hj1 := hsj rfl
     rw [Chazelle.Chain.sideLeft_zero, Chazelle.Chain.sideLeft_zero, H.prev_chain hj1 hj.le,
       H.next_chain hj H.le, prev_W T hj1 hj.le, next_W T hj, H.vtx j hj.le, H.vtx (j + 1) hj,
-      H.vtx (j - 1) (by omega)]
+      H.vtx (j - 1) by_o]
 
 /-- **The piece of an attached chord is attached.** -/
 theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
@@ -105,8 +105,8 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
     intro x hx hne hd
     by_contra hxD
     have hl := hnear x hx hne (lt_of_lt_of_le hd (min_le_left _ _))
-    exact hclean x (lt_of_lt_of_le hd (min_le_right _ _)) (by rw [hWb, hWf]; exact hxD) hl
-  have hrr : 0 < min r r' := lt_min hr hr'
+    exact hclean x (lt_of_lt_of_le hd (min_le_right _ _)) (by rwa [hWb, hWf]) hl
+  have hrr := lt_min hr hr'
   obtain ⟨hPy, hPa, hPb⟩ := hmem
   have hPab : P.1 = a ∨ P.1 = b := by
     by_contra h; push Not at h
@@ -125,34 +125,34 @@ theorem piece_of_attach (hQ : Q.Simple) (T : Top Q C) {F₀ : Set (Set Point)}
   have hPne : ∀ t : ℝ, t ≠ P.1 → ((t, y) : Point) ≠ P := fun t ht e => ht (by rw [← e])
   rcases hPab with hPa' | hPb'
   · -- `P` is the left end
-    have hz := hin (a + δ, y) ⟨rfl, by linarith, by linarith⟩ (hPne _ (by linarith))
-      (by rw [hdist, hPa', show a + δ - a = δ by ring, abs_of_pos hδ0]; exact hδ1)
-    obtain ⟨a', b', ha', ha'x, hxb', hb', hch'⟩ := sub_chord ⟨by linarith, by linarith⟩
+    have hz := hin (a + δ, y) ⟨rfl, by_l, by_l⟩ (hPne _ by_l)
+      (by rwa [hdist, hPa', show a + δ - a = δ by ring, abs_of_pos hδ0])
+    obtain ⟨a', b', ha', ha'x, hxb', hb', hch'⟩ := sub_chord ⟨by_l, by_l⟩
       (fun h => hch.left_not (hdom h)) (fun h => hch.right_not (hdom h)) hz hQ
     have ha'a : a' = a := by
       by_contra hne
-      have hlt : a < a' := lt_of_le_of_ne ha' (Ne.symm hne)
-      exact hch'.left_not (hin (a', y) ⟨rfl, ha', by linarith⟩ (hPne _ (by linarith))
-        (by rw [hdist, hPa', abs_of_pos (by linarith)]; linarith))
+      have hlt := lt_of_le_of_ne ha' (Ne.symm hne)
+      exact hch'.left_not (hin (a', y) ⟨rfl, ha', by_l⟩ (hPne _ by_l)
+        (by rw [hdist, hPa', abs_of_pos by_l]; linarith))
     subst ha'a
     refine ⟨hseg y a' b', ⟨⟨y, a', b', hch', rfl⟩, hseg y a' b, hc, fun q hq =>
       ⟨hq.1, hq.2.1, by linarith [hq.2.2]⟩⟩,
-      hp, hs0, hs1, ⟨hPy, by linarith, by linarith⟩, r, hr, fun x hx hne hd =>
+      hp, hs0, hs1, ⟨hPy, by_l, by_l⟩, r, hr, fun x hx hne hd =>
       hnear x ⟨hx.1, hx.2.1, by linarith [hx.2.2]⟩ hne hd⟩
   · -- `P` is the right end
-    have hz := hin (b - δ, y) ⟨rfl, by linarith, by linarith⟩ (hPne _ (by linarith))
-      (by rw [hdist, hPb', show b - δ - b = -δ by ring, abs_neg, abs_of_pos hδ0]; exact hδ1)
-    obtain ⟨a', b', ha', ha'x, hxb', hb', hch'⟩ := sub_chord ⟨by linarith, by linarith⟩
+    have hz := hin (b - δ, y) ⟨rfl, by_l, by_l⟩ (hPne _ by_l)
+      (by rwa [hdist, hPb', show b - δ - b = -δ by ring, abs_neg, abs_of_pos hδ0])
+    obtain ⟨a', b', ha', ha'x, hxb', hb', hch'⟩ := sub_chord ⟨by_l, by_l⟩
       (fun h => hch.left_not (hdom h)) (fun h => hch.right_not (hdom h)) hz hQ
     have hb'b : b' = b := by
       by_contra hne
-      have hlt : b' < b := lt_of_le_of_ne hb' hne
-      exact hch'.right_not (hin (b', y) ⟨rfl, by linarith, hb'⟩ (hPne _ (by linarith))
-        (by rw [hdist, hPb', abs_of_neg (by linarith)]; linarith))
+      have hlt := lt_of_le_of_ne hb' hne
+      exact hch'.right_not (hin (b', y) ⟨rfl, by_l, hb'⟩ (hPne _ by_l)
+        (by rw [hdist, hPb', abs_of_neg by_l]; linarith))
     subst hb'b
     refine ⟨hseg y a' b', ⟨⟨y, a', b', hch', rfl⟩, hseg y a b', hc, fun q hq =>
       ⟨hq.1, by linarith [hq.2.1], hq.2.2⟩⟩,
-      hp, hs0, hs1, ⟨hPy, by linarith, by linarith⟩, r, hr, fun x hx hne hd =>
+      hp, hs0, hs1, ⟨hPy, by_l, by_l⟩, r, hr, fun x hx hne hd =>
       hnear x ⟨hx.1, by linarith [hx.2.1], hx.2.2⟩ hne hd⟩
 
 theorem wrapK_self {n x : ℝ} (hx : x < n) : wrapK n x = x := by unfold wrapK; rw [ite_eq_left hx]
@@ -162,8 +162,8 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     {F₀ : Set (Set Point)} (hF₀ : F₀ ⊆ (chainModel C).Adm) {U V : Set Point} (hVU : V ⊆ U) :
     ArcT.ArcCorr (chainModel C) (interiorModel Q) F₀ (pieces Q F₀) U V 0 C.m
       (fun x => x + c₀) := by
-  have hM₁ : WalkAx (chainModel C) := walkAx_chainModel hP
-  have hmn : C.m + 1 = Q.n := T.hm
+  have hM₁ := walkAx_chainModel hP
+  have hmn := T.hm
   have hWn : (interiorModel Q).W.n = Q.n := iw_n
   have hle := H.le
   have hsix := H.six
@@ -179,16 +179,16 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     · rw [hfl]; push_cast; ring
   refine ⟨le_rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [hWn]; exact_mod_cast T.n_pos
-  · rw [hWn, zero_add]; exact_mod_cast (show C.m ≤ Q.n by omega)
+  · rw [hWn, zero_add]; exact_mod_cast (by omega)
   · intro x _ y _ hxy; simp only; linarith
   · intro x hx
     refine ⟨add_nonneg hx.1 (Nat.cast_nonneg _), ?_⟩
     rw [chain_n]
     have : (x : ℝ) + c₀ ≤ C.m + c₀ := by linarith [hx.2]
-    have h2 : ((C.m + c₀ : ℕ) : ℝ) < ((2 * C.m + 7 : ℕ) : ℝ) := by exact_mod_cast (by omega)
+    have h2 : ((C.m + c₀ : ℕ) : ℝ) < ((2 * C.m + 7 : ℕ) : ℝ) := by exact_mod_cast by_o
     push_cast at h2 ⊢; linarith
   · intro y h1 h2
-    refine ⟨y - c₀, ⟨by simp only [zero_add] at h1; linarith, by linarith⟩, by ring⟩
+    refine ⟨y - c₀, ⟨by simp only [zero_add] at h1; linarith, by_l⟩, by_r⟩
   · intro x hx hv k hk
     have hkc : c₀ ≤ k := by
       have : (c₀ : ℝ) < k := by rw [← hk]; linarith [hx.1]
@@ -209,10 +209,10 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     have hsj : s = 0 → 1 ≤ j := by
       intro h0
       by_contra hj0; push Not at hj0
-      have : j = 0 := by omega
+      have : j = 0 := by_o
       have hx0 : x = 0 := by rw [hs, this] at h0; simpa using h0
       exact lt_irrefl _ (hx0 ▸ hx.1)
-    have hA₂ : SideAttach (interiorWalk Q) c j s :=
+    have hA₂ :=
       ExtG.attach_of_sector (H.pt_eq T hjm s).symm
         (fun y hy => (H.sec_eq T hQ hjm ht0 ht1 hsj y).1 hy)
         (by rw [iw_n]; omega) ht0 ht1 hA₁
@@ -222,7 +222,7 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     obtain ⟨d, hd, hAd⟩ := piece_of_attach hQ T hF₀ hc hA₂ hPd
     have hxn : x < ((interiorModel Q).W.n : ℝ) := by
       rw [hWn]
-      have : ((C.m : ℕ) : ℝ) < ((Q.n : ℕ) : ℝ) := by exact_mod_cast (by omega)
+      have : ((C.m : ℕ) : ℝ) < ((Q.n : ℕ) : ℝ) := by exact_mod_cast by_o
       linarith [hx.2]
     refine ⟨d, hd, j, s, hAd, ?_⟩
     rw [wrapK_self hxn, hs]; ring
@@ -231,7 +231,7 @@ theorem transCorr (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.S
     obtain ⟨hjm, ht0, ht1, hfl, hfr⟩ := hpos x hx
     have hxn : x < ((interiorModel Q).W.n : ℝ) := by
       rw [hWn]
-      have : ((C.m : ℕ) : ℝ) < ((Q.n : ℕ) : ℝ) := by exact_mod_cast (by omega)
+      have : ((C.m : ℕ) : ℝ) < ((Q.n : ℕ) : ℝ) := by exact_mod_cast by_o
       linarith [hx.2]
     rw [wrapK_self hxn] at hfa
     rw [hfr, hfl]
@@ -257,7 +257,7 @@ theorem piece_wt (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : C.P.Si
     (hm : b' ≤ C.m) (hsub : ∀ x, a' < x → x < b' → sideInArc a b x) :
     (interiorModel Q).arcWt a' b' ≤ (chainModel C).weight F₀ U := by
   have hWn : (interiorModel Q).W.n = Q.n := iw_n
-  have hmn : (C.m : ℝ) < Q.n := by exact_mod_cast (show C.m < Q.n by have := T.hm; omega)
+  have hmn : (C.m : ℝ) < Q.n := by exact_mod_cast (by have := T.hm; omega)
   have hplain : ∀ x, sideInArc a' b' x ↔ a' < x ∧ x < b' := fun x => by
     unfold sideInArc; rw [ite_eq_left hab']
   refine ArcT.arcWt_le (walkAx_chainModel hP) hF₀ hfin hU (transCorr H T hQ hP hF₀ hVU)
@@ -300,8 +300,8 @@ theorem arcWt_le_trans (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : 
     (harc : (interiorModel Q).IsArc (pieces Q F₀) V a b) :
     (interiorModel Q).arcWt a b ≤ 2 * (chainModel C).weight F₀ U + 1 := by
   set w := (chainModel C).weight F₀ U
-  have ha0 : 0 ≤ a := harc.1
-  have hb0 : 0 ≤ b := harc.2.2.1
+  have ha0 := harc.1
+  have hb0 := harc.2.2.1
   have hm0 : (0 : ℝ) ≤ C.m := Nat.cast_nonneg _
   have hlast := arcWt_last T
   have pw := fun {a' b' : ℝ} (h0 : 0 ≤ a') (hab' : a' < b') (hm : b' ≤ C.m)
@@ -315,7 +315,7 @@ theorem arcWt_le_trans (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : 
       unfold sideInArc; rw [ite_eq_left hab]
     by_cases ham : a < C.m
     · -- the piece `(a, min b m)` and the last edge
-      have hbm : a < min b C.m := lt_min hab ham
+      have hbm := lt_min hab ham
       have h1 := pw ha0 hbm (min_le_right _ _) (fun x h1 h2 =>
         (hin x).2 ⟨h1, lt_of_lt_of_le h2 (min_le_left _ _)⟩)
       have hadd := BoxT.arcWt_le_add (M := interiorModel Q) (a := a) (b := b) (a₁ := a)
@@ -332,8 +332,8 @@ theorem arcWt_le_trans (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : 
             · exact hlastI _ h
             · exfalso
               -- a vertex key is not of the form `p + t` with `0 < t < 1`
-              have e : (p : ℝ) < C.m := by linarith
-              have e' : (C.m : ℝ) < p + 1 := by linarith
+              have e : (p : ℝ) < C.m := by_l
+              have e' : (C.m : ℝ) < p + 1 := by_l
               have e1 : p < C.m := by exact_mod_cast e
               have e2 : C.m < p + 1 := by exact_mod_cast e'
               omega)
@@ -366,17 +366,17 @@ theorem arcWt_le_trans (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : 
             · right
               have hp0 : (0 : ℝ) ≤ p := Nat.cast_nonneg p
               unfold sideInArc; rw [ite_eq_left hpos]
-              exact ⟨by linarith, hx⟩)
+              exact ⟨by_l, hx⟩)
         omega
-      · rw [← hzero]; exact le_trans hlast (by omega)
+      · rw [← hzero]; exact le_trans hlast by_o
     by_cases ham : a < C.m
     · have h1 := pw ha0 ham le_rfl (fun x h1 _ => (hin x).2 (Or.inl h1))
       have hadd := BoxT.arcWt_le_add (M := interiorModel Q) (a := a) (b := b) (a₁ := a)
         (b₁ := C.m) (a₂ := C.m) (b₂ := b') (fun p _ t ht0 ht1 hx => by
           rw [hin] at hx
           have hne : (p : ℝ) + t ≠ C.m := fun h => by
-            have e : (p : ℝ) < C.m := by linarith
-            have e' : (C.m : ℝ) < p + 1 := by linarith
+            have e : (p : ℝ) < C.m := by_l
+            have e' : (C.m : ℝ) < p + 1 := by_l
             have e1 : p < C.m := by exact_mod_cast e
             have e2 : C.m < p + 1 := by exact_mod_cast e'
             omega
@@ -395,8 +395,8 @@ theorem arcWt_le_trans (H : Shift Q C c₀) (T : Top Q C) (hQ : Q.Simple) (hP : 
           rcases hx with hx | hx
           · exact (hK _).2 (Or.inl (lt_of_le_of_lt ham hx))
           · have hne : (p : ℝ) + t ≠ C.m := fun h => by
-              have e : (p : ℝ) < C.m := by linarith
-              have e' : (C.m : ℝ) < p + 1 := by linarith
+              have e : (p : ℝ) < C.m := by_l
+              have e' : (C.m : ℝ) < p + 1 := by_l
               have e1 : p < C.m := by exact_mod_cast e
               have e2 : C.m < p + 1 := by exact_mod_cast e'
               omega

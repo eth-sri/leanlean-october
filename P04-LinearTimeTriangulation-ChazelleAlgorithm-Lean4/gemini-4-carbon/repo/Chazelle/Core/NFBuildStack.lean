@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Short
+
 public import Mathlib.Data.List.Basic
 public import Mathlib.Data.List.Count
 public import Mathlib.Data.List.Infix
@@ -65,7 +67,7 @@ theorem mem_openList {u : List ℕ} {x : ℕ} : x ∈ openList u ↔ u.count x =
   constructor
   · exact fun h => h.2
   · intro h
-    exact ⟨count_pos_iff.1 (by omega), h⟩
+    exact ⟨count_pos_iff.1 by_o, h⟩
 
 /-- **An opening event pushes.** -/
 theorem openList_snoc_open {u : List ℕ} {x : ℕ} (hx : u.count x = 0) :
@@ -79,14 +81,14 @@ theorem openList_snoc_open {u : List ℕ} {x : ℕ} (hx : u.count x = 0) :
   have hyx : y ≠ x := by
     rintro rfl
     rw [mem_reverse] at hy
-    exact absurd (count_pos_iff.2 hy) (by omega)
+    exact absurd (count_pos_iff.2 hy) by_o
   simp [count_append, Ne.symm hyx]
 
 /-- **A closing event pops**: if `x` occurs once in `u` and is the latest open chord, reading it
 again removes it. -/
 theorem openList_snoc_close {u : List ℕ} {x : ℕ} {rest : List ℕ} (hx : u.count x = 1)
     (hlist : openList u = x :: rest) : openList (u ++ [x]) = rest := by
-  have hxu : x ∈ u.reverse := by rw [mem_reverse]; exact count_pos_iff.1 (by omega)
+  have hxu : x ∈ u.reverse := by rw [mem_reverse]; exact count_pos_iff.1 by_o
   obtain ⟨a, b, hab⟩ := List.append_of_mem hxu
   have hcnt : u.reverse.count x = 1 := by rw [count_reverse]; exact hx
   rw [hab, count_append, count_cons_self] at hcnt
@@ -120,7 +122,7 @@ theorem openList_snoc_close {u : List ℕ} {x : ℕ} {rest : List ℕ} (hx : u.c
 word, it is that chord. -/
 theorem head_openList {w u v : List ℕ} (htw : Twice w) (hnc : NoCross w) {x : ℕ}
     (hw : w = u ++ [x] ++ v) (hx : u.count x = 1) : ∃ rest, openList u = x :: rest := by
-  have hxo : x ∈ openList u := mem_openList.2 hx
+  have hxo := mem_openList.2 hx
   rcases hlist : openList u with _ | ⟨y, rest⟩
   · rw [hlist] at hxo; exact absurd hxo not_mem_nil
   · refine ⟨rest, ?_⟩
@@ -141,8 +143,8 @@ theorem head_openList {w u v : List ℕ} (htw : Twice w) (hnc : NoCross w) {x : 
     have hyv : y ∈ v := by
       rw [hw, count_append, count_append,
         count_eq_zero_of_not_mem (by simp [hyx] : y ∉ [x])] at hyw
-      exact count_pos_iff.1 (by omega)
-    have h2 : [x, y] <+ [x] ++ v := (singleton_sublist.2 hyv).cons_cons x
+      exact count_pos_iff.1 by_o
+    have h2 := (singleton_sublist.2 hyv).cons_cons x
     exact hnc x y (Ne.symm hyx) (by rw [hw, append_assoc]; exact h1'.append h2)
 
 /-- **The stack is the list of open chords** on every prefix of a parenthesis word. -/
@@ -222,7 +224,7 @@ theorem label_ne_aux {w : List ℕ} (htw : Twice w) (hnc : NoCross w) {m m' : �
     (hj : (w.take m).count j = 1) (hj' : (w.take m').count j ≠ 1) :
     (openList (w.take m)).head? ≠ (openList (w.take m')).head? := by
   intro heq
-  have hjo : j ∈ openList (w.take m) := mem_openList.2 hj
+  have hjo := mem_openList.2 hj
   rcases hl : openList (w.take m) with _ | ⟨i, rest⟩
   · rw [hl] at hjo; exact not_mem_nil hjo
   rw [hl] at heq
@@ -260,13 +262,13 @@ theorem label_ne_aux {w : List ℕ} (htw : Twice w) (hnc : NoCross w) {m m' : �
     have hiz : z.count i = 0 := by rw [hz, count_append, hi1] at hi'; omega
     have hjz : j ∈ z := by
       rw [hz, count_append, hj] at hj'
-      exact count_pos_iff.1 (by omega)
+      exact count_pos_iff.1 by_o
     have hiw : w.count i = 2 := htw i (mem_of_mem_take (count_pos_iff.1 (by omega : 0 < (w.take m).count i)))
     have hw : w = w.take m ++ z ++ w.drop m' := by rw [← hz, take_append_drop]
     have hiy : i ∈ w.drop m' := by
       rw [hw, count_append, count_append, hi1, hiz] at hiw
-      exact count_pos_iff.1 (by omega)
-    have h2 : [j] ++ [i] <+ z ++ w.drop m' :=
+      exact count_pos_iff.1 by_o
+    have h2 :=
       (singleton_sublist.2 hjz).append (singleton_sublist.2 hiy)
     exact hnc j i hji (by rw [hw, append_assoc]; exact hsub.append h2)
 

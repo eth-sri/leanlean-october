@@ -64,25 +64,25 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have hwfc := hwf.mono hA
   have i0 : c.nreg 81000 = E.MD := by rw [hI.hin _ (by unfold FFix; omega), hE.i0]
   have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by unfold FFix; omega), hE.k1]
-  have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
-  have hMD6 : E.MD + 6 ≤ c.nreg ALLOC := le_trans hwf.1 hA
+  have hAW := hI.hw.1 ALLOC
+  have hMD6 := le_trans hwf.1 hA
   have ok : okB E.W c.nmem fKeySetL c.nreg := by
     simp only [fKeySetL, okB, okI, FScr, FOut]
-    refine ⟨⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by rw [i0, k1]; omega⟩,
-      Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩),
-        by omega⟩, ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by omega⟩,
-      Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), trivial⟩
+    refine ⟨⟨Or.inl (Or.inl ⟨by_n, by_n⟩), by rw [i0, k1]; omega⟩,
+      Or.inl (Or.inl ⟨by_n, by_n⟩), ⟨Or.inl (Or.inl ⟨by_n, by_n⟩),
+        by_o⟩, ⟨Or.inl (Or.inl ⟨by_n, by_n⟩), by_o⟩,
+      Or.inl (Or.inl ⟨by_n, by_n⟩), trivial⟩
   refine (FRS.seq (K₂ := 11010) (FRS.block hB fKeySetL hI ok) (fun c₁ hI₁ _ h₁ => ?_)).mono
     (by simp [fKeySetL]) (fun _ h => h)
   obtain ⟨s20, s21, s22, s23, s00, sfr⟩ := fKeySet_eff c.nmem c.nreg
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem fKeySetL c.nreg q := fun q => by rw [h₁]
   have m₁ : c₁.nmem = c.nmem := by rw [h₁]
   have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := by
-    rw [e₁, sfr _ (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
-      (by unfold ALLOC; omega) (by unfold ALLOC; omega)]
+    rw [e₁, sfr _ by_ao by_ao by_ao
+      by_ao by_ao]
   have f₁ : ∀ q, ¬ KeyW q → c₁.nreg q = c.nreg q := fun q hq => by
     unfold KeyW at hq
-    rw [e₁, sfr q (by omega) (by omega) (by omega) (by omega) (by omega)]
+    rw [e₁, sfr q by_o by_o by_o by_o by_o]
   have r20 : c₁.nreg 83020 = E.MD + 1 := by rw [e₁, s20, i0, k1]
   have r21 : c₁.nreg 83021 = c.nmem E.MD := by rw [e₁, s21, i0]
   have r22 : c₁.nreg 83022 = 0 := by rw [e₁, s22]
@@ -107,9 +107,9 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
       r22 hx' hy' (walk_le_W hE.hMD hE.hwf hE.hWh hM) (by rw [hA₁]; omega)
     have h8 : ∀ q, 80000 ≤ q → q < 90000 → c'.nreg q = c₁.nreg q := fun q h1 h2 =>
       hf.1 q (by rw [band8 h1 h2]; simp [primBands, bRestore, bSign, bLocate])
-        (by unfold ALLOC; omega)
-    refine FRS.prim hB hI₁ (.ifLtN_true (by rw [r21, r23, h0]; omega) ex) hf (by omega) (by omega)
-      ⟨by rw [hM]; exact b1, by rw [hM]; exact b2, hfin c' h8⟩
+        by_ao
+    refine FRS.prim hB hI₁ (.ifLtN_true (by rw [r21, r23, h0]; omega) ex) hf by_o by_o
+      ⟨by rwa [hM], by rwa [hM], hfin c' h8⟩
   · -- the interior model
     have hn := interior_n (P := E.P)
     have hD : c₁.nreg 83000 + 1 ≤ E.W := by rw [r00]; omega
@@ -121,13 +121,13 @@ theorem fKey_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
           unfold InR at ha hb hd he
           rcases hr with rfl | rfl | rfl | rfl <;> omega)
       hx₁.2.1 hy₁.2.1 (by rw [← hn]; exact hx₁.1) (by rw [← hn]; exact hy₁.1)
-    have hfr : FrameB Bik c₁ c' := exec_frameB ex (wr_iKey a b d e)
+    have hfr := exec_frameB ex (wr_iKey a b d e)
     have hf := frame_of_frameB hfr Bik_band k
     have h8 : ∀ q, 80000 ≤ q → q < 90000 → c'.nreg q = c₁.nreg q := fun q h1 h2 =>
       hf.1 q (by rw [band8 h1 h2]; simp [primBands, bRestore, bSign, bLocate])
-        (by unfold ALLOC; omega)
-    refine FRS.prim hB hI₁ (.ifLtN_false (by rw [r21, r23, h1]; omega) ex) hf (by omega)
-      (by omega) ⟨by rw [hM]; exact b1, by rw [hM]; exact b2, hfin c' h8⟩
+        by_ao
+    refine FRS.prim hB hI₁ (.ifLtN_false (by rw [r21, r23, h1]; omega) ex) hf by_o
+      by_o ⟨by rwa [hM], by rwa [hM], hfin c' h8⟩
 
 end
 

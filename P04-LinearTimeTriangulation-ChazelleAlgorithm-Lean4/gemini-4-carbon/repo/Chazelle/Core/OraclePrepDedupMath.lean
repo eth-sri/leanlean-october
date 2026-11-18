@@ -37,12 +37,12 @@ theorem dedup_key {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hs : So
     False := by
   unfold dedupF at h1 h2
   split_ifs at h1 h2 with c1 c2
-  have e : pr (s a) = pr (s a') := (Option.some.inj h1).trans (Option.some.inj h2).symm
+  have e := (Option.some.inj h1).trans (Option.some.inj h2).symm
   obtain ⟨ha', c2⟩ := c2
   rcases c2 with c2 | c2
   · omega
-  · have e1 := hs a (a' - 1) (by omega) (by omega)
-    have e2 := hs (a' - 1) a' (by omega) ha'
+  · have e1 := hs a (a' - 1) by_o by_o
+    have e2 := hs (a' - 1) a' by_o ha'
     rw [e] at e1
     exact c2 (PLe.antisymm e2 e1).symm
 
@@ -78,7 +78,7 @@ theorem mem_dedup {pr : ℕ → ℕ × ℕ} {s : ℕ → ℕ} {n : ℕ} (hsurj :
       · right
         intro e
         have := Nat.find_min hex (show t0 - 1 < t0 by omega)
-        exact this ⟨by omega, by rw [← e, e0]⟩
+        exact this ⟨by_o, by rw [← e, e0]⟩
     unfold dedupF
     rw [ite_eq_left ⟨h0, hcond⟩, e0]
 

@@ -53,12 +53,12 @@ theorem MCtx.transport {C : Chain} {N : NF} {E md cd nf : ℕ} {c c' : Config}
   swap
   · rw [hm0] at h1; omega
   obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep hmwf hm0 hC' hm hA
-  refine ⟨hctx.transport rCD hm hA, by rw [rCD, rMD]; exact hcd,
-    by rw [rMD]; exact Or.inl ⟨w2, H, C', w3, hMC⟩, by rw [rMD]; exact w1, by rw [rMD]; exact w2,
-    by rw [rNF]; exact hNW.transport fun b hb => hm b (by omega), le_trans hE hA,
+  refine ⟨hctx.transport rCD hm hA, by rwa [rCD, rMD],
+    by rw [rMD]; exact Or.inl ⟨w2, H, C', w3, hMC⟩, by rwa [rMD], by rwa [rMD],
+    by rw [rNF]; exact hNW.transport fun b hb => hm b by_o, le_trans hE hA,
     fun j hj => by
-      rw [rTL] at hj; rw [rTB, hm _ (by omega)]; exact htab j hj,
-    by rw [rTL]; exact hbig, by rw [rTB]; exact hTB, by rw [rTB, rTL]; omega⟩
+      rw [rTL] at hj; rw [rTB, hm _ by_o]; exact htab j hj,
+    by rwa [rTL], by rwa [rTB], by rw [rTB, rTL]; omega⟩
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {J : Merge.Junction} {N₁ N₂ : NF}
@@ -73,8 +73,8 @@ theorem mctx1 (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c)
   have hTA := E.hTBR
   refine ⟨E.ctx1' hI, md4, md1, md2, md3, ?_, by have := hI.hA; omega, fun j hj => ?_,
     by rw [hTLR]; exact E.hbig₁, by rw [hTBR], by rw [hTBR, hTLR]; have := hI.hA; omega⟩
-  · rw [h3]; exact E.hNT₁.transport fun b hb => hI.hm b (by omega)
-  · rw [hTLR] at hj; rw [hTBR, hI.hm _ (by omega)]; exact E.htab j hj
+  · rw [h3]; exact E.hNT₁.transport fun b hb => hI.hm b by_o
+  · rw [hTLR] at hj; rw [hTBR, hI.hm _ by_o]; exact E.htab j hj
 
 /-! ## The model descriptor of `C₂` -/
 
@@ -125,21 +125,21 @@ theorem md2Init_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
       (∀ r, ¬ MD2W r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
       (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
   have hK := E.hK.fix hI
-  have k0 : c.nreg 240610 = 0 := hK.1
-  have k1 : c.nreg 240611 = 1 := hK.2.1
+  have k0 := hK.1
+  have k1 := hK.2.1
   have hctx := E.ctx2' hI
   obtain ⟨hG, hWh, hwf, ⟨H, hC, hreg⟩, hPs, hWm⟩ := hctx
-  have hB : c.nreg 240021 + 5 ≤ c.nreg 9999 := hwf.1
+  have hB := hwf.1
   obtain ⟨c', k, ex, hk, a1, a2, a3, hreg', m0, mc, mlo, rr, rm, ro⟩ :=
     md2Init_exec (P := P) c hI.hw k0 k1 (by unfold ALLOC at hroom; omega) hB
   have a1' : c'.nreg ALLOC = c.nreg ALLOC + 6 := a1
   have a2' : c'.nreg gMD2 = c.nreg ALLOC := a2
   have a3' : c'.nreg gCD2 = c.nreg ALLOC + 1 := a3
-  have m0' : c'.nmem (c.nreg ALLOC) = 0 := m0
-  have mc' : ∀ j, j < 5 → c'.nmem (c.nreg ALLOC + 1 + j) = c.nmem (c.nreg (sw 21) + j) := mc
-  have mlo' : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a := mlo
-  have hwf' : ChainWF P (c.nreg ALLOC) c.nmem (c.nreg (sw 21)) := hwf
-  have hC' : ChainDescAt c.nmem (c.nreg (sw 21)) (Qof P) H J.right := hC
+  have m0' := m0
+  have mc' := mc
+  have mlo' := mlo
+  have hwf' := hwf
+  have hC' := hC
   obtain ⟨hMD, hMWF, hCD⟩ := SweepRam.modelDesc_of_copy (E' := c'.nreg ALLOC) hwf' hC'
     le_rfl mlo' m0' mc' (by rw [a1'])
   have hTBR : c'.nreg TBR = c₀.nreg TBR := by
@@ -151,8 +151,8 @@ theorem md2Init_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
       (by unfold TLR sw; omega) (by unfold TLR sw; omega)]
     exact hI.hin _ (by unfold IFix TLR sw; omega)
   have h4 : c'.nreg (sw 4) = c₀.nreg (sw 4) := by
-    rw [hreg' _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)
-      (by unfold sw; omega) (by unfold sw; omega)]
+    rw [hreg' _ by_so by_so by_so
+      by_so by_so]
     exact hI.hin _ (by unfold IFix sw; omega)
   have hA : c.nreg ALLOC ≤ c'.nreg ALLOC := by show c.nreg 9999 ≤ c'.nreg 9999; omega
   have hTA := E.hTBR
@@ -161,23 +161,23 @@ theorem md2Init_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   have hI' : IInv W c₀ c' := by
     refine ⟨ex.wb_right, fun q hq => ?_, le_trans hI.hA hA, hmem, fun a ha => by rw [rm]; exact hI.hrm a ha⟩
     unfold IFix at hq
-    rw [hreg' q (by omega) (by omega) (by omega) (by omega) (by omega)]
+    rw [hreg' q by_o by_o by_o by_o by_o]
     exact hI.hin q (by unfold IFix; omega)
-  refine ⟨c', k, ex, by omega, hI', ⟨fun r hr hra => ?_, fun r _ => by rw [rr], ro, hA,
+  refine ⟨c', k, ex, by_o, hI', ⟨fun r hr hra => ?_, fun r _ => by rw [rr], ro, hA,
     by show c'.nreg 9999 ≤ c.nreg 9999 + k; omega⟩, ?_, fun r hr hra => ?_, hA, fun a ha => mlo' a ha⟩
   · have : ¬ (240000 ≤ r ∧ r < 250000) := fun h => hr (scr_band (iscr_sw (by
       by_contra h'; exact hr (by
         unfold ioBands sweepBands; rw [band_sw h.1 h.2]; decide)) h.2))
-    exact hreg' r hra (by omega) (by omega) (by omega) (by omega)
-  · refine ⟨⟨hG, hWh, ?_, ⟨H, ?_, hreg⟩, hPs, hWm⟩, by rw [a3', a2'], by rw [a2']; exact hMD,
-      by rw [a2']; exact hMWF, by rw [a2']; exact m0', by rw [h4]; exact E.hNT₂.transport (fun b hb =>
-        hmem b (by omega)), by have := hI.hA; omega, fun j hj => ?_, by rw [hTLR]; exact E.hbig₂,
+    exact hreg' r hra by_o by_o by_o by_o
+  · refine ⟨⟨hG, hWh, ?_, ⟨H, ?_, hreg⟩, hPs, hWm⟩, by rw [a3', a2'], by rwa [a2'],
+      by rwa [a2'], by rw [a2']; exact m0', by rw [h4]; exact E.hNT₂.transport (fun b hb =>
+        hmem b by_o), by have := hI.hA; omega, fun j hj => ?_, by rw [hTLR]; exact E.hbig₂,
       by rw [hTBR], by rw [hTBR, hTLR]; have := hI.hA; omega⟩
     · rw [a3']; exact hMWF.2 m0'
-    · rw [a3']; exact hCD
-    · rw [hTLR] at hj; rw [hTBR, hmem _ (by omega)]; exact E.htab j hj
+    · rwa [a3']
+    · rw [hTLR] at hj; rw [hTBR, hmem _ by_o]; exact E.htab j hj
   · unfold MD2W gMD2 gCD2 gTP gTV sw at hr
-    exact hreg' r hra (by omega) (by omega) (by omega) (by omega)
+    exact hreg' r hra by_o by_o by_o by_o
 
 end
 

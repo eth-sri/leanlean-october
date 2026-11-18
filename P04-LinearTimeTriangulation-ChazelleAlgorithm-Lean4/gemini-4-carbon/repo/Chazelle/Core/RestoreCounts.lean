@@ -141,9 +141,9 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
       2 ≤ (sideExits M S R (pb + tb) (pa + ta)).ncard := by
   obtain ⟨heS, heR, hP⟩ := hsw
   set F := insert e S with hFdef
-  have hF : ChordSystem M.D F := hM.sys F (insert_subset he hS) (hfin.insert e)
-  have hSF : S ⊆ F := subset_insert e S
-  have heF : e ∈ F := mem_insert e S
+  have hF := hM.sys F (insert_subset he hS) (hfin.insert e)
+  have hSF := subset_insert e S
+  have heF := mem_insert e S
   obtain ⟨R₁, R₂, hs⟩ := Merge.exists_split hF hSF heF heS hR heR
   obtain ⟨K₁, K₂, hK, ⟨c₁, hK₁⟩, ⟨c₂, hK₂⟩, hsec₁, hsec₂⟩ := hM.split he hA hB hAB
   have hdisj : Disjoint K₁ K₂ := by
@@ -184,7 +184,7 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
   -- a half lies in one component
   have hin : ∀ Q ∈ regionsIn M.D F, Q ⊆ R → 2 ≤ (exitsIn M.D S Q).ncard → Q ⊆ K₁ ∨ Q ⊆ K₂ := by
     intro Q hQ _ h2
-    obtain ⟨c, hc⟩ := nonempty_of_ncard_ne_zero (s := exitsIn M.D S Q) (by omega)
+    obtain ⟨c, hc⟩ := nonempty_of_ncard_ne_zero (s := exitsIn M.D S Q) by_o
     rcases hside Q hQ c hc with h | h
     · exact Or.inl h.1
     · exact Or.inr h.1
@@ -212,16 +212,16 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
   have hdiff : ¬ ((R₁ ⊆ K₁ ∧ R₂ ⊆ K₁) ∨ (R₁ ⊆ K₂ ∧ R₂ ⊆ K₂)) := by
     obtain ⟨ea, eb, heab, heq, -, heopen, -, -⟩ := hM.ends e he
     set z := Geometry.lerp ea eb (1 / 2) with hz
-    have hzD : z ∈ M.D := heopen _ ⟨by norm_num, by norm_num⟩
+    have hzD : z ∈ M.D := heopen _ ⟨by_n, by_n⟩
     have hze : z ∈ e := by
-      rw [heq]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
-    have hRo : IsOpen R := hF.regionsIn_open hSF hR
+      rw [heq]; exact Geometry.lerp_mem_segment _ _ by_n by_n
+    have hRo := hF.regionsIn_open hSF hR
     obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 hRo z (heR ⟨hze, hzD⟩)
-    have hsys : ({e} : Set (Set Point)) ⊆ F := singleton_subset_iff.2 heF
+    have hsys := singleton_subset_iff.2 heF
     obtain ⟨ε₀, hε₀, hsep⟩ := hF.chord_separates_in hsys (mem_singleton e) hze hzD
     set ε := min (ε₀ / 2) (ρ / 2) with hε
-    have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-    obtain ⟨hu, hd, hne⟩ := hsep ε hε0 (lt_of_le_of_lt (min_le_left _ _) (by linarith))
+    have hε0 : 0 < ε := lt_min by_l by_l
+    obtain ⟨hu, hd, hne⟩ := hsep ε hε0 (lt_of_le_of_lt (min_le_left _ _) by_l)
     have hfe : freeIn M.D {e} = M.D \ e := by
       ext w; simp [freeIn]
     rw [hfe] at hu hd hne
@@ -246,11 +246,11 @@ theorem counts_of_splitsWell (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M
       rintro K ⟨c₀, rfl⟩ h1 h2
       exact hne ((connectedComponentIn_eq h1).symm.trans (connectedComponentIn_eq h2))
     rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
-    · have hu' : ((z.1, z.2 + ε) : Point) ∈ K₁ := hU12.elim (fun h => h1 h) (fun h => h2 h)
-      have hd' : ((z.1, z.2 - ε) : Point) ∈ K₁ := hD12.elim (fun h => h1 h) (fun h => h2 h)
+    · have hu' := hU12.elim (fun h => h1 h) (fun h => h2 h)
+      have hd' := hD12.elim (fun h => h1 h) (fun h => h2 h)
       exact same K₁ ⟨c₁, hK₁⟩ hu' hd'
-    · have hu' : ((z.1, z.2 + ε) : Point) ∈ K₂ := hU12.elim (fun h => h1 h) (fun h => h2 h)
-      have hd' : ((z.1, z.2 - ε) : Point) ∈ K₂ := hD12.elim (fun h => h1 h) (fun h => h2 h)
+    · have hu' := hU12.elim (fun h => h1 h) (fun h => h2 h)
+      have hd' := hD12.elim (fun h => h1 h) (fun h => h2 h)
       exact same K₂ ⟨c₂, hK₂⟩ hu' hd'
   have i1 := hin R₁ hs.mem₁ hR₁R hc₁
   have i2 := hin R₂ hs.mem₂ hR₂R hc₂

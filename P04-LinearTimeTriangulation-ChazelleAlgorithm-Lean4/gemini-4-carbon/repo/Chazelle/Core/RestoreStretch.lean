@@ -85,7 +85,7 @@ theorem arrive (hS : Stretch M Cα g g' L) (hGα : WalkAx (chainModel Cα)) {c :
     rw [ho, rayPt_fst]; rcases hσ with rfl | rfl <;> linarith
   have hfarC : rayPt a σ T ∈ Cα.set := by rw [← hfar]; exact hS.memM hd ht0 ht1
   have harr := arrive_other hsetD hoy haC hkopen hoD hσ hdir hT hdom hfarC
-  have hTL : T = L₀ := rayPt_inj hσ harr
+  have hTL := rayPt_inj hσ harr
   subst hTL
   have hch : chordOf a σ T = c := by rw [chordOf_eq_segment hσ hT, hceq]
   rw [hch] at hFA

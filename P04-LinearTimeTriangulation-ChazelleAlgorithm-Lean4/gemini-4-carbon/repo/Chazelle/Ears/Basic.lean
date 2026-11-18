@@ -55,8 +55,8 @@ theorem prevIdx_mod (P : Polygon) {i : ℕ} (hi : i < P.n) : prevIdx P i % P.n =
 theorem prevIdx_of_mod (P : Polygon) (hn : 0 < P.n) (a : ℕ) :
     prevIdx P (a % P.n) = (a + P.n - 1) % P.n := by
   unfold prevIdx
-  have h1 : a % P.n + P.n - 1 = a % P.n + (P.n - 1) := by omega
-  have h2 : a + P.n - 1 = a + (P.n - 1) := by omega
+  have h1 : a % P.n + P.n - 1 = a % P.n + (P.n - 1) := by_o
+  have h2 : a + P.n - 1 = a + (P.n - 1) := by_o
   rw [h1, h2, Nat.mod_add_mod]
 
 /-- The previous index of `(s + 1) % n` is `s % n`. -/
@@ -144,7 +144,7 @@ theorem weakTriangulates_clip (hP : P.Simple) (hi : i < P.n) (he : IsEar P i)
     {T : List Polygon.Triangle} (h : WeakTriangulates (clip P i) T) :
     WeakTriangulates P
       (earTriangle P i :: T.map (relabel ((prevIdx P i + 2) % P.n) P.n)) := by
-  have h₁ : WeakTriangulates (P.arc (prevIdx P i) 2) [(0, 1, 2)] :=
+  have h₁ :=
     weakTriangulates_triangle _ (simple_earArc P i hP he) (n_arc P _ _)
   have := weakTriangulates_of_diagonal hP he.1 (chord_ear_subset_filled P i hi he) h₁ h
   rw [List.map_cons, List.map_nil, List.singleton_append, relabel_ear P i hi] at this

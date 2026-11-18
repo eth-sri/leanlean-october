@@ -33,9 +33,9 @@ theorem posLtF_iff {P : Polygon} (hG : GoodEnv P) (li : Bool) {x y : WPos}
     (hx : x.edge < (Qof P).n) (hx1 : 1 ≤ x.hgt) (hxn : x.hgt ≤ (Qof P).n) (hy1 : 1 ≤ y.hgt)
     (hyn : y.hgt ≤ (Qof P).n) :
     posLtF P li (Qof P).n x.edge x.hgt y.edge y.hgt = if PosLt (Qof P) li x y then 1 else 0 := by
-  have hn : 0 < (Qof P).n := by omega
+  have hn : 0 < (Qof P).n := by_o
   have h1 := hltF_eq_one hG (DownMath.ivB_lt li hx) (DownMath.ivB_lt li (Nat.mod_lt (x.edge + 1) hn))
-  have h2 := hltF_eq_one hG (u := x.hgt - 1) (v := y.hgt - 1) (by omega) (by omega)
+  have h2 := hltF_eq_one hG (u := x.hgt - 1) (v := y.hgt - 1) by_o by_o
   have b1 := hltF_le P (ivB li (Qof P).n x.edge) (ivB li (Qof P).n ((x.edge + 1) % (Qof P).n))
   have b2 := hltF_le P (x.hgt - 1) (y.hgt - 1)
   have hiff : (EdgeUp (Qof P) li x.edge ↔
@@ -59,14 +59,14 @@ theorem eq2S_exec (d : Config) (hw : WordsBounded W d) {a b c e dst : ℕ} (ha :
       NRegs d d' (upd d.nreg dst
         (if d.nreg a = d.nreg b ∧ d.nreg c = d.nreg e then 1 else 0)) := by
   unfold eq2S
-  refine x_mono (x_seq (K₂ := 9) (x_const d hw dst 0 (by omega)) (fun d1 hw1 n1 => ?_)) (by omega)
+  refine x_mono (x_seq (K₂ := 9) (x_const d hw dst 0 by_o) (fun d1 hw1 n1 => ?_)) by_o
   obtain ⟨d2, k2, e2, hk2, n2⟩ := x_ifR (P := P) (W := W) (r := dst) (d := d1) (K := 7)
-    (fun _ => x_mono (x_skipR d1 hw1 dst) (by omega))
-    (fun _ => x_ifR (fun _ => x_mono (x_skipR d1 hw1 dst) (by omega))
-      (fun _ => x_ifR (fun _ => x_mono (x_skipR d1 hw1 dst) (by omega))
+    (fun _ => x_mono (x_skipR d1 hw1 dst) by_o)
+    (fun _ => x_ifR (fun _ => x_mono (x_skipR d1 hw1 dst) by_o)
+      (fun _ => x_ifR (fun _ => x_mono (x_skipR d1 hw1 dst) by_o)
         (fun _ => x_ifR (fun _ => x_skipR d1 hw1 dst)
-          (fun _ => x_const d1 hw1 dst 1 (by omega)))))
-  refine ⟨d2, k2, e2, by omega, ?_⟩
+          (fun _ => x_const d1 hw1 dst 1 by_o))))
+  refine ⟨d2, k2, e2, by_o, ?_⟩
   refine ⟨?_, n2.2.1.trans n1.2.1, n2.2.2.1.trans n1.2.2.1, n2.2.2.2.1.trans n1.2.2.2.1,
     n2.2.2.2.2.trans n1.2.2.2.2⟩
   rw [n2.1, n1.1, Machine.upd_upd_same]
@@ -89,22 +89,22 @@ theorem posLtOn_exec (d : Config) (hw : WordsBounded W d) {a b c e dst n : ℕ} 
       d1.nreg 217150 = d.nreg a ∧ d1.nreg 217151 = d.nreg b ∧ d1.nreg 217152 = d.nreg c ∧
       d1.nreg 217153 = d.nreg e ∧ (∀ r, r < 217150 → d1.nreg r = d.nreg r) := by
     exec_block
-    refine ⟨by omega, ?_, ?_, ?_, ?_, fun r hr => ?_⟩ <;> config_simp
-    · rw [Machine.upd_other _ _ _ (show b ≠ 217150 by omega)]
-    · rw [Machine.upd_other _ _ _ (show c ≠ 217151 by omega),
-        Machine.upd_other _ _ _ (show c ≠ 217150 by omega)]
-    · rw [Machine.upd_other _ _ _ (show e ≠ 217152 by omega),
-        Machine.upd_other _ _ _ (show e ≠ 217151 by omega),
-        Machine.upd_other _ _ _ (show e ≠ 217150 by omega)]
-    · rw [Machine.upd_other _ _ _ (show r ≠ 217153 by omega),
-        Machine.upd_other _ _ _ (show r ≠ 217152 by omega),
-        Machine.upd_other _ _ _ (show r ≠ 217151 by omega),
-        Machine.upd_other _ _ _ (show r ≠ 217150 by omega)]
+    refine ⟨by_o, ?_, ?_, ?_, ?_, fun r hr => ?_⟩ <;> config_simp
+    · rw [Machine.upd_other _ _ _ (by omega)]
+    · rw [Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (by omega)]
+    · rw [Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (by omega)]
+    · rw [Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (by omega),
+        Machine.upd_other _ _ _ (by omega)]
   obtain ⟨d2, k2, e2, hk2, v2, -⟩ := posLtS_exec (P := P) d1 e1.wb_right
-    (by rw [g1 _ (by omega), h20]) (by rw [g1 _ (by omega), h26]) (by rw [g1 _ (by omega), h27])
-    (by rw [a50]; exact hae) hnW hW
+    (by rw [g1 _ by_o, h20]) (by rw [g1 _ by_o, h26]) (by rw [g1 _ by_o, h27])
+    (by rwa [a50]) hnW hW
   obtain ⟨d3, k3, e3, hk3, n3⟩ := x_copy (P := P) d2 e2.wb_right dst 217154
-  refine ⟨d3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, ?_⟩
+  refine ⟨d3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by_o, ?_⟩
   rw [n3.same, v2, a50, a51, a52, a53]
 
 set_option maxHeartbeats 2000000 in
@@ -116,19 +116,19 @@ theorem onS_exec (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) (h27 : d.nr
           else 1) else (if d.nreg 217125 < 1 then 0 else (if d.nreg 217126 < 1 then 0 else 1)))
         else 1) else 1)) := by
   unfold onS
-  refine x_mono (x_seq (K₂ := 15) (x_const d hw 217127 0 (by omega)) (fun d1 hw1 n1 => ?_))
-    (by omega)
+  refine x_mono (x_seq (K₂ := 15) (x_const d hw 217127 0 by_o) (fun d1 hw1 n1 => ?_))
+    by_o
   have s0 := fun (K : ℕ) (hK : 1 ≤ K) => x_mono (P := P) (x_skipR d1 hw1 217127) hK
-  have s1 := fun (K : ℕ) (hK : 1 ≤ K) => x_mono (P := P) (x_const d1 hw1 217127 1 (by omega)) hK
+  have s1 := fun (K : ℕ) (hK : 1 ≤ K) => x_mono (P := P) (x_const d1 hw1 217127 1 by_o) hK
   obtain ⟨d2, k2, e2, hk2, n2⟩ := x_ifR (P := P) (W := W) (r := 217127) (d := d1) (K := 13)
     (fun _ => x_ifR (fun _ => x_ifR
-        (fun _ => x_ifR (fun _ => x_ifR (fun _ => s0 5 (by omega)) (fun _ => s1 5 (by omega)))
-          (fun _ => s1 7 (by omega)))
-        (fun _ => x_ifR (fun _ => s0 7 (by omega))
-          (fun _ => x_ifR (fun _ => s0 5 (by omega)) (fun _ => s1 5 (by omega)))))
-      (fun _ => s1 11 (by omega)))
-    (fun _ => s1 13 (by omega))
-  refine ⟨d2, k2, e2, by omega, ?_⟩
+        (fun _ => x_ifR (fun _ => x_ifR (fun _ => s0 5 by_o) (fun _ => s1 5 by_o))
+          (fun _ => s1 7 by_o))
+        (fun _ => x_ifR (fun _ => s0 7 by_o)
+          (fun _ => x_ifR (fun _ => s0 5 by_o) (fun _ => s1 5 by_o))))
+      (fun _ => s1 11 by_o))
+    (fun _ => s1 13 by_o)
+  refine ⟨d2, k2, e2, by_o, ?_⟩
   refine ⟨?_, n2.2.1.trans n1.2.1, n2.2.2.1.trans n1.2.2.1, n2.2.2.2.1.trans n1.2.2.2.1,
     n2.2.2.2.2.trans n1.2.2.2.2⟩
   rw [n2.1, n1.1, Machine.upd_upd_same]
@@ -138,7 +138,7 @@ theorem onS_exec (d : Config) (hw : WordsBounded W d) (hW : 1 ≤ W) (h27 : d.nr
 /-- The registers `bktFS` writes. -/
 def BbktF (r : ℕ) : Bool := decide (r = 217112 ∨ r = 217128)
 
-theorem wr_bktF : wr BbktF bktFS = true := by decide
+theorem wr_bktF : wr BbktF bktFS = true := by_d
 
 set_option maxHeartbeats 2000000 in
 /-- **The bucket formula.** -/
@@ -155,20 +155,20 @@ theorem bktFS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} (hj : j < A)
           else 2 * j + 1) := by
     unfold bktFS
     by_cases c1 : d.nreg 217122 < 1
-    · refine spec_ifLtN_true (by rw [h27]; exact c1) ?_
+    · refine spec_ifLtN_true (by rwa [h27]) ?_
       by_cases c2 : d.nreg 217123 < 1
-      · refine spec_ifLtN_true (by rw [h27]; exact c2) ?_
+      · refine spec_ifLtN_true (by rwa [h27]) ?_
         by_cases c3 : d.nreg 217125 < 1
-        · refine spec_ifLtN_true (by rw [h27]; exact c3) ?_
+        · refine spec_ifLtN_true (by rwa [h27]) ?_
           exec_block
           · omega
-          · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_left c3]
-        · refine spec_ifLtN_false (by rw [h27]; exact c3) ?_
+          · refine ⟨by_o, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_left c3]
+        · refine spec_ifLtN_false (by rwa [h27]) ?_
           exec_block
           · omega
           · config_simp; omega
-          · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_right c3]; omega
-      · refine spec_ifLtN_false (by rw [h27]; exact c2) ?_
+          · refine ⟨by_o, ?_⟩; config_simp; rw [ite_eq_left c1, ite_eq_left c2, ite_eq_right c3]; omega
+      · refine spec_ifLtN_false (by rwa [h27]) ?_
         refine spec_seq ?_
         exec_block
         · omega
@@ -177,25 +177,25 @@ theorem bktFS_exec (d : Config) (hw : WordsBounded W d) {A j : ℕ} (hj : j < A)
           exec_block
           · config_simp; omega
           · config_simp; omega
-          · refine ⟨by omega, ?_⟩; config_simp
+          · refine ⟨by_o, ?_⟩; config_simp
             rw [ite_eq_left c1, ite_eq_right c2, Nat.mod_eq_of_lt c4]; omega
         · refine spec_ifLtN_false (by config_simp; omega) ?_
           exec_block
           · omega
-          · refine ⟨by omega, ?_⟩; config_simp
+          · refine ⟨by_o, ?_⟩; config_simp
             have h0 : (j + 1) % A = 0 := by rw [show j + 1 = A by omega, Nat.mod_self]
             rw [ite_eq_left c1, ite_eq_right c2, h0]
-    · refine spec_ifLtN_false (by rw [h27]; exact c1) ?_
+    · refine spec_ifLtN_false (by rwa [h27]) ?_
       exec_block
       · omega
       · config_simp; omega
-      · refine ⟨by omega, ?_⟩; config_simp; rw [ite_eq_right c1]; omega
+      · refine ⟨by_o, ?_⟩; config_simp; rw [ite_eq_right c1]; omega
   exact ⟨d', k, ex, hk, hv, exec_frameB ex wr_bktF⟩
 
 /-- The registers `arcRdS` writes. -/
 def Brd (r : ℕ) : Bool := decide ((217116 ≤ r ∧ r ≤ 217121) ∨ r = 217128)
 
-theorem wr_arcRd : wr Brd arcRdS = true := by decide
+theorem wr_arcRd : wr Brd arcRdS = true := by_d
 
 set_option maxHeartbeats 2000000 in
 /-- **Read arc `j`** (the region list entry at `217114`). -/
@@ -216,11 +216,11 @@ theorem arcRd_exec (d : Config) (hw : WordsBounded W d) {AB j se sh ee eh : ℕ}
     unfold arcRdS
     exec_block
     all_goals (try (config_simp; simp only [h14, h27, h31]; omega))
-    refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h14, h27, h31]
-    · exact k1 _ (by omega)
-    · exact k2 _ (by omega)
-    · exact k3 _ (by omega)
-    · exact k4 _ (by omega)
+    refine ⟨by_o, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> simp only [h14, h27, h31]
+    · exact k1 _ by_o
+    · exact k2 _ by_o
+    · exact k3 _ by_o
+    · exact k4 _ by_o
   exact ⟨d', k, ex, hk, v16, v18, v19, v20, v21, exec_frameB ex wr_arcRd⟩
 
 end pieces

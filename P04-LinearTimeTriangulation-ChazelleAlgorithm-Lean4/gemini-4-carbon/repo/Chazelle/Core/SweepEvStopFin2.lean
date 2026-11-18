@@ -39,7 +39,7 @@ theorem slfStSeq_irs {x : ℕ} (hx : IScr x) (hK1x : K1 ≠ x) : ∀ (vs : List 
     have hvx' : v ≠ x := hvx v List.mem_cons_self
     have hvs : ∀ w ∈ vs, w ≠ x := fun w hw => hvx w (List.mem_cons_of_mem _ hw)
     simp only [List.length_cons] at hW ⊢
-    refine IRS.mono (K := 1 + (1 + 2 * vs.length)) (IRS.seq (IRS.store hI hA) ?_) (by omega)
+    refine IRS.mono (K := 1 + (1 + 2 * vs.length)) (IRS.seq (IRS.store hI hA) ?_) by_o
       (fun _ h => h)
     rintro c₁ hI₁ - - rfl
     refine IRS.seq (K₁ := 1) (K₂ := 2 * vs.length) (IRS.block [.addN x x K1] hI₁
@@ -50,7 +50,7 @@ theorem slfStSeq_irs {x : ℕ} (hx : IScr x) (hK1x : K1 ≠ x) : ∀ (vs : List 
     have r2o : ∀ r, r ≠ x → c₂.nreg r = c.nreg r := fun r hr => by
       rw [hc2]; simp only [regB, regI]; rw [upd_other _ _ _ hr]
     have m2 : c₂.nmem = upd c.nmem (c.nreg x) (c.nreg v) := by rw [hc2]
-    refine (slfStSeq_irs hx hK1x vs hI₂ (by rw [r2o _ hK1x]; exact hk1) hvs
+    refine (slfStSeq_irs hx hK1x vs hI₂ (by rwa [r2o _ hK1x]) hvs
       (by rw [r2x]; omega) (by rw [r2x]; omega)).mono le_rfl ?_
     rintro c' ⟨h1, h2, h3, h4⟩
     refine ⟨fun i hi => ?_, fun a ha => ?_, fun r hr => by rw [h3 r hr, r2o r hr], by
@@ -58,14 +58,14 @@ theorem slfStSeq_irs {x : ℕ} (hx : IScr x) (hK1x : K1 ≠ x) : ∀ (vs : List 
     · rcases i with _ | j
       · rw [h2 _ (Or.inl (by rw [r2x]; omega)), m2]
         simp
-      · have := h1 j (by omega)
+      · have := h1 j by_o
         have hmem : vs.getD j 0 ∈ vs := by
-          rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]
+          rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem by_o]
           exact List.getElem_mem _
         rw [r2x, r2o _ (hvs _ hmem)] at this
         simp only [List.getD_cons_succ]
         rw [show c.nreg x + (j + 1) = c.nreg x + 1 + j by ring, this]
-    · rw [h2 _ (by rw [r2x]; omega), m2, upd_other _ _ _ (by omega)]
+    · rw [h2 _ (by rw [r2x]; omega), m2, upd_other _ _ _ by_o]
 
 /-! ## Emitting a raw record -/
 
@@ -113,17 +113,17 @@ theorem slfEmit_irs {pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slfX) (hd
       (∀ a, (a < c.nreg gRB + 11 * c.nreg gRC ∨ c.nreg gRB + 11 * c.nreg gRC + 11 ≤ a) →
         c'.nmem a = c.nmem a) ∧
       c'.nreg gRC = c.nreg gRC + 1 ∧ (∀ r, r ≠ slfX → r ≠ gRC → c'.nreg r = c.nreg r)) := by
-  have hsX : IScr slfX := iscr_sw' (by norm_num) (by norm_num)
-  have hsC : IScr gRC := iscr_sw' (by norm_num) (by norm_num)
+  have hsX : IScr slfX := iscr_sw' by_n by_n
+  have hsC : IScr gRC := iscr_sw' by_n by_n
   have hB : gRB ≠ slfX := by unfold gRB slfX sw; omega
   have hC : gRC ≠ slfX := by unfold gRC slfX sw; omega
   have hK1X : K1 ≠ slfX := by unfold K1 slfX sw; omega
   have hK1C : K1 ≠ gRC := by unfold K1 gRC sw; omega
   have hok : okB W c.nmem slfAddrL c.nreg := by
     simp only [slfAddrL, okB, okI, regI, upd_same, upd_other _ _ _ hC]
-    refine ⟨hsX, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩,
-      ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, ⟨hsX, by omega⟩,
-      ⟨hsX, by omega⟩, ⟨hsX, by omega⟩, trivial⟩
+    refine ⟨hsX, ⟨hsX, by_o⟩, ⟨hsX, by_o⟩, ⟨hsX, by_o⟩, ⟨hsX, by_o⟩,
+      ⟨hsX, by_o⟩, ⟨hsX, by_o⟩, ⟨hsX, by_o⟩, ⟨hsX, by_o⟩, ⟨hsX, by_o⟩,
+      ⟨hsX, by_o⟩, ⟨hsX, by_o⟩, trivial⟩
   obtain ⟨va, vo⟩ := slfAddrL_val c.nmem c.nreg
   refine IRS.seq (K₁ := 12) (K₂ := 2 * 11 + 1) (IRS.block slfAddrL hI hok) ?_
   rintro c₁ hI₁ - - hc1
@@ -136,13 +136,13 @@ theorem slfEmit_irs {pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slfX) (hd
     rcases hv with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl
     all_goals first | assumption | (simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfX, sw]; omega)
   refine IRS.seq (K₁ := 2 * 11) (K₂ := 1) (slfStSeq_irs hsX hK1X (slfWords pe ph dc) hI₁
-    (by rw [o1 _ hK1X]; exact hk1) hws (by rw [a1]; omega)
+    (by rwa [o1 _ hK1X]) hws (by rw [a1]; omega)
     (by rw [a1]; simp only [slfWords, List.length_cons, List.length_nil]; omega)) ?_
   rintro c₂ hI₂ - - ⟨s1, s2, s3, s4⟩
   have c2C : c₂.nreg gRC = c.nreg gRC := by rw [s3 _ hC, o1 _ hC]
   have c2K : c₂.nreg K1 = 1 := by rw [s3 _ hK1X, o1 _ hK1X]; exact hk1
   refine (IRS.block [.addN gRC gRC K1] hI₂ ⟨⟨hsC, by rw [c2C, c2K]; omega⟩, trivial⟩).mono
-    (by simp) ?_
+    by_s ?_
   rintro c₃ hc3
   have m3 : c₃.nmem = c₂.nmem := by rw [hc3]
   simp only [slfWords, List.length_cons, List.length_nil] at s1 s2

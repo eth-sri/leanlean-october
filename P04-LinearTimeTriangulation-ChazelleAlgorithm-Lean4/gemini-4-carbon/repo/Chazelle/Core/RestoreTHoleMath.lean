@@ -37,7 +37,7 @@ theorem tour_mod {m S a : ℕ} (hS : S ≤ 2 * m) (ha : a < 2 * m) :
     (S + a) % (2 * m) = if S + a < 2 * m then S + a else S + a - 2 * m := by
   split_ifs with h
   · exact Nat.mod_eq_of_lt h
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
 
 /-- The tour position determines the tour step. -/
 theorem tour_inj {m S a b : ℕ} (hS : S ≤ 2 * m) (ha : a < 2 * m) (hb : b < 2 * m)
@@ -67,7 +67,7 @@ theorem chain_open_positions (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {t :
   have hS := C.sideS_lt C.sideBeta
   obtain ⟨k, hk, s, hs, hz, hcov⟩ := C.sideTour_open C.sideBeta hi ⟨ht, ht1⟩
   have hzmem : sidePt (C.sideWalk C.sideBeta) (i + 6) t ∈ C.set :=
-    C.sideWalk_tour_pt_mem C.sideBeta hi.le (fun h => absurd h (by omega)) ht.le ht1
+    C.sideWalk_tour_pt_mem C.sideBeta hi.le (fun h => absurd h by_o) ht.le ht1
   rcases C.sideWalk_pos_cases C.sideBeta hp' ht' with hbox | ⟨i', hi', rfl, hit'⟩
   · exact absurd (heq ▸ hzmem) (C.sideWalk_box_pt C.sideBeta hbox ht' ht1').1
   -- a tour position
@@ -86,7 +86,7 @@ theorem chain_open_positions (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {t :
   have hkk : k' = k := by
     by_contra hne
     have hlk : C.edgeIdx k' ≠ C.edgeIdx k := fun h =>
-      hne (C.sideEdgeIdx_inj (by omega) (by omega) h)
+      hne (C.sideEdgeIdx_inj by_o by_o h)
     have e1 : ∀ q : ℕ, C.vertex (q + 1) = C.P.vtx ((C.edgeIdx q + 1) % C.P.n) := fun q => by
       unfold Chain.vertex; rw [C.edgeIdx_succ]
     have h2 : lerp (C.vertex k') (C.vertex (k' + 1)) s' = lerp (C.vertex k) (C.vertex (k + 1)) s := by
@@ -96,8 +96,7 @@ theorem chain_open_positions (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {t :
     have := Jordan.simple_openEdge_not_mem_other hP (C.edgeIdx_lt k') hs' (C.edgeIdx_lt k)
       (Ne.symm hlk)
     apply this
-    rw [show C.P.vtx (C.edgeIdx k') = C.vertex k' from rfl, ← e1 k', h2]
-    exact hmem
+    rwa [show C.P.vtx (C.edgeIdx k') = C.vertex k' from rfl, ← e1 k', h2]
   subst hkk
   -- the tour positions of the chain edge
   rw [C.sideIdx_eq, C.sideIdx_succ] at hcov hcov'
@@ -110,7 +109,7 @@ theorem chain_open_positions (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {t :
   · left; rw [tour_inj hS hi'2 hi hsame]
   · right
     obtain ⟨h1, h2⟩ := candIdx_mod (m := C.m) (j := 2 * C.m - 1 - (C.sideS C.sideBeta + i) %
-      (2 * C.m)) hS (by omega)
+      (2 * C.m)) hS by_o
     have htw : tourTwin C i = candIdx C.m (C.sideS C.sideBeta)
         (2 * C.m - 1 - (C.sideS C.sideBeta + i) % (2 * C.m)) := rfl
     rw [← htw] at h1 h2
@@ -155,7 +154,7 @@ theorem eHole_mem {n p : ℕ} (hp : p < n) {t : ℝ} (ht : 0 < t) (ht1 : t < 1) 
   rcases Nat.lt_or_ge (p + 1) n with h | h
   · rw [Nat.mod_eq_of_lt h]
     push_cast
-    rw [ite_eq_left (by linarith)]; constructor <;> linarith
+    rw [ite_eq_left by_l]; constructor <;> linarith
   · rw [show p + 1 = n by omega, Nat.mod_self]
     push_cast
     rw [ite_eq_right (by have : (0 : ℝ) ≤ p := Nat.cast_nonneg _; linarith)]
@@ -168,18 +167,18 @@ theorem vHole_mem {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) :
   unfold sideInArc prevV
   rcases Nat.eq_zero_or_pos q with h0 | h0
   · subst h0
-    rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)]
+    rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt by_o, Nat.mod_eq_of_lt by_o]
     push_cast
     rw [ite_eq_right (by norm_num; omega)]
     right; norm_num
-  · rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+  · rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     rcases Nat.lt_or_ge (q + 1) n with h | h
     · rw [Nat.mod_eq_of_lt h]
-      rw [ite_eq_left (by exact_mod_cast (show q - 1 < q + 1 by omega))]
-      constructor <;> exact_mod_cast (by omega)
+      rw [ite_eq_left (by exact_mod_cast (by omega))]
+      constructor <;> exact_mod_cast by_o
     · rw [show q + 1 = n by omega, Nat.mod_self]
       rw [ite_eq_right (by push_cast; norm_num)]
-      left; exact_mod_cast (show q - 1 < q by omega)
+      left; exact_mod_cast (by omega)
 
 /-- A key `0` inside an interval with ends below `n` means the key `n` is inside it too. -/
 theorem sideInArc_zero_n {a b : ℝ} {n : ℕ} (ha0 : 0 ≤ a) (ha : a < n) (h : sideInArc a b ((0 : ℕ) + 0)) :
@@ -205,18 +204,18 @@ theorem avoid_of_cover {M : Model} {Q : Polygon} {hs : List (WPos × WPos)} {z :
   rcases ht1.lt_or_eq with ht1 | ht1
   · exact hc p t hp ht0 ht1 hz
   · subst ht1
-    have hn : 0 < M.W.n := by omega
+    have hn : 0 < M.W.n := by_o
     have hz' : sidePt M.W ((p + 1) % M.W.n) 0 = z := by
       rw [Chazelle.Chain.sidePt_zero, ← hz]; simp [Model.wb, Geometry.lerp]
     obtain ⟨g, hg, hin⟩ := hc _ 0 (Nat.mod_lt _ hn) le_rfl one_pos hz'
     refine ⟨g, hg, ?_⟩
     rcases Nat.lt_or_ge (p + 1) M.W.n with h | h
-    · rw [Nat.mod_eq_of_lt h] at hin; push_cast at hin ⊢; rw [add_zero] at hin; exact hin
+    · rw [Nat.mod_eq_of_lt h] at hin; push_cast at hin ⊢; rwa [add_zero] at hin
     · rw [show p + 1 = M.W.n by omega, Nat.mod_self] at hin
       obtain ⟨g1, g1e⟩ := hv g hg
       have hk : M.key Q g.1 = g.1.edge := by
         obtain ⟨⟨e, h⟩, _⟩ := g; simp only at g1 ⊢; subst g1; exact key_vtx' M Q e
-      have e1 : ((p : ℝ) + 1) = ((M.W.n : ℕ) : ℝ) := by exact_mod_cast (show p + 1 = M.W.n by omega)
+      have e1 : ((p : ℝ) + 1) = ((M.W.n : ℕ) : ℝ) := by exact_mod_cast (by omega)
       rw [e1]
       exact sideInArc_zero_n (by rw [hk]; exact Nat.cast_nonneg _)
         (by rw [hk]; exact_mod_cast g1e) hin
@@ -236,11 +235,11 @@ theorem cover_chain_vertex (hP : C.P.Simple) {k : ℕ} (hk : k ≤ C.m) {hs : Li
     refine ⟨_, hm, ?_⟩
     simp only [vHole, key_hole]
     subst hpq
-    exact vHole_mem (by omega) hq
+    exact vHole_mem by_o hq
   rcases hpc with h | h | ⟨h, hkt⟩
-  · exact mem _ (by omega) h1 h
-  · exact mem _ (by omega) h2 h
-  · exact mem _ (by omega) (h3 hkt) h
+  · exact mem _ by_o h1 h
+  · exact mem _ by_o h2 h
+  · exact mem _ by_o (h3 hkt) h
 
 /-- **The chain edge holes.** -/
 theorem cover_chain_edge (hP : C.P.Simple) {i : ℕ} (hi : i < 2 * C.m) {τ : ℝ} (hτ : 0 < τ)

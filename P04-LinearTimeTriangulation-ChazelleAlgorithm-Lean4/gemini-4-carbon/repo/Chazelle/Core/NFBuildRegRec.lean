@@ -37,7 +37,7 @@ theorem offF_mono (cA cC : ℕ → ℕ) {r r' : ℕ} (h : r ≤ r') : offF cA cC
   | zero => rw [Nat.le_zero.1 h]
   | succ n ih =>
     rcases Nat.lt_or_ge r (n + 1) with h' | h'
-    · rw [offF_succ]; have := ih (by omega); omega
+    · rw [offF_succ]; have := ih by_o; omega
     · rw [show r = n + 1 by omega]
 
 /-- The word `q` of the region table. -/
@@ -72,10 +72,10 @@ theorem recR_step (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) 
   have hr : a < RT ∨ (RT ≤ a ∧ a < RT + 5 * n) ∨ (∃ f, f < 5 ∧ a = RT + 5 * n + f) ∨
       (RT + 5 * n + 5 ≤ a ∧ a < RT + 5 * R) ∨ RT + 5 * R ≤ a := by
     by_cases h : RT + 5 * n ≤ a ∧ a < RT + 5 * n + 5
-    · exact Or.inr (Or.inr (Or.inl ⟨a - (RT + 5 * n), by omega, by omega⟩))
+    · exact Or.inr (Or.inr (Or.inl ⟨a - (RT + 5 * n), by_o, by_o⟩))
     · omega
   have hq : a < FA ∨ (FA ≤ a ∧ a < FA + n) ∨ a = FA + n ∨ (FA + n + 1 ≤ a ∧ a < FA + R) ∨
-      (FA + R ≤ a ∧ a < FA + R + n) ∨ a = FA + R + n ∨ FA + R + n + 1 ≤ a := by omega
+      (FA + R ≤ a ∧ a < FA + R + n) ∨ a = FA + R + n ∨ FA + R + n + 1 ≤ a := by_o
   rcases hr with h | h | ⟨f, hf, rfl⟩ | h | h
   · rcases hq with h' | h' | rfl | h' | h' | rfl | h' <;> ifs_omega <;>
       first | rfl | omega | (congr 1; omega) | (congr 1 <;> congr 1 <;> omega)
@@ -83,15 +83,15 @@ theorem recR_step (m₁ : ℕ → ℕ) {RT FA R : ℕ} (cA cC wR : ℕ → ℕ) 
   · interval_cases f <;> ifs_omega <;>
       first
         | rfl
-        | (rw [show RT + 5 * n + 0 - RT = 5 * n + 0 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
+        | (rw [show RT + 5 * n + 0 - RT = 5 * n + 0 by omega, rtv_eq _ _ _ _ _ by_n];
            rfl)
-        | (rw [show RT + 5 * n + 1 - RT = 5 * n + 1 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
+        | (rw [show RT + 5 * n + 1 - RT = 5 * n + 1 by omega, rtv_eq _ _ _ _ _ by_n];
            rfl)
-        | (rw [show RT + 5 * n + 2 - RT = 5 * n + 2 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
+        | (rw [show RT + 5 * n + 2 - RT = 5 * n + 2 by omega, rtv_eq _ _ _ _ _ by_n];
            rfl)
-        | (rw [show RT + 5 * n + 3 - RT = 5 * n + 3 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
+        | (rw [show RT + 5 * n + 3 - RT = 5 * n + 3 by omega, rtv_eq _ _ _ _ _ by_n];
            rfl)
-        | (rw [show RT + 5 * n + 4 - RT = 5 * n + 4 by omega, rtv_eq _ _ _ _ _ (by norm_num)];
+        | (rw [show RT + 5 * n + 4 - RT = 5 * n + 4 by omega, rtv_eq _ _ _ _ _ by_n];
            rfl)
   · rcases hq with h' | h' | rfl | h' | h' | rfl | h' <;> ifs_omega <;>
       first | rfl | omega
@@ -134,7 +134,7 @@ def regRecLoop : Stmt :=
 /-- The registers `regRecLoop` writes. -/
 def BregRec (r : ℕ) : Bool := decide (r = 43201) || decide (43210 ≤ r ∧ r < 43218)
 
-theorem wr_regRecLoop : wrM BregRec regRecLoop = true := by decide
+theorem wr_regRecLoop : wrM BregRec regRecLoop = true := by_d
 
 section exec
 
@@ -158,22 +158,22 @@ theorem regRecLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
       FrameM BregRec d e ∧ e.nmem = recRMem (regMem m₀ CA R cA cC wR) RT FA R cA cC wR n)
     (fun e => 28 * (R - e.nreg 43201)) (fun e => 26 * e.nreg 43201) (fun e he => he.1)
     (fun e ⟨hwe, n, hne, hnR, hPe, hfe, hme⟩ htest => by
-      have r1 : e.nreg 44008 = CA := by rw [hfe.1 _ (by decide), hCA]
-      have r2 : e.nreg 43200 = R := by rw [hfe.1 _ (by decide), hR]
-      have r4 : e.nreg 43011 = 1 := by rw [hfe.1 _ (by decide), h1]
-      have r5 : e.nreg 44003 = RT := by rw [hfe.1 _ (by decide), hRT]
-      have r6 : e.nreg 44011 = FA := by rw [hfe.1 _ (by decide), hFA]
+      have r1 : e.nreg 44008 = CA := by rw [hfe.1 _ by_d, hCA]
+      have r2 : e.nreg 43200 = R := by rw [hfe.1 _ by_d, hR]
+      have r4 : e.nreg 43011 = 1 := by rw [hfe.1 _ by_d, h1]
+      have r5 : e.nreg 44003 = RT := by rw [hfe.1 _ by_d, hRT]
+      have r6 : e.nreg 44011 = FA := by rw [hfe.1 _ by_d, hFA]
       rw [hne, r2] at htest
       have ma : e.nmem (CA + n) = cA n := by
         rw [hme]; unfold recRMem
-        rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega), regMem_rdA _ _ _ _ _ _ htest]
+        rw [ite_eq_right by_o, ite_eq_right by_o, ite_eq_right by_o, regMem_rdA _ _ _ _ _ _ htest]
       have mc : e.nmem (CA + n + R) = cC n := by
         rw [hme]; unfold recRMem
-        rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega),
+        rw [ite_eq_right by_o, ite_eq_right by_o, ite_eq_right by_o,
           show CA + n + R = CA + R + n by omega, regMem_rdC _ _ _ _ _ _ htest]
       have mw : e.nmem (CA + n + R + R) = wR n := by
         rw [hme]; unfold recRMem
-        rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega),
+        rw [ite_eq_right by_o, ite_eq_right by_o, ite_eq_right by_o,
           show CA + n + R + R = CA + 2 * R + n by omega, regMem_rdW _ _ _ _ _ _ htest]
       have ho1 := offF_succ cA cC n
       have ho2 := offF_mono cA cC (show n + 1 ≤ R by omega)
@@ -202,17 +202,17 @@ theorem regRecLoop_exec (d : Config) (hw : WordsBounded W d) {m₀ : ℕ → ℕ
         · rw [hne, r4]
         · rw [r1, r2, hne, hPe, ma, mc]; omega
         · rw [r1, r2, r4, r5, r6, hne, hPe, ma, mc, mw]
-          exact recR_step' _ cA cC wR htest hlay hme (by omega) (by omega) (by omega) (by omega)
-            (by omega) (by omega) (by omega) rfl rfl rfl rfl rfl rfl rfl
+          exact recR_step' _ cA cC wR htest hlay hme by_o by_o by_o by_o
+            by_o by_o by_o rfl rfl rfl rfl rfl rfl rfl
       obtain ⟨e', k, x, hk, hn', hP', hm'⟩ := X
-      exact ⟨e', k, x, ⟨x.wb_right, n + 1, hn', by omega, hP',
-        hfe.trans (exec_frameM x (by decide)), hm'⟩, by rw [hn', hne]; omega,
+      exact ⟨e', k, x, ⟨x.wb_right, n + 1, hn', by_o, hP',
+        hfe.trans (exec_frameM x by_d), hm'⟩, by rw [hn', hne]; omega,
         by rw [hn', hne]; omega⟩)
     ⟨hw, 0, hi, Nat.zero_le _, by rw [hP]; rfl, FrameM.refl _ _, by
-      rw [hm]; funext a; unfold recRMem; rw [ite_eq_right (by omega), ite_eq_right (by omega),
-        ite_eq_right (by omega)]⟩
+      rw [hm]; funext a; unfold recRMem; rw [ite_eq_right by_o, ite_eq_right by_o,
+        ite_eq_right by_o]⟩
   have hnR' : n = R := by
-    rw [hn', hf.1 _ (by decide), hR] at htest; omega
+    rw [hn', hf.1 _ by_d, hR] at htest; omega
   subst hnR'
   exact ⟨d', k, e, by rw [hi] at hk; omega, by rw [hi, hn'] at hψ; omega, hw', hf, hm'⟩
 

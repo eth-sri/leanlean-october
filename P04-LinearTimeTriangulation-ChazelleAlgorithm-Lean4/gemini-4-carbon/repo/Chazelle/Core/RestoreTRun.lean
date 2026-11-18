@@ -42,29 +42,29 @@ variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 theorem RS.mono {s : Stmt} {K K' : ℕ} {Q Q' : Config → Prop} (h : RS P W c₀ s c K Q)
     (hK : K ≤ K') (hQ : ∀ c', Q c' → Q' c') : RS P W c₀ s c K' Q' := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
-  exact ⟨c', k, ex, by omega, hI, hrf, hQ c' hq⟩
+  exact ⟨c', k, ex, by_o, hI, hrf, hQ c' hq⟩
 
 theorem RS.seq {s t : Stmt} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config → Prop} (h₁ : RS P W c₀ s c K₁ Q₁)
     (h₂ : ∀ c₁, TInv W c₀ c₁ → c₁.nreg ALLOC ≤ c.nreg ALLOC + K₁ → Q₁ c₁ →
       RS P W c₀ t c₁ K₂ Q₂) : RS P W c₀ (.seq s t) c (K₁ + K₂) Q₂ := by
   obtain ⟨c₁, k₁, e₁, hk₁, hI₁, hrf₁, hq₁⟩ := h₁
   obtain ⟨c', k₂, e₂, hk₂, hI', hrf₂, hq⟩ := h₂ c₁ hI₁ (by have := hrf₁.2.2.2.2.2.2; omega) hq₁
-  exact ⟨c', k₁ + k₂, .seq e₁ e₂, by omega, hI', hrf₁.trans hrf₂, hq⟩
+  exact ⟨c', k₁ + k₂, .seq e₁ e₂, by_o, hI', hrf₁.trans hrf₂, hq⟩
 
 theorem RS.ifT {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     (ht : c.nreg a < c.nreg b) (h : RS P W c₀ t c K Q) : RS P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
-  exact ⟨c', k + 1, .ifLtN_true ht ex, by omega, hI, hrf.mono subset_rfl (by omega), hq⟩
+  exact ⟨c', k + 1, .ifLtN_true ht ex, by_o, hI, hrf.mono subset_rfl by_o, hq⟩
 
 theorem RS.ifF {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     (ht : ¬ c.nreg a < c.nreg b) (h : RS P W c₀ e c K Q) :
     RS P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hrf, hq⟩ := h
-  exact ⟨c', k + 2, .ifLtN_false ht ex, by omega, hI, hrf.mono subset_rfl (by omega), hq⟩
+  exact ⟨c', k + 2, .ifLtN_false ht ex, by_o, hI, hrf.mono subset_rfl by_o, hq⟩
 
 theorem RS.skip {K : ℕ} {Q : Config → Prop} (hI : TInv W c₀ c) (hq : Q c) :
     RS P W c₀ .skip c K Q :=
-  ⟨c, 0, .skip hI.hw, by omega, hI, RF.refl c 0, hq⟩
+  ⟨c, 0, .skip hI.hw, by_o, hI, RF.refl c 0, hq⟩
 
 /-- **A step of a model operation.** -/
 theorem RS.op {s : Stmt} {K : ℕ} {Q : Config → Prop}
@@ -110,22 +110,22 @@ theorem RS.while {a b : ℕ} {body : Stmt} (I : Config → Prop) (μ : Config �
   induction hn : μ c using Nat.strong_induction_on generalizing c with
   | _ n ih =>
     by_cases ht : c.nreg a < c.nreg b
-    · have hμ : 0 < μ c := hpos c hc ht
+    · have hμ := hpos c hc ht
       obtain ⟨c₁, k₁, e₁, hk₁, hI₁, hrf₁, hc₁, hμ₁⟩ := hbody c hI hc ht (by
-        have : Kb ≤ (Kb + 2) * μ c := by nlinarith
+        have : Kb ≤ (Kb + 2) * μ c := by_nl
         omega)
       have hA₁ := hrf₁.2.2.2.2.2.2
       have hroom₁ : c₁.nreg ALLOC + (Kb + 2) * μ c₁ ≤ W := by
         have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * μ c := Nat.mul_le_mul_left _ hμ₁
         rw [Nat.mul_add, Nat.mul_one] at this
         omega
-      obtain ⟨c', k₂, e₂, hk₂, hI', hrf₂, hq⟩ := ih (μ c₁) (by omega) hI₁ hc₁ hroom₁ rfl
+      obtain ⟨c', k₂, e₂, hk₂, hI', hrf₂, hq⟩ := ih (μ c₁) by_o hI₁ hc₁ hroom₁ rfl
       refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht e₁ e₂, ?_, hI',
-        (hrf₁.trans hrf₂).mono subset_rfl (by omega), hq⟩
-      have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ (by omega)
+        (hrf₁.trans hrf₂).mono subset_rfl by_o, hq⟩
+      have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ by_o
       rw [Nat.mul_add, Nat.mul_one] at this
       omega
-    · exact ⟨c, 2, .whileLtN_false ht hI.hw, by omega, hI, RF.refl c 2, hc, ht⟩
+    · exact ⟨c, 2, .whileLtN_false ht hI.hw, by_o, hI, RF.refl c 2, hc, ht⟩
 
 end
 

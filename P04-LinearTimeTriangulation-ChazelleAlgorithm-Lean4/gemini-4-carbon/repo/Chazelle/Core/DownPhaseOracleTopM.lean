@@ -35,11 +35,11 @@ theorem block_top {m : ℕ → ℕ} {h A : ℕ} (hR : Robust A m fun m' => Grade
       m (blkD m h g b + 3) ≤ 2 ^ g ∧
       ∀ k, k ≤ 2 ^ g → ((Qof P).vtx (b * 2 ^ g + k)).2 ≤
         ((Qof P).vtx (b * 2 ^ g + m (blkD m h g b + 3))).2 := by
-  have hp : 0 < 2 ^ g := Nat.two_pow_pos g
+  have hp := Nat.two_pow_pos g
   have hbc : b < gradeCount P.n g := by
     unfold gradeCount
     have : b * 2 ^ g ≤ P.n - 2 := by
-      have : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
+      have : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by_r
       omega
     have := Nat.div_le_div_right (c := 2 ^ g) this
     rw [Nat.mul_div_cancel _ hp] at this
@@ -50,26 +50,23 @@ theorem block_top {m : ℕ → ℕ} {h A : ℕ} (hR : Robust A m fun m' => Grade
   have hQ : (Qof P).n = P.n := shear_n _ _
   have hlen : C.m = 2 ^ g := by
     rw [hmm]; unfold gradeLen
-    have : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
+    have : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by_r
     omega
   have hsC : C.s = b * 2 ^ g := hs
   have hT : m (blkD m h g b + 3) = C.topIdx := hC.2.2.2.2.1
   have hx : C.s + C.m < (Qof P).n := by
     rw [hQ, hlen, hsC]
-    have : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
+    have : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by_r
     omega
-  refine ⟨h2, hr, by unfold ShootCut.entryAddr at hE; omega, by omega, ?_, fun k hk => ?_⟩
+  refine ⟨h2, hr, by unfold ShootCut.entryAddr at hE; omega, by_o, ?_, fun k hk => ?_⟩
   · rw [hT, ← hlen]; exact C.topIdx_le
   · have hk' : k ≤ C.m := by rw [hlen]; exact hk
     have h1 := C.vertex_snd_le_top hk'
     rw [ShootCut.grade_vertex hP hx hk', hsC] at h1
     rw [hT]
-    show _ ≤ ((Qof P).vtx (b * 2 ^ g + C.topIdx)).2
     have := ShootCut.grade_vertex hP hx C.topIdx_le
     rw [hsC] at this
-    rw [← this]
-    exact h1
-
+    rwa [← this]
 /-- **The top of a chain is its unique highest vertex** (distinct heights): a chain vertex at
 least as high as all chain vertices is the top. -/
 theorem topIdx_of_max {C : Chain} (hD : DistinctHeights C.P) {j : ℕ} (hj : j ≤ C.m)
@@ -77,9 +74,9 @@ theorem topIdx_of_max {C : Chain} (hD : DistinctHeights C.P) {j : ℕ} (hj : j �
   have h1 := C.topIdx_min hj hmax
   have h2 := C.vertex_snd_le_top hj
   have h3 := hmax C.topIdx C.topIdx_le
-  have heq : (C.vertex j).2 = (C.vertex C.topIdx).2 := le_antisymm h2 h3
+  have heq := le_antisymm h2 h3
   by_contra hne
-  have hlt : C.topIdx < j := lt_of_le_of_ne h1 hne
+  have hlt := lt_of_le_of_ne h1 hne
   refine hD _ _ (C.edgeIdx_lt j) (C.edgeIdx_lt C.topIdx) ?_ heq
   intro he
   have := C.sideEdgeIdx_inj hj C.topIdx_le he

@@ -49,7 +49,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have hK₀ := E.hK.fix hI
   have hP := E.hP
   have hNF := E.hNF₂
-  have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
+  have hAW := hI.hw.1 ALLOC
   have hW4 : 4 ≤ W := by have := E.hWh; unfold hostWords at this; omega
   obtain ⟨⟨hpKn, hpKp, hpK6⟩, hoK, -⟩ := startMathTask P J N₂ hP hNF
   have hoK' : offK P J (pK0 J) 0 = Lst J := by
@@ -57,23 +57,23 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       unfold offK oW; rfl
     rw [this]; unfold pK0; exact_mod_cast hoK
   set i := c.nreg sP with hid
-  have nob : ∀ j, j < 10000 → bandOf (sw j) ∉ oracleBands := fun j hj => not_oracle_sw (by unfold sw; omega) (by unfold sw; omega)
+  have nob : ∀ j, j < 10000 → bandOf (sw j) ∉ oracleBands := fun j hj => not_oracle_sw by_so by_so
   unfold stStep
   refine (IRS.ite (K := 11990) (fun hlt => ?_) (fun hge => ?_)).mono
     (by unfold stStepK; omega) (fun _ h => h)
   swap
   · refine IRS.skip hI ⟨⟨sN, sP2, sPl, sAt, sLen, sLab, sReg, aF1, aFi⟩,
-      fun hi => absurd hi (by omega), fun _ => rfl, fun _ _ _ _ => rfl, le_rfl, fun _ _ => rfl⟩
-  have hi : i < rs.length := by omega
+      fun hi => absurd hi by_o, fun _ => rfl, fun _ _ _ _ => rfl, le_rfl, fun _ _ => rfl⟩
+  have hi : i < rs.length := by_o
   have hr1 := hSR i hi
   rw [getD_d5 hi] at hr1
   obtain ⟨ra, rb, -, -, -⟩ := hr1
   obtain ⟨hpw, -, -, -⟩ := hw rs[i] (List.getElem_mem hi)
   obtain ⟨-, -, -, hsL⟩ := stop_facts hst hi
   -- 1. load the stop
-  have hok1 : okB W c.nmem lsStLoad c.nreg := stLoad_ok _ _ hK₀.2.1 (by omega)
+  have hok1 : okB W c.nmem lsStLoad c.nreg := stLoad_ok _ _ hK₀.2.1 by_o
   refine IRS.seq (K₁ := 7) (K₂ := 11008 + 84) (IRS.block lsStLoad hI hok1) ?_ |>.mono
-    (by simp) (fun _ h => h)
+    by_s (fun _ h => h)
   rintro c₁ hI₁ hA₁ - hc₁
   obtain ⟨v1E, v1H⟩ := stLoad_val c.nmem c.nreg hK₀.2.1
   have hm1 : c₁.nmem = c.nmem := by rw [hc₁]
@@ -93,8 +93,8 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   refine IRS.seq (K₁ := 11008) (K₂ := 84) (callOff_irs (dsc := sw 2) (ex := kE) (hx := kH)
     (ey := zE) (hy := zH) (g := cGW) (o := zO) (C := J.whole) hI₁ (E.ctxW' hI₁)
     (by simp [kE, kH, zE, zH, cGW, sw]) (by simp [zO, sw])
-    (by rw [e1kE]; exact hpKn) (by rw [e1E]; exact hpw.1) (by rw [hgw]; exact hC.hg)
-    (by rw [e1kE, e1kH]; exact hpKp) (by rw [e1E, e1H]; exact hpw.2.1)
+    (by rwa [e1kE]) (by rw [e1E]; exact hpw.1) (by rw [hgw]; exact hC.hg)
+    (by rwa [e1kE, e1kH]) (by rw [e1E, e1H]; exact hpw.2.1)
     (by rw [e1kE, e1kH]; exact fun _ => hpK6 rfl) (by rw [e1E, e1H]; exact hpw.2.2)
     (by rw [hA1]; unfold stStepK at hroom; omega)) ?_
   rintro c₂ hI₂ hA₂ - ⟨b2, -, k2, hal2, hm2⟩
@@ -107,9 +107,9 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
   have k12 : ∀ q, bandOf q ∉ oracleBands → q ≠ zX → q ≠ zE → q ≠ zH → q ≠ zO → q ≠ zO + 1 →
       q ≠ ALLOC → c₂.nreg q = c.nreg q := fun q hq h1 h2 h3 h4 h5 h6 => by
     rw [k2 q hq h4 h5 h6, k1 q h1 h2 h3]
-  have k0₂ : c₂.nreg K0 = 0 := (E.hK.fix hI₂).1
+  have k0₂ := (E.hK.fix hI₂).1
   have hm12 : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-    rw [hm2 a (by omega), hm1]
+    rw [hm2 a by_o, hm1]
   -- the registers of the state, kept so far
   have keepS : ∀ q, (LblR kN kL q ∨ q = aF ∨ q = sP) → c₂.nreg q = c.nreg q := by
     intro q hq
@@ -117,7 +117,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       unfold LblR at hq
       simp only [kN, kL, aF, sP, sw] at hq
       omega
-    refine k12 q (not_oracle_sw (by omega) (by omega)) ?_ ?_ ?_ ?_ ?_ ?_
+    refine k12 q (not_oracle_sw by_o by_o) ?_ ?_ ?_ ?_ ?_ ?_
     all_goals first | (simp only [ALLOC]; omega) | (intro h; subst h; unfold LblR at hq; simp [kN, kL, aF, sP, zX, zE, zH, zO, sw] at hq)
   have fr12 : ∀ r, bandOf r ∉ oracleBands → ¬ WS r → r ≠ ALLOC → c₂.nreg r = c.nreg r :=
     fun r hr hws hra => k12 r hr (fun h => hws (Or.inl h)) (fun h => hws (Or.inr (Or.inl h)))
@@ -130,7 +130,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     have hgt : Lst J < soff P J rs[i] := hb2.2.1 (by have := hb2.1; omega)
     exact IRS.skip hI₂ ⟨stI_congr ⟨sN, sP2, sPl, sAt, sLen, sLab, sReg, aF1, aFi⟩ keepS,
       fun hi' he => absurd he (ne_of_gt hgt), fun _ => keepS sP (Or.inr (Or.inr rfl)), fr12,
-      by omega, hm12⟩
+      by_o, hm12⟩
   · -- the stop lies at the key
     rw [k0₂] at h
     have hat : soff P J rs[i] = Lst J := by
@@ -138,43 +138,43 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       linarith
     have hi1 : i ≤ 1 := by
       by_contra h2
-      have hi2 : i = 2 := by omega
-      have h0 := sAt 0 (by omega) (by omega)
-      have := stops_two hP hNF hst (i := 0) (by omega)
+      have hi2 : i = 2 := by_o
+      have h0 := sAt 0 by_o by_o
+      have := stops_two hP hNF hst (i := 0) by_o
       simp only [Nat.zero_add] at this
       have e2 : soff P J rs[2] = Lst J := by
         have : rs[i] = rs[2] := by simp [hi2]
         rw [← this]; exact hat
       linarith
-    have hax := hAR i (by omega)
-    rw [getD_d5 (by omega)] at hax
+    have hax := hAR i by_o
+    rw [getD_d5 by_o] at hax
     obtain ⟨xa, xn, xl, xm, -⟩ := hax
     have haux' := haux i hi
-    rw [getD_d5 hi, getD_d5 (show i < ax.length by omega)] at haux'
+    rw [getD_d5 hi, getD_d5 (by omega)] at haux'
     obtain ⟨ax1, -, axn, axl, axm, -⟩ := haux'
     -- the auxiliary record
-    have sP2' : c₂.nreg sP = i := keepS sP (Or.inr (Or.inr rfl))
-    have aB2 : c₂.nreg aB = c.nreg aB := k12 _ (nob _ (by norm_num)) (by simp [aB, zX, sw])
+    have sP2' := keepS sP (Or.inr (Or.inr rfl))
+    have aB2 : c₂.nreg aB = c.nreg aB := k12 _ (nob _ by_n) (by simp [aB, zX, sw])
       (by simp [aB, zE, sw]) (by simp [aB, zH, sw]) (by simp [aB, zO, sw]) (by simp [aB, zO, sw])
       (by simp [aB, ALLOC, sw])
     have hok3 : okB W c₂.nmem stAux c₂.nreg := stAux_ok _ _ (E.hK.fix hI₂).2.1 (by
       rw [aB2, sP2']; have := hlay.2; omega)
     refine IRS.seq (K₁ := 11) (K₂ := 70 + 1) (IRS.block stAux hI₂ hok3) ?_ |>.mono
-      (by simp) (fun _ h => h)
+      by_s (fun _ h => h)
     rintro c₃ hI₃ - - hc₃
     obtain ⟨v3A, v3N, v3L, v3M⟩ := stAux_val c₂.nmem c₂.nreg (E.hK.fix hI₂).2.1
     have mm : ∀ k, k < 5 → c₂.nmem (c.nreg aB + 5 * i + k) = c.nmem (c.nreg aB + 5 * i + k) :=
-      fun k hk => hm12 _ (by omega)
+      fun k hk => hm12 _ by_o
     have hm3 : c₃.nmem = c₂.nmem := by rw [hc₃]
-    have e3A : c₃.nreg zA = (ax[i]'(by omega)).1 := by
+    have e3A : c₃.nreg zA = (ax[i]' by_o).1 := by
       rw [hc₃]; show regB _ _ _ _ = _; rw [v3A, aB2, sP2', ← xa]
-      simpa using mm 0 (by norm_num)
-    have e3N : c₃.nreg zN = (ax[i]'(by omega)).2.1 := by
-      rw [hc₃]; show regB _ _ _ _ = _; rw [v3N, aB2, sP2', ← xn]; exact mm 1 (by norm_num)
-    have e3L : c₃.nreg zL = (ax[i]'(by omega)).2.2.1 := by
-      rw [hc₃]; show regB _ _ _ _ = _; rw [v3L, aB2, sP2', ← xl]; exact mm 2 (by norm_num)
-    have e3M : c₃.nreg zM = (ax[i]'(by omega)).2.2.2.1 := by
-      rw [hc₃]; show regB _ _ _ _ = _; rw [v3M, aB2, sP2', ← xm]; exact mm 3 (by norm_num)
+      simpa using mm 0 by_n
+    have e3N : c₃.nreg zN = (ax[i]' by_o).2.1 := by
+      rw [hc₃]; show regB _ _ _ _ = _; rw [v3N, aB2, sP2', ← xn]; exact mm 1 by_n
+    have e3L : c₃.nreg zL = (ax[i]' by_o).2.2.1 := by
+      rw [hc₃]; show regB _ _ _ _ = _; rw [v3L, aB2, sP2', ← xl]; exact mm 2 by_n
+    have e3M : c₃.nreg zM = (ax[i]' by_o).2.2.2.1 := by
+      rw [hc₃]; show regB _ _ _ _ = _; rw [v3M, aB2, sP2', ← xm]; exact mm 3 by_n
     have k3 : ∀ q, q ≠ zX → q ≠ zA → q ≠ zN → q ≠ zL → q ≠ zM → c₃.nreg q = c₂.nreg q :=
       fun q h1 h2 h3 h4 h5 => by rw [hc₃]; exact stAux_other _ _ h1 h2 h3 h4 h5
     have keep3 : ∀ q, (LblR kN kL q ∨ q = aF ∨ q = sP) → c₃.nreg q = c₂.nreg q := by
@@ -191,7 +191,7 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     -- the labels
     have n3 : c₃.nreg kN ≤ 4 := by
       rw [keep3 kN (Or.inl (Or.inl rfl)), keepS kN (Or.inl (Or.inl rfl))]; exact sN
-    refine IRS.seq (K₁ := 70) (K₂ := 1) (stLabs_irs hI₃ E.hK n3 (by rw [e3A]; exact ax1) hW4) ?_
+    refine IRS.seq (K₁ := 70) (K₂ := 1) (stLabs_irs hI₃ E.hK n3 (by rwa [e3A]) hW4) ?_
     rintro c₄ hI₄ hA₄ - ⟨n4, l4, a4, f4, m4⟩
     -- advance the pointer
     have sP4 : c₄.nreg sP = i := by
@@ -211,13 +211,13 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     have hlab5 : lblOf c₅ kN kL = lblOf c₄ kN kL :=
       lblOf_congrK (fun q hq => f5 q (by unfold LblR at hq; simp only [kN, kL, sP, sw] at hq ⊢; omega))
     rw [hlab3] at l4
-    have e3A' : c₃.nreg zA = 1 ↔ (ax[i]'(by omega)).1 = 1 := by rw [e3A]
-    have hlen2 : (lblOf c kN kL).length ≤ 2 := by omega
+    have e3A' : c₃.nreg zA = 1 ↔ (ax[i]' by_o).1 = 1 := by rw [e3A]
+    have hlen2 : (lblOf c kN kL).length ≤ 2 := by_o
     have aF3 : c₃.nreg aF = c.nreg aF := by
       rw [keep3 aF (Or.inr (Or.inl rfl)), keepS aF (Or.inr (Or.inl rfl))]
     refine ⟨⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, fun _ _ => by rw [v5], fun hn => absurd hat (hn hi),
       fun r hr hws hra => ?_, ?_, fun a ha => ?_⟩
-    · rw [f5 _ (by simp [kN, sP, sw])]; exact n4
+    · rwa [f5 _ (by simp [kN, sP, sw])]
     · rw [v5]; omega
     · rw [v5]; omega
     · intro j hj hj'
@@ -237,9 +237,9 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
         split_ifs
         · exact labAdd_old this
         · exact this
-      · rw [getD_d5' (show i < ax.length by omega)] at hv
+      · rw [getD_d5' (by omega)] at hv
         unfold axLabs at hv
-        by_cases ha : (ax[i]'(by omega)).1 = 1
+        by_cases ha : (ax[i]' by_o).1 = 1
         · rw [ite_eq_left ha] at hv
           rw [ite_eq_left (e3A'.2 ha), e3N, e3L, e3M]
           refine labAdd_new hlen2 ?_
@@ -263,19 +263,19 @@ theorem stStep_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     · rw [f5 _ (by simp [aF, sP, sw]), a4]
       split_ifs
       · omega
-      · rw [aF3]; exact aF1
+      · rwa [aF3]
     · rw [f5 _ (by simp [aF, sP, sw]), a4, v5]
       by_cases ha : c₃.nreg zA = 1
       · rw [ite_eq_left ha]
-        refine ⟨fun _ => ⟨i, by omega, ?_⟩, fun _ => rfl⟩
-        rw [getD_d5' (show i < ax.length by omega)]; exact e3A'.1 ha
+        refine ⟨fun _ => ⟨i, by_o, ?_⟩, fun _ => rfl⟩
+        rw [getD_d5' (by omega)]; exact e3A'.1 ha
       · rw [ite_eq_right ha, aF3, aFi]
         constructor
-        · rintro ⟨j, hj, hjx⟩; exact ⟨j, by omega, hjx⟩
+        · rintro ⟨j, hj, hjx⟩; exact ⟨j, by_o, hjx⟩
         · rintro ⟨j, hj, hjx⟩
           rcases Nat.lt_succ_iff_lt_or_eq.1 hj with h' | rfl
           · exact ⟨j, h', hjx⟩
-          · rw [getD_d5' (show i < ax.length by omega)] at hjx
+          · rw [getD_d5' (by omega)] at hjx
             exact absurd (e3A'.2 hjx) ha
     · -- the frame
       have hr5 : r ≠ sP := fun h => hws (by subst h; simp [WS])

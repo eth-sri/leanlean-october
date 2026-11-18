@@ -90,12 +90,12 @@ theorem sOuterInv_push {σ : ℝ} {c₀ : Config} {out : List Polygon.Triangle} 
     exact congrArg _ hst₂
   have hkQ : c.nreg 64 < (subPoly P l).n := by rw [n_subPoly]; exact hk
   have hwalk := walk_of_lt (subPoly P l) σ hkQ (stackS c)
-  refine ⟨⟨hw', hC', hT', hF', by omega, ?_, ?_⟩, ?_⟩
+  refine ⟨⟨hw', hC', hT', hF', by_o, ?_, ?_⟩, ?_⟩
   · intro x hx
     rw [hs'] at hx
     rcases List.mem_cons.1 hx with rfl | hx
     · exact hk
-    · exact hlt₂ x (by rw [hst₂]; exact hx)
+    · exact hlt₂ x (by rwa [hst₂])
   · rw [e64, hs', eout, hout₂, List.append_assoc, ← List.map_append, ← hout, hwalk]
   · unfold subOuterPot
     rw [e64, hs', hwalk, List.length_append]
@@ -115,16 +115,16 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
   obtain ⟨h60, h61, h62, h65, h68, h70, hr70, hr72⟩ := hC
   have hk : c.nreg 64 < l.length := by rw [h62] at ht; exact ht
   unfold subOuterBody
-  refine spec_seq (spec_instr (Exec.constN hw 69 1 (by omega)) fun hw₁ => ?_)
+  refine spec_seq (spec_instr (Exec.constN hw 69 1 by_o) fun hw₁ => ?_)
   have hs₁ : stackS { c with nreg := upd c.nreg 69 1 } = stackS c :=
     stackS_congr (by config_simp) (by config_simp) rfl
   have hF₁ : SFrame c { c with nreg := upd c.nreg 69 1 } := sFrame_of_regs
-    (fun r hr => by config_simp; exact Machine.upd_other _ _ _ (by omega)) (fun r _ => rfl) rfl rfl
+    (fun r hr => by config_simp; exact Machine.upd_other _ _ _ by_o) (fun r _ => rfl) rfl rfl
   refine spec_seq (spec_use (subInnerLoop_exec (P := P) (σ := σ) (k := c.nreg 64) hL' hk _ hw₁
     ⟨by config_simp; exact h60, by config_simp; exact h61, by config_simp; exact h62,
       by config_simp; exact h65, by config_simp; exact h68, by config_simp; exact h70,
       by config_simp; exact hr70, by config_simp; exact hr72⟩
-    hT (by config_simp) (by config_simp; exact htop) (by rw [hs₁]; exact hlt)
+    hT (by config_simp) (by config_simp; exact htop) (by rwa [hs₁])
     (by config_simp)) ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨hC₂, hT₂, hF₂, h64₂, htop₂, hlt₂, hout₂, hst₂⟩
   rw [hs₁] at hk₂ hout₂ hst₂
@@ -144,11 +144,11 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
         nmem := upd c₂.nmem (c₂.nreg 61 + c₂.nreg 63) (c₂.nreg 64) } := by
       refine ⟨fun r hr => ?_, fun r _ => rfl, fun a ha => ?_, rfl⟩
       · have h1 : r ≠ 71 := by omega
-        have h2 : r ≠ 63 := by omega
-        have h3 : r ≠ 64 := by omega
+        have h2 : r ≠ 63 := by_o
+        have h3 : r ≠ 64 := by_o
         simp [h1, h2, h3]
       · config_simp
-        exact Machine.upd_other _ _ _ (by omega)
+        exact Machine.upd_other _ _ _ by_o
     obtain ⟨hI', hp'⟩ := sOuterInv_push (P := P) (W := W) (c₀ := c₀) ‹WordsBounded _ _›
       ⟨by config_simp; exact g60, by config_simp; exact g61, by config_simp; exact g62,
         by config_simp; exact g65, by config_simp; exact g68, by config_simp; exact g70,
@@ -161,7 +161,7 @@ theorem subOuterBody_inv (hL : SLayout W base sbase l.length) {σ : ℝ} {c₀ :
       hk htop₂ hlt₂ hout hout₂ hst₂ (by config_simp)
       (by config_simp; rw [g65]) (by config_simp; rw [g65, h64₂]) (by config_simp; rw [h64₂])
       (by config_simp)
-    exact ⟨hI', by omega⟩
+    exact ⟨hI', by_o⟩
 
 /-- **Spec lemma for the walk.**  From a configuration with the constants, the index table,
 `top ≤ k` (`k = nreg 64`) and stack entries `< m`, the walk appends
@@ -213,16 +213,16 @@ theorem subInitBlock_exec (h3 : 3 ≤ l.length) (c : Config) (hc : WordsBounded 
   have hg : ∀ i, i < l.length →
       upd (upd c.nmem (c.nreg 61) 0) (c.nreg 61 + 1) 1 (c.nreg 60 + i) = l.getD i 0 := by
     intro i hi
-    rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega), hT i hi]
+    rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o, hT i hi]
   have gA : upd (upd c.nmem (c.nreg 61) 0) (c.nreg 61 + 1) 1 (c.nreg 60 + c.nreg 62 - 1) =
       l.getD (l.length - 1) 0 := by
     rw [show c.nreg 60 + c.nreg 62 - 1 = c.nreg 60 + (l.length - 1) by omega]
-    exact hg _ (by omega)
+    exact hg _ by_o
   have gB : upd (upd c.nmem (c.nreg 61) 0) (c.nreg 61 + 1) 1 (c.nreg 60) = l.getD 0 0 := by
-    have := hg 0 (by omega)
+    have := hg 0 by_o
     rwa [Nat.add_zero] at this
   have gC : upd (upd c.nmem (c.nreg 61) 0) (c.nreg 61 + 1) 1 (c.nreg 60 + 1) = l.getD 1 0 :=
-    hg 1 (by omega)
+    hg 1 by_o
   unfold subInitBlock
   exec_block
   · omega
@@ -231,7 +231,7 @@ theorem subInitBlock_exec (h3 : 3 ≤ l.length) (c : Config) (hc : WordsBounded 
   · config_simp; omega
   · config_simp; omega
   · config_simp; omega
-  · refine ⟨by omega, by config_simp, by config_simp, by config_simp; exact h62, by config_simp,
+  · refine ⟨by_o, by config_simp, by config_simp, by config_simp; exact h62, by config_simp,
       by config_simp, by config_simp, by config_simp, by config_simp, ?_,
       fun i hi => by config_simp; exact hg i hi, ?_, by config_simp; rw [gA],
       by config_simp; rw [gA], by config_simp; rw [gB], by config_simp; rw [gB],
@@ -241,25 +241,25 @@ theorem subInitBlock_exec (h3 : 3 ≤ l.length) (c : Config) (hc : WordsBounded 
       simp [stk, upd]
     · refine ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_, rfl⟩
       · have h63 : r ≠ 63 := by omega
-        have h64 : r ≠ 64 := by omega
-        have h65 : r ≠ 65 := by omega
-        have h68 : r ≠ 68 := by omega
-        have h70 : r ≠ 70 := by omega
-        have h71 : r ≠ 71 := by omega
-        have h72 : r ≠ 72 := by omega
-        have h73 : r ≠ 73 := by omega
-        have h74 : r ≠ 74 := by omega
+        have h64 : r ≠ 64 := by_o
+        have h65 : r ≠ 65 := by_o
+        have h68 : r ≠ 68 := by_o
+        have h70 : r ≠ 70 := by_o
+        have h71 : r ≠ 71 := by_o
+        have h72 : r ≠ 72 := by_o
+        have h73 : r ≠ 73 := by_o
+        have h74 : r ≠ 74 := by_o
         simp [h63, h64, h65, h68, h70, h71, h72, h73, h74]
       · have h61 : r ≠ 61 := by omega
-        have h62 : r ≠ 62 := by omega
-        have h63 : r ≠ 63 := by omega
-        have h64 : r ≠ 64 := by omega
-        have h65 : r ≠ 65 := by omega
-        have h66 : r ≠ 66 := by omega
-        have h72 : r ≠ 72 := by omega
+        have h62 : r ≠ 62 := by_o
+        have h63 : r ≠ 63 := by_o
+        have h64 : r ≠ 64 := by_o
+        have h65 : r ≠ 65 := by_o
+        have h66 : r ≠ 66 := by_o
+        have h72 : r ≠ 72 := by_o
         simp [h61, h62, h63, h64, h65, h66, h72]
       · config_simp
-        rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+        rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o]
 
 set_option linter.unusedSimpArgs false in
 /-- **Spec lemma for `subSignStmt`.**  With `rreg 72 = 0`: cost `≤ 10`;
@@ -273,32 +273,32 @@ theorem subSignStmt_exec (c : Config) (hc : WordsBounded W c) (h72 : c.rreg 72 =
       c'.rreg 72 = c.rreg 72 ∧ (∀ r, (r < 61 ∨ 72 < r) → c'.rreg r = c.rreg r) ∧
       c'.nreg = c.nreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold subSignStmt
-  refine spec_seq (spec_use (detInto_exec (P := P) 67 68 69 61 62 63 64 65 66 (by decide)
-    (by decide) (by decide)
+  refine spec_seq (spec_use (detInto_exec (P := P) 67 68 69 61 62 63 64 65 66 by_d
+    by_d by_d
     (fun r hr => by rcases hr with rfl | rfl | rfl | rfl | rfl | rfl <;> decide) c hc) ?_)
   rintro c₁ k₁ hk₁ hw₁ ⟨hdet, hfr, hn, hnm, hrm, hout⟩
-  have e72 : c₁.rreg 72 = c.rreg 72 := hfr 72 (by decide) (by decide) (by decide)
+  have e72 : c₁.rreg 72 = c.rreg 72 := hfr 72 by_d by_d by_d
   by_cases hpos : 0 < det (c.rreg 61, c.rreg 62) (c.rreg 63, c.rreg 64) (c.rreg 65, c.rreg 66)
-  · refine spec_ifLtR_true (by rw [e72, h72, hdet]; exact hpos)
+  · refine spec_ifLtR_true (by rwa [e72, h72, hdet])
       (spec_instr (Exec.constR hw₁ 70 1) fun hw₂ => ?_)
-    refine ⟨by omega, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
+    refine ⟨by_o, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
       by config_simp; exact hnm, by config_simp; exact hrm, by config_simp; exact hout⟩
     · config_simp
       rw [ite_eq_left hpos]
       norm_num
     · config_simp
-      rw [Machine.upd_other _ _ _ (by omega)]
-      exact hfr r (by omega) (by omega) (by omega)
-  · refine spec_ifLtR_false (by rw [e72, h72, hdet]; exact hpos)
+      rw [Machine.upd_other _ _ _ by_o]
+      exact hfr r by_o by_o by_o
+  · refine spec_ifLtR_false (by rwa [e72, h72, hdet])
       (spec_instr (Exec.constR hw₁ 70 (-1)) fun hw₂ => ?_)
-    refine ⟨by omega, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
+    refine ⟨by_o, ?_, by config_simp; exact e72, fun r hr => ?_, by config_simp; exact hn,
       by config_simp; exact hnm, by config_simp; exact hrm, by config_simp; exact hout⟩
     · config_simp
       rw [ite_eq_right hpos]
       norm_num
     · config_simp
-      rw [Machine.upd_other _ _ _ (by omega)]
-      exact hfr r (by omega) (by omega) (by omega)
+      rw [Machine.upd_other _ _ _ by_o]
+      exact hfr r by_o by_o by_o
 
 end init
 
@@ -330,8 +330,8 @@ theorem mountainSubStmt_exec_sign (h3 : 3 ≤ l.length) (c : Config) (hc : Words
   have hsig : c₂.rreg 70 = mountainSign (subPoly P l) := by
     rw [e70, r1, r2, r3, r4, r5, r6]
     unfold mountainSign
-    rw [n_subPoly, vtx_subPoly_getD P l (by omega), vtx_subPoly_getD P l (by omega),
-      vtx_subPoly_getD P l (by omega)]
+    rw [n_subPoly, vtx_subPoly_getD P l by_o, vtx_subPoly_getD P l by_o,
+      vtx_subPoly_getD P l by_o]
   have hC : SConsts (c.nreg 60) (c.nreg 61) l.length (mountainSign (subPoly P l)) c₂ :=
     ⟨by rw [hn, n60], by rw [hn, n61], by rw [hn, n62], by rw [hn, n65], by rw [hn, n68],
       by rw [hn, n70], hsig, by rw [e72, r72]⟩
@@ -379,8 +379,8 @@ theorem mountainSub_exec (hM : IsMountain (subPoly P l)) (c : Config) (hc : Word
   have hlen := (mountain_triangulates_of_sign (subPoly P l) hM hσ hpos).1.2.1
   rw [n_subPoly] at hlen
   obtain ⟨hn, hr, hnm, hrm⟩ := hF
-  refine ⟨c', k, mountainSign (subPoly P l), ex, hσ, hpos, by omega, hout, hn, hr,
-    fun a ha => hnm a (by rw [hm]; exact ha), hrm⟩
+  refine ⟨c', k, mountainSign (subPoly P l), ex, hσ, hpos, by_o, hout, hn, hr,
+    fun a ha => hnm a (by rwa [hm]), hrm⟩
 
 end main
 

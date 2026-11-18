@@ -58,7 +58,7 @@ theorem gKey_ok : KeyOK gKey 11010 := by
   intro a b d e ha hb hd he P W M N c₀ c hE hI hx hy hroom
   have h21 := hI.h21
   have h23 := hI.h23
-  have i0 := hI.hin 83000 (by norm_num) (by norm_num)
+  have i0 := hI.hin 83000 by_n by_n
   unfold InR at ha hb hd he
   rcases hE.kind with ⟨h0, C, hM⟩ | ⟨h1, hMi, hbit⟩
   · -- a chain model
@@ -69,12 +69,12 @@ theorem gKey_ok : KeyOK gKey 11010 := by
       subst hM'; exact ⟨hy.1, hy.2.1, hy.2.2 C' rfl⟩
     obtain ⟨c', k, ex, hk, b1, b2, hf⟩ := keyCmp_exec (by unfold InR; omega) (by unfold InR; omega)
       (by unfold InR; omega) (by unfold InR; omega) hI.hw hE.hG hE.hW hwf hC hI.h22 hx' hy'
-      (hE.hWm C' hM') (by omega)
+      (hE.hWm C' hM') by_o
     obtain ⟨hI', hrf, h8⟩ := hI.prim ex.wb_right hf
-    refine ⟨c', k + 1, .ifLtN_true (by rw [h21, h23, h0]; omega) ex, by omega, ?_, ?_,
-      hI', hrf.mono subset_rfl (by omega), h8⟩
-    · rw [hM']; exact b1
-    · rw [hM']; exact b2
+    refine ⟨c', k + 1, .ifLtN_true (by rw [h21, h23, h0]; omega) ex, by_o, ?_, ?_,
+      hI', hrf.mono subset_rfl by_o, h8⟩
+    · rwa [hM']
+    · rwa [hM']
   · -- the interior model
     subst hMi
     have hn := interior_n (P := P)
@@ -87,10 +87,10 @@ theorem gKey_ok : KeyOK gKey 11010 := by
       (by intro r hr; simp only [List.mem_cons, List.not_mem_nil, or_false] at hr
           rcases hr with rfl | rfl | rfl | rfl <;> omega)
       hx.2.1 hy.2.1 (by rw [← hn]; exact hx.1) (by rw [← hn]; exact hy.1)
-    have hfr : FrameB Bik c c' := exec_frameB ex (wr_iKey a b d e)
+    have hfr := exec_frameB ex (wr_iKey a b d e)
     obtain ⟨hI', hrf, h8⟩ := hI.prim ex.wb_right (frame_of_frameB hfr Bik_band k)
-    refine ⟨c', k + 2, .ifLtN_false (by rw [h21, h23, h1]; omega) ex, by omega, b1, b2,
-      hI', hrf.mono subset_rfl (by omega), h8⟩
+    refine ⟨c', k + 2, .ifLtN_false (by rw [h21, h23, h1]; omega) ex, by_o, b1, b2,
+      hI', hrf.mono subset_rfl by_o, h8⟩
 
 end
 

@@ -105,7 +105,7 @@ theorem kn_le (_Y : XCtx P li L E reg r C NR i0 g) {p : ℕ} :
   unfold kNext
   by_cases h : tU C.m C.topIdx C.sideBeta p < C.m
   · rw [decide_eq_true h, tK_eq_of_lt h]; simp only [ite_true]
-    exact ⟨by omega, fun h' => absurd h' (by decide)⟩
+    exact ⟨by_o, fun h' => absurd h' by_d⟩
   · rw [decide_eq_false h, tK_eq_of_ge (not_lt.1 h)]
     simp only [Bool.false_eq_true, ite_false]; omega
 
@@ -124,14 +124,14 @@ theorem inner_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht
   have hse := walk_sector_edge Y.cpSimple Y.X.hCs Y.X.hCm C.sideBeta h6 hp ht
   generalize tK C.m C.topIdx C.sideBeta p = kc at hkn hk1 hkc_le hv0 hv1 hse ⊢
   rw [hA] at hkn hk1 hv1 hse
-  have hsn := sig_next (i0 := i0) (show kc < xK by omega) (show kNext li kc < xK by omega) hk1
-  rw [Y.vtx_sig (by omega)] at hv0
-  rw [Y.vtx_sig (by omega), hsn] at hv1
+  have hsn := sig_next (i0 := i0) (by omega) (show kNext li kc < xK by omega) hk1
+  rw [Y.vtx_sig by_o] at hv0
+  rw [Y.vtx_sig by_o, hsn] at hv1
   have hne : (xG).vtx (sig li xK i0 kc) ≠ (xG).vtx ((sig li xK i0 kc + 1) % (xG).n) :=
-    Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rw [Y.gn]; exact sig_lt li (by omega) _ _)
+    Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rw [Y.gn]; exact sig_lt li by_o _ _)
   refine ⟨?_, fun x => ?_⟩
   · unfold sidePt; rw [hv0, hv1, Y.gn]
-  · rw [hse, Chazelle.Chain.sideLeft_edge hne ht, Y.vtx_sig (by omega), Y.vtx_sig (by omega), hsn,
+  · rw [hse, Chazelle.Chain.sideLeft_edge hne ht, Y.vtx_sig by_o, Y.vtx_sig by_o, hsn,
       Y.gn]
 
 /-- **Inner position at a tour vertex** (regular): a vertex position of `G`, sector inside. -/
@@ -154,17 +154,15 @@ theorem inner_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
   rw [hA] at hsv
   have hnx : kNext li kc ≤ C.m := by unfold kNext; split_ifs <;> omega
   have hpv : kPrev li kc ≤ C.m := by unfold kPrev; split_ifs <;> omega
-  have hsn := sig_next (i0 := i0) (show kc < xK by omega) (show kNext li kc < xK by omega)
+  have hsn := sig_next (i0 := i0) (by omega) (show kNext li kc < xK by omega)
     (fun _ => by omega)
-  have hsp := sig_prev (i0 := i0) (show kc < xK by omega) (show kPrev li kc < xK by omega)
+  have hsp := sig_prev (i0 := i0) (by omega) (show kPrev li kc < xK by omega)
     (fun _ => by omega)
   refine ⟨?_, fun x hx => ?_⟩
-  · rw [Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero, hv0, Y.vtx_sig (by omega)]
+  · rw [Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero, hv0, Y.vtx_sig by_o]
   · have h := hsv x hx
-    rw [Y.vtx_sig (by omega), Y.vtx_sig (by omega), Y.vtx_sig (by omega), hsn, hsp] at h
-    rw [Chazelle.Chain.sideLeft_zero, Y.gn]
-    exact h
-
+    rw [Y.vtx_sig by_o, Y.vtx_sig by_o, Y.vtx_sig by_o, hsn, hsp] at h
+    rwa [Chazelle.Chain.sideLeft_zero, Y.gn]
 /-- **Outer position inside a tour edge**: the reversed position of `G`, opposite half-plane. -/
 theorem outer_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1)
     (hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = !li) :
@@ -190,20 +188,20 @@ theorem outer_edge {p : ℕ} (h6 : 6 ≤ p) (hp : p < 2 * C.m + 6) {t : ℝ} (ht
     · simp only [Bool.not_false, ite_true, Bool.false_eq_true, ite_false]; omega
     · simp only [Bool.not_true, Bool.false_eq_true, ite_false, ite_true]
       have := hk1 rfl; omega
-  have hkn' : kNext (!li) kc < xK := by omega
+  have hkn' : kNext (!li) kc < xK := by_o
   have hsn : sig li xK i0 kc = (sig li xK i0 (kNext (!li) kc) + 1) % xK := by
     conv_lhs => rw [← hback]
     refine sig_next hkn' (by rw [hback]; omega) (fun hl => ?_)
     subst hl; unfold kNext; simp only [Bool.not_false, ite_true]; omega
-  rw [Y.vtx_sig (by omega)] at hv0
+  rw [Y.vtx_sig by_o] at hv0
   rw [Y.vtx_sig hkn'] at hv1
   have hne : (xG).vtx (sig li xK i0 (kNext (!li) kc)) ≠
       (xG).vtx ((sig li xK i0 (kNext (!li) kc) + 1) % (xG).n) :=
-    Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rw [Y.gn]; exact sig_lt li (by omega) _ _)
+    Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rw [Y.gn]; exact sig_lt li by_o _ _)
   have ht' : 1 - t ∈ Ioo (0 : ℝ) 1 := ⟨by linarith [ht.2], by linarith [ht.1]⟩
   refine ⟨?_, fun x hx hx' => ?_⟩
   · unfold sidePt; rw [hv0, hv1, Y.gn, ← hsn, ← Chazelle.Geometry.lerp_symm]
-  · rw [hse, Y.vtx_sig (by omega), Y.vtx_sig hkn'] at hx
+  · rw [hse, Y.vtx_sig by_o, Y.vtx_sig hkn'] at hx
     rw [Chazelle.Chain.sideLeft_edge hne ht', Y.gn, ← hsn] at hx'
     exact det_neg_of hx hx'
 
@@ -229,18 +227,18 @@ theorem outer_vtx {p : ℕ} (h6 : 6 ≤ p) (hp : p ≤ 2 * C.m + 6)
   have e2 : kNext (!li) kc = kPrev li kc := by unfold kPrev kNext; cases li <;> simp
   have hnx : kNext li kc ≤ C.m := by unfold kNext; split_ifs <;> omega
   have hpv : kPrev li kc ≤ C.m := by unfold kPrev; split_ifs <;> omega
-  have hsn := sig_next (i0 := i0) (show kc < xK by omega) (show kNext li kc < xK by omega)
+  have hsn := sig_next (i0 := i0) (by omega) (show kNext li kc < xK by omega)
     (fun _ => by omega)
-  have hsp := sig_prev (i0 := i0) (show kc < xK by omega) (show kPrev li kc < xK by omega)
+  have hsp := sig_prev (i0 := i0) (by omega) (show kPrev li kc < xK by omega)
     (fun _ => by omega)
-  have hσ : sig li xK i0 kc < (xG).n := by rw [Y.gn]; exact sig_lt li (by omega) _ _
+  have hσ : sig li xK i0 kc < (xG).n := by rw [Y.gn]; exact sig_lt li by_o _ _
   refine ⟨?_, fun x hx hx' => ?_⟩
-  · rw [Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero, hv0, Y.vtx_sig (by omega)]
+  · rw [Chazelle.Chain.sidePt_zero, Chazelle.Chain.sidePt_zero, hv0, Y.vtx_sig by_o]
   · have h := hsv x hx
-    rw [e1, e2, Y.vtx_sig (by omega), Y.vtx_sig (by omega), Y.vtx_sig (by omega), hsn, hsp] at h
+    rw [e1, e2, Y.vtx_sig by_o, Y.vtx_sig by_o, Y.vtx_sig by_o, hsn, hsp] at h
     rw [Chazelle.Chain.sideLeft_zero, Y.gn] at hx'
     have hns := FactsInterior.corner_nonSpike Y.gSimple hσ
-    have hB : (xG).vtx ((sig li xK i0 kc + 1) % (xG).n) - (xG).vtx (sig li xK i0 kc) ≠ 0 :=
+    have hB :=
       sub_ne_zero.2 (Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple hσ).symm
     unfold Chazelle.Jordan.prevIdx at hns
     rw [Y.gn] at hns hB
@@ -255,7 +253,7 @@ theorem g_bound {q : ℕ} (hq : q < xK) {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 1
   have h3 := Y.three
   have hmem : sidePt xG q s ∈ C.P.boundary := by
     rw [Y.hbd]
-    exact ⟨q, by rw [Y.gn]; exact hq, Chazelle.Geometry.lerp_mem_segment _ _ hs0 hs1⟩
+    exact ⟨q, by rwa [Y.gn], Chazelle.Geometry.lerp_mem_segment _ _ hs0 hs1⟩
   obtain ⟨h1, h2⟩ := Chazelle.Jordan.abs_le_coordBound_of_mem_boundary C.P hmem
   refine ⟨h1, h2, ?_⟩
   obtain ⟨i, hi, hz⟩ := hmem
@@ -264,9 +262,9 @@ theorem g_bound {q : ℕ} (hq : q < xK) {s : ℝ} (hs0 : 0 ≤ s) (hs1 : s ≤ 1
   have hv : ∀ k, k < C.P.n → (C.P.vtx k).2 ≤ C.top.2 := by
     intro k hk
     rw [← chain_vertex_eq Y.X.hCs hk]
-    exact C.topIdx_spec.2 k (by omega)
+    exact C.topIdx_spec.2 k by_o
   have a1 := hv i hi
-  have a2 := hv ((i + 1) % C.P.n) (Nat.mod_lt _ (by omega))
+  have a2 := hv ((i + 1) % C.P.n) (Nat.mod_lt _ by_o)
   rw [hz', Chazelle.Geometry.lerp_snd]
   nlinarith
 
@@ -286,12 +284,12 @@ theorem meet_of_attach (Y : XCtx P li L E reg r C NR i0 g) {c : Set Point}
     (hc : ∃ y a b : ℝ, a < b ∧ c = Chazelle.Visibility.hseg y a b) {q : ℕ} {s : ℝ}
     (hA : SideAttach xG c q s) : (c ∩ reg r).Nonempty := by
   have hG := Y.gSimple
-  have hMH : WalkAx (interiorModel xG) := walkAx_interiorModel hG
+  have hMH := walkAx_interiorModel hG
   have hW : (interiorModel xG).W = xG :=
     DownDrv.interiorWalk_hostPoly Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
   have hReq := DownDrv.region_eq_intHost Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
   obtain ⟨hq, hs0, hs1, hmem, rA, hrA, hsec⟩ := hA
-  obtain ⟨r', hr', hcl⟩ := hMH.clean q (by rw [hW]; exact hq) s hs0 hs1
+  obtain ⟨r', hr', hcl⟩ := hMH.clean q (by rwa [hW]) s hs0 hs1
   rw [hW] at hcl
   obtain ⟨y₀, a, b, hab, rfl⟩ := hc
   obtain ⟨x, hxc, hne, hxd⟩ := Extract.exists_near_mem hab hmem (lt_min hrA hr')
@@ -300,7 +298,7 @@ theorem meet_of_attach (Y : XCtx P li L E reg r C NR i0 g) {c : Set Point}
     by_contra hxD
     exact hcl x (show dist x _ < r' from lt_of_lt_of_le hxd (min_le_right _ _)) hxD hxl
   refine ⟨x, hxc, ?_⟩
-  rw [hReq]; exact hxD
+  rwa [hReq]
 
 end
 

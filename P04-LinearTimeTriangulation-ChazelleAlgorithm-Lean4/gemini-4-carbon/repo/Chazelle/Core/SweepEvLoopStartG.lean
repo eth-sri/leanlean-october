@@ -41,8 +41,8 @@ theorem stores_irs (hK : Consts c₀) {a : ℕ} (ha : IScr a) :
     refine IRS.seq (K₁ := 1) (K₂ := 1 + 2 * rs.length) (IRS.store (v := r) hI hA) ?_ |>.mono
       (by simp; omega) (fun _ h => h)
     rintro c₁ hI₁ - - rfl
-    set c₁ : Config := { c with nmem := upd c.nmem (c.nreg a) (c.nreg r) } with hc₁
-    have hk1 : c₁.nreg K1 = 1 := (hK.fix hI₁).2.1
+    set c₁ := { c with nmem := upd c.nmem (c.nreg a) (c.nreg r) } with hc₁
+    have hk1 := (hK.fix hI₁).2.1
     have hk1' : c.nreg K1 = 1 := hk1
     have ea : c₁.nreg a = c.nreg a := rfl
     refine IRS.seq (K₁ := 1) (K₂ := 2 * rs.length) (IRS.instr1 (i := .addN a a K1) hI₁
@@ -63,18 +63,18 @@ theorem stores_irs (hK : Consts c₀) {a : ℕ} (ha : IScr a) :
     rw [e3 x]
     simp only [List.length_cons]
     by_cases hx : c.nreg a + 1 ≤ x ∧ x < c.nreg a + 1 + rs.length
-    · rw [ite_eq_left hx, ite_eq_left (by omega)]
-      have hidx : x - c.nreg a = (x - (c.nreg a + 1)) + 1 := by omega
+    · rw [ite_eq_left hx, ite_eq_left by_o]
+      have hidx : x - c.nreg a = (x - (c.nreg a + 1)) + 1 := by_o
       rw [hidx, List.getD_cons_succ]
       have hmem : rs.getD (x - (c.nreg a + 1)) 0 ∈ rs := by
-        rw [List.getD_eq_getElem _ _ (by omega)]; exact List.getElem_mem _
+        rw [List.getD_eq_getElem _ _ by_o]; exact List.getElem_mem _
       exact o2 _ (hr _ (List.mem_cons_of_mem _ hmem))
     · rw [ite_eq_right hx]
       show upd c.nmem (c.nreg a) (c.nreg r) x = _
       by_cases hx0 : x = c.nreg a
       · subst hx0
-        rw [upd_same, ite_eq_left (by omega), Nat.sub_self, List.getD_cons_zero]
-      · rw [upd_other _ _ _ hx0, ite_eq_right (by omega)]
+        rw [upd_same, ite_eq_left by_o, Nat.sub_self, List.getD_cons_zero]
+      · rw [upd_other _ _ _ hx0, ite_eq_right by_o]
 
 /-- The registers of the log record. -/
 def lsLogRegs : List ℕ := [kE, kH, kN, kL, kL + 1, kL + 2, kL + 3]
@@ -94,7 +94,7 @@ theorem stLog_irs (hK : Consts c₀) (hI : IInv W c₀ c) (hlB : c₀.nreg ALLOC
       ∀ i, i < 4 → c'.nmem (c.nreg lB + 3 + i) = c.nreg (kL + i)) := by
   have hzX : IScr zX := iscr_sw (by simp [zX, sw]) (by simp [zX, sw])
   refine IRS.seq (K₁ := 1) (K₂ := 14 + 1) (IRS.instr1 (i := .copyN zX lB) hI hzX) ?_ |>.mono
-    (by norm_num) (fun _ h => h)
+    by_n (fun _ h => h)
   rintro c₁ hI₁ - - rfl
   have v1 : ({ c with nreg := regI c.nmem (.copyN zX lB) c.nreg } : Config).nreg zX = c.nreg lB := by
     simp [regI]
@@ -103,29 +103,29 @@ theorem stLog_irs (hK : Consts c₀) (hI : IInv W c₀ c) (hlB : c₀.nreg ALLOC
   have hne : ∀ r ∈ lsLogRegs, r ≠ zX := by
     intro r hr; simp only [lsLogRegs, List.mem_cons, List.not_mem_nil, or_false] at hr
     rcases hr with rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp [kE, kH, kN, kL, zX, sw]
-  refine IRS.seq (K₁ := 14) (K₂ := 1) (stores_irs hK hzX lsLogRegs _ hI₁ (by rw [v1]; exact hlB) hne
+  refine IRS.seq (K₁ := 14) (K₂ := 1) (stores_irs hK hzX lsLogRegs _ hI₁ (by rwa [v1]) hne
     (by rw [v1]; simp [lsLogRegs]; omega)) ?_
   rintro c₂ hI₂ - - ⟨e1, e2, e3⟩
   rw [v1] at e3
   refine (IRS.instr1 (i := .constN lC 1) hI₂ ⟨iscr_sw (by simp [lC, sw]) (by simp [lC, sw]),
-    by omega⟩).mono le_rfl ?_
+    by_o⟩).mono le_rfl ?_
   rintro c' rfl
   have hlen : lsLogRegs.length = 7 := rfl
   have val : ∀ k, k < 7 → c₂.nmem (c.nreg lB + k) = c.nreg (lsLogRegs.getD k 0) := by
     intro k hk
     rw [e3, ite_eq_left (by rw [hlen]; omega), Nat.add_sub_cancel_left, o1 _ ?_]
-    rw [List.getD_eq_getElem _ _ (by rw [hlen]; exact hk)]
+    rw [List.getD_eq_getElem _ _ (by rwa [hlen])]
     exact hne _ (List.getElem_mem _)
   refine ⟨by simp [regI], fun q h1 h2 => ?_, fun x hx => ?_, ?_, ?_, ?_, fun i hi => ?_⟩
   · simp only [regI]
     rw [upd_other _ _ _ h2, e2 q h1, o1 q h1]
   · show c₂.nmem x = _
     rw [e3, ite_eq_right (by rw [hlen]; omega)]
-  · show c₂.nmem _ = _; have := val 0 (by norm_num); simpa [lsLogRegs] using this
-  · show c₂.nmem _ = _; have := val 1 (by norm_num); simpa [lsLogRegs] using this
-  · show c₂.nmem _ = _; have := val 2 (by norm_num); simpa [lsLogRegs] using this
+  · show c₂.nmem _ = _; have := val 0 by_n; simpa [lsLogRegs] using this
+  · show c₂.nmem _ = _; have := val 1 by_n; simpa [lsLogRegs] using this
+  · show c₂.nmem _ = _; have := val 2 by_n; simpa [lsLogRegs] using this
   · show c₂.nmem _ = _
-    have := val (3 + i) (by omega)
+    have := val (3 + i) by_o
     rw [← Nat.add_assoc] at this
     rw [this]
     interval_cases i <;> simp [lsLogRegs]

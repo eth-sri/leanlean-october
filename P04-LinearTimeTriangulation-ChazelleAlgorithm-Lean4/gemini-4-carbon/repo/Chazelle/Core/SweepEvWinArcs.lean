@@ -31,7 +31,7 @@ theorem arcsTask : ArcsTask := by
   classical
   set M := chainModel C with hMdef
   have hGM : GoodModel M := Or.inl ⟨C, hP, rfl⟩
-  have hM : WalkAx M := walkAx_of_goodModel hGM
+  have hM := walkAx_of_goodModel hGM
   set F := N.F M Q with hF
   have hN' := hN
   obtain ⟨hFam, -, -, reg, hRC, -, hAO, -, -⟩ := hN
@@ -48,7 +48,7 @@ theorem arcsTask : ArcsTask := by
   have h2 : ∀ r, r < R → ((Finset.range A).filter fun j => (N.arc j).reg = r).card ≤
       M.deg F (reg r) + 1 := by
     intro r hr
-    have hU : reg r ∈ M.regions F := hRC.1 r hr
+    have hU := hRC.1 r hr
     obtain ⟨hfin, hle⟩ := arcsPerRegion M Q F hGM hFam (reg r) hU
     refine le_trans ?_ hle
     rw [← Set.ncard_coe_finset]
@@ -59,7 +59,7 @@ theorem arcsTask : ArcsTask := by
       rw [hj.2] at this
       exact this
     · simp only [Finset.coe_filter, Finset.mem_range, Set.mem_ofPred_eq] at hj hj'
-      have hk : M.key Q (N.arc j).s = M.key Q (N.arc j').s := congrArg Prod.fst h
+      have hk := congrArg Prod.fst h
       exact hAO.2.1 j j' hj.1 hj'.1 (by rw [hj.2, hj'.2]) hk
   -- 3. the degrees sum to at most `2 K`
   have hsys := hM.sys F hFam.2.1 hFam.1
@@ -78,12 +78,11 @@ theorem arcsTask : ArcsTask := by
       change ∑ᶠ U ∈ M.regions F, _ = _
       rw [himg, finsum_mem_image hinj, finsum_mem_coe_finset]
       rfl
-    rw [← e]; exact hpot
+    rwa [← e]
   -- 4. the count
   have hK : F.ncard = N.nChords := Gran.ncard_F hN'
-  have hRK : R = N.nChords + 1 := Gran.nRegions_eq hN' hM
-  have h4 : ∑ r ∈ Finset.range R, ((Finset.range A).filter fun j => (N.arc j).reg = r).card ≤
-      ∑ r ∈ Finset.range R, (M.deg F (reg r) + 1) :=
+  have hRK := Gran.nRegions_eq hN' hM
+  have h4 :=
     Finset.sum_le_sum fun r hr => h2 r (Finset.mem_range.1 hr)
   rw [Finset.sum_add_distrib, Finset.sum_const, Finset.card_range, smul_eq_mul, mul_one] at h4
   omega

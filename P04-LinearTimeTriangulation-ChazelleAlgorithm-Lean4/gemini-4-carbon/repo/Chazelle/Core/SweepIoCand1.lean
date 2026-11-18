@@ -54,15 +54,15 @@ theorem cand1Spec_of (hB : BruteSpec) (hT : TabStepSpec) (hS : ShrStepSpec) : Ca
       κB * (N₁.arcs.length + 1) * (F (c₀.nreg (sw 5)) + 1) ≤ KB := by
     intro h
     rw [hKB, ite_eq_left h]
-    exact Nat.mul_le_mul (Nat.mul_le_mul_right _ (by omega)) le_rfl
+    exact Nat.mul_le_mul (Nat.mul_le_mul_right _ by_o) le_rfl
   have hLK := Cand1.lhsK_le (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))
   have h1 : κB + κT + κS + 30000 ≤
       (κB + κT + κS + 30000) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) :=
-    Nat.le_mul_of_pos_right _ (by omega)
+    Nat.le_mul_of_pos_right _ by_o
   have e : (2 * SweepEv.κGen (c₀.nreg (sw 6)) + κB + κT + κS + 30000) *
       (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) =
       2 * (SweepEv.κGen (c₀.nreg (sw 6)) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1)) +
-        (κB + κT + κS + 30000) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) := by ring
+        (κB + κT + κS + 30000) * (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) := by_r
   have hcost : Cand1.lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) +
       (Cand1.kD κT κS (Cand1.lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB +
         11076) ≤
@@ -70,7 +70,7 @@ theorem cand1Spec_of (hB : BruteSpec) (hT : TabStepSpec) (hS : ShrStepSpec) : Ca
         (F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) + KB := by
     unfold Cand1.kD; omega
   exact (Cand1.cand1P_irs hTb hSb hBr hsh hBs hXl hA hI hq hend hKB' hacc0
-    (by omega)).mono hcost (fun _ h => h)
+    by_o).mono hcost (fun _ h => h)
 
 /-- **The candidate step of side `1`** (piece F). -/
 theorem cand1Spec (hB : BruteSpec) : Cand1Spec := cand1Spec_of hB tabStep shrStep

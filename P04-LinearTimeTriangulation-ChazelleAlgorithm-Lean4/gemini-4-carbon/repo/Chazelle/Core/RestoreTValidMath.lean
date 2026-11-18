@@ -106,7 +106,7 @@ theorem valid_sound (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
   set Q := Qof P
   obtain ⟨hcorr, -, harcs, hregsOK⟩ := hregs
   have hFam := hNF.1
-  have hU : reg r ∈ M.regions (N.F M Q) := hcorr.1 r hr
+  have hU := hcorr.1 r hr
   obtain ⟨-, hL, hcase⟩ := hv
   have hpos : M.pos Q x = sidePt M.W x.edge (M.param Q x) := rfl
   have hτ := dirOf_pm σb
@@ -120,7 +120,7 @@ theorem valid_sound (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
   rcases hcase with ⟨j, hj, hin⟩ | ⟨h0, hc, hcl⟩
   · exact valid_inside hGM hFam hU hxe hx.1 hx.2.1 (arcOf j hj) hin hτ hL
   · have hkx : M.key Q x = (x.edge : ℝ) + 0 := by unfold Model.key; rw [h0]
-    have e0 : M.param (Qof P) x = 0 := h0
+    have e0 := h0
     have hL' : sideLeft M.W x.edge 0 (rayPt (sidePt M.W x.edge 0) (dirOf σb) 1) := by
       have := hL
       unfold LeftB at this
@@ -133,7 +133,7 @@ theorem valid_sound (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
         ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W x.edge 0) (dirOf σb) s ∉ c := by
       intro c hc ht
       obtain ⟨i, hi, rfl⟩ := mem_F_iff hc
-      have hmem : i ∈ (N.region r).chords := ((hregsOK r hr).1 i).2 ⟨hi, ht⟩
+      have hmem := ((hregsOK r hr).1 i).2 ⟨hi, ht⟩
       obtain ⟨hcl1, hcl2⟩ := hcl i hmem
       refine exit_avoid hGM hFam hc (hNF.2.2.1 i hi) hxe hτ hL' ?_ ?_
       · intro h1 ⟨hlp, hl0⟩
@@ -167,14 +167,14 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
   have hM := walkAx_of_goodModel hGM
   obtain ⟨hcorr, -, harcs, hregsOK⟩ := hregs
   have hFam := hNF.1
-  have hU : reg r ∈ M.regions (N.F M Q) := hcorr.1 r hr
+  have hU := hcorr.1 r hr
   have hτ := dirOf_pm σb
   have hpos : M.pos Q x = sidePt M.W x.edge (M.param Q x) := rfl
   -- the family is nonempty
   obtain ⟨i₀, hi₀⟩ : ∃ i, i ∈ (N.region r).chords := by
     rcases hl : (N.region r).chords with _ | ⟨a, l⟩
     · exact absurd hl hex
-    · exact ⟨a, by simp⟩
+    · exact ⟨a, by_s⟩
   have hne : (N.F M Q).Nonempty := by
     have := (((hregsOK r hr).1 i₀).1 hi₀).1
     exact ⟨_, chord_toSet_mem' this⟩
@@ -191,9 +191,9 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
     obtain ⟨a, b, hab, hin⟩ := valid_complete_int hGM hFam hne hU hadm hnF hsub hxe ht0 hx.2.1
       hτ hL hT rfl hdom
     obtain ⟨j, hj, ha, hb⟩ := listed a b hab
-    exact Or.inl ⟨j, hj, by rw [ha, hb]; exact hin⟩
+    exact Or.inl ⟨j, hj, by rwa [ha, hb]⟩
   · -- at a walk vertex
-    have h0 : M.param Q x = 0 := ht0.symm
+    have h0 := ht0.symm
     have hkx : M.key Q x = (x.edge : ℝ) + 0 := by unfold Model.key; rw [h0]
     rw [hpos, h0] at hdom hadm hnF hsub
     have hL' := hL
@@ -210,7 +210,7 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
           rayPt (sidePt M.W x.edge 0) (dirOf σb) s ∉ (N.chord i).toSet M Q := by
         filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
         exact hnot _ hcF s hs hsT.2
-      have hlpos : ProperPos M Q P.n (N.chord i).lpos ∧ ProperPos M Q P.n (N.chord i).rpos :=
+      have hlpos :=
         chord_proper hNF hi'
       refine ⟨fun h1 hk => ?_, fun h1 hk => ?_⟩
       · rw [hkx] at hk
@@ -224,7 +224,7 @@ theorem valid_compl (hGM : GoodModel M) (hNF : IsNF M (Qof P) N)
         exact exit_block hM hadmi hat hτ (Or.inr ⟨hm, e1, e2⟩) hav
     rcases hcase with ⟨a, b, hab, hin⟩ | ⟨b, hab, hcr⟩ | ⟨a, hab, hcr⟩
     · obtain ⟨j, hj, ha, hb⟩ := listed a b hab
-      exact Or.inl ⟨j, hj, by rw [ha, hb, hkx]; exact hin⟩
+      exact Or.inl ⟨j, hj, by rwa [ha, hb, hkx]⟩
     · obtain ⟨j, hj, ha, -⟩ := listed _ b hab
       exact Or.inr ⟨h0, Or.inl ⟨⟨j, hj, by rw [ha, hkx]⟩, hcr⟩, hcl⟩
     · obtain ⟨j, hj, -, hb⟩ := listed a _ hab

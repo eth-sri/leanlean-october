@@ -44,14 +44,14 @@ theorem whileLtN_rel {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : Conf
     intro c hn hc
     by_cases ht : c.nreg a < c.nreg b
     · obtain ⟨c₁, k₁, hb, hI₁, hk₁, hμ, hr₁⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hk₂, hr₂⟩ := ih (μ c₁) (by omega) c₁ rfl hI₁
+      obtain ⟨c', k₂, hl, hI', ht', hk₂, hr₂⟩ := ih (μ c₁) by_o c₁ rfl hI₁
       refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht', ?_,
-        hmono _ _ _ _ (htrans _ _ _ _ _ hr₁ hr₂) (by omega)⟩
+        hmono _ _ _ _ (htrans _ _ _ _ _ hr₁ hr₂) by_o⟩
       have : (B + 2) * (μ c₁ + 1) ≤ (B + 2) * μ c := Nat.mul_le_mul_left _ hμ
       rw [Nat.mul_add, Nat.mul_one] at this
       omega
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by omega,
-        hmono _ _ _ _ (hrefl c) (by omega)⟩
+    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by_o,
+        hmono _ _ _ _ (hrefl c) by_o⟩
 
 /-! ## The holes -/
 
@@ -85,8 +85,8 @@ theorem levLeaves_eq (M : Model) (Q : Polygon) (c : Config) (R : ℕ)
         | zero => rfl
         | succ f =>
           simp only [holesFrom]
-          have h1 := hk ℓ (by omega)
-          have h2 := hk (ℓ + 1) (by omega)
+          have h1 := hk ℓ by_o
+          have h2 := hk (ℓ + 1) by_o
           rw [show R + 30 + (ℓ + 1) = R + 30 + ℓ + 1 by omega] at h2 ⊢
           rw [ite_no]; omega
       rw [this]
@@ -98,21 +98,21 @@ def holeList (c : Config) (R : ℕ) : List (WPos × WPos) :=
 /-- The holes of the recursion from level `0` are the holes of the contract. -/
 theorem holesFrom_eq (c : Config) (R : ℕ) (hk : ∀ ℓ, ℓ ≤ 3 → c.nreg (R + 30 + ℓ) = ℓ) :
     holesFrom c R 3 0 = holeList c R := by
-  have h0 := hk 0 (by omega)
-  have h1 := hk 1 (by omega)
-  have h2 := hk 2 (by omega)
+  have h0 := hk 0 by_o
+  have h1 := hk 1 by_o
+  have h2 := hk 2 by_o
   simp only [holesFrom, holeList, Nat.add_zero] at h0 ⊢
   rw [show R + 30 + (0 + 1) = R + 30 + 1 by omega, show R + 30 + (0 + 1 + 1) = R + 30 + 2 by omega]
   rw [h0, h1, h2]
   rcases Nat.lt_or_ge (c.nreg (R + 9)) 1 with hH | hH
-  · rw [ite_no _ _ (by omega), show min (c.nreg (R + 9)) 3 = 0 by omega]; rfl
+  · rw [ite_no _ _ by_o, show min (c.nreg (R + 9)) 3 = 0 by omega]; rfl
   rcases Nat.lt_or_ge (c.nreg (R + 9)) 2 with hH2 | hH2
-  · rw [ite_yes _ _ (by omega), ite_no _ _ (by omega), show min (c.nreg (R + 9)) 3 = 1 by omega]
+  · rw [ite_yes _ _ by_o, ite_no _ _ by_o, show min (c.nreg (R + 9)) 3 = 1 by omega]
     rfl
   rcases Nat.lt_or_ge (c.nreg (R + 9)) 3 with hH3 | hH3
-  · rw [ite_yes _ _ (by omega), ite_yes _ _ (by omega), ite_no _ _ (by omega),
+  · rw [ite_yes _ _ by_o, ite_yes _ _ by_o, ite_no _ _ by_o,
       show min (c.nreg (R + 9)) 3 = 2 by omega]; rfl
-  · rw [ite_yes _ _ (by omega), ite_yes _ _ (by omega), ite_yes _ _ (by omega),
+  · rw [ite_yes _ _ by_o, ite_yes _ _ by_o, ite_yes _ _ by_o,
       show min (c.nreg (R + 9)) 3 = 3 by omega]; rfl
 
 /-! ## The vocabulary of the contract -/

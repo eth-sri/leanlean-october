@@ -77,7 +77,7 @@ theorem mem_nodeScan (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
       rw [e, hek]; exact harc.2.2.2.1
     have hsn := hkey _ hs hsk'
     have hen := hkey _ he hek'
-    exact mem_scan C Q N hs he hsn hen hxC (by rw [hsk, hek]; exact hmem)
+    exact mem_scan C Q N hs he hsn hen hxC (by rwa [hsk, hek])
 
 /-- A ray point in the open box at height at most the top that lies on an arc is on the chain. -/
 theorem mem_set_of_arcSet {x : Point} (hbox : x ∈ Chain.box C.radius) (hy : x.2 ≤ C.top.2)
@@ -90,7 +90,7 @@ theorem mem_set_of_arcSet {x : Point} (hbox : x ∈ Chain.box C.radius) (hy : x.
 /-- Near `0`, the points of a finite set are only `0`. -/
 theorem eventually_not_mem_of_finite {X : Set ℝ} (hX : X.Finite) : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∉ X := by
   have hc : IsClosed (X \ {0}) := (hX.sdiff).isClosed
-  have ho : (X \ {0})ᶜ ∈ 𝓝 (0 : ℝ) := hc.isOpen_compl.mem_nhds (by simp)
+  have ho : (X \ {0})ᶜ ∈ 𝓝 (0 : ℝ) := hc.isOpen_compl.mem_nhds by_s
   filter_upwards [nhdsWithin_le_nhds ho, self_mem_nhdsWithin] with t h1 h2
   intro ht
   exact h1 ⟨ht, by simp only [Set.mem_singleton_iff]; exact ne_of_gt h2⟩
@@ -118,7 +118,7 @@ theorem not_arcHit_empty {F : Set (Set Point)} {x : Point} : ¬ ArcHit C F ∅ x
         rw [hε]; split_ifs with h
         · have := min_le_left ((q : ℝ) + 1 - a) (b - a); linarith
         · linarith [hqa.2]
-      refine ⟨q, a + ε - q, hq, by linarith [hqa.1], by linarith, ?_⟩
+      refine ⟨q, a + ε - q, hq, by linarith [hqa.1], by_l, ?_⟩
       rw [show (q : ℝ) + (a + ε - q) = a + ε by ring]
       unfold sideInArc
       split_ifs with h
@@ -126,7 +126,7 @@ theorem not_arcHit_empty {F : Set (Set Point)} {x : Point} : ¬ ArcHit C F ∅ x
         have e : ε = min ((q : ℝ) + 1 - a) (b - a) / 2 := by rw [hε, BookData.ite_t h]
         constructor <;> linarith
       · left; linarith
-    · refine ⟨0, 1 / 2, hn, by norm_num, by norm_num, ?_⟩
+    · refine ⟨0, 1 / 2, hn, by_n, by_n, ?_⟩
       unfold sideInArc; norm_num
   have := hfac p t hp ht0 ht1 hin
   obtain ⟨δ, hδ, -⟩ := this.exists
@@ -164,13 +164,13 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
     {best : Option ℝ} (hbest : Sweep.FirstHitOpt S z σ best) :
     (∀ t, best = some t → FirstHit C.set z σ t) ∧ (best = none → NoHit C.set z σ) := by
   set F := N.F (chainModel C) Q with hFdef
-  have hFam : (chainModel C).ChordFamily Q F := hN.1
+  have hFam := hN.1
   have hfin := finite_crossings C (fun k _ => vertex_snd_ne C hD) z hσ
   -- the initial part of the ray is free
   have hini : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt z σ t ∈ freeIn C.dom F := by
     filter_upwards [eventually_not_mem_of_finite hfin, Ioo_mem_nhdsGT hT] with t h1 h2
     exact mem_freeIn_of_ray C hz (hbox t h2.1 h2.2) h1 (hnoF t h2.1 h2.2)
-  have hfree : Merge.FreeAt C z σ := hini.mono fun t ht => ht.1
+  have hfree := hini.mono fun t ht => ht.1
   obtain ⟨hT0, hnd, hdom⟩ := Merge.hit_of_freeAt C hz hσ hfree
   set t₀ := C.hitParam z σ
   by_cases hon : rayPt z σ t₀ ∈ C.set
@@ -180,13 +180,13 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
     obtain ⟨R, hRr, hRi⟩ := exists_final_region C hz hT hbox hfin hnoF
     -- the node of `R` at the stopping point
     obtain ⟨a₀, ha₀, hsub⟩ := mem_nhdsLT_iff_exists_Ioo_subset.1 hRi
-    have hRhit : ArcHit C F R (rayPt z σ T) :=
+    have hRhit :=
       arcHit_left C hP hFam hRr hz hσ ha₀ (fun t h1 h2 => hsub ⟨h1, h2⟩) hstop
     obtain ⟨a, b, harc, hmem⟩ := hRhit
     obtain ⟨r, hr, rfl⟩ := hR.2.2 R hRr
     obtain ⟨j, hj, hjr, hja, hjb⟩ := hA.2.2.1 r hr a b harc
     obtain ⟨p, hp, hpj⟩ := NFLoc.seq_surj hN hj
-    have hpN : p < B.N := lt_of_lt_of_le hp hB.arcs_le
+    have hpN := lt_of_lt_of_le hp hB.arcs_le
     have hrp : rgi N p = r := by
       show (N.arc (N.seq.getD p 0)).reg = r
       rw [hpj, hjr]
@@ -202,8 +202,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
       have hek : ek (chainModel C) Q N p = b := by
         show (chainModel C).key Q (N.arc (N.seq.getD p 0)).e = b
         rw [hpj, hjb]
-      show rayPt z σ T ∈ (chainModel C).arcSet (sk (chainModel C) Q N p) (ek (chainModel C) Q N p)
-      rw [hsk, hek]; exact hmem
+      rwa [hsk, hek]
     -- no node of `D*` is hit before `T`
     have hDh : ∀ i, Dm i → ∀ s, 0 < s → s < T →
         ¬ ArcHit C F (rgNode reg N B i) (rayPt z σ s) := by
@@ -223,7 +222,7 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
         exact not_arcHit_empty hh
     obtain ⟨iU, hiU, hsel⟩ := cluster_query_nodes C hP hFam (rgNode reg N B) (bookGraph B)
       (conn_of_graphOK hN hR hA hB) (cross_of_graphOK hP hN hR hA hB) Dm ℓ hlab hz hσ hT hbox
-      hfin hnoF hDh hU hUi (iR := iR) (by rw [hrgR]; exact hR.1 r hr) (by rw [hrgR]; exact hRi)
+      hfin hnoF hDh hU hUi (iR := iR) (by rw [hrgR]; exact hR.1 r hr) (by rwa [hrgR])
     have hSN : SN iU := hSN iU (by
       rcases hsel with h | ⟨-, h⟩
       · exact Or.inl h
@@ -244,10 +243,10 @@ theorem query_main (hP : C.P.Simple) (hD : DistinctHeights C.P)
       rw [BookData.ite_t hiUA]
     have hinS : rayPt z σ t₀ ∈ S :=
       hS1 iU hSN (mem_nodeScan hN hR hA hiUA hon (by rw [hiU']; exact ⟨a₁, b₁, harc₁, hmem₁⟩))
-    have hSfirst : FirstHit S z σ t₀ := Sweep.firstHit_of_subset hSC hfirst hinS
+    have hSfirst := Sweep.firstHit_of_subset hSC hfirst hinS
     refine ⟨fun t ht => ?_, fun hn => ?_⟩
     · subst ht
-      rw [Sweep.firstHit_unique hbest hSfirst]; exact hfirst
+      rwa [Sweep.firstHit_unique hbest hSfirst]
     · subst hn
       exact absurd hinS (hbest t₀ hT0)
   · -- the true hit is the side of the box: no hit at all

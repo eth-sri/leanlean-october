@@ -90,7 +90,7 @@ theorem frame21_of_B {B : ℕ → Bool} {c c' : Config} {k : ℕ}
     · rfl
     · have := hB _ h; unfold ALLOC bandOf bDownDrv at this; omega)
   exact frame21 (fun r h => Or.inl (hB r h)) (FrameB.toM hf) (fun a _ => by rw [hf.2.2.1]) hrr
-    (by omega) (by omega)
+    by_o by_o
 
 set_option maxHeartbeats 8000000 in
 /-- **The host of the region.** -/
@@ -110,16 +110,16 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
   rcases Nat.eq_zero_or_pos E.K with hK | hK
   · -- the whole walk
     obtain ⟨c', k, e, hk, v22, vA, hH0, v16, v21, hm, FM, F⟩ := host0_exec (P := E.P) c hw R.n
-      (by omega) R.c0 R.c1 (by omega)
+      by_o R.c0 R.c1 by_o
     have ex : Exec E.P E.W (hostS sH) c c' (k + 2) :=
       .ifLtN_false (by rw [R.c1, R.K, hK]; omega) e
-    refine ⟨c', k + 2, [HostItem.run 0 (E.P.n - 1)], ex, by omega, by rw [v22]; exact hH0,
+    refine ⟨c', k + 2, [HostItem.run 0 (E.P.n - 1)], ex, by_o, by rwa [v22],
       fun it hit => ?_, by rw [v21]; rfl, ?_, ?_, by rw [v22], by rw [v22, vA]; simp,
       fun q hq1 _ a b d e f => FM.1 q (by
         have h9 : q ≠ 9999 := by intro h; subst h; simp [bandOf, bDownDrv] at hq1
         simp [a, b, d, e, f, h9]),
-      F.mono le_rfl (by omega)⟩
-    · simp only [List.mem_singleton] at hit; subst hit; exact ⟨by omega, by omega⟩
+      F.mono le_rfl by_o⟩
+    · simp only [List.mem_singleton] at hit; subst hit; exact ⟨by_o, by_o⟩
     · rw [v16]; simp [Host.pts, HostItem.pts]; omega
     · rw [BGood.pts_zero hK, hQn]
   · -- the host RAM
@@ -137,15 +137,15 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
       · exact R.li
       · simp [a, b, d]
     have w₁ := e₁.wb_right
-    have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by decide) (by decide) (by decide)
+    have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ by_d by_d by_d
     have hNW : NFWithin c₁.nmem E.H (c₁.nreg ALLOC) E.N := by
       rw [A₁]
       exact (hE.hNF.transport (fun a ha => by rw [m₁]; exact hlow a ha)).mono hA
-    have hLne : E.L ≠ [] := List.ne_nil_of_length_pos hK
+    have hLne := List.ne_nil_of_length_pos hK
     obtain ⟨c₂, k₂, e₂, hk₂, ⟨pk, pH⟩, F₂⟩ := hH E.P E.W c₁ w₁
       ⟨hE.hG, hE.hWh, by rw [v2]; split_ifs <;> omega,
         by rw [v2, ← hE.hli]; cases E.li <;> simp, E.L, E.E, hLne, hE.hok, hE.hperm, hE.hsort,
-        hE.hdeg, by rw [v0]; exact hNW, by rw [v1]; exact hr'⟩
+        hE.hdeg, by rwa [v0], by rw [v1]; exact hr'⟩
       (by show c₁.nreg ALLOC + κH ≤ E.W; rw [A₁]; omega)
     have hp := pH E.L E.E hLne hE.hok hE.hperm hE.hsort (by rw [v0]; exact hNW.nfAt)
     dsimp only at hp
@@ -163,7 +163,7 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
       refine ⟨rfl, ?_, ?_, ?_, fun q a b d => ?_, rfl, rfl⟩ <;> config_simp
       simp [a, b, d]
     have ex : Exec E.P E.W (hostS sH) c c₃ (k₁ + (k₂ + k₃) + 1) :=
-      .ifLtN_true (by rw [R.c1, R.K]; exact hK) (.seq e₁ (.seq e₂ e₃))
+      .ifLtN_true (by rwa [R.c1, R.K]) (.seq e₁ (.seq e₂ e₃))
     set H := regHost E.li (Qof E.P).n E.N r with hHd
     have hwf : HostWF E.Q.n H := by
       obtain ⟨-, -, -, -, -, -, -, hwf⟩ := DownMath.walk_rep ((hE.ctx hK).rc hr') hE.hli
@@ -173,20 +173,20 @@ theorem hostS_exec {sH : Stmt} {κH : ℕ} (hH : HostOK sH κH) {E : BEnv} (hE :
     have F₁ : Frame {bDownDrv} c c₁ k₁ := frame21_of_B
       (B := fun q => decide (q = 215000 ∨ q = 215001 ∨ q = 215002))
       (fun q h => by simp only [decide_eq_true_eq] at h; rcases h with h | h | h <;> subst h <;> rfl)
-      (exec_frameB e₁ (by decide)) rr₁
+      (exec_frameB e₁ by_d) rr₁
     have F₃ : Frame {bDownDrv} c₂ c₃ k₃ := frame21_of_B
       (B := fun q => decide (q = 212022 ∨ q = 212021 ∨ q = 212016))
       (fun q h => by simp only [decide_eq_true_eq] at h; rcases h with h | h | h <;> subst h <;> rfl)
-      (exec_frameB e₃ (by decide)) rr₃
+      (exec_frameB e₃ by_d) rr₃
     have F := (F₁.trans (F₂.trans F₃))
     simp only [Finset.union_self] at F
-    have A₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := g₃ _ (by decide) (by decide) (by decide)
+    have A₃ : c₃.nreg ALLOC = c₂.nreg ALLOC := g₃ _ by_d by_d by_d
     have hk₂' : k₂ ≤ κH := hk₂
-    refine ⟨c₃, _, H, ex, by omega, by rw [u22, m₃]; exact hb3, by rw [← hQn]; exact hwf,
-      by rw [u21]; exact hb4, by rw [u16, hb5, hQn], ?_, by rw [u22, ← A₁]; exact hb1,
-      by rw [u22, A₃]; exact hb2, fun q hq1 hq2 a b d _ _ => ?_, F.mono le_rfl (by omega)⟩
+    refine ⟨c₃, _, H, ex, by_o, by rwa [u22, m₃], by rwa [← hQn],
+      by rwa [u21], by rw [u16, hb5, hQn], ?_, by rwa [u22, ← A₁],
+      by rwa [u22, A₃], fun q hq1 hq2 a b d _ _ => ?_, F.mono le_rfl by_o⟩
     · rw [BGood.pts_pos hK, hHd]; unfold regPts; rw [hQn]
-    · rw [g₃ q d b a, pk q hq1 hq2, g₁ q (by omega) (by omega) (by omega)]
+    · rw [g₃ q d b a, pk q hq1 hq2, g₁ q by_o by_o by_o]
 
 end exec
 

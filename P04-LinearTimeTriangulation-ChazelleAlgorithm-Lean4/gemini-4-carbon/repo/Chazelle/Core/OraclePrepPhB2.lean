@@ -85,15 +85,15 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have hsimp : C.P.Simple := by rw [hCQ]; exact (shearInvariance (epsOf P) P).1 hG.1
   have hA0 := arcs_pos hsimp hN
   obtain ⟨hNB7, hABb, hSBb⟩ := NFLoc.nfWithin_bounds hNFw hN hA0
-  have hNFc : NFAt c.nmem NB N := hNFw c.nmem hagree
+  have hNFc := hNFw c.nmem hagree
   have hmn : C.m < P.n := by have := C.m_lt; rw [hCQ, hQn] at this; exact this
   have hm1 := C.one_le
   have hW8 : 8 * P.n + 32 ≤ W := by unfold hostWords at hHW; omega
   set MD := c.nreg 120040 with hMDdef
   set L := c.nreg 120042 with hLdef
   -- 1. the star chords
-  have e4 : c.nmem (NB + 4) = m₀ (NB + 4) := hagree _ (by omega)
-  have e6 : c.nmem (NB + 6) = m₀ (NB + 6) := hagree _ (by omega)
+  have e4 : c.nmem (NB + 4) = m₀ (NB + 4) := hagree _ by_o
+  have e6 : c.nmem (NB + 6) = m₀ (NB + 6) := hagree _ by_o
   have hM := rgMem_of hNFc hN
   rw [e4, e6] at hM
   obtain ⟨-, -, -, hAo⟩ := NFLoc.isNF_arcs hN
@@ -102,23 +102,23 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     obtain ⟨reg, -, hA, -⟩ := NFLoc.isNF_arcs hN
     exact (hA.1 _ (NFLoc.seq_lt hN hp)).1
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, a9₁, b72, b73, b74, pairs₁⟩ := starStage_exec (P := P) hw hM PL.rNB
-    PL.two hNFc.2.2.1 PL.rAB PL.rSB PL.rA PL.one hAl (by omega) (by omega) (by omega) hρR
+    PL.two hNFc.2.2.1 PL.rAB PL.rSB PL.rA PL.one hAl by_o by_o by_o hρR
     (by unfold chCap; omega)
   have hstar : starList (fun q => (fun j => (N.arc j).reg) ((fun p => N.seq.getD p 0) q))
       N.arcs.length = starList (OracleQ.rgi N) N.arcs.length := rfl
   rw [hstar] at b74 pairs₁
-  have K₁ : ∀ r, (BFR r || BIS r) = false → c₁.nreg r = c.nreg r := F₁.1
+  have K₁ := F₁.1
   have k12₁ : ∀ r, 120010 ≤ r → r ≤ 120049 → c₁.nreg r = c.nreg r := fun r a b => K₁ r (by
     simp only [BFR, BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
   have PL₁ := PL.congr fun r hr => k12₁ r (by unfold PLReg at hr; omega)
     (by unfold PLReg at hr; omega)
   -- 2. the zipper
-  have mem₁ : ∀ a, a < A₁ → c₁.nmem a = c.nmem a := F₁.2.2.1
-  set V : QV := { qvOf c₁ with μ := N.arcs.length + 3 } with hV
-  have hVMD : V.MD = MD := k12₁ _ (by norm_num) (by norm_num)
+  have mem₁ := F₁.2.2.1
+  set V := { qvOf c₁ with μ := N.arcs.length + 3 } with hV
+  have hVMD : V.MD = MD := k12₁ _ by_n by_n
   have hVTB : V.TB = MD + 6 := by
-    show c₁.nreg 120041 = _; rw [k12₁ _ (by norm_num) (by norm_num), hTB]
-  have hVL : V.L = L := k12₁ _ (by norm_num) (by norm_num)
+    show c₁.nreg 120041 = _; rw [k12₁ _ by_n by_n, hTB]
+  have hVL : V.L = L := k12₁ _ by_n by_n
   have hVA : V.A = N.arcs.length := PL₁.rA
   have hZ : ZEnv P W A₁ C N V c₁ :=
     { good := hG
@@ -128,11 +128,11 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       s_lt := by rw [hCQ, hQn] at hsl; exact hsl
       isNF := hN
       loc := zloc_of (m := c₁.nmem) (MD := MD) (TB := MD + 6) (L := L) hHW hsimp hD hwf hNFw hN
-        (fun a ha => by rw [mem₁ a (by omega), hagree a ha])
-        (by rw [mem₁ _ (by omega)]; exact hMD0)
-        (fun i hi => by rw [mem₁ _ (by omega)]; exact hmdc i hi) hA₀MD le_rfl
-        (fun j hj => by rw [mem₁ _ (by omega), ← hTB]; exact htab j hj) hAlt
-        (by rw [← hTB]; exact hTBA) (by omega) hVMD PL₁.rNB hVTB hVL hVA PL₁.rAB PL₁.rSB (by simp [hV])
+        (fun a ha => by rw [mem₁ a by_o, hagree a ha])
+        (by rwa [mem₁ _ by_o])
+        (fun i hi => by rw [mem₁ _ by_o]; exact hmdc i hi) hA₀MD le_rfl
+        (fun j hj => by rw [mem₁ _ by_o, ← hTB]; exact htab j hj) hAlt
+        (by rwa [← hTB]) by_o hVMD PL₁.rNB hVTB hVL hVA PL₁.rAB PL₁.rSB (by simp [hV])
       pk := hpk.congr fun r hr => K₁ r (by
         simp only [BFR, BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
       rMD := rfl
@@ -142,10 +142,10 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       rA := rfl
       rAB := rfl
       rSB := rfl
-      r3 := by rw [K₁ _ (by decide)]; exact h205 }
+      r3 := by rwa [K₁ _ by_d] }
   set A₃ := A₁ + N.regions.length + 2 * chCap N.arcs.length with hA₃
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, a9₂, z93, z94, z95, pairsZ, -⟩ := zipStage_exec (P := P)
-    e₁.wb_right hZ a9₁ (by omega) (by rw [hVA]; unfold zCap chCap at *; omega)
+    e₁.wb_right hZ a9₁ by_o (by rw [hVA]; unfold zCap chCap at *; omega)
   rw [hVA] at a9₂ z94 pairsZ hk₂
   rw [hVL] at hk₂
   have K₂ : ∀ r, (BZS r || BSP r) = false → c₂.nreg r = c₁.nreg r := F₂.1
@@ -157,7 +157,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     have := emitted_length_le (OracleQ.zipEk C (Qof P) N) N.arcs.length
     have : (OracleQ.zipSp C (Qof P) N).length ≤ 5 := by
       unfold OracleQ.zipSp OracleQ.zipSpO
-      exact (List.length_filterMap_le _ _).trans (by simp)
+      exact (List.length_filterMap_le _ _).trans by_s
     simp only [List.length_append]; omega
   have hnI : (starList (OracleQ.rgi N) N.arcs.length).length ≤ N.arcs.length := starList_length _ _
   -- 3. the deduplication
@@ -170,13 +170,13 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   have hzc : zCap N.arcs.length = 2 * N.arcs.length + 5 := rfl
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, mem₃, rm₃, o₃, al3a, al3b, v1, v2, v8, Dl, cnt, hDl, pairsD,
       hnd, hmem⟩ := dedupStage_exec (P := P) e₂.wb_right (CH1 := CH1) (CH2 := CH2) (nI := nI)
-    (by rw [K₂ _ (by decide)]; exact b72) (by rw [K₂ _ (by decide)]; exact b73)
-    (by rw [K₂ _ (by decide)]; exact b74) z93 z94 z95
-    (by rw [k12₂ _ (by norm_num) (by norm_num)]; exact PL₁.one)
-    (by rw [k12₂ _ (by norm_num) (by norm_num)]; exact PL₁.zero) a9₂
-    (by omega) (by omega) (by omega)
-    (by omega) (by omega)
-    (by omega)
+    (by rwa [K₂ _ by_d]) (by rwa [K₂ _ by_d])
+    (by rwa [K₂ _ by_d]) z93 z94 z95
+    (by rw [k12₂ _ by_n by_n]; exact PL₁.one)
+    (by rw [k12₂ _ by_n by_n]; exact PL₁.zero) a9₂
+    by_o by_o by_o
+    by_o by_o
+    by_o
   have k12₃ : ∀ r, 120010 ≤ r → r ≤ 120049 → c₃.nreg r = c.nreg r := fun r a b => by
     rw [r₃ r (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]; omega) (by rw [hAL]; omega),
       k12₂ r a b, k12₁ r a b]
@@ -184,15 +184,15 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
   obtain ⟨c₄, k₄, e₄, hk₄, F₄, w34, w37⟩ : ∃ c₄ k₄, Exec P W setB c₃ c₄ k₄ ∧ k₄ = 3 ∧
       FrameB (fun r => decide (r = 60034 ∨ r = 60037)) c₃ c₄ ∧
       c₄.nreg 60034 = N.arcs.length + 3 ∧ c₄.nreg 60037 = N.arcs.length + 3 + (nI + Dl.length) := by
-    have hwr : wr (fun r => decide (r = 60034 ∨ r = 60037)) setB = true := by decide
+    have hwr : wr (fun r => decide (r = 60034 ∨ r = 60037)) setB = true := by_d
     suffices H : ∃ c₄ k₄, Exec P W setB c₃ c₄ k₄ ∧ k₄ = 3 ∧ c₄.nreg 60034 = N.arcs.length + 3 ∧
         c₄.nreg 60037 = N.arcs.length + 3 + (nI + Dl.length) by
       obtain ⟨c₄, k₄, ex, hk, a, b⟩ := H
       exact ⟨c₄, k₄, ex, hk, exec_frameB ex hwr, a, b⟩
     have w₃ := e₃.wb_right
-    have g30 : c₃.nreg 120030 = N.arcs.length := by rw [k12₃ _ (by norm_num) (by norm_num), PL.rA]
-    have g48 : c₃.nreg 120048 = 2 := by rw [k12₃ _ (by norm_num) (by norm_num), PL.two]
-    have g11 : c₃.nreg 120011 = 1 := by rw [k12₃ _ (by norm_num) (by norm_num), PL.one]
+    have g30 : c₃.nreg 120030 = N.arcs.length := by rw [k12₃ _ by_n by_n, PL.rA]
+    have g48 : c₃.nreg 120048 = 2 := by rw [k12₃ _ by_n by_n, PL.two]
+    have g11 : c₃.nreg 120011 = 1 := by rw [k12₃ _ by_n by_n, PL.one]
     unfold setB
     exec_block
     · rw [g30, g48]; omega
@@ -205,9 +205,9 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
     have h4 : (decide (r = 60034 ∨ r = 60037)) = false := by
       simp only [decide_eq_false_iff_not]; omega
     rw [F₄.1 r h4, k12₃ r a b]
-  refine ⟨c₄, _, ex, ?_, ?_, k12₄, ?_, ?_, CH1, CH2, Dl, by omega, by rw [F₄.1 _ (by decide), v1],
-    by rw [F₄.1 _ (by decide), v2], by rw [F₄.1 _ (by decide), v8], w34,
-    by rw [w37, List.length_append], ?_, ?_, ?_, hnd, fun x => ?_, by omega⟩
+  refine ⟨c₄, _, ex, ?_, ?_, k12₄, ?_, ?_, CH1, CH2, Dl, by_o, by rw [F₄.1 _ by_d, v1],
+    by rw [F₄.1 _ by_d, v2], by rw [F₄.1 _ by_d, v8], w34,
+    by rw [w37, List.length_append], ?_, ?_, ?_, hnd, fun x => ?_, by_o⟩
   · have := hk₃; omega
   · -- the frame
     have hband : ∀ r, (110000 ≤ r ∧ r < 130000) → bandOf r ∈ bBands := by
@@ -217,9 +217,9 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
         simp only [BFR, BIS, Bool.or_eq_true, decide_eq_true_eq] at hr
         by_cases h9 : r = 9999
         · exact Or.inr h9
-        · left; exact hband r (by omega))
-      (fun r => exec_rframeS e₁ (B := fun _ => false) (by decide) r rfl) le_rfl
-    have hrr₂ : ∀ r, Bk r = false → c₂.rreg r = c₁.rreg r := exec_rframeS e₂ (by decide)
+        · left; exact hband r by_o)
+      (fun r => exec_rframeS e₁ (B := fun _ => false) by_d r rfl) le_rfl
+    have hrr₂ : ∀ r, Bk r = false → c₂.rreg r = c₁.rreg r := exec_rframeS e₂ by_d
     have G₂ : GF bBands A₁ c₁ c₂ :=
       ⟨fun r hr hra => F₂.1 r (by
           by_contra h'; simp only [Bool.not_eq_false] at h'
@@ -234,7 +234,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
           simp only [Bk, decide_eq_false_iff_not]; intro h
           exact hr (by simp only [bBands, Finset.mem_insert, Finset.mem_singleton, bSign, bandOf]
                        omega)),
-        fun a ha => F₂.2.2.1 a (by omega), fun a ha => F₂.2.2.2.1 a (by omega), F₂.2.2.2.2⟩
+        fun a ha => F₂.2.2.1 a by_o, fun a ha => F₂.2.2.2.1 a by_o, F₂.2.2.2.2⟩
     have G₃ : GF bBands A₁ c₂ c₃ :=
       ⟨fun r hr hra => r₃ r (fun h => hr (by
           simp only [dBands, Finset.mem_insert, Finset.mem_singleton] at h
@@ -242,7 +242,7 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
         fun r hr => rr₃ r (fun h => hr (by
           simp only [dBands, Finset.mem_insert, Finset.mem_singleton] at h
           simp only [bBands, Finset.mem_insert, Finset.mem_singleton]; tauto)),
-        fun a ha => mem₃ a (Or.inl (by omega)), fun a ha => rm₃ a (by omega), o₃⟩
+        fun a ha => mem₃ a (Or.inl by_o), fun a ha => rm₃ a by_o, o₃⟩
     have hb6 : ∀ r, bandOf r ∉ bBands → (decide (r = 60034 ∨ r = 60037)) = false := by
       intro r hr
       have : bandOf r ≠ 6 := fun h => hr (by simp [bBands, bDecomp, h])
@@ -252,15 +252,15 @@ theorem phB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (h
       ⟨fun r hr _ => F₄.1 r (hb6 r hr), fun r hr => F₄.2.1 r (hb6 r hr),
         fun a _ => by rw [F₄.2.2.1], fun a _ => by rw [F₄.2.2.2.1], F₄.2.2.2.2⟩
     exact G₁.trans (G₂.trans (G₃.trans G₄))
-  · rw [hAL] at al3a; rw [hAL, F₄.1 _ (by decide)]; omega
-  · rw [hAL] at al3b; rw [hAL, F₄.1 _ (by decide)]; omega
+  · rw [hAL] at al3a; rw [hAL, F₄.1 _ by_d]; omega
+  · rw [hAL] at al3b; rw [hAL, F₄.1 _ by_d]; omega
   · refine PairsAt.append (fun t ht => ?_) ?_
-    · rw [F₄.2.2.1, mem₃ _ (Or.inl (by omega)), mem₃ _ (Or.inr (Or.inl ⟨by omega,
-        by omega⟩)), F₂.2.2.1 _ (by omega), F₂.2.2.1 _ (by omega)]
+    · rw [F₄.2.2.1, mem₃ _ (Or.inl by_o), mem₃ _ (Or.inr (Or.inl ⟨by_o,
+        by_o⟩)), F₂.2.2.1 _ by_o, F₂.2.2.1 _ by_o]
       exact pairs₁ t ht
-    · rw [F₄.2.2.1]; exact pairsD
+    · rwa [F₄.2.2.1]
   · rw [List.length_append]; omega
-  · rw [hAL] at al3a; rw [List.length_append, hAL, F₄.1 _ (by decide)]; omega
+  · rw [hAL] at al3a; rw [List.length_append, hAL, F₄.1 _ by_d]; omega
   · rw [hmem x]
     constructor
     · rintro ⟨i, hi, rfl⟩

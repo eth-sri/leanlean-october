@@ -35,7 +35,7 @@ theorem sum_cntF (key : ℕ → ℕ) {n R : ℕ} (h : ∀ j, j < n → key j < R
     have e : (List.range R).map (cntF key (n + 1)) =
         (List.range R).map fun r => cntF key n r + (if key n = r then 1 else 0) := by
       apply List.map_congr_left; intro r _; exact cntF_succ key n r
-    rw [e, List.sum_map_add, ih (fun j hj => h j (by omega)), sum_ind, ite_eq_left (h n (by omega))]
+    rw [e, List.sum_map_add, ih (fun j hj => h j by_o), sum_ind, ite_eq_left (h n by_o)]
 
 theorem sum_cnt2F_le (u v : ℕ → ℕ) (n R : ℕ) : ((List.range R).map (cnt2F u v n)).sum ≤ 2 * n := by
   induction n with
@@ -105,7 +105,7 @@ theorem twice_m_le {P : Polygon} {W : ℕ} {m : ℕ → ℕ} {D : ℕ} {M : Mode
     2 * m (D + 3) ≤ W := by
   rcases hM with ⟨-, H, C, hC, -⟩ | ⟨h1, -, -⟩
   · obtain ⟨-, -, -, -, h2⟩ := hCW h0 H C hC
-    have hm : m (D + 1 + 2) = C.m := hC.2.2.2.1
+    have hm := hC.2.2.2.1
     rw [show D + 3 = D + 1 + 2 by omega, hm]
     have := C.m_lt
     omega

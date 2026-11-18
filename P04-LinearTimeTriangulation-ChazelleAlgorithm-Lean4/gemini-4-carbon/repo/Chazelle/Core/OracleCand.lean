@@ -44,7 +44,7 @@ def predP (A p : ℕ) : ℕ := if p = 0 then A - 1 else p - 1
 theorem predP_succP {A p : ℕ} (hp : p < A) : predP A (succP A p) = p := by
   unfold succP predP
   by_cases h : p + 1 < A
-  · rw [ite_eq_left h, ite_eq_right (by omega)]; omega
+  · rw [ite_eq_left h, ite_eq_right by_o]; omega
   · rw [ite_eq_right h, ite_eq_left rfl]; omega
 
 theorem succP_lt {A p : ℕ} (hp : p < A) : succP A p < A := by unfold succP; split_ifs <;> omega
@@ -126,13 +126,13 @@ theorem end_start_adj {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.leng
       have h0p := starts_lt hN hGM hne hp0 hp
       have hqp := sk_mono hN (show q ≤ p by omega) hp
       have hwr : ¬ sk M Q N p < ek M Q N p := by intro hc; linarith
-      have hlt : ek M Q N p < sk M Q N p := lt_of_le_of_ne (not_lt.1 hwr) (Ne.symm hne')
+      have hlt := lt_of_le_of_ne (not_lt.1 hwr) (Ne.symm hne')
       have hle : ek M Q N p ≤ sk M Q N 0 := by
         by_contra hc
         push Not at hc
         exact hfree _ (by unfold sideInArc; rw [ite_eq_right hwr]; exact Or.inr hc) hcr
       have h0q := sk_mono hN (Nat.zero_le q) hq
-      exact start_unique hN hGM hne hq h0 (by linarith)
+      exact start_unique hN hGM hne hq h0 by_l
 
 /-- **Distinct arcs have distinct ends** (every cut starts an arc, `arcCover`). -/
 theorem end_unique {p q : ℕ} (hp : p < N.arcs.length) (hq : q < N.arcs.length)
@@ -209,7 +209,7 @@ theorem scanSet_subset (p : ℕ) : scanSet C Q N p ⊆ C.set := by
     refine ⟨_, hk, ?_⟩
     rw [C.chainEdge_eq, h]
     obtain ⟨s, hs0, hs1, rfl⟩ := hx
-    exact ⟨1 - s, by linarith, by linarith, by ext <;> simp <;> ring⟩
+    exact ⟨1 - s, by_l, by_l, by ext <;> simp <;> ring⟩
 
 /-- **The scanned edges cover the chain points of an arc**: a point of the chain on the closed
 point set of the arc at spine position `p` (whose ends are proper positions) lies on a scanned
@@ -245,7 +245,7 @@ theorem mem_scan {p : ℕ}
         show (chainModel C).W.vtx (q + 1) = (chainModel C).W.vtx ((q + 1) % n)
         rw [Nat.mod_eq_of_lt hlast]
       · exfalso
-        have hq1 : q + 1 = n := by omega
+        have hq1 : q + 1 = n := by_o
         have hv : Geometry.lerp ((chainModel C).wa q) ((chainModel C).wb q) 1 = C.slitTop := by
           rw [Geometry.lerp_one]
           show (C.sideWalk C.sideBeta).vtx ((q + 1) % (C.sideWalk C.sideBeta).n) = C.slitTop
@@ -261,7 +261,7 @@ theorem mem_scan {p : ℕ}
   rw [← hkey'] at hkey
   rw [← hpt] at hxC ⊢
   -- the edge `q'` is among the scanned ones, at index `k ≥ 1`
-  have hq'R : (q' : ℝ) ≤ q' + t' := by linarith
+  have hq'R : (q' : ℝ) ≤ q' + t' := by_l
   have hfl : ∀ (e : ℕ) (u : ℝ) (v : ℕ) (w : ℝ), 0 ≤ u → u < 1 → 0 ≤ w → w < 1 →
       (e : ℝ) + u ≤ v + w → e ≤ v := by
     intro e u v w hu hu1 hw hw1 h
@@ -280,11 +280,11 @@ theorem mem_scan {p : ℕ}
         rw [ite_eq_left hab] at hkey
         rcases hkey with h | h | h
         · exact ⟨h.1.le, h.2.le⟩
-        · exact ⟨le_of_eq h.symm, by linarith⟩
-        · exact ⟨by linarith, le_of_eq h⟩
+        · exact ⟨le_of_eq h.symm, by_l⟩
+        · exact ⟨by_l, le_of_eq h⟩
       have h1 := hfl se _ q' t' hs0 hs1 ht0' ht1' (hak ▸ hk'.1)
       have h2 := hfl q' t' ee _ ht0' ht1' he0 he1 (hbk ▸ hk'.2)
-      refine ⟨q' - se + 1, by omega, by omega, ?_⟩
+      refine ⟨q' - se + 1, by_o, by_o, ?_⟩
       rw [show se + n - 1 + (q' - se + 1) = q' + n by omega, Nat.add_mod_right,
         Nat.mod_eq_of_lt hq']
     · rw [ite_eq_right hab]
@@ -298,32 +298,32 @@ theorem mem_scan {p : ℕ}
         · exact Or.inr (le_of_eq h)
       rcases hk' with h | h
       · have h1 := hfl se _ q' t' hs0 hs1 ht0' ht1' (hak ▸ h)
-        refine ⟨q' - se + 1, by omega, by omega, ?_⟩
+        refine ⟨q' - se + 1, by_o, by_o, ?_⟩
         rw [show se + n - 1 + (q' - se + 1) = q' + n by omega, Nat.add_mod_right,
           Nat.mod_eq_of_lt hq']
       · have h2 := hfl q' t' ee _ ht0' ht1' he0 he1 (hbk ▸ h)
-        refine ⟨q' + n - se + 1, by omega, by omega, ?_⟩
+        refine ⟨q' + n - se + 1, by_o, by_o, ?_⟩
         rw [show se + n - 1 + (q' + n - se + 1) = q' + n + n by omega, Nat.add_mod_right,
           Nat.add_mod_right, Nat.mod_eq_of_lt hq']
   -- the edge is a tour edge (or the closing vertex, the top)
   rw [hn7] at hq'
   rcases pos_on_chain C hq' ht0' ht1' hxC with ⟨h1, h2⟩ | ⟨h1, h2⟩
-  · refine ⟨k, by omega, q' - 6, by omega, by rw [hidx]; omega, ?_⟩
-    have := C.sidePt_tour C.sideBeta (i := q' - 6) (by omega) t'
+  · refine ⟨k, by_o, q' - 6, by_o, by rw [hidx]; omega, ?_⟩
+    have := C.sidePt_tour C.sideBeta (i := q' - 6) by_o t'
     rw [show q' - 6 + 6 = q' by omega] at this
     show sidePt (C.sideWalk C.sideBeta) q' t' ∈ _
     rw [this]
     exact Geometry.lerp_mem_segment _ _ ht0' ht1'.le
   · subst h1; subst h2
-    refine ⟨k - 1, by omega, 2 * C.m - 1, by have := C.one_le; omega, ?_, ?_⟩
+    refine ⟨k - 1, by_o, 2 * C.m - 1, by have := C.one_le; omega, ?_, ?_⟩
     · unfold scanIdx at hidx ⊢
       have hkn : (se + n - 1 + (k - 1)) % n = (se + n - 1 + k + n - 1) % n := by
         rw [show se + n - 1 + k + n - 1 = se + n - 1 + (k - 1) + n by omega, Nat.add_mod_right]
-      rw [hkn, Nat.add_sub_assoc (by omega), Nat.add_mod, hidx, hn7]
+      rw [hkn, Nat.add_sub_assoc by_o, Nat.add_mod, hidx, hn7]
       have := C.one_le
       rw [Nat.mod_eq_of_lt (show 2 * C.m + 7 - 1 < 2 * C.m + 7 by omega),
         show 2 * C.m + 6 + (2 * C.m + 7 - 1) = (2 * C.m - 1 + 6) + (2 * C.m + 7) by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+        Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     · show sidePt (C.sideWalk C.sideBeta) (2 * C.m + 6) 0 ∈ _
       rw [Chazelle.Chain.sidePt_zero, C.sideWalk_vtx_tour C.sideBeta le_rfl,
         show 2 * C.m - 1 + 1 = 2 * C.m by have := C.one_le; omega]
@@ -342,8 +342,8 @@ theorem arcs_le_one_of_empty {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N
   obtain ⟨U, hU⟩ := Set.ncard_eq_one.1 hcard
   by_contra hc
   push Not at hc
-  have h0 := hA.1 0 (by omega)
-  have h1 := hA.1 1 (by omega)
+  have h0 := hA.1 0 by_o
+  have h1 := hA.1 1 by_o
   have hr0 : reg (N.arc 0).reg = U := by
     have := hR.1 _ h0.1; rw [hF, hU] at this; exact this
   have hr1 : reg (N.arc 1).reg = U := by
@@ -354,7 +354,7 @@ theorem arcs_le_one_of_empty {M : Model} {Q : Polygon} {N : NF} (hN : IsNF M Q N
     rcases (hA.1 j hj).2.2.2.2.2.1 with ⟨hc, -⟩ | ⟨-, h, -⟩
     · obtain ⟨c, hc, -⟩ := hc; rw [hF] at hc; exact absurd hc (Set.notMem_empty _)
     · exact h
-  have := hA.2.1 0 1 (by omega) (by omega) hreg (by rw [hk 0 (by omega), hk 1 (by omega)])
+  have := hA.2.1 0 1 by_o by_o hreg (by rw [hk 0 by_o, hk 1 by_o])
   omega
 
 end OracleQ

@@ -93,12 +93,12 @@ theorem search_irs {ls : Stmt} {κL : ℕ} (hls : LSBody ls κL)
         c'.nreg r = c.nreg r) ∧
       (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
+    iscr_sw by_o by_o
   refine IRS.seq (K₁ := 2) (K₂ := κL * (c₀.nreg TLR + 1))
-    (IRS.block lsIn hI ⟨s 4020 (by norm_num) (by norm_num), s 4021 (by norm_num) (by norm_num),
+    (IRS.block lsIn hI ⟨s 4020 by_n by_n, s 4021 by_n by_n,
       trivial⟩) ?_
   rintro c₁ hI₁ hA₁ hA₁' rfl
-  set c₁ : Config := { c with nreg := regB c.nmem lsIn c.nreg } with hc₁
+  set c₁ := { c with nreg := regB c.nmem lsIn c.nreg } with hc₁
   have v1 : c₁.nreg S0C.lsxE = c.nreg zP := by
     simp only [hc₁, lsIn, regB, regI, upd, S0C.lsxE, S0C.lsxH, zP, zPh, sw]
     simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
@@ -123,14 +123,14 @@ theorem search_irs {ls : Stmt} {κL : ℕ} (hls : LSBody ls κL)
       S0C.lsPr P J c₀.nmem (rd c₀ bSweep 300) (c₀.nreg (sw 40)) ⟨c.nreg zP, c.nreg zPh⟩ j) := by
     intro j hj
     rw [e300, e40, v1, v2]
-    exact lsPr_congr (hm _ (by omega)) (hm _ (by omega))
+    exact lsPr_congr (hm _ by_o) (hm _ by_o)
   have hG : c₁.nreg (sw 40) < (chainModel J.whole).W.n := by
     rw [e40, S0C.aenv_gW hA]; exact_mod_cast S0C.gW_lt J
   have hrec : ∀ j, j < c₁.nreg (sw 301) → SweepEv.PosW P J
       (c₁.nmem (c₁.nreg (sw 300) + 7 * j)) (c₁.nmem (c₁.nreg (sw 300) + 7 * j + 1)) := by
     intro j hj
     rw [e301] at hj
-    rw [e300, hm _ (by omega), hm _ (by omega)]
+    rw [e300, hm _ by_o, hm _ by_o]
     exact S0C.log_posW hA hj
   have hx : SweepEv.PosW P J (c₁.nreg S0C.lsxE) (c₁.nreg S0C.lsxH) := by
     rw [v1, v2]
@@ -142,10 +142,10 @@ theorem search_irs {ls : Stmt} {κL : ℕ} (hls : LSBody ls κL)
         ⟨c₁.nreg S0C.lsxE, c₁.nreg S0C.lsxH⟩ i := by
     intro i j hij hj h
     rw [e301] at hj
-    rw [hlsP i (by omega)]
+    rw [hlsP i by_o]
     rw [hlsP j hj] at h
     exact S0C.log_mono hA _ hij hj h
-  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := vo _ (by decide) (by decide)
+  have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := vo _ by_d by_d
   have h := hls P W J c₀ c₁ hI₁ hA.hK (ctxW hA hI₁)
     (fun j hj => by
       rw [eTL] at hj
@@ -159,11 +159,11 @@ theorem search_irs {ls : Stmt} {κL : ℕ} (hls : LSBody ls κL)
   refine h.mono le_rfl ?_
   rintro c' ⟨r1, r2, r3, r4, r5, r6⟩
   rw [e301] at r1
-  refine ⟨r1, fun j hj => (hlsP j (by omega)).1 (r2 j hj),
-    fun j hj hjE => fun h' => r3 j hj (by rw [e301]; exact hjE) ((hlsP j hjE).2 h'),
-    fun r h1 h2 h3 => ?_, fun a ha => by rw [r6 a (by omega)]⟩
+  refine ⟨r1, fun j hj => (hlsP j by_o).1 (r2 j hj),
+    fun j hj hjE => fun h' => r3 j hj (by rwa [e301]) ((hlsP j hjE).2 h'),
+    fun r h1 h2 h3 => ?_, fun a ha => by rw [r6 a by_o]⟩
   rw [r4 r h1 (fun h => h2 (by unfold S0C.LSet at h; unfold sw at *; omega)) h3]
-  exact vo r (by rintro rfl; exact h2 (by decide)) (by rintro rfl; exact h2 (by decide))
+  exact vo r (by rintro rfl; exact h2 by_d) (by rintro rfl; exact h2 by_d)
 
 end Env
 

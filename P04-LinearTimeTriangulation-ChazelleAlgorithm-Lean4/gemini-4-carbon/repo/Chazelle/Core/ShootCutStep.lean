@@ -44,14 +44,14 @@ theorem block_grade {g Λ : ℕ} (hg : 1 ≤ g) (hγ : 2 ^ g ≤ γ) (hcap : γ 
     exact this
   have h2 : 2 ≤ 2 ^ g := by
     calc 2 = 2 ^ 1 := by norm_num
-      _ ≤ 2 ^ g := Nat.pow_le_pow_right (by norm_num) hg
+      _ ≤ 2 ^ g := Nat.pow_le_pow_right by_n hg
   refine ⟨by
     rcases Nat.eq_zero_or_pos Λ with h0 | h0
     · subst h0; simp at hcap; omega
     · omega, ?_⟩
   unfold cutGran
   apply gradeGran_mono
-  have : 2 ^ g ≤ 2 ^ Nat.clog 2 γ := hγ.trans (Nat.le_pow_clog (by norm_num) γ)
+  have : 2 ^ g ≤ 2 ^ Nat.clog 2 γ := hγ.trans (Nat.le_pow_clog by_n γ)
   exact (Nat.pow_le_pow_iff_right (by norm_num : 1 < 2)).1 this
 
 /-- **A block of an upward stretch** `[q, q + L]` (walk vertices `c + d ↦ Q.vtx (q + d)`). -/
@@ -63,23 +63,23 @@ theorem blockUp_ok {c q L g b e : ℕ} (hwalk : ∀ d, d ≤ L →
     PcOK P C m h γ ⟨⟨c + (b * 2 ^ g - q), 0⟩, ⟨c + (b * 2 ^ g - q) + 2 ^ g, 0⟩,
       if 0 < g then 1 else 0, e, b * 2 ^ g, 1, 2 ^ g⟩ := by
   have hp := Nat.two_pow_pos g
-  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
+  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by_r
   rcases Nat.eq_zero_or_pos g with rfl | hg
   · simp only [pow_zero, lt_irrefl, ite_false]
     exact single_ok e (b * 1) 1 1 (by simp at e1 hhi; omega)
   · simp only [hg, ite_true]
-    have hγ : 2 ^ g ≤ γ := by omega
+    have hγ : 2 ^ g ≤ γ := by_o
     obtain ⟨hΛ, hgran⟩ := block_grade hg hγ hcap
     refine ⟨proper_vtx' P C _, proper_vtx' P C _, by simp; omega, by simp; omega, Or.inr rfl,
-      fun h1 => by simp at h1, fun _ => ⟨g, b, hg, hΛ, ?_, he hg, rfl, rfl, by omega, hgran,
+      fun h1 => by simp at h1, fun _ => ⟨g, b, hg, hΛ, ?_, he hg, rfl, rfl, by_o, hgran,
         rfl, rfl, by simp; omega, rfl, by simp; omega, Or.inl rfl, fun d hd => ?_⟩⟩
     · unfold gradeCount
-      have : b * 2 ^ g + 2 ^ g ≤ P.n - 1 := by omega
-      have : b * 2 ^ g ≤ P.n - 2 := by omega
+      have : b * 2 ^ g + 2 ^ g ≤ P.n - 1 := by_o
+      have : b * 2 ^ g ≤ P.n - 2 := by_o
       have := (Nat.le_div_iff_mul_le hp).2 this
       omega
     · simp only [↓reduceIte]
-      rw [Nat.add_assoc, hwalk _ (by omega)]
+      rw [Nat.add_assoc, hwalk _ by_o]
       congr 1; omega
 
 /-- **A block of a downward stretch** from the top `q` (walk vertices `c + d ↦ Q.vtx (q - d)`). -/
@@ -91,22 +91,22 @@ theorem blockDn_ok {c q L g b e : ℕ} (hwalk : ∀ d, d ≤ L →
     PcOK P C m h γ ⟨⟨c + (q - (b + 1) * 2 ^ g), 0⟩, ⟨c + (q - (b + 1) * 2 ^ g) + 2 ^ g, 0⟩,
       if 0 < g then 1 else 0, e, b * 2 ^ g, 0, 2 ^ g⟩ := by
   have hp := Nat.two_pow_pos g
-  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
+  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by_r
   rcases Nat.eq_zero_or_pos g with rfl | hg
   · simp only [pow_zero, lt_irrefl, ite_false]
     exact single_ok e (b * 1) 0 1 (by simp at e1 hhi; omega)
   · simp only [hg, ite_true]
-    have hγ : 2 ^ g ≤ γ := by omega
+    have hγ : 2 ^ g ≤ γ := by_o
     obtain ⟨hΛ, hgran⟩ := block_grade hg hγ hcap
     refine ⟨proper_vtx' P C _, proper_vtx' P C _, by simp; omega, by simp; omega, Or.inr rfl,
-      fun h1 => by simp at h1, fun _ => ⟨g, b, hg, hΛ, ?_, he hg, rfl, rfl, by omega, hgran,
+      fun h1 => by simp at h1, fun _ => ⟨g, b, hg, hΛ, ?_, he hg, rfl, rfl, by_o, hgran,
         rfl, rfl, by simp; omega, rfl, by simp; omega, Or.inr rfl, fun d hd => ?_⟩⟩
     · unfold gradeCount
-      have : b * 2 ^ g ≤ P.n - 2 := by omega
+      have : b * 2 ^ g ≤ P.n - 2 := by_o
       have := (Nat.le_div_iff_mul_le hp).2 this
       omega
     · simp only [show (0 : ℕ) ≠ 1 by decide, ↓reduceIte]
-      rw [Nat.add_assoc, hwalk _ (by omega)]
+      rw [Nat.add_assoc, hwalk _ by_o]
       congr 1; omega
 
 end ShootCut

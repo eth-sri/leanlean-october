@@ -46,7 +46,7 @@ theorem transition (hQ : Q.Simple) (T : Top Q C) (hD : DistinctH Q)
       (pieces Q F₀).ncard ≤ F₀.ncard := by
   have hmn := T.hm
   have hm1 := C.one_le
-  have hh : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 (by omega) (by omega) (by omega)
+  have hh : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 by_o by_o by_o
   obtain ⟨hfam, hcard⟩ := chordFamily_pieces T hF₀ hQ hh
   exact ⟨hfam, degLe_pieces hQ T hh hF₀ hd, semigranular_pieces hQ T hD hF₀ hγ, hcard⟩
 

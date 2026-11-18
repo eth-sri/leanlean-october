@@ -56,7 +56,7 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
       ((10 ^ 9 * ((t * (f + 1) + 20) * (h + a + 1)) + 22) * g + 2)) + 3) * k + 4) + 2) * k + 2)) ≤
       10 ^ 10 * (t + 21) * (d + 2) ^ 2 * f * g * (h + a + 1) := by
   set S := h + a + 1 with hS
-  have hS1 : 1 ≤ S := by omega
+  have hS1 : 1 ≤ S := by_o
   set T := t * (f + 1) + 20 with hT
   -- the piece bound
   have hTf : T ≤ 2 * (t + 20) * f := by
@@ -67,13 +67,13 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
   -- the pair bound
   set P := 10 ^ 9 * 2 * (t + 21) * f * S with hP
   have hP1 : 1 ≤ P := by
-    rw [hP]; have : 1 ≤ (t + 21) * f * S := Nat.one_le_iff_ne_zero.2 (by positivity)
+    rw [hP]; have : 1 ≤ (t + 21) * f * S := Nat.one_le_iff_ne_zero.2 by_p
     nlinarith
   have hpair : 70 + 11040 + 11040 + 7 + g + 3 + ((10 ^ 9 * (T * S) + 22) * g + 2) + 3 ≤
       (P + 22200) * g := by
     have : (10 ^ 9 * (T * S) + 22) * g ≤ P * g := Nat.mul_le_mul_right _ hKp
     nlinarith
-  have hk1 : k + 1 ≤ d + 2 := by omega
+  have hk1 : k + 1 ≤ d + 2 := by_o
   -- the loops
   have hloop : 30 + (17 + (((((70 + 11040 + 11040 + 7 + g + 3 +
       ((10 ^ 9 * (T * S) + 22) * g + 2)) + 3) * k + 4) + 2) * k + 2)) ≤
@@ -81,7 +81,7 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
     generalize hX : 70 + 11040 + 11040 + 7 + g + 3 + ((10 ^ 9 * (T * S) + 22) * g + 2) = X at hpair ⊢
     set Q := (P + 22200) * g with hQ
     have h1 : (X + 3) * k ≤ Q * k := Nat.mul_le_mul_right _ hpair
-    have h2 : ((X + 3) * k + 4 + 2) * k ≤ (Q * k + 6) * k := Nat.mul_le_mul_right _ (by omega)
+    have h2 : ((X + 3) * k + 4 + 2) * k ≤ (Q * k + 6) * k := Nat.mul_le_mul_right _ by_o
     have h3 : (Q * k + 6) * k ≤ (Q * (d + 1) + 6) * (d + 1) :=
       Nat.mul_le_mul (by have := Nat.mul_le_mul_left Q hk; omega) hk
     have h4 : (Q * (d + 1) + 6) * (d + 1) + 49 ≤ (P + 22300) * g * (d + 2) ^ 2 := by
@@ -89,13 +89,13 @@ theorem find_cost {t f g h a d k : ℕ} (hf : 1 ≤ f) (hg : 1 ≤ g) (hk : k �
         rw [hQ]; ring
       rw [e]
       have : Q * (d + 1) * (d + 1) ≤ Q * (d + 2) ^ 2 := by
-        rw [mul_assoc, ← pow_two]; exact Nat.mul_le_mul_left _ (Nat.pow_le_pow_left (by omega) 2)
+        rw [mul_assoc, ← pow_two]; exact Nat.mul_le_mul_left _ (Nat.pow_le_pow_left by_o 2)
       nlinarith
     omega
   calc _ ≤ (P + 22300) * g * (d + 2) ^ 2 := hloop
     _ ≤ 10 ^ 10 * (t + 21) * (d + 2) ^ 2 * f * g * (h + a + 1) := by
       have : P + 22300 ≤ 10 ^ 10 * (t + 21) * f * S := by
-        rw [hP]; have : 1 ≤ (t + 21) * f * S := Nat.one_le_iff_ne_zero.2 (by positivity)
+        rw [hP]; have : 1 ≤ (t + 21) * f * S := Nat.one_le_iff_ne_zero.2 by_p
         nlinarith
       calc (P + 22300) * g * (d + 2) ^ 2 ≤ 10 ^ 10 * (t + 21) * f * S * g * (d + 2) ^ 2 := by
             gcongr
@@ -116,7 +116,7 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
   set E := fEnv P W M N X Ok cu (testS sh) Bc Bo F G H testκ c with hEdef
   have hA0 : c₀.nreg ALLOC = c.nreg ALLOC := fr _ (by unfold IniW ALLOC; omega)
   -- the oracles cost at least one step
-  have hγ1 : 1 ≤ c.nreg 81003 := one_le_gamma hGM hNF.1 hsg
+  have hγ1 := one_le_gamma hGM hNF.1 hsg
   obtain ⟨hF1, hG1⟩ := oracle_pos hsh hcu hw hG hWh hX hcap hwf hreg hMD hGM hOk hγ1
     (hw.1 _) (hw.1 _) (hw.1 _)
   -- the bands
@@ -125,10 +125,10 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
   have hBT : restoreBands ∪ E.Bo ⊆ B := subset_rfl
   -- the run from the initialised configuration
   have hI0 : FInv W c₀ c₀ := ⟨ex₀.wb_right, fun _ _ => rfl, le_rfl, fun _ _ => rfl⟩
-  have hw0 : FWin E c₀ := ⟨by omega, fun h => absurd h (by omega)⟩
+  have hw0 : FWin E c₀ := ⟨by_o, fun h => absurd h by_o⟩
   set k := kOf E with hkdef
   set Kp := pK E with hKpdef
-  have hkd : k ≤ c.nreg 81005 + 1 := kOf_le hE
+  have hkd := kOf_le hE
   have hcost := find_cost (t := testκ (c.nreg 81005)) (h := H (c.nreg 81003))
     (a := Nat.clog 2 (c.nreg 81003)) hF1 hG1 hkd
   have hc1 : 30 + (17 + ((outerK E Kp k + 2) * k + 2)) ≤ findκ (c.nreg 81005) *
@@ -140,20 +140,20 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
     have hch : (E.N.region E.r).chords ≠ [] := fun h => by
       rw [hkdef] at ht; unfold kOf at ht; rw [ite_eq_left h] at ht; omega
     have hk' : k = (E.N.region E.r).arcs.length := by rw [hkdef]; unfold kOf; rw [ite_eq_right hch]
-    exact hE.arcOK hch (by rw [← hk']; exact ht)
+    exact hE.arcOK hch (by rwa [← hk'])
   have hPG : ∀ t, t < k → PGood E c₀ Kp t := fun t ht => by
     have hch : (E.N.region E.r).chords ≠ [] := fun h => by
       rw [hkdef] at ht; unfold kOf at ht; rw [ite_eq_left h] at ht; omega
     have hk' : k = (E.N.region E.r).arcs.length := by rw [hkdef]; unfold kOf; rw [ite_eq_right hch]
-    exact pgood_of hE hch (by rw [← hk']; exact ht) k0K_le
+    exact pgood_of hE hch (by rwa [← hk']) k0K_le
       (fun Cα N γ' hQ hcan hγ' hm => k1K_le hE hQ hcan hγ' hm)
   have hrun : FRS B P W c₀ (.seq aCntS (outerLoop cu (testS sh))) c₀
       (17 + ((outerK E Kp k + 2) * k + 2)) (fun c' => FWin E c' ∧
         ∀ i, i < k → ∀ j, j < k → PairDone E c₀ i j (c'.nreg 81007)) := by
     refine FRS.seq (K₁ := 17) (cnt_fs hE hB hI0) (fun c₁ hI₁ hA₁ h₁ => ?_)
     obtain ⟨h30, h32, f₁⟩ := h₁
-    have hw₁ : FWin E c₁ := hw0.congr' (fun q a b => f₁ q (by omega) (by omega) (by omega)
-      (by omega) (by omega) (by omega))
+    have hw₁ : FWin E c₁ := hw0.congr' (fun q a b => f₁ q by_o by_o by_o
+      by_o by_o by_o)
     exact (outerLoop_fs (k := k) hE hB hBT hI₁ hw₁ h32 h30 hA hPG (hnW_of hE)
       (by show c₁.nreg ALLOC + _ ≤ W; rw [hA0] at hA₁; omega)).mono le_rfl
       (fun c' h' => ⟨h'.1, h'.2.2.2⟩)
@@ -168,9 +168,9 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
     rw [hI'.hin q (by unfold FFix; omega), fr q (by unfold IniW; omega)]
   · -- soundness and completeness
     intro M' N' reg hMD' hNA' hNF' hregs'
-    have hMM : M' = M := NFLoc.modelDesc_unique hMD' hMD
+    have hMM := NFLoc.modelDesc_unique hMD' hMD
     subst hMM
-    have hNp : patch N N' = N := nf_patch hNW.nfAt hNA'
+    have hNp := nf_patch hNW.nfAt hNA'
     have hregs : NFRegs M' (Qof P) N reg := by
       have : NFRegs M' (Qof P) (patch N N') reg := hregs'
       rwa [hNp] at this
@@ -185,8 +185,8 @@ theorem findOK_of {sh cu : Stmt} {Bs Bc Bo : Finset ℕ} {F G H : ℕ → ℕ} {
         unfold IniW at h; rw [hBdef]; apply Finset.mem_union_left
         have : bandOf r = bRestore := by unfold bandOf bRestore; omega
         rw [this]; decide)), fun r _ => by rw [rr], fun a _ => by rw [nm],
-      fun a _ => by rw [rm], ro, by rw [hA0], by omega⟩
-    have hf1 : Frame B c₀ c' k₁ := RF.to_frame hrf
+      fun a _ => by rw [rm], ro, by rw [hA0], by_o⟩
+    have hf1 := RF.to_frame hrf
     have := hf0.trans hf1
     rwa [Finset.union_self] at this
 

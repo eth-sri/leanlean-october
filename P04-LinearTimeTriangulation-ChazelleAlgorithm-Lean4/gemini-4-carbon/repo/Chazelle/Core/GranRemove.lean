@@ -89,8 +89,8 @@ theorem split_sdiff_nonempty (hc : c ∈ S) (hM : WalkAx M)
   · exact absurd h h2
   · by_contra he
     rw [not_nonempty_iff_eq_empty] at he
-    have hD : regionsIn M.D ∅ = {M.D} := Chazelle.Chain.regionsIn_empty hM.preconn hM.nonempty
-    have hP : P ∈ regionsIn M.D (S \ {c}) := hs.mem
+    have hD := Chazelle.Chain.regionsIn_empty hM.preconn hM.nonempty
+    have hP := hs.mem
     have hX'' : X ∈ regionsIn M.D (S \ {c}) := hX'
     have e1 : X = M.D := by
       rw [he, hD] at hX''; exact hX''
@@ -217,7 +217,7 @@ theorem arcs_merged_ge (hM : WalkAx M) (hS : S ⊆ M.Adm) (hfin : S.Finite) (hc 
       hk₂ hk hncut'
     obtain ⟨Z, hZ, hZa⟩ := hM.arc_of_gap hS' hfin' hl hr hlr (fun k hk hc' => hno k hc' hk)
     have fZ := hZa.2.2.2.2.2.2 p t hp ht.1 ht.2 hxin
-    have hZP : Z = P := WalkAx.faces_unique hZ hs.mem fZ (faces_mono hf hs.sub₁)
+    have hZP := WalkAx.faces_unique hZ hs.mem fZ (faces_mono hf hs.sub₁)
     subst hZP
     refine ⟨l, r, hZa, M.arcWt_mono fun y hy => ?_⟩
     have hl' : ¬ sideInArc a b l := fun h' => h.2.2.2.2.2.1 l h' (Model.isCut_mono M sdiff_sub hl)
@@ -311,8 +311,8 @@ families of a model satisfying the walk axioms. -/
 theorem weightLocal (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite) :
     Merge.WeightLocal M.D F M.weight := by
   intro S hSF c hc X hX hcX
-  have hS : S ⊆ M.Adm := hSF.trans hF
-  have hSfin : S.Finite := hfin.subset hSF
+  have hS := hSF.trans hF
+  have hSfin := hfin.subset hSF
   have hsys := hM.sys S hS hSfin
   obtain ⟨P, R₁, R₂, hs⟩ := Merge.exists_removal_split hsys subset_rfl hc
   have hX1 : X ≠ R₁ := by

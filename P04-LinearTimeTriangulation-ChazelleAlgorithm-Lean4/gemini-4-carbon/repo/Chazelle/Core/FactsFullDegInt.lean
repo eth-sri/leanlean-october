@@ -50,9 +50,9 @@ theorem open_of_mem {y a b : ℝ} (h : IsHChordIn (Q.filled \ Q.boundary) y a b)
   obtain ⟨hzy, hza, hzb⟩ := hz
   refine ⟨lt_of_le_of_ne hza fun e => h.left_not ?_, lt_of_le_of_ne hzb fun e => h.right_not ?_⟩
   · have : ((a, y) : Point) = z := point_ext e hzy.symm
-    rw [this]; exact hzD
+    rwa [this]
   · have : ((b, y) : Point) = z := point_ext e.symm hzy.symm
-    rw [this]; exact hzD
+    rwa [this]
 
 /-- Two chords sharing a point of the domain are equal. -/
 theorem eq_of_common {c c' : Set Point} (hc : HC Q c) (hc' : HC Q c') {z : Point} (hz : z ∈ c)
@@ -99,18 +99,18 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
   set u := Q.vtx e
   set v := Q.vtx ((e + 1) % Q.n)
   have hn := simple_three_le hQ
-  have huv : u.2 ≠ v.2 := hDH e _ he (Nat.mod_lt _ (by omega)) (succIdx_ne Q hn he).symm
-  have hd : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huv)
+  have huv : u.2 ≠ v.2 := hDH e _ he (Nat.mod_lt _ by_o) (succIdx_ne Q hn he).symm
+  have hd := sub_ne_zero.2 (Ne.symm huv)
   obtain ⟨ε, hε, hball⟩ := Metric.eventually_nhds_iff.1 hnear
   set L := dist u v + 1 with hL
-  have hL0 : 0 < L := by positivity
+  have hL0 : 0 < L := by_p
   set δ := min (min t (1 - t)) (ε / L) / 2 with hδ
   have hδ0 : 0 < δ := by
     rw [hδ]; have := lt_min (lt_min ht.1 (sub_pos.2 ht.2)) (div_pos hε hL0); linarith
   have hδm : δ < min (min t (1 - t)) (ε / L) := by
     rw [hδ]; have := lt_min (lt_min ht.1 (sub_pos.2 ht.2)) (div_pos hε hL0); linarith
-  have hδt : δ < t := hδm.trans_le ((min_le_left _ _).trans (min_le_left _ _))
-  have hδt' : δ < 1 - t := hδm.trans_le ((min_le_left _ _).trans (min_le_right _ _))
+  have hδt := hδm.trans_le ((min_le_left _ _).trans (min_le_left _ _))
+  have hδt' := hδm.trans_le ((min_le_left _ _).trans (min_le_right _ _))
   have hδε : δ * L < ε := by
     have := hδm.trans_le (min_le_right _ _); rwa [lt_div_iff₀ hL0] at this
   -- the direction along the edge that moves to the side `τ`
@@ -138,7 +138,7 @@ theorem vertex_of_side (hQ : Q.Simple) (hDH : DistinctHeights Q) {w : Point}
       _ < ε := hδε
   · simp only [lerp_snd, hs]
     have : u.2 + (t + σ * δ) * (v.2 - u.2) - (u.2 + t * (v.2 - u.2)) =
-        δ * (σ * (v.2 - u.2)) := by ring
+        δ * (σ * (v.2 - u.2)) := by_r
     rw [this]
     nlinarith
 
@@ -176,11 +176,11 @@ theorem side_chords_eq (hQ : Q.Simple) (hDH : DistinctHeights Q) {T : Set Point}
       push Not at hall
       obtain ⟨s, hs1, hs2, hsD⟩ := hall
       have hs1' : z.1 < s := lt_of_le_of_ne hs1 fun e => hsD (by
-        rw [← e, ← hzy]; exact hzD)
+        rwa [← e, ← hzy])
       have hs2' : s < z'.1 := lt_of_le_of_ne hs2 fun e => hsD (by
-        rw [e, ← hz'y]; exact hz'D)
-      have hsl : xl < s := by linarith
-      have hsr : s < xr := by linarith
+        rwa [e, ← hz'y])
+      have hsl : xl < s := by_l
+      have hsr : s < xr := by_l
       have hb : ((s, y₀) : Point) ∈ Q.boundary := by
         by_contra hb; exact hsD ⟨hcl s hsl hsr, hb⟩
       obtain ⟨m, hm, hwm⟩ := vertex_of_side hQ hDH hb hτ
@@ -208,11 +208,11 @@ theorem side_iff {c : Set Point} (hc : HC Q c) {y₀ : ℝ} {w₀ : Point}
     by_contra hge
     push Not at hge
     have hne : z.1 ≠ w₀.1 := fun e => hw₀ (by
-      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rw [this]; exact hzD)
+      have : w₀ = z := point_ext e.symm (hw₀y.trans hzy.symm); rwa [this])
     have := between_mem h hz' hz'D hz hzD hlt.le (lt_of_le_of_ne hge (Ne.symm hne)).le
     apply hw₀
     have e : ((w₀.1, y) : Point) = w₀ := point_ext rfl (by rw [hy, hw₀y])
-    rw [← e]; exact this
+    rwa [← e]
   · intro hlt; exact ⟨z, hz, hzD, hzy, hlt⟩
 
 /-- **Degree `≤ 4`** in the interior visibility map augmented by finitely many horizontal chords,
@@ -234,13 +234,13 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
     rw [hTdef, ← h.region_eq hQ hqR]
     exact isPreconnected_connectedComponentIn.subset_connectedComponentIn
       (mem_connectedComponentIn hqf) ((connectedComponentIn_subset _ _).trans hfreeR)
-  have hTD : T ⊆ D := h.trapSet_subset_interior hQ hqR
-  have hqT : q ∈ T := hUT (mem_connectedComponentIn hqf)
+  have hTD := h.trapSet_subset_interior hQ hqR
+  have hqT := hUT (mem_connectedComponentIn hqf)
   have hfreeU : U ⊆ freeIn D G := connectedComponentIn_subset _ _
-  have hcl : closure U ⊆ closedTrap Q i j y₁ y₂ :=
+  have hcl :=
     (closure_mono hUT).trans (Visibility.closure_trapSet_subset _ _ _ _ _)
-  have hqy₁ : y₁ < q.2 := hqT.1
-  have hqy₂ : q.2 < y₂ := hqT.2.1
+  have hqy₁ := hqT.1
+  have hqy₂ := hqT.2.1
   -- a domain point of the closed trapezoid at a middle height is inside
   have hmid : ∀ z ∈ D, z ∈ closedTrap Q i j y₁ y₂ → y₁ < z.2 → z.2 < y₂ → z ∈ T := by
     intro z hzD hzC hz1 hz2
@@ -251,9 +251,9 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
   have hslice : ∀ c ∈ G, ∀ z ∈ c, z ∈ T → ∀ w ∈ T, w.2 = z.2 → w ∈ c := by
     intro c hc z hz hzT w hwT hwz
     obtain ⟨y, a, b, hh, rfl⟩ := hG c hc
-    have hzy : z.2 = y := hz.1
+    have hzy := hz.1
     refine mem_of_joined hh hz (hTD hzT) (hwz.trans hzy) fun s h1 h2 => hTD ?_
-    have hseg : Chazelle.segment z w ⊆ T :=
+    have hseg :=
       Geometry.segment_subset_of_convex (Visibility.convex_trapSet _ _ _ _ _) hzT hwT
     apply hseg
     rw [Visibility.segment_horizontal_eq_hseg hwz.symm]
@@ -320,7 +320,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have hzT := hmid z hzD (hcl hzU) (hqy₁.trans hmz.1) hmz.2
         have hUz := hbelow c hc z hz hzT hmz.1
         have hz0' := hclle _ hUz z₀ hz₀U
-        have heq : z₀.2 = z.2 := le_antisymm hz0' hz0
+        have heq := le_antisymm hz0' hz0
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₁.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
@@ -373,7 +373,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
         have hzT := hmid z hzD (hcl hzU) hmz.1 (hmz.2.trans hqy₂)
         have hUz := habove c hc z hz hzT hmz.2
         have hz0' := hclge _ hUz z₀ hz₀U
-        have heq : z₀.2 = z.2 := le_antisymm hz0 hz0'
+        have heq := le_antisymm hz0 hz0'
         have hz₀c := hslice c hc z hz hzT z₀ hz₀T heq
         exact eq_of_common (hG c hc) (hG c₀ hc₀.1) hz₀c hz₀ hz₀D
       calc E₂.ncard ≤ ({c₀} : Set (Set Point)).ncard := ncard_le_ncard hsub1 (finite_singleton _)
@@ -414,7 +414,7 @@ theorem deg_le_four (hQ : Q.Simple) (hDH : DistinctHeights Q) {G : Set (Set Poin
     (hGfin.subset fun c hc => hc.1).union (hGfin.subset fun c hc => hc.1)
   calc {c | c ∈ G ∧ TouchesIn D c U}.ncard ≤ (E₁ ∪ E₂).ncard := ncard_le_ncard hsub hfin12
     _ ≤ E₁.ncard + E₂.ncard := ncard_union_le _ _
-    _ ≤ 4 := by omega
+    _ ≤ 4 := by_o
 
 end FullDegInt
 

@@ -41,8 +41,8 @@ theorem BrkInc.lt (h : BrkInc β N) {i j : ℕ} (hij : i < j) (hj : j ≤ N) : �
   | zero => omega
   | succ j ih =>
     rcases Nat.lt_succ_iff_lt_or_eq.1 hij with h' | h'
-    · exact lt_trans (ih h' (by omega)) (h j (by omega))
-    · rw [h']; exact h j (by omega)
+    · exact lt_trans (ih h' by_o) (h j by_o)
+    · rw [h']; exact h j by_o
 
 theorem BrkInc.le (h : BrkInc β N) {i j : ℕ} (hij : i ≤ j) (hj : j ≤ N) : β i ≤ β j := by
   rcases hij.lt_or_eq with h' | h'
@@ -57,14 +57,14 @@ theorem seg_spec (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) (
   have hdown : ∀ j ∈ S, ∀ i, 1 ≤ i → i ≤ j → i ∈ S := by
     intro j hj i hi hij
     rw [hS, Finset.mem_filter, Finset.mem_Ico] at hj ⊢
-    exact ⟨⟨hi, by omega⟩, le_trans (h.le hij (by omega)) hj.2⟩
+    exact ⟨⟨hi, by_o⟩, le_trans (h.le hij by_o) hj.2⟩
   have hcard : ∀ k, k ≤ N - 1 → (∀ i, 1 ≤ i → i ≤ k → β i ≤ x) → k ≤ S.card := by
     intro k hk hall
     have : Finset.Icc 1 k ⊆ S := by
       intro i hi
       rw [Finset.mem_Icc] at hi
       rw [hS, Finset.mem_filter, Finset.mem_Ico]
-      exact ⟨⟨hi.1, by omega⟩, hall i hi.1 hi.2⟩
+      exact ⟨⟨hi.1, by_o⟩, hall i hi.1 hi.2⟩
     have := Finset.card_le_card this
     simpa using this
   have hsub : S ⊆ Finset.Icc 1 S.card := by
@@ -83,7 +83,7 @@ theorem seg_spec (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) (
   have hmem : ∀ j, j ∈ S ↔ 1 ≤ j ∧ j ≤ k := by
     intro j
     constructor
-    · intro hj; have := hsub hj; rw [Finset.mem_Icc] at this; exact this
+    · intro hj; have := hsub hj; rwa [Finset.mem_Icc] at this
     · rintro ⟨h1, h2⟩
       by_contra hn
       -- then `S ⊆ [1, j - 1]`, too small
@@ -92,20 +92,20 @@ theorem seg_spec (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) (
         rw [Finset.mem_Icc]
         refine ⟨(Finset.mem_Ico.1 (Finset.mem_filter.1 hi).1).1, ?_⟩
         by_contra hij
-        exact hn (hdown i hi j h1 (by omega))
+        exact hn (hdown i hi j h1 by_o)
       have := Finset.card_le_card this
       simp at this; omega
   show k < N ∧ β k ≤ x ∧ x < β (k + 1)
-  refine ⟨by omega, ?_, ?_⟩
+  refine ⟨by_o, ?_, ?_⟩
   · rcases Nat.eq_zero_or_pos k with h0 | h0
-    · rw [h0]; exact hx0
+    · rwa [h0]
     · exact (Finset.mem_filter.1 ((hmem k).2 ⟨h0, le_rfl⟩)).2
   · by_cases hk1 : k + 1 = N
-    · rw [hk1]; exact hxN
+    · rwa [hk1]
     · by_contra hlt
       push Not at hlt
       have : k + 1 ∈ S := by
-        rw [hS, Finset.mem_filter, Finset.mem_Ico]; exact ⟨⟨by omega, by omega⟩, hlt⟩
+        rw [hS, Finset.mem_filter, Finset.mem_Ico]; exact ⟨⟨by_o, by_o⟩, hlt⟩
       have := ((hmem (k + 1)).1 this).2
       omega
 
@@ -123,11 +123,11 @@ variable {c : ℝ}
 theorem brk_piece (h : BrkInc β N) (hN : 1 ≤ N) {x : ℝ} (hx0 : β 0 ≤ x) (hxN : x < β N) :
     c + seg β N x ≤ brk β N c x ∧ brk β N c x < c + seg β N x + 1 := by
   obtain ⟨hk, h1, h2⟩ := seg_spec h hN hx0 hxN
-  have hpos : 0 < β (seg β N x + 1) - β (seg β N x) := by linarith
+  have hpos : 0 < β (seg β N x + 1) - β (seg β N x) := by_l
   unfold brk
   constructor
   · have : 0 ≤ (x - β (seg β N x)) / (β (seg β N x + 1) - β (seg β N x)) :=
-      div_nonneg (by linarith) hpos.le
+      div_nonneg by_l hpos.le
     linarith
   · have : (x - β (seg β N x)) / (β (seg β N x + 1) - β (seg β N x)) < 1 := by
       rw [div_lt_one hpos]; linarith
@@ -137,7 +137,7 @@ theorem brk_top (h : BrkInc β N) (hN : 1 ≤ N) : brk β N c (β N) = c + N := 
   unfold brk
   rw [seg_top h hN, Nat.sub_add_cancel hN]
   have hpos : 0 < β N - β (N - 1) := by
-    have := h (N - 1) (by omega); rw [Nat.sub_add_cancel hN] at this; linarith
+    have := h (N - 1) by_o; rw [Nat.sub_add_cancel hN] at this; linarith
   rw [div_self hpos.ne']
   have : ((N - 1 : ℕ) : ℝ) = N - 1 := by rw [Nat.cast_sub hN]; simp
   rw [this]; ring
@@ -154,7 +154,7 @@ theorem brk_bot (h : BrkInc β N) (_hN : 1 ≤ N) : brk β N c (β 0) = c := by
 theorem brk_strictMonoOn (h : BrkInc β N) (hN : 1 ≤ N) :
     StrictMonoOn (brk β N c) (Icc (β 0) (β N)) := by
   intro x hx y hy hxy
-  have hxN : x < β N := lt_of_lt_of_le hxy hy.2
+  have hxN := lt_of_lt_of_le hxy hy.2
   have px := brk_piece (c := c) h hN hx.1 hxN
   rcases hy.2.lt_or_eq with hyN | hyN
   · have py := brk_piece (c := c) h hN hy.1 hyN
@@ -165,13 +165,13 @@ theorem brk_strictMonoOn (h : BrkInc β N) (hN : 1 ≤ N) :
       linarith [px.2, py.1]
     · unfold brk
       rw [hs] at hx1 hx2 ⊢
-      have hpos : 0 < β (seg β N y + 1) - β (seg β N y) := by linarith
+      have hpos : 0 < β (seg β N y + 1) - β (seg β N y) := by_l
       have : (x - β (seg β N y)) / (β (seg β N y + 1) - β (seg β N y)) <
           (y - β (seg β N y)) / (β (seg β N y + 1) - β (seg β N y)) :=
-        div_lt_div_of_pos_right (by linarith) hpos
+        div_lt_div_of_pos_right by_l hpos
       linarith
     · exfalso
-      have : seg β N y + 1 ≤ seg β N x := hs
+      have := hs
       have := h.le this (by have := (seg_spec h hN hx.1 hxN).1; omega)
       linarith
   · rw [hyN, brk_top h hN]
@@ -187,18 +187,18 @@ theorem brk_onto (h : BrkInc β N) (hN : 1 ≤ N) {y : ℝ} (hy0 : c ≤ y) (hyN
   · exact ⟨β N, ⟨h.le (Nat.zero_le _) le_rfl, le_rfl⟩, by rw [brk_top h hN, hyN]⟩
   set j := ⌊y - c⌋₊ with hj
   have hjN : j < N := by
-    rw [hj, Nat.floor_lt (by linarith)]; linarith
-  have hj1 : (j : ℝ) ≤ y - c := Nat.floor_le (by linarith)
+    rw [hj, Nat.floor_lt by_l]; linarith
+  have hj1 : (j : ℝ) ≤ y - c := Nat.floor_le by_l
   have hj2 : y - c < j + 1 := Nat.lt_floor_add_one _
   have hpos : 0 < β (j + 1) - β j := by linarith [h j hjN]
   set x := β j + (y - c - j) * (β (j + 1) - β j)
   have hx1 : β j ≤ x := by have := mul_nonneg (show 0 ≤ y - c - j by linarith) hpos.le; linarith
   have hx2 : x < β (j + 1) := by
     have : (y - c - j) * (β (j + 1) - β j) < 1 * (β (j + 1) - β j) :=
-      mul_lt_mul_of_pos_right (by linarith) hpos
+      mul_lt_mul_of_pos_right by_l hpos
     linarith
-  have hx0 : β 0 ≤ x := le_trans (h.le (Nat.zero_le _) hjN.le) hx1
-  have hxN : x < β N := lt_of_lt_of_le hx2 (h.le (by omega) le_rfl)
+  have hx0 := le_trans (h.le (Nat.zero_le _) hjN.le) hx1
+  have hxN : x < β N := lt_of_lt_of_le hx2 (h.le by_o le_rfl)
   -- the piece of `x` is `j`
   have hseg : seg β N x = j := by
     obtain ⟨hk, h1, h2⟩ := seg_spec h hN hx0 hxN
@@ -225,12 +225,12 @@ theorem brk_int_iff (h : BrkInc β N) (hN : 1 ≤ N) {c₀ : ℕ} {x : ℝ} (hx0
     have e : (k : ℝ) = c₀ + seg β N x := by
       have a1 : c₀ + seg β N x ≤ k := by exact_mod_cast p.1
       have a2 : k < c₀ + seg β N x + 1 := by exact_mod_cast p.2
-      have : k = c₀ + seg β N x := by omega
+      have : k = c₀ + seg β N x := by_o
       rw [this]; push_cast; ring
     rw [e] at hk'
     unfold brk at hk'
-    have hpos : 0 < β (seg β N x + 1) - β (seg β N x) := by linarith
-    have : (x - β (seg β N x)) / (β (seg β N x + 1) - β (seg β N x)) = 0 := by linarith
+    have hpos : 0 < β (seg β N x + 1) - β (seg β N x) := by_l
+    have : (x - β (seg β N x)) / (β (seg β N x + 1) - β (seg β N x)) = 0 := by_l
     rw [div_eq_zero_iff] at this
     rcases this with h' | h'
     · linarith

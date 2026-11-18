@@ -63,8 +63,8 @@ theorem chord_dom_nonempty {Q : Polygon} (hQ : Q.Simple) {c : Set Point} (hc : c
   have hpos := Visibility.chordParam_pos hQ hi hdir
   refine ⟨Visibility.rayPt (Q.vtx i) σ (Visibility.chordParam Q i σ / 2), ?_, ?_⟩
   · rw [Visibility.chordSet_eq_image hQ hi hdir]
-    exact ⟨_, ⟨by linarith, by linarith⟩, rfl⟩
-  · exact (Visibility.chord_spec hQ hi hdir).2.2 _ (by linarith) (by linarith)
+    exact ⟨_, ⟨by_l, by_l⟩, rfl⟩
+  · exact (Visibility.chord_spec hQ hi hdir).2.2 _ by_l by_l
 
 /-- The chords of `Q` are admissible chords of its interior model, at vertex heights. -/
 theorem chords_family {Q : Polygon} (hQ : Q.Simple) {c : Set Point} (hc : c ∈ chords Q) :
@@ -204,7 +204,7 @@ theorem newL_ok (B : BaseCtx Q L E reg li) :
         have hreg := B.hregs.1
         rcases Chazelle.Chain.regionsIn_eq_or_disjoint (hreg.1 r hr) (hreg.1 r' hr') with h | h
         · exact hreg.2.1 r r' hr hr' h
-        · exact absurd (h.le_bot ⟨hcR hz, hcR' hz⟩) (by simp)
+        · exact absurd (h.le_bot ⟨hcR hz, hcR' hz⟩) by_s
     · intro c hc c' hc' hcc
       subst hcc
       obtain ⟨x, hx, rfl⟩ := List.mem_map.1 hc
@@ -260,7 +260,7 @@ theorem run_pts_lt (hQ : Q.Simple) :
   intro it hit
   simp only [List.mem_singleton] at hit
   subst hit
-  exact ⟨by omega, by omega⟩
+  exact ⟨by_o, by_o⟩
 
 theorem regOK0 (hQ : Q.Simple) (hli : li = true ↔ Mountain.LeftInside Q) :
     RegOK Q ∅ (interiorModel Q).D (polyOf Q (wlist li (Host.pts Q.n [HostItem.run 0 (Q.n - 1)]))) := by

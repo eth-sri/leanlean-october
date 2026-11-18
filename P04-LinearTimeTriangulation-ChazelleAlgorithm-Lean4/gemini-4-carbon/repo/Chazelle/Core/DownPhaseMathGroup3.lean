@@ -33,7 +33,7 @@ theorem runCnt_arith2 {n x c y : ℕ} (hx : x < n) (hcn : c < n) (hy : y = (x + 
   · rw [Nat.mod_eq_of_lt h, show x + c + n - x = c + n by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt hcn]
   · have e : (x + c) % n = x + c - n := by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
     rw [e, show x + c - n + n - x = c by omega, Nat.mod_eq_of_lt hcn]
 
 /-- The points of an arc group. -/
@@ -70,10 +70,10 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
   set I := interiorModel Q with hI
   set S := N.F I Q with hS
   set K := nk I S R with hK
-  have hM : WalkAx I := walkAx_interiorModel hQ
-  have hFam : I.ChordFamily Q S := hN.1
-  have h3 : 3 ≤ K := three_le_nk hQ hFam hne hR
-  have hn3 : 3 ≤ Q.n := Chazelle.Jordan.simple_three_le hQ
+  have hM := walkAx_interiorModel hQ
+  have hFam := hN.1
+  have h3 := three_le_nk hQ hFam hne hR
+  have hn3 := Chazelle.Jordan.simple_three_le hQ
   have hil := hD.hil
   have hd0 := hD.hd0
   have hdN := hD.hdN
@@ -90,40 +90,40 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
   have hstart : RepPt li Q S R i₁ (ptSym li Q.n xs false) := by
     apply ptSym_rep hN hdh hli hxs hD.hl
     · obtain ⟨c, ⟨hc, ht⟩, p, t, hA, he⟩ := hM.exists_exit_at_start hFam.2.1 hFam.1 hne hR harc
-      exact ⟨c, hc, ht, p, t, hA, by rw [hD.hl]; exact he⟩
+      exact ⟨c, hc, ht, p, t, hA, by rwa [hD.hl]⟩
     · intro _
       constructor
-      · intro h; exact absurd h (by decide)
+      · intro h; exact absurd h by_d
       · intro hB
         exfalso
-        have hA := arcGap_of_start hQ hFam hne hR hil (by rw [hD.hl]; exact harc)
+        have hA := arcGap_of_start hQ hFam hne hR hil (by rwa [hD.hl])
         obtain ⟨c, ⟨hc, ht⟩, p, t, hA', he⟩ := hM.exists_exit_at_start hFam.2.1 hFam.1 hne hR harc
-        exact not_arcGap_both hQ hFam hne hR hil ⟨c, hc, ht, p, t, hA', by rw [hD.hl]; exact he⟩
+        exact not_arcGap_both hQ hFam hne hR hil ⟨c, hc, ht, p, t, hA', by rwa [hD.hl]⟩
           hA hB
   -- the end
   set m := (i₁ + d₁) % K with hm
-  have hmK : m < K := Nat.mod_lt _ (by omega)
-  have hkm : hk I S R m = I.key Q xe := hD.hr
+  have hmK : m < K := Nat.mod_lt _ by_o
+  have hkm := hD.hr
   have harc' : I.IsArc S R (I.key Q xs) (hk I S R m) := by rw [hkm]; exact harc
   have hAprev := arcGap_prev_of_end hQ hFam hne hR hmK harc'
   have hexe : hk I S R m ∈ exitKeys I S R := by
     obtain ⟨c, ⟨hc, ht⟩, p, t, hA, he⟩ := hM.exists_exit_at_end hFam.2.1 hFam.1 hne hR harc
-    exact ⟨c, hc, ht, p, t, hA, by rw [hkm]; exact he⟩
-  have hendR : RepPt li Q S R m (ptSym li Q.n xe true) :=
+    exact ⟨c, hc, ht, p, t, hA, by rwa [hkm]⟩
+  have hendR :=
     ptSym_rep hN hdh hli hxe hkm hexe fun _ => ⟨fun _ => hAprev, fun _ => rfl⟩
   -- the run
   have hcnt : runCnt li Q.n xs xe = d₁ - 1 := by
     unfold runCnt
     rcases hend with ⟨hint, hfr⟩ | ⟨hni, hfr⟩
-    · have hat : atVtx li Q.n xe = true := (atVtx_iff hN hdh hli hxe).2 hint
+    · have hat := (atVtx_iff hN hdh hli hxe).2 hint
       rw [ite_eq_left hat, add_zero, ← hfls, ← hfle]
-      exact runCnt_arith (by rw [hfls]; exact hes) (by omega) hdn hfr
+      exact runCnt_arith (by rwa [hfls]) by_o hdn hfr
     · have hat : atVtx li Q.n xe = false := by
         by_contra h
         exact hni ((atVtx_iff hN hdh hli hxe).1 (by simpa using h))
       rw [ite_eq_right (by rw [hat]; decide), ← hfls, ← hfle,
         show ⌊I.key Q xe⌋₊ + 1 + Q.n - 1 = ⌊I.key Q xe⌋₊ + Q.n by omega]
-      exact runCnt_arith2 (by rw [hfls]; exact hes) (by omega) hfr
+      exact runCnt_arith2 (by rwa [hfls]) by_o hfr
   have hrun : RepFrom li Q S R ((runItems li Q.n xs xe).flatMap (wpts li Q.n)) (i₁ + 1) ∧
       ((runItems li Q.n xs xe).flatMap (wpts li Q.n)).length = d₁ - 1 := by
     unfold runItems
@@ -132,24 +132,24 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
     · rw [ite_eq_left hd1]
       exact ⟨repFrom_nil li _, by simp [hd1]⟩
     · rw [ite_eq_right hd1]
-      obtain ⟨hlen, hget⟩ := run_wpts (li := li) (by omega) hes (show d₁ - 1 < Q.n by omega)
-        (by omega)
+      obtain ⟨hlen, hget⟩ := run_wpts (li := li) by_o hes (show d₁ - 1 < Q.n by omega)
+        by_o
       refine ⟨fun j hj => ?_, hlen⟩
       rw [hlen] at hj
       have hgj := hget j hj
       rw [hgj]
       have hidx : (i₁ + 1 + j) % K = (i₁ + (j + 1)) % K := by ring_nf
       rw [hidx]
-      have hv := hinner (j + 1) (by omega) (by omega)
+      have hv := hinner (j + 1) by_o by_o
       left
       refine ⟨?_, ?_⟩
-      · obtain ⟨⟨k, hk'⟩, hin⟩ := hD.inner (j + 1) (by omega) (by omega)
+      · obtain ⟨⟨k, hk'⟩, hin⟩ := hD.inner (j + 1) by_o by_o
         refine ⟨k, ?_, hk', I.key Q xs, I.key Q xe, harc, ?_⟩
         · have := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 (Nat.mod_lt (i₁ + (j + 1))
             (show 0 < K by omega)))
           rw [hk'] at this
           exact_mod_cast this.2
-        · rw [← hk']; exact hin
+        · rwa [← hk']
       · rw [hv, Nat.floor_natCast, hfls]
   -- the junction
   have hq₁m : (i₁ + d₁ + 1) % K = (m + 1) % K := by rw [hm, Nat.mod_add_mod]
@@ -169,24 +169,24 @@ theorem group_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) {xs xe
         intro h
         have e1 : I.key Q xn = hk I S R (((m + 1) % K + 1) % K) := by
           rw [hnext, hJ1', ← hq₁m, Nat.mod_add_mod]
-        have e2 : I.key Q (partner N r xe) = hk I S R ((m + 1) % K) := hpkey
+        have e2 := hpkey
         rw [h] at e2
-        exact hk_succ_ne hM hFam.2.1 hFam.1 (by omega) (Nat.mod_lt _ (by omega)) (e2.symm.trans e1)
+        exact hk_succ_ne hM hFam.2.1 hFam.1 by_o (Nat.mod_lt _ by_o) (e2.symm.trans e1)
       rw [ite_eq_right hpx]
       refine ⟨repFrom_single ?_, by simp [hJ1']⟩
       rw [hq₁m]
       apply ptSym_rep hN hdh hli hpos hpkey.symm hpex
       intro _
       constructor
-      · intro h; exact absurd h (by decide)
+      · intro h; exact absurd h by_d
       · intro hB
         rw [prevIdx_succ hmK] at hB
-        exact absurd hCm fun hC => not_arc_and_chord hM hFam.2.1 hFam.1 (by omega) hmK hB hC
+        exact absurd hCm fun hC => not_arc_and_chord hM hFam.2.1 hFam.1 by_o hmK hB hC
   -- assembly
   obtain ⟨hrunR, hrunL⟩ := hrun
   obtain ⟨hjR, hjL⟩ := hjunc
   have hA1 : RepFrom li Q S R [ptSym li Q.n xs false] i₁ :=
-    repFrom_single (by rw [Nat.mod_eq_of_lt hil]; exact hstart)
+    repFrom_single (by rwa [Nat.mod_eq_of_lt hil])
   have hA2 := repFrom_append hA1 (by simpa using hrunR)
   have hA3 := repFrom_append hA2 (L' := [ptSym li Q.n xe true]) (repFrom_single (by
     rw [List.length_append, hrunL, List.length_singleton,

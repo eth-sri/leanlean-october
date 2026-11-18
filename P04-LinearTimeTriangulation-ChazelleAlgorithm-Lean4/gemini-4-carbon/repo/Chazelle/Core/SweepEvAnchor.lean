@@ -78,18 +78,18 @@ theorem after_pos_eps (hP : J.P.Simple) {S₂ : Set (Set Point)}
   · push Not at hsε
     have hC := corr_right0 J hP hS₂ hS₂f
     set s' := min (min δ ε) s / 2 with hs'
-    have hm : 0 < min (min δ ε) s := lt_min (lt_min hδ hε) hs0
+    have hm := lt_min (lt_min hδ hε) hs0
     have h1 := min_le_left (min δ ε) s
     have h2 := min_le_right (min δ ε) s
     have h3 := min_le_left δ ε
     have h4 := min_le_right δ ε
-    have hs'0 : 0 < s' := by linarith
+    have hs'0 : 0 < s' := by_l
     have hoff' : oW J (p + (t + s')) = oW J (p + t) + s' :=
-      off_add_small hC.hg hp ht0 hs'0.le (by linarith)
-    refine ⟨s', hs'0, by linarith, by linarith, hW' s' hs'0 (by linarith) (by linarith), ?_,
+      off_add_small hC.hg hp ht0 hs'0.le by_l
+    refine ⟨s', hs'0, by_l, by_l, hW' s' hs'0 by_l by_l, ?_,
       hoff', ?_⟩
     · intro hcut
-      obtain ⟨k0, k1⟩ := Corr.key_mem hp (show 0 ≤ t + s' by linarith) (show t + s' < 1 by linarith)
+      obtain ⟨k0, k1⟩ := Corr.key_mem hp (by linarith) (show t + s' < 1 by linarith)
       exact hgap _ hcut (by have := k0; linarith)
         (by have := k1; linarith) ⟨by rw [hoff']; linarith,
           by rw [hoff', hoff]; linarith⟩
@@ -101,7 +101,7 @@ theorem dirAt_unique (hP : J.P.Simple) {e : Set Point} (he : e ∈ Merge.augChor
     {p : ℕ} {t d d' : ℝ} (_hA : SideAttach (chainModel J.whole).W e p t)
     (h : DirAt (chainModel J.whole).W e p t d) (h' : DirAt (chainModel J.whole).W e p t d') :
     d = d' := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM := FactsChain.walkAx J.whole hP
   obtain ⟨a, b, hab, heab, hy, -⟩ := hM.ends e he
   have ha : a ∈ e := by rw [heab]; exact Geometry.left_mem_segment _ _
   have hb : b ∈ e := by rw [heab]; exact Geometry.right_mem_segment _ _
@@ -118,13 +118,13 @@ theorem dirAt_other (hP : J.P.Simple) {e : Set Point} (he : e ∈ Merge.augChord
     (hB : SideAttach (chainModel J.whole).W e pb tb)
     (hAB : sidePt (chainModel J.whole).W pa ta ≠ sidePt (chainModel J.whole).W pb tb)
     (h : DirAt (chainModel J.whole).W e pa ta d) : DirAt (chainModel J.whole).W e pb tb (-d) := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have hy : (sidePt (chainModel J.whole).W pa ta).2 = (sidePt (chainModel J.whole).W pb tb).2 :=
+  have hM := FactsChain.walkAx J.whole hP
+  have hy :=
     (attach_snd_eq hP he hB hA.2.2.2.1)
   rcases h with ⟨rfl, h⟩ | ⟨rfl, h⟩
-  · exact Or.inr ⟨by norm_num, dir_opposite hM he hA hB hAB h⟩
+  · exact Or.inr ⟨by_n, dir_opposite hM he hA hB hAB h⟩
   · rcases hM.attach_dir he hB with h' | h'
-    · exact Or.inl ⟨by norm_num, h'⟩
+    · exact Or.inl ⟨by_n, h'⟩
     · exfalso
       have e1 := h' _ hA.2.2.2.1
       have e2 := h _ hB.2.2.2.1
@@ -146,8 +146,8 @@ theorem anchor_not_inside (hP : J.P.Simple) {S₂ : Set (Set Point)}
     exact_mod_cast hC.hg
   have hAB := pt_ne_of_off_ne hP hS₂ hS₂f he hA hB (by linarith : oW J (pa + ta) ≠ oW J (pb + tb))
   have := no_cross_off hC.hM hC.hF hC.hfin he hZ (Ne.symm hZe) hA hB hAB hZK hZz hg0 hgn
-    (by rw [← oW_eq, ← oW_eq]; linarith) (by rw [← oW_eq, ← oW_eq]; exact h1)
-    (by rw [← oW_eq, ← oW_eq]; exact h2)
+    (by rw [← oW_eq, ← oW_eq]; linarith) (by rwa [← oW_eq, ← oW_eq])
+    (by rwa [← oW_eq, ← oW_eq])
   rw [← oW_eq, ← oW_eq, ← oW_eq] at this
   linarith [this.1]
 
@@ -179,7 +179,7 @@ theorem noEncl_of_closed (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have hbx : oW J (qb + sb) ≤ ox := by
       by_contra h
       push Not at h
-      exact hEx ⟨e, he, qa, qb, sa, sb, hA, hB, hAB, hLa, by linarith, Or.inl h⟩
+      exact hEx ⟨e, he, qa, qb, sa, sb, hA, hB, hAB, hLa, by_l, Or.inl h⟩
     by_cases heZ : e = Z
     · subst heZ
       -- `Z` has an attachment below `Lst`: it is `qa` or `qb`
@@ -188,12 +188,12 @@ theorem noEncl_of_closed (hP : J.P.Simple) {S₂ : Set (Set Point)}
       · linarith
       · linarith
     rcases lt_or_ge (oW J (qa + sa)) (oW J (pK + tK)) with h | h
-    · exact anchor_not_inside hP hS₂ hS₂f hZ he (Ne.symm heZ) hZK hZz hA hB h (by linarith)
-        (by linarith)
+    · exact anchor_not_inside hP hS₂ hS₂f hZ he (Ne.symm heZ) hZK hZz hA hB h by_l
+        by_l
     · have := (hcl e he heZ qa sa hA h hA' qb sb hB).2
       linarith
   · -- a pocket: `x` is enclosed too
-    exact hEx ⟨e, he, qa, qb, sa, sb, hA, hB, hAB, hLa, by linarith, Or.inr hby⟩
+    exact hEx ⟨e, he, qa, qb, sa, sb, hA, hB, hAB, hLa, by_l, Or.inr hby⟩
 
 /-- **A chord nested in another**: a chord `e ≠ c` attached strictly between the two attachments
 of `c` has all its attachments between them. -/
@@ -211,8 +211,8 @@ theorem closed_nested (hP : J.P.Simple) {S₂ : Set (Set Point)}
     exact_mod_cast hC.hg
   have hAB := pt_ne_of_off_ne hP hS₂ hS₂f hc hA hB hab.ne
   have := no_cross_off hC.hM hC.hF hC.hfin hc he hce hA hB hAB hQ hQ' hg0 hgn
-    (by rw [← oW_eq, ← oW_eq]; exact hab) (by rw [← oW_eq, ← oW_eq]; exact h1)
-    (by rw [← oW_eq, ← oW_eq]; exact h2)
+    (by rwa [← oW_eq, ← oW_eq]) (by rwa [← oW_eq, ← oW_eq])
+    (by rwa [← oW_eq, ← oW_eq])
   rw [← oW_eq, ← oW_eq, ← oW_eq] at this
   exact this
 

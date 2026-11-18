@@ -1,7 +1,9 @@
 module
 
 public import Chazelle.Jordan.Jordan
-public import Chazelle.Programs.RayScanSpec
+public import Chazelle.Programs.Tactics
+public import Chazelle.Geometry.Basic
+public import Chazelle.Jordan.SegmentFacts
 public import Mathlib.Topology.Homeomorph.Lemmas
 public import Mathlib.Topology.Order.LeftRightNhds
 
@@ -183,7 +185,7 @@ theorem rayPt_injective (p : Point) {σ : ℝ} (hσ : σ ≠ 0) : Function.Injec
   intro s t h
   have := congrArg Prod.fst h
   simp only [rayPt_fst] at this
-  exact mul_left_cancel₀ hσ (by linarith)
+  exact mul_left_cancel₀ hσ by_l
 
 /-- The parameters `t > 0` at which the ray meets the boundary. -/
 def hitSet (P : Polygon) (p : Point) (σ : ℝ) : Set ℝ :=
@@ -203,7 +205,7 @@ theorem rayPt_mem_interior_of_isPreconnected {P : Polygon} (hP : P.Simple) {p : 
     {t₀ : ℝ} (ht₀ : t₀ ∈ I) (hint : rayPt p σ t₀ ∈ P.filled \ P.boundary) :
     ∀ t ∈ I, rayPt p σ t ∈ P.filled \ P.boundary := by
   intro t ht
-  have himg : IsPreconnected (rayPt p σ '' I) := hI.image _ (continuous_rayPt p σ).continuousOn
+  have himg := hI.image _ (continuous_rayPt p σ).continuousOn
   have hsub : rayPt p σ '' I ⊆ P.boundaryᶜ := by
     rintro _ ⟨s, hs, rfl⟩; exact hIb s hs
   have hpar := parity_eq_of_isPreconnected P himg hsub (mem_image_of_mem _ ht₀) (mem_image_of_mem _ ht)
@@ -230,7 +232,7 @@ theorem hitSet_nonempty {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (h�
   have hs : t₀ + s ∈ Ioi (0 : ℝ) := by simp only [mem_Ioi]; linarith
   have h3 := (hR _ (hall _ hs).1).1
   simp only [rayPt_fst] at h3
-  have : p.1 + σ * (t₀ + s) = p.1 + σ * t₀ + s * σ := by ring
+  have : p.1 + σ * (t₀ + s) = p.1 + σ * t₀ + s * σ := by_r
   rw [this] at h3
   exact absurd h3 (not_le.2 hRs)
 
@@ -241,7 +243,7 @@ theorem hit_of_initial {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (hσ
     {t₀ : ℝ} (ht₀ : 0 < t₀) (hint : ∀ t, 0 < t → t < t₀ → rayPt p σ t ∈ P.filled \ P.boundary) :
     t₀ ≤ hitParam P p σ ∧ rayPt p σ (hitParam P p σ) ∈ P.boundary ∧
       ∀ t, 0 < t → t < hitParam P p σ → rayPt p σ t ∈ P.filled \ P.boundary := by
-  have hmid : rayPt p σ (t₀ / 2) ∈ P.filled \ P.boundary := hint _ (by linarith) (by linarith)
+  have hmid : rayPt p σ (t₀ / 2) ∈ P.filled \ P.boundary := hint _ by_l by_l
   have hne := hitSet_nonempty hP hσ (by linarith : 0 < t₀ / 2) hmid
   -- every hit parameter is `≥ t₀`
   have hge : ∀ t ∈ hitSet P p σ, t₀ ≤ t := by
@@ -258,14 +260,14 @@ theorem hit_of_initial {P : Polygon} (hP : P.Simple) {p : Point} {σ : ℝ} (hσ
   have hclosed : IsClosed (hitSet P p σ) := by
     rw [hset]
     exact (isClosed_Ici).inter ((isClosed_boundary P).preimage (continuous_rayPt p σ))
-  have h2 : rayPt p σ (hitParam P p σ) ∈ P.boundary :=
+  have h2 :=
     (hclosed.csInf_mem hne (hitSet_bddBelow P p σ)).2
   refine ⟨h1, h2, ?_⟩
   have hIb : ∀ t ∈ Ioo (0 : ℝ) (hitParam P p σ), rayPt p σ t ∉ P.boundary := by
     intro t ht hmem
     have : t ∈ hitSet P p σ := ⟨ht.1, hmem⟩
     exact absurd (csInf_le (hitSet_bddBelow P p σ) this) (not_le.2 ht.2)
-  have hmid' : t₀ / 2 ∈ Ioo (0 : ℝ) (hitParam P p σ) := ⟨by linarith, by linarith⟩
+  have hmid' : t₀ / 2 ∈ Ioo (0 : ℝ) (hitParam P p σ) := ⟨by_l, by_l⟩
   exact fun t ht1 ht2 =>
     rayPt_mem_interior_of_isPreconnected hP isPreconnected_Ioo hIb hmid' hmid t ⟨ht1, ht2⟩
 
@@ -288,16 +290,14 @@ theorem hitParam_eq_of_first (P : Polygon) (p : Point) (σ : ℝ) {t : ℝ} (ht 
 theorem exists_initial_interior {P : Polygon} (hP : P.Simple) {q : Point}
     (hq : q ∈ P.filled \ P.boundary) (σ : ℝ) :
     ∃ t₀ > 0, ∀ t, 0 < t → t < t₀ → rayPt q σ t ∈ P.filled \ P.boundary := by
-  have hopen : IsOpen (P.filled \ P.boundary) := isOpen_filled_sdiff_boundary hP
+  have hopen := isOpen_filled_sdiff_boundary hP
   have hcont : ContinuousAt (rayPt q σ) 0 := (continuous_rayPt q σ).continuousAt
   have hmem : P.filled \ P.boundary ∈ 𝓝 (rayPt q σ 0) := by
     rw [rayPt_zero]; exact hopen.mem_nhds hq
   have := hcont.preimage_mem_nhds hmem
   obtain ⟨ε, hε, hball⟩ := Metric.mem_nhds_iff.1 this
   refine ⟨ε, hε, fun t ht1 ht2 => hball ?_⟩
-  rw [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos ht1]
-  exact ht2
-
+  rwa [Metric.mem_ball, Real.dist_eq, sub_zero, abs_of_pos ht1]
 /-! ### The interior-point specialisations -/
 
 /-- The parameter of the first boundary point of the horizontal ray to the right of `q`. -/
@@ -323,7 +323,7 @@ theorem rightHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.fi
   rcases ht0.lt_or_eq with h | h
   · have := h3 t h ht1
     rwa [rayPt_one] at this
-  · rw [← h, add_zero]; exact hq
+  · rwa [← h, add_zero]
 
 /-- The right ray from an interior point meets the boundary at a positive parameter. -/
 theorem rightHitParam_pos {P : Polygon} (hP : P.Simple) {q : Point}
@@ -352,7 +352,7 @@ theorem leftHit_spec {P : Polygon} (hP : P.Simple) {q : Point} (hq : q ∈ P.fil
   rcases ht0.lt_or_eq with h | h
   · have := h3 t h ht1
     rwa [rayPt_neg_one] at this
-  · rw [← h, sub_zero]; exact hq
+  · rwa [← h, sub_zero]
 
 theorem leftHitParam_pos {P : Polygon} (hP : P.Simple) {q : Point}
     (hq : q ∈ P.filled \ P.boundary) : 0 < leftHitParam P q :=

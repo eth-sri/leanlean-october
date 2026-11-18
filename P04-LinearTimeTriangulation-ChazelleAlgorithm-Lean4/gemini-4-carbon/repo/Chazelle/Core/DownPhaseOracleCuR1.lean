@@ -16,10 +16,6 @@ public import Chazelle.Core.DownPhaseOracleCuM4
 the chain survives (`CEnv`); the frame is that of the interior oracles.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace IOrc
@@ -65,8 +61,8 @@ def BarcC (r : ℕ) : Bool :=
   decide (150000 ≤ r ∧ r < 150014) ||
     decide (r = 170133 ∨ r = 170142 ∨ r = 170143 ∨ r = 170145 ∨ r = 170146)
 
-theorem wr_arcOneC : wr BarcC arcOneC = true := by decide
-theorem wr_arcTwoAC : wr BarcC arcTwoAC = true := by decide
+theorem wr_arcOneC : wr BarcC arcOneC = true := by_d
+theorem wr_arcTwoAC : wr BarcC arcTwoAC = true := by_d
 
 theorem barcC_io {r : ℕ} (h : BarcC r = true) : bandOf r ∈ ioBands ∧ r ≠ ALLOC :=
   io_of_band' (by simp only [BarcC, Bool.or_eq_true, decide_eq_true_eq] at h; omega)
@@ -152,11 +148,11 @@ theorem arcTwoBC_exec (c : Config) (hw : WordsBounded W c) {τ ee eh L u n : ℕ
   have w₁ := e₁.wb_right
   have hwr : wr BarcC (block [.constN 170133 6, .copyN 150001 170133, .constN 150002 0,
       .subN 170142 170089 170077, .subN 170143 170035 170142, .addN 150003 170133 170143,
-      .copyN 150004 170036, .copyN 170145 170133, .addN 170146 170033 170142]) = true := by decide
+      .copyN 150004 170036, .copyN 170145 170133, .addN 170146 170033 170142]) = true := by_d
   have F₁ := exec_frameB e₁ hwr
   by_cases hlt : c₁.nreg 170146 < c₁.nreg 170010
-  · refine ⟨c₁, _, .seq e₁ (.ifLtN_true hlt (.skip w₁)), by omega, a1, a2, a3, a4, a45, ?_, ?_⟩
-    · rw [a46, Nat.mod_eq_of_lt (by rw [← a46, ← a10]; exact hlt)]
+  · refine ⟨c₁, _, .seq e₁ (.ifLtN_true hlt (.skip w₁)), by_o, a1, a2, a3, a4, a45, ?_, ?_⟩
+    · rw [a46, Nat.mod_eq_of_lt (by rwa [← a46, ← a10])]
     · exact (FrameB.trans F₁ (FrameB.refl _ _))
   · have hwr2 : wr BarcC (block [.subN 170146 170146 170010]) = true := by decide
     obtain ⟨c₂, k₂, e₂, hk₂, b46, b⟩ : ∃ c₂ k₂, Exec P W (block [.subN 170146 170146 170010]) c₁ c₂ k₂ ∧
@@ -165,12 +161,12 @@ theorem arcTwoBC_exec (c : Config) (hw : WordsBounded W c) {τ ee eh L u n : ℕ
       exec_block
       refine ⟨rfl, by config_simp, fun r hr => by config_simp; simp [upd, hr]⟩
     have F₂ := exec_frameB e₂ hwr2
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_false hlt e₂), by omega, by rw [b _ (by decide)]; exact a1,
-      by rw [b _ (by decide)]; exact a2, by rw [b _ (by decide)]; exact a3,
-      by rw [b _ (by decide)]; exact a4, by rw [b _ (by decide)]; exact a45, ?_, F₁.trans F₂⟩
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_false hlt e₂), by_o, by rwa [b _ by_d],
+      by rwa [b _ by_d], by rwa [b _ by_d],
+      by rwa [b _ by_d], by rwa [b _ by_d], ?_, F₁.trans F₂⟩
     rw [b46, a46, a10]
     rw [a46, a10] at hlt
-    rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
 
 theorem cuSet_exec (c : Config) (hw : WordsBounded W c) :
     ∃ c', Exec P W (block (copies cuSetL)) c c' 3 ∧ c'.nreg 150000 = c.nreg 170078 ∧
@@ -204,11 +200,11 @@ theorem recS_exec (k : ℕ) (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) 
   have e := Exec.block_cons e1 (Exec.block_cons e2 (Exec.block_cons e3 (Exec.block_cons e4
     (Exec.block_cons e5 (Exec.block_nil w5)))))
   refine ⟨_, _, e, rfl, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-  · simp only [Config.nreg_mk, upd]
+  · simp only [upd]
     split_ifs <;> omega
-  · simp only [slotAt, Config.nreg_mk, Config.nmem_mk, upd, Slot.mk.injEq]
+  · simp only [slotAt, upd, Slot.mk.injEq]
     refine ⟨?_, ?_, ?_, ?_⟩ <;> split_ifs <;> first | rfl | omega
-  · simp only [Config.nreg_mk, upd]
+  · simp only [upd]
     split_ifs <;> first | rfl | omega
 
 /-- **One call of the chain cutter at a chain arc of a stretch, recorded as slot `k`.** -/
@@ -245,14 +241,14 @@ theorem cutR_exec {cu : Stmt} {G H : ℕ → ℕ}
   obtain ⟨c₁, e₁, i0, i9, i13, r₁, rr₁, m₁, rm₁, o₁⟩ := cuSet_exec (P := P) c hw
   have w₁ := e₁.wb_right
   have k₁ : ∀ r, 170000 ≤ r → c₁.nreg r = c.nreg r := fun r hr =>
-    r₁ r (by omega) (by omega) (by omega)
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := r₁ _ (by decide) (by decide) (by decide)
+    r₁ r by_o by_o by_o
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := r₁ _ by_d by_d by_d
   have F₁ : Frame ioBands c c₁ 3 := by
     refine frameIO_of_frameB (B := fun r => decide (150000 ≤ r ∧ r < 150014))
       (fun r hr => io_of_band' (Or.inr (Or.inr (by simp at hr; omega)))) ⟨fun r hr => ?_,
         fun r _ => by rw [rr₁], m₁, rm₁, o₁⟩ 3
     simp only [decide_eq_false_iff_not] at hr
-    exact r₁ r (by omega) (by omega) (by omega)
+    exact r₁ r by_o by_o by_o
   have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => k₁ r h1) (fun a _ => by rw [m₁])
     (by rw [hA₁])
   have D₁ : DescOK P c₁.nmem (c₁.nreg 150000) C (c₁.nreg ALLOC) := by
@@ -260,10 +256,10 @@ theorem cutR_exec {cu : Stmt} {G H : ℕ → ℕ}
   obtain ⟨hMD, hMWF, -⟩ := D₁
   obtain ⟨hctx, hcap⟩ := S₁.ctx
   obtain ⟨sP, eP, sE, eE, sI', eI, hwt, -⟩ := harc
-  have b1 : c₁.nreg 150001 = sa.edge := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha1
-  have b2 : c₁.nreg 150002 = sa.hgt := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha2
-  have b3 : c₁.nreg 150003 = ea.edge := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha3
-  have b4 : c₁.nreg 150004 = ea.hgt := by rw [r₁ _ (by decide) (by decide) (by decide)]; exact ha4
+  have b1 : c₁.nreg 150001 = sa.edge := by rw [r₁ _ by_d by_d by_d]; exact ha1
+  have b2 : c₁.nreg 150002 = sa.hgt := by rw [r₁ _ by_d by_d by_d]; exact ha2
+  have b3 : c₁.nreg 150003 = ea.edge := by rw [r₁ _ by_d by_d by_d]; exact ha3
+  have b4 : c₁.nreg 150004 = ea.hgt := by rw [r₁ _ by_d by_d by_d]; exact ha4
   have e1 : rd c₁ bCut 1 = sa.edge := b1
   have e2 : rd c₁ bCut 2 = sa.hgt := b2
   have e3 : rd c₁ bCut 3 = ea.edge := b3
@@ -274,20 +270,20 @@ theorem cutR_exec {cu : Stmt} {G H : ℕ → ℕ}
   have h13 : c₁.nreg 150013 = s.h := by rw [i13]; exact hS.r13
   -- the chain cutter
   obtain ⟨c₂, k₂, e₂, hk₂, hpost, F₂⟩ := hcu P W c₁ w₁ ⟨hG, hW,
-    by show (gradeCtx O).holds P c₁.nmem (c₁.nreg 150013) (c₁.nreg ALLOC); rw [h13]; exact hctx,
-    by show c₁.nreg 150009 ≤ (gradeCtx O).cap P c₁.nmem (c₁.nreg 150013); rw [h9, h13]; exact hcap,
+    by show (gradeCtx O).holds P c₁.nmem (c₁.nreg 150013) (c₁.nreg ALLOC); rwa [h13],
+    by show c₁.nreg 150009 ≤ (gradeCtx O).cap P c₁.nmem (c₁.nreg 150013); rwa [h9, h13],
     hMWF, chainModel C, hMD, okModel_sub hG,
-    by show ProperPos _ _ _ ⟨c₁.nreg 150001, c₁.nreg 150002⟩; rw [hsa', ← hQ]; exact sP,
-    by show ProperPos _ _ _ ⟨c₁.nreg 150003, c₁.nreg 150004⟩; rw [hea', ← hQ]; exact eP,
-    by show c₁.nreg 150001 < _; rw [b1]; exact sE,
-    by show c₁.nreg 150003 < _; rw [b3]; exact eE,
+    by show ProperPos _ _ _ ⟨c₁.nreg 150001, c₁.nreg 150002⟩; rwa [hsa', ← hQ],
+    by show ProperPos _ _ _ ⟨c₁.nreg 150003, c₁.nreg 150004⟩; rwa [hea', ← hQ],
+    by show c₁.nreg 150001 < _; rwa [b1],
+    by show c₁.nreg 150003 < _; rwa [b3],
     by show c₁.nreg 150002 = 0 ∨ (chainModel C).InnerPt ((chainModel C).pos (Qof P)
           ⟨c₁.nreg 150001, c₁.nreg 150002⟩)
        rw [hsa', b2]; exact sI',
     by show c₁.nreg 150004 = 0 ∨ (chainModel C).InnerPt ((chainModel C).pos (Qof P)
           ⟨c₁.nreg 150003, c₁.nreg 150004⟩)
-       rw [hea', b4]; exact eI,
-    by show _ ≤ c₁.nreg 150009; rw [e1, e2, e3, e4, h9]; exact hwt⟩
+       rwa [hea', b4],
+    by show _ ≤ c₁.nreg 150009; rwa [e1, e2, e3, e4, h9]⟩
     (by show c₁.nreg ALLOC + G (c₁.nreg 150009) ≤ W
         rw [h9, hA₁]; omega)
   have hp := hpost (chainModel C) hMD
@@ -298,7 +294,7 @@ theorem cutR_exec {cu : Stmt} {G H : ℕ → ℕ}
   -- the registers survive the cutter
   have g₂ : ∀ r, 170000 ≤ r → r < 180000 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
     F₂.1 r (by unfold bandOf; rw [show r / 10000 = 17 by omega]; decide)
-      (by unfold ALLOC; omega)
+      by_ao
   have hA₂ := F₂.2.2.2.2.2.1
   have C₂ : CEnv P W O s u L h1 h2 c₂ := (hC.keep (fun r hr => by
       rw [k₁ r (by unfold CRegs at hr; omega)]) (fun a _ => by rw [m₁])
@@ -307,13 +303,13 @@ theorem cutR_exec {cu : Stmt} {G H : ℕ → ℕ}
     F₂.2.2.1 hA₂
   have T₂ : SlotSt P (H s.γ) (G s.γ) s.e₁ V0
       ((s.e₁ : ℝ) + off - g₀ + (chainModel C).key (Qof P) sa) k c₂ :=
-    hT.keep (fun r h1 h2 => by rw [g₂ r (by omega) (by omega), k₁ r (by omega)])
-      (fun a ha => by rw [F₂.2.2.1 a (by rw [hA₁]; exact ha), m₁]) (by rw [← hA₁]; exact hA₂)
+    hT.keep (fun r h1 h2 => by rw [g₂ r by_o by_o, k₁ r by_o])
+      (fun a ha => by rw [F₂.2.2.1 a (by rwa [hA₁]), m₁]) (by rwa [← hA₁])
   -- the record
   obtain ⟨c₃, k₃, e₃, hk₃, f3, sl3, r₃, rr₃, m₃, rm₃, o₃⟩ := recS_exec (P := P) k c₂ w₂
     (by have := hS.hW; unfold hostWords at this; omega)
-  have g145 : c₂.nreg 170145 = g₀ := by rw [g₂ _ (by norm_num) (by norm_num), k₁ _ (by norm_num)]; exact hg
-  have g146 : c₂.nreg 170146 = u₀ := by rw [g₂ _ (by norm_num) (by norm_num), k₁ _ (by norm_num)]; exact hu₀
+  have g145 : c₂.nreg 170145 = g₀ := by rw [g₂ _ by_n by_n, k₁ _ by_n]; exact hg
+  have g146 : c₂.nreg 170146 = u₀ := by rw [g₂ _ by_n by_n, k₁ _ by_n]; exact hu₀
   rw [g145, g146] at sl3
   have hslot : SlotOK P c₂.nmem (c₂.nreg ALLOC) (H s.γ) s.e₁
       ((s.e₁ : ℝ) + off - g₀ + (chainModel C).key (Qof P) sa)
@@ -322,19 +318,19 @@ theorem cutR_exec {cu : Stmt} {G H : ℕ → ℕ}
     exact ⟨C, ℓ, off, sa, ea, hSt, hoff, rfl, hq1, hLE, h0, hl, hc, ht,
       fun i hi => ⟨(hpp i hi).1, (hpp i hi).2.1, (hpp i hi).2.2.1, (hpp i hi).2.2.2, hkd i hi,
         hk0 i hi, hk1 i hi⟩, hsa, hea, hlt, rfl, rfl⟩
-  have T₃ := T₂.add hk r₃ f3 m₃ hslot (by rw [sl3]; exact hqG)
+  have T₃ := T₂.add hk r₃ f3 m₃ hslot (by rwa [sl3])
   have C₃ : CEnv P W O s u L h1 h2 c₃ := C₂.keep (fun r hr => r₃ r (Or.inl (by
       unfold CRegs at hr; omega))) (fun a _ => by rw [m₃]) (by
-      rw [r₃ _ (Or.inl (by unfold ALLOC; omega))])
-  have F₃ : Frame ioBands c₂ c₃ k₃ := frameIO_of_frameB
+      rw [r₃ _ (Or.inl by_ao)])
+  have F₃ := frameIO_of_frameB
     (B := fun r => decide (170200 + 5 * k ≤ r ∧ r < 170205 + 5 * k))
     (fun r hr => io_of_band' (Or.inl (by simp at hr; omega)))
     ⟨fun r hr => r₃ r (by simp at hr; omega), fun r _ => by rw [rr₃], m₃, rm₃, o₃⟩ k₃
   have ex : Exec P W (cutR cu k) c c₃ (3 + k₂ + k₃) := .seq (.seq e₁ e₂) e₃
   have hk₂' : k₂ ≤ G s.γ := by
     have := hk₂; simp only [rd, bandReg, bCut] at this; rw [← h9]; exact this
-  refine ⟨c₃, _, ex, by omega, T₃, C₃,
-    ((F₁.trans (F₂.mono oracleBands_sub_io le_rfl)).trans F₃).mono (by simp) le_rfl,
+  refine ⟨c₃, _, ex, by_o, T₃, C₃,
+    ((F₁.trans (F₂.mono oracleBands_sub_io le_rfl)).trans F₃).mono by_s le_rfl,
     fun r h1 h2 hr => ?_⟩
   rw [r₃ r hr, g₂ r h1 h2, k₁ r h1]
 

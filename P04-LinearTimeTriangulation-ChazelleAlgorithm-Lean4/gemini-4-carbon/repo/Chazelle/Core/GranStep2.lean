@@ -184,7 +184,7 @@ theorem touch_P {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) :
   have e := hs.exits_eq_union (hsys_F hE h hc hs) sdiff_subset (St.cs_mem_F hc)
     not_mem_sdiff_self (W := st.F E \ {cs E.M E.Q E.N c}) subset_rfl
   have hiS : cs E.M E.Q E.N i ∈ st.F E \ {cs E.M E.Q E.N c} := by
-    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rw [mem_singleton_iff]; exact hic⟩, hi.1, rfl⟩
+    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rwa [mem_singleton_iff]⟩, hi.1, rfl⟩
   constructor
   · intro ht
     have : cs E.M E.Q E.N i ∈ Merge.exitsIn E.M.D (st.F E \ {cs E.M E.Q E.N c}) P := ⟨hiS, ht⟩
@@ -207,7 +207,7 @@ theorem not_both {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c)
   have hd := hs.exits_disjoint (hsys_F hE h hc hs) sdiff_subset (St.cs_mem_F hc)
     (W := st.F E \ {cs E.M E.Q E.N c}) subset_rfl
   have hiS : cs E.M E.Q E.N i ∈ st.F E \ {cs E.M E.Q E.N c} := by
-    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rw [mem_singleton_iff]; exact hic⟩, hi.1, rfl⟩
+    rw [← fam_diff hE hc]; exact ⟨i, ⟨hi, by rwa [mem_singleton_iff]⟩, hi.1, rfl⟩
   exact Set.disjoint_left.1 hd ⟨hiS, h1⟩ ⟨hiS, h2⟩
 
 theorem mem_newEx (i : ℕ) :
@@ -241,8 +241,8 @@ theorem newEx_length (hE : E.Good) (h : Inv E st) (hc : c ∈ st.L E)
     (st.newEx c).length + 2 = st.deg (st.s0 c) + st.deg (st.s1 c) := by
   obtain ⟨-, -, -, htouch⟩ := h.sides c hc
   obtain ⟨hX, hY⟩ := h.cl_mem hE hc
-  have hcX : c ∈ st.exl (st.s0 c) := (exl_X hE h hc c).2 ⟨hc, (htouch _ hX).2 (Or.inl rfl)⟩
-  have hcY : c ∈ st.exl (st.s1 c) := (exl_Y hE h hc c).2 ⟨hc, (htouch _ hY).2 (Or.inr rfl)⟩
+  have hcX := (exl_X hE h hc c).2 ⟨hc, (htouch _ hX).2 (Or.inl rfl)⟩
+  have hcY := (exl_Y hE h hc c).2 ⟨hc, (htouch _ hY).2 (Or.inr rfl)⟩
   have nX := (h.cls _ ⟨c, hc, Or.inl rfl⟩).2.2.1
   have nY := (h.cls _ ⟨c, hc, Or.inr rfl⟩).2.2.1
   unfold St.newEx

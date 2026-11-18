@@ -52,11 +52,11 @@ theorem hFix_irs {dsc nr : ℕ} (hdr : DR dsc) (hnr : DR nr) {C : Chain} (hI : I
         c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
   have hKc := hK.fix hI
   obtain ⟨k0, k1, k6, -, -, -, -⟩ := hKc
-  have hW2 : 2 * C.m + 7 ≤ W := hctx.2.2.2.2.2
+  have hW2 := hctx.2.2.2.2.2
   unfold hFix
   -- 1. `e + 1`
   refine IRS.seq (K₁ := 1) (K₂ := 31012)
-    ((IRS.block [.addN (sw 722) lE K1] hI ⟨⟨iscr_sw (by unfold sw; omega) (by unfold sw; omega),
+    ((IRS.block [.addN (sw 722) lE K1] hI ⟨⟨iscr_sw by_so by_so,
       by rw [hE, k1]; omega⟩, trivial⟩).mono le_rfl (fun _ h => h)) ?_
   rintro c₁ hI₁ hA₁ hA₁' hc₁
   have q22 : c₁.nreg (sw 722) = e + 1 := by
@@ -64,29 +64,29 @@ theorem hFix_irs {dsc nr : ℕ} (hdr : DR dsc) (hnr : DR nr) {C : Chain} (hI : I
   have q1 : ∀ r, r ≠ sw 722 → c₁.nreg r = c.nreg r := fun r hr => by
     rw [hc₁]; simp only [regB, regI]; exact upd_other _ _ _ hr
   have qm1 : c₁.nmem = c.nmem := by rw [hc₁]
-  have qN : c₁.nreg nr = 2 * C.m + 7 := by rw [q1 _ (by unfold DR at hnr; (try unfold sw); omega)]; exact hn
+  have qN : c₁.nreg nr = 2 * C.m + 7 := by rwa [q1 _ (by unfold DR at hnr; (try unfold sw); omega)]
   -- 2. the edge `e'`
   have hstep2 : IRS P W c₀ (.ifLtN (sw 722) nr (.instr (.copyN (sw 723) lE))
       (.instr (.copyN (sw 723) K6))) c₁ 3 (fun c' => ∃ e', c'.nreg (sw 723) = e' ∧ 6 ≤ e' ∧
         e' < 2 * C.m + 6 ∧ (chainModel C).pos (Qof P) ⟨e', 0⟩ = (chainModel C).pos (Qof P) ⟨e, 0⟩ ∧
         (∀ r, r ≠ sw 723 → c'.nreg r = c₁.nreg r) ∧ c'.nmem = c₁.nmem) := by
     refine IRS.ite (fun hlt => ?_) (fun hlt => ?_)
-    · refine (IRS.instr1 hI₁ (i := .copyN (sw 723) lE) (iscr_sw (by unfold sw; omega)
-        (by unfold sw; omega))).mono (by omega) ?_
+    · refine (IRS.instr1 hI₁ (i := .copyN (sw 723) lE) (iscr_sw by_so
+        by_so)).mono by_o ?_
       rintro c' rfl
       rw [q22, qN] at hlt
-      refine ⟨e, ?_, h6, by omega, rfl, fun r hr => ?_, rfl⟩
+      refine ⟨e, ?_, h6, by_o, rfl, fun r hr => ?_, rfl⟩
       · simp only [regI, upd_same]
-        rw [q1 _ (by unfold lE sw; omega)]; exact hE
+        rwa [q1 _ (by unfold lE sw; omega)]
       · simp only [regI]; exact upd_other _ _ _ hr
-    · refine (IRS.instr1 hI₁ (i := .copyN (sw 723) K6) (iscr_sw (by unfold sw; omega)
-        (by unfold sw; omega))).mono (by omega) ?_
+    · refine (IRS.instr1 hI₁ (i := .copyN (sw 723) K6) (iscr_sw by_so
+        by_so)).mono by_o ?_
       rintro c' rfl
       rw [q22, qN] at hlt
-      have he' : e = 2 * C.m + 6 := by omega
+      have he' : e = 2 * C.m + 6 := by_o
       refine ⟨6, ?_, le_rfl, by have := C.one_le; omega, ?_, fun r hr => ?_, rfl⟩
       · simp only [regI, upd_same]
-        rw [q1 _ (by unfold K6 sw; omega)]; exact k6
+        rwa [q1 _ (by unfold K6 sw; omega)]
       · rw [he', pos_top_copies]
       · simp only [regI]; exact upd_other _ _ _ hr
   refine IRS.seq (K₁ := 3) (K₂ := 31009) hstep2 ?_
@@ -95,14 +95,14 @@ theorem hFix_irs {dsc nr : ℕ} (hdr : DR dsc) (hnr : DR nr) {C : Chain} (hI : I
     rw [q2 _ (by unfold lH sw; omega), q1 _ (by unfold lH sw; omega)]; exact hH
   have hctx₂ : ChainCtx P W c₂ dsc C := hctx.transport
     (by rw [q2 _ (by unfold DR at hdr; (try unfold sw); omega), q1 _ (by unfold DR at hdr; (try unfold sw); omega)])
-    (fun a _ => by rw [qm2, qm1]) (by rw [q2 _ (by unfold ALLOC sw; omega), q1 _ (by unfold ALLOC sw; omega)])
+    (fun a _ => by rw [qm2, qm1]) (by rw [q2 _ by_so, q1 _ by_so])
   have hA₂e : c₂.nreg ALLOC = c.nreg ALLOC := by
-    rw [q2 _ (by unfold ALLOC sw; omega), q1 _ (by unfold ALLOC sw; omega)]
+    rw [q2 _ by_so, q1 _ by_so]
   -- 3. the symbolic point
   refine IRS.seq (K₁ := 31006) (K₂ := 3) (callSym_irs (o := sw 724) hI₂ hctx₂
     ⟨by unfold DR at hdr; omega, by unfold DR at hdr; omega, by unfold sw; omega, by unfold sw; omega,
       by unfold lH sw; omega, by unfold lH sw; omega⟩ ⟨by unfold sw; omega, by unfold sw; omega⟩
-    (by rw [q23]; exact he6) (by rw [q23]; exact he')
+    (by rwa [q23]) (by rw [q23]; exact he')
     (by rw [q23, hH₂]; exact ⟨le_rfl, zero_lt_one, Nat.zero_le _⟩)
     (by rw [hH₂]; exact ⟨fun _ => rfl, fun _ => rfl⟩) (by rw [hA₂e]; omega)) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨⟨s, hs, hsl, hse⟩, q3, hA₃'', qm3⟩
@@ -110,7 +110,7 @@ theorem hFix_irs {dsc nr : ℕ} (hdr : DR dsc) (hnr : DR nr) {C : Chain} (hI : I
   obtain ⟨hkl, hkh⟩ := symHgt (P := P) hs hsl
   rw [hse] at hkh
   set k := if c₃.nreg (sw 724) = 0 then c₃.nreg (sw 724 + 1) else c₃.nreg (sw 724 + 2) with hkd
-  have k1₃ : c₃.nreg K1 = 1 := (Consts.fix hK hI₃).2.1
+  have k1₃ := (Consts.fix hK hI₃).2.1
   -- 4. the code
   have hfin : ∀ (j : ℕ), (j = sw 724 + 1 ∨ j = sw 724 + 2) → c₃.nreg j = k →
       IRS P W c₀ (.instr (.addN lH j K1)) c₃ 1 (fun c' => ∃ k, c'.nreg lH = k + 1 ∧ k < P.n ∧
@@ -128,11 +128,11 @@ theorem hFix_irs {dsc nr : ℕ} (hdr : DR dsc) (hnr : DR nr) {C : Chain} (hI : I
       rw [upd_other _ _ _ hr2, q3 r hr1 (by unfold sw at hr3 ⊢; omega) hr4,
         q2 _ (by unfold sw at hr3 ⊢; omega), q1 _ (by unfold sw at hr3 ⊢; omega)]
     · simp only [regI]
-      rw [upd_other _ _ _ (show ALLOC ≠ lH by unfold lH ALLOC sw; omega)]
+      rw [upd_other _ _ _ (by unfold lH ALLOC sw; omega)]
       rw [← hA₂e]; exact hA₃''
     · simp only
-      rw [qm3 a (by rw [hA₂e]; exact ha), qm2, qm1]
-  refine (IRS.ite (K := 1) (fun hlt => ?_) (fun hlt => ?_)).mono (by omega) (fun _ h => h)
+      rw [qm3 a (by rwa [hA₂e]), qm2, qm1]
+  refine (IRS.ite (K := 1) (fun hlt => ?_) (fun hlt => ?_)).le
   · have h0 : c₃.nreg (sw 724) = 0 := by rw [k1₃] at hlt; omega
     exact hfin (sw 724 + 1) (Or.inl rfl) (by rw [hkd, ite_eq_left h0])
   · have h0 : c₃.nreg (sw 724) ≠ 0 := by rw [k1₃] at hlt; omega
@@ -165,20 +165,20 @@ theorem hHgt_irs {dsc nr : ℕ} (hdr : DR dsc) (hnr : DR nr) {C : Chain} (hI : I
       by unfold lE sw; omega, by unfold lH sw; omega, by unfold lH sw; omega⟩
     ⟨by unfold sw; omega, by unfold sw; omega, by unfold lE sw; omega, by unfold lH sw; omega,
       by unfold lE sw; omega, by unfold lH sw; omega, by unfold lE lH sw; omega⟩
-    (by rw [hE]; exact he) (by rw [hxw]; exact hpp) (fun _ _ _ _ => by rw [hxw]; exact hy)
-    (by omega)) ?_
+    (by rwa [hE]) (by rwa [hxw]) (fun _ _ _ _ => by rwa [hxw])
+    by_o) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨q1E, q1H, q1, hA₁'', qm1⟩
   rw [hxw] at q1H
   set h₁ := nhgt (chainModel C) (Qof P) x with hh₁
   obtain ⟨hpp₁, hpar₁, hpos₁, hnorm₁⟩ := nhgt_facts (u := x) hpp
   rw [← hh₁] at hpp₁ hpar₁ hpos₁ hnorm₁
   have hK₁ := hK.fix hI₁
-  have k1₁ : c₁.nreg K1 = 1 := hK₁.2.1
-  have hE₁ : c₁.nreg lE = x.edge := q1E.trans hE
+  have k1₁ := hK₁.2.1
+  have hE₁ := q1E.trans hE
   have keep1 : ∀ r, bandOf r ∉ oracleBands → r ≠ lH → (r < sw 720 ∨ sw 726 < r) → r ≠ ALLOC →
       c₁.nreg r = c.nreg r := fun r h1 h2 h3 h4 =>
     q1 r h1 h2 (by unfold sw at h3 ⊢; omega) (by unfold sw at h3 ⊢; omega) h4
-  refine (IRS.ite (K := 31013) (fun hlt => ?_) (fun hlt => ?_)).mono (by omega) (fun _ h => h)
+  refine (IRS.ite (K := 31013) (fun hlt => ?_) (fun hlt => ?_)).le
   · -- a vertex: fix the code
     have h0 : h₁ = 0 := by rw [k1₁, q1H] at hlt; omega
     have hpar0 : (chainModel C).param (Qof P) x = 0 := by
@@ -197,9 +197,9 @@ theorem hHgt_irs {dsc nr : ℕ} (hdr : DR dsc) (hnr : DR nr) {C : Chain} (hI : I
           exact lt_irrefl _ hy
         · rw [C.sideWalk_vtx_three] at hy; simp only at hy; rw [abs_neg, abs_of_pos hR] at hy
           exact lt_irrefl _ hy
-      · exact ⟨h6, by omega⟩
-      · exact ⟨by omega, by omega⟩
-    have hctx₁ : ChainCtx P W c₁ dsc C := hctx.transport
+      · exact ⟨h6, by_o⟩
+      · exact ⟨by_o, by_o⟩
+    have hctx₁ := hctx.transport
       (keep1 dsc (by exact not_oracle_sw (by unfold DR at hdr; omega) (by unfold DR at hdr; omega))
         (by unfold DR at hdr; unfold lH sw; omega) (by unfold DR at hdr; (try unfold sw); omega) (by unfold DR at hdr; unfold ALLOC; omega))
       qm1 hA₁''
@@ -207,16 +207,16 @@ theorem hHgt_irs {dsc nr : ℕ} (hdr : DR dsc) (hnr : DR nr) {C : Chain} (hI : I
       rw [keep1 nr (by exact not_oracle_sw (by unfold DR at hnr; omega) (by unfold DR at hnr; omega))
         (by unfold DR at hnr; unfold lH sw; omega) (by unfold DR at hnr; (try unfold sw); omega)
         (by unfold DR at hnr; unfold ALLOC; omega)]; exact hn
-    refine (hFix_irs hdr hnr hI₁ hK hctx₁ hn₁ hE₁ (by rw [q1H, h0]) he6.1 he6.2 (by omega) hPW).mono
+    refine (hFix_irs hdr hnr hI₁ hK hctx₁ hn₁ hE₁ (by rw [q1H, h0]) he6.1 he6.2 by_o hPW).mono
       le_rfl ?_
     rintro c' ⟨k, hk1, hkl, hkh, hk2, hk3, hk4⟩
     rw [← hposv] at hkh
     obtain ⟨vpar, vpos⟩ := vtx_fix (M := chainModel C) (Q := Qof P) (e := x.edge) (h' := k)
-      (by rw [← hposv]; exact hkh)
+      (by rwa [← hposv])
     refine ⟨k, ?_, hk1, hkl, hkh, by rw [vpar, hpar0], by rw [vpos, ← hposv],
       ⟨by rw [vpar], by rw [vpar]; exact zero_lt_one, by show k + 1 ≤ P.n; omega⟩,
       fun r h1 h2 h3 h4 => ?_, le_trans hA₁'' hk3, fun a ha => ?_⟩
-    · rw [hk2 lE (by unfold lE sw; exact not_oracle_sw (by omega) (by omega))
+    · rw [hk2 lE (by unfold lE sw; exact not_oracle_sw by_o by_o)
         (by unfold lE lH sw; omega) (Or.inr (by unfold lE sw; omega)) (by unfold lE ALLOC sw; omega)]
       exact hE₁
     · rw [hk2 r h1 h2 (by unfold sw at h3 ⊢; omega) h4]
@@ -224,14 +224,14 @@ theorem hHgt_irs {dsc nr : ℕ} (hdr : DR dsc) (hnr : DR nr) {C : Chain} (hI : I
     · rw [hk4 a (lt_of_lt_of_le ha hA₁''), qm1 a ha]
   · -- inside an edge: the code is positive
     have hpos0 : h₁ ≠ 0 := by rw [k1₁, q1H] at hlt; omega
-    obtain ⟨k, hk⟩ : ∃ k, h₁ = k + 1 := ⟨h₁ - 1, by omega⟩
+    obtain ⟨k, hk⟩ : ∃ k, h₁ = k + 1 := ⟨h₁ - 1, by_o⟩
     have hparne : (chainModel C).param (Qof P) ⟨x.edge, h₁⟩ ≠ 0 := fun h =>
       hpos0 (hnorm₁.2 h)
     have hkh := hgt_of_pos (M := chainModel C) (Q := Qof P) (x := ⟨x.edge, h₁⟩) (h := k) hk hparne
     rw [hpos₁] at hkh
     refine IRS.skip hI₁ ⟨k, hE₁, by rw [q1H, hk], by
-      have := hpp₁.2.2; simp only at this; omega, hkh, by rw [← hk]; exact hpar₁,
-      by rw [← hk]; exact hpos₁, by rw [← hk]; exact hpp₁, keep1, hA₁'', qm1⟩
+      have := hpp₁.2.2; simp only at this; omega, hkh, by rwa [← hk],
+      by rwa [← hk], by rwa [← hk], keep1, hA₁'', qm1⟩
 
 end
 

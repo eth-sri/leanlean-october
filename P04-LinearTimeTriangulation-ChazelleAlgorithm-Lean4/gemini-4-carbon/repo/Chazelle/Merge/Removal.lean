@@ -66,7 +66,7 @@ theorem regionsIn_erase (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆
       regionsIn D (S \ {c}) = (regionsIn D S \ {R₁, R₂}) ∪ {R₁ ∪ R₂ ∪ (c ∩ D)} := by
   have hS' : S \ {c} ⊆ F := fun _ h => hS h.1
   have hcS' : c ∉ S \ {c} := fun h => h.2 rfl
-  have hins : insert c (S \ {c}) = S := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
+  have hins := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
   obtain ⟨R, hR, hcR, R₁, R₂, hne, hunion, hR₁, hR₂, heq⟩ :=
     hF.regionsIn_insert hS' (hS hc) hcS'
   have htouch := hF.touches_iff_of_split hS' (hS hc) hcS' hR hcR hunion hR₁ hR₂ heq

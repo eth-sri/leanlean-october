@@ -155,9 +155,9 @@ theorem edgeX_le_top (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTrap P q 
   have hcont : ContinuousOn (fun y => edgeX P j y - edgeX P i y) (Icc q.2 y₂) :=
     ((continuous_edgeX P j).sub (continuous_edgeX P i)).continuousOn
   have h0 : (0 : ℝ) ∈ Ioo (edgeX P j y₂ - edgeX P i y₂) (edgeX P j q.2 - edgeX P i q.2) :=
-    ⟨by linarith, by linarith [hq'.2.2.1, hq'.2.2.2]⟩
+    ⟨by_l, by linarith [hq'.2.2.1, hq'.2.2.2]⟩
   obtain ⟨y, hy, hfy⟩ := intermediate_value_Ioo' hT.lt_top.le hcont h0
-  have hfy' : edgeX P j y - edgeX P i y = 0 := hfy
+  have hfy' := hfy
   have hb := hT.bot_lt
   have hzi : ((edgeX P i y, y) : Point) ∈ P.edge i :=
     hT.mem_edgeL (by show y₁ ≤ y; linarith [hy.1]) (by show y ≤ y₂; exact hy.2.le) rfl
@@ -183,9 +183,9 @@ theorem edgeX_le_bot (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTrap P q 
   have hcont : ContinuousOn (fun y => edgeX P j y - edgeX P i y) (Icc y₁ q.2) :=
     ((continuous_edgeX P j).sub (continuous_edgeX P i)).continuousOn
   have h0 : (0 : ℝ) ∈ Ioo (edgeX P j y₁ - edgeX P i y₁) (edgeX P j q.2 - edgeX P i q.2) :=
-    ⟨by linarith, by linarith [hq'.2.2.1, hq'.2.2.2]⟩
+    ⟨by_l, by linarith [hq'.2.2.1, hq'.2.2.2]⟩
   obtain ⟨y, hy, hfy⟩ := intermediate_value_Ioo hT.bot_lt.le hcont h0
-  have hfy' : edgeX P j y - edgeX P i y = 0 := hfy
+  have hfy' := hfy
   have ht := hT.lt_top
   have hzi : ((edgeX P i y, y) : Point) ∈ P.edge i :=
     hT.mem_edgeL (by show y₁ ≤ y; exact hy.1.le) (by show y ≤ y₂; linarith [hy.2]) rfl
@@ -206,29 +206,29 @@ theorem edgeX_le_bot (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTrap P q 
 theorem edgeX_lt (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTrap P q i j y₁ y₂) {y : ℝ}
     (h1 : y₁ < y) (h2 : y < y₂) : edgeX P i y < edgeX P j y := by
   have hq' := hT.q_mem hP hq.1
-  have hqlt : edgeX P i q.2 < edgeX P j q.2 := hq'.2.2.1.trans hq'.2.2.2
+  have hqlt := hq'.2.2.1.trans hq'.2.2.2
   have hb := hT.edgeX_le_bot hP hq
   have ht := hT.edgeX_le_top hP hq
   have h12 := hT.bot_lt
   have h23 := hT.lt_top
   rcases le_or_gt y q.2 with hle | hlt
   · obtain ⟨l, hl0, hl1, hy⟩ : ∃ l : ℝ, 0 < l ∧ l ≤ 1 ∧ y = (1 - l) * y₁ + l * q.2 := by
-      refine ⟨(y - y₁) / (q.2 - y₁), div_pos (by linarith) (by linarith), ?_, ?_⟩
-      · rw [div_le_one (by linarith)]; linarith
+      refine ⟨(y - y₁) / (q.2 - y₁), div_pos by_l by_l, ?_, ?_⟩
+      · rw [div_le_one by_l]; linarith
       · have hne : q.2 - y₁ ≠ 0 := by linarith
         field_simp
         ring
-    rw [hy, edgeX_combo P i (by ring), edgeX_combo P j (by ring)]
+    rw [hy, edgeX_combo P i by_r, edgeX_combo P j by_r]
     have e1 := mul_nonneg (sub_nonneg.2 hl1) (sub_nonneg.2 hb)
     have e2 := mul_pos hl0 (sub_pos.2 hqlt)
     linarith
   · obtain ⟨l, hl0, hl1, hy⟩ : ∃ l : ℝ, 0 ≤ l ∧ l < 1 ∧ y = (1 - l) * q.2 + l * y₂ := by
-      refine ⟨(y - q.2) / (y₂ - q.2), div_nonneg (by linarith) (by linarith), ?_, ?_⟩
-      · rw [div_lt_one (by linarith)]; linarith
+      refine ⟨(y - q.2) / (y₂ - q.2), div_nonneg by_l by_l, ?_, ?_⟩
+      · rw [div_lt_one by_l]; linarith
       · have hne : y₂ - q.2 ≠ 0 := by linarith
         field_simp
         ring
-    rw [hy, edgeX_combo P i (by ring), edgeX_combo P j (by ring)]
+    rw [hy, edgeX_combo P i by_r, edgeX_combo P j by_r]
     have e1 := mul_pos (sub_pos.2 hl1) (sub_pos.2 hqlt)
     have e2 := mul_nonneg hl0 (sub_nonneg.2 ht)
     linarith
@@ -343,9 +343,9 @@ theorem not_both_on_left (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTrap 
   have hBy := hT.botVtx_snd hP hq
   have h12 := (hT.bot_lt.trans hT.lt_top).le
   have hTe : P.vtx (topVtx P i j y₂) ∈ P.edge i :=
-    hT.mem_edgeL (by rw [hTy]; exact h12) (by rw [hTy]) (by rw [hTy]; exact hT1)
+    hT.mem_edgeL (by rwa [hTy]) (by rw [hTy]) (by rwa [hTy])
   have hBe : P.vtx (botVtx P i j y₁) ∈ P.edge i :=
-    hT.mem_edgeL (by rw [hBy]) (by rw [hBy]; exact h12) (by rw [hBy]; exact hB1)
+    hT.mem_edgeL (by rw [hBy]) (by rwa [hBy]) (by rwa [hBy])
   have hne := hT.topVtx_ne_botVtx hP hq
   have hsucc := succIdx_lt P hT.hi
   rcases eq_endpoint_of_vtx_mem_edge hP ht hT.hi hTe with e1 | e1 <;>
@@ -372,9 +372,9 @@ theorem not_both_on_right (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTrap
   have hBy := hT.botVtx_snd hP hq
   have h12 := (hT.bot_lt.trans hT.lt_top).le
   have hTe : P.vtx (topVtx P i j y₂) ∈ P.edge j :=
-    hT.mem_edgeR (by rw [hTy]; exact h12) (by rw [hTy]) (by rw [hTy]; exact hT1)
+    hT.mem_edgeR (by rwa [hTy]) (by rw [hTy]) (by rwa [hTy])
   have hBe : P.vtx (botVtx P i j y₁) ∈ P.edge j :=
-    hT.mem_edgeR (by rw [hBy]) (by rw [hBy]; exact h12) (by rw [hBy]; exact hB1)
+    hT.mem_edgeR (by rw [hBy]) (by rwa [hBy]) (by rwa [hBy])
   have hne := hT.topVtx_ne_botVtx hP hq
   have hsucc := succIdx_lt P hT.hj
   rcases eq_endpoint_of_vtx_mem_edge hP ht hT.hj hTe with e1 | e1 <;>
@@ -412,7 +412,7 @@ theorem diag_lerp_mem_trapSet (hP : P.Simple) (hq : q ∈ freeRegion P)
     · have e1 := mul_pos (sub_pos.2 hs1) (sub_pos.2 hlt)
       have e2 := mul_nonneg hs0.le (sub_nonneg.2 hBi)
       linarith
-    · have hlt' : edgeX P i y₁ < (P.vtx (botVtx P i j y₁)).1 :=
+    · have hlt' :=
         lt_of_le_of_ne hBi (fun e => hnotL ⟨heq.symm, e.symm⟩)
       have e1 := mul_nonneg (sub_nonneg.2 hs1.le) (sub_nonneg.2 hTi)
       have e2 := mul_pos hs0 (sub_pos.2 hlt')
@@ -423,7 +423,7 @@ theorem diag_lerp_mem_trapSet (hP : P.Simple) (hq : q ∈ freeRegion P)
     · have e1 := mul_pos (sub_pos.2 hs1) (sub_pos.2 hlt)
       have e2 := mul_nonneg hs0.le (sub_nonneg.2 hBj)
       linarith
-    · have hlt' : (P.vtx (botVtx P i j y₁)).1 < edgeX P j y₁ :=
+    · have hlt' :=
         lt_of_le_of_ne hBj (fun e => hnotR ⟨heq, e⟩)
       have e1 := mul_nonneg (sub_nonneg.2 hs1.le) (sub_nonneg.2 hTj)
       have e2 := mul_pos hs0 (sub_pos.2 hlt')
@@ -455,7 +455,7 @@ theorem exists_isDiagonal (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTrap
   have hb := hT.botVtx_lt hP hq
   have hne := hT.topVtx_ne_botVtx hP hq
   obtain ⟨L, hL2, hLn, hsL⟩ := exists_diag_index (simple_three_le hP) ht hb hne h1 h2
-  have hs : topVtx P i j y₂ % P.n = topVtx P i j y₂ := Nat.mod_eq_of_lt ht
+  have hs := Nat.mod_eq_of_lt ht
   refine ⟨topVtx P i j y₂, L, ⟨hL2, hLn, ?_⟩, hs, hsL, ?_⟩
   · rw [hs, hsL]
     intro p hp hpT hpB
@@ -487,8 +487,8 @@ theorem vtx_mem_closedTrap_iff (hT : IsTrap P q i j y₁ y₂) {k : ℕ} (hk : k
       refine ⟨hk, h1.symm, ?_, ?_⟩ <;> rw [h1] <;> assumption
   · have h12 := (hT.bot_lt.trans hT.lt_top).le
     rintro (⟨-, hy, h3, h4⟩ | ⟨-, hy, h3, h4⟩)
-    · exact ⟨hy.ge, by rw [hy]; exact h12, by rw [hy]; exact h3, by rw [hy]; exact h4⟩
-    · exact ⟨by rw [hy]; exact h12, hy.le, by rw [hy]; exact h3, by rw [hy]; exact h4⟩
+    · exact ⟨hy.ge, by rwa [hy], by rwa [hy], by rwa [hy]⟩
+    · exact ⟨by rwa [hy], hy.le, by rwa [hy], by rwa [hy]⟩
 
 /-- A vertex of `P` in the closure of the trapezoid lies on the closed top or bottom side. -/
 theorem vtx_mem_closure_trapSet (hT : IsTrap P q i j y₁ y₂) {k : ℕ} (hk : k < P.n)
@@ -504,10 +504,10 @@ theorem top_le_of_subset (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTrap 
     (hsub : trapSet P i j y₁ y₂ ⊆ trapSet P i' j' y₁' y₂') : y₂ ≤ y₂' := by
   by_contra hlt
   rw [not_le] at hlt
-  have hq2 : q.2 < y₂' := (hsub (hT.q_mem hP hq.1)).2.1
+  have hq2 := (hsub (hT.q_mem hP hq.1)).2.1
   have hmid := hT.mid_mem_trapSet hP hq (y := (y₂' + y₂) / 2) (by linarith [hT.bot_lt])
-    (by linarith)
-  have h : (y₂' + y₂) / 2 < y₂' := (hsub hmid).2.1
+    by_l
+  have h := (hsub hmid).2.1
   linarith
 
 /-- If the trapezoid lies in another trapezoid, its bottom height is at least the other's. -/
@@ -516,10 +516,10 @@ theorem bot_le_of_subset (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTrap 
     (hsub : trapSet P i j y₁ y₂ ⊆ trapSet P i' j' y₁' y₂') : y₁' ≤ y₁ := by
   by_contra hlt
   rw [not_le] at hlt
-  have hq1 : y₁' < q.2 := (hsub (hT.q_mem hP hq.1)).1
-  have hmid := hT.mid_mem_trapSet hP hq (y := (y₁ + y₁') / 2) (by linarith)
+  have hq1 := (hsub (hT.q_mem hP hq.1)).1
+  have hmid := hT.mid_mem_trapSet hP hq (y := (y₁ + y₁') / 2) by_l
     (by linarith [hT.lt_top])
-  have h : y₁' < (y₁ + y₁') / 2 := (hsub hmid).1
+  have h := (hsub hmid).1
   linarith
 
 /-- If the trapezoid lies in another trapezoid, the other's left side line is to the left at
@@ -535,13 +535,13 @@ theorem left_le_of_subset (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTrap
     have hij := hT.edgeX_lt hP hq hy.1 hy.2
     have hmin1 := min_le_left (edgeX P i' y) (edgeX P j y)
     have hmin2 := min_le_right (edgeX P i' y) (edgeX P j y)
-    have hlt2 : edgeX P i y < min (edgeX P i' y) (edgeX P j y) := lt_min hlt hij
+    have hlt2 := lt_min hlt hij
     have hp : (((edgeX P i y + min (edgeX P i' y) (edgeX P j y)) / 2, y) : Point) ∈
         trapSet P i j y₁ y₂ :=
       ⟨hy.1, hy.2,
         by show edgeX P i y < (edgeX P i y + min (edgeX P i' y) (edgeX P j y)) / 2; linarith,
         by show (edgeX P i y + min (edgeX P i' y) (edgeX P j y)) / 2 < edgeX P j y; linarith⟩
-    have h2 : edgeX P i' y < (edgeX P i y + min (edgeX P i' y) (edgeX P j y)) / 2 :=
+    have h2 :=
       (hsub hp).2.2.1
     linarith
   have hcl := (isClosed_le (continuous_edgeX P i') (continuous_edgeX P i)).closure_subset_iff.2
@@ -562,13 +562,13 @@ theorem right_le_of_subset (hP : P.Simple) (hq : q ∈ freeRegion P) (hT : IsTra
     have hij := hT.edgeX_lt hP hq hy.1 hy.2
     have hmax1 := le_max_left (edgeX P i y) (edgeX P j' y)
     have hmax2 := le_max_right (edgeX P i y) (edgeX P j' y)
-    have hlt2 : max (edgeX P i y) (edgeX P j' y) < edgeX P j y := max_lt hij hlt
+    have hlt2 := max_lt hij hlt
     have hp : (((max (edgeX P i y) (edgeX P j' y) + edgeX P j y) / 2, y) : Point) ∈
         trapSet P i j y₁ y₂ :=
       ⟨hy.1, hy.2,
         by show edgeX P i y < (max (edgeX P i y) (edgeX P j' y) + edgeX P j y) / 2; linarith,
         by show (max (edgeX P i y) (edgeX P j' y) + edgeX P j y) / 2 < edgeX P j y; linarith⟩
-    have h2 : (max (edgeX P i y) (edgeX P j' y) + edgeX P j y) / 2 < edgeX P j' y :=
+    have h2 :=
       (hsub hp).2.2.2
     linarith
   have hcl := (isClosed_le (continuous_edgeX P j) (continuous_edgeX P j')).closure_subset_iff.2
@@ -582,11 +582,11 @@ theorem topVtx_eq_of_trapSet_eq (hP : P.Simple) (hq : q ∈ freeRegion P)
     (hT : IsTrap P q i j y₁ y₂) {q' : Point} {i' j' : ℕ} {y₁' y₂' : ℝ} (hq' : q' ∈ freeRegion P)
     (hT' : IsTrap P q' i' j' y₁' y₂') (h : trapSet P i j y₁ y₂ = trapSet P i' j' y₁' y₂') :
     topVtx P i j y₂ = topVtx P i' j' y₂' ∧ botVtx P i j y₁ = botVtx P i' j' y₁' := by
-  have hsub : trapSet P i j y₁ y₂ ⊆ trapSet P i' j' y₁' y₂' := h.subset
-  have hsub' : trapSet P i' j' y₁' y₂' ⊆ trapSet P i j y₁ y₂ := h.symm.subset
-  have hy2 : y₂ = y₂' :=
+  have hsub := h.subset
+  have hsub' := h.symm.subset
+  have hy2 :=
     le_antisymm (hT.top_le_of_subset hP hq hT' hsub) (hT'.top_le_of_subset hP hq' hT hsub')
-  have hy1 : y₁ = y₁' :=
+  have hy1 :=
     le_antisymm (hT'.bot_le_of_subset hP hq' hT hsub') (hT.bot_le_of_subset hP hq hT' hsub)
   have h12 := (hT.bot_lt.trans hT.lt_top).le
   have h12' := (hT'.bot_lt.trans hT'.lt_top).le
@@ -594,16 +594,16 @@ theorem topVtx_eq_of_trapSet_eq (hP : P.Simple) (hq : q ∈ freeRegion P)
   have hI2' : y₂ ∈ Icc y₁' y₂' := by rw [hy2]; exact ⟨h12', le_rfl⟩
   have hI1 : y₁ ∈ Icc y₁ y₂ := ⟨le_rfl, h12⟩
   have hI1' : y₁ ∈ Icc y₁' y₂' := by rw [hy1]; exact ⟨le_rfl, h12'⟩
-  have hi2 : edgeX P i y₂ = edgeX P i' y₂ :=
+  have hi2 :=
     le_antisymm (hT'.left_le_of_subset hP hq' hT hsub' y₂ hI2')
       (hT.left_le_of_subset hP hq hT' hsub y₂ hI2)
-  have hj2 : edgeX P j y₂ = edgeX P j' y₂ :=
+  have hj2 :=
     le_antisymm (hT.right_le_of_subset hP hq hT' hsub y₂ hI2)
       (hT'.right_le_of_subset hP hq' hT hsub' y₂ hI2')
-  have hi1 : edgeX P i y₁ = edgeX P i' y₁ :=
+  have hi1 :=
     le_antisymm (hT'.left_le_of_subset hP hq' hT hsub' y₁ hI1')
       (hT.left_le_of_subset hP hq hT' hsub y₁ hI1)
-  have hj1 : edgeX P j y₁ = edgeX P j' y₁ :=
+  have hj1 :=
     le_antisymm (hT.right_le_of_subset hP hq hT' hsub y₁ hI1)
       (hT'.right_le_of_subset hP hq' hT hsub' y₁ hI1')
   have hS2 : sideVtxSet P i j y₂ = sideVtxSet P i' j' y₂' := by

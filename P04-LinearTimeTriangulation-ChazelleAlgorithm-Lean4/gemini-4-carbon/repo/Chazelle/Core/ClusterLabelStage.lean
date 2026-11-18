@@ -72,24 +72,24 @@ theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have hYg : Y.Good W := labLay_good hμ hO hR hV hW
   unfold labS
   obtain ⟨c1, e1, hw1, h1, h2, hm1, hr1, hrm1, ho1⟩ := copies_exec (P := P) hw labCopies
-    (b := 130090) (by decide) (by decide)
+    (b := 130090) by_d by_d
   have g1 : ∀ r, (r < 130100 ∨ 130110 < r) → c1.nreg r = c.nreg r := fun r hr =>
     h2 r (fun p hp h => by
       have := (show ∀ p ∈ labCopies, 130100 ≤ p.1 ∧ p.1 ≤ 130110 by decide) p hp; omega)
   have hG1 : GR g c1 := hG.frame (fun r hr => g1 r (by unfold GRReg at hr; omega))
   have cp : ∀ d s, (d, s) ∈ labCopies → c1.nreg d = c.nreg s := fun d s h => h1 _ h
   have hR0 : Regs0 Y c1 := ⟨hG1.one,
-    by rw [cp 130100 130021 (by decide)]; exact hG.rO,
-    by rw [cp 130101 130022 (by decide)]; exact hG.rR,
-    by rw [cp 130102 130023 (by decide)]; exact hG.rV,
-    by rw [cp 130103 130030 (by decide)]; exact hG.rbase 0 (by omega),
-    by rw [cp 130104 130031 (by decide)]; exact hG.rbase 1 (by omega),
-    by rw [cp 130105 130078 (by decide)]; exact hG.rbase 48 (by omega),
-    by rw [cp 130106 130032 (by decide)]; exact hG.rbase 2 (by omega),
-    by rw [cp 130107 130033 (by decide)]; exact hG.rbase 3 (by omega),
-    by rw [cp 130108 130034 (by decide)]; exact hG.rbase 4 (by omega),
-    by rw [cp 130109 130035 (by decide)]; exact hG.rbase 5 (by omega),
-    by rw [cp 130110 130011 (by decide)]; exact hG.rμ⟩
+    by rw [cp 130100 130021 by_d]; exact hG.rO,
+    by rw [cp 130101 130022 by_d]; exact hG.rR,
+    by rw [cp 130102 130023 by_d]; exact hG.rV,
+    by rw [cp 130103 130030 by_d]; exact hG.rbase 0 by_o,
+    by rw [cp 130104 130031 by_d]; exact hG.rbase 1 by_o,
+    by rw [cp 130105 130078 by_d]; exact hG.rbase 48 by_o,
+    by rw [cp 130106 130032 by_d]; exact hG.rbase 2 by_o,
+    by rw [cp 130107 130033 by_d]; exact hG.rbase 3 by_o,
+    by rw [cp 130108 130034 by_d]; exact hG.rbase 4 by_o,
+    by rw [cp 130109 130035 by_d]; exact hG.rbase 5 by_o,
+    by rw [cp 130110 130011 by_d]; exact hG.rμ⟩
   have henv : Y.env c1.nmem =
       primalEnv c.nmem g.bO g.bR g.bV (g.base 0) (g.base 1) (g.base 48) g.μ g.N := by
     rw [hm1]; rfl
@@ -108,7 +108,7 @@ theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     exact g1 r (by unfold LabRG at hr; omega)
   · rw [hfr.2.2.2.2 a (by
       simp only [Lay.Written, hY, labLay]
-      have : g.μ + 3 ≤ g.U := by omega
+      have : g.μ + 3 ≤ g.U := by_o
       omega), hm1]
   · have hx' : (Y.env c1.nmem).vb x ≠ 1 := by
       show view c1.nmem (g.base 48) g.μ x ≠ 1
@@ -116,7 +116,7 @@ theorem labS_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     have hy' : (Y.env c1.nmem).vb y ≠ 1 := by
       show view c1.nmem (g.base 48) g.μ y ≠ 1
       rw [view_lt hy, hm1]; exact h1y
-    have := hlab x y (by rw [hnv]; exact hx) (by rw [hnv]; exact hy) hx' hy'
+    have := hlab x y (by rwa [hnv]) (by rwa [hnv]) hx' hy'
     rw [henv] at this
     simp only [labV, hY, labLay, view_lt hx, view_lt hy] at this
     exact this

@@ -39,13 +39,13 @@ theorem arrival_of_freeC (C : Chain) (hPC : C.P.Simple) {z : Point} {σ : ℝ}
   obtain ⟨u, hu, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hf
   have hu0 : (0 : ℝ) < u := hu
   set T := u / 2
-  have hT : 0 < T := by positivity
+  have hT : 0 < T := by_p
   have hσ0 : σ ≠ 0 := by rcases hσ with h | h <;> rw [h] <;> norm_num
   have hee : z ≠ rayPt z σ T := by
     intro h
     have h' := congrArg Prod.fst h
     simp only [rayPt] at h'
-    have hm0 : σ * T = 0 := by linarith
+    have hm0 : σ * T = 0 := by_l
     rcases mul_eq_zero.1 hm0 with h1 | h1
     · exact hσ0 h1
     · linarith
@@ -58,7 +58,7 @@ theorem arrival_of_freeC (C : Chain) (hPC : C.P.Simple) {z : Point} {σ : ℝ}
   obtain ⟨p, t, hp, ht0, ht1, hpt, hl⟩ :=
     C.sideSees_chordEnd hPC C.sideBeta hee (by simp [rayPt]) hopen hz
   have hpt' : sidePt (chainModel C).W p t = z := hpt
-  have hl' : sideLeft (chainModel C).W p t (rayPt z σ T) := hl
+  have hl' := hl
   refine ⟨p, t, hp, ht0, ht1, hpt', ?_⟩
   rw [neg_neg]
   have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ T) := by
@@ -121,7 +121,7 @@ theorem flagS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hP : J.P.Simple)
   refine (callArr_irs hI hctx ⟨by unfold sw; norm_num, by unfold sw; norm_num, by unfold zE sw; norm_num,
     by unfold zE sw; norm_num, by unfold qH sw; norm_num, by unfold qH sw; norm_num,
     by unfold qD sw; norm_num, by unfold qD sw; norm_num⟩ ⟨by unfold zF sw; norm_num,
-    by unfold zF sw; norm_num⟩ he hpp (by rw [hz]; exact hzR) hroom).mono le_rfl ?_
+    by unfold zF sw; norm_num⟩ he hpp (by rwa [hz]) hroom).mono le_rfl ?_
   rintro c' ⟨⟨hf1, hf2, hf3⟩, hfr, hA, hm⟩
   rw [hz] at hf2 hf3
   have e1 : zF + 1 = zP := rfl
@@ -170,14 +170,14 @@ theorem recS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) (h
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
   set σ := dirOf (c.nreg qD) with hσd
   have hσ : σ = 1 ∨ σ = -1 := dirOf_cases _
-  have hk1 : c.nreg K1 = 1 := (hK.fix hI).2.1
+  have hk1 := (hK.fix hI).2.1
   obtain ⟨hT0, -, -⟩ := Merge.hit_of_freeAt J.whole hzt hσ hfree
   rw [hT] at hT0
-  have hgen : Sweep.Genuine J.whole z σ T :=
+  have hgen :=
     (Sweep.genuine_iff J.whole hzt hσ).2 ⟨hfree, hT⟩
   have hsr : ∀ r, 240700 ≤ r → r < 250000 → IScr r := fun r h1 h2 => iscr_sw h1 h2
   have hW1 : 1 ≤ W := by have := hctx.2.1; unfold hostWords at this; omega
-  have hrho : IScr rho := hsr _ (by unfold rho sw; norm_num) (by unfold rho sw; norm_num)
+  have hrho : IScr rho := hsr _ by_d by_d
   have hq1 : σ = 1 ↔ c.nreg qD = 1 := by
     rw [hσd]; unfold dirOf; split_ifs with h <;> norm_num [h]
   -- `rho := flip qD`
@@ -196,19 +196,19 @@ theorem recS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) (h
       c'.nmem = c₁.nmem) := by
     unfold eqT
     by_cases h1 : c₁.nreg qD < c₁.nreg K1
-    · refine (IRS.ifT h1 (IRS.skip (K := 0) hI₁ ?_)).mono (by norm_num) (fun _ h => h)
+    · refine (IRS.ifT h1 (IRS.skip (K := 0) hI₁ ?_)).mono by_n (fun _ h => h)
       rw [q1, kk1] at h1
-      exact ⟨by rw [r1, ite_eq_right (by omega)], fun _ _ => rfl, rfl⟩
-    refine IRS.mono (K := 5) (IRS.ifF h1 ?_) (by norm_num) (fun _ h => h)
+      exact ⟨by rw [r1, ite_eq_right by_o], fun _ _ => rfl, rfl⟩
+    refine IRS.mono (K := 5) (IRS.ifF h1 ?_) by_n (fun _ h => h)
     by_cases h2 : c₁.nreg K1 < c₁.nreg qD
-    · refine (IRS.ifT h2 (IRS.skip (K := 0) hI₁ ?_)).mono (by norm_num) (fun _ h => h)
+    · refine (IRS.ifT h2 (IRS.skip (K := 0) hI₁ ?_)).mono by_n (fun _ h => h)
       rw [q1, kk1] at h2
-      exact ⟨by rw [r1, ite_eq_right (by omega)], fun _ _ => rfl, rfl⟩
-    refine (IRS.ifF h2 (IRS.instr1 (i := .constN rho 0) hI₁ ⟨hrho, by omega⟩)).mono (by norm_num) ?_
+      exact ⟨by rw [r1, ite_eq_right by_o], fun _ _ => rfl, rfl⟩
+    refine (IRS.ifF h2 (IRS.instr1 (i := .constN rho 0) hI₁ ⟨hrho, by_o⟩)).mono by_n ?_
     rintro c' rfl
     rw [q1, kk1] at h1 h2
     refine ⟨?_, fun r hr => ?_, rfl⟩
-    · show upd c₁.nreg rho 0 rho = _; rw [upd_same, ite_eq_left (by omega)]
+    · show upd c₁.nreg rho 0 rho = _; rw [upd_same, ite_eq_left by_o]
     · show upd c₁.nreg rho 0 r = _; rw [upd_other _ _ _ hr]
   refine (IRS.seq (K₂ := 35024) st2 ?_).mono (by simp [recK]) (fun _ h => h)
   rintro c₂ hI₂ hA₂ - ⟨r2, k2, hm2⟩
@@ -216,16 +216,15 @@ theorem recS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) (h
   have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := ff _ (by unfold rho ALLOC sw; omega)
   have y2 : c₂.nreg yE = c.nreg yE := ff _ (by unfold rho yE sw; omega)
   have h2' : c₂.nreg yH = c.nreg yH := ff _ (by unfold rho yH sw; omega)
-  have hctx₂ : ChainCtx P W c₂ (sw 2) J.whole := hctx.transport
+  have hctx₂ := hctx.transport
     (ff _ (by unfold rho sw; omega)) (fun a _ => by rw [hm2, hm1]) (by rw [hA2])
   have hwR : |((chainModel J.whole).pos (Qof P) ⟨c₂.nreg yE, c₂.nreg yH⟩).2| < J.whole.radius := by
     rw [y2, h2', hw]; simpa [rayPt] using hzR
   refine (IRS.seq (K₂ := 17) (callArr_irs hI₂ hctx₂ ⟨by unfold sw; norm_num, by unfold sw; norm_num,
     by unfold yE sw; norm_num, by unfold yE sw; norm_num, by unfold yH sw; norm_num,
     by unfold yH sw; norm_num, by unfold rho sw; norm_num, by unfold rho sw; norm_num⟩
-    ⟨by unfold wF sw; norm_num, by unfold wF sw; norm_num⟩ (by rw [y2]; exact he)
-    (by rw [y2, h2']; exact hpp) hwR (by rw [hA2]; unfold recK at hroom; omega)) ?_).mono le_rfl
-    (fun _ h => h)
+    ⟨by unfold wF sw; norm_num, by unfold wF sw; norm_num⟩ (by rwa [y2])
+    (by rwa [y2, h2']) hwR (by rw [hA2]; unfold recK at hroom; omega)) ?_).le
   rintro c₃ hI₃ hA₃ hA₃' ⟨⟨hf1, hf2, hf3⟩, fr3, hA3, hm3⟩
   rw [y2, h2', hw, r2] at hf2 hf3
   have hflip : -dirOf (if c.nreg qD = 1 then 0 else 1) = σ := neg_dirOf_flip _
@@ -241,18 +240,16 @@ theorem recS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) (h
   have hRD := Sweep.recordData_of_arrival J (Qof P) hσ hT0 hh hAz hAw
   have k3 : ∀ r, bandOf r ∉ oracleBands → r ≠ rho → r ≠ wF → r ≠ wP → r ≠ wPh → r ≠ ALLOC →
       c₃.nreg r = c.nreg r := fun r h0 h1 h2 h3 h4 h5 => by rw [fr3 r h0 h2 h3 h4 h5, ff r h1]
-  have zp3 : c₃.nreg zP = c.nreg zP := k3 _ (not_oracle_sw (by unfold zP sw; norm_num)
-    (by unfold zP sw; norm_num)) (by unfold zP rho sw; omega) (by unfold zP wF sw; omega)
+  have zp3 : c₃.nreg zP = c.nreg zP := k3 _ by_d (by unfold zP rho sw; omega) (by unfold zP wF sw; omega)
     (by unfold zP wP sw; omega) (by unfold zP wPh sw; omega) (by unfold zP ALLOC sw; omega)
-  have q3 : c₃.nreg qD = c.nreg qD := k3 _ (not_oracle_sw (by unfold qD sw; norm_num)
-    (by unfold qD sw; norm_num)) (by unfold qD rho sw; omega) (by unfold qD wF sw; omega)
+  have q3 : c₃.nreg qD = c.nreg qD := k3 _ by_d (by unfold qD rho sw; omega) (by unfold qD wF sw; omega)
     (by unfold qD wP sw; omega) (by unfold qD wPh sw; omega) (by unfold qD ALLOC sw; omega)
-  have kk3 : c₃.nreg K1 = 1 := (hK.fix hI₃).2.1
+  have kk3 := (hK.fix hI₃).2.1
   -- the default order, then the swap for `σ = 1`
   refine (IRS.seq (K₂ := 15) (IRS.block [.copyN rL wP, .copyN rR zP] hI₃
-    ⟨hsr _ (by unfold rL sw; norm_num) (by unfold rL sw; norm_num),
-      hsr _ (by unfold rR sw; norm_num) (by unfold rR sw; norm_num), trivial⟩) ?_).mono
-    (by simp) (fun _ h => h)
+    ⟨hsr _ by_d by_d,
+      hsr _ by_d by_d, trivial⟩) ?_).mono
+    by_s (fun _ h => h)
   rintro c₄ hI₄ - - hc4
   have v4L : c₄.nreg rL = c₃.nreg wP := by
     rw [hc4]; show regB c₃.nmem [.copyN rL wP, .copyN rR zP] c₃.nreg rL = _
@@ -268,7 +265,7 @@ theorem recS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) (h
   have hm4 : c₄.nmem = c₃.nmem := by rw [hc4]
   have q4 : c₄.nreg qD = c.nreg qD := by rw [k4 _ (by unfold qD rL sw; omega)
     (by unfold qD rR sw; omega), q3]
-  have kk4 : c₄.nreg K1 = 1 := (hK.fix hI₄).2.1
+  have kk4 := (hK.fix hI₄).2.1
   have w4 : c₄.nreg wP = c₃.nreg wP := k4 _ (by unfold wP rL sw; omega) (by unfold wP rR sw; omega)
   have zp4 : c₄.nreg zP = c.nreg zP := by
     rw [k4 _ (by unfold zP rL sw; omega) (by unfold zP rR sw; omega), zp3]
@@ -281,32 +278,32 @@ theorem recS_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) (h
         r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) := by
     intro c' hl hr hwp hk hm hA
-    refine ⟨by rw [hl, hr, hwp]; exact hRD, fun r h0 h1 h2 h3 h4 h5 h6 h7 => ?_, ?_, fun a ha => ?_⟩
+    refine ⟨by rwa [hl, hr, hwp], fun r h0 h1 h2 h3 h4 h5 h6 h7 => ?_, ?_, fun a ha => ?_⟩
     · rw [hk r h5 h6, k4 r h5 h6]; exact k3 r h0 h1 h2 h3 h4 h7
     · rw [hA, k4 _ (by unfold rL ALLOC sw; omega) (by unfold rR ALLOC sw; omega)]
-      rw [← hA2]; exact hA3
-    · rw [hm, hm4, hm3 a (by omega), hm2, hm1]
+      rwa [← hA2]
+    · rw [hm, hm4, hm3 a by_o, hm2, hm1]
   have hA4 : c₄.nreg ALLOC = c₃.nreg ALLOC := k4 _ (by unfold rL ALLOC sw; omega)
     (by unfold rR ALLOC sw; omega)
   unfold eqT
   by_cases h1 : c₄.nreg qD < c₄.nreg K1
-  · refine (IRS.ifT h1 (IRS.skip (K := 0) hI₄ ?_)).mono (by norm_num) (fun _ h => h)
+  · refine (IRS.ifT h1 (IRS.skip (K := 0) hI₄ ?_)).mono by_n (fun _ h => h)
     rw [q4, kk4] at h1
     have hs : ¬ σ = 1 := fun h => by have := hq1.1 h; omega
     exact hfin c₄ (by rw [v4L, ite_eq_right hs]) (by rw [v4R, ite_eq_right hs]) w4 (fun _ _ _ => rfl) rfl rfl
-  refine IRS.mono (K := 15) (IRS.ifF h1 ?_) (by norm_num) (fun _ h => h)
+  refine IRS.mono (K := 15) (IRS.ifF h1 ?_) by_n (fun _ h => h)
   by_cases h2 : c₄.nreg K1 < c₄.nreg qD
-  · refine (IRS.ifT h2 (IRS.skip (K := 0) hI₄ ?_)).mono (by norm_num) (fun _ h => h)
+  · refine (IRS.ifT h2 (IRS.skip (K := 0) hI₄ ?_)).mono by_n (fun _ h => h)
     rw [q4, kk4] at h2
     have hs : ¬ σ = 1 := fun h => by have := hq1.1 h; omega
     exact hfin c₄ (by rw [v4L, ite_eq_right hs]) (by rw [v4R, ite_eq_right hs]) w4 (fun _ _ _ => rfl) rfl rfl
   rw [q4, kk4] at h1 h2
-  have hs : σ = 1 := hq1.2 (by omega)
-  refine (IRS.ifF (show ¬ c₄.nreg K1 < c₄.nreg qD by rw [q4, kk4]; omega)
+  have hs : σ = 1 := hq1.2 by_o
+  refine (IRS.ifF (by rw [q4, kk4]; omega)
     (IRS.block [.copyN rL zP, .copyN rR wP] hI₄
-      ⟨hsr _ (by unfold rL sw; norm_num) (by unfold rL sw; norm_num),
-        hsr _ (by unfold rR sw; norm_num) (by unfold rR sw; norm_num), trivial⟩)).mono
-    (by simp) ?_
+      ⟨hsr _ by_d by_d,
+        hsr _ by_d by_d, trivial⟩)).mono
+    by_s ?_
   rintro c' rfl
   refine hfin _ ?_ ?_ ?_ (fun r h1 h2 => ?_) rfl ?_
   · show regB c₄.nmem [.copyN rL zP, .copyN rR wP] c₄.nreg rL = _

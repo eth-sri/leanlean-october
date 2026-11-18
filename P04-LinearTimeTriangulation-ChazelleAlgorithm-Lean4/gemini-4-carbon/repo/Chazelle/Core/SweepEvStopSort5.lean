@@ -61,15 +61,15 @@ theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   set A := c.nreg ALLOC with hA
   set S := c.nreg gRC with hS
   have e₀ := exec_regB (P := P) ssIdxHead hw (by
-    simp only [ssIdxHead, okW, okWI]; exact ⟨trivial, trivial, by omega, trivial⟩)
-  set c₁ : Config := { c with nreg := regB c.nmem ssIdxHead c.nreg } with hc₁
+    simp only [ssIdxHead, okW, okWI]; exact ⟨trivial, trivial, by_o, trivial⟩)
+  set c₁ := { c with nreg := regB c.nmem ssIdxHead c.nreg } with hc₁
   have v1 : ∀ r, r ≠ srA0 → r ≠ srIB → r ≠ srI → c₁.nreg r = c.nreg r := fun r a b d => by
     simp only [hc₁, ssIdxHead, regB, regI]
     rw [upd_other _ _ _ d, upd_other _ _ _ b, upd_other _ _ _ a]
   have vI : c₁.nreg srI = 0 := by simp only [hc₁, ssIdxHead, regB, regI, upd_same]
   have vB : c₁.nreg srIB = A := by
     simp only [hc₁, ssIdxHead, regB, regI]
-    rw [upd_other _ _ _ (by ssoSrt), upd_same, upd_other _ _ _ (show ALLOC ≠ srA0 by ssoSrt)]
+    rw [upd_other _ _ _ (by ssoSrt), upd_same, upd_other _ _ _ (by ssoSrt)]
   have v0 : c₁.nreg srA0 = A := by
     simp only [hc₁, ssIdxHead, regB, regI]
     rw [upd_other _ _ _ (by ssoSrt), upd_other _ _ _ (by ssoSrt), upd_same]
@@ -102,7 +102,7 @@ theorem ssIdx_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         · simp only [upd_same]
           rw [upd_other _ _ _ (show srI ≠ srA by ssoSrt), dB, hi]
           rcases Nat.lt_or_ge t i with h | h
-          · rw [upd_other _ _ _ (by omega)]; exact ht t h
+          · rw [upd_other _ _ _ by_o]; exact ht t h
           · rw [show t = i by omega, upd_same]
         · simp only [upd_same]
           rw [upd_other _ _ _ (by rw [dB, hi]; omega)]; exact hm a ha
@@ -138,7 +138,7 @@ theorem ssAllocL_val (m f : ℕ → ℕ) :
     Nat.reduceAdd, upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true]
   simp only [srSB, sB, srT, aB, ALLOC, sC, srJ, sw, Nat.reduceAdd] at a b d e g h i
   simp only [upd_apply]
-  repeat rw [ite_eq_right (by omega)]
+  repeat rw [ite_eq_right by_o]
 
 set_option maxRecDepth 20000 in
 theorem ssAllocL_ok {W : ℕ} (m f : ℕ → ℕ)

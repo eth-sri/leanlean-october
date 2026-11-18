@@ -30,7 +30,7 @@ def cpS : Stmt := .seq (.instr (.constN 210060 0)) (.whileLtN 210060 210061 cpBo
 /-- The registers `cpS` writes. -/
 def Bcp (r : ℕ) : Bool := decide (r = 210060) || decide (r = 210064) || decide (r = 210065)
 
-theorem wrM_cpBody : wrM Bcp cpBody = true := by decide
+theorem wrM_cpBody : wrM Bcp cpBody = true := by_d
 
 section exec
 
@@ -59,9 +59,9 @@ theorem cpS_exec {d : Config} (hw : WordsBounded W d) {S D len : ℕ}
       seg d'.nmem D len = seg d.nmem S len ∧
       (∀ a, (a < D ∨ D + len ≤ a) → d'.nmem a = d.nmem a) ∧ FrameM Bcp d d' := by
   have e₀ := Exec.constN (P := P) hw 210060 0 (Nat.zero_le _)
-  set d₀ : Config := { d with nreg := upd d.nreg 210060 0 } with hd₀
+  set d₀ := { d with nreg := upd d.nreg 210060 0 } with hd₀
   have g₀ : ∀ r, r ≠ 210060 → d₀.nreg r = d.nreg r := fun r hr => by rw [hd₀]; simp [hr]
-  have f₀ : FrameM Bcp d d₀ := exec_frameM e₀ (by decide)
+  have f₀ : FrameM Bcp d d₀ := exec_frameM e₀ by_d
   let Inv : ℕ → Config → Prop := fun i e => WordsBounded W e ∧ e.nreg 210060 = i ∧
     e.nreg 210061 = len ∧ e.nreg 210062 = S ∧ e.nreg 210063 = D ∧ e.nreg 210034 = 1 ∧
     FrameM Bcp d e ∧
@@ -71,24 +71,24 @@ theorem cpS_exec {d : Config} (hw : WordsBounded W d) {S D len : ℕ}
     (fun i e ⟨hw, h1, h2, _⟩ => ⟨hw, h1, h2⟩)
     (fun i e hi ⟨hw, h1, h2, h3, h4, h5, hf, hm⟩ => by
       obtain ⟨e', k, ex, hk, h1', hm', hf'⟩ := cpBody_exec (P := P) e hw h1 h3 h4 h5
-        (by omega) (by omega) (by omega)
-      have g : ∀ r, Bcp r = false → e'.nreg r = e.nreg r := hf'.1
-      refine ⟨e', k, ex, ⟨ex.wb_right, h1', (g _ (by decide)).trans h2, (g _ (by decide)).trans h3,
-        (g _ (by decide)).trans h4, (g _ (by decide)).trans h5, hf.trans hf', fun a => ?_⟩,
-        by omega⟩
+        by_o by_o by_o
+      have g := hf'.1
+      refine ⟨e', k, ex, ⟨ex.wb_right, h1', (g _ by_d).trans h2, (g _ by_d).trans h3,
+        (g _ by_d).trans h4, (g _ by_d).trans h5, hf.trans hf', fun a => ?_⟩,
+        by_o⟩
       rw [hm', Machine.upd_apply]
       by_cases ha : a = D + i
-      · rw [ite_eq_left ha, hm (S + i), ite_eq_right (by omega), ite_eq_left (by omega),
+      · rw [ite_eq_left ha, hm (S + i), ite_eq_right by_o, ite_eq_left by_o,
           show a - D = i by omega]
       · rw [ite_eq_right ha, hm a]; split_ifs <;> first | rfl | omega)
-    (j := 0) ⟨e₀.wb_right, by rw [hd₀]; simp, by rw [g₀ _ (by decide), h61],
-      by rw [g₀ _ (by decide), h62], by rw [g₀ _ (by decide), h63], by rw [g₀ _ (by decide), h34],
-      f₀, fun a => by rw [ite_eq_right (by omega)]⟩ (Nat.zero_le _)
-  refine ⟨d', 1 + k, .seq e₀ ex, by omega, w', ?_, fun a ha => ?_, hf'⟩
+    (j := 0) ⟨e₀.wb_right, by rw [hd₀]; simp, by rw [g₀ _ by_d, h61],
+      by rw [g₀ _ by_d, h62], by rw [g₀ _ by_d, h63], by rw [g₀ _ by_d, h34],
+      f₀, fun a => by rw [ite_eq_right by_o]⟩ (Nat.zero_le _)
+  refine ⟨d', 1 + k, .seq e₀ ex, by_o, w', ?_, fun a ha => ?_, hf'⟩
   · unfold seg; apply List.map_congr_left; intro i hi
     rw [List.mem_range] at hi
-    rw [hm', ite_eq_left (by omega), show D + i - D = i by omega]
-  · rw [hm', ite_eq_right (by omega)]
+    rw [hm', ite_eq_left by_o, show D + i - D = i by omega]
+  · rw [hm', ite_eq_right by_o]
 
 end exec
 

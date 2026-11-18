@@ -36,7 +36,7 @@ theorem side_const {L d b v w : ℝ} (hd : d = 0 ∨ L ≤ d) (hb : b = 0 ∨ L 
     first
     | (left; linarith)
     | (right; linarith)
-    | (exact ⟨by linarith, by linarith⟩)
+    | (exact ⟨by_l, by_l⟩)
     | (exfalso; rcases h' with h' | h' <;> linarith)
 
 theorem out_of {L y : ℝ} (hy : 0 ≤ y) (h : ¬ (0 < y ∧ y < L)) : y = 0 ∨ L ≤ y := by

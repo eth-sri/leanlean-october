@@ -43,16 +43,16 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
     ∃ i, i < es.length ∧ (es.getD i (0, 0, ∅)).1 = p ∧ (es.getD i (0, 0, ∅)).2.1 = t := by
   obtain ⟨hne, hmem, hhead, hsort, hgap, hlast, -⟩ := hL
   set n := (chainModel J.whole).W.n with hn
-  set x : ℝ := p + t with hx
+  set x := p + t with hx
   have hpn := hA.1
   have ht0 := hA.2.1
   have ht1 := hA.2.2.1
-  have hx0 : 0 ≤ x := by positivity
+  have hx0 : 0 ≤ x := by_p
   have hxn : x < n := by
     have : (p : ℝ) + 1 ≤ n := by exact_mod_cast hpn
     linarith
   have hcut : (chainModel J.whole).IsCut (F₂plus J S₂) x := ⟨e, he, p, t, hA, rfl⟩
-  have hlen : 0 < es.length := List.length_pos_iff.2 hne
+  have hlen := List.length_pos_iff.2 hne
   -- keys of the log
   let K : ℕ → ℝ := fun i => (es.getD i (0, 0, ∅)).1 + (es.getD i (0, 0, ∅)).2.1
   have hget : ∀ i (hi : i < es.length), es.getD i (0, 0, ∅) = es[i] := fun i hi => by
@@ -62,8 +62,7 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
   have hK0 : oW J (K 0) ≤ oW J x := by
     have h := hhead (es.getD 0 (0, 0, ∅)) (by
       rw [hget 0 hlen, List.head?_eq_getElem?, List.getElem?_eq_getElem hlen]; rfl)
-    show oW J (K 0) ≤ _
-    rw [show K 0 = _ from rfl, h]; exact hst
+    rwa [show K 0 = _ from rfl, h]
   -- the last key not after `x`
   set i := Nat.findGreatest (fun i => oW J (K i) ≤ oW J x) (es.length - 1) with hi
   have hiP : oW J (K i) ≤ oW J x := Nat.findGreatest_spec (P := fun i => oW J (K i) ≤ oW J x)
@@ -78,14 +77,14 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
     have h1 := hKi.1; have h2 := hKi.2.2.1
     have : ((es.getD i (0, 0, ∅)).1 : ℝ) + 1 ≤ n := by exact_mod_cast h1
     simp only [K]; linarith
-  have hgW0 : (0 : ℝ) ≤ gW J := by positivity
+  have hgW0 : (0 : ℝ) ≤ gW J := by_p
   have heq : oW J (K i) = oW J x := by
     rcases hiP.lt_or_eq with hlt | h
     · exfalso
       by_cases hnext : i + 1 < es.length
-      · have hnot : ¬ oW J (K (i + 1)) ≤ oW J x :=
+      · have hnot :=
           Nat.findGreatest_is_greatest (P := fun i => oW J (K i) ≤ oW J x)
-            (n := es.length - 1) (k := i + 1) (by omega) (by omega)
+            (n := es.length - 1) (k := i + 1) by_o by_o
         exact hgap i hnext x hcut hx0 hxn ⟨hlt, not_le.1 hnot⟩
       · have hlast' : es.getLast? = some (es.getD i (0, 0, ∅)) := by
           rw [List.getLast?_eq_getElem?, hget i hil]
@@ -93,7 +92,7 @@ theorem cut_key (J : Merge.Junction) {S₂ : Set (Set Point)} {es : List (ℕ ×
         have := hlast _ (by rw [hlast']; rfl) x hcut hx0 hxn
         exact this ⟨hlt, off_lt hxn hgW0⟩
     · exact h
-  have hkx : K i = x := off_inj hgW0 (gW_lt J) hKi0 hKin hx0 hxn heq
+  have hkx := off_inj hgW0 (gW_lt J) hKi0 hKin hx0 hxn heq
   obtain ⟨h1, h2⟩ := key_split hKi.2.1 hKi.2.2.1 ht0 ht1 hkx
   exact ⟨i, hil, h1, h2⟩
 
@@ -159,7 +158,7 @@ theorem tab_cand (J : Merge.Junction) {Q : Polygon} {N : NF} {T : ℕ → Option
   · rw [hpt]
     exact ⟨1, zero_le_one, le_rfl, by ext <;> simp⟩
   · left
-    have hk : j / 2 < N.nChords := by omega
+    have hk : j / 2 < N.nChords := by_o
     have hc := chord_mem_F (M := chainModel J.right) (Q := Q) hk
     unfold endOrigin endDir at hfree ⊢
     by_cases h : j % 2 = 0

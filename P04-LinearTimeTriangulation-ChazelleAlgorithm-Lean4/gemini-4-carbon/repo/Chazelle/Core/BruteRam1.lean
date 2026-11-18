@@ -27,10 +27,6 @@ Registers of band `bBrute = 18` (`180000 + i`):
 result is `C.topIdx`, by distinct heights).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace Brute
@@ -81,11 +77,11 @@ theorem initS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   · config_simp; omega
   · refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
     all_goals first
-      | (simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]; omega)
-      | simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+      | (simp (disch := omega) only [Machine.upd_same, Machine.upd_other]; omega)
+      | simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
       | skip
-    simp only [decide_eq_false_iff_not] at hr
-    simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+    simp at hr
+    simp (disch := omega) only [Machine.upd_other]
 
 
 /-! ## Boolean operations on bit registers (`180011` holds `1`) -/
@@ -106,12 +102,12 @@ theorem andS_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) (c : Config) (hw : Word
       FrameB (fun r => decide (r = d)) c c' := by
   unfold andS
   exec_block
-  · config_simp; omega
+  · omega
   · refine ⟨rfl, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
-    · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+    · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
       rw [h1]
-    · simp only [decide_eq_false_iff_not] at hr
-      simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+    · simp at hr
+      simp (disch := omega) only [Machine.upd_other]
 
 theorem orS_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) (c : Config) (hw : WordsBounded W c)
     {d x y t : ℕ} (hd : d ≠ 180011) (ht : t ≠ 180011) (hdt : d ≠ t) (h1 : c.nreg 180011 = 1)
@@ -121,12 +117,12 @@ theorem orS_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) (c : Config) (hw : Words
       FrameB (fun r => decide (r = d ∨ r = t)) c c' := by
   unfold orS
   exec_block
-  · config_simp; omega
+  · omega
   · refine ⟨rfl, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
-    · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+    · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
       rw [h1]
     · simp only [decide_eq_false_iff_not, not_or] at hr
-      simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+      simp (disch := omega) only [Machine.upd_other]
 
 theorem notS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     {d x : ℕ} (_hd : d ≠ 180011) (h1 : c.nreg 180011 = 1) :
@@ -135,10 +131,10 @@ theorem notS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
   unfold notS
   exec_block
   refine ⟨rfl, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
-  · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+  · simp (disch := omega) only [Machine.upd_same]
     rw [h1]
-  · simp only [decide_eq_false_iff_not] at hr
-    simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+  · simp at hr
+    simp (disch := omega) only [Machine.upd_other]
 
 /-! ## The top index -/
 
@@ -168,59 +164,59 @@ theorem topBody_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ 
       c₁.nreg 180021 = a + b ∧ c₁.nreg 180022 = a + k ∧ FrameB Btop c c₁ ∧
       ∀ r, r ≠ 180021 → r ≠ 180022 → c₁.nreg r = c.nreg r := by
     exec_block
-    · config_simp; rw [h0, h13]; omega
+    · rw [h0, h13]; omega
     · config_simp; rw [h0, h20]; omega
     · refine ⟨rfl, ?_, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩, fun r h1 h2 => ?_⟩
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
         rw [h0, h13]
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_same]
         rw [h0, h20]
       · unfold Btop at hr
-        simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-        simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
-  obtain ⟨c₂, k₂, e₂, hk₂, F₂, bit₂, sig₂⟩ := testS_exec (P := P) hG hW (op := 1) (by omega)
-    (x := .v 180021) (y := .v 180022) (z := .v 180021) (d := 180029) (Or.inr (by omega))
-    (Or.inr (by omega)) (Or.inr (by omega)) c₁ e₁.wb_right
+        simp at hr
+        simp (disch := omega) only [Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_other]
+  obtain ⟨c₂, k₂, e₂, hk₂, F₂, bit₂, sig₂⟩ := testS_exec (P := P) hG hW (op := 1) by_o
+    (x := .v 180021) (y := .v 180022) (z := .v 180021) (d := 180029) (Or.inr by_o)
+    (Or.inr by_o) (Or.inr by_o) c₁ e₁.wb_right
     (by simp only [Src.pt, SymPt.Lt]; omega) (by simp only [Src.pt, SymPt.Lt]; omega)
     (by simp only [Src.pt, SymPt.Lt]; omega)
   simp only [Src.pt, SymPt.eval, SignTest, q21, q22] at sig₂
-  have k2 : ∀ r, Bt 180029 r = false → c₂.nreg r = c₁.nreg r := F₂.1
+  have k2 := F₂.1
   have c11 : c₂.nreg 180011 = 1 := by
-    rw [k2 _ (by decide), R₁' _ (by decide) (by decide), h11]
-  have c13 : c₂.nreg 180013 = b := by rw [k2 _ (by decide), R₁' _ (by decide) (by decide), h13]
-  have c20 : c₂.nreg 180020 = k := by rw [k2 _ (by decide), R₁' _ (by decide) (by decide), h20]
+    rw [k2 _ by_d, R₁' _ by_d by_d, h11]
+  have c13 : c₂.nreg 180013 = b := by rw [k2 _ by_d, R₁' _ by_d by_d, h13]
+  have c20 : c₂.nreg 180020 = k := by rw [k2 _ by_d, R₁' _ by_d by_d, h20]
   have w₂ := e₂.wb_right
   obtain ⟨c₃, k₃, e₃, hk₃, q13, q20, R₃⟩ : ∃ c₃ k₃, Exec P W
       (.ifLtN 180029 180011 .skip (.instr (.copyN 180013 180020))) c₂ c₃ k₃ ∧ k₃ ≤ 3 ∧
       c₃.nreg 180013 = (if ((Qof P).vtx (a + b)).2 < ((Qof P).vtx (a + k)).2 then k else b) ∧
       c₃.nreg 180020 = k ∧ FrameB Btop c₂ c₃ := by
     by_cases ht : ((Qof P).vtx (a + b)).2 < ((Qof P).vtx (a + k)).2
-    · have h1 : c₂.nreg 180029 = 1 := sig₂.2 ht
+    · have h1 := sig₂.2 ht
       refine ⟨_, _, .ifLtN_false (by rw [h1, c11]; omega) (Exec.copyN w₂ 180013 180020), le_refl _,
         ?_, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
       · simp [ht, c20]
       · simp [c20]
       · unfold Btop at hr
-        simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-        simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+        simp at hr
+        simp (disch := omega) only [Machine.upd_other]
     · have h1 : c₂.nreg 180029 = 0 := by have := mt sig₂.1 ht; omega
-      exact ⟨_, _, .ifLtN_true (by rw [h1, c11]; omega) (.skip w₂), by omega,
+      exact ⟨_, _, .ifLtN_true (by rw [h1, c11]; omega) (.skip w₂), by_o,
         by rw [ite_eq_right ht, c13], c20, FrameB.refl _ _⟩
   have e₄ := Exec.addN (P := P) e₃.wb_right 180020 180020 180011 (by
-    rw [q20, R₃.1 _ (by decide), c11]; omega)
-  refine ⟨_, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, ?_, ?_, ?_⟩
+    rw [q20, R₃.1 _ by_d, c11]; omega)
+  refine ⟨_, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by_o, ?_, ?_, ?_⟩
   · refine (R₁.trans (frameB_mono F₂ ?_)).trans (R₃.trans ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩)
     · intro r hr
       unfold Btop at hr; unfold Bt
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢
-      exact ⟨hr.1, by omega⟩
+      simp at hr ⊢
+      exact ⟨hr.1, by_o⟩
     · unfold Btop at hr
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-      simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
-  · simp only [Config.nreg_mk, Machine.upd_same]
-    rw [q20, R₃.1 _ (by decide), c11]
-  · simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+      simp at hr
+      simp (disch := omega) only [Machine.upd_other]
+  · simp
+    rw [q20, R₃.1 _ by_d, c11]
+  · simp (disch := omega) only [Machine.upd_other]
     exact q13
 
 /-- **The top-index scan**: register `180013` receives the index of the highest vertex among
@@ -239,12 +235,12 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
     · omega
     · refine ⟨rfl, by config_simp, by config_simp, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
       unfold Btop at hr
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-      simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+      simp at hr
+      simp (disch := omega) only [Machine.upd_other]
   let I : Config → Prop := fun d => WordsBounded W d ∧ FrameB Btop c d ∧
     1 ≤ d.nreg 180020 ∧ d.nreg 180020 ≤ m + 1 ∧ d.nreg 180013 < d.nreg 180020 ∧
     ∀ i, i < d.nreg 180020 → ((Qof P).vtx (a + i)).2 ≤ ((Qof P).vtx (a + d.nreg 180013)).2
-  have hI₁ : I c₁ := ⟨e₁.wb_right, R₁, by omega, by omega, by omega, fun i hi => by
+  have hI₁ : I c₁ := ⟨e₁.wb_right, R₁, by_o, by_o, by_o, fun i hi => by
     rw [q13, show i = 0 by omega]⟩
   have keep : ∀ d r, FrameB Btop c d → Btop r = false → d.nreg r = c.nreg r := fun d r h hr =>
     h.1 r hr
@@ -253,12 +249,12 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
       (fun d => m + 1 - d.nreg 180020) 253 (fun d hd => hd.1)
       (by
         intro d ⟨wd, Fd, d1, d2, d3, d4⟩ hlt
-        have d23 : d.nreg 180023 = m + 1 := by rw [keep d _ Fd (by decide), h23]
+        have d23 : d.nreg 180023 = m + 1 := by rw [keep d _ Fd by_d, h23]
         rw [d23] at hlt
         obtain ⟨d', k', e', hk', F', q20', q13'⟩ := topBody_exec hG hW d wd
-          (by rw [keep d _ Fd (by decide), h0]) (by rw [keep d _ Fd (by decide), h11]) rfl rfl
-          (by omega) (by omega)
-        refine ⟨d', k', e', ⟨e'.wb_right, Fd.trans F', by omega, by omega, ?_, ?_⟩, hk', by omega⟩
+          (by rw [keep d _ Fd by_d, h0]) (by rw [keep d _ Fd by_d, h11]) rfl rfl
+          by_o by_o
+        refine ⟨d', k', e', ⟨e'.wb_right, Fd.trans F', by_o, by_o, ?_, ?_⟩, hk', by_o⟩
         · rw [q13', q20']; split_ifs <;> omega
         · intro i hi
           rw [q20'] at hi
@@ -271,9 +267,9 @@ theorem topS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
             · exact d4 i hi
             · exact not_lt.1 ht)
       hI₁
-  have c23 : c₂.nreg 180023 = m + 1 := by rw [keep c₂ _ F₂ (by decide), h23]
+  have c23 : c₂.nreg 180023 = m + 1 := by rw [keep c₂ _ F₂ by_d, h23]
   rw [c23] at hex
-  refine ⟨c₂, _, .seq e₁ e₂, ?_, F₂, by omega, fun i hi => h₄ i (by omega)⟩
+  refine ⟨c₂, _, .seq e₁ e₂, ?_, F₂, by_o, fun i hi => h₄ i by_o⟩
   rw [q20] at hk₂; omega
 
 end

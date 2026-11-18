@@ -27,7 +27,7 @@ theorem iter_keep {c cw cs co c' : Config} (h : IterRel P J N₁ N₂ c cw cs co
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, hfrW⟩ := hWO
   have hsA : cs.nreg ALLOC = cw.nreg ALLOC :=
     hsO _ (by unfold ALLOC bF sw; omega) (by unfold ALLOC bN sw; omega)
-  refine ⟨fun r hr hk => ?_, by omega⟩
+  refine ⟨fun r hr hk => ?_, by_o⟩
   have hb := band_sw_not ⟨hr.1, hr.2.1⟩
   have hra : r ≠ ALLOC := by have := hr.1; unfold ALLOC; omega
   rw [hfrK r hb hk hra, hregO r hb hr.2.2.2.2.2.1 hr.2.2.2.2.2.2 hra,
@@ -97,8 +97,7 @@ theorem loop_irs {W : ℕ} {c₀ : Config} {body : Stmt} {Kb : ℕ}
       rintro c' ⟨cw, cs, co, hIR⟩
       have hkeep := (iter_keep hIR).1
       have hk' : c'.nreg K1 = 1 := by
-        rw [hkeep _ (keepR_of (by unfold K1 sw; omega)) (by unfold KR kE kH kN kL sP dF lC K1 sw; omega)]
-        exact hk
+        rwa [hkeep _ (keepR_of (by unfold K1 sw; omega)) (by unfold KR kE kH kN kL sP dF lC K1 sw; omega)]
       by_cases hd : c'.nreg dF = 0
       · obtain ⟨hL', hlt⟩ := hstep c cw cs co c' hLc hIR hd
         exact ⟨⟨hk', Or.inl hL'⟩, by rw [hμ c' hL', hμ c hLc]; omega⟩
@@ -108,7 +107,7 @@ theorem loop_irs {W : ℕ} {c₀ : Config} {body : Stmt} {Kb : ℕ}
           by_cases hc : co.nreg bF = 1 ∨ co.nreg sP < co.nreg sC ∨ co.nreg wX = 0
           · exact absurd (hsome hc).1 hd
           · push Not at hc
-            exact (hnone ⟨hc.1, by omega, hc.2.2⟩).1
+            exact (hnone ⟨hc.1, by_o, hc.2.2⟩).1
         obtain ⟨hOut, hlC⟩ := hdone c cw cs co c' hLc hIR hd1
         refine ⟨⟨hk', Or.inr ⟨hd1, done_runOut hLc hIR hOut hlC⟩⟩, ?_⟩
         rw [hμ c hLc]

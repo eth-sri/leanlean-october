@@ -65,7 +65,7 @@ theorem LbRegs.of_frame {c c' : Config} {lo hi key bACT bFIRST bFPRE bPOW LP : �
     (h : LbRegs c lo hi key bACT bFIRST bFPRE bPOW LP)
     (hr : ∀ r, ¬ LbRG r → c'.nreg r = c.nreg r) : LbRegs c' lo hi key bACT bFIRST bFPRE bPOW LP := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> (rw [hr _ (by unfold LbRG; omega)]; assumption)
+  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> (rwa [hr _ (by unfold LbRG; omega)])
 
 /-- **One level of the search.** -/
 theorem lbBody_exec {c : Config} (hw : WordsBounded W c) {lo hi key bACT bFIRST bFPRE bPOW LP : ℕ}
@@ -102,11 +102,11 @@ theorem lbBody_exec {c : Config} (hw : WordsBounded W c) {lo hi key bACT bFIRST 
   by_cases hbig : hi < pos + 2 ^ j
   · -- out of range: skip
     subst hk1
-    refine ⟨c1, 4 + (0 + 1), .seq e1 (.ifLtN_true (by rw [hR1.rhi, ht1]; exact hbig)
-      (.skip hw1)), by omega, hm1, hr1, hrr1, hrm1, ho1, hj1, pos, hpos1, ?_⟩
+    refine ⟨c1, 4 + (0 + 1), .seq e1 (.ifLtN_true (by rwa [hR1.rhi, ht1])
+      (.skip hw1)), by_o, hm1, hr1, hrr1, hrm1, ho1, hj1, pos, hpos1, ?_⟩
     exact hstep2 (fun h => by omega)
   · -- probe the key at `pos + 2^j - 1`
-    have hin : lo ≤ pos + 2 ^ j - 1 ∧ pos + 2 ^ j - 1 < hi := ⟨by omega, by omega⟩
+    have hin : lo ≤ pos + 2 ^ j - 1 ∧ pos + 2 ^ j - 1 < hi := ⟨by_o, by_o⟩
     obtain ⟨hwa, hwb⟩ := hwf _ hin.1 hin.2
     rw [← hm1] at hwa hwb
     obtain ⟨c2, k2, e2, hk2', hw2', hm2, hk2, hr2, hrr2, hrm2, ho2⟩ : ∃ c2 k2,
@@ -120,16 +120,16 @@ theorem lbBody_exec {c : Config} (hw : WordsBounded W c) {lo hi key bACT bFIRST 
         c2.rmem = c1.rmem ∧ c2.output = c1.output := by
       exec_block
       · rw [hR1.rACT, ht1]; omega
-      · config_simp; rw [hR1.rFIRST, hR1.rACT, ht1, hR1.one,
-          show bACT + (pos + 2 ^ j) - 1 = bACT + (pos + 2 ^ j - 1) by omega]; exact hwa
-      · config_simp; rw [hR1.rFPRE, hR1.rFIRST, hR1.rACT, ht1, hR1.one,
-          show bACT + (pos + 2 ^ j) - 1 = bACT + (pos + 2 ^ j - 1) by omega]; exact hwb
+      · config_simp; rwa [hR1.rFIRST, hR1.rACT, ht1, hR1.one,
+          show bACT + (pos + 2 ^ j) - 1 = bACT + (pos + 2 ^ j - 1) by omega]
+      · config_simp; rwa [hR1.rFPRE, hR1.rFIRST, hR1.rACT, ht1, hR1.one,
+          show bACT + (pos + 2 ^ j) - 1 = bACT + (pos + 2 ^ j - 1) by omega]
       · refine ⟨rfl, ‹_›, rfl, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
         · config_simp; rw [hR1.rFPRE, hR1.rFIRST, hR1.rACT, ht1, hR1.one,
             show bACT + (pos + 2 ^ j) - 1 = bACT + (pos + 2 ^ j - 1) by omega]; rfl
         · simp only [Machine.upd_apply, h1, h2, ite_false]
     subst hk1 hk2'
-    have hkey2 : c2.nreg 130310 = key := by rw [hr2 _ (by decide) (by decide)]; exact hR1.rkey
+    have hkey2 : c2.nreg 130310 = key := by rw [hr2 _ by_d by_d]; exact hR1.rkey
     have hkk : c2.nreg 130315 = keyOf c.nmem bACT bFIRST bFPRE (pos + 2 ^ j - 1) := by
       rw [hk2, hm1]
     have hframe : ∀ c3 : Config, (∀ r, ¬ LbRG r → c3.nreg r = c2.nreg r) →
@@ -139,9 +139,9 @@ theorem lbBody_exec {c : Config} (hw : WordsBounded W c) {lo hi key bACT bFIRST 
         (fun e => hr (by rw [e]; unfold LbRG; omega)), hr1 r hr]
     by_cases hlt : keyOf c.nmem bACT bFIRST bFPRE (pos + 2 ^ j - 1) < key
     · have e3 := Exec.copyN (P := P) hw2' 130311 130316
-      refine ⟨_, 4 + ((7 + (1 + 1)) + 2), .seq e1 (.ifLtN_false (by rw [hR1.rhi, ht1]; exact hbig)
-        (.seq e2 (.ifLtN_true (by rw [hkk, hkey2]; exact hlt) e3))), by omega, ?_, ?_, ?_, ?_,
-        ?_, ?_, pos + 2 ^ j, ?_, hstep1 ⟨by omega, hlt⟩⟩
+      refine ⟨_, 4 + ((7 + (1 + 1)) + 2), .seq e1 (.ifLtN_false (by rwa [hR1.rhi, ht1])
+        (.seq e2 (.ifLtN_true (by rwa [hkk, hkey2]) e3))), by_o, ?_, ?_, ?_, ?_,
+        ?_, ?_, pos + 2 ^ j, ?_, hstep1 ⟨by_o, hlt⟩⟩
       · simp [hm2, hm1]
       · refine hframe _ (fun r hr => ?_)
         simp only [Machine.upd_apply]; unfold LbRG at hr; split_ifs <;> omega
@@ -149,14 +149,14 @@ theorem lbBody_exec {c : Config} (hw : WordsBounded W c) {lo hi key bACT bFIRST 
       · simp [hrm2, hrm1]
       · simp [ho2, ho1]
       · simp only [Machine.upd_apply]
-        rw [ite_eq_right (by decide), hr2 _ (by decide) (by decide), hj1]
+        rw [ite_eq_right by_d, hr2 _ by_d by_d, hj1]
       · simp only [Machine.upd_same]
-        rw [hr2 _ (by decide) (by decide), ht1]
-    · refine ⟨c2, 4 + ((7 + (0 + 2)) + 2), .seq e1 (.ifLtN_false (by rw [hR1.rhi, ht1]; exact hbig)
-        (.seq e2 (.ifLtN_false (by rw [hkk, hkey2]; exact hlt) (.skip hw2')))), by omega,
+        rw [hr2 _ by_d by_d, ht1]
+    · refine ⟨c2, 4 + ((7 + (0 + 2)) + 2), .seq e1 (.ifLtN_false (by rwa [hR1.rhi, ht1])
+        (.seq e2 (.ifLtN_false (by rwa [hkk, hkey2]) (.skip hw2')))), by_o,
         hm2.trans hm1, hframe _ (fun _ _ => rfl), hrr2.trans hrr1, hrm2.trans hrm1,
-        ho2.trans ho1, by rw [hr2 _ (by decide) (by decide), hj1], pos,
-        by rw [hr2 _ (by decide) (by decide), hpos1], hstep2 (fun h => hlt h.2)⟩
+        ho2.trans ho1, by rw [hr2 _ by_d by_d, hj1], pos,
+        by rw [hr2 _ by_d by_d, hpos1], hstep2 (fun h => hlt h.2)⟩
 
 /-- **The lower-bound search.**  At the end `pos` (register `130311`) is the partition point of
 the sorted keys of `[lo, hi)` for `key`; only the scratch registers change. -/
@@ -191,28 +191,28 @@ theorem lbStmt_exec {c : Config} (hw : WordsBounded W c) {lo hi key bACT bFIRST 
     (fun c2 ⟨hw2', hm2, hr2, hrr2, hrm2, ho2, j, pos, hj, hpos, hjL, hI⟩ htest => by
       have hR2 := hR.of_frame hr2
       rw [hR2.zero, hj] at htest
-      obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := ⟨j - 1, by omega⟩
+      obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := ⟨j - 1, by_o⟩
       have hs2 : Sorted (keyOf c2.nmem bACT bFIRST bFPRE) lo hi := by rw [hm2]; exact hs
       have hI2 : LbInv (keyOf c2.nmem bACT bFIRST bFPRE) lo hi key pos (j' + 1) := by
         rw [hm2]; exact hI
-      have hpow2 : c2.nmem (bPOW + j') = 2 ^ j' := by rw [hm2]; exact hpow j' (by omega)
-      have hp : 2 ^ j' ≤ 2 ^ LP := Nat.pow_le_pow_right (by norm_num) (by omega)
+      have hpow2 : c2.nmem (bPOW + j') = 2 ^ j' := by rw [hm2]; exact hpow j' by_o
+      have hp : 2 ^ j' ≤ 2 ^ LP := Nat.pow_le_pow_right by_n by_o
       obtain ⟨c3, k3, e3, hk3, hm3, hr3, hrr3, hrm3, ho3, hj3, pos', hpos3, hI3⟩ :=
-        lbBody_exec (P := P) hw2' hR2 hs2 hpos hj (by omega) hpow2 hI2 hwpow hwact (by omega)
+        lbBody_exec (P := P) hw2' hR2 hs2 hpos hj by_o hpow2 hI2 hwpow hwact by_o
           (fun i a b => by rw [hm2]; exact hwf i a b)
       refine ⟨c3, k3, e3, ⟨e3.wb_right, hm3.trans hm2, fun r hr => (hr3 r hr).trans (hr2 r hr),
-        hrr3.trans hrr2, hrm3.trans hrm2, ho3.trans ho2, j', pos', hj3, hpos3, by omega,
-        by rw [hm2] at hI3; exact hI3⟩, ?_⟩
+        hrr3.trans hrr2, hrm3.trans hrm2, ho3.trans ho2, j', pos', hj3, hpos3, by_o,
+        by rwa [hm2] at hI3⟩, ?_⟩
       rw [hj3, hj]; omega)
     ⟨hw1, hm1, hr1, hrr1, hrm1, ho1, LP, lo, hj1, hpos1, le_rfl, LbInv.init hlh hLP⟩
   have hR' := hR.of_frame hr'
   rw [hR'.zero, hj] at htest
-  have hj0 : j = 0 := by omega
+  have hj0 : j = 0 := by_o
   subst hj0
   obtain ⟨fin1, fin2⟩ := LbInv.final hs hI
   refine ⟨c', k1 + k, .seq e1 e, by rw [hj1] at hk; omega, hm', hr', hrr', hrm', ho',
-    by rw [hpos]; exact hI.lo_le, by rw [hpos]; exact hI.le_hi, by rw [hpos]; exact fin1,
-    by rw [hpos]; exact fin2⟩
+    by rw [hpos]; exact hI.lo_le, by rw [hpos]; exact hI.le_hi, by rwa [hpos],
+    by rwa [hpos]⟩
 
 
 /-! ## The good test -/
@@ -252,10 +252,10 @@ theorem cntIn_eq {κ : ℕ → ℕ} {lo hi a b p1 p2 : ℕ} (_hab : a ≤ b)
     constructor
     · rintro ⟨⟨c, d⟩, e, f⟩
       constructor
-      · by_contra hc; have := b1 i c (by omega); omega
-      · by_contra hc; have := a2 i (by omega) d; omega
+      · by_contra hc; have := b1 i c by_o; omega
+      · by_contra hc; have := a2 i by_o d; omega
     · rintro ⟨c, d⟩
-      refine ⟨⟨by omega, by omega⟩, a1 i c (by omega), b2 i (by omega) d⟩
+      refine ⟨⟨by_o, by_o⟩, a1 i c by_o, b2 i by_o d⟩
   rw [this, Nat.card_Ico]
 
 /-- The registers read by the good test. -/
@@ -284,7 +284,7 @@ theorem GoodRegs.of_frame {c c' : Config} {lo hi z bACT bFIRST bFPRE bPOW LP bFS
     GoodRegs c' lo hi z bACT bFIRST bFPRE bPOW LP bFSZ := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by unfold GoodRG; omega)]; assumption)
+    (rwa [hr _ (by unfold GoodRG; omega)])
 
 /-- **The good test.** -/
 theorem goodStmt_exec {c : Config} (hw : WordsBounded W c)
@@ -310,7 +310,7 @@ theorem goodStmt_exec {c : Config} (hw : WordsBounded W c)
       c1.rreg = c.rreg ∧ c1.rmem = c.rmem ∧ c1.output = c.output := by
     unfold goodPre1
     exec_block
-    · rw [hR.rFPRE, hR.rz]; exact hwz1
+    · rwa [hR.rFPRE, hR.rz]
     · refine ⟨rfl, ‹_›, rfl, by config_simp; rw [hR.rFPRE, hR.rz], fun r h1 h2 => ?_, rfl, rfl,
         rfl⟩
       simp only [Machine.upd_apply, h1, h2, ite_false]
@@ -320,8 +320,8 @@ theorem goodStmt_exec {c : Config} (hw : WordsBounded W c)
   have hL1 := hR1.lb
   rw [hkey1] at hL1
   obtain ⟨c2, k2, e2, hk2, hm2, hr2, hrr2, hrm2, ho2, hp1a, hp1b, hb1, ha1⟩ :=
-    lbStmt_exec (P := P) hw1 hL1 (by rw [hm1]; exact hs) hlh (by rw [hm1]; exact hpow) hLP hwpow
-      hwact hw2 (by rw [hm1]; exact hwf)
+    lbStmt_exec (P := P) hw1 hL1 (by rwa [hm1]) hlh (by rwa [hm1]) hLP hwpow
+      hwact hw2 (by rwa [hm1])
   rw [hm1] at hb1 ha1
   have hR2 : GoodRegs c2 lo hi z bACT bFIRST bFPRE bPOW LP bFSZ :=
     hR1.of_frame (fun r hr => hr2 r (fun h => hr (Or.inl ⟨by unfold LbRG at h; omega,
@@ -337,8 +337,8 @@ theorem goodStmt_exec {c : Config} (hw : WordsBounded W c)
       c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output := by
     unfold goodPre2
     exec_block
-    · config_simp; rw [hR2.rFSZ, hR2.rz]; exact hwz2
-    · config_simp; rw [hkey2, hR2.rFSZ, hR2.rz, hm2, hm1]; exact hwz3
+    · config_simp; rwa [hR2.rFSZ, hR2.rz]
+    · config_simp; rwa [hkey2, hR2.rFSZ, hR2.rz, hm2, hm1]
     · refine ⟨rfl, ‹_›, by rw [hm2, hm1], by config_simp; rfl, ?_, fun r h1 h2 h3 h4 => ?_, rfl,
         rfl, rfl⟩
       · config_simp; rw [hkey2, hR2.rFSZ, hR2.rz, hm2, hm1]
@@ -350,8 +350,8 @@ theorem goodStmt_exec {c : Config} (hw : WordsBounded W c)
   have hL3 := hR3.lb
   rw [hkey3] at hL3
   obtain ⟨c4, k4, e4, hk4, hm4, hr4, hrr4, hrm4, ho4, hp2a, hp2b, hb2, ha2⟩ :=
-    lbStmt_exec (P := P) hw3 hL3 (by rw [hm3]; exact hs) hlh (by rw [hm3]; exact hpow) hLP hwpow
-      hwact hw2 (by rw [hm3]; exact hwf)
+    lbStmt_exec (P := P) hw3 hL3 (by rwa [hm3]) hlh (by rwa [hm3]) hLP hwpow
+      hwact hw2 (by rwa [hm3])
   rw [hm3] at hb2 ha2
   have hs4 : c4.nreg 130332 = p1 := by rw [hr4 _ (by unfold LbRG; omega), hs3]
   have hR4 : GoodRegs c4 lo hi z bACT bFIRST bFPRE bPOW LP bFSZ :=
@@ -361,7 +361,7 @@ theorem goodStmt_exec {c : Config} (hw : WordsBounded W c)
   have hw4 := e4.wb_right
   have hcnt : cntIn (keyOf c.nmem bACT bFIRST bFPRE) lo hi (c.nmem (bFPRE + z))
       (c.nmem (bFPRE + z) + c.nmem (bFSZ + z)) = p2 - p1 :=
-    cntIn_eq (by omega) ⟨hp1a, hp1b⟩ ⟨hp2a, hp2b⟩ hb1 ha1 hb2 ha2
+    cntIn_eq by_o ⟨hp1a, hp1b⟩ ⟨hp2a, hp2b⟩ hb1 ha1 hb2 ha2
   -- the comparison
   obtain ⟨c5, k5, e5, hk5, hw5, hm5, hd5, hr5, hrr5, hrm5, ho5⟩ : ∃ c5 k5,
       Exec P W (block [.subN 130334 130311 130332, .addN 130334 130334 130334]) c4 c5 k5 ∧
@@ -373,7 +373,7 @@ theorem goodStmt_exec {c : Config} (hw : WordsBounded W c)
     · refine ⟨rfl, ‹_›, rfl, by config_simp; rw [hs4]; omega, fun r h1 => ?_, rfl, rfl, rfl⟩
       simp only [Machine.upd_apply, h1, ite_false]
   have hW5 : c5.nreg 130302 = hi - lo := by
-    rw [hr5 _ (by decide)]; exact hR4.rW
+    rw [hr5 _ by_d]; exact hR4.rW
   have hframe : ∀ c6 : Config, (∀ r, r ≠ 130331 → c6.nreg r = c5.nreg r) →
       ∀ r, ¬ GoodRG r → c6.nreg r = c.nreg r := by
     intro c6 h6 r hr
@@ -386,22 +386,22 @@ theorem goodStmt_exec {c : Config} (hw : WordsBounded W c)
         (fun e => hr (by rw [e]; unfold GoodRG; omega))]
   subst hk1 hk3 hk5
   by_cases hgood : c5.nreg 130302 < c5.nreg 130334
-  · have e6 := Exec.constN (P := P) hw5 130331 1 (by omega)
+  · have e6 := Exec.constN (P := P) hw5 130331 1 by_o
     refine ⟨_, 2 + (k2 + (4 + (k4 + (2 + (1 + 1))))), .seq e1 (.seq e2 (.seq e3 (.seq e4
-      (.seq e5 (.ifLtN_true hgood e6))))), by omega, ?_, hframe _ (fun r hr => by simp [hr]),
+      (.seq e5 (.ifLtN_true hgood e6))))), by_o, ?_, hframe _ (fun r hr => by simp [hr]),
       by simp [hrr5, hrr4, hrr3, hrr2, hrr1], by simp [hrm5, hrm4, hrm3, hrm2, hrm1],
-      by simp [ho5, ho4, ho3, ho2, ho1], by simp, ?_⟩
+      by simp [ho5, ho4, ho3, ho2, ho1], by_s, ?_⟩
     · simp [hm5, hm4, hm3]
     · simp only [Machine.upd_same, true_iff]
-      rw [hW5, hd5] at hgood; rw [hcnt]; exact hgood
-  · have e6 := Exec.constN (P := P) hw5 130331 0 (by omega)
+      rw [hW5, hd5] at hgood; rwa [hcnt]
+  · have e6 := Exec.constN (P := P) hw5 130331 0 by_o
     refine ⟨_, 2 + (k2 + (4 + (k4 + (2 + (1 + 2))))), .seq e1 (.seq e2 (.seq e3 (.seq e4
-      (.seq e5 (.ifLtN_false hgood e6))))), by omega, ?_, hframe _ (fun r hr => by simp [hr]),
+      (.seq e5 (.ifLtN_false hgood e6))))), by_o, ?_, hframe _ (fun r hr => by simp [hr]),
       by simp [hrr5, hrr4, hrr3, hrr2, hrr1], by simp [hrm5, hrm4, hrm3, hrm2, hrm1],
-      by simp [ho5, ho4, ho3, ho2, ho1], by simp, ?_⟩
+      by simp [ho5, ho4, ho3, ho2, ho1], by_s, ?_⟩
     · simp [hm5, hm4, hm3]
     · simp only [Machine.upd_same, zero_ne_one, false_iff]
-      rw [hW5, hd5] at hgood; rw [hcnt]; exact hgood
+      rw [hW5, hd5] at hgood; rwa [hcnt]
 
 /-! ## The climb -/
 
@@ -451,7 +451,7 @@ theorem ClimbCtx.of_frame {c c' : Config} {lo hi bACT bFIRST bFPRE bPOW LP bFSZ 
     ClimbCtx c' lo hi bACT bFIRST bFPRE bPOW LP bFSZ bUP L N := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by unfold ClimbRG GoodRG; omega)]; assumption)
+    (rwa [hr _ (by unfold ClimbRG GoodRG; omega)])
 
 theorem ClimbCtx.good {c : Config} {lo hi bACT bFIRST bFPRE bPOW LP bFSZ bUP L N z : ℕ}
     (h : ClimbCtx c lo hi bACT bFIRST bFPRE bPOW LP bFSZ bUP L N) (hz : c.nreg 130330 = z) :
@@ -514,7 +514,7 @@ theorem climbBody_exec {c : Config} (hw : WordsBounded W c)
   have hjN : bUP + j * N + x ≤ W := by
     have : j * N + x < L * N := by
       calc j * N + x < j * N + N := by omega
-        _ = (j + 1) * N := by ring
+        _ = (j + 1) * N := by_r
         _ ≤ L * N := Nat.mul_le_mul_right _ hjL
     have := hM.wup; omega
   -- load `z := UP_j[x]`
@@ -528,7 +528,7 @@ theorem climbBody_exec {c : Config} (hw : WordsBounded W c)
     have hbj : bUP + (j + 1) * N - N = bUP + j * N := by
       rw [show (j + 1) * N = j * N + N by ring]; omega
     exec_block
-    · config_simp; rw [hb, hC.rN, hx, hbj]; exact hjN
+    · config_simp; rwa [hb, hC.rN, hx, hbj]
     · refine ⟨rfl, ‹_›, rfl, by config_simp; rw [hj, hC.one]; omega,
         by config_simp; rw [hb, hC.rN, hbj], ?_, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl⟩
       · config_simp; rw [hb, hC.rN, hx, hbj, htab]
@@ -545,7 +545,7 @@ theorem climbBody_exec {c : Config} (hw : WordsBounded W c)
   rw [hm1] at hg2
   have hone2 : c2.nreg 130001 = 1 := by rw [hr2 _ (by unfold GoodRG; omega)]; exact hC1.one
   have hx2 : c2.nreg 130341 = x := by
-    rw [hr2 _ (by unfold GoodRG; omega), hr1 _ (by decide) (by decide) (by decide) (by decide), hx]
+    rw [hr2 _ (by unfold GoodRG; omega), hr1 _ by_d by_d by_d by_d, hx]
   have hz2 : c2.nreg 130330 = up^[2 ^ j] x := by
     rw [hr2 _ (by unfold GoodRG; omega), hz1]
   have hframe : ∀ c3 : Config, (∀ r, r ≠ 130341 → c3.nreg r = c2.nreg r) →
@@ -566,15 +566,15 @@ theorem climbBody_exec {c : Config} (hw : WordsBounded W c)
     have hng : ¬ GdF c.nmem bACT bFIRST bFPRE bFSZ lo hi (up^[2 ^ j] x) := by
       intro h; have := hg2.mpr h; rw [hone2] at hbad; omega
     have e3 := Exec.copyN (P := P) e2.wb_right 130341 130330
-    refine ⟨_, 4 + (k2 + (1 + 1)), .seq e1 (.seq e2 (.ifLtN_true hbad e3)), by omega,
+    refine ⟨_, 4 + (k2 + (1 + 1)), .seq e1 (.seq e2 (.ifLtN_true hbad e3)), by_o,
       by simp [hm2, hm1], hframe _ (fun r hr => by simp [hr]), by simp [hrr2, hrr1],
       by simp [hrm2, hrm1], by simp [ho2, ho1], by simp [hj2], by simp [hb2],
       up^[2 ^ j] x, by simp [hz2], hzN, hs1 hng, 2 ^ j + n, ?_⟩
     rw [Function.iterate_add_apply, hn]
   · have hgd : GdF c.nmem bACT bFIRST bFPRE bFSZ lo hi (up^[2 ^ j] x) := by
-      rw [hone2] at hbad; exact hg2.mp (by omega)
+      rw [hone2] at hbad; exact hg2.mp by_o
     refine ⟨c2, 4 + (k2 + (0 + 2)), .seq e1 (.seq e2 (.ifLtN_false hbad (.skip e2.wb_right))),
-      by omega, by rw [hm2, hm1], hframe _ (fun _ _ => rfl), by rw [hrr2, hrr1],
+      by_o, by rw [hm2, hm1], hframe _ (fun _ _ => rfl), by rw [hrr2, hrr1],
       by rw [hrm2, hrm1], by rw [ho2, ho1], hj2, hb2, x, hx2, hxN, hs2 hgd, n, hn⟩
 
 /-- **The climb**: from `y < N` (register `130340`), the face `f` in register `130344` is `y` if
@@ -601,9 +601,9 @@ theorem climbStmt_exec {c : Config} (hw : WordsBounded W c)
   have hz0 : c0.nreg 130330 = y := by simp [c0, hy]
   obtain ⟨c1, k1, e1, hk1, hm1, hr1, hrr1, hrm1, ho1, hle1, hg1⟩ :=
     good_in_ctx (P := P) e0.wb_right hC0 (by simpa [c0] using hM) hz0 hyN
-  have hm1' : c1.nmem = c.nmem := hm1
+  have hm1' := hm1
   rw [show c0.nmem = c.nmem from rfl] at hg1
-  have hC1 : ClimbCtx c1 lo hi bACT bFIRST bFPRE bPOW LP bFSZ bUP L N :=
+  have hC1 :=
     hC0.of_frame (fun r hr => hr1 r (fun h => hr (Or.inl h)))
   have hy1 : c1.nreg 130340 = y := by
     rw [hr1 _ (by unfold GoodRG; omega)]; simp [c0, hy]
@@ -649,24 +649,24 @@ theorem climbStmt_exec {c : Config} (hw : WordsBounded W c)
           htest => by
         have hC4 := hC2.of_frame hr4
         rw [hC4.zero, hj4] at htest
-        obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := ⟨j - 1, by omega⟩
+        obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := ⟨j - 1, by_o⟩
         have hM4 : ClimbMem c4.nmem W lo hi bACT bFIRST bFPRE bPOW LP bFSZ bUP L N up := by
           rw [hm4]; exact hM
         rw [← hm4] at hI4
         obtain ⟨c5, k5, e5, hk5, hm5, hr5, hrr5, hrm5, ho5, hj5, hb5, x', hx5, hxN5, hI5, hanc5⟩ :=
-          climbBody_exec (P := P) hw4 hC4 hM4 hx4 hj4 (by omega) hb4 hxN4 hI4 hanc4
+          climbBody_exec (P := P) hw4 hC4 hM4 hx4 hj4 by_o hb4 hxN4 hI4 hanc4
         rw [hm4] at hI5
         refine ⟨c5, k5, e5, ⟨e5.wb_right, hm5.trans hm4, fun r hr => (hr5 r hr).trans (hr4 r hr),
-          hrr5.trans hrr4, hrm5.trans hrm4, ho5.trans ho4, x', j', hx5, hj5, hb5, hxN5, by omega,
+          hrr5.trans hrr4, hrm5.trans hrm4, ho5.trans ho4, x', j', hx5, hj5, hb5, hxN5, by_o,
           hI5, hanc5⟩, ?_⟩
         rw [hj5, hj4]
-        have : (34 * LP + 34) * (j' + 1) = (34 * LP + 34) * j' + (34 * LP + 34) := by ring
+        have : (34 * LP + 34) * (j' + 1) = (34 * LP + 34) * j' + (34 * LP + 34) := by_r
         omega)
       ⟨e2.wb_right, hm2.trans hm1', fun _ _ => rfl, rfl, rfl, rfl, y, L, hx2, hj2, hb2, hyN,
         le_rfl, ⟨hng, hroot⟩, 0, rfl⟩
     have hC3 := hC2.of_frame hr3
     rw [hC3.zero, hj3] at htest
-    have hj0 : j = 0 := by omega
+    have hj0 : j = 0 := by_o
     subst hj0
     obtain ⟨hfb, hfg⟩ := hI3.final
     -- `f := UP_0[x]`
@@ -674,7 +674,7 @@ theorem climbStmt_exec {c : Config} (hw : WordsBounded W c)
     simp only [Nat.zero_mul, add_zero, pow_zero, Function.iterate_one] at htab
     have hwx : bUP + x ≤ W := by
       have := hM.wup
-      have : x < L * N := lt_of_lt_of_le hxN (by nlinarith)
+      have : x < L * N := lt_of_lt_of_le hxN by_nl
       omega
     obtain ⟨c4, k4, e4, hk4, hw4, hm4, hf4, hr4, hrr4, hrm4, ho4⟩ : ∃ c4 k4,
         Exec P W (block [.addN 130333 130326 130341, .loadN 130344 130333]) c3 c4 k4 ∧ k4 = 2 ∧
@@ -682,7 +682,7 @@ theorem climbStmt_exec {c : Config} (hw : WordsBounded W c)
         (∀ r, r ≠ 130333 → r ≠ 130344 → c4.nreg r = c3.nreg r) ∧ c4.rreg = c3.rreg ∧
         c4.rmem = c3.rmem ∧ c4.output = c3.output := by
       exec_block
-      · rw [hC3.rUP, hx3]; exact hwx
+      · rwa [hC3.rUP, hx3]
       · refine ⟨rfl, ‹_›, rfl, by config_simp; rw [hC3.rUP, hx3, hm3, htab], fun r h1 h2 => ?_,
           rfl, rfl, rfl⟩
         simp only [Machine.upd_apply, h1, h2, ite_false]
@@ -706,7 +706,7 @@ theorem climbStmt_exec {c : Config} (hw : WordsBounded W c)
       exact Or.inr ⟨x, n, hn, hfb, hfg, hf4⟩
   · -- `y` is good
     have hgd : GdF c.nmem bACT bFIRST bFPRE bFSZ lo hi y := by
-      rw [hone1] at hbad; exact hg1.mp (by omega)
+      rw [hone1] at hbad; exact hg1.mp by_o
     have e2 := Exec.copyN (P := P) e1.wb_right 130344 130340
     refine ⟨_, 1 + (k1 + (1 + 2)), .seq e0 (.seq e1 (.ifLtN_false hbad e2)), ?_, hm1', ?_, ?_, ?_,
       ?_, ?_, Or.inl ⟨hgd, ?_⟩⟩
@@ -719,7 +719,7 @@ theorem climbStmt_exec {c : Config} (hw : WordsBounded W c)
     · exact hrr1
     · exact hrm1
     · exact ho1
-    · simp only [Machine.upd_same]; rw [hy1]; exact hyN
+    · simp only [Machine.upd_same]; rwa [hy1]
     · simp only [Machine.upd_same]; rw [hy1]
 
 end proofs

@@ -117,38 +117,38 @@ theorem qlLoop_exec {P : Polygon} {W K CB LB : ℕ} {c₀ : Config}
       by omega⟩
   | n + 1, c, hI, hn => by
     obtain ⟨i, hi⟩ : ∃ i, c.nreg 70102 = i := ⟨_, rfl⟩
-    have hiK : i < K := by omega
+    have hiK : i < K := by_o
     have hCBi := hCB i hiK
-    have hmem : c.nmem (CB + 5 * i) = c₀.nmem (CB + 5 * i) := hI.low _ (by omega)
+    have hmem : c.nmem (CB + 5 * i) = c₀.nmem (CB + 5 * i) := hI.low _ by_o
     obtain ⟨c', k, e, hk, v01, vA, v02, mo, m0, m1, m2, m3, m4, m5, R, rr, rm, ro⟩ :=
       qlBody_exec (P := P) c hI.wb (by rw [hI.cur, hi]) (by rw [hI.alloc, hi])
-        (by rw [hI.regs _ (by decide) (by decide) (by decide) (by decide) (by decide)
-          (by decide), h05])
-        (by rw [hI.regs _ (by decide) (by decide) (by decide) (by decide) (by decide)
-          (by decide), h06])
-        (by rw [hI.regs _ (by decide) (by decide) (by decide) (by decide) (by decide)
-          (by decide), h08])
-        (by omega) (by omega) (by omega) (by rw [hmem]; exact hh i hiK) (by omega)
+        (by rw [hI.regs _ by_d by_d by_d by_d by_d
+          by_d, h05])
+        (by rw [hI.regs _ by_d by_d by_d by_d by_d
+          by_d, h06])
+        (by rw [hI.regs _ by_d by_d by_d by_d by_d
+          by_d, h08])
+        by_o by_o by_o (by rw [hmem]; exact hh i hiK) by_o
     rw [hi] at v02
     have hI' : QLI W K CB LB c₀ c' := by
-      refine ⟨e.wb_right, by omega, by rw [v01, v02]; ring, by rw [vA, v02]; ring,
+      refine ⟨e.wb_right, by_o, by rw [v01, v02]; ring, by rw [vA, v02]; ring,
         fun r a1 a2 a3 a4 a5 a6 => by rw [R r a1 a2 a3 a4 a5 a6, hI.regs r a1 a2 a3 a4 a5 a6],
-        fun a ha => by rw [mo a (Or.inl (by omega)), hI.low a ha], fun i' hi' => ?_,
+        fun a ha => by rw [mo a (Or.inl by_o), hI.low a ha], fun i' hi' => ?_,
         by rw [rr, hI.rr], by rw [rm, hI.rm], by rw [ro, hI.out]⟩
       rw [v02] at hi'
       rcases Nat.lt_or_ge i' i with hlt | hge
-      · obtain ⟨d0, d1, d2, d3, d4, d5⟩ := hI.done i' (by omega)
+      · obtain ⟨d0, d1, d2, d3, d4, d5⟩ := hI.done i' by_o
         refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
-        · rw [mo _ (Or.inl (by omega)), d0]
-        · rw [mo _ (Or.inl (by omega)), d1]
-        · rw [mo _ (Or.inl (by omega)), d2]
-        · rw [mo _ (Or.inl (by omega)), d3]
-        · rw [mo _ (Or.inl (by omega)), d4]
-        · rw [mo _ (Or.inl (by omega)), d5]
+        · rw [mo _ (Or.inl by_o), d0]
+        · rw [mo _ (Or.inl by_o), d1]
+        · rw [mo _ (Or.inl by_o), d2]
+        · rw [mo _ (Or.inl by_o), d3]
+        · rw [mo _ (Or.inl by_o), d4]
+        · rw [mo _ (Or.inl by_o), d5]
       · have hii : i' = i := by omega
         subst hii
-        have e1 : c.nmem (CB + 5 * i' + 1) = c₀.nmem (CB + 5 * i' + 1) := hI.low _ (by omega)
-        have e2 : c.nmem (CB + 5 * i' + 2) = c₀.nmem (CB + 5 * i' + 2) := hI.low _ (by omega)
+        have e1 : c.nmem (CB + 5 * i' + 1) = c₀.nmem (CB + 5 * i' + 1) := hI.low _ by_o
+        have e2 : c.nmem (CB + 5 * i' + 2) = c₀.nmem (CB + 5 * i' + 2) := hI.low _ by_o
         refine ⟨?_, ?_, ?_, ?_, ?_, ?_⟩
         · rw [m0, ← e1]
         · rw [m1, hmem]
@@ -157,10 +157,10 @@ theorem qlLoop_exec {P : Polygon} {W K CB LB : ℕ} {c₀ : Config}
         · rw [m4, hmem]
         · exact m5
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := qlLoop_exec h05 h06 h08 h00 hCB hh hW hWK n c'
-      hI' (by omega)
+      hI' by_o
     exact ⟨c'', k + 2 + k₂, .whileLtN_true (by
-      rw [hi, hI.regs 70100 (by decide) (by decide) (by decide) (by decide) (by decide)
-        (by decide), h00]; exact hiK) e e₂, by omega, by omega, hI'', hK⟩
+      rwa [hi, hI.regs 70100 by_d by_d by_d by_d by_d
+        by_d, h00]) e e₂, by_o, by_o, hI'', hK⟩
 
 /-- **The written query list.** -/
 theorem chordList_endQL {m m₀ : ℕ → ℕ} {LB CB : ℕ} {cs : List CRec}
@@ -175,12 +175,12 @@ theorem chordList_endQL {m m₀ : ℕ → ℕ} {LB CB : ℕ} {cs : List CRec}
   intro j hj
   rw [endQL_length] at hj
   rw [endQL_get cs hj]
-  obtain ⟨i, rfl | rfl⟩ : ∃ i, j = 2 * i ∨ j = 2 * i + 1 := ⟨j / 2, by omega⟩
+  obtain ⟨i, rfl | rfl⟩ : ∃ i, j = 2 * i ∨ j = 2 * i + 1 := ⟨j / 2, by_o⟩
   · have hi : i < cs.length := by omega
     obtain ⟨c0, c1, c2⟩ := hcs i hi
     obtain ⟨d0, d1, d2, -, -, -⟩ := hdone i hi
-    have e1 : 2 * i / 2 = i := by omega
-    have e2 : 2 * i % 2 = 0 := by omega
+    have e1 : 2 * i / 2 = i := by_o
+    have e2 : 2 * i % 2 = 0 := by_o
     simp only [e1, e2, ite_true]
     refine ⟨?_, ?_, ?_⟩
     · rw [show LB + 3 * (2 * i) = LB + 6 * i by ring, d0, c1]
@@ -189,8 +189,8 @@ theorem chordList_endQL {m m₀ : ℕ → ℕ} {LB CB : ℕ} {cs : List CRec}
   · have hi : i < cs.length := by omega
     obtain ⟨c0, c1, c2⟩ := hcs i hi
     obtain ⟨-, -, -, d3, d4, d5⟩ := hdone i hi
-    have e1 : (2 * i + 1) / 2 = i := by omega
-    have e2 : (2 * i + 1) % 2 = 1 := by omega
+    have e1 : (2 * i + 1) / 2 = i := by_o
+    have e2 : (2 * i + 1) % 2 = 1 := by_o
     simp only [e1, e2, one_ne_zero, ite_false]
     refine ⟨?_, ?_, ?_⟩
     · rw [show LB + 3 * (2 * i + 1) = LB + 6 * i + 3 by ring, d3, c2]
@@ -220,14 +220,14 @@ theorem endQL_ok (J : Merge.Junction) (Q : Polygon) (i : ℕ) {N : NF}
     simp only [endQL, List.mem_map, List.mem_range, NF.chord]
     constructor
     · rintro ⟨j, hj, rfl⟩
-      refine ⟨j / 2, by omega, ?_⟩
+      refine ⟨j / 2, by_o, ?_⟩
       split_ifs
       · exact Or.inl rfl
       · exact Or.inr rfl
     · rintro ⟨k, hk, rfl | rfl⟩
-      · exact ⟨2 * k, by omega, by simp⟩
-      · exact ⟨2 * k + 1, by omega, by
-          rw [show (2 * k + 1) / 2 = k by omega, ite_eq_right (by omega)]⟩
+      · exact ⟨2 * k, by_o, by_s⟩
+      · exact ⟨2 * k + 1, by_o, by
+          rw [show (2 * k + 1) / 2 = k by omega, ite_eq_right by_o]⟩
   refine ⟨fun q hq => ?_, ?_⟩
   · obtain ⟨k, hk, rfl | rfl⟩ := (mem q).1 hq
     · exact (key k hk).1

@@ -202,8 +202,8 @@ theorem events_nodup : (events M Q L).Nodup := by
       intro k x hx
       simp only [List.mem_cons, List.not_mem_nil, or_false] at hx
       rcases hx with rfl | rfl <;> rfl
-    have h1 : a.1 = i := hfst i a ha
-    have h2 : b.1 = j := hfst j b hb
+    have h1 := hfst i a ha
+    have h2 := hfst j b hb
     exact hij (h1.symm.trans ((congrArg Prod.fst hab).trans h2))
 
 theorem nodup : S.Nodup := h.perm.nodup_iff.2 h.events_nodup
@@ -211,8 +211,8 @@ theorem nodup : S.Nodup := h.perm.nodup_iff.2 h.events_nodup
 theorem lo_lt_hi {i : ℕ} (hi' : i < L.length) : lo M Q L i < hi M Q L i := by
   unfold lo hi
   rcases lt_or_gt_of_ne (h.kl_ne_kr hi') with h1 | h1
-  · rw [min_eq_left h1.le, max_eq_right h1.le]; exact h1
-  · rw [min_eq_right h1.le, max_eq_left h1.le]; exact h1
+  · rwa [min_eq_left h1.le, max_eq_right h1.le]
+  · rwa [min_eq_right h1.le, max_eq_left h1.le]
 
 theorem lo_bounds {i : ℕ} (hi' : i < L.length) : 0 ≤ lo M Q L i ∧ lo M Q L i < M.W.n := by
   unfold lo
@@ -256,7 +256,7 @@ theorem mem_cases' {f : Ev} (hf : f ∈ S) :
   obtain ⟨hlt, hc⟩ := h.mem_cases hf
   refine ⟨hlt, ?_⟩
   rcases h.e1_e2_cases f.1 with ⟨-, h1, h2⟩ | ⟨-, h1, h2⟩
-  · rw [h1, h2]; exact hc
+  · rwa [h1, h2]
   · rw [h1, h2]; exact hc.symm
 
 /-- The attachments of chord `i` at its two keys, in key order. -/
@@ -327,7 +327,7 @@ theorem open_iff {y : ℝ} (hy : ∀ e ∈ S, e.2.1 ≠ y) {j : ℕ} (hj : j < L
   rw [BuildSort.count_two (j := j) (h.nodup.filter _) (h.e1_ne_e2 hj) rfl rfl
     (fun f hf hfj => by
       have := (h.mem_cases' (mem_of_mem_filter hf)).2
-      rw [hfj] at this; exact this)]
+      rwa [hfj] at this)]
   have m1 : (j, lo M Q L j, hi M Q L j) ∈ S := h.e1_mem hj
   have m2 : (j, hi M Q L j, lo M Q L j) ∈ S := h.e2_mem hj
   simp only [e1, e2, mem_filter, decide_eq_true_eq, m1, m2, true_and]
@@ -437,7 +437,7 @@ theorem prefix_open {u v : List Ev} {i j : ℕ} (hsplit : S = u ++ e1 M Q L i ::
   rw [BuildSort.count_two (j := j) hnd.1 (h.e1_ne_e2 hj) rfl rfl
     (fun f hf hfj => by
       have := (h.mem_cases' (hsplit ▸ mem_append_left _ hf)).2
-      rw [hfj] at this; exact this)]
+      rwa [hfj] at this)]
   have hne1 : e1 M Q L j ≠ e1 M Q L i := fun he => hij (congrArg Prod.fst he)
   have hne2 : e2 M Q L j ≠ e1 M Q L i := fun he => hij (congrArg Prod.fst he)
   have hsp1 := BuildSort.mem_split_of_ne (hmemS _ (h.e1_mem hj)) hne1
@@ -495,7 +495,7 @@ theorem prefix_open {u v : List Ev} {i j : ℕ} (hsplit : S = u ++ e1 M Q L i ::
       rw [hcyc1 i hi', hcyc1 j hj] at le
       rcases le with h3 | ⟨h3, h4⟩
       · linarith
-      · exact h.keys_ne hi' hj (Ne.symm hij) ⟨h3, by linarith⟩
+      · exact h.keys_ne hi' hj (Ne.symm hij) ⟨h3, by_l⟩
     rw [ite_eq_left h1, ite_eq_right h2]
 
 /-- **A region touching chord `i`, faced at a non-cut key `y`**: for every other chord `j`, `y` is
@@ -521,12 +521,12 @@ theorem touch_within {U : Set Point} (hU : U ∈ M.regions (famOf M Q L)) {p : �
         sideInArc (pb + tb) (pa + ta) (q + τ) := by
       rw [ka, kb]
       by_cases h1 : lo M Q L j ≤ lo M Q L i
-      · have h2 : hi M Q L j < hi M Q L i := lt_of_not_ge fun h2 => hw ⟨h1, h2⟩
+      · have h2 := lt_of_not_ge fun h2 => hw ⟨h1, h2⟩
         exact ⟨pd, td, hD, by rw [kd]; exact h.sideInArc_hi_lo hj (Or.inr h2)⟩
       · exact ⟨pc, tc, hC, by rw [kc]; exact h.sideInArc_hi_lo hj (Or.inl (lt_of_not_ge h1))⟩
     obtain ⟨q, τ, hQ, hq⟩ := hout
     exact h.walk.not_touches_of_split h.adm h.finite (chordSet_mem hi') (chordSet_mem hj) hne
-      hA hB hAB hU hp ht (by rw [ka, kb, h.sideInArc_lo_hi hj]; exact hin) hf hQ hq htouch
+      hA hB hAB hU hp ht (by rwa [ka, kb, h.sideInArc_lo_hi hj]) hf hQ hq htouch
   · rintro ⟨hw1, hw2⟩
     by_contra hin
     have hy' : sideInArc (hi M Q L j) (lo M Q L j) (p + t) := by
@@ -538,10 +538,10 @@ theorem touch_within {U : Set Point} (hU : U ∈ M.regions (famOf M Q L)) {p : �
         sideInArc (pa + ta) (pb + tb) (q + τ) := by
       rw [ka, kb]
       rcases hw1.lt_or_eq with h1 | h1
-      · exact ⟨pc, tc, hC, by rw [kc, h.sideInArc_lo_hi hj]; exact ⟨h1, by linarith⟩⟩
-      · have h2 : hi M Q L i < hi M Q L j :=
+      · exact ⟨pc, tc, hC, by rw [kc, h.sideInArc_lo_hi hj]; exact ⟨h1, by_l⟩⟩
+      · have h2 :=
           lt_of_le_of_ne hw2 fun h2 => h.keys_ne hi' hj (Ne.symm hij) ⟨h1.symm, h2⟩
-        exact ⟨pd, td, hD, by rw [kd, h.sideInArc_lo_hi hj]; exact ⟨by linarith, h2⟩⟩
+        exact ⟨pd, td, hD, by rw [kd, h.sideInArc_lo_hi hj]; exact ⟨by_l, h2⟩⟩
     obtain ⟨q, τ, hQ, hq⟩ := hin2
     exact h.walk.not_touches_of_split h.adm h.finite (chordSet_mem hi') (chordSet_mem hj) hne
       hB hA (Ne.symm hAB) hU hp ht (by rw [ka, kb]; exact hy') hf hQ hq htouch
@@ -561,7 +561,7 @@ theorem faces_reg {p : ℕ} {t : ℝ} (hp : p < M.W.n) (ht : t ∈ Ioo (0 : ℝ)
   have hreg : reg M Q L S (gapLabel S (p + t)) = hh.choose := by
     unfold reg; rw [dite_eq_left hh]
   obtain ⟨hU', p', t', hp', ht0', ht1', hcut', hlab, hf'⟩ := hh.choose_spec
-  have heq : hh.choose = U :=
+  have heq :=
     (h.faces_same_iff hU' hU hp' hp ⟨ht0', ht1'⟩ ht hcut' hcut hf' hf).2 hlab
   rw [hreg, heq]
   exact ⟨hU, hf⟩
@@ -583,7 +583,7 @@ omit h in
 theorem take_word_succ (_h : Ctx M Q L S) {u v : List Ev} {e : Ev} (hsplit : S = u ++ e :: v) :
     (S.map Prod.fst).take (u.length + 1) = u.map Prod.fst ++ [e.1] := by
   rw [← map_take, hsplit, show u ++ e :: v = (u ++ [e]) ++ v by simp,
-    take_left' (by simp), map_append, map_singleton]
+    take_left' by_s, map_append, map_singleton]
 
 /-- The first event of a chord is not in the prefix before it, nor is its second event. -/
 theorem count_prefix_self {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
@@ -595,7 +595,7 @@ theorem count_prefix_self {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L 
   rw [BuildSort.count_two (j := i) hnd.1 (h.e1_ne_e2 hi') rfl rfl
     (fun f hf hfj => by
       have := (h.mem_cases' (hsplit ▸ mem_append_left _ hf)).2
-      rw [hfj] at this; exact this)]
+      rwa [hfj] at this)]
   have h1 : e1 M Q L i ∉ u := fun h1 => hnd.2.2 _ h1 _ mem_cons_self rfl
   have h2 : e2 M Q L i ∉ u := by
     intro h2
@@ -638,7 +638,7 @@ theorem label_outside {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i ::
     by_cases hji : j = i
     · subst hji
       rw [h.count_prefix_self hsplit hi']
-      exact ⟨fun h' => absurd h' hout, fun h' => absurd h' (by omega)⟩
+      exact ⟨fun h' => absurd h' hout, fun h' => absurd h' by_o⟩
     · rw [h.prefix_open hsplit hi' hj hji]
       exact h.touch_within hU hp ht hcut hf hi' hj hji htouch
   · rw [h.count_ge hj, h.count_prefix_ge hsplit hj]
@@ -691,8 +691,8 @@ theorem sides {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
   have hBelow : M.BelowOf c Dn := fun z hz hzD => (hside z hz hzD).mono fun _ h => h.2
   obtain ⟨pu, tu, hpu, htu0, htu1, hcu, hfu⟩ := h.walk.exists_faces_nc h.adm h.finite hUp
   obtain ⟨pd, td, hpd, htd0, htd1, hcd, hfd⟩ := h.walk.exists_faces_nc h.adm h.finite hDn
-  have htU : TouchesIn M.D c Up := (htouch Up hUp).2 (Or.inl rfl)
-  have htD : TouchesIn M.D c Dn := (htouch Dn hDn).2 (Or.inr rfl)
+  have htU := (htouch Up hUp).2 (Or.inl rfl)
+  have htD := (htouch Dn hDn).2 (Or.inr rfl)
   -- the attachments and the midpoints
   have hA := h.attL hi'
   have hB := h.attR hi'
@@ -702,18 +702,18 @@ theorem sides {u v : List Ev} {i : ℕ} (hsplit : S = u ++ e1 M Q L i :: v)
   obtain ⟨hcab, hy, hopen, -, -⟩ := h.walk.attach_seg (h.adm hcF) hA hB hAB
   have hlt : pl.1 < pr.1 := h.pos_lt hi'
   have hmid : Geometry.lerp pl pr (1 / 2) ∈ c := by
-    rw [hcab]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
-  have hmidD : Geometry.lerp pl pr (1 / 2) ∈ M.D := hopen _ ⟨by norm_num, by norm_num⟩
+    rw [hcab]; exact Geometry.lerp_mem_segment _ _ by_n by_n
+  have hmidD : Geometry.lerp pl pr (1 / 2) ∈ M.D := hopen _ ⟨by_n, by_n⟩
   have hmid' : Geometry.lerp pr pl (1 / 2) ∈ c := by
-    rw [hcab, Geometry.segment_comm]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
+    rw [hcab, Geometry.segment_comm]; exact Geometry.lerp_mem_segment _ _ by_n by_n
   have hmidD' : Geometry.lerp pr pl (1 / 2) ∈ M.D :=
-    WalkAx.open_rev hopen _ ⟨by norm_num, by norm_num⟩
+    WalkAx.open_rev hopen _ ⟨by_n, by_n⟩
   -- `Up` is not faced strictly between the left and the right endpoint
   have hnU : ¬ sideInArc (kl M Q L i) (kr M Q L i) (pu + tu) := by
     intro hin
     refine h.walk.not_left_of_after h.adm hcF hA hB hAB hUp hpu ⟨htu0, htu1⟩ hin hfu ?_
     refine (eventually_mul_pos (hAbove _ hmid hmidD) (sub_pos.2 hlt)).mono fun δ hδ => ?_
-    rw [Chazelle.Core.offset_mid_ab hy]; exact hδ
+    rwa [Chazelle.Core.offset_mid_ab hy]
   -- `Dn` is not faced strictly between the right and the left endpoint
   have hnD : ¬ sideInArc (kr M Q L i) (kl M Q L i) (pd + td) := by
     intro hin
@@ -849,7 +849,7 @@ theorem regions_corr :
           simp only [List.length_nil]
           unfold BuildStack.label; simp [BuildStack.run]
         rwa [h0] at this
-    · have hi : i < L.length := hℓ i rfl
+    · have hi := hℓ i rfl
       obtain ⟨u, v, hsplit⟩ := List.append_of_mem (h.e1_mem hi)
       have := (h.sides hsplit hi).1
       rwa [h.label_first hsplit hi] at this

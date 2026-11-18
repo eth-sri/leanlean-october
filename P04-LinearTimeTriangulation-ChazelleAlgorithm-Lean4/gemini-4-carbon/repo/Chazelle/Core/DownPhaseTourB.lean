@@ -34,13 +34,13 @@ theorem tourB_lt (k : ℕ) : tourB C β k < 2 * C.m := TourA.tourA_lt _
 
 theorem sideIdx_tourB {k : ℕ} (hk : k < C.m) : C.sideIdx β (tourB C β k) = k + 1 := by
   unfold tourB
-  rw [Chain.sideIdx_eq, TourA.mod_tourA (by omega)]
+  rw [Chain.sideIdx_eq, TourA.mod_tourA by_o]
   unfold sideE; split_ifs <;> omega
 
 theorem sideIdx_tourB_succ {k : ℕ} (hk : k < C.m) : C.sideIdx β (tourB C β k + 1) = k := by
   unfold tourB
-  rw [C.sideIdx_succ, TourA.mod_tourA (by omega)]
-  unfold sideE; rw [ite_eq_right (by omega)]; omega
+  rw [C.sideIdx_succ, TourA.mod_tourA by_o]
+  unfold sideE; rw [ite_eq_right by_o]; omega
 
 theorem vtx_tourB {k : ℕ} (hk : k < C.m) :
     (C.sideWalk β).vtx (tourB C β k + 6) = C.vertex (k + 1) := by
@@ -57,8 +57,8 @@ the tour start. -/
 theorem tourB_succ {k : ℕ} (hk : k + 1 < C.m) (hne : 2 * C.m - (k + 1) ≠ sA C β) :
     tourB C β k = tourB C β (k + 1) + 1 := by
   unfold tourB
-  have := TourA.tourA_succ (C := C) (β := β) (k := 2 * C.m - (k + 2)) (by omega)
-    (by rw [show 2 * C.m - (k + 2) + 1 = 2 * C.m - (k + 1) by omega]; exact hne)
+  have := TourA.tourA_succ (C := C) (β := β) (k := 2 * C.m - (k + 2)) by_o
+    (by rwa [show 2 * C.m - (k + 2) + 1 = 2 * C.m - (k + 1) by omega])
   rw [show 2 * C.m - (k + 2) + 1 = 2 * C.m - (k + 1) by omega] at this
   rw [this, show 2 * C.m - (k + 1 + 1) = 2 * C.m - (k + 2) by omega]
 

@@ -49,7 +49,7 @@ theorem seg_bkt {m : ℕ → ℕ} {bk : ℕ → ℕ} {n A base R : ℕ} (hA : �
   have hl := seg_flat bk m n R (A + 1)
   rw [hn, h] at hl
   unfold bktList at hl
-  have hle : b + 1 ≤ A + 1 := by omega
+  have hle : b + 1 ≤ A + 1 := by_o
   obtain ⟨d, hd⟩ := Nat.exists_eq_add_of_le hle
   -- split both sides at bucket `b`
   have hsplit : ∀ (f : ℕ → List ℕ), (List.range (A + 1)).flatMap f =
@@ -76,7 +76,7 @@ def Bbl (r : ℕ) : Bool := decide (210050 ≤ r ∧ r ≤ 210059)
 
 theorem wrM_bs1 : wrM Bbl (block [.addN 210057 210037 210050, .loadN 210052 210057,
     .addN 210057 210036 210050, .loadN 210053 210057, .subN 210054 210053 210052,
-    .addN 210055 210048 210052]) = true := by decide
+    .addN 210055 210048 210052]) = true := by_d
 
 /-- The fixed data of the bucket loop: the model descriptor, the chord list `L` with its event
 records, the arrays of the bucket distribution. -/
@@ -138,8 +138,8 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
     (hroom : d.nreg ALLOC + bsCost bk n j + 1 ≤ W) :
     ∃ d' k, Exec P W bsBody d d' k ∧ BsI P W c₀ m₁ bk n A base Cb Sb Rb D T M L (j + 1) d' ∧
       k ≤ bsCost bk n j ∧ d'.nreg ALLOC ≤ d.nreg ALLOC + bsCost bk n j := by
-  have hst := E.st j (by omega)
-  have hcn := E.cnt j (by omega)
+  have hst := E.st j by_o
+  have hcn := E.cnt j by_o
   have hSb : Sb + j < Rb := by rw [E.hR]; omega
   have hCb : Cb + j < Rb := by rw [E.hR, E.hS]; omega
   have hl1 := I.low _ hSb
@@ -166,7 +166,7 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
       refine ⟨rfl, ?_, ?_, ?_, rfl⟩ <;> config_simp <;>
         simp only [I.r37, I.r50, I.r36, I.r48, hl1, hl2, hst, hcn]; omega
     exact ⟨d₁, k₁, e₁, hk₁, v55, v54, v50, hm₁, exec_frameM e₁ wrM_bs1⟩
-  have g₁ : ∀ r, Bbl r = false → d₁.nreg r = d.nreg r := hf₁.1
+  have g₁ := hf₁.1
   have w₁ := e₁.wb_right
   have hlow₁ : ∀ a, a < Rb → d₁.nmem a = m₁ a := fun a ha => by rw [hm₁]; exact I.low a ha
   obtain ⟨hM₁, hwf₁⟩ := desc_agree E.wf E.desc (m' := d₁.nmem) fun a ha => hlow₁ a (by
@@ -175,15 +175,15 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
     obtain ⟨a1, a2, a3, a4⟩ := E.recs c hc
     have hT := E.hT
     refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [hlow₁ _ (by rw [E.hR, E.hS]; omega)] <;> assumption
-  have hA₁ : d₁.nreg ALLOC = d.nreg ALLOC := g₁ _ (by decide)
+  have hA₁ : d₁.nreg ALLOC = d.nreg ALLOC := g₁ _ by_d
   have hseg₁ : seg d₁.nmem (Rb + bstart bk n j) (bcnt bk n j) = (bfilt bk n j).map (base + ·) := by
-    rw [hm₁]; exact I.todo j le_rfl (by omega)
+    rw [hm₁]; exact I.todo j le_rfl by_o
   -- sort the segment
   obtain ⟨d₂, k₂, e₂, hk₂, w₂, hperm, hsort, hm₂, hA₂, hA₂', g₂, rr₂, rm₂, o₂, v40, v42, v42', v43⟩ :=
     sortBack_exec (P := P) (W := W) E.good E.hw d₁ w₁ (X := Rb + bstart bk n j)
       (len := bcnt bk n j) (D := D) (T := T) (M := M) (L := L) v55 v54
-      (by rw [g₁ _ (by decide)]; exact I.r34) (by rw [g₁ _ (by decide)]; exact I.r40)
-      (by rw [g₁ _ (by decide)]; exact I.r42) (by rw [g₁ _ (by decide)]; exact I.r42')
+      (by rw [g₁ _ by_d]; exact I.r34) (by rw [g₁ _ by_d]; exact I.r40)
+      (by rw [g₁ _ by_d]; exact I.r42) (by rw [g₁ _ by_d]; exact I.r42')
       (hwf₁.mono (by have := I.alloc; rw [hA₁, E.hR, E.hS] at *; omega)) hM₁ E.ok hrec₁
       (by have := I.alloc; rw [hA₁]; rw [E.hR, E.hS] at this; have := E.hT; omega)
       (by rw [hA₁]; have := I.alloc; omega)
@@ -194,11 +194,11 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
   have b21 : ∀ r, 210000 ≤ r → r < 220000 → bandOf r ∉ ({bSort, bSign, bBuild} : Finset ℕ) :=
     fun r h1 h2 => by simp [bandOf, bSort, bSign, bBuild]; omega
   have v50₂ : d₂.nreg 210050 = j := by
-    rw [g₂ _ (b21 _ (by norm_num) (by norm_num)) (by decide) (by decide), v50]
+    rw [g₂ _ (b21 _ by_n by_n) by_d by_d, v50]
   have v34₂ : d₂.nreg 210034 = 1 := by
-    rw [g₂ _ (b21 _ (by norm_num) (by norm_num)) (by decide) (by decide), g₁ _ (by decide), I.r34]
+    rw [g₂ _ (b21 _ by_n by_n) by_d by_d, g₁ _ by_d, I.r34]
   have e₃ := Exec.addN (P := P) w₂ 210050 210050 210034 (by rw [v50₂, v34₂]; omega)
-  set d₃ : Config := { d₂ with nreg := upd d₂.nreg 210050 (d₂.nreg 210050 + d₂.nreg 210034) }
+  set d₃ := { d₂ with nreg := upd d₂.nreg 210050 (d₂.nreg 210050 + d₂.nreg 210034) }
     with hd₃
   have g₃ : ∀ r, r ≠ 210050 → d₃.nreg r = d₂.nreg r := fun r hr => by rw [hd₃]; simp [hr]
   have bcb : ∀ r, Bbl r = false → Bcb r = false := fun r hb => by
@@ -208,24 +208,24 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
   have k21 : ∀ r, 210000 ≤ r → r < 220000 → Bbl r = false → d₃.nreg r = d.nreg r := by
     intro r h1 h2 hb
     rw [g₃ r (by intro h; subst h; simp [Bbl] at hb), g₂ r (b21 r h1 h2) (bcb r hb)
-      (by unfold ALLOC; omega), g₁ r hb]
-  have hst' : bstart bk n j + bcnt bk n j = bstart bk n (j + 1) := hsucc.symm
+      by_ao, g₁ r hb]
+  have hst' := hsucc.symm
   refine ⟨d₃, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), ?_, by unfold bsCost; omega,
-    by rw [show d₃.nreg ALLOC = d₂.nreg ALLOC from g₃ _ (by decide)]; unfold bsCost; omega⟩
-  refine ⟨e₃.wb_right, by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r34,
-    by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r36,
-    by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r37,
-    by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r39,
-    by rw [k21 _ (by norm_num) (by norm_num) (by decide)]; exact I.r48, ?_,
-    by rw [g₃ _ (by decide)]; exact v40, by rw [g₃ _ (by decide)]; exact v42,
-    by rw [g₃ _ (by decide)]; exact v42',
-    by rw [show d₃.nreg ALLOC = d₂.nreg ALLOC from g₃ _ (by decide)]; have := I.alloc; omega,
+    by rw [show d₃.nreg ALLOC = d₂.nreg ALLOC from g₃ _ by_d]; unfold bsCost; omega⟩
+  refine ⟨e₃.wb_right, by rw [k21 _ by_n by_n by_d]; exact I.r34,
+    by rw [k21 _ by_n by_n by_d]; exact I.r36,
+    by rw [k21 _ by_n by_n by_d]; exact I.r37,
+    by rw [k21 _ by_n by_n by_d]; exact I.r39,
+    by rw [k21 _ by_n by_n by_d]; exact I.r48, ?_,
+    by rwa [g₃ _ by_d], by rwa [g₃ _ by_d],
+    by rw [g₃ _ by_d]; exact v42',
+    by rw [show d₃.nreg ALLOC = d₂.nreg ALLOC from g₃ _ by_d]; have := I.alloc; omega,
     fun a ha => ?_, fun b hb => ?_, fun b hb1 hb2 => ?_, fun r hr hb hra => ?_,
     fun r h1 h2 => ?_, fun r hr hb => ?_, fun a ha => ?_, ?_⟩
   · rw [hd₃]; simp only [Machine.upd_same]
     rw [v50₂, v34₂]
   · show d₂.nmem a = m₁ a
-    rw [hm₂ a (by rw [hA₁]; have := I.alloc; omega) (Or.inl (by omega)), hlow₁ a ha]
+    rw [hm₂ a (by rw [hA₁]; have := I.alloc; omega) (Or.inl by_o), hlow₁ a ha]
   · show (seg d₂.nmem (Rb + bstart bk n b) (bcnt bk n b)).Perm _ ∧ _
     rcases Nat.lt_or_ge b j with hbj | hbj
     · have hcong : seg d₂.nmem (Rb + bstart bk n b) (bcnt bk n b) =
@@ -236,7 +236,7 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
         have h2 := bstart_le (bk := bk) E.bkA (show j ≤ A + 1 by omega)
         have h3 := I.alloc
         have h4 : Rb + bstart bk n b + i < d₁.nreg ALLOC := by rw [hA₁]; omega
-        rw [hm₂ _ h4 (Or.inl (by omega)), hm₁]
+        rw [hm₂ _ h4 (Or.inl by_o), hm₁]
       rw [hcong]; exact I.done b hbj
     · have hbj' : b = j := by omega
       subst hbj'
@@ -250,12 +250,12 @@ theorem bsBody_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
       rw [bstart_succ] at h2
       have h3 := I.alloc
       have h4 : Rb + bstart bk n b + i < d₁.nreg ALLOC := by rw [hA₁]; omega
-      rw [hm₂ _ h4 (Or.inr (by omega)), hm₁]
-    rw [hcong]; exact I.todo b (by omega) hb2
+      rw [hm₂ _ h4 (Or.inr by_o), hm₁]
+    rw [hcong]; exact I.todo b by_o hb2
   · have hr50 : r ≠ 210050 := fun h => by subst h; simp [Bbl] at hb
     rw [g₃ r hr50, g₂ r hr (bcb r hb) hra, g₁ r hb]
     exact I.fr r hr hb hra
-  · rw [g₃ r (by omega), v43 r h1 h2, g₁ r (by simp [Bbl]; omega)]; exact I.r43 r h1 h2
+  · rw [g₃ r by_o, v43 r h1 h2, g₁ r (by simp [Bbl]; omega)]; exact I.r43 r h1 h2
   · show d₂.rreg r = _
     rw [rr₂ r hr (bcb r hb), hf₁.2.1 r hb]
     exact I.rr r hr hb
@@ -280,12 +280,12 @@ theorem bsLoop_exec {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D
     (fun j e hj ⟨h, hA⟩ => by
       have hsum : ∑ b ∈ Finset.range (j + 1), bsCost bk n b ≤
           ∑ b ∈ Finset.range (A + 1), bsCost bk n b :=
-        Finset.sum_le_sum_of_subset (Finset.range_subset_range.2 (by omega))
+        Finset.sum_le_sum_of_subset (Finset.range_subset_range.2 by_o)
       rw [Finset.sum_range_succ] at hsum
-      obtain ⟨e', k, ex, h', hk, hA'⟩ := bsBody_exec E (by omega) h (by omega)
+      obtain ⟨e', k, ex, h', hk, hA'⟩ := bsBody_exec E by_o h by_o
       exact ⟨e', k, ex, ⟨h', by rw [Finset.sum_range_succ]; omega⟩, hk⟩)
-    (j := 0) ⟨I, by simp⟩ (Nat.zero_le _)
-  refine ⟨d', k, ex, hI, by rw [Finset.range_eq_Ico]; exact hk, hA⟩
+    (j := 0) ⟨I, by_s⟩ (Nat.zero_le _)
+  refine ⟨d', k, ex, hI, by rwa [Finset.range_eq_Ico], hA⟩
 
 /-- **The sorted new codes**: with the buckets ordered by the comparator, the array is a sorted
 permutation of the new codes. -/
@@ -302,8 +302,7 @@ theorem bs_result {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T
   rw [hflat]
   constructor
   · -- permutation
-    have h1 : ((List.range (A + 1)).flatMap fun b => seg d.nmem (Rb + bstart bk n b) (bcnt bk n b)).Perm
-        (bktList bk n A base) :=
+    have h1 :=
       List.Perm.flatMap_left _ fun b hb => (I.done b (List.mem_range.1 hb)).1
     refine h1.trans ?_
     -- `bktList` is a permutation of the codes
@@ -321,7 +320,7 @@ theorem bs_result {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T
           obtain ⟨q, hq, rfl⟩ := hx
           obtain ⟨q', hq', hqq⟩ := hx'
           rw [mem_bfilt] at hq hq'
-          have : q' = q := by omega
+          have : q' = q := by_o
           subst this; omega
       · exact (List.nodup_range).map (fun a b h => by omega)
       · unfold bktList
@@ -341,7 +340,7 @@ theorem bs_result {c₀ : Config} {m₁ bk : ℕ → ℕ} {n A base Cb Sb Rb D T
     obtain ⟨q, hq, rfl⟩ := hx'
     obtain ⟨q', hq', rfl⟩ := hy'
     rw [mem_bfilt] at hq hq'
-    exact hmono q q' hq.1 hq'.1 (by rw [hq.2, hq'.2]; exact hbb)
+    exact hmono q q' hq.1 hq'.1 (by rwa [hq.2, hq'.2])
 
 end exec
 

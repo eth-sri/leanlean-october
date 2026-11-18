@@ -104,7 +104,7 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
   by_cases ha : a.2 = v.2
   · rw [ite_eq_left ha]
     have ha' : a.2 - v.2 = 0 := by rw [ha, sub_self]
-    have ha1 : a.1 - v.1 ≠ 0 := fun h => hav (Prod.ext (by linarith) ha)
+    have ha1 : a.1 - v.1 ≠ 0 := fun h => hav (Prod.ext by_l ha)
     have cXA : sideCross ((σ, 0) : Point) (a - v) = 0 := by rw [eXA, ha', mul_zero]
     by_cases hb : b.2 = v.2
     · -- both neighbours at the height of `v`: only a spike contains a horizontal direction
@@ -120,14 +120,14 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
       · exact lt_irrefl _ h
       · exact hns ⟨cBA, hd⟩
     · rw [ite_eq_right hb]
-      have hb0 : b.2 - v.2 ≠ 0 := sub_ne_zero.2 hb
+      have hb0 := sub_ne_zero.2 hb
       have cBA : sideCross (b - v) (a - v) = -((b.2 - v.2) * (a.1 - v.1)) := by
         rw [eBA, ha']; ring
-      have hne : (b.2 - v.2) * (a.1 - v.1) ≠ 0 := mul_ne_zero hb0 ha1
+      have hne := mul_ne_zero hb0 ha1
       rw [cXA, cBA, eBX]
       by_cases hvb : v.2 < b.2
       · rw [ite_eq_left hvb]
-        have hbp : 0 < b.2 - v.2 := by linarith
+        have hbp : 0 < b.2 - v.2 := by_l
         constructor
         · rintro (⟨-, -, h⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
           · exact absurd h (lt_irrefl _)
@@ -143,14 +143,14 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
         · rintro ⟨rfl, h2⟩
           right; left
           refine ⟨?_, Or.inl ?_⟩
-          · have : 0 < (b.2 - v.2) * (a.1 - v.1) := mul_pos hbp (by linarith)
+          · have : 0 < (b.2 - v.2) * (a.1 - v.1) := mul_pos hbp by_l
             linarith
           · linarith
       · rw [ite_eq_right hvb]
         have hbn : b.2 - v.2 < 0 := by
           rcases lt_or_gt_of_ne hb0 with h | h
           · exact h
-          · exact absurd (by linarith) hvb
+          · exact absurd by_l hvb
         constructor
         · rintro (⟨-, -, h⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
           · exact absurd h (lt_irrefl _)
@@ -166,23 +166,23 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
         · rintro ⟨rfl, h2⟩
           right; left
           refine ⟨?_, Or.inl ?_⟩
-          · have : 0 < (b.2 - v.2) * (a.1 - v.1) := mul_pos_of_neg_of_neg hbn (by linarith)
+          · have : 0 < (b.2 - v.2) * (a.1 - v.1) := mul_pos_of_neg_of_neg hbn by_l
             linarith
           · linarith
   · rw [ite_eq_right ha]
-    have ha0 : a.2 - v.2 ≠ 0 := sub_ne_zero.2 ha
+    have ha0 := sub_ne_zero.2 ha
     by_cases hb : b.2 = v.2
     · rw [ite_eq_left hb]
       have hb' : b.2 - v.2 = 0 := by rw [hb, sub_self]
-      have hb1 : b.1 - v.1 ≠ 0 := fun h => hbv (Prod.ext (by linarith) hb)
+      have hb1 : b.1 - v.1 ≠ 0 := fun h => hbv (Prod.ext by_l hb)
       have cBX : sideCross (b - v) ((σ, 0) : Point) = 0 := by rw [eBX, hb', mul_zero]
       have cBA : sideCross (b - v) (a - v) = (b.1 - v.1) * (a.2 - v.2) := by
         rw [eBA, hb']; ring
-      have hne : (b.1 - v.1) * (a.2 - v.2) ≠ 0 := mul_ne_zero hb1 ha0
+      have hne := mul_ne_zero hb1 ha0
       rw [cBX, cBA, eXA]
       by_cases hva : v.2 < a.2
       · rw [ite_eq_left hva]
-        have hap : 0 < a.2 - v.2 := by linarith
+        have hap : 0 < a.2 - v.2 := by_l
         constructor
         · rintro (⟨-, h, -⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
           · exact absurd h (lt_irrefl _)
@@ -198,13 +198,13 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
         · rintro ⟨rfl, h2⟩
           right; left
           refine ⟨?_, Or.inr ?_⟩
-          · exact mul_neg_of_neg_of_pos (by linarith) hap
+          · exact mul_neg_of_neg_of_pos by_l hap
           · linarith
       · rw [ite_eq_right hva]
         have han : a.2 - v.2 < 0 := by
           rcases lt_or_gt_of_ne ha0 with h | h
           · exact h
-          · exact absurd (by linarith) hva
+          · exact absurd by_l hva
         constructor
         · rintro (⟨-, h, -⟩ | ⟨h1, h2 | h2⟩ | ⟨h1, -⟩ | ⟨h1, -⟩)
           · exact absurd h (lt_irrefl _)
@@ -220,7 +220,7 @@ theorem sideLeftOf_iff_emitG {a v b : Point} (hav : a ≠ v) (hbv : b ≠ v)
         · rintro ⟨rfl, h2⟩
           right; left
           refine ⟨?_, Or.inr ?_⟩
-          · exact mul_neg_of_pos_of_neg (by linarith) han
+          · exact mul_neg_of_pos_of_neg by_l han
           · linarith
     · rw [ite_eq_right hb]
       have h := Brute.sideLeftOf_horiz ha hb hσ
@@ -236,9 +236,9 @@ theorem dirInterior_iff_emitG {W : Polygon} (hW : W.Simple) (hL : Mountain.orien
       emitG (W.vtx (Chazelle.Jordan.prevIdx W p)) (W.vtx p) (W.vtx ((p + 1) % W.n)) σ := by
   rw [dirInterior_iff_corner hW hL hp hσ]
   have hn := simple_three_le hW
-  have hav : W.vtx (Chazelle.Jordan.prevIdx W p) ≠ W.vtx p :=
+  have hav :=
     simple_vtx_ne hW (Chazelle.Jordan.prevIdx_lt W hp) hp (Chazelle.Jordan.prevIdx_ne W hn hp)
-  have hbv : W.vtx ((p + 1) % W.n) ≠ W.vtx p := (simple_vtx_succ_ne hW hp).symm
+  have hbv := (simple_vtx_succ_ne hW hp).symm
   exact sideLeftOf_iff_emitG hav hbv (FactsInterior.corner_nonSpike hW hp) hσ
 
 end

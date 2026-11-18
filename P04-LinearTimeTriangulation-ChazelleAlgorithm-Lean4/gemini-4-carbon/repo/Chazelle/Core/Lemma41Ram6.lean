@@ -71,8 +71,7 @@ theorem preB_exec {c : Config} (hw : WordsBounded W c) {ptr A : ℕ}
   · config_simp; simp only [h65, h24]
   · config_simp; simp only [hA]
   · config_simp; simp only [hA, h81]
-  · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  · upd_keep
 
 set_option maxHeartbeats 8000000 in
 theorem setupB_exec {c : Config} (hw : WordsBounded W c) :
@@ -90,8 +89,7 @@ theorem setupB_exec {c : Config} (hw : WordsBounded W c) :
   refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, by config_simp,
     by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
     fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-  simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  upd_keep
 
 set_option maxHeartbeats 8000000 in
 theorem postB_exec {c : Config} (hw : WordsBounded W c) {E TD f prev ptr i j : ℕ}
@@ -125,8 +123,7 @@ theorem postB_exec {c : Config} (hw : WordsBounded W c) {E TD f prev ptr i j : �
   · config_simp; simp only [h65, h84]
   · config_simp; simp only [h62, h80]
   · config_simp; simp only [h64, h24]
-  · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  · upd_keep
 
 end proofs
 

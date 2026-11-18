@@ -65,11 +65,11 @@ theorem count_doubles (n i : ℕ) :
       List.count_nil, beq_iff_eq]
     by_cases h : i = n
     · subst h; simp
-    · have h' : ¬ n = i := Ne.symm h
+    · have h' := Ne.symm h
       simp only [h', ite_false, add_zero]
       by_cases h2 : i < n
-      · rw [ite_eq_left h2, ite_eq_left (by omega)]
-      · rw [ite_eq_right h2, ite_eq_right (by omega)]
+      · rw [ite_eq_left h2, ite_eq_left by_o]
+      · rw [ite_eq_right h2, ite_eq_right by_o]
 
 theorem count_events (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) {i : ℕ}
     (hi : i < L.length) : ((events M Q L).map Prod.fst).count i = 2 := by
@@ -133,8 +133,8 @@ theorem event_data {M : Model} (hM : WalkAx M) {Q : Polygon} {L : List (ℕ × �
       sidePt M.W pa ta ≠ sidePt M.W pb tb ∧ e.2.1 = pa + ta ∧ e.2.2 = pb + tb := by
   obtain ⟨i, hi, he⟩ := mem_events.1 he
   set r := recOf (L.getD i (0, 0, 0)) with hr
-  have hatt : r.Attached M Q := hL.2.2.1 _ (getD_mem hi)
-  have hadm : r.toSet M Q ∈ M.Adm := hL.1.2.1 (chordSet_mem hi)
+  have hatt := hL.2.2.1 _ (getD_mem hi)
+  have hadm := hL.1.2.1 (chordSet_mem hi)
   have hlt := endpoints hM hadm hatt
   have hne : sidePt M.W r.lp (M.param Q r.lpos) ≠ sidePt M.W r.rp (M.param Q r.rpos) := by
     intro h
@@ -216,7 +216,7 @@ theorem tie_rule_down {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F 
     t = 0 ∧ cycDist M.W.n p (pe + te) < cycDist M.W.n p (pw + tw) := by
   obtain ⟨rfl, U, V, R, -, -, -, -, -, -, -, -, -, hord⟩ :=
     hM.tie_down hF hfin hce hcw hAe hAw hE hW hdown
-  have hv0 : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero M.W p
+  have hv0 := Chazelle.Chain.sidePt_zero M.W p
   rw [hv0] at hBe' hBw'
   have hin := hord pe pw te tw hBe hBe' hBw hBw'
   have keyb : ∀ {pa : ℕ} {ta : ℝ} {c : Set Point}, SideAttach M.W c pa ta →
@@ -244,7 +244,7 @@ theorem tie_rule_up {M : Model} (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
     t = 0 ∧ cycDist M.W.n p (pw + tw) < cycDist M.W.n p (pe + te) := by
   obtain ⟨rfl, U, V, R, -, -, -, -, -, -, -, -, -, hord⟩ :=
     hM.tie_up hF hfin hce hcw hAe hAw hE hW hup
-  have hv0 : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero M.W p
+  have hv0 := Chazelle.Chain.sidePt_zero M.W p
   rw [hv0] at hBe' hBw'
   have hin := hord pe pw te tw hBe hBe' hBw hBw'
   have keyb : ∀ {pa : ℕ} {ta : ℝ} {c : Set Point}, SideAttach M.W c pa ta →

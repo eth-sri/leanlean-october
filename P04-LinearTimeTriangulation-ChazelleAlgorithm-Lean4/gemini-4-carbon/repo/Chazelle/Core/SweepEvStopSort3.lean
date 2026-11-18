@@ -65,9 +65,9 @@ theorem stopRecs_snoc {m m' : ℕ → ℕ} {A : ℕ} {O : List (ℕ × ℕ × �
   simp only [List.length_append, List.length_singleton] at hi
   split_ifs with h1 h2
   · obtain ⟨a0, a1, a2, a3, a4⟩ := h i h1
-    exact ⟨(hk _ (by omega) (by omega)).trans a0, (hk _ (by omega) (by omega)).trans a1,
-      (hk _ (by omega) (by omega)).trans a2, (hk _ (by omega) (by omega)).trans a3,
-      (hk _ (by omega) (by omega)).trans a4⟩
+    exact ⟨(hk _ by_o by_o).trans a0, (hk _ by_o by_o).trans a1,
+      (hk _ by_o by_o).trans a2, (hk _ by_o by_o).trans a3,
+      (hk _ by_o by_o).trans a4⟩
   · subst h2; exact hn
   · omega
 
@@ -82,9 +82,9 @@ theorem auxRecs_snoc {m m' : ℕ → ℕ} {A : ℕ} {O : List (ℕ × ℕ × ℕ
   simp only [List.length_append, List.length_singleton] at hi
   split_ifs with h1 h2
   · obtain ⟨a0, a1, a2, a3, a4⟩ := h i h1
-    exact ⟨(hk _ (by omega) (by omega)).trans a0, (hk _ (by omega) (by omega)).trans a1,
-      (hk _ (by omega) (by omega)).trans a2, (hk _ (by omega) (by omega)).trans a3,
-      (hk _ (by omega) (by omega)).trans a4⟩
+    exact ⟨(hk _ by_o by_o).trans a0, (hk _ by_o by_o).trans a1,
+      (hk _ by_o by_o).trans a2, (hk _ by_o by_o).trans a3,
+      (hk _ by_o by_o).trans a4⟩
   · subst h2; exact hn
   · omega
 
@@ -136,41 +136,41 @@ theorem ssWr_step {P : Polygon} {W : ℕ} {J : Merge.Junction} {d2 RB S A₀ : �
   have wD : ∀ t, t < 5 → d'.nmem (B1 + 5 * O.length + t) = m₀ (RB + 11 * x + ssOff t) :=
     fun t ht => by
       rw [hmem']; unfold ssWM
-      rw [ite_eq_left (by omega), show B1 + 5 * O.length + t - (B1 + 5 * O.length) = t by omega]
+      rw [ite_eq_left by_o, show B1 + 5 * O.length + t - (B1 + 5 * O.length) = t by omega]
       exact src _ (by unfold ssOff; split_ifs <;> omega)
   have wE : ∀ t, t < 5 → d'.nmem (B1 + 5 * S + 5 * O.length + t) = m₀ (RB + 11 * x + 6 + t) :=
     fun t ht => by
       rw [hmem']; unfold ssWM
-      rw [ite_eq_right (by omega), ite_eq_left (by omega),
+      rw [ite_eq_right by_o, ite_eq_left by_o,
         show B1 + 5 * S + 5 * O.length + t - (B1 + 5 * S + 5 * O.length) = t by omega]
       rw [show RB + 11 * x + 6 + t = RB + 11 * x + (6 + t) by omega]
-      exact src _ (by omega)
+      exact src _ by_o
   have kD : ∀ a, a < B1 + 5 * O.length → d'.nmem a = d.nmem a := fun a ha => by
-    rw [hmem']; unfold ssWM; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    rw [hmem']; unfold ssWM; rw [ite_eq_right by_o, ite_eq_right by_o]
   have kE : ∀ a, a < B1 + 5 * S + 5 * O.length → (a < B1 + 5 * O.length ∨
       B1 + 5 * O.length + 5 ≤ a) → d'.nmem a = d.nmem a := fun a ha ha' => by
-    rw [hmem']; unfold ssWM; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
-  refine ⟨d', k, ex, hk, by rw [hsC, hC]; simp, ?_, ?_, fun a ha => kD a (by omega),
+    rw [hmem']; unfold ssWM; rw [ite_eq_right by_o, ite_eq_right by_o]
+  refine ⟨d', k, ex, hk, by rw [hsC, hC]; simp, ?_, ?_, fun a ha => kD a by_o,
     hr, hrr, hrm, ho⟩
   · rw [List.map_append, List.map_singleton]
     refine stopRecs_snoc hst (fun a _ ha => kD a (by simpa using ha)) ?_
     simp only [List.length_map, rawRec]
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · have := wD 0 (by norm_num); simp only [ssOff] at this; simpa using this
-    · have := wD 1 (by norm_num); simp only [ssOff] at this; simpa using this
-    · have := wD 2 (by norm_num); simp only [ssOff] at this; simpa using this
-    · have := wD 3 (by norm_num); simp only [ssOff] at this; simpa using this
-    · have := wD 4 (by norm_num); simp only [ssOff] at this; simpa using this
+    · have := wD 0 by_n; simp only [ssOff] at this; simpa using this
+    · have := wD 1 by_n; simp only [ssOff] at this; simpa using this
+    · have := wD 2 by_n; simp only [ssOff] at this; simpa using this
+    · have := wD 3 by_n; simp only [ssOff] at this; simpa using this
+    · have := wD 4 by_n; simp only [ssOff] at this; simpa using this
   · rw [List.map_append, List.map_singleton]
     refine auxRecs_snoc hax (fun a ha0 ha => kE a (by simpa using ha) (by
       simp only [List.length_map] at ha; omega)) ?_
     simp only [List.length_map, rawAux]
     refine ⟨?_, ?_, ?_, ?_, ?_⟩
-    · have := wE 0 (by norm_num); simpa using this
-    · have := wE 1 (by norm_num); simpa using this
-    · have := wE 2 (by norm_num); simpa using this
-    · have := wE 3 (by norm_num); simpa using this
-    · have := wE 4 (by norm_num); simpa using this
+    · have := wE 0 by_n; simpa using this
+    · have := wE 1 by_n; simpa using this
+    · have := wE 2 by_n; simpa using this
+    · have := wE 3 by_n; simpa using this
+    · have := wE 4 by_n; simpa using this
 
 /-! ## One step of the pass -/
 
@@ -182,12 +182,12 @@ theorem ssCtx_keep {J : Merge.Junction} {d2 RB S A₀ : ℕ} {m₀ : ℕ → ℕ
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8⟩ := h
   have k : ∀ i, (i < 3003 ∨ (3016 < i ∧ i < 10000)) ∧ i ≠ 2601 →
       d'.nreg (sw i) = d.nreg (sw i) :=
-    fun i hi => hr (sw i) (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega)
+    fun i hi => hr (sw i) by_so by_so by_so
       (by unfold sC sw; omega)
-  exact ⟨(k 2 (by norm_num)).trans h1, (k 659 (by norm_num)).trans h2,
-    (k 4000 (by norm_num)).trans h3, (k 4001 (by norm_num)).trans h4,
-    (k 610 (by norm_num)).trans h5, (k 611 (by norm_num)).trans h6,
-    (k 3000 (by norm_num)).trans h7, fun a ha => (hm a ha).trans (h8 a ha)⟩
+  exact ⟨(k 2 by_n).trans h1, (k 659 by_n).trans h2,
+    (k 4000 by_n).trans h3, (k 4001 by_n).trans h4,
+    (k 610 by_n).trans h5, (k 611 by_n).trans h6,
+    (k 3000 by_n).trans h7, fun a ha => (hm a ha).trans (h8 a ha)⟩
 
 theorem ssBc_sub {r : ℕ} (h : bandOf r ∉ oracleBands) : bandOf r ∉ ssBc := fun h' =>
   h (by
@@ -226,7 +226,7 @@ theorem ssCp_val (m f : ℕ → ℕ) :
   · simp only [regB, regI, srP, srX, sw, Nat.reduceAdd, upd_same, ne_eq, upd_other,
       Nat.reduceEqDiff, not_false_eq_true]
   · simp only [regB, regI, srP, srX, sw, Nat.reduceAdd, upd_same]
-    rw [upd_other _ _ _ (by norm_num)]
+    rw [upd_other _ _ _ by_n]
   · simp only [regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
 
 end

@@ -84,11 +84,11 @@ theorem bstart_all {n A : ℕ} (hA : ∀ q, q < n → bk q ≤ A) : bstart bk n 
   induction n with
   | zero => unfold bstart; simp [bcnt_zero]
   | succ n ih =>
-    have ih' := ih fun q hq => hA q (by omega)
+    have ih' := ih fun q hq => hA q by_o
     unfold bstart at ih' ⊢
     simp only [bcnt_succ, Finset.sum_add_distrib, ih']
     rw [Finset.sum_eq_single (bk n) (fun b _ hb => ite_eq_right (Ne.symm hb))
-      (fun h => absurd (Finset.mem_range.2 (by have := hA n (by omega); omega)) h), ite_eq_left rfl]
+      (fun h => absurd (Finset.mem_range.2 (by have := hA n by_o; omega)) h), ite_eq_left rfl]
 
 /-- The first `b` buckets. -/
 def bktPre (bk : ℕ → ℕ) (n b base : ℕ) : List ℕ :=
@@ -125,7 +125,7 @@ theorem bfilt_getD {n q b : ℕ} (hq : q < n) (hb : bk q = b) :
       rcases Nat.lt_or_ge q m with h | h
       · obtain ⟨t, ht⟩ := ih h
         rw [bfilt_succ, ht]
-        exact ⟨t ++ (if bk m = b then [m] else []), by simp⟩
+        exact ⟨t ++ (if bk m = b then [m] else []), by_s⟩
       · have hqm : q = m := by omega
         subst hqm
         exact ⟨[], by rw [bfilt_succ, ite_eq_left hb]⟩
@@ -138,7 +138,7 @@ theorem bfilt_getD {n q b : ℕ} (hq : q < n) (hb : bk q = b) :
 theorem bktList_getD_slot {n A base q : ℕ} (hq : q < n) (hA : bk q ≤ A) :
     (bktList bk n A base).getD (slot bk n q) 0 = base + q := by
   rw [bktList_eq]
-  have hle : bk q + 1 ≤ A + 1 := by omega
+  have hle : bk q + 1 ≤ A + 1 := by_o
   obtain ⟨d, hd⟩ := Nat.exists_eq_add_of_le hle
   have hpre : ∀ e, bktPre bk n (bk q + 1 + e) base =
       bktPre bk n (bk q) base ++ (bfilt bk n (bk q)).map (base + ·) ++
@@ -157,8 +157,8 @@ theorem bktList_getD_slot {n A base q : ℕ} (hq : q < n) (hA : bk q ≤ A) :
     have h1 := bcnt_mono (bk := bk) (show q + 1 ≤ n by omega) (bk q)
     rw [bcnt_succ, ite_eq_left rfl] at h1
     unfold bcnt at h1 ⊢; omega
-  rw [List.getD_append _ _ _ _ (by rw [List.length_map]; exact hlt)]
-  rw [List.getD_eq_getElem _ _ (by rw [List.length_map]; exact hlt), List.getElem_map]
+  rw [List.getD_append _ _ _ _ (by rwa [List.length_map])]
+  rw [List.getD_eq_getElem _ _ (by rwa [List.length_map]), List.getElem_map]
   have := bfilt_getD (bk := bk) hq rfl
   rw [List.getD_eq_getElem _ _ hlt] at this
   rw [this]
@@ -211,10 +211,10 @@ theorem seg_eq_bktList {m : ℕ → ℕ} {R n A base : ℕ} (hA : ∀ q, q < n �
   intro p hp _
   rw [seg_length] at hp
   obtain ⟨q, hq, rfl⟩ := exists_slot hA hp
-  have e1 : (seg m R n)[slot bk n q]'(by rw [seg_length]; exact hp) = m (R + slot bk n q) := by
+  have e1 : (seg m R n)[slot bk n q]'(by rwa [seg_length]) = m (R + slot bk n q) := by
     simp [seg]
   have e2 := bktList_getD_slot (bk := bk) (base := base) hq (hA q hq)
-  rw [List.getD_eq_getElem _ _ (by rw [bktList_length hA]; exact hp)] at e2
+  rw [List.getD_eq_getElem _ _ (by rwa [bktList_length hA])] at e2
   rw [e1, e2, h q hq]
 
 end

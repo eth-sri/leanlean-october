@@ -71,16 +71,16 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
   have b43 := g.base_eq 43; have b49 := g.base_eq 49; have b0 := g.base_eq 0
   have b1 := g.base_eq 1
   have hm12 : ∀ x, x < g.A0 → c2.nmem x = c.nmem x := fun x hx => by
-    rw [hm2 x (by omega), hm1 x hx]
+    rw [hm2 x by_o, hm1 x hx]
   have hmap2 : MapArrays c2.nmem g.bO g.bR g.bV g.μ g.N M := fun d => by
     have := d.2
-    rw [hm2 _ (by omega), hm2 _ (by omega), hm2 _ (by omega)]; exact hD1.map d
+    rw [hm2 _ by_o, hm2 _ by_o, hm2 _ by_o]; exact hD1.map d
   have hF2 : ∀ u, u < g.μ → c2.nmem (g.base 0 + u) < g.N ∧
       c2.nmem (g.bV + c2.nmem (g.base 0 + u)) = u := fun u hu => by
     have h := hD1.firstF u hu
-    rw [hm2 (g.base 0 + u) (by omega), hm2 (g.bV + c1.nmem (g.base 0 + u)) (by omega)]; exact h
+    rw [hm2 (g.base 0 + u) by_o, hm2 (g.bV + c1.nmem (g.base 0 + u)) by_o]; exact h
   have hz2 : ∀ d, d < g.N → c2.nmem (g.base 1 + d) = 0 := fun d hd => by
-    rw [hm2 _ (by omega)]; exact hD1.zero d hd
+    rw [hm2 _ by_o]; exact hD1.zero d hd
   -- the labels
   obtain ⟨c3, k3, x3, hk3, hw3, hr3, hrr3, hrm3, ho3, hm3, hlab3⟩ := labS_exec (P := P) hw2 hG2
     (M := M) hmap2 hF2 hz2 hμN hO hR hV hEND
@@ -92,8 +92,8 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
       c4.rreg = c3.rreg ∧ c4.rmem = c3.rmem ∧ c4.output = c3.output := by
     unfold outS
     exec_block
-    refine ⟨rfl, ‹_›, by config_simp; exact hG3.rbase 48 (by omega),
-      by config_simp; exact hG3.rbase 2 (by omega), fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
+    refine ⟨rfl, ‹_›, by config_simp; exact hG3.rbase 48 by_o,
+      by config_simp; exact hG3.rbase 2 by_o, fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
     simp only
     rw [Machine.upd_other _ _ _ h2, Machine.upd_other _ _ _ h1]
   have hAl : ALLOC = 9999 := rfl
@@ -102,8 +102,8 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
       hr2 _ (by rw [hAl]; omega), hr1 _ (by rw [hAl]; omega)]
   -- the allocator
   obtain ⟨c5, k5, x5, hk5, hw5, hA5, hA5k, hr5, hm5, hrr5, hrm5, ho5⟩ := bumpS_exec (P := P) hw4
-    (E := g.END) (by rw [hr4 _ (by omega) (by omega)]; exact hG3.one)
-    (by rw [hr4 _ (by omega) (by omega)]; exact hG3.rEND)
+    (E := g.END) (by rw [hr4 _ by_o by_o]; exact hG3.one)
+    (by rw [hr4 _ by_o by_o]; exact hG3.rEND)
     (by rw [hA4, eA]; omega) hEND
   have hA4' : c4.nreg ALLOC = g.A0 := by rw [hA4]; rfl
   have r4 : c5.nreg 130004 = g.base 48 := by rw [hr5 _ (by rw [hAl]; omega)]; exact h04
@@ -111,7 +111,7 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
   have hrd4 : rd c5 bCluster 4 = g.base 48 := r4
   have hrd5 : rd c5 bCluster 5 = g.base 2 := r5
   have hDF : ∀ v, v < g.μ → c5.nmem (g.base 48 + v) = c2.nmem (g.base 48 + v) := fun v hv => by
-    rw [hm5, hm4, hm3 _ (by omega)]
+    rw [hm5, hm4, hm3 _ by_o]
   have hLAB : ∀ v, c5.nmem (g.base 2 + v) = c3.nmem (g.base 2 + v) := fun v => by rw [hm5, hm4]
   have hstep : ∀ u w, (primalEnv c2.nmem g.bO g.bR g.bV (g.base 0) (g.base 1) (g.base 48) g.μ
       g.N).Step u w → AdjN M u w ∧ u ∉ H ∧ u ∉ D ∧ w ∉ H ∧ w ∉ D := by
@@ -150,15 +150,15 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
   · intro u v w hw'
     rw [hrd4] at hw'
     rw [hrd5, hLAB, hLAB]
-    have hBl : rd c bCluster 0 + 2 < g.A0 := hB2
+    have hBl := hB2
     have hgraph : memGraph c.nmem (rd c bCluster 0) (rd c bCluster 1) (rd c bCluster 2) =
         memGraph c2.nmem (rd c bCluster 0) (rd c bCluster 1) (rd c bCluster 2) :=
       (memGraph_congr (A := g.A0) hm12 hB2 hO hV (fun d hd => by
         rw [(hmap ⟨d, hd⟩).1]; exact (M.opp ⟨d, hd⟩).2)).symm
     have hreach := reach_of_walk (m := c2.nmem) (bF := g.base 0) (bDB := g.base 1)
       (bVB := g.base 48) hmap2 (fun d hd => by rw [hz2 d hd]; omega)
-      (B := rd c bCluster 0) (E := rd c bCluster 2) (by rw [hm12 _ (by omega)]; rfl)
-      (by rw [hm12 _ (by omega)]; rfl) rfl (w.mapLe (le_of_eq hgraph)) (fun x hx => by
+      (B := rd c bCluster 0) (E := rd c bCluster 2) (by rw [hm12 _ by_o]; rfl)
+      (by rw [hm12 _ by_o]; rfl) rfl (w.mapLe (le_of_eq hgraph)) (fun x hx => by
         have hx' : x ∈ w.support := by
           have e := SimpleGraph.Walk.support_mapLe_eq_support (h := le_of_eq hgraph) (p := w)
           exact cast (congrArg (x ∈ ·) e) hx
@@ -174,8 +174,8 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
       ext v
       simp only [Finset.mem_filter, Finset.mem_range]
       constructor
-      · rintro ⟨hv, h1, h2⟩; exact ⟨⟨hv, by rw [← hDF v hv]; exact h1⟩, by rw [← hLAB]; exact h2⟩
-      · rintro ⟨⟨hv, h1⟩, h2⟩; exact ⟨hv, by rw [hDF v hv]; exact h1, by rw [hLAB]; exact h2⟩
+      · rintro ⟨hv, h1, h2⟩; exact ⟨⟨hv, by rwa [← hDF v hv]⟩, by rwa [← hLAB]⟩
+      · rintro ⟨⟨hv, h1⟩, h2⟩; exact ⟨hv, by rwa [hDF v hv], by rwa [hLAB]⟩
     rw [heq]
     have hc := class_card hI2 hstep (lab := fun v => c3.nmem (g.base 2 + v))
       (X := (Finset.range g.μ).filter (fun v => c2.nmem (g.base 48 + v) ≠ 1))
@@ -193,8 +193,8 @@ theorem clusterProg_meets : Meets clusterProg {bCluster}
       by rw [ho5, ho4, ho3, ho2, ho1], by rw [hA5, eA]; omega, by rw [hA5]; omega⟩
     · have : r < 130000 ∨ 140000 ≤ r := by
         simp only [Finset.mem_singleton, bandOf, bCluster] at hr; omega
-      rw [hr5 r hra, hr4 r (by omega) (by omega), hr3 r (by unfold LabRG; omega),
-        hr2 r (by omega), hr1 r (by omega)]
+      rw [hr5 r hra, hr4 r by_o by_o, hr3 r (by unfold LabRG; omega),
+        hr2 r by_o, hr1 r by_o]
     · rw [hm5, hm4, hm3 _ (by rw [eA] at hx; omega)]; exact hm12 x hx
 
 end

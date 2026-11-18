@@ -66,7 +66,7 @@ theorem compl_of (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
     exact H i hi (congrArg WPos.edge e1) e2 e3 _ τ hc hτ ho
   · obtain ⟨i, hi, e1, e2, e3, hc⟩ := tab_match hA hX harr hj hT ⟨hv1, hv2, hv3⟩
     have hs : j % 2 = qS d := by
-      apply dS_inj (by omega) (qS_le _)
+      apply dS_inj by_o (qS_le _)
       rw [dS_mod, dS_qS, hdir]
     rw [hs] at e3
     rw [← dS_mod, hs] at hc

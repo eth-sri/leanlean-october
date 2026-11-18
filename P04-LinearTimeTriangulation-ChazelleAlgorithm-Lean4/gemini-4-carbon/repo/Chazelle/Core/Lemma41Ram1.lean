@@ -25,7 +25,7 @@ open Machine Machine.Stmt Programs
 
 theorem dvd_succ_iff {x g : ℕ} (h : 2 ^ g ∣ x) : 2 ^ (g + 1) ∣ x ↔ (x / 2 ^ g) % 2 = 0 := by
   obtain ⟨k, rfl⟩ := h
-  rw [Nat.mul_div_cancel_left _ (by positivity), pow_succ, Nat.mul_dvd_mul_iff_left (by positivity)]
+  rw [Nat.mul_div_cancel_left _ by_p, pow_succ, Nat.mul_dvd_mul_iff_left by_p]
   exact Nat.dvd_iff_mod_eq_zero
 
 theorem div_succ (x g : ℕ) : x / 2 ^ (g + 1) = x / 2 ^ g / 2 := by
@@ -94,10 +94,10 @@ theorem ascBody_exec {c0 c : Config} (hw : WordsBounded W c) {lam b x D PW : ℕ
   have r20 : c.nreg 160020 = D := by rw [hr _ (by unfold AscRG; omega)]; exact h20
   have r21 : c.nreg 160021 = PW := by rw [hr _ (by unfold AscRG; omega)]; exact h21
   set g := c.nreg 160012 with hg
-  have hxb : x + 2 ^ g ≤ b := hok.2
+  have hxb := hok.2
   have hqx : x / 2 ^ g ≤ x := Nat.div_le_self _ _
   have hpg := Nat.one_le_two_pow (n := g)
-  have hpl : 2 ^ g ≤ 2 ^ lam := Nat.pow_le_pow_right (by norm_num) (by omega)
+  have hpl : 2 ^ g ≤ 2 ^ lam := Nat.pow_le_pow_right by_n by_o
   -- the counter step
   have e1 := Exec.addN (P := P) hw 160016 160012 160024 (by rw [r24]; omega)
   set c1 := { c with nreg := upd c.nreg 160016 (c.nreg 160012 + c.nreg 160024) } with hc1
@@ -118,15 +118,15 @@ theorem ascBody_exec {c0 c : Config} (hw : WordsBounded W c) {lam b x D PW : ℕ
       by simp only; rw [hrm2, hrm], by simp only; rw [ho2, ho], ?_, ?_, ?_, ?_⟩
     · simp only
       rw [Machine.upd_other _ _ _ (by unfold AscRG at hr'; omega), hr2 r hr', hr r hr']
-    · simp only; rw [Machine.upd_other _ _ _ (by omega), hg2]; exact hgl
-    · simp only; rw [Machine.upd_other _ _ _ (by omega), hg2]; exact hok
-    · simp only; rw [Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), hg2, hq2]
+    · simp only; rwa [Machine.upd_other _ _ _ by_o, hg2]
+    · simp only; rwa [Machine.upd_other _ _ _ by_o, hg2]
+    · simp only; rw [Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o, hg2, hq2]
     · right; simp only
-      rw [Machine.upd_same, Machine.upd_other _ _ _ (by omega), hg2, hn]; exact ⟨rfl, rfl⟩
+      rw [Machine.upd_same, Machine.upd_other _ _ _ by_o, hg2, hn]; exact ⟨rfl, rfl⟩
   unfold ascBody
   by_cases hA : c1.nreg 160016 < c1.nreg 160026
-  · rw [h16, k1 _ (by omega), r26] at hA
+  · rw [h16, k1 _ by_o, r26] at hA
     -- read `q / 2`
     obtain ⟨c2, k2, e2, hk2, hw2, h17, h18, k2r, hm2, hrr2, hrm2, ho2⟩ : ∃ c2 k2, Exec P W
         (block [.addN 160017 160020 160013, .loadN 160017 160017, .addN 160018 160017 160017])
@@ -134,10 +134,10 @@ theorem ascBody_exec {c0 c : Config} (hw : WordsBounded W c) {lam b x D PW : ℕ
         c2.nreg 160018 = x / 2 ^ g / 2 + x / 2 ^ g / 2 ∧
         (∀ r, r ≠ 160017 → r ≠ 160018 → c2.nreg r = c1.nreg r) ∧ c2.nmem = c.nmem ∧
         c2.rreg = c.rreg ∧ c2.rmem = c.rmem ∧ c2.output = c.output := by
-      have q1 : c1.nreg 160020 = D := by rw [k1 _ (by omega)]; exact r20
-      have q2 : c1.nreg 160013 = x / 2 ^ g := by rw [k1 _ (by omega)]; exact hq
+      have q1 : c1.nreg 160020 = D := by rw [k1 _ by_o]; exact r20
+      have q2 : c1.nreg 160013 = x / 2 ^ g := by rw [k1 _ by_o]; exact hq
       have md : c1.nmem (D + x / 2 ^ g) = x / 2 ^ g / 2 := by
-        show c.nmem _ = _; rw [hm]; exact hD _ (by omega)
+        show c.nmem _ = _; rw [hm]; exact hD _ by_o
       have e1w := e1.wb_right
       exec_block
       · rw [q1, q2]; omega
@@ -147,32 +147,32 @@ theorem ascBody_exec {c0 c : Config} (hw : WordsBounded W c) {lam b x D PW : ℕ
         simp only [Machine.upd_apply]
         split_ifs <;> first | omega
     have fr2 : ∀ r, ¬ AscRG r → c2.nreg r = c.nreg r := fun r hr' => by
-      unfold AscRG at hr'; rw [k2r r (by omega) (by omega), k1 r (by omega)]
-    have g2 : c2.nreg 160012 = g := by rw [k2r _ (by omega) (by omega), k1 _ (by omega)]
+      unfold AscRG at hr'; rw [k2r r by_o by_o, k1 r by_o]
+    have g2 : c2.nreg 160012 = g := by rw [k2r _ by_o by_o, k1 _ by_o]
     have q2 : c2.nreg 160013 = x / 2 ^ g := by
-      rw [k2r _ (by omega) (by omega), k1 _ (by omega)]; exact hq
-    have t13 : c2.nreg 160013 = x / 2 ^ g := q2
+      rw [k2r _ by_o by_o, k1 _ by_o]; exact hq
+    have t13 := q2
     by_cases hodd : c2.nreg 160018 < c2.nreg 160013
     · rw [h18, t13] at hodd
       obtain ⟨e3, hI3⟩ := stop c2 hw2 fr2 hm2 hrr2 hrm2 ho2 g2 q2
         (nextG_eq_of hgl hok (fun _ hg1 => by
           have := (dvd_succ_iff hok.1).mp hg1.1; omega))
-      refine ⟨_, _, .seq e1 (.ifLtN_true (by rw [h16, k1 _ (by omega), r26]; exact hA)
-        (.seq e2 (.ifLtN_true (by rw [h18, t13]; exact hodd) e3))), hI3, ?_⟩
+      refine ⟨_, _, .seq e1 (.ifLtN_true (by rwa [h16, k1 _ by_o, r26])
+        (.seq e2 (.ifLtN_true (by rwa [h18, t13]) e3))), hI3, ?_⟩
       simp only [Machine.upd_same, Machine.upd_other _ _ _ (show (160012 : ℕ) ≠ 160025 by omega)]
       rw [g2, hf]; omega
     · have heven : (x / 2 ^ g) % 2 = 0 := by rw [h18, t13] at hodd; omega
-      have hdv : 2 ^ (g + 1) ∣ x := (dvd_succ_iff hok.1).mpr heven
+      have hdv := (dvd_succ_iff hok.1).mpr heven
       obtain ⟨c4, k4, e4, hk4, hw4, h19, k4r, hm4, hrr4, hrm4, ho4⟩ : ∃ c4 k4, Exec P W
           (block [.addN 160019 160021 160016, .loadN 160019 160019, .addN 160019 160010 160019])
           c2 c4 k4 ∧ k4 = 3 ∧ WordsBounded W c4 ∧ c4.nreg 160019 = x + 2 ^ (g + 1) ∧
           (∀ r, r ≠ 160019 → c4.nreg r = c2.nreg r) ∧ c4.nmem = c.nmem ∧
           c4.rreg = c.rreg ∧ c4.rmem = c.rmem ∧ c4.output = c.output := by
         have q21 : c2.nreg 160021 = PW := by rw [fr2 _ (by unfold AscRG; omega)]; exact r21
-        have q16 : c2.nreg 160016 = g + 1 := by rw [k2r _ (by omega) (by omega)]; exact h16
+        have q16 : c2.nreg 160016 = g + 1 := by rw [k2r _ by_o by_o]; exact h16
         have q10 : c2.nreg 160010 = x := by rw [fr2 _ (by unfold AscRG; omega)]; exact r10
-        have mp : c2.nmem (PW + (g + 1)) = 2 ^ (g + 1) := by rw [hm2, hm]; exact hPW _ (by omega)
-        have hp1 : 2 ^ (g + 1) ≤ 2 ^ lam := Nat.pow_le_pow_right (by norm_num) (by omega)
+        have mp : c2.nmem (PW + (g + 1)) = 2 ^ (g + 1) := by rw [hm2, hm]; exact hPW _ by_o
+        have hp1 : 2 ^ (g + 1) ≤ 2 ^ lam := Nat.pow_le_pow_right by_n by_o
         exec_block
         · rw [q21, q16]; omega
         · config_simp; rw [q10, q21, q16, mp]; omega
@@ -181,60 +181,60 @@ theorem ascBody_exec {c0 c : Config} (hw : WordsBounded W c) {lam b x D PW : ℕ
           simp only [Machine.upd_apply]
           split_ifs <;> first | omega
       have fr4 : ∀ r, ¬ AscRG r → c4.nreg r = c.nreg r := fun r hr' => by
-        unfold AscRG at hr'; rw [k4r r (by omega), fr2 r (by unfold AscRG; omega)]
+        unfold AscRG at hr'; rw [k4r r by_o, fr2 r (by unfold AscRG; omega)]
       have r11' : c4.nreg 160011 = b := by rw [fr4 _ (by unfold AscRG; omega)]; exact r11
       by_cases hB : c4.nreg 160011 < c4.nreg 160019
       · rw [r11', h19] at hB
         obtain ⟨e5, hI5⟩ := stop c4 hw4 fr4 hm4 hrr4 hrm4 ho4
-          (by rw [k4r _ (by omega)]; exact g2) (by rw [k4r _ (by omega)]; exact q2)
+          (by rwa [k4r _ by_o]) (by rwa [k4r _ by_o])
           (nextG_eq_of hgl hok (fun _ hg1 => by have := hg1.2; omega))
         refine ⟨_, _, .seq e1 (.ifLtN_true
-          (by rw [h16, k1 _ (by omega), r26]; exact hA) (.seq e2 (.ifLtN_false
-          (by rw [h18, t13]; omega) (.seq e4 (.ifLtN_true (by rw [r11', h19]; exact hB) e5))))),
+          (by rwa [h16, k1 _ by_o, r26]) (.seq e2 (.ifLtN_false
+          (by rw [h18, t13]; omega) (.seq e4 (.ifLtN_true (by rwa [r11', h19]) e5))))),
           hI5, ?_⟩
         simp only [Machine.upd_same,
           Machine.upd_other _ _ _ (show (160012 : ℕ) ≠ 160025 by omega)]
-        rw [k4r _ (by omega), g2, hf]; omega
+        rw [k4r _ by_o, g2, hf]; omega
       · rw [r11', h19] at hB
         obtain ⟨c6, k6, e6, hk6, hw6, h12', h13', k6r, hm6, hrr6, hrm6, ho6⟩ : ∃ c6 k6, Exec P W
             (block [.copyN 160013 160017, .copyN 160012 160016]) c4 c6 k6 ∧ k6 = 2 ∧
             WordsBounded W c6 ∧ c6.nreg 160012 = g + 1 ∧ c6.nreg 160013 = x / 2 ^ g / 2 ∧
             (∀ r, r ≠ 160012 → r ≠ 160013 → c6.nreg r = c4.nreg r) ∧ c6.nmem = c.nmem ∧
             c6.rreg = c.rreg ∧ c6.rmem = c.rmem ∧ c6.output = c.output := by
-          have q17 : c4.nreg 160017 = x / 2 ^ g / 2 := by rw [k4r _ (by omega)]; exact h17
+          have q17 : c4.nreg 160017 = x / 2 ^ g / 2 := by rw [k4r _ by_o]; exact h17
           have q16 : c4.nreg 160016 = g + 1 := by
-            rw [k4r _ (by omega), k2r _ (by omega) (by omega)]; exact h16
+            rw [k4r _ by_o, k2r _ by_o by_o]; exact h16
           exec_block
           refine ⟨rfl, ‹_›, by config_simp; exact q16, by config_simp; exact q17,
             fun r a1 a2 => ?_, hm4, hrr4, hrm4, ho4⟩
           simp only [Machine.upd_apply]
           split_ifs <;> first | omega
         refine ⟨c6, _, .seq e1 (.ifLtN_true
-          (by rw [h16, k1 _ (by omega), r26]; exact hA) (.seq e2 (.ifLtN_false
-          (by rw [h18, t13]; omega) (.seq e4 (.ifLtN_false (by rw [r11', h19]; exact hB) e6))))),
+          (by rwa [h16, k1 _ by_o, r26]) (.seq e2 (.ifLtN_false
+          (by rw [h18, t13]; omega) (.seq e4 (.ifLtN_false (by rwa [r11', h19]) e6))))),
           ⟨fun r hr' => ?_, by rw [hm6, hm], by rw [hrr6, hrr], by rw [hrm6, hrm], by rw [ho6, ho],
             ?_, ?_, ?_, Or.inl ?_⟩, ?_⟩
-        · unfold AscRG at hr'; rw [k6r r (by omega) (by omega), fr4 r (by unfold AscRG; omega)]
+        · unfold AscRG at hr'; rw [k6r r by_o by_o, fr4 r (by unfold AscRG; omega)]
           exact hr r (by unfold AscRG; omega)
         · rw [h12']; omega
-        · rw [h12']; exact ⟨hdv, by omega⟩
+        · rw [h12']; exact ⟨hdv, by_o⟩
         · rw [h13', h12', div_succ]
-        · rw [k6r _ (by omega) (by omega), k4r _ (by omega), k2r _ (by omega) (by omega),
-            k1 _ (by omega)]; exact hf
-        · rw [h12', k6r _ (by omega) (by omega), k4r _ (by omega), k2r _ (by omega) (by omega),
-            k1 _ (by omega), hf]
+        · rwa [k6r _ by_o by_o, k4r _ by_o, k2r _ by_o by_o,
+            k1 _ by_o]
+        · rw [h12', k6r _ by_o by_o, k4r _ by_o, k2r _ by_o by_o,
+            k1 _ by_o, hf]
           omega
-  · rw [h16, k1 _ (by omega), r26] at hA
+  · rw [h16, k1 _ by_o, r26] at hA
     have fr1 : ∀ r, ¬ AscRG r → c1.nreg r = c.nreg r := fun r hr' => by
-      unfold AscRG at hr'; rw [k1 r (by omega)]
+      unfold AscRG at hr'; rw [k1 r by_o]
     obtain ⟨e3, hI3⟩ := stop c1 e1.wb_right fr1 rfl rfl rfl rfl
-      (by rw [k1 _ (by omega)]) (by rw [k1 _ (by omega)]; exact hq)
+      (by rw [k1 _ by_o]) (by rwa [k1 _ by_o])
       (nextG_eq_of hgl hok (fun h => by omega))
     refine ⟨_, _, .seq e1 (.ifLtN_false
-      (by rw [h16, k1 _ (by omega), r26]; exact hA) e3), hI3, ?_⟩
+      (by rwa [h16, k1 _ by_o, r26]) e3), hI3, ?_⟩
     simp only [Machine.upd_same,
       Machine.upd_other _ _ _ (show (160012 : ℕ) ≠ 160025 by omega)]
-    rw [k1 _ (by omega), hf]; omega
+    rw [k1 _ by_o, hf]; omega
 
 set_option maxHeartbeats 4000000 in
 /-- **The greedy grade on the RAM.** -/
@@ -299,7 +299,7 @@ theorem forN {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (n B : �
       rw [hri, hrn] at htest
       obtain ⟨c', k, e, hk, h'⟩ := hbody j c htest h
       obtain ⟨-, hri', -⟩ := hI (j + 1) c' h'
-      refine ⟨c', k, e, ⟨j + 1, h', by omega⟩, ?_⟩
+      refine ⟨c', k, e, ⟨j + 1, h', by_o⟩, ?_⟩
       rw [hri, hri']
       have : (B + 2) * (n - j) = (B + 2) * (n - (j + 1)) + (B + 2) := by
         rw [← Nat.mul_succ]; congr 1; omega

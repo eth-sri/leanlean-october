@@ -33,16 +33,16 @@ theorem forLoop {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (Kb 
     ∃ c' k, Exec P W (.whileLtN ir nr body) c c' k ∧ Inv N c' ∧ k ≤ (Kb + 2) * (N - j) + 2 := by
   induction hn : N - j generalizing j c with
   | zero =>
-    have hjN : j = N := by omega
+    have hjN : j = N := by_o
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by_o⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    have hlt : j < N := by omega
+    have hlt : j < N := by_o
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
-    obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_⟩
+    obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ by_o by_o
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwa [h1, h2]) e₁ e₂, hI', ?_⟩
     rw [Nat.mul_succ]
     omega
 
@@ -56,16 +56,16 @@ theorem forLoopSum {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (
       k ≤ (∑ i ∈ Finset.Ico j N, (f i + 2)) + 2 := by
   induction hn : N - j generalizing j c with
   | zero =>
-    have hjN : j = N := by omega
+    have hjN : j = N := by_o
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by simp⟩
+    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by_s⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    have hlt : j < N := by omega
+    have hlt : j < N := by_o
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁⟩ := hbody j c hlt hc
-    obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_⟩
+    obtain ⟨c', k₂, e₂, hI', hk₂⟩ := ih hI₁ by_o by_o
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwa [h1, h2]) e₁ e₂, hI', ?_⟩
     rw [Finset.sum_eq_sum_Ico_succ_bot hlt]
     omega
 

@@ -44,11 +44,11 @@ theorem gradeGran_succ_le {n g : ℕ} (hn : 2 ≤ n) (hg : g ≤ topGrade n) :
   have h2 := two_pow_le_of_le_top hn hg
   have hp := two_pow_le_of_le_top hn (le_refl (topGrade n))
   have hsq := sq_le_two_pow g
-  have hgp : 2 ^ g ≤ 2 ^ topGrade n := Nat.pow_le_pow_right (by norm_num) hg
+  have hgp : 2 ^ g ≤ 2 ^ topGrade n := Nat.pow_le_pow_right by_n hg
   have hcb : Cost.ceilBeta (g + 1) ≤ g + 1 := Cost.ceilBeta_le _
-  have h3 : 2 ^ Cost.ceilBeta (g + 1) ≤ 2 ^ (g + 1) := Nat.pow_le_pow_right (by norm_num) hcb
+  have h3 : 2 ^ Cost.ceilBeta (g + 1) ≤ 2 ^ (g + 1) := Nat.pow_le_pow_right by_n hcb
   have hcl : Nat.clog 2 (g + 1) ≤ g + 1 := Nat.clog_le_of_le_pow Nat.lt_two_pow_self.le
-  have h4 : (g + 1) * (Nat.clog 2 (g + 1) + 2) ≤ (g + 3) ^ 2 := by nlinarith
+  have h4 : (g + 1) * (Nat.clog 2 (g + 1) + 2) ≤ (g + 3) ^ 2 := by_nl
   unfold gradeGran fuseLoss
   rw [pow_succ 2 g] at h3
   have hg2 : g ≤ 2 ^ g := Nat.lt_two_pow_self.le
@@ -80,14 +80,14 @@ theorem gradesL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB :
     (∀ a, a < A0 → c'.nmem a = c.nmem a) ∧ (∀ a, a < A0 → c'.rmem a = c.rmem a) ∧
     c'.output = c.output ∧ (∀ r, GK r → c'.nreg r = c.nreg r) ∧
     (∀ r, OutB (bandOf r) → c'.rreg r = c.rreg r)
-  have hI0 : I c := ⟨0, h, R, by omega, hw, hI, by omega, by simp [hA0],
+  have hI0 : I c := ⟨0, h, R, by_o, hw, hI, by_o, by simp [hA0],
     fun _ _ => rfl, fun _ _ => rfl, rfl, fun _ _ => rfl, fun _ _ => rfl⟩
   have hsplit : ∀ g, g < p + 1 → ∑ j ∈ Finset.Ico g (p + 1), F j =
       F g + ∑ j ∈ Finset.Ico (g + 1) (p + 1), F j := fun g hg =>
     Finset.sum_eq_sum_Ico_succ_bot hg F
   have htot : ∀ g, g ≤ p + 1 → ∑ j ∈ Finset.range g, F j + ∑ j ∈ Finset.Ico g (p + 1), F j =
       upT κB κL κG O.κ P.n := fun g hg => by
-    unfold upT; rw [← hp_def, ← hF, Finset.range_eq_Ico, Finset.sum_Ico_consecutive _ (by omega) hg,
+    unfold upT; rw [← hp_def, ← hF, Finset.range_eq_Ico, Finset.sum_Ico_consecutive _ by_o hg,
       Finset.range_eq_Ico]
   obtain ⟨c', k, e, ⟨g, h', R', hgp, hw', hI', a1, a2, mm, mr, mo, fr, frr⟩, htest, hk, hψ⟩ :=
     whileLtN_potential_lb' (P := P) (W := W) (a := 170007) (b := 170006)
@@ -96,24 +96,24 @@ theorem gradesL_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ} (hB :
       (fun c' => c'.nreg ALLOC) (fun c' ⟨_, _, _, _, h, _⟩ => h)
       (fun c2 ⟨g, h2, R2, hgp, hw2, hI2, a1, a2, mm, mr, mo, fr, frr⟩ htest => by
         rw [hI2.1.r07, hI2.2.2.2.2.1] at htest
-        have hg : g ≤ p := by omega
-        have hsum := htot g (by omega)
+        have hg : g ≤ p := by_o
+        have hsum := htot g by_o
         have hs := hsplit g htest
         have hFg : F g = gradeC κB κL κG O.κ P.n g + stepB κB κL κG O.κ g + 10 := rfl
         obtain ⟨c3, k3, h3, R3, e3, hk3, hw3, b1, b2, hI3, m3, r3, o3, f3, ff3⟩ :=
-          gradeB_exec (O := O) hB hL hGr hV hG hWh hn hw2 hI2 hg (by omega)
+          gradeB_exec (O := O) hB hL hGr hV hG hWh hn hw2 hI2 hg by_o
             (by have := gradeGran_succ_le hn hg; unfold hostWords at hWh; omega)
-        refine ⟨c3, k3, e3, ⟨g + 1, h3, R3, by omega, hw3, hI3, by omega, ?_,
-          fun a ha => by rw [m3 a (by omega), mm a ha],
-          fun a ha => by rw [r3 a (by omega), mr a ha], by rw [o3, mo],
+        refine ⟨c3, k3, e3, ⟨g + 1, h3, R3, by_o, hw3, hI3, by_o, ?_,
+          fun a ha => by rw [m3 a by_o, mm a ha],
+          fun a ha => by rw [r3 a by_o, mr a ha], by rw [o3, mo],
           fun r hr => by rw [f3 r hr, fr r hr], fun r hr => by rw [ff3 r hr, frr r hr]⟩, ?_,
-          by omega⟩
+          by_o⟩
         · rw [Finset.sum_range_succ]; omega
         · rw [hI3.1.r07, hI2.1.r07]; omega) hI0
   have hgp' : g = p + 1 := by rw [hI'.1.r07, hI'.2.2.2.2.1] at htest; omega
   subst hgp'
-  refine ⟨c', k, h', R', e, ?_, hw', a1, by omega, hI', mm, mr, mo, fr, frr⟩
-  have := htot 0 (by omega)
+  refine ⟨c', k, h', R', e, ?_, hw', a1, by_o, hI', mm, mr, mo, fr, frr⟩
+  have := htot 0 by_o
   rw [hI.1.r07] at hk
   simp only [Finset.range_zero, Finset.sum_empty, zero_add] at this
   omega

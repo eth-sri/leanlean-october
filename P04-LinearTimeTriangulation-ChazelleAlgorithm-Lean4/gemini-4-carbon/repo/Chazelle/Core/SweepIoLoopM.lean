@@ -30,12 +30,12 @@ theorem qPt_end {J : Merge.Junction} {P : Polygon} {N₂ : NF} (hN : IsNF (chain
   have hget : (sweepEndQ N₂.chords ++ L₁).getD j (0, 0, 0) =
       (let r := N₂.chords.getD (j / 2) ⟨0, 0, 0, 0, 0⟩
        if j % 2 = 0 then (r.lp, r.h + 1, 1) else (r.rp, r.h + 1, 0)) := by
-    rw [List.getD_eq_getElem?_getD, List.getElem?_append_left (by rw [hlen]; exact hj)]
+    rw [List.getD_eq_getElem?_getD, List.getElem?_append_left (by rwa [hlen])]
     simp only [sweepEndQ, List.getElem?_map, List.getElem?_range (show j < 2 * N₂.chords.length
       from hj), Option.map_some, Option.getD_some]
   unfold qPt
   rw [hget]
-  have hsc : sideChain J 1 = J.right := by unfold sideChain; rw [ite_eq_right (by norm_num)]
+  have hsc : sideChain J 1 = J.right := by unfold sideChain; rw [ite_eq_right by_n]
   rw [hsc]
   unfold endPos NF.chord CRec.lpos CRec.rpos
   by_cases h : j % 2 = 0 <;> simp [h]

@@ -96,7 +96,7 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     have h1 := (hA.map (firstOf g m hA.first_lt v)).2.2
     have h2 := hA.first_v v v.2
     simp only [firstOf] at h1 ⊢
-    rw [← h1]; exact h2
+    rwa [← h1]
   · rcases x with d | d | d
     · show m (g.base 11 + d) = (M.opp d : ℕ)
       exact (hB1.so d).1
@@ -113,8 +113,7 @@ theorem sfacts_of {g : GV} {F : Type} [Fintype F] [DecidableEq F]
       rw [← Nat.add_assoc]; exact (hB1.sf d).2.2
   · unfold upTf; rw [dite_eq_left v.2]
   · have := hA.pv ⟨x, hx⟩; simp only at this
-    show m (g.base 6 + x) = upTf T x
-    unfold upTf; rw [dite_eq_left hx]; exact this
+    unfold upTf; rwa [dite_eq_left hx]
   · have hlvv := hlv _ (hA.lev_lt v)
     obtain ⟨hb, ht, -, -⟩ := hlvv
     simp only [slabN, dite_eq_left v.2, dite_eq_left x.2] at hvx

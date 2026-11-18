@@ -63,15 +63,15 @@ theorem tile_mono (h : Tile n a b q s e) :
   | zero =>
     intro hi
     have h0 : unwrapK n a (s 0) = a := by rw [h.s0, unwrapK_self]
-    refine ⟨by rw [h0], by rw [h0]; exact hub, ?_⟩
-    exact hlast 0 hi (by rw [h0]) (by rw [h0]; exact hub)
+    refine ⟨by rw [h0], by rwa [h0], ?_⟩
+    exact hlast 0 hi (by rw [h0]) (by rwa [h0])
   | succ i ih =>
     intro hi
-    obtain ⟨h1, h2, h3, -⟩ := ih (by omega)
-    have hn := (cyc_unwrap h.ha (h.hs i (by omega)) h.hb (h.he i (by omega)) h2).1
+    obtain ⟨h1, h2, h3, -⟩ := ih by_o
+    have hn := (cyc_unwrap h.ha (h.hs i by_o) h.hb (h.he i by_o) h2).1
       (h.hin i hi)
     rw [← h.hse i hi]
-    refine ⟨by linarith, hn.2, ?_⟩
+    refine ⟨by_l, hn.2, ?_⟩
     have := hlast (i + 1) hi (by rw [← h.hse i hi]; linarith) (by rw [← h.hse i hi]; exact hn.2)
     rw [← h.hse i hi] at this
     exact this
@@ -84,7 +84,7 @@ theorem tile_cover (h : Tile n a b q s e) {x : ℝ} (_hx : 0 ≤ x ∧ x < n)
   -- the last piece starting at or before `x`
   classical
   have hex : ∃ i, i < q ∧ unwrapK n a (s i) ≤ unwrapK n a x := ⟨0, h.hq, by
-    rw [h.s0, unwrapK_self]; exact hxa⟩
+    rwa [h.s0, unwrapK_self]⟩
   let i := Nat.findGreatest (fun i => i < q ∧ unwrapK n a (s i) ≤ unwrapK n a x) q
   have hi : i < q ∧ unwrapK n a (s i) ≤ unwrapK n a x := by
     obtain ⟨j, hj, hj'⟩ := hex
@@ -109,7 +109,7 @@ theorem tile_inner (h : Tile n a b q s e) {i : ℕ} (hi : i < q) {y : ℝ} (hy :
   have hub := unwrap_b h
   have := (cyc_unwrap h.ha (h.hs i hi) (h.he i hi) hy h3).1 hiy
   have ha0 : unwrapK n a a = a := unwrapK_self
-  exact (cyc_unwrap h.ha h.ha h.hb hy (by rw [ha0]; exact hub)).2
+  exact (cyc_unwrap h.ha h.ha h.hb hy (by rwa [ha0])).2
     ⟨by rw [ha0]; linarith [this.1], by linarith [this.2]⟩
 
 end

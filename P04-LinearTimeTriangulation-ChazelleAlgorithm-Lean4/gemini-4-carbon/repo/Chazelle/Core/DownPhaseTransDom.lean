@@ -65,7 +65,7 @@ theorem Top.filled_below_top (hQ : Q.Simple) (T : Top Q C) {z : Point} (hz : z �
     z.2 ≤ C.top.2 := by
   by_contra hlt
   push Not at hlt
-  set L : ℝ := coordBound Q + |z.2| + 1 with hL
+  set L := coordBound Q + |z.2| + 1 with hL
   have hL0 : 0 ≤ L := by rw [hL]; have := abs_nonneg z.2; have := C.coordBound_nonneg; rw [T.hP] at this; linarith
   set f : ℝ → Point := fun t => (z.1, z.2 + t) with hf
   have hpre : IsPreconnected (f '' Icc 0 L) :=
@@ -97,7 +97,7 @@ theorem Top.interior_sub_dom (hQ : Q.Simple) (T : Top Q C) :
     exact ⟨lt_of_le_of_lt hsq.1 this, lt_of_le_of_lt hsq.2 this⟩
   · obtain ⟨h1, h2, -⟩ := C.mem_slit_iff.1 hs
     have h3 := T.filled_below_top hQ hzf
-    have hzt : z = C.top := Prod.ext h1 (le_antisymm h3 h2)
+    have hzt := Prod.ext h1 (le_antisymm h3 h2)
     exact hzb (T.set_sub (hzt ▸ C.top_mem_set))
 
 /-- The last edge of `Q`. -/
@@ -112,12 +112,12 @@ theorem Top.boundary_dom (T : Top Q C) {z : Point} (hz : z ∈ Q.boundary) (hzD 
   obtain ⟨i, hi, hzi⟩ := hz
   have him : i = C.m := by
     by_contra h
-    exact hzs ⟨i, by have := T.hm; omega, by rw [T.chainEdge_eq' (by have := T.hm; omega)]; exact hzi⟩
+    exact hzs ⟨i, by have := T.hm; omega, by rwa [T.chainEdge_eq' (by have := T.hm; omega)]⟩
   subst him
   rw [T.last_edge] at hzi
   obtain ⟨s, hs0, hs1, rfl⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 hzi
   have hm0 : C.vertex C.m = Q.vtx C.m := T.vertex_eq (by have := T.hm; omega)
-  have h00 : C.vertex 0 = Q.vtx 0 := T.vertex_eq T.n_pos
+  have h00 := T.vertex_eq T.n_pos
   refine ⟨s, ⟨?_, ?_⟩, rfl⟩
   · rcases hs0.lt_or_eq with h | h
     · exact h

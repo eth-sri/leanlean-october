@@ -29,11 +29,11 @@ theorem chordListAt_of_seg {m m' : ℕ → ℕ} {B A : ℕ} {L : List (ℕ × �
     exact this
   obtain ⟨h1, h2, h3⟩ := h i hi
   refine ⟨?_, ?_, ?_⟩
-  · rw [e (3 * i) (by omega)]; exact h1
-  · rw [show A + 3 * i + 1 = A + (3 * i + 1) by ring, e _ (by omega),
-      show B + (3 * i + 1) = B + 3 * i + 1 by ring]; exact h2
-  · rw [show A + 3 * i + 2 = A + (3 * i + 2) by ring, e _ (by omega),
-      show B + (3 * i + 2) = B + 3 * i + 2 by ring]; exact h3
+  · rwa [e (3 * i) by_o]
+  · rwa [show A + 3 * i + 1 = A + (3 * i + 1) by ring, e _ by_o,
+      show B + (3 * i + 1) = B + 3 * i + 1 by ring]
+  · rwa [show A + 3 * i + 2 = A + (3 * i + 2) by ring, e _ by_o,
+      show B + (3 * i + 2) = B + 3 * i + 2 by ring]
 
 /-- A chord list is the concatenation of its two parts. -/
 theorem chordListAt_append {m : ℕ → ℕ} {A : ℕ} {L L₂ : List (ℕ × ℕ × ℕ)}
@@ -43,7 +43,7 @@ theorem chordListAt_append {m : ℕ → ℕ} {A : ℕ} {L L₂ : List (ℕ × �
   rw [List.length_append] at hi
   rcases Nat.lt_or_ge i L.length with h | h
   · rw [List.getD_append _ _ _ _ h]; exact h₁ i h
-  · obtain ⟨a1, a2, a3⟩ := h₂ (i - L.length) (by omega)
+  · obtain ⟨a1, a2, a3⟩ := h₂ (i - L.length) by_o
     rw [List.getD_append_right _ _ _ _ h]
     refine ⟨?_, ?_, ?_⟩
     · rw [← a1]; congr 1; omega
@@ -55,12 +55,12 @@ def BsA (r : ℕ) : Bool :=
   decide (210025 ≤ r ∧ r ≤ 210029) || decide (r = 210034) || decide (210060 ≤ r ∧ r ≤ 210067) ||
     decide (r = 9999)
 
-theorem wrM_spl0 : wrM BsA spl0 = true := by decide
+theorem wrM_spl0 : wrM BsA spl0 = true := by_d
 
 /-- The registers `spl1` writes. -/
 def Bs1 (r : ℕ) : Bool := decide (210061 ≤ r ∧ r ≤ 210063)
 
-theorem wrM_spl1 : wrM Bs1 spl1 = true := by decide
+theorem wrM_spl1 : wrM Bs1 spl1 = true := by_d
 
 theorem FrameM.of_s1 {c c' : Config} (h : FrameM Bs1 c c') : FrameM BsA c c' :=
   h.mono fun r hr => by
@@ -107,47 +107,47 @@ theorem splA_exec (c : Config) (hw : WordsBounded W c) {B K B₂ K₂ : ℕ}
   have f₁ := exec_frameM e₁ wrM_spl0
   -- copy `L`
   obtain ⟨c₂, k₂, e₂, hk₂, w₂, hs₂, hm₂, f₂⟩ := cpS_exec (P := P) e₁.wb_right v61 v62 v63 v34
-    (Or.inl (by omega)) (by omega) (by omega)
-  have g₂ : ∀ r, Bcp r = false → c₂.nreg r = c₁.nreg r := f₂.1
+    (Or.inl by_o) by_o by_o
+  have g₂ := f₂.1
   -- the second copy's arguments
   obtain ⟨c₃, k₃, e₃, hk₃, w61, w62, w63, hm₃⟩ : ∃ c₃ k₃, Exec P W spl1 c₂ c₃ k₃ ∧ k₃ = 4 ∧
       c₃.nreg 210061 = 3 * K₂ ∧ c₃.nreg 210062 = B₂ ∧ c₃.nreg 210063 = A₀ + 3 * K ∧
       c₃.nmem = c₂.nmem := by
-    have h21' : c₂.nreg 210021 = K₂ := by rw [g₂ _ (by decide), f₁.1 _ (by decide), h21]
-    have h20' : c₂.nreg 210020 = B₂ := by rw [g₂ _ (by decide), f₁.1 _ (by decide), h20]
-    have h26' : c₂.nreg 210026 = A₀ := by rw [g₂ _ (by decide), v26]
-    have h67' : c₂.nreg 210067 = 3 * K := by rw [g₂ _ (by decide), v67]
+    have h21' : c₂.nreg 210021 = K₂ := by rw [g₂ _ by_d, f₁.1 _ by_d, h21]
+    have h20' : c₂.nreg 210020 = B₂ := by rw [g₂ _ by_d, f₁.1 _ by_d, h20]
+    have h26' : c₂.nreg 210026 = A₀ := by rw [g₂ _ by_d, v26]
+    have h67' : c₂.nreg 210067 = 3 * K := by rw [g₂ _ by_d, v67]
     unfold spl1
     exec_block
     all_goals try (config_simp; (try simp only [h21', h20', h26', h67']); omega)
     refine ⟨rfl, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> (try simp only [h21', h20', h26', h67']);
       omega
   have f₃ := exec_frameM e₃ wrM_spl1
-  have g₃ : ∀ r, Bs1 r = false → c₃.nreg r = c₂.nreg r := f₃.1
+  have g₃ := f₃.1
   -- copy `L₂`
   obtain ⟨c₄, k₄, e₄, hk₄, w₄, hs₄, hm₄, f₄⟩ := cpS_exec (P := P) e₃.wb_right w61 w62 w63
-    (by rw [g₃ _ (by decide), g₂ _ (by decide), v34]) (Or.inl (by omega)) (by omega) (by omega)
-  have g₄ : ∀ r, Bcp r = false → c₄.nreg r = c₃.nreg r := f₄.1
+    (by rw [g₃ _ by_d, g₂ _ by_d, v34]) (Or.inl by_o) by_o by_o
+  have g₄ := f₄.1
   have k : ∀ r, Bcp r = false → Bs1 r = false → c₄.nreg r = c₁.nreg r := fun r h1 h2 => by
     rw [g₄ r h1, g₃ r h2, g₂ r h1]
-  refine ⟨c₄, k₁ + (k₂ + (k₃ + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega, w₄,
-    by rw [k _ (by decide) (by decide)]; exact v25, by rw [k _ (by decide) (by decide)]; exact v26,
-    by rw [k _ (by decide) (by decide)]; exact v27, by rw [k _ (by decide) (by decide)]; exact v28,
-    by rw [k _ (by decide) (by decide)]; exact v29, by rw [k _ (by decide) (by decide)]; exact v34,
-    by rw [k _ (by decide) (by decide)]; exact vA, ?_, fun a ha => ?_,
+  refine ⟨c₄, k₁ + (k₂ + (k₃ + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), by_o, w₄,
+    by rwa [k _ by_d by_d], by rwa [k _ by_d by_d],
+    by rwa [k _ by_d by_d], by rwa [k _ by_d by_d],
+    by rwa [k _ by_d by_d], by rwa [k _ by_d by_d],
+    by rwa [k _ by_d by_d], ?_, fun a ha => ?_,
     ((f₁.trans (FrameM.of_cp f₂)).trans (FrameM.of_s1 f₃)).trans (FrameM.of_cp f₄), ?_⟩
   · refine chordListAt_append (chordListAt_of_seg hL ?_) (chordListAt_of_seg hL₂ ?_)
     · rw [← hK]
       rw [seg_congr (m := c₄.nmem) (m' := c₂.nmem) fun i hi => by
-        rw [hm₄ _ (Or.inl (by omega)), hm₃]]
+        rw [hm₄ _ (Or.inl by_o), hm₃]]
       rw [hs₂, hm₁]
     · rw [← hK, ← hK₂, hs₄, hm₃]
       apply seg_congr; intro i hi
-      rw [hm₂ _ (Or.inl (by omega)), hm₁]
-  · rw [hm₄ _ (Or.inl (by omega)), hm₃, hm₂ _ (Or.inl (by omega)), hm₁]
+      rw [hm₂ _ (Or.inl by_o), hm₁]
+  · rw [hm₄ _ (Or.inl by_o), hm₃, hm₂ _ (Or.inl by_o), hm₁]
   · funext r
     exact exec_frameM2 (.seq e₁ (.seq e₂ (.seq e₃ e₄))) (BN := BsA) (BR := fun _ => false)
-      (by decide) r rfl
+      by_d r rfl
 
 end exec
 

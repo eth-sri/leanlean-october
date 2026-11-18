@@ -51,7 +51,7 @@ theorem rest_answer {B : BookData} (X : MainCtx P C V N B m) {z : Point} (hs : S
   rcases tr with ⟨hab, h0⟩ | ⟨hab, t, hpart, hf, hdg, h1, h2⟩ |
       ⟨hab, t, hpart, hnd, bD, hD, hbD, pk, hloc, hbest, hb, o5, o6⟩
   · refine ⟨fun h => by rw [h0] at h; omega, fun _ => noHit_of_above C ?_ _⟩
-    rw [hs.zy, ← hT.top]; exact hab
+    rwa [hs.zy, ← hT.top]
   · exact deg_answer X.ch hs hpart hf hdg h1 h2
   · obtain ⟨q1, q2⟩ := main_answer X hs hab hpart hnd hD hbD hloc hbest
     obtain ⟨hb1, hb2⟩ := hb
@@ -78,7 +78,7 @@ theorem rest_answer {B : BookData} (X : MainCtx P C V N B m) {z : Point} (hs : S
         rw [hQn] at hsp ⊢
         have hn2 : 2 ≤ P.n := by
           have := C.add_one_le; have := C.one_le; rw [hv.CQ, hQn] at *; omega
-        exact xe_mem_edge hT (Nat.mod_lt _ (by omega)) hsp hn2
+        exact xe_mem_edge hT (Nat.mod_lt _ by_o) hsp hn2
     · rw [o5] at hf
       have hbo : bestOf c' = none := by unfold bestOf; rw [ite_eq_right hf]
       exact q2 hbo

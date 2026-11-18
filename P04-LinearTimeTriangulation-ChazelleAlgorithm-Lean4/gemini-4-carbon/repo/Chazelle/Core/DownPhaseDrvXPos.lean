@@ -61,21 +61,21 @@ theorem cyc_end {n a b x y : ℝ} (hxy : x ≠ y) (hx0 : 0 ≤ x) (hxn : x < n) 
     unfold sideInArc at hnot hpt
     by_cases hab : a < b
     · simp only [ite_eq_left hab] at hnot hpt
-      obtain ⟨z, -, hz2, hz3, -⟩ := hpt (y - 1) (by linarith)
-      have hay : a < y := lt_trans hz3 hz2
+      obtain ⟨z, -, hz2, hz3, -⟩ := hpt (y - 1) by_l
+      have hay := lt_trans hz3 hz2
       have hby : b < y := by
         rcases lt_or_ge b y with h | h
         · exact h
-        · exact absurd ⟨hay, lt_of_le_of_ne h (by intro e; exact hyb (by linarith))⟩ hnot
+        · exact absurd ⟨hay, lt_of_le_of_ne h (by intro e; exact hyb by_l)⟩ hnot
       obtain ⟨z, hz1, -, -, hz4⟩ := hpt b hby
       linarith
     · simp only [ite_eq_right hab] at hnot hpt
       push Not at hnot
-      have hby : b < y := lt_of_le_of_ne hnot.2 (by intro e; exact hyb (by linarith))
+      have hby : b < y := lt_of_le_of_ne hnot.2 (by intro e; exact hyb by_l)
       obtain ⟨z, hz1, hz2, hz3⟩ := hpt b hby
       rcases hz3 with h | h <;> linarith [hnot.1]
   · subst hy
-    have hx : 0 < x := lt_of_le_of_ne hx0 (Ne.symm hxy)
+    have hx := lt_of_le_of_ne hx0 (Ne.symm hxy)
     unfold sideInArc at hnot
     by_cases hab : a < b
     · have hz := hsub ((max x b + n) / 2) (by have := le_max_left x b; linarith)
@@ -112,8 +112,8 @@ theorem pEdge_rep (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) {li
     (hli : li = true ↔ Mountain.LeftInside Q) (hdh : DistinctHeights Q) {ι : ℕ}
     (hι : ι < nk (interiorModel Q) S R) {s : SymPt} (hs : RepPt li Q S R ι s) :
     pEdge li Q.n s = ⌊hk (interiorModel Q) S R ι⌋₊ := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
-  have hn3 : 3 ≤ Q.n := Chazelle.Jordan.simple_three_le hQ
+  have hM := walkAx_interiorModel hQ
+  have hn3 := Chazelle.Jordan.simple_three_le hQ
   have hb := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hι)
   have hW : (interiorModel Q).W = interiorWalk Q := rfl
   rw [hW, walk_n] at hb
@@ -122,7 +122,7 @@ theorem pEdge_rep (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) {li
   have hp : ⌊κ⌋₊ < Q.n := by
     have : (⌊κ⌋₊ : ℝ) < Q.n := lt_of_le_of_lt (Nat.floor_le hb.1) hb.2
     exact_mod_cast this
-  have hp1 : (⌊κ⌋₊ + 1) % Q.n < Q.n := Nat.mod_lt _ (by omega)
+  have hp1 : (⌊κ⌋₊ + 1) % Q.n < Q.n := Nat.mod_lt _ by_o
   -- consecutive walk vertices have distinct heights
   have hd : (Q.vtx (ivB li Q.n ⌊κ⌋₊)).2 ≠ (Q.vtx (ivB li Q.n ((⌊κ⌋₊ + 1) % Q.n))).2 := by
     refine hdh _ _ (ivB_lt li hp) (ivB_lt li hp1) fun h' => ?_
@@ -133,7 +133,7 @@ theorem pEdge_rep (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) {li
   rcases hs with ⟨-, rfl⟩ | ⟨-, h, hhn, hy, (⟨hint, -, rfl⟩ | ⟨hnot, rfl⟩)⟩
   · exact ivB_ivB li hp
   · -- an arc end at a vertex, written with the previous edge
-    have hprev : (⌊κ⌋₊ + Q.n - 1) % Q.n < Q.n := Nat.mod_lt _ (by omega)
+    have hprev : (⌊κ⌋₊ + Q.n - 1) % Q.n < Q.n := Nat.mod_lt _ by_o
     have hsucc : ((⌊κ⌋₊ + Q.n - 1) % Q.n + 1) % Q.n = ⌊κ⌋₊ := by
       have := succ_prevIdx (N := Q.n) hp; unfold prevIdx at this; exact this
     simp only [pEdge]
@@ -154,17 +154,17 @@ theorem pEdge_rep (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S) {li
     unfold hostPt sidePt at hy
     rw [hW, walk_n, DownMath.walk_vtx hli hp, DownMath.walk_vtx hli hp1, Chazelle.Geometry.lerp_snd] at hy
     have : (1 - (κ - ⌊κ⌋₊)) * ((Q.vtx (ivB li Q.n ⌊κ⌋₊)).2 -
-        (Q.vtx (ivB li Q.n ((⌊κ⌋₊ + 1) % Q.n))).2) = 0 := by linarith
+        (Q.vtx (ivB li Q.n ((⌊κ⌋₊ + 1) % Q.n))).2) = 0 := by_l
     rcases mul_eq_zero.1 this with h0 | h0
     · linarith
-    · exact hd (by linarith)
+    · exact hd by_l
 
 /-- **The parameter of an interior walk position** from its point. -/
 theorem iparam {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) (hdh : DistinctHeights Q)
     (hn : 2 ≤ Q.n) {q : ℕ} (hq : q < Q.n) {τ : ℝ} {h : ℕ}
     (hz : (sidePt (interiorWalk Q) q τ).2 = (Q.vtx h).2) :
     (interiorModel Q).param Q ⟨q, h + 1⟩ = τ := by
-  have hq1 : (q + 1) % Q.n < Q.n := Nat.mod_lt _ (by omega)
+  have hq1 : (q + 1) % Q.n < Q.n := Nat.mod_lt _ by_o
   have hd : (Q.vtx (ivB li Q.n q)).2 ≠ (Q.vtx (ivB li Q.n ((q + 1) % Q.n))).2 := by
     refine hdh _ _ (ivB_lt li hq) (ivB_lt li hq1) fun h' => ?_
     have := ivB_inj li hq hq1 h'
@@ -182,7 +182,7 @@ theorem iparam {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) (hdh : Di
     else ((Q.vtx h).2 - ((interiorModel Q).wa q).2) /
       (((interiorModel Q).wb q).2 - ((interiorModel Q).wa q).2)) = τ
   rw [ha, hb, ite_eq_right hd]
-  have hne : (Q.vtx (ivB li Q.n ((q + 1) % Q.n))).2 - (Q.vtx (ivB li Q.n q)).2 ≠ 0 :=
+  have hne :=
     sub_ne_zero.2 (Ne.symm hd)
   rw [div_eq_iff hne]
   linarith
@@ -215,16 +215,16 @@ theorem not_attach_flat {y a b : ℝ} (hab : a < b) {q : ℕ} (hq : q < xK) {t :
     (hflat : ((xG).vtx q).2 = ((xG).vtx ((q + 1) % xK)).2)
     (hA : SideAttach xG (hseg y a b) q t) : False := by
   have hne : (xG).vtx q ≠ (xG).vtx ((q + 1) % (xG).n) :=
-    Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rw [Y.gn]; exact hq)
+    Chazelle.Jordan.simple_vtx_succ_ne Y.gSimple (by rwa [Y.gn])
   obtain ⟨-, -, -, hmem, rA, hrA, hsec⟩ := hA
   obtain ⟨x, hxc, hxne, hxd⟩ := Extract.exists_near_mem hab hmem hrA
   have hx := (Chazelle.Chain.sideLeft_edge hne ht x).1 (hsec x hxc hxne hxd)
   rw [Y.gn] at hx
-  have hzy : (sidePt xG q t).2 = y := hmem.1
-  have hxy : x.2 = y := hxc.1
+  have hzy := hmem.1
+  have hxy := hxc.1
   unfold sidePt at hzy
   rw [Y.gn, Chazelle.Geometry.lerp_snd, ← hflat] at hzy
-  have hy : ((xG).vtx q).2 = y := by linarith
+  have hy : ((xG).vtx q).2 = y := by_l
   unfold det at hx
   rw [hxy, ← hflat, hy] at hx
   simp only [sub_self, mul_zero] at hx
@@ -237,7 +237,7 @@ theorem chordGap_flat {ι : ℕ} (hι : ι < xK)
   have h3 := Y.three
   obtain ⟨c', hc', p₁, p₂, t₁, t₂, hA₁, hA₂, e₁, e₂, -⟩ := hC
   obtain ⟨h', -, a, b, rfl⟩ := Y.X.hFam.2.2 c' hc'
-  rw [hostPoly_vtx hι, hostPoly_vtx (Nat.mod_lt _ (by omega)), e₁, e₂,
+  rw [hostPoly_vtx hι, hostPoly_vtx (Nat.mod_lt _ by_o), e₁, e₂,
     hostPt_eq _ hA₁.2.1 hA₁.2.2.1, hostPt_eq _ hA₂.2.1 hA₂.2.2.1, hA₁.2.2.2.1.1, hA₂.2.2.2.1.1]
 
 /-- At a vertex of `G` between two chord gaps no horizontal chord is attached. -/
@@ -253,8 +253,8 @@ theorem not_attach_junction {y a b : ℝ} (hab : a < b) {ι : ℕ} (hι : ι < x
   have hns := FactsInterior.corner_nonSpike Y.gSimple hσ
   unfold Chazelle.Jordan.prevIdx at hns
   rw [Chazelle.Chain.sidePt_zero] at hmem
-  have hzy : ((xG).vtx ι).2 = y := hmem.1
-  have hxy : x.2 = y := hxc.1
+  have hzy := hmem.1
+  have hxy := hxc.1
   unfold prevIdx at h2
   rw [Y.gn] at hns hx
   unfold sideLeftOf at hx

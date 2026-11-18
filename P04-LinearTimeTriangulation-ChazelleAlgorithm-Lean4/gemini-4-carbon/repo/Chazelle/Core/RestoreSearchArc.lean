@@ -99,7 +99,7 @@ theorem ccw_half {B A : Point} (hB : B ≠ 0) (hA : A ≠ 0)
     · exfalso
       -- `A`, `B` parallel with zero dot product: one of them is zero
       have : (B.1 * A.2 - B.2 * A.1) ^ 2 + (B.1 * A.1 + B.2 * A.2) ^ 2 =
-          (B.1 ^ 2 + B.2 ^ 2) * (A.1 ^ 2 + A.2 ^ 2) := by ring
+          (B.1 ^ 2 + B.2 ^ 2) * (A.1 ^ 2 + A.2 ^ 2) := by_r
       rw [hc, hd] at this
       have hBp : 0 < B.1 ^ 2 + B.2 ^ 2 := by
         rcases hB' with h | h <;> positivity
@@ -119,7 +119,7 @@ theorem ccw_half {B A : Point} (hB : B ≠ 0) (hA : A ≠ 0)
             linear_combination X.1 * hx
           rcases hb.lt_or_eq with hb | hb
           · have : B.2 * (X.1 ^ 2 + X.2 ^ 2) < 0 :=
-              mul_neg_of_neg_of_pos hb (by positivity)
+              mul_neg_of_neg_of_pos hb by_p
             by_contra hn; push Not at hn; nlinarith
           · rw [hb] at hx ⊢
             have hB1 : B.1 ≠ 0 := by rcases hB' with h | h; exact h; exact absurd hb h
@@ -144,13 +144,13 @@ theorem ccw_half {B A : Point} (hB : B ≠ 0) (hA : A ≠ 0)
     exfalso
     have e1 : B.2 < 0 ∧ 0 < A.2 ∨ (B.1 * A.2 - B.2 * A.1 ≤ 0) := by
       rcases hE with ⟨-, h1, h2⟩ | ⟨h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩
-      · left; exact ⟨by linarith, by linarith⟩
+      · left; exact ⟨by_l, by_l⟩
       · right; linarith
       · right; linarith
       · right; linarith
     have e2 : 0 < B.2 ∧ A.2 < 0 ∨ (B.1 * A.2 - B.2 * A.1 ≤ 0) := by
       rcases hW with ⟨-, h1, h2⟩ | ⟨h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩
-      · left; exact ⟨by linarith, by linarith⟩
+      · left; exact ⟨by_l, by_l⟩
       · right; linarith
       · right; linarith
       · right; linarith
@@ -174,8 +174,8 @@ theorem attach_ray (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ} 
   rcases hM.attach_endpoint hopen hA' with h | h
   · refine ⟨b, by rw [h]; exact hab.symm, by rw [h]; exact hy.symm, by rw [hcab, h],
       hout b hb, ?_⟩
-    rw [h]; exact hopen
-  · refine ⟨a, by rw [h]; exact hab, by rw [h]; exact hy, by rw [hcab, h, Geometry.segment_comm],
+    rwa [h]
+  · refine ⟨a, by rwa [h], by rwa [h], by rw [hcab, h, Geometry.segment_comm],
       hout a ha, ?_⟩
     intro s hs
     rw [h, Geometry.lerp_symm]
@@ -197,13 +197,13 @@ theorem ray_eq {D : Set Point} {w o o' : Point} (ho : o.2 = w.2) (ho' : o'.2 = w
     rcases pos_and_pos_or_neg_and_neg_of_mul_pos hsame with ⟨h1, h2⟩ | ⟨h1, h2⟩
     · -- `o` inside `[w, o']`
       have hs : (o.1 - w.1) / (o'.1 - w.1) ∈ Ioo (0 : ℝ) 1 :=
-        ⟨div_pos h1 h2, (div_lt_one h2).2 (by linarith)⟩
+        ⟨div_pos h1 h2, (div_lt_one h2).2 by_l⟩
       refine hoD ?_
       rw [← lerp_hit ho ho' (s := (o.1 - w.1) / (o'.1 - w.1)) (by have := h1.ne; have := h2.ne; field_simp; ring)]
       exact hopen' _ hs
     · -- `o'` inside `[w, o]`
       have hs : (o'.1 - w.1) / (o.1 - w.1) ∈ Ioo (0 : ℝ) 1 :=
-        ⟨div_pos_of_neg_of_neg h2 h1, (div_lt_one_of_neg h1).2 (by linarith)⟩
+        ⟨div_pos_of_neg_of_neg h2 h1, (div_lt_one_of_neg h1).2 by_l⟩
       refine ho'D ?_
       rw [← lerp_hit ho' ho (s := (o'.1 - w.1) / (o.1 - w.1)) (by have := h1.ne; have := h2.ne; field_simp; ring)]
       exact hopen _ hs
@@ -211,12 +211,12 @@ theorem ray_eq {D : Set Point} {w o o' : Point} (ho : o.2 = w.2) (ho' : o'.2 = w
   · exfalso
     rcases pos_and_pos_or_neg_and_neg_of_mul_pos hsame with ⟨h1, h2⟩ | ⟨h1, h2⟩
     · have hs : (o'.1 - w.1) / (o.1 - w.1) ∈ Ioo (0 : ℝ) 1 :=
-        ⟨div_pos h2 h1, (div_lt_one h1).2 (by linarith)⟩
+        ⟨div_pos h2 h1, (div_lt_one h1).2 by_l⟩
       refine ho'D ?_
       rw [← lerp_hit ho' ho (s := (o'.1 - w.1) / (o.1 - w.1)) (by have := h1.ne; have := h2.ne; field_simp; ring)]
       exact hopen _ hs
     · have hs : (o.1 - w.1) / (o'.1 - w.1) ∈ Ioo (0 : ℝ) 1 :=
-        ⟨div_pos_of_neg_of_neg h1 h2, (div_lt_one_of_neg h2).2 (by linarith)⟩
+        ⟨div_pos_of_neg_of_neg h1 h2, (div_lt_one_of_neg h2).2 by_l⟩
       refine hoD ?_
       rw [← lerp_hit ho ho' (s := (o.1 - w.1) / (o'.1 - w.1)) (by have := h1.ne; have := h2.ne; field_simp; ring)]
       exact hopen' _ hs
@@ -241,7 +241,7 @@ theorem attach_ccw (_hM : WalkAx M) {c : Set Point} {p : ℕ} {t : ℝ}
       (sidePrev M.W p t - sidePt M.W p t) := by
   obtain ⟨-, -, -, -, r, hr, hleft⟩ := hA
   obtain ⟨s, ⟨hs1, hd⟩, hs0⟩ := ((lerp_near (sidePt M.W p t) o hr).and self_mem_nhdsWithin).exists
-  have hs0' : (0 : ℝ) < s := hs0
+  have hs0' := hs0
   have hx : lerp (sidePt M.W p t) o s ∈ c := by
     rw [hco]; exact Geometry.mem_segment_iff_lerp.2 ⟨s, hs0'.le, hs1.le, rfl⟩
   have hl := hleft _ hx (Chazelle.Jordan.lerp_ne_left (Ne.symm ho) hs0') hd
@@ -264,7 +264,7 @@ theorem ccw_unit {B A o w : Point} (h : sideCcw B (o - w) A) (ho : o.2 = w.2) :
   · intro hneg
     have e : o - w = (w.1 - o.1) • ((-1, 0) : Point) := by
       apply point_ext <;> simp [ho]
-    rw [e, Chazelle.Chain.sideCcw_smul (by linarith)] at h
+    rw [e, Chazelle.Chain.sideCcw_smul by_l] at h
     exact h
 
 /-- Points level with the centre of a half-disk and inside its square are in its closure. -/
@@ -284,7 +284,7 @@ theorem mem_closure_halfDisk' {w z : Point} {r τ : ℝ} (hτ : τ = 1 ∨ τ = 
   · rw [mem_halfDisk_iff]
     refine ⟨⟨hz1, ?_⟩, ?_⟩
     · show |w.2 + τ * δ - w.2| < r
-      rw [add_sub_cancel_left, habs]; exact hδr
+      rwa [add_sub_cancel_left, habs]
     · show 0 < τ * (w.2 + τ * δ - w.2)
       rw [add_sub_cancel_left, ← mul_assoc]
       rcases hτ with rfl | rfl <;> norm_num <;> exact hδ0
@@ -300,7 +300,7 @@ theorem sidePrev_ne (hM : WalkAx M) {p : ℕ} (hp : p < M.W.n) {t : ℝ} (ht0 : 
   split_ifs with ht
   · subst ht
     rw [Chazelle.Chain.sidePt_zero]
-    have hn : 0 < M.W.n := by omega
+    have hn : 0 < M.W.n := by_o
     have hq := hM.nd ((p + M.W.n - 1) % M.W.n) (Nat.mod_lt _ hn)
     rw [Sweep.prev_succ_mod hp] at hq
     exact hq
@@ -317,7 +317,7 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
     ∃ a b, M.IsArc S R a b ∧ ClosedArc a b (p + t) := by
   obtain ⟨hp, ht0, ht1, -, rA, hrA, hleftA⟩ := id hA
   have hsys := hM.sys S hS hfin
-  have hRo : IsOpen R := hsys.regionsIn_open subset_rfl hR
+  have hRo := hsys.regionsIn_open subset_rfl hR
   obtain ⟨oe, hoe, hoe2, hes, hoeD, hoeo⟩ := attach_ray hM he hA
   obtain ⟨r₁, hr₁, hfree⟩ := Sweep.sector_free hM hS hfin hp ht0 ht1
   have hav := sidePrev_ne hM hp ht0
@@ -325,13 +325,13 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
   -- a point of `e` near the attachment, in `R`
   obtain ⟨se, ⟨hse1, hsed⟩, hse0⟩ := ((lerp_near (sidePt M.W p t) oe (lt_min hr₁ hrA)).and
     self_mem_nhdsWithin).exists
-  have hse0' : (0 : ℝ) < se := hse0
+  have hse0' := hse0
   set ze := lerp (sidePt M.W p t) oe se with hze
-  have hzeD : ze ∈ M.D := hoeo se ⟨hse0', hse1⟩
+  have hzeD := hoeo se ⟨hse0', hse1⟩
   have hzee : ze ∈ e := by
     rw [hes]; exact Geometry.mem_segment_iff_lerp.2 ⟨se, hse0'.le, hse1.le, rfl⟩
-  have hzeR : ze ∈ R := heR ⟨hzee, hzeD⟩
-  have hzel : sideLeft M.W p t ze :=
+  have hzeR := heR ⟨hzee, hzeD⟩
+  have hzel :=
     hleftA ze hzee (Chazelle.Jordan.lerp_ne_left (Ne.symm hoe) hse0')
       (lt_of_lt_of_le hsed (min_le_right _ _))
   replace hsed : dist ze (sidePt M.W p t) < r₁ := lt_of_lt_of_le hsed (min_le_left _ _)
@@ -342,7 +342,7 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
     set w := sidePt M.W p t with hw
     have hdx : ∀ o : Point, o ≠ w → o.2 = w.2 → o.1 - w.1 ≠ 0 := by
       intro o ho ho2 h0
-      exact ho (point_ext (by linarith) ho2)
+      exact ho (point_ext by_l ho2)
     -- `e` and `c` leave in opposite directions
     have hopp : (oe.1 - w.1) * (oc.1 - w.1) < 0 := by
       rcases lt_trichotomy ((oe.1 - w.1) * (oc.1 - w.1)) 0 with h | h | h
@@ -360,7 +360,7 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
       · have hpos : 0 < (oc.1 - w.1) * (o'.1 - w.1) := by
           have h3 := mul_pos_of_neg_of_neg hopp h
           have h4 : (oe.1 - w.1) * (oc.1 - w.1) * ((oe.1 - w.1) * (o'.1 - w.1)) =
-              (oe.1 - w.1) ^ 2 * ((oc.1 - w.1) * (o'.1 - w.1)) := by ring
+              (oe.1 - w.1) ^ 2 * ((oc.1 - w.1) * (o'.1 - w.1)) := by_r
           rw [h4] at h3
           exact pos_of_mul_pos_right h3 (sq_nonneg _)
         rw [hc's, hcs, ray_eq hoc2 ho'2 hpos hocD ho'D hoco ho'o]
@@ -383,8 +383,8 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
     obtain ⟨τ, hτ, hhalf⟩ : ∃ τ : ℝ, (τ = 1 ∨ τ = -1) ∧ ∀ X : Point, 0 < τ * X.2 →
         sideCcw (sideNext M.W p - w) X (sidePrev M.W p t - w) := by
       rcases ccw_half (sub_ne_zero_of_ne hbv) (sub_ne_zero_of_ne hav) hE hW with h | h
-      · exact ⟨1, Or.inl rfl, fun X hX => h X (by linarith)⟩
-      · exact ⟨-1, Or.inr rfl, fun X hX => h X (by linarith)⟩
+      · exact ⟨1, Or.inl rfl, fun X hX => h X by_l⟩
+      · exact ⟨-1, Or.inr rfl, fun X hX => h X by_l⟩
     -- the half-disk is free
     have hH : halfDisk w r₁ τ ⊆ freeIn M.D S := by
       intro x hx
@@ -417,7 +417,7 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
     -- `R` touches `c`
     obtain ⟨sc, ⟨hsc1, hscd⟩, hsc0⟩ := ((lerp_near w oc hr₁).and
       self_mem_nhdsWithin).exists
-    have hsc0' : (0 : ℝ) < sc := hsc0
+    have hsc0' := hsc0
     have htR : TouchesIn M.D c R := by
       refine ⟨lerp w oc sc, ⟨?_, hoco sc ⟨hsc0', hsc1⟩⟩, closure_mono hHR
         (mem_closure_halfDisk' hτ hr₁ (hy2 sc oc hoc2) (hx1 sc oc hoc2 hscd))⟩
@@ -457,7 +457,7 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
       obtain ⟨hxD, hxc⟩ := hfree x hx.1 hx.2
       exact ⟨hxD, fun ⟨c, hc, hxc'⟩ => hB c hc (hxc c hc hxc')⟩
     have hzeL : ze ∈ L := ⟨hsed, hzel⟩
-    have hLR : L ⊆ R :=
+    have hLR :=
       Chazelle.Chain.subset_regionsIn_of_inter hR hpre hLfree ⟨ze, hzeL, hzeR⟩
     -- the arc around the key
     obtain ⟨X, hX, l, r, harc, hin⟩ := hM.arc_around hS hfin hne hcut
@@ -467,15 +467,14 @@ theorem attach_closedArc (hM : WalkAx M) {S : Set (Set Point)} (hS : S ⊆ M.Adm
           (continuous_id.mul continuous_const).tendsto 0
         rw [zero_mul] at this
         exact this.mono_left nhdsWithin_le_nhds
-      · exact mul_pos hx (by linarith)
+      · exact mul_pos hx by_l
     have hfX : ∀ᶠ s in 𝓝[>] (0 : ℝ), s < 1 ∧ M.Faces p (t + s * (1 - t)) X := by
       filter_upwards [Ioo_mem_nhdsGT one_pos, hscale.eventually (cyc_open hin)] with s hs hk
-      have hs0 : (0 : ℝ) < s := hs.1
-      refine ⟨hs.2, harc.2.2.2.2.2.2 p _ hp (by nlinarith) (by nlinarith [mul_pos (sub_pos.2 hs.2) (sub_pos.2 ht1)]) ?_⟩
+      have hs0 := hs.1
+      refine ⟨hs.2, harc.2.2.2.2.2.2 p _ hp by_nl (by nlinarith [mul_pos (sub_pos.2 hs.2) (sub_pos.2 ht1)]) ?_⟩
       rw [← add_assoc]; exact hk
     obtain ⟨s, hs1, hs2⟩ := (hoff.and hfX).exists
-    have h2 : ∀ᶠ δ in 𝓝[>] (0 : ℝ),
-        offset (M.wa p) (M.wb p) (t + s * (1 - t)) (δ * (1 - t)) ∈ X :=
+    have h2 :=
       hscale.eventually hs2.2
     obtain ⟨δ, hδ1, hδ2⟩ := (hs1.and h2).exists
     have e : offset (sidePt M.W p t) (sideNext M.W p) s (1 * δ) =

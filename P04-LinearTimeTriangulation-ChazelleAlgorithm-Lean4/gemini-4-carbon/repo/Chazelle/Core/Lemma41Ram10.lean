@@ -68,8 +68,7 @@ theorem rbBody_exec {c : Config} (hw : WordsBounded W c) {p0 e0 t Al : ℕ}
   · config_simp; simp only [h95, h96, h80, h24, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [h95, h96, h80, h24, Machine.upd_apply]; split_ifs <;> first | omega
   · unfold RbBRG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
 
 set_option maxHeartbeats 8000000 in
 theorem rbInit_exec {c : Config} (hw : WordsBounded W c) {B J : ℕ}
@@ -89,8 +88,7 @@ theorem rbInit_exec {c : Config} (hw : WordsBounded W c) {B J : ℕ}
   · config_simp
   · config_simp
   · unfold RbRG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
 
 /-- The invariant of the rebuild after `t` entries. -/
 def RbInv (W : ℕ) (c0 : Config) (B J : ℕ) (e : ℕ → ℕ) (t : ℕ) (c : Config) : Prop :=
@@ -118,8 +116,8 @@ theorem rbS_exec {c : Config} (hw : WordsBounded W c) {B J : ℕ} {e : ℕ → �
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have hAl : ALLOC = 9999 := rfl
   obtain ⟨c1, k1, e1, hk1, hw1, i94, i95, i96, i97, fr1, hm1, hrr1, hrm1, ho1⟩ :=
-    rbInit_exec (P := P) hw hA h64 (by omega)
-  have r1 : ∀ r, ¬ RbRG r → c1.nreg r = c.nreg r := fr1
+    rbInit_exec (P := P) hw hA h64 by_o
+  have r1 := fr1
   obtain ⟨c', k, e', ⟨t, ⟨hw', h97', h64', h95', hA', h96', hent, hout, fr', hrr', hrm', ho'⟩, htJ⟩,
       htest, hk, hψ⟩ :=
     whileLtN_potential_lb' (P := P) (W := W) (a := 160097) (b := 160064) (body := rbBody)
@@ -128,52 +126,50 @@ theorem rbS_exec {c : Config} (hw : WordsBounded W c) {B J : ℕ} {e : ℕ → �
       (fun c2 ⟨t, ⟨hw2, h97, h64c, h95, hA2, h96, hent, hout, fr2, hrr2, hrm2, ho2⟩, htJ⟩ htest => by
         rw [h97, h64c] at htest
         have r24 : c2.nreg 160024 = 1 := by
-          rw [fr2 _ (by unfold RbBRG; omega) (by rw [hAl]; omega), r1 _ (by unfold RbRG; omega)]
-          exact h24
+          rwa [fr2 _ (by unfold RbBRG; omega) (by rw [hAl]; omega), r1 _ (by unfold RbRG; omega)]
         have r80 : c2.nreg 160080 = 2 := by
-          rw [fr2 _ (by unfold RbBRG; omega) (by rw [hAl]; omega), r1 _ (by unfold RbRG; omega)]
-          exact h80
+          rwa [fr2 _ (by unfold RbBRG; omega) (by rw [hAl]; omega), r1 _ (by unfold RbRG; omega)]
         set kk := J - 1 - t with hkk
-        have hek := hcell kk (by omega)
+        have hek := hcell kk by_o
         obtain ⟨c3, k3, e3, hk3, hw3, q95, q96, q97, qA, qm0, qm1, qm, fr3, hrr3, hrm3, ho3⟩ :=
-          rbBody_exec (P := P) hw2 h95 (h96 htest) h97 hA2 r24 r80 (by omega) (by omega)
-            (by omega) (by omega) (by omega)
+          rbBody_exec (P := P) hw2 h95 (h96 htest) h97 hA2 r24 r80 by_o by_o
+            by_o by_o by_o
         have q64 : c3.nreg 160064 = J := by
           rw [fr3 _ (by unfold RbBRG; omega) (by rw [hAl]; omega)]; exact h64c
         refine ⟨c3, k3, e3, ⟨t + 1, ⟨hw3, q97, q64, by rw [q95]; omega, by rw [qA]; ring,
           fun ht1 => ?_, fun k a1 a2 => ?_, fun a ha => ?_, fun r h1 h2 => ?_,
-          by rw [hrr3, hrr2], by rw [hrm3, hrm2], by rw [ho3, ho2]⟩, by omega⟩, ?_, by omega⟩
-        · rw [q96, hout _ (Or.inl (by omega)), hm1, hlink kk (by omega) (by omega)]
+          by rw [hrr3, hrr2], by rw [hrm3, hrm2], by rw [ho3, ho2]⟩, by_o⟩, ?_, by_o⟩
+        · rw [q96, hout _ (Or.inl by_o), hm1, hlink kk by_o by_o]
           all_goals (congr 1; try omega)
         · rcases Nat.lt_or_ge k (J - t) with hk | hk
           · have hkq : k = kk := by omega
             subst hkq
             refine ⟨?_, ?_⟩
             · rw [show B + 2 * (J - 1 - t) = B + 2 * (J - t) - 2 by omega, qm0,
-                hout _ (Or.inl (by omega)), hm1]
+                hout _ (Or.inl by_o), hm1]
             · rw [show B + 2 * (J - 1 - t) + 1 = B + 2 * (J - t) - 2 + 1 by omega, qm1,
-                hout _ (Or.inl (by omega)), hm1]
+                hout _ (Or.inl by_o), hm1]
           · obtain ⟨b1, b2⟩ := hent k hk a2
-            rw [qm _ (by omega) (by omega), qm _ (by omega) (by omega)]
+            rw [qm _ by_o by_o, qm _ by_o by_o]
             exact ⟨b1, b2⟩
-        · rw [qm _ (by omega) (by omega)]; exact hout a (by omega)
+        · rw [qm _ by_o by_o]; exact hout a by_o
         · rw [fr3 r h1 h2]; exact fr2 r h1 h2
         · rw [q97, h97]; omega)
-      ⟨0, ⟨hw1, i97, by rw [r1 _ (by unfold RbRG; omega)]; exact h64, by rw [i95]; simp,
+      ⟨0, ⟨hw1, i97, by rwa [r1 _ (by unfold RbRG; omega)], by rw [i95]; simp,
         by rw [r1 _ (by unfold RbRG; rw [hAl]; omega), hA]; simp,
-        fun h => by rw [i96, h63 (by omega)]; congr 1, fun k a1 a2 => by omega,
+        fun h => by rw [i96, h63 by_o]; congr 1, fun k a1 a2 => by omega,
         fun a _ => rfl, fun r _ _ => rfl, rfl, rfl, rfl⟩, Nat.zero_le _⟩
   have htJ' : t = J := by rw [h97', h64'] at htest; omega
   have hk' : k ≤ 13 * J + 2 := by
     have := hk; simp only [i97, Nat.sub_zero] at this; exact this
-  have hψ' : c'.nreg ALLOC ≤ c1.nreg ALLOC + k := hψ
+  have hψ' := hψ
   have hA1 : c1.nreg ALLOC = B := by rw [r1 _ (by unfold RbRG; rw [hAl]; omega)]; exact hA
-  refine ⟨c', k1 + k, .seq e1 e', by omega, hw', by rw [hA', htJ'], by omega,
-    by rw [fr' _ (by unfold RbBRG; omega) (by rw [hAl]; omega)]; exact i94,
+  refine ⟨c', k1 + k, .seq e1 e', by_o, hw', by rw [hA', htJ'], by_o,
+    by rwa [fr' _ (by unfold RbBRG; omega) (by rw [hAl]; omega)],
     fun k hk => ?_, fun a ha => ?_, fun r h1 h2 => ?_, by rw [hrr', hrr1], by rw [hrm', hrm1],
     by rw [ho', ho1]⟩
-  · rw [← hm1]; exact hent k (by omega) hk
-  · rw [hout a (by omega), hm1]
+  · rw [← hm1]; exact hent k by_o hk
+  · rw [hout a by_o, hm1]
   · rw [fr' r (by unfold RbBRG; unfold RbRG at h1; omega) h2]; exact r1 r h1
 
 end proofs
@@ -187,7 +183,7 @@ theorem levelAt_of_cells {P : Polygon} {m m' : ℕ → ℕ} {B hp : ℕ} {ns : L
   obtain ⟨-, -, C, h1, h2, h3⟩ := hc k hk
   refine ⟨C, h1, h2, ?_⟩
   rw [(hent k hk).1, (hent k hk).2]
-  exact (h3.agree hout).mono (by omega)
+  exact (h3.agree hout).mono by_o
 
 end
 

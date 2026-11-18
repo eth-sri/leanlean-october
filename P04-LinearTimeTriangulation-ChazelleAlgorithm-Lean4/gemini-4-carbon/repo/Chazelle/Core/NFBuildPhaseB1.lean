@@ -52,11 +52,11 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     s16, s17, s18, s19, s20⟩ := setupB_exec (P := P) c hw hK hN h1 hH hSEr hroom
   have w₁ := x₁.wb_right
   have f₁ := exec_frameB x₁ wr_setupB
-  have g₁ : ∀ r, BsetupB r = false → c₁.nreg r = c.nreg r := f₁.1
+  have g₁ := f₁.1
   -- 2. the counted interval
   obtain ⟨c₂, k₂, x₂, hk₂, l1, l2, l3, l4, f₂⟩ := lohiS_exec (P := P) c₁ w₁ (D := D)
-    (by rw [g₁ _ (by decide), hD]) (by rw [f₁.2.2.1]; exact twice_m_le hM hCW)
-    (by omega) (by unfold hostWords at hWn; omega) (by unfold hostWords at hWn; omega)
+    (by rw [g₁ _ by_d, hD]) (by rw [f₁.2.2.1]; exact twice_m_le hM hCW)
+    by_o (by unfold hostWords at hWn; omega) (by unfold hostWords at hWn; omega)
   rw [f₁.2.2.1] at l1 l2 l3
   have w₂ := x₂.wb_right
   have g₂ : ∀ r, r ≠ 41023 → r ≠ 41019 → r ≠ 44020 → r ≠ 44021 → r ≠ 44022 →
@@ -67,35 +67,35 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       r ≠ 44022 → c₂.nreg r = c.nreg r := fun r h a1 a2 a3 a4 a5 => by
     rw [g₂ r a1 a2 a3 a4 a5, g₁ r h]
   have C₂ : BConst D T K B H (loOf c.nmem D) (hdOf c.nmem D P.n) (c.nmem D) c₂ :=
-    { rD := by rw [G₂ 40000 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hD]
-      rT := by rw [G₂ 42000 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hT]
-      rN := by rw [G₂ 42001 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hN]
-      r1a := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s1]
-      rB := by rw [G₂ 43001 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hB]
-      rK := by rw [G₂ 43002 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), hK]
-      r0 := by rw [G₂ 43010 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), h0]
-      r1 := by rw [G₂ 43011 (by decide) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-          (by norm_num), h1]
-      r3 := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s2]
-      rR := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s3]
-      rH := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s4]
-      rCT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s5]
-      rAT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s6]
-      rRT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s7]
-      rQT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s8]
-      rLT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s9]
-      rST := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s10]
-      rWT := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s11]
-      rCA := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s12]
-      rFA := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s13]
-      rFC := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s14]
-      rA := by rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s15]
+    { rD := by rw [G₂ 40000 by_d by_n by_n by_n by_n
+          by_n, hD]
+      rT := by rw [G₂ 42000 by_d by_n by_n by_n by_n
+          by_n, hT]
+      rN := by rw [G₂ 42001 by_d by_n by_n by_n by_n
+          by_n, hN]
+      r1a := by rw [g₂ _ by_n by_n by_n by_n by_n, s1]
+      rB := by rw [G₂ 43001 by_d by_n by_n by_n by_n
+          by_n, hB]
+      rK := by rw [G₂ 43002 by_d by_n by_n by_n by_n
+          by_n, hK]
+      r0 := by rw [G₂ 43010 by_d by_n by_n by_n by_n
+          by_n, h0]
+      r1 := by rw [G₂ 43011 by_d by_n by_n by_n by_n
+          by_n, h1]
+      r3 := by rw [g₂ _ by_n by_n by_n by_n by_n, s2]
+      rR := by rw [g₂ _ by_n by_n by_n by_n by_n, s3]
+      rH := by rw [g₂ _ by_n by_n by_n by_n by_n, s4]
+      rCT := by rw [g₂ _ by_n by_n by_n by_n by_n, s5]
+      rAT := by rw [g₂ _ by_n by_n by_n by_n by_n, s6]
+      rRT := by rw [g₂ _ by_n by_n by_n by_n by_n, s7]
+      rQT := by rw [g₂ _ by_n by_n by_n by_n by_n, s8]
+      rLT := by rw [g₂ _ by_n by_n by_n by_n by_n, s9]
+      rST := by rw [g₂ _ by_n by_n by_n by_n by_n, s10]
+      rWT := by rw [g₂ _ by_n by_n by_n by_n by_n, s11]
+      rCA := by rw [g₂ _ by_n by_n by_n by_n by_n, s12]
+      rFA := by rw [g₂ _ by_n by_n by_n by_n by_n, s13]
+      rFC := by rw [g₂ _ by_n by_n by_n by_n by_n, s14]
+      rA := by rw [g₂ _ by_n by_n by_n by_n by_n, s15]
       rlo := l1
       rhd := l2
       r19 := l4
@@ -113,16 +113,16 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       cnt := fun p hp => by rw [hcI p hp, hdOf_eq]; omega
       cntW := by rw [hdOf_eq]; omega }
   have n100 : c₂.nreg 43100 = 0 := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s16]
+    rw [g₂ _ by_n by_n by_n by_n by_n, s16]
   have n103 : c₂.nreg 43103 = SE + 0 := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s19,
+    rw [g₂ _ by_n by_n by_n by_n by_n, s19,
       Nat.add_zero]
   have n104 : c₂.nreg 43104 = SE := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s20]
+    rw [g₂ _ by_n by_n by_n by_n by_n, s20]
   have n101 : c₂.nreg 43101 = (stk E 0).length := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s17]; rfl
+    rw [g₂ _ by_n by_n by_n by_n by_n, s17]; rfl
   have n102 : c₂.nreg 43102 = (gapsB M (Qof P) L E 0).length := by
-    rw [g₂ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num), s18]; rfl
+    rw [g₂ _ by_n by_n by_n by_n by_n, s18]; rfl
   have nN : c₂.nreg 42001 = E.length := by rw [C₂.rN, hlen]
   have I₀ : PassInv F c₂ c₂ 0 :=
     { m_le := Nat.zero_le _, r100 := n100, r103 := n103, r104 := n104, r101 := n101,
@@ -136,8 +136,8 @@ theorem phaseB1_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       arcs := fun j hj => by simp [gapsB] at hj,
       frame := FrameM.refl _ _ }
   obtain ⟨c₃, k₃, x₃, hk₃, hk₃', w₃, I₃⟩ := passLoop_exec F I₀ w₂
-  have C₃ := C₂.frame I₃.frame (by decide)
-  exact ⟨c₃, _, .seq x₁ (.seq x₂ x₃), by omega, by omega, w₃, C₃, F, c₂, I₃⟩
+  have C₃ := C₂.frame I₃.frame by_d
+  exact ⟨c₃, _, .seq x₁ (.seq x₂ x₃), by_o, by_o, w₃, C₃, F, c₂, I₃⟩
 
 end exec
 

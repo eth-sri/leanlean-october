@@ -24,7 +24,7 @@ open SortL (seg)
 
 theorem n_le_top (P : Polygon) : (Qof P).n ≤ 2 ^ topGrade P.n + 1 := by
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have := Nat.le_pow_clog (b := 2) (by norm_num) (P.n - 1)
+  have := Nat.le_pow_clog (b := 2) by_n (P.n - 1)
   unfold topGrade
   omega
 
@@ -43,7 +43,7 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
   obtain ⟨hw, -, h11, hfix, hlow, -, hnreg, -, -, hA1, -, C, NR, γR, Lx, h12, hMx, hMor, hreg⟩ :=
     hInv
   -- the registers of the context
-  have hfx : ∀ q, DrvR.LvFixed q → c.nreg q = c₁.nreg q := hfix
+  have hfx := hfix
   have c00 : c.nreg 210000 = lam := by rw [hfx _ (by unfold DrvR.LvFixed; omega), X.r00]
   have c01 : c.nreg 210001 = c₁.nreg 210001 := hfx _ (by unfold DrvR.LvFixed; omega)
   have c02 : c.nreg 210002 = c₁.nreg 210002 := hfx _ (by unfold DrvR.LvFixed; omega)
@@ -52,14 +52,14 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
   have c07 : c.nreg 211007 = 2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 12) := by
     rw [hfx _ (by unfold DrvR.LvFixed; omega), X.r07]
   have c09 : c.nreg 211009 = c₁.nreg 211009 := hfx _ (by unfold DrvR.LvFixed; omega)
-  have hT : c₁.nreg 211009 + 3 * (L.length + 1) = c₁.nreg ALLOC := X.r09
-  have hK : 0 < L.length := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ X.hL)
+  have hT := X.r09
+  have hK := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ X.hL)
   have hnR : (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E).nRegions = L.length + 1 :=
     nRegions_build _ _ _ _
   have hμ15 : 15 ≤ DrvR.nextLvl lam := by
     unfold DrvR.nextLvl; rw [Setup.ceilBeta_eq]; have := X.h16; omega
   have hp10 : 128 ≤ 2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 10) :=
-    le_trans (by norm_num) (Nat.pow_le_pow_right (by norm_num) (show 7 ≤ _ by omega))
+    le_trans by_n (Nat.pow_le_pow_right by_n (show 7 ≤ _ by omega))
   have hγ₀ : c₁.nreg 211006 + 128 ≤ 2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 12) := by
     rw [X.r06, pow12]; omega
   -- the math of the level
@@ -81,7 +81,7 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
     rcases hMor with h | ⟨r, hr, h⟩
     · rw [h]; exact Nat.zero_le _
     · rw [h]; exact hlen r hr
-  have hK₂ : ((List.range (L.length + 1)).flatMap Lx).length ≤ (L.length + 1) * c.nreg 211013 :=
+  have hK₂ :=
     flat_length_le Lx _ _ hMx
   obtain ⟨hc1, hc2, hc3⟩ := hκc (DrvR.nextLvl lam) hμ15
   have hc3' : (DrvR.lvNch (DrvR.nextLvl lam) + 1) *
@@ -92,9 +92,9 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
   have hcost := cost_le (R := L.length + 1) (K := L.length)
     (K₂ := ((List.range (L.length + 1)).flatMap Lx).length) (M := c.nreg 211013)
     (ν := DrvR.lvNch (DrvR.nextLvl lam)) (Λ := lemma41Nat (DrvR.nextLvl lam) + 1) (κc := κc)
-    (κS := DrvR.κSpl κB) (κr := κRd 134) rfl hK₂ hMν (by omega) hc1 hc2 hc3'
+    (κS := DrvR.κSpl κB) (κr := κRd 134) rfl hK₂ hMν by_o hc1 hc2 hc3'
   obtain ⟨hW134, hWK, hWM⟩ := room_small (R := L.length + 1) (K := L.length)
-    (M := c.nreg 211013) (κc := κc) (κS := DrvR.κSpl κB) (κr := κRd 134) rfl hMν (by omega) hc1
+    (M := c.nreg 211013) (κc := κc) (κS := DrvR.κSpl κB) (κr := κRd 134) rfl hMν by_o hc1
   set κ := 300 + 48 * κc + 5 * DrvR.κSpl κB * κc + κRd 134 * κc with hκ
   set B := κ * (L.length + 1) * (lemma41Nat (DrvR.nextLvl lam) + 1) with hBd
   set K₂ := ((List.range (L.length + 1)).flatMap Lx).length with hK₂d
@@ -109,32 +109,30 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
     gather_exec (G := G) hGG hw rfl rfl rfl h12 h11 (by rw [c09]) rfl c03
       (by show 4 * L.length + 3 ≤ W; omega) (by show 4 * c.nreg 211013 ≤ W; omega)
   have hkg : kg ≤ 8 * K₂ + (35 * c.nreg 211013 + 32) * (L.length + 1) + 26 := hkg0
-  have v20 : cg.nreg 210020 = c.nreg ALLOC := v20₀
+  have v20 := v20₀
   have v21 : cg.nreg 210021 = K₂ := v21₀
-  have v22 : cg.nreg 210022 = c.nreg ALLOC + 3 * K₂ := v22₀
-  have v24 : cg.nreg 210024 = 4 * c.nreg 211013 := v24₀
+  have v22 := v22₀
+  have v24 := v24₀
   have Ag : cg.nreg ALLOC = c.nreg ALLOC + 5 * K₂ := Ag₀
-  have lowg : ∀ a, a < c.nreg ALLOC → cg.nmem a = c.nmem a := lowg₀
-  have CLg : ChordListAt cg.nmem (c.nreg ALLOC) L₂ := CLg₀
-  have bkg : ∀ q, q < 2 * K₂ → cg.nmem (c.nreg ALLOC + 3 * K₂ + q) =
-      DrvR.keyBkt (Qof P) (BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E)
-        (DrvR.endPos L₂ q) := bkg₀
-  have RFg : Restore.RF DrvR.drvBands (c.nreg ALLOC) c cg kg := RFg₀
-  have gk : ∀ r, BL r = false → r ≠ ALLOC → cg.nreg r = c.nreg r := keepg
-  have g01 : cg.nreg 210001 = c₁.nreg 210001 := by rw [gk _ (by decide) (by decide), c01]
-  have g02 : cg.nreg 210002 = c₁.nreg 210002 := by rw [gk _ (by decide) (by decide), c02]
-  have g03 : cg.nreg 210003 = L.length := by rw [gk _ (by decide) (by decide), c03]
-  have g04 : cg.nreg 210004 = c₁.nreg 210004 := by rw [gk _ (by decide) (by decide), c04]
-  have g00 : cg.nreg 210000 = lam := by rw [gk _ (by decide) (by decide), c00]
+  have lowg := lowg₀
+  have CLg := CLg₀
+  have bkg := bkg₀
+  have RFg := RFg₀
+  have gk := keepg
+  have g01 : cg.nreg 210001 = c₁.nreg 210001 := by rw [gk _ by_d by_d, c01]
+  have g02 : cg.nreg 210002 = c₁.nreg 210002 := by rw [gk _ by_d by_d, c02]
+  have g03 : cg.nreg 210003 = L.length := by rw [gk _ by_d by_d, c03]
+  have g04 : cg.nreg 210004 = c₁.nreg 210004 := by rw [gk _ by_d by_d, c04]
+  have g00 : cg.nreg 210000 = lam := by rw [gk _ by_d by_d, c00]
   have g07 : cg.nreg 211007 = 2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 12) := by
-    rw [gk _ (by decide) (by decide), c07]
+    rw [gk _ by_d by_d, c07]
   -- the memory below the table
-  have hTA : c₁.nreg 211009 ≤ c.nreg ALLOC := by omega
+  have hTA : c₁.nreg 211009 ≤ c.nreg ALLOC := by_o
   have memg : ∀ a, a < c₁.nreg 211009 → cg.nmem a = c₁.nmem a := fun a ha => by
-    rw [lowg a (by omega)]; exact hlow a ha
-  have hMD : ModelDescAt cg.nmem (c₁.nreg 210001) (Qof P) (interiorModel (Qof P)) :=
+    rw [lowg a by_o]; exact hlow a ha
+  have hMD :=
     X.md cg.nmem memg
-  have hone : cg.nmem (c₁.nreg 210001) = 1 := DrvD.desc_one hMD
+  have hone := DrvD.desc_one hMD
   have hmdA := X.mdA
   have hlA := X.lA
   have heA := X.eA
@@ -158,10 +156,10 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
     ⟨X.good, X.wh, by
       show ModelDescWF P (cg.nreg ALLOC) cg.nmem (cg.nreg 210001)
       rw [g01]
-      exact ⟨by rw [Ag]; omega, fun h0 => absurd (hone.symm.trans h0) (by norm_num)⟩,
+      exact ⟨by rw [Ag]; omega, fun h0 => absurd (hone.symm.trans h0) by_n⟩,
       interiorModel (Qof P), L, L₂, E, by
       show ModelDescAt cg.nmem (cg.nreg 210001) (Qof P) (interiorModel (Qof P))
-      rw [g01]; exact hMD, hGM, by show cg.nreg 210003 = _; exact g03, by
+      rwa [g01], hGM, by show cg.nreg 210003 = _; exact g03, by
       show cg.nreg 210002 + 3 * L.length ≤ cg.nreg ALLOC
       rw [g02, Ag]; omega, by
       show ChordListAt cg.nmem (cg.nreg 210002) L
@@ -170,7 +168,7 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
       show cg.nreg 210020 + 3 * L₂.length ≤ cg.nreg ALLOC
       rw [v20, Ag]; omega, by
       show ChordListAt cg.nmem (cg.nreg 210020) L₂
-      rw [v20]; exact CLg, hok', by
+      rwa [v20], hok', by
       show cg.nreg 210004 + 2 * L.length ≤ cg.nreg ALLOC
       rw [g04, Ag]; omega, by
       show seg cg.nmem (cg.nreg 210004) (2 * L.length) = E
@@ -198,61 +196,61 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
     have h : ks ≤ DrvR.splCost κB cg := hks
     rw [hsplCost] at h; exact h
   obtain ⟨p3, p2l, p2b, p2, p4l, p4b, pperm, psort, p5l, pNW⟩ := postS (interiorModel (Qof P)) L L₂
-    (by show ModelDescAt cg.nmem (cg.nreg 210001) (Qof P) (interiorModel (Qof P)); rw [g01]; exact hMD)
+    (by show ModelDescAt cg.nmem (cg.nreg 210001) (Qof P) (interiorModel (Qof P)); rwa [g01])
     (by show cg.nreg 210003 = _; exact g03)
     (by show ChordListAt cg.nmem (cg.nreg 210002) L; rw [g02]; exact X.lmem cg.nmem memg)
     (by show cg.nreg 210021 = _; rw [v21])
-    (by show ChordListAt cg.nmem (cg.nreg 210020) L₂; rw [v20]; exact CLg)
+    (by show ChordListAt cg.nmem (cg.nreg 210020) L₂; rwa [v20])
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at p3 p2l p2b p2 p4l p4b
   simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd] at pperm psort p5l pNW
   have hLL : (L ++ L₂).length = L.length + L₂.length := List.length_append
-  have As : cg.nreg ALLOC ≤ cs.nreg ALLOC := Fs.2.2.2.2.2.1
-  have As' : cs.nreg ALLOC ≤ cg.nreg ALLOC + ks := Fs.2.2.2.2.2.2
+  have As := Fs.2.2.2.2.2.1
+  have As' := Fs.2.2.2.2.2.2
   set E' := seg cs.nmem (cs.nreg 210004) (2 * (L.length + L₂.length)) with hE'
   have hperm' : E'.Perm (List.range (2 * (L ++ L₂).length)) := by rw [hLL]; exact pperm
-  have hsort' : E'.Pairwise (BuildNF.codeLe (interiorModel (Qof P)) (Qof P) (L ++ L₂)) := psort
+  have hsort' := psort
   obtain ⟨fsub, fdeg, fsg, fcnt⟩ := hfam E' hperm' hsort'
   -- 3. the arguments of the rounds
-  obtain ⟨cr, kr0, xr0, hkr0, u00, u01, mr, fr⟩ := ltRd_exec (P := P) cs ws (by omega)
+  obtain ⟨cr, kr0, xr0, hkr0, u00, u01, mr, fr⟩ := ltRd_exec (P := P) cs ws by_o
   have gr : ∀ q, q ≠ 216000 → q ≠ 216001 → cr.nreg q = cs.nreg q := fun q h1 h2 =>
     fr.1 q (by simp [h1, h2])
   have wr := xr0.wb_right
-  have Ar : cr.nreg ALLOC = cs.nreg ALLOC := gr _ (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+  have Ar : cr.nreg ALLOC = cs.nreg ALLOC := gr _ by_ao by_ao
   have r1 : cr.nreg 210001 = c₁.nreg 210001 := by
-    rw [gr _ (by norm_num) (by norm_num), keepS _ (Or.inl ⟨by norm_num, by norm_num⟩), g01]
+    rw [gr _ by_n by_n, keepS _ (Or.inl ⟨by_n, by_n⟩), g01]
   have rγ : cr.nreg 216001 = 2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 12) := by
-    rw [u01, keepS _ (Or.inr (Or.inr ⟨by norm_num, by norm_num⟩)), g07]
+    rw [u01, keepS _ (Or.inr (Or.inr ⟨by_n, by_n⟩)), g07]
   -- the frames so far
   have RFs : Restore.RF DrvR.drvBands (c.nreg ALLOC) cg cs ks :=
     (Restore.RF.of_frame Fs (by rw [Ag]; omega)).mono DrvD.splBands_sub le_rfl
   have RFr : Restore.RF DrvR.drvBands (c.nreg ALLOC) cs cr kr0 :=
     DrvD.rf_of_frameB (fun r hr => by
       simp only [decide_eq_true_eq] at hr
-      exact ⟨DrvD.mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩) fr
+      exact ⟨DrvD.mem_drvBands by_o by_o, by unfold ALLOC; omega⟩) fr
   have RF3 := RFg.trans (RFs.trans RFr)
   have memr : ∀ a, a < c₁.nreg 211009 → cr.nmem a = c₁.nmem a := fun a ha => by
-    rw [RF3.2.2.1 a (by omega)]; exact hlow a ha
+    rw [RF3.2.2.1 a by_o]; exact hlow a ha
   have hcore : ∀ i, i < 10000 → cr.nreg (coreReg i) = c₁.nreg (coreReg i) := fun i hi => by
     have hb : bandOf (coreReg i) ∉ DrvR.drvBands := by
       rw [DrvR.coreReg_band i hi]; exact DrvR.bCore_notin_drvBands
     rw [RF3.1 _ hb (DrvR.coreReg_ne_alloc i hi), hnreg _ hb (DrvR.coreReg_ne_alloc i hi)]
-  have Acr : c.nreg ALLOC ≤ cr.nreg ALLOC := RF3.2.2.2.2.2.1
+  have Acr := RF3.2.2.2.2.2.1
   -- the state after the splice
   have hst : DrvR.StateAt P cr (L ++ L₂) E' := by
-    have r2 : cr.nreg 210002 = cs.nreg 210002 := gr _ (by norm_num) (by norm_num)
-    have r3 : cr.nreg 210003 = cs.nreg 210003 := gr _ (by norm_num) (by norm_num)
-    have r4 : cr.nreg 210004 = cs.nreg 210004 := gr _ (by norm_num) (by norm_num)
-    have r5 : cr.nreg 210005 = cs.nreg 210005 := gr _ (by norm_num) (by norm_num)
+    have r2 : cr.nreg 210002 = cs.nreg 210002 := gr _ by_n by_n
+    have r3 : cr.nreg 210003 = cs.nreg 210003 := gr _ by_n by_n
+    have r4 : cr.nreg 210004 = cs.nreg 210004 := gr _ by_n by_n
+    have r5 : cr.nreg 210005 = cs.nreg 210005 := gr _ by_n by_n
     refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, hok', hperm', hsort', ?_⟩ <;>
       simp only [rd, bandReg, bDownDrv, Nat.reduceMul, Nat.reduceAdd]
     · rw [r1]; omega
-    · rw [r1]; exact (X.md.transport memr).mono (by omega)
+    · rw [r1]; exact (X.md.transport memr).mono by_o
     · rw [r3, p3, hLL]
-    · rw [r2, Ar, hLL]; exact p2b
-    · rw [r2, Ar, mr]; exact DrvD.chordListAt_robust p2 (by rw [hLL]; exact p2b)
-    · rw [r4, Ar, hLL]; exact p4b
-    · rw [r4, Ar, mr, hLL]; exact DrvD.seg_robust (by omega)
-    · rw [r5, Ar, mr]; exact pNW
+    · rwa [r2, Ar, hLL]
+    · rw [r2, Ar, mr]; exact DrvD.chordListAt_robust p2 (by rwa [hLL])
+    · rwa [r4, Ar, hLL]
+    · rw [r4, Ar, mr, hLL]; exact DrvD.seg_robust by_o
+    · rwa [r5, Ar, mr]
   -- 4. the rounds
   have hcostR : κRd (cr.nreg 216000) * (rd cr bDownDrv 3 + 1) *
       DrvR.shCost κo (cr.nreg 216001) * DrvR.cuCost κo (cr.nreg 216001) *
@@ -264,14 +262,14 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
             Nat.clog 2 (DrvR.lvGr (DrvR.nextLvl lam)) + 1)) := by
     have e3 : rd cr bDownDrv 3 = L.length + K₂ := by
       show cr.nreg 210003 = _
-      rw [gr _ (by norm_num) (by norm_num), p3]
+      rw [gr _ by_n by_n, p3]
     rw [e3, u00, rγ]
     unfold DrvR.lvGr
     ring
   obtain ⟨c', k₄, x₄, hk₄, ⟨keepR, postR⟩, F₄⟩ := hRd P W cr wr
-    ⟨X.envD (hcore 0 (by norm_num)) (hcore 1 (by norm_num)) memr (by omega), by rw [u00]; norm_num,
+    ⟨X.envD (hcore 0 by_n) (hcore 1 by_n) memr by_o, by rw [u00]; norm_num,
       by rw [rγ]; exact Nat.one_le_two_pow, by rw [rγ]; exact X.big2, L ++ L₂, E', hst,
-      by rw [u00]; exact fdeg, by rw [rγ]; exact fsg⟩
+      by rwa [u00], by rwa [rγ]⟩
     (by
       show cr.nreg ALLOC + κRd (cr.nreg 216000) * (rd cr bDownDrv 3 + 1) *
         DrvR.shCost κo (cr.nreg 216001) * DrvR.cuCost κo (cr.nreg 216001) *
@@ -282,16 +280,16 @@ theorem lvTailSpec {O : OracleIface} (hio : DrvR.IntOraclesSpec O) : DrvR.LvTail
       DrvR.shCost κo (cr.nreg 216001) * DrvR.cuCost κo (cr.nreg 216001) *
       (cutGran (cr.nreg 216001) + Nat.clog 2 (cr.nreg 216001) + 1) := hk₄
   rw [hcostR] at hk₄'
-  have RF4 : Restore.RF DrvR.drvBands (c.nreg ALLOC) cr c' k₄ :=
+  have RF4 :=
     Restore.RF.of_frame F₄ Acr
   have RFall := RF3.trans RF4
   refine ⟨c', kg + (ks + (kr0 + k₄)), Exec.seq xg (Exec.seq xs (Exec.seq xr0 x₄)), ?_,
-    (RFall.mono subset_rfl (by omega)).to_frame, ?_, ?_⟩
+    (RFall.mono subset_rfl by_o).to_frame, ?_, ?_⟩
   · -- the cost
     omega
   · -- the level register
-    rw [keepR _ (Or.inl rfl), gr _ (by norm_num) (by norm_num),
-      keepS _ (Or.inl ⟨by norm_num, by norm_num⟩), g00]
+    rw [keepR _ (Or.inl rfl), gr _ by_n by_n,
+      keepS _ (Or.inl ⟨by_n, by_n⟩), g00]
   · -- `Inv(μ)`
     obtain ⟨s1, s2, s3, s4, s5, s6, s7, s8, s9, s10, s11⟩ := st'
     refine ⟨s1, s2, L', E'', s3, s4, s5, s6, s7, s8, s9, s10, s11, deg', by rw [← rγ]; exact sg',

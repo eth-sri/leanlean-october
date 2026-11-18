@@ -102,11 +102,11 @@ theorem irs_ifEq {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     IRS P W c₀ (ifEq a b t e) c (K + 4) Q := by
   unfold ifEq
   by_cases h1 : c.nreg a < c.nreg b
-  · exact (IRS.ifT h1 (he (by omega))).mono (by omega) (fun _ h => h)
-  · refine (IRS.ifF h1 ?_).mono (K := K + 2 + 2) (by omega) (fun _ h => h)
+  · exact (IRS.ifT h1 (he by_o)).le
+  · refine (IRS.ifF h1 ?_).mono (K := K + 2 + 2) by_o (fun _ h => h)
     by_cases h2 : c.nreg b < c.nreg a
-    · exact IRS.ifT h2 (he (by omega))
-    · exact IRS.ifF h2 (ht (by omega))
+    · exact IRS.ifT h2 (he by_o)
+    · exact IRS.ifF h2 (ht by_o)
 
 /-! ## Frames -/
 
@@ -227,7 +227,7 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
   have kk3 : c.nreg 240616 = 3 := k3
   have kk4 : c.nreg 240613 = 4 := k4
   have s : ∀ j, 4807 ≤ j → j ≤ 4813 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw by_so by_so
   -- the block
   have v : regB c.nmem midL c.nreg m2 = J.right.m ∧
       regB c.nmem midL c.nreg ti = J.right.topIdx ∧
@@ -249,16 +249,16 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
   obtain ⟨vm, vi, vb, vd, vx, vo⟩ := v
   have ok : okB W c.nmem midL c.nreg := by
     simp only [midL, okB, okI, regI]
-    refine ⟨⟨s 4811 (by norm_num) (by norm_num), ?_⟩, s 4808 (by norm_num) (by norm_num),
-      ⟨s 4811 (by norm_num) (by norm_num), ?_⟩, s 4809 (by norm_num) (by norm_num),
-      ⟨s 4811 (by norm_num) (by norm_num), ?_⟩, s 4810 (by norm_num) (by norm_num),
-      ⟨s 4812 (by norm_num) (by norm_num), ?_⟩, ⟨s 4813 (by norm_num) (by norm_num), ?_⟩, trivial⟩
+    refine ⟨⟨s 4811 by_n by_n, ?_⟩, s 4808 by_n by_n,
+      ⟨s 4811 by_n by_n, ?_⟩, s 4809 by_n by_n,
+      ⟨s 4811 by_n by_n, ?_⟩, s 4810 by_n by_n,
+      ⟨s 4812 by_n by_n, ?_⟩, ⟨s 4813 by_n by_n, ?_⟩, trivial⟩
     all_goals simp [upd, tmp, m2, ti, bt, dd, sw, K2, K3, K4, kk2, kk3, kk4, a2, a3]
     all_goals (have := J.right.topIdx_le; simp only [Merge.Junction.right_m] at hWm this; omega)
   refine IRS.seq (K₁ := 8) (K₂ := 12) ((IRS.block midL hI ok).mono (by simp [midL])
     (fun _ h => h)) ?_
   rintro c₁ hI₁ - - rfl
-  have hb6 : c.nreg K6 = 6 := k6
+  have hb6 := k6
   have e6 : regB c.nmem midL c.nreg K6 = 6 := by
     rw [vo _ (by unfold OutM K6 sw; omega)]; exact k6
   have e1 : regB c.nmem midL c.nreg K1 = 1 := by
@@ -277,13 +277,13 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
     rw [regB_other _ l _ (fun i hi h => by
       rw [hd i hi] at h; subst h; unfold OutM tgt sw at hr; omega)]
     rw [hc₂]; exact vo r hr
-  have st : IScr tgt := s 4807 le_rfl (by norm_num)
+  have st : IScr tgt := s 4807 le_rfl by_n
   refine irs_ifEq (K := 8) (fun hb => ?_) (fun hb => ?_)
   · simp only at hb
-    have hβ : J.right.sideBeta = true := vb.1 (by rw [hb]; exact e1)
+    have hβ : J.right.sideBeta = true := vb.1 (by rwa [hb])
     have hmid : midT J.right = 2 * J.right.m - 2 * J.right.topIdx := by unfold midT; rw [ite_eq_left hβ]
-    refine (fin [.subN tgt m2x dd, .addN tgt tgt K6] _ rfl hI₁ (by simp) ?_ ?_ ?_).mono
-      (by norm_num) (fun _ h => h)
+    refine (fin [.subN tgt m2x dd, .addN tgt tgt K6] _ rfl hI₁ by_s ?_ ?_ ?_).mono
+      by_n (fun _ h => h)
     · simp only [okB, okI, regI]
       refine ⟨st, ⟨st, ?_⟩, trivial⟩
       simp only [upd, tgt, m2x, dd, K6, sw] at *
@@ -301,8 +301,8 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
       rw [vi, vm] at hl
       have hmid : midT J.right = 2 * J.right.topIdx := by
         unfold midT; rw [ite_eq_right hβ, ite_eq_left hl]
-      refine (fin [.addN tgt dd K6] _ rfl hI₁ (by simp) ?_ ?_ ?_).mono
-        (by norm_num) (fun _ h => h)
+      refine (fin [.addN tgt dd K6] _ rfl hI₁ by_s ?_ ?_ ?_).mono
+        by_n (fun _ h => h)
       · simp only [okB, okI]
         refine ⟨⟨st, ?_⟩, trivial⟩
         rw [vd, e6]; omega
@@ -315,8 +315,8 @@ theorem midB_irs (hI : IInv W c₀ c) (hK : Consts c) (hctx : ChainCtx P W c (sw
       rw [vi, vm] at hl
       have hmid : midT J.right = 0 := by
         unfold midT; rw [ite_eq_right hβ, ite_eq_right hl]
-      refine (fin [.copyN tgt K6] _ rfl hI₁ (by simp) ?_ ?_ ?_).mono
-        (by norm_num) (fun _ h => h)
+      refine (fin [.copyN tgt K6] _ rfl hI₁ by_s ?_ ?_ ?_).mono
+        by_n (fun _ h => h)
       · simp only [okB, okI]
         exact ⟨st, trivial⟩
       · simp [dstI]

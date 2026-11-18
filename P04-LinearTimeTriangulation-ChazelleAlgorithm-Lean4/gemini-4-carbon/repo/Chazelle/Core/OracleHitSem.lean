@@ -64,9 +64,9 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
   have he : C.chainEdge ci = Q.edge (eIdx Q.n s ci) := by
     unfold Chain.chainEdge Chain.edgeIdx eIdx; rw [hCQ, hs]
   set e := eIdx Q.n s ci with he_def
-  have hen : e < Q.n := Nat.mod_lt _ (by omega)
+  have hen : e < Q.n := Nat.mod_lt _ by_o
   have hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2 := by
-    refine hD _ _ hen (Nat.mod_lt _ (by omega)) ?_
+    refine hD _ _ hen (Nat.mod_lt _ by_o) ?_
     intro h
     rcases Nat.lt_or_ge (e + 1) Q.n with h' | h'
     · rw [Nat.mod_eq_of_lt h'] at h; omega
@@ -76,7 +76,7 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
   suffices hiff : (Spans Q e hz ∧ 0 < σ * (xe Q e hz - z.1)) ↔ HitC Q s hz σ zo ci by
     unfold edgeHit at hspec
     by_cases h : HitC Q s hz σ zo ci
-    · rw [ite_eq_left h, vOf_of_spans h.1]; rw [ite_eq_left (hiff.2 h)] at hspec; exact hspec
+    · rw [ite_eq_left h, vOf_of_spans h.1]; rwa [ite_eq_left (hiff.2 h)] at hspec
     · rw [ite_eq_right h]; rw [ite_eq_right (fun h' => h (hiff.1 h'))] at hspec; exact hspec
   unfold HitC
   rw [← he_def]
@@ -92,7 +92,7 @@ theorem hit_chainEdge {C : Chain} (hCQ : C.P = Q) (hs : C.s = s) (hD : DistinctH
       have hmem : ((xe Q e hz, (Q.vtx hz).2) : Point) ∈ C.chainEdge ci := by
         rw [he]
         have := (rayPt_mem_edge_iff Q hne (z := ((xe Q e hz, (Q.vtx hz).2) : Point)) rfl
-          (Or.inl rfl) 0).2 ⟨hsp, by simp⟩
+          (Or.inl rfl) 0).2 ⟨hsp, by_s⟩
         simpa [rayPt] using this
       have hbox := C.set_subset_box ⟨ci, hci, hmem⟩
       have hx := (abs_lt.1 hbox.1)

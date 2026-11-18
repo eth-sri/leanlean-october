@@ -107,9 +107,9 @@ theorem nChords_le_canonical {c : ℕ → ℕ} (hc : ∀ (M : Model) (Q : Polygo
   rw [Gran.ncard_F hnf] at h
   have hs := size_le_n (chainModel C)
   rw [chainModel_n] at hs
-  calc N.nChords ≤ N.nChords * (γ + 1) := Nat.le_mul_of_pos_right _ (by omega)
+  calc N.nChords ≤ N.nChords * (γ + 1) := Nat.le_mul_of_pos_right _ by_o
     _ ≤ c D * ((chainModel C).size + 1) := h
-    _ ≤ c D * (2 * C.m + 8) := Nat.mul_le_mul_left _ (by omega)
+    _ ≤ c D * (2 * C.m + 8) := Nat.mul_le_mul_left _ by_o
 
 /-! ## `Nat.clog` arithmetic -/
 
@@ -120,7 +120,7 @@ theorem clog_mono {a b : ℕ} (h : a ≤ b) : Nat.clog 2 a ≤ Nat.clog 2 b :=
 theorem clog_mul_le (a b : ℕ) : Nat.clog 2 (a * b) ≤ Nat.clog 2 a + Nat.clog 2 b := by
   apply Nat.clog_le_of_le_pow
   rw [pow_add]
-  exact Nat.mul_le_mul (Nat.le_pow_clog (by norm_num) a) (Nat.le_pow_clog (by norm_num) b)
+  exact Nat.mul_le_mul (Nat.le_pow_clog by_n a) (Nat.le_pow_clog by_n b)
 
 theorem clog_le_self (a : ℕ) : Nat.clog 2 a ≤ a := by
   apply Nat.clog_le_of_le_pow

@@ -42,14 +42,14 @@ theorem arc_int {N se ee w : ℕ} {a b : ℝ} (hse : se < N) (hee : ee < N) (ha0
     omega
   rw [ite_eq_right hsp]
   have hxa : ∀ y : ℕ, (y : ℝ) = a → y = se := fun y h => by
-    have h1 : (se : ℝ) ≤ y := h ▸ ha0
-    have h2 : (y : ℝ) < se + 1 := h ▸ ha1
+    have h1 := h ▸ ha0
+    have h2 := h ▸ ha1
     have h1' : se ≤ y := by exact_mod_cast h1
     have h2' : y < se + 1 := by exact_mod_cast h2
     omega
   have hxb : ∀ y : ℕ, (y : ℝ) = b → y = ee := fun y h => by
-    have h1 : (ee : ℝ) ≤ y := h ▸ hb0
-    have h2 : (y : ℝ) < ee + 1 := h ▸ hb1
+    have h1 := h ▸ hb0
+    have h2 := h ▸ hb1
     have h1' : ee ≤ y := by exact_mod_cast h1
     have h2' : y < ee + 1 := by exact_mod_cast h2
     omega
@@ -64,16 +64,16 @@ theorem arc_int {N se ee w : ℕ} {a b : ℝ} (hse : se < N) (hee : ee < N) (ha0
         have : (x : ℝ) < ee + 1 := by linarith [hc.2]
         exact_mod_cast this
       have h3 : se ≤ ee := by
-        have : (se : ℝ) < ee + 1 := by linarith
+        have : (se : ℝ) < ee + 1 := by_l
         have : se < ee + 1 := by exact_mod_cast this
         omega
       rw [show x + N - se = (x - se) + N by omega, Nat.add_mod_right,
         show ee + N - se = (ee - se) + N by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)]
+        Nat.mod_eq_of_lt by_o, Nat.mod_eq_of_lt by_o]
       omega
     · -- b ≤ a
       have hab' : ee ≤ se := by
-        have : (ee : ℝ) < se + 1 := by linarith
+        have : (ee : ℝ) < se + 1 := by_l
         have : ee < se + 1 := by exact_mod_cast this
         omega
       have hne : ee ≠ se := by
@@ -81,21 +81,21 @@ theorem arc_int {N se ee w : ℕ} {a b : ℝ} (hse : se < N) (hee : ee < N) (ha0
         rcases hw with hw | hw
         · exact hsp ⟨rfl, hw⟩
         · exact hab hw
-      have hlt : ee < se := by omega
+      have hlt : ee < se := by_o
       rw [Nat.mod_eq_of_lt (by omega : ee + N - se < N)]
       rcases hc with hc | hc
       · have h1 : se ≤ x := by
-          have : (se : ℝ) < x + 1 := by linarith
+          have : (se : ℝ) < x + 1 := by_l
           have : se < x + 1 := by exact_mod_cast this
           omega
         rw [show x + N - se = (x - se) + N by omega, Nat.add_mod_right,
-          Nat.mod_eq_of_lt (by omega)]
+          Nat.mod_eq_of_lt by_o]
         omega
       · have h2 : x ≤ ee := by
-          have : (x : ℝ) < ee + 1 := by linarith
+          have : (x : ℝ) < ee + 1 := by_l
           have : x < ee + 1 := by exact_mod_cast this
           omega
-        rw [Nat.mod_eq_of_lt (by omega)]
+        rw [Nat.mod_eq_of_lt by_o]
         omega
   · have := hxa x hc
     subst this
@@ -129,18 +129,15 @@ theorem arc_of_target (hGα : GoodModel (chainModel Cα)) {Nα : NF}
   have hTU := hcorr.1 T hD.hT
   obtain ⟨ε, ⟨h1, h2⟩, h3⟩ := ((hD.hfT.and hev).and (Ioo_mem_nhdsGT one_pos)).exists
   have hfU := harc.2.2.2.2.2.2 _ ε hXn h3.1 h3.2 h2
-  have hUT : U = regα T := WalkAx.faces_unique hU hTU hfU h1
+  have hUT := WalkAx.faces_unique hU hTU hfU h1
   subst hUT
   obtain ⟨j, hj, hjr, hjs, hje⟩ := harcs.2.2.1 T hD.hT a b harc
-  have hmem : j ∈ (Nα.region T).arcs := (harcs.2.2.2 T hD.hT j).2 ⟨hj, hjr⟩
+  have hmem := (harcs.2.2.2 T hD.hT j).2 ⟨hj, hjr⟩
   obtain ⟨t, ht, htj⟩ := List.mem_iff_getElem.1 hmem
   have hget : (Nα.region T).arcs.getD t 0 = j := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, htj]; rfl
-  refine ⟨t, ht, by rw [hget]; exact hj, ?_⟩
-  rw [hget, hjs, hje]
-  exact hcl
-
-end
+  refine ⟨t, ht, by rwa [hget], ?_⟩
+  rwa [hget, hjs, hje]end
 
 end Restore
 

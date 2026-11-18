@@ -33,10 +33,10 @@ theorem mod3_cases {x K : ℕ} (hK : 0 < K) (hx : x < 3 * K) :
   · exact Or.inl (Nat.mod_eq_of_lt h1)
   · by_cases h2 : x < 2 * K
     · right; left
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]; omega
     · right; right
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_sub_mod (by omega),
-        Nat.mod_eq_of_lt (by omega)]; omega
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_sub_mod by_o,
+        Nat.mod_eq_of_lt by_o]; omega
 
 theorem idx_I1 {K a i k : ℕ} (hK : 0 < K) (ha : a ≤ K) (hi : i < K) (hk : k < K) :
     (a + K - 1 - ((a + K - i) % K + k) % K) % K = (i + (K - 1 - k)) % K := by
@@ -83,10 +83,10 @@ theorem extractOK_of_model {C C' : Chain} (h : chainModel C = chainModel C')
     (hE : DownDrv.ExtractOK Q S R C') : DownDrv.ExtractOK Q S R C := by
   obtain ⟨h1, h2, h3, h4⟩ := hE
   refine ⟨?_, ?_, ?_, ?_⟩
-  · rw [h]; exact h1
-  · rw [h]; exact h2
-  · rw [h]; exact h3
-  · rw [h]; exact h4
+  · rwa [h]
+  · rwa [h]
+  · rwa [h]
+  · rwa [h]
 
 /-- **Counterclockwise extraction** for a chain from index `0` of the host polygon rotated by `i0`,
 the host key before `i0` being a chord gap. -/
@@ -102,7 +102,7 @@ theorem extractOK_rot (X : Extract.Ctx Q S R) {g i0 : ℕ} (hg : g < nk (interio
   refine chainModel_congr ?_ (fun k => ?_) ?_
   · rw [hostChain_m]; omega
   · show C.P.vtx ((C.s + k) % C.P.n) = (hostPoly Q S R).vtx (((g + 1) % K + k) % (hostPoly Q S R).n)
-    rw [hs, zero_add, hPn, hostPoly_n, hP, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; exact Nat.mod_lt _ (by omega)),
+    rw [hs, zero_add, hPn, hostPoly_n, hP, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; exact Nat.mod_lt _ by_o),
       hostPoly_n, hgi, Nat.add_mod_mod, Nat.mod_add_mod]
   · rw [hP, coordBound_rotate]
     rfl
@@ -119,13 +119,12 @@ theorem extractOK_rev (X : Extract.Ctx Q S R) {g i0 : ℕ} (hg : g < nk (interio
     DownDrv.ExtractOK Q S R C := by
   have h3 := X.three
   set K := nk (interiorModel Q) S R with hK
-  have hK0 : 0 < K := by omega
+  have hK0 : 0 < K := by_o
   obtain ⟨a, hnk'0, haK0, hk'0⟩ := hk_mir X.hQ X.hFam X.hne X.hR
-  have haK : a ≤ K := haK0
-  have hk' : ∀ j, j < K → hk (interiorModel Q.mir) (mirF S) (mir '' R) j =
-      rk (interiorModel Q).W.n (Q.n - 1) (hk (interiorModel Q) S R ((a + K - 1 - j) % K)) := hk'0
+  have haK := haK0
+  have hk' := hk'0
   set K' := nk (interiorModel Q.mir) (mirF S) (mir '' R) with hK'
-  have hnk' : K' = K := hnk'0
+  have hnk' := hnk'0
   set i₀ := i0 % K with hi₀
   have hi₀K : i₀ < K := Nat.mod_lt _ hK0
   set s' := (a + K - i₀) % K with hs'
@@ -135,7 +134,7 @@ theorem extractOK_rev (X : Extract.Ctx Q S R) {g i0 : ℕ} (hg : g < nk (interio
   have X' := DownDrv.ctx_mir X
   have h := modelMir_interior X.hQ
   have hc := h.walk.c_lt
-  have hWn : (interiorModel Q).W.n = Q.n := walk_n Q
+  have hWn := walk_n Q
   -- the mirrored host polygon at a reflected index
   have hvtx' : ∀ j, j < K → (hostPoly Q.mir (mirF S) (mir '' R)).vtx j =
       mir ((hostPoly Q S R).vtx ((a + K - 1 - j) % K)) := by
@@ -143,7 +142,7 @@ theorem extractOK_rev (X : Extract.Ctx Q S R) {g i0 : ℕ} (hg : g < nk (interio
     have hσ : (a + K - 1 - j) % K < K := Nat.mod_lt _ hK0
     have hb := hostKeys_bounds (hk_mem (walkAx_interiorModel X.hQ) X.hFam.2.1 X.hFam.1 hσ)
     obtain ⟨r0, rn⟩ := rk_bounds hc hb.1 hb.2
-    rw [hostPoly_vtx (by rw [← hK', hnk']; exact hj), hk' j hj, hostPt_mir X.hQ r0 rn,
+    rw [hostPoly_vtx (by rwa [← hK', hnk']), hk' j hj, hostPt_mir X.hQ r0 rn,
       rk_rk hc hb.1 hb.2, hostPoly_vtx hσ]
   -- the mirrored chain is a rotation of the mirrored host polygon
   have hPm : C.mir.P = (hostPoly Q.mir (mirF S) (mir '' R)).rotate s' := by
@@ -155,11 +154,11 @@ theorem extractOK_rev (X : Extract.Ctx Q S R) {g i0 : ℕ} (hg : g < nk (interio
       have e2 : (a + K - 1 - (s' + k) % K) % K = (i₀ + (K - 1 - k)) % K := by
         rw [hs']; exact idx_I1 hK0 haK hi₀K hk
       rw [chainMir_P, mir_vtx, hPv k hk,
-        Existence.vtx_rotate _ _ (by rw [hostPoly_n, ← hK', hnk']; exact hk),
+        Existence.vtx_rotate _ _ (by rwa [hostPoly_n, ← hK', hnk']),
         hostPoly_n, ← hK', hnk', hvtx' _ (Nat.mod_lt _ hK0), e2, e1]
   -- the chord gap of the mirrored region
   have hgc' : ChordGap (interiorModel Q.mir) (mirF S) (mir '' R) g' := by
-    have hgi' : (g + 1) % K = i₀ := hgi
+    have hgi' := hgi
     apply chordGap_mir X.hQ hgc
     · have e : (a + K - 1 - g') % K = (g + 1) % K := by
         rw [hg', hs']; exact idx_I2 hK0 haK hi₀K hg hgi'
@@ -169,7 +168,7 @@ theorem extractOK_rev (X : Extract.Ctx Q S R) {g i0 : ℕ} (hg : g < nk (interio
       show hk (interiorModel Q.mir) (mirF S) (mir '' R) ((g' + 1) % K') = _
       rw [hnk', hk' _ (Nat.mod_lt _ hK0), e]
   have hg'K' : g' < nk (interiorModel Q.mir) (mirF S) (mir '' R) := by
-    rw [← hK', hnk']; exact hg'K
+    rwa [← hK', hnk']
   -- extraction for the mirrored chain
   have hE' := DownDrv.extractOK_host X' hg'K' hgc'
   refine DownDrv.extractOK_of_mir X.hQ hPs (extractOK_of_model ?_ hE')

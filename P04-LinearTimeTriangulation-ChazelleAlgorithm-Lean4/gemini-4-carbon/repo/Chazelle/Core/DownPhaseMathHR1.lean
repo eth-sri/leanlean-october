@@ -34,41 +34,41 @@ theorem hostR1Spec : DrvR.HostR1Spec := by
   intro P L E reg r hG hLne hL hperm hsort _hdeg hregs hr Q N S
   classical
   have hQ : Q.Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have hdh : DistinctHeights Q := (goodShear_epsOf hG.2).2.1
-  have hK : 0 < L.length := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
+  have hdh := (goodShear_epsOf hG.2).2.1
+  have hK := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
   have X : RegCtx Q L E reg r := ⟨hQ, hdh, hL, hperm, hsort, hK, hregs, hr⟩
   set li := decide (Mountain.LeftInside Q) with hlidef
   have hli : li = true ↔ Mountain.LeftInside Q := decide_eq_true_iff
   obtain ⟨i0, g, hrep, hlen, hgK, hgc, hgi, hwf⟩ := walk_rep X hli
   set WP := (walkItems li Q.n N r).flatMap (wpts li Q.n) with hWP
   -- the context
-  have hN : IsNF (interiorModel Q) Q N := isNF_build hQ hL hperm hsort
-  have hFam : (interiorModel Q).ChordFamily Q S := hN.1
-  have hnc : N.nChords = L.length := nChords_build hQ hL hperm hsort
+  have hN := isNF_build hQ hL hperm hsort
+  have hFam := hN.1
+  have hnc := nChords_build hQ hL hperm hsort
   have hne : S.Nonempty :=
-    ⟨_, (chordPos_attach hN (show 0 < N.nChords by rw [hnc]; exact hK) (Or.inl rfl)).1⟩
-  have hR : reg r ∈ (interiorModel Q).regions S := hregs.1.1 r hr
+    ⟨_, (chordPos_attach hN (by rw [hnc]; exact hK) (Or.inl rfl)).1⟩
+  have hR := hregs.1.1 r hr
   have Xc : Extract.Ctx Q S (reg r) := ⟨hQ, hFam, hne, hR⟩
   set K := nk (interiorModel Q) S (reg r) with hKdef
-  have h3 : 3 ≤ K := three_le_nk hQ hFam hne hR
+  have h3 := three_le_nk hQ hFam hne hR
   have hrep' : ∀ j, j < K → RepPt li Q S (reg r) ((i0 + j) % K) (WP.getD j (.vtx 0)) :=
-    fun j hj => hrep j (by rw [hlen]; exact hj)
-  have hrot : (⟨WP.map (SymPt.eval Q)⟩ : Polygon) = (hostPoly Q S (reg r)).rotate i0 :=
+    fun j hj => hrep j (by rwa [hlen])
+  have hrot :=
     poly_of_rep hQ hFam hne hR hli hdh hlen hrep'
   have hedge := edgeOK_of_rep hQ hFam hne hR hdh hlen hrep'
   have hpts := regHost_pts li Q.n N r
   by_cases hLI : Mountain.LeftInside Q
   · -- counterclockwise
-    have hl : li = true := hli.2 hLI
+    have hl := hli.2 hLI
     have hH : regHost li Q.n N r = walkItems li Q.n N r := by unfold regHost; rw [ite_eq_left hl]
     rw [ite_eq_left hl] at hpts
     have hpoly : (regHost li Q.n N r).poly Q = (hostPoly Q S (reg r)).rotate i0 := by
       rw [← hrot]; unfold Host.poly; rw [hpts]
     obtain ⟨hs, hint, hbd, hvx⟩ := polyFacts_rotate hQ hFam hne hR i0
-    refine ⟨by rw [hH]; exact hwf, ?_, by rw [hpoly]; exact hs, by rw [hpoly]; exact hint,
-      by rw [hpoly]; exact hbd, by rw [hpoly]; exact hvx, ?_⟩
+    refine ⟨by rwa [hH], ?_, by rwa [hpoly], by rwa [hpoly],
+      by rwa [hpoly], by rwa [hpoly], ?_⟩
     · apply hostRegular_of_list
-      rw [hpts]; exact hedge
+      rwa [hpts]
     · intro C hP hs0 hm
       exact extractOK_rot Xc hgK hgc hgi (hP.trans hpoly) hs0 hm
   · -- clockwise
@@ -99,9 +99,9 @@ theorem hostR1Spec : DrvR.HostR1Spec := by
       rw [hverts, List.getD_eq_getElem _ _ (by simp [hlen]; exact hk), List.getElem_reverse,
         List.getD_eq_getElem _ _ (by simp [hlen]; omega)]
       simp [hlen]
-    have hfacts : PolyFacts Q S (reg r) P' := polyFacts_rev hQ hFam hne hR i0
+    have hfacts := polyFacts_rev hQ hFam hne hR i0
       (by rw [hP'n, Existence.n_rotate, hostPoly_n])
-      (fun k hk => hP'v k (by rw [Existence.n_rotate, hostPoly_n] at hk; exact hk))
+      (fun k hk => hP'v k (by rwa [Existence.n_rotate, hostPoly_n] at hk))
     obtain ⟨hs, hint, hbd, hvx⟩ := hfacts
     refine ⟨?_, ?_, hs, hint, hbd, hvx, ?_⟩
     · rw [hH]; intro it hit; exact hwf it (List.mem_reverse.1 hit)
@@ -109,7 +109,7 @@ theorem hostR1Spec : DrvR.HostR1Spec := by
       rw [hpts, ← hWP]
       exact regular_reverse hedge
     · intro C hP hs0 hm
-      refine extractOK_rev Xc hgK hgc hgi (by rw [hP]; exact hP'n) (fun k hk => ?_) (hP ▸ hs) hs0 hm
+      refine extractOK_rev Xc hgK hgc hgi (by rwa [hP]) (fun k hk => ?_) (hP ▸ hs) hs0 hm
       rw [hP, hP'v k hk, Existence.vtx_rotate _ _ (by rw [hostPoly_n]; omega), hostPoly_n,
         Existence.n_rotate, hostPoly_n]
 

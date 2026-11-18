@@ -151,17 +151,16 @@ theorem sides_rm {i : ℕ} (hi : i ∈ st.L E) (hic : i ≠ c) (μ : ℕ) :
     · have e0 := (g_eq_P_iff hE h hc hs hW0).1 hP
       have e1 := (g_eq_P_iff hE h hc hs hW1).1 (he ▸ hP)
       -- `i` touches both classes of `c`
-      have t0 : TouchesIn E.M.D (cs E.M E.Q E.N i) (st.cl E (st.s0 i)) :=
+      have t0 :=
         (htouch _ hW0).2 (Or.inl rfl)
-      have t1 : TouchesIn E.M.D (cs E.M E.Q E.N i) (st.cl E (st.s1 i)) :=
+      have t1 :=
         (htouch _ hW1).2 (Or.inr rfl)
       rcases e0 with e0 | e0 <;> rcases e1 with e1 | e1
       · exact hne (e0.trans e1.symm)
       · rw [e0] at t0; rw [e1] at t1; exact not_both hE h hc hs hi hic t0 t1
       · rw [e0] at t0; rw [e1] at t1; exact not_both hE h hc hs hi hic t1 t0
       · exact hne (e0.trans e1.symm)
-    · have hP' : (if st.cl E (st.s1 i) = st.cl E (st.s0 c) ∨ st.cl E (st.s1 i) = st.cl E (st.s1 c)
-          then P else st.cl E (st.s1 i)) ≠ P := he ▸ hP
+    · have hP' := he ▸ hP
       rw [ite_eq_right (fun h' => hP (ite_eq_left h'))] at he
       rw [ite_eq_right (fun h' => hP' (ite_eq_left h'))] at he
       exact hne he
@@ -236,7 +235,7 @@ theorem cls_rm (hlow : st.deg (st.s0 c) < 3 ∨ st.deg (st.s1 c) < 3) {x : ℕ}
   set μ := st.mu E c
   rw [rm_F hE h hc, rm_L hE h hc]
   rcases ref_cases hE h hc hs μ hx with rfl | ⟨hxR, hxlt, h1, h2⟩
-  · have hcl : (st.remove c μ).cl E (st.s0 c) = P :=
+  · have hcl :=
       rm_cl_in hE h hc hs (h.sides c hc).1 (Or.inl rfl) μ
     have hdeg : (st.remove c μ).deg (st.s0 c) = (st.newEx c).length := by
       show Function.update st.deg (st.s0 c) _ (st.s0 c) = _
@@ -257,7 +256,7 @@ theorem cls_rm (hlow : st.deg (st.s0 c) < 3 ∨ st.deg (st.s1 c) < 3) {x : ℕ}
       tauto
   · have hxX : x ≠ st.s0 c := fun e => h1 (by rw [e])
     obtain ⟨hcx, hxP⟩ := cl_out hE h hc hs hxlt h1 h2
-    have hcl : (st.remove c μ).cl E x = st.cl E x := rm_cl_out hE h hc hs hxlt h1 h2 μ
+    have hcl := rm_cl_out hE h hc hs hxlt h1 h2 μ
     have hdeg : (st.remove c μ).deg x = st.deg x := by
       show Function.update st.deg (st.s0 c) _ x = _
       rw [Function.update_of_ne hxX]
@@ -271,10 +270,9 @@ theorem cls_rm (hlow : st.deg (st.s0 c) < 3 ∨ st.deg (st.s1 c) < 3) {x : ℕ}
       rw [ite_eq_right (fun h' => hxX h'.1)]
     obtain ⟨d1, w1, n1, m1, l1⟩ := h.cls x hxR
     rw [hcl, hdeg, hexl]
-    refine ⟨by rw [deg_other hE h hc hs hcx hxP]; exact d1, ?_, n1, fun i => ?_, l1⟩
+    refine ⟨by rwa [deg_other hE h hc hs hcx hxP], ?_, n1, fun i => ?_, l1⟩
     · show Function.update st.wt (st.s0 c) μ x = _
-      rw [Function.update_of_ne hxX, weight_other' hE h hc hs hcx hxP]
-      exact w1
+      rwa [Function.update_of_ne hxX, weight_other' hE h hc hs hcx hxP]
     · rw [m1]
       simp only [mem_sdiff, mem_singleton_iff]
       constructor
@@ -292,7 +290,7 @@ theorem cls_rm (hlow : st.deg (st.s0 c) < 3 ∨ st.deg (st.s1 c) < 3) {x : ℕ}
 theorem refInj_rm {x y : ℕ} (μ : ℕ) (hx : (st.remove c μ).Ref E x)
     (hy : (st.remove c μ).Ref E y)
     (he : (st.remove c μ).cl E x = (st.remove c μ).cl E y) : x = y := by
-  have hP : (st.remove c μ).cl E (st.s0 c) = P :=
+  have hP :=
     rm_cl_in hE h hc hs (h.sides c hc).1 (Or.inl rfl) μ
   rcases ref_cases hE h hc hs μ hx with rfl | ⟨hxR, hxlt, h1, h2⟩ <;>
     rcases ref_cases hE h hc hs μ hy with rfl | ⟨hyR, hylt, h1', h2'⟩

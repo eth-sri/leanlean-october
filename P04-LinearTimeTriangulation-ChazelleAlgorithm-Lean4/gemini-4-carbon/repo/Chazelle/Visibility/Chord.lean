@@ -113,7 +113,7 @@ theorem chordEnd_ne_vtx {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {
   simp only [chordEnd_fst] at this
   have hσ := h.ne_zero hi
   have hpos := chordParam_pos hP hi h
-  have : σ * chordParam P i σ = 0 := by linarith
+  have : σ * chordParam P i σ = 0 := by_l
   rcases mul_eq_zero.1 this with h' | h'
   · exact hσ h'
   · exact hpos.ne' h'
@@ -215,7 +215,7 @@ theorem hchord_inter {P : Polygon} {y a b y' a' b' : ℝ} (h : IsHChord P y a b)
       ((p = (a, y) ∨ p = (b, y)) ∧ (p = (a', y') ∨ p = (b', y'))) := by
   obtain ⟨hpy, hpa, hpb⟩ := hp
   obtain ⟨hpy', hpa', hpb'⟩ := hp'
-  have hyy : y = y' := hpy.symm.trans hpy'
+  have hyy := hpy.symm.trans hpy'
   subst hyy
   -- is `p` an endpoint of the first chord?
   by_cases hend : p.1 = a ∨ p.1 = b
@@ -233,15 +233,15 @@ theorem hchord_inter {P : Polygon} {y a b y' a' b' : ℝ} (h : IsHChord P y a b)
       · exact Or.inr (Prod.ext he hpy)
     · by_contra hne
       push Not at hne
-      have ha' : a' < p.1 := lt_of_le_of_ne hpa' (fun e => hne.1 (Prod.ext e.symm hpy))
-      have hb' : p.1 < b' := lt_of_le_of_ne hpb' (fun e => hne.2 (Prod.ext e hpy))
+      have ha' := lt_of_le_of_ne hpa' (fun e => hne.1 (Prod.ext e.symm hpy))
+      have hb' := lt_of_le_of_ne hpb' (fun e => hne.2 (Prod.ext e hpy))
       have := h'.open_int p.1 ha' hb'
       rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at this
       exact this.2 hpb
   · -- `p` is in the open part of the first chord, hence interior
     push Not at hend
-    have ha : a < p.1 := lt_of_le_of_ne hpa (Ne.symm hend.1)
-    have hb : p.1 < b := lt_of_le_of_ne hpb hend.2
+    have ha := lt_of_le_of_ne hpa (Ne.symm hend.1)
+    have hb := lt_of_le_of_ne hpb hend.2
     have hint := h.open_int p.1 ha hb
     rw [show ((p.1, y) : Point) = p from Prod.ext rfl hpy.symm] at hint
     -- so `p` is not an endpoint of the second chord either
@@ -306,15 +306,15 @@ theorem segment_horizontal_eq_hseg {a b : Point} (hab : a.2 = b.2) :
     · refine ⟨(p.1 - a.1) / (b.1 - a.1), ?_, ?_, ?_⟩
       · rcases lt_or_gt_of_ne heq with h | h
         · rw [min_eq_left h.le] at h1
-          exact div_nonneg (by linarith) (by linarith)
+          exact div_nonneg by_l by_l
         · rw [max_eq_left h.le] at h2
-          exact div_nonneg_of_nonpos (by linarith) (by linarith)
+          exact div_nonneg_of_nonpos by_l by_l
       · rcases lt_or_gt_of_ne heq with h | h
         · rw [max_eq_right h.le] at h2
-          rw [div_le_one (by linarith)]; linarith
+          rw [div_le_one by_l]; linarith
         · rw [min_eq_right h.le] at h1
-          rw [div_le_one_of_neg (by linarith)]; linarith
-      · have hne : b.1 - a.1 ≠ 0 := fun h => heq (by linarith)
+          rw [div_le_one_of_neg by_l]; linarith
+      · have hne : b.1 - a.1 ≠ 0 := fun h => heq by_l
         rw [Geometry.point_ext_iff]; simp only
         constructor
         · field_simp
@@ -340,14 +340,14 @@ theorem isHChord_chord {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {�
   · have hlt : (P.vtx i).1 < (chordEnd P i 1).1 := by simp only [chordEnd_fst, one_mul]; linarith
     rw [min_eq_left hlt.le, max_eq_right hlt.le]
     refine ⟨hlt, hv ▸ hvb, he ▸ hend, fun x hx1 hx2 => ?_⟩
-    have := hint (x - (P.vtx i).1) (by linarith) (by simp only [chordEnd_fst, one_mul] at hx2; linarith)
+    have := hint (x - (P.vtx i).1) by_l (by simp only [chordEnd_fst, one_mul] at hx2; linarith)
     simp only [rayPt, one_mul, add_sub_cancel] at this
     exact this
   · have hlt : (chordEnd P i (-1)).1 < (P.vtx i).1 := by
       simp only [chordEnd_fst, neg_one_mul]; linarith
     rw [min_eq_right hlt.le, max_eq_left hlt.le]
     refine ⟨hlt, he ▸ hend, hv ▸ hvb, fun x hx1 hx2 => ?_⟩
-    have := hint ((P.vtx i).1 - x) (by linarith)
+    have := hint ((P.vtx i).1 - x) by_l
       (by simp only [chordEnd_fst, neg_one_mul] at hx1; linarith)
     simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel] at this
     exact this
@@ -414,7 +414,7 @@ theorem chords_finite (P : Polygon) : (chords P).Finite :=
 
 /-- **At most `2 n` chords.** -/
 theorem chords_ncard_le (P : Polygon) : (chords P).ncard ≤ 2 * P.n := by
-  have hfin : ((↑(Finset.range P.n) : Set ℕ) ×ˢ ({1, -1} : Set ℝ)).Finite :=
+  have hfin :=
     (Finset.range P.n).finite_toSet.prod ((finite_singleton (-1 : ℝ)).insert 1)
   calc (chords P).ncard
       ≤ ((fun x : ℕ × ℝ => chordSet P x.1 x.2) ''
@@ -422,7 +422,7 @@ theorem chords_ncard_le (P : Polygon) : (chords P).ncard ≤ 2 * P.n := by
         ncard_le_ncard (chords_subset_image P) (hfin.image _)
     _ ≤ ((↑(Finset.range P.n) : Set ℕ) ×ˢ ({1, -1} : Set ℝ)).ncard := ncard_image_le hfin
     _ = 2 * P.n := by
-        rw [ncard_prod, ncard_coe_finset, Finset.card_range, ncard_pair (by norm_num), mul_comm]
+        rw [ncard_prod, ncard_coe_finset, Finset.card_range, ncard_pair by_n, mul_comm]
 
 /-- Every chord is a closed segment with boundary endpoints and interior open part. -/
 theorem chords_spec {P : Polygon} (hP : P.Simple) {S : Set Point} (hS : S ∈ chords P) :

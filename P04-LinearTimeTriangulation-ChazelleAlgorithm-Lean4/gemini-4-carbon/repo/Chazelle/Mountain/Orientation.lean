@@ -82,28 +82,26 @@ theorem eventually_offset_orient {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i
       offset (P.vtx i) (P.vtx ((i + 1) % P.n)) t (-(orient P * δ)) ∉ P.filled := by
   have hn := simple_three_le hP
   obtain ⟨cL, cR, hcL, hcR, hne, -, hsides⟩ := two_components hP
-  have h0 := hsides 0 (by omega) (1 / 2) ⟨by norm_num, by norm_num⟩
+  have h0 := hsides 0 by_o (1 / 2) ⟨by_n, by_n⟩
   have hi' := hsides i hi t ht
   have hLI : LeftInside P ↔ parity P cL = true := by
     constructor
     · intro h
       obtain ⟨δ, h1, h2⟩ := (h.and h0).exists
       unfold leftPoint at h1
-      have hb : offset (P.vtx 0) (P.vtx ((0 + 1) % P.n)) (1 / 2) δ ∉ P.boundary :=
+      have hb :=
         connectedComponentIn_subset _ _ h2.1
       rw [mem_filled_iff hP hb] at h1
-      rw [← parity_eq_of_mem_connectedComponentIn P h2.1]
-      exact h1
+      rwa [← parity_eq_of_mem_connectedComponentIn P h2.1]
     · intro h
       filter_upwards [h0] with δ hδ
       unfold leftPoint
-      rw [mem_filled_iff hP (connectedComponentIn_subset _ _ hδ.1),
+      rwa [mem_filled_iff hP (connectedComponentIn_subset _ _ hδ.1),
         parity_eq_of_mem_connectedComponentIn P hδ.1]
-      exact h
   filter_upwards [hi'] with δ hδ
-  have hb1 : offset (P.vtx i) (P.vtx ((i + 1) % P.n)) t δ ∉ P.boundary :=
+  have hb1 :=
     connectedComponentIn_subset _ _ hδ.1
-  have hb2 : offset (P.vtx i) (P.vtx ((i + 1) % P.n)) t (-δ) ∉ P.boundary :=
+  have hb2 :=
     connectedComponentIn_subset _ _ hδ.2
   have hp1 := parity_eq_of_mem_connectedComponentIn P hδ.1
   have hp2 := parity_eq_of_mem_connectedComponentIn P hδ.2
@@ -165,8 +163,8 @@ theorem orient_eq_of_filled_subset {Q P : Polygon} (hQ : Q.Simple) (hP : P.Simpl
     (hi : i < Q.n) (hj : j < P.n) (h1 : Q.vtx i = P.vtx j)
     (h2 : Q.vtx ((i + 1) % Q.n) = P.vtx ((j + 1) % P.n)) (hsub : Q.filled ⊆ P.filled) :
     orient P = orient Q := by
-  apply orient_eq_of_eventually hP hj (t := 1 / 2) ⟨by norm_num, by norm_num⟩ (orient_eq Q)
-  filter_upwards [eventually_offset_orient hQ hi (t := 1 / 2) ⟨by norm_num, by norm_num⟩]
+  apply orient_eq_of_eventually hP hj (t := 1 / 2) ⟨by_n, by_n⟩ (orient_eq Q)
+  filter_upwards [eventually_offset_orient hQ hi (t := 1 / 2) ⟨by_n, by_n⟩]
     with δ hδ
   rw [← h1, ← h2]
   exact hsub hδ.1.1
@@ -185,17 +183,17 @@ theorem interior_triangle_mem_filled_iff {P : Polygon} (hP : P.Simple) {i : ℕ}
     x ∈ P.filled ↔ 0 < orient P * det (P.vtx i) (P.vtx ((i + 1) % P.n)) b := by
   set a := P.vtx i with ha
   set v := P.vtx ((i + 1) % P.n) with hv
-  have hav : a ≠ v := (ne_of_det_ne_zero hdet).1
+  have hav := (ne_of_det_ne_zero hdet).1
   have hsq := sqLen_pos hav
   set D := interior (convexHull ℝ ({a, v, b} : Set Point)) with hD
-  have hconn : IsPreconnected D := (convex_triangle a v b).interior.isPreconnected
+  have hconn := (convex_triangle a v b).interior.isPreconnected
   have hsub : D ⊆ P.boundaryᶜ := fun y hy => hoff y hy
   obtain ⟨σ, hσ, hpos⟩ : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ 0 < σ * det a v b := by
     rcases lt_or_gt_of_ne hdet with h | h
-    · exact ⟨-1, Or.inr rfl, by linarith⟩
-    · exact ⟨1, Or.inl rfl, by linarith⟩
+    · exact ⟨-1, Or.inr rfl, by_l⟩
+    · exact ⟨1, Or.inl rfl, by_l⟩
   -- the offset points of the edge at its midpoint, on the `σ` side, lie in the open triangle
-  set W : Set Point := {y | 0 < bary₁ a v b y} ∩ {y | 0 < bary₂ a v b y} with hW
+  set W := {y | 0 < bary₁ a v b y} ∩ {y | 0 < bary₂ a v b y} with hW
   have hWo : IsOpen W :=
     (isOpen_lt continuous_const (continuous_bary₁ a v b)).inter
       (isOpen_lt continuous_const (continuous_bary₂ a v b))
@@ -206,9 +204,9 @@ theorem interior_triangle_mem_filled_iff {P : Polygon} (hP : P.Simple) {i : ℕ}
     · show 0 < bary₂ a v b (lerp a v (1 / 2))
       rw [bary₂_lerp, bary₂_vertex_left, bary₂_vertex_mid hdet]; norm_num
   have hev1 := eventually_offset_mem σ hWo hmW
-  have hev2 := eventually_offset_orient hP hi (t := 1 / 2) ⟨by norm_num, by norm_num⟩
+  have hev2 := eventually_offset_orient hP hi (t := 1 / 2) ⟨by_n, by_n⟩
   obtain ⟨δ, hδW, hδor, hδ0⟩ := (hev1.and (hev2.and self_mem_nhdsWithin)).exists
-  have hδ0' : (0 : ℝ) < δ := hδ0
+  have hδ0' := hδ0
   rw [← ha, ← hv] at hδor
   have hpD : offset a v (1 / 2) (σ * δ) ∈ D := by
     rw [hD, mem_interior_triangle_iff hdet]
@@ -221,7 +219,7 @@ theorem interior_triangle_mem_filled_iff {P : Polygon} (hP : P.Simple) {i : ℕ}
       ring
     rw [e]
     exact div_pos (mul_pos (mul_pos hδ0' hsq) hpos) (mul_self_pos.2 hdet)
-  have hxb : x ∉ P.boundary := hoff x hx
+  have hxb := hoff x hx
   have hpar := parity_eq_of_isPreconnected P hconn hsub hx hpD
   rcases sign_eq_or_eq_neg hσ (orient_eq P) with heq | heq
   · -- the convex side is the interior side
@@ -232,7 +230,7 @@ theorem interior_triangle_mem_filled_iff {P : Polygon} (hP : P.Simple) {i : ℕ}
   · -- the convex side is the exterior side
     subst heq
     rw [neg_mul] at hpD hpar
-    refine iff_of_false ?_ (by linarith)
+    refine iff_of_false ?_ by_l
     intro hf
     rw [mem_filled_iff hP hxb, hpar, ← mem_filled_iff hP (hoff _ hpD)] at hf
     exact hδor.2 hf
@@ -243,8 +241,8 @@ theorem orient_det_pos_of_three {P : Polygon} (hP : P.Simple) (h3 : P.n = 3) :
     0 < orient P * det (P.vtx 0) (P.vtx 1) (P.vtx 2) := by
   have hdet := det_ne_zero_of_simple_three P hP h3
   have h1 : (0 + 1) % P.n = 1 := by rw [h3]
-  have key := interior_triangle_mem_filled_iff hP (i := 0) (by omega) (b := P.vtx 2)
-    (by rw [h1]; exact hdet)
+  have key := interior_triangle_mem_filled_iff hP (i := 0) by_o (b := P.vtx 2)
+    (by rwa [h1])
     (by rw [h1]; intro x hx; exact not_mem_boundary_of_mem_interior_triangle P h3 hdet hx)
     (x := Geometry.centroid (P.vtx 0) (P.vtx 1) (P.vtx 2))
     (by rw [h1]; exact centroid_mem_interior hdet)
@@ -265,11 +263,11 @@ theorem interior_earHull_not_mem_boundary {P : Polygon} (hP : P.Simple) {i : ℕ
       ({P.vtx (prevIdx P i), P.vtx i, P.vtx ((i + 1) % P.n)} : Set Point))) :
     x ∉ P.boundary := by
   have h3 := simple_three_le hP
-  have hn : 0 < P.n := by omega
+  have hn : 0 < P.n := by_o
   set Q := P.rotate i with hQdef
-  have hQ : Q.Simple := simple_rotate P i hP
-  have hQn : Q.n = P.n := n_rotate P i
-  obtain ⟨ea, ev, eb⟩ := vtx_rotate_fan P i (by omega) hi
+  have hQ := simple_rotate P i hP
+  have hQn := n_rotate P i
+  obtain ⟨ea, ev, eb⟩ := vtx_rotate_fan P i by_o hi
   have hdetQ : det (Q.vtx (Q.n - 1)) (Q.vtx 0) (Q.vtx 1) ≠ 0 := by
     rw [ea, ev, eb]; exact hdet
   have hnoneQ : ∀ j, j < Q.n →
@@ -278,7 +276,7 @@ theorem interior_earHull_not_mem_boundary {P : Polygon} (hP : P.Simple) {i : ℕ
     intro j hj hmem
     rw [ea, ev, eb] at hmem
     rw [hQn] at hj ⊢
-    have hQj : Q.vtx j = P.vtx ((i + j) % P.n) := vtx_rotate P i hj
+    have hQj := vtx_rotate P i hj
     rw [hQj] at hmem
     by_contra hcon
     simp only [not_or] at hcon
@@ -287,11 +285,11 @@ theorem interior_earHull_not_mem_boundary {P : Polygon} (hP : P.Simple) {i : ℕ
     · intro h
       unfold prevIdx at h
       rw [show i + P.n - 1 = i + (P.n - 1) by omega] at h
-      exact hjn (rot_index_inj hj (by omega) h)
+      exact hjn (rot_index_inj hj by_o h)
     · intro h
       exact hj0 (rot_index_inj hj hn (by rw [h, Nat.add_zero, Nat.mod_eq_of_lt hi]))
     · intro h
-      exact hj1 (rot_index_inj hj (by omega) h)
+      exact hj1 (rot_index_inj hj by_o h)
   have hvert := vert_le_zero_of_none hnoneQ
   rw [mem_interior_triangle_iff hdet] at hx
   rw [← boundary_rotate P i]
@@ -314,12 +312,12 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
   set a := P.vtx (prevIdx P i) with ha
   set v := P.vtx i with hv
   set b := P.vtx ((i + 1) % P.n) with hb
-  have hab : a ≠ b := vtx_prev_ne_vtx_succ P i hP hi
+  have hab := vtx_prev_ne_vtx_succ P i hP hi
   set m := lerp a b (1 / 2) with hm
-  have hmB : m ∉ P.boundary :=
+  have hmB :=
     open_chord_not_mem_boundary_of_test P i hP h4 hi hdet hnone m
-      (lerp_mem_segment _ _ (by norm_num) (by norm_num)) (lerp_ne_left hab (by norm_num))
-      (lerp_ne_right hab (by norm_num))
+      (lerp_mem_segment _ _ by_n by_n) (lerp_ne_left hab by_n)
+      (lerp_ne_right hab by_n)
   -- barycentric coordinates of the midpoint of the chord
   have hm1 : bary₁ a v b m = 1 / 2 := by
     rw [hm, bary₁_lerp, bary₁_vertex_left hdet, bary₁_vertex_right]; ring
@@ -345,15 +343,15 @@ theorem isEar_iff_convex_of_empty {P : Polygon} (hP : P.Simple) (h4 : 4 ≤ P.n)
     · exact hoff _ (hint s ⟨h0, by linarith [hs.2]⟩)
     · rw [← h0, lerp_zero]; exact hmB
   have hx1 : lerp m v (1 / 2) ∈ interior (convexHull ℝ ({a, v, b} : Set Point)) :=
-    hint (1 / 2) ⟨by norm_num, by norm_num⟩
+    hint (1 / 2) ⟨by_n, by_n⟩
   have hpar := parity_eq_of_isPreconnected P hS hSb (x := lerp m v 0) (y := lerp m v (1 / 2))
-    ⟨0, ⟨le_rfl, by norm_num⟩, rfl⟩ ⟨1 / 2, ⟨by norm_num, le_rfl⟩, rfl⟩
+    ⟨0, ⟨le_rfl, by_n⟩, rfl⟩ ⟨1 / 2, ⟨by_n, le_rfl⟩, rfl⟩
   rw [lerp_zero] at hpar
   -- the edge `prev i` is the directed segment `a v`
-  have hprev : prevIdx P i < P.n := prevIdx_lt P hi
+  have hprev := prevIdx_lt P hi
   have hsucc : P.vtx ((prevIdx P i + 1) % P.n) = v := by rw [prevIdx_add_one_mod P hi]
-  have key := interior_triangle_mem_filled_iff hP hprev (b := b) (by rw [hsucc]; exact hdet)
-    (by rw [hsucc]; exact hoff) (x := lerp m v (1 / 2)) (by rw [hsucc]; exact hx1)
+  have key := interior_triangle_mem_filled_iff hP hprev (b := b) (by rwa [hsucc])
+    (by rwa [hsucc]) (x := lerp m v (1 / 2)) (by rwa [hsucc])
   rw [hsucc] at key
   rw [← key, hpar, ← mem_filled_iff hP (hoff _ hx1)]
 

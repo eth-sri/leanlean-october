@@ -58,7 +58,7 @@ theorem run_pts_getD (n a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
 theorem pts_append_run (n : ℕ) (H₁ H₂ : Host) (a ℓ : ℕ) {k : ℕ} (hk : k ≤ ℓ) :
     ((H₁ ++ HostItem.run a ℓ :: H₂).pts n).getD ((H₁.pts n).length + k) (.vtx 0) =
       .vtx ((a + k) % n) := by
-  rw [pts_append, pts_cons, List.getD_eq_getElem?_getD, List.getElem?_append_right (by omega),
+  rw [pts_append, pts_cons, List.getD_eq_getElem?_getD, List.getElem?_append_right by_o,
     Nat.add_sub_cancel_left, List.getElem?_append_left (by rw [run_pts_length]; omega),
     ← List.getD_eq_getElem?_getD, run_pts_getD n a ℓ hk]
 
@@ -88,7 +88,7 @@ theorem sharedGeneric_of_vtx {Q : Polygon} (hdh : DistinctHeights Q) {H : Host} 
     (hv : (H.pts Q.n).getD ((J.s + J.m₁) % (H.pts Q.n).length) (.vtx 0) = .vtx b)
     (hw : (H.pts Q.n).getD ((J.s + (J.m₁ + 1)) % (H.pts Q.n).length) (.vtx 0) = .vtx c) :
     SharedGeneric J := by
-  have hP' : J.whole.P = H.poly Q := hP
+  have hP' := hP
   have eU : sharedU J = Q.vtx a := by
     unfold sharedU; rw [chain_vertex_host hP', show J.whole.s = J.s from rfl, hu]; rfl
   have eV : sharedV J = Q.vtx b := by
@@ -140,29 +140,29 @@ theorem sharedGeneric_run {Q : Polygon} (hn : 3 ≤ Q.n) (hdh : DistinctHeights 
   have hlen : (H₁.pts Q.n).length + ℓ + 1 ≤ N := pts_append_run_length Q.n H₁ H₂ a ℓ
   have hm1 := J.one_le_m₁
   have hu : (J.s + (J.m₁ - 1)) % N = (H₁.pts Q.n).length + (k - 1) := by
-    have e : J.s + J.m₁ = (J.s + (J.m₁ - 1)) + 1 := by omega
+    have e : J.s + J.m₁ = (J.s + (J.m₁ - 1)) + 1 := by_o
     rw [e] at hj
-    rw [mod_pred (by omega) hj (by omega)]; omega
+    rw [mod_pred by_o hj by_o]; omega
   have hw : (J.s + (J.m₁ + 1)) % N = (H₁.pts Q.n).length + (k + 1) := by
-    rw [← add_assoc, mod_succ hj (by omega)]; omega
-  have hv : (J.s + J.m₁) % N = (H₁.pts Q.n).length + k := hj
-  have hn0 : 0 < Q.n := by omega
-  have e1 : a + (k - 1) + 1 = a + k := by omega
-  have e2 : a + (k - 1) + 2 = a + (k + 1) := by omega
-  have d1 := add_mod_ne (x := a + (k - 1)) (show 0 < Q.n by omega) (show 1 < Q.n by omega)
+    rw [← add_assoc, mod_succ hj by_o]; omega
+  have hv := hj
+  have hn0 : 0 < Q.n := by_o
+  have e1 : a + (k - 1) + 1 = a + k := by_o
+  have e2 : a + (k - 1) + 2 = a + (k + 1) := by_o
+  have d1 := add_mod_ne (x := a + (k - 1)) (by omega) (by omega)
     (by omega : (0 : ℕ) ≠ 1)
-  have d2 := add_mod_ne (x := a + (k - 1)) (show 2 < Q.n by omega) (show 1 < Q.n by omega)
+  have d2 := add_mod_ne (x := a + (k - 1)) (by omega) (show 1 < Q.n by omega)
     (by omega : (2 : ℕ) ≠ 1)
-  have d3 := add_mod_ne (x := a + (k - 1)) (show 0 < Q.n by omega) (show 2 < Q.n by omega)
+  have d3 := add_mod_ne (x := a + (k - 1)) (by omega) (by omega)
     (by omega : (0 : ℕ) ≠ 2)
   rw [add_zero, e1] at d1
   rw [e1, e2] at d2
   rw [add_zero, e2] at d3
   refine sharedGeneric_of_vtx hdh hP (Nat.mod_lt _ hn0) (Nat.mod_lt _ hn0)
     (Nat.mod_lt _ hn0) d1 d2 d3 ?_ ?_ ?_
-  · rw [hu]; exact pts_append_run Q.n H₁ H₂ a ℓ (by omega)
-  · rw [hv]; exact pts_append_run Q.n H₁ H₂ a ℓ (by omega)
-  · rw [hw]; exact pts_append_run Q.n H₁ H₂ a ℓ (by omega)
+  · rw [hu]; exact pts_append_run Q.n H₁ H₂ a ℓ by_o
+  · rw [hv]; exact pts_append_run Q.n H₁ H₂ a ℓ by_o
+  · rw [hw]; exact pts_append_run Q.n H₁ H₂ a ℓ by_o
 
 end
 

@@ -30,9 +30,9 @@ theorem tLeft_exec (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C : Chain}
     ∃ c' k, Exec P W tLeft c c' k ∧ k ≤ 17404 ∧
       BitIs c' 50210 (LeftB M P (xOf c₀) (c₀.nreg 83008)) ∧ TStep W c₀ c c' k := by
   obtain ⟨H, C', hC, hM', hwf⟩ := hI.chain hE hM
-  have i5 := hI.hin 83005 (by norm_num) (by norm_num)
-  have i6 := hI.hin 83006 (by norm_num) (by norm_num)
-  have i8 := hI.hin 83008 (by norm_num) (by norm_num)
+  have i5 := hI.hin 83005 by_n by_n
+  have i6 := hI.hin 83006 by_n by_n
+  have i8 := hI.hin 83008 by_n by_n
   have hxe : c₀.nreg 83005 < (chainModel C').W.n := by rw [← hM']; exact hE.hxe
   have hxp : ProperPos (chainModel C') (Qof P) P.n ⟨c₀.nreg 83005, c₀.nreg 83006⟩ := by
     rw [← hM']; exact hE.hxp
@@ -48,8 +48,8 @@ theorem tLeft_exec (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C : Chain}
       have q1 := h1 (50201, 83005) (by simp [lsL])
       have q2 := h1 (50202, 83006) (by simp [lsL])
       simp only at q1 q2
-      refine ⟨by rw [q1, i5]; exact hxe, by rw [q1, q2, i5, i6]; exact hxp, ?_⟩
-      rw [q1, q2, i5, i6]; exact hy) hroom
+      refine ⟨by rwa [q1, i5], by rwa [q1, q2, i5, i6], ?_⟩
+      rwa [q1, q2, i5, i6]) hroom
   have q1 := h1 (50201, 83005) (by simp [lsL])
   have q2 := h1 (50202, 83006) (by simp [lsL])
   have q3 := h1 (50203, 83008) (by simp [lsL])
@@ -58,10 +58,7 @@ theorem tLeft_exec (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {C : Chain}
   have := hout
   unfold LeftOut at this
   rw [q1, q2, q3, i5, i6, i8] at this
-  rw [hM']
-  exact this
-
-end
+  rwa [hM']end
 
 end Restore
 

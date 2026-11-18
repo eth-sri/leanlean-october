@@ -43,14 +43,14 @@ variable {J : Merge.Junction}
 /-- **The point of the start key** (offset `Lst`) is the shared vertex. -/
 theorem start_key_pt (hP : J.P.Simple) :
     sidePt (chainModel J.whole).W ((gW J + Lst J) % (chainModel J.whole).W.n) 0 = J.shared := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn := cm_n J.whole
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have hτ' := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   by_cases hlt : Lst J < lOff J
   · obtain ⟨hv, -, hτ, hL⟩ := caseB_facts J hlt
     have e : (gW J + Lst J) % (chainModel J.whole).W.n = 2 * J.whole.m + 6 := by
       unfold gW
-      rw [hL, hn, Nat.mod_eq_of_lt (by omega)]
+      rw [hL, hn, Nat.mod_eq_of_lt by_o]
       omega
     rw [e, (sidePt_top_copies J.whole).2, shared_eq_top J hv]
   · have hlo : lOff J = Lst J := by
@@ -58,14 +58,14 @@ theorem start_key_pt (hP : J.P.Simple) :
       · rw [lOff_of_vnt J hv, Lst_rlen]
       · exact (caseC_facts J hv hlt).2.1
     have := start_pt J hP
-    rw [add_zero, Nat.mod_eq_of_lt (by omega), ← gL_eq J, hlo] at this
+    rw [add_zero, Nat.mod_eq_of_lt by_o, ← gL_eq J, hlo] at this
     exact this
 
 /-- **A position whose point is in the domain of `C₂` is strictly beyond the start.** -/
 theorem Lst_lt_of_dom (hP : J.P.Simple) {p : ℕ} {t : ℝ} (hp : p < (chainModel J.whole).W.n)
     (ht0 : 0 ≤ t) (ht1 : t < 1) (hD : sidePt (chainModel J.whole).W p t ∈ J.right.dom) :
     (Lst J : ℝ) < oW J (p + t) := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn := cm_n J.whole
   have hτw := tpos_lt J.whole J.m₁
   have hg : gW J < (chainModel J.whole).W.n := by unfold gW; omega
   have hvD : J.shared ∉ J.right.dom := fun h =>
@@ -81,11 +81,11 @@ theorem Lst_lt_of_dom (hP : J.P.Simple) {p : ℕ} {t : ℝ} (hp : p < (chainMode
       have e : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) ((p : ℝ) + t) =
           (D : ℝ) + t := hoW
       exact stretch_not_dom₂ J hP (S₂ := ∅) (empty_subset _) finite_empty hp ht0 ht1
-        ⟨by rw [e]; exact h0, by rw [e]; exact hL⟩ hD
+        ⟨by rwa [e], by rwa [e]⟩ hD
     · -- at the start key: the shared vertex
       have hDL : D = Lst J := by
-        have h1 : (D : ℝ) ≤ Lst J := by linarith
-        have h2 : (Lst J : ℝ) < D + 1 := by linarith
+        have h1 : (D : ℝ) ≤ Lst J := by_l
+        have h2 : (Lst J : ℝ) < D + 1 := by_l
         have h1' : D ≤ Lst J := by exact_mod_cast h1
         have h2' : Lst J < D + 1 := by exact_mod_cast h2
         omega
@@ -175,14 +175,14 @@ theorem origin_attach (hP : J.P.Simple) {S₂ : Set (Set Point)}
       sidePt (chainModel J.whole).W p t = rayPt a σ (J.whole.hitParam a σ) ∧
       (Lst J : ℝ) < oW J (p + t) ∧ sidePt (chainModel J.whole).W p t ≠ J.shared := by
   obtain ⟨-, hfree, -, hwD, -, hwR⟩ := origin_hit hP (hS₂ hc) ha haR hav hlt
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have he : Merge.shoot J.whole a σ ∈ F₂plus J S₂ := shoot_end_mem hc ha hfree
+  have hM := FactsChain.walkAx J.whole hP
+  have he := shoot_end_mem hc ha hfree
   have hadm := F₂plus_subset J hS₂ he
   have hw : rayPt a σ (J.whole.hitParam a σ) ∈ Merge.shoot J.whole a σ :=
     Geometry.right_mem_segment _ _
   obtain ⟨p, t, hA, hpt⟩ := endpoint_attach hM hadm hw hwD
   refine ⟨p, t, hA.1, hA.2.1, hA.2.2.1, hA, hpt,
-    Lst_lt_of_dom hP hA.1 hA.2.1 hA.2.2.1 (by rw [hpt]; exact hwR), fun h => ?_⟩
+    Lst_lt_of_dom hP hA.1 hA.2.1 hA.2.2.1 (by rwa [hpt]), fun h => ?_⟩
   rw [hpt] at h
   rw [h] at hwR
   exact J.right.not_mem_set_of_mem_dom hwR J.shared_mem_right
@@ -262,7 +262,7 @@ theorem query_chord {Q : Polygon} {N : NF} {j : ℕ} (hj : j < 2 * N.nChords) :
           Merge.lend ((N.chord (j / 2)).toSet (chainModel J.right) Q)) ∨
         (endDir j = -1 ∧ endOrigin J Q N j =
           Merge.rend ((N.chord (j / 2)).toSet (chainModel J.right) Q))) := by
-  have hk : j / 2 < N.nChords := by omega
+  have hk : j / 2 < N.nChords := by_o
   refine ⟨⟨N.chord (j / 2), ?_, rfl⟩, ?_⟩
   · unfold NF.chord
     rw [NFLoc.getD_of_lt _ hk]
@@ -277,7 +277,7 @@ end Origin
 /-- **Task O: the chord seen from a valid origin.** -/
 theorem originTask : SweepEv.OriginTask := by
   intro J Q N hP hN _hF
-  have hS₂ : N.F (chainModel J.right) Q ⊆ Merge.augChords J.right := hN.1.2.1
+  have hS₂ := hN.1.2.1
   refine ⟨fun j hj haR hav hat hlt => ?_, fun j j' hj hj' haR hav _hat hlt haR' hav' _hat' hlt'
     heq => ?_⟩
   · obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Q) hj
@@ -286,7 +286,7 @@ theorem originTask : SweepEv.OriginTask := by
   · obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Q) hj
     obtain ⟨hc', ha'⟩ := query_chord (J := J) (Q := Q) hj'
     obtain ⟨-, hσ, hcc⟩ := origin_inj hP (hS₂ hc) (hS₂ hc') ha ha' haR hav hlt haR' hav' hlt' heq
-    have hk := hN.2.1 (j / 2) (j' / 2) (by omega) (by omega) hcc
+    have hk := hN.2.1 (j / 2) (j' / 2) by_o by_o hcc
     have hpar : j % 2 = j' % 2 := by
       have e1 := (endOrigin_eq J hN hj).2
       have e2 := (endOrigin_eq J hN hj').2

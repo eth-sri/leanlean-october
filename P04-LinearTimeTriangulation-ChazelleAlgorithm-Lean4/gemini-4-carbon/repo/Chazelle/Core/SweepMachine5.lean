@@ -42,7 +42,7 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
     (hsec : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) τ' 1))
     (hev : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt (chainModel C).W p t) τ' s ∈ e) :
     SideAttach (chainModel C).W e p t := by
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
+  have hM := FactsChain.walkAx C hP
   set z := sidePt (chainModel C).W p t with hz
   have hzD : z ∉ C.dom := hM.trace p hp t ht ht1.le
   have hsec' : ∀ s > 0, sideLeft (chainModel C).W p t (rayPt z τ' s) :=
@@ -50,7 +50,7 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
   obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec he
   have hlr := hH.lt
   obtain ⟨s₁, hs₁, hs₁0⟩ := (hev.and self_mem_nhdsWithin).exists
-  have hs₁0' : (0 : ℝ) < s₁ := hs₁0
+  have hs₁0' := hs₁0
   have hzy : z.2 = y := by simpa [rayPt] using hs₁.1
   have hzpt : ((z.1, y) : Point) = z := Prod.ext rfl hzy.symm
   refine ⟨hp, ht, ht1, ?_, 1, one_pos, fun x hx hxz _ => ?_⟩
@@ -93,7 +93,7 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
         · exfalso; apply hxz; exact Prod.ext (by rw [← h, hzl]) (by rw [hxy, hzy])
       have e : x = rayPt z 1 (x.1 - l) :=
         point_ext (by simp [rayPt, hzl]) (by simp [rayPt, hxy, hzy])
-      rw [e]; exact hsec' _ (by linarith)
+      rw [e]; exact hsec' _ by_l
     · have hzr : z.1 = r := by
         have h1 : z.1 ≤ r := by
           by_contra h
@@ -112,7 +112,7 @@ theorem sideAttach_of_along (hP : C.P.Simple) {e : Set Point} (he : e ∈ Merge.
         · exfalso; apply hxz; exact Prod.ext (by rw [h, hzr]) (by rw [hxy, hzy])
       have e : x = rayPt z (-1) (r - x.1) :=
         point_ext (by simp [rayPt, hzr]) (by simp [rayPt, hxy, hzy])
-      rw [e]; exact hsec' _ (by linarith)
+      rw [e]; exact hsec' _ by_l
 
 end ChainModel
 

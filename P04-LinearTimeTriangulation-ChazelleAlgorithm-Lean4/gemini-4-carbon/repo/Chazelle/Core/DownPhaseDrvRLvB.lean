@@ -105,14 +105,14 @@ theorem RegMem.transport {m m' : ℕ → ℕ} {A A' T B : ℕ} {Q : Polygon} {N 
     (hm : ∀ a, (a < A ∧ (a < B → T + 3 * r ≤ a ∧ a < T + 3 * r + 3)) → m' a = m a)
     (hA : A ≤ A') : RegMem m' A' T B Q N r Lx := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7⟩ := h
-  have e0 : m' (T + 3 * r) = m (T + 3 * r) := hm _ ⟨by omega, fun _ => ⟨le_rfl, by omega⟩⟩
-  have e1 : m' (T + 3 * r + 1) = m (T + 3 * r + 1) := hm _ ⟨by omega, fun _ => ⟨by omega, by omega⟩⟩
-  have e2 : m' (T + 3 * r + 2) = m (T + 3 * r + 2) := hm _ ⟨by omega, fun _ => ⟨by omega, by omega⟩⟩
-  refine ⟨by rw [e1, h1], by rw [e0]; exact h2, by rw [e0]; omega, ?_, by rw [e2]; exact h5,
+  have e0 : m' (T + 3 * r) = m (T + 3 * r) := hm _ ⟨by_o, fun _ => ⟨le_rfl, by_o⟩⟩
+  have e1 : m' (T + 3 * r + 1) = m (T + 3 * r + 1) := hm _ ⟨by_o, fun _ => ⟨by_o, by_o⟩⟩
+  have e2 : m' (T + 3 * r + 2) = m (T + 3 * r + 2) := hm _ ⟨by_o, fun _ => ⟨by_o, by_o⟩⟩
+  refine ⟨by rw [e1, h1], by rwa [e0], by rw [e0]; omega, ?_, by rwa [e2],
     by rw [e2]; omega, fun q hq => ?_⟩
   · rw [e0]
-    exact clAt_congr h4 fun x hx1 hx2 => hm x ⟨by omega, fun hx => by omega⟩
-  · rw [e2, hm _ ⟨by omega, fun hx => by omega⟩]
+    exact clAt_congr h4 fun x hx1 hx2 => hm x ⟨by_o, fun hx => by omega⟩
+  · rw [e2, hm _ ⟨by_o, fun hx => by omega⟩]
     exact h7 q hq
 
 /-- A host description below `A` is robust. -/
@@ -120,16 +120,16 @@ theorem hostAt_robust {m : ℕ → ℕ} {B A : ℕ} {H : Host} (h : HostAt m B H
     (hA : B + 3 * H.length + 1 ≤ A) : Robust A m (fun m => HostAt m B H) := by
   intro m' hm'
   obtain ⟨h0, hi⟩ := h
-  refine ⟨by rw [hm' B (by omega)]; exact h0, fun i hi' => ?_⟩
+  refine ⟨by rwa [hm' B by_o], fun i hi' => ?_⟩
   have := hi i hi'
   revert this
   rcases H.getD i (.run 0 0) with ⟨a, ℓ⟩ | ⟨⟨j⟩ | ⟨e, hh⟩⟩ <;> simp only <;> intro hh' <;>
     · first
       | (obtain ⟨x1, x2, x3⟩ := hh'
-         exact ⟨by rw [hm' _ (by omega)]; exact x1, by rw [hm' _ (by omega)]; exact x2,
-           by rw [hm' _ (by omega)]; exact x3⟩)
+         exact ⟨by rwa [hm' _ by_o], by rwa [hm' _ by_o],
+           by rwa [hm' _ by_o]⟩)
       | (obtain ⟨x1, x2⟩ := hh'
-         exact ⟨by rw [hm' _ (by omega)]; exact x1, by rw [hm' _ (by omega)]; exact x2⟩)
+         exact ⟨by rwa [hm' _ by_o], by rwa [hm' _ by_o]⟩)
 
 /-! ## Counted loops with the allocator -/
 
@@ -147,16 +147,16 @@ theorem forLoopA {ir nr : ℕ} {body : Stmt} (Inv : ℕ → Config → Prop) (Kb
       c'.nreg ALLOC ≤ c.nreg ALLOC + k := by
   induction hn : N - j generalizing j c with
   | zero =>
-    have hjN : j = N := by omega
+    have hjN : j = N := by_o
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega, by omega⟩
+    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by_o, by_o⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    have hlt : j < N := by omega
+    have hlt : j < N := by_o
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁, hA₁⟩ := hbody j c hlt hc
-    obtain ⟨c', k₂, e₂, hI', hk₂, hA₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_, by omega⟩
+    obtain ⟨c', k₂, e₂, hI', hk₂, hA₂⟩ := ih hI₁ by_o by_o
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwa [h1, h2]) e₁ e₂, hI', ?_, by_o⟩
     rw [Nat.mul_succ]
     omega
 

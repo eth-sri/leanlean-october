@@ -27,7 +27,7 @@ theorem gradeCount_succ (n g : ℕ) : gradeCount n (g + 1) = (n - 2) / 2 ^ g / 2
 /-- A chain of a grade has at least one edge and fits in the curve. -/
 theorem gradeLen_pos (hn : 2 ≤ n) (hi : i < gradeCount n g) : 1 ≤ gradeLen n g i := by
   unfold gradeLen gradeCount at *
-  have hpos : 0 < 2 ^ g := by positivity
+  have hpos : 0 < 2 ^ g := by_p
   have : i * 2 ^ g ≤ n - 2 := by
     by_contra hc
     have : (n - 2) / 2 ^ g < i := by
@@ -41,7 +41,7 @@ theorem gradeLen_le (n g i : ℕ) : gradeLen n g i ≤ 2 ^ g := min_le_left _ _
 theorem gradeLen_fit (hn : 2 ≤ n) (hi : i < gradeCount n g) :
     gradeStart g i + gradeLen n g i + 1 ≤ n := by
   unfold gradeLen gradeStart gradeCount at *
-  have hpos : 0 < 2 ^ g := by positivity
+  have hpos : 0 < 2 ^ g := by_p
   have : i * 2 ^ g ≤ n - 2 := by
     by_contra hc
     have : (n - 2) / 2 ^ g < i := by
@@ -56,44 +56,44 @@ theorem gradeLen_succ_two (hn : 2 ≤ n) (h : 2 * i + 1 < gradeCount n g) :
       gradeLen n (g + 1) i = gradeLen n g (2 * i) + gradeLen n g (2 * i + 1) ∧
       gradeStart g (2 * i + 1) = gradeStart g (2 * i) + gradeLen n g (2 * i) := by
   unfold gradeLen gradeStart gradeCount at *
-  have hpos : 0 < 2 ^ g := by positivity
+  have hpos : 0 < 2 ^ g := by_p
   have h1 : (2 * i + 1) * 2 ^ g ≤ n - 2 := by
     by_contra hc
     have : (n - 2) / 2 ^ g < 2 * i + 1 := by rw [Nat.div_lt_iff_lt_mul hpos]; omega
     omega
-  have e : (2 * i + 1) * 2 ^ g = 2 * i * 2 ^ g + 2 ^ g := by ring
+  have e : (2 * i + 1) * 2 ^ g = 2 * i * 2 ^ g + 2 ^ g := by_r
   have e2 : i * 2 ^ (g + 1) = 2 * i * 2 ^ g := by rw [pow_succ]; ring
   rw [e2]
-  refine ⟨min_eq_left (by omega), ?_, ?_⟩
+  refine ⟨min_eq_left by_o, ?_, ?_⟩
   · rw [min_eq_left (show 2 ^ g ≤ n - 1 - 2 * i * 2 ^ g by omega), pow_succ]
     rcases le_total (2 ^ g) (n - 1 - (2 * i + 1) * 2 ^ g) with h2 | h2
-    · rw [min_eq_left h2, min_eq_left (by omega)]; ring
-    · rw [min_eq_right h2, min_eq_right (by omega)]; omega
-  · rw [min_eq_left (by omega)]; ring
+    · rw [min_eq_left h2, min_eq_left by_o]; ring
+    · rw [min_eq_right h2, min_eq_right by_o]; omega
+  · rw [min_eq_left by_o]; ring
 
 /-- **A single child.** -/
 theorem gradeLen_succ_one (hn : 2 ≤ n) (_hi : i < gradeCount n (g + 1))
     (h : gradeCount n g ≤ 2 * i + 1) : gradeLen n (g + 1) i = gradeLen n g (2 * i) := by
   unfold gradeLen gradeCount at *
-  have hpos : 0 < 2 ^ g := by positivity
+  have hpos : 0 < 2 ^ g := by_p
   have e2 : i * 2 ^ (g + 1) = 2 * i * 2 ^ g := by rw [pow_succ]; ring
   rw [e2]
   have h1 : n - 2 < (2 * i + 1) * 2 ^ g := by
-    have : (n - 2) / 2 ^ g < 2 * i + 1 := by omega
+    have : (n - 2) / 2 ^ g < 2 * i + 1 := by_o
     rwa [Nat.div_lt_iff_lt_mul hpos] at this
-  have e : (2 * i + 1) * 2 ^ g = 2 * i * 2 ^ g + 2 ^ g := by ring
+  have e : (2 * i + 1) * 2 ^ g = 2 * i * 2 ^ g + 2 ^ g := by_r
   rw [min_eq_right (show n - 1 - 2 * i * 2 ^ g ≤ 2 ^ (g + 1) by rw [pow_succ]; omega),
-    min_eq_right (show n - 1 - 2 * i * 2 ^ g ≤ 2 ^ g by omega)]
+    min_eq_right (by omega)]
 
 /-- The top grade has a single chain. -/
 theorem gradeCount_top (hn : 2 ≤ n) : gradeCount n (topGrade n) = 1 := by
   unfold gradeCount topGrade
-  have := Nat.le_pow_clog (b := 2) (by norm_num) (n - 1)
-  rw [Nat.div_eq_of_lt (by omega)]
+  have := Nat.le_pow_clog (b := 2) by_n (n - 1)
+  rw [Nat.div_eq_of_lt by_o]
 
 theorem gradeLen_top (_hn : 2 ≤ n) : gradeLen n (topGrade n) 0 = n - 1 := by
   unfold gradeLen topGrade
-  have := Nat.le_pow_clog (b := 2) (by norm_num) (n - 1)
+  have := Nat.le_pow_clog (b := 2) by_n (n - 1)
   simp only [Nat.zero_mul, Nat.sub_zero]
   exact min_eq_right this
 

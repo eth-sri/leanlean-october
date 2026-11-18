@@ -37,7 +37,7 @@ theorem topR_eq (E : List ℕ) (m : ℕ) :
   · rfl
   · simp only [head?_cons, ridx, reverse_cons, length_append, length_reverse, length_cons,
       length_nil, Nat.add_eq_zero_iff, one_ne_zero, and_false, ite_false, Nat.add_sub_cancel]
-    rw [getD_eq_getElem?_getD, getElem?_append_right (by simp), length_reverse, Nat.sub_self]
+    rw [getD_eq_getElem?_getD, getElem?_append_right by_s, length_reverse, Nat.sub_self]
     rfl
 
 theorem cw_getElem {E : List ℕ} {m : ℕ} (hm : m < E.length) :
@@ -100,7 +100,7 @@ theorem gapsB_succ (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E :
 theorem gapsB_length_le (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (m : ℕ) :
     (gapsB M Q L E m).length ≤ m := by
   unfold gapsB
-  exact (length_filter_le _ _).trans (by simp)
+  exact (length_filter_le _ _).trans by_s
 
 /-- The gap predicate by keys. -/
 theorem Input.gapP_iff {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
@@ -111,7 +111,7 @@ theorem Input.gapP_iff {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} 
   rw [decide_eq_true_iff]
   by_cases h1 : m + 1 = E.length
   · simp [h1]
-  · rw [Nat.mod_eq_of_lt (by omega), h.key_s hm, h.key_s (by omega)]
+  · rw [Nat.mod_eq_of_lt by_o, h.key_s hm, h.key_s by_o]
 
 /-- The word `f` of a chord record. -/
 def cf (r : CRec) (f : ℕ) : ℕ :=
@@ -147,14 +147,14 @@ theorem Input.chordRec_new {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × �
         up := if E.getD m 0 % 2 < 1 then topR E m else E.getD m 0 / 2 + 1,
         dn := if E.getD m 0 % 2 < 1 then E.getD m 0 / 2 + 1 else topR E m } := by
   have hidx : (E.map (· / 2)).idxOf (E.getD m 0 / 2) = m := by
-    have := idxOf_new (w := cw E) (m := m) (by simp [cw, hm]) (by rw [cw_getElem hm]; exact hn)
+    have := idxOf_new (w := cw E) (m := m) (by simp [cw, hm]) (by rwa [cw_getElem hm])
     rw [cw_getElem hm] at this
     exact this
   rw [h.chordRec_eq hx, hidx]
   unfold topR cw
   by_cases hp : E.getD m 0 % 2 = 0
-  · rw [ite_eq_left hp, ite_eq_left hp, ite_eq_left (by omega), ite_eq_left (by omega)]
-  · rw [ite_eq_right hp, ite_eq_right hp, ite_eq_right (by omega), ite_eq_right (by omega)]
+  · rw [ite_eq_left hp, ite_eq_left hp, ite_eq_left by_o, ite_eq_left by_o]
+  · rw [ite_eq_right hp, ite_eq_right hp, ite_eq_right by_o, ite_eq_right by_o]
 
 /-- The arc record of a gap start. -/
 theorem arcRec_eq (M : Model) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) (E : List ℕ) (m : ℕ) :

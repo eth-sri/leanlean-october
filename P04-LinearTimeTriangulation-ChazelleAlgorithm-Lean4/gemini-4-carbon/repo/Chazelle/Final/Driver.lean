@@ -76,10 +76,10 @@ theorem finalStage : Core.FinalStageSpec := by
   obtain ⟨T, Cs, hT, hC, h9991, hTab, h9993, hCab, hTB, hCB, hout0⟩ := hready
   have hPQ' := hPQ
   obtain ⟨ε, -, hQe, hag⟩ := hPQ'
-  have hQn : Q.n = P.n := hPQ.n_eq
-  have hn3 : 3 ≤ P.n := hQn ▸ hQ.1
-  have hTL : T.length ≤ 2 * P.n + 1 := hQn ▸ hT.length_le hQ
-  have hCL : Cs.length ≤ 2 * P.n := hQn ▸ hC.length_le
+  have hQn := hPQ.n_eq
+  have hn3 := hQn ▸ hQ.1
+  have hTL := hQn ▸ hT.length_le hQ
+  have hCL := hQn ▸ hC.length_le
   set A := c.nreg Core.ALLOC with hA
   set M := T.length + Cs.length with hM
   change c.nreg 9991 = T.length at h9991
@@ -89,8 +89,8 @@ theorem finalStage : Core.FinalStageSpec := by
   change c.nreg 9990 + 4 * T.length ≤ c.nreg 9999 at hTB
   change c.nreg 9992 + 3 * Cs.length ≤ c.nreg 9999 at hCB
   have hA' : c.nreg 9999 = A := rfl
-  have hW : A + 100 * (P.n + 1) ≤ W := hroom
-  have hML : M ≤ 4 * P.n + 1 := by omega
+  have hW := hroom
+  have hML : M ≤ 4 * P.n + 1 := by_o
   -- 1. the layout
   unfold finalStmt
   refine spec_seq ?_
@@ -101,7 +101,7 @@ theorem finalStage : Core.FinalStageSpec := by
   · config_simp; rw [hA', h9991, h9993]; omega
   · config_simp; rw [hA', h9991, h9993]; omega
   refine spec_name fun c₁ hc₁ => ?_
-  have hw₁ : WordsBounded W c₁ := by rw [hc₁]; assumption
+  have hw₁ : WordsBounded W c₁ := by rwa [hc₁]
   have r1 : ∀ r, r ≠ 200 → r ≠ 201 → r ≠ 202 → r ≠ 252 → r ≠ 253 → c₁.nreg r = c.nreg r := by
     intro r a b d e f; rw [hc₁]; config_simp
     simp only [Machine.upd_apply, a, b, d, e, f, ite_false]
@@ -116,43 +116,43 @@ theorem finalStage : Core.FinalStageSpec := by
   -- 2. the diagonal list
   refine spec_seq (spec_use (diagStmt_exec (P := P) (Q := Q) (W := W) hQ hQn hT hC
     (DB := A) (HB := A + 2 * M) (SB := A + 2 * M + P.n) (M := M) c₁ hw₁ c200 c201 c202
-    (by rw [r1 9991 (by decide) (by decide) (by decide) (by decide) (by decide), h9991])
-    (by rw [r1 9993 (by decide) (by decide) (by decide) (by decide) (by decide), h9993])
-    (by rw [m1, r1 9990 (by decide) (by decide) (by decide) (by decide) (by decide)]; exact hTab)
-    (by rw [m1, r1 9992 (by decide) (by decide) (by decide) (by decide) (by decide)]; exact hCab)
-    (by rw [r1 9990 (by decide) (by decide) (by decide) (by decide) (by decide)]; omega)
-    (by rw [r1 9992 (by decide) (by decide) (by decide) (by decide) (by decide)]; omega)
-    le_rfl le_rfl (by omega) le_rfl (by omega)) ?_)
+    (by rw [r1 9991 by_d by_d by_d by_d by_d, h9991])
+    (by rw [r1 9993 by_d by_d by_d by_d by_d, h9993])
+    (by rwa [m1, r1 9990 by_d by_d by_d by_d by_d])
+    (by rwa [m1, r1 9992 by_d by_d by_d by_d by_d])
+    (by rw [r1 9990 by_d by_d by_d by_d by_d]; omega)
+    (by rw [r1 9992 by_d by_d by_d by_d by_d]; omega)
+    le_rfl le_rfl by_o le_rfl by_o) ?_)
   rintro c₂ k₂ hk₂ hw₂ ⟨E, hE, h206, hband, hfn₂, hfr₂, hnm₂, hrm₂, hout₂⟩
-  have hED : EnumDiags Q E := EnumDiags.perm (enumDiags_diagList hQ hT hC) hE.symm
-  have hElen : E.length ≤ M := hE.length_eq ▸ diagList_length_le_tables Q T Cs
-  have hElen' : E.length ≤ 4 * P.n + 1 := hQn ▸ (hE.length_eq ▸ diagList_length_le hQ hT hC)
+  have hED := EnumDiags.perm (enumDiags_diagList hQ hT hC) hE.symm
+  have hElen := hE.length_eq ▸ diagList_length_le_tables Q T Cs
+  have hElen' := hQn ▸ (hE.length_eq ▸ diagList_length_le hQ hT hC)
   have hElt : ∀ d ∈ E, d.1 < P.n ∧ d.2 < P.n ∧ d.1 ≠ d.2 := by
     intro d hd
     have := diagList_lt hQ hT hC (hE.mem_iff.1 hd)
     rw [hQn] at this
-    exact ⟨by omega, this.2, by omega⟩
+    exact ⟨by_o, this.2, by_o⟩
   set ND := E.length with hND
   set NN := P.n + 2 * ND with hNN
   set B := A + 2 * M + P.n + M with hB
   -- 3. the orientation
-  refine spec_seq (spec_use (orientStmt_exec (P := P) (W := W) hPQ hQ c₂ hw₂ (by omega)) ?_)
+  refine spec_seq (spec_use (orientStmt_exec (P := P) (W := W) hPQ hQ c₂ hw₂ by_o) ?_)
   rintro c₃ k₃ hk₃ hw₃ ⟨hσ₃, hfn₃, hfr₃, hnm₃, hrm₃, hout₃⟩
   have R3 : ∀ r, (r < 203 ∨ 227 < r) → (r < 230 ∨ 236 < r) → c₃.nreg r = c₁.nreg r := by
     intro r h1 h2; rw [hfn₃ r h2, hfn₂ r h1]
   -- 4. the splitting registers
   refine spec_seq ?_
   exec_block
-  · rw [R3 202 (by omega) (by omega), R3 253 (by omega) (by omega), c202, c253]; omega
+  · rw [R3 202 by_o by_o, R3 253 by_o by_o, c202, c253]; omega
   refine spec_name fun c₄ hc₄ => ?_
-  have hw₄ : WordsBounded W c₄ := by rw [hc₄]; assumption
+  have hw₄ : WordsBounded W c₄ := by rwa [hc₄]
   have c4_100 : c₄.nreg 100 = B := by
-    rw [hc₄]; config_simp; rw [R3 202 (by omega) (by omega), R3 253 (by omega) (by omega), c202,
+    rw [hc₄]; config_simp; rw [R3 202 by_o by_o, R3 253 by_o by_o, c202,
       c253]
   have c4_101 : c₄.nreg 101 = A := by
-    rw [hc₄]; config_simp; rw [R3 200 (by omega) (by omega), c200]
+    rw [hc₄]; config_simp; rw [R3 200 by_o by_o, c200]
   have c4_102 : c₄.nreg 102 = ND := by
-    rw [hc₄]; config_simp; rw [hfn₃ 206 (by omega), h206]
+    rw [hc₄]; config_simp; rw [hfn₃ 206 by_o, h206]
   have c4σ : c₄.rreg 100 = orient Q := by rw [hc₄]; config_simp; exact hσ₃
   have m4 : c₄.nmem = c₂.nmem := by rw [hc₄]; config_simp; exact hnm₃
   -- 5. the splitting
@@ -160,19 +160,19 @@ theorem finalStage : Core.FinalStageSpec := by
       c₄.nmem (A + 2 * j + 1) = (E.getD j (0, 0)).2 := by
     intro j hj; rw [m4]; exact hband j hj
   refine spec_seq (spec_use (splitStmt_exec (P := P) (W := W) (B := B) (DB := A) (ND := ND)
-    (NN := NN) (σ := orient Q) (D := E) c₄ hw₄ c4_100 c4_101 c4_102 c4σ rfl rfl hElt (by omega)
-    hband₄ (Or.inl (by omega)) (by omega) (by omega)) ?_)
+    (NN := NN) (σ := orient Q) (D := E) c₄ hw₄ c4_100 c4_101 c4_102 c4σ rfl rfl hElt by_o
+    hband₄ (Or.inl by_o) by_o by_o) ?_)
   rintro c₅ k₅ hk₅ hw₅ ⟨hS₅, h115, hfn₅, hfr₅, hnm₅, hrm₅, hout₅⟩
   -- 6. the output registers
   have e252 : c₅.nreg 252 = P.n := by
-    rw [hfn₅ 252 (by omega), hc₄]; config_simp
-    rw [R3 252 (by omega) (by omega), c252]
+    rw [hfn₅ 252 by_o, hc₄]; config_simp
+    rw [R3 252 by_o by_o, c252]
   refine spec_seq ?_
   exec_block
   · config_simp; rw [hS₅.r109, e252]; omega
   · config_simp; rw [hS₅.r109, e252, h115]; omega
   refine spec_name fun c₆ hc₆ => ?_
-  have hw₆ : WordsBounded W c₆ := by rw [hc₆]; assumption
+  have hw₆ : WordsBounded W c₆ := by rwa [hc₆]
   -- the structure and its cycles (for `Q`)
   set S := runState P (orient Q) (initState P.n) E with hSdef
   obtain ⟨cs, hR, hp⟩ := runState_spec hQ hED
@@ -187,21 +187,21 @@ theorem finalStage : Core.FinalStageSpec := by
       enum := ⟨E, hED, hp⟩
       repr := hR
       cnt := hcnt
-      lay1 := by omega
-      lay2 := by omega
-      lay3 := by omega
+      lay1 := by_o
+      lay2 := by_o
+      lay3 := by_o
       lay4 := by omega }
   have m6 : c₆.nmem = c₅.nmem := by rw [hc₆]
   have hBands : Bands c₆.nmem S NN (B + NN) B := by
     intro y hy
     rw [m6]
-    exact ⟨hS₅.mem.vtx y (by omega), hS₅.mem.nxt y (by omega)⟩
+    exact ⟨hS₅.mem.vtx y by_o, hS₅.mem.nxt y by_o⟩
   refine spec_use (outStmt_exec (P := P) (W := W) hX c₆ hw₆ hBands
     (by rw [hc₆]; config_simp; exact h115)
     (by rw [hc₆]; config_simp; rw [hS₅.r109, e252])
     (by rw [hc₆]; config_simp; exact hS₅.r106)
     (by rw [hc₆]; config_simp; exact hS₅.r105)
-    (by rw [hc₆]; config_simp; rw [hS₅.r109, e252, h115]) (by omega)) ?_
+    (by rw [hc₆]; config_simp; rw [hS₅.r109, e252, h115]) by_o) ?_
   rintro c₇ k₇ hk₇ hw₇ ⟨X, hX7, hout₇⟩
   refine ⟨?_, ?_⟩
   · -- the cost
@@ -211,7 +211,7 @@ theorem finalStage : Core.FinalStageSpec := by
       have h2 := countP_diagList_le hQ hT hC v
       rw [← hE.countP_eq] at h2
       omega
-    have hk₂' : k₂ ≤ 202 * T.length + 174 * Cs.length + 5 * P.n + 20 := hk₂
+    have hk₂' := hk₂
     nlinarith
   · rw [hout₇, hc₆]
     config_simp
@@ -219,9 +219,6 @@ theorem finalStage : Core.FinalStageSpec := by
     config_simp
     rw [hout₃, hout₂, hc₁]
     config_simp
-    rw [hout0, List.nil_append]
-    exact hX7
-
-end
+    rwa [hout0, List.nil_append]end
 
 end Chazelle.Final

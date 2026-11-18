@@ -51,7 +51,7 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
     (hcont2.tendsto 0).mono_left nhdsWithin_le_nhds (by rw [h0']; exact ball_mem_nhds w hr)
   obtain ⟨δ, hδs, hδ1, hδ2, hδ0⟩ := ((Chazelle.Jordan.edge_sides hP hi ht₀).and
     (hev1.and (hev2.and self_mem_nhdsWithin))).exists
-  have hδ0' : (0 : ℝ) < δ := hδ0
+  have hδ0' := hδ0
   have huv : u ≠ v := fun e => hh (by rw [e])
   have hsq := Chazelle.Jordan.sqLen_pos huv
   -- the two half-disks
@@ -91,7 +91,7 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
     have := hdet (-1); rw [show w.1 + -1 * ε = w.1 - ε by ring] at this; rw [this]; ring
   have hdp : Chazelle.det u v ((w.1 + ε, w.2) : Point) = -(ε * (v.2 - u.2)) := by
     have := hdet 1; rw [show w.1 + 1 * ε = w.1 + ε by ring] at this; rw [this]; ring
-  have hLR : offset u v t₀ δ ∈ P.filled ↔ offset u v t₀ (-δ) ∉ P.filled := hδs
+  have hLR := hδs
   rcases lt_or_gt_of_ne (sub_ne_zero.2 (Ne.symm hh)) with hneg | hpos
   · -- `v.2 < u.2`: the right neighbour is on the positive side
     have hpH : ((w.1 + ε, w.2) : Point) ∈ Hp := ⟨hp, by
@@ -111,7 +111,7 @@ theorem cross_sides {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n) {t₀
       show 0 < -1 * _; rw [hdp]; nlinarith⟩
     have e1 := FactsInterior.filled_iff_of_preconnected hP (hpre 1) (hsub 1) hmH hL
     have e2 := FactsInterior.filled_iff_of_preconnected hP (hpre (-1)) (hsub (-1)) hpH hR
-    rw [e1, e2]; exact hLR
+    rwa [e1, e2]
 
 variable {Q : Polygon} {C : Chain}
 
@@ -121,9 +121,9 @@ theorem sub_chord {y a b x : ℝ} (hab : a ≤ x ∧ x ≤ b)
     (ha : ((a, y) : Point) ∉ Q.filled \ Q.boundary) (hb : ((b, y) : Point) ∉ Q.filled \ Q.boundary)
     (hx : ((x, y) : Point) ∈ Q.filled \ Q.boundary) (hQ : Q.Simple) :
     ∃ a' b', a ≤ a' ∧ a' < x ∧ x < b' ∧ b' ≤ b ∧ IsHChordIn (Q.filled \ Q.boundary) y a' b' := by
-  have hDo : IsOpen (Q.filled \ Q.boundary) := Chazelle.Jordan.isOpen_filled_sdiff_boundary hQ
+  have hDo := Chazelle.Jordan.isOpen_filled_sdiff_boundary hQ
   have hcont : Continuous (fun t : ℝ => ((t, y) : Point)) := by fun_prop
-  have hclo : IsClosed {t : ℝ | ((t, y) : Point) ∉ Q.filled \ Q.boundary} :=
+  have hclo :=
     hDo.isClosed_compl.preimage hcont
   -- the left end
   set A := Icc a x ∩ {t : ℝ | ((t, y) : Point) ∉ Q.filled \ Q.boundary} with hA
@@ -132,11 +132,11 @@ theorem sub_chord {y a b x : ℝ} (hab : a ≤ x ∧ x ≤ b)
   have hAbdd : BddAbove A := ⟨x, fun t ht => ht.1.2⟩
   have ha'A := hAc.csSup_mem hAne hAbdd
   set a' := sSup A with ha'
-  have ha'x : a' < x := lt_of_le_of_ne ha'A.1.2 (fun e => ha'A.2 (by rw [e]; exact hx))
+  have ha'x : a' < x := lt_of_le_of_ne ha'A.1.2 (fun e => ha'A.2 (by rwa [e]))
   have hleft : ∀ t, a' < t → t ≤ x → ((t, y) : Point) ∈ Q.filled \ Q.boundary := by
     intro t ht1 ht2
     by_contra hn
-    have : t ≤ a' := le_csSup hAbdd ⟨⟨le_trans ha'A.1.1 ht1.le, ht2⟩, hn⟩
+    have := le_csSup hAbdd ⟨⟨le_trans ha'A.1.1 ht1.le, ht2⟩, hn⟩
     linarith
   -- the right end
   set B := Icc x b ∩ {t : ℝ | ((t, y) : Point) ∉ Q.filled \ Q.boundary} with hB
@@ -145,14 +145,14 @@ theorem sub_chord {y a b x : ℝ} (hab : a ≤ x ∧ x ≤ b)
   have hBbdd : BddBelow B := ⟨x, fun t ht => ht.1.1⟩
   have hb'B := hBc.csInf_mem hBne hBbdd
   set b' := sInf B with hb'
-  have hxb' : x < b' := lt_of_le_of_ne hb'B.1.1 (fun e => hb'B.2 (by rw [← e]; exact hx))
+  have hxb' : x < b' := lt_of_le_of_ne hb'B.1.1 (fun e => hb'B.2 (by rwa [← e]))
   have hright : ∀ t, x ≤ t → t < b' → ((t, y) : Point) ∈ Q.filled \ Q.boundary := by
     intro t ht1 ht2
     by_contra hn
-    have : b' ≤ t := csInf_le hBbdd ⟨⟨ht1, le_trans ht2.le hb'B.1.2⟩, hn⟩
+    have := csInf_le hBbdd ⟨⟨ht1, le_trans ht2.le hb'B.1.2⟩, hn⟩
     linarith
   refine ⟨a', b', ha'A.1.1, ha'x, hxb', hb'B.1.2,
-    ⟨by linarith, ha'A.2, hb'B.2, fun t ht1 ht2 => ?_⟩⟩
+    ⟨by_l, ha'A.2, hb'B.2, fun t ht1 ht2 => ?_⟩⟩
   rcases le_or_gt t x with h | h
   · exact hleft t ht1 h
   · exact hright t h.le ht2
@@ -180,7 +180,7 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
       ((e, y) : Point) ∈ closure (Q.filled \ Q.boundary) →
       ∃ s ∈ Ioo (0 : ℝ) 1, ((e, y) : Point) = lerp (Q.vtx C.m) (Q.vtx 0) s := by
     intro e hae heb hnD hcl
-    have hf : ((e, y) : Point) ∈ Q.filled :=
+    have hf :=
       closure_minimal (fun z hz => hz.1) (Chazelle.Jordan.isClosed_filled Q) hcl
     have hbd : ((e, y) : Point) ∈ Q.boundary := by
       by_contra h; exact hnD ⟨hf, h⟩
@@ -194,24 +194,24 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
     have h1 := congrArg Prod.fst h
     have h1' := congrArg Prod.fst h'
     simp only [Chazelle.Geometry.lerp_fst, Chazelle.Geometry.lerp_snd] at h1 h1' h2 h2'
-    have hne : (Q.vtx 0).2 - (Q.vtx C.m).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hh)
+    have hne := sub_ne_zero.2 (Ne.symm hh)
     have hss : s = s' := by
-      have : (s - s') * ((Q.vtx 0).2 - (Q.vtx C.m).2) = 0 := by linarith
+      have : (s - s') * ((Q.vtx 0).2 - (Q.vtx C.m).2) = 0 := by_l
       rcases mul_eq_zero.1 this with h | h
       · linarith
       · exact absurd h hne
     subst hss
-    exact ⟨rfl, by linarith⟩
+    exact ⟨rfl, by_l⟩
   -- closure points
   have hclL : ∀ {a' b' : ℝ}, IsHChordIn (Q.filled \ Q.boundary) y a' b' →
       ((b', y) : Point) ∈ closure (Q.filled \ Q.boundary) := by
     intro a' b' hc'
     refine Metric.mem_closure_iff.2 fun ε hε => ?_
     set m := min (ε / 2) ((b' - a') / 2)
-    have hm0 : 0 < m := lt_min (by linarith) (by linarith [hc'.lt])
+    have hm0 : 0 < m := lt_min by_l (by linarith [hc'.lt])
     have hm1 : m < ε := by have := min_le_left (ε / 2) ((b' - a') / 2); linarith
     have hm2 : m < b' - a' := by have := min_le_right (ε / 2) ((b' - a') / 2); linarith [hc'.lt]
-    refine ⟨(b' - m, y), hc'.open_mem _ (by linarith) (by linarith), ?_⟩
+    refine ⟨(b' - m, y), hc'.open_mem _ by_l by_l, ?_⟩
     rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_self, abs_zero,
       show b' - (b' - m) = m by ring, abs_of_pos hm0]
     exact max_lt hm1 hε
@@ -220,10 +220,10 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
     intro a' b' hc'
     refine Metric.mem_closure_iff.2 fun ε hε => ?_
     set m := min (ε / 2) ((b' - a') / 2)
-    have hm0 : 0 < m := lt_min (by linarith) (by linarith [hc'.lt])
+    have hm0 : 0 < m := lt_min by_l (by linarith [hc'.lt])
     have hm1 : m < ε := by have := min_le_left (ε / 2) ((b' - a') / 2); linarith
     have hm2 : m < b' - a' := by have := min_le_right (ε / 2) ((b' - a') / 2); linarith [hc'.lt]
-    refine ⟨(a' + m, y), hc'.open_mem _ (by linarith) (by linarith), ?_⟩
+    refine ⟨(a' + m, y), hc'.open_mem _ by_l by_l, ?_⟩
     rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_self, abs_zero,
       show a' - (a' + m) = -m by ring, abs_neg, abs_of_pos hm0]
     exact max_lt hm1 hε
@@ -242,7 +242,7 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
     obtain ⟨ε₀, hε₀, hcross⟩ := cross_sides hQ hmn hs hh'
     rw [hsucc, ← e] at hcross
     set ε := min (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2)) with hεd
-    have hε0 : 0 < ε := lt_min (by linarith) (lt_min (by linarith [hc₁.lt]) (by linarith [hc₂.lt]))
+    have hε0 : 0 < ε := lt_min by_l (lt_min (by linarith [hc₁.lt]) (by linarith [hc₂.lt]))
     have hε1 : ε < ε₀ := by have := min_le_left (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2)); linarith
     have hε2 : ε < b₁ - a₁ := by
       have := min_le_right (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2))
@@ -250,8 +250,8 @@ theorem one_piece (hQ : Q.Simple) (T : Top Q C) (hh : (Q.vtx C.m).2 ≠ (Q.vtx 0
     have hε3 : ε < b₂ - b₁ := by
       have := min_le_right (ε₀ / 2) (min ((b₁ - a₁) / 2) ((b₂ - b₁) / 2))
       have := min_le_right ((b₁ - a₁) / 2) ((b₂ - b₁) / 2); linarith [hc₂.lt]
-    have hl := hc₁.open_mem (b₁ - ε) (by linarith) (by linarith)
-    have hr := hc₂.open_mem (b₁ + ε) (by linarith) (by linarith)
+    have hl := hc₁.open_mem (b₁ - ε) by_l by_l
+    have hr := hc₂.open_mem (b₁ + ε) by_l by_l
     exact ((hcross ε hε0 hε1).1 hl.1) hr.1
   rcases lt_trichotomy a₁ a₂ with h | h | h
   · have hb₁a₂ : b₁ ≤ a₂ := by

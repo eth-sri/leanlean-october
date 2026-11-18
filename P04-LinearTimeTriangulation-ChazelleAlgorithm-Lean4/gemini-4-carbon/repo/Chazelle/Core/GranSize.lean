@@ -125,7 +125,7 @@ theorem edge_lt' (hN : IsNF M Q N) (hne : (N.F M Q).Nonempty) {j : ℕ} (hj : j 
   obtain ⟨-, -, -, -, -, -, -, -, -, -, hpp⟩ := id hN
   obtain ⟨hs0, hs1, -⟩ := (hpp _ (NFLoc.seq_lt hN hj)).1
   unfold pk Model.key at hk
-  have hfl : ((N.arc (N.seq.getD j 0)).s.edge : ℝ) < p + 1 := by linarith
+  have hfl : ((N.arc (N.seq.getD j 0)).s.edge : ℝ) < p + 1 := by_l
   have : (N.arc (N.seq.getD j 0)).s.edge < p + 1 := by exact_mod_cast hfl
   omega
 

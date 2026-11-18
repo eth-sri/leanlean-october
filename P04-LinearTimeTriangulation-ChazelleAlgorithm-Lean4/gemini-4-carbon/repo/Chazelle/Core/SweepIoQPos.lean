@@ -89,11 +89,11 @@ theorem posClass_pt {C : Chain} {Q : Polygon} {x : WPos} (hx : PosClass C Q x)
   rw [hW] at hy ⊢
   rcases hx with (h | h) | ⟨h6, hlt⟩ | ⟨hend, hz⟩
   · right; rw [h, b1]; simp only; rw [abs_neg, abs_of_pos hR]
-    exact ⟨rfl, by rw [h, b1] at hy; exact hy⟩
+    exact ⟨rfl, by rwa [h, b1] at hy⟩
   · right; rw [h, b3]; simp only; rw [abs_of_pos hR]
-    exact ⟨rfl, by rw [h, b3] at hy; exact hy⟩
+    exact ⟨rfl, by rwa [h, b3] at hy⟩
   · left
-    have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := t) (by omega)
+    have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := t) by_o
       (fun h => by omega) h0 h1
     rwa [show x.edge - 6 + 6 = x.edge by omega] at this
   · left
@@ -114,16 +114,16 @@ theorem not_sideLeft_bottom (C : Chain) {σ : ℝ} (_hσ : σ = 1 ∨ σ = -1) {
   rcases hp with rfl | rfl
   · rw [show (2 + (C.sideWalk C.sideBeta).n - 1) % (C.sideWalk C.sideBeta).n = 1 by
         rw [hn, show 2 + (2 * C.m + 7) - 1 = 1 + (2 * C.m + 7) by omega, Nat.add_mod_right,
-          Nat.mod_eq_of_lt (by omega)],
-      show (2 + 1) % (C.sideWalk C.sideBeta).n = 3 by rw [hn]; exact Nat.mod_eq_of_lt (by omega),
+          Nat.mod_eq_of_lt by_o],
+      show (2 + 1) % (C.sideWalk C.sideBeta).n = 3 by rw [hn]; exact Nat.mod_eq_of_lt by_o,
       C.sideWalk_vtx_one, C.sideWalk_vtx_two, C.sideWalk_vtx_three]
     simp only [sideCross, Chazelle.Chain.sideDot, rayPt, Prod.fst_sub, Prod.snd_sub]
     intro h
     rcases h with ⟨-, h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩ <;> nlinarith
   · rw [show (3 + (C.sideWalk C.sideBeta).n - 1) % (C.sideWalk C.sideBeta).n = 2 by
         rw [hn, show 3 + (2 * C.m + 7) - 1 = 2 + (2 * C.m + 7) by omega, Nat.add_mod_right,
-          Nat.mod_eq_of_lt (by omega)],
-      show (3 + 1) % (C.sideWalk C.sideBeta).n = 4 by rw [hn]; exact Nat.mod_eq_of_lt (by omega),
+          Nat.mod_eq_of_lt by_o],
+      show (3 + 1) % (C.sideWalk C.sideBeta).n = 4 by rw [hn]; exact Nat.mod_eq_of_lt by_o,
       C.sideWalk_vtx_two, C.sideWalk_vtx_three, C.sideWalk_vtx_four]
     simp only [sideCross, Chazelle.Chain.sideDot, rayPt, Prod.fst_sub, Prod.snd_sub]
     intro h
@@ -139,7 +139,7 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
   have hn := cm_n C
   have hR := C.radius_pos
   have htR := C.top_snd_lt_radius
-  have htm : |C.top.2| < C.radius := absy_lt C C.top_mem_set
+  have htm := absy_lt C C.top_mem_set
   have htl := (abs_lt.1 htm).1
   set t := (chainModel C).param Q x with ht
   rw [pos_eq_sidePt' C Q x, ← ht] at htop hsec ⊢
@@ -158,9 +158,9 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
         rcases h0.lt_or_eq with h0 | h0
         · exfalso
           apply Sweep.not_sideLeft_horizontal h0 h1 (W := (chainModel C).W) (p := 2) _ σ
-          · rw [← h]; exact hsec
+          · rwa [← h]
           · rw [hW, C.sideWalk_vtx_two, show (2 + 1) % (C.sideWalk C.sideBeta).n = 3 by
-              rw [C.sideWalk_n]; exact Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_three]
+              rw [C.sideWalk_n]; exact Nat.mod_eq_of_lt by_o, C.sideWalk_vtx_three]
         · exact h0.symm
       rw [h, ht0] at hsec
       exact not_sideLeft_bottom C hσ (Or.inl rfl) hsec
@@ -172,14 +172,14 @@ theorem query_abs {C : Chain} {Q : Polygon} {x : WPos} (he : x.edge < (chainMode
         exact not_sideLeft_bottom C hσ (Or.inr rfl) hsec
     · rw [hW, h, b4] at htop; simp only at htop; linarith
     · rw [hW, h, b5] at htop; simp only at htop; nlinarith
-  · have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := t) (by omega)
+  · have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := t) by_o
       (fun h => by omega) h0 h1
     rw [show x.edge - 6 + 6 = x.edge by omega] at this
-    exact absy_lt C (by rw [hW]; exact this)
+    exact absy_lt C (by rwa [hW])
   · rw [hW, hend, b6] at htop ⊢; simp only at htop ⊢
-    have : t * (C.radius - C.top.2) ≤ 0 := by linarith
-    have ht0 : t = 0 := by nlinarith
-    rw [ht0, zero_mul, add_zero]; exact htm
+    have : t * (C.radius - C.top.2) ≤ 0 := by_l
+    have ht0 : t = 0 := by_nl
+    rwa [ht0, zero_mul, add_zero]
 
 end
 

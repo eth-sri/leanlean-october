@@ -89,8 +89,8 @@ theorem exists_pos_after_both {p : ℕ} {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) {
     ∃ t' ∈ Ioo (0 : ℝ) 1, A (p + t') ∧ B (p + t') := by
   obtain ⟨ε, h1, h2, h3⟩ := ((WalkAx.exists_pos_after ht ht1).and (hA.and hB)).exists
   refine ⟨t + ε, h1, ?_, ?_⟩
-  · rw [← add_assoc]; exact h2
-  · rw [← add_assoc]; exact h3
+  · rwa [← add_assoc]
+  · rwa [← add_assoc]
 
 /-! ## Weights -/
 
@@ -143,7 +143,7 @@ theorem arcWt_zero_zero : M.arcWt 0 0 = M.size := by
   constructor
   · rintro ⟨hp, hc, -⟩; exact ⟨hp, hc⟩
   · rintro ⟨hp, hc⟩
-    refine ⟨hp, hc, 1 / 2, by norm_num, by norm_num, ?_⟩
+    refine ⟨hp, hc, 1 / 2, by_n, by_n, ?_⟩
     unfold sideInArc
     rw [ite_eq_right (lt_irrefl (0:ℝ))]
     left
@@ -162,7 +162,7 @@ theorem isArc_empty_iff (hM : WalkAx M) {U : Set Point} (hU : U ∈ M.regions �
       have : 0 < M.W.n := by
         by_contra h0
         obtain ⟨z, hz⟩ := hM.nonempty
-        obtain ⟨s, -, -, p, hp, -⟩ := hM.reach z hz (fun i hi => absurd hi (by omega))
+        obtain ⟨s, -, -, p, hp, -⟩ := hM.reach z hz (fun i hi => absurd hi by_o)
         omega
       exact_mod_cast this
     refine ⟨le_rfl, hn, le_rfl, hn, Or.inr ⟨rfl, rfl, rfl⟩, fun x _ ⟨c, hc, _⟩ => ?_, ?_⟩
@@ -173,7 +173,7 @@ theorem isArc_empty_iff (hM : WalkAx M) {U : Set Point} (hU : U ∈ M.regions �
       have hD : M.regions ∅ = {M.D} := Chazelle.Chain.regionsIn_empty hM.preconn hM.nonempty
       have e1 : U = M.D := by rw [hD] at hU; exact hU
       have e2 : V = M.D := by rw [hD] at hV; exact hV
-      rw [e1, ← e2]; exact hfV
+      rwa [e1, ← e2]
 
 /-- The weight of the only region of the empty family is `size`. -/
 theorem weight_empty (hM : WalkAx M) {U : Set Point} (hU : U ∈ M.regions ∅) :

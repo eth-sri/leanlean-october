@@ -34,15 +34,15 @@ theorem gT_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO n g : ℕ) :
   set S := stepB κB κL κG κO g with hS
   set cnt := gradeCount n g with hcnt
   have h1 : gT κB κL κG κO n g ≤ (cnt + 1) * (S + 19) + 17 * g + 100 := by
-    have e : (cnt + 1) * (S + 19) = cnt * (S + 19) + S + 19 := by ring
-    have e2 : stepB κB κL κG κO g = S := hS.symm
-    have e3 : gradeCount n g = cnt := hcnt.symm
+    have e : (cnt + 1) * (S + 19) = cnt * (S + 19) + S + 19 := by_r
+    have e2 := hS.symm
+    have e3 := hcnt.symm
     unfold gT gradeC; rw [e2, e3]; omega
   have h1' : (gT κB κL κG κO n g : ℝ) ≤ ((cnt : ℝ) + 1) * ((S : ℝ) + 19) + 17 * g + 100 := by
     exact_mod_cast h1
   have hSt := stepB_le κB κL κG κO g
   rw [← hS] at hSt; push_cast at hSt
-  have h2g : (0 : ℝ) < (2 : ℝ) ^ g := by positivity
+  have h2g : (0 : ℝ) < (2 : ℝ) ^ g := by_p
   have hc : (cnt : ℝ) + 1 ≤ (n : ℝ) / (2 : ℝ) ^ g + 2 := by
     rw [hcnt]; unfold gradeCount
     have : (((n - 2) / 2 ^ g : ℕ) : ℝ) ≤ ((n - 2 : ℕ) : ℝ) / ((2 ^ g : ℕ) : ℝ) := Nat.cast_div_le
@@ -54,19 +54,19 @@ theorem gT_le (κB κL : ℕ) (κG : ℕ → ℕ) (κO n g : ℕ) :
   have hK := K1_nonneg κB κL κG κO
   have hY := Yg_le g
   have hY0 := Yg_pos g
-  have hS0 : (0 : ℝ) ≤ (S : ℝ) + 19 := by positivity
-  have hc0 : (0 : ℝ) ≤ (cnt : ℝ) + 1 := by positivity
+  have hS0 : (0 : ℝ) ≤ (S : ℝ) + 19 := by_p
+  have hc0 : (0 : ℝ) ≤ (cnt : ℝ) + 1 := by_p
   have e : ((n : ℝ) / (2 : ℝ) ^ g + 2) * Yg g =
       (n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * Yg g := by
     unfold Yg; field_simp
   have i1 : ((cnt : ℝ) + 1) * ((S : ℝ) + 19) ≤ ((n : ℝ) / (2 : ℝ) ^ g + 2) * (K1 κB κL κG κO * Yg g) :=
-    mul_le_mul hc hSt hS0 (by positivity)
+    mul_le_mul hc hSt hS0 by_p
   have i2 : ((n : ℝ) / (2 : ℝ) ^ g + 2) * (K1 κB κL κG κO * Yg g) =
       K1 κB κL κG κO * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * Yg g) := by
     rw [← e]; ring
   have i3 : K1 κB κL κG κO * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * Yg g) ≤
       K1 κB κL κG κO * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * (2 : ℝ) ^ g) :=
-    mul_le_mul_of_nonneg_left (by linarith) hK
+    mul_le_mul_of_nonneg_left by_l hK
   linarith
 
 /-- **All grades cost `O(n)`.** -/
@@ -74,7 +74,7 @@ theorem upT_le_real (κB κL : ℕ) (κG : ℕ → ℕ) (κO n : ℕ) (hn : 2 �
     (upT κB κL κG κO n : ℝ) ≤ (312 * K1 κB κL κG κO + 3200) * n := by
   set p := topGrade n with hp
   set K := K1 κB κL κG κO with hK
-  have hK0 : 0 ≤ K := K1_nonneg κB κL κG κO
+  have hK0 := K1_nonneg κB κL κG κO
   unfold upT
   rw [← hp]
   push_cast
@@ -88,12 +88,12 @@ theorem upT_le_real (κB κL : ℕ) (κG : ℕ → ℕ) (κO n : ℕ) (hn : 2 �
           Finset.sum_le_sum fun g _ => by
             have := gT_le κB κL κG κO n g
             have e : K * ((n : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 76) + 2 * (2 : ℝ) ^ g) =
-              K * n * (2 : ℝ) ^ (-(g : ℝ) / 76) + K * 2 * (2 : ℝ) ^ g := by ring
+              K * n * (2 : ℝ) ^ (-(g : ℝ) / 76) + K * 2 * (2 : ℝ) ^ g := by_r
             linarith
       _ = _ := by rw [Finset.sum_add_distrib, Finset.sum_add_distrib, Finset.mul_sum,
             Finset.mul_sum]
   have hA : ∑ g ∈ Finset.range (p + 1), (2 : ℝ) ^ (-(g : ℝ) / 76) ≤ 304 := by
-    have := sum_two_rpow_neg_le 76 (by norm_num) (p + 1); push_cast at this; linarith
+    have := sum_two_rpow_neg_le 76 by_n (p + 1); push_cast at this; linarith
   have hB : ∑ g ∈ Finset.range (p + 1), (2 : ℝ) ^ g ≤ 4 * n := by
     have h1 := sum_pow_two (p + 1)
     have h2 := two_pow_le_of_le_top hn (le_refl (topGrade n))
@@ -111,17 +111,17 @@ theorem upT_le_real (κB κL : ℕ) (κG : ℕ → ℕ) (κO n : ℕ) (hn : 2 �
     have h4 := sq_le_two_pow p
     have h5 := two_pow_le_of_le_top hn (le_refl (topGrade n))
     rw [← hp] at h5
-    have h6 : (p + 1) * (17 * p + 100) ≤ 3200 * n := by omega
+    have h6 : (p + 1) * (17 * p + 100) ≤ 3200 * n := by_o
     have h7 : ((p + 1 : ℕ) : ℝ) * (17 * (p : ℝ) + 100) ≤ 3200 * n := by exact_mod_cast h6
     push_cast at h7 h2
     linarith
   have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
   have i1 := mul_le_mul_of_nonneg_left hA (show 0 ≤ K * (n : ℝ) by positivity)
   have i2 : K * 2 * ∑ g ∈ Finset.range (p + 1), (2 : ℝ) ^ g ≤ 8 * (K * n) := by
-    have := mul_le_mul_of_nonneg_left hB (show 0 ≤ K * 2 by positivity)
-    have e : K * 2 * (4 * (n : ℝ)) = 8 * (K * n) := by ring
+    have := mul_le_mul_of_nonneg_left hB (by positivity)
+    have e : K * 2 * (4 * (n : ℝ)) = 8 * (K * n) := by_r
     linarith
-  have e3 : (312 * K + 3200) * (n : ℝ) = 312 * (K * n) + 3200 * n := by ring
+  have e3 : (312 * K + 3200) * (n : ℝ) = 312 * (K * n) + 3200 * n := by_r
   linarith
 
 /-- **All grades cost `O(n)`** (natural-number form). -/

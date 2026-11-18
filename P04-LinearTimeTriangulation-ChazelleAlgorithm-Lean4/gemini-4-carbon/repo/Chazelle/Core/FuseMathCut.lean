@@ -124,7 +124,7 @@ theorem corner_east {R : ℝ} (hR : v.2 < R) (hN : N.2 < v.2) :
     sideLeftOf ((v.1, R) : Point) v N (rayPt v 1 1) := by
   unfold sideLeftOf
   rw [rayPt_sub_one]
-  refine Chain.sideCcw_east (by simp) (by simp; linarith) rfl one_pos (by simp; linarith)
+  refine Chain.sideCcw_east by_s (by simp; linarith) rfl one_pos (by simp; linarith)
     (sub_ne_zero.2 fun e => by rw [e] at hN; exact lt_irrefl _ hN) ?_
   unfold sideCross
   simp only [Prod.fst_sub, Prod.snd_sub]
@@ -137,7 +137,7 @@ theorem corner_west {R : ℝ} (hR : v.2 < R) (hP : P.2 < v.2) :
     sideLeftOf P v ((v.1, R) : Point) (rayPt v (-1) 1) := by
   unfold sideLeftOf
   rw [rayPt_sub_one]
-  refine Chain.sideCcw_west (by simp) (by simp; linarith) rfl (by norm_num) (by simp; linarith)
+  refine Chain.sideCcw_west by_s (by simp; linarith) rfl by_n (by simp; linarith)
     (sub_ne_zero.2 fun e => by rw [e] at hP; exact lt_irrefl _ hP) ?_
   unfold sideCross
   simp only [Prod.fst_sub, Prod.snd_sub]
@@ -190,7 +190,7 @@ theorem corner_pair (hP : P.2 ≠ v.2) (hN : N.2 ≠ v.2) :
       unfold sideCross; simp only [Prod.fst_sub, Prod.snd_sub]
       intro e; apply hN; linarith
   · rcases lt_or_gt_of_ne hP with hP' | hP' <;> rcases lt_or_gt_of_ne hN with hN' | hN'
-    · right; exact ⟨hpos, by nlinarith⟩
+    · right; exact ⟨hpos, by_nl⟩
     · left
       refine ⟨-1, Or.inr rfl, (Chain.sideLeftOf_iff_pos hpos).2 ⟨?_, ?_⟩⟩
       · rw [det_rayPt_left]; linarith
@@ -199,14 +199,14 @@ theorem corner_pair (hP : P.2 ≠ v.2) (hN : N.2 ≠ v.2) :
       refine ⟨1, Or.inl rfl, (Chain.sideLeftOf_iff_pos hpos).2 ⟨?_, ?_⟩⟩
       · rw [det_rayPt_left]; linarith
       · rw [det_rayPt_right]; linarith
-    · right; exact ⟨hpos, by nlinarith⟩
+    · right; exact ⟨hpos, by_nl⟩
 
 /-- A full-turn corner at a vertex different from its neighbour contains a horizontal
 direction. -/
 theorem corner_full_ne (h : P ≠ v) : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ sideLeftOf P v P (rayPt v σ 1) := by
   by_cases h2 : P.2 = v.2
   · have h1 : P.1 ≠ v.1 := fun e => h (Prod.ext e h2)
-    have hne : P - v ≠ 0 := sub_ne_zero.2 h
+    have hne := sub_ne_zero.2 h
     have hcr : ∀ σ : ℝ, sideCross (P - v) ((σ, 0) : Point) = 0 := by
       intro σ; unfold sideCross; simp only [Prod.fst_sub, Prod.snd_sub]; rw [h2]; ring
     rcases lt_or_gt_of_ne h1 with hl | hg
@@ -241,7 +241,7 @@ theorem vkey_nbrs (hP : J.P.Simple) {k : ℕ} (hk : k < (chainModel J.whole).W.n
     (sideNext (chainModel J.whole).W k = sharedU J ∨ sideNext (chainModel J.whole).W k = sharedW J ∨
       (sideNext (chainModel J.whole).W k = J.whole.slitTop ∧ sharedV J = J.whole.top)) := by
   set C := J.whole with hC
-  have hP' : C.P.Simple := hP
+  have hP' := hP
   have hm₁ : J.m₁ ≤ C.m := by rw [hC, Merge.Junction.whole_m]; omega
   have hvbox : sharedV J ∈ Chain.box C.radius := C.set_subset_box (C.vertex_mem_set hm₁)
   have hn := WalkEmbed.cm_n C
@@ -257,8 +257,8 @@ theorem vkey_nbrs (hP : J.P.Simple) {k : ℕ} (hk : k < (chainModel J.whole).W.n
     · exact WalkEmbed.corner_not_mem_box C (Or.inl rfl) hvbox
     · exact WalkEmbed.corner_not_mem_box C (Or.inl rfl) hvbox
     · exact WalkEmbed.slitTop_not_mem_box C hvbox
-  obtain ⟨i, rfl⟩ : ∃ i, k = i + 6 := ⟨k - 6, by omega⟩
-  have hi : i ≤ 2 * C.m := by omega
+  obtain ⟨i, rfl⟩ : ∃ i, k = i + 6 := ⟨k - 6, by_o⟩
+  have hi : i ≤ 2 * C.m := by_o
   have hidx : C.sideIdx C.sideBeta i = J.m₁ := by
     rw [WalkEmbed.cm_W, C.sideWalk_vtx_tour _ hi] at hv
     exact C.sideVertex_inj hP' (C.sideIdx_le _ _) hm₁ hv
@@ -268,7 +268,7 @@ theorem vkey_nbrs (hP : J.P.Simple) {k : ℕ} (hk : k < (chainModel J.whole).W.n
     rcases hj with hj | hj
     · right; rw [hj]; rfl
     · left; rw [show C.sideIdx C.sideBeta j = J.m₁ - 1 by omega]; rfl
-  refine ⟨by omega, ?_, ?_⟩
+  refine ⟨by_o, ?_, ?_⟩
   · unfold sidePrev
     rw [ite_eq_left rfl, WalkEmbed.cm_W]
     rcases Nat.eq_zero_or_pos i with rfl | hi0
@@ -276,19 +276,19 @@ theorem vkey_nbrs (hP : J.P.Simple) {k : ℕ} (hk : k < (chainModel J.whole).W.n
       rw [C.sideWalk_prev_six, C.sideWalk_vtx_five]
       refine ⟨rfl, ?_⟩
       rw [← hv, WalkEmbed.cm_W, zero_add, C.sideWalk_vtx_six]
-    · rw [C.sideWalk_prev_tour _ hi0 hi, C.sideWalk_vtx_tour _ (by omega)]
+    · rw [C.sideWalk_prev_tour _ hi0 hi, C.sideWalk_vtx_tour _ by_o]
       have hs := C.sideTour_step C.sideBeta (i - 1)
       rw [Nat.sub_add_cancel hi0, hidx] at hs
-      rcases hnb (i - 1) (by omega) with h | h
+      rcases hnb (i - 1) by_o with h | h
       · exact Or.inl h
       · exact Or.inr (Or.inl h)
   · unfold sideNext
     rw [WalkEmbed.cm_W]
     rcases lt_or_eq_of_le hi with hi' | rfl
-    · rw [C.sideWalk_next_tour _ hi', C.sideWalk_vtx_tour _ (by omega)]
+    · rw [C.sideWalk_next_tour _ hi', C.sideWalk_vtx_tour _ by_o]
       have hs := C.sideTour_step C.sideBeta i
       rw [hidx] at hs
-      rcases hnb (i + 1) (by omega) with h | h
+      rcases hnb (i + 1) by_o with h | h
       · exact Or.inl h
       · exact Or.inr (Or.inl h)
     · right; right
@@ -310,15 +310,15 @@ theorem vkey_cut_or_inner (hP : J.P.Simple) (hgen : SharedGeneric J) (S₁ S₂ 
     {k : ℕ} (hk : k < (chainModel J.whole).W.n) (hv : (chainModel J.whole).W.vtx k = sharedV J) :
     (chainModel J.whole).IsCut (J.fusion S₁ S₂ ∪ glueChords J) k ∨ InnerCopy J k := by
   set C := J.whole with hC
-  have hP' : C.P.Simple := hP
+  have hP' := hP
   obtain ⟨-, hPr, hNx⟩ := vkey_nbrs J hP hk hv
   set W := (chainModel C).W with hW
   set Pr := sidePrev W k 0 with hPr_def
   set Nx := sideNext W k with hNx_def
   have hm₁ : J.m₁ ≤ C.m := by rw [hC, Merge.Junction.whole_m]; omega
-  have hu : (sharedU J).2 ≠ (sharedV J).2 := hgen.1
-  have hw : (sharedW J).2 ≠ (sharedV J).2 := hgen.2.1
-  have hut : (sharedU J).2 ≤ C.top.2 := C.vertex_snd_le_top (j := J.m₁ - 1) (by omega)
+  have hu := hgen.1
+  have hw := hgen.2.1
+  have hut : (sharedU J).2 ≤ C.top.2 := C.vertex_snd_le_top (j := J.m₁ - 1) by_o
   have hwt : (sharedW J).2 ≤ C.top.2 :=
     C.vertex_snd_le_top (j := J.m₁ + 1) (by rw [hC, Merge.Junction.whole_m]; have := J.one_le_m₂; omega)
   have hvt : (sharedV J).2 ≤ C.top.2 := C.vertex_snd_le_top hm₁
@@ -339,7 +339,7 @@ theorem vkey_cut_or_inner (hP : J.P.Simple) (hgen : SharedGeneric J) (S₁ S₂ 
       unfold sideLeft; rw [hpt]; exact hl
     obtain ⟨hfree, hA⟩ := sideAttach_chordSet hP' hk hm₁ hpt hσ hl'
     refine ⟨C.chordSet J.m₁ σ, Or.inl (Merge.Junction.sharedChords_subset_fusion J S₁ S₂
-      ⟨σ, hσ, hfree, rfl⟩), k, 0, hA, by simp⟩
+      ⟨σ, hσ, hfree, rfl⟩), k, 0, hA, by_s⟩
   by_cases hPN : Pr = Nx
   · left
     refine hcut 1 (Or.inl rfl) ?_
@@ -356,7 +356,7 @@ theorem vkey_cut_or_inner (hP : J.P.Simple) (hgen : SharedGeneric J) (S₁ S₂ 
     · left
       refine hcut (-1) (Or.inr rfl) ?_
       rw [hNs, show C.slitTop = ((sharedV J).1, C.radius) by rw [hvT]; rfl]
-      exact corner_west (by rw [hvT]; exact hR) (lt_of_le_of_ne (hvT ▸ hPu ▸ hut) (hne _ (Or.inl hPu)))
+      exact corner_west (by rwa [hvT]) (lt_of_le_of_ne (hvT ▸ hPu ▸ hut) (hne _ (Or.inl hPu)))
   · rcases hNx with hNu | hNw | ⟨hNs, hvT⟩
     · rcases corner_pair (hne _ (Or.inr (Or.inl hPw))) (hne _ (Or.inl hNu)) with ⟨σ, hσ, hl⟩ | hexc
       · exact Or.inl (hcut σ hσ hl)
@@ -367,7 +367,7 @@ theorem vkey_cut_or_inner (hP : J.P.Simple) (hgen : SharedGeneric J) (S₁ S₂ 
     · left
       refine hcut (-1) (Or.inr rfl) ?_
       rw [hNs, show C.slitTop = ((sharedV J).1, C.radius) by rw [hvT]; rfl]
-      exact corner_west (by rw [hvT]; exact hR) (lt_of_le_of_ne (hvT ▸ hPw ▸ hwt) (hne _ (Or.inr (Or.inl hPw))))
+      exact corner_west (by rwa [hvT]) (lt_of_le_of_ne (hvT ▸ hPw ▸ hwt) (hne _ (Or.inr (Or.inl hPw))))
   · left
     have hN' : Nx.2 < (sharedV J).2 := by
       rcases hNx with hNu | hNw | ⟨hNs, -⟩
@@ -376,7 +376,7 @@ theorem vkey_cut_or_inner (hP : J.P.Simple) (hgen : SharedGeneric J) (S₁ S₂ 
       · exact absurd (hPs.trans hNs.symm) hPN
     refine hcut 1 (Or.inl rfl) ?_
     rw [hPs, show C.slitTop = ((sharedV J).1, C.radius) by rw [hvT]; rfl]
-    exact corner_east (by rw [hvT]; exact hR) hN'
+    exact corner_east (by rwa [hvT]) hN'
 
 /-- **There is at most one inner copy**: two inner copies have the same corner, hence overlapping
 left sectors at the same point, so they are the same walk position (`Chain.sideWalk_disj`). -/
@@ -385,7 +385,7 @@ theorem inner_unique (hP : J.P.Simple) {k k' : ℕ} (hk : k < (chainModel J.whol
     (hv' : (chainModel J.whole).W.vtx k' = sharedV J) (h : InnerCopy J k) (h' : InnerCopy J k') :
     k = k' := by
   set C := J.whole with hC
-  have hP' : C.P.Simple := hP
+  have hP' := hP
   set W := (chainModel C).W with hW
   obtain ⟨hc, hdet, -⟩ := h
   obtain ⟨hc', hdet', -⟩ := h'
@@ -412,7 +412,7 @@ theorem inner_unique (hP : J.P.Simple) {k k' : ℕ} (hk : k < (chainModel J.whol
     constructor
     · have : det Pr v (Pr + Nx - v) = det Pr v Nx := by
         unfold det; simp only [Prod.fst_add, Prod.snd_add, Prod.fst_sub, Prod.snd_sub]; ring
-      rw [one_mul, this]; exact hdet
+      rwa [one_mul, this]
     · have : det v Nx (Pr + Nx - v) = det Pr v Nx := by
         unfold det; simp only [Prod.fst_add, Prod.snd_add, Prod.fst_sub, Prod.snd_sub]; ring
       rw [one_mul, this]; exact hdet
@@ -472,19 +472,19 @@ theorem cap_param (hgen : SharedGeneric J) (hext : SharedExtremum J) :
   unfold capNear capFar
   set du := (sharedU J).2 - (sharedV J).2
   set dw := (sharedW J).2 - (sharedV J).2
-  have hdu : du ≠ 0 := sub_ne_zero.2 hu
-  have hdw : dw ≠ 0 := sub_ne_zero.2 hw
+  have hdu := sub_ne_zero.2 hu
+  have hdw := sub_ne_zero.2 hw
   have hduw : du ≠ dw := fun e => huw (by simpa [du, dw] using e)
   split_ifs with h
   · intro τ
     refine ⟨?_, ?_, ?_, Or.inl ⟨rfl, rfl⟩⟩
     · rcases lt_or_gt_of_ne hdw with hn | hp
-      · exact div_pos_of_neg_of_neg (by nlinarith) hn
-      · exact div_pos (by nlinarith) hp
+      · exact div_pos_of_neg_of_neg by_nl hn
+      · exact div_pos by_nl hp
     · rcases lt_or_gt_of_ne hdw with hn | hp
       · have hdu' : du < 0 := by nlinarith
         rw [abs_of_neg hdu', abs_of_neg hn] at h
-        exact (div_lt_one_of_neg hn).2 (by linarith)
+        exact (div_lt_one_of_neg hn).2 by_l
       · have hdu' : 0 < du := by nlinarith
         rw [abs_of_pos hdu', abs_of_pos hp] at h
         exact (div_lt_one hp).2 h
@@ -493,15 +493,15 @@ theorem cap_param (hgen : SharedGeneric J) (hext : SharedExtremum J) :
   · intro τ
     refine ⟨?_, ?_, ?_, Or.inr ⟨rfl, rfl⟩⟩
     · rcases lt_or_gt_of_ne hdu with hn | hp
-      · exact div_pos_of_neg_of_neg (by nlinarith) hn
-      · exact div_pos (by nlinarith) hp
+      · exact div_pos_of_neg_of_neg by_nl hn
+      · exact div_pos by_nl hp
     · rcases lt_or_gt_of_ne hdu with hn | hp
       · have hdw' : dw < 0 := by nlinarith
         rw [abs_of_neg hdw', abs_of_neg hn] at h
-        exact (div_lt_one_of_neg hn).2 (lt_of_le_of_ne (by linarith) hduw)
+        exact (div_lt_one_of_neg hn).2 (lt_of_le_of_ne by_l hduw)
       · have hdw' : 0 < dw := by nlinarith
         rw [abs_of_pos hdw', abs_of_pos hp] at h
-        exact (div_lt_one hp).2 (lt_of_le_of_ne (by linarith) (Ne.symm hduw))
+        exact (div_lt_one hp).2 (lt_of_le_of_ne by_l (Ne.symm hduw))
     · show (sharedW J).2 = (sharedV J).2 + dw / du * du
       rw [div_mul_cancel₀ _ hdu]; ring
 
@@ -514,7 +514,7 @@ theorem inner_cap_cut (hP : J.P.Simple) (hgen : SharedGeneric J) (S₁ S₂ : Se
     ∃ q : ℝ, (chainModel J.whole).IsCut (J.fusion S₁ S₂ ∪ glueChords J) q ∧
       (((k : ℝ) < q ∧ q < k + 1) ∨ ((k : ℝ) - 1 < q ∧ q < k)) := by
   set C := J.whole with hC
-  have hP' : C.P.Simple := hP
+  have hP' := hP
   set W := (chainModel C).W with hW
   obtain ⟨hc, hdet, hext⟩ := h
   obtain ⟨hτ0, hτ1, hnear, hnf⟩ := cap_param J hgen hext
@@ -522,7 +522,7 @@ theorem inner_cap_cut (hP : J.P.Simple) (hgen : SharedGeneric J) (S₁ S₂ : Se
   have hk6 := (vkey_nbrs J hP hk hv).1
   set v := sharedV J with hv_def
   have hm₁ : J.m₁ ≤ C.m := by rw [hC, Merge.Junction.whole_m]; omega
-  have hut : (sharedU J).2 ≤ C.top.2 := C.vertex_snd_le_top (j := J.m₁ - 1) (by omega)
+  have hut : (sharedU J).2 ≤ C.top.2 := C.vertex_snd_le_top (j := J.m₁ - 1) by_o
   have hwt : (sharedW J).2 ≤ C.top.2 :=
     C.vertex_snd_le_top (j := J.m₁ + 1) (by rw [hC, Merge.Junction.whole_m]; have := J.one_le_m₂; omega)
   have hnt : (capNear J).2 ≤ C.top.2 := by
@@ -557,13 +557,13 @@ theorem inner_cap_cut (hP : J.P.Simple) (hgen : SharedGeneric J) (S₁ S₂ : Se
     · exact Or.inr ⟨h1.trans h4.symm, h2.trans h3.symm⟩
     · exact Or.inr ⟨h1.trans h4.symm, h2.trans h3.symm⟩
     · exact Or.inl ⟨h2.trans h4.symm, h1.trans h3.symm⟩
-  have hnear' : (capNear J).2 = v.2 + τ * ((capFar J).2 - v.2) := hnear
+  have hnear' := hnear
   rcases hcase with ⟨hN, hPr⟩ | ⟨hPr, hN⟩
   · -- the cap chord is attached on the walk edge after `k`
     set N := sideNext W k
     set Pp := sidePrev W k 0
     have hNv : v ≠ N := fun e => hfv (by rw [← hN, ← e])
-    have hvk : W.vtx k = v := hv
+    have hvk := hv
     have hN' : W.vtx ((k + 1) % W.n) = N := rfl
     have hO : capOrigin J = lerp v N τ := by
       rw [show capOrigin J = lerp v (capFar J) τ from rfl, ← hN]
@@ -572,22 +572,22 @@ theorem inner_cap_cut (hP : J.P.Simple) (hgen : SharedGeneric J) (S₁ S₂ : Se
     have hpt : sidePt W k τ = capOrigin J := by
       unfold sidePt; rw [hvk, hN', hO]
     have hl : sideLeft W k τ (rayPt (capOrigin J) (capDir J) 1) := by
-      rw [Chain.sideLeft_edge (by rw [hvk, hN']; exact hNv) ⟨hτ0, hτ1⟩, hvk, hN', hO, hD]
+      rw [Chain.sideLeft_edge (by rwa [hvk, hN']) ⟨hτ0, hτ1⟩, hvk, hN', hO, hD]
       refine cap_left_next ?_ ?_
       · rw [hPr, hN]; exact hnear'
       · exact hdet
-    exact ⟨_, hcap k τ hk hτ0.le hτ1 hpt hl, Or.inl ⟨by linarith, by linarith⟩⟩
+    exact ⟨_, hcap k τ hk hτ0.le hτ1 hpt hl, Or.inl ⟨by_l, by_l⟩⟩
   · -- the cap chord is attached on the walk edge before `k`
     set N := sideNext W k
     set Pp := sidePrev W k 0
     have hPv : Pp ≠ v := fun e => hfv (by rw [← hPr, e])
-    have hvk : W.vtx k = v := hv
-    have hk1 : (k - 1 + 1) % W.n = k := by rw [Nat.sub_add_cancel (by omega), Nat.mod_eq_of_lt hk]
+    have hvk := hv
+    have hk1 : (k - 1 + 1) % W.n = k := by rw [Nat.sub_add_cancel by_o, Nat.mod_eq_of_lt hk]
     have hPk : W.vtx (k - 1) = Pp := by
       show _ = sidePrev W k 0
       unfold sidePrev
       rw [ite_eq_left rfl, show k + W.n - 1 = (k - 1) + W.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega)]
+        Nat.mod_eq_of_lt by_o]
     have hO : capOrigin J = lerp v Pp τ := by
       rw [show capOrigin J = lerp v (capFar J) τ from rfl, ← hPr]
     have hD : capDir J = if N.1 < (lerp v Pp τ).1 then -1 else 1 := by
@@ -595,13 +595,13 @@ theorem inner_cap_cut (hP : J.P.Simple) (hgen : SharedGeneric J) (S₁ S₂ : Se
     have hpt : sidePt W (k - 1) (1 - τ) = capOrigin J := by
       unfold sidePt; rw [hk1, hPk, hvk, hO, Geometry.lerp_symm, sub_sub_cancel]
     have hl : sideLeft W (k - 1) (1 - τ) (rayPt (capOrigin J) (capDir J) 1) := by
-      rw [Chain.sideLeft_edge (by rw [hk1, hPk, hvk]; exact hPv) ⟨by linarith, by linarith⟩,
+      rw [Chain.sideLeft_edge (by rwa [hk1, hPk, hvk]) ⟨by_l, by_l⟩,
         hk1, hPk, hvk, hO, hD]
       refine cap_left_prev ?_ ?_
       · rw [hPr, hN]; exact hnear'
       · exact hdet
-    refine ⟨_, hcap (k - 1) (1 - τ) (by omega) (by linarith) (by linarith) hpt hl, Or.inr ?_⟩
-    have : ((k - 1 : ℕ) : ℝ) = k - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    refine ⟨_, hcap (k - 1) (1 - τ) by_o by_l by_l hpt hl, Or.inr ?_⟩
+    have : ((k - 1 : ℕ) : ℝ) = k - 1 := by rw [Nat.cast_sub by_o]; simp
     rw [this]
     constructor <;> linarith
 
@@ -622,8 +622,8 @@ theorem top_sector (C' : Chain) (hP' : C'.P.Simple) :
   · rw [C'.sideTour_one_eq_last β hT]
     exact corner_full_ne (C'.sideTour_last_ne_top hP' β)
   push Not at hT
-  have hT0 : 0 < C'.topIdx := Nat.pos_of_ne_zero hT.1
-  have hTm : C'.topIdx < C'.m := lt_of_le_of_ne C'.topIdx_le hT.2
+  have hT0 := Nat.pos_of_ne_zero hT.1
+  have hTm := lt_of_le_of_ne C'.topIdx_le hT.2
   have hgood := C'.sideGood_sideBeta hP'
   rcases hgood with h | h | hmain
   · exact absurd h hT.1
@@ -632,10 +632,10 @@ theorem top_sector (C' : Chain) (hP' : C'.P.Simple) :
   have hlow : (C'.vertex (C'.topIdx - 1)).2 < C'.top.2 := by
     by_contra hc
     push Not at hc
-    have := C'.topIdx_min (j := C'.topIdx - 1) (by omega) fun i hi =>
+    have := C'.topIdx_min (j := C'.topIdx - 1) by_o fun i hi =>
       (C'.vertex_snd_le_top hi).trans hc
     omega
-  have hhigh : (C'.vertex (C'.topIdx + 1)).2 ≤ C'.top.2 := C'.vertex_snd_le_top (by omega)
+  have hhigh : (C'.vertex (C'.topIdx + 1)).2 ≤ C'.top.2 := C'.vertex_snd_le_top by_o
   have hnb : (C'.sideTour β 1 = C'.vertex (C'.topIdx + 1) ∧
       C'.sideTour β (2 * C'.m - 1) = C'.vertex (C'.topIdx - 1)) ∨
       (C'.sideTour β 1 = C'.vertex (C'.topIdx - 1) ∧
@@ -651,13 +651,13 @@ theorem top_sector (C' : Chain) (hP' : C'.P.Simple) :
   set t := C'.top
   have hN2 : N.2 ≤ t.2 := by rcases hnb with ⟨h1, -⟩ | ⟨h1, -⟩ <;> rw [h1] <;> linarith
   have hP2 : P.2 ≤ t.2 := by rcases hnb with ⟨-, h1⟩ | ⟨-, h1⟩ <;> rw [h1] <;> linarith
-  have hNt : N ≠ t := C'.sideTour_one_ne_top hP' β
-  have hPt : P ≠ t := C'.sideTour_last_ne_top hP' β
+  have hNt := C'.sideTour_one_ne_top hP' β
+  have hPt := C'.sideTour_last_ne_top hP' β
   have hU1 : (C'.slitTop - t).1 = 0 := by simp [Chain.slitTop, t]
   have hU2 : 0 < (C'.slitTop - t).2 := by
     simp only [Chain.slitTop, Prod.snd_sub, t]; linarith [C'.top_snd_lt_radius]
-  have hB : N - t ≠ 0 := sub_ne_zero.2 hNt
-  have hA : P - t ≠ 0 := sub_ne_zero.2 hPt
+  have hB := sub_ne_zero.2 hNt
+  have hA := sub_ne_zero.2 hPt
   have hU : C'.slitTop - t ≠ 0 := fun e => by rw [e] at hU2; simp at hU2
   by_cases hE : (N - t).2 = 0 ∧ 0 ≤ (N - t).1
   · -- the next neighbour is level to the east: the sector contains west
@@ -667,12 +667,12 @@ theorem top_sector (C' : Chain) (hP' : C'.P.Simple) :
       · exfalso; have := hE.1; simp only [Prod.snd_sub] at this; rw [h1] at this; linarith
     have hPl : P.2 < t.2 := by
       rcases hnb with ⟨-, h1⟩ | ⟨h1, -⟩
-      · rw [h1]; exact hlow
+      · rwa [h1]
       · exfalso; exact absurd (h1.symm.trans hN') (by
-          intro e; have := C'.sideVertex_inj hP' (by omega) (by omega) e; omega)
+          intro e; have := C'.sideVertex_inj hP' by_o by_o e; omega)
     refine ⟨-1, Or.inr rfl, ?_⟩
     unfold sideLeftOf; rw [rayPt_sub_one]
-    have hw := Chain.sideCcw_west (B := P - t) (X := ((-1 : ℝ), (0 : ℝ))) hU1 hU2 rfl (by norm_num)
+    have hw := Chain.sideCcw_west (B := P - t) (X := ((-1 : ℝ), (0 : ℝ))) hU1 hU2 rfl by_n
       (by simp only [Prod.snd_sub]; linarith) hA (by
         unfold sideCross; simp only [Prod.fst_sub, Prod.snd_sub]; rintro ⟨h1, -⟩; linarith)
     exact Chain.sideCcw_sub_right hB hU hA hmain hw
@@ -701,7 +701,7 @@ theorem topglue_cut (J : Merge.Junction) (hP : J.P.Simple) (S₁ S₂ : Set (Set
   have hl' : sideLeft (chainModel J.whole).W k 0 (rayPt (J.whole.vertex kt) σ 1) := by
     unfold sideLeft; rw [hprev, hnext, hpt', hvert]; exact hl
   obtain ⟨hfree, hA⟩ := sideAttach_chordSet hP hk hktm hpt' hσ hl'
-  exact ⟨_, Or.inr (Or.inl ⟨kt, hkt, σ, hσ, hfree, rfl⟩), k, 0, hA, by simp⟩
+  exact ⟨_, Or.inr (Or.inl ⟨kt, hkt, σ, hσ, hfree, rfl⟩), k, 0, hA, by_s⟩
 
 /-! ## Cuts transfer from a side walk to the walk of `C` -/
 
@@ -730,7 +730,7 @@ theorem cut_transfer (J : Merge.Junction) (hP : J.P.Simple) {C' : Chain} (hP' : 
   subst hpe hte
   set p' := (g' + d) % W'.n
   set q := sidePt W' p' t
-  have hq : q ∈ c := hA'.2.2.2.1
+  have hq := hA'.2.2.2.1
   have hqd : q ∉ C'.dom := (walkAx_chainModel hP').trace _ hA'.1 t ht ht1.le
   obtain ⟨y, a, b, hH, hy, rfl, hl, hr⟩ := Merge.augChords_spec (hsub hcS)
   have hqe : q = (a, y) ∨ q = (b, y) := by
@@ -741,7 +741,7 @@ theorem cut_transfer (J : Merge.Junction) (hP : J.P.Simple) {C' : Chain} (hP' : 
           hqd
       · right; exact Prod.ext h2 hq2
     · left; exact Prod.ext h1.symm hq2
-  have hpt : sidePt W ((g + d) % W.n) t = q := hA.sidePt_eq hd t
+  have hpt := hA.sidePt_eq hd t
   have hleft := hA.sideLeft_eq hn hn' hd hdt'
   by_cases hv : q = J.shared
   · -- the endpoint is the shared vertex: a shared chord is attached here
@@ -750,15 +750,15 @@ theorem cut_transfer (J : Merge.Junction) (hP : J.P.Simple) {C' : Chain} (hP' : 
     obtain ⟨σ, hσ, hdir⟩ : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧
         sideLeft W' p' t (rayPt q σ 1) := by
       set ε := min (r / 2) ((b - a) / 2) with hε
-      have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-      have hεr : ε < r := lt_of_le_of_lt (min_le_left _ _) (by linarith)
+      have hε0 : 0 < ε := lt_min by_l by_l
+      have hεr : ε < r := lt_of_le_of_lt (min_le_left _ _) by_l
       have hεb : ε ≤ (b - a) / 2 := min_le_right _ _
       rcases hqe with hqa | hqb
       · refine ⟨1, Or.inl rfl, (sideLeft_rayPt hε0).1 (hsec _ ?_ ?_ ?_)⟩
         · show rayPt q 1 ε ∈ _
           rw [hqa]; refine ⟨rfl, ?_, ?_⟩ <;> simp only [rayPt] <;> linarith
         · intro e; have := congrArg Prod.fst e; simp only [rayPt] at this; linarith
-        · rw [dist_rayPt _ (Or.inl rfl) hε0.le]; exact hεr
+        · rwa [dist_rayPt _ (Or.inl rfl) hε0.le]
       · refine ⟨-1, Or.inr rfl, (sideLeft_rayPt hε0).1 (hsec _ ?_ ?_ ?_)⟩
         · show rayPt q (-1) ε ∈ _
           rw [hqb]; refine ⟨rfl, ?_, ?_⟩ <;> simp only [rayPt] <;> linarith
@@ -767,17 +767,17 @@ theorem cut_transfer (J : Merge.Junction) (hP : J.P.Simple) {C' : Chain} (hP' : 
     have hl2 : sideLeft W ((g + d) % W.n) t (rayPt (sidePt W ((g + d) % W.n) t) σ 1) := by
       rw [hleft, hpt]; exact hdir
     have hm₁ : J.m₁ ≤ J.whole.m := by rw [Merge.Junction.whole_m]; omega
-    have hvq : sidePt W ((g + d) % W.n) t = J.whole.vertex J.m₁ := hpt.trans hv
+    have hvq := hpt.trans hv
     obtain ⟨hfree, hAt⟩ := sideAttach_shoot hP (Nat.mod_lt _ hn) ht ht1 hσ
       (by rw [hvq]; exact J.whole.vertex_snd_le_top hm₁) hl2
     rw [hvq] at hfree hAt
     exact ⟨_, hshared ⟨σ, hσ, hfree, rfl⟩, _, t, hAt, rfl⟩
   · obtain ⟨hL, hR⟩ := hend _ hcS
     rcases hqe with hqa | hqb
-    · obtain ⟨e, he, hqe, hec⟩ := hL (by rw [hl, ← hqa]; exact hv)
+    · obtain ⟨e, he, hqe, hec⟩ := hL (by rwa [hl, ← hqa])
       rw [hl, ← hqa] at hqe
       exact ⟨e, he, _, t, hA.sideAttach_subset hn hn' hd hdt' hA' hec hqe, rfl⟩
-    · obtain ⟨e, he, hqe, hec⟩ := hR (by rw [hr, ← hqb]; exact hv)
+    · obtain ⟨e, he, hqe, hec⟩ := hR (by rwa [hr, ← hqb])
       rw [hr, ← hqb] at hqe
       exact ⟨e, he, _, t, hA.sideAttach_subset hn hn' hd hdt' hA' hec hqe, rfl⟩
 

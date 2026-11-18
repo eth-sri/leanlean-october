@@ -29,7 +29,7 @@ theorem hstep_lt (D m : ℕ) (hm : 1 ≤ m) : hstep D m < m := by
   rcases Nat.eq_zero_or_pos D with rfl | hD
   · simp; omega
   · apply Nat.div_lt_of_lt_mul
-    have : (D - 1) * m < D * m := Nat.mul_lt_mul_of_pos_right (by omega) (by omega)
+    have : (D - 1) * m < D * m := Nat.mul_lt_mul_of_pos_right by_o by_o
     linarith [Nat.mul_comm m D]
 
 theorem hstep_mono (D : ℕ) {a b : ℕ} (hab : a ≤ b) : hstep D a ≤ hstep D b :=
@@ -52,7 +52,7 @@ theorem hstep_iter_anti (D m : ℕ) {i j : ℕ} (hij : i ≤ j) : (hstep D)^[j] 
 /-- `m' ≤ hstep D m` as soon as `D m' ≤ (D - 1) m`. -/
 theorem le_hstep {D m m' : ℕ} (hD : 1 ≤ D) (h : D * m' ≤ (D - 1) * m) : m' ≤ hstep D m := by
   unfold hstep
-  rw [Nat.le_div_iff_mul_le (by omega)]
+  rw [Nat.le_div_iff_mul_le by_o]
   linarith [Nat.mul_comm m' D]
 
 theorem hstep_exists (D K : ℕ) : ∃ i, (hstep D)^[i] K = 0 := by
@@ -66,7 +66,7 @@ theorem hstep_exists (D K : ℕ) : ∃ i, (hstep D)^[i] K = 0 := by
       rcases ih with h1 | h1
       · by_cases h0 : (hstep D)^[i] K = 0
         · right; rw [h0]; exact Nat.le_zero.1 (hstep_le D 0)
-        · left; have := hstep_lt D ((hstep D)^[i] K) (by omega); omega
+        · left; have := hstep_lt D ((hstep D)^[i] K) by_o; omega
       · right; rw [h1]; exact Nat.le_zero.1 (hstep_le D 0)
   rcases this K with h1 | h1
   · omega
@@ -94,12 +94,12 @@ theorem iter_D_half {D : ℕ} (hD : 1 ≤ D) (m : ℕ) : 2 * (hstep D)^[D] m ≤
     | succ i ih =>
       rw [Function.iterate_succ_apply']
       set x := (hstep D)^[i] m
-      have hx : hstep D x ≤ x := hstep_le D x
+      have hx := hstep_le D x
       have hDx : D * hstep D x ≤ (D - 1) * x := by
         unfold hstep
         have := Nat.div_mul_le_self ((D - 1) * x) D
         linarith [Nat.mul_comm D ((D - 1) * x / D)]
-      rcases ih (by omega) with h1 | h1
+      rcases ih by_o with h1 | h1
       · left; omega
       · by_cases h2 : 2 * x ≤ m
         · left; omega
@@ -124,10 +124,10 @@ theorem rounds_le {D : ℕ} (hD : 1 ≤ D) (K : ℕ) : rounds D K ≤ D * Nat.cl
       have h2 : (hstep D)^[D] m + 1 ≤ 2 ^ c := by
         rw [pow_succ] at hm; omega
       exact Nat.le_zero.1 ((hstep_iter_mono D (D * c) le_rfl).trans (ih _ h2).le)
-  exact Nat.find_min' _ (key _ K (Nat.le_pow_clog (by norm_num) _))
+  exact Nat.find_min' _ (key _ K (Nat.le_pow_clog by_n _))
 
 theorem rounds_zero (D : ℕ) : rounds D 0 = 0 :=
-  Nat.le_zero.1 (Nat.find_min' _ (by simp))
+  Nat.le_zero.1 (Nat.find_min' _ by_s)
 
 end
 

@@ -80,11 +80,11 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   set G := c₀.nreg (sw 40) with hGdef
   have hXc := hX
   obtain ⟨-, b2, -, -, hsl, -, -⟩ := hX
-  have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
+  have hAW := hI.hw.1 ALLOC
   have hA0 := hI.hA
-  have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
+  have hm := hI.hm
   have hALc : c.nreg (sw 300) = AL := hI.hin _ (by unfold IFix sw; omega)
-  have hb2 : AL + 7 * rd c₀ bSweep 301 ≤ c₀.nreg ALLOC := b2
+  have hb2 := b2
   -- the search result is the log record at the query position, if there is one
   have hmatch : ∀ i, i < rd c₀ bSweep 301 → c₀.nmem (AL + 7 * i) = zp →
       (chainModel J.whole).param (Qof P) (logPos c₀.nmem AL i) =
@@ -97,14 +97,14 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨v1E, v1H, k1⟩ := cAddr_val c.nmem c.nreg hKc.2.1
   rw [hALc] at v1E v1H
-  set c₁ : Config := { c with nreg := regB c.nmem cAddr c.nreg } with hc₁
+  set c₁ := { c with nreg := regB c.nmem cAddr c.nreg } with hc₁
   have nk1 : ∀ q, (q < sw 4100 ∨ sw 4102 < q) → c₁.nreg q = c.nreg q := fun q hq =>
     k1 q (by unfold kA sw at *; omega) (by unfold kE sw at *; omega) (by unfold kH sw at *; omega)
   have hlp := log_posW hA ht
   have hE1 : c₁.nreg kE = c₀.nmem (AL + 7 * t) := by
-    show regB c.nmem cAddr c.nreg kE = _; rw [v1E, hm _ (by nlinarith)]
+    show regB c.nmem cAddr c.nreg kE = _; rw [v1E, hm _ by_nl]
   have hH1 : c₁.nreg kH = c₀.nmem (AL + 7 * t + 1) := by
-    show regB c.nmem cAddr c.nreg kH = _; rw [v1H, hm _ (by nlinarith)]
+    show regB c.nmem cAddr c.nreg kH = _; rw [v1H, hm _ by_nl]
   have hxE1 : c₁.nreg lsxE = zp := by rw [nk1 _ (by unfold lsxE sw; omega)]; exact hxE
   have hxH1 : c₁.nreg lsxH = zh := by rw [nk1 _ (by unfold lsxH sw; omega)]; exact hxH
   have hG1 : c₁.nreg (sw 40) = G := hI₁.hin _ (by unfold IFix sw; omega)
@@ -113,12 +113,12 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   refine IRS.seq (K₁ := 11008) (callOff_irs (C := J.whole) (dsc := sw 2) (ex := kE) (hx := kH)
     (ey := lsxE) (hy := lsxH) (g := sw 40) (o := kO) hI₁ (hA.ctxW hI₁)
     (by unfold kE kH lsxE lsxH sw; omega) (by unfold kO sw; omega)
-    (by rw [hE1]; exact hlp.1) (by rw [hxE1]; exact hzP)
+    (by rw [hE1]; exact hlp.1) (by rwa [hxE1])
     (by rw [hG1, hGdef, aenv_gW hA]; exact gW_lt_nat J)
-    (by rw [hE1, hH1]; exact hlp.2.1) (by rw [hxE1, hxH1]; exact hzPp)
-    (by rw [hE1, hH1]; exact hlp.2.2) (by rw [hxE1, hxH1]; exact h6z)
+    (by rw [hE1, hH1]; exact hlp.2.1) (by rwa [hxE1, hxH1])
+    (by rw [hE1, hH1]; exact hlp.2.2) (by rwa [hxE1, hxH1])
     (by unfold checkK hitK offerFK offerK at hroom; rw [show c₁.nreg ALLOC = c.nreg ALLOC from
-      nk1 _ (by unfold ALLOC sw; omega)]; omega)) ?_
+      nk1 _ by_so]; omega)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨hb1, hb2', k2, hal2, hm2⟩
   rw [hE1, hH1, hxE1, hxH1, hG1] at hb1 hb2'
   set kt := (chainModel J.whole).key (Qof P) (logPos c₀.nmem AL t) with hkt
@@ -130,18 +130,18 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
       c₂.nreg q = c.nreg q :=
     fun q hq hb hqa => by
       rw [k2 q hb (by unfold kO sw at *; omega) (by unfold kO sw at *; omega) hqa]
-      exact nk1 q (by unfold sw at *; omega)
+      exact nk1 q by_so
   have hfr2 : FrQ c c₂ := ⟨fun r hr hq hra => by
       rw [k2 r hr (fun h => hq (by subst h; right; unfold kO sw; omega))
         (fun h => hq (by subst h; right; unfold kO sw; omega)) hra]
       exact k1 r (fun h => hq (by subst h; right; unfold kA sw; omega))
         (fun h => hq (by subst h; right; unfold kE sw; omega))
         (fun h => hq (by subst h; right; unfold kH sw; omega)),
-    by rw [show c₁.nreg ALLOC = c.nreg ALLOC from nk1 _ (by unfold ALLOC sw; omega)] at hal2
+    by rw [show c₁.nreg ALLOC = c.nreg ALLOC from nk1 _ by_so] at hal2
        exact hal2,
-    fun a ha => hm2 a (by rw [show c₁.nreg ALLOC = c.nreg ALLOC from
-      nk1 _ (by unfold ALLOC sw; omega)]; exact ha)⟩
-  have hk0₂ : c₂.nreg K0 = 0 := (hK.fix hI₂).1
+    fun a ha => hm2 a (by rwa [show c₁.nreg ALLOC = c.nreg ALLOC from
+      nk1 _ (by unfold ALLOC sw; omega)])⟩
+  have hk0₂ := (hK.fix hI₂).1
   have hacc₂ : AccOK P accA (ModB J 1 1) J.whole.radius z (dirOf d) L c₂ :=
     hacc.transport (fun j hj => nk2 (accA + j) (by unfold accA sw; omega)
       (nob (by unfold accA sw; omega) (by unfold accA sw; omega)) (by unfold accA ALLOC sw; omega))
@@ -160,9 +160,8 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
   · rw [hk0₂] at hc1
     have hlt : off (chainModel J.whole).W.n G kt < off (chainModel J.whole).W.n G kx :=
       hb1.2.1 (by have := hb1.1; omega)
-    exact (IRS.ifT (by rw [hk0₂]; exact hc1) (noOffer (ne_of_lt hlt) 0)).mono (by omega)
-      (fun _ h => h)
-  · refine (IRS.ifF hc1 ?_).mono (K := 2 + hitK + 2) (by omega) (fun _ h => h)
+    exact (IRS.ifT (by rwa [hk0₂]) (noOffer (ne_of_lt hlt) 0)).le
+  · refine (IRS.ifF hc1 ?_).mono (K := 2 + hitK + 2) by_o (fun _ h => h)
     rw [hk0₂] at hc1
     have hn1 : ¬ off (chainModel J.whole).W.n G kt < off (chainModel J.whole).W.n G kx :=
       fun h => by have := hb1.2.2 h; omega
@@ -170,9 +169,8 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
     · rw [hk0₂] at hc2
       have hlt : off (chainModel J.whole).W.n G kx < off (chainModel J.whole).W.n G kt :=
         hb2'.2.1 (by have := hb2'.1; omega)
-      exact (IRS.ifT (by rw [hk0₂]; exact hc2) (noOffer (ne_of_gt hlt) 0)).mono (by omega)
-        (fun _ h => h)
-    · refine (IRS.ifF (K := hitK) hc2 ?_).mono (by omega) (fun _ h => h)
+      exact (IRS.ifT (by rwa [hk0₂]) (noOffer (ne_of_gt hlt) 0)).le
+    · refine (IRS.ifF (K := hitK) hc2 ?_).le
       rw [hk0₂] at hc2
       have hn2 : ¬ off (chainModel J.whole).W.n G kx < off (chainModel J.whole).W.n G kt :=
         fun h => by have := hb2'.2.2 h; omega
@@ -185,10 +183,10 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
       have hd₂ : c₂.nreg qD = d := nk2 _ (by unfold qD sw; omega)
         (nob (by unfold qD sw; omega) (by unfold qD sw; omega)) (by unfold qD ALLOC sw; omega)
       refine (hit_irs hA hXc hI₂
-        (by rw [ht₂]; exact ht) (by rw [ht₂]; exact hpt) hz hzs hz2
-        (by rw [hd₂]; exact hacc₂)
+        (by rwa [ht₂]) (by rwa [ht₂]) hz hzs hz2
+        (by rwa [hd₂])
         (by unfold checkK at hroom; have := hA₂'
-            rw [show c₁.nreg ALLOC = c.nreg ALLOC from nk1 _ (by unfold ALLOC sw; omega)] at this
+            rw [show c₁.nreg ALLOC = c.nreg ALLOC from nk1 _ by_so] at this
             omega)).mono le_rfl ?_
       rintro c' ⟨L', hacc', hLL, hsnd, hcmp, hfr'⟩
       rw [hd₂] at hacc' hsnd
@@ -198,7 +196,7 @@ theorem check_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N�
       have hti := hmatch i hi h1 h2
       rw [← hti] at hf
       have hslot := hsl t ht (qS d) (qS_le d)
-      have hpt' : logPt P J c₀.nmem (rd c₀ bSweep 300) t = z := hpt
+      have hpt' := hpt
       have heq := slot_eq hA.hP hslot hf hpt' hz hzs hz2 hc
       exact hcmp hf τ hτ (heq.trans ho)
 

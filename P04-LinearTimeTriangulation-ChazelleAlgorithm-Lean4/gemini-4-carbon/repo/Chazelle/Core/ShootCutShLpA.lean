@@ -17,11 +17,6 @@ hit so far is kept in `140210 …` (`CandAt`).
   step bound.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
-
 namespace Chazelle.Core
 
 namespace ShootCut
@@ -63,9 +58,9 @@ def Blpi (r : ℕ) : Bool := decide (140110 ≤ r ∧ r < 140116) || r == 140334
 /-- The registers written by `lpLoad`. -/
 def Blpl (r : ℕ) : Bool := decide (140250 ≤ r ∧ r < 140259) || r == 140110
 
-theorem wr_lpInit : wr Blpi lpInit = true := by decide
+theorem wr_lpInit : wr Blpi lpInit = true := by_d
 
-theorem wr_lpLoad : wr Blpl lpLoad = true := by decide
+theorem wr_lpLoad : wr Blpl lpLoad = true := by_d
 
 /-! ## The set-up and the loads -/
 
@@ -101,7 +96,7 @@ theorem lpLoadA_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {
   exec_block
   all_goals first | (config_simp; rw [h10, h1']; omega) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h10, h1']
+  all_goals simp only [upd, h10, h1']
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
 
 theorem lpLoadB_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p : ℕ}
@@ -115,7 +110,7 @@ theorem lpLoadB_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {
   exec_block
   all_goals first | (config_simp; rw [h10, h1']; omega) | skip
   refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩
-  all_goals simp only [upd, Config.nreg_mk, Config.nmem_mk, h10, h1']
+  all_goals simp only [upd, h10, h1']
   all_goals first | (split_ifs <;> first | rfl | omega) | skip
 
 theorem lpLoad_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p : ℕ}
@@ -127,21 +122,21 @@ theorem lpLoad_exec (c : Config) (hw : WordsBounded W c) (h1 : c.nreg K1 = 1) {p
       c'.nreg 140256 = c.nmem (p + 6) ∧ c'.nreg 140257 = c.nmem (p + 7) ∧
       c'.nreg 140258 = c.nmem (p + 8) ∧ FrameB Blpl c c' := by
   obtain ⟨c₁, k₁, e₁, hk₁, q10, q0, q1, q2, q3, q4⟩ := lpLoadA_exec (P := P) c hw h1 h10 hp
-  have f₁ := exec_frameB (B := Blpl) e₁ (by decide)
-  have g1 : c₁.nreg K1 = 1 := by rw [f₁.1 _ (by decide)]; exact h1
+  have f₁ := exec_frameB (B := Blpl) e₁ by_d
+  have g1 : c₁.nreg K1 = 1 := by rw [f₁.1 _ by_d]; exact h1
   obtain ⟨c₂, k₂, e₂, hk₂, u10, u5, u6, u7, u8⟩ := lpLoadB_exec (P := P) c₁ e₁.wb_right g1 q10
-    (by omega)
+    by_o
   have f₂ := exec_frameB (B := fun r => decide (140255 ≤ r ∧ r < 140259) || r == 140110) e₂
-    (by decide)
+    by_d
   have ex : Exec P W lpLoad c c₂ (k₁ + k₂) := .seq e₁ e₂
   have hm : c₁.nmem = c.nmem := f₁.2.2.1
-  refine ⟨c₂, _, ex, by omega, by rw [u10], ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+  refine ⟨c₂, _, ex, by_o, by rw [u10], ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     exec_frameB ex wr_lpLoad⟩
-  · rw [f₂.1 _ (by decide), q0]
-  · rw [f₂.1 _ (by decide), q1]
-  · rw [f₂.1 _ (by decide), q2]
-  · rw [f₂.1 _ (by decide), q3]
-  · rw [f₂.1 _ (by decide), q4]
+  · rw [f₂.1 _ by_d, q0]
+  · rw [f₂.1 _ by_d, q1]
+  · rw [f₂.1 _ by_d, q2]
+  · rw [f₂.1 _ by_d, q3]
+  · rw [f₂.1 _ by_d, q4]
   · rw [u5, hm]
   · rw [u6, hm, show p + 5 + 1 = p + 6 by omega]
   · rw [u7, hm, show p + 5 + 2 = p + 7 by omega]

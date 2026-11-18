@@ -37,10 +37,10 @@ theorem frc_after (hN : IsNF M Q N) {j : ℕ} (hj : j < N.arcs.length) {e : ℕ}
     AfterFaces M e t (regOf M Q N (N.arc (sj N j)).reg) := by
   obtain ⟨-, harc⟩ := arc_regOf hN hj
   rcases hl1 with hF | hin
-  · exact ⟨1, one_pos, fun s hs0 _ hs2 => faces_of_empty harc hF he (by linarith) hs2⟩
+  · exact ⟨1, one_pos, fun s hs0 _ hs2 => faces_of_empty harc hF he by_l hs2⟩
   · obtain ⟨δ, hδ, h⟩ := sideInArc_nhds hin
     refine ⟨δ, hδ, fun s hs0 hs1 hs2 => ?_⟩
-    refine harc.2.2.2.2.2.2 e (t + s) he (by linarith) hs2 ?_
+    refine harc.2.2.2.2.2.2 e (t + s) he by_l hs2 ?_
     rw [← add_assoc]; exact (h s hs0 hs1).2
 
 /-- **A non-cut position faces the region of the arc at `j` just before it.** -/
@@ -52,11 +52,11 @@ theorem frc_before (hN : IsNF M Q N) {j : ℕ} (hj : j < N.arcs.length) {e : ℕ
   rcases ht0.lt_or_eq with htp | rfl
   · rcases hl1 with hF | hin
     · refine ⟨1, one_pos, fun _ s hs0 _ hst => ?_, fun h => absurd h htp.ne'⟩
-      exact faces_of_empty harc hF he (by linarith) (by linarith)
+      exact faces_of_empty harc hF he by_l by_l
     · obtain ⟨δ, hδ, h⟩ := sideInArc_nhds hin
       refine ⟨δ, hδ, fun _ s hs0 hs1 hst => ?_, fun h => absurd h htp.ne'⟩
-      refine harc.2.2.2.2.2.2 e (t - s) he (by linarith) (by linarith) ?_
-      have : (e : ℝ) + (t - s) = (e : ℝ) + t - s := by ring
+      refine harc.2.2.2.2.2.2 e (t - s) he by_l by_l ?_
+      have : (e : ℝ) + (t - s) = (e : ℝ) + t - s := by_r
       rw [this]; exact (h s hs0 hs1).1
   · rcases hl1 with hF | hin
     · exact beforeFaces_of_empty harc hF he
@@ -90,7 +90,7 @@ theorem frc_box_noncut (hP : C.P.Simple) (hN : IsNF (chainModel C) (Qof P) N) {e
     rw [hpar, hedge, Chazelle.Chain.sidePt_zero]
   rw [hv] at hs
   have hr := C.radius_pos
-  rcases ShootCut.walk_vtx_box (C := C) (q := e) (by omega) with h | h <;> rw [h] at hs
+  rcases ShootCut.walk_vtx_box (C := C) (q := e) by_o with h | h <;> rw [h] at hs
   · rw [abs_of_pos hr] at hs; exact lt_irrefl _ hs
   · rw [abs_neg, abs_of_pos hr] at hs; exact lt_irrefl _ hs
 

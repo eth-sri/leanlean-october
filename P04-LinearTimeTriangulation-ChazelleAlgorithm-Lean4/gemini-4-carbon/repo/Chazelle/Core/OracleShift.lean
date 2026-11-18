@@ -32,7 +32,7 @@ theorem firstHitOpt_shift (hA : A ⊆ Chain.box R) (hd : 0 ≤ d)
   | none =>
     intro t ht hm
     rw [rayPt_rayPt] at hm
-    exact h (d + t) (by linarith) hm
+    exact h (d + t) by_l hm
   | some v =>
     obtain ⟨hv, hm, hfirst⟩ := h
     have hdv : d < v := by
@@ -40,21 +40,21 @@ theorem firstHitOpt_shift (hA : A ⊆ Chain.box R) (hd : 0 ≤ d)
       exact hout v hv hc (hA hm)
     refine ⟨by simp only; linarith, ?_, fun t ht hlt hm' => ?_⟩
     · simp only
-      rw [rayPt_rayPt, show d + (v - d) = v by ring]; exact hm
+      rwa [rayPt_rayPt, show d + (v - d) = v by ring]
     · rw [rayPt_rayPt] at hm'
       simp only at hlt
-      exact hfirst (d + t) (by linarith) (by linarith) hm'
+      exact hfirst (d + t) by_l by_l hm'
 
 /-- A first hit from the entry point is a first hit from the origin. -/
 theorem firstHit_unshift (hA : A ⊆ Chain.box R) (hd : 0 ≤ d)
     (hout : ∀ s, 0 < s → s ≤ d → rayPt z σ s ∉ Chain.box R) {t : ℝ}
     (h : FirstHit A (rayPt z σ d) σ t) : FirstHit A z σ (t + d) := by
   obtain ⟨ht, hm, hfirst⟩ := h
-  refine ⟨by linarith, by rw [rayPt_rayPt, add_comm] at hm; exact hm, fun s hs hlt hm' => ?_⟩
+  refine ⟨by_l, by rwa [rayPt_rayPt, add_comm] at hm, fun s hs hlt hm' => ?_⟩
   by_cases hsd : s ≤ d
   · exact hout s hs hsd (hA hm')
   · push Not at hsd
-    refine hfirst (s - d) (by linarith) (by linarith) ?_
+    refine hfirst (s - d) by_l by_l ?_
     rw [rayPt_rayPt, show d + (s - d) = s by ring]; exact hm'
 
 /-- No hit from the entry point is no hit from the origin. -/
@@ -65,8 +65,8 @@ theorem noHit_unshift (hA : A ⊆ Chain.box R) (_hd : 0 ≤ d)
   by_cases hsd : s ≤ d
   · exact hout s hs hsd (hA hm)
   · push Not at hsd
-    refine h (s - d) (by linarith) ?_
-    rw [rayPt_rayPt, show d + (s - d) = s by ring]; exact hm
+    refine h (s - d) by_l ?_
+    rwa [rayPt_rayPt, show d + (s - d) = s by ring]
 
 /-- **An origin past the box**: the ray never meets the box. -/
 theorem noHit_past (hA : A ⊆ Chain.box R) (hσ : σ = 1 ∨ σ = -1) (hpast : R ≤ σ * z.1) :

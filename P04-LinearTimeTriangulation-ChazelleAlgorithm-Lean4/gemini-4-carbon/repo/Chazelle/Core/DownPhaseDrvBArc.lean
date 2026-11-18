@@ -49,10 +49,10 @@ theorem ends_on_arcs (B : BaseCtx Q L E reg li) {r : ℕ}
   obtain ⟨hcQ, hcS, hcR, hatt, -⟩ := regList_sound B.hQ B.hdh B.hli B.fam hR hl hx
   have hFam := B.fam
   have hM := walkAx_interiorModel B.hQ
-  have hnc : N.nChords = L.length := DownMath.nChords_build B.hQ B.hL B.hperm B.hsort
-  have hNF : IsNF (interiorModel Q) Q N := DownMath.isNF_build B.hQ B.hL B.hperm B.hsort
+  have hnc := DownMath.nChords_build B.hQ B.hL B.hperm B.hsort
+  have hNF := DownMath.isNF_build B.hQ B.hL B.hperm B.hsort
   have hne : (N.F (interiorModel Q) Q).Nonempty :=
-    ⟨_, (DownMath.chordPos_attach hNF (show 0 < N.nChords by rw [hnc]; exact B.hK)
+    ⟨_, (DownMath.chordPos_attach hNF (by rw [hnc]; exact B.hK)
       (Or.inl rfl)).1⟩
   have hA : SideAttach (interiorModel Q).W ((recOf x).toSet (interiorModel Q) Q) y.edge
       ((interiorModel Q).param Q y) := by
@@ -63,7 +63,7 @@ theorem ends_on_arcs (B : BaseCtx Q L E reg li) {r : ℕ}
     (B.hregs.1.1 r hr) (chords_family B.hQ hcQ) hcS hcR hA
   obtain ⟨j, hj, hjr, hs, he⟩ := B.hregs.2.2.1.2.2.1 r hr a b harc
   refine ⟨j, (B.hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩, hj, ?_⟩
-  rw [hs, he]; exact hcl
+  rwa [hs, he]
 
 /-- **The arc scan of an end of an emitted record finds a match.** -/
 theorem scan_hex (B : BaseCtx Q L E reg li) {r : ℕ}
@@ -100,8 +100,8 @@ theorem edge_of_key {M : Model} {Q : Polygon} {x : WPos} (h0 : 0 ≤ M.param Q x
     (h1 : M.param Q x < 1) {w : ℕ} (hk : (w : ℝ) ≤ M.key Q x) (hk' : M.key Q x < w + 1) :
     x.edge = w := by
   unfold Model.key at hk hk'
-  have a : (x.edge : ℝ) < w + 1 := by linarith
-  have b : (w : ℝ) < x.edge + 1 := by linarith
+  have a : (x.edge : ℝ) < w + 1 := by_l
+  have b : (w : ℝ) < x.edge + 1 := by_l
   have a' : x.edge < w + 1 := by exact_mod_cast a
   have b' : w < x.edge + 1 := by exact_mod_cast b
   omega
@@ -119,8 +119,8 @@ theorem last_arc_edges (B : BaseCtx Q L E reg li) :
   obtain ⟨hA0, hlast⟩ := DrvD.gs_last (M := I) (Q := Q) (L := L) hE
   rw [hA]
   set j := (gapStarts I Q L E).length - 1 with hj
-  have hs := DrvD.arc_s (M := I) (Q := Q) (E := E) B.hK (j := j) (by omega)
-  have he := DrvD.arc_e (M := I) (Q := Q) (E := E) B.hK (j := j) (by omega)
+  have hs := DrvD.arc_s (M := I) (Q := Q) (E := E) B.hK (j := j) by_o
+  have he := DrvD.arc_e (M := I) (Q := Q) (E := E) B.hK (j := j) by_o
   rw [hlast, Nat.sub_add_cancel hE, Nat.mod_self] at he
   rw [hlast] at hs
   rw [hs, he]
@@ -133,7 +133,7 @@ theorem last_arc_edges (B : BaseCtx Q L E reg li) :
     intro m hm
     obtain ⟨-, q0, q1⟩ := evPos_ok B hm
     have k1 := DrvD.kE_mono B.hsort (Nat.zero_le m) hm
-    have k2 := DrvD.kE_mono B.hsort (show m ≤ E.length - 1 by omega) (by omega)
+    have k2 := DrvD.kE_mono B.hsort (show m ≤ E.length - 1 by omega) by_o
     unfold DrvD.kE at k1 k2
     refine edge_of_key q0 q1 ?_ ?_
     · have : (w : ℝ) ≤ I.key Q (wposOf L (E.getD 0 0)) := by
@@ -155,8 +155,8 @@ theorem last_arc_edges (B : BaseCtx Q L E reg li) :
   have w1 := hall m1 hm1
   rw [g0] at w0
   rw [g1] at w1
-  rw [BuildNF.wposOf_even (by norm_num)] at w0
-  rw [BuildNF.wposOf_odd (by norm_num)] at w1
+  rw [BuildNF.wposOf_even by_n] at w0
+  rw [BuildNF.wposOf_odd by_n] at w1
   have hlt := BuildNF.pos_lt' (walkAx_interiorModel B.hQ) B.hL (i := 0) B.hK
   have hpos : I.pos Q (BuildRegions.crec L (0 / 2)).lpos = I.pos Q (BuildRegions.crec L (1 / 2)).rpos := by
     show I.pos Q ⟨_, _⟩ = I.pos Q ⟨_, _⟩
@@ -194,7 +194,7 @@ theorem closedArc_range (B : BaseCtx Q L E reg li) {j : ℕ}
   have ke : I.key Q e = e.edge + I.param Q e := rfl
   unfold arcCnt
   rw [← hsd, ← hed]
-  have hpt1 : (p : ℝ) + t < p + 1 := by linarith
+  have hpt1 : (p : ℝ) + t < p + 1 := by_l
   by_cases hlt : j + 1 < (gapStarts I Q L E).length
   · -- an arc that does not wrap
     have hk := DrvD.key_s_lt_e (M := I) (Q := Q) B.hK hE hlt
@@ -205,30 +205,30 @@ theorem closedArc_range (B : BaseCtx Q L E reg li) {j : ℕ}
       · exact ⟨hc.ge, hc ▸ hk.le⟩
       · exact ⟨hc ▸ hk.le, hc.le⟩
     have h1 : s.edge ≤ p := by
-      have : (s.edge : ℝ) < p + 1 := by linarith
+      have : (s.edge : ℝ) < p + 1 := by_l
       have : s.edge < p + 1 := by exact_mod_cast this
       omega
     have h2 : p ≤ e.edge := by
-      have : (p : ℝ) < e.edge + 1 := by linarith
+      have : (p : ℝ) < e.edge + 1 := by_l
       have : p < e.edge + 1 := by exact_mod_cast this
       omega
     refine ⟨p - s.edge, ?_, ?_⟩
     · rw [show e.edge + Q.n - s.edge = (e.edge - s.edge) + Q.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega)]
+        Nat.mod_eq_of_lt by_o]
       omega
     · rw [show s.edge + (p - s.edge) = p by omega, Nat.mod_eq_of_lt hp]
   · -- the last arc wraps
-    have hjl : j = (gapStarts I Q L E).length - 1 := by omega
+    have hjl : j = (gapStarts I Q L E).length - 1 := by_o
     have hks := DrvD.key_s_last (M := I) (Q := Q) B.hK hE
     have hke := DrvD.key_e_last (M := I) (Q := Q) B.hK hE
     rw [← hN, ← hjl, ← hsd] at hks
     rw [← hN, ← hjl, ← hed] at hke
     have hge : I.key Q e ≤ I.key Q s := by
-      rw [hks, hke]; exact DrvD.kE_mono B.hsort (Nat.zero_le _) (by omega)
+      rw [hks, hke]; exact DrvD.kE_mono B.hsort (Nat.zero_le _) by_o
     have hne := last_arc_edges B
     rw [← hN, hA, ← hjl, ← hsd, ← hed] at hne
     have hse : e.edge < s.edge := by
-      have : (e.edge : ℝ) < s.edge + 1 := by linarith
+      have : (e.edge : ℝ) < s.edge + 1 := by_l
       have : e.edge < s.edge + 1 := by exact_mod_cast this
       omega
     have hor : I.key Q s ≤ p + t ∨ p + t ≤ I.key Q e := by
@@ -241,20 +241,20 @@ theorem closedArc_range (B : BaseCtx Q L E reg li) {j : ℕ}
       · exact Or.inl hc.ge
       · exact Or.inr hc.le
     have hcnt : (e.edge + Q.n - s.edge) % Q.n = e.edge + Q.n - s.edge :=
-      Nat.mod_eq_of_lt (by omega)
+      Nat.mod_eq_of_lt by_o
     rw [hcnt]
     rcases hor with h | h
     · have h1 : s.edge ≤ p := by
-        have : (s.edge : ℝ) < p + 1 := by linarith
+        have : (s.edge : ℝ) < p + 1 := by_l
         have : s.edge < p + 1 := by exact_mod_cast this
         omega
-      refine ⟨p - s.edge, by omega, ?_⟩
+      refine ⟨p - s.edge, by_o, ?_⟩
       rw [show s.edge + (p - s.edge) = p by omega, Nat.mod_eq_of_lt hp]
     · have h2 : p ≤ e.edge := by
-        have : (p : ℝ) < e.edge + 1 := by linarith
+        have : (p : ℝ) < e.edge + 1 := by_l
         have : p < e.edge + 1 := by exact_mod_cast this
         omega
-      refine ⟨p + Q.n - s.edge, by omega, ?_⟩
+      refine ⟨p + Q.n - s.edge, by_o, ?_⟩
       rw [show s.edge + (p + Q.n - s.edge) = p + Q.n by omega, Nat.add_mod_right,
         Nat.mod_eq_of_lt hp]
 

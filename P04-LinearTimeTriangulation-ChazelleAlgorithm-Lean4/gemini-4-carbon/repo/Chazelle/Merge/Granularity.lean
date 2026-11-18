@@ -146,9 +146,7 @@ theorem contractionCondIn_iff {wt : Set (Set Point) → Set Point → ℕ} {S : 
     by_contra hle
     push Not at hle
     refine h c ⟨hc, U, hU, V, hV, hne, hcU, hcV, hlow, fun W' hW' hUW' => ?_⟩
-    rw [regionsIn_eq_of_subset hW' hW (regionsIn_nonempty hU) hUW' hUW]
-    exact hle
-
+    rwa [regionsIn_eq_of_subset hW' hW (regionsIn_nonempty hU) hUW' hUW]
 /-- The two regions touched by a removable chord are the two halves `R₁`, `R₂` of the removal
 split. -/
 theorem IsSplit.eq_pair_of_touches (hF : ChordSystem D F) {S : Set (Set Point)} (hS : S ⊆ F)
@@ -174,7 +172,7 @@ theorem removable_of_removable_sdiff (hF : ChordSystem D F)
     (hsep : ∀ X ∈ regionsIn D S, TouchesIn D c' X → ¬ TouchesIn D c X)
     (h : Removable D wt γ (S \ {c'}) c) : Removable D wt γ S c := by
   obtain ⟨hcT', U, hU, V, hV, hne, hcU, hcV, hlow, hW⟩ := h
-  have hc : c ∈ S := hcT'.1
+  have hc := hcT'.1
   have hT' : S \ {c'} ⊆ F := fun _ h => hS h.1
   have hc'T' : c' ∉ S \ {c'} := fun h => h.2 rfl
   have hins' := insert_sdiff_self hc'
@@ -197,7 +195,7 @@ theorem removable_of_removable_sdiff (hF : ChordSystem D F)
     exact ⟨by rw [← hins']; exact hs'.mem_of_ne hX hXP, e⟩
   obtain ⟨hUS, eU⟩ := hold U hU hcU
   obtain ⟨hVS, eV⟩ := hold V hV hcV
-  refine ⟨hc, U, hUS, V, hVS, hne, hcU, hcV, by rw [eU, eV]; exact hlow, ?_⟩
+  refine ⟨hc, U, hUS, V, hVS, hne, hcU, hcV, by rwa [eU, eV], ?_⟩
   -- the merged region of `c` is not touched by `c'`, so its weight is unchanged
   intro W hW' hUW
   have hS1 : S \ {c} ⊆ F := fun _ h => hS h.1

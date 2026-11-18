@@ -10,11 +10,6 @@ then (unless the first piece is the whole subarc) the main loop and the last pie
 tile the subarc (`ArcOK`), are valid, and there are `O(log γ)` of them.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
-
 namespace Chazelle.Core
 
 namespace ShootCut
@@ -34,21 +29,21 @@ theorem CoreRegs.of_low {MD mode : ℕ} {s e : WPos} {c c' : Config}
     (h93 : c'.nreg 150093 = 3) (h96 : c'.nreg 150096 = 6) :
     CoreRegs P C H Hh MD h γ mode s e m₀ c' := by
   have k : ∀ r, 150000 ≤ r → r < 150030 ∨ (150030 < r ∧ r < 150037) →
-      c'.nreg r = c.nreg r := fun r h1 h2 => hk r h1 (by omega) (by omega)
-  exact ⟨⟨(k _ (by norm_num) (by norm_num)).trans R.chain.h21,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h22,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h23,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h26,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h28,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h29, h91, h93, h96⟩,
-    (k _ (by norm_num) (by norm_num)).trans R.h00, (k _ (by norm_num) (by norm_num)).trans R.h01,
-    (k _ (by norm_num) (by norm_num)).trans R.h02, (k _ (by norm_num) (by norm_num)).trans R.h03,
-    (k _ (by norm_num) (by norm_num)).trans R.h04, (k _ (by norm_num) (by norm_num)).trans R.h09,
-    (k _ (by norm_num) (by norm_num)).trans R.h13, (k _ (by norm_num) (by norm_num)).trans R.h20,
-    (k _ (by norm_num) (by norm_num)).trans R.h27, (k _ (by norm_num) (by norm_num)).trans R.h31,
-    (k _ (by norm_num) (by norm_num)).trans R.h32, (k _ (by norm_num) (by norm_num)).trans R.h33,
-    (k _ (by norm_num) (by norm_num)).trans R.h34, (k _ (by norm_num) (by norm_num)).trans R.h35,
-    (k _ (by norm_num) (by norm_num)).trans R.h36, h90, h92⟩
+      c'.nreg r = c.nreg r := fun r h1 h2 => hk r h1 by_o by_o
+  exact ⟨⟨(k _ by_n by_n).trans R.chain.h21,
+      (k _ by_n by_n).trans R.chain.h22,
+      (k _ by_n by_n).trans R.chain.h23,
+      (k _ by_n by_n).trans R.chain.h26,
+      (k _ by_n by_n).trans R.chain.h28,
+      (k _ by_n by_n).trans R.chain.h29, h91, h93, h96⟩,
+    (k _ by_n by_n).trans R.h00, (k _ by_n by_n).trans R.h01,
+    (k _ by_n by_n).trans R.h02, (k _ by_n by_n).trans R.h03,
+    (k _ by_n by_n).trans R.h04, (k _ by_n by_n).trans R.h09,
+    (k _ by_n by_n).trans R.h13, (k _ by_n by_n).trans R.h20,
+    (k _ by_n by_n).trans R.h27, (k _ by_n by_n).trans R.h31,
+    (k _ by_n by_n).trans R.h32, (k _ by_n by_n).trans R.h33,
+    (k _ by_n by_n).trans R.h34, (k _ by_n by_n).trans R.h35,
+    (k _ by_n by_n).trans R.h36, h90, h92⟩
 
 /-- The cost bound of the general case. -/
 def genCost (K γ : ℕ) : ℕ := 1100 * ((2 * K + 90) * (Nat.log 2 γ + 1) + 1702) + 2 * K + 20000
@@ -74,12 +69,12 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   set n := 2 * C.m + 7 with hn
   -- the flags of the uncounted block
   obtain ⟨d₁, k₁, e₁, hk₁, o38, o37, r₁, m₁⟩ := uFlag_exec (P := P) d hw 150001 150038 150037
-    (by omega) (by omega) (by omega) R.h01 hs1 R.chain.h96 R.chain.h91 R.h32 (by omega)
+    by_o by_o by_o R.h01 hs1 R.chain.h96 R.chain.h91 R.h32 by_o
   obtain ⟨d₂, k₂, e₂, hk₂, o39, o30, r₂, m₂⟩ := uFlag_exec (P := P) d₁ e₁.wb_right 150003 150039
-    150030 (by omega) (by omega) (by omega) (by rw [r₁ _ (by omega) (by omega), R.h03]) he1
-    (by rw [r₁ _ (by omega) (by omega), R.chain.h96])
-    (by rw [r₁ _ (by omega) (by omega), R.chain.h91])
-    (by rw [r₁ _ (by omega) (by omega), R.h32]) (by omega)
+    150030 by_o by_o by_o (by rw [r₁ _ by_o by_o, R.h03]) he1
+    (by rw [r₁ _ by_o by_o, R.chain.h96])
+    (by rw [r₁ _ by_o by_o, R.chain.h91])
+    (by rw [r₁ _ by_o by_o, R.h32]) by_o
   have g₂ : ∀ x, x ≠ 150037 → x ≠ 150038 → x ≠ 150039 → x ≠ 150030 → d₂.nreg x = d.nreg x :=
     fun x h1 h2 h3 h4 => by rw [r₂ x h3 h4, r₁ x h2 h1]
   have w₂ := e₂.wb_right
@@ -90,71 +85,71 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       d₃.nmem = d₂.nmem := by
     unfold fOf
     have a90 : d₂.nreg 150090 = 0 := by
-      rw [g₂ 150090 (by omega) (by omega) (by omega) (by omega), R.h90]
+      rw [g₂ 150090 by_o by_o by_o by_o, R.h90]
     have a31 : d₂.nreg 150031 = 2 * C.m + 5 := by
-      rw [g₂ 150031 (by omega) (by omega) (by omega) (by omega), R.h31]
+      rw [g₂ 150031 by_o by_o by_o by_o, R.h31]
     have a03 : d₂.nreg 150003 = e.edge := by
-      rw [g₂ 150003 (by omega) (by omega) (by omega) (by omega), R.h03]
+      rw [g₂ 150003 by_o by_o by_o by_o, R.h03]
     by_cases heU : e.edge ≤ 5 ∨ e.edge = 2 * C.m + 6
     · have c39 : d₂.nreg 150090 < d₂.nreg 150039 := by rw [a90, o39, ite_eq_left heU]; omega
-      refine spec_ifLtN_true c39 (spec_instr (Exec.copyN w₂ _ _) fun _ => ⟨by omega, ?_,
+      refine spec_ifLtN_true c39 (spec_instr (Exec.copyN w₂ _ _) fun _ => ⟨by_o, ?_,
           fun x hx => by simp [hx], rfl⟩)
       config_simp; rw [a31, ite_eq_left heU]
     · have c39 : ¬ d₂.nreg 150090 < d₂.nreg 150039 := by rw [a90, o39, ite_eq_right heU]; omega
-      refine spec_ifLtN_false c39 (spec_instr (Exec.copyN w₂ _ _) fun _ => ⟨by omega, ?_,
+      refine spec_ifLtN_false c39 (spec_instr (Exec.copyN w₂ _ _) fun _ => ⟨by_o, ?_,
           fun x hx => by simp [hx], rfl⟩)
       config_simp; rw [a03, ite_eq_right heU]
   -- `43 := 0`
-  have e₄ := Exec.constN (P := P) e₃.wb_right 150043 0 (by omega)
+  have e₄ := Exec.constN (P := P) e₃.wb_right 150043 0 by_o
   set d₄ := ({ d₃ with nreg := upd d₃.nreg 150043 0 } : Config) with hd₄
   have g₄ : ∀ x, x ≠ 150037 → x ≠ 150038 → x ≠ 150039 → x ≠ 150030 → x ≠ 150041 →
       x ≠ 150043 → d₄.nreg x = d.nreg x := fun x h1 h2 h3 h4 h5 h6 => by
     simp only [hd₄, upd]; rw [ite_eq_right h6, r₃ x h5, g₂ x h1 h2 h3 h4]
   have w₄ := e₄.wb_right
-  have R₄ : CoreRegs P C H Hh MD h γ mode s e m₀ d₄ := R.of_low
-    (fun r h1 h2 h3 => g₄ r (by omega) (by omega) (by omega) h3 (by omega) (by omega))
-    (by rw [g₄ _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), R.h90])
-    (by rw [g₄ _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), R.chain.h91])
-    (by rw [g₄ _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), R.h92])
-    (by rw [g₄ _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), R.chain.h93])
-    (by rw [g₄ _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), R.chain.h96])
+  have R₄ := R.of_low
+    (fun r h1 h2 h3 => g₄ r by_o by_o by_o h3 by_o by_o)
+    (by rw [g₄ _ by_o by_o by_o by_o by_o by_o, R.h90])
+    (by rw [g₄ _ by_o by_o by_o by_o by_o by_o, R.chain.h91])
+    (by rw [g₄ _ by_o by_o by_o by_o by_o by_o, R.h92])
+    (by rw [g₄ _ by_o by_o by_o by_o by_o by_o, R.chain.h93])
+    (by rw [g₄ _ by_o by_o by_o by_o by_o by_o, R.chain.h96])
   have hm₄ : ∀ a, a < A₀ → d₄.nmem a = m₀ a := fun a ha => by
     show d₃.nmem a = m₀ a; rw [m₃, m₂, m₁]; exact hm a ha
-  have fr₄ : FrameB Scr d d₄ := ((exec_frameB e₁ (by decide)).trans
-    (exec_frameB e₂ (by decide))).trans ((exec_frameB e₃ (by decide)).trans
-      (exec_frameB e₄ (by decide)))
+  have fr₄ : FrameB Scr d d₄ := ((exec_frameB e₁ by_d).trans
+    (exec_frameB e₂ by_d)).trans ((exec_frameB e₃ by_d).trans
+      (exec_frameB e₄ by_d))
   have hI₄ := hE.stable _ _ _ hI fr₄
   have b38 : d₄.nreg 150038 = if s.edge ≤ 5 ∨ s.edge = 2 * C.m + 6 then 1 else 0 := by
-    simp only [hd₄, upd]; rw [ite_eq_right (by omega), r₃ _ (by omega), r₂ _ (by omega) (by omega)]
+    simp only [hd₄, upd]; rw [ite_eq_right by_o, r₃ _ by_o, r₂ _ by_o by_o]
     exact o38
   have b37 : d₄.nreg 150037 = uIx s.edge := by
-    simp only [hd₄, upd]; rw [ite_eq_right (by omega), r₃ _ (by omega), r₂ _ (by omega) (by omega)]
+    simp only [hd₄, upd]; rw [ite_eq_right by_o, r₃ _ by_o, r₂ _ by_o by_o]
     exact o37
   have b39 : d₄.nreg 150039 = if e.edge ≤ 5 ∨ e.edge = 2 * C.m + 6 then 1 else 0 := by
-    simp only [hd₄, upd]; rw [ite_eq_right (by omega), r₃ _ (by omega)]; exact o39
+    simp only [hd₄, upd]; rw [ite_eq_right by_o, r₃ _ by_o]; exact o39
   have b30 : d₄.nreg 150030 = uIx e.edge := by
-    simp only [hd₄, upd]; rw [ite_eq_right (by omega), r₃ _ (by omega)]; exact o30
+    simp only [hd₄, upd]; rw [ite_eq_right by_o, r₃ _ by_o]; exact o30
   have b41 : d₄.nreg 150041 = fOf C.m e.edge := by
-    simp only [hd₄, upd]; rw [ite_eq_right (by omega)]; exact o41
+    simp only [hd₄, upd]; rw [ite_eq_right by_o]; exact o41
   have b43 : d₄.nreg 150043 = 0 := by simp [hd₄]
   -- the first piece
   obtain ⟨d₅, k₅, p₁, ex₅, hk₅, hI₅, hp₁, hp₁s, hdone, hndone, kp₅, mem₅⟩ :=
     first_exec S hE (ps₀ := ps₀) d₄ w₄ R₄ b38 b37 b39 b30 hI₄ hs he hs1 he1
   have w₅ := ex₅.wb_right
-  have R₅ : CoreRegs P C H Hh MD h γ mode s e m₀ d₅ := R₄.of_low
-    (fun r h1 h2 h3 => kp₅ r (Or.inl ⟨h1, by omega⟩) (by omega) (by omega))
-    (by rw [kp₅ _ (by unfold Keep; omega) (by omega) (by omega), R₄.h90])
-    (by rw [kp₅ _ (by unfold Keep; omega) (by omega) (by omega), R₄.chain.h91])
-    (by rw [kp₅ _ (by unfold Keep; omega) (by omega) (by omega), R₄.h92])
-    (by rw [kp₅ _ (by unfold Keep; omega) (by omega) (by omega), R₄.chain.h93])
-    (by rw [kp₅ _ (by unfold Keep; omega) (by omega) (by omega), R₄.chain.h96])
+  have R₅ := R₄.of_low
+    (fun r h1 h2 h3 => kp₅ r (Or.inl ⟨h1, by_o⟩) by_o by_o)
+    (by rw [kp₅ _ (by unfold Keep; omega) by_o by_o, R₄.h90])
+    (by rw [kp₅ _ (by unfold Keep; omega) by_o by_o, R₄.chain.h91])
+    (by rw [kp₅ _ (by unfold Keep; omega) by_o by_o, R₄.h92])
+    (by rw [kp₅ _ (by unfold Keep; omega) by_o by_o, R₄.chain.h93])
+    (by rw [kp₅ _ (by unfold Keep; omega) by_o by_o, R₄.chain.h96])
   have hm₅ : ∀ a, a < A₀ → d₅.nmem a = m₀ a := fun a ha => by rw [mem₅ a ha]; exact hm₄ a ha
-  have c91 : d₅.nreg 150091 = 1 := R₅.chain.h91
+  have c91 := R₅.chain.h91
   have hpre : ∀ {d' : Config} {k : ℕ}, Exec P W (.ifLtN 150043 150091
       (.seq setFlag (.seq (mainLoop emit) (final emit))) .skip) d₅ d' k →
       Exec P W (general emit) d d' ((k₁ + k₂) + (k₃ + (1 + (k₅ + k)))) := fun ex => by
     unfold general; exact .seq (.seq e₁ e₂) (.seq e₃ (.seq e₄ (.seq ex₅ ex)))
-  have hGc : 2 * K + 90 ≤ (2 * K + 90) * (Nat.log 2 γ + 1) := Nat.le_mul_of_pos_right _ (by omega)
+  have hGc : 2 * K + 90 ≤ (2 * K + 90) * (Nat.log 2 γ + 1) := Nat.le_mul_of_pos_right _ by_o
   by_cases hd43 : d₅.nreg 150043 < d₅.nreg 150091
   · -- the main loop and the last piece
     have hnd : ¬ Done C.m s.edge e.edge := fun hd => by rw [(hdone hd).2, c91] at hd43; omega
@@ -168,34 +163,34 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     have hTle : ks + len ((2 * C.m + 7 : ℕ) : ℝ) ks ke ≤ ks + ((2 * C.m + 7 : ℕ) : ℝ) := by
       have := len_le ((2 * C.m + 7 : ℕ) : ℝ) ks ke kS.1 kE.2; linarith
     -- the flag
-    obtain ⟨d₆, k₆, e₆, hk₆, o42, r₆, m₆⟩ := setFlag_exec (P := P) d₅ w₅ (by omega)
+    obtain ⟨d₆, k₆, e₆, hk₆, o42, r₆, m₆⟩ := setFlag_exec (P := P) d₅ w₅ by_o
     have w₆ := e₆.wb_right
-    have a40 : d₆.nreg 150040 = U₀ % n := by rw [r₆ _ (by omega), h40, hU₀]
+    have a40 : d₆.nreg 150040 = U₀ % n := by rw [r₆ _ by_o, h40, hU₀]
     have a41 : d₆.nreg 150041 = F % n := by
-      rw [r₆ _ (by omega), kp₅ _ (by unfold Keep; omega) (by omega) (by omega), b41, hF]
+      rw [r₆ _ by_o, kp₅ _ (by unfold Keep; omega) by_o by_o, b41, hF]
     have hc0 : 6 ≤ U₀ % n ∧ U₀ % n ≤ 2 * C.m + 6 := by
       rw [hU₀]; unfold c0Of; split_ifs <;> omega
     have hf : 6 ≤ F % n ∧ F % n ≤ 2 * C.m + 5 := by
       rw [hF]; unfold fOf; split_ifs <;> omega
-    have hUof : Uof U₀ n (U₀ % n) = U₀ := Uof_eq (by omega) le_rfl (by omega)
+    have hUof : Uof U₀ n (U₀ % n) = U₀ := Uof_eq by_o le_rfl by_o
     have L : LStat C U₀ F γ := ⟨hUF, hFU, hf.1, hf.2, fun v L hv hvF h6 hL => le_trans
-      (arcWt_ge C kS kE ⟨0, by ring⟩ (T_unw ks ke _) hTle h6 hL
+      (arcWt_ge C kS kE ⟨0, by_r⟩ (T_unw ks ke _) hTle h6 hL
         (by have : (U₀ : ℝ) ≤ v := by exact_mod_cast hv
             linarith)
         (by have : ((v + L : ℕ) : ℝ) ≤ F := by exact_mod_cast hvF
             push_cast at this; linarith)) hwt⟩
-    have hI₆ := hE.stable _ _ _ hI₅ (exec_frameB e₆ (by decide))
+    have hI₆ := hE.stable _ _ _ hI₅ (exec_frameB e₆ by_d)
     have hL0 : LoopI P C H Hh MD h γ mode s e m₀ A₀ W I (ps₀ ++ [p₁]) U₀ F
         (mu C (Qof P).n H F U₀) d₆ d₆ := by
-      refine ⟨w₆, R₅.of_frame' (fun r h1 h2 h3 h4 => r₆ r h4) (by rw [r₆ _ (by omega)]; exact R₅.h90)
-        (by rw [r₆ _ (by omega)]; exact c91) (by rw [r₆ _ (by omega)]; exact R₅.h92)
-        (by rw [r₆ _ (by omega)]; exact R₅.chain.h93) (by rw [r₆ _ (by omega)]; exact R₅.chain.h96),
+      refine ⟨w₆, R₅.of_frame' (fun r h1 h2 h3 h4 => r₆ r h4) (by rw [r₆ _ by_o]; exact R₅.h90)
+        (by rwa [r₆ _ by_o]) (by rw [r₆ _ by_o]; exact R₅.h92)
+        (by rw [r₆ _ by_o]; exact R₅.chain.h93) (by rw [r₆ _ by_o]; exact R₅.chain.h96),
         fun a ha => by rw [m₆]; exact hm₅ a ha, fun _ _ _ _ _ => rfl, by rw [a40]; omega,
-        by rw [a40]; omega, by rw [a40, hUof]; exact hUF, ?_, [], ?_, by simpa using hI₆,
-        by simp, by rw [a40, hUof]; simp⟩
+        by rw [a40]; omega, by rwa [a40, hUof], ?_, [], ?_, by simpa using hI₆,
+        by_s, by rw [a40, hUof]; simp⟩
       · rw [o42, a40, hUof, show d₅.nreg 150040 = U₀ % n by rw [h40, hU₀],
-          show d₅.nreg 150041 = F % n by rw [← a41, r₆ _ (by omega)]]
-        exact flag_of (by omega) hUF (by omega)
+          show d₅.nreg 150041 = F % n by rw [← a41, r₆ _ by_o]]
+        exact flag_of by_o hUF by_o
       · rw [a40, hUof]; rfl
     obtain ⟨d₇, k₇, e₇, hL₇, hU₇, hk₇⟩ := mainLoop_exec S hE L d₆ a41 d₆ hL0
     obtain ⟨w₇, R₇, hm₇, hk₇', -, -, -, -, loop, hpath, hI₇, hok₇, hcnt⟩ := hL₇
@@ -203,8 +198,8 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     -- the last piece
     obtain ⟨d₈, k₈, fin, e₈, hk₈, hI₈, hok₈, hfinY, hfinN, mem₈⟩ := final_exec S hE
       (ps := ps₀ ++ [p₁] ++ loop) hD hMD hHh d₇ w₇ hm₇ R₇
-      (by rw [hk₇' _ (by omega) (by omega) (by omega) (by omega), r₆ _ (by omega),
-        kp₅ _ (by unfold Keep; omega) (by omega) (by omega), b39]) hI₇ he he1
+      (by rw [hk₇' _ by_o by_o by_o by_o, r₆ _ by_o,
+        kp₅ _ (by unfold Keep; omega) by_o by_o, b39]) hI₇ he he1
     -- the pieces
     have hfin : (fin = [pVE (F % n) e] ∧ (F : ℝ) < ks + len ((2 * C.m + 7 : ℕ) : ℝ) ks ke) ∨
         (fin = [] ∧ (F : ℝ) = ks + len ((2 * C.m + 7 : ℕ) : ℝ) ks ke) := by
@@ -224,7 +219,7 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     have hμ : mu C (Qof P).n H F U₀ ≤ 1031 := by
       have h1 := mu_le (C := C) (nQ := (Qof P).n) (H := H) F U₀
       have h2 := card_brkU_le (C := C) (nQ := (Qof P).n) (H := H)
-        (by rw [S.hQn]; omega) (by rw [S.hQn]; exact S.hwf) (U := U₀) (F := F) (by omega)
+        (by rw [S.hQn]; omega) (by rw [S.hQn]; exact S.hwf) (U := U₀) (F := F) by_o
       have := S.hlen
       omega
     have hfinL : fin.length ≤ 1 := by rcases hfin with ⟨rfl, -⟩ | ⟨rfl, -⟩ <;> simp
@@ -239,7 +234,7 @@ theorem general_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     · simp only [List.length_cons, List.length_append]
       have e1 : 2 * (Nat.log 2 γ + 1) * mu C (Qof P).n H F U₀ ≤ 2 * (Nat.log 2 γ + 1) * 1031 :=
         Nat.mul_le_mul_left _ hμ
-      have e2 : 2 * (Nat.log 2 γ + 1) * 1031 + 3 ≤ 2100 * (Nat.log 2 γ + 1) := by omega
+      have e2 : 2 * (Nat.log 2 γ + 1) * 1031 + 3 ≤ 2100 * (Nat.log 2 γ + 1) := by_o
       omega
   · -- a single piece
     have hd : Done C.m s.edge e.edge := by

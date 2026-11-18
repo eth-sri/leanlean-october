@@ -92,8 +92,8 @@ theorem plan_one (hL : spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (nh Q e₂
   have hpe : ProperPos (interiorModel Q) Q Q.n ⟨e₂, nh Q e₂ h₂⟩ :=
     ⟨by rw [param_nh q.he₂]; exact q.he.1, by rw [param_nh q.he₂]; exact q.he.2.1,
       le_trans nh_le q.he.2.2⟩
-  refine ⟨⟨q.he₁, h1, hL, q.hs, by rw [hmod]; exact hpe, by rw [hmod]; exact hee,
-    by rw [hmod]; exact hxy⟩, hS, hwt (by omega)⟩
+  refine ⟨⟨q.he₁, h1, hL, q.hs, by rwa [hmod], by rwa [hmod],
+    by rwa [hmod]⟩, hS, hwt by_o⟩
 
 include q in
 /-- **Two sub-queries** (`L ≥ n`): two edges to the vertex `(e₁ + 2) mod n`, then the rest. -/
@@ -114,7 +114,7 @@ theorem plan_two (hL : Q.n ≤ spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (n
   set ee := eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂) with heed
   set L := spanL ee (nh Q e₂ h₂) with hLd
   have hn := q.hn
-  have hn0 : 0 < Q.n := by omega
+  have hn0 : 0 < Q.n := by_o
   have hee2 : 2 ≤ ee := by rcases hee with ⟨-, h'⟩ | ⟨-, h', -⟩ <;> omega
   have hLn : L ≤ Q.n + 1 := by rcases hee with ⟨-, h'⟩ | ⟨-, h', -⟩ <;> omega
   have hmod2 : ((e₁ + 2) % Q.n + (ee - 2)) % Q.n = e₂ := by
@@ -127,18 +127,18 @@ theorem plan_two (hL : Q.n ≤ spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (n
   have hp0 : ∀ e, (interiorModel Q).param Q ⟨e, 0⟩ = 0 := fun e => rfl
   have hx1 := q.hs.2.1
   have hx0 := q.hs.1
-  refine ⟨⟨q.he₁, by norm_num, by omega, q.hs, hv0 _, Or.inl ⟨rfl, rfl⟩, by
+  refine ⟨⟨q.he₁, by_n, by_o, q.hs, hv0 _, Or.inl ⟨rfl, rfl⟩, by
       rw [hp0]; push_cast; linarith⟩,
-    ⟨Nat.mod_lt _ hn0, by omega, by omega, hv0 _, by rw [hmod2]; exact hpe, ?_, ?_⟩, ?_, ?_⟩
+    ⟨Nat.mod_lt _ hn0, by_o, by_o, hv0 _, by rwa [hmod2], ?_, ?_⟩, ?_, ?_⟩
   · rw [hmod2]
     rcases hee with ⟨h0, h'⟩ | ⟨h0, h', hp⟩
-    · exact Or.inl ⟨h0, by omega⟩
-    · exact Or.inr ⟨h0, by omega, hp⟩
+    · exact Or.inl ⟨h0, by_o⟩
+    · exact Or.inr ⟨h0, by_o, hp⟩
   · rw [hp0, hmod2]
     rcases hee with ⟨h0, h'⟩ | ⟨h0, h', hp⟩
     · have : (interiorModel Q).param Q ⟨e₂, nh Q e₂ h₂⟩ = 0 := by rw [h0]; rfl
       rw [this, add_zero]
-      exact_mod_cast (show 0 < ee - 2 by omega)
+      exact_mod_cast (by omega)
     · have : (0 : ℝ) ≤ ((ee - 2 : ℕ) : ℝ) := Nat.cast_nonneg _
       linarith
   · rw [hS, hp0, hmod2, add_zero]
@@ -158,7 +158,7 @@ theorem plan_two (hL : Q.n ≤ spanL (eeOf Q e₁ h₁ e₂ (nh Q e₂ h₂)) (n
       have : ((2 : ℕ) : ℝ) ≤ ee := by exact_mod_cast hee2
       linarith)]
   · rcases (show L = Q.n ∨ Q.n < L by omega) with h' | h'
-    · rw [hwt (by omega), h']
+    · rw [hwt by_o, h']
     · exact hwt' h'
 
 

@@ -137,13 +137,13 @@ theorem mem1_keep {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   rw [hr]
   by_cases h1 : a = X + 2 * i + 1
   · subst h1
-    rw [ite_eq_left rfl, ite_eq_right (by omega), ite_eq_left (by omega), show X + 2 * i + 1 - X = 2 * i + 1 by
-      omega, tbl, ite_eq_left (hkc 1 (by norm_num)), hnc 1 (by norm_num)]
+    rw [ite_eq_left rfl, ite_eq_right by_o, ite_eq_left by_o, show X + 2 * i + 1 - X = 2 * i + 1 by
+      omega, tbl, ite_eq_left (hkc 1 by_n), hnc 1 by_n]
   by_cases h2 : a = X + 2 * i
   · subst h2
-    rw [ite_eq_right h1, ite_eq_left rfl, ite_eq_right (by omega), ite_eq_left (by omega), show X + 2 * i - X = 2 * i by
-      omega, tbl, show 2 * i = 2 * i + 0 by rfl, ite_eq_left (hkc 0 (by norm_num)),
-      hnc 0 (by norm_num)]
+    rw [ite_eq_right h1, ite_eq_left rfl, ite_eq_right by_o, ite_eq_left by_o, show X + 2 * i - X = 2 * i by
+      omega, tbl, show 2 * i = 2 * i + 0 by rfl, ite_eq_left (hkc 0 by_n),
+      hnc 0 by_n]
   rw [ite_eq_right h1, ite_eq_right h2]
   have htw : ∀ s, s < 3 → tw (keepL li n L) (3 * j + s) =
       if s = 0 then (L.getD i (0, 0, 0)).1 else if s = 1 then (L.getD i (0, 0, 0)).2.1
@@ -152,18 +152,18 @@ theorem mem1_keep {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     rw [show (3 * j + s) % 3 = s by omega, show (3 * j + s) / 3 = j by omega, hg]
   by_cases h3 : a = B' + 3 * j + 2
   · subst h3
-    rw [ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
-      htw 2 (by norm_num)]
+    rw [ite_eq_left rfl, ite_eq_left by_o, show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
+      htw 2 by_n]
     simp
   by_cases h4 : a = B' + 3 * j + 1
   · subst h4
-    rw [ite_eq_right h3, ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 1 - B' = 3 * j + 1 by omega,
-      htw 1 (by norm_num)]
+    rw [ite_eq_right h3, ite_eq_left rfl, ite_eq_left by_o, show B' + 3 * j + 1 - B' = 3 * j + 1 by omega,
+      htw 1 by_n]
     simp
   by_cases h5 : a = B' + 3 * j
   · subst h5
-    rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left (by omega),
-      show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 (by norm_num)]
+    rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left by_o,
+      show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 by_n]
     simp
   rw [ite_eq_right h3, ite_eq_right h4, ite_eq_right h5]
   split_ifs <;> first | rfl | omega
@@ -185,21 +185,21 @@ theorem mem1_drop {m₀ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   rw [hr]
   by_cases h1 : a = X + 2 * i + 1
   · subst h1
-    rw [ite_eq_left rfl, ite_eq_right (by omega), ite_eq_left (by omega), show X + 2 * i + 1 - X = 2 * i + 1 by
-      omega, tbl, hkc 1 (by norm_num)]
+    rw [ite_eq_left rfl, ite_eq_right by_o, ite_eq_left by_o, show X + 2 * i + 1 - X = 2 * i + 1 by
+      omega, tbl, hkc 1 by_n]
     simp
   by_cases h2 : a = X + 2 * i
   · subst h2
-    rw [ite_eq_right h1, ite_eq_left rfl, ite_eq_right (by omega), ite_eq_left (by omega), show X + 2 * i - X = 2 * i + 0
-      by omega, tbl, hkc 0 (by norm_num)]
+    rw [ite_eq_right h1, ite_eq_left rfl, ite_eq_right by_o, ite_eq_left by_o, show X + 2 * i - X = 2 * i + 0
+      by omega, tbl, hkc 0 by_n]
     simp
   rw [ite_eq_right h1, ite_eq_right h2]
   by_cases h6 : B' ≤ a ∧ a < B' + 3 * rankF (keepX li n) L i
   · rw [ite_eq_left h6, ite_eq_left h6]
   · rw [ite_eq_right h6, ite_eq_right h6]
     by_cases h7 : X ≤ a ∧ a < X + 2 * i
-    · rw [ite_eq_left h7, ite_eq_left (by omega)]
-    · rw [ite_eq_right h7, ite_eq_right (by omega)]
+    · rw [ite_eq_left h7, ite_eq_left by_o]
+    · rw [ite_eq_right h7, ite_eq_right by_o]
 
 /-! ## The pieces of one chord -/
 
@@ -233,13 +233,13 @@ theorem dEq_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) :
       (∀ r, r ≠ 200115 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
       c'.rmem = c.rmem ∧ c'.output = c.output := by
   by_cases h1 : c.nreg 200112 < c.nreg 200116
-  · exact ⟨c, _, .ifLtN_true h1 (.skip hw), by omega, by rw [ite_eq_right (by omega)],
+  · exact ⟨c, _, .ifLtN_true h1 (.skip hw), by_o, by rw [ite_eq_right by_o],
       fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   by_cases h2 : c.nreg 200116 < c.nreg 200112
-  · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), by omega,
-      by rw [ite_eq_right (by omega)], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+  · exact ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw)), by_o,
+      by rw [ite_eq_right by_o], fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
   have e := Exec.constN (P := P) hw 200115 1 hW
-  exact ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 e), by omega, by simp [show c.nreg 200112 =
+  exact ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 e), by_o, by simp [show c.nreg 200112 =
     c.nreg 200116 by omega], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
 
 /-- **The start-vertex test.** -/
@@ -257,15 +257,15 @@ theorem dTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Boo
       c₁.rmem = c.rmem ∧ c₁.output = c.output := by
     cases li
     · have h : ¬ c.nreg 200101 < c.nreg 200103 := by rw [h101, hbit]; simp
-      exact ⟨_, _, .ifLtN_false h (Exec.subN hw 200116 200104 p), by omega,
+      exact ⟨_, _, .ifLtN_false h (Exec.subN hw 200116 200104 p), by_o,
         by simp [wStart, h104], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
     · have h : c.nreg 200101 < c.nreg 200103 := by rw [h101, hbit]; simp
-      exact ⟨_, _, .ifLtN_true h (Exec.copyN hw 200116 p), by omega,
+      exact ⟨_, _, .ifLtN_true h (Exec.copyN hw 200116 p), by_o,
         by simp [wStart], fun r hr => by simp [hr], rfl, rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, v₂, r₂, m₂, rr₂, rm₂, o₂⟩ := dEq_exec (P := P) c₁ e₁.wb_right hW
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, fun r a b => by rw [r₂ r a, r₁ r b], by rw [m₂, m₁],
+  refine ⟨c₂, _, .seq e₁ e₂, by_o, ?_, fun r a b => by rw [r₂ r a, r₁ r b], by rw [m₂, m₁],
     by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
-  rw [v₂, v₁, r₁ _ (by norm_num), r₁ _ (by norm_num)]
+  rw [v₂, v₁, r₁ _ by_n, r₁ _ by_n]
 
 set_option maxHeartbeats 4000000 in
 /-- **A kept chord.** -/

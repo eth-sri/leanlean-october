@@ -89,9 +89,9 @@ theorem m2cSet_val (m f : ℕ → ℕ) {e h : ℕ} (_he : e ≠ lE ∧ e ≠ lH)
       nb.2, *]
 
 theorem m2cSet_ok (m f : ℕ → ℕ) (e h : ℕ) : okB W m (m2cSet e h) f :=
-  ⟨iscr_sw (by unfold lE sw; norm_num) (by unfold lE sw; norm_num),
-    iscr_sw (by unfold lH sw; norm_num) (by unfold lH sw; norm_num),
-    iscr_sw (by unfold lD sw; norm_num) (by unfold lD sw; norm_num), trivial⟩
+  ⟨iscr_sw by_d by_d,
+    iscr_sw by_d by_d,
+    iscr_sw by_d by_d, trivial⟩
 
 /-- The cost of a branch. -/
 def m2cK (T Fg D : ℕ) : ℕ := 35007 + (3 + (lhRunK T Fg D + 7) + 2)
@@ -105,7 +105,7 @@ theorem m2cK_le (T Fg D : ℕ) : m2cK T Fg D + 4 ≤ (κGen D + 40000) * (Fg + T
   rw [h3]
   have e : m2cK T Fg D + 4 = (lhRunK T Fg D + 7) + 35016 := by unfold m2cK; ring
   rw [e]
-  exact Nat.add_le_add (h1.trans h2) (le_trans (by norm_num) h4)
+  exact Nat.add_le_add (h1.trans h2) (le_trans by_n h4)
 
 end
 

@@ -35,15 +35,15 @@ theorem ratio_mem_iff {a b y : ℝ} (hab : a ≠ b) :
     (0 ≤ ratio a b y ∧ ratio a b y < 1) ↔ (if a < b then a ≤ y ∧ y < b else b < y ∧ y ≤ a) := by
   unfold ratio
   rcases lt_or_gt_of_ne hab with h | h
-  · rw [ite_eq_left h, le_div_iff₀ (by linarith), div_lt_one (by linarith)]
+  · rw [ite_eq_left h, le_div_iff₀ by_l, div_lt_one by_l]
     constructor <;> rintro ⟨h1, h2⟩ <;> constructor <;> linarith
-  · rw [ite_eq_right (not_lt.2 h.le), div_nonneg_iff, div_lt_one_of_neg (by linarith)]
+  · rw [ite_eq_right (not_lt.2 h.le), div_nonneg_iff, div_lt_one_of_neg by_l]
     constructor
     · rintro ⟨h1 | h1, h2⟩
       · exfalso; linarith [h1.2]
-      · exact ⟨by linarith, by linarith [h1.1]⟩
+      · exact ⟨by_l, by linarith [h1.1]⟩
     · rintro ⟨h1, h2⟩
-      exact ⟨Or.inr ⟨by linarith, by linarith⟩, by linarith⟩
+      exact ⟨Or.inr ⟨by_l, by_l⟩, by_l⟩
 
 theorem ratio_eq_zero_iff {a b y : ℝ} (hab : a ≠ b) : ratio a b y = 0 ↔ y = a := by
   unfold ratio
@@ -58,9 +58,9 @@ theorem ratio_lt_iff {a b y y' : ℝ} (hab : a ≠ b) :
     ratio a b y < ratio a b y' ↔ (if a < b then y < y' else y' < y) := by
   unfold ratio
   rcases lt_or_gt_of_ne hab with h | h
-  · rw [ite_eq_left h, div_lt_div_iff_of_pos_right (by linarith)]
+  · rw [ite_eq_left h, div_lt_div_iff_of_pos_right by_l]
     constructor <;> intro h' <;> linarith
-  · rw [ite_eq_right (not_lt.2 h.le), div_lt_div_right_of_neg (by linarith)]
+  · rw [ite_eq_right (not_lt.2 h.le), div_lt_div_right_of_neg by_l]
     constructor <;> intro h' <;> linarith
 
 variable {C C' : Chain}
@@ -235,7 +235,7 @@ theorem arcWt_eq {Q : Polygon} {x x' : WPos} (hx : BandPos C C' Q x) (hx' : Band
     intro p _; show (6 ≤ p ∧ p < 2 * C'.m + 6) ↔ _; rw [h.m_eq]
   have r1 := (h.param_mem_iff hx).2 hm
   have r2 := (h.param_mem_iff hx').2 hm'
-  rw [Model.arcWt_key _ hc (by omega) Q hm hm', Model.arcWt_key _ hc' (by omega) Q r1 r2]
+  rw [Model.arcWt_key _ hc by_o Q hm hm', Model.arcWt_key _ hc' by_o Q r1 r2]
   unfold arcWtNat keyCeil
   have hlt := h.key_lt_iff hx hx' hm hm'
   unfold Model.key at hlt

@@ -311,7 +311,7 @@ theorem edge_mono (hE : E.Good) {a b : ℕ} (ha : a < E.A) (hb : b < E.A)
   have hb1 := (par_mem hE hb).2
   rw [key_edge, key_edge] at hlt
   by_contra h'
-  have : (E.edge b : ℝ) + 1 ≤ E.edge a := by exact_mod_cast (show E.edge b + 1 ≤ E.edge a by omega)
+  have : (E.edge b : ℝ) + 1 ≤ E.edge a := by exact_mod_cast (by omega)
   linarith
 
 /-- **The integer weight of two positions is the weight of the key interval.** -/
@@ -322,7 +322,7 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
   obtain ⟨pa0, pa1⟩ := par_mem hE ha
   obtain ⟨pb0, pb1⟩ := par_mem hE hb
   rw [key_edge, key_edge, arcWt_formula hE.hcd ea eb pa0 pa1 pb0 pb1, ← key_edge, ← key_edge]
-  have hcnt : E.M.counted (E.edge b) ↔ (E.ch = false ∨ (6 ≤ E.edge b ∧ E.edge b < 2 * E.m + 6)) :=
+  have hcnt :=
     hE.hcd.2 _ eb
   obtain ⟨hpz1, hpz⟩ := h.pz b hb
   have hn := hE.hn
@@ -334,12 +334,12 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
       by_cases hz : E.par b = 0
       · rw [ite_eq_right (by rw [hz]; exact lt_irrefl 0)]
         by_contra h'
-        have : st.pz b = 1 := by omega
+        have : st.pz b = 1 := by_o
         exact (hpz.1 this).2 hz
       · rw [ite_eq_left (lt_of_le_of_ne pb0 (Ne.symm hz))]
         exact (hpz.2 ⟨hc, hz⟩).symm
     · by_contra h'
-      exact hc (hpz.1 (by omega)).1
+      exact hc (hpz.1 by_o).1
   have hb01 : bump (E.par b) ≤ 1 := by unfold bump; split_ifs <;> omega
   have hnE : E.n = E.M.W.n := rfl
   unfold gwt Env.sz
@@ -354,7 +354,7 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
     rw [ite_eq_left hlt, ite_eq_left hkl]
     cases hch : E.ch with
     | false =>
-      have hc : E.M.counted (E.edge b) := hcnt.2 (Or.inl hch)
+      have hc := hcnt.2 (Or.inl hch)
       have := hbx.1 hc
       unfold cntIn bB; simp only [Bool.false_eq_true, ite_false]
       omega
@@ -379,7 +379,7 @@ theorem gw_eq (hE : E.Good) (h : StatOK E st) {a b : ℕ} (ha : a < E.A) (hb : b
     rw [ite_eq_right hlt, ite_eq_right (not_lt.2 hkl.le)]
     cases hch : E.ch with
     | false =>
-      have hc : E.M.counted (E.edge b) := hcnt.2 (Or.inl hch)
+      have hc := hcnt.2 (Or.inl hch)
       have := hbx.1 hc
       unfold cntIn bB; simp only [Bool.false_eq_true, ite_false]
       omega
@@ -421,7 +421,7 @@ theorem Inv.final (_hE : E.Good) (h : Inv E st) (htop : st.top = 0) :
     intro c hc
     have hcS := hc.1
     obtain ⟨i, hiL, -, rfl⟩ := hcS
-    exact h.work i hiL (fun t ht => absurd ht (by omega)) hc
+    exact h.work i hiL (fun t ht => absurd ht by_o) hc
   exact this
 
 end

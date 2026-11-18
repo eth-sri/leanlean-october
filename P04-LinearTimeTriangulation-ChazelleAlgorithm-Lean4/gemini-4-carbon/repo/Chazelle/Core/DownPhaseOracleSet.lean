@@ -41,17 +41,17 @@ theorem oset_union (W : Polygon) (g : ℕ) {x y z : ℝ} (hxy : x ≤ y) (hyz : 
     oset W g x y ∪ oset W g y z = oset W g x z := by
   ext p; constructor
   · rintro (⟨d, t, h0, h1, h2, h3, rfl⟩ | ⟨d, t, h0, h1, h2, h3, rfl⟩)
-    · exact ⟨d, t, h0, h1, h2, by linarith, rfl⟩
-    · exact ⟨d, t, h0, h1, by linarith, h3, rfl⟩
+    · exact ⟨d, t, h0, h1, h2, by_l, rfl⟩
+    · exact ⟨d, t, h0, h1, by_l, h3, rfl⟩
   · rintro ⟨d, t, h0, h1, h2, h3, rfl⟩
     by_cases h : (d : ℝ) + t ≤ y
     · exact Or.inl ⟨d, t, h0, h1, h2, h, rfl⟩
-    · exact Or.inr ⟨d, t, h0, h1, by linarith, h3, rfl⟩
+    · exact Or.inr ⟨d, t, h0, h1, by_l, h3, rfl⟩
 
 theorem oset_mono (W : Polygon) (g : ℕ) {x y x' y' : ℝ} (hx : x' ≤ x) (hy : y ≤ y') :
     oset W g x y ⊆ oset W g x' y' := by
   rintro _ ⟨d, t, h0, h1, h2, h3, rfl⟩
-  exact ⟨d, t, h0, h1, by linarith, by linarith, rfl⟩
+  exact ⟨d, t, h0, h1, by_l, by_l, rfl⟩
 
 /-- **Agreeing stretches have the same point sets.** -/
 theorem oset_congr {W W' : Polygon} {g g' L : ℕ} (hA : WalkEmbed.Agree W W' g g' L) {x y : ℝ}
@@ -61,11 +61,11 @@ theorem oset_congr {W W' : Polygon} {g g' L : ℕ} (hA : WalkEmbed.Agree W W' g 
     intro V V' h h' hA' p hp
     obtain ⟨d, t, h0, h1, h2, h3, rfl⟩ := hp
     have hd : d ≤ L := by
-      have : (d : ℝ) ≤ L := by linarith
+      have : (d : ℝ) ≤ L := by_l
       exact_mod_cast this
     rcases h0.lt_or_eq with ht | rfl
     · have hd' : d + 1 ≤ L := by
-        have : (d : ℝ) < L := by linarith
+        have : (d : ℝ) < L := by_l
         have : d < L := by exact_mod_cast this
         omega
       refine ⟨d, t, h0, h1, h2, h3, ?_⟩
@@ -86,10 +86,10 @@ theorem oset_shift (W : Polygon) (g k : ℕ) {x y : ℝ} (hx : 0 ≤ x) :
       refine ⟨d - k, t, h0, h1, by rw [e]; linarith, by rw [e]; linarith, ?_⟩
       rw [show g + k + (d - k) = g + d by omega]
     · have hdk' : (d : ℝ) + 1 ≤ k := by exact_mod_cast (by omega : d + 1 ≤ k)
-      have ht : t = 1 := by linarith
-      have hx0 : x = 0 := by linarith
+      have ht : t = 1 := by_l
+      have hx0 : x = 0 := by_l
       have hdk1 : d + 1 = k := by
-        have : (k : ℝ) ≤ d + 1 := by linarith
+        have : (k : ℝ) ≤ d + 1 := by_l
         have : k ≤ d + 1 := by exact_mod_cast this
         omega
       have hk' : (k : ℝ) = d + 1 := by exact_mod_cast hdk1.symm
@@ -104,17 +104,17 @@ theorem oset_shift (W : Polygon) (g k : ℕ) {x y : ℝ} (hx : 0 ≤ x) :
 /-- **An unwrapped key interval from a walk vertex** is an `oset`. -/
 theorem wset_eq_oset (M : Model) {g : ℕ} (hg : g < M.W.n) {x y : ℝ} (hx : 0 ≤ x) :
     ShootCut.wset M ((g : ℝ) + x) ((g : ℝ) + y) = oset M.W g x y := by
-  have hn : 0 < M.W.n := by omega
+  have hn : 0 < M.W.n := by_o
   ext z; constructor
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
-    set K : ℤ := (p : ℤ) - j * M.W.n - g with hK
+    set K := (p : ℤ) - j * M.W.n - g with hK
     have hKr : (K : ℝ) = X - g - t := by rw [hK]; push_cast; linarith
     have hK1 : (-1 : ℝ) ≤ K := by rw [hKr]; linarith
     have hK1' : -1 ≤ K := by exact_mod_cast hK1
     rcases (show K = -1 ∨ 0 ≤ K by omega) with hKe | hKe
     · have hr : (K : ℝ) = -1 := by exact_mod_cast hKe
-      have ht : t = 1 := by linarith
-      have hx0 : x = 0 := by linarith
+      have ht : t = 1 := by_l
+      have hx0 : x = 0 := by_l
       refine ⟨0, 0, le_rfl, zero_le_one, by simp [hx0], by push_cast; linarith, ?_⟩
       have hgz : (g : ℤ) = ((p + 1 : ℕ) : ℤ) + (-j) * M.W.n := by
         rw [hK] at hKe; push_cast; linarith
@@ -137,7 +137,7 @@ theorem wset_eq_oset (M : Model) {g : ℕ} (hg : g < M.W.n) {x y : ℝ} (hx : 0 
       rw [hgd, show g + d + 1 = (g + d) + 1 by ring, ← Nat.mod_add_mod, hgd]
       rfl
   · rintro ⟨d, t, h0, h1, h2, h3, rfl⟩
-    refine ⟨(g + d) % M.W.n, t, Nat.mod_lt _ hn, h0, h1, ⟨g + d + t, by linarith, by linarith,
+    refine ⟨(g + d) % M.W.n, t, Nat.mod_lt _ hn, h0, h1, ⟨g + d + t, by_l, by_l,
       -(((g + d) / M.W.n : ℕ) : ℤ), ?_⟩, ?_⟩
     · have e := Nat.mod_add_div (g + d) M.W.n
       have e' : (((g + d) % M.W.n : ℕ) : ℝ) + M.W.n * ((g + d) / M.W.n : ℕ) = g + d := by
@@ -153,7 +153,7 @@ theorem arcSet_eq_oset (M : Model) {u : ℕ} (hu : u < M.W.n) {t₁ b : ℝ} (ht
     (ht1 : t₁ < 1) (hb : 0 ≤ b) (hbn : b < M.W.n) :
     M.arcSet ((u : ℝ) + t₁) b = oset M.W u t₁ (t₁ + ShootCut.len M.W.n ((u : ℝ) + t₁) b) := by
   have hun : (u : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hu
-  rw [ShootCut.arcSet_eq_wset M (by positivity) (by linarith) hb hbn, ← wset_eq_oset M hu ht0]
+  rw [ShootCut.arcSet_eq_wset M by_p by_l hb hbn, ← wset_eq_oset M hu ht0]
   congr 1
   unfold ShootCut.len
   split_ifs <;> ring
@@ -167,18 +167,18 @@ theorem len_key {n u e : ℕ} (hu : u < n) {t₁ t₂ : ℝ} (ht1 : t₁ < 1) (h
   by_cases h : u + e < n
   · rw [Nat.mod_eq_of_lt h]
     push_cast
-    rw [ite_eq_left (by linarith)]
+    rw [ite_eq_left by_l]
     ring
   · have hen : e ≤ n := by
-      have : (e : ℝ) < n + 1 := by linarith
+      have : (e : ℝ) < n + 1 := by_l
       have : e < n + 1 := by exact_mod_cast this
       omega
     have hm : (u + e) % n = u + e - n := by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
     rw [hm]
     have e1 : ((u + e - n : ℕ) : ℝ) = u + e - n := by
-      rw [Nat.cast_sub (by omega)]; push_cast; ring
-    rw [e1, ite_eq_right (by linarith)]
+      rw [Nat.cast_sub by_o]; push_cast; ring
+    rw [e1, ite_eq_right by_l]
     ring
 
 /-! ## Positions at the same offset -/
@@ -223,7 +223,7 @@ theorem arcWt_off (M : Model) {lo hi : ℕ}
     (ht21 : t₂ < 1) (hlt : t₁ < e + t₂)
     (hwrap : (lo = 0 ∧ hi = M.W.n ∧ keyCeil e t₂ ≤ M.W.n) ∨ (u + keyCeil e t₂ ≤ hi ∧ hi < M.W.n)) :
     M.arcWt ((u : ℝ) + t₁) (((u + e) % M.W.n : ℕ) + t₂) = keyCeil e t₂ := by
-  have hn : 0 < M.W.n := by omega
+  have hn : 0 < M.W.n := by_o
   rw [M.arcWt_closed hc hhi ⟨ht0, ht1⟩ ⟨ht2, ht21⟩]
   have hke : keyCeil ((u + e) % M.W.n) t₂ = (u + e) % M.W.n + (keyCeil e t₂ - e) := by
     unfold keyCeil; split_ifs <;> omega
@@ -240,31 +240,31 @@ theorem arcWt_off (M : Model) {lo hi : ℕ}
       rw [ite_eq_left (by push_cast; linarith), hke]
       omega
     · have hm : (u + e) % M.W.n = u + e - M.W.n := by
-        rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+        rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
       rw [hm] at hke ⊢
       have e1 : ((u + e - M.W.n : ℕ) : ℝ) = u + e - M.W.n := by
-        rw [Nat.cast_sub (by omega)]; push_cast; ring
+        rw [Nat.cast_sub by_o]; push_cast; ring
       have hnot : ¬ ((u : ℝ) + t₁ < ((u + e - M.W.n : ℕ) : ℝ) + t₂) := by
         rw [e1]
         intro hlt'
         -- then `n < e + t₂ - t₁ + …`: the key would lie beyond one lap
-        have : (M.W.n : ℝ) + t₁ < e + t₂ := by linarith
+        have : (M.W.n : ℝ) + t₁ < e + t₂ := by_l
         have hkr : (keyCeil e t₂ : ℝ) ≤ M.W.n := by exact_mod_cast hkn
         rcases Nat.lt_or_ge e (keyCeil e t₂) with h2 | h2
         · have : (e : ℝ) + 1 ≤ M.W.n := by
-            have : e + 1 ≤ M.W.n := by omega
+            have : e + 1 ≤ M.W.n := by_o
             exact_mod_cast this
           linarith
-        · have h3 := hkp (by omega)
+        · have h3 := hkp by_o
           have : (e : ℝ) ≤ M.W.n := by
-            have : e ≤ M.W.n := by omega
+            have : e ≤ M.W.n := by_o
             exact_mod_cast this
           linarith
       rw [ite_eq_right hnot, hke]
       simp only [min_eq_left (show u ≤ M.W.n by omega)]
       omega
   · obtain ⟨hwrap, hhn⟩ := hwrap
-    have hue : u + e < M.W.n := by omega
+    have hue : u + e < M.W.n := by_o
     rw [Nat.mod_eq_of_lt hue] at hke ⊢
     rw [ite_eq_left (by push_cast; linarith), hke]
     omega

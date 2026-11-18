@@ -57,7 +57,7 @@ theorem ray_mem_region_before' (hGM : GoodModel M) {Q : Polygon} {F : Set (Set P
   obtain ⟨⟨hS1, hHc, hoff⟩, hrayH⟩ := hbefore hcross
   have hne : F.Nonempty := ⟨c, hc⟩
   obtain ⟨-, -, hak⟩ := WalkAx.arc_cuts hne harc
-  have hn : 0 < M.W.n := by omega
+  have hn : 0 < M.W.n := by_o
   obtain ⟨s, ⟨hs1, hs2⟩, hs3⟩ :=
     ((hoff.and (before_eventually hp harc.1 harc.2.1 hak)).and (Ioo_mem_nhdsGT one_pos)).exists
   have hq : (p + M.W.n - 1) % M.W.n < M.W.n := Nat.mod_lt _ hn
@@ -103,10 +103,10 @@ theorem touches_of_along_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆
   set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
   set b' := M.W.vtx ((p + 1) % M.W.n) with hb
   have hbv : b' ≠ v := fun h => hne h.symm
-  have hB0 : b' - v ≠ 0 := sub_ne_zero.2 hbv
+  have hB0 := sub_ne_zero.2 hbv
   have hκ0 : 0 < -((b' - v).2 * τ) := by
     have := hcross; rw [sideCross_pair] at this; linarith
-  set A : Point := ((τ, 0) : Point) with hAdef
+  set A := ((τ, 0) : Point) with hAdef
   have hvA : v + A ≠ v := by
     intro h
     have := congrArg Prod.fst h
@@ -126,13 +126,13 @@ theorem touches_of_along_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆
   have hWfree : ∀ x ∈ ball v r, x ∈ (freeIn M.D F)ᶜ → ¬ sideLeftOf (v + A) v b' x := by
     intro x hx hxS hxW
     have hxW' : x ∈ Wg := ⟨hx, hxW⟩
-    obtain ⟨hxD, hxc⟩ := hsf x (by rw [hwv]; exact hx) (hWleft x hxW')
+    obtain ⟨hxD, hxc⟩ := hsf x (by rwa [hwv]) (hWleft x hxW')
     apply hxS
     refine ⟨hxD, ?_⟩
     rintro ⟨c', hc', hxc'⟩
     have hA' := hxc c' hc' hxc'
     have hvc' : v ∈ c' := by have := hA'.2.2.2.1; rwa [hwv] at this
-    have hy : x.2 = v.2 := hsys.snd_eq hc' hxc' hvc'
+    have hy := hsys.snd_eq hc' hxc' hvc'
     rcases hWsec x hxW' with ⟨-, -, h⟩ | ⟨h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩
     · rw [hAdef, sideCross_pair, Prod.snd_sub, hy, sub_self] at h; simp at h
     · linarith
@@ -146,31 +146,31 @@ theorem touches_of_along_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆
     harc.2.2.2.2.2.2 p s hp hs3.1 hs3.2 (by rw [add_zero] at hs2 ⊢; exact hs2)
   obtain ⟨δ, hδU, hδ⟩ := (hf.and hs1).exists
   have hWU : Wg ⊆ U :=
-    subset_region hU hHc (fun x hx => by simpa using hS1 hx) hδ.2 (by rw [one_mul]; exact hδU)
+    subset_region hU hHc (fun x hx => by simpa using hS1 hx) hδ.2 (by rwa [one_mul])
   -- a point of the chord on the ray, close to the vertex
   obtain ⟨s₀, hs₀c, hs₀⟩ := (hfr.and_eventually (Ioo_mem_nhdsGT (half_pos hr))).exists
-  have hs₀0 : 0 < s₀ := hs₀.1
-  have hs₀r : s₀ < r / 2 := hs₀.2
+  have hs₀0 := hs₀.1
+  have hs₀r := hs₀.2
   refine ⟨rayPt (sidePt M.W p 0) τ s₀, ⟨hs₀c, ?_⟩, ?_⟩
   · refine (hsf _ ?_ ((sideLeft_rayPt_iff _ p 0 τ one_pos hs₀0).1 hsec)).1
     rw [mem_ball, dist_rayPt _ hτ hs₀0.le]; linarith
   · rw [hwv]
     set κ := -((b' - v).2 * τ) with hκ
     set K := |(b' - v).1| + 1 with hK
-    have hK0 : 0 < K := by positivity
+    have hK0 : 0 < K := by_p
     have hlim : Tendsto (fun ε : ℝ => ((v.1 + τ * s₀, v.2 - τ * ε) : Point)) (𝓝[>] (0 : ℝ))
         (𝓝 (rayPt v τ s₀)) := by
       have hc' : Continuous (fun ε : ℝ => ((v.1 + τ * s₀, v.2 - τ * ε) : Point)) := by fun_prop
       have h0 : ((v.1 + τ * s₀, v.2 - τ * 0) : Point) = rayPt v τ s₀ :=
-        point_ext (by simp) (by simp)
+        point_ext by_s by_s
       have := hc'.tendsto 0
       rw [h0] at this
       exact this.mono_left nhdsWithin_le_nhds
     refine mem_closure_of_tendsto hlim ?_
-    have hbd : 0 < min (r / 2) (s₀ * κ / K) := lt_min (half_pos hr) (by positivity)
+    have hbd : 0 < min (r / 2) (s₀ * κ / K) := lt_min (half_pos hr) by_p
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hbd] with ε hε hε'
     have hε0 : (0 : ℝ) < ε := hε
-    have hε1 : ε < r / 2 := hε'.2.trans_le (min_le_left _ _)
+    have hε1 := hε'.2.trans_le (min_le_left _ _)
     have hε2 : ε * K < s₀ * κ := by
       have := hε'.2.trans_le (min_le_right _ _)
       rwa [lt_div_iff₀ hK0] at this
@@ -217,7 +217,7 @@ theorem touches_of_along_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
   have hsys := hM.sys F hF hfin
   obtain ⟨r, hr, hsf⟩ := sector_free hM hF hfin hp le_rfl one_pos
   have hne := hM.nd p hp
-  have hn0 : 0 < M.W.n := by omega
+  have hn0 : 0 < M.W.n := by_o
   have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
   set v := M.W.vtx p with hv
   set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
@@ -226,11 +226,11 @@ theorem touches_of_along_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
   have hav : a ≠ v := by
     have := hM.nd _ (Nat.mod_lt (p + M.W.n - 1) hn0)
     rwa [prev_succ_mod hp] at this
-  have hB0 : b' - v ≠ 0 := sub_ne_zero.2 hbv
-  have hA0 : a - v ≠ 0 := sub_ne_zero.2 hav
+  have hB0 := sub_ne_zero.2 hbv
+  have hA0 := sub_ne_zero.2 hav
   have hκ0 : 0 < τ * (a - v).2 := by
     have := hcross; rw [sideCross_pair_left] at this; linarith
-  set A : Point := ((τ, 0) : Point) with hAdef
+  set A := ((τ, 0) : Point) with hAdef
   have hAne : A ≠ 0 := by
     intro h
     have := congrArg Prod.fst h
@@ -252,13 +252,13 @@ theorem touches_of_along_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
   have hWfree : ∀ x ∈ ball v r, x ∈ (freeIn M.D F)ᶜ → ¬ sideLeftOf a v (v + A) x := by
     intro x hx hxS hxW
     have hxW' : x ∈ Wg := ⟨hx, hxW⟩
-    obtain ⟨hxD, hxc⟩ := hsf x (by rw [hwv]; exact hx) (hWleft x hxW')
+    obtain ⟨hxD, hxc⟩ := hsf x (by rwa [hwv]) (hWleft x hxW')
     apply hxS
     refine ⟨hxD, ?_⟩
     rintro ⟨c', hc', hxc'⟩
     have hA' := hxc c' hc' hxc'
     have hvc' : v ∈ c' := by have := hA'.2.2.2.1; rwa [hwv] at this
-    have hy : x.2 = v.2 := hsys.snd_eq hc' hxc' hvc'
+    have hy := hsys.snd_eq hc' hxc' hvc'
     rcases hWsec x hxW' with ⟨-, h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩ | ⟨h, -⟩
     · rw [hAdef, sideCross_pair_left, Prod.snd_sub, hy, sub_self] at h; simp at h
     · linarith
@@ -280,28 +280,28 @@ theorem touches_of_along_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
   have hWU : Wg ⊆ U :=
     subset_region hU hHc (fun x hx => by simpa using hS1 hx) hδ.1 hδU'
   obtain ⟨s₀, hs₀c, hs₀⟩ := (hfr.and_eventually (Ioo_mem_nhdsGT (half_pos hr))).exists
-  have hs₀0 : 0 < s₀ := hs₀.1
-  have hs₀r : s₀ < r / 2 := hs₀.2
+  have hs₀0 := hs₀.1
+  have hs₀r := hs₀.2
   refine ⟨rayPt (sidePt M.W p 0) τ s₀, ⟨hs₀c, ?_⟩, ?_⟩
   · refine (hsf _ ?_ ((sideLeft_rayPt_iff _ p 0 τ one_pos hs₀0).1 hsec)).1
     rw [mem_ball, dist_rayPt _ hτ hs₀0.le]; linarith
   · rw [hwv]
     set κ := τ * (a - v).2 with hκ
     set K := |(a - v).1| + 1 with hK
-    have hK0 : 0 < K := by positivity
+    have hK0 : 0 < K := by_p
     have hlim : Tendsto (fun ε : ℝ => ((v.1 + τ * s₀, v.2 + τ * ε) : Point)) (𝓝[>] (0 : ℝ))
         (𝓝 (rayPt v τ s₀)) := by
       have hc' : Continuous (fun ε : ℝ => ((v.1 + τ * s₀, v.2 + τ * ε) : Point)) := by fun_prop
       have h0 : ((v.1 + τ * s₀, v.2 + τ * 0) : Point) = rayPt v τ s₀ :=
-        point_ext (by simp) (by simp)
+        point_ext by_s by_s
       have := hc'.tendsto 0
       rw [h0] at this
       exact this.mono_left nhdsWithin_le_nhds
     refine mem_closure_of_tendsto hlim ?_
-    have hbd : 0 < min (r / 2) (s₀ * κ / K) := lt_min (half_pos hr) (by positivity)
+    have hbd : 0 < min (r / 2) (s₀ * κ / K) := lt_min (half_pos hr) by_p
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hbd] with ε hε hε'
     have hε0 : (0 : ℝ) < ε := hε
-    have hε1 : ε < r / 2 := hε'.2.trans_le (min_le_left _ _)
+    have hε1 := hε'.2.trans_le (min_le_left _ _)
     have hε2 : ε * K < s₀ * κ := by
       have := hε'.2.trans_le (min_le_right _ _)
       rwa [lt_div_iff₀ hK0] at this
@@ -363,7 +363,7 @@ theorem valid_after (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
       rw [this] at hU'; exact hU'
     obtain ⟨r, hr, hsf⟩ := sector_free hM hFam.2.1 hFam.1 hp le_rfl one_pos
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hr] with s hs hsr
-    have hs0 : (0 : ℝ) < s := hs
+    have hs0 := hs
     rw [hUD]
     refine (hsf _ ?_ ((sideLeft_rayPt_iff _ p 0 τ one_pos hs0).1 hsec)).1
     rw [mem_ball, dist_rayPt _ hτ hs0.le]; exact hsr.2
@@ -395,7 +395,7 @@ theorem valid_before (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
       rw [this] at hU'; exact hU'
     obtain ⟨r, hr, hsf⟩ := sector_free hM hFam.2.1 hFam.1 hp le_rfl one_pos
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hr] with s hs hsr
-    have hs0 : (0 : ℝ) < s := hs
+    have hs0 := hs
     rw [hUD]
     refine (hsf _ ?_ ((sideLeft_rayPt_iff _ p 0 τ one_pos hs0).1 hsec)).1
     rw [mem_ball, dist_rayPt _ hτ hs0.le]; exact hsr.2
@@ -436,8 +436,8 @@ theorem exit_avoid (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
   rw [Filter.not_eventually] at hfr
   simp only [not_not] at hfr
   obtain ⟨s, hsc, hs⟩ := (hfr.and_eventually (Ioo_mem_nhdsGT hr)).exists
-  have hs0 : 0 < s := hs.1
-  have hsl : sideLeft M.W p 0 (rayPt (sidePt M.W p 0) τ s) :=
+  have hs0 := hs.1
+  have hsl :=
     (sideLeft_rayPt_iff _ p 0 τ one_pos hs0).1 hsec
   have hball : rayPt (sidePt M.W p 0) τ s ∈ ball (sidePt M.W p 0) r := by
     rw [mem_ball, dist_rayPt _ hτ hs0.le]; exact hs.2
@@ -445,11 +445,11 @@ theorem exit_avoid (hGM : GoodModel M) {Q : Polygon} {F : Set (Set Point)}
   have hadm := hF hcF
   set v := sidePt M.W p 0 with hv
   -- the vertex is an end of the chord: its left end if `τ = 1`, its right end if `τ = -1`
-  have hvc : v ∈ cr.toSet M Q := hA.2.2.2.1
-  have hvD : v ∉ M.D := hM.trace p hp 0 le_rfl zero_le_one
+  have hvc := hA.2.2.2.1
+  have hvD := hM.trace p hp 0 le_rfl zero_le_one
   obtain ⟨hL1, hL2⟩ := hat
-  have hlmem : sidePt M.W cr.lp (M.param Q cr.lpos) ∈ cr.toSet M Q := hL1.2.2.2.1
-  have hrmem : sidePt M.W cr.rp (M.param Q cr.rpos) ∈ cr.toSet M Q := hL2.2.2.2.1
+  have hlmem := hL1.2.2.2.1
+  have hrmem := hL2.2.2.2.1
   obtain ⟨y, xa, xb, hH, hcr⟩ := adm_hchord hGM hadm
   have hts : cr.toSet M Q =
       Visibility.hseg (Q.vtx cr.h).2 (M.pos Q cr.lpos).1 (M.pos Q cr.rpos).1 := rfl

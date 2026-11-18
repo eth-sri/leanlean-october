@@ -31,12 +31,12 @@ theorem GF.trans {b : ℕ} {c₁ c₂ c₃ : Config} {k₁ k₂ : ℕ} (h₁ : G
   obtain ⟨b1, b2, b3, b4, b5, b6, b7⟩ := h₂
   exact ⟨fun r hr ha => (b1 r hr ha).trans (a1 r hr ha), fun r hr => (b2 r hr).trans (a2 r hr),
     fun a ha => (b3 a ha).trans (a3 a ha), fun a ha => (b4 a ha).trans (a4 a ha), b5.trans a5,
-    a6.trans b6, by omega⟩
+    a6.trans b6, by_o⟩
 
 theorem GF.mono {b : ℕ} {c c' : Config} {k k' : ℕ} (h : GF b c c' k) (hk : k ≤ k') :
     GF b c c' k' := by
   obtain ⟨a1, a2, a3, a4, a5, a6, a7⟩ := h
-  exact ⟨a1, a2, a3, a4, a5, a6, by omega⟩
+  exact ⟨a1, a2, a3, a4, a5, a6, by_o⟩
 
 /-- A natural-only statement writing registers of band `9` or `5` (`Bw`) and storing only at or
 above `b` gives `GF b`. -/
@@ -142,7 +142,7 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hdR : d.R = R := rfl
   have hdD : d.D = D := rfl
   have hEnd : d.oEnd = (dmOf K A R D 0).oEnd := rfl
-  have hN : NFAt c.nmem NFH N := hNW.holds
+  have hN := hNW.holds
   obtain ⟨aB, aCh, aRg, aLst, aArc, aSeq⟩ := nf_areas hNW
   have hW5 : 5 ≤ W := by unfold hostWords at hWh; have := hwf.1; omega
   have hWn : P.n ≤ W := by unfold hostWords at hWh; omega
@@ -150,19 +150,19 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hdE := dmOf_oEnd K A R D b0
   -- 1. the header
   obtain ⟨c₁, k₁, e₁, hk₁, q10, q11, q12, q13, q15, q16, q17, q22, q23, q24, q18, q14, q19, q20,
-    q21, q50, q51, F₁⟩ := hdr_exec (P := P) c hw h0 h1 (by omega) (by have := hwf.1; omega) hWn
+    q21, q50, q51, F₁⟩ := hdr_exec (P := P) c hw h0 h1 by_o (by have := hwf.1; omega) hWn
     (fun h0' => by have := chain_m_le hwf hMD h0'; unfold hostWords at hWh; omega)
   have w₁ := e₁.wb_right
   rw [hN.1] at q10; rw [hN.2.1] at q11; rw [hN.2.2.1] at q12
-  have g₁ : ∀ r, Bhdr r = false → c₁.nreg r = c.nreg r := F₁.1
-  have hA₁ : c₁.nreg ALLOC = b0 := g₁ _ (by decide)
+  have g₁ := F₁.1
+  have hA₁ : c₁.nreg ALLOC = b0 := g₁ _ by_d
   -- 2. the layout
   obtain ⟨c₂, k₂, e₂, hk₂, B₂, a₂, x27, x28, x26, ab₂, r₂, m₂, F₂⟩ := base_exec (P := P) c₁ w₁
     (K := K) (A := A) (R := R) (by rw [q10]; rfl) (by rw [q11]) (by rw [q12]; rfl)
-    (by rw [g₁ _ (by decide), h2]) q19 (by rw [hA₁]; exact hroom)
+    (by rw [g₁ _ by_d, h2]) q19 (by rwa [hA₁])
   rw [hA₁] at hk₂ B₂ a₂ x27 x28
   have w₂ := e₂.wb_right
-  have g₂ : ∀ r, (r < 90025 ∨ 90045 ≤ r) → r ≠ 90061 → r ≠ ALLOC → c₂.nreg r = c₁.nreg r := r₂
+  have g₂ := r₂
   have mem₂ : c₂.nmem = c.nmem := by rw [m₂, F₁.2.2.1]
   -- the entry records
   have hrec : ∀ i, i < K → c₂.nmem (c.nmem (NFH + 3) + 5 * i + 3) = (N.chord i).up ∧
@@ -170,30 +170,30 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     rw [mem₂]
     obtain ⟨-, -, -, h3', h4'⟩ := hN.2.2.2.2.2.1 i hi
     exact ⟨h3', h4'⟩
-  have hCB : c.nmem (NFH + 3) + 5 * K ≤ b0 := by have := aCh (K - 1) (by omega); omega
-  have hRB : c.nmem (NFH + 5) + 5 * R ≤ b0 := by have := aRg (R - 1) (by omega); omega
-  have hbW : d.b0 + d.oEnd ≤ W := by rw [hEnd]; exact hroom
+  have hCB : c.nmem (NFH + 3) + 5 * K ≤ b0 := by have := aCh (K - 1) by_o; omega
+  have hRB : c.nmem (NFH + 5) + 5 * R ≤ b0 := by have := aRg (R - 1) by_o; omega
+  have hbW : d.b0 + d.oEnd ≤ W := by rwa [hEnd]
   -- 3. the chords
   have c2 : ∀ r, 90000 ≤ r → r < 90025 → r ≠ 90060 → Bhdr r = false → c₂.nreg r = c.nreg r :=
-    fun r a1 a2 a3 a4 => by rw [g₂ r (by omega) (by omega) (by unfold ALLOC; omega), g₁ r a4]
+    fun r a1 a2 a3 a4 => by rw [g₂ r by_o by_o by_ao, g₁ r a4]
   have t10 : c₂.nreg 90010 = K := by
-    rw [g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q10]; rfl
+    rw [g₂ _ by_o by_o by_ao, q10]; rfl
   have t13 : c₂.nreg 90013 = c.nmem (NFH + 3) := by
-    rw [g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q13]
-  have t19 : c₂.nreg 90019 = 1 := by rw [g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q19]
-  have t20 : c₂.nreg 90020 = 3 := by rw [g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q20]
+    rw [g₂ _ by_o by_o by_ao, q13]
+  have t19 : c₂.nreg 90019 = 1 := by rw [g₂ _ by_o by_o by_ao, q19]
+  have t20 : c₂.nreg 90020 = 3 := by rw [g₂ _ by_o by_o by_ao, q20]
   obtain ⟨c₃, k₃, e₃, hk₃, L₃, M₃, F₃⟩ := chLoop_exec (P := P) (d := d) (chords := N.chord) w₂ B₂
     rfl t10 t13 t19 t20 hrec hCB hbW hW5
   have w₃ := e₃.wb_right
-  have g₃ : ∀ r, Binit r = false → c₃.nreg r = c₂.nreg r := F₃.1
+  have g₃ := F₃.1
   have B₃ : Bases c₃ d := B₂.frame fun r a1 a2 => g₃ r (by simp [Binit]; omega)
   -- 4. the worklist
   obtain ⟨c₄, k₄, e₄, hk₄, S₄, M₄, F₄⟩ := stkLoop_exec (P := P) (d := d) w₃ B₃
-    (by rw [g₃ _ (by decide), t10, hdK])
-    (by rw [g₃ _ (by decide), x26, hdD, hdK])
-    (by rw [g₃ _ (by decide), t19]) hbW
+    (by rw [g₃ _ by_d, t10, hdK])
+    (by rw [g₃ _ by_d, x26, hdD, hdK])
+    (by rw [g₃ _ by_d, t19]) hbW
   have w₄ := e₄.wb_right
-  have g₄ : ∀ r, Binit r = false → c₄.nreg r = c₃.nreg r := F₄.1
+  have g₄ := F₄.1
   have B₄ : Bases c₄ d := B₃.frame fun r a1 a2 => g₄ r (by simp [Binit]; omega)
   have t4 : ∀ r, Binit r = false → c₄.nreg r = c₂.nreg r := fun r h => by rw [g₄ r h, g₃ r h]
   -- 5. the classes
@@ -206,60 +206,60 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     intro r hr
     obtain ⟨-, a2, a4, -, a5⟩ := hN.2.2.2.2.2.2.2.1 r hr
     have hr4 := aRg r hr
-    refine ⟨by rw [m4 _ (by omega)]; exact a2, by rw [m4 _ (by omega)]; exact a4, fun t ht => ?_,
+    refine ⟨by rwa [m4 _ by_o], by rwa [m4 _ by_o], fun t ht => ?_,
       rfl⟩
     have := aLst r hr t ht
-    rw [m4 (c.nmem (NFH + 5) + 5 * r + 3) (by omega), m4 _ (by omega)]
+    rw [m4 (c.nmem (NFH + 5) + 5 * r + 3) by_o, m4 _ by_o]
     exact a5 t ht
   obtain ⟨c₅, k₅, e₅, hk₅, C₅, M₅, F₅⟩ := regLoop_exec (P := P) (W := W) (R := R) (D := D)
     (RB := c.nmem (NFH + 5)) (LB := c.nmem (NFH + 7)) (d := d) (rg := N.region) w₄ B₄ rfl rfl
-    (by rw [t4 _ (by decide), g₂ _ (by omega) (by omega) (by unfold ALLOC; omega),
-      g₁ _ (by decide), h2])
-    (by rw [t4 _ (by decide), g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q12]; rfl)
-    (by rw [t4 _ (by decide), g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q16])
-    (by rw [t4 _ (by decide), g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q22])
-    (by rw [t4 _ (by decide), x27]; rfl)
-    (by rw [t4 _ (by decide), t19]) (by rw [t4 _ (by decide), t20])
-    (by rw [t4 _ (by decide), g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q21])
+    (by rw [t4 _ by_d, g₂ _ by_o by_o by_ao,
+      g₁ _ by_d, h2])
+    (by rw [t4 _ by_d, g₂ _ by_o by_o by_ao, q12]; rfl)
+    (by rw [t4 _ by_d, g₂ _ by_o by_o by_ao, q16])
+    (by rw [t4 _ by_d, g₂ _ by_o by_o by_ao, q22])
+    (by rw [t4 _ by_d, x27]; rfl)
+    (by rw [t4 _ by_d, t19]) (by rw [t4 _ by_d, t20])
+    (by rw [t4 _ by_d, g₂ _ by_o by_o by_ao, q21])
     hrecR (fun r hr => chords_le hNF hRC hRO hdeg hr) hRB
     (fun r hr h1r => by
-      have := aLst r hr ((N.region r).chords.length - 1) (by omega)
+      have := aLst r hr ((N.region r).chords.length - 1) by_o
       rw [m4 _ (by have := aRg r hr; omega)]; omega) hbW hW5
   have u5 : ∀ r, Binit r = false → c₅.nreg r = c₂.nreg r := fun r h => by
     rw [F₅.1 r h, t4 r h]
   have v2 : ∀ r, 90000 ≤ r → r < 90025 → r ≠ 90060 → c₅.nreg r = c₁.nreg r := fun r a1 a2 a3 => by
-    rw [u5 r (by simp [Binit]; omega), g₂ r (by omega) (by omega) (by unfold ALLOC; omega)]
+    rw [u5 r (by simp [Binit]; omega), g₂ r by_o by_o by_ao]
   have v1 : ∀ r, 90000 ≤ r → r < 90025 → r ≠ 90060 → Bhdr r = false → c₅.nreg r = c.nreg r :=
     fun r a1 a2 a3 a4 => by rw [v2 r a1 a2 a3, g₁ r a4]
-  have hGF1 : GF b0 c c₁ k₁ := GF.of_nat e₁ (Bw := Bhdr) (by decide) (by decide)
+  have hGF1 : GF b0 c c₁ k₁ := GF.of_nat e₁ (Bw := Bhdr) by_d by_d
     (fun r hr => by
       simp only [Bhdr, Bool.or_eq_true, decide_eq_true_eq] at hr
       rcases hr with ((h | h) | h) | h
-      · exact band9_gran (by omega) (by omega)
-      · exact band9_gran (by omega) (by omega)
-      · exact band5_gran (by omega) (by omega)
-      · exact band5_gran (by omega) (by omega))
+      · exact band9_gran by_o by_o
+      · exact band9_gran by_o by_o
+      · exact band5_gran by_o by_o
+      · exact band5_gran by_o by_o)
     (fun a _ => by rw [F₁.2.2.1])
   have hGF2 : GF b0 c₁ c₂ k₂ := by
-    have N2 := exec_natOnly e₂ (by decide)
+    have N2 := exec_natOnly e₂ by_d
     refine ⟨fun r hr ha => F₂.1 r ?_, fun r _ => by rw [N2.1], fun a _ => by rw [m₂],
       fun a _ => by rw [N2.2.1], N2.2.2, by rw [a₂, hA₁]; omega, ab₂⟩
     simp only [Bbase, Bool.or_eq_false_iff, decide_eq_false_iff_not]
-    refine ⟨fun h => hr (band9_gran (by omega) (by omega)).1, fun h => ha h⟩
-  have hGF3 : GF b0 c₂ c₃ k₃ := GF.of_nat e₃ (by decide) wrS_chLoop
+    refine ⟨fun h => hr (band9_gran by_o by_o).1, fun h => ha h⟩
+  have hGF3 : GF b0 c₂ c₃ k₃ := GF.of_nat e₃ by_d wrS_chLoop
     (fun r hr => by
       have : 90070 ≤ r ∧ r < 90100 := by simpa [Binit] using hr
-      exact band9_gran (by omega) (by omega))
+      exact band9_gran by_o by_o)
     (fun a ha => M₃ a (by left; omega))
-  have hGF4 : GF b0 c₃ c₄ k₄ := GF.of_nat e₄ (by decide) wrS_stkLoop
+  have hGF4 : GF b0 c₃ c₄ k₄ := GF.of_nat e₄ by_d wrS_stkLoop
     (fun r hr => by
       have : 90070 ≤ r ∧ r < 90100 := by simpa [Binit] using hr
-      exact band9_gran (by omega) (by omega))
+      exact band9_gran by_o by_o)
     (fun a ha => M₄ a (by left; omega))
-  have hGF5 : GF b0 c₄ c₅ k₅ := GF.of_nat e₅ (by decide) wrS_regLoop
+  have hGF5 : GF b0 c₄ c₅ k₅ := GF.of_nat e₅ by_d wrS_regLoop
     (fun r hr => by
       have : 90070 ≤ r ∧ r < 90100 := by simpa [Binit] using hr
-      exact band9_gran (by omega) (by omega))
+      exact band9_gran by_o by_o)
     (fun a ha => M₅ a (by left; omega))
   refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), ?_, ⟨e₅.wb_right, ?_, ?_, ?_, ?_, ?_,
     ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
@@ -269,33 +269,33 @@ theorem initA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     rw [hdE] at hk₂
     rw [c1] at hk₄
     unfold costA; rw [dmOf_oEnd, c0]; omega
-  · rw [v1 _ (by norm_num) (by norm_num) (by norm_num) (by decide), h0]
-  · rw [v1 _ (by norm_num) (by norm_num) (by norm_num) (by decide), h1]
-  · rw [v1 _ (by norm_num) (by norm_num) (by norm_num) (by decide), h2]
-  · rw [v1 _ (by norm_num) (by norm_num) (by norm_num) (by decide), h3]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q10]; rfl
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q11]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q12]; rfl
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q13]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q15]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q17]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q23]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q18]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q14, h3]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q19]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q20]
-  · rw [v2 _ (by norm_num) (by norm_num) (by norm_num), q21]
-  · rw [u5 _ (by decide), g₂ _ (by omega) (by omega) (by unfold ALLOC; omega), q50]
-  · rw [u5 _ (by decide), x26]
-  · rw [u5 _ (by decide), x28]
+  · rw [v1 _ by_n by_n by_n by_d, h0]
+  · rw [v1 _ by_n by_n by_n by_d, h1]
+  · rw [v1 _ by_n by_n by_n by_d, h2]
+  · rw [v1 _ by_n by_n by_n by_d, h3]
+  · rw [v2 _ by_n by_n by_n, q10]; rfl
+  · rw [v2 _ by_n by_n by_n, q11]
+  · rw [v2 _ by_n by_n by_n, q12]; rfl
+  · rw [v2 _ by_n by_n by_n, q13]
+  · rw [v2 _ by_n by_n by_n, q15]
+  · rw [v2 _ by_n by_n by_n, q17]
+  · rw [v2 _ by_n by_n by_n, q23]
+  · rw [v2 _ by_n by_n by_n, q18]
+  · rw [v2 _ by_n by_n by_n, q14, h3]
+  · rw [v2 _ by_n by_n by_n, q19]
+  · rw [v2 _ by_n by_n by_n, q20]
+  · rw [v2 _ by_n by_n by_n, q21]
+  · rw [u5 _ by_d, g₂ _ by_o by_o by_ao, q50]
+  · rw [u5 _ by_d, x26]
+  · rw [u5 _ by_d, x28]
   · exact B₄.frame fun r a1 a2 => F₅.1 r (by simp [Binit]; omega)
-  · rw [u5 _ (by decide), a₂]
+  · rw [u5 _ by_d, a₂]
   · intro u hu
     obtain ⟨l1, l2, l3⟩ := L₃ u hu
     refine ⟨?_, ?_, ?_⟩
-    · rw [M₅ _ (by left; omega), M₄ _ (by left; omega)]; exact l1
-    · rw [M₅ _ (by left; omega), M₄ _ (by left; omega)]; exact l2
-    · rw [M₅ _ (by left; omega), M₄ _ (by left; omega)]; exact l3
+    · rwa [M₅ _ (by left; omega), M₄ _ (by left; omega)]
+    · rwa [M₅ _ (by left; omega), M₄ _ (by left; omega)]
+    · rwa [M₅ _ (by left; omega), M₄ _ (by left; omega)]
   · intro u hu
     change u < d.cap at hu
     change c₅.nmem (b0 + d.oStk + u) = u

@@ -61,24 +61,24 @@ theorem faceRead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
   have e1 : f 240611 = 1 := hk1
   simp only [faceRead, regB, regI, upd, lX, lY, lSB, lAB, lJ, fSE, fSH, fEE, fEH, K1, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  refine ⟨congrArg m (by ring), congrArg m (by ring), congrArg m (by ring), congrArg m (by ring)⟩
+  refine ⟨congrArg m by_r, congrArg m by_r, congrArg m by_r, congrArg m by_r⟩
 
 theorem faceRead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb1 : f lSB + f lJ ≤ W)
     (hb2 : f lAB + 5 * m (f lSB + f lJ) + 4 ≤ W) : okB W m faceRead f := by
   have e1 : f 240611 = 1 := hk1
-  have hb1' : f 241115 + f 241108 ≤ W := hb1
+  have hb1' := hb1
   have hb2' : f 241116 + 5 * m (f 241115 + f 241108) + 4 ≤ W := hb2
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
+    iscr_sw by_o by_o
   simp only [faceRead, okB, okI, regI, upd, lX, lY, lSB, lAB, lJ, fSE, fSH, fEE, fEH, K1, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  refine ⟨⟨s 1112 (by norm_num) (by norm_num), hb1'⟩, s 1112 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, ⟨s 1113 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, s 1200 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, s 1201 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, s 1202 (by norm_num) (by norm_num),
-    ⟨s 1113 (by norm_num) (by norm_num), by omega⟩, s 1203 (by norm_num) (by norm_num), trivial⟩
+  refine ⟨⟨s 1112 by_n by_n, hb1'⟩, s 1112 by_n by_n,
+    ⟨s 1113 by_n by_n, by_o⟩, ⟨s 1113 by_n by_n, by_o⟩,
+    ⟨s 1113 by_n by_n, by_o⟩, ⟨s 1113 by_n by_n, by_o⟩,
+    ⟨s 1113 by_n by_n, by_o⟩, s 1200 by_n by_n,
+    ⟨s 1113 by_n by_n, by_o⟩, s 1201 by_n by_n,
+    ⟨s 1113 by_n by_n, by_o⟩, s 1202 by_n by_n,
+    ⟨s 1113 by_n by_n, by_o⟩, s 1203 by_n by_n, trivial⟩
 
 theorem faceRead_other (m f : ℕ → ℕ) {q : ℕ} (h1 : q ≠ lX) (h2 : q ≠ lY) (h3 : q ≠ fSE)
     (h4 : q ≠ fSH) (h5 : q ≠ fEE) (h6 : q ≠ fEH) : regB m faceRead f q = f q :=
@@ -110,9 +110,9 @@ theorem modelDesc_transport {m m' : ℕ → ℕ} {D E E' : ℕ} {M : Model}
   · obtain ⟨w1, w2, w3⟩ := ShotList.modelDesc_keep hwf h0 hC he hE
     exact ⟨Or.inl ⟨w2, H, C, w3, rfl⟩, w1⟩
   · have hD6 := hwf.1
-    have e0 : m' D = m D := he _ (by omega)
-    have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
-    refine ⟨Or.inr ⟨by rw [e0, h1], by rw [e1]; exact hL, hM⟩, by omega, fun h => ?_⟩
+    have e0 : m' D = m D := he _ by_o
+    have e1 : m' (D + 1) = m (D + 1) := he _ by_o
+    refine ⟨Or.inr ⟨by rw [e0, h1], by rwa [e1], hM⟩, by_o, fun h => ?_⟩
     rw [e0, h1] at h; exact absurd h one_ne_zero
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
@@ -132,9 +132,9 @@ theorem EvEnv.md₂ (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
 theorem EvEnv.nt₂ (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c) :
     NFWithin c.nmem (c.nreg (sw 4)) (c.nreg TBR) N₂ := by
   rw [hI.hin _ (show IFix (sw 4) by unfold IFix sw; omega),
-    hI.hin _ (show IFix TBR by unfold IFix TBR sw; omega)]
+    hI.hin _ (by unfold IFix TBR sw; omega)]
   have h := E.hTBR
-  exact Robust.transport E.hNT₂ (fun a ha => hI.hm a (by omega))
+  exact Robust.transport E.hNT₂ (fun a ha => hI.hm a by_o)
 
 /-- The power table at a run configuration. -/
 theorem EvEnv.tab (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c₀ c) :
@@ -143,9 +143,9 @@ theorem EvEnv.tab (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have eB : c.nreg TBR = c₀.nreg TBR := hI.hin _ (by unfold IFix TBR sw; omega)
   have eL : c.nreg TLR = c₀.nreg TLR := hI.hin _ (by unfold IFix TLR sw; omega)
   have h := E.hTBR
-  refine ⟨fun j hj => ?_, by rw [eL]; exact E.hbig₂, by rw [eB, eL]; exact h, eL⟩
+  refine ⟨fun j hj => ?_, by rw [eL]; exact E.hbig₂, by rwa [eB, eL], eL⟩
   rw [eL] at hj
-  rw [eB, hI.hm _ (by omega)]
+  rw [eB, hI.hm _ by_o]
   exact E.htab j hj
 
 /-! ## The prefix -/
@@ -182,11 +182,11 @@ theorem faceLoc_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     IRS P W c₀ faceLoc c (faceLocK (c₀.nreg TLR)) (LocOut P J N₂ c) := by
   have hK := E.hK.fix hI
   obtain ⟨k0, k1, k6, k4, k5, k2, k3⟩ := hK
-  have hP₂ : J.right.P.Simple := E.hP
+  have hP₂ := E.hP
   have hNF := E.hNF₂
   obtain ⟨hmd, hmwf⟩ := E.md₂ hI
   have hNT := E.nt₂ hI
-  have hNA : NFAt c.nmem (c.nreg (sw 4)) N₂ := hNT.nfAt
+  have hNA := hNT.nfAt
   obtain ⟨htab, hbig, hTB, eL⟩ := E.tab hI
   have hA0 := arcs_pos hP₂ hNF
   obtain ⟨b7, b4A, b6A⟩ := NFLoc.nfWithin_bounds hNT hNF hA0
@@ -203,7 +203,7 @@ theorem faceLoc_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
         by unfold sw; norm_num, by unfold fE sw; norm_num, by unfold fE sw; norm_num,
         by unfold K0 sw; norm_num, by unfold K0 sw; norm_num⟩
       ⟨by unfold lJ sw; norm_num, by unfold lJ sw; norm_num⟩ hmd hmwf hP₂ hNA hNF
-      hfe hpp htab hbig (by omega) (by omega) (by omega) (by omega)
+      hfe hpp htab hbig by_o by_o by_o by_o
       (by rw [eL]; unfold faceLocK at hroom; omega)) ?_)
     (by rw [eL]; unfold faceLocK; omega) (fun _ h => h)
   rintro c₁ hI₁ - - ⟨hj1, hl1, hl2, k1', hA1, hm1⟩
@@ -211,14 +211,14 @@ theorem faceLoc_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   rw [k0, key_vertex] at hl1 hl2
   have keep1 : ∀ r, bandOf r ∉ oracleBands → r ≠ lJ → c₁.nreg r = c.nreg r := fun r h1 h2 => by
     by_cases hra : r = ALLOC
-    · rw [hra]; exact hA1
+    · rwa [hra]
     · exact k1' r h1 h2 hra
   have e4 : c₁.nreg (sw 4) = c.nreg (sw 4) :=
-    keep1 _ (not_oracle_sw (by unfold sw; norm_num) (by unfold sw; norm_num))
-      (by unfold lJ sw; norm_num)
+    keep1 _ by_d
+      by_d
   -- 2. copy the normal form register
   refine IRS.seq (IRS.block [.copyN lNF (sw 4)] hI₁
-    ⟨iscr_sw (by unfold lNF sw; norm_num) (by unfold lNF sw; norm_num), trivial⟩) ?_
+    ⟨iscr_sw by_d by_d, trivial⟩) ?_
   rintro c₂ hI₂ - - hc2
   have hm2 : c₂.nmem = c.nmem := by rw [hc2]; exact hm1
   have c2NF : c₂.nreg lNF = c.nreg (sw 4) := by
@@ -244,24 +244,24 @@ theorem faceLoc_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   have c3r : ∀ r, r ≠ lX → r ≠ lA → r ≠ lSB → r ≠ lAB → c₃.nreg r = c₂.nreg r := by
     intro r h1 h2 h3 h4; rw [hc3]; exact nbrHead_other _ _ h1 h2 h3 h4
   have c3J : c₃.nreg lJ = j := by
-    rw [c3r _ (by unfold lJ lX sw; norm_num) (by unfold lJ lA sw; norm_num)
-      (by unfold lJ lSB sw; norm_num) (by unfold lJ lAB sw; norm_num),
-      c2r _ (by unfold lJ lNF sw; norm_num)]
+    rw [c3r _ by_d by_d
+      by_d by_d,
+      c2r _ by_d]
   -- 4. the neighbouring positions
   refine IRS.seq (nbrJ_irs hI₃ (E.hK.fix hI₃) c3A c3J hj1) ?_
   rintro c₄ hI₄ - - ⟨v4P, v4N, k4', hm4'⟩
   have hjP := OracleQ.predP_lt hj1
   have hjN := OracleQ.succP_lt hj1
   have c4SB : c₄.nreg lSB = c.nmem (c.nreg (sw 4) + 6) := by
-    rw [k4' _ (by unfold lSB lJP sw; norm_num) (by unfold lSB lJN sw; norm_num), c3SB]
+    rw [k4' _ by_d by_d, c3SB]
   have c4AB : c₄.nreg lAB = c.nmem (c.nreg (sw 4) + 4) := by
-    rw [k4' _ (by unfold lAB lJP sw; norm_num) (by unfold lAB lJN sw; norm_num), c3AB]
+    rw [k4' _ by_d by_d, c3AB]
   have c4J : c₄.nreg lJ = j := by
-    rw [k4' _ (by unfold lJ lJP sw; norm_num) (by unfold lJ lJN sw; norm_num), c3J]
+    rw [k4' _ by_d by_d, c3J]
   have hm4 : c₄.nmem = c.nmem := by rw [hm4', hm3]
   -- the table reads
   have hseqv : ∀ p, p < N₂.arcs.length → c.nmem (c.nmem (c.nreg (sw 4) + 6) + p) = sj N₂ p :=
-    fun p hp => hNA.2.2.2.2.2.2.2.2.1 p (by rw [NFLoc.seq_length hNF]; exact hp)
+    fun p hp => hNA.2.2.2.2.2.2.2.2.1 p (by rwa [NFLoc.seq_length hNF])
   have hsjl : ∀ p, p < N₂.arcs.length → sj N₂ p < N₂.arcs.length := fun p hp =>
     NFLoc.seq_lt hNF hp
   have harcv : ∀ a, a < N₂.arcs.length →
@@ -271,7 +271,7 @@ theorem faceLoc_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
       c.nmem (c.nmem (c.nreg (sw 4) + 4) + 5 * a + 3) = (N₂.arc a).e.edge ∧
       c.nmem (c.nmem (c.nreg (sw 4) + 4) + 5 * a + 4) = (N₂.arc a).e.hgt :=
     fun a ha => hNA.2.2.2.2.2.2.1 a ha
-  have hTBW : c.nreg TBR ≤ W := by omega
+  have hTBW : c.nreg TBR ≤ W := by_o
   have hb1 : ∀ v, v < N₂.arcs.length → c.nmem (c.nreg (sw 4) + 6) + v ≤ W ∧
       c.nmem (c.nreg (sw 4) + 4) + 5 * c.nmem (c.nmem (c.nreg (sw 4) + 6) + v) + 4 ≤ W := by
     intro v hv
@@ -303,17 +303,17 @@ theorem faceLoc_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     intro r h1 h2 h3 h4 h5; rw [hc5]; exact nbrRegsL_other _ _ h1 h2 h3 h4 h5
   have hm5 : c₅.nmem = c.nmem := by rw [hc5]; exact hm4
   have c5SB : c₅.nreg lSB = c.nmem (c.nreg (sw 4) + 6) := by
-    rw [c5r _ (by unfold lSB lX sw; norm_num) (by unfold lSB lY sw; norm_num)
-      (by unfold lSB lR0 sw; norm_num) (by unfold lSB lR1 sw; norm_num)
-      (by unfold lSB lR2 sw; norm_num), c4SB]
+    rw [c5r _ by_d by_d
+      by_d by_d
+      by_d, c4SB]
   have c5AB : c₅.nreg lAB = c.nmem (c.nreg (sw 4) + 4) := by
-    rw [c5r _ (by unfold lAB lX sw; norm_num) (by unfold lAB lY sw; norm_num)
-      (by unfold lAB lR0 sw; norm_num) (by unfold lAB lR1 sw; norm_num)
-      (by unfold lAB lR2 sw; norm_num), c4AB]
+    rw [c5r _ by_d by_d
+      by_d by_d
+      by_d, c4AB]
   have c5J : c₅.nreg lJ = j := by
-    rw [c5r _ (by unfold lJ lX sw; norm_num) (by unfold lJ lY sw; norm_num)
-      (by unfold lJ lR0 sw; norm_num) (by unfold lJ lR1 sw; norm_num)
-      (by unfold lJ lR2 sw; norm_num), c4J]
+    rw [c5r _ by_d by_d
+      by_d by_d
+      by_d, c4J]
   have hK₅ := E.hK.fix hI₅
   -- 6. the arc at `j`
   have hb6 := hb1 _ hj1
@@ -333,26 +333,26 @@ theorem faceLoc_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
     intro r hr hrr
     have n1 := fun q (h1 : sw 1102 ≤ q) (h2 : q ≤ sw 1203) => out_ne hrr h1 h2
     rw [c6r r hrr,
-      c5r r (n1 _ (by unfold lX sw; norm_num) (by unfold lX sw; norm_num))
-        (n1 _ (by unfold lY sw; norm_num) (by unfold lY sw; norm_num))
-        (n1 _ (by unfold lR0 sw; norm_num) (by unfold lR0 sw; norm_num))
-        (n1 _ (by unfold lR1 sw; norm_num) (by unfold lR1 sw; norm_num))
-        (n1 _ (by unfold lR2 sw; norm_num) (by unfold lR2 sw; norm_num)),
-      k4' r (n1 _ (by unfold lJP sw; norm_num) (by unfold lJP sw; norm_num))
-        (n1 _ (by unfold lJN sw; norm_num) (by unfold lJN sw; norm_num)),
-      c3r r (n1 _ (by unfold lX sw; norm_num) (by unfold lX sw; norm_num))
-        (n1 _ (by unfold lA sw; norm_num) (by unfold lA sw; norm_num))
-        (n1 _ (by unfold lSB sw; norm_num) (by unfold lSB sw; norm_num))
-        (n1 _ (by unfold lAB sw; norm_num) (by unfold lAB sw; norm_num)),
-      c2r r (n1 _ (by unfold lNF sw; norm_num) (by unfold lNF sw; norm_num))]
-    exact keep1 r hr (n1 _ (by unfold lJ sw; norm_num) (by unfold lJ sw; norm_num))
+      c5r r (n1 _ by_d by_d)
+        (n1 _ by_d by_d)
+        (n1 _ by_d by_d)
+        (n1 _ by_d by_d)
+        (n1 _ by_d by_d),
+      k4' r (n1 _ by_d by_d)
+        (n1 _ by_d by_d),
+      c3r r (n1 _ by_d by_d)
+        (n1 _ by_d by_d)
+        (n1 _ by_d by_d)
+        (n1 _ by_d by_d),
+      c2r r (n1 _ by_d by_d)]
+    exact keep1 r hr (n1 _ by_d by_d)
   have hR : ∀ q, (q = lR0 ∨ q = lR1 ∨ q = lR2) → c₆.nreg q = c₅.nreg q := by
     rintro q (rfl | rfl | rfl) <;> apply c6o <;>
       simp [lR0, lR1, lR2, lX, lY, fSE, fSH, fEE, fEH, sw]
   refine ⟨j, hj1, hl1, hl2, by rw [hR _ (Or.inl rfl), c5R0],
     by rw [hR _ (Or.inr (Or.inl rfl)), c5R1], by rw [hR _ (Or.inr (Or.inr rfl)), c5R2],
-    ?_, ?_, ?_, ?_, by rw [hc6]; exact hm5,
-    hothers _ (by decide) (Or.inl (by unfold ALLOC sw; norm_num)), hothers⟩
+    ?_, ?_, ?_, ?_, by rwa [hc6],
+    hothers _ by_d (Or.inl by_d), hothers⟩
   · rw [hc6]; show regB c₅.nmem faceRead c₅.nreg fSE = _
     rw [v6SE, c5AB, c5SB, c5J, hm5, hsj]; exact ha.2.1
   · rw [hc6]; show regB c₅.nmem faceRead c₅.nreg fSH = _

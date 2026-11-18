@@ -40,7 +40,7 @@ theorem invStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
     ∃ c' k, Exec P W invStmt c c' k ∧ k ≤ 7 * n + 3 ∧ WordsBounded W c' ∧
       PFr InvRG (fun a => bO ≤ a ∧ a < bO + n) c c' ∧
       ∀ i, i < n → c'.nmem (bO + c.nmem (bI + i)) = i := by
-  have e0 := Exec.constN (P := P) hw 130803 0 (by omega)
+  have e0 := Exec.constN (P := P) hw 130803 0 by_o
   set c1 := { c with nreg := upd c.nreg 130803 0 }
   have hf1 : PFr InvRG (fun a => bO ≤ a ∧ a < bO + n) c c1 :=
     PFr.nreg (PFr.refl c) (fun r hr => by
@@ -52,11 +52,11 @@ theorem invStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
       ∀ i, i < j → c'.nmem (bO + c.nmem (bI + i)) = i)
     n 5 (fun j c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c2 hj ⟨hw2, hi2, hn2, hf2, hm2⟩ => by
-      have r0 : ∀ r, ¬ InvRG r → c2.nreg r = c.nreg r := hf2.1
+      have r0 := hf2.1
       have rI := (r0 130800 (by unfold InvRG; omega)).trans hI
       have rO := (r0 130801 (by unfold InvRG; omega)).trans hO
       have r1 := (r0 130001 (by unfold InvRG; omega)).trans hone
-      have mI : c2.nmem (bI + j) = c.nmem (bI + j) := hf2.2.2.2.2 _ (by omega)
+      have mI : c2.nmem (bI + j) = c.nmem (bI + j) := hf2.2.2.2.2 _ by_o
       have hv := hlt j hj
       unfold invBody
       exec_block
@@ -66,18 +66,18 @@ theorem invStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
       · refine PFr.of_eq hf2 (fun r hr => ?_) (fun a ha => ?_)
         · simp only [Machine.upd_apply]; unfold InvRG at hr; split_ifs <;> omega
         · simp only [rI, rO, hi2, mI]
-          rw [Machine.upd_other _ _ _ (by omega)]
+          rw [Machine.upd_other _ _ _ by_o]
       · config_simp
         simp only [rI, rO, hi2, mI, Machine.upd_apply]
         split_ifs with h
         · have e : c.nmem (bI + i) = c.nmem (bI + j) := by omega
-          have hin : i < n := by omega
+          have hin : i < n := by_o
           exact (hinj i j hin hj e).symm
         · have hij : i ≠ j := by rintro rfl; exact h rfl
-          exact hm2 i (by omega))
+          exact hm2 i by_o)
     (j₀ := 0) ⟨e0.wb_right, by simp [c1], by simp [c1, hn], hf1, fun i hi => by omega⟩
     (Nat.zero_le _)
-  exact ⟨c', 1 + k, .seq e0 e, by omega, hw', hf', hI'⟩
+  exact ⟨c', 1 + k, .seq e0 e, by_o, hw', hf', hI'⟩
 
 end proofs
 
@@ -94,9 +94,7 @@ theorem OK.congr {R R' : BTree} (hR : R.OK) (hn : R'.n = R.n) (hq : ∀ i, i < R
     refine ⟨j, hj, ?_⟩
     have hne : R.q i ≠ R.q 0 := fun h => by
       have := hR.q_inj i hi 0 hR.n_pos h; omega
-    rw [hq j (by omega), hq i hi, hp _ (hR.q_lt i hi) hne]
-    exact hqj
-
+    rwa [hq j by_o, hq i hi, hp _ (hR.q_lt i hi) hne]
 /-- The parent function only reads the queue head and the parents. -/
 theorem up_congr {R R' : BTree} (hq0 : R'.q 0 = R.q 0)
     (hp : ∀ g, g < R.n → g ≠ R.q 0 → R'.par g = R.par g) {g : ℕ} (hg : g < R.n) :

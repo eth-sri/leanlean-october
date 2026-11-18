@@ -48,8 +48,8 @@ theorem attach_far (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ
     (hA : SideAttach (chainModel J.whole).W (Merge.shoot J.whole a σ) p t)
     (hoff : (Lst J : ℝ) ≤ oW J (p + t)) :
     sidePt (chainModel J.whole).W p t = rayPt a σ (J.whole.hitParam a σ) := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
-  have ha2 : a.2 ≤ J.whole.top.2 := J.whole.snd_le_top_of_mem_set (J.right_set_subset haR)
+  have hM := FactsChain.walkAx J.whole hP
+  have ha2 := J.whole.snd_le_top_of_mem_set (J.right_set_subset haR)
   obtain ⟨hτ, -, hint⟩ := Merge.hit_of_freeAt J.whole ha2 hσ hfree
   have hopen : ∀ s ∈ Ioo (0 : ℝ) 1,
       lerp a (rayPt a σ (J.whole.hitParam a σ)) s ∈ (chainModel J.whole).D := fun s hs => by
@@ -58,7 +58,7 @@ theorem attach_far (hP : J.P.Simple) {a : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ
   rcases hM.attach_endpoint hopen hA with h | h
   · exfalso
     have := off_right_pt J hP (S₂ := ∅) (empty_subset _) finite_empty hA.1 hA.2.1 hA.2.2.1
-      (by rw [h]; exact haR) (by rw [h]; exact hav)
+      (by rwa [h]) (by rwa [h])
     rw [← oW_eq, ← Lst_eq] at this
     linarith [this.2]
   · exact h
@@ -79,10 +79,10 @@ theorem whole_lt_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     rw [whole_hitParam_eq_min J (le_trans ha₂ J.right_top_le) hσ, right_hitParam_eq J ha₂]
     exact min_le_right _ _
   refine lt_of_le_of_ne hle fun heq => ?_
-  have ha2 : a.2 ≤ J.whole.top.2 := le_trans ha₂ J.right_top_le
+  have ha2 := le_trans ha₂ J.right_top_le
   obtain ⟨hτ, hwD, -⟩ := Merge.hit_of_freeAt J.whole ha2 hσ hfree
   have hpt := attach_far hP hσ haR hav hfree hA hoff.le
-  have hAdm : Merge.shoot J.whole a σ ∈ Merge.augChords J.whole :=
+  have hAdm :=
     F₂plus_subset J hS₂ (shoot_end_mem hc ha hfree)
   set τ := J.whole.hitParam a σ with hτd
   -- the far end of `c`
@@ -92,7 +92,7 @@ theorem whole_lt_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     · refine ⟨Merge.rend c, -1, rfl, Or.inr ⟨rfl, rfl⟩, point_ext ?_ ?_⟩
       · rw [rayPt_fst, heq, hR]; ring
       · rw [rayPt_snd, hr2]
-    · refine ⟨Merge.lend c, 1, by norm_num, Or.inl ⟨rfl, rfl⟩, point_ext ?_ ?_⟩
+    · refine ⟨Merge.lend c, 1, by_n, Or.inl ⟨rfl, rfl⟩, point_ext ?_ ?_⟩
       · rw [rayPt_fst, heq, hR]; ring
       · rw [rayPt_snd, hl2]
   have hbmem : b ∈ Merge.shoot J.whole a σ := by
@@ -104,14 +104,14 @@ theorem whole_lt_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
       obtain ⟨σ'', hσ'', hfr, he⟩ := chord_eq_shoot_of_end J.whole hAdm hbmem hbD
       exact hns (Or.inl (Or.inl ⟨σ'', hσ'', hfr, he⟩))
     · have := off_right_pt J hP (S₂ := ∅) (empty_subset _) finite_empty hA.1 hA.2.1 hA.2.2.1
-        (by rw [hpt, hwb]; exact hbR) (by rw [hpt, hwb]; exact hbv)
+        (by rwa [hpt, hwb]) (by rwa [hpt, hwb])
       rw [← oW_eq, ← Lst_eq] at this
       linarith [this.2]
   · obtain ⟨σ'', hσ'', hfr, he⟩ := chord_eq_shoot_of_end J.whole hAdm hbmem hbD
     -- the direction from `b` is back towards `a`
     have hb2 : b.2 ≤ J.whole.top.2 := by rw [← hwb, rayPt_snd]; exact ha2
     obtain ⟨hτ'', -, -⟩ := Merge.hit_of_freeAt J.whole hb2 hσ'' hfr
-    have haIn : a ∈ Merge.shoot J.whole b σ'' := he ▸ origin_mem J
+    have haIn := he ▸ origin_mem J
     unfold Merge.shoot at haIn
     obtain ⟨s, hs0, hs1, has⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 haIn
     rw [lerp_rayPt] at has
@@ -142,7 +142,7 @@ theorem stp_win_keep (hregW : ∀ r, bandOf r ∉ oracleBands → ¬ WR r → r 
     {k : ℕ} (hk : (600 ≤ k ∧ k < 700) ∨ (2400 ≤ k ∧ k ≤ 2406) ∨ (2430 ≤ k ∧ k ≤ 2459) ∨
       (2600 ≤ k ∧ k ≤ 2699)) : cw.nreg (sw k) = c.nreg (sw k) :=
   hregW _ (band_sw_not ⟨by unfold sw; omega, by unfold sw; omega⟩) (by unfold WR sw; omega)
-    (by unfold ALLOC sw; omega)
+    by_so
 
 /-- The registers kept by the reset and the batch of origins. -/
 theorem stp_batch_keep (hR : ResetRel cw cs)
@@ -152,7 +152,7 @@ theorem stp_batch_keep (hR : ResetRel cw cs)
   have h1 : cs.nreg (sw k) = cw.nreg (sw k) :=
     hR.2.2.2 _ (by unfold bF sw; omega) (by unfold bN sw; omega)
   refine ⟨h1, (hregB _ (band_sw_not ⟨by unfold sw; omega, by unfold sw; omega⟩) ?_ ?_
-    (by unfold ALLOC sw; omega)).trans h1⟩
+    by_so).trans h1⟩
   · unfold OrgR CandR BestR LblR bF bE bH bN bL sw; omega
   · unfold LR oK oS sw; omega
 
@@ -175,10 +175,10 @@ theorem no_cut_core (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
   classical
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
   have hP := E.hP
-  have hS₂ : (chainModel J.right).ChordFamily (Qof P) S₂ := E.hNF₂.1
-  have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
+  have hS₂ := E.hNF₂.1
+  have hS₂a := hS₂.2.1
   have hF := F₂plus_chordFamily E
-  have hLst : (Lst J : ℝ) < oW J (p + t) := lt_of_le_of_lt L.keyL hlt
+  have hLst := lt_of_le_of_lt L.keyL hlt
   -- a stop chord at the position is a stop not yet passed
   have stopCase : ∀ s ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W s p t → StopChord2 J S₂ s →
       ∃ i, c.nreg sP ≤ i ∧ i < c.nreg sC ∧ stopOff P J c i = oW J (p + t) := by
@@ -196,7 +196,7 @@ theorem no_cut_core (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
       rw [e0, e1]
       show oW J ((rs[i].1 : ℝ) + (chainModel J.whole).param (Qof P) ⟨rs[i].1, rs[i].2.1⟩) = _
       rw [h2, h1]
-    have hic : i < c.nreg sC := hlen ▸ hi
+    have hic := hlen ▸ hi
     refine ⟨i, ?_, hic, hoff⟩
     by_contra hlt'
     push Not at hlt'
@@ -218,7 +218,7 @@ theorem no_cut_core (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
   have hpt := attach_far hP hσ haR hav hfree hA hLst.le
   have hnv : sidePt (chainModel J.whole).W p t ≠ J.shared := by
     intro h
-    have hm : J.shared ∈ Merge.shoot J.whole a σ := h ▸ hA.2.2.2.1
+    have hm := h ▸ hA.2.2.2.1
     have hvD : J.shared ∉ J.whole.dom := fun hd =>
       J.whole.not_mem_set_of_mem_dom hd (J.left_set_subset J.shared_mem_left)
     obtain ⟨σ', hσ', hfr, he'⟩ := chord_eq_shoot_of_end J.whole (F₂plus_subset J hS₂a he) hm hvD
@@ -234,29 +234,29 @@ theorem no_cut_core (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
       endOrigin J (Qof P) N₂ j = a ∧ endDir j = σ := by
     unfold endOrigin endDir
     rcases ha with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-    · refine ⟨2 * i, by omega, ⟨0, by omega, by omega⟩, ?_, ?_⟩
-      · rw [ite_eq_left (by omega), show 2 * i / 2 = i by omega, ← hci]
-      · rw [ite_eq_left (by omega)]
-    · refine ⟨2 * i + 1, by omega, ⟨1, le_rfl, rfl⟩, ?_, ?_⟩
-      · rw [ite_eq_right (by omega), show (2 * i + 1) / 2 = i by omega, ← hci]
-      · rw [ite_eq_right (by omega)]
+    · refine ⟨2 * i, by_o, ⟨0, by_o, by_o⟩, ?_, ?_⟩
+      · rw [ite_eq_left by_o, show 2 * i / 2 = i by omega, ← hci]
+      · rw [ite_eq_left by_o]
+    · refine ⟨2 * i + 1, by_o, ⟨1, le_rfl, rfl⟩, ?_, ?_⟩
+      · rw [ite_eq_right by_o, show (2 * i + 1) / 2 = i by omega, ← hci]
+      · rw [ite_eq_right by_o]
   -- the registers through the window, the reset and the batch
   obtain ⟨rs₁, -, -, hgk, -, -, -, -, -, hcov, -, hregW⟩ := hW
   obtain ⟨hregB, -, A, hBA⟩ := hB
   have kW := fun {k : ℕ} hk => stp_win_keep (c := c) (cw := cw) hregW (k := k) hk
   have kB := fun {k : ℕ} hk => stp_batch_keep (cs := cs) (co := co) hR hregB (k := k) hk
-  have ekE : cs.nreg kE = c.nreg kE := (kB (k := 2400) (by omega)).1.trans (kW (by omega))
-  have ekH : cs.nreg kH = c.nreg kH := (kB (k := 2401) (by omega)).1.trans (kW (by omega))
-  have ekN : cs.nreg kN = c.nreg kN := (kB (k := 2402) (by omega)).1.trans (kW (by omega))
+  have ekE : cs.nreg kE = c.nreg kE := (kB (k := 2400) by_o).1.trans (kW by_o)
+  have ekH : cs.nreg kH = c.nreg kH := (kB (k := 2401) by_o).1.trans (kW by_o)
+  have ekN : cs.nreg kN = c.nreg kN := (kB (k := 2402) by_o).1.trans (kW by_o)
   have ekL : ∀ u, u < 4 → cs.nreg (kL + u) = c.nreg (kL + u) := fun u hu => by
-    have := (kB (k := 2403 + u) (by omega)).1.trans (kW (by omega))
+    have := (kB (k := 2403 + u) by_o).1.trans (kW by_o)
     rwa [show sw (2403 + u) = kL + u by unfold kL sw; omega] at this
-  have egN : cs.nreg gN = c.nreg gN := (kB (k := 2440) (by omega)).1.trans (kW (by omega))
+  have egN : cs.nreg gN = c.nreg gN := (kB (k := 2440) by_o).1.trans (kW by_o)
   have egR : ∀ u, u < 2 → cs.nreg (gR + u) = c.nreg (gR + u) := fun u hu => by
-    have := (kB (k := 2441 + u) (by omega)).1.trans (kW (by omega))
+    have := (kB (k := 2441 + u) by_o).1.trans (kW by_o)
     rwa [show sw (2441 + u) = gR + u by unfold gR sw; omega] at this
-  have eGB : cs.nreg wGB = cw.nreg wGB := (kB (k := 2420) (by omega)).1
-  have eGK : cs.nreg wGK = cw.nreg wGK := (kB (k := 2421) (by omega)).1
+  have eGB : cs.nreg wGB = cw.nreg wGB := (kB (k := 2420) by_o).1
+  have eGK : cs.nreg wGK = cw.nreg wGK := (kB (k := 2421) by_o).1
   -- the query is tried in this iteration
   have hRO := (regOf_spec E.hNF₂).2.2.2.1
   have hreg : ∀ l, l < N₂.nRegions → regOf (chainModel J.right) (Qof P) N₂ l = V →
@@ -268,10 +268,10 @@ theorem no_cut_core (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
     rcases hVΛ with ⟨l, hl, hlV⟩ | hg
     · obtain ⟨u, hu, hu4, rfl⟩ : ∃ u, u < c.nreg kN ∧ u < 4 ∧ l = c.nreg (kL + u) := by
         rcases hl with h | h | h | h
-        · exact ⟨0, h.1, by norm_num, by rw [add_zero]; exact h.2⟩
-        · exact ⟨1, h.1, by norm_num, h.2⟩
-        · exact ⟨2, h.1, by norm_num, h.2⟩
-        · exact ⟨3, h.1, by norm_num, h.2⟩
+        · exact ⟨0, h.1, by_n, by rw [add_zero]; exact h.2⟩
+        · exact ⟨1, h.1, by_n, h.2⟩
+        · exact ⟨2, h.1, by_n, h.2⟩
+        · exact ⟨3, h.1, by_n, h.2⟩
       refine Or.inl (Or.inl ⟨u, by rw [ekN]; omega, ?_⟩)
       rw [ekL u hu4]
       exact hreg _ (L.labR u hu) hlV
@@ -288,19 +288,18 @@ theorem no_cut_core (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
     push_cast; ring
   have hlo : rayPt a σ (J.whole.hitParam a σ) ∈
       ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) (cs.nreg wGK) [] := by
-    have hin := hcov d t hMV hA.2.1 hA.2.2.1 (by rw [hoffd]; exact hlt) (fun h0 => by
+    have hin := hcov d t hMV hA.2.1 hA.2.2.1 (by rwa [hoffd]) (fun h0 => by
       rw [hoffd]; by_contra hc; exact hwin ⟨h0, not_le.1 hc⟩)
     rw [hArr.2.2.2.1, ← hgk] at hin
-    rw [hR.1, eGB, eGK]
-    exact hin
+    rwa [hR.1, eGB, eGK]
   -- accepted, so the best candidate is at or before it
-  obtain ⟨h, hh, hmA⟩ := hBA.comp j hjO' hj ⟨by rw [hjO]; exact haR, by rw [hjO]; exact hav,
-    by rw [hjO]; exact hat⟩ p t (by rw [hjO, hjD]; exact hA) (by rw [hjO, hjD]; exact hpt) hLst
-    hnv (by rw [hjO, hjD]; exact hlt') (by rw [hjO, hjD]; exact hlo)
+  obtain ⟨h, hh, hmA⟩ := hBA.comp j hjO' hj ⟨by rwa [hjO], by rwa [hjO],
+    by rwa [hjO]⟩ p t (by rwa [hjO, hjD]) (by rwa [hjO, hjD]) hLst
+    hnv (by rw [hjO, hjD]; exact hlt') (by rwa [hjO, hjD])
   have hoT : offT P J (j, p, h) = oW J (p + t) := by
     show oW J (p + (chainModel J.whole).param (Qof P) ⟨p, h⟩) = _
     rw [hh]
-  obtain ⟨hbF, hle⟩ := hBA.bMin _ hmA (by rw [hoT, ekE, ekH]; exact hlt)
+  obtain ⟨hbF, hle⟩ := hBA.bMin _ hmA (by rwa [hoT, ekE, ekH])
   exact ⟨hbF, hle.trans hoT.le⟩
 
 /-- **No cut before the candidates**: every chord of `F₂⁺` attached beyond the key of `c` is
@@ -318,13 +317,13 @@ theorem no_cut_between (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopIn
     (cw.nreg wX = 0 ∧ offK P J (cw.nreg wE) (cw.nreg wH) < oW J (p + t)) := by
   classical
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole E.hP
+  have hM := FactsChain.walkAx J.whole E.hP
   have hF := F₂plus_chordFamily E
   set K := {x : ℝ | (chainModel J.whole).IsCut (F₂plus J S₂) x ∧ keyOff P J c < oW J x} with hK
   have hKf : K.Finite := (hM.finite_cuts hF.2.1 hF.1).subset fun x hx => hx.1
   have hKm : ((p : ℝ) + t) ∈ K := ⟨⟨e, he, p, t, hA, rfl⟩, hlt⟩
   obtain ⟨x, ⟨⟨e', he', p', t', hA', rfl⟩, hx⟩, hmin⟩ := Set.exists_min_image K (oW J) hKf ⟨_, hKm⟩
-  have hle : oW J (p' + t') ≤ oW J (p + t) := hmin _ hKm
+  have hle := hmin _ hKm
   have hgap : ∀ e'' ∈ F₂plus J S₂, ∀ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e'' q s →
       ¬ (keyOff P J c < oW J (q + s) ∧ oW J (q + s) < oW J (p' + t')) := by
     rintro e'' he'' q s hq ⟨h1, h2⟩
@@ -345,22 +344,22 @@ theorem iter_stops (L : LoopInv P J N₁ N₂ c₀ c) (hI : IterRel P J N₁ N�
   obtain ⟨hregB, -, A, hBA⟩ := hB
   have kW := fun {k : ℕ} hk => stp_win_keep (c := c) (cw := cw) hregW (k := k) hk
   have kB := fun {k : ℕ} hk => stp_batch_keep (cs := cs) (co := co) hR hregB (k := k) hk
-  have esP : co.nreg sP = c.nreg sP := (kB (k := 2450) (by omega)).2.trans (kW (by omega))
-  have esC : co.nreg sC = c.nreg sC := (kB (k := 2601) (by omega)).2.trans (kW (by omega))
-  have esB : co.nreg sB = c.nreg sB := (kB (k := 2600) (by omega)).2.trans (kW (by omega))
-  have eTB : cs.nreg cTB = c.nreg cTB := (kB (k := 661) (by omega)).1.trans (kW (by omega))
+  have esP : co.nreg sP = c.nreg sP := (kB (k := 2450) by_o).2.trans (kW by_o)
+  have esC : co.nreg sC = c.nreg sC := (kB (k := 2601) by_o).2.trans (kW by_o)
+  have esB : co.nreg sB = c.nreg sB := (kB (k := 2600) by_o).2.trans (kW by_o)
+  have eTB : cs.nreg cTB = c.nreg cTB := (kB (k := 661) by_o).1.trans (kW by_o)
   have eAs : cs.nreg ALLOC = cw.nreg ALLOC := hR.2.2.2 _ (by unfold ALLOC bF sw; omega)
     (by unfold ALLOC bN sw; omega)
   have hmem : ∀ x, x < c.nreg ALLOC → c.nreg cTB + 6 * N₂.nChords ≤ x → co.nmem x = c.nmem x := by
     intro x hx hx'
-    rw [hBA.memT x (by omega) (Or.inr (by omega)), hR.1, hmW x hx]
+    rw [hBA.memT x by_o (Or.inr by_o), hR.1, hmW x hx]
   have hlay := L.lay1
   have hlay2 := L.lay2
   have hlay4 := L.lay4
-  refine ⟨esP, esC, fun i hi => ?_, (kB (k := 2425) (by omega)).2,
-    (kB (k := 2423) (by omega)).2, (kB (k := 2424) (by omega)).2⟩
+  refine ⟨esP, esC, fun i hi => ?_, (kB (k := 2425) by_o).2,
+    (kB (k := 2423) by_o).2, (kB (k := 2424) by_o).2⟩
   unfold stopOff stopE stopH
-  rw [esB, hmem _ (by omega) (by omega), hmem _ (by omega) (by omega)]
+  rw [esB, hmem _ by_o by_o, hmem _ by_o by_o]
 
 /-- **No cut strictly between the key of an iteration and the next key** (Task L1, step 1). -/
 theorem no_cut_iter (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P J N₁ N₂ c₀ c)
@@ -375,13 +374,13 @@ theorem no_cut_iter (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
     have h3 := hKs (by rw [esP, esC]; omega)
     rw [esP] at h3
     change keyOff P J c' ≤ stopOff P J co (c.nreg sP) at h3
-    rw [est _ (by omega)] at h3
+    rw [est _ by_o] at h3
     have h4 := L.sorted (c.nreg sP) i hi1 hi2
     exact absurd (h3.trans (h4.trans hi3)) (not_le.2 h2)
   · obtain ⟨-, -, hKb, -⟩ := hK4 (Or.inl hbF)
     exact absurd ((hKb hbF).trans hb) (not_le.2 h2)
-  · obtain ⟨-, -, -, -, hKw, -⟩ := hK4 (Or.inr (Or.inr (by rw [ewX]; exact hwX)))
-    have h3 := hKw (by rw [ewX]; exact hwX)
+  · obtain ⟨-, -, -, -, hKw, -⟩ := hK4 (Or.inr (Or.inr (by rwa [ewX])))
+    have h3 := hKw (by rwa [ewX])
     rw [ewE, ewH] at h3
     exact absurd (h3.trans hw.le) (not_le.2 h2)
 
@@ -399,7 +398,7 @@ theorem no_cut_done (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (L : LoopInv P
   rcases no_cut_between E L hW hR hB he hA h1 with ⟨i, hi1, hi2, -⟩ | ⟨hbF, -⟩ | ⟨hwX, -⟩
   · exact hnone (Or.inr (Or.inl (by rw [esP, esC]; omega)))
   · exact hnone (Or.inl hbF)
-  · exact hnone (Or.inr (Or.inr (by rw [ewX]; exact hwX)))
+  · exact hnone (Or.inr (Or.inr (by rwa [ewX])))
 
 end Iter
 

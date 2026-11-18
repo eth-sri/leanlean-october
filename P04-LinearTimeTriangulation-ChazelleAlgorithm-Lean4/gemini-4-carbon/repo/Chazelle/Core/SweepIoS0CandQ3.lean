@@ -67,13 +67,13 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   obtain ⟨b1, -, -, -, hsl, -, -⟩ := hX
   rw [rd_sw] at b1
   have hBc : c.nreg sB = B := hI.hin _ (by unfold IFix sB sw; omega)
-  have hm : ∀ a, a < c₀.nreg ALLOC → c.nmem a = c₀.nmem a := hI.hm
-  have hAW : c.nreg ALLOC ≤ W := hI.hw.1 ALLOC
+  have hm := hI.hm
+  have hAW := hI.hw.1 ALLOC
   have hA0 := hI.hA
   have hE' : t < c₀.nreg (sw 301) := ht
   have hS6 : S + 3 ≤ B + 6 * c₀.nreg (sw 301) := by
     rw [hSdef]; unfold slotA; have := qS_le d; nlinarith
-  have hslot : SlotOK P J c₀.nmem B (rd c₀ bSweep 300) t s := hsl t ht s (qS_le d)
+  have hslot := hsl t ht s (qS_le d)
   -- the slot address
   have hok1 : okB W c.nmem cSlot c.nreg := cSlot_ok _ _ (by rw [hBc]; nlinarith)
   refine IRS.mono (K := cSlot.length + (5 + (5 + (offerFK + 2)))) (IRS.seq
@@ -81,8 +81,8 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨v1S, k1⟩ := cSlot_val c.nmem c.nreg
   rw [hBc] at v1S
-  set c₁ : Config := { c with nreg := regB c.nmem cSlot c.nreg } with hc₁
-  have hK₁ : Consts c₁ := hK.fix hI₁
+  set c₁ := { c with nreg := regB c.nmem cSlot c.nreg } with hc₁
+  have hK₁ := hK.fix hI₁
   have hAc₁ : c₁.nreg ALLOC = c.nreg ALLOC := k1 ALLOC (by unfold ALLOC kS sw; omega)
   have hd₁ : c₁.nreg qD = d := k1 qD (by unfold qD kS sw; omega)
   refine IRS.seq (K₁ := 5) (cDir_irs hI₁ hK₁ (by
@@ -93,20 +93,20 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   have v2S' : c₂.nreg kS = S := by
     rw [v2S]; show regB c.nmem cSlot c.nreg kS + 3 * qS d = S
     rw [v1S, hSdef]; unfold slotA; ring
-  have hK₂ : Consts c₂ := hK.fix hI₂
+  have hK₂ := hK.fix hI₂
   have hok3 : okB W c₂.nmem cRead c₂.nreg := cRead_ok _ _ hK₂.2.1 (by rw [v2S']; omega)
   refine IRS.seq (K₁ := cRead.length) (IRS.block cRead hI₂ hok3) ?_
   rintro c₃ hI₃ hA₃ hA₃' rfl
   obtain ⟨v3F, v3E, v3H, k3⟩ := cRead_val c₂.nmem c₂.nreg hK₂.2.1
-  set c₃ : Config := { c₂ with nreg := regB c₂.nmem cRead c₂.nreg } with hc₃
+  set c₃ := { c₂ with nreg := regB c₂.nmem cRead c₂.nreg } with hc₃
   rw [v2S'] at v3F v3E v3H
-  have hm₂ : ∀ a, a < c₀.nreg ALLOC → c₂.nmem a = c₀.nmem a := hI₂.hm
+  have hm₂ := hI₂.hm
   have hF : c₃.nreg kF = c₀.nmem S := by
-    show regB c₂.nmem cRead c₂.nreg kF = _; rw [v3F, hm₂ S (by omega)]
+    show regB c₂.nmem cRead c₂.nreg kF = _; rw [v3F, hm₂ S by_o]
   have hPe : c₃.nreg kPe = c₀.nmem (S + 1) := by
-    show regB c₂.nmem cRead c₂.nreg kPe = _; rw [v3E, hm₂ (S + 1) (by omega)]
+    show regB c₂.nmem cRead c₂.nreg kPe = _; rw [v3E, hm₂ (S + 1) by_o]
   have hPh : c₃.nreg kPh = c₀.nmem (S + 2) := by
-    show regB c₂.nmem cRead c₂.nreg kPh = _; rw [v3H, hm₂ (S + 2) (by omega)]
+    show regB c₂.nmem cRead c₂.nreg kPh = _; rw [v3H, hm₂ (S + 2) by_o]
   -- registers through the three steps
   have keep : ∀ q, q ≠ kS → q ≠ kF → q ≠ kPe → q ≠ kPh → c₃.nreg q = c.nreg q := by
     intro q h1 h2 h3 h4
@@ -116,10 +116,10 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   have nk : ∀ q, (q < sw 4100 ∨ sw 4111 < q) → c₃.nreg q = c.nreg q := fun q hq =>
     keep q (by unfold kS sw at *; omega) (by unfold kF sw at *; omega)
       (by unfold kPe sw at *; omega) (by unfold kPh sw at *; omega)
-  have hAc₃ : c₃.nreg ALLOC = c.nreg ALLOC := nk ALLOC (by unfold ALLOC sw; omega)
+  have hAc₃ : c₃.nreg ALLOC = c.nreg ALLOC := nk ALLOC by_so
   have hd₃ : c₃.nreg qD = d := nk qD (by unfold qD sw; omega)
-  have hk1₃ : c₃.nreg K1 = 1 := hK.fix hI₃ |>.2.1
-  have hk0₃ : c₃.nreg K0 = 0 := hK.fix hI₃ |>.1
+  have hk1₃ := hK.fix hI₃ |>.2.1
+  have hk0₃ := hK.fix hI₃ |>.1
   have hacc₃ : AccOK P accA (ModB J 1 1) J.whole.radius z σ L c₃ :=
     hacc.transport (fun j hj => nk (accA + j) (by unfold accA sw; omega))
   have hfr₃ : FrQ c c₃ := ⟨fun r _ hr _ => keep r (fun h => hr (by subst h; right; unfold kS sw; omega))
@@ -132,7 +132,7 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   by_cases hf : c₃.nreg K0 < c₃.nreg kF
   · -- a flagged slot: offer its origin
     rw [hk0₃, hF] at hf
-    have hf1 : c₀.nmem S = 1 := by omega
+    have hf1 : c₀.nmem S = 1 := by_o
     obtain ⟨he, hpp, hc⟩ := hslot.2 hf1
     rw [hpt] at hc
     obtain ⟨hτ, hpos⟩ := cand_ray (dS_eq s) hc (z_mem_right_dom hA.hP hz hzs hz2)
@@ -148,7 +148,7 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
       rw [hMod, hI₃.hin _ (by unfold IFix sw; omega)]
       obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, h34, -⟩ := hA.hst
       exact h34
-    have hy : |z.2| < J.whole.radius := (J.left.set_subset_box hz).2
+    have hy := (J.left.set_subset_box hz).2
     refine (IRS.ifT (by rw [hk0₃, hF]; omega) (offerF_irs (L := L) (τ := τs) hI₃ hK hA.hG
       (by have := hA.hWh; unfold hostWords at this; omega)
       ⟨by unfold accA sw; norm_num, by unfold accA sw; norm_num⟩
@@ -167,13 +167,13 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
       ⟨by unfold accA sw; norm_num, by unfold kPe accA sw; norm_num,
         by unfold kPh accA sw; norm_num, by unfold K1 accA sw; norm_num,
         by unfold qD accA sw; norm_num, by unfold kPo accA sw; norm_num⟩
-      (by rw [hd₃]; exact hacc₃) (by rw [hk1₃]; norm_num) hctx₃ (by rw [hMod]; rfl) hn₃
-      (by rw [hMod, hPe]; exact he) (by rw [hMod, hPe, hPh]; exact hpp)
-      (by rw [hMod, hPe, hPh, hd₃]; exact hpos) hy
-      (by rw [hAc₃]; unfold hitK at hroom; omega))).mono (by omega) ?_
+      (by rwa [hd₃]) (by rw [hk1₃]; norm_num) hctx₃ (by rw [hMod]; rfl) hn₃
+      (by rwa [hMod, hPe]) (by rwa [hMod, hPe, hPh])
+      (by rwa [hMod, hPe, hPh, hd₃]) hy
+      (by rw [hAc₃]; unfold hitK at hroom; omega))).mono by_o ?_
     rintro c' ⟨⟨L', hacc', hL', hins⟩, hk', hal', hm'⟩
     rw [hd₃] at hacc'
-    have hL'eq : L' = insert τs L := hins (by rw [hMod]; exact hz2)
+    have hL'eq : L' = insert τs L := hins (by rwa [hMod])
     refine ⟨L', hacc', by rw [hL'eq]; exact Set.subset_insert _ _, fun τ hτ' => ?_,
       fun _ τ hτ0 hτe => ?_, ?_⟩
     · rcases hL' with rfl | ⟨-, hon⟩
@@ -193,7 +193,7 @@ theorem hit_irs (hA : AEnv P W X Ok J H N₁ N₂ E c₀) (hX : AuxCore P J N₂
   · -- an empty slot
     have hf0 : c₀.nmem S = 0 := by rw [hk0₃, hF] at hf; omega
     refine (IRS.ifF hf (IRS.skip (K := 0) hI₃ ⟨L, hacc₃, le_rfl, fun τ h => Or.inl h,
-      fun h => absurd (hf0 ▸ h) (by norm_num), hfr₃⟩)).mono (by unfold offerFK offerK; omega)
+      fun h => absurd (hf0 ▸ h) by_n, hfr₃⟩)).mono (by unfold offerFK offerK; omega)
       (fun _ h => h)
 
 end

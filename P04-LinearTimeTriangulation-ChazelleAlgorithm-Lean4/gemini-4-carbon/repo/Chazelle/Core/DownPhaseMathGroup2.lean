@@ -60,7 +60,7 @@ include hQ hdh hN hne hR hRC in
 theorem exit_record {x : WPos} (hx : ChordPos N x) {a : ℝ}
     (harc : (interiorModel Q).IsArc (N.F (interiorModel Q) Q) R a ((interiorModel Q).key Q x)) :
     ∃ i ∈ (N.region r).chords, x = (N.chord i).lpos ∨ x = (N.chord i).rpos := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   obtain ⟨c, ⟨hc, ht⟩, p, t, hA, he⟩ := hM.exists_exit_at_end hN.1.2.1 hN.1.1 hne hR harc
   obtain ⟨i, hi, rfl⟩ := chord_of_mem hc
   refine ⟨i, (hRC i).2 ⟨hi, ht⟩, ?_⟩
@@ -93,7 +93,7 @@ theorem partner_key {x : WPos} (hx : ChordPos N x) {m : ℕ}
       hk (interiorModel Q) (N.F (interiorModel Q) Q) R
           ((m + 1) % nk (interiorModel Q) (N.F (interiorModel Q) Q) R) ∈
         exitKeys (interiorModel Q) (N.F (interiorModel Q) Q) R := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have h3 := three_le_nk hQ hN.1 hne hR
   obtain ⟨i₀, hi₀, hcases⟩ := partner_spec (exit_record hQ hdh hN hne hR hRC hx harc)
   obtain ⟨hi₀n, ht₀⟩ := (hRC i₀).1 hi₀
@@ -119,17 +119,17 @@ theorem partner_key {x : WPos} (hx : ChordPos N x) {m : ℕ}
   -- after the end: the chord continues to the next host key
   have hex : hk (interiorModel Q) (N.F (interiorModel Q) Q) R m ∈
       exitKeys (interiorModel Q) (N.F (interiorModel Q) Q) R :=
-    ⟨c₀, hc₀S, ht₀, _, _, hAx, by rw [hkm]; exact ekx⟩
-  have hAp' := DownMath.arcGap_prev_of_end hQ hN.1 hne hR hm (by rw [hkm]; exact harc)
+    ⟨c₀, hc₀S, ht₀, _, _, hAx, by rwa [hkm]⟩
+  have hAp' := DownMath.arcGap_prev_of_end hQ hN.1 hne hR hm (by rwa [hkm])
   obtain ⟨-, hnext⟩ := end_chord hQ hN.1 hne hR hm hex hAp'
-  obtain ⟨p', t', hA', he'⟩ := hnext c₀ hc₀S ht₀ _ _ hAx (by rw [hkm]; exact ekx)
+  obtain ⟨p', t', hA', he'⟩ := hnext c₀ hc₀S ht₀ _ _ hAx (by rwa [hkm])
   have hz : hk (interiorModel Q) (N.F (interiorModel Q) Q) R
       ((m + 1) % nk (interiorModel Q) (N.F (interiorModel Q) Q) R) =
       (interiorModel Q).key Q (partner N r x) := by
     apply attach_third hM (hN.1.2.1 hc₀S) ⟨_, _, hAx, ekx⟩ ⟨_, _, hAp, ekp⟩ ⟨p', t', hA', he'⟩
       hxp
     rw [← hkm]
-    exact (hk_succ_ne hM hN.1.2.1 hN.1.1 (by omega) hm).symm
+    exact (hk_succ_ne hM hN.1.2.1 hN.1.1 by_o hm).symm
   exact ⟨hpos, hz.symm, ⟨c₀, hc₀S, ht₀, p', t', hA', he'⟩⟩
 
 end

@@ -33,15 +33,15 @@ theorem star_dual_enc {opp fp fpi : ℕ → ℕ} (hopp : ∀ d : Fin N, opp d = 
     (hSF : ∀ d, d < N → G.vert d = d ∧ G.vert (N + d) = d ∧ G.vert (2 * N + d) = fpi d)
     (hSFi : ∀ d, d < N → G.first d = d) :
     EnvEnc G (star M).dual (fun g => (g : ℕ)) (enc N) := by
-  refine ⟨fun v => by rw [hGnv]; exact v.2, fun v w h => Fin.ext h, fun u hu => ⟨⟨u, by omega⟩, rfl⟩,
+  refine ⟨fun v => by rw [hGnv]; exact v.2, fun v w h => Fin.ext h, fun u hu => ⟨⟨u, by_o⟩, rfl⟩,
     fun x => by rw [hGN]; exact enc_lt x, fun x y h => enc_inj h, fun e he => ?_,
     fun x => ?_, fun x => ?_, fun x => ?_, fun v => ⟨.inl v, by rw [hSFi v v.2]; rfl, rfl⟩⟩
   · rw [hGN] at he
     by_cases h1 : e < N
     · exact ⟨.inl ⟨e, h1⟩, rfl⟩
     · by_cases h2 : e < 2 * N
-      · exact ⟨.inr (.inl ⟨e - N, by omega⟩), by simp only [enc]; omega⟩
-      · exact ⟨.inr (.inr ⟨e - 2 * N, by omega⟩), by simp only [enc]; omega⟩
+      · exact ⟨.inr (.inl ⟨e - N, by_o⟩), by simp only [enc]; omega⟩
+      · exact ⟨.inr (.inr ⟨e - 2 * N, by_o⟩), by simp only [enc]; omega⟩
   · rcases x with d | d | d
     · show G.opp d = enc N (starOpp M (.inl d))
       rw [(hSO d d.2).1, hopp]; rfl

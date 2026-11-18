@@ -34,12 +34,12 @@ theorem copyBit_exec {r : ℕ} (hr : 50100 ≤ r ∧ r < 50200) {p : Prop} (hI :
   have hw := hI.hw
   have h23 := hI.h23
   have hW1 : 1 ≤ W := by have := hw.1 83023; omega
-  have e₁ := Exec.constN (P := P) hw r 0 (by omega)
-  set c₁ : Config := { c with nreg := upd c.nreg r 0 }
+  have e₁ := Exec.constN (P := P) hw r 0 by_o
+  set c₁ := { c with nreg := upd c.nreg r 0 }
   have w₁ := e₁.wb_right
-  have q10 : c₁.nreg 50210 = c.nreg 50210 := upd_ne (by omega)
+  have q10 : c₁.nreg 50210 = c.nreg 50210 := upd_ne by_o
   have q23 : c₁.nreg 83023 = 1 := by
-    rw [show c₁.nreg 83023 = c.nreg 83023 from upd_ne (by omega)]; exact h23
+    rw [show c₁.nreg 83023 = c.nreg 83023 from upd_ne by_o]; exact h23
   have fin : ∀ c' k, Exec P W (copyBit r) c c' k → c'.nreg r ≤ 1 → (c'.nreg r = 1 ↔ p) →
       k ≤ 6 → ∃ c' k, Exec P W (copyBit r) c c' k ∧ k ≤ 6 ∧ c'.nreg r ≤ 1 ∧
         (c'.nreg r = 1 ↔ p) ∧ TStep W c₀ c c' k ∧ FrameB (fun q => q == r) c c' :=
@@ -52,18 +52,18 @@ theorem copyBit_exec {r : ℕ} (hr : 50100 ≤ r ∧ r < 50200) {p : Prop} (hI :
       exec_frameB ex (by simp [copyBit, setB, wr, wrOK])⟩
   unfold copyBit
   by_cases a : c₁.nreg 50210 < c₁.nreg 83023
-  · refine fin _ _ (.seq e₁ (.ifLtN_true a (.skip w₁))) (by simp [c₁, upd]) ?_ (by omega)
+  · refine fin _ _ (.seq e₁ (.ifLtN_true a (.skip w₁))) (by simp [c₁, upd]) ?_ by_o
     simp only [c₁, upd_eq, zero_ne_one, false_iff]
     intro h; have := hp.2 h; omega
   · by_cases b : c₁.nreg 83023 < c₁.nreg 50210
     · refine fin _ _ (.seq e₁ (.ifLtN_false a (.ifLtN_true b (.skip w₁)))) (by simp [c₁, upd]) ?_
-        (by omega)
+        by_o
       simp only [c₁, upd_eq, zero_ne_one, false_iff]
       intro h; have := hp.2 h; omega
     · refine fin _ _ (.seq e₁ (.ifLtN_false a (.ifLtN_false b (Exec.constN w₁ r 1 hW1))))
-        (by simp [upd]) ?_ (by omega)
+        (by simp [upd]) ?_ by_o
       simp only [upd_eq, true_iff]
-      exact hp.1 (by omega)
+      exact hp.1 by_o
 
 
 /-! ## The corner -/
@@ -90,7 +90,7 @@ theorem wr_cornerS : wr Bcor cornerS = true := by
 
 /-- The previous vertex index. -/
 theorem prev_succ {p n : ℕ} (hp : p < n) : ((p + n - 1) % n + 1) % n = p := by
-  have hn : 0 < n := by omega
+  have hn : 0 < n := by_o
   rcases Nat.eq_zero_or_pos p with rfl | h0
   · rw [Nat.zero_add, Nat.mod_eq_of_lt (show n - 1 < n by omega), Nat.sub_add_cancel hn,
       Nat.mod_self]
@@ -105,7 +105,7 @@ theorem cornerS_exec (_hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : W
       SymPtIn c' 50143 (.vtx (iIdx bit P.n (c.nreg 83005))) ∧
       SymPtIn c' 50146 (.vtx (iIdx bit P.n ((c.nreg 83005 + 1) % P.n))) := by
   set p := c.nreg 83005
-  have hn : 0 < P.n := by omega
+  have hn : 0 < P.n := by_o
   set pe := (p + P.n - 1) % P.n with hpe
   have hpeL : pe < P.n := Nat.mod_lt _ hn
   obtain ⟨c₁, k₁, e₁, hk₁, q1⟩ : ∃ c₁ k₁, Exec P W
@@ -129,24 +129,24 @@ theorem cornerS_exec (_hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : W
       have hp0 : p = 0 := by rw [p05, p23, h23] at h0; omega
       exec_block
       · omega
-      · refine ⟨by omega, by config_simp; exact p00, ?_, pm, by config_simp; exact p05⟩
+      · refine ⟨by_o, by config_simp; exact p00, ?_, pm, by config_simp; exact p05⟩
         config_simp
-        rw [p32, hpe, hp0, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]
+        rw [p32, hpe, hp0, Nat.zero_add, Nat.mod_eq_of_lt by_o]
     · refine spec_ifLtN_false h0 (spec_instr (Exec.subN w' _ _ _) fun _ => ?_)
       have hp1 : 0 < p := by rw [p05, p23, h23] at h0; omega
-      refine ⟨by omega, by config_simp; exact p00, ?_, pm, by config_simp; exact p05⟩
+      refine ⟨by_o, by config_simp; exact p00, ?_, pm, by config_simp; exact p05⟩
       config_simp
       rw [p32, p05, hpe, show p + P.n - 1 = (p - 1) + P.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega)]
+        Nat.mod_eq_of_lt by_o]
   obtain ⟨q00, q02, qm, q05⟩ := q1
   obtain ⟨c₂, k₂, e₂, hk₂, r41, r44⟩ := intIdx_exec (P := P) hW c₁ e₁.wb_right
-    (by rw [q02]; exact hpeL) (by rw [q00]; exact hD)
+    (by rwa [q02]) (by rwa [q00])
   rw [q00, q02, qm, hmd] at r41 r44
   have w₂ := e₂.wb_right
-  have f₂ : FrameB Bdir c₁ c₂ := exec_frameB e₂ wr_intIdx
-  have q05' : c₂.nreg 83005 = p := by rw [f₂.1 83005 (by decide), q05]
+  have f₂ := exec_frameB e₂ wr_intIdx
+  have q05' : c₂.nreg 83005 = p := by rw [f₂.1 83005 by_d, q05]
   have q00' : c₂.nreg 50000 = c.nreg 83000 := by
-    rw [f₂.1 50000 (by decide), q00]
+    rw [f₂.1 50000 by_d, q00]
   have qm' : c₂.nmem = c.nmem := by rw [f₂.2.2.1, qm]
   obtain ⟨c₃, k₃, e₃, hk₃, s141, s144, s02, s00, sm⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN 50141 50041, .copyN 50144 50044, .copyN 50002 83005]) c₂ c₃ k₃ ∧ k₃ = 3 ∧
@@ -155,9 +155,9 @@ theorem cornerS_exec (_hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : W
     exec_block
     exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, rfl⟩
   obtain ⟨c₄, k₄, e₄, hk₄, t41, t44⟩ := intIdx_exec (P := P) hW c₃ e₃.wb_right
-    (by rw [s02, q05']; exact hp) (by rw [s00, q00']; exact hD)
+    (by rwa [s02, q05']) (by rwa [s00, q00'])
   rw [s00, q00', sm, qm', hmd, s02, q05'] at t41 t44
-  have f₄ : FrameB Bdir c₃ c₄ := exec_frameB e₄ wr_intIdx
+  have f₄ := exec_frameB e₄ wr_intIdx
   obtain ⟨c₅, k₅, e₅, hk₅, u147, u140, u143, u146, u141, u144⟩ : ∃ c₅ k₅, Exec P W
       (block [.copyN 50147 50044, .constN 50140 0, .constN 50143 0, .constN 50146 0]) c₄ c₅ k₅ ∧
       k₅ = 4 ∧ c₅.nreg 50147 = c₄.nreg 50044 ∧ c₅.nreg 50140 = 0 ∧ c₅.nreg 50143 = 0 ∧
@@ -169,10 +169,10 @@ theorem cornerS_exec (_hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : W
     · omega
     · exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
         by config_simp⟩
-  refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega, ⟨u140, ?_⟩, ⟨u143, ?_⟩,
+  refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by_o, ⟨u140, ?_⟩, ⟨u143, ?_⟩,
     ⟨u146, ?_⟩⟩
-  · rw [u141, f₄.1 50141 (by decide), s141, r41]; rfl
-  · rw [u144, f₄.1 50144 (by decide), s144, r44, prev_succ hp]; rfl
+  · rw [u141, f₄.1 50141 by_d, s141, r41]; rfl
+  · rw [u144, f₄.1 50144 by_d, s144, r44, prev_succ hp]; rfl
   · rw [u147, t44]; rfl
 
 
@@ -190,14 +190,14 @@ theorem combineS_exec {c : Config} (hw : WordsBounded W c) (hW1 : 1 ≤ W) (h23 
     ∃ c' k, Exec P W combineS c c' k ∧ k ≤ 8 ∧
       BitIs c' 50210 ((po ∧ pn ∧ pp) ∨ (¬ po ∧ (pn ∨ pp))) ∧
       ∀ r, r ≠ 50210 → c'.nreg r = c.nreg r := by
-  have e₁ := Exec.constN (P := P) hw 50210 0 (by omega)
-  set c₁ : Config := { c with nreg := upd c.nreg 50210 0 }
+  have e₁ := Exec.constN (P := P) hw 50210 0 by_o
+  set c₁ := { c with nreg := upd c.nreg 50210 0 }
   have w₁ := e₁.wb_right
   have g : ∀ r, r ≠ 50210 → c₁.nreg r = c.nreg r := fun r hr => upd_ne hr
-  have ho' := ho.of_eq (g 50150 (by decide))
-  have hn' := hn.of_eq (g 50130 (by decide))
-  have hp' := hp.of_eq (g 50131 (by decide))
-  have h23' : c₁.nreg 83023 = 1 := by rw [g _ (by decide), h23]
+  have ho' := ho.of_eq (g 50150 by_d)
+  have hn' := hn.of_eq (g 50130 by_d)
+  have hp' := hp.of_eq (g 50131 by_d)
+  have h23' : c₁.nreg 83023 = 1 := by rw [g _ by_d, h23]
   have h10 : c₁.nreg 50210 = 0 := by show upd c.nreg 50210 0 50210 = 0; exact upd_eq
   unfold combineS
   refine spec_seq ⟨c₁, 1, e₁, ?_⟩
@@ -206,12 +206,12 @@ theorem combineS_exec {c : Config} (hw : WordsBounded W c) (hW1 : 1 ≤ W) (h23 
   rcases bit01 hp' with ⟨qp, np⟩ | ⟨qp, np⟩
   all_goals
     repeat (first
-      | (refine spec_ifLtN_true (by omega) ?_)
-      | (refine spec_ifLtN_false (by omega) ?_))
+      | (refine spec_ifLtN_true by_o ?_)
+      | (refine spec_ifLtN_false by_o ?_))
   all_goals first
-    | exact spec_skip w₁ ⟨by omega, ⟨by omega, by simp [h10, no, nn, np]⟩,
+    | exact spec_skip w₁ ⟨by_o, ⟨by_o, by simp [h10, no, nn, np]⟩,
         fun r hr => g r hr⟩
-    | exact spec_instr (Exec.constN w₁ _ _ hW1) fun _ => ⟨by omega, ⟨by simp [upd],
+    | exact spec_instr (Exec.constN w₁ _ _ hW1) fun _ => ⟨by_o, ⟨by simp [upd],
         by simp [upd, no, nn, np]⟩, fun r hr => by
           show upd c₁.nreg 50210 1 r = c.nreg r
           rw [upd_ne hr, g r hr]⟩
@@ -244,7 +244,7 @@ theorem iIdx_inj {bit n p q : ℕ} (hp : p < n) (hq : q < n) (h : iIdx bit n p =
     p = q := by
   unfold iIdx at h; split_ifs at h <;> omega
 
-theorem wr_combineS : wr (fun q => q == 50210) combineS = true := by decide
+theorem wr_combineS : wr (fun q => q == 50210) combineS = true := by_d
 
 theorem iLeft_ok_vertex (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
     (hM : M = interiorModel (Qof P)) (hbit : c₀.nmem (c₀.nreg 83000 + 1) = 1 ↔
@@ -254,68 +254,68 @@ theorem iLeft_ok_vertex (hE : TGood P W M N c₀) (hI : TInv W c₀ c)
       BitIs c' 50210 (LeftB M P (xOf c₀) (c₀.nreg 83008)) ∧ TStep W c₀ c c' k := by
   have hG := hE.hG
   have hWn : P.n + 3 ≤ W := by have := hE.hW; unfold hostWords at this; omega
-  have hn3 : 3 ≤ P.n := hG.1.1
+  have hn3 := hG.1.1
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hn : M.W.n = P.n := by rw [hM]; exact interior_n
   have hp : c₀.nreg 83005 < P.n := by rw [← hn]; exact hE.hxe
   set bit := c₀.nmem (c₀.nreg 83000 + 1)
-  have hbit' : bit = 1 ↔ Mountain.LeftInside (Qof P) := hbit
+  have hbit' := hbit
   -- the next turn
-  obtain ⟨c₁, k₁, e₁, hk₁, t₁, s₁⟩ := turn_ok.1 P W M N c₀ c hE hI (by omega)
-  have f₁ : FrameB Bturn c c₁ := exec_frameB e₁ wr_tTurnN
-  obtain ⟨c₂, k₂, e₂, hk₂, b₂0, b₂, s₂, f₂⟩ := copyBit_exec (P := P) (r := 50130) (by omega)
+  obtain ⟨c₁, k₁, e₁, hk₁, t₁, s₁⟩ := turn_ok.1 P W M N c₀ c hE hI by_o
+  have f₁ := exec_frameB e₁ wr_tTurnN
+  obtain ⟨c₂, k₂, e₂, hk₂, b₂0, b₂, s₂, f₂⟩ := copyBit_exec (P := P) (r := 50130) by_o
     s₁.1 t₁
   -- the previous turn
   obtain ⟨c₃, k₃, e₃, hk₃, t₃, s₃⟩ := turn_ok.2 P W M N c₀ c₂ hE s₂.1 hv
     (by have := s₁.2.1.2.2.2.2.2.2; have := s₂.2.1.2.2.2.2.2.2; omega)
-  have f₃ : FrameB Bturn c₂ c₃ := exec_frameB e₃ wr_tTurnP
-  obtain ⟨c₄, k₄, e₄, hk₄, b₄0, b₄, s₄, f₄⟩ := copyBit_exec (P := P) (r := 50131) (by omega)
+  have f₃ := exec_frameB e₃ wr_tTurnP
+  obtain ⟨c₄, k₄, e₄, hk₄, b₄0, b₄, s₄, f₄⟩ := copyBit_exec (P := P) (r := 50131) by_o
     s₃.1 t₃
   have hA₄ : c₄.nreg ALLOC ≤ c.nreg ALLOC + (k₁ + k₂ + k₃ + k₄) := by
     have := s₁.2.1.2.2.2.2.2.2; have := s₂.2.1.2.2.2.2.2.2; have := s₃.2.1.2.2.2.2.2.2
     have := s₄.2.1.2.2.2.2.2.2; omega
   have n30 : c₄.nreg 50130 = c₂.nreg 50130 := by
-    rw [f₄.1 50130 (by decide), f₃.1 50130 (by decide)]
+    rw [f₄.1 50130 by_d, f₃.1 50130 by_d]
   -- the corner
   have hI₄ := s₄.1
-  have i0 := hI₄.hin 83000 (by norm_num) (by norm_num)
-  have i5 := hI₄.hin 83005 (by norm_num) (by norm_num)
+  have i0 := hI₄.hin 83000 by_n by_n
+  have i5 := hI₄.hin 83005 by_n by_n
   have hmd : c₄.nmem (c₄.nreg 83000 + 1) = bit := by
     rw [i0, hI₄.hm _ (by have := hE.hwfMD.1; omega)]
   have hD : c₄.nreg 83000 + 1 ≤ W := by
     have := (hI₄.modelDesc hE).2.1; have := hI₄.hw.1 ALLOC; omega
   obtain ⟨c₅, k₅, e₅, hk₅, y40, y43, y46⟩ := cornerS_exec (P := P) hG hWn hI₄.hw hmd hD
-    (by rw [i5]; exact hp) hI₄.h23
+    (by rwa [i5]) hI₄.h23
   rw [i5] at y40 y43 y46
-  have f₅ : FrameB Bcor c₄ c₅ := exec_frameB e₅ wr_cornerS
+  have f₅ := exec_frameB e₅ wr_cornerS
   have s₅ : TStep W c₀ c₄ c₅ k₅ := hI₄.stepB e₅.wb_right f₅ (fun r hr => primReg (by
     simp only [Bcor, Bdir, Bool.or_eq_true, beq_iff_eq, decide_eq_true_eq] at hr; omega)) k₅
   -- the orientation
   set p := c₀.nreg 83005
   set pe := (p + P.n - 1) % P.n
   set pb := (p + 1) % P.n
-  have hpe : pe < P.n := Nat.mod_lt _ (by omega)
-  have hpb : pb < P.n := Nat.mod_lt _ (by omega)
+  have hpe : pe < P.n := Nat.mod_lt _ by_o
+  have hpb : pb < P.n := Nat.mod_lt _ by_o
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, o₆0, o₆⟩ := kbit_exec (P := P) hG hWn c₅ e₅.wb_right
     (a := 50140) (b := 50143) (d := 50146) (op := 2) (dst := 50150)
     (sa := .vtx (iIdx bit P.n pe)) (sb := .vtx (iIdx bit P.n p)) (sd := .vtx (iIdx bit P.n pb))
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
+    by_n by_n by_n by_n by_n
     (show (iIdx bit P.n pe) < P.n from iIdx_lt hpe) (show (iIdx bit P.n p) < P.n from iIdx_lt hp)
     (show (iIdx bit P.n pb) < P.n from iIdx_lt hpb) y40 y43 y46
   have s₆ : TStep W c₀ c₅ c₆ k₆ := s₅.1.stepB e₆.wb_right f₆ (fun r hr => primReg (by
     simp only [Bkb, WalkKey.Bk, Bool.or_eq_true, beq_iff_eq, decide_eq_true_eq] at hr; omega)) k₆
   -- the combination
   have g30 : c₆.nreg 50130 = c₂.nreg 50130 := by
-    rw [f₆.1 50130 (by decide), f₅.1 50130 (by decide), n30]
+    rw [f₆.1 50130 by_d, f₅.1 50130 by_d, n30]
   have g31 : c₆.nreg 50131 = c₄.nreg 50131 := by
-    rw [f₆.1 50131 (by decide), f₅.1 50131 (by decide)]
-  obtain ⟨c₇, k₇, e₇, hk₇, bit₇, -⟩ := combineS_exec (P := P) e₆.wb_right (by omega)
+    rw [f₆.1 50131 by_d, f₅.1 50131 by_d]
+  obtain ⟨c₇, k₇, e₇, hk₇, bit₇, -⟩ := combineS_exec (P := P) e₆.wb_right by_o
     s₆.1.h23 ⟨o₆0, o₆⟩ (BitIs.of_eq ⟨b₂0, b₂⟩ g30) (BitIs.of_eq ⟨b₄0, b₄⟩ g31)
-  have f₇ : FrameB (fun q => q == 50210) c₆ c₇ := exec_frameB e₇ wr_combineS
+  have f₇ := exec_frameB e₇ wr_combineS
   have s₇ : TStep W c₀ c₆ c₇ k₇ := s₆.1.stepB e₇.wb_right f₇ (fun r hr => primReg (by
     simp only [beq_iff_eq] at hr; omega)) k₇
   refine ⟨c₇, k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + k₇))))),
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))), by omega, ?_,
+    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))), by_o, ?_,
     s₁.trans (s₂.trans (s₃.trans (s₄.trans (s₅.trans (s₆.trans s₇)))))⟩
   refine ⟨bit₇.1, bit₇.2.trans ?_⟩
   -- the corner in terms of the walk

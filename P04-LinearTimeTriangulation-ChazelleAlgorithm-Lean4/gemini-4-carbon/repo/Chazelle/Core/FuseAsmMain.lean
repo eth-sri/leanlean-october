@@ -82,7 +82,7 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   rw [← hT]
   have hbud := fuse_total (κs := κs) (κB := κB) (D := D) (K₁ := K₁) (K₂ := K₂)
     (L₀ := 2 * K₁ + 5) (L₁ := 2 * K₂ + 3) (Kc := 2 * K₁ + 2 * K₂ + 8)
-    (Kd := 2 * K₁ + 2 * K₂ + 8) (Fg := F γ) le_rfl le_rfl (by omega) le_rfl le_rfl le_rfl le_rfl
+    (Kd := 2 * K₁ + 2 * K₂ + 8) (Fg := F γ) le_rfl le_rfl by_o le_rfl le_rfl le_rfl le_rfl
     le_rfl le_rfl le_rfl le_rfl
   rw [← hB₂, ← hB₄, ← hB₆, ← hB₇, ← hT] at hbud
   simp only [← Nat.add_assoc] at hbud
@@ -97,14 +97,14 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   have hL₀l : L₀.length ≤ 2 * K₁ + 5 := by
     rw [hL₀]; simp only [List.length_append, endQL_length, NF.nChords] at *; omega
   have w₁ := e₁.wb_right
-  have F₁ : Frame FB c c₁ k₁ := frame_side (Or.inl rfl) r₁ rr₁ m₁ rm₁ o₁ a₁ hk₁'
+  have F₁ := frame_side (Or.inl rfl) r₁ rr₁ m₁ rm₁ o₁ a₁ hk₁'
   have hF₁ : FCtx P W J H N₁ N₂ A c₁ := by
-    rw [← hA]; exact hF.keep (fun r h1 h2 => r₁ r (bside_lo (Or.inl rfl) h1 (by omega)))
+    rw [← hA]; exact hF.keep (fun r h1 h2 => r₁ r (bside_lo (Or.inl rfl) h1 by_o))
       (fun a ha => m₁ a ha) (by rw [a₁]; omega)
   have hP₁ : FPre P X Ok J N₁ N₂ c₁ :=
-    hP.keep hloc (fun r h1 h2 => r₁ r (bside_lo (Or.inl rfl) (by omega) (by omega))) F₁
-  have e06₁ : c₁.nreg 70006 = D := by rw [r₁ _ (by decide), hD]
-  have e05₁ : c₁.nreg 70005 = γ := by rw [r₁ _ (by decide), hγ]
+    hP.keep hloc (fun r h1 h2 => r₁ r (bside_lo (Or.inl rfl) by_o by_o)) F₁
+  have e06₁ : c₁.nreg 70006 = D := by rw [r₁ _ by_d, hD]
+  have e05₁ : c₁.nreg 70005 = γ := by rw [r₁ _ by_d, hγ]
   have ok₀ := side₀_ok J (Qof P) hF.is₁ pv₁ pv₀ pt₁ pt₀ pk₀ nk₀
   rw [← hL₀] at ok₀
   -- 2. the sweep of side `0`
@@ -112,19 +112,19 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   rw [← hB₂] at mono₂
   obtain ⟨c₂, k₂, R₀, e₂, hk₂, hR₀l, hRB₀, hRB₀', hR₀, sees₀, F₂, g₂, n₂⟩ :=
     swStage_exec hM c₁ w₁ hF₁ hP₁ (i := 0) (S := 70150) (Lr := 70128) (RB := 70153)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by decide) (L := L₀) n₁
-      (by rw [s₁]; exact L₁) (by rw [s₁, a₁]) (fun q hq => (ok₀ q hq).1) (by norm_num)
+      by_n by_n by_n by_n by_d (L := L₀) n₁
+      (by rwa [s₁]) (by rw [s₁, a₁]) (fun q hq => (ok₀ q hq).1) by_n
       (fun q hq => (ok₀ q hq).2)
       (by rw [e06₁, e05₁, hK₁, hK₂, a₁, hA]; omega)
   rw [e06₁, e05₁, hK₁, hK₂] at hk₂
   have w₂ := e₂.wb_right
   have g₂' : ∀ r, 70000 ≤ r → r < 70152 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
-    g₂ r (by unfold bandOf bFuse; omega) (by omega) (by omega)
-  have hF₂ : FCtx P W J H N₁ N₂ A c₂ := hF₁.keep (fun r h1 h2 => g₂' r h1 (by omega))
+    g₂ r (by unfold bandOf bFuse; omega) by_o by_o
+  have hF₂ : FCtx P W J H N₁ N₂ A c₂ := hF₁.keep (fun r h1 h2 => g₂' r h1 by_o)
     (fun a ha => F₂.2.2.1 a (by have := hF₁.le; omega)) F₂.2.2.2.2.2.1
   have hP₂ : FPre P X Ok J N₁ N₂ c₂ :=
-    hP₁.keep hloc (fun r h1 h2 => g₂' r (by omega) (by omega)) F₂
-  have R₂ : CapRegs P J c₂ := R₁.keep fun r h => g₂' r (by omega) (by omega)
+    hP₁.keep hloc (fun r h1 h2 => g₂' r by_o by_o) F₂
+  have R₂ : CapRegs P J c₂ := R₁.keep fun r h => g₂' r by_o by_o
   -- 3. the query list of side `1`
   obtain ⟨c₃, k₃, t'₁, t'₀, k₁', e₃, hk₃, hk₃', lt'₁, lt'₀, lk₁, s₃, a₃, n₃, L₃, m₃, r₃, rr₃, rm₃,
       o₃, q305, q308, pt'₁, pt'₀, pk₁, nk₁⟩ :=
@@ -139,18 +139,18 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   have hL₁l : L₁'.length ≤ 2 * K₂ + 3 := by
     rw [hL₁']; simp only [List.length_append, endQL_length, NF.nChords] at *; omega
   have w₃ := e₃.wb_right
-  have F₃ : Frame FB c₂ c₃ k₃ := frame_side (Or.inr rfl) r₃ rr₃ m₃ rm₃ o₃ a₃ hk₃'
-  have hF₃ : FCtx P W J H N₁ N₂ A c₃ := hF₂.keep
-    (fun r h1 h2 => r₃ r (bside_lo (Or.inr rfl) h1 (by omega)))
+  have F₃ := frame_side (Or.inr rfl) r₃ rr₃ m₃ rm₃ o₃ a₃ hk₃'
+  have hF₃ := hF₂.keep
+    (fun r h1 h2 => r₃ r (bside_lo (Or.inr rfl) h1 by_o))
     (fun a ha => m₃ a (by have := hF₂.le; omega)) (by rw [a₃]; omega)
   have hP₃ : FPre P X Ok J N₁ N₂ c₃ :=
-    hP₂.keep hloc (fun r h1 h2 => r₃ r (bside_lo (Or.inr rfl) (by omega) (by omega))) F₃
+    hP₂.keep hloc (fun r h1 h2 => r₃ r (bside_lo (Or.inr rfl) by_o by_o)) F₃
   have ok₁ := side₁_ok J (Qof P) hF.is₂ pt'₁ pt'₀ pk₁ nk₁
   rw [← hL₁'] at ok₁
   have e06₃ : c₃.nreg 70006 = D := by
-    rw [r₃ _ (by decide), g₂' _ (by norm_num) (by norm_num), e06₁]
+    rw [r₃ _ by_d, g₂' _ by_n by_n, e06₁]
   have e05₃ : c₃.nreg 70005 = γ := by
-    rw [r₃ _ (by decide), g₂' _ (by norm_num) (by norm_num), e05₁]
+    rw [r₃ _ by_d, g₂' _ by_n by_n, e05₁]
   -- 4. the sweep of side `1`
   have mono₄ := sweepc_mono (κs D) (K₁ + K₂) (F γ) hL₁l
   rw [← hB₄] at mono₄
@@ -158,41 +158,41 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   have al₂' := F₂.2.2.2.2.2.1
   obtain ⟨c₄, k₄, R₁', e₄, hk₄, hR₁l, hRB₁, hRB₁', hR₁, sees₁, F₄, g₄, n₄⟩ :=
     swStage_exec hM c₃ w₃ hF₃ hP₃ (i := 1) (S := 70151) (Lr := 70128) (RB := 70155)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by decide) (L := L₁') n₃
-      (by rw [s₃]; exact L₃) (by rw [s₃, a₃]) (fun q hq => (ok₁ q hq).1)
+      by_n by_n by_n by_n by_d (L := L₁') n₃
+      (by rwa [s₃]) (by rw [s₃, a₃]) (fun q hq => (ok₁ q hq).1)
       (fun _ => ⟨_, by rw [hL₁', endQL_eq], by simp only [List.length_append]; omega⟩)
       (fun q hq => (ok₁ q hq).2)
       (by rw [e06₃, e05₃, hK₁, hK₂, a₃]; rw [a₁, hA] at al₂; omega)
   rw [e06₃, e05₃, hK₁, hK₂] at hk₄
   have w₄ := e₄.wb_right
   have g₄' : ∀ r, 70000 ≤ r → r < 70154 → c₄.nreg r = c₃.nreg r := fun r h1 h2 =>
-    g₄ r (by unfold bandOf bFuse; omega) (by omega) (by omega)
+    g₄ r (by unfold bandOf bFuse; omega) by_o by_o
   have al₄ := F₄.2.2.2.2.2.2
   have al₄' := F₄.2.2.2.2.2.1
   -- the lists at `c₄`
   have mem14 : ∀ a, a < c₁.nreg ALLOC → c₄.nmem a = c₁.nmem a := fun a ha => by
-    rw [F₄.2.2.1 a (by rw [a₃]; omega), m₃ a (by omega), F₂.2.2.1 a ha]
+    rw [F₄.2.2.1 a (by rw [a₃]; omega), m₃ a by_o, F₂.2.2.1 a ha]
   have mem24 : ∀ a, a < c₂.nreg ALLOC → c₄.nmem a = c₂.nmem a := fun a ha => by
     rw [F₄.2.2.1 a (by rw [a₃]; omega), m₃ a ha]
   have x50 : c₄.nreg 70150 = A := by
-    rw [g₄' _ (by norm_num) (by norm_num), r₃ _ (by decide), g₂' _ (by norm_num) (by norm_num),
+    rw [g₄' _ by_n by_n, r₃ _ by_d, g₂' _ by_n by_n,
       s₁, hA]
   have x52 : c₄.nreg 70152 = L₀.length := by
-    rw [g₄' _ (by norm_num) (by norm_num), r₃ _ (by decide)]; exact n₂
+    rw [g₄' _ by_n by_n, r₃ _ by_d]; exact n₂
   have x53 : c₄.nreg 70153 = c₂.nreg 70153 := by
-    rw [g₄' _ (by norm_num) (by norm_num), r₃ _ (by decide)]
-  have x51 : c₄.nreg 70151 = c₂.nreg ALLOC := by rw [g₄' _ (by norm_num) (by norm_num), s₃]
-  have x05 : c₄.nreg 70105 = 1 := by rw [g₄' _ (by norm_num) (by norm_num), q305]
-  have x08 : c₄.nreg 70108 = 0 := by rw [g₄' _ (by norm_num) (by norm_num), q308]
+    rw [g₄' _ by_n by_n, r₃ _ by_d]
+  have x51 : c₄.nreg 70151 = c₂.nreg ALLOC := by rw [g₄' _ by_n by_n, s₃]
+  have x05 : c₄.nreg 70105 = 1 := by rw [g₄' _ by_n by_n, q305]
+  have x08 : c₄.nreg 70108 = 0 := by rw [g₄' _ by_n by_n, q308]
   -- 5. the collection
   obtain ⟨c₅, k₅, e₅, hk₅, s₅, n₅, a₅, L₅, F₅, r₅⟩ := collectS_exec (P := P) c₄ w₄ x05 x08
     (L₀ := L₀) (L₁ := L₁') (R₀ := R₀) (R₁ := R₁')
     (by rw [x50, ← hA]; exact chordList_agree (E := c₁.nreg ALLOC) L₁ a₁.symm.le mem14)
-    x52 (by rw [x53]; exact resultList_agree hR₀ (by omega) mem24) hR₀l
+    x52 (by rw [x53]; exact resultList_agree hR₀ by_o mem24) hR₀l
     (by rw [x50]; rw [a₁, hA] at al₂'; omega) (by rw [x53]; omega)
     (by rw [x51]; exact (chordList_agree (E := c₃.nreg ALLOC) L₃ a₃.symm.le
           fun a ha => F₄.2.2.1 a ha))
-    n₄ hR₁ hR₁l (by rw [x51]; omega) (by omega)
+    n₄ hR₁ hR₁l (by rw [x51]; omega) by_o
     (by rw [a₁, hA] at al₂; rw [a₃] at al₄; omega)
   have w₅ := e₅.wb_right
   obtain ⟨C, hC⟩ : ∃ l, l = collectQ L₀ R₀ ++ collectQ L₁' R₁' := ⟨_, rfl⟩
@@ -204,7 +204,7 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   -- 6. the arguments of the deduplication
   obtain ⟨c₆, k₆, e₆, hk₆, t40, t41, tr₆, tm₆, trr₆, trm₆, to₆⟩ := ddSet_exec (P := P) c₅ w₅
   have w₆ := e₆.wb_right
-  have a₆ : c₆.nreg ALLOC = c₅.nreg ALLOC := tr₆ _ (by decide) (by decide)
+  have a₆ : c₆.nreg ALLOC = c₅.nreg ALLOC := tr₆ _ by_d by_d
   have F₆ : Frame FB c₅ c₆ k₆ := ⟨fun r hr ha => tr₆ r (fun h => hr (by rw [h]; exact band7))
       (fun h => hr (by rw [h]; exact band7)), fun r _ => by rw [trr₆], fun a _ => by rw [tm₆],
     fun a _ => by rw [trm₆], to₆, by rw [a₆], by rw [a₆]; omega⟩
@@ -225,15 +225,15 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   rw [htl] at hDmem
   have al₇ := F₇.2.2.2.2.2.2
   -- the context at `c₇`
-  have hF₄ : FCtx P W J H N₁ N₂ A c₄ := hF₃.keep (fun r h1 h2 => g₄' r h1 (by omega))
+  have hF₄ : FCtx P W J H N₁ N₂ A c₄ := hF₃.keep (fun r h1 h2 => g₄' r h1 by_o)
     (fun a ha => F₄.2.2.1 a (by have := hF₃.le; omega)) al₄'
-  have hF₇ : FCtx P W J H N₁ N₂ A c₇ := hF₄.keep
+  have hF₇ := hF₄.keep
     (fun r h1 h2 => by
-      rw [keep₇ r h1 (by omega), tr₆ r (by omega) (by omega), r₅ r (Or.inl (by omega))
-        (by omega) (by unfold ALLOC; omega)])
+      rw [keep₇ r h1 by_o, tr₆ r by_o by_o, r₅ r (Or.inl by_o)
+        by_o by_ao])
     (fun a ha => by
       have := hF₄.le
-      rw [F₇.2.2.1 a (by rw [a₆, a₅]; omega), tm₆, F₅.2.2.1 a (by omega)])
+      rw [F₇.2.2.1 a (by rw [a₆, a₅]; omega), tm₆, F₅.2.2.1 a by_o])
     (by have := F₇.2.2.2.2.2.1; rw [a₆, a₅] at this; omega)
   obtain ⟨-, -, -, -, sdw, sww⟩ := hF₇.side
   -- the chord list
@@ -249,12 +249,12 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   have hbl := nlogc_mono κB (show Dl.length ≤ 2 * K₁ + 2 * K₂ + 8 by omega)
   rw [← hB₇] at hbl
   obtain ⟨c₈, k₈, N, e₈, hk₈, h07, hNW, hIs, hNmap, F₈, -⟩ := bldStage_exec hB c₇ w₇ hG hHW
-    sww sdw hF.simple hDL hDc (by rw [hDc] at h42b; exact h42b) hok
+    sww sdw hF.simple hDL hDc (by rwa [hDc] at h42b) hok
     (by rw [a₆, a₅] at al₇; rw [a₁, hA] at al₂; rw [a₃] at al₄; omega)
   have ex : Exec P W (fuseRun sw sB) c c₈ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + k₈))))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ e₈))))))
   have Ft : Frame FB c c₈ (k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + k₈))))))) :=
-    ftrF F₁ (ftrF F₂ (ftrF F₃ (ftrF F₄ (ftrF F₅ (ftrF F₆ (ftrF (F₇.mono (by decide) le_rfl)
+    ftrF F₁ (ftrF F₂ (ftrF F₃ (ftrF F₄ (ftrF F₅ (ftrF F₆ (ftrF (F₇.mono by_d le_rfl)
       F₈))))))
   have hcost := fuse_total (κs := κs) (κB := κB) (D := D) (K₁ := K₁) (K₂ := K₂)
     (L₀ := L₀.length) (L₁ := L₁'.length) (Kc := C.length) (Kd := Dl.length) (Fg := F γ)
@@ -266,7 +266,7 @@ theorem fuseRun_exec {sw sB : Stmt} {κs F : ℕ → ℕ} {κB : ℕ} {X : MemCt
   have eL₁ : L₁'.length = 2 * K₂ + t'₁.length + t'₀.length + k₁'.length := by
     rw [hL₁']; simp only [List.length_append, endQL_length, hlen₂]; ring
   have hNl : N.chords.length = Dl.length := by rw [← hNmap, List.length_map]
-  refine ⟨c₈, _, N, ex, by omega, Ft, ?_, hNW, hIs, ?_, ?_⟩
+  refine ⟨c₈, _, N, ex, by_o, Ft, ?_, hNW, hIs, ?_, ?_⟩
   · have := F₇.2.2.2.2.2.1
     rw [a₆, a₅] at this; rw [a₃] at al₄'; rw [a₁] at al₂'
     omega

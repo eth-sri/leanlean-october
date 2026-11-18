@@ -65,8 +65,8 @@ theorem cp1_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   unfold cp1 sw at *
   exec_block
-  · config_simp; rw [h1]; exact hP
-  · config_simp; rw [h1]; exact hS
+  · config_simp; rwa [h1]
+  · config_simp; rwa [h1]
   · refine ⟨rfl, ?_, ?_, ?_, ?_, rfl, rfl, rfl⟩
     · config_simp; rw [h1]
     · config_simp; rw [h1]
@@ -90,11 +90,11 @@ theorem copyDesc_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   set S := c.nreg (sw 97) with hS
   -- the head: `0` at `D`
   have e₁ := Exec.storeN (P := P) hw (sw 96) (sw 90)
-  set c₁ : Config := { c with nmem := upd c.nmem (c.nreg (sw 96)) (c.nreg (sw 90)) } with hc₁
+  set c₁ := { c with nmem := upd c.nmem (c.nreg (sw 96)) (c.nreg (sw 90)) } with hc₁
   have w₁ := e₁.wb_right
   have e₂ := Exec.addN (P := P) w₁ (sw 96) (sw 96) (sw 91) (by
     rw [hc₁]; simp only; rw [h1]; unfold sw at hD ⊢; omega)
-  set c₂ : Config := { c₁ with nreg := upd c₁.nreg (sw 96) (c₁.nreg (sw 96) + c₁.nreg (sw 91)) }
+  set c₂ := { c₁ with nreg := upd c₁.nreg (sw 96) (c₁.nreg (sw 96) + c₁.nreg (sw 91)) }
     with hc₂
   have w₂ := e₂.wb_right
   have r₂ : ∀ r, r ≠ sw 96 → c₂.nreg r = c.nreg r := fun r hr => by
@@ -116,46 +116,46 @@ theorem copyDesc_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
     obtain ⟨c', k', ex, hk', a, b, m, r, x, y, z⟩ := cp1_exec (P := P) cc hcc hone
       (by rw [hd]; omega) (by rw [hs]; omega)
     have hread : cc.nmem (S + k) = c.nmem (S + k) := by
-      rw [hkeep _ (Or.inl (by omega)), m₂, upd_other _ _ _ (by omega)]
+      rw [hkeep _ (Or.inl by_o), m₂, upd_other _ _ _ by_o]
     refine ⟨c', k', ex, hk', by rw [a, hd]; ring, by rw [b, hs]; ring, fun a' ha' => ?_,
       fun j hj => ?_, r, x, y, z⟩
-    · rw [m, hd, hs, upd_other _ _ _ (by omega)]
-      exact hkeep a' (by omega)
+    · rw [m, hd, hs, upd_other _ _ _ by_o]
+      exact hkeep a' by_o
     · rw [m, hd, hs]
       rcases (Nat.lt_succ_iff.1 hj).lt_or_eq with hj' | rfl
-      · rw [upd_other _ _ _ (by omega)]; exact hval j hj'
+      · rw [upd_other _ _ _ by_o]; exact hval j hj'
       · rw [upd_same, hread]
-  have hr2 : ∀ r, r ≠ sw 96 → c₂.nreg r = c.nreg r := r₂
+  have hr2 := r₂
   obtain ⟨c₃, k₃, e₃, hk₃, d₃, s₃, m₃, v₃, r₃, x₃, y₃, z₃⟩ :=
-    step c₂ 0 w₂ (by omega) (by rw [d₂]) (by rw [hr2 _ (by unfold sw; omega)]; rfl)
-      (by rw [hr2 _ (by unfold sw; omega), h1]) (fun _ _ => rfl) (fun j hj => absurd hj (by omega))
+    step c₂ 0 w₂ by_o (by rw [d₂]) (by rw [hr2 _ (by unfold sw; omega)]; rfl)
+      (by rw [hr2 _ (by unfold sw; omega), h1]) (fun _ _ => rfl) (fun j hj => absurd hj by_o)
   have o3 : c₃.nreg (sw 91) = 1 := by
     rw [r₃ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega),
       hr2 _ (by unfold sw; omega), h1]
   obtain ⟨c₄, k₄, e₄, hk₄, d₄, s₄, m₄, v₄, r₄, x₄, y₄, z₄⟩ :=
-    step c₃ 1 e₃.wb_right (by omega) d₃ s₃ o3 m₃ v₃
+    step c₃ 1 e₃.wb_right by_o d₃ s₃ o3 m₃ v₃
   have o4 : c₄.nreg (sw 91) = 1 := by
     rw [r₄ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), o3]
   obtain ⟨c₅, k₅, e₅, hk₅, d₅, s₅, m₅, v₅, r₅, x₅, y₅, z₅⟩ :=
-    step c₄ 2 e₄.wb_right (by omega) d₄ s₄ o4 m₄ v₄
+    step c₄ 2 e₄.wb_right by_o d₄ s₄ o4 m₄ v₄
   have o5 : c₅.nreg (sw 91) = 1 := by
     rw [r₅ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), o4]
   obtain ⟨c₆, k₆, e₆, hk₆, d₆, s₆, m₆, v₆, r₆, x₆, y₆, z₆⟩ :=
-    step c₅ 3 e₅.wb_right (by omega) d₅ s₅ o5 m₅ v₅
+    step c₅ 3 e₅.wb_right by_o d₅ s₅ o5 m₅ v₅
   have o6 : c₆.nreg (sw 91) = 1 := by
     rw [r₆ _ (by unfold sw; omega) (by unfold sw; omega) (by unfold sw; omega), o5]
   obtain ⟨c₇, k₇, e₇, hk₇, d₇, s₇, m₇, v₇, r₇, x₇, y₇, z₇⟩ :=
-    step c₆ 4 e₆.wb_right (by omega) d₆ s₆ o6 m₆ v₆
+    step c₆ 4 e₆.wb_right by_o d₆ s₆ o6 m₆ v₆
   have ex : Exec P W copyDesc c c₇ (1 + 1 + 0 + (k₃ + (k₄ + (k₅ + (k₆ + k₇))))) := by
     unfold copyDesc
     exact .seq (Exec.block_cons e₁ (Exec.block_cons e₂ (Exec.block_nil w₂)))
       (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))
-  refine ⟨c₇, _, ex, by omega, by rw [d₇], ?_, fun j hj => v₇ j hj, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [m₇ _ (Or.inl (by omega)), m₂, upd_same]
+  refine ⟨c₇, _, ex, by_o, by rw [d₇], ?_, fun j hj => v₇ j hj, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  · rw [m₇ _ (Or.inl by_o), m₂, upd_same]
   · intro a ha
-    rw [m₇ _ (Or.inl (by omega)), m₂, upd_other _ _ _ (by omega)]
+    rw [m₇ _ (Or.inl by_o), m₂, upd_other _ _ _ by_o]
   · intro a ha
-    rw [m₇ _ (Or.inr (by omega)), m₂, upd_other _ _ _ (by omega)]
+    rw [m₇ _ (Or.inr by_o), m₂, upd_other _ _ _ by_o]
   · intro r h96 h97 h98
     rw [r₇ r h96 h97 h98, r₆ r h96 h97 h98, r₅ r h96 h97 h98, r₄ r h96 h97 h98,
       r₃ r h96 h97 h98, hr2 r h96]
@@ -175,7 +175,7 @@ theorem modelDesc_of_copy {P : Polygon} {m m' : ℕ → ℕ} {bw A E E' : ℕ} {
   obtain ⟨-, -, hEb, -⟩ := hwf.2 H C hC
   have hC' := chainDescAt_copy hC hEb he hc
   exact ⟨Or.inl ⟨h0, H, C, hC', rfl⟩,
-    ⟨by omega, fun _ => chainWF_copy hwf hC he hc (by omega) (by omega)⟩, hC'⟩
+    ⟨by_o, fun _ => chainWF_copy hwf hC he hc by_o by_o⟩, hC'⟩
 
 /-! ## The junction of the descriptors -/
 
@@ -191,6 +191,8 @@ theorem junction_unique {m : ℕ → ℕ} {bl br bw : ℕ} {Q : Polygon} {H H' :
   obtain ⟨rfl, rfl, rfl⟩ := hl
   obtain ⟨-, -, rfl⟩ := hr
   rfl
+
+macro "by_so" : term => `(by dsimp (config := { failIfUnchanged := false }) only [ALLOC, sw] at *; omega)
 
 end
 

@@ -46,8 +46,8 @@ theorem key_in_arc (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
   set M := chainModel C with hMd
   set F := N.F M Q with hFd
   have hGM : GoodModel M := Or.inl ⟨C, hP, rfl⟩
-  have hM : WalkAx M := walkAx_of_goodModel hGM
-  have hFam : M.ChordFamily Q F := hN.1
+  have hM := walkAx_of_goodModel hGM
+  have hFam := hN.1
   obtain ⟨hRC, -, hArcs, -⟩ := regOf_spec hN
   have ofArc : ∀ U ∈ M.regions F, ∀ a b, M.IsArc F U a b →
       ∃ j < N.arcs.length, M.key Q (N.arc j).s = a ∧ M.key Q (N.arc j).e = b := by
@@ -64,7 +64,7 @@ theorem key_in_arc (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     rw [hs, hk]
   · obtain ⟨U, hU, l, r, harc, hin⟩ := exists_arc_around hGM hFam hkey hcut
     obtain ⟨j, hj, hs, he⟩ := ofArc U hU _ _ harc
-    exact ⟨j, hj, Or.inl (by rw [hs, he]; exact hin)⟩
+    exact ⟨j, hj, Or.inl (by rwa [hs, he])⟩
 
 /-- **The exit point of a free ray** (at a height not above the top) is a walk point whose key
 lies in the closed arc of an arc record. -/
@@ -80,7 +80,7 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
   set w := rayPt z σ T with hw
   -- the height is inside the box
   have hzR : |z.2| < C.radius := by
-    have := C.dom_subset_box (hdom (T / 2) (by linarith) (by linarith))
+    have := C.dom_subset_box (hdom (T / 2) by_l by_l)
     simpa [rayPt] using this.2
   -- the hit point is on the chain or on a vertical side of the box
   have he : w ∈ C.set ∨ (|w.1| = C.radius ∧ |w.2| < C.radius) := by
@@ -90,10 +90,10 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
       · by_contra hgt
         push Not at hgt
         set ε := min (T / 2) ((|w.1| - C.radius) / 2) with hε
-        have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-        have hbox := C.dom_subset_box (hdom (T - ε) (by linarith) (by linarith))
-        have h1 : |(rayPt z σ (T - ε)).1| < C.radius := hbox.1
+        have hε0 : 0 < ε := lt_min by_l by_l
+        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) by_l
+        have hbox := C.dom_subset_box (hdom (T - ε) by_l by_l)
+        have h1 := hbox.1
         have h2 : |w.1| ≤ |(rayPt z σ (T - ε)).1| + ε := by
           have e : w.1 = (rayPt z σ (T - ε)).1 + σ * ε := by simp [hw, rayPt]; ring
           rw [e]
@@ -106,7 +106,7 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
         exact h ⟨hlt, by simpa [hw] using hzR⟩
     · exact Or.inl h
   -- a walk position at the hit point
-  have hT2 : (0 : ℝ) < T / 2 := by linarith
+  have hT2 : (0 : ℝ) < T / 2 := by_l
   have hee : w ≠ rayPt w (-σ) (T / 2) := by
     intro h
     have := congrArg Prod.fst h
@@ -120,12 +120,12 @@ theorem exit_in_arcs (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     exact hdom _ (by nlinarith [hs.2]) (by nlinarith [hs.1])
   obtain ⟨p, t, hp, ht, ht1, hpt, -⟩ :=
     C.sideSees_chordEnd hP C.sideBeta hee (by simp [rayPt]) hopen he
-  have hpt' : sidePt (chainModel C).W p t = w := hpt
+  have hpt' := hpt
   have hkey : 0 < (p : ℝ) + t := by
     by_contra hle
     push Not at hle
     have hp0 : p = 0 := by
-      have : (p : ℝ) ≤ 0 := by linarith
+      have : (p : ℝ) ≤ 0 := by_l
       exact_mod_cast le_antisymm (by exact_mod_cast this) (Nat.zero_le p)
     have ht0 : t = 0 := by
       have : (0 : ℝ) ≤ p := Nat.cast_nonneg p
@@ -157,7 +157,7 @@ theorem walk_ne_of_dom (C : Chain) (hP : C.P.Simple) {z : Point} (hz : z ∈ C.d
     (hp : p < (chainModel C).W.n) {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) :
     lerp ((chainModel C).wa p) ((chainModel C).wb p) t ≠ z := fun h =>
   (FactsChain.walkAx C hP).trace p hp t ht0 ht1
-    (by rw [show sidePt (chainModel C).W p t = z from h]; exact hz)
+    (by rwa [show sidePt (chainModel C).W p t = z from h])
 
 /-- **A point strictly inside the box is an inner point** of the chain model. -/
 theorem innerPt_box (C : Chain) {z : Point} (h1 : |z.1| < C.radius) (h2 : |z.2| < C.radius) :
@@ -168,7 +168,7 @@ theorem innerPt_box (C : Chain) {z : Point} (h1 : |z.1| < C.radius) (h2 : |z.2| 
   have v1 : (chainModel C).W.vtx 1 = (-C.radius, C.radius) := rfl
   have v2 : (chainModel C).W.vtx 2 = (-C.radius, -C.radius) := rfl
   have v3 : (chainModel C).W.vtx 3 = (C.radius, -C.radius) := rfl
-  refine ⟨⟨2, 1, by omega, by omega, ?_, ?_⟩, ⟨1, 3, by omega, by omega, ?_, ?_⟩⟩
+  refine ⟨⟨2, 1, by_o, by_o, ?_, ?_⟩, ⟨1, 3, by_o, by_o, ?_, ?_⟩⟩
   · rw [v2]; simp only; linarith
   · rw [v1]; simp only; linarith
   · rw [v1]; simp only; linarith
@@ -228,7 +228,7 @@ theorem mdFacts_of {B d : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (hcp : ∀ j, j < 5 → c₀.nmem (B + 1 + j) = c₀.nmem (d + j)) : MdFacts P c B H C := by
   obtain ⟨h0, -⟩ := Restore.chainDesc_of hmd rfl
   obtain ⟨-, -, hEb, -⟩ := hwf.2 H C hd
-  have hC : ChainDescAt c₀.nmem (B + 1) (Qof P) H C :=
+  have hC :=
     MergeAsm.chainDescAt_copy hd hEb (fun _ _ => rfl) hcp
   obtain ⟨hmd', hmw', hC', h0'⟩ := MergeAsm.modelDesc_agree hmw h0 hC hI.hm
   exact ⟨h0', hC', hmw'.mono hI.hA, hmd'⟩

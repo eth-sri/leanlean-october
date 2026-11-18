@@ -55,8 +55,8 @@ theorem emD_iff {a v b : Point} {A1 A2 B1 B2 D X1 X2 X3 X4 : Bool}
   have e8 : X3 = decide (b.1 < v.1) := Bool.eq_iff_iff.2 (by simpa using hX3)
   have e9 : X4 = decide (v.1 < b.1) := Bool.eq_iff_iff.2 (by simpa using hX4)
   subst e1 e2 e3 e4 e5 e6 e7 e8 e9
-  have h1 : (1 : ℝ) ≠ -1 := by norm_num
-  have h2 : (-1 : ℝ) ≠ 1 := by norm_num
+  have h1 : (1 : ℝ) ≠ -1 := by_n
+  have h2 : (-1 : ℝ) ≠ 1 := by_n
   unfold emD emitG Brute.emitR
   rcases lt_trichotomy a.2 v.2 with ha | ha | ha <;>
     rcases lt_trichotomy b.2 v.2 with hb | hb | hb
@@ -118,7 +118,7 @@ theorem bt_cor {d : ℕ} (hd : 212071 ≤ d ∧ d ≤ 212085) (r : ℕ) (h : Bru
   · exact Or.inl h
   · subst h; exact Or.inr hd
 
-theorem wr_decideS : wr (fun r => decide (212082 ≤ r ∧ r ≤ 212085)) decideS = true := by decide
+theorem wr_decideS : wr (fun r => decide (212082 ≤ r ∧ r ≤ 212085)) decideS = true := by_d
 
 set_option maxHeartbeats 4000000 in
 /-- **The nine tests.** -/
@@ -136,9 +136,9 @@ theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wor
       (c'.nreg 212077 = 1 ↔ (sa.eval (Qof P)).1 < (sv.eval (Qof P)).1) ∧
       (c'.nreg 212078 = 1 ↔ (sb.eval (Qof P)).1 < (sv.eval (Qof P)).1) ∧
       (c'.nreg 212079 = 1 ↔ (sv.eval (Qof P)).1 < (sb.eval (Qof P)).1) := by
-  have oa : OutK 212060 := Or.inr (by norm_num)
-  have ov : OutK 212063 := Or.inr (by norm_num)
-  have ob : OutK 212066 := Or.inr (by norm_num)
+  have oa : OutK 212060 := Or.inr by_n
+  have ov : OutK 212063 := Or.inr by_n
+  have ob : OutK 212066 := Or.inr by_n
   -- a test keeps the three triples and the earlier bits
   have keep : ∀ {d : ℕ} {c₁ c₂ : Config}, 212071 ≤ d → d ≤ 212079 → FrameB (Brute.Bt d) c₁ c₂ →
       ∀ r, (r < 10000 ∨ 10500 ≤ r) → r ≠ d → c₂.nreg r = c₁.nreg r := by
@@ -148,109 +148,109 @@ theorem testsS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wor
   have tr : ∀ {c₁ c₂ : Config} {x : ℕ} {s : SymPt}, SymPtIn c₁ x s → x = 212060 ∨ x = 212063 ∨
       x = 212066 → (∀ r, 212060 ≤ r → r < 212069 → c₂.nreg r = c₁.nreg r) → SymPtIn c₂ x s := by
     intro c₁ c₂ x s h hx hr
-    exact symPtIn_of_eq h fun j h1 h2 => hr j (by omega) (by omega)
-  obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, t₁⟩ := tstR_exec (P := P) hG hW (op := 1) (by norm_num)
+    exact symPtIn_of_eq h fun j h1 h2 => hr j by_o by_o
+  obtain ⟨c₁, k₁, e₁, hk₁, f₁, b₁, t₁⟩ := tstR_exec (P := P) hG hW (op := 1) by_n
     (d := 212071) oa ov ov c hw ia iv iv la lv lv
-  have g₁ := keep (by norm_num) (by norm_num) f₁
+  have g₁ := keep by_n by_n f₁
   have tr₁ : ∀ {x : ℕ} {s : SymPt}, SymPtIn c x s → x = 212060 ∨ x = 212063 ∨ x = 212066 →
-      SymPtIn c₁ x s := fun h hx => tr h hx fun r h1 h2 => g₁ r (by omega) (by omega)
-  obtain ⟨c₂, k₂, e₂, hk₂, f₂, b₂, t₂⟩ := tstR_exec (P := P) hG hW (op := 1) (by norm_num)
-    (d := 212072) ov oa ov c₁ e₁.wb_right (tr₁ iv (by norm_num)) (tr₁ ia (by norm_num))
-    (tr₁ iv (by norm_num)) lv la lv
-  have g₂ := keep (by norm_num) (by norm_num) f₂
+      SymPtIn c₁ x s := fun h hx => tr h hx fun r h1 h2 => g₁ r by_o by_o
+  obtain ⟨c₂, k₂, e₂, hk₂, f₂, b₂, t₂⟩ := tstR_exec (P := P) hG hW (op := 1) by_n
+    (d := 212072) ov oa ov c₁ e₁.wb_right (tr₁ iv by_n) (tr₁ ia by_n)
+    (tr₁ iv by_n) lv la lv
+  have g₂ := keep by_n by_n f₂
   have tr₂ : ∀ {x : ℕ} {s : SymPt}, SymPtIn c x s → x = 212060 ∨ x = 212063 ∨ x = 212066 →
-      SymPtIn c₂ x s := fun h hx => tr (tr₁ h hx) hx fun r h1 h2 => g₂ r (by omega) (by omega)
-  obtain ⟨c₃, k₃, e₃, hk₃, f₃, b₃, t₃⟩ := tstR_exec (P := P) hG hW (op := 1) (by norm_num)
-    (d := 212073) ob ov ov c₂ e₂.wb_right (tr₂ ib (by norm_num)) (tr₂ iv (by norm_num))
-    (tr₂ iv (by norm_num)) lb lv lv
-  have g₃ := keep (by norm_num) (by norm_num) f₃
+      SymPtIn c₂ x s := fun h hx => tr (tr₁ h hx) hx fun r h1 h2 => g₂ r by_o by_o
+  obtain ⟨c₃, k₃, e₃, hk₃, f₃, b₃, t₃⟩ := tstR_exec (P := P) hG hW (op := 1) by_n
+    (d := 212073) ob ov ov c₂ e₂.wb_right (tr₂ ib by_n) (tr₂ iv by_n)
+    (tr₂ iv by_n) lb lv lv
+  have g₃ := keep by_n by_n f₃
   have tr₃ : ∀ {x : ℕ} {s : SymPt}, SymPtIn c x s → x = 212060 ∨ x = 212063 ∨ x = 212066 →
-      SymPtIn c₃ x s := fun h hx => tr (tr₂ h hx) hx fun r h1 h2 => g₃ r (by omega) (by omega)
-  obtain ⟨c₄, k₄, e₄, hk₄, f₄, b₄, t₄⟩ := tstR_exec (P := P) hG hW (op := 1) (by norm_num)
-    (d := 212074) ov ob ov c₃ e₃.wb_right (tr₃ iv (by norm_num)) (tr₃ ib (by norm_num))
-    (tr₃ iv (by norm_num)) lv lb lv
-  have g₄ := keep (by norm_num) (by norm_num) f₄
+      SymPtIn c₃ x s := fun h hx => tr (tr₂ h hx) hx fun r h1 h2 => g₃ r by_o by_o
+  obtain ⟨c₄, k₄, e₄, hk₄, f₄, b₄, t₄⟩ := tstR_exec (P := P) hG hW (op := 1) by_n
+    (d := 212074) ov ob ov c₃ e₃.wb_right (tr₃ iv by_n) (tr₃ ib by_n)
+    (tr₃ iv by_n) lv lb lv
+  have g₄ := keep by_n by_n f₄
   have tr₄ : ∀ {x : ℕ} {s : SymPt}, SymPtIn c x s → x = 212060 ∨ x = 212063 ∨ x = 212066 →
-      SymPtIn c₄ x s := fun h hx => tr (tr₃ h hx) hx fun r h1 h2 => g₄ r (by omega) (by omega)
-  obtain ⟨c₅, k₅, e₅, hk₅, f₅, b₅, t₅⟩ := tstR_exec (P := P) hG hW (op := 2) (by norm_num)
-    (d := 212075) oa ov ob c₄ e₄.wb_right (tr₄ ia (by norm_num)) (tr₄ iv (by norm_num))
-    (tr₄ ib (by norm_num)) la lv lb
-  have g₅ := keep (by norm_num) (by norm_num) f₅
+      SymPtIn c₄ x s := fun h hx => tr (tr₃ h hx) hx fun r h1 h2 => g₄ r by_o by_o
+  obtain ⟨c₅, k₅, e₅, hk₅, f₅, b₅, t₅⟩ := tstR_exec (P := P) hG hW (op := 2) by_n
+    (d := 212075) oa ov ob c₄ e₄.wb_right (tr₄ ia by_n) (tr₄ iv by_n)
+    (tr₄ ib by_n) la lv lb
+  have g₅ := keep by_n by_n f₅
   have tr₅ : ∀ {x : ℕ} {s : SymPt}, SymPtIn c x s → x = 212060 ∨ x = 212063 ∨ x = 212066 →
-      SymPtIn c₅ x s := fun h hx => tr (tr₄ h hx) hx fun r h1 h2 => g₅ r (by omega) (by omega)
-  obtain ⟨c₆, k₆, e₆, hk₆, f₆, b₆, t₆⟩ := tstR_exec (P := P) hG hW (op := 0) (by norm_num)
-    (d := 212076) ov oa ov c₅ e₅.wb_right (tr₅ iv (by norm_num)) (tr₅ ia (by norm_num))
-    (tr₅ iv (by norm_num)) lv la lv
-  have g₆ := keep (by norm_num) (by norm_num) f₆
+      SymPtIn c₅ x s := fun h hx => tr (tr₄ h hx) hx fun r h1 h2 => g₅ r by_o by_o
+  obtain ⟨c₆, k₆, e₆, hk₆, f₆, b₆, t₆⟩ := tstR_exec (P := P) hG hW (op := 0) by_n
+    (d := 212076) ov oa ov c₅ e₅.wb_right (tr₅ iv by_n) (tr₅ ia by_n)
+    (tr₅ iv by_n) lv la lv
+  have g₆ := keep by_n by_n f₆
   have tr₆ : ∀ {x : ℕ} {s : SymPt}, SymPtIn c x s → x = 212060 ∨ x = 212063 ∨ x = 212066 →
-      SymPtIn c₆ x s := fun h hx => tr (tr₅ h hx) hx fun r h1 h2 => g₆ r (by omega) (by omega)
-  obtain ⟨c₇, k₇, e₇, hk₇, f₇, b₇, t₇⟩ := tstR_exec (P := P) hG hW (op := 0) (by norm_num)
-    (d := 212077) oa ov ov c₆ e₆.wb_right (tr₆ ia (by norm_num)) (tr₆ iv (by norm_num))
-    (tr₆ iv (by norm_num)) la lv lv
-  have g₇ := keep (by norm_num) (by norm_num) f₇
+      SymPtIn c₆ x s := fun h hx => tr (tr₅ h hx) hx fun r h1 h2 => g₆ r by_o by_o
+  obtain ⟨c₇, k₇, e₇, hk₇, f₇, b₇, t₇⟩ := tstR_exec (P := P) hG hW (op := 0) by_n
+    (d := 212077) oa ov ov c₆ e₆.wb_right (tr₆ ia by_n) (tr₆ iv by_n)
+    (tr₆ iv by_n) la lv lv
+  have g₇ := keep by_n by_n f₇
   have tr₇ : ∀ {x : ℕ} {s : SymPt}, SymPtIn c x s → x = 212060 ∨ x = 212063 ∨ x = 212066 →
-      SymPtIn c₇ x s := fun h hx => tr (tr₆ h hx) hx fun r h1 h2 => g₇ r (by omega) (by omega)
-  obtain ⟨c₈, k₈, e₈, hk₈, f₈, b₈, t₈⟩ := tstR_exec (P := P) hG hW (op := 0) (by norm_num)
-    (d := 212078) ob ov ov c₇ e₇.wb_right (tr₇ ib (by norm_num)) (tr₇ iv (by norm_num))
-    (tr₇ iv (by norm_num)) lb lv lv
-  have g₈ := keep (by norm_num) (by norm_num) f₈
+      SymPtIn c₇ x s := fun h hx => tr (tr₆ h hx) hx fun r h1 h2 => g₇ r by_o by_o
+  obtain ⟨c₈, k₈, e₈, hk₈, f₈, b₈, t₈⟩ := tstR_exec (P := P) hG hW (op := 0) by_n
+    (d := 212078) ob ov ov c₇ e₇.wb_right (tr₇ ib by_n) (tr₇ iv by_n)
+    (tr₇ iv by_n) lb lv lv
+  have g₈ := keep by_n by_n f₈
   have tr₈ : ∀ {x : ℕ} {s : SymPt}, SymPtIn c x s → x = 212060 ∨ x = 212063 ∨ x = 212066 →
-      SymPtIn c₈ x s := fun h hx => tr (tr₇ h hx) hx fun r h1 h2 => g₈ r (by omega) (by omega)
-  obtain ⟨c₉, k₉, e₉, hk₉, f₉, b₉, t₉⟩ := tstR_exec (P := P) hG hW (op := 0) (by norm_num)
-    (d := 212079) ov ob ov c₈ e₈.wb_right (tr₈ iv (by norm_num)) (tr₈ ib (by norm_num))
-    (tr₈ iv (by norm_num)) lv lb lv
-  have g₉ := keep (by norm_num) (by norm_num) f₉
+      SymPtIn c₈ x s := fun h hx => tr (tr₇ h hx) hx fun r h1 h2 => g₈ r by_o by_o
+  obtain ⟨c₉, k₉, e₉, hk₉, f₉, b₉, t₉⟩ := tstR_exec (P := P) hG hW (op := 0) by_n
+    (d := 212079) ov ob ov c₈ e₈.wb_right (tr₈ iv by_n) (tr₈ ib by_n)
+    (tr₈ iv by_n) lv lb lv
+  have g₉ := keep by_n by_n f₉
   -- the bits survive the later tests
   have v1 : c₉.nreg 212071 = c₁.nreg 212071 := by
-    rw [g₉ _ (by norm_num) (by norm_num), g₈ _ (by norm_num) (by norm_num),
-      g₇ _ (by norm_num) (by norm_num), g₆ _ (by norm_num) (by norm_num),
-      g₅ _ (by norm_num) (by norm_num), g₄ _ (by norm_num) (by norm_num),
-      g₃ _ (by norm_num) (by norm_num), g₂ _ (by norm_num) (by norm_num)]
+    rw [g₉ _ by_n by_n, g₈ _ by_n by_n,
+      g₇ _ by_n by_n, g₆ _ by_n by_n,
+      g₅ _ by_n by_n, g₄ _ by_n by_n,
+      g₃ _ by_n by_n, g₂ _ by_n by_n]
   have v2 : c₉.nreg 212072 = c₂.nreg 212072 := by
-    rw [g₉ _ (by norm_num) (by norm_num), g₈ _ (by norm_num) (by norm_num),
-      g₇ _ (by norm_num) (by norm_num), g₆ _ (by norm_num) (by norm_num),
-      g₅ _ (by norm_num) (by norm_num), g₄ _ (by norm_num) (by norm_num),
-      g₃ _ (by norm_num) (by norm_num)]
+    rw [g₉ _ by_n by_n, g₈ _ by_n by_n,
+      g₇ _ by_n by_n, g₆ _ by_n by_n,
+      g₅ _ by_n by_n, g₄ _ by_n by_n,
+      g₃ _ by_n by_n]
   have v3 : c₉.nreg 212073 = c₃.nreg 212073 := by
-    rw [g₉ _ (by norm_num) (by norm_num), g₈ _ (by norm_num) (by norm_num),
-      g₇ _ (by norm_num) (by norm_num), g₆ _ (by norm_num) (by norm_num),
-      g₅ _ (by norm_num) (by norm_num), g₄ _ (by norm_num) (by norm_num)]
+    rw [g₉ _ by_n by_n, g₈ _ by_n by_n,
+      g₇ _ by_n by_n, g₆ _ by_n by_n,
+      g₅ _ by_n by_n, g₄ _ by_n by_n]
   have v4 : c₉.nreg 212074 = c₄.nreg 212074 := by
-    rw [g₉ _ (by norm_num) (by norm_num), g₈ _ (by norm_num) (by norm_num),
-      g₇ _ (by norm_num) (by norm_num), g₆ _ (by norm_num) (by norm_num),
-      g₅ _ (by norm_num) (by norm_num)]
+    rw [g₉ _ by_n by_n, g₈ _ by_n by_n,
+      g₇ _ by_n by_n, g₆ _ by_n by_n,
+      g₅ _ by_n by_n]
   have v5 : c₉.nreg 212075 = c₅.nreg 212075 := by
-    rw [g₉ _ (by norm_num) (by norm_num), g₈ _ (by norm_num) (by norm_num),
-      g₇ _ (by norm_num) (by norm_num), g₆ _ (by norm_num) (by norm_num)]
+    rw [g₉ _ by_n by_n, g₈ _ by_n by_n,
+      g₇ _ by_n by_n, g₆ _ by_n by_n]
   have v6 : c₉.nreg 212076 = c₆.nreg 212076 := by
-    rw [g₉ _ (by norm_num) (by norm_num), g₈ _ (by norm_num) (by norm_num),
-      g₇ _ (by norm_num) (by norm_num)]
+    rw [g₉ _ by_n by_n, g₈ _ by_n by_n,
+      g₇ _ by_n by_n]
   have v7 : c₉.nreg 212077 = c₇.nreg 212077 := by
-    rw [g₉ _ (by norm_num) (by norm_num), g₈ _ (by norm_num) (by norm_num)]
+    rw [g₉ _ by_n by_n, g₈ _ by_n by_n]
   have v8 : c₉.nreg 212078 = c₈.nreg 212078 := by
-    rw [g₉ _ (by norm_num) (by norm_num)]
+    rw [g₉ _ by_n by_n]
   have hf : FrameB Bcor c c₉ := by
     have hh : ∀ {d : ℕ} {c₁ c₂ : Config}, 212071 ≤ d ∧ d ≤ 212085 → FrameB (Brute.Bt d) c₁ c₂ →
         FrameB Bcor c₁ c₂ := fun hd f => fbMono f (bt_cor hd)
     exact fbTrans (fbTrans (fbTrans (fbTrans (fbTrans (fbTrans (fbTrans (fbTrans
-      (hh (by norm_num) f₁) (hh (by norm_num) f₂)) (hh (by norm_num) f₃)) (hh (by norm_num) f₄))
-      (hh (by norm_num) f₅)) (hh (by norm_num) f₆)) (hh (by norm_num) f₇)) (hh (by norm_num) f₈))
-      (hh (by norm_num) f₉)
+      (hh by_n f₁) (hh by_n f₂)) (hh by_n f₃)) (hh by_n f₄))
+      (hh by_n f₅)) (hh by_n f₆)) (hh by_n f₇)) (hh by_n f₈))
+      (hh by_n f₉)
   refine ⟨c₉, k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (k₆ + (k₇ + (k₈ + k₉))))))),
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))))),
-    by omega, hf, ?_, by rw [v1]; exact t₁, by rw [v2]; exact t₂, by rw [v3]; exact t₃,
-    by rw [v4]; exact t₄, by rw [v5]; exact t₅, by rw [v6]; exact t₆, by rw [v7]; exact t₇,
-    by rw [v8]; exact t₈, t₉⟩
+    by_o, hf, ?_, by rwa [v1], by rwa [v2], by rwa [v3],
+    by rwa [v4], by rwa [v5], by rwa [v6], by rwa [v7],
+    by rwa [v8], t₉⟩
   intro r h1 h2
   interval_cases r
-  · rw [v1]; exact b₁
-  · rw [v2]; exact b₂
-  · rw [v3]; exact b₃
-  · rw [v4]; exact b₄
-  · rw [v5]; exact b₅
-  · rw [v6]; exact b₆
-  · rw [v7]; exact b₇
-  · rw [v8]; exact b₈
+  · rwa [v1]
+  · rwa [v2]
+  · rwa [v3]
+  · rwa [v4]
+  · rwa [v5]
+  · rwa [v6]
+  · rwa [v7]
+  · rwa [v8]
   · exact b₉
 
 /-- The value of a bit. -/
@@ -290,7 +290,7 @@ theorem decideS_exec (c : Config) (hw : WordsBounded W c) (hW : 2 ≤ W)
           | refine spec_ifLtN_true (by config_simp; simp only [h1, h2, h3, h4, c1]; omega) ?_
           | refine spec_ifLtN_false (by config_simp; simp only [h1, h2, h3, h4, c1]; omega) ?_)) <;>
         (try unfold setE) <;> exec_block <;> (try omega) <;>
-        refine ⟨by omega, ?_, ?_⟩ <;> config_simp <;>
+        refine ⟨by_o, ?_, ?_⟩ <;> config_simp <;>
         (try simp only [c0, h5, h6, h7, h8, h9]) <;>
         cases D <;> cases X1 <;> cases X2 <;> cases X3 <;> cases X4 <;> simp [emD, bv, h3]
   exact ⟨c', k, ex, hk, q1, q2, exec_frameB ex wr_decideS⟩
@@ -310,33 +310,33 @@ theorem cornerS_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config) (hw : Wo
       (c'.nreg 212085 = 1 ↔ emitG (sa.eval (Qof P)) (sv.eval (Qof P)) (sb.eval (Qof P)) (-1)) := by
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, hb, t1, t2, t3, t4, t5, t6, t7, t8, t9⟩ :=
     testsS_exec (P := P) hG hW c hw ia iv ib la lv lb
-  have c0' : c₁.nreg 212000 = 1 := by rw [f₁.1 _ (by decide), c0]
-  have c1' : c₁.nreg 212001 = 0 := by rw [f₁.1 _ (by decide), c1]
-  obtain ⟨c₂, k₂, e₂, hk₂, q1, q2, f₂⟩ := decideS_exec (P := P) c₁ e₁.wb_right (by omega) c0' c1'
-    (bv_of_bit (hb 212071 (by norm_num) (by norm_num)))
-    (bv_of_bit (hb 212072 (by norm_num) (by norm_num)))
-    (bv_of_bit (hb 212073 (by norm_num) (by norm_num)))
-    (bv_of_bit (hb 212074 (by norm_num) (by norm_num)))
-    (bv_of_bit (hb 212075 (by norm_num) (by norm_num)))
-    (bv_of_bit (hb 212076 (by norm_num) (by norm_num)))
-    (bv_of_bit (hb 212077 (by norm_num) (by norm_num)))
-    (bv_of_bit (hb 212078 (by norm_num) (by norm_num)))
-    (bv_of_bit (hb 212079 (by norm_num) (by norm_num)))
+  have c0' : c₁.nreg 212000 = 1 := by rw [f₁.1 _ by_d, c0]
+  have c1' : c₁.nreg 212001 = 0 := by rw [f₁.1 _ by_d, c1]
+  obtain ⟨c₂, k₂, e₂, hk₂, q1, q2, f₂⟩ := decideS_exec (P := P) c₁ e₁.wb_right by_o c0' c1'
+    (bv_of_bit (hb 212071 by_n by_n))
+    (bv_of_bit (hb 212072 by_n by_n))
+    (bv_of_bit (hb 212073 by_n by_n))
+    (bv_of_bit (hb 212074 by_n by_n))
+    (bv_of_bit (hb 212075 by_n by_n))
+    (bv_of_bit (hb 212076 by_n by_n))
+    (bv_of_bit (hb 212077 by_n by_n))
+    (bv_of_bit (hb 212078 by_n by_n))
+    (bv_of_bit (hb 212079 by_n by_n))
   obtain ⟨m1, m2⟩ := emD_iff (a := sa.eval (Qof P)) (v := sv.eval (Qof P)) (b := sb.eval (Qof P))
     (A1 := decide (c₁.nreg 212071 = 1)) (A2 := decide (c₁.nreg 212072 = 1))
     (B1 := decide (c₁.nreg 212073 = 1)) (B2 := decide (c₁.nreg 212074 = 1))
     (D := decide (c₁.nreg 212075 = 1)) (X1 := decide (c₁.nreg 212076 = 1))
     (X2 := decide (c₁.nreg 212077 = 1)) (X3 := decide (c₁.nreg 212078 = 1))
     (X4 := decide (c₁.nreg 212079 = 1))
-    (by rw [decide_eq_true_iff]; exact t1) (by rw [decide_eq_true_iff]; exact t2)
-    (by rw [decide_eq_true_iff]; exact t3) (by rw [decide_eq_true_iff]; exact t4)
-    (by rw [decide_eq_true_iff]; exact t5) (by rw [decide_eq_true_iff]; exact t6)
-    (by rw [decide_eq_true_iff]; exact t7) (by rw [decide_eq_true_iff]; exact t8)
-    (by rw [decide_eq_true_iff]; exact t9)
-  refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, fbTrans f₁ (fbMono f₂ bcor_dec),
+    (by rwa [decide_eq_true_iff]) (by rwa [decide_eq_true_iff])
+    (by rwa [decide_eq_true_iff]) (by rwa [decide_eq_true_iff])
+    (by rwa [decide_eq_true_iff]) (by rwa [decide_eq_true_iff])
+    (by rwa [decide_eq_true_iff]) (by rwa [decide_eq_true_iff])
+    (by rwa [decide_eq_true_iff])
+  refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by_o, fbTrans f₁ (fbMono f₂ bcor_dec),
     by rw [q1]; exact bv_le _, by rw [q2]; exact bv_le _, ?_, ?_⟩
-  · rw [q1, bv_eq_one]; exact m1
-  · rw [q2, bv_eq_one]; exact m2
+  · rwa [q1, bv_eq_one]
+  · rwa [q2, bv_eq_one]
 
 end exec
 

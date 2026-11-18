@@ -1,6 +1,11 @@
 module
 
-public import Chazelle.Separator.LiptonTarjan
+public import Chazelle.Separator.CycleSeparator
+public import Chazelle.Separator.Maps
+public import Mathlib.Data.Fintype.BigOperators
+public import Mathlib.Algebra.BigOperators.Group.Finset.Piecewise
+public import Mathlib.Data.Nat.Sqrt
+public import Mathlib.Order.Interval.Finset.Nat
 
 /-!
 # Recursive separation into clusters (planar separators, part 5)
@@ -59,7 +64,7 @@ theorem sum_split_bound {ι : Type*} [DecidableEq ι] (L : Finset ι) (m : ι �
   · rcases (show J.card = 0 ∨ J.card = 1 by omega) with h0 | h1
     · rw [Finset.card_eq_zero.mp h0, Finset.sum_empty]; omega
     · obtain ⟨d, hd⟩ := Finset.card_eq_one.mp h1
-      have hdL : d ∈ L := (Finset.mem_filter.mp (hd ▸ Finset.mem_singleton_self d)).1
+      have hdL := (Finset.mem_filter.mp (hd ▸ Finset.mem_singleton_self d)).1
       rw [hd, Finset.card_singleton, Finset.sum_singleton, Finset.sum_singleton] at hkey
       rw [hd, Finset.sum_singleton]
       have := hhalf d hdL

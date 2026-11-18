@@ -51,7 +51,7 @@ theorem slInc_irs (hK : Consts c₀) : ∀ (n : ℕ) {c : Config}, IInv W c₀ c
       refine IRS.ofExec hI ex le_rfl (fun r _ hr => ?_) rfl (fun _ _ => rfl) rfl rfl
         (by dsimp only; rw [upd_same]; omega) (by dsimp only; rw [upd_same, k1]) rfl
       dsimp only; rw [upd_other _ _ _ hr]
-    refine (IRS.seq (K₂ := n) h1 ?_).mono (by omega) (fun _ h => h)
+    refine (IRS.seq (K₂ := n) h1 ?_).le
     rintro c₁ hI₁ - - rfl
     have hA : ({ c with nreg := upd c.nreg ALLOC (c.nreg ALLOC + c.nreg K1) } : Config).nreg ALLOC =
         c.nreg ALLOC + 1 := by dsimp only; rw [upd_same, k1]
@@ -67,14 +67,14 @@ theorem slRawV_congr {J : Merge.Junction} {N : NF} {m m' : ℕ → ℕ} {RB i : 
     RawV P J N m' RB i := by
   have e1 : rawRec m' RB i = rawRec m RB i := by
     unfold rawRec
-    rw [show RB + 11 * i = RB + 11 * i + 0 by ring, h 0 (by norm_num), h 1 (by norm_num),
-      h 3 (by norm_num), h 4 (by norm_num), h 5 (by norm_num)]
-  have e2 : rawDc m' RB i = rawDc m RB i := by unfold rawDc; rw [h 2 (by norm_num)]
+    rw [show RB + 11 * i = RB + 11 * i + 0 by ring, h 0 by_n, h 1 by_n,
+      h 3 by_n, h 4 by_n, h 5 by_n]
+  have e2 : rawDc m' RB i = rawDc m RB i := by unfold rawDc; rw [h 2 by_n]
   have e3 : rawAux m' RB i = rawAux m RB i := by
     unfold rawAux
-    rw [h 6 (by norm_num), h 7 (by norm_num), h 8 (by norm_num), h 9 (by norm_num),
-      h 10 (by norm_num)]
-  unfold RawV at *; rw [e1, e2, e3]; exact hv
+    rw [h 6 by_n, h 7 by_n, h 8 by_n, h 9 by_n,
+      h 10 by_n]
+  unfold RawV at *; rwa [e1, e2, e3]
 
 /-- **The invariant of the origin loop** (`M1` the configuration after `md2Init`, the raw array
 at `A0 = M1.ALLOC`, `u` codes done, the set `D` of done codes). -/
@@ -133,29 +133,29 @@ theorem slOrg_step {J : Merge.Junction} {N₂ : NF} {M1 c' c'' : Config} {u : �
   rw [hS.rb] at o3 o4 o5
   have keepOld : ∀ i, i < c'.nreg gRC → ∀ j, j < 11 →
       c''.nmem (M1.nreg ALLOC + 11 * i + j) = c'.nmem (M1.nreg ALLOC + 11 * i + j) :=
-    fun i hi j hj => o5 _ (by have := hS.room; have := hS.cnt; nlinarith) (Or.inl (by nlinarith))
+    fun i hi j hj => o5 _ (by have := hS.room; have := hS.cnt; nlinarith) (Or.inl by_nl)
   have hR : ∀ r, 240000 ≤ r → r < 250000 → ¬ SOrgR r → c''.nreg r = c'.nreg r := fun r h1 h2 h3 =>
-    o7 r (not_oracle_sw h1 h2) h3 (by unfold ALLOC; omega)
+    o7 r (not_oracle_sw h1 h2) h3 by_ao
   have rB : c''.nreg gRB = c'.nreg gRB := hR _ (by unfold gRB sw; omega) (by unfold gRB sw; omega)
     (by unfold SOrgR gRB gRC sw; omega)
   have rM : c''.nreg gMD2 = c'.nreg gMD2 := hR _ (by unfold gMD2 sw; omega)
     (by unfold gMD2 sw; omega) (by unfold SOrgR gMD2 gRC sw; omega)
   have rC : c''.nreg gCD2 = c'.nreg gCD2 := hR _ (by unfold gCD2 sw; omega)
     (by unfold gCD2 sw; omega) (by unfold SOrgR gCD2 gRC sw; omega)
-  refine ⟨⟨by rw [rB, hS.rb], by have := hS.room; omega, by omega,
+  refine ⟨⟨by rw [rB, hS.rb], by have := hS.room; omega, by_o,
     fun i hi => ?_, fun kind k b hD hOD p t hA hL => ?_, fun a ha => ?_,
     ⟨by rw [rM, hS.regM.1], by rw [rC, hS.regM.2]⟩, fun r h0 h1 h2 => ?_⟩, o7⟩
   · by_cases hi' : i < c'.nreg gRC
     · exact slRawV_congr (keepOld i hi') (hS.valid i hi')
-    · exact o3 i (by omega) hi
+    · exact o3 i by_o hi
   · rcases hD with hD | ⟨rfl, rfl, rfl⟩
     · obtain ⟨i, hi, e1, e2, e3⟩ := hS.compl kind k b hD hOD p t hA hL
       have hrr : rawRec c''.nmem (M1.nreg ALLOC) i = rawRec c'.nmem (M1.nreg ALLOC) i := by
         unfold rawRec
         rw [show M1.nreg ALLOC + 11 * i = M1.nreg ALLOC + 11 * i + 0 by ring,
-          keepOld i hi 0 (by norm_num), keepOld i hi 1 (by norm_num),
-          keepOld i hi 3 (by norm_num), keepOld i hi 4 (by norm_num), keepOld i hi 5 (by norm_num)]
-      exact ⟨i, by omega, by rw [hrr]; exact e1, by rw [hrr]; exact e2, by rw [hrr]; exact e3⟩
+          keepOld i hi 0 by_n, keepOld i hi 1 by_n,
+          keepOld i hi 3 by_n, keepOld i hi 4 by_n, keepOld i hi 5 by_n]
+      exact ⟨i, by_o, by rwa [hrr], by rwa [hrr], by rwa [hrr]⟩
     · obtain ⟨i, hi1, hi2, e1, e2, e3⟩ := o4 hOD p t hA hL
       exact ⟨i, hi2, e1, e2, e3⟩
   · rw [o5 a (by have := hS.room; omega) (Or.inl (by have := hS.room; omega)), hS.memM a ha]
@@ -166,17 +166,17 @@ theorem SlpInv.regChange {J : Merge.Junction} {N₂ : NF} {c M1 c' c'' : Config}
     {D : ℕ → ℕ → ℕ → Prop} (h : SlpInv P J N₂ c M1 u D c')
     (hr : ∀ r, ¬ (sw 4010 ≤ r ∧ r < sw 5000) → c''.nreg r = c'.nreg r)
     (hm : c''.nmem = c'.nmem) : SlpInv P J N₂ c M1 u D c'' := by
-  have e : ∀ r, r < sw 4010 → c''.nreg r = c'.nreg r := fun r hr' => hr r (by omega)
-  have eA : c''.nreg ALLOC = c'.nreg ALLOC := e _ (by unfold ALLOC sw; omega)
+  have e : ∀ r, r < sw 4010 → c''.nreg r = c'.nreg r := fun r hr' => hr r by_o
+  have eA : c''.nreg ALLOC = c'.nreg ALLOC := e _ by_so
   have eB : c''.nreg gRB = c'.nreg gRB := e _ (by unfold gRB sw; omega)
   have eC : c''.nreg gRC = c'.nreg gRC := e _ (by unfold gRC sw; omega)
   refine ⟨by rw [eB]; exact h.rb, by rw [eA]; exact h.room, by rw [eC]; exact h.cnt,
-    fun i hi => by rw [hm]; exact h.valid i (by rw [← eC]; exact hi),
+    fun i hi => by rw [hm]; exact h.valid i (by rwa [← eC]),
     fun kind k b hD hOD p t hA hL => ?_, fun a ha => by rw [hm]; exact h.memM a ha,
     ⟨by rw [e _ (by unfold gMD2 sw; omega)]; exact h.regM.1,
       by rw [e _ (by unfold gCD2 sw; omega)]; exact h.regM.2⟩, fun r h0 h1 h2 => ?_⟩
   · obtain ⟨i, hi, e1⟩ := h.compl kind k b hD hOD p t hA hL
-    exact ⟨i, by rw [eC]; exact hi, by rw [hm]; exact e1⟩
+    exact ⟨i, by rwa [eC], by rwa [hm]⟩
   · rw [← h.regs r h0 h1 h2]
     exact hr r (fun h' => h1 (by unfold S2R; right; right; unfold sw at *; omega))
 
@@ -203,13 +203,13 @@ theorem slCode_irs {J : Merge.Junction} {N₂ : NF} {c₁ M1 : Config} {o : Stmt
   have hKc := hA0.fix hI
   have ok : okB W c.nmem [.constN oKd kd, ins, .constN oB b] c.nreg := by
     rcases hins with ⟨rfl, -⟩ | ⟨rfl, -⟩
-    · exact ⟨⟨iscr_sw (by unfold oKd sw; omega) (by unfold oKd sw; omega), by omega⟩,
-        ⟨iscr_sw (by unfold oKk sw; omega) (by unfold oKk sw; omega), by omega⟩,
-        ⟨iscr_sw (by unfold oB sw; omega) (by unfold oB sw; omega), by omega⟩, trivial⟩
-    · exact ⟨⟨iscr_sw (by unfold oKd sw; omega) (by unfold oKd sw; omega), by omega⟩,
+    · exact ⟨⟨iscr_sw (by unfold oKd sw; omega) (by unfold oKd sw; omega), by_o⟩,
+        ⟨iscr_sw (by unfold oKk sw; omega) (by unfold oKk sw; omega), by_o⟩,
+        ⟨iscr_sw (by unfold oB sw; omega) (by unfold oB sw; omega), by_o⟩, trivial⟩
+    · exact ⟨⟨iscr_sw (by unfold oKd sw; omega) (by unfold oKd sw; omega), by_o⟩,
         iscr_sw (by unfold oKk sw; omega) (by unfold oKk sw; omega),
-        ⟨iscr_sw (by unfold oB sw; omega) (by unfold oB sw; omega), by omega⟩, trivial⟩
-  refine (IRS.seq (K₂ := Ko kd) (IRS.block _ hI ok) ?_).mono (by simp) (fun _ h => h)
+        ⟨iscr_sw (by unfold oB sw; omega) (by unfold oB sw; omega), by_o⟩, trivial⟩
+  refine (IRS.seq (K₂ := Ko kd) (IRS.block _ hI ok) ?_).mono by_s (fun _ h => h)
   rintro c₂ hI₂ - - hc2
   have vals : c₂.nreg oKd = kd ∧ c₂.nreg oKk = kv ∧ c₂.nreg oB = b ∧
       (∀ r, r ≠ oKd → r ≠ oKk → r ≠ oB → c₂.nreg r = c.nreg r) ∧ c₂.nmem = c.nmem := by
@@ -221,13 +221,13 @@ theorem slCode_irs {J : Merge.Junction} {N₂ : NF} {c₁ M1 : Config} {o : Stmt
       refine ⟨trivial, trivial, trivial, fun r h1 h2 h3 => ?_, trivial⟩
       simp only [h1, h2, h3, ite_false]
   obtain ⟨v1, v2, v3, v4, v5⟩ := vals
-  have hS2 : SlpInv P J N₂ c₁ M1 u D c₂ := hS.regChange (fun r hr => v4 r
+  have hS2 := hS.regChange (fun r hr => v4 r
     (fun h => hr (by subst h; unfold oKd sw; omega)) (fun h => hr (by subst h; unfold oKk sw; omega))
     (fun h => hr (by subst h; unfold oB sw; omega))) v5
   have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := v4 _ (by unfold oKd ALLOC sw; omega)
     (by unfold oKk ALLOC sw; omega) (by unfold oB ALLOC sw; omega)
-  have hO2 := hO c₂ hI₂ (hS2.ctx hctx hIM hI₂) (by rw [v1]; exact hkd) (by rw [v3]; exact hb)
-    (by rw [v1, v2]; exact hk) (by rw [hS2.rb]; exact hIM.hA)
+  have hO2 := hO c₂ hI₂ (hS2.ctx hctx hIM hI₂) (by rwa [v1]) (by rwa [v3])
+    (by rwa [v1, v2]) (by rw [hS2.rb]; exact hIM.hA)
     (by rw [hS2.rb]; have := hS2.room; have := hS2.cnt; omega)
     (by rw [v1, hA2]; omega)
   refine hO2.mono (le_of_eq (by rw [v1])) ?_
@@ -235,13 +235,13 @@ theorem slCode_irs {J : Merge.Junction} {N₂ : NF} {c₁ M1 : Config} {o : Stmt
   obtain ⟨h1, h2⟩ := slOrg_step hS2 hu hc'
   rw [v1, v2, v3] at h1
   refine ⟨h1, ?_, ?_, ?_⟩
-  · rw [h2 _ (not_oracle_sw (by unfold slK sw; omega) (by unfold slK sw; omega))
+  · rw [h2 _ by_d
       (by unfold SOrgR slK gRC sw; omega) (by unfold slK ALLOC sw; omega),
       v4 _ (by unfold slK oKd sw; omega) (by unfold slK oKk sw; omega) (by unfold slK oB sw; omega)]
-  · rw [h2 _ (not_oracle_sw (by unfold slN sw; omega) (by unfold slN sw; omega))
+  · rw [h2 _ by_d
       (by unfold SOrgR slN gRC sw; omega) (by unfold slN ALLOC sw; omega),
       v4 _ (by unfold slN oKd sw; omega) (by unfold slN oKk sw; omega) (by unfold slN oB sw; omega)]
-  · rw [h2 _ (not_oracle_sw (by unfold slV sw; omega) (by unfold slV sw; omega))
+  · rw [h2 _ by_d
       (by unfold SOrgR slV gRC sw; omega) (by unfold slV ALLOC sw; omega),
       v4 _ (by unfold slV oKd sw; omega) (by unfold slV oKk sw; omega) (by unfold slV oB sw; omega)]
 
@@ -256,19 +256,19 @@ theorem slAlloc_irs (hK : Consts c₀) (hI : IInv W c₀ c) (h0 : c.nreg slK = 0
       c'.nreg ALLOC = c.nreg ALLOC + 44 * c.nreg slV ∧ c'.nreg slK = c.nreg slV ∧
       (∀ r, r ≠ slK → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   set V := c.nreg slV
-  have hVW : V ≤ W := by omega
+  have hVW : V ≤ W := by_o
   refine (IRS.while (Kb := 45) (fun c' => c'.nreg ALLOC = c.nreg ALLOC + 44 * c'.nreg slK ∧
       c'.nreg slK ≤ V ∧ (∀ r, r ≠ slK → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem)
-      (fun c' => V - c'.nreg slK) ?_ ?_ hI ⟨by rw [h0]; ring, by omega, fun _ _ _ => rfl, rfl⟩
+      (fun c' => V - c'.nreg slK) ?_ ?_ hI ⟨by rw [h0]; ring, by_o, fun _ _ _ => rfl, rfl⟩
       (by rw [h0]; omega)).mono (by rw [h0]; omega) ?_
   · rintro c' ⟨-, -, hr, -⟩ ht
     rw [hr slV (by unfold slV slK sw; omega) (by unfold slV ALLOC sw; omega)] at ht; omega
   · rintro c' hI' ⟨a1, a2, a3, a4⟩ ht hroom'
     have hV' : c'.nreg slV = V := a3 slV (by unfold slV slK sw; omega) (by unfold slV ALLOC sw; omega)
     rw [hV'] at ht
-    refine IRS.seq (K₂ := 1) (slInc_irs hK 44 hI' (by omega)) ?_
+    refine IRS.seq (K₂ := 1) (slInc_irs hK 44 hI' by_o) ?_
     rintro c₁ hI₁ - - ⟨b1, b2, b3⟩
-    have k1 : c₁.nreg K1 = 1 := (hK.fix hI₁).2.1
+    have k1 := (hK.fix hI₁).2.1
     have hk1 : c₁.nreg slK = c'.nreg slK := b2 _ (by unfold slK ALLOC sw; omega)
     refine (IRS.block [.addN slK slK K1] hI₁ ⟨⟨iscr_sw (by unfold slK sw; omega)
       (by unfold slK sw; omega), by rw [k1, hk1]; omega⟩, trivial⟩).mono le_rfl ?_
@@ -283,7 +283,7 @@ theorem slAlloc_irs (hK : Consts c₀) (hI : IInv W c₀ c) (h0 : c.nreg slK = 0
   · rintro c' ⟨⟨a1, a2, a3, a4⟩, a5⟩
     have hV' : c'.nreg slV = V := a3 slV (by unfold slV slK sw; omega) (by unfold slV ALLOC sw; omega)
     rw [hV'] at a5
-    have : c'.nreg slK = V := by omega
+    have : c'.nreg slK = V := by_o
     exact ⟨by rw [a1, this], this, a3, a4⟩
 
 
@@ -314,24 +314,23 @@ theorem slKLoop_irs {J : Merge.Junction} {N₂ : NF} {c₁ M1 : Config} {o : Stm
     (hroom : c.nreg ALLOC + ((7 + 2 * Ko 1 + 2) * N₂.nChords + 2) ≤ W) :
     IRS P W c₀ (slKLoop o) c ((7 + 2 * Ko 1 + 2) * N₂.nChords + 2) (fun c' =>
       SlpInv P J N₂ c₁ M1 (4 + 2 * N₂.nChords) (slD N₂.nChords) c') := by
-  have hKW : N₂.nChords ≤ W := by nlinarith
+  have hKW : N₂.nChords ≤ W := by_nl
   refine (IRS.while (Kb := 7 + 2 * Ko 1) (fun c' => SlpInv P J N₂ c₁ M1 (4 + 2 * c'.nreg slK)
       (slD (c'.nreg slK)) c' ∧ c'.nreg slN = N₂.nChords ∧ c'.nreg slK ≤ N₂.nChords)
-      (fun c' => N₂.nChords - c'.nreg slK) ?_ ?_ hI ⟨by rw [h0]; exact hS, hN, by omega⟩
+      (fun c' => N₂.nChords - c'.nreg slK) ?_ ?_ hI ⟨by rwa [h0], hN, by_o⟩
       (by rw [h0]; simp; omega)).mono (by rw [h0]; simp) ?_
   · rintro c' ⟨-, hN', -⟩ ht; rw [hN'] at ht; omega
   · rintro c' hI' ⟨hS', hN', hk'⟩ ht hroom'
     rw [hN'] at ht
     set k := c'.nreg slK with hk_def
     refine (IRS.seq (K₂ := 4 + Ko 1) (slCode_irs (kd := 1) (b := 0) hctx hO hK hIM hI' hS'
-      (Or.inr ⟨rfl, rfl⟩) (by norm_num) (by norm_num) (fun _ => ht) (by omega) (by omega)) ?_).mono
-      (by omega) (fun _ h => h)
+      (Or.inr ⟨rfl, rfl⟩) by_n by_n (fun _ => ht) by_o by_o) ?_).le
     rintro c₂ hI₂ - hA₂' ⟨hS₂, k2, n2, -⟩
     refine (IRS.seq (K₂ := 1) (slCode_irs (kd := 1) (b := 1) hctx hO hK hIM hI₂ hS₂
-      (Or.inr ⟨rfl, rfl⟩) (by norm_num) (by norm_num) (fun _ => by rw [k2]; exact ht)
-      (by omega) (by omega)) ?_).mono (by omega) (fun _ h => h)
+      (Or.inr ⟨rfl, rfl⟩) by_n by_n (fun _ => by rwa [k2])
+      by_o by_o) ?_).le
     rintro c₃ hI₃ - - ⟨hS₃, k3, n3, -⟩
-    have k1 : c₃.nreg K1 = 1 := (hK.fix hI₃).2.1
+    have k1 := (hK.fix hI₃).2.1
     refine (IRS.block [.addN slK slK K1] hI₃ ⟨⟨iscr_sw (by unfold slK sw; omega)
       (by unfold slK sw; omega), by rw [k1, k3, k2]; omega⟩, trivial⟩).mono le_rfl ?_
     rintro c'' rfl
@@ -345,7 +344,7 @@ theorem slKLoop_irs {J : Merge.Junction} {N₂ : NF} {c₁ M1 : Config} {o : Stm
       by dsimp only; rw [vk]; omega⟩, by dsimp only; rw [vk]; omega⟩
     dsimp only at hS₄ ⊢
     rw [vk]
-    refine hS₄.monoD ?_ (by omega)
+    refine hS₄.monoD ?_ by_o
     rintro kind kk b ⟨hb, h | ⟨rfl, hlt⟩⟩
     · exact Or.inl (Or.inl ⟨hb, Or.inl h⟩)
     · rw [k2]
@@ -356,14 +355,14 @@ theorem slKLoop_irs {J : Merge.Junction} {N₂ : NF} {c₁ M1 : Config} {o : Stm
         · exact Or.inr ⟨rfl, rfl, rfl⟩
   · rintro c' ⟨⟨hS', hN', hk'⟩, hex⟩
     rw [hN'] at hex
-    have : c'.nreg slK = N₂.nChords := by omega
+    have : c'.nreg slK = N₂.nChords := by_o
     rw [this] at hS'
     exact hS'
 
 
 theorem slp_clog_le {K L : ℕ} (hL : L = Nat.clog 2 K) (_hK : 1 ≤ K) {x : ℕ} (hx : x ≤ 16 * K) :
     Nat.clog 2 x ≤ L + 4 := by
-  have h1 : K ≤ 2 ^ L := by rw [hL]; exact Nat.le_pow_clog (by norm_num) K
+  have h1 : K ≤ 2 ^ L := by rw [hL]; exact Nat.le_pow_clog by_n K
   have h2 : x ≤ 2 ^ (L + 4) := by rw [pow_add]; norm_num; omega
   exact (Nat.clog_le_of_le_pow h2)
 
@@ -373,18 +372,18 @@ theorem slp_cost (κo κs K₁ K₂ F T L : ℕ) (hL : L = Nat.clog 2 (K₁ + K�
       ((3 + κo * (K₁ + K₂ + 1) * (F + T + 1)) + (((7 + 2 * (κo * 1 * (F + T + 1)) + 2) * K₂ + 2) +
       κs * (4 * K₂ + 8 + 1) * (Nat.clog 2 (4 * K₂ + 8 + 1) + 1))))))))) ≤
     (24 * κo + 45 * κs + 400) * (K₁ + K₂ + 1) * (F + L + 1) := by
-  have hc : Nat.clog 2 (4 * K₂ + 8 + 1) ≤ L + 4 := slp_clog_le hL (by omega) (by omega)
+  have hc : Nat.clog 2 (4 * K₂ + 8 + 1) ≤ L + 4 := slp_clog_le hL by_o by_o
   set Kc := K₁ + K₂ + 1 with hKc
   set Y := F + L + 1 with hY
-  have hX : F + T + 1 ≤ 4 * Y := by omega
-  have hY1 : 1 ≤ Y := by omega
-  have hK1 : 1 ≤ Kc := by omega
+  have hX : F + T + 1 ≤ 4 * Y := by_o
+  have hY1 : 1 ≤ Y := by_o
+  have hK1 : 1 ≤ Kc := by_o
   have e1 : κo * Kc * (F + T + 1) ≤ κo * Kc * (4 * Y) := Nat.mul_le_mul_left _ hX
   have e2 : κo * 1 * (F + T + 1) ≤ κo * (4 * Y) := by rw [mul_one]; exact Nat.mul_le_mul_left _ hX
   have e3 : κs * (4 * K₂ + 8 + 1) * (Nat.clog 2 (4 * K₂ + 8 + 1) + 1) ≤ κs * (9 * Kc) * (5 * Y) := by
-    apply Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (by omega)
+    apply Nat.mul_le_mul (Nat.mul_le_mul_left _ by_o) by_o
   have e4 : (7 + 2 * (κo * 1 * (F + T + 1)) + 2) * K₂ ≤ (9 + 8 * κo * Y) * Kc := by
-    apply Nat.mul_le_mul _ (by omega)
+    apply Nat.mul_le_mul _ by_o
     nlinarith
   nlinarith
 
@@ -439,7 +438,7 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
     simp only [hR1, hR2, hR3, hR4, hR5, hR6, hR7, hR8, hR9, hKo0, hKo2, hKo1]; exact hcost
   have hroom' : c.nreg ALLOC + (25 + R1) ≤ W := by
     dsimp only at hroom; exact le_trans (Nat.add_le_add_left hT _) hroom
-  refine (IRS.seq (K₂ := R1) (md2Init_irs E hI (by omega)) ?_).mono hT (fun _ h => h)
+  refine (IRS.seq (K₂ := R1) (md2Init_irs E hI by_o) ?_).mono hT (fun _ h => h)
   have hRge : 47 * (K₂ + 2) + 8 ≤ R1 := by rw [hR1, hR2, hR3]; omega
   rintro c₁ hI₁ hA₁ hA₁' ⟨hctx₁, r1, a1, m1⟩
   -- the setup
@@ -448,14 +447,14 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
     rw [hI₁.hin _ (by unfold IFix sw; omega)]
     exact E.hNW₂.transport fun b hb => hI₁.hm b hb
   have hK2m : c₁.nmem (c₁.nreg (sw 4)) = K₂ := hNW.holds.1
-  have k2c : c₁.nreg K2 = 2 := hKc1.2.2.2.2.2.1
+  have k2c := hKc1.2.2.2.2.2.1
   have okS : okB W c₁.nmem slSetup c₁.nreg := by
     simp only [slSetup, okB, okI, regI, gRB, gRC, slN, slV, slK, K2, ALLOC, sw, Nat.reduceAdd]
       at hK2m k2c ⊢
     simp only [upd, Nat.reduceEqDiff, ite_true, ite_false, hK2m, k2c]
-    refine ⟨iscr_sw (by norm_num) (by norm_num), ⟨iscr_sw (by norm_num) (by norm_num), by omega⟩,
-      iscr_sw (by norm_num) (by norm_num), ⟨iscr_sw (by norm_num) (by norm_num), ?_⟩,
-      ⟨iscr_sw (by norm_num) (by norm_num), by omega⟩, trivial⟩
+    refine ⟨iscr_sw by_n by_n, ⟨iscr_sw by_n by_n, by_o⟩,
+      iscr_sw by_n by_n, ⟨iscr_sw by_n by_n, ?_⟩,
+      ⟨iscr_sw by_n by_n, by_o⟩, trivial⟩
     have := hI₁.hw; omega
   refine IRS.seq (K₂ := R2) (IRS.block _ hI₁ okS) ?_
   rintro M1 hIM hAMa hAMb hM1
@@ -512,27 +511,27 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
           (fun h => h1 (hS2R _ (by subst h; unfold slK sw; omega) (by subst h; unfold slK sw; omega)))]
       exact r1 r (fun h => h1 (by
         unfold MD2W gMD2 gCD2 gTP gTV at h
-        rcases h with rfl | rfl | rfl | rfl <;> exact hS2R _ (by unfold sw; omega) (by unfold sw; omega))) h2
-  have hK4 : c₄.nreg slK = 0 := k4
+        rcases h with rfl | rfl | rfl | rfl <;> exact hS2R _ by_so by_so)) h2
+  have hK4 := k4
   have hN4 : c₄.nreg slN = K₂ := by
     rw [v4' _ (by unfold slN slK sw; omega), r3 _ (by unfold slN slK sw; omega)
       (by unfold slN ALLOC sw; omega), v3]
   -- the shared and top codes
   refine IRS.seq (K₂ := R5) (slCode_irs (kd := 0) (b := 0) hctxM hOc hK hIM hI₄ hS4
-    (Or.inl ⟨rfl, rfl⟩) (by norm_num) (by norm_num) (fun h => absurd h (by norm_num)) (by omega)
-    (by omega)) ?_
+    (Or.inl ⟨rfl, rfl⟩) by_n by_n (fun h => absurd h by_n) by_o
+    by_o) ?_
   rintro c₅ hI₅ hA5a hA5b ⟨hS5, k5, n5, -⟩
   refine IRS.seq (K₂ := R6) (slCode_irs (kd := 0) (b := 1) hctxM hOc hK hIM hI₅ hS5
-    (Or.inl ⟨rfl, rfl⟩) (by norm_num) (by norm_num) (fun h => absurd h (by norm_num)) (by omega)
-    (by omega)) ?_
+    (Or.inl ⟨rfl, rfl⟩) by_n by_n (fun h => absurd h by_n) by_o
+    by_o) ?_
   rintro c₆ hI₆ hA6a hA6b ⟨hS6, k6, n6, -⟩
   refine IRS.seq (K₂ := R7) (slCode_irs (kd := 2) (b := 0) hctxM hOc hK hIM hI₆ hS6
-    (Or.inl ⟨rfl, rfl⟩) (by norm_num) (by norm_num) (fun h => absurd h (by norm_num)) (by omega)
-    (by omega)) ?_
+    (Or.inl ⟨rfl, rfl⟩) by_n by_n (fun h => absurd h by_n) by_o
+    by_o) ?_
   rintro c₇ hI₇ hA7a hA7b ⟨hS7, k7, n7, -⟩
   refine IRS.seq (K₂ := R8) (slCode_irs (kd := 2) (b := 1) hctxM hOc hK hIM hI₇ hS7
-    (Or.inl ⟨rfl, rfl⟩) (by norm_num) (by norm_num) (fun h => absurd h (by norm_num)) (by omega)
-    (by omega)) ?_
+    (Or.inl ⟨rfl, rfl⟩) by_n by_n (fun h => absurd h by_n) by_o
+    by_o) ?_
   rintro c₈ hI₈ hA8a hA8b ⟨hS8, k8, n8, -⟩
   have hS8' : SlpInv P J N₂ c M1 4 (slD 0) c₈ := by
     refine hS8.monoD ?_ le_rfl
@@ -551,10 +550,10 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
   have hcnt9 : c₉.nreg gRC ≤ 4 * K₂ + 8 := by have := hS9.cnt; omega
   have hsc : κs * (c₉.nreg gRC + 1) * (Nat.clog 2 (c₉.nreg gRC + 1) + 1) ≤ R9 := by
     rw [hR9]
-    exact Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega))
+    exact Nat.mul_le_mul (Nat.mul_le_mul_left _ by_o)
       (by have := Nat.clog_mono_right 2 (show c₉.nreg gRC + 1 ≤ 4 * K₂ + 8 + 1 by omega); omega)
   refine (hSrt sh Bs F X Ok P W c₀ c₉ J N₁ N₂ E hI₉ (fun i hi => ?_)
-    (by rw [hS9.rb]; have := hS9.room; omega) (by omega)).mono hsc ?_
+    (by rw [hS9.rb]; have := hS9.room; omega) by_o).mono hsc ?_
   · obtain ⟨hok, hpw, -⟩ := hS9.valid i hi
     rw [hS9.rb]
     exact ⟨hpw, hok.2.2.2.2.1⟩
@@ -574,8 +573,8 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
     rw [List.getD_eq_getElem _ _ (by simpa using hi), List.getElem_map]
   have hMc : ∀ a, a < c.nreg ALLOC → M1.nmem a = c.nmem a := fun a ha => by
     rw [v7, m1 a ha]
-  refine ⟨O.map (rawRec c₉.nmem (M1.nreg ALLOC)), O.map (rawAux c₉.nmem (M1.nreg ALLOC)), by simp [hO4], by simp, hO5, hO6, ?_, ?_, ?_,
-    by simpa using hlen, by omega, by simpa using hO8, by omega, by simpa using hO10,
+  refine ⟨O.map (rawRec c₉.nmem (M1.nreg ALLOC)), O.map (rawAux c₉.nmem (M1.nreg ALLOC)), by simp [hO4], by_s, hO5, hO6, ?_, ?_, ?_,
+    by simpa using hlen, by_o, by simpa using hO8, by_o, by simpa using hO10,
     fun a ha => ?_, fun r h0 h1 h2 => ?_⟩
   · -- the stops
     refine stopsOK_of' (RS := List.range (c₉.nreg gRC)) (rec := rawRec c₉.nmem (M1.nreg ALLOC)) (dc := rawDc c₉.nmem (M1.nreg ALLOC))
@@ -597,9 +596,9 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
       have hss : stopSet J (Qof P) N₂ kind 0 b = stopSet J (Qof P) N₂ kind k b := by
         simp [stopSet, h1]
       obtain ⟨i, hi, e1, e2, e3⟩ := hS9.compl kind 0 b
-        ⟨hb1, Or.inl ⟨by omega, rfl⟩⟩
-        ⟨⟨hk2, hb1, fun h => absurd h h1, htop⟩, by rw [hso]; exact hfree⟩ p t
-        (by rw [hss]; exact hA) hL
+        ⟨hb1, Or.inl ⟨by_o, rfl⟩⟩
+        ⟨⟨hk2, hb1, fun h => absurd h h1, htop⟩, by rwa [hso]⟩ p t
+        (by rwa [hss]) hL
       exact ⟨i, List.mem_range.2 hi, e1, e2, by rw [e3, hss]⟩
   · -- the word facts
     intro r hr
@@ -612,7 +611,7 @@ theorem stopTask_of (hO : OrgTask) (hS : SortTask) : StopTask := by
     simp only [List.length_map] at hi
     rw [hget i hi, hget i hi]
     exact (hval _ (List.getElem_mem hi)).2.2
-  · rw [hO11 a (by omega), hS9.memM a (by omega), hMc a ha]
+  · rw [hO11 a by_o, hS9.memM a by_o, hMc a ha]
   · rw [hO12 r h0 (fun h => h1 ?_) h2, hS9.regs r h0 h1 h2]
     unfold SoR at h; unfold S2R
     rcases h with h | h | h | h

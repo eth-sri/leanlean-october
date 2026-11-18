@@ -57,10 +57,10 @@ theorem normOf_facts {M : Model} {Q : Polygon} {n : ℕ} {u : WPos} (hu : Proper
   by_cases hp : M.param Q ⟨e, h⟩ = 0
   · rw [ite_eq_left hp]
     obtain ⟨p1, k1⟩ := param_zero_same hp
-    refine ⟨⟨⟨by rw [param_vtx], by rw [param_vtx]; norm_num, by simp⟩, Or.inl rfl⟩, rfl,
+    refine ⟨⟨⟨by rw [param_vtx], by rw [param_vtx]; norm_num, by_s⟩, Or.inl rfl⟩, rfl,
       p1.symm, k1.symm, Or.inl rfl⟩
   · rw [ite_eq_right hp]
-    have h0 : 0 < M.param Q ⟨e, h⟩ := lt_of_le_of_ne hu.1 (Ne.symm hp)
+    have h0 := lt_of_le_of_ne hu.1 (Ne.symm hp)
     exact ⟨⟨hu, Or.inr h0⟩, rfl, rfl, rfl, Or.inr h0⟩
 
 /-! ## The machine -/
@@ -97,31 +97,31 @@ theorem tNormK_rs {s : ℕ} (hs : Scr s ∧ Scr (s + 1) ∧ Scr (s + 2) ∧ Scr 
   have inR : ∀ r, Scr r → InR r := fun r hr => by unfold Scr at hr; unfold InR; omega
   have hk := kcmp_rs (P := P) (W := W) gKey_ok (a := s) (b := 83022) (d := s) (e := s + 1)
     (u := s + 2) (v := s + 3) (by unfold InR; omega) (by unfold InR; omega) (by unfold InR; omega)
-    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) (by omega) hE hI
+    (by unfold InR; omega) (by unfold Scr; omega) (by unfold Scr; omega) by_o hE hI
     ⟨by exact he, by rw [i22]; exact ⟨le_rfl, by simp [param_vtx], Nat.zero_le _⟩,
       fun C hM _ => hbox C hM⟩
     ⟨he, hp, fun C _ hh => by simp only at hh; omega⟩ (by unfold normK at hroom; omega)
   rw [i22] at hk
-  refine RS.mono (K := (11010 + 2) + (0 + 2 + 1)) ?_ (by norm_num) (fun _ h => h)
+  refine RS.mono (K := (11010 + 2) + (0 + 2 + 1)) ?_ by_n (fun _ h => h)
   unfold tNormK
   refine RS.seq hk fun c₁ hI₁ _ ⟨b1, _, a1⟩ => ?_
-  have k1s : c₁.nreg s = c.nreg s := a1 _ (by omega) (by omega) (by simp)
-  have k1h : c₁.nreg (s + 1) = c.nreg (s + 1) := a1 _ (by omega) (by omega) (by simp)
-  have k23 : c₁.nreg 83023 = 1 := hI₁.h23
+  have k1s : c₁.nreg s = c.nreg s := a1 _ by_o by_o by_s
+  have k1h : c₁.nreg (s + 1) = c.nreg (s + 1) := a1 _ by_o by_o by_s
+  have k23 := hI₁.h23
   rw [key_vtx_lt_iff] at b1
   rcases bit01 b1 with ⟨bz, hnp⟩ | ⟨bo, hpos⟩
   · -- parameter `0`
-    have hp0 : M.param (Qof P) ⟨c.nreg s, c.nreg (s + 1)⟩ = 0 := le_antisymm (not_lt.1 hnp) hp.1
+    have hp0 := le_antisymm (not_lt.1 hnp) hp.1
     refine RS.ifT (by rw [bz, k23]; omega) ((RS.const hI₁ (r := s + 1) (v := 0) (by unfold Scr; omega)
-      (Nat.zero_le _)).mono (by norm_num) fun c₂ hc₂ => ?_)
-    have e2s : c₂.nreg s = c.nreg s := by rw [hc₂, upd_ne (by omega), k1s]
-    refine ⟨e2s, ?_, (a1.trans (Agr.of_upd hc₂)).mono (by simp)⟩
+      (Nat.zero_le _)).mono by_n fun c₂ hc₂ => ?_)
+    have e2s : c₂.nreg s = c.nreg s := by rw [hc₂, upd_ne by_o, k1s]
+    refine ⟨e2s, ?_, (a1.trans (Agr.of_upd hc₂)).mono by_s⟩
     rw [e2s, hc₂, upd_eq]; unfold normOf; rw [ite_eq_left hp0]
   · -- positive parameter
     refine RS.ifF (by rw [bo, k23]; omega) ((RS.skip hI₁ (K := 1) (Q := fun c' =>
       c'.nreg s = c.nreg s ∧ ⟨c'.nreg s, c'.nreg (s + 1)⟩ =
         normOf M (Qof P) ⟨c.nreg s, c.nreg (s + 1)⟩ ∧ Agr c c' [s + 1, s + 2, s + 3])
-      ⟨k1s, ?_, a1.mono (by simp)⟩))
+      ⟨k1s, ?_, a1.mono by_s⟩))
     rw [k1s, k1h]; unfold normOf; rw [ite_eq_right (ne_of_gt hpos)]
 
 /-- **Normalising a position.** -/
@@ -148,24 +148,24 @@ theorem tNorm_rs {s : ℕ} (hs : Scr s ∧ Scr (s + 1) ∧ Scr (s + 2) ∧ Scr (
     unfold normOf; rw [ite_eq_left (by rw [hz]; rfl)]; rw [hz]
   have h0 : 0 < c.nreg (s + 1) := by rw [i22] at hh; exact hh
   refine RS.ifT hh ?_
-  refine RS.mono (K := 1 + (11010 + 6 + 2 + 2)) ?_ (by norm_num) (fun _ h => h)
+  refine RS.mono (K := 1 + (11010 + 6 + 2 + 2)) ?_ by_n (fun _ h => h)
   refine RS.seq (RS.const hI (r := s + 4) (v := 6) (by unfold Scr; omega)
     (by have := hE.hW; unfold hostWords at this; omega)) fun c₁ hI₁ hA₁ hc₁ => ?_
   have k1 : ∀ r, r ≠ s + 4 → c₁.nreg r = c.nreg r := fun r hr => by rw [hc₁, upd_ne hr]
   have p1 : ProperPos M (Qof P) P.n ⟨c₁.nreg s, c₁.nreg (s + 1)⟩ := by
-    rw [k1 s (by omega), k1 (s + 1) (by omega)]; exact hp
-  have e1 : c₁.nreg s < M.W.n := by rw [k1 s (by omega)]; exact he
-  have z1 : 0 < c₁.nreg (s + 1) := by rw [k1 (s + 1) (by omega)]; exact h0
-  have a1 : Agr c c₁ [s + 4] := Agr.of_upd hc₁
+    rw [k1 s by_o, k1 (s + 1) by_o]; exact hp
+  have e1 : c₁.nreg s < M.W.n := by rw [k1 s by_o]; exact he
+  have z1 : 0 < c₁.nreg (s + 1) := by rw [k1 (s + 1) by_o]; exact h0
+  have a1 := Agr.of_upd hc₁
   have fin : ∀ c₂, (c₂.nreg s = c₁.nreg s ∧ ⟨c₂.nreg s, c₂.nreg (s + 1)⟩ =
       normOf M (Qof P) ⟨c₁.nreg s, c₁.nreg (s + 1)⟩ ∧ Agr c₁ c₂ [s + 1, s + 2, s + 3]) →
       (c₂.nreg s = c.nreg s ∧ ⟨c₂.nreg s, c₂.nreg (s + 1)⟩ =
         normOf M (Qof P) ⟨c.nreg s, c.nreg (s + 1)⟩ ∧ Agr c c₂ [s + 1, s + 2, s + 3, s + 4]) :=
     fun c₂ ⟨q1, q2, q3⟩ => by
-      refine ⟨by rw [q1, k1 s (by omega)], by rw [q2, k1 s (by omega), k1 (s + 1) (by omega)],
-        (a1.trans q3).mono (by simp)⟩
+      refine ⟨by rw [q1, k1 s by_o], by rw [q2, k1 s by_o, k1 (s + 1) by_o],
+        (a1.trans q3).mono by_s⟩
   have hroom1 : c₁.nreg ALLOC + normK ≤ W := by
-    have := hI₁.hA; rw [k1 _ (by unfold ALLOC; omega)]; exact hroom
+    have := hI₁.hA; rw [k1 _ by_ao]; exact hroom
   have i21 := hI₁.h21
   have i23 := hI₁.h23
   rcases hE.kind with ⟨hz, C, hMC⟩ | ⟨h1', hMi, -⟩
@@ -173,21 +173,21 @@ theorem tNorm_rs {s : ℕ} (hs : Scr s ∧ Scr (s + 1) ∧ Scr (s + 2) ∧ Scr (
     refine RS.ifT (by rw [i21, i23, hz]; omega) ?_
     by_cases hb : c₁.nreg s < c₁.nreg (s + 4)
     · -- a box edge: the parameter is positive
-      have h6 : c.nreg s < 6 := by rw [k1 s (by omega), hc₁, upd_eq] at hb; exact hb
+      have h6 : c.nreg s < 6 := by rw [k1 s by_o, hc₁, upd_eq] at hb; exact hb
       have hpos : 0 < M.param (Qof P) ⟨c.nreg s, c.nreg (s + 1)⟩ := by
         subst hMC
         exact box_param_pos C (x := ⟨c.nreg s, c.nreg (s + 1)⟩) h6 hp.1 (hy C rfl)
       refine RS.ifT hb (RS.skip hI₁ (fin c₁ ⟨rfl, ?_, Agr.refl _ _⟩))
-      rw [k1 s (by omega), k1 (s + 1) (by omega)]
+      rw [k1 s by_o, k1 (s + 1) by_o]
       unfold normOf; rw [ite_eq_right (ne_of_gt hpos)]
     · refine RS.ifF hb ((tNormK_rs hs' hE hI₁ p1 e1 z1 (fun C' _ => ?_) hroom1).mono
-        (by norm_num) fin)
+        by_n fin)
       have v4 : c₁.nreg (s + 4) = 6 := by rw [hc₁, upd_eq]
       omega
   · -- the interior model
     refine RS.ifF (by rw [i21, i23, h1']; omega) ((tNormK_rs hs' hE hI₁ p1 e1 z1
       (fun C' hC' => absurd (hC'.symm.trans hMi) (chainModel_ne_interior C' _)) hroom1).mono
-      (by norm_num) fin)
+      by_n fin)
 
 end
 

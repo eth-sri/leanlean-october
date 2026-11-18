@@ -40,13 +40,13 @@ theorem ResOK.transport {C : Chain} {a : Point} {σ : ℝ} {G : Prop} {F : ℕ} 
     (h : ResOK P C a σ G F c) (hr : ∀ i, i < 7 → c'.nreg (F + i) = c.nreg (F + i)) :
     ResOK P C a σ G F c' := by
   obtain ⟨h1, h2, h3⟩ := h
-  have e0 : c'.nreg F = c.nreg F := hr 0 (by norm_num)
-  refine ⟨by rw [e0]; exact h1, fun hf => ?_, fun hg => by rw [e0]; exact h3 hg⟩
+  have e0 : c'.nreg F = c.nreg F := hr 0 by_n
+  refine ⟨by rwa [e0], fun hf => ?_, fun hg => by rw [e0]; exact h3 hg⟩
   rw [e0] at hf
   obtain ⟨τ, a1, a2, a3, a4, a5, a6, a7⟩ := h2 hf
-  rw [hr 1 (by norm_num), hr 2 (by norm_num)]
-  exact ⟨τ, a1, a2, a3, a4, a5, absRec_transport a6 (hr 3 (by norm_num)) (hr 4 (by norm_num))
-    (hr 5 (by norm_num)) (hr 6 (by norm_num)), a7⟩
+  rw [hr 1 by_n, hr 2 by_n]
+  exact ⟨τ, a1, a2, a3, a4, a5, absRec_transport a6 (hr 3 by_n) (hr 4 by_n)
+    (hr 5 by_n) (hr 6 by_n), a7⟩
 
 /-- The empty result. -/
 def noRes (F : ℕ) : Stmt := .instr (.constN F 0)
@@ -78,9 +78,9 @@ theorem save_irs (hI : IInv W c₀ c) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 2
       (∀ q, (q < F ∨ F + 6 < q) → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
   have hok : okB W c.nmem (saveL F) c.nreg := by
     simp only [saveL, okB, okI]
-    exact ⟨iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega),
-      iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega),
-      iscr_sw (by omega) (by omega), iscr_sw (by omega) (by omega), trivial⟩
+    exact ⟨iscr_sw by_o by_o, iscr_sw by_o by_o,
+      iscr_sw by_o by_o, iscr_sw by_o by_o, iscr_sw by_o by_o,
+      iscr_sw by_o by_o, iscr_sw by_o by_o, trivial⟩
   refine (IRS.block _ hI hok).mono (by simp [saveL]) ?_
   rintro c' hc'
   obtain ⟨v0, v1, v2, v3, v4, v5, v6, vo⟩ := save_val c.nmem c.nreg hF
@@ -89,12 +89,12 @@ theorem save_irs (hI : IInv W c₀ c) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 2
   have hm : c'.nmem = c.nmem := by rw [hc']
   refine ⟨?_, fun q hq => e q _ (vo q hq), hm⟩
   obtain ⟨hf1, hf0, hf⟩ := hacc
-  refine ⟨by rw [e _ _ v0]; exact hf1, fun h1 => ?_, fun hg => ?_⟩
+  refine ⟨by rwa [e _ _ v0], fun h1 => ?_, fun hg => ?_⟩
   · rw [e _ _ v0] at h1
     obtain ⟨τ, hτ, hmin, -, hpp, hen, hpos, hrec⟩ := hf h1
     obtain ⟨hτ0, hon⟩ := hL τ hτ
-    refine ⟨τ, hτ0, hon, by rw [e _ _ v1]; exact hen, by rw [e _ _ v1, e _ _ v2]; exact hpp,
-      by rw [e _ _ v1, e _ _ v2]; exact hpos, ?_, fun hg => ?_⟩
+    refine ⟨τ, hτ0, hon, by rwa [e _ _ v1], by rwa [e _ _ v1, e _ _ v2],
+      by rwa [e _ _ v1, e _ _ v2], ?_, fun hg => ?_⟩
     · refine absRec_transport (c := c) hrec (e _ _ v3) ?_ ?_ ?_
       · rw [show F + 3 + 1 = F + 4 by omega]; exact e _ _ v4
       · rw [show F + 3 + 2 = F + 5 by omega]; exact e _ _ v5
@@ -104,7 +104,7 @@ theorem save_irs (hI : IInv W c₀ c) {F : ℕ} (hF : 244000 ≤ F ∧ F + 6 < 2
   · rw [e _ _ v0]
     obtain ⟨-, hmem⟩ := hG hg
     by_contra hne
-    have h0 : c.nreg accA = 0 := by omega
+    have h0 : c.nreg accA = 0 := by_o
     rw [hf0 h0] at hmem
     exact hmem
 

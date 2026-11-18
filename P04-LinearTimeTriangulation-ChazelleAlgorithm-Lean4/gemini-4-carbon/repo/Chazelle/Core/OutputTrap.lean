@@ -176,7 +176,7 @@ variable {Q : Polygon} {N : NF} {reg : ℕ → Set Point}
 theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : TrapData Q)
     (hD : D.region = reg ri) : trapOf (revOf Q) Q.n N ri = Final.trapRecOf D := by
   have hQ := H.simple
-  have hn3 : 3 ≤ Q.n := hQ.1
+  have hn3 := hQ.1
   have hi := D.isTrap.hi
   have hj := D.isTrap.hj
   have hpi := inp_lt (b := revOf Q) hi
@@ -191,7 +191,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
       (wv (revOf Q) Q.n c.rp ≠ c.h → c.rp = inp (revOf Q) Q.n D.j) := by
     intro c hc
     obtain ⟨k, hk, rfl⟩ := List.mem_map.1 hc
-    have hkN : k < N.nChords := (((H.regs ri hr).1 k).1 hk).1
+    have hkN := (((H.regs ri hr).1 k).1 hk).1
     obtain ⟨f1, f2, f3, f4⟩ := H.facts hr D hD hk
     obtain ⟨hlp, hrp, -⟩ := rec_attach H.nf hkN
     refine ⟨f1, f2, fun h => ?_, fun h => ?_⟩
@@ -252,9 +252,9 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
     simp only [Bool.not_eq_true] at hcon
     obtain ⟨p1, p2⟩ := peak hcon.1
     obtain ⟨v1, v2⟩ := valley hcon.2
-    have e1 : inp (revOf Q) Q.n D.i = nxt Q.n (inp (revOf Q) Q.n D.j) :=
+    have e1 :=
       wv_inj hpi (nxt_lt hpj) (p1.trans p2.symm)
-    have e2 : inp (revOf Q) Q.n D.j = nxt Q.n (inp (revOf Q) Q.n D.i) :=
+    have e2 :=
       wv_inj hpj (nxt_lt hpi) (v2.trans v1.symm)
     rw [e2] at e1
     unfold nxt at e1
@@ -264,7 +264,7 @@ theorem trapOf_eq (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) (D : Tr
     push Not at hcon
     simp only [Bool.not_eq_true] at hcon
     have hempty : ∀ k ∈ (N.region ri).chords, False := fun k hk => by
-      have hkN : k < N.nChords := (((H.regs ri hr).1 k).1 hk).1
+      have hkN := (((H.regs ri hr).1 k).1 hk).1
       refine H.not_both hkN ?_ ?_
       · by_contra hne
         have := fL.2 ⟨_, hmemk k hk, hne⟩; rw [hcon.1] at this; exact Bool.false_ne_true this
@@ -365,7 +365,7 @@ theorem chords_length_le (H : RegCtx Q N reg) {ri : ℕ} (hr : ri < N.nRegions) 
     intro x hx
     rw [List.mem_toFinset, List.mem_map] at hx
     obtain ⟨k, hk, rfl⟩ := hx
-    have hkN : k < N.nChords := (((H.regs ri hr).1 k).1 hk).1
+    have hkN := (((H.regs ri hr).1 k).1 hk).1
     obtain ⟨v, σ, hv, hσ, -, hS, -⟩ := chords_spec hQ (rec_chords H.full hkN)
     have hvh : v = (N.chord k).h := by
       have e : hseg (Q.vtx v).2 (min (Q.vtx v).1 (chordEnd Q v σ).1)

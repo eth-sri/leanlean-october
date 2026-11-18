@@ -44,12 +44,11 @@ theorem side3_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
     FRS B E.P E.W c₀ (side3 r i j k) c 8 (fun c' =>
       BitIs c' r ((p ∧ (q ∧ s)) ∨ (¬ p ∧ (q ∨ s))) ∧ BitFr r c c') := by
   have hW1 : 1 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
-  refine (FRS.seq (K₂ := 7) (setR_fs hB hI hr (Nat.zero_le _)) (fun c₁ hI₁ _ ⟨v₁, f₁⟩ => ?_)).mono
-    (by omega) (fun _ h => h)
+  refine (FRS.seq (K₂ := 7) (setR_fs hB hI hr (Nat.zero_le _)) (fun c₁ hI₁ _ ⟨v₁, f₁⟩ => ?_)).le
   have k0 := k0_of hE hI₁
-  have bi : BitIs c₁ i p := hi.of_eq (f₁ i (Ne.symm hri))
-  have bj : BitIs c₁ j q := hj.of_eq (f₁ j (Ne.symm hrj))
-  have bk : BitIs c₁ k s := hk.of_eq (f₁ k (Ne.symm hrk))
+  have bi := hi.of_eq (f₁ i (Ne.symm hri))
+  have bj := hj.of_eq (f₁ j (Ne.symm hrj))
+  have bk := hk.of_eq (f₁ k (Ne.symm hrk))
   have nil : ¬ ((p ∧ (q ∧ s)) ∨ (¬ p ∧ (q ∨ s))) →
       FRS B E.P E.W c₀ .skip c₁ 0 (fun c' => BitIs c' r ((p ∧ (q ∧ s)) ∨ (¬ p ∧ (q ∨ s))) ∧
         BitFr r c c') := fun hn => FRS.skip hI₁ ⟨BitIs.const_zero v₁ hn, f₁⟩
@@ -66,31 +65,29 @@ theorem side3_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
     refine (FRS.ifT a1 ?_).mono (K := 7) le_rfl (fun _ h => h)
     by_cases a2 : c₁.nreg 81011 < c₁.nreg j
     · have hq := (b1 bj).1 a2
-      refine (FRS.ifT a2 ?_).mono (K := 5) (by omega) (fun _ h => h)
+      refine (FRS.ifT a2 ?_).mono (K := 5) by_o (fun _ h => h)
       by_cases a3 : c₁.nreg 81011 < c₁.nreg k
-      · exact (FRS.ifT a3 (one (Or.inl ⟨hp, hq, (b1 bk).1 a3⟩))).mono (by omega) (fun _ h => h)
+      · exact (FRS.ifT a3 (one (Or.inl ⟨hp, hq, (b1 bk).1 a3⟩))).le
       · exact (FRS.ifF a3 (nil (fun h => by
           rcases h with h | h
           · exact a3 ((b1 bk).2 h.2.2)
-          · exact h.1 hp))).mono (by omega) (fun _ h => h)
+          · exact h.1 hp))).le
     · exact (FRS.ifF a2 (nil (fun h => by
         rcases h with h | h
         · exact a2 ((b1 bj).2 h.2.1)
-        · exact h.1 hp))).mono (by omega) (fun _ h => h)
+        · exact h.1 hp))).le
   · have hp : ¬ p := fun h => a1 ((b1 bi).2 h)
     refine (FRS.ifF a1 ?_).mono (K := 7) le_rfl (fun _ h => h)
     by_cases a2 : c₁.nreg 81011 < c₁.nreg j
-    · exact (FRS.ifT a2 (one (Or.inr ⟨hp, Or.inl ((b1 bj).1 a2)⟩))).mono (by omega)
-        (fun _ h => h)
+    · exact (FRS.ifT a2 (one (Or.inr ⟨hp, Or.inl ((b1 bj).1 a2)⟩))).le
     refine (FRS.ifF a2 ?_).mono (K := 5) le_rfl (fun _ h => h)
     by_cases a3 : c₁.nreg 81011 < c₁.nreg k
-    · exact (FRS.ifT a3 (one (Or.inr ⟨hp, Or.inr ((b1 bk).1 a3)⟩))).mono (by omega)
-        (fun _ h => h)
+    · exact (FRS.ifT a3 (one (Or.inr ⟨hp, Or.inr ((b1 bk).1 a3)⟩))).le
     · exact (FRS.ifF a3 (nil (fun h => by
         rcases h with h | ⟨-, h | h⟩
         · exact hp h.1
         · exact a2 ((b1 bj).2 h)
-        · exact a3 ((b1 bk).2 h)))).mono (by omega) (fun _ h => h)
+        · exact a3 ((b1 bk).2 h)))).le
 
 /-- `r := [r] ∨ (¬[i] ∧ ¬[j])`. -/
 def eqor (r i j : ℕ) : Stmt := .ifLtN 81011 i .skip (.ifLtN 81011 j .skip (Stmt.block [.constN r 1]))
@@ -106,14 +103,13 @@ theorem eqor_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
       fun h' => by rw [h.2.2 h']; omega⟩
   by_cases a1 : c.nreg 81011 < c.nreg i
   · exact (FRS.ifT a1 (FRS.skip (K := 0) hI ⟨hrr.congr ⟨Or.inl, fun h => h.resolve_right
-      (fun h' => h'.1 ((b1 hi).1 a1))⟩, fun _ _ => rfl⟩)).mono (by omega) (fun _ h => h)
+      (fun h' => h'.1 ((b1 hi).1 a1))⟩, fun _ _ => rfl⟩)).le
   refine (FRS.ifF a1 ?_).mono (K := 5) le_rfl (fun _ h => h)
   by_cases a2 : c.nreg 81011 < c.nreg j
   · exact (FRS.ifT a2 (FRS.skip (K := 0) hI ⟨hrr.congr ⟨Or.inl, fun h => h.resolve_right
-      (fun h' => h'.2 ((b1 hj).1 a2))⟩, fun _ _ => rfl⟩)).mono (by omega) (fun _ h => h)
+      (fun h' => h'.2 ((b1 hj).1 a2))⟩, fun _ _ => rfl⟩)).le
   · exact (FRS.ifF a2 ((setR_fs hB hI hr hW1).mono le_rfl (fun c' ⟨v, f⟩ =>
-      ⟨BitIs.const_one v (Or.inr ⟨fun h => a1 ((b1 hi).2 h), fun h => a2 ((b1 hj).2 h)⟩), f⟩))).mono
-      (by omega) (fun _ h => h)
+      ⟨BitIs.const_one v (Or.inr ⟨fun h => a1 ((b1 hi).2 h), fun h => a2 ((b1 hj).2 h)⟩), f⟩))).le
 
 /-- `r := ([i] ↔ [j])`. -/
 def xnorR (r i j : ℕ) : Stmt :=
@@ -126,11 +122,10 @@ theorem xnorR_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
     (hj : BitIs c j q) :
     FRS B E.P E.W c₀ (xnorR r i j) c 6 (fun c' => BitIs c' r (p ↔ q) ∧ BitFr r c c') := by
   have hW1 : 1 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
-  refine (FRS.seq (K₂ := 5) (setR_fs hB hI hr (Nat.zero_le _)) (fun c₁ hI₁ _ ⟨v₁, f₁⟩ => ?_)).mono
-    (by omega) (fun _ h => h)
+  refine (FRS.seq (K₂ := 5) (setR_fs hB hI hr (Nat.zero_le _)) (fun c₁ hI₁ _ ⟨v₁, f₁⟩ => ?_)).le
   have k0 := k0_of hE hI₁
-  have bi : BitIs c₁ i p := hi.of_eq (f₁ i (Ne.symm hri))
-  have bj : BitIs c₁ j q := hj.of_eq (f₁ j (Ne.symm hrj))
+  have bi := hi.of_eq (f₁ i (Ne.symm hri))
+  have bj := hj.of_eq (f₁ j (Ne.symm hrj))
   have b1 : ∀ {x : ℕ} {P : Prop}, BitIs c₁ x P → (c₁.nreg 81011 < c₁.nreg x ↔ P) :=
     fun h => by rw [k0]; exact ⟨fun h' => h.2.1 (by have := h.1; omega),
       fun h' => by rw [h.2.2 h']; omega⟩
@@ -144,15 +139,13 @@ theorem xnorR_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   · have hp := (b1 bi).1 a1
     refine (FRS.ifT a1 ?_).mono (K := 5) le_rfl (fun _ h => h)
     by_cases a2 : c₁.nreg 81011 < c₁.nreg j
-    · exact (FRS.ifT a2 (one ⟨fun _ => (b1 bj).1 a2, fun _ => hp⟩)).mono (by omega)
-        (fun _ h => h)
-    · exact (FRS.ifF a2 (nil (fun h => a2 ((b1 bj).2 (h.1 hp))))).mono (by omega) (fun _ h => h)
+    · exact (FRS.ifT a2 (one ⟨fun _ => (b1 bj).1 a2, fun _ => hp⟩)).le
+    · exact (FRS.ifF a2 (nil (fun h => a2 ((b1 bj).2 (h.1 hp))))).le
   · have hp : ¬ p := fun h => a1 ((b1 bi).2 h)
     refine (FRS.ifF a1 ?_).mono (K := 5) le_rfl (fun _ h => h)
     by_cases a2 : c₁.nreg 81011 < c₁.nreg j
-    · exact (FRS.ifT a2 (nil (fun h => hp (h.2 ((b1 bj).1 a2))))).mono (by omega) (fun _ h => h)
-    · exact (FRS.ifF a2 (one ⟨fun h => absurd h hp, fun h => absurd ((b1 bj).2 h) a2⟩)).mono
-        (by omega) (fun _ h => h)
+    · exact (FRS.ifT a2 (nil (fun h => hp (h.2 ((b1 bj).1 a2))))).le
+    · exact (FRS.ifF a2 (one ⟨fun h => absurd h hp, fun h => absurd ((b1 bj).2 h) a2⟩)).le
 
 /-- `r := [i] ∧ [j]`. -/
 def andR (r i j : ℕ) : Stmt :=
@@ -164,11 +157,10 @@ theorem andR_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
     (hj : BitIs c j q) :
     FRS B E.P E.W c₀ (andR r i j) c 6 (fun c' => BitIs c' r (p ∧ q) ∧ BitFr r c c') := by
   have hW1 : 1 ≤ E.W := by have := hE.hWh; unfold hostWords at this; omega
-  refine (FRS.seq (K₂ := 5) (setR_fs hB hI hr (Nat.zero_le _)) (fun c₁ hI₁ _ ⟨v₁, f₁⟩ => ?_)).mono
-    (by omega) (fun _ h => h)
+  refine (FRS.seq (K₂ := 5) (setR_fs hB hI hr (Nat.zero_le _)) (fun c₁ hI₁ _ ⟨v₁, f₁⟩ => ?_)).le
   have k0 := k0_of hE hI₁
-  have bi : BitIs c₁ i p := hi.of_eq (f₁ i (Ne.symm hri))
-  have bj : BitIs c₁ j q := hj.of_eq (f₁ j (Ne.symm hrj))
+  have bi := hi.of_eq (f₁ i (Ne.symm hri))
+  have bj := hj.of_eq (f₁ j (Ne.symm hrj))
   have b1 : ∀ {x : ℕ} {P : Prop}, BitIs c₁ x P → (c₁.nreg 81011 < c₁.nreg x ↔ P) :=
     fun h => by rw [k0]; exact ⟨fun h' => h.2.1 (by have := h.1; omega),
       fun h' => by rw [h.2.2 h']; omega⟩
@@ -179,9 +171,9 @@ theorem andR_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
     by_cases a2 : c₁.nreg 81011 < c₁.nreg j
     · exact (FRS.ifT a2 ((setR_fs hB hI₁ hr hW1).mono le_rfl (fun c' ⟨v, f⟩ =>
         ⟨BitIs.const_one v ⟨(b1 bi).1 a1, (b1 bj).1 a2⟩, fun x hx => (f x hx).trans
-          (f₁ x hx)⟩))).mono (by omega) (fun _ h => h)
-    · exact (FRS.ifF a2 (nil (fun h => a2 ((b1 bj).2 h.2)))).mono (by omega) (fun _ h => h)
-  · exact (FRS.ifF a1 (nil (fun h => a1 ((b1 bi).2 h.1)))).mono (by omega) (fun _ h => h)
+          (f₁ x hx)⟩))).le
+    · exact (FRS.ifF a2 (nil (fun h => a2 ((b1 bj).2 h.2)))).le
+  · exact (FRS.ifF a1 (nil (fun h => a1 ((b1 bi).2 h.1)))).le
 
 end
 

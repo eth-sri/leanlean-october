@@ -57,8 +57,8 @@ theorem ChordSystem.touches_of_subset_split (hF : ChordSystem D F) {S : Set (Set
     (hU : U ∈ regionsIn D (insert c S)) (hUR : U ⊆ R) : TouchesIn D c U := by
   obtain ⟨z₀, hz₀⟩ := (hF.chord_inter_nonempty_isPreconnected hc).1
   obtain ⟨u, hu⟩ := regionsIn_nonempty hU
-  have hReq : R = connectedComponentIn (freeIn D S) z₀ := regionsIn_eq_component hR (hcR hz₀)
-  have huR : u ∈ connectedComponentIn (freeIn D S) z₀ := hReq ▸ hUR hu
+  have hReq := regionsIn_eq_component hR (hcR hz₀)
+  have huR := hReq ▸ hUR hu
   obtain ⟨w, hw, r, hr, τ, hτ, -, hsub⟩ := hF.exists_halfDisk_subset hS hc hcS hz₀ hU hu huR
   exact ⟨w, hw, closure_mono hsub (mem_closure_halfDisk hτ hr)⟩
 
@@ -75,7 +75,7 @@ theorem ChordSystem.touches_iff_of_split (hF : ChordSystem D F) {S : Set (Set Po
     have : p ∈ R₁ ∪ R₂ := Or.inl hp
     rw [hunion] at this
     exact this.1
-  have hR₂R : R₂ ⊆ R := fun p hp => by
+  have hR₂R := fun p hp => by
     have : p ∈ R₁ ∪ R₂ := Or.inr hp
     rw [hunion] at this
     exact this.1
@@ -88,12 +88,12 @@ theorem ChordSystem.touches_iff_of_split (hF : ChordSystem D F) {S : Set (Set Po
       rw [heq] at hW
       rcases hW with h | h
       · exact h
-      · simp only [mem_insert_iff, mem_singleton_iff] at h
+      · simp at h
         rcases h with rfl | rfl
         · exact absurd rfl hnot.1
         · exact absurd rfl hnot.2
     rw [Set.mem_sdiff, mem_singleton_iff] at hW'
-    have hdisj : Disjoint (closure W) R :=
+    have hdisj :=
       (regionsIn_disjoint_of_ne hW'.1 hR hW'.2).closure_left (hF.regionsIn_open hS hR)
     exact hdisj.notMem_of_mem_left hzW (hcR hz)
   · rintro (rfl | rfl)
@@ -106,7 +106,7 @@ theorem ChordSystem.touches_iff (hF : ChordSystem D F) {S : Set (Set Point)} (hS
     ∃ R₁ R₂ : Set Point, R₁ ≠ R₂ ∧ ∀ W ∈ regionsIn D S, TouchesIn D c W ↔ W = R₁ ∨ W = R₂ := by
   have hS' : S \ {c} ⊆ F := fun _ h => hS h.1
   have hcS' : c ∉ S \ {c} := fun h => h.2 rfl
-  have hins : insert c (S \ {c}) = S := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
+  have hins := insert_sdiff_singleton.trans (insert_eq_of_mem hc)
   obtain ⟨R, hR, hcR, R₁, R₂, hne, hunion, hR₁, hR₂, heq⟩ :=
     hF.regionsIn_insert hS' (hS hc) hcS'
   refine ⟨R₁, R₂, hne, ?_⟩
@@ -183,7 +183,7 @@ theorem ChordSystem.dualGraph_reachable_insert (hF : ChordSystem D F) {S : Set (
     have : p ∈ R₁ ∪ R₂ := Or.inr hp
     rw [hunion] at this
     exact this.1
-  have hadj12 : G'.Adj R₁ R₂ :=
+  have hadj12 :=
     dualGraphIn_adj_of_touches (mem_insert c S) hR₁ hR₂ hne ((htouch R₁ hR₁).2 (Or.inl rfl))
       ((htouch R₂ hR₂).2 (Or.inr rfl))
   -- old regions other than `R` differ from the two new ones
@@ -209,7 +209,7 @@ theorem ChordSystem.dualGraph_reachable_insert (hF : ChordSystem D F) {S : Set (
   have hedgeR : ∀ V ∈ regionsIn D S, V ≠ R → ∀ c' ∈ S, TouchesIn D c' R → TouchesIn D c' V →
       G'.Reachable R₁ V := by
     intro V hV hVR c' hc' hR' hV'
-    have hV'' : V ∈ regionsIn D (insert c S) := hold V hV hVR
+    have hV'' := hold V hV hVR
     have hne' := hnotR V hV hVR
     have hcc' : c ≠ c' := fun h => hcS (h ▸ hc')
     rcases hF.touches_split_or hc (hS hc') hcc' hunion hR' with h1 | h2
@@ -222,7 +222,7 @@ theorem ChordSystem.dualGraph_reachable_insert (hF : ChordSystem D F) {S : Set (
     obtain ⟨hU, hV, hUV', c', hc', hU', hV'⟩ := hUV
     by_cases hUR : U = R
     · subst hUR
-      have hVR : V ≠ U := Ne.symm hUV'
+      have hVR := Ne.symm hUV'
       rw [hφR, hφ V hVR]
       exact hedgeR V hV hVR c' hc' hU' hV'
     · by_cases hVR : V = R
@@ -246,7 +246,7 @@ theorem ChordSystem.dualGraph_reachable_insert (hF : ChordSystem D F) {S : Set (
     · rw [mem_singleton_iff] at hUR
       have := hreach U R (ih U hU R hR)
       rwa [hφ U hUR, hφR] at this
-    · simp only [mem_insert_iff, mem_singleton_iff] at hU
+    · simp at hU
       rcases hU with rfl | rfl
       · exact SimpleGraph.Reachable.refl _
       · exact hadj12.reachable.symm
@@ -257,14 +257,14 @@ theorem ChordSystem.dualGraph_reachable_insert (hF : ChordSystem D F) {S : Set (
 theorem ChordSystem.dualGraph_reachable (hF : ChordSystem D F) (hD : IsPreconnected D)
     (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) :
     ∀ U ∈ regionsIn D S, ∀ V ∈ regionsIn D S, (dualGraphIn D S).Reachable U V := by
-  have hfin : S.Finite := hF.finite.subset hS
+  have hfin := hF.finite.subset hS
   induction S, hfin using Set.Finite.induction_on with
   | empty =>
     intro U hU V hV
     rw [regionsIn_empty hD hne, mem_singleton_iff] at hU hV
     rw [hU, hV]
   | @insert c S hcS hSfin ih =>
-    have hS' : S ⊆ F := (subset_insert c S).trans hS
+    have hS' := (subset_insert c S).trans hS
     exact hF.dualGraph_reachable_insert hS' (hS (mem_insert c S)) hcS (ih hS')
 
 /-- The regions of a submap form a nonempty set. -/
@@ -275,7 +275,7 @@ theorem ChordSystem.regionsIn_nonempty_set (hF : ChordSystem D F) (hD : IsPrecon
 /-- The dual graph on the regions is connected. -/
 theorem ChordSystem.dualTree_connected (hF : ChordSystem D F) (hD : IsPreconnected D)
     (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) : (dualTreeIn D S).Connected := by
-  have : Nonempty (regionsIn D S) := (hF.regionsIn_nonempty_set hD hne hS).to_subtype
+  have := (hF.regionsIn_nonempty_set hD hne hS).to_subtype
   refine ⟨fun u v => ?_⟩
   have h := hF.dualGraph_reachable hD hne hS u u.2 v v.2
   rw [SimpleGraph.reachable_iff_reflTransGen] at h
@@ -286,7 +286,7 @@ theorem ChordSystem.dualTree_connected (hF : ChordSystem D F) (hD : IsPreconnect
     | refl => intro hW; exact SimpleGraph.Reachable.refl _
     | @tail W V _ hWV ih =>
       intro hV
-      have hW : W ∈ regionsIn D S := hWV.1
+      have hW := hWV.1
       have hadj : (dualTreeIn D S).Adj ⟨W, hW⟩ ⟨V, hV⟩ := hWV
       exact (ih hW).trans hadj.reachable
   exact key v h v.2
@@ -330,7 +330,7 @@ theorem ChordSystem.dualGraph_edgeSet_subset (hF : ChordSystem D F) {S : Set (Se
 /-- The dual graph has at most `S.ncard` edges. -/
 theorem ChordSystem.dualGraph_card_edgeSet_le (hF : ChordSystem D F) {S : Set (Set Point)}
     (hS : S ⊆ F) : Nat.card (dualGraphIn D S).edgeSet ≤ S.ncard := by
-  have hfin : S.Finite := hF.finite.subset hS
+  have hfin := hF.finite.subset hS
   rw [Nat.card_coe_set_eq]
   calc (dualGraphIn D S).edgeSet.ncard
       ≤ (edgeOfIn D S '' S).ncard := ncard_le_ncard (hF.dualGraph_edgeSet_subset hS) (hfin.image _)
@@ -339,7 +339,7 @@ theorem ChordSystem.dualGraph_card_edgeSet_le (hF : ChordSystem D F) {S : Set (S
 /-- The dual graph on the regions has at most `S.ncard` edges. -/
 theorem ChordSystem.dualTree_card_edgeSet_le (hF : ChordSystem D F) {S : Set (Set Point)}
     (hS : S ⊆ F) : Nat.card (dualTreeIn D S).edgeSet ≤ S.ncard := by
-  have hfin : S.Finite := hF.finite.subset hS
+  have hfin := hF.finite.subset hS
   have : Finite (dualGraphIn D S).edgeSet :=
     ((hfin.image _).subset (hF.dualGraph_edgeSet_subset hS)).to_subtype
   calc Nat.card (dualTreeIn D S).edgeSet
@@ -356,7 +356,7 @@ both is connected and acyclic. -/
 theorem ChordSystem.dual_isTree (hF : ChordSystem D F) (hD : IsPreconnected D)
     (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) :
     (dualTreeIn D S).IsTree := by
-  have : Finite (regionsIn D S) := (hF.regionsIn_finite hD hne hS).to_subtype
+  have := (hF.regionsIn_finite hD hne hS).to_subtype
   rw [SimpleGraph.isTree_iff_connected_and_card]
   have hconn := hF.dualTree_connected hD hne hS
   refine ⟨hconn, ?_⟩
@@ -369,7 +369,6 @@ theorem ChordSystem.dual_isTree (hF : ChordSystem D F) (hD : IsPreconnected D)
 /-- The dual tree has exactly `S.ncard` edges. -/
 theorem ChordSystem.dualTree_card_edgeSet (hF : ChordSystem D F) (hD : IsPreconnected D)
     (hne : D.Nonempty) {S : Set (Set Point)} (hS : S ⊆ F) : Nat.card (dualTreeIn D S).edgeSet = S.ncard := by
-  have : Finite (regionsIn D S) := (hF.regionsIn_finite hD hne hS).to_subtype
   have h1 := (hF.dualTree_connected hD hne hS).card_vert_le_card_edgeSet_add_one
   have h2 := hF.dualTree_card_edgeSet_le hS
   have h3 : Nat.card (regionsIn D S) = S.ncard + 1 := by

@@ -51,10 +51,10 @@ theorem rootLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI
     Robust.transport hN (fun a ha => hI.hm a ha)
   have hNA := hN'.nfAt
   obtain ⟨hB7, -⟩ := nf_bounds hN'
-  have hB11 : c.nreg 81134 + 11 < c₀.nreg ALLOC :=
+  have hB11 :=
     robust_addr (v := N.dec.length) fun m' hm' => (hN m' hm').2.2.2.2.1
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
-  have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
+  have hA0 := hI.hA
+  have hAW := hI.hw.1 ALLOC
   have k7 : c.nreg 81016 = 7 := by rw [hI.hin _ (by unfold FFix; omega), hE.k7]
   have k2 : c.nreg 81013 = 2 := by rw [hI.hin _ (by unfold FFix; omega), hE.k2]
   have ok : okB E.W c.nmem rootL c.nreg := by
@@ -79,20 +79,20 @@ theorem parS_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have v20 : c₁.nreg 81120 = c.nreg 81150 := by rw [e₁]; simp [regB, regI, upd]
   have f₁ : ∀ q, q ≠ 81120 → c₁.nreg q = c.nreg q := fun q h => by
     rw [e₁]; simp [regB, regI, upd, h]
-  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
+  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ by_ao
   refine FRS.seq (K₂ := 1) (halfS_fs hE hB hI₁ v20 (by rw [hA₁']; unfold paK at hroom; omega))
     (fun c₂ hI₂ hA₂ ⟨h21, h22, f₂⟩ => ?_)
   have k1 : c₂.nreg 81012 = 1 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k1]
   have ok3 : okB E.W c₂.nmem [.subN 81151 81012 81122] c₂.nreg := by
     simp only [okB, okI, FScr, FOut]; norm_num
-  refine (FRS.block hB _ hI₂ ok3).mono (by simp) (fun c' h' => ?_)
+  refine (FRS.block hB _ hI₂ ok3).mono by_s (fun c' h' => ?_)
   have e' : ∀ q, c'.nreg q = regB c₂.nmem [.subN 81151 81012 81122] c₂.nreg q := fun q => by
     rw [h']
   refine ⟨?_, ?_, fun q h1 h2 => ?_⟩
   · rw [e']; simp [regB, regI, upd]; exact h21
   · rw [e']; simp [regB, regI, upd, k1, h22]
   · rw [e']; simp [regB, regI, upd, h2]
-    rw [f₂ q (by omega) (by omega) (by omega) (by omega) (by omega), f₁ q (by omega)]
+    rw [f₂ q by_o by_o by_o by_o by_o, f₁ q by_o]
 
 /-- A valid decomposition code. -/
 def VCode (N : NF) (x : ℕ) : Prop :=
@@ -145,27 +145,27 @@ theorem desc_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have k0 := k0_of hE hI
   have hev : c.nreg 81150 % 2 = 0 := by rw [k0, h51] at hg; omega
   have hk : c.nreg 81150 / 2 < Nα.nChords := by rcases hv with h | h <;> omega
-  have hx : c.nreg 81150 = 2 * (c.nreg 81150 / 2) := by omega
+  have hx : c.nreg 81150 = 2 * (c.nreg 81150 / 2) := by_o
   -- the depth bound
   have hdep : c.nreg 81142 ≤ dd := by
     obtain ⟨j, hj, hjr⟩ := hDd.2.2.2.2.2.2.1 (c.nreg 81150) (fun _ => hk)
     by_contra h
-    exact hnot j (by omega) hjr
+    exact hnot j by_o hjr
   have nd : ∀ q, 81011 ≤ q → q < 83000 → ¬ DescW q → ¬ NodeW q := fun q _ _ h h' => h (Or.inl h')
   have rg : ∀ q, (81130 ≤ q ∧ q ≤ 81141) → c.nreg q = cs.nreg q := fun q h =>
-    fr q (by omega) (by omega) (fun h' => by
+    fr q by_o by_o (fun h' => by
       rcases h' with h' | h' | h' | h'
       · unfold NodeW KeyW VertW at h'; omega
       · unfold LeafW KeyW VertW at h'; omega
       · omega
       · omega)
   obtain ⟨r30, r31, r32, r33, r34, r35⟩ := hR
-  have hRc : SRegs c g g' L Dα Bα := ⟨by rw [rg _ (by omega), r30], by rw [rg _ (by omega), r31],
-    by rw [rg _ (by omega), r32], by rw [rg _ (by omega), r33], by rw [rg _ (by omega), r34],
-    by rw [rg _ (by omega), r35]⟩
+  have hRc : SRegs c g g' L Dα Bα := ⟨by rw [rg _ by_o, r30], by rw [rg _ by_o, r31],
+    by rw [rg _ by_o, r32], by rw [rg _ by_o, r33], by rw [rg _ by_o, r34],
+    by rw [rg _ by_o, r35]⟩
   have hJc : c.nreg 81140 < E.M.W.n ∧
       ProperPos E.M (Qof E.P) E.P.n ⟨c.nreg 81140, c.nreg 81141⟩ := by
-    rw [rg _ (by omega), rg 81141 (by omega)]; exact hJ
+    rw [rg _ by_o, rg 81141 by_o]; exact hJ
   have hx' : 2 * (c.nreg 81150 / 2) ≤ maxCode Nα := by unfold maxCode; omega
   refine FRS.seq (K₁ := ndK E (2 * (c.nreg 81150 / 2))) (K₂ := paK E (maxCode Nα) + 1)
     (node_fs hE hB hBT hI hw hP hRc hJc hx hk (by
@@ -192,35 +192,35 @@ theorem desc_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     (by unfold paK; have := halfK_mono (n := E.P.n) hx₂; omega) (fun _ h => h)
   have k1 : c₃.nreg 81012 = 1 := by rw [hI₃.hin _ (by unfold FFix; omega), hE.k1]
   have y42 : c₃.nreg 81142 = c.nreg 81142 := by
-    rw [f₃ _ (by omega) (by norm_num), f₂ _ (by norm_num) (by norm_num)
+    rw [f₃ _ by_o by_n, f₂ _ by_n by_n
       (by unfold NodeW KeyW VertW; omega)]
   have ok : okB E.W c₃.nmem [.addN 81142 81142 81012] c₃.nreg := by
     simp only [okB, okI, FScr, FOut, k1, y42]; norm_num; omega
-  refine (FRS.block hB _ hI₃ ok).mono (by simp) (fun c₄ h₄ => ?_)
+  refine (FRS.block hB _ hI₃ ok).mono by_s (fun c₄ h₄ => ?_)
   have e₄ : ∀ q, c₄.nreg q = regB c₃.nmem [.addN 81142 81142 81012] c₃.nreg q := fun q => by
     rw [h₄]
   have f₄ : ∀ q, q ≠ 81142 → c₄.nreg q = c₃.nreg q := fun q h => by
     rw [e₄]; simp [regB, regI, upd, h]
   have v42 : c₄.nreg 81142 = c.nreg 81142 + 1 := by rw [e₄]; simp [regB, regI, upd, k1, y42]
   have z50 : c₄.nreg 81150 = c₂.nreg 81150 := by
-    rw [f₄ _ (by norm_num), f₃ _ (by omega) (by norm_num)]
+    rw [f₄ _ by_n, f₃ _ by_o by_n]
   have z07 : c₄.nreg 81007 = c₂.nreg 81007 := by
-    rw [f₄ _ (by norm_num), f₃ _ (by omega) (by norm_num)]
-  refine ⟨⟨w₂.congr' (fun q a b => by rw [f₄ q (by omega), f₃ q (by omega) (by omega)]),
-    fun q a b hq => ?_, fun h => by rw [z07]; exact m₂ (mo h), by rw [z50]; exact hv₂,
-    by rw [f₄ _ (by norm_num), p51, z50], by rw [f₄ _ (by norm_num), p21, z50],
-    by rw [v42, z50, Function.iterate_succ_apply, hpar₂, ← hx]; exact hpath, fun t ht => ?_,
+    rw [f₄ _ by_n, f₃ _ by_o by_n]
+  refine ⟨⟨w₂.congr' (fun q a b => by rw [f₄ q by_o, f₃ q by_o by_o]),
+    fun q a b hq => ?_, fun h => by rw [z07]; exact m₂ (mo h), by rwa [z50],
+    by rw [f₄ _ by_n, p51, z50], by rw [f₄ _ by_n, p21, z50],
+    by rwa [v42, z50, Function.iterate_succ_apply, hpar₂, ← hx], fun t ht => ?_,
     fun reg ai bi aj bj dX regα T hD hJ' hJr' => ?_⟩, by rw [v42]; omega⟩
   · rw [f₄ q (fun h => hq (Or.inr (Or.inr (Or.inr h)))),
-      f₃ q (fun h => hq (Or.inl (Or.inr (Or.inr (Or.inl ⟨by omega, by omega⟩)))))
+      f₃ q (fun h => hq (Or.inl (Or.inr (Or.inr (Or.inl ⟨by_o, by_o⟩)))))
         (fun h => hq (Or.inr (Or.inr (Or.inl h)))), f₂ q a b (nd q a b hq), fr q a b hq]
   · rw [v42] at ht
     rw [z50]
     rcases Nat.eq_zero_or_pos t with rfl | htp
     · exact hnr₂
-    · obtain ⟨s, rfl⟩ : ∃ s, t = s + 1 := ⟨t - 1, by omega⟩
+    · obtain ⟨s, rfl⟩ : ∃ s, t = s + 1 := ⟨t - 1, by_o⟩
       rw [Function.iterate_succ_apply, hpar₂, ← hx]
-      exact hnot s (by omega)
+      exact hnot s by_o
   · rw [z07, z50]
     rcases hcomp reg ai bi aj bj dX regα T hD hJ' hJr' with h | hb
     · exact Or.inl (m₂ h)
@@ -229,8 +229,8 @@ theorem desc_body (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       · right
         have h0 : c₂.nreg 81007 = 0 := by have := w₂.1; omega
         rw [hx] at hb
-        exact node_dec hE hP hRc hD (by rw [rg 81140 (by omega), rg 81141 (by omega)]; exact hJ')
-          (by rw [rg 81140 (by omega), rg 81141 (by omega)]; exact hJr') hw hk hb raw₂ h0
+        exact node_dec hE hP hRc hD (by rw [rg 81140 by_o, rg 81141 by_o]; exact hJ')
+          (by rw [rg 81140 by_o, rg 81141 by_o]; exact hJr') hw hk hb raw₂ h0
 
 /-- **The descent of a stretch.** -/
 def descS (sT : Stmt) : Stmt :=
@@ -276,19 +276,19 @@ theorem desc_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     (parS_fs hE hB hI₁ (by unfold descK at hroom; omega))
     (fun c₂ hI₂ hA₂ ⟨p21, p51, f₂⟩ => ?_) |>.mono (by unfold descK; omega) (fun _ h => h)
   have g₂ : ∀ q, 81011 ≤ q → q < 83000 → ¬ DescW q → c₂.nreg q = c.nreg q := fun q a b hq => by
-    rw [f₂ q (fun h => hq (Or.inl (Or.inr (Or.inr (Or.inl ⟨by omega, by omega⟩)))))
+    rw [f₂ q (fun h => hq (Or.inl (Or.inr (Or.inr (Or.inl ⟨by_o, by_o⟩)))))
       (fun h => hq (Or.inr (Or.inr (Or.inl h)))),
       f₁ q (fun h => hq (Or.inl (Or.inr (Or.inr (Or.inr (Or.inl h))))))
         (fun h => hq (Or.inr (Or.inr (Or.inr h))))]
   have y50 : c₂.nreg 81150 = Nα.root := by
-    rw [f₂ _ (by omega) (by norm_num), v50]
+    rw [f₂ _ by_o by_n, v50]
   have y42 : c₂.nreg 81142 = 0 := by
-    rw [f₂ _ (by omega) (by norm_num), v42]
+    rw [f₂ _ by_o by_n, v42]
   have e07 : ∀ q, 81007 ≤ q → q ≤ 81010 → c₂.nreg q = c.nreg q := fun q a b => by
-    rw [f₂ q (by omega) (by omega), f₁ q (by omega) (by omega)]
+    rw [f₂ q by_o by_o, f₁ q by_o by_o]
   have hL₂ : DInv E c₀ c Cα Nα g g' L c₂ := by
-    refine ⟨hw.congr' e07, g₂, fun h => by rw [e07 _ le_rfl (by norm_num)]; exact h,
-      by rw [y50]; exact hv0, by rw [p51, v50, y50],
+    refine ⟨hw.congr' e07, g₂, fun h => by rwa [e07 _ le_rfl by_n],
+      by rwa [y50], by rw [p51, v50, y50],
       by rw [p21, v50, y50], by rw [y42, y50]; rfl, fun t ht => by rw [y42] at ht; omega,
       fun reg ai bi aj bj dX regα T hD _ _ => Or.inr (by rw [y50]; exact below_root hDd hD.hT)⟩
   -- the loop
@@ -305,41 +305,41 @@ theorem desc_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       (fun d hId hd hgd hroomd => desc_body hE hB hBT hP hR' hDd hJ hdW hId hd hgd hroomd)
       hI₂ hL₂ (by rw [y42, Nat.sub_zero]; unfold descK at hroom; omega)).mono
       (by rw [y42, Nat.sub_zero]) (fun _ h => h))
-    (fun c₃ hI₃ hA₃ ⟨hL₃, hex⟩ => ?_) |>.mono le_rfl (fun _ h => h)
+    (fun c₃ hI₃ hA₃ ⟨hL₃, hex⟩ => ?_) |>.le
   · obtain ⟨-, frd, -, hvd, h51d, -, -, hnotd, -⟩ := hd
-    rw [frd _ (by norm_num) (by norm_num) (nDW _ (Or.inl rfl)), k0c, h51d] at hgd
+    rw [frd _ by_n by_n (nDW _ (Or.inl rfl)), k0c, h51d] at hgd
     have hk : d.nreg 81150 / 2 < Nα.nChords := by rcases hvd with h | h <;> omega
     obtain ⟨j, hj, hjr⟩ := hDd.2.2.2.2.2.2.1 (d.nreg 81150) (fun _ => hk)
     have : d.nreg 81142 ≤ j := by
       by_contra h
-      exact hnotd j (by omega) hjr
+      exact hnotd j by_o hjr
     omega
   obtain ⟨hw₃, fr₃, mo₃, hv₃, h51₃, h21₃, -, -, hcomp₃⟩ := hL₃
-  rw [fr₃ _ (by norm_num) (by norm_num) (nDW _ (Or.inl rfl)), k0c, h51₃] at hex
-  have hodd : c₃.nreg 81150 % 2 = 1 := by omega
+  rw [fr₃ _ by_n by_n (nDW _ (Or.inl rfl)), k0c, h51₃] at hex
+  have hodd : c₃.nreg 81150 % 2 = 1 := by_o
   have hrn : c₃.nreg 81150 / 2 < Nα.nRegions := by rcases hv₃ with h | h <;> omega
   have rg₃ : ∀ q, (81130 ≤ q ∧ q ≤ 81141) → c₃.nreg q = c.nreg q := fun q h =>
-    fr₃ q (by omega) (by omega) (nDW q (Or.inr (Or.inl h)))
-  have hR₃ : SRegs c₃ g g' L Dα Bα := ⟨by rw [rg₃ _ (by omega), r30], by rw [rg₃ _ (by omega), r31],
-    by rw [rg₃ _ (by omega), r32], by rw [rg₃ _ (by omega), r33], by rw [rg₃ _ (by omega), r34],
-    by rw [rg₃ _ (by omega), r35]⟩
+    fr₃ q by_o by_o (nDW q (Or.inr (Or.inl h)))
+  have hR₃ : SRegs c₃ g g' L Dα Bα := ⟨by rw [rg₃ _ by_o, r30], by rw [rg₃ _ by_o, r31],
+    by rw [rg₃ _ by_o, r32], by rw [rg₃ _ by_o, r33], by rw [rg₃ _ by_o, r34],
+    by rw [rg₃ _ by_o, r35]⟩
   have hlm : lmu Cα (Qof E.P) Nα (c₃.nreg 81150 / 2) (2 * Cα.m + 7) ≤ lmuB Cα (Qof E.P) Nα :=
     Finset.le_sup (f := fun r => lmu Cα (Qof E.P) Nα r (2 * Cα.m + 7)) (Finset.mem_range.2 hrn)
   have hlm' := Nat.mul_le_mul_left (lbK E + 2) hlm
   refine (leaf_fs hE hB hBT hI₃ hw₃ hP hR₃ h21₃ hrn hnW h2α (hWa _ hrn)
-    (by unfold descK at hroom; omega)).mono (by omega)
+    (by unfold descK at hroom; omega)).mono by_o
     (fun c' ⟨w', f', m', gl⟩ => ⟨w', fun q a b hq => by
       rw [f' q a b (fun h => hq (Or.inr (Or.inl h))), fr₃ q a b hq], fun h => m' (mo₃ h), ?_⟩)
   intro reg ai bi aj bj dX regα T hD hJa hJr
   rcases hcomp₃ reg ai bi aj bj dX regα T hD hJa hJr with h | hb
   · exact m' h
-  have hx2 : c₃.nreg 81150 = 2 * (c₃.nreg 81150 / 2) + 1 := by omega
+  have hx2 : c₃.nreg 81150 = 2 * (c₃.nreg 81150 / 2) + 1 := by_o
   rw [hx2] at hb
   have hrT := leaf_target hDd hrn hD.hT hb
   have hS := hP.hS
   have hsimp : Cα.P.Simple := by rw [hP.hQ]; exact (shearInvariance (epsOf E.P) E.P).1 hE.hG.1
   have hGα : GoodModel (chainModel Cα) := Or.inl ⟨Cα, hsimp, rfl⟩
-  have hnα : (chainModel Cα).W.n = 2 * Cα.m + 7 := Stretch.nα Cα
+  have hnα := Stretch.nα Cα
   have hXn : g' + dX < (chainModel Cα).W.n := by
     rw [hnα]; have := hD.hXL; have := hS.hgL; omega
   obtain ⟨t, ht, hjt, hcl⟩ := arc_of_target hGα hP.hNα hD hXn

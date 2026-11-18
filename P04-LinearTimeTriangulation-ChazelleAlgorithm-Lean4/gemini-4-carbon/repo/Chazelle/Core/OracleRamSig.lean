@@ -71,18 +71,18 @@ theorem wr_load (t : ℕ) (ht : 10000 ≤ t ∧ t + 2 < 10500) (s : SymSrc) :
 theorem holds_congr {c c' : Config} {s : SymSrc} {p : SymPt} (hs : s.Out)
     (hc : ∀ r, Bk r = false → c'.nreg r = c.nreg r) (h : s.Holds c p) : s.Holds c' p := by
   cases s with
-  | vtx r => simp only [SymSrc.Holds] at h ⊢; rw [hc r hs]; exact h
+  | vtx r => simp only [SymSrc.Holds] at h ⊢; rwa [hc r hs]
   | edge re rh =>
-    simp only [SymSrc.Holds] at h ⊢; rw [hc re hs.1, hc rh hs.2]; exact h
+    simp only [SymSrc.Holds] at h ⊢; rwa [hc re hs.1, hc rh hs.2]
   | regs r =>
     simp only [SymSrc.Holds] at h ⊢
     cases p with
     | vtx i =>
       simp only [SymPtIn] at h ⊢
-      rw [hc r hs.1, hc (r + 1) hs.2.1]; exact h
+      rwa [hc r hs.1, hc (r + 1) hs.2.1]
     | onEdge e h' =>
       simp only [SymPtIn] at h ⊢
-      rw [hc r hs.1, hc (r + 1) hs.2.1, hc (r + 2) hs.2.2]; exact h
+      rwa [hc r hs.1, hc (r + 1) hs.2.1, hc (r + 2) hs.2.2]
 
 /-- Close a goal about explicit register updates by case analysis. -/
 macro "upd_solve" : tactic =>
@@ -102,7 +102,7 @@ theorem load_exec {P : Polygon} {W : ℕ} (t : ℕ) (hW : 1 ≤ W) (s : SymSrc) 
     simp only [SymSrc.load]
     exec_block
     · omega
-    · refine ⟨by omega, ?_, fun r' h1' h2' h3' => ?_⟩
+    · refine ⟨by_o, ?_, fun r' h1' h2' h3' => ?_⟩
       · simp only [SymPtIn]
         config_simp
         refine ⟨?_, ?_⟩ <;> upd_solve
@@ -116,7 +116,7 @@ theorem load_exec {P : Polygon} {W : ℕ} (t : ℕ) (hW : 1 ≤ W) (s : SymSrc) 
     simp only [SymSrc.load]
     exec_block
     · omega
-    · refine ⟨by omega, ?_, fun r' h1' h2' h3' => ?_⟩
+    · refine ⟨by_o, ?_, fun r' h1' h2' h3' => ?_⟩
       · simp only [SymPtIn]
         config_simp
         refine ⟨?_, ?_, ?_⟩ <;> upd_solve
@@ -129,7 +129,7 @@ theorem load_exec {P : Polygon} {W : ℕ} (t : ℕ) (hW : 1 ≤ W) (s : SymSrc) 
     have h3 := hts (r + 2) hs.2.2
     simp only [SymSrc.load]
     exec_block
-    refine ⟨by omega, ?_, fun r' h1' h2' h3' => ?_⟩
+    refine ⟨by_o, ?_, fun r' h1' h2' h3' => ?_⟩
     · cases p with
       | vtx i =>
         simp only [SymPtIn] at hp ⊢
@@ -156,20 +156,20 @@ theorem sgnS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
     ∃ c' k, Exec P W (sgnS op s₁ s₂ s₃) c c' k ∧ k ≤ 245 ∧ FrameB Bk c c' ∧
       c'.nreg 10010 ≤ 1 ∧
       (c'.nreg 10010 = 1 ↔ SignTest op (p₁.eval (Qof P)) (p₂.eval (Qof P)) (p₃.eval (Qof P))) := by
-  have hW1 : 1 ≤ W := by omega
+  have hW1 : 1 ≤ W := by_o
   obtain ⟨c₁, k₁, e₁, hk₁, i₁, r₁⟩ := load_exec (P := P) 10000 hW1 s₁ c hw o₁
-    (fun r hr => Bk_false_ne hr 10000 (by norm_num)) h₁
-  have f₁ := exec_frameB e₁ (wr_load 10000 (by norm_num) s₁)
+    (fun r hr => Bk_false_ne hr 10000 by_n) h₁
+  have f₁ := exec_frameB e₁ (wr_load 10000 by_n s₁)
   obtain ⟨c₂, k₂, e₂, hk₂, i₂, r₂⟩ := load_exec (P := P) 10003 hW1 s₂ c₁ e₁.wb_right o₂
-    (fun r hr => Bk_false_ne hr 10003 (by norm_num)) (holds_congr o₂ f₁.1 h₂)
-  have f₂ := exec_frameB e₂ (wr_load 10003 (by norm_num) s₂)
+    (fun r hr => Bk_false_ne hr 10003 by_n) (holds_congr o₂ f₁.1 h₂)
+  have f₂ := exec_frameB e₂ (wr_load 10003 by_n s₂)
   obtain ⟨c₃, k₃, e₃, hk₃, i₃, r₃⟩ := load_exec (P := P) 10006 hW1 s₃ c₂ e₂.wb_right o₃
-    (fun r hr => Bk_false_ne hr 10006 (by norm_num))
+    (fun r hr => Bk_false_ne hr 10006 by_n)
     (holds_congr o₃ (fun r hr => (f₂.1 r hr).trans (f₁.1 r hr)) h₃)
-  have f₃ := exec_frameB e₃ (wr_load 10006 (by norm_num) s₃)
+  have f₃ := exec_frameB e₃ (wr_load 10006 by_n s₃)
   have w₄ := WordsBounded.upd_nreg e₃.wb_right (show op ≤ W by omega) c₃.pc (r := 10009)
-  have e₄ := Exec.constN e₃.wb_right 10009 op (P := P) (show op ≤ W by omega)
-  set c₄ : Config := { c₃ with nreg := upd c₃.nreg 10009 op } with hc₄
+  have e₄ := Exec.constN e₃.wb_right 10009 op (P := P) (by omega)
+  set c₄ := { c₃ with nreg := upd c₃.nreg 10009 op } with hc₄
   -- the slots survive the later loads
   have keep : ∀ (d : Config) (t : ℕ) (q : SymPt), SymPtIn d t q →
       ∀ d' : Config, (∀ r, r = t ∨ r = t + 1 ∨ r = t + 2 → d'.nreg r = d.nreg r) →
@@ -178,21 +178,20 @@ theorem sgnS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
     cases q with
     | vtx i =>
       simp only [SymPtIn] at hq ⊢
-      rw [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl))]; exact hq
+      rwa [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl))]
     | onEdge e h =>
       simp only [SymPtIn] at hq ⊢
-      rw [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl)), hd (t + 2) (Or.inr (Or.inr rfl))]
-      exact hq
+      rwa [hd t (Or.inl rfl), hd (t + 1) (Or.inr (Or.inl rfl)), hd (t + 2) (Or.inr (Or.inr rfl))]
   have j₁ : SymPtIn c₄ 10000 p₁ := keep c₁ 10000 p₁ i₁ c₄ fun r hr => by
     rw [hc₄]; config_simp
-    rw [Machine.upd_other _ _ _ (by omega), r₃ r (by omega) (by omega) (by omega),
-      r₂ r (by omega) (by omega) (by omega)]
+    rw [Machine.upd_other _ _ _ by_o, r₃ r by_o by_o by_o,
+      r₂ r by_o by_o by_o]
   have j₂ : SymPtIn c₄ 10003 p₂ := keep c₂ 10003 p₂ i₂ c₄ fun r hr => by
     rw [hc₄]; config_simp
-    rw [Machine.upd_other _ _ _ (by omega), r₃ r (by omega) (by omega) (by omega)]
+    rw [Machine.upd_other _ _ _ by_o, r₃ r by_o by_o by_o]
   have j₃ : SymPtIn c₄ 10006 p₃ := keep c₃ 10006 p₃ i₃ c₄ fun r hr => by
     rw [hc₄]; config_simp
-    rw [Machine.upd_other _ _ _ (by omega)]
+    rw [Machine.upd_other _ _ _ by_o]
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, bit₅, sig₅⟩ := sig_exec (P := P) c₄ w₄ hG hW
     (by rw [hc₄]; config_simp; omega) l₁ l₂ l₃ j₁ j₂ j₃
   have op₄ : c₄.nreg 10009 = op := by rw [hc₄]; config_simp
@@ -201,7 +200,7 @@ theorem sgnS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) 
     refine ⟨fun r hr => ?_, fun _ _ => rfl, rfl, rfl, rfl⟩
     rw [hc₄]; config_simp
     rw [Machine.upd_other _ _ _ (by simp only [Bk, decide_eq_false_iff_not, not_and, not_lt] at hr; omega)]
-  refine ⟨c₅, k₁ + (k₂ + (k₃ + (1 + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega,
+  refine ⟨c₅, k₁ + (k₂ + (k₃ + (1 + k₅))), .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by_o,
     f₁.trans (f₂.trans (f₃.trans (f₄.trans f₅))), bit₅, sig₅⟩
 
 end

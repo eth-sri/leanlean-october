@@ -50,7 +50,7 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
       d'.nmem = d.nmem ∧ FrameM (fun q => decide (q = 215045) || decide (215052 ≤ q ∧ q ≤ 215054) ||
         decide (215056 ≤ q ∧ q ≤ 215063)) d d' := by
 
-  have e5 : ∀ a b : ℕ, a + (b + b + (b + b) + b) = a + 5 * b := fun a b => by ring
+  have e5 : ∀ a b : ℕ, a + (b + b + (b + b) + b) = a + 5 * b := fun a b => by_r
   obtain ⟨d', k, ex, hk, hpost, hm⟩ : ∃ d' k, Exec P W chTest d d' k ∧ k ≤ 30 ∧
       (if (N.chord i).lpos = x then
         d'.nreg 215052 = (N.chord i).rpos.edge ∧ d'.nreg 215053 = (N.chord i).rpos.hgt ∧
@@ -69,7 +69,7 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
       refine spec_ifLtN_true (by config_simp; simp only [h55, hi, hK.one, e5, hh, hlp, h46, h47]; omega) ?_
       exec_block
       · omega
-      refine ⟨by omega, ?_, rfl⟩
+      refine ⟨by_o, ?_, rfl⟩
       simp only [hL, ↓reduceIte]
       refine ⟨?_, ?_, ?_⟩ <;> config_simp <;>
         (try simp only [h55, hi, hK.one, e5, hh, hrp]) <;> rfl
@@ -80,16 +80,16 @@ theorem chTest_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {
         refine spec_ifLtN_true (by config_simp; simp only [h55, hi, hK.one, e5, hh, hrp, h46, h47]; omega) ?_
         exec_block
         · omega
-        refine ⟨by omega, ?_, rfl⟩
+        refine ⟨by_o, ?_, rfl⟩
         simp only [hL, hR, ↓reduceIte]
         refine ⟨?_, ?_, ?_⟩ <;> config_simp <;>
           (try simp only [h55, hi, hK.one, e5, hh, hlp]) <;> rfl
       · have hR' : ¬ ((N.chord i).rp = x.edge ∧ (N.chord i).h + 1 = x.hgt) := fun h => hR (rpos_eq_iff.2 h)
         refine spec_ifLtN_false (by config_simp; simp only [h55, hi, hK.one, e5, hh, hrp, h46, h47]; omega) ?_
-        refine spec_skip ‹_› ⟨by omega, ?_, rfl⟩
+        refine spec_skip ‹_› ⟨by_o, ?_, rfl⟩
         simp only [hL, hR, ↓reduceIte]
         refine ⟨?_, ?_, ?_⟩ <;> config_simp
-  exact ⟨d', k, ex, hk, hpost, hm, exec_frameM ex (by decide)⟩
+  exact ⟨d', k, ex, hk, hpost, hm, exec_frameM ex by_d⟩
 
 
 /-- The search predicate of `partner`. -/
@@ -140,7 +140,7 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
       · omega
       · omega
       refine ⟨rfl, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> simp only [h46, h47]
-    exact ⟨d₀, k₀, e₀, hk₀, a52, a53, a54, a55, m₀, exec_frameM e₀ (by decide)⟩
+    exact ⟨d₀, k₀, e₀, hk₀, a52, a53, a54, a55, m₀, exec_frameM e₀ by_d⟩
   -- the loop
   let Inv : ℕ → Config → Prop := fun v e => WordsBounded W e ∧ e.nreg 215055 = v ∧
     e.nreg 215031 = cs.length ∧
@@ -152,13 +152,13 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
     (ir := 215055) (nr := 215031) Inv 33 cs.length
     (fun v e ⟨hw, h1, h2, _⟩ => ⟨hw, h1, h2⟩)
     (fun v e hv ⟨hwe, e55, e31, e52, e53, e54, fe, me⟩ => by
-      have g : ∀ q, Bpart q = false → e.nreg q = d.nreg q := fe.1
-      have Ke : Kst n li e := hK.frame fe (by decide)
+      have g := fe.1
+      have Ke : Kst n li e := hK.frame fe by_d
       have hfs := find_take_succ (p := pmatch N x) hv
       have hmem : cs.getD v 0 ∈ cs := by
         rw [List.getD_eq_getElem _ _ hv]; exact List.getElem_mem hv
       obtain ⟨hi1, hil, hir, hih⟩ := hF.hch _ hmem
-      have Ke' : e.nreg 215020 = 1 := Ke.one
+      have Ke' := Ke.one
       obtain ⟨e', k, ex, hk, p55, p52, p53, p54, pm⟩ : ∃ e' k, Exec P W chBody e e' k ∧ k ≤ 33 ∧
           e'.nreg 215055 = v + 1 ∧
           e'.nreg 215052 = (resOf N x ((cs.take (v + 1)).find? (pmatch N x))).edge ∧
@@ -171,12 +171,12 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
         | some i₀ =>
           rw [hfound] at e52 e53 e54
           simp only [Option.isSome_some, ↓reduceIte] at e54
-          refine spec_ifLtN_false (by omega) ?_
+          refine spec_ifLtN_false by_o ?_
           refine spec_skip hwe ?_
           exec_block
           · omega
           rw [hfs, hfound, Option.some_or]
-          refine ⟨by omega, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp
+          refine ⟨by_o, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp
           · omega
           · exact e52
           · exact e53
@@ -184,15 +184,15 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
         | none =>
           rw [hfound] at e52 e53 e54
           simp only [Option.isSome_none, Bool.false_eq_true, ↓reduceIte, resOf] at e52 e53 e54
-          refine spec_ifLtN_true (by omega) ?_
+          refine spec_ifLtN_true by_o ?_
           set i := cs.getD v 0 with hidef
           obtain ⟨r1, r2, r3, r4⟩ := hrec i hi1
           obtain ⟨c1, c2⟩ := hch v hv
-          have t46 : e.nreg 215046 = x.edge := by rw [g _ (by decide), h46]
-          have t47 : e.nreg 215047 = x.hgt := by rw [g _ (by decide), h47]
-          have t27 : e.nreg 215027 = d.nreg 215027 := g _ (by decide)
-          have t29 : e.nreg 215029 = d.nreg 215029 := g _ (by decide)
-          have t25 : e.nreg 215025 = d.nreg 215025 := g _ (by decide)
+          have t46 : e.nreg 215046 = x.edge := by rw [g _ by_d, h46]
+          have t47 : e.nreg 215047 = x.hgt := by rw [g _ by_d, h47]
+          have t27 : e.nreg 215027 = d.nreg 215027 := g _ by_d
+          have t29 : e.nreg 215029 = d.nreg 215029 := g _ by_d
+          have t25 : e.nreg 215025 = d.nreg 215025 := g _ by_d
           have ti : e.nmem (e.nreg 215027 + (e.nreg 215029 + v)) = i := by rw [me, t27, t29, c1]
           have tiW : e.nreg 215027 + (e.nreg 215029 + v) ≤ W := by rw [t27, t29]; exact c2
           have th : e.nmem (e.nreg 215025 + 5 * i) = (N.chord i).h := by rw [me, t25, r1]
@@ -202,12 +202,12 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
           refine spec_use (chTest_exec (P := P) e hwe Ke t46 t47 e55 ti tiW th tl tr tW hxe hxh
             hil hir hih hW) ?_
           intro c₁ k₁ hk₁ hw₁ ⟨hpost, hm₁, hf₁⟩
-          have q55 : c₁.nreg 215055 = v := by rw [hf₁.1 _ (by decide), e55]
-          have q20 : c₁.nreg 215020 = 1 := by rw [hf₁.1 _ (by decide), Ke']
+          have q55 : c₁.nreg 215055 = v := by rw [hf₁.1 _ by_d, e55]
+          have q20 : c₁.nreg 215020 = 1 := by rw [hf₁.1 _ by_d, Ke']
           exec_block
           · omega
           rw [hfs, hfound, Option.none_or]
-          refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+          refine ⟨by_o, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
           · omega
           all_goals by_cases hL : (N.chord i).lpos = x <;> by_cases hR : (N.chord i).rpos = x <;>
             simp only [hL, hR, ↓reduceIte] at hpost <;>
@@ -215,11 +215,11 @@ theorem partS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n : ℕ} {N
               ↓reduceIte, resOf, Option.isSome_some, Option.isSome_none, Bool.false_eq_true,
               hpost.1, hpost.2.1, hpost.2.2, e52, e53, e54, hm₁]
       have fe' := exec_frameM ex wrM_chBody
-      exact ⟨e', k, ex, ⟨ex.wb_right, p55, by rw [fe'.1 _ (by decide), e31], p52, p53, p54,
+      exact ⟨e', k, ex, ⟨ex.wb_right, p55, by rw [fe'.1 _ by_d, e31], p52, p53, p54,
         fe.trans fe', pm.trans me⟩, hk⟩)
-    (j := 0) ⟨e₀.wb_right, a55, by rw [f₀.1 _ (by decide), h31], by simp [resOf, a52],
+    (j := 0) ⟨e₀.wb_right, a55, by rw [f₀.1 _ by_d, h31], by simp [resOf, a52],
       by simp [resOf, a53], by simp [a54], f₀, m₀⟩ (Nat.zero_le _)
-  refine ⟨d', k₀ + k, .seq e₀ ex, by omega, ?_, ?_, m', f'⟩
+  refine ⟨d', k₀ + k, .seq e₀ ex, by_o, ?_, ?_, m', f'⟩
   · rw [v52, List.take_length, partner_eq]
   · rw [v53, List.take_length, partner_eq]
 

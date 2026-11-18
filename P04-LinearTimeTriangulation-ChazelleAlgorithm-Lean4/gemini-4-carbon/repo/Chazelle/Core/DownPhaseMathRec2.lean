@@ -68,7 +68,7 @@ theorem chordPos_ne (hN : IsNF M Q N) (hM : WalkAx M) {i : ℕ} (hi : i < N.nCho
   apply hab
   obtain ⟨ha2, ha1, ha1'⟩ := ha
   obtain ⟨hb2, hb1, hb1'⟩ := hb
-  exact Prod.ext (by linarith) (ha2.trans hb2.symm)
+  exact Prod.ext by_l (ha2.trans hb2.symm)
 
 end
 
@@ -79,7 +79,7 @@ theorem atVtx_iff {N : NF} (hN : IsNF (interiorModel Q) Q N) (hdh : DistinctHeig
       (interiorModel Q).key Q x = ⌊(interiorModel Q).key Q x⌋₊ := by
   obtain ⟨i, hi, hxi⟩ := hx
   obtain ⟨-, hA, ek, eh, hh, hy⟩ := chordPos_attach hN hi hxi
-  have hp : x.edge < Q.n := walk_n Q ▸ hA.1
+  have hp := walk_n Q ▸ hA.1
   have hW : (interiorModel Q).W = interiorWalk Q := rfl
   rw [ek, floor_add hA.2.1 hA.2.2.1]
   unfold atVtx
@@ -98,7 +98,7 @@ theorem atVtx_iff {N : NF} (hN : IsNF (interiorModel Q) Q N) (hdh : DistinctHeig
       · rw [h]; unfold Model.wa; rw [hW, walk_vtx hli hp, sub_self, zero_div]
     rw [hpar, add_zero]
   · intro h
-    have hp0 : (interiorModel Q).param Q x = 0 := by linarith
+    have hp0 : (interiorModel Q).param Q x = 0 := by_l
     rw [hp0, Chazelle.Chain.sidePt_zero, hW, walk_vtx hli hp] at hy
     by_contra hne
     exact hdh _ _ hh (ivB_lt li hp) hne hy.symm
@@ -173,11 +173,11 @@ theorem regArcs_facts (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L
     have := (hA1 _ hj).2
     rw [hreg] at this
     exact ⟨hj, this⟩
-  · obtain ⟨hj, hreg⟩ := hmem t (by omega)
+  · obtain ⟨hj, hreg⟩ := hmem t by_o
     obtain ⟨hj', hreg'⟩ := hmem t' ht'
     have hlt : as.getD t 0 < as.getD t' 0 := by
-      rw [hget t (by omega), hget t' ht']
-      exact List.pairwise_iff_getElem.1 hsorted t t' (by omega) ht' htt
+      rw [hget t by_o, hget t' ht']
+      exact List.pairwise_iff_getElem.1 hsorted t t' by_o ht' htt
     have hle : (interiorModel Q).key Q (N.arc (as.getD t 0)).s ≤
         (interiorModel Q).key Q (N.arc (as.getD t' 0)).s := by
       have := List.pairwise_iff_getElem.1 hseq (as.getD t 0) (as.getD t' 0)
@@ -188,7 +188,7 @@ theorem regArcs_facts (hQ : Q.Simple) (hL : ChordTriplesOK (interiorModel Q) Q L
     have := hA2 _ _ hj hj' (hreg.trans hreg'.symm) he
     omega
   · obtain ⟨j, hj, hreg, hs, he⟩ := hA3 r hr a b hab
-    have hjm : j ∈ as := (hA4 r hr j).2 ⟨hj, hreg⟩
+    have hjm := (hA4 r hr j).2 ⟨hj, hreg⟩
     obtain ⟨t, ht, htj⟩ := List.getElem_of_mem hjm
     exact ⟨t, ht, by rw [hget t ht, htj, hs], by rw [hget t ht, htj, he]⟩
 

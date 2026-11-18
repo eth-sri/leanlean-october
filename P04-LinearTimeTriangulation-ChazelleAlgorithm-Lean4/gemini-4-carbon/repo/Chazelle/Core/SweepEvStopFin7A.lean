@@ -27,18 +27,18 @@ theorem slfRec_words {m : ℕ → ℕ} {RB j pe ph dc : ℕ} {cc : Config}
     rawRec m RB j = (cc.nreg pe, cc.nreg ph, cc.nreg oKd, cc.nreg oKk, cc.nreg oB) ∧
       rawDc m RB j = cc.nreg dc ∧
       rawAux m RB j = (cc.nreg slfA, cc.nreg slfN, cc.nreg slfL0, cc.nreg slfL1, cc.nreg oPar) := by
-  have w : ∀ i, i < 11 → m (RB + 11 * j + i) = cc.nreg ((slfWords pe ph dc).getD i 0) := hw
-  have w0 := w 0 (by norm_num)
-  have w1 := w 1 (by norm_num)
-  have w2 := w 2 (by norm_num)
-  have w3 := w 3 (by norm_num)
-  have w4 := w 4 (by norm_num)
-  have w5 := w 5 (by norm_num)
-  have w6 := w 6 (by norm_num)
-  have w7 := w 7 (by norm_num)
-  have w8 := w 8 (by norm_num)
-  have w9 := w 9 (by norm_num)
-  have w10 := w 10 (by norm_num)
+  have w := hw
+  have w0 := w 0 by_n
+  have w1 := w 1 by_n
+  have w2 := w 2 by_n
+  have w3 := w 3 by_n
+  have w4 := w 4 by_n
+  have w5 := w 5 by_n
+  have w6 := w 6 by_n
+  have w7 := w 7 by_n
+  have w8 := w 8 by_n
+  have w9 := w 9 by_n
+  have w10 := w 10 by_n
   simp only [slfWords, List.getD_cons_zero, List.getD_cons_succ, Nat.add_zero] at w0 w1 w2 w3
   simp only [slfWords, List.getD_cons_zero, List.getD_cons_succ] at w4 w5 w6 w7
   simp only [slfWords, List.getD_cons_zero, List.getD_cons_succ] at w8 w9 w10
@@ -67,12 +67,12 @@ theorem slfRec_congr {m m' : ℕ → ℕ} {RB j : ℕ}
     (h : ∀ i, i < 11 → m' (RB + 11 * j + i) = m (RB + 11 * j + i)) :
     rawRec m' RB j = rawRec m RB j ∧ rawDc m' RB j = rawDc m RB j ∧
       rawAux m' RB j = rawAux m RB j := by
-  have h0 := h 0 (by norm_num)
+  have h0 := h 0 by_n
   rw [Nat.add_zero] at h0
   unfold rawRec rawDc rawAux
-  rw [h0, h 1 (by norm_num), h 2 (by norm_num), h 3 (by norm_num), h 4 (by norm_num),
-    h 5 (by norm_num), h 6 (by norm_num), h 7 (by norm_num), h 8 (by norm_num),
-    h 9 (by norm_num), h 10 (by norm_num)]
+  rw [h0, h 1 by_n, h 2 by_n, h 3 by_n, h 4 by_n,
+    h 5 by_n, h 6 by_n, h 7 by_n, h 8 by_n,
+    h 9 by_n, h 10 by_n]
   exact ⟨rfl, rfl, rfl⟩
 
 variable {W : ℕ} {c₀ : Config}
@@ -94,7 +94,7 @@ theorem slfMaybe_irs {bitr pe ph dc : ℕ} (hpe : pe ≠ slfX) (hph : ph ≠ slf
     refine IRS.skip hI ⟨by rw [ite_eq_left h1, Nat.add_zero], fun h' => absurd h1 h', fun _ _ => rfl,
       fun _ _ _ => rfl⟩
   · have h1 : c.nreg bitr ≠ 1 := by omega
-    refine (slfEmit_irs hpe hph hdc hI hk1 hA hW).mono (by norm_num) ?_
+    refine (slfEmit_irs hpe hph hdc hI hk1 hA hW).mono by_n ?_
     rintro c' ⟨a1, a2, a3, a4⟩
     exact ⟨by rw [a3, ite_eq_right h1], fun _ => a1, a2, a4⟩
 

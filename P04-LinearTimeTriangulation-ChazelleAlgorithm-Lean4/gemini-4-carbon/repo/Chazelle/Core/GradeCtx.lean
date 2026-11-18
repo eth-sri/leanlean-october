@@ -20,7 +20,7 @@ theorem gradeRaw_handle_lt {O : OracleIface} {P : Polygon} {m : ℕ → ℕ} {h 
   by_contra hA
   push Not at hA
   have := (hR (Function.update m h (topGrade P.n + 2)) fun a ha => by
-    rw [Function.update_of_ne (by omega)]).1
+    rw [Function.update_of_ne by_o]).1
   rw [Function.update_self] at this
   omega
 

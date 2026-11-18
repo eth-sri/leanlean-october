@@ -68,12 +68,12 @@ theorem cyc_start {n : ℝ} {a b x y : ℝ} (hxy : x ≠ y) (hx0 : 0 ≤ x) (hxn
     · -- `a < x`, so `b ≤ x`, and points just after `x` are not below `b`
       have hb : b ≤ x := by
         by_contra hb; push Not at hb; exact hnot ⟨h, hb⟩
-      obtain ⟨z, h1, -, -, -, -, h3⟩ := hpt (x + 1) (by linarith)
+      obtain ⟨z, h1, -, -, -, -, h3⟩ := hpt (x + 1) by_l
       linarith
   · simp only [ite_eq_right hab] at hnot hpt
     push Not at hnot
     by_contra hne
-    have hxa : x < a := lt_of_le_of_ne hnot.1 hne
+    have hxa := lt_of_le_of_ne hnot.1 hne
     obtain ⟨z, h1, h2, -, -, h3⟩ := hpt a hxa
     rcases h3 with h3 | h3
     · linarith
@@ -102,13 +102,13 @@ theorem start_of_arcGap {j : ℕ} (hj : j < nk (interiorModel Q) S R)
     ∃ b, (interiorModel Q).IsArc S R (hk (interiorModel Q) S R j) b := by
   set I := interiorModel Q
   set N := nk I S R
-  have hM : WalkAx I := walkAx_interiorModel hQ
-  have h3 : 3 ≤ N := three_le_nk hQ hFam hne hR
+  have hM := walkAx_interiorModel hQ
+  have h3 := three_le_nk hQ hFam hne hR
   obtain ⟨a', b', harc, hsub⟩ := hA
-  have hsj : (j + 1) % N < N := Nat.mod_lt _ (by omega)
+  have hsj : (j + 1) % N < N := Nat.mod_lt _ by_o
   have hbx := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hj)
   have hby := hostKeys_bounds (hk_mem hM hFam.2.1 hFam.1 hsj)
-  have e := cyc_start (hk_succ_ne hM hFam.2.1 hFam.1 (by omega) hj) hbx.1 hbx.2 hby.1 hby.2
+  have e := cyc_start (hk_succ_ne hM hFam.2.1 hFam.1 by_o hj) hbx.1 hbx.2 hby.1 hby.2
     harc.1 harc.2.1 hsub (fun h => harc.2.2.2.2.2.1 _ h hcut)
   exact ⟨b', e ▸ harc⟩
 
@@ -116,7 +116,7 @@ theorem start_of_arcGap {j : ℕ} (hj : j < nk (interiorModel Q) S R)
 theorem arcGap_of_start {j : ℕ} (hj : j < nk (interiorModel Q) S R) {b : ℝ}
     (harc : (interiorModel Q).IsArc S R (hk (interiorModel Q) S R j) b) :
     ArcGap (interiorModel Q) S R j := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   obtain ⟨i_l, d, hD⟩ := arc_keys hM hFam.2.1 hFam.1 hne hR harc
   have := hk_inj hM hFam.2.1 hFam.1 hD.hil hj hD.hl
   subst this
@@ -155,11 +155,11 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
     intro t t' htt ht'
     by_contra h; push Not at h
     rcases h.lt_or_eq with h | h
-    · have := hk_strictMono hM hF hfin h (hil t (by omega))
-      rw [(hD t' ht').hl, (hD t (by omega)).hl] at this
+    · have := hk_strictMono hM hF hfin h (hil t by_o)
+      rw [(hD t' ht').hl, (hD t by_o).hl] at this
       linarith [hsort t t' htt ht']
     · have := hsort t t' htt ht'
-      rw [← (hD t' ht').hl, ← (hD t (by omega)).hl, h] at this
+      rw [← (hD t' ht').hl, ← (hD t by_o).hl, h] at this
       exact lt_irrefl _ this
   have hi0 : ∀ t, t < k → i 0 ≤ i t := by
     intro t ht
@@ -178,26 +178,26 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
     intro t ht
     have hDt := hD t ht
     set m := (i t + d t) % N with hm
-    have hmN : m < N := Nat.mod_lt _ (by omega)
-    have hbm : hk I S R m = b t := hDt.hr
+    have hmN : m < N := Nat.mod_lt _ by_o
+    have hbm := hDt.hr
     obtain ⟨c, ⟨hc, htc⟩, pc, tc, hAc, hec⟩ := hM.exists_exit_at_end hF hfin hne hR (harc t ht)
-    have hx : hk I S R m ∈ exitKeys I S R := ⟨c, hc, htc, pc, tc, hAc, by rw [hbm]; exact hec⟩
+    have hx : hk I S R m ∈ exitKeys I S R := ⟨c, hc, htc, pc, tc, hAc, by rwa [hbm]⟩
     have hprev : prevIdx N m = (i t + (d t - 1)) % N := by
       have e : m = ((i t + (d t - 1)) % N + 1) % N := by
         rw [hm, Nat.mod_add_mod, show i t + (d t - 1) + 1 = i t + d t by have := hDt.hd0; omega]
-      rw [e]; exact prevIdx_succ (Nat.mod_lt _ (by omega))
+      rw [e]; exact prevIdx_succ (Nat.mod_lt _ by_o)
     have hAp : ArcGap I S R (prevIdx N m) := by
       rw [hprev]; exact arcData_gap hQ hFam hne hR (harc t ht) hDt (by have := hDt.hd0; omega)
     obtain ⟨hCm, hnext⟩ := end_chord hQ hFam hne hR hmN hx hAp
     set q₁ := (m + 1) % N with hq₁
-    have hq₁N : q₁ < N := Nat.mod_lt _ (by omega)
+    have hq₁N : q₁ < N := Nat.mod_lt _ by_o
     have hq₁e : q₁ = (i t + d t + 1) % N := by rw [hq₁, hm, Nat.mod_add_mod]
-    obtain ⟨pz, tz, hAz, hez⟩ := hnext c hc htc pc tc hAc (by rw [hbm]; exact hec)
+    obtain ⟨pz, tz, hAz, hez⟩ := hnext c hc htc pc tc hAc (by rwa [hbm])
     have hcut₁ : I.IsCut S (hk I S R q₁) := ⟨c, hc, pz, tz, hAz, hez⟩
     -- no arc start at the end
     have hnot_m : ∀ s, s < k → i s ≠ m := by
       intro s hs he
-      exact not_arc_and_chord hM hF hfin (by omega) hmN (he ▸ hstartA s hs) hCm
+      exact not_arc_and_chord hM hF hfin by_o hmN (he ▸ hstartA s hs) hCm
     -- no arc start inside the arc
     have hnot_in : ∀ j, 0 < j → j < d t → ∀ s, s < k → i s ≠ (i t + j) % N := by
       intro j hj0 hjd s hs he
@@ -206,7 +206,7 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
       exact (harc t ht).2.2.2.2.2.1 _ hin (WalkAx.arc_cuts hne (harc s hs)).1
     by_cases hA₁ : ArcGap I S R q₁
     · -- the next key starts the next arc
-      have hJt : J t = 0 := (hJ0 t).2 (hq₁e ▸ hA₁)
+      have hJt := (hJ0 t).2 (hq₁e ▸ hA₁)
       obtain ⟨b', hb'⟩ := start_of_arcGap hQ hFam hne hR hq₁N hA₁ hcut₁
       obtain ⟨s, hs, has, -⟩ := hcomp _ _ hb'
       refine ⟨hCm, ⟨s, hs, ?_⟩, ?_⟩
@@ -221,13 +221,13 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
       have hJt : J t = 1 := by
         have := hJ1 t
         by_contra h
-        exact hA₁ (hq₁e ▸ (hJ0 t).1 (by omega))
+        exact hA₁ (hq₁e ▸ (hJ0 t).1 by_o)
       have hCp : ChordGap I S R (prevIdx N q₁) := by rw [hq₁, prevIdx_succ hmN]; exact hCm
       obtain ⟨-, hA₂⟩ := junction hQ hFam hne hR hdh hq₁N hCp hA₁
       have hC₁ : ChordGap I S R q₁ :=
-        (gap_cases hM hF hfin hne hR (by omega) hq₁N).resolve_left hA₁
+        (gap_cases hM hF hfin hne hR by_o hq₁N).resolve_left hA₁
       obtain ⟨c'', hc'', -, p₂, -, t₂, -, hA₂', -, he₂, -⟩ := hC₁
-      have hq₂N : (q₁ + 1) % N < N := Nat.mod_lt _ (by omega)
+      have hq₂N : (q₁ + 1) % N < N := Nat.mod_lt _ by_o
       have hcut₂ : I.IsCut S (hk I S R ((q₁ + 1) % N)) := ⟨c'', hc'', p₂, t₂, hA₂', he₂⟩
       obtain ⟨b', hb'⟩ := start_of_arcGap hQ hFam hne hR hq₂N hA₂ hcut₂
       obtain ⟨s, hs, has, -⟩ := hcomp _ _ hb'
@@ -254,7 +254,7 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
     have hle : i t + grpLen d J t ≤ i 0 + N := by
       by_contra h; push Not at h
       have hj0 : 0 < i 0 + N - i t := by have := hil t ht; omega
-      apply hnone (i 0 + N - i t) hj0 (by omega) 0 hk1
+      apply hnone (i 0 + N - i t) hj0 by_o 0 hk1
       rw [show i t + (i 0 + N - i t) = i 0 + N by have := hil t ht; omega, Nat.add_mod_right,
         Nat.mod_eq_of_lt (hil 0 hk1)]
     constructor
@@ -264,9 +264,9 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
         rcases hle.lt_or_eq with h | h
         · exact h
         · exfalso
-          have h1 := hmono t (t + 1) (by omega) ht1
+          have h1 := hmono t (t + 1) by_o ht1
           have h2 := hil (t + 1) ht1
-          apply hnone (i (t + 1) - i t) (by omega) (by omega) (t + 1) ht1
+          apply hnone (i (t + 1) - i t) by_o by_o (t + 1) ht1
           rw [show i t + (i (t + 1) - i t) = i (t + 1) by omega, Nat.mod_eq_of_lt h2]
       have hgN : i t + grpLen d J t < N ∨ N ≤ i t + grpLen d J t := Nat.lt_or_ge _ _
       rcases hgN with hgN | hgN
@@ -280,15 +280,15 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
         rcases (show s = t + 1 ∨ t + 1 < s by omega) with rfl | hs1
         · exact his.symm
         · exfalso
-          have h1 := hmono t (t + 1) (by omega) ht1
+          have h1 := hmono t (t + 1) by_o ht1
           have h2 := hmono (t + 1) s hs1 hs
-          apply hnone (i (t + 1) - i t) (by omega) (by omega) (t + 1) ht1
+          apply hnone (i (t + 1) - i t) by_o by_o (t + 1) ht1
           rw [show i t + (i (t + 1) - i t) = i (t + 1) by omega,
             Nat.mod_eq_of_lt (hil (t + 1) ht1)]
       · exfalso
         have h0N := hil 0 hk1
         rw [show i t + grpLen d J t = (i t + grpLen d J t - N) + N by omega, Nat.add_mod_right,
-          Nat.mod_eq_of_lt (by omega)] at his
+          Nat.mod_eq_of_lt by_o] at his
         have := hi0 s hs
         omega
     · intro ht1
@@ -305,7 +305,7 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
           omega
         · have h0N := hil 0 hk1
           rw [show i t + grpLen d J t = (i t + grpLen d J t - N) + N by omega, Nat.add_mod_right,
-            Nat.mod_eq_of_lt (by omega)] at his
+            Nat.mod_eq_of_lt by_o] at his
           have := hi0 s hs
           omega
       · exact h
@@ -314,12 +314,12 @@ theorem arcs_cycle (hdh : DistinctHeights Q) {k : ℕ} (hk1 : 0 < k) (a b : ℕ 
     induction t with
     | zero => simp [grpOff]
     | succ t ih =>
-      rw [grpOff_succ, ← Nat.add_assoc, ← ih (by omega)]
-      exact ((hstep t (by omega)).1 ht).symm
+      rw [grpOff_succ, ← Nat.add_assoc, ← ih by_o]
+      exact ((hstep t by_o).1 ht).symm
   refine ⟨i, d, J, hD, fun t _ => hJ0 t, fun t _ => hJ1 t, hoff, ?_⟩
-  obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by omega⟩
-  have h1 := (hstep k' (by omega)).2 rfl
-  rw [hoff k' (by omega)] at h1
+  obtain ⟨k', rfl⟩ : ∃ k', k = k' + 1 := ⟨k - 1, by_o⟩
+  have h1 := (hstep k' by_o).2 rfl
+  rw [hoff k' by_o] at h1
   rw [grpOff_succ]
   omega
 

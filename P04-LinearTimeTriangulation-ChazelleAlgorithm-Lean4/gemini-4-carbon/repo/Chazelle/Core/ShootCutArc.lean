@@ -88,7 +88,7 @@ theorem key_range {N : ℕ} {x : WPos} (hx : ProperPos (chainModel C) Q N x)
 theorem T_unw (k k' : ℝ) (n : ℝ) : ∃ j : ℤ, k + len n k k' = k' + j * n := by
   unfold len
   split_ifs
-  · exact ⟨0, by ring⟩
+  · exact ⟨0, by_r⟩
   · exact ⟨1, by push_cast; ring⟩
 
 /-- **A single piece** `[s, e]`. -/
@@ -98,14 +98,14 @@ theorem arcOK_single {N : ℕ} {s e : WPos} (hs : ProperPos (chainModel C) Q N s
     ArcOK C Q s e [p] := by
   have ks := key_range hs hs1
   have ke := key_range he he1
-  refine ⟨by simp, hps, by simp [hpe], fun i hi => by simp at hi, fun i hi => by simp at hi, ?_,
+  refine ⟨by_s, hps, by simp [hpe], fun i hi => by simp at hi, fun i hi => by simp at hi, ?_,
     fun pc hpc => ?_⟩
   swap
   · rw [List.mem_singleton] at hpc; subst hpc; exact ⟨Or.inl hps, Or.inl hpe⟩
   have hl := len_pos ((2 * C.m + 7 : ℕ) : ℝ) ((chainModel C).key Q s) ((chainModel C).key Q e)
     ks.2 ke.1
   refine ⟨⟨0, by simp [hps]⟩, (chainModel C).key Q s + len ((2 * C.m + 7 : ℕ) : ℝ)
-    ((chainModel C).key Q s) ((chainModel C).key Q e), by linarith, by rw [hpe]; exact T_unw _ _ _,
+    ((chainModel C).key Q s) ((chainModel C).key Q e), by_l, by rw [hpe]; exact T_unw _ _ _,
     rfl⟩
 
 /-- The keys of a valid piece are keys of the walk. -/
@@ -156,7 +156,7 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
     rw [key_hgt0, Int.cast_natCast]
     have := Nat.mod_add_div u n
     have e : ((u % n : ℕ) : ℝ) + ((u / n : ℕ) : ℝ) * (n : ℝ) = (u : ℝ) := by
-      exact_mod_cast (show u % n + u / n * n = u by rw [Nat.mul_comm]; omega)
+      exact_mod_cast (by rw [Nat.mul_comm]; omega)
     linarith
   have hfinP : KPath M Q (n : ℝ) (F : ℝ) fin T := by
     rcases hfin with ⟨rfl, hlt⟩ | ⟨rfl, heq⟩
@@ -178,7 +178,7 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
       have hl := upath_chained hloop
       rcases hfin with ⟨rfl, _⟩ | ⟨rfl, _⟩
       · exact ⟨e, hp₁s, by rw [hp₁e]; exact Chained.append' hl ⟨rfl, rfl⟩⟩
-      · exact ⟨_, hp₁s, by rw [hp₁e, List.append_nil]; exact hl⟩
+      · exact ⟨_, hp₁s, by rwa [hp₁e, List.append_nil]⟩
     obtain ⟨y, hy⟩ := hc
     rw [Chained.last hy hne]; exact hy
   refine ⟨hne, hp₁s, hlast, fun i hi => Chained.get hch i hi, fun i hi => ?_, hkp, ?_⟩
@@ -191,7 +191,7 @@ theorem arcOK_general {P : Polygon} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPo
     · rcases hfin with ⟨rfl, _⟩ | ⟨rfl, _⟩
       · rw [List.mem_singleton] at hpc; subst hpc; exact ⟨Or.inr rfl, Or.inl rfl⟩
       · simp at hpc
-  have := e6_of_kpath hn0 hkp (by linarith) (fun pc hpc => pcOK_keys (hok pc hpc)) hne i hi
+  have := e6_of_kpath hn0 hkp by_l (fun pc hpc => pcOK_keys (hok pc hpc)) hne i hi
   rw [hlast] at this
   exact this
 

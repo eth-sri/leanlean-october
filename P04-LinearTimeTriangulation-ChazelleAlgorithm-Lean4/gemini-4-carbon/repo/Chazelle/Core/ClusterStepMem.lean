@@ -53,8 +53,8 @@ theorem stkList_congr {m m' : ℕ → ℕ} {b : ℕ} (n : ℕ)
   | zero => rfl
   | succ n ih =>
     simp only [stkList]
-    rw [h _ (by omega) (by omega), h _ (by omega) (by omega),
-      ih (fun x hx hx' => h x hx (by omega))]
+    rw [h _ by_o by_o, h _ by_o by_o,
+      ih (fun x hx hx' => h x hx by_o)]
 
 /-- The pushed entry, if any. -/
 def optSeg (s a b : ℕ) : List (ℕ × ℕ) := if s < b - a then [(a, b)] else []
@@ -72,15 +72,14 @@ theorem pushF_stk {bS s a b : ℕ} {q : (ℕ → ℕ) × ℕ} {L : List (ℕ × 
     refine ⟨?_, by rw [htp]; ring, fun x hx => ?_⟩
     · simp only [stkList]
       have e1 : upd (upd q.1 (bS + q.2) a) (bS + q.2 + 1) b (bS + 2 * L.length) = a := by
-        rw [upd_apply, upd_apply, ite_eq_right (by omega), ite_eq_left (by omega)]
+        rw [upd_apply, upd_apply, ite_eq_right by_o, ite_eq_left by_o]
       have e2 : upd (upd q.1 (bS + q.2) a) (bS + q.2 + 1) b (bS + 2 * L.length + 1) = b := by
-        rw [upd_apply, ite_eq_left (by omega)]
+        rw [upd_apply, ite_eq_left by_o]
       rw [e1, e2]
       congr 1
-      rw [stkList_congr _ (fun x _ hx => by rw [upd_apply, upd_apply, ite_eq_right (by omega),
-        ite_eq_right (by omega)])]
-      exact hL
-    · rw [upd_apply, upd_apply, ite_eq_right (by omega), ite_eq_right (by omega)]
+      rwa [stkList_congr _ (fun x _ hx => by rw [upd_apply, upd_apply, ite_eq_right by_o,
+        ite_eq_right by_o])]
+    · rw [upd_apply, upd_apply, ite_eq_right by_o, ite_eq_right by_o]
   · simp only [ite_eq_right hs, List.nil_append]
     refine ⟨hL, htp, ?_⟩; simp
 
@@ -128,7 +127,7 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
   have hit : ∀ i, lo ≤ i → i < hi → m2 (S.bTMP + i) < S.μ := fun i a b => by
     rw [h2tmp i a b]; exact hact i a b
   have hinj2 : ∀ i i', lo ≤ i → i < hi → lo ≤ i' → i' < hi → m2 (S.bTMP + i) = m2 (S.bTMP + i') →
-      i = i' := fun i i' a b c d e => hinj i i' a b c d (by rw [← h2tmp i a b, ← h2tmp i' c d]; exact e)
+      i = i' := fun i i' a b c d e => hinj i i' a b c d (by rwa [← h2tmp i a b, ← h2tmp i' c d])
   obtain ⟨A1, A2, A3, A4, A5, A6⟩ := passes_spec hL (f := f) hlh hhi hit hinj2 hsum
   have hu : ∀ i t t', lo ≤ i → i < hi → ((t = 0 ∧ s0 i) ∨ (t = 1 ∧ s1 i) ∨ (t = 2 ∧ s2 i)) →
       ((t' = 0 ∧ s0 i) ∨ (t' = 1 ∧ s1 i) ∨ (t' = 2 ∧ s2 i)) → t = t' := by
@@ -141,23 +140,23 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
   -- `TMP` and the marks are untouched by the passes
   have hPt : ∀ i, lo ≤ i → i < hi → mP (S.bTMP + i) = m (S.bACT + i) := by
     intro i a b
-    rw [A4 _ (by omega) (fun i' c d _ => by have := hit i' c d; omega)]
+    rw [A4 _ by_o (fun i' c d _ => by have := hit i' c d; omega)]
     exact h2tmp i a b
   have hPd : ∀ i, lo ≤ i → i < hi → mP (S.bDF + m (S.bACT + i)) = m2 (S.bDF + m (S.bACT + i)) := by
     intro i a b
     have := hact i a b
-    exact A4 _ (by omega) (fun i' c d _ => by have := hit i' c d; omega)
+    exact A4 _ by_o (fun i' c d _ => by have := hit i' c d; omega)
   -- the release condition
   have hrel : ∀ x, (∃ i, lo ≤ i ∧ i < lo + (hi - lo) ∧ mP (S.bDF + mP (S.bTMP + i)) = 1 ∧
       x = S.bPOS + mP (S.bTMP + i)) ↔ ∃ i, lo ≤ i ∧ i < hi ∧ mk i ∧ x = S.bPOS + m (S.bACT + i) := by
     intro x
     constructor
     · rintro ⟨i, a, b, c, d⟩
-      rw [hPt i a (by omega)] at c d
-      rw [hPd i a (by omega)] at c
-      exact ⟨i, a, by omega, (h2df i a (by omega)).mp c, d⟩
+      rw [hPt i a by_o] at c d
+      rw [hPd i a by_o] at c
+      exact ⟨i, a, by_o, (h2df i a by_o).mp c, d⟩
     · rintro ⟨i, a, b, c, d⟩
-      refine ⟨i, a, by omega, ?_, by rw [hPt i a b]; exact d⟩
+      refine ⟨i, a, by_o, ?_, by rwa [hPt i a b]⟩
       rw [hPt i a b, hPd i a b]; exact (h2df i a b).mpr c
   have hmS : ∀ x, mS x = if ∃ i, lo ≤ i ∧ i < hi ∧ mk i ∧ x = S.bPOS + m (S.bACT + i)
       then S.μ else mP x := by
@@ -174,7 +173,7 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
   have hnotmk : ∀ i, lo ≤ i → i < hi → (s0 i ∨ s1 i ∨ s2 i) →
       ¬ ∃ i', lo ≤ i' ∧ i' < hi ∧ mk i' ∧ S.bPOS + m (S.bACT + i) = S.bPOS + m (S.bACT + i') := by
     rintro i a b hs ⟨i', c, d, e, g⟩
-    have := hinj i i' a b c d (by omega)
+    have := hinj i i' a b c d by_o
     subst this
     exact hsmk i a b hs e
   refine ⟨fun x h1 h2 => ?_, fun i a b h => ?_, fun i a b h => ?_, fun i a b h => ?_,
@@ -184,22 +183,22 @@ theorem stepMem {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m m2 : ℕ → ℕ} {
     exact A4 x h1 (fun i c d _ => by have := hit i c d; omega)
   · have := cntS_lt a b h (i' := hi)
     have hs' : cntS s0 lo hi + cntS s1 lo hi + cntS s2 lo hi ≤ hi - lo := hsum
-    rw [hmS, ite_eq_right (hnoPOS _ (by omega))]; rw [A1 i a b h, h2tmp i a b]
+    rw [hmS, ite_eq_right (hnoPOS _ by_o)]; rw [A1 i a b h, h2tmp i a b]
   · have := cntS_lt a b h (i' := hi)
     have hs' : cntS s0 lo hi + cntS s1 lo hi + cntS s2 lo hi ≤ hi - lo := hsum
-    rw [hmS, ite_eq_right (hnoPOS _ (by omega))]; rw [A2 i a b h, h2tmp i a b]
+    rw [hmS, ite_eq_right (hnoPOS _ by_o)]; rw [A2 i a b h, h2tmp i a b]
   · have := cntS_lt a b h (i' := hi)
     have hs' : cntS s0 lo hi + cntS s1 lo hi + cntS s2 lo hi ≤ hi - lo := hsum
-    rw [hmS, ite_eq_right (hnoPOS _ (by omega))]; rw [A3 i a b h, h2tmp i a b]
+    rw [hmS, ite_eq_right (hnoPOS _ by_o)]; rw [A3 i a b h, h2tmp i a b]
   · rw [hmS, ite_eq_left ⟨i, a, b, h, rfl⟩]
   · rw [hmS, ite_eq_right (hnotmk i a b (Or.inl h)), ← h2tmp i a b, P0 i a b h]
   · rw [hmS, ite_eq_right (hnotmk i a b (Or.inr (Or.inl h))), ← h2tmp i a b, P1 i a b h]
   · rw [hmS, ite_eq_right (hnotmk i a b (Or.inr (Or.inr h))), ← h2tmp i a b, P2 i a b h]
-  · rw [hmS, ite_eq_right (by rintro ⟨i, a, b, -, e⟩; exact hn i a b (by omega))]
-    refine A4 _ (by omega) (fun i c d _ => ?_)
+  · rw [hmS, ite_eq_right (by rintro ⟨i, a, b, -, e⟩; exact hn i a b by_o)]
+    refine A4 _ by_o (fun i c d _ => ?_)
     rw [h2tmp i c d]
     intro e
-    exact hn i c d (by omega)
+    exact hn i c d by_o
 
 end
 

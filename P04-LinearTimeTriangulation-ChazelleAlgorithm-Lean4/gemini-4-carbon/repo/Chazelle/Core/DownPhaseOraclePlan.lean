@@ -45,18 +45,18 @@ theorem oset_mod (W : Polygon) (g : ℕ) (x y : ℝ) : oset W (g % W.n) x y = os
 theorem oset_sub_set {u L : ℕ} (hu : u < Q.n) (h1 : 1 ≤ L) (h2 : L + 1 ≤ Q.n) {x y : ℝ}
     (hy : y ≤ L) : oset (interiorWalk Q) u x y ⊆ (ch Q u L h1 h2).set := by
   rintro _ ⟨d, t, ht0, ht1, hx, hdy, rfl⟩
-  have hQ1 : 1 ≤ Q.n := by omega
+  have hQ1 : 1 ≤ Q.n := by_o
   have hd : d ≤ L := by
-    have : (d : ℝ) ≤ L := by linarith
+    have : (d : ℝ) ≤ L := by_l
     exact_mod_cast this
   have tv : ∀ k, k ≤ L → (interiorWalk Q).vtx ((u + k) % (interiorWalk Q).n) =
       WalkEmbed.tourV (ch Q u L h1 h2) (jStart Q L) k := fun k hk => by
     have e1 := iw_tour (a := cStart Q u L) (m := L) (hm1 := h1) (hm := h2) hQ1 (d := k) hk
-    rw [uStart_cStart hu (by omega)] at e1
+    rw [uStart_cStart hu by_o] at e1
     exact e1
   rcases ht0.lt_or_eq with htp | rfl
   · have hd1 : d + 1 ≤ L := by
-      have : (d : ℝ) < L := by linarith
+      have : (d : ℝ) < L := by_l
       have : d < L := by exact_mod_cast this
       omega
     rw [tv d hd, show u + d + 1 = u + (d + 1) by ring, tv (d + 1) hd1]
@@ -88,7 +88,7 @@ theorem abs_lerp_le {a b : ℝ} {B t : ℝ} (ha : |a| ≤ B) (hb : |b| ≤ B) (h
 theorem mi_pos_bound {p h : ℕ} (hp : p < Q.n) (hpp : ProperPos (interiorModel Q) Q Q.n ⟨p, h⟩) :
     |((interiorModel Q).pos Q ⟨p, h⟩).1| ≤ Jordan.coordBound Q ∧
       |((interiorModel Q).pos Q ⟨p, h⟩).2| ≤ Jordan.coordBound Q := by
-  have hn : 0 < Q.n := by omega
+  have hn : 0 < Q.n := by_o
   have ha := mi_wa hp
   have hb := mi_wb hp
   have i1 := iv_lt hp
@@ -114,9 +114,8 @@ theorem param_nh {e h : ℕ} (he : e < Q.n) :
   unfold nh
   split_ifs with hc
   · obtain ⟨h0, h1⟩ := hc
-    obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
+    obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by_o⟩
     simp only [Nat.add_sub_cancel] at h1
-    show (0 : ℝ) = _
     unfold Model.param
     simp only
     rw [mi_wa he, ← h1]
@@ -133,11 +132,11 @@ theorem nh_zero_or {e h : ℕ} : nh Q e h = 0 ∨ nh Q e h = h := by
 theorem param_pos_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e h : ℕ} (he : e < Q.n)
     (hh : h ≤ Q.n) (hp0 : 0 ≤ (interiorModel Q).param Q ⟨e, h⟩) (h0 : nh Q e h ≠ 0) :
     0 < (interiorModel Q).param Q ⟨e, nh Q e h⟩ := by
-  have hnh : nh Q e h = h := nh_zero_or.resolve_left h0
+  have hnh := nh_zero_or.resolve_left h0
   rw [hnh] at h0 ⊢
   have hc : ¬ (h ≠ 0 ∧ h - 1 = iv Q e) := by
     intro hc; unfold nh at hnh; rw [ite_eq_left hc] at hnh; exact h0 hnh.symm
-  obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by omega⟩
+  obtain ⟨h', rfl⟩ : ∃ h', h = h' + 1 := ⟨h - 1, by_o⟩
   have hne : h' ≠ iv Q e := fun hc' => hc ⟨h0, by simpa using hc'⟩
   rcases hp0.lt_or_eq with hlt | heq
   · exact hlt
@@ -149,7 +148,7 @@ theorem param_pos_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e h : ℕ} (he :
     have hnh' : ((interiorModel Q).wa e).2 ≠ ((interiorModel Q).wb e).2 := by
       rw [hwa, hwb]
       have h1 := iv_lt (Q := Q) he
-      have h2 := iv_lt (Q := Q) (p := (e + 1) % Q.n) (Nat.mod_lt _ (by omega))
+      have h2 := iv_lt (Q := Q) (p := (e + 1) % Q.n) (Nat.mod_lt _ by_o)
       refine hD _ _ h1 h2 ?_
       unfold iv
       split_ifs
@@ -164,8 +163,8 @@ theorem param_pos_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e h : ℕ} (he :
     rw [ite_eq_right hnh', eq_comm, div_eq_zero_iff] at heq
     rcases heq with heq | heq
     · rw [hwa] at heq
-      exact hD _ _ (by omega) (iv_lt he) hne (by linarith)
-    · exact hnh' (by linarith)
+      exact hD _ _ by_o (iv_lt he) hne by_l
+    · exact hnh' by_l
 
 /-! ## The plan of a query -/
 
@@ -187,10 +186,10 @@ theorem arcWt_around {e₁ : ℕ} (he₁ : e₁ < Q.n) {x t₂ : ℝ} (hx : x < 
     (htx : t₂ ≤ x) : (interiorModel Q).arcWt ((e₁ : ℝ) + x) ((e₁ : ℝ) + t₂) = Q.n := by
   have hc : ∀ p, p < (interiorModel Q).W.n →
       ((interiorModel Q).counted p ↔ 0 ≤ p ∧ p < (interiorModel Q).W.n) := fun p hp => by
-    rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rw [mi_n]; exact hp)
-  rw [(interiorModel Q).arcWt_closed hc le_rfl ⟨by linarith, hx⟩ ⟨ht0.le, by linarith⟩, mi_n]
+    rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rwa [mi_n])
+  rw [(interiorModel Q).arcWt_closed hc le_rfl ⟨by_l, hx⟩ ⟨ht0.le, by_l⟩, mi_n]
   unfold arcWtNat keyCeil
-  rw [ite_eq_right (by linarith), ite_eq_right ht0.ne']
+  rw [ite_eq_right by_l, ite_eq_right ht0.ne']
   simp only [min_eq_left he₁.le]
   omega
 
@@ -217,7 +216,7 @@ theorem plan_arc (hn : 3 ≤ Q.n) {e₁ h₁ e₂ h₂ : ℕ} (he₁ : e₁ < Q.
   set x := (interiorModel Q).param Q ⟨e₁, h₁⟩ with hxd
   set t₂ := (interiorModel Q).param Q ⟨e₂, h₂⟩ with ht₂
   set ee := eeOf Q e₁ h₁ e₂ h₂ with heed
-  have hn0 : 0 < Q.n := by omega
+  have hn0 : 0 < Q.n := by_o
   have hd := WalkEmbed.add_dOf he₁ he₂
   have hdl := WalkEmbed.dOf_lt hn0 e₁ e₂
   -- the offset and its properties
@@ -232,17 +231,16 @@ theorem plan_arc (hn : 3 ≤ Q.n) {e₁ h₁ e₂ h₂ : ℕ} (he₁ : e₁ < Q.
       · rw [ite_eq_left hlt]
         have h3 : (3 : ℝ) ≤ Q.n := by exact_mod_cast hn
         refine ⟨⟨by push_cast; linarith, by push_cast; linarith [hy.2, hx.1]⟩, by
-          rw [Nat.add_zero, Nat.mod_eq_of_lt he₁, hd], by omega, fun _ hz => ?_⟩
+          rw [Nat.add_zero, Nat.mod_eq_of_lt he₁, hd], by_o, fun _ hz => ?_⟩
         rw [hz] at ht₂
         have : t₂ = 0 := by rw [ht₂]; rfl
         linarith [hx.1]
       · rw [ite_eq_right hlt]
         push Not at hlt
-        refine ⟨⟨by linarith [hy.1, hx.2, (show (1 : ℝ) ≤ Q.n by exact_mod_cast (show 1 ≤ Q.n by
-          omega))], by linarith⟩, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt he₁, hd], le_rfl,
+        refine ⟨⟨by linarith [hy.1, hx.2, (show (1 : ℝ) ≤ Q.n by exact_mod_cast (by omega))], by_l⟩, by rw [Nat.add_mod_right, Nat.mod_eq_of_lt he₁, hd], le_rfl,
           fun h => by omega⟩
     · rw [ite_eq_right h0]
-      have h1 : (1 : ℝ) ≤ WalkEmbed.dOf Q.n e₁ e₂ := by exact_mod_cast (show 1 ≤ _ by omega)
+      have h1 : (1 : ℝ) ≤ WalkEmbed.dOf Q.n e₁ e₂ := by exact_mod_cast (by omega)
       have h2 : ((WalkEmbed.dOf Q.n e₁ e₂ : ℕ) : ℝ) + 1 ≤ Q.n := by exact_mod_cast hdl
       exact ⟨⟨by linarith [hx.2, hy.1], by linarith [hx.1, hy.2]⟩, hd, hdl.le, fun h => absurd h h0⟩
   obtain ⟨⟨hxy, hlap⟩, hmod, heen, hee0⟩ := hE
@@ -255,7 +253,7 @@ theorem plan_arc (hn : 3 ≤ Q.n) {e₁ h₁ e₂ h₂ : ℕ} (he₁ : e₁ < Q.
     unfold keyCeil
     rcases hsp with ⟨h0, h1⟩ | ⟨h0, h1, h2⟩
     · have : t₂ = 0 := by rw [ht₂, h0]; rfl
-      rw [ite_eq_left this]; exact h1
+      rwa [ite_eq_left this]
     · rw [ite_eq_right h2.ne']; exact h1
   have hb : (interiorModel Q).key Q ⟨e₂, h₂⟩ = (((e₁ + ee) % Q.n : ℕ) : ℝ) + t₂ := by
     rw [hmod]; rfl
@@ -271,14 +269,14 @@ theorem plan_arc (hn : 3 ≤ Q.n) {e₁ h₁ e₂ h₂ : ℕ} (he₁ : e₁ < Q.
     rw [arcSet_eq_oset _ hu' hx.1 hx.2 hb0 hbn, mi_n, len_key he₁ hx.2 hy.1 hxy hlap]
     congr 1; ring
   · rcases hsp with ⟨h0, h1⟩ | ⟨h0, h1, -⟩
-    · rw [← h1]; by_contra hc; exact hee0 (by omega) h0
+    · rw [← h1]; by_contra hc; exact hee0 by_o h0
     · omega
   · have hc : ∀ p, p < (interiorModel Q).W.n →
         ((interiorModel Q).counted p ↔ 0 ≤ p ∧ p < (interiorModel Q).W.n) := fun p hp => by
-      rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rw [mi_n]; exact hp)
+      rw [mi_n] at hp ⊢; exact interiorModel_counted_iff Q p (by rwa [mi_n])
     rw [key_eq, hb, ← hkc]
     have := arcWt_off (interiorModel Q) hc le_rfl hu' (Nat.zero_le _) hx.1 hx.2 hy.1 hy.2 hxy
-      (Or.inl ⟨rfl, rfl, by rw [hkc, mi_n]; exact hle⟩)
+      (Or.inl ⟨rfl, rfl, by rwa [hkc, mi_n]⟩)
     rw [mi_n] at this
     exact this
   · -- once around: `ee = n`, the end on the start edge, before the start

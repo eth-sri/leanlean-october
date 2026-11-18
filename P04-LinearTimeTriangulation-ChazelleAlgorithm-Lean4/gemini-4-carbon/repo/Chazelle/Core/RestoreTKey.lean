@@ -63,7 +63,7 @@ theorem posOK_of {C : Chain} {Q : Polygon} {n : ℕ} {x : WPos} (he : x.edge < (
     PosOK C Q n x := by
   refine ⟨he, hx, fun h0 => ?_⟩
   by_contra h6
-  have hp := box_param_pos C (by omega) hx.1 hy
+  have hp := box_param_pos C by_o hx.1 hy
   rcases x with ⟨e, h⟩
   simp only at h0
   subst h0
@@ -114,8 +114,8 @@ theorem keyCmp_exec {a b d e : ℕ} (ha : InR a) (hb : InR b) (hd : InR d) (he :
       simp only at q1 q2 q3 q4 q5
       obtain ⟨hx1, hx2, hx3⟩ := hx
       obtain ⟨hy1, hy2, hy3⟩ := hy
-      refine ⟨by rw [q1]; exact hx1, by rw [q3]; exact hy1, by rw [q5, h0]; omega,
-        by rw [q1, q2]; exact hx2, by rw [q3, q4]; exact hy2, fun h => ?_, fun h => ?_, hWm⟩
+      refine ⟨by rwa [q1], by rwa [q3], by rw [q5, h0]; omega,
+        by rwa [q1, q2], by rwa [q3, q4], fun h => ?_, fun h => ?_, hWm⟩
       · rw [q1]; rw [q2] at h; exact hx3 h
       · rw [q3]; rw [q4] at h; exact hy3 h) hroom
   have q1 := h1 (50201, a) (by simp [kcL])

@@ -35,7 +35,7 @@ def InBand (C C' : Chain) (Q : Polygon) (L : List (ℕ × ℕ × ℕ)) : Prop :=
 /-- The walk position of an event code is an end of a chord of the list. -/
 theorem wposOf_mem {c : ℕ} (hc : c < 2 * L.length) :
     ∃ x ∈ L, wposOf L c = (recOf x).lpos ∨ wposOf L c = (recOf x).rpos := by
-  have hi : c / 2 < L.length := by omega
+  have hi : c / 2 < L.length := by_o
   refine ⟨L[c / 2], getElem_mem _, ?_⟩
   have hcr : crec L (c / 2) = recOf L[c / 2] := by
     unfold crec; rw [getD_eq_getElem _ _ hi]
@@ -50,7 +50,7 @@ theorem end_facts (hband : InBand C C' Q L) (hL : ChordTriplesOK (chainModel C) 
     w.edge < (chainModel C).W.n ∧ BandPos C C' Q w ∧
       (0 ≤ (chainModel C).param Q w ∧ (chainModel C).param Q w < 1) := by
   obtain ⟨hl, hr⟩ := hL.2.2.1 x hx
-  have hb : |(Q.vtx x.1).2| < bnd C C' := hband x hx
+  have hb := hband x hx
   rcases hw with rfl | rfl
   · exact ⟨hl.1, Or.inr ⟨x.1, rfl, hb⟩, hl.2.1, hl.2.2.1⟩
   · exact ⟨hr.1, Or.inr ⟨x.1, rfl, hb⟩, hr.2.1, hr.2.2.1⟩

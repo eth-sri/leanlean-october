@@ -43,7 +43,7 @@ theorem emit1_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   | none =>
     have hf := hn ho
     have ht : c.nreg 110290 < c.nreg 120011 := by rw [hf, h1]; exact Nat.zero_lt_one
-    exact ⟨c, 1, .ifLtN_true ht (.skip hw), by omega, fun _ _ _ => rfl, rfl, rfl, rfl,
+    exact ⟨c, 1, .ifLtN_true ht (.skip hw), by_o, fun _ _ _ => rfl, rfl, rfl, rfl,
       by rw [hc]; rfl, fun t ht => by simp at ht, fun _ _ => rfl⟩
   | some z =>
     obtain ⟨hf, hv1, hv2⟩ := hs z ho
@@ -61,18 +61,18 @@ theorem emit1_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       · refine ⟨rfl, ?_, ?_, rfl, rfl, rfl⟩
         · config_simp; rw [hR2, hc, h1]
         · config_simp; rw [hR1, hc, hv1, hR2, hv2]
-    refine ⟨c', _, .ifLtN_false ht e, by omega, fun r a b => ?_, rr', rm', o', ?_, fun t ht' => ?_,
+    refine ⟨c', _, .ifLtN_false ht e, by_o, fun r a b => ?_, rr', rm', o', ?_, fun t ht' => ?_,
       fun a ha => ?_⟩
     · rw [n', upd_other _ _ _ a, upd_other _ _ _ b]
     · rw [n']; simp [upd]
     · simp only [Option.toList_some, List.length_cons, List.length_nil] at ht'
-      have : t = 0 := by omega
+      have : t = 0 := by_o
       subst this
       rw [m']
       simp only [Nat.add_zero, Option.toList_some, List.getD_cons_zero]
-      exact ⟨by rw [upd_other _ _ _ (by omega), upd_same], by rw [upd_same]⟩
+      exact ⟨by rw [upd_other _ _ _ by_o, upd_same], by rw [upd_same]⟩
     · simp only [Option.toList_some, List.length_cons, List.length_nil] at ha
-      rw [m', upd_other _ _ _ (by omega), upd_other _ _ _ (by omega)]
+      rw [m', upd_other _ _ _ by_o, upd_other _ _ _ by_o]
 
 /-- **Normalise, guard, append.** -/
 def emitG : Stmt :=
@@ -109,30 +109,30 @@ theorem emitG_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     unfold gOpt
     by_cases hg0 : g = 0
     · have ht : ¬ c₁.nreg 120012 < c₁.nreg 110245 := by
-        rw [R₁ _ (by omega) (by omega), R₁ _ (by omega) (by omega), h0, hg, hg0]
+        rw [R₁ _ by_o by_o, R₁ _ by_o by_o, h0, hg, hg0]
         exact Nat.lt_irrefl 0
-      refine ⟨_, _, .ifLtN_false ht (Exec.constN w₁ 110290 0 (Nat.zero_le _)), by omega,
+      refine ⟨_, _, .ifLtN_false ht (Exec.constN w₁ 110290 0 (Nat.zero_le _)), by_o,
         (fun _ => by config_simp), (fun z hz => by rw [ite_eq_left hg0] at hz; cases hz),
         (fun r hr => by config_simp; rw [upd_other _ _ _ hr]), rfl, rfl, rfl, rfl⟩
     · have ht : c₁.nreg 120012 < c₁.nreg 110245 := by
-        rw [R₁ _ (by omega) (by omega), R₁ _ (by omega) (by omega), h0, hg]; omega
-      refine ⟨_, _, .ifLtN_true ht (.skip w₁), by omega, fun hn => ?_, fun z hz => ?_,
+        rw [R₁ _ by_o by_o, R₁ _ by_o by_o, h0, hg]; omega
+      refine ⟨_, _, .ifLtN_true ht (.skip w₁), by_o, fun hn => ?_, fun z hz => ?_,
         fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
       · rw [ite_eq_right hg0] at hn; exact n₁ hn
       · rw [ite_eq_right hg0] at hz; exact s₁ z hz
   rw [hg]
-  have g1 : c₂.nreg 120011 = 1 := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), h1]
-  have g93 : c₂.nreg 110293 = R1 := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), hR1]
-  have g94 : c₂.nreg 110294 = R2 := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), hR2]
-  have g95 : c₂.nreg 110295 = c₀ := by rw [R₂.1 _ (by decide), R₁ _ (by omega) (by omega), hc]
+  have g1 : c₂.nreg 120011 = 1 := by rw [R₂.1 _ by_d, R₁ _ by_o by_o, h1]
+  have g93 : c₂.nreg 110293 = R1 := by rw [R₂.1 _ by_d, R₁ _ by_o by_o, hR1]
+  have g94 : c₂.nreg 110294 = R2 := by rw [R₂.1 _ by_d, R₁ _ by_o by_o, hR2]
+  have g95 : c₂.nreg 110295 = c₀ := by rw [R₂.1 _ by_d, R₁ _ by_o by_o, hc]
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, rr₃, rm₃, o₃, cnt₃, pr₃, mm₃⟩ := emit1_exec (P := P) e₂.wb_right g1 g93
     g94 g95 _ n₂ s₂ hR12 hRW
-  have hm₁ : c₁.nmem = c.nmem := f₁.2.2.1
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, fun r a b c' d => ?_, ?_, ?_, ?_, cnt₃, pr₃,
+  have hm₁ := f₁.2.2.1
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by_o, fun r a b c' d => ?_, ?_, ?_, ?_, cnt₃, pr₃,
     fun x hx => ?_⟩
-  · rw [r₃ r a b, R₂.1 r (by omega), R₁ r d c']
+  · rw [r₃ r a b, R₂.1 r by_o, R₁ r d c']
   · rw [rr₃, R₂.2.2.1]; funext r
-    exact WalkKey.exec_rframe e₁ (B := fun _ => false) (by decide) r rfl
+    exact WalkKey.exec_rframe e₁ (B := fun _ => false) by_d r rfl
   · rw [rm₃, R₂.2.2.2.1, f₁.2.2.2.1]
   · rw [o₃, R₂.2.2.2.2, f₁.2.2.2.2]
   · rw [mm₃ x hx, R₂.2.1, hm₁]
@@ -207,7 +207,7 @@ theorem spRam_eq {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q 
       unfold sp3 gOpt
       by_cases hc : 0 < rT C ∧ s6 + sT = 0
       · have c6 : s6 = 0 := by omega
-        have cT : sT = 0 := by omega
+        have cT : sT = 0 := by_o
         rw [ite_eq_left hc, ite_eq_right one_ne_zero, ite_eq_left ⟨hc.1, i6.1 c6, iT.1 cT⟩, x6 (i6.1 c6), xT (iT.1 cT)]
       · rw [ite_eq_right hc, ite_eq_left rfl,
           ite_eq_right (fun h => hc ⟨h.1, by rw [i6.2 h.2.1, iT.2 h.2.2]⟩)]
@@ -215,7 +215,7 @@ theorem spRam_eq {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q 
       unfold sp4 gOpt
       by_cases hc : sT + s2 = 0
       · have cT : sT = 0 := by omega
-        have c2 : s2 = 0 := by omega
+        have c2 : s2 = 0 := by_o
         rw [ite_eq_left hc, ite_eq_right one_ne_zero, ite_eq_left ⟨iT.1 cT, i2.1 c2⟩, xT (iT.1 cT), x2 (i2.1 c2)]
       · rw [ite_eq_right hc, ite_eq_left rfl,
           ite_eq_right (fun h => hc (by rw [iT.2 h.1, i2.2 h.2]))]
@@ -223,7 +223,7 @@ theorem spRam_eq {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q 
       unfold sp5 gOpt
       by_cases hc : s6 + s2 = 0
       · have c6 : s6 = 0 := by omega
-        have c2 : s2 = 0 := by omega
+        have c2 : s2 = 0 := by_o
         rw [ite_eq_left hc, ite_eq_right one_ne_zero, ite_eq_left ⟨i6.1 c6, i2.1 c2⟩, x6 (i6.1 c6), x2 (i2.1 c2)]
       · rw [ite_eq_right hc, ite_eq_left rfl,
           ite_eq_right (fun h => hc (by rw [i6.2 h.1, i2.2 h.2]))]
@@ -236,7 +236,7 @@ theorem spRam_eq {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q 
       intro g a b ha hb
       unfold gOpt; split_ifs
       · rfl
-      · exact normP_none_of_le_one hA (by omega) (by omega)
+      · exact normP_none_of_le_one hA by_o by_o
     have hs : ∀ o : Option (ℕ × ℕ), o ∈ zipSpO C Q N → o = none := by
       intro o ho
       have n1 := normP_none_of_le_one hA (aftArc_lt C Q N 6) (befArc_lt C Q N (κT C))

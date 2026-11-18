@@ -96,20 +96,20 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       FrameB Btop c c' := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hhw : hostWords P.n = 256 * P.n + 16 := rfl
-  have hW3 : P.n + 3 ≤ W := by omega
+  have hW3 : P.n + 3 ≤ W := by_o
   have hNW : 2 * NP ≤ W := by
     have h1 := Host.pts_length_le hwf
     have h2 : H.length * P.n ≤ 64 * P.n := Nat.mul_le_mul_right _ hHok
     rw [hNP]; omega
-  have hn3 : 3 ≤ P.n := hG.1.1
-  have hn0 : 0 < P.n := by omega
+  have hn3 := hG.1.1
+  have hn0 : 0 < P.n := by_o
   have hLt := NFLoc.hostWF_pts hwf hn0
   set D1 := c.nreg 219110 with hD1
   set D2 := c.nreg 219114 with hD2
-  have t1 : c.nmem (D1 + 1 + 3) = C1.topIdx := hd1.2.2.2.2.1
-  have t2 : c.nmem (D2 + 1 + 3) = C2.topIdx := hd2.2.2.2.2.1
-  have ht1 : C1.topIdx ≤ ma := hm1 ▸ C1.topIdx_le
-  have ht2 : C2.topIdx ≤ C2.m := C2.topIdx_le
+  have t1 := hd1.2.2.2.2.1
+  have t2 := hd2.2.2.2.2.1
+  have ht1 := hm1 ▸ C1.topIdx_le
+  have ht2 := C2.topIdx_le
   -- the loads and the host environment
   obtain ⟨c₁, k₁, e₁, hk₁, v20, v23, v21, v25, E₁, s52, n87, k91, g₁⟩ : ∃ c₁ k₁, Exec P W mgLoad c c₁ k₁ ∧
       k₁ = 17 ∧ c₁.nreg 219120 = C1.topIdx ∧ c₁.nreg 219123 = c.nmem (D1 + 5) ∧
@@ -117,7 +117,7 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       NFLoc.HostEnv W HB H.length c.nmem c₁ ∧ c₁.nreg 50052 = 0 ∧ c₁.nreg 50087 = NP ∧
       c₁.nreg 50091 = C1.topIdx ∧ FrameB Btop c c₁ := by
     have q44 := hK.r44; have q45 := hK.r45
-    have hD1W : D1 + 4 ≤ W := by omega
+    have hD1W : D1 + 4 ≤ W := by_o
     have t1' : c.nmem (D1 + 4) = C1.topIdx := by rw [show D1 + 4 = D1 + 1 + 3 by ring]; exact t1
     have t2' : c.nmem (D2 + 4) = C2.topIdx := by rw [show D2 + 4 = D2 + 1 + 3 by ring]; exact t2
     obtain ⟨c₁, k₁, e₁, hk₁, v20, v23, v21, v25, v60, v61, v67, v68, v69, s52, n87, k91, m₁⟩ :
@@ -132,12 +132,12 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp <;>
         (try simp only [← hD1, ← hD2, q44, q45, h12, h00, h07, h01, t1', t2'])
     refine ⟨c₁, k₁, e₁, hk₁, v20, v23, v21, v25, ⟨e₁.wb_right, v60, v61, v67, v68, v69, m₁⟩, s52,
-      n87, k91, exec_frameB e₁ (by decide)⟩
-  have hNP' : (H.pts P.n).length = NP := hNP.symm
+      n87, k91, exec_frameB e₁ by_d⟩
+  have hNP' := hNP.symm
   -- the first top point
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, E₂, sp₁, hsp₁, in₁⟩ := NFLoc.hostPt_exec (P := P) c₁ E₁ hHA hwf
-    (by omega) (by omega) (by omega) s52 (by rw [n87, hNP]) k91 (by omega) (by omega)
-  have g₂ : ∀ r, NFLoc.Bhost r = false → c₂.nreg r = c₁.nreg r := f₂.1
+    by_o by_o by_o s52 (by rw [n87, hNP]) k91 by_o by_o
+  have g₂ := f₂.1
   obtain ⟨c₃, k₃, e₃, hk₃, a₃, k91', g₃, m₃⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN 219130 50046, .copyN 219131 50047, .copyN 219132 50048,
         .copyN 50091 219121]) c₂ c₃ k₃ ∧ k₃ = 4 ∧ SymPtIn c₃ 219130 sp₁ ∧
@@ -145,24 +145,24 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       (∀ r, ¬ (219130 ≤ r ∧ r ≤ 219132) → r ≠ 50091 → c₃.nreg r = c₂.nreg r) ∧
       c₃.nmem = c₂.nmem := by
     have hw₂ := e₂.wb_right
-    have q21 : c₂.nreg 219121 = ma + C2.topIdx := by rw [g₂ _ (by decide), v21]
+    have q21 : c₂.nreg 219121 = ma + C2.topIdx := by rw [g₂ _ by_d, v21]
     exec_block
     refine ⟨rfl, NFLoc.symPtIn_copy in₁ (by config_simp) (by config_simp) (by config_simp),
       by config_simp; exact q21, fun r h1 h2 => ?_, rfl⟩
     simp only [Machine.upd_apply]
     split_ifs <;> first | rfl | omega
   have E₃ : NFLoc.HostEnv W HB H.length c.nmem c₃ :=
-    ⟨e₃.wb_right, by rw [g₃ _ (by omega) (by omega), E₂.h60], by rw [g₃ _ (by omega) (by omega), E₂.h61],
-      by rw [g₃ _ (by omega) (by omega), E₂.h67], by rw [g₃ _ (by omega) (by omega), E₂.h68],
-      by rw [g₃ _ (by omega) (by omega), E₂.h69], by rw [m₃, E₂.mem]⟩
-  have s52' : c₃.nreg 50052 = 0 := by rw [g₃ _ (by omega) (by omega), g₂ _ (by decide), s52]
-  have n87' : c₃.nreg 50087 = NP := by rw [g₃ _ (by omega) (by omega), g₂ _ (by decide), n87]
+    ⟨e₃.wb_right, by rw [g₃ _ by_o by_o, E₂.h60], by rw [g₃ _ by_o by_o, E₂.h61],
+      by rw [g₃ _ by_o by_o, E₂.h67], by rw [g₃ _ by_o by_o, E₂.h68],
+      by rw [g₃ _ by_o by_o, E₂.h69], by rw [m₃, E₂.mem]⟩
+  have s52' : c₃.nreg 50052 = 0 := by rw [g₃ _ by_o by_o, g₂ _ by_d, s52]
+  have n87' : c₃.nreg 50087 = NP := by rw [g₃ _ by_o by_o, g₂ _ by_d, n87]
   -- the second top point
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, E₄, sp₂, hsp₂, in₂⟩ := NFLoc.hostPt_exec (P := P) c₃ E₃ hHA hwf
-    (by omega) (by omega) (by omega) s52' (by rw [n87', hNP]) k91' (by omega) (by omega)
-  have g₄ : ∀ r, NFLoc.Bhost r = false → c₄.nreg r = c₃.nreg r := f₄.1
-  have a₄ : SymPtIn c₄ 219130 sp₁ := NFLoc.symPtIn_copy a₃ (g₄ _ (by decide)) (g₄ _ (by decide))
-    (g₄ _ (by decide))
+    by_o by_o by_o s52' (by rw [n87', hNP]) k91' by_o by_o
+  have g₄ := f₄.1
+  have a₄ : SymPtIn c₄ 219130 sp₁ := NFLoc.symPtIn_copy a₃ (g₄ _ by_d) (g₄ _ by_d)
+    (g₄ _ by_d)
   obtain ⟨c₅, k₅, e₅, hk₅, a₅, b₅, g₅, m₅⟩ : ∃ c₅ k₅, Exec P W
       (block [.copyN 219133 50046, .copyN 219134 50047, .copyN 219135 50048]) c₄ c₅ k₅ ∧
       k₅ = 3 ∧ SymPtIn c₅ 219130 sp₁ ∧ SymPtIn c₅ 219133 sp₂ ∧
@@ -174,11 +174,11 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     simp only [Machine.upd_apply]
     split_ifs <;> first | rfl | omega
   -- the comparison
-  have l₁ : sp₁.Lt P.n := hLt _ (List.mem_of_getElem? hsp₁)
-  have l₂ : sp₂.Lt P.n := hLt _ (List.mem_of_getElem? hsp₂)
+  have l₁ := hLt _ (List.mem_of_getElem? hsp₁)
+  have l₂ := hLt _ (List.mem_of_getElem? hsp₂)
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, b6le, b6⟩ := SweepPrim.kbit_exec (P := P) hG hW3 c₅ e₅.wb_right
-    (a := 219130) (b := 219133) (d := 219130) (op := 1) (dst := 219136) (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) l₁ l₂ l₁ a₅ b₅ a₅
+    (a := 219130) (b := 219133) (d := 219130) (op := 1) (dst := 219136) by_n by_n
+    by_n by_n by_n l₁ l₂ l₁ a₅ b₅ a₅
   -- the two tops are the loaded points
   have top1 : C1.top = sp₁.eval (Qof P) := by
     unfold Chain.top
@@ -192,20 +192,20 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     rw [b6, top1, top2]; simp only [SignTest, not_le]
   -- the selection
   have q20 : c₆.nreg 219120 = C1.topIdx := by
-    rw [f₆.1 _ (by decide), g₅ _ (by omega), g₄ _ (by decide), g₃ _ (by omega) (by omega),
-      g₂ _ (by decide), v20]
+    rw [f₆.1 _ by_d, g₅ _ by_o, g₄ _ by_d, g₃ _ by_o by_o,
+      g₂ _ by_d, v20]
   have q21 : c₆.nreg 219121 = ma + C2.topIdx := by
-    rw [f₆.1 _ (by decide), g₅ _ (by omega), g₄ _ (by decide), g₃ _ (by omega) (by omega),
-      g₂ _ (by decide), v21]
+    rw [f₆.1 _ by_d, g₅ _ by_o, g₄ _ by_d, g₃ _ by_o by_o,
+      g₂ _ by_d, v21]
   have q23 : c₆.nreg 219123 = c.nmem (D1 + 5) := by
-    rw [f₆.1 _ (by decide), g₅ _ (by omega), g₄ _ (by decide), g₃ _ (by omega) (by omega),
-      g₂ _ (by decide), v23]
+    rw [f₆.1 _ by_d, g₅ _ by_o, g₄ _ by_d, g₃ _ by_o by_o,
+      g₂ _ by_d, v23]
   have q25 : c₆.nreg 219125 = c.nmem (D2 + 5) := by
-    rw [f₆.1 _ (by decide), g₅ _ (by omega), g₄ _ (by decide), g₃ _ (by omega) (by omega),
-      g₂ _ (by decide), v25]
+    rw [f₆.1 _ by_d, g₅ _ by_o, g₄ _ by_d, g₃ _ by_o by_o,
+      g₂ _ by_d, v25]
   have q41 : c₆.nreg 219141 = 1 := by
-    rw [f₆.1 _ (by decide), g₅ _ (by omega), g₄ _ (by decide), g₃ _ (by omega) (by omega),
-      g₂ _ (by decide), g₁.1 _ (by decide), hK.r41]
+    rw [f₆.1 _ by_d, g₅ _ by_o, g₄ _ by_d, g₃ _ by_o by_o,
+      g₂ _ by_d, g₁.1 _ by_d, hK.r41]
   have hw₆ := e₆.wb_right
   obtain ⟨c₇, k₇, e₇, hk₇, o38, o39, f₇⟩ : ∃ c₇ k₇, Exec P W mgSel c₆ c₇ k₇ ∧ k₇ ≤ 4 ∧
       c₇.nreg 219138 = (if (C2.top).2 ≤ (C1.top).2 then C1.topIdx else C1.m + C2.topIdx) ∧
@@ -220,8 +220,8 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
         exec_block
         refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> (try simp only [q20, q23])
       have ex7 : Exec P W mgSel c₆ c₇ (k₇ + 1) := .ifLtN_true h0 e₇
-      refine ⟨c₇, k₇ + 1, ex7, by omega, by rw [w38, ite_eq_left hc],
-        by rw [w39, ite_eq_left hc], exec_frameB ex7 (by decide)⟩
+      refine ⟨c₇, k₇ + 1, ex7, by_o, by rw [w38, ite_eq_left hc],
+        by rw [w39, ite_eq_left hc], exec_frameB ex7 by_d⟩
     · have h0 : ¬ c₆.nreg 219136 < c₆.nreg 219141 := by
         rw [q41]; have := hbit.2 hc; omega
       obtain ⟨c₇, k₇, e₇, hk₇, w38, w39⟩ : ∃ c₇ k₇, Exec P W
@@ -230,13 +230,13 @@ theorem mgTop_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
         exec_block
         refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> (try simp only [q21, q25])
       have ex7 : Exec P W mgSel c₆ c₇ (k₇ + 2) := .ifLtN_false h0 e₇
-      refine ⟨c₇, k₇ + 2, ex7, by omega, by rw [w38, ite_eq_right hc, hm1],
-        by rw [w39, ite_eq_right hc], exec_frameB ex7 (by decide)⟩
+      refine ⟨c₇, k₇ + 2, ex7, by_o, by rw [w38, ite_eq_right hc, hm1],
+        by rw [w39, ite_eq_right hc], exec_frameB ex7 by_d⟩
   refine ⟨c₇, k₁ + (k₂ + (k₃ + (k₄ + k₅)) + (k₆ + k₇)), ?_, ?_, o38, o39, ?_⟩
   · exact .seq e₁ (.seq (.seq e₂ (.seq e₃ (.seq e₄ e₅))) (.seq e₆ e₇))
   · omega
-  · have F3 : FrameB Btop c₂ c₃ := exec_frameB e₃ (by decide)
-    have F5 : FrameB Btop c₄ c₅ := exec_frameB e₅ (by decide)
+  · have F3 : FrameB Btop c₂ c₃ := exec_frameB e₃ by_d
+    have F5 : FrameB Btop c₄ c₅ := exec_frameB e₅ by_d
     have hb : ∀ r, Btop r = false → NFLoc.Bhost r = false := fun r hr => by
       simp only [Btop, NFLoc.Bhost, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega
     have hk : ∀ r, Btop r = false → SweepPrim.Bkb 219136 r = false := fun r hr => by

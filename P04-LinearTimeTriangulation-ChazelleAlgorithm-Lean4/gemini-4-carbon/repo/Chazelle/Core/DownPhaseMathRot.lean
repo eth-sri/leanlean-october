@@ -46,10 +46,10 @@ theorem topIdx_congr : C.topIdx = C'.topIdx := by
   apply le_antisymm
   · apply C.topIdx_min (by rw [hm]; exact C'.topIdx_le)
     intro i hi
-    rw [hv, hv]; exact C'.topIdx_spec.2 i (by rw [← hm]; exact hi)
+    rw [hv, hv]; exact C'.topIdx_spec.2 i (by rwa [← hm])
   · apply C'.topIdx_min (by rw [← hm]; exact C.topIdx_le)
     intro i hi
-    rw [← hv, ← hv]; exact C.topIdx_spec.2 i (by rw [hm]; exact hi)
+    rw [← hv, ← hv]; exact C.topIdx_spec.2 i (by rwa [hm])
 
 omit hr in
 theorem top_congr : C.top = C'.top := by

@@ -43,7 +43,7 @@ def earHull (P : Polygon) (i : ℕ) : Set Point :=
 /-- The two endpoints of the ear chord are distinct. -/
 theorem vtx_prev_ne_vtx_succ (hP : P.Simple) (hi : i < P.n) :
     P.vtx (prevIdx P i) ≠ P.vtx ((i + 1) % P.n) :=
-  simple_vtx_ne hP (prevIdx_lt P hi) (Nat.mod_lt _ (by omega))
+  simple_vtx_ne hP (prevIdx_lt P hi) (Nat.mod_lt _ by_o)
     (prevIdx_ne_succIdx P hP.1 hi)
 
 /-- The open ear chord avoids the boundary (the chord condition of `IsEar`, unfolded). -/
@@ -80,7 +80,7 @@ theorem not_mem_earHull_of_isEar (hP : P.Simple) (hi : i < P.n) (he : IsEar P i)
   · rw [e1] at hkj
     exact h2 (simple_vtx_inj hP hj hi hkj.symm)
   · rw [e2] at hkj
-    exact h3 (simple_vtx_inj hP hj (Nat.mod_lt _ (by omega)) hkj.symm)
+    exact h3 (simple_vtx_inj hP hj (Nat.mod_lt _ by_o) hkj.symm)
 
 /-- **The midpoint of an ear chord is inside.** -/
 theorem parity_mid_of_isEar (hP : P.Simple) (hi : i < P.n) (he : IsEar P i) :
@@ -88,10 +88,10 @@ theorem parity_mid_of_isEar (hP : P.Simple) (hi : i < P.n) (he : IsEar P i) :
   have hab := vtx_prev_ne_vtx_succ P i hP hi
   have hmB : lerp (P.vtx (prevIdx P i)) (P.vtx ((i + 1) % P.n)) (1 / 2) ∉ P.boundary :=
     open_chord_not_mem_boundary_of_isEar P i hi he _
-      (lerp_mem_segment _ _ (by norm_num) (by norm_num)) (lerp_ne_left hab (by norm_num))
-      (lerp_ne_right hab (by norm_num))
+      (lerp_mem_segment _ _ by_n by_n) (lerp_ne_left hab by_n)
+      (lerp_ne_right hab by_n)
   rw [← mem_filled_iff hP hmB]
-  exact he.2 (lerp_mem_segment _ _ (by norm_num) (by norm_num))
+  exact he.2 (lerp_mem_segment _ _ by_n by_n)
 
 /-! ### The backward direction -/
 
@@ -101,11 +101,11 @@ theorem vtx_rotate_fan (hn : 2 ≤ P.n) (hi : i < P.n) :
     (P.rotate i).vtx 0 = P.vtx i ∧
     (P.rotate i).vtx 1 = P.vtx ((i + 1) % P.n) := by
   refine ⟨?_, ?_, ?_⟩
-  · rw [n_rotate, vtx_rotate P i (by omega)]
+  · rw [n_rotate, vtx_rotate P i by_o]
     unfold prevIdx
     congr 2; omega
-  · rw [vtx_rotate P i (by omega), Nat.add_zero, Nat.mod_eq_of_lt hi]
-  · rw [vtx_rotate P i (by omega)]
+  · rw [vtx_rotate P i by_o, Nat.add_zero, Nat.mod_eq_of_lt hi]
+  · rw [vtx_rotate P i by_o]
 
 /-- **No crossing, at an arbitrary vertex.**  If the ear triangle at `i` is nondegenerate and
 contains no vertex other than its corners, the open chord from `prev i` to `next i` avoids the
@@ -116,11 +116,11 @@ theorem open_chord_not_mem_boundary_of_test (hP : P.Simple) (h4 : 4 ≤ P.n) (hi
       P.vtx j ∉ earHull P i) :
     ∀ p ∈ Chazelle.segment (P.vtx (prevIdx P i)) (P.vtx ((i + 1) % P.n)),
       p ≠ P.vtx (prevIdx P i) → p ≠ P.vtx ((i + 1) % P.n) → p ∉ P.boundary := by
-  have hn : 0 < P.n := by omega
+  have hn : 0 < P.n := by_o
   set Q := P.rotate i with hQdef
-  have hQ : Q.Simple := simple_rotate P i hP
-  have hQn : Q.n = P.n := n_rotate P i
-  obtain ⟨ea, ev, eb⟩ := vtx_rotate_fan P i (by omega) hi
+  have hQ := simple_rotate P i hP
+  have hQn := n_rotate P i
+  obtain ⟨ea, ev, eb⟩ := vtx_rotate_fan P i by_o hi
   have hQ4 : 4 ≤ Q.n := by rw [hQn]; exact h4
   have hdetQ : det (Q.vtx (Q.n - 1)) (Q.vtx 0) (Q.vtx 1) ≠ 0 := by
     rw [ea, ev, eb]; exact hdet
@@ -130,7 +130,7 @@ theorem open_chord_not_mem_boundary_of_test (hP : P.Simple) (h4 : 4 ≤ P.n) (hi
     intro j hj hmem
     rw [ea, ev, eb] at hmem
     rw [hQn] at hj ⊢
-    have hQj : Q.vtx j = P.vtx ((i + j) % P.n) := vtx_rotate P i hj
+    have hQj := vtx_rotate P i hj
     rw [hQj] at hmem
     by_contra hcon
     simp only [not_or] at hcon
@@ -139,11 +139,11 @@ theorem open_chord_not_mem_boundary_of_test (hP : P.Simple) (h4 : 4 ≤ P.n) (hi
     · intro h
       unfold prevIdx at h
       rw [show i + P.n - 1 = i + (P.n - 1) by omega] at h
-      exact hjn (rot_index_inj hj (by omega) h)
+      exact hjn (rot_index_inj hj by_o h)
     · intro h
       exact hj0 (rot_index_inj hj hn (by rw [h, Nat.add_zero, Nat.mod_eq_of_lt hi]))
     · intro h
-      exact hj1 (rot_index_inj hj (by omega) h)
+      exact hj1 (rot_index_inj hj by_o h)
   have hchord := chord_base_not_mem_boundary hQ hQ4 hdetQ hnoneQ
   rw [ea, eb, boundary_rotate] at hchord
   intro p hp hp1 hp2
@@ -172,10 +172,10 @@ theorem chord_subset_filled_of_test (hP : P.Simple) (hi : i < P.n)
       lerp (P.vtx (prevIdx P i)) (P.vtx ((i + 1) % P.n)) t ∉ P.boundary :=
     fun t ht => hoff _ (lerp_mem_segment _ _ ht.1.le ht.2.le) (lerp_ne_left hab ht.1)
       (lerp_ne_right hab ht.2)
-  have hmid : (1 / 2 : ℝ) ∈ Set.Ioo (0 : ℝ) 1 := ⟨by norm_num, by norm_num⟩
+  have hmid : (1 / 2 : ℝ) ∈ Set.Ioo (0 : ℝ) 1 := ⟨by_n, by_n⟩
   exact segment_subset_filled_of_open hP
     (Jordan.boundary_subset_filled P (vtx_mem_boundary P (prevIdx_lt P hi)))
-    (Jordan.boundary_subset_filled P (vtx_mem_boundary P (Nat.mod_lt _ (by omega))))
+    (Jordan.boundary_subset_filled P (vtx_mem_boundary P (Nat.mod_lt _ by_o)))
     hoff' hmid ((mem_filled_iff hP (hoff' _ hmid)).2 hpar)
 
 /-! ### The ear test -/

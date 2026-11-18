@@ -139,7 +139,7 @@ theorem hdS_exec (c : Config) (hw : WordsBounded W c) {H : ℕ} (h05 : c.nreg 21
     all_goals try rfl
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
     q.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2.2.2,
-    exec_frameB ex (by decide)⟩
+    exec_frameB ex by_d⟩
 
 /-- The registers of the reservation. -/
 def Bres (r : ℕ) : Bool := decide (r = 216023) || decide (r = 9999)
@@ -163,19 +163,19 @@ theorem resS_exec {c : Config} (hw : WordsBounded W c) {R : ℕ} (h13 : c.nreg 2
       exec_block
       all_goals try (config_simp; (try simp only [h1, h3, h4']); omega)
       refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [h1, h3, h4']; omega
-    have hf' : FrameB Bres e e' := exec_frameB ex (by decide)
+    have hf' : FrameB Bres e e' := exec_frameB ex by_d
     have hA' : e'.nreg ALLOC = e.nreg ALLOC + 5 := by
       show e'.nreg 9999 = e.nreg 9999 + 5
       rw [q.2, h4']; ring
     have hnot : ∀ r, bandOf r ∉ DrvR.drvBands → r ≠ ALLOC → Bres r = false := fun r hr hra => by
       simp only [Bres, Bool.or_eq_false_iff, decide_eq_false_iff_not]
-      refine ⟨fun h => hr (by rw [h]; exact mem_drvBands (by norm_num) (by norm_num)), hra⟩
-    refine ⟨e', k, ex, ⟨ex.wb_right, q.1, (hf'.1 _ (by decide)).trans h2,
-      (hf'.1 _ (by decide)).trans h3, by show e'.nreg 9999 = _; rw [q.2], hf.trans hf', hj⟩,
+      refine ⟨fun h => hr (by rw [h]; exact mem_drvBands by_n by_n), hra⟩
+    refine ⟨e', k, ex, ⟨ex.wb_right, q.1, (hf'.1 _ by_d).trans h2,
+      (hf'.1 _ by_d).trans h3, by show e'.nreg 9999 = _; rw [q.2], hf.trans hf', hj⟩,
       ⟨fun r hr hra => hf'.1 r (hnot r hr hra), fun r _ =>
-        WalkKey.exec_rframe ex (B := fun _ => false) (by decide) r rfl, fun a _ => by rw [hf'.2.2.1],
-        fun a _ => by rw [hf'.2.2.2.1], hf'.2.2.2.2, by omega, by omega⟩, hk⟩
-  have I0 : Inv 0 c := ⟨hw, h23, h13, h02, by simp, FrameB.refl _ _, Nat.zero_le _⟩
+        WalkKey.exec_rframe ex (B := fun _ => false) by_d r rfl, fun a _ => by rw [hf'.2.2.1],
+        fun a _ => by rw [hf'.2.2.2.1], hf'.2.2.2.2, by_o, by_o⟩, hk⟩
+  have I0 : Inv 0 c := ⟨hw, h23, h13, h02, by_s, FrameB.refl _ _, Nat.zero_le _⟩
   obtain ⟨c', k, ex, ⟨j, w', h1, h2, -, h4, hf, hjle⟩, hx, RFl, hk⟩ := Restore.whileLtN_frame (P := P)
     (W := W) (a := 216023) (b := 216013) (body := resBody) (B := DrvR.drvBands) (A₀ := A₀)
     (fun e => ∃ j, Inv j e) (fun e => R - e.nreg 216023) 6 (fun e ⟨_, h⟩ => h.1)
@@ -183,7 +183,7 @@ theorem resS_exec {c : Config} (hw : WordsBounded W c) {R : ℕ} (h13 : c.nreg 2
       obtain ⟨hw, h1, h2, -⟩ := id hI
       rw [h1, h2] at ht
       obtain ⟨e', k, ex, hI', RF', hk⟩ := key j e ht hI
-      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by omega, by rw [h1, hI'.2.1]; omega⟩) ⟨0, I0⟩
+      exact ⟨e', k, ex, ⟨j + 1, hI'⟩, RF', by_o, by rw [h1, hI'.2.1]; omega⟩) ⟨0, I0⟩
   have hjR : j = R := by rw [h1, h2] at hx; omega
   subst hjR
   refine ⟨c', k, ex, ?_, h4, h1, hf, RFl⟩
@@ -206,7 +206,7 @@ theorem midS_exec (c : Config) (hw : WordsBounded W c) {R B RB : ℕ} (h13 : c.n
     exec_block
     all_goals try (config_simp; (try simp only [h13, h18, h15, h05]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;> (try simp only [h13, h18, h15, h05]) <;> omega
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2, exec_frameB ex by_d⟩
 
 set_option maxHeartbeats 1000000 in
 /-- The arguments of the splice. -/
@@ -222,7 +222,7 @@ theorem splArgs_exec (c : Config) (hw : WordsBounded W c) :
     unfold splArgs
     exec_block
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
-  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2, exec_frameB ex by_d⟩
 
 /-- The round counter. -/
 theorem incr_exec (c : Config) (hw : WordsBounded W c) {t : ℕ} (h10 : c.nreg 216010 = t)
@@ -232,9 +232,9 @@ theorem incr_exec (c : Config) (hw : WordsBounded W c) {t : ℕ} (h10 : c.nreg 2
   obtain ⟨c', k, ex, hk, q⟩ : ∃ c' k, Exec P W (block [.addN 216010 216010 216002]) c c' k ∧
       k = 1 ∧ c'.nreg 216010 = t + 1 := by
     exec_block
-    · rw [h10, h02]; exact ht
+    · rwa [h10, h02]
     · refine ⟨rfl, ?_⟩; config_simp; rw [h10, h02]
-  exact ⟨c', k, ex, hk, q, exec_frameB ex (by decide)⟩
+  exact ⟨c', k, ex, hk, q, exec_frameB ex by_d⟩
 
 end exec
 

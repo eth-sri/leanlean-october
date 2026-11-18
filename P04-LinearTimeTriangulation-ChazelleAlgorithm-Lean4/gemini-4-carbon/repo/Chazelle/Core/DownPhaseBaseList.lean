@@ -63,9 +63,9 @@ theorem rankF_add (L : List α) (i m : ℕ) :
 
 theorem rankF_lt_of {L : List α} {i j : ℕ} (d : α) (hij : i < j) (hi : i < L.length)
     (hf : f (L.getD i d) = true) : rankF f L i < rankF f L j := by
-  obtain ⟨m, rfl⟩ : ∃ m, j = i + (m + 1) := ⟨j - i - 1, by omega⟩
+  obtain ⟨m, rfl⟩ : ∃ m, j = i + (m + 1) := ⟨j - i - 1, by_o⟩
   rw [rankF_add]
-  have hd : L.drop i = L[i] :: L.drop (i + 1) := List.drop_eq_getElem_cons hi
+  have hd := List.drop_eq_getElem_cons hi
   have hLi : L.getD i d = L[i] := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
   rw [hLi] at hf
@@ -86,7 +86,7 @@ theorem rankF_length (L : List α) : rankF f L L.length = (L.filter f).length :=
 theorem rankF_succ {L : List α} {i : ℕ} (d : α) (hi : i < L.length) :
     rankF f L (i + 1) = rankF f L i + if f (L.getD i d) then 1 else 0 := by
   rw [rankF_add]
-  have hd : L.drop i = L[i] :: L.drop (i + 1) := List.drop_eq_getElem_cons hi
+  have hd := List.drop_eq_getElem_cons hi
   have hLi : L.getD i d = L[i] := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
   rw [hLi, hd, List.take_succ_cons, List.take_zero, List.filter_cons]
@@ -98,11 +98,11 @@ theorem count_codes {L : List α} (d : α) {i : ℕ} (hi : i ≤ L.length) :
   induction i with
   | zero => simp [rankF]
   | succ k ih =>
-    rw [rankF_succ f d (by omega), show 2 * (k + 1) = 2 * k + 1 + 1 by ring, List.range_succ,
+    rw [rankF_succ f d by_o, show 2 * (k + 1) = 2 * k + 1 + 1 by ring, List.range_succ,
       List.range_succ, List.filter_append, List.filter_append, List.length_append,
-      List.length_append, show 2 * k + 1 = 2 * k + 1 from rfl, ih (by omega)]
-    have e1 : (2 * k) / 2 = k := by omega
-    have e2 : (2 * k + 1) / 2 = k := by omega
+      List.length_append, show 2 * k + 1 = 2 * k + 1 from rfl, ih by_o]
+    have e1 : (2 * k) / 2 = k := by_o
+    have e2 : (2 * k + 1) / 2 = k := by_o
     simp only [List.filter_cons, List.filter_nil, e1, e2]
     split_ifs <;> simp; omega
 
@@ -139,7 +139,7 @@ theorem wposOf_newCode {L : List (ℕ × ℕ × ℕ)} {c : ℕ} (hc : c < 2 * L.
   unfold wposOf
   rw [h1, h2]
   simp only [BuildRegions.crec]
-  rw [getD_keepL (by omega) hk]
+  rw [getD_keepL by_o hk]
 
 theorem tieBit_newCode (M : Model) {L : List (ℕ × ℕ × ℕ)} {c : ℕ} (hc : c < 2 * L.length)
     (hk : keptC li n L c = true) : tieBit M (keepL li n L) (newCode li n L c) = tieBit M L c := by
@@ -157,7 +157,7 @@ theorem codeLe_newCode (M : Model) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} 
 
 theorem newCode_lt {L : List (ℕ × ℕ × ℕ)} {c : ℕ} (hc : c < 2 * L.length)
     (hk : keptC li n L c = true) : newCode li n L c < 2 * (keepL li n L).length := by
-  have := rankF_lt_length (keepX li n) (0, 0, 0) (show c / 2 < L.length by omega) hk
+  have := rankF_lt_length (keepX li n) (0, 0, 0) (by omega) hk
   unfold newCode keepL
   omega
 
@@ -166,10 +166,10 @@ theorem newCode_inj {L : List (ℕ × ℕ × ℕ)} {c c' : ℕ} (hc : c < 2 * L.
     (h : newCode li n L c = newCode li n L c') : c = c' := by
   unfold newCode at h
   rcases lt_trichotomy (c / 2) (c' / 2) with h1 | h1 | h1
-  · have := rankF_lt_of (keepX li n) (0, 0, 0) h1 (by omega) hk
+  · have := rankF_lt_of (keepX li n) (0, 0, 0) h1 by_o hk
     omega
   · rw [h1] at h; omega
-  · have := rankF_lt_of (keepX li n) (0, 0, 0) h1 (by omega) hk'
+  · have := rankF_lt_of (keepX li n) (0, 0, 0) h1 by_o hk'
     omega
 
 variable {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
@@ -190,7 +190,7 @@ theorem dropE_pairwise (M : Model) (Q : Polygon) (hperm : E.Perm (List.range (2 
 /-- **The renumbered event list is a permutation of the new codes.** -/
 theorem dropE_perm (hperm : E.Perm (List.range (2 * L.length))) :
     (dropE li n L E).Perm (List.range (2 * (keepL li n L).length)) := by
-  have hnd : E.Nodup := hperm.nodup_iff.2 List.nodup_range
+  have hnd := hperm.nodup_iff.2 List.nodup_range
   have hnd' : (dropE li n L E).Nodup := by
     unfold dropE
     refine (hnd.filter _).map_on fun a ha b hb hab => ?_

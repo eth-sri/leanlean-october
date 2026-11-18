@@ -59,7 +59,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
   rw [hS] at hmem
   obtain ⟨hy, hxa, hxb⟩ := hmem
   simp only at hy hxa hxb
-  have hhz : chH m V (chAt m V q) = V.hz :=
+  have hhz :=
     ((heights_ne h.hT hhn hs.hv.hz_lt).1 hy.symm)
   rw [hhz] at hxa hxb EL ER hC
   obtain ⟨ht, hpre, hpost⟩ := hpart
@@ -76,17 +76,17 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
         linarith
     · -- ahead: the chord at `t` is found, and its left end is not after ours
       push Not at hqt
-      have htK : t < V.K := by omega
+      have htK : t < V.K := by_o
       have hle := h.sorted t q hqt hq
       have hnot := hpost htK
       rw [← Bool.not_eq_true, chPr_iff] at hnot
       have hHt : chH m V (chAt m V t) = V.hz := by
         rcases hle with hlt | ⟨hh, -⟩
         · by_contra hne
-          exact hnot ⟨h.lt t htK, Or.inl (by omega)⟩
+          exact hnot ⟨h.lt t htK, Or.inl by_o⟩
         · rw [hh, hhz]
       have hf : FoundC V m t := by
-        refine ⟨by rw [ite_eq_left hσ]; exact htK, ?_⟩
+        refine ⟨by rwa [ite_eq_left hσ], ?_⟩
         unfold jCOf; rw [ite_eq_left hσ]; exact hHt
       have hnear := h2 hf
       unfold nearC jCOf at hnear; rw [ite_eq_left hσ, ite_eq_left hσ] at hnear
@@ -101,15 +101,15 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
         by_contra hc
         rw [Bool.not_eq_false] at hc
         have := chPr_mono h t q hqt hq hc
-        rw [hpost (by omega)] at this; exact Bool.false_ne_true this
+        rw [hpost by_o] at this; exact Bool.false_ne_true this
       rw [← Bool.not_eq_true, chPr_iff] at hnot
       have ha : ¬ EndLtZ P C V (chL m V (chAt m V q)) V.hz := fun hh =>
         hnot ⟨h.lt q hq, Or.inr ⟨hhz, fun h' => absurd h' hσ, fun _ => hh⟩⟩
       have ha' := not_lt.1 (fun hh => ha ((endLtZ_iff hσ hs.zo hnp EL.good).2 hh))
       linarith
     · push Not at hqt
-      have hle := h.sorted q (t - 1) (by omega) (by omega)
-      have hpt := hpre (t - 1) (by omega)
+      have hle := h.sorted q (t - 1) by_o by_o
+      have hpt := hpre (t - 1) by_o
       rw [chPr_iff] at hpt
       have hHt : chH m V (chAt m V (t - 1)) = V.hz := by
         rcases hle with hlt | ⟨hh, -⟩
@@ -120,7 +120,7 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
         unfold jCOf; rw [ite_eq_right hσ]; exact hHt
       have hnear := h2 hf
       unfold nearC jCOf at hnear; rw [ite_eq_right hσ, ite_eq_right hσ] at hnear
-      obtain ⟨-, -, hCt, -, ELt, ERt⟩ := h.facts (h.lt (t - 1) (by omega))
+      obtain ⟨-, -, hCt, -, ELt, ERt⟩ := h.facts (h.lt (t - 1) by_o)
       rw [hHt] at ELt ERt hCt
       have hx := chLe_xv (by rw [hhz]; exact EL.good) (by rw [hHt]; exact ELt.good) hle (by rw [hHt, hhz])
       rw [hHt, hhz] at hx
@@ -128,8 +128,8 @@ theorem chord_free (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z)
       have hr : xv P C V (chR m V (chAt m V q)) V.hz ≤ xv P C V (chR m V (chAt m V (t - 1))) V.hz := by
         by_cases hq' : chAt m V q = chAt m V (t - 1)
         · rw [hq']
-        · have := chord_disjoint h (h.lt q hq) (h.lt (t - 1) (by omega)) hq' (by rw [hhz, hHt])
-            (by rw [hhz, hHt]; exact hx)
+        · have := chord_disjoint h (h.lt q hq) (h.lt (t - 1) by_o) hq' (by rw [hhz, hHt])
+            (by rwa [hhz, hHt])
           rw [hhz, hHt] at this
           linarith [hCt.lt]
       linarith
@@ -152,8 +152,8 @@ theorem cand_of_stop (hN : IsNF (chainModel C) (Qof P) N) (hP : C.P.Simple)
     exact ⟨k, hk, candidate hN hGM hne hv hpk hin l1 l2⟩
   · rw [Set.not_nonempty_iff_eq_empty] at hne
     have h1 := arcs_le_one_of_empty hN hGM hne
-    have := (hloc 0 (by omega)).1
-    exact ⟨0, by omega, Or.inl (by omega)⟩
+    have := (hloc 0 by_o).1
+    exact ⟨0, by_o, Or.inl by_o⟩
 
 /-- The facts of the stopping point of the main phase. -/
 structure SelFacts (P : Polygon) (C : Chain) (V : QV) (m : ℕ → ℕ) (t : ℕ) (bD : Option ℕ)
@@ -171,7 +171,7 @@ theorem xe_mem_edge (hT : TopOK P C V) {e : ℕ} (he : e < P.n) (hsp : Spans (Qo
     ((xe (Qof P) e V.hz, ((Qof P).vtx V.hz).2) : Point) ∈ (Qof P).edge e := by
   have := (rayPt_mem_edge_iff (Qof P) (edge_nonhoriz hT.hD he hn2)
     (z := ((xe (Qof P) e V.hz, ((Qof P).vtx V.hz).2) : Point)) rfl (Or.inl rfl) 0).2
-    ⟨hsp, by simp⟩
+    ⟨hsp, by_s⟩
   simpa [rayPt] using this
 
 /-- **The stopping point of the main phase.** -/
@@ -194,14 +194,14 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
       |xe (Qof P) (eIdx P.n V.s cD) V.hz| < C.radius := by
     intro cD hcD
     subst hcD
-    have hpos : 0 < vOf (Qof P) V.s V.hz (sgnOf V.σb) z cD := (show FirstHit _ _ _ _ from hD).1
+    have hpos := (hD).1
     have hsp := spans_of_vOf_pos hpos
     rw [vOf_of_spans hsp] at hpos
     rw [hQn] at hsp hpos
     have hmem : ((xe (Qof P) (eIdx P.n V.s cD) V.hz, ((Qof P).vtx V.hz).2) : Point) ∈
         C.chainEdge cD := by
       rw [chainEdge_eq_edge hv]
-      exact xe_mem_edge hT (Nat.mod_lt _ (by omega)) hsp hn2
+      exact xe_mem_edge hT (Nat.mod_lt _ by_o) hsp hn2
     have hc := hbD cD rfl
     rw [hv.m] at hc
     exact ⟨hsp, hpos, hmem, abs_fst_lt_radius_of_mem ⟨cD, hc, hmem⟩⟩
@@ -260,7 +260,7 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
       obtain ⟨-, -, -, hxD⟩ := hDf cD hcD
       have hcb : CBof P C V bD (nearC V m t) := by
         rcases hA.2 with h0 | h0
-        · rw [hcD] at h0; exact absurd h0 (by simp)
+        · rw [hcD] at h0; exact absurd h0 by_s
         · exact h0
       rw [hcD] at hcb
       have hcb' : if V.σb = 1 then EndLtD P C V (eIdx P.n V.s cD) (nearC V m t) V.hz
@@ -333,7 +333,7 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
     have hw : (if V.σb = 1 then 3 else 1) = 1 ∨ (if V.σb = 1 then 3 else 1) = 3 := by
       split_ifs <;> simp
     refine ⟨((if (if V.σb = 1 then 3 else 1) = 3 then C.radius else -C.radius),
-      ((Qof P).vtx V.hz).2), ⟨?_, rfl, Or.inr ?_, ?_, ?_, fun cD h' => absurd h' (by simp),
+      ((Qof P).vtx V.hz).2), ⟨?_, rfl, Or.inr ?_, ?_, ?_, fun cD h' => absurd h' by_s,
       fun hf => absurd hf hnf⟩⟩
     · unfold mainPos; rw [hsel]; exact stop_box hT hw rfl
     · split_ifs <;> simp [abs_of_pos hR]
@@ -345,7 +345,7 @@ theorem sel_facts (h : ChordRecOK P C V m N) {z : Point} (hs : SemOK P C V z) (h
         have := max_lt (hnp.1 hσ) (show -C.radius < C.radius by linarith)
         linarith
       · simp only [ite_eq_right hσ, show ¬ (1 : ℕ) = 3 by omega, ite_false]; rw [sgnOf_ne hσ]
-        have := lt_min (hnp.2 hσ) (show -C.radius < C.radius by linarith)
+        have := lt_min (hnp.2 hσ) (by linarith)
         linarith
 
 end

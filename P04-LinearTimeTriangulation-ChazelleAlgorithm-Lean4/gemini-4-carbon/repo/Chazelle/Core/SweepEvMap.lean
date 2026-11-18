@@ -62,11 +62,11 @@ theorem vtx_tpos' (C : Chain) {k : ℕ} (hk : k ≤ C.m) :
   have hn := cm_n C
   have hτ := tpos_lt C k
   have h1 := C.one_le
-  have := walk_tour C k 0 (by omega)
+  have := walk_tour C k 0 by_o
   rw [Nat.add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
   rw [this]
   unfold tourV
-  rw [Nat.add_zero, Nat.mod_eq_of_lt (by omega)]
+  rw [Nat.add_zero, Nat.mod_eq_of_lt by_o]
   unfold Chazelle.Chain.sideE; rw [ite_eq_left hk]
 
 theorem Lst_rlen : Lst J = rlen J := rL1_add_rL2 J
@@ -78,7 +78,7 @@ theorem nvt_left (hP : J.P.Simple) (hv : ¬ VNotTop J) :
   have htop := left_top_eq J hv
   have hm1 : J.left.m = J.m₁ := rfl
   have hk : J.left.topIdx = J.m₁ := by
-    have h1 : J.left.vertex J.left.topIdx = J.left.vertex J.m₁ := htop
+    have h1 := htop
     exact J.left.sideVertex_inj hP J.left.topIdx_le (by rw [hm1]) h1
   have h1 := J.one_le_m₁
   have hτ : tpos J.left J.m₁ = 0 := by
@@ -95,7 +95,7 @@ theorem nvt_left (hP : J.P.Simple) (hv : ¬ VNotTop J) :
     have h2 := J.right.one_le
     have hm2 : J.right.m = J.m₂ := rfl
     rcases vtop_cases J hv with h | h
-    · rw [h, zero_add, Nat.mod_eq_of_lt (show 2 * J.m₂ < 2 * J.whole.m by omega)]
+    · rw [h, zero_add, Nat.mod_eq_of_lt (by omega)]
       omega
     · rw [h, Nat.mod_self]; omega
   refine ⟨hτ, ?_, ?_, ?_, ?_⟩
@@ -129,11 +129,11 @@ theorem caseC_facts (hv : ¬ VNotTop J) (hle : ¬ Lst J < lOff J) :
 
 /-- The base of the left stretch is `gW + lOff`. -/
 theorem gL_eq : (gW J + lOff J) % (chainModel J.whole).W.n = 6 + tpos J.whole (J.m₁ + 2 * J.m₂) := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn := cm_n J.whole
   have hτ := tpos_lt J.whole J.m₁
   have hτ' := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   unfold gW lOff
-  exact add_dOf (by omega) (by omega)
+  exact add_dOf by_o by_o
 
 /-- The walk edge of the left stretch at `d` is the edge at offset `lOff + d`. -/
 theorem left_edge_eq (d : ℕ) :

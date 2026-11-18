@@ -57,7 +57,7 @@ open Chazelle.Chain (sideInArc)
 def locDir : Stmt :=
   .seq (block [.constN 50032 1, .loadN 50033 50000]) (.ifLtN 50033 50032 chainDir intDir)
 
-theorem wr_locDir : wr Bdir locDir = true := by decide
+theorem wr_locDir : wr Bdir locDir = true := by_d
 
 /-- **Well-formed chain descriptors** for the direction procedure, for a model descriptor at
 `D`: if it describes a chain model, at most `64` host items, the host well formed and
@@ -76,10 +76,10 @@ def LocDPre (P : Polygon) (W : ℕ) (c : Config) : Prop :=
 /-- The layout determines the chain. -/
 theorem chain_eq_of_desc {m : ℕ → ℕ} {B : ℕ} {Q : Polygon} {H H' : Host} {C C' : Chain}
     (h : ChainDescAt m B Q H C) (h' : ChainDescAt m B Q H' C') : C = C' := by
-  have hH : H = H' := hostAt_unique h.1 h'.1
+  have hH := hostAt_unique h.1 h'.1
   have hP : C.P = C'.P := by rw [h.2.1, h'.2.1, hH]
-  have hs : C.s = C'.s := h.2.2.1.symm.trans h'.2.2.1
-  have hm : C.m = C'.m := h.2.2.2.1.symm.trans h'.2.2.2.1
+  have hs := h.2.2.1.symm.trans h'.2.2.1
+  have hm := h.2.2.2.1.symm.trans h'.2.2.2.1
   cases C
   cases C'
   simp only at hP hs hm
@@ -108,8 +108,8 @@ theorem locDir_ok : DirOK locDir 5100 LocDPre := by
     · exact ⟨rfl, by config_simp, by config_simp, fun r h1 h2 => by simp [h1, h2], rfl⟩
   obtain ⟨r₁, m₁⟩ := r₁
   have w₁ := e₁.wb_right
-  have d₁ : c₁.nreg 50000 = c.nreg 50000 := r₁ _ (by omega) (by omega)
-  have x₁ : c₁.nreg 50002 = c.nreg 50002 := r₁ _ (by omega) (by omega)
+  have d₁ : c₁.nreg 50000 = c.nreg 50000 := r₁ _ by_o by_o
+  have x₁ : c₁.nreg 50002 = c.nreg 50002 := r₁ _ by_o by_o
   suffices hmain : ∃ c' k, Exec P W locDir c c' k ∧ k ≤ 5100 ∧
       c'.nreg 10502 = dirCode M (c.nreg 50002) by
     obtain ⟨c', k, ex, hk, hd⟩ := hmain
@@ -120,9 +120,9 @@ theorem locDir_ok : DirOK locDir 5100 LocDPre := by
     have he' : c₁.nreg 50002 < 2 * C.m + 7 := by
       rw [x₁]; simpa [chainModel, C.sideWalk_n] using he
     obtain ⟨c₂, k₂, e₂, hk₂, -, d₂⟩ := chainDir_exec (P := P) hG hW c₁ w₁ (H := H) (C := C)
-      (by rw [d₁, m₁]; exact hC) (by rw [d₁]; exact hDW) (by rw [d₁, m₁]; exact hHW) hwf hs hNW
+      (by rwa [d₁, m₁]) (by rwa [d₁]) (by rwa [d₁, m₁]) hwf hs hNW
       he'
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [q33, q32, h0]; omega) e₂), by omega, ?_⟩
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_true (by rw [q33, q32, h0]; omega) e₂), by_o, ?_⟩
     rw [d₂, x₁]
   · have he' : c₁.nreg 50002 < P.n := by
       rw [x₁]
@@ -132,8 +132,8 @@ theorem locDir_ok : DirOK locDir 5100 LocDPre := by
       have hn : (Qof P).n = P.n := shear_n _ _
       omega
     obtain ⟨c₂, k₂, e₂, hk₂, -, d₂⟩ := intDir_exec (P := P) hG hW c₁ w₁ he'
-      (by rw [d₁]; omega) (by rw [d₁, m₁]; exact hbit)
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [q33, q32, h1]; omega) e₂), by omega, ?_⟩
+      (by rw [d₁]; omega) (by rwa [d₁, m₁])
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [q33, q32, h1]; omega) e₂), by_o, ?_⟩
     rw [d₂, x₁]
 
 /-! ## The specification -/
@@ -145,7 +145,7 @@ theorem robust_addr {E : ℕ} {m : ℕ → ℕ} {a v : ℕ} (h : Robust E m fun 
     a < E := by
   by_contra hge
   have := h (Function.update m a (v + 1)) (fun b hb => by
-    rw [Function.update_of_ne (by omega)])
+    rw [Function.update_of_ne by_o])
   simp at this
 
 /-- A word reached through a pointer that robustly holds a value: the pointer and the word lie
@@ -154,17 +154,17 @@ theorem robust_addr2 {E : ℕ} {m : ℕ → ℕ} {b o v : ℕ}
     (h : Robust E m fun m' => m' (m' b + o) = v) : b < E ∧ m b + o < E := by
   have hb : b < E := by
     by_contra hge
-    have hX : b ≠ E + b + 1 + o := by omega
+    have hX : b ≠ E + b + 1 + o := by_o
     have := h (Function.update (Function.update m b (E + b + 1)) (E + b + 1 + o) (v + 1))
       (fun a ha => by
-        rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega)])
+        rw [Function.update_of_ne by_o, Function.update_of_ne by_o])
     simp only at this
     rw [Function.update_of_ne hX, Function.update_self, Function.update_self] at this
     omega
   refine ⟨hb, ?_⟩
   by_contra hge
   have := h (Function.update m (m b + o) (v + 1)) (fun a ha => by
-    rw [Function.update_of_ne (by omega)])
+    rw [Function.update_of_ne by_o])
   simp only at this
   rw [Function.update_of_ne (show b ≠ m b + o by omega), Function.update_self] at this
   omega
@@ -177,14 +177,14 @@ theorem nfWithin_bounds {m : ℕ → ℕ} {B E : ℕ} {M : Model} {Q : Polygon} 
   have hsl := seq_length hNF
   have h1 : Robust E m fun m' => m' (m' (B + 4) + 5 * (N.arcs.length - 1) + 4) =
       (N.arc (N.arcs.length - 1)).e.hgt := fun m' hm' =>
-    ((h m' hm').2.2.2.2.2.2.1 _ (by omega)).2.2.2.2
+    ((h m' hm').2.2.2.2.2.2.1 _ by_o).2.2.2.2
   have h2 : Robust E m fun m' => m' (m' (B + 6) + (N.arcs.length - 1)) =
       N.seq.getD (N.arcs.length - 1) 0 := fun m' hm' =>
-    (h m' hm').2.2.2.2.2.2.2.2.1 _ (by omega)
+    (h m' hm').2.2.2.2.2.2.2.2.1 _ by_o
   have a1 := robust_addr2 (b := B + 4) (o := 5 * (N.arcs.length - 1) + 4)
     (by simpa only [Nat.add_assoc] using h1)
   have a2 := robust_addr2 h2
-  refine ⟨by omega, by omega, by omega⟩
+  refine ⟨by_o, by_o, by_o⟩
 
 /-- A well-formed host of a chain of the geometry polygon has at most `64 n` points. -/
 theorem chain_n_le {P : Polygon} {m : ℕ → ℕ} {B : ℕ} {H : Host} {C : Chain}
@@ -205,7 +205,7 @@ theorem locChainWF_of {P : Polygon} {W E : ℕ} {m : ℕ → ℕ} {D : ℕ} (h :
   obtain ⟨h1, h2, h3, h4⟩ := (h.2 h0).2 H C hC
   have hN := chain_n_le hC h1 h2
   unfold hostWords at hW
-  exact ⟨h1, h2, by omega, h4, by omega⟩
+  exact ⟨h1, h2, by_o, h4, by_o⟩
 
 end
 

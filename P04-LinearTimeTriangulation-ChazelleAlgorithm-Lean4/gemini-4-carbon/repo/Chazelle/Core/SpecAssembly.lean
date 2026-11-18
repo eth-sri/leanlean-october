@@ -56,10 +56,10 @@ theorem linear_of_core (hcore : CoreStageSpec) (hfin : FinalStageSpec)
   obtain ⟨s₁, C₁, K₁, h₁⟩ := hcore
   obtain ⟨s₂, C₂, K₂, h₂⟩ := hfin
   refine ⟨Machine.Stmt.compile (Stmt.seq s₁ s₂) 0 ++ [Instr.halt], C₁ + C₂ + 1, K₁ + C₁ + K₂ + 1,
-    by omega, by omega, ?_⟩
+    by_o, by_o, ?_⟩
   intro P hP
   have hW : (K₁ + C₁ + K₂ + 1) * (P.n + 1) =
-      K₁ * (P.n + 1) + C₁ * (P.n + 1) + K₂ * (P.n + 1) + (P.n + 1) := by ring
+      K₁ * (P.n + 1) + C₁ * (P.n + 1) + K₂ * (P.n + 1) + (P.n + 1) := by_r
   obtain ⟨c₁, k₁, e₁, hk₁, halloc, Q, hPQ, hQ, hready⟩ :=
     h₁ P hP ((K₁ + C₁ + K₂ + 1) * (P.n + 1)) (by rw [hW]; omega)
   obtain ⟨c₂, k₂, e₂, hk₂, htri⟩ := h₂ P Q hP hQ hPQ ((K₁ + C₁ + K₂ + 1) * (P.n + 1)) c₁
@@ -67,7 +67,7 @@ theorem linear_of_core (hcore : CoreStageSpec) (hfin : FinalStageSpec)
   refine ⟨c₂.output, ?_, ?_⟩
   · have hr := Machine.runsWithin_of_exec (Exec.seq e₁ e₂)
     refine runsWithin_mono hr ?_
-    have hC : (C₁ + C₂ + 1) * (P.n + 1) = C₁ * (P.n + 1) + C₂ * (P.n + 1) + (P.n + 1) := by ring
+    have hC : (C₁ + C₂ + 1) * (P.n + 1) = C₁ * (P.n + 1) + C₂ * (P.n + 1) + (P.n + 1) := by_r
     rw [hC]
     omega
   · obtain ⟨ε, -, rfl, -⟩ := hPQ

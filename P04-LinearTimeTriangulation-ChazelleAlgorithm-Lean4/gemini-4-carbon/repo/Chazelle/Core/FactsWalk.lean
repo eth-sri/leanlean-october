@@ -113,7 +113,7 @@ theorem eventually_offset_left (hM : WalkAx M) {p : ℕ} (hp : p < M.W.n) {t : �
   rw [one_mul] at hδ
   refine ⟨hδ, ?_⟩
   rw [sideLeft_edge hne ht, ← wa_eq, ← wb_eq, det_offset]
-  have hδ0' : (0 : ℝ) < δ := hδ0
+  have hδ0' := hδ0
   exact mul_pos hδ0' (sqLen_pos hne)
 
 /-- A position inside an edge whose small left sector lies in `K` faces only sets meeting `K`. -/
@@ -173,18 +173,18 @@ theorem hsep (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {a b : Point}
       connectedComponentIn (M.D \ Chazelle.segment a b) (offset a b (1 / 2) δ) ≠
         connectedComponentIn (M.D \ Chazelle.segment a b) (offset b a (1 / 2) δ) := by
   have hF := hM.sys {c} (singleton_subset_iff.2 hc) (finite_singleton c)
-  have hmid := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
+  have hmid := hopen (1 / 2) ⟨by_n, by_n⟩
   have hmc : lerp a b (1 / 2) ∈ c := by
-    rw [hcab]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
+    rw [hcab]; exact lerp_mem_segment _ _ by_n by_n
   obtain ⟨ε₀, hε₀, hsep⟩ := hF.chord_separates_in subset_rfl (mem_singleton c) hmc hmid
   have hfree : freeIn M.D {c} = M.D \ Chazelle.segment a b := by
     rw [freeIn, sUnion_singleton, hcab]
   rw [hfree] at hsep
   have hd : b.1 - a.1 ≠ 0 := by
-    intro h; apply hab; exact point_ext (by linarith) hy
-  have hdpos : 0 < |b.1 - a.1| := abs_pos.2 hd
+    intro h; apply hab; exact point_ext by_l hy
+  have hdpos := abs_pos.2 hd
   filter_upwards [Ioo_mem_nhdsGT (div_pos hε₀ hdpos)] with δ hδ
-  have hε : 0 < δ * |b.1 - a.1| := mul_pos hδ.1 hdpos
+  have hε := mul_pos hδ.1 hdpos
   have hε' : δ * |b.1 - a.1| < ε₀ := by
     have := hδ.2; rw [lt_div_iff₀ hdpos] at this; exact this
   obtain ⟨-, -, hne⟩ := hsep _ hε hε'
@@ -197,7 +197,7 @@ theorem hsep (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {a b : Point}
   rw [e1, e2]
   rcases lt_or_gt_of_ne hd with h | h
   · rw [abs_of_neg h] at hne
-    have e3 : δ * (b.1 - a.1) = -(δ * -(b.1 - a.1)) := by ring
+    have e3 : δ * (b.1 - a.1) = -(δ * -(b.1 - a.1)) := by_r
     rw [e3, sub_neg_eq_add, ← sub_eq_add_neg]
     exact fun h' => hne h'.symm
   · rw [abs_of_pos h] at hne
@@ -287,7 +287,7 @@ theorem eventually_offset_not_mem (hM : WalkAx M) {F : Set (Set Point)} (hF : F 
     obtain ⟨s, hs0, hs1, he⟩ := Geometry.mem_segment_iff_lerp.1 hmem
     have h1 := det_offset (M.wa p) (M.wb p) t δ
     rw [he, Geometry.det_lerp, hq0] at h1
-    have hδ' : (0 : ℝ) < δ := hδ
+    have hδ' := hδ
     have hsq : 0 < sqLen (M.wa p) (M.wb p) := sqLen_pos hne
     have := mul_pos hδ' hsq
     nlinarith [mul_nonneg hs0 (neg_nonneg.2 hle)]
@@ -316,7 +316,7 @@ theorem exists_faces_of_not_cut (hM : WalkAx M) {F : Set (Set Point)} (hF : F �
   have hLF : L ⊆ freeIn M.D F := by
     rintro _ ⟨δ, hδ, rfl⟩; exact hsub hδ
   set z := offset (M.wa p) (M.wb p) t (δ₀ / 2) with hz
-  have hzL : z ∈ L := ⟨δ₀ / 2, ⟨by linarith, by linarith⟩, rfl⟩
+  have hzL : z ∈ L := ⟨δ₀ / 2, ⟨by_l, by_l⟩, rfl⟩
   refine ⟨connectedComponentIn (freeIn M.D F) z, ⟨z, hLF hzL, rfl⟩, ?_⟩
   filter_upwards [Ioo_mem_nhdsGT hδ₀] with δ hδ
   exact hLc.subset_connectedComponentIn hzL hLF ⟨δ, hδ, rfl⟩
@@ -349,11 +349,11 @@ theorem exists_faces (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
     {U : Set Point} (hU : U ∈ M.regions F) :
     ∃ (p : ℕ) (t : ℝ), p < M.W.n ∧ 0 < t ∧ t < 1 ∧ M.Faces p t U := by
   have hsys := hM.sys F hF hfin
-  have hUo : IsOpen U := hsys.regionsIn_open subset_rfl hU
+  have hUo := hsys.regionsIn_open subset_rfl hU
   obtain ⟨z₀, hz₀⟩ := Chazelle.Chain.regionsIn_nonempty hU
   obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hUo z₀ hz₀
   -- a point of `U` at a generic height
-  set B : Set ℝ := {y | ∃ i < M.W.n, (M.W.vtx i).2 = y} ∪ {y | ∃ c ∈ F, ∃ x ∈ c, x.2 = y}
+  set B := {y | ∃ i < M.W.n, (M.W.vtx i).2 = y} ∪ {y | ∃ c ∈ F, ∃ x ∈ c, x.2 = y}
     with hB
   have hBfin : B.Finite := by
     refine Set.Finite.union ?_ (finite_chord_heights hsys)
@@ -361,21 +361,21 @@ theorem exists_faces (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
       ext y; simp [mem_Iio]
     rw [this]; exact (finite_Iio _).image _
   obtain ⟨y, hyI, hyB⟩ := ((Ioo_infinite (lt_add_of_pos_right z₀.2 hr)).sdiff hBfin).nonempty
-  set z : Point := (z₀.1, y) with hz
+  set z := (z₀.1, y) with hz
   have hzU : z ∈ U := by
     apply hball
     rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
     simp only [hz, sub_self, abs_zero]
     rw [max_lt_iff, abs_of_pos (by linarith [hyI.1])]
     exact ⟨hr, by linarith [hyI.2]⟩
-  have hUfree : U ⊆ freeIn M.D F := Chazelle.Chain.regionsIn_subset hU
-  have hzD : z ∈ M.D := (hUfree hzU).1
+  have hUfree := Chazelle.Chain.regionsIn_subset hU
+  have hzD := (hUfree hzU).1
   have hzv : ∀ i < M.W.n, z.2 ≠ (M.W.vtx i).2 := fun i hi h => hyB (Or.inl ⟨i, hi, h.symm⟩)
   have hzc : ∀ x : Point, x.2 = y → x ∉ ⋃₀ F := by
     rintro x hx ⟨c, hc, hxc⟩
     exact hyB (Or.inr ⟨c, hc, x, hxc, hx⟩)
   obtain ⟨s, hs, hseg, p, hp, t, ht, hq, hup⟩ := hM.reach z hzD hzv
-  set q : Point := (z.1 + s, z.2) with hqdef
+  set q := (z.1 + s, z.2) with hqdef
   -- the segment from `z` to `q` (half-open) is in `U`
   set L := (fun s' : ℝ => ((z.1 + s', z.2) : Point)) '' Ico 0 s with hL
   have hLc : IsPreconnected L :=
@@ -388,13 +388,13 @@ theorem exists_faces (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
     rw [Chazelle.Chain.regionsIn_eq_component hU hzU]
     exact hLc.subset_connectedComponentIn hzL hLF
   -- a half-disk on the left of the edge at `q` is free
-  have hqF : q ∉ ⋃₀ F := hzc q rfl
+  have hqF := hzc q rfl
   obtain ⟨r₁, hr₁, hb₁⟩ := Metric.isOpen_iff.1 (hsys.isClosed_sUnion subset_rfl).isOpen_compl q hqF
   obtain ⟨r₂, hr₂, hcl⟩ := hM.clean p hp t ht.1.le ht.2
   have hne := hM.nd p hp
   set u := M.W.vtx p
   set v := M.W.vtx ((p + 1) % M.W.n)
-  set H : Set Point := ball q (min r₁ r₂) ∩ {x | 0 < 1 * det u v x} with hH
+  set H := ball q (min r₁ r₂) ∩ {x | 0 < 1 * det u v x} with hH
   have hHc : IsPreconnected H := ((convex_ball _ _).inter (convex_det_pos _ _ 1)).isPreconnected
   have hHF : H ⊆ freeIn M.D F := by
     rintro x ⟨hx1, hx2⟩
@@ -403,7 +403,7 @@ theorem exists_faces (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
     by_contra hxD
     refine hcl x ?_ hxD ?_
     · rw [hq]; exact ball_subset_ball (min_le_right _ _) hx1
-    · rw [sideLeft_edge hne ht]; exact hx2
+    · rwa [sideLeft_edge hne ht]
   -- a point of the segment lies in the half-disk
   have hq0 : det u v q = 0 := by
     rw [← hq]; exact Geometry.det_lerp_self _ _ _
@@ -421,9 +421,9 @@ theorem exists_faces (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (h
       have e : det u v ((z.1 + (s - ε), z.2) : Point) = det u v q + ε * (v.2 - u.2) := by
         simp only [hqdef, det]; ring
       rw [e, hq0]
-      have : 0 < v.2 - u.2 := by linarith
+      have : 0 < v.2 - u.2 := by_l
       nlinarith
-  have hwL : ((z.1 + (s - ε), z.2) : Point) ∈ L := ⟨s - ε, ⟨by linarith, by linarith⟩, rfl⟩
+  have hwL : ((z.1 + (s - ε), z.2) : Point) ∈ L := ⟨s - ε, ⟨by_l, by_l⟩, rfl⟩
   have hHU : H ⊆ U := by
     rw [Chazelle.Chain.regionsIn_eq_component hU (hLU hwL)]
     exact hHc.subset_connectedComponentIn hw hHF
@@ -445,7 +445,7 @@ theorem sameComp_of_forall {D : Set Point} {F : Set (Set Point)} (hF : ChordSyst
     ∀ {u u' : Point}, u ∈ freeIn D S → u' ∈ freeIn D S →
       (∀ c ∈ S, connectedComponentIn (D \ c) u = connectedComponentIn (D \ c) u') →
         connectedComponentIn (freeIn D S) u = connectedComponentIn (freeIn D S) u' := by
-  have hfin : S.Finite := hF.finite.subset hS
+  have hfin := hF.finite.subset hS
   induction S, hfin using Set.Finite.induction_on with
   | empty =>
     intro u u' hu hu' _
@@ -453,27 +453,27 @@ theorem sameComp_of_forall {D : Set Point} {F : Set (Set Point)} (hF : ChordSyst
     rw [hD.connectedComponentIn hu, hD.connectedComponentIn hu']
   | @insert c S hcS hSfin ih =>
     intro u u' hu hu' h
-    have hS' : S ⊆ F := (subset_insert c S).trans hS
-    have hc : c ∈ F := hS (mem_insert c S)
-    have hins : insert c S ⊆ F := insert_subset hc hS'
+    have hS' := (subset_insert c S).trans hS
+    have hc := hS (mem_insert c S)
+    have hins := insert_subset hc hS'
     set A := freeIn D S with hA
     set A' := freeIn D (insert c S) with hA'
     have hA'eq : A' = A \ c := Chazelle.Chain.freeIn_insert D c S
-    have huA : u ∈ A := (hA'eq ▸ hu).1
-    have hu'A : u' ∈ A := (hA'eq ▸ hu').1
-    have hIH : connectedComponentIn A u = connectedComponentIn A u' :=
+    have huA := (hA'eq ▸ hu).1
+    have hu'A := (hA'eq ▸ hu').1
+    have hIH :=
       ih hS' huA hu'A fun d hd => h d (mem_insert_of_mem c hd)
     obtain ⟨R, hR, hcR, R₁, R₂, hne, hunion, hR₁, hR₂, heq⟩ := hF.regionsIn_insert hS' hc hcS
     -- the region of `u` in `insert c S`
     set V := connectedComponentIn A' u with hV
     have hVmem : V ∈ regionsIn D (insert c S) := ⟨u, hu, rfl⟩
-    have huV : u ∈ V := mem_connectedComponentIn hu
+    have huV := mem_connectedComponentIn hu
     have hfin_eq : ∀ {x : Point} {X : Set Point}, X ∈ regionsIn D (insert c S) → x ∈ X →
         X = connectedComponentIn A' x := fun hX hx => Chazelle.Chain.regionsIn_eq_component hX hx
     rw [heq] at hVmem
     rcases hVmem with ⟨hVS, hVR⟩ | hVR₁₂
     · -- `V` is an old region
-      have hV' : V = connectedComponentIn A u := Chazelle.Chain.regionsIn_eq_component hVS huV
+      have hV' := Chazelle.Chain.regionsIn_eq_component hVS huV
       have hu'V : u' ∈ V := by rw [hV', hIH]; exact mem_connectedComponentIn hu'A
       exact connectedComponentIn_eq hu'V
     · -- `V` is one of the two new regions
@@ -481,14 +481,14 @@ theorem sameComp_of_forall {D : Set Point} {F : Set (Set Point)} (hF : ChordSyst
       have hR₂R : R₂ ⊆ R \ c := fun x hx => hunion ▸ Or.inr hx
       have hVR : V ⊆ R \ c := by
         rcases hVR₁₂ with h1 | h1
-        · rw [h1]; exact hR₁R
+        · rwa [h1]
         · rw [mem_singleton_iff] at h1; rw [h1]; exact hR₂R
-      have hRu : R = connectedComponentIn A u := Chazelle.Chain.regionsIn_eq_component hR (hVR huV).1
+      have hRu := Chazelle.Chain.regionsIn_eq_component hR (hVR huV).1
       have hu'R : u' ∈ R := by rw [hRu, hIH]; exact mem_connectedComponentIn hu'A
-      have hu'c : u' ∉ c := (hA'eq ▸ hu').2
+      have hu'c := (hA'eq ▸ hu').2
       -- the two sides of `c` at a point `w`
       obtain ⟨w, hwc, hwD⟩ := (hF.chord_inter_nonempty_isPreconnected hc).1
-      have hRo : IsOpen R := hF.regionsIn_open hS' hR
+      have hRo := hF.regionsIn_open hS' hR
       obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.1 hRo w (hcR ⟨hwc, hwD⟩)
       obtain ⟨ε₁, hε₁, hs₁⟩ := hF.chord_separates_in hins (mem_insert c S) hwc hwD
       obtain ⟨ε₂, hε₂, hs₂⟩ := hF.chord_separates_in (singleton_subset_iff.2 hc)
@@ -496,15 +496,15 @@ theorem sameComp_of_forall {D : Set Point} {F : Set (Set Point)} (hF : ChordSyst
       set ε := min (min ε₁ ε₂) r / 2 with hε
       have hε0 : 0 < ε := by rw [hε]; have := lt_min (lt_min hε₁ hε₂) hr; linarith
       have hεm : ε < min (min ε₁ ε₂) r := by rw [hε]; have := lt_min (lt_min hε₁ hε₂) hr; linarith
-      have hε₁' : ε < ε₁ := hεm.trans_le ((min_le_left _ _).trans (min_le_left _ _))
-      have hε₂' : ε < ε₂ := hεm.trans_le ((min_le_left _ _).trans (min_le_right _ _))
-      have hεr : ε < r := hεm.trans_le (min_le_right _ _)
+      have hε₁' := hεm.trans_le ((min_le_left _ _).trans (min_le_left _ _))
+      have hε₂' := hεm.trans_le ((min_le_left _ _).trans (min_le_right _ _))
+      have hεr := hεm.trans_le (min_le_right _ _)
       obtain ⟨hp₁, hm₁, hne₁⟩ := hs₁ ε hε0 hε₁'
       obtain ⟨-, -, hne₂⟩ := hs₂ ε hε0 hε₂'
       have hfc : freeIn D {c} = D \ c := by rw [Chazelle.Chain.freeIn, sUnion_singleton]
       rw [hfc] at hne₂
-      set wp : Point := (w.1, w.2 + ε) with hwp
-      set wm : Point := (w.1, w.2 - ε) with hwm
+      set wp := (w.1, w.2 + ε) with hwp
+      set wm := (w.1, w.2 - ε) with hwm
       have hwpR : wp ∈ R := hball (by
         rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
         simp only [hwp, sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hε0]
@@ -537,7 +537,7 @@ theorem sameComp_of_forall {D : Set Point} {F : Set (Set Point)} (hF : ChordSyst
         have := isPreconnected_connectedComponentIn.subset_connectedComponentIn hx hsub
         exact connectedComponentIn_eq (this (mem_connectedComponentIn hw0))
       by_contra hfalse
-      have hVne : V ≠ connectedComponentIn A' u' := hfalse
+      have hVne := hfalse
       rcases hin12 wp ⟨hwpR, hwpc⟩ with hp | hp <;> rcases hin12 wm ⟨hwmR, hwmc⟩ with hm | hm <;>
         rcases hin12 u ⟨(hVR huV).1, (hVR huV).2⟩ with hU | hU <;>
         rcases hin12 u' ⟨hu'R, hu'c⟩ with hU' | hU'
@@ -633,9 +633,8 @@ theorem eq_iff_not_separates (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
     by_contra hUU
     have hsys := hM.sys F hF hfin
     have hcomp : connectedComponentIn (freeIn M.D F) u ≠ connectedComponentIn (freeIn M.D F) u' := by
-      rw [← Chazelle.Chain.regionsIn_eq_component hU hu,
+      rwa [← Chazelle.Chain.regionsIn_eq_component hU hu,
         ← Chazelle.Chain.regionsIn_eq_component hU' hu']
-      exact hUU
     have hex : ∃ c ∈ F, connectedComponentIn (M.D \ c) u ≠ connectedComponentIn (M.D \ c) u' := by
       by_contra hall
       push Not at hall

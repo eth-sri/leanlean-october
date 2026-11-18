@@ -35,32 +35,32 @@ theorem inE_iff (hS : Stretch M Cα g g' L) {p : ℕ} (hp : p < (chainModel Cα)
   by_cases hge : g' ≤ p
   · have e : (p + (chainModel Cα).W.n - g') % (chainModel Cα).W.n = p - g' := by
       rw [show p + (chainModel Cα).W.n - g' = (p - g') + (chainModel Cα).W.n by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+        Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     rw [e]
     have hc : ((p - g' : ℕ) : ℝ) = (p : ℝ) - g' := by push_cast [Nat.cast_sub hge]; ring
     constructor
     · rintro ⟨-, h2, h3⟩
       refine ⟨?_, ?_⟩
       · rcases h3 with h3 | h3
-        · have : (1 : ℝ) ≤ ((p - g' : ℕ) : ℝ) := by exact_mod_cast (show 1 ≤ p - g' by omega)
+        · have : (1 : ℝ) ≤ ((p - g' : ℕ) : ℝ) := by exact_mod_cast (by omega)
           linarith
         · have : (0 : ℝ) ≤ ((p - g' : ℕ) : ℝ) := Nat.cast_nonneg _
           linarith
-      · have : ((p - g' : ℕ) : ℝ) + 1 ≤ L := by exact_mod_cast (show p - g' + 1 ≤ L by omega)
+      · have : ((p - g' : ℕ) : ℝ) + 1 ≤ L := by exact_mod_cast (by omega)
         linarith
     · rintro ⟨h1, h2⟩
       refine ⟨hge, ?_, ?_⟩
       · by_contra hc'
-        have : (L : ℝ) ≤ ((p - g' : ℕ) : ℝ) := by exact_mod_cast (show L ≤ p - g' by omega)
+        have : (L : ℝ) ≤ ((p - g' : ℕ) : ℝ) := by exact_mod_cast (by omega)
         linarith
       · by_cases hpg : g' < p
         · exact Or.inl hpg
         · right
-          have : p - g' = 0 := by omega
+          have : p - g' = 0 := by_o
           rw [this] at h1; simpa using h1
   · push Not at hge
     have e : (p + (chainModel Cα).W.n - g') % (chainModel Cα).W.n =
-        p + (chainModel Cα).W.n - g' := Nat.mod_eq_of_lt (by omega)
+        p + (chainModel Cα).W.n - g' := Nat.mod_eq_of_lt by_o
     rw [e]
     constructor
     · rintro ⟨h1, -⟩; omega

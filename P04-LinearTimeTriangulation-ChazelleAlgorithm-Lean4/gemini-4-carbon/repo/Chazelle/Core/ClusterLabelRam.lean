@@ -92,7 +92,7 @@ theorem LFr.nreg {Y : Lay} {c0 c : Config} (hf : LFr Y c0 c) {f : ℕ → ℕ}
   ⟨fun r hr => (hfr r hr).trans (hf.1 r hr), hf.2.1, hf.2.2.1, hf.2.2.2.1, hf.2.2.2.2⟩
 
 theorem Regs0.lfr {Y : Lay} {c0 c : Config} (h : Regs0 Y c0) (hf : LFr Y c0 c) : Regs0 Y c := by
-  have k : ∀ r, ¬ LScr r → c.nreg r = c0.nreg r := hf.1
+  have k := hf.1
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
     (rwa [k _ (by unfold LScr Scr; omega)])
@@ -125,8 +125,8 @@ theorem fillLoop_exec (hY : Y.Good W) {c : Config} (hw : WordsBounded W c) (hR :
         · refine ⟨fun r hr => ?_, hf1.2.1, hf1.2.2.1, hf1.2.2.2.1, fun a ha => ?_⟩
           · simp only [Machine.upd_apply]
             split_ifs with h1 h2
-            · exact absurd (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩))) (h1 ▸ hr)
-            · exact absurd (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩))) (h2 ▸ hr)
+            · exact absurd (Or.inr (Or.inr (Or.inr ⟨by_o, by_o⟩))) (h1 ▸ hr)
+            · exact absurd (Or.inr (Or.inr (Or.inr ⟨by_o, by_o⟩))) (h2 ▸ hr)
             · exact hf1.1 r hr
           · simp only [Machine.upd_apply, hR1.rLab]
             unfold Lay.Written at ha
@@ -139,14 +139,14 @@ theorem fillLoop_exec (hY : Y.Good W) {c : Config} (hw : WordsBounded W c) (hR :
           unfold labV
           rw [hR1.rLab, hR1.rn, view_upd_in _ _ _ _ _ htest]
           rcases Nat.lt_succ_iff_lt_or_eq.mp hx with hx | rfl
-          · rw [Function.update_of_ne (by omega)]; exact hl1 x hx
+          · rw [Function.update_of_ne by_o]; exact hl1 x hx
           · rw [Function.update_self]
         · config_simp; rw [hR1.one]; omega)
-    ⟨hw, ⟨fun _ _ => rfl, rfl, rfl, rfl, fun _ _ => rfl⟩, by omega, fun x hx => by omega⟩
+    ⟨hw, ⟨fun _ _ => rfl, rfl, rfl, rfl, fun _ _ => rfl⟩, by_o, fun x hx => by omega⟩
   have hR' := hR.lfr hf'
   rw [hR'.rn] at htest
-  refine ⟨c', k, e, by rw [h0] at hk; omega, hw', hf', by omega,
-    fun x hx => hlab x (by omega)⟩
+  refine ⟨c', k, e, by rw [h0] at hk; omega, hw', hf', by_o,
+    fun x hx => hlab x by_o⟩
 
 end fill
 
@@ -204,12 +204,12 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
       ∃ c3, Exec P W (.instr (.addN 130140 130140 130001)) c2 c3 1 ∧ DI Y W cE c3 ∧
         c3.nreg 130140 = c.nreg 130140 + 1 ∧ c3.nmem = c2.nmem := by
     intro c2 hw2 hf2 hv2 hL2
-    have hone : c2.nreg 130001 = 1 := (hR.lfr hf2).one
+    have hone := (hR.lfr hf2).one
     have e := Exec.addN (P := P) hw2 130140 130140 130001 (by rw [hone, hv2]; omega)
     refine ⟨_, e, ⟨e.wb_right, LFr.nreg hf2 (fun r hr => ?_), ?_, ?_⟩, ?_, rfl⟩
-    · rw [Machine.upd_other _ _ _ (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩))))]
+    · rw [Machine.upd_other _ _ _ (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by_o, by_o⟩))))]
     · simp only [Machine.upd_same]; rw [hone, hv2]; omega
-    · simp only [Machine.upd_same]; rw [hone, hv2]; exact hL2
+    · simp only [Machine.upd_same]; rwa [hone, hv2]
     · simp only [Machine.upd_same]; rw [hone, hv2]
   obtain ⟨c1, k1, e1, hk1, hw1, hm1, hX1, hr1, hrr1, hrm1, ho1⟩ : ∃ c1 k1,
       Exec P W (block [.addN 130141 130105 130140, .loadN 130142 130141]) c c1 k1 ∧ k1 = 2 ∧
@@ -225,11 +225,11 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
   have hf1 : LFr Y cE c1 := by
     refine ⟨fun r hr => ?_, hrr1.trans hI.fr.2.1, hrm1.trans hI.fr.2.2.1, ho1.trans hI.fr.2.2.2.1,
       fun a ha => by rw [hm1]; exact hI.fr.2.2.2.2 a ha⟩
-    rw [hr1 r (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩))))
-      (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩))))]
+    rw [hr1 r (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by_o, by_o⟩))))
+      (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by_o, by_o⟩))))]
     exact hI.fr.1 r hr
-  have hv1 : c1.nreg 130140 = c.nreg 130140 := hr1 _ (by decide) (by decide)
-  have hone1 : c1.nreg 130001 = 1 := (hR.lfr hf1).one
+  have hv1 : c1.nreg 130140 = c.nreg 130140 := hr1 _ by_d by_d
+  have hone1 := (hR.lfr hf1).one
   have hpot : ∀ c3 : Config, c3.nreg 130140 = c.nreg 130140 + 1 → c3.nmem = c.nmem →
       drvPot Y (Y.env cE.nmem) c3 + 40 = drvPot Y (Y.env cE.nmem) c := by
     intro c3 hv3 hm3
@@ -240,11 +240,11 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
   · -- blocked: skip
     obtain ⟨c3, e3, hD3, hv3, hm3⟩ := fin c1 hw1 hf1 hv1 (by
       rw [hm1]; exact hI.inv.skip (Or.inl hvb))
-    refine ⟨c3, 2 + (4 + 1), .seq (hk1 ▸ e1) (.seq (ifNe1_skip hw1 hone1 (by rw [hX1]; exact hvb))
+    refine ⟨c3, 2 + (4 + 1), .seq (hk1 ▸ e1) (.seq (ifNe1_skip hw1 hone1 (by rwa [hX1]))
       e3), hD3, ?_⟩
     have := hpot c3 hv3 (hm3.trans hm1)
     omega
-  · have hX1' : c1.nreg 130142 ≠ 1 := by rw [hX1]; exact hvb
+  · have hX1' : c1.nreg 130142 ≠ 1 := by rwa [hX1]
     -- load the label
     obtain ⟨c2, k2, e2, hk2, hw2, hm2, hX2, hr2, hrr2, hrm2, ho2⟩ : ∃ c2 k2,
         Exec P W (block [.addN 130141 130106 130140, .loadN 130142 130141]) c1 c2 k2 ∧ k2 = 2 ∧
@@ -261,10 +261,10 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
     have hf2 : LFr Y cE c2 := by
       refine ⟨fun r hr => ?_, hrr2.trans hf1.2.1, hrm2.trans hf1.2.2.1, ho2.trans hf1.2.2.2.1,
         fun a ha => by rw [hm2]; exact hI.fr.2.2.2.2 a ha⟩
-      rw [hr2 r (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩))))
-        (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by omega, by omega⟩))))]
+      rw [hr2 r (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by_o, by_o⟩))))
+        (fun h => hr (Or.inr (Or.inr (Or.inr ⟨by_o, by_o⟩))))]
       exact hf1.1 r hr
-    have hv2 : c2.nreg 130140 = c.nreg 130140 := (hr2 _ (by decide) (by decide)).trans hv1
+    have hv2 : c2.nreg 130140 = c.nreg 130140 := (hr2 _ by_d by_d).trans hv1
     have hRc2 := hR.lfr hf2
     by_cases hl : labV Y c.nmem (c.nreg 130140) < Y.nv
     · -- labelled: skip
@@ -300,8 +300,8 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
           fun a ha => by rw [hm3]; exact hI.fr.2.2.2.2 a ha⟩
         rw [hr3 r (fun h => hr (Or.inl h)) (fun h => hr (Or.inr (Or.inl h)))]
         exact hf2.1 r hr
-      have hR3 : Regs Y (c.nreg 130140) (c.nreg 130140) c3 := (hR.lfr hf3).regs h111 h112
-      have henv3 : Y.env c3.nmem = Y.env cE.nmem := hf3.env hY
+      have hR3 := (hR.lfr hf3).regs h111 h112
+      have henv3 := hf3.env hY
       have hlab3 : labV Y c3.nmem = labV Y c.nmem := by rw [hm3]
       have hp : (Y.env c3.nmem).Pre (c.nreg 130140) (c.nreg 130140) (labV Y c3.nmem) := by
         rw [henv3, hlab3]
@@ -314,9 +314,9 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
         have := hOI.inv
         rw [henv3, hlab3, hht] at this
         exact this
-      have hf4 : LFr Y cE c4 := hf3.trans (LFr.of_fr hOI.fr)
+      have hf4 := hf3.trans (LFr.of_fr hOI.fr)
       have hv4 : c4.nreg 130140 = c.nreg 130140 := by
-        rw [hOI.fr.1 _ (by unfold Scr; omega), hr3 _ (by decide) (by decide), hv2]
+        rw [hOI.fr.1 _ (by unfold Scr; omega), hr3 _ by_d by_d, hv2]
       have hL4 := hI.inv.bfs hok hs hlt hB
       obtain ⟨c5, e5, hD5, hv5, hm5⟩ := fin c4 hOI.wb hf4 hv4 hL4
       have hge2 : ¬ c2.nreg 130142 < c2.nreg 130110 := by rw [hX2, hRc2.rn]; exact hl
@@ -332,7 +332,7 @@ theorem drvBody_exec (hY : Y.Good W) (hR : Regs0 Y cE) (hok : (Y.env cE.nmem).OK
           ∑ x ∈ unlab Y c.nmem, (Y.env cE.nmem).deg x := hsum
       unfold drvPot
       rw [hv5, hm5]
-      have hsl : c.nreg 130140 + 1 ≤ Y.nv := hlt
+      have hsl := hlt
       omega
 
 end drv
@@ -355,20 +355,20 @@ theorem labelStmt_exec (hY : Y.Good W) {c : Config} (hw : WordsBounded W c) (hR 
       ∀ x y, x < Y.nv → y < Y.nv → (Y.env c.nmem).vb x ≠ 1 → (Y.env c.nmem).vb y ≠ 1 →
         (labV Y c'.nmem x = labV Y c'.nmem y ↔ (Y.env c.nmem).Reach x y) := by
   have := hY.wn
-  have e1 := Exec.constN (P := P) hw 130140 0 (by omega)
+  have e1 := Exec.constN (P := P) hw 130140 0 by_o
   set c1 := { c with nreg := upd c.nreg 130140 0 }
   have hf1 : LFr Y c c1 := LFr.nreg ⟨fun _ _ => rfl, rfl, rfl, rfl, fun _ _ => rfl⟩
     (fun r hr => Machine.upd_other _ _ _ (fun h => hr (Or.inr (Or.inr (Or.inr
-      ⟨by omega, by omega⟩)))))
+      ⟨by_o, by_o⟩)))))
   obtain ⟨c2, k2, e2, hk2, hw2, hf2, hv2, hlab2⟩ := fillLoop_exec (P := P) hY e1.wb_right
     (hR.lfr hf1) (by simp [c1])
   have hf12 := hf1.trans hf2
-  have e3 := Exec.constN (P := P) hw2 130140 0 (by omega)
+  have e3 := Exec.constN (P := P) hw2 130140 0 by_o
   set c3 := { c2 with nreg := upd c2.nreg 130140 0 }
   have hf3 : LFr Y c c3 := LFr.nreg hf12
     (fun r hr => Machine.upd_other _ _ _ (fun h => hr (Or.inr (Or.inr (Or.inr
-      ⟨by omega, by omega⟩)))))
-  have henv3 : Y.env c3.nmem = Y.env c.nmem := hf3.env hY
+      ⟨by_o, by_o⟩)))))
+  have henv3 := hf3.env hY
   have hD3 : DI Y W c c3 := ⟨e3.wb_right, hf3, by simp [c3], by
     simp only [c3, Machine.upd_same]
     exact Env.LInv.init (fun x hx => hlab2 x hx)⟩

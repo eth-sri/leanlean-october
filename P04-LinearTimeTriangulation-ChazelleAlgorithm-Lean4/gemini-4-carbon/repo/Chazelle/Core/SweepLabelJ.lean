@@ -90,7 +90,7 @@ theorem pos_eq_vertex (hP : C.P.Simple) (β : Bool) {p : ℕ} (hp : p < (C.sideW
             (1 - t) := by
           apply Geometry.point_ext <;> simp [Geometry.lerp] <;> ring
         rw [e] at h
-        exact C.sideOpen_ne_vertex hP ⟨by linarith, by linarith⟩ h
+        exact C.sideOpen_ne_vertex hP ⟨by_l, by_l⟩ h
     · refine ⟨rfl, i, hi, rfl, ?_⟩
       rw [Chazelle.Chain.sidePt_zero, C.sideWalk_vtx_tour β hi] at h
       exact C.sideVertex_inj hP (C.sideIdx_le β i) hk h
@@ -108,14 +108,14 @@ theorem vertex0_arith {m b i : ℕ} (hm : 0 < m) (hb : b ≤ 2 * m) (hi : i ≤ 
   have hτ : (0 + 2 * m - b) % (2 * m) = if b = 0 then 0 else 2 * m - b := by
     split_ifs with hb0
     · subst hb0; simp
-    · rw [Nat.mod_eq_of_lt (show 0 + 2 * m - b < 2 * m by omega)]; omega
+    · rw [Nat.mod_eq_of_lt (by omega)]; omega
   rw [hτ]
   have key : ∀ x, x < 2 * (2 * m + 7) →
       x % (2 * m + 7) = if x < 2 * m + 7 then x else x - (2 * m + 7) := by
     intro x hx; split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-  interval_cases q <;> split_ifs with hb0 <;> rw [key _ (by omega)] <;> split_ifs <;> omega
+    · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
+  interval_cases q <;> split_ifs with hb0 <;> rw [key _ by_o] <;> split_ifs <;> omega
 
 /-- **The positions at vertex `0`** of the walk of a chain model, read from the tour position `0`:
 offset `0`, or offset `2m` when the tour position `0` is the box. -/
@@ -135,7 +135,7 @@ theorem off_vertex0 (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) {t
     split_ifs at hidx
     · exact hidx
     · omega
-  have := vertex0_arith (m := C.m) (b := bS C) (i := i) (by omega) (bS_le C) hi h0
+  have := vertex0_arith (m := C.m) (b := bS C) (i := i) by_o (bS_le C) hi h0
   unfold dOf
   rw [hn]
   unfold tpos

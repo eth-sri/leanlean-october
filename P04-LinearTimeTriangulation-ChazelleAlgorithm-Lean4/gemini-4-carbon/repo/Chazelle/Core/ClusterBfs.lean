@@ -82,10 +82,8 @@ theorem Done.mono {lev q lev' q' : ℕ → ℕ} {t t' u e : ℕ} (h : G.Done lev
     (hu : lev' u = lev u) : G.Done lev' q' t' u e := by
   intro h1 h2
   obtain ⟨⟨j, hj, hqj⟩, hl⟩ := h h1 h2
-  refine ⟨⟨j, by omega, by rw [hq j hj, hqj]⟩, ?_⟩
-  rw [hu, ← hqj, hlev j hj, hqj]
-  exact hl
-
+  refine ⟨⟨j, by_o, by rw [hq j hj, hqj]⟩, ?_⟩
+  rwa [hu, ← hqj, hlev j hj, hqj]
 /-- A dart leaving a reached vertex through an unblocked dart to an unblocked vertex is a step. -/
 theorem step_of_dart {u e : ℕ} (he : e < G.N) (hdb : G.db e ≠ 1) (hve : G.vert e = u)
     (hu : G.vb u ≠ 1) (hw : G.vb (G.head e) ≠ 1) : G.Step u (G.head e) :=
@@ -97,12 +95,12 @@ theorem step_of_dart {u e : ℕ} (he : e < G.N) (hdb : G.db e ≠ 1) (hve : G.ve
 theorem Inv.init {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} (hp : G.Pre s L lab0)
     (hq : q 0 = s) (hlab : ∀ v, v < G.nv → lab v = if v = s then L else lab0 v)
     (hlev : lev s = 0) : G.Inv s L lab0 lab lev par q 0 1 := by
-  refine ⟨by omega, by have := hp.s_lt; omega, by omega, hq, ?_, ?_, ?_, ?_, ?_, ?_, ?_, hlev,
+  refine ⟨by_o, by have := hp.s_lt; omega, by_o, hq, ?_, ?_, ?_, ?_, ?_, ?_, ?_, hlev,
     ?_, ?_⟩
   · intro i hi; rw [show i = 0 by omega, hq]; exact hp.s_lt
   · intro i hi j hj _; omega
   · intro i hi; rw [show i = 0 by omega, hq, hlab s hp.s_lt, ite_eq_left rfl]
-  · intro v hv hne; rw [hlab v hv, ite_eq_right (fun h => hne 0 (by omega) (by rw [hq, h]))]
+  · intro v hv hne; rw [hlab v hv, ite_eq_right (fun h => hne 0 by_o (by rw [hq, h]))]
   · intro i j hij hj; rw [show i = 0 by omega, show j = 0 by omega]
   · intro i hi _; rw [show i = 0 by omega]; omega
   · intro i hi; rw [show i = 0 by omega, hq]; exact ⟨Relation.ReflTransGen.refl, hp.s_vb⟩
@@ -122,7 +120,7 @@ theorem Inv.t_lt_of_notMem {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t :
     (hnot : ∀ i, i < t → q i ≠ w) : t < G.nv := by
   classical
   by_contra hge
-  have ht : t = G.nv := le_antisymm hI.tn (by omega)
+  have ht : t = G.nv := le_antisymm hI.tn by_o
   have hsub : (Finset.range t).image q ⊆ Finset.range G.nv := by
     intro x hx
     obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hx
@@ -149,7 +147,7 @@ theorem InvIn.visited_iff {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j 
   · intro hlt
     by_contra hnot
     push Not at hnot
-    have hreach : G.Reach s (G.head e) :=
+    have hreach :=
       Relation.ReflTransGen.tail (hI.inv.reach h hI.hlt).1
         (step_of_dart he hdb hve (hI.inv.reach h hI.hlt).2 hw)
     rw [hI.inv.lab_out _ hwn hnot, hp.fresh _ hwn hreach] at hlt
@@ -192,33 +190,33 @@ theorem InvIn.push {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
   set w := G.head e with hw_def
   set u := q h with hu_def
   obtain ⟨hI0, hht, _, hcur⟩ := hI
-  have hqh : q h < G.nv := hI0.qlt h hht
+  have hqh := hI0.qlt h hht
   have hfirst := hp.ok.first_lt _ hqh
-  have he : e < G.N := hp.ok.injOn.iterate_lt j hfirst
+  have he := hp.ok.injOn.iterate_lt j hfirst
   have hve : G.vert e = u := by rw [he_def, hp.ok.vert_iterate j hfirst, hp.ok.vert_first _ hqh]
-  have hwn : w < G.nv := hp.ok.vert_lt _ (hp.ok.opp_lt e he)
-  have htn : t < G.nv := hI0.t_lt_of_notMem hwn hnot
-  have hne : ∀ i, i < t → q i ≠ w := hnot
+  have hwn := hp.ok.vert_lt _ (hp.ok.opp_lt e he)
+  have htn := hI0.t_lt_of_notMem hwn hnot
+  have hne := hnot
   -- the new functions agree with the old ones on the old queue
   have hq' : ∀ i, i < t → Function.update q t w i = q i := fun i hi =>
-    Function.update_of_ne (by omega) _ _
+    Function.update_of_ne by_o _ _
   have hqt : Function.update q t w t = w := Function.update_self _ _ _
   have hlev' : ∀ i, i < t → Function.update lev w (lev u + 1) (q i) = lev (q i) := fun i hi =>
     Function.update_of_ne (hne i hi) _ _
   have hlevw : Function.update lev w (lev u + 1) w = lev u + 1 := Function.update_self _ _ _
-  have hlevu : Function.update lev w (lev u + 1) u = lev u := hlev' h hht
+  have hlevu := hlev' h hht
   have hpar' : ∀ i, i < t → Function.update par w e (q i) = par (q i) := fun i hi =>
     Function.update_of_ne (hne i hi) _ _
   have hlab' : ∀ v, v ≠ w → Function.update lab w L v = lab v := fun v hv =>
     Function.update_of_ne hv _ _
   have hreach_u := hI0.reach h hht
-  refine ⟨⟨by have := hI0.ht; omega, by omega, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
-    ?_⟩, by omega, by rw [hq' h hht]; exact hj, ?_⟩
+  refine ⟨⟨by have := hI0.ht; omega, by_o, by_o, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+    ?_⟩, by_o, by rwa [hq' h hht], ?_⟩
   · rw [hq' 0 hI0.t0]; exact hI0.q0
   · intro i hi
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl
     · rw [hq' i hi]; exact hI0.qlt i hi
-    · rw [hqt]; exact hwn
+    · rwa [hqt]
   · intro i hi k hk hik
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl <;>
       rcases Nat.lt_succ_iff_lt_or_eq.mp hk with hk | rfl
@@ -231,12 +229,12 @@ theorem InvIn.push {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
     · rw [hq' i hi, hlab' _ (hne i hi)]; exact hI0.lab_in i hi
     · rw [hqt]; exact Function.update_self _ _ _
   · intro v hv hvn
-    have hvw : v ≠ w := fun h => hvn t (by omega) (by rw [hqt, h])
+    have hvw : v ≠ w := fun h => hvn t by_o (by rw [hqt, h])
     rw [hlab' v hvw]
-    exact hI0.lab_out v hv (fun i hi => by rw [← hq' i hi]; exact hvn i (by omega))
+    exact hI0.lab_out v hv (fun i hi => by rw [← hq' i hi]; exact hvn i by_o)
   · intro i k hik hk
     rcases Nat.lt_succ_iff_lt_or_eq.mp hk with hk | rfl
-    · rw [hq' i (by omega), hq' k hk, hlev' i (by omega), hlev' k hk]
+    · rw [hq' i by_o, hq' k hk, hlev' i by_o, hlev' k hk]
       exact hI0.mono i k hik hk
     · rw [hqt, hlevw]
       rcases Nat.lt_succ_iff_lt_or_eq.mp (show i < k + 1 by omega) with hi | rfl
@@ -259,23 +257,23 @@ theorem InvIn.push {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ}
     · obtain ⟨p1, p2, p3, k, hk, p4, p5⟩ := hI0.par i hi hi0
       unfold ParOK
       rw [hq' i hi, hpar' i hi, hlev' i hi]
-      exact ⟨p1, p2, p3, k, hk, by rw [hq' k (by omega)]; exact p4,
-        by rw [hq' k (by omega), hlev' k (by omega)]; exact p5⟩
+      exact ⟨p1, p2, p3, k, hk, by rwa [hq' k by_o],
+        by rwa [hq' k by_o, hlev' k by_o]⟩
     · unfold ParOK
       rw [hqt, Function.update_self, hlevw]
       refine ⟨he, hdb, rfl, h, hht, ?_, ?_⟩
-      · rw [hq' h hht]; exact hve
+      · rwa [hq' h hht]
       · rw [hq' h hht, hlev' h hht]
   · intro i hi e' he' hve'
     rw [hq' i (by have := hI0.ht; omega)] at hve' ⊢
-    exact (hI0.done i hi e' he' hve').mono (by omega) hq' hlev'
+    exact (hI0.done i hi e' he' hve').mono by_o hq' hlev'
       (hlev' i (by have := hI0.ht; omega))
   · intro i hi
     rw [hq' h hht]
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl
-    · exact (hcur i hi).mono (by omega) hq' hlev' hlevu
+    · exact (hcur i hi).mono by_o hq' hlev' hlevu
     · intro _ _
-      refine ⟨⟨t, by omega, hqt⟩, ?_⟩
+      refine ⟨⟨t, by_o, hqt⟩, ?_⟩
       rw [hlevw, hlevu]
 
 /-- `InvIn.skip` with the dart named. -/
@@ -304,12 +302,12 @@ theorem InvIn.finish {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t j : ℕ
   obtain ⟨hI0, hht, _, hcur⟩ := hI
   refine { hI0 with ht := hht, span := ?_, done := ?_ }
   · intro i hi hh
-    exact (hI0.span i hi hht).trans (by have := hI0.mono h (h + 1) (by omega) hh; omega)
+    exact (hI0.span i hi hht).trans (by have := hI0.mono h (h + 1) by_o hh; omega)
   · intro i hi e he hve
     rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl
     · exact hI0.done i hi e he hve
     · obtain ⟨k, hk, rfl⟩ := (hp.ok.orbit_iff (hI0.qlt i hht)).mp ⟨he, hve⟩
-      exact hcur k (by omega)
+      exact hcur k by_o
 
 /-- Levels are bounded by queue positions. -/
 theorem Inv.lev_le {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ}
@@ -321,7 +319,7 @@ theorem Inv.lev_le {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ}
     rcases Nat.eq_zero_or_pos i with rfl | hpos
     · rw [hI.q0, hI.lev0]
     · obtain ⟨-, -, -, j, hj, -, hl⟩ := hI.par i hi hpos
-      have := ih j hj (by omega)
+      have := ih j hj by_o
       omega
 
 /-- The degree sum of the processed queue entries is at most `N`. -/
@@ -335,7 +333,7 @@ theorem Inv.sum_deg_le {s L : ℕ} {lab0 lab lev par q : ℕ → ℕ} {h t : ℕ
     exact hI.qlt i (by rw [Finset.mem_range] at hi; omega)
   · intro i hi j hj hij
     simp only [Finset.coe_range, Set.mem_Iio] at hi hj
-    exact hI.qinj i (by omega) j (by omega) hij
+    exact hI.qinj i by_o j by_o hij
 
 /-! ## The end of the search -/
 

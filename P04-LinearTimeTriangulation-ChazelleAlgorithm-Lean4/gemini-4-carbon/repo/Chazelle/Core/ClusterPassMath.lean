@@ -37,7 +37,7 @@ theorem cntS_succ {i : ℕ} (h : lo ≤ i) :
   unfold cntS
   rw [Nat.Ico_succ_right_eq_insert_Ico h, Finset.filter_insert]
   split_ifs with hs
-  · rw [Finset.card_insert_of_notMem (by simp)]
+  · rw [Finset.card_insert_of_notMem by_s]
   · simp
 
 theorem cntS_mono {i i' : ℕ} (h : i ≤ i') : cntS sel lo i ≤ cntS sel lo i' := by
@@ -75,7 +75,7 @@ theorem passMem_ptr_eq (j : ℕ) :
   induction j with
   | zero => simp [passMem, cntS_self]
   | succ j ih =>
-    rw [passMem_succ, show lo + (j + 1) = lo + j + 1 by omega, cntS_succ (by omega)]
+    rw [passMem_succ, show lo + (j + 1) = lo + j + 1 by omega, cntS_succ by_o]
     split_ifs with hs
     · simp only; rw [ih]; omega
     · rw [ih]; omega
@@ -105,20 +105,20 @@ theorem passMem_act (j : ℕ)
       simp only
       rcases Nat.lt_succ_iff_lt_or_eq.mp (show i < lo + j + 1 by omega) with hi | hi
       · have hlt := cntS_lt (sel := sel) h1 hi hs
-        have hci := cntS_mono (sel := sel) (lo := lo) (show i ≤ lo + j by omega)
-        rw [Machine.upd_other _ _ _ (hdAP _ (by omega) (by omega) _ (by omega) (by omega)).symm,
-          Machine.upd_other _ _ _ (by omega)]
-        exact ih (fun i' a b p c d => hdAP i' a (by omega) p c (by omega)) i h1 hi hs
+        have hci := cntS_mono (sel := sel) (lo := lo) (by omega)
+        rw [Machine.upd_other _ _ _ (hdAP _ by_o by_o _ by_o by_o).symm,
+          Machine.upd_other _ _ _ by_o]
+        exact ih (fun i' a b p c d => hdAP i' a by_o p c by_o) i h1 hi hs
       · subst hi
-        rw [Machine.upd_other _ _ _ (hdAP _ (by omega) (by omega) _ (by omega) (by omega)).symm,
+        rw [Machine.upd_other _ _ _ (hdAP _ by_o by_o _ by_o by_o).symm,
           hp, Machine.upd_same]
     · rw [ite_eq_right hsj]
       rw [ite_eq_right hsj] at hcm
       have hi : i < lo + j := by
-        rcases Nat.lt_succ_iff_lt_or_eq.mp (show i < lo + j + 1 by omega) with hi | hi
+        rcases Nat.lt_succ_iff_lt_or_eq.mp (by omega) with hi | hi
         · exact hi
         · subst hi; exact absurd hs hsj
-      exact ih (fun i' a b p c d => hdAP i' a (by omega) p c (by omega)) i h1 hi hs
+      exact ih (fun i' a b p c d => hdAP i' a by_o p c by_o) i h1 hi hs
 
 /-- **The positions of the selected items.** -/
 theorem passMem_pos (j : ℕ)
@@ -147,21 +147,21 @@ theorem passMem_pos (j : ℕ)
       simp only
       rcases Nat.lt_succ_iff_lt_or_eq.mp (show i < lo + j + 1 by omega) with hi | hi
       · have hne : m0 (bTMP + i) ≠ m0 (bTMP + (lo + j)) := fun h =>
-          absurd (hinj i (lo + j) h1 (by omega) (by omega) (by omega) h) (by omega)
-        rw [Machine.upd_other _ _ _ (by omega),
-          Machine.upd_other _ _ _ (hdAP _ h1 (by omega) _ (by omega) (by omega))]
-        exact ih (fun i' a b p c d => hdAP i' a (by omega) p c (by omega))
-          (fun a b c d e' f => hinj a b c (by omega) e' (by omega)) i h1 hi hs
+          absurd (hinj i (lo + j) h1 by_o by_o by_o h) by_o
+        rw [Machine.upd_other _ _ _ by_o,
+          Machine.upd_other _ _ _ (hdAP _ h1 by_o _ by_o by_o)]
+        exact ih (fun i' a b p c d => hdAP i' a by_o p c by_o)
+          (fun a b c d e' f => hinj a b c by_o e' by_o) i h1 hi hs
       · subst hi
         rw [Machine.upd_same, hp]
     · rw [ite_eq_right hsj]
       rw [ite_eq_right hsj] at hcm
       have hi : i < lo + j := by
-        rcases Nat.lt_succ_iff_lt_or_eq.mp (show i < lo + j + 1 by omega) with hi | hi
+        rcases Nat.lt_succ_iff_lt_or_eq.mp (by omega) with hi | hi
         · exact hi
         · subst hi; exact absurd hs hsj
-      exact ih (fun i' a b p c d => hdAP i' a (by omega) p c (by omega))
-        (fun a b c d e' f => hinj a b c (by omega) e' (by omega)) i h1 hi hs
+      exact ih (fun i' a b p c d => hdAP i' a by_o p c by_o)
+        (fun a b c d e' f => hinj a b c by_o e' by_o) i h1 hi hs
 
 /-- **Nothing else changes.** -/
 theorem passMem_keep (j : ℕ) {x : ℕ}
@@ -180,11 +180,11 @@ theorem passMem_keep (j : ℕ) {x : ℕ}
     by_cases hsj : sel (lo + j)
     · rw [ite_eq_left hsj] at hA ⊢
       simp only
-      rw [Machine.upd_other _ _ _ (hP _ (by omega) (by omega) hsj),
+      rw [Machine.upd_other _ _ _ (hP _ by_o by_o hsj),
         Machine.upd_other _ _ _ (by rw [hp]; omega)]
-      exact ih (by omega) (fun i a b c => hP i a (by omega) c)
+      exact ih by_o (fun i a b c => hP i a by_o c)
     · rw [ite_eq_right hsj] at hA ⊢
-      exact ih (by omega) (fun i a b c => hP i a (by omega) c)
+      exact ih by_o (fun i a b c => hP i a by_o c)
 
 /-- **Passes with the same selection on the segment agree.** -/
 theorem passMem_congr_sel {sel sel' : ℕ → Prop} (j : ℕ)
@@ -194,10 +194,10 @@ theorem passMem_congr_sel {sel sel' : ℕ → Prop} (j : ℕ)
   induction j with
   | zero => rfl
   | succ j ih =>
-    rw [passMem_succ, passMem_succ, ih (fun i a b => h i a (by omega))]
+    rw [passMem_succ, passMem_succ, ih (fun i a b => h i a by_o)]
     by_cases hs : sel (lo + j)
-    · rw [ite_eq_left hs, ite_eq_left ((h _ (by omega) (by omega)).mp hs)]
-    · rw [ite_eq_right hs, ite_eq_right (fun h' => hs ((h _ (by omega) (by omega)).mpr h'))]
+    · rw [ite_eq_left hs, ite_eq_left ((h _ by_o by_o).mp hs)]
+    · rw [ite_eq_right hs, ite_eq_right (fun h' => hs ((h _ by_o by_o).mpr h'))]
 
 theorem cntS_congr {sel sel' : ℕ → Prop} {i : ℕ}
     (h : ∀ i', lo ≤ i' → i' < i → (sel i' ↔ sel' i')) : cntS sel lo i = cntS sel' lo i := by
@@ -221,10 +221,10 @@ theorem cntS_surj {sel : ℕ → Prop} {hi : ℕ} (hlh : lo ≤ hi) :
     rw [cntS_succ hn] at hr
     by_cases hr' : r < cntS sel lo n
     · obtain ⟨i, a, b, c, d⟩ := ih r hr'
-      exact ⟨i, a, by omega, c, d⟩
+      exact ⟨i, a, by_o, c, d⟩
     · by_cases hs : sel n
       · rw [ite_eq_left hs] at hr
-        exact ⟨n, hn, by omega, hs, by omega⟩
+        exact ⟨n, hn, by_o, hs, by_o⟩
       · rw [ite_eq_right hs] at hr; omega
 
 end

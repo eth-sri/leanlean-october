@@ -38,16 +38,16 @@ theorem loadQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hW : c.nreg pA + 2 �
       (∀ r, r ≠ qJ → r ≠ qE → r ≠ qH → r ≠ qD → r ≠ tAq → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
-  have k2 : c.nreg K2 = 2 := hKc.2.2.2.2.2.1
+  have k1 := hKc.2.1
+  have k2 := hKc.2.2.2.2.2.1
   have s : ∀ r, 240700 ≤ r → r < 250000 → IScr r := fun r h1 h2 => iscr_sw h1 h2
   have ok : okB W c.nmem [.copyN qJ pJ, .loadN qE pA, .addN tAq pA K1, .loadN qH tAq,
       .addN tAq pA K2, .loadN qD tAq] c.nreg := by
     simp only [qJ, pJ, qE, pA, tAq, K1, K2, qH, qD, sw, Nat.reduceAdd] at k1 k2 hW ⊢
     simp only [okB, okI, regI, upd, Nat.reduceEqDiff, ite_false, k1, k2]
-    refine ⟨s _ (by norm_num) (by norm_num), s _ (by norm_num) (by norm_num),
-      ⟨s _ (by norm_num) (by norm_num), by omega⟩, s _ (by norm_num) (by norm_num),
-      ⟨s _ (by norm_num) (by norm_num), by omega⟩, s _ (by norm_num) (by norm_num), trivial⟩
+    refine ⟨s _ by_n by_n, s _ by_n by_n,
+      ⟨s _ by_n by_n, by_o⟩, s _ by_n by_n,
+      ⟨s _ by_n by_n, by_o⟩, s _ by_n by_n, trivial⟩
   refine (IRS.block _ hI ok).mono le_rfl ?_
   rintro c' rfl
   simp only [qJ, pJ, qE, pA, tAq, K1, K2, qH, qD, sw, Nat.reduceAdd] at k1 k2 ⊢
@@ -85,8 +85,8 @@ theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c�
         c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
   have hKc := hK.fix hI
-  have k0 : c.nreg K0 = 0 := hKc.1
-  have k1 : c.nreg K1 = 1 := hKc.2.1
+  have k0 := hKc.1
+  have k1 := hKc.2.1
   have hG := hctx.1
   have hWh := hctx.2.1
   have hWn : P.n + 3 ≤ W := by unfold hostWords at hWh; omega
@@ -95,9 +95,9 @@ theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c�
   have hdl : 240000 ≤ dsc ∧ dsc < 240700 := hdsc
   -- 1. the vertex point of the height code
   have ok1 : okB W c.nmem [.copyN sZ K0, .subN (sZ + 1) qH K1] c.nreg :=
-    ⟨s _ (by unfold sZ sw; norm_num) (by unfold sZ sw; norm_num),
-      s _ (by unfold sZ sw; norm_num) (by unfold sZ sw; norm_num), trivial⟩
-  refine (IRS.seq (K₂ := 16960) (IRS.block _ hI ok1) ?_).mono (by simp) (fun _ h => h)
+    ⟨s _ by_d by_d,
+      s _ by_d by_d, trivial⟩
+  refine (IRS.seq (K₂ := 16960) (IRS.block _ hI ok1) ?_).mono by_s (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   have v1 : c₁.nreg sZ = 0 ∧ c₁.nreg (sZ + 1) = c.nreg qH - 1 ∧
       (∀ r, r ≠ sZ → r ≠ sZ + 1 → c₁.nreg r = c.nreg r) ∧ c₁.nmem = c.nmem := by
@@ -119,30 +119,30 @@ theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c�
   -- 2. the top
   have hpp : ProperPos (chainModel C) (Qof P) P.n ⟨c₁.nreg K6, c₁.nreg K0⟩ := by
     rw [rK6, rK0]; exact ⟨le_refl _, by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩
-  refine IRS.seq (K₂ := 251 + 2) (callSym_irs hI₁ hctx₁ ⟨by omega, by omega,
+  refine IRS.seq (K₂ := 251 + 2) (callSym_irs hI₁ hctx₁ ⟨by_o, by_o,
       by unfold K6 sw; norm_num, by unfold K6 sw; norm_num, by unfold K0 sw; norm_num,
       by unfold K0 sw; norm_num⟩ ⟨by unfold sTq sw; norm_num, by unfold sTq sw; norm_num⟩
       (by rw [rK6]; omega) hpp
       (by rw [rK6, rK0, top_pos]; exact absy_lt C C.top_mem_set)
-      (Or.inl ⟨by rw [rK6], by rw [rK6]; omega⟩) (by omega)) ?_
+      (Or.inl ⟨by rw [rK6], by rw [rK6]; omega⟩) by_o) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨sp, hsp, hlt, hev, f2, hA2, m2⟩
   rw [rK6, rK0, top_pos] at hev
-  have hsz₂ : SymPtIn c₂ sZ (.vtx (c.nreg qH - 1)) := symPtIn_copy hsz
-    (f2 _ (not_oracle_sw (by unfold sZ sw; norm_num) (by unfold sZ sw; norm_num))
-      (Or.inl (by unfold sZ sTq sw; norm_num)) (by unfold sZ ALLOC sw; omega))
-    (f2 _ (not_oracle_sw (by unfold sZ sw; norm_num) (by unfold sZ sw; norm_num))
-      (Or.inl (by unfold sZ sTq sw; norm_num)) (by unfold sZ ALLOC sw; omega))
-    (f2 _ (not_oracle_sw (by unfold sZ sw; norm_num) (by unfold sZ sw; norm_num))
-      (Or.inl (by unfold sZ sTq sw; norm_num)) (by unfold sZ ALLOC sw; omega))
+  have hsz₂ := symPtIn_copy hsz
+    (f2 _ by_d
+      (Or.inl by_d) (by unfold sZ ALLOC sw; omega))
+    (f2 _ by_d
+      (Or.inl by_d) (by unfold sZ ALLOC sw; omega))
+    (f2 _ by_d
+      (Or.inl by_d) (by unfold sZ ALLOC sw; omega))
   -- 3. the sign test
-  refine IRS.seq (K₂ := 2) (callKb_irs (by norm_num) hI₂ hG hWn
+  refine IRS.seq (K₂ := 2) (callKb_irs by_n hI₂ hG hWn
       ⟨by unfold sTq sw; norm_num, by unfold sTq sw; norm_num⟩
       ⟨by unfold sZ sw; norm_num, by unfold sZ sw; norm_num⟩
       ⟨by unfold kO sw; norm_num, by unfold kO sw; norm_num⟩ hsp hsz₂ hlt
-      (show c.nreg qH - 1 < P.n by omega) (by omega)) ?_
+      (show c.nreg qH - 1 < P.n by omega) by_o) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨o1, o2, f3, hA3, m3⟩
-  have k1₃ : c₃.nreg K1 = 1 := (hK.fix hI₃).2.1
-  refine (IRS.block [.subN bt K1 kO] hI₃ ⟨s _ (by omega) (by omega), trivial⟩).mono (by norm_num) ?_
+  have k1₃ := (hK.fix hI₃).2.1
+  refine (IRS.block [.subN bt K1 kO] hI₃ ⟨s _ by_o by_o, trivial⟩).mono by_n ?_
   rintro c' rfl
   have vb : regB c₃.nmem [.subN bt K1 kO] c₃.nreg bt = 1 - c₃.nreg kO := by
     simp only [regB, regI, upd_same, k1₃]
@@ -168,7 +168,7 @@ theorem bitT_irs {dsc bt : ℕ} {C : Chain} (hI : IInv W c₀ c) (hK : Consts c�
   · simp only
     rw [kb ALLOC (by rcases hbt with rfl | rfl <;> simp [bL, bR, ALLOC, sw])]; omega
   · intro a ha; simp only
-    rw [m3 a (by omega), m2 a (by omega), m1]
+    rw [m3 a by_o, m2 a by_o, m1]
 
 /-- **The two bits**: the bit of the query chain is `1`, the other one is tested. -/
 def bitsQ : Stmt :=
@@ -190,7 +190,7 @@ theorem bitsQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) {
         r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
+  have k1 := hKc.2.1
   have s : ∀ r, 240700 ≤ r → r < 250000 → IScr r := fun r h1 h2 => iscr_sw h1 h2
   -- one branch: set `b₁ := 1`, test `b₂`
   have br : ∀ (b₁ b₂ d : ℕ) (C₁ C₂ : Chain), (b₁ = bL ∧ b₂ = bR ∨ b₁ = bR ∧ b₂ = bL) →
@@ -204,7 +204,7 @@ theorem bitsQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) {
     intro b₁ b₂ d C₁ C₂ hb hd hctx
     have hb1 : 243225 ≤ b₁ ∧ b₁ ≤ 243226 ∧ 243225 ≤ b₂ ∧ b₂ ≤ 243226 ∧ b₁ ≠ b₂ := by
       rcases hb with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩ <;> simp [bL, bR, sw]
-    refine IRS.seq (K₂ := 16962) (IRS.block [.copyN b₁ K1] hI ⟨s _ (by omega) (by omega), trivial⟩) ?_
+    refine IRS.seq (K₂ := 16962) (IRS.block [.copyN b₁ K1] hI ⟨s _ by_o by_o, trivial⟩) ?_
     rintro c₁ hI₁ - - rfl
     have v1 : ∀ r, r ≠ b₁ → regB c.nmem [.copyN b₁ K1] c.nreg r = c.nreg r := by
       intro r hr; simp only [regB, regI]; exact upd_other _ _ _ hr
@@ -212,30 +212,30 @@ theorem bitsQ_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c₀) {
       simp only [regB, regI, upd_same, k1]
     have hctx₁ : ChainCtx P W { c with nreg := regB c.nmem [.copyN b₁ K1] c.nreg } d C₂ :=
       hctx.transport (v1 d (by unfold IFix at hd; omega)) (fun _ _ => rfl)
-        (by simp only; rw [v1 ALLOC (by unfold ALLOC; omega)])
-    have hA1 : regB c.nmem [.copyN b₁ K1] c.nreg ALLOC = c.nreg ALLOC := v1 _ (by unfold ALLOC; omega)
+        (by simp only; rw [v1 ALLOC by_ao])
+    have hA1 : regB c.nmem [.copyN b₁ K1] c.nreg ALLOC = c.nreg ALLOC := v1 _ by_ao
     have hq1 : regB c.nmem [.copyN b₁ K1] c.nreg qH = c.nreg qH := v1 _ (by unfold qH sw; omega)
     refine (bitT_irs hI₁ hK hctx₁ hd (by rcases hb with ⟨-, rfl⟩ | ⟨-, rfl⟩ <;> simp)
-      (by simp only; rw [hq1]; exact hqH)
+      (by simp only; rwa [hq1])
       (by simp only; rw [hA1]; omega)).mono le_rfl ?_
     rintro c' ⟨q1, q2, q3, q4, q5⟩
     simp only [hq1, hA1] at q1 q2 q3 q4 q5
     refine ⟨?_, q1, q2, fun r r0 r1 r2 r3 r4 => ?_, q4, q5⟩
-    · rw [q3 b₁ (not_oracle_sw (by omega) (by omega)) hb1.2.2.2.2
-        (fun h => by unfold sw at h; omega) (by unfold ALLOC; omega), e1]
+    · rw [q3 b₁ (not_oracle_sw by_o by_o) hb1.2.2.2.2
+        (fun h => by unfold sw at h; omega) by_ao, e1]
     · rw [q3 r r0 r2 r3 r4, v1 r r1]
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hi with rfl | rfl
   · have ht : c.nreg sSide < c.nreg K1 := by rw [hs, k1]; norm_num
     refine (IRS.ifT ht (br bL bR (sw 21) J.left J.right (Or.inl ⟨rfl, rfl⟩)
-      (by unfold IFix sw; omega) hR)).mono (by norm_num) ?_
+      (by unfold IFix sw; omega) hR)).mono by_n ?_
     rintro c' ⟨q1, q2, q3, q4, q5⟩
-    exact ⟨⟨by omega, ⟨fun _ => h0 rfl, fun _ => q1⟩⟩, ⟨q2, q3⟩,
+    exact ⟨⟨by_o, ⟨fun _ => h0 rfl, fun _ => q1⟩⟩, ⟨q2, q3⟩,
       fun r r0 r1 r2 r3 r4 => q4 r r0 r1 r2 r3 r4, q5⟩
   · have ht : ¬ c.nreg sSide < c.nreg K1 := by rw [hs, k1]; norm_num
     refine (IRS.ifF ht (br bR bL (sw 20) J.right J.left (Or.inr ⟨rfl, rfl⟩)
-      (by unfold IFix sw; omega) hL)).mono (by norm_num) ?_
+      (by unfold IFix sw; omega) hL)).mono by_n ?_
     rintro c' ⟨q1, q2, q3, q4, q5⟩
-    exact ⟨⟨q2, q3⟩, ⟨by omega, ⟨fun _ => h1 rfl, fun _ => q1⟩⟩,
+    exact ⟨⟨q2, q3⟩, ⟨by_o, ⟨fun _ => h1 rfl, fun _ => q1⟩⟩,
       fun r r0 r1 r2 r3 r4 => q4 r r0 r2 r1 r3 r4, q5⟩
 
 /-! ## The result store -/
@@ -258,16 +258,16 @@ theorem store4_irs {v0 v1 v2 v3 : ℕ} (hI : IInv W c₀ c) (hK : Consts c₀)
       c'.nmem = mem4' c.nmem (c.nreg pR) (c.nreg v0) (c.nreg v1) (c.nreg v2) (c.nreg v3) ∧
       (∀ r, r ≠ tAq → c'.nreg r = c.nreg r)) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
-  have k2 : c.nreg K2 = 2 := hKc.2.2.2.2.2.1
-  have k3 : c.nreg K3 = 3 := hKc.2.2.2.2.2.2
-  have stA : IScr tAq := iscr_sw (by unfold tAq sw; norm_num) (by unfold tAq sw; norm_num)
+  have k1 := hKc.2.1
+  have k2 := hKc.2.2.2.2.2.1
+  have k3 := hKc.2.2.2.2.2.2
+  have stA : IScr tAq := iscr_sw by_d by_d
   have pRA : pR ≠ tAq := by unfold pR tAq sw; norm_num
   have K1A : K1 ≠ tAq := by unfold K1 tAq sw; norm_num
   have K2A : K2 ≠ tAq := by unfold K2 tAq sw; norm_num
   have K3A : K3 ≠ tAq := by unfold K3 tAq sw; norm_num
   unfold store4
-  refine (IRS.seq (K₂ := 6) (IRS.store (v := v0) hI hA) ?_).mono (by norm_num) (fun _ h => h)
+  refine (IRS.seq (K₂ := 6) (IRS.store (v := v0) hI hA) ?_).mono by_n (fun _ h => h)
   rintro c₁ hI₁ - - rfl
   refine IRS.seq (K₂ := 5) (IRS.instr1 (i := .addN tAq pR K1) hI₁ ⟨stA, by
     simp only; rw [k1]; omega⟩) ?_

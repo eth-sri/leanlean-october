@@ -51,14 +51,14 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       (∀ r, Bend S r = false → c'.nreg r = c.nreg r) ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧
       c'.output = c.output := by
   obtain ⟨A₀, hA₀⟩ : ∃ x, c.nreg ALLOC = x := ⟨_, rfl⟩
-  have hA' : c.nreg 9999 = A₀ := hA₀
+  have hA' := hA₀
   obtain ⟨Hd, hHd⟩ : ∃ x, c.nreg G = x := ⟨_, rfl⟩
   rw [hHd] at hN
   have hat := hN.nfAt
   obtain ⟨hK, -, -, -, -, hch, -⟩ := hat
   obtain ⟨hB7, hch', -⟩ := Gran.nf_areas hN
   set K := N.nChords with hKdef
-  have hKc : c.nmem Hd = K := hK
+  have hKc := hK
   obtain ⟨CB, hCB⟩ : ∃ x, c.nmem (Hd + 3) = x := ⟨_, rfl⟩
   rw [hCB] at hch hch'
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W (sqInit S G) c c₁ k₁ ∧ k₁ = 9 ∧
@@ -73,7 +73,7 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       all_goals try (simp (disch := omega) only [Machine.upd_same,
         Machine.upd_other, hHd]; omega)
       refine ⟨rfl, ?_⟩
-      simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hHd, hA', ALLOC]
+      simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hHd, ALLOC]
       and_intros
       all_goals first | trivial | exact hKc | exact hCB |
         (intro r h1 h2 h3 h4; simp (disch := omega) only [Machine.upd_other])
@@ -83,19 +83,18 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   have hIs' := hIs
   obtain ⟨-, -, -, -, -, -, -, -, -, hhQ, -⟩ := hIs'
   have hn : (Qof P).n = P.n := shear_n _ _
-  have I0 : QLI W K CB A₀ c₁ c₁ := ⟨w₁, by omega, by rw [q01, q02]; ring, by rw [qA, q02]; ring,
+  have I0 : QLI W K CB A₀ c₁ c₁ := ⟨w₁, by_o, by rw [q01, q02]; ring, by rw [qA, q02]; ring,
     fun _ _ _ _ _ _ _ => rfl, fun _ _ => rfl, fun i hi => by omega, rfl, rfl, rfl⟩
   obtain ⟨c₂, k₂, e₂, hk₂, hk₂', I₂, h₂⟩ := qlLoop_exec (P := P) q05 q06 q08 q00
     (fun i hi => by have := hch' i hi; omega)
     (fun i hi => by
       rw [qm, (hch i hi).1]
       have := hhQ i hi; rw [hn] at this; omega)
-    (by omega) (by omega) K c₁ I0 (by omega)
+    by_o by_o K c₁ I0 by_o
   have w₂ := I₂.wb
-  have g₂ : ∀ r, r ≠ 70101 → r ≠ 70102 → r ≠ 70103 → r ≠ 70104 → r ≠ 70107 → r ≠ ALLOC →
-      c₂.nreg r = c₁.nreg r := I₂.regs
+  have g₂ := I₂.regs
   have r00 : c₂.nreg 70100 = K := by
-    rw [g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide) (by decide), q00]
+    rw [g₂ _ by_d by_d by_d by_d by_d by_d, q00]
   obtain ⟨c₃, k₃, e₃, hk₃, t28, tr, tm, trr, trm, tou⟩ : ∃ c₃ k₃, Exec P W sqMid c₂ c₃ k₃ ∧
       k₃ = 1 ∧ c₃.nreg 70128 = 2 * K ∧ (∀ r, r ≠ 70128 → c₃.nreg r = c₂.nreg r) ∧
       c₃.nmem = c₂.nmem ∧ c₃.rreg = c₂.rreg ∧ c₃.rmem = c₂.rmem ∧ c₃.output = c₂.output := by
@@ -109,17 +108,17 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   have ex : Exec P W (endPart S G) c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
   have hlen : (endQL N.chords).length = 2 * K := endQL_length _
   have hS' : S ≠ ALLOC := by rcases hS with rfl | rfl <;> decide
-  refine ⟨c₃, _, ex, by omega, by omega, ?_, ?_, by rw [t28, hlen], ?_, ?_, ?_, fun a ha => ?_,
+  refine ⟨c₃, _, ex, by_o, by_o, ?_, ?_, by rw [t28, hlen], ?_, ?_, ?_, fun a ha => ?_,
     fun r hr => ?_, by rw [trr, I₂.rr, qrr], by rw [trm, I₂.rm, qrm], by rw [tou, I₂.out, qo]⟩
   · rw [tr _ (by rcases hS with rfl | rfl <;> decide), g₂ _ (by rcases hS with rfl | rfl <;> decide)
       (by rcases hS with rfl | rfl <;> decide) (by rcases hS with rfl | rfl <;> decide)
       (by rcases hS with rfl | rfl <;> decide) (by rcases hS with rfl | rfl <;> decide) hS', qS,
       hA₀]
-  · rw [tr _ (by decide), I₂.alloc, h₂, hlen, hA₀]; ring
-  · rw [tr _ (by decide), g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), q05]
-  · rw [tr _ (by decide), g₂ _ (by decide) (by decide) (by decide) (by decide) (by decide)
-      (by decide), q08]
+  · rw [tr _ by_d, I₂.alloc, h₂, hlen, hA₀]; ring
+  · rw [tr _ by_d, g₂ _ by_d by_d by_d by_d by_d
+      by_d, q05]
+  · rw [tr _ by_d, g₂ _ by_d by_d by_d by_d by_d
+      by_d, q08]
   · rw [tm, hA₀]
     have hdone := I₂.done
     rw [h₂] at hdone
@@ -127,12 +126,12 @@ theorem endPart_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
     rw [qm]
     obtain ⟨d0, d1, d2, -, -⟩ := hch i hi
     exact ⟨d0, d1, d2⟩
-  · rw [tm, I₂.low a (by omega), qm]
+  · rw [tm, I₂.low a by_o, qm]
   · have hr' := hr
     simp only [Bend, Bool.or_eq_false_iff, decide_eq_false_iff_not,
       beq_eq_false_iff_ne] at hr'
-    rw [tr r (by omega), g₂ r (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
-      qr r (by omega) (by omega) (by omega) (by omega)]
+    rw [tr r by_o, g₂ r by_o by_o by_o by_o by_o by_o,
+      qr r by_o by_o by_o by_o]
 
 end
 

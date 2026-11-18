@@ -25,10 +25,6 @@ oracle bands, so that it survives the calls to the chain oracles (finding E7-B1)
   raised by `8`), and the running minimum flag `170070 := 0`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace IOrc
@@ -110,7 +106,7 @@ def BinitB (r : ℕ) : Bool :=
     r = 170093 ∨ r = 170016 ∨ r = 170017 ∨ r = 170015 ∨ r = 170091 ∨ r = 9999 ∨ r = 170070 ∨
     r = 170014)
 
-theorem wrM_initI : BuildRam.wrM BinitB initI = true := by decide
+theorem wrM_initI : BuildRam.wrM BinitB initI = true := by_d
 
 /-- **The set-up.** -/
 theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
@@ -151,53 +147,53 @@ theorem initI_exec {P : Polygon} {W : ℕ} (c : Config)
     refine ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
       by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
       by config_simp, ?_, ?_, ?_, ?_, fun a ha => ?_, trivial, rfl, rfl, rfl⟩
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
-    · simp only [Config.nmem_mk, upd]; split_ifs <;> first | rfl | omega
+    · simp only [upd]; split_ifs <;> first | rfl | omega
+    · simp only [upd]; split_ifs <;> first | rfl | omega
+    · simp only [upd]; split_ifs <;> first | rfl | omega
+    · simp only [upd]; split_ifs <;> first | rfl | omega
+    · simp only [upd]; split_ifs <;> first | rfl | omega
   have fM := BuildRam.exec_frameM e₁ wrM_initI
   replace rest : ∀ r, ¬ BinitR r → c₁.nreg r = c.nreg r := fun r hr =>
     fM.1 r (by unfold BinitB; unfold BinitR at hr; simpa using hr)
   have w₁ := e₁.wb_right
-  have hb : c₁.nreg 170011 = 1 := q11
+  have hb := q11
   -- the orientation bit
   obtain ⟨c₂, k₂, e₂, hk₂, b14, bl, r₂⟩ : ∃ c₂ k₂, Exec P W bitI c₁ c₂ k₂ ∧ k₂ ≤ 5 ∧
       (c₂.nreg 170014 = 1 ↔ c₁.nreg 170093 = 1) ∧ c₂.nreg 170014 ≤ 1 ∧
       c₂ = { c₁ with nreg := upd c₁.nreg 170014 (c₂.nreg 170014) } := by
     unfold bitI
     by_cases h1 : c₁.nreg 170093 < c₁.nreg 170011
-    · refine ⟨_, _, .ifLtN_true h1 (Exec.constN w₁ 170014 0 (by omega)), by omega, ?_, ?_, ?_⟩
+    · refine ⟨_, _, .ifLtN_true h1 (Exec.constN w₁ 170014 0 by_o), by_o, ?_, ?_, ?_⟩
       · simp only [upd_same]; omega
       · simp only [upd_same]; omega
       · simp only [upd_same]
     by_cases h2 : c₁.nreg 170011 < c₁.nreg 170093
-    · refine ⟨_, _, .ifLtN_false h1 (.ifLtN_true h2 (Exec.constN w₁ 170014 0 (by omega))),
-        by omega, ?_, ?_, ?_⟩
+    · refine ⟨_, _, .ifLtN_false h1 (.ifLtN_true h2 (Exec.constN w₁ 170014 0 by_o)),
+        by_o, ?_, ?_, ?_⟩
       · simp only [upd_same]; omega
       · simp only [upd_same]; omega
       · simp only [upd_same]
-    · refine ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 (Exec.constN w₁ 170014 1 (by omega))),
-        by omega, ?_, ?_, ?_⟩
+    · refine ⟨_, _, .ifLtN_false h1 (.ifLtN_false h2 (Exec.constN w₁ 170014 1 by_o)),
+        by_o, ?_, ?_, ?_⟩
       · simp only [upd_same]; exact ⟨fun _ => by omega, fun _ => trivial⟩
       · simp only [upd_same]; omega
       · simp only [upd_same]
   have k : ∀ r, r ≠ 170014 → c₂.nreg r = c₁.nreg r := fun r hr => by
     rw [r₂]; simp [upd, hr]
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, by omega, by rw [k _ (by omega)]; exact q10,
-    by rw [k _ (by omega)]; exact q11, by rw [k _ (by omega)]; exact q12,
-    by rw [k _ (by omega)]; exact q18, by rw [k _ (by omega)]; exact q19,
-    by rw [k _ (by omega)]; exact q16, by rw [k _ (by omega)]; exact q17,
-    by rw [b14, q93], bl, by rw [k _ (by omega)]; exact q15, by rw [k _ (by omega)]; exact qA,
-    by rw [k _ (by omega)]; exact q70, ?_, ?_, ?_, ?_, fun a ha => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
+  refine ⟨c₂, _, .seq e₁ e₂, by_o, by_o, by rwa [k _ by_o],
+    by rwa [k _ by_o], by rwa [k _ by_o],
+    by rwa [k _ by_o], by rwa [k _ by_o],
+    by rwa [k _ by_o], by rwa [k _ by_o],
+    by rw [b14, q93], bl, by rwa [k _ by_o], by rwa [k _ by_o],
+    by rwa [k _ by_o], ?_, ?_, ?_, ?_, fun a ha => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
   all_goals first
     | (rw [r₂]; simp only [Config.nmem_mk]; first | exact m0 | exact m1 | exact m2 | exact m3)
     | skip
   · rw [r₂]; exact mlo a ha
   · rw [k r (by unfold BinitR at hr; omega)]; exact rest r hr
-  · rw [r₂]; exact rr
-  · rw [r₂]; exact rm
-  · rw [r₂]; exact ro
+  · rwa [r₂]
+  · rwa [r₂]
+  · rwa [r₂]
 
 end
 

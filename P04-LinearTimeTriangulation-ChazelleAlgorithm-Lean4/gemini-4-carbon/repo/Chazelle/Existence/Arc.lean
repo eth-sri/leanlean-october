@@ -125,13 +125,13 @@ theorem mem_boundary_arc_iff {p : Point} :
   constructor
   · rintro ⟨i, hi, hp⟩
     rcases Nat.lt_or_ge i L with h | h
-    · exact Or.inl ⟨i, h, by rw [← edge_arc P s L h]; exact hp⟩
+    · exact Or.inl ⟨i, h, by rwa [← edge_arc P s L h]⟩
     · have : i = L := by omega
       rw [this] at hp
-      exact Or.inr (by rw [← edge_arc_last P s L]; exact hp)
+      exact Or.inr (by rwa [← edge_arc_last P s L])
   · rintro (⟨i, hi, hp⟩ | hp)
-    · exact ⟨i, by omega, by rw [edge_arc P s L hi]; exact hp⟩
-    · exact ⟨L, by omega, by rw [edge_arc_last]; exact hp⟩
+    · exact ⟨i, by omega, by rwa [edge_arc P s L hi]⟩
+    · exact ⟨L, by omega, by rwa [edge_arc_last]⟩
 
 /-! ### The complementary arc -/
 
@@ -189,7 +189,6 @@ theorem crossSum_eq_sum_split (hL : L ≤ P.n) (z : Point) :
   congr 1
   apply Finset.sum_congr rfl
   intro i _
-  show g ((s + (L + i)) % P.n) = _
   rw [← Nat.add_assoc]
 
 /-- **Splitting along a chord.**  The crossing sum of `P` at `z` is the sum of the crossing
@@ -259,7 +258,7 @@ theorem simple_arc_of_chord (hP : P.Simple) (h2 : 2 ≤ L) (hLn : L + 1 ≤ P.n)
         have hab : p = P.vtx (s % P.n) ∨ p = P.vtx ((s + L) % P.n) := by
           by_contra hcon
           rw [not_or] at hcon
-          exact hch p (by rw [segment_comm]; exact hp2) hcon.1 hcon.2
+          exact hch p (by rwa [segment_comm]) hcon.1 hcon.2
             ⟨_, Nat.mod_lt _ hn, hp1⟩
         refine ⟨?_, hab.symm⟩
         rcases hab with rfl | rfl
@@ -312,11 +311,9 @@ theorem boundary_subset_arcs (hL : L ≤ P.n) (hn : 0 < P.n) :
   rintro p ⟨j, hj, hp⟩
   obtain ⟨i, hi, hij⟩ := exists_rot_index hn s j hj
   rcases Nat.lt_or_ge i L with hiL | hiL
-  · exact Or.inl ((mem_boundary_arc_iff P s L).2 (Or.inl ⟨i, hiL, by rw [hij]; exact hp⟩))
+  · exact Or.inl ((mem_boundary_arc_iff P s L).2 (Or.inl ⟨i, hiL, by rwa [hij]⟩))
   · refine Or.inr ((mem_boundary_arc_iff P _ _).2 (Or.inl ⟨i - L, by omega, ?_⟩))
-    rw [compl_arc_index, show s + L + (i - L) = s + i by omega, hij]
-    exact hp
-
+    rwa [compl_arc_index, show s + L + (i - L) = s + i by omega, hij]
 /-- The chord lies in the boundary of the arc. -/
 theorem chord_subset_boundary_arc :
     segment (P.vtx ((s + L) % P.n)) (P.vtx (s % P.n)) ⊆ (P.arc s L).boundary :=

@@ -198,11 +198,11 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
   · have hk := DrvD.key_s_lt_e (M := interiorModel Q) (Q := Q) B.hK hE hlt
     rw [hsg, heg] at hk
     have hse : s.edge ≤ e.edge := by
-      have : (s.edge : ℝ) < e.edge + 1 := by linarith
+      have : (s.edge : ℝ) < e.edge + 1 := by_l
       have : s.edge < e.edge + 1 := by exact_mod_cast this
       omega
     rw [show e.edge + Q.n - s.edge = (e.edge - s.edge) + Q.n by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega)]
+      Nat.mod_eq_of_lt by_o]
     have hsub : ((Finset.Ioo s.edge e.edge : Finset ℕ) : Set ℕ) ⊆
         WalkAx.vertsIn (interiorModel Q) ((interiorModel Q).key Q s)
           ((interiorModel Q).key Q e) := by
@@ -222,14 +222,14 @@ theorem arcCnt_le (B : BaseCtx Q L E reg li) {r : ℕ}
     rw [← hjl, hsg] at hks
     rw [← hjl, heg] at hke
     have hge : (interiorModel Q).key Q e ≤ (interiorModel Q).key Q s := by
-      rw [hks, hke]; exact DrvD.kE_mono B.hsort (Nat.zero_le _) (by omega)
+      rw [hks, hke]; exact DrvD.kE_mono B.hsort (Nat.zero_le _) by_o
     have hne := last_arc_edges B
     rw [hA, ← hjl, hsg, heg] at hne
     have hse : e.edge < s.edge := by
-      have : (e.edge : ℝ) < s.edge + 1 := by linarith
+      have : (e.edge : ℝ) < s.edge + 1 := by_l
       have : e.edge < s.edge + 1 := by exact_mod_cast this
       omega
-    rw [Nat.mod_eq_of_lt (by omega)]
+    rw [Nat.mod_eq_of_lt by_o]
     have hsub : ((Finset.Ioo s.edge Q.n ∪ Finset.Ico 0 e.edge : Finset ℕ) : Set ℕ) ⊆
         WalkAx.vertsIn (interiorModel Q) ((interiorModel Q).key Q s)
           ((interiorModel Q).key Q e) := by
@@ -268,7 +268,7 @@ theorem arcWt_zero (Q : Polygon) : (interiorModel Q).arcWt 0 0 = Q.n := by
     constructor
     · exact fun h => h.1
     · intro h
-      refine ⟨h, trivial, 1 / 2, by norm_num, by norm_num, ?_⟩
+      refine ⟨h, trivial, 1 / 2, by_n, by_n, ?_⟩
       unfold sideInArc; rw [ite_eq_right (lt_irrefl _)]; left; positivity
   rw [this, show {p : ℕ | p < Q.n} = ((Finset.range Q.n : Finset ℕ) : Set ℕ) by ext; simp,
     Set.ncard_coe_finset, Finset.card_range]
@@ -280,8 +280,8 @@ theorem n_le_of_empty {Q : Polygon} (hQ : Q.Simple) {E : List ℕ} (hE : E = [])
   subst hE
   set I := interiorModel Q with hI
   set N := BuildNF.buildNF I Q [] [] with hN
-  have hL : ChordTriplesOK I Q [] := ⟨⟨by simp, by simp, by simp⟩, by simp, by simp, by simp⟩
-  have hNF : IsNF I Q N := DownMath.isNF_build hQ hL (by simp) (by simp)
+  have hL : ChordTriplesOK I Q [] := ⟨⟨by_s, by_s, by_s⟩, by_s, by_s, by_s⟩
+  have hNF : IsNF I Q N := DownMath.isNF_build hQ hL by_s by_s
   obtain ⟨-, -, -, reg, hRC, -, hAO, -⟩ := id hNF
   have hA : N.arcs = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
     show BuildNF.arcList I Q [] [] = _

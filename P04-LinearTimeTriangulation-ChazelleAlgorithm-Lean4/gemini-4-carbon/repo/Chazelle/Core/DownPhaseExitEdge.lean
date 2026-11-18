@@ -30,7 +30,7 @@ theorem consecutive_of_empty (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite
     (hab : a ≠ b) (hnone : ∀ x ∈ hostKeys M F U, ¬ sideInArc a b x) :
     ∃ i, i < nk M F U ∧ hk M F U i = a ∧ hk M F U ((i + 1) % nk M F U) = b := by
   obtain ⟨i, hi, rfl⟩ := exists_hk hM hF hfin ha
-  have hsi : (i + 1) % nk M F U < nk M F U := Nat.mod_lt _ (by omega)
+  have hsi : (i + 1) % nk M F U < nk M F U := Nat.mod_lt _ by_o
   refine ⟨i, hi, rfl, ?_⟩
   exact cyc_first (hk_succ_ne hM hF hfin h2 hi) hab (hnone _ (hk_mem hM hF hfin hsi))
     (hk_gap hM hF hfin h2 hi hb)

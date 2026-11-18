@@ -43,13 +43,13 @@ theorem halfIn_side (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
     (hSifin : Si.Finite) {τ x h : ℝ} (hgood : HalfIn J.whole.dom τ ((x, h) : Point))
     (hcol : h < C'.top.2 ∨ (τ = -1 ∧ h ≤ C'.top.2) ∨ x ≠ C'.top.1) :
     HalfIn (freeIn C'.dom Si) τ ((x, h) : Point) := by
-  have hP' : C'.P.Simple := hC'P ▸ hP
+  have hP' := hC'P ▸ hP
   obtain ⟨r, hr, hsub⟩ := hgood
   obtain ⟨r₂, hr₂, hch⟩ := chords_off_line (walkAx_chainModel hP') hSiA hSifin ((x, h) : Point)
   obtain ⟨r₃, hr₃, hsl⟩ : ∃ r₃ > 0, ∀ y ∈ ball ((x, h) : Point) r₃,
       0 < τ * (y.2 - h) → y ∉ C'.slit := by
     rcases hcol with hc | ⟨hτ1, hc⟩ | hc
-    · refine ⟨C'.top.2 - h, by linarith, fun y hy _ hys => ?_⟩
+    · refine ⟨C'.top.2 - h, by_l, fun y hy _ hys => ?_⟩
       have h1 := (C'.mem_slit_iff.1 hys).2.1
       rw [mem_ball, Prod.dist_eq, max_lt_iff, Real.dist_eq, Real.dist_eq] at hy
       have := (abs_lt.1 hy.2).2
@@ -172,11 +172,11 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
   have hm : midOf M f ∈ f ∧ midOf M f ∈ M.D := by
     unfold midOf; rw [dite_eq_left hex]; exact Classical.choose_spec hex
   set m := midOf M f with hmdef
-  have hm2 : m.2 = z₁.2 := snd_eq_of_mem hM (hF hf) hz₁ hm.1
+  have hm2 := snd_eq_of_mem hM (hF hf) hz₁ hm.1
   have hgood : ∀ x ∈ Icc (min z₁.1 m.1) (max z₁.1 m.1),
       HalfIn (freeIn C'.dom Si) τ ((x, z₁.2) : Point) := by
     intro x hx
-    have hxD : ((x, z₁.2) : Point) ∈ M.D := between_open hM (hF hf) hz₁ hz₁D hm.1 hm.2 hx.1 hx.2
+    have hxD := between_open hM (hF hf) hz₁ hz₁D hm.1 hm.2 hx.1 hx.2
     refine halfIn_side J hP hC'P hset hSiA hSifin (halfIn_of_mem J.whole.isOpen_dom τ hxD) ?_
     rcases hh.lt_or_eq with hlt | heq
     · exact Or.inl hlt
@@ -190,12 +190,12 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
   have hW₀r : W₀ ∈ M'.regions Si := ⟨w, hw, rfl⟩
   have hz₁W : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z₁.1, z₁.2 + τ * δ) : Point) ∈ W₀ := by
     rcases le_total z₁.1 m.1 with h | h
-    · rw [min_eq_left h] at h1; exact h1
+    · rwa [min_eq_left h] at h1
     · rw [max_eq_left h] at h2; exact h2
   have hmW : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((m.1, m.2 + τ * δ) : Point) ∈ W₀ := by
     rw [hm2]
     rcases le_total z₁.1 m.1 with h | h
-    · rw [max_eq_right h] at h2; exact h2
+    · rwa [max_eq_right h] at h2
     · rw [min_eq_right h] at h1; exact h1
   have hmeet : ∀ {X Y : Set Point}, X ∈ M'.regions Si → Y ∈ M'.regions Si → ∀ {p : Point},
       (∀ᶠ δ in 𝓝[>] (0 : ℝ), ((p.1, p.2 + τ * δ) : Point) ∈ X) →
@@ -204,7 +204,7 @@ theorem phi_eq (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P) (hset : C'.set
     obtain ⟨δ, h3, h4⟩ := (hX'.and hY').exists
     exact (Chazelle.Chain.regionsIn_eq_or_disjoint hX hY).resolve_right
       (fun hd => hd.le_bot ⟨h3, h4⟩)
-  have hWV : W₀ = V := hmeet hW₀r hV hz₁W hzV
+  have hWV := hmeet hW₀r hV hz₁W hzV
   have hPhi : ∃ U ∈ M'.regions Si, ∀ᶠ δ in 𝓝[>] (0 : ℝ),
       (((midOf M f).1, (midOf M f).2 + sideOf M R f * δ) : Point) ∈ U := by
     rw [hso]; exact ⟨W₀, hW₀r, hmW⟩
@@ -232,7 +232,7 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
   set M := chainModel J.whole with hMdef
   set M' := chainModel C' with hM'def
   have hM : WalkAx M := walkAx_chainModel hP
-  have hP' : C'.P.Simple := hC'P ▸ hP
+  have hP' := hC'P ▸ hP
   obtain ⟨y, a, b, hH, hy, hceq, hl, hr⟩ := Merge.augChords_spec (hSi.2.1 hc)
   -- the side of `R`
   obtain ⟨τ, hτ, hsideE⟩ : ∃ τ : ℝ, (τ = 1 ∨ τ = -1) ∧ SideIn M R e τ := by
@@ -264,7 +264,7 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       · exact Or.inl h
       · exact Or.inr (Or.inl ⟨h, hy⟩)
     · push Not at hcase
-      have hyt : y = C'.top.2 := le_antisymm hy hcase.1
+      have hyt := le_antisymm hy hcase.1
       have htop : C'.top.1 ≤ a ∨ b ≤ C'.top.1 := by
         by_contra h
         push Not at h
@@ -300,7 +300,7 @@ theorem parent_touch (hP : J.P.Simple) {C' : Chain} (hC'P : C'.P = J.P)
       exact ⟨_, ⟨w, hw, rfl⟩, h2, h1⟩
   have hPhi : Phi M M' Si R f = V := by
     refine phi_eq J hP hC'P hset hSi.2.1 hSi.1 hF hfin hR hf hτ hsidef hz₁f hz₁D
-      (by rw [hz₁y, hz₀y]; exact hy) hV ?_
+      (by rwa [hz₁y, hz₀y]) hV ?_
     rw [hz₁y]; exact hV₁
   refine ⟨f, hf, hRf, hadjf, hc, z₀, ⟨hec hz₀e, ?_⟩, ?_⟩
   · show z₀ ∈ C'.dom

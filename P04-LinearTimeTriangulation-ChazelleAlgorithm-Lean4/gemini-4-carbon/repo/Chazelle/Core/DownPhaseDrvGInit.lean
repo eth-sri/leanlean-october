@@ -31,9 +31,9 @@ theorem rgInit0_exec (c : Config) (hw : WordsBounded W c) :
     unfold rgInit0
     exec_block
     refine ⟨rfl, ?_, ?_, rfl⟩ <;> config_simp
-  exact ⟨c', k, ex, hk, h1, h2, hm, exec_frameM ex (by decide),
+  exact ⟨c', k, ex, hk, h1, h2, hm, exec_frameM ex by_d,
     funext fun r => exec_frameM2 ex (BN := fun q => decide (q = 219000 ∨ q = 219002))
-      (BR := fun _ => false) (by decide) r rfl⟩
+      (BR := fun _ => false) by_d r rfl⟩
 
 /-- **The padding loop** runs exactly `3 (r9999 - r219250) + 2` steps. -/
 theorem rgPadLoop_exec : ∀ (m : ℕ) (c : Config), WordsBounded W c → c.nreg 219251 = 1 →
@@ -42,20 +42,20 @@ theorem rgPadLoop_exec : ∀ (m : ℕ) (c : Config), WordsBounded W c → c.nreg
       { c with nreg := upd c.nreg 219250 (c.nreg 9999) } (3 * m + 2)
   | 0, c, hw, _, hle, hd => by
     have h : c.nreg 219250 = c.nreg 9999 := by omega
-    refine ((Exec.whileLtN_false (by omega) hw).cast_end ?_)
+    refine ((Exec.whileLtN_false by_o hw).cast_end ?_)
     rw [← h, upd_eq_self]
   | m + 1, c, hw, h51, hle, hd => by
     have e := Exec.addN (P := P) hw 219250 219250 219251 (by rw [h51]; have := hw.1 9999; omega)
     have h1 : (upd c.nreg 219250 (c.nreg 219250 + c.nreg 219251)) 219251 = 1 := by
-      rw [upd_other _ _ _ (by decide), h51]
+      rw [upd_other _ _ _ by_d, h51]
     have h2 : (upd c.nreg 219250 (c.nreg 219250 + c.nreg 219251)) 9999 = c.nreg 9999 :=
-      upd_other _ _ _ (by decide)
+      upd_other _ _ _ by_d
     have h3 : (upd c.nreg 219250 (c.nreg 219250 + c.nreg 219251)) 219250 = c.nreg 219250 + 1 := by
       rw [upd_same, h51]
     have e' := rgPadLoop_exec m _ e.wb_right h1 (by dsimp only; rw [h2, h3]; omega)
       (by dsimp only; rw [h2, h3]; omega)
-    refine ((Exec.whileLtN_true (by omega) (Exec.seq e (.skip e.wb_right)) e').cast
-      (by ring)).cast_end ?_
+    refine ((Exec.whileLtN_true by_o (Exec.seq e (.skip e.wb_right)) e').cast
+      by_r).cast_end ?_
     simp only [h2, upd_upd_same]
 
 /-- **The padding**: exactly `3 (r9999 - r219003) + 4` steps. -/
@@ -67,11 +67,11 @@ theorem rgPad_exec (c : Config) (hw : WordsBounded W c) (hs : c.nreg 219003 ≤ 
   have e₁ := Exec.copyN (P := P) hw 219250 219003
   have e₂ := Exec.constN (P := P) e₁.wb_right 219251 1 hW
   have a50 : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 219250 = c.nreg 219003 := by
-    rw [upd_other _ _ _ (by decide), upd_same]
+    rw [upd_other _ _ _ by_d, upd_same]
   have a51 : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 219251 = 1 := upd_same _ _ _
   have aA : (upd (upd c.nreg 219250 (c.nreg 219003)) 219251 1) 9999 = c.nreg 9999 := by
-    rw [upd_other _ _ _ (by decide), upd_other _ _ _ (by decide)]
-  have e₃ := rgPadLoop_exec (P := P) _ _ e₂.wb_right a51 (by dsimp only; rw [a50, aA]; exact hs)
+    rw [upd_other _ _ _ by_d, upd_other _ _ _ by_d]
+  have e₃ := rgPadLoop_exec (P := P) _ _ e₂.wb_right a51 (by dsimp only; rwa [a50, aA])
     rfl
   refine ⟨_, (Exec.seq (Exec.seq e₁ (Exec.seq e₂ (.skip e₂.wb_right))) e₃).cast
     (by dsimp only; rw [a50, aA]; ring), fun r h1 h2 => ?_, rfl, rfl, rfl, rfl⟩
@@ -105,8 +105,8 @@ theorem rgInit1_exec (c : Config) (hw : WordsBounded W c) {HB NP T Hl : ℕ}
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
       rfl⟩ <;> config_simp <;> (try simp only [h00, h01, h03, hHl])
   exact ⟨c', k, ex, hk, ⟨h40, h41, h42, h43, h44, h45, h46⟩, a00, a01, a03, a04, a07, a30, a31,
-    a20, a21, a22, a23, a24, aA, hm, exec_frameM ex (by decide),
-    funext fun r => exec_frameM2 ex (BN := Bi1) (BR := fun _ => false) (by decide) r rfl⟩
+    a20, a21, a22, a23, a24, aA, hm, exec_frameM ex by_d,
+    funext fun r => exec_frameM2 ex (BN := Bi1) (BR := fun _ => false) by_d r rfl⟩
 
 end exec
 

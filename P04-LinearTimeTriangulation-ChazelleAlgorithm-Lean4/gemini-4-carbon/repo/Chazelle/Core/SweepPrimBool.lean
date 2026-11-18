@@ -123,41 +123,41 @@ theorem wr_compile : ∀ (f : BF) (d : ℕ), wr (f.wset d) (f.compile d) = true
   | not f, d => by
     have h := wr_mono (wr_compile f d) (B' := (not f).wset d) (fun r hr => by
       unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      exact decide_eq_true by_o)
     have h1 := one_le_size f
     simp only [compile, wr]
     rw [h]
     simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
     refine ⟨?_, ?_⟩ <;>
-      exact decide_eq_true (by omega)
+      exact decide_eq_true by_o
   | and f g, d => by
     have hf := wr_mono (wr_compile f d) (B' := (and f g).wset d) (fun r hr => by
       unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      exact decide_eq_true by_o)
     have hg := wr_mono (wr_compile g (d + 1)) (B' := (and f g).wset d) (fun r hr => by
       unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      exact decide_eq_true by_o)
     have h1 := one_le_size f
     have h2 := one_le_size g
     simp only [compile, wr]
     rw [hf, hg]
     simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
     refine ⟨?_, ?_⟩ <;> (try refine ⟨?_, ?_⟩) <;>
-      exact decide_eq_true (by omega)
+      exact decide_eq_true by_o
   | or f g, d => by
     have hf := wr_mono (wr_compile f d) (B' := (or f g).wset d) (fun r hr => by
       unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      exact decide_eq_true by_o)
     have hg := wr_mono (wr_compile g (d + 1)) (B' := (or f g).wset d) (fun r hr => by
       unfold wset at hr ⊢; have := of_decide_eq_true hr; simp only [size] at this ⊢
-      exact decide_eq_true (by omega))
+      exact decide_eq_true by_o)
     have h1 := one_le_size f
     have h2 := one_le_size g
     simp only [compile, wr]
     rw [hf, hg]
     simp only [block, wr, wrOK, wset, size, Bool.true_and, Bool.and_true, Bool.and_eq_true]
     refine ⟨?_, ?_⟩ <;> (try refine ⟨?_, ?_⟩) <;> (try refine ⟨?_, ?_⟩) <;>
-      exact decide_eq_true (by omega)
+      exact decide_eq_true by_o
 /-- **The compiled formula computes its value.**  If every variable is a register below `d`
 holding a bit, the block writes `(f.eval …).toNat` into `d` (at most `4 · size f` steps) and
 changes only the registers `d … d + size f`. -/
@@ -199,7 +199,7 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
     have keep : ∀ r, r < d → c₁.nreg r = c.nreg r := fun r hr =>
       f₁.1 r (by simp only [wset, decide_eq_false_iff_not]; omega)
     obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := compile_exec (P := P) hW g (d + 1) c₁ hw₁ (VarsOK.mono (by
-      intro r h; exact ⟨by omega, by rw [keep r h.1]; exact h.2⟩) hv.2)
+      intro r h; exact ⟨by_o, by rw [keep r h.1]; exact h.2⟩) hv.2)
     have hw₂ := e₂.wb_right
     have d₂ : c₂.nreg d = c₁.nreg d := f₂.1 d (by simp [wset])
     have hb₁ : c₁.nreg d ≤ 1 := by rw [v₁]; exact Bool.toNat_le _
@@ -228,7 +228,7 @@ theorem compile_exec {P : Polygon} {W : ℕ} (hW : 2 ≤ W) :
     have keep : ∀ r, r < d → c₁.nreg r = c.nreg r := fun r hr =>
       f₁.1 r (by simp only [wset, decide_eq_false_iff_not]; omega)
     obtain ⟨c₂, k₂, e₂, hk₂, v₂, f₂⟩ := compile_exec (P := P) hW g (d + 1) c₁ hw₁ (VarsOK.mono (by
-      intro r h; exact ⟨by omega, by rw [keep r h.1]; exact h.2⟩) hv.2)
+      intro r h; exact ⟨by_o, by rw [keep r h.1]; exact h.2⟩) hv.2)
     have hw₂ := e₂.wb_right
     have d₂ : c₂.nreg d = c₁.nreg d := f₂.1 d (by simp [wset])
     have hb₁ : c₁.nreg d ≤ 1 := by rw [v₁]; exact Bool.toNat_le _

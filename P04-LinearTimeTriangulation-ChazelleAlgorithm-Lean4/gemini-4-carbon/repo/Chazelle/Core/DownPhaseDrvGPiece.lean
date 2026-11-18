@@ -65,7 +65,7 @@ theorem frame_band {B : ℕ → Bool} (hB : ∀ q, B q = true → bandOf q = bDo
     · rfl
     · have := hB _ h; simp [bandOf, ALLOC, bDownDrv] at this)
   refine ⟨fun r hr _ => hf.1 r ?_, fun r hr => hf.2.1 r ?_, fun a _ => by rw [hm],
-    fun a _ => by rw [hf.2.2.1], hf.2.2.2, by omega, by omega⟩ <;>
+    fun a _ => by rw [hf.2.2.1], hf.2.2.2, by_o, by_o⟩ <;>
   · cases h : B r
     · rfl
     · exact absurd (hB r h ▸ bDownDrv_mem_drvBands) hr
@@ -92,7 +92,7 @@ theorem pcArgs_exec (d : Config) (hw : WordsBounded W d) (hW : 130 ≤ W) :
     exec_block
     · exact hW
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp
-  exact ⟨d', k, ex, hk, h1, h2, h3, h4, h5, h6, h7, h8, h9, hm, exec_frameM ex (by decide)⟩
+  exact ⟨d', k, ex, hk, h1, h2, h3, h4, h5, h6, h7, h8, h9, hm, exec_frameM ex by_d⟩
 
 /-- **One call of the piece procedure.** -/
 theorem pcCall_exec {O : OracleIface} {sp : Stmt} {κP : ℕ} (hsp : PcMeets O sp κP)
@@ -125,14 +125,14 @@ theorem pcCall_exec {O : OracleIface} {sp : Stmt} {κP : ℕ} (hsp : PcMeets O s
   have hW130 : 130 ≤ W := by have : hostWords P.n = 256 * P.n + 16 := rfl; have := hG.1.1; omega
   obtain ⟨d₁, k₁, e₁, hk₁, a0, a1, a2, a3, a4, a5, a6, a7, a8, m₁, f₁⟩ :=
     pcArgs_exec (P := P) d hw hW130
-  have hA₁ : d₁.nreg ALLOC = d.nreg ALLOC := f₁.1 ALLOC (by decide)
+  have hA₁ : d₁.nreg ALLOC = d.nreg ALLOC := f₁.1 ALLOC by_d
   have fr₁ : Frame drvBands d d₁ k₁ := frame_band (fun q hq => by
     simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) f₁ m₁ k₁
-  have hHA : HostAt d.nmem HB H := hH.holds
-  have hpre : _ := hsp P W d₁ e₁.wb_right ⟨hG, hWn, by rw [a8, h05, m₁, hA₁]; exact hX,
-    by rw [a6]; omega, by rw [a2, h41]; exact hm1, by rw [a3, h42]; exact hk, H,
-    by rw [a0, h00, m₁, hA₁]; exact hH, by rw [a0, h00, hA₁]; exact hHB, hHl, hwf, hreg, hsimp,
-    by rw [a1, a2, h40, h41]; exact hsm,
+  have hHA := hH.holds
+  have hpre : _ := hsp P W d₁ e₁.wb_right ⟨hG, hWn, by rwa [a8, h05, m₁, hA₁],
+    by rw [a6]; omega, by rwa [a2, h41], by rwa [a3, h42], H,
+    by rwa [a0, h00, m₁, hA₁], by rwa [a0, h00, hA₁], hHl, hwf, hreg, hsimp,
+    by rwa [a1, a2, h40, h41],
     fun h1 => by
       rw [a3, h42] at h1
       obtain ⟨b1, b2, b3, b4, b5⟩ := hleaf h1
@@ -140,19 +140,19 @@ theorem pcCall_exec {O : OracleIface} {sp : Stmt} {κP : ℕ} (hsp : PcMeets O s
       exact ⟨b1, b2, b3, b4, b5⟩,
     fun h0 => by
       rw [a3, h42] at h0
-      rw [a2, a7, h41, h04]; exact hcon h0⟩ (by beta_reduce; rw [a5, h02, hA₁]; exact hroom)
+      rw [a2, a7, h41, h04]; exact hcon h0⟩ (by beta_reduce; rwa [a5, h02, hA₁])
   obtain ⟨d', k₂, e₂, hk₂, ⟨q1, q2, q3, q4, q5⟩, fr₂⟩ := hpre
   beta_reduce at hk₂
   rw [a5, h02] at hk₂
-  refine ⟨d', k₁ + k₂, .seq e₁ e₂, by omega, fun q hq hq' => ?_, by rw [← hA₁]; exact q2,
-    by rw [← hA₁]; exact q3, q4, fun C hP hs hm => ?_, by
+  refine ⟨d', k₁ + k₂, .seq e₁ e₂, by_o, fun q hq hq' => ?_, by rwa [← hA₁],
+    by rwa [← hA₁], q4, fun C hP hs hm => ?_, by
       have := fr₁.trans fr₂; rwa [Finset.union_self] at this⟩
   · rw [q1 q hq hq', f₁.1 q (by simp only [decide_eq_false_iff_not]; omega)]
-  · obtain ⟨r1, N, r2, r3⟩ := q5 H C (by rw [a0, h00, m₁]; exact hHA) hP (by rw [a1, h40]; exact hs)
-      (by rw [a2, h41]; exact hm)
+  · obtain ⟨r1, N, r2, r3⟩ := q5 H C (by rwa [a0, h00, m₁]) hP (by rwa [a1, h40])
+      (by rwa [a2, h41])
     rw [a7, a6, h04] at r3
     refine ⟨?_, N, r2, r3⟩
-    rw [a0, h00] at r1; exact r1
+    rwa [a0, h00] at r1
 
 end exec
 

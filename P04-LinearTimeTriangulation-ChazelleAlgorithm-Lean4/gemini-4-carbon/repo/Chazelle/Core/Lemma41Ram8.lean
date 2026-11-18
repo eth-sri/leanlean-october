@@ -63,8 +63,8 @@ theorem nf_chords_ncard {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainMode
 theorem NodeOK.chords_le {P : Polygon} {m : ℕ → ℕ} {A hp d f : ℕ} {C : Chain} {γ : ℕ}
     (hG : GoodEnv P) (h : NodeOK P m A hp d f C γ) : m f * γ ≤ 60 * (2 * C.m + 7) := by
   obtain ⟨-, hCP, -, -, -, -, N, hN, hc⟩ := h
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have hGM : GoodModel (chainModel C) := Or.inl ⟨C, by rw [hCP]; exact hQ, rfl⟩
+  have hQ := (shearInvariance (epsOf P) P).1 hG.1
+  have hGM : GoodModel (chainModel C) := Or.inl ⟨C, by rwa [hCP], rfl⟩
   have hM := walkAx_of_goodModel hGM
   have hF := hc.1.1
   have := hM.lemma23_walk hF.2.1 hF.1 hc.2.1 hc.2.2.1
@@ -107,7 +107,7 @@ theorem forStep2 {ri rn : ℕ} {body : Stmt} (I : ℕ → Config → Prop) (N : 
       rw [hri, hrn] at htest
       obtain ⟨c', k, e, hk, h', hA'⟩ := hbody p c htest h
       obtain ⟨-, hri', -⟩ := hI (p + 1) c' h'
-      refine ⟨c', k, e, ⟨p + 1, h', by omega⟩, ?_, hA'⟩
+      refine ⟨c', k, e, ⟨p + 1, h', by_o⟩, ?_, hA'⟩
       rw [hri, hri', show 2 * (p + 1) / 2 = p + 1 by omega, show 2 * p / 2 = p by omega,
         Finset.sum_eq_sum_Ico_succ_bot (show p < (N + 1) / 2 by omega)]
       omega) ⟨0, hc, Nat.zero_le _⟩
@@ -190,32 +190,32 @@ theorem pairL_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
   obtain ⟨c', k, e, hk, hI, hψ⟩ := forStep2 (P := P) (W := W) (ri := 160062) (rn := 160067)
     (body := pairS sM) (PairSt P W X c0 A0 B hp hX tgt ns pcs) (j - 1) (fun q => pcs q + 329)
     (fun p c h => ⟨h.1, h.2.1, by
-      rw [h.2.2.2.2.2.2.2.2.2.1 _ (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega))
-        (by rw [hAl]; omega)]; exact h67⟩)
+      rwa [h.2.2.2.2.2.2.2.2.2.1 _ (bandOK_l41 by_o by_o) (not_pairRG by_o)
+        (by rw [hAl]; omega)]⟩)
     (fun p c hp h => by
       obtain ⟨hwc, c62, c65, c64, cA0, cA1, cm, crm, co, cr, crr, cX, ccap, ee, hee, hprev⟩ := h
       have cr' : ∀ r, 160000 ≤ r → r < 160035 → c.nreg r = c0.nreg r := fun r a b =>
-        cr r (bandOK_l41 a (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)
+        cr r (bandOK_l41 a by_o) (not_pairRG by_o) (by rw [hAl]; omega)
       have cr'' : ∀ r, 160065 < r → r < 160090 → c.nreg r = c0.nreg r := fun r a b =>
-        cr r (bandOK_l41 (by omega) (by omega)) (not_pairRG (by omega)) (by rw [hAl]; omega)
+        cr r (bandOK_l41 by_o by_o) (not_pairRG by_o) (by rw [hAl]; omega)
       set A := c.nreg ALLOC with hAdef
-      have hp1 : 2 * p + 1 < j := by omega
-      obtain ⟨C1, s1, m1', n1⟩ := hL (2 * p) (by omega)
+      have hp1 : 2 * p + 1 < j := by_o
+      obtain ⟨C1, s1, m1', n1⟩ := hL (2 * p) by_o
       obtain ⟨C2, s2, m2', n2⟩ := hL (2 * p + 1) hp1
-      have cmA : ∀ a, a < A0 → c.nmem a = c0.nmem a := cm
+      have cmA := cm
       have n1c := (n1.agree cmA).mono cA0
       have n2c := (n2.agree cmA).mono cA0
       have hcons : C2.s = C1.s + C1.m := by rw [s1, s2, m1', hc (2 * p) hp1]
       have kb1 : c.nmem (c0.nmem (B + 2 * (2 * p) + 1)) ≤ kb (nd ns (2 * p)) :=
-        n1c.chords_kb hG m1' (hγ1 _ (by omega))
-      have kb2 : c.nmem (c0.nmem (B + 2 * (2 * p + 1) + 1)) ≤ kb (nd ns (2 * p + 1)) :=
+        n1c.chords_kb hG m1' (hγ1 _ by_o)
+      have kb2 :=
         n2c.chords_kb hG m2' (hγ1 _ hp1)
       have hmc : mergeCostV κ F G H (c.nmem (c0.nmem (B + 2 * (2 * p) + 1)))
           (c.nmem (c0.nmem (B + 2 * (2 * p + 1) + 1))) γ₀ (C1.m + C2.m) ≤ pcs p := by
         have := mergeCostV_mono κ F G H γ₀ (C1.m + C2.m) kb1 kb2
         rw [m1', m2'] at this ⊢; exact this
       have hbp : A + 5 + pcs p + 3 ≤ W := by
-        have := hsum_mono (p + 1) (by omega)
+        have := hsum_mono (p + 1) by_o
         rw [Finset.sum_range_succ] at this
         omega
       obtain ⟨c'', k'', e'', hk'', hw'', hAk'', E, TD, f, C, hE1, hE2, hA'', w0, w1, w2, hCs, hCm,
@@ -225,53 +225,53 @@ theorem pairL_exec (hG : GoodEnv P) (hWh : hostWords P.n ≤ W) (hWn : P.n + 3 �
           (d1 := c0.nmem (B + 2 * (2 * p))) (f1 := c0.nmem (B + 2 * (2 * p) + 1))
           (d2 := c0.nmem (B + 2 * (2 * p + 1))) (f2 := c0.nmem (B + 2 * (2 * p + 1) + 1))
           (prev := c.nreg 160063) (i := 2 * p) (j := p) (hX := hX) (γ₀ := γ₀) (tgt := tgt)
-          rfl c65 rfl c62 c64 (by rw [cr' _ (by omega) (by omega)]; exact h33)
-          (by rw [cr' _ (by omega) (by omega)]; exact h34)
-          (by rw [cr' _ (by omega) (by omega)]; exact h00)
-          (by rw [cr' _ (by omega) (by omega)]; exact h24)
-          (by rw [cr'' _ (by omega) (by omega)]; exact h80)
-          (by rw [cr'' _ (by omega) (by omega)]; exact h81)
-          (by rw [cr'' _ (by omega) (by omega)]; exact h83)
-          (by rw [cr'' _ (by omega) (by omega)]; exact h84)
-          (by rw [cmA _ (by omega)]; congr 1; omega)
-          (by rw [cmA _ (by omega)]; congr 1; omega)
-          (by rw [cmA _ (by omega)]; congr 1; omega)
-          (by rw [cmA _ (by omega)]; congr 1; omega)
-          n1c n2c (by rw [← s1] at *; exact hγ _ (by omega)) (hγ _ hp1) hcons cX
-          (by rw [ccap]; exact hcap) htg (by omega) (by omega) (by omega) (by omega)
-      refine ⟨c'', k'', e'', by omega, ?_, hAk''⟩
-      refine ⟨hw'', by rw [q62]; ring, by rw [q65]; ring, q64, by omega, ?_,
-        fun a ha => by rw [mem'' a (by omega)]; exact cm a ha,
-        fun a ha => by rw [rmem'' a (by omega)]; exact crm a ha, by rw [out'']; exact co,
+          rfl c65 rfl c62 c64 (by rwa [cr' _ by_o by_o])
+          (by rwa [cr' _ by_o by_o])
+          (by rwa [cr' _ by_o by_o])
+          (by rwa [cr' _ by_o by_o])
+          (by rwa [cr'' _ by_o by_o])
+          (by rwa [cr'' _ by_o by_o])
+          (by rwa [cr'' _ by_o by_o])
+          (by rwa [cr'' _ by_o by_o])
+          (by rw [cmA _ by_o]; congr 1; omega)
+          (by rw [cmA _ by_o]; congr 1; omega)
+          (by rw [cmA _ by_o]; congr 1; omega)
+          (by rw [cmA _ by_o]; congr 1; omega)
+          n1c n2c (by rw [← s1] at *; exact hγ _ by_o) (hγ _ hp1) hcons cX
+          (by rwa [ccap]) htg by_o by_o by_o by_o
+      refine ⟨c'', k'', e'', by_o, ?_, hAk''⟩
+      refine ⟨hw'', by rw [q62]; ring, by rw [q65]; ring, q64, by_o, ?_,
+        fun a ha => by rw [mem'' a by_o]; exact cm a ha,
+        fun a ha => by rw [rmem'' a by_o]; exact crm a ha, by rwa [out''],
         fun r h1 h2 h3 => by rw [fr'' r h1 h2 h3]; exact cr r h1 h2 h3,
         fun r h1 h2 => by rw [frr'' r h1 h2]; exact crr r h1 h2,
-        by rw [hA'']; exact hX'', by rw [cap'']; exact ccap,
+        by rw [hA'']; exact hX'', by rwa [cap''],
         fun q => if q = p then E else ee q, fun q hq => ?_, fun _ => by simp [q63]⟩
       · rw [hA'', Finset.sum_range_succ]; omega
       · rcases Nat.lt_or_ge q p with hqp | hqp
         · obtain ⟨a1, a2, a3, C', b1, b2, b3⟩ := hee q hqp
           simp only [show q ≠ p by omega, ite_false]
-          refine ⟨a1, by omega, fun hq1 => ?_, C', b1, b2, ?_⟩
+          refine ⟨a1, by_o, fun hq1 => ?_, C', b1, b2, ?_⟩
           · simp only [show q - 1 ≠ p by omega, ite_false]
-            rw [mem'' _ (by omega)]; exact a3 hq1
-          · rw [mem'' _ (by omega), mem'' _ (by omega), hA'']
-            exact (b3.agree mem'').mono (by omega)
+            rw [mem'' _ by_o]; exact a3 hq1
+          · rw [mem'' _ by_o, mem'' _ by_o, hA'']
+            exact (b3.agree mem'').mono by_o
         · have hqe : q = p := by omega
           subst hqe
           simp only [ite_true]
-          refine ⟨by omega, by omega, fun hq1 => ?_, C, ?_, ?_, ?_⟩
+          refine ⟨by_o, by_o, fun hq1 => ?_, C, ?_, ?_, ?_⟩
           · simp only [show q - 1 ≠ q by omega, ite_false]
             rw [w2, hprev hq1]
           · rw [hCs, s1]
           · rw [hCm, m1', m2']
-          · rw [w0, w1, hA'']; exact hN)
-    (⟨hw, by rw [h62], by rw [h65]; ring, h64, by omega, by rw [hA]; simp,
+          · rwa [w0, w1, hA''])
+    (⟨hw, by rw [h62], by rw [h65]; ring, h64, by_o, by rw [hA]; simp,
       fun _ _ => rfl, fun _ _ => rfl, rfl, fun _ _ _ _ => rfl, fun _ _ _ => rfl,
-      by rw [hA]; exact hXh, rfl, fun _ => 0, fun q hq => by omega, fun h => by omega⟩)
+      by rwa [hA], rfl, fun _ => 0, fun q hq => by omega, fun h => by omega⟩)
   rw [hnp] at hk hI
-  refine ⟨c', k, e, ?_, by rw [← hA]; exact hψ, hI⟩
+  refine ⟨c', k, e, ?_, by rwa [← hA], hI⟩
   have : ∑ q ∈ range (j / 2), (pcs q + 329 + 2) = ∑ q ∈ range (j / 2), (pcs q + 331) :=
-    Finset.sum_congr rfl fun _ _ => by ring
+    Finset.sum_congr rfl fun _ _ => by_r
   omega
 
 end proofs

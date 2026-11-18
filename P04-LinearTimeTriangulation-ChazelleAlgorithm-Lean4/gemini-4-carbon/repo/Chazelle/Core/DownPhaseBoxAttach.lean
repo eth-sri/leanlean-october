@@ -82,10 +82,10 @@ theorem prev_sub_pt_zero (W : Polygon) (p : ℕ) :
 theorem prev_succ {n p : ℕ} (hp : p < n) : ((p + n - 1) % n + 1) % n = p := by
   rcases Nat.eq_zero_or_pos p with h0 | h0
   · subst h0
-    have e : (0 + n - 1) % n = n - 1 := by rw [Nat.zero_add]; exact Nat.mod_eq_of_lt (by omega)
+    have e : (0 + n - 1) % n = n - 1 := by rw [Nat.zero_add]; exact Nat.mod_eq_of_lt by_o
     rw [e, Nat.sub_add_cancel (by omega : 1 ≤ n), Nat.mod_self]
   · have e : (p + n - 1) % n = p - 1 := by
-      rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     rw [e, Nat.sub_add_cancel h0, Nat.mod_eq_of_lt hp]
 
 /-! ## Twin chains -/
@@ -98,12 +98,12 @@ theorem sig_slope (a b : ℝ) :
   rcases lt_trichotomy a b with hab | rfl | hab
   · have h1 : stretch (bnd C C') (kk C C') a < stretch (bnd C C') (kk C C') b := sig_lt_iff.2 hab
     refine ⟨(stretch (bnd C C') (kk C C') b - stretch (bnd C C') (kk C C') a) / (b - a),
-      div_pos (by linarith) (by linarith), ?_⟩
+      div_pos by_l by_l, ?_⟩
     field_simp [show b - a ≠ 0 by linarith]
-  · exact ⟨1, one_pos, by ring⟩
+  · exact ⟨1, one_pos, by_r⟩
   · have h1 : stretch (bnd C C') (kk C C') b < stretch (bnd C C') (kk C C') a := sig_lt_iff.2 hab
     refine ⟨(stretch (bnd C C') (kk C C') b - stretch (bnd C C') (kk C C') a) / (b - a),
-      div_pos_of_neg_of_neg (by linarith) (by linarith), ?_⟩
+      div_pos_of_neg_of_neg by_l by_l, ?_⟩
     field_simp [show b - a ≠ 0 by linarith]
 
 namespace Twin
@@ -144,9 +144,9 @@ theorem sector_scale {p : ℕ} {t t' : ℝ} (hp : p < (C.sideWalk C.sideBeta).n)
           β • (sidePrev (C.sideWalk C.sideBeta) p t - sidePt (C.sideWalk C.sideBeta) p t) := by
   set W := C.sideWalk C.sideBeta
   set W' := C'.sideWalk C'.sideBeta
-  have hn : W'.n = W.n := h.walk_n
+  have hn := h.walk_n
   obtain ⟨l, hl, e⟩ := h.edge_scale hp
-  have hα : 0 < (1 - t') * l / (1 - t) := div_pos (mul_pos (by linarith) hl) (by linarith)
+  have hα : 0 < (1 - t') * l / (1 - t) := div_pos (mul_pos by_l hl) by_l
   have eN : sideNext W' p - sidePt W' p t' =
       ((1 - t') * l / (1 - t)) • (sideNext W p - sidePt W p t) := by
     rw [next_sub_pt, next_sub_pt, hn, e, smul_smul, smul_smul]
@@ -154,19 +154,19 @@ theorem sector_scale {p : ℕ} {t t' : ℝ} (hp : p < (C.sideWalk C.sideBeta).n)
     field_simp [show 1 - t ≠ 0 by linarith]
   refine ⟨_, hα, ?_⟩
   by_cases ht0 : t = 0
-  · have ht0' : t' = 0 := h0.1 ht0
+  · have ht0' := h0.1 ht0
     subst ht0 ht0'
     set q := (p + W.n - 1) % W.n
-    have hnpos : 0 < W.n := by omega
+    have hnpos : 0 < W.n := by_o
     have hq : q < W.n := Nat.mod_lt _ hnpos
     obtain ⟨l', hl', e'⟩ := h.edge_scale hq
-    have hqp : (q + 1) % W.n = p := prev_succ hp
+    have hqp := prev_succ hp
     rw [hqp] at e'
     refine ⟨l', hl', eN, ?_⟩
     rw [prev_sub_pt_zero, prev_sub_pt_zero, hn, e', smul_smul, smul_smul, mul_comm]
   · have ht0' : t' ≠ 0 := fun e0 => ht0 (h0.2 e0)
-    have htp : 0 < t := lt_of_le_of_ne ht.1 (Ne.symm ht0)
-    have htp' : 0 < t' := lt_of_le_of_ne ht'.1 (Ne.symm ht0')
+    have htp := lt_of_le_of_ne ht.1 (Ne.symm ht0)
+    have htp' := lt_of_le_of_ne ht'.1 (Ne.symm ht0')
     refine ⟨t' * l / t, div_pos (mul_pos htp' hl) htp, eN, ?_⟩
     rw [prev_sub_pt _ _ ht0, prev_sub_pt _ _ ht0', hn, e, smul_smul, smul_smul]
     congr 1
@@ -195,12 +195,9 @@ theorem attach_transfer {d : Set Point} {y : ℝ} (hdy : ∀ z ∈ d, z.2 = y) {
     rwa [hψ z, hpt, hψ s] at this
   have hzne : z ≠ s := fun e => hne (by rw [e, hpt])
   have hL := hnear z hz hzne hzd
-  have hz2 : s.2 = z.2 := (hdy s hmem).trans (hdy z hz).symm
+  have hz2 := (hdy s hmem).trans (hdy z hz).symm
   obtain ⟨κ, hκ, eX⟩ := h.scale_pt (Or.inl hz2)
-  rw [sideLeft_eq, eN, eP, hpt, eX, sideCcw_smul hα hκ hβ]
-  exact hL
-
-end Twin
+  rwa [sideLeft_eq, eN, eP, hpt, eX, sideCcw_smul hα hκ hβ]end Twin
 
 end
 

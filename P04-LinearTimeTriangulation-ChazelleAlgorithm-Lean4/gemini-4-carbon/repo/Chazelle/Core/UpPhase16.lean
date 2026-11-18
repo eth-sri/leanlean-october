@@ -104,8 +104,7 @@ theorem recA_exec {c : Config} (hw : WordsBounded W c) {A h g : ℕ}
   · config_simp; simp only [hA, h05, h07, h20, h21, h22, h25, Machine.upd_apply]
     split_ifs <;> first | omega
   · unfold RecRG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
 
 set_option maxHeartbeats 16000000 in
 theorem copyBody_exec {c : Config} (hw : WordsBounded W c) {j T T' Al : ℕ}
@@ -130,8 +129,7 @@ theorem copyBody_exec {c : Config} (hw : WordsBounded W c) {j T T' Al : ℕ}
   · config_simp; simp only [h50, h56, h57, Machine.upd_apply]
     split_ifs <;> first | omega
   · unfold CopyRG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
 
 set_option maxHeartbeats 16000000 in
 /-- **The rows of the old grades**: `T'[j] = T[j]` for `j < g`. -/
@@ -152,7 +150,7 @@ theorem copyL_exec {c : Config} (hw : WordsBounded W c) {g T T' Al : ℕ}
     (∀ a, (a < T' ∨ T' + j ≤ a) → c'.nmem a = c.nmem a) ∧
     (∀ r, ¬ CopyRG r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
     c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output
-  have hI0 : I c := ⟨0, by omega, hw, h50, by omega, fun _ h => absurd h (by omega),
+  have hI0 : I c := ⟨0, by_o, hw, h50, by_o, fun _ h => absurd h by_o,
     fun _ _ => rfl, fun _ _ _ => rfl, rfl, rfl, rfl⟩
   obtain ⟨c', k, e, ⟨j, hj, hw', j50, jA, hcp, hmem, fr, hrr, hrm, ho⟩, htest, hk, hψ⟩ :=
     whileLtN_potential_lb' (P := P) (W := W) (a := 170050) (b := 170007) (body := copyBody) I
@@ -163,23 +161,23 @@ theorem copyL_exec {c : Config} (hw : WordsBounded W c) {g T T' Al : ℕ}
         rw [j50, k07] at htest
         obtain ⟨c3, k3, e3, hk3, hw3, l50, lA, lw, lm, fr3, hrr3, hrm3, ho3⟩ :=
           copyBody_exec (P := P) (T := T) (T' := T') hw2 j50
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h57)
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h56) jA
-            (by rw [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]; exact h20)
-            (by omega) (by omega) (by omega) (by omega)
-        refine ⟨c3, k3, e3, ⟨j + 1, by omega, hw3, l50, by rw [lA]; ring, fun j' h' => ?_,
-          fun a ha => by rw [lm a (by omega), hmem a (by omega)],
+            (by rwa [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)])
+            (by rwa [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)]) jA
+            (by rwa [fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega)])
+            by_o by_o by_o by_o
+        refine ⟨c3, k3, e3, ⟨j + 1, by_o, hw3, l50, by rw [lA]; ring, fun j' h' => ?_,
+          fun a ha => by rw [lm a by_o, hmem a by_o],
           fun r h1 h2 => by rw [fr3 r h1 h2, fr r h1 h2], by rw [hrr3, hrr], by rw [hrm3, hrm],
           by rw [ho3, ho]⟩, by rw [l50, j50]; omega, by rw [lA]; omega⟩
         rcases Nat.lt_or_ge j' j with h1 | h1
-        · rw [lm _ (by omega), hcp j' h1]
+        · rw [lm _ by_o, hcp j' h1]
         · have : j' = j := by omega
           subst this
-          rw [lw, hmem _ (Or.inl (by omega))]) hI0
+          rw [lw, hmem _ (Or.inl by_o)]) hI0
   have hjg : j = g := by
     rw [j50, fr _ (by unfold CopyRG; omega) (by rw [hAl]; omega), h07] at htest; omega
   subst hjg
-  exact ⟨c', k, e, by rw [h50] at hk; omega, hw', jA, by rw [hA] at hψ; exact hψ, hcp, hmem, fr,
+  exact ⟨c', k, e, by rw [h50] at hk; omega, hw', jA, by rwa [hA] at hψ, hcp, hmem, fr,
     hrr, hrm, ho⟩
 
 end proofs

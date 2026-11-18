@@ -44,8 +44,8 @@ theorem copy2 {c₁ : Config} {r : ℕ} (hr : CmpR r) (hI₁ : FInv E.W c₀ c�
   unfold CmpR at hr
   have ok : okB E.W c₁.nmem [.copyN r 50210, .copyN (r + 1) 50211] c₁.nreg := by
     simp only [okB, okI]
-    exact ⟨Or.inl (Or.inl ⟨by omega, by omega⟩), Or.inl (Or.inl ⟨by omega, by omega⟩), trivial⟩
-  refine (FRS.block hB _ hI₁ ok).mono (by simp) (fun c' h' => ?_)
+    exact ⟨Or.inl (Or.inl ⟨by_o, by_o⟩), Or.inl (Or.inl ⟨by_o, by_o⟩), trivial⟩
+  refine (FRS.block hB _ hI₁ ok).mono by_s (fun c' h' => ?_)
   have e' : ∀ q, c'.nreg q = regB c₁.nmem [.copyN r 50210, .copyN (r + 1) 50211] c₁.nreg q :=
     fun q => by rw [h']
   refine ⟨by rw [e']; simp [regB, regI, upd], by rw [e']; simp [regB, regI, upd,
@@ -65,7 +65,7 @@ theorem cmpM_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
         E.M.key (Qof E.P) ⟨c.nreg a, c.nreg b⟩) ∧
       ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → q ≠ r → q ≠ r + 1 → c'.nreg q = c.nreg q) := by
   refine FRS.seq (K₂ := 2) (fKey_fs hE hB hI ha hb hd he hka hkb hkd hke hx hy
-    (by omega)) (fun c₁ hI₁ _ ⟨b1, b2, f1⟩ => ?_)
+    by_o) (fun c₁ hI₁ _ ⟨b1, b2, f1⟩ => ?_)
   refine (copy2 hr hI₁ hB).mono le_rfl (fun c' ⟨v1, v2, f2⟩ => ⟨b1.of_eq v1, b2.of_eq v2,
     fun q h1 h2 h3 h4 h5 => by rw [f2 q h4 h5, f1 q h1 h2 h3]⟩)
 
@@ -86,8 +86,8 @@ theorem cmpA_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
       ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → q ≠ r → q ≠ r + 1 → c'.nreg q = c.nreg q) := by
   have ok : okB E.W c.nmem cmpAL c.nreg := by
     simp only [cmpAL, okB, okI]
-    refine ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩),
-      ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by omega⟩, trivial⟩
+    refine ⟨Or.inl (Or.inl ⟨by_n, by_n⟩),
+      ⟨Or.inl (Or.inl ⟨by_n, by_n⟩), by_o⟩, trivial⟩
   refine FRS.seq (K₂ := 11008) (FRS.block hB _ hI ok) (fun c₁ hI₁ hA₁ h₁ => ?_)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem cmpAL c.nreg q := fun q => by rw [h₁]
   have m₁ : c₁.nmem = c.nmem := by rw [h₁]
@@ -95,21 +95,21 @@ theorem cmpA_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : F
   have r22 : c₁.nreg 83022 = 0 := by rw [e₁]; simp [cmpAL, regB, regI, upd]
   have f₁ : ∀ q, q ≠ 83020 → q ≠ 83022 → c₁.nreg q = c.nreg q := fun q h1 h2 => by
     rw [e₁]; simp [cmpAL, regB, regI, upd, h1, h2]
-  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega)
+  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ by_ao
+    by_ao
   have kf : ∀ q, ¬ KeyW q → c₁.nreg q = c.nreg q := fun q hq => by
-    unfold KeyW at hq; exact f₁ q (by omega) (by omega)
+    unfold KeyW at hq; exact f₁ q by_o by_o
   have hx₁ : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg a, c₁.nreg b⟩ := by
     rw [kf a hka, kf b hkb]; exact hx
   have hy₁ : PosOK Cα (Qof E.P) E.P.n ⟨c₁.nreg d, c₁.nreg e⟩ := by
     rw [kf d hkd, kf e hke]; exact hy
   obtain ⟨c₂, k₂, ex, hk, b1, b2, hf⟩ := keyCmp_exec ha hb hd he hI₁.hw hE.hG hE.hWh
-    (by rw [m₁, r20, hA₁']; exact hwf) (by rw [m₁, r20]; exact hC) r22 hx₁ hy₁ hWm
+    (by rwa [m₁, r20, hA₁']) (by rwa [m₁, r20]) r22 hx₁ hy₁ hWm
     (by rw [hA₁']; omega)
   have h8 : ∀ q, 80000 ≤ q → q < 90000 → c₂.nreg q = c₁.nreg q := fun q h1 h2 =>
     hf.1 q (by rw [band8 h1 h2]; simp [primBands, bRestore, bSign, bLocate])
-      (by unfold ALLOC; omega)
-  refine FRS.seq (K₂ := 2) (FRS.prim (Q := fun c' => c' = c₂) hB hI₁ ex hf le_rfl (by omega) rfl)
+      by_ao
+  refine FRS.seq (K₂ := 2) (FRS.prim (Q := fun c' => c' = c₂) hB hI₁ ex hf le_rfl by_o rfl)
     (fun c₃ hI₃ _ h₃ => ?_)
   subst h₃
   rw [kf a hka, kf b hkb, kf d hkd, kf e hke] at b1 b2

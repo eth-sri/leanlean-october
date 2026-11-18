@@ -9,11 +9,6 @@ The decision tree of `edgeSel` on the RAM (see `ShootCutShEdgeR`).  `eqTree`: th
 height; `neTree`: the ends at different heights, with `midTree` for the origin strictly between.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
-
 namespace Chazelle.Core
 
 namespace ShootCut
@@ -63,13 +58,13 @@ variable {P : Polygon} {W : ℕ} {H : Host} {C : Chain} {z : Point} {σ : ℝ}
 theorem PtRecB.keep {c c' : Config} {B : ℕ} {q : Point} {R : ℝ} (h : PtRecB P c B q R)
     (hk : ∀ r, B ≤ r → r < B + 11 → c'.nreg r = c.nreg r) : PtRecB P c' B q R := by
   obtain ⟨ax, hy, fr⟩ := h
-  refine ⟨absRec_copy' ax (hk _ le_rfl (by omega)) (hk _ (by omega) (by omega))
-    (hk _ (by omega) (by omega)) (hk _ (by omega) (by omega)),
-    hy.copy (hk _ (by omega) (by omega)) (by rw [hk _ (by omega) (by omega)])
-      (by rw [hk _ (by omega) (by omega)]), fun h7 => ?_⟩
-  obtain ⟨s, hs, hl, hv⟩ := fr (by rw [← hk _ (by omega) (by omega)]; exact h7)
-  exact ⟨s, NFLoc.symPtIn_copy hs (hk _ (by omega) (by omega)) (by rw [hk _ (by omega) (by omega)])
-    (by rw [hk _ (by omega) (by omega)]), hl, hv⟩
+  refine ⟨absRec_copy' ax (hk _ le_rfl by_o) (hk _ by_o by_o)
+    (hk _ by_o by_o) (hk _ by_o by_o),
+    hy.copy (hk _ by_o by_o) (by rw [hk _ by_o by_o])
+      (by rw [hk _ by_o by_o]), fun h7 => ?_⟩
+  obtain ⟨s, hs, hl, hv⟩ := fr (by rwa [← hk _ by_o by_o])
+  exact ⟨s, NFLoc.symPtIn_copy hs (hk _ by_o by_o) (by rw [hk _ by_o by_o])
+    (by rw [hk _ by_o by_o]), hl, hv⟩
 
 theorem Bkb_bedge {dst : ℕ} (hd : Bedge dst = true) (r : ℕ) (h : Bkb dst r = true) :
     Bedge r = true := by
@@ -85,7 +80,7 @@ theorem Bld_bedge {B : ℕ} (hB : 140262 ≤ B ∧ B + 11 ≤ 140330) (r : ℕ) 
   rcases h with (h | h) | h
   · exact Or.inl (Or.inl (Or.inl h))
   · exact Or.inl (Or.inl (Or.inr h))
-  · exact Or.inr (by omega)
+  · exact Or.inr by_o
 
 /-! ## The ends at one height -/
 
@@ -96,12 +91,12 @@ def PosAt (P : Polygon) (C : Chain) (c : Config) (e h : ℕ) (q : Point) : Prop 
 
 theorem PosAt.keep {c c' : Config} {e h : ℕ} {q : Point} (hp : PosAt P C c e h q)
     (he : c'.nreg e = c.nreg e) (hh : c'.nreg h = c.nreg h) : PosAt P C c' e h q := by
-  unfold PosAt at *; rw [he, hh]; exact hp
+  unfold PosAt at *; rwa [he, hh]
 
 theorem ne_of_seg {U V z X : Point} (hz : z ∉ seg U V) (hX : X ∈ seg U V) (hy : z.2 = X.2) :
     X.1 ≠ z.1 := fun h => hz (by
   have : z = X := Prod.ext h.symm hy
-  rw [this]; exact hX)
+  rwa [this])
 
 theorem eqTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ c)
     {pU pV : Point} (rU : PtRecB P c 140270 pU C.radius) (rV : PtRecB P c 140281 pV C.radius)
@@ -119,72 +114,72 @@ theorem eqTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ
     rw [show edgeSel _ _ _ _ _ _ _ _ = 0 by unfold edgeSel; rw [ite_eq_left hUV,
       ite_eq_right hzU]] at hc
     obtain ⟨c', k, ex, hk, ca, f⟩ := cand0_exec (P := P) (C := C) (z := z) (σ := σ) c hw
-      (hc.2 (by norm_num))
-    exact ⟨c', _, .ifLtN_true t0 ex, by omega, ca, f⟩
+      (hc.2 by_n)
+    exact ⟨c', _, .ifLtN_true t0 ex, by_o, ca, f⟩
   have hzU : z.2 = pU.2 := b12.2.1 (by have := b12.1; rw [E.k1] at t0; omega)
   obtain ⟨c₁, k₁, e₁, hk₁, a₁, f₁⟩ := aheadT_exec (P := P) c hw E (A := 140270) (dst := 140314)
-    (by norm_num) (by norm_num) rU.1 (ne_of_seg hz (U_mem_seg pU pV) hzU)
+    by_n by_n rU.1 (ne_of_seg hz (U_mem_seg pU pV) hzU)
   have E₁ := E.frame f₁ fun r hr => by
     have := Bedge_env r hr
     cases h : Bkb 140314 r
     · rfl
-    · exact absurd (Bkb_bedge (by decide) r h) (by rw [this]; decide)
+    · exact absurd (Bkb_bedge by_d r h) (by rw [this]; decide)
   have kp : ∀ r, 140260 ≤ r → r < 140300 → r ≠ 140314 → c₁.nreg r = c.nreg r := fun r h1 h2 h3 =>
     f₁.1 r (by simp [Bkb, Bk]; omega)
-  have rU₁ := rU.keep fun r h1 h2 => kp r (by omega) (by omega) (by omega)
-  have rV₁ := rV.keep fun r h1 h2 => kp r (by omega) (by omega) (by omega)
-  have pU₁ := pU'.keep (kp _ (by norm_num) (by norm_num) (by norm_num))
-    (kp _ (by norm_num) (by norm_num) (by norm_num))
-  have pV₁ := pV'.keep (kp _ (by norm_num) (by norm_num) (by norm_num))
-    (kp _ (by norm_num) (by norm_num) (by norm_num))
-  have fe₁ : FrameB Bedge c c₁ := FrameB.wk f₁ (Bkb_bedge (by decide))
+  have rU₁ := rU.keep fun r h1 h2 => kp r by_o by_o by_o
+  have rV₁ := rV.keep fun r h1 h2 => kp r by_o by_o by_o
+  have pU₁ := pU'.keep (kp _ by_n by_n by_n)
+    (kp _ by_n by_n by_n)
+  have pV₁ := pV'.keep (kp _ by_n by_n by_n)
+    (kp _ by_n by_n by_n)
+  have fe₁ : FrameB Bedge c c₁ := FrameB.wk f₁ (Bkb_bedge by_d)
   have w₁ := e₁.wb_right
-  have t0' : ¬ c.nreg 140312 < c.nreg K1 := t0
+  have t0' := t0
   by_cases t1 : c₁.nreg 140314 < c₁.nreg K1
   · have hA : ¬ 0 < σ * (pU.1 - z.1) := fun h => by
       have := a₁.2.2 h; rw [E₁.k1] at t1; omega
     rw [show edgeSel _ _ _ _ _ _ _ _ = 0 by unfold edgeSel; rw [ite_eq_left hUV,
       ite_eq_left hzU, ite_eq_right hA]] at hc
     obtain ⟨c', k, ex, hk, ca, f⟩ := cand0_exec (P := P) (C := C) (z := z) (σ := σ) c₁ w₁
-      (hc.2 (by norm_num))
-    exact ⟨c', _, .ifLtN_false t0' (.seq e₁ (.ifLtN_true t1 ex)), by omega, ca, fe₁.trans f⟩
+      (hc.2 by_n)
+    exact ⟨c', _, .ifLtN_false t0' (.seq e₁ (.ifLtN_true t1 ex)), by_o, ca, fe₁.trans f⟩
   have hA : 0 < σ * (pU.1 - z.1) := a₁.2.1 (by have := a₁.1; rw [E₁.k1] at t1; omega)
-  obtain ⟨c₂, k₂, e₂, hk₂, a₂, f₂⟩ := nearT_exec (P := P) c₁ w₁ E₁ (dst := 140316) (by norm_num)
+  obtain ⟨c₂, k₂, e₂, hk₂, a₂, f₂⟩ := nearT_exec (P := P) c₁ w₁ E₁ (dst := 140316) by_n
     rU₁.1 rV₁.1
   have E₂ := E₁.frame f₂ fun r hr => by
     have := Bedge_env r hr
     cases h : Bkb 140316 r
     · rfl
-    · exact absurd (Bkb_bedge (by decide) r h) (by rw [this]; decide)
+    · exact absurd (Bkb_bedge by_d r h) (by rw [this]; decide)
   have kp₂ : ∀ r, 140260 ≤ r → r < 140300 → r ≠ 140316 → c₂.nreg r = c₁.nreg r :=
     fun r h1 h2 h3 => f₂.1 r (by simp [Bkb, Bk]; omega)
-  have rU₂ := rU₁.keep fun r h1 h2 => kp₂ r (by omega) (by omega) (by omega)
-  have rV₂ := rV₁.keep fun r h1 h2 => kp₂ r (by omega) (by omega) (by omega)
-  have pU₂ := pU₁.keep (kp₂ _ (by norm_num) (by norm_num) (by norm_num))
-    (kp₂ _ (by norm_num) (by norm_num) (by norm_num))
-  have pV₂ := pV₁.keep (kp₂ _ (by norm_num) (by norm_num) (by norm_num))
-    (kp₂ _ (by norm_num) (by norm_num) (by norm_num))
-  have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (Bkb_bedge (by decide))
+  have rU₂ := rU₁.keep fun r h1 h2 => kp₂ r by_o by_o by_o
+  have rV₂ := rV₁.keep fun r h1 h2 => kp₂ r by_o by_o by_o
+  have pU₂ := pU₁.keep (kp₂ _ by_n by_n by_n)
+    (kp₂ _ by_n by_n by_n)
+  have pV₂ := pV₁.keep (kp₂ _ by_n by_n by_n)
+    (kp₂ _ by_n by_n by_n)
+  have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (Bkb_bedge by_d)
   have w₂ := e₂.wb_right
-  have t1' : ¬ c₁.nreg 140314 < c₁.nreg K1 := t1
+  have t1' := t1
   by_cases t2 : c₂.nreg 140316 < c₂.nreg K1
   · have hn : σ * pU.1 ≤ σ * pV.1 := by
       by_contra h; have := a₂.2.2 h; rw [E₂.k1] at t2; omega
     rw [show edgeSel _ _ _ _ _ _ _ _ = 1 by unfold edgeSel; rw [ite_eq_left hUV,
       ite_eq_left hzU, ite_eq_left hA, ite_eq_left hn]] at hc
     obtain ⟨c', k, ex, hk, ca, f⟩ := candFrom_exec (P := P) (C := C) (S := seg pU pV) c₂ w₂
-      (by omega) (A := 140270) (e := 140263) (h := 140264) (by norm_num) (by norm_num)
-      (by norm_num) rU₂.1 (hc.1 rfl) pU₂.2.1 pU₂.2.2 (by rw [pU₂.1, hzU])
+      by_o (A := 140270) (e := 140263) (h := 140264) by_n by_n
+      by_n rU₂.1 (hc.1 rfl) pU₂.2.1 pU₂.2.2 (by rw [pU₂.1, hzU])
     exact ⟨c', _, .ifLtN_false t0' (.seq e₁ (.ifLtN_false t1' (.seq e₂ (.ifLtN_true t2 ex)))),
-      by omega, ca, (fe₁.trans fe₂).trans f⟩
+      by_o, ca, (fe₁.trans fe₂).trans f⟩
   have hn : ¬ σ * pU.1 ≤ σ * pV.1 := a₂.2.1 (by have := a₂.1; rw [E₂.k1] at t2; omega)
   rw [show edgeSel _ _ _ _ _ _ _ _ = 2 by unfold edgeSel; rw [ite_eq_left hUV,
     ite_eq_left hzU, ite_eq_left hA, ite_eq_right hn]] at hc
   obtain ⟨c', k, ex, hk, ca, f⟩ := candFrom_exec (P := P) (C := C) (S := seg pU pV) c₂ w₂
-    (by omega) (A := 140281) (e := 140265) (h := 140266) (by norm_num) (by norm_num)
-    (by norm_num) rV₂.1 (hc.1 rfl) pV₂.2.1 pV₂.2.2 (by rw [pV₂.1, hzU, hUV])
+    by_o (A := 140281) (e := 140265) (h := 140266) by_n by_n
+    by_n rV₂.1 (hc.1 rfl) pV₂.2.1 pV₂.2.2 (by rw [pV₂.1, hzU, hUV])
   exact ⟨c', _, .ifLtN_false t0' (.seq e₁ (.ifLtN_false t1' (.seq e₂ (.ifLtN_false t2 ex)))),
-    by omega, ca, (fe₁.trans fe₂).trans f⟩
+    by_o, ca, (fe₁.trans fe₂).trans f⟩
 
 /-! ## The point at the height of the origin -/
 
@@ -209,28 +204,28 @@ theorem xTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
   have hW : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
   have hin : i + 1 ≤ P.n := hpp.2.2
   have e₁ := Exec.addN (P := P) hw 140304 140236 K1 (by rw [h36, E.k1]; omega)
-  set c₁ : Config := { c with nreg := upd c.nreg 140304 (c.nreg 140236 + c.nreg K1) } with hc₁
+  set c₁ := { c with nreg := upd c.nreg 140304 (c.nreg 140236 + c.nreg K1) } with hc₁
   have g₁ : ∀ r, r ≠ 140304 → c₁.nreg r = c.nreg r := fun r hr => by rw [hc₁]; simp [hr]
-  have fe₁ : FrameB Bedge c c₁ := frameB_upd c _ (by decide)
+  have fe₁ : FrameB Bedge c c₁ := frameB_upd c _ by_d
   have E₁ := E.frame fe₁ Bedge_env
   have q04 : c₁.nreg 140304 = i + 1 := by rw [hc₁]; simp [h36, E.k1]
-  have q62 : c₁.nreg 140262 = p := by rw [g₁ _ (by decide), h62]
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ (by decide)
+  have q62 : c₁.nreg 140262 = p := by rw [g₁ _ by_d, h62]
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := g₁ _ by_d
   obtain ⟨c₂, k₂, e₂, hk₂, r₂, f₂⟩ := ptLoad_exec (P := P) c₁ e₁.wb_right E₁ (e := 140262)
-    (h := 140304) (B := 140292) (by norm_num) (by norm_num) (by norm_num) (by rw [q62]; exact hpn)
-    (by rw [q62, q04]; exact hpp) (Or.inr (by rw [q62, q04]; exact hqR)) (by rw [hA₁]; exact hroom)
+    (h := 140304) (B := 140292) by_n by_n by_n (by rwa [q62])
+    (by rwa [q62, q04]) (Or.inr (by rwa [q62, q04])) (by rwa [hA₁])
   rw [q62, q04] at r₂
-  have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (Bld_bedge (by norm_num))
+  have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (Bld_bedge by_n)
   have E₂ := E₁.frame fe₂ Bedge_env
   have k₂' : ∀ r, (r = 140262 ∨ r = 140304) → c₂.nreg r = c₁.nreg r := fun r hr =>
     f₂.1 r (by rcases hr with rfl | rfl <;> decide)
   obtain ⟨c₃, k₃, e₃, hk₃, a₃, f₃⟩ := aheadT_exec (P := P) c₂ e₂.wb_right E₂ (A := 140292)
-    (dst := 140314) (by norm_num) (by norm_num) r₂.1 (ne_of_seg hz hq hqy.symm)
-  have fe₃ : FrameB Bedge c₂ c₃ := FrameB.wk f₃ (Bkb_bedge (by decide))
-  have E₃ := E₂.bkb (by decide) f₃
+    (dst := 140314) by_n by_n r₂.1 (ne_of_seg hz hq hqy.symm)
+  have fe₃ : FrameB Bedge c₂ c₃ := FrameB.wk f₃ (Bkb_bedge by_d)
+  have E₃ := E₂.bkb by_d f₃
   have kp : ∀ r, 140260 ≤ r → r < 140310 → c₃.nreg r = c₂.nreg r := fun r h1 h2 =>
     f₃.1 r (by simp [Bkb, Bk]; omega)
-  have r₃ := r₂.keep fun r h1 h2 => kp r (by omega) (by omega)
+  have r₃ := r₂.keep fun r h1 h2 => kp r by_o by_o
   have hc := seg_at E.hσ hUV hq hqy
   have w₃ := e₃.wb_right
   unfold xTree
@@ -239,21 +234,21 @@ theorem xTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
       have := a₃.2.2 h; rw [E₃.k1] at t; omega
     rw [ite_eq_right hA] at hc
     obtain ⟨c', k, ex, hk, ca, f⟩ := cand0_exec (P := P) (C := C) (z := z) (σ := σ) c₃ w₃
-      (hc.2 (by norm_num))
-    exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.ifLtN_true t ex))), by omega, ca,
+      (hc.2 by_n)
+    exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.ifLtN_true t ex))), by_o, ca,
       ((fe₁.trans fe₂).trans fe₃).trans f⟩
   · have hA : 0 < σ * (((chainModel C).pos (Qof P) ⟨p, i + 1⟩).1 - z.1) :=
       a₃.2.1 (by have := a₃.1; rw [E₃.k1] at t; omega)
     rw [ite_eq_left hA] at hc
     obtain ⟨c', k, ex, hk, ca, f⟩ := candFrom_exec (P := P) (C := C) (S := seg pU pV) c₃ w₃
-      (by omega) (A := 140292) (e := 140262) (h := 140304) (by norm_num) (by norm_num)
-      (by norm_num) r₃.1 (hc.1 rfl)
-      (by rw [kp _ (by norm_num) (by norm_num), kp _ (by norm_num) (by norm_num),
-        k₂' _ (Or.inl rfl), k₂' _ (Or.inr rfl), q62, q04]; exact hpp)
-      (by rw [kp _ (by norm_num) (by norm_num), k₂' _ (Or.inl rfl), q62]; exact hpn)
-      (by rw [kp _ (by norm_num) (by norm_num), kp _ (by norm_num) (by norm_num),
+      by_o (A := 140292) (e := 140262) (h := 140304) by_n by_n
+      by_n r₃.1 (hc.1 rfl)
+      (by rwa [kp _ by_n by_n, kp _ by_n by_n,
+        k₂' _ (Or.inl rfl), k₂' _ (Or.inr rfl), q62, q04])
+      (by rwa [kp _ by_n by_n, k₂' _ (Or.inl rfl), q62])
+      (by rw [kp _ by_n by_n, kp _ by_n by_n,
         k₂' _ (Or.inl rfl), k₂' _ (Or.inr rfl), q62, q04, ← hqy])
-    exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.ifLtN_false t ex))), by omega, ca,
+    exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.ifLtN_false t ex))), by_o, ca,
       ((fe₁.trans fe₂).trans fe₃).trans f⟩
 
 /-! ## The origin strictly inside the heights -/
@@ -285,38 +280,38 @@ theorem midTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
         ∀ r, r ≠ dst → 140262 ≤ r → r < 140330 → c₁.nreg r = c₀.nreg r :=
     fun c₀ dst hw₀ E₀ rU₀ rV₀ h62₀ hA₀ hd1 hd2 a b ya yb ha hb hA hB => by
       obtain ⟨c₁, k, ex, hk, bt, f⟩ := hLess_exec E₀.hG hW c₀ hw₀ (a := a) (b := b) (dst := dst)
-        (by omega) (by omega) (by omega) E₀.k1 hR hA hB
+        by_o by_o by_o E₀.k1 hR hA hB
       have kp : ∀ r, r ≠ dst → 140262 ≤ r → r < 140330 → c₁.nreg r = c₀.nreg r :=
         fun r h1 h2 h3 => f.1 r (by simp [Bkb, Bk]; omega)
       exact ⟨c₁, k, ex, hk, bt, f, E₀.bkb (by simp [Bedge]; omega) f,
-        rU₀.keep fun r h1 h2 => kp r (by omega) (by omega) (by omega),
-        rV₀.keep fun r h1 h2 => kp r (by omega) (by omega) (by omega),
-        by rw [kp _ (by omega) (by norm_num) (by norm_num), h62₀],
+        rU₀.keep fun r h1 h2 => kp r by_o by_o by_o,
+        rV₀.keep fun r h1 h2 => kp r by_o by_o by_o,
+        by rw [kp _ by_o by_n by_n, h62₀],
         by rw [f.1 ALLOC (by simp [Bkb, Bk, ALLOC]; omega), hA₀], kp⟩
   obtain ⟨c₁, k₁, e₁, hk₁, b17, f₁, E₁, rU₁, rV₁, q₁, a₁, kp₁⟩ := step c 140317 hw E rU rV h62 rfl
-    le_rfl (by norm_num) 140274 140234 _ _ (Or.inl rfl) (Or.inr (Or.inl rfl)) rU.2.1 E.oy
+    le_rfl by_n 140274 140234 _ _ (Or.inl rfl) (Or.inr (Or.inl rfl)) rU.2.1 E.oy
   obtain ⟨c₂, k₂, e₂, hk₂, b18, f₂, E₂, rU₂, rV₂, q₂, a₂, kp₂⟩ := step c₁ 140318 e₁.wb_right E₁ rU₁
-    rV₁ q₁ a₁ (by norm_num) (by norm_num) 140234 140285 _ _ (Or.inr (Or.inl rfl))
+    rV₁ q₁ a₁ by_n by_n 140234 140285 _ _ (Or.inr (Or.inl rfl))
     (Or.inr (Or.inr rfl)) E₁.oy rV₁.2.1
   obtain ⟨c₃, k₃, e₃, hk₃, b19, f₃, E₃, rU₃, rV₃, q₃, a₃, kp₃⟩ := step c₂ 140319 e₂.wb_right E₂ rU₂
-    rV₂ q₂ a₂ (by norm_num) (by norm_num) 140285 140234 _ _ (Or.inr (Or.inr rfl))
+    rV₂ q₂ a₂ by_n by_n 140285 140234 _ _ (Or.inr (Or.inr rfl))
     (Or.inr (Or.inl rfl)) rV₂.2.1 E₂.oy
   obtain ⟨c₄, k₄, e₄, hk₄, b20, f₄, E₄, rU₄, rV₄, q₄, a₄, kp₄⟩ := step c₃ 140320 e₃.wb_right E₃ rU₃
-    rV₃ q₃ a₃ (by norm_num) (by norm_num) 140234 140274 _ _ (Or.inr (Or.inl rfl))
+    rV₃ q₃ a₃ by_n by_n 140234 140274 _ _ (Or.inr (Or.inl rfl))
     (Or.inl rfl) E₃.oy rU₃.2.1
   -- the bits survive
   have b17' : BitIs c₄ 140317 (pU.2 < z.2) :=
-    ((b17.of_eq (kp₂ _ (by norm_num) (by norm_num) (by norm_num))).of_eq
-      (kp₃ _ (by norm_num) (by norm_num) (by norm_num))).of_eq
-      (kp₄ _ (by norm_num) (by norm_num) (by norm_num))
+    ((b17.of_eq (kp₂ _ by_n by_n by_n)).of_eq
+      (kp₃ _ by_n by_n by_n)).of_eq
+      (kp₄ _ by_n by_n by_n)
   have b18' : BitIs c₄ 140318 (z.2 < pV.2) :=
-    (b18.of_eq (kp₃ _ (by norm_num) (by norm_num) (by norm_num))).of_eq
-      (kp₄ _ (by norm_num) (by norm_num) (by norm_num))
+    (b18.of_eq (kp₃ _ by_n by_n by_n)).of_eq
+      (kp₄ _ by_n by_n by_n)
   have b19' : BitIs c₄ 140319 (pV.2 < z.2) :=
-    b19.of_eq (kp₄ _ (by norm_num) (by norm_num) (by norm_num))
+    b19.of_eq (kp₄ _ by_n by_n by_n)
   have fe : FrameB Bedge c c₄ :=
-    (((FrameB.wk f₁ (Bkb_bedge (by decide))).trans (FrameB.wk f₂ (Bkb_bedge (by decide)))).trans
-      (FrameB.wk f₃ (Bkb_bedge (by decide)))).trans (FrameB.wk f₄ (Bkb_bedge (by decide)))
+    (((FrameB.wk f₁ (Bkb_bedge by_d)).trans (FrameB.wk f₂ (Bkb_bedge by_d))).trans
+      (FrameB.wk f₃ (Bkb_bedge by_d))).trans (FrameB.wk f₄ (Bkb_bedge by_d))
   have hpre : ∀ {s : Stmt} {c' : Config} {k : ℕ}, Exec P W s c₄ c' k →
       Exec P W (.seq (hLess 140274 140234 140317) (.seq (hLess 140234 140285 140318)
         (.seq (hLess 140285 140234 140319) (.seq (hLess 140234 140274 140320) s)))) c c'
@@ -339,16 +334,16 @@ theorem midTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       · exact h
     set i := c₄.nreg (140234 + 2) with hi_def
     have hm := mid_pos (chainModel C) (Qof P) (p := p) (h := i) hα hαβ hβ (by
-      rw [← hpU, ← hpV, ← hzi]; exact hmid)
+      rwa [← hpU, ← hpV, ← hzi])
     rw [← hpU, ← hpV] at hm
     obtain ⟨hmem, hy, hp0, hp1⟩ := hm
     exact xTree_exec c₄ w₄ E₄ (p := p) (i := i) q₄ rfl hmem (by rw [hy, ← hzi])
-      ⟨hp0.le, hp1, show i + 1 ≤ P.n by omega⟩ hpn (by rw [hy, ← hzi]; exact hzR) hUV hz
-      (by rw [a₄]; exact hroom)
+      ⟨hp0.le, hp1, show i + 1 ≤ P.n by omega⟩ hpn (by rwa [hy, ← hzi]) hUV hz
+      (by rwa [a₄])
   have ocase : ¬ ((pU.2 < z.2 ∧ z.2 < pV.2) ∨ (pV.2 < z.2 ∧ z.2 < pU.2)) →
       ∃ c' k, Exec P W cand0 c₄ c' k ∧ k = 1 ∧ CandAt P C c' 140220 (seg pU pV) z σ ∧
         FrameB Bedge c₄ c' := fun hmid => by
-    refine cand0_exec c₄ w₄ ((seg_out (x := 0) ?_).2 (by norm_num))
+    refine cand0_exec c₄ w₄ ((seg_out (x := 0) ?_).2 by_n)
     rintro ⟨h1, h2⟩
     apply hmid
     rcases le_total pU.2 pV.2 with h | h
@@ -364,28 +359,28 @@ theorem midTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       CandAt P C c' 140220 (seg pU pV) z σ ∧ FrameB Bedge c₄ c' := fun hn => by
     by_cases t19 : c₄.nreg 140319 < c₄.nreg K1
     · have h19 : ¬ pV.2 < z.2 := fun h => by have := b19'.2.2 h; rw [k1] at t19; omega
-      obtain ⟨c', k, ex, hk, ca, f⟩ := ocase (by tauto)
-      exact ⟨c', _, .ifLtN_true t19 ex, by omega, ca, f⟩
+      obtain ⟨c', k, ex, hk, ca, f⟩ := ocase by_t
+      exact ⟨c', _, .ifLtN_true t19 ex, by_o, ca, f⟩
     have h19 : pV.2 < z.2 := b19'.2.1 (by have := b19'.1; rw [k1] at t19; omega)
     by_cases t20 : c₄.nreg 140320 < c₄.nreg K1
     · have h20 : ¬ z.2 < pU.2 := fun h => by have := b20.2.2 h; rw [k1] at t20; omega
-      obtain ⟨c', k, ex, hk, ca, f⟩ := ocase (by tauto)
-      exact ⟨c', _, .ifLtN_false t19 (.ifLtN_true t20 ex), by omega, ca, f⟩
+      obtain ⟨c', k, ex, hk, ca, f⟩ := ocase by_t
+      exact ⟨c', _, .ifLtN_false t19 (.ifLtN_true t20 ex), by_o, ca, f⟩
     have h20 : z.2 < pU.2 := b20.2.1 (by have := b20.1; rw [k1] at t20; omega)
     obtain ⟨c', k, ex, hk, ca, f⟩ := xcase (Or.inr ⟨h19, h20⟩)
-    exact ⟨c', _, .ifLtN_false t19 (.ifLtN_false t20 ex), by omega, ca, f⟩
+    exact ⟨c', _, .ifLtN_false t19 (.ifLtN_false t20 ex), by_o, ca, f⟩
   by_cases t17 : c₄.nreg 140317 < c₄.nreg K1
   · have h17 : ¬ pU.2 < z.2 := fun h => by have := b17'.2.2 h; rw [k1] at t17; omega
     obtain ⟨c', k, ex, hk, ca, f⟩ := T2 (fun h => h17 h.1)
-    exact ⟨c', _, hpre (.ifLtN_true t17 ex), by omega, ca, fe.trans f⟩
+    exact ⟨c', _, hpre (.ifLtN_true t17 ex), by_o, ca, fe.trans f⟩
   have h17 : pU.2 < z.2 := b17'.2.1 (by have := b17'.1; rw [k1] at t17; omega)
   by_cases t18 : c₄.nreg 140318 < c₄.nreg K1
   · have h18 : ¬ z.2 < pV.2 := fun h => by have := b18'.2.2 h; rw [k1] at t18; omega
     obtain ⟨c', k, ex, hk, ca, f⟩ := T2 (fun h => h18 h.2)
-    exact ⟨c', _, hpre (.ifLtN_false t17 (.ifLtN_true t18 ex)), by omega, ca, fe.trans f⟩
+    exact ⟨c', _, hpre (.ifLtN_false t17 (.ifLtN_true t18 ex)), by_o, ca, fe.trans f⟩
   have h18 : z.2 < pV.2 := b18'.2.1 (by have := b18'.1; rw [k1] at t18; omega)
   obtain ⟨c', k, ex, hk, ca, f⟩ := xcase (Or.inl ⟨h17, h18⟩)
-  exact ⟨c', _, hpre (.ifLtN_false t17 (.ifLtN_false t18 ex)), by omega, ca, fe.trans f⟩
+  exact ⟨c', _, hpre (.ifLtN_false t17 (.ifLtN_false t18 ex)), by_o, ca, fe.trans f⟩
 
 /-! ## The ends at different heights -/
 
@@ -398,13 +393,13 @@ theorem endCase_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       k ≤ 270 ∧ CandAt P C c' 140220 (seg pU pV) z σ ∧ FrameB Bedge c c' := by
   have hW : P.n + 3 ≤ W := by have := E.hW; unfold hostWords at this; omega
   obtain ⟨c₁, k₁, e₁, hk₁, a₁, f₁⟩ := aheadT_exec (P := P) c hw E (A := A) (dst := 140314)
-    (by omega) (by norm_num) rq.1 (ne_of_seg hz hq hqz.symm)
-  have E₁ := E.bkb (by decide) f₁
+    by_o by_n rq.1 (ne_of_seg hz hq hqz.symm)
+  have E₁ := E.bkb by_d f₁
   have kp : ∀ r, 140262 ≤ r → r < 140310 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
     f₁.1 r (by simp [Bkb, Bk]; omega)
-  have rq₁ := rq.keep fun r h1 h2 => kp r (by omega) (by omega)
-  have pq₁ := pq.keep (kp e (by omega) (by omega)) (kp h (by omega) (by omega))
-  have fe₁ : FrameB Bedge c c₁ := FrameB.wk f₁ (Bkb_bedge (by decide))
+  have rq₁ := rq.keep fun r h1 h2 => kp r by_o by_o
+  have pq₁ := pq.keep (kp e by_o by_o) (kp h by_o by_o)
+  have fe₁ : FrameB Bedge c c₁ := FrameB.wk f₁ (Bkb_bedge by_d)
   have hc := seg_at E.hσ hUV hq hqz
   have w₁ := e₁.wb_right
   by_cases t : c₁.nreg 140314 < c₁.nreg K1
@@ -412,14 +407,14 @@ theorem endCase_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z �
       have := a₁.2.2 h; rw [E₁.k1] at t; omega
     rw [ite_eq_right hA'] at hc
     obtain ⟨c', k, ex, hk, ca, f⟩ := cand0_exec (P := P) (C := C) (z := z) (σ := σ) c₁ w₁
-      (hc.2 (by norm_num))
-    exact ⟨c', _, .seq e₁ (.ifLtN_true t ex), by omega, ca, fe₁.trans f⟩
+      (hc.2 by_n)
+    exact ⟨c', _, .seq e₁ (.ifLtN_true t ex), by_o, ca, fe₁.trans f⟩
   · have hA' : 0 < σ * (q.1 - z.1) := a₁.2.1 (by have := a₁.1; rw [E₁.k1] at t; omega)
     rw [ite_eq_left hA'] at hc
     obtain ⟨c', k, ex, hk, ca, f⟩ := candFrom_exec (P := P) (C := C) (S := seg pU pV) c₁ w₁
-      (by omega) (A := A) (e := e) (h := h) (by omega) (by omega) (by omega) rq₁.1 (hc.1 rfl)
+      by_o (A := A) (e := e) (h := h) by_o by_o by_o rq₁.1 (hc.1 rfl)
       pq₁.2.1 pq₁.2.2 (by rw [pq₁.1, ← hqz])
-    exact ⟨c', _, .seq e₁ (.ifLtN_false t ex), by omega, ca, fe₁.trans f⟩
+    exact ⟨c', _, .seq e₁ (.ifLtN_false t ex), by_o, ca, fe₁.trans f⟩
 
 theorem neTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ c)
     {pU pV : Point} {p : ℕ} (rU : PtRecB P c 140270 pU C.radius)
@@ -436,15 +431,15 @@ theorem neTree_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ
     by_cases t13 : c.nreg 140313 < c.nreg K1
     · have hzV : z.2 ≠ pV.2 := fun h => by have := b13.2.2 h; rw [k1] at t13; omega
       obtain ⟨c', k, ex, hk, ca, f⟩ := midTree_exec c hw E rU rV h62 geo hUV hzU hzV hz hroom
-      exact ⟨c', _, .ifLtN_true t12 (.ifLtN_true t13 ex), by omega, ca, f⟩
+      exact ⟨c', _, .ifLtN_true t12 (.ifLtN_true t13 ex), by_o, ca, f⟩
     have hzV : z.2 = pV.2 := b13.2.1 (by have := b13.1; rw [k1] at t13; omega)
     obtain ⟨c', k, ex, hk, ca, f⟩ := endCase_exec c hw E (V_mem_seg pU pV) hzV.symm hUV hz
-      (A := 140281) (e := 140265) (h := 140266) (by norm_num) (by norm_num) (by norm_num) rV pV'
-    exact ⟨c', _, .ifLtN_true t12 (.ifLtN_false t13 ex), by omega, ca, f⟩
+      (A := 140281) (e := 140265) (h := 140266) by_n by_n by_n rV pV'
+    exact ⟨c', _, .ifLtN_true t12 (.ifLtN_false t13 ex), by_o, ca, f⟩
   have hzU : z.2 = pU.2 := b12.2.1 (by have := b12.1; rw [k1] at t12; omega)
   obtain ⟨c', k, ex, hk, ca, f⟩ := endCase_exec c hw E (U_mem_seg pU pV) hzU.symm hUV hz
-    (A := 140270) (e := 140263) (h := 140264) (by norm_num) (by norm_num) (by norm_num) rU pU'
-  exact ⟨c', _, .ifLtN_false t12 ex, by omega, ca, f⟩
+    (A := 140270) (e := 140263) (h := 140264) by_n by_n by_n rU pU'
+  exact ⟨c', _, .ifLtN_false t12 ex, by_o, ca, f⟩
 
 /-! ## The segment machine -/
 
@@ -464,10 +459,10 @@ theorem edgeH_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
   -- `U`
   obtain ⟨⟨pUe, pUp, pUn⟩, pUy⟩ := iU
   obtain ⟨c₁, k₁, e₁, hk₁, rU₁, f₁⟩ := ptLoad_exec (P := P) c hw E (e := 140263) (h := 140264)
-    (B := 140270) (by norm_num) (by norm_num) (by norm_num) pUn pUp (by rw [pUe]; exact pUy)
-    (by omega)
+    (B := 140270) by_n by_n by_n pUn pUp (by rwa [pUe])
+    by_o
   rw [pUe] at rU₁
-  have fe₁ : FrameB Bedge c c₁ := FrameB.wk f₁ (Bld_bedge (by norm_num))
+  have fe₁ : FrameB Bedge c c₁ := FrameB.wk f₁ (Bld_bedge by_n)
   have E₁ := E.frame fe₁ Bedge_env
   have kp₁ : ∀ r, 140262 ≤ r → r < 140270 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
     f₁.1 r (by simp [Bld, Bprim]; omega)
@@ -475,29 +470,29 @@ theorem edgeH_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
   -- `V`
   obtain ⟨⟨pVe, pVp, pVn⟩, pVy⟩ := iV
   obtain ⟨c₂, k₂, e₂, hk₂, rV₂, f₂⟩ := ptLoad_exec (P := P) c₁ e₁.wb_right E₁ (e := 140265)
-    (h := 140266) (B := 140281) (by norm_num) (by norm_num) (by norm_num)
-    (by rw [kp₁ _ (by norm_num) (by norm_num)]; exact pVn)
-    (by rw [kp₁ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]; exact pVp)
-    (by rw [kp₁ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num), pVe]; exact pVy)
+    (h := 140266) (B := 140281) by_n by_n by_n
+    (by rwa [kp₁ _ by_n by_n])
+    (by rwa [kp₁ _ by_n by_n, kp₁ _ by_n by_n])
+    (by rwa [kp₁ _ by_n by_n, kp₁ _ by_n by_n, pVe])
     (by rw [hA₁]; omega)
-  rw [kp₁ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num), pVe] at rV₂
-  have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (Bld_bedge (by norm_num))
+  rw [kp₁ _ by_n by_n, kp₁ _ by_n by_n, pVe] at rV₂
+  have fe₂ : FrameB Bedge c₁ c₂ := FrameB.wk f₂ (Bld_bedge by_n)
   have E₂ := E₁.frame fe₂ Bedge_env
   have kp₂ : ∀ r, 140262 ≤ r → r < 140281 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
     f₂.1 r (by simp [Bld, Bprim]; omega)
   have hA₂ : c₂.nreg ALLOC = c.nreg ALLOC := by
     rw [f₂.1 ALLOC (by simp [Bld, Bprim, ALLOC]), hA₁]
-  have rU₂ := rU₁.keep fun r h1 h2 => kp₂ r (by omega) (by omega)
+  have rU₂ := rU₁.keep fun r h1 h2 => kp₂ r by_o by_o
   have pU₂ : PosAt P C c₂ 140263 140264 pU := by
     refine PosAt.keep ⟨pUe, pUp, pUn⟩ ?_ ?_
-    · rw [kp₂ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]
-    · rw [kp₂ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]
+    · rw [kp₂ _ by_n by_n, kp₁ _ by_n by_n]
+    · rw [kp₂ _ by_n by_n, kp₁ _ by_n by_n]
   have pV₂ : PosAt P C c₂ 140265 140266 pV := by
     refine PosAt.keep ⟨pVe, pVp, pVn⟩ ?_ ?_
-    · rw [kp₂ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]
-    · rw [kp₂ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num)]
+    · rw [kp₂ _ by_n by_n, kp₁ _ by_n by_n]
+    · rw [kp₂ _ by_n by_n, kp₁ _ by_n by_n]
   have q62 : c₂.nreg 140262 = p := by
-    rw [kp₂ _ (by norm_num) (by norm_num), kp₁ _ (by norm_num) (by norm_num), h62]
+    rw [kp₂ _ by_n by_n, kp₁ _ by_n by_n, h62]
   -- the three height bits
   have hEqStep : ∀ (c₀ : Config) (a b dst : ℕ) (ya yb : ℝ), WordsBounded W c₀ →
       ShEnv P W H C z σ c₀ → 140311 ≤ dst → dst < 140314 → HRecS P c₀ a ya C.radius →
@@ -505,34 +500,34 @@ theorem edgeH_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
       ∃ c₁ k, Exec P W (hEq a b dst) c₀ c₁ k ∧ k ≤ 20 ∧ BitIs c₁ dst (ya = yb) ∧
         (∀ r, r ≠ dst → c₁.nreg r = c₀.nreg r) ∧ FrameB Bedge c₀ c₁ ∧ ShEnv P W H C z σ c₁ :=
     fun c₀ a b dst ya yb hw₀ E₀ hd1 hd2 hA hB => by
-      obtain ⟨c₁, k, ex, hk, bt, hc⟩ := hEq_exec E₀.hG (by omega) c₀ hw₀ (dst := dst) E₀.k1 hR hA hB
+      obtain ⟨c₁, k, ex, hk, bt, hc⟩ := hEq_exec E₀.hG by_o c₀ hw₀ (dst := dst) E₀.k1 hR hA hB
       have kp : ∀ r, r ≠ dst → c₁.nreg r = c₀.nreg r := fun r hr => by rw [hc]; simp [hr]
       have fr : FrameB Bedge c₀ c₁ := by
         rw [hc]; exact frameB_upd c₀ _ (by simp [Bedge]; omega)
       exact ⟨c₁, k, ex, hk, bt, kp, fr, E₀.frame fr Bedge_env⟩
   obtain ⟨c₃, k₃, e₃, hk₃, b11, kp₃, fe₃, E₃⟩ := hEqStep c₂ 140274 140285 140311 _ _ e₂.wb_right
-    E₂ le_rfl (by norm_num) rU₂.2.1 rV₂.2.1
-  have rU₃ := rU₂.keep fun r h1 h2 => kp₃ r (by omega)
-  have rV₃ := rV₂.keep fun r h1 h2 => kp₃ r (by omega)
+    E₂ le_rfl by_n rU₂.2.1 rV₂.2.1
+  have rU₃ := rU₂.keep fun r h1 h2 => kp₃ r by_o
+  have rV₃ := rV₂.keep fun r h1 h2 => kp₃ r by_o
   obtain ⟨c₄, k₄, e₄, hk₄, b12, kp₄, fe₄, E₄⟩ := hEqStep c₃ 140234 140274 140312 _ _ e₃.wb_right
-    E₃ (by norm_num) (by norm_num) E₃.oy rU₃.2.1
-  have rU₄ := rU₃.keep fun r h1 h2 => kp₄ r (by omega)
-  have rV₄ := rV₃.keep fun r h1 h2 => kp₄ r (by omega)
+    E₃ by_n by_n E₃.oy rU₃.2.1
+  have rU₄ := rU₃.keep fun r h1 h2 => kp₄ r by_o
+  have rV₄ := rV₃.keep fun r h1 h2 => kp₄ r by_o
   obtain ⟨c₅, k₅, e₅, hk₅, b13, kp₅, fe₅, E₅⟩ := hEqStep c₄ 140234 140285 140313 _ _ e₄.wb_right
-    E₄ (by norm_num) (by norm_num) E₄.oy rV₄.2.1
-  have rU₅ := rU₄.keep fun r h1 h2 => kp₅ r (by omega)
-  have rV₅ := rV₄.keep fun r h1 h2 => kp₅ r (by omega)
+    E₄ by_n by_n E₄.oy rV₄.2.1
+  have rU₅ := rU₄.keep fun r h1 h2 => kp₅ r by_o
+  have rV₅ := rV₄.keep fun r h1 h2 => kp₅ r by_o
   have kk : ∀ r, 140262 ≤ r → r < 140270 → c₅.nreg r = c₂.nreg r := fun r h1 h2 => by
-    rw [kp₅ r (by omega), kp₄ r (by omega), kp₃ r (by omega)]
-  have pU₅ := pU₂.keep (kk _ (by norm_num) (by norm_num)) (kk _ (by norm_num) (by norm_num))
-  have pV₅ := pV₂.keep (kk _ (by norm_num) (by norm_num)) (kk _ (by norm_num) (by norm_num))
-  have q62' : c₅.nreg 140262 = p := by rw [kk _ (by norm_num) (by norm_num), q62]
+    rw [kp₅ r by_o, kp₄ r by_o, kp₃ r by_o]
+  have pU₅ := pU₂.keep (kk _ by_n by_n) (kk _ by_n by_n)
+  have pV₅ := pV₂.keep (kk _ by_n by_n) (kk _ by_n by_n)
+  have q62' : c₅.nreg 140262 = p := by rw [kk _ by_n by_n, q62]
   have b11' : BitIs c₅ 140311 (pU.2 = pV.2) :=
-    (b11.of_eq (kp₄ _ (by norm_num))).of_eq (kp₅ _ (by norm_num))
-  have b12' : BitIs c₅ 140312 (z.2 = pU.2) := b12.of_eq (kp₅ _ (by norm_num))
+    (b11.of_eq (kp₄ _ by_n)).of_eq (kp₅ _ by_n)
+  have b12' : BitIs c₅ 140312 (z.2 = pU.2) := b12.of_eq (kp₅ _ by_n)
   have hA₅ : c₅.nreg ALLOC = c.nreg ALLOC := by
-    rw [kp₅ _ (by decide), kp₄ _ (by decide), kp₃ _ (by decide), hA₂]
-  have fe : FrameB Bedge c c₅ := (((fe₁.trans fe₂).trans fe₃).trans fe₄).trans fe₅
+    rw [kp₅ _ by_d, kp₄ _ by_d, kp₃ _ by_d, hA₂]
+  have fe := (((fe₁.trans fe₂).trans fe₃).trans fe₄).trans fe₅
   have w₅ := e₅.wb_right
   have hpre : ∀ {s : Stmt} {c' : Config} {k : ℕ}, Exec P W s c₅ c' k →
       Exec P W (.seq (ptLoad 140263 140264 140270) (.seq (ptLoad 140265 140266 140281)
@@ -544,10 +539,10 @@ theorem edgeH_exec (c : Config) (hw : WordsBounded W c) (E : ShEnv P W H C z σ 
   · have hUV : pU.2 ≠ pV.2 := fun h => by have := b11'.2.2 h; rw [E₅.k1] at t11; omega
     obtain ⟨c', k, ex, hk, ca, f⟩ := neTree_exec c₅ w₅ E₅ rU₅ rV₅ pU₅ pV₅ q62' geo hUV b12' b13
       hz (by rw [hA₅]; omega)
-    exact ⟨c', _, hpre (.ifLtN_true t11 ex), by omega, ca, fe.trans f⟩
+    exact ⟨c', _, hpre (.ifLtN_true t11 ex), by_o, ca, fe.trans f⟩
   · have hUV : pU.2 = pV.2 := b11'.2.1 (by have := b11'.1; rw [E₅.k1] at t11; omega)
     obtain ⟨c', k, ex, hk, ca, f⟩ := eqTree_exec c₅ w₅ E₅ rU₅ rV₅ pU₅ pV₅ hUV b12' hz
-    exact ⟨c', _, hpre (.ifLtN_false t11 ex), by omega, ca, fe.trans f⟩
+    exact ⟨c', _, hpre (.ifLtN_false t11 ex), by_o, ca, fe.trans f⟩
 
 end
 

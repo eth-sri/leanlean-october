@@ -59,12 +59,12 @@ theorem sepMem_apply (m0 : ℕ → ℕ) (bTMP bPOS bDF μ lo j x : ℕ) :
         x = bPOS + m0 (bTMP + (lo + j))) := by
       constructor
       · rintro ⟨i, a, b, c, d⟩
-        rcases Nat.lt_succ_iff_lt_or_eq.mp (show i < lo + j + 1 by omega) with hi | hi
+        rcases Nat.lt_succ_iff_lt_or_eq.mp (by omega) with hi | hi
         · exact Or.inl ⟨i, a, hi, c, d⟩
         · subst hi; exact Or.inr ⟨c, d⟩
       · rintro (⟨i, a, b, c, d⟩ | ⟨c, d⟩)
-        · exact ⟨i, a, by omega, c, d⟩
-        · exact ⟨lo + j, by omega, by omega, c, d⟩
+        · exact ⟨i, a, by_o, c, d⟩
+        · exact ⟨lo + j, by_o, by_o, c, d⟩
     simp only [sepMem]
     by_cases h1 : m0 (bDF + m0 (bTMP + (lo + j))) = 1
     · rw [ite_eq_left h1, Machine.upd_apply]
@@ -114,7 +114,7 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
       c2.output = c.output ∧ lo ≤ i)
     hi 13 (fun i c2 h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun i c2 hih ⟨hw2, hi2, hn2, hm2, hr2, hrr2, hrm2, ho2, hlo2⟩ => by
-      have r : ∀ x, ¬ SepRG x → c2.nreg x = c.nreg x := hr2
+      have r := hr2
       have rT := (r 130650 (by unfold SepRG; omega)).trans hT
       have rP := (r 130652 (by unfold SepRG; omega)).trans hP
       have rD := (r 130653 (by unfold SepRG; omega)).trans hD
@@ -127,10 +127,10 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
         intro x hx
         rw [hm2, sepMem_apply, ite_eq_right]
         rintro ⟨i', a, b, -, rfl⟩
-        have := hit i' a (by omega)
+        have := hit i' a by_o
         omega
-      have mT : c2.nmem (bTMP + i) = v := hread _ (by omega)
-      have mD : c2.nmem (bDF + v) = m0 (bDF + v) := hread _ (by omega)
+      have mT : c2.nmem (bTMP + i) = v := hread _ by_o
+      have mD : c2.nmem (bDF + v) = m0 (bDF + v) := hread _ by_o
       obtain ⟨c3, k3, e3, hk3, hw3, h3v, h3f, h3r, hrr3, hrm3, ho3, hm3⟩ : ∃ c3 k3, Exec P W
           (block [.addN 130677 130650 130676, .loadN 130678 130677, .addN 130677 130653 130678,
             .loadN 130679 130677]) c2 c3 k3 ∧ k3 = 4 ∧ WordsBounded W c3 ∧ c3.nreg 130678 = v ∧
@@ -142,11 +142,11 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
         refine ⟨rfl, ‹_›, by config_simp; simp only [rT, hi2, mT], by
           config_simp; simp only [rT, rD, hi2, mT, mD], fun x h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
         simp only [Machine.upd_apply]; split_ifs <;> first | omega
-      have r3 : ∀ x, x ≠ 130677 → x ≠ 130678 → x ≠ 130679 → c3.nreg x = c2.nreg x := h3r
-      have h3i : c3.nreg 130676 = i := (r3 _ (by omega) (by omega) (by omega)).trans hi2
-      have h31 : c3.nreg 130001 = 1 := (r3 _ (by omega) (by omega) (by omega)).trans r1
-      have h3P : c3.nreg 130652 = bPOS := (r3 _ (by omega) (by omega) (by omega)).trans rP
-      have h3μ : c3.nreg 130675 = μ := (r3 _ (by omega) (by omega) (by omega)).trans rμ
+      have r3 := h3r
+      have h3i : c3.nreg 130676 = i := (r3 _ by_o by_o by_o).trans hi2
+      have h31 : c3.nreg 130001 = 1 := (r3 _ by_o by_o by_o).trans r1
+      have h3P : c3.nreg 130652 = bPOS := (r3 _ by_o by_o by_o).trans rP
+      have h3μ : c3.nreg 130675 = μ := (r3 _ by_o by_o by_o).trans rμ
       -- the conditional release
       have hnext1 : m0 (bDF + v) = 1 → sepMem m0 bTMP bPOS bDF μ lo (i + 1 - lo) =
           upd (sepMem m0 bTMP bPOS bDF μ lo (i - lo)) (bPOS + v) μ := by
@@ -167,15 +167,15 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
           (∀ x, x ≠ 130677 → c4.nreg x = c3.nreg x) ∧ c4.rreg = c3.rreg ∧ c4.rmem = c3.rmem ∧
           c4.output = c3.output := by
         by_cases h1 : c3.nreg 130679 < c3.nreg 130001
-        · refine ⟨c3, _, .ifLtN_true h1 (.skip hw3), by omega, hw3, ?_, fun _ _ => rfl, rfl, rfl,
+        · refine ⟨c3, _, .ifLtN_true h1 (.skip hw3), by_o, hw3, ?_, fun _ _ => rfl, rfl, rfl,
             rfl⟩
           rw [h3f, h31] at h1
-          rw [hnext0 (by omega), hm3, hm2]
+          rw [hnext0 by_o, hm3, hm2]
         · by_cases h2 : c3.nreg 130001 < c3.nreg 130679
-          · refine ⟨c3, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw3)), by omega, hw3, ?_,
+          · refine ⟨c3, _, .ifLtN_false h1 (.ifLtN_true h2 (.skip hw3)), by_o, hw3, ?_,
               fun _ _ => rfl, rfl, rfl, rfl⟩
             rw [h3f, h31] at h2
-            rw [hnext0 (by omega), hm3, hm2]
+            rw [hnext0 by_o, hm3, hm2]
           · have hf1 : m0 (bDF + v) = 1 := by rw [h3f, h31] at h1 h2; omega
             obtain ⟨c5, k5, e5, hk5, hw5, h5m, h5r, hrr5, hrm5, ho5⟩ : ∃ c5 k5, Exec P W
                 (block [.addN 130677 130652 130678, .storeN 130677 130675]) c3 c5 k5 ∧ k5 = 2 ∧
@@ -187,27 +187,27 @@ theorem sepStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
               · refine ⟨rfl, ‹_›, by config_simp; rw [h3P, h3v, h3μ], fun x hx => ?_, rfl, rfl,
                   rfl⟩
                 simp only [Machine.upd_apply, hx, ite_false]
-            refine ⟨c5, _, .ifLtN_false h1 (.ifLtN_false h2 e5), by omega, hw5, ?_, h5r, hrr5,
+            refine ⟨c5, _, .ifLtN_false h1 (.ifLtN_false h2 e5), by_o, hw5, ?_, h5r, hrr5,
               hrm5, ho5⟩
             rw [h5m, hnext1 hf1, hm3, hm2]
-      have h4i : c4.nreg 130676 = i := (h4r _ (by omega)).trans h3i
-      have h41 : c4.nreg 130001 = 1 := (h4r _ (by omega)).trans h31
+      have h4i : c4.nreg 130676 = i := (h4r _ by_o).trans h3i
+      have h41 : c4.nreg 130001 = 1 := (h4r _ by_o).trans h31
       have e6 := Exec.addN (P := P) hw4 130676 130676 130001 (by rw [h4i, h41]; omega)
-      refine ⟨_, k3 + (k4 + 1), .seq e3 (.seq e4 e6), by omega, e6.wb_right, by simp [h4i, h41],
+      refine ⟨_, k3 + (k4 + 1), .seq e3 (.seq e4 e6), by_o, e6.wb_right, by simp [h4i, h41],
         ?_, h4m, fun x hx => ?_, hrr4.trans (hrr3.trans hrr2), hrm4.trans (hrm3.trans hrm2),
-        ho4.trans (ho3.trans ho2), by omega⟩
-      · simp only [Machine.upd_apply]; rw [ite_eq_right (by omega), h4r _ (by omega),
-          r3 _ (by omega) (by omega) (by omega)]; exact hn2
+        ho4.trans (ho3.trans ho2), by_o⟩
+      · simp only [Machine.upd_apply]; rwa [ite_eq_right by_o, h4r _ by_o,
+          r3 _ by_o by_o by_o]
       · simp only [Machine.upd_apply]
         unfold SepRG at hx
-        rw [ite_eq_right (by omega), h4r _ (by omega), r3 _ (by omega) (by omega) (by omega)]
+        rw [ite_eq_right by_o, h4r _ by_o, r3 _ by_o by_o by_o]
         exact hr2 x (by unfold SepRG; omega))
     (j₀ := lo) ⟨e0.wb_right, by simp [hlo], by
-      simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact hhi,
+      simp only [Machine.upd_apply]; rwa [ite_eq_right by_o],
       by simp [m0, sepMem], fun r hr => by
         simp only [Machine.upd_apply]; rw [ite_eq_right (by unfold SepRG at hr; omega)],
       rfl, rfl, rfl, le_rfl⟩ hlh
-  exact ⟨c', 1 + k, .seq e0 e, by omega, hw', hm', hr', hrr', hrm', ho'⟩
+  exact ⟨c', 1 + k, .seq e0 e, by_o, hw', hm', hr', hrr', hrm', ho'⟩
 
 end proofs
 
@@ -241,7 +241,7 @@ theorem pushOne_exec {c : Config} (hw : WordsBounded W c) (t : ℕ) (ht : t < 3)
     refine ⟨_, e0, e0.wb_right, fun r hr => ?_, by simp [ha, hb], rfl, rfl, rfl, rfl⟩
     simp only [Machine.upd_apply, hr, ite_false]
   by_cases hbig : c1.nreg 130674 < c1.nreg 130702
-  · rw [r1 _ (by omega), hs, h1d] at hbig
+  · rw [r1 _ by_o, hs, h1d] at hbig
     obtain ⟨c2, k2, e2, hk2, hw2, h2m, h2t, h2r, hrr2, hrm2, ho2⟩ : ∃ c2 k2, Exec P W
         (block [.addN 130703 130700 130701, .storeN 130703 (130670 + t),
           .addN 130703 130703 130001, .storeN 130703 (130671 + t), .addN 130701 130701 130001,
@@ -249,29 +249,29 @@ theorem pushOne_exec {c : Config} (hw : WordsBounded W c) (t : ℕ) (ht : t < 3)
         c2.nmem = upd (upd c.nmem (bS + tp) a) (bS + tp + 1) b ∧ c2.nreg 130701 = tp + 2 ∧
         (∀ r, r ≠ 130701 → r ≠ 130702 → r ≠ 130703 → c2.nreg r = c.nreg r) ∧
         c2.rreg = c1.rreg ∧ c2.rmem = c1.rmem ∧ c2.output = c1.output := by
-      have q1 := (r1 130700 (by omega)).trans hS
-      have q2 := (r1 130701 (by omega)).trans htp
-      have q3 := (r1 130001 (by omega)).trans hone
-      have q4 := (r1 (130670 + t) (by omega)).trans ha
-      have q5 := (r1 (130671 + t) (by omega)).trans hb
+      have q1 := (r1 130700 by_o).trans hS
+      have q2 := (r1 130701 by_o).trans htp
+      have q3 := (r1 130001 by_o).trans hone
+      have q4 := (r1 (130670 + t) by_o).trans ha
+      have q5 := (r1 (130671 + t) by_o).trans hb
       exec_block
       all_goals first | omega | (config_simp; simp only [q1, q2, q3]; omega) |
-        (config_simp; rw [Machine.upd_other _ _ _ (by omega)]; simp only [q1, q2, q3]; omega) |
+        (config_simp; rw [Machine.upd_other _ _ _ by_o]; simp only [q1, q2, q3]; omega) |
         skip
       refine ⟨rfl, ‹_›, ?_, ?_, fun r h1 h2 h3 => ?_, rfl, rfl, rfl⟩
       · config_simp
-        rw [Machine.upd_other _ _ _ (show 130670 + t ≠ 130703 by omega),
-          Machine.upd_other _ _ _ (show 130671 + t ≠ 130703 by omega)]
+        rw [Machine.upd_other _ _ _ (by omega),
+          Machine.upd_other _ _ _ (by omega)]
         simp only [q1, q2, q3, q4, q5, hm1]
       · config_simp; simp only [q2, q3]
       · simp only [Machine.upd_apply, h1, h3, ite_false]; exact r1 r h2
-    refine ⟨c2, 1 + (k2 + 1), .seq e0 (.ifLtN_true (by rw [r1 _ (by omega), hs, h1d]; exact hbig)
-      e2), by omega, hw2, by rw [ite_eq_left hbig]; exact h2m, by rw [ite_eq_left hbig]; exact h2t, h2r,
+    refine ⟨c2, 1 + (k2 + 1), .seq e0 (.ifLtN_true (by rwa [r1 _ by_o, hs, h1d])
+      e2), by_o, hw2, by rwa [ite_eq_left hbig], by rwa [ite_eq_left hbig], h2r,
       by rw [hrr2, hrr1], by rw [hrm2, hrm1], by rw [ho2, ho1]⟩
-  · rw [r1 _ (by omega), hs, h1d] at hbig
-    refine ⟨c1, 1 + (0 + 2), .seq e0 (.ifLtN_false (by rw [r1 _ (by omega), hs, h1d]; exact hbig)
-      (.skip hw1)), by omega, hw1, by rw [ite_eq_right hbig, hm1],
-      by rw [ite_eq_right hbig, r1 _ (by omega), htp], fun r _ h2 _ => r1 r h2, hrr1, hrm1, ho1⟩
+  · rw [r1 _ by_o, hs, h1d] at hbig
+    refine ⟨c1, 1 + (0 + 2), .seq e0 (.ifLtN_false (by rwa [r1 _ by_o, hs, h1d])
+      (.skip hw1)), by_o, hw1, by rw [ite_eq_right hbig, hm1],
+      by rw [ite_eq_right hbig, r1 _ by_o, htp], fun r _ h2 _ => r1 r h2, hrr1, hrm1, ho1⟩
 
 end push
 

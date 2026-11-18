@@ -103,7 +103,7 @@ theorem sideInArc_split {a b g x : ℝ} (hx : sideInArc a b x) (hg : sideInArc a
         · exact Or.inr (Or.inl h)
         · right; right; simp only [hgb, ↓reduceIte]; exact Or.inl h
       · right; right; simp only [hgb, ↓reduceIte]; exact Or.inr hx
-    · have hgb : g < b := hg.resolve_left hag
+    · have hgb := hg.resolve_left hag
       rcases hx with hx | hx
       · left; simp only [hag, ↓reduceIte]; exact Or.inl hx
       · rcases lt_trichotomy x g with h | h | h
@@ -123,8 +123,8 @@ theorem keyEdges_natCast (k : ℕ) : keyEdges (k : ℝ) = ∅ := by
   ext p
   simp only [keyEdges, Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false, not_exists, not_and]
   intro t ht0 ht1 hp
-  have h1 : (p : ℝ) < k := by linarith
-  have h2 : (k : ℝ) < p + 1 := by linarith
+  have h1 : (p : ℝ) < k := by_l
+  have h2 : (k : ℝ) < p + 1 := by_l
   have h1' : p < k := by exact_mod_cast h1
   have h2' : k < p + 1 := by exact_mod_cast h2
   omega

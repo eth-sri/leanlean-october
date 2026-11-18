@@ -26,8 +26,8 @@ theorem faced_after {M : Model} (hGM : GoodModel M) {Q : Polygon} {F : Set (Set 
   have hM := walkAx_of_goodModel hGM
   obtain ⟨t', ⟨ht0, ht1⟩, hfree⟩ := hM.exists_after hF.2.1 hF.1 hp le_rfl one_pos
   simp only [add_zero] at hfree
-  set x : ℝ := p + t' / 2 with hx
-  have hxc : ¬ M.IsCut F x := fun h => hfree x h ⟨by linarith, by linarith⟩
+  set x := p + t' / 2 with hx
+  have hxc : ¬ M.IsCut F x := fun h => hfree x h ⟨by_l, by_l⟩
   have hx0 : 0 < x := by have : (0 : ℝ) ≤ p := Nat.cast_nonneg p; linarith
   obtain ⟨U, hU, l, r, harc, hin⟩ := WalkEmbed.exists_arc_around hGM hF hx0 hxc
   refine ⟨U, hU, ?_⟩
@@ -64,17 +64,17 @@ theorem faced_after {M : Model} (hGM : GoodModel M) {Q : Polygon} {F : Set (Set 
 theorem unwrap_off {n s k : ℕ} {t : ℝ} (hs : s < n) (ht0 : 0 ≤ t) (hkn : (k : ℝ) + t < n) :
     unwrapK n s ((((s + k) % n : ℕ) : ℝ) + t) = s + k + t := by
   have hk : k < n := by
-    have : (k : ℝ) < n := by linarith
+    have : (k : ℝ) < n := by_l
     exact_mod_cast this
   unfold unwrapK
   by_cases h : s + k < n
   · rw [Nat.mod_eq_of_lt h, ite_eq_left (by push_cast; linarith)]; push_cast; ring
   · have e : (s + k) % n = s + k - n := by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
     rw [e, ite_eq_right (by
-      have : ((s + k - n : ℕ) : ℝ) = (s : ℝ) + k - n := by rw [Nat.cast_sub (by omega)]; push_cast; ring
+      have : ((s + k - n : ℕ) : ℝ) = (s : ℝ) + k - n := by rw [Nat.cast_sub by_o]; push_cast; ring
       rw [this]; linarith)]
-    rw [Nat.cast_sub (by omega)]; push_cast; ring
+    rw [Nat.cast_sub by_o]; push_cast; ring
 
 /-- **A key strictly inside a piece's walk.** -/
 theorem off_sideInArc {n s m k : ℕ} {t : ℝ} (hs : s < n) (hmn : m < n) (ht0 : 0 ≤ t) (ht1 : t < 1)
@@ -83,19 +83,19 @@ theorem off_sideInArc {n s m k : ℕ} {t : ℝ} (hs : s < n) (hmn : m < n) (ht0 
   have hnR : (m : ℝ) < n := by exact_mod_cast hmn
   have hsR : (s : ℝ) < n := by exact_mod_cast hs
   have hs0 : 0 ≤ (s : ℝ) ∧ (s : ℝ) < n := ⟨Nat.cast_nonneg s, hsR⟩
-  have he := unwrap_off (k := m) (t := 0) hs le_rfl (by linarith)
-  have hy := unwrap_off (k := k) (t := t) hs ht0 (by linarith)
+  have he := unwrap_off (k := m) (t := 0) hs le_rfl by_l
+  have hy := unwrap_off (k := k) (t := t) hs ht0 by_l
   simp only [add_zero] at he
   have hb : 0 ≤ (((s + m) % n : ℕ) : ℝ) ∧ (((s + m) % n : ℕ) : ℝ) < n :=
-    ⟨Nat.cast_nonneg _, by exact_mod_cast Nat.mod_lt _ (by omega)⟩
+    ⟨Nat.cast_nonneg _, by exact_mod_cast Nat.mod_lt _ by_o⟩
   have hyb : 0 ≤ (((s + k) % n : ℕ) : ℝ) + t ∧ (((s + k) % n : ℕ) : ℝ) + t < n := by
     have hkn : k < n := by
-      have : (k : ℝ) < n := by linarith
+      have : (k : ℝ) < n := by_l
       exact_mod_cast this
-    have h1 : ((s + k) % n : ℕ) + 1 ≤ n := Nat.mod_lt _ (by omega)
+    have h1 : ((s + k) % n : ℕ) + 1 ≤ n := Nat.mod_lt _ by_o
     have h1' : (((s + k) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast h1
-    exact ⟨by positivity, by linarith⟩
-  have hm0 : (0 : ℝ) < m := by linarith
+    exact ⟨by_p, by_l⟩
+  have hm0 : (0 : ℝ) < m := by_l
   exact (cyc_unwrap hs0 hs0 hb hyb (by rw [unwrapK_self, he]; linarith)).2
     ⟨by rw [unwrapK_self, hy]; linarith, by rw [hy, he]; linarith⟩
 
@@ -108,14 +108,14 @@ theorem closed_offset {n s m p : ℕ} (hs : s < n) (hmn : m < n) (hm : 0 < m) (h
   have he := unwrap_off (k := m) (t := 0) hs le_rfl (by simp only [add_zero]; exact_mod_cast hmn)
   simp only [add_zero] at he
   have hb : 0 ≤ (((s + m) % n : ℕ) : ℝ) ∧ (((s + m) % n : ℕ) : ℝ) < n :=
-    ⟨Nat.cast_nonneg _, by exact_mod_cast Nat.mod_lt _ (by omega)⟩
+    ⟨Nat.cast_nonneg _, by exact_mod_cast Nat.mod_lt _ by_o⟩
   have hpb : 0 ≤ (p : ℝ) ∧ (p : ℝ) < n := ⟨Nat.cast_nonneg p, by exact_mod_cast hp⟩
   have hne : (s : ℝ) ≠ (((s + m) % n : ℕ) : ℝ) := by
     intro h'
     have h'' : s = (s + m) % n := by exact_mod_cast h'
     by_cases hw : s + m < n
     · rw [Nat.mod_eq_of_lt hw] at h''; omega
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at h''; omega
+    · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o] at h''; omega
   obtain ⟨h1, h2⟩ := (closedArc_unwrap hs0 hb hpb hne).1 h
   rw [he] at h2
   -- the unwrapped vertex is `p` or `p + n`
@@ -127,7 +127,7 @@ theorem closed_offset {n s m p : ℕ} (hs : s < n) (hmn : m < n) (hm : 0 < m) (h
   rw [← hPn] at h1 h2
   have h1' : s ≤ Pn := by exact_mod_cast h1
   have h2' : Pn ≤ s + m := by exact_mod_cast (by push_cast; linarith : (Pn : ℝ) ≤ ((s + m : ℕ) : ℝ))
-  exact ⟨Pn - s, by omega, by rw [show s + (Pn - s) = Pn by omega, hPm]⟩
+  exact ⟨Pn - s, by_o, by rw [show s + (Pn - s) = Pn by omega, hPm]⟩
 
 
 /-! ## The descent's facts for a stretch of a kind-1 piece -/
@@ -162,22 +162,22 @@ theorem descGood_mk (hE : FGood E c₀) {reg : ℕ → Set Point}
   obtain ⟨-, -, -, regα, hRC, hCS, hArcs, hRg, -⟩ := hcan.1
   have hGα : GoodModel (chainModel Cα) :=
     Or.inl ⟨Cα, by rw [hK.hQ]; exact qof_simple hE, rfl⟩
-  have hn7 : (chainModel Cα).W.n = 2 * Cα.m + 7 := chainModel_n Cα
+  have hn7 := chainModel_n Cα
   obtain ⟨U, hU, hfU⟩ := faced_after hGα hcan.1.1 (p := g' + dX) (by rw [hn7]; exact hg')
   obtain ⟨Tα, hTα, hTU⟩ := hRC.2.2 U hU
   have hsn : ∀ d', (g + d') % E.M.W.n = (s + (d0 + d')) % E.M.W.n := fun d' => by
     rw [hg, Nat.mod_add_mod, Nat.add_assoc]
   refine ⟨regα, Tα, ⟨hregs, hch, hAi, hAj, hij, fun d' hd' t ht0 ht1 hpos => ?_,
-    fun d' hd' => ?_, hsetD, hinB, hX0, hXL, ⟨σb, hσb, T, by rw [hdσ]; exact hgc⟩,
+    fun d' hd' => ?_, hsetD, hinB, hX0, hXL, ⟨σb, hσb, T, by rwa [hdσ]⟩,
     ⟨_, po, tq, hgc.2.2.2.2.2.2.2.1, hXA, hOA, hne, hXi, hXj, hcount⟩,
     ⟨hRC, hCS, hArcs, hRg⟩, ⟨4, Dec.recTree_of hGα hcan.1 hcan.2.1⟩, hTα,
-    by rw [hTU]; exact hfU⟩⟩
+    by rwa [hTU]⟩⟩
   · rw [hsn]
     exact hin _ t ht0 ht1 (by push_cast; linarith [(Nat.cast_nonneg d0 : (0 : ℝ) ≤ d0)])
-      (by have : ((d0 + d' : ℕ) : ℝ) + 1 ≤ Cα.m := by exact_mod_cast (by omega)
+      (by have : ((d0 + d' : ℕ) : ℝ) + 1 ≤ Cα.m := by exact_mod_cast by_o
           push_cast at this ⊢; linarith)
   · rw [hsn]
-    exact hE.ehc _ (Nat.mod_lt _ (by have := hK.hs; omega)) (hcnt _ (by omega))
+    exact hE.ehc _ (Nat.mod_lt _ (by have := hK.hs; omega)) (hcnt _ by_o)
 
 end
 

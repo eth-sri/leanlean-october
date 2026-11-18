@@ -42,8 +42,8 @@ theorem sortedDarts_of {M : ℕ} {G K s : ℕ → ℕ}
   rcases h with h | ⟨h1, h2⟩
   · exact Or.inl h
   · rcases eq_or_lt_of_le h2 with e | e
-    · have := hinj _ _ (hlt t (by omega)) (hlt t' ht') h1 e
-      exact absurd (inj_of_surj hlt hs (by omega) ht' this) (by omega)
+    · have := hinj _ _ (hlt t by_o) (hlt t' ht') h1 e
+      exact absurd (inj_of_surj hlt hs by_o ht' this) by_o
     · exact Or.inr ⟨h1, e⟩
 
 variable {B : BookData}

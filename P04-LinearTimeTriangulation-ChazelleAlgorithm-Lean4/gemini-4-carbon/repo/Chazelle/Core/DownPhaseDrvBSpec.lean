@@ -76,7 +76,7 @@ theorem newLB_pos (li : Bool) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} (E : 
   congr 1
   funext r
   unfold ptsB
-  rw [ite_eq_right (by omega)]
+  rw [ite_eq_right by_o]
 
 /-- **`newLB` is `newL0`** for `K = 0`. -/
 theorem newLB_zero (li : Bool) (Q : Polygon) {L : List (ℕ × ℕ × ℕ)} (E : List ℕ)

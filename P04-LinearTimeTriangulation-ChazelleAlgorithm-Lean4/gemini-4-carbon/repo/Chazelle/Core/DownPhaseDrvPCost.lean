@@ -26,17 +26,17 @@ theorem lemma41Nat_mono {g g' : ℕ} (h : g ≤ g') : lemma41Nat g ≤ lemma41Na
   have h2 : ((Nat.clog 2 g : ℕ) : ℝ) ≤ (Nat.clog 2 g' : ℕ) := by
     exact_mod_cast Nat.clog_mono_right 2 h
   have h3 : (2 : ℝ) ^ ((74 : ℝ) / 75 * g) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * g') :=
-    Real.rpow_le_rpow_of_exponent_le (by norm_num) (by nlinarith)
+    Real.rpow_le_rpow_of_exponent_le by_n by_nl
   have h0 : (0 : ℝ) ≤ g := Nat.cast_nonneg g
   have hc : (0 : ℝ) ≤ (Nat.clog 2 g : ℕ) := Nat.cast_nonneg _
-  have hp : (0 : ℝ) < (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := Real.rpow_pos_of_pos (by norm_num) _
-  have hg2 : (g : ℝ) ^ 2 ≤ (g' : ℝ) ^ 2 := by nlinarith
+  have hp : (0 : ℝ) < (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := Real.rpow_pos_of_pos by_n _
+  have hg2 : (g : ℝ) ^ 2 ≤ (g' : ℝ) ^ 2 := by_nl
   calc (g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1) * (2 : ℝ) ^ ((74 : ℝ) / 75 * g)
       ≤ (g' : ℝ) ^ 2 * ((Nat.clog 2 g' : ℝ) + 1) * (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := by
         apply mul_le_mul_of_nonneg_right _ hp.le
-        exact mul_le_mul hg2 (by linarith) (by linarith) (by positivity)
+        exact mul_le_mul hg2 by_l by_l by_p
     _ ≤ (g' : ℝ) ^ 2 * ((Nat.clog 2 g' : ℝ) + 1) * (2 : ℝ) ^ ((74 : ℝ) / 75 * g') :=
-        mul_le_mul_of_nonneg_left h3 (by positivity)
+        mul_le_mul_of_nonneg_left h3 by_p
 
 /-- The real bound below `lemma41Nat`. -/
 theorem real_le_lemma41Nat (g : ℕ) :
@@ -49,13 +49,13 @@ theorem le_lemma41Nat (g : ℕ) : g ≤ lemma41Nat g := by
   have h := real_le_lemma41Nat g
   have h1 : (1 : ℝ) ≤ (g : ℝ) := by exact_mod_cast hg
   have h2 : (1 : ℝ) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * g) :=
-    Real.one_le_rpow (by norm_num) (by positivity)
+    Real.one_le_rpow by_n by_p
   have h3 : (0 : ℝ) ≤ (Nat.clog 2 g : ℕ) := Nat.cast_nonneg _
   have : (g : ℝ) ≤ (lemma41Nat g : ℝ) := by
     calc (g : ℝ) ≤ (g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1) * 1 := by nlinarith
       _ ≤ _ := by
         apply le_trans _ h
-        exact mul_le_mul_of_nonneg_left h2 (by positivity)
+        exact mul_le_mul_of_nonneg_left h2 by_p
   exact_mod_cast this
 
 theorem kcost_mono {K K' : ℕ} (h : K ≤ K') :
@@ -66,7 +66,7 @@ theorem kcost_mono {K K' : ℕ} (h : K ≤ K') :
 theorem kcost_le {g K : ℕ} (hg : 1 ≤ g) (hK : K * 2 ^ Cost.ceilBeta g ≤ 2520 * 2 ^ g) :
     K * (Nat.clog 2 K + 1) ≤ 35280 * lemma41Nat g := by
   set cb := Cost.ceilBeta g with hcb
-  have hcbg : cb ≤ g := Cost.ceilBeta_le g
+  have hcbg := Cost.ceilBeta_le g
   set e := g - cb with he
   have hpow : 2 ^ g = 2 ^ e * 2 ^ cb := by rw [← pow_add]; congr 1; omega
   have hKe : K ≤ 2520 * 2 ^ e := by
@@ -75,10 +75,10 @@ theorem kcost_le {g K : ℕ} (hg : 1 ≤ g) (hK : K * 2 ^ Cost.ceilBeta g ≤ 25
   have hlog : Nat.clog 2 K ≤ 12 + e := by
     apply Nat.clog_le_of_le_pow
     calc K ≤ 2520 * 2 ^ e := hKe
-      _ ≤ 2 ^ 12 * 2 ^ e := Nat.mul_le_mul_right _ (by norm_num)
+      _ ≤ 2 ^ 12 * 2 ^ e := Nat.mul_le_mul_right _ by_n
       _ = 2 ^ (12 + e) := by rw [pow_add]
   have h1 : K * (Nat.clog 2 K + 1) ≤ 2520 * 2 ^ e * (13 + e) :=
-    Nat.mul_le_mul hKe (by omega)
+    Nat.mul_le_mul hKe by_o
   -- the real comparison
   have hcbr : (g : ℝ) / 5 ≤ (cb : ℝ) := by
     have := Nat.le_ceil (Cost.beta * (g : ℝ))
@@ -90,7 +90,7 @@ theorem kcost_le {g K : ℕ} (hg : 1 ≤ g) (hK : K * 2 ^ Cost.ceilBeta g ≤ 25
     linarith
   have h2e : ((2 ^ e : ℕ) : ℝ) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := by
     rw [Nat.cast_pow, Nat.cast_ofNat, ← Real.rpow_natCast]
-    exact Real.rpow_le_rpow_of_exponent_le (by norm_num) her
+    exact Real.rpow_le_rpow_of_exponent_le by_n her
   have hg1 : (1 : ℝ) ≤ g := by exact_mod_cast hg
   have hge : (e : ℝ) ≤ g := by have := her; nlinarith
   have h13 : ((13 + e : ℕ) : ℝ) ≤ 14 * (g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1) := by
@@ -102,15 +102,15 @@ theorem kcost_le {g K : ℕ} (hg : 1 ≤ g) (hK : K * 2 ^ Cost.ceilBeta g ≤ 25
   have key : ((2520 * 2 ^ e * (13 + e) : ℕ) : ℝ) ≤ ((35280 * lemma41Nat g : ℕ) : ℝ) := by
     push_cast
     have hc : (0 : ℝ) ≤ (Nat.clog 2 g : ℕ) := Nat.cast_nonneg _
-    have hpos : (0 : ℝ) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := by positivity
+    have hpos : (0 : ℝ) ≤ (2 : ℝ) ^ ((74 : ℝ) / 75 * g) := by_p
     calc (2520 : ℝ) * 2 ^ e * (13 + e)
         = 2520 * ((2 ^ e : ℕ) : ℝ) * ((13 + e : ℕ) : ℝ) := by push_cast; ring
       _ ≤ 2520 * (2 : ℝ) ^ ((74 : ℝ) / 75 * g) *
           (14 * (g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1)) := by
-        apply mul_le_mul (by linarith) h13 (by positivity) (by positivity)
+        apply mul_le_mul by_l h13 by_p by_p
       _ = 35280 * ((g : ℝ) ^ 2 * ((Nat.clog 2 g : ℝ) + 1) *
-          (2 : ℝ) ^ ((74 : ℝ) / 75 * g)) := by ring
-      _ ≤ 35280 * (lemma41Nat g : ℝ) := by linarith
+          (2 : ℝ) ^ ((74 : ℝ) / 75 * g)) := by_r
+      _ ≤ 35280 * (lemma41Nat g : ℝ) := by_l
   have := (Nat.cast_le (α := ℝ)).1 key
   omega
 

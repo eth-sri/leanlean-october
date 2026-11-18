@@ -31,13 +31,13 @@ open Topology
 
 /-- The vertices lie in the triangle. -/
 theorem vertex_mem_triangle_left (a b c : Point) : a ∈ convexHull ℝ ({a, b, c} : Set Point) :=
-  subset_convexHull ℝ _ (by simp)
+  subset_convexHull ℝ _ by_s
 
 theorem vertex_mem_triangle_mid (a b c : Point) : b ∈ convexHull ℝ ({a, b, c} : Set Point) :=
-  subset_convexHull ℝ _ (by simp)
+  subset_convexHull ℝ _ by_s
 
 theorem vertex_mem_triangle_right (a b c : Point) : c ∈ convexHull ℝ ({a, b, c} : Set Point) :=
-  subset_convexHull ℝ _ (by simp)
+  subset_convexHull ℝ _ by_s
 
 /-- A point of `convexHull ℝ {a, b, c}` is a convex combination of `a`, `b`, `c`
 (no nondegeneracy needed). -/
@@ -55,13 +55,13 @@ theorem mem_convexHull_triple {a b c x : Point} :
     · intro y hy
       simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hy
       rcases hy with rfl | rfl | rfl
-      · exact ⟨1, 0, 0, zero_le_one, le_rfl, le_rfl, by norm_num, by simp⟩
-      · exact ⟨0, 1, 0, le_rfl, zero_le_one, le_rfl, by norm_num, by simp⟩
-      · exact ⟨0, 0, 1, le_rfl, le_rfl, zero_le_one, by norm_num, by simp⟩
+      · exact ⟨1, 0, 0, zero_le_one, le_rfl, le_rfl, by_n, by_s⟩
+      · exact ⟨0, 1, 0, le_rfl, zero_le_one, le_rfl, by_n, by_s⟩
+      · exact ⟨0, 0, 1, le_rfl, le_rfl, zero_le_one, by_n, by_s⟩
     · rintro y ⟨u₁, u₂, u₃, hu₁, hu₂, hu₃, hu, rfl⟩ z ⟨v₁, v₂, v₃, hv₁, hv₂, hv₃, hv, rfl⟩
         s t hs ht hst
-      refine ⟨s * u₁ + t * v₁, s * u₂ + t * v₂, s * u₃ + t * v₃, by positivity, by positivity,
-        by positivity, by linear_combination s * hu + t * hv + hst, ?_⟩
+      refine ⟨s * u₁ + t * v₁, s * u₂ + t * v₂, s * u₃ + t * v₃, by_p, by_p,
+        by_p, by linear_combination s * hu + t * hv + hst, ?_⟩
       ext <;> simp only [add_fst, add_snd, smul_fst, smul_snd] <;> ring
   · rintro ⟨w₁, w₂, w₃, hw₁, hw₂, hw₃, hw, rfl⟩
     have h := (convex_convexHull ℝ ({a, b, c} : Set Point)).sum_mem (t := Finset.univ)
@@ -228,7 +228,7 @@ theorem not_mem_interior_of_affine_zero {T : Set Point} {v x : Point} {f : Point
   obtain ⟨s, hs, hs1⟩ := (h1.and self_mem_nhdsWithin).exists
   have := hT _ hs
   rw [hf, hv, hx] at this
-  have hs1' : (1 : ℝ) < s := hs1
+  have hs1' := hs1
   linarith
 
 /-- The interior of a nondegenerate triangle: all barycentric coordinates positive. -/
@@ -271,7 +271,7 @@ noncomputable def centroid (a b c : Point) : Point :=
 theorem centroid_mem_interior {a b c : Point} (h : det a b c ≠ 0) :
     centroid a b c ∈ interior (convexHull ℝ ({a, b, c} : Set Point)) := by
   rw [mem_interior_triangle_iff h]
-  have hw : (1 / 3 : ℝ) + 1 / 3 + 1 / 3 = 1 := by norm_num
+  have hw : (1 / 3 : ℝ) + 1 / 3 + 1 / 3 = 1 := by_n
   unfold centroid
   rw [bary₁_combination h hw, bary₂_combination h hw, bary₃_combination h hw]
   norm_num
@@ -294,17 +294,17 @@ theorem closure_interior_triangle {a b c : Point} (h : det a b c ≠ 0) :
 /-- The edge `a b` lies in the triangle. -/
 theorem segment_subset_triangle_left (a b c : Point) :
     Chazelle.segment a b ⊆ convexHull ℝ ({a, b, c} : Set Point) :=
-  segment_subset_convexHull (by simp) (by simp)
+  segment_subset_convexHull by_s by_s
 
 /-- The edge `b c` lies in the triangle. -/
 theorem segment_subset_triangle_mid (a b c : Point) :
     Chazelle.segment b c ⊆ convexHull ℝ ({a, b, c} : Set Point) :=
-  segment_subset_convexHull (by simp) (by simp)
+  segment_subset_convexHull by_s by_s
 
 /-- The edge `a c` lies in the triangle. -/
 theorem segment_subset_triangle_right (a b c : Point) :
     Chazelle.segment a c ⊆ convexHull ℝ ({a, b, c} : Set Point) :=
-  segment_subset_convexHull (by simp) (by simp)
+  segment_subset_convexHull by_s by_s
 
 /-- On the edge `a b`, the third barycentric coordinate vanishes (no nondegeneracy needed). -/
 theorem bary₃_eq_zero_of_mem_segment {a b c x : Point} (hx : x ∈ Chazelle.segment a b) :

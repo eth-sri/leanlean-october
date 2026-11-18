@@ -67,7 +67,7 @@ theorem chord_eq_of_sub {D : Set Point} {y₁ a₁ b₁ y₂ a₂ b₂ y a b : �
     hseg y₁ a₁ b₁ = hseg y₂ a₂ b₂ := by
   obtain ⟨ey₁, ha₁, hb₁⟩ := hseg_sub hab.le s₁
   obtain ⟨ey₂, ha₂, hb₂⟩ := hseg_sub hab.le s₂
-  have hm : (((a + b) / 2, y) : Point) ∈ hseg y a b := ⟨rfl, by linarith, by linarith⟩
+  have hm : (((a + b) / 2, y) : Point) ∈ hseg y a b := ⟨rfl, by_l, by_l⟩
   rcases Chazelle.Chain.hchordIn_inter h₁ h₂ (s₁ hm) (s₂ hm) with ⟨e1, e2, e3⟩ | ⟨hp, -⟩
   · rw [e1, e2, e3]
   · exfalso
@@ -97,8 +97,8 @@ theorem triples_props {Q : Polygon} (hN : IsNF (chainModel C) Q N) {x : ℕ × �
   have hmem : N.chords[i].toSet (chainModel C) Q ∈ N.F (chainModel C) Q :=
     ⟨_, List.getElem_mem hi, rfl⟩
   refine ⟨?_, hFam.2.1 hmem, ?_, hmem⟩
-  · have := hh i hi; rw [hci] at this; exact this
-  · have := hatt i hi; rw [hci] at this; exact this
+  · have := hh i hi; rwa [hci] at this
+  · have := hatt i hi; rwa [hci] at this
 
 /-- The chain chords of the records are pairwise distinct. -/
 theorem nodup_triples_toSet {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
@@ -116,7 +116,7 @@ theorem nodup_triples_toSet {Q : Polygon} (hN : IsNF (chainModel C) Q N) :
     unfold NF.chord
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
   have := hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-    (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij)
+    (by unfold NF.nChords; simpa using j.2) (by rwa [e1, e2])
   exact Fin.ext this
 
 /-- **The number of chords** of a valid normal form is its number of records. -/
@@ -141,7 +141,7 @@ theorem ncard_F {M : Model} {Q : Polygon} {N : NF}
       unfold NF.chord
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem, Option.getD_some]
     exact Fin.ext (hdist i.1 j.1 (by unfold NF.nChords; simpa using i.2)
-      (by unfold NF.nChords; simpa using j.2) (by rw [e1, e2]; exact hij))
+      (by unfold NF.nChords; simpa using j.2) (by rwa [e1, e2]))
   rw [hF, show {c | c ∈ N.chords.map fun r => r.toSet M Q} =
       ((N.chords.map fun r => r.toSet M Q).toFinset : Set (Set Point)) by
     ext c; simp, Set.ncard_coe_finset, List.toFinset_card_of_nodup hnd, List.length_map]
@@ -159,7 +159,7 @@ theorem famOf_transL (hN : IsNF (chainModel C) Q N) :
       Trans.pieces Q (N.F (chainModel C) Q) := by
   have hmn := T.hm
   have hm1 := C.one_le
-  have hh' : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 (by omega) (by omega) (by omega)
+  have hh' : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 by_o by_o by_o
   ext d
   constructor
   · rintro ⟨x', hx', rfl⟩
@@ -193,7 +193,7 @@ theorem chordTriplesOK_transL (hN : IsNF (chainModel C) Q N)
   refine ⟨?_, ?_, ?_, ?_⟩
   · have := famOf_transL hQ T hD hli hN
     unfold famOf at this
-    rw [this]; exact hFam
+    rwa [this]
   · unfold transL
     rw [List.map_map]
     refine List.Nodup.map_on (fun x hx x' hx' hxx => ?_)
@@ -250,7 +250,7 @@ theorem trans_math (hG : GoodEnv P) (hC : TopChain P C)
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
   have hn : (Qof P).n = P.n := shear_n _ _
   have T : Trans.Top (Qof P) C := ⟨hC.1, hC.2.1, by rw [hn]; exact hC.2.2⟩
-  have hD : Trans.DistinctH (Qof P) := (goodShear_epsOf hG.2).2.1
+  have hD := (goodShear_epsOf hG.2).2.1
   have hP : C.P.Simple := by rw [hC.1]; exact hQ
   obtain ⟨hNF, hdeg, hgran, hdec⟩ := hN
   have hFam0 : (chainModel C).ChordFamily C.P (N.F (chainModel C) (Qof P)) := by
@@ -258,7 +258,7 @@ theorem trans_math (hG : GoodEnv P) (hC : TopChain P C)
   obtain ⟨hFam, hdegP, hwtP, -⟩ := Trans.transition hQ T hD hFam0 hgran.1 hdeg
   have hfam := famOf_transL hQ T hD hli hNF
   rw [← hn]
-  refine ⟨chordTriplesOK_transL hQ T hD hli hNF hFam, by rw [hfam]; exact hdegP, ?_, ?_, ?_⟩
+  refine ⟨chordTriplesOK_transL hQ T hD hli hNF hFam, by rwa [hfam], ?_, ?_, ?_⟩
   · rw [hfam]
     intro U hU
     refine (hwtP U hU).trans ?_

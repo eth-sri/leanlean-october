@@ -37,8 +37,8 @@ theorem KLe.trans {a b c : ℝ × ℕ} (h1 : KLe a b) (h2 : KLe b c) : KLe a c :
   unfold KLe at *
   rcases h1 with h1 | ⟨h1, h1'⟩ <;> rcases h2 with h2 | ⟨h2, h2'⟩
   · exact Or.inl (h1.trans h2)
-  · exact Or.inl (by rw [← h2]; exact h1)
-  · exact Or.inl (by rw [h1]; exact h2)
+  · exact Or.inl (by rwa [← h2])
+  · exact Or.inl (by rwa [h1])
   · exact Or.inr ⟨h1.trans h2, h1'.trans h2'⟩
 
 theorem KLe.total (a b : ℝ × ℕ) : KLe a b ∨ KLe b a := by
@@ -97,7 +97,7 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
       ((0 < i ∧ ∀ x', L[i - 1]? = some x' → key x' = key x) → DInv key L (i + 1) O) := by
   have hi : i < L.length := by
     by_contra h'; push Not at h'; rw [List.getElem?_eq_none h'] at hx; cases hx
-  have hxL : x ∈ L := List.mem_of_getElem? hx
+  have hxL := List.mem_of_getElem? hx
   constructor
   · intro hcase
     -- the last kept key is below the key of `x`
@@ -106,7 +106,7 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
       rcases Nat.eq_zero_or_pos i with h0 | hpos
       · rw [h.nil h0] at hy; cases hy
       · obtain ⟨x', hx'⟩ : ∃ x', L[i - 1]? = some x' :=
-          ⟨L[i - 1], List.getElem?_eq_getElem (by omega)⟩
+          ⟨L[i - 1], List.getElem?_eq_getElem by_o⟩
         obtain ⟨yl, hyl, hkl⟩ := h.last x' hpos hx'
         have hne : key x' ≠ key x := by
           rcases hcase with h0 | hc
@@ -114,28 +114,28 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
           · exact hc x' hx'
         -- `key x' ≤ key x` by sortedness
         have hle : KLe (key x') (key x) := by
-          have := List.pairwise_iff_getElem.1 hs (i - 1) i (by omega) hi (by omega)
-          rw [List.getElem?_eq_getElem (by omega)] at hx'
+          have := List.pairwise_iff_getElem.1 hs (i - 1) i by_o hi by_o
+          rw [List.getElem?_eq_getElem by_o] at hx'
           rw [List.getElem?_eq_getElem hi] at hx
           simp only [Option.some.injEq] at hx hx'
           rwa [hx, hx'] at this
-        have hlt : KLt (key x') (key x) := KLt.of_le_ne hle hne
+        have hlt := KLt.of_le_ne hle hne
         -- every kept key is at most the last one
         rcases List.getLast?_eq_some_iff.1 hyl with ⟨O', rfl⟩
         rcases List.mem_append.1 hy with hy | hy
         · have := List.pairwise_append.1 h.inc
-          have h2 := this.2.2 y hy yl (by simp)
+          have h2 := this.2.2 y hy yl by_s
           rw [hkl] at h2
           rcases h2 with h2 | ⟨h2, h2'⟩ <;> rcases hlt with h3 | ⟨h3, h3'⟩
           · exact Or.inl (h2.trans h3)
-          · exact Or.inl (by rw [← h3]; exact h2)
-          · exact Or.inl (by rw [h2]; exact h3)
+          · exact Or.inl (by rwa [← h3])
+          · exact Or.inl (by rwa [h2])
           · exact Or.inr ⟨h2.trans h3, h2'.trans h3'⟩
         · simp at hy; rw [hy, hkl]; exact hlt
     refine ⟨fun y hy => ?_, ?_, fun j hj x'' hx'' => ?_, fun x'' _ hx'' => ?_, fun h' => by omega⟩
     · rcases List.mem_append.1 hy with hy | hy
       · exact h.sub y hy
-      · simp at hy; rw [hy]; exact hxL
+      · simp at hy; rwa [hy]
     · rw [List.pairwise_append]
       exact ⟨h.inc, List.pairwise_singleton _ _, fun a ha b hb => by
         simp at hb; rw [hb]; exact hlast a ha⟩
@@ -143,18 +143,18 @@ theorem DInv.step {L : List α} (hs : L.Pairwise (fun x y => KLe (key x) (key y)
       · obtain ⟨y, hy, hk⟩ := h.cov j hj x'' hx''
         exact ⟨y, List.mem_append_left _ hy, hk⟩
       · rw [hx] at hx''; cases hx''
-        exact ⟨x, by simp, rfl⟩
+        exact ⟨x, by_s, rfl⟩
     · simp only [Nat.add_sub_cancel] at hx''
       rw [hx] at hx''; cases hx''
-      exact ⟨x, by simp, rfl⟩
+      exact ⟨x, by_s, rfl⟩
   · rintro ⟨hpos, heq⟩
     obtain ⟨x', hx'⟩ : ∃ x', L[i - 1]? = some x' :=
-      ⟨L[i - 1], List.getElem?_eq_getElem (by omega)⟩
+      ⟨L[i - 1], List.getElem?_eq_getElem by_o⟩
     refine ⟨h.sub, h.inc, fun j hj x'' hx'' => ?_, fun x'' _ hx'' => ?_, fun h' => by omega⟩
     · rcases (show j < i ∨ j = i by omega) with hj | rfl
       · exact h.cov j hj x'' hx''
       · rw [hx] at hx''; cases hx''
-        obtain ⟨y, hy, hk⟩ := h.cov (j - 1) (by omega) x' hx'
+        obtain ⟨y, hy, hk⟩ := h.cov (j - 1) by_o x' hx'
         exact ⟨y, hy, by rw [hk, heq x' hx']⟩
     · simp only [Nat.add_sub_cancel] at hx''
       rw [hx] at hx''; cases hx''
@@ -212,8 +212,8 @@ theorem raw_eq_of_key (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) 
   refine ⟨he, ht, ?_⟩
   have hm := (stop_mem hP hN hok hf).1
   have hm' := (stop_mem hP hN hok' hf').1
-  have ha : rSet P J N r ∈ Merge.augChords J.whole := F₂plus_subset J hS₂.2.1 hm
-  have ha' : rSet P J N r' ∈ Merge.augChords J.whole := F₂plus_subset J hS₂.2.1 hm'
+  have ha := F₂plus_subset J hS₂.2.1 hm
+  have ha' := F₂plus_subset J hS₂.2.1 hm'
   have hpt : sidePt (chainModel J.whole).W r.1 (rPar P J r) =
       sidePt (chainModel J.whole).W r'.1 (rPar P J r') := by rw [he, ht]
   rw [hend, hend', h2] at hpt

@@ -67,26 +67,26 @@ theorem scan_some {k : ℕ} {σ : ℝ} : ∀ {J b : ℕ}, scan C k σ J = some b
         obtain ⟨hb'J, hb'c, hb'min⟩ := scan_some hr
         simp only at h
         split_ifs at h with hlt
-        · simp only [Option.some.injEq] at h
+        · simp at h
           subst h
-          refine ⟨by omega, hc, fun j hj hcj => ?_⟩
+          refine ⟨by_o, hc, fun j hj hcj => ?_⟩
           rcases Nat.lt_succ_iff_lt_or_eq.1 hj with hj | rfl
           · exact hlt.le.trans (hb'min j hj hcj)
           · exact le_rfl
-        · simp only [Option.some.injEq] at h
+        · simp at h
           subst h
-          refine ⟨by omega, hb'c, fun j hj hcj => ?_⟩
+          refine ⟨by_o, hb'c, fun j hj hcj => ?_⟩
           rcases Nat.lt_succ_iff_lt_or_eq.1 hj with hj | rfl
           · exact hb'min j hj hcj
           · exact not_lt.1 hlt
     · obtain ⟨h1, h2, h3⟩ := scan_some h
-      refine ⟨by omega, h2, fun j hj hcj => ?_⟩
+      refine ⟨by_o, h2, fun j hj hcj => ?_⟩
       rcases Nat.lt_succ_iff_lt_or_eq.1 hj with hj | rfl
       · exact h3 j hj hcj
       · exact absurd hcj hc
 where
   scan_none_aux : ∀ {J : ℕ}, scan C k σ J = none → ∀ j, j < J → ¬ Cand C k σ j
-    | 0, _, j, hj => by omega
+    | 0, _, j, hj => by_o
     | J + 1, h, j, hj => by
       unfold scan at h
       split_ifs at h with hc
@@ -106,7 +106,7 @@ theorem scan_none {k : ℕ} {σ : ℝ} {J : ℕ} (h : scan C k σ J = none) :
 theorem xAt_mem_edge (hDH : DistinctHeights C.P) {j k : ℕ} (hj : j < C.m)
     (hs : Strad C j k) : ((edgeXk C j k, (C.vertex k).2) : Point) ∈ C.chainEdge j := by
   have hne : (C.vertex j).2 ≠ (C.vertex (j + 1)).2 :=
-    ChainObs.vertex_snd_ne hDH (by omega) (by omega) (by omega)
+    ChainObs.vertex_snd_ne hDH by_o by_o by_o
   rw [C.chainEdge_eq, Visibility.mem_segment_iff_xAt hne]
   refine ⟨⟨?_, ?_⟩, rfl⟩ <;> rcases hs with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> simp only
   · exact (min_le_left _ _).trans h1.le
@@ -122,7 +122,7 @@ theorem far_end (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : ℝ
     (scan C k σ C.m = none → C.chordEnd k σ = (σ * C.radius, (C.vertex k).2)) := by
   obtain ⟨hpos, hend, hint⟩ := C.chord_spec hk hσ hf
   have hσσ : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
-  set v := C.vertex k with hv
+  set v := C.vertex k
   have he1 : (C.chordEnd k σ).1 = v.1 + σ * C.chordParam k σ := rfl
   have he2 : (C.chordEnd k σ).2 = v.2 := rfl
   -- candidates are not nearer than the end
@@ -141,7 +141,7 @@ theorem far_end (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : ℝ
   have hB : C.chordEnd k σ ∈ C.set → ∃ j, Cand C k σ j ∧ edgeXk C j k = (C.chordEnd k σ).1 := by
     rintro ⟨j, hj, hmem⟩
     have hne : (C.vertex j).2 ≠ (C.vertex (j + 1)).2 :=
-      ChainObs.vertex_snd_ne hDH (by omega) (by omega) (by omega)
+      ChainObs.vertex_snd_ne hDH by_o by_o by_o
     rw [C.chainEdge_eq, Visibility.mem_segment_iff_xAt hne] at hmem
     obtain ⟨⟨hm1, hm2⟩, hx⟩ := hmem
     have hnev := C.chordEnd_ne_vertex hk hσ hf
@@ -149,7 +149,7 @@ theorem far_end (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : ℝ
       intro e
       apply hnev
       have : j = k := by
-        by_contra hjk; exact ChainObs.vertex_snd_ne hDH (by omega) hk hjk e
+        by_contra hjk; exact ChainObs.vertex_snd_ne hDH by_o hk hjk e
       subst this
       ext
       · rw [hx, he2, ← e, Visibility.xAt_left]
@@ -158,7 +158,7 @@ theorem far_end (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : ℝ
       intro e
       apply hnev
       have : j + 1 = k := by
-        by_contra hjk; exact ChainObs.vertex_snd_ne hDH (by omega) hk hjk e
+        by_contra hjk; exact ChainObs.vertex_snd_ne hDH by_o hk hjk e
       subst this
       ext
       · rw [hx, he2, ← e, Visibility.xAt_right hne]
@@ -176,7 +176,7 @@ theorem far_end (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : ℝ
     rw [hX, he1]
     have : σ * (v.1 + σ * C.chordParam k σ - v.1) = C.chordParam k σ := by
       rw [add_sub_cancel_left, ← mul_assoc, hσσ, one_mul]
-    rw [this]; exact hpos
+    rwa [this]
   -- candidate points are inside the box
   have hbox : ∀ j, Cand C k σ j → σ * edgeXk C j k < C.radius := by
     rintro j ⟨hj, hs, -⟩
@@ -199,7 +199,7 @@ theorem far_end (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : ℝ
           rw [mul_add, ← mul_assoc, hσσ, one_mul]
         rw [this]
         rw [this] at h1
-        have : σ * (edgeXk C b k - v.1) = σ * edgeXk C b k - σ * v.1 := by ring
+        have : σ * (edgeXk C b k - v.1) = σ * edgeXk C b k - σ * v.1 := by_r
         rw [this] at hA'
         linarith
       have h3 : edgeXk C b k = (C.chordEnd k σ).1 := by
@@ -212,7 +212,7 @@ theorem far_end (hDH : DistinctHeights C.P) {k : ℕ} (hk : k ≤ C.m) {σ : ℝ
       · exact he2
     · exfalso
       have h1 := hbox b hcb
-      have : σ * (edgeXk C b k - v.1) = σ * edgeXk C b k - σ * v.1 := by ring
+      have : σ * (edgeXk C b k - v.1) = σ * edgeXk C b k - σ * v.1 := by_r
       rw [this] at hA'
       have hv1 : v.1 + σ * C.chordParam k σ = σ * C.radius := by rw [← he1]; exact hwall
       have : σ * (v.1 + σ * C.chordParam k σ) = σ * v.1 + C.chordParam k σ := by

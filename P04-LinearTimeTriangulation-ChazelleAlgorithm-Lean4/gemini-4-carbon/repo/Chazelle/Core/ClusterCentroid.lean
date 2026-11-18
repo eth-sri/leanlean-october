@@ -55,7 +55,7 @@ theorem centroid_half (hM : M.Planar) {P : Finset V} {f : F} (hf : Good C δ P f
     rw [this]
     convert hng using 3
   · -- the parent side of `f`
-    have hgf : g = f := (C.head g hg).symm.trans hdf
+    have hgf := (C.head g hg).symm.trans hdf
     subst hgf
     unfold Good cnt at hf
     have hsplit := Finset.card_filter_add_card_filter_not (s := P)

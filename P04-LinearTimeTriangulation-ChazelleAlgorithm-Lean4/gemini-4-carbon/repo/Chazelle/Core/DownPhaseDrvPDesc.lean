@@ -11,10 +11,6 @@ edges, top index, orientation bit), puts `A` into `218010` and raises the alloca
 (`descS_exec`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace DrvP

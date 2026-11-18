@@ -56,7 +56,7 @@ theorem mem_segment_iff_of_lt {u v p : Point} (huv : u.1 < v.1) :
       u.1 ≤ p.1 ∧ p.1 ≤ v.1 ∧ (p.2 - u.2) * (v.1 - u.1) = (v.2 - u.2) * (p.1 - u.1) := by
   constructor
   · rintro ⟨t, ht0, ht1, rfl⟩
-    have hd : 0 < v.1 - u.1 := sub_pos.2 huv
+    have hd := sub_pos.2 huv
     refine ⟨?_, ?_, ?_⟩
     · simp only
       nlinarith
@@ -65,7 +65,7 @@ theorem mem_segment_iff_of_lt {u v p : Point} (huv : u.1 < v.1) :
     · simp only
       ring
   · rintro ⟨h0, h1, hl⟩
-    have hd : 0 < v.1 - u.1 := sub_pos.2 huv
+    have hd := sub_pos.2 huv
     refine ⟨(p.1 - u.1) / (v.1 - u.1), div_nonneg (by linarith) hd.le,
       (div_le_one hd).2 (by linarith), ?_⟩
     ext
@@ -84,7 +84,7 @@ theorem mem_segment_of_vertical {u v p : Point} (huv : u.1 = v.1) (hp : p.1 = u.
     ext
     · simp [hp]
     · simp; linarith
-  · have hd' : 0 < v.2 - u.2 := sub_pos.2 (lt_of_le_of_ne (h0.trans h1) hd)
+  · have hd' := sub_pos.2 (lt_of_le_of_ne (h0.trans h1) hd)
     refine ⟨(p.2 - u.2) / (v.2 - u.2), div_nonneg (by linarith) hd'.le,
       (div_le_one hd').2 (by linarith), ?_⟩
     ext

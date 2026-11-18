@@ -32,7 +32,7 @@ position's point. -/
 theorem attach_snd_eq (hP : J.P.Simple) {f : Set Point} (hf : f ∈ Merge.augChords J.whole)
     {p : ℕ} {t : ℝ} (hA : SideAttach (chainModel J.whole).W f p t) {z : Point} (hz : z ∈ f) :
     z.2 = (sidePt (chainModel J.whole).W p t).2 := by
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM := FactsChain.walkAx J.whole hP
   obtain ⟨a, b, -, hfab, hy, -⟩ := hM.ends f hf
   have key : ∀ w ∈ f, w.2 = a.2 := by
     intro w hw
@@ -79,8 +79,8 @@ theorem tie_dom (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Mer
       refine ⟨abs_lt.2 ⟨?_, ?_⟩, by rw [← hzE2]; exact h1.2⟩
       · linarith [(abs_lt.1 h2.1).1]
       · linarith [(abs_lt.1 h1.1).2]
-  have hR : J.right.radius = J.whole.radius := FuseMath.radius_of_P J (C' := J.right) rfl
-  have hy : x.2 ≤ J.right.top.2 := F₂plus_snd_le J hS₂ he hA.2.2.2.1
+  have hR := FuseMath.radius_of_P J (C' := J.right) rfl
+  have hy := F₂plus_snd_le J hS₂ he hA.2.2.2.1
   by_cases hxd : x ∈ J.right.dom
   · exact Or.inl hxd
   · right
@@ -109,7 +109,7 @@ theorem parent_unique {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords
     · have := congrArg Prod.fst h
       simp only at this
       rcases lt_or_gt_of_ne hx with h5 | h5 <;> linarith
-  have hyy : y = y' := hu.1.symm.trans hu'.1
+  have hyy := hu.1.symm.trans hu'.1
   subst hyy
   obtain ⟨hm, hma, hmb⟩ := hconv hu hw
   obtain ⟨hm', -, -⟩ := hconv hu' hw'

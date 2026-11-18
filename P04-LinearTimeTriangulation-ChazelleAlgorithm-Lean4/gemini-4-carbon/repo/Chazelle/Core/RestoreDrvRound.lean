@@ -160,11 +160,11 @@ theorem phaseA {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : OutI E
   set K := N.nChords with hKd
   set R := N.nRegions with hRd
   have hM := walkAx_of_goodModel hE.hGM
-  have hRK : R = K + 1 := Gran.nRegions_eq hcur.nf hM
+  have hRK := Gran.nRegions_eq hcur.nf hM
   have hNAt := hcur.nw.nfAt
   have hareas := Gran.nf_areas hcur.nw
   have hW := hI.wb
-  have hLBW : LB ≤ E.W := hW.1 ALLOC
+  have hLBW := hW.1 ALLOC
   have hKc : 2 * K + 2 ≤ E.Kc := size_le_Kc (by omega) hcur.size
   have hBr : 21 * E.Kc + 40 ≤ E.Br := by unfold DrvEnv.Br; omega
   have hroom := hI.room
@@ -182,36 +182,35 @@ theorem phaseA {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : OutI E
   set CB := c.nmem (H + 3) with hCBd
   set RB := c.nmem (H + 5) with hRBd
   have w₁ := e₁.wb_right
-  have g₁ : ∀ r, (r < 80013 ∨ (80017 < r ∧ r < 80030) ∨ (80031 < r ∧ r ≠ 80036)) →
-    c₁.nreg r = c.nreg r := R₁
+  have g₁ := R₁
   have A₁ : c₁.nreg ALLOC = LB := g₁ _ (by left; decide)
   -- copy
   obtain ⟨c₂, k₂, e₂, hk₂, A₂, h30, R₂, low₂, cop₂, RF₂⟩ := copy_exec (P := E.P) (A₀ := E.A₀)
     w₁ a13 a30 a31 A₁ (by rw [g₁ _ (by right; left; decide), hI.r20])
     (by rw [g₁ _ (by right; left; decide), hI.r22])
-    (fun i hi => hareas.2.1 i hi) (by omega) (by omega) hI.alloc
+    (fun i hi => hareas.2.1 i hi) by_o by_o hI.alloc
   have w₂ := e₂.wb_right
   -- mid
   obtain ⟨c₃, k₃, e₃, hk₃, b18, b43, b34, R₃, rr₃, m₃, rm₃, o₃⟩ := mid_exec (P := E.P) c₂ w₂
   have w₃ := e₃.wb_right
-  have A₃ : c₃.nreg ALLOC = LB + 3 * K := by rw [R₃ _ (by decide) (by decide) (by decide), A₂]
+  have A₃ : c₃.nreg ALLOC = LB + 3 * K := by rw [R₃ _ by_d by_d by_d, A₂]
   -- reservation
   obtain ⟨c₄, k₄, e₄, hk₄, A₄, R₄, m₄, RF₄⟩ := res_exec (P := E.P) (A₀ := E.A₀) w₃
-    (by rw [R₃ _ (by decide) (by decide) (by decide), R₂ _ (by decide) (by decide) (by decide)
-      (by decide), a14])
-    b34 A₃ (by rw [R₃ _ (by decide) (by decide) (by decide), R₂ _ (by decide) (by decide)
-      (by decide) (by decide), g₁ _ (by right; left; decide), hI.r20]) (by omega) (by omega)
+    (by rw [R₃ _ by_d by_d by_d, R₂ _ by_d by_d by_d
+      by_d, a14])
+    b34 A₃ (by rw [R₃ _ by_d by_d by_d, R₂ _ by_d by_d
+      by_d by_d, g₁ _ (by right; left; decide), hI.r20]) by_o by_o
   have w₄ := e₄.wb_right
   -- region-loop set-up
   have d16 : c₄.nreg 80016 = RB := by
-    rw [R₄ _ (by decide) (by decide), R₃ _ (by decide) (by decide) (by decide),
-      R₂ _ (by decide) (by decide) (by decide) (by decide), a16]
+    rw [R₄ _ by_d by_d, R₃ _ by_d by_d by_d,
+      R₂ _ by_d by_d by_d by_d, a16]
   have d21 : c₄.nreg 80021 = 2 := by
-    rw [R₄ _ (by decide) (by decide), R₃ _ (by decide) (by decide) (by decide),
-      R₂ _ (by decide) (by decide) (by decide) (by decide), g₁ _ (by right; left; decide),
+    rw [R₄ _ by_d by_d, R₃ _ by_d by_d by_d,
+      R₂ _ by_d by_d by_d by_d, g₁ _ (by right; left; decide),
       hI.r21]
   have hRB : RB + 4 < LB := by
-    have := hareas.2.2.1 0 (by omega); omega
+    have := hareas.2.2.1 0 by_o; omega
   obtain ⟨c₅, k₅, e₅, hk₅, f40, f41, R₅, rr₅, m₅, rm₅, o₅⟩ := preReg_exec (P := E.P) c₄ w₄
     (by rw [d16, d21]; omega)
   rw [d16, d21] at f41
@@ -221,24 +220,24 @@ theorem phaseA {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : OutI E
       r ≠ 80017 → r ≠ 80018 → c₅.nreg r = c.nreg r := by
     intro r h1 h2 h3 h4 h5 h6 h7 h8
     have hA : r ≠ ALLOC := by unfold ALLOC; omega
-    rw [R₅ r (by omega) (by omega), R₄ r (by omega) hA,
-      R₃ r (by omega) (by omega) (by omega), R₂ r (by omega) (by omega) (by omega) hA,
-      g₁ r (by omega)]
+    rw [R₅ r by_o by_o, R₄ r by_o hA,
+      R₃ r by_o by_o by_o, R₂ r by_o by_o by_o hA,
+      g₁ r by_o]
   have f17 : c₅.nreg 80017 = LB := by
-    rw [R₅ _ (by decide) (by decide), R₄ _ (by decide) (by decide),
-      R₃ _ (by decide) (by decide) (by decide), R₂ _ (by decide) (by decide) (by decide)
-        (by decide), a17]
+    rw [R₅ _ by_d by_d, R₄ _ by_d by_d,
+      R₃ _ by_d by_d by_d, R₂ _ by_d by_d by_d
+        by_d, a17]
   have f14 : c₅.nreg 80014 = R := by
-    rw [R₅ _ (by decide) (by decide), R₄ _ (by decide) (by decide),
-      R₃ _ (by decide) (by decide) (by decide), R₂ _ (by decide) (by decide) (by decide)
-        (by decide), a14]
+    rw [R₅ _ by_d by_d, R₄ _ by_d by_d,
+      R₃ _ by_d by_d by_d, R₂ _ by_d by_d by_d
+        by_d, a14]
   have f18 : c₅.nreg 80018 = K := by
-    rw [R₅ _ (by decide) (by decide), R₄ _ (by decide) (by decide), b18,
-      R₂ _ (by decide) (by decide) (by decide) (by decide), a13]
+    rw [R₅ _ by_d by_d, R₄ _ by_d by_d, b18,
+      R₂ _ by_d by_d by_d by_d, a13]
   have f43 : c₅.nreg 80043 = LB + 3 * K := by
-    rw [R₅ _ (by decide) (by decide), R₄ _ (by decide) (by decide), b43, A₂]
+    rw [R₅ _ by_d by_d, R₄ _ by_d by_d, b43, A₂]
   have A₅ : c₅.nreg ALLOC = LB + 3 * K + 3 * R := by
-    rw [R₅ _ (by decide) (by decide), A₄]
+    rw [R₅ _ by_d by_d, A₄]
   -- memory of `c₅`
   have mem5 : ∀ a, a < LB → c₅.nmem a = c.nmem a := fun a ha => by
     rw [m₅, m₄, m₃, low₂ a ha, m₁]
@@ -252,9 +251,9 @@ theorem phaseA {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : OutI E
         List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi]
       rfl
     rw [e, m₅, m₄, m₃]
-    have c0 := cop₂ i hi 0 (by omega)
-    have c1 := cop₂ i hi 1 (by omega)
-    have c2 := cop₂ i hi 2 (by omega)
+    have c0 := cop₂ i hi 0 by_o
+    have c1 := cop₂ i hi 1 by_o
+    have c2 := cop₂ i hi 2 by_o
     simp only [add_zero] at c0
     rw [m₁] at c0 c1 c2
     refine ⟨?_, ?_, ?_⟩
@@ -264,12 +263,12 @@ theorem phaseA {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : OutI E
   -- the frame
   have hb : ∀ r, bandOf r ∉ dBands → r < 80000 ∨ 90000 ≤ r := fun r hr => by
     by_contra h; push Not at h; exact hr (band8 h.1 h.2 ▸ mem_dBands_8)
-  have RF₁ : RF dBands E.A₀ c c₁ k₁ := rf_of_regs (fun r hr => g₁ r (by omega)) rr₁ m₁ rm₁ o₁
+  have RF₁ : RF dBands E.A₀ c c₁ k₁ := rf_of_regs (fun r hr => g₁ r by_o) rr₁ m₁ rm₁ o₁
   have RF₃ : RF dBands E.A₀ c₂ c₃ k₃ :=
-    rf_of_regs (fun r hr => R₃ r (by omega) (by omega) (by omega)) rr₃ m₃ rm₃ o₃
+    rf_of_regs (fun r hr => R₃ r by_o by_o by_o) rr₃ m₃ rm₃ o₃
   have RF₅ : RF dBands E.A₀ c₄ c₅ k₅ :=
-    rf_of_regs (fun r hr => R₅ r (by omega) (by omega)) rr₅ m₅ rm₅ o₅
-  have RFA : RF dBands E.A₀ c c₅ (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) :=
+    rf_of_regs (fun r hr => R₅ r by_o by_o) rr₅ m₅ rm₅ o₅
+  have RFA :=
     RF₁.trans (RF₂.trans (RF₃.trans (RF₄.trans RF₅)))
   -- the region-loop facts
   have hgood : RegGood (regEnvOf E N reg LB H) c₅ := by
@@ -282,49 +281,49 @@ theorem phaseA {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : OutI E
     · change a < E.A₀ at ha
       change c₅.nmem a = E.m₀ a
       rw [mem5 a (by have := hI.alloc; omega), hI.low a ha]
-    · rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega), hI.r00]; rfl
-    · rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega), hI.r03]; rfl
-    · rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega), hI.r04]; rfl
-    · rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega), hI.r06]; rfl
-    · rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega)]; rfl
-    · rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega), hI.r19]; rfl
-    · rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega), hI.r20]
-    · rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega), hI.r23]
-    · rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega), hI.r24]
+    · rw [G _ by_o by_o by_o by_o by_o by_o by_o
+        by_o, hI.r00]; rfl
+    · rw [G _ by_o by_o by_o by_o by_o by_o by_o
+        by_o, hI.r03]; rfl
+    · rw [G _ by_o by_o by_o by_o by_o by_o by_o
+        by_o, hI.r04]; rfl
+    · rw [G _ by_o by_o by_o by_o by_o by_o by_o
+        by_o, hI.r06]; rfl
+    · rw [G _ by_o by_o by_o by_o by_o by_o by_o
+        by_o]; rfl
+    · rw [G _ by_o by_o by_o by_o by_o by_o by_o
+        by_o, hI.r19]; rfl
+    · rw [G _ by_o by_o by_o by_o by_o by_o by_o
+        by_o, hI.r20]
+    · rw [G _ by_o by_o by_o by_o by_o by_o by_o
+        by_o, hI.r23]
+    · rw [G _ by_o by_o by_o by_o by_o by_o by_o
+        by_o, hI.r24]
     · show c₅.nreg 80041 = c₅.nmem (H + 5) + 2
       rw [f41, mem5 _ (by have := hareas.1; omega)]
     · show LB + 3 * (K + R) ≤ c₅.nreg ALLOC
       rw [A₅]; omega
     · show c₅.nreg ALLOC + (E.Bf + 2) * R + 2 ≤ E.W
       rw [A₅]
-      have : (E.Bf + 2) * R ≤ (E.Bf + 2) * E.Kc := Nat.mul_le_mul_left _ (by omega)
+      have : (E.Bf + 2) * R ≤ (E.Bf + 2) * E.Kc := Nat.mul_le_mul_left _ by_o
       have hBr2 : 21 * E.Kc + 40 + (E.Bf + 2) * E.Kc ≤ E.Br := by unfold DrvEnv.Br; omega
       omega
-  obtain ⟨c', k', ex, hQ⟩ := hrest c₅ _ hgood RFA (by omega)
-    (by rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega), hI.r02])
-    (by rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega), hI.r10])
-    (by rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega), hI.r11])
-    (by rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega), hI.r21])
-    (by rw [G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega), hI.r22])
+  obtain ⟨c', k', ex, hQ⟩ := hrest c₅ _ hgood RFA by_o
+    (by rw [G _ by_o by_o by_o by_o by_o by_o by_o
+      by_o, hI.r02])
+    (by rw [G _ by_o by_o by_o by_o by_o by_o by_o
+      by_o, hI.r10])
+    (by rw [G _ by_o by_o by_o by_o by_o by_o by_o
+      by_o, hI.r11])
+    (by rw [G _ by_o by_o by_o by_o by_o by_o by_o
+      by_o, hI.r21])
+    (by rw [G _ by_o by_o by_o by_o by_o by_o by_o
+      by_o, hI.r22])
     f17
-    (G _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega))
+    (G _ by_o by_o by_o by_o by_o by_o by_o by_o)
   exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ ex)))), by
-    have : k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k')))) = k₁ + (k₂ + (k₃ + (k₄ + k₅))) + k' := by ring
-    rw [this]; exact hQ⟩
+    have : k₁ + (k₂ + (k₃ + (k₄ + (k₅ + k')))) = k₁ + (k₂ + (k₃ + (k₄ + k₅))) + k' := by_r
+    rwa [this]⟩
 
 theorem clog_mul_mono {a b : ℕ} (h : a ≤ b) :
     a * (Nat.clog 2 a + 1) + 1 ≤ b * (Nat.clog 2 b + 1) + 1 := by
@@ -342,7 +341,7 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
   obtain ⟨reg, hRC, hCS, hAO, hRO, -⟩ := hcur.nf.2.2.2
   have hregs : NFRegs E.M (Qof E.P) N reg := ⟨hRC, hCS, hAO, hRO⟩
   have hM := walkAx_of_goodModel hE.hGM
-  have hRK : N.nRegions = N.nChords + 1 := Gran.nRegions_eq hcur.nf hM
+  have hRK := Gran.nRegions_eq hcur.nf hM
   have hKc : 2 * N.nChords + 2 ≤ E.Kc := size_le_Kc (by omega) hcur.size
   have hroom := hI.room
   have hroom' : c.nreg ALLOC + E.Br + 2 ≤ E.W := by
@@ -356,7 +355,7 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
   -- the region loop
   obtain ⟨c₆, k₆, newL, e₆, I₆, h40, RF₆, hk₆⟩ := reg_exec hgood
   have hNew : NewOK E.M (Qof E.P) N reg E.D newL := ⟨by
-    have := I₆.hfst; rw [h40] at this; exact this, I₆.hgood⟩
+    have := I₆.hfst; rwa [h40] at this, I₆.hgood⟩
   set L := oldL N ++ newL.map Prod.snd with hLd
   have hlenNew : newL.length ≤ N.nRegions := by
     have := congrArg List.length hNew.fst
@@ -367,18 +366,17 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
   have hok := round_list_ok hM hcur.nf hregs hNew
   have w₆ := e₆.wb_right
   -- registers after the loop
-  have reg6 : ∀ q, 80000 ≤ q → q < 81000 → q ≠ 80040 → q ≠ 80041 → q ≠ 80042 → q ≠ 80018 →
-      q ≠ 80043 → c₆.nreg q = c₅.nreg q := I₆.regs
+  have reg6 := I₆.regs
   -- build: arguments
   obtain ⟨c₇, k₇, e₇, hk₇, b0, b1, b2, R₇, rr₇, m₇, rm₇, o₇⟩ := bargs_exec (P := E.P) c₆ w₆
   have w₇ := e₇.wb_right
-  have A₇ : c₇.nreg ALLOC = c₆.nreg ALLOC := R₇ _ (by decide) (by decide) (by decide)
+  have A₇ : c₇.nreg ALLOC = c₆.nreg ALLOC := R₇ _ (by decide) by_d by_d
   have x0 : c₇.nreg 40000 = E.MD := by
-    rw [b0, reg6 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega), hgood.r00]; rfl
+    rw [b0, reg6 _ by_o by_o by_o by_o by_o by_o
+      by_o, hgood.r00]; rfl
   have x1 : c₇.nreg 40001 = c.nreg ALLOC := by
-    rw [b1, reg6 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-      (by omega), q17]
+    rw [b1, reg6 _ by_o by_o by_o by_o by_o by_o
+      by_o, q17]
   have x2 : c₇.nreg 40002 = L.length := by rw [b2, I₆.cnt, hLlen]; rfl
   -- memory below `A₀` agrees with the initial one
   have RF56 := RF₅.trans RF₆
@@ -399,7 +397,7 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
   have hcl := clog_mul_mono hLK
   have hA7le : c₇.nreg ALLOC ≤ c.nreg ALLOC + (k₅ + k₆) := by
     rw [A₇]; exact RF56.2.2.2.2.2.2
-  have hRKc : N.nRegions ≤ E.Kc := by omega
+  have hRKc : N.nRegions ≤ E.Kc := by_o
   have hBfR : (E.Bf + 2) * N.nRegions ≤ (E.Bf + 2) * E.Kc := Nat.mul_le_mul_left _ hRKc
   have hk56 : k₅ + k₆ ≤ 22 + 15 * E.Kc + 6 * E.Kc + (E.Bf + 2) * E.Kc := by
     change k₆ ≤ (E.Bf + 2) * N.nRegions + 2 at hk₆
@@ -431,13 +429,13 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
   obtain ⟨c₉, k₉, e₉, hk₉, h12, R₉, rr₉, m₉, rm₉, o₉⟩ := copy1_exec' (P := E.P) c₈ w₈ 80012 40003
   have w₉ := e₉.wb_right
   have r8 : ∀ q, 80000 ≤ q → q < 90000 → c₈.nreg q = c₇.nreg q := fun q h1 h2 =>
-    F₈.1 q (by rw [band8 h1 h2]; decide) (by unfold ALLOC; omega)
+    F₈.1 q (by rw [band8 h1 h2]; decide) by_ao
   have y10 : c₉.nreg 80010 = t := by
-    rw [R₉ _ (by decide), r8 _ (by omega) (by omega), R₇ _ (by decide) (by decide) (by decide),
-      reg6 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega), q10]
+    rw [R₉ _ by_d, r8 _ by_o by_o, R₇ _ by_d by_d by_d,
+      reg6 _ by_o by_o by_o by_o by_o by_o by_o, q10]
   have y20 : c₉.nreg 80020 = 1 := by
-    rw [R₉ _ (by decide), r8 _ (by omega) (by omega), R₇ _ (by decide) (by decide) (by decide),
-      reg6 _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega) (by omega),
+    rw [R₉ _ by_d, r8 _ by_o by_o, R₇ _ by_d by_d by_d,
+      reg6 _ by_o by_o by_o by_o by_o by_o by_o,
       hgood.r20]
   have hd0Kc : E.d0 + 1 ≤ E.Kc := by
     unfold DrvEnv.Kc
@@ -450,72 +448,71 @@ theorem round_step {E : DrvEnv} (hE : DrvGood E) {t : ℕ} {c : Config} (hI : Ou
   have Y : ∀ q, 80000 ≤ q → q < 81000 → q ≠ 80040 → q ≠ 80041 → q ≠ 80042 → q ≠ 80018 →
       q ≠ 80043 → q ≠ 80012 → q ≠ 80010 → c₁₀.nreg q = c₅.nreg q := by
     intro q h1 h2 h3 h4 h5 h6 h7 h8 h9
-    rw [R₁₀ q h9, R₉ q h8, r8 q h1 (by omega), R₇ q (by omega) (by omega) (by omega),
+    rw [R₁₀ q h9, R₉ q h8, r8 q h1 by_o, R₇ q by_o by_o by_o,
       reg6 q h1 h2 h3 h4 h5 h6 h7]
   -- frames
   have RF₇ : RF dBands E.A₀ c₆ c₇ k₇ := rf_of_regs' (fun r hr => R₇ r
     (fun h => hr (by rw [h]; decide)) (fun h => hr (by rw [h]; decide))
     (fun h => hr (by rw [h]; decide))) rr₇ m₇ rm₇ o₇
-  have RF₈ : RF dBands E.A₀ c₇ c₈ k₈ := RF.of_frame (F₈.mono (by decide) le_rfl) hA0₇
-  have RF₉ : RF dBands E.A₀ c₈ c₉ k₉ := rf_of_regs (fun r hr => R₉ r (by omega)) rr₉ m₉ rm₉ o₉
-  have RF₁₀ : RF dBands E.A₀ c₉ c₁₀ k₁₀ := rf_of_regs (fun r hr => R₁₀ r (by omega))
+  have RF₈ : RF dBands E.A₀ c₇ c₈ k₈ := RF.of_frame (F₈.mono by_d le_rfl) hA0₇
+  have RF₉ : RF dBands E.A₀ c₈ c₉ k₉ := rf_of_regs (fun r hr => R₉ r by_o) rr₉ m₉ rm₉ o₉
+  have RF₁₀ : RF dBands E.A₀ c₉ c₁₀ k₁₀ := rf_of_regs (fun r hr => R₁₀ r by_o)
     rr₁₀ m₁₀ rm₁₀ o₁₀
   have RFall := RF56.trans (RF₇.trans (RF₈.trans (RF₉.trans RF₁₀)))
-  have hktot : k₅ + k₆ + (k₇ + (k₈ + (k₉ + k₁₀))) ≤ E.Br := by omega
+  have hktot : k₅ + k₆ + (k₇ + (k₈ + (k₉ + k₁₀))) ≤ E.Br := by_o
   -- the new family
   have hF' : N'.F E.M (Qof E.P) = N.F E.M (Qof E.P) ∪ newSet E.M (Qof E.P) newL := by
     rw [Gran.F_of_map hmap₈, round_lset]
-  have hSa : N.F E.M (Qof E.P) ⊆ E.M.Adm := hcur.nf.1.2.1
-  have hSf : (N.F E.M (Qof E.P)).Finite := hcur.nf.1.1
+  have hSa := hcur.nf.1.2.1
+  have hSf := hcur.nf.1.1
   have hdata := round_data hM hcur.nf hregs hNew
   have hdeg' := round_degLe hM hSa hSf hdata hcur.deg (round_all hcur.nf hregs hNew)
   have hN'len : N'.nChords = L.length := by
     unfold NF.nChords; rw [← hmap₈, List.length_map]
-  have e₆' : Exec E.P E.W (regS E.sF) c₅ c₆ k₆ := e₆
+  have e₆' := e₆
   refine ⟨c₁₀, k₆ + ((k₇ + (k₈ + k₉)) + k₁₀),
-    .seq e₆' (.seq (.seq e₇ (.seq e₈ e₉)) e₁₀), ?_, RFall.mono subset_rfl (by omega),
-    by omega⟩
+    .seq e₆' (.seq (.seq e₇ (.seq e₈ e₉)) e₁₀), ?_, RFall.mono subset_rfl by_o,
+    by_o⟩
   · have e5 : ∀ q, 80000 ≤ q → q ≤ 80024 → q ≠ 80018 → q ≠ 80012 → q ≠ 80010 →
         c₁₀.nreg q = c₅.nreg q := fun q h1 h2 h3 h4 h5 =>
-      Y q h1 (by omega) (by omega) (by omega) (by omega) h3 (by omega) h4 h5
+      Y q h1 by_o by_o by_o by_o h3 by_o h4 h5
     have hA10 : c₁₀.nreg ALLOC = c₈.nreg ALLOC := by
-      rw [R₁₀ _ (by decide), R₉ _ (by decide)]
+      rw [R₁₀ _ by_d, R₉ _ by_d]
     have hmem10 : c₁₀.nmem = c₈.nmem := by rw [m₁₀, m₉]
-    have hH10 : c₁₀.nreg 80012 = rd c₈ bBuild 3 := by rw [R₁₀ _ (by decide), h12]; rfl
-    have E5 : ∀ q, 80000 ≤ q → q ≤ 80024 → q ≠ 80018 → q ≠ 80012 → q ≠ 80010 →
-        c₁₀.nreg q = c₅.nreg q := e5
-    have v00 : c₁₀.nreg 80000 = E.MD := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans hgood.r00
-    have v02 : c₁₀.nreg 80002 = E.d0 := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans q02
-    have v03 : c₁₀.nreg 80003 = E.D := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans hgood.r03
-    have v04 : c₁₀.nreg 80004 = E.γ := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans hgood.r04
-    have v06 : c₁₀.nreg 80006 = E.ctx := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans hgood.r06
-    have v11 : c₁₀.nreg 80011 = E.d0 + 1 := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans q11
-    have v19 : c₁₀.nreg 80019 = E.d0 + E.D := (E5 _ (by omega) (by omega) (by omega)
-      (by omega) (by omega)).trans hgood.r19
-    have v20 : c₁₀.nreg 80020 = 1 := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans hgood.r20
-    have v21 : c₁₀.nreg 80021 = 2 := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans q21
-    have v22 : c₁₀.nreg 80022 = 3 := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans q22
-    have v23 : c₁₀.nreg 80023 = 5 := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans hgood.r23
-    have v24 : c₁₀.nreg 80024 = 0 := (E5 _ (by omega) (by omega) (by omega) (by omega)
-      (by omega)).trans hgood.r24
+    have hH10 : c₁₀.nreg 80012 = rd c₈ bBuild 3 := by rw [R₁₀ _ by_d, h12]; rfl
+    have E5 := e5
+    have v00 : c₁₀.nreg 80000 = E.MD := (E5 _ by_o by_o by_o by_o
+      by_o).trans hgood.r00
+    have v02 : c₁₀.nreg 80002 = E.d0 := (E5 _ by_o by_o by_o by_o
+      by_o).trans q02
+    have v03 : c₁₀.nreg 80003 = E.D := (E5 _ by_o by_o by_o by_o
+      by_o).trans hgood.r03
+    have v04 : c₁₀.nreg 80004 = E.γ := (E5 _ by_o by_o by_o by_o
+      by_o).trans hgood.r04
+    have v06 : c₁₀.nreg 80006 = E.ctx := (E5 _ by_o by_o by_o by_o
+      by_o).trans hgood.r06
+    have v11 : c₁₀.nreg 80011 = E.d0 + 1 := (E5 _ by_o by_o by_o by_o
+      by_o).trans q11
+    have v19 : c₁₀.nreg 80019 = E.d0 + E.D := (E5 _ by_o by_o by_o
+      by_o by_o).trans hgood.r19
+    have v20 : c₁₀.nreg 80020 = 1 := (E5 _ by_o by_o by_o by_o
+      by_o).trans hgood.r20
+    have v21 : c₁₀.nreg 80021 = 2 := (E5 _ by_o by_o by_o by_o
+      by_o).trans q21
+    have v22 : c₁₀.nreg 80022 = 3 := (E5 _ by_o by_o by_o by_o
+      by_o).trans q22
+    have v23 : c₁₀.nreg 80023 = 5 := (E5 _ by_o by_o by_o by_o
+      by_o).trans hgood.r23
+    have v24 : c₁₀.nreg 80024 = 0 := (E5 _ by_o by_o by_o by_o
+      by_o).trans hgood.r24
     have vlow : ∀ a, a < E.A₀ → c₁₀.nmem a = E.m₀ a := fun a ha => by
       rw [RFall.2.2.1 a ha, hI.low a ha]
     refine ⟨e₁₀.wb_right, v00, v02, v03, v04, v06, h10, v11, v19, v20, v21, v22, v23, v24,
-      ⟨N', ?_⟩, vlow, le_trans hI.alloc RFall.2.2.2.2.2.1, by omega, ?_⟩
-    · refine ⟨by rw [hmem10, hA10, hH10]; exact hNW₈, hNF₈, ?_, ?_, ?_, ?_, fun _ => ?_⟩
+      ⟨N', ?_⟩, vlow, le_trans hI.alloc RFall.2.2.2.2.2.1, by_o, ?_⟩
+    · refine ⟨by rwa [hmem10, hA10, hH10], hNF₈, ?_, ?_, ?_, ?_, fun _ => ?_⟩
       · rw [hF']; exact hcur.sub.trans Set.subset_union_left
       · rw [hF']
-        exact Model.DegLe.mono _ hdeg' (max_le (le_max_left _ _) (by omega))
+        exact Model.DegLe.mono _ hdeg' (max_le (le_max_left _ _) by_o)
       · rw [hF']
         exact semigranular_mono hM Set.subset_union_left (Set.union_subset hSa hdata.adm)
           (hSf.union hdata.fin) hcur.sg

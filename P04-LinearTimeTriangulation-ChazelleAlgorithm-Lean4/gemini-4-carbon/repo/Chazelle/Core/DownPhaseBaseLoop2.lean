@@ -56,13 +56,13 @@ theorem mem2_keep {m₁ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
   set l := dropE li n L (E.take t)
   by_cases h1 : a = SE' + l.length
   · subst h1
-    rw [ite_eq_left rfl, ite_eq_left (by omega), show SE' + l.length - SE' = l.length by omega,
+    rw [ite_eq_left rfl, ite_eq_left by_o, show SE' + l.length - SE' = l.length by omega,
       List.getD_append_right _ _ _ _ (le_refl _), Nat.sub_self]
     rfl
   · rw [ite_eq_right h1]
     by_cases h2 : SE' ≤ a ∧ a < SE' + l.length
-    · rw [ite_eq_left h2, ite_eq_left (by omega), List.getD_append _ _ _ _ (by omega)]
-    · rw [ite_eq_right h2, ite_eq_right (by omega)]
+    · rw [ite_eq_left h2, ite_eq_left by_o, List.getD_append _ _ _ _ by_o]
+    · rw [ite_eq_right h2, ite_eq_right by_o]
 
 theorem mem2_skip {m₁ m : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     {SE' t : ℕ} (hm : ∀ a, m a = mem2 m₁ li n L E SE' t a) (ht : t < E.length)
@@ -113,9 +113,9 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     exact List.getElem_mem ht
   have hc2 : c < E.length := by rw [hEl]; exact mem_lt hperm hcE
   have mSE : d.nmem (SE + t) = c := by
-    rw [hI.mem]; unfold mem2; rw [ite_eq_right (by omega), hE t ht]
+    rw [hI.mem]; unfold mem2; rw [ite_eq_right by_o, hE t ht]
   have mX : d.nmem (X + c) = tbl li n L c := by
-    rw [hI.mem]; unfold mem2; rw [ite_eq_right (by omega), hX c hc2]
+    rw [hI.mem]; unfold mem2; rw [ite_eq_right by_o, hX c hc2]
   -- the load block
   obtain ⟨d₁, k₁, e₁, hk₁, v32, v31, v35, v33, r₁, m₁', rr₁, rm₁, o₁⟩ : ∃ d₁ k₁, Exec P W
       (block [.loadN 200132 200131, .addN 200131 200131 200100, .addN 200135 200121 200132,
@@ -134,7 +134,7 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     all_goals simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, h131, h100, h121, mSE, mX]
   have g1 : ∀ r, (r < 200130 ∨ 200135 < r ∨ r = 200130 ∨ r = 200134) →
-      d₁.nreg r = d.nreg r := fun r hr => r₁ r (by omega) (by omega) (by omega) (by omega)
+      d₁.nreg r = d.nreg r := fun r hr => r₁ r by_o by_o by_o by_o
   -- the branch
   obtain ⟨d₂, k₂, e₂, hk₂, hk₂', g2, n134, mem2', rr₂, rm₂, o₂⟩ : ∃ d₂ k₂,
       Exec P W (.ifLtN 200101 200133 (block [.subN 200133 200133 200100, .storeN 200134 200133,
@@ -143,9 +143,9 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
       d₂.nreg 200134 = SE' + (dropE li n L (E.take (t + 1))).length ∧
       (∀ a, d₂.nmem a = mem2 m₁ li n L E SE' (t + 1) a) ∧
       d₂.rreg = d₁.rreg ∧ d₂.rmem = d₁.rmem ∧ d₂.output = d₁.output := by
-    have h101 : d₁.nreg 200101 = 0 := by rw [g1 _ (by omega), hI.r101]
-    have h134 : d₁.nreg 200134 = SE' + l.length := by rw [g1 _ (by omega), hI.r134]
-    have h100 : d₁.nreg 200100 = 1 := by rw [g1 _ (by omega), hI.r100]
+    have h101 : d₁.nreg 200101 = 0 := by rw [g1 _ by_o, hI.r101]
+    have h134 : d₁.nreg 200134 = SE' + l.length := by rw [g1 _ by_o, hI.r134]
+    have h100 : d₁.nreg 200100 = 1 := by rw [g1 _ by_o, hI.r100]
     have hsucc := dropE_take_succ (li := li) (n := n) (L := L) ht
     rw [← hc, ← hl] at hsucc
     cases hk : keptC li n L c
@@ -153,7 +153,7 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
       have hn : ¬ d₁.nreg 200101 < d₁.nreg 200133 := by rw [h101, hv]; omega
       rw [hk] at hsucc
       simp only [Bool.false_eq_true, ite_false, List.append_nil] at hsucc
-      refine ⟨d₁, _, .ifLtN_false hn (.skip e₁.wb_right), le_rfl, by omega, fun _ _ _ => rfl,
+      refine ⟨d₁, _, .ifLtN_false hn (.skip e₁.wb_right), le_rfl, by_o, fun _ _ _ => rfl,
         by rw [hsucc, h134], fun a => ?_, rfl, rfl, rfl⟩
       rw [m₁']
       exact mem2_skip hI.mem ht hk a
@@ -176,29 +176,29 @@ theorem dBody2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
         all_goals simp (disch := omega) only [Machine.upd_same,
           Machine.upd_other, h134, h100, hv, Machine.upd_apply]
         simp
-      refine ⟨d₂, _, .ifLtN_true hp e₂, by omega, by omega, r₂,
+      refine ⟨d₂, _, .ifLtN_true hp e₂, by_o, by_o, r₂,
         by rw [w134, hsucc, List.length_append, List.length_singleton]; ring, fun a => ?_,
         rr₂, rm₂, o₂⟩
       rw [mm₂, m₁']
       exact mem2_keep hI.mem ht hk a
   -- the increment
-  have h130 : d₂.nreg 200130 = t := by rw [g2 _ (by omega) (by omega), g1 _ (by omega)]
+  have h130 : d₂.nreg 200130 = t := by rw [g2 _ by_o by_o, g1 _ by_o]
   have h100 : d₂.nreg 200100 = 1 := by
-    rw [g2 _ (by omega) (by omega), g1 _ (by omega), hI.r100]
+    rw [g2 _ by_o by_o, g1 _ by_o, hI.r100]
   have e₃ := Exec.addN (P := P) e₂.wb_right 200130 200130 200100 (by rw [h130, h100]; omega)
-  set d₃ : Config := { d₂ with nreg := upd d₂.nreg 200130 (d₂.nreg 200130 + d₂.nreg 200100) }
+  set d₃ := { d₂ with nreg := upd d₂.nreg 200130 (d₂.nreg 200130 + d₂.nreg 200100) }
     with hd₃
   have g3 : ∀ r, r ≠ 200130 → d₃.nreg r = d₂.nreg r := fun r hr => by rw [hd₃]; simp [hr]
   have v3 : d₃.nreg 200130 = t + 1 := by rw [hd₃]; simp [h130, h100]
   have g : ∀ r, (r < 200130 ∨ 200135 < r) → d₃.nreg r = d.nreg r := fun r hr => by
-    rw [g3 r (by omega), g2 r (by omega) (by omega), g1 r (by omega)]
-  refine ⟨d₃, _, .seq e₁ (.seq e₂ e₃), e₃.wb_right, ?_, v3, by omega, by omega⟩
-  refine ⟨by rw [v3]; omega, by rw [g _ (by norm_num), hI.r136], ?_, ?_,
-    by rw [g _ (by norm_num), hI.r121], by rw [g _ (by norm_num), hI.r100],
-    by rw [g _ (by norm_num), hI.r101], fun r hr => by rw [g r hr, hI.fr r hr], ?_, ?_, ?_,
+    rw [g3 r by_o, g2 r by_o by_o, g1 r by_o]
+  refine ⟨d₃, _, .seq e₁ (.seq e₂ e₃), e₃.wb_right, ?_, v3, by_o, by_o⟩
+  refine ⟨by rw [v3]; omega, by rw [g _ by_n, hI.r136], ?_, ?_,
+    by rw [g _ by_n, hI.r121], by rw [g _ by_n, hI.r100],
+    by rw [g _ by_n, hI.r101], fun r hr => by rw [g r hr, hI.fr r hr], ?_, ?_, ?_,
     fun a => ?_⟩
-  · rw [v3, g3 _ (by norm_num), g2 _ (by norm_num) (by norm_num), v31]; ring
-  · rw [v3, g3 _ (by norm_num), n134]
+  · rw [v3, g3 _ by_n, g2 _ by_n by_n, v31]; ring
+  · rw [v3, g3 _ by_n, n134]
   · show d₂.rreg = c₁.rreg; rw [rr₂, rr₁, hI.rr]
   · show d₂.rmem = c₁.rmem; rw [rm₂, rm₁, hI.rm]
   · show d₂.output = c₁.output; rw [o₂, o₁, hI.out]
@@ -228,7 +228,7 @@ theorem dLoop2_exec {m₁ : ℕ → ℕ} {li : Bool} {n : ℕ} {L : List (ℕ ×
     ⟨hw, hI⟩
   have hi := hI'.t_le
   rw [hI'.r136] at htest
-  have hend : d'.nreg 200130 = E.length := by omega
+  have hend : d'.nreg 200130 = E.length := by_o
   refine ⟨d', k, e, hw', hI', hend, ?_, ?_⟩
   · rw [h0, hend] at hψ; omega
   · rw [h0] at hk; omega

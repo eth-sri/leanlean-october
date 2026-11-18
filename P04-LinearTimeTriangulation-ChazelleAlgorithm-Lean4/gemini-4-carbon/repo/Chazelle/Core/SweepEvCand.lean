@@ -53,7 +53,7 @@ theorem right_hit_end {c : Set Point} (hc : c ∈ Merge.augChords J.right) {a : 
       rw [this]; exact hH.right_not
     · have e : rayPt ((l, y) : Point) 1 s = ((l + s, y) : Point) := by simp [rayPt]
       rw [e]
-      exact hH.open_mem _ (by linarith) (by simp only at hs2; linarith)
+      exact hH.open_mem _ by_l (by simp only at hs2; linarith)
   · rw [hr]
     refine ⟨Merge.freeAt_of_isHChordIn_right _ hH, hy, by simp only; linarith, ?_, rfl, rfl⟩
     refine J.right.hitParam_eq_of_first _ (-1) (by simp only; linarith) ?_ fun s hs1 hs2 => ?_
@@ -64,7 +64,7 @@ theorem right_hit_end {c : Set Point} (hc : c ∈ Merge.augChords J.right) {a : 
     · have e : rayPt ((r, y) : Point) (-1) s = ((r - s, y) : Point) := by
         simp [rayPt, sub_eq_add_neg]
       rw [e]
-      exact hH.open_mem _ (by simp only at hs2; linarith) (by linarith)
+      exact hH.open_mem _ (by simp only at hs2; linarith) by_l
 
 /-- A point of `C₂` other than the shared vertex is off `C₁`. -/
 theorem not_mem_left_of_right (hP : J.P.Simple) {a : Point} (ha : a ∈ J.right.set)
@@ -77,9 +77,9 @@ theorem not_mem_left_of_right (hP : J.P.Simple) {a : Point} (ha : a ∈ J.right.
 `C`. -/
 theorem whole_free_end (hP : J.P.Simple) {a : Point} (ha : a ∈ J.right.set) (hv : a ≠ J.shared)
     {σ : ℝ} (hfree : FreeAt J.right a σ) : FreeAt J.whole a σ := by
-  have haw : a.2 ≤ J.whole.top.2 :=
+  have haw :=
     J.whole.snd_le_top_of_mem_set (J.right_set_subset ha)
-  have ha₂ : a.2 ≤ J.right.top.2 := J.right.snd_le_top_of_mem_set ha
+  have ha₂ := J.right.snd_le_top_of_mem_set ha
   rw [freeAt_whole_iff J haw]
   have hR₂ : J.right.radius = J.whole.radius := rfl
   have hR₁ : J.left.radius = J.whole.radius := rfl
@@ -110,7 +110,7 @@ theorem whole_free_end (hP : J.P.Simple) {a : Point} (ha : a ∈ J.right.set) (h
 theorem whole_hit_lt {a : Point} (ha₁ : a.2 ≤ J.left.top.2) (ha₂ : a.2 ≤ J.right.top.2) {σ : ℝ}
     (hσ : σ = 1 ∨ σ = -1) {τ : ℝ} (hg : Genuine J.left a σ τ)
     (hlt : τ < J.right.hitParam a σ) : J.whole.hitParam a σ = τ := by
-  have haw : a.2 ≤ J.whole.top.2 := le_trans ha₁ J.left_top_le
+  have haw := le_trans ha₁ J.left_top_le
   rw [whole_hitParam_eq_min J haw hσ, left_hitParam_eq J ha₁, right_hitParam_eq J ha₂]
   rw [((genuine_iff J.left ha₁ hσ).1 hg).2]
   exact min_eq_left hlt.le
@@ -121,15 +121,13 @@ theorem whole_hit_right {a : Point} (ha₂ : a.2 ≤ J.right.top.2) {σ : ℝ} (
     (h : a.2 ≤ J.left.top.2 → J.right.hitParam a σ ≤ J.left.hitParam a σ)
     (hbox : J.right.hitParam a σ ≤ Merge.rayHit J.whole.radius ∅ a σ) :
     J.whole.hitParam a σ = J.right.hitParam a σ := by
-  have haw : a.2 ≤ J.whole.top.2 := le_trans ha₂ J.right_top_le
+  have haw := le_trans ha₂ J.right_top_le
   rw [whole_hitParam_eq_min J haw hσ, right_hitParam_eq J ha₂]
   apply min_eq_right
   by_cases h₁ : a.2 ≤ J.left.top.2
   · rw [left_hitParam_eq J h₁]; exact h h₁
   · push Not at h₁
-    rw [rayHit_eq_empty_of_above J.left h₁]
-    exact hbox
-
+    rwa [rayHit_eq_empty_of_above J.left h₁]
 /-- **The chord seen from an end of a chord of `S₂`** belongs to `F₂⁺`. -/
 theorem shoot_end_mem {S₂ : Set (Set Point)} {c : Set Point} (hc : c ∈ S₂) {a : Point} {σ : ℝ}
     (ha : (σ = 1 ∧ a = Merge.lend c) ∨ (σ = -1 ∧ a = Merge.rend c)) (hfree : FreeAt J.whole a σ) :
@@ -162,34 +160,33 @@ theorem cand_sound (hP : J.P.Simple) {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ 
   have hσ : σ = 1 ∨ σ = -1 := by rcases ha with ⟨h, -⟩ | ⟨h, -⟩ <;> simp [h]
   obtain ⟨hfr, ha₂, hlen, hR, -, -⟩ := right_hit_end (hS₂ hc) ha
   have hfree := whole_free_end hP haR hv hfr
-  have hτ : 0 < τ := hg.1
-  have hhit : J.whole.hitParam a σ = τ := whole_hit_lt ha₁ ha₂ hσ hg (by rw [hR]; exact hlt)
+  have hτ := hg.1
+  have hhit : J.whole.hitParam a σ = τ := whole_hit_lt ha₁ ha₂ hσ hg (by rwa [hR])
   -- the hit point is in the open chord `c`, hence not the shared vertex
   have hwD : rayPt a σ τ ∈ J.right.dom := by
     obtain ⟨-, -, hdom⟩ := Merge.hit_of_freeAt J.right ha₂ hσ hfr
-    exact hdom τ hτ (by rw [hR]; exact hlt)
+    exact hdom τ hτ (by rwa [hR])
   have hwv : rayPt a σ τ ≠ J.shared := fun h =>
     J.right.not_mem_set_of_mem_dom hwD (by rw [h]; exact J.shared_mem_right)
   have hMV' : MValid J d t := ⟨hMV.1, hMV.2.1, hMV.2.2, fun ht => by
-    have hpt : sidePt (chainModel J.left).W ((b₁ J + d) % (chainModel J.left).W.n) t =
-        rayPt a σ τ := hA.2.2.2.1
-    rw [ht] at hpt; rw [hpt]; exact hwv⟩
+    have hpt := hA.2.2.2.1
+    rw [ht] at hpt; rwa [hpt]⟩
   obtain ⟨hS, hO⟩ := map_sound hP hσ hτ hhit hMV' hA
-  have hM : WalkAx (chainModel J.whole) := FactsChain.walkAx J.whole hP
+  have hM := FactsChain.walkAx J.whole hP
   have hpt : sidePt (chainModel J.whole).W (mEdge J d) t = rayPt a σ τ := by
     have hmem : sidePt (chainModel J.whole).W (mEdge J d) t ∈
         Chazelle.segment a (rayPt a σ τ) := by
       have := hS.2.2.2.1
       unfold Merge.shoot at this; rwa [hhit] at this
-    have hnd : sidePt (chainModel J.whole).W (mEdge J d) t ∉ J.whole.dom :=
+    have hnd :=
       hM.trace _ hS.1 t hS.2.1 hS.2.2.1.le
     refine seg_end hmem hnd (fun s hs => ?_) (fun h => ?_)
     · rw [lerp_rayPt]
       obtain ⟨-, -, hdom⟩ := Merge.hit_of_freeAt J.whole
         (le_trans ha₂ J.right_top_le) hσ hfree
       exact hdom _ (mul_pos hs.1 hτ) (by rw [hhit]; nlinarith [hs.2])
-    · have := off_right_pt J hP hS₂ hS₂f hS.1 hS.2.1 hS.2.2.1 (by rw [h]; exact haR)
-        (by rw [h]; exact hv)
+    · have := off_right_pt J hP hS₂ hS₂f hS.1 hS.2.1 hS.2.2.1 (by rwa [h])
+        (by rwa [h])
       have h2 : oW J ((mEdge J d : ℝ) + t) < Lst J := by
         unfold oW gW; exact_mod_cast this.2
       rw [hO] at h2

@@ -65,8 +65,7 @@ theorem initA_exec {c : Config} (hw : WordsBounded W c) {S p : ℕ}
     by config_simp, by config_simp; simp only [h00, hS1], by config_simp; simp only [h00, hS1],
     by config_simp, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
   unfold bandOf bUp at hr
-  simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  upd_keep
 
 set_option maxHeartbeats 16000000 in
 theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg ALLOC = A)
@@ -86,8 +85,7 @@ theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg A
     all_goals try (config_simp; omega)
     refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, fun r a1 a2 a3 => ?_, rfl,
       rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
   have hA1 : c1.nreg ALLOC = A := by
     rw [fr1 _ (by rw [hAl]; omega) (by rw [hAl]; omega) (by rw [hAl]; omega)]; exact hA
   obtain ⟨c2, k2, e2, hk2, hw2, A2, j27, j15, hH, hm2, fr2, hrr2, hrm2, ho2⟩ :=
@@ -98,15 +96,14 @@ theorem initH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ} (hA : c.nreg A
       c3.nmem = c2.nmem ∧ c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output := by
     exec_block
     refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3,
-    by rw [fr3 _ (by rw [hAl]; omega)]; exact A2, by rw [j04, j27], by rw [hm3]; exact hH,
+    upd_keep
+  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by_o, hw3,
+    by rwa [fr3 _ (by rw [hAl]; omega)], by rw [j04, j27], by rwa [hm3],
     fun a ha => by rw [hm3, hm2 a ha, hm1], fun r h1 h2 h3 => ?_, by rw [hrr3, hrr2, hrr1],
     by rw [hrm3, hrm2, hrm1], by rw [ho3, ho2, ho1]⟩
   have : r < 160000 ∨ 170000 ≤ r := by unfold bandOf bL41 at h1; omega
-  rw [fr3 r h2, fr2 r (by omega) (by omega) (by omega) (by omega) h3,
-    fr1 r (by omega) (by omega) (by omega)]
+  rw [fr3 r h2, fr2 r by_o by_o by_o by_o h3,
+    fr1 r by_o by_o by_o]
 
 set_option maxHeartbeats 16000000 in
 theorem initR_exec {c : Config} (hw : WordsBounded W c) {H S D n1 : ℕ}
@@ -135,8 +132,7 @@ theorem initR_exec {c : Config} (hw : WordsBounded W c) {H S D n1 : ℕ}
   all_goals try (config_simp <;> (try simp only [hA, h00, h03, h28, h20, h21, h22, h25, h29,
     Machine.upd_apply]) <;> (try split_ifs) <;> first | omega | rfl)
   unfold InitRRG at h1
-  simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  upd_keep
 
 end proofs
 

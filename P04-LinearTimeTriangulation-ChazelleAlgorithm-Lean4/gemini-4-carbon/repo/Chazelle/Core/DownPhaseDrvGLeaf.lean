@@ -22,7 +22,7 @@ open Machine Machine.Stmt Programs BuildRam DrvR
 @[expose] public section
 
 theorem frame_refl (B : Finset ℕ) (c : Config) (k : ℕ) : Frame B c c k :=
-  ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_refl _, by omega⟩
+  ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_refl _, by_o⟩
 
 /-- **A counted loop with frames.** -/
 theorem forLoopF {P : Polygon} {W : ℕ} {ir nr : ℕ} {body : Stmt} {B : Finset ℕ}
@@ -35,20 +35,20 @@ theorem forLoopF {P : Polygon} {W : ℕ} {ir nr : ℕ} {body : Stmt} {B : Finset
       k ≤ (Kb + 2) * (N - j) + 2 ∧ Frame B c c' k := by
   induction hn : N - j generalizing j c with
   | zero =>
-    have hjN : j = N := by omega
+    have hjN : j = N := by_o
     subst hjN
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by omega, frame_refl B c 2⟩
+    exact ⟨c, 2, .whileLtN_false (by rw [h1, h2]; omega) hw, hc, by_o, frame_refl B c 2⟩
   | succ t ih =>
     obtain ⟨hw, h1, h2⟩ := hI j c hc
-    have hlt : j < N := by omega
+    have hlt : j < N := by_o
     obtain ⟨c₁, k₁, e₁, hI₁, hk₁, f₁⟩ := hbody j c hlt hc
-    obtain ⟨c', k₂, e₂, hI', hk₂, f₂⟩ := ih hI₁ (by omega) (by omega)
-    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rw [h1, h2]; exact hlt) e₁ e₂, hI', ?_, ?_⟩
+    obtain ⟨c', k₂, e₂, hI', hk₂, f₂⟩ := ih hI₁ by_o by_o
+    refine ⟨c', k₁ + 2 + k₂, .whileLtN_true (by rwa [h1, h2]) e₁ e₂, hI', ?_, ?_⟩
     · rw [Nat.mul_succ]; omega
     · have := f₁.trans f₂
       rw [Finset.union_self] at this
-      exact this.mono (le_refl _) (by omega)
+      exact this.mono (le_refl _) by_o
 
 /-- **A junction**: the host point `s` is strictly inside a run item. -/
 def JunOK (n : ℕ) (H : Host) (s : ℕ) : Prop :=
@@ -64,16 +64,16 @@ theorem leaf_facts {n C : ℕ} (hC : 1 ≤ C) (hn : 1 ≤ n) {H : Host} (hwf : H
   obtain ⟨H₁, a, ℓ, H₂, rfl, h1, h2, h3, h4, h5, h6⟩ := mem_hostLeaves hC hn H 0 hwf x hx
   rw [Nat.zero_add] at h1 h2 h6
   have hlen := DownMath.pts_append_run_length n H₁ H₂ a ℓ
-  refine ⟨by omega, h3, h4, h5, by omega, fun k hk => ?_,
-    ⟨H₁, a, ℓ, H₂, x.1 - (H₁.pts n).length, rfl, by omega, by omega, by omega⟩,
-    ⟨H₁, a, ℓ, H₂, x.1 + x.2.1 - (H₁.pts n).length, rfl, by omega, by omega, by omega⟩⟩
-  have e := DownMath.pts_append_run n H₁ H₂ a ℓ (k := x.1 - (H₁.pts n).length + k) (by omega)
+  refine ⟨by_o, h3, h4, h5, by_o, fun k hk => ?_,
+    ⟨H₁, a, ℓ, H₂, x.1 - (H₁.pts n).length, rfl, by_o, by_o, by_o⟩,
+    ⟨H₁, a, ℓ, H₂, x.1 + x.2.1 - (H₁.pts n).length, rfl, by_o, by_o, by_o⟩⟩
+  have e := DownMath.pts_append_run n H₁ H₂ a ℓ (k := x.1 - (H₁.pts n).length + k) by_o
   rw [show (H₁.pts n).length + (x.1 - (H₁.pts n).length + k) = x.1 + k by omega] at e
   rw [e, h6]
   congr 1
   rw [show a + (x.1 - (H₁.pts n).length + k) = a + (x.1 - (H₁.pts n).length) + k by omega,
     Nat.add_mod, Nat.mod_eq_of_lt (show k < n by omega)]
-  exact Nat.mod_eq_of_lt (by omega)
+  exact Nat.mod_eq_of_lt by_o
 
 end
 

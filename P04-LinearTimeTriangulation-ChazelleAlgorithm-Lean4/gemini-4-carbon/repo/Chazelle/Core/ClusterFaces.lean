@@ -61,7 +61,7 @@ theorem face_orbit [Finite (Fin N)] {fp : ℕ → ℕ} (hfp : ∀ d : Fin N, fp 
     rw [← hjn, iterate_fp hfp]
     exact congrArg Fin.val hn
   · rintro ⟨i, -, hi⟩
-    have : (M.fperm ^ i) d = e := Fin.ext (by rw [← iterate_fp hfp]; exact hi)
+    have : (M.fperm ^ i) d = e := Fin.ext (by rwa [← iterate_fp hfp])
     rw [← this]
     clear this hi
     induction i with
@@ -97,7 +97,7 @@ theorem fpStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
     ∃ c' k, Exec P W fpStmt c c' k ∧ k ≤ 9 * N + 3 ∧ WordsBounded W c' ∧
       PFr FpRG (fun a => bF ≤ a ∧ a < bF + N) c c' ∧
       ∀ d, d < N → c'.nmem (bF + d) = c.nmem (bR + c.nmem (bO + d)) := by
-  have e0 := Exec.constN (P := P) hw 130524 0 (by omega)
+  have e0 := Exec.constN (P := P) hw 130524 0 by_o
   set c1 := { c with nreg := upd c.nreg 130524 0 }
   have hf1 : PFr FpRG (fun a => bF + 0 ≤ a ∧ a < bF + N) c c1 :=
     PFr.nreg (PFr.refl c) (fun r hr => by
@@ -107,30 +107,30 @@ theorem fpStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
     (by unfold FpRG; omega) (bOut := bF) (n := N) (j₀ := 0) (B := 7)
     (fun d => c.nmem (bR + c.nmem (bO + d))) e0.wb_right
     (by simp only [c1, Machine.upd_same])
-    (by simp only [c1]; rw [Machine.upd_other _ _ _ (by omega)]; exact hN) (Nat.zero_le _)
+    (by simp only [c1]; rwa [Machine.upd_other _ _ _ by_o]) (Nat.zero_le _)
     (fun j c2 _ hjn hw2 hi2 hf2 => by
       have hf12 := hf1.trans hf2
-      have r0 : ∀ r, ¬ FpRG r → c2.nreg r = c.nreg r := hf12.1
+      have r0 := hf12.1
       have rR := (r0 130520 (by unfold FpRG; omega)).trans hR
       have rO := (r0 130521 (by unfold FpRG; omega)).trans hO
       have rF := (r0 130522 (by unfold FpRG; omega)).trans hF
       have r1 := (r0 130001 (by unfold FpRG; omega)).trans hone
-      have mO : c2.nmem (bO + j) = c.nmem (bO + j) := hf12.2.2.2.2 _ (by omega)
+      have mO : c2.nmem (bO + j) = c.nmem (bO + j) := hf12.2.2.2.2 _ by_o
       obtain ⟨hwr, hdr⟩ := hRw j hjn
       have mR : c2.nmem (bR + c.nmem (bO + j)) = c.nmem (bR + c.nmem (bO + j)) :=
-        hf12.2.2.2.2 _ (by omega)
+        hf12.2.2.2.2 _ by_o
       unfold fpBody
       exec_block
       · rw [rO, hi2]; omega
-      · config_simp; rw [rR, rO, hi2, mO]; exact hwr
+      · config_simp; rwa [rR, rO, hi2, mO]
       · config_simp; rw [rF, hi2]; omega
       · config_simp; rw [hi2, r1]; omega
       · refine ⟨le_refl _, by config_simp; rw [hi2, r1], fun r hr => ?_, rfl, rfl, rfl, ?_⟩
         · simp only [Machine.upd_apply]; unfold FpRG at hr; split_ifs <;> omega
         · config_simp; rw [rF, hi2, rR, rO, mO, mR])
-  refine ⟨c', 1 + k, .seq e0 e, by omega, hw', ?_, fun d hd => hI d (Nat.zero_le _) hd⟩
+  refine ⟨c', 1 + k, .seq e0 e, by_o, hw', ?_, fun d hd => hI d (Nat.zero_le _) hd⟩
   exact (hf1.trans hf').mono (fun r h => h)
-    (fun a ha => by obtain ⟨h1, h2⟩ := ha; exact ⟨by omega, h2⟩)
+    (fun a ha => by obtain ⟨h1, h2⟩ := ha; exact ⟨by_o, h2⟩)
 
 end fp
 
@@ -182,12 +182,12 @@ theorem teStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
     simp only [Machine.upd_apply]; unfold TeRG at hr; split_ifs <;> omega
   have hone1 : c1.nreg 130001 = 1 := (hr1.1 _ (by unfold TeRG; omega)).trans hone
   obtain ⟨c2, k2, e2, hk2, hf2, hfill⟩ := fillStmt_exec (P := P) e1.wb_right hone1
-    (by rw [h150, h151]; exact hwT) (by rw [h151]; exact hNW)
+    (by rwa [h150, h151]) (by rwa [h151])
   rw [h150, h151, h152] at hfill
   rw [h151] at hk2
   have hr2 : PFr TeRG (fun a => bT ≤ a ∧ a < bT + N) c c2 :=
     hr1.trans (hf2.mono (fun r hr => by unfold FillScr at hr; unfold TeRG; omega)
-      (fun a ha => by rw [h150, h151] at ha; exact ha))
+      (fun a ha => by rwa [h150, h151] at ha))
   have e3 := Exec.copyN (P := P) e2.wb_right 130545 130001
   set c3 := { c2 with nreg := upd c2.nreg 130545 (c2.nreg 130001) }
   have hr3 : PFr TeRG (fun a => bT ≤ a ∧ a < bT + N) c c3 :=
@@ -202,15 +202,15 @@ theorem teStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
         (c4.nmem (bT + d) = 0 ∧ ¬ TeSet c.nmem bPar bO j d))
     μ 9 (fun j c4 h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun j c4 hj ⟨hw4, hi4, hn4, hf4, hj1, hI4⟩ => by
-      have r0 : ∀ r, ¬ TeRG r → c4.nreg r = c.nreg r := hf4.1
+      have r0 := hf4.1
       have rP := (r0 130540 (by unfold TeRG; omega)).trans hPar
       have rO := (r0 130541 (by unfold TeRG; omega)).trans hO
       have rT := (r0 130542 (by unfold TeRG; omega)).trans hT
       have r1 := (r0 130001 (by unfold TeRG; omega)).trans hone
       obtain ⟨hpN, hwo, hoN⟩ := hparN j hj1 hj
-      have mP : c4.nmem (bPar + j) = c.nmem (bPar + j) := hf4.2.2.2.2 _ (by omega)
+      have mP : c4.nmem (bPar + j) = c.nmem (bPar + j) := hf4.2.2.2.2 _ by_o
       set p := c.nmem (bPar + j)
-      have mO : c4.nmem (bO + p) = c.nmem (bO + p) := hf4.2.2.2.2 _ (by omega)
+      have mO : c4.nmem (bO + p) = c.nmem (bO + p) := hf4.2.2.2.2 _ by_o
       set o := c.nmem (bO + p)
       obtain ⟨c5, k5, e5, hk5, hw5, h5n, h5r, h5m, h5rr, h5rm, h5o⟩ : ∃ c5 k5,
           Exec P W teBody c4 c5 k5 ∧ k5 = 9 ∧ WordsBounded W c5 ∧ c5.nreg 130545 = j + 1 ∧
@@ -223,10 +223,10 @@ theorem teStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
         refine ⟨rfl, ‹_›, by config_simp; rw [hi4, r1], fun r hr => ?_, ?_, rfl, rfl, rfl⟩
         · simp only [Machine.upd_apply]; unfold TeRG at hr; split_ifs <;> omega
         · config_simp; simp only [rT, rO, rP, hi4, mP, mO, r1]
-      refine ⟨c5, k5, e5, by omega, hw5, h5n, by rw [h5r _ (by unfold TeRG; omega), hn4],
+      refine ⟨c5, k5, e5, by_o, hw5, h5n, by rw [h5r _ (by unfold TeRG; omega), hn4],
         ⟨fun r hr => (h5r r hr).trans (hf4.1 r hr), h5rr.trans hf4.2.1, h5rm.trans hf4.2.2.1,
-          h5o.trans hf4.2.2.2.1, fun a ha => ?_⟩, by omega, fun d hd => ?_⟩
-      · rw [h5m, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+          h5o.trans hf4.2.2.2.1, fun a ha => ?_⟩, by_o, fun d hd => ?_⟩
+      · rw [h5m, Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o]
         exact hf4.2.2.2.2 a ha
       · have hnew : TeSet c.nmem bPar bO (j + 1) d ↔ TeSet c.nmem bPar bO j d ∨
             d = p ∨ d = o := by
@@ -236,17 +236,17 @@ theorem teStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
             · exact Or.inl ⟨v, hv1, hv, hv3⟩
             · exact Or.inr hv3
           · rintro (⟨v, hv1, hv2, hv3⟩ | h | h)
-            · exact ⟨v, hv1, by omega, hv3⟩
-            · exact ⟨j, hj1, by omega, Or.inl h⟩
-            · exact ⟨j, hj1, by omega, Or.inr h⟩
+            · exact ⟨v, hv1, by_o, hv3⟩
+            · exact ⟨j, hj1, by_o, Or.inl h⟩
+            · exact ⟨j, hj1, by_o, Or.inr h⟩
         rw [h5m, Machine.upd_apply, Machine.upd_apply]
         by_cases h1 : bT + d = bT + o
         · rw [ite_eq_left h1]
-          exact Or.inl ⟨rfl, hnew.mpr (Or.inr (Or.inr (by omega)))⟩
+          exact Or.inl ⟨rfl, hnew.mpr (Or.inr (Or.inr by_o))⟩
         · rw [ite_eq_right h1]
           by_cases h2 : bT + d = bT + p
           · rw [ite_eq_left h2]
-            exact Or.inl ⟨rfl, hnew.mpr (Or.inr (Or.inl (by omega)))⟩
+            exact Or.inl ⟨rfl, hnew.mpr (Or.inr (Or.inl by_o))⟩
           · rw [ite_eq_right h2]
             rcases hI4 d hd with ⟨a, b⟩ | ⟨a, b⟩
             · exact Or.inl ⟨a, hnew.mpr (Or.inl b)⟩
@@ -259,11 +259,11 @@ theorem teStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 =
       show upd c2.nreg 130545 (c2.nreg 130001) 130545 = 1
       rw [Machine.upd_same, hr2.1 _ (by unfold TeRG; omega), hone],
       by show upd c2.nreg 130545 (c2.nreg 130001) 130543 = μ
-         rw [Machine.upd_other _ _ _ (by omega), hr2.1 _ (by unfold TeRG; omega), hμ],
+         rw [Machine.upd_other _ _ _ by_o, hr2.1 _ (by unfold TeRG; omega), hμ],
       hr3, le_rfl, fun d hd => Or.inr ⟨by
           show c2.nmem (bT + d) = 0; exact hfill d hd, fun ⟨v, hv1, hv2, _⟩ => by omega⟩⟩ hμ1
   subst hk1
-  refine ⟨c', 3 + (k2 + (1 + k)), .seq e1 (.seq e2 (.seq e3 e)), by omega, hw', hf', hI.2⟩
+  refine ⟨c', 3 + (k2 + (1 + k)), .seq e1 (.seq e2 (.seq e3 e)), by_o, hw', hf', hI.2⟩
 
 end te
 
@@ -370,7 +370,7 @@ theorem unv_upd {m : ℕ → ℕ} {bA N x d : ℕ} (hx : x < N) (hmx : m (bA + x
     · rintro ⟨hy, hmy⟩
       by_cases hyx : y = x
       · left; exact hyx
-      · right; refine ⟨hy, ?_⟩; rw [ite_eq_right (by omega)]; exact hmy
+      · right; refine ⟨hy, ?_⟩; rwa [ite_eq_right by_o]
     · rintro (rfl | ⟨hy, hmy⟩)
       · exact ⟨hx, hmx⟩
       · refine ⟨hy, ?_⟩
@@ -392,7 +392,7 @@ structure WalkCtx (c : Config) (bF bA N : ℕ) : Prop where
 theorem WalkCtx.of_frame {c c' : Config} {bF bA N : ℕ} (h : WalkCtx c bF bA N)
     (hr : ∀ r, ¬ AttRG r → c'.nreg r = c.nreg r) : WalkCtx c' bF bA N := by
   obtain ⟨h1, h2, h3, h4, h5⟩ := h
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> (rw [hr _ (by unfold AttRG; omega)]; assumption)
+  refine ⟨?_, ?_, ?_, ?_, ?_⟩ <;> (rwa [hr _ (by unfold AttRG; omega)])
 
 open Classical in
 /-- **The walk around the cycle of `d`**: afterwards `ATT[x] = d` on the cycle, unchanged
@@ -439,9 +439,9 @@ theorem walkS_exec {c : Config} (hw : WordsBounded W c) {bF bA N d : ℕ}
         rw [hm2 e heN, ite_eq_right]
         · exact hfresh j hjp
         · rintro ⟨i, hi, hie⟩
-          exact absurd (iterate_inj_of_lt_per hf hdN (by omega) hjp hie) (by omega)
+          exact absurd (iterate_inj_of_lt_per hf hdN by_o hjp hie) by_o
       have hfe : c2.nmem (bF + e) = f e := by
-        rw [hf2.2.2.2.2 _ (by omega)]; exact hfm e heN
+        rw [hf2.2.2.2.2 _ by_o]; exact hfm e heN
       set e' := f e
       have he' : e' = f^[j + 1] d := by
         simp only [e', e]; rw [Function.iterate_succ_apply']
@@ -459,8 +459,7 @@ theorem walkS_exec {c : Config} (hw : WordsBounded W c) {bF bA N d : ℕ}
           rfl, rfl, ?_⟩
         · config_simp
           simp only [hC2.rA, hC2.rF, hej, hdj]
-          rw [Machine.upd_other _ _ _ (by omega)]
-          exact hfe
+          rwa [Machine.upd_other _ _ _ by_o]
         · simp only [Machine.upd_apply]; unfold AttRG at hr; split_ifs <;> omega
         · config_simp; simp only [hC2.rA, hej, hdj]
       have hone3 : c3.nreg 130001 = 1 := (h3r _ (by unfold AttRG; omega)).trans hC2.one
@@ -468,7 +467,7 @@ theorem walkS_exec {c : Config} (hw : WordsBounded W c) {bF bA N d : ℕ}
       have hnext : (j + 1 < per f N d) ↔ e' ≠ d := by
         rw [he']
         constructor
-        · intro h; exact iterate_ne_of_lt_per hf hdN (by omega) h
+        · intro h; exact iterate_ne_of_lt_per hf hdN by_o h
         · intro h
           by_contra h'
           exact h (by rw [show j + 1 = per f N d by omega]; exact iterate_per hf hdN)
@@ -481,40 +480,40 @@ theorem walkS_exec {c : Config} (hw : WordsBounded W c) {bF bA N d : ℕ}
           c4.output = c3.output ∧ c4.nmem = c3.nmem := by
         by_cases h1 : c3.nreg 130534 < c3.nreg 130533
         · have ec := Exec.copyN (P := P) hw3 130535 130001
-          refine ⟨_, _, .ifLtN_true h1 ec, by omega, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl,
+          refine ⟨_, _, .ifLtN_true h1 ec, by_o, ?_, ?_, ?_, fun r hr => ?_, rfl, rfl, rfl,
             rfl⟩
-          · simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact h3e
+          · simp only [Machine.upd_apply]; rwa [ite_eq_right by_o]
           · simp only [Machine.upd_same, hone3]
             rw [ite_eq_left (hnext.mpr (by rw [← h3e, ← h3d]; omega))]
-          · simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact h3d
+          · simp only [Machine.upd_apply]; rwa [ite_eq_right by_o]
           · simp only [Machine.upd_apply]; unfold AttRG at hr; split_ifs <;> omega
         · by_cases h2 : c3.nreg 130533 < c3.nreg 130534
           · have ec := Exec.copyN (P := P) hw3 130535 130001
-            refine ⟨_, _, .ifLtN_false h1 (.ifLtN_true h2 ec), by omega, ?_, ?_, ?_,
+            refine ⟨_, _, .ifLtN_false h1 (.ifLtN_true h2 ec), by_o, ?_, ?_, ?_,
               fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-            · simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact h3e
+            · simp only [Machine.upd_apply]; rwa [ite_eq_right by_o]
             · simp only [Machine.upd_same, hone3]
               rw [ite_eq_left (hnext.mpr (by rw [← h3e, ← h3d]; omega))]
-            · simp only [Machine.upd_apply]; rw [ite_eq_right (by omega)]; exact h3d
+            · simp only [Machine.upd_apply]; rwa [ite_eq_right by_o]
             · simp only [Machine.upd_apply]; unfold AttRG at hr; split_ifs <;> omega
-          · refine ⟨c3, _, .ifLtN_false h1 (.ifLtN_false h2 (.skip hw3)), by omega, h3e, ?_, h3d,
+          · refine ⟨c3, _, .ifLtN_false h1 (.ifLtN_false h2 (.skip hw3)), by_o, h3e, ?_, h3d,
               fun r _ => rfl, rfl, rfl, rfl, rfl⟩
             rw [h3c, ite_eq_right]
             intro h
             exact (hnext.mp h) (by rw [← h3e, ← h3d]; omega)
       subst hk3
-      refine ⟨c4, 5 + k4, .seq e3 e4, ⟨e4.wb_right, j + 1, by omega, by rw [h4e, he'], h4c, h4d,
+      refine ⟨c4, 5 + k4, .seq e3 e4, ⟨e4.wb_right, j + 1, by_o, by rw [h4e, he'], h4c, h4d,
         ⟨fun r hr => (h4r r hr).trans ((h3r r hr).trans (hf2.1 r hr)),
           hrr4.trans (hrr3.trans hf2.2.1), hrm4.trans (hrm3.trans hf2.2.2.1),
           ho4.trans (ho3.trans hf2.2.2.2.1), fun a ha => ?_⟩, fun x hx => ?_⟩, ?_⟩
-      · rw [hm4, hm3, Machine.upd_other _ _ _ (by omega)]; exact hf2.2.2.2.2 a ha
+      · rw [hm4, hm3, Machine.upd_other _ _ _ by_o]; exact hf2.2.2.2.2 a ha
       · rw [hm4, hm3, Machine.upd_apply]
         by_cases hxe : bA + x = bA + e
-        · rw [ite_eq_left hxe, ite_eq_left ⟨j, by omega, by omega⟩]
+        · rw [ite_eq_left hxe, ite_eq_left ⟨j, by_o, by_o⟩]
         · rw [ite_eq_right hxe, hm2 x hx]
           by_cases hex : ∃ i, i < j ∧ f^[i] d = x
           · obtain ⟨i, hi, hix⟩ := hex
-            rw [ite_eq_left ⟨i, hi, hix⟩, ite_eq_left ⟨i, by omega, hix⟩]
+            rw [ite_eq_left ⟨i, hi, hix⟩, ite_eq_left ⟨i, by_o, hix⟩]
           · rw [ite_eq_right hex, ite_eq_right]
             rintro ⟨i, hi, hix⟩
             rcases Nat.lt_succ_iff_lt_or_eq.mp hi with hi | rfl
@@ -524,7 +523,7 @@ theorem walkS_exec {c : Config} (hw : WordsBounded W c) {bF bA N d : ℕ}
         have := unv_upd (m := c2.nmem) (bA := bA) heN hme hdN
         omega)
     ⟨hw1, 0, Nat.zero_le _, by rw [h1e]; rfl, by rw [h1c, ite_eq_left hper], by
-      rw [h1r _ (by omega) (by omega)]; exact hd,
+      rwa [h1r _ by_o by_o],
       ⟨fun r hr => h1r r (by unfold AttRG at hr; omega) (by unfold AttRG at hr; omega), hrr1,
         hrm1, ho1, fun a _ => by rw [hm1]⟩,
       fun x hx => by rw [hm1, ite_eq_right (by rintro ⟨i, hi, _⟩; omega)]⟩
@@ -532,7 +531,7 @@ theorem walkS_exec {c : Config} (hw : WordsBounded W c) {bF bA N d : ℕ}
   rw [hC'.zero, hcj] at htest
   have hjp : j = per f N d := by
     by_contra h
-    rw [ite_eq_left (by omega)] at htest
+    rw [ite_eq_left by_o] at htest
     omega
   subst hjp
   refine ⟨c', k1 + k, .seq e1 e, ?_, hw', hdj, hf', fun x hx => ?_⟩
@@ -544,7 +543,7 @@ theorem walkS_exec {c : Config} (hw : WordsBounded W c) {bF bA N d : ℕ}
     · rintro ⟨i, -, hi⟩; exact ⟨i, hi⟩
     · rintro ⟨i, hi⟩
       obtain ⟨i', hi', hii⟩ := exists_lt_per_of_iterate hf hdN i
-      exact ⟨i', hi', by rw [← hii]; exact hi⟩
+      exact ⟨i', hi', by rwa [← hii]⟩
 
 open Classical in
 /-- **The face representatives**: afterwards `ATT[x]` is the least dart on the cycle of `x` under
@@ -569,13 +568,13 @@ theorem attStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
     simp only [Machine.upd_apply]; unfold AttRG at hr; split_ifs <;> omega
   have hone1 : c1.nreg 130001 = 1 := (hr1.1 _ (by unfold AttRG; omega)).trans hone
   obtain ⟨c2, k2, e2, hk2, hf2, hfill⟩ := fillStmt_exec (P := P) e1.wb_right hone1
-    (by rw [h150, h151]; exact hwA) (by rw [h151]; exact hNW)
+    (by rwa [h150, h151]) (by rwa [h151])
   rw [h150, h151, h152] at hfill
   rw [h151] at hk2
   have hr2 : PFr AttRG (fun a => bA ≤ a ∧ a < bA + N) c c2 :=
     hr1.trans (hf2.mono (fun r hr => by unfold FillScr at hr; unfold AttRG; omega)
-      (fun a ha => by rw [h150, h151] at ha; exact ha))
-  have e3 := Exec.constN (P := P) e2.wb_right 130533 0 (by omega)
+      (fun a ha => by rwa [h150, h151] at ha))
+  have e3 := Exec.constN (P := P) e2.wb_right 130533 0 by_o
   set c3 := { c2 with nreg := upd c2.nreg 130533 0 }
   have hr3 : PFr AttRG (fun a => bA ≤ a ∧ a < bA + N) c c3 :=
     PFr.nreg hr2 (fun r hr => by
@@ -614,19 +613,19 @@ theorem attStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
         have e6 := Exec.addN (P := P) hw5 130533 130533 130001 (by
           rw [h5d, hC5.one]; omega)
         refine ⟨_, k5 + (0 + 1 + 1), .seq e5 (.seq (.ifLtN_true hvis (.skip hw5)) e6),
-          ⟨e6.wb_right, d + 1, by simp [h5d, hC5.one], by omega, PFr.nreg hf5 (fun r hr => by
+          ⟨e6.wb_right, d + 1, by simp [h5d, hC5.one], by_o, PFr.nreg hf5 (fun r hr => by
             simp only [Machine.upd_apply]; unfold AttRG at hr; split_ifs <;> omega),
             fun x hx => ?_⟩, ?_⟩
         · show c5.nmem (bA + x) = _
           rw [hm5, hI4 x hx]
           by_cases hx1 : minOrb f x < d
-          · rw [ite_eq_left hx1, ite_eq_left (by omega)]
+          · rw [ite_eq_left hx1, ite_eq_left by_o]
           · have hne : minOrb f x ≠ d := by
               intro h
-              have horb : Orb f d x := h ▸ minOrb_orb x
+              have horb := h ▸ minOrb_orb x
               have := minOrb_eq hf htest horb
               omega
-            rw [ite_eq_right hx1, ite_eq_right (by omega)]
+            rw [ite_eq_right hx1, ite_eq_right by_o]
         · simp only [Machine.upd_same, h5d, hC5.one, hm5]
           subst hk5
           omega
@@ -634,44 +633,43 @@ theorem attStmt_exec {c : Config} (hw : WordsBounded W c) (hone : c.nreg 130001 
         have hmdd : minOrb f d = d := by
           rw [h5v, hC5.rN, hI4 d htest] at hvis
           by_contra h
-          rw [ite_eq_left (by omega)] at hvis
+          rw [ite_eq_left by_o] at hvis
           have := lt_of_le_of_lt (minOrb_le (f := f) d) htest
           omega
         have hfresh : ∀ i, i < per f N d → c5.nmem (bA + f^[i] d) = N := by
           intro i hi
           have hxN := hf.iterate_lt i htest
-          rw [hm5, hI4 _ hxN, minOrb_eq hf htest ⟨i, rfl⟩, hmdd, ite_eq_right (by omega)]
+          rw [hm5, hI4 _ hxN, minOrb_eq hf htest ⟨i, rfl⟩, hmdd, ite_eq_right by_o]
         obtain ⟨c6, k6, e6, hk6, hw6, h6d, hf6, hm6⟩ := walkS_exec (P := P) hw5 hC5 h5d htest hf
-          (fun x hx => by rw [hm5, hf4.2.2.2.2 _ (by omega)]; exact hfm x hx) hwA hwF hdisj
+          (fun x hx => by rw [hm5, hf4.2.2.2.2 _ by_o]; exact hfm x hx) hwA hwF hdisj
           hfresh
         have hC6 := hC5.of_frame hf6.1
         have e7 := Exec.addN (P := P) hw6 130533 130533 130001 (by
           rw [h6d, hC6.one]; omega)
         refine ⟨_, k5 + (k6 + 2 + 1), .seq e5 (.seq (.ifLtN_false hvis e6) e7),
-          ⟨e7.wb_right, d + 1, by simp [h6d, hC6.one], by omega,
+          ⟨e7.wb_right, d + 1, by simp [h6d, hC6.one], by_o,
             PFr.nreg (hf5.trans hf6) (fun r hr => by
               simp only [Machine.upd_apply]; unfold AttRG at hr; split_ifs <;> omega),
             fun x hx => ?_⟩, ?_⟩
         · show c6.nmem (bA + x) = _
           rw [hm6 x hx]
           by_cases horb : Orb f d x
-          · rw [ite_eq_left horb, minOrb_eq hf htest horb, hmdd, ite_eq_left (by omega)]
+          · rw [ite_eq_left horb, minOrb_eq hf htest horb, hmdd, ite_eq_left by_o]
           · rw [ite_eq_right horb, hm5, hI4 x hx]
             have hne : minOrb f x ≠ d := fun h => horb (h ▸ minOrb_orb x)
             by_cases hx1 : minOrb f x < d
-            · rw [ite_eq_left hx1, ite_eq_left (by omega)]
-            · rw [ite_eq_right hx1, ite_eq_right (by omega)]
+            · rw [ite_eq_left hx1, ite_eq_left by_o]
+            · rw [ite_eq_right hx1, ite_eq_right by_o]
         · simp only [Machine.upd_same, h6d, hC6.one]
           subst hk5
           have := unv_le c6.nmem bA N
           have h56 : unv c5.nmem bA N = unv c4.nmem bA N := by rw [hm5]
           omega)
     ⟨e3.wb_right, 0, by simp [c3], Nat.zero_le _, hr3, fun x hx => by
-      show c2.nmem (bA + x) = _
-      rw [hfill x hx, ite_eq_right (by omega)]⟩
+      rw [hfill x hx, ite_eq_right by_o]⟩
   have hC' := hC.of_frame hf'.1
   rw [hd, hC'.rN] at htest
-  have hdN' : d = N := by omega
+  have hdN' : d = N := by_o
   rw [hdN'] at hI
   subst hk1
   refine ⟨c', 3 + (k2 + (1 + k)), .seq e1 (.seq e2 (.seq e3 e)), ?_, hw', hf', fun x hx => ?_⟩

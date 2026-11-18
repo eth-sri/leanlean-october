@@ -26,7 +26,7 @@ variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Poly
 /-- The regions of a chord record differ. -/
 theorem up_ne_dn (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {k : ℕ} (hk : k < N₂.nChords) :
     (N₂.chord k).up ≠ (N₂.chord k).dn := by
-  have hPr : J.right.P.Simple := E.ctx2.2.2.2.2.1
+  have hPr := E.ctx2.2.2.2.2.1
   obtain ⟨hRC, hCS, -⟩ := regOf_spec E.hNF₂
   exact (Gran.touch_iff_side E.hNF₂ (FactsChain.walkAx J.right hPr) hRC hCS hk).1
 
@@ -63,7 +63,7 @@ theorem orgDo_batch (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {g : Stmt} {KG
   have hInv' := hInv
   obtain ⟨hreg, hAc, A, hB⟩ := hInv
   have keepS : ∀ r, 240000 ≤ r → r < 250000 → ¬ OrgR r → ¬ LR r → c.nreg r = cs.nreg r :=
-    fun r h1 h2 h3 h4 => hreg r (band_sw_not ⟨h1, h2⟩) h3 h4 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 h4 => hreg r (band_sw_not ⟨h1, h2⟩) h3 h4 by_ao
   have eGK : c.nreg wGK = cs.nreg wGK := keepS _ (by unfold wGK sw; omega)
     (by unfold wGK sw; omega) (by unfold OrgR CandR BestR LblR wGK bF bE bH bN bL sw; omega)
     (by unfold LR wGK oK oS sw; omega)
@@ -85,18 +85,18 @@ theorem orgDo_batch (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {g : Stmt} {KG
       nArc (chainModel J.left) (Qof P) N₁ (L.getD k 0) := fun k hk' => by
     rw [eGB, ← harcs k hk']
     unfold ShotList.arcAt
-    rw [hmc _ (by omega) (by omega), hmc _ (by omega) (by omega), hmc _ (by omega) (by omega),
-      hmc _ (by omega) (by omega)]
+    rw [hmc _ by_o by_o, hmc _ by_o by_o, hmc _ by_o by_o,
+      hmc _ by_o by_o]
   have hlo : ShotList.loSet (chainModel J.left) (Qof P) c.nmem (c.nreg wGB) L.length [] =
       ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB) L.length [] := by
-    rw [eGB]; exact loSet_congr (fun x h1 h2 => hmc x (by omega) (by omega))
+    rw [eGB]; exact loSet_congr (fun x h1 h2 => hmc x by_o by_o)
   have hb : c.nreg bF = 1 → PosW P J (c.nreg bE) (c.nreg bH) := fun h => by
     obtain ⟨⟨j, hj⟩, -⟩ := hB.bAcc h
     exact (hB.acc _ hj).2.2.2.2.2.2.2.1
   refine (orgDo_irs E hI hgen hL (by rw [eGK, hgK]) (by rw [eGB]; omega) harcs' rfl rfl hk hs
-    (by rw [eKE, eKH]; exact hkey) hb hB.fF hB.fN hroom).mono le_rfl ?_
+    (by rwa [eKE, eKH]) hb hB.fF hB.fN hroom).mono le_rfl ?_
   rintro c' ⟨hres, hcomp, hrej, hfr, hA'⟩
-  refine ⟨batch_step hInv' (by omega) hs (up_ne_dn E hk) hT hres
+  refine ⟨batch_step hInv' by_o hs (up_ne_dn E hk) hT hres
     (fun hv => hlo ▸ hcomp hv.1 hv.2.1 hv.2.2) hrej hfr hA', fun r hr => ?_, fun x h1 h2 => ?_⟩
   · refine hfr r (band_sw_not ?_) (not_orgR hr) (by
       rcases hr with ⟨h, -, -⟩ | h
@@ -113,8 +113,8 @@ theorem orgDo_batch (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {g : Stmt} {KG
       (by unfold LR sC oK oS sw; omega)
     rw [eaB] at h1; rw [eaB, eC] at h2
     rcases hres with ⟨hm, -⟩ | ⟨e, h, -, hm, -⟩
-    · exact hm x (by omega)
-    · rw [hm x (by omega), tabUpd_o _ (by rw [eTB]; omega) (by rw [eTB]; omega)
+    · exact hm x by_o
+    · rw [hm x by_o, tabUpd_o _ (by rw [eTB]; omega) (by rw [eTB]; omega)
         (by rw [eTB]; omega)]
 
 end

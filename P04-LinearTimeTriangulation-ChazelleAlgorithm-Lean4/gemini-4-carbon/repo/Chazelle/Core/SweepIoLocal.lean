@@ -62,8 +62,8 @@ theorem hseg_eq_ends {y L R y' a b : ℝ} (h : hseg y L R = hseg y' a b) (hab : 
   obtain ⟨hy, haL, haR⟩ := ha
   obtain ⟨-, hbL, hbR⟩ := hb
   simp only at hy haL haR hbL hbR
-  have hL : ((L, y) : Point) ∈ hseg y' a b := by rw [← h]; exact ⟨rfl, le_rfl, by linarith⟩
-  have hR : ((R, y) : Point) ∈ hseg y' a b := by rw [← h]; exact ⟨rfl, by linarith, le_rfl⟩
+  have hL : ((L, y) : Point) ∈ hseg y' a b := by rw [← h]; exact ⟨rfl, le_rfl, by_l⟩
+  have hR : ((R, y) : Point) ∈ hseg y' a b := by rw [← h]; exact ⟨rfl, by_l, le_rfl⟩
   obtain ⟨-, hL1, -⟩ := hL
   obtain ⟨-, -, hR2⟩ := hR
   simp only at hL1 hR2
@@ -73,8 +73,8 @@ theorem hseg_eq_ends {y L R y' a b : ℝ} (h : hseg y L R = hseg y' a b) (hab : 
 theorem rec_pos_ends {c : CRec} (hA : c.Attached M Q) {y a b : ℝ}
     (hc : c.toSet M Q = hseg y a b) (hab : a < b) :
     M.pos Q c.lpos = (a, y) ∧ M.pos Q c.rpos = (b, y) ∧ (Q.vtx c.h).2 = y := by
-  have hl : M.pos Q c.lpos ∈ c.toSet M Q := hA.1.2.2.2.1
-  have hr : M.pos Q c.rpos ∈ c.toSet M Q := hA.2.2.2.2.1
+  have hl := hA.1.2.2.2.1
+  have hr := hA.2.2.2.2.1
   have hset : c.toSet M Q = hseg (Q.vtx c.h).2 (M.pos Q c.lpos).1 (M.pos Q c.rpos).1 := rfl
   obtain ⟨hL, hR, hy⟩ := hseg_eq_ends (hset.symm.trans hc) hab
   have hl2 : (M.pos Q c.lpos).2 = (Q.vtx c.h).2 := by rw [hset] at hl; exact hl.1
@@ -182,9 +182,9 @@ theorem beforeFaces_of_arc_end' {F : Set (Set Point)} {U : Set Point} {l : ℝ} 
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 (sideInArc_before_end hlr)
   refine ⟨δ, hδ, fun _ s hs0 hs1 hst => ?_, fun h => absurd h ht0.ne'⟩
   have := hsub ⟨hs0, hs1⟩
-  refine harc.2.2.2.2.2.2 p (t - s) hp (by linarith) (by linarith) ?_
-  have e : (p : ℝ) + (t - s) = (p : ℝ) + t - s := by ring
-  rw [e]; exact this
+  refine harc.2.2.2.2.2.2 p (t - s) hp by_l by_l ?_
+  have e : (p : ℝ) + (t - s) = (p : ℝ) + t - s := by_r
+  rwa [e]
 
 /-- **The regions faced just after and just before a cut** have arcs starting and ending at the
 cut. -/
@@ -198,20 +198,16 @@ theorem faced_arcs (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
   obtain ⟨U', V', l, r, hU', hV', -, harcU, harcV, -⟩ := hM.attach_face hF hfin hc hAc
   have hne : F.Nonempty := ⟨c, hc⟩
   refine ⟨fun hW => ⟨r, ?_⟩, fun hW => ⟨l, ?_⟩⟩
-  · have hW' : AfterFaces M p' t' U' := afterFaces_of_arc harcU hp ht0
+  · have hW' := afterFaces_of_arc harcU hp ht0
       (WalkAx.eventually_after_start (WalkAx.arc_cuts hne harcU).2.2)
-    rw [after_unique ht1 hU hU' hW hW']
-    exact harcU
+    rwa [after_unique ht1 hU hU' hW hW']
   · have hlr := (WalkAx.arc_cuts hne harcV).2.2
     have hW' : BeforeFaces M p' t' V' := by
       rcases ht0.lt_or_eq with htp | ht00
       · exact beforeFaces_of_arc_end' hp htp ht1 harcV hlr
       · subst ht00
         exact beforeFaces_of_arc_end hp (hp1 rfl) harcV hlr
-    rw [before_unique ht0 hU hV' hW hW']
-    exact harcV
-
-end Facing
+    rwa [before_unique ht0 hU hV' hW hW']end Facing
 
 /-! ## The local hit -/
 
@@ -232,7 +228,7 @@ theorem key_pos_of_band {Q : Polygon} {x : WPos}
     (hzR : |((chainModel C).pos Q x).2| < C.radius) (h0 : (chainModel C).param Q x = 0) :
     1 ≤ x.edge := by
   by_contra hc
-  have hp0 : x.edge = 0 := by omega
+  have hp0 : x.edge = 0 := by_o
   have e : (chainModel C).pos Q x = C.slitTop := by
     show sidePt (chainModel C).W x.edge ((chainModel C).param Q x) = C.slitTop
     rw [hp0, h0, Chazelle.Chain.sidePt_zero]; rfl
@@ -280,13 +276,13 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
   set σ := dirOf d with hσdef
   have hσ : σ = 1 ∨ σ = -1 := dirOf_cases d
   have hGM : GoodModel M := Or.inl ⟨C, hP, rfl⟩
-  have hM : WalkAx M := walkAx_of_goodModel hGM
-  have hFam : M.ChordFamily Q F := hN.1
-  have hF : F ⊆ M.Adm := hFam.2.1
-  have hfin : F.Finite := hFam.1
+  have hM := walkAx_of_goodModel hGM
+  have hFam := hN.1
+  have hF := hFam.2.1
+  have hfin := hFam.1
   have hpt : sidePt M.W p t = z := rfl
-  have hsec' : sideLeft M.W p t (rayPt (sidePt M.W p t) σ 1) := hsec
-  have hfree : FreeAt C z σ := freeAt_of_leave C hP hσ hx hx0 hx1 hpt hsec
+  have hsec' := hsec
+  have hfree := freeAt_of_leave C hP hσ hx hx0 hx1 hpt hsec
   obtain ⟨hT, hwD, hdom⟩ := Merge.hit_of_freeAt C hzt hσ hfree
   set T := C.hitParam z σ with hTdef
   refine ⟨hfree, ?_⟩
@@ -298,13 +294,13 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
       (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt z σ s ∈ regOf M Q N r) →
       rayPt z σ T ∈ ShotList.loSet M Q m AB K hs := by
     intro r hr hrn hray
-    have hU : regOf M Q N r ∈ M.regions F := hRC.1 r hr
+    have hU := hRC.1 r hr
     set L := (List.range K).map (fun i => (M.key Q (ShotList.arcAt m AB i).1,
       M.key Q (ShotList.arcAt m AB i).2)) with hLdef
     have hL : ∀ a b, M.IsArc F (regOf M Q N r) a b → (a, b) ∈ L := by
       intro a b harc
       obtain ⟨i₀, hi₀, hir, his, hie⟩ := hArcs.2.2.1 r hr a b harc
-      have hmem : i₀ ∈ (N.region r).arcs := (hArcs.2.2.2 r hr i₀).2 ⟨hi₀, hir⟩
+      have hmem := (hArcs.2.2.2 r hr i₀).2 ⟨hi₀, hir⟩
       obtain ⟨i, hi, hk1, hk2⟩ := hlist r hrn i₀ hmem
       refine List.mem_map.2 ⟨i, List.mem_range.2 hi, ?_⟩
       simp only [hk1, hk2, his, hie]
@@ -321,7 +317,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
   -- the region of the arc at spine `j` when the key is not a cut
   have noncut : ¬ M.IsCut F ((p : ℝ) + t) → rayPt z σ T ∈ ShotList.loSet M Q m AB K hs := by
     intro hnc
-    have hjA : sj N j < N.arcs.length := NFLoc.seq_lt hN hj
+    have hjA := NFLoc.seq_lt hN hj
     obtain ⟨hr0, harc0⟩ := hArcs.1 (sj N j) hjA
     have hin : sideInArc (sk M Q N j) (ek M Q N j) ((p : ℝ) + t) := by
       rcases hloc1 hnc with hF0 | hin
@@ -345,7 +341,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
       ⟨ht0, -, hnot, hcr⟩
   · -- along a chord of the family attached at `x`
     right
-    have he' : e ∈ Merge.augChords C := hF he
+    have he' := hF he
     have hcut : M.IsCut F ((p : ℝ) + t) := ⟨e, he, p, t, hAe, rfl⟩
     have hne : F.Nonempty := ⟨e, he⟩
     obtain ⟨k, hk, hke⟩ := nf_chord_of_mem he
@@ -363,7 +359,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
         ((b, y) : Point) ∉ C.dom ∧ ((a, y) : Point) ∉ C.dom ∧ True := by
       refine ⟨?_, hH.right_not, hH.left_not, trivial⟩
       obtain ⟨s₁, hs₁, hs₁0⟩ := (hev.and self_mem_nhdsWithin).exists
-      have hs₁0' : (0 : ℝ) < s₁ := hs₁0
+      have hs₁0' := hs₁0
       rw [hey] at hs₁
       obtain ⟨-, hs₁a, hs₁b⟩ := hs₁
       simp only [rayPt_fst] at hs₁a hs₁b
@@ -371,12 +367,12 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
       · left; refine ⟨hσ1, ?_⟩
         rw [hσ1] at hs₁b
         rcases hza.lt_or_eq with h1 | h1
-        · exact absurd (by rw [← hzpt]; exact hopen _ h1 (by linarith)) hzD
+        · exact absurd (by rw [← hzpt]; exact hopen _ h1 by_l) hzD
         · exact h1.symm
       · right; refine ⟨hσ1, ?_⟩
         rw [hσ1] at hs₁a
         rcases hzb.lt_or_eq with h1 | h1
-        · exact absurd (by rw [← hzpt]; exact hopen _ (by linarith) h1) hzD
+        · exact absurd (by rw [← hzpt]; exact hopen _ by_l h1) hzD
         · exact h1
     have hd1 : σ = 1 ↔ d = 1 := by
       constructor
@@ -386,20 +382,20 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
     have hT' : T = b - a := by
       rcases hzend with ⟨hσ1, hz1⟩ | ⟨hσ1, hz1⟩
       · have hg : Genuine C z σ (b - a) := genuine_along_chord C he' (by rw [hey]; exact ⟨hzy, hza, hzb⟩)
-          hzD hσ (by linarith) (by
+          hzD hσ by_l (by
             rw [hey]; refine ⟨by simp [rayPt, hzy], ?_, ?_⟩ <;> simp only [rayPt_fst, hσ1, hz1] <;> linarith)
           (by
             have : rayPt z σ (b - a) = ((b, y) : Point) := by
               apply point_ext <;> simp [rayPt, hσ1, hz1, hzy]
-            rw [this]; exact hfar)
+            rwa [this])
         exact ((genuine_iff C hzt hσ).1 hg).2
       · have hg : Genuine C z σ (b - a) := genuine_along_chord C he' (by rw [hey]; exact ⟨hzy, hza, hzb⟩)
-          hzD hσ (by linarith) (by
+          hzD hσ by_l (by
             rw [hey]; refine ⟨by simp [rayPt, hzy], ?_, ?_⟩ <;> simp only [rayPt_fst, hσ1, hz1] <;> linarith)
           (by
             have : rayPt z σ (b - a) = ((a, y) : Point) := by
               apply point_ext <;> simp [rayPt, hσ1, hz1, hzy]
-            rw [this]; exact hdir)
+            rwa [this])
         exact ((genuine_iff C hzt hσ).1 hg).2
     -- the region on a faced side
     obtain ⟨ρ, U, hρ, hU, hS, hfac⟩ : ∃ ρ U, (ρ = 1 ∨ ρ = -1) ∧ U ∈ M.regions F ∧ SideOf M ρ e U ∧
@@ -438,10 +434,10 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
       · obtain ⟨l', harc⟩ := hfb (hfac.2 h)
         rw [← hrUe] at harc
         exact region_of_arc_at hN hGM hne hj (hloc2 hcut) hrU harc (Or.inr rfl)
-    have htouch : TouchesIn M.D e U := touchesIn_of_sideOf hM (hF he) hAe hS
+    have htouch := touchesIn_of_sideOf hM (hF he) hAe hS
     have hkr : k ∈ (N.region rU).chords := by
       refine ((hRegs rU hrU).1 k).2 ⟨hk, ?_⟩
-      rw [hke, hrUe]; exact htouch
+      rwa [hke, hrUe]
     -- the height index and the attachment edge
     have hkh : (N.chord k).h = h := by
       by_contra hne'
@@ -452,7 +448,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
     rw [hke] at hAk2
     refine ⟨rU, hmem, k, hkr, ?_⟩
     rcases hzend with ⟨hσ1, hz1⟩ | ⟨hσ1, hz1⟩
-    · have hd : d = 1 := hd1.1 hσ1
+    · have hd := hd1.1 hσ1
       have hlp : (N.chord k).lp = p := (hM.attach_unique (hF he) hAk1 hAe (by
         show M.pos Q (N.chord k).lpos = sidePt M.W p t
         rw [hla, hpt]; exact Prod.ext hz1.symm hzy.symm)).1
@@ -477,7 +473,7 @@ theorem local_hit_mem (hP : C.P.Simple) {Q : Polygon} (hD : DistinctHeights Q) {
       obtain ⟨rfl, rfl⟩ := Chazelle.Chain.sideKey_inj hAc.2.1 hAc.2.2.1 hx0 hx1 hk'.symm
       have hne : F.Nonempty := ⟨c, hc⟩
       obtain ⟨U, V, l, r, hU, hV, -, harcU, harcV, -⟩ := hM.attach_face hF hfin hc hAc
-      have hp1' : 1 ≤ p := hp1 ht0
+      have hp1' := hp1 ht0
       rw [ht0] at hAc harcU harcV
       have hpt0 : sidePt M.W p 0 = z := by rw [← ht0]; exact hpt
       have hsec0 : sideLeft M.W p 0 (rayPt (sidePt M.W p 0) σ 1) := by rw [← ht0]; exact hsec'

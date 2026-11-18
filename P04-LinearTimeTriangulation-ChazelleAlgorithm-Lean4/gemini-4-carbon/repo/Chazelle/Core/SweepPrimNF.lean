@@ -48,10 +48,10 @@ theorem mulAdd_exec {P : Polygon} {W : ℕ} {d a : ℕ} (hda : d ≠ a) :
         FrameB (fun r => r == d) c c'
   | 0, c, hw, _ => ⟨c, 0, .skip hw, rfl, by simp, FrameB.refl _ _⟩
   | s + 1, c, hw, hb => by
-    have e₁ := Exec.addN (P := P) hw d d a (by nlinarith)
+    have e₁ := Exec.addN (P := P) hw d d a by_nl
     obtain ⟨c', k, e', hk, v, f⟩ := mulAdd_exec hda s _ e₁.wb_right (by
       simp only [upd_same, upd_other _ _ _ (Ne.symm hda)]; nlinarith)
-    refine ⟨c', _, .seq e₁ e', by omega, ?_, (exec_frameB e₁ (by simp [wr, wrOK])).trans f⟩
+    refine ⟨c', _, .seq e₁ e', by_o, ?_, (exec_frameB e₁ (by simp [wr, wrOK])).trans f⟩
     rw [v]; simp only [upd_same, upd_other _ _ _ (Ne.symm hda)]; ring
 
 /-! ## One indexed load -/
@@ -63,7 +63,7 @@ def nfRd (k s f : ℕ) : Stmt :=
       .loadN 50210 50101]))
 
 theorem wr_nfRd (k s f : ℕ) : wr Bidx (nfRd k s f) = true := by
-  simp only [nfRd, wr, block, wrOK, wr_mulAdd (B := Bidx) (d := 50101) (by decide)]
+  simp only [nfRd, wr, block, wrOK, wr_mulAdd (B := Bidx) (d := 50101) by_d]
   decide
 
 /-- The address condition of `nfRd k s f`. -/
@@ -79,12 +79,12 @@ theorem nfRd_exec {P : Polygon} {W : ℕ} (k s f : ℕ) (c : Config) (hw : Words
     ∃ c' j, Exec P W (nfRd k s f) c c' j ∧ j = s + 6 ∧ c'.nreg 50210 = nfVal k s f c ∧
       FrameB Bidx c c' := by
   obtain ⟨h1, h2⟩ := h
-  have e₁ := Exec.constN (P := P) hw 50100 k (by omega)
+  have e₁ := Exec.constN (P := P) hw 50100 k by_o
   have e₂ := Exec.addN (P := P) e₁.wb_right 50100 50200 50100 (by simp; omega)
   have e₃ := Exec.loadN (P := P) e₂.wb_right 50101 50100
-  obtain ⟨c₄, k₄, e₄, hk₄, v₄, f₄⟩ := mulAdd_exec (P := P) (d := 50101) (a := 50201) (by decide)
+  obtain ⟨c₄, k₄, e₄, hk₄, v₄, f₄⟩ := mulAdd_exec (P := P) (d := 50101) (a := 50201) by_d
     s _ e₃.wb_right (by simp; omega)
-  have e₅ := Exec.constN (P := P) e₄.wb_right 50100 f (by omega)
+  have e₅ := Exec.constN (P := P) e₄.wb_right 50100 f by_o
   have e₆ := Exec.addN (P := P) e₅.wb_right 50101 50101 50100 (by
     simp only [upd_same, upd_other _ _ _ (show (50101 : ℕ) ≠ 50100 by decide)]
     rw [v₄]; simp; omega)
@@ -92,7 +92,7 @@ theorem nfRd_exec {P : Polygon} {W : ℕ} (k s f : ℕ) (c : Config) (hw : Words
   have ex : Exec P W (nfRd k s f) c _ ((1 + (1 + (1 + 0))) + (k₄ + (1 + (1 + (1 + 0))))) :=
     .seq (.seq e₁ (.seq e₂ (.seq e₃ (.skip e₃.wb_right))))
       (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.skip e₇.wb_right)))))
-  refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (wr_nfRd k s f)⟩
+  refine ⟨_, _, ex, by_o, ?_, exec_frameB ex (wr_nfRd k s f)⟩
   simp only [upd_same, upd_other _ _ _ (show (50101 : ℕ) ≠ 50100 by decide)]
   rw [f₄.2.2.1, v₄]
   simp [nfVal]
@@ -212,35 +212,35 @@ theorem nfLst_exec {P : Polygon} {W : ℕ} (f : ℕ) (c : Config) (hw : WordsBou
       FrameB Bidx c c' := by
   obtain ⟨h0, h1, h2⟩ := h
   obtain ⟨c₁, j₁, e₁, hj₁, v₁, f₁⟩ := nfRd_exec (P := P) 5 5 f c hw h0
-  have g : ∀ r, Bidx r = false → c₁.nreg r = c.nreg r := f₁.1
+  have g := f₁.1
   have m₁ := f₁.2.2.1
-  have e₂ := Exec.constN (P := P) e₁.wb_right 50100 7 (by omega)
+  have e₂ := Exec.constN (P := P) e₁.wb_right 50100 7 by_o
   have e₃ := Exec.addN (P := P) e₂.wb_right 50100 50200 50100 (by
     simp only [upd_same, upd_other _ _ _ (show (50200 : ℕ) ≠ 50100 by decide)]
-    rw [g 50200 (by decide)]; omega)
+    rw [g 50200 by_d]; omega)
   have e₄ := Exec.loadN (P := P) e₃.wb_right 50101 50100
   have e₅ := Exec.addN (P := P) e₄.wb_right 50101 50101 50210 (by
     simp only [upd_same, upd_other _ _ _ (show (50210 : ℕ) ≠ 50101 by decide),
       upd_other _ _ _ (show (50210 : ℕ) ≠ 50100 by decide),
       upd_other _ _ _ (show (50200 : ℕ) ≠ 50100 by decide)]
-    rw [g 50200 (by decide), m₁, v₁]; omega)
+    rw [g 50200 by_d, m₁, v₁]; omega)
   have e₆ := Exec.addN (P := P) e₅.wb_right 50101 50101 50202 (by
     simp only [upd_same, upd_other _ _ _ (show (50210 : ℕ) ≠ 50101 by decide),
       upd_other _ _ _ (show (50210 : ℕ) ≠ 50100 by decide),
       upd_other _ _ _ (show (50200 : ℕ) ≠ 50100 by decide),
       upd_other _ _ _ (show (50202 : ℕ) ≠ 50101 by decide),
       upd_other _ _ _ (show (50202 : ℕ) ≠ 50100 by decide)]
-    rw [g 50200 (by decide), g 50202 (by decide), m₁, v₁]; omega)
+    rw [g 50200 by_d, g 50202 by_d, m₁, v₁]; omega)
   have e₇ := Exec.loadN (P := P) e₆.wb_right 50210 50101
   have ex : Exec P W (nfLst f) c _ (j₁ + (1 + (1 + (1 + (1 + (1 + (1 + 0))))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.skip e₇.wb_right)))))))
-  refine ⟨_, _, ex, by omega, ?_, exec_frameB ex (wr_nfLst f)⟩
+  refine ⟨_, _, ex, by_o, ?_, exec_frameB ex (wr_nfLst f)⟩
   simp only [upd_same, upd_other _ _ _ (show (50210 : ℕ) ≠ 50101 by decide),
     upd_other _ _ _ (show (50210 : ℕ) ≠ 50100 by decide),
     upd_other _ _ _ (show (50200 : ℕ) ≠ 50100 by decide),
     upd_other _ _ _ (show (50202 : ℕ) ≠ 50101 by decide),
     upd_other _ _ _ (show (50202 : ℕ) ≠ 50100 by decide)]
-  rw [g 50200 (by decide), g 50202 (by decide), m₁, v₁]
+  rw [g 50200 by_d, g 50202 by_d, m₁, v₁]
 
 end
 

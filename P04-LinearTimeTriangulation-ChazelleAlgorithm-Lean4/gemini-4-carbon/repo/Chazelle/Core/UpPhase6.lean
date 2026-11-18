@@ -69,8 +69,7 @@ theorem mdB_exec {c : Config} (hw : WordsBounded W c) {MD B : ℕ} (hA : c.nreg 
     interval_cases j <;> (split_ifs <;> first | omega | rfl)
   · config_simp; simp only [hA, h30, h20, Machine.upd_apply]; split_ifs <;> first | omega
   · unfold MdRG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
 
 set_option maxHeartbeats 16000000 in
 /-- **Coarsening, called from the up phase.** -/
@@ -113,7 +112,7 @@ theorem granCall_exec {sG : Stmt} {κG : ℕ → ℕ}
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hn1 : 1 ≤ P.n := by have := C.one_le; omega
   obtain ⟨c1, k1, e1, hk1, hw1, m1A, m170, m1z, m1w, m1out, fr1, hrr1, hrm1, ho1⟩ :=
-    mdB_exec (P := P) hw hA h30 h20 h26 h29 hB5 (by omega)
+    mdB_exec (P := P) hw hA h30 h20 h26 h29 hB5 by_o
   have g1 : ∀ r, 170000 ≤ r → r < 170070 → c1.nreg r = c.nreg r := fun r a b =>
     fr1 r (by unfold MdRG; omega) (by rw [hAl]; omega)
   obtain ⟨c2, k2, e2, hk2, hw2, i0, i1, i2, i3, fr2, hm2, hrr2, hrm2, ho2⟩ : ∃ c2 k2, Exec P W
@@ -124,53 +123,52 @@ theorem granCall_exec {sG : Stmt} {κG : ℕ → ℕ}
       c2.nmem = c1.nmem ∧ c2.rreg = c1.rreg ∧ c2.rmem = c1.rmem ∧ c2.output = c1.output := by
     exec_block
     refine ⟨rfl, ‹_›, by config_simp; exact m170,
-      by config_simp; rw [g1 _ (by decide) (by decide)]; exact h31,
-      by config_simp; rw [g1 _ (by decide) (by decide)]; exact h25,
-      by config_simp; rw [g1 _ (by decide) (by decide)]; exact h11,
+      by config_simp; rwa [g1 _ by_d by_d],
+      by config_simp; rwa [g1 _ by_d by_d],
+      by config_simp; rwa [g1 _ by_d by_d],
       fun r a1 a2 a3 a4 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
   have hA2 : c2.nreg ALLOC = MD + 6 := by
-    rw [fr2 _ (by rw [hAl]; decide) (by rw [hAl]; decide) (by rw [hAl]; decide)
-      (by rw [hAl]; decide)]; exact m1A
+    rwa [fr2 _ (by rw [hAl]; decide) (by rw [hAl]; decide) (by rw [hAl]; decide)
+      (by rw [hAl]; decide)]
   -- memory facts at `c2`
   have mem2 : ∀ a, a < MD → c2.nmem a = c.nmem a := fun a ha => by
     rw [hm2]; exact m1out a (Or.inl ha)
   have hHA : HostAt c.nmem hp (Host.whole P.n) := by have := hd.1; rwa [hBh] at this
   have hHA2 : HostAt c2.nmem hp (Host.whole P.n) :=
-    hostAt_agree hHA rfl (by omega) mem2
+    hostAt_agree hHA rfl by_o mem2
   obtain ⟨-, d1, d2, d3, d4, d5⟩ := hd
   have w : ∀ j, j < 5 → c2.nmem (MD + 1 + j) = c.nmem (B + j) := fun j hj => by
     rw [hm2]; exact m1w j hj
   have hdesc : ChainDescAt c2.nmem (MD + 1) (Qof P) (Host.whole P.n) C := by
     refine ⟨?_, d1, ?_, ?_, ?_, ?_⟩
-    · have := w 0 (by norm_num); simp only [Nat.add_zero] at this
-      rw [this, hBh]; exact hHA2
-    · have := w 1 (by norm_num); rw [show MD + 1 + 1 = MD + 1 + 1 from rfl] at this
-      rw [this]; exact d2
-    · have := w 2 (by norm_num); rw [show MD + 1 + 2 = MD + 1 + 2 from rfl] at this
-      rw [this]; exact d3
-    · have := w 3 (by norm_num); rw [show MD + 1 + 3 = MD + 1 + 3 from rfl] at this
-      rw [this]; exact d4
-    · have := w 4 (by norm_num); rw [show MD + 1 + 4 = MD + 1 + 4 from rfl] at this
+    · have := w 0 by_n; simp only [Nat.add_zero] at this
+      rwa [this, hBh]
+    · have := w 1 by_n; rw [show MD + 1 + 1 = MD + 1 + 1 from rfl] at this
+      rwa [this]
+    · have := w 2 by_n; rw [show MD + 1 + 2 = MD + 1 + 2 from rfl] at this
+      rwa [this]
+    · have := w 3 by_n; rw [show MD + 1 + 3 = MD + 1 + 3 from rfl] at this
+      rwa [this]
+    · have := w 4 by_n; rw [show MD + 1 + 4 = MD + 1 + 4 from rfl] at this
       rw [this]; exact d5
   have hz : c2.nmem MD = 0 := by rw [hm2]; exact m1z
   have hwf : ModelDescWF P (c2.nreg ALLOC) c2.nmem MD := by
     rw [hA2]
-    refine ⟨le_rfl, fun _ => ⟨by omega, fun H C' hC' => ?_⟩⟩
+    refine ⟨le_rfl, fun _ => ⟨by_o, fun H C' hC' => ?_⟩⟩
     have e0 : c2.nmem (MD + 1) = hp := by
-      have := w 0 (by norm_num); simp only [Nat.add_zero] at this; rw [this, hBh]
-    have hH : H = Host.whole P.n := hostAt_unique hC'.1 (by rw [e0]; exact hHA2)
+      have := w 0 by_n; simp only [Nat.add_zero] at this; rw [this, hBh]
+    have hH : H = Host.whole P.n := hostAt_unique hC'.1 (by rwa [e0])
     subst hH
     refine ⟨by simp [Host.whole], hostWF_whole hn1, by rw [e0]; simp [Host.whole]; omega, ?_⟩
     have hs' : C'.s = C.s := by rw [← hC'.2.2.1, ← hdesc.2.2.1]
     have hP' : C'.P = Qof P := by
-      rw [hC'.2.1]; have := L41.poly_whole (Qof P) (by omega); rw [hQn] at this; exact this
+      rw [hC'.2.1]; have := L41.poly_whole (Qof P) by_o; rw [hQn] at this; exact this
     rw [hs', hP', hQn]; omega
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
+  have hQ := (shearInvariance (epsOf P) P).1 hG.1
   have hNW2 : NFWithin c2.nmem F (c2.nreg ALLOC) N := by
-    rw [hA2]; exact (hNW.transport mem2).mono (by omega)
-  have hFlt : F < MD := nfWithin_lt hNW
+    rw [hA2]; exact (hNW.transport mem2).mono by_o
+  have hFlt := nfWithin_lt hNW
   have q1 : 1 ≤ rd c2 bGran 2 := by show 1 ≤ c2.nreg 90002; omega
   have q2 : ModelDescWF P (c2.nreg ALLOC) c2.nmem (rd c2 bGran 0) := by
     show ModelDescWF P _ c2.nmem (c2.nreg 90000); rw [i0]; exact hwf
@@ -190,7 +188,7 @@ theorem granCall_exec {sG : Stmt} {κG : ℕ → ℕ}
       (Nat.clog 2 (c2.nmem (c2.nreg 90001)) + 1) + 1) ≤ W
     rw [hA2, i1, i2, hm2, m1out _ (Or.inl hFlt)]; omega
   obtain ⟨c3, k3, e3, hk3, hpost, fr3⟩ := hGr P W c2 hw2
-    ⟨hG, hWh, q1, q2, chainModel C, N, q3, Or.inl ⟨C, by rw [hCP]; exact hQ, rfl⟩, q4, hc.1, q5,
+    ⟨hG, hWh, q1, q2, chainModel C, N, q3, Or.inl ⟨C, by rwa [hCP], rfl⟩, q4, hc.1, q5,
       q6⟩ q7
   replace hk3 : k3 ≤ κG (c2.nreg 90002) * (c2.nmem (c2.nreg 90001) *
       (Nat.clog 2 (c2.nmem (c2.nreg 90001)) + 1) + 1) := hk3
@@ -207,15 +205,14 @@ theorem granCall_exec {sG : Stmt} {κG : ℕ → ℕ}
       c4.nmem = c3.nmem ∧ c4.rreg = c3.rreg ∧ c4.rmem = c3.rmem ∧ c4.output = c3.output := by
     exec_block
     refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
   have hA4 : c4.nreg ALLOC = c3.nreg ALLOC := fr4 _ (by rw [hAl]; decide)
   have hbb : ∀ r, bandOf r ∉ granBands → r < 90000 ∨ 100000 ≤ r := by
     intro r hr
     by_contra hc
     exact hr (by rw [show bandOf r = bGran by unfold bandOf bGran; omega]; decide)
-  have hA1 : c1.nreg ALLOC = MD + 6 := m1A
-  refine ⟨c4, k1 + (k2 + (k3 + k4)), .seq e1 (.seq e2 (.seq e3 e4)), by omega, hw4,
+  have hA1 := m1A
+  refine ⟨c4, k1 + (k2 + (k3 + k4)), .seq e1 (.seq e2 (.seq e3 e4)), by_o, hw4,
     by rw [hA4]; have := fr3a; rw [hA2] at this; omega,
     by rw [hA4]; have := fr3b; rw [hA2] at this; omega,
     ⟨N', by rw [o31, hm4, hA4]; exact hNW', hc'⟩,
@@ -224,7 +221,7 @@ theorem granCall_exec {sG : Stmt} {κG : ℕ → ℕ}
     by rw [ho4, fr3o, ho2, ho1], fun r h1 h2 h3 h4 => ?_,
     fun r h1 => by rw [hrr4, fr3rr r h1, hrr2, hrr1]⟩
   have := hbb r h1
-  rw [fr4 r h3, fr3r r h1 h4, fr2 r (by omega) (by omega) (by omega) (by omega), fr1 r h2 h4]
+  rw [fr4 r h3, fr3r r h1 h4, fr2 r by_o by_o by_o by_o, fr1 r h2 h4]
 
 end proofs
 

@@ -78,8 +78,7 @@ theorem proC_exec {c : Config} (hw : WordsBounded W c) (hW : 8 ≤ W) :
   refine ⟨rfl, ‹_›, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp,
     by config_simp, by config_simp, by config_simp, by config_simp, fun r hr => ?_, rfl, rfl, rfl,
     rfl⟩
-  simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  upd_keep
 
 set_option maxHeartbeats 16000000 in
 theorem proL_exec {c : Config} (hw : WordsBounded W c) {h a L lam : ℕ}
@@ -123,8 +122,7 @@ theorem proL_exec {c : Config} (hw : WordsBounded W c) {h a L lam : ℕ}
   · config_simp; simp only [h00, h03, h24, h80, h84]
   · config_simp
   · unfold ProRG at hr
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
 
 /-- `⌈log₂ λ⌉` is the first `c` with `λ ≤ 2^c`. -/
 theorem clog_eq_of {lam c : ℕ} (h1 : lam ≤ 2 ^ c) (h2 : c ≤ Nat.clog 2 lam) :
@@ -148,9 +146,8 @@ theorem clogS_exec {c : Config} (hw : WordsBounded W c) {PW lam : ℕ}
     exec_block
     all_goals try (config_simp; omega)
     refine ⟨rfl, ‹_›, by config_simp, ?_, fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-    · config_simp; rw [h21]; have := hpow 0 (by omega); simpa using this
-    · simp only
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    · config_simp; rw [h21]; have := hpow 0 by_o; simpa using this
+    · upd_keep
   let I : Config → Prop := fun c' => WordsBounded W c' ∧ ∃ i, i ≤ Nat.clog 2 lam ∧
     c'.nreg 160104 = i ∧ c'.nreg 160105 = 2 ^ i ∧
     (∀ r, r ≠ 160104 → r ≠ 160105 → r ≠ 160031 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
@@ -161,13 +158,13 @@ theorem clogS_exec {c : Config} (hw : WordsBounded W c) {PW lam : ℕ}
         .loadN 160105 160031]) I (fun c' => 5 * (Nat.clog 2 lam - c'.nreg 160104))
       (fun c' h => h.1)
       (fun c2 ⟨hw2, i, hi, h04, h05, fr2, hm2, hrr2, hrm2, ho2⟩ htest => by
-        have c03 : c2.nreg 160003 = lam := by rw [fr2 _ (by omega) (by omega) (by omega)]; exact h03
-        have c21 : c2.nreg 160021 = PW := by rw [fr2 _ (by omega) (by omega) (by omega)]; exact h21
-        have c24 : c2.nreg 160024 = 1 := by rw [fr2 _ (by omega) (by omega) (by omega)]; exact h24
+        have c03 : c2.nreg 160003 = lam := by rw [fr2 _ by_o by_o by_o]; exact h03
+        have c21 : c2.nreg 160021 = PW := by rw [fr2 _ by_o by_o by_o]; exact h21
+        have c24 : c2.nreg 160024 = 1 := by rw [fr2 _ by_o by_o by_o]; exact h24
         rw [h05, c03] at htest
         have hil : i < Nat.clog 2 lam := by
           by_contra hc
-          have := Nat.le_pow_clog (b := 2) (by norm_num) lam
+          have := Nat.le_pow_clog (b := 2) by_n lam
           have := Nat.pow_le_pow_right (show 0 < 2 by norm_num) (not_lt.mp hc)
           omega
         obtain ⟨c3, k3, e3, hk3, hw3, q04, q05, fr3, hm3, hrr3, hrm3, ho3⟩ : ∃ c3 k3, Exec P W
@@ -181,21 +178,19 @@ theorem clogS_exec {c : Config} (hw : WordsBounded W c) {PW lam : ℕ}
           all_goals try (config_simp; (try simp only [h04, c21, c24]); omega)
           refine ⟨rfl, ‹_›, by config_simp; simp only [h04, c24], ?_, fun r a1 a2 a3 => ?_, rfl,
             rfl, rfl, rfl⟩
-          · config_simp; simp only [h04, c21, c24, hm2]; exact hpow (i + 1) (by omega)
-          · simp only
-            repeat (rw [Machine.upd_other _ _ _ (by omega)])
-        refine ⟨c3, k3, e3, ⟨hw3, i + 1, by omega, q04, q05,
+          · config_simp; simp only [h04, c21, c24, hm2]; exact hpow (i + 1) by_o
+          · upd_keep
+        refine ⟨c3, k3, e3, ⟨hw3, i + 1, by_o, q04, q05,
           fun r a1 a2 a3 => by rw [fr3 r a1 a2 a3]; exact fr2 r a1 a2 a3, by rw [hm3, hm2],
           by rw [hrr3, hrr2], by rw [hrm3, hrm2], by rw [ho3, ho2]⟩, ?_⟩
-        show 5 * (Nat.clog 2 lam - c3.nreg 160104) + k3 + 2 ≤ 5 * (Nat.clog 2 lam - c2.nreg 160104)
         rw [q04, h04]; omega)
       ⟨hw1, 0, Nat.zero_le _, i04, i05, fun r a1 a2 _ => fr1 r a1 a2, hm1, hrr1, hrm1, ho1⟩
-  have c03 : c'.nreg 160003 = lam := by rw [fr' _ (by omega) (by omega) (by omega)]; exact h03
+  have c03 : c'.nreg 160003 = lam := by rw [fr' _ by_o by_o by_o]; exact h03
   rw [h05, c03] at htest
   have hk' : k ≤ 5 * Nat.clog 2 lam + 2 := by
     have := hk; simp only [i04, Nat.sub_zero] at this; exact this
-  refine ⟨c', k1 + k, .seq e1 e, by omega, hw', ?_, fr', hm', hrr', hrm', ho'⟩
-  rw [h04]; exact clog_eq_of (by omega) hi
+  refine ⟨c', k1 + k, .seq e1 e, by_o, hw', ?_, fr', hm', hrr', hrm', ho'⟩
+  rw [h04]; exact clog_eq_of by_o hi
 
 set_option maxHeartbeats 8000000 in
 theorem mulS_exec {c : Config} (hw : WordsBounded W c) {lam cl G2 : ℕ}
@@ -215,8 +210,7 @@ theorem mulS_exec {c : Config} (hw : WordsBounded W c) {lam cl G2 : ℕ}
     all_goals try (config_simp; (try simp only [h04, h80]); omega)
     refine ⟨rfl, ‹_›, by config_simp; simp only [h04, h80], by config_simp, by config_simp,
       fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
   obtain ⟨c2, k2, e2, hk2, hw2, -, -, h07, fr2, hm2, hrr2, hrm2, ho2⟩ :=
     forN (P := P) (W := W) (ri := 160108) (rn := 160003)
       (body := block [.addN 160107 160107 160106, .addN 160108 160108 160024])
@@ -226,32 +220,30 @@ theorem mulS_exec {c : Config} (hw : WordsBounded W c) {lam cl G2 : ℕ}
         c'.rreg = c1.rreg ∧ c'.rmem = c1.rmem ∧ c'.output = c1.output)
       lam 2 (fun i c' h => ⟨h.1, h.2.1, h.2.2.1⟩)
       (fun i c2 hi ⟨hw2, h08, c03, h07, fr2, hm2, hrr2, hrm2, ho2⟩ => by
-        have c06 : c2.nreg 160106 = cl + 2 := by rw [fr2 _ (by omega) (by omega)]; exact i06
+        have c06 : c2.nreg 160106 = cl + 2 := by rw [fr2 _ by_o by_o]; exact i06
         have c24 : c2.nreg 160024 = 1 := by
-          rw [fr2 _ (by omega) (by omega), fr1 _ (by omega) (by omega) (by omega)]; exact h24
-        have hbound : (i + 1) * (cl + 2) ≤ lam * (cl + 2) := Nat.mul_le_mul_right _ (by omega)
+          rw [fr2 _ by_o by_o, fr1 _ by_o by_o by_o]; exact h24
+        have hbound : (i + 1) * (cl + 2) ≤ lam * (cl + 2) := Nat.mul_le_mul_right _ by_o
         exec_block
         all_goals try (config_simp; (try simp only [h08, h07, c06, c24]); nlinarith)
-        refine ⟨by omega, ‹_›, by config_simp; simp only [h08, c24], c03 ▸ by config_simp, ?_,
+        refine ⟨by_o, ‹_›, by config_simp; simp only [h08, c24], c03 ▸ by config_simp, ?_,
           fun r a1 a2 => ?_, hm2, hrr2, hrm2, ho2⟩
         · config_simp; simp only [h07, c06]; ring
-        · simp only
-          repeat (rw [Machine.upd_other _ _ _ (by omega)])
+        · upd_keep
           exact fr2 r a1 a2)
-      (j₀ := 0) ⟨hw1, i08, by rw [fr1 _ (by omega) (by omega) (by omega)]; exact h03,
+      (j₀ := 0) ⟨hw1, i08, by rwa [fr1 _ by_o by_o by_o],
         by rw [i07]; ring, fun _ _ _ => rfl, rfl, rfl, rfl, rfl⟩ (Nat.zero_le _)
   obtain ⟨c3, k3, e3, hk3, hw3, q32, fr3, hm3, hrr3, hrm3, ho3⟩ : ∃ c3 k3, Exec P W
       (block [.addN 160032 160032 160107]) c2 c3 k3 ∧ k3 = 1 ∧ WordsBounded W c3 ∧
       c3.nreg 160032 = G2 + lam * (cl + 2) ∧ (∀ r, r ≠ 160032 → c3.nreg r = c2.nreg r) ∧
       c3.nmem = c2.nmem ∧ c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output := by
     have c32 : c2.nreg 160032 = G2 := by
-      rw [fr2 _ (by omega) (by omega), fr1 _ (by omega) (by omega) (by omega)]; exact h32
+      rw [fr2 _ by_o by_o, fr1 _ by_o by_o by_o]; exact h32
     exec_block
     all_goals try (config_simp; (try simp only [c32, h07]); nlinarith)
     refine ⟨rfl, ‹_›, by config_simp; simp only [c32, h07], fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3, q32,
+    upd_keep
+  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by_o, hw3, q32,
     fun r a1 a2 a3 a4 => ?_, by rw [hm3, hm2, hm1], by rw [hrr3, hrr2, hrr1],
     by rw [hrm3, hrm2, hrm1], by rw [ho3, ho2, ho1]⟩
   rw [fr3 r a1, fr2 r a3 a4, fr1 r a2 a3 a4]
@@ -284,8 +276,7 @@ theorem proH_exec {c : Config} (hw : WordsBounded W c) {A : ℕ}
     simp only [hA, h24, h29, Machine.upd_apply]
     refine ⟨?_, ?_, ?_⟩ <;> (split_ifs <;> first | omega)
   · config_simp; simp only [hA, h24, Machine.upd_apply]; split_ifs <;> first | omega
-  · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  · upd_keep
 
 end proofs
 

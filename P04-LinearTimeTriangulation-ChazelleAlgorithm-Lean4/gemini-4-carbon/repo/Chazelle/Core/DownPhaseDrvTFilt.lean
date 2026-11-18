@@ -107,18 +107,18 @@ theorem memT_keep {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List
   rw [hr]
   by_cases h3 : a = B' + 3 * j + 2
   · subst h3
-    rw [ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
-      htw 2 (by norm_num)]
+    rw [ite_eq_left rfl, ite_eq_left by_o, show B' + 3 * j + 2 - B' = 3 * j + 2 by omega,
+      htw 2 by_n]
     try simp
   by_cases h4 : a = B' + 3 * j + 1
   · subst h4
-    rw [ite_eq_right h3, ite_eq_left rfl, ite_eq_left (by omega), show B' + 3 * j + 1 - B' = 3 * j + 1 by omega,
-      htw 1 (by norm_num)]
+    rw [ite_eq_right h3, ite_eq_left rfl, ite_eq_left by_o, show B' + 3 * j + 1 - B' = 3 * j + 1 by omega,
+      htw 1 by_n]
     try simp
   by_cases h5 : a = B' + 3 * j
   · subst h5
-    rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left (by omega),
-      show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 (by norm_num)]
+    rw [ite_eq_right h3, ite_eq_right h4, ite_eq_left rfl, ite_eq_left by_o,
+      show B' + 3 * j - B' = 3 * j + 0 by omega, htw 0 by_n]
     try simp
   rw [ite_eq_right h3, ite_eq_right h4, ite_eq_right h5]
   split_ifs <;> first | rfl | omega
@@ -169,32 +169,32 @@ theorem fTest_exec (c : Config) (hw : WordsBounded W c) (hW : 1 ≤ W) {li : Boo
   have hset : ∃ c' k, Exec P W (.instr (.constN 190037 1)) c c' k ∧ k = 1 ∧
       c'.nreg 190037 = 1 ∧ (∀ r, r ≠ 190037 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output :=
-    ⟨_, _, Exec.constN hw 190037 1 hW, rfl, by simp, fun r hr => by simp [hr], rfl, rfl, rfl,
+    ⟨_, _, Exec.constN hw 190037 1 hW, rfl, by_s, fun r hr => by simp [hr], rfl, rfl, rfl,
       rfl⟩
   obtain ⟨cs, ks, es, hks, vs, gs, ms, rrs, rms, os⟩ := hset
   unfold fTest innerE
   by_cases h1 : c.nreg p < c.nreg 190014
-  · refine ⟨c, _, .ifLtN_true h1 (.skip hw), by omega, ?_, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+  · refine ⟨c, _, .ifLtN_true h1 (.skip hw), by_o, ?_, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
     rw [ite_eq_right (by rw [h14] at h1; simp; omega)]
   by_cases h2 : c.nreg p < c.nreg 190015
   · by_cases h3 : c.nreg 190014 < c.nreg p
-    · refine ⟨cs, _, .ifLtN_false h1 (.ifLtN_true h2 (.ifLtN_true h3 es)), by omega, ?_, gs,
+    · refine ⟨cs, _, .ifLtN_false h1 (.ifLtN_true h2 (.ifLtN_true h3 es)), by_o, ?_, gs,
         ms, rrs, rms, os⟩
       rw [vs, ite_eq_left (by rw [h14] at h1 h3; rw [h15] at h2; simp; omega)]
     · by_cases h4 : c.nreg 190032 < c.nreg 190016
       · refine ⟨cs, _, .ifLtN_false h1 (.ifLtN_true h2 (.ifLtN_false h3 (.ifLtN_true h4 es))),
-          by omega, ?_, gs, ms, rrs, rms, os⟩
+          by_o, ?_, gs, ms, rrs, rms, os⟩
         rw [h14] at h1 h3; rw [h15] at h2; rw [h16] at h4
-        rw [vs, ite_eq_left (decide_eq_true ⟨by omega, by omega, fun ⟨_, he⟩ => by omega⟩)]
+        rw [vs, ite_eq_left (decide_eq_true ⟨by_o, by_o, fun ⟨_, he⟩ => by omega⟩)]
       · by_cases h5 : c.nreg 190016 < c.nreg 190032
         · refine ⟨cs, _, .ifLtN_false h1 (.ifLtN_true h2 (.ifLtN_false h3 (.ifLtN_false h4
-            (.ifLtN_true h5 es)))), by omega, ?_, gs, ms, rrs, rms, os⟩
+            (.ifLtN_true h5 es)))), by_o, ?_, gs, ms, rrs, rms, os⟩
           rw [h14] at h1 h3; rw [h15] at h2; rw [h16] at h5
-          rw [vs, ite_eq_left (decide_eq_true ⟨by omega, by omega, fun ⟨_, he⟩ => by omega⟩)]
+          rw [vs, ite_eq_left (decide_eq_true ⟨by_o, by_o, fun ⟨_, he⟩ => by omega⟩)]
         · refine ⟨c, _, .ifLtN_false h1 (.ifLtN_true h2 (.ifLtN_false h3 (.ifLtN_false h4
-            (.ifLtN_false h5 (.skip hw))))), by omega, ?_, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
+            (.ifLtN_false h5 (.skip hw))))), by_o, ?_, fun _ _ => rfl, rfl, rfl, rfl, rfl⟩
           rw [ite_eq_right (by rw [h14] at h1 h3; rw [h15] at h2; rw [h16] at h4 h5; simp; omega)]
-  · refine ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.skip hw)), by omega, ?_, fun _ _ => rfl,
+  · refine ⟨c, _, .ifLtN_false h1 (.ifLtN_false h2 (.skip hw)), by_o, ?_, fun _ _ => rfl,
       rfl, rfl, rfl, rfl⟩
     rw [ite_eq_right (by rw [h15] at h2; simp; omega)]
 
@@ -207,25 +207,25 @@ theorem fMap_exec (c : Config) (hw : WordsBounded W c) {n c₀ d p : ℕ}
       (∀ r, r ≠ d → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧
       c'.rmem = c.rmem ∧ c'.output = c.output := by
   have e₁ := Exec.copyN (P := P) hw d 190010
-  set c₁ : Config := { c with nreg := upd c.nreg d (c.nreg 190010) } with hc₁
+  set c₁ := { c with nreg := upd c.nreg d (c.nreg 190010) } with hc₁
   have w₁ := e₁.wb_right
   have g₁ : ∀ r, r ≠ d → c₁.nreg r = c.nreg r := fun r hr => by rw [hc₁]; simp [hr]
   have v₁ : c₁.nreg d = n - 1 := by rw [hc₁]; simp [h10]
   have q14 : c₁.nreg 190014 = c₀ := by rw [g₁ _ (Ne.symm hd1), h14]
   have q15 : c₁.nreg 190015 = c₀ + (n - 1) := by rw [g₁ _ (Ne.symm hd2), h15]
-  have qp : c₁.nreg p = c.nreg p := g₁ _ (Ne.symm hdp)
+  have qp := g₁ _ (Ne.symm hdp)
   unfold fMap mapE
   by_cases h1 : c₁.nreg p < c₁.nreg 190014
-  · refine ⟨c₁, _, .seq e₁ (.ifLtN_true h1 (.skip w₁)), by omega, ?_, g₁, rfl, rfl, rfl, rfl⟩
+  · refine ⟨c₁, _, .seq e₁ (.ifLtN_true h1 (.skip w₁)), by_o, ?_, g₁, rfl, rfl, rfl, rfl⟩
     rw [v₁, ite_eq_right (by rw [q14, qp] at h1; omega)]
   by_cases h2 : c₁.nreg p < c₁.nreg 190015
   · have e₂ := Exec.subN (P := P) w₁ d p 190014
-    refine ⟨_, _, .seq e₁ (.ifLtN_false h1 (.ifLtN_true h2 e₂)), by omega, ?_,
+    refine ⟨_, _, .seq e₁ (.ifLtN_false h1 (.ifLtN_true h2 e₂)), by_o, ?_,
       fun r hr => ?_, rfl, rfl, rfl, rfl⟩
     · simp only [Machine.upd_same]
       rw [qp, q14, ite_eq_left (by rw [q14, qp] at h1; rw [q15, qp] at h2; omega)]
     · simp only; rw [Machine.upd_other _ _ _ hr]; exact g₁ r hr
-  · refine ⟨c₁, _, .seq e₁ (.ifLtN_false h1 (.ifLtN_false h2 (.skip w₁))), by omega, ?_, g₁,
+  · refine ⟨c₁, _, .seq e₁ (.ifLtN_false h1 (.ifLtN_false h2 (.skip w₁))), by_o, ?_, g₁,
       rfl, rfl, rfl, rfl⟩
     rw [v₁, ite_eq_right (by rw [q15, qp] at h2; omega)]
 

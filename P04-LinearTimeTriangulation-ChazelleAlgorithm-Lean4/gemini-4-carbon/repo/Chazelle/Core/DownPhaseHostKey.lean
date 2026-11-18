@@ -37,13 +37,13 @@ open Chazelle.Geometry (lerp lerp_zero lerp_one lerp_mem_segment)
 `t = t'`. -/
 theorem key_inj {p p' : ℕ} {t t' : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) (ht' : 0 ≤ t') (ht1' : t' < 1)
     (h : (p : ℝ) + t = p' + t') : p = p' ∧ t = t' := by
-  have h1 : (p : ℝ) < p' + 1 := by linarith
-  have h2 : (p' : ℝ) < p + 1 := by linarith
+  have h1 : (p : ℝ) < p' + 1 := by_l
+  have h2 : (p' : ℝ) < p + 1 := by_l
   have h1' : p < p' + 1 := by exact_mod_cast h1
   have h2' : p' < p + 1 := by exact_mod_cast h2
-  have hpp : p = p' := by omega
+  have hpp : p = p' := by_o
   subst hpp
-  exact ⟨rfl, by linarith⟩
+  exact ⟨rfl, by_l⟩
 
 /-- The closed key interval of host edge `i` (of `N` edges, keys `κ`): `[κ i, κ (i+1)]`, and for
 the last edge the wrapped interval `[κ (N-1), ∞) ∪ (-∞, κ 0]`. -/
@@ -59,9 +59,9 @@ theorem inKeyIv_inter {κ : ℕ → ℝ} {N i j : ℕ} (hmono : ∀ a b, a < b �
   have hle : ∀ a b, a < N → b < N → κ a ≤ κ b → a ≤ b := by
     intro a b ha hb hab
     by_contra h
-    have := hmono b a (by omega) ha
+    have := hmono b a by_o ha
     linarith
-  have hN0 : 0 < N := by omega
+  have hN0 : 0 < N := by_o
   unfold InKeyIv at hxi hxj
   -- wlog-free case analysis
   by_cases hi1 : i + 1 < N <;> by_cases hj1 : j + 1 < N <;>
@@ -70,36 +70,36 @@ theorem inKeyIv_inter {κ : ℕ → ℝ} {N i j : ℕ} (hmono : ∀ a b, a < b �
     rcases Nat.lt_or_gt_of_ne hij with h | h
     · -- i < j: κ i ≤ x ≤ κ (i+1) ≤ κ j ≤ x
       have h1 := hle j (i + 1) hj hi1 (le_trans hxj.1 hxi.2)
-      have hji : j = i + 1 := by omega
+      have hji : j = i + 1 := by_o
       subst hji
       refine ⟨i + 1, hi1, Or.inr (Nat.mod_eq_of_lt hi1).symm, Or.inl rfl, ?_⟩
       exact le_antisymm hxi.2 hxj.1
     · have h1 := hle i (j + 1) hi hj1 (le_trans hxi.1 hxj.2)
-      have hji : i = j + 1 := by omega
+      have hji : i = j + 1 := by_o
       subst hji
       refine ⟨j + 1, hj1, Or.inl rfl, Or.inr (Nat.mod_eq_of_lt hj1).symm, ?_⟩
       exact le_antisymm hxj.2 hxi.1
   · -- j is the last edge
-    have hjN : j = N - 1 := by omega
+    have hjN : j = N - 1 := by_o
     have hsj : (j + 1) % N = 0 := by rw [show j + 1 = N by omega, Nat.mod_self]
     rcases hxj with h | h
     · have h1 := hle j (i + 1) hj hi1 (le_trans h hxi.2)
-      have hji : j = i + 1 := by omega
+      have hji : j = i + 1 := by_o
       refine ⟨j, hj, Or.inr ?_, Or.inl rfl, le_antisymm (hji ▸ hxi.2) h⟩
       rw [hji, Nat.mod_eq_of_lt hi1]
     · have h1 := hle i 0 hi hN0 (le_trans hxi.1 h)
-      have hi0 : i = 0 := by omega
+      have hi0 : i = 0 := by_o
       subst hi0
       exact ⟨0, hN0, Or.inl rfl, Or.inr hsj.symm, le_antisymm h hxi.1⟩
   · -- i is the last edge
     have hsi : (i + 1) % N = 0 := by rw [show i + 1 = N by omega, Nat.mod_self]
     rcases hxi with h | h
     · have h1 := hle i (j + 1) hi hj1 (le_trans h hxj.2)
-      have hij' : i = j + 1 := by omega
+      have hij' : i = j + 1 := by_o
       refine ⟨i, hi, Or.inl rfl, Or.inr ?_, le_antisymm (hij' ▸ hxj.2) h⟩
       rw [hij', Nat.mod_eq_of_lt hj1]
     · have h1 := hle j 0 hj hN0 (le_trans hxj.1 h)
-      have hj0 : j = 0 := by omega
+      have hj0 : j = 0 := by_o
       subst hj0
       exact ⟨0, hN0, Or.inr hsi.symm, Or.inl rfl, le_antisymm h hxj.1⟩
   · exact absurd (by omega : i = j) hij
@@ -160,7 +160,7 @@ theorem inKeyIv_self {i : ℕ} (_hi : i < V.length) :
     InKeyIv (keyOf pp tt) V.length i (keyOf pp tt i) := by
   unfold InKeyIv
   split_ifs with h1
-  · exact ⟨le_rfl, (h.mono i (i + 1) (by omega) h1).le⟩
+  · exact ⟨le_rfl, (h.mono i (i + 1) by_o h1).le⟩
   · exact Or.inl le_rfl
 
 theorem inKeyIv_succ {i : ℕ} (hi : i < V.length) :
@@ -168,7 +168,7 @@ theorem inKeyIv_succ {i : ℕ} (hi : i < V.length) :
   unfold InKeyIv
   split_ifs with h1
   · rw [Nat.mod_eq_of_lt h1]
-    exact ⟨(h.mono i (i + 1) (by omega) h1).le, le_rfl⟩
+    exact ⟨(h.mono i (i + 1) by_o h1).le, le_rfl⟩
   · rw [show i + 1 = V.length by omega, Nat.mod_self]
     exact Or.inr le_rfl
 
@@ -226,7 +226,7 @@ theorem simple : (⟨V⟩ : Polygon).Simple := by
             ChordEdge D V k ∧ ∃ s : ℝ, 0 < s ∧ s < 1 ∧
               z = lerp (V.getD k (0, 0)) (V.getD ((k + 1) % V.length) (0, 0)) s := by
           intro k hk hzk
-          have hzb : z ∉ W.boundary := h.disj z hzD
+          have hzb := h.disj z hzD
           obtain ⟨s, hs0, hs1, hzs⟩ := Chazelle.Geometry.mem_segment_iff_lerp.1 hzk
           have hs0' : 0 < s := by
             rcases hs0.lt_or_eq with h' | h'
@@ -251,7 +251,7 @@ theorem simple : (⟨V⟩ : Polygon).Simple := by
         obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique h.wsimple hp hp' ht0 ht1 ht0' ht1'
           (hzp.symm.trans hzp')
         obtain ⟨k, hk, hki', hkj', hx⟩ := inKeyIv_inter h.mono hi hj hij hki hkj
-        have hzk : z = V.getD k (0, 0) := hzp.trans (h.eq_vtx_of_key hk ht0 ht1 hx)
+        have hzk := hzp.trans (h.eq_vtx_of_key hk ht0 ht1 hx)
         simp only [Polygon.commonEndpoints, hn, hv]
         refine ⟨?_, ?_⟩
         · rcases hki' with rfl | rfl

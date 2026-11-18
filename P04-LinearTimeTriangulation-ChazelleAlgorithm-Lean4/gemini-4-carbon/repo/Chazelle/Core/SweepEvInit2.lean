@@ -45,7 +45,7 @@ theorem frame_of_irs {W : ℕ} {c c' : Config} {k : ℕ} (hI : IInv W c c') (hf 
 theorem frame_regs {c c' : Config} (k : ℕ) (hr : ∀ r, bandOf r ∉ ioBands → c'.nreg r = c.nreg r)
     (hrr : c'.rreg = c.rreg) (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : Frame ioBands c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC alloc_not_io
+  have hA := hr ALLOC alloc_not_io
   exact ⟨fun r h _ => hr r h, fun r _ => by rw [hrr], fun a _ => by rw [hm],
     fun a _ => by rw [hrm], ho, by rw [hA], by rw [hA]; omega⟩
 
@@ -78,8 +78,8 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
         (r < sw 705 ∨ sw 709 < r) → c'.nreg r = c.nreg r := by
   have hW6 : 6 ≤ W := by have := hctx.2.2.2.2.2; omega
   have e₁ := exec_regB (P := P) [.constN iE 6, .constN iH 0] hw
-    (by simp only [okW, okWI]; exact ⟨hW6, by omega, trivial⟩)
-  set c₁ : Config := { c with nreg := regB c.nmem [.constN iE 6, .constN iH 0] c.nreg } with hc₁
+    (by simp only [okW, okWI]; exact ⟨hW6, by_o, trivial⟩)
+  set c₁ := { c with nreg := regB c.nmem [.constN iE 6, .constN iH 0] c.nreg } with hc₁
   have hw₁ := e₁.wb_right
   have q1 : ∀ r, r ≠ iE → r ≠ iH → c₁.nreg r = c.nreg r := fun r h1 h2 => by
     simp only [hc₁, regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
@@ -99,7 +99,7 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
       (by swoInit2) (by swoInit2) (by rw [qE])
       (by rw [qE]; omega) (by rw [qE, qH]; exact ⟨by rw [hpar], by rw [hpar]; norm_num,
         Nat.zero_le _⟩)
-      (by rw [qE, qH]; exact ⟨fun _ => hpar, fun _ => rfl⟩) (by rw [hA₁]; exact hroom)
+      (by rw [qE, qH]; exact ⟨fun _ => hpar, fun _ => rfl⟩) (by rwa [hA₁])
   rw [qE, qH] at hse
   have hpos : (chainModel J.left).pos (Qof P) ⟨6, 0⟩ = J.left.top := by
     show Chazelle.Chain.sidePt _ _ _ = _
@@ -108,12 +108,12 @@ theorem symS_exec {P : Polygon} {W : ℕ} {c : Config} {J : Merge.Junction}
   have hw₂ := e₂.wb_right
   have e₃ := exec_regB (P := P) symCp hw₂ (by
     simp only [symCp, okW, okWI]; exact ⟨trivial, trivial, trivial, trivial⟩)
-  set c₃ : Config := { c₂ with nreg := regB c₂.nmem symCp c₂.nreg } with hc₃
+  set c₃ := { c₂ with nreg := regB c₂.nmem symCp c₂.nreg } with hc₃
   have q3 : ∀ r, (r < sw 645 ∨ sw 647 < r) → c₃.nreg r = c₂.nreg r := fun r hr => by
     simp only [hc₃, symCp, regB, regI, cT1, sw] at hr ⊢
-    rw [upd_other _ _ _ (by omega), upd_other _ _ _ (by omega), upd_other _ _ _ (by omega)]
-  refine ⟨c₃, 2 + (k₂ + 3), .seq e₁ (.seq e₂ e₃), by omega, ?_, ⟨s, ?_, hsl, hse⟩, ?_⟩
-  · have f₁ : Frame ioBands c c₁ 2 := frame_regs 2 (fun r hr => q1 r
+    rw [upd_other _ _ _ by_o, upd_other _ _ _ by_o, upd_other _ _ _ by_o]
+  refine ⟨c₃, 2 + (k₂ + 3), .seq e₁ (.seq e₂ e₃), by_o, ?_, ⟨s, ?_, hsl, hse⟩, ?_⟩
+  · have f₁ := frame_regs 2 (fun r hr => q1 r
       (fun h => hr (by rw [h]; exact sw_io (by swoInit2) (by swoInit2)))
       (fun h => hr (by rw [h]; exact sw_io (by swoInit2) (by swoInit2))))
       rfl rfl rfl rfl
@@ -184,18 +184,18 @@ theorem mdCpW_step {P : Polygon} {W : ℕ} {c c₁ : Config} {A S j k : ℕ}
     rw [upd_other _ _ _ (by swoInit2), upd_same]
   simp only
   rw [vA, vV, upd_same, n20, nk]
-  have hsrc : c₁.nmem (S + j) = c.nmem (S + j) := h5 _ (by omega)
+  have hsrc : c₁.nmem (S + j) = c.nmem (S + j) := h5 _ by_o
   refine ⟨?_, ?_, ?_, fun i hi => ?_, fun a ha => ?_, fun r r1 r2 r3 r4 => ?_, h7, h8, h9⟩ <;>
     simp only
   · rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
       upd_other _ _ _ (by swoInit2), h1]
   · rw [upd_other _ _ _ (by swoInit2), upd_other _ _ _ (by swoInit2),
       upd_other _ _ _ (by swoInit2), h2]
-  · rw [upd_other _ _ _ (by omega), h3]
+  · rw [upd_other _ _ _ by_o, h3]
   · rcases Nat.lt_or_ge i j with h | h
-    · rw [upd_other _ _ _ (by omega), h4 i h]
+    · rw [upd_other _ _ _ by_o, h4 i h]
     · rw [show i = j by omega, upd_same, hsrc]
-  · rw [upd_other _ _ _ (by omega), h5 a ha]
+  · rw [upd_other _ _ _ by_o, h5 a ha]
   · rw [upd_other _ _ _ r3, upd_other _ _ _ r4, upd_other _ _ _ r3, h6 r r1 r2 r3 r4]
 
 set_option maxRecDepth 20000 in
@@ -210,7 +210,7 @@ theorem mdHead_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   · refine ⟨rfl, by config_simp, by config_simp; rw [k1], by config_simp; rw [k0],
       fun i hi => absurd hi (Nat.not_lt_zero _), fun a ha => ?_, fun r h1 h2 _ _ => ?_,
       rfl, rfl, rfl⟩
-    · config_simp; rw [upd_other _ _ _ (by omega)]
+    · config_simp; rw [upd_other _ _ _ by_o]
     · config_simp; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
 
 set_option maxRecDepth 20000 in
@@ -228,20 +228,20 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
   set A := c.nreg ALLOC with hA
   set S := c.nreg (sw 20) with hSd
   obtain ⟨c₁, kH, eH, hkH, I₁⟩ := mdHead_exec (P := P) hw k0 k1 hW
-  have hSA : S + 5 ≤ A := hS
+  have hSA := hS
   have nk : ∀ q, (q = K0 ∨ q = K1 ∨ q = K2 ∨ q = K3 ∨ q = K4) →
       q ≠ MD₁ ∧ q ≠ CD₁ ∧ q ≠ iA ∧ q ≠ iV := by
     rintro q (rfl | rfl | rfl | rfl | rfl) <;> refine ⟨?_, ?_, ?_, ?_⟩ <;> swoInit2
-  obtain ⟨c₂, e₄, I₂⟩ := mdCpW_step (P := P) eH.wb_right I₁ rfl hSA (by omega) (by norm_num) k0
-    (nk K0 (by simp)).1 (nk K0 (by simp)).2.1 (nk K0 (by simp)).2.2.1 (nk K0 (by simp)).2.2.2
-  obtain ⟨c₃, e₅, I₃⟩ := mdCpW_step (P := P) e₄.wb_right I₂ rfl hSA (by omega) (by norm_num) k1
-    (nk K1 (by simp)).1 (nk K1 (by simp)).2.1 (nk K1 (by simp)).2.2.1 (nk K1 (by simp)).2.2.2
-  obtain ⟨c₄, e₆, I₄⟩ := mdCpW_step (P := P) e₅.wb_right I₃ rfl hSA (by omega) (by norm_num) k2
-    (nk K2 (by simp)).1 (nk K2 (by simp)).2.1 (nk K2 (by simp)).2.2.1 (nk K2 (by simp)).2.2.2
-  obtain ⟨c₅, e₇, I₅⟩ := mdCpW_step (P := P) e₆.wb_right I₄ rfl hSA (by omega) (by norm_num) k3
-    (nk K3 (by simp)).1 (nk K3 (by simp)).2.1 (nk K3 (by simp)).2.2.1 (nk K3 (by simp)).2.2.2
-  obtain ⟨c₆, e₈, I₆⟩ := mdCpW_step (P := P) e₇.wb_right I₅ rfl hSA (by omega) (by norm_num) k4
-    (nk K4 (by simp)).1 (nk K4 (by simp)).2.1 (nk K4 (by simp)).2.2.1 (nk K4 (by simp)).2.2.2
+  obtain ⟨c₂, e₄, I₂⟩ := mdCpW_step (P := P) eH.wb_right I₁ rfl hSA by_o by_n k0
+    (nk K0 by_s).1 (nk K0 by_s).2.1 (nk K0 by_s).2.2.1 (nk K0 by_s).2.2.2
+  obtain ⟨c₃, e₅, I₃⟩ := mdCpW_step (P := P) e₄.wb_right I₂ rfl hSA by_o by_n k1
+    (nk K1 by_s).1 (nk K1 by_s).2.1 (nk K1 by_s).2.2.1 (nk K1 by_s).2.2.2
+  obtain ⟨c₄, e₆, I₄⟩ := mdCpW_step (P := P) e₅.wb_right I₃ rfl hSA by_o by_n k2
+    (nk K2 by_s).1 (nk K2 by_s).2.1 (nk K2 by_s).2.2.1 (nk K2 by_s).2.2.2
+  obtain ⟨c₅, e₇, I₅⟩ := mdCpW_step (P := P) e₆.wb_right I₄ rfl hSA by_o by_n k3
+    (nk K3 by_s).1 (nk K3 by_s).2.1 (nk K3 by_s).2.2.1 (nk K3 by_s).2.2.2
+  obtain ⟨c₆, e₈, I₆⟩ := mdCpW_step (P := P) e₇.wb_right I₅ rfl hSA by_o by_n k4
+    (nk K4 by_s).1 (nk K4 by_s).2.1 (nk K4 by_s).2.2.1 (nk K4 by_s).2.2.2
   obtain ⟨g1, g2, g3, g4, g5, g6, g7, g8, g9⟩ := I₆
   have gA : c₆.nreg ALLOC = A := g6 _ (by swoInit2)
     (by swoInit2) (by swoInit2) (by swoInit2)
@@ -249,7 +249,7 @@ theorem md1S_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) (
     rw [g6 _ (by swoInit2) (by swoInit2) (by swoInit2)
       (by swoInit2), k6]
   have e₉ := Exec.addN (P := P) e₈.wb_right ALLOC ALLOC K6 (by rw [gA, g6']; omega)
-  refine ⟨_, _, .seq eH (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))), by omega, ?_, ?_, ?_,
+  refine ⟨_, _, .seq eH (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉))))), by_o, ?_, ?_, ?_,
     g3, g4, g5, fun r h0 h1 h2 h3 h4 => ?_, g7, g8, g9⟩
   · simp only [upd_same]; rw [gA, g6']
   · simp only; rw [upd_other _ _ _ (by swoInit2), g1]

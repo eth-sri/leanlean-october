@@ -42,7 +42,7 @@ theorem nfAt_robust_bound {A : ℕ} {m : ℕ → ℕ} {B : ℕ} {N : NF}
     by_contra hc
     push Not at hc
     have := (h (Function.update m (B + 11) (N.dec.length + 1)) (fun a ha => by
-      rw [Function.update_of_ne (by omega)])).2.2.2.2.1
+      rw [Function.update_of_ne by_o])).2.2.2.2.1
     rw [Function.update_self] at this
     omega
   refine ⟨h1, fun i hi => ?_⟩
@@ -50,9 +50,9 @@ theorem nfAt_robust_bound {A : ℕ} {m : ℕ → ℕ} {B : ℕ} {N : NF}
   push Not at hc
   set a := m (B + 3) + 5 * i + 4 with ha
   have hm : ∀ a', a' < A → Function.update m a ((N.chord i).dn + 1) a' = m a' := fun a' ha' => by
-    rw [Function.update_of_ne (by omega)]
+    rw [Function.update_of_ne by_o]
   have hN := h _ hm
-  have h3 : Function.update m a ((N.chord i).dn + 1) (B + 3) = m (B + 3) := hm _ (by omega)
+  have h3 : Function.update m a ((N.chord i).dn + 1) (B + 3) = m (B + 3) := hm _ by_o
   have := (hN.2.2.2.2.2.1 i hi).2.2.2.2
   rw [h3, ← ha, Function.update_self] at this
   omega
@@ -73,7 +73,7 @@ theorem fSetup_exec (c : Config) (hw : WordsBounded W c) {A Bn K₀ CB b : ℕ}
       (∀ r, (r < 190017 ∨ 190043 < r) → r ≠ 9999 → c'.nreg r = c.nreg r) ∧
       (∀ a, c'.nmem a = if a = A + 1 then b else if a = A then 1 else c.nmem a) ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have hAW : A ≤ W := by omega
+  have hAW : A ≤ W := by_o
   unfold fSetup
   exec_block
   all_goals try omega
@@ -103,9 +103,9 @@ theorem recsT_of_nfAt {A : ℕ} {m m' : ℕ → ℕ} {B : ℕ} {N : NF}
       List.getElem?_eq_getElem hi', Option.getD_some]
   rw [hg]
   refine ⟨?_, ?_, ?_⟩
-  · rw [hm _ (by omega)]; exact e1
-  · rw [hm _ (by omega)]; exact e2
-  · rw [hm _ (by omega)]; exact e3
+  · rwa [hm _ by_o]
+  · rwa [hm _ by_o]
+  · rwa [hm _ by_o]
 
 /-- The list of a full pass, in memory. -/
 theorem chordListAt_memT {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀ : List (ℕ × ℕ × ℕ)} {B' : ℕ}
@@ -116,14 +116,14 @@ theorem chordListAt_memT {m₀ m : ℕ → ℕ} {li : Bool} {n c₀ : ℕ} {L₀
   intro j hj
   have hq : ∀ q, q < 3 → m (B' + 3 * j + q) = tw (transL li n c₀ L₀) (3 * j + q) := by
     intro q hq
-    rw [hm]; unfold memT; rw [hlen, ite_eq_left (by omega), show B' + 3 * j + q - B' = 3 * j + q by
+    rw [hm]; unfold memT; rw [hlen, ite_eq_left by_o, show B' + 3 * j + q - B' = 3 * j + q by
       omega]
   refine ⟨?_, ?_, ?_⟩
-  · have := hq 0 (by norm_num); rw [Nat.add_zero, Nat.add_zero] at this; rw [this]
+  · have := hq 0 by_n; rw [Nat.add_zero, Nat.add_zero] at this; rw [this]
     unfold tw; rw [show 3 * j % 3 = 0 by omega, show 3 * j / 3 = j by omega]; simp
-  · rw [hq 1 (by norm_num)]
+  · rw [hq 1 by_n]
     unfold tw; rw [show (3 * j + 1) % 3 = 1 by omega, show (3 * j + 1) / 3 = j by omega]; simp
-  · rw [hq 2 (by norm_num)]
+  · rw [hq 2 by_n]
     unfold tw; rw [show (3 * j + 2) % 3 = 2 by omega, show (3 * j + 2) / 3 = j by omega]; simp
 
 set_option maxHeartbeats 4000000 in
@@ -152,9 +152,9 @@ theorem filtS_exec (c : Config) (hw : WordsBounded W c) {N : NF} {li : Bool} {n 
   have hlen₀ : (triplesOf N).length = K₀ := by unfold triplesOf; rw [List.length_map]
   obtain ⟨c₁, k₁, e₁, hk₁, v21, v22, v23, v24, v17, v18, v99, v30, v31, v35, v36, g₁, mm₁,
     rr₁, rm₁, o₁⟩ := fSetup_exec (P := P) c hw (A := A) (Bn := Bn) (K₀ := K₀)
-      (CB := c.nmem (Bn + 3)) (b := if li then 1 else 0) rfl rfl hBnA hNA.1 rfl h01 (by omega)
+      (CB := c.nmem (Bn + 3)) (b := if li then 1 else 0) rfl rfl hBnA hNA.1 rfl h01 by_o
   have hlow₁ : ∀ a, a < A → c₁.nmem a = c.nmem a := fun a ha => by
-    rw [mm₁, ite_eq_right (by omega), ite_eq_right (by omega)]
+    rw [mm₁, ite_eq_right by_o, ite_eq_right by_o]
   have hR := recsT_of_nfAt hN hlow₁
   have hI₁ : FInv c₁.nmem li n c₀ (triplesOf N) (c.nmem (Bn + 3)) (A + 6) c₁ c₁ :=
     { i_le := by rw [v30]; omega
@@ -162,10 +162,10 @@ theorem filtS_exec (c : Config) (hw : WordsBounded W c) {N : NF} {li : Bool} {n 
       r31 := by rw [v31, v30]; ring
       r35 := by rw [v35, v30]; simp [rankF]
       r36 := by rw [v36, v30]; simp [rankF]
-      r10 := by rw [g₁ _ (by norm_num) (by norm_num), h10]
-      r14 := by rw [g₁ _ (by norm_num) (by norm_num), h14]
-      r15 := by rw [g₁ _ (by norm_num) (by norm_num), h15]
-      r16 := by rw [g₁ _ (by norm_num) (by norm_num), h16]
+      r10 := by rw [g₁ _ by_n by_n, h10]
+      r14 := by rw [g₁ _ by_n by_n, h14]
+      r15 := by rw [g₁ _ by_n by_n, h15]
+      r16 := by rw [g₁ _ by_n by_n, h16]
       r17 := v17
       r18 := v18
       fr := fun _ _ => rfl
@@ -178,28 +178,28 @@ theorem filtS_exec (c : Config) (hw : WordsBounded W c) {N : NF} {li : Bool} {n 
     rcases Nat.eq_zero_or_pos (triplesOf N).length with h0 | hpos
     · left; exact h0
     · right
-      have := (nfAt_robust_bound hN).2 (K₀ - 1) (by omega)
+      have := (nfAt_robust_bound hN).2 (K₀ - 1) by_o
       rw [hlen₀]
-      have : c.nmem (Bn + 3) + 5 * (K₀ - 1) + 4 < A := this
+      have := this
       omega
   obtain ⟨c₂, k₂, e₂, hw₂, hI₂, h30, hk₂, hk₂'⟩ := fLoop_exec (P := P) hR hCB
     (by rw [hlen₀]; omega) e₁.wb_right hI₁ v30
   rw [hlen₀] at hk₂ hk₂' h30
-  have g₂ : ∀ r, (r < 190030 ∨ 190039 < r) → c₂.nreg r = c₁.nreg r := hI₂.fr
-  refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by omega, by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+  have g₂ := hI₂.fr
+  refine ⟨c₂, k₁ + k₂, .seq e₁ e₂, by_o, by_o, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     hI₂.rr.trans rr₁, hI₂.rm.trans rm₁, hI₂.out.trans o₁⟩
-  · rw [g₂ _ (by norm_num), v21]
-  · rw [g₂ _ (by norm_num), v22]
+  · rw [g₂ _ by_n, v21]
+  · rw [g₂ _ by_n, v22]
   · rw [hI₂.r36, h30, ← hlen₀, DownBase.rankF_length]; unfold transL; rw [List.length_map]
-  · show c₂.nreg 9999 = _; rw [g₂ _ (by norm_num), v99]
+  · show c₂.nreg 9999 = _; rw [g₂ _ by_n, v99]
   · refine chordListAt_memT (m₀ := c₁.nmem) (fun a => ?_)
     rw [hI₂.mem a, h30, hlen₀]
-  · rw [hI₂.mem, h30]; unfold memT; rw [ite_eq_right (by omega), mm₁, ite_eq_right (by omega), ite_eq_left rfl]
-  · rw [hI₂.mem, h30]; unfold memT; rw [ite_eq_right (by omega), mm₁, ite_eq_left rfl]
+  · rw [hI₂.mem, h30]; unfold memT; rw [ite_eq_right by_o, mm₁, ite_eq_right by_o, ite_eq_left rfl]
+  · rw [hI₂.mem, h30]; unfold memT; rw [ite_eq_right by_o, mm₁, ite_eq_left rfl]
   · intro a ha
-    rw [hI₂.mem, h30]; unfold memT; rw [ite_eq_right (by omega), hlow₁ a ha]
+    rw [hI₂.mem, h30]; unfold memT; rw [ite_eq_right by_o, hlow₁ a ha]
   · intro r hr hra
-    rw [g₂ r (by omega), g₁ r hr hra]
+    rw [g₂ r by_o, g₁ r hr hra]
 
 end exec
 

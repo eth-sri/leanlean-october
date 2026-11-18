@@ -54,14 +54,14 @@ theorem nodup_flat {α β : Type*} (f : α → β) (Lx : ℕ → List α) (R : �
   | zero => simp
   | succ R ih =>
     rw [List.range_succ, List.flatMap_append, List.map_append, List.nodup_append]
-    refine ⟨ih (fun r hr => hnd r (by omega))
-      (fun r r' hr hr' => hdis r r' (by omega) (by omega)), by simpa using hnd R (by omega), ?_⟩
+    refine ⟨ih (fun r hr => hnd r by_o)
+      (fun r r' hr hr' => hdis r r' by_o by_o), by simpa using hnd R by_o, ?_⟩
     intro a ha b hb hab
     obtain ⟨y, hy, rfl⟩ := List.mem_map.1 ha
     obtain ⟨y', hy', rfl⟩ := List.mem_map.1 hb
     obtain ⟨r, hr, hyr⟩ := mem_flat.1 hy
     have hy'' : y' ∈ Lx R := by simpa using hy'
-    have := hdis r R (by omega) (by omega) y hyr y' hy'' hab
+    have := hdis r R by_o by_o y hyr y' hy'' hab
     omega
 
 /-! ## The region index of a region -/
@@ -98,7 +98,7 @@ theorem lx_size {Q : Polygon} {C : Chain} (hP : C.P.Simple) {F₁ : Set (Set Poi
     Set.ncard_le_ncard (fun c hc => hc.1) hcan.1.1
   have h3 := DownMath.lemma23_chain hP hcan.1 hcan.2.1 hcan.2.2
   calc l.length * (γ₀ + 1) ≤ F₁.ncard * (γR + 1) :=
-        Nat.mul_le_mul (by rw [h1]; exact h2) (by omega)
+        Nat.mul_le_mul (by rwa [h1]) by_o
     _ ≤ _ := h3
 
 /-! ## The abstract level -/
@@ -193,7 +193,7 @@ theorem down (X : LvlCtx Q L R reg C F Lx D γ) :
 /-- **The spliced list is valid.** -/
 theorem ok (X : LvlCtx Q L R reg C F Lx D γ) :
     ChordTriplesOK (interiorModel Q) Q (L ++ (List.range R).flatMap Lx) := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel X.hQ
+  have hM := walkAx_interiorModel X.hQ
   refine ⟨?_, ?_, ?_, ?_⟩
   · show (interiorModel Q).ChordFamily Q (Gran.lset (interiorModel Q) Q _)
     rw [X.step]; exact X.down.1
@@ -244,15 +244,13 @@ theorem count (X : LvlCtx Q L R reg C F Lx D γ) {γ₀ : ℕ}
       exact X.hmem r (Finset.mem_range.1 hr))
     rwa [show (Gran.lset (interiorModel Q) Q L).ncard = L.length from ncard_lset X.hL.2.1]
       at this
-  have hle : ∑ r ∈ Finset.range R, (Lx r).length * (γ₀ + 1) ≤
-      ∑ r ∈ Finset.range R, 280 * (D + 2) *
-        DownHost.nk (interiorModel Q) (Gran.lset (interiorModel Q) Q L) (reg r) :=
+  have hle :=
     Finset.sum_le_sum fun r hr => hper r (Finset.mem_range.1 hr)
   rw [← Finset.sum_mul, ← Finset.mul_sum] at hle
   rw [List.length_append, length_flatMap_range, Nat.add_mul]
   have h2 := Nat.mul_le_mul_left (280 * (D + 2)) hsum
   have h3 : 280 * (D + 2) * (Q.n + 4 * L.length) ≤ 1120 * (D + 2) * (Q.n + 4 * L.length) :=
-    Nat.mul_le_mul_right _ (by omega)
+    Nat.mul_le_mul_right _ by_o
   omega
 
 end LvlCtx

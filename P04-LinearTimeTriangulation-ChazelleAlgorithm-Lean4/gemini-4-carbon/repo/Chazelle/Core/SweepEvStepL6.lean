@@ -52,13 +52,13 @@ theorem stp_mem_stopLabs {m : ℕ → ℕ} {A : ℕ} {ax : List (ℕ × ℕ × �
     constructor
     · rintro ⟨t, ht, rfl⟩
       refine ⟨h, ?_⟩
-      have : t = 0 ∨ t = 1 := by omega
+      have : t = 0 ∨ t = 1 := by_o
       rcases this with rfl | rfl
-      · left; exact ⟨by omega, by rw [add_zero, a2]⟩
-      · right; exact ⟨by omega, by rw [show A + 5 * i + 2 + 1 = A + 5 * i + 3 by ring, a3]⟩
+      · left; exact ⟨by_o, by rw [add_zero, a2]⟩
+      · right; exact ⟨by_o, by rw [show A + 5 * i + 2 + 1 = A + 5 * i + 3 by ring, a3]⟩
     · rintro ⟨-, ⟨h1, rfl⟩ | ⟨h1, rfl⟩⟩
-      · exact ⟨0, by omega, by rw [add_zero, a2]⟩
-      · exact ⟨1, by omega, by rw [show A + 5 * i + 2 + 1 = A + 5 * i + 3 by ring, a3]⟩
+      · exact ⟨0, by_o, by rw [add_zero, a2]⟩
+      · exact ⟨1, by_o, by rw [show A + 5 * i + 2 + 1 = A + 5 * i + 3 by ring, a3]⟩
   · simp only [List.not_mem_nil, false_iff, not_and]
     intro h'; exact absurd h' h
 
@@ -109,7 +109,7 @@ theorem stop_unique {i i' : ℕ} (hi : i < rs.length) (hi' : i' < rs.length)
   obtain ⟨hi₀', -, -, -, e1', e2'⟩ := S.skip_at h1' h2'
   have hnd := S.hD.2.2.2.2.1.2.2.2
   have hl : (stopsOf J (Qof P) N₂ rs).length = rs.length := by simp [stopsOf]
-  exact (List.Nodup.getElem_inj_iff hnd (hi := by rw [hl]; exact hi)
+  exact (List.Nodup.getElem_inj_iff hnd (hi := by rwa [hl])
     (hj := by rw [hl]; exact hi')).1 (by
       rw [stopsOf_getElem hi, stopsOf_getElem hi', e2, e2', e1, e1', heq])
 
@@ -152,7 +152,7 @@ theorem labsOf_card (e : Set Point) :
         rintro (⟨t, ht, hto, hte, -⟩ | ⟨i, hi, f1, f2, f3, -⟩)
         · exact (S.triple_at ht hto).2.2.1 (hte ▸ hst)
         · exact hex ⟨i, hi, f1, f2, f3⟩
-      rw [hemp]; exact ⟨finite_empty, by simp⟩
+      rw [hemp]; exact ⟨finite_empty, by_s⟩
   · by_cases hex : ∃ t ∈ A, offT P J t = keyOff P J c' ∧
         Merge.shoot J.whole (endOrigin J (Qof P) N₂ t.1) (endDir t.1) = e
     · obtain ⟨t₀, ht₀, g1, g2⟩ := hex
@@ -174,7 +174,7 @@ theorem labsOf_card (e : Set Point) :
         · exact hex ⟨t, ht, hto, hte⟩
         · obtain ⟨hi₁, -, hs, -⟩ := S.skip_at f1 f2
           exact hst (f3 ▸ hs)
-      rw [hemp]; exact ⟨finite_empty, by simp⟩
+      rw [hemp]; exact ⟨finite_empty, by_s⟩
 
 end SCtx
 

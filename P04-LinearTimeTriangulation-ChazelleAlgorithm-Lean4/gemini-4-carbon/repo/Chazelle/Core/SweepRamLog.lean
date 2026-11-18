@@ -45,18 +45,18 @@ theorem faces_near_after (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm
   obtain ⟨δ, hδ, hW'⟩ := hW
   obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_after hM hF hfin ((p : ℝ) + t))
-  have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+  have hδ₁' := hδ₁
   set s := min (min δ δ₁) (min ε (1 - t)) / 2 with hs
   have hm : 0 < min (min δ δ₁) (min ε (1 - t)) :=
-    lt_min (lt_min hδ hδ₁') (lt_min hε (by linarith))
+    lt_min (lt_min hδ hδ₁') (lt_min hε by_l)
   have h1 := min_le_left (min δ δ₁) (min ε (1 - t))
   have h2 := min_le_right (min δ δ₁) (min ε (1 - t))
   have h3 := min_le_left δ δ₁
   have h4 := min_le_right δ δ₁
   have h5 := min_le_left ε (1 - t)
   have h6 := min_le_right ε (1 - t)
-  refine ⟨s, by linarith, by linarith, by linarith, ?_, hW' s (by linarith) (by linarith)
-    (by linarith)⟩
+  refine ⟨s, by_l, by_l, by_l, ?_, hW' s by_l by_l
+    by_l⟩
   have := hsub ⟨show 0 < s by linarith, show s < δ₁ by linarith⟩
   rw [Set.mem_ofPred_eq] at this
   rwa [← add_assoc]
@@ -68,34 +68,34 @@ theorem off_before_vertex {n g p : ℕ} (hg : g < n) (hp : p < n) {s : ℝ} (hs0
   have hpg : p ≠ g := by
     intro h; subst h; simp [off_self] at hpos
   rcases Nat.eq_zero_or_pos p with rfl | hp1
-  · have e : (0 + n - 1) % n = n - 1 := by rw [Nat.mod_eq_of_lt (by omega)]; omega
+  · have e : (0 + n - 1) % n = n - 1 := by rw [Nat.mod_eq_of_lt by_o]; omega
     rw [e]
-    have hn1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hn1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by rw [Nat.cast_sub by_o]; simp
     rw [hn1]
     unfold off
     have hg0 : (0 : ℝ) < g := by
-      have : 0 < g := Nat.pos_of_ne_zero (Ne.symm hpg)
+      have := Nat.pos_of_ne_zero (Ne.symm hpg)
       exact_mod_cast this
     have hgn : (g : ℝ) + 1 ≤ n := by exact_mod_cast hg
-    rw [ite_eq_left (by linarith), ite_eq_right (by push_cast; linarith)]
+    rw [ite_eq_left by_l, ite_eq_right (by push_cast; linarith)]
     push_cast; ring
   · have e : (p + n - 1) % n = p - 1 := by
-      rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      rw [show p + n - 1 = (p - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     rw [e]
-    have hp1' : ((p - 1 : ℕ) : ℝ) = (p : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have hp1' : ((p - 1 : ℕ) : ℝ) = (p : ℝ) - 1 := by rw [Nat.cast_sub by_o]; simp
     rw [hp1']
     unfold off
     rcases lt_or_gt_of_ne hpg with h | h
     · have h' : (p : ℝ) + 1 ≤ g := by exact_mod_cast h
-      rw [ite_eq_right (by linarith), ite_eq_right (by linarith)]; ring
+      rw [ite_eq_right by_l, ite_eq_right by_l]; ring
     · have h' : (g : ℝ) + 1 ≤ p := by exact_mod_cast h
-      rw [ite_eq_left (by linarith), ite_eq_left (by linarith)]; ring
+      rw [ite_eq_left by_l, ite_eq_left by_l]; ring
 
 /-- The offset of a position before `(p, t)` on the same edge. -/
 theorem off_before_edge {n g p : ℕ} (hg : g < n) (hp : p < n) {t s : ℝ} (hs0 : 0 < s)
     (hst : s < t) (ht1 : t < 1) :
     off n g ((p : ℝ) + (t - s)) = off n g ((p : ℝ) + t) - s := by
-  have := off_add_small hg hp (t := t - s) (s := s) (by linarith) hs0.le (by linarith)
+  have := off_add_small hg hp (t := t - s) (s := s) by_l hs0.le by_l
   rw [show t - s + s = t by ring] at this
   linarith
 
@@ -112,54 +112,54 @@ theorem faces_near_before (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Ad
   rcases ht0.lt_or_eq with htp | rfl
   · obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
       (eventually_not_cut_before hM hF hfin ((p : ℝ) + t))
-    have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+    have hδ₁' := hδ₁
     set s := min (min δ δ₁) (min ε t) / 2 with hs
-    have hm : 0 < min (min δ δ₁) (min ε t) := lt_min (lt_min hδ hδ₁') (lt_min hε htp)
+    have hm := lt_min (lt_min hδ hδ₁') (lt_min hε htp)
     have h1 := min_le_left (min δ δ₁) (min ε t)
     have h2 := min_le_right (min δ δ₁) (min ε t)
     have h3 := min_le_left δ δ₁
     have h4 := min_le_right δ δ₁
     have h5 := min_le_left ε t
     have h6 := min_le_right ε t
-    have hst : s < t := by linarith
-    have hoff := off_before_edge hg hp (show 0 < s by linarith) hst ht1
-    refine ⟨p, t - s, hp, ⟨by linarith, by linarith⟩, ?_, hWp htp s (by linarith) (by linarith) hst,
+    have hst : s < t := by_l
+    have hoff := off_before_edge hg hp (by linarith) hst ht1
+    refine ⟨p, t - s, hp, ⟨by_l, by_l⟩, ?_, hWp htp s by_l by_l hst,
       by rw [hoff]; linarith, by rw [hoff]; linarith⟩
     have := hsub ⟨show 0 < s by linarith, show s < δ₁ by linarith⟩
     rw [Set.mem_ofPred_eq] at this
     rwa [add_sub_assoc] at this
   · -- at a walk vertex: the end of the previous edge
     set q := (p + M.W.n - 1) % M.W.n with hq
-    have hqn : q < M.W.n := Nat.mod_lt _ (by omega)
+    have hqn : q < M.W.n := Nat.mod_lt _ by_o
     have hkey : ∀ s : ℝ, (q : ℝ) + (1 - s) = (p : ℝ) - s ∨ (q : ℝ) + (1 - s) = (M.W.n : ℝ) - s := by
       intro s
       rcases Nat.eq_zero_or_pos p with rfl | hp1
       · right
         have e : (0 + M.W.n - 1) % M.W.n = M.W.n - 1 := by
-          rw [Nat.mod_eq_of_lt (by omega)]; omega
-        rw [hq, e, Nat.cast_sub (by omega)]; push_cast; ring
+          rw [Nat.mod_eq_of_lt by_o]; omega
+        rw [hq, e, Nat.cast_sub by_o]; push_cast; ring
       · left
         have e : (p + M.W.n - 1) % M.W.n = p - 1 := by
           rw [show p + M.W.n - 1 = (p - 1) + M.W.n by omega, Nat.add_mod_right,
-            Nat.mod_eq_of_lt (by omega)]
-        rw [hq, e, Nat.cast_sub (by omega)]; push_cast; ring
+            Nat.mod_eq_of_lt by_o]
+        rw [hq, e, Nat.cast_sub by_o]; push_cast; ring
     obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
       ((eventually_not_cut_before hM hF hfin (p : ℝ)).and
         (eventually_not_cut_before hM hF hfin (M.W.n : ℝ)))
-    have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+    have hδ₁' := hδ₁
     set s := min (min δ δ₁) (min ε 1) / 2 with hs
-    have hm : 0 < min (min δ δ₁) (min ε 1) := lt_min (lt_min hδ hδ₁') (lt_min hε one_pos)
+    have hm := lt_min (lt_min hδ hδ₁') (lt_min hε one_pos)
     have h1 := min_le_left (min δ δ₁) (min ε 1)
     have h2 := min_le_right (min δ δ₁) (min ε 1)
     have h3 := min_le_left δ δ₁
     have h4 := min_le_right δ δ₁
     have h5 := min_le_left ε (1 : ℝ)
     have h6 := min_le_right ε (1 : ℝ)
-    have hs0 : 0 < s := by linarith
-    have hs1 : s < 1 := by linarith
+    have hs0 : 0 < s := by_l
+    have hs1 : s < 1 := by_l
     have hoff := off_before_vertex hg hp hs0 hs1 (by simpa using hpos)
     simp only [add_zero] at hoff hpos ⊢
-    refine ⟨q, 1 - s, hqn, ⟨by linarith, by linarith⟩, ?_, hW0 rfl s hs0 (by linarith),
+    refine ⟨q, 1 - s, hqn, ⟨by_l, by_l⟩, ?_, hW0 rfl s hs0 by_l,
       by rw [hoff]; linarith, by rw [hoff]; linarith⟩
     have hns := hsub ⟨hs0, show s < δ₁ by linarith⟩
     simp only [mem_ofPred_eq] at hns

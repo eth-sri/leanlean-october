@@ -112,58 +112,58 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
     show ((List.range (j + 1)).flatMap G.Lx).length = _
     rw [flat_succ, List.length_append, ← hℓ, ← hF]; rfl
   have hFK : F + ℓ ≤ G.K₂ := by
-    rw [← hF1]; exact flat_length_mono G.Lx (by omega)
+    rw [← hF1]; exact flat_length_mono G.Lx by_o
   have hℓM : ℓ ≤ G.Mx := hℓ ▸ hG.hMx j hj
   have r13 := hI.r13
   have r14 := hI.r14
   rw [hF] at r13 r14
   -- the table entry
-  have t0 : e.nmem (G.T + 3 * j) = G.m₀ (G.T + 3 * j) := hI.low _ (by omega)
-  have t1 : e.nmem (G.T + 3 * j + 1) = ℓ := by rw [hI.low _ (by omega)]; exact g1
-  have t2 : e.nmem (G.T + 3 * j + 1 + 1) = G.m₀ (G.T + 3 * j + 2) := hI.low _ (by omega)
+  have t0 : e.nmem (G.T + 3 * j) = G.m₀ (G.T + 3 * j) := hI.low _ by_o
+  have t1 : e.nmem (G.T + 3 * j + 1) = ℓ := by rw [hI.low _ by_o]; exact g1
+  have t2 : e.nmem (G.T + 3 * j + 1 + 1) = G.m₀ (G.T + 3 * j + 2) := hI.low _ by_o
   -- 1. the entry
   obtain ⟨e₁, k₁, x₁, hk₁, a40, a43, a44, a45, a61, a62, a63, m₁, f₁⟩ :=
-    ltB1_exec (P := G.P) e hI.wb hI.r31 hI.r00 r13 (by omega) (by rw [t1]; omega)
+    ltB1_exec (P := G.P) e hI.wb hI.r31 hI.r00 r13 by_o (by rw [t1]; omega)
   rw [t0] at a40 a62
   rw [t1] at a44 a45 a61
   rw [t2] at a43
   have w₁ := x₁.wb_right
-  have k₁r : ∀ r, B1 r = false → e₁.nreg r = e.nreg r := f₁.1
+  have k₁r := f₁.1
   -- 2. the triples
   obtain ⟨e₂, k₂, x₂, hk₂, w₂, sg₂, mo₂, f₂⟩ := DrvR.cpS_exec (P := G.P) (W := G.W) w₁
     (S := G.m₀ (G.T + 3 * j)) (D := G.A₀ + 3 * F) a61 a62 a63
-    (by rw [k₁r _ (by decide)]; exact hI.r34) (Or.inl (by omega)) (by omega) (by omega)
-  have k₂r : ∀ r, DrvR.Bcp r = false → e₂.nreg r = e₁.nreg r := f₂.1
+    (by rw [k₁r _ by_d]; exact hI.r34) (Or.inl by_o) by_o by_o
+  have k₂r := f₂.1
   -- 3. the bucket arguments
   obtain ⟨e₃, k₃, x₃, hk₃, a13, b61, b62, b63, m₃, f₃⟩ := ltB2_exec (P := G.P) e₂ w₂
     (a := G.A₀ + 3 * F) (ℓ := ℓ) (b := G.m₀ (G.T + 3 * j + 2))
     (D₂ := G.A₀ + 3 * G.K₂ + 2 * F)
-    (by rw [k₂r _ (by decide), k₁r _ (by decide), r13])
-    (by rw [k₂r _ (by decide), a44]) (by rw [k₂r _ (by decide), a45])
-    (by rw [k₂r _ (by decide), a43])
-    (by rw [k₂r _ (by decide), k₁r _ (by decide), r14]) (by omega)
+    (by rw [k₂r _ by_d, k₁r _ by_d, r13])
+    (by rw [k₂r _ by_d, a44]) (by rw [k₂r _ by_d, a45])
+    (by rw [k₂r _ by_d, a43])
+    (by rw [k₂r _ by_d, k₁r _ by_d, r14]) by_o
   have w₃ := x₃.wb_right
-  have k₃r : ∀ r, B2 r = false → e₃.nreg r = e₂.nreg r := f₃.1
+  have k₃r := f₃.1
   -- 4. the buckets
   obtain ⟨e₄, k₄, x₄, hk₄, w₄, sg₄, mo₄, f₄⟩ := DrvR.cpS_exec (P := G.P) (W := G.W) w₃
     (S := G.m₀ (G.T + 3 * j + 2)) (D := G.A₀ + 3 * G.K₂ + 2 * F) b61 b62 b63
-    (by rw [k₃r _ (by decide), k₂r _ (by decide), k₁r _ (by decide)]; exact hI.r34)
-    (Or.inl (by omega)) (by omega) (by omega)
-  have k₄r : ∀ r, DrvR.Bcp r = false → e₄.nreg r = e₃.nreg r := f₄.1
+    (by rw [k₃r _ by_d, k₂r _ by_d, k₁r _ by_d]; exact hI.r34)
+    (Or.inl by_o) by_o by_o
+  have k₄r := f₄.1
   -- 5. the pointers
   have r4 : ∀ r, B1 r = false → DrvR.Bcp r = false → B2 r = false →
       e₄.nreg r = e.nreg r := fun r h1 h2 h3 => by
     rw [k₄r r h2, k₃r r h3, k₂r r h2, k₁r r h1]
   obtain ⟨e₅, k₅, x₅, hk₅, c14, c31, c30, m₅, f₅⟩ := ltB3_exec (P := G.P) e₄ w₄
     (D₂ := G.A₀ + 3 * G.K₂ + 2 * F) (ℓ := ℓ) (p := G.T + 3 * j) (j := j)
-    (by rw [r4 _ (by decide) (by decide) (by decide), r14])
-    (by rw [k₄r _ (by decide), k₃r _ (by decide), k₂r _ (by decide), a45])
-    (by rw [r4 _ (by decide) (by decide) (by decide), hI.r31])
-    (by rw [r4 _ (by decide) (by decide) (by decide), hI.r01])
-    (by rw [r4 _ (by decide) (by decide) (by decide), hI.r30])
-    (by rw [r4 _ (by decide) (by decide) (by decide), hI.r00]) (by omega) (by omega)
-    (by omega)
-  have k₅r : ∀ r, B3 r = false → e₅.nreg r = e₄.nreg r := f₅.1
+    (by rw [r4 _ by_d by_d by_d, r14])
+    (by rw [k₄r _ by_d, k₃r _ by_d, k₂r _ by_d, a45])
+    (by rw [r4 _ by_d by_d by_d, hI.r31])
+    (by rw [r4 _ by_d by_d by_d, hI.r01])
+    (by rw [r4 _ by_d by_d by_d, hI.r30])
+    (by rw [r4 _ by_d by_d by_d, hI.r00]) by_o by_o
+    by_o
+  have k₅r := f₅.1
   -- the memory
   have mem5 : ∀ a, e₅.nmem a = if G.A₀ + 3 * G.K₂ + 2 * F ≤ a ∧
       a < G.A₀ + 3 * G.K₂ + 2 * F + 2 * ℓ then e₄.nmem a
@@ -172,12 +172,12 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
     rw [m₅]
     split_ifs with h1 h2
     · rfl
-    · rw [mo₄ a (by omega), m₃]
-    · rw [mo₄ a (by omega), m₃, mo₂ a (by omega), m₁]
+    · rw [mo₄ a by_o, m₃]
+    · rw [mo₄ a by_o, m₃, mo₂ a by_o, m₁]
   have low5 : ∀ a, a < G.A₀ → e₅.nmem a = e.nmem a := fun a ha => by
-    rw [mem5 a, ite_eq_right (by omega), ite_eq_right (by omega)]
+    rw [mem5 a, ite_eq_right by_o, ite_eq_right by_o]
   -- the frame
-  have fr : FrameM BL e e₅ :=
+  have fr :=
     ((((BL_mono B1_BL (BuildRam.FrameB.toM f₁)).trans (BL_mono Bcp_BL f₂)).trans
       (BL_mono B2_BL (BuildRam.FrameB.toM f₃))).trans
       (BL_mono Bcp_BL f₄)).trans (BL_mono B3_BL (BuildRam.FrameB.toM f₅))
@@ -185,26 +185,26 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
   have r5' : ∀ r, B1 r = false → DrvR.Bcp r = false → B2 r = false → B3 r = false →
       e₅.nreg r = e.nreg r := fun r h1 h2 h3 h4 => by rw [k₅r r h4, r4 r h1 h2 h3]
   refine ⟨e₅, k₁ + (k₂ + (k₃ + (k₄ + k₅))), Exec.seq x₁ (Exec.seq x₂ (Exec.seq x₃
-    (Exec.seq x₄ x₅))), ?_, DrvD.rf_of_frameM inDrv_BL fr low5, by omega⟩
-  refine ⟨x₅.wb_right, by rw [c30], by rw [r5 _ (by decide), hI.r11], by rw [c31]; omega,
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r00],
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r01],
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r34],
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r10],
-    by rw [r5' _ (by decide) (by decide) (by decide) (by decide), hI.r12], ?_, by rw [c14, hF1]; omega,
-    by rw [r5 _ (by decide), hI.alloc],
+    (Exec.seq x₄ x₅))), ?_, DrvD.rf_of_frameM inDrv_BL fr low5, by_o⟩
+  refine ⟨x₅.wb_right, by rw [c30], by rw [r5 _ by_d, hI.r11], by rw [c31]; omega,
+    by rw [r5' _ by_d by_d by_d by_d, hI.r00],
+    by rw [r5' _ by_d by_d by_d by_d, hI.r01],
+    by rw [r5' _ by_d by_d by_d by_d, hI.r34],
+    by rw [r5' _ by_d by_d by_d by_d, hI.r10],
+    by rw [r5' _ by_d by_d by_d by_d, hI.r12], ?_, by rw [c14, hF1]; omega,
+    by rw [r5 _ by_d, hI.alloc],
     fun r hr hra => by rw [r5 r hr, hI.keep r hr hra], fun a ha => by rw [low5 a ha, hI.low a ha],
-    ?_, ?_, by omega⟩
+    ?_, ?_, by_o⟩
   · -- the triple pointer
-    have : e₅.nreg 211113 = e₄.nreg 211113 := k₅r _ (by decide)
-    rw [this, k₄r _ (by decide), a13, hF1]; ring
+    have : e₅.nreg 211113 = e₄.nreg 211113 := k₅r _ by_d
+    rw [this, k₄r _ by_d, a13, hF1]; ring
   · -- the triples
     show ChordListAt e₅.nmem G.A₀ ((List.range (j + 1)).flatMap G.Lx)
     rw [flat_succ]
     refine DrvR.chordListAt_append ?_ ?_
     · refine DrvR.clAt_congr hI.list fun x hx1 hx2 => ?_
       have hF' : ((List.range j).flatMap G.Lx).length = F := hF
-      rw [mem5 x, ite_eq_right (by omega), ite_eq_right (by omega)]
+      rw [mem5 x, ite_eq_right by_o, ite_eq_right by_o]
     · have e3 : (List.range j).flatMap G.Lx = G.flat j := rfl
       rw [e3, hF]
       refine DrvR.chordListAt_of_seg (m := G.m₀) (B := G.m₀ (G.T + 3 * j)) g4 ?_
@@ -213,22 +213,22 @@ theorem body_step {G : GEnv} (hG : GGood G) {j : ℕ} {e : Config} (hI : LInv G 
       apply List.map_congr_left
       intro i hi
       rw [List.mem_range] at hi
-      rw [mem5, ite_eq_right (by omega), ite_eq_left (by omega), seg_pt sg₂ hi, m₁, hI.low _ (by omega)]
+      rw [mem5, ite_eq_right by_o, ite_eq_left by_o, seg_pt sg₂ hi, m₁, hI.low _ by_o]
   · -- the buckets
     intro q hq
     rw [hF1] at hq
     have e1 : G.flat (j + 1) = G.flat j ++ G.Lx j := flat_succ G.Lx j
     rw [e1]
     rcases Nat.lt_or_ge q (2 * F) with hq1 | hq1
-    · rw [mem5, ite_eq_right (by omega), ite_eq_right (by omega), hI.bkt q (by omega),
-        DrvLM.endPos_append_left (by omega)]
-    · obtain ⟨q', rfl⟩ : ∃ q', q = 2 * F + q' := ⟨q - 2 * F, by omega⟩
+    · rw [mem5, ite_eq_right by_o, ite_eq_right by_o, hI.bkt q by_o,
+        DrvLM.endPos_append_left by_o]
+    · obtain ⟨q', rfl⟩ : ∃ q', q = 2 * F + q' := ⟨q - 2 * F, by_o⟩
       have ea := DrvLM.endPos_append_right (G.flat j) (G.Lx j) q'
       rw [hF] at ea
-      rw [ea, mem5, ite_eq_left (by omega),
+      rw [ea, mem5, ite_eq_left by_o,
         show G.A₀ + 3 * G.K₂ + (2 * F + q') = G.A₀ + 3 * G.K₂ + 2 * F + q' by ring,
-        seg_pt sg₄ (by omega), m₃, mo₂ _ (by omega), m₁, hI.low _ (by omega)]
-      exact g7 q' (by omega)
+        seg_pt sg₄ by_o, m₃, mo₂ _ by_o, m₁, hI.low _ by_o]
+      exact g7 q' by_o
 
 set_option maxHeartbeats 1000000 in
 /-- **The gather loop.** -/

@@ -48,7 +48,7 @@ theorem edge_cand {U V z X : Point} {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (hzS :
   intro sel
   classical
   have e0 : ∀ f : ℕ, ∀ x : ℝ, Cand (seg U V) z σ 0 x → Cand (seg U V) z σ 0 (selX U V X f) :=
-    fun _ _ h => ⟨fun h' => absurd h' (by norm_num), h.2⟩
+    fun _ _ h => ⟨fun h' => absurd h' by_n, h.2⟩
   by_cases hUV : U.2 = V.2
   · by_cases hzU : z.2 = U.2
     · have hc := seg_on hσ hUV hzU hzS
@@ -117,7 +117,7 @@ theorem mid_pos (M : Model) (Q : Polygon) {p h : ℕ} {α β : ℝ} (hα : 0 ≤
     simp only [lerp_snd] at hmid
     rw [he] at hmid
     rcases hmid with ⟨h1, h2⟩ | ⟨h1, h2⟩ <;> linarith
-  have hd : b.2 - a.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hne)
+  have hd := sub_ne_zero.2 (Ne.symm hne)
   have hpar : M.param Q ⟨p, h + 1⟩ = ((Q.vtx h).2 - a.2) / (b.2 - a.2) := by
     show (if (M.wa p).2 = (M.wb p).2 then 0 else _) = _
     rw [ite_eq_right hne]

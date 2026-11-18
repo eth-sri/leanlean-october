@@ -112,7 +112,7 @@ def bktF (A j : ℕ) (eqS eqE gtS : Prop) [Decidable eqS] [Decidable eqE] [Decid
 /-! ## Basic arithmetic -/
 
 theorem tU_lt {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) : tU m T β p < 2 * m :=
-  Nat.mod_lt _ (by omega)
+  Nat.mod_lt _ by_o
 
 theorem tK_le {m T : ℕ} (β : Bool) (hm : 1 ≤ m) (p : ℕ) : tK m T β p ≤ m :=
   Chazelle.Chain.sideE_le (tU_lt β hm p).le
@@ -152,8 +152,8 @@ theorem qE_qE (li : Bool) {n e : ℕ} (he : e < n) : qE li n (qE li n e) = e := 
   cases li
   · simp only [Bool.false_eq_true, ite_false]
     by_cases h : e + 1 < n
-    · rw [ite_eq_left h, ite_eq_left (by omega)]; omega
-    · rw [ite_eq_right h, ite_eq_right (by omega)]; omega
+    · rw [ite_eq_left h, ite_eq_left by_o]; omega
+    · rw [ite_eq_right h, ite_eq_right by_o]; omega
   · simp
 
 end

@@ -146,8 +146,8 @@ theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainMode
   set M := chainModel J.whole with hMdef
   have hM : WalkAx M := walkAx_chainModel hP
   have hn := cm_n J.whole
-  set P0 : Finset ℕ := Finset.range 6 ∪ {2 * J.whole.m + 6} with hP0
-  have hP0c : P0.card ≤ 7 := (Finset.card_union_le _ _).trans (by simp)
+  set P0 := Finset.range 6 ∪ {2 * J.whole.m + 6} with hP0
+  have hP0c : P0.card ≤ 7 := (Finset.card_union_le _ _).trans by_s
   set X : ℕ → Set (Set Point) := fun p =>
     {f | f ∈ exits M F R ∧ ∃ t : ℝ, SideAttach M.W f p t} with hX
   have hXp : ∀ p, (X p).ncard ≤ 6 := by
@@ -157,7 +157,7 @@ theorem nc_ncard (hP : J.P.Simple) {F : Set (Set Point)} (hFA : F ⊆ (chainMode
     have hTfin : T.Finite := by
       refine (Set.Finite.image (fun x : ℝ => x - (p : ℝ)) (hM.finite_cuts hFA hfin)).subset ?_
       rintro t ⟨-, c, hc, hA⟩
-      exact ⟨p + t, ⟨c, hc.1, p, t, hA, rfl⟩, by ring⟩
+      exact ⟨p + t, ⟨c, hc.1, p, t, hA, rfl⟩, by_r⟩
     have hsub : X p ⊆ ⋃ t ∈ insert 0 T, {f | f ∈ F ∧ SideAttach M.W f p t} := by
       rintro f ⟨hf, t, hA⟩
       simp only [Set.mem_iUnion]
@@ -244,26 +244,26 @@ theorem four_pieces (hP : J.P.Simple) :
   obtain ⟨gA, gA', LA, gB, gB', LB, hA, hB, hsA, hsB, hcovL⟩ :=
     side_two_pieces J hP (C' := J.left) rfl (J₀ := J.m₁ + 2 * J.m₂) (J₀' := J.m₁)
       (ℓ := 2 * J.m₁) (fun e he => tourV_left J he)
-      (by rw [tourV_left J (by omega), tourV_left_zero]; rfl) (by simp) (by rw [hwm]; omega)
+      (by rw [tourV_left J by_o, tourV_left_zero]; rfl) by_s (by rw [hwm]; omega)
       (left_box_eq J)
   obtain ⟨gC, gC', LC, gD, gD', LD, hC, hD, hsC, hsD, hcovR⟩ :=
     side_two_pieces J hP (C' := J.right) rfl (J₀ := J.m₁) (J₀' := 0)
       (ℓ := 2 * J.m₂) (fun e he => tourV_right J he)
-      (by rw [tourV_right J (by omega), tourV_right_zero]; rfl) (by simp) (by rw [hwm]; omega)
+      (by rw [tourV_right J by_o, tourV_right_zero]; rfl) by_s (by rw [hwm]; omega)
       (right_box_eq J)
   refine ⟨gA, gA', LA, gB, gB', LB, gC, gC', LC, gD, gD', LD, hA, hB, hC, hD, hsA, hsB, hsC, hsD,
     fun p hp hc => ?_⟩
   obtain ⟨hc1, hc2⟩ : 6 ≤ p ∧ p < 2 * J.whole.m + 6 := hc
-  obtain ⟨i, rfl⟩ : ∃ i, p = 6 + i := ⟨p - 6, by omega⟩
+  obtain ⟨i, rfl⟩ : ∃ i, p = 6 + i := ⟨p - 6, by_o⟩
   have hτlt := tpos_lt J.whole (J.m₁ + 2 * J.m₂)
   rw [hwm] at hτlt
   have hrel := tpos_rel J
   rw [hwm] at hrel
   rcases cover_arith h1 h2 hτlt hrel (show i < 2 * (J.m₁ + J.m₂) by omega) with hin | hin
-  · rcases hcovL _ hp (by rw [hn, hwm]; exact hin) with h | h
+  · rcases hcovL _ hp (by rwa [hn, hwm]) with h | h
     · exact Or.inl h
     · exact Or.inr (Or.inl h)
-  · rcases hcovR _ hp (by rw [hn, hwm]; exact hin) with h | h
+  · rcases hcovR _ hp (by rwa [hn, hwm]) with h | h
     · exact Or.inr (Or.inr (Or.inl h))
     · exact Or.inr (Or.inr (Or.inr h))
 
@@ -282,7 +282,7 @@ theorem in_piece (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
     (hA : SideAttach (chainModel J.whole).W f p t) (hadj : Adj (chainModel J.whole) S' R p t)
     (hdp : dOf (chainModel J.whole).W.n g p < L) :
     f ∈ TypeI J C' Si S' R g g' L ∨ f ∈ CrossX (chainModel J.whole) S' R g L := by
-  have hpd : (g + dOf (chainModel J.whole).W.n g p) % (chainModel J.whole).W.n = p :=
+  have hpd :=
     add_dOf hpc.1 hA.1
   rw [← hpd] at hA hadj
   by_cases h0 : 0 < (dOf (chainModel J.whole).W.n g p : ℝ) + t
@@ -292,7 +292,7 @@ theorem in_piece (hP : J.P.Simple) {C' : Chain} {Q : Polygon} {Si Sj S' : Set (S
       have := (Nat.cast_nonneg (dOf (chainModel J.whole).W.n g p) : (0 : ℝ) ≤ _); linarith)
       hA.2.1
     have hd : dOf (chainModel J.whole).W.n g p = 0 := by
-      have : (dOf (chainModel J.whole).W.n g p : ℝ) ≤ 0 := by linarith
+      have : (dOf (chainModel J.whole).W.n g p : ℝ) ≤ 0 := by_l
       exact_mod_cast le_antisymm this (Nat.cast_nonneg _)
     rw [hd, ht, add_zero, Nat.mod_eq_of_lt hpc.1] at hA
     have hmem := hA.2.2.2.1
@@ -413,7 +413,7 @@ theorem fusionDegSpec : FusionDegSpec := by
   set F := J.fusion S₁ S₂ ∪ glueChords J with hFdef
   have hFA := fuse_adm J hgen hS₁.2.1 hS₂.2.1
   have hfin := fuse_fin J hS₁.1 hS₂.1
-  have hA : (adjExits M F R).ncard ≤ 16 * D + 65 := adj_ncard J hP hgen hS₁ hS₂ hD₁ hD₂ hR
+  have hA := adj_ncard J hP hgen hS₁ hS₂ hD₁ hD₂ hR
   have hendsL : ∀ c ∈ S₁, Merge.lend c ∉ J.whole.dom ∧ Merge.rend c ∉ J.whole.dom := fun c hc =>
     ⟨(J.ends_left (hS₁.2.1 hc)).2.1, (J.ends_left (hS₁.2.1 hc)).2.2.2⟩
   have hendsR : ∀ c ∈ S₂, Merge.lend c ∉ J.whole.dom ∧ Merge.rend c ∉ J.whole.dom := fun c hc =>
@@ -468,7 +468,7 @@ theorem fusionDegSpec : FusionDegSpec := by
   have i2 : I₂.ncard ≤ P.ncard := Set.ncard_image_le hPfin
   have hPu : P.ncard ≤ P₁.ncard + P₂.ncard := Set.ncard_union_le _ _
   have hsubn := Set.ncard_le_ncard hsub hfin'
-  have hDA : D * (adjExits M F R).ncard ≤ D * (16 * D + 65) := Nat.mul_le_mul_left D hA
+  have hDA := Nat.mul_le_mul_left D hA
   show (exits M F R).ncard ≤ 7 + 4 * D * (16 * D + 65)
   rw [show 7 + 4 * D * (16 * D + 65) = 7 + 4 * (D * (16 * D + 65)) by ring]
   generalize D * (16 * D + 65) = Y at hDA ⊢

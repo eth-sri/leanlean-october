@@ -90,37 +90,37 @@ theorem sideQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   -- the chord-end queries
   obtain ⟨c₁, k₁, e₁, hk₁, hk₁', s₁, a₁, n₁, o05, o08, L₁, m₁, r₁, rr₁, rm₁, ou₁⟩ :=
     endPart_exec (P := P) c hw (S := 70150) (G := 70003) (Or.inl rfl) (Or.inl rfl) hF.nf₁ hF.le
-      hF.is₁ hnW (by omega)
+      hF.is₁ hnW by_o
   have w₁ := e₁.wb_right
-  have hF₁ : FCtx P W J H N₁ N₂ A c₁ := hF.keep (fun r h1 h2 => r₁ r (bend_lo h1 (by omega)
-      (by omega))) (fun a ha => m₁ a (by have := hF.le; omega)) (by rw [a₁]; omega)
+  have hF₁ : FCtx P W J H N₁ N₂ A c₁ := hF.keep (fun r h1 h2 => r₁ r (bend_lo h1 by_o
+      by_o)) (fun a ha => m₁ a (by have := hF.le; omega)) (by rw [a₁]; omega)
   obtain ⟨sd0, sw0, -, -, sdw, sww⟩ := hF₁.side
   obtain ⟨pre, hpre⟩ : ∃ l, l = endQL N₁.chords := ⟨_, rfl⟩
   have hlenpre : pre.length = 2 * N₁.nChords := by rw [hpre]; exact endQL_length _
   rw [← hpre] at a₁ n₁ L₁ ⊢
   -- the shared vertex
   obtain ⟨c₂, k₂, v₁, v₀, e₂, hk₂, hk₂', hv₁, hv₀, a₂, n₂, L₂, m₂, r₂, rr₂, rm₂, ou₂, pv₁, pv₀⟩ :=
-    vtxPts_exec (P := P) c₁ w₁ hG hHW (D := 70000) (off := 2) (by norm_num) (by norm_num) sw0 J 0
+    vtxPts_exec (P := P) c₁ w₁ hG hHW (D := 70000) (off := 2) by_n by_n sw0 J 0
       sd0 hF.simple (kk := J.m₁) sd0.2.2.2.1 (by show J.m₁ ≤ J.m₁; exact le_rfl) o05 o08
-      (LB := A₀) (pre := pre) (by rw [a₁, hA₀]) n₁ (by rw [← hA₀]; exact L₁)
+      (LB := A₀) (pre := pre) (by rw [a₁, hA₀]) n₁ (by rwa [← hA₀])
       (by rw [a₁, show vtxCost = 74000 from rfl]; clear * - hroom hlenpre; omega)
       (by clear * - hroom hlenpre hnW hHW; unfold hostWords at hHW; omega)
   have w₂ := e₂.wb_right
-  have hF₂ : FCtx P W J H N₁ N₂ A c₂ := hF₁.keep (fun r h1 h2 => r₂ r (bpt_lo h1 (by omega))) (fun a ha => m₂ a (by have := hF₁.le; omega))
+  have hF₂ : FCtx P W J H N₁ N₂ A c₂ := hF₁.keep (fun r h1 h2 => r₂ r (bpt_lo h1 by_o)) (fun a ha => m₂ a (by have := hF₁.le; omega))
       (by rw [a₂, a₁, hA₀]; simp only [List.length_append]; omega)
   obtain ⟨sd0', sw0', -, -, -, -⟩ := hF₂.side
   -- the top of `C₁`
   obtain ⟨c₃, k₃, t₁, t₀, e₃, hk₃, hk₃', ht₁, ht₀, a₃, n₃, L₃, m₃, r₃, rr₃, rm₃, ou₃, pt₁, pt₀⟩ :=
-    vtxPts_exec (P := P) c₂ w₂ hG hHW (D := 70000) (off := 3) (by norm_num) (by norm_num) sw0' J 0
+    vtxPts_exec (P := P) c₂ w₂ hG hHW (D := 70000) (off := 3) by_n by_n sw0' J 0
       sd0' hF.simple (kk := J.left.topIdx) sd0'.2.2.2.2.1 J.left.topIdx_le
-      (by rw [r₂ _ (by decide), o05]) (by rw [r₂ _ (by decide), o08])
+      (by rw [r₂ _ by_d, o05]) (by rw [r₂ _ by_d, o08])
       (LB := A₀) (pre := pre ++ v₁ ++ v₀) a₂ n₂ L₂
       (by rw [a₂, show vtxCost = 74000 from rfl]; simp only [List.length_append]
           clear * - hroom hlenpre hv₁ hv₀ hA₀; omega)
       (by simp only [List.length_append]; clear * - hroom hlenpre hv₁ hv₀ hHW
           unfold hostWords at hHW; omega)
   have w₃ := e₃.wb_right
-  have hF₃ : FCtx P W J H N₁ N₂ A c₃ := hF₂.keep (fun r h1 h2 => r₃ r (bpt_lo h1 (by omega))) (fun a ha => m₃ a (by have := hF₂.le; omega))
+  have hF₃ : FCtx P W J H N₁ N₂ A c₃ := hF₂.keep (fun r h1 h2 => r₃ r (bpt_lo h1 by_o)) (fun a ha => m₃ a (by have := hF₂.le; omega))
       (by rw [a₃, a₂]; simp only [List.length_append]; omega)
   obtain ⟨sd0'', sw0'', -, -, sdw'', sww''⟩ := hF₃.side
   -- the cap data
@@ -131,16 +131,16 @@ theorem sideQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
     (by rw [a₃]; simp only [List.length_append]
         clear * - hroom hlenpre hv₁ hv₀ ht₁ ht₀ hA₀; omega)
   have w₄ := e₄.wb_right
-  have a₄ : c₄.nreg ALLOC = c₃.nreg ALLOC := r₄ _ (by decide)
-  have hF₄ : FCtx P W J H N₁ N₂ A c₄ := hF₃.keep (fun r h1 h2 => r₄ r (bcs_lo h1 (by omega))) (fun a _ => by rw [m₄]) (by rw [a₄])
+  have a₄ : c₄.nreg ALLOC = c₃.nreg ALLOC := r₄ _ by_d
+  have hF₄ : FCtx P W J H N₁ N₂ A c₄ := hF₃.keep (fun r h1 h2 => r₄ r (bcs_lo h1 by_o)) (fun a _ => by rw [m₄]) (by rw [a₄])
   obtain ⟨sd0₄, sw0₄, -, -, -, -⟩ := hF₄.side
   -- the cap query
   obtain ⟨c₅, k₅, k₀, e₅, hk₅, hk₅', hk₀, a₅, n₅, L₅, m₅, r₅, rr₅, rm₅, ou₅, pk₀, nk₀⟩ :=
     capQ₀_exec (P := P) c₄ w₄ hG hHW J hF.simple hF.gen sw0₄ sd0₄ R₄
-      (by rw [r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), o05])
-      (by rw [r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), o08])
+      (by rw [r₄ _ by_d, r₃ _ by_d, r₂ _ by_d, o05])
+      (by rw [r₄ _ by_d, r₃ _ by_d, r₂ _ by_d, o08])
       (LB := A₀) (pre := pre ++ v₁ ++ v₀ ++ t₁ ++ t₀) (by rw [a₄, a₃])
-      (by rw [r₄ _ (by decide), n₃]) (by rw [m₄]; exact L₃)
+      (by rw [r₄ _ by_d, n₃]) (by rwa [m₄])
       (by rw [a₄, a₃, show capBCost = 35100 from rfl]; simp only [List.length_append]
           clear * - hroom hlenpre hv₁ hv₀ ht₁ ht₀ hA₀; omega)
       (by simp only [List.length_append]; clear * - hroom hlenpre hv₁ hv₀ ht₁ ht₀ hHW
@@ -157,10 +157,10 @@ theorem sideQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
     pk₀, nk₀⟩
   · unfold sq0Cost; unfold vtxCost at hk₂ hk₃; unfold capBCost at hk₅; omega
   · rw [hlen]; omega
-  · rw [r₅ _ (by decide), r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), s₁]
+  · rw [r₅ _ by_d, r₄ _ by_d, r₃ _ by_d, r₂ _ by_d, s₁]
   · rw [a₅, ← hL, hA₀]
   · rw [n₅, hL]
-  · rw [← hL, hA₀]; exact L₅
+  · rwa [← hL, hA₀]
   · rw [m₅ a (by rw [a₄, a₃]; simp only [List.length_append]; omega), m₄,
       m₃ a (by rw [a₂]; simp only [List.length_append]; omega),
       m₂ a (by rw [a₁]; omega), m₁ a ha]
@@ -169,8 +169,8 @@ theorem sideQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   · rw [rr₅ r hr, rr₄ r hr, rr₃ r hr, rr₂ r hr, rr₁]
   · rw [rm₅, rm₄, rm₃, rm₂, rm₁]
   · rw [ou₅, ou₄, ou₃, ou₂, ou₁]
-  · rw [r₅ _ (by decide), r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), o05]
-  · rw [r₅ _ (by decide), r₄ _ (by decide), r₃ _ (by decide), r₂ _ (by decide), o08]
+  · rw [r₅ _ by_d, r₄ _ by_d, r₃ _ by_d, r₂ _ by_d, o05]
+  · rw [r₅ _ by_d, r₄ _ by_d, r₃ _ by_d, r₂ _ by_d, o08]
   · exact R₄.keep fun r h1 => r₅ r (bpt_cap h1)
 
 set_option maxHeartbeats 16000000 in
@@ -200,10 +200,10 @@ theorem sideQ₁_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   obtain ⟨A₀, hA₀⟩ : ∃ x, c.nreg ALLOC = x := ⟨_, rfl⟩
   obtain ⟨c₁, k₁, e₁, hk₁, hk₁', s₁, a₁, n₁, o05, o08, L₁, m₁, r₁, rr₁, rm₁, ou₁⟩ :=
     endPart_exec (P := P) c hw (S := 70151) (G := 70004) (Or.inr rfl) (Or.inr rfl) hF.nf₂ hF.le
-      hF.is₂ hnW (by omega)
+      hF.is₂ hnW by_o
   have w₁ := e₁.wb_right
-  have hF₁ : FCtx P W J H N₁ N₂ A c₁ := hF.keep (fun r h1 h2 => r₁ r (bend_lo h1 (by omega)
-      (by omega))) (fun a ha => m₁ a (by have := hF.le; omega)) (by rw [a₁]; omega)
+  have hF₁ : FCtx P W J H N₁ N₂ A c₁ := hF.keep (fun r h1 h2 => r₁ r (bend_lo h1 by_o
+      by_o)) (fun a ha => m₁ a (by have := hF.le; omega)) (by rw [a₁]; omega)
   have hR₁ : CapRegs P J c₁ := hR.keep fun r h => r₁ r (by
     simp only [Bend, ALLOC, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
     omega)
@@ -213,21 +213,21 @@ theorem sideQ₁_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   rw [← hpre] at a₁ n₁ L₁ ⊢
   -- the top of `C₂`
   obtain ⟨c₂, k₂, t₁, t₀, e₂, hk₂, hk₂', ht₁, ht₀, a₂, n₂, L₂, m₂, r₂, rr₂, rm₂, ou₂, pt₁, pt₀⟩ :=
-    vtxPts_exec (P := P) c₁ w₁ hG hHW (D := 70001) (off := 3) (by norm_num) (by norm_num) sw1 J 1
+    vtxPts_exec (P := P) c₁ w₁ hG hHW (D := 70001) (off := 3) by_n by_n sw1 J 1
       sd1 hF.simple (kk := J.right.topIdx) sd1.2.2.2.2.1 J.right.topIdx_le o05 o08
-      (LB := A₀) (pre := pre) (by rw [a₁, hA₀]) n₁ (by rw [← hA₀]; exact L₁)
+      (LB := A₀) (pre := pre) (by rw [a₁, hA₀]) n₁ (by rwa [← hA₀])
       (by rw [a₁, show vtxCost = 74000 from rfl]; clear * - hroom hlenpre; omega)
       (by clear * - hroom hlenpre hnW hHW; unfold hostWords at hHW; omega)
   have w₂ := e₂.wb_right
-  have hF₂ : FCtx P W J H N₁ N₂ A c₂ := hF₁.keep (fun r h1 h2 => r₂ r (bpt_lo h1 (by omega)))
+  have hF₂ : FCtx P W J H N₁ N₂ A c₂ := hF₁.keep (fun r h1 h2 => r₂ r (bpt_lo h1 by_o))
       (fun a ha => m₂ a (by have := hF₁.le; omega))
       (by rw [a₂, a₁, hA₀]; simp only [List.length_append]; omega)
-  have hR₂ : CapRegs P J c₂ := hR₁.keep fun r h => r₂ r (bpt_cap h)
+  have hR₂ := hR₁.keep fun r h => r₂ r (bpt_cap h)
   obtain ⟨-, -, sd1', sw1', -, -⟩ := hF₂.side
   -- the cap query
   obtain ⟨c₃, k₃, k₁', e₃, hk₃, hk₃', hk₀, a₃, n₃, L₃, m₃, r₃, rr₃, rm₃, ou₃, pk₁, nk₁⟩ :=
     capQ₁_exec (P := P) c₂ w₂ hG hHW J hF.simple hF.gen sw1' sd1' hR₂
-      (by rw [r₂ _ (by decide), o05]) (by rw [r₂ _ (by decide), o08])
+      (by rw [r₂ _ by_d, o05]) (by rw [r₂ _ by_d, o08])
       (LB := A₀) (pre := pre ++ t₁ ++ t₀) a₂ n₂ L₂
       (by rw [a₂, show capBCost = 35100 from rfl]; simp only [List.length_append]
           clear * - hroom hlenpre ht₁ ht₀ hA₀; omega)
@@ -242,22 +242,22 @@ theorem sideQ₁_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   have hv : J.whole.vertex (J.m₁ + J.right.topIdx) = (sideChain J 1).vertex J.right.topIdx :=
     Merge.Junction.whole_vertex_add J _
   refine ⟨c₃, _, t₁, t₀, k₁', ex, ?_, ?_, ht₁, ht₀, hk₀, ?_, ?_, ?_, ?_,
-    fun a ha => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_, ?_, by rw [hv]; exact pt₁,
-    by rw [hv]; exact pt₀, pk₁, nk₁⟩
+    fun a ha => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_, ?_, by rwa [hv],
+    by rwa [hv], pk₁, nk₁⟩
   · unfold sq1Cost; unfold vtxCost at hk₂; unfold capBCost at hk₃; omega
   · rw [hlen]; omega
-  · rw [r₃ _ (by decide), r₂ _ (by decide), s₁]
+  · rw [r₃ _ by_d, r₂ _ by_d, s₁]
   · rw [a₃, ← hL, hA₀]
   · rw [n₃, hL]
-  · rw [← hL, hA₀]; exact L₃
+  · rwa [← hL, hA₀]
   · rw [m₃ a (by rw [a₂]; simp only [List.length_append]; omega),
       m₂ a (by rw [a₁]; omega), m₁ a ha]
   · rw [r₃ r (bpt_of_side hr), r₂ r (bpt_of_side hr), r₁ r (bend_of hr)]
   · rw [rr₃ r hr, rr₂ r hr, rr₁]
   · rw [rm₃, rm₂, rm₁]
   · rw [ou₃, ou₂, ou₁]
-  · rw [r₃ _ (by decide), r₂ _ (by decide), o05]
-  · rw [r₃ _ (by decide), r₂ _ (by decide), o08]
+  · rw [r₃ _ by_d, r₂ _ by_d, o05]
+  · rw [r₃ _ by_d, r₂ _ by_d, o08]
 
 end
 

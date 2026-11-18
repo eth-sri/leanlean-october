@@ -41,7 +41,7 @@ theorem hostPoly_vtx {i : ℕ} (hi : i < nk (interiorModel Q) S R) :
 /-- At least three host keys. -/
 theorem three_le_nk (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) : 3 ≤ nk (interiorModel Q) S R := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have hS := hostKeys_finite (U := R) hM hFam.2.1 hFam.1
   obtain ⟨x, hx, y, hy, z, hz, hxy, hxz, hyz⟩ := three_le hQ hFam hne hR
   unfold nk
@@ -68,7 +68,7 @@ theorem hostChain_vertex (k : ℕ) :
       (hk (interiorModel Q) S R (((g + 1) % nk (interiorModel Q) S R + k) %
         nk (interiorModel Q) S R)) := by
   show (hostPoly Q S R).vtx (((g + 1) % nk (interiorModel Q) S R + k) % (hostPoly Q S R).n) = _
-  rw [hostPoly_n, hostPoly_vtx (Nat.mod_lt _ (by omega))]
+  rw [hostPoly_n, hostPoly_vtx (Nat.mod_lt _ by_o)]
 
 /-- Mod arithmetic of chain indices. -/
 theorem chain_idx {N s i j : ℕ} (hs : s < N) (hi : i < N) :
@@ -94,10 +94,10 @@ theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   set M := interiorModel Q
   set N := nk M S R
   set s := (g + 1) % N with hs
-  have hsN : s < N := Nat.mod_lt _ (by omega)
+  have hsN : s < N := Nat.mod_lt _ by_o
   set kl := (i_l + N - s) % N with hkl
-  have hklN : kl < N := Nat.mod_lt _ (by omega)
-  have hM : WalkAx M := walkAx_interiorModel hQ
+  have hklN : kl < N := Nat.mod_lt _ by_o
+  have hM := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
   -- the key of chain vertex `0` is a cut
@@ -112,11 +112,10 @@ theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
       subst hjd
       have hg' : (i_l + (j - 1)) % N = g := by
         have e1 : ((i_l + (j - 1)) % N + 1) % N = s := by
-          rw [Nat.add_mod ((i_l + (j - 1)) % N) 1, Nat.mod_mod, ← Nat.add_mod,
+          rwa [Nat.add_mod ((i_l + (j - 1)) % N) 1, Nat.mod_mod, ← Nat.add_mod,
             show i_l + (j - 1) + 1 = i_l + j by omega]
-          exact he
         have e2 : (g + 1) % N = s := rfl
-        have hgl : (i_l + (j - 1)) % N < N := Nat.mod_lt _ (by omega)
+        have hgl : (i_l + (j - 1)) % N < N := Nat.mod_lt _ by_o
         -- `x ↦ (x + 1) % N` is injective on `[0, N)`
         by_contra hne'
         rcases Nat.lt_or_gt_of_ne hne' with h | h
@@ -135,19 +134,19 @@ theorem arc_chain (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
           · rw [show (i_l + (j - 1)) % N + 1 = N by omega, Nat.mod_self,
               Nat.mod_eq_of_lt h2] at this; omega
           · omega
-      have hN2 : 2 ≤ N := by omega
+      have hN2 : 2 ≤ N := by_o
       have hAG : ArcGap M S R g := by
         refine ⟨l, r, harc, fun y hy0 hyn hy => ?_⟩
         rw [← hg'] at hy
         have e3 : ((i_l + (j - 1)) % N + 1) % N = (i_l + (j - 1 + 1)) % N := by
           rw [Nat.add_mod ((i_l + (j - 1)) % N) 1, Nat.mod_mod, ← Nat.add_mod]; ring_nf
         rw [e3] at hy
-        exact hgaps (j - 1) (by omega) y hy0 hyn hy
+        exact hgaps (j - 1) by_o y hy0 hyn hy
       exact not_arc_and_chord hM hF hfin hN2 hg hAG ⟨c, hc, p, p', t, t', hA, hB, ha, hb, hAB⟩
   -- hence no wrap-around
   by_contra hwrap
   push Not at hwrap
-  have hj : 0 < N - kl ∧ N - kl ≤ d := ⟨by omega, by omega⟩
+  have hj : 0 < N - kl ∧ N - kl ≤ d := ⟨by_o, by_o⟩
   apply hno (N - kl) hj.1 hj.2
   have := chain_idx (j := N - kl) hsN hil
   rw [← hkl, show s + kl + (N - kl) = s + N by omega, Nat.add_mod_right,

@@ -58,12 +58,12 @@ theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
     (ins := [(50200, dsc), (50201, re), (50202, rh)])
     (outs := [(o, 50210), (o + 1, 50211), (o + 2, 50212), (o + 3, 50213)]) symKey_meets
     primBands_oracle hI
-    (nodup3 (by norm_num) (by norm_num) (by norm_num))
+    (nodup3 by_n by_n by_n)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
-        exact ⟨band5_oracle (by norm_num) (by norm_num), band5_oracle (by norm_num) (by norm_num),
-          band5_oracle (by norm_num) (by norm_num)⟩)
-    (nodup4 (by omega) (by omega) (by omega) (by omega) (by omega) (by omega))
+        exact ⟨band5_oracle by_n by_n, band5_oracle by_n by_n,
+          band5_oracle by_n by_n⟩)
+    (nodup4 by_o by_o by_o by_o by_o by_o)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (fun c₁ hm hA e1 e2 => by
@@ -71,13 +71,13 @@ theorem callSym_irs {dsc re rh o : ℕ} {C : Chain} (hI : IInv W c₀ c)
       obtain ⟨g0, g1, g2⟩ := e1
       have hctx₁ := hctx.transport g0 (fun a _ => by rw [hm]) (by rw [hA])
       refine primPre_of hctx₁ ⟨⟨⟨?_, ?_, ?_⟩, ?_⟩, ?_⟩
-      · rw [g1]; exact he
-      · rw [g1, g2]; exact hpp
-      · rw [g1, g2]; exact hy
+      · rwa [g1]
+      · rwa [g1, g2]
+      · rwa [g1, g2]
       · rw [hm, g0]; exact hctx.hostReg
-      · rw [g1, g2]; exact hcls)
+      · rwa [g1, g2])
     (by simp only [List.length_cons, List.length_nil]; omega)
-  refine h.mono (by simp) ?_
+  refine h.mono by_s ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
   obtain ⟨g0, g1, g2⟩ := e1
@@ -109,11 +109,11 @@ theorem kbit_meets {op : ℕ} (hop : op ≤ 3) :
     Meets (kbit 10500 10503 10506 op 10520) {bSign} KbPre (KbPost op) (fun _ _ => 241) := by
   intro P W c hw ⟨hG, hW, sa, sb, sd, ha, hb, hd, la, lb, ld⟩ _
   obtain ⟨c', k, ex, hk, hfr, hle, hiff⟩ := kbit_exec (a := 10500) (b := 10503) (d := 10506)
-    (op := op) (dst := 10520) hG hW c hw (by norm_num) (by norm_num)
-    (by norm_num) (by norm_num) hop la lb ld ha hb hd
+    (op := op) (dst := 10520) hG hW c hw by_n by_n
+    by_n by_n hop la lb ld ha hb hd
   refine ⟨c', k, ex, hk, ⟨hle, fun sa' sb' sd' ha' hb' hd' => ?_⟩, NFLoc.frame_of_frameB hfr
     (fun r hr => ?_) k⟩
-  · rw [symPtIn_unique ha' ha, symPtIn_unique hb' hb, symPtIn_unique hd' hd]; exact hiff
+  · rwa [symPtIn_unique ha' ha, symPtIn_unique hb' hb, symPtIn_unique hd' hd]
   · simp only [Bkb, WalkKey.Bk, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq] at hr
     refine ⟨?_, ?_⟩
     · have : bandOf r = 1 := by unfold bandOf; rcases hr with h | h <;> omega
@@ -144,12 +144,12 @@ theorem callKb_irs {a b op o : ℕ} (hop : op ≤ 3) (hI : IInv W c₀ c) (hG : 
   have h := callP_irs (P := P) (c₀ := c₀) (c := c)
     (ins := [(10500, a), (10501, a + 1), (10502, a + 2), (10503, b), (10504, b + 1),
       (10505, b + 2), (10506, a), (10507, a + 1), (10508, a + 2)])
-    (outs := [(o, 10520)]) (kbit_meets hop) (by decide) hI
-    (by simp)
+    (outs := [(o, 10520)]) (kbit_meets hop) by_d hI
+    by_s
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]; omega)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq]
-        refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> exact bSign_oracle (by norm_num) (by norm_num))
-    (by simp)
+        refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> exact bSign_oracle by_n by_n)
+    by_s
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq]; omega)
     (by simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq]; omega)
     (fun c₁ hm hA e1 e2 => by
@@ -158,14 +158,14 @@ theorem callKb_irs {a b op o : ℕ} (hop : op ≤ 3) (hI : IInv W c₀ c) (hG : 
       exact ⟨hG, hW, sa, sb, sa, symPtIn_copy hsa g0 g1 g2, symPtIn_copy hsb g3 g4 g5,
         symPtIn_copy hsa g6 g7 g8, hla, hlb, hla⟩)
     (by simp only [List.length_cons, List.length_nil]; omega)
-  refine h.mono (by simp) ?_
+  refine h.mono by_s ?_
   rintro c' ⟨c₁, c₂, hm, e1, e2, hpost, f1, hk, hA, hm'⟩
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at e1 f1
   obtain ⟨g0, g1, g2, g3, g4, g5, g6, g7, g8⟩ := e1
   obtain ⟨hle, hiff⟩ := hpost
   have := hiff sa sb sa (symPtIn_copy hsa g0 g1 g2) (symPtIn_copy hsb g3 g4 g5)
     (symPtIn_copy hsa g6 g7 g8)
-  refine ⟨by rw [f1]; exact hle, by rw [f1]; exact this, fun r hr h0 hra => hk r hr
+  refine ⟨by rwa [f1], by rwa [f1], fun r hr h0 hra => hk r hr
     (by simp only [List.map_cons, List.map_nil, List.mem_cons, List.not_mem_nil, or_false]
         exact h0) hra, hA, hm'⟩
 

@@ -29,7 +29,7 @@ def chPts : Stmt :=
         .copyN 50091 50079])
       (.seq hostPt (block [.copyN 50043 50046, .copyN 50044 50047, .copyN 50045 50048]))))))
 
-theorem wr_chPts : wr Bdir chPts = true := by decide
+theorem wr_chPts : wr Bdir chPts = true := by_d
 
 /-- **The two walk vertices of a tour edge.** -/
 theorem chPts_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config)
@@ -51,16 +51,16 @@ theorem chPts_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
   have hn0 : 0 < P.n := by have := hG.1.1; omega
   have hLt := hostWF_pts hwf hn0
   obtain ⟨c₁, k₁, e₁, hk₁, k78, k79, f₁⟩ := chIdx_exec (P := P) c hw h32 h53 h54 h55 h56 hi hT
-    (by omega)
+    by_o
   have w₁ := e₁.wb_right
   set j := ((if b = 1 then T else 2 * m - T) + i) % (2 * m) with hj
-  have hjm : j < 2 * m := Nat.mod_lt _ (by omega)
-  have hk1 : sideE m j ≤ m := Chain.sideE_le (by omega)
-  have hk2 : sideE m (j + 1) ≤ m := Chain.sideE_le (by omega)
+  have hjm : j < 2 * m := Nat.mod_lt _ by_o
+  have hk1 : sideE m j ≤ m := Chain.sideE_le by_o
+  have hk2 : sideE m (j + 1) ≤ m := Chain.sideE_le by_o
   have g₁ := fun r (hr : Bl [50058, 50059, 50089, 50077, 50078, 50090, 50079] r = false) =>
     f₁.1 r hr
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, n63, E₂⟩ := cnt_exec (P := P) (n := P.n) c₁ w₁
-    (by rw [f₁.2.2.1]; exact hH) ((g₁ _ (by decide)).trans h60) haW (by omega)
+    (by rwa [f₁.2.2.1]) ((g₁ _ by_d).trans h60) haW by_o
   have g₂ := fun r (hr : Bhost r = false) => f₂.1 r hr
   obtain ⟨c₃, k₃, e₃, hk₃, q87, q91, r₃⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN 50087 50063, .copyN 50091 50078]) c₂ c₃ k₃ ∧ k₃ = 2 ∧
@@ -69,17 +69,17 @@ theorem chPts_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     have hw₂ := e₂.wb_right
     exec_block
     refine ⟨rfl, by config_simp; exact n63, ?_, fun r h1 h2 => by simp [h1, h2]⟩
-    config_simp; rw [g₂ _ (by decide), k78]
+    config_simp; rw [g₂ _ by_d, k78]
   have E₃ : HostEnv W Hh H.length c.nmem c₃ :=
-    ⟨e₃.wb_right, by rw [r₃ _ (by omega) (by omega), E₂.h60],
-      by rw [r₃ _ (by omega) (by omega), E₂.h61], by rw [r₃ _ (by omega) (by omega), E₂.h67],
-      by rw [r₃ _ (by omega) (by omega), E₂.h68], by rw [r₃ _ (by omega) (by omega), E₂.h69],
-      by rw [(exec_frameB e₃ (B := Bl [50087, 50091]) (by decide)).2.2.1, E₂.mem,
+    ⟨e₃.wb_right, by rw [r₃ _ by_o by_o, E₂.h60],
+      by rw [r₃ _ by_o by_o, E₂.h61], by rw [r₃ _ by_o by_o, E₂.h67],
+      by rw [r₃ _ by_o by_o, E₂.h68], by rw [r₃ _ by_o by_o, E₂.h69],
+      by rw [(exec_frameB e₃ (B := Bl [50087, 50091]) by_d).2.2.1, E₂.mem,
         f₁.2.2.1]⟩
   have s₃ : c₃.nreg 50052 = s := by
-    rw [r₃ _ (by omega) (by omega), g₂ _ (by decide), g₁ _ (by decide), h52]
+    rw [r₃ _ by_o by_o, g₂ _ by_d, g₁ _ by_d, h52]
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, E₄, sp₁, hsp₁, in₁⟩ := hostPt_exec (P := P) c₃ E₃ hH hwf
-    (by omega) haW hNW s₃ q87 q91 hs (by omega)
+    by_o haW hNW s₃ q87 q91 hs by_o
   have g₄ := fun r (hr : Bhost r = false) => f₄.1 r hr
   obtain ⟨c₅, k₅, e₅, hk₅, a₅, q91', r₅⟩ : ∃ c₅ k₅, Exec P W
       (block [.copyN 50040 50046, .copyN 50041 50047, .copyN 50042 50048, .copyN 50091 50079])
@@ -90,23 +90,23 @@ theorem chPts_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     refine ⟨rfl, symPtIn_copy in₁ (by config_simp) (by config_simp) (by config_simp), ?_,
       fun r h1 h2 h3 h4 => by simp [h1, h2, h3, h4]⟩
     config_simp
-    rw [g₄ _ (by decide), r₃ _ (by omega) (by omega), g₂ _ (by decide), k79]
+    rw [g₄ _ by_d, r₃ _ by_o by_o, g₂ _ by_d, k79]
   have E₅ : HostEnv W Hh H.length c.nmem c₅ :=
-    ⟨e₅.wb_right, by rw [r₅ _ (by omega) (by omega) (by omega) (by omega), E₄.h60],
-      by rw [r₅ _ (by omega) (by omega) (by omega) (by omega), E₄.h61],
-      by rw [r₅ _ (by omega) (by omega) (by omega) (by omega), E₄.h67],
-      by rw [r₅ _ (by omega) (by omega) (by omega) (by omega), E₄.h68],
-      by rw [r₅ _ (by omega) (by omega) (by omega) (by omega), E₄.h69],
-      by rw [(exec_frameB e₅ (B := Bl [50040, 50041, 50042, 50091]) (by decide)).2.2.1,
+    ⟨e₅.wb_right, by rw [r₅ _ by_o by_o by_o by_o, E₄.h60],
+      by rw [r₅ _ by_o by_o by_o by_o, E₄.h61],
+      by rw [r₅ _ by_o by_o by_o by_o, E₄.h67],
+      by rw [r₅ _ by_o by_o by_o by_o, E₄.h68],
+      by rw [r₅ _ by_o by_o by_o by_o, E₄.h69],
+      by rw [(exec_frameB e₅ (B := Bl [50040, 50041, 50042, 50091]) by_d).2.2.1,
         E₄.mem]⟩
   have s₅ : c₅.nreg 50052 = s := by
-    rw [r₅ _ (by omega) (by omega) (by omega) (by omega), g₄ _ (by decide), s₃]
+    rw [r₅ _ by_o by_o by_o by_o, g₄ _ by_d, s₃]
   have n₅ : c₅.nreg 50087 = N := by
-    rw [r₅ _ (by omega) (by omega) (by omega) (by omega), g₄ _ (by decide), q87]
+    rw [r₅ _ by_o by_o by_o by_o, g₄ _ by_d, q87]
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, -, sp₂, hsp₂, in₂⟩ := hostPt_exec (P := P) c₅ E₅ hH hwf
-    (by omega) haW hNW s₅ n₅ q91' hs (by omega)
-  have a₆ : SymPtIn c₆ 50040 sp₁ := symPtIn_copy a₅ (f₆.1 _ (by decide)) (f₆.1 _ (by decide))
-    (f₆.1 _ (by decide))
+    by_o haW hNW s₅ n₅ q91' hs by_o
+  have a₆ : SymPtIn c₆ 50040 sp₁ := symPtIn_copy a₅ (f₆.1 _ by_d) (f₆.1 _ by_d)
+    (f₆.1 _ by_d)
   obtain ⟨c₇, k₇, e₇, hk₇, a₇, b₇⟩ : ∃ c₇ k₇, Exec P W
       (block [.copyN 50043 50046, .copyN 50044 50047, .copyN 50045 50048]) c₆ c₇ k₇ ∧ k₇ = 3 ∧
       SymPtIn c₇ 50040 sp₁ ∧ SymPtIn c₇ 50043 sp₂ := by
@@ -114,10 +114,10 @@ theorem chPts_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W)
     exec_block
     exact ⟨rfl, symPtIn_copy a₆ (by config_simp) (by config_simp) (by config_simp),
       symPtIn_copy in₂ (by config_simp) (by config_simp) (by config_simp)⟩
-  have l₁ : sp₁.Lt P.n := hLt _ (List.mem_of_getElem? hsp₁)
-  have l₂ : sp₂.Lt P.n := hLt _ (List.mem_of_getElem? hsp₂)
+  have l₁ := hLt _ (List.mem_of_getElem? hsp₁)
+  have l₂ := hLt _ (List.mem_of_getElem? hsp₂)
   have ex : Exec P W chPts c c₇ _ := .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇)))))
-  exact ⟨c₇, _, ex, by omega, exec_frameB ex wr_chPts, sp₁, sp₂, hsp₁, hsp₂, a₇, b₇, l₁, l₂⟩
+  exact ⟨c₇, _, ex, by_o, exec_frameB ex wr_chPts, sp₁, sp₂, hsp₁, hsp₂, a₇, b₇, l₁, l₂⟩
 
 /-! ## Height-vertex indices and bit tests -/
 
@@ -133,11 +133,11 @@ theorem hvS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) {d
   cases sp with
   | vtx i =>
     obtain ⟨h0, h1⟩ := hsp
-    exact ⟨_, _, .ifLtN_true (by rw [h0, h32]; omega) (Exec.copyN hw _ _), by omega,
+    exact ⟨_, _, .ifLtN_true (by rw [h0, h32]; omega) (Exec.copyN hw _ _), by_o,
       by simp [upd, h1, hv], fun q hq => by simp [upd, hq], rfl⟩
   | onEdge e k =>
     obtain ⟨h0, -, h2⟩ := hsp
-    exact ⟨_, _, .ifLtN_false (by rw [h0, h32]; omega) (Exec.copyN hw _ _), by omega,
+    exact ⟨_, _, .ifLtN_false (by rw [h0, h32]; omega) (Exec.copyN hw _ _), by_o,
       by simp [upd, h2, hv], fun q hq => by simp [upd, hq], rfl⟩
 
 /-- `s` if `r a ≠ r b`, else `t`. -/
@@ -147,13 +147,13 @@ theorem ifNe_ne {P : Polygon} {W : ℕ} {a b : ℕ} {s t : Stmt} {c c' : Config}
     (h : c.nreg a ≠ c.nreg b) (e : Exec P W s c c' k) :
     ∃ k', Exec P W (ifNe a b s t) c c' k' ∧ k' ≤ k + 3 := by
   by_cases hlt : c.nreg a < c.nreg b
-  · exact ⟨_, .ifLtN_true hlt e, by omega⟩
-  · exact ⟨_, .ifLtN_false hlt (.ifLtN_true (by omega) e), by omega⟩
+  · exact ⟨_, .ifLtN_true hlt e, by_o⟩
+  · exact ⟨_, .ifLtN_false hlt (.ifLtN_true by_o e), by_o⟩
 
 theorem ifNe_eq {P : Polygon} {W : ℕ} {a b : ℕ} {s t : Stmt} {c c' : Config} {k : ℕ}
     (h : c.nreg a = c.nreg b) (e : Exec P W t c c' k) :
     Exec P W (ifNe a b s t) c c' (k + 2 + 2) :=
-  .ifLtN_false (by omega) (.ifLtN_false (by omega) e)
+  .ifLtN_false by_o (.ifLtN_false by_o e)
 
 /-- `r112 := 1` if `r111 ≠ 0`, `r ra ≠ r rb` and `r rc ≠ r rd` (else unchanged). -/
 def tail3 (ra rb rc rd : ℕ) : Stmt :=
@@ -167,22 +167,22 @@ theorem tail3_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) 
       (∀ q, q ≠ 90112 → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem := by
   unfold tail3
   by_cases h0 : c.nreg 90111 = 0
-  · exact ⟨c, _, .ifLtN_true (by rw [h19]; omega) (.skip hw), by omega, by omega,
+  · exact ⟨c, _, .ifLtN_true (by rw [h19]; omega) (.skip hw), by_o, by_o,
       by simp [h0, h112], fun _ _ => rfl, rfl⟩
   have e0 : ¬ c.nreg 90111 < c.nreg 90019 := by rw [h19]; omega
   by_cases h1 : c.nreg ra = c.nreg rb
-  · exact ⟨c, _, .ifLtN_false e0 (ifNe_eq h1 (.skip hw)), by omega, by omega,
+  · exact ⟨c, _, .ifLtN_false e0 (ifNe_eq h1 (.skip hw)), by_o, by_o,
       by simp [h1, h112], fun _ _ => rfl, rfl⟩
   by_cases h2 : c.nreg rc = c.nreg rd
   · obtain ⟨k', e', hk'⟩ := ifNe_ne (s := ifNe rc rd (.instr (.constN 90112 1)) .skip)
       (t := .skip) h1 (ifNe_eq (P := P) (W := W) (s := .instr (.constN 90112 1)) h2 (.skip hw))
-    exact ⟨c, _, .ifLtN_false e0 e', by omega, by omega, by simp [h2, h112],
+    exact ⟨c, _, .ifLtN_false e0 e', by_o, by_o, by simp [h2, h112],
       fun _ _ => rfl, rfl⟩
   · obtain ⟨k₁, e₁, hk₁⟩ := ifNe_ne (s := .instr (.constN 90112 1)) (t := .skip) h2
       (Exec.constN (P := P) hw 90112 1 hW)
     obtain ⟨k', e', hk'⟩ := ifNe_ne (s := ifNe rc rd (.instr (.constN 90112 1)) .skip)
       (t := .skip) h1 e₁
-    exact ⟨_, _, .ifLtN_false e0 e', by omega, by simp [upd], by simp [upd, h0, h1, h2],
+    exact ⟨_, _, .ifLtN_false e0 e', by_o, by simp [upd], by simp [upd, h0, h1, h2],
       fun q hq => by simp [upd, hq], rfl⟩
 
 /-! ## The procedure -/
@@ -209,12 +209,12 @@ def pzStmt : Stmt :=
 /-- The registers `pzStmt` writes. -/
 def Bpz (r : ℕ) : Bool := Bdir r || decide (r = 50002) || decide (90110 ≤ r ∧ r < 90120)
 
-theorem wr_pzStmt : wr Bpz pzStmt = true := by decide
+theorem wr_pzStmt : wr Bpz pzStmt = true := by_d
 
 /-- The registers `chPts` writes. -/
 def Bpts (r : ℕ) : Bool := decide (50040 ≤ r ∧ r < 50049) || decide (50056 ≤ r ∧ r < 50100)
 
-theorem wr_chPts_fine : wr Bpts chPts = true := by decide
+theorem wr_chPts_fine : wr Bpts chPts = true := by_d
 
 end
 

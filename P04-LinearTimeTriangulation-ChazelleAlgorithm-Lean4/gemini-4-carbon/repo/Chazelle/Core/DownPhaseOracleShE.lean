@@ -12,10 +12,6 @@ public import Chazelle.Core.DownPhaseOracleQPlan
   `140012` (`outI_exec`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace IOrc
@@ -60,15 +56,15 @@ def outI : Stmt :=
 /-- The registers the parameter blocks write. -/
 def Bset (r : ℕ) : Bool := decide (170033 ≤ r ∧ r < 170038)
 
-theorem wr_setOne : wr Bset setOne = true := by decide
-theorem wr_setTwoA : wr Bset setTwoA = true := by decide
-theorem wr_setTwoB : wr Bset setTwoB = true := by decide
+theorem wr_setOne : wr Bset setOne = true := by_d
+theorem wr_setTwoA : wr Bset setTwoA = true := by_d
+theorem wr_setTwoB : wr Bset setTwoB = true := by_d
 
 /-- The registers the answer writes. -/
 def Bout (r : ℕ) : Bool :=
   decide (140010 ≤ r ∧ r < 140013) || decide (r = 170092 ∨ r = 170095 ∨ r = 170096)
 
-theorem wr_outI : wr Bout outI = true := by decide
+theorem wr_outI : wr Bout outI = true := by_d
 
 /-! ## Execution -/
 
@@ -120,18 +116,18 @@ theorem setTwoB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   unfold setTwoB
   refine spec_seq ?_
   exec_block
-  · config_simp; rw [hS.r1, hS.r18]; omega
+  · rw [hS.r1, hS.r18]; omega
   · omega
   by_cases h : s.e₁ + 2 < P.n
-  · refine spec_ifLtN_true (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
-    refine spec_skip ‹_› ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+  · refine spec_ifLtN_true (by config_simp; rwa [hS.r1, hS.r18, hS.r10]) ?_
+    refine spec_skip ‹_› ⟨by_o, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
     · rw [hS.r1, hS.r18, Nat.mod_eq_of_lt h]
     · rw [hS.r18]
     · rw [hS.r18]
-  · refine spec_ifLtN_false (by config_simp; rw [hS.r1, hS.r18, hS.r10]; exact h) ?_
+  · refine spec_ifLtN_false (by config_simp; rwa [hS.r1, hS.r18, hS.r10]) ?_
     exec_block
-    refine ⟨by omega, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
-    · rw [hS.r1, hS.r18, hS.r10, Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    refine ⟨by_o, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
+    · rw [hS.r1, hS.r18, hS.r10, Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
     · rw [hS.r18]
     · rw [hS.r18]
 
@@ -163,7 +159,7 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
   · refine spec_ifLtN_true g ?_
     exec_block
     · omega
-    refine ⟨by omega, fun h => by config_simp at h, fun _ => hb3 (by rw [hS.r11] at g; omega)⟩
+    refine ⟨by_o, fun h => by config_simp at h, fun _ => hb3 (by rw [hS.r11] at g; omega)⟩
   refine spec_ifLtN_false g ?_
   obtain ⟨sb, t, hsb, hbs, hfh, hev⟩ := hb2 (by rw [hS.r11] at g; omega)
   have hbsQ := hbs
@@ -186,10 +182,10 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
     · omega
     have hiv : ivV (c.nreg 170014) (c.nreg 170019) (c.nreg 170072) = iv (Qof P) q := by
       rw [kq]; exact hS.ivv q
-    refine ⟨by omega, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
-    · config_simp; rw [hiv]; rw [hQ] at hpp; exact hpp
-    · config_simp; rw [hiv, mi_n]; exact hlt
-    · config_simp; rw [hiv]; exact hpos
+    refine ⟨by_o, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
+    · config_simp; rw [hiv]; rwa [hQ] at hpp
+    · config_simp; rwa [hiv, mi_n]
+    · config_simp; rwa [hiv]
   | onEdge e h =>
     obtain ⟨k0, ke, kh⟩ := hsb
     refine spec_ifLtN_false (by rw [k0, hS.r11]; omega) ?_
@@ -204,17 +200,17 @@ theorem outI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {S 
       (by config_simp; rw [ke]; omega)
     refine spec_seq ⟨c₂, k₂, e₂, ?_⟩
     have w₂ := e₂.wb_right
-    have b73 : c₂.nreg 170073 = h := by rw [ir _ (by decide) (by decide)]; config_simp; exact kh
-    have b11 : c₂.nreg 170011 = 1 := by rw [ir _ (by decide) (by decide)]; config_simp; exact hS.r11
+    have b73 : c₂.nreg 170073 = h := by rw [ir _ by_d by_d]; config_simp; exact kh
+    have b11 : c₂.nreg 170011 = 1 := by rw [ir _ by_d by_d]; config_simp; exact hS.r11
     have hie : c₂.nreg 170096 = iEdge (Qof P) e := by
       rw [i96]; config_simp; rw [ke, ← hS.iev e]
     exec_block
     · omega
     · config_simp; rw [b73, b11]; omega
-    refine ⟨by omega, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
-    · config_simp; rw [hie, b73, b11]; rw [hQ] at hpp; exact hpp
-    · config_simp; rw [hie, mi_n]; exact hlt
-    · config_simp; rw [hie, b73, b11]; exact hpos
+    refine ⟨by_o, fun _ => ⟨t, hfh, ?_, ?_, ?_⟩, fun h => (h (by config_simp)).elim⟩
+    · config_simp; rw [hie, b73, b11]; rwa [hQ] at hpp
+    · config_simp; rwa [hie, mi_n]
+    · config_simp; rwa [hie, b73, b11]
 
 
 end exec

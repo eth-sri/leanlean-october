@@ -25,7 +25,7 @@ theorem SS.Regs.of_frameR {S : SS} {c c' : Config} (h : S.Regs c)
     h39, h40, h41, h42, h43, h44⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by unfold RegsR; omega)]; assumption)
+    (rwa [hr _ (by unfold RegsR; omega)])
 
 /-- **The potential of the initial stack.** -/
 theorem segPot_segL {s μ L : ℕ} {bo : ℕ → ℕ} (hL : ∀ b, cntBelow bo μ b < 2 ^ L) (j : ℕ) :
@@ -36,7 +36,7 @@ theorem segPot_segL {s μ L : ℕ} {bo : ℕ → ℕ} (hL : ∀ b, cntBelow bo �
     rw [cntLt_succ]
     simp only [segL, segPot, List.map_append, List.sum_append] at ih ⊢
     have hlen : len (cntLt bo μ j, cntLt bo μ (j + 1)) = cntBelow bo μ j := len_seg j
-    have hsz : Nat.size (cntBelow bo μ j) ≤ L := Nat.size_le.mpr (hL j)
+    have hsz := Nat.size_le.mpr (hL j)
     have : cntBelow bo μ j * Nat.size (cntBelow bo μ j) ≤ L * cntBelow bo μ j := by
       rw [Nat.mul_comm L]; exact Nat.mul_le_mul_left _ hsz
     unfold optSeg; split_ifs
@@ -48,21 +48,21 @@ theorem memGraph_congr {m m' : ℕ → ℕ} {B μ E A : ℕ} (hA : ∀ a, a < A 
     (hB : B + 2 < A) (hO : m B + 2 * E ≤ A) (hV : m (B + 2) + 2 * E ≤ A)
     (hopp : ∀ d, d < 2 * E → m (m B + d) < 2 * E) :
     memGraph m' B μ E = memGraph m B μ E := by
-  have eB : m' B = m B := hA _ (by omega)
-  have eB2 : m' (B + 2) = m (B + 2) := hA _ (by omega)
+  have eB : m' B = m B := hA _ by_o
+  have eB2 : m' (B + 2) = m (B + 2) := hA _ by_o
   have hmd : ∀ u v, MemDart m' B E u v ↔ MemDart m B E u v := fun u v => by
     unfold MemDart
     rw [eB, eB2]
     constructor
     · rintro ⟨d, hd, h1, h2⟩
       have ho := hopp d hd
-      rw [hA (m (B + 2) + d) (by omega)] at h1
-      rw [hA (m B + d) (by omega), hA (m (B + 2) + m (m B + d)) (by omega)] at h2
+      rw [hA (m (B + 2) + d) by_o] at h1
+      rw [hA (m B + d) by_o, hA (m (B + 2) + m (m B + d)) by_o] at h2
       exact ⟨d, hd, h1, h2⟩
     · rintro ⟨d, hd, h1, h2⟩
       have ho := hopp d hd
-      refine ⟨d, hd, by rw [hA (m (B + 2) + d) (by omega)]; exact h1, ?_⟩
-      rw [hA (m B + d) (by omega), hA (m (B + 2) + m (m B + d)) (by omega)]; exact h2
+      refine ⟨d, hd, by rwa [hA (m (B + 2) + d) by_o], ?_⟩
+      rw [hA (m B + d) by_o, hA (m (B + 2) + m (m B + d)) by_o]; exact h2
   ext u v
   simp only [memGraph, hmd]
 

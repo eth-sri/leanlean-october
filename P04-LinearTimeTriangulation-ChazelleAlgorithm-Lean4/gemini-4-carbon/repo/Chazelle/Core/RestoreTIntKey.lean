@@ -63,7 +63,7 @@ theorem interior_wa {bit : ℕ} (hbit : bit = 1 ↔ Mountain.LeftInside (Qof P))
   have hn : (Qof P).n = P.n := shear_n _ _
   unfold Model.wa
   simp only [interiorModel]
-  rw [interiorWalk_vtx _ (by rw [hn]; exact he), hn]
+  rw [interiorWalk_vtx _ (by rwa [hn]), hn]
   unfold iIdx
   by_cases h : bit = 1
   · rw [ite_eq_left (hbit.1 h), ite_eq_left h]
@@ -95,7 +95,7 @@ theorem interior_wb {bit : ℕ} (hbit : bit = 1 ↔ Mountain.LeftInside (Qof P))
     simp only [interiorModel]; rw [interiorWalk_n, hn]
   unfold Model.wb
   rw [hW]
-  have := interior_wa (P := P) hbit (e := (e + 1) % P.n) (Nat.mod_lt _ (by omega))
+  have := interior_wa (P := P) hbit (e := (e + 1) % P.n) (Nat.mod_lt _ by_o)
   unfold Model.wa at this
   exact this
 
@@ -147,7 +147,7 @@ def iKey (a b d e : ℕ) : Stmt :=
 def Bik (r : ℕ) : Bool :=
   Bdir r || r == 50000 || r == 50002 || (50120 ≤ r && r < 50124) || r == 50210 || r == 50211
 
-theorem wr_intIdx : wr Bdir intIdx = true := by decide
+theorem wr_intIdx : wr Bdir intIdx = true := by_d
 
 theorem wr_iKey (a b d e : ℕ) : wr Bik (iKey a b d e) = true := by
   have h1 : wr Bik intIdx = true := wr_mono wr_intIdx (fun r h => by simp [Bik, h])
@@ -172,9 +172,9 @@ theorem iEdge_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
     exec_block
     refine ⟨rfl, by config_simp, ?_, rfl⟩
     config_simp
-    rw [upd_ne (by omega)]
+    rw [upd_ne by_o]
   obtain ⟨c₂, k₂, e₂, hk₂, r41, r44⟩ := intIdx_exec (P := P) hW c₁ e₁.wb_right
-    (by rw [q02]; exact ha) (by rw [q01]; exact hD)
+    (by rwa [q02]) (by rwa [q01])
   rw [q01, q02, hm₁, hmd] at r41 r44
   obtain ⟨c₃, k₃, e₃, hk₃, s40, s41, s43, s44, s121⟩ : ∃ c₃ k₃, Exec P W
       (block [.copyN 50121 50041, .constN 50040 0, .constN 50043 0]) c₂ c₃ k₃ ∧ k₃ = 3 ∧
@@ -185,13 +185,13 @@ theorem iEdge_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
     · omega
     · omega
     · exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp, by config_simp⟩
-  have hn : 0 < P.n := by omega
+  have hn : 0 < P.n := by_o
   have hia : iIdx bit P.n (c.nreg a) < P.n := iIdx_lt ha
   have hib : iIdx bit P.n ((c.nreg a + 1) % P.n) < P.n := iIdx_lt (Nat.mod_lt _ hn)
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, d₄⟩ := dirTail_exec (P := P) hG hW c₃ e₃.wb_right
     (sa := .vtx (iIdx bit P.n (c.nreg a))) (sb := .vtx (iIdx bit P.n ((c.nreg a + 1) % P.n)))
     hia hib ⟨s40, by rw [s41, r41]; rfl⟩ ⟨s43, by rw [s44, r44]; rfl⟩
-  have g121 : c₄.nreg 50121 = c₃.nreg 50121 := f₄.1 50121 (by decide)
+  have g121 : c₄.nreg 50121 = c₃.nreg 50121 := f₄.1 50121 by_d
   obtain ⟨c₅, k₅, e₅, hk₅, t120, t121, t32⟩ : ∃ c₅ k₅, Exec P W
       (block [.copyN 50120 10502, .constN 50032 1]) c₄ c₅ k₅ ∧ k₅ = 2 ∧
       c₅.nreg 50120 = c₄.nreg 10502 ∧ c₅.nreg 50121 = c₄.nreg 50121 ∧ c₅.nreg 50032 = 1 := by
@@ -199,7 +199,7 @@ theorem iEdge_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
     exec_block
     · omega
     · exact ⟨rfl, by config_simp, by config_simp, by config_simp⟩
-  refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by omega, ?_, ?_, t32⟩
+  refine ⟨c₅, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅))), by_o, ?_, ?_, t32⟩
   · rw [t120, d₄, dirCode_eq]
     simp only [SymPt.eval]
     rw [interior_wa hbit ha, interior_wb hbit ha]
@@ -220,11 +220,11 @@ theorem iDecide_exec {c : Config} (hw : WordsBounded W c) (hW : 1 ≤ W)
   rcases (show c.nreg 10502 = 0 ∨ c.nreg 10502 = 1 ∨ c.nreg 10502 = 2 by omega) with v | v | v
   all_goals
     repeat (first
-      | (refine spec_ifLtN_true (by omega) ?_)
-      | (refine spec_ifLtN_false (by omega) ?_))
+      | (refine spec_ifLtN_true by_o ?_)
+      | (refine spec_ifLtN_false by_o ?_))
   all_goals first
-    | exact spec_skip hw ⟨by omega, by omega, by omega, by simp [h10, d, v], by simp [h11, d, v]⟩
-    | exact spec_instr (Exec.constN hw _ _ hW) fun _ => ⟨by omega, by simp [upd, h10],
+    | exact spec_skip hw ⟨by_o, by_o, by_o, by simp [h10, d, v], by simp [h11, d, v]⟩
+    | exact spec_instr (Exec.constN hw _ _ hW) fun _ => ⟨by_o, by simp [upd, h10],
         by simp [upd, h11], by simp [upd, h10, d, v], by simp [upd, h11, d, v]⟩
 
 
@@ -245,11 +245,11 @@ theorem hSel_exec {c : Config} (hw : WordsBounded W c) {src dst : ℕ} (h32 : c.
       ∀ r, r ≠ dst → c'.nreg r = c.nreg r := by
   unfold hSel
   by_cases h : c.nreg src < c.nreg 50032
-  · refine spec_ifLtN_true h (spec_instr (Exec.copyN hw _ _) fun _ => ⟨by omega, ?_, ?_⟩)
-    · simp only [upd_eq]; rw [ite_eq_left (by omega)]
+  · refine spec_ifLtN_true h (spec_instr (Exec.copyN hw _ _) fun _ => ⟨by_o, ?_, ?_⟩)
+    · simp only [upd_eq]; rw [ite_eq_left by_o]
     · intro r hr; exact upd_ne hr
-  · refine spec_ifLtN_false h (spec_instr (Exec.subN hw _ _ _) fun _ => ⟨by omega, ?_, ?_⟩)
-    · simp only [upd_eq]; rw [ite_eq_right (by omega), h32]
+  · refine spec_ifLtN_false h (spec_instr (Exec.subN hw _ _ _) fun _ => ⟨by_o, ?_, ?_⟩)
+    · simp only [upd_eq]; rw [ite_eq_right by_o, h32]
     · intro r hr; exact upd_ne hr
 
 /-- **The comparison on one edge** (interior model). -/
@@ -267,23 +267,23 @@ theorem iSame_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
       BitIs c' 50211 ((interiorModel (Qof P)).key (Qof P) ⟨c.nreg d, c.nreg e⟩ <
         (interiorModel (Qof P)).key (Qof P) ⟨c.nreg a, c.nreg b⟩) := by
   set M := interiorModel (Qof P)
-  have ha8 := h8 a (by simp)
-  have hb8 := h8 b (by simp)
-  have he8 := h8 e (by simp)
+  have ha8 := h8 a by_s
+  have hb8 := h8 b by_s
+  have he8 := h8 e by_s
   obtain ⟨c₁, k₁, e₁, hk₁, d120, d121, d32⟩ := iEdge_exec hG hW hw hbit hmd hD hxe ha8
-  have f₁ : FrameB BiE c c₁ := exec_frameB e₁ (wr_iEdge a)
+  have f₁ := exec_frameB e₁ (wr_iEdge a)
   have g₁ : ∀ r, 80000 ≤ r → r < 90000 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
     f₁.1 r (by simp [BiE, Bdir]; omega)
   obtain ⟨c₂, k₂, e₂, hk₂, v122, o₂⟩ := hSel_exec (P := P) e₁.wb_right (src := b) (dst := 50122)
-    d32 (by omega)
+    d32 by_o
   obtain ⟨c₃, k₃, e₃, hk₃, v123, o₃⟩ := hSel_exec (P := P) e₂.wb_right (src := e) (dst := 50123)
-    (by rw [o₂ _ (by decide)]; exact d32) (by omega)
+    (by rwa [o₂ _ by_d]) by_o
   -- the height indices
   have hIx : c₃.nreg 50122 = hIdx bit P.n ⟨c.nreg a, c.nreg b⟩ := by
-    rw [o₃ _ (by decide), v122, g₁ b hb8.1 hb8.2, d121]
+    rw [o₃ _ by_d, v122, g₁ b hb8.1 hb8.2, d121]
     unfold hIdx; simp only
   have hIy : c₃.nreg 50123 = hIdx bit P.n ⟨c.nreg d, c.nreg e⟩ := by
-    rw [v123, o₂ _ (by omega), g₁ e he8.1 he8.2, o₂ _ (by decide), d121, ← hsame]
+    rw [v123, o₂ _ by_o, g₁ e he8.1 he8.2, o₂ _ by_d, d121, ← hsame]
     unfold hIdx; simp only
   obtain ⟨c₄, k₄, e₄, hk₄, s40, s41, s43, s44, r₄⟩ : ∃ c₄ k₄, Exec P W
       (block [.constN 50040 0, .copyN 50041 50122, .constN 50043 0, .copyN 50044 50123]) c₃ c₄ k₄ ∧
@@ -299,39 +299,39 @@ theorem iSame_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
       simp [upd, h1, h2, h3, h4]
   have hn := hxe
   have hhx : hIdx bit P.n ⟨c.nreg a, c.nreg b⟩ < P.n := hIdx_lt hxe hx.2.2
-  have hhy : hIdx bit P.n ⟨c.nreg d, c.nreg e⟩ < P.n := hIdx_lt (by rw [← hsame]; exact hxe) hy.2.2
+  have hhy : hIdx bit P.n ⟨c.nreg d, c.nreg e⟩ < P.n := hIdx_lt (by rwa [← hsame]) hy.2.2
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, d₅⟩ := dirTail_exec (P := P) hG hW c₄ e₄.wb_right
     (sa := .vtx (hIdx bit P.n ⟨c.nreg a, c.nreg b⟩))
     (sb := .vtx (hIdx bit P.n ⟨c.nreg d, c.nreg e⟩)) hhx hhy
     ⟨s40, by rw [s41, hIx]⟩ ⟨s43, by rw [s44, hIy]⟩
   have w₅ := e₅.wb_right
-  have e₆ := Exec.constN (P := P) w₅ 50032 1 (by omega)
-  set c₆ : Config := { c₅ with nreg := upd c₅.nreg 50032 1 }
+  have e₆ := Exec.constN (P := P) w₅ 50032 1 by_o
+  set c₆ := { c₅ with nreg := upd c₅.nreg 50032 1 }
   have p120 : c₆.nreg 50120 = dirCode M (c.nreg a) := by
     show upd c₅.nreg 50032 1 50120 = _
-    rw [upd_ne (by decide), f₅.1 50120 (by decide), r₄ _ (by decide) (by decide) (by decide)
-      (by decide), o₃ _ (by decide), o₂ _ (by decide), d120]
+    rw [upd_ne by_d, f₅.1 50120 by_d, r₄ _ by_d by_d by_d
+      by_d, o₃ _ by_d, o₂ _ by_d, d120]
   have p10 : c₆.nreg 50210 = 0 := by
     show upd c₅.nreg 50032 1 50210 = _
-    rw [upd_ne (by decide), f₅.1 50210 (by decide), r₄ _ (by decide) (by decide) (by decide)
-      (by decide), o₃ _ (by decide), o₂ _ (by decide), f₁.1 50210 (by decide), h10]
+    rw [upd_ne by_d, f₅.1 50210 by_d, r₄ _ by_d by_d by_d
+      by_d, o₃ _ by_d, o₂ _ by_d, f₁.1 50210 by_d, h10]
   have p11 : c₆.nreg 50211 = 0 := by
     show upd c₅.nreg 50032 1 50211 = _
-    rw [upd_ne (by decide), f₅.1 50211 (by decide), r₄ _ (by decide) (by decide) (by decide)
-      (by decide), o₃ _ (by decide), o₂ _ (by decide), f₁.1 50211 (by decide), h11]
+    rw [upd_ne by_d, f₅.1 50211 by_d, r₄ _ by_d by_d by_d
+      by_d, o₃ _ by_d, o₂ _ by_d, f₁.1 50211 by_d, h11]
   have p02 : c₆.nreg 10502 = NFLoc.dirOf ((Qof P).vtx (hIdx bit P.n ⟨c.nreg a, c.nreg b⟩)).2
       ((Qof P).vtx (hIdx bit P.n ⟨c.nreg d, c.nreg e⟩)).2 := by
     show upd c₅.nreg 50032 1 10502 = _
-    rw [upd_ne (by decide), d₅]; rfl
-  obtain ⟨c₇, k₇, e₇, hk₇, b1, b2, i1, i2⟩ := iDecide_exec (P := P) e₆.wb_right (by omega)
+    rw [upd_ne by_d, d₅]; rfl
+  obtain ⟨c₇, k₇, e₇, hk₇, b1, b2, i1, i2⟩ := iDecide_exec (P := P) e₆.wb_right by_o
     (by show upd c₅.nreg 50032 1 50032 = 1; exact upd_eq) p10 p11
     (by rw [p120]; exact dirCode_le_two _ _) (by rw [p02]; exact dirOf_le _ _)
   refine ⟨c₇, k₁ + (k₂ + (k₃ + (k₄ + (k₅ + (1 + k₇))))),
-    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))), by omega, ⟨b1, ?_⟩, ⟨b2, ?_⟩⟩
+    .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))), by_o, ⟨b1, ?_⟩, ⟨b2, ?_⟩⟩
   · rw [i1, p120, p02, dirOf_one, dirOf_two, key_lt_lex hx hy]
     have hbase := param_lt_iff_same_edge M (Qof P) (x := ⟨c.nreg a, c.nreg b⟩)
       (y := ⟨c.nreg d, c.nreg e⟩) hsame
-    rw [interior_hgtY hbit hxe, interior_hgtY hbit (by rw [← hsame]; exact hxe)] at hbase
+    rw [interior_hgtY hbit hxe, interior_hgtY hbit (by rwa [← hsame])] at hbase
     simp only at hbase ⊢
     rw [← hbase]
     constructor
@@ -342,7 +342,7 @@ theorem iSame_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Word
   · rw [i2, p120, p02, dirOf_one, dirOf_two, key_lt_lex hy hx]
     have hbase := param_lt_iff_same_edge M (Qof P) (x := ⟨c.nreg d, c.nreg e⟩)
       (y := ⟨c.nreg a, c.nreg b⟩) hsame.symm
-    rw [interior_hgtY hbit (by rw [← hsame]; exact hxe), interior_hgtY hbit hxe] at hbase
+    rw [interior_hgtY hbit (by rwa [← hsame]), interior_hgtY hbit hxe] at hbase
     simp only at hbase ⊢
     rw [hsame] at hbase ⊢
     rw [← hbase]
@@ -366,10 +366,10 @@ theorem iKey_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Words
         (interiorModel (Qof P)).key (Qof P) ⟨c.nreg d, c.nreg e⟩) ∧
       BitIs c' 50211 ((interiorModel (Qof P)).key (Qof P) ⟨c.nreg d, c.nreg e⟩ <
         (interiorModel (Qof P)).key (Qof P) ⟨c.nreg a, c.nreg b⟩) := by
-  have ha8 := h8 a (by simp)
-  have hb8 := h8 b (by simp)
-  have hd8 := h8 d (by simp)
-  have he8 := h8 e (by simp)
+  have ha8 := h8 a by_s
+  have hb8 := h8 b by_s
+  have hd8 := h8 d by_s
+  have he8 := h8 e by_s
   obtain ⟨c₁, k₁, e₁, hk₁, q10, q11, g₁, hm₁⟩ : ∃ c₁ k₁, Exec P W
       (block [.constN 50210 0, .constN 50211 0]) c c₁ k₁ ∧ k₁ = 2 ∧ c₁.nreg 50210 = 0 ∧
       c₁.nreg 50211 = 0 ∧ (∀ r, 80000 ≤ r → r < 90000 → c₁.nreg r = c.nreg r) ∧
@@ -386,13 +386,13 @@ theorem iKey_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Words
   have ee := (g₁ e he8.1 he8.2).symm
   simp only [ea, eb, ed, ee] at hx hy hxe _hye ⊢
   have hmd' : c₁.nmem (c₁.nreg 83000 + 1) = bit := by
-    rw [hm₁, g₁ 83000 (by norm_num) (by norm_num)]; exact hmd
-  have hD' : c₁.nreg 83000 + 1 ≤ W := by rw [g₁ 83000 (by norm_num) (by norm_num)]; exact hD
+    rw [hm₁, g₁ 83000 by_n by_n]; exact hmd
+  have hD' : c₁.nreg 83000 + 1 ≤ W := by rw [g₁ 83000 by_n by_n]; exact hD
   unfold iKey
   refine spec_seq ⟨c₁, k₁, e₁, ?_⟩
   by_cases t1 : c₁.nreg a < c₁.nreg d
-  · refine spec_ifLtN_true t1 (spec_instr (Exec.constN w₁ _ _ (by omega)) fun _ =>
-      ⟨by omega, ⟨by simp [upd], ?_⟩, ⟨by simp [upd, q11], ?_⟩⟩)
+  · refine spec_ifLtN_true t1 (spec_instr (Exec.constN w₁ _ _ by_o) fun _ =>
+      ⟨by_o, ⟨by simp [upd], ?_⟩, ⟨by simp [upd, q11], ?_⟩⟩)
     · simp only [upd_eq, true_iff]
       exact (key_lt_lex hx hy).2 (Or.inl t1)
     · simp only [upd_ne (show (50211 : ℕ) ≠ 50210 by decide), q11]
@@ -401,8 +401,8 @@ theorem iKey_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Words
       · intro h
         rcases (key_lt_lex hy hx).1 h with h' | ⟨h', -⟩ <;> simp only at h' <;> omega
   · by_cases t2 : c₁.nreg d < c₁.nreg a
-    · refine spec_ifLtN_false t1 (spec_ifLtN_true t2 (spec_instr (Exec.constN w₁ _ _ (by omega))
-        fun _ => ⟨by omega, ⟨by simp [upd, q10], ?_⟩, ⟨by simp [upd], ?_⟩⟩))
+    · refine spec_ifLtN_false t1 (spec_ifLtN_true t2 (spec_instr (Exec.constN w₁ _ _ by_o)
+        fun _ => ⟨by_o, ⟨by simp [upd, q10], ?_⟩, ⟨by simp [upd], ?_⟩⟩))
       · simp only [upd_ne (show (50210 : ℕ) ≠ 50211 by decide), q10]
         constructor
         · intro h; omega
@@ -414,7 +414,7 @@ theorem iKey_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {c : Config} (hw : Words
       refine spec_ifLtN_false t1 (spec_ifLtN_false t2 ?_)
       obtain ⟨c', k, ex, hk, b1, b2⟩ := iSame_exec (P := P) hG hW w₁ hbit hmd' hD' h8 q10 q11
         hsame hx hy hxe
-      exact ⟨c', k, ex, by omega, b1, b2⟩
+      exact ⟨c', k, ex, by_o, b1, b2⟩
 
 end
 

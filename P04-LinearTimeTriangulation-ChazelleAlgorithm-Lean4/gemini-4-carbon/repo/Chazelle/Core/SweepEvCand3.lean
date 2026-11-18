@@ -44,7 +44,7 @@ theorem arrival_unique {C : Chain} (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C
   have hfree : FreeAt C w (-σ) := by
     filter_upwards [Ioo_mem_nhdsGT hτ] with s hs
     rw [hback]; exact hdom _ (by linarith [hs.2]) (by linarith [hs.1])
-  have he : Merge.shoot C w (-σ) ∈ Merge.augChords C :=
+  have he :=
     Merge.shoot_mem_augChords C hw2 hwD hnσ hfree
   obtain ⟨hT, -, -⟩ := Merge.hit_of_freeAt C hw2 hnσ hfree
   have hev : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w (-σ) s ∈ Merge.shoot C w (-σ) := by
@@ -66,7 +66,7 @@ theorem arrival_unique {C : Chain} (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C
     rw [← hpt] at hsec hev' he'
     have := sideAttach_of_along C hP he' hq hu0 hu1 hnσ hsec hev'
     rwa [hpt] at this
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
+  have hM := FactsChain.walkAx C hP
   exact hM.attach_unique he (att hA) (att hA') (by rw [hA.2.2.2.1, hA'.2.2.2.1])
 
 /-- **A walk position strictly inside the height band of the box** is a `PosW` position. -/
@@ -98,7 +98,7 @@ def CandOK (P : Polygon) (J : Merge.Junction) (S₂ : Set (Set Point)) (a : Poin
 /-- `b₁ < n₁`. -/
 theorem b₁_lt : b₁ J < (chainModel J.left).W.n := by
   have := tpos_lt J.left J.m₁
-  have hn : (chainModel J.left).W.n = 2 * J.left.m + 7 := cm_n J.left
+  have hn := cm_n J.left
   have hm1 : J.left.m = J.m₁ := rfl
   unfold b₁; split_ifs <;> omega
 
@@ -136,13 +136,13 @@ theorem candOK_of {P : Polygon} (hP : J.P.Simple) {S₂ : Set (Set Point)}
     · have hv : MValid J d t := ⟨h1, h2, fun h => h3 ⟨h.1, h.2.1, fun h0 => h.2.2 (hnorm.1 h0)⟩,
         fun h => absurd h htp.ne'⟩
       rw [param_corr hP hv htp, hpd]
-    · have h0 : hN = 0 := hnorm.2 ht0.symm
+    · have h0 := hnorm.2 ht0.symm
       have ht0' : t = 0 := ht0.symm
       rw [ht0', h0]; rfl
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn := cm_n J.whole
   rw [← hpar] at hS hpt hO
   have hlt' : mEdge J d < (chainModel J.whole).W.n := by
-    unfold mEdge; exact Nat.mod_lt _ (by omega)
+    unfold mEdge; exact Nat.mod_lt _ by_o
   refine ⟨hfree, hmem, hS, by rw [hpt, hhit], ?_, posW_of_inner hlt'
     ⟨by rw [hpar]; exact hpp.1, by rw [hpar]; exact hpp.2.1, hpp.2.2⟩ ?_, ?_⟩
   · rw [hO]
@@ -155,12 +155,12 @@ theorem candOK_of {P : Polygon} (hP : J.P.Simple) {S₂ : Set (Set Point)}
     have hRR : J.whole.radius = J.right.radius := rfl
     rw [hRR]
     exact lt_of_le_of_lt (J.right.abs_le_coordBound_of_mem_set haR).2 J.right.coordBound_lt_radius
-  · rw [hhit, hR]; exact hlt
+  · rwa [hhit, hR]
 
 /-- **The `C₁` part is read within one turn of the walk of `C₁`.** -/
 theorem E₁_le (hP : J.P.Simple) : E₁ J ≤ (chainModel J.left).W.n := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
-  have hn₁ : (chainModel J.left).W.n = 2 * J.left.m + 7 := cm_n J.left
+  have hn := cm_n J.whole
+  have hn₁ := cm_n J.left
   have hm1 : J.left.m = J.m₁ := rfl
   by_cases hVNT : VNotTop J
   · have hlen : Lst J + llen J = (chainModel J.whole).W.n := by

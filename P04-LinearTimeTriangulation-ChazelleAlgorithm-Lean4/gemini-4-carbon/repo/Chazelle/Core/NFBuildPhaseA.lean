@@ -105,7 +105,7 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   have hroom' : A₀ + 32 * K + 22 + SortR.sortCost 11010 (2 * K) ≤ W := by
     unfold costA at hroom; omega
   -- setup
-  obtain ⟨c₁, k₁, x₁, hk₁, v₁⟩ := setupA_exec (P := P) c hw hB' hK hA (by omega) (by omega)
+  obtain ⟨c₁, k₁, x₁, hk₁, v₁⟩ := setupA_exec (P := P) c hw hB' hK hA by_o by_o
   obtain ⟨r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, fr₁, rr₁, m₁, rm₁, out₁⟩ := v₁
   have w₁ := x₁.wb_right
   -- the record loop
@@ -113,16 +113,16 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     { i_le := by rw [r9]; omega, rK := r2, r0 := r3, r1 := r4, a21 := by rw [r10, r9]; omega,
       a22 := by rw [r11, r9]; omega, a23 := by rw [r12, r9]; omega, a24 := by rw [r13, r9],
       fr := fun _ _ => rfl, rr := rfl, rm := rfl, out := rfl,
-      mem := fun a => by rw [m₁, r9]; unfold recMem; rw [ite_eq_right (by omega), ite_eq_right (by omega)] }
+      mem := fun a => by rw [m₁, r9]; unfold recMem; rw [ite_eq_right by_o, ite_eq_right by_o] }
   have hhW : ∀ x ∈ L, x.1 + 1 ≤ W := fun x hx => by
     have := hL.2.2.2 x hx
     have hn : (Qof P).n = P.n := shear_n _ _
     omega
-  obtain ⟨c₂, k₂, x₂, hk₂, hk₂', w₂, I₂, i₂⟩ := recLoop_exec (P := P) hCL hB rfl (by omega) hhW w₁ hI₁ r9
+  obtain ⟨c₂, k₂, x₂, hk₂, hk₂', w₂, I₂, i₂⟩ := recLoop_exec (P := P) hCL hB rfl by_o hhW w₁ hI₁ r9
   -- the sort's inputs
-  have hA₂ : c₂.nreg 9999 = A₀ + 10 * K := by rw [I₂.fr _ (Or.inl (by norm_num)), r8]
-  have hS₂ : c₂.nreg 43031 = A₀ + 8 * K := by rw [I₂.fr _ (Or.inr (by norm_num)), r7]
-  have hN₂ : c₂.nreg 42001 = 2 * K := by rw [I₂.fr _ (Or.inl (by norm_num)), r5]
+  have hA₂ : c₂.nreg 9999 = A₀ + 10 * K := by rw [I₂.fr _ (Or.inl by_n), r8]
+  have hS₂ : c₂.nreg 43031 = A₀ + 8 * K := by rw [I₂.fr _ (Or.inr by_n), r7]
+  have hN₂ : c₂.nreg 42001 = 2 * K := by rw [I₂.fr _ (Or.inl by_n), r5]
   obtain ⟨c₃, k₃, x₃, hk₃, v30003, v30004, g₃, mm₃, rr₃, rm₃, out₃⟩ : ∃ c₃ k₃,
       Exec P W (block [.copyN 30003 43031, .copyN 30004 42001]) c₂ c₃ k₃ ∧ k₃ = 2 ∧
       c₃.nreg 30003 = A₀ + 8 * K ∧ c₃.nreg 30004 = 2 * K ∧
@@ -136,38 +136,38 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     · simp [hN₂]
     · simp [h1, h2]
   have w₃ := x₃.wb_right
-  have hA₃ : c₃.nreg 9999 = A₀ + 10 * K := by rw [g₃ _ (by norm_num) (by norm_num), hA₂]
+  have hA₃ : c₃.nreg 9999 = A₀ + 10 * K := by rw [g₃ _ by_n by_n, hA₂]
   -- memory at the sort
   have mem₃ : ∀ a, c₃.nmem a = recMem c.nmem L A₀ (A₀ + 8 * K) K a := fun a => by
     rw [mm₃, I₂.mem, i₂]
   have hbelow : ∀ a, a < A₀ → c₃.nmem a = c.nmem a := fun a ha => by
-    rw [mem₃]; unfold recMem; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    rw [mem₃]; unfold recMem; rw [ite_eq_right by_o, ite_eq_right by_o]
   have hrecs : RecsAt c₃.nmem A₀ L := recsAt_of fun q hq => by
-    rw [mem₃]; unfold recMem; rw [ite_eq_left (by omega), show A₀ + q - A₀ = q by omega]
+    rw [mem₃]; unfold recMem; rw [ite_eq_left by_o, show A₀ + q - A₀ = q by omega]
   have hlist : seg c₃.nmem (A₀ + 8 * K) (2 * K) = List.range (2 * K) := seg_range fun i hi => by
-    rw [mem₃]; unfold recMem; rw [ite_eq_right (by omega), ite_eq_left (by omega)]; omega
+    rw [mem₃]; unfold recMem; rw [ite_eq_right by_o, ite_eq_left by_o]; omega
   obtain ⟨hM₃, hwf₃⟩ := desc_agree hwf hM (m' := c₃.nmem) fun a ha => hbelow a ha
-  have hwf₃' : ModelDescWF P (A₀ + 10 * K) c₃.nmem D := modelDescWF_mono hwf₃ (by omega)
+  have hwf₃' : ModelDescWF P (A₀ + 10 * K) c₃.nmem D := modelDescWF_mono hwf₃ by_o
   have hD₃ : c₃.nreg 40000 = D := by
-    rw [g₃ _ (by norm_num) (by norm_num), I₂.fr _ (Or.inl (by norm_num)),
-      fr₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-        (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-        (by norm_num) (by norm_num), hD]
+    rw [g₃ _ by_n by_n, I₂.fr _ (Or.inl by_n),
+      fr₁ _ by_n by_n by_n by_n by_n by_n
+        by_n by_n by_n by_n by_n by_n
+        by_n by_n, hD]
   have hT₃ : c₃.nreg 42000 = A₀ := by
-    rw [g₃ _ (by norm_num) (by norm_num), I₂.fr _ (Or.inl (by norm_num)), r6]
-  have hN₃ : c₃.nreg 42001 = 2 * K := by rw [g₃ _ (by norm_num) (by norm_num), hN₂]
+    rw [g₃ _ by_n by_n, I₂.fr _ (Or.inl by_n), r6]
+  have hN₃ : c₃.nreg 42001 = 2 * K := by rw [g₃ _ by_n by_n, hN₂]
   -- the sort
-  have hcmp := evCmp_ok (P := P) (W := W) hG hWn (A₀ := A₀ + 10 * K) (by omega) hwf₃' hM₃ hL
-    hrecs (by omega) c₃.nreg
+  have hcmp := evCmp_ok (P := P) (W := W) hG hWn (A₀ := A₀ + 10 * K) by_o hwf₃' hM₃ hL
+    hrecs by_o c₃.nreg
   have hJ₃ : EvJ c₃.nmem (A₀ + 10 * K) D A₀ (2 * K) c₃.nreg c₃ :=
     ⟨hD₃, hT₃, hN₃, fun _ _ => rfl, fun _ _ _ => rfl⟩
   have hJs : SortR.JStable (EvJ c₃.nmem (A₀ + 10 * K) D A₀ (2 * K) c₃.nreg) (c₃.nreg ALLOC) := by
     rw [show ALLOC = 9999 from rfl, hA₃]; exact evJ_stable _ _ _ _ _ _
   obtain ⟨c₄, k₄, x₄, hk₄, J₄, F₄, e₄, e₄', E, hE, hperm, hsort⟩ :=
-    SortR.sortStmt_exec (P := P) (W := W) hcmp (by decide)
+    SortR.sortStmt_exec (P := P) (W := W) hcmp by_d
       (fun a b d h1 h2 => evLeB_trans M (Qof P) L _ a b d h1 h2)
       (fun a b => evLeB_total M (Qof P) L _ a b) w₃ hJ₃ hJs (List.range (2 * K))
-      (by rw [List.length_range, v30003]; exact hlist) (by rw [List.length_range, v30004])
+      (by rwa [List.length_range, v30003]) (by rw [List.length_range, v30004])
       (by rw [List.length_range, show ALLOC = 9999 from rfl, hA₃, v30003]; omega)
       (by rw [List.length_range, show ALLOC = 9999 from rfl, hA₃]; omega)
   rw [List.length_range] at hk₄ e₄' hE
@@ -184,28 +184,28 @@ theorem phaseA_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     fun c hc => ?_, ?_, e₄', E, hE, hperm, ?_⟩
   · -- registers outside the bands
     obtain ⟨hr3, hr'⟩ := band_out hr
-    have hra' : r ≠ 9999 := hra
-    rw [F1 r hr3 hra, g₃ _ (by omega) (by omega), I₂.fr _ (by omega)]
-    exact fr₁ _ (by omega) (by omega) (by omega) (by omega) (by omega) (by omega)
-        (by omega) (by omega) hra' (by omega) (by omega) (by omega) (by omega) (by omega)
+    have hra' := hra
+    rw [F1 r hr3 hra, g₃ _ by_o by_o, I₂.fr _ by_o]
+    exact fr₁ _ by_o by_o by_o by_o by_o by_o
+        by_o by_o hra' by_o by_o by_o by_o by_o
   · rw [F2 r (band_out hr).1, rr₃, I₂.rr, rr₁]
-  · have ha' : a < A₀ := ha
+  · have ha' := ha
     rw [F3 a (lt_of_lt_of_le ha' (Nat.le_add_right _ _))]
     exact hbelow a ha'
-  · have ha' : a < A₀ := ha
+  · have ha' := ha
     rw [F4 a (lt_of_lt_of_le ha' (Nat.le_add_right _ _)), rm₃, I₂.rm, rm₁]
   · rw [F5, out₃, I₂.out, out₁]
   · show A₀ ≤ c₄.nreg 9999; omega
   · show c₄.nreg 9999 ≤ A₀ + _; omega
-  · rw [j5 _ (by norm_num) (by norm_num), g₃ _ (by norm_num) (by norm_num),
-      I₂.fr _ (Or.inl (by norm_num)), r1]
-  · rw [j5 _ (by norm_num) (by norm_num), g₃ _ (by norm_num) (by norm_num), I₂.rK]
-  · rw [j5 _ (by norm_num) (by norm_num), g₃ _ (by norm_num) (by norm_num), I₂.r0]
-  · rw [j5 _ (by norm_num) (by norm_num), g₃ _ (by norm_num) (by norm_num), I₂.r1]
+  · rw [j5 _ by_n by_n, g₃ _ by_n by_n,
+      I₂.fr _ (Or.inl by_n), r1]
+  · rw [j5 _ by_n by_n, g₃ _ by_n by_n, I₂.rK]
+  · rw [j5 _ by_n by_n, g₃ _ by_n by_n, I₂.r0]
+  · rw [j5 _ by_n by_n, g₃ _ by_n by_n, I₂.r1]
   · obtain ⟨a1, a2, a3, a4⟩ := hrecs c hc
-    refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [j4 _ (by omega)] <;> assumption
+    refine ⟨?_, ?_, ?_, ?_⟩ <;> rw [j4 _ by_o] <;> assumption
   · rw [show ALLOC = 9999 from rfl, hA₃] at e₄; omega
-  · have hnd : E.Nodup := hperm.nodup_iff.2 List.nodup_range
+  · have hnd := hperm.nodup_iff.2 List.nodup_range
     refine (hsort.and hnd).imp_of_mem fun {a b} ha hb hab => ?_
     have ha' := List.mem_range.1 (hperm.mem_iff.1 ha)
     have hb' := List.mem_range.1 (hperm.mem_iff.1 hb)

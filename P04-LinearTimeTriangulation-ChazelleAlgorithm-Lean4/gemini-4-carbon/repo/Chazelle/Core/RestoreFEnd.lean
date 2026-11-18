@@ -37,8 +37,8 @@ theorem setR_fs {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FInv E.W c₀ c) {r v
       ∀ q, q ≠ r → c'.nreg q = c.nreg q) := by
   unfold SReg at hr
   have ok : okB E.W c.nmem [.constN r v] c.nreg := by
-    simp only [okB, okI]; exact ⟨⟨Or.inl (Or.inl ⟨by omega, by omega⟩), hv⟩, trivial⟩
-  refine (FRS.block hB _ hI ok).mono (by simp) (fun c' h' => ?_)
+    simp only [okB, okI]; exact ⟨⟨Or.inl (Or.inl ⟨by_o, by_o⟩), hv⟩, trivial⟩
+  refine (FRS.block hB _ hI ok).mono by_s (fun c' h' => ?_)
   have e' : ∀ q, c'.nreg q = regB c.nmem [.constN r v] c.nreg q := fun q => by rw [h']
   exact ⟨by rw [e']; simp [regB, regI, upd], fun q hq => by rw [e']; simp [regB, regI, upd, hq]⟩
 
@@ -73,7 +73,7 @@ theorem endMap_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
   have h17' : s + 9 ≠ 81017 := (hsF 81017 (by unfold FFix; omega)).2.2.symm
   have ok : okB E.W c.nmem [.subN (s + 1) p 81131, .subN (s + 9) 81017 81130] c.nreg := by
     simp only [okB, okI]
-    exact ⟨Or.inl (Or.inl ⟨by omega, by omega⟩), Or.inl (Or.inl ⟨by omega, by omega⟩), trivial⟩
+    exact ⟨Or.inl (Or.inl ⟨by_o, by_o⟩), Or.inl (Or.inl ⟨by_o, by_o⟩), trivial⟩
   refine FRS.seq (K₂ := 8) (FRS.block hB _ hI ok) (fun c₁ hI₁ _ h₁ => ?_)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.subN (s + 1) p 81131, .subN (s + 9) 81017 81130]
       c.nreg q := fun q => by rw [h₁]
@@ -92,51 +92,50 @@ theorem endMap_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI :
     by_cases hc : c₁.nreg (s + 1) < c₁.nreg (s + 9)
     · have okc : okB E.W c₁.nmem [.addN (s + 1) (s + 1) 81130] c₁.nreg := by
         simp only [okB, okI]
-        refine ⟨⟨Or.inl (Or.inl ⟨by omega, by omega⟩), ?_⟩, trivial⟩
+        refine ⟨⟨Or.inl (Or.inl ⟨by_o, by_o⟩), ?_⟩, trivial⟩
         have := hI₁.hw.1 81017
         rw [(fx c₁ hI₁).1] at this
         omega
-      refine (FRS.ifT hc ((FRS.block hB _ hI₁ okc))).mono (by simp) (fun c' h' => ?_)
+      refine (FRS.ifT hc ((FRS.block hB _ hI₁ okc))).mono by_s (fun c' h' => ?_)
       have e' : ∀ q, c'.nreg q = regB c₁.nmem [.addN (s + 1) (s + 1) 81130] c₁.nreg q :=
         fun q => by rw [h']
       refine ⟨?_, fun q hq => by rw [e']; simp [regB, regI, upd, hq]⟩
       rw [e']; simp only [regB, regI, upd, ite_true]
       rw [v1, w30, Nat.mod_eq_of_lt (by rw [v1, v9] at hc; omega)]; omega
     · have okc : okB E.W c₁.nmem [.subN (s + 1) (s + 1) (s + 9)] c₁.nreg := by
-        simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by omega, by omega⟩), trivial⟩
-      refine (FRS.ifF hc ((FRS.block hB _ hI₁ okc))).mono (by simp) (fun c' h' => ?_)
+        simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by_o, by_o⟩), trivial⟩
+      refine (FRS.ifF hc ((FRS.block hB _ hI₁ okc))).mono by_s (fun c' h' => ?_)
       have e' : ∀ q, c'.nreg q = regB c₁.nmem [.subN (s + 1) (s + 1) (s + 9)] c₁.nreg q :=
         fun q => by rw [h']
       refine ⟨?_, fun q hq => by rw [e']; simp [regB, regI, upd, hq]⟩
       rw [e']; simp only [regB, regI, upd, ite_true]
       rw [v1, v9] at hc ⊢
       have e2 : c.nreg 81130 + (c.nreg p - c.nreg 81131) =
-          (c.nreg p - c.nreg 81131 - (n - c.nreg 81130)) + n := by omega
-      rw [e2, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+          (c.nreg p - c.nreg 81131 - (n - c.nreg 81130)) + n := by_o
+      rw [e2, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
   refine FRS.seq (K₂ := 5) step2 (fun c₂ hI₂ _ ⟨u1, g₂⟩ => ?_)
-  refine FRS.seq (K₂ := 4) (setR_fs hB hI₂ (r := s + 2) ⟨by omega, by omega⟩ (Nat.zero_le _))
+  refine FRS.seq (K₂ := 4) (setR_fs hB hI₂ (r := s + 2) ⟨by_o, by_o⟩ (Nat.zero_le _))
     (fun c₃ hI₃ _ ⟨u2, g₃⟩ => ?_)
   have g7 : c₃.nreg (s + 7) = c.nreg (s + 7) := by
     rw [g₃ _ h7, g₂ _ h71, f₁ _ h71 h79]
-  have g11 : c₃.nreg 81011 = 0 := (fx c₃ hI₃).2
+  have g11 := (fx c₃ hI₃).2
   have fin : ∀ c' : Config, (∀ q, q ≠ s + 2 → c'.nreg q = c₃.nreg q) →
       ∀ q, q ≠ s + 1 → q ≠ s + 2 → q ≠ s + 9 → c'.nreg q = c.nreg q :=
     fun c' h q h1 h2 h3 => by rw [h q h2, g₃ q h2, g₂ q h1, f₁ q h1 h3]
   by_cases hc : c₃.nreg 81011 < c₃.nreg (s + 7)
   · have okc : okB E.W c₃.nmem [.copyN (s + 2) 81155] c₃.nreg := by
-      simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by omega, by omega⟩), trivial⟩
-    refine (FRS.ifT hc (FRS.block hB _ hI₃ okc)).mono (by simp) (fun c' h' => ?_)
+      simp only [okB, okI]; exact ⟨Or.inl (Or.inl ⟨by_o, by_o⟩), trivial⟩
+    refine (FRS.ifT hc (FRS.block hB _ hI₃ okc)).mono by_s (fun c' h' => ?_)
     have e' : ∀ q, c'.nreg q = regB c₃.nmem [.copyN (s + 2) 81155] c₃.nreg q :=
       fun q => by rw [h']
     have f' : ∀ q, q ≠ s + 2 → c'.nreg q = c₃.nreg q := fun q hq => by
       rw [e']; simp [regB, regI, upd, hq]
-    refine ⟨by rw [f' _ (by omega), g₃ _ (by omega), u1], fun _ => ?_, fun h0 => by
+    refine ⟨by rw [f' _ by_o, g₃ _ by_o, u1], fun _ => ?_, fun h0 => by
       rw [g11, g7, h0] at hc; omega, fin c' f'⟩
     rw [e']; simp only [regB, regI, upd, ite_true]
     rw [g₃ _ h55.2.1, g₂ _ h55.1, f₁ _ h55.1 h55.2.2]
-  · exact (FRS.ifF hc (FRS.skip (K := 0) hI₃ ⟨by rw [g₃ _ (by omega), u1],
-      fun h1 => by rw [g11, g7, h1] at hc; omega, fun _ => u2, fin c₃ (fun _ _ => rfl)⟩)).mono
-      (by omega) (fun _ h => h)
+  · exact (FRS.ifF hc (FRS.skip (K := 0) hI₃ ⟨by rw [g₃ _ by_o, u1],
+      fun h1 => by rw [g11, g7, h1] at hc; omega, fun _ => u2, fin c₃ (fun _ _ => rfl)⟩)).le
 
 end
 

@@ -76,7 +76,7 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
   obtain ⟨rs, ax, hlen, haxl, hrecs, haux, hSok, hword, hauxok, hsize⟩ := hL.stops
   unfold iter iterK at *
   -- 1. the window
-  refine IRS.seq (K₁ := KW) (K₂ := 2 + (((12 * (c₀.nreg (sw 6)) + 8) * (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG + κO) + κO) + KK)) (hwin c hI hL.key hL.keyL (by omega)) ?_
+  refine IRS.seq (K₁ := KW) (K₂ := 2 + (((12 * (c₀.nreg (sw 6)) + 8) * (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG + κO) + κO) + KK)) (hwin c hI hL.key hL.keyL by_o) ?_
   rintro cw hIw hAw hAw' hWO
   have hWO' := hWO
   obtain ⟨rsW, hrsW2, hrsWR, hgK, hgB1, hgB2, harcs, hwX1, hwE, -, hmW, hfrW⟩ := hWO
@@ -84,11 +84,11 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
     hfrW r (band_sw_not ⟨h.1, h.2.1⟩) h.2.2.1 (by have := h.1; unfold ALLOC; omega)
   -- 2. the reset
   refine IRS.seq (K₁ := resetL.length) (K₂ := ((12 * (c₀.nreg (sw 6)) + 8) * (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG + κO) + κO) + KK)
-    (IRS.block resetL hIw ⟨⟨iscr_sw (by unfold bF sw; omega) (by unfold bF sw; omega), by omega⟩,
-      ⟨iscr_sw (by unfold bN sw; omega) (by unfold bN sw; omega), by omega⟩, trivial⟩) ?_
+    (IRS.block resetL hIw ⟨⟨iscr_sw (by unfold bF sw; omega) (by unfold bF sw; omega), by_o⟩,
+      ⟨iscr_sw (by unfold bN sw; omega) (by unfold bN sw; omega), by_o⟩, trivial⟩) ?_
   rintro cs hIs hAs hAs' rfl
   have hrl : resetL.length = 2 := rfl
-  set cs : Config := { cw with nreg := regB cw.nmem resetL cw.nreg } with hcsd
+  set cs := { cw with nreg := regB cw.nmem resetL cw.nreg } with hcsd
   have hsF : cs.nreg bF = 0 := by
     simp only [hcsd, resetL, regB, regI, upd, bF, bN, sw]; simp
   have hsN : cs.nreg bN = 0 := by
@@ -126,7 +126,7 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
     keepS _ (keepR_of (by unfold kL sw; omega))
   have kgR : ∀ i, i < 2 → cs.nreg (gR + i) = c.nreg (gR + i) := fun i hi =>
     keepS _ (keepR_of (by unfold gR sw; omega))
-  have hAcs : c.nreg ALLOC ≤ cs.nreg ALLOC := hAw
+  have hAcs := hAw
   -- the layout at `cs`
   have hT : cs.nreg cTB + 6 * N₂.nChords ≤ cs.nreg ALLOC := by
     have := hL.lay1; have := hL.lay2; have := hL.lay4; rw [kTB]; omega
@@ -142,7 +142,7 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
       (fun r hr => hreg r (hrsWR r hr))
     have h2 : rsW.length * ((c₀.nreg (sw 6)) + 1) ≤ 2 * ((c₀.nreg (sw 6)) + 1) := Nat.mul_le_mul_right _ hrsW2
     omega
-  have hLarc : ∀ a ∈ regArcs N₁ rsW, a < N₁.arcs.length := regArcs_lt E.hNF₁ hrsWR
+  have hLarc := regArcs_lt E.hNF₁ hrsWR
   -- 3. the origins
   have hod : ∀ (O : Set ℕ) (c' : Config), IInv W c₀ c' →
       BatchInv P J N₂ cs (ShotList.loSet (chainModel J.left) (Qof P) cs.nmem (cs.nreg wGB)
@@ -169,20 +169,20 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
     fun O c1 c2 h hr hm _ _ _ => batch_stable h hr hm
   have hpar : ∀ i, i < cs.nreg sC → parOf cs i ≤ N₂.nChords := fun i hi => by
     rw [ksC, ← hlen] at hi
-    have hA := haux i (by rw [haxl]; exact hi)
+    have hA := haux i (by rwa [haxl])
     have hok := (hauxok i hi).2.2.2.2.2.2.1
     unfold parOf
     rw [kaB, hmS _ (by have := hL.lay5; omega)]
     rw [hA.2.2.2.2]; exact hok
   refine IRS.seq (K₁ := ((12 * (c₀.nreg (sw 6)) + 8) * (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG + κO) + κO)) (K₂ := KK)
-    (horgs (orgDo sh g) (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG) _ hod hstab ∅ cs hIs (batch_base hsF (by omega))
+    (horgs (orgDo sh g) (odK (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6)) KG) _ hod hstab ∅ cs hIs (batch_base hsF by_o)
       (fun i hi => by
-        rw [kkL i (by omega)]
+        rw [kkL i by_o]
         exact hL.labR i (by rw [kkN] at hi; omega))
       (fun i hi => by
-        rw [kgR i (by omega)]
+        rw [kgR i by_o]
         exact hL.gapR i (by rw [kgN] at hi; omega))
-      hpar hauxL (by omega)) ?_
+      hpar hauxL by_o) ?_
   rintro co hIo hAo hAo' hBo
   rw [Set.empty_union] at hBo
   have hBo' := hBo
@@ -192,7 +192,7 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
       (by have := h.1; unfold ALLOC; omega)
   have keepOC : ∀ r, KeepR r → co.nreg r = c.nreg r := fun r h => (keepO r h).trans (keepS r h)
   have hmO : ∀ x, cs.nreg cTB + 6 * N₂.nChords ≤ x → x < c.nreg ALLOC → co.nmem x = c.nmem x :=
-    fun x h1 h2 => (hBA.memT x (by omega) (Or.inr h1)).trans (hmS x h2)
+    fun x h1 h2 => (hBA.memT x by_o (Or.inr h1)).trans (hmS x h2)
   -- registers at `co`
   have oaB : co.nreg aB = c.nreg aB := keepOC _ (keepR_of (by unfold aB sw; omega))
   have osC : co.nreg sC = c.nreg sC := keepOC _ (keepR_of (by unfold sC sw; omega))
@@ -210,15 +210,15 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
       (by unfold wX wE wH sw at hr; unfold ALLOC; omega)]
     exact hsO r (by unfold wX wE wH sw at hr; unfold bF sw; omega)
       (by unfold wX wE wH sw at hr; unfold bN sw; omega)
-  have oX : co.nreg wX = cw.nreg wX := nW _ (Or.inl rfl)
-  have oE : co.nreg wE = cw.nreg wE := nW _ (Or.inr (Or.inl rfl))
-  have oH : co.nreg wH = cw.nreg wH := nW _ (Or.inr (Or.inr rfl))
+  have oX := nW _ (Or.inl rfl)
+  have oE := nW _ (Or.inr (Or.inl rfl))
+  have oH := nW _ (Or.inr (Or.inr rfl))
   -- the stops at `co`
   have hstopM : ∀ i, i < c.nreg sC → stopE co i = stopE c i ∧ stopH co i = stopH c i := by
     intro i hi
     have := hL.lay4; have := hL.lay1; have := hL.lay2
     unfold stopE stopH
-    rw [osB, hmO _ (by rw [kTB]; omega) (by omega), hmO _ (by rw [kTB]; omega) (by omega)]
+    rw [osB, hmO _ (by rw [kTB]; omega) by_o, hmO _ (by rw [kTB]; omega) by_o]
     exact ⟨rfl, rfl⟩
   have hoff : ∀ i, i < c.nreg sC → offK P J (stopE co i) (stopH co i) = stopOff P J c i :=
     fun i hi => by rw [(hstopM i hi).1, (hstopM i hi).2]; rfl
@@ -241,12 +241,12 @@ theorem iter_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) {win key g : Stmt
       unfold stopE stopH; rw [r1, r2]
       exact (hword _ (by rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi']; exact List.getElem_mem hi')).1)
     (fun i i' h1 h2 => by
-      rw [osC] at h2; rw [hoff i (by omega), hoff i' h2]; exact hL.sorted i i' h1 h2)
+      rw [osC] at h2; rw [hoff i by_o, hoff i' h2]; exact hL.sorted i i' h1 h2)
     (fun i h => by
-      rw [osC] at h; rw [hoff i (by omega), hoff (i + 2) h]; exact hL.two i h)
+      rw [osC] at h; rw [hoff i by_o, hoff (i + 2) h]; exact hL.two i h)
     (by rw [osP, osC]; exact hL.ptr) (by rw [okN]; exact hL.labN) hBA.fN
     (by rw [osB, osC]; have := hL.lay4; omega) (by rw [oaB, osC]; have := hL.lay5; omega)
-    (by rw [olB]; have := hL.lay1; have := hL.tab0; omega) hroomL (by omega)).mono le_rfl ?_
+    (by rw [olB]; have := hL.lay1; have := hL.tab0; omega) hroomL by_o).mono le_rfl ?_
   intro c' hK
   exact ⟨cw, cs, co, hWO', hAw, hRes, hBo', hK⟩
 

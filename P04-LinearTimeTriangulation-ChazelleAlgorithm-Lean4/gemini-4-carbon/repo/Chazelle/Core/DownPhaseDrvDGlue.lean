@@ -35,10 +35,10 @@ theorem arcList_lt {m : ℕ → ℕ} {B E' : ℕ} {N : NF} (h : NFWithin m B E' 
     m (B + 7) + m (m (B + 5) + 5 * r + 1) + t < E' := by
   have hp : m (B + 5) + 5 * r + 1 < E' := by
     have := (Gran.nf_areas h).2.2.1 r hr; omega
-  have hB : B + 7 < E' := (Gran.nf_areas h).1
+  have hB := (Gran.nf_areas h).1
   exact Gran.robust_addr3 (b₁ := B + 7) (p₂ := m (B + 5) + 5 * r + 1) (t := t)
     (v := (N.region r).arcs.getD t 0) hp (fun m' hm' => by
-      have e5 : m' (B + 5) = m (B + 5) := hm' _ (by omega)
+      have e5 : m' (B + 5) = m (B + 5) := hm' _ by_o
       have := ((h m' hm').2.2.2.2.2.2.2.1 r hr).2.2.2.1 t ht
       rw [e5] at this
       exact this)
@@ -57,7 +57,7 @@ theorem endPos_props (_hGM : GoodModel M) {N : NF} {reg : ℕ → Set Point} {r 
     · exact hf.1.2
   have hh : (endPos t s).hgt = t.1 + 1 := by unfold endPos; split_ifs <;> rfl
   obtain ⟨he, h0, h1, -⟩ := id hA
-  refine ⟨he, by omega, ⟨h0, h1, ?_⟩, hA⟩
+  refine ⟨he, by_o, ⟨h0, h1, ?_⟩, hA⟩
   have := hf.2.1
   omega
 
@@ -95,9 +95,9 @@ theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWo
       exact List.getElem_mem hnA
     exact lt_of_le_of_lt (Nat.zero_le _) ((hAOK.2.2.2 r hr' _).1 hm).1
   refine ⟨hG, hWh, hDW, hCW, hMD, hxe, hx1, hxp, ?_, ?_, fun t ht => ?_, fun j hj => ?_⟩
-  · have := arcList_lt hNW hr' (t := (N.region r).arcs.length - 1) (by omega)
+  · have := arcList_lt hNW hr' (t := (N.region r).arcs.length - 1) by_o
     omega
-  · have := hareas.2.2.2.2.1 (N.arcs.length - 1) (by omega)
+  · have := hareas.2.2.2.2.1 (N.arcs.length - 1) by_o
     omega
   · have := (hNAt.2.2.2.2.2.2.2.1 r hr').2.2.2.1 t ht
     exact this
@@ -108,10 +108,10 @@ theorem scanGood_of (hGM : GoodModel M) {W : ℕ} (hG : GoodEnv P) (hWh : hostWo
     rw [hQn] at hps hpe
     have hA' := arcs_length (M := M) (Q := Qof P) (E := E) hK
     have hElen : E.length = 2 * L.length := by rw [hperm.length_eq, List.length_range]
-    have hjg : j < (BuildNF.gapStarts M (Qof P) L E).length := by rw [← hA']; exact hjA
+    have hjg : j < (BuildNF.gapStarts M (Qof P) L E).length := by rwa [← hA']
     -- the end of arc `j` is an event position
     have hev : (E.getD ((gs M (Qof P) L E j + 1) % E.length) 0) < 2 * L.length := by
-      have hi : (gs M (Qof P) L E j + 1) % E.length < E.length := Nat.mod_lt _ (by omega)
+      have hi : (gs M (Qof P) L E j + 1) % E.length < E.length := Nat.mod_lt _ by_o
       have hmem : E.getD ((gs M (Qof P) L E j + 1) % E.length) 0 ∈ E := by
         rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi, Option.getD_some]
         exact List.getElem_mem hi
@@ -148,7 +148,7 @@ theorem hex_of (hGM : GoodModel M) (hok : ChordTriplesOK M (Qof P) L)
   have hElen : E.length = 2 * L.length := by rw [hperm.length_eq, List.length_range]
   obtain ⟨-, -, -, hA⟩ := endPos_props (P := P) hGM hf hs
   obtain ⟨j, hj, hjA, hcl⟩ := exists_closedArc hM hNF hregs hne hr hf.2.2.1 hf.2.2.2 hA
-  refine ⟨j, hj, match_of_closedArc hK (by omega) hjA hcl (by simp [tA]; rfl)
+  refine ⟨j, hj, match_of_closedArc hK by_o hjA hcl (by simp [tA]; rfl)
     (by simp [tB]; rfl)⟩
 
 end

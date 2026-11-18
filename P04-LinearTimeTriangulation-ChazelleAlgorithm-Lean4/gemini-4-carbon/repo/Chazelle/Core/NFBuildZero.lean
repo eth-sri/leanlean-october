@@ -31,7 +31,7 @@ theorem Model.arcWt_self (M : Model) {lo hi : ℕ}
     · rintro ⟨hp, hcp, -⟩
       exact (hc p hp).1 hcp
     · rintro ⟨h1, h2⟩
-      refine ⟨by omega, (hc p (by omega)).2 ⟨h1, h2⟩, ?_⟩
+      refine ⟨by_o, (hc p by_o).2 ⟨h1, h2⟩, ?_⟩
       by_cases h : (p : ℝ) < x
       · exact Or.inl h
       · right; push Not at h; linarith
@@ -93,33 +93,33 @@ theorem nfAt_zero {M : Model} {Q : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : 
     (hm : ∀ f, f < 24 → m (H + f) =
       zeroW H (BuildNF.regWt M Q L E 0) f) :
     NFAt m H (BuildNF.buildNF M Q L E) := by
-  have hL' : L = [] := List.length_eq_zero_iff.1 hL
+  have hL' := List.length_eq_zero_iff.1 hL
   subst hL'
-  have hz : ∀ f, f < 24 → m (H + f) = zeroW H (BuildNF.regWt M Q [] E 0) f := hm
+  have hz := hm
   have v : ∀ f, f < 24 → m (H + f) = [0, 1, 1, H + 12, H + 12, H + 17, H + 22, H + 23, H, 0, H, 0,
       0, 0, 0, 0, 0, 1, 0, 0, 1, BuildNF.regWt M Q [] E 0, 0, 0].getD f 0 := fun f hf => by
     rw [hz f hf, zeroW_eq _ _ _ hf]
-  have e0 : m H = 0 := v 0 (by norm_num)
-  have e1 : m (H + 1) = 1 := v 1 (by norm_num)
-  have e2 : m (H + 2) = 1 := v 2 (by norm_num)
-  have e4 : m (H + 4) = H + 12 := v 4 (by norm_num)
-  have e5 : m (H + 5) = H + 17 := v 5 (by norm_num)
-  have e6 : m (H + 6) = H + 22 := v 6 (by norm_num)
-  have e7 : m (H + 7) = H + 23 := v 7 (by norm_num)
-  have e9 : m (H + 9) = 0 := v 9 (by norm_num)
-  have e11 : m (H + 11) = 0 := v 11 (by norm_num)
-  have e12 : m (H + 12) = 0 := v 12 (by norm_num)
-  have e13 : m (H + 13) = 0 := v 13 (by norm_num)
-  have e14 : m (H + 14) = 0 := v 14 (by norm_num)
-  have e15 : m (H + 15) = 0 := v 15 (by norm_num)
-  have e16 : m (H + 16) = 0 := v 16 (by norm_num)
-  have e17 : m (H + 17) = 1 := v 17 (by norm_num)
-  have e18 : m (H + 18) = 0 := v 18 (by norm_num)
-  have e19 : m (H + 19) = 0 := v 19 (by norm_num)
-  have e20 : m (H + 20) = 1 := v 20 (by norm_num)
-  have e21 : m (H + 21) = BuildNF.regWt M Q [] E 0 := v 21 (by norm_num)
-  have e22 : m (H + 22) = 0 := v 22 (by norm_num)
-  have e23 : m (H + 23) = 0 := v 23 (by norm_num)
+  have e0 : m H = 0 := v 0 by_n
+  have e1 : m (H + 1) = 1 := v 1 by_n
+  have e2 : m (H + 2) = 1 := v 2 by_n
+  have e4 : m (H + 4) = H + 12 := v 4 by_n
+  have e5 : m (H + 5) = H + 17 := v 5 by_n
+  have e6 : m (H + 6) = H + 22 := v 6 by_n
+  have e7 : m (H + 7) = H + 23 := v 7 by_n
+  have e9 : m (H + 9) = 0 := v 9 by_n
+  have e11 : m (H + 11) = 0 := v 11 by_n
+  have e12 : m (H + 12) = 0 := v 12 by_n
+  have e13 : m (H + 13) = 0 := v 13 by_n
+  have e14 : m (H + 14) = 0 := v 14 by_n
+  have e15 : m (H + 15) = 0 := v 15 by_n
+  have e16 : m (H + 16) = 0 := v 16 by_n
+  have e17 : m (H + 17) = 1 := v 17 by_n
+  have e18 : m (H + 18) = 0 := v 18 by_n
+  have e19 : m (H + 19) = 0 := v 19 by_n
+  have e20 : m (H + 20) = 1 := v 20 by_n
+  have e21 : m (H + 21) = BuildNF.regWt M Q [] E 0 := v 21 by_n
+  have e22 : m (H + 22) = 0 := v 22 by_n
+  have e23 : m (H + 23) = 0 := v 23 by_n
   have hA : BuildNF.arcList M Q [] E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
     unfold BuildNF.arcList; simp
   have hRA : BuildNF.regArcs M Q [] E 0 = [0] := by
@@ -198,7 +198,7 @@ theorem zeroStores_exec (d : Config) (hw : WordsBounded W d) {H hd : ℕ}
   all_goals first
     | (config_simp; simp (config := { failIfUnchanged := false }) only [hH]; omega)
     | skip
-  refine ⟨by omega, by omega, ?_, fun r h1 h2 => ?_, fun f hf => ?_, fun a ha => ?_⟩ <;>
+  refine ⟨by_o, by_o, ?_, fun r h1 h2 => ?_, fun f hf => ?_, fun a ha => ?_⟩ <;>
     config_simp
   · rw [hH]
   · simp (disch := omega) only [upd_other]
@@ -213,7 +213,7 @@ end exec
 theorem regWt_zero {M : Model} {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
     (hL : L.length = 0) {m : ℕ → ℕ} {D : ℕ} (hM : ModelDescAt m D (Qof P) M) :
     BuildNF.regWt M (Qof P) L E 0 = hdOf m D P.n := by
-  have hL' : L = [] := List.length_eq_zero_iff.1 hL
+  have hL' := List.length_eq_zero_iff.1 hL
   subst hL'
   have hA : BuildNF.arcList M (Qof P) [] E = [⟨0, ⟨0, 0⟩, ⟨0, 0⟩⟩] := by
     unfold BuildNF.arcList; simp
@@ -232,7 +232,7 @@ section exec
 
 variable {P : Polygon} {W : ℕ}
 
-theorem wr_zeroCase : wrM BphaseB zeroCase = true := by decide
+theorem wr_zeroCase : wrM BphaseB zeroCase = true := by_d
 
 set_option maxHeartbeats 1000000 in
 /-- **The empty chord list.** -/
@@ -244,7 +244,7 @@ theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounde
       FrameM BphaseB c c' ∧ c'.nreg 40003 = H ∧ c'.nreg 9999 = H + 24 ∧
       (∀ a, a < H → c'.nmem a = c.nmem a) ∧
       NFWithin c'.nmem H (c'.nreg 9999) (BuildNF.buildNF M (Qof P) L E) := by
-  have hHW : H ≤ W := by omega
+  have hHW : H ≤ W := by_o
   obtain ⟨hDW, hCW⟩ := locChainWF_of hwf hHW hWn
   have hD6 := hwf.1
   obtain ⟨c₁, k₁, x₁, hk₁, v1, v2, g₁, mm₁⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 44000 9999,
@@ -260,23 +260,23 @@ theorem zeroCase_exec (hWn : hostWords P.n ≤ W) (c : Config) (hw : WordsBounde
       · simp (disch := omega) only [upd_other]
   have w₁ := x₁.wb_right
   obtain ⟨c₂, k₂, x₂, hk₂, l1, l2, l3, l4, f₂⟩ := lohiS_exec (P := P) c₁ w₁ (D := D)
-    (by rw [g₁ _ (by norm_num) (by norm_num) (by norm_num), hD])
-    (by rw [mm₁]; exact twice_m_le hM hCW) (by omega) (by unfold hostWords at hWn; omega)
+    (by rw [g₁ _ by_n by_n by_n, hD])
+    (by rw [mm₁]; exact twice_m_le hM hCW) by_o (by unfold hostWords at hWn; omega)
     (by unfold hostWords at hWn; omega)
   rw [mm₁] at l1 l2 l3
   have w₂ := x₂.wb_right
   obtain ⟨c₃, k₃, x₃, hk₃, hk₃', v40003, g₃, T1, T2⟩ := zeroStores_exec (P := P) c₂ w₂ (H := H)
-    (hd := hdOf c.nmem D P.n) (by rw [f₂.1 _ (by decide), v1]) l2 hroom
+    (hd := hdOf c.nmem D P.n) (by rw [f₂.1 _ by_d, v1]) l2 hroom
   have X : Exec P W zeroCase c c₃ (k₁ + (k₂ + k₃)) := by
     rw [zeroCase_eq]; exact .seq x₁ (.seq x₂ x₃)
-  have h9999 : c₃.nreg 9999 = H + 24 := by rw [g₃ _ (by omega) (by omega), f₂.1 _ (by decide), v2]
-  refine ⟨c₃, _, X, by omega, by omega, x₃.wb_right, exec_frameM X wr_zeroCase, v40003, h9999,
+  have h9999 : c₃.nreg 9999 = H + 24 := by rw [g₃ _ by_o by_o, f₂.1 _ by_d, v2]
+  refine ⟨c₃, _, X, by_o, by_o, x₃.wb_right, exec_frameM X wr_zeroCase, v40003, h9999,
     fun a ha => by rw [T2 a (Or.inl ha), f₂.2.2.1, mm₁], ?_⟩
   intro m' hm'
   rw [h9999] at hm'
   apply nfAt_zero hL
   intro f hf
-  rw [hm' _ (by omega), T1 f hf, regWt_zero hL hM]
+  rw [hm' _ by_o, T1 f hf, regWt_zero hL hM]
 
 end exec
 

@@ -148,7 +148,7 @@ theorem isBoundedSet_image_shearPt {ε : ℝ} {S : Set Point} (h : IsBoundedSet 
   refine ⟨R + |ε| * R, ?_⟩
   rintro _ ⟨q, hq, rfl⟩
   obtain ⟨h1, h2⟩ := hR q hq
-  have hR0 : 0 ≤ R := (abs_nonneg _).trans h1
+  have hR0 := (abs_nonneg _).trans h1
   refine ⟨?_, ?_⟩
   · simp only [shearPt]
     nlinarith [abs_nonneg ε]

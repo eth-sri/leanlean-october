@@ -82,12 +82,12 @@ theorem m2c_lh_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         exact k1 _ (by simp [gMD2, gCD2, TBR, TLR, lE, sw]) (by simp [gMD2, gCD2, TBR, TLR, lH, sw])
           (by simp [gMD2, gCD2, TBR, TLR, lD, sw]))
       (fun a _ => by rw [hm1]) (by rw [hA1])
-  have hnr : c₁.nreg (sw 34) = 2 * J.right.m + 7 := m2c_nr E hI₁
+  have hnr := m2c_nr E hI₁
   refine (lhSave_irs E.hsh E.hBs E.hXl (Or.inr ⟨by simp [gMD2, sw], by simp [gMD2, sw]⟩)
     (Or.inr ⟨by simp [gCD2, sw], by simp [gCD2, sw]⟩) (Or.inl ⟨by simp [sw], by simp [sw]⟩)
     (Or.inl ⟨by simp [sw], by simp [sw]⟩) ⟨by simp [r2F, sw], by simp [r2F, sw]⟩ hI₁ E.hK E.hG
     E.hWh hM₁ E.hP E.hNF₂ E.hX E.hcap E.hOk₂ E.hsg₂ E.hdeg₂ hnr (x := ⟨c.nreg e, c.nreg h⟩) v1E v1H
-    (by rw [v1D]; exact hb) hxe hpp hcl hy hon (Gd := Gd) (by rw [v1D]; exact hGd)
+    (by rwa [v1D]) hxe hpp hcl hy hon (Gd := Gd) (by rwa [v1D])
     (by rw [hA1]; omega)).mono le_rfl ?_
   rintro c' ⟨hres, hfr⟩
   rw [v1D] at hres

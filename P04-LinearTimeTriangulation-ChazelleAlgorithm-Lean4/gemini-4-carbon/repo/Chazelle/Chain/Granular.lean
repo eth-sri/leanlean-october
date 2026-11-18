@@ -127,8 +127,8 @@ theorem card_sub_one_le_two_mul_sum_low (hG : G.IsTree) :
   classical
   by_cases hN : Fintype.card V ≤ 1
   · omega
-  have hnt : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.1 (by omega)
-  have hpos : ∀ v, 1 ≤ G.degree v := fun v =>
+  have hnt : Nontrivial V := Fintype.one_lt_card_iff_nontrivial.1 by_o
+  have hpos := fun v =>
     le_trans (hG.connected.preconnected.minDegree_pos_of_nontrivial) (G.minDegree_le_degree v)
   have hsum : ∑ v, G.degree v + 2 = 2 * Fintype.card V := by
     rw [G.sum_degrees_eq_twice_card_edges, ← hG.card_edgeFinset]

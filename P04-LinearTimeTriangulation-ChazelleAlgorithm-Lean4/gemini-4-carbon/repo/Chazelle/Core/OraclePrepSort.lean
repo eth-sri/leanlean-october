@@ -58,10 +58,10 @@ def LexJ (m₀ : ℕ → ℕ) (A₀ B1 B2 K : ℕ) (c : Config) : Prop :=
 theorem lexJ_stable (m₀ : ℕ → ℕ) (A₀ B1 B2 K : ℕ) : SortR.JStable (LexJ m₀ A₀ B1 B2 K) A₀ := by
   intro c c' ⟨h1, h2, h3, h4⟩ hr _ hm _ _
   have hb : ∀ r, 115000 ≤ r → r < 116000 → c'.nreg r = c.nreg r := fun r a b =>
-    hr r (by unfold bandOf bSort; omega) (by unfold ALLOC; omega)
-  exact ⟨by rw [hb _ (by norm_num) (by norm_num)]; exact h1,
-    by rw [hb _ (by norm_num) (by norm_num)]; exact h2,
-    by rw [hb _ (by norm_num) (by norm_num)]; exact h3, fun a ha => (hm a ha).trans (h4 a ha)⟩
+    hr r (by unfold bandOf bSort; omega) by_ao
+  exact ⟨by rwa [hb _ by_n by_n],
+    by rwa [hb _ by_n by_n],
+    by rwa [hb _ by_n by_n], fun a ha => (hm a ha).trans (h4 a ha)⟩
 
 /-- **The contract of the comparator.** -/
 theorem lexCmp_ok {P : Polygon} {W : ℕ} {m₀ : ℕ → ℕ} {A₀ B1 B2 K : ℕ}
@@ -74,30 +74,30 @@ theorem lexCmp_ok {P : Polygon} {W : ℕ} {m₀ : ℕ → ℕ} {A₀ B1 B2 K : �
       c'.nreg 30002 = (if lexLe m₀ B1 B2 K (c.nreg 30000) (c.nreg 30001) then 1 else 0) by
     obtain ⟨c', k, ex, hk, hbit⟩ := H
     have f := exec_frameB ex hwr
-    have fr := WalkKey.exec_rframe ex (B := fun _ => false) (by decide)
+    have fr := WalkKey.exec_rframe ex (B := fun _ => false) by_d
     refine ⟨c', k, ex, hk, ⟨?_, ?_, ?_, fun a ha => by rw [f.2.2.1]; exact j4 a ha⟩, hbit,
       fun r h0 h1 h2 hb => f.1 r ?_, fun r _ => fr r rfl, f.2.2.1, f.2.2.2.1, f.2.2.2.2⟩
-    · rw [f.1 _ (by decide)]; exact j1
-    · rw [f.1 _ (by decide)]; exact j2
-    · rw [f.1 _ (by decide)]; exact j3
+    · rwa [f.1 _ by_d]
+    · rwa [f.1 _ by_d]
+    · rwa [f.1 _ by_d]
     · simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]
       refine ⟨h2, fun h => ?_⟩
       rcases hb with hb | hb
       · exact hb (by rw [Finset.mem_singleton]; unfold bandOf; omega)
       · unfold ALLOC at hb; omega
-  have h1 : c.nreg 115005 = K := j3
+  have h1 := j3
   unfold lexCmp lexLe
   have hW' := hW
   by_cases ha : c.nreg 30000 < K
-  · refine spec_ifLtN_true (by rw [h1]; exact ha) ?_
+  · refine spec_ifLtN_true (by rwa [h1]) ?_
     by_cases hb : c.nreg 30001 < K
-    · refine spec_ifLtN_true (by rw [h1]; exact hb) ?_
+    · refine spec_ifLtN_true (by rwa [h1]) ?_
       set a := c.nreg 30000
       set b := c.nreg 30001
-      have ma : c.nmem (B1 + a) = m₀ (B1 + a) := j4 _ (by omega)
-      have mb : c.nmem (B1 + b) = m₀ (B1 + b) := j4 _ (by omega)
-      have ma2 : c.nmem (B2 + a) = m₀ (B2 + a) := j4 _ (by omega)
-      have mb2 : c.nmem (B2 + b) = m₀ (B2 + b) := j4 _ (by omega)
+      have ma : c.nmem (B1 + a) = m₀ (B1 + a) := j4 _ by_o
+      have mb : c.nmem (B1 + b) = m₀ (B1 + b) := j4 _ by_o
+      have ma2 : c.nmem (B2 + a) = m₀ (B2 + a) := j4 _ by_o
+      have mb2 : c.nmem (B2 + b) = m₀ (B2 + b) := j4 _ by_o
       obtain ⟨c₁, k₁, e₁, hk₁, v3, v4, r₁, m₁⟩ : ∃ c₁ k₁, Exec P W (block [.addN 115002 115000 30000,
           .loadN 115003 115002, .addN 115002 115000 30001, .loadN 115004 115002]) c c₁ k₁ ∧ k₁ = 4 ∧
           c₁.nreg 115003 = m₀ (B1 + a) ∧ c₁.nreg 115004 = m₀ (B1 + b) ∧
@@ -112,22 +112,22 @@ theorem lexCmp_ok {P : Polygon} {W : ℕ} {m₀ : ℕ → ℕ} {A₀ B1 B2 K : �
       have w₁ := e₁.wb_right
       refine spec_seq ⟨c₁, k₁, e₁, ?_⟩
       by_cases hlt : m₀ (B1 + a) < m₀ (B1 + b)
-      · refine spec_ifLtN_true (by rw [v3, v4]; exact hlt) (spec_instr (Exec.constN w₁ _ _ hW)
-          fun _ => ⟨by omega, ?_⟩)
+      · refine spec_ifLtN_true (by rwa [v3, v4]) (spec_instr (Exec.constN w₁ _ _ hW)
+          fun _ => ⟨by_o, ?_⟩)
         simp [ha, hb, hlt]
-      refine spec_ifLtN_false (by rw [v3, v4]; exact hlt) ?_
+      refine spec_ifLtN_false (by rwa [v3, v4]) ?_
       by_cases hgt : m₀ (B1 + b) < m₀ (B1 + a)
-      · refine spec_ifLtN_true (by rw [v3, v4]; exact hgt) (spec_instr (Exec.constN w₁ 30002 0
-          (Nat.zero_le _)) fun _ => ⟨by omega, ?_⟩)
+      · refine spec_ifLtN_true (by rwa [v3, v4]) (spec_instr (Exec.constN w₁ 30002 0
+          (Nat.zero_le _)) fun _ => ⟨by_o, ?_⟩)
         simp [ha, hb, hlt]; omega
-      refine spec_ifLtN_false (by rw [v3, v4]; exact hgt) ?_
-      have heq : m₀ (B1 + a) = m₀ (B1 + b) := by omega
+      refine spec_ifLtN_false (by rwa [v3, v4]) ?_
+      have heq : m₀ (B1 + a) = m₀ (B1 + b) := by_o
       obtain ⟨c₂, k₂, e₂, hk₂, u3, u4⟩ : ∃ c₂ k₂, Exec P W (block [.addN 115002 115001 30000,
           .loadN 115003 115002, .addN 115002 115001 30001, .loadN 115004 115002]) c₁ c₂ k₂ ∧
           k₂ = 4 ∧ c₂.nreg 115003 = m₀ (B2 + a) ∧ c₂.nreg 115004 = m₀ (B2 + b) := by
-        have g1 : c₁.nreg 115001 = B2 := by rw [r₁ _ (by omega)]; exact j2
-        have g2 : c₁.nreg 30000 = a := r₁ _ (by omega)
-        have g3 : c₁.nreg 30001 = b := r₁ _ (by omega)
+        have g1 : c₁.nreg 115001 = B2 := by rw [r₁ _ by_o]; exact j2
+        have g2 : c₁.nreg 30000 = a := r₁ _ by_o
+        have g3 : c₁.nreg 30001 = b := r₁ _ by_o
         exec_block
         · rw [g1, g2]; omega
         · config_simp; rw [g1, g3]; omega
@@ -137,26 +137,26 @@ theorem lexCmp_ok {P : Polygon} {W : ℕ} {m₀ : ℕ → ℕ} {A₀ B1 B2 K : �
       have w₂ := e₂.wb_right
       refine spec_seq ⟨c₂, k₂, e₂, ?_⟩
       by_cases h2 : m₀ (B2 + b) < m₀ (B2 + a)
-      · refine spec_ifLtN_true (by rw [u3, u4]; exact h2) (spec_instr (Exec.constN w₂ 30002 0
-          (Nat.zero_le _)) fun _ => ⟨by omega, ?_⟩)
+      · refine spec_ifLtN_true (by rwa [u3, u4]) (spec_instr (Exec.constN w₂ 30002 0
+          (Nat.zero_le _)) fun _ => ⟨by_o, ?_⟩)
         simp [ha, hb, heq]; omega
-      · refine spec_ifLtN_false (by rw [u3, u4]; exact h2) (spec_instr (Exec.constN w₂ _ _ hW)
-          fun _ => ⟨by omega, ?_⟩)
+      · refine spec_ifLtN_false (by rwa [u3, u4]) (spec_instr (Exec.constN w₂ _ _ hW)
+          fun _ => ⟨by_o, ?_⟩)
         simp [ha, hb, heq]; omega
-    · refine spec_ifLtN_false (by rw [h1]; exact hb) (spec_instr (Exec.constN hw _ _ hW) fun _ =>
-        ⟨by omega, ?_⟩)
+    · refine spec_ifLtN_false (by rwa [h1]) (spec_instr (Exec.constN hw _ _ hW) fun _ =>
+        ⟨by_o, ?_⟩)
       simp [ha, hb]
-  · refine spec_ifLtN_false (by rw [h1]; exact ha) ?_
+  · refine spec_ifLtN_false (by rwa [h1]) ?_
     by_cases hb : c.nreg 30001 < K
-    · refine spec_ifLtN_true (by rw [h1]; exact hb) (spec_instr (Exec.constN hw _ _ (by omega))
-        fun _ => ⟨by omega, ?_⟩)
+    · refine spec_ifLtN_true (by rwa [h1]) (spec_instr (Exec.constN hw _ _ by_o)
+        fun _ => ⟨by_o, ?_⟩)
       simp [ha, hb]
-    · refine spec_ifLtN_false (by rw [h1]; exact hb) ?_
+    · refine spec_ifLtN_false (by rwa [h1]) ?_
       by_cases hc : c.nreg 30001 < c.nreg 30000
-      · refine spec_ifLtN_true hc (spec_instr (Exec.constN hw _ _ (by omega)) fun _ =>
-          ⟨by omega, ?_⟩)
+      · refine spec_ifLtN_true hc (spec_instr (Exec.constN hw _ _ by_o) fun _ =>
+          ⟨by_o, ?_⟩)
         simp [ha, hb]; omega
-      · refine spec_ifLtN_false hc (spec_instr (Exec.constN hw _ _ hW) fun _ => ⟨by omega, ?_⟩)
+      · refine spec_ifLtN_false hc (spec_instr (Exec.constN hw _ _ hW) fun _ => ⟨by_o, ?_⟩)
         simp [ha, hb]; omega
 
 end

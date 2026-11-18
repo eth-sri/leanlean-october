@@ -59,7 +59,7 @@ theorem tie_step_facts2 (hP : J.P.Simple) {Q : Polygon}
         off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pf + 0) := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hFs := hC.hF
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
@@ -122,7 +122,7 @@ theorem propag_K2 (hP : J.P.Simple) {Q : Polygon}
       have := no_cross_off hC.hM hC.hF hF.1 hf he (Ne.symm hef) hfA hfF hNF hB' hW hg0 hgn h
         hb hlt
       linarith [this.2]
-  · exact hΦ e he hef pw tw pb' tb' hW hB' hWB hoW hoB (by linarith)
+  · exact hΦ e he hef pw tw pb' tb' hW hB' hWB hoW hoB by_l
 
 /-! ## The ends of a chain -/
 
@@ -170,19 +170,19 @@ theorem back_end2 (hP : J.P.Simple) {Q : Polygon}
     · exact hZout ⟨hpos, hlt⟩
     · apply hsa
       rcases hP0.lt_or_eq with hP0' | hP0'
-      · exact (sideInArc_rev_iff_off hg0 hgn kZ0 kZ1 kP0 kP1 kx0 kx1 (by linarith)).2
-          (Or.inr (by linarith))
+      · exact (sideInArc_rev_iff_off hg0 hgn kZ0 kZ1 kP0 kP1 kx0 kx1 by_l).2
+          (Or.inr by_l)
       · exfalso
-        have hk := off_inj hg0 hgn kP0 kP1 kZ0 kZ1 (by linarith)
+        have hk := off_inj hg0 hgn kP0 kP1 kZ0 kZ1 by_l
         exact hne (by obtain ⟨rfl, rfl⟩ := sideKey_inj hPa.2.1 hPa.2.2.1 hZa.2.1 hZa.2.2.1 hk; rfl)
   refine ⟨hLZ, ?_⟩
   have hPZ : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
-      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by linarith
+      off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by_l
   have hle : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) ≤
       off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) := by
     by_contra hc
     push Not at hc
-    exact hsa ((sideInArc_iff_off hg0 hgn kP0 kP1 kZ0 kZ1 kx0 kx1 hPZ).2 ⟨by linarith, hc⟩)
+    exact hsa ((sideInArc_iff_off hg0 hgn kP0 kP1 kZ0 kZ1 kx0 kx1 hPZ).2 ⟨by_l, hc⟩)
   rcases hle.lt_or_eq with hq | hq
   · exact hq
   · exact absurd ⟨h, hh, pz, tz, hZa, (off_inj hg0 hgn kZ0 kZ1 kx0 kx1 hq).symm⟩ hnc₀
@@ -232,7 +232,7 @@ theorem fwd_end2 (hP : J.P.Simple) {Q : Polygon}
       exact hZout ⟨hpos, hlt⟩
     refine ⟨hLZ, ?_⟩
     have hPZ : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (ph + th) <
-        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by linarith
+        off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by_l
     have hle : off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀) ≤
         off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (pz + tz) := by
       by_contra hc
@@ -260,13 +260,13 @@ theorem kind_of_S₂x (hP : J.P.Simple) {S₂ : Set (Set Point)}
   rcases hc with hc | ⟨hcF, hcA⟩
   · exact Or.inl hc
   have hC := corr_right0 J hP hS₂ hS₂f
-  have hfe : f = c := hC.nest f hf c hcF hfc
+  have hfe := hC.nest f hf c hcF hfc
   subst hfe
   rcases F₂plus_kind J hS₂ hf with ⟨c₀, hc₀, hfc₀⟩ | h
   · left
     have := s2_eq_of_sub J (S₂ := Merge.augChords J.right) subset_rfl hcA (hS₂ hc₀)
       (F₂plus_subset J hS₂ hf) subset_rfl hfc₀
-    rw [this]; exact hc₀
+    rwa [this]
   · exact Or.inr h
 
 /-- The kind of the last chord from the tracked data. -/
@@ -331,7 +331,7 @@ theorem chain_gen2 (hP : J.P.Simple) {Q : Polygon}
       ChainEnd2 J S₂ ρ θ G V₀ Φ := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hFs := hC.hF
   intro N
   induction N using Nat.strong_induction_on with
   | _ N ih =>
@@ -377,7 +377,7 @@ theorem chain_gen2 (hP : J.P.Simple) {Q : Polygon}
     have hθρ : θ * ρ * θ * ρ = 1 := by
       rcases hθ with rfl | rfl <;> rcases hρ with rfl | rfl <;> norm_num
     have hori' : 0 < θ * ρ * (Pf.1 - Bp.1) := by
-      have h1 : 0 < θ * ρ * (Pn.1 - Pf.1) := hori
+      have h1 := hori
       nlinarith [mul_pos h1 h1]
     have hΦ' := hΦ f f' pn tn ((g + d') % W.n) pb tb hf hf' hne hfA hfF hNF hA' hB hBne hn0
       hnL hin.1 hin.2 hΦf
@@ -397,7 +397,7 @@ theorem chain_gen2 (hP : J.P.Simple) {Q : Polygon}
           obtain ⟨s, hs0, hs1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hz
           simp only [Geometry.lerp_fst] at hz'
           have : θ * ρ * (Bp.1 - (Pf.1 + s * (Bp.1 - Pf.1))) =
-              (1 - s) * (θ * ρ * (Bp.1 - Pf.1)) := by ring
+              (1 - s) * (θ * ρ * (Bp.1 - Pf.1)) := by_r
           nlinarith
       exact ih _ (lt_of_lt_of_le hlt hN) f' ((g + d') % W.n) 0 pb tb V' hV' hrel' le_rfl hf'
         hA' hB (Ne.symm hBne) hS' hori' (Or.inl ⟨c', hc', hfc', hVs'⟩) hin.1 hin.2 hΦ'
@@ -410,7 +410,7 @@ theorem chain_gen2 (hP : J.P.Simple) {Q : Polygon}
     subst hdL
     have hδ : 0 < rδ J := by
       by_contra h0
-      have := hC.hδ (by omega)
+      have := hC.hδ by_o
       omega
     rcases split_step J hP hS₂ hF hδ hf hc hfc hfF hρ hG hV hS hVs with
       hRL | ⟨-, Vg, -, hRLg⟩ | ⟨hgV, f', hf', hne, hA', hS', hpart⟩
@@ -507,12 +507,12 @@ theorem bracket_core2 (hP : J.P.Simple) {Q : Polygon}
       (off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀)) := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hFs := hC.hF
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
   set o := off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) with hodef
-  set L : ℝ := ((rL1 J + rL2 J : ℕ) : ℝ) with hLdef
+  set L := ((rL1 J + rL2 J : ℕ) : ℝ) with hLdef
   set o₀ := o (p₀ + t₀) with ho₀def
   set oA := o (pa + 0) with hoAdef
   -- the backward run
@@ -545,9 +545,9 @@ theorem bracket_core2 (hP : J.P.Simple) {Q : Polygon}
       by_contra hc
       push Not at hc
       have := no_cross_off hM hFs hF.1 hhb he (Ne.symm hehb) hPa hZa hPZ hB hW hg0 hgn
-        (by linarith) hc (by linarith)
+        by_l hc by_l
       linarith [this.2]
-    have hle := hΦb e he hehb pw tw pb tb hW hB hWB (by linarith) hoB hBP
+    have hle := hΦb e he hehb pw tw pb tb hW hB hWB by_l hoB hBP
     rcases hle.lt_or_eq with h | h
     · exact h
     · exfalso
@@ -573,14 +573,14 @@ theorem bracket_core2 (hP : J.P.Simple) {Q : Polygon}
     · rcases hoZ with h | h <;> linarith
   have h1 := hΦf e he hehf pw tw pb tb hW hB hWB hoW hoB
   rcases hfe with hz | ⟨hLz, hz⟩
-  · have hB0' : 0 < o (pb + tb) := lt_of_le_of_ne (off_nonneg kB0 hgn) (Ne.symm hB0)
+  · have hB0' := lt_of_le_of_ne (off_nonneg kB0 hgn) (Ne.symm hB0)
     have := no_cross_off hM hFs hF.1 hhf he (Ne.symm hehf) hZa' hQa (Ne.symm hQZ) hB hW hg0 hgn
-      (by rw [hz]; exact hQ0) (by rw [hz]; exact hB0') h1
+      (by rwa [hz]) (by rw [hz]; exact hB0') h1
     linarith [this.2]
   · rcases hoZ with h | h
     · linarith
     · have := no_cross_off hM hFs hF.1 hhf he (Ne.symm hehf) hQa hZa' hQZ hW hB hg0 hgn
-        (by linarith) (by linarith) h
+        by_l by_l h
       linarith [this.1]
 
 /-- **The bracket lemma.**  Let `G` be a region of `F₂⁺` without a label, on the side `ρ` of a
@@ -608,12 +608,12 @@ theorem bracket2 (hP : J.P.Simple) {Q : Polygon}
       (off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) (p₀ + t₀)) := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
-  have hcx : c ∈ S₂x J S₂ := subset_S₂x J S₂ hc
+  have hFs := hC.hF
+  have hcx := subset_S₂x J S₂ hc
   rcases local_step2 J hP hS₂ hF hd ht0 ht1 hsec he hcx hec heA hρ hG hV hGs hVs with
     hRL | ⟨rfl, f', hf', hne, hA', hS', hpart⟩
   · exact absurd hRL (hU V)
-  have hd0 : d ≠ 0 := (hsec rfl).1
+  have hd0 := (hsec rfl).1
   set W := (chainModel J.whole).W with hWdef
   set g := 6 + tpos J.whole J.m₁ with hgdef
   set A := (g + d) % W.n with hAdef
@@ -631,14 +631,14 @@ theorem bracket2 (hP : J.P.Simple) {Q : Polygon}
     rcases hθ with rfl | rfl <;> rcases hρ with rfl | rfl <;> norm_num
   have hori' : 0 < -θ * ρ * ((sidePt W A 0).1 - (sidePt W pb' tb').1) := by
     have e1 : -θ * ρ * ((sidePt W A 0).1 - (sidePt W pb' tb').1) =
-        θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1) := by ring
+        θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1) := by_r
     rw [e1]
     have hprod : 0 < (θ * ρ * ((sidePt W A 0).1 - (sidePt W pb tb).1)) *
         (θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1)) := by
       have e2 : (θ * ρ * ((sidePt W A 0).1 - (sidePt W pb tb).1)) *
           (θ * ρ * ((sidePt W pb' tb').1 - (sidePt W A 0).1)) =
           (θ * ρ * (θ * ρ)) * (-(((sidePt W pb tb).1 - (sidePt W A 0).1) *
-            ((sidePt W pb' tb').1 - (sidePt W A 0).1))) := by ring
+            ((sidePt W pb' tb').1 - (sidePt W A 0).1))) := by_r
       rw [e2, hθρ, one_mul]
       linarith
     exact pos_of_mul_pos_right hprod hori.le
@@ -660,10 +660,10 @@ theorem bracket2 (hP : J.P.Simple) {Q : Polygon}
     · exact Or.inr ⟨hk, h pb' tb' hB' hBne'⟩
   rcases hθ with rfl | rfl
   · exact bracket_core2 J hP hS₂ hF hρ hG hU hf' he hne hA0 hAL hA' heA hB' hB
-      (Ne.symm hBne') (Ne.symm hBne) hS' hGs (by linarith) hori hV hV (Or.inl rfl) hTf'
+      (Ne.symm hBne') (Ne.symm hBne) hS' hGs by_l hori hV hV (Or.inl rfl) hTf'
       (Or.inl ⟨c, hcx, hec, hVs⟩) hp₀ ht₀ hnc₀ hfG₀ ho₀
   · exact bracket_core2 J hP hS₂ hF hρ hG hU he hf' (Ne.symm hne) hA0 hAL heA hA' hB hB'
-      (Ne.symm hBne) (Ne.symm hBne') hGs hS' hori (by linarith) hV hV (Or.inl rfl)
+      (Ne.symm hBne) (Ne.symm hBne') hGs hS' hori by_l hV hV (Or.inl rfl)
       (Or.inl ⟨c, hcx, hec, hVs⟩) hTf' hp₀ ht₀ hnc₀ hfG₀ ho₀
 
 

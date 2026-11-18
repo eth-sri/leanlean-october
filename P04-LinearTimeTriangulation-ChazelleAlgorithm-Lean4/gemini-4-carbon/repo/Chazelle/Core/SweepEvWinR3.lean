@@ -96,8 +96,8 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   set M := chainModel J.left with hMd
   set x₀ := M.key (Qof P) ⟨c.nreg wE1, c.nreg kH⟩ with hx₀
   have hK := E.hK.fix hI
-  have k0 : c.nreg K0 = 0 := hK.1
-  have hP₁ : J.left.P.Simple := E.hP
+  have k0 := hK.1
+  have hP₁ := E.hP
   have hNF := E.hNF₁
   have hQn : (Qof P).n = P.n := shear_n _ _
   unfold bodyS
@@ -105,7 +105,7 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   swap
   · -- the empty family
     have hemp : N₁.F M (Qof P) = ∅ := by rw [win_F_empty_iff]; rw [k0, hch] at hne; omega
-    refine (IRS.ifF hne (win_irs_const' hI wsX (by omega))).mono (by norm_num) ?_
+    refine (IRS.ifF hne (win_irs_const' hI wsX by_o)).mono by_n ?_
     rintro c' ⟨v, o, m⟩
     refine ⟨c.nreg wO, ho, ?_, fun h => absurd hemp h.ne_empty, fun _ => v,
       fun r _ hr => o r (ne_of_wr hr wr_wX), m⟩
@@ -121,26 +121,26 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     obtain ⟨-, ⟨hpe, hee, -⟩⟩ := arc_end_facts hP₁ hNF hj
     exact ⟨hpe, hee, end6 hP₁ hNF hFne hj⟩
   have hNT := win_nt E hI
-  have hNA : NFAt c.nmem (c.nreg (sw 3)) N₁ := hNT.nfAt
+  have hNA := hNT.nfAt
   have hA0 := arcs_pos hP₁ hNF
   obtain ⟨b7, b4A, b6A⟩ := NFLoc.nfWithin_bounds hNT hNF hA0
   obtain ⟨-, -, hTB, -⟩ := win_tab E hI
   have hAW : c.nreg ALLOC ≤ W := hI.hw.1 _
   have hAc := hI.hA
-  have hTBW : c.nreg TBR ≤ W := by omega
+  have hTBW : c.nreg TBR ≤ W := by_o
   set o := c.nreg wO with hod
-  have hsj : OracleQ.sj N₁ o < N₁.arcs.length := NFLoc.seq_lt hNF ho
+  have hsj := NFLoc.seq_lt hNF ho
   obtain ⟨hr1, hr2, hr3, hr4⟩ := har
   obtain ⟨hpe, hee, he6⟩ := hpp _ hsj
   have hxr := key₁_range (Q := Qof P) he1 hpx
   -- 1. compare with the end of the located arc
-  refine IRS.seq (K₂ := 11082) (cmpS_irs E hI he1 (by rw [hr3]; exact hee) hpx
-    (by rw [hr3, hr4]; exact hpe) h6x (by rw [hr3, hr4]; exact he6) (by omega)) ?_ |>.mono
-    (by norm_num) (fun _ h => h)
+  refine IRS.seq (K₂ := 11082) (cmpS_irs E hI he1 (by rwa [hr3]) hpx
+    (by rwa [hr3, hr4]) h6x (by rwa [hr3, hr4]) by_o) ?_ |>.mono
+    by_n (fun _ h => h)
   rintro c₁ hI₁ - - ⟨b1, b2, k1, m1, a1⟩
   have k1' : ∀ r, ¬ WR r → bandOf r ∉ oracleBands → c₁.nreg r = c.nreg r := fun r hr hb =>
-    k1 r hb (ne_of_wr hr (wr_sw (i := 3010) (by norm_num) (by norm_num)))
-      (ne_of_wr hr (wr_sw (i := 3011) (by norm_num) (by norm_num)))
+    k1 r hb (ne_of_wr hr (wr_sw (i := 3010) by_n by_n))
+      (ne_of_wr hr (wr_sw (i := 3011) by_n by_n))
   have e1 : ∀ q, q = wO ∨ q = wA ∨ q = wR ∨ q = wEE ∨ q = wEH ∨ q = wE1 ∨ q = kH ∨ q = wD ∨
       q = sw 3 → c₁.nreg q = c.nreg q := by
     intro q hq
@@ -153,12 +153,12 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   rw [hEo] at b1 b2
   -- 2. the successor if the key is the end
   have hK₁ := E.hK.fix hI₁
-  refine IRS.seq (K₂ := 11050) (eqS_irs hI₁ E.hK hNF (by rw [m1, e1 _ (by simp)]; exact hNA)
-    (by rw [e1 _ (by simp)]; omega) (by rw [m1, e1 _ (by simp)]; omega)
-    (by rw [m1, e1 _ (by simp)]; omega) (by rw [e1 _ (by simp)]; exact ho) b1 b2
-    (by rw [e1 _ (by simp)]; exact ⟨by rw [e1 _ (by simp)]; exact hr1,
-      by rw [e1 _ (by simp)]; exact hr2, by rw [e1 _ (by simp)]; exact hr3,
-      by rw [e1 _ (by simp)]; exact hr4⟩)) ?_ |>.mono (by norm_num) (fun _ h => h)
+  refine IRS.seq (K₂ := 11050) (eqS_irs hI₁ E.hK hNF (by rwa [m1, e1 _ by_s])
+    (by rw [e1 _ by_s]; omega) (by rw [m1, e1 _ by_s]; omega)
+    (by rw [m1, e1 _ by_s]; omega) (by rwa [e1 _ by_s]) b1 b2
+    (by rw [e1 _ by_s]; exact ⟨by rwa [e1 _ by_s],
+      by rwa [e1 _ by_s], by rwa [e1 _ by_s],
+      by rwa [e1 _ by_s]⟩)) ?_ |>.mono by_n (fun _ h => h)
   rintro c₂ hI₂ - - ⟨q1, q2, har2, k2, m2⟩
   set o' := c₂.nreg wO with ho'd
   have nA : ∀ q, (q = wE1 ∨ q = kH ∨ q = wD ∨ q = sw 3) → ¬ ArcW q := by
@@ -166,7 +166,7 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       simp only [ArcW, wT, wA, wR, wEE, wEH, wL, wO, wE1, kH, wD, sw] <;> omega
   have e2 : ∀ q, (q = wE1 ∨ q = kH ∨ q = wD ∨ q = sw 3) → c₂.nreg q = c.nreg q := fun q hq => by
     rw [k2 q (nA q hq), e1 q (by rcases hq with h | h | h | h <;> simp [h])]
-  have eo1 : c₁.nreg wO = o := e1 _ (by simp)
+  have eo1 : c₁.nreg wO = o := e1 _ by_s
   rw [eo1] at q1 q2
   have hU : ∀ y : WPos, y.edge < M.W.n → ProperPos M (Qof P) P.n y →
       U₁ P J y = U₁ P J ⟨c.nreg wE1, c.nreg kH⟩ → M.key (Qof P) y = x₀ := by
@@ -189,16 +189,16 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       exact ⟨OracleQ.succP_lt ho, Or.inr (arc_of_loc' hP₁ hNF ho hFne heq)⟩
   obtain ⟨ho', hin⟩ := hsel
   obtain ⟨hr1', hr2', hr3', hr4'⟩ := har2
-  have hsj' : OracleQ.sj N₁ o' < N₁.arcs.length := NFLoc.seq_lt hNF ho'
+  have hsj' := NFLoc.seq_lt hNF ho'
   obtain ⟨hpe', hee', he6'⟩ := hpp _ hsj'
   have a2 : c₂.nreg ALLOC = c.nreg ALLOC := by
     rw [k2 _ (by simp only [ArcW, wT, wA, wR, wEE, wEH, wL, wO, ALLOC, sw]; omega), a1]
-  have eE1 := e2 wE1 (by simp)
-  have ekH := e2 kH (by simp)
+  have eE1 := e2 wE1 by_s
+  have ekH := e2 kH by_s
   -- 3. compare with the end of the arc after the key
-  refine IRS.seq (K₂ := 32) (cmpS_irs E hI₂ (by rw [eE1]; exact he1) (by rw [hr3']; exact hee')
-    (by rw [eE1, ekH]; exact hpx) (by rw [hr3', hr4']; exact hpe') (by rw [eE1, ekH]; exact h6x)
-    (by rw [hr3', hr4']; exact he6') (by omega)) ?_ |>.mono (by norm_num) (fun _ h => h)
+  refine IRS.seq (K₂ := 32) (cmpS_irs E hI₂ (by rwa [eE1]) (by rw [hr3']; exact hee')
+    (by rwa [eE1, ekH]) (by rw [hr3', hr4']; exact hpe') (by rwa [eE1, ekH])
+    (by rw [hr3', hr4']; exact he6') by_o) ?_ |>.mono by_n (fun _ h => h)
   rintro c₃ hI₃ - - ⟨b1', b2', k3, m3, a3⟩
   have hEo' : (⟨c₂.nreg wEE, c₂.nreg wEH⟩ : WPos) = (N₁.arc (OracleQ.sj N₁ o')).e := by
     rw [hr3', hr4']
@@ -210,30 +210,30 @@ theorem bodyS_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
         simp only [sw, wEE, wEH, wD, wC, wA, wR] <;> omega
     exact k3 q (not_oracle_sw hq'.1 hq'.2.1) hq'.2.2.1 hq'.2.2.2
   -- 4. the decision
-  refine (decS_irs hI₃ E.hK E.hM b2' (by rw [e3 wEE (by simp), hr3']; exact hee') E.hWn).mono
-    (by norm_num) ?_
+  refine (decS_irs hI₃ E.hK E.hM b2' (by rw [e3 wEE by_s, hr3']; exact hee') E.hWn).mono
+    by_n ?_
   rintro c₄ ⟨hdec, k4, m4⟩
-  rw [e3 wD (by simp), e2 wD (by simp), e3 wEE (by simp), hr3', e3 wEH (by simp), hr4'] at hdec
+  rw [e3 wD by_s, e2 wD by_s, e3 wEE by_s, hr3', e3 wEH by_s, hr4'] at hdec
   have nD : ∀ q, (q = wA ∨ q = wR ∨ q = wEE ∨ q = wEH) → ¬ DecW q := by
     intro q hq; rcases hq with h | h | h | h <;> subst h <;>
       simp only [DecW, wX, wE, wH, wDE, wPs, wA, wR, wEE, wEH, sw] <;> omega
   refine ⟨o', ho', ⟨?_, ?_, ?_, ?_⟩, fun _ => ⟨hin, hdec⟩, fun h => absurd h hFne.ne_empty,
     fun r hr hw => ?_, by rw [m4, m3, m2, m1]⟩
-  · rw [k4 _ (nD _ (by simp)), e3 _ (by simp), hr1']
-  · rw [k4 _ (nD _ (by simp)), e3 _ (by simp), hr2']
-  · rw [k4 _ (nD _ (by simp)), e3 _ (by simp), hr3']
-  · rw [k4 _ (nD _ (by simp)), e3 _ (by simp), hr4']
+  · rw [k4 _ (nD _ by_s), e3 _ by_s, hr1']
+  · rw [k4 _ (nD _ by_s), e3 _ by_s, hr2']
+  · rw [k4 _ (nD _ by_s), e3 _ by_s, hr3']
+  · rw [k4 _ (nD _ by_s), e3 _ by_s, hr4']
   · have hnD : ¬ DecW r := by
       rintro (h | h | h | h | h) <;> subst h <;> apply hw
       · exact wr_wX
       · exact wr_wE
       · exact wr_wH
-      · exact wr_sw (by norm_num) (by norm_num)
-      · exact wr_sw (by norm_num) (by norm_num)
+      · exact wr_sw by_n by_n
+      · exact wr_sw by_n by_n
     have hnA : ¬ ArcW r := by
-      rintro (h | h | h | h | h | h | h) <;> subst h <;> exact hw (wr_sw (by norm_num) (by norm_num))
-    rw [k4 r hnD, k3 r hr (ne_of_wr hw (wr_sw (i := 3010) (by norm_num) (by norm_num)))
-      (ne_of_wr hw (wr_sw (i := 3011) (by norm_num) (by norm_num))), k2 r hnA, k1' r hw hr]
+      rintro (h | h | h | h | h | h | h) <;> subst h <;> exact hw (wr_sw by_n by_n)
+    rw [k4 r hnD, k3 r hr (ne_of_wr hw (wr_sw (i := 3010) by_n by_n))
+      (ne_of_wr hw (wr_sw (i := 3011) by_n by_n)), k2 r hnA, k1' r hw hr]
 
 
 end

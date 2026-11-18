@@ -71,10 +71,10 @@ theorem rotN_spec (h : SortedDarts M G K s) {t : ℕ} (ht : t < M) :
   split_ifs with hn
   · obtain ⟨h1, h2⟩ := hn
     refine ⟨h.lt _ h1, h2, Or.inl ⟨?_, fun f hf hg hk => ?_⟩⟩
-    · have := h.sorted t (t + 1) (by omega) h1
+    · have := h.sorted t (t + 1) by_o h1
       unfold PLt at this; simp only at this; omega
     · obtain ⟨t', ht', rfl⟩ := h.surj f hf
-      have hlt : t < t' := pos_lt_of h ht ht' (Or.inr ⟨hg.symm, hk⟩)
+      have hlt := pos_lt_of h ht ht' (Or.inr ⟨hg.symm, hk⟩)
       rcases eq_or_lt_of_le (show t + 1 ≤ t' by omega) with e | e
       · subst e; exact le_rfl
       · have := h.sorted (t + 1) t' e ht'
@@ -83,10 +83,10 @@ theorem rotN_spec (h : SortedDarts M G K s) {t : ℕ} (ht : t < M) :
     refine ⟨h.lt _ f1, f2, Or.inr ⟨fun f hf hg => ?_, fun f hf hg => ?_⟩⟩
     · obtain ⟨t', ht', rfl⟩ := h.surj f hf
       by_contra hc
-      have hlt : t < t' := pos_lt_of h ht ht' (Or.inr ⟨hg.symm, by omega⟩)
+      have hlt : t < t' := pos_lt_of h ht ht' (Or.inr ⟨hg.symm, by_o⟩)
       apply hn
-      refine ⟨by omega, ?_⟩
-      have a := h.sorted t (t + 1) (by omega) (by omega)
+      refine ⟨by_o, ?_⟩
+      have a := h.sorted t (t + 1) by_o by_o
       rcases eq_or_lt_of_le (show t + 1 ≤ t' by omega) with e | e
       · subst e; exact hg
       · have b := h.sorted (t + 1) t' e ht'

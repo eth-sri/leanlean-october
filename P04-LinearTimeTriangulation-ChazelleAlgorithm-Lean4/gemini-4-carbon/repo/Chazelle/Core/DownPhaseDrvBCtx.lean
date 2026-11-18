@@ -69,11 +69,11 @@ theorem orient_rotate {P : Polygon} (hP : P.Simple) (s : ℕ) :
   have hn := Chazelle.Jordan.simple_three_le hP
   have hs := Existence.simple_rotate P s hP
   have h0 : 0 < (P.rotate s).n := by rw [Existence.n_rotate]; omega
-  have h1 : (0 + 1) % (P.rotate s).n < P.n := by rw [Existence.n_rotate]; exact Nat.mod_lt _ (by omega)
+  have h1 : (0 + 1) % (P.rotate s).n < P.n := by rw [Existence.n_rotate]; exact Nat.mod_lt _ by_o
   refine Mountain.orient_eq_of_filled_subset hP hs (i := s % P.n) (j := 0)
-    (Nat.mod_lt _ (by omega)) h0 ?_ ?_ (by rw [Existence.filled_rotate])
-  · rw [Existence.vtx_rotate _ _ (by omega), Nat.add_zero]
-  · rw [Existence.vtx_rotate_succ _ _ (by omega)]; simp
+    (Nat.mod_lt _ by_o) h0 ?_ ?_ (by rw [Existence.filled_rotate])
+  · rw [Existence.vtx_rotate _ _ by_o, Nat.add_zero]
+  · rw [Existence.vtx_rotate_succ _ _ by_o]; simp
 
 /-! ## The walk-order list of a host -/
 
@@ -115,16 +115,16 @@ theorem regOK_host {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ → 
   obtain ⟨i0, g, hrep, hlen, hgK, hgc, hgi, hwf⟩ := DownMath.walk_rep X hli
   set WP := (walkItems li Q.n N r).flatMap (DownMath.wpts li Q.n) with hWP
   have hQ := X.hQ
-  have hN : IsNF (interiorModel Q) Q N := DownMath.isNF_build hQ X.hL X.hperm X.hsort
+  have hN := DownMath.isNF_build hQ X.hL X.hperm X.hsort
   have hFam : (interiorModel Q).ChordFamily Q S := hN.1
-  have hnc : N.nChords = L.length := DownMath.nChords_build hQ X.hL X.hperm X.hsort
+  have hnc := DownMath.nChords_build hQ X.hL X.hperm X.hsort
   have hne : S.Nonempty :=
-    ⟨_, (DownMath.chordPos_attach hN (show 0 < N.nChords by rw [hnc]; exact X.hK) (Or.inl rfl)).1⟩
-  have hR : reg r ∈ (interiorModel Q).regions S := X.hregs.1.1 r X.hr
+    ⟨_, (DownMath.chordPos_attach hN (by rw [hnc]; exact X.hK) (Or.inl rfl)).1⟩
+  have hR := X.hregs.1.1 r X.hr
   set K := DownHost.nk (interiorModel Q) S (reg r) with hKdef
   have hrep' : ∀ j, j < K → DownMath.RepPt li Q S (reg r) ((i0 + j) % K) (WP.getD j (.vtx 0)) :=
-    fun j hj => hrep j (by rw [hlen]; exact hj)
-  have hrot : (⟨WP.map (SymPt.eval Q)⟩ : Polygon) = (DownHost.hostPoly Q S (reg r)).rotate i0 :=
+    fun j hj => hrep j (by rwa [hlen])
+  have hrot :=
     DownMath.poly_of_rep hQ hFam hne hR hli X.hdh hlen hrep'
   have hwl : wlist li ((regHost li Q.n N r).pts Q.n) = WP := by
     rw [DownMath.regHost_pts]
@@ -148,16 +148,14 @@ theorem regOK_host {L : List (ℕ × ℕ × ℕ)} {E : List ℕ} {reg : ℕ → 
       rcases Chazelle.Chain.regionsIn_eq_or_disjoint hR hR' with h | h
       · exact h
       · obtain ⟨z, hz⟩ := hnon
-        exact absurd (h.le_bot ⟨hcR hz, hcR' hz⟩) (by simp)
+        exact absurd (h.le_bot ⟨hcR hz, hcR' hz⟩) by_s
     subst hRR
-    have hn0 : 0 < (DownHost.hostPoly Q S (reg r)).n := by omega
+    have hn0 : 0 < (DownHost.hostPoly Q S (reg r)).n := by_o
     obtain ⟨k, hk, hkj⟩ := Existence.exists_rot_index hn0 i0 j hj
-    refine ⟨k, by rw [Existence.n_rotate]; exact hk, ?_, ?_⟩
+    refine ⟨k, by rwa [Existence.n_rotate], ?_, ?_⟩
     · rw [Existence.vtx_rotate _ _ hk, hkj, hjv]
     · unfold DirInterior
-      rw [Existence.vtx_rotate _ _ hk, hkj, Existence.filled_rotate, Existence.boundary_rotate]
-      exact hdirj
-
+      rwa [Existence.vtx_rotate _ _ hk, hkj, Existence.filled_rotate, Existence.boundary_rotate]
 /-! ## The whole walk (`K = 0`) -/
 
 /-- The interior of a simple polygon is the only region of the empty family. -/
@@ -167,7 +165,7 @@ theorem region_empty (hQ : Q.Simple) :
   obtain ⟨z, hz⟩ := hM.nonempty
   have hfree : freeIn (interiorModel Q).D (∅ : Set (Set Point)) = (interiorModel Q).D := by
     ext x; simp [freeIn]
-  refine ⟨z, by rw [hfree]; exact hz, ?_⟩
+  refine ⟨z, by rwa [hfree], ?_⟩
   rw [hfree]
   exact (hM.preconn.connectedComponentIn hz).symm
 
@@ -178,12 +176,10 @@ theorem regOK_empty (hQ : Q.Simple) {li : Bool} (hli : li = true ↔ Mountain.Le
   refine ⟨hs, ho, by rw [hb, hf]; rfl, by rw [hb]; exact subset_union_left, region_empty hQ, ?_⟩
   intro i σ hi hσ hdir _ _
   have hk := DownMath.ivB_lt li hi
-  refine ⟨ivB li Q.n i, by rw [DownMath.walk_n]; exact hk, ?_, ?_⟩
+  refine ⟨ivB li Q.n i, by rwa [DownMath.walk_n], ?_, ?_⟩
   · rw [DownMath.walk_vtx hli hk, ivB_ivB li hi]
   · unfold DirInterior
-    rw [DownMath.walk_vtx hli hk, ivB_ivB li hi, hf, hb]
-    exact hdir
-
+    rwa [DownMath.walk_vtx hli hk, ivB_ivB li hi, hf, hb]
 /-- The walk-order list of the host `[.run 0 (n - 1)]` is the interior walk. -/
 theorem polyOf_wlist_run (hQ : Q.Simple) {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q) :
     polyOf Q (wlist li (Host.pts Q.n [HostItem.run 0 (Q.n - 1)])) = interiorWalk Q := by
@@ -202,8 +198,8 @@ theorem polyOf_wlist_run (hQ : Q.Simple) {li : Bool} (hli : li = true ↔ Mounta
   · rw [polyOf_n, hlen, DownMath.walk_n]
   · intro k hk
     rw [polyOf_n, hlen] at hk
-    rw [polyOf_vtx Q (by rw [hlen]; exact hk), DownMath.walk_vtx hli hk,
-      wlist_getD li (by rw [hpts, List.length_map, List.length_range]; exact hk), hpts]
+    rw [polyOf_vtx Q (by rwa [hlen]), DownMath.walk_vtx hli hk,
+      wlist_getD li (by rwa [hpts, List.length_map, List.length_range]), hpts]
     simp only [List.length_map, List.length_range]
     rw [List.getD_eq_getElem?_getD, List.getElem?_map,
       List.getElem?_range (by split_ifs <;> omega)]

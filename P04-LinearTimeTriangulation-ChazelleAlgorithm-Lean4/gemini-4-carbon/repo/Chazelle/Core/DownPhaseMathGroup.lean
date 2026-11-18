@@ -50,17 +50,17 @@ theorem arcGap_prev_of_end {S : Set (Set Point)} {R : Set Point} (hQ : Q.Simple)
     (hR : R ∈ (interiorModel Q).regions S) {i : ℕ} (hi : i < nk (interiorModel Q) S R) {a : ℝ}
     (harc : (interiorModel Q).IsArc S R a (hk (interiorModel Q) S R i)) :
     ArcGap (interiorModel Q) S R (prevIdx (nk (interiorModel Q) S R) i) := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have h3 := three_le_nk hQ hFam hne hR
   obtain ⟨i_l, d, hD⟩ := arc_keys hM hFam.2.1 hFam.1 hne hR harc
-  have hidx := hk_inj hM hFam.2.1 hFam.1 (Nat.mod_lt _ (by omega)) hi hD.hr
+  have hidx := hk_inj hM hFam.2.1 hFam.1 (Nat.mod_lt _ by_o) hi hD.hr
   have hd0 := hD.hd0
   have e : prevIdx (nk (interiorModel Q) S R) i = (i_l + (d - 1)) % nk (interiorModel Q) S R := by
     have h1 : i = ((i_l + (d - 1)) % nk (interiorModel Q) S R + 1) % nk (interiorModel Q) S R := by
       rw [Nat.mod_add_mod, show i_l + (d - 1) + 1 = i_l + d by omega]; exact hidx.symm
-    rw [h1]; exact prevIdx_succ (Nat.mod_lt _ (by omega))
+    rw [h1]; exact prevIdx_succ (Nat.mod_lt _ by_o)
   rw [e]
-  exact arcData_gap hQ hFam hne hR harc hD (by omega)
+  exact arcData_gap hQ hFam hne hR harc hD by_o
 
 /-- **The symbolic point of a chord position represents its host key**, when `isEnd` marks
 exactly the vertex keys after an arc gap. -/

@@ -74,7 +74,7 @@ theorem chordRec_up_le (h : Input M Q L E) {i : ℕ} (hi : i < L.length) :
 /-- Every chord occurs in the word. -/
 theorem mem_cw (h : Input M Q L E) {x : ℕ} (hx : x < L.length) : x ∈ cw E := by
   unfold cw
-  exact mem_map.2 ⟨2 * x, h.perm.mem_iff.2 (mem_range.2 (by omega)), by omega⟩
+  exact mem_map.2 ⟨2 * x, h.perm.mem_iff.2 (mem_range.2 by_o), by_o⟩
 
 /-! ## The machine functions -/
 
@@ -158,10 +158,10 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
   have hlenA : (buildNF M Q L E).arcs.length = (gapStarts M Q L E).length := by
     show (arcList M Q L E).length = _
     rw [arcList_pos hK, length_map]
-  have h0 := hH 0 (by norm_num); have h1 := hH 1 (by norm_num); have h2 := hH 2 (by norm_num)
-  have h3 := hH 3 (by norm_num); have h4 := hH 4 (by norm_num); have h5 := hH 5 (by norm_num)
-  have h6 := hH 6 (by norm_num); have h7 := hH 7 (by norm_num); have h9 := hH 9 (by norm_num)
-  have h11 := hH 11 (by norm_num)
+  have h0 := hH 0 by_n; have h1 := hH 1 by_n; have h2 := hH 2 by_n
+  have h3 := hH 3 by_n; have h4 := hH 4 by_n; have h5 := hH 5 by_n
+  have h6 := hH 6 by_n; have h7 := hH 7 by_n; have h9 := hH 9 by_n
+  have h11 := hH 11 by_n
   simp only [hdrW, Nat.add_zero] at h0 h1 h2 h3 h4 h5 h6 h7 h9 h11
   norm_num at h0 h1 h2 h3 h4 h5 h6 h7 h9 h11
   refine ⟨?_, ?_, ?_, ?_, ?_, fun i hi => ?_, fun j hj => ?_, fun r hr => ?_, fun j hj => ?_,
@@ -174,9 +174,9 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
   · -- chords
     have hi' : i < L.length := by simpa [buildNF] using hi
     rw [h3, Input.chord_eq hi']
-    have c0 := hC i hi' 0 (by norm_num); have c1 := hC i hi' 1 (by norm_num)
-    have c2 := hC i hi' 2 (by norm_num); have c3 := hC i hi' 3 (by norm_num)
-    have c4 := hC i hi' 4 (by norm_num)
+    have c0 := hC i hi' 0 by_n; have c1 := hC i hi' 1 by_n
+    have c2 := hC i hi' 2 by_n; have c3 := hC i hi' 3 by_n
+    have c4 := hC i hi' 4 by_n
     simp only [cf, Nat.add_zero] at c0 c1 c2 c3 c4
     norm_num at c0 c1 c2 c3 c4
     exact ⟨c0, c1, c2, c3, c4⟩
@@ -185,9 +185,9 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
     have ha : (buildNF M Q L E).arc j = arcRec M Q L E ((gapStarts M Q L E).getD j 0) := by
       unfold NF.arc; exact arcList_getD hK hj
     rw [h4, ha]
-    have c0 := hA j hj 0 (by norm_num); have c1 := hA j hj 1 (by norm_num)
-    have c2 := hA j hj 2 (by norm_num); have c3 := hA j hj 3 (by norm_num)
-    have c4 := hA j hj 4 (by norm_num)
+    have c0 := hA j hj 0 by_n; have c1 := hA j hj 1 by_n
+    have c2 := hA j hj 2 by_n; have c3 := hA j hj 3 by_n
+    have c4 := hA j hj 4 by_n
     simp only [af, Nat.add_zero] at c0 c1 c2 c3 c4
     norm_num at c0 c1 c2 c3 c4
     exact ⟨c0, c1, c2, c3, c4⟩
@@ -195,10 +195,10 @@ theorem nfAt_of_tables (h : Input M Q L E) (hK : L.length ≠ 0) {m : ℕ → �
     have hr' : r < L.length + 1 := by simpa [buildNF] using hr
     rw [h5, h.region_eq hr']
     simp only
-    have c0 := hR r hr' 0 (by norm_num); have c1 := hR r hr' 1 (by norm_num)
-    have c2 := hR r hr' 2 (by norm_num); have c3 := hR r hr' 3 (by norm_num)
-    have c4 := hR r hr' 4 (by norm_num)
-    rw [BuildRam.rtv_eq _ _ _ _ _ (by norm_num)] at c0 c1 c2 c3 c4
+    have c0 := hR r hr' 0 by_n; have c1 := hR r hr' 1 by_n
+    have c2 := hR r hr' 2 by_n; have c3 := hR r hr' 3 by_n
+    have c4 := hR r hr' 4 by_n
+    rw [BuildRam.rtv_eq _ _ _ _ _ by_n] at c0 c1 c2 c3 c4
     norm_num at c0 c1 c2 c3 c4
     refine ⟨?_, ?_, ?_, fun t ht => ?_, fun t ht => ?_⟩
     · rw [c0, regArcs_eq hK]; rfl

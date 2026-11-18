@@ -58,7 +58,7 @@ theorem xeGlue : XEGlue := by
   intro P W c L E C NR hG hWh hb1 hbit hLne hok hperm hsort hdeg hNW hr hHost hHB hCP hCs hCm
     hMDwf hMDa hCDa hNRW hNR hroom
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
-  have hdh : DistinctHeights (Qof P) := (goodShear_epsOf hG.2).2.1
+  have hdh := (goodShear_epsOf hG.2).2.1
   have hn : (Qof P).n = P.n := shear_n _ _
   have hn3 : 3 ≤ (Qof P).n := by have := hQ.1; omega
   have hWn : 256 * P.n + 16 ≤ W := hWh
@@ -79,8 +79,8 @@ theorem xeGlue : XEGlue := by
   obtain ⟨b1, -, b3, b4, b5, -⟩ := Restore.nf_bounds hNW
   obtain ⟨c1, c2, -, -, -, -⟩ := Restore.nf_bounds hNRW
   unfold xKappa at hroom
-  have hA0W : c.nreg ALLOC ≤ W := by omega
-  have hK : c.nmem (c.nreg 217006) = NR.chords.length := hNRat.1
+  have hA0W : c.nreg ALLOC ≤ W := by_o
+  have hK := hNRat.1
   -- the model descriptor is a chain descriptor
   have hMD0 : c.nmem (c.nreg 217005) = 0 := by
     rcases hMDa.holds with ⟨h0, -⟩ | ⟨-, -, hI⟩
@@ -103,26 +103,26 @@ theorem xeGlue : XEGlue := by
   have hnRA1 : 1 ≤ ((buildNF (interiorModel (Qof P)) (Qof P) L E).region (c.nreg 217001)).arcs.length := by
     by_contra h0
     have hnil := ga_regHost_nil (decide (c.nreg 217002 = 1)) (Qof P).n
-      (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001) (by omega)
+      (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001) by_o
     rw [hnil] at hmp
     simp [Host.pts] at hmp
   have hnRA32 := regHost_length_ge (decide (c.nreg 217002 = 1)) (Qof P).n
     (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)
-  have hr' : c.nreg 217001 < (buildNF (interiorModel (Qof P)) (Qof P) L E).regions.length := hr
+  have hr' := hr
   have hreg4 := b4 _ hr
   have hRA := b5 _ hr _ (show ((buildNF (interiorModel (Qof P)) (Qof P) L E).region
     (c.nreg 217001)).arcs.length - 1 < _ by omega)
   have hA1 : 1 ≤ (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length := by
-    have := hras 0 (by omega); omega
+    have := hras 0 by_o; omega
   have hAB := b3 _ (show (buildNF (interiorModel (Qof P)) (Qof P) L E).arcs.length - 1 < _ by omega)
-  refine ⟨⟨hG, hli, hdh, by omega, by rw [hn]; exact hWn, rfl, by show _ + 5 * NR.chords.length ≤ W; omega,
+  refine ⟨⟨hG, hli, hdh, by_o, by rwa [hn], rfl, by show _ + 5 * NR.chords.length ≤ W; omega,
     fun mm hmm => hHost mm hmm, hwf, hlen64, hHB, hm1, hmp, C.topIdx_le, ?_, ?_, ?_, rfl,
     fun j hj => hgood j hj, hinc, hnext, hfree, ?_, ?_, fun t ht => hras t ht, ?_, ?_, ?_, ?_, ?_,
     rfl, rfl⟩, ?_⟩
   · -- the chord records of `N_R`
     intro mm hmm i hi
     have h := ((hNRW mm hmm).2.2.2.2.2.1 i hi)
-    rw [hmm (c.nreg 217006 + 3) (by omega)] at h
+    rw [hmm (c.nreg 217006 + 3) by_o] at h
     exact ⟨h.1, h.2.1, h.2.2.1⟩
   · intro i hi; exact c2 i hi
   · intro i hi
@@ -130,17 +130,17 @@ theorem xeGlue : XEGlue := by
     have h1 := hl.1
     have h2 := hrr.1
     rw [C.sideWalk_n] at h1 h2
-    exact ⟨by omega, by show _ ≤ 2 * C.m + 6; omega, by show _ ≤ 2 * C.m + 6; omega⟩
+    exact ⟨by_o, by show _ ≤ 2 * C.m + 6; omega, by show _ ≤ 2 * C.m + 6; omega⟩
   · -- the arc records of `N`
     intro mm hmm j hj
     have h := ((hNW mm hmm).2.2.2.2.2.2.1 j hj)
-    rw [hmm (c.nreg 217000 + 4) (by omega)] at h
+    rw [hmm (c.nreg 217000 + 4) by_o] at h
     exact ⟨h.2.1, h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
   · -- the arc list of the region
     intro mm hmm t ht
     have h := ((hNW mm hmm).2.2.2.2.2.2.2.1 _ hr').2.2.2.1 t ht
-    rw [hmm (c.nreg 217000 + 5) (by omega), hmm (c.nreg 217000 + 7) (by omega),
-      hmm (c.nmem (c.nreg 217000 + 5) + 5 * c.nreg 217001 + 1) (by omega)] at h
+    rw [hmm (c.nreg 217000 + 5) by_o, hmm (c.nreg 217000 + 7) by_o,
+      hmm (c.nmem (c.nreg 217000 + 5) + 5 * c.nreg 217001 + 1) by_o] at h
     exact h
   · intro j hj; exact b3 j hj
   · show (c.nmem (c.nreg 217000 + 7) + c.nmem (c.nmem (c.nreg 217000 + 5) + 5 * c.nreg 217001 + 1)) + ((buildNF (interiorModel (Qof P)) (Qof P) L E).region (c.nreg 217001)).arcs.length ≤ c.nreg ALLOC; omega
@@ -158,16 +158,15 @@ theorem xeGlue : XEGlue := by
           (buildNF (interiorModel (Qof P)) (Qof P) L E) (c.nreg 217001)) (decide (c.nreg 217002 = 1))
           C.m C.topIdx C.sideBeta (NR.chord i).h p) := fun p hp => by
       refine ⟨hp, by simp [xPos], ?_⟩
-      show pEdge _ _ _ < _
-      refine pEdge_lt _ (hpt_lt hwf (by omega) ?_)
+      refine pEdge_lt _ (hpt_lt hwf by_o ?_)
       have := tK_le C.sideBeta hm1 (T := C.topIdx) p
       omega
-    exact ⟨hgp _ hpl, hgp _ hpr, ga_onArc hli hdh (by omega) hgood hras (hgp _ hpl) hj1 ho1,
-      ga_onArc hli hdh (by omega) hgood hras (hgp _ hpr) hj2 ho2⟩
+    exact ⟨hgp _ hpl, hgp _ hpr, ga_onArc hli hdh by_o hgood hras (hgp _ hpl) hj1 ho1,
+      ga_onArc hli hdh by_o hgood hras (hgp _ hpr) hj2 ho2⟩
   · -- the set-up facts
     refine ⟨hCD.2.2.2.1, hCD.2.2.2.2.1, hCD.2.2.2.2.2, (hHost.holds).1, hK, hNat.2.1,
-      ((hNat.2.2.2.2.2.2.2.1 _ hr').1), by omega, by have := hMDwf.1; omega, ?_, by omega,
-      by omega, by omega, by omega, by show (c.nmem (c.nreg 217000 + 7) + c.nmem (c.nmem (c.nreg 217000 + 5) + 5 * c.nreg 217001 + 1)) ≤ W; omega, by omega⟩
+      ((hNat.2.2.2.2.2.2.2.1 _ hr').1), by_o, by have := hMDwf.1; omega, ?_, by_o,
+      by_o, by_o, by_o, by show (c.nmem (c.nreg 217000 + 7) + c.nmem (c.nmem (c.nreg 217000 + 5) + 5 * c.nreg 217001 + 1)) ≤ W; omega, by_o⟩
     omega
 
 end

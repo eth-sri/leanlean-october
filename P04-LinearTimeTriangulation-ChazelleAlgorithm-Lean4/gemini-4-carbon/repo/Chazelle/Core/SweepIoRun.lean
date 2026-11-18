@@ -78,27 +78,27 @@ def IScr (r : ℕ) : Prop := (240700 ≤ r ∧ r < 250000) ∨ bandOf r ∈ orac
 theorem band_sw {r : ℕ} (h1 : 240000 ≤ r) (h2 : r < 250000) : bandOf r = bSweep := by
   unfold bandOf bSweep; omega
 
-theorem bSweep_mem : bSweep ∈ ioBands := by decide
+theorem bSweep_mem : bSweep ∈ ioBands := by_d
 
 theorem oracle_sub : oracleBands ⊆ ioBands := Finset.subset_union_right
 
-theorem alloc_not_io : bandOf ALLOC ∉ ioBands := by decide
+theorem alloc_not_io : bandOf ALLOC ∉ ioBands := by_d
 
 theorem fix_not_scr {q : ℕ} (h : IFix q) : ¬ IScr q := by
   rintro (h' | h')
   · unfold IFix at h; omega
   · unfold IFix at h
-    rw [band_sw (by omega) (by omega)] at h'
-    exact absurd h' (by decide)
+    rw [band_sw by_o by_o] at h'
+    exact absurd h' by_d
 
 theorem alloc_not_scr : ¬ IScr ALLOC := by
   rintro (h | h)
   · unfold ALLOC at h; omega
-  · exact absurd h (by decide)
+  · exact absurd h by_d
 
 theorem scr_band {r : ℕ} (h : IScr r) : bandOf r ∈ ioBands := by
   rcases h with h | h
-  · rw [band_sw (by omega) h.2]; exact bSweep_mem
+  · rw [band_sw by_o h.2]; exact bSweep_mem
   · exact oracle_sub h
 
 /-! ## The invariant and the run steps -/
@@ -119,14 +119,14 @@ def IFr (c c' : Config) (k : ℕ) : Prop :=
     c.nreg ALLOC ≤ c'.nreg ALLOC ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k
 
 theorem IFr.refl (c : Config) (k : ℕ) : IFr c c k :=
-  ⟨fun _ _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by omega⟩
+  ⟨fun _ _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by_o⟩
 
 theorem IFr.trans {c c₁ c₂ : Config} {k₁ k₂ : ℕ} (h₁ : IFr c c₁ k₁) (h₂ : IFr c₁ c₂ k₂) :
     IFr c c₂ (k₁ + k₂) := by
   obtain ⟨r₁, rr₁, o₁, a₁, b₁⟩ := h₁
   obtain ⟨r₂, rr₂, o₂, a₂, b₂⟩ := h₂
   exact ⟨fun r hr hra => (r₂ r hr hra).trans (r₁ r hr hra), fun r hr => (rr₂ r hr).trans (rr₁ r hr),
-    o₂.trans o₁, a₁.trans a₂, by omega⟩
+    o₂.trans o₁, a₁.trans a₂, by_o⟩
 
 theorem IFr.mono {c c' : Config} {k k' : ℕ} (h : IFr c c' k) (hk : k ≤ k') : IFr c c' k' :=
   ⟨h.1, h.2.1, h.2.2.1, h.2.2.2.1, by have := h.2.2.2.2; omega⟩
@@ -146,7 +146,7 @@ variable {P : Polygon} {W : ℕ} {c₀ c : Config}
 theorem IRS.mono {s : Stmt} {K K' : ℕ} {Q Q' : Config → Prop} (h : IRS P W c₀ s c K Q)
     (hK : K ≤ K') (hQ : ∀ c', Q c' → Q' c') : IRS P W c₀ s c K' Q' := by
   obtain ⟨c', k, ex, hk, hI, hfr, hq⟩ := h
-  exact ⟨c', k, ex, by omega, hI, hfr, hQ c' hq⟩
+  exact ⟨c', k, ex, by_o, hI, hfr, hQ c' hq⟩
 
 theorem IRS.seq {s t : Stmt} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config → Prop} (h₁ : IRS P W c₀ s c K₁ Q₁)
     (h₂ : ∀ c₁, IInv W c₀ c₁ → c.nreg ALLOC ≤ c₁.nreg ALLOC → c₁.nreg ALLOC ≤ c.nreg ALLOC + K₁ →
@@ -154,19 +154,19 @@ theorem IRS.seq {s t : Stmt} {K₁ K₂ : ℕ} {Q₁ Q₂ : Config → Prop} (h�
   obtain ⟨c₁, k₁, e₁, hk₁, hI₁, hfr₁, hq₁⟩ := h₁
   obtain ⟨c', k₂, e₂, hk₂, hI', hfr₂, hq⟩ := h₂ c₁ hI₁ hfr₁.2.2.2.1
     (by have := hfr₁.2.2.2.2; omega) hq₁
-  exact ⟨c', k₁ + k₂, .seq e₁ e₂, by omega, hI', hfr₁.trans hfr₂, hq⟩
+  exact ⟨c', k₁ + k₂, .seq e₁ e₂, by_o, hI', hfr₁.trans hfr₂, hq⟩
 
 theorem IRS.ifT {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     (ht : c.nreg a < c.nreg b) (h : IRS P W c₀ t c K Q) :
     IRS P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hfr, hq⟩ := h
-  exact ⟨c', k + 1, .ifLtN_true ht ex, by omega, hI, hfr.mono (by omega), hq⟩
+  exact ⟨c', k + 1, .ifLtN_true ht ex, by_o, hI, hfr.mono by_o, hq⟩
 
 theorem IRS.ifF {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     (ht : ¬ c.nreg a < c.nreg b) (h : IRS P W c₀ e c K Q) :
     IRS P W c₀ (.ifLtN a b t e) c (K + 2) Q := by
   obtain ⟨c', k, ex, hk, hI, hfr, hq⟩ := h
-  exact ⟨c', k + 2, .ifLtN_false ht ex, by omega, hI, hfr.mono (by omega), hq⟩
+  exact ⟨c', k + 2, .ifLtN_false ht ex, by_o, hI, hfr.mono by_o, hq⟩
 
 theorem IRS.ite {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
     (ht : c.nreg a < c.nreg b → IRS P W c₀ t c K Q)
@@ -178,18 +178,18 @@ theorem IRS.ite {a b : ℕ} {t e : Stmt} {K : ℕ} {Q : Config → Prop}
 
 theorem IRS.skip {K : ℕ} {Q : Config → Prop} (hI : IInv W c₀ c) (hq : Q c) :
     IRS P W c₀ .skip c K Q :=
-  ⟨c, 0, .skip hI.hw, by omega, hI, IFr.refl c 0, hq⟩
+  ⟨c, 0, .skip hI.hw, by_o, hI, IFr.refl c 0, hq⟩
 
 /-- A register-only change on scratch registers keeps the invariant. -/
 theorem IInv.regs {c' : Config} {k : ℕ} (hI : IInv W c₀ c) (hw : WordsBounded W c')
     (hr : ∀ r, ¬ IScr r → c'.nreg r = c.nreg r)
     (hrr : c'.rreg = c.rreg) (hm : c'.nmem = c.nmem) (hrm : c'.rmem = c.rmem)
     (ho : c'.output = c.output) : IInv W c₀ c' ∧ IFr c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC alloc_not_scr
+  have hA := hr ALLOC alloc_not_scr
   refine ⟨⟨hw, fun q hq => (hr q (fix_not_scr hq)).trans (hI.hin q hq), by rw [hA]; exact hI.hA,
     fun a ha => by rw [hm]; exact hI.hm a ha, fun a ha => by rw [hrm]; exact hI.hrm a ha⟩,
-    fun r hr' _ => hr r (fun h => hr' (scr_band h)), fun r _ => by rw [hrr], ho, by omega,
-    by omega⟩
+    fun r hr' _ => hr r (fun h => hr' (scr_band h)), fun r _ => by rw [hrr], ho, by_o,
+    by_o⟩
 
 /-- **One register instruction** on a scratch register. -/
 theorem IRS.reg {i : Instr} {r v : ℕ} (hI : IInv W c₀ c) (hr : IScr r)
@@ -252,7 +252,7 @@ theorem IRS.store {a v : ℕ} (hI : IInv W c₀ c) (ha : c₀.nreg ALLOC ≤ c.n
   refine ⟨_, 1, ex, le_rfl, ⟨ex.wb_right, hI.hin, hI.hA, fun b hb => ?_, hI.hrm⟩,
     ⟨fun _ _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, Nat.le_add_right _ _⟩, rfl⟩
   simp only [upd]
-  rw [ite_eq_right (by omega)]
+  rw [ite_eq_right by_o]
   exact hI.hm b hb
 
 /-- **A loop**: an invariant `I` and a measure `μ`; each iteration costs at most `Kb` and lowers
@@ -267,22 +267,22 @@ theorem IRS.while {a b : ℕ} {body : Stmt} (I : Config → Prop) (μ : Config �
   induction hn : μ c using Nat.strong_induction_on generalizing c with
   | _ n ih =>
     by_cases ht : c.nreg a < c.nreg b
-    · have hμ : 0 < μ c := hpos c hc ht
+    · have hμ := hpos c hc ht
       obtain ⟨c₁, k₁, e₁, hk₁, hI₁, hfr₁, hc₁, hμ₁⟩ := hbody c hI hc ht (by
-        have : Kb ≤ (Kb + 2) * μ c := by nlinarith
+        have : Kb ≤ (Kb + 2) * μ c := by_nl
         omega)
       have hA₁ := hfr₁.2.2.2.2
       have hroom₁ : c₁.nreg ALLOC + (Kb + 2) * μ c₁ ≤ W := by
         have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * μ c := Nat.mul_le_mul_left _ hμ₁
         rw [Nat.mul_add, Nat.mul_one] at this
         omega
-      obtain ⟨c', k₂, e₂, hk₂, hI', hfr₂, hq⟩ := ih (μ c₁) (by omega) hI₁ hc₁ hroom₁ rfl
+      obtain ⟨c', k₂, e₂, hk₂, hI', hfr₂, hq⟩ := ih (μ c₁) by_o hI₁ hc₁ hroom₁ rfl
       refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht e₁ e₂, ?_, hI',
-        (hfr₁.trans hfr₂).mono (by omega), hq⟩
-      have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ (by omega)
+        (hfr₁.trans hfr₂).mono by_o, hq⟩
+      have : (Kb + 2) * (μ c₁ + 1) ≤ (Kb + 2) * n := Nat.mul_le_mul_left _ by_o
       rw [Nat.mul_add, Nat.mul_one] at this
       omega
-    · exact ⟨c, 2, .whileLtN_false ht hI.hw, by omega, hI, IFr.refl c 2, hc, ht⟩
+    · exact ⟨c, 2, .whileLtN_false ht hI.hw, by_o, hI, IFr.refl c 2, hc, ht⟩
 
 /-- **A call of a statement with a `Meets` contract in the oracle bands**: the fixed registers
 are kept by the frame. -/
@@ -297,7 +297,7 @@ theorem IRS.callO {s : Stmt} {B' : Finset ℕ} {Pre : Polygon → ℕ → Config
   have hkeep : ∀ r, bandOf r ∉ oracleBands → r ≠ ALLOC → c'.nreg r = c.nreg r :=
     fun r hr hra => hfr.1 r (fun h => hr (hB h)) hra
   have hfix : ∀ q, IFix q → c'.nreg q = c.nreg q := fun q hq => hkeep q (by
-    unfold IFix at hq; rw [band_sw (by omega) (by omega)]; decide) (by unfold IFix at hq; unfold ALLOC; omega)
+    unfold IFix at hq; rw [band_sw by_o by_o]; decide) (by unfold IFix at hq; unfold ALLOC; omega)
   exact ⟨c', k, ex, hk, ⟨ex.wb_right, fun q hq => (hfix q hq).trans (hI.hin q hq),
     le_trans hI.hA hfr.2.2.2.2.2.1,
     fun a ha => (hfr.2.2.1 a (lt_of_lt_of_le ha hI.hA)).trans (hI.hm a ha),
@@ -317,6 +317,18 @@ theorem IRS.ofExec {s : Stmt} {c' : Config} {k K : ℕ} {Q : Config → Prop} (h
       fun a ha => (hm a ha).trans (hI.hm a ha), fun a ha => by rw [hrm]; exact hI.hrm a ha⟩,
     ⟨fun r hr' hra => hr r (fun h => hr' (scr_band h)) hra, fun r _ => by rw [hrr], ho, hA1, hA2⟩,
     hq⟩
+
+theorem IRS.le {s : Stmt} {K K' : ℕ} {Q : Config → Prop} (h : IRS P W c₀ s c K Q)
+    (hK : K ≤ K' := by omega) : IRS P W c₀ s c K' Q :=
+  h.mono hK fun _ x => x
+
+macro "i_keep" L:ident : tactic =>
+  `(tactic| refine regB_other _ _ _ fun i hi => by
+      simp only [$L:ident, List.mem_cons, List.not_mem_nil, or_false] at hi
+      (repeat' rcases hi with rfl | hi) <;> try cases hi <;> simp only [dstI] <;> omega)
+
+macro "i_ok" "[" hs:term,* "]" : tactic =>
+  `(tactic| (simp only [okB, okI, regI, upd, IScr, $[$hs:term],*]; norm_num; (repeat' apply And.intro) <;> omega))
 
 end
 

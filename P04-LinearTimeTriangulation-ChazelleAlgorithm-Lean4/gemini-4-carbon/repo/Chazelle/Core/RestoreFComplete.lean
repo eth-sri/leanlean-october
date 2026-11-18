@@ -29,9 +29,9 @@ theorem arc_index (hE : FGood E c₀) {reg : ℕ → Set Point}
     ∃ t, t < (E.N.region E.r).arcs.length ∧ E.M.key (Qof E.P) (arcOf E.N E.r t).s = a ∧
       E.M.key (Qof E.P) (arcOf E.N E.r t).e = b := by
   obtain ⟨-, -, hArcs, -⟩ := hregs
-  have hr : E.r < E.N.nRegions := hE.hr
+  have hr := hE.hr
   obtain ⟨j, hj, hjr, hs, he⟩ := hArcs.2.2.1 E.r hr a b h
-  have hjm : j ∈ (E.N.region E.r).arcs := (hArcs.2.2.2 E.r hr j).2 ⟨hj, hjr⟩
+  have hjm := (hArcs.2.2.2 E.r hr j).2 ⟨hj, hjr⟩
   obtain ⟨t, ht, htj⟩ := List.mem_iff_getElem.1 hjm
   refine ⟨t, ht, ?_, ?_⟩ <;>
   · unfold arcOf
@@ -48,7 +48,7 @@ theorem closedArc_unwrap {n a b x : ℝ} (ha : 0 ≤ a ∧ a < n) (hb : 0 ≤ b 
     split_ifs at * with h1
     · exact lt_of_le_of_ne h1 hab
     · linarith [ha.2, hb.1]
-  have hc := cyc_unwrap ha ha hb hx (by rw [unwrapK_self]; exact hub)
+  have hc := cyc_unwrap ha ha hb hx (by rwa [unwrapK_self])
   rw [unwrapK_self] at hc
   constructor
   · rintro (h | rfl | rfl)
@@ -96,9 +96,9 @@ theorem not_countOK_same_arc {M : Model} {S : Set (Set Point)} {R : Set Point} {
       have : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
       constructor <;> linarith [(Nat.cast_nonneg p : (0 : ℝ) ≤ p)]
     have hk := (cyc_unwrap ha hk₁ hk₂ hpt h2).1 hin
-    have hub : a < unwrapK M.W.n a b := by linarith
+    have hub : a < unwrapK M.W.n a b := by_l
     have : sideInArc a b ((p : ℝ) + t) :=
-      (cyc_unwrap ha ha hb hpt (by rw [unwrapK_self]; exact hub)).2
+      (cyc_unwrap ha ha hb hpt (by rwa [unwrapK_self])).2
         ⟨by rw [unwrapK_self]; linarith [hk.1], by linarith [hk.2]⟩
     exact hnc _ this ⟨c, hc.1, p, t, hat, rfl⟩
   rintro ⟨c1, c2⟩
@@ -135,13 +135,13 @@ theorem key_attach_ne {W : Polygon} {p p' : ℕ} {t t' : ℝ} (ht : 0 ≤ t ∧ 
     (hne : sidePt W p t ≠ sidePt W p' t') : (p : ℝ) + t ≠ p' + t' := by
   intro h
   have hp : p = p' := by
-    have h1 : (p : ℝ) < p' + 1 := by linarith
-    have h2 : (p' : ℝ) < p + 1 := by linarith
+    have h1 : (p : ℝ) < p' + 1 := by_l
+    have h2 : (p' : ℝ) < p + 1 := by_l
     have h1' : p < p' + 1 := by exact_mod_cast h1
     have h2' : p' < p + 1 := by exact_mod_cast h2
     omega
   subst hp
-  have : t = t' := by linarith
+  have : t = t' := by_l
   exact hne (by rw [this])
 
 /-- **The setup of completeness.** -/
@@ -153,7 +153,7 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
   obtain ⟨hFam, -, -, -⟩ := hE.hNF
   have hregs' := hregs
   obtain ⟨hRC, -, hArcs, hRg⟩ := hregs'
-  have hr : E.r < E.N.nRegions := hE.hr
+  have hr := hE.hr
   have hU := hRC.1 E.r hr
   set S := E.N.F E.M (Qof E.P)
   -- the region has an exit chord
@@ -169,7 +169,7 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
       have hci : E.N.chord i = r' := by
         unfold NF.chord; rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hi,
           Option.getD_some, hir]
-      have := ((hRg E.r hr).1 i).2 ⟨hi, by rw [hci]; exact htc⟩
+      have := ((hRg E.r hr).1 i).2 ⟨hi, by rwa [hci]⟩
       rw [h0] at this; exact List.not_mem_nil this
     omega
   have hne : S.Nonempty := by
@@ -198,10 +198,10 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
     obtain ⟨hp, ht0, ht1, -⟩ := hOA
     have : (po : ℝ) + 1 ≤ E.M.W.n := by exact_mod_cast hp
     constructor <;> linarith [(Nat.cast_nonneg po : (0 : ℝ) ≤ po)]
-  have hkne : (X.edge : ℝ) + 0 ≠ (po : ℝ) + tq :=
+  have hkne :=
     key_attach_ne ⟨le_rfl, one_pos⟩ ⟨hOA.2.1, hOA.2.2.1⟩ hne'
   refine ⟨X, σ, T, po, tq, ti, tj, ⟨hch, hgc, hXA, hOA, hne', fun C hC => ?_, hti, htj,
-    by unfold aK bK; rw [hai, hbi]; exact hX₁, by unfold aK bK; rw [haj, hbj]; exact hX₂, ?_,
+    by unfold aK bK; rwa [hai, hbi], by unfold aK bK; rwa [haj, hbj], ?_,
     hcnt⟩⟩
   · have hXX : X = ⟨X.edge, 0⟩ := by cases X; simp only at hX0 ⊢; rw [hX0]
     have h1 := hpr C hC
@@ -214,7 +214,7 @@ theorem good_set (hE : FGood E c₀) {reg : ℕ → Set Point}
     rw [hai, haj] at hab
     subst hab
     -- the two arcs are one record
-    have hr' : E.r < E.N.nRegions := hr
+    have hr' := hr
     have mem : ∀ t, t < (E.N.region E.r).arcs.length →
         (E.N.region E.r).arcs.getD t 0 < E.N.arcs.length ∧
           (E.N.arc ((E.N.region E.r).arcs.getD t 0)).reg = E.r := fun t ht => by

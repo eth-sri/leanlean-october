@@ -35,7 +35,7 @@ theorem KPath.mem {n : ℝ} : ∀ {V : ℝ} {ps : List Pc} {V' : ℝ}, KPath M Q
     rcases List.mem_cons.1 hpc with rfl | hpc
     · exact ⟨V, V₁, le_rfl, h2, h4.le, h1, h3⟩
     · obtain ⟨U, U₁, a1, a2, a3, a4, a5⟩ := KPath.mem h4 pc hpc
-      exact ⟨U, U₁, by linarith, a2, a3, a4, a5⟩
+      exact ⟨U, U₁, by_l, a2, a3, a4, a5⟩
 
 /-- **A kind-1 piece is no longer than the weight of the subarc.** -/
 theorem kind1_pw_le {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPos}
@@ -64,16 +64,14 @@ theorem kind1_pw_le {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} 
   rw [ke] at hj
   replace hi : U = (pc.s.edge : ℝ) + i * (n : ℝ) := hi
   replace hj : U₁ = (pc.s.edge : ℝ) + ((2 ^ g : ℕ) : ℝ) + j * (n : ℝ) := hj
-  replace hAU : a ≤ U := hAU
-  replace hUT : U₁ ≤ T := hUT
   set p₀ := pc.s.edge with hp₀
   have hpn : (p₀ : ℝ) + ((2 ^ g : ℕ) : ℝ) + 1 ≤ n := by
-    exact_mod_cast (show p₀ + 2 ^ g + 1 ≤ n by omega)
-  have hg0 : (0 : ℝ) < ((2 ^ g : ℕ) : ℝ) := by positivity
+    exact_mod_cast (by omega)
+  have hg0 : (0 : ℝ) < ((2 ^ g : ℕ) : ℝ) := by_p
   -- the two unwrappings agree
   have hji : j = i := by
-    have d1 : (0 : ℝ) < ((2 ^ g : ℕ) : ℝ) + ((j : ℝ) - i) * n := by linarith
-    have d2 : ((2 ^ g : ℕ) : ℝ) + ((j : ℝ) - i) * n ≤ n := by linarith
+    have d1 : (0 : ℝ) < ((2 ^ g : ℕ) : ℝ) + ((j : ℝ) - i) * n := by_l
+    have d2 : ((2 ^ g : ℕ) : ℝ) + ((j : ℝ) - i) * n ≤ n := by_l
     have ec : ((j - i : ℤ) : ℝ) = (j : ℝ) - i := by push_cast; ring
     have a1 : ((j - i : ℤ) : ℝ) > -1 := by
       rw [ec]; by_contra hc; push Not at hc; nlinarith
@@ -87,8 +85,8 @@ theorem kind1_pw_le {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} 
   have hi0 : 0 ≤ i := by
     have : (-1 : ℝ) < i := by
       by_contra hc; push Not at hc
-      have : (i : ℝ) * n ≤ -n := by nlinarith
-      have hp0 : (p₀ : ℝ) + 1 ≤ n := by linarith
+      have : (i : ℝ) * n ≤ -n := by_nl
+      have hp0 : (p₀ : ℝ) + 1 ≤ n := by_l
       linarith [hs.1]
     have : (-1 : ℤ) < i := by exact_mod_cast this
     omega
@@ -97,11 +95,11 @@ theorem kind1_pw_le {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} 
   have hv2 : ((p₀ + i' * n : ℕ) : ℝ) + ((2 ^ g : ℕ) : ℝ) = U₁ := by rw [hj]; push_cast; ring
   rw [hpw]
   obtain ⟨k, hk'⟩ := T_unw a b' (n : ℝ)
-  refine arcWt_ge C (A := a) (T := T) hs he ⟨0, by simp⟩ ⟨k, hk'⟩ hTA
-    (v := p₀ + i' * n) (L := 2 ^ g) ?_ ?_ (by rw [hv]; exact hAU) ?_
-  · rw [Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt (by omega)]; omega
-  · rw [Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt (by omega)]; omega
-  · rw [hv2]; exact hUT
+  refine arcWt_ge C (A := a) (T := T) hs he ⟨0, by_s⟩ ⟨k, hk'⟩ hTA
+    (v := p₀ + i' * n) (L := 2 ^ g) ?_ ?_ (by rwa [hv]) ?_
+  · rw [Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt by_o]; omega
+  · rw [Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt by_o]; omega
+  · rwa [hv2]
 
 /-- **A kind-1 piece of a subarc of weight `≤ γ`** has at most `γ` edges. -/
 theorem kind1_pw_le_γ {P : Polygon} {C : Chain} {m₀ : ℕ → ℕ} {h γ : ℕ} {s e : WPos}
@@ -119,25 +117,25 @@ theorem query_cost_le {κ gg M γ : ℕ} (hg : gg ≤ cutGran γ) (hM : M ≤ γ
       κ * (rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3) + 1) := by
   have e : (gg : ℝ) ^ ((1 : ℝ) / 3) * ((M : ℝ) + 1) ^ ((2 : ℝ) / 3) =
       ((gg : ℝ) * ((M : ℝ) + 1) ^ 2) ^ ((1 : ℝ) / 3) := by
-    rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_natCast,
-      ← Real.rpow_mul (by positivity)]
+    rw [Real.mul_rpow by_p by_p, ← Real.rpow_natCast,
+      ← Real.rpow_mul by_p]
     norm_num
   have h1 : ((gg : ℝ) * ((M : ℝ) + 1) ^ 2) ^ ((1 : ℝ) / 3) ≤
       (((cutGran γ * (γ + 1) ^ 2 : ℕ) : ℝ)) ^ ((1 : ℝ) / 3) := by
-    apply Real.rpow_le_rpow (by positivity) _ (by norm_num)
+    apply Real.rpow_le_rpow by_p _ by_n
     push_cast
     have a : (gg : ℝ) ≤ cutGran γ := by exact_mod_cast hg
     have b0 : (M : ℝ) ≤ γ := by exact_mod_cast hM
-    have b : (M : ℝ) + 1 ≤ γ + 1 := by linarith
+    have b : (M : ℝ) + 1 ≤ γ + 1 := by_l
     have b2 : ((M : ℝ) + 1) ^ 2 ≤ ((γ : ℝ) + 1) ^ 2 := by
-      apply pow_le_pow_left₀ (by positivity) b
-    exact mul_le_mul a b2 (by positivity) (by positivity)
+      apply pow_le_pow_left₀ by_p b
+    exact mul_le_mul a b2 by_p by_p
   have h2 : (((cutGran γ * (γ + 1) ^ 2 : ℕ) : ℝ)) ^ ((1 : ℝ) / 3) ≤
       (rpowCeil (cutGran γ * (γ + 1) ^ 2) ((1 : ℝ) / 3) : ℝ) := Nat.le_ceil _
   rw [e]
   apply Nat.ceil_le.2
   push_cast
-  exact mul_le_mul_of_nonneg_left (by linarith [h1.trans h2]) (by positivity)
+  exact mul_le_mul_of_nonneg_left (by linarith [h1.trans h2]) by_p
 
 /-- **The query facts of a kind-1 piece**, read from the grade table in any memory `m'` agreeing
 with `m` below the bound `A` of the table: its Lemma 3.6 structure, the chain of the structure
@@ -152,20 +150,20 @@ theorem kind1_query {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
   obtain ⟨hwf', Hs', Cα', N', hC', -, -, hset, -, -⟩ := kind1_facts hok hk hR hm' (le_refl A)
   obtain ⟨-, -, -, -, -, -, h1⟩ := hok
   obtain ⟨g, b, hg1, hgΛ, hb, hE, hpw, hx0, hbn, hgran, hs0, he0, h6, hee, hem, hdir, hW⟩ := h1 hk
-  have hR' : Robust A m' fun m'' => GradeRaw O P m'' h A := hR.transport hm'
+  have hR' := hR.transport hm'
   have hΛ : g < m' h := by
     have := (grade_low hR).1
-    rw [hm' h (by omega)]; exact hgΛ
+    rw [hm' h by_o]; exact hgΛ
   obtain ⟨Hs, Cα, N, hC, -, -, -, -, -, hmC, -, -, hAt, hS0, -, hS2⟩ := hR'.holds.2.2.2 g b hΛ hb
   obtain ⟨h2, hr, hlt⟩ := grade_entry hR hgΛ hb
   have hent : m' (m' (h + 2) + g) + 3 * b = pc.entry := by
-    have e1 : m' (h + 2) = m (h + 2) := hm' _ h2
-    have e2 : m' (m (h + 2) + g) = m (m (h + 2) + g) := hm' _ hr
+    have e1 := hm' _ h2
+    have e2 := hm' _ hr
     rw [e1, e2, hE]; rfl
   rw [hent] at hC hAt hS0 hS2
   have hlen : Cα.m = 2 ^ g := by rw [hmC]; exact gradeLen_full hbn
-  refine ⟨by rw [hE]; exact hlt, hAt, ⟨Hs', Cα', by rw [hS0]; exact hC', ?_⟩,
-    by rw [hS2]; exact hgran, ?_⟩
+  refine ⟨by rwa [hE], hAt, ⟨Hs', Cα', by rw [hS0]; exact hC', ?_⟩,
+    by rwa [hS2], ?_⟩
   · rw [← hset, show pc.s = ⟨pc.s.edge, 0⟩ by rw [← hs0], show pc.e = ⟨pc.e.edge, 0⟩ by rw [← he0],
       key_hgt0, key_hgt0, hee, hpw]
   · rw [hS0, hC.2.2.2.1, hlen, hpw]

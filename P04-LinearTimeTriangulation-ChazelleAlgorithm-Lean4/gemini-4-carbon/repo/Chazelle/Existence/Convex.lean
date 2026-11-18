@@ -69,14 +69,14 @@ theorem rotate_lexMin (P : Polygon) {m : ℕ} (hm : m < P.n)
     (hmin : ∀ i, i < P.n → lexLE (P.vtx m) (P.vtx i)) :
     ∀ i, i < P.n → lexLE ((P.rotate m).vtx 0) ((P.rotate m).vtx i) := by
   intro i hi
-  rw [vtx_rotate P m (by omega), vtx_rotate P m hi, Nat.add_zero, Nat.mod_eq_of_lt hm]
-  exact hmin _ (Nat.mod_lt _ (by omega))
+  rw [vtx_rotate P m by_o, vtx_rotate P m hi, Nat.add_zero, Nat.mod_eq_of_lt hm]
+  exact hmin _ (Nat.mod_lt _ by_o)
 
 /-! ### Index bookkeeping at vertex `0` -/
 
 /-- The successor of vertex `0` is vertex `1`. -/
 theorem succ_zero_mod (P : Polygon) (hn : 2 ≤ P.n) : (0 + 1) % P.n = 1 :=
-  Nat.mod_eq_of_lt (by omega)
+  Nat.mod_eq_of_lt by_o
 
 /-- The successor of vertex `n - 1` is vertex `0`. -/
 theorem succ_last_mod (P : Polygon) (hn : 1 ≤ P.n) : (P.n - 1 + 1) % P.n = 0 := by
@@ -84,7 +84,7 @@ theorem succ_last_mod (P : Polygon) (hn : 1 ≤ P.n) : (P.n - 1 + 1) % P.n = 0 :
 
 /-- The edge entering vertex `0` is edge `n - 1`. -/
 theorem prevIdx_zero (P : Polygon) (hn : 1 ≤ P.n) : prevIdx P 0 = P.n - 1 := by
-  rw [prevIdx_eq P (by omega)]; simp
+  rw [prevIdx_eq P by_o]; simp
 
 /-- Edge `0` is the segment from vertex `0` to vertex `1`. -/
 theorem edge_zero (P : Polygon) (hn : 2 ≤ P.n) :
@@ -103,15 +103,15 @@ theorem edges_at_zero_meet {P : Polygon} (hP : P.Simple) :
   have hn := simple_three_le hP
   intro p hp
   have hmem : p ∈ P.edge (P.n - 1) ∩ P.edge 0 := by
-    rw [edge_last P (by omega), edge_zero P (by omega)]; exact hp
-  rw [simple_edge_inter hP (by omega) (by omega) (by omega)] at hmem
+    rw [edge_last P by_o, edge_zero P by_o]; exact hp
+  rw [simple_edge_inter hP by_o by_o by_o] at hmem
   obtain ⟨h1, h2⟩ := hmem
-  rw [succ_last_mod P (by omega)] at h1
-  rw [succ_zero_mod P (by omega)] at h2
+  rw [succ_last_mod P by_o] at h1
+  rw [succ_zero_mod P by_o] at h2
   rcases h1 with rfl | rfl
   · rcases h2 with h2 | h2
     · exact h2
-    · exact absurd (simple_vtx_inj hP (by omega) (by omega) h2) (by omega)
+    · exact absurd (simple_vtx_inj hP by_o by_o h2) by_o
   · rfl
 
 /-! ### Points to the left of the smallest vertex are exterior -/
@@ -124,10 +124,10 @@ theorem parity_eq_false_of_fst_lt (P : Polygon)
   unfold crossSum
   apply Finset.sum_eq_zero
   intro i hi
-  have hi' : i < P.n := Finset.mem_range.1 hi
+  have hi' := Finset.mem_range.1 hi
   apply crossInd_of_not_crosses
   exact not_crosses_of_lt (hz.trans_le (fst_le_of_lexLE (hmin i hi')))
-    (hz.trans_le (fst_le_of_lexLE (hmin _ (Nat.mod_lt (i + 1) (by omega)))))
+    (hz.trans_le (fst_le_of_lexLE (hmin _ (Nat.mod_lt (i + 1) by_o))))
 
 /-! ### Strict convexity at the smallest vertex -/
 
@@ -138,28 +138,28 @@ theorem det_ne_zero_of_lexMin {P : Polygon} (hP : P.Simple)
     det (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) ≠ 0 := by
   intro h
   have hn := simple_three_le hP
-  have hav : P.vtx (P.n - 1) ≠ P.vtx 0 := simple_vtx_ne hP (by omega) (by omega) (by omega)
-  have hvb : P.vtx 0 ≠ P.vtx 1 := simple_vtx_ne hP (by omega) (by omega) (by omega)
+  have hav : P.vtx (P.n - 1) ≠ P.vtx 0 := simple_vtx_ne hP by_o by_o by_o
+  have hvb : P.vtx 0 ≠ P.vtx 1 := simple_vtx_ne hP by_o by_o by_o
   have hdir := dir_pos_of_collinear hav hvb (edges_at_zero_meet hP) h
-  have hu := hmin (P.n - 1) (by omega)
-  have hw := hmin 1 (by omega)
+  have hu := hmin (P.n - 1) by_o
+  have hw := hmin 1 by_o
   set u := P.vtx (P.n - 1)
   set v := P.vtx 0
   set w := P.vtx 1
-  have hu1 : v.1 ≤ u.1 := fst_le_of_lexLE hu
-  have hw1 : v.1 ≤ w.1 := fst_le_of_lexLE hw
+  have hu1 := fst_le_of_lexLE hu
+  have hw1 := fst_le_of_lexLE hw
   unfold det at h
   rcases hu1.lt_or_eq with hu1 | hu1 <;> rcases hw1.lt_or_eq with hw1 | hw1
   · -- both neighbours strictly to the right: the dot product is negative
-    have hb : 0 < w.1 - v.1 := sub_pos.2 hw1
+    have hb := sub_pos.2 hw1
     have hkey : (w.1 - v.1) * ((v.1 - u.1) * (w.1 - v.1) + (v.2 - u.2) * (w.2 - v.2)) =
         (v.1 - u.1) * ((w.1 - v.1) ^ 2 + (w.2 - v.2) ^ 2) := by
       linear_combination (-(w.2 - v.2)) * h
     have hneg : (v.1 - u.1) * ((w.1 - v.1) ^ 2 + (w.2 - v.2) ^ 2) < 0 :=
-      mul_neg_of_neg_of_pos (by linarith) (by positivity)
+      mul_neg_of_neg_of_pos by_l by_p
     nlinarith [mul_pos hb hdir]
   · -- `w` on the vertical line through `v`, above it; `u` strictly to the right
-    have hw2 : v.2 ≤ w.2 := snd_le_of_lexLE_of_fst_eq hw hw1
+    have hw2 := snd_le_of_lexLE_of_fst_eq hw hw1
     have hw2' : v.2 < w.2 := by
       rcases hw2.lt_or_eq with h' | h'
       · exact h'
@@ -169,7 +169,7 @@ theorem det_ne_zero_of_lexMin {P : Polygon} (hP : P.Simple)
     · linarith
     · linarith
   · -- `u` on the vertical line through `v`, above it; `w` strictly to the right
-    have hu2 : v.2 ≤ u.2 := snd_le_of_lexLE_of_fst_eq hu hu1
+    have hu2 := snd_le_of_lexLE_of_fst_eq hu hu1
     have hu2' : v.2 < u.2 := by
       rcases hu2.lt_or_eq with h' | h'
       · exact h'
@@ -179,8 +179,8 @@ theorem det_ne_zero_of_lexMin {P : Polygon} (hP : P.Simple)
     · linarith
     · linarith
   · -- all three on a vertical line
-    have hu2 : v.2 ≤ u.2 := snd_le_of_lexLE_of_fst_eq hu hu1
-    have hw2 : v.2 ≤ w.2 := snd_le_of_lexLE_of_fst_eq hw hw1
+    have hu2 := snd_le_of_lexLE_of_fst_eq hu hu1
+    have hw2 := snd_le_of_lexLE_of_fst_eq hw hw1
     rw [hu1] at hdir
     rw [← hw1] at hdir
     nlinarith [mul_nonneg (sub_nonneg.2 hu2) (sub_nonneg.2 hw2)]
@@ -208,8 +208,7 @@ theorem boundary_near_vtx {P : Polygon} (hP : P.Simple) {i : ℕ} (hi : i < P.n)
   · by_cases hkj : k = j
     · subst hkj
       left
-      rw [← edge_prevIdx P hi]
-      exact hxk
+      rwa [← edge_prevIdx P hi]
     · exact absurd hxk (hball x hx k (by simp [Finset.mem_erase, hki, hkj, hk]))
 
 /-! ### The convex sector at the smallest vertex is interior -/
@@ -226,9 +225,9 @@ theorem sector_subset_interior {P : Polygon} (hP : P.Simple)
       0 < σ * det (P.vtx (P.n - 1)) (P.vtx 0) x → 0 < σ * det (P.vtx 0) (P.vtx 1) x →
         x ∈ P.filled \ P.boundary := by
   have hn := simple_three_le hP
-  have h0 : 0 < P.n := by omega
-  have h1n : (0 + 1) % P.n = 1 := succ_zero_mod P (by omega)
-  have hprev : prevIdx P 0 = P.n - 1 := prevIdx_zero P (by omega)
+  have h0 : 0 < P.n := by_o
+  have h1n : (0 + 1) % P.n = 1 := succ_zero_mod P by_o
+  have hprev : prevIdx P 0 = P.n - 1 := prevIdx_zero P by_o
   have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
   obtain ⟨r, hr, hball⟩ := boundary_near_vtx hP h0
   rw [hprev, h1n] at hball
@@ -237,13 +236,13 @@ theorem sector_subset_interior {P : Polygon} (hP : P.Simple)
   set w := P.vtx 1 with hw
   have hdet : det u v w ≠ 0 := by
     intro h; rw [h, mul_zero] at hpos; exact lt_irrefl _ hpos
-  have hvw : v ≠ w := (ne_of_det_ne_zero hdet).2.1
+  have hvw := (ne_of_det_ne_zero hdet).2.1
   have hsq := sqLen_pos hvw
   -- the open convex sector and the half-disk on the far side of edge `v w`
-  set Splus : Set Point := ball v r ∩ ({x | 0 < σ * det u v x} ∩ {x | 0 < σ * det v w x})
+  set Splus := ball v r ∩ ({x | 0 < σ * det u v x} ∩ {x | 0 < σ * det v w x})
     with hSplus
-  set D : Set Point := ball v r ∩ {x | 0 < (-σ) * det v w x} with hD
-  have hSplus_conn : IsPreconnected Splus :=
+  set D := ball v r ∩ {x | 0 < (-σ) * det v w x} with hD
+  have hSplus_conn :=
     ((convex_ball v r).inter ((convex_det_pos u v σ).inter (convex_det_pos v w σ))).isPreconnected
   have hSplus_compl : Splus ⊆ P.boundaryᶜ := by
     rintro x ⟨hxb, hx1, hx2⟩ hxB
@@ -252,7 +251,7 @@ theorem sector_subset_interior {P : Polygon} (hP : P.Simple)
     rcases hball x hxb hxB with h | h
     · rw [det_eq_zero_of_mem_segment h, mul_zero] at hx1'; exact lt_irrefl _ hx1'
     · rw [det_eq_zero_of_mem_segment h, mul_zero] at hx2'; exact lt_irrefl _ hx2'
-  have hD_conn : IsPreconnected D :=
+  have hD_conn :=
     ((convex_ball v r).inter (convex_det_pos v w (-σ))).isPreconnected
   have hD_compl : D ⊆ P.boundaryᶜ := by
     rintro x ⟨hxb, hx⟩ hxB
@@ -264,11 +263,11 @@ theorem sector_subset_interior {P : Polygon} (hP : P.Simple)
     · rw [det_eq_zero_of_mem_segment h, mul_zero] at hx'; exact lt_irrefl _ hx'
   -- the reflex direction at `v` points strictly to the left
   have hfst : 0 < (u.1 - v.1) + (w.1 - v.1) := by
-    have h1 : v.1 ≤ u.1 := fst_le_of_lexLE (hmin _ (by omega))
-    have h2 : v.1 ≤ w.1 := fst_le_of_lexLE (hmin _ (by omega))
+    have h1 : v.1 ≤ u.1 := fst_le_of_lexLE (hmin _ by_o)
+    have h2 : v.1 ≤ w.1 := fst_le_of_lexLE (hmin _ by_o)
     by_contra hle
-    have hu1 : u.1 = v.1 := by linarith
-    have hw1 : w.1 = v.1 := by linarith
+    have hu1 : u.1 = v.1 := by_l
+    have hw1 : w.1 = v.1 := by_l
     apply hdet
     unfold det; rw [hu1, hw1]; ring
   have hqfst : ∀ ε : ℝ, 0 < ε → (v + ε • ((v - u) - (w - v))).1 < v.1 := by
@@ -282,13 +281,13 @@ theorem sector_subset_interior {P : Polygon} (hP : P.Simple)
     exact this.mono_left nhdsWithin_le_nhds
   obtain ⟨ε, hεb, hε0⟩ :=
     ((htq.eventually (isOpen_ball.mem_nhds (mem_ball_self hr))).and self_mem_nhdsWithin).exists
-  have hε0' : (0 : ℝ) < ε := hε0
+  have hε0' := hε0
   have hqD : v + ε • ((v - u) - (w - v)) ∈ D := by
     refine ⟨hεb, ?_⟩
     show 0 < (-σ) * det v w (v + ε • ((v - u) - (w - v)))
     rw [(det_reflex_point u v w ε).2]
     nlinarith [mul_pos hε0' hpos]
-  have hqpar : parity P (v + ε • ((v - u) - (w - v))) = false :=
+  have hqpar :=
     parity_eq_false_of_fst_lt P hmin (hqfst ε hε0')
   have hDpar : ∀ x ∈ D, parity P x = false := fun x hx =>
     (parity_eq_of_isPreconnected P hD_conn hD_compl hx hqD).trans hqpar
@@ -308,7 +307,7 @@ theorem sector_subset_interior {P : Polygon} (hP : P.Simple)
   obtain ⟨δ, hplus, hminus, hsides, hδ0⟩ :=
     ((eventually_offset_mem σ hW1 htW).and ((eventually_offset_mem (-σ) isOpen_ball htW.1).and
       ((edge_sides hP h0 ht01).and self_mem_nhdsWithin))).exists
-  have hδ0' : (0 : ℝ) < δ := hδ0
+  have hδ0' := hδ0
   unfold leftPoint rightPoint at hsides
   rw [h1n] at hsides
   have hxplus : offset v w t (σ * δ) ∈ Splus := by
@@ -337,11 +336,11 @@ theorem sector_subset_interior {P : Polygon} (hP : P.Simple)
       rw [neg_neg, one_mul] at hminus_not
       by_contra hcon
       exact hminus_not (hsides.2 hcon)
-  have hplus_par : parity P (offset v w t (σ * δ)) = true :=
+  have hplus_par :=
     (mem_filled_iff hP (hSplus_compl hxplus)).1 hplus_filled
   refine ⟨r, hr, fun x hxb hx1 hx2 => ?_⟩
   have hxS : x ∈ Splus := ⟨hxb, hx1, hx2⟩
-  have hxB : x ∉ P.boundary := hSplus_compl hxS
+  have hxB := hSplus_compl hxS
   refine ⟨(mem_filled_iff hP hxB).2 ?_, hxB⟩
   rw [parity_eq_of_isPreconnected P hSplus_conn hSplus_compl hxS hxplus, hplus_par]
 

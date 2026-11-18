@@ -72,51 +72,51 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
     obtain ⟨-, -, -, hd2, -⟩ := h.desc; rw [← h.dm, hd2]
   set γ := m (O + 2) with hγdef
   set w := min γ (2 * V.m + 7) with hwdef
-  have hγ1 : 1 ≤ γ := gamma_pos hP hC
+  have hγ1 := gamma_pos hP hC
   have hKγ : V.K * γ ≤ 60 * (2 * V.m + 7) := h.chords_le
-  have hK : V.K ≤ 60 * (2 * V.m + 7) := le_trans (Nat.le_mul_of_pos_right _ hγ1) hKγ
+  have hK := le_trans (Nat.le_mul_of_pos_right _ hγ1) hKγ
   have hA5 : V.A ≤ 5 * (V.K + 1) := by
     have := arcs_le_regions hP hC
     rw [regions_eq hP hC.1] at this
     rw [h.hA, h.hK]; exact this
   have hμ := h.μ_A
-  have hL : V.L ≤ Nat.clog 2 (V.A + V.K) + 1 := h.L_le
-  have hds : dstarCost m V ≤ 7 * k ^ 2 * (NCof w + 6) + 4 := h.dstarCost_le hP
+  have hL := h.L_le
+  have hds := h.dstarCost_le hP
   have hk1 := h.k_pos
   -- the scans
   have hμγ : V.μ * (γ + 1) ≤ 4200 * (2 * V.m + 1) + 8 * (γ + 1) := by
-    have h1 : V.μ ≤ 5 * V.K + 8 := by omega
-    have h2 : V.K * (γ + 1) ≤ 2 * (V.K * γ) := by nlinarith
+    have h1 : V.μ ≤ 5 * V.K + 8 := by_o
+    have h2 : V.K * (γ + 1) ≤ 2 * (V.K * γ) := by_nl
     calc V.μ * (γ + 1) ≤ (5 * V.K + 8) * (γ + 1) := Nat.mul_le_mul_right _ h1
-      _ = 5 * (V.K * (γ + 1)) + 8 * (γ + 1) := by ring
-      _ ≤ 4200 * (2 * V.m + 1) + 8 * (γ + 1) := by omega
+      _ = 5 * (V.K * (γ + 1)) + 8 * (γ + 1) := by_r
+      _ ≤ 4200 * (2 * V.m + 1) + 8 * (γ + 1) := by_o
   have hscan := scan_le_gen (c := 4200) (d := 8) (w := w) hγ1 hμγ h.k_min
     (min_le_left _ _) (min_le_right _ _)
   set G := (γ : ℝ) ^ ((1 : ℝ) / 3) * ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) with hG
   have hG1 : ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) ≤ G := by
     have : (1 : ℝ) ≤ (γ : ℝ) ^ ((1 : ℝ) / 3) :=
-      Real.one_le_rpow (by exact_mod_cast hγ1) (by norm_num)
-    have h0 : (0 : ℝ) ≤ ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) := by positivity
+      Real.one_le_rpow (by exact_mod_cast hγ1) by_n
+    have h0 : (0 : ℝ) ≤ ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) := by_p
     rw [hG]; nlinarith
-  have hG0 : (0 : ℝ) ≤ G := by positivity
+  have hG0 : (0 : ℝ) ≤ G := by_p
   -- the binary searches
-  have hAK : V.A + V.K ≤ 2525 * (V.m + 1) := by omega
+  have hAK : V.A + V.K ≤ 2525 * (V.m + 1) := by_o
   have hlog := Chazelle.Cost.clog_le_eight_rpow (V.A + V.K)
   have hpow : ((V.A + V.K : ℕ) : ℝ) ^ ((2 : ℝ) / 3) ≤ 2525 * G := by
     have e1 : ((V.A + V.K : ℕ) : ℝ) ^ ((2 : ℝ) / 3) ≤ ((2525 : ℝ) * ((V.m : ℝ) + 1)) ^ ((2 : ℝ) / 3) :=
-      Real.rpow_le_rpow (by positivity) (by exact_mod_cast hAK) (by norm_num)
-    rw [Real.mul_rpow (by norm_num) (by positivity)] at e1
+      Real.rpow_le_rpow by_p (by exact_mod_cast hAK) by_n
+    rw [Real.mul_rpow by_n by_p] at e1
     have e2 : (2525 : ℝ) ^ ((2 : ℝ) / 3) ≤ 2525 := by
-      have := Real.rpow_le_rpow_of_exponent_le (x := (2525 : ℝ)) (by norm_num)
+      have := Real.rpow_le_rpow_of_exponent_le (x := (2525 : ℝ)) by_n
         (show (2 : ℝ) / 3 ≤ 1 by norm_num)
       rwa [Real.rpow_one] at this
-    have e3 : (0 : ℝ) ≤ ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) := by positivity
+    have e3 : (0 : ℝ) ≤ ((V.m : ℝ) + 1) ^ ((2 : ℝ) / 3) := by_p
     nlinarith
   have hLR : (V.L : ℝ) ≤ 20200 * G + 1 := by
     have : (V.L : ℝ) ≤ (Nat.clog 2 (V.A + V.K) : ℝ) + 1 := by exact_mod_cast hL
     linarith
   -- the scans in reals
-  set X : ℕ := k ^ 2 with hX
+  set X := k ^ 2 with hX
   have hX1 : 1 ≤ X := Nat.one_le_pow _ _ hk1
   have hscan' : ((w : ℝ) + 1) * (X : ℝ) ≤ 134688 * G := by
     rw [hX]; push_cast; norm_num at hscan ⊢; linarith
@@ -128,9 +128,9 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
     rw [hNC] at hds ⊢
     have hXw : w ≤ w * X := Nat.le_mul_of_pos_right _ hX1
     have e1 : (8 * X + 2) * (5660 * w + 62500 + 80) =
-        45280 * (w * X) + 500640 * X + 11320 * w + 125160 := by ring
-    have e2 : 7 * X * (5660 * w + 62500 + 6) = 39620 * (w * X) + 437542 * X := by ring
-    have e3 : (w + 1) * X = w * X + X := by ring
+        45280 * (w * X) + 500640 * X + 11320 * w + 125160 := by_r
+    have e2 : 7 * X * (5660 * w + 62500 + 6) = 39620 * (w * X) + 437542 * X := by_r
+    have e3 : (w + 1) * X = w * X + X := by_r
     rw [e1, e3]; rw [e2] at hds
     omega
   have hcR : ((100 + (715 * V.L + 700 + dstarCost m V + 4 * candCost V (NCof w) (8 * X) + 500) :
@@ -138,7 +138,7 @@ theorem QAt.qcost_le (h : QAt P m O E V H C N B k) :
     exact_mod_cast hcost
   have hκ : (κq : ℝ) = 2 * 10 ^ 12 := by unfold κq; norm_num
   rw [hκ]
-  have hwX : (0 : ℝ) ≤ ((w : ℝ) + 1) * (X : ℝ) := by positivity
+  have hwX : (0 : ℝ) ≤ ((w : ℝ) + 1) * (X : ℝ) := by_p
   linarith
 
 end

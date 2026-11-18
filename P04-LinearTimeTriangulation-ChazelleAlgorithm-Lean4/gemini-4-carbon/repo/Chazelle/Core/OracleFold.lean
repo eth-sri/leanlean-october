@@ -44,9 +44,9 @@ theorem cp_inj (hP : C.P.Simple) {k k' : ℕ} {τ τ' : ℝ} (h : CCoord C k τ)
     (heq : cp C k τ = cp C k' τ') : k = k' ∧ τ = τ' := by
   have hk : k ≤ C.m := by rcases h with h | h <;> omega
   have hk' : k' ≤ C.m := by rcases h' with h | h <;> omega
-  rcases eq_or_lt_of_le (show 0 ≤ τ by rcases h with h | h <;> [exact h.2.1; exact le_of_eq h.2.symm])
+  rcases eq_or_lt_of_le (by rcases h with h | h <;> [exact h.2.1; exact le_of_eq h.2.symm])
     with hτ | hτ <;>
-  rcases eq_or_lt_of_le (show 0 ≤ τ' by rcases h' with h | h <;> [exact h.2.1; exact le_of_eq h.2.symm])
+  rcases eq_or_lt_of_le (by rcases h' with h | h <;> [exact h.2.1; exact le_of_eq h.2.symm])
     with hτ' | hτ'
   · subst hτ; subst hτ'
     rw [cp_zero, cp_zero] at heq
@@ -77,7 +77,7 @@ theorem cp_inj (hP : C.P.Simple) {k k' : ℕ} {τ τ' : ℝ} (h : CCoord C k τ)
       simp only at h1 h2
       by_contra hne'
       apply hne
-      have hd : τ - τ' ≠ 0 := sub_ne_zero.2 hne'
+      have hd := sub_ne_zero.2 hne'
       apply Prod.ext
       · have : (τ - τ') * ((C.vertex (k + 1)).1 - (C.vertex k).1) = 0 := by linarith
         have := (mul_eq_zero.1 this).resolve_left hd
@@ -113,8 +113,8 @@ theorem tk_coord (i : ℕ) {t : ℝ} (ht : 0 ≤ t) (ht1 : t < 1) :
   · rcases eq_or_lt_of_le (show 2 * C.m - tj C i ≤ C.m by omega) with e | e
     · exact Or.inr ⟨e, rfl⟩
     · exact Or.inl ⟨e, le_rfl, one_pos⟩
-  · exact Or.inl ⟨by omega, by linarith, by
-      have : 0 < t := lt_of_le_of_ne ht (Ne.symm h2)
+  · exact Or.inl ⟨by_o, by_l, by
+      have := lt_of_le_of_ne ht (Ne.symm h2)
       linarith⟩
 
 /-- **The point of a tour position** in chain coordinates. -/
@@ -137,12 +137,12 @@ theorem tour_pt (i : ℕ) (hi : i < 2 * C.m) (t : ℝ) :
     · simp [show ¬ x ≤ C.m by omega]
   split_ifs with h1 h2
   · simp only
-    rw [sE1 j h1.le, sE1 (j + 1) (by omega)]
+    rw [sE1 j h1.le, sE1 (j + 1) by_o]
   · simp only
     subst h2
-    rw [lerp_zero, lerp_zero, sE3 j (by omega)]
+    rw [lerp_zero, lerp_zero, sE3 j by_o]
   · simp only
-    rw [Geometry.lerp_symm, sE3 (j + 1) (by omega), sE3 j (by omega)]
+    rw [Geometry.lerp_symm, sE3 (j + 1) by_o, sE3 j by_o]
     congr 2; omega
 
 /-- **Two tour positions have the same point iff their tour coordinates are equal or opposite.** -/
@@ -185,7 +185,7 @@ theorem pos_on_chain {p : ℕ} (hp : p < 2 * C.m + 7) {t : ℝ} (ht : 0 ≤ t) (
       rcases eq_or_lt_of_le ht with h0 | h0
       · exact Or.inr ⟨rfl, h0.symm⟩
       · exact absurd hx (C.sideWalk_box_pt C.sideBeta (Or.inr ⟨rfl, h0⟩) ht ht1).1
-    · exact Or.inl ⟨by omega, by omega⟩
+    · exact Or.inl ⟨by_o, by_o⟩
 
 /-- The closing vertex of the walk is the top, like the first tour vertex. -/
 theorem sidePt_last :
@@ -216,7 +216,7 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
     (∃ n : ℤ, ((p : ℝ) + t) + (p' + t') = 12 - 2 * C.sideS C.sideBeta + 2 * C.m * n) ∨
       ((p : ℝ) + t = 6 ∧ (p' : ℝ) + t' = 2 * C.m + 6) ∨
       ((p : ℝ) + t = 2 * C.m + 6 ∧ (p' : ℝ) + t' = 6) := by
-  have hx' : sidePt (C.sideWalk C.sideBeta) p' t' ∈ C.set := heq ▸ hx
+  have hx' := heq ▸ hx
   have hm := C.one_le
   -- normalise each position to a tour position `(i, t)` with `i < 2 m` and a shift `e ∈ {0, 2m}`
   have norm : ∀ {p : ℕ} {t : ℝ}, p < 2 * C.m + 7 → 0 ≤ t → t < 1 →
@@ -226,10 +226,10 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
         (e = 2 * C.m → i = 0 ∧ t = 0) := by
     intro p t hp ht ht1 hx
     rcases pos_on_chain C hp ht ht1 hx with ⟨h1, h2⟩ | ⟨h1, h2⟩
-    · refine ⟨p - 6, 0, by omega, Or.inl rfl, ?_, by rw [show p - 6 + 6 = p by omega], by omega⟩
-      rw [Nat.cast_sub (by omega)]; push_cast; ring
+    · refine ⟨p - 6, 0, by_o, Or.inl rfl, ?_, by rw [show p - 6 + 6 = p by omega], by_o⟩
+      rw [Nat.cast_sub by_o]; push_cast; ring
     · subst h1; subst h2
-      refine ⟨0, 2 * C.m, by omega, Or.inr rfl, by push_cast; ring, sidePt_last C, fun _ => ⟨rfl, rfl⟩⟩
+      refine ⟨0, 2 * C.m, by_o, Or.inr rfl, by push_cast; ring, sidePt_last C, fun _ => ⟨rfl, rfl⟩⟩
   obtain ⟨i, e, hi, he, hk, hpt, he2⟩ := norm hp ht ht1 hx
   obtain ⟨i', e', hi', he', hk', hpt', he2'⟩ := norm hp' ht' ht1' hx'
   have heq' : sidePt (C.sideWalk C.sideBeta) (i + 6) t = sidePt (C.sideWalk C.sideBeta) (i' + 6) t' := by
@@ -251,10 +251,10 @@ theorem mirror_sum (hP : C.P.Simple) {p p' : ℕ} (hp : p < 2 * C.m + 7) (hp' : 
     have hi0' : (0 : ℝ) ≤ i' := Nat.cast_nonneg i'
     have hm0 : (0 : ℝ) < C.m := by exact_mod_cast hm
     have hqq : (q : ℤ) = q' := by
-      have h1 : 2 * (C.m : ℝ) * ((q : ℝ) - q') < 2 * C.m := by linarith
-      have h2 : -(2 * (C.m : ℝ)) < 2 * C.m * ((q : ℝ) - q') := by linarith
-      have h3 : ((q : ℝ) - q') < 1 := by nlinarith
-      have h4 : -1 < ((q : ℝ) - q') := by nlinarith
+      have h1 : 2 * (C.m : ℝ) * ((q : ℝ) - q') < 2 * C.m := by_l
+      have h2 : -(2 * (C.m : ℝ)) < 2 * C.m * ((q : ℝ) - q') := by_l
+      have h3 : ((q : ℝ) - q') < 1 := by_nl
+      have h4 : -1 < ((q : ℝ) - q') := by_nl
       have h5 : ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) < 1 := by push_cast; linarith
       have h6 : -1 < ((q : ℤ) : ℝ) - ((q' : ℤ) : ℝ) := by push_cast; linarith
       have h7 : (q : ℤ) - q' < 1 := by exact_mod_cast h5

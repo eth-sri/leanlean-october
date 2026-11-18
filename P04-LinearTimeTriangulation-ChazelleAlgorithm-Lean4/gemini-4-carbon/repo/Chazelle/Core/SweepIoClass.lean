@@ -40,8 +40,8 @@ theorem mod_three {a n : ℕ} (_hn : 0 < n) (ha : a < 3 * n) :
     a % n = if a < n then a else if a < 2 * n then a - n else a - 2 * n := by
   split_ifs with h1 h2
   · exact Nat.mod_eq_of_lt h1
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
+  · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
     omega
 
 /-- **The tour positions of an end vertex.** -/
@@ -49,7 +49,7 @@ theorem endIdx (C : Chain) {k : ℕ} (hk : k = 0 ∨ k = C.m) {i : ℕ} (hi : i 
     C.sideIdx C.sideBeta i = k ↔ i = tpos C k ∨ (i = 2 * C.m ∧ tpos C k = 0) := by
   have hS := C.sideS_lt C.sideBeta
   have hm := C.one_le
-  have h2m : 0 < 2 * C.m := by omega
+  have h2m : 0 < 2 * C.m := by_o
   rw [Chain.sideIdx_eq]
   unfold tpos bS sideE
   set S := C.sideS C.sideBeta
@@ -66,7 +66,7 @@ theorem topIdx_iff (C : Chain) {i : ℕ} (hi : i ≤ 2 * C.m) :
     C.sideIdx C.sideBeta i = C.topIdx ↔ i = 0 ∨ i = 2 * C.m ∨ i = midT C := by
   have hT := C.topIdx_le
   have hm := C.one_le
-  have h2m : 0 < 2 * C.m := by omega
+  have h2m : 0 < 2 * C.m := by_o
   rw [Chain.sideIdx_eq]
   unfold midT sideE Chain.sideS
   cases hβ : C.sideBeta
@@ -111,8 +111,8 @@ theorem atEnd_iff (C : Chain) (hP : C.P.Simple) {k : ℕ} (hk : k = 0 ∨ k = C.
     · right; omega
   · rintro ⟨ht, h | ⟨h, h'⟩⟩
     · have hτ := tpos_lt C k
-      refine ⟨ht, tpos C k, by omega, by omega, (endIdx C hk (by omega)).2 (Or.inl rfl)⟩
-    · refine ⟨ht, 2 * C.m, le_rfl, by omega, (endIdx C hk le_rfl).2 (Or.inr ⟨rfl, h'⟩)⟩
+      refine ⟨ht, tpos C k, by_o, by_o, (endIdx C hk by_o).2 (Or.inl rfl)⟩
+    · refine ⟨ht, 2 * C.m, le_rfl, by_o, (endIdx C hk le_rfl).2 (Or.inr ⟨rfl, h'⟩)⟩
 
 /-- **A position is at the top** iff its parameter is `0` and its edge is `6`, `2m + 6` or
 `6 + midT`. -/
@@ -131,9 +131,9 @@ theorem atTop_iff (C : Chain) (hP : C.P.Simple) (Q : Polygon) {x : WPos}
     refine ⟨ht, ?_⟩
     rcases (topIdx_iff C hi).1 hidx with h | h | h <;> omega
   · rintro ⟨ht, h | h | h⟩
-    · exact ⟨ht, 0, by omega, by omega, (topIdx_iff C (by omega)).2 (Or.inl rfl)⟩
-    · exact ⟨ht, 2 * C.m, le_rfl, by omega, (topIdx_iff C le_rfl).2 (Or.inr (Or.inl rfl))⟩
-    · exact ⟨ht, midT C, hmid, by omega, (topIdx_iff C hmid).2 (Or.inr (Or.inr rfl))⟩
+    · exact ⟨ht, 0, by_o, by_o, (topIdx_iff C by_o).2 (Or.inl rfl)⟩
+    · exact ⟨ht, 2 * C.m, le_rfl, by_o, (topIdx_iff C le_rfl).2 (Or.inr (Or.inl rfl))⟩
+    · exact ⟨ht, midT C, hmid, by_o, (topIdx_iff C hmid).2 (Or.inr (Or.inr rfl))⟩
 
 end
 

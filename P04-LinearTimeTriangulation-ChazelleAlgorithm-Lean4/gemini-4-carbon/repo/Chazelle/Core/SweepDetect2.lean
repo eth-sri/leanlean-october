@@ -85,7 +85,7 @@ theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ 
   set w := rayPt a σ T with hw
   have hback : ∀ s, rayPt w (-σ) s = rayPt a σ (T - s) := fun s => rayPt_back a σ T s
   have hzR : |a.2| < C.radius := by
-    have := C.dom_subset_box (hdom (T / 2) (by linarith) (by linarith))
+    have := C.dom_subset_box (hdom (T / 2) by_l by_l)
     simpa [rayPt] using this.2
   have he : w ∈ C.set ∨ (|w.1| = C.radius ∧ |w.2| < C.radius) := by
     rcases (Merge.not_mem_dom_iff C (p := w) (by simpa [hw] using ha)).1 hwD with h | h
@@ -94,10 +94,10 @@ theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ 
       · by_contra hgt
         push Not at hgt
         set ε := min (T / 2) ((|w.1| - C.radius) / 2) with hε
-        have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-        have hbox := C.dom_subset_box (hdom (T - ε) (by linarith) (by linarith))
-        have h1 : |(rayPt a σ (T - ε)).1| < C.radius := hbox.1
+        have hε0 : 0 < ε := lt_min by_l by_l
+        have hεT : ε < T := lt_of_le_of_lt (min_le_left _ _) by_l
+        have hbox := C.dom_subset_box (hdom (T - ε) by_l by_l)
+        have h1 := hbox.1
         have h2 : |w.1| ≤ |(rayPt a σ (T - ε)).1| + ε := by
           have e : w.1 = (rayPt a σ (T - ε)).1 + σ * ε := by simp [hw, rayPt]; ring
           rw [e]
@@ -109,7 +109,7 @@ theorem arrival_exists (hP : C.P.Simple) {a : Point} (ha : a.2 ≤ C.top.2) {σ 
         push Not at hlt
         exact h ⟨hlt, by simpa [hw] using hzR⟩
     · exact Or.inl h
-  have hT2 : (0 : ℝ) < T / 2 := by linarith
+  have hT2 : (0 : ℝ) < T / 2 := by_l
   have hee : w ≠ rayPt w (-σ) (T / 2) := by
     intro h
     have := congrArg Prod.fst h
@@ -184,12 +184,12 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     {t : ℝ} (hA : Arrival (chainModel C).W w σ p t) (ht0 : 0 < t)
     (hno : ∀ e ∈ F, ¬ ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w (-σ) s ∈ e) :
     ¬ (chainModel C).IsCut F (p + t) := by
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
+  have hM := FactsChain.walkAx C hP
   obtain ⟨hp, -, ht1, hpt, hsec⟩ := hA
   rintro ⟨c, hcF, p', t', hAc, hkey⟩
   obtain ⟨hp', ht'0, ht'1, hc', r₀, hr₀, hnear⟩ := hAc
   obtain ⟨rfl, rfl⟩ := Chazelle.Chain.sideKey_inj ht0.le ht1 ht'0 ht'1 hkey
-  have hcA : c ∈ Merge.augChords C := hFam.2.1 hcF
+  have hcA := hFam.2.1 hcF
   obtain ⟨y, l, r, hH, -, hceq, -, -⟩ := Merge.augChords_spec hcA
   subst hceq
   rw [hpt] at hc' hnear
@@ -199,7 +199,7 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   have hne := hM.nd p hp
   set u := (chainModel C).W.vtx p with hu
   set v := (chainModel C).W.vtx ((p + 1) % (chainModel C).W.n) with hv
-  have hwlerp : w = lerp u v t := hpt.symm
+  have hwlerp := hpt.symm
   have hedge : ∀ x, sideLeft (chainModel C).W p t x ↔ 0 < det u v x :=
     fun x => Chazelle.Chain.sideLeft_edge hne ⟨ht0, ht1⟩ x
   have hshift : ∀ α, det u v ((w.1 + α, w.2) : Point) = -α * (v.2 - u.2) := by
@@ -213,7 +213,7 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   have hlr := hH.lt
   set δ := min r₀ (r - l) / 2 with hδ
   have hδ0 : 0 < δ := by
-    have : 0 < min r₀ (r - l) := lt_min hr₀ (by linarith)
+    have : 0 < min r₀ (r - l) := lt_min hr₀ by_l
     linarith
   have hδr : δ < r₀ := by have := min_le_left r₀ (r - l); linarith
   have hδl : δ < r - l := by have := min_le_right r₀ (r - l); linarith
@@ -229,7 +229,7 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     · exact hwD (by rw [show w = ((w.1, y) : Point) from Prod.ext rfl hwy]; exact hH.open_mem _ hl hr)
     · -- `w` is the right end: the chord leaves it to the left
       have hx : sideLeft (chainModel C).W p t ((w.1 + -δ, w.2) : Point) :=
-        hnear _ ⟨by simpa using hwy, by linarith, by linarith⟩
+        hnear _ ⟨by simpa using hwy, by_l, by_l⟩
           (fun h => by have := congrArg Prod.fst h; simp at this; linarith)
           (hdist _ (by rw [abs_neg, abs_of_pos hδ0]))
       rw [hedge, hshift] at hx
@@ -243,7 +243,7 @@ theorem not_cut_of_edge (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
       refine ⟨by simp [rayPt, hwy], ?_, ?_⟩ <;> simp [rayPt] <;> linarith [hs.1, hs.2]
   · -- `w` is the left end: the chord leaves it to the right
     have hx : sideLeft (chainModel C).W p t ((w.1 + δ, w.2) : Point) :=
-      hnear _ ⟨by simpa using hwy, by linarith, by linarith⟩
+      hnear _ ⟨by simpa using hwy, by_l, by_l⟩
         (fun h => by have := congrArg Prod.fst h; simp at this; linarith)
         (hdist _ (abs_of_pos hδ0))
     rw [hedge, hshift] at hx

@@ -56,7 +56,7 @@ theorem copyBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
       h20, h22, ALLOC]
   · simp (disch := omega) only [Machine.upd_same,
       Machine.upd_other, h31, hA', h20, ALLOC]
-  · have a4' : r ≠ 9999 := a4
+  · have a4' := a4
     simp (disch := omega) only [Machine.upd_other]
 
 set_option maxHeartbeats 2000000 in
@@ -72,35 +72,35 @@ theorem copyBody_step {P : Polygon} {W K CB LB : ℕ} {c₀ c : Config}
   have hsrc : c.nreg 80031 = CB + 5 * i := by rw [hI.src, hi]
   have hal : c.nreg ALLOC = LB + 3 * i := by rw [hI.alloc, hi]
   obtain ⟨c', k, e, hk, r31, rA, r30, hm, R, rr, rm, ro⟩ := copyBody_exec (P := P) c hI.wb hsrc
-    hal (by rw [hI.regs _ (by decide) (by decide) (by decide) (by decide), h20])
-    (by rw [hI.regs _ (by decide) (by decide) (by decide) (by decide), h22])
-    (by omega) (by omega) (by omega) (by omega)
+    hal (by rw [hI.regs _ by_d by_d by_d by_d, h20])
+    (by rw [hI.regs _ by_d by_d by_d by_d, h22])
+    by_o by_o by_o by_o
   rw [hi] at r30
-  refine ⟨c', k, e, ⟨e.wb_right, by omega, by rw [r31, r30]; ring, by rw [rA, r30]; ring,
+  refine ⟨c', k, e, ⟨e.wb_right, by_o, by rw [r31, r30]; ring, by rw [rA, r30]; ring,
     fun r a1 a2 a3 a4 => ?_, fun a ha => ?_, fun i' hi' j hj => ?_, by rw [rr, hI.rr],
     by rw [rm, hI.rm], by rw [ro, hI.out]⟩, hk, by rw [r30, hi]⟩
   · rw [R r a1 a2 a3 a4, hI.regs r a1 a2 a3 a4]
-  · rw [hm, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      Machine.upd_other _ _ _ (by omega), hI.low a ha]
+  · rw [hm, Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+      Machine.upd_other _ _ _ by_o, hI.low a ha]
   · rw [r30] at hi'
     have hs : ∀ j, j < 3 → c.nmem (CB + 5 * i + j) = c₀.nmem (CB + 5 * i + j) :=
-      fun j hj => hI.low _ (by omega)
+      fun j hj => hI.low _ by_o
     rcases Nat.lt_or_ge i' i with hlt | hge
-    · have hold := hI.copied i' (by omega) j hj
-      rw [hm, Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), hold]
+    · have hold := hI.copied i' by_o j hj
+      rw [hm, Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o, hold]
     · have hii : i' = i := by omega
       subst hii
-      have e0 := hs 0 (by omega)
-      have e1 := hs 1 (by omega)
-      have e2 := hs 2 (by omega)
+      have e0 := hs 0 by_o
+      have e1 := hs 1 by_o
+      have e2 := hs 2 by_o
       simp only [add_zero] at e0
       rw [hm]
       interval_cases j
       · simp only [add_zero]
-        rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+        rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
           Machine.upd_same, e0]
-      · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_same, e1]
+      · rw [Machine.upd_other _ _ _ by_o, Machine.upd_same, e1]
       · rw [Machine.upd_same, e2]
 
 /-- **The copy loop.** -/
@@ -115,7 +115,7 @@ theorem copy_exec {P : Polygon} {W K CB LB A₀ : ℕ} {c₀ : Config} (hw : Wor
       (∀ a, a < LB → c'.nmem a = c₀.nmem a) ∧
       (∀ i, i < K → ∀ j, j < 3 → c'.nmem (LB + 3 * i + j) = c₀.nmem (CB + 5 * i + j)) ∧
       RF dBands A₀ c₀ c' k := by
-  have I0 : CopyI W K CB LB c₀ c₀ := ⟨hw, by omega, by rw [h31, h30]; ring,
+  have I0 : CopyI W K CB LB c₀ c₀ := ⟨hw, by_o, by rw [h31, h30]; ring,
     by rw [hA, h30]; ring, fun _ _ _ _ _ => rfl, fun _ _ => rfl,
     fun i hi => by rw [h30] at hi; omega, rfl, rfl, rfl⟩
   obtain ⟨c', k, e, I', hx, RFl, hk⟩ := whileLtN_frame (P := P) (W := W) (a := 80030)
@@ -124,26 +124,26 @@ theorem copy_exec {P : Polygon} {W K CB LB A₀ : ℕ} {c₀ : Config} (hw : Wor
     (fun _ h => h.wb)
     (fun c I ht => by
       have t : c.nreg 80030 < K := by
-        rw [I.regs 80013 (by decide) (by decide) (by decide) (by decide), h13] at ht; exact ht
+        rw [I.regs 80013 by_d by_d by_d by_d, h13] at ht; exact ht
       obtain ⟨c', k, e, I', hk, hi⟩ := copyBody_step (P := P) I t h20 h22 hCB hW hWK
-      refine ⟨c', k, e, I', ?_, by omega, by omega⟩
+      refine ⟨c', k, e, I', ?_, by_o, by_o⟩
       -- the frame of one step
       have hb : ∀ r, bandOf r ∉ dBands → r ≠ 80030 ∧ r ≠ 80031 ∧ r ≠ 80033 := fun r hr =>
-        ⟨fun h => hr (by rw [h, band8 (by norm_num) (by norm_num)]; exact mem_dBands_8),
-         fun h => hr (by rw [h, band8 (by norm_num) (by norm_num)]; exact mem_dBands_8),
-         fun h => hr (by rw [h, band8 (by norm_num) (by norm_num)]; exact mem_dBands_8)⟩
+        ⟨fun h => hr (by rw [h, band8 by_n by_n]; exact mem_dBands_8),
+         fun h => hr (by rw [h, band8 by_n by_n]; exact mem_dBands_8),
+         fun h => hr (by rw [h, band8 by_n by_n]; exact mem_dBands_8)⟩
       refine ⟨fun r hr hra => ?_, fun r _ => by rw [I'.rr, I.rr], fun a ha => ?_,
         fun a _ => by rw [I'.rm, I.rm], by rw [I'.out, I.out], ?_, ?_⟩
       · obtain ⟨h1, h2, h3⟩ := hb r hr
         rw [I'.regs r h1 h2 h3 hra, I.regs r h1 h2 h3 hra]
-      · rw [I'.low a (by omega), I.low a (by omega)]
+      · rw [I'.low a by_o, I.low a by_o]
       · rw [I'.alloc, I.alloc]; omega
       · rw [I'.alloc, I.alloc, hi, hk]; omega) I0
   have hK' : c'.nreg 80030 = K := by
-    rw [I'.regs 80013 (by decide) (by decide) (by decide) (by decide), h13] at hx
+    rw [I'.regs 80013 by_d by_d by_d by_d, h13] at hx
     have := I'.i_le; omega
   refine ⟨c', k, e, ?_, by rw [I'.alloc, hK'], hK', I'.regs, I'.low,
-    fun i hi j hj => I'.copied i (by omega) j hj, RFl⟩
+    fun i hi j hj => I'.copied i by_o j hj, RFl⟩
   rw [h30] at hk
   omega
 
@@ -175,7 +175,7 @@ theorem resBody_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
   · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hA', h20,
       ALLOC]
   · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, h20, ALLOC]
-  · have a2' : r ≠ 9999 := a2
+  · have a2' := a2
     simp (disch := omega) only [Machine.upd_other]
 
 /-- **The reservation loop.** -/
@@ -185,7 +185,7 @@ theorem res_exec {P : Polygon} {W R A A₀ : ℕ} {c₀ : Config} (hw : WordsBou
     ∃ c' k, Exec P W resS c₀ c' k ∧ k ≤ 6 * R + 2 ∧ c'.nreg ALLOC = A + 3 * R ∧
       (∀ r, r ≠ 80034 → r ≠ ALLOC → c'.nreg r = c₀.nreg r) ∧ c'.nmem = c₀.nmem ∧
       RF dBands A₀ c₀ c' k := by
-  have I0 : ResI W R A c₀ c₀ := ⟨hw, by omega, by rw [hA, h34]; ring, fun _ _ _ => rfl, rfl,
+  have I0 : ResI W R A c₀ c₀ := ⟨hw, by_o, by rw [hA, h34]; ring, fun _ _ _ => rfl, rfl,
     rfl, rfl, rfl⟩
   obtain ⟨c', k, e, I', hx, RFl, hk⟩ := whileLtN_frame (P := P) (W := W) (a := 80034)
     (b := 80014) (body := resBody) (B := dBands) (A₀ := A₀)
@@ -193,21 +193,21 @@ theorem res_exec {P : Polygon} {W R A A₀ : ℕ} {c₀ : Config} (hw : WordsBou
     (fun _ h => h.wb)
     (fun c I ht => by
       have t : c.nreg 80034 < R := by
-        rw [I.regs 80014 (by decide) (by decide), h14] at ht; exact ht
-      have c20 : c.nreg 80020 = 1 := by rw [I.regs _ (by decide) (by decide), h20]
+        rw [I.regs 80014 by_d by_d, h14] at ht; exact ht
+      have c20 : c.nreg 80020 = 1 := by rw [I.regs _ by_d by_d, h20]
       obtain ⟨c', k, e, hk, qa, qj, qr, qm, qrr, qrm, qo⟩ := resBody_exec (P := P) c I.wb
-        I.alloc c20 (by omega) (by omega)
+        I.alloc c20 by_o by_o
       have b34 : bandOf 80034 ∈ dBands := by
-        rw [band8 (by norm_num) (by norm_num)]; exact mem_dBands_8
-      refine ⟨c', k, e, ⟨e.wb_right, by omega, by rw [qa, qj]; ring,
+        rw [band8 by_n by_n]; exact mem_dBands_8
+      refine ⟨c', k, e, ⟨e.wb_right, by_o, by rw [qa, qj]; ring,
         fun r a1 a2 => by rw [qr r a1 a2, I.regs r a1 a2], by rw [qm, I.mem],
         by rw [qrr, I.rr], by rw [qrm, I.rm], by rw [qo, I.out]⟩,
         ⟨fun r hr hra => qr r (fun h => hr (h ▸ b34)) hra, fun r _ => by rw [qrr],
           fun a _ => by rw [qm], fun a _ => by rw [qrm], qo, by rw [qa, I.alloc]; omega,
           by rw [qa, I.alloc, hk]; omega⟩,
-        by omega, by omega⟩) I0
+        by_o, by_o⟩) I0
   have hR' : c'.nreg 80034 = R := by
-    rw [I'.regs 80014 (by decide) (by decide), h14] at hx
+    rw [I'.regs 80014 by_d by_d, h14] at hx
     have := I'.j_le; omega
   refine ⟨c', k, e, ?_, by rw [I'.alloc, hR'], I'.regs, I'.mem, RFl⟩
   rw [h34] at hk

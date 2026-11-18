@@ -80,10 +80,10 @@ theorem crossSum_eq_zero_of_far_below (P : Polygon) {z : Point} (hz : z.2 < -coo
   rw [← sum_straddleInd P z]
   apply Finset.sum_congr rfl
   intro i hi
-  have hi' : i < P.n := Finset.mem_range.1 hi
-  have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ (by omega)
-  have hu : z.2 < (P.vtx i).2 := hz.trans_le (abs_le.1 (abs_snd_vtx_le_coordBound P hi')).1
-  have hv : z.2 < (P.vtx ((i + 1) % P.n)).2 :=
+  have hi' := Finset.mem_range.1 hi
+  have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ by_o
+  have hu := hz.trans_le (abs_le.1 (abs_snd_vtx_le_coordBound P hi')).1
+  have hv :=
     hz.trans_le (abs_le.1 (abs_snd_vtx_le_coordBound P hi2)).1
   unfold crossInd straddleInd
   exact if_congr (crosses_iff_straddles_of_below hu hv) rfl rfl
@@ -112,9 +112,9 @@ theorem abs_le_coordBound_of_parity_true (P : Polygon) {z : Point} (hz : parity 
   have : coordBound P < z.1 ∨ z.1 < -coordBound P ∨ coordBound P < z.2 ∨ z.2 < -coordBound P := by
     rcases h with (h | h) | (h | h)
     · exact Or.inl h
-    · exact Or.inr (Or.inl (by linarith))
+    · exact Or.inr (Or.inl by_l)
     · exact Or.inr (Or.inr (Or.inl h))
-    · exact Or.inr (Or.inr (Or.inr (by linarith)))
+    · exact Or.inr (Or.inr (Or.inr by_l))
   rw [parity_eq_false_of_far_any P this] at hz
   exact Bool.false_ne_true hz
 
@@ -124,7 +124,7 @@ theorem abs_le_coordBound_of_parity_true (P : Polygon) {z : Point} (hz : parity 
 theorem abs_le_coordBound_of_mem_boundary (P : Polygon) {p : Point} (hp : p ∈ P.boundary) :
     |p.1| ≤ coordBound P ∧ |p.2| ≤ coordBound P := by
   obtain ⟨i, hi, t, ht0, ht1, rfl⟩ := hp
-  have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ (by omega)
+  have hi2 : (i + 1) % P.n < P.n := Nat.mod_lt _ by_o
   have h1 := abs_le.1 (abs_fst_vtx_le_coordBound P hi)
   have h2 := abs_le.1 (abs_snd_vtx_le_coordBound P hi)
   have h3 := abs_le.1 (abs_fst_vtx_le_coordBound P hi2)
@@ -148,7 +148,7 @@ theorem isOpen_connectedComponentIn_boundary_compl (P : Polygon) (z : Point) :
 /-- The parity is constant on the component of a point off the boundary. -/
 theorem parity_eq_of_mem_connectedComponentIn (P : Polygon) {z w : Point}
     (hw : w ∈ connectedComponentIn P.boundaryᶜ z) : parity P w = parity P z := by
-  have hz : z ∈ P.boundaryᶜ := connectedComponentIn_nonempty_iff.1 ⟨w, hw⟩
+  have hz := connectedComponentIn_nonempty_iff.1 ⟨w, hw⟩
   exact parity_eq_of_isPreconnected P isPreconnected_connectedComponentIn
     (connectedComponentIn_subset _ _) hw (mem_connectedComponentIn hz)
 
@@ -182,11 +182,11 @@ theorem mem_filled_iff_bounded (P : Polygon) {z : Point} (hz : z ∉ P.boundary)
 
 /-- A real number can be pushed beyond any bound along a nonzero direction. -/
 theorem exists_abs_add_mul_gt {c : ℝ} (hc : c ≠ 0) (w R : ℝ) : ∃ s : ℝ, 0 ≤ s ∧ R < |w + s * c| := by
-  have hc' : 0 < |c| := abs_pos.2 hc
-  refine ⟨(|R| + |w| + 1) / |c|, by positivity, ?_⟩
+  have hc' := abs_pos.2 hc
+  refine ⟨(|R| + |w| + 1) / |c|, by_p, ?_⟩
   have h1 : |(|R| + |w| + 1) / |c| * c| = |R| + |w| + 1 := by
     rw [abs_mul, abs_div, abs_abs, div_mul_cancel₀ _ hc'.ne']
-    exact abs_of_pos (by positivity)
+    exact abs_of_pos by_p
   have h2 := abs_add_le (-w) (w + (|R| + |w| + 1) / |c| * c)
   rw [abs_neg, show -w + (w + (|R| + |w| + 1) / |c| * c) = (|R| + |w| + 1) / |c| * c by ring,
     h1] at h2
@@ -195,7 +195,7 @@ theorem exists_abs_add_mul_gt {c : ℝ} (hc : c ≠ 0) (w R : ℝ) : ∃ s : ℝ
 /-- The ray `{w + s • d | 0 ≤ s}`. -/
 def ray (w d : Point) : Set Point := (fun s : ℝ => w + s • d) '' Ici 0
 
-theorem mem_ray_self (w d : Point) : w ∈ ray w d := ⟨0, le_rfl, by simp⟩
+theorem mem_ray_self (w d : Point) : w ∈ ray w d := ⟨0, le_rfl, by_s⟩
 
 /-- A ray is preconnected. -/
 theorem isPreconnected_ray (w d : Point) : IsPreconnected (ray w d) :=
@@ -229,22 +229,22 @@ theorem not_isBoundedSet_connectedComponentIn_of_far (P : Polygon) {w : Point}
     (hw : coordBound P < w.1 ∨ w.1 < -coordBound P ∨ coordBound P < w.2 ∨ w.2 < -coordBound P) :
     ¬ IsBoundedSet (connectedComponentIn P.boundaryᶜ w) := by
   rcases hw with h | h | h | h
-  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (1, 0)) (by simp) ?_
+  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (1, 0)) by_s ?_
     rintro _ ⟨s, hs, rfl⟩ hp
     have := (abs_le.1 (abs_le_coordBound_of_mem_boundary P hp).1).2
     simp only [Geometry.add_fst, Geometry.smul_fst] at this
     linarith [mem_Ici.1 hs]
-  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (-1, 0)) (by simp) ?_
+  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (-1, 0)) by_s ?_
     rintro _ ⟨s, hs, rfl⟩ hp
     have := (abs_le.1 (abs_le_coordBound_of_mem_boundary P hp).1).1
     simp only [Geometry.add_fst, Geometry.smul_fst] at this
     linarith [mem_Ici.1 hs]
-  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (0, 1)) (by simp) ?_
+  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (0, 1)) by_s ?_
     rintro _ ⟨s, hs, rfl⟩ hp
     have := (abs_le.1 (abs_le_coordBound_of_mem_boundary P hp).2).2
     simp only [Geometry.add_snd, Geometry.smul_snd] at this
     linarith [mem_Ici.1 hs]
-  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (0, -1)) (by simp) ?_
+  · refine not_isBoundedSet_connectedComponentIn_of_ray P (d := (0, -1)) by_s ?_
     rintro _ ⟨s, hs, rfl⟩ hp
     have := (abs_le.1 (abs_le_coordBound_of_mem_boundary P hp).2).1
     simp only [Geometry.add_snd, Geometry.smul_snd] at this
@@ -277,9 +277,9 @@ theorem filled_subset_square (P : Polygon) :
   rw [not_and_or, not_le, not_le, lt_abs, lt_abs] at h
   rcases h with (h | h) | (h | h)
   · exact Or.inl h
-  · exact Or.inr (Or.inl (by linarith))
+  · exact Or.inr (Or.inl by_l)
   · exact Or.inr (Or.inr (Or.inl h))
-  · exact Or.inr (Or.inr (Or.inr (by linarith)))
+  · exact Or.inr (Or.inr (Or.inr by_l))
 
 /-- **The filled region is bounded.** -/
 theorem filled_bounded (P : Polygon) : IsBoundedSet P.filled :=

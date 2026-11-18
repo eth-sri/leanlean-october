@@ -73,7 +73,7 @@ theorem hostKeys_mir (hQ : Q.Simple) (_hFam : (interiorModel Q).ChordFamily Q S)
   · rintro (⟨c', hc', ht', p', t', hA', rfl⟩ | ⟨k, hk, rfl, a', b', harc', hin'⟩)
     · -- an exit key
       left
-      have hp : p' < (interiorModel Q).W.n := h.n_eq ▸ hA'.1
+      have hp := h.n_eq ▸ hA'.1
       have hA'' : SideAttach (interiorModel Q.mir).W (mir '' (mir '' c')) p' t' := by
         rwa [image_mir_image_mir]
       rw [h.walk.sideAttach_mir hp hA'.2.1 hA'.2.2.1] at hA''
@@ -82,7 +82,7 @@ theorem hostKeys_mir (hQ : Q.Simple) (_hFam : (interiorModel Q).ChordFamily Q S)
       · rw [posMir_key hc hp hA'.2.1 hA'.2.2.1]
     · -- a vertex key
       right
-      have hk' : k < (interiorModel Q).W.n := h.n_eq ▸ hk
+      have hk' := h.n_eq ▸ hk
       have ha0 := harc'.1
       have han := harc'.2.1
       have hb0 := harc'.2.2.1
@@ -96,7 +96,7 @@ theorem hostKeys_mir (hQ : Q.Simple) (_hFam : (interiorModel Q).ChordFamily Q S)
   · rintro (⟨c, hc', ht, p, t, hA, hx⟩ | ⟨k, hk, hkx, a, b, harc, hin⟩)
     · -- an exit key
       left
-      have hp : p < (interiorModel Q.mir).W.n := h.n_eq.symm ▸ hA.1
+      have hp := h.n_eq.symm ▸ hA.1
       have hA'' : SideAttach (interiorModel Q).W (mir '' (mir '' c)) p t := by
         rwa [image_mir_image_mir]
       rw [h.walk.symm.sideAttach_mir hp hA.2.1 hA.2.2.1] at hA''
@@ -134,17 +134,17 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
   set n := I.W.n with hn
   set c := Q.n - 1 with hcdef
   have h := modelMir_interior hQ
-  have hc : c < n := h.walk.c_lt
+  have hc := h.walk.c_lt
   have hM : WalkAx I := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
-  have h3 : 3 ≤ K := three_le_nk hQ hFam hne hR
+  have h3 := three_le_nk hQ hFam hne hR
   have hb : ∀ i, i < K → 0 ≤ hk I S R i ∧ hk I S R i < n := fun i hi =>
     hostKeys_bounds (hk_mem hM hF hfin hi)
   -- the number of host keys `≤ c`
   have hex : ∃ i, K ≤ i ∨ (c : ℝ) < hk I S R i := ⟨K, Or.inl le_rfl⟩
   set a := Nat.find hex with ha
-  have haK : a ≤ K := Nat.find_min' hex (Or.inl le_rfl)
+  have haK := Nat.find_min' hex (Or.inl le_rfl)
   have hlow : ∀ i, i < a → hk I S R i ≤ c := by
     intro i hi
     have := Nat.find_min hex hi
@@ -156,54 +156,54 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
     · omega
     · rcases hai.lt_or_eq with h2 | h2
       · exact lt_trans h1 (hk_strictMono (U := R) hM hF hfin h2 hi)
-      · rw [← h2]; exact h1
+      · rwa [← h2]
   -- the index map
   set σ : ℕ → ℕ := fun j => (a + K - 1 - j) % K with hσ
   have hσlo : ∀ j, j < a → σ j = a - 1 - j := by
     intro j hj
     simp only [hσ]
     rw [show a + K - 1 - j = (a - 1 - j) + K by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega)]
+      Nat.mod_eq_of_lt by_o]
   have hσhi : ∀ j, a ≤ j → j < K → σ j = a + K - 1 - j := by
     intro j hj hjK
     simp only [hσ]
-    rw [Nat.mod_eq_of_lt (by omega)]
-  have hσlt : ∀ j, j < K → σ j < K := fun j _ => Nat.mod_lt _ (by omega)
+    rw [Nat.mod_eq_of_lt by_o]
+  have hσlt : ∀ j, j < K → σ j < K := fun j _ => Nat.mod_lt _ by_o
   have hσσ : ∀ i, i < K → σ (σ i) = i := by
     intro i hi
     by_cases hia : i < a
-    · rw [hσlo i hia, hσlo _ (by omega)]; omega
-    · rw [hσhi i (by omega) hi, hσhi _ (by omega) (by omega)]; omega
+    · rw [hσlo i hia, hσlo _ by_o]; omega
+    · rw [hσhi i by_o hi, hσhi _ by_o by_o]; omega
   -- the reflected keys
   have hrklo : ∀ i, i < a → rk n c (hk I S R i) = c - hk I S R i := by
     intro i hi; unfold rk; rw [ite_eq_left (hlow i hi)]
   have hrkhi : ∀ i, a ≤ i → i < K → rk n c (hk I S R i) = c - hk I S R i + n := by
     intro i hai hi; unfold rk; rw [ite_eq_right (not_le.2 (hhigh i hai hi))]
-  set L' : List ℝ := (List.range K).map fun j => rk n c (hk I S R (σ j)) with hL'
+  set L' := (List.range K).map fun j => rk n c (hk I S R (σ j)) with hL'
   have hL'len : L'.length = K := by simp [hL']
   have hL'get : ∀ j, j < K → L'.getD j 0 = rk n c (hk I S R (σ j)) := by
     intro j hj
-    rw [List.getD_eq_getElem _ _ (by rw [hL'len]; exact hj)]
+    rw [List.getD_eq_getElem _ _ (by rwa [hL'len])]
     simp [hL']
   -- strictly increasing
   have hcn : (c : ℝ) < n := by exact_mod_cast hc
   have hmono : ∀ j j', j < j' → j' < K → L'.getD j 0 < L'.getD j' 0 := by
     intro j j' hjj hj'
-    rw [hL'get j (by omega), hL'get j' hj']
+    rw [hL'get j by_o, hL'get j' hj']
     by_cases h1 : j' < a
-    · rw [hσlo j (by omega), hσlo j' h1, hrklo _ (by omega), hrklo _ (by omega)]
-      have := hk_strictMono (U := R) hM hF hfin (show a - 1 - j' < a - 1 - j by omega) (by omega)
+    · rw [hσlo j by_o, hσlo j' h1, hrklo _ by_o, hrklo _ by_o]
+      have := hk_strictMono (U := R) hM hF hfin (show a - 1 - j' < a - 1 - j by omega) by_o
       linarith
     · by_cases h2 : j < a
-      · rw [hσlo j h2, hσhi j' (by omega) hj', hrklo _ (by omega),
-          hrkhi _ (by omega) (by omega)]
-        have := (hb (a - 1 - j) (by omega)).1
-        have := (hb (a + K - 1 - j') (by omega)).2
+      · rw [hσlo j h2, hσhi j' by_o hj', hrklo _ by_o,
+          hrkhi _ by_o by_o]
+        have := (hb (a - 1 - j) by_o).1
+        have := (hb (a + K - 1 - j') by_o).2
         linarith
-      · rw [hσhi j (by omega) (by omega), hσhi j' (by omega) hj', hrkhi _ (by omega) (by omega),
-          hrkhi _ (by omega) (by omega)]
+      · rw [hσhi j by_o by_o, hσhi j' by_o hj', hrkhi _ by_o by_o,
+          hrkhi _ by_o by_o]
         have := hk_strictMono (U := R) hM hF hfin (show a + K - 1 - j' < a + K - 1 - j by omega)
-          (by omega)
+          by_o
         linarith
   -- the same elements
   have hmem : ∀ x, x ∈ L' ↔ x ∈ hostKeys I' (mirF S) (mir '' R) := by
@@ -217,7 +217,7 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
       rw [hostKeys_mir hQ hFam hne hR r0 rn, rk_rk hc hb'.1 hb'.2]
       exact hk_mem hM hF hfin (hσlt j hj)
     · intro hx
-      have hM' : WalkAx I' := walkAx_interiorModel (mir_simple Q hQ)
+      have hM' := walkAx_interiorModel (mir_simple Q hQ)
       have hxb := hostKeys_bounds hx
       rw [h.n_eq] at hxb
       have := (hostKeys_mir hQ hFam hne hR hxb.1 hxb.2).1 hx
@@ -226,7 +226,7 @@ theorem hk_mir : ∃ a, nk (interiorModel Q.mir) (mirF S) (mir '' R) = nk (inter
       rw [hσσ i hi, hie, rk_rk hc hxb.1 hxb.2]
   -- `L'` is the sorted host key list
   have hfin' : (hostKeys I' (mirF S) (mir '' R)).Finite := by
-    have hM' : WalkAx I' := walkAx_interiorModel (mir_simple Q hQ)
+    have hM' := walkAx_interiorModel (mir_simple Q hQ)
     have hFam' := (h.chordFamily Q S).2 hFam
     exact hostKeys_finite hM' hFam'.2.1 hFam'.1
   have hsortL' : L'.Pairwise (· < ·) := by
@@ -272,7 +272,7 @@ theorem chordGap_mir {g : ℕ} (hC : ChordGap (interiorModel Q) S R g) {j : ℕ}
     obtain ⟨b1, b2, b3⟩ := posMir_bounds (c := Q.n - 1) (p' := q) hn hAq.2.1 hAq.2.2.1
     have hpp := posMir_posMir hc hAq.1 hAq.2.2.1
     refine ⟨?_, posMir_key hc hAq.1 hAq.2.1 hAq.2.2.1, ?_⟩
-    · rw [h.walk.sideAttach_mir b1 b2 b3, hpp]; exact hAq
+    · rwa [h.walk.sideAttach_mir b1 b2 b3, hpp]
     · rw [h.walk.sidePt_mir b1, hpp]
   obtain ⟨hB', hk', hs'⟩ := hmir p' t' hA'
   obtain ⟨hB, hk0, hs⟩ := hmir p t hA

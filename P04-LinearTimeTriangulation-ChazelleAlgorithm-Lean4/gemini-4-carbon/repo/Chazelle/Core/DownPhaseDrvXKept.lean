@@ -128,12 +128,10 @@ theorem chord_data {i : ℕ} (hi : i < NR.nChords) :
       ((chainModel C).param (Qof P) (NR.chord i).rpos) = (chainModel C).pos (Qof P) (NR.chord i).rpos :=
     rfl
   refine ⟨A, B, hAB, hc, hh i hi, hadm, hl, hr, ?_, ?_⟩
-  · have hm : sidePt (C.sideWalk C.sideBeta) (NR.chord i).lp
-        ((chainModel C).param (Qof P) (NR.chord i).lpos) ∈ hseg ((Qof P).vtx (NR.chord i).h).2 A B :=
+  · have hm :=
       hl.2.2.2.1
     exact Prod.ext rfl hm.1
-  · have hm : sidePt (C.sideWalk C.sideBeta) (NR.chord i).rp
-        ((chainModel C).param (Qof P) (NR.chord i).rpos) ∈ hseg ((Qof P).vtx (NR.chord i).h).2 A B :=
+  · have hm :=
       hr.2.2.2.1
     exact Prod.ext rfl hm.1
 
@@ -148,16 +146,16 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
   have hkc_le := tK_le C.sideBeta C.one_le p (T := C.topIdx)
   have hv0 := walk_vtx Y.X.hCs Y.X.hCm C.sideBeta h6 hp
   obtain ⟨-, ht0, ht1, hmem, rA, hrA, hsec⟩ := hat
-  have hz : (sidePt (C.sideWalk C.sideBeta) p t).2 = ((Qof P).vtx h).2 := hmem.1
+  have hz := hmem.1
   have hheight : ((Qof P).vtx (hidx (hpt (Qof P).n xH (tK C.m C.topIdx C.sideBeta p)))).2 =
       (C.P.vtx (tK C.m C.topIdx C.sideBeta p)).2 := by
-    rw [Y.hpt_eval (by omega), eval_snd]
+    rw [Y.hpt_eval by_o, eval_snd]
   constructor
   · intro htz
     unfold tZ at htz
     rw [← htz] at hheight
     by_contra htne
-    have ht0' : 0 < t := lt_of_le_of_ne ht0 (Ne.symm htne)
+    have ht0' := lt_of_le_of_ne ht0 (Ne.symm htne)
     rcases lt_or_eq_of_le hp with hp' | hp'
     · -- inside a tour edge: the edge would be horizontal
       have hse := walk_sector_edge Y.cpSimple Y.X.hCs Y.X.hCm C.sideBeta h6 hp' ⟨ht0', ht1⟩
@@ -178,7 +176,7 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
         · linarith
       obtain ⟨x, hxc, hne, hxd⟩ := Extract.exists_near_mem hAB hmem hrA
       have hx := (hse x).1 (hsec x hxc hne hxd)
-      have hxy : x.2 = ((Qof P).vtx h).2 := hxc.1
+      have hxy := hxc.1
       unfold det at hx
       rw [hxy, hflat, ← hheight] at hx
       simp only [sub_self, mul_zero] at hx
@@ -202,7 +200,7 @@ theorem tZ_iff {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ
     rw [Chazelle.Chain.sidePt_zero, hv0] at hz
     unfold tZ
     by_contra hne
-    exact Y.X.hdh _ _ hh (Y.hidx_lt (by omega)) hne (by rw [← hz, hheight])
+    exact Y.X.hdh _ _ hh (Y.hidx_lt by_o) hne (by rw [← hz, hheight])
 
 /-- **An end at a regular inner position: the chord meets `R`.** -/
 theorem meet_of_regIn {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
@@ -226,7 +224,7 @@ theorem meet_of_regIn {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {
       · exact absurd (htz.1 (hlast h')) ht0'.ne'
     obtain ⟨hpt, hsec⟩ := Y.inner_edge h6 hp' ⟨ht0', ht1⟩ hA
     exact meet_of_attach Y hcs (ExtG.attach_of_sector hpt.symm (fun x hx => (hsec x).1 hx)
-      (by rw [Y.gn]; exact sig_lt li (by omega) _ _) ht0 ht1 hat)
+      (by rw [Y.gn]; exact sig_lt li by_o _ _) ht0 ht1 hat)
   · subst ht0'
     have hu0 : tU C.m C.topIdx C.sideBeta p ≠ 0 := fun h0 =>
       hirr ⟨htz.2 rfl, Or.inl ((tK_eq_zero_iff _ hm1 p).2 h0)⟩
@@ -234,7 +232,7 @@ theorem meet_of_regIn {h : ℕ} (hh : h < (Qof P).n) {A B : ℝ} (hAB : A < B) {
       hirr ⟨htz.2 rfl, Or.inr ((tK_eq_m_iff _ hm1 p).2 h0)⟩
     obtain ⟨hpt, hsec⟩ := Y.inner_vtx h6 hp hu0 hum hA
     exact meet_of_attach Y hcs (ExtG.attach_of_sector hpt.symm hsec
-      (by rw [Y.gn]; exact sig_lt li (by omega) _ _) le_rfl one_pos hat)
+      (by rw [Y.gn]; exact sig_lt li by_o _ _) le_rfl one_pos hat)
 
 /-- **A kept chord is an interior chord of the host polygon.** -/
 theorem adm_G {c : Set Point} (hc : c ∈ (chainModel C).Adm) (hk : (c ∩ reg r).Nonempty) :
@@ -258,7 +256,7 @@ theorem kept_ends {h : ℕ} {A B : ℝ} (hAB : A < B)
       ∃ q s, SideAttach xG (hseg ((Qof P).vtx h).2 A B) q s ∧
         sidePt xG q s = ((B, ((Qof P).vtx h).2) : Point) := by
   have hadm := Y.adm_G hc hk
-  have hMH : WalkAx (interiorModel xG) := walkAx_interiorModel Y.gSimple
+  have hMH := walkAx_interiorModel Y.gSimple
   have hW : (interiorModel xG).W = xG :=
     DownDrv.interiorWalk_hostPoly Y.X.hQ Y.X.hFam Y.X.hne Y.X.hR
   obtain ⟨a', b', -, hseg', hy, -, hEa, hEb⟩ := hMH.ends _ hadm
@@ -288,8 +286,8 @@ theorem end_ok {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
   rw [C.sideWalk_n] at hpW
   have hbox : ¬ (p ≤ 5 ∨ (p = 2 * C.m + 6 ∧ 0 < t)) := fun hb =>
     Y.box_ne ht0 ht1 hb hqG hs0 hs1 hpt
-  have h6 : 6 ≤ p := by omega
-  have hp : p ≤ 2 * C.m + 6 := by omega
+  have h6 : 6 ≤ p := by_o
+  have hp : p ≤ 2 * C.m + 6 := by_o
   have hlast : p = 2 * C.m + 6 → t = 0 := fun h' => by
     by_contra hne; exact hbox (Or.inr ⟨h', lt_of_le_of_ne ht0 (Ne.symm hne)⟩)
   refine ⟨h6, hp, hlast, fun hreg => ?_⟩
@@ -297,15 +295,15 @@ theorem end_ok {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
   have hA : decide (tU C.m C.topIdx C.sideBeta p < C.m) = !li := by
     generalize decide (tU C.m C.topIdx C.sideBeta p < C.m) = d at hside ⊢
     cases li <;> cases d <;> simp_all
-  have hGn : (xG).n = xK := Y.gn
+  have hGn := Y.gn
   rcases ht0.lt_or_eq with ht0' | ht0'
   · have hp' : p < 2 * C.m + 6 := by
       rcases lt_or_eq_of_le hp with h' | h'
       · exact h'
       · exact absurd (hlast h') ht0'.ne'
     obtain ⟨hpt', hsec⟩ := Y.outer_edge h6 hp' ⟨ht0', ht1⟩ hA
-    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rw [hGn]; exact hqG)
-      (by rw [hGn]; exact sig_lt li (by omega) _ _) hs0 hs1 (by linarith) (by linarith)
+    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rwa [hGn])
+      (by rw [hGn]; exact sig_lt li by_o _ _) hs0 hs1 by_l by_l
       (hpt.trans hpt')
     subst hq hs
     exact attach_disj hAB hat hG hpt' hsec
@@ -313,8 +311,8 @@ theorem end_ok {h : ℕ} {A B : ℝ} (hAB : A < B) {p : ℕ} {t : ℝ}
     have hu0 : tU C.m C.topIdx C.sideBeta p ≠ 0 := fun h0 => hreg ⟨rfl, Or.inl h0⟩
     have hum : tU C.m C.topIdx C.sideBeta p ≠ C.m := fun h0 => hreg ⟨rfl, Or.inr h0⟩
     obtain ⟨hpt', hsec⟩ := Y.outer_vtx h6 hp hu0 hum hA
-    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rw [hGn]; exact hqG)
-      (by rw [hGn]; exact sig_lt li (by omega) _ _) hs0 hs1 le_rfl one_pos (hpt.trans hpt')
+    obtain ⟨hq, hs⟩ := FactsInterior.pos_unique Y.gSimple (by rwa [hGn])
+      (by rw [hGn]; exact sig_lt li by_o _ _) hs0 hs1 le_rfl one_pos (hpt.trans hpt')
     subst hq hs
     exact attach_disj hAB hat hG hpt' hsec
 
@@ -354,7 +352,7 @@ theorem not_both_irr {h : ℕ} {A B : ℝ} (hAB : A < B)
     have := congrArg Prod.fst hzL; simp at this; linarith
   have hends : (C.P.vtx kL = (xG).vtx g ∧ C.P.vtx kR = (xG).vtx ((g + 1) % xK)) ∨
       (C.P.vtx kL = (xG).vtx ((g + 1) % xK) ∧ C.P.vtx kR = (xG).vtx g) := by
-    rw [Y.vtx_sig (by omega), Y.vtx_sig (by omega)]
+    rw [Y.vtx_sig by_o, Y.vtx_sig by_o]
     rcases Y.sig_ends with ⟨e0, em⟩ | ⟨e0, em⟩ <;> rcases hL with rfl | rfl <;>
       rcases hR with rfl | rfl <;> simp_all
   have hedge : ∀ x : ℝ, A < x → x < B →
@@ -371,8 +369,8 @@ theorem not_both_irr {h : ℕ} {A B : ℝ} (hAB : A < B)
     rcases hends with ⟨e1, e2⟩ | ⟨e1, e2⟩
     · rwa [e1, e2] at hmem
     · rw [e1, e2] at hmem; rwa [Chazelle.Geometry.segment_comm]
-  have hmid := hIC.open_mem ((A + B) / 2) (by linarith) (by linarith)
-  exact hmid.2 (hedge _ (by linarith) (by linarith))
+  have hmid := hIC.open_mem ((A + B) / 2) by_l by_l
+  exact hmid.2 (hedge _ by_l by_l)
 
 /-- **X-R1: the kept test.**  The chord of record `i` of `NR` meets the region iff one of its ends
 is at a regular position on the inner side. -/

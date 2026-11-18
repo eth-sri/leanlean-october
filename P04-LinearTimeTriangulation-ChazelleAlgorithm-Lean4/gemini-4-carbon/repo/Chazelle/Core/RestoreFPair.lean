@@ -42,7 +42,7 @@ theorem aNorm_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
       ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → q ≠ s + 1 → ¬ (81044 ≤ q ∧ q ≤ 81047) →
         c'.nreg q = c.nreg q) := by
   have k0 := k0_of hE hI
-  have hn : 0 < E.M.W.n := by omega
+  have hn : 0 < E.M.W.n := by_o
   have hQn : (Qof E.P).n = E.P.n := shear_n _ _
   unfold normOf
   -- height code 0: nothing to do
@@ -53,11 +53,10 @@ theorem aNorm_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
       (by unfold anK; omega) (fun _ h => h)
     split_ifs <;> simp [h0]
   refine (FRS.ifT a1 ?_).mono (K := anK - 2) (by unfold anK; omega) (fun _ h => h)
-  have hh0 : 0 < c.nreg (s + 1) := by rw [k0] at a1; exact a1
+  have hh0 : 0 < c.nreg (s + 1) := by rwa [k0] at a1
   -- below the vertex range: a box edge of a chain model, positive parameter
   by_cases a2 : c.nreg s < c.nreg 81021
-  · refine (FRS.ifT a2 (FRS.skip (K := 0) hI ⟨rfl, ?_, fun _ _ _ _ _ _ => rfl⟩)).mono
-      (by omega) (fun _ h => h)
+  · refine (FRS.ifT a2 (FRS.skip (K := 0) hI ⟨rfl, ?_, fun _ _ _ _ _ _ => rfl⟩)).le
     have hv : c.nreg 81021 = c₀.nreg 81021 := hI.hin _ (by unfold FFix; omega)
     have hpos : 0 < E.M.param (Qof E.P) ⟨c.nreg s, c.nreg (s + 1)⟩ := by
       rw [hv] at a2
@@ -69,7 +68,7 @@ theorem aNorm_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
           show Chazelle.Chain.sidePt (C'.sideWalk C'.sideBeta) 6 0 ∈ C'.set
           rw [Chazelle.Chain.sidePt_zero, C'.sideWalk_vtx_six]
           exact C'.top_mem_set)).1
-        have he6 : c.nreg s < 6 := by omega
+        have he6 : c.nreg s < 6 := by_o
         have hp0 := hp.1
         have hy' := hy C hC
         rw [hC] at hp0 hy' ⊢
@@ -82,7 +81,7 @@ theorem aNorm_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   have ok1 : okB E.W c.nmem [.copyN 81044 s, .constN 81045 0] c.nreg := by
     simp only [okB, okI, FScr, FOut]; norm_num
   refine FRS.seq (K₂ := 11025) (FRS.block hB _ hI ok1) (fun c₁ hI₁ hA₁ h₁ => ?_) |>.mono
-    (by simp) (fun _ h => h)
+    by_s (fun _ h => h)
   have e₁ : ∀ q, c₁.nreg q = regB c.nmem [.copyN 81044 s, .constN 81045 0] c.nreg q :=
     fun q => by rw [h₁]
   have v44 : c₁.nreg 81044 = c.nreg s := by
@@ -90,9 +89,9 @@ theorem aNorm_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   have v45 : c₁.nreg 81045 = 0 := by rw [e₁]; simp [regB, regI, upd]
   have f₁ : ∀ q, q ≠ 81044 → q ≠ 81045 → c₁.nreg q = c.nreg q := fun q a b => by
     rw [e₁]; simp [regB, regI, upd, a, b]
-  have w0 : c₁.nreg s = c.nreg s := f₁ _ (by omega) (by omega)
-  have w1 : c₁.nreg (s + 1) = c.nreg (s + 1) := f₁ _ (by omega) (by omega)
-  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega) (by unfold ALLOC; omega)
+  have w0 : c₁.nreg s = c.nreg s := f₁ _ by_o by_o
+  have w1 : c₁.nreg (s + 1) = c.nreg (s + 1) := f₁ _ by_o by_o
+  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ by_ao by_ao
   have hpg0 : PosG E.M (Qof E.P) E.P.n ⟨c₁.nreg 81044, c₁.nreg 81045⟩ := by
     rw [v44, v45]
     refine ⟨hen, ⟨le_of_eq rfl, by show (0 : ℝ) < 1; norm_num, Nat.zero_le _⟩, fun C hC _ => ?_⟩
@@ -100,8 +99,8 @@ theorem aNorm_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   have hpg1 : PosG E.M (Qof E.P) E.P.n ⟨c₁.nreg s, c₁.nreg (s + 1)⟩ := by
     rw [w0, w1]; exact ⟨hen, hp, fun _ _ h => absurd h (by show c.nreg (s + 1) ≠ 0; omega)⟩
   refine FRS.seq (K₁ := 11022) (K₂ := 3) (cmpM_fs hE hB hI₁ (r := 81046) (a := 81044)
-    (b := 81045) (d := s) (e := s + 1) ⟨by norm_num, by norm_num⟩ ⟨by norm_num, by norm_num⟩
-    ⟨by norm_num, by norm_num⟩ ⟨by omega, by omega⟩ ⟨by omega, by omega⟩ (by unfold KeyW; omega)
+    (b := 81045) (d := s) (e := s + 1) ⟨by_n, by_n⟩ ⟨by_n, by_n⟩
+    ⟨by_n, by_n⟩ ⟨by_o, by_o⟩ ⟨by_o, by_o⟩ (by unfold KeyW; omega)
     (by unfold KeyW; omega) (by unfold KeyW; omega) (by unfold KeyW; omega) hpg0 hpg1
     (by rw [hA₁']; simp only [List.length_cons, List.length_nil] at hA₁; unfold anK at hroom;
         omega))
@@ -110,23 +109,22 @@ theorem aNorm_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : 
   have k0₂ := k0_of hE hI₂
   have g₂ : ∀ q, 80000 ≤ q → q < 90000 → ¬ KeyW q → ¬ (81044 ≤ q ∧ q ≤ 81047) →
       c₂.nreg q = c.nreg q := fun q a b h1 h2 => by
-    rw [f₂ q a b h1 (by omega) (by omega), f₁ q (by omega) (by omega)]
-  have y0 : c₂.nreg s = c.nreg s := g₂ s (by omega) (by omega) (by unfold KeyW; omega) (by omega)
+    rw [f₂ q a b h1 by_o by_o, f₁ q by_o by_o]
+  have y0 : c₂.nreg s = c.nreg s := g₂ s by_o by_o (by unfold KeyW; omega) by_o
   have y1 : c₂.nreg (s + 1) = c.nreg (s + 1) :=
-    g₂ _ (by omega) (by omega) (by unfold KeyW; omega) (by omega)
+    g₂ _ by_o by_o (by unfold KeyW; omega) by_o
   by_cases a3 : c₂.nreg 81011 < c₂.nreg 81046
   · have hpos : 0 < E.M.param (Qof E.P) ⟨c.nreg s, c.nreg (s + 1)⟩ := by
       rw [k0₂] at a3; exact b46.2.1 (by have := b46.1; omega)
-    refine (FRS.ifT a3 (FRS.skip (K := 0) hI₂ ⟨y0, ?_, fun q a b h1 h2 h3 => g₂ q a b h1 h3⟩)).mono
-      (by omega) (fun _ h => h)
+    refine (FRS.ifT a3 (FRS.skip (K := 0) hI₂ ⟨y0, ?_, fun q a b h1 h2 h3 => g₂ q a b h1 h3⟩)).le
     rw [ite_eq_right (ne_of_gt hpos), y1]
   · have hz : E.M.param (Qof E.P) ⟨c.nreg s, c.nreg (s + 1)⟩ = 0 := by
       rw [k0₂] at a3
-      have h46 : c₂.nreg 81046 ≠ 1 := by omega
+      have h46 : c₂.nreg 81046 ≠ 1 := by_o
       exact le_antisymm (not_lt.1 (fun h => h46 (b46.2.2 h))) hp.1
     have okz : okB E.W c₂.nmem [.constN (s + 1) 0] c₂.nreg := by
       simp only [okB, okI, FScr, FOut]; norm_num; omega
-    refine (FRS.ifF a3 (FRS.block hB _ hI₂ okz)).mono (by simp) (fun c' h' => ?_)
+    refine (FRS.ifF a3 (FRS.block hB _ hI₂ okz)).mono by_s (fun c' h' => ?_)
     have e' : ∀ q, c'.nreg q = regB c₂.nmem [.constN (s + 1) 0] c₂.nreg q := fun q => by rw [h']
     refine ⟨by rw [e']; simp [regB, regI, upd]; exact y0, by rw [e', ite_eq_left hz]; simp [regB, regI, upd],
       fun q a b h1 h2 h3 => by rw [e']; simp [regB, regI, upd, h2]; exact g₂ q a b h1 h3⟩
@@ -156,8 +154,8 @@ theorem pbL_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
       c'.nreg 81077 = c₀.nmem (prOf (c.nreg 81076) (c.nreg 81079) + 4) ∧
       c'.nreg 81070 = c₀.nmem (prOf (c.nreg 81076) (c.nreg 81079)) ∧
       ∀ q, q ≠ 81070 → q ≠ 81073 → q ≠ 81077 → q ≠ 81080 → c'.nreg q = c.nreg q) := by
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
-  have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
+  have hA0 := hI.hA
+  have hAW := hI.hw.1 ALLOC
   have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by unfold FFix; omega), hE.k1]
   have k3 : c.nreg 81014 = 3 := by rw [hI.hin _ (by unfold FFix; omega), hE.k3]
   unfold prOf at *
@@ -166,18 +164,18 @@ theorem pbL_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
   refine (FRS.block hB _ hI ok).mono (by simp [pbL]) (fun c' h' => ?_)
   have e' : ∀ q, c'.nreg q = regB c.nmem pbL c.nreg q := fun q => by rw [h']
   have ea : c.nreg 81076 + 1 + c.nreg 81079 + c.nreg 81079 + c.nreg 81079 + c.nreg 81079 +
-      c.nreg 81079 + c.nreg 81079 + c.nreg 81079 = c.nreg 81076 + 1 + 7 * c.nreg 81079 := by ring
+      c.nreg 81079 + c.nreg 81079 + c.nreg 81079 = c.nreg 81076 + 1 + 7 * c.nreg 81079 := by_r
   refine ⟨?_, ?_, ?_, fun q a b d e => ?_⟩
   · rw [e']; simp [pbL, regB, regI, upd, k1]; rw [← ea]
   · rw [e']; simp [pbL, regB, regI, upd, k1, k3]
     rw [show c.nreg 81076 + 1 + c.nreg 81079 + c.nreg 81079 + c.nreg 81079 + c.nreg 81079 +
       c.nreg 81079 + c.nreg 81079 + c.nreg 81079 + 3 + 1 =
       c.nreg 81076 + 1 + 7 * c.nreg 81079 + 4 by ring]
-    exact hI.hm _ (by omega)
+    exact hI.hm _ by_o
   · rw [e']; simp [pbL, regB, regI, upd, k1]
     rw [show c.nreg 81076 + 1 + c.nreg 81079 + c.nreg 81079 + c.nreg 81079 + c.nreg 81079 +
       c.nreg 81079 + c.nreg 81079 + c.nreg 81079 = c.nreg 81076 + 1 + 7 * c.nreg 81079 by ring]
-    exact hI.hm _ (by omega)
+    exact hI.hm _ by_o
   · rw [e', regB_other _ _ _ (fun i hi => ?_)]
     simp only [pbL, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
@@ -264,18 +262,18 @@ theorem pieceBody_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       (c.nreg 81007 = 1 → c'.nreg 81007 = 1) ∧ c'.nreg 81079 = i + 1 ∧
       PieceDone E c₀ c L i (c'.nreg 81007)) := by
   obtain ⟨hPR, hs0, hk0, hk1⟩ := hG
-  refine FRS.seq (K₁ := 12) (K₂ := Kp + 8) (pbL_fs hE hB hI (by rw [hL, hi]; exact hPR))
-    (fun c₁ hI₁ hA₁ ⟨v80, v77, v70, f₁⟩ => ?_) |>.mono (by omega) (fun _ h => h)
+  refine FRS.seq (K₁ := 12) (K₂ := Kp + 8) (pbL_fs hE hB hI (by rwa [hL, hi]))
+    (fun c₁ hI₁ hA₁ ⟨v80, v77, v70, f₁⟩ => ?_) |>.le
   rw [hL, hi] at v80 v77 v70
   have k0₁ := k0_of hE hI₁
   have k1₁ : c₁.nreg 81012 = 1 := by rw [hI₁.hin _ (by unfold FFix; omega), hE.k1]
-  have hw₁ : FWin E c₁ := hw.congr' (fun q a b => f₁ q (by omega) (by omega) (by omega) (by omega))
-  have e40 : c₁.nreg 81140 = c.nreg 81140 := f₁ _ (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num)
-  have e41 : c₁.nreg 81141 = c.nreg 81141 := f₁ _ (by norm_num) (by norm_num) (by norm_num)
-    (by norm_num)
+  have hw₁ : FWin E c₁ := hw.congr' (fun q a b => f₁ q by_o by_o by_o by_o)
+  have e40 : c₁.nreg 81140 = c.nreg 81140 := f₁ _ by_n by_n by_n
+    by_n
+  have e41 : c₁.nreg 81141 = c.nreg 81141 := f₁ _ by_n by_n by_n
+    by_n
   have e79 : c₁.nreg 81079 = i := by
-    rw [f₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num), hi]
+    rw [f₁ _ by_n by_n by_n by_n, hi]
   -- the final counter step
   have fin : ∀ c₂ : Config, FInv E.W c₀ c₂ → FWin E c₂ →
       (∀ q, 81011 ≤ q → q < 83000 → ¬ PW q → q ≠ 81079 → c₂.nreg q = c.nreg q) →
@@ -291,71 +289,70 @@ theorem pieceBody_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       have := hPR; have := hI.hA; have := hI.hw.1 ALLOC; unfold prOf at *; omega
     have ok : okB E.W c₂.nmem [.addN 81079 81079 81012] c₂.nreg := by
       simp only [okB, okI, FScr, FOut, k1₂, h79]; norm_num; omega
-    refine (FRS.block hB _ hI₂ ok).mono (by simp) (fun c' h' => ?_)
+    refine (FRS.block hB _ hI₂ ok).mono by_s (fun c' h' => ?_)
     have e' : ∀ q, c'.nreg q = regB c₂.nmem [.addN 81079 81079 81012] c₂.nreg q := fun q => by
       rw [h']
     have f' : ∀ q, q ≠ 81079 → c'.nreg q = c₂.nreg q := fun q h => by
       rw [e']; simp [regB, regI, upd, h]
-    have g07 : c'.nreg 81007 = c₂.nreg 81007 := f' _ (by norm_num)
-    exact ⟨hw₂.congr' (fun q a b => f' q (by omega)), fun q a b hq => by
+    have g07 : c'.nreg 81007 = c₂.nreg 81007 := f' _ by_n
+    exact ⟨hw₂.congr' (fun q a b => f' q by_o), fun q a b hq => by
       rw [f' q (fun h => hq (Or.inr (Or.inr (Or.inr (Or.inl h))))),
         f₂ q a b hq (fun h => hq (Or.inr (Or.inr (Or.inr (Or.inl h)))))],
       fun h => by rw [g07]; exact m₂ h, by rw [e']; simp [regB, regI, upd, k1₂, h79],
-      by rw [g07]; exact d₂⟩
+      by rwa [g07]⟩
   have nPW : ∀ q, ¬ PW q → q ≠ 81070 ∧ q ≠ 81073 ∧ q ≠ 81077 ∧ q ≠ 81080 := fun q hq =>
-    ⟨fun h => hq (Or.inr (Or.inl ⟨by omega, by omega⟩)),
-      fun h => hq (Or.inr (Or.inl ⟨by omega, by omega⟩)),
+    ⟨fun h => hq (Or.inr (Or.inl ⟨by_o, by_o⟩)),
+      fun h => hq (Or.inr (Or.inl ⟨by_o, by_o⟩)),
       fun h => hq (Or.inr (Or.inr (Or.inl h))), fun h => hq (Or.inr (Or.inr (Or.inr (Or.inr h))))⟩
   by_cases a1 : c₁.nreg 81011 < c₁.nreg 81077
   · refine FRS.seq (K₁ := Kp + 6) (K₂ := 1) (Q₁ := fun c₂ => FWin E c₂ ∧
         (∀ q, 81011 ≤ q → q < 83000 → ¬ PW q → q ≠ 81079 → c₂.nreg q = c.nreg q) ∧
         c₂.nreg 81079 = i ∧ (c.nreg 81007 = 1 → c₂.nreg 81007 = 1) ∧
         PieceDone E c₀ c L i (c₂.nreg 81007))
-      (FRS.ifT a1 ?_ |>.mono (K := Kp + 6) (by omega)
-      (fun _ h => h)) (fun c₂ hI₂ hA₂ h₂ => ?_) |>.mono (by omega) (fun _ h => h)
+      (FRS.ifT a1 ?_ |>.mono (K := Kp + 6) by_o
+      (fun _ h => h)) (fun c₂ hI₂ hA₂ h₂ => ?_) |>.le
     rotate_left
-    · exact fin c₂ hI₂ h₂.1 h₂.2.1 h₂.2.2.1 h₂.2.2.2.1 h₂.2.2.2.2 (by omega)
+    · exact fin c₂ hI₂ h₂.1 h₂.2.1 h₂.2.2.1 h₂.2.2.2.1 h₂.2.2.2.2 by_o
     by_cases a2 : c₁.nreg 81077 = c₁.nreg 81012
     · have hk : c₀.nmem (prOf L i + 4) = 1 := by rw [← v77, a2, k1₁]
       obtain ⟨Hs, Cα, N, γ', hK, hKp⟩ := hk1 hk
       refine (FRS.ifEq_eq a2 (kind1_fs hE hB hBT hI₁ hw₁ (by rw [v80]; exact hK.hPR)
         (by rw [v80]; exact hK.hCD) (by rw [v80]; exact hK.hwf) (by rw [v80]; exact hK.hNW)
         hK.hcan hK.hQ (by rw [v80]; exact hK.hdir) (by rw [v80]; exact hK.hs) hK.hmn
-        (by rw [v80]; exact hK.hVs) (by rw [e40, e41]; exact hJ) hnW hK.h2α hK.hWa hK.hdW
-        (by omega))).mono (by omega) (fun c₂ ⟨w₂, f₂, m₂, J, hV, ht, hs1, hs2⟩ => ?_)
+        (by rw [v80]; exact hK.hVs) (by rwa [e40, e41]) hnW hK.h2α hK.hWa hK.hdW
+        by_o)).mono by_o (fun c₂ ⟨w₂, f₂, m₂, J, hV, ht, hs1, hs2⟩ => ?_)
       rw [v80] at hV ht hs1 hs2
       refine ⟨w₂, fun q a b hq h79 => by
         rw [f₂ q a b (fun h => hq (Or.inl h)), f₁ q (nPW q hq).1 (nPW q hq).2.1 (nPW q hq).2.2.1
           (nPW q hq).2.2.2],
-        by rw [f₂ _ (by norm_num) (by norm_num) (by unfold K1W DescW NodeW LeafW KeyW VertW; omega),
+        by rw [f₂ _ by_n by_n (by unfold K1W DescW NodeW LeafW KeyW VertW; omega),
           e79],
-        fun h => m₂ (by rw [f₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num)]; exact h),
+        fun h => m₂ (by rwa [f₁ _ by_n by_n by_n by_n]),
         ⟨fun h0 => absurd h0 (by rw [hk]; norm_num), fun _ => ⟨Hs, Cα, N, γ', hK, J, hV, ht,
-          fun h => (hs1 h).congr (by rw [f₁ _ (by norm_num) (by norm_num) (by norm_num)
-            (by norm_num)]) (by rw [f₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num)]),
-          fun h => ⟨(hs2 h).1.congr (by rw [f₁ _ (by norm_num) (by norm_num) (by norm_num)
-            (by norm_num)]) (by rw [f₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num)]),
-            (hs2 h).2.congr (by rw [f₁ _ (by norm_num) (by norm_num) (by norm_num)
-            (by norm_num)]) (by rw [f₁ _ (by norm_num) (by norm_num) (by norm_num)
-            (by norm_num)])⟩⟩⟩⟩
+          fun h => (hs1 h).congr (by rw [f₁ _ by_n by_n by_n
+            by_n]) (by rw [f₁ _ by_n by_n by_n by_n]),
+          fun h => ⟨(hs2 h).1.congr (by rw [f₁ _ by_n by_n by_n
+            by_n]) (by rw [f₁ _ by_n by_n by_n by_n]),
+            (hs2 h).2.congr (by rw [f₁ _ by_n by_n by_n
+            by_n]) (by rw [f₁ _ by_n by_n by_n
+            by_n])⟩⟩⟩⟩
     · refine (FRS.ifEq_ne (K := Kp) hI₁ a2 ⟨hw₁, fun q a b hq _ => f₁ q (nPW q hq).1
         (nPW q hq).2.1 (nPW q hq).2.2.1 (nPW q hq).2.2.2, e79,
-        fun h => by rw [f₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num)]; exact h,
+        fun h => by rwa [f₁ _ by_n by_n by_n by_n],
         fun h0 => absurd h0 (by rw [← v77]; rw [k0₁] at a1; omega), fun h1 => absurd h1 (by
-          rw [← v77]; rw [k1₁] at a2; exact a2)⟩).mono (by omega) (fun _ h => h)
+          rw [← v77]; rwa [k1₁] at a2)⟩).le
   · have hk : c₀.nmem (prOf L i + 4) = 0 := by rw [← v77]; rw [k0₁] at a1; omega
     refine FRS.seq (K₁ := Kp + 2) (K₂ := 1) (FRS.ifF a1 ((kind0_fs hE hB hBT hI₁ hw₁ v70 hs0
-      (by omega)).mono hk0 (fun c₂ h => h))) (fun c₂ hI₂ hA₂ ⟨w₂, f₂, m₂, t₂⟩ => ?_) |>.mono
-      (by omega) (fun _ h => h)
+      by_o).mono hk0 (fun c₂ h => h))) (fun c₂ hI₂ hA₂ ⟨w₂, f₂, m₂, t₂⟩ => ?_) |>.le
     refine fin c₂ hI₂ w₂ (fun q a b hq h79 => by
       rw [f₂ q a b (fun h => hq (Or.inl (Or.inl (Or.inr (Or.inl (Or.inr (Or.inl h)))))))
-        (fun h => hq (Or.inr (Or.inl ⟨by omega, by omega⟩)))
-        (fun h => hq (Or.inr (Or.inl ⟨by omega, by omega⟩))),
+        (fun h => hq (Or.inr (Or.inl ⟨by_o, by_o⟩)))
+        (fun h => hq (Or.inr (Or.inl ⟨by_o, by_o⟩))),
         f₁ q (nPW q hq).1 (nPW q hq).2.1 (nPW q hq).2.2.1 (nPW q hq).2.2.2])
-      (by rw [f₂ _ (by norm_num) (by norm_num) (by unfold VertW; omega) (by norm_num)
-        (by norm_num), e79])
-      (fun h => m₂ (by rw [f₁ _ (by norm_num) (by norm_num) (by norm_num) (by norm_num)]; exact h))
-      ⟨fun _ => t₂, fun h1 => absurd h1 (by rw [hk]; norm_num)⟩ (by omega)
+      (by rw [f₂ _ by_n by_n (by unfold VertW; omega) by_n
+        by_n, e79])
+      (fun h => m₂ (by rwa [f₁ _ by_n by_n by_n by_n]))
+      ⟨fun _ => t₂, fun h1 => absurd h1 (by rw [hk]; norm_num)⟩ by_o
 
 
 theorem PieceDone.congr {cT cT' : Config} {L i f : ℕ} (h : PieceDone E c₀ cT L i f)
@@ -397,24 +394,24 @@ theorem pieceLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       fun i hi => by rw [h0] at hi; omega⟩ (by rw [hq0]; omega)).mono (by rw [hq0])
     (fun c' hP => ?_)
   · obtain ⟨dw, df, dm, dle, dd⟩ := hd
-    have d78 : d.nreg 81078 = q := by rw [df _ (by norm_num) (by norm_num) n78, hq]
-    have d40 := df _ (by norm_num) (by norm_num) n40
-    have d41 := df _ (by norm_num) (by norm_num) n41
+    have d78 : d.nreg 81078 = q := by rw [df _ by_n by_n n78, hq]
+    have d40 := df _ by_n by_n n40
+    have d41 := df _ by_n by_n n41
     rw [d78] at hlt
-    refine (pieceBody_fs hE hB hBT hId dw (by rw [df _ (by norm_num) (by norm_num) n76, hL]) rfl
-      (hG _ hlt) (by rw [d40, d41]; exact hJ) hnW hroomd).mono le_rfl
+    refine (pieceBody_fs hE hB hBT hId dw (by rw [df _ by_n by_n n76, hL]) rfl
+      (hG _ hlt) (by rwa [d40, d41]) hnW hroomd).mono le_rfl
       (fun c' ⟨w', f', m', h79, pd⟩ => ?_)
-    have c78 : c'.nreg 81078 = q := by rw [f' _ (by norm_num) (by norm_num) n78, d78]
+    have c78 : c'.nreg 81078 = q := by rw [f' _ by_n by_n n78, d78]
     refine ⟨⟨w', fun r a b hr => (f' r a b hr).trans (df r a b hr), fun h => m' (dm h),
-      by omega, fun i hi => ?_⟩, by omega⟩
+      by_o, fun i hi => ?_⟩, by_o⟩
     rcases Nat.lt_or_ge i (d.nreg 81079) with h | h
     · exact (dd i h).mono m'
     · rw [show i = d.nreg 81079 by omega]
       exact pd.congr d40.symm d41.symm
   · obtain ⟨hP1, hex⟩ := hP
     obtain ⟨cw, cf, cm, cle, cd⟩ := hP1
-    have c78 : c'.nreg 81078 = q := by rw [cf _ (by norm_num) (by norm_num) n78, hq]
-    exact ⟨cw, cf, cm, fun i hi => cd i (by omega)⟩
+    have c78 : c'.nreg 81078 = q := by rw [cf _ by_n by_n n78, hq]
+    exact ⟨cw, cf, cm, fun i hi => cd i by_o⟩
 
 end
 

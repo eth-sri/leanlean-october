@@ -43,7 +43,7 @@ theorem sideInArc_iff_cycDist {n k x y : ℝ} (_hk : 0 ≤ k ∧ k < n) (hx : 0 
   · rw [ite_eq_left h2, ite_eq_left h1, ite_eq_left h2]
     constructor
     · rintro ⟨-, h⟩; linarith
-    · intro h; exact ⟨h1, by linarith⟩
+    · intro h; exact ⟨h1, by_l⟩
   · rw [ite_eq_right (not_lt.2 h2.le), ite_eq_left h1, ite_eq_right (not_lt.2 h2.le)]
     exact ⟨fun _ => by linarith [hy.1, hx.2], fun _ => Or.inl h1⟩
   · rw [ite_eq_left h2, ite_eq_right (not_lt.2 h1.le), ite_eq_left h2]
@@ -55,7 +55,7 @@ theorem sideInArc_iff_cycDist {n k x y : ℝ} (_hk : 0 ≤ k ∧ k < n) (hx : 0 
     · rintro (h | h)
       · linarith
       · linarith
-    · intro h; exact Or.inr (by linarith)
+    · intro h; exact Or.inr by_l
 
 /-- An attachment event: chord index, key of this end, key of the other end. -/
 abbrev Ev := ℕ × ℝ × ℝ
@@ -78,7 +78,7 @@ theorem partner_of_sublist {L : List Ev} (hkey : ∀ e ∈ L, e.2.1 ≠ e.2.2)
     (hpair : ∀ e ∈ L, (e.1, e.2.2, e.2.1) ∈ L)
     (htwice : ∀ e ∈ L, (L.map Prod.fst).count e.1 = 2) {e₁ e₂ : Ev} (h : [e₁, e₂] <+ L)
     (hi : e₁.1 = e₂.1) : e₂ = (e₁.1, e₁.2.2, e₁.2.1) := by
-  have he₁ : e₁ ∈ L := h.subset (by simp)
+  have he₁ : e₁ ∈ L := h.subset by_s
   set F := L.filter (fun e => e.1 == e₁.1) with hF
   have hlen : F.length = 2 := by rw [hF, ← count_map_fst]; exact htwice e₁ he₁
   have hsub : [e₁, e₂] <+ F := by
@@ -88,7 +88,7 @@ theorem partner_of_sublist {L : List Ev} (hkey : ∀ e ∈ L, e.2.1 ≠ e.2.2)
   have heq : [e₁, e₂] = F := hsub.eq_of_length (by rw [hlen]; rfl)
   have hp : (e₁.1, e₁.2.2, e₁.2.1) ∈ F := by
     rw [hF, mem_filter]
-    exact ⟨hpair e₁ he₁, by simp⟩
+    exact ⟨hpair e₁ he₁, by_s⟩
   rw [← heq] at hp
   rcases mem_cons.1 hp with hp | hp
   · exfalso
@@ -115,35 +115,35 @@ theorem noCross_of_sorted {n : ℝ} {L : List Ev}
     have hmem : ∀ e ∈ [e₁, f₁, e₂, f₂], e ∈ L := fun e he => hl'.subset he
     have hne : ∀ e ∈ L, e.2.1 ≠ e.2.2 := fun e he => (hkey e he).2.2.2.2
     -- the partners
-    have he₂ : e₂ = (e₁.1, e₁.2.2, e₁.2.1) := partner_of_sublist hne hpair htwice
+    have he₂ := partner_of_sublist hne hpair htwice
       ((by simp : [e₁, e₂] <+ [e₁, f₁, e₂, f₂]).trans hl') (by rw [← h1, ← h3])
-    have hf₂ : f₂ = (f₁.1, f₁.2.2, f₁.2.1) := partner_of_sublist hne hpair htwice
+    have hf₂ := partner_of_sublist hne hpair htwice
       ((by simp : [f₁, f₂] <+ [e₁, f₁, e₂, f₂]).trans hl') (by rw [← h2, ← h4])
     -- the order
     have hpr : ∀ x y : Ev, [x, y] <+ [e₁, f₁, e₂, f₂] → EvLe n x y := fun x y h =>
       pairwise_pair.1 (hsorted.sublist (h.trans hl'))
-    have hef := hpr e₁ f₁ (by simp)
-    have hfe := hpr f₁ e₂ (by simp)
-    have hff := hpr e₂ f₂ (by simp)
+    have hef := hpr e₁ f₁ by_s
+    have hfe := hpr f₁ e₂ by_s
+    have hff := hpr e₂ f₂ by_s
     set a := e₁.2.1
     set b := e₁.2.2
     set c := f₁.2.1
     set d := f₁.2.2
-    obtain ⟨ha0, han, hb0, hbn, hab⟩ := hkey e₁ (hmem e₁ (by simp))
-    obtain ⟨hc0, hcn, hd0, hdn, hcd⟩ := hkey f₁ (hmem f₁ (by simp))
+    obtain ⟨ha0, han, hb0, hbn, hab⟩ := hkey e₁ (hmem e₁ by_s)
+    obtain ⟨hc0, hcn, hd0, hdn, hcd⟩ := hkey f₁ (hmem f₁ by_s)
     rw [he₂] at hfe hff
     rw [hf₂] at hff
     unfold EvLe at hef hfe hff
     simp only at hef hfe hff
     have hij' : e₁.1 ≠ f₁.1 := by rw [← h1, ← h2]; exact hij
-    have hX := hcross e₁ (hmem e₁ (by simp)) f₁ (hmem f₁ (by simp)) hij'
+    have hX := hcross e₁ (hmem e₁ by_s) f₁ (hmem f₁ by_s) hij'
     have hsame' : ¬ (a = c ∧ b = d) := fun ⟨h5, h6⟩ =>
-      hij' (hsame e₁ (hmem e₁ (by simp)) f₁ (hmem f₁ (by simp)) (Prod.ext h5 h6))
+      hij' (hsame e₁ (hmem e₁ by_s) f₁ (hmem f₁ by_s) (Prod.ext h5 h6))
     -- `a ≤ c ≤ b ≤ d`
     have hac : a ≤ c := by rcases hef with h | h; exact h.le; exact h.1.le
     have hcb : c ≤ b := by rcases hfe with h | h; exact h.le; exact h.1.le
     have hbd : b ≤ d := by rcases hff with h | h; exact h.le; exact h.1.le
-    have hab' : a < b := lt_of_le_of_ne (hac.trans hcb) hab
+    have hab' := lt_of_le_of_ne (hac.trans hcb) hab
     rcases hac.lt_or_eq with hac | hac
     · rcases hcb.lt_or_eq with hcb | hcb
       · rcases hbd.lt_or_eq with hbd | hbd
@@ -156,7 +156,7 @@ theorem noCross_of_sorted {n : ℝ} {L : List Ev}
           rcases hff with h | ⟨-, h⟩
           · linarith
           · unfold cycDist at h
-            rw [ite_eq_right (not_lt.2 hab'.le), ite_eq_right (not_lt.2 (show c ≤ d by linarith))] at h
+            rw [ite_eq_right (not_lt.2 hab'.le), ite_eq_right (not_lt.2 (by linarith))] at h
             linarith
       · -- tie at `c = b` between `f₁` and `e₂`
         rcases hfe with h | ⟨-, h⟩
@@ -171,7 +171,7 @@ theorem noCross_of_sorted {n : ℝ} {L : List Ev}
       · have hcd' : c < d := by linarith
         unfold cycDist at h
         rw [ite_eq_left hcd', ite_eq_left hab'] at h
-        exact hsame' ⟨hac, by linarith⟩
+        exact hsame' ⟨hac, by_l⟩
   · rw [mem_map] at hx
     obtain ⟨e, he, rfl⟩ := hx
     exact htwice e he

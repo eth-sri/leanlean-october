@@ -54,8 +54,8 @@ def tTurnP : Stmt :=
     (.ifLtN 83005 83023 (block [.inputSize 50002, .subN 50002 50002 50032])
       (.instr (.subN 50002 83005 50032)))) (.seq locDir turnTail)
 
-theorem wr_tTurnN : wr Bturn tTurnN = true := by decide
-theorem wr_tTurnP : wr Bturn tTurnP = true := by decide
+theorem wr_tTurnN : wr Bturn tTurnN = true := by_d
+theorem wr_tTurnP : wr Bturn tTurnP = true := by_d
 
 /-- The direction procedure's precondition in a run. -/
 theorem locDPre_of (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {c₁ : Config}
@@ -65,8 +65,8 @@ theorem locDPre_of (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {c₁ : Config
   obtain ⟨hMD, hwf⟩ := hI.modelDesc hE
   have hAW := hI.hw.1 ALLOC
   obtain ⟨h6, hloc⟩ := locChainWF_of hwf hAW hE.hW
-  refine ⟨hE.hG, by have := hE.hW; unfold hostWords at this; omega, by rw [h00]; exact h6,
-    by rw [h00, hm]; exact hloc, M, by rw [h00, hm]; exact hMD, he⟩
+  refine ⟨hE.hG, by have := hE.hW; unfold hostWords at this; omega, by rwa [h00],
+    by rwa [h00, hm], M, by rwa [h00, hm], he⟩
 
 /-- The turn code is `1` iff the turn is positive. -/
 theorem sgnCode_eq_one {x : ℝ} : sgnCode x = 1 ↔ 0 < x := by
@@ -83,8 +83,8 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
       exec_block
       exact ⟨rfl, by config_simp, by config_simp, rfl, by config_simp; rfl, by config_simp⟩
     obtain ⟨q00, q02, qm, qA, q08⟩ := q
-    have i5 := hI.hin 83005 (by norm_num) (by norm_num)
-    have i8 := hI.hin 83008 (by norm_num) (by norm_num)
+    have i5 := hI.hin 83005 by_n by_n
+    have i8 := hI.hin 83008 by_n by_n
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, d₂⟩ := locDir_ok P W c₁ e₁.wb_right
       (locDPre_of hE hI q00 qm qA (by rw [q02, i5]; exact hE.hxe))
     have hMD : ModelDescAt c₁.nmem (c₁.nreg 50000) (Qof P) M := by
@@ -99,18 +99,18 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
       · omega
       · exact ⟨rfl, by config_simp, by config_simp, by config_simp⟩
     obtain ⟨q3a, q3b, q3c⟩ := q3
-    obtain ⟨c₄, k₄, e₄, hk₄, o₄, -⟩ := turnOut_exec (P := P) c₃ e₃.wb_right (by omega) q3b
+    obtain ⟨c₄, k₄, e₄, hk₄, o₄, -⟩ := turnOut_exec (P := P) c₃ e₃.wb_right by_o q3b
       (by rw [q3c, hd]; exact dirCode_le_two _ _)
     have ex : Exec P W tTurnN c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-    have hfr : FrameB Bturn c c₄ := exec_frameB ex wr_tTurnN
-    refine ⟨c₄, _, ex, by omega, ?_, hI.prim ex.wb_right (frame_of_frameB hfr Bturn_band _)⟩
+    have hfr := exec_frameB ex wr_tTurnN
+    refine ⟨c₄, _, ex, by_o, ?_, hI.prim ex.wb_right (frame_of_frameB hfr Bturn_band _)⟩
     have e08 : c₂.nreg 83008 = c₀.nreg 83008 := by
-      rw [f₂.1 83008 (by decide), q08, i8]
+      rw [f₂.1 83008 by_d, q08, i8]
     rw [o₄, q3c, q3a, hd, e08, ← sgnCode_turnNext, sgnCode_eq_one]
     rfl
   · have hw := hI.hw
-    have i5 := hI.hin 83005 (by norm_num) (by norm_num)
-    have i8 := hI.hin 83008 (by norm_num) (by norm_num)
+    have i5 := hI.hin 83005 by_n by_n
+    have i8 := hI.hin 83008 by_n by_n
     have h23 := hI.h23
     have hxe := hE.hxe
     have hn : ∀ C : Chain, M = chainModel C → 6 ≤ c₀.nreg 83005 := fun C hM =>
@@ -119,14 +119,14 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
     set n := M.W.n
     have hpe : ∃ pe, pe = (c₀.nreg 83005 + n - 1) % n ∧ pe < n ∧
         (c₀.nreg 83005 = 0 → pe = P.n - 1) ∧ (0 < c₀.nreg 83005 → pe = c₀.nreg 83005 - 1) := by
-      refine ⟨_, rfl, Nat.mod_lt _ (by omega), fun h0 => ?_, fun h0 => ?_⟩
+      refine ⟨_, rfl, Nat.mod_lt _ by_o, fun h0 => ?_, fun h0 => ?_⟩
       · rcases hE.hkind with ⟨H, C, -, -, -, -, hM⟩ | hI'
         · exact absurd h0 (by have := hn C hM; omega)
         · have : n = P.n := by
             simp only [n, hI', interiorModel, NFLoc.interiorWalk_n]; exact shear_n _ _
-          rw [h0, this, Nat.zero_add, Nat.mod_eq_of_lt (by omega)]
+          rw [h0, this, Nat.zero_add, Nat.mod_eq_of_lt by_o]
       · rw [show c₀.nreg 83005 + n - 1 = (c₀.nreg 83005 - 1) + n by omega, Nat.add_mod_right,
-          Nat.mod_eq_of_lt (by omega)]
+          Nat.mod_eq_of_lt by_o]
     obtain ⟨pe, hpe, hpen, hp0, hp1⟩ := hpe
     obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W
         (.seq (block [.copyN 50000 83000, .constN 50032 1])
@@ -151,18 +151,18 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
       · refine spec_ifLtN_true h0 ?_
         exec_block
         · have := hE.hW; unfold hostWords at this; omega
-        · refine ⟨by omega, by config_simp; exact p00, ?_, pm, by config_simp; exact pA,
+        · refine ⟨by_o, by config_simp; exact p00, ?_, pm, by config_simp; exact pA,
             by config_simp; exact p08⟩
           config_simp
           rw [p32, hp0 (by rw [p05, i5, p23, h23] at h0; omega)]
       · refine spec_ifLtN_false h0 (spec_instr (Exec.subN w' _ _ _) fun _ => ?_)
-        refine ⟨by omega, by config_simp; exact p00, ?_, pm, by config_simp; exact pA,
+        refine ⟨by_o, by config_simp; exact p00, ?_, pm, by config_simp; exact pA,
           by config_simp; exact p08⟩
         config_simp
         rw [p32, p05, i5, hp1 (by rw [p05, i5, p23, h23] at h0; omega)]
     obtain ⟨q00, q02, qm, qA, q08⟩ := q
     obtain ⟨c₂, k₂, e₂, hk₂, f₂, d₂⟩ := locDir_ok P W c₁ e₁.wb_right
-      (locDPre_of hE hI q00 qm qA (by rw [q02]; exact hpen))
+      (locDPre_of hE hI q00 qm qA (by rwa [q02]))
     have hMD : ModelDescAt c₁.nmem (c₁.nreg 50000) (Qof P) M := by
       rw [q00, qm]; exact (hI.modelDesc hE).1
     have hd := d₂ M hMD
@@ -176,13 +176,13 @@ theorem turn_ok : TurnOK tTurnN tTurnP 5200 := by
       · omega
       · exact ⟨rfl, by config_simp, by config_simp, by config_simp⟩
     obtain ⟨q3a, q3b, q3c⟩ := q3
-    obtain ⟨c₄, k₄, e₄, hk₄, o₄, -⟩ := turnOut_exec (P := P) c₃ e₃.wb_right (by omega) q3b
+    obtain ⟨c₄, k₄, e₄, hk₄, o₄, -⟩ := turnOut_exec (P := P) c₃ e₃.wb_right by_o q3b
       (by rw [q3c, hd]; exact dirCode_le_two _ _)
     have ex : Exec P W tTurnP c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-    have hfr : FrameB Bturn c c₄ := exec_frameB ex wr_tTurnP
-    refine ⟨c₄, _, ex, by omega, ?_, hI.prim ex.wb_right (frame_of_frameB hfr Bturn_band _)⟩
+    have hfr := exec_frameB ex wr_tTurnP
+    refine ⟨c₄, _, ex, by_o, ?_, hI.prim ex.wb_right (frame_of_frameB hfr Bturn_band _)⟩
     have e08 : c₂.nreg 83008 = c₀.nreg 83008 := by
-      rw [f₂.1 83008 (by decide), q08, i8]
+      rw [f₂.1 83008 by_d, q08, i8]
     rw [o₄, q3c, q3a, hd, e08, hpe, ← sgnCode_turnPrev M hxe, sgnCode_eq_one]
     rfl
 

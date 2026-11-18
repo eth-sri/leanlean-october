@@ -60,7 +60,7 @@ theorem ifEqN_eq {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → P
     (h : c.nreg a = c.nreg b) (ht : ∃ c' k, Exec P W t c c' k ∧ Q c' (k + 4)) :
     ∃ c' k, Exec P W (ifEqN a b t e) c c' k ∧ Q c' k := by
   unfold ifEqN
-  refine spec_ifLtN_false (by omega) (spec_ifLtN_false (by omega) ?_)
+  refine spec_ifLtN_false by_o (spec_ifLtN_false by_o ?_)
   obtain ⟨c', k, ex, q⟩ := ht
   exact ⟨c', k, ex, by rwa [show k + 2 + 2 = k + 4 by omega]⟩
 
@@ -71,9 +71,9 @@ theorem ifEqN_ne {a b : ℕ} {t e : Stmt} {c : Config} {Q : Config → ℕ → P
   unfold ifEqN
   obtain ⟨c', k, ex, q⟩ := he
   by_cases hlt : c.nreg a < c.nreg b
-  · exact ⟨c', k + 1, .ifLtN_true hlt ex, q _ (by omega)⟩
+  · exact ⟨c', k + 1, .ifLtN_true hlt ex, q _ by_o⟩
   · have hlt' : c.nreg b < c.nreg a := by omega
-    exact ⟨c', k + 1 + 2, .ifLtN_false hlt (.ifLtN_true hlt' ex), q _ (by omega)⟩
+    exact ⟨c', k + 1 + 2, .ifLtN_false hlt (.ifLtN_true hlt' ex), q _ by_o⟩
 
 /-- Spec of `ldF`. -/
 theorem ldF_exec {c : Config} (hw : WordsBounded W c) (d f x : ℕ)
@@ -139,16 +139,16 @@ theorem DFr.trans {lo hi : ℕ} {c₁ c₂ c₃ : Config} (h₁ : DFr lo hi c₁
 theorem DRegs.of_regs {A R K CB RB LB : ℕ} {c c' : Config} (h : DRegs A R K CB RB LB c)
     (k : ∀ r, Prot r → r ≠ ALLOC → c'.nreg r = c.nreg r) : DRegs A R K CB RB LB c' := by
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun f hf' => ?_⟩
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.zero
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.one
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.two
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rR
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rK
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rCB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rRB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rLB
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rA
-  · rw [k _ (by unfold Prot; omega) (by decide)]; exact h.rR1
+  · rw [k _ (by unfold Prot; omega) by_d]; exact h.zero
+  · rw [k _ (by unfold Prot; omega) by_d]; exact h.one
+  · rw [k _ (by unfold Prot; omega) by_d]; exact h.two
+  · rw [k _ (by unfold Prot; omega) by_d]; exact h.rR
+  · rw [k _ (by unfold Prot; omega) by_d]; exact h.rK
+  · rw [k _ (by unfold Prot; omega) by_d]; exact h.rCB
+  · rw [k _ (by unfold Prot; omega) by_d]; exact h.rRB
+  · rw [k _ (by unfold Prot; omega) by_d]; exact h.rLB
+  · rw [k _ (by unfold Prot; omega) by_d]; exact h.rA
+  · rw [k _ (by unfold Prot; omega) by_d]; exact h.rR1
   · rw [k _ (by unfold Prot fb; omega) (by unfold fb ALLOC; omega)]; exact h.base f hf'
 
 theorem DRegs.frame {A R K CB RB LB lo hi : ℕ} {c c' : Config} (h : DRegs A R K CB RB LB c)
@@ -167,7 +167,7 @@ theorem addr_inj {A R f g i j : ℕ} (hi : i < R) (hj : j < R)
   rcases lt_trichotomy f g with hfg | rfl | hfg
   · have : (f + 1) * R ≤ g * R := Nat.mul_le_mul_right _ hfg
     rw [Nat.succ_mul] at this; omega
-  · exact ⟨rfl, by omega⟩
+  · exact ⟨rfl, by_o⟩
   · have : (g + 1) * R ≤ f * R := Nat.mul_le_mul_right _ hfg
     rw [Nat.succ_mul] at this; omega
 
@@ -188,7 +188,7 @@ theorem fv_store_out {m : ℕ → ℕ} {A R f i v a : ℕ} (hf : f < 19) (hi : i
   intro h
   rcases ha with ha | ha
   · omega
-  · have : (f + 1) * R ≤ 19 * R := Nat.mul_le_mul_right _ (by omega)
+  · have : (f + 1) * R ≤ 19 * R := Nat.mul_le_mul_right _ by_o
     rw [Nat.succ_mul] at this; omega
 
 end

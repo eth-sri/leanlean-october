@@ -34,10 +34,10 @@ theorem Input.key_first_le (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.lengt
     M.key (Qof P) (wposOf L (E.getD 0 0)) ≤ M.key (Qof P) (wposOf L (E.getD m 0)) := by
   rcases Nat.eq_zero_or_pos m with rfl | hpos
   · exact le_rfl
-  rw [h.key_s (by omega), h.key_s hm, BuildSort.kap_eq (by rw [h.length_evs]; omega),
-    BuildSort.kap_eq (by rw [h.length_evs]; exact hm)]
+  rw [h.key_s by_o, h.key_s hm, BuildSort.kap_eq (by rw [h.length_evs]; omega),
+    BuildSort.kap_eq (by rwa [h.length_evs])]
   exact BuildSort.key_le_of_evLe (List.pairwise_iff_getElem.1 h.sorted 0 m (by
-    rw [length_map]; omega) (by rw [length_map]; exact hm) hpos)
+    rw [length_map]; omega) (by rwa [length_map]) hpos)
 
 /-- **The weight of an arc record** by the machine formula. -/
 theorem Input.arcW_eq (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.length)
@@ -49,7 +49,7 @@ theorem Input.arcW_eq (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.length)
       wtF lo hi (wposOf L (E.getD m 0)).edge (wposOf L (E.getD ((m + 1) % E.length) 0)).edge pz
         (if m + 1 < E.length then 1 else 0) := by
   have hlen := h.length_E
-  have hm2 : (m + 1) % E.length < E.length := Nat.mod_lt _ (by omega)
+  have hm2 : (m + 1) % E.length < E.length := Nat.mod_lt _ by_o
   have ps := BuildRam.properPos_ev h.valid (c := E.getD m 0) (by
     exact getD_lt_of_perm h.perm hm)
   have pe := BuildRam.properPos_ev h.valid (c := E.getD ((m + 1) % E.length) 0) (by
@@ -68,7 +68,7 @@ theorem Input.arcW_eq (h : Input M (Qof P) L E) {m : ℕ} (hm : m < E.length)
     exact ⟨fun _ => this, fun _ => rfl⟩
   · rw [ite_eq_right hw, show (m + 1) % E.length = 0 by
       rw [show m + 1 = E.length by omega, Nat.mod_self]]
-    refine ⟨fun h' => absurd h' (by norm_num), fun h' => ?_⟩
+    refine ⟨fun h' => absurd h' by_n, fun h' => ?_⟩
     exact absurd (h.key_first_le hm) (not_le.2 h')
 
 end

@@ -39,7 +39,7 @@ theorem frame_copies {l : List (ℕ × ℕ)} {c c₁ : Config} {k : ℕ}
     have := hl q hq
     unfold ALLOC at hq'; omega)
   refine ⟨fun r hr _ => h1 r ?_, fun r _ => by rw [h2], fun a _ => by rw [h3], fun a _ => by rw [h4],
-    h5, by omega, by omega⟩
+    h5, by_o, by_o⟩
   intro h
   obtain ⟨q, hq, rfl⟩ := List.mem_map.1 h
   apply hr
@@ -72,14 +72,14 @@ theorem callPrim {p : Stmt} {K : ℕ} {Inp : Polygon → ℕ → Chain → Confi
     obtain ⟨q, hq, hq'⟩ := List.mem_map.1 h
     have := hl q hq
     unfold ALLOC at hq'; omega)
-  have h00 : c₁.nreg 50200 = c.nreg src := h1 _ hsrc
+  have h00 := h1 _ hsrc
   have hpre : PrimPre Inp P W c₁ := by
     refine ⟨hG, hW, ?_, H, C, ?_, hInp c₁ h1 h2 h4⟩
-    · rw [h00, hA₁, h4]; exact hwf
+    · rwa [h00, hA₁, h4]
     · rw [h00, h4]; exact hC
-  obtain ⟨c', k, e, hk, hpost, hf⟩ := hp P W c₁ e₁.wb_right hpre (by rw [hA₁]; exact hroom)
+  obtain ⟨c', k, e, hk, hpost, hf⟩ := hp P W c₁ e₁.wb_right hpre (by rwa [hA₁])
   refine ⟨c₁, c', l.length + k, h1, h2, h4, .seq e₁ e, by simp only at hk; omega, hpost H C ?_, ?_⟩
-  · rw [h00, h4]; exact hC
+  · rwa [h00, h4]
   · have := hf₁.trans hf
     exact this.mono (by
       intro b hb

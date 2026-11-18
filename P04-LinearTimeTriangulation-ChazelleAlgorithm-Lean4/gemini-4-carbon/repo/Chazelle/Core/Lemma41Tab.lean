@@ -25,7 +25,7 @@ theorem addr_lt (h : Robust A m Φ) {x v : ℕ}
     (hΦ : ∀ m', (∀ a, a < A → m' a = m a) → Φ m' → m' x = v) : x < A := by
   by_contra hx
   let m' : ℕ → ℕ := fun a => if a = x then v + 1 else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (by omega)]
+  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right by_o]
   have := hΦ m' he (h m' he)
   simp [m'] at this
 
@@ -34,7 +34,7 @@ theorem le_lt (h : Robust A m Φ) {x v : ℕ}
     (hΦ : ∀ m', (∀ a, a < A → m' a = m a) → Φ m' → m' x ≤ v) : x < A := by
   by_contra hx
   let m' : ℕ → ℕ := fun a => if a = x then v + 1 else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (by omega)]
+  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right by_o]
   have := hΦ m' he (h m' he)
   simp [m'] at this
 
@@ -45,7 +45,7 @@ theorem ptr_lt (h : Robust A m Φ) {p y v : ℕ}
   let V := p + A + 1
   let m' : ℕ → ℕ := fun a => if a = p then V else if a = V + y then v + 1 else m a
   have he : ∀ a, a < A → m' a = m a := fun a ha => by
-    simp only [m', V]; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    simp only [m', V]; rw [ite_eq_right by_o, ite_eq_right by_o]
   have := hΦ m' he (h m' he)
   simp only [m', V] at this
   split_ifs at this <;> omega
@@ -57,7 +57,7 @@ theorem bound2_lt (h : Robust A m Φ) {p u : ℕ}
   let V := p + A + 1
   let m' : ℕ → ℕ := fun a => if a = p then V else if a = V + u then A else m a
   have he : ∀ a, a < A → m' a = m a := fun a ha => by
-    simp only [m', V]; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+    simp only [m', V]; rw [ite_eq_right by_o, ite_eq_right by_o]
   have := hΦ m' he (h m' he)
   simp only [m', V] at this
   split_ifs at this <;> omega
@@ -71,7 +71,7 @@ theorem bound3_lt (h : Robust A m Φ) {p u w : ℕ}
   let m' : ℕ → ℕ := fun a =>
     if a = p then V else if a = V + u then V2 else if a = V2 + w then A else m a
   have he : ∀ a, a < A → m' a = m a := fun a ha => by
-    simp only [m', V, V2]; rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+    simp only [m', V, V2]; rw [ite_eq_right by_o, ite_eq_right by_o, ite_eq_right by_o]
   have := hΦ m' he (h m' he)
   simp only [m', V, V2] at this
   split_ifs at this <;> omega
@@ -80,7 +80,7 @@ theorem bound3_lt (h : Robust A m Φ) {p u w : ℕ}
 theorem nfWithin_lt {f : ℕ} {N : NF} (hN : NFWithin m f A N) : f < A := by
   by_contra hf
   let m' : ℕ → ℕ := fun a => if a = f then m f + 1 else m a
-  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right (by omega)]
+  have he : ∀ a, a < A → m' a = m a := fun a ha => by simp only [m']; rw [ite_eq_right by_o]
   have h1 := (hN m' he).1
   have h2 := hN.holds.1
   simp only [m', ite_true] at h1
@@ -101,12 +101,12 @@ theorem tab_lt {O : OracleIface} {P : Polygon} {h : ℕ}
       m (m (m (h + 2) + g) + 3 * i + 2) + 2 < A) := by
   have hG := hR.holds
   -- the header
-  have h0 : h < A := le_lt hR (x := h) (v := topGrade P.n + 1) fun m' _ hm' => hm'.1
-  have h1 : h + 1 < A := ptr_lt hR (p := h + 1) (y := 0) (v := P.n) fun m' _ hm' => hm'.2.1.1
+  have h0 := le_lt hR (x := h) (v := topGrade P.n + 1) fun m' _ hm' => hm'.1
+  have h1 := ptr_lt hR (p := h + 1) (y := 0) (v := P.n) fun m' _ hm' => hm'.2.1.1
   have h3 : h + 3 < A := ptr_lt hR (p := h + 3) (y := 2) (v := 1) fun m' _ hm' => by
     have := hm'.2.2.1 2 hn; simpa using this
   have h2 : h + 2 < A := bound3_lt hR (p := h + 2) (u := 0) (w := 3 * 0) fun m' he hm' => by
-    obtain ⟨-, -, -, -, hwf, -⟩ := hm'.2.2.2 0 0 (by rw [he h h0]; exact hΛ)
+    obtain ⟨-, -, -, -, hwf, -⟩ := hm'.2.2.2 0 0 (by rwa [he h h0])
       (by unfold gradeCount; omega)
     have := hwf.1; omega
   refine ⟨h0, h1, h2, h3, hG.2.1.1, hG.2.1.2.1, ?_, fun i hi => ?_, fun y hy => ?_,
@@ -128,18 +128,18 @@ theorem tab_lt {O : OracleIface} {P : Polygon} {h : ℕ}
   · refine ⟨hG.2.2.1 y hy, addr_lt hR (v := y / 2) fun m' he hm' => ?_⟩
     have := hm'.2.2.1 y hy; rwa [he _ h3] at this
   · have hgi : ∀ m' : ℕ → ℕ, (∀ a, a < A → m' a = m a) → g < m' h := fun m' he => by rw [he h h0]; exact hg
-    have hT : m (h + 2) + g < A := bound2_lt hR (p := m (h + 2) + g) (u := 3 * i)
+    have hT := bound2_lt hR (p := m (h + 2) + g) (u := 3 * i)
       fun m' he hm' => by
         obtain ⟨-, -, -, -, hwf, -⟩ := hm'.2.2.2 g i (hgi m' he) hi
         have := hwf.1; rw [he _ h2] at this; omega
-    have hO : m (m (h + 2) + g) + 3 * i + 2 < A := ptr_lt hR (y := 2) (v := gradeGran g)
+    have hO := ptr_lt hR (y := 2) (v := gradeGran g)
       fun m' he hm' => by
         obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, e3⟩ := hm'.2.2.2 g i (hgi m' he) hi
         rw [he _ h2, he _ hT] at e3; exact e3
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, e3⟩ := hG.2.2.2 g i hg hi
     refine ⟨hT, hO, e3, addr_lt hR (v := gradeGran g) fun m' he hm' => ?_⟩
     obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, -, -, e4⟩ := hm'.2.2.2 g i (hgi m' he) hi
-    rw [he _ h2, he _ hT, he _ hO] at e4; exact e4
+    rwa [he _ h2, he _ hT, he _ hO] at e4
 
 end
 

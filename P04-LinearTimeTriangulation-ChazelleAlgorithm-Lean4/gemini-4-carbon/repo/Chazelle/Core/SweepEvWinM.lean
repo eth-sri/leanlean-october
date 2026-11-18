@@ -67,15 +67,15 @@ theorem cIn_of_off {n a b x y : ℝ} (han : a < n) (hb0 : 0 ≤ b) (hbn : b < n)
         · linarith
         · exact absurd h hab
       · linarith
-  have e1 : off n x b = off n a b - off n a x := off_eq_sub hx0 hbn hxb.le
+  have e1 := off_eq_sub hx0 hbn hxb.le
   have hay : off n a y = off n a x + off n x y := by
     unfold off at *; split_ifs at * <;> linarith
   by_cases hyb : y = b
   · exact Or.inr (Or.inr hyb)
   · left
     rw [sia_iff_off hab han hb0 hbn hy0 hyn]
-    have hax : 0 ≤ off n a x := off_nonneg hx0 han
-    refine ⟨by linarith, lt_of_le_of_ne (by linarith) fun h => hyb ?_⟩
+    have hax := off_nonneg hx0 han
+    refine ⟨by_l, lt_of_le_of_ne by_l fun h => hyb ?_⟩
     unfold off at h; split_ifs at h <;> linarith
 
 section Gap
@@ -123,7 +123,7 @@ theorem gap_facts (hP : J.P.Simple) (hδ : 0 < lδ J) :
   have hn := win_n_eq (J := J)
   have hlt : 6 + tpos J.whole (J.m₁ + 2 * J.m₂) + lL1 J < (chainModel J.whole).W.n := by
     rw [hn]; omega
-  refine ⟨hv, h7, hl1, hb, hτp, hτl, by omega, ?_, hlt⟩
+  refine ⟨hv, h7, hl1, hb, hτp, hτl, by_o, ?_, hlt⟩
   rw [← add_assoc, ← Nat.mod_add_mod, ← hlOff, gL_eq, Nat.mod_eq_of_lt hlt]
 
 /-- `Lst + ψ d < n` on the `C₁` part. -/
@@ -137,8 +137,8 @@ theorem Lst_ψ_lt (hP : J.P.Simple) {d : ℕ} (hd : d < E₁ J) :
   · omega
   · rcases win_lδ_cases (J := J) with h | h
     · omega
-    · have := (gap_facts hP (by omega)).2.2.2.2.2.2.1
-      have : d ≤ lL1 J := by by_contra h'; exact h1 ⟨by omega, by omega⟩
+    · have := (gap_facts hP by_o).2.2.2.2.2.2.1
+      have : d ≤ lL1 J := by by_contra h'; exact h1 ⟨by_o, by_o⟩
       omega
 
 end Gap
@@ -150,7 +150,7 @@ section Key
 variable {J : Merge.Junction}
 
 theorem dOf_add_mod {n g d : ℕ} (hg : g < n) (hd : d < n) : dOf n g ((g + d) % n) = d :=
-  add_mod_inj (dOf_lt (by omega) g _) hd (add_dOf hg (Nat.mod_lt _ (by omega)))
+  add_mod_inj (dOf_lt by_o g _) hd (add_dOf hg (Nat.mod_lt _ by_o))
 
 /-- The part offset `D - Lst` of the key edge `e` (as the RAM computes it). -/
 noncomputable def kr (J : Merge.Junction) (e : ℕ) : ℕ :=
@@ -185,16 +185,16 @@ theorem key_map {P : Polygon} (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h)
   have hLn := win_Lst_lt (J := J)
   set n := (chainModel J.whole).W.n with hn
   set D := dOf n (gW J) e with hD
-  have hDn : D < n := dOf_lt (by omega) _ _
+  have hDn : D < n := dOf_lt by_o _ _
   have hoff := win_offK_eq (J := J) he hpp
   rw [← hD] at hoff
   have hLD : Lst J ≤ D := by
     have h1 : (Lst J : ℝ) < D + 1 := by rw [hoff] at hL; linarith [hpp.2.1]
     exact_mod_cast Nat.lt_succ_iff.1 (by exact_mod_cast h1)
   have hr : kr J e = D - Lst J := by
-    refine add_mod_inj (g := (gW J + Lst J) % n) (dOf_lt (by omega) _ _) (by omega) ?_
+    refine add_mod_inj (g := (gW J + Lst J) % n) (dOf_lt by_o _ _) by_o ?_
     unfold kr
-    rw [← hn, add_dOf (Nat.mod_lt _ (by omega)) he, Nat.mod_add_mod,
+    rw [← hn, add_dOf (Nat.mod_lt _ by_o) he, Nat.mod_add_mod,
       show gW J + Lst J + (D - Lst J) = gW J + D by omega, hD, add_dOf hg he]
   have hE : kd J e < E₁ J := by
     rw [win_E₁_eq]; unfold kd d0Of; rw [hr]; split_ifs <;> omega
@@ -205,15 +205,15 @@ theorem key_map {P : Polygon} (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h)
   have hm : mEdge J (kd J e) = e := by
     unfold mEdge; rw [hψ, hr, ← hn, show Lst J + (D - Lst J) = D by omega, hD, add_dOf hg he]
   have hv : MValid J (kd J e) (1 / 2) := by
-    refine ⟨hE, fun h => ?_, fun h => ?_, fun h => absurd h (by norm_num)⟩
+    refine ⟨hE, fun h => ?_, fun h => ?_, fun h => absurd h by_n⟩
     · rcases hgap h.1 with h' | h' <;> omega
     · rcases hgap h.1 with h' | h' <;> omega
   refine ⟨?_, hE, hgap, hψ, hm, hv, ?_, fun s => ?_⟩
   · rw [hoff, hr]; push_cast [hLD]; ring
-  · have := param_corr hP hv (by norm_num) (Qof P) h
+  · have := param_corr hP hv by_n (Qof P) h
     rw [hm] at this; exact this.symm
-  · have := edge_corr hP hv (by norm_num) s
-    rw [hm] at this; exact this
+  · have := edge_corr hP hv by_n s
+    rwa [hm] at this
 
 /-- The key of the key position in the walk of `C₁` has `b₁`-offset `kd + t₀`. -/
 theorem key₁_off {P : Polygon} (hP : J.P.Simple) {e h : ℕ} (hpw : PosW P J e h)
@@ -253,7 +253,7 @@ theorem lex_lt {d₀ d : ℕ} {t₀ t : ℝ} (hd₀ : GapOut J d₀)
   by_contra hc
   push Not at hc
   have hdd : d ≤ d₀ := by
-    have : (d : ℝ) < d₀ + 1 := by linarith
+    have : (d : ℝ) < d₀ + 1 := by_l
     exact_mod_cast Nat.lt_succ_iff.1 (by exact_mod_cast this)
   rcases eq_or_lt_of_le hdd with e | hlt
   · subst e; linarith
@@ -279,7 +279,7 @@ theorem lex_le {d dE : ℕ} {t tE : ℝ} (hdE : GapOut J dE) (ht0 : 0 ≤ t) (ht
   by_contra hc
   push Not at hc
   have hdd : dE ≤ d := by
-    have : (dE : ℝ) < d + 1 := by linarith
+    have : (dE : ℝ) < d + 1 := by_l
     exact_mod_cast Nat.lt_succ_iff.1 (by exact_mod_cast this)
   rcases eq_or_lt_of_le hdd with e | hlt
   · subst e; linarith
@@ -302,16 +302,16 @@ theorem lex_le_gap {d : ℕ} {t : ℝ} (hδ : 0 < lδ J)
       rw [t0, h2]; simp
     · right
       have h3 : lL1 J + lδ J ≤ d := by
-        by_contra h'; exact hv2 ⟨hδ, by omega, by omega⟩
+        by_contra h'; exact hv2 ⟨hδ, by_o, by_o⟩
       have hψ : ψ J d = d - lδ J := by
-        unfold ψ; rw [ite_eq_left ⟨hδ, by omega⟩, ite_eq_right (by omega)]
+        unfold ψ; rw [ite_eq_left ⟨hδ, by_o⟩, ite_eq_right by_o]
       rw [hψ] at h
-      have h4 : lL1 J ≤ d - lδ J := by omega
+      have h4 : lL1 J ≤ d - lδ J := by_o
       have h5 : (lL1 J : ℝ) ≤ ((d - lδ J : ℕ) : ℝ) := by exact_mod_cast h4
-      have t0 : t = 0 := by linarith
+      have t0 : t = 0 := by_l
       refine ⟨?_, t0⟩
       subst t0
-      have : ((d - lδ J : ℕ) : ℝ) ≤ lL1 J := by linarith
+      have : ((d - lδ J : ℕ) : ℝ) ≤ lL1 J := by_l
       have : d - lδ J ≤ lL1 J := by exact_mod_cast this
       omega
 
@@ -324,9 +324,9 @@ theorem cIn_of_U {n g a b x y : ℝ} (hg0 : 0 ≤ g) (hgn : g < n) (han : a < n)
     (hx : sideInArc a b x ∨ a = x) (hxy : off n g x < off n g y)
     (hyb : off n g y ≤ off n g b ∨ off n g b < off n g x) : CIn a b y := by
   have e1 := off_eq_sub (g := g) hx0 hyn hxy.le
-  refine cIn_of_off han hb0 hbn hx0 hxn hy0 hyn hab hx (by linarith) ?_
+  refine cIn_of_off han hb0 hbn hx0 hxn hy0 hyn hab hx by_l ?_
   rcases hyb with h | h
-  · rw [e1, off_eq_sub (g := g) hx0 hbn (by linarith)]; linarith
+  · rw [e1, off_eq_sub (g := g) hx0 hbn by_l]; linarith
   · rw [e1, off_eq_sub' (g := g) hxn hb0 h]
     have := off_lt (g := g) hyn hg0
     have := off_nonneg (g := g) hb0 hgn
@@ -381,7 +381,7 @@ theorem win_pos_eq_sidePt (M : Model) (Q : Polygon) (x : WPos) :
     M.pos Q x = sidePt M.W x.edge (M.param Q x) := rfl
 
 theorem mvalid_half {d : ℕ} (hd : d < E₁ J) (hg : GapOut J d) : MValid J d (1 / 2) := by
-  refine ⟨hd, fun h => ?_, fun h => ?_, fun h => absurd h (by norm_num)⟩
+  refine ⟨hd, fun h => ?_, fun h => ?_, fun h => absurd h by_n⟩
   · rcases hg h.1 with h' | h' <;> omega
   · rcases hg h.1 with h' | h' <;> omega
 
@@ -393,9 +393,9 @@ theorem wend_map (hP : J.P.Simple) {dE eE hE : ℕ} (hdE : dE < E₁ J) (hg : Ga
     PosW P J (mEdge J dE) hE ∧ offK P J (mEdge J dE) hE =
       (Lst J : ℝ) + ψ J dE + (chainModel J.left).param (Qof P) ⟨eE, hE⟩ := by
   have hv := mvalid_half hdE hg
-  have hpar := param_corr hP hv (by norm_num) (Qof P) hE
+  have hpar := param_corr hP hv by_n (Qof P) hE
   rw [heE] at hpar
-  have hpt := edge_corr hP hv (by norm_num) ((chainModel J.left).param (Qof P) ⟨eE, hE⟩)
+  have hpt := edge_corr hP hv by_n ((chainModel J.left).param (Qof P) ⟨eE, hE⟩)
   rw [heE] at hpt
   have hm : mEdge J dE < (chainModel J.whole).W.n := by
     unfold mEdge; exact Nat.mod_lt _ (by have := win_gW_lt (J := J); omega)
@@ -404,8 +404,7 @@ theorem wend_map (hP : J.P.Simple) {dE eE hE : ℕ} (hdE : dE < E₁ J) (hg : Ga
   refine ⟨posW_of_inner hm hpp' ?_, ?_⟩
   · rw [win_pos_eq_sidePt, hpar]
     simp only
-    rw [hpt]
-    exact hy
+    rwa [hpt]
   · rw [win_offK_eq hm hpp', hpar]
     unfold mEdge
     rw [dOf_add_mod win_gW_lt (Lst_ψ_lt hP hdE)]
@@ -415,9 +414,9 @@ theorem win_pred_mod {n b d e : ℕ} (hb : b < n) (hd : d < n) (h1 : 1 ≤ d) (h
     (he0 : e ≠ 0) : (b + (d - 1)) % n + 1 = e := by
   by_cases h : b + d < n
   · rw [Nat.mod_eq_of_lt h] at he
-    rw [Nat.mod_eq_of_lt (by omega)]; omega
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at he
-    rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+    rw [Nat.mod_eq_of_lt by_o]; omega
+  · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o] at he
+    rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]; omega
 
 /-- **The cut witness of a window end at an arc end.** -/
 theorem wend_cut {dE eE : ℕ} {tE : ℝ} {G : Set (Set Point)} (hdE : dE < E₁ J)
@@ -434,9 +433,9 @@ theorem wend_cut {dE eE : ℕ} {tE : ℝ} {G : Set (Set Point)} (hdE : dE < E₁
       rfl, ?_⟩
     · rcases hg h.1 with h' | h' <;> omega
     · rcases hg h.1 with h' | h' <;> omega
-    · rw [hheE]; exact hcut
+    · rwa [hheE]
   · obtain ⟨h1, he0, hg'⟩ := h0 hz.symm
-    refine ⟨dE - 1, 1, ⟨by omega, fun h => ?_, fun h => ?_, fun h => absurd h one_ne_zero⟩,
+    refine ⟨dE - 1, 1, ⟨by_o, fun h => ?_, fun h => ?_, fun h => absurd h one_ne_zero⟩,
       zero_le_one, le_rfl, ?_, ?_⟩
     · rcases hg' h.1 with h' | h' <;> omega
     · rcases hg' h.1 with h' | h' <;> omega
@@ -470,9 +469,9 @@ theorem gap_pt (hP : J.P.Simple) (hδ : 0 < lδ J) :
   have hm1 : J.left.m = J.m₁ := rfl
   rw [hb, hl1, h7, hn₁]
   rw [show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁ + 7) = 6 + (2 * J.left.m + 7) by
-      omega, Nat.add_mod_right, Nat.mod_eq_of_lt (show 6 < 2 * J.left.m + 7 by omega),
+      omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega),
     show 6 + tpos J.left J.m₁ + (2 * J.m₁ - tpos J.left J.m₁) = 2 * J.left.m + 6 by omega,
-    Nat.mod_eq_of_lt (show 2 * J.left.m + 6 < 2 * J.left.m + 7 by omega)]
+    Nat.mod_eq_of_lt (by omega)]
   obtain ⟨a, b⟩ := sidePt_top_copies J.left
   rw [← hn₁] at *
   rw [a, b]
@@ -508,10 +507,7 @@ theorem mem_loSet {M : Model} {Q : Polygon} {N : NF} {n' : ℕ} {m : ℕ → ℕ
   rw [hg k hk, hkd]
   unfold nArc
   simp only
-  rw [(Restore.normOf_facts hs).2.2.2.1, (Restore.normOf_facts he).2.2.2.1]
-  exact hc
-
-end Gath
+  rwa [(Restore.normOf_facts hs).2.2.2.1, (Restore.normOf_facts he).2.2.2.1]end Gath
 
 /-! ## Coverage -/
 
@@ -546,14 +542,14 @@ theorem cover_arc (hP : J.P.Simple) (hN : IsNF (chainModel J.left) (Qof P) N₁)
       ShotList.loSet (chainModel J.left) (Qof P) m A l.length [] := by
   set M := chainModel J.left with hM
   have hn₁ : 0 < M.W.n := by rw [hM, win_n₁_eq]; omega
-  have hdn : d < M.W.n := lt_of_lt_of_le hd (E₁_le hP)
+  have hdn := lt_of_lt_of_le hd (E₁_le hP)
   have hpp : ∀ j, j < N₁.arcs.length → ProperPos M (Qof P) (Qof P).n (N₁.arc j).s ∧
       ProperPos M (Qof P) (Qof P).n (N₁.arc j).e := fun j hj => by
     obtain ⟨-, -, -, reg, -, -, -, -, -, -, h⟩ := hN; exact h j hj
   obtain ⟨reg, -, -, harc⟩ := OracleQ.isArc_sj hN ho
   obtain ⟨hs0, hsn, he0, hen, -⟩ := harc
   have hp := Nat.mod_lt (b₁ J + d) hn₁
-  have hy : off M.W.n (b₁ J) (((b₁ J + d) % M.W.n : ℕ) + t) = d + t :=
+  have hy :=
     off_key b₁_lt hdn ht0 ht1
   have hyr : 0 ≤ (((b₁ J + d) % M.W.n : ℕ) : ℝ) + t ∧ (((b₁ J + d) % M.W.n : ℕ) : ℝ) + t < M.W.n := by
     have : (((b₁ J + d) % M.W.n + 1 : ℕ) : ℝ) ≤ M.W.n := by exact_mod_cast hp
@@ -562,8 +558,8 @@ theorem cover_arc (hP : J.P.Simple) (hN : IsNF (chainModel J.left) (Qof P) N₁)
   have hb0 : (0 : ℝ) ≤ b₁ J := Nat.cast_nonneg _
   have hbn : (b₁ J : ℝ) < M.W.n := by exact_mod_cast b₁_lt
   refine mem_loSet hg hl hpp hol hp ht0 ht1.le ?_
-  refine cIn_of_U hb0 hbn hsn he0 hen hx0 hxn hyr.1 hyr.2 hab hin (by rw [hy]; exact hlt) ?_
-  rw [hy]; exact hup
+  refine cIn_of_U hb0 hbn hsn he0 hen hx0 hxn hyr.1 hyr.2 hab hin (by rwa [hy]) ?_
+  rwa [hy]
 
 end Cover
 

@@ -68,10 +68,10 @@ theorem sideInArc_interleave {a b x₁ x₂ x₃ x₄ : ℝ}
       intro x hx
       simp only [P, sideInArc, ite_eq_right hab, not_or, not_lt]
       exact ⟨fun h => ⟨h.2, h.1⟩, fun h => ⟨h.2, h.1⟩⟩
-    have m1 : x₁ ∈ ({x₁, x₂, x₃, x₄} : Set ℝ) := by simp
-    have m2 : x₂ ∈ ({x₁, x₂, x₃, x₄} : Set ℝ) := by simp
-    have m3 : x₃ ∈ ({x₁, x₂, x₃, x₄} : Set ℝ) := by simp
-    have m4 : x₄ ∈ ({x₁, x₂, x₃, x₄} : Set ℝ) := by simp
+    have m1 : x₁ ∈ ({x₁, x₂, x₃, x₄} : Set ℝ) := by_s
+    have m2 : x₂ ∈ ({x₁, x₂, x₃, x₄} : Set ℝ) := by_s
+    have m3 : x₃ ∈ ({x₁, x₂, x₃, x₄} : Set ℝ) := by_s
+    have m4 : x₄ ∈ ({x₁, x₂, x₃, x₄} : Set ℝ) := by_s
     refine interleave_absurd (fun x => b ≤ x ∧ x ≤ a)
       (fun x y z hxy hyz hx hz => ⟨by linarith [hx.1], by linarith [hz.2]⟩) hord ?_ ?_ ?_
     · rw [← hP _ m1, ← hP _ m3]; exact not_congr h13
@@ -87,10 +87,10 @@ theorem mirror_noncross {L K lo : ℝ} (hL : 0 < L) {k₁ k₂ k₃ k₄ : ℝ}
     (P13 : (∃ n : ℤ, k₁ + k₃ = K + L * n) ∨ (k₁ = lo ∧ k₃ = lo + L) ∨ (k₁ = lo + L ∧ k₃ = lo))
     (P24 : (∃ n : ℤ, k₂ + k₄ = K + L * n) ∨ (k₂ = lo ∧ k₄ = lo + L) ∨ (k₂ = lo + L ∧ k₄ = lo))
     (hord : (k₁ < k₂ ∧ k₂ < k₃ ∧ k₃ < k₄) ∨ (k₄ < k₁ ∧ k₁ < k₂ ∧ k₂ < k₃)) : False := by
-  have r1 := hr k₁ (by simp)
-  have r2 := hr k₂ (by simp)
-  have r3 := hr k₃ (by simp)
-  have r4 := hr k₄ (by simp)
+  have r1 := hr k₁ by_s
+  have r2 := hr k₂ by_s
+  have r3 := hr k₃ by_s
+  have r4 := hr k₄ by_s
   rcases P13 with ⟨n, hn⟩ | ⟨e1, e3⟩ | ⟨e1, e3⟩
   · rcases P24 with ⟨n', hn'⟩ | ⟨e2, e4⟩ | ⟨e2, e4⟩
     · -- the two sums differ by a multiple of `L` strictly between `-L` and `L`, and not by `0`
@@ -145,13 +145,13 @@ theorem sj_inj (hN : IsNF M Q N) {p q : ℕ} (hp : p < N.arcs.length) (hq : q < 
     (h : sj N p = sj N q) : p = q := by
   have hl := NFLoc.seq_length hN
   unfold sj at h
-  rw [NFLoc.getD_of_lt 0 (by omega), NFLoc.getD_of_lt 0 (by omega)] at h
+  rw [NFLoc.getD_of_lt 0 by_o, NFLoc.getD_of_lt 0 by_o] at h
   exact (seq_nodup hN).getElem_inj_iff.1 h
 
 /-- **Start keys strictly increase along the table** (nonempty family). -/
 theorem starts_lt (hN : IsNF M Q N) (_hGM : GoodModel M) (hne : (N.F M Q).Nonempty) {p q : ℕ}
     (hpq : p < q) (hq : q < N.arcs.length) : sk M Q N p < sk M Q N q := by
-  have hle : sk M Q N p ≤ sk M Q N q := NFLoc.seq_sorted hN hpq.le hq
+  have hle := NFLoc.seq_sorted hN hpq.le hq
   refine lt_of_le_of_ne hle fun heq => ?_
   obtain ⟨reg, hR, hA, harc⟩ := isArc_sj hN (hpq.trans hq)
   have harc' : M.IsArc (N.F M Q) (reg (N.arc (sj N q)).reg) (sk M Q N q) (ek M Q N q) :=
@@ -252,15 +252,15 @@ theorem order4 (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q).Nonempty)
     (hκ₃ : sideInArc (sk M Q N p₃) (ek M Q N p₃) κ₃) (hκ₄ : sideInArc (sk M Q N p₄) (ek M Q N p₄) κ₄)
     (hn₁ : κ₁ < M.W.n) (hn₂ : κ₂ < M.W.n) (hn₃ : κ₃ < M.W.n) :
     (κ₁ < κ₂ ∧ κ₂ < κ₃ ∧ κ₃ < κ₄) ∨ (κ₄ < κ₁ ∧ κ₁ < κ₂ ∧ κ₂ < κ₃) := by
-  have a1 := start_lt_interior hN hGM hne h12 (by omega) hκ₁ hn₁
-  have b1 := interior_lt_start hN hGM hne h12 (by omega) hκ₁
-  have a2 := start_lt_interior hN hGM hne h23 (by omega) hκ₂ hn₂
-  have b2 := interior_lt_start hN hGM hne h23 (by omega) hκ₂
+  have a1 := start_lt_interior hN hGM hne h12 by_o hκ₁ hn₁
+  have b1 := interior_lt_start hN hGM hne h12 by_o hκ₁
+  have a2 := start_lt_interior hN hGM hne h23 by_o hκ₂ hn₂
+  have b2 := interior_lt_start hN hGM hne h23 by_o hκ₂
   have a3 := start_lt_interior hN hGM hne h34 h4 hκ₃ hn₃
   have b3 := interior_lt_start hN hGM hne h34 h4 hκ₃
   rcases last_interior hN hGM hne (h12.trans (h23.trans h34)) h4 hκ₄ with c | c
-  · left; exact ⟨by linarith, by linarith, by linarith⟩
-  · right; exact ⟨by linarith, by linarith, by linarith⟩
+  · left; exact ⟨by_l, by_l, by_l⟩
+  · right; exact ⟨by_l, by_l, by_l⟩
 
 end ArcOrder
 
@@ -290,9 +290,9 @@ theorem regions_noninterleave (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F 
     {p₁ p₂ p₃ p₄ : ℕ} (h12 : p₁ < p₂) (h23 : p₂ < p₃) (h34 : p₃ < p₄)
     (h4 : p₄ < N.arcs.length) (hr13 : rgi N p₁ = rgi N p₃) (hr24 : rgi N p₂ = rgi N p₄) :
     rgi N p₁ = rgi N p₂ := by
-  have hp1 : p₁ < N.arcs.length := by omega
-  have hp2 : p₂ < N.arcs.length := by omega
-  have hp3 : p₃ < N.arcs.length := by omega
+  have hp1 : p₁ < N.arcs.length := by_o
+  have hp2 : p₂ < N.arcs.length := by_o
+  have hp3 : p₃ < N.arcs.length := by_o
   obtain ⟨reg, hR, hA, -⟩ := NFLoc.isNF_arcs hN
   -- interior positions of the four arcs (facing the regions of the common witness `reg`)
   have pick : ∀ p, p < N.arcs.length → ∃ pp < M.W.n, ∃ t ∈ Ioo (0 : ℝ) 1,
@@ -327,10 +327,10 @@ theorem regions_noninterleave (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F 
     c₂ c₄ f₂ f₄).1 (by rw [hr24]) c hc
   have e13 : sideInArc (pa + ta) (pb + tb) (q₁ + t₁) ↔ sideInArc (pa + ta) (pb + tb) (q₃ + t₃) := by
     by_contra h
-    exact h13 ⟨pa, pb, ta, tb, hAa, hAb, hpt, by tauto⟩
+    exact h13 ⟨pa, pb, ta, tb, hAa, hAb, hpt, by_t⟩
   have e24 : sideInArc (pa + ta) (pb + tb) (q₂ + t₂) ↔ sideInArc (pa + ta) (pb + tb) (q₄ + t₄) := by
     by_contra h
-    exact h24 ⟨pa, pb, ta, tb, hAa, hAb, hpt, by tauto⟩
+    exact h24 ⟨pa, pb, ta, tb, hAa, hAb, hpt, by_t⟩
   have hcutA : M.IsCut (N.F M Q) (pa + ta) := ⟨c, hc, pa, ta, hAa, rfl⟩
   have hcutB : M.IsCut (N.F M Q) (pb + tb) := ⟨c, hc, pb, tb, hAb, rfl⟩
   refine sideInArc_interleave (a := pa + ta) (b := pb + tb) ?_ hord e13 e24 hiff
@@ -349,7 +349,7 @@ theorem stars_nonCross (hN : IsNF M Q N) (hGM : GoodModel M) (hne : (N.F M Q).No
   obtain ⟨hc12, hc2, hcr, hcmin⟩ := hL c hc
   obtain ⟨hc'12, hc'2, hc'r, hc'min⟩ := hL c' hc'
   have hreg := regions_noninterleave hN hGM hne h1 h2 h3 hc'2 hcr hc'r
-  have := hc'min c.1 (by omega) hreg
+  have := hc'min c.1 by_o hreg
   omega
 
 /-- **An outer (zipper) chord**: two spine positions whose arcs contain, in their interiors, keys
@@ -378,7 +378,7 @@ theorem zips_nonCross (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     (hN : IsNF (chainModel C) Q N) (hne : (N.F (chainModel C) Q).Nonempty)
     {L : List (ℕ × ℕ)} (hL : ∀ c ∈ L, ZipOK C Q N c) : OracleBook.NonCross L := by
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
+  have hn := walk_n C
   intro c hc c' hc' ⟨h1, h2, h3⟩
   obtain ⟨hc12, hc2, pa, pb, ta, tb, hpa, hpb, hta, hta1, htb, htb1, hxa, hab, ia, ib⟩ := hL c hc
   obtain ⟨hc'12, hc'2, pc, pd, tc, td, hpc, hpd, htc, htc1, htd, htd1, hxc, hcd, ic, id⟩ :=
@@ -386,18 +386,18 @@ theorem zips_nonCross (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
   have hord := order4 hN hGM hne h1 h2 h3 hc'2 ia ic ib id (key_lt_n hpa hta1)
     (key_lt_n hpc htc1) (key_lt_n hpb htb1)
   rw [hn] at hpa hpb hpc hpd
-  have hxb : Chazelle.Chain.sidePt (chainModel C).W pb tb ∈ C.set := hab ▸ hxa
-  have hxd : Chazelle.Chain.sidePt (chainModel C).W pd td ∈ C.set := hcd ▸ hxc
+  have hxb := hab ▸ hxa
+  have hxd := hcd ▸ hxc
   have ra := key_range C hpa hta hta1 hxa
   have rb := key_range C hpb htb htb1 hxb
   have rc := key_range C hpc htc htc1 hxc
   have rd := key_range C hpd htd htd1 hxd
   have hneab : (pa : ℝ) + ta ≠ pb + tb := by
-    rcases hord with ⟨a, b, c⟩ | ⟨a, b, c⟩ <;> exact ne_of_lt (by linarith)
+    rcases hord with ⟨a, b, c⟩ | ⟨a, b, c⟩ <;> exact ne_of_lt by_l
   have hnecd : (pc : ℝ) + tc ≠ pd + td := by
     rcases hord with ⟨a, b, c⟩ | ⟨a, b, c⟩
-    · exact ne_of_lt (by linarith)
-    · exact ne_of_gt (by linarith)
+    · exact ne_of_lt by_l
+    · exact ne_of_gt by_l
   have m1 := mirror_sum C hP hpa hpb hta hta1 htb htb1 hxa hab hneab
   have m2 := mirror_sum C hP hpc hpd htc htc1 htd htd1 hxc hcd hnecd
   refine mirror_noncross (L := 2 * C.m) (K := 12 - 2 * C.sideS C.sideBeta) (lo := 6)

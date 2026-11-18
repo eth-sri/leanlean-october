@@ -56,7 +56,7 @@ theorem mem_dd (l : List α) (d : α) (x : α) : x ∈ dd l d ↔ x ∈ l := by
     let P : ℕ → Prop := fun i => i < l.length ∧ l.getD i d = l[j]
     have hP : ∃ i, P i := ⟨j, hj, by rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hj]; rfl⟩
     let i := Nat.find hP
-    have hi : P i := Nat.find_spec hP
+    have hi := Nat.find_spec hP
     refine ⟨i, ⟨hi.1, ?_⟩, hi.2⟩
     unfold keep
     by_cases h0 : i = 0
@@ -80,22 +80,22 @@ theorem dd_nodup {r : α → α → Prop} (hanti : ∀ x y, r x y → r y x → 
   -- wlog `i < j`
   have key : ∀ a b, a < b → b < l.length → keep l d b = true → l.getD a d = l.getD b d → False := by
     intro a b hab hb hk heq
-    have hb0 : b ≠ 0 := by omega
+    have hb0 : b ≠ 0 := by_o
     unfold keep at hk
     simp only [hb0, false_or, decide_eq_true_eq, decide_eq_true_eq] at hk
     apply hk
     -- `l[a] = l[b]` and `a ≤ b - 1 < b`: sorted, so `l[b - 1] = l[b]`
     have ga : l.getD a d = l[a] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]; rfl
+      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem by_o]; rfl
     have gb : l.getD b d = l[b] := by
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hb]; rfl
     have gc : l.getD (b - 1) d = l[b - 1] := by
-      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem (by omega)]; rfl
+      rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem by_o]; rfl
     rw [gb, gc]
     rw [ga, gb] at heq
     rcases Nat.lt_or_ge a (b - 1) with h | h
-    · have h1 : r l[a] l[b - 1] := List.pairwise_iff_getElem.1 hs _ _ (by omega) (by omega) h
-      have h2 : r l[b - 1] l[b] := List.pairwise_iff_getElem.1 hs _ _ (by omega) hb (by omega)
+    · have h1 : r l[a] l[b - 1] := List.pairwise_iff_getElem.1 hs _ _ by_o by_o h
+      have h2 : r l[b - 1] l[b] := List.pairwise_iff_getElem.1 hs _ _ by_o hb by_o
       rw [heq] at h1
       exact (hanti _ _ h2 h1).symm
     · have : a = b - 1 := by omega
@@ -130,11 +130,11 @@ theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg
     ∀ (n : ℕ) (c : Config), IXI W K S c₀ c → c.nreg 70200 + n = K →
       ∃ c' k, Exec P W ixLoop c c' k ∧ k ≤ 5 * n + 2 ∧ n ≤ k ∧ IXI W K S c₀ c' ∧ c'.nreg 70200 = K
   | 0, c, hI, hn => by
-    have h01' : c.nreg 70201 = K := by rw [hI.regs 70201 (by decide) (by decide), h01]
-    exact ⟨c, 2, .whileLtN_false (by rw [h01']; omega) hI.wb, by omega, by omega, hI, by omega⟩
+    have h01' : c.nreg 70201 = K := by rw [hI.regs 70201 by_d by_d, h01]
+    exact ⟨c, 2, .whileLtN_false (by rw [h01']; omega) hI.wb, by_o, by_o, hI, by_o⟩
   | n + 1, c, hI, hn => by
-    have h01' : c.nreg 70201 = K := by rw [hI.regs 70201 (by decide) (by decide), h01]
-    have h05' : c.nreg 70105 = 1 := by rw [hI.regs 70105 (by decide) (by decide), h05]
+    have h01' : c.nreg 70201 = K := by rw [hI.regs 70201 by_d by_d, h01]
+    have h05' : c.nreg 70105 = 1 := by rw [hI.regs 70105 by_d by_d, h05]
     obtain ⟨i, hi⟩ : ∃ i, c.nreg 70200 = i := ⟨_, rfl⟩
     have hA : c.nreg 9999 = S + i := by rw [← hi]; exact hI.alloc
     have hw := hI.wb
@@ -152,22 +152,22 @@ theorem ixLoop_exec {P : Polygon} {W K S : ℕ} {c₀ : Config} (h05 : c₀.nreg
           h05', ALLOC]
       · simp (disch := omega) only [Machine.upd_same, Machine.upd_other, hA,
           h05', ALLOC]; ring
-      · have a2' : r ≠ 9999 := a2
+      · have a2' := a2
         simp (disch := omega) only [Machine.upd_other]
       · simp (disch := omega) only [hA, hi, ALLOC]
     obtain ⟨q0, qA, qr, qm, qrr, qrm, qo⟩ := q
     have hI' : IXI W K S c₀ c' := by
-      refine ⟨e.wb_right, by omega, by rw [qA, q0], fun r a1 a2 => by rw [qr r a1 a2,
-        hI.regs r a1 a2], fun a ha => by rw [qm, upd_other _ _ _ (by omega), hI.low a ha],
+      refine ⟨e.wb_right, by_o, by rw [qA, q0], fun r a1 a2 => by rw [qr r a1 a2,
+        hI.regs r a1 a2], fun a ha => by rw [qm, upd_other _ _ _ by_o, hI.low a ha],
         fun j hj => ?_, by rw [qrr, hI.rr], by rw [qrm, hI.rm], by rw [qo, hI.out]⟩
       rw [q0] at hj
       rw [qm]
       rcases Nat.lt_or_ge j i with h | h
-      · rw [upd_other _ _ _ (by omega)]; exact hI.done j (by omega)
+      · rw [upd_other _ _ _ by_o]; exact hI.done j by_o
       · have : j = i := by omega
         subst this; rw [upd_same]
-    obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := ixLoop_exec h05 h01 hW n c' hI' (by omega)
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [hi, h01']; omega) e e₂, by omega, by omega, hI'', hK⟩
+    obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := ixLoop_exec h05 h01 hW n c' hI' by_o
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [hi, h01']; omega) e e₂, by_o, by_o, hI'', hK⟩
 
 theorem seg_range {m : ℕ → ℕ} {S K : ℕ} (h : ∀ j, j < K → m (S + j) = j) :
     SortL.seg m S K = List.range K := by

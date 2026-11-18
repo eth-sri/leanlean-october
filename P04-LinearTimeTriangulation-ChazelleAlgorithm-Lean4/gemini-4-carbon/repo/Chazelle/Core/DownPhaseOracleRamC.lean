@@ -15,10 +15,6 @@ public import Chazelle.Core.DownPhaseOracleRamB
 Scratch: `170092 … 170129` and the sign kernel.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace IOrc
@@ -51,7 +47,7 @@ theorem param_lt_iff_iw (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {e h h' : ℕ}
           (Q.vtx (hI Q e h')).2 < (Q.vtx (hI Q e h)).2) := by
   have hnh : ((interiorModel Q).wa e).2 ≠ ((interiorModel Q).wb e).2 := by
     rw [mi_wa he, mi_wb he]
-    refine hD _ _ (iv_lt he) (iv_lt (Nat.mod_lt _ (by omega))) ?_
+    refine hD _ _ (iv_lt he) (iv_lt (Nat.mod_lt _ by_o)) ?_
     unfold iv
     split_ifs
     · intro hc
@@ -72,7 +68,7 @@ theorem param_lt_iff_iw (hD : DistinctHeights Q) (hn : 3 ≤ Q.n) {e h h' : ℕ}
   constructor
   · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
     · exact Or.inl ⟨h1, h2⟩
-    · exact Or.inr ⟨by linarith, h2⟩
+    · exact Or.inr ⟨by_l, h2⟩
   · rintro (⟨h1, h2⟩ | ⟨h1, h2⟩)
     · exact Or.inl ⟨h1, h2⟩
     · exact Or.inr ⟨lt_of_le_of_ne (not_lt.1 h1) (Ne.symm hnh'), h2⟩
@@ -82,7 +78,7 @@ theorem dOf_eq {n e₁ e₂ : ℕ} (h1 : e₁ < n) (h2 : e₂ < n) :
   unfold WalkEmbed.dOf
   split_ifs with h
   · exact Nat.mod_eq_of_lt h
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
 
 /-! ## The programs -/
 
@@ -153,7 +149,7 @@ theorem wr_normI : wr Bnorm normI = true := by
       · subst hr; simp; omega)
   simp only [normI, normA, normB, normC, normD, ltS, ltK, ltPrep, ltKer, ltSlots, ivF, wr, block,
     wrOK,
-    hk _ _ _ _ 170108 (by norm_num) (by norm_num), hk _ _ _ _ 170103 (by norm_num) (by norm_num),
+    hk _ _ _ _ 170108 by_n by_n, hk _ _ _ _ 170103 by_n by_n,
     Bool.and_true, Bool.true_and]
   decide
 
@@ -183,29 +179,29 @@ theorem normA_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) :
   by_cases h0 : c.nreg 170012 < c.nreg 170004
   · refine spec_ifLtN_true (by config_simp; exact h0) ?_
     by_cases h1 : c.nreg 170004 - 1 < iv (Qof P) s.e₂
-    · refine spec_ifLtN_true (by config_simp; rw [hS.r11, hσ]; exact h1) ?_
-      refine spec_skip ‹_› ⟨by omega, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
+    · refine spec_ifLtN_true (by config_simp; rwa [hS.r11, hσ]) ?_
+      refine spec_skip ‹_› ⟨by_o, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
       · config_simp; unfold nh; rw [hS.r4, ite_eq_right (by rw [hS.r4] at h1; omega)]
-      · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+      · simp only [upd]; split_ifs <;> first | rfl | omega
     by_cases h2 : iv (Qof P) s.e₂ < c.nreg 170004 - 1
-    · refine spec_ifLtN_false (by config_simp; rw [hS.r11, hσ]; exact h1)
-        (spec_ifLtN_true (by config_simp; rw [hS.r11, hσ]; exact h2) ?_)
-      refine spec_skip ‹_› ⟨by omega, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
+    · refine spec_ifLtN_false (by config_simp; rwa [hS.r11, hσ])
+        (spec_ifLtN_true (by config_simp; rwa [hS.r11, hσ]) ?_)
+      refine spec_skip ‹_› ⟨by_o, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
       · config_simp; unfold nh; rw [hS.r4, ite_eq_right (by rw [hS.r4] at h2; omega)]
-      · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
-    · refine spec_ifLtN_false (by config_simp; rw [hS.r11, hσ]; exact h1)
-        (spec_ifLtN_false (by config_simp; rw [hS.r11, hσ]; exact h2) ?_)
+      · simp only [upd]; split_ifs <;> first | rfl | omega
+    · refine spec_ifLtN_false (by config_simp; rwa [hS.r11, hσ])
+        (spec_ifLtN_false (by config_simp; rwa [hS.r11, hσ]) ?_)
       exec_block
       all_goals first | omega | skip
-      refine ⟨by omega, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
+      refine ⟨by_o, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
       · config_simp; unfold nh
         rw [hS.r12, hS.r4] at h0; rw [hS.r4] at h1 h2
-        rw [ite_eq_left ⟨by omega, by omega⟩]
-      · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+        rw [ite_eq_left ⟨by_o, by_o⟩]
+      · simp only [upd]; split_ifs <;> first | rfl | omega
   · refine spec_ifLtN_false (by config_simp; exact h0) ?_
-    refine spec_skip ‹_› ⟨by omega, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
-    · config_simp; unfold nh; rw [hS.r12, hS.r4] at h0; rw [hS.r4, ite_eq_right (by omega)]
-    · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    refine spec_skip ‹_› ⟨by_o, ?_, fun r a b d e f => ?_, rfl, rfl, rfl, rfl⟩
+    · config_simp; unfold nh; rw [hS.r12, hS.r4] at h0; rw [hS.r4, ite_eq_right by_o]
+    · simp only [upd]; split_ifs <;> first | rfl | omega
 
 /-- **The offset of the end edge** (`dOf`). -/
 theorem normB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
@@ -217,17 +213,17 @@ theorem normB_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   unfold normB
   refine spec_seq ?_
   exec_block
-  · config_simp; rw [hS.r3, hS.r10]; omega
+  · rw [hS.r3, hS.r10]; omega
   by_cases hc : s.e₂ + P.n - s.e₁ < P.n
-  · refine spec_ifLtN_true (by config_simp; rw [hS.r3, hS.r10, hS.r1]; exact hc) ?_
-    refine spec_skip ‹_› ⟨by omega, ?_, ?_⟩
+  · refine spec_ifLtN_true (by config_simp; rwa [hS.r3, hS.r10, hS.r1]) ?_
+    refine spec_skip ‹_› ⟨by_o, ?_, ?_⟩
     · config_simp; rw [hS.r3, hS.r10, hS.r1, dOf_eq h1 h2, ite_eq_left hc]
-    · simp only [Config.nreg_mk, upd_upd_same, upd_same]
-  · refine spec_ifLtN_false (by config_simp; rw [hS.r3, hS.r10, hS.r1]; exact hc) ?_
+    · simp only [upd_same]
+  · refine spec_ifLtN_false (by config_simp; rwa [hS.r3, hS.r10, hS.r1]) ?_
     exec_block
-    refine ⟨by omega, ?_, ?_⟩
+    refine ⟨by_o, ?_, ?_⟩
     · config_simp; rw [hS.r3, hS.r10, hS.r1, dOf_eq h1 h2, ite_eq_right hc]
-    · simp only [Config.nreg_mk, upd_upd_same, upd_same]
+    · simp only [upd_same]
 
 end exec
 
@@ -244,7 +240,7 @@ theorem wr_ltS : wr BltS ltS = true := by
       · simp [hr]
       · subst hr; simp; omega)
   simp only [ltS, ltK, ltPrep, ltKer, ltSlots, ivF, wr, block, wrOK,
-    hk _ _ _ _ 170108 (by norm_num) (by norm_num), hk _ _ _ _ 170103 (by norm_num) (by norm_num),
+    hk _ _ _ _ 170108 by_n by_n, hk _ _ _ _ 170103 by_n by_n,
     Bool.and_true, Bool.true_and]
   decide
 
@@ -256,7 +252,7 @@ variable {P : Polygon} {W : ℕ} {O : OracleIface} {s : Stat}
 def Bprep (r : ℕ) : Bool :=
   decide (r = 170092 ∨ r = 170095 ∨ r = 170096 ∨ (170104 ≤ r ∧ r < 170122))
 
-theorem wr_ltPrep : wr Bprep ltPrep = true := by decide
+theorem wr_ltPrep : wr Bprep ltPrep = true := by_d
 
 /-- **The preparation**: the kernel slots hold the vertices `iv e₁`, `iv (e₁ + 1)` (the ends of
 the start edge) and the height vertices of the two positions. -/
@@ -287,8 +283,8 @@ theorem ltPrep_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     -- `(e₁ + 1) mod n` in `170095`
     obtain ⟨k₂, e₂, hk₂⟩ := exec_ite_upd (P := P) (W := W) (a := 170095) (b := 170010)
       (r := 170095) (s₁ := .skip) (s₂ := block [.constN 170095 0]) (v₂ := 0) (K := 1) _
-      (fun _ => ⟨0, exec_skip_upd ‹_› 170095, by omega⟩)
-      (fun _ => ⟨1, exec_constN_upd ‹_› 170095 0 (by omega), le_rfl⟩)
+      (fun _ => ⟨0, exec_skip_upd ‹_› 170095, by_o⟩)
+      (fun _ => ⟨1, exec_constN_upd ‹_› 170095 0 by_o, le_rfl⟩)
     refine ⟨_, _, e₂, ?_⟩
     have w₂ := e₂.wb_right
     refine spec_seq ?_
@@ -301,7 +297,7 @@ theorem ltPrep_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     obtain ⟨k₄, e₄, hk₄⟩ := exec_ite_upd (P := P) (W := W) (a := 170012) (b := 170002)
       (r := 170104) (s₁ := block [.subN 170104 170002 170011]) (s₂ := .skip) (K := 1) _
       (fun _ => ⟨1, exec_subN_upd ‹_› 170104 170002 170011, le_rfl⟩)
-      (fun _ => ⟨0, exec_skip_upd ‹_› 170104, by omega⟩)
+      (fun _ => ⟨0, exec_skip_upd ‹_› 170104, by_o⟩)
     refine ⟨_, _, e₄, ?_⟩
     have w₄ := e₄.wb_right
     unfold ltSlots
@@ -310,7 +306,7 @@ theorem ltPrep_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     have hlb := hS.lb
     have hlb1 := hS.lb1
     have hQ : (Qof P).n = P.n := shear_n _ _
-    refine ⟨by omega, ⟨by config_simp, ?_⟩, ⟨by config_simp, ?_⟩, ⟨by config_simp, ?_⟩,
+    refine ⟨by_o, ⟨by config_simp, ?_⟩, ⟨by config_simp, ?_⟩, ⟨by config_simp, ?_⟩,
       ⟨by config_simp, ?_⟩⟩
     · config_simp; rw [hS.ivv, hS.r1]
     · config_simp
@@ -336,26 +332,26 @@ theorem ltKer_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : P
         ¬ ((Qof P).vtx a).2 < ((Qof P).vtx b).2 ∧ ((Qof P).vtx y).2 < ((Qof P).vtx x).2) := by
   unfold ltKer
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, b₁, t₁⟩ := SweepPrim.kbit_exec (P := P) hG hW c hw
-    (a := 170110) (b := 170113) (d := 170110) (op := 1) (dst := 170108) (by norm_num)
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (sa := .vtx a) (sb := .vtx b)
+    (a := 170110) (b := 170113) (d := 170110) (op := 1) (dst := 170108) by_n
+    by_n by_n by_n by_n (sa := .vtx a) (sb := .vtx b)
     (sd := .vtx a) ha hb ha s1 s2 s1
   have kp : ∀ r, 10500 ≤ r → r ≠ 170108 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
     F₁.1 r (by simp only [SweepPrim.Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-      beq_eq_false_iff_ne]; exact ⟨by omega, h2⟩)
-  have s3' : SymPtIn c₁ 170116 (.vtx x) := NFLoc.symPtIn_copy s3 (kp _ (by omega) (by omega))
-    (kp _ (by omega) (by omega)) (kp _ (by omega) (by omega))
-  have s4' : SymPtIn c₁ 170119 (.vtx y) := NFLoc.symPtIn_copy s4 (kp _ (by omega) (by omega))
-    (kp _ (by omega) (by omega)) (kp _ (by omega) (by omega))
+      beq_eq_false_iff_ne]; exact ⟨by_o, h2⟩)
+  have s3' : SymPtIn c₁ 170116 (.vtx x) := NFLoc.symPtIn_copy s3 (kp _ by_o by_o)
+    (kp _ by_o by_o) (kp _ by_o by_o)
+  have s4' : SymPtIn c₁ 170119 (.vtx y) := NFLoc.symPtIn_copy s4 (kp _ by_o by_o)
+    (kp _ by_o by_o) (kp _ by_o by_o)
   simp only [SignTest, SymPt.eval] at t₁
-  have h12' : c₁.nreg 170012 = 0 := by rw [kp _ (by omega) (by omega), h12]
+  have h12' : c₁.nreg 170012 = 0 := by rw [kp _ by_o by_o, h12]
   by_cases hup : c₁.nreg 170012 < c₁.nreg 170108
   · obtain ⟨c₂, k₂, e₂, hk₂, F₂, b₂, t₂⟩ := SweepPrim.kbit_exec (P := P) hG hW c₁ e₁.wb_right
-      (a := 170116) (b := 170119) (d := 170116) (op := 1) (dst := 170103) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num) (sa := .vtx x) (sb := .vtx y)
+      (a := 170116) (b := 170119) (d := 170116) (op := 1) (dst := 170103) by_n
+      by_n by_n by_n by_n (sa := .vtx x) (sb := .vtx y)
       (sd := .vtx x) hx hy hx s3' s4' s3'
     simp only [SignTest, SymPt.eval] at t₂
-    have hu : ((Qof P).vtx a).2 < ((Qof P).vtx b).2 := t₁.1 (by omega)
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_true hup e₂), by omega, b₂, ?_⟩
+    have hu : ((Qof P).vtx a).2 < ((Qof P).vtx b).2 := t₁.1 by_o
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_true hup e₂), by_o, b₂, ?_⟩
     rw [t₂]
     constructor
     · intro h; exact Or.inl ⟨hu, h⟩
@@ -363,13 +359,13 @@ theorem ltKer_exec (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P) (hW : P
       · exact h
       · exact absurd hu h
   · obtain ⟨c₂, k₂, e₂, hk₂, F₂, b₂, t₂⟩ := SweepPrim.kbit_exec (P := P) hG hW c₁ e₁.wb_right
-      (a := 170119) (b := 170116) (d := 170119) (op := 1) (dst := 170103) (by norm_num)
-      (by norm_num) (by norm_num) (by norm_num) (by norm_num) (sa := .vtx y) (sb := .vtx x)
+      (a := 170119) (b := 170116) (d := 170119) (op := 1) (dst := 170103) by_n
+      by_n by_n by_n by_n (sa := .vtx y) (sb := .vtx x)
       (sd := .vtx y) hy hx hy s4' s3' s4'
     simp only [SignTest, SymPt.eval] at t₂
     have hu : ¬ ((Qof P).vtx a).2 < ((Qof P).vtx b).2 := fun h => by
       have := t₁.2 h; omega
-    refine ⟨c₂, _, .seq e₁ (.ifLtN_false hup e₂), by omega, b₂, ?_⟩
+    refine ⟨c₂, _, .seq e₁ (.ifLtN_false hup e₂), by_o, b₂, ?_⟩
     rw [t₂]
     constructor
     · intro h; exact Or.inr ⟨hu, h⟩
@@ -386,7 +382,7 @@ theorem ltS_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
       (c'.nreg 170103 = 1 ↔ (interiorModel (Qof P)).param (Qof P) ⟨s.e₁, s.h₁⟩ <
         (interiorModel (Qof P)).param (Qof P) ⟨s.e₁, h₂⟩) ∧ FrameB BltS c c' := by
   have hQ : (Qof P).n = P.n := shear_n _ _
-  have hD : DistinctHeights (Qof P) := ShootCut.goodEnv_distinct hS.good
+  have hD := ShootCut.goodEnv_distinct hS.good
   have hn := hS.n3
   have hW := hS.nW
   obtain ⟨c', k, ex, hk, b, t⟩ : ∃ c' k, Exec P W ltS c c' k ∧ k ≤ 840 ∧ c'.nreg 170103 ≤ 1 ∧
@@ -398,11 +394,11 @@ theorem ltS_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
       refine spec_ifLtN_true h0 ?_
       exec_block
       all_goals first | omega | skip
-      refine ⟨by omega, by config_simp; omega, ?_⟩
+      refine ⟨by_o, by config_simp; omega, ?_⟩
       config_simp
       rw [hz, param_zero]
       constructor
-      · intro h; exact absurd h (by simp)
+      · intro h; exact absurd h by_s
       · intro h; linarith
     · refine spec_ifLtN_false h0 ?_
       have h21 : 1 ≤ h₂ := by rw [← h30]; rw [hS.r11] at h0; omega
@@ -411,24 +407,24 @@ theorem ltS_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
         rw [F₁.1 _ (by unfold Bprep; decide)]; exact hS.r12
       have hl : ∀ {i}, i < P.n → i < P.n := fun h => h
       obtain ⟨c₂, k₂, e₂, hk₂, b₂, t₂⟩ := ltKer_exec c₁ e₁.wb_right hS.good hW k12
-        (by have := iv_lt (Q := Qof P) (p := s.e₁) (by rw [hQ]; exact he1); rwa [hQ] at this) (by
-          have := iv_lt (Q := Qof P) (p := (s.e₁ + 1) % P.n) (by rw [hQ]; exact Nat.mod_lt _ (by omega))
+        (by have := iv_lt (Q := Qof P) (p := s.e₁) (by rwa [hQ]); rwa [hQ] at this) (by
+          have := iv_lt (Q := Qof P) (p := (s.e₁ + 1) % P.n) (by rw [hQ]; exact Nat.mod_lt _ by_o)
           rwa [hQ] at this)
         (by unfold hI; split_ifs
-            · have := iv_lt (Q := Qof P) (p := s.e₁) (by rw [hQ]; exact he1); rwa [hQ] at this
+            · have := iv_lt (Q := Qof P) (p := s.e₁) (by rwa [hQ]); rwa [hQ] at this
             · omega)
-        (by omega) s1 s2 s3 s4
-      refine ⟨c₂, _, .seq e₁ e₂, by omega, b₂, ?_⟩
-      rw [t₂, param_lt_iff_iw hD (by rw [hQ]; exact hn) (by rw [hQ]; exact he1), hQ]
-      have : hI (Qof P) s.e₁ h₂ = h₂ - 1 := by unfold hI; rw [ite_eq_right (by omega)]
+        by_o s1 s2 s3 s4
+      refine ⟨c₂, _, .seq e₁ e₂, by_o, b₂, ?_⟩
+      rw [t₂, param_lt_iff_iw hD (by rwa [hQ]) (by rwa [hQ]), hQ]
+      have : hI (Qof P) s.e₁ h₂ = h₂ - 1 := by unfold hI; rw [ite_eq_right by_o]
       rw [this]
   exact ⟨c', k, ex, hk, b, t, exec_frameB ex wr_ltS⟩
 
 theorem wr_normC : wr (fun r => BltS r || decide (r = 170031)) normC = true := by
   have h := wr_ltS
-  simp only [normC, wr, block, wrOK, Bool.and_true, Bool.true_and]
-  refine Bool.and_eq_true_iff.2 ⟨by decide, Bool.and_eq_true_iff.2
-    ⟨SweepPrim.wr_mono h (fun r hr => by simp [hr]), by decide⟩⟩
+  simp only [normC, wr, block, wrOK, Bool.and_true]
+  refine Bool.and_eq_true_iff.2 ⟨by_d, Bool.and_eq_true_iff.2
+    ⟨SweepPrim.wr_mono h (fun r hr => by simp [hr]), by_d⟩⟩
 
 /-- **The offset of the end edge** into `170031`. -/
 theorem normC_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
@@ -445,9 +441,9 @@ theorem normC_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   by_cases hd : c.nreg 170012 < c.nreg 170102
   · refine spec_ifLtN_true hd ?_
     exec_block
-    refine ⟨by omega, ?_, fun r h1 h2 => ?_⟩
+    refine ⟨by_o, ?_, fun r h1 h2 => ?_⟩
     · config_simp; rw [h102, ite_eq_right (by rw [hS.r12, h102] at hd; omega)]
-    · simp only [Config.nreg_mk, upd]; split_ifs <;> first | rfl | omega
+    · simp only [upd]; split_ifs <;> first | rfl | omega
   · refine spec_ifLtN_false hd ?_
     have hd0 : WalkEmbed.dOf P.n s.e₁ s.e₂ = 0 := by rw [hS.r12, h102] at hd; omega
     have he : s.e₂ = s.e₁ := by
@@ -465,14 +461,14 @@ theorem normC_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
     · refine spec_ifLtN_true hb ?_
       exec_block
       all_goals first | omega | skip
-      refine ⟨by omega, ?_, fun r h1 h2 => ?_⟩
-      · config_simp; rw [ite_eq_left (t₁.1 (by omega))]
-      · simp only [Config.nreg_mk, upd]; rw [ite_eq_right h1]; exact F₁.1 r h2
+      refine ⟨by_o, ?_, fun r h1 h2 => ?_⟩
+      · config_simp; rw [ite_eq_left (t₁.1 by_o)]
+      · simp only [upd]; rw [ite_eq_right h1]; exact F₁.1 r h2
     · refine spec_ifLtN_false hb ?_
       exec_block
-      refine ⟨by omega, ?_, fun r h1 h2 => ?_⟩
+      refine ⟨by_o, ?_, fun r h1 h2 => ?_⟩
       · config_simp; rw [k10, ite_eq_right (fun h => by have := t₁.2 h; omega)]
-      · simp only [Config.nreg_mk, upd]; rw [ite_eq_right h1]; exact F₁.1 r h2
+      · simp only [upd]; rw [ite_eq_right h1]; exact F₁.1 r h2
 
 /-- **The number of edges met** into `170032`. -/
 theorem normD_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {h₂ ee : ℕ}
@@ -486,13 +482,13 @@ theorem normD_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c) {h
   · refine spec_ifLtN_true (by config_simp; exact h) ?_
     exec_block
     · config_simp; rw [h31, hS.r11]; omega
-    refine ⟨by omega, ?_, ?_⟩
+    refine ⟨by_o, ?_, ?_⟩
     · config_simp; rw [h31, hS.r11, ite_eq_right (by rw [hS.r12, h30] at h; omega)]
-    · simp only [Config.nreg_mk, upd_upd_same, upd_same]
+    · simp only [upd_same]
   · refine spec_ifLtN_false (by config_simp; exact h) ?_
-    refine spec_skip ‹_› ⟨by omega, ?_, ?_⟩
+    refine spec_skip ‹_› ⟨by_o, ?_, ?_⟩
     · config_simp; rw [h31, ite_eq_left (by rw [hS.r12, h30] at h; omega), Nat.add_zero]
-    · simp only [Config.nreg_mk, upd_upd_same, upd_same]
+    · simp only [upd_same]
 
 theorem eeOf_le {Q : Polygon} {e₁ h₁ e₂ h₂ : ℕ} (hn : 0 < Q.n) : eeOf Q e₁ h₁ e₂ h₂ ≤ Q.n := by
   unfold eeOf
@@ -512,32 +508,32 @@ theorem normI_exec (c : Config) (hw : WordsBounded W c) (hS : SEnv P W O s c)
   have hW := hS.hW
   unfold hostWords at hW
   obtain ⟨c₁, k₁, e₁, hk₁, a30, ka, ma, -, -, -⟩ := normA_exec c hw hS
-  have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => ka r (by omega) (by omega) (by omega)
-    (by omega) (by omega)) (fun a _ => by rw [ma]) (by rw [ka _ (by decide) (by decide)
-      (by decide) (by decide) (by decide)])
+  have S₁ : SEnv P W O s c₁ := hS.keep (fun r h1 h2 => ka r by_o by_o by_o
+    by_o by_o) (fun a _ => by rw [ma]) (by rw [ka _ by_d by_d
+      by_d by_d by_d])
   obtain ⟨c₂, k₂, e₂, hk₂, b102, hc₂⟩ := normB_exec c₁ e₁.wb_right S₁ he1 he2
   have kb : ∀ r, r ≠ 170102 → c₂.nreg r = c₁.nreg r := fun r hr => by
     rw [hc₂]; simp [upd, hr]
-  have S₂ : SEnv P W O s c₂ := S₁.keep (fun r h1 h2 => kb r (by omega))
-    (fun a _ => by rw [hc₂]) (by rw [kb _ (by decide)])
+  have S₂ : SEnv P W O s c₂ := S₁.keep (fun r h1 h2 => kb r by_o)
+    (fun a _ => by rw [hc₂]) (by rw [kb _ by_d])
   have h2n : nh (Qof P) s.e₂ s.h₂ ≤ P.n := le_trans nh_le hh2
   obtain ⟨c₃, k₃, e₃, hk₃, c31, kc⟩ := normC_exec c₂ e₂.wb_right S₂ he1 he2 hh1 hx0
-    (h₂ := nh (Qof P) s.e₂ s.h₂) (by rw [kb _ (by decide)]; exact a30) h2n b102
-  have S₃ : SEnv P W O s c₃ := S₂.keep (fun r h1 h2 => kc r (by omega)
+    (h₂ := nh (Qof P) s.e₂ s.h₂) (by rwa [kb _ by_d]) h2n b102
+  have S₃ : SEnv P W O s c₃ := S₂.keep (fun r h1 h2 => kc r by_o
       (by unfold BltS Bk; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
     (fun a _ => by rw [(exec_frameB e₃ (wr_normC)).2.2.1]) (by
-      rw [kc _ (by decide) (by decide)])
+      rw [kc _ by_d by_d])
   have hee := eeOf_le (Q := Qof P) (e₁ := s.e₁) (h₁ := s.h₁) (e₂ := s.e₂)
     (h₂ := nh (Qof P) s.e₂ s.h₂) (by rw [hQ]; omega)
   rw [hQ] at hee
   obtain ⟨c₄, k₄, e₄, hk₄, d32, hc₄⟩ := normD_exec c₃ e₃.wb_right S₃
-    (h₂ := nh (Qof P) s.e₂ s.h₂) (by rw [kc _ (by decide) (by decide), kb _ (by decide)]; exact a30)
-    c31 (by omega)
+    (h₂ := nh (Qof P) s.e₂ s.h₂) (by rwa [kc _ by_d by_d, kb _ by_d])
+    c31 by_o
   have ex : Exec P W normI c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  refine ⟨c₄, _, ex, by omega, ?_, ?_, d32, exec_frameB ex wr_normI⟩
-  · rw [hc₄]; simp only [Config.nreg_mk, upd]
-    rw [kc _ (by decide) (by decide), kb _ (by decide)]; exact a30
-  · rw [hc₄]; simp only [Config.nreg_mk, upd]; exact c31
+  refine ⟨c₄, _, ex, by_o, ?_, ?_, d32, exec_frameB ex wr_normI⟩
+  · rw [hc₄]; simp only [upd]
+    rwa [kc _ by_d by_d, kb _ by_d]
+  · rw [hc₄]; simp only [upd]; exact c31
 
 end exec2
 

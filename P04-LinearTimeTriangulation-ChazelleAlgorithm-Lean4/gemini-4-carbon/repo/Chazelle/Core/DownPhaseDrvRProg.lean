@@ -72,9 +72,9 @@ theorem frame_drv {c c' : Config} {k : ℕ}
     (hr : ∀ r, (r < 210000 ∨ 220000 ≤ r) → c'.nreg r = c.nreg r) (hm : c'.nmem = c.nmem)
     (hrr : c'.rreg = c.rreg) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     Frame {bDownDrv} c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
+  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC by_ao
   refine ⟨fun r hr' _ => hr r ?_, fun r _ => by rw [hrr], fun a _ => by rw [hm],
-    fun a _ => by rw [hrm], ho, by omega, by omega⟩
+    fun a _ => by rw [hrm], ho, by_o, by_o⟩
   simp only [Finset.mem_singleton, bandOf, bDownDrv] at hr'
   omega
 
@@ -83,9 +83,9 @@ theorem frame_core {c c' : Config} {k : ℕ}
     (hr : ∀ r, r ≠ 230003 → c'.nreg r = c.nreg r) (hm : c'.nmem = c.nmem)
     (hrr : c'.rreg = c.rreg) (hrm : c'.rmem = c.rmem) (ho : c'.output = c.output) :
     Frame {bCore} c c' k := by
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
+  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC by_ao
   refine ⟨fun r hr' _ => hr r ?_, fun r _ => by rw [hrr], fun a _ => by rw [hm],
-    fun a _ => by rw [hrm], ho, by omega, by omega⟩
+    fun a _ => by rw [hrm], ho, by_o, by_o⟩
   simp only [Finset.mem_singleton, bandOf, bCore] at hr'
   omega
 
@@ -111,12 +111,12 @@ theorem guardS_exec (n₀ : ℕ) (c : Config) (hw : WordsBounded W c) (hn₀ : n
   by_cases h : P.n < n₀
   · refine spec_ifLtN_true (by config_simp; omega) ?_
     refine spec_skip ‹_› ?_
-    refine ⟨by omega, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl, rfl⟩
+    refine ⟨by_o, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl, rfl⟩
     · simp only [Machine.upd_same, ite_eq_right (show ¬ n₀ ≤ P.n by omega)]
     all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
   · refine spec_ifLtN_false (by config_simp; omega) ?_
     refine spec_instr (Exec.copyN ‹_› 210007 210000) fun _ => ?_
-    refine ⟨by omega, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl, rfl⟩
+    refine ⟨by_o, ?_, ?_, fun r hr => ?_, fun r h1 h2 => ?_, ?_, rfl, rfl, rfl, rfl⟩
     · simp (disch := omega) only [Machine.upd_same, Machine.upd_other,
         ite_eq_left (show n₀ ≤ P.n by omega)]
     all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]

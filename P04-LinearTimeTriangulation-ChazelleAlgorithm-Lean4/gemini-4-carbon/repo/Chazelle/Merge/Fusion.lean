@@ -217,7 +217,7 @@ theorem sharedChords_ncard_le : J.sharedChords.ncard ≤ 2 := by
       ≤ ((fun σ => J.whole.chordSet J.m₁ σ) '' ({1, -1} : Set ℝ)).ncard :=
         ncard_le_ncard hsub ((toFinite _).image _)
     _ ≤ ({1, -1} : Set ℝ).ncard := ncard_image_le (toFinite _)
-    _ = 2 := ncard_pair (by norm_num)
+    _ = 2 := ncard_pair by_n
 
 /-- The fusion is covered by the two shooting images of `S₁ ∪ S₂` and the shared chords. -/
 theorem fusion_subset_image (S₁ S₂ : Set (Set Point)) :
@@ -251,7 +251,7 @@ theorem ncard_fusion_le {S₁ S₂ : Set (Set Point)} (h₁ : S₁.Finite) (h₂
     _ ≤ (S₁ ∪ S₂).ncard + (S₁ ∪ S₂).ncard + 2 :=
         Nat.add_le_add (Nat.add_le_add (ncard_image_le h12) (ncard_image_le h12))
           J.sharedChords_ncard_le
-    _ ≤ 2 * (S₁.ncard + S₂.ncard) + 2 := by omega
+    _ ≤ 2 * (S₁.ncard + S₂.ncard) + 2 := by_o
 
 /-! ### Endpoints are preserved -/
 

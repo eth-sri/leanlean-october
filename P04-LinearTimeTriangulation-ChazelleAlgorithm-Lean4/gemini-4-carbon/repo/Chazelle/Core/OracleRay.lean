@@ -103,7 +103,7 @@ theorem noHit_chain_of_hit (C : Chain) {z : Point} (hz : z.2 ≤ C.top.2) {σ : 
     · exact h
     · exact absurd h hmem
   have hin : rayPt z σ (T / 2) ∈ Chain.box C.radius :=
-    C.dom_subset_box (hdom (T / 2) (by linarith) (by linarith))
+    C.dom_subset_box (hdom (T / 2) by_l by_l)
   intro t ht htC
   have hbt := C.set_subset_box htC
   rcases lt_trichotomy t T with hlt | heq | hgt
@@ -159,7 +159,7 @@ theorem arcHit_left (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Po
   have hhit : C.hitParam z' σ = s - a := by
     refine hitParam_eq_of_interval C hz'2 hσ (sub_pos.2 has) (fun u hu hus => ?_) ?_
     · rw [hz', rayPt_rayPt]
-      exact mem_dom_of_region C hV (hin _ (by linarith) (by linarith))
+      exact mem_dom_of_region C hV (hin _ by_l by_l)
     · rw [hz', rayPt_rayPt, add_sub_cancel]
       exact hs
   rw [hhit, hz', rayPt_rayPt, add_sub_cancel] at hmem
@@ -183,7 +183,7 @@ theorem arcHit_right (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set P
   have hhit : C.hitParam z' (-σ) = b - s := by
     refine hitParam_eq_of_interval C hz'2 hnσ (sub_pos.2 hsb) (fun u hu hus => ?_) ?_
     · rw [hz', rayPt_rayPt_neg]
-      exact mem_dom_of_region C hV (hin _ (by linarith) (by linarith))
+      exact mem_dom_of_region C hV (hin _ by_l by_l)
     · rw [hz', rayPt_rayPt_neg, sub_sub_cancel]
       exact hs
   rw [hhit, hz', rayPt_rayPt_neg, sub_sub_cancel] at hmem
@@ -221,7 +221,7 @@ theorem interval_subset_region (C : Chain) {F : Set (Set Point)} {V : Set Point}
     (hV : V ∈ (chainModel C).regions F) {z : Point} {σ a b : ℝ}
     (hfree : ∀ t, a < t → t < b → rayPt z σ t ∈ freeIn C.dom F) {t₀ : ℝ} (ht₀a : a < t₀)
     (ht₀b : t₀ < b) (hin : rayPt z σ t₀ ∈ V) : ∀ t, a < t → t < b → rayPt z σ t ∈ V := by
-  have hV' : V ∈ regionsIn C.dom F := hV
+  have hV' := hV
   have hc : IsPreconnected (rayPt z σ '' Ioo a b) :=
     isPreconnected_Ioo.image _ (Chazelle.Visibility.continuous_rayPt z σ).continuousOn
   have hsub := Sweep.subset_region hV' hc (by rintro _ ⟨t, ht, rfl⟩; exact hfree t ht.1 ht.2)
@@ -233,10 +233,10 @@ theorem interval_subset_region (C : Chain) {F : Set (Set Point)} {V : Set Point}
 theorem exists_region_of_interval (C : Chain) {F : Set (Set Point)} {z : Point} {σ a b : ℝ}
     (hab : a < b) (hfree : ∀ t, a < t → t < b → rayPt z σ t ∈ freeIn C.dom F) :
     ∃ V ∈ (chainModel C).regions F, ∀ t, a < t → t < b → rayPt z σ t ∈ V := by
-  have hm : rayPt z σ ((a + b) / 2) ∈ freeIn C.dom F := hfree _ (by linarith) (by linarith)
+  have hm : rayPt z σ ((a + b) / 2) ∈ freeIn C.dom F := hfree _ by_l by_l
   refine ⟨_, Chazelle.Chain.mem_regionsIn hm, ?_⟩
-  exact interval_subset_region C (Chazelle.Chain.mem_regionsIn hm) hfree (by linarith)
-    (by linarith) (mem_connectedComponentIn hm)
+  exact interval_subset_region C (Chazelle.Chain.mem_regionsIn hm) hfree by_l
+    by_l (mem_connectedComponentIn hm)
 
 /-- **The last crossing before `t₁`**: for a finite set `X` of parameters and `t₁ > 0` there is
 `s ∈ [0, t₁)`, either `0` or a positive element of `X`, with no element of `X` in `(s, t₁)`. -/
@@ -272,23 +272,23 @@ theorem ray_path (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point
   intro t₁ R hn ht₁ ht₁T hR hRi
   obtain ⟨s, hs0, hst, hsX, hgap⟩ := exists_gap hfin ht₁
   have hfree : ∀ t, s < t → t < t₁ → rayPt z σ t ∈ freeIn C.dom F := fun t h1 h2 =>
-    mem_freeIn_of_ray C hz (hbox t (by linarith) (by linarith)) (hgap t h1 h2)
-      (hnoF t (by linarith) (by linarith))
+    mem_freeIn_of_ray C hz (hbox t by_l by_l) (hgap t h1 h2)
+      (hnoF t by_l by_l)
   obtain ⟨t', ht'R, ht'⟩ := (hRi.and (Ioo_mem_nhdsLT hst)).exists
   have hRall := interval_subset_region C hR hfree ht'.1 ht'.2 ht'R
   rcases hsX with rfl | ⟨hspos, hsX⟩
   · -- no crossing: the ray is in one region on `(0, t₁)`
     obtain ⟨t'', ht''U, ht''⟩ := (hUi.and (Ioo_mem_nhdsGT ht₁)).exists
-    have hU' : U ∈ regionsIn C.dom F := hU
-    have hR' : R ∈ regionsIn C.dom F := hR
+    have hU' := hU
+    have hR' := hR
     rcases Chazelle.Chain.regionsIn_eq_or_disjoint hU' hR' with e | hdis
     · rw [e]
     · exact absurd (hRall t'' ht''.1 ht''.2) (Set.disjoint_left.1 hdis ht''U)
   · -- the last crossing `s`: the region `A` just before it
     obtain ⟨s', hs'0, hs's, -, hgap'⟩ := exists_gap hfin hspos
     have hfree' : ∀ t, s' < t → t < s → rayPt z σ t ∈ freeIn C.dom F := fun t h1 h2 =>
-      mem_freeIn_of_ray C hz (hbox t (by linarith) (by linarith)) (hgap' t h1 h2)
-        (hnoF t (by linarith) (by linarith))
+      mem_freeIn_of_ray C hz (hbox t by_l by_l) (hgap' t h1 h2)
+        (hnoF t by_l by_l)
     obtain ⟨A, hA, hAall⟩ := exists_region_of_interval C hs's hfree'
     have hfinI : (X ∩ Ioo 0 t₁).Finite := hfin.inter_of_left _
     have hlt : (X ∩ Ioo 0 s).ncard < n := by
@@ -296,10 +296,10 @@ theorem ray_path (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point
       refine Set.ncard_lt_ncard ⟨fun t ht => ⟨ht.1, ht.2.1, lt_trans ht.2.2 hst⟩, fun hsub => ?_⟩
         hfinI
       exact lt_irrefl s (hsub ⟨hsX, hspos, hst⟩).2.2
-    have hpath := ih _ hlt s A rfl hspos (by linarith) hA
+    have hpath := ih _ hlt s A rfl hspos by_l hA
       (by filter_upwards [Ioo_mem_nhdsLT hs's] with t ht; exact hAall t ht.1 ht.2)
     have hsdom : rayPt z σ s ∉ C.dom := fun h => C.set_subset_dom_compl hsX h
-    refine hpath.tail ⟨hA, hR, ⟨rayPt z σ s, hsX, σ, hσ, ?_, ?_⟩, s, hspos, by linarith,
+    refine hpath.tail ⟨hA, hR, ⟨rayPt z σ s, hsX, σ, hσ, ?_, ?_⟩, s, hspos, by_l,
       arcHit_left C hP hFam hA hz hσ hs's hAall hsdom,
       arcHit_right C hP hFam hR hz hσ hst hRall hsdom⟩
     · filter_upwards [Ioo_mem_nhdsGT (sub_pos.2 hs's)] with u hu
@@ -330,7 +330,7 @@ theorem exists_final_region (C : Chain) {F : Set (Set Point)} {z : Point} (hz : 
     ∃ R ∈ (chainModel C).regions F, ∀ᶠ t in 𝓝[<] T, rayPt z σ t ∈ R := by
   obtain ⟨s, hs0, hsT, -, hgap⟩ := exists_gap hfin hT
   obtain ⟨R, hR, hall⟩ := exists_region_of_interval C hsT fun t h1 h2 =>
-    mem_freeIn_of_ray C hz (hbox t (by linarith) h2) (hgap t h1 h2) (hnoF t (by linarith) h2)
+    mem_freeIn_of_ray C hz (hbox t by_l h2) (hgap t h1 h2) (hnoF t by_l h2)
   refine ⟨R, hR, ?_⟩
   filter_upwards [Ioo_mem_nhdsLT hsT] with t ht
   exact hall t ht.1 ht.2
@@ -349,17 +349,17 @@ theorem finite_crossings (C : Chain)
     exact ⟨k, hk, hmem⟩
   refine Set.Finite.subset (Set.Finite.biUnion (Finset.range C.m).finite_toSet fun k hk => ?_) hsub
   refine Set.Subsingleton.finite fun a ha b hb => ?_
-  have hk : k < C.m := Finset.mem_range.1 hk
+  have hk := Finset.mem_range.1 hk
   simp only [mem_ofPred_eq, C.chainEdge_eq] at ha hb
   obtain ⟨s₁, -, -, h₁⟩ := ha
   obtain ⟨s₂, -, -, h₂⟩ := hb
   have hy1 := congrArg Prod.snd h₁
   have hy2 := congrArg Prod.snd h₂
   simp only [rayPt_snd] at hy1 hy2
-  have hd : (C.vertex (k + 1)).2 - (C.vertex k).2 ≠ 0 := sub_ne_zero.2 (hne k hk).symm
+  have hd := sub_ne_zero.2 (hne k hk).symm
   have hs : s₁ = s₂ := by
     have : s₁ * ((C.vertex (k + 1)).2 - (C.vertex k).2) =
-        s₂ * ((C.vertex (k + 1)).2 - (C.vertex k).2) := by linarith
+        s₂ * ((C.vertex (k + 1)).2 - (C.vertex k).2) := by_l
     exact mul_right_cancel₀ hd this
   apply rayPt_injective z hσ
   rw [h₁, h₂, hs]
@@ -373,8 +373,8 @@ theorem vertex_snd_ne (C : Chain) (hD : DistinctHeights C.P) {k : ℕ} :
   unfold Chain.edgeIdx
   intro h
   have h1 := Nat.sub_mod_eq_zero_of_mod_eq h.symm
-  rw [show C.s + (k + 1) - (C.s + k) = 1 by omega, Nat.one_mod_eq_one.2 (by omega)] at h1
-  exact absurd h1 (by norm_num)
+  rw [show C.s + (k + 1) - (C.s + k) = 1 by omega, Nat.one_mod_eq_one.2 by_o] at h1
+  exact absurd h1 by_n
 
 /-! ## The cluster argument (p. 515) -/
 
@@ -424,7 +424,7 @@ theorem walk_n (C : Chain) : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n C.
 theorem key_box_left (C : Chain) (Q : Polygon) (h : ℕ) :
     (chainModel C).key Q ⟨1, h + 1⟩ = 1 + (C.radius - (Q.vtx h).2) / (2 * C.radius) := by
   have hR := C.radius_pos
-  have h2 : (1 + 1) % (chainModel C).W.n = 2 := by rw [walk_n]; exact Nat.mod_eq_of_lt (by omega)
+  have h2 : (1 + 1) % (chainModel C).W.n = 2 := by rw [walk_n]; exact Nat.mod_eq_of_lt by_o
   unfold Model.key Model.param Model.wa Model.wb
   simp only [h2]
   show ((1 : ℕ) : ℝ) + (if ((C.sideWalk C.sideBeta).vtx 1).2 = ((C.sideWalk C.sideBeta).vtx 2).2
@@ -432,7 +432,7 @@ theorem key_box_left (C : Chain) (Q : Polygon) (h : ℕ) :
       (((C.sideWalk C.sideBeta).vtx 2).2 - ((C.sideWalk C.sideBeta).vtx 1).2)) = _
   rw [C.sideWalk_vtx_one, C.sideWalk_vtx_two]
   simp only
-  rw [ite_eq_right (by linarith)]
+  rw [ite_eq_right by_l]
   push_cast
   congr 1
   field_simp
@@ -442,7 +442,7 @@ theorem key_box_left (C : Chain) (Q : Polygon) (h : ℕ) :
 theorem key_box_right (C : Chain) (Q : Polygon) (h : ℕ) :
     (chainModel C).key Q ⟨3, h + 1⟩ = 3 + ((Q.vtx h).2 + C.radius) / (2 * C.radius) := by
   have hR := C.radius_pos
-  have h4 : (3 + 1) % (chainModel C).W.n = 4 := by rw [walk_n]; exact Nat.mod_eq_of_lt (by omega)
+  have h4 : (3 + 1) % (chainModel C).W.n = 4 := by rw [walk_n]; exact Nat.mod_eq_of_lt by_o
   unfold Model.key Model.param Model.wa Model.wb
   simp only [h4]
   show ((3 : ℕ) : ℝ) + (if ((C.sideWalk C.sideBeta).vtx 3).2 = ((C.sideWalk C.sideBeta).vtx 4).2
@@ -450,7 +450,7 @@ theorem key_box_right (C : Chain) (Q : Polygon) (h : ℕ) :
       (((C.sideWalk C.sideBeta).vtx 4).2 - ((C.sideWalk C.sideBeta).vtx 3).2)) = _
   rw [C.sideWalk_vtx_three, C.sideWalk_vtx_four]
   simp only
-  rw [ite_eq_right (by linarith)]
+  rw [ite_eq_right by_l]
   push_cast
   congr 1
   field_simp

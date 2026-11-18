@@ -32,7 +32,7 @@ theorem arcWt_le_gamma {M : Model} (hGM : GoodModel M) {F : Set (Set Point)}
   have hM := walkAx_of_goodModel hGM
   have hbdd : BddAbove ((fun ab : ℝ × ℝ => M.arcWt ab.1 ab.2) '' {ab | M.IsArc F U ab.1 ab.2}) :=
     ((hM.arcs_bound hF.2.1 hF.1 hU).1.image _).bddAbove
-  have hle : M.arcWt a b ≤ M.weight F U := le_csSup hbdd ⟨(a, b), harc, rfl⟩
+  have hle := le_csSup hbdd ⟨(a, b), harc, rfl⟩
   exact hle.trans (hsg U hU)
 
 /-- A finite set of counted edges met by an interval bounds its weight from below. -/
@@ -43,7 +43,7 @@ theorem card_le_arcWt {M : Model} {a b : ℝ} (T : Finset ℕ)
   rw [← Set.ncard_coe_finset]
   refine Set.ncard_le_ncard (fun q hq => ?_) ((Set.finite_Iio M.W.n).subset fun p hp => hp.1)
   obtain ⟨h1, h2, h3⟩ := hT q hq
-  exact ⟨h1, h2, 1 / 2, by norm_num, by norm_num, h3⟩
+  exact ⟨h1, h2, 1 / 2, by_n, by_n, h3⟩
 
 /-- **`γ ≥ 1`** for a `γ`-canonical normal form of a chain. -/
 theorem gamma_pos (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4) : 1 ≤ γ := by
@@ -51,10 +51,10 @@ theorem gamma_pos (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4)
   have hM := walkAx_of_goodModel hGM
   have hF := hC.1.1
   have hsg := hC.2.2.1.semigranular
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
+  have hnW := walk_n C
   have hm1 := C.one_le
   by_contra h0
-  have hγ : γ = 0 := by omega
+  have hγ : γ = 0 := by_o
   subst hγ
   by_cases hne : (N.F (chainModel C) Q).Nonempty
   · exact hM.not_semigranular_zero hF.2.1 hF.1 hne (p₀ := 6) (by rw [hnW]; omega)
@@ -88,7 +88,7 @@ theorem card_counted_ge (m : ℕ) (S : Finset ℕ) (hS : ∀ q ∈ S, q < 2 * m 
     omega
   have hc := Finset.card_le_card hsub
   have hc2 : (Finset.range 6 ∪ {2 * m + 6}).card ≤ 7 :=
-    (Finset.card_union_le _ _).trans (by simp)
+    (Finset.card_union_le _ _).trans by_s
   omega
 
 /-- **The walk edges scanned for an arc.** -/
@@ -100,9 +100,9 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   have hN := hC.1
   have hsg := hC.2.2.1.semigranular
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
+  have hnW := walk_n C
   obtain ⟨reg, hR, hA, harc⟩ := isArc_sj hN hp
-  have hU : reg (N.arc (sj N p)).reg ∈ (chainModel C).regions (N.F (chainModel C) Q) :=
+  have hU :=
     hR.1 _ (hA.1 _ (NFLoc.seq_lt hN hp)).1
   have hwt := arcWt_le_gamma hGM hN.1 hsg hU harc
   obtain ⟨-, -, -, -, -, -, -, -, -, -, hpp⟩ := id hN
@@ -114,7 +114,7 @@ theorem scanLen_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N γ 4
   have hts0 : 0 ≤ (chainModel C).param Q (N.arc (sj N p)).s := hs0
   have hts1 : (chainModel C).param Q (N.arc (sj N p)).s < 1 := hs1
   have hte0 : 0 ≤ (chainModel C).param Q (N.arc (sj N p)).e := he0
-  have hte1 : (chainModel C).param Q (N.arc (sj N p)).e < 1 := he1
+  have hte1 := he1
   have ha1 := harc.2.1
   have hb1 := harc.2.2.2.1
   rw [hnW] at ha1 hb1
@@ -181,7 +181,7 @@ theorem region_arcs_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N 
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   have hM := walkAx_of_goodModel hGM
   obtain ⟨hF, -, -, reg, hR, -, hA, hRs, -⟩ := hC.1
-  have hU : reg r ∈ (chainModel C).regions (N.F (chainModel C) Q) := hR.1 r hr
+  have hU := hR.1 r hr
   have hnd := (hRs r hr).2.2.1
   set L := (N.region r).arcs
   set f : ℕ → ℝ × ℝ := fun j => ((chainModel C).key Q (N.arc j).s, (chainModel C).key Q (N.arc j).e)
@@ -201,7 +201,7 @@ theorem region_arcs_le (hP : C.P.Simple) (hC : IsCanonicalNF (chainModel C) Q N 
   have hL : L.length = ({j | j ∈ L} : Set ℕ).ncard := by
     rw [show ({j | j ∈ L} : Set ℕ) = ↑L.toFinset by ext; simp, Set.ncard_coe_finset,
       List.toFinset_card_of_nodup hnd]
-  have h1 : ({j | j ∈ L} : Set ℕ).ncard = (f '' {j | j ∈ L}).ncard := (Set.InjOn.ncard_image hinj).symm
+  have h1 := (Set.InjOn.ncard_image hinj).symm
   have h2 := Set.ncard_le_ncard hsub hfin
   omega
 

@@ -38,7 +38,7 @@ theorem stores_exec {P : Polygon} {W : ℕ} (L : List ℕ) {c : Config} (hw : Wo
     exact ⟨c, 0, .skip hw, rfl, by simpa using hp, fun _ _ => rfl, fun i hi => by simp at hi,
       fun _ _ => rfl, rfl, rfl, rfl⟩
   | cons r L ih =>
-    have hr : r ≠ 110005 := hL r (by simp)
+    have hr : r ≠ 110005 := hL r by_s
     obtain ⟨c₁, k₁, e₁, hk₁, v5, R₁, m₁, rr₁, rm₁, o₁⟩ : ∃ c₁ k₁, Exec P W
         (block [.storeN 110005 r, .addN 110005 110005 120011]) c c₁ k₁ ∧ k₁ = 2 ∧
         c₁.nreg 110005 = p + 1 ∧ (∀ r', r' ≠ 110005 → c₁.nreg r' = c.nreg r') ∧
@@ -50,15 +50,15 @@ theorem stores_exec {P : Polygon} {W : ℕ} (L : List ℕ) {c : Config} (hw : Wo
           rfl, rfl, rfl⟩
         config_simp; rw [upd_other _ _ _ hr']
     obtain ⟨c₂, k₂, e₂, hk₂, v5', R₂, m₂, m₂', rr₂, rm₂, o₂⟩ := ih e₁.wb_right v5
-      (by rw [R₁ _ (by decide), h1]) (fun r' hr' => hL r' (by simp [hr']))
+      (by rw [R₁ _ by_d, h1]) (fun r' hr' => hL r' (by simp [hr']))
       (by simp at hW; omega)
     refine ⟨c₂, _, .seq e₁ e₂, by simp; omega, by rw [v5']; simp; omega,
       fun r' hr' => by rw [R₂ r' hr', R₁ r' hr'], fun i hi => ?_, fun a ha => ?_,
       by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
     · rcases i with _ | j
-      · rw [Nat.add_zero, m₂' p (Or.inl (by omega)), m₁]; simp [upd]
+      · rw [Nat.add_zero, m₂' p (Or.inl by_o), m₁]; simp [upd]
       · simp only [List.length_cons] at hi
-        have hj : j < L.length := by omega
+        have hj : j < L.length := by_o
         have := m₂ j hj
         rw [show p + 1 + j = p + (j + 1) by omega] at this
         rw [this, List.getD_cons_succ]
@@ -66,7 +66,7 @@ theorem stores_exec {P : Polygon} {W : ℕ} (L : List ℕ) {c : Config} (hw : Wo
           rw [List.getD_eq_getElem _ _ hj]; exact List.getElem_mem hj
         exact R₁ _ (hL _ (List.mem_cons_of_mem _ hmem))
     · simp at ha
-      rw [m₂' a (by omega), m₁, upd_other _ _ _ (by omega)]
+      rw [m₂' a by_o, m₁, upd_other _ _ _ by_o]
 
 /-- The registers of the header, in order. -/
 def hdrRegs : List ℕ :=
@@ -99,20 +99,19 @@ theorem hdrS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
         fun r a b d e => ?_, rfl, rfl, rfl, rfl⟩
       config_simp; simp only [upd_apply]; rw [ite_eq_right b, ite_eq_right e, ite_eq_right d, ite_eq_right a]
   obtain ⟨c₂, k₂, e₂, hk₂, v5, R₂, mm, mo, rr₂, rm₂, o₂⟩ := stores_exec (P := P) hdrRegs
-    e₁.wb_right a5 (by rw [R₁ _ (by decide) (by decide) (by decide) (by decide), h1])
-    (by decide) (by simp [hdrRegs]; omega)
+    e₁.wb_right a5 (by rw [R₁ _ by_d by_d by_d by_d, h1])
+    by_d (by simp [hdrRegs]; omega)
   have hl : hdrRegs.length = 18 := rfl
-  refine ⟨c₂, _, .seq e₁ e₂, by rw [hk₁, hk₂, hl], by rw [R₂ _ (by decide), a3],
-    by rw [R₂ _ (by decide), a9], fun r a b d e => by rw [R₂ r d, R₁ r a b d e],
-    fun i hi h3 => ?_, ?_, fun a ha => by rw [mo a (by rw [hl]; exact ha), m₁],
+  refine ⟨c₂, _, .seq e₁ e₂, by rw [hk₁, hk₂, hl], by rw [R₂ _ by_d, a3],
+    by rw [R₂ _ by_d, a9], fun r a b d e => by rw [R₂ r d, R₁ r a b d e],
+    fun i hi h3 => ?_, ?_, fun a ha => by rw [mo a (by rwa [hl]), m₁],
     by rw [rr₂, rr₁], by rw [rm₂, rm₁], by rw [o₂, o₁]⟩
-  · rw [mm i (by rw [hl]; exact hi)]
+  · rw [mm i (by rwa [hl])]
     have hne : hdrRegs.getD i 0 ≠ 110003 ∧ hdrRegs.getD i 0 ≠ 110004 ∧
         hdrRegs.getD i 0 ≠ 110005 ∧ hdrRegs.getD i 0 ≠ 9999 := by
       interval_cases i <;> simp_all [hdrRegs]
     exact R₁ _ hne.1 hne.2.1 hne.2.2.1 hne.2.2.2
   · rw [mm 3 (by rw [hl]; omega)]
-    show c₁.nreg 9999 = O + 18
     exact a9
 
 /-! ## The payment of the allocator -/
@@ -126,7 +125,7 @@ theorem payS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
       (∀ r, r ≠ 110008 → r ≠ 110009 → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem ∧
       c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have e₁ := Exec.subN (P := P) hw 110008 9999 120026
-  set c₁ : Config := { c with nreg := upd c.nreg 110008 (c.nreg 9999 - c.nreg 120026) } with hc₁
+  set c₁ := { c with nreg := upd c.nreg 110008 (c.nreg 9999 - c.nreg 120026) } with hc₁
   have v8 : c₁.nreg 110008 = E - A₀ := by rw [hc₁]; config_simp; rw [hAl, h26]
   have R₁ : ∀ r, r ≠ 110008 → c₁.nreg r = c.nreg r := fun r hr => by
     rw [hc₁]; config_simp; rw [upd_other _ _ _ hr]
@@ -134,7 +133,7 @@ theorem payS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
     d.nreg 120011 = 1 ∧ (∀ r, r ≠ 110009 → d.nreg r = c₁.nreg r) ∧ d.nmem = c₁.nmem ∧
     d.rreg = c₁.rreg ∧ d.rmem = c₁.rmem ∧ d.output = c₁.output
   obtain ⟨c₂, k₂, e₂, hk₂, ⟨-, -, -, R₂, m₂, rr₂, rm₂, o₂⟩, -, hn⟩ := forS_exec (P := P) (W := W)
-    (ri := 110009) (rn := 110008) (r1 := 120011) (body := .skip) (by decide) (by decide)
+    (ri := 110009) (rn := 110008) (r1 := 120011) (body := .skip) by_d by_d
     (n := E - A₀) (κ := 0) I
     (fun i d h => ⟨h.1, h.2.1, h.2.2.1⟩)
     (fun i d v h hw' => ⟨hw', by simp [upd, h.2.1], by simp [upd, h.2.2.1],
@@ -142,9 +141,9 @@ theorem payS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
       h.2.2.2.2.1, h.2.2.2.2.2.1, h.2.2.2.2.2.2.1, h.2.2.2.2.2.2.2⟩)
     (fun i d _ h hri => ⟨d, 0, .skip h.1, le_rfl, hri, h⟩)
     e₁.wb_right (by rw [← v8]; exact e₁.wb_right.1 _)
-    (fun d hwd h0 hr hm hrr hrm ho => ⟨hwd, by rw [hr _ (by decide), v8],
-      by rw [hr _ (by decide), R₁ _ (by decide), h1], fun r hr' => hr r hr', hm, hrr, hrm, ho⟩)
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, by omega, fun r a b => by rw [R₂ r b, R₁ r a], m₂,
+    (fun d hwd h0 hr hm hrr hrm ho => ⟨hwd, by rw [hr _ by_d, v8],
+      by rw [hr _ by_d, R₁ _ by_d, h1], fun r hr' => hr r hr', hm, hrr, hrm, ho⟩)
+  refine ⟨c₂, _, .seq e₁ e₂, by_o, by_o, fun r a b => by rw [R₂ r b, R₁ r a], m₂,
     rr₂, rm₂, o₂⟩
 
 end

@@ -16,8 +16,6 @@ forwards (`li`) or backwards (`¬ li`).
   (`wrV_exec`, `wrE_exec`).
 -/
 
-set_option linter.unnecessarySeqFocus false
-
 namespace Chazelle.Core
 
 namespace DrvB
@@ -68,10 +66,10 @@ theorem PtAtB.congr {m m' : ℕ → ℕ} {a : ℕ} {x : SymPt} (h : PtAtB m a x)
     (hm : ∀ b, a ≤ b → b < a + 3 → m' b = m b) : PtAtB m' a x := by
   cases x with
   | vtx i =>
-    exact ⟨(hm a le_rfl (by omega)).trans h.1, (hm (a + 1) (by omega) (by omega)).trans h.2⟩
+    exact ⟨(hm a le_rfl by_o).trans h.1, (hm (a + 1) by_o by_o).trans h.2⟩
   | onEdge e h' =>
-    exact ⟨(hm a le_rfl (by omega)).trans h.1, (hm (a + 1) (by omega) (by omega)).trans h.2.1,
-      (hm (a + 2) (by omega) (by omega)).trans h.2.2⟩
+    exact ⟨(hm a le_rfl by_o).trans h.1, (hm (a + 1) by_o by_o).trans h.2.1,
+      (hm (a + 2) by_o by_o).trans h.2.2⟩
 
 theorem slotE_lt {li : Bool} {NP k : ℕ} (hk : k < NP) : slotE li NP k < NP := by
   unfold slotE; split <;> omega
@@ -92,17 +90,17 @@ theorem ESt.step {W n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c c' : Config
   have hsl := slotE_lt (li := li) hK
   have hreg : ∀ r, r ≠ 212025 → c'.nreg r = c.nreg r := fun r hr =>
     hf.1 r (by simpa using hr)
-  refine ⟨hw, by omega, hS.hW, hS.fr.trans (hf.mono fun r hr => ?_), ?_, ?_, ?_, ?_, ?_, ?_, hptr⟩
+  refine ⟨hw, by_o, hS.hW, hS.fr.trans (hf.mono fun r hr => ?_), ?_, ?_, ?_, ?_, ?_, ?_, hptr⟩
   · simp only [decide_eq_true_eq] at hr; subst hr; decide
-  · rw [hreg _ (by decide)]; exact hS.r0
-  · rw [hreg _ (by decide)]; exact hS.r1
-  · rw [hreg _ (by decide)]; exact hS.rli
-  · rw [hreg _ (by decide)]; exact hS.rn
+  · rw [hreg _ by_d]; exact hS.r0
+  · rw [hreg _ by_d]; exact hS.r1
+  · rw [hreg _ by_d]; exact hS.rli
+  · rw [hreg _ by_d]; exact hS.rn
   · intro a ha
-    rw [hm a (by omega)]; exact hS.mem a ha
+    rw [hm a by_o]; exact hS.mem a ha
   · intro k hk
     rcases Nat.lt_or_ge k K with hk' | hk'
-    · have hne := slotE_ne (li := li) (by omega) hK (Nat.ne_of_lt hk')
+    · have hne := slotE_ne (li := li) by_o hK (Nat.ne_of_lt hk')
       refine (hS.pts k hk').congr fun b hb1 hb2 => hm b ?_
       rcases Nat.lt_or_gt_of_ne hne with h | h <;> omega
     · have : k = K := by omega
@@ -114,15 +112,15 @@ theorem ESt.frame {W n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c c' : Confi
     (h25 : c'.nreg 212025 = c.nreg 212025) (hm : c'.nmem = c.nmem) :
     ESt W n PA li L c₀ c' K := by
   refine ⟨hw, hS.le, hS.hW, hS.fr.trans hf, ?_, ?_, ?_, ?_, ?_, ?_, h25.trans hS.ptr⟩
-  · rw [hf.1 _ (by decide)]; exact hS.r0
-  · rw [hf.1 _ (by decide)]; exact hS.r1
-  · rw [hf.1 _ (by decide)]; exact hS.rli
-  · rw [hf.1 _ (by decide)]; exact hS.rn
+  · rw [hf.1 _ by_d]; exact hS.r0
+  · rw [hf.1 _ by_d]; exact hS.r1
+  · rw [hf.1 _ by_d]; exact hS.rli
+  · rw [hf.1 _ by_d]; exact hS.rn
   · intro a ha; rw [hm]; exact hS.mem a ha
   · intro k hk; rw [hm]; exact hS.pts k hk
 
-theorem wr_wrV : wrM (fun r => decide (r = 212025)) wrV = true := by decide
-theorem wr_wrE : wrM (fun r => decide (r = 212025)) wrE = true := by decide
+theorem wr_wrV : wrM (fun r => decide (r = 212025)) wrV = true := by_d
+theorem wr_wrE : wrM (fun r => decide (r = 212025)) wrE = true := by_d
 
 section exec
 
@@ -151,7 +149,7 @@ theorem wrV_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K 
       exec_block
       simp only [ptrE, slotE, Bool.false_eq_true, ite_false] at hp ⊢
       simp only [h0, h1, hp, PtAtB, Machine.upd_same]
-      refine ⟨by omega, fun a ha => ?_, ?_, by omega⟩
+      refine ⟨by_o, fun a ha => ?_, ?_, by_o⟩
       · simp only [upd]; split_ifs <;> omega
       · simp only [upd]; split_ifs <;> omega
     · refine spec_ifLtN_true (by simp only [h1, hl]; simp) ?_
@@ -162,7 +160,7 @@ theorem wrV_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K 
       · omega
       · omega
       · omega
-      refine ⟨by omega, fun a ha => ?_, ?_, by omega⟩
+      refine ⟨by_o, fun a ha => ?_, ?_, by_o⟩
       · simp only [upd]; split_ifs <;> omega
       · refine ⟨?_, ?_⟩ <;> simp only [upd] <;> (try split_ifs) <;> omega
   exact ⟨c', k, ex, hk, hS.step hK ex.wb_right (exec_frameM ex wr_wrV) hm hp hptr,
@@ -191,7 +189,7 @@ theorem wrE_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K 
       exec_block
       simp only [ptrE, slotE, Bool.false_eq_true, ite_false] at hp ⊢
       simp only [h0, hp, PtAtB, Machine.upd_same]
-      refine ⟨by omega, fun a ha => ?_, ?_, by omega⟩
+      refine ⟨by_o, fun a ha => ?_, ?_, by_o⟩
       · simp only [upd]; split_ifs <;> omega
       · refine ⟨?_, ?_, ?_⟩ <;> simp only [upd] <;> (try split_ifs) <;> omega
     · refine spec_ifLtN_true (by simp only [h1, hl]; simp) ?_
@@ -202,7 +200,7 @@ theorem wrE_exec {n PA : ℕ} {li : Bool} {L : List SymPt} {c₀ c : Config} {K 
       · omega
       · omega
       · omega
-      refine ⟨by omega, fun a ha => ?_, ?_, by omega⟩
+      refine ⟨by_o, fun a ha => ?_, ?_, by_o⟩
       · simp only [upd]; split_ifs <;> omega
       · refine ⟨?_, ?_, ?_⟩ <;> simp only [upd] <;> (try split_ifs) <;> omega
   exact ⟨c', k, ex, hk, hS.step hK ex.wb_right (exec_frameM ex wr_wrE) hm hp hptr,

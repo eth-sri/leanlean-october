@@ -53,7 +53,7 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   set AT := c₀.nreg (sw 302) with hATd
   set B := c₀.nreg ALLOC with hBd
   set j := 2 * k + s with hjd
-  have hK : Consts c := e.hA.hK.fix hI
+  have hK := e.hA.hK.fix hI
   have hst := e.hA.hstops
   have hlog := e.hA.hlog
   have htw := e.hA.htabw
@@ -62,7 +62,7 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   have hWc := hI.hw.1 ALLOC
   have mc : ∀ (d : Config), IInv W c₀ d → ∀ a, a < B → d.nmem a = c.nmem a :=
     fun d hd a ha => (hd.hm a ha).trans (hI.hm a ha).symm
-  have hj : j < 2 * N₂.nChords := by omega
+  have hj : j < 2 * N₂.nChords := by_o
   have od := e.odc (m := c.nmem) hI.hm
   simp only [rd_sw] at od
   obtain ⟨-, hpw⟩ := od.tw j hj
@@ -74,7 +74,7 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   refine IRS.seq (K₁ := 2) (K₂ := kTb κL (c₀.nreg TLR) - 2) hb1 ?_ |>.mono
     (by unfold kTb; omega) (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' rfl
-  set c₁ : Config := { c with nreg := regB c.nmem [.copyN oK ipJ, .copyN oS ipS] c.nreg }
+  set c₁ := { c with nreg := regB c.nmem [.copyN oK ipJ, .copyN oS ipS] c.nreg }
     with hc₁
   have v1 : ∀ r, r ≠ oK → r ≠ oS → c₁.nreg r = c.nreg r := fun r h1 h2 => by
     simp only [hc₁, regB, regI]; rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
@@ -84,27 +84,27 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     simp only [hc₁, regB, regI]; rw [upd_same, upd_other _ _ _ (by unfold oK ipS sw; omega), hs]
   refine IRS.seq (K₁ := 11100) (K₂ := kTb κL (c₀.nreg TLR) - 2 - 11100)
     (orgHead_irs hI₁ e.hA.hK (e.hA.ctxR hI₁) e.hA.hNF₂ (e.nw hI₁) le_rfl
-      (by rw [vK]; exact hkK) (by rw [vS]; exact hs1) (by unfold kTb at hroom; omega)) ?_ |>.mono
+      (by rwa [vK]) (by rwa [vS]) (by unfold kTb at hroom; omega)) ?_ |>.mono
     (by unfold kTb; omega) (fun _ h => h)
   rintro c₂ hI₂ hA₂ hA₂' ⟨-, -, -, -, vE, vC, -, -, fr₂, hAl₂, hm₂⟩
   rw [vK, vS] at vE vC
   have k21 : ∀ r, bandOf r ∉ oracleBands → (r < sw 2200 ∨ sw 2217 < r) → r ≠ ALLOC →
       c₂.nreg r = c.nreg r := fun r h1 h2 h3 =>
-    (fr₂ r h1 (by unfold sw at *; omega) h3).trans
+    (fr₂ r h1 by_so h3).trans
       (v1 r (by unfold oK sw at *; omega) (by unfold oS sw at *; omega))
   have mem2 : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => hm₂ a ha
   -- the class test
-  have hK₂ : Consts c₂ := e.hA.hK.fix hI₂
+  have hK₂ := e.hA.hK.fix hI₂
   refine IRS.seq (K₁ := 19) (K₂ := kTb κL (c₀.nreg TLR) - 2 - 11100 - 19) (cls_irs hI₂ hK₂) ?_
     |>.mono (by unfold kTb; omega) (fun _ h => h)
   rintro c₃ hI₃ hA₃ hA₃' ⟨vV, vV1, fr₃, hm₃⟩
   have e5 : c₂.nreg ipM5 = 2 * J.right.m + 5 :=
-    (k21 _ (not_oracle_sw (by unfold ipM5 sw; omega) (by unfold ipM5 sw; omega))
+    (k21 _ by_d
       (by unfold ipM5 sw; omega) (by unfold ipM5 ALLOC sw; omega)).trans hM5
   have e6 : c₂.nreg ipM6 = 6 + midT J.right :=
-    (k21 _ (not_oracle_sw (by unfold ipM6 sw; omega) (by unfold ipM6 sw; omega))
+    (k21 _ by_d
       (by unfold ipM6 sw; omega) (by unfold ipM6 ALLOC sw; omega)).trans hM6
-  have e41 : c₂.nreg (sw 41) = cstR J 1 := (e.fix hI₂ (k := 41) (by norm_num)).trans e.st0.2.1
+  have e41 : c₂.nreg (sw 41) = cstR J 1 := (e.fix hI₂ (k := 41) by_n).trans e.st0.2.1
   rw [e5, e6, e41, vE, vC, ← valid_test e.hA.hP e.hA.hNF₂ hkK hs1] at vV
   have k3 : ∀ r, bandOf r ∉ oracleBands → (r < sw 2200 ∨ sw 2217 < r) → r ≠ ALLOC → r ≠ ipV →
       c₃.nreg r = c.nreg r := fun r h1 h2 h3 h4 => (fr₃ r h4).trans (k21 r h1 h2 h3)
@@ -118,50 +118,49 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     · rcases hr with rfl | rfl | rfl | rfl | rfl <;> simp [ipB, ipM6, ipM5, ipJ, ipKc, sw]
     · rcases hr with rfl | rfl | rfl | rfl | rfl <;> simp [ipB, ipM6, ipM5, ipJ, ipKc, ALLOC, sw]
     · rcases hr with rfl | rfl | rfl | rfl | rfl <;> simp [ipB, ipM6, ipM5, ipJ, ipKc, ipV, sw]
-  have hK₃ : Consts c₃ := e.hA.hK.fix hI₃
+  have hK₃ := e.hA.hK.fix hI₃
   by_cases hv : c₃.nreg ipV < c₃.nreg K1
   · -- not regular
     have hv0 : ¬ ValidO J (Qof P) N₂ j := by
       intro h; have := vV.2 h; rw [this, hK₃.2.1] at hv; omega
     refine (IRS.ifT (K := 0) hv (IRS.skip hI₃ (Q := fun c' =>
       (∀ r, PReg r → c'.nreg r = c.nreg r) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
-      SInv P J N₂ AS AL E AT B c'.nmem S (j + 1)) ⟨hp3, by omega, ?_⟩)).mono
+      SInv P J N₂ AS AL E AT B c'.nmem S (j + 1)) ⟨hp3, by_o, ?_⟩)).mono
       (by unfold kTb; omega) (fun _ h => h)
-    exact (hS.congr (fun a ha => mem3 a (by omega)) (by omega) (by omega) (by omega)).tabSkip
+    exact (hS.congr (fun a ha => mem3 a by_o) by_o by_o by_o).tabSkip
       (fun h => hv0 h.1)
   -- regular
   have hvo : ValidO J (Qof P) N₂ j := vV.1 (by rw [hK₃.2.1] at hv; omega)
   refine IRS.ifF (K := kTb κL (c₀.nreg TLR) - 2 - 11100 - 19 - 2) hv ?_ |>.mono
     (by unfold kTb; omega) (fun _ h => h)
-  have a3 : c₃.nreg ipA = AT + 3 * j := (k3 _ (not_oracle_sw (by unfold ipA sw; omega)
-    (by unfold ipA sw; omega)) (by unfold ipA sw; omega) (by unfold ipA ALLOC sw; omega)
+  have a3 : c₃.nreg ipA = AT + 3 * j := (k3 _ by_d (by unfold ipA sw; omega) (by unfold ipA ALLOC sw; omega)
     (by unfold ipA ipV sw; omega)).trans ha
   refine IRS.seq (K₁ := 6) (K₂ := kTb κL (c₀.nreg TLR) - 2 - 11100 - 19 - 2 - 6)
-    (tbTg_irs hI₃ hK₃ a3 (by omega)) ?_ |>.mono (by unfold kTb; omega) (fun _ h => h)
+    (tbTg_irs hI₃ hK₃ a3 by_o) ?_ |>.mono (by unfold kTb; omega) (fun _ h => h)
   rintro c₄ hI₄ hA₄ hA₄' ⟨g1, g2, g3, g4, gfr, gm⟩
-  have q1 : c₄.nreg lsxE = c.nmem (AT + 3 * j + 1) := by rw [g3, mem3 _ (by omega)]
-  have q2 : c₄.nreg lsxH = c.nmem (AT + 3 * j + 2) := by rw [g4, mem3 _ (by omega)]
+  have q1 : c₄.nreg lsxE = c.nmem (AT + 3 * j + 1) := by rw [g3, mem3 _ by_o]
+  have q2 : c₄.nreg lsxH = c.nmem (AT + 3 * j + 2) := by rw [g4, mem3 _ by_o]
   refine IRS.seq (K₁ := κL * (c₀.nreg TLR + 1)) (K₂ := 12)
-    (e.search hls hI₄ (by rw [q1, q2]; exact pw) (by unfold kTb at hroom; omega)) ?_ |>.mono
+    (e.search hls hI₄ (by rwa [q1, q2]) (by unfold kTb at hroom; omega)) ?_ |>.mono
     (by unfold kTb; omega) (fun _ h => h)
   rintro c₅ hI₅ hA₅ hA₅' ⟨s1, s2, sfr, sA, sm⟩
   have hq : (⟨c₄.nreg lsxE, c₄.nreg lsxH⟩ : WPos) =
       ⟨c₄.nmem (AT + 3 * (2 * k + s) + 1), c₄.nmem (AT + 3 * (2 * k + s) + 2)⟩ := by
-    rw [q1, q2, mc c₄ hI₄ _ (by omega), mc c₄ hI₄ (AT + 3 * (2 * k + s) + 2) (by omega)]
+    rw [q1, q2, mc c₄ hI₄ _ by_o, mc c₄ hI₄ (AT + 3 * (2 * k + s) + 2) by_o]
   rw [hq] at s1 s2
   have od₄ := e.odc (m := c₄.nmem) hI₄.hm
   simp only [rd_sw] at od₄
-  have hf₄ : c₄.nmem (AT + 3 * (2 * k + s)) = 1 := by rw [mc c₄ hI₄ _ (by omega)]; exact hf
+  have hf₄ : c₄.nmem (AT + 3 * (2 * k + s)) = 1 := by rw [mc c₄ hI₄ _ by_o]; exact hf
   obtain ⟨ht, e1, e2, hvl⟩ := tab_step od₄ e.hA.hNF₂ rfl hkK hs1 hvo hf₄ s1 s2
   -- registers after the search
   have k5 : ∀ r, sw 4100 ≤ r → r ≤ sw 4129 → r ≠ ipV → r ≠ ipE → r ≠ ipH → r ≠ ipA →
       c₅.nreg r = c.nreg r := by
     intro r h1 h2 n1 n2 n3 n4
-    rw [sfr r (not_oracle_sw (by unfold sw at *; omega) (by unfold sw at *; omega))
-      (by unfold LSet sw at *; omega) (by unfold ALLOC sw at *; omega),
+    rw [sfr r (not_oracle_sw by_so by_so)
+      (by unfold LSet sw at *; omega) by_so,
       gfr r n2 n3 n4 (by unfold lsxE sw at *; omega) (by unfold lsxH sw at *; omega)]
-    exact k3 r (not_oracle_sw (by unfold sw at *; omega) (by unfold sw at *; omega))
-      (by unfold sw at *; omega) (by unfold ALLOC sw at *; omega) n1
+    exact k3 r (not_oracle_sw by_so by_so)
+      by_so by_so n1
   have k5S : c₅.nreg ipS = s := (k5 ipS (by unfold ipS sw; omega) (by unfold ipS sw; omega)
     (by unfold ipS ipV sw; omega) (by unfold ipS ipE sw; omega) (by unfold ipS ipH sw; omega)
     (by unfold ipS ipA sw; omega)).trans hs
@@ -169,22 +168,22 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     (by unfold ipB ipV sw; omega) (by unfold ipB ipE sw; omega) (by unfold ipB ipH sw; omega)
     (by unfold ipB ipA sw; omega)).trans hB
   have k5E : c₅.nreg ipE = c₃.nreg oE := by
-    rw [sfr _ (not_oracle_sw (by unfold ipE sw; omega) (by unfold ipE sw; omega))
+    rw [sfr _ by_d
       (by unfold LSet ipE sw; omega) (by unfold ALLOC ipE sw; omega), g1]
   have k5H : c₅.nreg ipH = c₃.nreg oC := by
-    rw [sfr _ (not_oracle_sw (by unfold ipH sw; omega) (by unfold ipH sw; omega))
+    rw [sfr _ by_d
       (by unfold LSet ipH sw; omega) (by unfold ALLOC ipH sw; omega), g2]
   have c3E : c₃.nreg oE = (endPos N₂ k s).edge := by
     rw [fr₃ _ (by unfold oE ipV sw; omega)]; exact vE
   have c3C : c₃.nreg oC = nhgt (chainModel J.right) (Qof P) (endPos N₂ k s) := by
     rw [fr₃ _ (by unfold oC ipV sw; omega)]; exact vC
-  have hK₅ : Consts c₅ := e.hA.hK.fix hI₅
+  have hK₅ := e.hA.hK.fix hI₅
   refine (slotSt_irs hI₅ hK₅ k5B rfl k5S le_rfl (by
     have := hI₅.hw.1 ALLOC
     omega)).mono le_rfl ?_
   rintro c' ⟨w1, w2⟩
   have wA := w2 ALLOC (by unfold ALLOC ipT sw; omega)
-  refine ⟨fun r hr => ?_, by omega, ?_⟩
+  refine ⟨fun r hr => ?_, by_o, ?_⟩
   · have hT : r ≠ ipT := by
       rcases hr with rfl | rfl | rfl | rfl | rfl <;> simp [ipT, ipB, ipM6, ipM5, ipJ, ipKc, sw]
     rw [w2 r hT]
@@ -197,14 +196,13 @@ theorem tbHit_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
         (by simp [ipB, ipM6, ipM5, ipJ, ipKc, ipA, sw])
   · rw [w1]
     have m5 : ∀ a, a < B + 6 * E → c₅.nmem a = c.nmem a := fun a ha => by
-      rw [sm a (by omega), gm, mem3 a (by omega)]
-    have hS₅ := hS.congr m5 (by omega) (by omega) (by omega)
+      rw [sm a by_o, gm, mem3 a by_o]
+    have hS₅ := hS.congr m5 by_o by_o by_o
     have hv' : SlotVal P J ⟨c₅.nreg ipE, c₅.nreg ipH⟩ ((2 * k + s) % 2)
         (logPt P J c₄.nmem AL (c₅.nreg lsI)) := by
-      rw [k5E, k5H, c3E, c3C, show (2 * k + s) % 2 = s by omega]
-      exact hvl
+      rwa [k5E, k5H, c3E, c3C, show (2 * k + s) % 2 = s by omega]
     have h := hS₅.tabStep (m₂ := c₄.nmem) (fun a ha => (mc c₄ hI₄ a ha).trans
-      (mc c₅ hI₅ a ha).symm) (by omega) (by omega) (by omega) ht e1 e2 hv'
+      (mc c₅ hI₅ a ha).symm) by_o by_o by_o ht e1 e2 hv'
     rw [show (2 * k + s) % 2 = s by omega] at h
     exact h
 
@@ -232,8 +230,7 @@ theorem tbOne_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     rcases hsr with rfl | rfl <;> simp [K0, K1, sw]
   unfold tbOne
   refine IRS.seq (K₁ := 7) (K₂ := kTb κL (c₀.nreg TLR) + 2)
-    (tbLd_irs hI hsr' (e.fix hI (k := 302) (by norm_num)) hk hsv (by omega)) ?_ |>.mono
-    (by omega) (fun _ h => h)
+    (tbLd_irs hI hsr' (e.fix hI (k := 302) by_n) hk hsv by_o) ?_ |>.le
   rintro c₁ hI₁ hA₁ hA₁' ⟨l1, l2, l3, lfr, lm⟩
   have hp1 : ∀ r, PReg r → c₁.nreg r = c.nreg r := fun r hr => by
     rcases hr with rfl | rfl | rfl | rfl | rfl <;>
@@ -244,26 +241,25 @@ theorem tbOne_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   have hS₁ : SInv P J N₂ (c₀.nreg (sw 200)) (c₀.nreg (sw 300)) (c₀.nreg (sw 301))
       (c₀.nreg (sw 302)) (c₀.nreg ALLOC) c₁.nmem (c₀.nreg (sw 201)) (2 * k + s) := by
     rw [lm]; exact hS
-  have hK₁ : Consts c₁ := e.hA.hK.fix hI₁
+  have hK₁ := e.hA.hK.fix hI₁
   by_cases hf : c₁.nreg ipF < c₁.nreg K1
   · refine (IRS.ifT (K := 0) hf (IRS.skip hI₁ (Q := fun c' =>
       (∀ r, PReg r → c'.nreg r = c.nreg r) ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧
       SInv P J N₂ (c₀.nreg (sw 200)) (c₀.nreg (sw 300)) (c₀.nreg (sw 301))
         (c₀.nreg (sw 302)) (c₀.nreg ALLOC) c'.nmem (c₀.nreg (sw 201)) (2 * k + s + 1))
-      ⟨hp1, hA₁, hS₁.tabSkip (fun h => by rw [l3, ← lm] at hf; rw [hK₁.2.1] at hf; omega)⟩)).mono
-      (by omega) (fun _ h => h)
+      ⟨hp1, hA₁, hS₁.tabSkip (fun h => by rw [l3, ← lm] at hf; rw [hK₁.2.1] at hf; omega)⟩)).le
   · have od := e.odc (m := c.nmem) hI.hm
     simp only [rd_sw] at od
-    have hfl := (od.tw (2 * k + s) (by omega)).1
+    have hfl := (od.tw (2 * k + s) by_o).1
     have hf1 : c₁.nmem (c₀.nreg (sw 302) + 3 * (2 * k + s)) = 1 := by
       rw [lm]; rw [l3, hK₁.2.1] at hf; omega
     refine IRS.ifF hf ?_
-    refine (tbHit_irs hls e hI₁ ((hp1 _ (Or.inl rfl)).trans hB) (by omega)
+    refine (tbHit_irs hls e hI₁ ((hp1 _ (Or.inl rfl)).trans hB) by_o
       ((hp1 _ (Or.inr (Or.inr (Or.inl rfl)))).trans hM5) ((hp1 _ (Or.inr (Or.inl rfl))).trans hM6)
       ((hp1 _ (Or.inr (Or.inr (Or.inr (Or.inl rfl))))).trans hk) hkK l1 hs1 l2 hf1 hS₁
-      (by omega)).mono le_rfl ?_
+      by_o).mono le_rfl ?_
     rintro c' ⟨g1, g2, g3⟩
-    exact ⟨fun r hr => (g1 r hr).trans (hp1 r hr), by omega, g3⟩
+    exact ⟨fun r hr => (g1 r hr).trans (hp1 r hr), by_o, g3⟩
 
 set_option maxHeartbeats 4000000 in
 /-- **The two entries of a chord.** -/
@@ -281,21 +277,21 @@ theorem tbB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧
       SInv P J N₂ (c₀.nreg (sw 200)) (c₀.nreg (sw 300)) (c₀.nreg (sw 301))
         (c₀.nreg (sw 302)) (c₀.nreg ALLOC) c'.nmem (c₀.nreg (sw 201)) (2 * (c.nreg ipJ + 1))) := by
-  have hK : Consts c := e.hA.hK.fix hI
+  have hK := e.hA.hK.fix hI
   unfold tbB
   refine IRS.seq (K₁ := kTb κL (c₀.nreg TLR) + 9) (K₂ := kTb κL (c₀.nreg TLR) + 9 + 1)
-    (tbOne_irs hls e hI hB hAl hM5 hM6 (Or.inl rfl) hK.1 (by norm_num) rfl hkK
-      (by simpa using hS) (by omega)) ?_ |>.mono (by omega) (fun _ h => h)
+    (tbOne_irs hls e hI hB hAl hM5 hM6 (Or.inl rfl) hK.1 by_n rfl hkK
+      (by simpa using hS) by_o) ?_ |>.le
   rintro c₁ hI₁ hA₁ hA₁' ⟨g1, g2, g3⟩
-  have hK₁ : Consts c₁ := e.hA.hK.fix hI₁
+  have hK₁ := e.hA.hK.fix hI₁
   have pJ : PReg ipJ := Or.inr (Or.inr (Or.inr (Or.inl rfl)))
   refine IRS.seq (K₁ := kTb κL (c₀.nreg TLR) + 9) (K₂ := 1)
-    (tbOne_irs hls e hI₁ ((g1 _ (Or.inl rfl)).trans hB) (by omega)
+    (tbOne_irs hls e hI₁ ((g1 _ (Or.inl rfl)).trans hB) by_o
       ((g1 _ (Or.inr (Or.inr (Or.inl rfl)))).trans hM5) ((g1 _ (Or.inr (Or.inl rfl))).trans hM6)
-      (Or.inr rfl) hK₁.2.1 le_rfl (g1 _ pJ) hkK g3 (by omega)) ?_
+      (Or.inr rfl) hK₁.2.1 le_rfl (g1 _ pJ) hkK g3 by_o) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨h1, h2, h3⟩
-  have hK₂ : Consts c₂ := e.hA.hK.fix hI₂
-  have j2 : c₂.nreg ipJ = c.nreg ipJ := (h1 _ pJ).trans (g1 _ pJ)
+  have hK₂ := e.hA.hK.fix hI₂
+  have j2 := (h1 _ pJ).trans (g1 _ pJ)
   refine (IRS.instr1 (i := .addN ipJ ipJ K1) hI₂ ⟨iscr_sw (by unfold ipJ sw; omega)
     (by unfold ipJ sw; omega), by
       rw [j2, hK₂.2.1]; have := hI.hw.1 ALLOC; have := e.hA.htabw; have := hI.hA
@@ -308,9 +304,7 @@ theorem tbB_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
   · simp only [regI]
     rw [upd_other _ _ _ (by unfold ALLOC ipJ sw; omega)]; omega
   · simp only
-    rw [show 2 * (c.nreg ipJ + 1) = 2 * c.nreg ipJ + 1 + 1 by ring]
-    exact h3
-
+    rwa [show 2 * (c.nreg ipJ + 1) = 2 * c.nreg ipJ + 1 + 1 by ring]
 /-- **The table loop.** -/
 theorem tbLoop_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     (e : IE P W X Ok J H N₁ N₂ Eb c₀ rs ls) (hI : IInv W c₀ c)
@@ -338,19 +332,19 @@ theorem tbLoop_irs {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
       obtain ⟨d1, d2, d3, d4⟩ := hd
       rw [d1 _ pKc nKc, hKc] at hlt
       refine (tbB_irs hls e hId ((d1 ipB (Or.inl rfl) (by unfold ipB ipJ sw; omega)).trans hB)
-        (by omega) ((d1 ipM5 (Or.inr (Or.inr (Or.inl rfl))) (by unfold ipM5 ipJ sw; omega)).trans hM5)
+        by_o ((d1 ipM5 (Or.inr (Or.inr (Or.inl rfl))) (by unfold ipM5 ipJ sw; omega)).trans hM5)
         ((d1 ipM6 (Or.inr (Or.inl rfl)) (by unfold ipM6 ipJ sw; omega)).trans hM6) hlt d4
         hr).mono le_rfl ?_
       rintro d' ⟨g1, g2, g3, g4⟩
-      exact ⟨⟨fun r hr hrJ => (g2 r hr hrJ).trans (d1 r hr hrJ), by omega, by omega,
-        by rw [g1]; exact g4⟩, by omega⟩)
-    hI ⟨fun _ _ _ => rfl, le_rfl, by omega, by rw [hJ]; exact hS⟩ (by rw [hJ]; simpa using hroom)
+      exact ⟨⟨fun r hr hrJ => (g2 r hr hrJ).trans (d1 r hr hrJ), by_o, by_o,
+        by rwa [g1]⟩, by_o⟩)
+    hI ⟨fun _ _ _ => rfl, le_rfl, by_o, by rwa [hJ]⟩ (by rw [hJ]; simpa using hroom)
   rw [hJ] at h
   simp only [Nat.sub_zero] at h
   refine h.mono le_rfl ?_
   rintro d ⟨⟨d1, d2, d3, d4⟩, d5⟩
   rw [d1 _ pKc nKc, hKc] at d5
-  have : d.nreg ipJ = N₂.nChords := by omega
+  have : d.nreg ipJ = N₂.nChords := by_o
   rw [this] at d4
   exact ⟨d2, d1 _ (Or.inl rfl) (by unfold ipB ipJ sw; omega), d4⟩
 

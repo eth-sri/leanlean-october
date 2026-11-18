@@ -23,7 +23,7 @@ def pad (m : ℕ → ℕ) (A Z : ℕ) : ℕ → ℕ := fun a => if a < A then m 
 
 theorem pad_lt {m : ℕ → ℕ} {A Z a : ℕ} (h : a < A) : pad m A Z a = m a := ite_eq_left h
 
-theorem pad_ge {m : ℕ → ℕ} {A Z a : ℕ} (h : A ≤ a) : pad m A Z a = Z := ite_eq_right (by omega)
+theorem pad_ge {m : ℕ → ℕ} {A Z a : ℕ} (h : A ≤ a) : pad m A Z a = Z := ite_eq_right by_o
 
 theorem robust_pad {A : ℕ} {m : ℕ → ℕ} {Φ : (ℕ → ℕ) → Prop} (h : Robust A m Φ) (Z : ℕ) :
     Φ (pad m A Z) := h _ fun _ ha => pad_lt ha
@@ -41,17 +41,17 @@ theorem grade_low (hR : Robust A m fun m' => GradeRaw O P m' h A) :
   have hh : h < A := by
     by_contra hA
     have := (robust_pad hR (topGrade P.n + 2)).1
-    rw [pad_ge (by omega)] at this
+    rw [pad_ge by_o] at this
     omega
   have h1 : h + 1 < A := by
     by_contra hA
     have := (robust_pad hR (A + P.n + 1)).2.1.1
-    rw [pad_ge (show A ≤ h + 1 by omega), pad_ge (show A ≤ A + P.n + 1 by omega)] at this
+    rw [pad_ge (show A ≤ h + 1 by omega), pad_ge (by omega)] at this
     omega
   have h3 : h + 3 < A := by
     by_contra hA
     have := (robust_pad hR (A + 1)).2.2.1 0 (Nat.zero_le _)
-    rw [pad_ge (show A ≤ h + 3 by omega), pad_ge (show A ≤ A + 1 + 0 by omega)] at this
+    rw [pad_ge (show A ≤ h + 3 by omega), pad_ge (by omega)] at this
     omega
   refine ⟨h3, fun j hj => ?_, fun x hx => ?_⟩
   · by_contra hA
@@ -76,7 +76,7 @@ theorem grade_entry (hR : Robust A m fun m' => GradeRaw O P m' h A) {g i : ℕ} 
   have hh : h < A := by
     by_contra hA
     have := (robust_pad hR (topGrade P.n + 2)).1
-    rw [pad_ge (by omega)] at this
+    rw [pad_ge by_o] at this
     omega
   -- a descriptor whose words are all the padding value `Z > n` is impossible
   have key : ∀ Z, A ≤ Z → P.n < Z → ∀ D, A ≤ D →
@@ -84,32 +84,32 @@ theorem grade_entry (hR : Robust A m fun m' => GradeRaw O P m' h A) {g i : ℕ} 
         C.m = gradeLen P.n g i) := by
     rintro Z hZA hZn D hD ⟨H, C, hC, hm⟩
     have e2 := hC.2.2.2.1
-    rw [pad_ge (by omega)] at e2
+    rw [pad_ge by_o] at e2
     have : gradeLen P.n g i ≤ P.n := by unfold gradeLen; omega
     omega
   have h2 : h + 2 < A := by
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
-    refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
+      (by rwa [pad_lt hh]) hi
+    refine key Z by_o by_o _ ?_ ⟨H, C, hC, hm⟩
     simp only [pad_ge (show A ≤ h + 2 by omega)]
-    rw [pad_ge (show A ≤ Z + g by omega), pad_ge (show A ≤ Z + 3 * i by omega)]
+    rw [pad_ge (show A ≤ Z + g by omega), pad_ge (by omega)]
     omega
   have hr : m (h + 2) + g < A := by
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
-    refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
-    rw [pad_lt h2, pad_ge (show A ≤ m (h + 2) + g by omega), pad_ge (show A ≤ Z + 3 * i by omega)]
+      (by rwa [pad_lt hh]) hi
+    refine key Z by_o by_o _ ?_ ⟨H, C, hC, hm⟩
+    rw [pad_lt h2, pad_ge (show A ≤ m (h + 2) + g by omega), pad_ge (by omega)]
     omega
   have hE : entryAddr m h g i < A := by
     by_contra hA
     set Z := A + P.n + 1
     obtain ⟨H, C, N, hC, -, -, -, -, -, hm, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
-    refine key Z (by omega) (by omega) _ ?_ ⟨H, C, hC, hm⟩
+      (by rwa [pad_lt hh]) hi
+    refine key Z by_o by_o _ ?_ ⟨H, C, hC, hm⟩
     unfold entryAddr at hA
     rw [pad_lt h2, pad_lt hr, pad_ge (show A ≤ m (m (h + 2) + g) + 3 * i by omega)]
     omega
@@ -120,10 +120,10 @@ theorem grade_entry (hR : Robust A m fun m' => GradeRaw O P m' h A) {g i : ℕ} 
     by_contra hA
     set Z := A + m (entryAddr m h g i) + 1
     obtain ⟨H, C, N, -, -, -, -, -, -, -, -, -, -, e1, -⟩ := (robust_pad hR Z).2.2.2 g i
-      (by rw [pad_lt hh]; exact hg) hi
+      (by rwa [pad_lt hh]) hi
     have eE : m (m (h + 2) + g) + 3 * i = entryAddr m h g i := rfl
     rw [pad_lt h2, pad_lt hr, eE, pad_ge (show A ≤ entryAddr m h g i + 2 by omega),
-      pad_ge (show A ≤ Z by omega), pad_lt hE] at e1
+      pad_ge (by omega), pad_lt hE] at e1
     omega
   exact ⟨h2, hr, hE2⟩
 

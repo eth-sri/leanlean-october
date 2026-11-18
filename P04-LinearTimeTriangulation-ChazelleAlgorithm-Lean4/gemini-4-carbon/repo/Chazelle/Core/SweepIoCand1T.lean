@@ -140,18 +140,17 @@ theorem topT_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB) (
   have k6 := h.hK.2.2.1
   set KK := kD κT κS (lhsK (c₀.nreg TLR) (F (c₀.nreg (sw 5))) (c₀.nreg (sw 6))) KB with hKK
   unfold topT
-  refine irs_ite' (K := KK + 12) (by omega) (fun hj => ?_) (fun hj => ?_)
+  refine irs_ite' (K := KK + 12) by_o (fun hj => ?_) (fun hj => ?_)
   · rw [h.vj, h.vk] at hj
-    have hj' : c.nreg qJ < 2 * N₂.nChords := by omega
-    refine irs_ifEq' (K := KK + 8) (by omega) (fun e => ?_) (fun e => ?_)
+    have hj' : c.nreg qJ < 2 * N₂.nChords := by_o
+    refine irs_ifEq' (K := KK + 8) by_o (fun e => ?_) (fun e => ?_)
     · rw [h.vE, k6] at e
-      exact (leaf_brute hBr hsh hBs hXl h (Or.inr (htop.2 ⟨h0, Or.inl e⟩)) hns hroom).mono
-        (by omega) (fun _ h => h)
-    · refine irs_ifEq' (K := KK + 4) (by omega) (fun e' => ?_) (fun e' => ?_)
+      exact (leaf_brute hBr hsh hBs hXl h (Or.inr (htop.2 ⟨h0, Or.inl e⟩)) hns hroom).le
+    · refine irs_ifEq' (K := KK + 4) by_o (fun e' => ?_) (fun e' => ?_)
       · rw [h.vE, h.vy] at e'
-        have e1 : c.nreg qE + 1 = 2 * J.m₂ + 7 := by omega
+        have e1 : c.nreg qE + 1 = 2 * J.m₂ + 7 := by_o
         exact (leaf_brute hBr hsh hBs hXl h (Or.inr (htop.2 ⟨h0, Or.inr (Or.inl e1)⟩))
-          hns hroom).mono (by omega) (fun _ h => h)
+          hns hroom).le
       · refine irs_ifEq' (K := KK) le_rfl (fun e'' => ?_) (fun e'' => ?_)
         · rw [h.vE, h.vt] at e''
           exact leaf_brute hBr hsh hBs hXl h (Or.inr (htop.2 ⟨h0, Or.inr (Or.inr e'')⟩)) hns
@@ -162,12 +161,11 @@ theorem topT_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB) (
           have hnt : z ≠ J.right.top := fun hz => by
             rcases (htop.1 hz).2 with a | a | a
             · exact e a
-            · exact e' (by omega)
+            · exact e' by_o
             · exact e'' a
           exact leaf_tab hT h hj' hns hnt hroom
   · rw [h.vj, h.vk] at hj
-    exact (leaf_brute hBr hsh hBs hXl h (Or.inl (by omega)) hns hroom).mono (by omega)
-      (fun _ h => h)
+    exact (leaf_brute hBr hsh hBs hXl h (Or.inl by_o) hns hroom).le
 
 include hT hS hBr hsh hBs hXl in
 /-- **The decision tree** of a tour position. -/
@@ -186,38 +184,36 @@ theorem dec_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB)
   have k0 := h.hK.1
   have k6 := h.hK.2.2.1
   have hz0 := nhgt_eq_zero_iff (chainModel J.right) (Qof P) ⟨c.nreg qE, c.nreg qH⟩
-  refine irs_ite' (K := KK + 26) (by omega) (fun hp => ?_) (fun hp => ?_)
+  refine irs_ite' (K := KK + 26) by_o (fun hp => ?_) (fun hp => ?_)
   · -- parameter positive
     rw [k0, vH] at hp
     have hne : (chainModel J.right).param (Qof P) ⟨c.nreg qE, c.nreg qH⟩ ≠ 0 :=
       fun e => by rw [hz0.2 e] at hp; exact lt_irrefl _ hp
     have hns : z ≠ J.shared := fun e => hne (hsh'.1 e).1
     have hnt : z ≠ J.right.top := fun e => by
-      have := (top_iffR h.hA.hP (Qof P) hx hp0 hp1).1 (by rw [hzpos]; exact e)
+      have := (top_iffR h.hA.hP (Qof P) hx hp0 hp1).1 (by rwa [hzpos])
       exact hne this.1
     unfold genT
-    refine irs_ite' (K := KK) (by omega) (fun hj => ?_) (fun hj => ?_)
+    refine irs_ite' (K := KK) by_o (fun hj => ?_) (fun hj => ?_)
     · rw [h.vj, h.vk] at hj
-      exact leaf_tab hT h (by omega) hns hnt hroom
+      exact leaf_tab hT h by_o hns hnt hroom
     · rw [h.vj, h.vk] at hj
-      exact leaf_brute hBr hsh hBs hXl h (Or.inl (by omega)) hns hroom
+      exact leaf_brute hBr hsh hBs hXl h (Or.inl by_o) hns hroom
   · -- parameter zero
     rw [k0, vH] at hp
     have h0 : (chainModel J.right).param (Qof P) ⟨c.nreg qE, c.nreg qH⟩ = 0 :=
-      hz0.1 (by omega)
+      hz0.1 by_o
     unfold zeroT
-    refine irs_ifEq' (K := KK + 22) (by omega) (fun e => ?_) (fun e => ?_)
+    refine irs_ifEq' (K := KK + 22) by_o (fun e => ?_) (fun e => ?_)
     · rw [h.vE, h.v41] at e
-      exact (leaf_shr hS hsh hBs hXl h (hsh'.2 ⟨h0, Or.inl e⟩) hroom).mono (by omega)
-        (fun _ h => h)
+      exact (leaf_shr hS hsh hBs hXl h (hsh'.2 ⟨h0, Or.inl e⟩) hroom).le
     · rw [h.vE, h.v41] at e
-      refine irs_ifEq' (K := KK + 18) (by omega) (fun e' => ?_) (fun e' => ?_)
+      refine irs_ifEq' (K := KK + 18) by_o (fun e' => ?_) (fun e' => ?_)
       · rw [h.vE, h.vy] at e'
-        refine irs_ifEq' (K := KK + 14) (by omega) (fun e'' => ?_) (fun e'' => ?_)
+        refine irs_ifEq' (K := KK + 14) by_o (fun e'' => ?_) (fun e'' => ?_)
         · rw [h.v41, k6] at e''
-          have e1 : c.nreg qE + 1 = 2 * J.m₂ + 7 := by omega
-          exact (leaf_shr hS hsh hBs hXl h (hsh'.2 ⟨h0, Or.inr ⟨e1, e''⟩⟩) hroom).mono
-            (by omega) (fun _ h => h)
+          have e1 : c.nreg qE + 1 = 2 * J.m₂ + 7 := by_o
+          exact (leaf_shr hS hsh hBs hXl h (hsh'.2 ⟨h0, Or.inr ⟨e1, e''⟩⟩) hroom).le
         · rw [h.v41, k6] at e''
           have hns : z ≠ J.shared := fun hz => by
             rcases (hsh'.1 hz).2 with a | ⟨-, a⟩
@@ -228,8 +224,8 @@ theorem dec_irs (h : TreeH P W X Ok J H N₁ N₂ E c₀ c c₂ z L F κB KB)
         have hns : z ≠ J.shared := fun hz => by
           rcases (hsh'.1 hz).2 with a | ⟨a, -⟩
           · exact e a
-          · exact e' (by omega)
-        exact (topT_irs hT hBr hsh hBs hXl h hns h0 hroom).mono (by omega) (fun _ h => h)
+          · exact e' by_o
+        exact (topT_irs hT hBr hsh hBs hXl h hns h0 hroom).le
 
 end Tree
 

@@ -151,7 +151,7 @@ structure XE (P : Polygon) (W : ℕ) (v : XV) (N NR : NF) (ras : ℕ → ℕ) (A
 def Bch (r : ℕ) : Bool :=
   decide ((217038 ≤ r ∧ r ≤ 217040) ∨ (217045 ≤ r ∧ r ≤ 217046) ∨ (217050 ≤ r ∧ r ≤ 217199))
 
-theorem wrM_ch : wrM Bch chS = true := by decide
+theorem wrM_ch : wrM Bch chS = true := by_d
 
 /-- The host point at the start of walk edge `p`. -/
 noncomputable def sPt (P : Polygon) (v : XV) (p : ℕ) : SymPt := hpt (Qof P).n v.H (tK v.m v.T v.β p)

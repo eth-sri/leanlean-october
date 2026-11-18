@@ -45,13 +45,13 @@ section proofs
 variable {O : OracleIface} {P : Polygon} {W : ℕ}
 
 theorem two_pow_le_of_le_top {n g : ℕ} (hn : 2 ≤ n) (hg : g ≤ topGrade n) : 2 ^ g ≤ 2 * n := by
-  have h1 : 2 ^ g ≤ 2 ^ topGrade n := Nat.pow_le_pow_right (by norm_num) hg
+  have h1 : 2 ^ g ≤ 2 ^ topGrade n := Nat.pow_le_pow_right by_n hg
   rcases Nat.lt_or_ge 1 (n - 1) with h | h
-  · have h2 := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) h
+  · have h2 := Nat.pow_pred_clog_lt_self (b := 2) by_n h
     unfold topGrade at h1
     have h3 : 1 ≤ Nat.clog 2 (n - 1) := by
       rcases Nat.eq_zero_or_pos (Nat.clog 2 (n - 1)) with h0 | h0
-      · have := Nat.le_pow_clog (b := 2) (by norm_num) (n - 1); rw [h0] at this; simp at this
+      · have := Nat.le_pow_clog (b := 2) by_n (n - 1); rw [h0] at this; simp at this
         omega
       · exact h0
     have e : 2 ^ Nat.clog 2 (n - 1) = 2 * 2 ^ (Nat.clog 2 (n - 1)).pred := by
@@ -69,7 +69,7 @@ theorem GK.kept {r : ℕ} (h : GK r) : Kept r ∧ r ≠ 170015 ∧ r ≠ 170016 
     rcases h1 with h1 | h1
     · unfold OutB bandOf at h1; omega
     · omega
-  · refine ⟨Or.inr ⟨by unfold bandOf bUp; omega, by omega⟩, by omega⟩
+  · refine ⟨Or.inr ⟨by unfold bandOf bUp; omega, by_o⟩, by_o⟩
 
 theorem GK.ne_alloc {r : ℕ} (h : GK r) : r ≠ ALLOC := h.kept.1.ne_alloc
 

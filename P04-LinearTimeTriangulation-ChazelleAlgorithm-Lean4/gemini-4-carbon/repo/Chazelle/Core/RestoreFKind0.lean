@@ -1,7 +1,7 @@
 module
 
 public import Chazelle.Core.RestoreFVert
-public import Chazelle.Core.RestoreKind0
+public import Chazelle.Core.RestorePrune
 
 /-!
 # WP-E, the search on the RAM (`FindOK`), part 7: a light piece
@@ -46,7 +46,7 @@ def VSet (E : FEnv) (v : ℕ) : Prop :=
 theorem FWin.congr {c' : Config} (h : FWin E c) (h7 : c'.nreg 81007 = c.nreg 81007)
     (h8 : c'.nreg 81008 = c.nreg 81008) (h9 : c'.nreg 81009 = c.nreg 81009)
     (h10 : c'.nreg 81010 = c.nreg 81010) : FWin E c' := by
-  unfold FWin; rw [h7, h8, h9, h10]; exact h
+  unfold FWin; rwa [h7, h8, h9, h10]
 
 /-- **Testing a vertex in the candidate range.** -/
 theorem vTest_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
@@ -62,17 +62,17 @@ theorem vTest_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have r19 : c.nreg 81019 = c₀.nreg 81019 := hI.hin _ (by unfold FFix; omega)
   by_cases h1 : c.nreg 81071 < c.nreg 81021
   · refine (FRS.ifT h1 (FRS.skip (K := 0) hI ⟨hw, fun _ _ _ _ => rfl, id,
-      fun reg _ _ hs _ _ _ => ?_⟩)).mono (by omega) (fun _ h => h)
+      fun reg _ _ hs _ _ _ => ?_⟩)).le
     have := (hE.hvc _ hv hs).1
     omega
-  refine (FRS.ifF h1 ?_).mono (K := tvK E + 4) (by omega) (fun _ h => h)
+  refine (FRS.ifF h1 ?_).mono (K := tvK E + 4) by_o (fun _ h => h)
   by_cases h2 : c.nreg 81019 < c.nreg 81071
   · refine (FRS.ifT h2 (FRS.skip (K := 0) hI ⟨hw, fun _ _ _ _ => rfl, id,
-      fun reg _ _ hs _ _ _ => ?_⟩)).mono (by omega) (fun _ h => h)
+      fun reg _ _ hs _ _ _ => ?_⟩)).le
     have := (hE.hvc _ hv hs).2
     omega
-  refine (FRS.ifF h2 ?_).mono (K := tvK E + 2) (by omega) (fun _ h => h)
-  refine (tVert_fs hE hB hBT hI hw hv (hE.hvr _ hv (by omega) (by omega)) hroom).mono le_rfl
+  refine (FRS.ifF h2 ?_).mono (K := tvK E + 2) by_o (fun _ h => h)
+  refine (tVert_fs hE hB hBT hI hw hv (hE.hvr _ hv by_o by_o) hroom).mono le_rfl
     (fun c' ⟨h1', h2', h3', h4'⟩ => ⟨h1', h2', h3', fun reg hr hch _ => h4' reg hr hch⟩)
 
 theorem mod_step {n a : ℕ} (hn : 0 < n) :
@@ -97,7 +97,7 @@ theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
         ∀ t, t < 10 → VSet E ((e₀ + t) % E.M.W.n) → ∀ σb, σb ≤ 1 →
           GoodAt E reg ((e₀ + t) % E.M.W.n) σb → c'.nreg 81007 = 1)) := by
   set n := E.M.W.n with hn
-  have hn0 : 0 < n := by omega
+  have hn0 : 0 < n := by_o
   have hW10 : 10 ≤ E.W := by
     have := hE.hWh; have := hE.hG.1.1; unfold hostWords at *; omega
   have hnW : n ≤ E.W := by
@@ -110,8 +110,8 @@ theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       by rw [hI'.hin _ (by unfold FFix; omega), hE.k1]⟩
   have ok0 : okB E.W c.nmem [.copyN 81071 81070, .constN 81072 0] c.nreg := by
     simp only [okB, okI]
-    exact ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩),
-      ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by omega⟩, trivial⟩
+    exact ⟨Or.inl (Or.inl ⟨by_n, by_n⟩),
+      ⟨Or.inl (Or.inl ⟨by_n, by_n⟩), by_o⟩, trivial⟩
   refine (FRS.seq (K₂ := (tvK E + 11) * 10 + 2) (FRS.block hB _ hI ok0)
     (fun c₁ hI₁ hA₁ h₁ => ?_)).mono
     (by simp only [List.length_cons, List.length_nil, k0K]; omega) (fun _ h => h)
@@ -121,8 +121,8 @@ theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
   have v72 : c₁.nreg 81072 = 0 := by rw [e₁]; simp [regB, regI, upd]
   have f₁ : ∀ q, q ≠ 81071 → q ≠ 81072 → c₁.nreg q = c.nreg q := fun q h1 h2 => by
     rw [e₁]; simp [regB, regI, upd, h1, h2]
-  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega)
+  have hA₁' : c₁.nreg ALLOC = c.nreg ALLOC := f₁ _ by_ao
+    by_ao
   -- the loop
   let I : Config → Prop := fun c' => c'.nreg 81072 ≤ 10 ∧
     c'.nreg 81071 = (e₀ + c'.nreg 81072) % n ∧ FWin E c' ∧
@@ -132,11 +132,11 @@ theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       ∀ t, t < c'.nreg 81072 → VSet E ((e₀ + t) % n) → ∀ σb, σb ≤ 1 →
         GoodAt E reg ((e₀ + t) % n) σb → c'.nreg 81007 = 1)
   have hI1 : I c₁ := by
-    refine ⟨by omega, by rw [v71, v72, Nat.add_zero, Nat.mod_eq_of_lt he₀], ?_,
-      fun q _ _ _ h4 h5 => f₁ q h4 h5, fun h => by rw [f₁ _ (by norm_num) (by norm_num)]; exact h,
+    refine ⟨by_o, by rw [v71, v72, Nat.add_zero, Nat.mod_eq_of_lt he₀], ?_,
+      fun q _ _ _ h4 h5 => f₁ q h4 h5, fun h => by rwa [f₁ _ by_n by_n],
       fun _ _ _ t ht => by omega⟩
-    exact hw.congr (f₁ _ (by norm_num) (by norm_num)) (f₁ _ (by norm_num) (by norm_num))
-      (f₁ _ (by norm_num) (by norm_num)) (f₁ _ (by norm_num) (by norm_num))
+    exact hw.congr (f₁ _ by_n by_n) (f₁ _ by_n by_n)
+      (f₁ _ by_n by_n) (f₁ _ by_n by_n)
   have hbody : ∀ c', FInv E.W c₀ c' → I c' → c'.nreg 81072 < c'.nreg 81024 →
       c'.nreg ALLOC + (tvK E + 9) ≤ E.W →
       FRS B E.P E.W c₀ (.seq (vTest E.sT) (.seq (Stmt.block k0StepL)
@@ -146,18 +146,18 @@ theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     obtain ⟨g17, g24, g12⟩ := fx c' hI'
     rw [g24] at ht
     have hv' : c'.nreg 81071 < n := by rw [i2]; exact Nat.mod_lt _ hn0
-    refine FRS.seq (K₂ := 5) (vTest_fs hE hB hBT hI' i3 hv' (by omega))
+    refine FRS.seq (K₂ := 5) (vTest_fs hE hB hBT hI' i3 hv' by_o)
       (fun c₂ hI₂ hA₂ ⟨j1, j2, j3, j4⟩ => ?_)
-    have k71 : c₂.nreg 81071 = c'.nreg 81071 := j2 _ (by norm_num) (by norm_num)
+    have k71 : c₂.nreg 81071 = c'.nreg 81071 := j2 _ by_n by_n
       (by unfold VertW; omega)
-    have k72 : c₂.nreg 81072 = c'.nreg 81072 := j2 _ (by norm_num) (by norm_num)
+    have k72 : c₂.nreg 81072 = c'.nreg 81072 := j2 _ by_n by_n
       (by unfold VertW; omega)
     obtain ⟨-, -, h12⟩ := fx c₂ hI₂
     have ok : okB E.W c₂.nmem k0StepL c₂.nreg := by
       simp only [k0StepL, okB, okI, regI]
-      refine ⟨⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by rw [k72, h12]; omega⟩,
-        ⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), ?_⟩, trivial⟩
-      rw [upd_ne (by norm_num), upd_ne (by norm_num), k71, h12]; omega
+      refine ⟨⟨Or.inl (Or.inl ⟨by_n, by_n⟩), by rw [k72, h12]; omega⟩,
+        ⟨Or.inl (Or.inl ⟨by_n, by_n⟩), ?_⟩, trivial⟩
+      rw [upd_ne by_n, upd_ne by_n, k71, h12]; omega
     refine FRS.seq (K₂ := 3) (FRS.block hB _ hI₂ ok) (fun c₃ hI₃ hA₃ h₃ => ?_)
     have e₃ : ∀ q, c₃.nreg q = regB c₂.nmem k0StepL c₂.nreg q := fun q => by rw [h₃]
     have u71 : c₃.nreg 81071 = c'.nreg 81071 + 1 := by
@@ -175,37 +175,36 @@ theorem kind0_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       intro c₄ w72 w71 f₄
       have g : ∀ q, q ≠ 81071 → q ≠ 81072 → c₄.nreg q = c₂.nreg q := fun q h1 h2 => by
         rw [f₄ q h1, f₃ q h1 h2]
-      refine ⟨⟨by omega, by rw [w71, w72], ?_, fun q h1 h2 h3 h4 h5 => ?_, fun h => ?_,
-        fun reg hr hch t htl hs σb hσb hg => ?_⟩, by omega⟩
-      · exact j1.congr (g _ (by norm_num) (by norm_num)) (g _ (by norm_num) (by norm_num))
-          (g _ (by norm_num) (by norm_num)) (g _ (by norm_num) (by norm_num))
+      refine ⟨⟨by_o, by rw [w71, w72], ?_, fun q h1 h2 h3 h4 h5 => ?_, fun h => ?_,
+        fun reg hr hch t htl hs σb hσb hg => ?_⟩, by_o⟩
+      · exact j1.congr (g _ by_n by_n) (g _ by_n by_n)
+          (g _ by_n by_n) (g _ by_n by_n)
       · rw [g q h4 h5, j2 q h1 h2 h3, i4 q h1 h2 h3 h4 h5]
-      · rw [g _ (by norm_num) (by norm_num)]; exact j3 (i5 h)
-      · rw [g _ (by norm_num) (by norm_num)]
+      · rw [g _ by_n by_n]; exact j3 (i5 h)
+      · rw [g _ by_n by_n]
         rw [w72] at htl
         rcases Nat.lt_succ_iff_lt_or_eq.1 htl with htl | rfl
         · exact j3 (i6 reg hr hch t htl hs σb hσb hg)
         · rw [← i2] at hs hg; exact j4 reg hr hch hs σb hσb hg
     by_cases hc : c₃.nreg 81071 < c₃.nreg 81017
-    · refine (FRS.ifT hc (FRS.skip (K := 0) hI₃ (fin c₃ u72 ?_ (fun _ _ => rfl)))).mono
-        (by omega) (fun _ h => h)
-      rw [u71, i2, ← Nat.add_assoc, ← mod_step hn0, ite_eq_left (by rw [← i2, ← u71, ← h17]; exact hc)]
+    · refine (FRS.ifT hc (FRS.skip (K := 0) hI₃ (fin c₃ u72 ?_ (fun _ _ => rfl)))).le
+      rw [u71, i2, ← Nat.add_assoc, ← mod_step hn0, ite_eq_left (by rwa [← i2, ← u71, ← h17])]
     · have okc : okB E.W c₃.nmem [.constN 81071 0] c₃.nreg := by
         simp only [okB, okI]
-        exact ⟨⟨Or.inl (Or.inl ⟨by norm_num, by norm_num⟩), by omega⟩, trivial⟩
-      refine (FRS.ifF hc (FRS.block hB _ hI₃ okc)).mono (by simp) (fun c₄ h₄ => ?_)
+        exact ⟨⟨Or.inl (Or.inl ⟨by_n, by_n⟩), by_o⟩, trivial⟩
+      refine (FRS.ifF hc (FRS.block hB _ hI₃ okc)).mono by_s (fun c₄ h₄ => ?_)
       have e₄ : ∀ q, c₄.nreg q = regB c₃.nmem [.constN 81071 0] c₃.nreg q := fun q => by
         rw [h₄]
       refine fin c₄ (by rw [e₄]; simp [regB, regI, upd, u72]) ?_
         (fun q hq => by rw [e₄]; simp [regB, regI, upd, hq])
       rw [e₄]; simp only [regB, regI, upd, ite_true]
-      rw [← Nat.add_assoc, ← mod_step hn0, ite_eq_right (by rw [← i2, ← u71, ← h17]; exact hc)]
+      rw [← Nat.add_assoc, ← mod_step hn0, ite_eq_right (by rwa [← i2, ← u71, ← h17])]
   have hroom₁ : c₁.nreg ALLOC + (tvK E + 9 + 2) * (10 - c₁.nreg 81072) ≤ E.W := by
     rw [hA₁', v72]; unfold k0K at hroom; omega
-  have k24 : c.nreg 81024 = 10 := (fx c hI).2.1
+  have k24 := (fx c hI).2.1
   have w24 : ∀ c', I c' → c'.nreg 81024 = 10 := fun c' hc' => by
-    rw [hc'.2.2.2.1 _ (by norm_num) (by norm_num) (by unfold VertW; omega) (by norm_num)
-      (by norm_num), k24]
+    rw [hc'.2.2.2.1 _ by_n by_n (by unfold VertW; omega) by_n
+      by_n, k24]
   refine (FRS.while I (fun c' => 10 - c'.nreg 81072) (tvK E + 9) (fun c' hc' ht => ?_) hbody
     hI₁ hI1 hroom₁).mono (by rw [v72]) (fun c' ⟨hc', ht⟩ => ⟨hc'.2.2.1, hc'.2.2.2.1,
       hc'.2.2.2.2.1, fun reg hr hch t ht' => hc'.2.2.2.2.2 reg hr hch t (by

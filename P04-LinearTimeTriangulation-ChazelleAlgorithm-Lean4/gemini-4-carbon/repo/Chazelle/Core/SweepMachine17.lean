@@ -1,6 +1,6 @@
 module
 
-public import Chazelle.Core.SweepMachine16
+public import Chazelle.Core.SweepMachine14
 
 /-!
 # The sweep (WP-D), part 33: the abstract machine, wall pieces
@@ -49,14 +49,14 @@ theorem sideLabel_sub (hP : J.P.Simple) {Q : Polygon}
     {ρ : ℝ} (hρ : ρ = 1 ∨ ρ = -1) {V : Set Point}
     (hV : V ∈ (chainModel J.right).regions S₂) (hVs : SideOf (chainModel J.right) ρ c V) :
     SideLabel J S₂ f ρ V := by
-  have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
+  have hS₂a := hS₂.2.1
   obtain ⟨d, hd, hd0, hpd⟩ := stretch_decomp J hP hS₂a hS₂.1 hB.1 hB.2.1 hB.2.2.1 h0 hL
   have hns' := hns
   rw [hpd] at hB hns'
   have hsec : tB = 0 → d ≠ 0 ∧ d ≠ rL1 J := by
     intro ht
     refine ⟨hd0 ht, fun hdr => ?_⟩
-    have hlt : rL1 J < rL1 J + rL2 J := by omega
+    have hlt : rL1 J < rL1 J + rL2 J := by_o
     apply hns' ht
     rw [ht, hdr]
     exact sidePt_split J hP hS₂a hS₂.1 hlt

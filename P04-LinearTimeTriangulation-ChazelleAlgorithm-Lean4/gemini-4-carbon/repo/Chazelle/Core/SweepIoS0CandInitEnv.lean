@@ -74,13 +74,13 @@ theorem IE.st0 (e : IE P W X Ok J H N₁ N₂ Eb c₀ rs ls) :
     c₀.nreg (sw 40) = gW J ∧ c₀.nreg (sw 41) = cstR J 1 ∧
       c₀.nreg (sw 34) = 2 * J.right.m + 7 := by
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, h40, -, -, h34, -⟩ := e.hA.hst
-  exact ⟨h40 0 (by norm_num), h40 1 (by norm_num), h34⟩
+  exact ⟨h40 0 by_n, h40 1 by_n, h34⟩
 
 theorem IE.nw (e : IE P W X Ok J H N₁ N₂ Eb c₀ rs ls) (hI : IInv W c₀ c) :
     NFWithin c.nmem (c.nreg (sw 4)) (c.nreg ALLOC) N₂ := by
-  rw [e.fix hI (k := 4) (by norm_num)]
+  rw [e.fix hI (k := 4) by_n]
   have hE := e.hA.hE
-  exact (e.hA.hN₂.transport (fun a ha => hI.hm a (by omega))).mono (hE.trans hI.hA)
+  exact (e.hA.hN₂.transport (fun a ha => hI.hm a by_o)).mono (hE.trans hI.hA)
 
 theorem ini_gW_lt_nat (J : Merge.Junction) : gW J < (chainModel J.whole).W.n := by
   exact_mod_cast gW_lt J
@@ -98,11 +98,11 @@ theorem IE.search {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
       (∀ r, bandOf r ∉ oracleBands → ¬ LSet r → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
   have hA := e.hA
-  have f300 := e.fix hI (k := 300) (by norm_num)
-  have f301 := e.fix hI (k := 301) (by norm_num)
-  have f40 := e.fix hI (k := 40) (by norm_num)
-  have fTB : c.nreg TBR = c₀.nreg TBR := e.fix hI (k := 600) (by norm_num)
-  have fTL : c.nreg TLR = c₀.nreg TLR := e.fix hI (k := 601) (by norm_num)
+  have f300 := e.fix hI (k := 300) by_n
+  have f301 := e.fix hI (k := 301) by_n
+  have f40 := e.fix hI (k := 40) by_n
+  have fTB : c.nreg TBR = c₀.nreg TBR := e.fix hI (k := 600) by_n
+  have fTL : c.nreg TLR = c₀.nreg TLR := e.fix hI (k := 601) by_n
   have g40 := e.st0.1
   have od := e.odc (m := c.nmem) (fun a ha => hI.hm a ha)
   have hbig := hA.hbigE
@@ -121,7 +121,7 @@ theorem IE.search {lsS : Stmt} {κL : ℕ} (hls : LSBody lsS κL)
     (fun j hj => by rw [f300]; rw [f301] at hj; exact od.logW hj)
     hx
     (by rw [f300, f301, f40, g40]; exact od.down rfl _)
-    (by rw [fTL]; exact hroom)
+    (by rwa [fTL])
   rw [fTL, f300, f301, f40, g40] at h
   exact h.mono le_rfl (fun c' h' => h'.2)
 
@@ -135,14 +135,14 @@ theorem stOrg_irs (e : IE P W X Ok J H N₁ N₂ Eb c₀ rs ls) (hI : IInv W c�
       (∀ r, bandOf r ∉ oracleBands → (r < sw 2200 ∨ sw 2217 < r) → r ≠ ipE → r ≠ ipH →
         r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
-  have hK : Consts c := e.hA.hK.fix hI
+  have hK := e.hA.hK.fix hI
   obtain ⟨k0, k1, k6, -, -, k2, -⟩ := hK
-  have h41 : c.nreg (sw 41) = cstR J 1 := (e.fix hI (k := 41) (by norm_num)).trans e.st0.2.1
+  have h41 : c.nreg (sw 41) = cstR J 1 := (e.fix hI (k := 41) by_n).trans e.st0.2.1
   have nE : ipH ≠ ipE := by unfold ipH ipE sw; omega
   unfold stOrg
   by_cases c0 : kind = 0
   · refine (IRS.ifT (K := 2) (by rw [hk1, k1, c0]; norm_num) (IRS.block _ hI ?_)).mono
-      (by norm_num) ?_
+      by_n ?_
     · simp [okB, okI, ipE, ipH, sw, IScr]
     · rintro c' rfl
       refine ⟨?_, ?_, fun r _ _ h1 h2 _ => ?_, le_rfl, fun _ _ => rfl⟩
@@ -152,10 +152,10 @@ theorem stOrg_irs (e : IE P W X Ok J H N₁ N₂ Eb c₀ rs ls) (hI : IInv W c�
         unfold stopPos; simp [c0]
       · simp only [regB, regI]
         rw [upd_other _ _ _ h2, upd_other _ _ _ h1]
-  refine (IRS.ifF (K := 11108) (by rw [hk1, k1]; omega) ?_).mono (by norm_num) (fun _ h => h)
+  refine (IRS.ifF (K := 11108) (by rw [hk1, k1]; omega) ?_).mono by_n (fun _ h => h)
   by_cases c1 : kind = 1
   · subst c1
-    refine (IRS.ifT (K := 11104) (by rw [hk1, k2]; norm_num) ?_).mono (by norm_num) (fun _ h => h)
+    refine (IRS.ifT (K := 11104) (by rw [hk1, k2]; norm_num) ?_).mono by_n (fun _ h => h)
     have hko := hkk rfl
     refine IRS.seq (K₁ := 2) (K₂ := 11102) (IRS.block [.copyN oK ipKk, .copyN oS ipS] hI ?_) ?_
     · simp [okB, okI, oK, oS, sw, IScr]
@@ -168,8 +168,8 @@ theorem stOrg_irs (e : IE P W X Ok J H N₁ N₂ Eb c₀ rs ls) (hI : IInv W c�
     have vS : regB c.nmem [.copyN oK ipKk, .copyN oS ipS] c.nreg oS = sOf b := by
       simp only [regB, regI]; rw [upd_same, upd_other _ _ _ (by unfold oK ipS sw; omega), hb]
     refine IRS.seq (K₁ := 11100) (K₂ := 2) (orgHead_irs hI₁ e.hA.hK (e.hA.ctxR hI₁)
-      e.hA.hNF₂ (e.nw hI₁) le_rfl (by simp only; rw [vK]; exact hko)
-      (by simp only; rw [vS]; exact ini_sOf_le b) (by omega)) ?_
+      e.hA.hNF₂ (e.nw hI₁) le_rfl (by simp only; rwa [vK])
+      (by simp only; rw [vS]; exact ini_sOf_le b) by_o) ?_
     rintro c₂ hI₂ hA₂ hA₂' ⟨-, -, -, -, vE, vC, -, -, fr₂, hAl₂, hm₂⟩
     simp only at vE vC fr₂ hAl₂ hm₂
     rw [vK, vS] at vE vC
@@ -186,16 +186,15 @@ theorem stOrg_irs (e : IE P W X Ok J H N₁ N₂ Eb c₀ rs ls) (hI : IInv W c�
         upd_other _ _ _ (show oC ≠ ipE by unfold oC ipE sw; omega)]
       rw [vC]; unfold stopPos; simp
     · simp only [regB, regI]
-      rw [upd_other _ _ _ h3, upd_other _ _ _ h2, fr₂ r hr (by unfold sw at *; omega) h4,
+      rw [upd_other _ _ _ h3, upd_other _ _ _ h2, fr₂ r hr by_so h4,
         v1 r (by unfold oK sw at *; omega) (by unfold oS sw at *; omega)]
     · simp only [regB, regI]
-      rw [upd_other _ _ _ (show ALLOC ≠ ipH by unfold ALLOC ipH sw; omega),
+      rwa [upd_other _ _ _ (show ALLOC ≠ ipH by unfold ALLOC ipH sw; omega),
         upd_other _ _ _ (show ALLOC ≠ ipE by unfold ALLOC ipE sw; omega)]
-      exact hAl₂
     · simp only; exact hm₂ a ha
   · have c2 : kind = 2 := by omega
     refine (IRS.ifF (K := 2) (by rw [hk1, k2]; omega) (IRS.block _ hI ?_)).mono
-      (by norm_num) ?_
+      by_n ?_
     · simp [okB, okI, ipE, ipH, sw, IScr]
     · rintro c' rfl
       refine ⟨?_, ?_, fun r _ _ h1 h2 _ => ?_, le_rfl, fun _ _ => rfl⟩

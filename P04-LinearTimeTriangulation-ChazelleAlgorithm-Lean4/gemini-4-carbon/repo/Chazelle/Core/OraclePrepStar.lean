@@ -118,7 +118,7 @@ theorem rgS_exec {P : Polygon} {W : ℕ} {d : Config} (hwd : WordsBounded W d) {
     · config_simp; rw [hSB, hp, hs, hAB]; omega
     · refine ⟨rfl, ?_⟩
       config_simp; rw [hSB, hp, hs, hAB, ← hr]; congr 1; ring
-  exact ⟨d', k, e, hk, exec_frameB e (by decide), v⟩
+  exact ⟨d', k, e, hk, exec_frameB e by_d, v⟩
 
 /-! ## The first position of each region -/
 
@@ -159,31 +159,31 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
     simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
     rw [n₁]; simp only [upd]; split_ifs <;> first | omega
   have v60 : c₁.nreg 110060 = A₀ := by rw [n₁]; config_simp
-  have v44 : c₁.nreg 120044 = AB := by rw [hr₁ _ (by decide), hAB]
-  have v46 : c₁.nreg 120046 = SB := by rw [hr₁ _ (by decide), hSB]
-  have v30 : c₁.nreg 120030 = A := by rw [hr₁ _ (by decide), hA]
-  have v11 : c₁.nreg 120011 = 1 := by rw [hr₁ _ (by decide), h1]
+  have v44 : c₁.nreg 120044 = AB := by rw [hr₁ _ by_d, hAB]
+  have v46 : c₁.nreg 120046 = SB := by rw [hr₁ _ by_d, hSB]
+  have v30 : c₁.nreg 120030 = A := by rw [hr₁ _ by_d, hA]
+  have v11 : c₁.nreg 120011 = 1 := by rw [hr₁ _ by_d, h1]
   let K : ℕ → Bool := fun r => decide (r = 110060) || decide (r = 120044) || decide (r = 120046) ||
     decide (r = 120030) || decide (r = 120011)
   let J : Config → Prop := JK c₁ K A₀
   obtain ⟨c₂, k₂, e₂, hk₂, r₂, rr₂, mm₂, rm₂, o₂, -, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 110069) (rn := 120030) (r1 := 120011) (ra := 110067) (rv := 110066) (body := frBody)
-    (B := fun r => decide (110063 ≤ r ∧ r ≤ 110067)) (by decide) (by decide) (by decide)
-    (by decide) (by decide) J A₀
+    (B := fun r => decide (110063 ≤ r ∧ r ≤ 110067)) by_d by_d by_d
+    by_d by_d J A₀
     (fun d d' hJ hr hm => JK.stable (rs := [110069]) (fun r hr' => by
       simp only [K, Bool.or_eq_true, decide_eq_true_eq] at hr'
       rcases hr' with (((rfl | rfl) | rfl) | rfl) | rfl <;> decide) hJ
       (fun r a b => hr r a (by simpa using b)) hm)
     (n := A) (κ := 12) (fun i => A₀ + ρ (A - 1 - i)) (fun i => A - 1 - i) (fun i _ => by omega)
     (fun i d hi hJ hwd hri => by
-      have g60 : d.nreg 110060 = A₀ := by rw [hJ.1 _ (by decide), v60]
-      have g44 : d.nreg 120044 = AB := by rw [hJ.1 _ (by decide), v44]
-      have g46 : d.nreg 120046 = SB := by rw [hJ.1 _ (by decide), v46]
-      have g30 : d.nreg 120030 = A := by rw [hJ.1 _ (by decide), v30]
-      have g11 : d.nreg 120011 = 1 := by rw [hJ.1 _ (by decide), v11]
+      have g60 : d.nreg 110060 = A₀ := by rw [hJ.1 _ by_d, v60]
+      have g44 : d.nreg 120044 = AB := by rw [hJ.1 _ by_d, v44]
+      have g46 : d.nreg 120046 = SB := by rw [hJ.1 _ by_d, v46]
+      have g30 : d.nreg 120030 = A := by rw [hJ.1 _ by_d, v30]
+      have g11 : d.nreg 120011 = 1 := by rw [hJ.1 _ by_d, v11]
       have hMd : RgMem d.nmem AB SB A σ rg := ⟨fun p hp => by
-          rw [hJ.2 _ (by omega), m₁]; exact hM.seq p hp, hM.σ_lt,
-        fun j hj => by rw [hJ.2 _ (by omega), m₁]; exact hM.reg j hj⟩
+          rw [hJ.2 _ by_o, m₁]; exact hM.seq p hp, hM.σ_lt,
+        fun j hj => by rw [hJ.2 _ by_o, m₁]; exact hM.reg j hj⟩
       obtain ⟨d₁, k₁', e₁', hk₁', n₁', -⟩ : ∃ d₁ k₁', Exec P W
           (block [.subN 110063 120030 120011, .subN 110063 110063 110069]) d d₁ k₁' ∧ k₁' = 2 ∧
           d₁.nreg = upd d.nreg 110063 (A - 1 - i) ∧ True := by
@@ -193,17 +193,17 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
       have f₁' : ∀ r, r ≠ 110063 → d₁.nreg r = d.nreg r := fun r hr => by
         rw [n₁']; exact upd_other _ _ _ hr
       have hm₁' : d₁.nmem = d.nmem :=
-        (exec_frameB e₁' (B := fun r => decide (r = 110063)) (by decide)).2.2.1
+        (exec_frameB e₁' (B := fun r => decide (r = 110063)) by_d).2.2.1
       obtain ⟨d₂, k₂', e₂', hk₂', f₂', v₂'⟩ := rgS_exec (P := P) e₁'.wb_right (p := A - 1 - i)
-        (by rw [hm₁']; exact hMd) (by rw [f₁' _ (by decide), g44])
-        (by rw [f₁' _ (by decide), g46]) (by rw [n₁']; config_simp) (by omega) (by omega)
-        (by omega)
-      have hρl := hρR (A - 1 - i) (by omega)
+        (by rwa [hm₁']) (by rw [f₁' _ by_d, g44])
+        (by rw [f₁' _ by_d, g46]) (by rw [n₁']; config_simp) by_o by_o
+        by_o
+      have hρl := hρR (A - 1 - i) by_o
       obtain ⟨d₃, k₃', e₃', hk₃', v67, v66⟩ : ∃ d₃ k₃', Exec P W
           (block [.addN 110067 110060 110065, .copyN 110066 110063]) d₂ d₃ k₃' ∧ k₃' = 2 ∧
           d₃.nreg 110067 = A₀ + ρ (A - 1 - i) ∧ d₃.nreg 110066 = A - 1 - i := by
-        have a60 : d₂.nreg 110060 = A₀ := by rw [f₂'.1 _ (by decide), f₁' _ (by decide), g60]
-        have a63 : d₂.nreg 110063 = A - 1 - i := by rw [f₂'.1 _ (by decide), n₁']; config_simp
+        have a60 : d₂.nreg 110060 = A₀ := by rw [f₂'.1 _ by_d, f₁' _ by_d, g60]
+        have a63 : d₂.nreg 110063 = A - 1 - i := by rw [f₂'.1 _ by_d, n₁']; config_simp
         have w₂ := e₂'.wb_right
         exec_block
         · rw [a60, v₂']; omega
@@ -211,25 +211,25 @@ theorem frS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {N
           · config_simp; rw [a60, v₂']
           · config_simp; rw [a63]
       have ex : Exec P W frBody d d₃ _ := .seq e₁' (.seq e₂' e₃')
-      exact ⟨d₃, _, ex, by omega, exec_frameB ex (by decide), v67, v66⟩)
-    e₁.wb_right (JK.refl _ _ _) v30 v11 (by omega)
-  refine ⟨c₂, _, .seq e₁ e₂, by nlinarith, ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
+      exact ⟨d₃, _, ex, by_o, exec_frameB ex by_d, v67, v66⟩)
+    e₁.wb_right (JK.refl _ _ _) v30 v11 by_o
+  refine ⟨c₂, _, .seq e₁ e₂, by_nl, ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
     fun a ha => by rw [rm₂, rm₁], by rw [o₂, o₁]⟩, ?_, ?_, fun p hp => ?_⟩
   · simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    rw [r₂ r (by simp; omega) (by omega)]; exact hr₁ r (by simp [BFR]; omega)
+    rw [r₂ r (by simp; omega) by_o]; exact hr₁ r (by simp [BFR]; omega)
   · rw [rr₂ r (by simp only [BFR, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
       rr₁]
   · rw [mm₂, scat_below (fun i _ => by omega) ha, m₁]
-  · rw [r₂ _ (by decide) (by decide), n₁]; config_simp
-  · rw [r₂ _ (by decide) (by decide), v60]
+  · rw [r₂ _ by_d by_d, n₁]; config_simp
+  · rw [r₂ _ by_d by_d, v60]
   · -- the last store at the region of `p` is that of its first position
     obtain ⟨hf1, hf2, hf3⟩ := fpos_spec ρ p
     set q := fpos ρ p
-    have hq : q < A := by omega
+    have hq : q < A := by_o
     have := scat_at (m := c₁.nmem) (g := fun i => A₀ + ρ (A - 1 - i)) (f := fun i => A - 1 - i)
-      (n := A) (i := A - 1 - q) (by omega) (fun j hj hij e => by
+      (n := A) (i := A - 1 - q) by_o (fun j hj hij e => by
         have e' : ρ (A - 1 - j) = ρ p := by
-          have : ρ (A - 1 - j) = ρ (A - 1 - (A - 1 - q)) := by omega
+          have : ρ (A - 1 - j) = ρ (A - 1 - (A - 1 - q)) := by_o
           rw [this, show A - 1 - (A - 1 - q) = q by omega, hf1]
         have := hf3 _ e'
         omega)
@@ -299,11 +299,11 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
   have v74 : c₁.nreg 110074 = 0 := by rw [n₁]; config_simp
   have v80 : c₁.nreg 110080 = chCap A := by rw [n₁]; config_simp
   have v9 : c₁.nreg 9999 = A₀ + 2 * chCap A := by rw [n₁]; config_simp
-  have v60 : c₁.nreg 110060 = FR := by rw [hr₁ _ (by decide), hFR]
-  have v44 : c₁.nreg 120044 = AB := by rw [hr₁ _ (by decide), hAB]
-  have v46 : c₁.nreg 120046 = SB := by rw [hr₁ _ (by decide), hSB]
-  have v30 : c₁.nreg 120030 = A := by rw [hr₁ _ (by decide), hA]
-  have v11 : c₁.nreg 120011 = 1 := by rw [hr₁ _ (by decide), h1]
+  have v60 : c₁.nreg 110060 = FR := by rw [hr₁ _ by_d, hFR]
+  have v44 : c₁.nreg 120044 = AB := by rw [hr₁ _ by_d, hAB]
+  have v46 : c₁.nreg 120046 = SB := by rw [hr₁ _ by_d, hSB]
+  have v30 : c₁.nreg 120030 = A := by rw [hr₁ _ by_d, hA]
+  have v11 : c₁.nreg 120011 = 1 := by rw [hr₁ _ by_d, h1]
   let K : ℕ → Bool := fun r => decide (r = 110060) || decide (r = 120044) || decide (r = 120046) ||
     decide (r = 120011)
   let J : Config → Prop := JK c₁ K A₀
@@ -311,36 +311,36 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
     (ri := 110079) (rn := 120030) (r1 := 120011) (rf := 110078) (rv1 := 110076) (rv2 := 110077)
     (rR1 := 110072) (rR2 := 110073) (rc := 110074) (rt := 110075) (body := iBody)
     (B := fun r => decide (110063 ≤ r ∧ r ≤ 110071) || decide (110076 ≤ r ∧ r ≤ 110078))
-    (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+    by_d by_d by_d by_d by_d by_d by_d
     (R1 := A₀) (c₀ := 0) J
     (fun d d' hJ hr hm => JK.stable (rs := [110079, 110074, 110075]) (fun r hr' => by
       simp only [K, Bool.or_eq_true, decide_eq_true_eq] at hr'
       rcases hr' with ((rfl | rfl) | rfl) | rfl <;> decide) hJ
       (fun r a b => hr r a (by simp at b; omega) (by simp at b; omega) (by simp at b; omega))
-      (fun a ha => hm a (Or.inl (by omega))))
+      (fun a ha => hm a (Or.inl by_o)))
     (n := A) (κ := 20) (starOf ρ)
     (fun i d hi hJ hwd hri => by
-      have g60 : d.nreg 110060 = FR := by rw [hJ.1 _ (by decide), v60]
-      have g44 : d.nreg 120044 = AB := by rw [hJ.1 _ (by decide), v44]
-      have g46 : d.nreg 120046 = SB := by rw [hJ.1 _ (by decide), v46]
+      have g60 : d.nreg 110060 = FR := by rw [hJ.1 _ by_d, v60]
+      have g44 : d.nreg 120044 = AB := by rw [hJ.1 _ by_d, v44]
+      have g46 : d.nreg 120046 = SB := by rw [hJ.1 _ by_d, v46]
       have hMd : RgMem d.nmem AB SB A σ rg := ⟨fun p hp => by
-          rw [hJ.2 _ (by omega), m₁]; exact hM.seq p hp, hM.σ_lt,
-        fun j hj => by rw [hJ.2 _ (by omega), m₁]; exact hM.reg j hj⟩
+          rw [hJ.2 _ by_o, m₁]; exact hM.seq p hp, hM.σ_lt,
+        fun j hj => by rw [hJ.2 _ by_o, m₁]; exact hM.reg j hj⟩
       have e₀ := Exec.copyN (P := P) hwd 110063 110079
-      set d₀ : Config := { d with nreg := upd d.nreg 110063 (d.nreg 110079) } with hd₀
+      set d₀ := { d with nreg := upd d.nreg 110063 (d.nreg 110079) } with hd₀
       have f₀ : ∀ r, r ≠ 110063 → d₀.nreg r = d.nreg r := fun r hr => by
         rw [hd₀]; exact upd_other _ _ _ hr
       obtain ⟨d₂, k₂', e₂', hk₂', f₂', v₂'⟩ := rgS_exec (P := P) e₀.wb_right (p := i)
-        hMd (by rw [f₀ _ (by decide), g44]) (by rw [f₀ _ (by decide), g46])
-        (by rw [hd₀]; config_simp; exact hri) hi (by omega) (by omega)
+        hMd (by rw [f₀ _ by_d, g44]) (by rw [f₀ _ by_d, g46])
+        (by rw [hd₀]; config_simp; exact hri) hi by_o by_o
       have hρl : ρ i < R := hρR i hi
-      have hρl' : rg (σ i) < R := hρR i hi
+      have hρl' := hρR i hi
       have hfp : d₂.nmem (FR + ρ i) = fpos ρ i := by
-        rw [f₂'.2.2.1, show d₀.nmem = d.nmem from rfl, hJ.2 _ (by omega), m₁]; exact hfr i hi
-      have a60 : d₂.nreg 110060 = FR := by rw [f₂'.1 _ (by decide), f₀ _ (by decide), g60]
-      have a63 : d₂.nreg 110063 = i := by rw [f₂'.1 _ (by decide), hd₀]; config_simp; exact hri
+        rw [f₂'.2.2.1, show d₀.nmem = d.nmem from rfl, hJ.2 _ by_o, m₁]; exact hfr i hi
+      have a60 : d₂.nreg 110060 = FR := by rw [f₂'.1 _ by_d, f₀ _ by_d, g60]
+      have a63 : d₂.nreg 110063 = i := by rw [f₂'.1 _ by_d, hd₀]; config_simp; exact hri
       have a11 : d₂.nreg 120011 = 1 := by
-        rw [f₂'.1 _ (by decide), f₀ _ (by decide), hJ.1 _ (by decide), v11]
+        rw [f₂'.1 _ by_d, f₀ _ by_d, hJ.1 _ by_d, v11]
       have hfi := (fpos_spec ρ i).2.1
       have w₂ := e₂'.wb_right
       obtain ⟨d₃, k₃', e₃', hk₃', v76, v77, v71, v63⟩ : ∃ d₃ k₃', Exec P W
@@ -363,37 +363,37 @@ theorem iS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {AB
           (∀ r, r ≠ 110078 → d₄.nreg r = d₃.nreg r) := by
         by_cases h : fpos ρ i + 2 ≤ i
         · have ht : d₃.nreg 110071 < d₃.nreg 110063 := by rw [v71, v63]; omega
-          exact ⟨_, _, .ifLtN_true ht (Exec.constN w₃ 110078 1 (by omega)), by omega,
+          exact ⟨_, _, .ifLtN_true ht (Exec.constN w₃ 110078 1 by_o), by_o,
             by rw [ite_eq_left h]; config_simp, fun r hr => by config_simp; rw [upd_other _ _ _ hr]⟩
         · have ht : ¬ d₃.nreg 110071 < d₃.nreg 110063 := by rw [v71, v63]; omega
-          exact ⟨_, _, .ifLtN_false ht (Exec.constN w₃ 110078 0 (Nat.zero_le _)), by omega,
+          exact ⟨_, _, .ifLtN_false ht (Exec.constN w₃ 110078 0 (Nat.zero_le _)), by_o,
             by rw [ite_eq_right h]; config_simp, fun r hr => by config_simp; rw [upd_other _ _ _ hr]⟩
       obtain ⟨d₄, k₄', e₄', hk₄', v78, r₄⟩ := hcase
       have ex : Exec P W iBody d d₄ _ := .seq e₀ (.seq e₂' (.seq e₃' e₄'))
-      refine ⟨d₄, _, ex, by omega, exec_frameB ex (by decide), fun hn => ?_, fun x hx => ?_⟩
+      refine ⟨d₄, _, ex, by_o, exec_frameB ex by_d, fun hn => ?_, fun x hx => ?_⟩
       · unfold starOf at hn
         split_ifs at hn with h
         rw [v78, ite_eq_right h]
       · unfold starOf at hx
         split_ifs at hx with h
         cases hx
-        exact ⟨by rw [v78, ite_eq_left h], by rw [r₄ _ (by decide), v76],
-          by rw [r₄ _ (by decide), v77]⟩)
+        exact ⟨by rw [v78, ite_eq_left h], by rw [r₄ _ by_d, v76],
+          by rw [r₄ _ by_d, v77]⟩)
     e₁.wb_right (JK.refl _ _ _) v30 v11 v72 v73 v74
     (by unfold chCap; omega) (by unfold chCap at hW ⊢; omega)
   rw [Nat.zero_add] at cnt₂
   simp only [Nat.add_zero] at pr₂
-  refine ⟨c₂, _, .seq e₁ e₂, by nlinarith, ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
+  refine ⟨c₂, _, .seq e₁ e₂, by_nl, ⟨fun r hr => ?_, fun r hr => ?_, fun a ha => ?_,
     fun a ha => by rw [rm₂, rm₁], by rw [o₂, o₁]⟩, ?_, ?_, ?_, ?_, cnt₂, pr₂⟩
   · simp only [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
-    rw [r₂ r (by simp; omega) (by omega) (by omega) (by omega)]; exact hr₁ r (by simp [BIS]; omega)
+    rw [r₂ r (by simp; omega) by_o by_o by_o]; exact hr₁ r (by simp [BIS]; omega)
   · rw [rr₂ r (by simp only [BIS, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega),
       rr₁]
-  · rw [mm₂ a (Or.inl (by omega)), m₁]
-  · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v9]
-  · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v72]
-  · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v73]
-  · rw [r₂ _ (by decide) (by decide) (by decide) (by decide), v80]
+  · rw [mm₂ a (Or.inl by_o), m₁]
+  · rw [r₂ _ by_d by_d by_d by_d, v9]
+  · rw [r₂ _ by_d by_d by_d by_d, v72]
+  · rw [r₂ _ by_d by_d by_d by_d, v73]
+  · rw [r₂ _ by_d by_d by_d by_d, v80]
 
 end
 

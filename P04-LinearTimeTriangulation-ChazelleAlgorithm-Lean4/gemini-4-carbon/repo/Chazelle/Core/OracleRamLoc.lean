@@ -66,10 +66,10 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   set AB := c.nmem (B + 4) with hABdef
   set SB := c.nmem (B + 6) with hSBdef
   set x : WPos := ⟨c.nreg 50002, c.nreg 50003⟩ with hxdef
-  have hA1 : c.nmem (B + 1) = A := hN.2.1
-  have hsl : N.seq.length = A := seq_length hNF
+  have hA1 := hN.2.1
+  have hsl := seq_length hNF
   have hseq : ∀ i, i < A → c.nmem (SB + i) = N.seq.getD i 0 := fun i hi =>
-    hN.2.2.2.2.2.2.2.2.1 i (by omega)
+    hN.2.2.2.2.2.2.2.2.1 i by_o
   obtain ⟨hcov1, hcov2⟩ := hcov M (Qof P) (N.F M (Qof P)) hGM hNF.1
   have hA0 : 0 < A := by
     obtain ⟨U, hU, a, b, hab⟩ := hcov1
@@ -79,10 +79,10 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, hd₁⟩ := locDir_ok P W c hw hD
   have d₁ := hd₁ M hM
   have w₁ := e₁.wb_right
-  have b1 : c₁.nreg 50001 = B := f₁.1 _ (by decide)
-  have b2 : c₁.nreg 50002 = c.nreg 50002 := f₁.1 _ (by decide)
-  have b3 : c₁.nreg 50003 = c.nreg 50003 := f₁.1 _ (by decide)
-  have m₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have b1 : c₁.nreg 50001 = B := f₁.1 _ by_d
+  have b2 : c₁.nreg 50002 = c.nreg 50002 := f₁.1 _ by_d
+  have b3 : c₁.nreg 50003 = c.nreg 50003 := f₁.1 _ by_d
+  have m₁ := f₁.2.2.1
   -- 2. the setup
   obtain ⟨c₂, k₂, e₂, hk₂, q⟩ : ∃ c₂ k₂, Exec P W locSetup c₁ c₂ k₂ ∧ k₂ = 14 ∧
       (c₂.nreg 10500 = c.nreg 50002 ∧ c₂.nreg 10501 = c.nreg 50003 ∧
@@ -104,58 +104,58 @@ theorem myLoc_exec (hcov : ArcCoverSpec) {P : Polygon} {W : ℕ} {c : Config}
   obtain ⟨q500, q501, q502, q503, q504, q505, q103, q104⟩ := q
   have w₂ := e₂.wb_right
   have f₂ := exec_frameB e₂ wr_locSetup
-  have m₂ : c₂.nmem = c.nmem := f₂.2.2.1.trans m₁
+  have m₂ := f₂.2.2.1.trans m₁
   have R₂ : ∀ r, Bloc r = false → Bdir r = false → c₂.nreg r = c.nreg r := fun r h1 h2 =>
     (f₂.1 r h1).trans (f₁.1 r h2)
   -- 3. the search
   set d := dirCode M x.edge with hd
   have hJ₂ : CmpJ x d AB A SB TB c.nmem c₂ :=
     ⟨q500, q501, by rw [q502, d₁], q503, q504, q505, fun a _ => by rw [m₂]⟩
-  have hcmp := keyCmp_predOK hG hW x hx.2.2 d AB A SB TB c.nmem hAB (by omega)
+  have hcmp := keyCmp_predOK hG hW x hx.2.2 d AB A SB TB c.nmem hAB by_o
   have hpr : ∀ i, i < A → (cmpPr P x d AB A c.nmem (c.nmem (SB + i)) = true ↔
       KeyPred M (Qof P) x (N.arc (N.seq.getD i 0)).s) := fun i hi => by
     rw [hseq i hi]
     exact cmpPr_eq hN x hx hst (seq_lt hNF hi)
   obtain ⟨c₃, k₃, e₃, hk₃, hJ₃, hL₃, m₃, a₃, ht₃, hpre₃, hpost₃⟩ := tsearch_exec (P := P) hcmp
-    (by decide) (rT := 120041) (rL := 120042) (T := TB) (L := L) (by unfold bandOf bLocate; omega)
+    by_d (rT := 120041) (rL := 120042) (T := TB) (L := L) (by unfold bandOf bLocate; omega)
     (by unfold bandOf bLocate; omega) w₂ hJ₂ (cmpJ_stable x d AB A SB TB c.nmem)
-    (by rw [R₂ _ (by decide) (by decide)]; exact hTBr) (by rw [R₂ _ (by decide) (by decide)]; exact hLr)
-    (fun j hj => by rw [m₂]; exact htab j hj) (by rw [q104]; exact hbig)
-    (by rw [q103, q104]; exact hSB) hTW
+    (by rwa [R₂ _ by_d by_d]) (by rwa [R₂ _ by_d by_d])
+    (fun j hj => by rw [m₂]; exact htab j hj) (by rwa [q104])
+    (by rwa [q103, q104]) hTW
     (fun i j hij hj hprj => by
       rw [q103, m₂] at hprj ⊢
       rw [q104] at hj
-      exact (hpr i (by omega)).2 (KeyPred.mono ((hpr j hj).1 hprj) (seq_sorted hNF hij hj)))
-    (by omega)
+      exact (hpr i by_o).2 (KeyPred.mono ((hpr j hj).1 hprj) (seq_sorted hNF hij hj)))
+    by_o
   rw [q104] at ht₃ hpost₃
   rw [q103, m₂] at hpre₃ hpost₃
   obtain ⟨-, -, -, -, h504, -, -⟩ := hJ₃
   -- 4. the spine position
   set t := c₃.nreg 50105 with htdef
   have hpick := locate_pick (fun y hy => hcov2 y hy) hNF x hA0 ht₃
-    (fun i hi => (hpr i (by omega)).1 (hpre₃ i hi))
+    (fun i hi => (hpr i by_o).1 (hpre₃ i hi))
     (fun hi hk => by
       have := (hpr t hi).2 hk
       rw [hpost₃ hi] at this
       exact Bool.false_ne_true this)
   have w₃ := e₃.wb_right
   have c12 : c₃.nreg 120012 = 0 := by
-    rw [hL₃.1 _ (by simp [bSign, bandOf]) (by simp [bandOf, bLocate]) (by decide),
-      R₂ _ (by decide) (by decide), h12]
+    rw [hL₃.1 _ (by simp [bSign, bandOf]) (by simp [bandOf, bLocate]) by_d,
+      R₂ _ by_d by_d, h12]
   have c11 : c₃.nreg 120011 = 1 := by
-    rw [hL₃.1 _ (by simp [bSign, bandOf]) (by simp [bandOf, bLocate]) (by decide),
-      R₂ _ (by decide) (by decide), h11]
+    rw [hL₃.1 _ (by simp [bSign, bandOf]) (by simp [bandOf, bLocate]) by_d,
+      R₂ _ by_d by_d, h11]
   obtain ⟨c₄, k₄, e₄, hk₄, v₄⟩ : ∃ c₄ k₄, Exec P W myFinish c₃ c₄ k₄ ∧ k₄ ≤ 3 ∧
       c₄.nreg 120170 = (if 0 < t then t - 1 else A - 1) := by
     unfold myFinish
     by_cases h0 : 0 < t
-    · exact ⟨_, _, .ifLtN_true (by rw [c12]; exact h0) (Exec.subN w₃ _ _ _), by omega,
+    · exact ⟨_, _, .ifLtN_true (by rwa [c12]) (Exec.subN w₃ _ _ _), by_o,
         by config_simp; rw [c11, ite_eq_left h0]⟩
-    · exact ⟨_, _, .ifLtN_false (by rw [c12]; exact h0) (Exec.subN w₃ _ _ _), by omega,
+    · exact ⟨_, _, .ifLtN_false (by rwa [c12]) (Exec.subN w₃ _ _ _), by_o,
         by config_simp; rw [c11, h504, ite_eq_right h0]⟩
   have ex : Exec P W myLoc c c₄ (k₁ + (k₂ + (k₃ + k₄))) := .seq e₁ (.seq e₂ (.seq e₃ e₄))
-  have f₃ := exec_frameB e₃ (B := fun r => Bcmp r || decide (50100 ≤ r ∧ r ≤ 50116)) (by decide)
-  have f₄ := exec_frameB e₄ (B := fun r => decide (r = 120170)) (by decide)
+  have f₃ := exec_frameB e₃ (B := fun r => Bcmp r || decide (50100 ≤ r ∧ r ≤ 50116)) by_d
+  have f₄ := exec_frameB e₄ (B := fun r => decide (r = 120170)) by_d
   have fr : FrameB BL c c₄ :=
     (FrameB.mono f₁ fun r hr => by simp [BL, hr]).trans
       ((FrameB.mono f₂ fun r hr => by simp [BL, hr]).trans

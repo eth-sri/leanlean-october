@@ -64,10 +64,10 @@ theorem init_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     obtain ⟨x, hx⟩ := hne
     obtain ⟨i, hi, -⟩ := mem_F_iff.1 hx
     omega
-  have hM : WalkAx M := walkAx_of_goodModel hGM
+  have hM := walkAx_of_goodModel hGM
   have hR1 : 1 ≤ N.nRegions := by rw [nRegions_eq hNF hM]; omega
   obtain ⟨c₅, k₅, e₅, hk₅, I₅, G₅⟩ := initA_exec (P := P) hw h0 h1 h2 h3 hWh hwf hMD hNW hNF hRC
-    hRO hdeg (by omega) hK1 hR1
+    hRO hdeg by_o hK1 hR1
   obtain ⟨c₈, k₈, e₈, hk₈, I₈, G₈⟩ := initB_exec (P := P) I₅ hG hWh hwf hMD hGM hNW hNF hne
     (by rw [I₅.alloc]; show c.nreg ALLOC + (dmOf N.nChords N.arcs.length N.nRegions D 0).oEnd + _ ≤ W
         omega)
@@ -85,7 +85,7 @@ theorem init_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   have hstat : StatOK E st :=
     ⟨fun i hi => I₈.nd0 i hi, fun i hi => I₈.nd1 i hi, fun j hj => (I₈.ring j hj).2.2.1,
       fun j hj => ⟨(I₈.ring j hj).2.2.2.1, (I₈.ring j hj).2.2.2.2⟩⟩
-  have hI : Inv E st := Inv.init hE hstat hdeg hsemi
+  have hI := Inv.init hE hstat hdeg hsemi
   have hsz : E.sz ≤ W := by rw [envOf_sz hMD]; exact szOf_le hwf hMD hWh
   have hW3 : 3 ≤ W := by unfold hostWords at hWh; omega
   have hEnd : d.oEnd = (dmOf N.nChords N.arcs.length N.nRegions D 0).oEnd := rfl

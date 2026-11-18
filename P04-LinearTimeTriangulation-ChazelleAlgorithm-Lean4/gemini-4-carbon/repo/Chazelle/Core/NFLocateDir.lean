@@ -42,7 +42,7 @@ def dirTail : Stmt :=
         (.ifLtN 10010 50032 (.instr (.constN 10502 0)) (.instr (.constN 10502 2)))
         (.instr (.constN 10502 1))))))))
 
-theorem wr_dirTail : wr Bdir dirTail = true := by decide
+theorem wr_dirTail : wr Bdir dirTail = true := by_d
 
 /-- A symbolic point in three registers is copied by three copies. -/
 theorem symPtIn_copy {c c' : Config} {r r' : ℕ} {s : SymPt} (h : SymPtIn c r s)
@@ -90,39 +90,39 @@ theorem dirTail_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ 
     (hsa : SymPtIn c 50040 sa) (hsb : SymPtIn c 50043 sb) :
     ∃ c' k, Exec P W dirTail c c' k ∧ k ≤ 490 ∧ FrameB Bdir c c' ∧
       c'.nreg 10502 = dirOf (sa.eval (Qof P)).2 (sb.eval (Qof P)).2 := by
-  obtain ⟨c₁, k₁, e₁, hk₁, i1, i2, i3, o1, r1⟩ := kerLoad_exec_ab (P := P) (by omega) c hw
+  obtain ⟨c₁, k₁, e₁, hk₁, i1, i2, i3, o1, r1⟩ := kerLoad_exec_ab (P := P) by_o c hw
     hsa hsb
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, bit₂, sig₂⟩ := sig_exec (P := P) c₁ e₁.wb_right hG hW
-    (by omega) hla hlb hla i1 i2 i3
+    by_o hla hlb hla i1 i2 i3
   rw [o1] at sig₂
   simp only [SignTest] at sig₂
   have w₂ := e₂.wb_right
   have e₃ := Exec.copyN (P := P) w₂ 50037 10010
   have w₃ := e₃.wb_right
-  set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50037 (c₂.nreg 10010) }
+  set c₃ := { c₂ with nreg := upd c₂.nreg 50037 (c₂.nreg 10010) }
   have k2 : ∀ r, (r < 10000 ∨ 10500 ≤ r) → c₂.nreg r = c₁.nreg r := fun r hr =>
     f₂.1 r (by unfold Bk; simp only [decide_eq_false_iff_not]; omega)
   have sa₃ : SymPtIn c₃ 50040 sa := symPtIn_copy hsa
-    (by simp only [c₃, upd]; rw [ite_eq_right (by omega), k2 _ (by omega), r1 _ (by omega)])
-    (by simp only [c₃, upd]; rw [ite_eq_right (by omega), k2 _ (by omega), r1 _ (by omega)])
-    (by simp only [c₃, upd]; rw [ite_eq_right (by omega), k2 _ (by omega), r1 _ (by omega)])
+    (by simp only [c₃, upd]; rw [ite_eq_right by_o, k2 _ by_o, r1 _ by_o])
+    (by simp only [c₃, upd]; rw [ite_eq_right by_o, k2 _ by_o, r1 _ by_o])
+    (by simp only [c₃, upd]; rw [ite_eq_right by_o, k2 _ by_o, r1 _ by_o])
   have sb₃ : SymPtIn c₃ 50043 sb := symPtIn_copy hsb
-    (by simp only [c₃, upd]; rw [ite_eq_right (by omega), k2 _ (by omega), r1 _ (by omega)])
-    (by simp only [c₃, upd]; rw [ite_eq_right (by omega), k2 _ (by omega), r1 _ (by omega)])
-    (by simp only [c₃, upd]; rw [ite_eq_right (by omega), k2 _ (by omega), r1 _ (by omega)])
+    (by simp only [c₃, upd]; rw [ite_eq_right by_o, k2 _ by_o, r1 _ by_o])
+    (by simp only [c₃, upd]; rw [ite_eq_right by_o, k2 _ by_o, r1 _ by_o])
+    (by simp only [c₃, upd]; rw [ite_eq_right by_o, k2 _ by_o, r1 _ by_o])
   have up₃ : c₃.nreg 50037 = c₂.nreg 10010 := by simp [c₃]
-  obtain ⟨c₄, k₄, e₄, hk₄, j1, j2, j3, o4, r4⟩ := kerLoad_exec_ba (P := P) (by omega) c₃ w₃
+  obtain ⟨c₄, k₄, e₄, hk₄, j1, j2, j3, o4, r4⟩ := kerLoad_exec_ba (P := P) by_o c₃ w₃
     sb₃ sa₃
   obtain ⟨c₅, k₅, e₅, hk₅, f₅, bit₅, sig₅⟩ := sig_exec (P := P) c₄ e₄.wb_right hG hW
-    (by omega) hlb hla hlb j1 j2 j3
+    by_o hlb hla hlb j1 j2 j3
   rw [o4] at sig₅
   simp only [SignTest] at sig₅
   have w₅ := e₅.wb_right
   have up₅ : c₅.nreg 50037 = c₂.nreg 10010 := by
-    rw [f₅.1 _ (by decide), r4 _ (by omega), up₃]
-  have e₆ := Exec.constN (P := P) w₅ 50032 1 (by omega)
+    rw [f₅.1 _ by_d, r4 _ by_o, up₃]
+  have e₆ := Exec.constN (P := P) w₅ 50032 1 by_o
   have w₆ := e₆.wb_right
-  set c₆ : Config := { c₅ with nreg := upd c₅.nreg 50032 1 }
+  set c₆ := { c₅ with nreg := upd c₅.nreg 50032 1 }
   have h6a : c₆.nreg 50037 = c₂.nreg 10010 := by simp [c₆, up₅]
   have h6b : c₆.nreg 10010 = c₅.nreg 10010 := by simp [c₆]
   have h6c : c₆.nreg 50032 = 1 := by simp [c₆]
@@ -135,22 +135,22 @@ theorem dirTail_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ 
     by_cases hab : ya < yb
     · have : c₂.nreg 10010 = 1 := sig₂.2 hab
       refine spec_ifLtN_false (by rw [h6a, h6c, this]; omega)
-        (spec_instr (Exec.constN w₆ _ _ (by omega)) fun _ => ⟨by omega, ?_⟩)
+        (spec_instr (Exec.constN w₆ _ _ by_o) fun _ => ⟨by_o, ?_⟩)
       simp [hab]
     · have h0 : c₂.nreg 10010 = 0 := by have := mt sig₂.1 hab; omega
       refine spec_ifLtN_true (by rw [h6a, h6c, h0]; omega) ?_
       by_cases hba : yb < ya
       · have : c₅.nreg 10010 = 1 := sig₅.2 hba
         refine spec_ifLtN_false (by rw [h6b, h6c, this]; omega)
-          (spec_instr (Exec.constN w₆ _ _ (by omega)) fun _ => ⟨by omega, ?_⟩)
+          (spec_instr (Exec.constN w₆ _ _ by_o) fun _ => ⟨by_o, ?_⟩)
         simp [hab, hba]
       · have h0' : c₅.nreg 10010 = 0 := by have := mt sig₅.1 hba; omega
         refine spec_ifLtN_true (by rw [h6b, h6c, h0']; omega)
-          (spec_instr (Exec.constN w₆ _ _ (by omega)) fun _ => ⟨by omega, ?_⟩)
+          (spec_instr (Exec.constN w₆ _ _ by_o) fun _ => ⟨by_o, ?_⟩)
         simp [hab, hba]
   have ex : Exec P W dirTail c c₇ (k₁ + (k₂ + (1 + (k₄ + (k₅ + (1 + k₇)))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇)))))
-  exact ⟨c₇, _, ex, by omega, exec_frameB ex wr_dirTail, r₇⟩
+  exact ⟨c₇, _, ex, by_o, exec_frameB ex wr_dirTail, r₇⟩
 
 /-! ## The interior model -/
 
@@ -171,7 +171,7 @@ theorem interiorWalk_vtx (Q : Polygon) {p : ℕ} (hp : p < Q.n) :
   · rfl
   · unfold Polygon.vtx Polygon.n at *
     have hp' : p < Q.vertices.reverse.length := by simpa using hp
-    rw [getD_of_lt _ hp', List.getElem_reverse, getD_of_lt _ (by omega)]
+    rw [getD_of_lt _ hp', List.getElem_reverse, getD_of_lt _ by_o]
 
 /-- The indices of the interior model: bit, `(e + 1) mod n`, and the two vertex indices. -/
 def intIdx : Stmt :=
@@ -188,7 +188,7 @@ def intIdx : Stmt :=
 def intDir : Stmt :=
   .seq intIdx (.seq (block [.constN 50040 0, .constN 50043 0]) dirTail)
 
-theorem wr_intDir : wr Bdir intDir = true := by decide
+theorem wr_intDir : wr Bdir intDir = true := by_d
 
 /-- The indices computed by `intIdx`. -/
 theorem intIdx_exec {P : Polygon} {W : ℕ} (hW : P.n + 3 ≤ W) (c : Config) (hw : WordsBounded W c)
@@ -215,12 +215,12 @@ theorem intIdx_exec {P : Polygon} {W : ℕ} (hW : P.n + 3 ≤ W) (c : Config) (h
       c₂.nreg 50031 = (c.nreg 50002 + 1) % P.n ∧ c₂.nreg 50030 = P.n ∧ c₂.nreg 50032 = 1 ∧
       c₂.nreg 50033 = c.nmem (c.nreg 50000 + 1) ∧ c₂.nreg 50002 = c.nreg 50002 := by
     by_cases h : c.nreg 50002 + 1 < P.n
-    · refine spec_ifLtN_true (by rw [q31, q30]; exact h) (spec_skip w₁ ⟨by omega, ?_⟩)
+    · refine spec_ifLtN_true (by rwa [q31, q30]) (spec_skip w₁ ⟨by_o, ?_⟩)
       rw [q31, Nat.mod_eq_of_lt h]
       exact ⟨rfl, q30, q32, q33, q02⟩
-    · refine spec_ifLtN_false (by rw [q31, q30]; exact h)
-        (spec_instr (Exec.constN w₁ _ _ (by omega)) fun _ => ⟨by omega, ?_⟩)
-      have : c.nreg 50002 + 1 = P.n := by omega
+    · refine spec_ifLtN_false (by rwa [q31, q30])
+        (spec_instr (Exec.constN w₁ _ _ by_o) fun _ => ⟨by_o, ?_⟩)
+      have : c.nreg 50002 + 1 = P.n := by_o
       config_simp
       rw [this, Nat.mod_self]
       exact ⟨rfl, q30, q32, q33, q02⟩
@@ -245,23 +245,23 @@ theorem intIdx_exec {P : Polygon} {W : ℕ} (hW : P.n + 3 ≤ W) (c : Config) (h
       c₃.nreg 50044 = (if b = 1 then e1 else P.n - 1 - e1) := by
     by_cases h0 : b < 1
     · obtain ⟨c', k, ex, hk, a, a'⟩ := hrev c₂ w₂ s30 s32 s02 s31
-      refine ⟨c', k + 1, .ifLtN_true (by rw [s33, s32]; exact h0) ex, by omega, ?_, ?_⟩
-      · rw [a, ite_eq_right (by omega)]
-      · rw [a', ite_eq_right (by omega)]
+      refine ⟨c', k + 1, .ifLtN_true (by rwa [s33, s32]) ex, by_o, ?_, ?_⟩
+      · rw [a, ite_eq_right by_o]
+      · rw [a', ite_eq_right by_o]
     · by_cases h2 : 1 < b
       · obtain ⟨c', k, ex, hk, a, a'⟩ := hrev c₂ w₂ s30 s32 s02 s31
-        refine ⟨c', k + 1 + 2, .ifLtN_false (by rw [s33, s32]; exact h0)
-          (.ifLtN_true (by rw [s33, s32]; exact h2) ex), by omega, ?_, ?_⟩
-        · rw [a, ite_eq_right (by omega)]
-        · rw [a', ite_eq_right (by omega)]
+        refine ⟨c', k + 1 + 2, .ifLtN_false (by rwa [s33, s32])
+          (.ifLtN_true (by rwa [s33, s32]) ex), by_o, ?_, ?_⟩
+        · rw [a, ite_eq_right by_o]
+        · rw [a', ite_eq_right by_o]
       · have hb1 : b = 1 := by omega
-        refine spec_ifLtN_false (by rw [s33, s32]; exact h0)
-          (spec_ifLtN_false (by rw [s33, s32]; exact h2) ?_)
+        refine spec_ifLtN_false (by rwa [s33, s32])
+          (spec_ifLtN_false (by rwa [s33, s32]) ?_)
         exec_block
-        refine ⟨by omega, ?_, ?_⟩ <;> config_simp <;> rw [ite_eq_left hb1]
+        refine ⟨by_o, ?_, ?_⟩ <;> config_simp <;> rw [ite_eq_left hb1]
         · exact s02
         · exact s31
-  exact ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, r41, r44⟩
+  exact ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by_o, r41, r44⟩
 
 /-- **The direction procedure of the interior model** (at most `510` steps). -/
 theorem intDir_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W) (c : Config)
@@ -279,7 +279,7 @@ theorem intDir_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
     · omega
     · exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp⟩
   have hn : (Qof P).n = P.n := shear_n _ P
-  have hn0 : 0 < P.n := by omega
+  have hn0 : 0 < P.n := by_o
   set e := c.nreg 50002
   set ia := (if c.nmem (c.nreg 50000 + 1) = 1 then e else P.n - 1 - e)
   set ib := (if c.nmem (c.nreg 50000 + 1) = 1 then (e + 1) % P.n else P.n - 1 - (e + 1) % P.n)
@@ -290,10 +290,10 @@ theorem intDir_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 3 ≤ W
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, d₃⟩ := dirTail_exec (P := P) hG hW c₂ e₂.wb_right
     (sa := .vtx ia) (sb := .vtx ib) hia hib ⟨a, by rw [x41, r41]⟩ ⟨b, by rw [x44, r44]⟩
   have ex : Exec P W intDir c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
-  refine ⟨c₃, _, ex, by omega, exec_frameB ex wr_intDir, ?_⟩
+  refine ⟨c₃, _, ex, by_o, exec_frameB ex wr_intDir, ?_⟩
   rw [d₃, dirCode_eq]
   simp only [SymPt.eval, Model.wa, Model.wb, interiorModel]
-  rw [interiorWalk_n, hn, interiorWalk_vtx _ (by rw [hn]; exact he),
+  rw [interiorWalk_n, hn, interiorWalk_vtx _ (by rwa [hn]),
     interiorWalk_vtx _ (by rw [hn]; exact Nat.mod_lt _ hn0), hn]
   simp only [ia, ib]
   by_cases hL : Mountain.LeftInside (Qof P)

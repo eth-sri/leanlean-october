@@ -1,6 +1,6 @@
 module
 
-public import Chazelle.Core.SweepMachine13
+public import Chazelle.Core.SweepMachine11
 
 /-!
 # The sweep (WP-D), part 30: the abstract machine, the start of the `C₁` part

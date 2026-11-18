@@ -51,9 +51,9 @@ theorem full_in_region (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S
     exact hcS (this ▸ he)
   have hpre : IsPreconnected ((fun x : ℝ => ((x, y) : Point)) '' Ioo a b) :=
     isPreconnected_Ioo.image _ (by fun_prop : Continuous fun x : ℝ => ((x, y) : Point)).continuousOn
-  set z₀ : Point := ((a + b) / 2, y)
+  set z₀ := ((a + b) / 2, y)
   have hz₀ : z₀ ∈ (fun x : ℝ => ((x, y) : Point)) '' Ioo a b :=
-    ⟨(a + b) / 2, ⟨by linarith, by linarith⟩, rfl⟩
+    ⟨(a + b) / 2, ⟨by_l, by_l⟩, rfl⟩
   refine ⟨connectedComponentIn (freeIn D S) z₀, ⟨z₀, hfree hz₀, rfl⟩, ?_, ⟨z₀, hsubD hz₀⟩⟩
   exact hopen.trans (hpre.subset_connectedComponentIn hz₀ hfree)
 

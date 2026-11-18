@@ -41,22 +41,22 @@ theorem hseg_near {y a b : ℝ} (hab : a < b) {e : Point} (he : e ∈ hseg y a b
     intro δ hδ h
     have := congrArg Prod.fst h
     simp only at this
-    exact hδ (by linarith)
+    exact hδ by_l
   rcases heb.lt_or_eq with h | h
   · set δ := min (r / 2) ((b - e.1) / 2) with hδ
-    have hδ0 : 0 < δ := lt_min (by linarith) (by linarith)
+    have hδ0 : 0 < δ := lt_min by_l by_l
     have hδ1 : δ ≤ r / 2 := min_le_left _ _
     have hδ2 : δ ≤ (b - e.1) / 2 := min_le_right _ _
     refine ⟨(e.1 + δ, y), ⟨rfl, by simp only; linarith, by simp only; linarith⟩, hne δ hδ0.ne',
       ?_⟩
     rw [hdist, abs_of_pos hδ0]; linarith
   · set δ := min (r / 2) ((e.1 - a) / 2) with hδ
-    have hea : a < e.1 := by linarith
-    have hδ0 : 0 < δ := lt_min (by linarith) (by linarith)
+    have hea : a < e.1 := by_l
+    have hδ0 : 0 < δ := lt_min by_l by_l
     have hδ1 : δ ≤ r / 2 := min_le_left _ _
     have hδ2 : δ ≤ (e.1 - a) / 2 := min_le_right _ _
     refine ⟨(e.1 + -δ, y), ⟨rfl, by simp only; linarith, by simp only; linarith⟩,
-      hne (-δ) (by linarith), ?_⟩
+      hne (-δ) by_l, ?_⟩
     rw [hdist, abs_neg, abs_of_pos hδ0]; linarith
 
 /-- **Uniqueness of attachment positions** in a model with the walk axioms: a position with the
@@ -80,15 +80,15 @@ theorem pos_eq_of_sector {M : Model} (hM : WalkAx M) {c : Set Point} (hc : c ∈
     rcases hs0.lt_or_eq with h0 | h0
     · rcases hs1.lt_or_eq with h1 | h1
       · exact absurd (hs ▸ hopen s ⟨h0, h1⟩) heD
-      · rw [h1, Chazelle.Geometry.lerp_one] at hs; rw [hs]; exact hEb
+      · rw [h1, Chazelle.Geometry.lerp_one] at hs; rwa [hs]
     · rw [← h0, Chazelle.Geometry.lerp_zero] at hs; rw [hs]; exact hEa
   by_contra hne
   have hne' : p = p' → t ≠ t' := fun h1 h2 => hne ⟨h1.symm, h2.symm⟩
   obtain ⟨r, hr, hdis⟩ := hend.2 p p' t t' hp ht0 ht1 hp' ht' ht1' hne' rfl hpt
   obtain ⟨x, hx, hxe, hxd⟩ := hnear (min r (min rA rS)) (lt_min hr (lt_min hrA hrS))
-  have h1 : dist x e < r := lt_of_lt_of_le hxd (min_le_left _ _)
-  have h2 : dist x e < rA := lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_left _ _))
-  have h3 : dist x e < rS := lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_right _ _))
+  have h1 := lt_of_lt_of_le hxd (min_le_left _ _)
+  have h2 := lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_left _ _))
+  have h3 := lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_right _ _))
   exact hdis x (mem_ball.2 h1) (hsA x hx hxe h2) (hS x hx hxe h3)
 
 variable {Q : Polygon} {C : Chain}
@@ -100,8 +100,8 @@ theorem int_lt_top (hQ : Q.Simple) (T : Trans.Top Q C) {x : Point}
   obtain ⟨ε, hε, hball⟩ := Metric.isOpen_iff.1 hO x hx
   have hmem : ((x.1, x.2 + ε / 2) : Point) ∈ Q.filled \ Q.boundary := hball (by
     rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq, sub_self, abs_zero,
-      show x.2 + ε / 2 - x.2 = ε / 2 by ring, abs_of_pos (by linarith)]
-    exact max_lt hε (by linarith))
+      show x.2 + ε / 2 - x.2 = ε / 2 by ring, abs_of_pos by_l]
+    exact max_lt hε by_l)
   have := T.filled_below_top hQ hmem.1
   simp only at this
   linarith
@@ -113,7 +113,7 @@ theorem lerp_snd_ne {A B : Point} (h : A.2 ≠ B.2) {s : ℝ} (hs : s ∈ Ioo (0
       (lerp A B s).2 < max A.2 B.2 := by
   rw [Chazelle.Geometry.lerp_snd]
   obtain ⟨h0, h1⟩ := hs
-  have hd : B.2 - A.2 ≠ 0 := sub_ne_zero.2 (Ne.symm h)
+  have hd := sub_ne_zero.2 (Ne.symm h)
   refine ⟨fun e => hd ?_, fun e => hd ?_, ?_⟩
   · have : s * (B.2 - A.2) = 0 := by linarith
     rcases mul_eq_zero.1 this with h' | h'
@@ -147,12 +147,12 @@ theorem openLast_mem_dom {s : ℝ} (hs : s ∈ Ioo (0 : ℝ) 1) :
     lerp (Q.vtx C.m) (Q.vtx 0) s ∈ C.dom := by
   have hmn := T.hm
   have hm1 := C.one_le
-  have hh : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 (by omega) (by omega) (by omega)
+  have hh : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 by_o by_o by_o
   obtain ⟨hne1, hne2, hlt⟩ := lerp_snd_ne hh hs
   set e := lerp (Q.vtx C.m) (Q.vtx 0) s with he
   have heE : e ∈ Q.edge C.m := by
     rw [T.last_edge]; exact Chazelle.Geometry.lerp_mem_segment _ _ hs.1.le hs.2.le
-  have hefill : e ∈ Q.filled := Or.inl ⟨C.m, by omega, heE⟩
+  have hefill : e ∈ Q.filled := Or.inl ⟨C.m, by_o, heE⟩
   refine C.mem_dom_iff.2 ⟨?_, ?_, ?_⟩
   · have hsq := Chazelle.Jordan.filled_subset_square Q hefill
     have := C.coordBound_lt_radius
@@ -160,7 +160,7 @@ theorem openLast_mem_dom {s : ℝ} (hs : s ∈ Ioo (0 : ℝ) 1) :
     exact ⟨lt_of_le_of_lt hsq.1 this, lt_of_le_of_lt hsq.2 this⟩
   · rintro ⟨k, hk, hek⟩
     rw [T.chainEdge_eq' hk] at hek
-    have hint := hQ.2.2 k C.m (by omega) (by omega) (by omega)
+    have hint := hQ.2.2 k C.m by_o by_o by_o
     have hc : e ∈ Q.commonEndpoints k C.m := by rw [← hint]; exact ⟨hek, heE⟩
     rcases hc.2 with h | h
     · exact hne1 (by rw [h])
@@ -170,7 +170,7 @@ theorem openLast_mem_dom {s : ℝ} (hs : s ∈ Ioo (0 : ℝ) 1) :
     have h2 := (C.mem_slit_iff.1 hsl).2.1
     have hv1 := T.vtx_le_top (show C.m < Q.n by omega)
     have hv2 := T.vtx_le_top (show 0 < Q.n by omega)
-    have : max (Q.vtx C.m).2 (Q.vtx 0).2 ≤ C.top.2 := max_le hv1 hv2
+    have := max_le hv1 hv2
     linarith
 
 /-- **A chord of the chain model whose points near its end are interior is attached on the
@@ -213,9 +213,9 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
     exact heD (T.interior_sub_dom hQ ⟨hefill, h⟩)
   -- its interior walk position
   obtain ⟨j, hj, s, hs0, hs1, hjs⟩ :=
-    FactsInterior.exists_pos_of_mem_boundary (W := interiorWalk Q) (by rw [hWb]; exact hebd)
+    FactsInterior.exists_pos_of_mem_boundary (W := interiorWalk Q) (by rwa [hWb])
   rw [hIn] at hj
-  obtain ⟨rI, hrI, hI⟩ := FactsInterior.interior_left hWs hWo (by rw [hIn]; exact hj) hs0 hs1
+  obtain ⟨rI, hrI, hI⟩ := FactsInterior.interior_left hWs hWo (by rwa [hIn]) hs0 hs1
   -- the points of the chord near the end are in the interior walk's sector
   have hsecI : ∃ r > 0, ∀ x ∈ hseg y a b, x ≠ e → dist x e < r →
       sideLeft (interiorWalk Q) j s x := by
@@ -225,7 +225,7 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
     · rw [hWf, hWb]; exact hN x hx hxe (lt_of_lt_of_le hxd (min_le_left _ _))
   obtain ⟨rS, hrS, hS⟩ := hsecI
   -- points of the chord have the height of the end
-  have hey : e.2 = y := hemem.1
+  have hey := hemem.1
   have hxy : ∀ x ∈ hseg y a b, x.2 = e.2 := fun x hx => by rw [hey]; exact hx.1
   -- an interior point near the end, for the top cases
   have htopc : e ≠ C.top := by
@@ -239,9 +239,9 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
     · -- the first vertex of the run
       obtain ⟨rfl, rfl⟩ := hj0
       have hev : e = (interiorWalk Q).vtx 0 := by rw [← hjs, Chazelle.Chain.sidePt_zero]
-      obtain ⟨hi1, hprev⟩ := uturn_zero hQ T hD hli (by rw [← hev]; exact htopc)
+      obtain ⟨hi1, hprev⟩ := uturn_zero hQ T hD hli (by rwa [← hev])
       have hv0 : W.vtx (c0 C li) = (interiorWalk Q).vtx 0 := by
-        have := vtx_c0 hQ T hD hli (j := 0) (by omega); rwa [zero_add] at this
+        have := vtx_c0 hQ T hD hli (j := 0) by_o; rwa [zero_add] at this
       have hv1 : W.vtx (c0 C li + 1) = (interiorWalk Q).vtx 1 := by
         have := vtx_c0 hQ T hD hli (j := 1) hm1; rwa [add_comm] at this
       have hc0 : 7 ≤ c0 C li := by unfold c0; omega
@@ -249,24 +249,24 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
       have hpos := pos_eq_of_sector hMC hc hA (p' := c0 C li) (t' := 0) (by
           show c0 C li < W.n; rw [hWn]; unfold c0; omega) le_rfl one_pos hpt
         ⟨1, one_pos, fun x hx hxe _ => sideLeft_uturn (W := W) (a := (interiorWalk Q).vtx 1)
-          (by rw [hWn, show c0 C li + (2 * C.m + 7) - 1 = (c0 C li - 1) + (2 * C.m + 7) by omega,
-            Nat.add_mod_right, Nat.mod_eq_of_lt (by unfold c0; omega)]; exact hprev)
-          (by rw [hWn, Nat.mod_eq_of_lt (by unfold c0; omega)]; exact hv1)
-          (by rw [hv0]; exact iw_snd_ne hQ T hD hli (by omega) (by omega) (by omega))
-          (by rw [hv0, ← hev]; exact hxy x hx) (by rw [hv0, ← hev]; exact hxe)⟩ hnearc
+          (by rwa [hWn, show c0 C li + (2 * C.m + 7) - 1 = (c0 C li - 1) + (2 * C.m + 7) by omega,
+            Nat.add_mod_right, Nat.mod_eq_of_lt (by unfold c0; omega)])
+          (by rwa [hWn, Nat.mod_eq_of_lt (by unfold c0; omega)])
+          (by rw [hv0]; exact iw_snd_ne hQ T hD hli by_o by_o by_o)
+          (by rw [hv0, ← hev]; exact hxy x hx) (by rwa [hv0, ← hev])⟩ hnearc
       obtain ⟨hp', -⟩ := hpos
-      refine ⟨by omega, by omega, fun h => ?_⟩
+      refine ⟨by_o, by_o, fun h => ?_⟩
       omega
     · -- inside the run
       have hsj : s = 0 → 1 ≤ j := fun h0 => by
-        by_contra h1; exact hj0 ⟨by omega, h0⟩
+        by_contra h1; exact hj0 ⟨by_o, h0⟩
       have hpt : sidePt W (j + c0 C li) s = e := by rw [H.pt_eq T hjm s, hjs]
       have hpos := pos_eq_of_sector hMC hc hA (p' := j + c0 C li) (t' := s) (by
           show j + c0 C li < W.n; rw [hWn]; unfold c0; omega) hs0 hs1 hpt
         ⟨rS, hrS, fun x hx hxe hxd =>
           (H.sec_eq T hQ hjm hs0 hs1 hsj x).2 (hS x hx hxe hxd)⟩ hnearc
       obtain ⟨hp', -⟩ := hpos
-      refine ⟨by omega, by omega, fun h => ?_⟩
+      refine ⟨by_o, by_o, fun h => ?_⟩
       omega
   · rcases hs0.lt_or_eq with hs | hs
     · -- the open last edge: impossible
@@ -276,7 +276,7 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
           sidePt (interiorWalk Q) C.m s = lerp (Q.vtx 0) (Q.vtx C.m) s := by
         unfold sidePt
         rw [hIn, show (C.m + 1) % Q.n = 0 by rw [hmn, Nat.mod_self],
-          iw_vtx_idx hli (by omega), iw_vtx_idx hli (by omega)]
+          iw_vtx_idx hli by_o, iw_vtx_idx hli by_o]
         unfold idxI
         by_cases h : li = true
         · left; rw [ite_eq_left h, ite_eq_left h]
@@ -287,28 +287,28 @@ theorem inner_of_interior {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : �
       · rw [h]; exact openLast_mem_dom hQ T hD ⟨hs, hs1⟩
       · rw [h, show lerp (Q.vtx 0) (Q.vtx C.m) s = lerp (Q.vtx C.m) (Q.vtx 0) (1 - s) by
           apply Prod.ext <;> simp [Chazelle.Geometry.lerp] <;> ring]
-        exact openLast_mem_dom hQ T hD ⟨by linarith, by linarith⟩
+        exact openLast_mem_dom hQ T hD ⟨by_l, by_l⟩
     · -- the last vertex of the run
       subst hs
       have hev : e = (interiorWalk Q).vtx C.m := by rw [← hjs, Chazelle.Chain.sidePt_zero]
-      obtain ⟨hi1, hnext⟩ := uturn_last hQ T hD hli (by rw [← hev]; exact htopc)
+      obtain ⟨hi1, hnext⟩ := uturn_last hQ T hD hli (by rwa [← hev])
       have hvm : W.vtx (c0 C li + C.m) = (interiorWalk Q).vtx C.m := by
         have := vtx_c0 hQ T hD hli (j := C.m) le_rfl; rwa [add_comm] at this
       have hvm1 : W.vtx (c0 C li + C.m - 1) = (interiorWalk Q).vtx (C.m - 1) := by
-        have := vtx_c0 hQ T hD hli (j := C.m - 1) (by omega)
+        have := vtx_c0 hQ T hD hli (j := C.m - 1) by_o
         rwa [show C.m - 1 + c0 C li = c0 C li + C.m - 1 by omega] at this
       have hpt : sidePt W (c0 C li + C.m) 0 = e := by rw [Chazelle.Chain.sidePt_zero, hvm, hev]
       have hpos := pos_eq_of_sector hMC hc hA (p' := c0 C li + C.m) (t' := 0) (by
           show c0 C li + C.m < W.n; rw [hWn]; unfold c0; omega) le_rfl one_pos hpt
         ⟨1, one_pos, fun x hx hxe _ => sideLeft_uturn (W := W) (a := (interiorWalk Q).vtx (C.m - 1))
-          (by rw [hWn, show c0 C li + C.m + (2 * C.m + 7) - 1 =
+          (by rwa [hWn, show c0 C li + C.m + (2 * C.m + 7) - 1 =
               (c0 C li + C.m - 1) + (2 * C.m + 7) by omega,
-            Nat.add_mod_right, Nat.mod_eq_of_lt (by unfold c0; omega)]; exact hvm1)
-          (by rw [hWn, Nat.mod_eq_of_lt (by unfold c0; omega)]; exact hnext)
-          (by rw [hvm]; exact iw_snd_ne hQ T hD hli (by omega) (by omega) (by omega))
-          (by rw [hvm, ← hev]; exact hxy x hx) (by rw [hvm, ← hev]; exact hxe)⟩ hnearc
+            Nat.add_mod_right, Nat.mod_eq_of_lt (by unfold c0; omega)])
+          (by rwa [hWn, Nat.mod_eq_of_lt (by unfold c0; omega)])
+          (by rw [hvm]; exact iw_snd_ne hQ T hD hli by_o by_o by_o)
+          (by rw [hvm, ← hev]; exact hxy x hx) (by rwa [hvm, ← hev])⟩ hnearc
       obtain ⟨hp', ht'⟩ := hpos
-      exact ⟨by omega, by omega, fun _ => ht'.symm⟩
+      exact ⟨by_o, by_o, fun _ => ht'.symm⟩
 
 end
 

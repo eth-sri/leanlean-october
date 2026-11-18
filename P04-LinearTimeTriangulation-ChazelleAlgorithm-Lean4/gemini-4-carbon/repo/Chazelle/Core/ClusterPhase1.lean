@@ -63,22 +63,22 @@ theorem B2F.congr {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have b26 := g.base_eq 26; have b28 := g.base_eq 28; have b29 := g.base_eq 29
   have b30 := g.base_eq 30
   have hLN : ∀ j, j < g.L → ∀ x, x < g.N → j * g.N + x < g.L * g.U := fun j hj x hx => by
-    have : (j + 1) * g.N ≤ g.L * g.U := Nat.mul_le_mul (by omega) (by omega)
+    have : (j + 1) * g.N ≤ g.L * g.U := Nat.mul_le_mul by_o by_o
     rw [Nat.succ_mul] at this; omega
   refine ⟨fun x hx => ?_, fun x hx => ?_, h.r0, fun x hx => ?_, fun x hx => ?_, h.R_ok, h.R_n,
     h.R_up, h.R_root, h.R_pre, fun j hj x hx => ?_⟩
-  · have := x.2; rw [he _ (Or.inl ⟨by omega, by omega⟩)]; exact h.fpar x hx
-  · rw [he _ (Or.inl ⟨by omega, by omega⟩)]; exact h.fpar_lt x hx
-  · rw [he _ (Or.inl ⟨by omega, by omega⟩)]; exact h.pre x hx
-  · rw [he _ (Or.inl ⟨by omega, by omega⟩)]; exact h.sz x hx
+  · have := x.2; rw [he _ (Or.inl ⟨by_o, by_o⟩)]; exact h.fpar x hx
+  · rw [he _ (Or.inl ⟨by_o, by_o⟩)]; exact h.fpar_lt x hx
+  · rw [he _ (Or.inl ⟨by_o, by_o⟩)]; exact h.pre x hx
+  · rw [he _ (Or.inl ⟨by_o, by_o⟩)]; exact h.sz x hx
   · have := hLN j hj x hx
-    rw [he _ (Or.inr ⟨by omega, by omega⟩)]; exact h.up_tab j hj x hx
+    rw [he _ (Or.inr ⟨by_o, by_o⟩)]; exact h.up_tab j hj x hx
 
 /-- The block of a light-free level is a block index. -/
 theorem shift_div_lt {l cs k μ : ℕ} (hk : 0 < k) (hcs : cs < k) (_hkμ : k ≤ μ) (hl : l < μ) :
     (l + cs) / k < μ := by
   rw [Nat.div_lt_iff_lt_mul hk]
-  obtain ⟨t, ht⟩ : ∃ t, μ = t + 1 := ⟨μ - 1, by omega⟩
+  obtain ⟨t, ht⟩ : ∃ t, μ = t + 1 := ⟨μ - 1, by_o⟩
   rw [ht, Nat.succ_mul]
   have : t ≤ t * k := Nat.le_mul_of_pos_right _ hk
   omega

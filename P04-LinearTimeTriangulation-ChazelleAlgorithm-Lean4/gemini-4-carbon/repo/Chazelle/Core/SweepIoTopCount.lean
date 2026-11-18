@@ -51,7 +51,7 @@ theorem chord_aug {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q
     rw [NFLoc.getD_of_lt _ hk]
     exact List.getElem_mem _
   obtain ⟨y, a, b, hH, -, heq, hl, hr⟩ :=
-    Merge.augChords_spec (show _ ∈ Merge.augChords C from hN.1.2.1 hmem)
+    Merge.augChords_spec (hN.1.2.1 hmem)
   exact ⟨y, a, b, hH, heq, hl, hr⟩
 
 /-- Two endpoint queries of the same parity with the same origin are equal. -/
@@ -59,8 +59,8 @@ theorem endOrigin_inj {J : Merge.Junction} {Q : Polygon} {N : NF}
     (hN : IsNF (chainModel J.right) Q N) {j j' : ℕ} (hj : j < 2 * N.nChords)
     (hj' : j' < 2 * N.nChords) (hp : j % 2 = j' % 2)
     (h : endOrigin J Q N j = endOrigin J Q N j') : j = j' := by
-  obtain ⟨y, a, b, hH, heq, hl, hr⟩ := chord_aug hN (k := j / 2) (by omega)
-  obtain ⟨y', a', b', hH', heq', hl', hr'⟩ := chord_aug hN (k := j' / 2) (by omega)
+  obtain ⟨y, a, b, hH, heq, hl, hr⟩ := chord_aug hN (k := j / 2) by_o
+  obtain ⟨y', a', b', hH', heq', hl', hr'⟩ := chord_aug hN (k := j' / 2) by_o
   have hset : (N.chord (j / 2)).toSet (chainModel J.right) Q =
       (N.chord (j' / 2)).toSet (chainModel J.right) Q := by
     rcases Nat.mod_two_eq_zero_or_one j with h0 | h1
@@ -73,7 +73,7 @@ theorem endOrigin_inj {J : Merge.Junction} {Q : Polygon} {N : NF}
       obtain ⟨e1, e2⟩ := Prod.mk.inj h
       subst e1; subst e2
       rw [heq, heq', hchord_left_eq hH hH']
-  have := hN.2.1 _ _ (by omega) (by omega) hset
+  have := hN.2.1 _ _ by_o by_o hset
   omega
 
 /-- **At most two endpoint queries start at the top of `C₂`.** -/

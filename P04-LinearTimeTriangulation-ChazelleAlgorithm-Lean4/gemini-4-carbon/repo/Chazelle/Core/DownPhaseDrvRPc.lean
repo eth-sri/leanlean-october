@@ -59,7 +59,7 @@ theorem chunks_le {C s a L : ℕ} (h0 : L ≠ 0) (h : L ≤ C ∨ C = 0) :
 
 theorem chunks_gt {C s a L : ℕ} (h0 : L ≠ 0) (h : C < L) (hC : C ≠ 0) :
     chunks C s a L = (s, C, a) :: chunks C (s + C) (a + C) (L - C) := by
-  rw [chunks, ite_eq_right h0, ite_eq_right (by omega)]
+  rw [chunks, ite_eq_right h0, ite_eq_right by_o]
 
 /-- The pieces of a segment: inside it, nonempty, at most `C` edges, `Q` start shifted like the
 host start. -/
@@ -75,10 +75,10 @@ theorem mem_chunks {C : ℕ} (hC : 1 ≤ C) : ∀ (L s a : ℕ) (x : ℕ × ℕ 
     · rw [chunks_le h0 (Or.inl hle)] at hx
       simp only [List.mem_singleton] at hx
       subst hx; dsimp only; omega
-    · rw [chunks_gt h0 (by omega) (by omega)] at hx
+    · rw [chunks_gt h0 by_o by_o] at hx
       rcases List.mem_cons.1 hx with rfl | hx
       · dsimp only; omega
-      · have := ih (L - C) (by omega) (s + C) (a + C) x hx
+      · have := ih (L - C) by_o (s + C) (a + C) x hx
         omega
 
 /-- The number of pieces of a segment. -/
@@ -91,8 +91,8 @@ theorem chunks_length {C : ℕ} (hC : 1 ≤ C) : ∀ (L s a : ℕ), (chunks C s 
     · rw [h0, chunks_zero]; simp
     by_cases hle : L ≤ C
     · rw [chunks_le h0 (Or.inl hle)]; simp; omega
-    · rw [chunks_gt h0 (by omega) (by omega)]
-      have := ih (L - C) (by omega) (s + C) (a + C)
+    · rw [chunks_gt h0 by_o by_o]
+      have := ih (L - C) by_o (s + C) (a + C)
       simp only [List.length_cons, Nat.succ_mul]
       omega
 
@@ -109,24 +109,24 @@ theorem leafIn_of_seg {n C p a ℓ s0 u L : ℕ} (hC : 1 ≤ C) {x : ℕ × ℕ 
     (hx : x ∈ chunks C s0 u L) (hs0 : p + 1 ≤ s0) (hend : s0 + L + 1 ≤ p + ℓ)
     (hnu : u + L + 1 ≤ n) (hmod : u = (a + (s0 - p)) % n) : LeafIn n C p a ℓ x := by
   obtain ⟨h1, h2, h4, h5, h6⟩ := mem_chunks hC _ _ _ x hx
-  refine ⟨by omega, by omega, h4, h5, by omega, ?_⟩
-  have e : x.2.2 = u + (x.1 - s0) := by omega
+  refine ⟨by_o, by_o, h4, h5, by_o, ?_⟩
+  have e : x.2.2 = u + (x.1 - s0) := by_o
   rw [e, show a + (x.1 - p) = a + (s0 - p) + (x.1 - s0) by omega, ← Nat.mod_add_mod, ← hmod,
-    Nat.mod_eq_of_lt (by omega)]
+    Nat.mod_eq_of_lt by_o]
 
 theorem mem_runLeaves {n C p a ℓ : ℕ} (hC : 1 ≤ C) (hn : 1 ≤ n) (hℓ : ℓ < n) {x : ℕ × ℕ × ℕ}
     (hx : x ∈ runLeaves n C p a ℓ) : LeafIn n C p a ℓ x := by
-  have hu : (a + 1) % n < n := Nat.mod_lt _ (by omega)
+  have hu : (a + 1) % n < n := Nat.mod_lt _ by_o
   have hq := Nat.mod_add_div (a + 1) n
   unfold runLeaves at hx
   split_ifs at hx with h3 hw
   · simp at hx
-  · exact leafIn_of_seg hC hx (le_refl _) (by omega) (by omega)
+  · exact leafIn_of_seg hC hx (le_refl _) by_o by_o
       (by rw [show a + (p + 1 - p) = a + 1 by omega])
   · rcases List.mem_append.1 hx with hx | hx
-    · exact leafIn_of_seg hC hx (le_refl _) (by omega) (by omega)
+    · exact leafIn_of_seg hC hx (le_refl _) by_o by_o
         (by rw [show a + (p + 1 - p) = a + 1 by omega])
-    · refine leafIn_of_seg hC hx (by omega) (by omega) (by omega) ?_
+    · refine leafIn_of_seg hC hx by_o by_o by_o ?_
       rw [show a + (p + 1 + (n - (a + 1) % n) - p) = 0 + n * ((a + 1) / n + 1) by
         rw [Nat.mul_add, Nat.mul_one]; omega, Nat.add_mul_mod_self_left, Nat.zero_mod]
 

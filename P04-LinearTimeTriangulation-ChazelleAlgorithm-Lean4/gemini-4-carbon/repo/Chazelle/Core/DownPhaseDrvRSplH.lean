@@ -29,12 +29,12 @@ def splS (sB : Stmt) : Stmt :=
     (.seq (.seq spl2 (.seq DownNF.phaseAS spl3))
       (.seq (.seq bktS (.seq (.instr (.constN 210050 0)) bsLoop)) (splT sB)))
 
-theorem wrM_spl7 : wrM (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) spl7 = true := by decide
+theorem wrM_spl7 : wrM (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) spl7 = true := by_d
 theorem wrM2_spl7 : wrM2 (fun r => decide (40000 ≤ r ∧ r ≤ 40004)) (fun _ => false) spl7 = true := by
   decide
-theorem wrM_spl8 : wrM (fun r => decide (210002 ≤ r ∧ r ≤ 210005)) spl8 = true := by decide
+theorem wrM_spl8 : wrM (fun r => decide (210002 ≤ r ∧ r ≤ 210005)) spl8 = true := by_d
 theorem wrM2_spl8 :
-    wrM2 (fun r => decide (210002 ≤ r ∧ r ≤ 210005)) (fun _ => false) spl8 = true := by decide
+    wrM2 (fun r => decide (210002 ≤ r ∧ r ≤ 210005)) (fun _ => false) spl8 = true := by_d
 
 /-- Registers of `bDownDrv` are outside the bands of the sorted build. -/
 theorem band21_notin {r : ℕ} (h1 : 210000 ≤ r) (h2 : r < 220000) :
@@ -109,26 +109,26 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
   obtain ⟨c₄, k₄, e₄, hk₄, w₄, m71, mA, mseg, mlow, mfr, mrr, mrm, mout⟩ :=
     splC_exec (P := P) (W := W) hG hWn c hw (D := D) (T := T) (SE := SE) (Rb := Rb) (K := K)
       (K₂ := K₂) (M := M) (L' := L ++ L₂) (E := E) (E₂ := E₂) h27 h28 h29 h04 h48 h34 h40 h42
-      (by rw [h42', hlen]) hlen hwf hM hok hrec (by rw [hlen]; exact hT) hE hSE hE₂ hRb hcodes
-      (by omega)
+      (by rw [h42', hlen]) hlen hwf hM hok hrec (by rwa [hlen]) hE hSE hE₂ hRb hcodes
+      by_o
   rw [← hA₃] at m71 mA mlow
-  have hmseg : seg c₄.nmem (c₄.nreg 210071) (2 * (K + K₂)) = E' := mseg
+  have hmseg := mseg
   have k4 : ∀ r, 210000 ≤ r → r < 220000 → Bs56 r = false → Bcp r = false →
       c₄.nreg r = c.nreg r := fun r h1 h2 h3 h4 =>
-    mfr r (band21_notin h1 h2) h3 h4 (by unfold ALLOC; omega)
-  have b26 : c₄.nreg 210026 = A₀ := by rw [k4 _ (by norm_num) (by norm_num) (by decide) (by decide), h26]
+    mfr r (band21_notin h1 h2) h3 h4 by_ao
+  have b26 : c₄.nreg 210026 = A₀ := by rw [k4 _ by_n by_n by_d by_d, h26]
   -- the padding
   obtain ⟨c₅, e₅, pfr, prr, pnm, prm, pout, w₅⟩ :=
     padS_exec (P := P) (src := 210026) w₄ (by rw [b26]; have := mA; unfold ALLOC at this; omega)
       (by unfold hostWords at hWn; omega)
   have hp9 : c₄.nreg 9999 = A₃ + 4 * (K + K₂) := by have := mA; unfold ALLOC at this; omega
   have q01 : c₅.nreg 210001 = D := by
-    rw [pfr _ (by decide) (by decide), k4 _ (by norm_num) (by norm_num) (by decide) (by decide), h01]
+    rw [pfr _ by_d by_d, k4 _ by_n by_n by_d by_d, h01]
   have q25 : c₅.nreg 210025 = K + K₂ := by
-    rw [pfr _ (by decide) (by decide), k4 _ (by norm_num) (by norm_num) (by decide) (by decide), h25]
-  have q26 : c₅.nreg 210026 = A₀ := by rw [pfr _ (by decide) (by decide), b26]
-  have q71 : c₅.nreg 210071 = A₃ + 2 * (K + K₂) := by rw [pfr _ (by decide) (by decide), m71]
-  have q9 : c₅.nreg 9999 = A₃ + 4 * (K + K₂) := by rw [pfr _ (by decide) (by decide), hp9]
+    rw [pfr _ by_d by_d, k4 _ by_n by_n by_d by_d, h25]
+  have q26 : c₅.nreg 210026 = A₀ := by rw [pfr _ by_d by_d, b26]
+  have q71 : c₅.nreg 210071 = A₃ + 2 * (K + K₂) := by rw [pfr _ by_d by_d, m71]
+  have q9 : c₅.nreg 9999 = A₃ + 4 * (K + K₂) := by rw [pfr _ by_d by_d, hp9]
   -- the arguments of the sorted build
   obtain ⟨c₆, k₆, e₆, hk₆, v0, v1, v2, v4, hm₆⟩ : ∃ c₆ k₆, Exec P W spl7 c₅ c₆ k₆ ∧ k₆ = 4 ∧
       c₆.nreg 40000 = D ∧ c₆.nreg 40001 = A₀ ∧ c₆.nreg 40002 = K + K₂ ∧
@@ -139,45 +139,45 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
   have f₆ := exec_frameM e₆ wrM_spl7
   have w₆ := e₆.wb_right
   have a6 : c₆.nreg ALLOC = A₃ + 4 * (K + K₂) := by
-    rw [f₆.1 _ (by decide)]; exact q9
+    rw [f₆.1 _ by_d]; exact q9
   have hm6 : ∀ a, a < A₃ → c₆.nmem a = c.nmem a := fun a ha => by rw [hm₆, pnm, mlow a ha]
   obtain ⟨hM₆, hwf₆⟩ := desc_agree hwf hM (m' := c₆.nmem) hm6
   have hwf₆' : ModelDescWF P (c₆.nreg ALLOC) c₆.nmem D := hwf₆.mono (by rw [a6]; omega)
   have hCL₆ : ChordListAt c₆.nmem A₀ (L ++ L₂) := fun i hi => by
     obtain ⟨x1, x2, x3⟩ := hCL i hi
     rw [hlen] at hi
-    exact ⟨by rw [hm6 _ (by omega)]; exact x1, by rw [hm6 _ (by omega)]; exact x2,
-      by rw [hm6 _ (by omega)]; exact x3⟩
+    exact ⟨by rwa [hm6 _ by_o], by rwa [hm6 _ by_o],
+      by rwa [hm6 _ by_o]⟩
   have hseg₆ : seg c₆.nmem (A₃ + 2 * (K + K₂)) (2 * (K + K₂)) = E' := by
-    rw [hm₆, pnm, ← m71]; exact hmseg
+    rwa [hm₆, pnm, ← m71]
   -- the sorted build
   have H7 := hB P W c₆ w₆
     (by
       simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd]
-      refine ⟨hG, hWn, by rw [v0]; exact hwf₆', M, L ++ L₂, E', by rw [v0]; exact hM₆, hgood,
-        by rw [v2, hlen], by rw [v1, a6, hlen]; omega, by rw [v1]; exact hCL₆, hok,
-        by rw [v4, a6, hlen]; omega, by rw [v4, hlen]; exact hseg₆, hP, hS⟩)
+      refine ⟨hG, hWn, by rw [v0]; exact hwf₆', M, L ++ L₂, E', by rwa [v0], hgood,
+        by rw [v2, hlen], by rw [v1, a6, hlen]; omega, by rwa [v1], hok,
+        by rw [v4, a6, hlen]; omega, by rwa [v4, hlen], hP, hS⟩)
     (by
       simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd]
       rw [a6, v2]; omega)
   obtain ⟨c₇, k₇, e₇, hk₇, post₇, fr₇⟩ := H7
   simp only [rd, bandReg, bBuild, Nat.reduceMul, Nat.reduceAdd] at hk₇ post₇
   rw [v2] at hk₇
-  obtain ⟨o1, o2, -, -, -⟩ := post₇ M (L ++ L₂) (by rw [v0]; exact hM₆) (by rw [v2, hlen])
-    (by rw [v1]; exact hCL₆)
+  obtain ⟨o1, o2, -, -, -⟩ := post₇ M (L ++ L₂) (by rwa [v0]) (by rw [v2, hlen])
+    (by rwa [v1])
   rw [v4, hlen, hseg₆] at o2
   rw [a6] at o1
   obtain ⟨fr7, rr7, nm7, rm7, out7, al7, au7⟩ := fr₇
   rw [a6] at al7 au7 nm7 rm7
   have k7 : ∀ r, 210000 ≤ r → r < 220000 → c₇.nreg r = c₆.nreg r := fun r h1 h2 =>
     fr7 r (by simp only [Finset.mem_insert, Finset.mem_singleton, bandOf, bSort, bSign, bBuild]; omega)
-      (by unfold ALLOC; omega)
+      by_ao
   have r26 : c₇.nreg 210026 = A₀ := by
-    rw [k7 _ (by norm_num) (by norm_num), f₆.1 _ (by decide), q26]
+    rw [k7 _ by_n by_n, f₆.1 _ by_d, q26]
   have r25 : c₇.nreg 210025 = K + K₂ := by
-    rw [k7 _ (by norm_num) (by norm_num), f₆.1 _ (by decide), q25]
+    rw [k7 _ by_n by_n, f₆.1 _ by_d, q25]
   have r71 : c₇.nreg 210071 = A₃ + 2 * (K + K₂) := by
-    rw [k7 _ (by norm_num) (by norm_num), f₆.1 _ (by decide), q71]
+    rw [k7 _ by_n by_n, f₆.1 _ by_d, q71]
   -- the outputs
   have w₇ := e₇.wb_right
   obtain ⟨c₈, k₈, e₈, hk₈, u2, u3, u4, u5, hm₈⟩ : ∃ c₈ k₈, Exec P W spl8 c₇ c₈ k₈ ∧ k₈ = 4 ∧
@@ -187,7 +187,7 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
     exec_block
     refine ⟨rfl, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp <;> (try simp only [r26, r25, r71])
   have f₈ := exec_frameM e₈ wrM_spl8
-  have a8 : c₈.nreg ALLOC = c₇.nreg ALLOC := f₈.1 _ (by decide)
+  have a8 : c₈.nreg ALLOC = c₇.nreg ALLOC := f₈.1 _ by_d
   have hm8 : ∀ a, a < A₃ + 4 * (K + K₂) → c₈.nmem a = c₆.nmem a := fun a ha => by
     rw [hm₈, nm7 a ha]
   refine ⟨c₈, k₄ + (3 * (c₄.nreg 9999 - c₄.nreg 210026) + 4 + (k₆ + (k₇ + k₈))),
@@ -200,10 +200,10 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
   · rw [a8, hp9, b26]; omega
   · rw [u4]; omega
   · rw [u4, a8]; omega
-  · rw [u4, seg_congr (m' := c₆.nmem) fun i hi => hm8 _ (by omega), hseg₆]
+  · rw [u4, seg_congr (m' := c₆.nmem) fun i hi => hm8 _ by_o, hseg₆]
   · rw [u5]; omega
-  · rw [u5, hm₈, a8]; exact o2
-  · rw [hm8 a (by omega), hm6 a ha]
+  · rwa [u5, hm₈, a8]
+  · rw [hm8 a by_o, hm6 a ha]
   · rw [f₈.1 r (by simp only [decide_eq_false_iff_not]; omega)]
     rw [fr7 r (by
       simp only [Finset.mem_insert, Finset.mem_singleton] at hr ⊢; tauto) hra]
@@ -215,7 +215,7 @@ theorem splT_exec {sB : Stmt} {κB : ℕ} (hB : SortedMeets sB κB) (hG : GoodEn
       simp only [Finset.mem_insert, Finset.mem_singleton] at hr ⊢; tauto),
       exec_frameM2 e₆ wrM2_spl7 r rfl, prr, mrr r (by
       simp only [Finset.mem_insert, Finset.mem_singleton] at hr ⊢; tauto)]
-  · rw [f₈.2.2.1, rm7 a (by omega), f₆.2.2.1, prm, mrm]
+  · rw [f₈.2.2.1, rm7 a by_o, f₆.2.2.1, prm, mrm]
   · rw [f₈.2.2.2, out7, f₆.2.2.2, pout, mout]
 
 end exec

@@ -76,8 +76,7 @@ theorem descLoadB_exec {c : Config} (hw : WordsBounded W c) {pl pr : ℕ}
   all_goals try omega
   refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun r hr => by
       unfold DescRG at hr
-      simp only
-      repeat (rw [Machine.upd_other _ _ _ (by omega)]),
+      upd_keep,
     rfl, rfl, rfl, rfl⟩
   all_goals (config_simp; try simp only [h35, h36, h24, Nat.add_assoc, Nat.reduceAdd])
 
@@ -105,8 +104,7 @@ theorem descHeadB_exec {c : Config} (hw : WordsBounded W c) {pl TD sl ml mr : �
   · config_simp; simp only [h35, h37, h24, Machine.upd_apply]
     split_ifs <;> first | omega
   · config_simp; simp only [h37, h24]
-  · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  · upd_keep
 
 set_option maxHeartbeats 8000000 in
 theorem descTopS_exec {c : Config} (hw : WordsBounded W c) {TD f tl bl ml tr br : ℕ}
@@ -139,10 +137,9 @@ theorem descTopS_exec {c : Config} (hw : WordsBounded W c) {TD f tl bl ml tr br 
         split_ifs <;> first | omega
       · config_simp; simp only [h38, h24, Machine.upd_apply]
         split_ifs <;> first | omega
-      · simp only
-        repeat (rw [Machine.upd_other _ _ _ (by omega)])
-    refine ⟨c', k + 1, .ifLtN_true (by rw [h49, h24]; exact hf) e, by omega, hw',
-      by rw [ite_eq_left hf]; exact r1, by rw [ite_eq_left hf]; exact r2, r3, r4, r5, r6, r7⟩
+      · upd_keep
+    refine ⟨c', k + 1, .ifLtN_true (by rwa [h49, h24]) e, by_o, hw',
+      by rwa [ite_eq_left hf], by rwa [ite_eq_left hf], r3, r4, r5, r6, r7⟩
   · rw [h49, h24] at hf
     obtain ⟨c', k, e, hk, hw', r1, r2, r3, r4, r5, r6, r7⟩ : ∃ c' k, Exec P W
         (block [.addN 160039 160051 160055, .addN 160038 160038 160024, .storeN 160038 160039,
@@ -160,10 +157,9 @@ theorem descTopS_exec {c : Config} (hw : WordsBounded W c) {TD f tl bl ml tr br 
         split_ifs <;> first | omega
       · config_simp; simp only [h38, h24, Machine.upd_apply]
         split_ifs <;> first | omega
-      · simp only
-        repeat (rw [Machine.upd_other _ _ _ (by omega)])
-    refine ⟨c', k + 2, .ifLtN_false (by rw [h49, h24]; exact hf) e, by omega, hw',
-      by rw [ite_eq_right hf]; exact r1, by rw [ite_eq_right hf]; exact r2, r3, r4, r5, r6, r7⟩
+      · upd_keep
+    refine ⟨c', k + 2, .ifLtN_false (by rwa [h49, h24]) e, by_o, hw',
+      by rwa [ite_eq_right hf], by rwa [ite_eq_right hf], r3, r4, r5, r6, r7⟩
 
 theorem top_eq {P : Polygon} {C : Chain} (hC : C.P = Qof P) (hn : C.s + C.m < P.n) :
     C.top = (Qof P).vtx (C.s + C.topIdx) := by
@@ -171,7 +167,7 @@ theorem top_eq {P : Polygon} {C : Chain} (hC : C.P = Qof P) (hn : C.s + C.m < P.
   have hQn : (Qof P).n = P.n := shear_n _ _
   show C.vertex C.topIdx = _
   unfold Chain.vertex Chain.edgeIdx
-  rw [hC, hQn, Nat.mod_eq_of_lt (by omega)]
+  rw [hC, hQn, Nat.mod_eq_of_lt by_o]
 
 set_option maxHeartbeats 16000000 in
 /-- **The descriptor of the union on the RAM.** -/
@@ -197,14 +193,14 @@ theorem descS_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wor
   have ht1 := C₁.topIdx_le; have ht2 := C₂.topIdx_le
   -- loads
   obtain ⟨c1, k1, e1, hk1, hw1, l50, l51, l52, l53, l54, l55, l56, l40, l41, l43, l44, l46, l47,
-    fr1, hm1, hrr1, hrm1, ho1⟩ := descLoadB_exec (P := P) hw h35 h36 h24 (by omega) (by omega)
+    fr1, hm1, hrr1, hrm1, ho1⟩ := descLoadB_exec (P := P) hw h35 h36 h24 by_o by_o
     (by rw [d1s, d1t]; omega) (by rw [d1s, d1m, d2t]; omega)
   rw [d1s] at l50 l41 l44; rw [d1m] at l51 l44; rw [d1t] at l52 l41; rw [d2m] at l54
   rw [d2t] at l55 l44
   -- the sign test
   obtain ⟨c2, k2, e2, hk2, fb2, hf2, hiff2⟩ := kbit_exec (P := P) hG hWn c1 hw1
-    (a := 160040) (b := 160043) (d := 160046) (op := 1) (dst := 160049) (by omega) (by omega)
-    (by omega) (by omega) (by omega) (sa := .vtx (C₁.s + C₁.topIdx))
+    (a := 160040) (b := 160043) (d := 160046) (op := 1) (dst := 160049) by_o by_o
+    by_o by_o by_o (sa := .vtx (C₁.s + C₁.topIdx))
     (sb := .vtx (C₁.s + C₁.m + C₂.topIdx)) (sd := .vtx 0)
     (show C₁.s + C₁.topIdx < P.n by omega) (show C₁.s + C₁.m + C₂.topIdx < P.n by omega)
     (show 0 < P.n by omega) ⟨l40, l41⟩ ⟨l43, l44⟩ ⟨l46, l47⟩
@@ -215,51 +211,51 @@ theorem descS_exec (hG : GoodEnv P) (hWn : P.n + 3 ≤ W) {c : Config} (hw : Wor
   have hflag : c2.nreg 160049 = 1 ↔ (C₁.top).2 < (C₂.top).2 := by
     rw [hiff2]
     simp only [SignTest, SymPt.eval]
-    rw [top_eq hP1 (by omega), top_eq hP2 (by rw [hs]; omega), hs]
+    rw [top_eq hP1 by_o, top_eq hP2 (by rw [hs]; omega), hs]
   have bk : ∀ r, 160000 ≤ r → Bk r = false := fun r h => by simp [Bk]; omega
   -- the head words
   obtain ⟨c3, k3, e3, hk3, hw3, m0, m1', m2', mout3, h38, fr3, hrr3, hrm3, ho3⟩ :=
     descHeadB_exec (P := P) hw2 (pl := pl) (TD := TD) (sl := C₁.s) (ml := C₁.m) (mr := C₂.m)
-    (by rw [k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold DescRG; omega)]; exact h35)
-    (by rw [k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold DescRG; omega)]; exact h37)
-    (by rw [k2r _ (bk _ (by omega)) (by omega), fr1 _ (by unfold DescRG; omega)]; exact h24)
-    (by rw [k2r _ (bk _ (by omega)) (by omega)]; exact l50)
-    (by rw [k2r _ (bk _ (by omega)) (by omega)]; exact l51)
-    (by rw [k2r _ (bk _ (by omega)) (by omega)]; exact l54) hW (by omega)
+    (by rwa [k2r _ (bk _ by_o) by_o, fr1 _ (by unfold DescRG; omega)])
+    (by rwa [k2r _ (bk _ by_o) by_o, fr1 _ (by unfold DescRG; omega)])
+    (by rwa [k2r _ (bk _ by_o) by_o, fr1 _ (by unfold DescRG; omega)])
+    (by rwa [k2r _ (bk _ by_o) by_o])
+    (by rwa [k2r _ (bk _ by_o) by_o])
+    (by rwa [k2r _ (bk _ by_o) by_o]) hW by_o
   -- the top word and the bit
   obtain ⟨c4, k4, e4, hk4, hw4, m3', m4', mout4, fr4, hrr4, hrm4, ho4⟩ :=
     descTopS_exec (P := P) hw3 (TD := TD) (f := c2.nreg 160049) (tl := C₁.topIdx)
     (bl := c.nmem (pl + 4)) (ml := C₁.m) (tr := C₂.topIdx) (br := c.nmem (pr + 4)) h38
-    (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega),
-      fr1 _ (by unfold DescRG; omega)]; exact h24)
-    (by rw [fr3 _ (by omega) (by omega)])
-    (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega)]; exact l52)
-    (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega), l53])
-    (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega)]; exact l51)
-    (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega)]; exact l55)
-    (by rw [fr3 _ (by omega) (by omega), k2r _ (bk _ (by omega)) (by omega), l56])
-    hW (by omega)
+    (by rwa [fr3 _ by_o by_o, k2r _ (bk _ by_o) by_o,
+      fr1 _ (by unfold DescRG; omega)])
+    (by rw [fr3 _ by_o by_o])
+    (by rwa [fr3 _ by_o by_o, k2r _ (bk _ by_o) by_o])
+    (by rw [fr3 _ by_o by_o, k2r _ (bk _ by_o) by_o, l53])
+    (by rwa [fr3 _ by_o by_o, k2r _ (bk _ by_o) by_o])
+    (by rwa [fr3 _ by_o by_o, k2r _ (bk _ by_o) by_o])
+    (by rw [fr3 _ by_o by_o, k2r _ (bk _ by_o) by_o, l56])
+    hW by_o
   have hfle : c2.nreg 160049 < 1 ↔ (C₂.top).2 ≤ (C₁.top).2 := by
     have := hf2
     constructor
     · intro h; by_contra hc; push Not at hc; have := hflag.mpr hc; omega
     · intro h; by_contra hc
-      have : c2.nreg 160049 = 1 := by omega
+      have : c2.nreg 160049 = 1 := by_o
       have := hflag.mp this; linarith
   have mem4 : ∀ a, (a < TD ∨ TD + 5 ≤ a) → c4.nmem a = c.nmem a := fun a ha => by
-    rw [mout4 a (by omega) (by omega), mout3 a (by omega) (by omega) (by omega), hm2, hm1]
-  refine ⟨c4, k1 + (k2 + (k3 + k4)), .seq e1 (.seq e2 (.seq e3 e4)), by omega, hw4,
+    rw [mout4 a by_o by_o, mout3 a by_o by_o by_o, hm2, hm1]
+  refine ⟨c4, k1 + (k2 + (k3 + k4)), .seq e1 (.seq e2 (.seq e3 e4)), by_o, hw4,
     fun _ a ha => mem4 a (Or.inl ha), ?_, ?_, ?_, ?_, ?_, mem4, fun r h1 h2 => ?_, fun r hr hr' => ?_,
     by rw [hrm4, hrm3, hrm2, hrm1], by rw [ho4, ho3, ho2, ho1]⟩
-  · rw [mout4 _ (by omega) (by omega), m0, hm2, hm1]
-  · rw [mout4 _ (by omega) (by omega), m1']
-  · rw [mout4 _ (by omega) (by omega), m2']
+  · rw [mout4 _ by_o by_o, m0, hm2, hm1]
+  · rw [mout4 _ by_o by_o, m1']
+  · rw [mout4 _ by_o by_o, m2']
   · rw [m3']; split_ifs with a1 a2 a2 <;> first | rfl | (exfalso; exact a2 (hfle.mp a1)) |
       (exfalso; exact a1 (hfle.mpr a2))
   · rw [m4']; split_ifs with a1 a2 a2 <;> first | rfl | (exfalso; exact a2 (hfle.mp a1)) |
       (exfalso; exact a1 (hfle.mpr a2))
   · unfold DescRG at h1
-    rw [fr4 r (by omega) (by omega), fr3 r (by omega) (by omega), k2r r h2 (by omega),
+    rw [fr4 r by_o by_o, fr3 r by_o by_o, k2r r h2 by_o,
       fr1 r (by unfold DescRG; omega)]
   · rw [hrr4, hrr3, frr2 r (by simp [Bkb, hr, hr']), hrr1]
 

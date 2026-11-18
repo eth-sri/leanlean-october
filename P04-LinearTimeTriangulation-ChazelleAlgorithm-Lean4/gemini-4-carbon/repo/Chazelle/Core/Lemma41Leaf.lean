@@ -42,13 +42,13 @@ theorem cover_getD_succ {lam b : ℕ} (x : ℕ) : ∀ k, k + 1 < (cover lam b x)
       rcases k with _ | k
       · have hx' : x + 2 ^ nextG lam b x < b := by
           by_contra hc
-          rw [cover_of_ge (by omega)] at hk; simp at hk
+          rw [cover_of_ge by_o] at hk; simp at hk
         simp only [List.getD_cons_succ, List.getD_cons_zero]
         exact cover_getD_zero hx'
       · simp only [List.getD_cons_succ]
         simp only [List.length_cons] at hk
-        exact ih _ (step_lt hx) k (by omega)
-    · rw [cover_of_ge (by omega)] at hk; simp at hk
+        exact ih _ (step_lt hx) k by_o
+    · rw [cover_of_ge by_o] at hk; simp at hk
 
 theorem leafShp_length (lam b a : ℕ) : (leafShp lam b a).length = (cover lam b a).length := by
   simp [leafShp]
@@ -57,7 +57,7 @@ theorem leafShp_consec (lam b a : ℕ) : Consec (leafShp lam b a) := by
   intro k hk
   rw [leafShp_length] at hk
   unfold leafShp
-  rw [nd_map_of_lt hk, nd_map_of_lt (by omega)]
+  rw [nd_map_of_lt hk, nd_map_of_lt by_o]
   exact cover_getD_succ a k hk
 
 theorem leafShp_first {lam b a : ℕ} (h : a < b) : (nd (leafShp lam b a) 0).1 = a := by
@@ -78,7 +78,7 @@ theorem two_le_cover {lam b a : ℕ} (_hl : 1 ≤ lam) (h : 2 ^ (lam - 1) < b - 
   have hsum := cover_sum (lam := lam) (b := b) a
   rw [cover_of_lt hab] at hsum hc
   simp only [List.length_cons] at hc
-  have h0 : (cover lam b (a + 2 ^ nextG lam b a)).length = 0 := by omega
+  have h0 : (cover lam b (a + 2 ^ nextG lam b a)).length = 0 := by_o
   rw [List.length_eq_zero_iff] at h0
   rw [h0] at hsum
   simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, add_zero] at hsum
@@ -113,7 +113,7 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
       (leafShp lam b a) := by
   set j := (cover lam b a).length with hj
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hΛ : 1 ≤ m0 h := by omega
+  have hΛ : 1 ≤ m0 h := by_o
   obtain ⟨-, -, h2, -, -, -, -, -, -, hent⟩ := tab_lt hR hn hΛ
   have hG := hR.holds
   intro k hk
@@ -128,9 +128,9 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
   set g := q.1 with hgdef
   set x := q.2 with hxdef
   obtain ⟨i, hi⟩ := hdvd
-  have hpos : 0 < 2 ^ g := by positivity
+  have hpos : 0 < 2 ^ g := by_p
   have hxi : x / 2 ^ g = i := by rw [hi, Nat.mul_div_cancel_left _ hpos]
-  have hgΛ : g < m0 h := by omega
+  have hgΛ : g < m0 h := by_o
   have hic : i < gradeCount P.n g := by
     unfold gradeCount
     have : i * 2 ^ g ≤ P.n - 2 := by
@@ -142,39 +142,39 @@ theorem leaves_levelAt {O : OracleIface} {P : Polygon} {m0 m5 m6 m8 : ℕ → �
   have hCs' : C.s = x := by rw [hCs]; unfold gradeStart; rw [hi]; ring
   have hCm' : C.m = 2 ^ g := by
     rw [hCm]; unfold gradeLen
-    have : x + 2 ^ g ≤ P.n - 1 := by omega
+    have : x + 2 ^ g ≤ P.n - 1 := by_o
     rw [hi] at this
     apply min_eq_left; rw [mul_comm]; omega
   set R := m0 (m0 (h + 2) + g) with hRdef
   set B := m0 (R + 3 * i) with hBdef
-  have hB5 : B + 5 ≤ A := hwf.1
-  have hR3 : R + 3 * i + 1 < A := by omega
+  have hB5 := hwf.1
+  have hR3 : R + 3 * i + 1 < A := by_o
   -- the record, read in `m0`
   obtain ⟨r0, rj, r5⟩ := h6rec k hk
   rw [← hq, hxi] at rj r5
-  have e5 : m5 (m0 (h + 2) + g) = R := h5 _ hT
-  have eR : m5 (R + 3 * i) = B := h5 _ (by omega)
-  have eF : m5 (R + 3 * i + 1) = m0 (R + 3 * i + 1) := h5 _ hR3
+  have e5 := h5 _ hT
+  have eR : m5 (R + 3 * i) = B := h5 _ by_o
+  have eF := h5 _ hR3
   have hwords : ∀ t, 1 ≤ t → t ≤ 4 → m8 (A + 7 + 6 * k + t) = m0 (B + t) := fun t t1 t4 => by
-    rw [h86 _ (by omega), rj t t1 t4, e5, eR, h5 _ (by omega)]
-  have hd0 : m8 (A + 7 + 6 * k) = A := by rw [h86 _ (by omega), r0]
+    rw [h86 _ by_o, rj t t1 t4, e5, eR, h5 _ by_o]
+  have hd0 : m8 (A + 7 + 6 * k) = A := by rw [h86 _ by_o, r0]
   have hf : m8 (A + 7 + 6 * j + 2 * k + 1) = m0 (R + 3 * i + 1) := by
     rw [(h8ent k hk).2, r5, e5, eF]
   have h8m0 : ∀ y, y < A → m8 y = m0 y := fun y hy => by
-    rw [h86 _ (by omega), h65 _ (by omega), h5 _ hy]
+    rw [h86 _ by_o, h65 _ by_o, h5 _ hy]
   refine ⟨C, hCs', hCm', ?_⟩
   rw [(h8ent k hk).1, hf]
   obtain ⟨-, -, d1, d2, d3, d4⟩ := hd
-  refine ⟨⟨?_, ?_, ?_, ?_, ?_, ?_⟩, hCP, hd0, by omega, by omega, by omega, N,
-    (hN.transport h8m0).mono (by omega), hc⟩
+  refine ⟨⟨?_, ?_, ?_, ?_, ?_, ?_⟩, hCP, hd0, by_o, by_o, by_o, N,
+    (hN.transport h8m0).mono by_o, hc⟩
   · rw [hd0]
-    exact hostAt_agree (A := A + 7) hhost rfl (by omega) fun y hy => by
-      rw [h86 _ (by omega), h65 _ (by omega)]
-  · rw [hCP]; have := poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
-  · rw [hwords 1 le_rfl (by norm_num)]; exact d1
-  · rw [hwords 2 (by norm_num) (by norm_num)]; exact d2
-  · rw [hwords 3 (by norm_num) (by norm_num)]; exact d3
-  · rw [hwords 4 (by norm_num) le_rfl]; exact d4
+    exact hostAt_agree (A := A + 7) hhost rfl by_o fun y hy => by
+      rw [h86 _ by_o, h65 _ by_o]
+  · rw [hCP]; have := poly_whole (Qof P) by_o; rw [hQn] at this; exact this.symm
+  · rwa [hwords 1 le_rfl by_n]
+  · rwa [hwords 2 by_n by_n]
+  · rwa [hwords 3 by_n by_n]
+  · rwa [hwords 4 by_n le_rfl]
 
 end
 

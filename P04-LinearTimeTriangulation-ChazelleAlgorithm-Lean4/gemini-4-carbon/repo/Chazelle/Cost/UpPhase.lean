@@ -85,7 +85,7 @@ theorem one_le_ceilBeta {g : ℕ} (hg : 1 ≤ g) : 1 ≤ ceilBeta g := by
 /-- `1 / 2^⌈βg⌉ ≤ 2^(-g/5)`. -/
 theorem inv_two_pow_ceilBeta_le (g : ℕ) :
     1 / (2 : ℝ) ^ (ceilBeta g) ≤ (2 : ℝ) ^ (-(g : ℝ) / 5) := by
-  rw [one_div, ← Real.rpow_natCast, ← Real.rpow_neg (by norm_num)]
+  rw [one_div, ← Real.rpow_natCast, ← Real.rpow_neg by_n]
   apply two_rpow_le_two_rpow
   have := beta_mul_le_ceilBeta g
   rw [beta_eq] at this
@@ -97,16 +97,16 @@ theorem inv_two_pow_ceilBeta_le (g : ℕ) :
 `1/75 - 1/76 = 1/5700`). -/
 theorem slack76_cubic (g : ℕ) :
     (g : ℝ) ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 75) ≤ 34200 ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 76) := by
-  have h := natPow_le_two_rpow 3 5700 (by norm_num) g
+  have h := natPow_le_two_rpow 3 5700 by_n g
   have hpos : 0 ≤ (2 : ℝ) ^ (-(g : ℝ) / 75) := (two_rpow_pos _).le
   have h' : (g : ℝ) ^ 3 ≤ 34200 ^ 3 * (2 : ℝ) ^ ((g : ℝ) / 5700) := by
-    have e : (2 * ((3 : ℕ) : ℝ) * ((5700 : ℕ) : ℝ)) = 34200 := by norm_num
+    have e : (2 * ((3 : ℕ) : ℝ) * ((5700 : ℕ) : ℝ)) = 34200 := by_n
     rw [e] at h
     exact_mod_cast h
   calc (g : ℝ) ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 75)
       ≤ (34200 ^ 3 * (2 : ℝ) ^ ((g : ℝ) / 5700)) * (2 : ℝ) ^ (-(g : ℝ) / 75) :=
         mul_le_mul_of_nonneg_right h' hpos
-    _ = 34200 ^ 3 * ((2 : ℝ) ^ ((g : ℝ) / 5700) * (2 : ℝ) ^ (-(g : ℝ) / 75)) := by ring
+    _ = 34200 ^ 3 * ((2 : ℝ) ^ ((g : ℝ) / 5700) * (2 : ℝ) ^ (-(g : ℝ) / 75)) := by_r
     _ = 34200 ^ 3 * (2 : ℝ) ^ (-(g : ℝ) / 76) := by
         rw [two_rpow_mul_two_rpow]
         congr 2
@@ -115,7 +115,7 @@ theorem slack76_cubic (g : ℕ) :
 /-- `λ · 2^(-λ/5) ≤ 12 · 2^(-λ/76)`. -/
 theorem slack76_linear (g : ℕ) :
     (g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5) ≤ 12 * (2 : ℝ) ^ (-(g : ℝ) / 76) := by
-  have h := nat_le_two_rpow 6 (by norm_num) g
+  have h := nat_le_two_rpow 6 by_n g
   have hpos : 0 ≤ (2 : ℝ) ^ (-(g : ℝ) / 5) := (two_rpow_pos _).le
   have hg : (0 : ℝ) ≤ g := Nat.cast_nonneg g
   calc (g : ℝ) * (2 : ℝ) ^ (-(g : ℝ) / 5)
@@ -127,7 +127,7 @@ theorem slack76_linear (g : ℕ) :
         congr 2
         ring
     _ ≤ 12 * (2 : ℝ) ^ (-(g : ℝ) / 76) := by
-        apply mul_le_mul_of_nonneg_left _ (by norm_num)
+        apply mul_le_mul_of_nonneg_left _ by_n
         apply two_rpow_le_two_rpow
         linarith
 
@@ -144,11 +144,6 @@ i.e. `λ² ⌈log₂ λ⌉ 2^((74/75)λ)`. -/
 @[expose] noncomputable def lemma41Bound (g : ℕ) : ℝ :=
   (g : ℝ) ^ 2 * (Nat.clog 2 g : ℝ) * (2 : ℝ) ^ ((1 - beta / 3 + 4 * beta ^ 2 / 3) * g)
 
-/-- Lemma 3.6's preprocessing bound (without its constant) for a grade-`g` chain:
-`m ⌈log₂ m⌉ / γ + 1` with `m = 2^g + 1` vertices and `γ = 2^⌈βg⌉`. -/
-@[expose] noncomputable def lemma36PrepBound (g : ℕ) : ℝ :=
-  ((2 : ℝ) ^ g + 1) * (Nat.clog 2 (2 ^ g + 1) : ℝ) / (2 : ℝ) ^ (ceilBeta g) + 1
-
 theorem lemma41Bound_eq (g : ℕ) :
     lemma41Bound g = (g : ℝ) ^ 2 * (Nat.clog 2 g : ℝ) * (2 : ℝ) ^ ((74 / 75 : ℝ) * g) := by
   unfold lemma41Bound
@@ -161,22 +156,6 @@ theorem lemma41Bound_nonneg (g : ℕ) : 0 ≤ lemma41Bound g := by
 
 /-! ### Processing a grade; the whole up phase -/
 
-/-- Time to process grade `g` (Chazelle p. 516–518), for `n = 2^p + 1`: there are `2^(p-g)`
-chains in grade `g`; for each we pay a constant `c₀` (naive processing of the early grades and
-bookkeeping), `c₁` times Lemma 4.1's bound (computing its canonical submap), and `c₂` times
-Lemma 3.6's preprocessing bound (with `γ = 2^⌈βg⌉`). -/
-@[expose] noncomputable def upGradeCost (c₀ c₁ c₂ : ℝ) (p g : ℕ) : ℝ :=
-  (2 : ℝ) ^ (p - g) * (c₀ + c₁ * lemma41Bound g + c₂ * lemma36PrepBound g)
-
-/-- Total up-phase time: processing grades `0, 1, …, p`. -/
-@[expose] noncomputable def upPhaseCost (c₀ c₁ c₂ : ℝ) (p : ℕ) : ℝ :=
-  ∑ g ∈ range (p + 1), upGradeCost c₀ c₁ c₂ p g
-
-/-- The explicit up-phase per-grade constant `c₀ + 34200³ c₁ + 27 c₂`. -/
-@[expose] noncomputable def upSlackConst (c₀ c₁ c₂ : ℝ) : ℝ := c₀ + 34200 ^ 3 * c₁ + 27 * c₂
-
-/-! ### Lemma 4.1's internal arithmetic -/
-
 /-- **Granularity reset cost in Lemma 4.1 (p. 517).**
 `Σ_{0 ≤ k < λ} 2^(k - ⌈βk⌉) ≤ 10 · 2^((1-β)λ)` (the paper: `O(2^(λ(1-β)))`). -/
 theorem resetCost_le (lam : ℕ) :
@@ -184,7 +163,7 @@ theorem resetCost_le (lam : ℕ) :
   set r := (2 : ℝ) ^ ((4 : ℝ) / 5) with hr
   have hterm : ∀ k ∈ range lam, (2 : ℝ) ^ (k - ceilBeta k) ≤ r ^ k := by
     intro k _
-    rw [← Real.rpow_natCast, hr, ← Real.rpow_mul_natCast (by norm_num)]
+    rw [← Real.rpow_natCast, hr, ← Real.rpow_mul_natCast by_n]
     apply two_rpow_le_two_rpow
     rw [Nat.cast_sub (ceilBeta_le k)]
     have := beta_mul_le_ceilBeta k
@@ -192,19 +171,19 @@ theorem resetCost_le (lam : ℕ) :
     linarith
   refine le_trans (Finset.sum_le_sum hterm) ?_
   -- r ≥ 2^(1/5) ≥ 1 + 1/10
-  have hu := sub_one_ge_of_pow_eq_two (N := 5) (by norm_num) (Real.rpow_nonneg (by norm_num) _)
-    (two_rpow_one_div_pow 5 (by norm_num))
+  have hu := sub_one_ge_of_pow_eq_two (N := 5) by_n (Real.rpow_nonneg by_n _)
+    (two_rpow_one_div_pow 5 by_n)
   have hr1 : (2 : ℝ) ^ ((1 : ℝ) / ((5 : ℕ) : ℝ)) ≤ r := by
     rw [hr]; apply two_rpow_le_two_rpow; norm_num
   have hr11 : 1 + 1 / 10 ≤ r := by push_cast at hu hr1 ⊢; linarith
-  have hr0 : 1 < r := by linarith
+  have hr0 : 1 < r := by_l
   rw [geom_sum_eq hr0.ne']
   have hrl : r ^ lam = (2 : ℝ) ^ ((1 - beta) * lam) := by
-    rw [hr, ← Real.rpow_mul_natCast (by norm_num), beta_eq]
+    rw [hr, ← Real.rpow_mul_natCast by_n, beta_eq]
     congr 1
     ring
   rw [hrl]
-  have hpos : 0 < r - 1 := by linarith
+  have hpos : 0 < r - 1 := by_l
   rw [div_le_iff₀ hpos]
   have h2 : 0 < (2 : ℝ) ^ ((1 - beta) * lam) := two_rpow_pos _
   nlinarith
@@ -218,13 +197,6 @@ theorem resetCost_le (lam : ℕ) :
       ((2 : ℝ) ^ (beta ^ 2 * lam) + (Nat.clog 2 m : ℝ))
 
 /-! ### Lemma 4.1 with the `+1` terms of Lemma 3.5, and the assembled per-chain bound -/
-
-/-- Lemma 3.5's bound for one merge at grade `λ`, keeping the `+1` of `(n₁/γ₁ + n₂/γ₂ + 1)`:
-`λ² (m / 2^(βλ) + 1) 2^(β²λ/3 + 2βλ/3) (2^(β²λ) + ⌈log₂ m⌉)` (the paper drops the `+1`). -/
-@[expose] noncomputable def mergeCostFull (lam m : ℕ) : ℝ :=
-  (lam : ℝ) ^ 2 * ((m : ℝ) / (2 : ℝ) ^ (beta * lam) + 1) *
-    (2 : ℝ) ^ (beta ^ 2 * lam / 3 + 2 * beta * lam / 3) *
-      ((2 : ℝ) ^ (beta ^ 2 * lam) + (Nat.clog 2 m : ℝ))
 
 end
 

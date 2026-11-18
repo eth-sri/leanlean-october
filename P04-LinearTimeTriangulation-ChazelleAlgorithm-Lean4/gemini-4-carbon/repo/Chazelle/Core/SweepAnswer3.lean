@@ -55,9 +55,9 @@ theorem vertex_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
           (chainModel C).W.vtx p) ((-σ, 0) : Point) ∨
         0 < sideCross ((-σ, 0) : Point) ((chainModel C).W.vtx
           ((p + (chainModel C).W.n - 1) % (chainModel C).W.n) - (chainModel C).W.vtx p)) := by
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
-  have hF : F ⊆ (chainModel C).Adm := hFam.2.1
-  have hfin : F.Finite := hFam.1
+  have hM := FactsChain.walkAx C hP
+  have hF := hFam.2.1
+  have hfin := hFam.1
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   obtain ⟨hp, -, -, hpt, hsec⟩ := hA
   have hnot : ∀ c ∈ F, ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt w (-σ) s ∉ c := by
@@ -74,7 +74,7 @@ theorem vertex_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
       rw [hpt]; exact hsec
     have := (sideLeft_rayPt_iff _ p 0 (-σ) one_pos hs).1 h1
     rwa [hpt] at this
-  have hall : ∀ᶠ s in 𝓝[>] (0 : ℝ), ∀ c ∈ F, rayPt w (-σ) s ∉ c :=
+  have hall :=
     (hfin.eventually_all).2 hnot
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (hall.and (Ioo_mem_nhdsGT hr₀))
@@ -88,13 +88,13 @@ theorem vertex_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
     rintro ⟨c, hcF, hxc⟩
     exact hc c hcF hxc
   set z := rayPt w (-σ) (δ / 2) with hz
-  have hzfree : z ∈ freeIn C.dom F := hfree _ ⟨by linarith, by linarith⟩
+  have hzfree : z ∈ freeIn C.dom F := hfree _ ⟨by_l, by_l⟩
   set U := connectedComponentIn (freeIn C.dom F) z with hU
-  have hUreg : U ∈ (chainModel C).regions F := Chazelle.Chain.mem_regionsIn hzfree
+  have hUreg := Chazelle.Chain.mem_regionsIn hzfree
   have hconn : IsPreconnected ((fun s => rayPt w (-σ) s) '' Ioo (0 : ℝ) δ) :=
     isPreconnected_Ioo.image _ (by unfold rayPt; fun_prop)
   have hsubU : (fun s => rayPt w (-σ) s) '' Ioo (0 : ℝ) δ ⊆ U :=
-    hconn.subset_connectedComponentIn ⟨δ / 2, ⟨by linarith, by linarith⟩, rfl⟩
+    hconn.subset_connectedComponentIn ⟨δ / 2, ⟨by_l, by_l⟩, rfl⟩
       (by rintro _ ⟨s, hs, rfl⟩; exact hfree s hs)
   have happ : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt (chainModel C).W p 0) (-σ) s ∈ U := by
     filter_upwards [Ioo_mem_nhdsGT hδ0] with s hs
@@ -110,7 +110,7 @@ theorem freeAt_of_leave (hP : C.P.Simple) {z : Point} {σ : ℝ} (hσ : σ = 1 �
     {t : ℝ} (hp : p < (chainModel C).W.n) (ht : 0 ≤ t) (ht1 : t < 1)
     (hpt : sidePt (chainModel C).W p t = z) (hsec : sideLeft (chainModel C).W p t (rayPt z σ 1)) :
     FreeAt C z σ := by
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
+  have hM := FactsChain.walkAx C hP
   obtain ⟨r, hr, hsf⟩ := sector_free hM (F := ∅) (empty_subset _) finite_empty hp ht ht1
   filter_upwards [Ioo_mem_nhdsGT hr] with s hs
   have hsec' : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ s) := by
@@ -141,10 +141,10 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
             (chainModel C).W.vtx p) ((σ, 0) : Point) ∨
           0 < sideCross ((σ, 0) : Point) ((chainModel C).W.vtx
             ((p + (chainModel C).W.n - 1) % (chainModel C).W.n) - (chainModel C).W.vtx p))) := by
-  have hM : WalkAx (chainModel C) := FactsChain.walkAx C hP
-  have hF : F ⊆ (chainModel C).Adm := hFam.2.1
+  have hM := FactsChain.walkAx C hP
+  have hF := hFam.2.1
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
-  have hA : Arrival (chainModel C).W z (-σ) p t := ⟨hp, ht, ht1, hpt, by rw [neg_neg]; exact hsec⟩
+  have hA : Arrival (chainModel C).W z (-σ) p t := ⟨hp, ht, ht1, hpt, by rwa [neg_neg]⟩
   have hsec' : ∀ s > 0, sideLeft (chainModel C).W p t (rayPt z σ s) := by
     intro s hs
     have h1 : sideLeft (chainModel C).W p t (rayPt (sidePt (chainModel C).W p t) σ 1) := by
@@ -156,7 +156,7 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
   · left
     obtain ⟨e, he, hev⟩ := hch
     refine ⟨e, he, ?_, hev⟩
-    have heA : e ∈ Merge.augChords C := hF he
+    have heA := hF he
     obtain ⟨y, l, r, hH, -, rfl, -, -⟩ := Merge.augChords_spec heA
     have hlr := hH.lt
     obtain ⟨s₁, hs₁, hs₁0⟩ := (hev.and self_mem_nhdsWithin).exists
@@ -202,7 +202,7 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
           · exact h
           · exfalso; apply hxz; exact Prod.ext (by rw [← h, hzl]) (by rw [hxy, hzy])
         have e : x = rayPt z 1 (x.1 - l) := point_ext (by simp [rayPt, hzl]) (by simp [rayPt, hxy, hzy])
-        rw [e]; exact hsec' _ (by linarith)
+        rw [e]; exact hsec' _ by_l
       · -- σ = -1: `z` is the right end
         have hzr : z.1 = r := by
           have h1 : z.1 ≤ r := by
@@ -222,7 +222,7 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
           · exfalso; apply hxz; exact Prod.ext (by rw [h, hzr]) (by rw [hxy, hzy])
         have e : x = rayPt z (-1) (r - x.1) :=
           point_ext (by simp [rayPt, hzr]) (by simp [rayPt, hxy, hzy])
-        rw [e]; exact hsec' _ (by linarith)
+        rw [e]; exact hsec' _ by_l
   · right
     have hch' : ∀ e ∈ F, ¬ ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt z σ s ∈ e :=
       fun e he h => hch ⟨e, he, h⟩
@@ -235,7 +235,7 @@ theorem leave_cases (hP : C.P.Simple) {Q : Polygon} {F : Set (Set Point)}
       · subst ht0
         have hp1 : 1 ≤ p := by
           by_contra h0
-          have hp0 : p = 0 := by omega
+          have hp0 : p = 0 := by_o
           subst hp0
           have h0 : sidePt (chainModel C).W 0 0 = C.slitTop := by
             rw [Chazelle.Chain.sidePt_zero]; rfl

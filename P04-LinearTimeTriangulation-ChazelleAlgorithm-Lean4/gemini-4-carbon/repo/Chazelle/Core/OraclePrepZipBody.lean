@@ -70,14 +70,14 @@ theorem ZEnv.stable {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c 
   loc := h.loc.transport hm
   pk := h.pk.congr fun r hr' => hr r (by
     simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq]; omega)
-  rMD := by rw [hr _ (by decide)]; exact h.rMD
-  rNB := by rw [hr _ (by decide)]; exact h.rNB
-  rTB := by rw [hr _ (by decide)]; exact h.rTB
-  rL := by rw [hr _ (by decide)]; exact h.rL
-  rA := by rw [hr _ (by decide)]; exact h.rA
-  rAB := by rw [hr _ (by decide)]; exact h.rAB
-  rSB := by rw [hr _ (by decide)]; exact h.rSB
-  r3 := by rw [hr _ (by decide)]; exact h.r3
+  rMD := by rw [hr _ by_d]; exact h.rMD
+  rNB := by rw [hr _ by_d]; exact h.rNB
+  rTB := by rw [hr _ by_d]; exact h.rTB
+  rL := by rw [hr _ by_d]; exact h.rL
+  rA := by rw [hr _ by_d]; exact h.rA
+  rAB := by rw [hr _ by_d]; exact h.rAB
+  rSB := by rw [hr _ by_d]; exact h.rSB
+  r3 := by rw [hr _ by_d]; exact h.r3
 
 section Facts
 
@@ -91,7 +91,7 @@ theorem ZEnv.Qn (h : ZEnv P W lo C N V c) : C.P.n = P.n := by
   rw [h.CQ]; exact shear_n _ _
 
 theorem ZEnv.m_lt (h : ZEnv P W lo C N V c) : C.m < P.n := by
-  have := C.m_lt; rw [h.Qn] at this; exact this
+  have := C.m_lt; rwa [h.Qn] at this
 
 theorem ZEnv.hD (h : ZEnv P W lo C N V c) : DistinctHeights C.P := by
   rw [h.CQ]; exact distinctHeights_of_goodEnv h.good
@@ -106,7 +106,7 @@ theorem ZEnv.arcEnd (h : ZEnv P W lo C N V c) {j : ℕ} (hj : j < N.arcs.length)
   obtain ⟨-, harc⟩ := hA.1 j hj
   obtain ⟨-, -, -, -, -, -, -, -, -, -, hprop⟩ := id hN
   obtain ⟨hs, he⟩ := hprop j hj
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
+  have hnW := walk_n C
   have hkey : ∀ (w : WPos), ProperPos (chainModel C) (Qof P) (Qof P).n w →
       (chainModel C).key (Qof P) w < (chainModel C).W.n → w.edge < 2 * C.m + 7 := by
     intro w hw hk
@@ -146,9 +146,9 @@ theorem ZEnv.endPos_mem {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV}
   have hnf := hL.nf
   have hlen := NFLoc.seq_length hN
   have hsq : c.nmem (V.SB + x) = sj N x := by
-    rw [← hSB]; exact hnf.2.2.2.2.2.2.2.2.1 x (by rw [hlen, ← hA]; exact hx)
-  have hjl : sj N x < V.A := by rw [hA]; exact NFLoc.seq_lt hN (by rw [← hA]; exact hx)
-  obtain ⟨-, a1, a2, a3, a4⟩ := hnf.2.2.2.2.2.2.1 (sj N x) (by rw [← hA]; exact hjl)
+    rw [← hSB]; exact hnf.2.2.2.2.2.2.2.2.1 x (by rwa [hlen, ← hA])
+  have hjl : sj N x < V.A := by rw [hA]; exact NFLoc.seq_lt hN (by rwa [← hA])
+  obtain ⟨-, a1, a2, a3, a4⟩ := hnf.2.2.2.2.2.2.1 (sj N x) (by rwa [← hA])
   refine ⟨hsq, hjl, ?_, ?_⟩ <;> rw [hsq, ← hAB] <;> cases d
   · simpa [endPos] using a3
   · simpa [endPos] using a1
@@ -204,7 +204,7 @@ theorem prepS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c :
   -- the load
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, v₁, v₁'⟩ := arcPosS_exec (P := P) e₀.wb_right (AB := V.AB)
     (SB := V.SB) (A := V.A) (p := x) (o := if d then 1 else 3) h₀.rAB h₀.rSB h₀.pk.one v03 hxA v04
-    (by split_ifs <;> omega) (by rw [hsq]; exact hjl) (by omega) (by omega)
+    (by split_ifs <;> omega) (by rwa [hsq]) by_o by_o
   rw [hwv] at v₁; rw [hhv] at v₁'
   have h₁ : ZEnv P W lo C N V c₁ := h₀.stable (fun r hr => f₁.1 r (by
     simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr; simp; omega))
@@ -218,18 +218,18 @@ theorem prepS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c :
     hR (by have := h.hW; omega)
   set w := (endPos N d x).edge
   set hc := (endPos N d x).hgt
-  obtain ⟨hw7, hh, hp0, hp1⟩ := h₀.arcEnd (j := sj N x) (by rw [← hA]; exact hjl) d
+  obtain ⟨hw7, hh, hp0, hp1⟩ := h₀.arcEnd (j := sj N x) (by rwa [← hA]) d
   have hwe : (if d then (N.arc (sj N x)).s else (N.arc (sj N x)).e) = endPos N d x := by
     unfold endPos; rfl
   rw [hwe] at hw7 hh hp0 hp1
   rw [v₁] at fl₂ rest₂
-  obtain ⟨z₁, z₂, z₃⟩ := rest₂ (by omega)
+  obtain ⟨z₁, z₂, z₃⟩ := rest₂ by_o
   rw [v₁'] at z₂ z₃
   have hz : c₂.nreg 110103 = nz C w hc := by rw [z₂, ← nzN_eq, h.Qn]
   have ex : Exec P W (prepS d) c c₂ _ := .seq e₀ (.seq e₁ e₂)
-  refine ⟨c₂, _, ex, by omega, exec_frameB ex (wr_prepS d), ?_, ?_, ?_, ?_⟩
-  · rw [f₂.1 _ (by decide), f₁.1 _ (by decide), v04]
-  · rw [f₂.1 _ (by decide), f₁.1 _ (by decide), v03]
+  refine ⟨c₂, _, ex, by_o, exec_frameB ex (wr_prepS d), ?_, ?_, ?_, ?_⟩
+  · rw [f₂.1 _ by_d, f₁.1 _ by_d, v04]
+  · rw [f₂.1 _ by_d, f₁.1 _ by_d, v03]
   · rw [fl₂, hz]
     have hiff := inI_iff C h.hD (w := w) (hc := hc) hw7 hh ⟨hp0, hp1⟩
     have : (chainModel C).key C.P (endPos N d x) = (chainModel C).key C.P ⟨w, hc⟩ := rfl
@@ -288,7 +288,7 @@ theorem locS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
   set Y := mirPos C w hc with hYdef
   -- the end and its mirror
   obtain ⟨hsq, hjl, -, -⟩ := h.endPos_mem hxA d
-  obtain ⟨hw7, hh, hp0, hp1⟩ := h.arcEnd (j := sj N x) (by rw [← hA]; exact hjl) d
+  obtain ⟨hw7, hh, hp0, hp1⟩ := h.arcEnd (j := sj N x) (by rwa [← hA]) d
   have hwe : (if d then (N.arc (sj N x)).s else (N.arc (sj N x)).e) = endPos N d x := by
     unfold endPos; rfl
   rw [hwe] at hw7 hh hp0 hp1
@@ -324,16 +324,16 @@ theorem locS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hx50 : ProperPos (chainModel C) (Qof P) P.n ⟨c₁.nreg 50002, c₁.nreg 50003⟩ := by
     rw [n₁]; config_simp; rw [← hQ]
-    exact ⟨hYp0, hYp1, by rw [← h.Qn]; exact hYh⟩
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
+    exact ⟨hYp0, hYp1, by rwa [← h.Qn]⟩
+  have hnW := walk_n C
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hq₂, loc1, loc2⟩ := myLoc_exec arcCover (P := P) (W := W) (c := c₁)
-    w₁ ⟨h.good, by omega, by rw [n₁]; config_simp; have := hL.md_le; omega,
+    w₁ ⟨h.good, by_o, by rw [n₁]; config_simp; have := hL.md_le; omega,
       by rw [n₁, mm₁]; config_simp; exact hL.chwf, chainModel C,
       by rw [n₁, mm₁]; config_simp; exact hL.md, by rw [n₁]; config_simp; rw [hnW]; omega⟩
-    h.good (by omega) (by rw [n₁, mm₁]; config_simp; exact hL.md) hL.good
+    h.good by_o (by rw [n₁, mm₁]; config_simp; exact hL.md) hL.good
     (by rw [n₁, mm₁]; config_simp; exact hL.nf) h.isNF hx50 hL.st
-    (by rw [R₁ _ (by decide) (by decide) (by decide)]; exact h.rTB)
-    (by rw [R₁ _ (by decide) (by decide) (by decide)]; exact h.rL) h₁.pk.zero h₁.pk.one
+    (by rw [R₁ _ by_d by_d by_d]; exact h.rTB)
+    (by rw [R₁ _ by_d by_d by_d]; exact h.rL) h₁.pk.zero h₁.pk.one
     (by rw [mm₁]; exact hL.tab) (by rw [← hA]; exact hL.A_lt)
     (by rw [n₁]; config_simp; exact hL.NB_le) (by rw [n₁, mm₁]; config_simp; rw [← hA]; exact hL.AB_le)
     (by rw [n₁, mm₁]; config_simp; rw [← hA]; exact hL.SB_le) hTB
@@ -343,21 +343,21 @@ theorem locS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
   obtain ⟨q0, hq0d⟩ : ∃ q0, c₂.nreg 120170 = q0 := ⟨_, rfl⟩
   rw [hq0d] at hq₂ loc1 loc2
   have hq0A : q0 < V.A := by rw [hA]; exact hq₂
-  have R₂ : ∀ r, BL r = false → c₂.nreg r = c₁.nreg r := f₂.1
-  have h₂ : ZEnv P W lo C N V c₂ := h₁.stable (fun r hr => R₂ r (BL_keep (Or.inl hr)))
+  have R₂ := f₂.1
+  have h₂ := h₁.stable (fun r hr => R₂ r (BL_keep (Or.inl hr)))
     (fun a _ => by rw [f₂.2.2.1])
-  have mm₂ : c₂.nmem = c.nmem := f₂.2.2.1.trans mm₁
+  have mm₂ := f₂.2.2.1.trans mm₁
   -- 3.–4. the end of the located arc
   have e₃ := Exec.copyN (P := P) e₂.wb_right 110203 120170
-  set c₃ : Config := { c₂ with nreg := upd c₂.nreg 110203 (c₂.nreg 120170) } with hc₃
+  set c₃ := { c₂ with nreg := upd c₂.nreg 110203 (c₂.nreg 120170) } with hc₃
   have R₃ : ∀ r, r ≠ 110203 → c₃.nreg r = c₂.nreg r := fun r hr => by
     rw [hc₃]; exact upd_other _ _ _ hr
   have h₃ : ZEnv P W lo C N V c₃ := h₂.stable (fun r hr => R₃ r (by
     simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr; omega)) (fun _ _ => rfl)
   obtain ⟨hsq', hjl', hwv', hhv'⟩ := h.endPos_mem hq0A d
   have o₃ : c₃.nreg 110204 = if d then 1 else 3 := by
-    rw [R₃ _ (by decide), R₂ _ (BL_keep (Or.inr (Or.inl rfl))), R₁ _ (by decide) (by decide)
-      (by decide), ho]
+    rw [R₃ _ by_d, R₂ _ (BL_keep (Or.inr (Or.inl rfl))), R₁ _ by_d by_d
+      by_d, ho]
   obtain ⟨hL₃, -, -⟩ := h₃.mem
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, v₄, v₄'⟩ := arcPosS_exec (P := P) e₃.wb_right (AB := V.AB)
     (SB := V.SB) (A := V.A) (p := q0) (o := if d then 1 else 3) h₃.rAB h₃.rSB h₃.pk.one
@@ -374,11 +374,11 @@ theorem locS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
     (fun a _ => by rw [f₄.2.2.1])
   -- 5. the copies
   have y210 : c₄.nreg 110210 = Y.edge := by
-    rw [f₄.1 _ (by decide), R₃ _ (by decide), R₂ _ (BL_keep (Or.inr (Or.inr (Or.inr (Or.inl
-      ⟨by norm_num, by norm_num⟩))))), n₁]; config_simp
+    rw [f₄.1 _ by_d, R₃ _ by_d, R₂ _ (BL_keep (Or.inr (Or.inr (Or.inr (Or.inl
+      ⟨by_n, by_n⟩))))), n₁]; config_simp
   have y211 : c₄.nreg 110211 = Y.hgt := by
-    rw [f₄.1 _ (by decide), R₃ _ (by decide), R₂ _ (BL_keep (Or.inr (Or.inr (Or.inr (Or.inl
-      ⟨by norm_num, by norm_num⟩))))), n₁]; config_simp
+    rw [f₄.1 _ by_d, R₃ _ by_d, R₂ _ (BL_keep (Or.inr (Or.inr (Or.inr (Or.inl
+      ⟨by_n, by_n⟩))))), n₁]; config_simp
   obtain ⟨c₅, k₅, e₅, hk₅, n₅⟩ : ∃ c₅ k₅, Exec P W (block [.copyN 110212 110100,
       .copyN 110100 110210]) c₄ c₅ k₅ ∧ k₅ = 2 ∧
       c₅.nreg = upd (upd c₄.nreg 110212 w2) 110100 Y.edge := by
@@ -387,7 +387,7 @@ theorem locS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
     refine ⟨rfl, ?_⟩
     config_simp; rw [v₄, y210]
   have hm₅ : c₅.nmem = c₄.nmem :=
-    (exec_frameB e₅ (B := fun r => decide (r = 110212 ∨ r = 110100)) (by decide)).2.2.1
+    (exec_frameB e₅ (B := fun r => decide (r = 110212 ∨ r = 110100)) by_d).2.2.1
   have R₅ : ∀ r, r ≠ 110212 → r ≠ 110100 → c₅.nreg r = c₄.nreg r := fun r a b => by
     rw [n₅, upd_other _ _ _ b, upd_other _ _ _ a]
   have h₅ : ZEnv P W lo C N V c₅ := h₄.stable (fun r hr => R₅ r (by
@@ -400,24 +400,24 @@ theorem locS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
   have hS := C.sideS_lt C.sideBeta
   have hR := rT_lt C
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, -, rest₆⟩ := posA_exec (P := P) e₅.wb_right h₅.pk hm1 hmn h.s_lt hS hR
-    (by omega)
+    by_o
   have x100 : c₅.nreg 110100 = Y.edge := by rw [n₅]; config_simp
-  have x101 : c₅.nreg 110101 = hc2 := by rw [R₅ _ (by decide) (by decide), v₄']
+  have x101 : c₅.nreg 110101 = hc2 := by rw [R₅ _ by_d by_d, v₄']
   rw [x100, x101] at rest₆
   obtain ⟨-, z₆, -⟩ := rest₆ hY7
   have z₆' : c₆.nreg 110103 = nz C Y.edge hc2 := by rw [z₆, ← nzN_eq, h.Qn]
   -- 7. the flag of equal keys
-  obtain ⟨c₇, k₇, e₇, hk₇, f₇, v₇⟩ := eqS_exec (P := P) e₆.wb_right (by omega)
-  have x212 : c₆.nreg 110212 = w2 := by rw [f₆.1 _ (by decide), n₅]; config_simp
+  obtain ⟨c₇, k₇, e₇, hk₇, f₇, v₇⟩ := eqS_exec (P := P) e₆.wb_right by_o
+  have x212 : c₆.nreg 110212 = w2 := by rw [f₆.1 _ by_d, n₅]; config_simp
   have x210 : c₆.nreg 110210 = Y.edge := by
-    rw [f₆.1 _ (by decide), R₅ _ (by decide) (by decide), y210]
+    rw [f₆.1 _ by_d, R₅ _ by_d by_d, y210]
   have x211 : c₆.nreg 110211 = Y.hgt := by
-    rw [f₆.1 _ (by decide), R₅ _ (by decide) (by decide), y211]
+    rw [f₆.1 _ by_d, R₅ _ by_d by_d, y211]
   rw [x212, x210, z₆', x211] at v₇
   -- 8. the adjusted arc
   have g170 : c₇.nreg 120170 = q0 := by
-    rw [f₇.1 _ (by decide), f₆.1 _ (by decide), R₅ _ (by decide) (by decide),
-      f₄.1 _ (by decide), R₃ _ (by decide), hq0d]
+    rw [f₇.1 _ by_d, f₆.1 _ by_d, R₅ _ by_d by_d,
+      f₄.1 _ by_d, R₃ _ by_d, hq0d]
   have h₇ : ZEnv P W lo C N V c₇ := h₅.stable (fun r hr => by
       rw [f₇.1 r (by simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr; simp; omega),
         f₆.1 r (by simp only [ZKeep, Bool.or_eq_true, decide_eq_true_eq] at hr; simp [BPA]; omega)])
@@ -428,14 +428,14 @@ theorem locS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
     · rw [h0, pow_zero] at c'; have := h.hW; omega
     · omega
   obtain ⟨c₈, k₈, e₈, hk₈, f₈, v₈⟩ := adjS_exec (P := P) e₇.wb_right d h₇.pk.one h₇.pk.zero h₇.rA
-    (by rw [g170]; exact hq0A) hAW
+    (by rwa [g170]) hAW
   rw [g170, v₇] at v₈
   -- 9. the normalised pair
   have x299 : c₈.nreg 110299 = x := by
-    rw [f₈.1 _ (by decide), f₇.1 _ (by decide), f₆.1 _ (by decide), R₅ _ (by decide) (by decide),
-      f₄.1 _ (by decide), R₃ _ (by decide), R₂ _ (BL_keep (Or.inr (Or.inr (Or.inl rfl)))),
-      R₁ _ (by decide) (by decide) (by decide), hx]
-  have h1₈ : c₈.nreg 120011 = 1 := by rw [f₈.1 _ (by decide)]; exact h₇.pk.one
+    rw [f₈.1 _ by_d, f₇.1 _ by_d, f₆.1 _ by_d, R₅ _ by_d by_d,
+      f₄.1 _ by_d, R₃ _ by_d, R₂ _ (BL_keep (Or.inr (Or.inr (Or.inl rfl)))),
+      R₁ _ by_d by_d by_d, hx]
+  have h1₈ : c₈.nreg 120011 = 1 := by rw [f₈.1 _ by_d]; exact h₇.pk.one
   set q := adjN d V.A q0 (if w2 = Y.edge ∧ nz C Y.edge hc2 = Y.hgt then 1 else 0) with hqdef
   have hqA : q < V.A := by
     rw [hqdef]; unfold adjN
@@ -445,11 +445,11 @@ theorem locS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
   rw [x299, v₈] at n₉ s₉
   have ex : Exec P W (locS d) c c₉ _ :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.seq e₈ e₉)))))))
-  refine ⟨c₉, _, ex, by omega, ?_, q, hqA, fun hne => ?_, n₉, s₉⟩
+  refine ⟨c₉, _, ex, by_o, ?_, q, hqA, fun hne => ?_, n₉, s₉⟩
   · -- the frame
-    have fr₁ : FrameB BLS c c₁ := exec_frameB e₁ (by decide)
-    have fr₃ : FrameB BLS c₂ c₃ := exec_frameB e₃ (by decide)
-    have fr₅ : FrameB BLS c₄ c₅ := exec_frameB e₅ (by decide)
+    have fr₁ : FrameB BLS c c₁ := exec_frameB e₁ by_d
+    have fr₃ : FrameB BLS c₂ c₃ := exec_frameB e₃ by_d
+    have fr₅ : FrameB BLS c₄ c₅ := exec_frameB e₅ by_d
     refine fr₁.trans ((FrameB.mono f₂ fun r hr => by simp [BLS, hr]).trans (fr₃.trans
       ((FrameB.mono f₄ fun r hr => ?_).trans (fr₅.trans ((FrameB.mono f₆ fun r hr => ?_).trans
       ((FrameB.mono f₇ fun r hr => ?_).trans ((FrameB.mono f₈ fun r hr => ?_).trans
@@ -465,7 +465,7 @@ theorem locS_exec {P : Polygon} {W lo : ℕ} {C : Chain} {N : NF} {V : QV} {c : 
         mk C ((chainModel C).key (Qof P) (endPos N d x)) := by
       have := hYk; rw [hQ] at this; exact this
     rw [hkY] at loc1 loc2
-    have hq0N : q0 < N.arcs.length := hq₂
+    have hq0N := hq₂
     have hkeq : (chainModel C).key (Qof P) (endPos N d q0) =
         mk C ((chainModel C).key (Qof P) (endPos N d x)) ↔
         (w2 = Y.edge ∧ nz C Y.edge hc2 = Y.hgt) := by

@@ -41,10 +41,10 @@ theorem arcLoop_exec (d : Config) (hw : WordsBounded W d) {n : ℕ} {N : NF} {r 
     (fun t e ⟨hw, h1, h2, _⟩ => ⟨hw, h1, h2⟩)
     (fun t e ht ⟨hwe, e41, e30, Ee, Be, me, fe⟩ => by
       obtain ⟨e', k, ex, hk, v41, B', m', f'⟩ := arcBody_exec (P := P) e hwe Ee e41 ht Be
-      exact ⟨e', k, ex, ⟨ex.wb_right, v41, by rw [f'.1 _ (by decide), e30], Ee.keep f' m', B',
+      exact ⟨e', k, ex, ⟨ex.wb_right, v41, by rw [f'.1 _ by_d, e30], Ee.keep f' m', B',
         fun a ha => by rw [m' a ha, me a ha], fe.trans f'⟩, hk⟩)
     (j := 0) ⟨hw, h41, hE.aR, hE, hB, fun _ _ => rfl, FrameM.refl _ _⟩ (Nat.zero_le _)
-  exact ⟨d', k, ex, by omega, by rw [← pre_full]; exact B', E', m', f'⟩
+  exact ⟨d', k, ex, by_o, by rw [← pre_full]; exact B', E', m', f'⟩
 
 /-- One item of the copy. -/
 theorem cpyBody_exec (e : Config) (hw : WordsBounded W e) {li : Bool} {n S D u w i : ℕ}
@@ -65,10 +65,10 @@ theorem cpyBody_exec (e : Config) (hw : WordsBounded W e) {li : Bool} {n S D u w
     refine ⟨rfl, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
       simp only [h81, h82, h83, h84, h80, hK.one, hK.two, hK.three]
     unfold wr3
-    rw [Machine.upd_other _ _ _ (show S + 1 ≠ D by omega),
-      Machine.upd_other _ _ _ (show S + 2 ≠ D + 1 by omega),
-      Machine.upd_other _ _ _ (show S + 2 ≠ D by omega)]
-  exact ⟨e', k, ex, hk, h1, h2, h3, hm, exec_frameM ex (by decide)⟩
+    rw [Machine.upd_other _ _ _ (by omega),
+      Machine.upd_other _ _ _ (by omega),
+      Machine.upd_other _ _ _ (by omega)]
+  exact ⟨e', k, ex, hk, h1, h2, h3, hm, exec_frameM ex by_d⟩
 
 theorem take_add_one_getD {l : List HostItem} {i : ℕ} (h : i < l.length) (x : HostItem) :
     l.take (i + 1) = l.take i ++ [l.getD i x] := by
@@ -109,31 +109,31 @@ theorem cpyLoop_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T : ℕ
       set si := if li then i else K - 1 - i with hsi
       have hsiK : si < K := by rw [hsi]; split_ifs <;> omega
       obtain ⟨e', k, ex, hk, v80, v81, v82, vm, fe'⟩ := cpyBody_exec (P := P) e hwe Ke
-        (e81 hi) e82 e83 e84 e80 (by omega) (by omega) (by split_ifs at e83 ⊢ <;> omega)
-        (by omega)
-      refine ⟨e', k, ex, ⟨ex.wb_right, v80, by rw [fe'.1 _ (by decide), e11], by rw [v82]; ring,
-        fun hi' => ?_, by rw [fe'.1 _ (by decide), e83], by rw [fe'.1 _ (by decide), e84],
-        Ke.frame fe' (by decide), fun a ha => ?_, ?_, fe.trans (fe'.mono fun q hq => by
-          simp only [Bcp, Bool.or_eq_true, decide_eq_true_eq] at hq ⊢; omega)⟩, by omega⟩
+        (e81 hi) e82 e83 e84 e80 by_o by_o (by split_ifs at e83 ⊢ <;> omega)
+        by_o
+      refine ⟨e', k, ex, ⟨ex.wb_right, v80, by rw [fe'.1 _ by_d, e11], by rw [v82]; ring,
+        fun hi' => ?_, by rw [fe'.1 _ by_d, e83], by rw [fe'.1 _ by_d, e84],
+        Ke.frame fe' by_d, fun a ha => ?_, ?_, fe.trans (fe'.mono fun q hq => by
+          simp only [Bcp, Bool.or_eq_true, decide_eq_true_eq] at hq ⊢; omega)⟩, by_o⟩
       · rw [v81]
         cases li <;> simp only [Bool.false_eq_true, ↓reduceIte] at hsi ⊢ <;> omega
-      · rw [vm, wr3_lt (by omega), me a ha]
-      · rw [take_add_one_getD (by omega) (.run 0 0), vm]
+      · rw [vm, wr3_lt by_o, me a ha]
+      · rw [take_add_one_getD by_o (.run 0 0), vm]
         have hlen : (H.take i).length = i := by rw [List.length_take, hHl]; omega
         obtain ⟨a1, a2, a3⟩ := hI si hsiK
         have s0 : e.nmem (T + 3 * si) = encK (H.getD i (.run 0 0)) := by
-          rw [me _ (by omega), a1, hHget i hi]
+          rw [me _ by_o, a1, hHget i hi]
         have s1 : e.nmem (T + 3 * si + 1) = encA (H.getD i (.run 0 0)) := by
-          rw [me _ (by omega), a2, hHget i hi]
+          rw [me _ by_o, a2, hHget i hi]
         have s2 : e.nmem (T + 3 * si + 2) = encB (H.getD i (.run 0 0)) := by
-          rw [me _ (by omega), a3, hHget i hi]
+          rw [me _ by_o, a3, hHget i hi]
         have := Ie.snoc (H.getD i (.run 0 0))
         rw [hlen, ← s0, ← s1, ← s2] at this
         exact this)
-    (j := 0) ⟨hw, h80, h11, by omega, fun h0 => by rw [h81]; split_ifs <;> omega,
+    (j := 0) ⟨hw, h80, h11, by_o, fun h0 => by rw [h81]; split_ifs <;> omega,
       h83, h84, hK, fun _ _ => rfl, by simp only [List.take_zero]; exact ItemsAt.nil _ _,
       FrameM.refl _ _⟩ (Nat.zero_le _)
-  refine ⟨d', k, ex, by omega, ?_, by rw [v82]; ring, m', f'⟩
+  refine ⟨d', k, ex, by_o, ?_, by rw [v82]; ring, m', f'⟩
   have htk : H.take K = H := by rw [← hHl, List.take_length]
   rw [htk] at I'
   exact I'
@@ -162,15 +162,15 @@ theorem finS_exec (d : Config) (hw : WordsBounded W d) {li : Bool} {n T K : ℕ}
       refine spec_ifLtN_true (by config_simp; rw [hK.zero, hK.li]; decide) ?_
       exec_block
       · omega
-      refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
+      refine ⟨by_o, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
         simp only [h40, h11, h32, hK.one, hK.three, ↓reduceIte]
     | false =>
       refine spec_ifLtN_false (by config_simp; rw [hK.zero, hK.li]; decide) ?_
       exec_block
       · omega
-      refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
+      refine ⟨by_o, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
         simp only [h40, h11, hK.one, hK.three, Bool.false_eq_true, ↓reduceIte]
-  exact ⟨d', k, ex, hk, v10, vm, v80, v82, v81, v83, v84, exec_frameM ex (by decide)⟩
+  exact ⟨d', k, ex, hk, v10, vm, v80, v82, v81, v83, v84, exec_frameM ex by_d⟩
 
 /-- **The padding loop** runs exactly `3 (r215082 - r9999) + 2` steps. -/
 theorem padLoopH_exec : ∀ (m : ℕ) (c : Config), WordsBounded W c → c.nreg 215020 = 1 →
@@ -178,20 +178,20 @@ theorem padLoopH_exec : ∀ (m : ℕ) (c : Config), WordsBounded W c → c.nreg 
     Exec P W padLoopH c { c with nreg := upd c.nreg 9999 (c.nreg 215082) } (3 * m + 2)
   | 0, c, hw, _, hle, hd => by
     have h : c.nreg 9999 = c.nreg 215082 := by omega
-    refine ((Exec.whileLtN_false (by omega) hw).cast_end ?_)
+    refine ((Exec.whileLtN_false by_o hw).cast_end ?_)
     rw [← h, upd_eq_self]
   | m + 1, c, hw, h20, hle, hd => by
     have e := Exec.addN (P := P) hw 9999 9999 215020 (by rw [h20]; have := hw.1 215082; omega)
     have h1 : (upd c.nreg 9999 (c.nreg 9999 + c.nreg 215020)) 215020 = 1 := by
-      rw [upd_other _ _ _ (by decide), h20]
+      rw [upd_other _ _ _ by_d, h20]
     have h2 : (upd c.nreg 9999 (c.nreg 9999 + c.nreg 215020)) 215082 = c.nreg 215082 :=
-      upd_other _ _ _ (by decide)
+      upd_other _ _ _ by_d
     have h3 : (upd c.nreg 9999 (c.nreg 9999 + c.nreg 215020)) 9999 = c.nreg 9999 + 1 := by
       rw [upd_same, h20]
     have e' := padLoopH_exec m _ e.wb_right h1 (by dsimp only; rw [h2, h3]; omega)
       (by dsimp only; rw [h2, h3]; omega)
-    refine ((Exec.whileLtN_true (by omega) (Exec.seq e (.skip e.wb_right)) e').cast
-      (by ring)).cast_end ?_
+    refine ((Exec.whileLtN_true by_o (Exec.seq e (.skip e.wb_right)) e').cast
+      by_r).cast_end ?_
     simp only [h2, upd_upd_same]
 
 end exec

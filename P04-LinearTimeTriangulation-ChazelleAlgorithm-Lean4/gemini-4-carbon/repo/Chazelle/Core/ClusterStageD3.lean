@@ -56,7 +56,7 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     · simp [h]
     · simp only [h, ne_eq, not_false_eq_true, iff_true]; exact hblt _ (hlt v hv) h
   unfold placeS
-  have e1 := Exec.constN (P := P) hw 130860 0 (by omega)
+  have e1 := Exec.constN (P := P) hw 130860 0 by_o
   set c1 := { c with nreg := upd c.nreg 130860 0 } with hc1
   have f1 : PFr StDRG (PlMem g) c c1 :=
     ⟨fun r hr => by simp only [c1, Machine.upd_other _ _ _ (show r ≠ 130860 by
@@ -80,33 +80,33 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       obtain ⟨c4, k4, e4, hk4, hw4, hf4, hi4, hm4⟩ := placeBody_exec (P := P) hw3 hG3
         (gg := inv j) (v := v) (f := first v) (l := lev v) (h := hl (lev v)) (b := b)
         (q := c3.nmem (g.base 42 + b)) hi3 hj
-        (by rw [keep _ (by omega)]; exact hinv j hj) (by have := hvW j hj; omega)
-        (by have := hvW j hj; rw [keep _ (by omega)]; exact hvert j hj) hvμ
-        (by rw [keep _ (by omega)]; exact hfst v hvμ)
-        (fun _ => by rw [keep _ (by omega)]; exact hlev v hvμ) (fun _ => hlv)
-        (fun _ => by rw [keep _ (by omega)]; exact hhl _ hlv) (fun _ => hhl1 _ hlv)
-        (fun _ => by rw [keep _ (by omega)]; exact hblk _ hlv) (fun _ h => hblt _ hlv h)
+        (by rw [keep _ by_o]; exact hinv j hj) (by have := hvW j hj; omega)
+        (by have := hvW j hj; rw [keep _ by_o]; exact hvert j hj) hvμ
+        (by rw [keep _ by_o]; exact hfst v hvμ)
+        (fun _ => by rw [keep _ by_o]; exact hlev v hvμ) (fun _ => hlv)
+        (fun _ => by rw [keep _ by_o]; exact hhl _ hlv) (fun _ => hhl1 _ hlv)
+        (fun _ => by rw [keep _ by_o]; exact hblk _ hlv) (fun _ h => hblt _ hlv h)
         (fun _ => rfl) (fun hf hh => by
           have hkv : key v = j := hk2 j hj hf
           have hbv : bo v = b := by simp only [hbo, blkOf, ite_eq_right hh, hb]
-          have hbμ : b < g.μ := hblt _ hlv hh
+          have hbμ := hblt _ hlv hh
           rw [hI3.cnt b hbμ, ← hbv, ← hkv, ← rk_eq_cB]
           have := rk_lt (bo := bo) (key := key) hvμ
           have := cntLt_succ bo g.μ (bo v); have := cntLt_le bo g.μ (bo v + 1)
           omega) hW
       refine ⟨c4, k4, e4, hk4, hw4, hi4, by
-        rw [hf4.1 _ (by unfold PLRG; omega)]; exact hn3,
+        rwa [hf4.1 _ (by unfold PLRG; omega)],
         hf3.trans (hf4.mono (fun r h => by unfold PLRG at h; unfold StDRG; omega)
           (fun a h => h)), ?_⟩
       rw [hm4]
       split_ifs with hc
-      · have hkv : key v = j := hk2 j hj hc.1
+      · have hkv := hk2 j hj hc.1
         have hbv : bo v = b := by simp only [hbo, blkOf, ite_eq_right hc.2, hb]
-        have hbμ : bo v < g.μ := (hbo_lt v hvμ).2 hc.2
+        have hbμ := (hbo_lt v hvμ).2 hc.2
         have hq : c3.nmem (g.base 42 + b) = plPos g.μ bo key v := by
           rw [← hbv, hI3.cnt _ hbμ]; unfold plPos; rw [rk_eq_cB, hkv]
-        have := hI3.step hinj (by omega) (by omega) hvμ hkv hbμ
-        rw [hq, ← hbv]; exact this
+        have := hI3.step hinj by_o by_o hvμ hkv hbμ
+        rwa [hq, ← hbv]
       · refine hI3.skip (fun w hw hkw hbw => hc ?_)
         have h1 := hk1 w hw
         have hwv : v = w := by rw [hv, ← hkw, h1.2.1, h1.2.2]
@@ -114,7 +114,7 @@ theorem placeS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
         refine ⟨?_, (hbo_lt v hvμ).1 hbw⟩
         rw [hwv, ← h1.2.1, hkw])
     (j₀ := 0) ⟨e1.wb_right, by simp [c1], hG1.rN, f1, PlInv.zero hcnt⟩ (Nat.zero_le _)
-  exact ⟨c', 1 + k, .seq e1 e, by omega, hw', hf', hm'⟩
+  exact ⟨c', 1 + k, .seq e1 e, by_o, hw', hf', hm'⟩
 
 end proofs
 

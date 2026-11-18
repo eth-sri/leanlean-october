@@ -36,7 +36,7 @@ theorem trE_eq {n u₀ g₀ e : ℕ} (hu : u₀ < n) (he : e - g₀ < n) :
   unfold trE
   split_ifs with h
   · rw [Nat.mod_eq_of_lt h]
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
 
 /-- The translated piece as the RAM computes it. -/
 def trPcR (n u₀ g₀ : ℕ) (pc : Pc) : Pc :=
@@ -92,8 +92,8 @@ def SlotOK (P : Polygon) (m : ℕ → ℕ) (E Hγ e₁ : ℕ) (Va Vb : ℝ) (sl 
 theorem rdPc_congr {m m' : ℕ → ℕ} {L i E : ℕ} (he : ∀ a, a < E → m' a = m a)
     (hi : L + 1 + 7 * i + 7 ≤ E) : rdPc m' L i = rdPc m L i := by
   unfold rdPc
-  rw [he _ (by omega), he _ (by omega), he _ (by omega), he _ (by omega), he _ (by omega),
-    he _ (by omega), he _ (by omega)]
+  rw [he _ by_o, he _ by_o, he _ by_o, he _ by_o, he _ by_o,
+    he _ by_o, he _ by_o]
 
 /-- **A valid slot survives** memory changes at or above its bound. -/
 theorem SlotOK.keep {P : Polygon} {m m' : ℕ → ℕ} {E E' Hγ e₁ : ℕ} {Va Vb : ℝ} {sl : Slot}
@@ -103,10 +103,10 @@ theorem SlotOK.keep {P : Polygon} {m m' : ℕ → ℕ} {E E' Hγ e₁ : ℕ} {Va
   have hr : ∀ i, i < sl.q → rdPc m' sl.L i = rdPc m sl.L i := fun i hi =>
     rdPc_congr he (by have : 7 * i + 7 ≤ 7 * sl.q := by omega
                       omega)
-  refine ⟨C, ℓ, off, sa, ea, S, hu, by rw [he _ (by omega)]; exact hq, hq1, by omega,
-    by rw [hr 0 (by omega)]; exact h0, by rw [hr _ (by omega)]; exact hl,
-    fun i hi => by rw [hr i (by omega), hr (i + 1) hi]; exact hc i hi,
-    fun i hi => by rw [hr i (by omega)]; exact ht i hi,
+  refine ⟨C, ℓ, off, sa, ea, S, hu, by rwa [he _ by_o], hq1, by_o,
+    by rwa [hr 0 by_o], by rwa [hr _ by_o],
+    fun i hi => by rw [hr i by_o, hr (i + 1) hi]; exact hc i hi,
+    fun i hi => by rw [hr i by_o]; exact ht i hi,
     fun i hi => by rw [hr i hi]; exact (hv i hi).keep he hE, r1, r2, r3, r4, r5⟩
 
 /-- **The translated pieces of a valid slot** form a path of unwrapped interior keys and are
@@ -130,18 +130,18 @@ theorem slotOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb : �
   have hl' : (chainModel C).key (Qof P) (ps[ps.length - 1]'(by
       have := List.length_pos_iff.2 hne; omega)).e = (chainModel C).key (Qof P) ea := by
     rw [hget, hlen]; exact hl
-  have hc' : ∀ i (hi : i + 1 < ps.length), (chainModel C).key (Qof P) (ps[i]'(by omega)).e =
+  have hc' : ∀ i (hi : i + 1 < ps.length), (chainModel C).key (Qof P) (ps[i]' by_o).e =
       (chainModel C).key (Qof P) (ps[i + 1]'hi).s := fun i hi => by
-    rw [hget, hget]; exact hc i (by omega)
-  have ht' : ∀ i (hi : i + 1 < ps.length), sideInArc ((chainModel C).key (Qof P) (ps[i]'(by omega)).s)
-      ((chainModel C).key (Qof P) ea) ((chainModel C).key (Qof P) (ps[i]'(by omega)).e) :=
-    fun i hi => by rw [hget]; exact ht i (by omega)
+    rw [hget, hget]; exact hc i by_o
+  have ht' : ∀ i (hi : i + 1 < ps.length), sideInArc ((chainModel C).key (Qof P) (ps[i]' by_o).s)
+      ((chainModel C).key (Qof P) ea) ((chainModel C).key (Qof P) (ps[i]' by_o).e) :=
+    fun i hi => by rw [hget]; exact ht i by_o
   have hpp : ∀ pc ∈ ps, ProperPos (chainModel C) (Qof P) (Qof P).n pc.s ∧
       ProperPos (chainModel C) (Qof P) (Qof P).n pc.e := by
     intro pc hpc
     obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hpc
     rw [hget]
-    have := hv i (by omega)
+    have := hv i by_o
     rw [hQ]; exact ⟨this.1, this.2.1⟩
   have hmono := chain_mono hne r3 h0' hl' hc' ht'
   -- the RAM translation is the translation
@@ -149,8 +149,8 @@ theorem slotOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb : �
     unfold slotPcs
     rw [hps, List.map_map]
     refine List.map_congr_left (fun i hi => ?_)
-    have hi' : i < sl.q := List.mem_range.1 hi
-    obtain ⟨m1, m2, m3⟩ := hmono i (by omega)
+    have hi' := List.mem_range.1 hi
+    obtain ⟨m1, m2, m3⟩ := hmono i by_o
     rw [hget] at m1 m2 m3
     have hp := hv i hi'
     have hsP : ProperPos (chainModel C) (Qof P) (Qof P).n (rdPc m sl.L i).s := by rw [hQ]; exact hp.1
@@ -158,7 +158,7 @@ theorem slotOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb : �
     obtain ⟨a1, a2, -⟩ := str_edge S hsP (r1.trans m1) ((m2.le.trans m3).trans r2)
     obtain ⟨b1, b2, -⟩ := str_edge S heP (r1.trans (m1.trans m2.le)) (m3.trans r2)
     have hℓ := S.hℓ
-    exact trPcR_eq S.hu (by omega) (by omega)
+    exact trPcR_eq S.hu by_o by_o
   refine ⟨?_, fun pc hpc => ?_, ?_⟩
   · rw [hslot, r4, r5]
     exact slot_kpath S hu hne r3 h0' hl' hc' ht' hpp r1 r2
@@ -167,7 +167,7 @@ theorem slotOK_out {P : Polygon} {m : ℕ → ℕ} {E Hγ e₁ : ℕ} {Va Vb : �
     obtain ⟨i, hi, rfl⟩ := List.mem_iff_getElem.1 hpc'
     obtain ⟨m1, m2, m3⟩ := hmono i hi
     rw [hget] at m1 m2 m3 ⊢
-    exact pcV_tr S (hv i (by omega)) (r1.trans m1) (m3.trans r2) m2
+    exact pcV_tr S (hv i by_o) (r1.trans m1) (m3.trans r2) m2
   · rw [hslot]; simpa using hne
 
 /-! ## Chains of slots -/

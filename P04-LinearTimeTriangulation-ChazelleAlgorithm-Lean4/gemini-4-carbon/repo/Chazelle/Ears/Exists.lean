@@ -35,8 +35,8 @@ theorem isEar_of_diagonal_two {s : ℕ} (hd : IsDiagonal P s 2)
     IsEar P ((s + 1) % P.n) := by
   have hn : 0 < P.n := by have := hd.2.1; omega
   refine ⟨?_, ?_⟩
-  · rw [prevIdx_succ_mod P hn, isDiagonal_mod_iff]; exact hd
-  · rw [prevIdx_succ_mod P hn, mod_add_one_mod]; exact hin
+  · rwa [prevIdx_succ_mod P hn, isDiagonal_mod_iff]
+  · rwa [prevIdx_succ_mod P hn, mod_add_one_mod]
 
 /-- The filled region of an arc of an interior diagonal lies in the filled region of `P`. -/
 theorem filled_arc_subset {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
@@ -50,33 +50,33 @@ theorem isEar_of_arc {s L : ℕ} (hP : P.Simple) (hd : IsDiagonal P s L)
     (hin : Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) ⊆ P.filled)
     {k : ℕ} (hk0 : 0 < k) (hkL : k < L) (he : IsEar (P.arc s L) k) :
     IsEar P ((s + k) % P.n) := by
-  have hLn : L + 2 ≤ P.n := hd.2.1
-  have hn : 0 < P.n := by omega
-  have hL : L ≤ P.n := by omega
-  have hAn : (P.arc s L).n = L + 1 := n_arc P s L
-  have h4 : 4 ≤ (P.arc s L).n := he.1.2.1
+  have hLn := hd.2.1
+  have hn : 0 < P.n := by_o
+  have hL : L ≤ P.n := by_o
+  have hAn := n_arc P s L
+  have h4 := he.1.2.1
   have hprev : prevIdx (P.arc s L) k = k - 1 := by
-    rw [prevIdx_eq _ (by omega)]; simp [Nat.pos_iff_ne_zero.1 hk0]
+    rw [prevIdx_eq _ by_o]; simp [Nat.pos_iff_ne_zero.1 hk0]
   have e1 : (P.arc s L).vtx (prevIdx (P.arc s L) k) = P.vtx ((s + (k - 1)) % P.n) := by
-    rw [hprev, vtx_arc P s L (by omega)]
+    rw [hprev, vtx_arc P s L by_o]
   have e2 : (P.arc s L).vtx ((k + 1) % (P.arc s L).n) = P.vtx ((s + (k - 1) + 2) % P.n) := by
-    rw [hAn, Nat.mod_eq_of_lt (by omega), vtx_arc P s L (by omega)]
+    rw [hAn, Nat.mod_eq_of_lt by_o, vtx_arc P s L by_o]
     congr 2; omega
   -- the ear chord of `A`, avoiding the boundary of `A` and lying in `A.filled`
   have hch := he.1.2.2
   rw [hprev, hAn, Nat.mod_eq_of_lt (by omega : k - 1 < L + 1),
-    Nat.mod_eq_of_lt (by omega : k - 1 + 2 < L + 1), vtx_arc P s L (by omega),
-    vtx_arc P s L (by omega), ← Nat.add_assoc] at hch
+    Nat.mod_eq_of_lt (by omega : k - 1 + 2 < L + 1), vtx_arc P s L by_o,
+    vtx_arc P s L by_o, ← Nat.add_assoc] at hch
   have hsub := he.2
   rw [e1, e2] at hsub
   have hkey : IsEar P ((s + (k - 1) + 1) % P.n) := by
     apply isEar_of_diagonal_two
-    · refine ⟨le_rfl, by omega, ?_⟩
+    · refine ⟨le_rfl, by_o, ?_⟩
       intro p hp hp1 hp2 hpB
-      have hpA : p ∉ (P.arc s L).boundary := hch p hp hp1 hp2
+      have hpA := hch p hp hp1 hp2
       rcases boundary_subset_arcs P s L hL hn hpB with h | h
       · exact hpA h
-      · have hpf : p ∈ Chazelle.segment (P.vtx (s % P.n)) (P.vtx ((s + L) % P.n)) :=
+      · have hpf :=
           filled_arcs_meet_on_chord P s L hP hd hin p (hsub hp) (Jordan.boundary_subset_filled _ h)
         rw [segment_comm] at hpf
         exact hpA (chord_subset_boundary_arc P s L hpf)
@@ -92,37 +92,37 @@ theorem apex_not_both_endpoints {N L s' L' k₁ k₂ : ℕ} (hN : N = L + 1)
     (hk₁0 : 0 < k₁) (hk₁ : k₁ < L') (hk₂0 : 0 < k₂) (hk₂ : k₂ < N - L') (hL' : L' + 2 ≤ N) :
     (0 < (s' + k₁) % N ∧ (s' + k₁) % N < L) ∨
       (0 < (s' + (L' + k₂)) % N ∧ (s' + (L' + k₂)) % N < L) := by
-  have hN0 : 0 < N := by omega
+  have hN0 : 0 < N := by_o
   have ha₁ : (s' + k₁) % N < N := Nat.mod_lt _ hN0
   have ha₂ : (s' + (L' + k₂)) % N < N := Nat.mod_lt _ hN0
   by_contra hcon
   rw [not_or] at hcon
   obtain ⟨h₁, h₂⟩ := hcon
-  have c₁ : (s' + k₁) % N = 0 ∨ (s' + k₁) % N = L := by omega
-  have c₂ : (s' + (L' + k₂)) % N = 0 ∨ (s' + (L' + k₂)) % N = L := by omega
+  have c₁ : (s' + k₁) % N = 0 ∨ (s' + k₁) % N = L := by_o
+  have c₂ : (s' + (L' + k₂)) % N = 0 ∨ (s' + (L' + k₂)) % N = L := by_o
   rcases c₁ with c₁ | c₁ <;> rcases c₂ with c₂ | c₂
   · -- equal apexes
-    have := rot_index_inj (n := N) (s := s') (i := k₁) (j := L' + k₂) (by omega) (by omega)
+    have := rot_index_inj (n := N) (s := s') (i := k₁) (j := L' + k₂) by_o by_o
       (by rw [c₁, c₂])
     omega
   · -- `a₁ = 0` is the successor of `a₂ = L`
     have e : (s' + (L' + k₂ + 1)) % N = (s' + k₁) % N := by
       rw [← mod_add_one_mod, c₂, c₁, hN, Nat.mod_self]
     rcases Nat.lt_or_ge (L' + k₂ + 1) N with h | h
-    · have := rot_index_inj (n := N) (s := s') h (by omega) e
+    · have := rot_index_inj (n := N) (s := s') h by_o e
       omega
     · have hEq : L' + k₂ + 1 = N := by omega
       rw [hEq, Nat.add_mod_right] at e
-      have := rot_index_inj (n := N) (s := s') (i := 0) (j := k₁) hN0 (by omega)
-        (by rw [Nat.add_zero]; exact e)
+      have := rot_index_inj (n := N) (s := s') (i := 0) (j := k₁) hN0 by_o
+        (by rwa [Nat.add_zero])
       omega
   · -- `a₂ = 0` is the successor of `a₁ = L`
     have e : (s' + (k₁ + 1)) % N = (s' + (L' + k₂)) % N := by
       rw [← mod_add_one_mod, c₁, c₂, hN, Nat.mod_self]
-    have := rot_index_inj (n := N) (s := s') (i := k₁ + 1) (j := L' + k₂) (by omega) (by omega) e
+    have := rot_index_inj (n := N) (s := s') (i := k₁ + 1) (j := L' + k₂) by_o by_o e
     omega
   · -- equal apexes
-    have := rot_index_inj (n := N) (s := s') (i := k₁) (j := L' + k₂) (by omega) (by omega)
+    have := rot_index_inj (n := N) (s := s') (i := k₁) (j := L' + k₂) by_o by_o
       (by rw [c₁, c₂])
     omega
 
@@ -143,7 +143,7 @@ theorem exists_ear_in_arc_aux (m : ℕ) : ∀ Q : Polygon, Q.n = m → Q.Simple 
     set A := Q.arc s L with hAdef
     have hA : A.Simple := simple_arc Q s L hQ hd
     have hAn : A.n = L + 1 := n_arc Q s L
-    have hA4 : 4 ≤ A.n := by omega
+    have hA4 : 4 ≤ A.n := by_o
     have hAm : A.n < m := by have := hd.2.1; omega
     obtain ⟨s', L', hd', hin'⟩ := exists_diagonal hA hA4
     obtain ⟨k₁, hk₁0, hk₁, he₁⟩ := ih A.n hAm A rfl hA s' L' hd' hin'

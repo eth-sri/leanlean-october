@@ -45,12 +45,12 @@ theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
       c'.nmem = upd (upd (upd c.nmem (A + 12 + 19 * R + 3 * j) (fv c.nmem A R 16 j))
         (A + 12 + 19 * R + 3 * j + 1) (fv c.nmem A R 17 j))
         (A + 12 + 19 * R + 3 * j + 2) (fv c.nmem A R 18 j) := by
-  have b16 := hR.b 16 (by norm_num); have b17 := hR.b 17 (by norm_num)
-  have b18 := hR.b 18 (by norm_num); have b19 := hR.b 19 (by norm_num)
+  have b16 := hR.b 16 by_n; have b17 := hR.b 17 by_n
+  have b18 := hR.b 18 by_n; have b19 := hR.b 19 by_n
   simp only [Nat.reduceAdd] at b16 b17 b18 b19
   have o := hR.one
-  have h16 : 16 * R + j < 19 * R := by omega
-  have hjR : 3 * j + 3 ≤ 3 * K := by omega
+  have h16 : 16 * R + j < 19 * R := by_o
+  have hjR : 3 * j + 3 ≤ 3 * K := by_o
   unfold fcBody ldF fb
   simp only [Nat.reduceAdd]
   refine spec_seq ?_
@@ -75,7 +75,7 @@ theorem fcBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB
   refine spec_instr (Machine.Exec.addN ‹WordsBounded _ _› _ _ _ ?_) fun _hw => ?_
   rotate_left
   side_tac
-  refine ⟨by norm_num, ⟨fun r hr hra => ?_, rfl, rfl, rfl, fun a ha => ?_⟩, ?_, ?_⟩
+  refine ⟨by_n, ⟨fun r hr hra => ?_, rfl, rfl, rfl, fun a ha => ?_⟩, ?_, ?_⟩
   · unfold Prot at hr
     config_simp
     simp (disch := omega) only [Machine.upd_other]
@@ -107,7 +107,7 @@ theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
   set c1 := { c with nreg := upd c.nreg 60020 0 } with hc1
   have hf1 : DFr (A + 12) (A + 12 + 19 * R + 3 * K) c c1 :=
     DFr.nreg _ fun r hr _ => by
-      unfold Prot at hr; rw [Machine.upd_other _ _ _ (by omega)]
+      unfold Prot at hr; rw [Machine.upd_other _ _ _ by_o]
   obtain ⟨c', k, e, ⟨hw', hf', hj', hv'⟩, htest, hk⟩ := Exec.whileLtN_potential (P := P) (W := W)
     (a := 60020) (b := 60014) (body := fcBody)
     (fun d => WordsBounded W d ∧ DFr (A + 12) (A + 12 + 19 * R + 3 * K) c d ∧ d.nreg 60020 ≤ K ∧
@@ -121,10 +121,10 @@ theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
       rw [hjdef] at htest hjd hvd
       obtain ⟨d', k', e', rfl, hf'', h20', hm'⟩ := fcBody_exec (P := P) hwd hRd hAW hjdef htest hKR
       have hfv : ∀ f, f < 19 → fv d.nmem A R f j = fv c.nmem A R f j := fun f hf => by
-        have : f * R ≤ 18 * R := Nat.mul_le_mul_right _ (by omega)
-        unfold fv; rw [hvd, ite_eq_right (by omega)]
-      refine ⟨d', 15, e', ⟨e'.wb_right, hfd.trans hf'', by omega, fun a => ?_⟩, by omega⟩
-      rw [hm', h20', hfv 16 (by norm_num), hfv 17 (by norm_num), hfv 18 (by norm_num)]
+        have : f * R ≤ 18 * R := Nat.mul_le_mul_right _ by_o
+        unfold fv; rw [hvd, ite_eq_right by_o]
+      refine ⟨d', 15, e', ⟨e'.wb_right, hfd.trans hf'', by_o, fun a => ?_⟩, by_o⟩
+      rw [hm', h20', hfv 16 by_n, hfv 17 by_n, hfv 18 by_n]
       simp only [Machine.upd_apply]
       rw [hvd a]
       unfold ntv
@@ -138,13 +138,13 @@ theorem fcS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB LB
         | (· simp only [show (a - (A + 12 + 19 * R)) % 3 = 2 by omega,
             show (a - (A + 12 + 19 * R)) / 3 = j by omega, Nat.reduceAdd]))
     ⟨hw1, hf1, by simp only [hc1]; config_simp; omega, fun a => by
-      simp only [hc1]; config_simp; rw [ite_eq_right (by omega)]⟩
+      simp only [hc1]; config_simp; rw [ite_eq_right by_o]⟩
   have hR' := hR.frame hf'
   rw [hR'.rK] at htest
-  have hjK : c'.nreg 60020 = K := by omega
+  have hjK : c'.nreg 60020 = K := by_o
   have h0 : c1.nreg 60020 = 0 := by simp only [hc1]; config_simp
   rw [h0] at hk
-  refine ⟨c', k, e, by omega, hw', hf', fun a => ?_⟩
+  refine ⟨c', k, e, by_o, hw', hf', fun a => ?_⟩
   rw [hv' a, hjK]
 
 end fc
@@ -165,13 +165,13 @@ theorem hdrS_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB RB L
       c'.nmem (A + 7) = c.nmem (B + 7) ∧ c'.nmem (A + 8) = A + 12 + 19 * R ∧
       c'.nmem (A + 9) = c.nreg 60024 ∧ c'.nmem (A + 10) = A + 12 ∧ c'.nmem (A + 11) = K ∧
       ∀ a, (a < A ∨ A + 12 ≤ a) → c'.nmem a = c.nmem a := by
-  have b0 := hR.b 0 (by norm_num); have b19 := hR.b 19 (by norm_num)
+  have b0 := hR.b 0 by_n; have b19 := hR.b 19 by_n
   simp only [Nat.reduceAdd, Nat.zero_mul, Nat.add_zero] at b0 b19
   have o := hR.one; have t := hR.two; have rA := hR.rA; have rK := hR.rK; have rR := hR.rR
   unfold hdrS
   exec_block
   side_tac
-  refine ⟨by omega, ?_, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, ?_⟩
+  refine ⟨by_o, ?_, fun r h1 h2 h3 h4 => ?_, rfl, rfl, rfl, ?_⟩
   · config_simp; exact rA
   · config_simp; simp (disch := omega) only [Machine.upd_other]
   · config_simp

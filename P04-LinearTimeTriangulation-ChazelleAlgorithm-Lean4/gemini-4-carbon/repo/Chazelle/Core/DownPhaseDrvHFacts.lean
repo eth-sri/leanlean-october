@@ -45,7 +45,7 @@ theorem region_arcs_le_of {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hN
     (N.region r).arcs.length ≤ 5 := by
   classical
   obtain ⟨hF, -, -, reg, hR, -, hA, hRs, -⟩ := hN
-  have hU : reg r ∈ M.regions (N.F M Q) := hR.1 r hr
+  have hU := hR.1 r hr
   have hnd := (hRs r hr).2.2.1
   set L := (N.region r).arcs
   set f : ℕ → ℝ × ℝ := fun j => (M.key Q (N.arc j).s, M.key Q (N.arc j).e)
@@ -65,7 +65,7 @@ theorem region_arcs_le_of {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hN
   have hL : L.length = ({j | j ∈ L} : Set ℕ).ncard := by
     rw [show ({j | j ∈ L} : Set ℕ) = ↑L.toFinset by ext; simp, Set.ncard_coe_finset,
       List.toFinset_card_of_nodup hnd]
-  have h1 : ({j | j ∈ L} : Set ℕ).ncard = (f '' {j | j ∈ L}).ncard :=
+  have h1 :=
     (Set.InjOn.ncard_image hinj).symm
   have h2 := Set.ncard_le_ncard hsub hfin
   omega
@@ -80,14 +80,14 @@ theorem hfacts_of {Q : Polygon} (hQ : Q.Simple) {L : List (ℕ × ℕ × ℕ)} {
     (hr : r < (BuildNF.buildNF (interiorModel Q) Q L E).nRegions) :
     HFacts Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r := by
   set N := BuildNF.buildNF (interiorModel Q) Q L E with hNdef
-  have hK : 0 < L.length := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
+  have hK := List.length_pos_iff_exists_mem.2 (List.exists_mem_of_ne_nil _ hLne)
   have hN : IsNF (interiorModel Q) Q N := DownMath.isNF_build hQ hL hperm hsort
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have hpos : ∀ x : WPos, DownMath.ChordPos N x → x.edge < Q.n ∧ x.hgt ≤ Q.n := by
     intro x hx
     obtain ⟨i, hi, hxi⟩ := hx
     obtain ⟨-, hA, -, eh, hh, -⟩ := DownMath.chordPos_attach hN hi hxi
-    exact ⟨DownMath.walk_n Q ▸ hA.1, by omega⟩
+    exact ⟨DownMath.walk_n Q ▸ hA.1, by_o⟩
   obtain ⟨-, -, -, reg, hRC, -, hAO, hRO, -, hh, -⟩ := id hN
   refine ⟨hr, region_arcs_le_of hM hN hdeg hr, ?_, fun j hj => ?_, fun i hi => ?_⟩
   · rw [← Gran.deg_region hN hRC hRO hr]

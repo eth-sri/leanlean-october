@@ -48,18 +48,18 @@ theorem mod_tourA {k : ℕ} (hk : k < 2 * C.m) : (C.sideS β + tourA C β k) % (
     have h1 : sA C β + (k + 2 * C.m - sA C β) % (2 * C.m) ≡
         sA C β + (k + 2 * C.m - sA C β) [MOD 2 * C.m] :=
       Nat.ModEq.add_left _ (Nat.mod_modEq _ _)
-    have h2 : sA C β + (k + 2 * C.m - sA C β) = k + 2 * C.m := by omega
+    have h2 : sA C β + (k + 2 * C.m - sA C β) = k + 2 * C.m := by_o
     rw [h2] at h1
     exact h1.trans (by simp [Nat.ModEq])
   rw [e, Nat.mod_eq_of_lt hk]
 
 theorem sideIdx_tourA {k : ℕ} (hk : k < C.m) : C.sideIdx β (tourA C β k) = k := by
-  rw [Chain.sideIdx_eq, mod_tourA (by omega)]
+  rw [Chain.sideIdx_eq, mod_tourA by_o]
   unfold sideE; rw [ite_eq_left hk.le]
 
 theorem sideIdx_tourA_succ {k : ℕ} (hk : k < C.m) : C.sideIdx β (tourA C β k + 1) = k + 1 := by
-  rw [C.sideIdx_succ, mod_tourA (by omega)]
-  unfold sideE; rw [ite_eq_left (by omega)]
+  rw [C.sideIdx_succ, mod_tourA by_o]
+  unfold sideE; rw [ite_eq_left by_o]
 
 theorem vtx_tourA {k : ℕ} (hk : k < C.m) :
     (C.sideWalk β).vtx (tourA C β k + 6) = C.vertex k := by
@@ -84,19 +84,19 @@ theorem tourA_succ {k : ℕ} (hk : k + 1 < 2 * C.m) (hne : k + 1 ≠ sA C β) :
   unfold tourA
   rcases Nat.lt_or_ge k (sA C β) with h | h
   · -- `k < sA`, so `k + 1 < sA`
-    have h' : k + 1 < sA C β := lt_of_le_of_ne h hne
-    rw [Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)]; omega
+    have h' := lt_of_le_of_ne h hne
+    rw [Nat.mod_eq_of_lt by_o, Nat.mod_eq_of_lt by_o]; omega
   · rw [show k + 1 + 2 * C.m - sA C β = (k + 1 - sA C β) + 2 * C.m by omega,
       show k + 2 * C.m - sA C β = (k - sA C β) + 2 * C.m by omega,
-      Nat.add_mod_right, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega),
-      Nat.mod_eq_of_lt (by omega)]
+      Nat.add_mod_right, Nat.add_mod_right, Nat.mod_eq_of_lt by_o,
+      Nat.mod_eq_of_lt by_o]
     omega
 
 /-- The side-`A` tour index is positive away from the tour start. -/
 theorem tourA_pos {k : ℕ} (hk : k < 2 * C.m) (hne : k ≠ sA C β) : 0 < tourA C β k := by
   by_contra h
   push Not at h
-  have h0 : tourA C β k = 0 := by omega
+  have h0 : tourA C β k = 0 := by_o
   have := mod_tourA (C := C) (β := β) hk
   rw [h0, add_zero] at this
   exact hne (this.symm.trans rfl)
@@ -105,13 +105,13 @@ theorem tourA_pos {k : ℕ} (hk : k < 2 * C.m) (hne : k ≠ sA C β) : 0 < tourA
 theorem sideLeft_tourA_vtx {k : ℕ} (h0 : 0 < k) (hk : k < C.m) (hne : k ≠ sA C β) (x : Point) :
     sideLeft (C.sideWalk β) (tourA C β k + 6) 0 x ↔
       sideLeftOf (C.vertex (k - 1)) (C.vertex k) (C.vertex (k + 1)) x := by
-  have hpos := tourA_pos (C := C) (β := β) (show k < 2 * C.m by omega) hne
+  have hpos := tourA_pos (C := C) (β := β) (by omega) hne
   have hsucc : tourA C β k = tourA C β (k - 1) + 1 := by
-    have := tourA_succ (C := C) (β := β) (k := k - 1) (by omega) (by rw [Nat.sub_add_cancel h0]; exact hne)
+    have := tourA_succ (C := C) (β := β) (k := k - 1) by_o (by rwa [Nat.sub_add_cancel h0])
     rw [Nat.sub_add_cancel h0] at this; exact this
   rw [C.sideLeft_tour_inner β hpos (tourA_lt k)]
   unfold Chain.sideTour
-  rw [hsucc, Nat.add_sub_cancel, sideIdx_tourA (by omega), ← hsucc, sideIdx_tourA hk,
+  rw [hsucc, Nat.add_sub_cancel, sideIdx_tourA by_o, ← hsucc, sideIdx_tourA hk,
     sideIdx_tourA_succ hk]
 
 /-- **The left sector inside a side-`A` edge**: the left half-plane of the chain edge. -/

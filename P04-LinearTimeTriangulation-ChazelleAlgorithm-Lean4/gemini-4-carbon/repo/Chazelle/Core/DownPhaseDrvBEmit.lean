@@ -91,12 +91,12 @@ theorem emitAt_iff {l : List SymPt} (hW : (polyOf Q l).Simple)
     emitAt Q l k d ↔ DirInterior (polyOf Q l) k (sgnD d) := by
   have hn := Chazelle.Jordan.simple_three_le hW
   rw [polyOf_n] at hn
-  rw [dirInterior_iff_emitG hW hL (by rw [polyOf_n]; exact hk) (sgnD_cases d)]
+  rw [dirInterior_iff_emitG hW hL (by rwa [polyOf_n]) (sgnD_cases d)]
   unfold emitAt
   have hp : Chazelle.Jordan.prevIdx (polyOf Q l) k = (k + l.length - 1) % l.length := by
     unfold Chazelle.Jordan.prevIdx; rw [polyOf_n]
-  rw [hp, polyOf_vtx Q (Nat.mod_lt _ (by omega)), polyOf_vtx Q hk, polyOf_n,
-    polyOf_vtx Q (Nat.mod_lt _ (by omega))]
+  rw [hp, polyOf_vtx Q (Nat.mod_lt _ by_o), polyOf_vtx Q hk, polyOf_n,
+    polyOf_vtx Q (Nat.mod_lt _ by_o)]
 
 /-! ## The far walk edge -/
 
@@ -112,7 +112,7 @@ theorem farW_spec (hQ : Q.Simple) (hDH : DistinctHeights Q) (li : Bool) {i d : �
   have hn := Chazelle.Jordan.simple_three_le hQ
   have hex : ∃ w, w < Q.n ∧ OpenEdgePt Q (qE li Q.n w) (chordEnd Q i (sgnD d)) := by
     obtain ⟨q, hc, -, ho⟩ := far_cand hQ hDH hi (sgnD_cases d) hdir
-    exact ⟨qEi li Q.n q, qEi_lt li hc.1, by rw [qE_qEi li (by omega) hc.1]; exact ho⟩
+    exact ⟨qEi li Q.n q, qEi_lt li hc.1, by rwa [qE_qEi li by_o hc.1]⟩
   unfold farW
   rw [dite_eq_left hex]
   exact Classical.choose_spec hex
@@ -186,7 +186,7 @@ theorem emIdx_length_le (l : List SymPt) : (emIdx Q l).length ≤ 2 * l.length :
       ≤ ((List.range l.length).map fun _ => 2).sum := by
         apply List.sum_le_sum
         intro k _
-        exact (List.length_filterMap_le _ _).trans (by simp)
+        exact (List.length_filterMap_le _ _).trans by_s
     _ = 2 * l.length := by simp [mul_comm]
 
 theorem regList_length_le (li : Bool) (l : List SymPt) : (regList li Q l).length ≤ 2 * l.length := by
@@ -210,11 +210,11 @@ theorem emIdx_facts (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hmem : l.getD kd.1 (.vtx 0) ∈ l := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some]
     exact List.getElem_mem hk
-  have hin : i < Q.n := qvx_lt (hl _ hmem) hi
+  have hin := qvx_lt (hl _ hmem) hi
   have hv : (polyOf Q l).vtx kd.1 = Q.vtx i := by rw [polyOf_vtx Q hk]; exact qvx_eval hi
   have hdirW := (emitAt_iff hR.simple hR.orient hk kd.2).1 hem
   obtain ⟨hdir, -, hc, hcS, hcR⟩ := hR.sound hQ hFam hin hv (sgnD_cases _) hdirW
-  exact ⟨i, hi, hin, hk, by omega, hv, hdirW, hdir, hc, hcS, hcR⟩
+  exact ⟨i, hi, hin, hk, by_o, hv, hdirW, hdir, hc, hcS, hcR⟩
 
 /-- **Soundness**: every emitted record is that of a vertex chord of `Q` missing from `S`, with its
 domain part in the region, attached, with proper ends. -/
@@ -251,16 +251,16 @@ theorem regList_complete (hQ : Q.Simple) (hDH : DistinctHeights Q)
   rw [polyOf_n] at hk
   obtain ⟨d, hd, hσd⟩ : ∃ d, d ≤ 1 ∧ sgnD d = σ := by
     rcases hσ with rfl | rfl
-    · exact ⟨0, by omega, rfl⟩
+    · exact ⟨0, by_o, rfl⟩
     · exact ⟨1, le_rfl, rfl⟩
   subst hσd
   have hmem : l.getD k (.vtx 0) ∈ l := by
     rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some]
     exact List.getElem_mem hk
   have hq : qvx Q (l.getD k (.vtx 0)) = some i :=
-    qvx_of_eval hQ hDH (hl _ hmem) hi (by rw [← polyOf_vtx Q hk]; exact hv)
+    qvx_of_eval hQ hDH (hl _ hmem) hi (by rwa [← polyOf_vtx Q hk])
   have hkd : (k, d) ∈ emIdx Q l :=
-    mem_emIdx.2 ⟨hk, by omega, by rw [hq]; rfl, (emitAt_iff hR.simple hR.orient hk d).2 hdirW⟩
+    mem_emIdx.2 ⟨hk, by_o, by rw [hq]; rfl, (emitAt_iff hR.simple hR.orient hk d).2 hdirW⟩
   refine ⟨recAt li Q l (k, d), List.mem_map.2 ⟨(k, d), hkd, rfl⟩, ?_⟩
   have hrec : recAt li Q l (k, d) = vtrip li Q.n i d (farW li Q i d) := by
     unfold recAt; rw [hq]; rfl
@@ -295,7 +295,7 @@ theorem regList_nodup (hQ : Q.Simple) (hDH : DistinctHeights Q)
     split_ifs at hσ with h1 h2 h2 <;> first | omega | norm_num at hσ
   have hk : a.1 = b.1 := by
     have := hva.trans hvb.symm
-    exact hR.simple.2.1 _ _ (by rw [polyOf_n]; exact hak) (by rw [polyOf_n]; exact hbk) this
+    exact hR.simple.2.1 _ _ (by rwa [polyOf_n]) (by rwa [polyOf_n]) this
   exact Prod.ext hk hd
 
 end

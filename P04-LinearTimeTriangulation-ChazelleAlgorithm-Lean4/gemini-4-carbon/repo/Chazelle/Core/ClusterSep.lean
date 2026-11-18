@@ -53,7 +53,7 @@ theorem exists_label' (hM : M.Planar) (δ : V → D) (hδ : ∀ v, M.vert (δ v)
   have hfv : M.face (δ v) ≠ f := by
     intro h
     exact T.not_isAnc_of_notMem_sepSet hv h (by rw [hδ]; exact T.isAnc_refl v)
-  set U : Set F := {g | g = f ∨ ∃ d ∈ T.coDarts, M.face d = f ∧ g ∈ T.cross d}
+  set U := {g | g = f ∨ ∃ d ∈ T.coDarts, M.face d = f ∧ g ∈ T.cross d}
   have hstep : ∀ x y, M.faceRel T.coDarts x y → x ∈ U → y ∈ U := by
     rintro x y ⟨e, he, rfl, rfl⟩ hx
     rcases hx with hx | ⟨d, hd, hdf, hxd⟩
@@ -61,9 +61,9 @@ theorem exists_label' (hM : M.Planar) (δ : V → D) (hδ : ∀ v, M.vert (δ v)
     · by_cases h1 : e = d
       · subst h1; exact absurd hxd (T.face_notMem_cross hM hd)
       · by_cases h2 : e = M.opp d
-        · subst h2; left; rw [M.opp_opp]; exact hdf
+        · subst h2; left; rwa [M.opp_opp]
         · exact Or.inr ⟨d, hd, hdf, T.cross_closed (T.mem_Sd.mpr ⟨he, h1, h2⟩) hxd⟩
-  have hmem : M.face (δ v) ∈ U :=
+  have hmem :=
     mem_of_eqvGen (M.faceRel T.coDarts) U hstep
       (fun x y hxy hy => hstep y x (faceRel_opp T.coDarts_oppClosed hxy) hy)
       (T.eqvGen_faceRel_coDarts hM.1 f (M.face (δ v))) (Or.inl rfl)
@@ -117,9 +117,9 @@ theorem isDesc_parent_iff {h g : F} (hh : h ≠ g) : C.IsDesc h g ↔ C.IsDesc (
   · rintro ⟨n, hn⟩
     rcases n with _ | n
     · exact absurd hn hh
-    · exact ⟨n, by rw [Function.iterate_succ_apply] at hn; exact hn⟩
+    · exact ⟨n, by rwa [Function.iterate_succ_apply] at hn⟩
   · rintro ⟨n, hn⟩
-    exact ⟨n + 1, by rw [Function.iterate_succ_apply]; exact hn⟩
+    exact ⟨n + 1, by rwa [Function.iterate_succ_apply]⟩
 
 /-- The parent darts and their opposites. -/
 noncomputable def treeDarts : Finset D :=
@@ -167,8 +167,8 @@ theorem coDarts_eq (hM : M.Planar) : T.coDarts = C.treeDarts := by
       Finset.card_univ]
     omega
   have hco := T.card_coDarts hM
-  have hF : 0 < Fintype.card F := Fintype.card_pos_iff.mpr ⟨C.r0⟩
-  exact (Finset.eq_of_subset_of_card_le hsub (by omega)).symm
+  have hF := Fintype.card_pos_iff.mpr ⟨C.r0⟩
+  exact (Finset.eq_of_subset_of_card_le hsub by_o).symm
 
 theorem mem_coDarts_iff (hM : M.Planar) {e : D} :
     e ∈ T.coDarts ↔ ∃ g, g ≠ C.r0 ∧ (e = C.fpar g ∨ e = M.opp (C.fpar g)) := by
@@ -198,20 +198,16 @@ theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
       · -- crossing down the parent dart of `x'`
         have hx'g : x' ≠ g := fun h => hne1 (by rw [h])
         show C.IsDesc _ g
-        rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0]
-        exact hx
+        rwa [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0]
       · -- crossing up to the parent
         have hx'g : x' ≠ g := fun h => hne2 (by rw [h])
-        show C.IsDesc _ g
         simp only [Set.mem_ofPred_eq] at hx
         rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0] at hx
-        rw [M.opp_opp]
-        exact hx
+        rwa [M.opp_opp]
     · rintro x y ⟨e, he, rfl, rfl⟩ hy
       obtain ⟨he1, hne1, hne2⟩ := T.mem_Sd.mp he
       obtain ⟨x', hx'0, rfl | rfl⟩ := (C.mem_coDarts_iff hM).mp he1
       · have hx'g : x' ≠ g := fun h => hne1 (by rw [h])
-        show C.IsDesc _ g
         simp only [Set.mem_ofPred_eq] at hy
         rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0] at hy
         exact hy
@@ -219,8 +215,7 @@ theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
         show C.IsDesc _ g
         simp only [Set.mem_ofPred_eq] at hy
         rw [M.opp_opp] at hy
-        rw [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0]
-        exact hy
+        rwa [C.head x' hx'0, C.isDesc_parent_iff hx'g, C.parent_of_ne hx'0]
   · -- every descendant reaches `g` along parent darts other than `fpar g`
     rintro ⟨n, hn⟩
     induction n generalizing h with
@@ -233,7 +228,7 @@ theorem cross_fpar (hM : M.Planar) {g : F} (hg : g ≠ C.r0) (h : F) :
       have hh0 : h ≠ C.r0 := by
         intro h0
         rw [h0, show C.parent C.r0 = C.r0 by simp [parent],
-          Function.iterate_fixed (show C.parent C.r0 = C.r0 by simp [parent])] at hn
+          Function.iterate_fixed (by simp [parent])] at hn
         exact hg hn.symm
       refine EqvGen.trans _ _ _ hpar (EqvGen.rel _ _ ⟨C.fpar h, ?_, ?_, C.head h hh0⟩)
       · refine T.mem_Sd.mpr ⟨C.mem h hh0, fun heq => hhg ?_, fun heq => ?_⟩

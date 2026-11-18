@@ -164,14 +164,14 @@ theorem argS_exec (c : Config) (hw : WordsBounded W c) :
     exec_block
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
-    q.2.2.2.2.2.2, exec_frameB ex (by decide)⟩
+    q.2.2.2.2.2.2, exec_frameB ex by_d⟩
 
 /-- The registers `appT` writes. -/
 def BappT (r : ℕ) : Bool :=
   decide (r = 216020) || decide (r = 216021) || decide (r = 216033) || decide (r = 216034) ||
     decide (216040 ≤ r ∧ r ≤ 216043) || decide (r = 40000)
 
-theorem wrM_appT : wrM BappT appT = true := by decide
+theorem wrM_appT : wrM BappT appT = true := by_d
 
 set_option maxHeartbeats 2000000 in
 /-- Appending the triple and the region data of the scans. -/
@@ -199,7 +199,7 @@ theorem appT_exec (c : Config) (hw : WordsBounded W c) {d n p LB : ℕ}
     all_goals try (config_simp; simp only [h21, h20, h02, h05, h31, h16]; omega)
     · config_simp
       simp only [h21, h02, h05, h31, h16, Machine.upd_apply]
-      split_ifs <;> first | omega | (rw [show p - 2 + 1 = p - 1 by omega]; exact hLB)
+      split_ifs <;> first | omega | (rwa [show p - 2 + 1 = p - 1 by omega])
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
     all_goals config_simp
     all_goals try simp only [h21, h20, h02, h05, h31, h16]
@@ -209,7 +209,7 @@ theorem appT_exec (c : Config) (hw : WordsBounded W c) {d n p LB : ℕ}
   exact ⟨c', k, ex, hk, q.1, q.2.1, q.2.2.1, q.2.2.2.1, q.2.2.2.2.1, q.2.2.2.2.2.1,
     q.2.2.2.2.2.2.1, q.2.2.2.2.2.2.2, exec_frameM ex wrM_appT⟩
 
-theorem wrM_stB : wrM (fun r => decide (r = 216022)) stB = true := by decide
+theorem wrM_stB : wrM (fun r => decide (r = 216022)) stB = true := by_d
 
 /-- Storing a bucket. -/
 theorem stB_exec (c : Config) (hw : WordsBounded W c) {d : ℕ} (h22 : c.nreg 216022 = d)
@@ -220,7 +220,7 @@ theorem stB_exec (c : Config) (hw : WordsBounded W c) {d : ℕ} (h22 : c.nreg 21
       (c'.nmem = upd c.nmem d (c.nreg 216053) ∧ c'.nreg 216022 = d + 1) := by
     unfold stB
     exec_block
-    · config_simp; rw [h22, h02]; exact hd
+    · config_simp; rwa [h22, h02]
     · refine ⟨rfl, ?_, ?_⟩ <;> config_simp <;> simp only [h22, h02]
   exact ⟨c', k, ex, hk, q.1, q.2, exec_frameM ex wrM_stB⟩
 

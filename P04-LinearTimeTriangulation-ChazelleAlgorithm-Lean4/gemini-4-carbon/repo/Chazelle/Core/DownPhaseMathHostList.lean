@@ -38,7 +38,7 @@ theorem poly_eq_of_vtx {P P' : Polygon} (hn : P.n = P'.n)
     cases P' with
     | mk l' =>
       congr 1
-      have hn' : l.length = l'.length := hn
+      have hn' := hn
       refine List.ext_getElem hn' fun i h1 h2 => ?_
       have := hv i h1
       simp only [Polygon.vtx] at this
@@ -70,7 +70,7 @@ theorem poly_of_rep {li : Bool} (hli : li = true ↔ Mountain.LeftInside Q)
     have hj' : j < nk (interiorModel Q) S R := by simpa [Polygon.n, hL] using hj
     have hjL : j < L.length := by rw [hL]; exact hj'
     have hlt : (i0 + j) % nk (interiorModel Q) S R < nk (interiorModel Q) S R :=
-      Nat.mod_lt _ (by omega)
+      Nat.mod_lt _ by_o
     rw [Existence.vtx_rotate _ _ (by rw [hostPoly_n]; exact hj'), hostPoly_n,
       hostPoly_vtx hlt, ← rep_eval hQ hFam hne hR hli hdh hlt (hrep j hj')]
     simp only [Polygon.vtx]
@@ -90,9 +90,9 @@ theorem edgeOK_of_rep {li : Bool} (hdh : DistinctHeights Q) {L : List SymPt} {i0
   rw [hL] at hj ⊢
   have hidx : (i0 + (j + 1) % N) % N = ((i0 + j) % N + 1) % N := by
     rw [Nat.add_mod_mod, Existence.mod_add_one_mod]
-  have h2 := hrep ((j + 1) % N) (Nat.mod_lt _ (by omega))
+  have h2 := hrep ((j + 1) % N) (Nat.mod_lt _ by_o)
   rw [hidx] at h2
-  exact rep_edgeOK hQ hFam hne hR hdh (Nat.mod_lt _ (by omega)) (hrep j hj) h2
+  exact rep_edgeOK hQ hFam hne hR hdh (Nat.mod_lt _ by_o) (hrep j hj) h2
 
 end
 
@@ -113,16 +113,16 @@ theorem regular_reverse {n : ℕ} {L : List SymPt}
   have hrev : ∀ k, k < m → L.reverse.getD k (.vtx 0) = L.getD (m - 1 - k) (.vtx 0) := by
     intro k hk
     rw [List.getD_eq_getElem _ _ (by simpa using hk), List.getElem_reverse,
-      List.getD_eq_getElem _ _ (by omega)]
-  have hj1 : (j + 1) % m < m := Nat.mod_lt _ (by omega)
+      List.getD_eq_getElem _ _ by_o]
+  have hj1 : (j + 1) % m < m := Nat.mod_lt _ by_o
   rw [hrev j hj, hrev _ hj1]
   -- the pair is the reversed pair at index `m - 1 - (j + 1) % m`
   set k := m - 1 - (j + 1) % m with hk
-  have hkm : k < m := by omega
+  have hkm : k < m := by_o
   have hk1 : (k + 1) % m = m - 1 - j := by
     by_cases h1 : j + 1 < m
     · rw [Nat.mod_eq_of_lt h1] at hk
-      rw [hk, Nat.mod_eq_of_lt (by omega)]; omega
+      rw [hk, Nat.mod_eq_of_lt by_o]; omega
     · have : j + 1 = m := by omega
       rw [this, Nat.mod_self] at hk
       rw [hk, show m - 1 - 0 + 1 = m by omega, Nat.mod_self]; omega
@@ -151,11 +151,11 @@ theorem polyFacts_rotate (i0 : ℕ) : PolyFacts Q S R ((hostPoly Q S R).rotate i
   have h3 := three_le_nk hQ hFam hne hR
   refine ⟨Existence.simple_rotate _ _ hs, ?_, ?_, ?_⟩
   · rw [Existence.filled_rotate, Existence.boundary_rotate]; exact hint.symm
-  · rw [Existence.boundary_rotate]; exact hbd
+  · rwa [Existence.boundary_rotate]
   · intro j hj
-    have hn : 0 < (hostPoly Q S R).n := by omega
+    have hn : 0 < (hostPoly Q S R).n := by_o
     obtain ⟨i, hi, hij⟩ := Existence.exists_rot_index hn i0 j hj
-    exact ⟨i, by rw [Existence.n_rotate]; exact hi, by rw [Existence.vtx_rotate _ _ hi, hij]⟩
+    exact ⟨i, by rwa [Existence.n_rotate], by rw [Existence.vtx_rotate _ _ hi, hij]⟩
 
 /-- The facts for a reversal of a rotation of the host polygon. -/
 theorem polyFacts_rev (i0 : ℕ) {P : Polygon} (hn : P.n = ((hostPoly Q S R).rotate i0).n)
@@ -165,16 +165,13 @@ theorem polyFacts_rev (i0 : ℕ) {P : Polygon} (hn : P.n = ((hostPoly Q S R).rot
   obtain ⟨hs, hint, hbd, hvx⟩ := polyFacts_rotate hQ hFam hne hR i0
   have hbd' := Mountain.rev_boundary hn hv
   refine ⟨Mountain.rev_simple hn hv hs, ?_, ?_, ?_⟩
-  · rw [Mountain.rev_filled hn hv, hbd']; exact hint
-  · rw [hbd']; exact hbd
+  · rwa [Mountain.rev_filled hn hv, hbd']
+  · rwa [hbd']
   · intro j hj
     obtain ⟨j', hj', e⟩ := hvx j hj
     set m := ((hostPoly Q S R).rotate i0).n
     refine ⟨m - 1 - j', by rw [hn]; omega, ?_⟩
-    rw [hv _ (by omega), show m - 1 - (m - 1 - j') = j' by omega]
-    exact e
-
-end
+    rwa [hv _ by_o, show m - 1 - (m - 1 - j') = j' by omega]end
 
 end
 

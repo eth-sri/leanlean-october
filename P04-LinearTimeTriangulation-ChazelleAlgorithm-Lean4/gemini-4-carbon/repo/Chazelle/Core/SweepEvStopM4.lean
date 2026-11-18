@@ -67,7 +67,6 @@ theorem onCB_not_dom_right {z : Point} (h : OnCB J.right z) : z ∉ J.whole.dom 
 theorem far_free (C : Chain) {a : Point} (ha : a.2 ≤ C.top.2) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
     (hf : FreeAt C a σ) : FreeAt C (farPt C a σ) (-σ) := by
   obtain ⟨hT, -, hin⟩ := Merge.hit_of_freeAt C ha hσ hf
-  show ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (farPt C a σ) (-σ) s ∈ C.dom
   filter_upwards [Ioo_mem_nhdsGT hT] with s hs
   unfold farPt
   rw [Sweep.rayPt_back]
@@ -87,7 +86,7 @@ theorem win_min {a : Point} (ha : a.2 ≤ J.right.top.2) {σ : ℝ} (hσ : σ = 
     (h1g : FreeAt J.left a σ ∧ a.2 ≤ J.left.top.2 → τ₁ = J.left.hitParam a σ)
     (h2 : 0 < τ₂) (h2o : OnCB J.right (rayPt a σ τ₂)) (h2g : τ₂ = J.right.hitParam a σ)
     (hτ : τ = τ₁ ∨ τ = τ₂) (hτ1 : τ ≤ τ₁) (hτ2 : τ ≤ τ₂) : τ = J.whole.hitParam a σ := by
-  have haW : a.2 ≤ J.whole.top.2 := le_trans ha J.right_top_le
+  have haW := le_trans ha J.right_top_le
   refine hit_min hσ haW hf (L := {τ₁, τ₂}) ?_ ?_ ?_ ?_
   · intro x hx
     rcases hx with rfl | hx
@@ -130,15 +129,15 @@ theorem endPos_pt {P : Polygon} {N : NF} (hN : IsNF (chainModel J.right) (Qof P)
     (chainModel J.right).pos (Qof P) (endPos N i (1 - b)) =
       (if b = 1 then Merge.lend ((N.chord i).toSet (chainModel J.right) (Qof P))
         else Merge.rend ((N.chord i).toSet (chainModel J.right) (Qof P))) := by
-  have hj : 2 * i + (1 - b) < 2 * N.nChords := by omega
+  have hj : 2 * i + (1 - b) < 2 * N.nChords := by_o
   obtain ⟨hEO, -⟩ := endOrigin_eq J hN hj
   rw [show (2 * i + (1 - b)) / 2 = i by omega, show (2 * i + (1 - b)) % 2 = 1 - b by omega] at hEO
   rw [← hEO]
   unfold endOrigin
   rw [show (2 * i + (1 - b)) / 2 = i by omega]
   rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
-  · rw [ite_eq_right (by omega), ite_eq_right (by omega)]
-  · rw [ite_eq_left (by omega), ite_eq_left rfl]
+  · rw [ite_eq_right by_o, ite_eq_right by_o]
+  · rw [ite_eq_left by_o, ite_eq_left rfl]
 
 /-- The attachment of a chord record at its end. -/
 theorem endPos_attach {P : Polygon} {N : NF} (hN : IsNF (chainModel J.right) (Qof P) N) {i : ℕ}
@@ -178,7 +177,7 @@ theorem parent_key_iff (hP : J.P.Simple) {P : Polygon} {N : NF}
     rw [hpt] at hpa
     refine hiff.2 ?_
     rcases Nat.le_one_iff_eq_zero_or_eq_one.1 hb with rfl | rfl
-    · rw [ite_eq_right (by norm_num)] at hpa; exact Or.inr ⟨rfl, hpa⟩
+    · rw [ite_eq_right by_n] at hpa; exact Or.inr ⟨rfl, hpa⟩
     · rw [ite_eq_left rfl] at hpa; exact Or.inl ⟨rfl, hpa⟩
   · intro hsub
     have hend := hiff.1 hsub
@@ -193,14 +192,14 @@ theorem parent_key_iff (hP : J.P.Simple) {P : Polygon} {N : NF}
     have hfR := free_right hf hay
     have hA' := attach_of_origin (C := J.right) hP hay haD hσ hfR hA
     rw [← hcs] at hA'
-    have hM : WalkAx (chainModel J.right) := FactsChain.walkAx J.right hP
+    have hM := FactsChain.walkAx J.right hP
     have hpa : sidePt (chainModel J.right).W (endPos N i (1 - b)).edge
         ((chainModel J.right).param (Qof P) (endPos N i (1 - b))) = a := by
       show (chainModel J.right).pos (Qof P) (endPos N i (1 - b)) = a
       rw [hpt]
       rcases hend with ⟨rfl, h⟩ | ⟨rfl, h⟩
-      · rw [ite_eq_left rfl]; exact h
-      · rw [ite_eq_right (by norm_num)]; exact h
+      · rwa [ite_eq_left rfl]
+      · rw [ite_eq_right by_n]; exact h
     obtain ⟨e1, e2⟩ := hM.attach_unique (hS₂ hc) hAt hA' (by rw [hpa, hA.2.2.2.1])
     rw [e1, e2]
 

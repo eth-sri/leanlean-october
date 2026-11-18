@@ -52,15 +52,15 @@ theorem filled_inter_subset_of_interior_disjoint {Q₁ Q₂ : Polygon} (h₁ : Q
       z ∈ A.filled → z ∈ B.filled → z ∈ A.boundary := by
     intro A B hA hB hAB hzA hzB
     by_contra hzb
-    have hopen : IsOpen (A.filled \ A.boundary) := isOpen_filled_sdiff_boundary hA
-    have hnhds : A.filled \ A.boundary ∈ 𝓝 z := hopen.mem_nhds ⟨hzA, hzb⟩
-    have hcl : z ∈ closure (B.filled \ B.boundary) := filled_subset_closure_interior hB hzB
+    have hopen := isOpen_filled_sdiff_boundary hA
+    have hnhds := hopen.mem_nhds ⟨hzA, hzb⟩
+    have hcl := filled_subset_closure_interior hB hzB
     obtain ⟨y, hy⟩ := mem_closure_iff_nhds.1 hcl _ hnhds
-    have : y ∈ (A.filled \ A.boundary) ∩ (B.filled \ B.boundary) := hy
+    have := hy
     rw [hAB] at this
     exact this
   refine ⟨key Q₁ Q₂ h₁ h₂ hI hz₁ hz₂, key Q₂ Q₁ h₂ h₁ ?_ hz₂ hz₁⟩
-  rw [inter_comm]; exact hI
+  rwa [inter_comm]
 
 /-- The exterior of a simple polygon is not contained in the filled region of any polygon. -/
 theorem filled_compl_not_subset_filled (P Q : Polygon) : ¬ P.filledᶜ ⊆ Q.filled := by
@@ -89,14 +89,14 @@ theorem common_interior_empty {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q�
     have := (hxor z hzP hz₁b hz₂b).1 hzf
     exact (this.1 hz₁) hz₂
   -- `I` is open
-  have hIopen : IsOpen I :=
+  have hIopen :=
     (isOpen_filled_sdiff_boundary h₁).inter (isOpen_filled_sdiff_boundary h₂)
   -- `I` is relatively closed in the exterior of `P`
   have hIcl : closure I ∩ P.filledᶜ ⊆ I := by
     rintro z ⟨hzc, hzP⟩
-    have hz₁ : z ∈ Q₁.filled :=
+    have hz₁ :=
       (isClosed_filled Q₁).closure_subset (closure_mono (fun _ h => h.1.1) hzc)
-    have hz₂ : z ∈ Q₂.filled :=
+    have hz₂ :=
       (isClosed_filled Q₂).closure_subset (closure_mono (fun _ h => h.2.1) hzc)
     refine ⟨⟨hz₁, fun h => hzP (hb (Or.inl h))⟩, ⟨hz₂, fun h => hzP (hb (Or.inr h))⟩⟩
   -- connectedness of the exterior
@@ -112,7 +112,7 @@ theorem common_interior_empty {P Q₁ Q₂ : Polygon} (hP : P.Simple) (h₁ : Q�
     by_cases hxc : x ∈ closure I
     · exact Or.inl (hIcl ⟨hxc, hx⟩)
     · exact Or.inr ⟨hx, hxc⟩
-  have hsub : P.filledᶜ ⊆ I :=
+  have hsub :=
     IsPreconnected.subset_left_of_subset_union hIopen hVopen hdisj hcov ⟨z, hIP hz, hz⟩
       (filled_compl_connected hP)
   exact filled_compl_not_subset_filled P Q₁ (fun x hx => (hsub hx).1.1)

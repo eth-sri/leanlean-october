@@ -73,7 +73,7 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
   set T := c.nreg ALLOC with hT
   set K := (hostLeaves P.n C 0 H).length with hK
   set len := H.length with hlen
-  have hTW : T ≤ W := by omega
+  have hTW : T ≤ W := by_o
   -- initialization
   obtain ⟨c₁, k₁, e₁, hk₁, w₁, x01, x02, x17, x18, x19, x20, x26, x05, x06, x08, x07, x16, x04,
       x03, xA, xm⟩ : ∃ c₁ k₁, Exec P W plInit c c₁ k₁ ∧ k₁ = 13 ∧ WordsBounded W c₁ ∧
@@ -90,7 +90,7 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     refine ⟨rfl, ‹_›, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;>
       (try simp only [show ALLOC = 9999 from rfl]) <;> config_simp <;>
       (try simp only [h00, hl, h02, hT9])
-  have fr₁ : FrameM Bpl c c₁ := exec_frameM e₁ (by decide)
+  have fr₁ : FrameM Bpl c c₁ := exec_frameM e₁ by_d
   have h0 : hostLeaves P.n C 0 (H.take 0) = [] := by simp [hostLeaves]
   have h0p : (Host.pts P.n (H.take 0)).length = 0 := by simp [Host.pts]
   have I₁ : PlI W P.n C HB T len K H c 0 c₁ :=
@@ -113,17 +113,17 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     have hwfi := hwf it hmem
     have hHi := hH.2 i hlt
     rw [← hitd] at hHi
-    have haddr : HB + 1 + 3 * i + 3 ≤ T := by omega
-    have l0 := I.low (HB + 1 + 3 * i) (by omega)
-    have l1 := I.low (HB + 1 + 3 * i + 1) (by omega)
-    have l2 := I.low (HB + 1 + 3 * i + 2) (by omega)
+    have haddr : HB + 1 + 3 * i + 3 ≤ T := by_o
+    have l0 := I.low (HB + 1 + 3 * i) by_o
+    have l1 := I.low (HB + 1 + 3 * i + 1) by_o
+    have l2 := I.low (HB + 1 + 3 * i + 2) by_o
     have hit : ItemWords c₂.nmem (HB + 1 + 3 * i) it := by
       cases it with
       | run a ℓ =>
         obtain ⟨x1, x2, x3⟩ := hHi
-        exact ⟨by rw [l0]; exact x1,
-          by rw [l1, show HB + 1 + 3 * i + 1 = HB + 2 + 3 * i by omega]; exact x2,
-          by rw [l2, show HB + 1 + 3 * i + 2 = HB + 3 + 3 * i by omega]; exact x3⟩
+        exact ⟨by rwa [l0],
+          by rwa [l1, show HB + 1 + 3 * i + 1 = HB + 2 + 3 * i by omega],
+          by rwa [l2, show HB + 1 + 3 * i + 2 = HB + 3 + 3 * i by omega]⟩
       | pt x =>
         cases x with
         | vtx j => show c₂.nmem _ = 1; rw [l0]; exact hHi.1
@@ -140,21 +140,21 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
     rw [hsucc, List.length_append] at hle1
     have hpt := pts_take_le P.n H i
     obtain ⟨c₃, k₃, e₃, hk₃, b05, b08, b07, b16, b04, bL, bm, bf⟩ := plItem_exec (P := P) hC
-      (by omega) c₂ I.wb I.kc (it := it) I.r05 I.r08 I.r07 I.r16 I.r04 hit hwfi' (by omega)
-      (by omega) (by omega) (by omega) (by omega)
-    have gI : ∀ r, Bitem r = false → c₃.nreg r = c₂.nreg r := bf.1
+      by_o c₂ I.wb I.kc (it := it) I.r05 I.r08 I.r07 I.r16 I.r04 hit hwfi' by_o
+      by_o by_o by_o by_o
+    have gI := bf.1
     refine ⟨c₃, k₃, e₃, ⟨i + 1, ?_⟩, ?_⟩
     · refine ⟨e₃.wb_right, I.kc.keep fun r hr => gI r (by
           simp only [Bitem, Brun, Bch, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
-        b05, by rw [gI _ (by decide), I.r06], by rw [b08]; ring, ?_, ?_, ?_,
-        by rw [gI _ (by decide), I.r03], by rw [gI _ (by decide), I.rA], by omega, ?_, ?_, ?_⟩
+        b05, by rw [gI _ by_d, I.r06], by rw [b08]; ring, ?_, ?_, ?_,
+        by rw [gI _ by_d, I.r03], by rw [gI _ by_d, I.rA], by_o, ?_, ?_, ?_⟩
       · rw [b07, hpsucc]
       · rw [b16, hsucc, List.length_append]; ring
       · rw [b04, hsucc, List.length_append]
       · rw [hsucc]
         exact clAt_append (clAt_congr I.tab fun x _ hx => bm x (Or.inl hx)) bL
       · intro a ha
-        rw [bm a (Or.inl (by omega)), I.low a ha]
+        rw [bm a (Or.inl by_o), I.low a ha]
       · exact I.fr.trans ⟨fun r hr => gI r (by
             simp only [Bpl, Bitem, Brun, Bch, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢
             omega), fun r hr => bf.2.1 r (by
@@ -180,14 +180,14 @@ theorem plS_exec {C : ℕ} (hC : 1 ≤ C) (hn3 : 3 ≤ P.n) (c : Config) (hw : W
   refine ⟨_, k₁ + (k₂ + 1), ex, ?_, e₃.wb_right, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [I₁.r05, I₁.r04, h0] at hk₂
     omega
-  · simp only; rw [Machine.upd_other _ _ _ (by decide)]; exact I₂.r03
-  · simp only; rw [Machine.upd_other _ _ _ (by decide)]; exact r04₂
+  · simp only; rw [Machine.upd_other _ _ _ by_d]; exact I₂.r03
+  · simp only; rwa [Machine.upd_other _ _ _ by_d]
   · show upd c₂.nreg 9999 (c₂.nreg 219016) 9999 = T + 3 * K
     rw [Machine.upd_same, r16₂]
   · exact tab₂
   · exact I₂.low
   · exact I₂.kc.keep fun r hr => by
-      simp only; rw [Machine.upd_other _ _ _ (by omega)]
+      simp only; rw [Machine.upd_other _ _ _ by_o]
   · intro r hr
     simp only
     rw [Machine.upd_other _ _ _ (by

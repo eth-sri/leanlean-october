@@ -58,8 +58,8 @@ theorem sum_kids_split {v p r : ℕ} (hr : r < R) (hpr : pos r = p) :
       simp [hpr]
     · have hne : pos c ≠ p := fun e => hcr (h.pos_inj hc.1 hr (e.trans hpr.symm))
       by_cases h1 : p ≤ pos c
-      · rw [ite_eq_left h1, ite_eq_right hcr, ite_eq_left (by omega)]; simp
-      · rw [ite_eq_right h1, ite_eq_right hcr, ite_eq_right (by omega)]
+      · rw [ite_eq_left h1, ite_eq_right hcr, ite_eq_left by_o]; simp
+      · rw [ite_eq_right h1, ite_eq_right hcr, ite_eq_right by_o]
   rw [Finset.sum_congr rfl hpt, Finset.sum_add_distrib, Finset.sum_ite_eq']
   congr 1
   by_cases hk : ChX R prg pch rem v r
@@ -84,18 +84,18 @@ theorem p1_fold {j : ℕ} (hj : j ≤ R) {u : ℕ} (hu : u < R) :
     rfl
   | succ j ih =>
     rw [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
-    have hjR : j < R := by omega
-    have hp : R - 1 - j < R := by omega
-    have hr : ord (R - 1 - j) < R := h.ord_lt _ hp
+    have hjR : j < R := by_o
+    have hp : R - 1 - j < R := by_o
+    have hr := h.ord_lt _ hp
     have hpr : pos (ord (R - 1 - j)) = R - (j + 1) := by rw [h.pos_ord _ hp]; omega
     have ih' : ∀ v, v < R → ((List.range j).foldl (p1 R ord prg pch rem) ones) v =
         1 + ∑ c ∈ (kids R prg pch rem v).filter (fun c => R - j ≤ pos c), sz R prg pch rem c :=
-      fun v hv => ih (by omega) hv
+      fun v hv => ih by_o hv
     generalize (List.range j).foldl (p1 R ord prg pch rem) ones = s at ih' ⊢
     unfold p1
     generalize ord (R - 1 - j) = r at hr hpr ⊢
     have hsplit := fun v => sum_kids_split h (rem := rem) (v := v) hr hpr
-    have hth : R - (j + 1) + 1 = R - j := by omega
+    have hth : R - (j + 1) + 1 = R - j := by_o
     -- the size of `r` is final
     have hsr : s r = sz R prg pch rem r := by
       rw [ih' r hr, sz_rec h hr]
@@ -188,8 +188,8 @@ theorem cval_pos {t c : ℕ} (hc : c < R) (htc : AncX R prg pch rem t c) (hne : 
 theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch rem u) {st : T3}
     (hI : P2Inv R pos prg pch rem i st) : P2Inv R pos prg pch rem (i + 1) (p2 ord prg pch rem S st i) := by
   obtain ⟨hA, hB⟩ := hI
-  have hr : ord i < R := h.ord_lt i hi
-  have hpr : pos (ord i) = i := h.pos_ord i hi
+  have hr := h.ord_lt i hi
+  have hpr := h.pos_ord i hi
   unfold p2
   generalize ord i = r at hr hpr ⊢
   -- positions `< i + 1` are positions `< i` or `r`
@@ -197,7 +197,7 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
     intro u hu hpu
     by_cases e : pos u = i
     · exact Or.inr (h.pos_inj hu hr (e.trans hpr.symm))
-    · exact Or.inl (by omega)
+    · exact Or.inl by_o
   by_cases htop : r = 0 ∨ rem (pch r) = 1
   · rw [ite_eq_left htop]
     refine ⟨fun u hu hpu => ?_, fun t ht htt hpt => ?_⟩
@@ -229,8 +229,8 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
             have := b3 c hc htc hct
             have hcr := hnm c htc hct
             by_contra hh
-            exact hcr (h.pos_inj hc hr (by omega))
-          · exact Or.inr ⟨b1, b2, b3, by omega, b5⟩
+            exact hcr (h.pos_inj hc hr by_o)
+          · exact Or.inr ⟨b1, b2, b3, by_o, b5⟩
       · subst e
         dsimp only
         rw [Function.update_self, Function.update_self]
@@ -240,14 +240,14 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
         · have := (AncX.pos_le h htc hc).2.2 (Ne.symm hct)
           omega
   · rw [ite_eq_right htop]
-    have hrnt : ¬ IsTop pch rem r := htop
+    have hrnt := htop
     simp only [not_or] at htop
     have hr0 := htop.1
-    have hprR : prg r < R := h.prg_lt r hr hr0
+    have hprR := h.prg_lt r hr hr0
     have hppr : pos (prg r) < i := by rw [← hpr]; exact h.pos_prg r hr hr0
     obtain ⟨htR, httop, htanc⟩ := hA (prg r) hprR hppr
     generalize st.top (prg r) = t at htR httop htanc ⊢
-    have htr : AncX R prg pch rem t r := htanc.tail ⟨hr, hr0, rfl, htop.2⟩
+    have htr := htanc.tail ⟨hr, hr0, rfl, htop.2⟩
     have htne : t ≠ r := by
       intro e
       rw [e] at httop
@@ -284,7 +284,7 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
         · subst e
           dsimp only
           rw [Function.update_self, Function.update_self]
-          refine ⟨fun c hc htc hct hpc => ?_, Or.inr ⟨hr, htr, Ne.symm htne, by omega, rfl⟩⟩
+          refine ⟨fun c hc htc hct hpc => ?_, Or.inr ⟨hr, htr, Ne.symm htne, by_o, rfl⟩⟩
           rcases hlt c hc hpc with h2 | h2
           · exact (hB1 c hc htc hct h2).trans hbig.le
           · rw [h2]
@@ -298,10 +298,10 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
             · refine Or.inl ⟨b1, b2, fun c hc htc hct => ?_⟩
               have := b3 c hc htc hct
               by_contra hh
-              have hcr : c = r := h.pos_inj hc hr (by omega)
+              have hcr : c = r := h.pos_inj hc hr by_o
               rw [hcr] at htc
               exact hother t' ht' htt' e htc
-            · exact Or.inr ⟨b1, b2, b3, by omega, b5⟩
+            · exact Or.inr ⟨b1, b2, b3, by_o, b5⟩
       · exact absurd (e2 ▸ htt') hrnt
     · rw [ite_eq_right hbig]
       unfold P2Inv
@@ -317,7 +317,7 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
             · rw [h2]; omega
           · rcases hB2 with ⟨b1, b2, b3⟩ | ⟨b1, b2, b3, b4, b5⟩
             · omega
-            · exact Or.inr ⟨b1, b2, b3, by omega, b5⟩
+            · exact Or.inr ⟨b1, b2, b3, by_o, b5⟩
         · refine ⟨fun c hc htc hct hpc => ?_, ?_⟩
           · rcases hlt c hc hpc with h2 | h2
             · exact hB1 c hc htc hct h2
@@ -326,10 +326,10 @@ theorem p2_step {i : ℕ} (hi : i < R) (hS : ∀ u, u < R → S u = sz R prg pch
             · refine Or.inl ⟨b1, b2, fun c hc htc hct => ?_⟩
               have := b3 c hc htc hct
               by_contra hh
-              have hcr : c = r := h.pos_inj hc hr (by omega)
+              have hcr : c = r := h.pos_inj hc hr by_o
               rw [hcr] at htc
               exact hother t' ht' htt' e htc
-            · exact Or.inr ⟨b1, b2, b3, by omega, b5⟩
+            · exact Or.inr ⟨b1, b2, b3, by_o, b5⟩
       · exact absurd (e2 ▸ htt') hrnt
 
 theorem p2_fold {i : ℕ} (hi : i ≤ R) (hS : ∀ u, u < R → S u = sz R prg pch rem u) (st : T3) :
@@ -339,7 +339,7 @@ theorem p2_fold {i : ℕ} (hi : i ≤ R) (hS : ∀ u, u < R → S u = sz R prg p
     refine ⟨fun u _ hu => absurd hu (Nat.not_lt_zero _), fun t _ _ ht => absurd ht (Nat.not_lt_zero _)⟩
   | succ i ih =>
     rw [List.range_succ, List.foldl_append, List.foldl_cons, List.foldl_nil]
-    exact p2_step h (by omega) hS (ih (by omega))
+    exact p2_step h by_o hS (ih by_o)
 
 /-- **The top pass**: after all `R` steps, `top u` is the top of `u`, and for every top `t`,
 either its component is `{t}` and `best t = t`, or `best t` is a proper member of the component

@@ -175,7 +175,7 @@ theorem hlt_iff {P : Polygon} (hG : GoodEnv P) {u v : ℕ} (hu : u < (Qof P).n) 
     ((Qof P).vtx u).2 < ((Qof P).vtx v).2 ↔ Mountain.ylexLT (P.vtx u) (P.vtx v) := by
   have hgood := goodShear_epsOf hG.2
   have hn : (Qof P).n = P.n := shear_n _ P
-  rw [hgood.2.2.1 u v (by rw [← hn]; exact hu) (by rw [← hn]; exact hv)]
+  rw [hgood.2.2.1 u v (by rwa [← hn]) (by rwa [← hn])]
   show _ ↔ ((Qof P).vtx u).2 < ((Qof P).vtx v).2 ∨
     (((Qof P).vtx u).2 = ((Qof P).vtx v).2 ∧ ((Qof P).vtx u).1 < ((Qof P).vtx v).1)
   constructor

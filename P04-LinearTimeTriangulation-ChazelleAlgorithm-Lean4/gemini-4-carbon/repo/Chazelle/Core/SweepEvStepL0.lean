@@ -35,7 +35,7 @@ theorem F₂plus_chordFamily' {J : Merge.Junction} {Q : Polygon} {S₂ : Set (Se
     (hS₂ : (chainModel J.right).ChordFamily Q S₂)
     (hvtx : ∀ k, ∃ h, h < Q.n ∧ (J.whole.vertex k).2 = (Q.vtx h).2) :
     (chainModel J.whole).ChordFamily Q (F₂plus J S₂) := by
-  have hS₂a : S₂ ⊆ Merge.augChords J.right := hS₂.2.1
+  have hS₂a := hS₂.2.1
   refine ⟨F₂plus_finite J hS₂.1, F₂plus_subset J hS₂a, fun e he => ?_⟩
   -- a point of `e` at a vertex height of `Q`
   obtain ⟨z, hz, h, hh, hzh⟩ : ∃ z ∈ e, ∃ h, h < Q.n ∧ z.2 = (Q.vtx h).2 := by
@@ -65,14 +65,14 @@ theorem whole_vertex_height {P : Polygon} (hn3 : 3 ≤ P.n) {E : ℕ} {m : ℕ �
     ∃ h, h < (Qof P).n ∧ (C.vertex k).2 = ((Qof P).vtx h).2 := by
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hHwf : HostWF (Qof P).n H := by rw [hQn]; exact (hwf.2 H C hC).2.1
-  have hn : 0 < (Qof P).n := by omega
+  have hn : 0 < (Qof P).n := by_o
   rw [DownMath.chain_vertex_host hC.2.1 k, Gran.eval_snd]
   refine ⟨_, Gran.hv_lt ?_, rfl⟩
   set L := H.pts (Qof P).n
   by_cases hi : (C.s + k) % L.length < L.length
   · rw [List.getD_eq_getElem _ _ hi]
     exact NFLoc.hostWF_pts hHwf hn _ (List.getElem_mem _)
-  · rw [List.getD_eq_default _ _ (by omega)]
+  · rw [List.getD_eq_default _ _ by_o]
     exact hn
 
 /-- **`F₂⁺` is a chord family of `Qof P`** in the environment of the event loop. -/

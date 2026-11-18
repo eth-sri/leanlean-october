@@ -54,12 +54,12 @@ theorem not_mem_chord_of_crossAdj (C : Chain) {F : Set (Set Point)}
   intro c hc hxc
   obtain ⟨y, a, b, h, -, rfl, -, -⟩ := Merge.augChords_spec (hF hc)
   obtain ⟨hy, ha, hb⟩ := hxc
-  have hA' : A ∈ regionsIn C.dom F := hA
-  have hB' : B ∈ regionsIn C.dom F := hB
+  have hA' := hA
+  have hB' := hB
   -- points of the chord in either direction are free, which is impossible
-  have hfreeA : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt x (-σ) t ∉ ⋃₀ F :=
+  have hfreeA :=
     hAe.mono fun t ht => (Chazelle.Chain.regionsIn_subset hA' ht).2
-  have hfreeB : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt x σ t ∉ ⋃₀ F :=
+  have hfreeB :=
     hBe.mono fun t ht => (Chazelle.Chain.regionsIn_subset hB' ht).2
   have hab := h.lt
   -- one of the two directions runs along the chord
@@ -86,10 +86,10 @@ theorem not_mem_chord_of_crossAdj (C : Chain) {F : Set (Set Point)}
   have e2 := hmem (-σ) hnσ hfreeA
   rcases hσ with rfl | rfl
   · have := e1.1 rfl
-    have := e2.2 (by norm_num)
+    have := e2.2 by_n
     linarith
   · have := e1.2 rfl
-    have := e2.1 (by norm_num)
+    have := e2.1 by_n
     linarith
 
 /-- **Both regions of a crossing have an arc through the crossing point.** -/
@@ -99,16 +99,16 @@ theorem arcHit_of_crossAdj (C : Chain) (hP : C.P.Simple) {Q : Polygon} {F : Set 
     {x : Point} (hx : x ∈ C.set) {σ : ℝ} (hσ : σ = 1 ∨ σ = -1)
     (hAe : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt x (-σ) t ∈ A)
     (hBe : ∀ᶠ t in 𝓝[>] (0 : ℝ), rayPt x σ t ∈ B) : ArcHit C F A x ∧ ArcHit C F B x := by
-  have hz : x.2 ≤ C.top.2 := C.snd_le_top_of_mem_set hx
+  have hz := C.snd_le_top_of_mem_set hx
   have hxd : x ∉ C.dom := fun h => C.not_mem_set_of_mem_dom h hx
   have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
   have e0 : ∀ τ : ℝ, rayPt x τ 0 = x := fun τ => by simp [rayPt]
   obtain ⟨εA, hεA, hsubA⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hAe
   obtain ⟨εB, hεB, hsubB⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hBe
   have h1 := arcHit_right C hP hFam hA hz hnσ (s := 0) (b := εA) hεA
-    (fun t h0 h1 => hsubA ⟨h0, h1⟩) (by rw [e0]; exact hxd)
+    (fun t h0 h1 => hsubA ⟨h0, h1⟩) (by rwa [e0])
   have h2 := arcHit_right C hP hFam hB hz hσ (s := 0) (b := εB) hεB
-    (fun t h0 h1 => hsubB ⟨h0, h1⟩) (by rw [e0]; exact hxd)
+    (fun t h0 h1 => hsubB ⟨h0, h1⟩) (by rwa [e0])
   rw [e0] at h1 h2
   exact ⟨h1, h2⟩
 
@@ -148,7 +148,7 @@ theorem interior_of_arcHit (C : Chain) {F : Set (Set Point)} (hne : F.Nonempty) 
       · exact absurd (h ▸ hca) hnc
       · exact absurd (h ▸ hcb) hnc
     · exfalso
-      have hp1 : p + 1 = (chainModel C).W.n := by omega
+      have hp1 : p + 1 = (chainModel C).W.n := by_o
       have hv : Geometry.lerp ((chainModel C).wa p) ((chainModel C).wb p) 1 = C.slitTop := by
         rw [Geometry.lerp_one]
         show (C.sideWalk C.sideBeta).vtx ((p + 1) % (C.sideWalk C.sideBeta).n) = C.slitTop
@@ -179,7 +179,7 @@ theorem cross_zip (C : Chain) (hP : C.P.Simple) {Q : Polygon} {N : NF}
     ∃ p q, p < N.arcs.length ∧ q < N.arcs.length ∧ reg (rgi N p) = A ∧ reg (rgi N q) = B ∧
       ZipRel C Q N p q := by
   set F := N.F (chainModel C) Q
-  have hFam : (chainModel C).ChordFamily Q F := hN.1
+  have hFam := hN.1
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   obtain ⟨x, hx, σ, hσ, hAe, hBe⟩ := hcr
   -- the family is nonempty: otherwise there is a single region

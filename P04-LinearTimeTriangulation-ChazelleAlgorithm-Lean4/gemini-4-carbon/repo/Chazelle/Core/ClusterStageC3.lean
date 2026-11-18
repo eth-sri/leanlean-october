@@ -65,8 +65,8 @@ theorem lvBody_exec {g : GV} {c2 : Config} (hw2 : WordsBounded W c2) (hG2 : GR g
   have hU := g.U_ge; have hE := g.END_eq
   have b35 := g.base_eq 35; have b36 := g.base_eq 36; have b37 := g.base_eq 37
   have b38 := g.base_eq 38; have b39 := g.base_eq 39
-  have r65 := hG2.rbase 35 (by omega); have r66 := hG2.rbase 36 (by omega)
-  have r67 := hG2.rbase 37 (by omega); have r68 := hG2.rbase 38 (by omega)
+  have r65 := hG2.rbase 35 by_o; have r66 := hG2.rbase 36 by_o
+  have r67 := hG2.rbase 37 by_o; have r68 := hG2.rbase 38 by_o
   have r1 := hG2.one; have r0 := hG2.zero; have rk := hG2.rk'
   have ht : (j + cs) % g.k' < g.k' := Nat.mod_lt _ hk
   have hb : (j + cs) / g.k' ≤ j + cs := Nat.div_le_self _ _
@@ -89,11 +89,11 @@ theorem lvBody_exec {g : GV} {c2 : Config} (hw2 : WordsBounded W c2) (hG2 : GR g
     refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a ha => ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_,
       ?_, ?_, ?_⟩
     · simp only; unfold LVRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      upd_keep
     · unfold LvMem at ha
       config_simp; simp only [r65, r67, r68, h40, h41, h39, h42]
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+      rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o]
     all_goals (config_simp; simp only [r65, r66, r67, r68, h40, h41, h39, h42, r1, r0, rk])
   -- the light flag
   set hl := if (j + cs) % g.k' < g.k' - 1 then 0 else 1 with hhl
@@ -103,14 +103,14 @@ theorem lvBody_exec {g : GV} {c2 : Config} (hw2 : WordsBounded W c2) (hG2 : GR g
       c4.nmem = upd c3.nmem (g.base 36 + j) hl ∧ c4.nreg = c3.nreg := by
     by_cases hp : c3.nreg 130841 < c3.nreg 130839
     · have e := Exec.storeN (P := P) hw3 130843 130009
-      refine ⟨_, 1 + 1, .ifLtN_true hp e, by omega, e.wb_right,
+      refine ⟨_, 1 + 1, .ifLtN_true hp e, by_o, e.wb_right,
         ⟨fun r _ => rfl, rfl, rfl, rfl, fun a ha => ?_⟩, ?_⟩
       · simp only; rw [h43, Machine.upd_other _ _ _ (by unfold LvMem at ha; omega)]
       · rw [h41', h39'] at hp
         refine ⟨?_, rfl⟩
         simp only; rw [h43, h0', hhl, ite_eq_left hp]
     · have e := Exec.storeN (P := P) hw3 130843 130001
-      refine ⟨_, 1 + 2, .ifLtN_false hp e, by omega, e.wb_right,
+      refine ⟨_, 1 + 2, .ifLtN_false hp e, by_o, e.wb_right,
         ⟨fun r _ => rfl, rfl, rfl, rfl, fun a ha => ?_⟩, ?_⟩
       · simp only; rw [h43, Machine.upd_other _ _ _ (by unfold LvMem at ha; omega)]
       · rw [h41', h39'] at hp
@@ -129,40 +129,40 @@ theorem lvBody_exec {g : GV} {c2 : Config} (hw2 : WordsBounded W c2) (hG2 : GR g
       (∀ r, r ≠ 130841 → r ≠ 130842 → c6.nreg r = c5.nreg r) ∧ c6.rreg = c5.rreg ∧
       c6.rmem = c5.rmem ∧ c6.output = c5.output := by
     by_cases hp : c5.nreg 130841 < c5.nreg 130015
-    · rw [h5t, h5r _ (by omega), hk'] at hp
-      refine ⟨c5, 0 + 1, .ifLtN_true (by rw [h5t, h5r _ (by omega), hk']; exact hp) (.skip e5.wb_right),
-        by omega, e5.wb_right, rfl, ?_, ?_, fun _ _ _ => rfl, rfl, rfl, rfl⟩
+    · rw [h5t, h5r _ by_o, hk'] at hp
+      refine ⟨c5, 0 + 1, .ifLtN_true (by rwa [h5t, h5r _ by_o, hk']) (.skip e5.wb_right),
+        by_o, e5.wb_right, rfl, ?_, ?_, fun _ _ _ => rfl, rfl, rfl, rfl⟩
       · rw [h5t, hmod, ite_eq_left hp]
-      · rw [h5r _ (by omega), h42', hdiv, ite_eq_left hp]
+      · rw [h5r _ by_o, h42', hdiv, ite_eq_left hp]
     · have hp' := hp
-      rw [h5t, h5r _ (by omega), hk'] at hp'
-      have e7 := Exec.constN (P := P) e5.wb_right 130841 0 (by omega)
+      rw [h5t, h5r _ by_o, hk'] at hp'
+      have e7 := Exec.constN (P := P) e5.wb_right 130841 0 by_o
       have e8 := Exec.addN (P := P) e7.wb_right 130842 130842 130001 (by
         simp only [Machine.upd_other _ _ _ (show (130842 : ℕ) ≠ 130841 by omega),
           Machine.upd_other _ _ _ (show (130001 : ℕ) ≠ 130841 by omega)]
-        rw [h5r _ (by omega), h5r _ (by omega), h42', h1']; omega)
+        rw [h5r _ by_o, h5r _ by_o, h42', h1']; omega)
       refine ⟨_, (1 + (1 + 0)) + 2, .ifLtN_false hp (.seq e7 (.seq e8 (.skip e8.wb_right))),
-        by omega, e8.wb_right, rfl, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
+        by_o, e8.wb_right, rfl, ?_, ?_, fun r h1 h2 => ?_, rfl, rfl, rfl⟩
       · simp only [Machine.upd_other _ _ _ (show (130841 : ℕ) ≠ 130842 by omega),
           Machine.upd_same]
         rw [hmod, ite_eq_right hp']
       · simp only [Machine.upd_same,
           Machine.upd_other _ _ _ (show (130842 : ℕ) ≠ 130841 by omega),
           Machine.upd_other _ _ _ (show (130001 : ℕ) ≠ 130841 by omega)]
-        rw [h5r _ (by omega), h5r _ (by omega), h42', h1', hdiv, ite_eq_right hp']
+        rw [h5r _ by_o, h5r _ by_o, h42', h1', hdiv, ite_eq_right hp']
       · simp only [Machine.upd_other _ _ _ h1, Machine.upd_other _ _ _ h2]
-  have h6l : c6.nreg 130840 = j := by rw [h6r _ (by omega) (by omega), h5r _ (by omega), h40']
-  have h61 : c6.nreg 130001 = 1 := by rw [h6r _ (by omega) (by omega), h5r _ (by omega), h1']
+  have h6l : c6.nreg 130840 = j := by rw [h6r _ by_o by_o, h5r _ by_o, h40']
+  have h61 : c6.nreg 130001 = 1 := by rw [h6r _ by_o by_o, h5r _ by_o, h1']
   have e9 := Exec.addN (P := P) hw6 130840 130840 130001 (by rw [h6l, h61]; omega)
   have hmfin : ({ c6 with nreg := upd c6.nreg 130840 (c6.nreg 130840 + c6.nreg 130001) } :
       Config).nmem = upd c3.nmem (g.base 36 + j) hl := by
     show c6.nmem = _; rw [hm6, show c5.nmem = c4.nmem from rfl, hm4]
-  refine ⟨_, k3 + (k4 + (1 + (k6 + 1))), .seq e3 (.seq e4 (.seq e5 (.seq e6 e9))), by omega,
+  refine ⟨_, k3 + (k4 + (1 + (k6 + 1))), .seq e3 (.seq e4 (.seq e5 (.seq e6 e9))), by_o,
     e9.wb_right, hf3.trans (hf4.trans ⟨fun r hr => ?_, h6rr, h6rm, h6o, fun a ha => ?_⟩), ?_, ?_, ?_,
     ?_, fun a h1 h2 h3 h4 => ?_⟩
   · unfold LVRG at hr
     simp only [Machine.upd_other _ _ _ (show r ≠ 130840 by omega)]
-    rw [h6r _ (by omega) (by omega), h5r _ (by omega), hr4]
+    rw [h6r _ by_o by_o, h5r _ by_o, hr4]
   · show c6.nmem a = c4.nmem a; rw [hm6]
   · simp only [Machine.upd_same, h6l, h61]
   · simp only [Machine.upd_other _ _ _ (show (130841 : ℕ) ≠ 130840 by omega)]
@@ -171,11 +171,11 @@ theorem lvBody_exec {g : GV} {c2 : Config} (hw2 : WordsBounded W c2) (hG2 : GR g
     exact h6b
   · rw [hmfin]
     refine ⟨?_, ?_, ?_, ?_⟩
-    · rw [Machine.upd_other _ _ _ (by omega), hm3, Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), Machine.upd_same]
-    · rw [Machine.upd_other _ _ _ (by omega), hm3, Machine.upd_other _ _ _ (by omega),
+    · rw [Machine.upd_other _ _ _ by_o, hm3, Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o, Machine.upd_same]
+    · rw [Machine.upd_other _ _ _ by_o, hm3, Machine.upd_other _ _ _ by_o,
         Machine.upd_same]
-    · rw [Machine.upd_other _ _ _ (by omega), hm3, Machine.upd_same]
+    · rw [Machine.upd_other _ _ _ by_o, hm3, Machine.upd_same]
     · rw [Machine.upd_same]
   · rw [hmfin, Machine.upd_other _ _ _ h4, hm3, Machine.upd_other _ _ _ h3,
       Machine.upd_other _ _ _ h2, Machine.upd_other _ _ _ h1]
@@ -188,7 +188,7 @@ theorem lvS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk
       ∀ l, l < g.μ → LvOK g c'.nmem (g.k' - 1 - rho) l := by
   have hU := g.U_ge; have hE := g.END_eq
   set cs := g.k' - 1 - rho with hcs
-  have hc : cs < g.k' := by omega
+  have hc : cs < g.k' := by_o
   unfold lvS
   obtain ⟨c1, k1, e1, hk1, hw1, h39, h38, h40, h41, h42, hf1⟩ : ∃ c1 k1, Exec P W
       (block [.subN 130839 130015 130001, .subN 130838 130839 130836, .constN 130840 0,
@@ -205,7 +205,7 @@ theorem lvS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk
     · config_simp; rw [hG.rk', hG.one, hrho, Nat.mod_eq_of_lt hc]
     · config_simp; rw [Nat.div_eq_of_lt hc]
     · simp only; unfold StCRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      upd_keep
   have hG1 : GR g c1 := hG.frame (fun r hr => hf1.1 r (by unfold GRReg at hr; unfold StCRG; omega))
   obtain ⟨c', k, e, hk', hw', hi', hn', h41', h42', h39', h38', hf', hm'⟩ := forN (P := P) (W := W)
     (ri := 130840) (rn := 130011) (body := lvBody)
@@ -219,9 +219,9 @@ theorem lvS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk
         unfold GRReg at hr; unfold StCRG; omega))
       obtain ⟨c3, k3, e3, hk3, hw3, hf3, h40', h41', h42', hok, hkeep⟩ :=
         lvBody_exec (P := P) hw2 hG2 hk hkμ hj hc hi2 ht2 hb2 h392 hW
-      refine ⟨c3, k3, e3, hk3, hw3, h40', by rw [hf3.1 _ (by unfold LVRG; omega)]; exact hn2,
-        h41', h42', by rw [hf3.1 _ (by unfold LVRG; omega)]; exact h392,
-        by rw [hf3.1 _ (by unfold LVRG; omega)]; exact h382,
+      refine ⟨c3, k3, e3, hk3, hw3, h40', by rwa [hf3.1 _ (by unfold LVRG; omega)],
+        h41', h42', by rwa [hf3.1 _ (by unfold LVRG; omega)],
+        by rwa [hf3.1 _ (by unfold LVRG; omega)],
         hf2.trans (hf3.mono (fun r h => by simp only [LVRG, StCRG] at h ⊢; omega) (fun a h => h)),
         fun l hl => ?_⟩
       rcases Nat.lt_or_ge l j with h | h
@@ -229,13 +229,13 @@ theorem lvS_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c) (hk
         have b38 := g.base_eq 38
         obtain ⟨o1, o2, o3, o4⟩ := hm2 l h
         refine ⟨?_, ?_, ?_, ?_⟩
-        · rw [hkeep _ (by omega) (by omega) (by omega) (by omega)]; exact o1
-        · rw [hkeep _ (by omega) (by omega) (by omega) (by omega)]; exact o2
-        · rw [hkeep _ (by omega) (by omega) (by omega) (by omega)]; exact o3
-        · rw [hkeep _ (by omega) (by omega) (by omega) (by omega)]; exact o4
-      · rw [show l = j by omega]; exact hok)
+        · rwa [hkeep _ by_o by_o by_o by_o]
+        · rwa [hkeep _ by_o by_o by_o by_o]
+        · rwa [hkeep _ by_o by_o by_o by_o]
+        · rwa [hkeep _ by_o by_o by_o by_o]
+      · rwa [show l = j by omega])
     (j₀ := 0) ⟨hw1, h40, hG1.rμ, h41, h42, h39, h38, hf1, fun l hl => by omega⟩ (Nat.zero_le _)
-  exact ⟨c', k1 + k, .seq e1 e, by omega, hw', hf', h38', hm'⟩
+  exact ⟨c', k1 + k, .seq e1 e, by_o, hw', hf', h38', hm'⟩
 
 end proofs
 

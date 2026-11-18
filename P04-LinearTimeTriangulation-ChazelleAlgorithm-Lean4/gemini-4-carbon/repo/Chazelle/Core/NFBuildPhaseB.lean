@@ -37,11 +37,11 @@ theorem wr_phaseB : wrM BphaseB phaseB = true := by
     have := wrM_mono (B' := BphaseB) (fun r hr => ?_) wr_passBody
     · simp only [passLoop, wrM]; exact this
     · cases hb : Bpass r
-      · rw [hb] at hr; exact absurd hr (by simp)
+      · rw [hb] at hr; exact absurd hr by_s
       · by_contra hc
         simp only [BphaseB, decide_eq_true_eq, not_or, not_and, not_lt] at hc
-        have : Bpass r = false := Bpass_false (by omega)
-        rw [this] at hb; exact absurd hb (by simp)
+        have : Bpass r = false := Bpass_false by_o
+        rw [this] at hb; exact absurd hb by_s
   have h4 : wrM BphaseB regPhase = true := wrM_mono (fun r hr => by
     simp only [BregPhase, Bool.or_eq_true, decide_eq_true_eq] at hr
     simp only [BphaseB, decide_eq_true_eq]; omega) wr_regPhase
@@ -69,7 +69,7 @@ theorem phaseB_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
       (∀ a, a < H → c'.nmem a = c.nmem a) ∧
       NFWithin c'.nmem H (c'.nreg 9999) (BuildNF.buildNF M (Qof P) L E) := by
   set K := L.length with hKdef
-  have hlen : E.length = 2 * K := hI.length_E
+  have hlen := hI.length_E
   obtain ⟨c₃, k₃, x₃, hk₃, hk₃', w₃, C₃, F, c₂, I⟩ := phaseB1_exec (P := P) hG hWn c hw hI hlen
     hD hT hN hB hKr h0 h1 hSEr hH hwf hM hR hTH hCL hBH hSE hSEH hroom
   have hgs : gapsB M (Qof P) L E E.length = gapStarts M (Qof P) L E := BuildNF.gapsB_full _ _ _ _
@@ -80,22 +80,22 @@ theorem phaseB_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
     rw [List.take_of_length_le (by simp [cw])]
   -- the tables of the pass
   have hkey : ∀ j, j < A → c₃.nmem (H + 12 + 5 * K + 5 * j) = keyA M (Qof P) L E j := fun j hj => by
-    have := (I.arcs j (by rw [hgs]; exact hj)).1 0 (by norm_num)
+    have := (I.arcs j (by rwa [hgs])).1 0 by_n
     rw [Nat.add_zero, hgs] at this
     rw [this]; rfl
   have hkR : ∀ j, j < A → keyA M (Qof P) L E j < K + 1 := fun j _ => by
     unfold keyA; rw [BuildNF.arcRec_eq]; have := BuildNF.topR_le hI ((gapStarts M (Qof P) L E).getD j 0 + 1)
     simp only; omega
   have hwt : ∀ j, j < A → c₃.nmem (H + 17 + 28 * K + j) = wA M (Qof P) L E j := fun j hj => by
-    have := (I.arcs j (by rw [hgs]; exact hj)).2
+    have := (I.arcs j (by rwa [hgs])).2
     rw [hgs] at this
     rw [this]; rfl
   have hch : ∀ i, i < K → ∀ f, f < 5 → c₃.nmem (H + 12 + 5 * i + f) = cf (chordRec M (Qof P) L E i) f :=
     fun i hi f hf => I.chords i hi (by rw [htake]; exact BuildNF.mem_cw hI hi) f hf
   have hu : ∀ i, i < K → c₃.nmem (H + 12 + 5 * i + 3) = upC M (Qof P) L E i := fun i hi => by
-    rw [hch i hi 3 (by norm_num)]; rfl
+    rw [hch i hi 3 by_n]; rfl
   have hv : ∀ i, i < K → c₃.nmem (H + 12 + 5 * i + 4) = dnC M (Qof P) L E i := fun i hi => by
-    rw [hch i hi 4 (by norm_num)]; rfl
+    rw [hch i hi 4 by_n]; rfl
   have huR : ∀ i, i < K → upC M (Qof P) L E i < K + 1 := fun i hi => by
     have := (BuildNF.chordRec_up_le hI hi).1; unfold upC; omega
   have hvR : ∀ i, i < K → dnC M (Qof P) L E i < K + 1 := fun i hi => by
@@ -104,24 +104,24 @@ theorem phaseB_exec (hG : GoodEnv P) (hWn : hostWords P.n ≤ W) (c : Config)
   -- the region phase
   obtain ⟨c', k, x, hk, hk', w', f', h40003, T1, T2, T3, T4, T5, T6⟩ := regPhase_exec (P := P) c₃ w₃
     C₃ hA₃ hAle hkey hkR hwt hu hv huR hvR hroom
-  have C' := C₃.frame f' (by decide)
+  have C' := C₃.frame f' by_d
   have X : Exec P W phaseB c c' (k₃ + k) := .seq x₃ x
-  refine ⟨c', _, X, by omega, by unfold sizeB; omega, w', exec_frameM X wr_phaseB, h40003, C'.rA,
+  refine ⟨c', _, X, by_o, by unfold sizeB; omega, w', exec_frameM X wr_phaseB, h40003, C'.rA,
     fun a ha => by rw [T2 a (Or.inl ha), I.low a ha], ?_⟩
   -- the normal form
   intro m' hm'
   rw [C'.rA] at hm'
   have hoff : offF (cntF (keyA M (Qof P) L E) A) (cnt2F (upC M (Qof P) L E) (dnC M (Qof P) L E) K)
       (K + 1) ≤ A + 2 * K := offF_R_le _ _ _ hkR
-  have hK0 : K ≠ 0 := by omega
+  have hK0 : K ≠ 0 := by_o
   refine BuildNF.nfAt_of_tables hI hK0 (H := H) (CT := H + 12) (AT := H + 12 + 5 * K)
     (RT := H + 12 + 15 * K) (QT := H + 17 + 20 * K) (LT := H + 17 + 22 * K)
     (fun f hf => by rw [hm' _ (by unfold sizeB; omega), T1 f hf])
     (fun i hi f hf => by
-      rw [hm' _ (by unfold sizeB; omega), T2 _ (Or.inr (by omega)), hch i hi f hf])
+      rw [hm' _ (by unfold sizeB; omega), T2 _ (Or.inr by_o), hch i hi f hf])
     (fun j hj f hf => by
-      rw [hm' _ (by unfold sizeB; omega), T2 _ (Or.inr (by omega))]
-      have := (I.arcs j (by rw [hgs]; exact hj)).1 f hf
+      rw [hm' _ (by unfold sizeB; omega), T2 _ (Or.inr by_o)]
+      have := (I.arcs j (by rwa [hgs])).1 f hf
       rw [hgs] at this
       rw [show H + 12 + 5 * K + 5 * j + f = H + 12 + 5 * K + 5 * j + f from rfl, this])
     (fun r hr f hf => by rw [hm' _ (by unfold sizeB; omega), T3 r hr f hf])

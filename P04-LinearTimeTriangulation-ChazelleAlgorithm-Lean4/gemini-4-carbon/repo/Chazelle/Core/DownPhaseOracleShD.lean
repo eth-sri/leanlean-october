@@ -13,10 +13,6 @@ A sub-query serves a subarc of `L ≤ n - 1` walk edges of the interior walk fro
 `oset (interiorWalk Q) u x (ee + t₂)` of the subarc.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace IOrc
@@ -58,9 +54,9 @@ def BSQ (r : ℕ) : Bool :=
 def Barc (r : ℕ) : Bool :=
   decide (140000 ≤ r ∧ r < 140014) || decide (r = 170133 ∨ r = 170142 ∨ r = 170143)
 
-theorem wr_arcOne : wr Barc arcOne = true := by decide
-theorem wr_arcTwoA : wr Barc arcTwoA = true := by decide
-theorem wr_arcTwoB : wr Barc arcTwoB = true := by decide
+theorem wr_arcOne : wr Barc arcOne = true := by_d
+theorem wr_arcTwoA : wr Barc arcTwoA = true := by_d
+theorem wr_arcTwoB : wr Barc arcTwoB = true := by_d
 
 theorem barc_io {r : ℕ} (h : Barc r = true) : bandOf r ∈ ioBands ∧ r ≠ ALLOC :=
   io_of_band (by simp only [Barc, Bool.or_eq_true, decide_eq_true_eq] at h; omega)
@@ -128,8 +124,8 @@ theorem frame_chainI {c c' : Config} {k : ℕ} (hk : 14 ≤ k) (hA : c'.nreg ALL
     (ho : c'.output = c.output) : Frame ioBands c c' k := by
   have hB : ∀ r, Bchain r = true → bandOf r ∈ ioBands := fun r h => (io_of_band (by
     simp only [Bchain, Bk, Bool.or_eq_true, decide_eq_true_eq] at h; omega)).1
-  refine ⟨fun r hr' ha => ?_, fun r hr' => ?_, hm, fun a _ => by rw [hrm], ho, by omega,
-    by omega⟩
+  refine ⟨fun r hr' ha => ?_, fun r hr' => ?_, hm, fun a _ => by rw [hrm], ho, by_o,
+    by_o⟩
   · cases hb : Bchain r
     · exact hr r hb ha
     · exact absurd (hB r hb) hr'
@@ -174,34 +170,34 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
   have h2 := hsub.h2
   have hu := hsub.hu
   have hee := sub_ee_le hsub
-  have hcap : L ≤ 2 ^ (s.m₀ s.h - 1) := hLγ.trans hS.cap
+  have hcap := hLγ.trans hS.cap
   set x := (interiorModel (Qof P)).param (Qof P) ⟨u, sh₀⟩ with hx
   set y := (ee : ℝ) + (interiorModel (Qof P)).param (Qof P) ⟨(u + ee) % (Qof P).n, eh⟩ with hy
-  have hyL : y ≤ L := sub_y_le hsub
+  have hyL := sub_y_le hsub
   set C := ch (Qof P) u L h1 h2 with hCd
   have hsubC : oset (interiorWalk (Qof P)) u x y ⊆ C.set := oset_sub_set hu h1 h2 hyL
   -- the chain
   obtain ⟨c₁, k₁, e₁, hk₁, hk₁', C₁, d78, dA, dm, dr, drr, drm, dout⟩ := chainI_exec c hw hS h33 h37
-    (by rw [← hQ]; exact hu) h1 h2 hcap (by omega)
-  have F₁ : Frame ioBands c c₁ k₁ := frame_chainI hk₁' dA dm dr drr drm dout
+    (by rwa [← hQ]) h1 h2 hcap by_o
+  have F₁ := frame_chainI hk₁' dA dm dr drr drm dout
   have w₁ := e₁.wb_right
   have g₁ : ∀ r, 170000 ≤ r → r < 180000 → BSQ r = false → c₁.nreg r = c.nreg r :=
     fun r r1 r2 hr => dr r (by
       simp only [BSQ, Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr
       simp only [Bchain, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
-      (by unfold ALLOC; omega)
-  have hB₁ : BestI P c₁ Sp (s.o.eval (Qof P)) (dirOf s.dir) := hB.keep (fun r r1 r2 => dr r
+      by_ao
+  have hB₁ := hB.keep (fun r r1 r2 => dr r
     (by simp only [Bchain, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
-    (by unfold ALLOC; omega))
-  have b34 : c₁.nreg 170034 = sh₀ := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h34
-  have b35 : c₁.nreg 170035 = ee := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h35
-  have b36 : c₁.nreg 170036 = eh := by rw [g₁ _ (by norm_num) (by norm_num) (by decide)]; exact h36
+    by_ao)
+  have b34 : c₁.nreg 170034 = sh₀ := by rw [g₁ _ by_n by_n by_d]; exact h34
+  have b35 : c₁.nreg 170035 = ee := by rw [g₁ _ by_n by_n by_d]; exact h35
+  have b36 : c₁.nreg 170036 = eh := by rw [g₁ _ by_n by_n by_d]; exact h36
   have hτ : tau (Qof P) u L h1 h2 < 2 * L := tau_lt
   -- the arc blocks keep the chain state and the best hit
   have keepArc : ∀ {d d' : Config}, FrameB Barc d d' → CEnv P W O s u L h1 h2 d →
       CEnv P W O s u L h1 h2 d' := fun F hC => hC.keep (fun r hr => F.1 r (by
         unfold CRegs at hr; simp only [Barc, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega))
-      (fun a _ => by rw [F.2.2.1]) (by rw [F.1 _ (by decide)])
+      (fun a _ => by rw [F.2.2.1]) (by rw [F.1 _ by_d])
   have keepArcB : ∀ {d d' : Config} {S' : Set Point}, FrameB Barc d d' →
       BestI P d S' (s.o.eval (Qof P)) (dirOf s.dir) →
       BestI P d' S' (s.o.eval (Qof P)) (dirOf s.dir) := fun F hb => hb.keep (fun r r1 r2 =>
@@ -219,18 +215,18 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
   · -- one chain arc
     have hb : ¬ c₁.nreg 170037 < c₁.nreg 170077 := by rw [C₁.r37, C₁.r77]; omega
     obtain ⟨c₂, k₂, e₂, hk₂, a1, a2, a3, a4, Fa⟩ := arcOne_exec (P := P) c₁ w₁ C₁.r77 b34 b35 b36
-      (by omega)
+      by_o
     have C₂ := keepArc Fa C₁
     have harc := chainArcs_one hsub hs hLγ
     obtain ⟨c₃, k₃, e₃, hk₃, hB₃, C₃, F₃, g₃⟩ := shotI_exec hsh c₂ e₂.wb_right C₂
       (sa := ⟨6 + tau (Qof P) u L h1 h2, sh₀⟩) (ea := ⟨6 + tau (Qof P) u L h1 h2 + ee, eh⟩)
       a1 a2 a3 a4 harc hsubC ho1 ho2 hol hoA (keepArcB Fa hB₁) (by
-        rw [Fa.1 _ (by decide), dA]; omega)
+        rw [Fa.1 _ by_d, dA]; omega)
     have ex : Exec P W (sqS sh) c c₃ (k₁ + (k₂ + k₃ + 2)) :=
       .seq e₁ (.ifLtN_false hb (.seq e₂ e₃))
-    have Fa' : Frame ioBands c₁ c₂ k₂ := frameIO_of_frameB (fun r h => barc_io h) Fa k₂
-    refine ⟨c₃, _, ex, by omega, hB₃, C₃.env, ((F₁.trans Fa').trans F₃).mono (by simp)
-      (by omega), fun r r1 r2 hr => ?_⟩
+    have Fa' := frameIO_of_frameB (fun r h => barc_io h) Fa k₂
+    refine ⟨c₃, _, ex, by_o, hB₃, C₃.env, ((F₁.trans Fa').trans F₃).mono by_s
+      by_o, fun r r1 r2 hr => ?_⟩
     rw [bandShot g₃ r r1 r2 hr, bandArc Fa r r1 r2 hr, g₁ r r1 r2 hr]
   · -- two chain arcs meeting at the top
     push Not at hs
@@ -240,16 +236,16 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
     have hle : L₁ ≤ ee := by rcases hsub.hee with ⟨-, h'⟩ | ⟨-, h', -⟩ <;> omega
     have hx1 : x ≤ (L₁ : ℝ) := by
       have := hsub.hs.2.1
-      have : (1 : ℝ) ≤ L₁ := by exact_mod_cast (show 1 ≤ L₁ by omega)
+      have : (1 : ℝ) ≤ L₁ := by exact_mod_cast (by omega)
       linarith
     have hL₁y : (L₁ : ℝ) ≤ y := by
       have : (L₁ : ℝ) ≤ ee := by exact_mod_cast hle
       have := hsub.he.1
       linarith
     have hU := oset_union (interiorWalk (Qof P)) u hx1 hL₁y
-    have sA : oset (interiorWalk (Qof P)) u x L₁ ⊆ C.set :=
+    have sA :=
       (oset_mono _ _ le_rfl hL₁y).trans hsubC
-    have sB : oset (interiorWalk (Qof P)) u L₁ y ⊆ C.set :=
+    have sB :=
       (oset_mono _ _ hx1 le_rfl).trans hsubC
     have oA : s.o.eval (Qof P) ∉ oset (interiorWalk (Qof P)) u x L₁ := fun h =>
       hoA (oset_mono _ _ le_rfl hL₁y h)
@@ -257,37 +253,37 @@ theorem sqS_exec {sh : Stmt} {F : ℕ → ℕ}
       hoA (oset_mono _ _ hx1 le_rfl h)
     -- the first arc
     obtain ⟨c₂, k₂, e₂, hk₂, a1, a2, a3, a4, Fa⟩ := arcTwoA_exec (P := P) c₁ w₁ C₁.r77 b34 C₁.r89
-      (by omega) (by omega)
+      by_o by_o
     have C₂ := keepArc Fa C₁
     obtain ⟨c₃, k₃, e₃, hk₃, hB₃, C₃, F₃, g₃⟩ := shotI_exec hsh c₂ e₂.wb_right C₂
       (sa := ⟨6 + tau (Qof P) u L h1 h2, sh₀⟩) (ea := ⟨2 * L + 6, 0⟩)
       a1 a2 a3 a4 harcA sA ho1 ho2 hol oA (keepArcB Fa hB₁) (by
-        rw [Fa.1 _ (by decide), dA]; omega)
+        rw [Fa.1 _ by_d, dA]; omega)
     -- the second arc
     have c35 : c₃.nreg 170035 = ee := by
-      rw [bandShot g₃ _ (by norm_num) (by norm_num) (by decide),
-        bandArc Fa _ (by norm_num) (by norm_num) (by decide)]; exact b35
+      rw [bandShot g₃ _ by_n by_n by_d,
+        bandArc Fa _ by_n by_n by_d]; exact b35
     have c36 : c₃.nreg 170036 = eh := by
-      rw [bandShot g₃ _ (by norm_num) (by norm_num) (by decide),
-        bandArc Fa _ (by norm_num) (by norm_num) (by decide)]; exact b36
+      rw [bandShot g₃ _ by_n by_n by_d,
+        bandArc Fa _ by_n by_n by_d]; exact b36
     obtain ⟨c₄, k₄, e₄, hk₄, a1', a2', a3', a4', Fb⟩ := arcTwoB_exec (P := P) c₃ e₃.wb_right
-      C₃.r77 c35 c36 C₃.r89 (by omega)
+      C₃.r77 c35 c36 C₃.r89 by_o
     have C₄ := keepArc Fb C₃
     have hA₃ := F₃.2.2.2.2.2.2
     obtain ⟨c₅, k₅, e₅, hk₅, hB₅, C₅, F₅, g₅⟩ := shotI_exec hsh c₄ e₄.wb_right C₄
       (sa := ⟨6, 0⟩) (ea := ⟨6 + (ee - L₁), eh⟩) a1' a2' a3' a4' harcB sB ho1 ho2 hol oB
       (keepArcB Fb hB₃) (by
-        rw [Fb.1 _ (by decide)]
-        have := Fa.1 ALLOC (by decide)
+        rw [Fb.1 _ by_d]
+        have := Fa.1 ALLOC by_d
         omega)
     have ex : Exec P W (sqS sh) c c₅ (k₁ + ((k₂ + (k₃ + (k₄ + k₅))) + 1)) :=
       .seq e₁ (.ifLtN_true hb (.seq e₂ (.seq e₃ (.seq e₄ e₅))))
-    have Fa' : Frame ioBands c₁ c₂ k₂ := frameIO_of_frameB (fun r h => barc_io h) Fa k₂
-    have Fb' : Frame ioBands c₃ c₄ k₄ := frameIO_of_frameB (fun r h => barc_io h) Fb k₄
-    refine ⟨c₅, _, ex, by omega, ?_, C₅.env,
-      ((((F₁.trans Fa').trans F₃).trans Fb').trans F₅).mono (by simp) (by omega),
+    have Fa' := frameIO_of_frameB (fun r h => barc_io h) Fa k₂
+    have Fb' := frameIO_of_frameB (fun r h => barc_io h) Fb k₄
+    refine ⟨c₅, _, ex, by_o, ?_, C₅.env,
+      ((((F₁.trans Fa').trans F₃).trans Fb').trans F₅).mono by_s by_o,
       fun r r1 r2 hr => ?_⟩
-    · rw [Set.union_assoc, hU] at hB₅; exact hB₅
+    · rwa [Set.union_assoc, hU] at hB₅
     · rw [bandShot g₅ r r1 r2 hr, bandArc Fb r r1 r2 hr, bandShot g₃ r r1 r2 hr,
         bandArc Fa r r1 r2 hr, g₁ r r1 r2 hr]
 

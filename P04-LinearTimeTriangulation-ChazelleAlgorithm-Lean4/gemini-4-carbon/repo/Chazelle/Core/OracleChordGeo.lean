@@ -62,7 +62,7 @@ theorem chainEdge_eq_edge (hv : QVOK P C V) (ci : ℕ) :
 theorem edge_nonhoriz (hD : DistinctHeights (Qof P)) {e : ℕ} (he : e < P.n) (hn : 2 ≤ P.n) :
     ((Qof P).vtx e).2 ≠ ((Qof P).vtx ((e + 1) % (Qof P).n)).2 := by
   have hQn : (Qof P).n = P.n := shear_n _ _
-  refine hD _ _ (by rw [hQn]; exact he) (Nat.mod_lt _ (by rw [hQn]; omega)) ?_
+  refine hD _ _ (by rwa [hQn]) (Nat.mod_lt _ (by rw [hQn]; omega)) ?_
   rw [hQn]
   intro h
   rcases Nat.lt_or_ge (e + 1) P.n with h' | h'
@@ -91,7 +91,7 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
   have hyR := vtx_snd_lt_radius hv.CQ hh
   rw [abs_lt] at hyR
   have htopR := C.top_snd_lt_radius
-  have hnW : (chainModel C).W.n = 2 * C.m + 7 := walk_n C
+  have hnW := walk_n C
   have hm1 := C.one_le
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hn2 : 2 ≤ P.n := by
@@ -106,9 +106,9 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
   rcases (by omega : w = 0 ∨ w = 1 ∨ w = 2 ∨ w = 3 ∨ w = 4 ∨ w = 5 ∨ (6 ≤ w ∧ w < 2 * C.m + 6) ∨
       w = 2 * C.m + 6) with rfl | rfl | rfl | rfl | rfl | rfl | ⟨h6, h6'⟩ | rfl
   · exfalso
-    rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_zero, C.sideWalk_vtx_one] at hy
+    rw [Nat.mod_eq_of_lt by_o, C.sideWalk_vtx_zero, C.sideWalk_vtx_one] at hy
     simp [Geometry.lerp, Chain.slitTop] at hy; linarith
-  · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_one, C.sideWalk_vtx_two] at hy ⊢
+  · rw [Nat.mod_eq_of_lt by_o, C.sideWalk_vtx_one, C.sideWalk_vtx_two] at hy ⊢
     have hx : xpClass 1 = 0 := rfl
     refine ⟨?_, by rw [hx]; omega, fun _ => notset _ ?_⟩
     · ext
@@ -116,9 +116,9 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
       · exact hy
     · simp [Geometry.lerp, abs_of_neg (neg_lt_zero.2 hR)]
   · exfalso
-    rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hy
+    rw [Nat.mod_eq_of_lt by_o, C.sideWalk_vtx_two, C.sideWalk_vtx_three] at hy
     simp [Geometry.lerp] at hy; linarith
-  · rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_three, C.sideWalk_vtx_four] at hy ⊢
+  · rw [Nat.mod_eq_of_lt by_o, C.sideWalk_vtx_three, C.sideWalk_vtx_four] at hy ⊢
     have hx : xpClass 3 = 2 := rfl
     refine ⟨?_, by rw [hx]; omega, fun _ => notset _ ?_⟩
     · ext
@@ -126,16 +126,16 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
       · exact hy
     · simp [Geometry.lerp, abs_of_pos hR]
   · exfalso
-    rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_four, C.sideWalk_vtx_five] at hy
+    rw [Nat.mod_eq_of_lt by_o, C.sideWalk_vtx_four, C.sideWalk_vtx_five] at hy
     simp [Geometry.lerp, Chain.slitTop] at hy; linarith
   · exfalso
-    rw [Nat.mod_eq_of_lt (by omega), C.sideWalk_vtx_five, C.sideWalk_vtx_six] at hy
+    rw [Nat.mod_eq_of_lt by_o, C.sideWalk_vtx_five, C.sideWalk_vtx_six] at hy
     simp only [Geometry.lerp, Chain.slitTop] at hy
     nlinarith
   · -- a tour edge
-    obtain ⟨i, rfl⟩ : ∃ i, w = i + 6 := ⟨w - 6, by omega⟩
-    rw [Nat.mod_eq_of_lt (by omega), show i + 6 + 1 = (i + 1) + 6 by ring,
-      C.sideWalk_vtx_tour _ (by omega), C.sideWalk_vtx_tour _ (by omega)] at hy ⊢
+    obtain ⟨i, rfl⟩ : ∃ i, w = i + 6 := ⟨w - 6, by_o⟩
+    rw [Nat.mod_eq_of_lt by_o, show i + 6 + 1 = (i + 1) + 6 by ring,
+      C.sideWalk_vtx_tour _ by_o, C.sideWalk_vtx_tour _ by_o] at hy ⊢
     have hseg : Geometry.lerp (C.sideTour C.sideBeta i) (C.sideTour C.sideBeta (i + 1)) t ∈
         C.chainEdge (tci C i) := by
       rw [← tour_seg C i]; exact ⟨t, ht0, ht1.le, rfl⟩
@@ -144,7 +144,7 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
       unfold xpSym; rw [ite_eq_left (by rw [hv.m]; omega), show i + 6 - 6 = i by omega]
     have hci := tci_lt C i
     set e := eIdx P.n V.s (tci C i) with he
-    have hen : e < P.n := Nat.mod_lt _ (by omega)
+    have hen : e < P.n := Nat.mod_lt _ by_o
     have hedge := hseg
     rw [chainEdge_eq_edge hv] at hedge
     set p := Geometry.lerp (C.sideTour C.sideBeta i) (C.sideTour C.sideBeta (i + 1)) t
@@ -152,11 +152,11 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
       have := (rayPt_mem_edge_iff (Qof P) (edge_nonhoriz hT.hD hen hn2) (z := p) hy (Or.inl rfl)
         0).1 (by simpa [rayPt] using hedge)
       linarith [this.2]
-    refine ⟨?_, fun _ => ⟨⟨_, hci, hseg⟩, by rw [hsym]; exact hen, by rw [hsym]; exact hedge⟩,
+    refine ⟨?_, fun _ => ⟨⟨_, hci, hseg⟩, by rwa [hsym], by rwa [hsym]⟩,
       fun h' => absurd hcls h'⟩
     ext
     · show p.1 = xv P C V (i + 6) h
-      rw [hx]; unfold xv xpX; rw [ite_eq_right (by omega), ite_eq_right (by omega), hsym]; rfl
+      rw [hx]; unfold xv xpX; rw [ite_eq_right by_o, ite_eq_right by_o, hsym]; rfl
     · exact hy
   · -- up the slit: the top vertex
     rw [show (2 * C.m + 6 + 1) % (2 * C.m + 7) = 0 by
@@ -164,7 +164,7 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
       show 2 * C.m + 6 = 2 * C.m + 6 from rfl, C.sideWalk_vtx_tour _ le_rfl,
       C.sideTour_two_m, C.sideWalk_vtx_zero] at hy ⊢
     simp only [Geometry.lerp, Chain.slitTop] at hy
-    have ht : t = 0 := by nlinarith
+    have ht : t = 0 := by_nl
     subst ht
     have hcls : xpClass (2 * C.m + 6) = 1 := by unfold xpClass; split_ifs <;> omega
     have hsym : xpSym C V P.n (2 * C.m + 6) h = .vtx V.tv := by
@@ -173,18 +173,18 @@ theorem end_class (hT : TopOK P C V) {w h : ℕ} (hw : w < 2 * C.m + 7) (hh : h 
     refine ⟨?_, fun _ => ⟨C.top_mem_set, by rw [hsym]; exact hT.tv_lt, ?_⟩,
       fun h' => absurd hcls h'⟩
     · ext
-      · unfold xv xpX; rw [ite_eq_right (by omega), ite_eq_right (by omega), hsym]
+      · unfold xv xpX; rw [ite_eq_right by_o, ite_eq_right by_o, hsym]
         show C.top.1 = ((Qof P).vtx V.tv).1; rw [hT.top]
       · simp at hy; linarith
     · rw [hsym]; show C.top ∈ Polygon.edge _ V.tv
-      rw [← hT.top]; exact ⟨0, le_rfl, zero_le_one, by simp⟩
+      rw [← hT.top]; exact ⟨0, le_rfl, zero_le_one, by_s⟩
 
 /-- Two horizontal segments with `a < b` are equal only if their data are. -/
 theorem hseg_inj {y a b y' a' b' : ℝ} (hab : a < b) (ha'b' : a' ≤ b')
     (h : hseg y a b = hseg y' a' b') : y = y' ∧ a = a' ∧ b = b' := by
   have m1 : ((a, y) : Point) ∈ hseg y' a' b' := by rw [← h]; exact ⟨rfl, le_rfl, hab.le⟩
   have m2 : ((b, y) : Point) ∈ hseg y' a' b' := by rw [← h]; exact ⟨rfl, hab.le, le_rfl⟩
-  have e1 : y = y' := m1.1
+  have e1 := m1.1
   subst e1
   have m3 : ((a', y) : Point) ∈ hseg y a b := by rw [h]; exact ⟨rfl, le_rfl, ha'b'⟩
   have m4 : ((b', y) : Point) ∈ hseg y a b := by rw [h]; exact ⟨rfl, ha'b', le_rfl⟩
@@ -219,24 +219,22 @@ theorem chord_facts (hT : TopOK P C V) {N : NF} (hN : IsNF (chainModel C) (Qof P
   obtain ⟨y', a, b, hH, hyt, hset⟩ := hFam.2.1 hmem
   obtain ⟨⟨hl1, hl2, hl3, hl4, -⟩, ⟨hr1, hr2, hr3, hr4, -⟩⟩ := hAtt i hi
   -- the two ends lie on the chord
-  have hl : (chainModel C).pos (Qof P) ch.lpos ∈ hseg ((Qof P).vtx ch.h).2
-      ((chainModel C).pos (Qof P) ch.lpos).1 ((chainModel C).pos (Qof P) ch.rpos).1 := hl4
-  have hr : (chainModel C).pos (Qof P) ch.rpos ∈ hseg ((Qof P).vtx ch.h).2
-      ((chainModel C).pos (Qof P) ch.lpos).1 ((chainModel C).pos (Qof P) ch.rpos).1 := hr4
+  have hl := hl4
+  have hr := hr4
   have hle : ((chainModel C).pos (Qof P) ch.lpos).1 ≤ ((chainModel C).pos (Qof P) ch.rpos).1 :=
     hl.2.2
   obtain ⟨ey, ea, eb⟩ := hseg_inj hH.lt hle hset.symm
   have hyt' : ((Qof P).vtx ch.h).2 ≤ C.top.2 := by rw [← ey]; exact hyt
   have hnW := walk_n C
-  have EL := end_class hT (w := ch.lp) (h := ch.h) (by rw [← hnW]; exact hl1) hhn hl2 hl3 hl.1 hyt'
-  have ER := end_class hT (w := ch.rp) (h := ch.h) (by rw [← hnW]; exact hr1) hhn hr2 hr3 hr.1 hyt'
+  have EL := end_class hT (w := ch.lp) (h := ch.h) (by rwa [← hnW]) hhn hl2 hl3 hl.1 hyt'
+  have ER := end_class hT (w := ch.rp) (h := ch.h) (by rwa [← hnW]) hhn hr2 hr3 hr.1 hyt'
   have xl : ((chainModel C).pos (Qof P) ch.lpos).1 = xv P C V ch.lp ch.h := by
     have := congrArg Prod.fst EL.1; exact this
   have xr : ((chainModel C).pos (Qof P) ch.rpos).1 = xv P C V ch.rp ch.h := by
     have := congrArg Prod.fst ER.1; exact this
-  refine ⟨hhn, hyt', ?_, ?_, ⟨EL.1, EL.2.1, EL.2.2, by rw [← hnW]; exact hl1, hl2, hl3⟩,
-    ⟨ER.1, ER.2.1, ER.2.2, by rw [← hnW]; exact hr1, hr2, hr3⟩⟩
-  · rw [← xl, ← xr, ← ey, ← ea, ← eb]; exact hH
+  refine ⟨hhn, hyt', ?_, ?_, ⟨EL.1, EL.2.1, EL.2.2, by rwa [← hnW], hl2, hl3⟩,
+    ⟨ER.1, ER.2.1, ER.2.2, by rwa [← hnW], hr2, hr3⟩⟩
+  · rwa [← xl, ← xr, ← ey, ← ea, ← eb]
   · show hseg _ _ _ = _
     rw [xl, xr]
 
@@ -282,7 +280,7 @@ theorem endGtZ_iff {z : Point} (hσ : V.σb = 1) (hz : ZoOK C (sgnOf V.σb) z V.
       exact ⟨by rw [hz1]; linarith [hx.1], hx.1⟩
   · rw [h2]; simp only [show ¬ (2 : ℕ) = 0 by omega, ite_false, ite_true, true_or, true_iff,
       max_lt_iff]
-    exact ⟨hzR, by linarith⟩
+    exact ⟨hzR, by_l⟩
 
 theorem endLtZ_iff {z : Point} (hσ : V.σb ≠ 1) (hz : ZoOK C (sgnOf V.σb) z V.zo)
     (hnp : NotPast C V z) {w h : ℕ} (he : EndGood P C V w h) :
@@ -293,7 +291,7 @@ theorem endLtZ_iff {z : Point} (hσ : V.σb ≠ 1) (hz : ZoOK C (sgnOf V.σb) z 
   unfold EndLtZ ζOf xv; rw [ite_eq_right hσ]
   rcases xpClass_cases w with h0 | h1 | h2
   · rw [h0]; simp only [ite_true, true_or, true_iff, lt_min_iff]
-    exact ⟨hzR, by linarith⟩
+    exact ⟨hzR, by_l⟩
   · have hx := abs_lt.1 (he h1)
     rw [h1]; simp only [show ¬ (1 : ℕ) = 0 by omega, show ¬ (1 : ℕ) = 2 by omega, ite_false,
       true_and, false_or]
@@ -340,7 +338,7 @@ theorem EndFacts.good {w h : ℕ} (hE : EndFacts P C V w h) : EndGood P C V w h 
   have hm := (hc h1).1
   rw [hpos] at hm
   have := abs_fst_lt_radius_of_mem hm
-  unfold xv at this; rwa [ite_eq_right (by omega), ite_eq_right (by omega)] at this
+  unfold xv at this; rwa [ite_eq_right by_o, ite_eq_right by_o] at this
 
 end
 

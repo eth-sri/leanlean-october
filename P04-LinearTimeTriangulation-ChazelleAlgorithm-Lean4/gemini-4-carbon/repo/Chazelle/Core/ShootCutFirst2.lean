@@ -10,11 +10,6 @@ main loop (`40 := c₀`), or, when the subarc is short (`Done`), the whole piece
 (`43 := 1`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
-
 namespace Chazelle.Core
 
 namespace ShootCut
@@ -55,8 +50,8 @@ theorem first_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
   have tc43 : ∀ d₂ : Config, WordsBounded W d₂ → (∀ r, Keep r → d₂.nreg r = d.nreg r) →
       ∃ d₃, Exec P W (.instr (.constN 150043 1)) d₂ d₃ 1 ∧ FrameB Scr d₂ d₃ ∧
         d₃.nreg 150043 = 1 ∧ (∀ r, r ≠ 150043 → d₃.nreg r = d₂.nreg r) ∧ d₃.nmem = d₂.nmem :=
-    fun d₂ w₂ _ => ⟨_, Exec.constN w₂ 150043 1 (by omega),
-      exec_frameB (Exec.constN (P := P) w₂ 150043 1 (by omega)) (by decide), by config_simp,
+    fun d₂ w₂ _ => ⟨_, Exec.constN w₂ 150043 1 by_o,
+      exec_frameB (Exec.constN (P := P) w₂ 150043 1 by_o) by_d, by config_simp,
       fun r hr => by simp [hr], rfl⟩
   have tc40 : ∀ (d₁ : Config), (∀ r, Keep r → d₁.nreg r = d.nreg r) →
       ∀ d₂ : Config, WordsBounded W d₂ → (∀ r, Keep r → d₂.nreg r = d₁.nreg r) →
@@ -70,7 +65,7 @@ theorem first_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       rw [k₂ _ (by unfold Keep; omega), k₁ _ (by unfold Keep; omega), R.chain.h91]
     exact ⟨_, Exec.addN w₂ 150040 150001 150091 (by rw [a1, a91]; omega),
       exec_frameB (Exec.addN (P := P) w₂ 150040 150001 150091 (by rw [a1, a91]; omega))
-        (by decide), by config_simp; rw [a1, a91], fun r hr => by simp [hr], rfl⟩
+        by_d, by config_simp; rw [a1, a91], fun r hr => by simp [hr], rfl⟩
   have tc40' : ∀ (d₁ : Config), (∀ r, Keep r → d₁.nreg r = d.nreg r) →
       ∀ d₂ : Config, WordsBounded W d₂ → (∀ r, Keep r → d₂.nreg r = d₁.nreg r) →
       ∃ d₃, Exec P W (.instr (.copyN 150040 150096)) d₂ d₃ 1 ∧ FrameB Scr d₂ d₃ ∧
@@ -80,7 +75,7 @@ theorem first_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     have a96 : d₂.nreg 150096 = 6 := by
       rw [k₂ _ (by unfold Keep; omega), k₁ _ (by unfold Keep; omega), R.chain.h96]
     exact ⟨_, Exec.copyN w₂ 150040 150096, exec_frameB (Exec.copyN (P := P) w₂ 150040 150096)
-      (by decide), by config_simp; rw [a96], fun r hr => by simp [hr], rfl⟩
+      by_d, by config_simp; rw [a96], fun r hr => by simp [hr], rfl⟩
   unfold first
   by_cases hsU : s.edge ≤ 5 ∨ s.edge = 2 * C.m + 6
   · have t38 : d.nreg 150090 < d.nreg 150038 := by rw [R.h90, h38, ite_eq_left hsU]; omega
@@ -95,14 +90,14 @@ theorem first_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       set d₁ := ({ d with nreg := upd d.nreg 150075 (d.nreg 150096) } : Config) with hd₁
       have k₁ : ∀ r, Keep r → d₁.nreg r = d.nreg r := fun r hr => by
         simp only [hd₁, upd]; rw [ite_eq_right (by unfold Keep at hr; omega)]
-      have hpv : PcOK P C m₀ h γ (pSV s 6) := pSV_ok hs hs1 (by omega) (by
+      have hpv : PcOK P C m₀ h γ (pSV s 6) := pSV_ok hs hs1 by_o (by
         rw [wt_U_to_six C (Qof P) hs hsU]; omega)
       obtain ⟨d', k, ex, hk, hI', h40, kp, mem⟩ := leaf_exec hE (pc := pSV s 6) (tgt := 150040)
-        d₁ (hE.stable _ _ _ hI (exec_frameB e₁ (by decide))) hpv
-        (pcSV_exec d₁ e₁.wb_right (by omega) (by rw [k₁ _ (by unfold Keep; omega), R.h01])
+        d₁ (hE.stable _ _ _ hI (exec_frameB e₁ by_d)) hpv
+        (pcSV_exec d₁ e₁.wb_right by_o (by rw [k₁ _ (by unfold Keep; omega), R.h01])
           (by rw [k₁ _ (by unfold Keep; omega), R.h02]) (by simp [hd₁, upd, R.chain.h96]))
         (tc40' d₁ k₁)
-      exact ⟨d', _, .seq e₁ ex, by omega, hI', h40, fun r hr h1 => (kp r hr h1).trans (k₁ r hr),
+      exact ⟨d', _, .seq e₁ ex, by_o, hI', h40, fun r hr h1 => (kp r hr h1).trans (k₁ r hr),
         fun a ha => mem a ha⟩
     have notDone : ¬ (e.edge ≤ 5 ∨ e.edge = 2 * C.m + 6) ∨ ¬ uIx s.edge < uIx e.edge →
         ¬ Done C.m s.edge e.edge := by
@@ -124,27 +119,27 @@ theorem first_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           (∀ a, a < A₀ → d'.nmem a = d.nmem a) := by
       intro hnd d' k ex hk hI' h40 kp mem
       have hc0 : c0Of C.m s.edge = 6 := by unfold c0Of; rw [ite_eq_left hsU]
-      refine ⟨d', k, pSV s 6, ex, hk, hI', pSV_ok hs hs1 (by omega) (by
+      refine ⟨d', k, pSV s 6, ex, hk, hI', pSV_ok hs hs1 by_o (by
         rw [wt_U_to_six C (Qof P) hs hsU]; omega), rfl, fun hd => absurd hd hnd, fun _ => ⟨by
-        rw [hc0]; rfl, by rw [hc0, h40], kp _ (by unfold Keep; omega) (by omega)⟩,
+        rw [hc0]; rfl, by rw [hc0, h40], kp _ (by unfold Keep; omega) by_o⟩,
         fun r hr h1 _ => kp r hr h1, mem⟩
     by_cases heU : e.edge ≤ 5 ∨ e.edge = 2 * C.m + 6
     · have t39 : d.nreg 150090 < d.nreg 150039 := by rw [R.h90, h39, ite_eq_left heU]; omega
       by_cases hlt : uIx s.edge < uIx e.edge
       · -- a single piece through the uncounted block
         have hpv : PcOK P C m₀ h γ (pSE s e) := pSE_ok hs he hs1 he1 (by
-          rw [wt_U_U C (Qof P) hs he hsU heU (by rw [← uIx_eq hsU, ← uIx_eq heU]; exact hlt)]; omega)
+          rw [wt_U_U C (Qof P) hs he hsU heU (by rwa [← uIx_eq hsU, ← uIx_eq heU])]; omega)
         obtain ⟨d', k, ex, hk, hI', h43, kp, mem⟩ := leaf_exec hE (pc := pSE s e)
-          (tgt := 150043) d hI hpv (pcSE_exec d hw (by omega) R.h01 R.h02 R.h03 R.h04) tc43
+          (tgt := 150043) d hI hpv (pcSE_exec d hw by_o R.h01 R.h02 R.h03 R.h04) tc43
         refine ⟨d', _, pSE s e, .ifLtN_true t38 (.ifLtN_true t39 (.ifLtN_true
-          (by rw [h37, h30]; exact hlt) ex)), by omega, hI', hpv, rfl, fun _ => ⟨rfl, h43⟩,
+          (by rwa [h37, h30]) ex)), by_o, hI', hpv, rfl, fun _ => ⟨rfl, h43⟩,
           fun hnd => absurd (Or.inl ⟨hsU, heU, hlt⟩) hnd, fun r hr h1 h2 => kp r hr h2, mem⟩
       · obtain ⟨d', k, ex, hk, hI', h40, kp, mem⟩ := toSix (notDone (Or.inr hlt))
         exact fin6 (notDone (Or.inr hlt)) d' _ (.ifLtN_true t38 (.ifLtN_true t39
-          (.ifLtN_false (by rw [h37, h30]; exact hlt) ex))) (by omega) hI' h40 kp mem
+          (.ifLtN_false (by rwa [h37, h30]) ex))) by_o hI' h40 kp mem
     · have t39 : ¬ d.nreg 150090 < d.nreg 150039 := by rw [R.h90, h39, ite_eq_right heU]; omega
       obtain ⟨d', k, ex, hk, hI', h40, kp, mem⟩ := toSix (notDone (Or.inl heU))
-      exact fin6 (notDone (Or.inl heU)) d' _ (.ifLtN_true t38 (.ifLtN_false t39 ex)) (by omega)
+      exact fin6 (notDone (Or.inl heU)) d' _ (.ifLtN_true t38 (.ifLtN_false t39 ex)) by_o
         hI' h40 kp mem
   · have t38 : ¬ d.nreg 150090 < d.nreg 150038 := by rw [R.h90, h38, ite_eq_right hsU]; omega
     have hc0 : c0Of C.m s.edge = s.edge + 1 := by unfold c0Of; rw [ite_eq_right hsU]
@@ -156,7 +151,7 @@ theorem first_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
       simp only [hd₁, upd]; rw [ite_eq_right (by unfold Keep at hr; omega)]
     have o75 : d₁.nreg 150075 = s.edge + 1 := by simp [hd₁, upd, R.h01, R.chain.h91]
     have w₁ := e₁.wb_right
-    have hI₁ := hE.stable _ _ _ hI (exec_frameB e₁ (by decide))
+    have hI₁ := hE.stable _ _ _ hI (exec_frameB e₁ by_d)
     have a39 : d₁.nreg 150039 = d.nreg 150039 := k₁ _ (by unfold Keep; omega)
     have a90 : d₁.nreg 150090 = 0 := by rw [k₁ _ (by unfold Keep; omega), R.h90]
     have a32 : d₁.nreg 150032 = 2 * C.m + 6 := by rw [k₁ _ (by unfold Keep; omega), R.h32]
@@ -167,10 +162,10 @@ theorem first_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           (∀ r, Keep r → r ≠ 150040 → d'.nreg r = d₁.nreg r) ∧
           (∀ a, a < A₀ → d'.nmem a = d₁.nmem a) := by
       intro _
-      have hpv : PcOK P C m₀ h γ (pSV s (s.edge + 1)) := pSV_ok hs hs1 (by omega)
+      have hpv : PcOK P C m₀ h γ (pSV s (s.edge + 1)) := pSV_ok hs hs1 by_o
         (wt_to_next _ _ hs)
       exact leaf_exec hE (pc := pSV s (s.edge + 1)) (tgt := 150040) d₁ hI₁ hpv
-        (pcSV_exec d₁ w₁ (by omega) (by rw [k₁ _ (by unfold Keep; omega), R.h01])
+        (pcSV_exec d₁ w₁ by_o (by rw [k₁ _ (by unfold Keep; omega), R.h01])
           (by rw [k₁ _ (by unfold Keep; omega), R.h02]) o75)
         (fun d₂ w₂ k₂ => tc40 d₁ k₁ d₂ w₂ k₂)
     have finN : ¬ Done C.m s.edge e.edge → ∀ (d' : Config) (k : ℕ),
@@ -185,9 +180,9 @@ theorem first_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           (∀ r, Keep r → r ≠ 150040 → r ≠ 150043 → d'.nreg r = d.nreg r) ∧
           (∀ a, a < A₀ → d'.nmem a = d.nmem a) := by
       intro hnd d' k ex hk hI' h40 kp mem
-      refine ⟨d', k, pSV s (s.edge + 1), ex, hk, hI', pSV_ok hs hs1 (by omega)
+      refine ⟨d', k, pSV s (s.edge + 1), ex, hk, hI', pSV_ok hs hs1 by_o
         (wt_to_next _ _ hs), rfl, fun hd => absurd hd hnd, fun _ => ⟨by rw [hc0]; rfl,
-        by rw [hc0, h40], (kp _ (by unfold Keep; omega) (by omega)).trans
+        by rw [hc0, h40], (kp _ (by unfold Keep; omega) by_o).trans
           (k₁ _ (by unfold Keep; omega))⟩,
         fun r hr h1 _ => (kp r hr h1).trans (k₁ r hr), fun a ha => (mem a ha).trans rfl⟩
     by_cases heU : e.edge ≤ 5 ∨ e.edge = 2 * C.m + 6
@@ -200,22 +195,22 @@ theorem first_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
           · exact h3 hnx
         obtain ⟨d', k, ex, hk, hI', h40, kp, mem⟩ := toNext hnd
         exact finN hnd d' _ (.ifLtN_false t38 (.seq e₁ (.ifLtN_true t39 (.ifLtN_true
-          (by rw [o75, a32]; exact hnx) ex)))) (by omega) hI' h40 kp mem
+          (by rwa [o75, a32]) ex)))) by_o hI' h40 kp mem
       · -- a single piece from the last edge into the uncounted block
         have hpv : PcOK P C m₀ h γ (pSE s e) := pSE_ok hs he hs1 he1
-          (wt_last_edge C (Qof P) hs he (by omega) heU)
+          (wt_last_edge C (Qof P) hs he by_o heU)
         obtain ⟨d', k, ex, hk, hI', h43, kp, mem⟩ := leaf_exec hE (pc := pSE s e)
           (tgt := 150043) (post := fun d₃ => d₃.nreg 150043 = 1) d₁ hI₁ hpv
-          (pcSE_exec d₁ w₁ (by omega)
+          (pcSE_exec d₁ w₁ by_o
             (by rw [k₁ _ (by unfold Keep; omega), R.h01])
             (by rw [k₁ _ (by unfold Keep; omega), R.h02])
             (by rw [k₁ _ (by unfold Keep; omega), R.h03])
             (by rw [k₁ _ (by unfold Keep; omega), R.h04]))
-          (fun d₂ w₂ _ => ⟨_, Exec.constN w₂ 150043 1 (by omega),
-            exec_frameB (Exec.constN (P := P) w₂ 150043 1 (by omega)) (by decide),
+          (fun d₂ w₂ _ => ⟨_, Exec.constN w₂ 150043 1 by_o,
+            exec_frameB (Exec.constN (P := P) w₂ 150043 1 by_o) by_d,
             by config_simp, fun r hr => by simp [hr], rfl⟩)
         refine ⟨d', _, pSE s e, .ifLtN_false t38 (.seq e₁ (.ifLtN_true t39 (.ifLtN_false
-          (by rw [o75, a32]; exact hnx) ex))), by omega, hI', hpv, rfl, fun _ => ⟨rfl, h43⟩,
+          (by rwa [o75, a32]) ex))), by_o, hI', hpv, rfl, fun _ => ⟨rfl, h43⟩,
           fun hnd => absurd (Or.inr ⟨hsU, heU, hnx⟩) hnd,
           fun r hr h1 h2 => (kp r hr h2).trans (k₁ r hr), fun a ha => (mem a ha).trans rfl⟩
     · have t39 : ¬ d₁.nreg 150090 < d₁.nreg 150039 := by
@@ -225,7 +220,7 @@ theorem first_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
         · exact hsU h1
         · exact heU h2
       obtain ⟨d', k, ex, hk, hI', h40, kp, mem⟩ := toNext hnd
-      exact finN hnd d' _ (.ifLtN_false t38 (.seq e₁ (.ifLtN_false t39 ex))) (by omega) hI' h40
+      exact finN hnd d' _ (.ifLtN_false t38 (.seq e₁ (.ifLtN_false t39 ex))) by_o hI' h40
         kp mem
 
 /-- A piece to the end `e` from the walk vertex in `75`, handed to `emit`. -/
@@ -238,7 +233,7 @@ theorem leafVE_exec {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Prop} {I : List 
       (∀ r, Keep r → d'.nreg r = d.nreg r) ∧ (∀ a, a < A₀ → d'.nmem a = d.nmem a) := by
   obtain ⟨d₁, k₁, e₁, hk₁, hR, fr₁, kp₁⟩ := pcVE_exec (P := P) d hw hW h75 h03 h04
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp₂, mem₂⟩ := hE.run _ _ d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
-  exact ⟨d₂, k₁ + k₂, .seq e₁ e₂, by omega, hI₂, fun r hr => (kp₂ r hr).trans (kp₁ r hr),
+  exact ⟨d₂, k₁ + k₂, .seq e₁ e₂, by_o, hI₂, fun r hr => (kp₂ r hr).trans (kp₁ r hr),
     fun a ha => by rw [mem₂ a ha, fr₁.2.2.1]⟩
 
 /-- **The last piece**: from the walk vertex `2m + 5` into the uncounted block, or from the start
@@ -269,20 +264,20 @@ theorem final_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
     set d₁ := ({ d with nreg := upd d.nreg 150075 (d.nreg 150031) } : Config) with hd₁
     have k₁ : ∀ r, Keep r → d₁.nreg r = d.nreg r := fun r hr => by
       simp only [hd₁, upd]; rw [ite_eq_right (by unfold Keep at hr; omega)]
-    have hpv : PcOK P C m₀ h γ (pVE (2 * C.m + 5) e) := pVE_ok he he1 (by omega)
+    have hpv : PcOK P C m₀ h γ (pVE (2 * C.m + 5) e) := pVE_ok he he1 by_o
       (wt_last_to_U C (Qof P) he heU)
-    obtain ⟨d', k, ex, hk, hI', -, mem⟩ := leafVE_exec hE d₁ e₁.wb_right (by omega)
+    obtain ⟨d', k, ex, hk, hI', -, mem⟩ := leafVE_exec hE d₁ e₁.wb_right by_o
       (by simp [hd₁, upd, R.h31]) (by rw [k₁ _ (by unfold Keep; omega), R.h03])
       (by rw [k₁ _ (by unfold Keep; omega), R.h04])
-      (hE.stable _ _ _ hI (exec_frameB e₁ (by decide))) hpv
-    refine ⟨d', _, [pVE (2 * C.m + 5) e], .ifLtN_true t39 (.seq e₁ ex), by omega, hI', ?_,
+      (hE.stable _ _ _ hI (exec_frameB e₁ by_d)) hpv
+    refine ⟨d', _, [pVE (2 * C.m + 5) e], .ifLtN_true t39 (.seq e₁ ex), by_o, hI', ?_,
       fun _ => by rw [hf], fun h => absurd (Or.inl heU) h, fun a ha => mem a ha⟩
-    intro pc hp; simp only [List.mem_singleton] at hp; rw [hp]; exact hpv
+    intro pc hp; simp only [List.mem_singleton] at hp; rwa [hp]
   · have t39 : ¬ d.nreg 150090 < d.nreg 150039 := by rw [R.h90, h39, ite_eq_right heU]; omega
     have hf : fOf C.m e.edge = e.edge := by unfold fOf; rw [ite_eq_right heU]
     by_cases h4 : d.nreg 150090 < d.nreg 150004
     · have hh : 1 ≤ e.hgt := by rw [R.h90, R.h04] at h4; omega
-      obtain ⟨j, hj⟩ : ∃ j, e.hgt = j + 1 := ⟨e.hgt - 1, by omega⟩
+      obtain ⟨j, hj⟩ : ∃ j, e.hgt = j + 1 := ⟨e.hgt - 1, by_o⟩
       have hex : e = ⟨e.edge, j + 1⟩ := by rw [← hj]
       obtain ⟨d₁, k₁, e₁, hk₁, o49, o76, r₁, m₁⟩ : ∃ d₁ k₁, Exec P W
           (block [.copyN 150049 150003, .subN 150076 150004 150091]) d d₁ k₁ ∧ k₁ = 2 ∧
@@ -297,48 +292,48 @@ theorem final_exec (S : SEnv O P C H Hh h γ m₀ A₀ W) {emit : Stmt}
         simp only [List.mem_cons, List.not_mem_nil, or_false] at hr; omega)
       have hpe : ProperPos (chainModel C) (Qof P) P.n ⟨e.edge, j + 1⟩ := by rw [← hex]; exact he
       obtain ⟨d₂, k₂, e₂, hk₂, fr₂, i₂, l₂⟩ := posP_exec S hD hMD hHh d₁ e₁.wb_right
-        (fun a ha => by rw [m₁]; exact hm a ha) R₁ (by rw [r₁ _ (by omega) (by omega), R.h00])
-        (by rw [r₁ _ (by omega) (by omega), R.h27]) (by rw [r₁ _ (by omega) (by omega), R.h90])
-        (by rw [r₁ _ (by omega) (by omega), R.h92]) o49 o76 (by omega) (by omega)
+        (fun a ha => by rw [m₁]; exact hm a ha) R₁ (by rw [r₁ _ by_o by_o, R.h00])
+        (by rw [r₁ _ by_o by_o, R.h27]) (by rw [r₁ _ by_o by_o, R.h90])
+        (by rw [r₁ _ by_o by_o, R.h92]) o49 o76 by_o by_o
         (by have := he.2.2; omega)
       have ip : d₂.nreg 150089 = 1 ↔ 0 < (chainModel C).param (Qof P) e := by
         rw [hex]; exact i₂.trans (param_pos_iff _ _ hpe).symm
       have c90 : d₂.nreg 150090 = 0 := by
-        rw [(exec_frameB e₂ (B := Bd) (by decide)).1 _ (by decide), r₁ _ (by omega) (by omega),
+        rw [(exec_frameB e₂ (B := Bd) by_d).1 _ by_d, r₁ _ by_o by_o,
           R.h90]
-      have hI₂ := hE.stable _ _ _ hI ((exec_frameB e₁ (by decide)).trans fr₂)
+      have hI₂ := hE.stable _ _ _ hI ((exec_frameB e₁ by_d).trans fr₂)
       have w₂ := e₂.wb_right
       by_cases hp : d₂.nreg 150090 < d₂.nreg 150089
-      · have hpos : 0 < (chainModel C).param (Qof P) e := ip.1 (by omega)
+      · have hpos : 0 < (chainModel C).param (Qof P) e := ip.1 by_o
         have e₃ := Exec.copyN (P := P) w₂ 150075 150003
         set d₃ := ({ d₂ with nreg := upd d₂.nreg 150075 (d₂.nreg 150003) } : Config) with hd₃
         have a3 : d₂.nreg 150003 = e.edge := by
-          rw [fr₂.1 _ (by decide), r₁ _ (by omega) (by omega), R.h03]
+          rw [fr₂.1 _ by_d, r₁ _ by_o by_o, R.h03]
         have a4 : d₂.nreg 150004 = e.hgt := by
-          rw [fr₂.1 _ (by decide), r₁ _ (by omega) (by omega), R.h04]
-        have hpv : PcOK P C m₀ h γ (pVE e.edge e) := pVE_ok he he1 (by omega)
+          rw [fr₂.1 _ by_d, r₁ _ by_o by_o, R.h04]
+        have hpv : PcOK P C m₀ h γ (pVE e.edge e) := pVE_ok he he1 by_o
           (wt_from_start _ _ he hpos)
-        obtain ⟨d', k, ex, hk, hI', -, mem⟩ := leafVE_exec hE d₃ e₃.wb_right (by omega)
+        obtain ⟨d', k, ex, hk, hI', -, mem⟩ := leafVE_exec hE d₃ e₃.wb_right by_o
           (by simp [hd₃, upd, a3]) (by simp [hd₃, upd, a3]) (by simp [hd₃, upd, a4])
-          (hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide))) hpv
+          (hE.stable _ _ _ hI₂ (exec_frameB e₃ by_d)) hpv
         refine ⟨d', _, [pVE e.edge e], .ifLtN_false t39 (.ifLtN_true h4 (.seq e₁ (.seq e₂
           (.ifLtN_true hp (.seq e₃ ex))))), by have := S.hlen; omega, hI', ?_, fun _ => by rw [hf],
           fun h => absurd (Or.inr hpos) h, fun a ha => ?_⟩
-        · intro pc hpc; simp only [List.mem_singleton] at hpc; rw [hpc]; exact hpv
+        · intro pc hpc; simp only [List.mem_singleton] at hpc; rwa [hpc]
         · rw [mem a ha]; show d₂.nmem a = d.nmem a; rw [fr₂.2.2.1, m₁]
       · have hpos : ¬ 0 < (chainModel C).param (Qof P) e := fun h' => by
           have := ip.2 h'; omega
         refine ⟨d₂, _, [], .ifLtN_false t39 (.ifLtN_true h4 (.seq e₁ (.seq e₂
           (.ifLtN_false hp (.skip w₂))))), by have := S.hlen; omega, by simpa using hI₂,
-          by simp, fun h => h.elim (fun h => absurd h heU) (fun h => absurd h hpos),
+          by_s, fun h => h.elim (fun h => absurd h heU) (fun h => absurd h hpos),
           fun _ => rfl, fun a ha => by rw [fr₂.2.2.1, m₁]⟩
     · have hpos : ¬ 0 < (chainModel C).param (Qof P) e := by
         rw [R.h90, R.h04] at h4
-        have he0 : e.hgt = 0 := by omega
+        have he0 : e.hgt = 0 := by_o
         rw [show e = ⟨e.edge, 0⟩ by rw [← he0]]
         simp [Model.param]
-      refine ⟨d, _, [], .ifLtN_false t39 (.ifLtN_false h4 (.skip hw)), by omega,
-        by simpa using hI, by simp, fun h => h.elim (fun h => absurd h heU) (fun h => absurd h hpos), fun _ => rfl,
+      refine ⟨d, _, [], .ifLtN_false t39 (.ifLtN_false h4 (.skip hw)), by_o,
+        by simpa using hI, by_s, fun h => h.elim (fun h => absurd h heU) (fun h => absurd h hpos), fun _ => rfl,
         fun a _ => rfl⟩
 
 end

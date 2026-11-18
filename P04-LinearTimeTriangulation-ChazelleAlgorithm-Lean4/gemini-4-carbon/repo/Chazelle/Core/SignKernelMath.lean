@@ -93,9 +93,9 @@ theorem pe_pos_of_lexPos {L : List ℝ} (h : lexPos L) :
   | nil => exact h.elim
   | cons c L ih =>
     rcases h with h | ⟨h1, h2⟩
-    · have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), (0 : ℝ) < pe (c :: L) ε :=
+    · have hc :=
         continuous_const.continuousAt.eventually_lt (continuous_pe (c :: L)).continuousAt
-          (by rw [pe_cons_zero]; exact h)
+          (by rwa [pe_cons_zero])
       exact nhdsWithin_le_nhds hc
     · filter_upwards [ih h2, self_mem_nhdsWithin] with ε hε hε0
       simp only [pe, h1, zero_add]
@@ -108,9 +108,9 @@ theorem pe_neg_of_lexNeg {L : List ℝ} (h : lexNeg L) :
   | nil => exact h.elim
   | cons c L ih =>
     rcases h with h | ⟨h1, h2⟩
-    · have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), pe (c :: L) ε < (0 : ℝ) :=
+    · have hc :=
         (continuous_pe (c :: L)).continuousAt.eventually_lt continuous_const.continuousAt
-          (by rw [pe_cons_zero]; exact h)
+          (by rwa [pe_cons_zero])
       exact nhdsWithin_le_nhds hc
     · filter_upwards [ih h2, self_mem_nhdsWithin] with ε hε hε0
       simp only [pe, h1, zero_add]
@@ -207,7 +207,7 @@ theorem edge_x_mul (u w v : Point) (ε : ℝ) (hne : (w.2 - u.2) + ε * (w.1 - u
       ((w.2 - u.2) + ε * (w.1 - u.1)) =
     u.1 * (w.2 - u.2) + (v.2 - u.2) * (w.1 - u.1) +
       ε * (u.1 * (w.1 - u.1) + (v.1 - u.1) * (w.1 - u.1)) := by
-  have e : (w.2 + ε * w.1) - (u.2 + ε * u.1) = (w.2 - u.2) + ε * (w.1 - u.1) := by ring
+  have e : (w.2 + ε * w.1) - (u.2 + ε * u.1) = (w.2 - u.2) + ε * (w.1 - u.1) := by_r
   rw [e]
   field_simp
   ring
@@ -240,7 +240,7 @@ theorem edgeRep_spec (u w v : Point) :
     dsimp only
     linear_combination (-1 : ℝ) * this
   simp only [h2, ↓reduceIte]
-  have h0 : w.2 - u.2 = 0 := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
+  have h0 := le_antisymm (not_lt.1 h2) (not_lt.1 h1)
   by_cases h3 : w.1 - u.1 < 0
   · simp only [h3, ↓reduceIte]
     filter_upwards [self_mem_nhdsWithin] with ε (hε : 0 < ε)
@@ -260,8 +260,8 @@ theorem edgeRep_spec (u w v : Point) :
     dsimp only
     linear_combination (-1 : ℝ) * this
   simp only [h4, ↓reduceIte]
-  have h5 : w.1 - u.1 = 0 := le_antisymm (not_lt.1 h4) (not_lt.1 h3)
-  refine Eventually.of_forall fun ε => ⟨by norm_num, ?_, rfl⟩
+  have h5 := le_antisymm (not_lt.1 h4) (not_lt.1 h3)
+  refine Eventually.of_forall fun ε => ⟨by_n, ?_, rfl⟩
   dsimp only
   rw [h5]
   simp
@@ -284,9 +284,7 @@ theorem symRep_spec (P : Polygon) (s : SymPt) :
               ((P.vtx e).2 + ε * (P.vtx e).1))), (P.vtx h).2 + ε * (P.vtx h).1) := by
       simp only [SymPt.eval, edgeXAt, Visibility.edgeX, Visibility.xAt, shear_vtx, shear_n,
         shearPt]
-    rw [hev]
-    exact hε
-
+    rwa [hev]
 /-! ## The coefficient lists of the tests -/
 
 /-- Abscissa order `a.1 < b.1`: `x_b d_a - x_a d_b` (padded to five coefficients). -/
@@ -413,9 +411,9 @@ theorem signTest_iff_lex (P : Polygon) (hG : ∃ ε, GoodShear P ε) (s₁ s₂ 
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 hev
   have hδ0 : (0 : ℝ) < δ := hδ
   set ε' := min (δ / 2) (epsOf P)
-  have hε'0 : 0 < ε' := lt_min (by linarith) hε0
-  have hε'δ : ε' < δ := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-  obtain ⟨⟨r1, r2⟩, r3, hl⟩ := hsub (show ε' ∈ Ioo 0 δ from ⟨hε'0, hε'δ⟩)
+  have hε'0 : 0 < ε' := lt_min by_l hε0
+  have hε'δ : ε' < δ := lt_of_le_of_lt (min_le_left _ _) by_l
+  obtain ⟨⟨r1, r2⟩, r3, hl⟩ := hsub (⟨hε'0, hε'δ⟩)
   have hSF := hstab ε' hε'0 (min_le_right _ _) s₁ s₂ s₃ h₁ h₂ h₃
   have hT := signTest_congr hSF op
   have hP := signTest_iff_pe r1 r2 r3 op

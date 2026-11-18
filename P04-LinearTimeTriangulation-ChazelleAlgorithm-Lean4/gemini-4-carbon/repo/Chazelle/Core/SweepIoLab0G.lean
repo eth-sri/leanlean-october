@@ -78,13 +78,13 @@ theorem gS0_val (m f : ℕ → ℕ) :
 
 theorem gS0_ok (m f : ℕ → ℕ) (hb : f (sw 31) + f K1 ≤ W) : okB W m gS0 f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
-  have hb' : f 240031 + f 240611 ≤ W := hb
+    iscr_sw by_o by_o
+  have hb' := hb
   simp only [gS0, okB, okI, regI, upd, gL, lMD, lCD, lNF, lE, lH, K1, ALLOC, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  exact ⟨s 1001 (by norm_num) (by norm_num), s 1100 (by norm_num) (by norm_num),
-    ⟨s 1101 (by norm_num) (by norm_num), hb'⟩, s 1102 (by norm_num) (by norm_num),
-    s 1103 (by norm_num) (by norm_num), ⟨s 1104 (by norm_num) (by norm_num), Nat.zero_le _⟩,
+  exact ⟨s 1001 by_n by_n, s 1100 by_n by_n,
+    ⟨s 1101 by_n by_n, hb'⟩, s 1102 by_n by_n,
+    s 1103 by_n by_n, ⟨s 1104 by_n by_n, Nat.zero_le _⟩,
     trivial⟩
 
 set_option maxHeartbeats 4000000 in
@@ -109,7 +109,7 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
   have e31 : c.nreg (sw 31) = c₀.nreg (sw 31) := hfix _ (by unfold IFix sw; omega)
   have e4 : c.nreg (sw 4) = c₀.nreg (sw 4) := hfix _ (by unfold IFix sw; omega)
   have e34 : c.nreg (sw 34) = 2 * J.right.m + 7 := (hfix _ (by unfold IFix sw; omega)).trans hS.hnr
-  have k1 : c.nreg K1 = 1 := (hK.fix hI).2.1
+  have k1 := (hK.fix hI).2.1
   have hmdW : c.nreg (sw 31) + c.nreg K1 ≤ W := by
     rw [e31, k1]; have := hS.hmwf.1; have := hI.hA; have := hI.hw.1 ALLOC; omega
   unfold gapS gapK
@@ -118,18 +118,18 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
     ((IRS.block gS0 hI (gS0_ok _ _ hmdW)).mono (by simp [gS0]) (fun _ h => h)) ?_
   rintro c₁ hI₁ hA₁ hA₁' rfl
   obtain ⟨v1, v2, v3, v4, v5, v6, vo⟩ := gS0_val c.nmem c.nreg
-  set c₁ : Config := { c with nreg := regB c.nmem gS0 c.nreg } with hc₁
+  set c₁ := { c with nreg := regB c.nmem gS0 c.nreg } with hc₁
   have eA1 : c₁.nreg ALLOC = c.nreg ALLOC :=
-    vo ALLOC (by unfold ALLOC gL sw; omega) (by unfold ALLOC sw; omega)
+    vo ALLOC (by unfold ALLOC gL sw; omega) by_so
   have eT1 : c₁.nreg TLR = c₀.nreg TLR := hI₁.hin _ (by unfold IFix TLR sw; omega)
-  have hL₁ : LCtx P W J.right N₂ E c₁ := lctx_of hS hI₁ hA.htab hA.hTB hA.hTW
+  have hL₁ := lctx_of hS hI₁ hA.htab hA.hTB hA.hTW
     (by show regB _ _ _ _ = _; rw [v2, e31])
     (by show regB _ _ _ _ = _; rw [v3, e31, k1])
     (by show regB _ _ _ _ = _; rw [v4, e4])
   have hE1 : c₁.nreg lE = 2 * J.right.m + 6 := by
     show regB _ _ _ _ = _; rw [v5, e34, k1]; omega
   have hH1 : c₁.nreg lH = 0 := v6
-  have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
+  have hn₂ := cm_n J.right
   refine IRS.seq (K₁ := lh1K (c₀.nreg TLR)) (K₂ := 1 + lh1K (c₀.nreg TLR))
     ((lh1_irs hI₁ hK hL₁ (by rw [hE1, hn₂]; omega) (by rw [hH1]; exact pp_zero _ _ _ _)
       (by rw [eT1, eA1]; omega)).mono (by rw [eT1]) (fun _ h => h)) ?_
@@ -140,7 +140,7 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
     (IRS.block [.constN lE 6] hI₂ ⟨⟨iscr_sw (by unfold lE sw; omega) (by unfold lE sw; omega),
       by have := hA.hWm; omega⟩, trivial⟩) ?_
   rintro c₃ hI₃ hA₃ hA₃' rfl
-  set c₃ : Config := { c₂ with nreg := regB c₂.nmem [.constN lE 6] c₂.nreg } with hc₃
+  set c₃ := { c₂ with nreg := regB c₂.nmem [.constN lE 6] c₂.nreg } with hc₃
   have o3 : ∀ q, q ≠ lE → c₃.nreg q = c₂.nreg q := fun q hq => by
     simp only [hc₃, regB, regI]; exact upd_other _ _ _ hq
   have hE3 : c₃.nreg lE = 6 := by simp only [hc₃, regB, regI]; exact upd_same _ _ _
@@ -149,9 +149,9 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
   have k32 : ∀ q, (q = lMD ∨ q = lCD ∨ q = lNF ∨ q = lH ∨ q = gL) → c₃.nreg q = c₁.nreg q := by
     intro q hq
     rcases hq with rfl | rfl | rfl | rfl | rfl <;>
-      (rw [o3 _ (by decide)]
-       exact fr2' _ (nO _ (by decide) (by decide)) (by decide) (by decide))
-  have hL₃ : LCtx P W J.right N₂ E c₃ := lctx_of hS hI₃ hA.htab hA.hTB hA.hTW
+      (rw [o3 _ by_d]
+       exact fr2' _ (nO _ by_d by_d) by_d by_d)
+  have hL₃ := lctx_of hS hI₃ hA.htab hA.hTB hA.hTW
     (by rw [k32 _ (Or.inl rfl)]; show regB _ _ _ _ = _; rw [v2, e31])
     (by rw [k32 _ (Or.inr (Or.inl rfl))]; show regB _ _ _ _ = _; rw [v3, e31, k1])
     (by rw [k32 _ (Or.inr (Or.inr (Or.inl rfl)))]; show regB _ _ _ _ = _; rw [v4, e4])
@@ -167,15 +167,14 @@ theorem gap_irs {X : MemCtx} {Ok : Polygon → Model → Prop} {J : Merge.Juncti
   have hm3 : c₃.nmem = c₂.nmem := rfl
   refine ⟨?_, by rw [hAl4, eA3], fun a ha => ?_, fun r h1 h2 h3 h4 => ?_, c₂.nreg lJ, c₄.nreg lJ,
     ⟨hj1, ?_, ?_⟩, ⟨hj4, ?_, ?_⟩, fun i hi => ⟨?_, ?_⟩⟩
-  · rw [fr4' gL (nO _ (by decide) (by decide)) (by decide) (by decide),
+  · rw [fr4' gL (nO _ by_d by_d) by_d by_d,
       k32 _ (Or.inr (Or.inr (Or.inr (Or.inr rfl))))]
     show regB _ _ _ _ = _; rw [v1]
-  · rw [hm4 a (by rw [eA3]; omega), hm3, hm2 a (by rw [eA1]; exact ha)]
+  · rw [hm4 a (by rw [eA3]; omega), hm3, hm2 a (by rwa [eA1])]
   · have h3' : ¬ (sw 1108 ≤ r ∧ r ≤ sw 1119) :=
-      fun h => h3 ⟨le_trans (show sw 1100 ≤ sw 1108 by decide) h.1, h.2⟩
-    have h3e : r ≠ lE := by rintro rfl; exact h3 (by decide)
+      fun h => h3 ⟨le_trans (by decide) h.1, h.2⟩
+    have h3e : r ≠ lE := by rintro rfl; exact h3 by_d
     rw [fr4' r h1 h3' h4, o3 r h3e, fr2' r h1 h3' h4]
-    show regB _ _ _ _ = _
     exact vo r h2 h3
   · intro hc; rw [hE1, hH1, key_zero] at hl1; exact hl1 hc
   · intro hc; rw [hE1, hH1, key_zero] at hl2; exact hl2 hc

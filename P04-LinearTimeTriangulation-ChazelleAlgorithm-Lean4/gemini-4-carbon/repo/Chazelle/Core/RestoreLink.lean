@@ -48,10 +48,10 @@ theorem sideExits_subset (S : Set (Set Point)) (R : Set Point) (k₁ k₂ : ℝ)
 /-- Points of a segment close to its start. -/
 theorem exists_lerp_near {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ) :
     ∃ s : ℝ, 0 < s ∧ s < 1 ∧ lerp a b s ≠ a ∧ dist (lerp a b s) a < ρ := by
-  have hd : 0 < dist b a := dist_pos.2 hab.symm
+  have hd := dist_pos.2 hab.symm
   set s := min (1 / 2) (ρ / (2 * dist b a)) with hs
-  have hs0 : 0 < s := lt_min (by norm_num) (div_pos hρ (by positivity))
-  have hs1 : s < 1 := lt_of_le_of_lt (min_le_left _ _) (by norm_num)
+  have hs0 : 0 < s := lt_min by_n (div_pos hρ by_p)
+  have hs1 : s < 1 := lt_of_le_of_lt (min_le_left _ _) by_n
   have hdist : dist (lerp a b s) a = s * dist b a := by
     rw [Geometry.lerp_eq_add_smul, dist_eq_norm, add_sub_cancel_left, norm_smul,
       Real.norm_eq_abs, abs_of_pos hs0, dist_eq_norm]
@@ -65,7 +65,7 @@ theorem exists_lerp_near {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ)
     calc s * dist b a ≤ ρ / (2 * dist b a) * dist b a :=
           mul_le_mul_of_nonneg_right this hd.le
       _ = ρ / 2 := by field_simp
-      _ < ρ := by linarith
+      _ < ρ := by_l
 
 /-- **An attached admissible chord enters the left sector**: for every set `K` containing the
 small left sector at the attachment, the chord has a point in the domain lying in `K`. -/
@@ -85,10 +85,10 @@ theorem exists_near_attach (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p
     obtain ⟨s, hs0, hs1, hne, hd⟩ := exists_lerp_near huv (lt_min hr hr')
     have hxs : lerp u v s ∈ Chazelle.segment a b := by
       rw [← hseg]; exact Geometry.lerp_mem_segment _ _ hs0.le hs1.le
-    have hxD : lerp u v s ∈ M.D := hop s ⟨hs0, hs1⟩
+    have hxD := hop s ⟨hs0, hs1⟩
     refine ⟨_, ⟨hxs, hxD⟩, hK _ ?_ ?_⟩
     · rw [mem_ball, hpt]; exact lt_of_lt_of_le hd (min_le_right _ _)
-    · apply hsec _ hxs (by rw [hpt]; exact hne)
+    · apply hsec _ hxs (by rwa [hpt])
       rw [hpt]; exact lt_of_lt_of_le hd (min_le_left _ _)
   rcases hend with h | h
   · exact key a b hab hopen rfl h
@@ -141,9 +141,9 @@ theorem splitsWell_of_sideExits (hM : WalkAx M) {S : Set (Set Point)} (hS : S �
     (h2 : 2 ≤ (sideExits M S R (pb + tb) (pa + ta)).ncard) : SplitsWell M S R e := by
   refine ⟨heS, heR, ?_⟩
   set F := insert e S with hFdef
-  have hF : ChordSystem M.D F := hM.sys F (insert_subset he hS) (hfin.insert e)
-  have hSF : S ⊆ F := subset_insert e S
-  have heF : e ∈ F := mem_insert e S
+  have hF := hM.sys F (insert_subset he hS) (hfin.insert e)
+  have hSF := subset_insert e S
+  have heF := mem_insert e S
   obtain ⟨R₁, R₂, hs⟩ := Merge.exists_split hF hSF heF heS hR heR
   obtain ⟨K₁, K₂, hK, ⟨c₁, rfl⟩, ⟨c₂, rfl⟩, hsec₁, hsec₂⟩ := hM.split he hA hB hAB
   have hdisj := components_disjoint hK
@@ -175,9 +175,9 @@ theorem splitsWell_of_sideExits (hM : WalkAx M) {S : Set (Set Point)} (hS : S �
   have hs2 := side c₂ _ _ hsec₂
   -- pick one exit chord on each side
   have hne1 : (sideExits M S R (pa + ta) (pb + tb)).Nonempty :=
-    nonempty_of_ncard_ne_zero (by omega)
+    nonempty_of_ncard_ne_zero by_o
   have hne2 : (sideExits M S R (pb + tb) (pa + ta)).Nonempty :=
-    nonempty_of_ncard_ne_zero (by omega)
+    nonempty_of_ncard_ne_zero by_o
   obtain ⟨d₁, hd₁⟩ := hne1
   obtain ⟨d₂, hd₂⟩ := hne2
   have hR12 : ∀ Q, Q = R₁ ∨ Q = R₂ → Q ∈ regionsIn M.D F := by
@@ -225,7 +225,7 @@ theorem splitsWell_of_sideExits (hM : WalkAx M) {S : Set (Set Point)} (hS : S �
         rw [h] at hz hQK
         exact hdis.notMem_of_mem_left (hQK hz) (hRyK hz)
     rcases (hside c hc).1 with h | h
-    · rw [← hQ R₁ (Or.inl rfl) h]; exact h
+    · rwa [← hQ R₁ (Or.inl rfl) h]
     · rw [← hQ R₂ (Or.inr rfl) h]; exact h
   rcases pair_cases hP12 hRa hRb hab with rfl | rfl
   · exact gen c₁ c₂ _ _ P Rb hs1 hRb hRb2 hdisj

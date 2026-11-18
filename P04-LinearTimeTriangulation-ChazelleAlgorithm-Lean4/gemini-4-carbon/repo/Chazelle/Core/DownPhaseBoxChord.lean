@@ -29,8 +29,8 @@ variable {C C' : Chain}
 
 theorem tour_mem (C : Chain) {j : ℕ} (hj6 : 6 ≤ j) (hj : j ≤ 2 * C.m + 6) :
     (C.sideWalk C.sideBeta).vtx j ∈ C.set := by
-  have e : j = (j - 6) + 6 := by omega
-  rw [e, C.sideWalk_vtx_tour _ (by omega)]
+  have e : j = (j - 6) + 6 := by_o
+  rw [e, C.sideWalk_vtx_tour _ by_o]
   exact C.vertex_mem_set (C.sideIdx_le _ _)
 
 theorem walk_last (C : Chain) : (C.sideWalk C.sideBeta).vtx (2 * C.m + 6) = C.top := by
@@ -49,7 +49,7 @@ theorem edge_kind (C : Chain) {p : ℕ} (hp : p < (C.sideWalk C.sideBeta).n) :
   rw [hn] at hp
   rcases Nat.lt_or_ge p 6 with h6 | h6
   · have hmod : (p + 1) % (C.sideWalk C.sideBeta).n = p + 1 := by
-      rw [hn]; exact Nat.mod_eq_of_lt (by omega)
+      rw [hn]; exact Nat.mod_eq_of_lt by_o
     rw [hmod]
     interval_cases p
     · left; rw [C.sideWalk_vtx_zero, C.sideWalk_vtx_one]; rfl
@@ -61,11 +61,11 @@ theorem edge_kind (C : Chain) {p : ℕ} (hp : p < (C.sideWalk C.sideBeta).n) :
   · rcases Nat.lt_or_ge p (2 * C.m + 6) with h' | h'
     · right; right
       have hmod : (p + 1) % (C.sideWalk C.sideBeta).n = p + 1 := by
-        rw [hn]; exact Nat.mod_eq_of_lt (by omega)
+        rw [hn]; exact Nat.mod_eq_of_lt by_o
       rw [hmod]
-      exact ⟨tour_mem C h6 (by omega), tour_mem C (by omega) (by omega)⟩
+      exact ⟨tour_mem C h6 by_o, tour_mem C by_o by_o⟩
     · right; left
-      have hp' : p = 2 * C.m + 6 := by omega
+      have hp' : p = 2 * C.m + 6 := by_o
       subst hp'
       rw [C.sideWalk_vtx_wrap, walk_last]; rfl
 
@@ -107,7 +107,7 @@ theorem pos_eq {Q : Polygon} {x : WPos} (hxn : x.edge < (chainModel C).W.n)
   · exact absurd hk2 hh
   · -- a vertical edge
     have hk1' : u.1 = v.1 := hk1
-    have hne : v.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hh)
+    have hne := sub_ne_zero.2 (Ne.symm hh)
     have hne' : (phi C C' v).2 - (phi C C' u).2 ≠ 0 := by
       simp only [phi, stretchPt]; exact sub_ne_zero.2 (fun e => hh (sig_inj.1 e).symm)
     apply Prod.ext
@@ -150,14 +150,14 @@ theorem image_hseg {y a b : ℝ} (hy : |y| < bnd C C') :
     refine ⟨?_, sig_le_iff.2 hw2, sig_le_iff.2 hw3⟩
     simp only [phi, stretchPt]; rw [hw1, hy']
   · rintro ⟨hz1, hz2, hz3⟩
-    set w : Point := (stretch (bnd C C') (kk C C')⁻¹ z.1, y)
+    set w := (stretch (bnd C C') (kk C C')⁻¹ z.1, y)
     have hinv : stretch (bnd C C') (kk C C') (stretch (bnd C C') (kk C C')⁻¹ z.1) = z.1 := by
       have := stretch_inv (B := bnd C C') (k := (kk C C')⁻¹) bnd_nonneg
         (inv_pos.2 kk_pos) z.1
       rwa [inv_inv] at this
     refine ⟨w, ⟨rfl, ?_, ?_⟩, ?_⟩
-    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rw [hinv]; exact hz2
-    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rw [hinv]; exact hz3
+    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rwa [hinv]
+    · rw [← sig_le_iff (C := C) (C' := C')]; simp only [w]; rwa [hinv]
     · apply Prod.ext
       · simp only [phi, stretchPt, w]; exact hinv
       · simp only [phi, stretchPt, w]; rw [hy', hz1]
@@ -185,8 +185,8 @@ theorem augChords_transfer {y a b : ℝ} (hy : |y| < bnd C C')
   have hne : (hseg y' a' b').Nonempty := ⟨(a', y'), rfl, le_rfl, hh.lt.le⟩
   rw [← he] at hne
   obtain ⟨z, hz⟩ := hne
-  have hz' : z ∈ hseg y' a' b' := he ▸ hz
-  have hyy : y = y' := hz.1.symm.trans hz'.1
+  have hz' := he ▸ hz
+  have hyy := hz.1.symm.trans hz'.1
   subst hyy
   have hab : a = a' ∧ b = b' := by
     have hl : ((a', y) : Point) ∈ hseg y a b := by rw [he]; exact ⟨rfl, le_rfl, hh.lt.le⟩
@@ -210,8 +210,8 @@ theorem augChords_transfer {y a b : ℝ} (hy : |y| < bnd C C')
     have hinv : stretch (bnd C C') (kk C C') w = x := by
       have := stretch_inv (B := bnd C C') (k := (kk C C')⁻¹) bnd_nonneg (inv_pos.2 kk_pos) x
       rwa [inv_inv] at this
-    have hw := hh.open_mem w (by rw [← sig_lt_iff (C := C) (C' := C'), hinv]; exact hx1)
-      (by rw [← sig_lt_iff (C := C) (C' := C'), hinv]; exact hx2)
+    have hw := hh.open_mem w (by rwa [← sig_lt_iff (C := C) (C' := C'), hinv])
+      (by rwa [← sig_lt_iff (C := C) (C' := C'), hinv])
     have := (h.phi_mem_dom_iff (w, y)).2 hw
     simpa only [phi, stretchPt, hinv, hy'] using this
   · rw [← h.top_eq]; exact hy''

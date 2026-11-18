@@ -55,10 +55,10 @@ theorem cover {D : ℕ} (hT : Dec.RecTree N D) {k : ℕ} (hk : k < N.nChords) {r
 /-- A point of the open part of a chord record. -/
 theorem exists_chord_pt (hM : WalkAx M) (hN : IsNF M Q N) {i : ℕ} (hi : i < N.nChords) :
     ∃ z, z ∈ (N.chord i).toSet M Q ∧ z ∈ M.D := by
-  have hc : (N.chord i).toSet M Q ∈ M.Adm := hN.1.2.1 ⟨N.chord i, Dec.chord_mem hi, rfl⟩
+  have hc := hN.1.2.1 ⟨N.chord i, Dec.chord_mem hi, rfl⟩
   obtain ⟨a, b, -, heq, -, hopen, -, -⟩ := hM.ends _ hc
-  refine ⟨Geometry.lerp a b (1 / 2), ?_, hopen _ ⟨by norm_num, by norm_num⟩⟩
-  rw [heq]; exact Geometry.lerp_mem_segment _ _ (by norm_num) (by norm_num)
+  refine ⟨Geometry.lerp a b (1 / 2), ?_, hopen _ ⟨by_n, by_n⟩⟩
+  rw [heq]; exact Geometry.lerp_mem_segment _ _ by_n by_n
 
 /-- A preconnected subset of `D \ c` meeting a component of `D \ c` lies in it. -/
 theorem sub_comp {A : Set Point} {X : Set Point} (hX : IsPreconnected X) (hXA : X ⊆ A)
@@ -80,14 +80,14 @@ theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N
   have hck : c ∈ N.F M Q := ⟨N.chord k, Dec.chord_mem hk, rfl⟩
   obtain ⟨z, hzc, hzD⟩ := exists_chord_pt hM hN hi
   have hzc' : z ∉ c := fun h => hsys.inter_subset_compl hci hck hne ⟨hzc, h⟩ hzD
-  have hcl : IsClosed c := hsys.isClosed_chord hck
-  have hopen : IsOpen (M.D \ c) := hM.isOpen.sdiff hcl
+  have hcl := hsys.isClosed_chord hck
+  have hopen := hM.isOpen.sdiff hcl
   obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 hopen z ⟨hzD, hzc'⟩
   obtain ⟨hup, hdn, hside⟩ := hS i hi
   obtain ⟨ε₀, hε₀, hε⟩ := hside z hzc hzD
   set ε := min (ε₀ / 2) (ρ / 2) with hεdef
-  have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-  obtain ⟨hu, hd⟩ := hε ε hε0 (lt_of_le_of_lt (min_le_left _ _) (by linarith))
+  have hε0 : 0 < ε := lt_min by_l by_l
+  obtain ⟨hu, hd⟩ := hε ε hε0 (lt_of_le_of_lt (min_le_left _ _) by_l)
   have hbu : ((z.1, z.2 + ε) : Point) ∈ ball z ρ := by
     rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq]
     simp only [sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hε0]
@@ -98,13 +98,13 @@ theorem adj_same_comp (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N
     rw [max_eq_right hε0.le]; linarith [min_le_right (ε₀ / 2) (ρ / 2)]
   have hregsub : ∀ r, r < N.nRegions → reg r ⊆ M.D \ c := fun r hr x hx =>
     ⟨(regionsIn_subset (hR r hr) hx).1, fun hxc => (regionsIn_subset (hR r hr) hx).2 ⟨c, hck, hxc⟩⟩
-  have hballP : IsPreconnected (ball z ρ) := (convex_ball z ρ).isPreconnected
+  have hballP := (convex_ball z ρ).isPreconnected
   constructor
   · intro h
-    have hb : ball z ρ ⊆ connectedComponentIn (M.D \ c) w := sub_comp hballP hball hbu (h hu)
+    have hb := sub_comp hballP hball hbu (h hu)
     exact sub_comp (regionsIn_isPreconnected (hR _ hdn)) (hregsub _ hdn) hd (hb hbd)
   · intro h
-    have hb : ball z ρ ⊆ connectedComponentIn (M.D \ c) w := sub_comp hballP hball hbd (h hd)
+    have hb := sub_comp hballP hball hbd (h hd)
     exact sub_comp (regionsIn_isPreconnected (hR _ hup)) (hregsub _ hup) hu (hb hbu)
 
 /-- The components of `D \ c` of the regions below and above a chord `c`. -/
@@ -121,12 +121,12 @@ theorem comps_of (hM : WalkAx M) (hN : IsNF M Q N) (hS : ChordSidesOK M Q N reg)
   obtain ⟨z, hzc, hzD⟩ := exists_chord_pt hM hN hk
   obtain ⟨hup, hdn, hside⟩ := hS k hk
   obtain ⟨ε₀, hε₀, hε⟩ := hside z hzc hzD
-  have hsub : ({c} : Set (Set Point)) ⊆ N.F M Q := singleton_subset_iff.2 hck
+  have hsub := singleton_subset_iff.2 hck
   obtain ⟨ε₁, hε₁, hsep⟩ := hsys.chord_separates_in hsub (mem_singleton c) hzc hzD
   set ε := min (ε₀ / 2) (ε₁ / 2) with hεdef
-  have hε0 : 0 < ε := lt_min (by linarith) (by linarith)
-  obtain ⟨hu, hd⟩ := hε ε hε0 (lt_of_le_of_lt (min_le_left _ _) (by linarith))
-  obtain ⟨hu', hd', hne⟩ := hsep ε hε0 (lt_of_le_of_lt (min_le_right _ _) (by linarith))
+  have hε0 : 0 < ε := lt_min by_l by_l
+  obtain ⟨hu, hd⟩ := hε ε hε0 (lt_of_le_of_lt (min_le_left _ _) by_l)
+  obtain ⟨hu', hd', hne⟩ := hsep ε hε0 (lt_of_le_of_lt (min_le_right _ _) by_l)
   have hfe : freeIn M.D {c} = M.D \ c := by ext w; simp [freeIn]
   rw [hfe] at hu' hd' hne
   have hregsub : ∀ r, r < N.nRegions → reg r ⊆ M.D \ c := fun r hr x hx =>
@@ -180,7 +180,7 @@ theorem decide_side (hGM : GoodModel M) (hN : IsNF M Q N) {D : ℕ} (hT : Dec.Re
   have hR := hcorr.1
   set c := (N.chord k).toSet M Q with hc
   have hck : c ∈ N.F M Q := ⟨N.chord k, Dec.chord_mem hk, rfl⟩
-  have hcA : c ∈ M.Adm := hN.1.2.1 hck
+  have hcA := hN.1.2.1 hck
   obtain ⟨K₁, K₂, hK, ⟨c₁, hK₁⟩, ⟨c₂, hK₂⟩, hsec₁, hsec₂⟩ := hM.split hcA hA hB hAB
   obtain ⟨zd, zu, hdK, huK, hdisj⟩ := comps_of hM hN hS hR hk
   have hregsub : ∀ r, r < N.nRegions → reg r ⊆ M.D \ c := fun r hr x hx =>
@@ -215,9 +215,9 @@ theorem decide_side (hGM : GoodModel M) (hN : IsNF M Q N) {D : ℕ} (hT : Dec.Re
       obtain ⟨x, hx⟩ := hne r hr
       obtain ⟨y, hy⟩ := hne _ hdn
       -- `K` is the component of `zu` (through `x`) and of `zd` (through `y`)
-      have e1 : connectedComponentIn (M.D \ c) zu = K :=
+      have e1 :=
         (ceq (h1 hx) (hKw ▸ hrK hx)).trans hKw.symm
-      have e2 : connectedComponentIn (M.D \ c) zd = K :=
+      have e2 :=
         (ceq (hdK hy) (hKw ▸ hdK' hy)).trans hKw.symm
       exact hdisj.notMem_of_mem_left (hdK hy) (by rw [e1, ← e2]; exact hdK hy)
   have diff : ∀ K K' : Set Point, ∀ w w', K = connectedComponentIn (M.D \ c) w →
@@ -229,9 +229,9 @@ theorem decide_side (hGM : GoodModel M) (hN : IsNF M Q N) {D : ℕ} (hT : Dec.Re
       have h1 := hlow r h
       obtain ⟨x, hx⟩ := hne r hr
       obtain ⟨y, hy⟩ := hne _ hdn
-      have e1 : connectedComponentIn (M.D \ c) zd = K :=
+      have e1 :=
         (ceq (h1 hx) (hKw ▸ hrK hx)).trans hKw.symm
-      have e2 : connectedComponentIn (M.D \ c) zd = K' :=
+      have e2 :=
         (ceq (hdK hy) (hKw' ▸ hdK' hy)).trans hKw'.symm
       exact hKK.notMem_of_mem_left (e1 ▸ hdK hy) (e2 ▸ hdK hy)
     · exact h

@@ -43,8 +43,8 @@ theorem no_common_edge (hM : WalkAx M) {z : Point} {σ T : ℝ} (_hσ : σ = 1 �
     apply point_ext
     · simp only [Geometry.lerp_fst, rayPt_fst]; linarith
     · simp only [Geometry.lerp_snd, rayPt_snd]; linarith
-  exact hM.trace p hp _ (by linarith) (by linarith) (hmid ▸ hdom (T / 2) (by linarith)
-    (by linarith))
+  exact hM.trace p hp _ by_l by_l (hmid ▸ hdom (T / 2) by_l
+    by_l)
 
 end
 

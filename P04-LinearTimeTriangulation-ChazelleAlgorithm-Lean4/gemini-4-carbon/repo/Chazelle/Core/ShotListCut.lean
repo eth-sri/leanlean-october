@@ -63,14 +63,14 @@ theorem key_lt_iff {M : Model} {Q : Polygon} {n : ℕ} {x y : WPos} (hx : NormPo
     · exact Or.inl he
     · refine Or.inr ⟨he, ?_⟩
       rw [he] at h
-      have hlt : M.param Q x < M.param Q y := by linarith
+      have hlt : M.param Q x < M.param Q y := by_l
       by_cases hxh : 0 < x.hgt
       · by_cases hyh : 0 < y.hgt
         · exact absurd ⟨he, hxh, hyh⟩ hne
-        · rw [py.1 (by omega)] at hlt; linarith
+        · rw [py.1 by_o] at hlt; linarith
       · by_cases hyh : 0 < y.hgt
         · simp [hxh, hyh]
-        · rw [px.1 (by omega), py.1 (by omega)] at hlt; exact absurd hlt (lt_irrefl _)
+        · rw [px.1 by_o, py.1 by_o] at hlt; exact absurd hlt (lt_irrefl _)
     · exfalso
       have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast he
       linarith
@@ -79,7 +79,7 @@ theorem key_lt_iff {M : Model} {Q : Polygon} {n : ℕ} {x y : WPos} (hx : NormPo
       linarith
     · rw [he]
       split_ifs at hi with h1 h2 h2 <;> try omega
-      rw [px.1 (by omega)]
+      rw [px.1 by_o]
       have := py.2 h2
       linarith
 
@@ -122,32 +122,32 @@ theorem kltB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
       BitIs c' d (LexLt (c.nreg eu) (ibv (c.nreg hu)) (c.nreg ev) (ibv (c.nreg hv))) ∧
       FrameB (Bone d) c c' := by
   have e1 := Exec.constN (P := P) hw d 1 hW
-  have e0 := Exec.constN (P := P) hw d 0 (by omega)
+  have e0 := Exec.constN (P := P) hw d 0 by_o
   have wk := wr_kltB eu hu ev hv d z
   have v1 : ∀ p : Prop, p → BitIs { c with nreg := upd c.nreg d 1 } d p :=
-    fun p hp => ⟨by simp, by simp [hp]⟩
+    fun p hp => ⟨by_s, by simp [hp]⟩
   have v0 : ∀ p : Prop, ¬ p → BitIs { c with nreg := upd c.nreg d 0 } d p :=
-    fun p hp => ⟨by simp, by simp [hp]⟩
+    fun p hp => ⟨by_s, by simp [hp]⟩
   unfold LexLt ibv
   by_cases h1 : c.nreg eu < c.nreg ev
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ := .ifLtN_true h1 e1
-    exact ⟨_, _, ex, by omega, v1 _ (Or.inl h1), exec_frameB ex wk⟩
+    exact ⟨_, _, ex, by_o, v1 _ (Or.inl h1), exec_frameB ex wk⟩
   by_cases h2 : c.nreg ev < c.nreg eu
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ := .ifLtN_false h1 (.ifLtN_true h2 e0)
-    exact ⟨_, _, ex, by omega, v0 _ (by omega), exec_frameB ex wk⟩
+    exact ⟨_, _, ex, by_o, v0 _ by_o, exec_frameB ex wk⟩
   by_cases h3 : c.nreg z < c.nreg hu
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ :=
       .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_true h3 e0))
-    refine ⟨_, _, ex, by omega, v0 _ ?_, exec_frameB ex wk⟩
+    refine ⟨_, _, ex, by_o, v0 _ ?_, exec_frameB ex wk⟩
     rw [hz] at h3; simp only [h3, ↓reduceIte]; split_ifs <;> omega
   by_cases h4 : c.nreg z < c.nreg hv
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ :=
       .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false h3 (.ifLtN_true h4 e1)))
-    refine ⟨_, _, ex, by omega, v1 _ ?_, exec_frameB ex wk⟩
+    refine ⟨_, _, ex, by_o, v1 _ ?_, exec_frameB ex wk⟩
     rw [hz] at h3 h4; simp only [h4, ↓reduceIte, show ¬ 0 < c.nreg hu from h3]; omega
   · have ex : Exec P W (kltB eu hu ev hv d z) c _ _ :=
       .ifLtN_false h1 (.ifLtN_false h2 (.ifLtN_false h3 (.ifLtN_false h4 e0)))
-    refine ⟨_, _, ex, by omega, v0 _ ?_, exec_frameB ex wk⟩
+    refine ⟨_, _, ex, by_o, v0 _ ?_, exec_frameB ex wk⟩
     rw [hz] at h3 h4
     simp only [show ¬ 0 < c.nreg hv from h4, show ¬ 0 < c.nreg hu from h3, ↓reduceIte]; omega
 
@@ -276,7 +276,7 @@ theorem putPiece_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W 
   simp only at hu hv1 hv2
   unfold putPiece
   exec_block
-  refine ⟨by omega, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨by_o, ?_, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
   · simp only [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq]
     refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;> simp only [upd] <;> split_ifs <;> first | rfl | omega
   · simp only [upd]; split_ifs <;> first | rfl | omega
@@ -290,33 +290,32 @@ theorem selLeaf_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
         posR c (End.regs L hx hy z e.2))) ∧
       (∀ r, r ≠ Cn → ¬ (N ≤ r ∧ r < N + 4) → ¬ (S ≤ r ∧ r < S + 4) → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  have ne : ∀ e : End, ∀ o, (o = Cn ∨ (N ≤ o ∧ o < N + 4) ∨ (S ≤ o ∧ o < S + 4)) →
-      (End.regs L hx hy z e).1 ≠ o ∧ (End.regs L hx hy z e).2 ≠ o := hd
+  have ne := hd
   match tl, htl with
   | [], _ =>
     unfold selLeaf
     exec_block
     · omega
-    · refine ⟨by omega, ⟨by simp, by simp, by simp, by simp⟩, fun r h1 _ _ => by simp [upd, h1],
+    · refine ⟨by_o, ⟨by_s, by_s, by_s, by_s⟩, fun r h1 _ _ => by simp [upd, h1],
         rfl, rfl, rfl, rfl⟩
   | [p], _ =>
     obtain ⟨u, v⟩ := p
     obtain ⟨c₁, k₁, e₁, hk₁, p₁, r₁, m₁, rr₁, rm₁, o₁⟩ := putPiece_exec (P := P) c hw (d := N)
       (u := End.regs L hx hy z u) (v := End.regs L hx hy z v)
-      (ne u N (Or.inr (Or.inl ⟨le_refl _, by omega⟩))).2
-      ⟨(ne v N (Or.inr (Or.inl ⟨le_refl _, by omega⟩))).1,
-        (ne v (N + 1) (Or.inr (Or.inl ⟨by omega, by omega⟩))).1⟩
-      ⟨(ne v N (Or.inr (Or.inl ⟨le_refl _, by omega⟩))).2,
-        (ne v (N + 1) (Or.inr (Or.inl ⟨by omega, by omega⟩))).2,
-        (ne v (N + 2) (Or.inr (Or.inl ⟨by omega, by omega⟩))).2⟩
-    have e₂ := Exec.constN (P := P) e₁.wb_right Cn 1 (by omega)
-    refine ⟨_, _, .seq e₁ (Exec.block_cons e₂ (Exec.block_nil e₂.wb_right)), by omega,
-      ⟨by simp, by simp, fun q hq => ?_, by simp⟩, fun r h1 h2 _ => ?_, m₁, rr₁, rm₁, o₁⟩
+      (ne u N (Or.inr (Or.inl ⟨le_refl _, by_o⟩))).2
+      ⟨(ne v N (Or.inr (Or.inl ⟨le_refl _, by_o⟩))).1,
+        (ne v (N + 1) (Or.inr (Or.inl ⟨by_o, by_o⟩))).1⟩
+      ⟨(ne v N (Or.inr (Or.inl ⟨le_refl _, by_o⟩))).2,
+        (ne v (N + 1) (Or.inr (Or.inl ⟨by_o, by_o⟩))).2,
+        (ne v (N + 2) (Or.inr (Or.inl ⟨by_o, by_o⟩))).2⟩
+    have e₂ := Exec.constN (P := P) e₁.wb_right Cn 1 by_o
+    refine ⟨_, _, .seq e₁ (Exec.block_cons e₂ (Exec.block_nil e₂.wb_right)), by_o,
+      ⟨by_s, by_s, fun q hq => ?_, by_s⟩, fun r h1 h2 _ => ?_, m₁, rr₁, rm₁, o₁⟩
     · simp only [List.map_cons, List.map_nil, List.getElem?_cons_zero, Option.some.injEq] at hq
       subst hq
       rw [← p₁]
       simp only [pieceR, posR]
-      have : Cn ≠ N ∧ Cn ≠ N + 1 ∧ Cn ≠ N + 2 ∧ Cn ≠ N + 3 := by omega
+      have : Cn ≠ N ∧ Cn ≠ N + 1 ∧ Cn ≠ N + 2 ∧ Cn ≠ N + 3 := by_o
       simp [upd, this.1.symm, this.2.1.symm, this.2.2.1.symm, this.2.2.2.symm]
     · simp only [upd, h1, ↓reduceIte]
       exact r₁ r h2
@@ -325,46 +324,46 @@ theorem selLeaf_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
     obtain ⟨u', v'⟩ := q
     obtain ⟨c₁, k₁, e₁, hk₁, p₁, r₁, m₁, rr₁, rm₁, o₁⟩ := putPiece_exec (P := P) c hw (d := N)
       (u := End.regs L hx hy z u) (v := End.regs L hx hy z v)
-      (ne u N (Or.inr (Or.inl ⟨le_refl _, by omega⟩))).2
-      ⟨(ne v N (Or.inr (Or.inl ⟨le_refl _, by omega⟩))).1,
-        (ne v (N + 1) (Or.inr (Or.inl ⟨by omega, by omega⟩))).1⟩
-      ⟨(ne v N (Or.inr (Or.inl ⟨le_refl _, by omega⟩))).2,
-        (ne v (N + 1) (Or.inr (Or.inl ⟨by omega, by omega⟩))).2,
-        (ne v (N + 2) (Or.inr (Or.inl ⟨by omega, by omega⟩))).2⟩
+      (ne u N (Or.inr (Or.inl ⟨le_refl _, by_o⟩))).2
+      ⟨(ne v N (Or.inr (Or.inl ⟨le_refl _, by_o⟩))).1,
+        (ne v (N + 1) (Or.inr (Or.inl ⟨by_o, by_o⟩))).1⟩
+      ⟨(ne v N (Or.inr (Or.inl ⟨le_refl _, by_o⟩))).2,
+        (ne v (N + 1) (Or.inr (Or.inl ⟨by_o, by_o⟩))).2,
+        (ne v (N + 2) (Or.inr (Or.inl ⟨by_o, by_o⟩))).2⟩
     obtain ⟨c₂, k₂, e₂, hk₂, p₂, r₂, m₂, rr₂, rm₂, o₂⟩ := putPiece_exec (P := P) c₁ e₁.wb_right
       (d := S) (u := End.regs L hx hy z u') (v := End.regs L hx hy z v')
-      (ne u' S (Or.inr (Or.inr ⟨le_refl _, by omega⟩))).2
-      ⟨(ne v' S (Or.inr (Or.inr ⟨le_refl _, by omega⟩))).1,
-        (ne v' (S + 1) (Or.inr (Or.inr ⟨by omega, by omega⟩))).1⟩
-      ⟨(ne v' S (Or.inr (Or.inr ⟨le_refl _, by omega⟩))).2,
-        (ne v' (S + 1) (Or.inr (Or.inr ⟨by omega, by omega⟩))).2,
-        (ne v' (S + 2) (Or.inr (Or.inr ⟨by omega, by omega⟩))).2⟩
-    have e₃ := Exec.constN (P := P) e₂.wb_right Cn 2 (by omega)
+      (ne u' S (Or.inr (Or.inr ⟨le_refl _, by_o⟩))).2
+      ⟨(ne v' S (Or.inr (Or.inr ⟨le_refl _, by_o⟩))).1,
+        (ne v' (S + 1) (Or.inr (Or.inr ⟨by_o, by_o⟩))).1⟩
+      ⟨(ne v' S (Or.inr (Or.inr ⟨le_refl _, by_o⟩))).2,
+        (ne v' (S + 1) (Or.inr (Or.inr ⟨by_o, by_o⟩))).2,
+        (ne v' (S + 2) (Or.inr (Or.inr ⟨by_o, by_o⟩))).2⟩
+    have e₃ := Exec.constN (P := P) e₂.wb_right Cn 2 by_o
     have keep : ∀ e : End, posR c₁ (End.regs L hx hy z e) = posR c (End.regs L hx hy z e) := by
       intro e
-      have h1 := ne e N (Or.inr (Or.inl ⟨le_refl _, by omega⟩))
-      have h2 := ne e (N + 1) (Or.inr (Or.inl ⟨by omega, by omega⟩))
-      have h3 := ne e (N + 2) (Or.inr (Or.inl ⟨by omega, by omega⟩))
-      have h4 := ne e (N + 3) (Or.inr (Or.inl ⟨by omega, by omega⟩))
+      have h1 := ne e N (Or.inr (Or.inl ⟨le_refl _, by_o⟩))
+      have h2 := ne e (N + 1) (Or.inr (Or.inl ⟨by_o, by_o⟩))
+      have h3 := ne e (N + 2) (Or.inr (Or.inl ⟨by_o, by_o⟩))
+      have h4 := ne e (N + 3) (Or.inr (Or.inl ⟨by_o, by_o⟩))
       simp only [posR, WPos.mk.injEq]
-      exact ⟨r₁ _ (by omega), r₁ _ (by omega)⟩
+      exact ⟨r₁ _ by_o, r₁ _ by_o⟩
     refine ⟨_, _, .seq e₁ (.seq e₂ (Exec.block_cons e₃ (Exec.block_nil e₃.wb_right))),
-      by omega, ⟨by simp, by simp, fun q hq => ?_, fun q hq => ?_⟩, fun r h1 h2 h3 => ?_,
+      by_o, ⟨by_s, by_s, fun q hq => ?_, fun q hq => ?_⟩, fun r h1 h2 h3 => ?_,
       m₂.trans m₁, rr₂.trans rr₁, rm₂.trans rm₁, o₂.trans o₁⟩
     · simp only [List.map_cons, List.map_nil, List.getElem?_cons_zero, Option.some.injEq] at hq
       subst hq
       rw [← p₁]
       simp only [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq]
-      have : Cn ≠ N ∧ Cn ≠ N + 1 ∧ Cn ≠ N + 2 ∧ Cn ≠ N + 3 := by omega
+      have : Cn ≠ N ∧ Cn ≠ N + 1 ∧ Cn ≠ N + 2 ∧ Cn ≠ N + 3 := by_o
       simp only [upd, ↓reduceIte, this.1.symm, this.2.1.symm, this.2.2.1.symm,
         this.2.2.2.symm]
-      refine ⟨⟨r₂ _ (by omega), r₂ _ (by omega)⟩, r₂ _ (by omega), r₂ _ (by omega)⟩
+      refine ⟨⟨r₂ _ by_o, r₂ _ by_o⟩, r₂ _ by_o, r₂ _ by_o⟩
     · simp only [List.map_cons, List.map_nil, List.getElem?_cons_succ, List.getElem?_cons_zero,
         Option.some.injEq] at hq
       subst hq
       rw [← keep u', ← keep v', ← p₂]
       simp only [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq]
-      have : Cn ≠ S ∧ Cn ≠ S + 1 ∧ Cn ≠ S + 2 ∧ Cn ≠ S + 3 := by omega
+      have : Cn ≠ S ∧ Cn ≠ S + 1 ∧ Cn ≠ S + 2 ∧ Cn ≠ S + 3 := by_o
       simp only [upd, ↓reduceIte, this.1.symm, this.2.1.symm, this.2.2.1.symm,
         this.2.2.2.symm, and_self]
     · simp only [upd, h1, ↓reduceIte]
@@ -388,7 +387,7 @@ theorem selB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
       c'.nmem = c.nmem ∧ c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
   have leaf := fun (tl : List (End × End)) (htl : tl.length ≤ 2) =>
     selLeaf_exec (P := P) c hw hW hd hNS hC hC' tl htl
-  have t : ∀ {r : ℕ}, c.nreg r ≤ 1 → (c.nreg z < c.nreg r ↔ c.nreg r = 1) := fun h => by omega
+  have t : ∀ {r : ℕ}, c.nreg r ≤ 1 → (c.nreg z < c.nreg r ↔ c.nreg r = 1) := fun h => by_o
   unfold selB
   simp only
   by_cases hp : c.nreg hpA < c.nreg hpB
@@ -400,60 +399,60 @@ theorem selB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
       · have d2 : decide (c.nreg c2 = 1) = true := by simp [q2]
         by_cases q3 : c.nreg c3 = 1
         · have d3 : decide (c.nreg c3 = 1) = true := by simp [q3]
-          obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .X)] (by simp)
+          obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .X)] by_s
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_true ((t b1).2 q1) (.ifLtN_true ((t b2).2 q2)
-            (.ifLtN_true ((t b3).2 q3) ex))), by omega, ?_⟩
-          rw [d1, d2, d3]; exact h
+            (.ifLtN_true ((t b3).2 q3) ex))), by_o, ?_⟩
+          rwa [d1, d2, d3]
         · have d3 : decide (c.nreg c3 = 1) = false := by simp [q3]
-          obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .B)] (by simp)
+          obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .B)] by_s
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_true ((t b1).2 q1) (.ifLtN_true ((t b2).2 q2)
-            (.ifLtN_false (fun h' => q3 ((t b3).1 h')) ex))), by omega, ?_⟩
-          rw [d1, d2, d3]; exact h
+            (.ifLtN_false (fun h' => q3 ((t b3).1 h')) ex))), by_o, ?_⟩
+          rwa [d1, d2, d3]
       · have d2 : decide (c.nreg c2 = 1) = false := by simp [q2]
-        obtain ⟨c', k, ex, hk, h⟩ := leaf [] (by simp)
+        obtain ⟨c', k, ex, hk, h⟩ := leaf [] by_s
         refine ⟨c', _, .ifLtN_true hp (.ifLtN_true ((t b1).2 q1)
-          (.ifLtN_false (fun h' => q2 ((t b2).1 h')) ex)), by omega, ?_⟩
-        rw [d1, d2]; exact h
+          (.ifLtN_false (fun h' => q2 ((t b2).1 h')) ex)), by_o, ?_⟩
+        rwa [d1, d2]
     · have d1 : decide (c.nreg c1 = 1) = false := by simp [q1]
       have n1 : ¬ c.nreg z < c.nreg c1 := fun h' => q1 ((t b1).1 h')
       by_cases q4 : c.nreg c4 = 1
       · have d4 : decide (c.nreg c4 = 1) = true := by simp [q4]
         by_cases q5 : c.nreg c5 = 1
         · have d5 : decide (c.nreg c5 = 1) = true := by simp [q5]
-          obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .X), (.Y, .B)] (by simp)
+          obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .X), (.Y, .B)] by_s
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_true ((t b4).2 q4)
-            (.ifLtN_true ((t b5).2 q5) ex))), by omega, ?_⟩
-          rw [d1, d4, d5]; exact h
+            (.ifLtN_true ((t b5).2 q5) ex))), by_o, ?_⟩
+          rwa [d1, d4, d5]
         · have d5 : decide (c.nreg c5 = 1) = false := by simp [q5]
-          obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .X)] (by simp)
+          obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .X)] by_s
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_true ((t b4).2 q4)
-            (.ifLtN_false (fun h' => q5 ((t b5).1 h')) ex))), by omega, ?_⟩
-          rw [d1, d4, d5]; exact h
+            (.ifLtN_false (fun h' => q5 ((t b5).1 h')) ex))), by_o, ?_⟩
+          rwa [d1, d4, d5]
       · have d4 : decide (c.nreg c4 = 1) = false := by simp [q4]
         have n4 : ¬ c.nreg z < c.nreg c4 := fun h' => q4 ((t b4).1 h')
         by_cases q6 : c.nreg c6 = 1
         · have d6 : decide (c.nreg c6 = 1) = true := by simp [q6]
           by_cases q2 : c.nreg c2 = 1
           · have d2 : decide (c.nreg c2 = 1) = true := by simp [q2]
-            obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .B)] (by simp)
+            obtain ⟨c', k, ex, hk, h⟩ := leaf [(.Y, .B)] by_s
             refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_false n4
-              (.ifLtN_true ((t b6).2 q6) (.ifLtN_true ((t b2).2 q2) ex)))), by omega, ?_⟩
-            rw [d1, d4, d6, d2]; exact h
+              (.ifLtN_true ((t b6).2 q6) (.ifLtN_true ((t b2).2 q2) ex)))), by_o, ?_⟩
+            rwa [d1, d4, d6, d2]
           · have d2 : decide (c.nreg c2 = 1) = false := by simp [q2]
-            obtain ⟨c', k, ex, hk, h⟩ := leaf [] (by simp)
+            obtain ⟨c', k, ex, hk, h⟩ := leaf [] by_s
             refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_false n4
               (.ifLtN_true ((t b6).2 q6) (.ifLtN_false (fun h' => q2 ((t b2).1 h')) ex)))),
-              by omega, ?_⟩
-            rw [d1, d4, d6, d2]; exact h
+              by_o, ?_⟩
+            rwa [d1, d4, d6, d2]
         · have d6 : decide (c.nreg c6 = 1) = false := by simp [q6]
-          obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .B)] (by simp)
+          obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .B)] by_s
           refine ⟨c', _, .ifLtN_true hp (.ifLtN_false n1 (.ifLtN_false n4
-            (.ifLtN_false (fun h' => q6 ((t b6).1 h')) ex))), by omega, ?_⟩
-          rw [d1, d4, d6]; exact h
+            (.ifLtN_false (fun h' => q6 ((t b6).1 h')) ex))), by_o, ?_⟩
+          rwa [d1, d4, d6]
   · have hpd : decide (c.nreg hpA < c.nreg hpB) = false := by simp [hp]
     rw [hpd]
-    obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .B)] (by simp)
-    exact ⟨c', _, .ifLtN_false hp ex, by omega, h⟩
+    obtain ⟨c', k, ex, hk, h⟩ := leaf [(.A, .B)] by_s
+    exact ⟨c', _, .ifLtN_false hp ex, by_o, h⟩
 
 /-! ## A sequence of comparisons -/
 

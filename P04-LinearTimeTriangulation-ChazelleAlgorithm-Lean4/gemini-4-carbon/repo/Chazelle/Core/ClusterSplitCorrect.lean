@@ -47,14 +47,14 @@ theorem anc_window {upN : ℕ → ℕ} (hup : ∀ v : Fin μ, upN v = T.parent v
     have hx' : T.parent^[T.level u - T.level x] u = x := by
       by_cases hnl : n ≤ T.level u
       · rw [show T.level u - T.level x = n by omega, hn]
-      · have h1 : T.parent^[n] u = T.root := T.iterate_parent_eq_root (by omega)
+      · have h1 : T.parent^[n] u = T.root := T.iterate_parent_eq_root by_o
         have h2 : T.parent^[T.level u - T.level x] u = T.root :=
           T.iterate_parent_eq_root (by rw [hn] at h1; subst h1; rw [T.level_root]; omega)
         rw [h2, ← h1, hn]
     have hxu : T.level x ≤ T.level u := by
       have := T.level_iterate_parent (T.level u - T.level x) u
       rw [hx'] at this; omega
-    refine ⟨by omega, min (T.level u) ltop - T.level x, by omega, ?_⟩
+    refine ⟨by_o, min (T.level u) ltop - T.level x, by_o, ?_⟩
     rw [iterate_parentN T hup, show T.level u - min (T.level u) ltop +
       (min (T.level u) ltop - T.level x) = T.level u - T.level x by omega, hx']
 
@@ -84,18 +84,18 @@ theorem pass_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} {s
       (passMem m sel S.bACT S.bPOS S.bTMP lo e (hi - lo)).1 a = m a) ∧
     (passMem m sel S.bACT S.bPOS S.bTMP lo e (hi - lo)).2 = e + cntS sel lo hi := by
   have := hL.hACT; have := hL.hPOS; have := hL.hμU; have := hL.hTMP
-  have hj : lo + (hi - lo) = hi := by omega
+  have hj : lo + (hi - lo) = hi := by_o
   have hdAP : ∀ i, lo ≤ i → i < lo + (hi - lo) → ∀ p, e ≤ p →
       p < e + cntS sel lo (lo + (hi - lo)) → S.bPOS + m (S.bTMP + i) ≠ S.bACT + p := by
     intro i h1 h2 p h3 h4
     rw [hj] at h4
-    have := hit i h1 (by omega)
+    have := hit i h1 by_o
     omega
-  refine ⟨fun i h1 h2 hs => passMem_act (hi - lo) hdAP i h1 (by omega) hs,
+  refine ⟨fun i h1 h2 hs => passMem_act (hi - lo) hdAP i h1 by_o hs,
     fun i h1 h2 hs => passMem_pos (hi - lo) hdAP
-      (fun a b c d e' f => hinj a b c (by omega) e' (by omega)) i h1 (by omega) hs,
-    fun a h1 h2 => passMem_keep (hi - lo) (by rw [hj]; exact h1)
-      (fun i a' b c => h2 i a' (by omega) c), by rw [passMem_ptr_eq, hj]⟩
+      (fun a b c d e' f => hinj a b c by_o e' by_o) i h1 by_o hs,
+    fun a h1 h2 => passMem_keep (hi - lo) (by rwa [hj])
+      (fun i a' b c => h2 i a' by_o c), by rw [passMem_ptr_eq, hj]⟩
 
 /-- **The three passes**: each class lands in its range of `ACT`, the positions of its items are
 recorded, nothing else changes. -/
@@ -138,7 +138,7 @@ theorem passes_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} 
   have := hL.hACT; have := hL.hPOS; have := hL.hμU; have := hL.hTMP
   -- pass A
   obtain ⟨a1, a2, a3, a4⟩ := pass_spec (sel := s0) (e := lo) hL (m := m) hlh hhi le_rfl hit hinj
-    (by omega)
+    by_o
   have hA1 : (passA m S lo hi f).1 = (passMem m s0 S.bACT S.bPOS S.bTMP lo lo (hi - lo)).1 := rfl
   have hA2 : (passA m S lo hi f).2 = e1 := by
     show (passMem m s0 S.bACT S.bPOS S.bTMP lo lo (hi - lo)).2 = e1; rw [a4, he1]
@@ -146,66 +146,66 @@ theorem passes_spec {S : SS} {A0 U : ℕ} (hL : S.Lay A0 U W) {m : ℕ → ℕ} 
   have tA : ∀ i, lo ≤ i → i < hi → (passA m S lo hi f).1 (S.bTMP + i) = m (S.bTMP + i) := by
     intro i h1 h2
     rw [hA1]
-    refine a3 _ (by omega) (fun i' b c d => ?_)
+    refine a3 _ by_o (fun i' b c d => ?_)
     have := hit i' b c; omega
   obtain ⟨b1, b2, b3, b4⟩ := pass_spec (sel := s1) (e := e1) hL (m := (passA m S lo hi f).1) hlh hhi
-    (by omega) (fun i h1 h2 => by rw [tA i h1 h2]; exact hit i h1 h2)
-    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rw [← tA i h1 h2, ← tA i' h3 h4]; exact h))
-    (by omega)
+    by_o (fun i h1 h2 => by rw [tA i h1 h2]; exact hit i h1 h2)
+    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rwa [← tA i h1 h2, ← tA i' h3 h4]))
+    by_o
   have hB1 : (passB m S lo hi f).1 =
       (passMem (passA m S lo hi f).1 s1 S.bACT S.bPOS S.bTMP lo e1 (hi - lo)).1 := by
     unfold passB; rw [hA2]
   have hB2 : (passB m S lo hi f).2 = e2 := by unfold passB; rw [hA2, b4, he2]
   have tB : ∀ i, lo ≤ i → i < hi → (passB m S lo hi f).1 (S.bTMP + i) = m (S.bTMP + i) := by
     intro i h1 h2
-    rw [hB1, b3 _ (by omega) (fun i' b c d => ?_), tA i h1 h2]
+    rw [hB1, b3 _ by_o (fun i' b c d => ?_), tA i h1 h2]
     rw [tA i' b c]; have := hit i' b c; omega
   obtain ⟨c1, c2, c3, c4⟩ := pass_spec (sel := s2) (e := e2) hL (m := (passB m S lo hi f).1) hlh hhi
-    (by omega) (fun i h1 h2 => by rw [tB i h1 h2]; exact hit i h1 h2)
-    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rw [← tB i h1 h2, ← tB i' h3 h4]; exact h))
-    (by omega)
+    by_o (fun i h1 h2 => by rw [tB i h1 h2]; exact hit i h1 h2)
+    (fun i i' h1 h2 h3 h4 h => hinj i i' h1 h2 h3 h4 (by rwa [← tB i h1 h2, ← tB i' h3 h4]))
+    by_o
   have hC1 : (passC m S lo hi f).1 =
       (passMem (passB m S lo hi f).1 s2 S.bACT S.bPOS S.bTMP lo e2 (hi - lo)).1 := by
     unfold passC; rw [hB2]
   have hC2 : (passC m S lo hi f).2 = e3 := by unfold passC; rw [hB2, c4, he3]
   have hr0 : ∀ i, lo ≤ i → i < hi → cntS s0 lo i ≤ cntS s0 lo hi := fun i _ h =>
-    cntS_mono (by omega)
+    cntS_mono by_o
   have hr1 : ∀ i, lo ≤ i → i < hi → cntS s1 lo i ≤ cntS s1 lo hi := fun i _ h =>
-    cntS_mono (by omega)
+    cntS_mono by_o
   have hlt : ∀ (sel : ℕ → Prop) i, lo ≤ i → i < hi → sel i → cntS sel lo i < cntS sel lo hi :=
     fun sel i h1 h2 h3 => cntS_lt h1 h2 h3
   refine ⟨fun i h1 h2 hs => ?_, fun i h1 h2 hs => ?_, fun i h1 h2 hs => ?_, fun a h1 h2 => ?_,
     hC2, fun huniq => ⟨fun i h1 h2 hs => ?_, fun i h1 h2 hs => ?_, fun i h1 h2 hs => ?_⟩⟩
   · have := hlt s0 i h1 h2 hs
-    rw [hC1, c3 _ (by omega) (fun i' b c d => by rw [tB i' b c]; have := hit i' b c; omega), hB1,
-      b3 _ (by omega) (fun i' b c d => by rw [tA i' b c]; have := hit i' b c; omega), hA1,
+    rw [hC1, c3 _ by_o (fun i' b c d => by rw [tB i' b c]; have := hit i' b c; omega), hB1,
+      b3 _ by_o (fun i' b c d => by rw [tA i' b c]; have := hit i' b c; omega), hA1,
       a1 i h1 h2 hs]
   · have := hlt s1 i h1 h2 hs
-    rw [hC1, c3 _ (by omega) (fun i' b c d => by rw [tB i' b c]; have := hit i' b c; omega), hB1,
+    rw [hC1, c3 _ by_o (fun i' b c d => by rw [tB i' b c]; have := hit i' b c; omega), hB1,
       b1 i h1 h2 hs, tA i h1 h2]
   · rw [hC1, c1 i h1 h2 hs, tB i h1 h2]
-  · rw [hC1, c3 a (by omega) (fun i b c d => by rw [tB i b c]; exact h2 i b c (Or.inr (Or.inr d))),
-      hB1, b3 a (by omega) (fun i b c d => by rw [tA i b c]; exact h2 i b c (Or.inr (Or.inl d))),
-      hA1, a3 a (by omega) (fun i b c d => h2 i b c (Or.inl d))]
+  · rw [hC1, c3 a by_o (fun i b c d => by rw [tB i b c]; exact h2 i b c (Or.inr (Or.inr d))),
+      hB1, b3 a by_o (fun i b c d => by rw [tA i b c]; exact h2 i b c (Or.inr (Or.inl d))),
+      hA1, a3 a by_o (fun i b c d => h2 i b c (Or.inl d))]
   · have hn1 : ¬ s1 i := fun h => absurd (huniq i 0 1 h1 h2 (Or.inl ⟨rfl, hs⟩)
-      (Or.inr (Or.inl ⟨rfl, h⟩))) (by omega)
+      (Or.inr (Or.inl ⟨rfl, h⟩))) by_o
     have hn2 : ¬ s2 i := fun h => absurd (huniq i 0 2 h1 h2 (Or.inl ⟨rfl, hs⟩)
-      (Or.inr (Or.inr ⟨rfl, h⟩))) (by omega)
+      (Or.inr (Or.inr ⟨rfl, h⟩))) by_o
     have hv := hit i h1 h2
-    rw [hC1, c3 _ (by omega) (fun i' b c d => by
+    rw [hC1, c3 _ by_o (fun i' b c d => by
         rw [tB i' b c]; intro h
-        have := hinj i i' h1 h2 b c (by omega)
+        have := hinj i i' h1 h2 b c by_o
         subst this; exact hn2 d), hB1,
-      b3 _ (by omega) (fun i' b c d => by
+      b3 _ by_o (fun i' b c d => by
         rw [tA i' b c]; intro h
-        have := hinj i i' h1 h2 b c (by omega)
+        have := hinj i i' h1 h2 b c by_o
         subst this; exact hn1 d), hA1, a2 i h1 h2 hs]
   · have hn2 : ¬ s2 i := fun h => absurd (huniq i 1 2 h1 h2 (Or.inr (Or.inl ⟨rfl, hs⟩))
-      (Or.inr (Or.inr ⟨rfl, h⟩))) (by omega)
+      (Or.inr (Or.inr ⟨rfl, h⟩))) by_o
     have hv := hit i h1 h2
-    rw [hC1, c3 _ (by omega) (fun i' b c d => by
+    rw [hC1, c3 _ by_o (fun i' b c d => by
         rw [tB i' b c]; intro h
-        have := hinj i i' h1 h2 b c (by omega)
+        have := hinj i i' h1 h2 b c by_o
         subst this; exact hn2 d), hB1, ← tA i h1 h2, b2 i h1 h2 hs]
   · rw [hC1, ← tB i h1 h2, c2 i h1 h2 hs]
 

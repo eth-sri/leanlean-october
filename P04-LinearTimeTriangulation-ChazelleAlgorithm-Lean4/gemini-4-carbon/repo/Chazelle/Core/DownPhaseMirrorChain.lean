@@ -105,7 +105,7 @@ theorem sideE_sym {m : ℕ} (hm : 0 < m) {x y : ℕ} (h : (x + y) % (2 * m) = 0)
   have hs : x % (2 * m) + y % (2 * m) = 0 ∨ x % (2 * m) + y % (2 * m) = 2 * m := by
     by_cases hlt : x % (2 * m) + y % (2 * m) < 2 * m
     · rw [Nat.mod_eq_of_lt hlt] at h'; exact Or.inl h'
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)] at h'
+    · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o] at h'
       right; omega
   unfold sideE
   split_ifs <;> omega
@@ -146,7 +146,7 @@ theorem walkMir_sideWalk_not (β : Bool) :
   rw [hn] at hj ⊢
   rcases Nat.lt_or_ge j 6 with hj6 | hj6
   · rw [show 5 + (2 * C.m + 7) - j = (5 - j) + (2 * C.m + 7) * 1 by omega,
-      Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt (by omega)]
+      Nat.add_mul_mod_self_left, Nat.mod_eq_of_lt by_o]
     interval_cases j
     · show C.mir.slitTop = mir C.slitTop; exact slitTop_mir C
     · show ((-C.mir.radius, C.mir.radius) : Point) = mir (C.radius, C.radius)
@@ -158,11 +158,11 @@ theorem walkMir_sideWalk_not (β : Bool) :
     · show ((C.mir.radius, C.mir.radius) : Point) = mir (-C.radius, C.radius)
       rw [radius_mir, mir_pt, neg_neg]
     · show C.mir.slitTop = mir C.slitTop; exact slitTop_mir C
-  · obtain ⟨i, rfl⟩ : ∃ i, j = i + 6 := ⟨j - 6, by omega⟩
+  · obtain ⟨i, rfl⟩ : ∃ i, j = i + 6 := ⟨j - 6, by_o⟩
     rw [show (5 + (2 * C.m + 7) - (i + 6)) % (2 * C.m + 7) = (2 * C.m - i) + 6 by
-      rw [Nat.mod_eq_of_lt (by omega)]; omega]
-    rw [C.mir.sideWalk_vtx_tour _ (show i ≤ 2 * C.mir.m by simp; omega),
-      C.sideWalk_vtx_tour _ (by omega), sideTour_mir, sideTour_not _ _ (by omega)]
+      rw [Nat.mod_eq_of_lt by_o]; omega]
+    rw [C.mir.sideWalk_vtx_tour _ (by simp; omega),
+      C.sideWalk_vtx_tour _ by_o, sideTour_mir, sideTour_not _ _ by_o]
 
 /-- **The turn of the mirrored chain is flipped** (inner top vertex). -/
 theorem sideBeta_mir (hP : C.P.Simple) (h0 : 0 < C.topIdx) (hm : C.topIdx < C.m) :
@@ -171,12 +171,12 @@ theorem sideBeta_mir (hP : C.P.Simple) (h0 : 0 < C.topIdx) (hm : C.topIdx < C.m)
   set A := C.vertex (T + 1) - C.top
   set B := C.vertex (T - 1) - C.top
   set X := C.slitTop - C.top
-  have hA : A ≠ 0 := C.sideVertex_sub_top_ne hP (k := T + 1) (by omega) (by omega)
-  have hB : B ≠ 0 := C.sideVertex_sub_top_ne hP (k := T - 1) (by omega) (by omega)
+  have hA : A ≠ 0 := C.sideVertex_sub_top_ne hP (k := T + 1) by_o by_o
+  have hB : B ≠ 0 := C.sideVertex_sub_top_ne hP (k := T - 1) by_o by_o
   have hns := C.sideChain_nonSpike hP h0 hm
-  have hor : sideCcw A X B ∨ sideCcw B X A := Chazelle.Chain.sideCcw_or hA hB hns.1
-    (C.sideUp_not_ray _ (by omega) hA) (C.sideUp_not_ray _ (by omega) hB)
-  have hβ : C.sideBeta = true ↔ sideCcw A X B := C.sideBeta_eq_true_iff
+  have hor := Chazelle.Chain.sideCcw_or hA hB hns.1
+    (C.sideUp_not_ray _ by_o hA) (C.sideUp_not_ray _ by_o hB)
+  have hβ := C.sideBeta_eq_true_iff
   have e : C.mir.sideBeta = true ↔ sideCcw B X A := by
     rw [Chazelle.Chain.sideBeta_eq_true_iff, topIdx_mir, vertex_mir, vertex_mir, top_mir,
       slitTop_mir, mir_sub, mir_sub, mir_sub, sideCcw_mir]
@@ -226,7 +226,7 @@ theorem chords_chain_mir : C.mir.chords = mirF C.chords := by
   constructor
   · rintro ⟨k, σ, hk, hσ, hD, rfl⟩
     refine ⟨k, -σ, hk, by rcases hσ with rfl | rfl <;> norm_num, ?_, ?_⟩
-    · rw [← dirFree_mir, neg_neg]; exact hD
+    · rwa [← dirFree_mir, neg_neg]
     · rw [← neg_neg σ, chordSet_chain_mir, image_mir_image_mir, neg_neg]
   · rintro ⟨k, σ, hk, hσ, hD, hc⟩
     refine ⟨k, -σ, hk, by rcases hσ with rfl | rfl <;> norm_num, (dirFree_mir C k σ).2 hD, ?_⟩
@@ -243,7 +243,7 @@ theorem augChords_mir : Merge.augChords C.mir = mirF (Merge.augChords C) := by
   constructor
   · rintro ⟨y, a, b, hch, hy, rfl⟩
     refine ⟨y, -b, -a, ?_, hy, hseg_mir y a b⟩
-    rw [← isHChordIn_mir, neg_neg, neg_neg]; exact hch
+    rwa [← isHChordIn_mir, neg_neg, neg_neg]
   · rintro ⟨y, a, b, hch, hy, hc⟩
     refine ⟨y, -b, -a, isHChordIn_mir.2 hch, hy, ?_⟩
     rw [← hseg_mir, ← hc, image_mir_image_mir]
@@ -256,7 +256,7 @@ theorem modelMir_chain (hP : C.P.Simple) : ModelMir (chainModel C) (chainModel C
   counted p hp := by
     have hn : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n _
     rw [hn] at hp ⊢
-    rw [idx_q (by omega) hp]
+    rw [idx_q by_o hp]
     show (6 ≤ p ∧ p < 2 * C.m + 6) ↔ (6 ≤ _ ∧ _ < 2 * C.m + 6)
     split_ifs <;> omega
   Adm := augChords_mir C

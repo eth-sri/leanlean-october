@@ -71,7 +71,7 @@ def capCore : Stmt :=
 /-- **The primitive `capPrim`.** -/
 def capPrim : Stmt := .seq pHead capCore
 
-theorem wr_capPrim : wr Bprim capPrim = true := by decide
+theorem wr_capPrim : wr Bprim capPrim = true := by_d
 
 /-! ## The contract -/
 
@@ -109,13 +109,13 @@ theorem ext_iff' (u v w : ℝ) : 0 < (u - v) * (w - v) ↔ (v < u ∧ v < w) ∨
 theorem nearU_iff' {u v w : ℝ} (h : (v < u ∧ v < w) ∨ (u < v ∧ w < v)) :
     |u - v| < |w - v| ↔ ((v < u ∧ v < w) ∧ u < w) ∨ ((u < v ∧ w < v) ∧ w < u) := by
   rcases h with ⟨h1, h2⟩ | ⟨h1, h2⟩
-  · rw [abs_of_pos (by linarith), abs_of_pos (by linarith)]
+  · rw [abs_of_pos by_l, abs_of_pos by_l]
     constructor
-    · intro h; left; exact ⟨⟨h1, h2⟩, by linarith⟩
+    · intro h; left; exact ⟨⟨h1, h2⟩, by_l⟩
     · rintro (⟨-, h⟩ | ⟨⟨h3, -⟩, -⟩) <;> linarith
-  · rw [abs_of_neg (by linarith), abs_of_neg (by linarith)]
+  · rw [abs_of_neg by_l, abs_of_neg by_l]
     constructor
-    · intro h; right; exact ⟨⟨h1, h2⟩, by linarith⟩
+    · intro h; right; exact ⟨⟨h1, h2⟩, by_l⟩
     · rintro (⟨⟨h3, -⟩, -⟩ | ⟨-, h⟩) <;> linarith
 
 /-! ## Execution -/
@@ -135,39 +135,39 @@ theorem capLoad_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     simp only [Bcv, Bhost, Bool.or_eq_false_iff, beq_eq_false_iff_ne, decide_eq_false_iff_not]
     omega)
   have e₁ := Exec.subN (P := P) hE.wb 50120 50201 50032
-  have hE₁ := hE.step e₁ (by decide)
+  have hE₁ := hE.step e₁ by_d
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, su, iu, lu, vu⟩ := cvLoad_exec _ hE₁ (k := k - 1)
-    (by simp [h201, hE.r32]) (by omega) (dst := 50130) (by norm_num)
+    (by simp [h201, hE.r32]) by_o (dst := 50130) by_n
   have r₂ : ∀ r, 50200 ≤ r → c₂.nreg r = c.nreg r := fun r hr => by
-    rw [keep200 f₂ (by norm_num) (by norm_num) r hr]; simp only
-    rw [upd_other _ _ _ (by omega)]
+    rw [keep200 f₂ by_n by_n r hr]; simp only
+    rw [upd_other _ _ _ by_o]
   have e₃ := Exec.copyN (P := P) e₂.wb_right 50120 50201
-  have hE₃ := hE₂.step e₃ (by decide)
+  have hE₃ := hE₂.step e₃ by_d
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, hE₄, sv, iv, lv, vv⟩ := cvLoad_exec _ hE₃ (k := k)
-    (by simp only [upd_same]; rw [r₂ 50201 (by norm_num), h201]) (by omega)
-    (dst := 50133) (by norm_num)
+    (by simp only [upd_same]; rw [r₂ 50201 by_n, h201]) by_o
+    (dst := 50133) by_n
   have r₄ : ∀ r, 50200 ≤ r → c₄.nreg r = c.nreg r := fun r hr => by
-    rw [keep200 f₄ (by norm_num) (by norm_num) r hr]; simp only
-    rw [upd_other _ _ _ (by omega), r₂ r hr]
+    rw [keep200 f₄ by_n by_n r hr]; simp only
+    rw [upd_other _ _ _ by_o, r₂ r hr]
   have iu₄ : SymPtIn c₄ 50130 su := symPtIn_keep (symPtIn_of_eq iu fun j h1 h2 => by
-    simp only [upd]; rw [ite_eq_right (by omega)]) f₄ (by intro j h1 h2; interval_cases j <;> decide)
+    simp only [upd]; rw [ite_eq_right by_o]) f₄ (by intro j h1 h2; interval_cases j <;> decide)
   have e₅ := Exec.addN (P := P) e₄.wb_right 50120 50201 50032
-    (by rw [r₄ _ (by norm_num), h201, hE₄.r32]; have := hE₄.NW; have := C.m_lt;
+    (by rw [r₄ _ by_n, h201, hE₄.r32]; have := hE₄.NW; have := C.m_lt;
         have := hE₄.n_eq; omega)
-  have hE₅ := hE₄.step e₅ (by decide)
+  have hE₅ := hE₄.step e₅ by_d
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, hE₆, sw, iw, lw, vw⟩ := cvLoad_exec _ hE₅ (k := k + 1)
-    (by simp only [upd_same]; rw [r₄ 50201 (by norm_num), h201, hE₄.r32])
-    (by omega) (dst := 50136) (by norm_num)
+    (by simp only [upd_same]; rw [r₄ 50201 by_n, h201, hE₄.r32])
+    by_o (dst := 50136) by_n
   have r₆ : ∀ r, 50200 ≤ r → c₆.nreg r = c.nreg r := fun r hr => by
-    rw [keep200 f₆ (by norm_num) (by norm_num) r hr]; simp only
-    rw [upd_other _ _ _ (by omega), r₄ r hr]
+    rw [keep200 f₆ by_n by_n r hr]; simp only
+    rw [upd_other _ _ _ by_o, r₄ r hr]
   have iu₆ : SymPtIn c₆ 50130 su := symPtIn_keep (symPtIn_of_eq iu₄ fun j h1 h2 => by
-    simp only [upd]; rw [ite_eq_right (by omega)]) f₆ (by intro j h1 h2; interval_cases j <;> decide)
+    simp only [upd]; rw [ite_eq_right by_o]) f₆ (by intro j h1 h2; interval_cases j <;> decide)
   have iv₆ : SymPtIn c₆ 50133 sv := symPtIn_keep (symPtIn_of_eq iv fun j h1 h2 => by
-    simp only [upd]; rw [ite_eq_right (by omega)]) f₆ (by intro j h1 h2; interval_cases j <;> decide)
+    simp only [upd]; rw [ite_eq_right by_o]) f₆ (by intro j h1 h2; interval_cases j <;> decide)
   have ex : Exec P W capLoad c c₆ (1 + (k₂ + (1 + (k₄ + (1 + k₆))))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ e₆))))
-  exact ⟨c₆, _, ex, by omega, hE₆, r₆, su, sv, sw, iu₆, iv₆, iw, lu, lv, lw, vu, vv, vw⟩
+  exact ⟨c₆, _, ex, by_o, hE₆, r₆, su, sv, sw, iu₆, iv₆, iw, lu, lv, lw, vu, vv, vw⟩
 
 theorem BitIs.decEq {c : Config} {r : ℕ} {p : Prop} [Decidable p] (h : BitIs c r p) :
     decide (c.nreg r = 1) = decide p := by
@@ -197,27 +197,27 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
           BitIs c' 50213 (¬ near.1 < (Geometry.lerp V far ((near.2 - V.2) / (far.2 - V.2))).1)) := by
   have hG := hE.hG
   have hW := hE.hW
-  have hW2 : 2 ≤ W := by omega
+  have hW2 : 2 ≤ W := by_o
   -- the comparison bits
   obtain ⟨c₁, k₁, e₁, hk₁, f₁, a1, a2, -, -⟩ := cmp4_exec (base := 50141) hG hW c hE.wb
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) lu lv iu iv
+    by_n by_n by_n by_n lu lv iu iv
   have iu₁ := symPtIn_keep iu f₁ (by intro j h1 h2; interval_cases j <;> decide)
   have iv₁ := symPtIn_keep iv f₁ (by intro j h1 h2; interval_cases j <;> decide)
   have iw₁ := symPtIn_keep iw f₁ (by intro j h1 h2; interval_cases j <;> decide)
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, a5, a6, -, -⟩ := cmp4_exec (base := 50145) hG hW c₁ e₁.wb_right
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) lw lv iw₁ iv₁
+    by_n by_n by_n by_n lw lv iw₁ iv₁
   have iu₂ := symPtIn_keep iu₁ f₂ (by intro j h1 h2; interval_cases j <;> decide)
   have iv₂ := symPtIn_keep iv₁ f₂ (by intro j h1 h2; interval_cases j <;> decide)
   have iw₂ := symPtIn_keep iw₁ f₂ (by intro j h1 h2; interval_cases j <;> decide)
   obtain ⟨c₃, k₃, e₃, hk₃, f₃, a9, a10, -, -⟩ := cmp4_exec (base := 50149) hG hW c₂ e₂.wb_right
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) lu lw iu₂ iw₂
+    by_n by_n by_n by_n lu lw iu₂ iw₂
   have iu₃ := symPtIn_keep iu₂ f₃ (by intro j h1 h2; interval_cases j <;> decide)
   have iv₃ := symPtIn_keep iv₂ f₃ (by intro j h1 h2; interval_cases j <;> decide)
   have iw₃ := symPtIn_keep iw₂ f₃ (by intro j h1 h2; interval_cases j <;> decide)
-  have b41 := (a1.keep f₂ (by decide)).keep f₃ (by decide)
-  have b42 := (a2.keep f₂ (by decide)).keep f₃ (by decide)
-  have b45 := a5.keep f₃ (by decide)
-  have b46 := a6.keep f₃ (by decide)
+  have b41 := (a1.keep f₂ by_d).keep f₃ by_d
+  have b42 := (a2.keep f₂ by_d).keep f₃ by_d
+  have b45 := a5.keep f₃ by_d
+  have b46 := a6.keep f₃ by_d
   have b49 := a9
   have b50 := a10
   simp only [Ys] at b41 b42 b45 b46 b49 b50
@@ -233,19 +233,19 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     exacts [b41.1, b42.1, b45.1, b46.1, b49.1, b50.1]
   obtain ⟨c₄, k₄, e₄, hk₄, v₄, f₄⟩ := BF.compile_exec (P := P) hW2 fExt 50162 c₃ e₃.wb_right
     (by simp only [fExt, fBelow, fAbove, BF.VarsOK]
-        exact ⟨⟨⟨by norm_num, vars _ (by simp)⟩, ⟨by norm_num, vars _ (by simp)⟩⟩,
-          ⟨⟨by norm_num, vars _ (by simp)⟩, ⟨by norm_num, vars _ (by simp)⟩⟩⟩)
+        exact ⟨⟨⟨by_n, vars _ by_s⟩, ⟨by_n, vars _ by_s⟩⟩,
+          ⟨⟨by_n, vars _ by_s⟩, ⟨by_n, vars _ by_s⟩⟩⟩)
   have k34 : ∀ r, r < 50162 → c₄.nreg r = c₃.nreg r := fun r hr =>
     f₄.1 r (by simp only [BF.wset, decide_eq_false_iff_not]; omega)
   obtain ⟨c₅, k₅, e₅, hk₅, v₅, f₅⟩ := BF.compile_exec (P := P) hW2 fNearU 50170 c₄ e₄.wb_right
     (by simp only [fNearU, fBelow, fAbove, BF.VarsOK]
-        refine ⟨⟨⟨⟨by norm_num, ?_⟩, ⟨by norm_num, ?_⟩⟩, ⟨by norm_num, ?_⟩⟩,
-          ⟨⟨⟨by norm_num, ?_⟩, ⟨by norm_num, ?_⟩⟩, ⟨by norm_num, ?_⟩⟩⟩ <;>
-        rw [k34 _ (by norm_num)] <;> exact vars _ (by simp))
+        refine ⟨⟨⟨⟨by_n, ?_⟩, ⟨by_n, ?_⟩⟩, ⟨by_n, ?_⟩⟩,
+          ⟨⟨⟨by_n, ?_⟩, ⟨by_n, ?_⟩⟩, ⟨by_n, ?_⟩⟩⟩ <;>
+        rw [k34 _ by_n] <;> exact vars _ by_s)
   have k45 : ∀ r, r < 50170 → c₅.nreg r = c₄.nreg r := fun r hr =>
     f₅.1 r (by simp only [BF.wset, decide_eq_false_iff_not]; omega)
   have k35 : ∀ r, r < 50162 → c₅.nreg r = c₃.nreg r := fun r hr => by
-    rw [k45 r (by omega), k34 r hr]
+    rw [k45 r by_o, k34 r hr]
   have extE : fExt.eval (fun r => decide (c₃.nreg r = 1)) =
       decide ((V.2 < U.2 ∧ V.2 < X.2) ∨ (U.2 < V.2 ∧ X.2 < V.2)) := by
     simp only [fExt, fBelow, fAbove, BF.eval, b41.decEq, b42.decEq, b45.decEq, b46.decEq]
@@ -262,7 +262,7 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     simp only [Bool.decide_and, Bool.decide_or]
   have ext_bit : BitIs c₅ 50162 (0 < (U.2 - V.2) * (X.2 - V.2)) := by
     refine BitIs.of_bf (f := fExt) (v := fun r => decide (c₃.nreg r = 1))
-      (by rw [k45 _ (by norm_num)]; exact v₄) ?_
+      (by rwa [k45 _ by_n]) ?_
     rw [extE, decide_eq_true_iff, ext_iff']
   have near_bit : BitIs c₅ 50170
       (((V.2 < U.2 ∧ V.2 < X.2) ∧ U.2 < X.2) ∨ ((U.2 < V.2 ∧ X.2 < V.2) ∧ X.2 < U.2)) := by
@@ -270,13 +270,13 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     rw [nearE, decide_eq_true_iff]
   -- the environment so far
   have hE₅ : CEnv P W H C c₅ :=
-    ((((hE.frame f₁ e₁.wb_right (by decide)).frame f₂ e₂.wb_right (by decide)).frame f₃
-      e₃.wb_right (by decide)).frame f₄ e₄.wb_right (by decide)).frame f₅ e₅.wb_right (by decide)
-  have iu₅ : SymPtIn c₅ 50130 su := symPtIn_of_eq iu₃ fun j h1 h2 => k35 j (by omega)
-  have iv₅ : SymPtIn c₅ 50133 sv := symPtIn_of_eq iv₃ fun j h1 h2 => k35 j (by omega)
-  have iw₅ : SymPtIn c₅ 50136 sw := symPtIn_of_eq iw₃ fun j h1 h2 => k35 j (by omega)
+    ((((hE.frame f₁ e₁.wb_right by_d).frame f₂ e₂.wb_right by_d).frame f₃
+      e₃.wb_right by_d).frame f₄ e₄.wb_right by_d).frame f₅ e₅.wb_right by_d
+  have iu₅ : SymPtIn c₅ 50130 su := symPtIn_of_eq iu₃ fun j h1 h2 => k35 j by_o
+  have iv₅ : SymPtIn c₅ 50133 sv := symPtIn_of_eq iv₃ fun j h1 h2 => k35 j by_o
+  have iw₅ : SymPtIn c₅ 50136 sw := symPtIn_of_eq iw₃ fun j h1 h2 => k35 j by_o
   -- the selection
-  set sel : Prop := ((V.2 < U.2 ∧ V.2 < X.2) ∧ U.2 < X.2) ∨ ((U.2 < V.2 ∧ X.2 < V.2) ∧ X.2 < U.2)
+  set sel := ((V.2 < U.2 ∧ V.2 < X.2) ∧ U.2 < X.2) ∨ ((U.2 < V.2 ∧ X.2 < V.2) ∧ X.2 < U.2)
     with hsel
   obtain ⟨c₆, k₆, e₆, hk₆, sn, sf, isn, isf, hsn, r₆, m₆, rr₆, rm₆, o₆⟩ : ∃ c₆ k₆,
       Exec P W capSel c₅ c₆ k₆ ∧ k₆ ≤ 8 ∧ ∃ sn sf : SymPt, SymPtIn c₆ 50153 sn ∧
@@ -286,25 +286,25 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     have h32 := hE₅.r32
     have cp := fun (l : List (ℕ × ℕ)) => copies_exec (P := P) l c₅ e₅.wb_right
     by_cases hs : sel
-    · have h1 : c₅.nreg 50170 = 1 := near_bit.2.2 hs
+    · have h1 := near_bit.2.2 hs
       obtain ⟨c₆, e, h3, h3', hrr, hm, hrm, ho⟩ := cp [(50153, 50130), (50154, 50131),
-        (50155, 50132), (50156, 50136), (50157, 50137), (50158, 50138)] (by decide) (by decide)
-      refine ⟨c₆, _, .ifLtN_false (by rw [h1, h32]; omega) e, by simp, su, sw, ?_, ?_,
+        (50155, 50132), (50156, 50136), (50157, 50137), (50158, 50138)] by_d by_d
+      refine ⟨c₆, _, .ifLtN_false (by rw [h1, h32]; omega) e, by_s, su, sw, ?_, ?_,
         by simp [hs], fun r hr => h3' r (by simp; omega), hm, hrr, hrm, ho⟩
-      · exact symPtIn_copy iu₅ (h3 (50153, 50130) (by simp)) (h3 (50154, 50131) (by simp))
-          (h3 (50155, 50132) (by simp))
-      · exact symPtIn_copy iw₅ (h3 (50156, 50136) (by simp)) (h3 (50157, 50137) (by simp))
-          (h3 (50158, 50138) (by simp))
+      · exact symPtIn_copy iu₅ (h3 (50153, 50130) by_s) (h3 (50154, 50131) by_s)
+          (h3 (50155, 50132) by_s)
+      · exact symPtIn_copy iw₅ (h3 (50156, 50136) by_s) (h3 (50157, 50137) by_s)
+          (h3 (50158, 50138) by_s)
     · have h0 : c₅.nreg 50170 = 0 := by
-        have := near_bit.1; have := near_bit.2; by_contra h; apply hs; exact near_bit.2.1 (by omega)
+        have := near_bit.1; have := near_bit.2; by_contra h; apply hs; exact near_bit.2.1 by_o
       obtain ⟨c₆, e, h3, h3', hrr, hm, hrm, ho⟩ := cp [(50153, 50136), (50154, 50137),
-        (50155, 50138), (50156, 50130), (50157, 50131), (50158, 50132)] (by decide) (by decide)
-      refine ⟨c₆, _, .ifLtN_true (by rw [h0, h32]; omega) e, by simp, sw, su, ?_, ?_,
+        (50155, 50138), (50156, 50130), (50157, 50131), (50158, 50132)] by_d by_d
+      refine ⟨c₆, _, .ifLtN_true (by rw [h0, h32]; omega) e, by_s, sw, su, ?_, ?_,
         by simp [hs], fun r hr => h3' r (by simp; omega), hm, hrr, hrm, ho⟩
-      · exact symPtIn_copy iw₅ (h3 (50153, 50136) (by simp)) (h3 (50154, 50137) (by simp))
-          (h3 (50155, 50138) (by simp))
-      · exact symPtIn_copy iu₅ (h3 (50156, 50130) (by simp)) (h3 (50157, 50131) (by simp))
-          (h3 (50158, 50132) (by simp))
+      · exact symPtIn_copy iw₅ (h3 (50153, 50136) by_s) (h3 (50154, 50137) by_s)
+          (h3 (50155, 50138) by_s)
+      · exact symPtIn_copy iu₅ (h3 (50156, 50130) by_s) (h3 (50157, 50131) by_s)
+          (h3 (50158, 50132) by_s)
   have hE₆ : CEnv P W H C c₆ := hE₅.keep e₆.wb_right m₆ fun r hr => r₆ r (by
     simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr; omega)
   have lsn : sn.Lt P.n := by
@@ -315,7 +315,7 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   obtain ⟨c₇, k₇, e₇, hk₇, v59, r₇, m₇, rr₇, rm₇, o₇⟩ : ∃ c₇ k₇, Exec P W capCode c₆ c₇ k₇ ∧
       k₇ ≤ 4 ∧ c₇.nreg 50159 = shv sn + 1 ∧ (∀ r, r ≠ 50159 → c₇.nreg r = c₆.nreg r) ∧
       c₇.nmem = c₆.nmem ∧ c₇.rreg = c₆.rreg ∧ c₇.rmem = c₆.rmem ∧ c₇.output = c₆.output := by
-    have h32 : c₆.nreg 50032 = 1 := hE₆.r32
+    have h32 := hE₆.r32
     have hnW : shv sn + 1 ≤ W := by
       cases sn with
       | vtx i => simp only [shv, SymPt.Lt] at lsn ⊢; omega
@@ -327,7 +327,7 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       have e₂ := Exec.addN (P := P) e₁.wb_right 50159 50159 50032 (by
         simp only [upd_same, upd_other _ _ _ (show (50032 : ℕ) ≠ 50159 by decide)]
         rw [i1, h32]; simp only [shv] at hnW; omega)
-      refine ⟨_, _, .seq (.ifLtN_true (by rw [i0, h32]; omega) e₁) e₂, by omega, ?_,
+      refine ⟨_, _, .seq (.ifLtN_true (by rw [i0, h32]; omega) e₁) e₂, by_o, ?_,
         fun r hr => by simp [upd_other _ _ _ hr], rfl, rfl, rfl, rfl⟩
       simp only [upd_same, upd_other _ _ _ (show (50032 : ℕ) ≠ 50159 by decide)]
       rw [i1, h32]; rfl
@@ -337,28 +337,28 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       have e₂ := Exec.addN (P := P) e₁.wb_right 50159 50159 50032 (by
         simp only [upd_same, upd_other _ _ _ (show (50032 : ℕ) ≠ 50159 by decide)]
         rw [i2, h32]; simp only [shv] at hnW; omega)
-      refine ⟨_, _, .seq (.ifLtN_false (by rw [i0, h32]; omega) e₁) e₂, by omega, ?_,
+      refine ⟨_, _, .seq (.ifLtN_false (by rw [i0, h32]; omega) e₁) e₂, by_o, ?_,
         fun r hr => by simp [upd_other _ _ _ hr], rfl, rfl, rfl, rfl⟩
       simp only [upd_same, upd_other _ _ _ (show (50032 : ℕ) ≠ 50159 by decide)]
       rw [i2, h32]; rfl
   have hE₇ : CEnv P W H C c₇ := hE₆.keep e₇.wb_right m₇ fun r hr => r₇ r (by
     simp only [envRegs, List.mem_cons, List.not_mem_nil, or_false] at hr; omega)
-  have isn₇ : SymPtIn c₇ 50153 sn := symPtIn_of_eq isn fun j h1 h2 => r₇ j (by omega)
-  have isf₇ : SymPtIn c₇ 50156 sf := symPtIn_of_eq isf fun j h1 h2 => r₇ j (by omega)
+  have isn₇ : SymPtIn c₇ 50153 sn := symPtIn_of_eq isn fun j h1 h2 => r₇ j by_o
+  have isf₇ : SymPtIn c₇ 50156 sf := symPtIn_of_eq isf fun j h1 h2 => r₇ j by_o
   have iv₇ : SymPtIn c₇ 50133 sv := symPtIn_of_eq iv₅ fun j h1 h2 => by
-    rw [r₇ j (by omega), r₆ j (by omega)]
+    rw [r₇ j by_o, r₆ j by_o]
   -- the orientation bits
   obtain ⟨c₈, k₈, e₈, hk₈, f₈, d₈, t₈⟩ := kbit_exec (op := 2) (dst := 50160) hG hW c₇
-    e₇.wb_right (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) lv lsf lsn
+    e₇.wb_right by_n by_n by_n by_n by_n lv lsf lsn
     iv₇ isf₇ isn₇
   have iv₈ := symPtIn_keep iv₇ f₈ (by intro j h1 h2; interval_cases j <;> decide)
   have isf₈ := symPtIn_keep isf₇ f₈ (by intro j h1 h2; interval_cases j <;> decide)
   have isn₈ := symPtIn_keep isn₇ f₈ (by intro j h1 h2; interval_cases j <;> decide)
   obtain ⟨c₉, k₉, e₉, hk₉, f₉, d₉, t₉⟩ := kbit_exec (op := 3) (dst := 50161) hG hW c₈
-    e₈.wb_right (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) lv lsf lsn
+    e₈.wb_right by_n by_n by_n by_n by_n lv lsf lsn
     iv₈ isf₈ isn₈
   have b60 : BitIs c₉ 50160 (0 < det V (sf.eval (Qof P)) (sn.eval (Qof P))) := by
-    have := BitIs.keep ⟨d₈, t₈⟩ f₉ (by decide)
+    have := BitIs.keep ⟨d₈, t₈⟩ f₉ by_d
     simp only [SignTest, hV] at this; exact this
   have b61 : BitIs c₉ 50161 (det V (sf.eval (Qof P)) (sn.eval (Qof P)) = 0) := by
     have : BitIs c₉ 50161 _ := ⟨d₉, t₉⟩
@@ -368,28 +368,28 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     rw [f₉.1 r (by simp only [Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
         beq_eq_false_iff_ne]; omega),
       f₈.1 r (by simp only [Bkb, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not,
-        beq_eq_false_iff_ne]; omega), r₇ r (by omega), r₆ r (by omega)]
-  have g41 : BitIs c₉ 50141 (U.2 < V.2) := b41.of_eq (by rw [k59 _ (by norm_num) (by norm_num), k35 _ (by norm_num)])
-  have g42 : BitIs c₉ 50142 (V.2 < U.2) := b42.of_eq (by rw [k59 _ (by norm_num) (by norm_num), k35 _ (by norm_num)])
-  have g45 : BitIs c₉ 50145 (X.2 < V.2) := b45.of_eq (by rw [k59 _ (by norm_num) (by norm_num), k35 _ (by norm_num)])
-  have g46 : BitIs c₉ 50146 (V.2 < X.2) := b46.of_eq (by rw [k59 _ (by norm_num) (by norm_num), k35 _ (by norm_num)])
+        beq_eq_false_iff_ne]; omega), r₇ r by_o, r₆ r by_o]
+  have g41 : BitIs c₉ 50141 (U.2 < V.2) := b41.of_eq (by rw [k59 _ by_n by_n, k35 _ by_n])
+  have g42 : BitIs c₉ 50142 (V.2 < U.2) := b42.of_eq (by rw [k59 _ by_n by_n, k35 _ by_n])
+  have g45 : BitIs c₉ 50145 (X.2 < V.2) := b45.of_eq (by rw [k59 _ by_n by_n, k35 _ by_n])
+  have g46 : BitIs c₉ 50146 (V.2 < X.2) := b46.of_eq (by rw [k59 _ by_n by_n, k35 _ by_n])
   have h9w := e₉.wb_right
   obtain ⟨c₁₀, k₁₀, e₁₀, hk₁₀, v₁₀, f₁₀⟩ := BF.compile_exec (P := P) hW2 fPos 50182 c₉ h9w
     (by simp only [fPos, fBelow, fAbove, BF.VarsOK]
-        exact ⟨⟨⟨⟨by norm_num, g42.1⟩, ⟨by norm_num, g46.1⟩⟩, ⟨by norm_num, b60.1⟩⟩,
-          ⟨⟨⟨by norm_num, g41.1⟩, ⟨by norm_num, g45.1⟩⟩, ⟨⟨by norm_num, b60.1⟩,
-            ⟨by norm_num, b61.1⟩⟩⟩⟩)
+        exact ⟨⟨⟨⟨by_n, g42.1⟩, ⟨by_n, g46.1⟩⟩, ⟨by_n, b60.1⟩⟩,
+          ⟨⟨⟨by_n, g41.1⟩, ⟨by_n, g45.1⟩⟩, ⟨⟨by_n, b60.1⟩,
+            ⟨by_n, b61.1⟩⟩⟩⟩)
   have k910 : ∀ r, r < 50182 → c₁₀.nreg r = c₉.nreg r := fun r hr =>
     f₁₀.1 r (by simp only [BF.wset, decide_eq_false_iff_not]; omega)
-  set below : Prop := V.2 < U.2 ∧ V.2 < X.2 with hbelow
-  set above : Prop := U.2 < V.2 ∧ X.2 < V.2 with habove
+  set below := V.2 < U.2 ∧ V.2 < X.2 with hbelow
+  set above := U.2 < V.2 ∧ X.2 < V.2 with habove
   set dt := det V (sf.eval (Qof P)) (sn.eval (Qof P)) with hdt
   have posE : fPos.eval (fun r => decide (c₉.nreg r = 1)) =
       decide (¬ ((below ∧ 0 < dt) ∨ (above ∧ ¬ 0 < dt ∧ ¬ dt = 0))) := by
     simp only [fPos, fBelow, fAbove, BF.eval, g41.decEq, g42.decEq, g45.decEq, g46.decEq,
       b60.decEq, b61.decEq]
     simp only [hbelow, habove, Bool.decide_and, Bool.decide_or, decide_not]
-  have pos_bit : BitIs c₁₀ 50182 (¬ ((below ∧ 0 < dt) ∨ (above ∧ ¬ 0 < dt ∧ ¬ dt = 0))) :=
+  have pos_bit :=
     BitIs.of_bf (f := fPos) (v := fun r => decide (c₉.nreg r = 1)) v₁₀
       (by rw [posE, decide_eq_true_iff])
   -- the outputs
@@ -411,18 +411,18 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
   have hsz3 : fPos.size = 16 := rfl
   -- values at the end
   have c62 : c₁₀.nreg 50162 = c₅.nreg 50162 := by
-    rw [k910 _ (by norm_num), f₉.1 _ (by decide), f₈.1 _ (by decide), r₇ _ (by decide),
-      r₆ _ (by norm_num)]
+    rw [k910 _ by_n, f₉.1 _ by_d, f₈.1 _ by_d, r₇ _ by_d,
+      r₆ _ by_n]
   have c70 : c₁₀.nreg 50170 = c₅.nreg 50170 := by
-    rw [k910 _ (by norm_num), f₉.1 _ (by decide), f₈.1 _ (by decide), r₇ _ (by decide),
-      r₆ _ (by norm_num)]
+    rw [k910 _ by_n, f₉.1 _ by_d, f₈.1 _ by_d, r₇ _ by_d,
+      r₆ _ by_n]
   have c59 : c₁₀.nreg 50159 = shv sn + 1 := by
-    rw [k910 _ (by norm_num), f₉.1 _ (by decide), f₈.1 _ (by decide), v59]
+    rw [k910 _ by_n, f₉.1 _ by_d, f₈.1 _ by_d, v59]
   have hsnE : sn = if sel then su else sw := by
     have := congrArg Prod.fst hsn; simp only at this; rw [this]; split_ifs <;> rfl
   have hsfE : sf = if sel then sw else su := by
     have := congrArg Prod.snd hsn; simp only at this; rw [this]; split_ifs <;> rfl
-  refine ⟨c₁₁, _, ex, by omega, ?_, ?_, ?_, ?_, ?_, ?_⟩
+  refine ⟨c₁₁, _, ex, by_o, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact ext_bit.of_eq (by rw [q10, c62])
   · intro hext
     refine (near_bit.of_eq (by rw [q11, c70])).congr ?_
@@ -433,17 +433,17 @@ theorem capTail_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
     | vtx i => simp only [shv, SymPt.Lt] at lsn ⊢; omega
     | onEdge e h => simp only [shv, SymPt.Lt] at lsn ⊢; omega
   · intro hext
-    have hselE : sel ↔ |U.2 - V.2| < |X.2 - V.2| := (nearU_iff' ((ext_iff' _ _ _).1 hext)).symm
+    have hselE := (nearU_iff' ((ext_iff' _ _ _).1 hext)).symm
     rw [q12, c59, Nat.add_sub_cancel, ← eval_snd_shv, hsnE]
     by_cases hs : sel
     · rw [ite_eq_left hs, ite_eq_left (hselE.1 hs), hU]
     · rw [ite_eq_right hs, ite_eq_right (fun h => hs (hselE.2 h)), hX]
   · intro hext hUX
-    have hselE : sel ↔ |U.2 - V.2| < |X.2 - V.2| := (nearU_iff' ((ext_iff' _ _ _).1 hext)).symm
+    have hselE := (nearU_iff' ((ext_iff' _ _ _).1 hext)).symm
     refine (pos_bit.of_eq (by rw [q13])).congr ?_
     have hext' := (ext_iff' _ _ _).1 hext
     by_cases hs : sel
-    · have hn : |U.2 - V.2| < |X.2 - V.2| := hselE.1 hs
+    · have hn := hselE.1 hs
       simp only [ite_eq_left hn]
       rw [hdt, hsnE, hsfE, ite_eq_left hs, ite_eq_left hs, hU, hX]
       have hne : X.2 ≠ V.2 := by rcases hext' with ⟨-, h⟩ | ⟨-, h⟩ <;> [exact ne_of_gt h; exact ne_of_lt h]
@@ -477,12 +477,12 @@ theorem capPrim_meets : Meets capPrim primBands (PrimPre CapIn) (PrimPost CapOut
     (fun _ _ => 10100) := by
   refine prim_meets (K := 9300) (fun r h => h) wr_capPrim ?_
   intro P W H C c₀ c _hC hE ⟨hk1, hk2⟩ hinp
-  have h201 : c.nreg 50201 = c₀.nreg 50201 := hinp 50201 (by norm_num) (by norm_num)
+  have h201 : c.nreg 50201 = c₀.nreg 50201 := hinp 50201 by_n by_n
   obtain ⟨c₁, k₁, e₁, hk₁, hE₁, -, su, sv, sw, iu, iv, iw, lu, lv, lw, vu, vv, vw⟩ :=
     capLoad_exec c hE h201 hk1 hk2
   obtain ⟨c₂, k₂, e₂, hk₂, hout⟩ := capTail_exec c₁ hE₁ iu iv iw lu lv lw
   have hlen := hE.hlen
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_⟩
+  refine ⟨c₂, _, .seq e₁ e₂, by_o, ?_⟩
   simp only [vu, vv, vw] at hout
   exact hout
 
@@ -496,7 +496,7 @@ def hvCore : Stmt :=
 /-- **The primitive `hvPrim`.** -/
 def hvPrim : Stmt := .seq pHead hvCore
 
-theorem wr_hvPrim : wr Bprim hvPrim = true := by decide
+theorem wr_hvPrim : wr Bprim hvPrim = true := by_d
 
 /-- The input condition of `hvPrim`. -/
 def HvIn (_ : Polygon) (_ : ℕ) (C : Chain) (c : Config) : Prop := c.nreg 50201 ≤ C.m
@@ -510,11 +510,11 @@ theorem hvPrim_meets : Meets hvPrim primBands (PrimPre HvIn) (PrimPost HvOut)
     (fun _ _ => 3000) := by
   refine prim_meets (K := 2200) (fun r h => h) wr_hvPrim ?_
   intro P W H C c₀ c _hC hE hk hinp
-  have h201 : c.nreg 50201 = c₀.nreg 50201 := hinp 50201 (by norm_num) (by norm_num)
+  have h201 : c.nreg 50201 = c₀.nreg 50201 := hinp 50201 by_n by_n
   have e₁ := Exec.copyN (P := P) hE.wb 50120 50201
-  have hE₁ := hE.step e₁ (by decide)
+  have hE₁ := hE.step e₁ by_d
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, sp, isp, lsp, vsp⟩ := cvLoad_exec _ hE₁ (k := c₀.nreg 50201)
-    (by simp only [upd_same]; exact h201) hk (dst := 50130) (by norm_num)
+    (by simp only [upd_same]; exact h201) hk (dst := 50130) by_n
   have h32 := hE₂.r32
   have hlen := hE.hlen
   have hw₂ := e₂.wb_right
@@ -526,13 +526,13 @@ theorem hvPrim_meets : Meets hvPrim primBands (PrimPre HvIn) (PrimPost HvOut)
   | vtx i =>
     obtain ⟨i0, i1⟩ := isp
     have e₃ := Exec.copyN (P := P) hw₂ 50210 50131
-    exact ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_true (by rw [i0, h32]; omega) e₃)), by omega,
-      key _ (c₂.nreg 50131) (by simp) (by simp [i1, shv])⟩
+    exact ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_true (by rw [i0, h32]; omega) e₃)), by_o,
+      key _ (c₂.nreg 50131) by_s (by simp [i1, shv])⟩
   | onEdge e h =>
     obtain ⟨i0, i1, i2⟩ := isp
     have e₃ := Exec.copyN (P := P) hw₂ 50210 50132
-    exact ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_false (by rw [i0, h32]; omega) e₃)), by omega,
-      key _ (c₂.nreg 50132) (by simp) (by simp [i2, shv])⟩
+    exact ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_false (by rw [i0, h32]; omega) e₃)), by_o,
+      key _ (c₂.nreg 50132) by_s (by simp [i2, shv])⟩
 
 end
 

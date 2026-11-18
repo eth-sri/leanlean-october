@@ -150,7 +150,7 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
   have hWB : ∀ c₁ : Config, AppI W rs rn S T D' cc ℓ₀ l P₀ c.nmem c₁ → WordsBounded W c₁ :=
     fun _ h => h.wb
   have I0 : AppI W rs rn S T D' cc ℓ₀ l P₀ c.nmem c :=
-    ⟨hw, by omega, by rw [h101, h100]; simp, fun i hi => by
+    ⟨hw, by_o, by rw [h101, h100]; simp, fun i hi => by
       rw [h101, h100] at *; simp only [List.take_zero, List.filter_nil, List.append_nil]
       exact hP₀ i hi, fun _ _ => rfl, hS, hN, h62, h44, h19⟩
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90101) (b := rn)
@@ -182,17 +182,17 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
         intro d₂ hw₂ v2 r2' m2
         unfold appendV
         exec_block
-        · rw [r2' _ (by decide) (by decide), r2' _ (by decide) (by decide), h44']
+        · rw [r2' _ by_d by_d, r2' _ by_d by_d, h44']
           omega
-        · config_simp; rw [r2' _ (by decide) (by decide), r2' _ (by decide) (by decide), h19']
+        · config_simp; rw [r2' _ by_d by_d, r2' _ by_d by_d, h19']
           omega
         · refine ⟨rfl, ?_, ?_, fun r a1 a2 a3 => by simp [upd, a1, a3, r2' r a1 a2]⟩
-          · config_simp; rw [r2' _ (by decide) (by decide), r2' _ (by decide) (by decide), h19']
+          · config_simp; rw [r2' _ by_d by_d, r2' _ by_d by_d, h19']
           · config_simp
-            rw [r2' _ (by decide) (by decide), r2' _ (by decide) (by decide), h44', v2, m2]
+            rw [r2' _ by_d by_d, r2' _ by_d by_d, h44', v2, m2]
       -- the step as a whole
       have hfs := take_succ_filter l t cc ht
-      have hv : d₁.nreg 90062 = cc := by rw [qr _ (by decide) (by decide), h62']
+      have hv : d₁.nreg 90062 = cc := by rw [qr _ by_d by_d, h62']
       -- the increment and the invariant, from the state after the (possible) append
       have fin : ∀ (d₂ : Config) (k₂ : ℕ), WordsBounded W d₂ → k₂ ≤ 8 →
           Exec P W (.ifLtN 90102 90062 appendV (.ifLtN 90062 90102 appendV .skip)) d₁ d₂ k₂ →
@@ -205,24 +205,24 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
             (.ifLtN 90062 90102 appendV .skip)) (.instr (.addN 90101 90101 90019))) d₁ d₄ k₄ ∧
             k₄ ≤ 10 ∧ AppI W rs rn S T D' cc ℓ₀ l P₀ c.nmem d₄ ∧ d₄.nreg 90101 = t + 1 := by
         intro d₂ k₂ hw₂ hk₂ ex₂ r2' l2 t2 f2
-        have e19 : d₂.nreg 90019 = 1 := by rw [r2' 90019 (by decide) (by decide) (by decide), h19']
-        have e101 : d₂.nreg 90101 = t := r2' 90101 (by decide) (by decide) (by decide)
+        have e19 : d₂.nreg 90019 = 1 := by rw [r2' 90019 by_d by_d by_d, h19']
+        have e101 : d₂.nreg 90101 = t := r2' 90101 by_d by_d by_d
         obtain ⟨d₅, ex, v101, vr, vm⟩ : ∃ d₅, Exec P W (.instr (.addN 90101 90101 90019)) d₂ d₅ 1 ∧
             d₅.nreg 90101 = t + 1 ∧ (∀ r, r ≠ 90101 → d₅.nreg r = d₂.nreg r) ∧
             d₅.nmem = d₂.nmem :=
           ⟨_, Exec.addN hw₂ 90101 90101 90019 (by rw [e19, e101]; omega),
             by simp [upd, e19, e101], fun r hr => by simp [upd, hr], rfl⟩
-        refine ⟨_, _, .seq ex₂ ex, by omega, ⟨ex.wb_right, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
+        refine ⟨_, _, .seq ex₂ ex, by_o, ⟨ex.wb_right, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
           v101⟩
         · rw [v101]; omega
-        · rw [v101, vr _ (by decide), l2]
-        · rw [v101, vr _ (by decide), vm]; exact t2
-        · rw [vm]; exact f2
+        · rw [v101, vr _ by_d, l2]
+        · rwa [v101, vr _ by_d, vm]
+        · rwa [vm]
         · rw [vr _ r2, r2' _ r4 r3 r1, hrs']
         · rw [vr _ n2, r2' _ n4 n3 n1, hrn']
-        · rw [vr _ (by decide), r2' _ (by decide) (by decide) (by decide), h62']
-        · rw [vr _ (by decide), r2' _ (by decide) (by decide) (by decide), h44']
-        · rw [vr _ (by decide), e19]
+        · rw [vr _ by_d, r2' _ by_d by_d by_d, h62']
+        · rw [vr _ by_d, r2' _ by_d by_d by_d, h44']
+        · rw [vr _ by_d, e19]
       have key : ∃ d₄ k₄, Exec P W (.seq (.ifLtN 90102 90062 appendV
           (.ifLtN 90062 90102 appendV .skip)) (.instr (.addN 90101 90101 90019))) d₁ d₄ k₄ ∧
           k₄ ≤ 10 ∧ AppI W rs rn S T D' cc ℓ₀ l P₀ c.nmem d₄ ∧ d₄.nreg 90101 = t + 1 := by
@@ -232,10 +232,10 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
           have hn2 : ¬ d₁.nreg 90062 < d₁.nreg 90102 := by rw [q102, hv, hne]; omega
           have hfs' : (l.take (t + 1)).filter (· != cc) = (l.take t).filter (· != cc) := by
             rw [hfs, hne]; simp
-          refine fin d₁ _ hw₁ (by omega) (.ifLtN_false hn1 (.ifLtN_false hn2 (.skip hw₁)))
+          refine fin d₁ _ hw₁ by_o (.ifLtN_false hn1 (.ifLtN_false hn2 (.skip hw₁)))
             (fun r a1 a2 _ => qr r a1 a2) ?_ ?_ ?_
-          · rw [qr _ (by decide) (by decide), hlen, hfs']
-          · intro i hi; rw [qm, hfs']; rw [qr _ (by decide) (by decide)] at hi; exact htmp i hi
+          · rw [qr _ by_d by_d, hlen, hfs']
+          · intro i hi; rw [qm, hfs']; rw [qr _ by_d by_d] at hi; exact htmp i hi
           · intro a ha; rw [qm]; exact hfr a ha
         · -- append
           have hbit : (l.getD t 0 != cc) = true := by simpa using hne
@@ -248,7 +248,7 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
                 (.ifLtN 90062 90102 appendV .skip)) (.instr (.addN 90101 90101 90019))) d₁ d₄ k₄ ∧
                 k₄ ≤ 10 ∧ AppI W rs rn S T D' cc ℓ₀ l P₀ c.nmem d₄ ∧ d₄.nreg 90101 = t + 1 := by
             intro k₀ hk₀ ex₀
-            refine fin d₂ _ ex₀.wb_right (by omega) ex₀ r2' ?_ ?_ ?_
+            refine fin d₂ _ ex₀.wb_right by_o ex₀ r2' ?_ ?_ ?_
             · rw [l2, hlen, hfs', List.length_append, List.length_singleton]; omega
             · intro i hi
               rw [l2] at hi
@@ -261,7 +261,7 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
                   rw [List.length_append, hP, hlen]
                 rw [← this]; exact (getD_append_len _ _ []).symm
               · simp only [upd, show T + i ≠ T + d.nreg 90100 by omega, ite_false]
-                rw [htmp i (by omega), hfs', ← List.append_assoc]
+                rw [htmp i by_o, hfs', ← List.append_assoc]
                 exact (getD_append_left (l₂ := [l.getD t 0])
                   (by rw [List.length_append, hP, ← hlen]; omega)).symm
             · intro a ha
@@ -270,15 +270,15 @@ theorem appLoop_exec {P : Polygon} {W rs rn S T D' cc ℓ₀ : ℕ} {l P₀ : Li
               rw [ite_eq_right (by rw [hlen]; rcases ha with ha | ha <;> omega)]
               exact hfr a ha
           by_cases hlt : l.getD t 0 < cc
-          · exact post 1 (by omega) (.ifLtN_true (by rw [q102, hv]; exact hlt) e₂)
+          · exact post 1 by_o (.ifLtN_true (by rwa [q102, hv]) e₂)
           · have hgt : cc < l.getD t 0 := by omega
-            exact post 3 (by omega) ((Exec.ifLtN_false (by rw [q102, hv]; omega)
-              (.ifLtN_true (by rw [q102, hv]; exact hgt) e₂)).cast (by omega))
+            exact post 3 by_o ((Exec.ifLtN_false (by rw [q102, hv]; omega)
+              (.ifLtN_true (by rwa [q102, hv]) e₂)).cast by_o)
       obtain ⟨d₄, k₄, e₄, hk₄, I₄, t₄⟩ := key
-      exact ⟨d₄, k₁ + k₄, .seq e₁ e₄, I₄, by omega, by rw [t₄]; omega⟩) I0
+      exact ⟨d₄, k₁ + k₄, .seq e₁ e₄, I₄, by_o, by rw [t₄]; omega⟩) I0
   obtain ⟨hw', ht', hlen', htmp', hfr', -, hrn', -, -, -⟩ := I'
   rw [hrn'] at hx
-  have hfull : c'.nreg 90101 = l.length := by omega
+  have hfull : c'.nreg 90101 = l.length := by_o
   rw [hfull, List.take_length] at hlen' htmp'
   refine ⟨c', k, e, ?_, hlen', htmp', hfr', exec_frameS e (by
     simp [wrS, appBody, appendV, block, wrSOK, wrOK, Bapp])⟩

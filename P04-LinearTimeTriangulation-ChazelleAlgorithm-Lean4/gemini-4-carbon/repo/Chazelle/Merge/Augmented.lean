@@ -106,13 +106,13 @@ theorem hseg_inj {y a b y' a' b' : ℝ} (hab : a ≤ b) (h : hseg y a b = hseg y
 theorem segment_rayPt_pos (p : Point) {T : ℝ} (hT : 0 ≤ T) :
     Chazelle.segment p (rayPt p 1 T) = hseg p.2 p.1 (p.1 + T) := by
   rw [segment_horizontal_eq_hseg (rayPt_snd p 1 T).symm, rayPt_fst, one_mul,
-    min_eq_left (by linarith), max_eq_right (by linarith)]
+    min_eq_left by_l, max_eq_right by_l]
 
 /-- A leftward ray segment as an `hseg`. -/
 theorem segment_rayPt_neg (p : Point) {T : ℝ} (hT : 0 ≤ T) :
     Chazelle.segment p (rayPt p (-1) T) = hseg p.2 (p.1 - T) p.1 := by
   rw [segment_horizontal_eq_hseg (rayPt_snd p (-1) T).symm, rayPt_fst, neg_one_mul,
-    min_eq_right (by linarith), max_eq_left (by linarith), ← sub_eq_add_neg]
+    min_eq_right by_l, max_eq_left by_l, ← sub_eq_add_neg]
 
 /-! ### Augmented chords -/
 
@@ -138,7 +138,7 @@ theorem augChords_spec {C : Chain} {c : Set Point} (hc : c ∈ augChords C) :
 theorem anchorable_left (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
     C.Anchorable ((a, y) : Point) := by
   have hmid := h.open_mem ((a + b) / 2) (by linarith [h.lt]) (by linarith [h.lt])
-  have hy : |y| < C.radius := (C.dom_subset_box hmid).2
+  have hy := (C.dom_subset_box hmid).2
   by_cases hbox : ((a, y) : Point) ∈ Chain.box C.radius
   · have hnd := h.left_not
     rw [C.mem_dom_iff] at hnd
@@ -161,7 +161,7 @@ theorem anchorable_left (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
       linarith [h.lt]
     · -- `a < -R`: a point of the open chord just right of `a` is outside the box
       have hx1 : a < (a + min b (-C.radius)) / 2 := by
-        have : a < min b (-C.radius) := lt_min h.lt (by linarith)
+        have : a < min b (-C.radius) := lt_min h.lt by_l
         linarith
       have hx2 : (a + min b (-C.radius)) / 2 < b := by
         have := min_le_left b (-C.radius)
@@ -177,7 +177,7 @@ theorem anchorable_left (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
 theorem anchorable_right (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
     C.Anchorable ((b, y) : Point) := by
   have hmid := h.open_mem ((a + b) / 2) (by linarith [h.lt]) (by linarith [h.lt])
-  have hy : |y| < C.radius := (C.dom_subset_box hmid).2
+  have hy := (C.dom_subset_box hmid).2
   by_cases hbox : ((b, y) : Point) ∈ Chain.box C.radius
   · have hnd := h.right_not
     rw [C.mem_dom_iff] at hnd
@@ -196,14 +196,14 @@ theorem anchorable_right (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) 
     push Not at hgt
     rcases lt_abs.1 hgt with h1 | h1
     · have hx1 : a < (max a C.radius + b) / 2 := by
-        have : max a C.radius < b := max_lt h.lt h1
+        have := max_lt h.lt h1
         have := le_max_left a C.radius
         linarith
       have hx2 : (max a C.radius + b) / 2 < b := by
-        have : max a C.radius < b := max_lt h.lt h1
+        have := max_lt h.lt h1
         linarith
       have hx3 : C.radius < (max a C.radius + b) / 2 := by
-        have : max a C.radius < b := max_lt h.lt h1
+        have := max_lt h.lt h1
         have := le_max_right a C.radius
         linarith
       have := (C.dom_subset_box (h.open_mem _ hx1 hx2)).1
@@ -263,7 +263,7 @@ theorem hit_of_freeAt (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) {σ : ℝ}
   obtain ⟨u, hu, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 h
   rw [mem_Ioi] at hu
   have hle : u ≤ rayHit C.radius C.set p σ := le_rayHit hσ fun t ht1 ht2 => by
-    have hd : rayPt p σ t ∈ C.dom := hsub ⟨ht1, ht2⟩
+    have hd := hsub ⟨ht1, ht2⟩
     exact ⟨C.dom_subset_box hd, C.not_mem_set_of_mem_dom hd⟩
   have hpos := lt_of_lt_of_le hu hle
   obtain ⟨h1, h2⟩ := rayHit_spec (r := C.radius) C.isClosed_set p hσ
@@ -281,19 +281,19 @@ theorem shoot_mem_augChords (C : Chain) {p : Point} (hp : p.2 ≤ C.top.2) (hnd 
   obtain ⟨hpos, hend, hint⟩ := hit_of_freeAt C hp hσ h
   set T := C.hitParam p σ with hT
   rcases hσ with rfl | rfl
-  · refine ⟨p.2, p.1, p.1 + T, ⟨by linarith, hnd, ?_, fun x hx1 hx2 => ?_⟩, hp,
+  · refine ⟨p.2, p.1, p.1 + T, ⟨by_l, hnd, ?_, fun x hx1 hx2 => ?_⟩, hp,
       segment_rayPt_pos p hpos.le⟩
     · have : ((p.1 + T, p.2) : Point) = rayPt p 1 T := by simp [rayPt]
-      rw [this]; exact hend
-    · have := hint (x - p.1) (by linarith) (by linarith)
+      rwa [this]
+    · have := hint (x - p.1) by_l by_l
       have e : rayPt p 1 (x - p.1) = ((x, p.2) : Point) := by
         simp only [rayPt, one_mul, add_sub_cancel]
       rwa [e] at this
-  · refine ⟨p.2, p.1 - T, p.1, ⟨by linarith, ?_, hnd, fun x hx1 hx2 => ?_⟩, hp,
+  · refine ⟨p.2, p.1 - T, p.1, ⟨by_l, ?_, hnd, fun x hx1 hx2 => ?_⟩, hp,
       segment_rayPt_neg p hpos.le⟩
     · have : ((p.1 - T, p.2) : Point) = rayPt p (-1) T := by simp [rayPt, sub_eq_add_neg]
-      rw [this]; exact hend
-    · have := hint (p.1 - x) (by linarith) (by linarith)
+      rwa [this]
+    · have := hint (p.1 - x) by_l by_l
       have e : rayPt p (-1) (p.1 - x) = ((x, p.2) : Point) := by
         simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel]
       rwa [e] at this
@@ -303,13 +303,13 @@ inside the segment. -/
 theorem shoot_subset_pos (C : Chain) {y a b : ℝ} (hab : a < b)
     (hb : ((b, y) : Point) ∉ C.dom) : shoot C ((a, y) : Point) 1 ⊆ hseg y a b := by
   have hle : C.hitParam ((a, y) : Point) 1 ≤ b - a := by
-    refine C.hitParam_le_of_not_mem_dom _ 1 (by linarith) ?_
+    refine C.hitParam_le_of_not_mem_dom _ 1 by_l ?_
     have : rayPt ((a, y) : Point) 1 (b - a) = ((b, y) : Point) := by
       simp only [rayPt, one_mul, add_sub_cancel]
     rw [this]; exact hb
   have h := segment_rayPt_subset ((a, y) : Point) 1 (hitParam_nonneg C _ 1) hle
   have e : Chazelle.segment ((a, y) : Point) (rayPt ((a, y) : Point) 1 (b - a)) = hseg y a b := by
-    rw [segment_rayPt_pos _ (by linarith)]
+    rw [segment_rayPt_pos _ by_l]
     dsimp only
     rw [add_sub_cancel]
   rw [e] at h
@@ -320,14 +320,14 @@ inside the segment. -/
 theorem shoot_subset_neg (C : Chain) {y a b : ℝ} (hab : a < b)
     (ha : ((a, y) : Point) ∉ C.dom) : shoot C ((b, y) : Point) (-1) ⊆ hseg y a b := by
   have hle : C.hitParam ((b, y) : Point) (-1) ≤ b - a := by
-    refine C.hitParam_le_of_not_mem_dom _ (-1) (by linarith) ?_
+    refine C.hitParam_le_of_not_mem_dom _ (-1) by_l ?_
     have : rayPt ((b, y) : Point) (-1) (b - a) = ((a, y) : Point) := by
       simp only [rayPt, neg_one_mul, neg_sub, add_sub_cancel]
     rw [this]; exact ha
   have h := segment_rayPt_subset ((b, y) : Point) (-1) (hitParam_nonneg C _ (-1)) hle
   have e : Chazelle.segment ((b, y) : Point) (rayPt ((b, y) : Point) (-1) (b - a)) =
       hseg y a b := by
-    rw [segment_rayPt_neg _ (by linarith)]
+    rw [segment_rayPt_neg _ by_l]
     dsimp only
     rw [sub_sub_cancel]
   rw [e] at h
@@ -371,7 +371,7 @@ theorem hseg_eq_shoot (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b) :
       rw [this]; exact h.right_not
     · have e : rayPt ((a, y) : Point) 1 s = ((a + s, y) : Point) := by simp [rayPt]
       rw [e]
-      exact h.open_mem _ (by linarith) (by linarith)
+      exact h.open_mem _ by_l by_l
   unfold shoot
   rw [hT, segment_rayPt_pos _ (by linarith [h.lt])]
   dsimp only
@@ -388,7 +388,7 @@ theorem hseg_eq_shoot_neg (C : Chain) {y a b : ℝ} (h : IsHChordIn C.dom y a b)
     · have e : rayPt ((b, y) : Point) (-1) s = ((b - s, y) : Point) := by
         simp [rayPt, sub_eq_add_neg]
       rw [e]
-      exact h.open_mem _ (by linarith) (by linarith)
+      exact h.open_mem _ by_l by_l
   unfold shoot
   rw [hT, segment_rayPt_neg _ (by linarith [h.lt])]
   dsimp only

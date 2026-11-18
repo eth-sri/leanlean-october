@@ -201,21 +201,21 @@ theorem trapDiagonals_inter {P : Polygon} (hP : P.Simple) {d d' : ℕ × ℕ}
   obtain ⟨D, hD, rfl⟩ := hd
   obtain ⟨D', hD', rfl⟩ := hd'
   have hreg : D.region ≠ D'.region := fun h => hne (TrapData.diag_eq_of_region_eq hP D D' h)
-  have hdisj : Disjoint D.region D'.region :=
+  have hdisj :=
     (regions_eq_or_disjoint (D.region_mem_regions hP) (D'.region_mem_regions hP)).resolve_left
       hreg
   rintro p ⟨hp, hp'⟩
   have h1 : p ∉ D.region := by
     intro hpD
     rcases D'.segment_cases hP hD' hp' with e | e | e
-    · exact D.not_mem_region_of_vtx hP (D'.top_lt hP) (by rw [← e]; exact hpD)
-    · exact D.not_mem_region_of_vtx hP (D'.bot_lt hP) (by rw [← e]; exact hpD)
+    · exact D.not_mem_region_of_vtx hP (D'.top_lt hP) (by rwa [← e])
+    · exact D.not_mem_region_of_vtx hP (D'.bot_lt hP) (by rwa [← e])
     · exact Set.disjoint_left.1 hdisj hpD e
   have h1' : p ∉ D'.region := by
     intro hpD
     rcases D.segment_cases hP hD hp with e | e | e
-    · exact D'.not_mem_region_of_vtx hP (D.top_lt hP) (by rw [← e]; exact hpD)
-    · exact D'.not_mem_region_of_vtx hP (D.bot_lt hP) (by rw [← e]; exact hpD)
+    · exact D'.not_mem_region_of_vtx hP (D.top_lt hP) (by rwa [← e])
+    · exact D'.not_mem_region_of_vtx hP (D.bot_lt hP) (by rwa [← e])
     · exact Set.disjoint_right.1 hdisj hpD e
   simp only [mem_inter_iff, mem_insert_iff, mem_singleton_iff]
   exact ⟨D.eq_endpoint_of_mem_diagSeg hP hD hp h1, D'.eq_endpoint_of_mem_diagSeg hP hD' hp' h1'⟩
@@ -263,7 +263,7 @@ theorem vtxChords_not_adjacent {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (h
   have hm := hd.2.1
   have hpos := chordParam_pos hP hk hdir
   have hzo : rayPt (P.vtx d.1) σ (chordParam P d.1 σ / 2) ∈ openChordSet P d.1 σ :=
-    ⟨chordParam P d.1 σ / 2, ⟨by linarith, by linarith⟩, rfl⟩
+    ⟨chordParam P d.1 σ / 2, ⟨by_l, by_l⟩, rfl⟩
   have hzi := openChordSet_subset_interior hP hk hdir hzo
   have hzs : rayPt (P.vtx d.1) σ (chordParam P d.1 σ / 2) ∈ diagSeg P d := by
     rw [hseg, chordSet_eq_openChordSet_union hP hk hdir]
@@ -271,10 +271,10 @@ theorem vtxChords_not_adjacent {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (h
   constructor
   · intro h
     apply hzi.2
-    exact ⟨d.1, hk, by unfold Polygon.edge; rw [← h]; exact hzs⟩
+    exact ⟨d.1, hk, by unfold Polygon.edge; rwa [← h]⟩
   · intro h
     apply hzi.2
-    exact ⟨d.2, hm, by unfold Polygon.edge; rw [← h, segment_comm]; exact hzs⟩
+    exact ⟨d.2, hm, by unfold Polygon.edge; rwa [← h, segment_comm]⟩
 
 /-- **Each vertex-to-vertex chord is an interior diagonal.** -/
 theorem vtxChords_isDiagonal {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd : d ∈ vtxChords P) :
@@ -285,7 +285,7 @@ theorem vtxChords_isDiagonal {P : Polygon} (hP : P.Simple) {d : ℕ × ℕ} (hd 
   have hne := vtxChords_ne hP hd
   obtain ⟨h1, h2⟩ := vtxChords_not_adjacent hP hd
   obtain ⟨L, hL2, hLn, hsL⟩ := exists_diag_index (simple_three_le hP) hk hm hne h1 h2
-  have hs : d.1 % P.n = d.1 := Nat.mod_eq_of_lt hk
+  have hs := Nat.mod_eq_of_lt hk
   refine ⟨d.1, L, ⟨hL2, hLn, ?_⟩, hs, hsL, ?_⟩
   · rw [hs, hsL]
     intro p hp hp1 hp2

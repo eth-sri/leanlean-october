@@ -36,7 +36,7 @@ theorem same_side (hM : WalkAx M) {e s : Set Point} (he : e ∈ M.Adm) (hs : s �
     ¬ sideInArc (pb + tb) (pa + ta) (pw + tw) := by
   intro hwin
   obtain ⟨K₁, K₂, hK, ⟨c₁, rfl⟩, ⟨c₂, rfl⟩, hsec₁, hsec₂⟩ := hM.split he hA hB hAB
-  have hF : ChordSystem M.D {e, s} :=
+  have hF :=
     hM.sys _ (insert_subset he (singleton_subset_iff.2 hs)) (toFinite _)
   obtain ⟨hvp, hv0, hv1, -⟩ := id hv
   obtain ⟨hwp, hw0, hw1, -⟩ := id hw
@@ -68,9 +68,9 @@ theorem attach_unique (hM : WalkAx M) {e : Set Point} (he : e ∈ M.Adm) {p p' :
     obtain ⟨s, hs0, hs1, hsne, hsd⟩ := exists_lerp_near huv (lt_min hρ (lt_min hr hr'))
     have hx : Geometry.lerp u v s ∈ Chazelle.segment a b := by
       rw [← hseg]; exact Geometry.lerp_mem_segment _ _ hs0.le hs1.le
-    have h1 := hsec _ hx (by rw [hu]; exact hsne)
+    have h1 := hsec _ hx (by rwa [hu])
       (by rw [hu]; exact lt_of_lt_of_le hsd ((min_le_right _ _).trans (min_le_left _ _)))
-    have h2 := hsec' _ hx (by rw [← hpt, hu]; exact hsne)
+    have h2 := hsec' _ hx (by rwa [← hpt, hu])
       (by rw [← hpt, hu]; exact lt_of_lt_of_le hsd ((min_le_right _ _).trans (min_le_right _ _)))
     exact hdisj _ (by rw [Metric.mem_ball]; exact lt_of_lt_of_le hsd (min_le_left _ _)) h1 h2
   rcases hM.attach_endpoint hopen ⟨hp, ht0, ht1, hmem, r, hr, hsec⟩ with h | h

@@ -113,7 +113,7 @@ theorem lpt_ne_rpt (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
     sidePt M.W (N.chord i).lp (M.param Q (N.chord i).lpos) ≠
       sidePt M.W (N.chord i).rp (M.param Q (N.chord i).rpos) := by
   intro he
-  have hc : cs M Q N i ∈ M.Adm := F_adm hN (cs_mem hi)
+  have hc := F_adm hN (cs_mem hi)
   obtain ⟨a, b, hab, hcab, -, -, -, -⟩ := hM.ends _ hc
   -- the chord is `hseg y x₁ x₂` with `x₁ = x₂`: a single point
   have hset : cs M Q N i = Visibility.hseg (Q.vtx (N.chord i).h).2
@@ -127,13 +127,13 @@ theorem lpt_ne_rpt (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) :
   obtain ⟨ha1, ha2, ha3⟩ := ha
   obtain ⟨hb1, hb2, hb3⟩ := hb
   rw [hx] at ha2 hb2
-  exact hab (Prod.ext (by linarith) (by rw [ha1, hb1]))
+  exact hab (Prod.ext by_l (by rw [ha1, hb1]))
 
 /-- **The attachments of a record's chord** are at the keys of its two positions. -/
 theorem attach_keys (hM : WalkAx M) {i : ℕ} (hi : i < N.nChords) {p : ℕ} {t : ℝ}
     (hA : SideAttach M.W (cs M Q N i) p t) :
     (p : ℝ) + t = M.key Q (N.chord i).lpos ∨ (p : ℝ) + t = M.key Q (N.chord i).rpos := by
-  have hc : cs M Q N i ∈ M.Adm := F_adm hN (cs_mem hi)
+  have hc := F_adm hN (cs_mem hi)
   have hL := attach_l hN hi
   have hR := attach_r hN hi
   obtain ⟨hceq, -, hopen, -, -⟩ := hM.attach_seg hc hL hR (lpt_ne_rpt hN hM hi)
@@ -171,7 +171,7 @@ theorem seq_nodup : N.seq.Nodup := by
 theorem seq_inj {i i' : ℕ} (hi : i < N.arcs.length) (hi' : i' < N.arcs.length)
     (h : N.seq.getD i 0 = N.seq.getD i' 0) : i = i' := by
   have hl := NFLoc.seq_length hN
-  rw [NFLoc.getD_of_lt 0 (by omega), NFLoc.getD_of_lt 0 (by omega)] at h
+  rw [NFLoc.getD_of_lt 0 by_o, NFLoc.getD_of_lt 0 by_o] at h
   exact (List.Nodup.getElem_inj_iff (seq_nodup hN)).1 h
 
 /-- Distinct arcs of a nonempty submap start at distinct keys. -/
@@ -195,8 +195,8 @@ theorem pk_cut (hne : (N.F M Q).Nonempty) {i : ℕ} (hi : i < N.arcs.length) :
 theorem pk_strict (hne : (N.F M Q).Nonempty) {i i' : ℕ} (hii : i < i')
     (hi' : i' < N.arcs.length) : pk M Q N i < pk M Q N i' := by
   refine lt_of_le_of_ne (NFLoc.seq_sorted hN hii.le hi') fun h => ?_
-  have := start_inj hN hne (NFLoc.seq_lt hN (by omega)) (NFLoc.seq_lt hN hi') h
-  have := seq_inj hN (by omega) hi' this
+  have := start_inj hN hne (NFLoc.seq_lt hN by_o) (NFLoc.seq_lt hN hi') h
+  have := seq_inj hN by_o hi' this
   omega
 
 theorem pk_inj (hne : (N.F M Q).Nonempty) {i i' : ℕ} (hi : i < N.arcs.length)
@@ -255,12 +255,12 @@ theorem touch_iff_side (hNF : IsNF M Q N) (hM : WalkAx M) (hRC : RegionCorr M Q 
   obtain ⟨U, V, hU, hV, hUV, hside, htouch⟩ := Chazelle.Core.chordSides_of_system hsys (cs_mem hi)
   obtain ⟨hup, hdn, hCSi⟩ := hCS i hi
   -- a point of the open part of the chord
-  have hc : cs M Q N i ∈ M.Adm := F_adm hNF (cs_mem hi)
+  have hc := F_adm hNF (cs_mem hi)
   obtain ⟨a, b, -, hcab, -, hopen, -, -⟩ := hM.ends _ hc
   set z := Geometry.lerp a b (1 / 2) with hz
-  have hzD : z ∈ M.D := hopen _ ⟨by norm_num, by norm_num⟩
+  have hzD : z ∈ M.D := hopen _ ⟨by_n, by_n⟩
   have hzc : z ∈ cs M Q N i := by
-    rw [hcab]; exact Geometry.lerp_mem_segment a b (by norm_num) (by norm_num)
+    rw [hcab]; exact Geometry.lerp_mem_segment a b by_n by_n
   obtain ⟨ε₀, hε₀, hε⟩ := hCSi z hzc hzD
   obtain ⟨δ, ⟨h1, h2⟩, hδ0, hδ1⟩ := ((hside z hzc hzD).and (Ioo_mem_nhdsGT hε₀)).exists
   obtain ⟨e1, e2⟩ := hε δ hδ0 hδ1

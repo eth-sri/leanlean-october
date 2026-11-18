@@ -115,11 +115,11 @@ theorem m1cL1_val (m f : ℕ → ℕ) :
 
 theorem m1cL_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m m1cL0 f ∧ okB W m m1cL1 f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw by_so by_so
   simp only [m1cL0, m1cL1, okB, okI]
-  exact ⟨⟨s 1103 (by norm_num) (by norm_num), s 1104 (by norm_num) (by norm_num),
-    s 1105 (by norm_num) (by norm_num), trivial⟩, ⟨s 1103 (by norm_num) (by norm_num),
-    s 1104 (by norm_num) (by norm_num), s 1105 (by norm_num) (by norm_num), trivial⟩⟩
+  exact ⟨⟨s 1103 by_n by_n, s 1104 by_n by_n,
+    s 1105 by_n by_n, trivial⟩, ⟨s 1103 by_n by_n,
+    s 1104 by_n by_n, s 1105 by_n by_n, trivial⟩⟩
 
 theorem m1cCp_val (m f : ℕ → ℕ) :
     (∀ i, i < 7 → regB m m1cCp f (r1F + i) = f (brF + i)) ∧
@@ -134,12 +134,12 @@ theorem m1cCp_val (m f : ℕ → ℕ) :
 
 theorem m1cCp_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m m1cCp f := by
   have s : ∀ j, 700 ≤ j → j < 10000 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw by_so by_so
   simp only [m1cCp, okB, okI]
-  exact ⟨s 4030 (by norm_num) (by norm_num), s 4031 (by norm_num) (by norm_num),
-    s 4032 (by norm_num) (by norm_num), s 4033 (by norm_num) (by norm_num),
-    s 4034 (by norm_num) (by norm_num), s 4035 (by norm_num) (by norm_num),
-    s 4036 (by norm_num) (by norm_num), trivial⟩
+  exact ⟨s 4030 by_n by_n, s 4031 by_n by_n,
+    s 4032 by_n by_n, s 4033 by_n by_n,
+    s 4034 by_n by_n, s 4035 by_n by_n,
+    s 4036 by_n by_n, trivial⟩
 
 theorem stOrig_zero (J : Merge.Junction) (Q : Polygon) (N : NF) (k b : ℕ) :
     stOrig J Q N 0 k b = J.shared := by unfold stOrig; simp

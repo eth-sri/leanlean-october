@@ -39,9 +39,9 @@ def attachKeys (M : Model) (c : Set Point) : Set ℝ :=
 theorem near_end {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ) (e : Point)
     (he : e = a ∨ e = b) : ∃ x ∈ Chazelle.segment a b, x ≠ e ∧ dist x e < ρ := by
   set L := |b.1 - a.1| + |b.2 - a.2| + 1 with hL
-  have hL0 : 0 < L := by positivity
+  have hL0 : 0 < L := by_p
   set s := min (1 / 2 : ℝ) (ρ / (2 * L)) with hs
-  have hs0 : 0 < s := lt_min (by norm_num) (by positivity)
+  have hs0 : 0 < s := lt_min by_n by_p
   have hs1 : s ≤ 1 / 2 := min_le_left _ _
   have hsL : s * L ≤ ρ / 2 := by
     have := min_le_right (1 / 2 : ℝ) (ρ / (2 * L))
@@ -58,9 +58,9 @@ theorem near_end {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ) (e : Po
     · exact absurd h1 hu
     rcases mul_eq_zero.1 h2 with h2 | h2
     · exact absurd h2 hu
-    exact Prod.ext (by linarith) (by linarith)
+    exact Prod.ext by_l by_l
   rcases he with rfl | rfl
-  · refine ⟨(e.1 + s * (b.1 - e.1), e.2 + s * (b.2 - e.2)), ⟨s, hs0.le, by linarith, rfl⟩, ?_, ?_⟩
+  · refine ⟨(e.1 + s * (b.1 - e.1), e.2 + s * (b.2 - e.2)), ⟨s, hs0.le, by_l, rfl⟩, ?_, ?_⟩
     · intro h
       apply hne s hs0.ne'
       have h1 := congrArg Prod.fst h; have h2 := congrArg Prod.snd h
@@ -72,15 +72,15 @@ theorem near_end {a b : Point} (hab : a ≠ b) {ρ : ℝ} (hρ : 0 < ρ) (e : Po
       · nlinarith [abs_nonneg (b.1 - e.1)]
       · nlinarith [abs_nonneg (b.2 - e.2)]
   · refine ⟨(a.1 + (1 - s) * (e.1 - a.1), a.2 + (1 - s) * (e.2 - a.2)),
-      ⟨1 - s, by linarith, by linarith, rfl⟩, ?_, ?_⟩
+      ⟨1 - s, by_l, by_l, rfl⟩, ?_, ?_⟩
     · intro h
       apply hne s hs0.ne'
       have h1 := congrArg Prod.fst h; have h2 := congrArg Prod.snd h
       simp only at h1 h2
       exact Prod.ext (by simp only; linear_combination -h1) (by simp only; linear_combination -h2)
     · rw [Prod.dist_eq, Real.dist_eq, Real.dist_eq]
-      have e1 : a.1 + (1 - s) * (e.1 - a.1) - e.1 = -(s * (e.1 - a.1)) := by ring
-      have e2 : a.2 + (1 - s) * (e.2 - a.2) - e.2 = -(s * (e.2 - a.2)) := by ring
+      have e1 : a.1 + (1 - s) * (e.1 - a.1) - e.1 = -(s * (e.1 - a.1)) := by_r
+      have e2 : a.2 + (1 - s) * (e.2 - a.2) - e.2 = -(s * (e.2 - a.2)) := by_r
       rw [e1, e2, abs_neg, abs_neg, abs_mul, abs_mul, abs_of_pos hs0]
       refine max_lt ?_ ?_
       · nlinarith [abs_nonneg (e.1 - a.1)]
@@ -94,7 +94,7 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
   obtain ⟨pb, tb, hAb, hPb⟩ := hEb.1
   refine ⟨pa + ta, pb + tb, ?_⟩
   rintro x ⟨p, t, hA, rfl⟩
-  have hPc : sidePt M.W p t ∈ c := hA.2.2.2.1
+  have hPc := hA.2.2.2.1
   have hend : sidePt M.W p t = a ∨ sidePt M.W p t = b := by
     rw [hcab] at hPc
     obtain ⟨s, hs0, hs1, hs⟩ := hPc
@@ -115,9 +115,9 @@ theorem attachKeys_sub (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
     obtain ⟨r2, hr2, hs2⟩ := hAe.2.2.2.2
     obtain ⟨x, hx, hxe, hxd⟩ := near_end hab (lt_min hr (lt_min hr1 hr2)) e hee
     have hxc : x ∈ c := by rw [hcab]; exact hx
-    have h1 := hs1 x hxc (by rw [hP]; exact hxe)
+    have h1 := hs1 x hxc (by rwa [hP])
       (by rw [hP]; exact lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_left _ _)))
-    have h2 := hs2 x hxc (by rw [hPe]; exact hxe)
+    have h2 := hs2 x hxc (by rwa [hPe])
       (by rw [hPe]; exact lt_of_lt_of_le hxd ((min_le_right _ _).trans (min_le_right _ _)))
     exact hdisj x (lt_of_lt_of_le hxd (min_le_left _ _)) h1 h2
   rcases hend with h | h
@@ -179,8 +179,7 @@ theorem vtxIdx_disjoint {U U' : Set Point} (hU : U ∈ M.regions F) (hU' : U' �
     (hne : U ≠ U') : Disjoint (vtxIdx M F U) (vtxIdx M F U') := by
   rw [Set.disjoint_left]
   rintro k ⟨hk, a, b, harc, hin⟩ ⟨-, a', b', harc', hin'⟩
-  have ev : ∀ᶠ ε in 𝓝[>] (0 : ℝ), sideInArc a b (k + ε) ∧ sideInArc a' b' (k + ε) ∧
-      ε ∈ Ioo (0 : ℝ) 1 :=
+  have ev :=
     (eventually_in_arc hin).and ((eventually_in_arc hin').and
       (Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)))
   obtain ⟨t, ht1, ht2, ht3⟩ := ev.exists
@@ -246,7 +245,7 @@ theorem sum_nk_le (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) :
         Finset.sum_le_sum fun U _ => nk_le hM hF hfin U
     _ = ∑ U ∈ hRfin.toFinset, (vtxIdx M F U).ncard + 2 * ∑ U ∈ hRfin.toFinset, M.deg F U := by
         rw [Finset.sum_add_distrib, Finset.mul_sum]
-    _ ≤ M.W.n + 4 * F.ncard := by omega
+    _ ≤ M.W.n + 4 * F.ncard := by_o
 
 end
 

@@ -58,7 +58,7 @@ theorem rng_of {n cs L k : ℕ} (hcs : cs < n) (hL : L < n) (hk : k ≤ L) :
   by_cases h : cs + k < n
   · left; rw [Nat.mod_eq_of_lt h]; split_ifs <;> omega
   · right
-    rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
     split_ifs <;> omega
 
 theorem of_rng1 {n cs L v : ℕ} (hcs : cs < n) (h1 : cs ≤ v) (h2 : v ≤ rY1 n cs L) :
@@ -72,10 +72,10 @@ theorem of_rng2 {n cs L v : ℕ} (hcs : cs < n) (hL : L < n) (h1 : rX2 n cs L �
   unfold rX2 rY2 at *
   by_cases h : cs + L < n
   · rw [ite_eq_left h] at h1 h2
-    exact ⟨0, by omega, by rw [Nat.add_zero, Nat.mod_eq_of_lt hcs]; omega⟩
+    exact ⟨0, by_o, by rw [Nat.add_zero, Nat.mod_eq_of_lt hcs]; omega⟩
   · rw [ite_eq_right h] at h1 h2
-    refine ⟨v + n - cs, by omega, ?_⟩
-    rw [show cs + (v + n - cs) = v + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+    refine ⟨v + n - cs, by_o, ?_⟩
+    rw [show cs + (v + n - cs) = v + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
 
 theorem rY1_lt {n cs L : ℕ} (hcs : cs < n) : rY1 n cs L < n := by
   unfold rY1; split_ifs <;> omega
@@ -110,13 +110,13 @@ theorem topIdx_ch (hD : DistinctHeights Q) {u L : ℕ} {h1 : 1 ≤ L} {h2 : L + 
       rw [ch_vertex, ch_vertex]; exact hmax k hk)
   refine ⟨?_, by rw [hT]⟩
   rw [hT]
-  have hjn : j < Q.n := by omega
+  have hjn : j < Q.n := by_o
   by_cases h : cStart Q u L + j < Q.n
-  · have e1 : (cStart Q u L + j) % Q.n = cStart Q u L + j := Nat.mod_eq_of_lt h
+  · have e1 := Nat.mod_eq_of_lt h
     rw [e1, show cStart Q u L + j + Q.n - cStart Q u L = j + Q.n by omega,
       Nat.add_mod_right, Nat.mod_eq_of_lt hjn]
   · have e1 : (cStart Q u L + j) % Q.n = cStart Q u L + j - Q.n := by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
     rw [e1, show cStart Q u L + j - Q.n + Q.n - cStart Q u L = j by omega, Nat.mod_eq_of_lt hjn]
 
 /-! ## The orientation bit -/
@@ -129,7 +129,7 @@ def BetaF (A T B : Point) : Prop :=
     (det A T B = 0 ∧ T.2 < B.2 ∧ T.1 < B.1) ∨ (det A T B = 0 ∧ B.2 < T.2)
 
 theorem prev_idx {n s T : ℕ} (hn : 1 < n) (hT : 1 ≤ T) :
-    (s + (T - 1)) % n = ((s + T) % n + n - 1) % n := sub_idx (by omega) hT (by omega)
+    (s + (T - 1)) % n = ((s + T) % n + n - 1) % n := sub_idx by_o hT by_o
 
 /-- **The orientation bit of a chain of `Q`** (top not the first vertex), with the vertex indices
 of `Q` taken modulo `n`. -/
@@ -176,9 +176,9 @@ theorem mod2_eq {L j : ℕ} (_hL : 1 ≤ L) (hj : j < 6 * L) : mod2 L j = j % (2
   by_cases h1 : 2 * L ≤ j
   · rw [ite_eq_left h1]
     by_cases h2 : 2 * L ≤ j - 2 * L
-    · rw [ite_eq_left h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_sub_mod h2, Nat.mod_eq_of_lt (by omega)]
-    · rw [ite_eq_right h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (by omega)]
-  · rw [ite_eq_right h1, ite_eq_right h1, Nat.mod_eq_of_lt (by omega)]
+    · rw [ite_eq_left h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_sub_mod h2, Nat.mod_eq_of_lt by_o]
+    · rw [ite_eq_right h2, Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt by_o]
+  · rw [ite_eq_right h1, ite_eq_right h1, Nat.mod_eq_of_lt by_o]
 
 /-- The vertex index of `Q` at the walk vertex `6 + i` (`i ≤ 2L`) of the chain model. -/
 def cVtxV (n cs L S i : ℕ) : ℕ :=
@@ -210,9 +210,9 @@ theorem hitSym_ch {C : Chain} {v : ℕ} (hv : v = (C.s + C.topIdx) % C.P.n) {e h
   · rw [ite_eq_left h6, ite_eq_left h6, hv]
   · rw [ite_eq_right h6, ite_eq_right h6]
     have e1 : cVtx C e = cVtxV C.P.n C.s C.m (sSV C.sideBeta C.topIdx C.m) (e - 6) := by
-      rw [← cVtx_ch (by omega), show e - 6 + 6 = e by omega]
+      rw [← cVtx_ch by_o, show e - 6 + 6 = e by omega]
     have e2 : cVtx C (e + 1) = cVtxV C.P.n C.s C.m (sSV C.sideBeta C.topIdx C.m) (e - 6 + 1) := by
-      rw [← cVtx_ch (by omega), show e - 6 + 1 + 6 = e + 1 by omega]
+      rw [← cVtx_ch by_o, show e - 6 + 1 + 6 = e + 1 by omega]
     rw [e1, e2]
 
 /-! ## First hits on a union -/

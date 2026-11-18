@@ -76,7 +76,7 @@ theorem walk_vtx (hli : li = true ↔ Mountain.LeftInside Q) {p : ℕ} (hp : p <
     rw [ite_eq_right h, this]
     exact rev_vtx Q hp
 
-theorem mod_lt' {p n : ℕ} (hp : p < n) : (p + 1) % n < n := Nat.mod_lt _ (by omega)
+theorem mod_lt' {p n : ℕ} (hp : p < n) : (p + 1) % n < n := Nat.mod_lt _ by_o
 
 theorem walk_vtx_succ (hli : li = true ↔ Mountain.LeftInside Q) {p : ℕ} (hp : p < Q.n) :
     (interiorWalk Q).vtx ((p + 1) % (interiorWalk Q).n) = Q.vtx (wEnd li Q.n p) := by
@@ -128,7 +128,7 @@ theorem param_eq {p h : ℕ} (hp : p < Q.n) :
 theorem pos_snd {p h : ℕ} (hp : p < Q.n) :
     ((interiorModel Q).pos Q ⟨p, h + 1⟩).2 = (Q.vtx h).2 := by
   have hne := wa_wb_snd_ne hQ hDH hli hp
-  have hd : ((interiorModel Q).wb p).2 - ((interiorModel Q).wa p).2 ≠ 0 := sub_ne_zero.2 hne.symm
+  have hd := sub_ne_zero.2 hne.symm
   simp only [Model.pos, Geometry.lerp_snd]
   rw [param_eq hQ hDH hli hp]
   field_simp
@@ -156,7 +156,7 @@ theorem start_of_pos {p h : ℕ} (hp : p < Q.n) (hh : h < Q.n)
   have hpos' : lerp (Q.vtx j) (Q.vtx j') t = Q.vtx h := by
     rw [← hpos]; simp only [Model.pos]; rw [wa_eq hQ hDH hli hp, wb_eq hQ hDH hli hp]
   by_contra hne
-  have inj : ∀ a b, a < Q.n → b < Q.n → Q.vtx a = Q.vtx b → a = b := hQ.2.1
+  have inj := hQ.2.1
   -- `t ≠ 0`
   have ht0' : t ≠ 0 := by
     intro e
@@ -168,11 +168,11 @@ theorem start_of_pos {p h : ℕ} (hp : p < Q.n) (hh : h < Q.n)
     have hy := congrArg Prod.snd hpos'
     rw [e] at hy
     simp only [Geometry.lerp_snd] at hy
-    have hne' : (Q.vtx j).2 ≠ (Q.vtx j').2 := hDH _ _ hjn hj'n hjj'
-    have : (1 - t) * ((Q.vtx j').2 - (Q.vtx j).2) = 0 := by linarith
+    have hne' := hDH _ _ hjn hj'n hjj'
+    have : (1 - t) * ((Q.vtx j').2 - (Q.vtx j).2) = 0 := by_l
     rcases mul_eq_zero.1 this with h1 | h1
     · linarith
-    · exact hne' (by linarith)
+    · exact hne' by_l
   -- the `Q` edge carrying the position
   obtain ⟨e, hen, hee, hmem⟩ : ∃ e, e < Q.n ∧ (e = j ∧ (e + 1) % Q.n = j' ∨
       e = j' ∧ (e + 1) % Q.n = j) ∧ Q.vtx h ∈ Q.edge e := by
@@ -190,7 +190,7 @@ theorem start_of_pos {p h : ℕ} (hp : p < Q.n) (hh : h < Q.n)
       · have hjs : (j' + 1) % Q.n = j := by
           rw [hj1, hj'1, hmod p hp, hmod _ (by split_ifs <;> omega)]
           split_ifs <;> omega
-        refine ⟨1 - t, by linarith, by linarith, ?_⟩
+        refine ⟨1 - t, by_l, by_l, ?_⟩
         rw [hjs, ← hpos']
         simp only [lerp]
         refine Prod.ext ?_ ?_ <;> simp only <;> ring
@@ -206,21 +206,21 @@ theorem start_of_pos {p h : ℕ} (hp : p < Q.n) (hh : h < Q.n)
     rcases hee with ⟨rfl, -⟩ | ⟨rfl, -⟩
     · exact hne rfl
     · exact hj'h rfl
-  have hmh : Q.vtx h ∈ Q.edge h := ⟨0, le_rfl, zero_le_one, by simp⟩
+  have hmh : Q.vtx h ∈ Q.edge h := ⟨0, le_rfl, zero_le_one, by_s⟩
   have hcap := hQ.2.2 h e hh hen heh.symm
   have hin : Q.vtx h ∈ Q.edge h ∩ Q.edge e := ⟨hmh, hmem⟩
   rw [hcap] at hin
   obtain ⟨-, h2 | h2⟩ := hin
   · have := inj _ _ hh hen h2
     exact heh this.symm
-  · have := inj _ _ hh (Nat.mod_lt _ (by omega)) h2
+  · have := inj _ _ hh (Nat.mod_lt _ by_o) h2
     rcases hee with ⟨rfl, h3⟩ | ⟨rfl, h3⟩
     · exact hj'h (this.trans h3)
     · exact hne (this.trans h3)
 
 omit hQ hDH hli in
 theorem vtx_not_mem_dom {h : ℕ} (hh : h < Q.n) : Q.vtx h ∉ Q.filled \ Q.boundary := fun hm =>
-  hm.2 ⟨h, hh, 0, le_rfl, zero_le_one, by simp⟩
+  hm.2 ⟨h, hh, 0, le_rfl, zero_le_one, by_s⟩
 
 /-! ## Vertex chords among the records -/
 
@@ -281,34 +281,33 @@ theorem mem_full_iff {x : ℕ × ℕ × ℕ} (hx : (recOf x).Attached (interiorM
         (∀ t, 0 < t → t < b - a → rayPt (Q.vtx h) σ t ∈ hseg y a b) →
         hseg y a b ∈ chords Q := by
       intro σ hσ hin hon
-      have hba : 0 < b - a := sub_pos.2 hch.lt
+      have hba := sub_pos.2 hch.lt
       have e1 : ∀ᶠ t in 𝓝[>] (0 : ℝ), t ∈ Ioo 0 (b - a) := Ioo_mem_nhdsGT hba
-      have hdir : Visibility.DirInterior Q h σ := e1.mono fun t ht => hin t ht.1 ht.2
+      have hdir := e1.mono fun t ht => hin t ht.1 ht.2
       have hmem : chordSet Q h σ ∈ chords Q := ⟨h, σ, hh, hσ, hdir, rfl⟩
       have hpar := Visibility.chordParam_pos hQ hh hdir
       set s := min (Visibility.chordParam Q h σ / 2) ((b - a) / 2) with hs
-      have hs0 : 0 < s := lt_min (by linarith) (by linarith)
-      have hs1 : s < Visibility.chordParam Q h σ := (min_le_left _ _).trans_lt (by linarith)
-      have hs2 : s < b - a := (min_le_right _ _).trans_lt (by linarith)
+      have hs0 : 0 < s := lt_min by_l by_l
+      have hs1 : s < Visibility.chordParam Q h σ := (min_le_left _ _).trans_lt by_l
+      have hs2 : s < b - a := (min_le_right _ _).trans_lt by_l
       have hzC : rayPt (Q.vtx h) σ s ∈ chordSet Q h σ := by
         rw [Visibility.chordSet_eq_openChordSet_union hQ hh hdir]
         exact Or.inl ⟨s, ⟨hs0, hs1⟩, rfl⟩
       have heq := FullDegInt.eq_of_common (FullDegInt.hc_full hQ hmem) hHC hzC
         (hon s hs0 hs2) (hin s hs0 hs2)
-      rw [← heq]
-      exact hmem
+      rwa [← heq]
     rintro (e | e)
     · -- left end at the vertex
       have hv : Q.vtx h = (a, y) := by rw [← hL]; exact (pos_start hQ hDH hli hlp e).symm
       refine key 1 (Or.inl rfl) (fun t ht1 ht2 => ?_) (fun t ht1 ht2 => ?_)
-      · have := hch.open_mem (a + t) (by linarith) (by linarith)
+      · have := hch.open_mem (a + t) by_l by_l
         convert this using 1
         rw [hv]; simp [rayPt]
       · rw [hv]; refine ⟨rfl, ?_, ?_⟩ <;> simp [rayPt] <;> linarith
     · -- right end at the vertex
       have hv : Q.vtx h = (b, y) := by rw [← hR]; exact (pos_start hQ hDH hli hrp e).symm
       refine key (-1) (Or.inr rfl) (fun t ht1 ht2 => ?_) (fun t ht1 ht2 => ?_)
-      · have := hch.open_mem (b - t) (by linarith) (by linarith)
+      · have := hch.open_mem (b - t) by_l by_l
         convert this using 1
         rw [hv]; simp [rayPt, sub_eq_add_neg]
       · rw [hv]; refine ⟨rfl, ?_, ?_⟩ <;> simp [rayPt] <;> linarith

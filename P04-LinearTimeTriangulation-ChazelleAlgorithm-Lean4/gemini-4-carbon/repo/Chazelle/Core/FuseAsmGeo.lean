@@ -28,7 +28,7 @@ variable (J : Merge.Junction)
 theorem sideE_succ_m {m : ℕ} (hm : 1 ≤ m) : sideE m ((m + 1) % (2 * m)) = m - 1 := by
   unfold sideE
   rcases Nat.lt_or_ge (m + 1) (2 * m) with h | h
-  · rw [Nat.mod_eq_of_lt h, ite_eq_right (by omega)]; omega
+  · rw [Nat.mod_eq_of_lt h, ite_eq_right by_o]; omega
   · have : m = 1 := by omega
     subst this; simp
 
@@ -36,7 +36,7 @@ theorem sideE_succ_m {m : ℕ} (hm : 1 ≤ m) : sideE m ((m + 1) % (2 * m)) = m 
 theorem left_next : (chainModel J.left).W.vtx (6 + tpos J.left J.m₁ + 1) = sharedU J := by
   have hn := cm_n J.left
   have hτ := tpos_lt J.left J.m₁
-  have := walk_tour J.left J.m₁ 1 (by omega)
+  have := walk_tour J.left J.m₁ 1 by_o
   rw [Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
   rw [this]
   unfold tourV
@@ -48,7 +48,7 @@ theorem left_next : (chainModel J.left).W.vtx (6 + tpos J.left J.m₁ + 1) = sha
 theorem right_next : (chainModel J.right).W.vtx (6 + tpos J.right 0 + 1) = sharedW J := by
   have hn := cm_n J.right
   have hτ := tpos_lt J.right 0
-  have := walk_tour J.right 0 1 (by omega)
+  have := walk_tour J.right 0 1 by_o
   rw [Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
   rw [this]
   unfold tourV

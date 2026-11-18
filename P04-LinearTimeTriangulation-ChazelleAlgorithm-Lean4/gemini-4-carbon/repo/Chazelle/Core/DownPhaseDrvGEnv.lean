@@ -35,16 +35,15 @@ theorem fullDegLe_mono {M : Model} {Q : Polygon} {D D' : ℕ} (h : M.FullDegLe Q
 /-- The capacity of the up-phase data is at most `2 n`. -/
 theorem gradeCtx_cap_le {O : OracleIface} {P : Polygon} {m : ℕ → ℕ} {g A : ℕ} (hn : 1 ≤ P.n)
     (h : (gradeCtx O).holds P m g A) : (gradeCtx O).cap P m g ≤ 2 * P.n := by
-  have h1 : m g ≤ topGrade P.n + 1 := h.holds.1
-  show 2 ^ (m g - 1) ≤ 2 * P.n
-  have h2 : 2 ^ (m g - 1) ≤ 2 ^ topGrade P.n := Nat.pow_le_pow_right (by norm_num) (by omega)
+  have h1 := h.holds.1
+  have h2 : 2 ^ (m g - 1) ≤ 2 ^ topGrade P.n := Nat.pow_le_pow_right by_n by_o
   refine h2.trans ?_
   unfold topGrade
   rcases Nat.lt_or_ge (P.n - 1) 2 with h3 | h3
-  · have : Nat.clog 2 (P.n - 1) = 0 := Nat.clog_of_right_le_one (by omega) 2
+  · have : Nat.clog 2 (P.n - 1) = 0 := Nat.clog_of_right_le_one by_o 2
     rw [this]; simp; omega
-  · have h4 := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) (show 1 < P.n - 1 by omega)
-    have h5 : 1 ≤ Nat.clog 2 (P.n - 1) := Nat.clog_pos (by norm_num) (by omega)
+  · have h4 := Nat.pow_pred_clog_lt_self (b := 2) by_n (show 1 < P.n - 1 by omega)
+    have h5 : 1 ≤ Nat.clog 2 (P.n - 1) := Nat.clog_pos by_n by_o
     have e : 2 ^ Nat.clog 2 (P.n - 1) = 2 * 2 ^ (Nat.clog 2 (P.n - 1)).pred := by
       rw [← pow_succ', Nat.pred_eq_sub_one, Nat.sub_add_cancel h5]
     omega
@@ -125,16 +124,16 @@ def envRegs : List ℕ :=
     219142, 219143, 219144, 219145, 219146, 219100, 219101, 219103, 219104, 219107]
 
 theorem envRegs_band : ∀ q ∈ envRegs, bandOf q = bDownDrv ∧ 219000 ≤ q ∧
-    (q < 219110 ∨ 219139 < q) ∧ q ≠ 219222 := by decide
+    (q < 219110 ∨ 219139 < q) ∧ q ≠ 219222 := by_d
 
 theorem envRegs_band2 : ∀ q ∈ envRegs, q ≠ 219220 ∧ q ≠ 219221 ∧ q ≠ 219222 ∧
-    (q < 219224 ∨ 219229 < q) ∧ (q < 219240 ∨ 219251 < q) := by decide
+    (q < 219224 ∨ 219229 < q) ∧ (q < 219240 ∨ 219251 < q) := by_d
 
 /-- The environment survives a step keeping its registers and the memory below `A₁`. -/
 theorem REnv.keep {R : RData} {d d' : Config} (h : REnv R d)
     (hr : ∀ q ∈ envRegs, d'.nreg q = d.nreg q) (hm : ∀ a, a < R.A₁ → d'.nmem a = d.nmem a)
     (hA : d.nreg ALLOC ≤ d'.nreg ALLOC) : REnv R d' := by
-  have e : ∀ q, q ∈ envRegs → d'.nreg q = d.nreg q := hr
+  have e := hr
   exact ⟨by rw [e _ (by simp [envRegs]), h.r200], by rw [e _ (by simp [envRegs]), h.r201],
     by rw [e _ (by simp [envRegs]), h.r202], by rw [e _ (by simp [envRegs]), h.r204],
     by rw [e _ (by simp [envRegs]), h.r205], by rw [e _ (by simp [envRegs]), h.r230],
@@ -178,9 +177,9 @@ theorem REnv.table (hF : RFacts O P W R) {d : Config} (h : REnv R d) :
   obtain ⟨a1, a2, a3⟩ := hF.hT i hi
   have := hF.hTA
   refine ⟨?_, ?_, ?_⟩
-  · rw [h.low _ (by omega)]; exact a1
-  · rw [h.low _ (by omega)]; exact a2
-  · rw [h.low _ (by omega)]; exact a3
+  · rwa [h.low _ by_o]
+  · rwa [h.low _ by_o]
+  · rwa [h.low _ by_o]
 
 end facts
 
@@ -203,10 +202,10 @@ theorem AccOK.keep {P : Polygon} {R : RData} {d d' : Config} {pos γ : ℕ} {B :
     (h : AccOK P R d pos γ) (hf : Frame B d d' k)
     (hr : ∀ q, q = 219110 ∨ q = 219111 ∨ q = 219112 ∨ q = 219113 ∨ q = 219222 →
       d'.nreg q = d.nreg q) : AccOK P R d' pos γ := by
-  have r10 := hr 219110 (by simp)
-  have r11 := hr 219111 (by simp)
-  refine ⟨by rw [hr _ (by simp), h.r22], by rw [hr _ (by simp), h.r12],
-    by rw [hr _ (by simp), h.r13], by rw [r10]; have := hf.2.2.2.2.2.1; have := h.dA; omega,
+  have r10 := hr 219110 by_s
+  have r11 := hr 219111 by_s
+  refine ⟨by rw [hr _ by_s, h.r22], by rw [hr _ by_s, h.r12],
+    by rw [hr _ by_s, h.r13], by rw [r10]; have := hf.2.2.2.2.2.1; have := h.dA; omega,
     by rw [r10]; exact h.lo1, by rw [r11]; exact h.lo2, fun C hP hs hm => ?_⟩
   obtain ⟨h1, N, h2, h3⟩ := h.desc C hP hs hm
   rw [r10, r11]

@@ -45,8 +45,8 @@ theorem chLe_trans {a b d : ℕ} (h1 : ChLe P C V m a b) (h2 : ChLe P C V m b d)
   rcases h1 with h1 | ⟨e1, h1 | ⟨f1, g1⟩⟩ <;> rcases h2 with h2 | ⟨e2, h2 | ⟨f2, g2⟩⟩ <;>
     first
       | (left; omega)
-      | (right; exact ⟨by omega, Or.inl (by omega)⟩)
-      | (right; exact ⟨by omega, Or.inr ⟨by omega, fun h => le_trans (g1 h) (g2 (by omega))⟩⟩)
+      | (right; exact ⟨by_o, Or.inl by_o⟩)
+      | (right; exact ⟨by_o, Or.inr ⟨by_o, fun h => le_trans (g1 h) (g2 by_o)⟩⟩)
 
 open Classical in
 /-- **The comparison of the sort**: records below `K` by `ChLe`, then the others. -/
@@ -123,7 +123,7 @@ theorem chRecA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W chRecA c c' k ∧ k = 5 ∧
       FrameB (fun r => decide (r = 116012 ∨ r = 116010)) c c' ∧ c'.nreg 116012 = CB + 5 * x ∧
       c'.nreg 116010 = c.nmem (CB + 5 * x) := by
-  have hwr : wr (fun r => decide (r = 116012 ∨ r = 116010)) chRecA = true := by decide
+  have hwr : wr (fun r => decide (r = 116012 ∨ r = 116010)) chRecA = true := by_d
   suffices H : ∃ c' k, Exec P W chRecA c c' k ∧ k = 5 ∧ c'.nreg 116012 = CB + 5 * x ∧
       c'.nreg 116010 = c.nmem (CB + 5 * x) by
     obtain ⟨c', k, ex, hk, a, b⟩ := H
@@ -146,7 +146,7 @@ theorem chRecB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W chRecB c c' k ∧ k = 5 ∧
       FrameB (fun r => decide (r = 116013 ∨ r = 116011)) c c' ∧ c'.nreg 116013 = CB + 5 * x ∧
       c'.nreg 116011 = c.nmem (CB + 5 * x) := by
-  have hwr : wr (fun r => decide (r = 116013 ∨ r = 116011)) chRecB = true := by decide
+  have hwr : wr (fun r => decide (r = 116013 ∨ r = 116011)) chRecB = true := by_d
   suffices H : ∃ c' k, Exec P W chRecB c c' k ∧ k = 5 ∧ c'.nreg 116013 = CB + 5 * x ∧
       c'.nreg 116011 = c.nmem (CB + 5 * x) by
     obtain ⟨c', k, ex, hk, a, b⟩ := H
@@ -166,13 +166,13 @@ theorem chWA_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
     (ht : c.nreg 116012 = a) (h1 : c.nreg 120011 = 1) (hb : a + 1 ≤ W) :
     ∃ c' k, Exec P W chWA c c' k ∧ k = 2 ∧ FrameB (fun r => decide (r = 116014)) c c' ∧
       c'.nreg 116014 = c.nmem (a + 1) := by
-  have hwr : wr (fun r => decide (r = 116014)) chWA = true := by decide
+  have hwr : wr (fun r => decide (r = 116014)) chWA = true := by_d
   suffices H : ∃ c' k, Exec P W chWA c c' k ∧ k = 2 ∧ c'.nreg 116014 = c.nmem (a + 1) by
     obtain ⟨c', k, ex, hk, v⟩ := H
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, v⟩
   unfold chWA
   exec_block
-  · rw [ht, h1]; exact hb
+  · rwa [ht, h1]
   · exact ⟨rfl, by config_simp; rw [ht, h1]⟩
 
 /-- The walk edge of the left end of the record at `116013`. -/
@@ -182,13 +182,13 @@ theorem chWB_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {
     (ht : c.nreg 116013 = a) (h1 : c.nreg 120011 = 1) (hb : a + 1 ≤ W) :
     ∃ c' k, Exec P W chWB c c' k ∧ k = 2 ∧ FrameB (fun r => decide (r = 116015)) c c' ∧
       c'.nreg 116015 = c.nmem (a + 1) := by
-  have hwr : wr (fun r => decide (r = 116015)) chWB = true := by decide
+  have hwr : wr (fun r => decide (r = 116015)) chWB = true := by_d
   suffices H : ∃ c' k, Exec P W chWB c c' k ∧ k = 2 ∧ c'.nreg 116015 = c.nmem (a + 1) by
     obtain ⟨c', k, ex, hk, v⟩ := H
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, v⟩
   unfold chWB
   exec_block
-  · rw [ht, h1]; exact hb
+  · rwa [ht, h1]
   · exact ⟨rfl, by config_simp; rw [ht, h1]⟩
 
 /-- The class and the symbolic point of the left end of `a`, saved in `116016 … 116019`. -/
@@ -215,7 +215,7 @@ theorem xpA_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {V
       FrameB (fun r => decide (r = 120120 ∨ r = 120121)) c c₁ ∧
       c₁.nreg 120120 = c.nreg 116014 ∧ c₁.nreg 120121 = c.nreg 116010 := by
     have hwr : wr (fun r => decide (r = 120120 ∨ r = 120121))
-      (block [.copyN 120120 116014, .copyN 120121 116010]) = true := by decide
+      (block [.copyN 120120 116014, .copyN 120121 116010]) = true := by_d
     suffices H : ∃ c₁ k₁, Exec P W (block [.copyN 120120 116014, .copyN 120121 116010]) c c₁ k₁ ∧
         k₁ = 2 ∧ c₁.nreg 120120 = c.nreg 116014 ∧ c₁.nreg 120121 = c.nreg 116010 by
       obtain ⟨c₁, k₁, ex, hk, a, b⟩ := H
@@ -232,7 +232,7 @@ theorem xpA_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {V
       c₃.nreg 116016 = c₂.nreg 120122 ∧ c₃.nreg 116017 = c₂.nreg 120123 ∧
       c₃.nreg 116018 = c₂.nreg 120124 ∧ c₃.nreg 116019 = c₂.nreg 120125 := by
     have hwr : wr (fun r => decide (116016 ≤ r ∧ r ≤ 116019)) (block [.copyN 116016 120122,
-      .copyN 116017 120123, .copyN 116018 120124, .copyN 116019 120125]) = true := by decide
+      .copyN 116017 120123, .copyN 116018 120124, .copyN 116019 120125]) = true := by_d
     suffices H : ∃ c₃ k₃, Exec P W (block [.copyN 116016 120122, .copyN 116017 120123,
         .copyN 116018 120124, .copyN 116019 120125]) c₂ c₃ k₃ ∧ k₃ = 4 ∧
         c₃.nreg 116016 = c₂.nreg 120122 ∧ c₃.nreg 116017 = c₂.nreg 120123 ∧
@@ -242,7 +242,7 @@ theorem xpA_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {V
     have w₂ := e₂.wb_right
     exec_block
     exact ⟨rfl, by config_simp, by config_simp, by config_simp, by config_simp⟩
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by omega, ?_, by rw [y6, x1], fun h => ?_⟩
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by_o, ?_, by rw [y6, x1], fun h => ?_⟩
   · refine ((FrameB.mono F₁ fun r hr => ?_).trans (FrameB.mono F₂ fun r hr => ?_)).trans
       (FrameB.mono F₃ fun r hr => ?_)
     · simp only [decide_eq_true_eq] at hr; simp only [Bool.or_eq_true, decide_eq_true_eq]; omega
@@ -267,7 +267,7 @@ theorem xpB_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {V
       FrameB (fun r => decide (r = 120120 ∨ r = 120121)) c c₁ ∧
       c₁.nreg 120120 = c.nreg 116015 ∧ c₁.nreg 120121 = c.nreg 116011 := by
     have hwr : wr (fun r => decide (r = 120120 ∨ r = 120121))
-      (block [.copyN 120120 116015, .copyN 120121 116011]) = true := by decide
+      (block [.copyN 120120 116015, .copyN 120121 116011]) = true := by_d
     suffices H : ∃ c₁ k₁, Exec P W (block [.copyN 120120 116015, .copyN 120121 116011]) c c₁ k₁ ∧
         k₁ = 2 ∧ c₁.nreg 120120 = c.nreg 116015 ∧ c₁.nreg 120121 = c.nreg 116011 by
       obtain ⟨c₁, k₁, ex, hk, a, b⟩ := H
@@ -277,7 +277,7 @@ theorem xpB_exec {P : Polygon} {W : ℕ} (hW : 4 * P.n + 8 ≤ W) {C : Chain} {V
   have hq₁ : QConst P V c₁ := hq.frame F₁ (fun r h1 h2 => by simp only [decide_eq_false_iff_not]; omega)
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, x1, x2⟩ := xpS_exec (P := P) hW hv c₁ e₁.wb_right hq₁
   rw [a0] at x1 x2; rw [a1] at x2
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, x1, x2⟩
+  refine ⟨c₂, _, .seq e₁ e₂, by_o, ?_, x1, x2⟩
   refine (FrameB.mono F₁ fun r hr => ?_).trans (FrameB.mono F₂ fun r hr => ?_)
   · simp only [decide_eq_true_eq] at hr ⊢; omega
   · simp only [BX, decide_eq_true_eq] at hr ⊢; omega
@@ -310,9 +310,9 @@ def chCmp : Stmt :=
 /-- The registers written by the comparator. -/
 def BCmp (r : ℕ) : Bool := decide (r = 30002) || BCh r || Bk r
 
-theorem wr_chCmp : wr BCmp chCmp = true := by decide
+theorem wr_chCmp : wr BCmp chCmp = true := by_d
 
-theorem wrR_chCmp : wrR Bk chCmp = true := by decide
+theorem wrR_chCmp : wrR Bk chCmp = true := by_d
 
 /-- The invariant of the comparator. -/
 def ChCJ (c₀ : Config) (m₀ : ℕ → ℕ) (A₀ K : ℕ) (c : Config) : Prop :=
@@ -323,9 +323,9 @@ theorem chCJ_stable (c₀ : Config) (m₀ : ℕ → ℕ) (A₀ K : ℕ) :
     SortR.JStable (ChCJ c₀ m₀ A₀ K) A₀ := by
   intro c c' ⟨h0, h1, h2, h3⟩ hr _ hm _ _
   have hb : ∀ r, (116000 ≤ r ∧ r < 130000) → c'.nreg r = c.nreg r := fun r h =>
-    hr r (by unfold bandOf bSort; omega) (by unfold ALLOC; omega)
-  exact ⟨by rw [hb _ (by norm_num)]; exact h0, by rw [hb _ (by norm_num)]; exact h1,
-    fun r a b => by rw [hb r (by omega)]; exact h2 r a b, fun a ha => (hm a ha).trans (h3 a ha)⟩
+    hr r (by unfold bandOf bSort; omega) by_ao
+  exact ⟨by rwa [hb _ by_n], by rwa [hb _ by_n],
+    fun r a b => by rw [hb r by_o]; exact h2 r a b, fun a ha => (hm a ha).trans (h3 a ha)⟩
 
 set_option maxHeartbeats 8000000 in
 theorem chBoth_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤ W) {C : Chain}
@@ -342,97 +342,97 @@ theorem chBoth_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
   have hra := hrec _ hA
   have hrb := hrec _ hB
   set V := qvOf c₀ with hV
-  have hq' : QConst P V c := hq.congr fun r a b => j2 r a b
-  have hW1 : 1 ≤ W := by omega
-  have hW4 : 4 * P.n + 8 ≤ W := by omega
+  have hq' := hq.congr fun r a b => j2 r a b
+  have hW1 : 1 ≤ W := by_o
+  have hW4 : 4 * P.n + 8 ≤ W := by_o
   set a := c.nreg 30000 with ha
   set b := c.nreg 30001 with hb
   -- the heights
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, t12, h10⟩ := chRecA_exec (P := P) (CB := V.CB) (x := a) hw j0 rfl
-    (by omega)
+    by_o
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, t13, h11⟩ := chRecB_exec (P := P) (CB := V.CB) (x := b) e₁.wb_right
-    (by rw [F₁.1 _ (by decide)]; exact j0) (by rw [F₁.1 _ (by decide)]) (by omega)
+    (by rwa [F₁.1 _ by_d]) (by rw [F₁.1 _ by_d]) by_o
   have hHa : c₂.nreg 116010 = chH m₀ V a := by
-    rw [F₂.1 _ (by decide), h10, j3 _ (by omega)]; rfl
+    rw [F₂.1 _ by_d, h10, j3 _ by_o]; rfl
   have hHb : c₂.nreg 116011 = chH m₀ V b := by
-    rw [h11, F₁.2.2.1, j3 _ (by omega)]; rfl
-  have t12' : c₂.nreg 116012 = V.CB + 5 * a := by rw [F₂.1 _ (by decide), t12]
+    rw [h11, F₁.2.2.1, j3 _ by_o]; rfl
+  have t12' : c₂.nreg 116012 = V.CB + 5 * a := by rw [F₂.1 _ by_d, t12]
   have hq₂ : QConst P V c₂ := (hq'.frame F₁ fun r h1 h2 => by
     simp only [decide_eq_false_iff_not]; omega).frame F₂ fun r h1 h2 => by
       simp only [decide_eq_false_iff_not]; omega
-  have hm₂ : c₂.nmem = c.nmem := F₂.2.2.1.trans F₁.2.2.1
+  have hm₂ := F₂.2.2.1.trans F₁.2.2.1
   have w₂ := e₂.wb_right
   rcases lt_trichotomy (chH m₀ V a) (chH m₀ V b) with hlt | heq | hgt
-  · refine ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_true (by rw [hHa, hHb]; exact hlt)
-      (Exec.constN w₂ 30002 1 hW1))), by omega, fun _ => by config_simp, fun hc => ?_⟩
+  · refine ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_true (by rwa [hHa, hHb])
+      (Exec.constN w₂ 30002 1 hW1))), by_o, fun _ => by config_simp, fun hc => ?_⟩
     exact absurd (Or.inl hlt) hc
   · -- equal heights
     have nlt : ¬ c₂.nreg 116010 < c₂.nreg 116011 := by rw [hHa, hHb]; omega
-    obtain ⟨c₃, k₃, e₃, hk₃, F₃, w14⟩ := chWA_exec (P := P) w₂ t12' hq₂.one (by omega)
+    obtain ⟨c₃, k₃, e₃, hk₃, F₃, w14⟩ := chWA_exec (P := P) w₂ t12' hq₂.one by_o
     obtain ⟨c₄, k₄, e₄, hk₄, F₄, w15⟩ := chWB_exec (P := P) e₃.wb_right
-      (by rw [F₃.1 _ (by decide), t13])
-      (by rw [F₃.1 _ (by decide)]; exact hq₂.one) (by omega)
+      (by rw [F₃.1 _ by_d, t13])
+      (by rw [F₃.1 _ by_d]; exact hq₂.one) by_o
     have hLa : c₄.nreg 116014 = chL m₀ V a := by
-      rw [F₄.1 _ (by decide), w14, hm₂, j3 _ (by omega)]; rfl
+      rw [F₄.1 _ by_d, w14, hm₂, j3 _ by_o]; rfl
     have hLb : c₄.nreg 116015 = chL m₀ V b := by
       rw [w15, F₃.2.2.1, hm₂, show V.CB + 5 * b + 1 = V.CB + 5 * b + 1 from rfl,
-        j3 _ (by omega)]; rfl
+        j3 _ by_o]; rfl
     have hq₄ : QConst P V c₄ := (hq₂.frame F₃ fun r h1 h2 => by
       simp only [decide_eq_false_iff_not]; omega).frame F₄ fun r h1 h2 => by
         simp only [decide_eq_false_iff_not]; omega
     have hHa4 : c₄.nreg 116010 = chH m₀ V a := by
-      rw [F₄.1 _ (by decide), F₃.1 _ (by decide), hHa]
+      rw [F₄.1 _ by_d, F₃.1 _ by_d, hHa]
     have hHb4 : c₄.nreg 116011 = chH m₀ V b := by
-      rw [F₄.1 _ (by decide), F₃.1 _ (by decide), hHb]
+      rw [F₄.1 _ by_d, F₃.1 _ by_d, hHb]
     obtain ⟨c₅, k₅, e₅, hk₅, F₅, x16, sA⟩ := xpA_exec (P := P) hW4 hv e₄.wb_right hq₄
     rw [hLa] at x16 sA; rw [hHa4] at sA
     have hq₅ : QConst P V c₅ := hq₄.frame F₅ fun r h1 h2 => by
       simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega
     have hLb5 : c₅.nreg 116015 = chL m₀ V b := by
-      rw [F₅.1 _ (by decide), hLb]
+      rw [F₅.1 _ by_d, hLb]
     have hHb5 : c₅.nreg 116011 = chH m₀ V b := by
-      rw [F₅.1 _ (by decide), hHb4]
+      rw [F₅.1 _ by_d, hHb4]
     obtain ⟨c₆, k₆, e₆, hk₆, F₆, x22, sB⟩ := xpB_exec (P := P) hW4 hv e₅.wb_right hq₅
     rw [hLb5] at x22 sB; rw [hHb5] at sB
     have hq₆ : QConst P V c₆ := hq₅.frame F₆ fun r h1 h2 => by
       simp only [decide_eq_false_iff_not]; omega
-    have x16' : c₆.nreg 116016 = xpClass (chL m₀ V a) := by rw [F₆.1 _ (by decide), x16]
+    have x16' : c₆.nreg 116016 = xpClass (chL m₀ V a) := by rw [F₆.1 _ by_d, x16]
     have sA' : xpClass (chL m₀ V a) = 1 →
         SymPtIn c₆ 116017 (xpSym C V P.n (chL m₀ V a) (chH m₀ V a)) := fun h => by
       have := sA h
-      have g7 := F₆.1 116017 (by decide)
-      have g8 := F₆.1 116018 (by decide)
-      have g9 := F₆.1 116019 (by decide)
+      have g7 := F₆.1 116017 by_d
+      have g8 := F₆.1 116018 by_d
+      have g9 := F₆.1 116019 by_d
       unfold SymPtIn at this ⊢
       split at this <;> simp only [g7, g8, g9] at this ⊢ <;> exact this
     have w₆ := e₆.wb_right
     have one₆ := hq₆.one
-    have nlt2 : ¬ c₂.nreg 116011 < c₂.nreg 116010 := by omega
+    have nlt2 : ¬ c₂.nreg 116011 < c₂.nreg 116010 := by_o
     have hTie : ∀ c' k, Exec P W chDec c₆ c' k →
         ∃ k', Exec P W chBoth c c' k' ∧ k' = k₁ + k₂ + k₃ + k₄ + k₅ + k₆ + k + 4 := by
       intro c' k ex
       exact ⟨_, .seq e₁ (.seq e₂ (.ifLtN_false nlt (.ifLtN_false nlt2
-        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ ex))))))), by omega⟩
+        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ ex))))))), by_o⟩
     have hcl := xpClass_cases (chL m₀ V a)
     have hclb := xpClass_cases (chL m₀ V b)
     rcases lt_trichotomy (xpClass (chL m₀ V a)) (xpClass (chL m₀ V b)) with g | g | g
-    · obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_true (by rw [x16', x22]; exact g)
+    · obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_true (by rwa [x16', x22])
         (Exec.constN w₆ 30002 1 hW1))
-      exact ⟨_, k', ex', by omega, fun _ => by config_simp,
+      exact ⟨_, k', ex', by_o, fun _ => by config_simp,
         fun hc => absurd (Or.inr ⟨heq, Or.inl g⟩) hc⟩
     · by_cases g1 : xpClass (chL m₀ V a) = 1
       · -- the abscissas
         have la := xpSym_lt (C := C) (V := V) (w := chL m₀ V a) hn htv (hh a hA)
         have lb := xpSym_lt (C := C) (V := V) (w := chL m₀ V b) hn htv (hh b hB)
-        obtain ⟨c₇, k₇, e₇, hk₇, F₇, hbit, hiff⟩ := sgnS_exec (P := P) hG (by omega) 0 (by norm_num)
-          (.regs 120123) (.regs 116017) (.regs 116017) c₆ w₆ (by decide) (by decide) (by decide)
-          (sB (by omega)) (sA' g1) (sA' g1) lb la la
+        obtain ⟨c₇, k₇, e₇, hk₇, F₇, hbit, hiff⟩ := sgnS_exec (P := P) hG by_o 0 by_n
+          (.regs 120123) (.regs 116017) (.regs 116017) c₆ w₆ by_d by_d by_d
+          (sB by_o) (sA' g1) (sA' g1) lb la la
         have e₈ := Exec.subN (P := P) e₇.wb_right 30002 120011 10010
-        have one₇ : c₇.nreg 120011 = 1 := by rw [F₇.1 _ (by decide), one₆]
+        have one₇ : c₇.nreg 120011 = 1 := by rw [F₇.1 _ by_d, one₆]
         obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_false (by rw [x16', x22]; omega)
           (.ifLtN_false (by rw [x16', x22]; omega) (.ifLtN_false (by rw [x16', one₆]; omega)
             (.ifLtN_false (by rw [x16', one₆]; omega) (.seq e₇ e₈)))))
-        refine ⟨_, k', ex', by omega, ?_, ?_⟩
+        refine ⟨_, k', ex', by_o, ?_, ?_⟩
         · intro hc
           config_simp
           rw [one₇]
@@ -452,25 +452,25 @@ theorem chBoth_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 
             exact hc (Or.inr ⟨heq, Or.inr ⟨g, fun _ => not_lt.1 hx⟩⟩)
           omega
       · -- the classes `0` and `2`
-        have hc1 : xpClass (chL m₀ V a) < 1 ∨ 1 < xpClass (chL m₀ V a) := by omega
+        have hc1 : xpClass (chL m₀ V a) < 1 ∨ 1 < xpClass (chL m₀ V a) := by_o
         have hok : ChLe P C V m₀ a b := Or.inr ⟨heq, Or.inr ⟨g, fun h => absurd h g1⟩⟩
         rcases hc1 with hc1 | hc1
         · obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_false (by rw [x16', x22]; omega)
-            (.ifLtN_false (by rw [x16', x22]; omega) (.ifLtN_true (by rw [x16', one₆]; exact hc1)
+            (.ifLtN_false (by rw [x16', x22]; omega) (.ifLtN_true (by rwa [x16', one₆])
               (Exec.constN w₆ 30002 1 hW1))))
-          exact ⟨_, k', ex', by omega, fun _ => by config_simp, fun hc => absurd hok hc⟩
+          exact ⟨_, k', ex', by_o, fun _ => by config_simp, fun hc => absurd hok hc⟩
         · obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_false (by rw [x16', x22]; omega)
             (.ifLtN_false (by rw [x16', x22]; omega) (.ifLtN_false (by rw [x16', one₆]; omega)
-              (.ifLtN_true (by rw [x16', one₆]; exact hc1) (Exec.constN w₆ 30002 1 hW1)))))
-          exact ⟨_, k', ex', by omega, fun _ => by config_simp, fun hc => absurd hok hc⟩
+              (.ifLtN_true (by rwa [x16', one₆]) (Exec.constN w₆ 30002 1 hW1)))))
+          exact ⟨_, k', ex', by_o, fun _ => by config_simp, fun hc => absurd hok hc⟩
     · obtain ⟨k', ex', hk'⟩ := hTie _ _ (.ifLtN_false (by rw [x16', x22]; omega)
-        (.ifLtN_true (by rw [x16', x22]; exact g) (Exec.constN w₆ 30002 0 (Nat.zero_le _))))
-      refine ⟨_, k', ex', by omega, fun hc => ?_, fun _ => by config_simp⟩
+        (.ifLtN_true (by rwa [x16', x22]) (Exec.constN w₆ 30002 0 (Nat.zero_le _))))
+      refine ⟨_, k', ex', by_o, fun hc => ?_, fun _ => by config_simp⟩
       exfalso
       rcases hc with hc | ⟨-, hc | ⟨hc, -⟩⟩ <;> omega
   · refine ⟨_, _, .seq e₁ (.seq e₂ (.ifLtN_false (by rw [hHa, hHb]; omega)
-      (.ifLtN_true (by rw [hHa, hHb]; exact hgt) (Exec.constN w₂ 30002 0 (Nat.zero_le _))))),
-      by omega, fun hc => ?_, fun _ => by config_simp⟩
+      (.ifLtN_true (by rwa [hHa, hHb]) (Exec.constN w₂ 30002 0 (Nat.zero_le _))))),
+      by_o, fun hc => ?_, fun _ => by config_simp⟩
     exfalso
     rcases hc with hc | ⟨hc, -⟩ <;> omega
 
@@ -489,7 +489,7 @@ theorem chCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
       bandOf r ∈ ({bSign, bOPrep, bOQuery} : Finset ℕ) := by
     intro r h; simp only [Finset.mem_insert, Finset.mem_singleton, bSign, bOPrep, bOQuery]; omega
   set V := qvOf c₀ with hV
-  have hq' : QConst P V c := hq.congr fun r a b => j2 r a b
+  have hq' := hq.congr fun r a b => j2 r a b
   suffices H : ∃ c' k, Exec P W chCmp c c' k ∧ k ≤ 500 ∧
       c'.nreg 30002 = (if chLeB P C V m₀ K (c.nreg 30000) (c.nreg 30001) then 1 else 0) by
     obtain ⟨c', k, ex, hk, hbit⟩ := H
@@ -497,8 +497,8 @@ theorem chCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
     have fr := WalkKey.exec_rframe ex wrR_chCmp
     refine ⟨c', k, ex, hk, ⟨?_, ?_, fun r a b => ?_, fun a ha => by rw [f.2.2.1]; exact j3 a ha⟩,
       hbit, fun r h0 h1 h2 hb => f.1 r ?_, fun r hb => fr r ?_, f.2.2.1, f.2.2.2.1, f.2.2.2.2⟩
-    · rw [f.1 _ (by decide)]; exact j0
-    · rw [f.1 _ (by decide)]; exact j1
+    · rwa [f.1 _ by_d]
+    · rwa [f.1 _ by_d]
     · rw [f.1 r (by simp only [BCmp, BCh, Bk, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)]
       exact j2 r a b
     · by_contra hc
@@ -509,7 +509,7 @@ theorem chCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
     · by_contra hc
       simp only [Bool.not_eq_false, Bk, decide_eq_true_eq] at hc
       exact hb (hBc r (by unfold bandOf; omega))
-  have hW1 : 1 ≤ W := by omega
+  have hW1 : 1 ≤ W := by_o
   set a := c.nreg 30000 with ha
   set b := c.nreg 30001 with hb
   unfold chCmp chLeB
@@ -519,26 +519,26 @@ theorem chCmp_ok {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
     · rw [ite_eq_left hB]
       obtain ⟨c', k, ex, hk, v1, v0⟩ := chBoth_exec hG hW hv hq hrec hAW hh htv hn hw
         ⟨j0, j1, j2, j3⟩ hA hB
-      refine ⟨c', _, .ifLtN_true (by rw [j1]; exact hA) (.ifLtN_true (by rw [j1]; exact hB) ex),
-        by omega, ?_⟩
+      refine ⟨c', _, .ifLtN_true (by rwa [j1]) (.ifLtN_true (by rwa [j1]) ex),
+        by_o, ?_⟩
       by_cases hc : ChLe P C V m₀ a b
       · rw [v1 hc]; simp [hc]
       · rw [v0 hc]; simp [hc]
     · rw [ite_eq_right hB]
-      exact ⟨_, _, .ifLtN_true (by rw [j1]; exact hA) (.ifLtN_false (by rw [j1]; exact hB)
-        (Exec.constN hw 30002 1 hW1)), by omega, by config_simp; simp⟩
+      exact ⟨_, _, .ifLtN_true (by rwa [j1]) (.ifLtN_false (by rwa [j1])
+        (Exec.constN hw 30002 1 hW1)), by_o, by config_simp; simp⟩
   · rw [ite_eq_right hA]
     by_cases hB : b < K
     · rw [ite_eq_left hB]
-      exact ⟨_, _, .ifLtN_false (by rw [j1]; exact hA) (.ifLtN_true (by rw [j1]; exact hB)
-        (Exec.constN hw 30002 0 (Nat.zero_le _))), by omega, by config_simp; simp⟩
+      exact ⟨_, _, .ifLtN_false (by rwa [j1]) (.ifLtN_true (by rwa [j1])
+        (Exec.constN hw 30002 0 (Nat.zero_le _))), by_o, by config_simp; simp⟩
     · rw [ite_eq_right hB]
       by_cases hba : b < a
-      · exact ⟨_, _, .ifLtN_false (by rw [j1]; exact hA) (.ifLtN_false (by rw [j1]; exact hB)
-          (.ifLtN_true hba (Exec.constN hw 30002 0 (Nat.zero_le _)))), by omega,
+      · exact ⟨_, _, .ifLtN_false (by rwa [j1]) (.ifLtN_false (by rwa [j1])
+          (.ifLtN_true hba (Exec.constN hw 30002 0 (Nat.zero_le _)))), by_o,
           by config_simp; simp; omega⟩
-      · exact ⟨_, _, .ifLtN_false (by rw [j1]; exact hA) (.ifLtN_false (by rw [j1]; exact hB)
-          (.ifLtN_false hba (Exec.constN hw 30002 1 hW1))), by omega,
+      · exact ⟨_, _, .ifLtN_false (by rwa [j1]) (.ifLtN_false (by rwa [j1])
+          (.ifLtN_false hba (Exec.constN hw 30002 1 hW1))), by_o,
           by config_simp; simp; omega⟩
 
 end

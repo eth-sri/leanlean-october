@@ -37,7 +37,7 @@ theorem fpBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W fpBody c c' k ∧ k ≤ 7 ∧ FrameB BR c c' ∧
       c'.nreg 60064 = FPb + c.nmem (VT + c.nmem (Sb + (M - 1 - i))) ∧
       c'.nreg 60065 = M - 1 - i := by
-  have hwr : wr BR fpBody = true := by decide
+  have hwr : wr BR fpBody = true := by_d
   suffices H : ∃ c' k, Exec P W fpBody c c' k ∧ k ≤ 7 ∧
       c'.nreg 60064 = FPb + c.nmem (VT + c.nmem (Sb + (M - 1 - i))) ∧
       c'.nreg 60065 = M - 1 - i by
@@ -47,8 +47,8 @@ theorem fpBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   exec_block
   · config_simp; rw [h7, h60, hi, h1]; omega
   · config_simp; rw [h7, h60, hi, h1, h50, show M - i - 1 = M - 1 - i by omega]; omega
-  · config_simp; rw [h7, h60, hi, h1, h50, h61, show M - i - 1 = M - 1 - i by omega]; exact hFW
-  · exact ⟨by omega, by config_simp; rw [h7, h60, hi, h1, h50, h61,
+  · config_simp; rwa [h7, h60, hi, h1, h50, h61, show M - i - 1 = M - 1 - i by omega]
+  · exact ⟨by_o, by config_simp; rw [h7, h60, hi, h1, h50, h61,
       show M - i - 1 = M - 1 - i by omega], by config_simp; rw [h60, hi, h1]; omega⟩
 
 /-- The environment of `fpS`. -/
@@ -71,28 +71,28 @@ theorem fpS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c'.rmem = c.rmem ∧ c'.output = c.output ∧ FPJ Sb VT M FPb c.nmem c' := by
   obtain ⟨c', k, ex, hk, r', rr', mm, rm, o, J', -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60063) (rn := 60060) (r1 := 120011) (ra := 60064) (rv := 60065) (body := fpBody)
-    (B := BR) (by decide) (by decide) (by decide) (by decide) (by decide)
+    (B := BR) by_d by_d by_d by_d by_d
     (FPJ Sb VT M FPb c.nmem) FPb
-    (fun d d' hJ hr hm => ⟨by rw [hr _ (by decide) (by decide)]; exact hJ.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.2.2.1,
+    (fun d d' hJ hr hm => ⟨by rw [hr _ by_d by_d]; exact hJ.1,
+      by rw [hr _ by_d by_d]; exact hJ.2.1,
+      by rw [hr _ by_d by_d]; exact hJ.2.2.1,
+      by rw [hr _ by_d by_d]; exact hJ.2.2.2.1,
+      by rw [hr _ by_d by_d]; exact hJ.2.2.2.2.1,
       fun a ha => by rw [hm a ha]; exact hJ.2.2.2.2.2 a ha⟩)
     (n := M) (κ := 7) (fun i => FPb + c.nmem (VT + c.nmem (Sb + (M - 1 - i))))
     (fun i => M - 1 - i) (fun i _ => by omega)
     (fun i d hi hJd hwd hri => by
       obtain ⟨a7, a50, a60, a61, a1, am⟩ := hJd
-      have e1 : d.nmem (Sb + (M - 1 - i)) = c.nmem (Sb + (M - 1 - i)) := am _ (by omega)
-      have hs' := hs (M - 1 - i) (by omega)
+      have e1 : d.nmem (Sb + (M - 1 - i)) = c.nmem (Sb + (M - 1 - i)) := am _ by_o
+      have hs' := hs (M - 1 - i) by_o
       have e2 : d.nmem (VT + d.nmem (Sb + (M - 1 - i))) =
-          c.nmem (VT + c.nmem (Sb + (M - 1 - i))) := by rw [e1]; exact am _ (by omega)
+          c.nmem (VT + c.nmem (Sb + (M - 1 - i))) := by rw [e1]; exact am _ by_o
       have hg' := hG _ hs'
       obtain ⟨d', k, ex, hk, F, v1, v2⟩ := fpBody_exec hwd a7 a50 a60 a61 a1 hri hi
-        (by omega) (by omega) (by rw [e1]; exact hs') (by rw [e2]; omega)
+        by_o by_o (by rw [e1]; exact hs') (by rw [e2]; omega)
       exact ⟨d', k, ex, hk, F, by rw [v1, e2], v2⟩)
-    hw hJ hJ.2.2.1 hJ.2.2.2.2.1 (by omega)
-  exact ⟨c', k, ex, by nlinarith, r', rr', mm, rm, o, J'⟩
+    hw hJ hJ.2.2.1 hJ.2.2.2.2.1 by_o
+  exact ⟨c', k, ex, by_nl, r', rr', mm, rm, o, J'⟩
 
 theorem fpN_spec' {M : ℕ} {G s : ℕ → ℕ} {t : ℕ} (ht : t < M) :
     fpN M G s (G (s t)) < M ∧ G (s (fpN M G s (G (s t)))) = G (s t) ∧
@@ -115,7 +115,7 @@ theorem fpN_congr {M : ℕ} {G s G' s' : ℕ → ℕ} (h : ∀ t, t < M → G (s
     conv_rhs => rw [e]
     exact le_antisymm (a3 _ b1 (by rw [h _ b1, b2, e]))
       (b3 _ a1 (by rw [← h _ a1, a2, e]))
-  · have hex' : ¬ ∃ t, t < M ∧ G' (s' t) = v := fun ⟨t, ht, e⟩ => hex ⟨t, ht, by rw [h t ht]; exact e⟩
+  · have hex' : ¬ ∃ t, t < M ∧ G' (s' t) = v := fun ⟨t, ht, e⟩ => hex ⟨t, ht, by rwa [h t ht]⟩
     unfold fpN; rw [dite_eq_right hex, dite_eq_right hex']
 
 /-- **The first-position array** holds `fpN`. -/
@@ -125,10 +125,10 @@ theorem fp_scat {M FPb : ℕ} {G s g : ℕ → ℕ} (hg : ∀ i, i < M → g i =
   obtain ⟨f1, f2, f3⟩ := fpN_spec' (G := G) (s := s) ht
   set t₀ := fpN M G s (G (s t))
   have ha : FPb + G (s t) = g (M - 1 - t₀) := by
-    rw [hg _ (by omega), show M - 1 - (M - 1 - t₀) = t₀ by omega, f2]
-  rw [ha, scat_at (by omega) fun j hj hij e => by
-    rw [hg _ hj, hg _ (by omega), show M - 1 - (M - 1 - t₀) = t₀ by omega, f2] at e
-    have := f3 (M - 1 - j) (by omega) (by omega)
+    rw [hg _ by_o, show M - 1 - (M - 1 - t₀) = t₀ by omega, f2]
+  rw [ha, scat_at by_o fun j hj hij e => by
+    rw [hg _ hj, hg _ by_o, show M - 1 - (M - 1 - t₀) = t₀ by omega, f2] at e
+    have := f3 (M - 1 - j) by_o by_o
     omega]
   omega
 
@@ -148,7 +148,7 @@ theorem SortedSeq.congr {pr pr' s : ℕ → ℕ} {n : ℕ} (h : SortedSeq (fun i
     SortedSeq (fun i => (q i, q' i)) s n := fun t t' htt ht' => by
   have := h t t' htt ht'
   simp only at this ⊢
-  rw [(hq t (by omega)).1, (hq t (by omega)).2, (hq t' ht').1, (hq t' ht').2] at this
+  rw [(hq t by_o).1, (hq t by_o).2, (hq t' ht').1, (hq t' ht').2] at this
   exact this
 
 /-! ## The rotation -/
@@ -187,7 +187,7 @@ theorem rPre_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c'.nreg 60066 = Sb + t ∧ c'.nreg 60064 = ROTb + c.nmem (Sb + t) ∧
       c'.nreg 60067 = c.nmem (VT + c.nmem (Sb + t)) ∧ c'.nreg 60069 = t + 1 := by
   have hwr : wr (fun r => decide (r = 60064 ∨ r = 60066 ∨ r = 60067 ∨ r = 60068 ∨ r = 60069))
-    rPre = true := by decide
+    rPre = true := by_d
   suffices H : ∃ c' k, Exec P W rPre c c' k ∧ k = 6 ∧
       c'.nreg 60066 = Sb + t ∧ c'.nreg 60064 = ROTb + c.nmem (Sb + t) ∧
       c'.nreg 60067 = c.nmem (VT + c.nmem (Sb + t)) ∧ c'.nreg 60069 = t + 1 by
@@ -208,7 +208,7 @@ theorem rNext_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W rNext c c' k ∧ k = 4 ∧
       FrameB (fun r => decide (r = 60065 ∨ r = 60066 ∨ r = 60070)) c c' ∧
       c'.nreg 60065 = c.nmem (a + 1) ∧ c'.nreg 60070 = c.nmem (VT + c.nmem (a + 1)) := by
-  have hwr : wr (fun r => decide (r = 60065 ∨ r = 60066 ∨ r = 60070)) rNext = true := by decide
+  have hwr : wr (fun r => decide (r = 60065 ∨ r = 60066 ∨ r = 60070)) rNext = true := by_d
   suffices H : ∃ c' k, Exec P W rNext c c' k ∧ k = 4 ∧
       c'.nreg 60065 = c.nmem (a + 1) ∧ c'.nreg 60070 = c.nmem (VT + c.nmem (a + 1)) by
     obtain ⟨c', k, ex, hk, x, y⟩ := H
@@ -225,7 +225,7 @@ theorem rFb_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W rFb c c' k ∧ k = 4 ∧
       FrameB (fun r => decide (r = 60065 ∨ r = 60070)) c c' ∧
       c'.nreg 60065 = c.nmem (Sb + c.nmem (FPb + g)) := by
-  have hwr : wr (fun r => decide (r = 60065 ∨ r = 60070)) rFb = true := by decide
+  have hwr : wr (fun r => decide (r = 60065 ∨ r = 60070)) rFb = true := by_d
   suffices H : ∃ c' k, Exec P W rFb c c' k ∧ k = 4 ∧
       c'.nreg 60065 = c.nmem (Sb + c.nmem (FPb + g)) by
     obtain ⟨c', k, ex, hk, x⟩ := H
@@ -249,24 +249,24 @@ theorem rotBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
       c'.nreg 60064 = ROTb + m₁ (Sb + t) ∧
       c'.nreg 60065 = rotN M (fun d => m₁ (VT + d)) (fun t => m₁ (Sb + t)) t := by
   obtain ⟨a7, a50, a60, a61, a62, a1, am⟩ := hJ
-  have hwr : wr BR rotBody = true := by decide
+  have hwr : wr BR rotBody = true := by_d
   suffices H : ∃ c' k, Exec P W rotBody c c' k ∧ k ≤ 24 ∧
       c'.nreg 60064 = ROTb + m₁ (Sb + t) ∧
       c'.nreg 60065 = rotN M (fun d => m₁ (VT + d)) (fun t => m₁ (Sb + t)) t by
     obtain ⟨c', k, ex, hk, a, b⟩ := H
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, a, b⟩
-  have mS : ∀ u, u < M → c.nmem (Sb + u) = m₁ (Sb + u) := fun u hu => am _ (by omega)
-  have mV : ∀ d, d < M → c.nmem (VT + d) = m₁ (VT + d) := fun d hd => am _ (by omega)
-  have mF : ∀ v, v < N → c.nmem (FPb + v) = m₁ (FPb + v) := fun v hv => am _ (by omega)
+  have mS : ∀ u, u < M → c.nmem (Sb + u) = m₁ (Sb + u) := fun u hu => am _ by_o
+  have mV : ∀ d, d < M → c.nmem (VT + d) = m₁ (VT + d) := fun d hd => am _ by_o
+  have mF : ∀ v, v < N → c.nmem (FPb + v) = m₁ (FPb + v) := fun v hv => am _ by_o
   have hst := hs t ht
   have hGt := hG _ hst
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, p66, p64, p67, p69⟩ := rPre_exec (P := P) hw a7 a50 a62 a1 hi
-    (by omega) (by rw [mS t ht]; omega) (by rw [mS t ht]; omega)
+    by_o (by rw [mS t ht]; omega) (by rw [mS t ht]; omega)
   rw [mS t ht] at p64 p67
   rw [mV _ hst] at p67
   have K₁ : ∀ r, r = 60007 ∨ r = 60050 ∨ r = 60060 ∨ r = 60061 ∨ r = 120011 →
       c₁.nreg r = c.nreg r := fun r hr => F₁.1 r (by simp only [decide_eq_false_iff_not]; omega)
-  have m₁e : c₁.nmem = c.nmem := F₁.2.2.1
+  have m₁e := F₁.2.2.1
   -- the fallback: `s (fpN (G (s t)))`
   have fb : ∀ d, WordsBounded W d → d.nmem = c.nmem → d.nreg 60007 = Sb → d.nreg 60061 = FPb →
       d.nreg 60067 = m₁ (VT + m₁ (Sb + t)) → d.nreg 60064 = ROTb + m₁ (Sb + t) →
@@ -277,48 +277,48 @@ theorem rotBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
     have q1 : d.nmem (FPb + m₁ (VT + m₁ (Sb + t))) =
         fpN M (fun d => m₁ (VT + d)) (fun t => m₁ (Sb + t)) (m₁ (VT + m₁ (Sb + t))) := by
       rw [hm, mF _ hGt, hfp t ht]
-    obtain ⟨d', k, ex, hk, F, v⟩ := rFb_exec (P := P) hwd h7 h61 h67 (by omega)
+    obtain ⟨d', k, ex, hk, F, v⟩ := rFb_exec (P := P) hwd h7 h61 h67 by_o
       (by rw [q1]; have := hfpl t ht; omega)
-    refine ⟨d', k, ex, hk, by rw [F.1 _ (by decide), h64], ?_⟩
+    refine ⟨d', k, ex, hk, by rw [F.1 _ by_d, h64], ?_⟩
     rw [v, q1, hm, mS _ (hfpl t ht)]
   unfold rotBody
   by_cases hn : t + 1 < M
   · have hs1 := hs (t + 1) hn
     have hG1 := hG _ hs1
     obtain ⟨c₂, k₂, e₂, hk₂, F₂, x65, x70⟩ := rNext_exec (P := P) e₁.wb_right
-      (by rw [K₁ _ (by omega), a50]) (by rw [K₁ _ (by omega), a1]) p66 (by omega)
+      (by rw [K₁ _ by_o, a50]) (by rw [K₁ _ by_o, a1]) p66 by_o
       (by rw [m₁e, show Sb + t + 1 = Sb + (t + 1) by omega, mS _ hn]; omega)
     rw [m₁e, show Sb + t + 1 = Sb + (t + 1) by omega, mS _ hn] at x65 x70
     rw [mV _ hs1] at x70
     have K₂ : ∀ r, r = 60007 ∨ r = 60061 ∨ r = 60064 ∨ r = 60067 →
         c₂.nreg r = c₁.nreg r := fun r hr => F₂.1 r (by simp only [decide_eq_false_iff_not]; omega)
-    have hm₂ : c₂.nmem = c.nmem := F₂.2.2.1.trans m₁e
-    have b7 : c₂.nreg 60007 = Sb := by rw [K₂ _ (by omega), K₁ _ (by omega), a7]
-    have b61 : c₂.nreg 60061 = FPb := by rw [K₂ _ (by omega), K₁ _ (by omega), a61]
-    have b67 : c₂.nreg 60067 = m₁ (VT + m₁ (Sb + t)) := by rw [K₂ _ (by omega), p67]
-    have b64 : c₂.nreg 60064 = ROTb + m₁ (Sb + t) := by rw [K₂ _ (by omega), p64]
+    have hm₂ := F₂.2.2.1.trans m₁e
+    have b7 : c₂.nreg 60007 = Sb := by rw [K₂ _ by_o, K₁ _ by_o, a7]
+    have b61 : c₂.nreg 60061 = FPb := by rw [K₂ _ by_o, K₁ _ by_o, a61]
+    have b67 : c₂.nreg 60067 = m₁ (VT + m₁ (Sb + t)) := by rw [K₂ _ by_o, p67]
+    have b64 : c₂.nreg 60064 = ROTb + m₁ (Sb + t) := by rw [K₂ _ by_o, p64]
     have hrot : rotN M (fun d => m₁ (VT + d)) (fun t => m₁ (Sb + t)) t =
         if m₁ (VT + m₁ (Sb + (t + 1))) = m₁ (VT + m₁ (Sb + t)) then m₁ (Sb + (t + 1)) else
           m₁ (Sb + fpN M (fun d => m₁ (VT + d)) (fun t => m₁ (Sb + t))
             (m₁ (VT + m₁ (Sb + t)))) := by
       unfold rotN; simp only [hn, true_and]
-    have hc1 : c₁.nreg 60069 < c₁.nreg 60060 := by rw [p69, K₁ _ (by omega), a60]; exact hn
+    have hc1 : c₁.nreg 60069 < c₁.nreg 60060 := by rw [p69, K₁ _ by_o, a60]; exact hn
     rcases lt_trichotomy (m₁ (VT + m₁ (Sb + (t + 1)))) (m₁ (VT + m₁ (Sb + t))) with h | h | h
     · obtain ⟨c₃, k₃, e₃, hk₃, v64, v65⟩ := fb c₂ e₂.wb_right hm₂ b7 b61 b67 b64
-      refine ⟨c₃, _, .seq e₁ (.ifLtN_true hc1 (.seq e₂ (.ifLtN_true (by rw [x70, b67]; exact h)
-        e₃))), by omega, v64, by rw [v65, hrot, ite_eq_right (by omega)]⟩
+      refine ⟨c₃, _, .seq e₁ (.ifLtN_true hc1 (.seq e₂ (.ifLtN_true (by rwa [x70, b67])
+        e₃))), by_o, v64, by rw [v65, hrot, ite_eq_right by_o]⟩
     · refine ⟨c₂, _, .seq e₁ (.ifLtN_true hc1 (.seq e₂ (.ifLtN_false (by rw [x70, b67]; omega)
-        (.ifLtN_false (by rw [x70, b67]; omega) (.skip e₂.wb_right))))), by omega, b64,
+        (.ifLtN_false (by rw [x70, b67]; omega) (.skip e₂.wb_right))))), by_o, b64,
         by rw [x65, hrot, ite_eq_left h]⟩
     · obtain ⟨c₃, k₃, e₃, hk₃, v64, v65⟩ := fb c₂ e₂.wb_right hm₂ b7 b61 b67 b64
       refine ⟨c₃, _, .seq e₁ (.ifLtN_true hc1 (.seq e₂ (.ifLtN_false (by rw [x70, b67]; omega)
-        (.ifLtN_true (by rw [x70, b67]; exact h) e₃)))), by omega, v64,
-        by rw [v65, hrot, ite_eq_right (by omega)]⟩
-  · have hc1 : ¬ c₁.nreg 60069 < c₁.nreg 60060 := by rw [p69, K₁ _ (by omega), a60]; exact hn
+        (.ifLtN_true (by rwa [x70, b67]) e₃)))), by_o, v64,
+        by rw [v65, hrot, ite_eq_right by_o]⟩
+  · have hc1 : ¬ c₁.nreg 60069 < c₁.nreg 60060 := by rw [p69, K₁ _ by_o, a60]; exact hn
     obtain ⟨c₃, k₃, e₃, hk₃, v64, v65⟩ := fb c₁ e₁.wb_right m₁e
-      (by rw [K₁ _ (by omega), a7]) (by rw [K₁ _ (by omega), a61]) p67 p64
-    refine ⟨c₃, _, .seq e₁ (.ifLtN_false hc1 e₃), by omega, v64, ?_⟩
-    rw [v65]; unfold rotN; rw [ite_eq_right (by omega)]
+      (by rw [K₁ _ by_o, a7]) (by rw [K₁ _ by_o, a61]) p67 p64
+    refine ⟨c₃, _, .seq e₁ (.ifLtN_false hc1 e₃), by_o, v64, ?_⟩
+    rw [v65]; unfold rotN; rw [ite_eq_right by_o]
 
 /-- **The rotation**: a scatter over the positions. -/
 def rotS : Stmt := scatS 60063 60060 120011 60064 60065 rotBody
@@ -340,22 +340,22 @@ theorem rotS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c'.rmem = c.rmem ∧ c'.output = c.output ∧ RotJ Sb VT M FPb ROTb c.nmem c' := by
   obtain ⟨c', k, ex, hk, r', rr', mm, rm, o, J', -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60063) (rn := 60060) (r1 := 120011) (ra := 60064) (rv := 60065) (body := rotBody)
-    (B := BR) (by decide) (by decide) (by decide) (by decide) (by decide)
+    (B := BR) by_d by_d by_d by_d by_d
     (RotJ Sb VT M FPb ROTb c.nmem) ROTb
-    (fun d d' hJ hr hm => ⟨by rw [hr _ (by decide) (by decide)]; exact hJ.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.2.2.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.2.2.2.2.1,
+    (fun d d' hJ hr hm => ⟨by rw [hr _ by_d by_d]; exact hJ.1,
+      by rw [hr _ by_d by_d]; exact hJ.2.1,
+      by rw [hr _ by_d by_d]; exact hJ.2.2.1,
+      by rw [hr _ by_d by_d]; exact hJ.2.2.2.1,
+      by rw [hr _ by_d by_d]; exact hJ.2.2.2.2.1,
+      by rw [hr _ by_d by_d]; exact hJ.2.2.2.2.2.1,
       fun a ha => by rw [hm a ha]; exact hJ.2.2.2.2.2.2 a ha⟩)
     (n := M) (κ := 24) (fun t => ROTb + c.nmem (Sb + t))
     (fun t => rotN M (fun d => c.nmem (VT + d)) (fun t => c.nmem (Sb + t)) t) (fun i _ => by omega)
     (fun i d hi hJd hwd hri => by
       obtain ⟨d', k, ex, hk, F, v1, v2⟩ := rotBody_exec hwd hJd hri hi hSR hVR hFR hRW hs hG hfp hfpl
       exact ⟨d', k, ex, hk, F, v1, v2⟩)
-    hw hJ hJ.2.2.1 hJ.2.2.2.2.2.1 (by omega)
-  exact ⟨c', k, ex, by nlinarith, r', rr', mm, rm, o, J'⟩
+    hw hJ hJ.2.2.1 hJ.2.2.2.2.2.1 by_o
+  exact ⟨c', k, ex, by_nl, r', rr', mm, rm, o, J'⟩
 
 end
 

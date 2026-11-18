@@ -45,7 +45,7 @@ def arcOfB (A b : ℕ) : ℕ := if b = 0 ∨ A ≤ b then A - 1 else b - 1
 theorem arcOfB_bktB {A j : ℕ} (hj : j < A) (t₂ : Bool) : arcOfB A (bktB A j t₂) = j := by
   unfold arcOfB bktB
   by_cases h : j + 1 < A
-  · rw [ite_eq_left h, ite_eq_right (by omega)]; omega
+  · rw [ite_eq_left h, ite_eq_right by_o]; omega
   · rw [ite_eq_right h]
     cases t₂ <;> simp <;> omega
 
@@ -59,10 +59,10 @@ theorem bkt_of_match (N : NF) {x : ℝ} {j : ℕ} (hj : j < N.arcs.length) {t₁
   · rw [ite_eq_left h] at hm ⊢
     simp only [Bool.and_eq_true] at hm
     right; left
-    exact ⟨by omega, h, by rw [Nat.add_sub_cancel]; exact h₁.1 hm.1,
+    exact ⟨by_o, h, by rw [Nat.add_sub_cancel]; exact h₁.1 hm.1,
       by rw [Nat.add_sub_cancel]; exact h₂.1 hm.2⟩
   · rw [ite_eq_right h] at hm ⊢
-    have hjA : j = N.arcs.length - 1 := by omega
+    have hjA : j = N.arcs.length - 1 := by_o
     by_cases ht : t₂ = true
     · rw [ite_eq_left ht]
       left
@@ -89,7 +89,7 @@ theorem exists_closedArc (hM : WalkAx M) {N : NF} {reg : ℕ → Set Point} (hNF
     he hw.1 hw.2.1 hA
   obtain ⟨j, hj, hjr, hs, he'⟩ := hregs.2.2.1.2.2.1 r hr a b harc
   refine ⟨j, (hregs.2.2.1.2.2.2 r hr j).2 ⟨hj, hjr⟩, hj, ?_⟩
-  rw [hs, he']; exact hcl
+  rwa [hs, he']
 
 variable {L : List (ℕ × ℕ × ℕ)} {E : List ℕ}
 
@@ -104,7 +104,7 @@ theorem match_of_closedArc (hK : 0 < L.length) (hE : 0 < E.length) {j : ℕ}
   unfold matchB
   by_cases h : j + 1 < (buildNF M Q L E).arcs.length
   · rw [ite_eq_left h]
-    have hlt := key_s_lt_e (M := M) (Q := Q) hK hE (j := j) (by rw [← arcs_length hK]; exact h)
+    have hlt := key_s_lt_e (M := M) (Q := Q) hK hE (j := j) (by rwa [← arcs_length hK])
     simp only [Bool.and_eq_true]
     rcases hc with hc | hc | hc
     · unfold sideInArc at hc
@@ -135,10 +135,10 @@ theorem bcnt_le_two {bk : ℕ → ℕ} {n b : ℕ}
   push Not at hcon
   set l := DrvR.bfilt bk n b with hl
   have hpw : l.Pairwise (· < ·) := List.Pairwise.filter _ List.pairwise_lt_range
-  have m0 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 0) (by omega))
-  have m2 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 2) (by omega))
-  have h01 := List.pairwise_iff_getElem.1 hpw 0 1 (by omega) (by omega) (by omega)
-  have h12 := List.pairwise_iff_getElem.1 hpw 1 2 (by omega) (by omega) (by omega)
+  have m0 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 0) by_o)
+  have m2 := (DrvR.mem_bfilt (bk := bk)).1 (List.getElem_mem (l := l) (n := 2) by_o)
+  have h01 := List.pairwise_iff_getElem.1 hpw 0 1 by_o by_o by_o
+  have h12 := List.pairwise_iff_getElem.1 hpw 1 2 by_o by_o by_o
   have := h _ _ m0.1 m2.1 m0.2 m2.2
   omega
 

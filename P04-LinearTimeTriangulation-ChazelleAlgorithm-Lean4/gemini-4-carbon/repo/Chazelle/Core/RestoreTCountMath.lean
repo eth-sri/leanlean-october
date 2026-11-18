@@ -32,7 +32,7 @@ theorem cntP_succ (p : ℕ → Prop) (t : ℕ) :
   unfold cntP
   rw [Finset.range_add_one, Finset.filter_insert]
   split_ifs with h
-  · rw [Finset.card_insert_of_notMem (by simp)]
+  · rw [Finset.card_insert_of_notMem by_s]
   · rfl
 
 open Classical in
@@ -41,7 +41,7 @@ theorem cntP_zero (p : ℕ → Prop) : cntP p 0 = 0 := by simp [cntP]
 open Classical in
 theorem cntP_le (p : ℕ → Prop) (t : ℕ) : cntP p t ≤ t := by
   unfold cntP
-  exact (Finset.card_filter_le _ _).trans (by simp)
+  exact (Finset.card_filter_le _ _).trans by_s
 
 variable {M : Model} {P : Polygon} {N : NF}
 
@@ -55,7 +55,7 @@ theorem record_attach (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {i : ℕ} (hi
     {p : ℕ} {t : ℝ} (h : SideAttach M.W ((N.chord i).toSet M (Qof P)) p t) :
     (p : ℝ) + t = M.key (Qof P) (N.chord i).lpos ∨ (p : ℝ) + t = M.key (Qof P) (N.chord i).rpos := by
   have hM := walkAx_of_goodModel hGM
-  have hadm : (N.chord i).toSet M (Qof P) ∈ M.Adm := hNF.1.2.1 (chord_toSet_mem' hi)
+  have hadm := hNF.1.2.1 (chord_toSet_mem' hi)
   have hat := hNF.2.2.1 i hi
   have hne : sidePt M.W (N.chord i).lp (M.param (Qof P) (N.chord i).lpos) ≠
       sidePt M.W (N.chord i).rp (M.param (Qof P) (N.chord i).rpos) := by
@@ -97,12 +97,11 @@ theorem sideExits_ncard (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ 
     constructor
     · rintro ⟨⟨hcF, htouch⟩, p, t, hA, hin⟩
       obtain ⟨i, hi, rfl⟩ := mem_F_iff hcF
-      have hmem : i ∈ L := (hlist i).2 ⟨hi, htouch⟩
+      have hmem := (hlist i).2 ⟨hi, htouch⟩
       obtain ⟨t', ht', hti⟩ := List.getElem_of_mem hmem
       have hat : chordAt N r t' = i := by
         unfold chordAt
-        rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht', Option.getD_some]
-        exact hti
+        rwa [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht', Option.getD_some]
       refine ⟨t', ⟨ht', ?_⟩, by simp only [hat]⟩
       rw [hat]
       exact (attach_side_iff hGM hNF hi k₁ k₂).1 ⟨p, t, hA, hin⟩
@@ -122,8 +121,8 @@ theorem sideExits_ncard (hGM : GoodModel M) (hNF : IsNF M (Qof P) N) {reg : ℕ 
       rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
     have m₁ : chordAt N r t₁ ∈ L := by rw [g t₁ h₁]; exact List.getElem_mem h₁
     have m₂ : chordAt N r t₂ ∈ L := by rw [g t₂ h₂]; exact List.getElem_mem h₂
-    have hi₁ : chordAt N r t₁ < N.nChords := ((hlist _).1 m₁).1
-    have hi₂ : chordAt N r t₂ < N.nChords := ((hlist _).1 m₂).1
+    have hi₁ := ((hlist _).1 m₁).1
+    have hi₂ := ((hlist _).1 m₂).1
     have hij := hNF.2.1 _ _ hi₁ hi₂ heq
     rw [g t₁ h₁, g t₂ h₂] at hij
     exact (List.Nodup.getElem_inj_iff hnd).1 hij

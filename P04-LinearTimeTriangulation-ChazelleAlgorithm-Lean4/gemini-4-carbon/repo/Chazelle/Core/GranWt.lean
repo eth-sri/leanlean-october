@@ -48,7 +48,7 @@ theorem ncard_counted {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
       constructor
       · rintro ⟨-, -, h1, h2⟩; exact ⟨h1, h2⟩
       · rintro ⟨h1, h2⟩
-        exact ⟨by omega, (hD.2 p (by omega)).2 (Or.inl rfl), h1, h2⟩
+        exact ⟨by_o, (hD.2 p by_o).2 (Or.inl rfl), h1, h2⟩
     rw [e, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
     rfl
   | true =>
@@ -61,14 +61,14 @@ theorem ncard_counted {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
       · rintro ⟨hp, hc, h1, h2⟩
         have := (hD.2 p hp).1 hc
         rcases this with h | h
-        · exact absurd h (by decide)
+        · exact absurd h by_d
         · refine ⟨max_le h1 h.1, lt_min h2 h.2⟩
       · rintro ⟨h1, h2⟩
         have h1' := le_of_max_le_left h1
         have h1'' := le_of_max_le_right h1
         have h2' := lt_of_lt_of_le h2 (min_le_left _ _)
         have h2'' := lt_of_lt_of_le h2 (min_le_right _ _)
-        exact ⟨by omega, (hD.2 p (by omega)).2 (Or.inr ⟨h1'', h2''⟩), h1', h2'⟩
+        exact ⟨by_o, (hD.2 p by_o).2 (Or.inr ⟨h1'', h2''⟩), h1', h2'⟩
     rw [e, Set.ncard_eq_toFinset_card', Set.toFinset_Ico, Nat.card_Ico]
     rfl
 
@@ -91,12 +91,12 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
     · constructor
       · intro h
         by_contra h'
-        have : (eb : ℝ) + 1 ≤ p := by exact_mod_cast (show eb + 1 ≤ p by omega)
+        have : (eb : ℝ) + 1 ≤ p := by exact_mod_cast (by omega)
         linarith
       · intro h
-        have : (p : ℝ) ≤ eb := by exact_mod_cast (show p ≤ eb by omega)
+        have : (p : ℝ) ≤ eb := by exact_mod_cast (by omega)
         linarith
-    · have ht0 : tb = 0 := le_antisymm (not_lt.1 ht) hb0
+    · have ht0 := le_antisymm (not_lt.1 ht) hb0
       rw [ht0, add_zero, Nat.add_zero]
       exact_mod_cast Iff.rfl
   -- `a < p + 1` for some point of the open edge iff `ea ≤ p`
@@ -105,7 +105,7 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
     constructor
     · intro h
       by_contra h'
-      have : (p : ℝ) + 1 ≤ ea := by exact_mod_cast (show p + 1 ≤ ea by omega)
+      have : (p : ℝ) + 1 ≤ ea := by exact_mod_cast (by omega)
       linarith
     · intro h
       have : (ea : ℝ) ≤ p := by exact_mod_cast h
@@ -122,10 +122,10 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
       refine ⟨hp, hc, ?_⟩
       -- some point of the open edge differs from the key
       by_cases hq : (p : ℝ) + 1 / 2 = ea + ta
-      · refine ⟨1 / 4, by norm_num, by norm_num, ?_⟩
+      · refine ⟨1 / 4, by_n, by_n, ?_⟩
         unfold sideInArc; rw [← h1, ite_eq_right (lt_irrefl _)]
         right; linarith
-      · refine ⟨1 / 2, by norm_num, by norm_num, ?_⟩
+      · refine ⟨1 / 2, by_n, by_n, ?_⟩
         unfold sideInArc; rw [← h1, ite_eq_right (lt_irrefl _)]
         rcases lt_or_gt_of_ne hq with h | h
         · right; exact h
@@ -150,7 +150,7 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
       set hi := min ((eb : ℝ) + tb) (p + 1)
       have hlohi : lo < hi := by
         simp only [lo, hi]
-        refine max_lt (lt_min h2 e1) (lt_min e2 (by linarith))
+        refine max_lt (lt_min h2 e1) (lt_min e2 by_l)
       refine ⟨(lo + hi) / 2 - p, ?_, ?_, ?_⟩
       · have : (p : ℝ) ≤ lo := le_max_right _ _
         linarith
@@ -162,10 +162,10 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
         have : hi ≤ (eb : ℝ) + tb := min_le_left _ _
         constructor <;> linarith
   · -- `b < a`: the wrap-around
-    have hlt : (eb : ℝ) + tb < ea + ta := lt_of_le_of_ne (not_lt.1 h2) (Ne.symm h1)
+    have hlt := lt_of_le_of_ne (not_lt.1 h2) (Ne.symm h1)
     have hle : eb ≤ ea := by
       by_contra h'
-      have : (ea : ℝ) + 1 ≤ eb := by exact_mod_cast (show ea + 1 ≤ eb by omega)
+      have : (ea : ℝ) + 1 ≤ eb := by exact_mod_cast (by omega)
       linarith
     have hr : min (eb + bump tb) ea ≤ M.W.n := (min_le_right _ _).trans ha.le
     have hdisj : Disjoint {p : ℕ | p < M.W.n ∧ M.counted p ∧ 0 ≤ p ∧ p < min (eb + bump tb) ea}
@@ -187,28 +187,28 @@ theorem arcWt_formula {M : Model} {ch : Bool} {m : ℕ} (hD : CountDesc M ch m) 
         unfold sideInArc at hin
         rw [ite_eq_right h2] at hin
         rcases hin with hin | hin
-        · exact Or.inr ⟨hp, hc, (hafter p).1 (by linarith), hp⟩
-        · have e2 := (hbump p).1 (by linarith)
+        · exact Or.inr ⟨hp, hc, (hafter p).1 by_l, hp⟩
+        · have e2 := (hbump p).1 by_l
           by_cases hpe : p < ea
           · exact Or.inl ⟨hp, hc, Nat.zero_le _, lt_min e2 hpe⟩
-          · exact Or.inr ⟨hp, hc, by omega, hp⟩
+          · exact Or.inr ⟨hp, hc, by_o, hp⟩
       · rintro (⟨hp, hc, -, hr'⟩ | ⟨hp, hc, hl, -⟩)
         · have e2 := (hbump p).2 (lt_of_lt_of_le hr' (min_le_left _ _))
           set hi := min ((eb : ℝ) + tb) (p + 1)
-          have hphi : (p : ℝ) < hi := lt_min e2 (by linarith)
+          have hphi : (p : ℝ) < hi := lt_min e2 by_l
           have hhi1 : hi ≤ (p : ℝ) + 1 := min_le_right _ _
           have hhi2 : hi ≤ (eb : ℝ) + tb := min_le_left _ _
-          refine ⟨hp, hc, (hi - p) / 2, by linarith, by linarith, ?_⟩
+          refine ⟨hp, hc, (hi - p) / 2, by_l, by_l, ?_⟩
           unfold sideInArc
           rw [ite_eq_right h2]
           right
           linarith
         · have e1 := (hafter p).2 hl
           set lo := max ((ea : ℝ) + ta) p
-          have hlo1 : lo < (p : ℝ) + 1 := max_lt e1 (by linarith)
+          have hlo1 : lo < (p : ℝ) + 1 := max_lt e1 by_l
           have hlo2 : (p : ℝ) ≤ lo := le_max_right _ _
           have hlo3 : (ea : ℝ) + ta ≤ lo := le_max_left _ _
-          refine ⟨hp, hc, (lo + p + 1) / 2 - p, by linarith, by linarith, ?_⟩
+          refine ⟨hp, hc, (lo + p + 1) / 2 - p, by_l, by_l, ?_⟩
           unfold sideInArc
           rw [ite_eq_right h2]
           left

@@ -33,8 +33,8 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
   set C₁ := J.left with hC₁
   set W := (chainModel C).W with hW
   set W₁ := (chainModel C₁).W with hW₁
-  have hn : W.n = 2 * C.m + 7 := cm_n C
-  have hn₁ : W₁.n = 2 * C₁.m + 7 := cm_n C₁
+  have hn := cm_n C
+  have hn₁ := cm_n C₁
   have hwm : C.m = J.m₁ + J.m₂ := rfl
   have hm1 : C₁.m = J.m₁ := rfl
   have h1 := J.one_le_m₁
@@ -54,7 +54,7 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
   have hg : 6 + τ < W.n := by rw [hn]; omega
   have hg' : 6 + τ' < W₁.n := by rw [hn₁]; omega
   have hv0 : W₁.vtx (6 + τ') = J.shared := by
-    have := walk_tour C₁ J.m₁ 0 (by omega)
+    have := walk_tour C₁ J.m₁ 0 by_o
     rw [add_zero, Nat.mod_eq_of_lt hg', tourV_left_zero] at this
     exact this
   have hnoV : ∀ L : ℝ, (τ' = 0 → L ≤ 2 * C₁.m) → ∀ p < W₁.n, ∀ t : ℝ, 0 ≤ t → t < 1 →
@@ -77,8 +77,8 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
     fun e he e' he' h => augChords_nest (F₁plus_subset J hS₁ he) (F₁plus_subset J hS₁ he') h
   have hFs := F₁plus_subset J hS₁
   have hFf := F₁plus_finite J hS₁f
-  have hℓ : ℓ < 2 * C.m := by omega
-  have hℓ' : ℓ ≤ 2 * C₁.m := by omega
+  have hℓ : ℓ < 2 * C.m := by_o
+  have hℓ' : ℓ ≤ 2 * C₁.m := by_o
   have hℓ'R : (ℓ : ℝ) ≤ 2 * C₁.m := by exact_mod_cast hℓ'
   by_cases hsl : s < ℓ
   · -- case Sh
@@ -87,33 +87,33 @@ theorem corr_left0 (hP : J.P.Simple) {S₁ : Set (Set Point)}
     rw [ite_eq_left hsl, ite_eq_left hsl, ite_eq_left hsl]
     refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rw [hn]; omega,
       by rw [hn₁]; omega, fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
-      hnoV _ (fun h0 => absurd h0 (by omega)), htrans, hnest⟩
+      hnoV _ (fun h0 => absurd h0 by_o), htrans, hnest⟩
     intro d hd
-    obtain rfl : d = 0 := by omega
+    obtain rfl : d = 0 := by_o
     simpa using hA (ℓ + 7) le_rfl
   push Not at hsl
   by_cases hsl' : ℓ ≤ s'
   · -- case N
     have hA := agree_N hT hsl hsl'
-    rw [ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ s < ℓ by omega),
+    rw [ite_eq_right (by omega), ite_eq_right (show ¬ s < ℓ by omega),
       ite_eq_right (show ¬ s < ℓ by omega), ite_eq_left hsl', ite_eq_left hsl', ite_eq_left hsl']
     refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rw [hn]; omega,
       by rw [hn₁]; omega, fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
       hnoV _ (fun _ => by push_cast; linarith), htrans, hnest⟩
     intro d hd
-    obtain rfl : d = 0 := by omega
+    obtain rfl : d = 0 := by_o
     simpa using hA ℓ le_rfl
   -- case G
   push Not at hsl'
   have hA1 := agree_G1 hT hsl hsl'
   have hA2 := agree_G2 hT hℓ' hsl hsl'
-  have hs'1 : 1 ≤ s' := by omega
-  rw [ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ s < ℓ by omega),
-    ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega),
-    ite_eq_right (show ¬ ℓ ≤ s' by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega)]
+  have hs'1 : 1 ≤ s' := by_o
+  rw [ite_eq_right (by omega), ite_eq_right (by omega),
+    ite_eq_right (by omega), ite_eq_right (by omega),
+    ite_eq_right (by omega), ite_eq_right (by omega)]
   refine ⟨hM, hM₁, hFs, hFf, hS₁, hS₁f, hg, hg', by rw [hn]; omega,
-    by rw [hn₁]; omega, fun h => absurd h (by norm_num), fun _ => by rw [hn₁]; omega, hA1, ?_,
-    hnoV _ (fun h0 => absurd h0 (by omega)), htrans, hnest⟩
+    by rw [hn₁]; omega, fun h => absurd h by_n, fun _ => by rw [hn₁]; omega, hA1, ?_,
+    hnoV _ (fun h0 => absurd h0 by_o), htrans, hnest⟩
   · intro d hd
     have := hA2 d hd
     rwa [Nat.mod_add_mod, Nat.mod_add_mod] at this

@@ -59,7 +59,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
         GapPair J S₂ G V := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
+  have hFs := hC.hF
   have hg0 : (0 : ℝ) ≤ ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) := Nat.cast_nonneg _
   have hgn : ((6 + tpos J.whole J.m₁ : ℕ) : ℝ) < (chainModel J.whole).W.n := by
     exact_mod_cast hC.hg
@@ -70,7 +70,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
   set W := (chainModel J.whole).W with hWdef
   set g := 6 + tpos J.whole J.m₁ with hgdef
   set L := rL1 J + rL2 J with hLdef
-  have hoN : off W.n (g : ℝ) ((((g + d) % W.n : ℕ) : ℝ) + t) = d + t := hC.off_M hd ht0 ht1
+  have hoN := hC.off_M hd ht0 ht1
   have hN0 : 0 < off W.n (g : ℝ) ((((g + d) % W.n : ℕ) : ℝ) + t) := by
     rw [hoN]
     rcases ht0.lt_or_eq with h | h
@@ -134,7 +134,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
     have hθρ : θ * ρ * θ * ρ = 1 := by
       rcases hθ with rfl | rfl <;> rcases hρ with rfl | rfl <;> norm_num
     have hori' : 0 < θ * ρ * (Pf.1 - Bp.1) := by
-      have h1 : 0 < θ * ρ * (Pn.1 - Pf.1) := hori
+      have h1 := hori
       nlinarith [mul_pos h1 h1]
     rcases hpart with ⟨c', hc', hfc', hVs'⟩ | ⟨-, hoff⟩
     · -- recursion along the partner
@@ -152,7 +152,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
           obtain ⟨s, hs0, hs1, rfl⟩ := Geometry.mem_segment_iff_lerp.1 hz
           simp only [Geometry.lerp_fst] at hz'
           have : θ * ρ * (Bp.1 - (Pf.1 + s * (Bp.1 - Pf.1))) =
-              (1 - s) * (θ * ρ * (Bp.1 - Pf.1)) := by ring
+              (1 - s) * (θ * ρ * (Bp.1 - Pf.1)) := by_r
           nlinarith
       exact ih _ (lt_of_lt_of_le hlt hN) d' 0 f' pb tb V' hV' le_rfl hd' le_rfl zero_lt_one
         (fun _ => hd'0) hf' hA' hB (Ne.symm hBne) hS' hori' ⟨c', hc', hfc', hVs'⟩
@@ -194,7 +194,7 @@ theorem half_walk2 (hP : J.P.Simple) {Q : Polygon}
     subst hdL
     have hδ : 0 < rδ J := by
       by_contra h0
-      have := hC.hδ (by omega)
+      have := hC.hδ by_o
       omega
     have hd'0 : rL1 J ≠ 0 := by
       intro h; rw [h] at hin1; simp at hin1
@@ -297,12 +297,12 @@ theorem label_side_gen2 (hP : J.P.Simple) {Q : Polygon}
     (hL : RLabel J S₂ G V') : V' = V ∨ (GapLab J S₂ V' ∧ GapLab J S₂ V) := by
   have hC := corr_right0 J hP hS₂.2.1 hS₂.1
   have hM := hC.hM
-  have hFs : F₂plus J S₂ ⊆ (chainModel J.whole).Adm := hC.hF
-  have hcx : c ∈ S₂x J S₂ := subset_S₂x J S₂ hc
+  have hFs := hC.hF
+  have hcx := subset_S₂x J S₂ hc
   rcases local_step2 J hP hS₂ hF hd ht0 ht1 hsec he hcx hec heA hρ hG hV hGs hVs with
     hRL | ⟨rfl, f', hf', hne, hA', hS', hpart⟩
   · exact label_right3 J hP hS₂.2.1 hS₂.1 hG hV' hV hL hRL
-  have hd0 : d ≠ 0 := (hsec rfl).1
+  have hd0 := (hsec rfl).1
   set W := (chainModel J.whole).W with hWdef
   set A := (6 + tpos J.whole J.m₁ + d) % W.n with hAdef
   obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach (hFs he) heA
@@ -319,11 +319,11 @@ theorem label_side_gen2 (hP : J.P.Simple) {Q : Polygon}
   have hθρ : θ * ρ * (θ * ρ) = 1 := by
     rcases hθ with rfl | rfl <;> rcases hρ with rfl | rfl <;> norm_num
   have hori' : 0 < -θ * ρ * (Pa.1 - Bq.1) := by
-    have e1 : -θ * ρ * (Pa.1 - Bq.1) = θ * ρ * (Bq.1 - Pa.1) := by ring
+    have e1 : -θ * ρ * (Pa.1 - Bq.1) = θ * ρ * (Bq.1 - Pa.1) := by_r
     rw [e1]
     have hprod : 0 < (θ * ρ * (Pa.1 - Bp.1)) * (θ * ρ * (Bq.1 - Pa.1)) := by
       have e2 : (θ * ρ * (Pa.1 - Bp.1)) * (θ * ρ * (Bq.1 - Pa.1)) =
-          (θ * ρ * (θ * ρ)) * (-((Bp.1 - Pa.1) * (Bq.1 - Pa.1))) := by ring
+          (θ * ρ * (θ * ρ)) * (-((Bp.1 - Pa.1) * (Bq.1 - Pa.1))) := by_r
       rw [e2, hθρ, one_mul]
       linarith
     exact pos_of_mul_pos_right hprod hori.le

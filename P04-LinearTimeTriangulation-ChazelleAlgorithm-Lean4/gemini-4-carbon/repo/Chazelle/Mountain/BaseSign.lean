@@ -78,7 +78,7 @@ theorem sector_lowest_subset_interior (hM : IsMountain P) {σ : ℝ} (hσ : σ =
     linarith
   obtain ⟨r, hr, hsec⟩ := sector_subset_interior hT hmin hσ' hposT
   refine ⟨r, hr, fun y hy h1 h2 => ?_⟩
-  have := hsec y.swap (by rw [hTdef, transpose_vtx, swap_mem_ball_swap_iff]; exact hy)
+  have := hsec y.swap (by rwa [hTdef, transpose_vtx, swap_mem_ball_swap_iff])
     (by rw [hTn, hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap]; linarith)
     (by rw [hTdef, transpose_vtx, transpose_vtx, det_swap_swap_swap]; linarith)
   rw [Set.mem_sdiff, mem_transpose_filled_iff, Chazelle.Visibility.mem_transpose_boundary_iff,
@@ -104,13 +104,13 @@ theorem mountain_orient_det (hM : IsMountain P) :
   obtain ⟨σ, hσ, hpos⟩ : ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧
       0 < σ * det (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) := by
     rcases lt_or_gt_of_ne hdet with h | h
-    · exact ⟨-1, Or.inr rfl, by linarith⟩
-    · exact ⟨1, Or.inl rfl, by linarith⟩
+    · exact ⟨-1, Or.inr rfl, by_l⟩
+    · exact ⟨1, Or.inl rfl, by_l⟩
   obtain ⟨r, hr, hsec⟩ := sector_lowest_subset_interior P hM hσ hpos
   set u := P.vtx (P.n - 1) with hu
   set v := P.vtx 0 with hv
   set w := P.vtx 1 with hw
-  have huv : u ≠ v := simple_vtx_ne hP (by omega) (by omega) (by omega)
+  have huv : u ≠ v := simple_vtx_ne hP by_o by_o by_o
   have hsq := sqLen_pos huv
   have hσ2 : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
   -- a point of the edge `u v` close to `v`, in the ball and on the `σ` side of `v w`
@@ -124,20 +124,17 @@ theorem mountain_orient_det (hM : IsMountain P) :
     rw [Geometry.det_lerp, Geometry.det_self_outer, det_cyclic]
     nlinarith [mul_pos hs01.1 hpos]
   obtain ⟨s, hsW, hs01⟩ := hev.exists
-  have hsucc : (P.n - 1 + 1) % P.n = 0 := by rw [Nat.sub_add_cancel (by omega), Nat.mod_self]
+  have hsucc : (P.n - 1 + 1) % P.n = 0 := by rw [Nat.sub_add_cancel by_o, Nat.mod_self]
   have hor : orient P = σ := by
-    apply orient_eq_of_eventually hP (i := P.n - 1) (by omega) (t := 1 - s)
+    apply orient_eq_of_eventually hP (i := P.n - 1) by_o (t := 1 - s)
       ⟨by linarith [hs01.2], by linarith [hs01.1]⟩ hσ
     rw [hsucc, ← hu, ← hv]
     filter_upwards [eventually_offset_mem σ hW hsW, self_mem_nhdsWithin] with δ hδ hδ0
-    have hδ0' : (0 : ℝ) < δ := hδ0
+    have hδ0' := hδ0
     refine (hsec _ hδ.1 ?_ hδ.2).1
-    show 0 < σ * det u v (offset u v (1 - s) (σ * δ))
     rw [det_offset, show σ * (σ * δ * sqLen u v) = (σ * σ) * (δ * sqLen u v) by ring, hσ2, one_mul]
     exact mul_pos hδ0' hsq
-  rw [hor]
-  exact hpos
-
+  rwa [hor]
 /-- **Correctness with the computable sign.**  For a mountain `P` and any `σ = ±1` with
 `0 < σ * det v_{n-1} v₀ v₁`, the stack walk with sign `σ` triangulates `P` and performs at most
 `2 * n` corner tests. -/

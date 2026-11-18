@@ -67,11 +67,11 @@ theorem lv_cost (K X κH κR κX κc κT N Kb : ℕ) (hX : 1 ≤ X) (hN : N ≤ 
     rw [hKb]
     have a1 : κH ≤ κH * X := Nat.le_mul_of_pos_right _ hX
     have a2 : κX * (N + 1) ≤ κX * κc * X + κX * X := by
-      have : κX * (N + 1) ≤ κX * (κc * X + X) := Nat.mul_le_mul_left _ (by omega)
+      have : κX * (N + 1) ≤ κX * (κc * X + X) := Nat.mul_le_mul_left _ by_o
       calc κX * (N + 1) ≤ κX * (κc * X + X) := this
-        _ = κX * κc * X + κX * X := by ring
+        _ = κX * κc * X + κX * X := by_r
     have e : (32 + κH + κR + κX + κX * κc + κc) * X =
-        32 * X + κH * X + κR * X + κX * X + κX * κc * X + κc * X := by ring
+        32 * X + κH * X + κR * X + κX * X + κX * κc * X + κc * X := by_r
     rw [e]
     generalize κH * X = a at *
     generalize κR * X = b at *
@@ -83,13 +83,13 @@ theorem lv_cost (K X κH κR κX κc κT N Kb : ℕ) (hX : 1 ≤ X) (hN : N ≤ 
   have h2 : (Kb + 2) * (K + 1) ≤ (32 + κH + κR + κX + κX * κc + κc) * ((K + 1) * X) := by
     calc (Kb + 2) * (K + 1) ≤ (32 + κH + κR + κX + κX * κc + κc) * X * (K + 1) :=
           Nat.mul_le_mul_right _ h1
-      _ = _ := by ring
+      _ = _ := by_r
   have h3 : 9 * (K + 1) + 48 ≤ 57 * ((K + 1) * X) := by
     have : K + 1 ≤ (K + 1) * X := Nat.le_mul_of_pos_right _ hX
     omega
   have e : (89 + κH + κR + κX + κX * κc + κc + κT) * ((K + 1) * X) =
       57 * ((K + 1) * X) + (32 + κH + κR + κX + κX * κc + κc) * ((K + 1) * X) +
-        κT * (K + 1) * X := by ring
+        κT * (K + 1) * X := by_r
   rw [e]
   generalize (32 + κH + κR + κX + κX * κc + κc) * ((K + 1) * X) = u at *
   generalize κT * (K + 1) * X = v at *
@@ -115,7 +115,7 @@ theorem ne_nil_of_big {P : Polygon} {L : List (ℕ × ℕ × ℕ)} {E : List ℕ
   have hn : (Qof P).n = P.n := shear_n _ _
   rw [hn] at h
   have h1 : 2 ^ (Cost.ceilBeta lam + 12) ≤ 2 ^ (Cost.ceilBeta (topGrade P.n) + 12) :=
-    Nat.pow_le_pow_right (by norm_num) (by have := ceilBeta_mono hlp; omega)
+    Nat.pow_le_pow_right by_n (by have := ceilBeta_mono hlp; omega)
   have h2 : 2 ^ (Cost.ceilBeta (topGrade P.n) + 13) = 2 * 2 ^ (Cost.ceilBeta (topGrade P.n) + 12) := by
     rw [pow_succ]; ring
   omega
@@ -127,9 +127,9 @@ theorem big_of {n lam : ℕ} (h16 : 16 ≤ lam) (hlp : lam ≤ topGrade n)
       2 ^ (Cost.ceilBeta (nextLvl lam) + 12) ≤ n - 1 := by
   have hμ := nextLvl_lt h16
   have hc : Cost.ceilBeta (nextLvl lam) ≤ Cost.ceilBeta (topGrade n) :=
-    ceilBeta_mono (by omega)
+    ceilBeta_mono by_o
   have h1 : 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) ≤ 2 ^ (Cost.ceilBeta (topGrade n) + 12) :=
-    Nat.pow_le_pow_right (by norm_num) (by omega)
+    Nat.pow_le_pow_right by_n by_o
   have h2 : 2 ^ (Cost.ceilBeta (topGrade n) + 13) = 2 * 2 ^ (Cost.ceilBeta (topGrade n) + 12) := by
     rw [pow_succ]; ring
   have h3 : 2 ^ (Cost.ceilBeta (nextLvl lam) + 12) = 4 * 2 ^ (Cost.ceilBeta (nextLvl lam) + 10) := by
@@ -164,13 +164,13 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   simp only [rd21, Nat.reduceAdd] at h16 hlp hInv hroom
   rw [hlam] at h16 hlp hInv hroom
   obtain ⟨hD, hDa, L, E, hK, hLb, hLa, hEb, hEa, hok, hperm, hsort, hN, hdeg, hwt, hcnt⟩ := hInv
-  have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hG.1
+  have hQ := (shearInvariance (epsOf P) P).1 hG.1
   obtain ⟨-, -, -, reg, g1, g2, g3, g4, -⟩ := DownMath.isNF_build hQ hok hperm hsort
   set X := lemma41Nat (nextLvl lam) + 1 with hX
   set K := L.length with hKdef
-  have hX1 : 1 ≤ X := by omega
+  have hX1 : 1 ≤ X := by_o
   have hμ15 := nextLvl_ge h16
-  have hNc : lvNch (nextLvl lam) ≤ κc * X := (hκc _ hμ15).1
+  have hNc := (hκc _ hμ15).1
   set Kb := lvKb κH κR κX lam with hKb
   have hcost := lv_cost K X κH κR κX κc κT (lvNch (nextLvl lam)) Kb hX1 hNc rfl
   have hκ : κLv κH κR κX κc κT = 89 + κH + κR + κX + κX * κc + κc + κT := rfl
@@ -188,45 +188,45 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
           generalize κT * (K + 1) * X = w at hcost
           omega) hW11
   have keep : ∀ q, 210000 ≤ q → q ≤ 210005 → c₁.nreg q = c.nreg q := fun q h1 h2 =>
-    hreg q (by omega) (by omega) (by omega) (by unfold ALLOC; omega)
+    hreg q by_o by_o by_o by_ao
   have k230 : ∀ q, 230000 ≤ q → q ≤ 230001 → c₁.nreg q = c.nreg q := fun q h1 h2 =>
-    hreg q (by omega) (by omega) (by omega) (by unfold ALLOC; omega)
-  have hc0 : c₁.nreg (coreReg 0) = c.nreg (coreReg 0) := k230 230000 le_rfl (by norm_num)
-  have hc1 : c₁.nreg (coreReg 1) = c.nreg (coreReg 1) := k230 230001 (by norm_num) le_rfl
+    hreg q by_o by_o by_o by_ao
+  have hc0 : c₁.nreg (coreReg 0) = c.nreg (coreReg 0) := k230 230000 le_rfl by_n
+  have hc1 : c₁.nreg (coreReg 1) = c.nreg (coreReg 1) := k230 230001 by_n le_rfl
   -- 2. the context
   have ctx : LvCtx O P W c₁ L E reg lam := by
     refine ⟨hG, hW3, hWh, ?_, ?_, ?_, h16, hlp, ne_nil_of_big hG hperm hwt hlp (hn₀ _ hn), hok,
-      hperm, hsort, hdeg, hwt, ⟨g1, g2, g3, g4⟩, ?_, by rw [keep _ le_rfl (by norm_num), hlam],
+      hperm, hsort, hdeg, hwt, ⟨g1, g2, g3, g4⟩, ?_, by rw [keep _ le_rfl by_n, hlam],
       a02, a04, a06, a07, b08, ?_, ?_, a14, (big_of h16 hlp (hn₀ _ hn)).1,
       (big_of h16 hlp (hn₀ _ hn)).2, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-    · rw [d09, hmm, hc0]; exact hS
-    · rw [d09, hmm, hc1]; exact hXh
-    · rw [hmm, hc1]; exact hcap
-    · rw [d09, hmm, keep _ (by norm_num) le_rfl]; exact hN
+    · rwa [d09, hmm, hc0]
+    · rwa [d09, hmm, hc1]
+    · rwa [hmm, hc1]
+    · rwa [d09, hmm, keep _ by_n le_rfl]
     · rw [b08']; exact li_of_desc hDa.holds
     · rw [d09, d99]
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hDa
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hD
-    · rw [keep _ (by norm_num) (by norm_num)]; exact hK
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hLb
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hLa
-    · rw [d09, keep _ (by norm_num) (by norm_num)]; exact hEb
-    · rw [d09, hmm, keep _ (by norm_num) (by norm_num)]; exact hEa
+    · rwa [d09, hmm, keep _ by_n by_n]
+    · rwa [d09, keep _ by_n by_n]
+    · rwa [keep _ by_n by_n]
+    · rwa [d09, keep _ by_n by_n]
+    · rwa [d09, hmm, keep _ by_n by_n]
+    · rwa [d09, keep _ by_n by_n]
+    · rwa [d09, hmm, keep _ by_n by_n]
   -- 3. the loop invariant at the start
   have hn3 : 3 ≤ (Qof P).n := hQ.1
   have inv0 : LvInv O P W c₁ L E reg Kb 0 c₁ := by
     refine ⟨w₁, d10, by rw [d11], fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl,
-      fun _ _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by simp,
-      fun _ => ⟨Qof P, 0, 1, le_rfl, by omega⟩,
+      fun _ _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by_s,
+      fun _ => ⟨Qof P, 0, 1, le_rfl, by_o⟩,
       fun _ => BuildNF.buildNF (interiorModel (Qof P)) (Qof P) L E, fun _ => 0, fun _ => [],
       by rw [d12]; simp, fun r hr => absurd hr (Nat.not_lt_zero r), Or.inl d13,
       fun r hr => absurd hr (Nat.not_lt_zero r)⟩
   -- 4. the loop
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC + 3 * (K + 1) := d99
+  have hA₁ := d99
   obtain ⟨c₂, k₂, e₂, I₂, hk₂, hA₂⟩ := hloop P W c₁ c₁ L E reg lam Kb ctx le_rfl
     (by rw [hA₁]
         have hkb : (K + 1) * Kb ≤ (Kb + 2) * (K + 1) := by
-          rw [Nat.mul_comm]; exact Nat.mul_le_mul_right _ (by omega)
+          rw [Nat.mul_comm]; exact Nat.mul_le_mul_right _ by_o
         generalize κLv κH κR κX κc κT * ((K + 1) * X) = u at hcost hroom
         generalize (Kb + 2) * (K + 1) = v at hcost hkb
         generalize κT * (K + 1) * X = w at hcost
@@ -241,7 +241,7 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
   obtain ⟨-, -, -, -, m₂, rm₂, r₂, rr₂, o₂, a₂, -, -⟩ := I₂
   have ex : Exec P W (.seq lvPar (.seq (lvLoop sH sR sX) sT)) c c₃ (k₁ + (k₂ + k₃)) :=
     .seq e₁ (.seq e₂ e₃)
-  have b21 : bDownDrv ∈ drvBands := bDownDrv_mem_drvBands
+  have b21 := bDownDrv_mem_drvBands
   refine ⟨c₃, _, ex, ?_, ⟨?_, ?_⟩, ?_⟩
   · -- the cost
     simp only [rd21, Nat.reduceAdd]
@@ -251,16 +251,16 @@ theorem levelSpec_of_loop {O : OracleIface} {sH sR sX : Stmt} {κH κR κX : ℕ
     generalize κT * (K + 1) * X = w at hcost hk₃
     omega
   · simp only [rd21, Nat.reduceAdd]; rw [h00, hlam]
-  · simp only [rd21, Nat.reduceAdd]; rw [hlam]; exact hInv₃
+  · simp only [rd21, Nat.reduceAdd]; rwa [hlam]
   · -- the frame
-    have hA9 : c₁.nreg 211009 = c.nreg ALLOC := d09
+    have hA9 := d09
     refine ⟨fun r hr hrA => ?_, fun r hr => ?_, fun a ha => ?_, fun a ha => ?_, ?_, ?_, ?_⟩
     · rw [F₃.1 r hr hrA, r₂ r hr hrA, F₁.1 r (fun h => hr (by
-        simp only [Finset.mem_singleton] at h; rw [h]; exact b21)) hrA]
+        simp only [Finset.mem_singleton] at h; rwa [h])) hrA]
     · rw [F₃.2.1 r hr, rr₂ r hr, F₁.2.1 r (fun h => hr (by
-        simp only [Finset.mem_singleton] at h; rw [h]; exact b21))]
-    · rw [F₃.2.2.1 a (by omega), m₂ a (by omega), hmm]
-    · rw [F₃.2.2.2.1 a (by omega), rm₂ a (by omega), F₁.2.2.2.1 a ha]
+        simp only [Finset.mem_singleton] at h; rwa [h]))]
+    · rw [F₃.2.2.1 a by_o, m₂ a by_o, hmm]
+    · rw [F₃.2.2.2.1 a by_o, rm₂ a by_o, F₁.2.2.2.1 a ha]
     · rw [F₃.2.2.2.2.1, o₂, F₁.2.2.2.2.1]
     · have := F₃.2.2.2.2.2.1; omega
     · have := F₃.2.2.2.2.2.2; have := F₁.2.2.2.2.2.2; omega

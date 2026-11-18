@@ -77,13 +77,13 @@ theorem fst_eq_crossX {v a p : Point} (hp : p ∈ Chazelle.segment v a) (hh : p.
 /-- An open interval contains a point different from two given reals. -/
 theorem exists_Ioo_avoid {lo hi : ℝ} (h : lo < hi) (c₁ c₂ : ℝ) :
     ∃ x, lo < x ∧ x < hi ∧ x ≠ c₁ ∧ x ≠ c₂ := by
-  have hd : 0 < hi - lo := by linarith
+  have hd : 0 < hi - lo := by_l
   by_cases hA : lo + (hi - lo) / 4 ≠ c₁ ∧ lo + (hi - lo) / 4 ≠ c₂
-  · exact ⟨_, by linarith, by linarith, hA.1, hA.2⟩
+  · exact ⟨_, by_l, by_l, hA.1, hA.2⟩
   by_cases hB : lo + (hi - lo) / 2 ≠ c₁ ∧ lo + (hi - lo) / 2 ≠ c₂
-  · exact ⟨_, by linarith, by linarith, hB.1, hB.2⟩
+  · exact ⟨_, by_l, by_l, hB.1, hB.2⟩
   by_cases hC : lo + 3 * (hi - lo) / 4 ≠ c₁ ∧ lo + 3 * (hi - lo) / 4 ≠ c₂
-  · exact ⟨_, by linarith, by linarith, hC.1, hC.2⟩
+  · exact ⟨_, by_l, by_l, hC.1, hC.2⟩
   exfalso
   rw [not_and_or, not_not, not_not] at hA hB hC
   rcases hA with hA | hA <;> rcases hB with hB | hB <;> rcases hC with hC | hC <;> linarith
@@ -105,25 +105,25 @@ theorem piece3_between_aux {m M x x' z : ℝ} (hmM : m ≤ M) (hxm : x ≠ m) (h
     · have := max_lt ha hb
       constructor <;> intro hz <;> linarith
     · rw [ite_eq_left ha, ite_eq_right hb] at h
-      split_ifs at h <;> exact absurd h (by decide)
+      split_ifs at h <;> exact absurd h by_d
   · by_cases hb : x' < m
     · rw [ite_eq_right ha, ite_eq_left hb] at h
-      split_ifs at h <;> exact absurd h (by decide)
+      split_ifs at h <;> exact absurd h by_d
     · rw [ite_eq_right ha, ite_eq_right hb] at h
-      have h1 : m < x := lt_of_le_of_ne (not_lt.1 ha) (Ne.symm hxm)
-      have h2 : m < x' := lt_of_le_of_ne (not_lt.1 hb) (Ne.symm hxm')
+      have h1 := lt_of_le_of_ne (not_lt.1 ha) (Ne.symm hxm)
+      have h2 := lt_of_le_of_ne (not_lt.1 hb) (Ne.symm hxm')
       by_cases hc : x < M
       · by_cases hd : x' < M
         · have h3 := lt_min h1 h2
           have h4 := max_lt hc hd
           constructor <;> intro hz <;> linarith
         · rw [ite_eq_left hc, ite_eq_right hd] at h
-          exact absurd h (by decide)
+          exact absurd h by_d
       · by_cases hd : x' < M
         · rw [ite_eq_right hc, ite_eq_left hd] at h
-          exact absurd h (by decide)
-        · have h5 : M < x := lt_of_le_of_ne (not_lt.1 hc) (Ne.symm hxM)
-          have h6 : M < x' := lt_of_le_of_ne (not_lt.1 hd) (Ne.symm hxM')
+          exact absurd h by_d
+        · have h5 := lt_of_le_of_ne (not_lt.1 hc) (Ne.symm hxM)
+          have h6 := lt_of_le_of_ne (not_lt.1 hd) (Ne.symm hxM')
           have h3 := lt_min h5 h6
           constructor <;> intro hz <;> linarith
 
@@ -155,8 +155,8 @@ theorem ncard_le_three_of_near {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k <
   set v := P.vtx k with hv
   set a := P.vtx (prevIdx P k) with ha
   set b := P.vtx ((k + 1) % P.n) with hb
-  have hSfin : S.Finite := (regions_finite hP).subset hS
-  have hF' : F ≤ 𝓝 v.2 := hF.trans nhdsWithin_le_nhds
+  have hSfin := (regions_finite hP).subset hS
+  have hF' := hF.trans nhdsWithin_le_nhds
   -- a common height `h`
   have hev1 : ∀ᶠ h in F, ∀ R ∈ S, ∃ x, |x - v.1| < r ∧ ((x, h) : Point) ∈ R ∧
       x ≠ crossX v a h ∧ x ≠ crossX v b h :=
@@ -184,7 +184,7 @@ theorem ncard_le_three_of_near {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k <
     intro R hR R' hR' hpiece
     obtain ⟨hxR1, hxR2, hxR3, hxR4⟩ := hx R hR
     obtain ⟨hxR1', hxR2', hxR3', hxR4'⟩ := hx R' hR'
-    set T : Set Point := (fun z : ℝ => ((z, h) : Point)) '' Icc (min (x R) (x R'))
+    set T := (fun z : ℝ => ((z, h) : Point)) '' Icc (min (x R) (x R'))
       (max (x R) (x R')) with hT
     have hTc : IsPreconnected T :=
       isPreconnected_Icc.image _ (Continuous.continuousOn (by fun_prop))
@@ -204,8 +204,8 @@ theorem ncard_le_three_of_near {P : Polygon} (hP : P.Simple) {k : ℕ} (hk : k <
       · rw [Geometry.segment_comm] at hq
         exact hzne.1 (fst_eq_crossX hq h2)
       · exact hzne.2 (fst_eq_crossX hq h2)
-    have hRfree : ((x R, h) : Point) ∈ freeRegion P := regions_subset (hS hR) hxR2
-    have hTi : T ⊆ P.filled \ P.boundary :=
+    have hRfree := regions_subset (hS hR) hxR2
+    have hTi :=
       subset_interior_of_isPreconnected hP hTc hTb hpT hRfree.1
     have hTf : T ⊆ freeRegion P := by
       intro q hq
@@ -241,16 +241,16 @@ theorem trapData_eventually_below {P : Polygon} (hP : P.Simple) (D : TrapData P)
       x ≠ c₁ h ∧ x ≠ c₂ h := by
   obtain ⟨-, hky, hk1, hk2⟩ := hk
   rw [hky]
-  have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
+  have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have e2 : ∀ᶠ h in 𝓝 D.y₂, edgeX P D.i h < (P.vtx k).1 + r :=
-    (continuous_edgeX P D.i).continuousAt.eventually_lt continuousAt_const (by linarith)
+    (continuous_edgeX P D.i).continuousAt.eventually_lt continuousAt_const by_l
   have e3 : ∀ᶠ h in 𝓝 D.y₂, (P.vtx k).1 - r < edgeX P D.j h :=
-    continuousAt_const.eventually_lt (continuous_edgeX P D.j).continuousAt (by linarith)
+    continuousAt_const.eventually_lt (continuous_edgeX P D.j).continuousAt by_l
   filter_upwards [Ioo_mem_nhdsLT h12, nhdsWithin_le_nhds e2, nhdsWithin_le_nhds e3]
     with h hh hh3 hh4
   have hij := D.isTrap.edgeX_lt hP D.free hh.1 hh.2
   have hlohi : max (edgeX P D.i h) ((P.vtx k).1 - r) < min (edgeX P D.j h) ((P.vtx k).1 + r) :=
-    max_lt (lt_min hij hh3) (lt_min hh4 (by linarith))
+    max_lt (lt_min hij hh3) (lt_min hh4 by_l)
   obtain ⟨x, hx1, hx2, hxc1, hxc2⟩ := exists_Ioo_avoid hlohi (c₁ h) (c₂ h)
   have l1 := le_max_left (edgeX P D.i h) ((P.vtx k).1 - r)
   have l2 := le_max_right (edgeX P D.i h) ((P.vtx k).1 - r)
@@ -268,16 +268,16 @@ theorem trapData_eventually_above {P : Polygon} (hP : P.Simple) (D : TrapData P)
       x ≠ c₁ h ∧ x ≠ c₂ h := by
   obtain ⟨-, hky, hk1, hk2⟩ := hk
   rw [hky]
-  have h12 : D.y₁ < D.y₂ := D.isTrap.bot_lt.trans D.isTrap.lt_top
+  have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
   have e2 : ∀ᶠ h in 𝓝 D.y₁, edgeX P D.i h < (P.vtx k).1 + r :=
-    (continuous_edgeX P D.i).continuousAt.eventually_lt continuousAt_const (by linarith)
+    (continuous_edgeX P D.i).continuousAt.eventually_lt continuousAt_const by_l
   have e3 : ∀ᶠ h in 𝓝 D.y₁, (P.vtx k).1 - r < edgeX P D.j h :=
-    continuousAt_const.eventually_lt (continuous_edgeX P D.j).continuousAt (by linarith)
+    continuousAt_const.eventually_lt (continuous_edgeX P D.j).continuousAt by_l
   filter_upwards [Ioo_mem_nhdsGT h12, nhdsWithin_le_nhds e2, nhdsWithin_le_nhds e3]
     with h hh hh3 hh4
   have hij := D.isTrap.edgeX_lt hP D.free hh.1 hh.2
   have hlohi : max (edgeX P D.i h) ((P.vtx k).1 - r) < min (edgeX P D.j h) ((P.vtx k).1 + r) :=
-    max_lt (lt_min hij hh3) (lt_min hh4 (by linarith))
+    max_lt (lt_min hij hh3) (lt_min hh4 by_l)
   obtain ⟨x, hx1, hx2, hxc1, hxc2⟩ := exists_Ioo_avoid hlohi (c₁ h) (c₂ h)
   have l1 := le_max_left (edgeX P D.i h) ((P.vtx k).1 - r)
   have l2 := le_max_right (edgeX P D.i h) ((P.vtx k).1 - r)
@@ -405,7 +405,7 @@ theorem chord_src_unique {P : Polygon} (hP : P.Simple) {i i' : ℕ} (hi : i < P.
   rcases lt_trichotomy (chordParam P i σ) (chordParam P i' σ) with hlt | heq | hgt
   · exfalso
     have hmem := (chord_spec hP hi' hd').2.2 (chordParam P i' σ - chordParam P i σ)
-      (by linarith) (by linarith)
+      by_l by_l
     have he : rayPt (P.vtx i') σ (chordParam P i' σ - chordParam P i σ) = P.vtx i := by
       refine Prod.ext ?_ ?_
       · show (P.vtx i').1 + σ * (chordParam P i' σ - chordParam P i σ) = (P.vtx i).1
@@ -420,7 +420,7 @@ theorem chord_src_unique {P : Polygon} (hP : P.Simple) {i i' : ℕ} (hi : i < P.
     linarith
   · exfalso
     have hmem := (chord_spec hP hi hd).2.2 (chordParam P i σ - chordParam P i' σ)
-      (by linarith) (by linarith)
+      by_l by_l
     have he : rayPt (P.vtx i) σ (chordParam P i σ - chordParam P i' σ) = P.vtx i' := by
       refine Prod.ext ?_ ?_
       · show (P.vtx i).1 + σ * (chordParam P i σ - chordParam P i' σ) = (P.vtx i').1
@@ -436,7 +436,7 @@ theorem ncard_vtxChords_snd_dir_le {P : Polygon} (hP : P.Simple) (v : ℕ) (σ :
       chordEnd P d.1 σ = P.vtx d.2}.ncard ≤ 1 := by
   rw [ncard_le_one_iff ((vtxChords_finite hP).subset fun _ h => h.1)]
   rintro d d' ⟨hd, hdv, hdir, hend⟩ ⟨hd', hdv', hdir', hend'⟩
-  have h1 : d.1 = d'.1 := chord_src_unique hP hd.1 hd'.1 hdir hdir'
+  have h1 := chord_src_unique hP hd.1 hd'.1 hdir hdir'
     (by rw [hend, hend', hdv, hdv'])
   exact Prod.ext h1 (hdv.trans hdv'.symm)
 
@@ -486,7 +486,7 @@ theorem card_incident_le {P : Polygon} (hP : P.Simple) (v : ℕ) : (incident P v
         Nat.add_le_add (Nat.add_le_add (ncard_trapDiagonals_fst_le hP v)
           (ncard_trapDiagonals_snd_le hP v))
           (Nat.add_le_add (ncard_vtxChords_fst_le hP v) (ncard_vtxChords_snd_le hP v))
-    _ = 10 := by norm_num
+    _ = 10 := by_n
 
 /-! ### Degrees in the final-stage input -/
 

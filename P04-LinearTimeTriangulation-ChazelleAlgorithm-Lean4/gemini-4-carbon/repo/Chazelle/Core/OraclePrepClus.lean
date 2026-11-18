@@ -42,12 +42,12 @@ theorem kBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) 
     (hone : c.nreg 120011 = 1) (hj : 1 ≤ j) (hlt : j ^ 3 < μ) (hW : 8 * μ ≤ W) :
     ∃ c' k, Exec P W kBody c c' k ∧ k = 11 ∧ FrameB BK3 c c' ∧ c'.nreg 60090 = j + 1 ∧
       c'.nreg 60091 = (j + 1) ^ 2 ∧ c'.nreg 60092 = (j + 1) ^ 3 := by
-  have hwr : wr BK3 kBody = true := by decide
+  have hwr : wr BK3 kBody = true := by_d
   suffices H : ∃ c' k, Exec P W kBody c c' k ∧ k = 11 ∧ c'.nreg 60090 = j + 1 ∧
       c'.nreg 60091 = (j + 1) ^ 2 ∧ c'.nreg 60092 = (j + 1) ^ 3 by
     obtain ⟨c', k, ex, hk, a, b, d⟩ := H
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, a, b, d⟩
-  have e3 : (j + 1) ^ 3 = j ^ 3 + 3 * j ^ 2 + 3 * j + 1 := by ring
+  have e3 : (j + 1) ^ 3 = j ^ 3 + 3 * j ^ 2 + 3 * j + 1 := by_r
   have hb : (j + 1) ^ 3 ≤ 8 * j ^ 3 := by nlinarith [sq_nonneg j, pow_pos (by omega : 0 < j) 2]
   have hsq : 0 ≤ j ^ 2 := Nat.zero_le _
   unfold kBody
@@ -62,7 +62,7 @@ theorem kS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ
     ∃ c' k, Exec P W kS c c' k ∧ k ≤ 16 * μ + 5 ∧ FrameB BK3 c c' ∧
       1 ≤ c'.nreg 60090 ∧ μ ≤ c'.nreg 60090 ^ 3 ∧
       (c'.nreg 60090 = 1 ∨ (c'.nreg 60090 - 1) ^ 3 < μ) := by
-  have hwr : wr BK3 kS = true := by decide
+  have hwr : wr BK3 kS = true := by_d
   obtain ⟨c₁, k₁, e₁, hk₁, a0, a1, a2, R₁⟩ : ∃ c₁ k₁, Exec P W
       (block [.constN 60090 1, .constN 60091 1, .constN 60092 1]) c c₁ k₁ ∧ k₁ = 3 ∧
       c₁.nreg 60090 = 1 ∧ c₁.nreg 60091 = 1 ∧ c₁.nreg 60092 = 1 ∧
@@ -73,29 +73,29 @@ theorem kS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ
     · omega
     · refine ⟨rfl, by config_simp, by config_simp, by config_simp, fun r hr => ?_⟩
       unfold BK3 at hr; simp only [decide_eq_false_iff_not] at hr
-      config_simp; simp only [upd_apply]; rw [ite_eq_right (by omega), ite_eq_right (by omega), ite_eq_right (by omega)]
+      config_simp; simp only [upd_apply]; rw [ite_eq_right by_o, ite_eq_right by_o, ite_eq_right by_o]
   let I : Config → Prop := fun d => WordsBounded W d ∧ d.nreg 60034 = μ ∧ d.nreg 120011 = 1 ∧
     ∃ j, 1 ≤ j ∧ d.nreg 60090 = j ∧ d.nreg 60091 = j ^ 2 ∧ d.nreg 60092 = j ^ 3 ∧
       (j = 1 ∨ (j - 1) ^ 3 < μ)
-  have hI₁ : I c₁ := ⟨e₁.wb_right, by rw [R₁ _ (by decide), hμ], by rw [R₁ _ (by decide), hone],
+  have hI₁ : I c₁ := ⟨e₁.wb_right, by rw [R₁ _ by_d, hμ], by rw [R₁ _ by_d, hone],
     1, le_rfl, a0, by rw [a1]; norm_num, by rw [a2]; norm_num, Or.inl rfl⟩
   obtain ⟨c₂, k₂, e₂, ⟨-, -, -, j, hj1, b0, -, b2, hjm⟩, hn, hk₂, -⟩ :=
     SortR.whileLtN_potential_lb (P := P) (W := W) (a := 60092) (b := 60034) (body := kBody) I
       (fun d => 16 * (μ - d.nreg 60090)) (fun _ => 0) (fun d h => h.1)
       (fun d ⟨hwd, dμ, d1, j, hj1, d0, dsq, dcu, _⟩ ht => by
         rw [dcu, dμ] at ht
-        obtain ⟨d', k, ex, hk, F, v0, v1, v2⟩ := kBody_exec (P := P) hwd d0 dsq dcu d1 hj1 ht (by omega)
+        obtain ⟨d', k, ex, hk, F, v0, v1, v2⟩ := kBody_exec (P := P) hwd d0 dsq dcu d1 hj1 ht by_o
         have hjμ : j < μ := lt_of_le_of_lt (by nlinarith [pow_pos (by omega : 0 < j) 2]) ht
-        refine ⟨d', k, ex, ⟨ex.wb_right, by rw [F.1 _ (by decide), dμ], by rw [F.1 _ (by decide), d1],
-          j + 1, by omega, v0, v1, v2, Or.inr (by simpa using ht)⟩, ?_, Nat.zero_le _⟩
+        refine ⟨d', k, ex, ⟨ex.wb_right, by rw [F.1 _ by_d, dμ], by rw [F.1 _ by_d, d1],
+          j + 1, by_o, v0, v1, v2, Or.inr (by simpa using ht)⟩, ?_, Nat.zero_le _⟩
         rw [v0, d0]; omega) hI₁
-  refine ⟨c₂, _, .seq e₁ e₂, ?_, exec_frameB (.seq e₁ e₂) hwr, by rw [b0]; exact hj1, ?_, ?_⟩
+  refine ⟨c₂, _, .seq e₁ e₂, ?_, exec_frameB (.seq e₁ e₂) hwr, by rwa [b0], ?_, ?_⟩
   · rw [a0] at hk₂; omega
   · rw [b0]; rw [b2] at hn
     have : c₂.nreg 60034 = μ := by
-      rw [(exec_frameB e₂ (B := BK3) (by decide)).1 _ (by decide), R₁ _ (by decide), hμ]
+      rw [(exec_frameB e₂ (B := BK3) by_d).1 _ by_d, R₁ _ by_d, hμ]
     rw [this] at hn; omega
-  · rw [b0]; exact hjm
+  · rwa [b0]
 
 /-! ## The call -/
 
@@ -144,12 +144,12 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
       (∀ l, ((Finset.range B.N).filter (fun v => c'.nmem (c'.nreg 130004 + v) ≠ 1 ∧
         c'.nmem (c'.nreg 130005 + v) = l)).card ≤ c'.nreg 60090 ^ 2) := by
   have hAL : ALLOC = 9999 := rfl
-  obtain ⟨c₁, k₁, e₁, hk₁, F₁, kpos, kcube, kmin⟩ := kS_exec (P := P) hw hμ hone (by omega)
+  obtain ⟨c₁, k₁, e₁, hk₁, F₁, kpos, kcube, kmin⟩ := kS_exec (P := P) hw hμ hone by_o
   set kk := c₁.nreg 60090 with hkk
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, s0, s1, s2, s3⟩ : ∃ c₂ k₂, Exec P W clSet c₁ c₂ k₂ ∧ k₂ = 4 ∧
       FrameB (fun r => decide (130000 ≤ r ∧ r ≤ 130003)) c₁ c₂ ∧ c₂.nreg 130000 = Bh ∧
       c₂.nreg 130001 = B.N ∧ c₂.nreg 130002 = B.E ∧ c₂.nreg 130003 = kk := by
-    have hwr : wr (fun r => decide (130000 ≤ r ∧ r ≤ 130003)) clSet = true := by decide
+    have hwr : wr (fun r => decide (130000 ≤ r ∧ r ≤ 130003)) clSet = true := by_d
     suffices H : ∃ c₂ k₂, Exec P W clSet c₁ c₂ k₂ ∧ k₂ = 4 ∧ c₂.nreg 130000 = Bh ∧
         c₂.nreg 130001 = B.N ∧ c₂.nreg 130002 = B.E ∧ c₂.nreg 130003 = kk by
       obtain ⟨c₂, k₂, ex, hk, a, b, d, e⟩ := H
@@ -157,12 +157,12 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
     have w₁ := e₁.wb_right
     unfold clSet
     exec_block
-    exact ⟨rfl, by config_simp; rw [F₁.1 _ (by decide), hBh],
-      by config_simp; rw [F₁.1 _ (by decide), hμ], by config_simp; rw [F₁.1 _ (by decide), hE],
+    exact ⟨rfl, by config_simp; rw [F₁.1 _ by_d, hBh],
+      by config_simp; rw [F₁.1 _ by_d, hμ], by config_simp; rw [F₁.1 _ by_d, hE],
       by config_simp; rfl⟩
-  have m₂ : c₂.nmem = c.nmem := F₂.2.2.1.trans F₁.2.2.1
+  have m₂ := F₂.2.2.1.trans F₁.2.2.1
   have A₂ : c₂.nreg ALLOC = A := by
-    rw [hAL, F₂.1 _ (by decide), F₁.1 _ (by decide)]; exact hA
+    rw [hAL, F₂.1 _ by_d, F₁.1 _ by_d]; exact hA
   have r0 : rd c₂ bCluster 0 = Bh := s0
   have r1 : rd c₂ bCluster 1 = B.N := s1
   have r2 : rd c₂ bCluster 2 = B.E := s2
@@ -171,9 +171,9 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
       (Nat.clog 2 (rd c₂ bCluster 1 + rd c₂ bCluster 2) + 1) + 1) ≤ W := by
     rw [A₂, r1, r2]; exact hroom
   obtain ⟨c₃, k₃, e₃, hk₃, post, F₃⟩ := clusterProg_meets P W c₂ e₂.wb_right
-    ⟨hPW, by rw [r3]; exact kpos, by rw [r1, r3]; exact kcube, fun m' hm' => by
+    ⟨hPW, by rwa [r3], by rwa [r1, r3], fun m' hm' => by
       rw [r0, r1, r2]
-      exact (hR m' (fun a ha => by rw [hm' a (by rw [A₂]; exact ha), m₂])).1⟩ hcost
+      exact (hR m' (fun a ha => by rw [hm' a (by rwa [A₂]), m₂])).1⟩ hcost
   beta_reduce at hk₃
   rw [r1, r2] at hk₃
   obtain ⟨p4, p5, p4', p5', pcard, pwalk, pclus⟩ := post
@@ -185,12 +185,12 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
   have K6 : ∀ r, bandOf r = 6 → c₃.nreg r = c₂.nreg r := fun r hr =>
     F₃.1 r (by simp [hr, bCluster]) (by rw [hAL]; intro h; rw [h] at hr; simp [bandOf] at hr)
   have k3 : c₃.nreg 60090 = kk := by
-    rw [K6 _ (by unfold bandOf; norm_num), F₂.1 _ (by decide)]
+    rw [K6 _ by_d, F₂.1 _ by_d]
   have A₃a : A ≤ c₃.nreg ALLOC := by have := F₃.2.2.2.2.2.1; omega
   have A₃b : c₃.nreg ALLOC ≤ A + k₃ := by have := F₃.2.2.2.2.2.2; omega
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by unfold clCost; omega, ?_, A₃a, by omega, ?_,
-    by rw [k3]; exact kpos, by rw [k3]; exact kcube, by rw [k3]; exact kmin,
-    by rw [← A₂]; exact p4, by rw [← A₂]; exact p5, p4', p5', ?_, pwalk, ?_⟩
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), by unfold clCost; omega, ?_, A₃a, by_o, ?_,
+    by rwa [k3], by rwa [k3], by rwa [k3],
+    by rwa [← A₂], by rwa [← A₂], p4', p5', ?_, pwalk, ?_⟩
   · have FA : FrameN {bDecomp, bCluster} c c₂ :=
       PF.frameN (B := fun r => BK3 r || decide (130000 ≤ r ∧ r ≤ 130003))
         ⟨fun r hr => by
@@ -207,8 +207,8 @@ theorem clStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c
           rcases hr with h | h
           · simp [bDecomp, bandOf]; omega
           · simp [bCluster, bandOf]; omega)
-        (by rw [hAL, F₂.2.1 _ (by decide), F₁.2.1 _ (by decide)])
-    exact FA.trans (FrameN.mono (Frame.toN F₃) (by decide)) (by rw [A₂, ← hA])
+        (by rw [hAL, F₂.2.1 _ by_d, F₁.2.1 _ by_d])
+    exact FA.trans (FrameN.mono (Frame.toN F₃) by_d) (by rw [A₂, ← hA])
   · intro r hr hr'
     rw [K6 r hr, F₂.1 r (by simp only [decide_eq_false_iff_not]; unfold bandOf at hr; omega),
       F₁.1 r (by unfold BK3; simp only [decide_eq_false_iff_not]; omega)]

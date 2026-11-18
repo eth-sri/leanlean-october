@@ -63,7 +63,7 @@ theorem innerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       (∀ q, 81011 ≤ q → q < 83000 → ¬ PairW q → q ≠ 81031 → c'.nreg q = c.nreg q) ∧
       (c.nreg 81007 = 1 → c'.nreg 81007 = 1) ∧ ∀ j, j < k → PairDone E c₀ i j (c'.nreg 81007)) := by
   have hkW : k ≤ E.W := by
-    have : k ≤ (pairK E Kp + 3) * k := Nat.le_mul_of_pos_left k (by omega)
+    have : k ≤ (pairK E Kp + 3) * k := Nat.le_mul_of_pos_left k by_o
     omega
   have hq0 : c.nreg 81032 - c.nreg 81031 = k := by rw [hk, h0]; rfl
   refine (FRS.while (a := 81031) (b := 81032) (body := .seq (pairBody E.cu E.sT)
@@ -73,38 +73,38 @@ theorem innerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       fun j hj => by rw [h0] at hj; omega⟩ (by rw [hq0]; omega)).mono (by rw [hq0])
     (fun c' hP => ?_)
   · obtain ⟨dw, df, dm, dle, dd⟩ := hd
-    have d32 : d.nreg 81032 = k := by rw [df _ (by norm_num) (by norm_num) nPair32 (by norm_num), hk]
-    have d30 : d.nreg 81030 = i := by rw [df _ (by norm_num) (by norm_num) nPair30 (by norm_num), hi]
+    have d32 : d.nreg 81032 = k := by rw [df _ by_n by_n nPair32 by_n, hk]
+    have d30 : d.nreg 81030 = i := by rw [df _ by_n by_n nPair30 by_n, hi]
     rw [d32] at hlt
     refine FRS.seq (K₁ := pairK E Kp) (K₂ := 1) (pairBody_fs hE hB hBT hId dw d30 rfl hAi
-      (hA _ hlt) hPG hnW (by omega)) (fun c₁ hI₁ hA₁ h₁ => ?_)
+      (hA _ hlt) hPG hnW by_o) (fun c₁ hI₁ hA₁ h₁ => ?_)
     obtain ⟨w₁, f₁, m₁, pd⟩ := h₁
     have k1 : c₁.nreg 81012 = 1 := by rw [hI₁.hin _ (by unfold FFix; omega), hE.k1]
-    have j₁ : c₁.nreg 81031 = d.nreg 81031 := f₁ _ (by norm_num) (by norm_num) nPair31
+    have j₁ : c₁.nreg 81031 = d.nreg 81031 := f₁ _ by_n by_n nPair31
     have ok : okB E.W c₁.nmem [.addN 81031 81031 81012] c₁.nreg := by
       simp only [okB, okI, FScr, FOut, k1, j₁]; norm_num; omega
-    refine (FRS.block hB _ hI₁ ok).mono (by simp) (fun c' h' => ?_)
+    refine (FRS.block hB _ hI₁ ok).mono by_s (fun c' h' => ?_)
     have e' : ∀ q, c'.nreg q = regB c₁.nmem [.addN 81031 81031 81012] c₁.nreg q := fun q => by
       rw [h']
     have f' : ∀ q, q ≠ 81031 → c'.nreg q = c₁.nreg q := fun q h => by
       rw [e']; simp [regB, regI, upd, h]
     have v31 : c'.nreg 81031 = d.nreg 81031 + 1 := by
       rw [e']; simp [regB, regI, upd, k1, j₁]
-    have g07 : c'.nreg 81007 = c₁.nreg 81007 := f' _ (by norm_num)
+    have g07 : c'.nreg 81007 = c₁.nreg 81007 := f' _ by_n
     have c32 : c'.nreg 81032 = k := by
-      rw [f' _ (by norm_num), f₁ _ (by norm_num) (by norm_num) nPair32, d32]
-    refine ⟨⟨w₁.congr' (fun q a b => f' q (by omega)), fun q a b hq h31 => by
+      rw [f' _ by_n, f₁ _ by_n by_n nPair32, d32]
+    refine ⟨⟨w₁.congr' (fun q a b => f' q by_o), fun q a b hq h31 => by
       rw [f' q h31, f₁ q a b hq, df q a b hq h31], fun h => by rw [g07]; exact m₁ (dm h),
-      by omega, fun j hj => ?_⟩, by omega⟩
+      by_o, fun j hj => ?_⟩, by_o⟩
     rw [g07]
     rcases Nat.lt_or_ge j (d.nreg 81031) with h | h
     · exact (dd j h).mono m₁
-    · rw [show j = d.nreg 81031 by omega]; exact pd
+    · rwa [show j = d.nreg 81031 by omega]
   · obtain ⟨hP1, hex⟩ := hP
     obtain ⟨cw, cf, cm, cle, cd⟩ := hP1
     have c32 : c'.nreg 81032 = k := by
-      rw [cf _ (by norm_num) (by norm_num) nPair32 (by norm_num), hk]
-    exact ⟨cw, cf, cm, fun j hj => cd j (by omega)⟩
+      rw [cf _ by_n by_n nPair32 by_n, hk]
+    exact ⟨cw, cf, cm, fun j hj => cd j by_o⟩
 
 /-! ## The outer loop -/
 
@@ -143,7 +143,7 @@ theorem outerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     (fun c' hP => ?_)
   · obtain ⟨dw, df, dm, dle, dd⟩ := hd
     have d32 : d.nreg 81032 = k := by
-      rw [df _ (by norm_num) (by norm_num) nPair32 (by norm_num) (by norm_num), hk]
+      rw [df _ by_n by_n nPair32 by_n by_n, hk]
     rw [d32] at hlt
     have ok0 : okB E.W d.nmem [.constN 81031 0] d.nreg := by
       simp only [okB, okI, FScr, FOut]; norm_num
@@ -153,41 +153,41 @@ theorem outerLoop_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have f₁ : ∀ q, q ≠ 81031 → c₁.nreg q = d.nreg q := fun q h => by
       rw [e₁]; simp [regB, regI, upd, h]
     have z31 : c₁.nreg 81031 = 0 := by rw [e₁]; simp [regB, regI, upd]
-    have w₁ : FWin E c₁ := dw.congr' (fun q a b => f₁ q (by omega))
+    have w₁ : FWin E c₁ := dw.congr' (fun q a b => f₁ q by_o)
     refine FRS.seq (K₁ := (pairK E Kp + 3) * k + 2) (K₂ := 1)
-      (innerLoop_fs hE hB hBT hI₁ w₁ (f₁ _ (by norm_num)) (by rw [f₁ _ (by norm_num), d32]) z31
+      (innerLoop_fs hE hB hBT hI₁ w₁ (f₁ _ by_n) (by rw [f₁ _ by_n, d32]) z31
         (hA _ hlt) hA (hPG _ hlt) hnW (by unfold outerK at hroomd; omega))
       (fun c₂ hI₂ hA₂ h₂ => ?_)
     obtain ⟨w₂, f₂, m₂, pd⟩ := h₂
     have k1 : c₂.nreg 81012 = 1 := by rw [hI₂.hin _ (by unfold FFix; omega), hE.k1]
     have i₂ : c₂.nreg 81030 = d.nreg 81030 := by
-      rw [f₂ _ (by norm_num) (by norm_num) nPair30 (by norm_num), f₁ _ (by norm_num)]
+      rw [f₂ _ by_n by_n nPair30 by_n, f₁ _ by_n]
     have ok : okB E.W c₂.nmem [.addN 81030 81030 81012] c₂.nreg := by
       simp only [okB, okI, FScr, FOut, k1, i₂]; norm_num; omega
-    refine (FRS.block hB _ hI₂ ok).mono (by simp) (fun c' h' => ?_)
+    refine (FRS.block hB _ hI₂ ok).mono by_s (fun c' h' => ?_)
     have e' : ∀ q, c'.nreg q = regB c₂.nmem [.addN 81030 81030 81012] c₂.nreg q := fun q => by
       rw [h']
     have f' : ∀ q, q ≠ 81030 → c'.nreg q = c₂.nreg q := fun q h => by
       rw [e']; simp [regB, regI, upd, h]
     have v30 : c'.nreg 81030 = d.nreg 81030 + 1 := by
       rw [e']; simp [regB, regI, upd, k1, i₂]
-    have g07 : c'.nreg 81007 = c₂.nreg 81007 := f' _ (by norm_num)
+    have g07 : c'.nreg 81007 = c₂.nreg 81007 := f' _ by_n
     have g07' : c₂.nreg 81007 = 1 → c'.nreg 81007 = 1 := fun h => by rw [g07]; exact h
     have c32 : c'.nreg 81032 = k := by
-      rw [f' _ (by norm_num), f₂ _ (by norm_num) (by norm_num) nPair32 (by norm_num),
-        f₁ _ (by norm_num), d32]
-    refine ⟨⟨w₂.congr' (fun q a b => f' q (by omega)), fun q a b hq h30 h31 => by
+      rw [f' _ by_n, f₂ _ by_n by_n nPair32 by_n,
+        f₁ _ by_n, d32]
+    refine ⟨⟨w₂.congr' (fun q a b => f' q by_o), fun q a b hq h30 h31 => by
       rw [f' q h30, f₂ q a b hq h31, f₁ q h31, df q a b hq h30 h31],
-      fun h => g07' (m₂ (by rw [f₁ _ (by norm_num)]; exact dm h)),
-      by omega, fun i hi j hj => ?_⟩, by omega⟩
+      fun h => g07' (m₂ (by rw [f₁ _ by_n]; exact dm h)),
+      by_o, fun i hi j hj => ?_⟩, by_o⟩
     rcases Nat.lt_or_ge i (d.nreg 81030) with h | h
-    · exact ((dd i h j hj).mono (fun h => m₂ (by rw [f₁ _ (by norm_num)]; exact h))).mono g07'
+    · exact ((dd i h j hj).mono (fun h => m₂ (by rwa [f₁ _ by_n]))).mono g07'
     · rw [show i = d.nreg 81030 by omega]; exact (pd j hj).mono g07'
   · obtain ⟨hP1, hex⟩ := hP
     obtain ⟨cw, cf, cm, cle, cd⟩ := hP1
     have c32 : c'.nreg 81032 = k := by
-      rw [cf _ (by norm_num) (by norm_num) nPair32 (by norm_num) (by norm_num), hk]
-    exact ⟨cw, cf, cm, fun i hi j hj => cd i (by omega) j hj⟩
+      rw [cf _ by_n by_n nPair32 by_n by_n, hk]
+    exact ⟨cw, cf, cm, fun i hi j hj => cd i by_o j hj⟩
 
 end
 

@@ -53,15 +53,15 @@ theorem while_exact {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : ℕ �
   intro j d hI hj
   induction hn : L - j generalizing j d with
   | zero =>
-    have hjL : j = L := by omega
+    have hjL : j = L := by_o
     subst hjL
     exact ⟨d, .whileLtN_false (fun h => absurd ((htest j d hI).1 h) (lt_irrefl _)) (hwb j d hI),
       hI⟩
   | succ n ih =>
-    have hlt : j < L := by omega
+    have hlt : j < L := by_o
     obtain ⟨d₁, e₁, hI₁⟩ := hbody j d hI hlt
-    obtain ⟨d', e', hI'⟩ := ih (j + 1) d₁ hI₁ (by omega) (by omega)
-    refine ⟨d', (Exec.whileLtN_true ((htest j d hI).2 hlt) e₁ e').cast (by ring), hI'⟩
+    obtain ⟨d', e', hI'⟩ := ih (j + 1) d₁ hI₁ by_o by_o
+    refine ⟨d', (Exec.whileLtN_true ((htest j d hI).2 hlt) e₁ e').cast by_r, hI'⟩
 
 set_option maxRecDepth 20000 in
 theorem tabHead_val (m f : ℕ → ℕ) :
@@ -95,9 +95,9 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   set a₂ := c.nmem (c.nreg (sw 4) + 1) with ha₂
   set A₀ := c.nreg ALLOC with hA₀
   set Lf := Nat.clog 2 (a₁ + a₂ + 1) with hLf
-  have hLpow : a₁ + a₂ + 1 ≤ 2 ^ Lf := Nat.le_pow_clog (by norm_num) _
+  have hLpow : a₁ + a₂ + 1 ≤ 2 ^ Lf := Nat.le_pow_clog by_n _
   have hLle : Lf ≤ a₁ + a₂ + 1 := by
-    rw [hLf, Nat.clog_le_iff_le_pow (by norm_num)]
+    rw [hLf, Nat.clog_le_iff_le_pow by_n]
     exact (Nat.lt_two_pow_self).le
   -- the head
   obtain ⟨vB, vL, vX, vN, vo⟩ := tabHead_val c.nmem c.nreg
@@ -105,8 +105,8 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     simp only [tabHead, okW, okWI, regI, TBR, TLR, iX, iA, iN, iV, K1, ALLOC, sw, Nat.reduceAdd,
       upd_same, ne_eq, upd_other, Nat.reduceEqDiff, not_false_eq_true, true_and, and_true]
     simp only [K1, sw, Nat.reduceAdd] at hK1 h3 h4 ha₁ ha₂
-    rw [hK1]; refine ⟨by omega, by omega, by omega, by omega, by omega⟩)
-  set c₁ : Config := { c with nreg := regB c.nmem tabHead c.nreg } with hc₁
+    rw [hK1]; refine ⟨by_o, by_o, by_o, by_o, by_o⟩)
+  set c₁ := { c with nreg := regB c.nmem tabHead c.nreg } with hc₁
   have n₁ : ∀ r, r ≠ TBR → r ≠ TLR → r ≠ iX → r ≠ iA → r ≠ iN → r ≠ iV → c₁.nreg r = c.nreg r :=
     vo
   have g11 : c₁.nreg K1 = 1 := by rw [n₁ _ (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3) (by swoInit3), hK1]
@@ -127,14 +127,14 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
   obtain ⟨c₂, e₂, w₂, hj, hx, htab, hr₂, hm₂, rr₂, rm₂, o₂⟩ :=
     while_exact (P := P) (W := W) (a := iX) (b := iN) (body := block tabBodyI) I Lf 4
       (fun j d h => by
-        rw [h.2.2.1, hN j d h, hLf, Nat.lt_clog_iff_pow_lt (by norm_num)])
+        rw [h.2.2.1, hN j d h, hLf, Nat.lt_clog_iff_pow_lt by_n])
       (fun j d h => h.1)
       (fun j d ⟨hwd, hj, hx, htab, hr, hm, rr, rm, o⟩ hjl => by
         have dB : d.nreg TBR = A₀ := by rw [hr _ (by swoInit3) (by swoInit3) (by swoInit3), gB]
         have d11 : d.nreg K1 = 1 := by rw [hr _ (by swoInit3) (by swoInit3) (by swoInit3), g11]
         have ht : 2 ^ j < a₁ + a₂ + 1 := by
-          rw [← Nat.lt_clog_iff_pow_lt (by norm_num)]; exact hjl
-        have hjL : j ≤ Lf := hjl.le
+          rw [← Nat.lt_clog_iff_pow_lt by_n]; exact hjl
+        have hjL := hjl.le
         have e₁ := Exec.addN (P := P) hwd iP TBR TLR (by rw [dB, hj]; omega)
         have e₂ := Exec.storeN (P := P) e₁.wb_right iP iX
         have e₃ := Exec.addN (P := P) e₂.wb_right iX iX iX (by
@@ -155,7 +155,7 @@ theorem tabS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
         · simp only [upd_same]
           rw [upd_other _ _ _ (show iX ≠ iP by swoInit3), dB, hj]
           rcases Nat.lt_or_ge t j with h | h
-          · rw [upd_other _ _ _ (by omega)]; exact htab t h
+          · rw [upd_other _ _ _ by_o]; exact htab t h
           · rw [show t = j by omega, upd_same, hx]
         · simp only
           rw [upd_other _ _ _ c', upd_other _ _ _ a, upd_other _ _ _ b]; exact hr r a b c'

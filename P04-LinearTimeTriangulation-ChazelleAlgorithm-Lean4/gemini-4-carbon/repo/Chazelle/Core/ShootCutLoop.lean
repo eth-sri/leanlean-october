@@ -13,10 +13,6 @@ public import Chazelle.Core.ShootCutPath
   the whole loop, from the first walk vertex `U₀` to the final one `F` (`F - U₀ < 2m + 7`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace ShootCut
@@ -36,7 +32,7 @@ theorem add_mod_split {n U D : ℕ} (hn : 0 < n) (hD : D < n) :
   rw [Nat.add_mod, Nat.mod_eq_of_lt hD]
   split_ifs with h
   · exact Nat.mod_eq_of_lt h
-  · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+  · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
 
 theorem Uof_eq {U₀ n U : ℕ} (hn : 0 < n) (h0 : U₀ ≤ U) (h1 : U < U₀ + n) :
     Uof U₀ n (U % n) = U := by
@@ -47,8 +43,8 @@ theorem Uof_eq {U₀ n U : ℕ} (hn : 0 < n) (h0 : U₀ ≤ U) (h1 : U < U₀ + 
   have ha := Nat.mod_lt U₀ hn
   split_ifs with h
   · rw [show U₀ % n + (U - U₀) + n - U₀ % n = (U - U₀) + n by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega)]; omega
-  · rw [show U₀ % n + (U - U₀) - n + n - U₀ % n = U - U₀ by omega, Nat.mod_eq_of_lt (by omega)]
+      Nat.mod_eq_of_lt by_o]; omega
+  · rw [show U₀ % n + (U - U₀) - n + n - U₀ % n = U - U₀ by omega, Nat.mod_eq_of_lt by_o]
     omega
 
 /-- **The gap between two positions** less than a lap apart. -/
@@ -61,10 +57,10 @@ theorem resid_gap {n U F : ℕ} (hn : 0 < n) (hU : U < F) (hF : F < U + n) :
   split_ifs at e with h
   · rw [e]; constructor
     · omega
-    · rw [ite_eq_left (by omega)]; omega
+    · rw [ite_eq_left by_o]; omega
   · rw [e]; constructor
     · omega
-    · rw [ite_eq_right (by omega)]; omega
+    · rw [ite_eq_right by_o]; omega
 
 /-! ## The piece through the uncounted block -/
 
@@ -99,14 +95,14 @@ theorem uStep_exec {P : Polygon} {W A₀ K : ℕ} {emit : Stmt} {Pv : Pc → Pro
     all_goals first | (config_simp; rw [h32]; done) | (config_simp; rw [h96]; done) |
       (config_simp; done) | skip
     simp only [upd]; split_ifs <;> first | rfl | omega
-  have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ (by decide)
+  have fr₁ : FrameB Scr d d₁ := exec_frameB e₁ by_d
   have hR : PcRegs d₁ (uPc m) := ⟨v50, v51, v52, v53, v54, fun h => by simp [uPc] at h⟩
   obtain ⟨d₂, k₂, e₂, hk₂, hI₂, kp, mem₂⟩ := hE.run _ (uPc m) d₁ e₁.wb_right (hE.stable _ _ _ hI fr₁) hR hpv
   have q96 : d₂.nreg 150096 = 6 := by
-    rw [kp _ (by unfold Keep; omega), r₁ _ (by omega), h96]
+    rw [kp _ (by unfold Keep; omega), r₁ _ by_o, h96]
   have e₃ := Exec.copyN (P := P) e₂.wb_right 150040 150096
-  refine ⟨_, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega,
-    hE.stable _ _ _ hI₂ (exec_frameB e₃ (by decide)), by config_simp; rw [q96],
+  refine ⟨_, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by_o,
+    hE.stable _ _ _ hI₂ (exec_frameB e₃ by_d), by config_simp; rw [q96],
     fun r hr h1 => ?_, fun a ha => ?_⟩
   · config_simp
     rw [upd_other _ _ _ h1, kp r hr, r₁ r (by unfold Keep at hr; omega)]
@@ -119,16 +115,16 @@ theorem setFlag_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d
       (∀ x, x ≠ 150042 → d'.nreg x = d.nreg x) ∧ d'.nmem = d.nmem := by
   unfold setFlag
   by_cases h1 : d.nreg 150040 < d.nreg 150041
-  · refine spec_ifLtN_true h1 (spec_instr (Exec.constN hw _ _ (by omega)) fun _ =>
-      ⟨by omega, ?_, fun x hx => by simp [hx], rfl⟩)
-    config_simp; rw [ite_eq_right (by omega)]
+  · refine spec_ifLtN_true h1 (spec_instr (Exec.constN hw _ _ by_o) fun _ =>
+      ⟨by_o, ?_, fun x hx => by simp [hx], rfl⟩)
+    config_simp; rw [ite_eq_right by_o]
   · by_cases h2 : d.nreg 150041 < d.nreg 150040
-    · refine spec_ifLtN_false h1 (spec_ifLtN_true h2 (spec_instr (Exec.constN hw _ _ (by omega))
-        fun _ => ⟨by omega, ?_, fun x hx => by simp [hx], rfl⟩))
-      config_simp; rw [ite_eq_right (by omega)]
+    · refine spec_ifLtN_false h1 (spec_ifLtN_true h2 (spec_instr (Exec.constN hw _ _ by_o)
+        fun _ => ⟨by_o, ?_, fun x hx => by simp [hx], rfl⟩))
+      config_simp; rw [ite_eq_right by_o]
     · refine spec_ifLtN_false h1 (spec_ifLtN_false h2 (spec_instr (Exec.constN hw _ _
-        (by omega)) fun _ => ⟨by omega, ?_, fun x hx => by simp [hx], rfl⟩))
-      config_simp; rw [ite_eq_left (by omega)]
+        by_o) fun _ => ⟨by_o, ?_, fun x hx => by simp [hx], rfl⟩))
+      config_simp; rw [ite_eq_left by_o]
 
 theorem CoreRegs.of_frame' {P : Polygon} {C : Chain} {H : Host} {Hh MD h γ mode : ℕ}
     {s e : WPos} {m₀ : ℕ → ℕ} {c c' : Config} (R : CoreRegs P C H Hh MD h γ mode s e m₀ c)
@@ -137,21 +133,21 @@ theorem CoreRegs.of_frame' {P : Polygon} {C : Chain} {H : Host} {Hh MD h γ mode
     (h93 : c'.nreg 150093 = 3) (h96 : c'.nreg 150096 = 6) :
     CoreRegs P C H Hh MD h γ mode s e m₀ c' := by
   have k : ∀ r, 150000 ≤ r → r < 150040 ∨ (150042 < r ∧ r < 150044) ∨ r = 150041 →
-      c'.nreg r = c.nreg r := fun r h1 h2 => hk r h1 (by omega) (by omega) (by omega)
-  exact ⟨⟨(k _ (by norm_num) (by norm_num)).trans R.chain.h21,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h22,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h23,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h26,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h28,
-      (k _ (by norm_num) (by norm_num)).trans R.chain.h29, h91, h93, h96⟩,
-    (k _ (by norm_num) (by norm_num)).trans R.h00, (k _ (by norm_num) (by norm_num)).trans R.h01,
-    (k _ (by norm_num) (by norm_num)).trans R.h02, (k _ (by norm_num) (by norm_num)).trans R.h03,
-    (k _ (by norm_num) (by norm_num)).trans R.h04, (k _ (by norm_num) (by norm_num)).trans R.h09,
-    (k _ (by norm_num) (by norm_num)).trans R.h13, (k _ (by norm_num) (by norm_num)).trans R.h20,
-    (k _ (by norm_num) (by norm_num)).trans R.h27, (k _ (by norm_num) (by norm_num)).trans R.h31,
-    (k _ (by norm_num) (by norm_num)).trans R.h32, (k _ (by norm_num) (by norm_num)).trans R.h33,
-    (k _ (by norm_num) (by norm_num)).trans R.h34, (k _ (by norm_num) (by norm_num)).trans R.h35,
-    (k _ (by norm_num) (by norm_num)).trans R.h36, h90, h92⟩
+      c'.nreg r = c.nreg r := fun r h1 h2 => hk r h1 by_o by_o by_o
+  exact ⟨⟨(k _ by_n by_n).trans R.chain.h21,
+      (k _ by_n by_n).trans R.chain.h22,
+      (k _ by_n by_n).trans R.chain.h23,
+      (k _ by_n by_n).trans R.chain.h26,
+      (k _ by_n by_n).trans R.chain.h28,
+      (k _ by_n by_n).trans R.chain.h29, h91, h93, h96⟩,
+    (k _ by_n by_n).trans R.h00, (k _ by_n by_n).trans R.h01,
+    (k _ by_n by_n).trans R.h02, (k _ by_n by_n).trans R.h03,
+    (k _ by_n by_n).trans R.h04, (k _ by_n by_n).trans R.h09,
+    (k _ by_n by_n).trans R.h13, (k _ by_n by_n).trans R.h20,
+    (k _ by_n by_n).trans R.h27, (k _ by_n by_n).trans R.h31,
+    (k _ by_n by_n).trans R.h32, (k _ by_n by_n).trans R.h33,
+    (k _ by_n by_n).trans R.h34, (k _ by_n by_n).trans R.h35,
+    (k _ by_n by_n).trans R.h36, h90, h92⟩
 
 end
 

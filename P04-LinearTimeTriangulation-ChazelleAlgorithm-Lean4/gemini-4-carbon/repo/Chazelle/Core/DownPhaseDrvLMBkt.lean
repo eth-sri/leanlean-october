@@ -126,14 +126,14 @@ noncomputable def cntB (Q : Polygon) (N : NF) (l : List (ℕ × ℕ × ℕ)) (b 
 theorem endPos_append_left {l₁ l₂ : List (ℕ × ℕ × ℕ)} {q : ℕ} (hq : q < 2 * l₁.length) :
     DrvR.endPos (l₁ ++ l₂) q = DrvR.endPos l₁ q := by
   unfold DrvR.endPos
-  rw [List.getD_append _ _ _ _ (by omega)]
+  rw [List.getD_append _ _ _ _ by_o]
 
 theorem endPos_append_right (l₁ l₂ : List (ℕ × ℕ × ℕ)) (q : ℕ) :
     DrvR.endPos (l₁ ++ l₂) (2 * l₁.length + q) = DrvR.endPos l₂ q := by
-  have e2 : (2 * l₁.length + q) / 2 = l₁.length + q / 2 := by omega
-  have e3 : (2 * l₁.length + q) % 2 = q % 2 := by omega
+  have e2 : (2 * l₁.length + q) / 2 = l₁.length + q / 2 := by_o
+  have e3 : (2 * l₁.length + q) % 2 = q % 2 := by_o
   unfold DrvR.endPos
-  rw [e2, e3, List.getD_append_right _ _ _ _ (by omega), Nat.add_sub_cancel_left]
+  rw [e2, e3, List.getD_append_right _ _ _ _ by_o, Nat.add_sub_cancel_left]
 
 variable {Q : Polygon} {N : NF}
 
@@ -196,10 +196,10 @@ end count
 /-- The positions of the new event codes. -/
 theorem wposOf_new' {L L₂ : List (ℕ × ℕ × ℕ)} {q : ℕ} (_hq : q < 2 * L₂.length) :
     wposOf (L ++ L₂) (2 * L.length + q) = DrvR.endPos L₂ q := by
-  have e2 : (2 * L.length + q) / 2 = L.length + q / 2 := by omega
-  have e3 : (2 * L.length + q) % 2 = q % 2 := by omega
+  have e2 : (2 * L.length + q) / 2 = L.length + q / 2 := by_o
+  have e3 : (2 * L.length + q) % 2 = q % 2 := by_o
   have hg : (L ++ L₂).getD (L.length + q / 2) (0, 0, 0) = L₂.getD (q / 2) (0, 0, 0) := by
-    rw [List.getD_append_right _ _ _ _ (by omega), Nat.add_sub_cancel_left]
+    rw [List.getD_append_right _ _ _ _ by_o, Nat.add_sub_cancel_left]
   unfold wposOf DrvR.endPos
   rw [e3, e2]
   simp only [BuildRegions.crec, hg]
@@ -231,12 +231,12 @@ theorem kE_const (hsort : E.Pairwise (codeLe (interiorModel Q) Q L)) {a b : ℕ}
   induction b, hab using Nat.le_induction with
   | base => rfl
   | succ b hab ih =>
-    have h1 := ih (by omega) (fun m h1 h2 => hgap m h1 (by omega))
-    have hm := hgap b hab (by omega)
+    have h1 := ih by_o (fun m h1 h2 => hgap m h1 by_o)
+    have hm := hgap b hab by_o
     rw [DrvD.mem_gapStarts] at hm
     push Not at hm
-    have h2 := (hm (by omega)).2
-    rw [DrvD.kap_evs (by omega), DrvD.kap_evs (by omega)] at h2
+    have h2 := (hm by_o).2
+    rw [DrvD.kap_evs by_o, DrvD.kap_evs by_o] at h2
     have h3 := DrvD.kE_mono hsort (show b ≤ b + 1 by omega) hb
     linarith
 
@@ -244,7 +244,7 @@ theorem kE_const (hsort : E.Pairwise (codeLe (interiorModel Q) Q L)) {a b : ℕ}
 theorem gs_of_mem {m : ℕ} (hm : m ∈ gapStarts (interiorModel Q) Q L E) :
     ∃ k, k < (gapStarts (interiorModel Q) Q L E).length ∧ DrvD.gs (interiorModel Q) Q L E k = m := by
   obtain ⟨k, hk, hkm⟩ := List.mem_iff_getElem.1 hm
-  exact ⟨k, hk, by rw [DrvD.gs_eq hk]; exact hkm⟩
+  exact ⟨k, hk, by rwa [DrvD.gs_eq hk]⟩
 
 theorem gs_strict {k k' : ℕ} (hk : k < (gapStarts (interiorModel Q) Q L E).length)
     (_hk' : k' < (gapStarts (interiorModel Q) Q L E).length)
@@ -253,7 +253,7 @@ theorem gs_strict {k k' : ℕ} (hk : k < (gapStarts (interiorModel Q) Q L E).len
   push Not at hc
   rcases lt_or_eq_of_le hc with hc | hc
   · have := DrvD.gs_lt_gs (M := interiorModel Q) (Q := Q) (L := L) (E := E) hc
-      (by omega)
+      by_o
     omega
   · subst hc; omega
 
@@ -287,7 +287,7 @@ theorem keyBkt_eq {x : WPos} {A c : ℕ}
     refine List.filter_congr fun i hi => ?_
     rw [List.mem_range] at hi
     exact decide_eq_decide.2 (h i hi)
-  have hm : min (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length c = c := Nat.min_eq_right hc
+  have hm := Nat.min_eq_right hc
   constructor
   · intro hex
     unfold st at hex
@@ -319,8 +319,8 @@ theorem st_lt {i i' : ℕ} (hii : i < i') (hi' : i' < (BuildNF.buildNF (interior
   have hA := DrvD.arcs_length (M := interiorModel Q) (Q := Q) (E := E) hK
   rw [hA] at hi'
   unfold st
-  rw [DrvD.key_s hK (by omega), DrvD.key_s hK hi']
-  have h1 := DrvD.gs_succ (M := interiorModel Q) (Q := Q) (L := L) hE (j := i) (by omega)
+  rw [DrvD.key_s hK by_o, DrvD.key_s hK hi']
+  have h1 := DrvD.gs_succ (M := interiorModel Q) (Q := Q) (L := L) hE (j := i) by_o
   have h2 := DrvD.gs_lt_gs (M := interiorModel Q) (Q := Q) (L := L) (E := E) hii hi'
   have h3 := DrvD.kE_mono hsort (show DrvD.gs (interiorModel Q) Q L E i + 1 ≤
     DrvD.gs (interiorModel Q) Q L E i' by omega) (DrvD.gs_lt_len hi')
@@ -344,9 +344,9 @@ theorem key_e_eq {j : ℕ} (hj : j + 1 < (BuildNF.buildNF (interiorModel Q) Q L 
   have h1 := DrvD.gs_succ (M := interiorModel Q) (Q := Q) (L := L) hE (j := j) hj
   have h2 := DrvD.gs_lt_gs (M := interiorModel Q) (Q := Q) (L := L) (E := E)
     (show j < j + 1 by omega) hj
-  refine kE_const hsort (by omega) (DrvD.gs_lt_len hj) fun m hm1 hm2 hm => ?_
+  refine kE_const hsort by_o (DrvD.gs_lt_len hj) fun m hm1 hm2 hm => ?_
   obtain ⟨k, hk, rfl⟩ := gs_of_mem hm
-  have := gs_strict (L := L) (E := E) (by omega) hk (k := j) (by omega)
+  have := gs_strict (L := L) (E := E) by_o hk (k := j) by_o
   have := gs_strict (L := L) (E := E) hk hj (k := k) hm2
   omega
 
@@ -388,7 +388,7 @@ theorem arc_of_bkt {j : ℕ} {x : WPos}
       (interiorModel Q).key Q ((BuildNF.buildNF (interiorModel Q) Q L E).arc j).e =
         st Q L E 0) := by
     refine ⟨fun h => key_e_eq hK hperm hsort h, fun h => ?_⟩
-    have : j = (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length - 1 := by omega
+    have : j = (BuildNF.buildNF (interiorModel Q) Q L E).arcs.length - 1 := by_o
     rw [this]; exact key_e_last_eq hK hperm hsort
   unfold OnArcKey at hx
   rw [hks] at hx
@@ -397,44 +397,44 @@ theorem arc_of_bkt {j : ℕ} {x : WPos}
   rcases hx with hx | hx | hx
   · -- the start of arc `j`
     have := (hkb j hj.le (fun i hi => ⟨fun h => by
-        by_contra h'; have := hle j i (by omega) hi; linarith,
+        by_contra h'; have := hle j i by_o hi; linarith,
       fun h => by rw [hx]; exact hlt i j h hj⟩)).1 ⟨j, hj, hx.symm⟩
-    left; rw [this]; unfold arcA; rw [ite_eq_right (by omega)]; omega
+    left; rw [this]; unfold arcA; rw [ite_eq_right by_o]; omega
   · rcases Nat.lt_or_ge (j + 1) A with hj1 | hj1
     · rw [hke.1 hj1] at hx
       have := (hkb (j + 1) hj1.le (fun i hi => ⟨fun h => by
-          by_contra h'; have := hle (j + 1) i (by omega) hi; linarith,
+          by_contra h'; have := hle (j + 1) i by_o hi; linarith,
         fun h => by rw [hx]; exact hlt i (j + 1) h hj1⟩)).1 ⟨j + 1, hj1, hx.symm⟩
-      right; rw [this]; unfold arcB; rw [ite_eq_right (by omega)]; omega
-    · rw [hke.2 (by omega)] at hx
+      right; rw [this]; unfold arcB; rw [ite_eq_right by_o]; omega
+    · rw [hke.2 by_o] at hx
       have := (hkb 0 (Nat.zero_le _) (fun i hi => ⟨fun h => by
-          have := hle 0 i (by omega) hi; linarith, fun h => by omega⟩)).1 ⟨0, by omega, hx.symm⟩
-      right; rw [this]; unfold arcB; rw [ite_eq_left (by omega)]; omega
+          have := hle 0 i by_o hi; linarith, fun h => by omega⟩)).1 ⟨0, by_o, hx.symm⟩
+      right; rw [this]; unfold arcB; rw [ite_eq_left by_o]; omega
   · rcases Nat.lt_or_ge (j + 1) A with hj1 | hj1
     · rw [hke.1 hj1] at hx
       unfold sideInArc at hx
-      rw [ite_eq_left (hlt j (j + 1) (by omega) hj1)] at hx
+      rw [ite_eq_left (hlt j (j + 1) by_o hj1)] at hx
       have := (hkb (j + 1) hj1.le (fun i hi => ⟨fun h => by
-          by_contra h'; have := hle (j + 1) i (by omega) hi; linarith,
-        fun h => by have := hle i j (by omega) hj; linarith⟩)).2 (by
+          by_contra h'; have := hle (j + 1) i by_o hi; linarith,
+        fun h => by have := hle i j by_o hj; linarith⟩)).2 (by
           rintro ⟨i, hi, hie⟩
           rcases Nat.lt_or_ge j i with hji | hji
-          · have := hle (j + 1) i (by omega) hi; linarith
+          · have := hle (j + 1) i by_o hi; linarith
           · have := hle i j hji hj; linarith)
-      left; rw [this]; unfold arcA; rw [ite_eq_right (by omega)]; omega
-    · rw [hke.2 (by omega)] at hx
+      left; rw [this]; unfold arcA; rw [ite_eq_right by_o]; omega
+    · rw [hke.2 by_o] at hx
       unfold sideInArc at hx
-      rw [ite_eq_right (by have := hle 0 j (by omega) hj; linarith)] at hx
+      rw [ite_eq_right (by have := hle 0 j by_o hj; linarith)] at hx
       rcases hx with hx | hx
       · have := (hkb A le_rfl (fun i hi => ⟨fun _ => hi,
-          fun _ => by have := hle i j (by omega) hj; linarith⟩)).2 (by
+          fun _ => by have := hle i j by_o hj; linarith⟩)).2 (by
             rintro ⟨i, hi, hie⟩
-            have := hle i j (by omega) hj; linarith)
-        left; rw [this]; unfold arcA; rw [ite_eq_right (by omega)]; omega
+            have := hle i j by_o hj; linarith)
+        left; rw [this]; unfold arcA; rw [ite_eq_right by_o]; omega
       · have := (hkb 0 (Nat.zero_le _) (fun i hi => ⟨fun h => by
-            have := hle 0 i (by omega) hi; linarith, fun h => by omega⟩)).2 (by
+            have := hle 0 i by_o hi; linarith, fun h => by omega⟩)).2 (by
             rintro ⟨i, hi, hie⟩
-            have := hle 0 i (by omega) hi; linarith)
+            have := hle 0 i by_o hi; linarith)
         left; rw [this]; unfold arcA; rw [ite_eq_left rfl]; omega
 
 /-- **At most `4 M` ends per bucket.** -/

@@ -81,7 +81,7 @@ def Bloc (r : ℕ) : Bool :=
   decide (10500 ≤ r ∧ r < 10506) || decide (50000 ≤ r ∧ r < 50030) ||
     decide (50100 ≤ r ∧ r < 50117)
 
-theorem wr_locSetup : wr Bloc locSetup = true := by decide
+theorem wr_locSetup : wr Bloc locSetup = true := by_d
 
 theorem Bloc_band (r : ℕ) (h : Bloc r = true) : bandOf r ∈ ({bLocate, bSign} : Finset ℕ) ∧
     r ≠ ALLOC := by
@@ -116,7 +116,7 @@ theorem cRec_ext {a b : CRec} (h1 : a.h = b.h) (h2 : a.lp = b.lp) (h3 : a.rp = b
 /-- The layout determines the arc records. -/
 theorem nfAt_arcs_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
     N'.arcs = N.arcs := by
-  have hl : N'.arcs.length = N.arcs.length := h'.2.1.symm.trans h.2.1
+  have hl := h'.2.1.symm.trans h.2.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.2.1 j hj'
@@ -130,7 +130,7 @@ theorem nfAt_arcs_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h
 /-- The layout determines the chord records. -/
 theorem nfAt_chords_eq {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B N) (h' : NFAt m B N') :
     N'.chords = N.chords := by
-  have hl : N'.chords.length = N.chords.length := h'.1.symm.trans h.1
+  have hl := h'.1.symm.trans h.1
   apply List.ext_getElem hl
   intro j hj hj'
   have e := h.2.2.2.2.2.1 j hj'

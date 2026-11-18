@@ -64,15 +64,15 @@ theorem detInto_exec {P : Polygon} {W : ℕ} (dst t1 t2 a1 a2 v1 v2 b1 b2 : ℕ)
       c'.rreg dst = det (c.rreg a1, c.rreg a2) (c.rreg v1, c.rreg v2) (c.rreg b1, c.rreg b2) ∧
       (∀ r, r ≠ dst → r ≠ t1 → r ≠ t2 → c'.rreg r = c.rreg r) ∧
       c'.nreg = c.nreg ∧ c'.nmem = c.nmem ∧ c'.rmem = c.rmem ∧ c'.output = c.output := by
-  obtain ⟨ha1d, ha1t1, ha1t2⟩ := hin a1 (by simp)
-  obtain ⟨ha2d, ha2t1, ha2t2⟩ := hin a2 (by simp)
-  obtain ⟨hv1d, hv1t1, hv1t2⟩ := hin v1 (by simp)
-  obtain ⟨hv2d, hv2t1, hv2t2⟩ := hin v2 (by simp)
-  obtain ⟨hb1d, hb1t1, hb1t2⟩ := hin b1 (by simp)
-  obtain ⟨hb2d, hb2t1, hb2t2⟩ := hin b2 (by simp)
+  obtain ⟨ha1d, ha1t1, ha1t2⟩ := hin a1 by_s
+  obtain ⟨ha2d, ha2t1, ha2t2⟩ := hin a2 by_s
+  obtain ⟨hv1d, hv1t1, hv1t2⟩ := hin v1 by_s
+  obtain ⟨hv2d, hv2t1, hv2t2⟩ := hin v2 by_s
+  obtain ⟨hb1d, hb1t1, hb1t2⟩ := hin b1 by_s
+  obtain ⟨hb2d, hb2t1, hb2t2⟩ := hin b2 by_s
   unfold detInto
   exec_block
-  refine ⟨by omega, ?_, ?_, rfl, rfl, rfl, rfl⟩
+  refine ⟨by_o, ?_, ?_, rfl, rfl, rfl, rfl⟩
   · simp [hdt1, hdt2, ht12, hdt1.symm, hdt2.symm, ht12.symm, ha1d, ha1t1, ha1t2, ha2d, ha2t1,
       ha2t2, hv1d, hv1t1, hv1t2, hv2d, hv2t1, hv2t2, hb1d, hb1t1, hb1t2, hb2d, hb2t1, hb2t2, det]
   · intro r h1 h2 h3

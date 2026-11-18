@@ -88,7 +88,7 @@ theorem param_of_lerp (M : Model) (Q : Polygon) {q h : ℕ} {s : ℝ}
       else ((Q.vtx h).2 - (M.W.vtx q).2) /
         ((M.W.vtx ((q + 1) % M.W.n)).2 - (M.W.vtx q).2)) = s
   rw [ite_eq_right hne, ← hy, Chazelle.Geometry.lerp_snd]
-  have hd : (M.W.vtx ((q + 1) % M.W.n)).2 - (M.W.vtx q).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hne)
+  have hd := sub_ne_zero.2 (Ne.symm hne)
   rw [show (M.W.vtx q).2 + s * ((M.W.vtx ((q + 1) % M.W.n)).2 - (M.W.vtx q).2) -
       (M.W.vtx q).2 = s * ((M.W.vtx ((q + 1) % M.W.n)).2 - (M.W.vtx q).2) by ring,
     mul_div_assoc, div_self hd, mul_one]
@@ -132,7 +132,7 @@ theorem attach_int {Q : Polygon} (hQ : Q.Simple) {y a b : ℝ}
     intro e e' hE hqe
     obtain ⟨p, t, hAt, hpt'⟩ := hE.1
     obtain ⟨hp, ht0, ht1, -⟩ := id hAt
-    obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique hWs hp (by rw [hIn]; exact hq) ht0 ht1 hu0 hu1
+    obtain ⟨rfl, rfl⟩ := FactsInterior.pos_unique hWs hp (by rwa [hIn]) ht0 ht1 hu0 hu1
       (hpt'.trans hqe.symm)
     exact hAt
   rcases hpt with hpt | hpt
@@ -155,7 +155,7 @@ theorem iw_ends (_hQ : Q.Simple) (T : Trans.Top Q C) (_hD : Trans.DistinctH Q)
     ((interiorWalk Q).vtx 0 = Q.vtx 0 ∨ (interiorWalk Q).vtx 0 = Q.vtx C.m) ∧
       ((interiorWalk Q).vtx C.m = Q.vtx 0 ∨ (interiorWalk Q).vtx C.m = Q.vtx C.m) := by
   have hmn := T.hm
-  rw [iw_vtx_idx hli (by omega), iw_vtx_idx hli (by omega)]
+  rw [iw_vtx_idx hli by_o, iw_vtx_idx hli by_o]
   unfold idxI
   by_cases h : li = true
   · rw [ite_eq_left h, ite_eq_left h]; exact ⟨Or.inl rfl, Or.inr rfl⟩
@@ -173,13 +173,13 @@ theorem inner_param {h p : ℕ} (hp1 : c0 C li ≤ p) (hp2 : p < c0 C li + C.m) 
   have hIn : (interiorWalk Q).n = Q.n := Trans.iw_n
   have hWn : (C.sideWalk C.sideBeta).n = 2 * C.m + 7 := Chain.sideWalk_n _ _
   set j := p - c0 C li with hj
-  have hjm : j < C.m := by omega
-  have hpj : p = j + c0 C li := by omega
+  have hjm : j < C.m := by_o
+  have hpj : p = j + c0 C li := by_o
   have e1 : (C.sideWalk C.sideBeta).vtx p = (interiorWalk Q).vtx j := by
     rw [hpj]; exact vtx_c0 hQ T hD hli hjm.le
   have e2 : (C.sideWalk C.sideBeta).vtx ((p + 1) % (C.sideWalk C.sideBeta).n) =
       (interiorWalk Q).vtx ((j + 1) % (interiorWalk Q).n) := by
-    rw [hWn, Nat.mod_eq_of_lt (by unfold c0 at *; omega), hIn, Nat.mod_eq_of_lt (by omega),
+    rw [hWn, Nat.mod_eq_of_lt (by unfold c0 at *; omega), hIn, Nat.mod_eq_of_lt by_o,
       show p + 1 = (j + 1) + c0 C li by omega]
     exact vtx_c0 hQ T hD hli hjm
   refine ⟨?_, ?_⟩
@@ -192,7 +192,7 @@ theorem iw_edge_ne {q : ℕ} (hq : q < Q.n) :
   have hn3 := hQ.1
   have hIn : (interiorWalk Q).n = Q.n := Trans.iw_n
   rw [hIn]
-  refine iw_snd_ne hQ T hD hli hq (Nat.mod_lt _ (by omega)) ?_
+  refine iw_snd_ne hQ T hD hli hq (Nat.mod_lt _ by_o) ?_
   intro h
   rcases (show q + 1 < Q.n ∨ q + 1 = Q.n by omega) with h1 | h1
   · rw [Nat.mod_eq_of_lt h1] at h; omega
@@ -204,16 +204,16 @@ theorem paramC_c0_zero_iff {h : ℕ} (hh : h < Q.n) :
   have hmn := T.hm
   have hm1 := C.one_le
   have hIn : (interiorWalk Q).n = Q.n := Trans.iw_n
-  obtain ⟨e1, -⟩ := inner_param hQ T hD hli (h := h) (p := c0 C li) le_rfl (by omega)
-  rw [← e1, Nat.sub_self, paramI_succ, ite_eq_right (iw_edge_ne hQ T hD hli (by omega))]
+  obtain ⟨e1, -⟩ := inner_param hQ T hD hli (h := h) (p := c0 C li) le_rfl by_o
+  rw [← e1, Nat.sub_self, paramI_succ, ite_eq_right (iw_edge_ne hQ T hD hli by_o)]
   have hd : ((interiorWalk Q).vtx ((0 + 1) % (interiorWalk Q).n)).2 -
       ((interiorWalk Q).vtx 0).2 ≠ 0 :=
-    sub_ne_zero.2 (Ne.symm (iw_edge_ne hQ T hD hli (by omega)))
-  rw [div_eq_zero_iff, or_iff_left hd, sub_eq_zero, iw_vtx_idx hli (j := 0) (by omega)]
+    sub_ne_zero.2 (Ne.symm (iw_edge_ne hQ T hD hli by_o))
+  rw [div_eq_zero_iff, or_iff_left hd, sub_eq_zero, iw_vtx_idx hli (j := 0) by_o]
   constructor
   · intro h'
     by_contra hne
-    exact hD _ _ hh (idxI_lt (by omega)) hne h'
+    exact hD _ _ hh (idxI_lt by_o) hne h'
   · intro h'; rw [h']
 
 /-- **The test of the filter**: an inner end in geometric terms. -/
@@ -256,11 +256,11 @@ theorem piece_at_inner {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : ℕ}
   have hle := i0_le hQ T hD hli
   have hIn : (interiorWalk Q).n = Q.n := Trans.iw_n
   set j := p - c0 C li with hj
-  have hjm : j < C.m := by omega
-  have hpj : p = j + c0 C li := by omega
+  have hjm : j < C.m := by_o
+  have hpj : p = j + c0 C li := by_o
   obtain ⟨hp, ht0, ht1, -⟩ := id hA
   have hsj : t = 0 → 1 ≤ j := fun h0 => by
-    by_contra h1; exact hp3 ⟨by omega, h0⟩
+    by_contra h1; exact hp3 ⟨by_o, h0⟩
   have hpt : sidePt (interiorWalk Q) j t = sidePt (C.sideWalk C.sideBeta) p t := by
     rw [hpj, H.pt_eq T hjm]
   have hAI : SideAttach (interiorWalk Q) c j t := by
@@ -270,7 +270,7 @@ theorem piece_at_inner {c : Set Point} (hc : c ∈ (chainModel C).Adm) {p : ℕ}
   have hnD : sidePt (interiorWalk Q) j t ∉ C.dom := by
     rw [hpt]; exact hMC.trace p hp t ht0 ht1.le
   obtain ⟨d, ⟨⟨y, a, b, hch, rfl⟩, c', hc', hdc⟩, hAd⟩ :=
-    Trans.piece_of_attach hQ T (F₀ := {c}) (fun _ h => by rw [mem_singleton_iff.1 h]; exact hc)
+    Trans.piece_of_attach hQ T (F₀ := {c}) (fun _ h => by rwa [mem_singleton_iff.1 h])
       (mem_singleton c) hAI hnD
   rw [mem_singleton_iff.1 hc'] at hdc
   refine ⟨y, a, b, hch, hdc, ?_⟩
@@ -313,9 +313,9 @@ theorem last_edge_pt {h : ℕ} {s : ℝ} (hs : s ∈ Ioo (0 : ℝ) 1)
   have hmn := T.hm
   have hIn : (interiorWalk Q).n = Q.n := Trans.iw_n
   have hwrap : (C.m + 1) % (interiorWalk Q).n = 0 := by rw [hIn, ← hmn, Nat.mod_self]
-  have hne := iw_edge_ne hQ T hD hli (q := C.m) (by omega)
-  have hv0 := iw_vtx_idx hli (Q := Q) (j := 0) (by omega)
-  have hvm := iw_vtx_idx hli (Q := Q) (j := C.m) (by omega)
+  have hne := iw_edge_ne hQ T hD hli (q := C.m) by_o
+  have hv0 := iw_vtx_idx hli (Q := Q) (j := 0) by_o
+  have hvm := iw_vtx_idx hli (Q := Q) (j := C.m) by_o
   unfold idxI at hv0 hvm
   by_cases hl : li = true
   · rw [ite_eq_left hl] at hv0 hvm
@@ -365,14 +365,14 @@ theorem other_end {y a b : ℝ} (hc : hseg y a b ∈ (chainModel C).Adm) {h : �
   obtain ⟨hp, ht0, ht1, hmem, -⟩ := hA'
   rcases hcase with ⟨rfl, hnear⟩ | ⟨hzD, hzb⟩
   · rcases special_end hQ T hD hli hc hA hnear hnI with ⟨rfl, -, hpt⟩ | ⟨rfl, ht0', hpt⟩
-    · rw [ite_eq_left ⟨le_rfl, by omega⟩]
-      obtain ⟨e1, e2⟩ := inner_param hQ T hD hli (h := h) (p := c0 C li) le_rfl (by omega)
+    · rw [ite_eq_left ⟨le_rfl, by_o⟩]
+      obtain ⟨e1, e2⟩ := inner_param hQ T hD hli (h := h) (p := c0 C li) le_rfl by_o
       rw [e1]
       exact ⟨ht0, ht1, e2⟩
-    · rw [ite_eq_right (by omega)]
+    · rw [ite_eq_right by_o]
       have hwrap : (C.m + 1) % (interiorWalk Q).n = 0 := by rw [hIn, ← hmn, Nat.mod_self]
       have hpar : (interiorModel Q).param Q ⟨C.m, h + 1⟩ = 0 := by
-        refine param_of_lerp (interiorModel Q) Q (iw_edge_ne hQ T hD hli (by omega)) ?_
+        refine param_of_lerp (interiorModel Q) Q (iw_edge_ne hQ T hD hli by_o) ?_
         show (lerp ((interiorWalk Q).vtx C.m) ((interiorWalk Q).vtx ((C.m + 1) %
           (interiorWalk Q).n)) 0).2 = _
         rw [Chazelle.Geometry.lerp_zero, hy, ← hpt]
@@ -380,7 +380,7 @@ theorem other_end {y a b : ℝ} (hc : hseg y a b ∈ (chainModel C).Adm) {h : �
       rw [hpar, Chazelle.Chain.sidePt_zero, ← hpt]
       exact ⟨le_rfl, one_pos, rfl⟩
   · obtain ⟨s, hs, rfl⟩ := T.boundary_dom hzb hzD
-    have hh' : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 (by omega) (by omega) (by omega)
+    have hh' : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 by_o by_o by_o
     obtain ⟨hne1, hne2, -⟩ := lerp_snd_ne hh' hs
     have hJ : ¬ (c0 C li ≤ p ∧ p < c0 C li + C.m) := by
       rintro ⟨h1, h2⟩
@@ -433,7 +433,7 @@ theorem mapped_end {y a b : ℝ} (hc : hseg y a b ∈ (chainModel C).Adm)
         ((interiorModel Q).param Q ⟨mapE Q.n (c0 C li) p, h + 1⟩) = z := by
   have hmn := T.hm
   have hm1 := C.one_le
-  have hh' : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 (by omega) (by omega) (by omega)
+  have hh' : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 by_o by_o by_o
   obtain ⟨-, ha', hb'⟩ := piece_bounds hQ T hD hli hch' hsub
   have hlt' := hch'.lt
   obtain ⟨hzbA, hzbB⟩ := piece_ends_bd hQ T hD hch'
@@ -470,34 +470,34 @@ theorem mapped_end {y a b : ℝ} (hc : hseg y a b ∈ (chainModel C).Adm)
     rcases hz with ⟨rfl, hpt⟩ | ⟨rfl, hpt⟩
     · rcases ha'.lt_or_eq with hlt | heq
       · right
-        exact ⟨hch.open_mem a' hlt (by linarith), hzbA⟩
+        exact ⟨hch.open_mem a' hlt by_l, hzbA⟩
       · left
         subst heq
-        refine ⟨hpt.symm, b' - a, by linarith, fun x hx hxe hxd => ?_⟩
+        refine ⟨hpt.symm, b' - a, by_l, fun x hx hxe hxd => ?_⟩
         obtain ⟨hxy, hxa, -⟩ := hx
         have hx1 : x.1 ≠ a := fun e => hxe (Prod.ext e hxy)
         have hd : |x.1 - a| < b' - a := by
           have := hxd
           rw [Prod.dist_eq, Real.dist_eq] at this
           exact lt_of_le_of_lt (le_max_left _ _) this
-        rw [abs_of_nonneg (by linarith)] at hd
+        rw [abs_of_nonneg by_l] at hd
         rw [show x = ((x.1, y) : Point) from Prod.ext rfl hxy]
-        exact hch'.open_mem _ (lt_of_le_of_ne hxa (Ne.symm hx1)) (by linarith)
+        exact hch'.open_mem _ (lt_of_le_of_ne hxa (Ne.symm hx1)) by_l
     · rcases hb'.lt_or_eq with hlt | heq
       · right
-        exact ⟨hch.open_mem b' (by linarith) hlt, hzbB⟩
+        exact ⟨hch.open_mem b' by_l hlt, hzbB⟩
       · left
         subst heq
-        refine ⟨hpt.symm, b' - a', by linarith, fun x hx hxe hxd => ?_⟩
+        refine ⟨hpt.symm, b' - a', by_l, fun x hx hxe hxd => ?_⟩
         obtain ⟨hxy, -, hxb⟩ := hx
         have hx1 : x.1 ≠ b' := fun e => hxe (Prod.ext e hxy)
         have hd : |x.1 - b'| < b' - a' := by
           have := hxd
           rw [Prod.dist_eq, Real.dist_eq] at this
           exact lt_of_le_of_lt (le_max_left _ _) this
-        rw [abs_of_nonpos (by linarith)] at hd
+        rw [abs_of_nonpos by_l] at hd
         rw [show x = ((x.1, y) : Point) from Prod.ext rfl hxy]
-        exact hch'.open_mem _ (by linarith) (lt_of_le_of_ne hxb hx1)
+        exact hch'.open_mem _ by_l (lt_of_le_of_ne hxb hx1)
 
 omit hQ T hD hli in
 /-- The chord of a record of the chain model, with its two ends. -/
@@ -560,7 +560,7 @@ theorem rec_kept {x : ℕ × ℕ × ℕ} (hx : x.1 < Q.n)
   have hmapLt : ∀ p, mapE Q.n (c0 C li) p < Q.n := fun p => by
     have := T.hm
     unfold mapE; split_ifs <;> omega
-  refine ⟨by rw [hset]; exact ⟨y, a', b', hch', rfl⟩, by rw [hset, hcab]; exact hsub, ?_, ?_⟩
+  refine ⟨by rw [hset]; exact ⟨y, a', b', hch', rfl⟩, by rwa [hset, hcab], ?_, ?_⟩
   · show SideAttach (interiorWalk Q) _ _ _
     rw [hset]
     exact attach_int hQ hch' (hmapLt _) hl0 hl1 (Or.inl hlpt)
@@ -576,7 +576,7 @@ theorem rec_dropped {x : ℕ × ℕ × ℕ} (hx : x.1 < Q.n)
     (hdc : d ⊆ (recOf x).toSet (chainModel C) Q) : False := by
   have hmn := T.hm
   have hm1 := C.one_le
-  have hh' : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 (by omega) (by omega) (by omega)
+  have hh' : (Q.vtx C.m).2 ≠ (Q.vtx 0).2 := hD C.m 0 by_o by_o by_o
   obtain ⟨y, a, b, hch, hcab, hy, heL, heR⟩ := rec_chord hcA hatt
   obtain ⟨hAL, hAR⟩ := hatt
   rw [hcab] at hAL hAR hcA hdc
@@ -611,15 +611,15 @@ theorem rec_dropped {x : ℕ × ℕ × ℕ} (hx : x.1 < Q.n)
         dist z (sidePt (C.sideWalk C.sideBeta) x.2.1
           ((chainModel C).param Q ⟨x.2.1, x.1 + 1⟩)) < r → z ∈ Q.filled \ Q.boundary := by
       rw [heL]
-      refine ⟨b' - a', by linarith, fun z hz hze hzd => ?_⟩
+      refine ⟨b' - a', by_l, fun z hz hze hzd => ?_⟩
       obtain ⟨hzy, hza, -⟩ := hz
       have hz1 : z.1 ≠ a' := fun e => hze (Prod.ext e hzy)
       have hd : |z.1 - a'| < b' - a' := by
         rw [Prod.dist_eq, Real.dist_eq] at hzd
         exact lt_of_le_of_lt (le_max_left _ _) hzd
-      rw [abs_of_nonneg (by linarith)] at hd
+      rw [abs_of_nonneg by_l] at hd
       rw [show z = ((z.1, y) : Point) from Prod.ext rfl hzy]
-      exact hch'.open_mem _ (lt_of_le_of_ne hza (Ne.symm hz1)) (by linarith)
+      exact hch'.open_mem _ (lt_of_le_of_ne hza (Ne.symm hz1)) by_l
     rcases special_end hQ T hD hli hcA (p := x.2.1) hAL hnear hkL with ⟨-, -, hpt⟩ | ⟨-, -, hpt⟩
     · left; rw [← heL, hpt]
     · right; rw [← heL, hpt]
@@ -632,15 +632,15 @@ theorem rec_dropped {x : ℕ × ℕ × ℕ} (hx : x.1 < Q.n)
         dist z (sidePt (C.sideWalk C.sideBeta) x.2.2
           ((chainModel C).param Q ⟨x.2.2, x.1 + 1⟩)) < r → z ∈ Q.filled \ Q.boundary := by
       rw [heR]
-      refine ⟨b' - a', by linarith, fun z hz hze hzd => ?_⟩
+      refine ⟨b' - a', by_l, fun z hz hze hzd => ?_⟩
       obtain ⟨hzy, -, hzb⟩ := hz
       have hz1 : z.1 ≠ b' := fun e => hze (Prod.ext e hzy)
       have hd : |z.1 - b'| < b' - a' := by
         rw [Prod.dist_eq, Real.dist_eq] at hzd
         exact lt_of_le_of_lt (le_max_left _ _) hzd
-      rw [abs_of_nonpos (by linarith)] at hd
+      rw [abs_of_nonpos by_l] at hd
       rw [show z = ((z.1, y) : Point) from Prod.ext rfl hzy]
-      exact hch'.open_mem _ (by linarith) (lt_of_le_of_ne hzb hz1)
+      exact hch'.open_mem _ by_l (lt_of_le_of_ne hzb hz1)
     rcases special_end hQ T hD hli hcA (p := x.2.2) hAR hnear hkR with ⟨-, -, hpt⟩ | ⟨-, -, hpt⟩
     · left; rw [← heR, hpt]
     · right; rw [← heR, hpt]
@@ -661,16 +661,16 @@ theorem rec_dropped {x : ℕ × ℕ × ℕ} (hx : x.1 < Q.n)
     obtain ⟨s, hs, hes⟩ := hlast e h1 h2 hb
     obtain ⟨hn1, hn2, -⟩ := lerp_snd_ne hh' hs
     have hy' : y = (lerp (Q.vtx C.m) (Q.vtx 0) s).2 := by rw [← hes]
-    exact ⟨by rw [hy']; exact hn2, by rw [hy']; exact hn1⟩
+    exact ⟨by rwa [hy'], by rwa [hy']⟩
   rcases ha'.lt_or_eq with haL | haL <;> rcases hb'.lt_or_eq with hbR | hbR
   · -- both ends of the piece on the open last edge: the same point
-    obtain ⟨s, hs, hes⟩ := hlast a' haL (by linarith) hzbA
-    obtain ⟨s', hs', hes'⟩ := hlast b' (by linarith) hbR hzbB
+    obtain ⟨s, hs, hes⟩ := hlast a' haL by_l hzbA
+    obtain ⟨s', hs', hes'⟩ := hlast b' by_l hbR hzbB
     have h2 := congrArg Prod.snd hes
     have h2' := congrArg Prod.snd hes'
     simp only [Chazelle.Geometry.lerp_snd] at h2 h2'
     have hss : s = s' := by
-      have : (s - s') * ((Q.vtx 0).2 - (Q.vtx C.m).2) = 0 := by linarith
+      have : (s - s') * ((Q.vtx 0).2 - (Q.vtx C.m).2) = 0 := by_l
       rcases mul_eq_zero.1 this with h | h
       · linarith
       · exact absurd (sub_eq_zero.1 h) (Ne.symm hh')
@@ -681,12 +681,12 @@ theorem rec_dropped {x : ℕ × ℕ × ℕ} (hx : x.1 < Q.n)
     linarith
   · -- the piece reaches the right end only
     have hv := hyv _ (hvR hbR)
-    obtain ⟨n1, n2⟩ := hnot a' haL (by linarith) hzbA
+    obtain ⟨n1, n2⟩ := hnot a' haL by_l hzbA
     rcases hv with hv | hv <;> simp only at hv
     · exact n1 hv
     · exact n2 hv
   · have hv := hyv _ (hvL haL.symm)
-    obtain ⟨n1, n2⟩ := hnot b' (by linarith) hbR hzbB
+    obtain ⟨n1, n2⟩ := hnot b' by_l hbR hzbB
     rcases hv with hv | hv <;> simp only at hv
     · exact n1 hv
     · exact n2 hv
@@ -694,7 +694,7 @@ theorem rec_dropped {x : ℕ × ℕ × ℕ} (hx : x.1 < Q.n)
     have hL := hvL haL.symm
     have hR := hvR hbR
     have hab : ((a, y) : Point) ≠ (b, y) := fun e => hch.lt.ne (congrArg Prod.fst e)
-    have hsn := iw_snd_ne hQ T hD hli (j := 0) (k := C.m) (by omega) (by omega) (by omega)
+    have hsn := iw_snd_ne hQ T hD hli (j := 0) (k := C.m) by_o by_o by_o
     rcases hL with hL | hL <;> rcases hR with hR | hR
     · exact hab (hL.trans hR.symm)
     · apply hsn; rw [← hL, ← hR]

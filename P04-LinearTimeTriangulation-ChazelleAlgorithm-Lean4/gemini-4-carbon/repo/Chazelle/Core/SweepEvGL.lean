@@ -68,9 +68,9 @@ theorem side_meets_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     have hzD' := hzD
     rw [h] at hzD'
     exact hM.trace pz (by have := hPZ.1; exact this) tz hPZ.2.1 hPZ.2.2.1.le (hPe ▸ hzD')
-  have hdist : dist z e < min r r' := hsb
+  have hdist := hsb
   have hzL : Chazelle.Chain.sideLeft M.W pz tz z :=
-    hleft z hzZ (by rw [hPe]; exact hze) (by rw [hPe]; exact lt_of_lt_of_le hdist (min_le_right _ _))
+    hleft z hzZ (by rwa [hPe]) (by rw [hPe]; exact lt_of_lt_of_le hdist (min_le_right _ _))
   have hzK : z ∈ connectedComponentIn (M.D \ c) k :=
     hs z (by rw [mem_ball, hPe]; exact lt_of_lt_of_le hdist (min_le_left _ _)) hzL
   -- the component is open, so the points just beside `z` are in it
@@ -78,7 +78,7 @@ theorem side_meets_comp (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     (hM.isOpen.sdiff hcl).connectedComponentIn
   have hev : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z.1, z.2 + ρ * δ) : Point) ∈ connectedComponentIn (M.D \ c) k := by
     have hc : Continuous (fun δ : ℝ => ((z.1, z.2 + ρ * δ) : Point)) := by fun_prop
-    have h0 : ((z.1, z.2 + ρ * 0) : Point) = z := by simp
+    have h0 : ((z.1, z.2 + ρ * 0) : Point) = z := by_s
     have := hc.tendsto 0
     rw [h0] at this
     exact (this.mono_left nhdsWithin_le_nhds) (hKo.mem_nhds hzK)

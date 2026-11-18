@@ -109,7 +109,7 @@ theorem rank_lt_of_lt {L : List ℝ} {v w : ℝ} (hv : v ∈ L) (h : v < w) : ra
       omega
     · have := ih hv'
       by_cases h1 : z < v
-      · have h2 : z < w := h1.trans h
+      · have h2 := h1.trans h
         simp only [h1, h2, decide_true, ↓reduceIte, List.length_cons]; omega
       · by_cases h2 : z < w
         · simp only [h1, h2, decide_true, decide_false, Bool.false_eq_true, ↓reduceIte,
@@ -123,7 +123,7 @@ theorem rank_lt_iff {L : List ℝ} {v w : ℝ} (hv : v ∈ L) (hw : w ∈ L) :
   · intro h
     by_contra h'
     rcases (not_lt.1 h').lt_or_eq with h'' | h''
-    · exact absurd (rank_lt_of_lt hw h'') (by omega)
+    · exact absurd (rank_lt_of_lt hw h'') by_o
     · rw [h''] at h; exact lt_irrefl _ h
 
 theorem rank_eq_iff {L : List ℝ} {v w : ℝ} (hv : v ∈ L) (hw : w ∈ L) :
@@ -182,7 +182,7 @@ def P2N (A B X Y K : ℕ) : Bool :=
     imp (!siaN X Y A && !siaN A B X && X == A) (siaN A B Y && CInN Y B K))
 
 theorem p1N_all : ∀ A, A < 6 → ∀ B, B < 6 → ∀ X, X < 6 → ∀ Y, Y < 6 → ∀ K, K < 6 →
-    P1N A B X Y K = true := by decide
+    P1N A B X Y K = true := by_d
 
 /-- P0 on ranks: the open interval of a piece lies in the open interval of the arc. -/
 def P0N (A B X Y K : ℕ) : Bool :=
@@ -194,10 +194,10 @@ def P0N (A B X Y K : ℕ) : Bool :=
     imp (!siaN X Y A && !siaN A B X && siaN A B Y && siaN Y B K) (siaN A B K))
 
 theorem p0N_all : ∀ A, A < 6 → ∀ B, B < 6 → ∀ X, X < 6 → ∀ Y, Y < 6 → ∀ K, K < 6 →
-    P0N A B X Y K = true := by decide
+    P0N A B X Y K = true := by_d
 
 theorem p2N_all : ∀ A, A < 6 → ∀ B, B < 6 → ∀ X, X < 6 → ∀ Y, Y < 6 → ∀ K, K < 6 →
-    P2N A B X Y K = true := by decide
+    P2N A B X Y K = true := by_d
 
 /-! ## The order facts on reals -/
 
@@ -215,7 +215,7 @@ theorem p1R (a b x y k : ℝ) (hxy : x ≠ y) :
     (¬ sideInArc x y a → ¬ sideInArc a b x → x = a → sideInArc a b y → CIn y b k →
         CIn a b k ∧ ¬ sideInArc x y k) ∧
     (¬ sideInArc x y a → ¬ sideInArc a b x → x ≠ a → CIn a b k → ¬ sideInArc x y k) := by
-  set L : List ℝ := [a, b, x, y, k] with hL
+  set L := [a, b, x, y, k] with hL
   have ma : a ∈ L := by simp [L]
   have mb : b ∈ L := by simp [L]
   have mx : x ∈ L := by simp [L]
@@ -260,9 +260,9 @@ theorem p1R (a b x y k : ℝ) (hxy : x ≠ y) :
 /-- The ranks of five reals, as a transfer package. -/
 theorem ranks5 (a b x y k : ℝ) : ∃ L : List ℝ, a ∈ L ∧ b ∈ L ∧ x ∈ L ∧ y ∈ L ∧ k ∈ L ∧
     rank L a < 6 ∧ rank L b < 6 ∧ rank L x < 6 ∧ rank L y < 6 ∧ rank L k < 6 := by
-  refine ⟨[a, b, x, y, k], by simp, by simp, by simp, by simp, by simp, ?_, ?_, ?_, ?_, ?_⟩ <;>
+  refine ⟨[a, b, x, y, k], by_s, by_s, by_s, by_s, by_s, ?_, ?_, ?_, ?_, ?_⟩ <;>
   · have := rank_lt_length [a, b, x, y, k]; simp only [List.length_cons, List.length_nil] at this
-    exact Nat.lt_of_le_of_lt (this _) (by norm_num)
+    exact Nat.lt_of_le_of_lt (this _) by_n
 
 set_option synthInstance.maxSize 100000 in
 set_option synthInstance.maxHeartbeats 1000000 in
@@ -391,18 +391,18 @@ theorem cut1_cover {a b x y : α} (hxy : key x ≠ key y) {k : ℝ} (hk : CIn (k
   obtain ⟨q1, q2, q3⟩ := p2R (key a) (key b) (key x) (key y) k hxy hk hk'
   unfold cut1 cutK
   split_ifs with h1 h2 h3 h4 h5 h6 h7
-  · exact ⟨(y, x), by simp, (q1 h1).2.1 h3⟩
-  · exact ⟨(y, b), by simp, (q1 h1).2.2 h3⟩
+  · exact ⟨(y, x), by_s, (q1 h1).2.1 h3⟩
+  · exact ⟨(y, b), by_s, (q1 h1).2.2 h3⟩
   · exact absurd (q1 h1).1 h2
   · rcases q2 h1 h4 with h | ⟨-, h⟩
-    · exact ⟨(a, x), by simp, h⟩
-    · exact ⟨(y, b), by simp, h⟩
+    · exact ⟨(a, x), by_s, h⟩
+    · exact ⟨(y, b), by_s, h⟩
   · rcases q2 h1 h4 with h | ⟨h', -⟩
-    · exact ⟨(a, x), by simp, h⟩
+    · exact ⟨(a, x), by_s, h⟩
     · exact absurd h' h5
-  · exact ⟨(y, b), by simp, (q3 h1 h4 h6).2⟩
+  · exact ⟨(y, b), by_s, (q3 h1 h4 h6).2⟩
   · exact absurd (q3 h1 h4 h6).1 h7
-  · exact ⟨(a, b), by simp, hk⟩
+  · exact ⟨(a, b), by_s, hk⟩
 
 /-! ## Several holes -/
 
@@ -423,7 +423,7 @@ theorem leaves_open {hs : List (α × α)} (hh : HolesOK key hs) {p uv : α × �
   | cons g hs ih =>
     simp only [leaves, List.mem_flatMap] at h
     obtain ⟨q, hq, hq'⟩ := h
-    exact cut1_open key (hh g (by simp)) hq
+    exact cut1_open key (hh g by_s) hq
       (ih (fun h' hm => hh h' (List.mem_cons_of_mem _ hm)) hq')
 
 /-- **P1 for several holes.** -/
@@ -438,7 +438,7 @@ theorem leaves_sub {hs : List (α × α)} (hh : HolesOK key hs) {p uv : α × α
     simp only [leaves, List.mem_flatMap] at h
     obtain ⟨q, hq, hq'⟩ := h
     obtain ⟨h1, h2⟩ := ih (fun h' hm => hh h' (List.mem_cons_of_mem _ hm)) hq'
-    obtain ⟨h3, h4⟩ := cut1_sub key (hh g (by simp)) hq h1
+    obtain ⟨h3, h4⟩ := cut1_sub key (hh g by_s) hq h1
     refine ⟨h3, fun g' hg' => ?_⟩
     rcases List.mem_cons.1 hg' with rfl | hg'
     · exact h4
@@ -451,7 +451,7 @@ theorem leaves_cover {hs : List (α × α)} (hh : HolesOK key hs) {p : α × α}
   induction hs generalizing p with
   | nil => exact ⟨p, by simp [leaves], hk⟩
   | cons g hs ih =>
-    obtain ⟨q, hq, hq'⟩ := cut1_cover key (hh g (by simp)) hk (hk' g (by simp))
+    obtain ⟨q, hq, hq'⟩ := cut1_cover key (hh g by_s) hk (hk' g by_s)
     obtain ⟨uv, huv, huv'⟩ := ih (fun h' hm => hh h' (List.mem_cons_of_mem _ hm)) hq'
       (fun g' hg' => hk' g' (List.mem_cons_of_mem _ hg'))
     exact ⟨uv, by simp only [leaves, List.mem_flatMap]; exact ⟨q, hq, huv⟩, huv'⟩

@@ -197,7 +197,7 @@ theorem star_faceDeg [Fintype D] [DecidableEq D] (g : D) : (star M).faceDeg g = 
       rw [Perm.inv_eq_iff_eq]
       simp
   rw [this]
-  rw [Finset.card_insert_of_notMem (by simp), Finset.card_insert_of_notMem (by simp),
+  rw [Finset.card_insert_of_notMem by_s, Finset.card_insert_of_notMem by_s,
     Finset.card_singleton]
 
 /-- **Connectivity is preserved.** -/
@@ -205,7 +205,7 @@ theorem star_connected (hM : M.Connected) : (star M).Connected := by
   intro S hrot hopp x hx y
   -- the old darts in `S` form a nonempty rotation- and opposite-closed set
   have hinv : ∀ z ∈ S, (starRot M)⁻¹ z ∈ S := fun z hz => mem_of_inv_mem (starRot M) S hrot hz
-  set S0 : Set D := {d | Sum.inl d ∈ S}
+  set S0 := {d | Sum.inl d ∈ S}
   have h0rot : ∀ d ∈ S0, M.rot d ∈ S0 := by
     intro d hd
     exact hrot _ (hrot _ hd)

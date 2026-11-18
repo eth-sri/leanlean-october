@@ -42,13 +42,13 @@ theorem key_eq_nat {p e : ℕ} {τ : ℝ} (h0 : 0 ≤ τ) (h1 : τ ≤ 1) (h : (
     (p = e ∧ τ = 0) ∨ (p + 1 = e ∧ τ = 1) := by
   rcases h1.lt_or_eq with h1 | h1
   · left
-    have a1 : (p : ℝ) ≤ e := by linarith
-    have a2 : (e : ℝ) < p + 1 := by linarith
+    have a1 : (p : ℝ) ≤ e := by_l
+    have a2 : (e : ℝ) < p + 1 := by_l
     have b1 : p ≤ e := by exact_mod_cast a1
     have b2 : e < p + 1 := by exact_mod_cast a2
-    have hp : p = e := by omega
+    have hp : p = e := by_o
     subst hp
-    exact ⟨rfl, by linarith⟩
+    exact ⟨rfl, by_l⟩
   · right
     subst h1
     have : ((p + 1 : ℕ) : ℝ) = e := by push_cast; linarith
@@ -57,8 +57,8 @@ theorem key_eq_nat {p e : ℕ} {τ : ℝ} (h0 : 0 ≤ τ) (h1 : τ ≤ 1) (h : (
 /-- A key strictly between `e` and `e + 1` at a position `(p, τ)`: the position is on edge `e`. -/
 theorem key_between {p e : ℕ} {τ : ℝ} (h0 : 0 ≤ τ) (h1 : τ ≤ 1) (ha : (e : ℝ) < p + τ)
     (hb : (p : ℝ) + τ < e + 1) : p = e := by
-  have a1 : (p : ℝ) < e + 1 := by linarith
-  have a2 : (e : ℝ) < p + 1 := by linarith
+  have a1 : (p : ℝ) < e + 1 := by_l
+  have a2 : (e : ℝ) < p + 1 := by_l
   have b1 : p < e + 1 := by exact_mod_cast a1
   have b2 : e < p + 1 := by exact_mod_cast a2
   omega
@@ -73,7 +73,7 @@ theorem edge_keys (W : Polygon) {e : ℕ} (he : e < W.n) {p : ℕ} (hp : p < W.n
     rcases key_eq_nat h0 h1 h with ⟨rfl, rfl⟩ | ⟨hpe, rfl⟩
     · exact ⟨0, le_rfl, zero_le_one, rfl⟩
     · refine ⟨0, le_rfl, zero_le_one, ?_⟩
-      rw [sidePt_zero, sidePt_one', ← hpe, Nat.mod_eq_of_lt (by omega)]
+      rw [sidePt_zero, sidePt_one', ← hpe, Nat.mod_eq_of_lt by_o]
   -- the end vertex of the edge
   have at_f : (p : ℝ) + τ = (((e + 1) % W.n : ℕ) : ℝ) →
       ∃ t₂ : ℝ, 0 ≤ t₂ ∧ t₂ ≤ 1 ∧ sidePt W e t₂ = sidePt W p τ := by
@@ -89,7 +89,7 @@ theorem edge_keys (W : Polygon) {e : ℕ} (he : e < W.n) {p : ℕ} (hp : p < W.n
     rcases Nat.lt_or_ge (e + 1) W.n with hlt | hge
     · rw [Nat.mod_eq_of_lt hlt] at hin
       push_cast at hin
-      rw [ite_eq_left (by linarith)] at hin
+      rw [ite_eq_left by_l] at hin
       have := key_between h0 h1 hin.1 hin.2
       subst this
       exact ⟨τ, h0, h1, rfl⟩
@@ -99,7 +99,7 @@ theorem edge_keys (W : Polygon) {e : ℕ} (he : e < W.n) {p : ℕ} (hp : p < W.n
       rw [ite_eq_right (by have : (0 : ℝ) ≤ e := Nat.cast_nonneg _; linarith)] at hin
       rcases hin with hin | hin
       · have hpe : p = e := by
-          have a1 : (e : ℝ) < p + 1 := by linarith
+          have a1 : (e : ℝ) < p + 1 := by_l
           have b1 : e < p + 1 := by exact_mod_cast a1
           omega
         subst hpe
@@ -113,10 +113,10 @@ theorem prevV_succ {n q : ℕ} (hn : 2 ≤ n) (hq : q < n) : (prevV n q + 1) % n
   unfold prevV
   rcases Nat.eq_zero_or_pos q with rfl | h0
   · have : (0 + n - 1) % n = n - 1 := by
-      rw [show 0 + n - 1 = n - 1 by omega]; exact Nat.mod_eq_of_lt (by omega)
+      rw [show 0 + n - 1 = n - 1 by omega]; exact Nat.mod_eq_of_lt by_o
     rw [this, show n - 1 + 1 = n by omega, Nat.mod_self]
   · have : (q + n - 1) % n = q - 1 := by
-      rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     rw [this, show q - 1 + 1 = q by omega, Nat.mod_eq_of_lt hq]
 
 /-- **The key interval of a vertex hole** is the union of those of its two walk edges. -/
@@ -124,20 +124,20 @@ theorem vtx_keys_split {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) {k : ℝ} (hk0 : 
     (_hkn : k ≤ n) (h : CIn ((prevV n q : ℕ) : ℝ) (((q + 1) % n : ℕ) : ℝ) k) :
     CIn ((prevV n q : ℕ) : ℝ) (((prevV n q + 1) % n : ℕ) : ℝ) k ∨
       CIn (q : ℝ) (((q + 1) % n : ℕ) : ℝ) k := by
-  have hpq : (prevV n q + 1) % n = q := prevV_succ (by omega) hq
+  have hpq : (prevV n q + 1) % n = q := prevV_succ by_o hq
   rw [hpq]
   unfold CIn sideInArc at h ⊢
   unfold prevV at h ⊢
   rcases Nat.eq_zero_or_pos q with rfl | h0
   · -- q = 0: the interval [n - 1, 1] wraps
-    rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt (by omega),
+    rw [show 0 + n - 1 = n - 1 by omega, Nat.mod_eq_of_lt by_o,
       Nat.mod_eq_of_lt (by omega : 0 + 1 < n)] at h ⊢
-    have e1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have e1 : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by rw [Nat.cast_sub by_o]; simp
     rw [e1] at h ⊢
     push_cast at h ⊢
     have hn' : (3 : ℝ) ≤ n := by exact_mod_cast hn
-    rw [ite_eq_right (by linarith)] at h
-    rw [ite_eq_right (by linarith), ite_eq_left (by linarith)]
+    rw [ite_eq_right by_l] at h
+    rw [ite_eq_right by_l, ite_eq_left by_l]
     rcases h with (h | h) | h | h
     · left; left; left; exact h
     · rcases lt_or_ge k 0 with h' | h'
@@ -149,14 +149,14 @@ theorem vtx_keys_split {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) {k : ℝ} (hk0 : 
     · right; right; right; exact h
   · rw [show q + n - 1 = (q - 1) + n by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt (by omega : q - 1 < n)] at h ⊢
-    have e1 : ((q - 1 : ℕ) : ℝ) = (q : ℝ) - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    have e1 : ((q - 1 : ℕ) : ℝ) = (q : ℝ) - 1 := by rw [Nat.cast_sub by_o]; simp
     rw [e1] at h ⊢
     rcases Nat.lt_or_ge (q + 1) n with hlt | hge
     · -- no wrap
       rw [Nat.mod_eq_of_lt hlt] at h ⊢
       push_cast at h ⊢
-      rw [ite_eq_left (by linarith)] at h
-      rw [ite_eq_left (by linarith), ite_eq_left (by linarith)]
+      rw [ite_eq_left by_l] at h
+      rw [ite_eq_left by_l, ite_eq_left by_l]
       rcases h with ⟨ha, hb⟩ | h | h
       · rcases lt_trichotomy k q with h' | h' | h'
         · left; left; exact ⟨ha, h'⟩
@@ -165,12 +165,12 @@ theorem vtx_keys_split {n q : ℕ} (hn : 3 ≤ n) (hq : q < n) {k : ℝ} (hk0 : 
       · left; right; left; exact h
       · right; right; right; exact h
     · -- q = n - 1: the interval [n - 2, 0] wraps
-      have hq1 : q + 1 = n := by omega
+      have hq1 : q + 1 = n := by_o
       rw [hq1, Nat.mod_self] at h ⊢
       push_cast at h ⊢
       have hq' : (q : ℝ) + 1 = n := by exact_mod_cast hq1
-      rw [ite_eq_right (by linarith)] at h
-      rw [ite_eq_left (by linarith), ite_eq_right (by linarith)]
+      rw [ite_eq_right by_l] at h
+      rw [ite_eq_left by_l, ite_eq_right by_l]
       rcases h with (h | h) | h | h
       · rcases lt_trichotomy k q with h' | h' | h'
         · left; left; exact ⟨h, h'⟩
@@ -201,8 +201,8 @@ theorem near_vHole (M : Model) (Q : Polygon) (hn : 3 ≤ M.W.n) {q : ℕ} (hq : 
   have hkn : (p : ℝ) + τ ≤ M.W.n := by
     have : ((p + 1 : ℕ) : ℝ) ≤ M.W.n := by exact_mod_cast hp
     push_cast at this; linarith
-  have hpv : prevV M.W.n q < M.W.n := by unfold prevV; exact Nat.mod_lt _ (by omega)
-  have hpq : (prevV M.W.n q + 1) % M.W.n = q := prevV_succ (by omega) hq
+  have hpv : prevV M.W.n q < M.W.n := by unfold prevV; exact Nat.mod_lt _ by_o
+  have hpq : (prevV M.W.n q + 1) % M.W.n = q := prevV_succ by_o hq
   rcases vtx_keys_split hn hq hk0 hkn hk with h | h
   · refine ⟨prevV M.W.n q, hpv, ⟨1, zero_le_one, le_rfl, ?_⟩, edge_keys M.W hpv hp h0 h1 h⟩
     rw [sidePt_one', hpq, hz]

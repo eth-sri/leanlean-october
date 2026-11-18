@@ -57,8 +57,8 @@ theorem placeB_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
         (g.base 42 + b) (q + 1) := by
   have hU := g.U_ge; have hE := g.END_eq; have b35 := g.base_eq 35; have b42 := g.base_eq 42
   have b43 := g.base_eq 43; have b44 := g.base_eq 44; have b45 := g.base_eq 45
-  have r65 := hG.rbase 35 (by omega); have r72 := hG.rbase 42 (by omega)
-  have r73 := hG.rbase 43 (by omega); have r74 := hG.rbase 44 (by omega)
+  have r65 := hG.rbase 35 by_o; have r72 := hG.rbase 42 by_o
+  have r73 := hG.rbase 43 by_o; have r74 := hG.rbase 44 by_o
   have r1 := hG.one
   unfold placeB
   exec_block
@@ -69,11 +69,11 @@ theorem placeB_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   · config_simp; rw [r72, r65, h65, hb, hq, r1]; omega
   · refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a ha => ?_⟩, by config_simp, ?_⟩
     · simp only; unfold PLRG at hr
-      repeat (rw [Machine.upd_other _ _ _ (by omega)])
+      upd_keep
     · config_simp; unfold PlMem at ha
       rw [r74, r73, r72, r65, h65, hb, hq, h63]
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
+      rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o]
     · config_simp; rw [r74, r73, r72, r65, h65, hb, hq, h63, r1]
 
 set_option maxHeartbeats 2000000 in
@@ -87,7 +87,7 @@ theorem lightB_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       c'.nmem = if h ≠ 1 then upd (upd (upd c.nmem (g.base 43 + q) v) (g.base 44 + v) q)
         (g.base 42 + b) (q + 1) else c.nmem := by
   have hU := g.U_ge; have hE := g.END_eq; have b3 := g.base_eq 3; have b36 := g.base_eq 36
-  have r33 := hG.rbase 3 (by omega); have r66 := hG.rbase 36 (by omega)
+  have r33 := hG.rbase 3 by_o; have r66 := hG.rbase 36 by_o
   have r1 := hG.one
   obtain ⟨c1, k1, e1, hk1, hw1, hf1, h65, h66, h63', h60, hm1⟩ : ∃ c1 k1, Exec P W
       (block [.addN 130861 130033 130863, .loadN 130865 130861,
@@ -100,7 +100,7 @@ theorem lightB_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     · refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, ?_, ?_, ?_,
         by config_simp, rfl⟩
       · simp only; unfold PLRG at hr
-        repeat (rw [Machine.upd_other _ _ _ (by omega)])
+        upd_keep
       · config_simp; rw [r33, h63, hlev]
       · config_simp; rw [r66, r33, h63, hlev, hh]
       · config_simp; exact h63
@@ -110,14 +110,14 @@ theorem lightB_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   by_cases hp : h < 1
   · have hne : h ≠ 1 := by omega
     obtain ⟨c2, k2, e2, hk2, hw2, hf2, h60', hm2⟩ := placeB_exec (P := P) hw1 hG1 h63' hv h65 hl
-      (by rw [hm1]; exact hb) (hbμ hne) (by rw [hm1]; exact hq) (hqμ hne) hW
-    refine ⟨c2, k1 + (k2 + 1), .seq e1 (.ifLtN_true (by rw [h66, r1']; exact hp) e2), by omega,
+      (by rwa [hm1]) (hbμ hne) (by rwa [hm1]) (hqμ hne) hW
+    refine ⟨c2, k1 + (k2 + 1), .seq e1 (.ifLtN_true (by rwa [h66, r1']) e2), by_o,
       hw2, hf1.trans hf2, by rw [h60', h60], ?_⟩
     rw [ite_eq_left hne, hm2, hm1]
   · have he : h = 1 := by omega
-    refine ⟨c1, k1 + (0 + 2), .seq e1 (.ifLtN_false (by rw [h66, r1']; exact hp) (.skip hw1)),
-      by omega, hw1, hf1, h60, ?_⟩
-    rw [ite_eq_right (by omega), hm1]
+    refine ⟨c1, k1 + (0 + 2), .seq e1 (.ifLtN_false (by rwa [h66, r1']) (.skip hw1)),
+      by_o, hw1, hf1, h60, ?_⟩
+    rw [ite_eq_right by_o, hm1]
 
 set_option maxHeartbeats 2000000 in
 /-- **One placement step.** -/
@@ -136,7 +136,7 @@ theorem placeBody_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g 
         (g.base 44 + v) q) (g.base 42 + b) (q + 1) else c.nmem := by
   have hU := g.U_ge; have hE := g.END_eq; have b32 := g.base_eq 32; have b0 := g.base_eq 0
   have hN : g.N ≤ g.U := by have := g.U_ge; omega
-  have r62 := hG.rbase 32 (by omega); have r30 := hG.rbase 0 (by omega)
+  have r62 := hG.rbase 32 by_o; have r30 := hG.rbase 0 by_o
   have r23 := hG.rV; have r1 := hG.one
   obtain ⟨c1, k1, e1, hk1, hw1, hf1, h62, h63, h64, h60', hm1⟩ : ∃ c1 k1, Exec P W
       (block [.addN 130861 130062 130860, .loadN 130862 130861,
@@ -150,7 +150,7 @@ theorem placeBody_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g 
     · config_simp; rw [r30, r23, r62, h60, hinv, hvert]; omega
     · refine ⟨rfl, ‹_›, ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, ?_, ?_, ?_, ?_, rfl⟩
       · simp only; unfold PLRG at hr
-        repeat (rw [Machine.upd_other _ _ _ (by omega)])
+        upd_keep
       · config_simp; rw [r62, h60, hinv]
       · config_simp; rw [r23, r62, h60, hinv, hvert]
       · config_simp; rw [r30, r23, r62, h60, hinv, hvert, hfst]
@@ -162,20 +162,20 @@ theorem placeBody_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g 
       c2.nmem = if f = gg ∧ h ≠ 1 then upd (upd (upd c.nmem (g.base 43 + q) v)
         (g.base 44 + v) q) (g.base 42 + b) (q + 1) else c.nmem := by
     by_cases h1 : f < gg
-    · refine ⟨c1, 0 + 1, .ifLtN_true (by rw [h64, h62]; exact h1) (.skip hw1), by omega, hw1,
+    · refine ⟨c1, 0 + 1, .ifLtN_true (by rwa [h64, h62]) (.skip hw1), by_o, hw1,
         PFr.refl c1, h60', ?_⟩
-      rw [ite_eq_right (by omega), hm1]
+      rw [ite_eq_right by_o, hm1]
     by_cases h2 : gg < f
-    · refine ⟨c1, (0 + 1) + 2, .ifLtN_false (by rw [h64, h62]; exact h1)
-        (.ifLtN_true (by rw [h64, h62]; exact h2) (.skip hw1)), by omega, hw1,
+    · refine ⟨c1, (0 + 1) + 2, .ifLtN_false (by rwa [h64, h62])
+        (.ifLtN_true (by rwa [h64, h62]) (.skip hw1)), by_o, hw1,
         PFr.refl c1, h60', ?_⟩
-      rw [ite_eq_right (by omega), hm1]
-    have hfg : f = gg := by omega
+      rw [ite_eq_right by_o, hm1]
+    have hfg : f = gg := by_o
     obtain ⟨c3, k3, e3, hk3, hw3, hf3, h603, hm3⟩ := lightB_exec (P := P) hw1 hG1 h63 hv
       (by rw [hm1]; exact hlev hfg) (hl hfg) (by rw [hm1]; exact hh hfg) (hh1 hfg)
       (by rw [hm1]; exact hb hfg) (hbμ hfg) (by rw [hm1]; exact hq hfg) (hqμ hfg) hW
-    refine ⟨c3, (k3 + 2) + 2, .ifLtN_false (by rw [h64, h62]; exact h1)
-      (.ifLtN_false (by rw [h64, h62]; exact h2) e3), by omega, hw3, hf3,
+    refine ⟨c3, (k3 + 2) + 2, .ifLtN_false (by rwa [h64, h62])
+      (.ifLtN_false (by rwa [h64, h62]) e3), by_o, hw3, hf3,
       by rw [h603]; exact h60', ?_⟩
     rw [hm3, hm1]
     by_cases hh' : h ≠ 1
@@ -184,7 +184,7 @@ theorem placeBody_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g 
   have r1' : c2.nreg 130001 = 1 := by
     rw [hf2.1 _ (by unfold PLRG; omega), hf1.1 _ (by unfold PLRG; omega)]; exact r1
   have e3 := Exec.addN (P := P) hw2 130860 130860 130001 (by rw [h60'', r1']; omega)
-  refine ⟨_, k1 + (k2 + 1), .seq e1 (.seq e2 e3), by omega, e3.wb_right,
+  refine ⟨_, k1 + (k2 + 1), .seq e1 (.seq e2 e3), by_o, e3.wb_right,
     (hf1.trans hf2).trans ⟨fun r hr => ?_, rfl, rfl, rfl, fun a _ => rfl⟩, ?_, hm2⟩
   · simp only [Machine.upd_other _ _ _ (show r ≠ 130860 by unfold PLRG at hr; omega)]
   · simp only [Machine.upd_same]; rw [h60'', r1']

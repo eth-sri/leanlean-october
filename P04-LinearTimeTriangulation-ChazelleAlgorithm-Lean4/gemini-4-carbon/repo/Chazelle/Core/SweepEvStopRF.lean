@@ -143,13 +143,13 @@ theorem orgMain_irs {m2 m1 : Stmt → Stmt} {fin : Stmt} {κ2 κ1 κF : ℕ → 
   set a := stOrig J (Qof P) N₂ kind k b with ha
   obtain ⟨-, ha2, -, -, -⟩ := stOrig_facts E.hP E.hNF₂ hD.ok
   -- 1. the candidate of `C₂`
-  refine IRS.seq (H2 sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hM hD hpos (by omega)) ?_
+  refine IRS.seq (H2 sh Bs F X Ok P W c₀ c J N₁ N₂ E hI hM hD hpos by_o) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨⟨r2, par2⟩, fr2⟩
   have e2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ M2R r → r ≠ ALLOC → c₂.nreg r = c.nreg r :=
     fun r h1 h2 h3 h4 => fr2.keep h1 h2 h3 h4
   have n2 : ∀ r, sw 4010 ≤ r → r ≤ sw 4023 → c₂.nreg r = c.nreg r := fun r h1 h2 =>
-    e2 r (by unfold sw at *; omega) (by unfold sw at *; omega) (by unfold M2R sw at *; omega)
-      (by unfold ALLOC sw at *; omega)
+    e2 r by_so by_so (by unfold M2R sw at *; omega)
+      by_so
   have c2Kd : c₂.nreg oKd = kind := n2 _ (by unfold oKd; omega) (by unfold oKd sw; omega)
   have c2Kk : c₂.nreg oKk = k := n2 _ (by unfold oKk sw; omega) (by unfold oKk sw; omega)
   have c2B : c₂.nreg oB = b := n2 _ (by unfold oB sw; omega) (by unfold oB sw; omega)
@@ -158,7 +158,7 @@ theorem orgMain_irs {m2 m1 : Stmt → Stmt} {fin : Stmt} {κ2 κ1 κF : ℕ → 
   have hD₂ : OrgD P J N₂ (c₂.nreg oKd) (c₂.nreg oKk) (c₂.nreg oB) := by
     rw [c2Kd, c2Kk, c2B]; exact hD
   have hpos₂ : OrgPos P J N₂ (c₂.nreg oKd) (c₂.nreg oKk) (c₂.nreg oB) (c₂.nreg oPE)
-      (c₂.nreg oPH) := by rw [c2Kd, c2Kk, c2B, c2PE, c2PH]; exact hpos
+      (c₂.nreg oPH) := by rwa [c2Kd, c2Kk, c2B, c2PE, c2PH]
   -- 2. the candidate of `C₁`
   refine IRS.seq ((H1 sh Bs F X Ok P W c₀ c₂ J N₁ N₂ E hI₂ hD₂ hpos₂ (by rw [c2Kd]; omega)).mono
     (by rw [c2Kd]) (fun _ h => h)) ?_
@@ -168,8 +168,8 @@ theorem orgMain_irs {m2 m1 : Stmt → Stmt} {fin : Stmt} {κ2 κ1 κF : ℕ → 
     fun r h1 h2 h3 h4 => fr3.keep h1 h2 h3 h4
   have n3 : ∀ r, (sw 4010 ≤ r ∧ r ≤ sw 4026) ∨ (sw 4040 ≤ r ∧ r ≤ sw 4046) →
       c₃.nreg r = c₂.nreg r := fun r h =>
-    e3 r (by unfold sw at *; omega) (by unfold sw at *; omega) (by unfold M1R sw at *; omega)
-      (by unfold ALLOC sw at *; omega)
+    e3 r by_so by_so (by unfold M1R sw at *; omega)
+      by_so
   have c3B : c₃.nreg oB = b := by rw [n3 _ (Or.inl ⟨by unfold oB sw; omega, by unfold oB sw; omega⟩), c2B]
   have c3NB : c₃.nreg oNB = 1 - b := by
     rw [n3 _ (Or.inl ⟨by unfold oNB sw; omega, by unfold oNB sw; omega⟩),
@@ -177,18 +177,18 @@ theorem orgMain_irs {m2 m1 : Stmt → Stmt} {fin : Stmt} {κ2 κ1 κF : ℕ → 
   have r2' : ResOK P J.right a (dirOf b) (FreeAt J.right a (dirOf b)) r2F c₃ :=
     r2.transport fun i hi => n3 _ (Or.inr ⟨by unfold r2F sw; omega, by unfold r2F sw; omega⟩)
   -- 3. the far end
-  refine IRS.seq (stWin_irs E hI₃ hD c3B c3NB r1 r2' (by omega)) ?_
+  refine IRS.seq (stWin_irs E hI₃ hD c3B c3NB r1 r2' by_o) ?_
   rintro c₄ hI₄ hA₄ hA₄' ⟨w1, w2, w3, fr4⟩
   have e4 : ∀ r, 240000 ≤ r → r < 250000 → ¬ WinR r → r ≠ ALLOC → c₄.nreg r = c₃.nreg r :=
     fun r h1 h2 h3 h4 => fr4.keep h1 h2 h3 h4
   have n4 : ∀ r, sw 4000 ≤ r → r ≤ sw 4023 → c₄.nreg r = c.nreg r := by
     intro r h1 h2
-    rw [e4 r (by unfold sw at *; omega) (by unfold sw at *; omega) (by unfold WinR sw at *; omega)
-      (by unfold ALLOC sw at *; omega),
-      e3 r (by unfold sw at *; omega) (by unfold sw at *; omega) (by unfold M1R sw at *; omega)
-      (by unfold ALLOC sw at *; omega),
-      e2 r (by unfold sw at *; omega) (by unfold sw at *; omega) (by unfold M2R sw at *; omega)
-      (by unfold ALLOC sw at *; omega)]
+    rw [e4 r by_so by_so (by unfold WinR sw at *; omega)
+      by_so,
+      e3 r by_so by_so (by unfold M1R sw at *; omega)
+      by_so,
+      e2 r by_so by_so (by unfold M2R sw at *; omega)
+      by_so]
   have c4Kd : c₄.nreg oKd = kind := n4 _ (by unfold oKd sw; omega) (by unfold oKd sw; omega)
   have c4Kk : c₄.nreg oKk = k := n4 _ (by unfold oKk sw; omega) (by unfold oKk sw; omega)
   have c4B : c₄.nreg oB = b := n4 _ (by unfold oB sw; omega) (by unfold oB sw; omega)
@@ -216,13 +216,13 @@ theorem orgMain_irs {m2 m1 : Stmt → Stmt} {fin : Stmt} {κ2 κ1 κF : ℕ → 
         (by unfold ALLOC pH2 sw; omega)]
     rw [p1, p2]
     exact par2 hk1 (free_right hD.free ha2)
-  have hAl : c.nreg ALLOC ≤ c₄.nreg ALLOC := by omega
-  refine (HF sh Bs F X Ok P W c₀ c₄ J N₁ N₂ E hI₄ hD₄ hpre (by rw [c4RB]; exact hR0)
+  have hAl : c.nreg ALLOC ≤ c₄.nreg ALLOC := by_o
+  refine (HF sh Bs F X Ok P W c₀ c₄ J N₁ N₂ E hI₄ hD₄ hpre (by rwa [c4RB])
     (by rw [c4RB, c4RC]; omega) (by rw [c4Kd]; omega)).mono (by rw [c4Kd]) ?_
   intro c' hout
   rw [c4Kd, c4Kk, c4B] at hout
   refine OrgOut.lift hout c4RC c4RB hAl (fun x hx => ?_) (fun r h1 h2 h3 => ?_)
-  · rw [fr4.2.2 x (by omega), fr3.2.2 x (by omega), fr2.2.2 x hx]
+  · rw [fr4.2.2 x by_o, fr3.2.2 x by_o, fr2.2.2 x hx]
   · have h2' : ¬ ((sw 700 ≤ r ∧ r < sw 2200) ∨ r = gRC ∨ (sw 3000 ≤ r ∧ r < sw 4000) ∨
       (sw 4010 ≤ r ∧ r < sw 4200) ∨ (sw 5000 ≤ r ∧ r < sw 6000)) := h2
     rw [fr4.1 r h1 (by unfold WinR at *; unfold sw at *; omega) h3,
@@ -237,13 +237,13 @@ def κOrg (κ2 κ1 κF : ℕ → ℕ) (D : ℕ) : ℕ := 70663 + κ2 D + κ1 D +
 theorem org_cost_le (κ2 κ1 κF : ℕ → ℕ) (D M G : ℕ) (hM : 1 ≤ M) (hG : 1 ≤ G) :
     30 + (35029 + (κ2 D * G + (κ1 D * M * G + (35600 + κF D * M * G)) + 2) + 2) ≤
       κOrg κ2 κ1 κF D * M * G := by
-  have hMG : 1 ≤ M * G := Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
+  have hMG : 1 ≤ M * G := Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero by_o by_o)
   have e : κOrg κ2 κ1 κF D * M * G =
       70663 * (M * G) + κ2 D * (M * G) + κ1 D * M * G + κF D * M * G := by
     unfold κOrg; ring
   have h2 : κ2 D * G ≤ κ2 D * (M * G) :=
-    Nat.mul_le_mul_left _ (by nlinarith)
-  have h0 : 70663 ≤ 70663 * (M * G) := by omega
+    Nat.mul_le_mul_left _ by_nl
+  have h0 : 70663 ≤ 70663 * (M * G) := by_o
   omega
 
 set_option maxHeartbeats 2000000 in
@@ -258,7 +258,7 @@ theorem orgTask_of' (h2 : M2Task) (h1 : M1Task) (hF : FinTask) : OrgTask := by
   set G := F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1 with hG
   set M := (if c.nreg oKd = 1 then 1 else N₁.nChords + N₂.nChords + 1) with hMdef
   have hM1 : 1 ≤ M := by rw [hMdef]; split_ifs <;> omega
-  have hG1 : 1 ≤ G := by omega
+  have hG1 : 1 ≤ G := by_o
   have hcost := org_cost_le κ2 κ1 κF D M G hM1 hG1
   set Km := κ2 D * G + (κ1 D * M * G + (35600 + κF D * M * G)) with hKm
   set kind := c.nreg oKd with hkind
@@ -272,8 +272,8 @@ theorem orgTask_of' (h2 : M2Task) (h1 : M1Task) (hF : FinTask) : OrgTask := by
   have e1 : ∀ r, 240000 ≤ r → r < 250000 → ¬ LdW r → r ≠ ALLOC → c₁.nreg r = c.nreg r :=
     fun r h1 h2 h3 h4 => fr1.keep h1 h2 h3 h4
   have k1 : ∀ r, (sw 4000 ≤ r ∧ r ≤ sw 4012) ∨ (sw 4020 ≤ r ∧ r ≤ sw 4023) → c₁.nreg r = c.nreg r :=
-    fun r h => e1 r (by unfold sw at *; omega) (by unfold sw at *; omega)
-      (by unfold LdW LdW₀ oNB oPE oPH oAd tX tR sw at *; omega) (by unfold ALLOC sw at *; omega)
+    fun r h => e1 r by_so by_so
+      (by unfold LdW LdW₀ oNB oPE oPH oAd tX tR sw at *; omega) by_so
   have c1Kd : c₁.nreg oKd = kind := k1 _ (Or.inl ⟨by unfold oKd sw; omega, by unfold oKd sw; omega⟩)
   have c1Kk : c₁.nreg oKk = k := k1 _ (Or.inl ⟨by unfold oKk sw; omega, by unfold oKk sw; omega⟩)
   have c1B : c₁.nreg oB = b := k1 _ (Or.inl ⟨by unfold oB sw; omega, by unfold oB sw; omega⟩)
@@ -286,16 +286,16 @@ theorem orgTask_of' (h2 : M2Task) (h1 : M1Task) (hF : FinTask) : OrgTask := by
   refine IRS.ite (fun hAd => ?_) (fun hAd => ?_)
   · -- an admissible code
     have hAd1 : c₁.nreg oAd = 1 := by rw [k1K0] at hAd; omega
-    have hok : StOK P J N₂ kind k b := ld3.1 hAd1
+    have hok := ld3.1 hAd1
     have hpos := ld4 hAd1
     refine IRS.seq (K₁ := 35029) (K₂ := Km + 2) (stA_irs E.hP E.hNF₂ hI₁ E.hK (E.fx hI₁) hok c1B
-      hpos.2.2.2.1 hpos.2.2.1 hpos.2.1 (by have := E.hWn; omega) (by omega)) ?_
+      hpos.2.2.2.1 hpos.2.2.1 hpos.2.1 (by have := E.hWn; omega) by_o) ?_
     rintro c₂ hI₂ hA₂ hA₂' ⟨f1, f2, f3, fr2⟩
     have e2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ StAW r → r ≠ ALLOC → c₂.nreg r = c₁.nreg r :=
       fun r h1 h2 h3 h4 => fr2.keep h1 h2 h3 h4
     have k2 : ∀ r, sw 4000 ≤ r → r ≤ sw 4017 → c₂.nreg r = c₁.nreg r := fun r h1 h2 =>
-      e2 r (by unfold sw at *; omega) (by unfold sw at *; omega)
-        (by unfold StAW CvSet oXE cX cT cDd oF0 sw at *; omega) (by unfold ALLOC sw at *; omega)
+      e2 r by_so by_so
+        (by unfold StAW CvSet oXE cX cT cDd oF0 sw at *; omega) by_so
     have c2Kd : c₂.nreg oKd = kind := by rw [k2 _ (by unfold oKd sw; omega) (by unfold oKd sw; omega), c1Kd]
     have c2Kk : c₂.nreg oKk = k := by rw [k2 _ (by unfold oKk sw; omega) (by unfold oKk sw; omega), c1Kk]
     have c2B : c₂.nreg oB = b := by rw [k2 _ (by unfold oB sw; omega) (by unfold oB sw; omega), c1B]
@@ -311,7 +311,7 @@ theorem orgTask_of' (h2 : M2Task) (h1 : M1Task) (hF : FinTask) : OrgTask := by
         unfold StAW CvSet oXE cX cT cDd oF0 at hx; unfold SOrgR; unfold sw at *; omega)) h3).trans
         (fr1S r h1 h2 h3)
     have hmem2 : ∀ x, x < c.nreg ALLOC → c₂.nmem x = c.nmem x := fun x hx => by
-      rw [fr2.2.2 x (by omega), fr1.2.2 x hx]
+      rw [fr2.2.2 x by_o, fr1.2.2 x hx]
     refine IRS.ite (fun hF0 => ?_) (fun hF0 => ?_)
     · -- a free direction
       have hF1 : c₂.nreg oF0 = 1 := by rw [k2K0] at hF0; omega
@@ -335,13 +335,13 @@ theorem orgTask_of' (h2 : M2Task) (h1 : M1Task) (hF : FinTask) : OrgTask := by
           (c₂.nreg oPH) := by rw [c2Kd, c2Kk, c2B, c2PE, c2PH]; exact hpos
       have hA0 := f3 hF1
       have hmain := orgMain_irs (sh := sh) H2 H1 HF E hI₂ hM₂ hD₂ hpos₂ (by rw [c2NB, c2B])
-        (by rw [c2Kd, c2Kk, c2B]; exact hA0) (by rw [c2RB]; exact hR0) (by rw [c2RB, c2RC]; omega)
+        (by rwa [c2Kd, c2Kk, c2B]) (by rwa [c2RB]) (by rw [c2RB, c2RC]; omega)
         (by rw [c2Kd]; show c₂.nreg ALLOC + Km ≤ W; omega)
       rw [c2Kd, c2Kk, c2B] at hmain
-      refine hmain.mono le_rfl (fun c' hout => OrgOut.lift hout c2RC c2RB (by omega) hmem2 fr2S)
+      refine hmain.mono le_rfl (fun c' hout => OrgOut.lift hout c2RC c2RB by_o hmem2 fr2S)
     · -- not free
       have hF0' : c₂.nreg oF0 ≠ 1 := by rw [k2K0] at hF0; omega
-      refine IRS.skip hI₂ (OrgOut.none (fun hDo => hF0' (f2.2 hDo.free)) c2RC (by omega) hmem2
+      refine IRS.skip hI₂ (OrgOut.none (fun hDo => hF0' (f2.2 hDo.free)) c2RC by_o hmem2
         fr2S)
   · -- not admissible
     have hAd0 : c₁.nreg oAd ≠ 1 := by rw [k1K0] at hAd; omega

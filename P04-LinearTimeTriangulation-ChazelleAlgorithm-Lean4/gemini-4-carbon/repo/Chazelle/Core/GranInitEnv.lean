@@ -28,7 +28,7 @@ theorem desc_count {P : Polygon} {mem : ℕ → ℕ} {MD : ℕ} {M : Model}
       (decide (mem MD = 0) = true → M.W.n = 2 * mem (MD + 3) + 7) ∧
       szOf P (mem MD) (mem (MD + 3)) = cntIn (decide (mem MD = 0)) (mem (MD + 3)) 0 M.W.n := by
   rcases h with ⟨h0, H, C, hC, rfl⟩ | ⟨h1, -, rfl⟩
-  · have hm : mem (MD + 3) = C.m := hC.2.2.2.1
+  · have hm := hC.2.2.2.1
     have hn : (chainModel C).W.n = 2 * C.m + 7 := C.sideWalk_n C.sideBeta
     rw [hm, h0]
     simp only [decide_true]
@@ -37,7 +37,7 @@ theorem desc_count {P : Polygon} {mem : ℕ → ℕ} {MD : ℕ} {M : Model}
     · unfold szOf cntIn; rw [hn]; simp only [ite_true]; omega
   · rw [h1]
     simp only [show (1 : ℕ) ≠ 0 by decide, decide_false]
-    refine ⟨⟨fun h => absurd h (by decide), fun p hp => ?_⟩, fun h => absurd h (by decide), ?_⟩
+    refine ⟨⟨fun h => absurd h by_d, fun p hp => ?_⟩, fun h => absurd h by_d, ?_⟩
     · simp [interiorModel]
     · unfold szOf cntIn
       simp only [Bool.false_eq_true, ite_false, ite_eq_right (show (1 : ℕ) ≠ 0 by decide),

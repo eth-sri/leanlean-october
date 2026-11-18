@@ -46,7 +46,7 @@ theorem param_eq_of_pos (M : Model) {e h' hv : ℕ} {z : Point} (hpos : M.pos Q 
         simp only at hpos'
         rw [ite_eq_right hh] at hpos'
         rw [hhv, ← hpos', Geometry.lerp_snd]
-        have : (M.wb e).2 - (M.wa e).2 ≠ 0 := sub_ne_zero.2 (Ne.symm hh)
+        have := sub_ne_zero.2 (Ne.symm hh)
         field_simp
         ring
       exact param_congr M Q e hy.symm
@@ -61,8 +61,8 @@ theorem ptAns_some (i : ℕ) {e' h' ρ hv : ℕ} {z : Point}
   have hpos : M.pos Q ⟨e', h'⟩ = z := by
     rw [SweepPrim.pos_eq_sidePt]; exact hA.2.2.2.1
   have hpar := param_eq_of_pos Q M hpos hhv
-  obtain ⟨hq, hp⟩ := queryOK_of_arrival J Q i (h := hv) hA hpar (by omega) hz2
-  refine ⟨fun q hq' => ?_, fun h => absurd h (by simp)⟩
+  obtain ⟨hq, hp⟩ := queryOK_of_arrival J Q i (h := hv) hA hpar by_o hz2
+  refine ⟨fun q hq' => ?_, fun h => absurd h by_s⟩
   simp only [List.mem_singleton] at hq'
   subst hq'
   refine ⟨hq, ?_, hp, rfl⟩
@@ -73,7 +73,7 @@ theorem ptAns_none (hP : J.P.Simple) (i : ℕ) {ρ : ℕ} {z : Point}
     (hz : z ∈ (sideChain J i).set) (hz2 : z.2 ≤ (sideChain J i).top.2)
     (hnone : ∀ p t, ¬ Sweep.Arrival (chainModel (sideChain J i)).W z (-dirOf ρ) p t) :
     PtAns J Q i z (dirOf ρ) [] :=
-  ⟨fun q hq => absurd hq (by simp), fun _ =>
+  ⟨fun q hq => absurd hq by_s, fun _ =>
     not_free_of_none J hP i (SweepPrim.dirOf_cases' ρ) hz hz2 hnone⟩
 
 end

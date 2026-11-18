@@ -23,12 +23,12 @@ theorem graphOK_of {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) 
     (hP : C.P.Simple) {D : List (ℕ × ℕ)} (hD : D.Nodup) (hDm : ∀ x, x ∈ D ↔ x ∈ zipRaw C Q N) :
     GraphOK C Q N ⟨N.arcs.length + 3, starList (rgi N) N.arcs.length, D⟩ where
   three_le := by simp
-  arcs_le := by simp
+  arcs_le := by_s
   I_nodup := starList_nodup _ _
   O_nodup := hD
   I_ok := fun c hc => by
     obtain ⟨h1, h2, h3⟩ := mem_starList.1 hc
-    refine ⟨by omega, by simp; omega, fun h => ?_⟩
+    refine ⟨by_o, by simp; omega, fun h => ?_⟩
     simp at h; omega
   O_ok := fun c hc => by
     obtain ⟨h1, h2, -⟩ := zipRaw_sound hN hP ((hDm c).1 hc)
@@ -37,15 +37,15 @@ theorem graphOK_of {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) 
   I_star := fun c hc => by
     obtain ⟨h1, h2, h3⟩ := mem_starList.1 hc
     obtain ⟨f1, f2, f3⟩ := fpos_spec (rgi N) c.2
-    refine ⟨by omega, h1, by rw [h2, f1], fun q _ hq => ?_⟩
+    refine ⟨by_o, h1, by rw [h2, f1], fun q _ hq => ?_⟩
     rw [h2] at hq ⊢
     exact f3 q (hq.trans f1)
   O_zip := fun c hc => by
     obtain ⟨h1, h2, h3⟩ := zipRaw_sound hN hP ((hDm c).1 hc)
-    exact ⟨by omega, h2, h3⟩
+    exact ⟨by_o, h2, h3⟩
   I_complete := fun p hp => by
     obtain ⟨f1, f2, f3⟩ := fpos_spec (rgi N) p
-    refine ⟨fpos (rgi N) p, by omega, f1, fun q _ hq => f3 q hq, ?_⟩
+    refine ⟨fpos (rgi N) p, by_o, f1, fun q _ hq => f3 q hq, ?_⟩
     rcases starList_complete (rgi N) hp with h | h | h
     · exact Or.inl h
     · exact Or.inr (Or.inl h)

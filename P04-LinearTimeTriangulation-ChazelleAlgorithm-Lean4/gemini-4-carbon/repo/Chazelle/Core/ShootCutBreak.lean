@@ -80,7 +80,7 @@ theorem off_of_mod {n a t c : ℕ} (hn : 0 < n) (ht : t < n) (_hc : c < n) (h : 
   rcases (show a % n + t < n ∨ n ≤ a % n + t by omega) with h3 | h3
   · rw [Nat.mod_eq_of_lt h3] at h2
     rw [show n + c - a % n = t + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt ht]
-  · rw [Nat.mod_eq_sub_mod h3, Nat.mod_eq_of_lt (by omega)] at h2
+  · rw [Nat.mod_eq_sub_mod h3, Nat.mod_eq_of_lt by_o] at h2
     rw [show n + c - a % n = t by omega, Nat.mod_eq_of_lt ht]
 
 /-- **Break host points lie in `brkSet`** (for well-formed hosts: runs shorter than `n`). -/
@@ -89,7 +89,7 @@ theorem hostBreak_mem {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) {u : 
   obtain ⟨r, hr, h1, h2, hc⟩ := h
   unfold brkSet
   refine Finset.mem_biUnion.2 ⟨r, Finset.mem_range.2 hr, Finset.mem_image.2 ?_⟩
-  refine ⟨u - NFLoc.preLen n H r, ?_, by omega⟩
+  refine ⟨u - NFLoc.preLen n H r, ?_, by_o⟩
   have hsucc := NFLoc.preLen_succ n H hr
   have hget : H.getD r (.run 0 0) = H[r] := by simp [List.getD_eq_getElem?_getD, hr]
   rw [hget] at hc ⊢
@@ -103,7 +103,7 @@ theorem hostBreak_mem {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) {u : 
   | run a ℓ =>
     simp only [NFLoc.itemCnt] at hsucc
     simp only at hit
-    have ht : u - NFLoc.preLen n H r < n := by omega
+    have ht : u - NFLoc.preLen n H r < n := by_o
     simp only [brkOffs, Finset.mem_insert, Finset.mem_singleton]
     rcases hc with hc | hc | hc | hc
     · exact Or.inl hc
@@ -111,7 +111,7 @@ theorem hostBreak_mem {n : ℕ} {H : Host} (hn : 0 < n) (hwf : HostWF n H) {u : 
     · right; right; left
       rw [off_of_mod hn ht hn hc, Nat.add_zero]
     · right; right; right
-      rw [off_of_mod hn ht (by omega) hc]
+      rw [off_of_mod hn ht by_o hc]
       congr 1
       omega
 
@@ -140,10 +140,10 @@ theorem tJ_inj {i i' : ℕ} (hi : i < 2 * C.m) (hi' : i' < 2 * C.m) (h : tJ C i 
   rcases (show C.sideS C.sideBeta + i' < 2 * C.m ∨ 2 * C.m ≤ C.sideS C.sideBeta + i' by omega)
     with h2 | h2
   · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_of_lt h2] at h; omega
-  · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_sub_mod h2, Nat.mod_eq_of_lt (by omega)] at h; omega
-  · rw [Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt h2] at h; omega
-  · rw [Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt (by omega), Nat.mod_eq_sub_mod h2,
-      Nat.mod_eq_of_lt (by omega)] at h; omega
+  · rw [Nat.mod_eq_of_lt h1, Nat.mod_eq_sub_mod h2, Nat.mod_eq_of_lt by_o] at h; omega
+  · rw [Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt by_o, Nat.mod_eq_of_lt h2] at h; omega
+  · rw [Nat.mod_eq_sub_mod h1, Nat.mod_eq_of_lt by_o, Nat.mod_eq_sub_mod h2,
+      Nat.mod_eq_of_lt by_o] at h; omega
 
 /-- At most one tour position has a given tour coordinate. -/
 theorem card_tJ_eq (j : ℕ) : ((Finset.range (2 * C.m)).filter fun i => tJ C i = j).card ≤ 1 := by
@@ -169,13 +169,13 @@ theorem card_fiber_le (u : ℕ) :
     · obtain ⟨q, hq⟩ := (Nat.modEq_iff_dvd' hle).1 (by unfold Nat.ModEq; exact h.symm)
       have hq0 : q = 0 := by
         by_contra h0
-        have : C.P.n ≤ C.P.n * q := Nat.le_mul_of_pos_right _ (by omega)
+        have : C.P.n ≤ C.P.n * q := Nat.le_mul_of_pos_right _ by_o
         omega
       subst hq0; omega
     · obtain ⟨q, hq⟩ := (Nat.modEq_iff_dvd' hle).1 (by unfold Nat.ModEq; exact h)
       have hq0 : q = 0 := by
         by_contra h0
-        have : C.P.n ≤ C.P.n * q := Nat.le_mul_of_pos_right _ (by omega)
+        have : C.P.n ≤ C.P.n * q := Nat.le_mul_of_pos_right _ by_o
         omega
       subst hq0; omega
   refine le_trans (Finset.card_le_card (t := ((Finset.range (2 * C.m)).filter fun i =>
@@ -196,8 +196,8 @@ theorem card_fiber_le (u : ℕ) :
   have hlt := tJ_lt C i
   unfold sideE at hki
   split_ifs at hki with h1 h2 h2
-  · left; exact ⟨hi.1, by unfold sideE; rw [ite_eq_left h2]; exact hki⟩
-  · left; exact ⟨hi.1, by unfold sideE; rw [ite_eq_right h2]; exact hki⟩
+  · left; exact ⟨hi.1, by unfold sideE; rwa [ite_eq_left h2]⟩
+  · left; exact ⟨hi.1, by unfold sideE; rwa [ite_eq_right h2]⟩
   · right; refine ⟨hi.1, ?_⟩; unfold sideE; rw [ite_eq_left h2]; omega
   · right; refine ⟨hi.1, ?_⟩; unfold sideE; rw [ite_eq_right h2]; omega
 

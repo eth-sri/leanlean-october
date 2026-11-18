@@ -93,7 +93,7 @@ theorem slb_nonfused_tie (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)
   have hoff := hC.off_M hd le_rfl zero_lt_one
   have h1 : (1 : ℝ) ≤ d := by exact_mod_cast Nat.one_le_iff_ne_zero.2 hd0
   have h2 : (d : ℝ) + 1 ≤ ((rL1 J + rL2 J : ℕ) : ℝ) := by
-    have : d + 1 ≤ rL1 J + rL2 J := hd
+    have := hd
     exact_mod_cast this
   have hin : 0 < off (chainModel J.whole).W.n ((6 + tpos J.whole J.m₁ : ℕ) : ℝ)
       ((((6 + tpos J.whole J.m₁ + d) % (chainModel J.whole).W.n : ℕ) : ℝ) + 0) ∧

@@ -38,14 +38,14 @@ def plCh : Stmt := .whileLtN 219017 219014 plChBody
 def Bch (r : ℕ) : Bool :=
   decide (r = 219004) || decide (219012 ≤ r ∧ r ≤ 219016) || decide (r = 219021)
 
-theorem wrM_plChBody : wrM Bch plChBody = true := by decide
+theorem wrM_plChBody : wrM Bch plChBody = true := by_d
 
 /-- One piece off the front. -/
 theorem chunks_cons {C s a L : ℕ} (hC : 1 ≤ C) (hL : 1 ≤ L) :
     chunks C s a L = (s, min C L, a) :: chunks C (s + min C L) (a + min C L) (L - min C L) := by
   by_cases h : L ≤ C
-  · rw [chunks_le (by omega) (Or.inl h), min_eq_right h, Nat.sub_self, chunks_zero]
-  · rw [chunks_gt (by omega) (by omega) (by omega), min_eq_left (by omega)]
+  · rw [chunks_le by_o (Or.inl h), min_eq_right h, Nat.sub_self, chunks_zero]
+  · rw [chunks_gt by_o by_o by_o, min_eq_left by_o]
 
 section exec
 
@@ -67,20 +67,20 @@ theorem plChBody_exec (d : Config) (hw : WordsBounded W d) {C L s a k ptr : ℕ}
       d d₁ j₁ ∧ j₁ ≤ 3 ∧ d₁.nreg 219015 = min C L ∧ (∀ r, r ≠ 219015 → d₁.nreg r = d.nreg r) ∧
       d₁.nmem = d.nmem := by
     by_cases h : C < L
-    · refine ⟨_, _, .ifLtN_true (by rw [h02, h14]; exact h) (Exec.copyN (P := P) hw 219015 219002),
-        by omega, ?_, fun r hr => by simp [hr], rfl⟩
+    · refine ⟨_, _, .ifLtN_true (by rwa [h02, h14]) (Exec.copyN (P := P) hw 219015 219002),
+        by_o, ?_, fun r hr => by simp [hr], rfl⟩
       simp only [Machine.upd_same, h02]; rw [min_eq_left h.le]
-    · refine ⟨_, _, .ifLtN_false (by rw [h02, h14]; exact h) (Exec.copyN (P := P) hw 219015 219014),
-        by omega, ?_, fun r hr => by simp [hr], rfl⟩
-      simp only [Machine.upd_same, h14]; rw [min_eq_right (by omega)]
+    · refine ⟨_, _, .ifLtN_false (by rwa [h02, h14]) (Exec.copyN (P := P) hw 219015 219014),
+        by_o, ?_, fun r hr => by simp [hr], rfl⟩
+      simp only [Machine.upd_same, h14]; rw [min_eq_right by_o]
   have w₁ := e₁.wb_right
-  have a12 : d₁.nreg 219012 = s := by rw [g₁ _ (by decide), h12]
-  have a13 : d₁.nreg 219013 = a := by rw [g₁ _ (by decide), h13]
-  have a14 : d₁.nreg 219014 = L := by rw [g₁ _ (by decide), h14]
-  have a16 : d₁.nreg 219016 = ptr := by rw [g₁ _ (by decide), h16]
-  have a04 : d₁.nreg 219004 = k := by rw [g₁ _ (by decide), h04]
-  have a18 : d₁.nreg 219018 = 1 := by rw [g₁ _ (by decide), h18]
-  have a20 : d₁.nreg 219020 = 3 := by rw [g₁ _ (by decide), h20]
+  have a12 : d₁.nreg 219012 = s := by rw [g₁ _ by_d, h12]
+  have a13 : d₁.nreg 219013 = a := by rw [g₁ _ by_d, h13]
+  have a14 : d₁.nreg 219014 = L := by rw [g₁ _ by_d, h14]
+  have a16 : d₁.nreg 219016 = ptr := by rw [g₁ _ by_d, h16]
+  have a04 : d₁.nreg 219004 = k := by rw [g₁ _ by_d, h04]
+  have a18 : d₁.nreg 219018 = 1 := by rw [g₁ _ by_d, h18]
+  have a20 : d₁.nreg 219020 = 3 := by rw [g₁ _ by_d, h20]
   have hmin : min C L ≤ L := min_le_right _ _
   obtain ⟨d₂, j₂, e₂, hj₂, b12, b13, b14, b16, b04, bm⟩ : ∃ d₂ j₂, Exec P W
       (block [.storeN 219016 219012, .addN 219021 219016 219018, .storeN 219021 219015,
@@ -94,7 +94,7 @@ theorem plChBody_exec (d : Config) (hw : WordsBounded W d) {C L s a k ptr : ℕ}
     all_goals try (config_simp; (try simp only [a12, a13, a14, a16, a04, a18, a20, v15]); omega)
     refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;> config_simp <;>
       (try simp only [a12, a13, a14, a16, a04, a18, a20, v15])
-  refine ⟨d₂, j₁ + j₂, .seq e₁ e₂, by omega, b12, b13, b14, b16, b04, by rw [bm, m₁], ?_⟩
+  refine ⟨d₂, j₁ + j₂, .seq e₁ e₂, by_o, b12, b13, b14, b16, b04, by rw [bm, m₁], ?_⟩
   exact exec_frameM (.seq e₁ e₂) wrM_plChBody
 
 /-- **The chunk loop** writes the pieces of the segment as triples at the pointer. -/
@@ -116,21 +116,21 @@ theorem plCh_exec {C : ℕ} (hC : 1 ≤ C) : ∀ (L : ℕ) (d : Config) (s a k p
     by_cases hL : L = 0
     · subst hL
       rw [chunks_zero]
-      refine ⟨d, 2, .whileLtN_false (by rw [h17, h14]; omega) hw, by simp, by simp [h16],
+      refine ⟨d, 2, .whileLtN_false (by rw [h17, h14]; omega) hw, by_s, by simp [h16],
         by simp [h04], fun i hi => by simp at hi, fun _ _ => rfl, FrameM.refl _ _⟩
     · have hcons := chunks_cons (s := s) (a := a) hC (by omega : 1 ≤ L)
       set len := min C L with hlen
-      have hlen1 : 1 ≤ len := le_min hC (by omega)
+      have hlen1 : 1 ≤ len := le_min hC by_o
       have hlenL : len ≤ L := min_le_right _ _
       rw [hcons] at hWp hWk
       simp only [List.length_cons] at hWp hWk
       obtain ⟨d₁, j₁, e₁, hj₁, b12, b13, b14, b16, b04, bm, f₁⟩ :=
-        plChBody_exec (P := P) d hw h02 h14 h12 h13 h16 h04 h18 h20 (by omega) hWs hWa (by omega)
-      have g₁ : ∀ r, Bch r = false → d₁.nreg r = d.nreg r := f₁.1
-      obtain ⟨d', j₂, e₂, hj₂, c16, c04, cL, cm, cf⟩ := ih (L - len) (by omega) d₁ (s + len)
-        (a + len) (k + 1) (ptr + 3) e₁.wb_right (by rw [g₁ _ (by decide), h02]) b14 b12 b13 b16
-        b04 (by rw [g₁ _ (by decide), h17]) (by rw [g₁ _ (by decide), h18])
-        (by rw [g₁ _ (by decide), h20]) (by omega) (by omega) (by omega) (by omega)
+        plChBody_exec (P := P) d hw h02 h14 h12 h13 h16 h04 h18 h20 by_o hWs hWa by_o
+      have g₁ := f₁.1
+      obtain ⟨d', j₂, e₂, hj₂, c16, c04, cL, cm, cf⟩ := ih (L - len) by_o d₁ (s + len)
+        (a + len) (k + 1) (ptr + 3) e₁.wb_right (by rw [g₁ _ by_d, h02]) b14 b12 b13 b16
+        b04 (by rw [g₁ _ by_d, h17]) (by rw [g₁ _ by_d, h18])
+        (by rw [g₁ _ by_d, h20]) by_o by_o by_o by_o
       refine ⟨d', j₁ + 2 + j₂, .whileLtN_true (by rw [h17, h14]; omega) e₁ e₂, ?_, ?_, ?_, ?_,
         ?_, f₁.trans cf⟩
       · rw [hcons, List.length_cons]; omega
@@ -139,24 +139,24 @@ theorem plCh_exec {C : ℕ} (hC : 1 ≤ C) : ∀ (L : ℕ) (d : Config) (s a k p
       · rw [hcons]
         intro i hi
         rcases i with _ | i
-        · rw [cm _ (Or.inl (by omega)), cm _ (Or.inl (by omega)), cm _ (Or.inl (by omega)), bm]
+        · rw [cm _ (Or.inl by_o), cm _ (Or.inl by_o), cm _ (Or.inl by_o), bm]
           simp only [List.getD_cons_zero, Nat.mul_zero, Nat.add_zero]
           refine ⟨?_, ?_, ?_⟩
-          · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+          · rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
               Machine.upd_same]
-          · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_same]
+          · rw [Machine.upd_other _ _ _ by_o, Machine.upd_same]
           · rw [Machine.upd_same]
         · simp only [List.length_cons] at hi
-          obtain ⟨x1, x2, x3⟩ := cL i (by omega)
+          obtain ⟨x1, x2, x3⟩ := cL i by_o
           simp only [List.getD_cons_succ]
           refine ⟨?_, ?_, ?_⟩
-          · rw [show ptr + 3 * (i + 1) = ptr + 3 + 3 * i by ring]; exact x1
-          · rw [show ptr + 3 * (i + 1) + 1 = ptr + 3 + 3 * i + 1 by ring]; exact x2
-          · rw [show ptr + 3 * (i + 1) + 2 = ptr + 3 + 3 * i + 2 by ring]; exact x3
+          · rwa [show ptr + 3 * (i + 1) = ptr + 3 + 3 * i by ring]
+          · rwa [show ptr + 3 * (i + 1) + 1 = ptr + 3 + 3 * i + 1 by ring]
+          · rwa [show ptr + 3 * (i + 1) + 2 = ptr + 3 + 3 * i + 2 by ring]
       · intro x hx
         rw [hcons, List.length_cons] at hx
-        rw [cm x (by omega), bm, Machine.upd_other _ _ _ (by omega),
-          Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+        rw [cm x by_o, bm, Machine.upd_other _ _ _ by_o,
+          Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o]
 
 end exec
 

@@ -62,8 +62,7 @@ theorem halfBody_exec {c : Config} (hw : WordsBounded W c) {D t y Al : ℕ}
   · config_simp; simp only [h03, h40, h41, h20, Machine.upd_apply]; split_ifs <;> omega
   · config_simp; simp only [h03, h40, h20, Machine.upd_apply]; split_ifs <;> first | omega
   · unfold HalfBRG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
 
 set_option maxHeartbeats 16000000 in
 /-- **The halving table on the RAM.** -/
@@ -88,9 +87,8 @@ theorem halfS_exec {c : Config} (hw : WordsBounded W c) {n D : ℕ}
     refine ⟨rfl, ‹_›, by config_simp; rw [← hAl, hA], by config_simp, by config_simp,
       by config_simp; simp only [h01, h20], fun r hr => ?_, rfl, rfl, rfl, rfl⟩
     unfold HalfRG at hr
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  have r1 : ∀ r, ¬ HalfRG r → c1.nreg r = c.nreg r := fr1
+    upd_keep
+  have r1 := fr1
   let I : Config → Prop := fun c' => WordsBounded W c' ∧ ∃ k, 2 * k ≤ n + 2 ∧
     c'.nreg 170040 = 2 * k ∧ c'.nreg 170041 = k ∧ c'.nreg 170042 = n + 1 ∧
     c'.nreg 170003 = D ∧ c'.nreg ALLOC = D + 2 * k ∧
@@ -103,40 +101,40 @@ theorem halfS_exec {c : Config} (hw : WordsBounded W c) {n D : ℕ}
       (fun c' => 9 * (n + 2 - c'.nreg 170040)) (fun c' => c'.nreg ALLOC) (fun c' h => h.1)
       (fun c2 ⟨hw2, t, ht, h40, h41, h42, h03, hA2, hent, hlow, fr2, hrr2, hrm2, ho2⟩ htest => by
         rw [h40, h42] at htest
-        have g : ∀ r, ¬ HalfRG r → r ≠ ALLOC → c2.nreg r = c.nreg r := fr2
+        have g := fr2
         obtain ⟨c3, k3, e3, hk3, hw3, q40, q41, qA, qm0, qm1, qm, fr3, hrr3, hrm3, ho3⟩ :=
           halfBody_exec (P := P) hw2 h03 h40 h41 hA2
-            (by rw [g _ (by unfold HalfRG; omega) (by rw [hAl]; omega)]; exact h20)
-            (by rw [g _ (by unfold HalfRG; omega) (by rw [hAl]; omega)]; exact h21)
-            (by omega) (by omega) (by omega)
-        refine ⟨c3, k3, e3, ⟨hw3, t + 1, by omega, by rw [q40]; ring, q41,
-          by rw [fr3 170042 (by unfold HalfBRG; omega) (by rw [hAl]; omega)]; exact h42,
-          by rw [fr3 170003 (by unfold HalfBRG; omega) (by rw [hAl]; omega)]; exact h03,
+            (by rwa [g _ (by unfold HalfRG; omega) (by rw [hAl]; omega)])
+            (by rwa [g _ (by unfold HalfRG; omega) (by rw [hAl]; omega)])
+            by_o by_o by_o
+        refine ⟨c3, k3, e3, ⟨hw3, t + 1, by_o, by rw [q40]; ring, q41,
+          by rwa [fr3 170042 (by unfold HalfBRG; omega) (by rw [hAl]; omega)],
+          by rwa [fr3 170003 (by unfold HalfBRG; omega) (by rw [hAl]; omega)],
           by rw [qA]; ring, fun x hx => ?_, fun a ha => ?_, fun r h1 h2 => ?_,
           by rw [hrr3, hrr2], by rw [hrm3, hrm2], by rw [ho3, ho2]⟩, ?_, ?_⟩
         · rcases Nat.lt_or_ge x (2 * t) with h1 | h1
-          · rw [qm _ (by omega) (by omega)]; exact hent x h1
+          · rw [qm _ by_o by_o]; exact hent x h1
           · rcases Nat.lt_or_ge x (2 * t + 1) with h2 | h2
             · have hx2 : x = 2 * t := by omega
               subst hx2; rw [qm0]; omega
             · have hx2 : x = 2 * t + 1 := by omega
               subst hx2; rw [show D + (2 * t + 1) = D + 2 * t + 1 by ring, qm1]; omega
-        · rw [qm _ (by omega) (by omega)]; exact hlow a ha
+        · rw [qm _ by_o by_o]; exact hlow a ha
         · rw [fr3 r (by unfold HalfBRG; unfold HalfRG at h1; omega) h2]; exact fr2 r h1 h2
         · show 9 * (n + 2 - c3.nreg 170040) + k3 + 2 ≤ 9 * (n + 2 - c2.nreg 170040)
           rw [q40, h40]; omega
         · show c3.nreg ALLOC ≤ c2.nreg ALLOC + k3
           rw [qA]; omega)
-      ⟨hw1, 0, by omega, i40, i41, i42, i03,
+      ⟨hw1, 0, by_o, i40, i41, i42, i03,
         by rw [r1 _ (by unfold HalfRG; rw [hAl]; omega), hA]; ring,
         fun x hx => by omega, fun a _ => by rw [hm1], fun r h1 _ => r1 r h1, hrr1, hrm1, ho1⟩
   rw [h40', h42'] at htest
   have hk' : k ≤ 9 * (n + 2) + 2 := by
     have := hk; simp only [i40, Nat.sub_zero] at this; exact this
-  have hψ' : c'.nreg ALLOC ≤ c1.nreg ALLOC + k := hψ
+  have hψ' := hψ
   have hA1 : c1.nreg ALLOC = D := by rw [r1 _ (by unfold HalfRG; rw [hAl]; omega)]; exact hA
-  refine ⟨c', k1 + k, .seq e1 e, ?_, hw', h03', by omega, by omega, by omega,
-    fun x hx => hent x (by omega), hlow, fr', hrr', hrm', ho'⟩
+  refine ⟨c', k1 + k, .seq e1 e, ?_, hw', h03', by_o, by_o, by_o,
+    fun x hx => hent x by_o, hlow, fr', hrr', hrm', ho'⟩
   · -- the loop runs `⌈(n+1)/2⌉` times; the potential bound suffices
     omega
 

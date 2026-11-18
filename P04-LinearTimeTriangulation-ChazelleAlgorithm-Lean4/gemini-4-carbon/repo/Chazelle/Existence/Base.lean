@@ -48,13 +48,13 @@ theorem mem_boundary_three (h3 : P.n = 3) {p : Point} :
   · rintro ⟨i, hi, hp⟩
     rw [h3] at hi
     interval_cases i
-    · exact Or.inl (by rw [← edge_zero_three P h3]; exact hp)
-    · exact Or.inr (Or.inl (by rw [← edge_one_three P h3]; exact hp))
-    · exact Or.inr (Or.inr (by rw [← edge_two_three P h3]; exact hp))
+    · exact Or.inl (by rwa [← edge_zero_three P h3])
+    · exact Or.inr (Or.inl (by rwa [← edge_one_three P h3]))
+    · exact Or.inr (Or.inr (by rwa [← edge_two_three P h3]))
   · rintro (hp | hp | hp)
-    · exact ⟨0, by omega, by rw [edge_zero_three P h3]; exact hp⟩
-    · exact ⟨1, by omega, by rw [edge_one_three P h3]; exact hp⟩
-    · exact ⟨2, by omega, by rw [edge_two_three P h3]; exact hp⟩
+    · exact ⟨0, by_o, by rwa [edge_zero_three P h3]⟩
+    · exact ⟨1, by_o, by rwa [edge_one_three P h3]⟩
+    · exact ⟨2, by_o, by rwa [edge_two_three P h3]⟩
 
 /-- The boundary of a polygon with three vertices lies in the triangle of its vertices. -/
 theorem boundary_subset_triangle (h3 : P.n = 3) :
@@ -71,22 +71,22 @@ theorem boundary_subset_triangle (h3 : P.n = 3) :
 theorem det_ne_zero_of_simple_three (hP : P.Simple) (h3 : P.n = 3) :
     det (P.vtx 0) (P.vtx 1) (P.vtx 2) ≠ 0 := by
   intro hdet
-  have h01 : P.vtx 0 ≠ P.vtx 1 := simple_vtx_ne hP (by omega) (by omega) (by norm_num)
-  have h02 : P.vtx 0 ≠ P.vtx 2 := simple_vtx_ne hP (by omega) (by omega) (by norm_num)
-  have h12 : P.vtx 1 ≠ P.vtx 2 := simple_vtx_ne hP (by omega) (by omega) (by norm_num)
+  have h01 : P.vtx 0 ≠ P.vtx 1 := simple_vtx_ne hP by_o by_o by_n
+  have h02 : P.vtx 0 ≠ P.vtx 2 := simple_vtx_ne hP by_o by_o by_n
+  have h12 : P.vtx 1 ≠ P.vtx 2 := simple_vtx_ne hP by_o by_o by_n
   obtain ⟨t, ht⟩ := Geometry.exists_lerp_of_det_eq_zero h01 hdet
   rcases lt_or_ge t 0 with ht0 | ht0
   · -- `v₀` lies strictly between `v₁` and `v₂`: on edge `1`
-    have h1t : (1 : ℝ) - t ≠ 0 := by linarith
+    have h1t : (1 : ℝ) - t ≠ 0 := by_l
     have hv0 : P.vtx 0 = Geometry.lerp (P.vtx 1) (P.vtx 2) (1 / (1 - t)) := by
       rw [ht]
       apply Geometry.point_ext <;> simp only [Geometry.lerp_fst, Geometry.lerp_snd] <;>
         field_simp <;> ring
     have hmem : P.vtx 0 ∈ P.edge 1 := by
       rw [edge_one_three P h3, hv0]
-      refine Geometry.lerp_mem_segment _ _ (div_nonneg zero_le_one (by linarith)) ?_
-      rw [div_le_one (by linarith)]; linarith
-    have := eq_endpoint_of_vtx_mem_edge hP (k := 0) (i := 1) (by omega) (by omega) hmem
+      refine Geometry.lerp_mem_segment _ _ (div_nonneg zero_le_one by_l) ?_
+      rw [div_le_one by_l]; linarith
+    have := eq_endpoint_of_vtx_mem_edge hP (k := 0) (i := 1) by_o by_o hmem
     rw [h3] at this
     norm_num at this
     rcases this with h | h
@@ -97,23 +97,23 @@ theorem det_ne_zero_of_simple_three (hP : P.Simple) (h3 : P.n = 3) :
     have hmem : P.vtx 2 ∈ P.edge 0 := by
       rw [edge_zero_three P h3, ht]
       exact Geometry.lerp_mem_segment _ _ ht0 ht1
-    have := eq_endpoint_of_vtx_mem_edge hP (k := 2) (i := 0) (by omega) (by omega) hmem
+    have := eq_endpoint_of_vtx_mem_edge hP (k := 2) (i := 0) by_o by_o hmem
     rw [h3] at this
     norm_num at this
     rcases this with h | h
     · exact h02 h.symm
     · exact h12 h.symm
   · -- `v₁` lies strictly between `v₀` and `v₂`: on edge `2`
-    have ht0' : t ≠ 0 := by linarith
+    have ht0' : t ≠ 0 := by_l
     have hv1 : P.vtx 1 = Geometry.lerp (P.vtx 0) (P.vtx 2) (1 / t) := by
       rw [ht]
       apply Geometry.point_ext <;> simp only [Geometry.lerp_fst, Geometry.lerp_snd] <;>
         field_simp <;> ring
     have hmem : P.vtx 1 ∈ P.edge 2 := by
       rw [edge_two_three P h3, segment_comm, hv1]
-      refine Geometry.lerp_mem_segment _ _ (by positivity) ?_
-      rw [div_le_one (by linarith)]; linarith
-    have := eq_endpoint_of_vtx_mem_edge hP (k := 1) (i := 2) (by omega) (by omega) hmem
+      refine Geometry.lerp_mem_segment _ _ by_p ?_
+      rw [div_le_one by_l]; linarith
+    have := eq_endpoint_of_vtx_mem_edge hP (k := 1) (i := 2) by_o by_o hmem
     rw [h3] at this
     norm_num at this
     rcases this with h | h
@@ -148,7 +148,7 @@ theorem mem_boundary_of_not_mem_interior_triangle (h3 : P.n = 3)
   rcases Geometry.mem_edge_of_not_mem_interior hdet hz hint with h | h | h
   · exact Or.inl h
   · exact Or.inr (Or.inl h)
-  · exact Or.inr (Or.inr (by rw [segment_comm]; exact h))
+  · exact Or.inr (Or.inr (by rwa [segment_comm]))
 
 /-! ### Escaping along a ray -/
 
@@ -177,7 +177,7 @@ theorem not_mem_filled_of_neg_affine {P : Polygon} {T : Set Point} (hT : P.bound
   have hy := hTf _ (hT hb)
   simp only at hy
   rw [heq, hf, hv] at hy
-  have : (1 + s) * f z < 0 := mul_neg_of_pos_of_neg (by linarith) hz
+  have : (1 + s) * f z < 0 := mul_neg_of_pos_of_neg by_l hz
   linarith
 
 /-! ### The filled region of a triangle -/
@@ -188,7 +188,7 @@ theorem filled_eq_triangle (hP : P.Simple) (h3 : P.n = 3) :
     P.filled = convexHull ℝ ({P.vtx 0, P.vtx 1, P.vtx 2} : Set Point) := by
   have hdet := det_ne_zero_of_simple_three P hP h3
   set T := convexHull ℝ ({P.vtx 0, P.vtx 1, P.vtx 2} : Set Point) with hTdef
-  have hbT : P.boundary ⊆ T := boundary_subset_triangle P h3
+  have hbT := boundary_subset_triangle P h3
   have hTf : ∀ y ∈ T, 0 ≤ Geometry.bary₁ (P.vtx 0) (P.vtx 1) (P.vtx 2) y ∧
       0 ≤ Geometry.bary₂ (P.vtx 0) (P.vtx 1) (P.vtx 2) y ∧
       0 ≤ Geometry.bary₃ (P.vtx 0) (P.vtx 1) (P.vtx 2) y :=
@@ -225,7 +225,7 @@ theorem filled_eq_triangle (hP : P.Simple) (h3 : P.n = 3) :
       · exact Or.inr hxT
     have hdisj : Disjoint (interior T) Tᶜ :=
       Set.disjoint_left.2 fun x hx hx' => hx' (interior_subset hx)
-    have hsub : connectedComponentIn P.boundaryᶜ z ⊆ interior T :=
+    have hsub :=
       IsPreconnected.subset_left_of_subset_union isOpen_interior
         (Geometry.isClosed_triangle _ _ _).isOpen_compl hdisj
         ((connectedComponentIn_subset _ _).trans hcov)

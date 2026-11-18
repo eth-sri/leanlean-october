@@ -52,15 +52,15 @@ theorem pz_int {Q : Polygon} (hQ : Q.Simple) (hdh : DistinctHeights Q) {e h : �
       apply hne
       rw [OutNF.param_eq hQ hdh he k, OutNF.wa_eq he, ← hk, sub_self, zero_div]
     · intro hk
-      exact OutNF.param_ne_zero hQ hdh he (by omega) fun h' => hk h'.symm
+      exact OutNF.param_ne_zero hQ hdh he by_o fun h' => hk h'.symm
 
 /-- The walk vertices of a tour edge of the chain model. -/
 theorem chain_wa_wb (C : Chain) {i : ℕ} (hi : i < 2 * C.m) :
     (chainModel C).wa (i + 6) = C.vertex (C.sideIdx C.sideBeta i) ∧
       (chainModel C).wb (i + 6) = C.vertex (C.sideIdx C.sideBeta (i + 1)) := by
   simp only [Model.wa, Model.wb, chainModel]
-  rw [C.sideWalk_n, Nat.mod_eq_of_lt (by omega), show i + 6 + 1 = (i + 1) + 6 by ring,
-    C.sideWalk_vtx_tour _ (by omega), C.sideWalk_vtx_tour _ (by omega)]
+  rw [C.sideWalk_n, Nat.mod_eq_of_lt by_o, show i + 6 + 1 = (i + 1) + 6 by ring,
+    C.sideWalk_vtx_tour _ by_o, C.sideWalk_vtx_tour _ by_o]
   exact ⟨rfl, rfl⟩
 
 /-- **Chain model, tour edge**: a position has a nonzero parameter iff its code is nonzero, the
@@ -86,9 +86,9 @@ theorem pz_chain (C : Chain) {Q : Polygon} (hdh : DistinctHeights Q) {i h : ℕ}
     by_cases hab : hv sp₁ = hv sp₂
     · rw [ite_eq_left (by rw [hab])]; simp [hab]
     · rw [ite_eq_right (fun e => hab ((hinj _ _ a1 a2).1 e))]
-      have hden : (Q.vtx (hv sp₂)).2 - (Q.vtx (hv sp₁)).2 ≠ 0 :=
+      have hden :=
         sub_ne_zero.2 (fun e => hab ((hinj _ _ a1 a2).1 e.symm))
-      rw [div_eq_zero_iff, sub_eq_zero, hinj _ _ (by omega) a1]
+      rw [div_eq_zero_iff, sub_eq_zero, hinj _ _ by_o a1]
       simp only [hab, not_false_eq_true, true_and]
       constructor
       · intro hn e; exact hn (Or.inl e)

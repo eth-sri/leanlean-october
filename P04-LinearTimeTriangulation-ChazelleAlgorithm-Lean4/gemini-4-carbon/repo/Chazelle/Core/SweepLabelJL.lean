@@ -54,13 +54,13 @@ theorem vertexEnd_arith {m b i : ℕ} (hm : 0 < m) (hb : b ≤ 2 * m) (hi : i �
       x % (2 * m + 7) = if x < 2 * m + 7 then x else x - (2 * m + 7) := by
     intro x hx; split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
+    · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
   have key2 : ∀ x, x < 2 * (2 * m) → x % (2 * m) = if x < 2 * m then x else x - 2 * m := by
     intro x hx; split_ifs with h
     · exact Nat.mod_eq_of_lt h
-    · rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]
-  rw [key2 _ (by omega)]
-  interval_cases hq' : (b + i) / (2 * m) <;> split_ifs <;> rw [key _ (by omega)] <;>
+    · rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]
+  rw [key2 _ by_o]
+  interval_cases hq' : (b + i) / (2 * m) <;> split_ifs <;> rw [key _ by_o] <;>
     split_ifs <;> omega
 
 /-- **The positions at the last vertex** of the walk of a chain model, read from its tour
@@ -81,7 +81,7 @@ theorem off_vertexEnd (hP : C.P.Simple) {p : ℕ} (hp : p < (chainModel C).W.n) 
     split_ifs at hidx
     · exact hidx
     · omega
-  have := vertexEnd_arith (m := C.m) (b := bS C) (i := i) (by omega) (bS_le C) hi h0
+  have := vertexEnd_arith (m := C.m) (b := bS C) (i := i) by_o (bS_le C) hi h0
   unfold dOf
   rw [hn]
   unfold tpos

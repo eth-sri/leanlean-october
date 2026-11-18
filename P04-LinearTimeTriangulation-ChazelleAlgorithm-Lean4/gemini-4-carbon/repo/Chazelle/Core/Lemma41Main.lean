@@ -63,7 +63,7 @@ theorem okModel_chain {P : Polygon} (hG : GoodEnv P) (C : Chain) (hC : C.P = Qof
   have hn : 1 ≤ P.n := by have := hG.1.1; omega
   refine ⟨Host.whole P.n, C, by simp [HostOk, Host.whole], by rw [hQn]; exact hostRegular_whole hn,
     ?_, ?_, rfl⟩
-  · rw [hC]; have := poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
+  · rw [hC]; have := poly_whole (Qof P) by_o; rw [hQn] at this; exact this.symm
   · rw [hC]; exact (shearInvariance (epsOf P) P).1 hG.1
 
 section proofs
@@ -78,8 +78,7 @@ theorem baseB_exec {c : Config} (hw : WordsBounded W c) :
   unfold baseB
   exec_block
   refine ⟨rfl, ‹_›, by config_simp, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
-  simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  upd_keep
 
 set_option maxHeartbeats 4000000 in
 theorem epiB_exec {c : Config} (hw : WordsBounded W c) {B : ℕ} (h66 : c.nreg 160066 = B)
@@ -92,8 +91,7 @@ theorem epiB_exec {c : Config} (hw : WordsBounded W c) {B : ℕ} (h66 : c.nreg 1
   exec_block
   all_goals try (config_simp; (try simp only [h66, h24]); omega)
   refine ⟨rfl, ‹_›, by config_simp; simp only [h66, h24], fun r a1 a2 => ?_, rfl, rfl, rfl, rfl⟩
-  simp only
-  repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  upd_keep
 
 end proofs
 

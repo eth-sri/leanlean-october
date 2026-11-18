@@ -86,7 +86,7 @@ theorem sideCcw_mir (B X A : Point) : sideCcw (mir A) (mir X) (mir B) ↔ sideCc
       · rcases h3 with h3 | h3
         · left; intro h0
           rw [h0, zero_mul] at e1
-          have : sideCross B X * sideDot B A = 0 := by linarith
+          have : sideCross B X * sideDot B A = 0 := by_l
           rcases mul_eq_zero.1 this with h | h
           · exact h3 h
           · linarith
@@ -152,16 +152,16 @@ theorem idx_v {n c p : ℕ} (hc : c < n) (hp : p < n) :
     (c + n - p) % n = if p ≤ c then c - p else c + n - p := by
   split_ifs with h
   · rw [show c + n - p = (c - p) + n * 1 by omega, Nat.add_mul_mod_self_left,
-      Nat.mod_eq_of_lt (by omega)]
-  · exact Nat.mod_eq_of_lt (by omega)
+      Nat.mod_eq_of_lt by_o]
+  · exact Nat.mod_eq_of_lt by_o
 
 theorem idx_q {n c p : ℕ} (hc : c < n) (hp : p < n) :
     (c + 2 * n - 1 - p) % n = if p < c then c - 1 - p else c + n - 1 - p := by
   split_ifs with h
   · rw [show c + 2 * n - 1 - p = (c - 1 - p) + n * 2 by omega, Nat.add_mul_mod_self_left,
-      Nat.mod_eq_of_lt (by omega)]
+      Nat.mod_eq_of_lt by_o]
   · rw [show c + 2 * n - 1 - p = (c + n - 1 - p) + n * 1 by omega, Nat.add_mul_mod_self_left,
-      Nat.mod_eq_of_lt (by omega)]
+      Nat.mod_eq_of_lt by_o]
 
 /-- The vertex index map is an involution. -/
 theorem idx_invol {n c p : ℕ} (hc : c < n) (hp : p < n) : (c + n - (c + n - p) % n) % n = p := by

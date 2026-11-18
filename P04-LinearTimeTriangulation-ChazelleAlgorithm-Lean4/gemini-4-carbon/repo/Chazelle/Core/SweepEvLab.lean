@@ -56,11 +56,10 @@ theorem neq_irs {r x : ℕ} {s : Stmt} {K : ℕ} {Q : Config → Prop} (hI : IIn
     IRS P W c₀ (neq r x s) c (K + 4) Q := by
   unfold neq
   by_cases h1 : c.nreg r < c.nreg x
-  · exact (IRS.ifT h1 (hs (by omega))).mono (by omega) (fun _ h => h)
+  · exact (IRS.ifT h1 (hs by_o)).le
   · by_cases h2 : c.nreg x < c.nreg r
-    · exact (IRS.ifF h1 (IRS.ifT h2 (hs (by omega)))).mono (by omega) (fun _ h => h)
-    · exact (IRS.ifF h1 (IRS.ifF h2 (IRS.skip (K := 0) hI (hq (by omega))))).mono (by omega)
-        (fun _ h => h)
+    · exact (IRS.ifF h1 (IRS.ifT h2 (hs by_o))).le
+    · exact (IRS.ifF h1 (IRS.ifF h2 (IRS.skip (K := 0) hI (hq by_o)))).le
 
 /-- The registers of a label list. -/
 def LblR (bN bL q : ℕ) : Prop := q = bN ∨ (bL ≤ q ∧ q < bL + 4)
@@ -100,15 +99,15 @@ theorem addLab_irs {bN bL r : ℕ} (hI : IInv W c₀ c) (hK : Consts c) (hsN : I
   -- the frame of a set
   have setFr : ∀ i, i < 4 → ∀ c' : Config, (∀ q, q ≠ bL + i → q ≠ bN → c'.nreg q = c.nreg q) →
       ∀ q, ¬ LblR bN bL q → c'.nreg q = c.nreg q := fun i hi c' h q hq =>
-    h q (fun h' => hq (Or.inr ⟨by omega, by omega⟩)) (fun h' => hq (Or.inl h'))
+    h q (fun h' => hq (Or.inr ⟨by_o, by_o⟩)) (fun h' => hq (Or.inl h'))
   unfold addLab
   generalize hn : c.nreg bN = n at hN hlen
   interval_cases n
   · -- empty list
-    refine (IRS.ifT (by rw [hn, k1]; norm_num) (lab_set_irs (i := 0) hI hsN (hsL 0 (by norm_num))
-      (hNL 0 (by norm_num)) (by omega))).mono (by norm_num) ?_
+    refine (IRS.ifT (by rw [hn, k1]; norm_num) (lab_set_irs (i := 0) hI hsN (hsL 0 by_n)
+      (hNL 0 by_n) by_o)).mono by_n ?_
     rintro c' ⟨v1, v2, v3, v4⟩
-    refine ⟨by omega, ?_, setFr 0 (by norm_num) c' v3, v4⟩
+    refine ⟨by_o, ?_, setFr 0 by_n c' v3, v4⟩
     rw [lbl c', lbl c, v2, hn]
     simp only [Nat.add_zero] at v1
     simp [addL, v1]
@@ -118,13 +117,13 @@ theorem addLab_irs {bN bL r : ℕ} (hI : IInv W c₀ c) (hK : Consts c) (hsN : I
     refine IRS.mono (K := 28 + 2) (IRS.ifF (by rw [hn, k1]; norm_num) ?_) le_rfl (fun _ h => h)
     refine IRS.mono (K := 24 + 4) (neq_irs hI (fun hne => ?_) (fun heq => ?_)) le_rfl (fun _ h => h)
     · refine IRS.mono (K := 2 + 2) (IRS.ifT (by rw [hn, k2]; norm_num) (lab_set_irs (i := 1) hI hsN
-        (hsL 1 (by norm_num)) (hNL 1 (by norm_num)) (by omega))) (by norm_num) ?_
+        (hsL 1 by_n) (hNL 1 by_n) by_o)) by_n ?_
       rintro c' ⟨v1, v2, v3, v4⟩
-      refine ⟨by omega, ?_, setFr 1 (by norm_num) c' v3, v4⟩
-      have e0 : c'.nreg bL = c.nreg bL := v3 _ (by omega) (fun h => hNL 0 (by norm_num) (by rw [h]; rfl))
+      refine ⟨by_o, ?_, setFr 1 by_n c' v3, v4⟩
+      have e0 : c'.nreg bL = c.nreg bL := v3 _ by_o (fun h => hNL 0 by_n (by rw [h]; rfl))
       rw [lbl c', v2, hl]
       simp [addL, List.range_succ, e0, v1, hne]
-    · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
+    · exact ⟨by_o, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
   · -- two labels
     have hl : lblOf c bN bL = [c.nreg bL, c.nreg (bL + 1)] := by rw [lbl c, hn]; simp [List.range_succ]
     refine IRS.mono (K := 28 + 2) (IRS.ifF (by rw [hn, k1]; norm_num) ?_) le_rfl (fun _ h => h)
@@ -132,16 +131,16 @@ theorem addLab_irs {bN bL r : ℕ} (hI : IInv W c₀ c) (hK : Consts c) (hsN : I
     · refine IRS.mono (K := 22 + 2) (IRS.ifF (by rw [hn, k2]; norm_num) ?_) le_rfl (fun _ h => h)
       refine IRS.mono (K := 18 + 4) (neq_irs hI (fun hne' => ?_) (fun heq => ?_)) le_rfl (fun _ h => h)
       · refine IRS.mono (K := 2 + 2) (IRS.ifT (by rw [hn, k3]; norm_num) (lab_set_irs (i := 2) hI hsN
-          (hsL 2 (by norm_num)) (hNL 2 (by norm_num)) (by omega))) (by norm_num) ?_
+          (hsL 2 by_n) (hNL 2 by_n) by_o)) by_n ?_
         rintro c' ⟨v1, v2, v3, v4⟩
-        refine ⟨by omega, ?_, setFr 2 (by norm_num) c' v3, v4⟩
-        have e0 : c'.nreg bL = c.nreg bL := v3 _ (by omega) (fun h => hNL 0 (by norm_num) (by rw [h]; rfl))
+        refine ⟨by_o, ?_, setFr 2 by_n c' v3, v4⟩
+        have e0 : c'.nreg bL = c.nreg bL := v3 _ by_o (fun h => hNL 0 by_n (by rw [h]; rfl))
         have e1 : c'.nreg (bL + 1) = c.nreg (bL + 1) :=
-          v3 _ (by omega) (fun h => hNL 1 (by norm_num) h.symm)
+          v3 _ by_o (fun h => hNL 1 by_n h.symm)
         rw [lbl c', v2, hl]
         simp [addL, List.range_succ, e0, e1, v1, hne, hne']
-      · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
-    · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
+      · exact ⟨by_o, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
+    · exact ⟨by_o, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
   · -- three labels
     have hl : lblOf c bN bL = [c.nreg bL, c.nreg (bL + 1), c.nreg (bL + 2)] := by
       rw [lbl c, hn]; simp [List.range_succ]
@@ -149,44 +148,44 @@ theorem addLab_irs {bN bL r : ℕ} (hI : IInv W c₀ c) (hK : Consts c) (hsN : I
     refine IRS.mono (K := 24 + 4) (neq_irs hI (fun hne => ?_) (fun heq => ?_)) le_rfl (fun _ h => h)
     · refine IRS.mono (K := 22 + 2) (IRS.ifF (by rw [hn, k2]; norm_num) ?_) le_rfl (fun _ h => h)
       refine IRS.mono (K := 18 + 4) (neq_irs hI (fun hne' => ?_) (fun heq => ?_)) le_rfl (fun _ h => h)
-      · refine IRS.mono (K := 16 + 2) (IRS.ifF (by rw [hn, k3]; norm_num) ?_) (by norm_num)
+      · refine IRS.mono (K := 16 + 2) (IRS.ifF (by rw [hn, k3]; norm_num) ?_) by_n
           (fun _ h => h)
         refine IRS.mono (K := 12 + 4) (neq_irs hI (fun hne'' => ?_) (fun heq => ?_)) le_rfl
           (fun _ h => h)
         · refine IRS.mono (K := 2 + 2) (IRS.ifT (by rw [hn, k4]; norm_num) (lab_set_irs (i := 3) hI
-            hsN (hsL 3 (by norm_num)) (hNL 3 (by norm_num)) (by omega))) (by norm_num) ?_
+            hsN (hsL 3 by_n) (hNL 3 by_n) by_o)) by_n ?_
           rintro c' ⟨v1, v2, v3, v4⟩
-          refine ⟨by omega, ?_, setFr 3 (by norm_num) c' v3, v4⟩
+          refine ⟨by_o, ?_, setFr 3 by_n c' v3, v4⟩
           have e0 : c'.nreg bL = c.nreg bL :=
-            v3 _ (by omega) (fun h => hNL 0 (by norm_num) (by rw [h]; rfl))
+            v3 _ by_o (fun h => hNL 0 by_n (by rw [h]; rfl))
           have e1 : c'.nreg (bL + 1) = c.nreg (bL + 1) :=
-            v3 _ (by omega) (fun h => hNL 1 (by norm_num) h.symm)
+            v3 _ by_o (fun h => hNL 1 by_n h.symm)
           have e2 : c'.nreg (bL + 2) = c.nreg (bL + 2) :=
-            v3 _ (by omega) (fun h => hNL 2 (by norm_num) h.symm)
+            v3 _ by_o (fun h => hNL 2 by_n h.symm)
           rw [lbl c', v2, hl]
           simp [addL, List.range_succ, e0, e1, e2, v1, hne, hne', hne'']
-        · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
-      · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
-    · exact ⟨by omega, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
+        · exact ⟨by_o, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
+      · exact ⟨by_o, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
+    · exact ⟨by_o, by rw [hl]; simp [addL, heq], fun _ _ => rfl, rfl⟩
   · -- full
-    have hl4 : (lblOf c bN bL).length = 4 := hlen
+    have hl4 := hlen
     have hfull : ∀ v, addL (lblOf c bN bL) v = lblOf c bN bL := fun v => by
-      unfold addL; rw [ite_eq_left (Or.inr (by omega))]
+      unfold addL; rw [ite_eq_left (Or.inr by_o)]
     have hun : ∀ (K : ℕ), IRS P W c₀ .skip c K (fun c' => c'.nreg bN ≤ 4 ∧
         lblOf c' bN bL = addL (lblOf c bN bL) (c.nreg r) ∧
         (∀ q, ¬ LblR bN bL q → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := fun K =>
-      IRS.skip hI ⟨by omega, (hfull _).symm, fun _ _ => rfl, rfl⟩
+      IRS.skip hI ⟨by_o, (hfull _).symm, fun _ _ => rfl, rfl⟩
     have hq : c.nreg bN ≤ 4 ∧ lblOf c bN bL = addL (lblOf c bN bL) (c.nreg r) ∧
         (∀ q, ¬ LblR bN bL q → c.nreg q = c.nreg q) ∧ c.nmem = c.nmem :=
-      ⟨by omega, (hfull _).symm, fun _ _ => rfl, rfl⟩
+      ⟨by_o, (hfull _).symm, fun _ _ => rfl, rfl⟩
     refine IRS.mono (K := 28 + 2) (IRS.ifF (by rw [hn, k1]; norm_num) ?_) le_rfl (fun _ h => h)
     refine IRS.mono (K := 24 + 4) (neq_irs hI (fun _ => ?_) (fun _ => hq)) le_rfl (fun _ h => h)
     refine IRS.mono (K := 22 + 2) (IRS.ifF (by rw [hn, k2]; norm_num) ?_) le_rfl (fun _ h => h)
     refine IRS.mono (K := 18 + 4) (neq_irs hI (fun _ => ?_) (fun _ => hq)) le_rfl (fun _ h => h)
-    refine IRS.mono (K := 16 + 2) (IRS.ifF (by rw [hn, k3]; norm_num) ?_) (by norm_num) (fun _ h => h)
+    refine IRS.mono (K := 16 + 2) (IRS.ifF (by rw [hn, k3]; norm_num) ?_) by_n (fun _ h => h)
     refine IRS.mono (K := 12 + 4) (neq_irs hI (fun _ => ?_) (fun _ => hq)) le_rfl (fun _ h => h)
-    refine IRS.mono (K := 10 + 2) (IRS.ifF (by rw [hn, k4]; norm_num) ?_) (by norm_num) (fun _ h => h)
-    exact IRS.mono (K := 0 + 4) (neq_irs hI (fun _ => hun 0) (fun _ => hq)) (by norm_num)
+    refine IRS.mono (K := 10 + 2) (IRS.ifF (by rw [hn, k4]; norm_num) ?_) by_n (fun _ h => h)
+    exact IRS.mono (K := 0 + 4) (neq_irs hI (fun _ => hun 0) (fun _ => hq)) by_n
       (fun _ h => h)
 
 end

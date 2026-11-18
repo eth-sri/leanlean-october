@@ -33,13 +33,13 @@ theorem QAt.nodeNa_eq (h : QAt P m O E V H C N B k) {u : ℕ} (hu : u < V.A) :
   obtain ⟨reg, -, hA, -⟩ := NFLoc.isNF_arcs hN
   have huA : u < N.arcs.length := by rw [← h.hA]; exact hu
   have hj0 : nodeArc0 m V u = sj N u := by
-    have := hm.nf.2.2.2.2.2.2.2.2.1 u (by rw [NFLoc.seq_length hN]; exact huA)
+    have := hm.nf.2.2.2.2.2.2.2.2.1 u (by rwa [NFLoc.seq_length hN])
     unfold nodeArc0 sj; rw [← hm.SB]; exact this
-  have hj0A : sj N u < N.arcs.length := NFLoc.seq_lt hN huA
+  have hj0A := NFLoc.seq_lt hN huA
   have hr : nodeReg m V u = rgi N u := by
     have := (hm.nf.2.2.2.2.2.2.1 _ hj0A).1
     unfold nodeReg rgi; rw [hj0, ← hm.AB]; exact this
-  have hrR : rgi N u < N.regions.length := (hA.1 _ hj0A).1
+  have hrR := (hA.1 _ hj0A).1
   obtain ⟨hna, -, -, hlist, -⟩ := hm.nf.2.2.2.2.2.2.2.1 _ hrR
   have hna' : nodeNa m V u = (N.region (rgi N u)).arcs.length := by
     unfold nodeNa; rw [hr, ← hm.RB]; exact hna
@@ -54,7 +54,7 @@ theorem QAt.arcLen_eq (h : QAt P m O E V H C N B k) {j : ℕ} (hj : j < V.A) :
   have hm := h.nodeMem
   obtain ⟨hpA, hpj⟩ := hm.pos j hj
   have hsj : sj N (arcPos m V j) = j := hpj
-  refine ⟨?_, by rw [← h.hA]; exact hpA⟩
+  refine ⟨?_, by rwa [← h.hA]⟩
   unfold scanLenR arcLenM lenOf
   rw [hsj, ← h.hA, arcSe_eq hm hj, arcEe_eq hm hj]
 

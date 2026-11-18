@@ -16,8 +16,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
-
 /-- The ghost components after a round. -/
 noncomputable def gcNext (R K : ℕ) (prg pch chOf top best : ℕ → ℕ) (σ : RS) (gc : ℕ → Finset ℕ)
     (e : ℕ) : Finset ℕ :=
@@ -31,20 +29,20 @@ def crNext (K : ℕ) (chOf top best : ℕ → ℕ) (σ : RS) (j : ℕ) (cr : ℕ
 theorem split_bound {D a b : ℕ} (hD : 1 ≤ D) (ha : 1 ≤ a) (hb : 1 ≤ b)
     (hm : a + b - 1 ≤ D * min a b) :
     D * (a - 1) ≤ (D - 1) * (a + b - 1) ∧ D * (b - 1) ≤ (D - 1) * (a + b - 1) := by
-  obtain ⟨d, rfl⟩ : ∃ d, D = d + 1 := ⟨D - 1, by omega⟩
-  obtain ⟨a', rfl⟩ : ∃ a', a = a' + 1 := ⟨a - 1, by omega⟩
-  obtain ⟨b', rfl⟩ : ∃ b', b = b' + 1 := ⟨b - 1, by omega⟩
+  obtain ⟨d, rfl⟩ : ∃ d, D = d + 1 := ⟨D - 1, by_o⟩
+  obtain ⟨a', rfl⟩ : ∃ a', a = a' + 1 := ⟨a - 1, by_o⟩
+  obtain ⟨b', rfl⟩ : ∃ b', b = b' + 1 := ⟨b - 1, by_o⟩
   simp only [Nat.add_sub_cancel] at hm ⊢
-  have e1 : a' + 1 + (b' + 1) - 1 = a' + b' + 1 := by omega
+  have e1 : a' + 1 + (b' + 1) - 1 = a' + b' + 1 := by_o
   rw [e1] at hm ⊢
   rcases le_total a' b' with hab | hab
-  · rw [min_eq_left (by omega)] at hm
+  · rw [min_eq_left by_o] at hm
     constructor
     · rcases Nat.eq_zero_or_pos d with rfl | hd
       · simp at hm; omega
       · nlinarith
     · nlinarith
-  · rw [min_eq_right (by omega)] at hm
+  · rw [min_eq_right by_o] at hm
     constructor
     · nlinarith
     · rcases Nat.eq_zero_or_pos d with rfl | hd
@@ -101,7 +99,7 @@ theorem root_next_pos (hj : 1 ≤ j) : (σ').root = σ.root := by
   · rw [ite_eq_left ha]
     rcases hI.i4 0 h.R_pos (Or.inl rfl) ha with ⟨-, -, hj0⟩ | ⟨hs, -⟩
     · omega
-    · rw [ite_eq_right (by omega)]
+    · rw [ite_eq_right by_o]
   · rw [ite_eq_right ha]
 
 /-- The new state at an old top. -/
@@ -129,7 +127,7 @@ theorem new_top_facts {e : ℕ} (he : e < K) (hc : Chosen σ top best chOf e) :
       (σ').side (chOf e) = (if isdn (chOf e) = 1 then 0 else 1) := by
   obtain ⟨-, -, -, -, -, hnt, -, c1, -, c3, -⟩ := chosen_facts h hch hT hB hI he hc
   have hnt' : top (chOf e) ≠ chOf e := fun e' => hnt ((top_iff h hch hT hB hI c1).1 e')
-  have hp : nPend K chOf top best σ e = 1 := (pend_next h hch hT hB hI he).2 hc
+  have hp := (pend_next h hch hT hB hI he).2 hc
   refine ⟨?_, ?_, ?_⟩ <;> simp only [next, ite_eq_left c1, ite_eq_right hnt', c3, ite_eq_left hp]
 
 /-- An old top that is not active stays as it is. -/
@@ -145,7 +143,7 @@ theorem valid_next {x : ℕ} (hx : ValidC R K pch σ x) :
       · rw [ite_eq_right hp]
   · have hx2 : x % 2 ≠ 0 := by omega
     refine ⟨Or.inr ⟨h1, h2, (istop_next h hch hT hB hI h2).2 (Or.inl h3), ?_⟩, ?_, ?_⟩
-    · rw [act_top h hch hT hB hI h2 h3, ite_eq_right h4]; exact h4
+    · rwa [act_top h hch hT hB hI h2 h3, ite_eq_right h4]
     · simp only [compOf, ite_eq_right hx2]
     · simp only [pcode, ite_eq_right hx2]
       rw [lpar_top h hch hT hB hI h2 h3, ite_eq_right h4]
@@ -158,8 +156,8 @@ theorem code_next {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
   by_cases hbt : best t = t
   · have hcode : code best pch t = 2 * t + 1 := by unfold code; rw [ite_eq_left hbt]
     rw [hcode]
-    have hm : (2 * t + 1) % 2 = 1 := by omega
-    have hd : (2 * t + 1) / 2 = t := by omega
+    have hm : (2 * t + 1) % 2 = 1 := by_o
+    have hd : (2 * t + 1) / 2 = t := by_o
     have hsing : sub R prg pch σ.rem t = {t} := by
       ext v
       rw [mem_sub, Finset.mem_singleton]
@@ -181,8 +179,8 @@ theorem code_next {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
   · obtain ⟨b1, b2, b3, b4, b5, b6, b7, b8⟩ := cut_chosen h hch hT hB hI ht htop hact hbt
     have hcode : code best pch t = 2 * pch (best t) := by unfold code; rw [ite_eq_right hbt]
     rw [hcode]
-    have hm : (2 * pch (best t)) % 2 = 0 := by omega
-    have hd : (2 * pch (best t)) / 2 = pch (best t) := by omega
+    have hm : (2 * pch (best t)) % 2 = 0 := by_o
+    have hd : (2 * pch (best t)) / 2 = pch (best t) := by_o
     have v1 : (2 * pch (best t)) / 2 < K := by rw [hd]; exact b4
     have v2 : (σ').rem ((2 * pch (best t)) / 2) = 1 := by
       rw [hd]; exact (rem_next h hch hT hB hI b4).2 (Or.inr b7)
@@ -200,8 +198,8 @@ theorem pend_child {e s t : ℕ} (he : e < K) (hp : σ.pend e = 1) (_ht : t < R)
   have hr := hI.i0 e he hp
   obtain ⟨-, hcm, hpm, -⟩ := hI.i1 e he hr
   obtain ⟨c1, c2, c3⟩ := hch e he
-  have hctop : IsTop pch σ.rem (chOf e) := Or.inr (by rw [c3]; exact hr)
-  have hpR : prg (chOf e) < R := h.prg_lt _ c1 c2
+  have hctop : IsTop pch σ.rem (chOf e) := Or.inr (by rwa [c3])
+  have hpR := h.prg_lt _ c1 c2
   by_cases hcond : (isdn (chOf e) = 1 ↔ s = 0)
   · rw [ite_eq_left hcond]
     have hmem : chOf e ∈ sub R prg pch σ.rem t := by

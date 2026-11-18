@@ -93,9 +93,9 @@ theorem star_face_iff (f : D) (e : D ⊕ D ⊕ D) :
   constructor
   · intro h
     rcases e with d | d | d
-    · exact ⟨0, by omega, by simp only [star_face, starFace_inl] at h; subst h; rfl⟩
-    · exact ⟨2, by omega, by simp only [star_face, starFace_inl_inr] at h; subst h; rfl⟩
-    · refine ⟨1, by omega, ?_⟩
+    · exact ⟨0, by_o, by simp only [star_face, starFace_inl] at h; subst h; rfl⟩
+    · exact ⟨2, by_o, by simp only [star_face, starFace_inl_inr] at h; subst h; rfl⟩
+    · refine ⟨1, by_o, ?_⟩
       simp only [star_face, starFace_inr_inr] at h
       subst h
       simp [starDarts]
@@ -132,7 +132,7 @@ theorem star_mem_sepSet_inl (f : D) (v : V) :
     · refine ⟨.inr (.inr (M.fperm f)), ?_, ?_⟩
       · simp
       · simp only [star_vert, starVert_inr_inr]
-        rw [starTree_isAnc_inl, M.vert_fperm]; exact h
+        rwa [starTree_isAnc_inl, M.vert_fperm]
     · exact ⟨.inr (.inl f), rfl, (starTree_isAnc_inr T a ha v _).mpr h⟩
 
 /-- **The separator in a slab**: at most `3 k` real vertices whose levels (shifted by `c`) lie in

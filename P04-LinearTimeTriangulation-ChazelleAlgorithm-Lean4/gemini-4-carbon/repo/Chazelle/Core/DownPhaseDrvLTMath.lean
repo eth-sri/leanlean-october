@@ -24,7 +24,7 @@ namespace DrvLT
 theorem le_lvNch {μ ℓ : ℕ} (h : ℓ * (3 * 2 ^ (Cost.ceilBeta μ + 10) + 1) ≤
     140 * (DrvR.regCap + 2) * (20 * 2 ^ μ + 17)) : ℓ ≤ DrvR.lvNch μ := by
   unfold DrvR.lvNch
-  exact (Nat.le_div_iff_mul_le (by positivity)).2 h
+  exact (Nat.le_div_iff_mul_le by_p).2 h
 
 /-- The gathered list has at most `R M` triples. -/
 theorem flat_length_le (Lx : ℕ → List (ℕ × ℕ × ℕ)) (R M : ℕ)
@@ -32,7 +32,7 @@ theorem flat_length_le (Lx : ℕ → List (ℕ × ℕ × ℕ)) (R M : ℕ)
   rw [DrvLM.length_flatMap_range]
   calc ∑ r ∈ Finset.range R, (Lx r).length ≤ ∑ r ∈ Finset.range R, M :=
         Finset.sum_le_sum fun r hr => h r (Finset.mem_range.1 hr)
-    _ = R * M := by simp
+    _ = R * M := by_s
 
 /-- A prefix of the gathered list is no longer than the list. -/
 theorem flat_length_mono (Lx : ℕ → List (ℕ × ℕ × ℕ)) {j R : ℕ} (h : j ≤ R) :
@@ -58,7 +58,7 @@ theorem i3_step {lam K K₁ K' n p γ₀ : ℕ} (h16 : 16 ≤ lam) (hlp : lam �
     rw [hγ]
     have : 2 ^ Cost.ceilBeta (Cost.ceilBeta lam + 11) ≤
         2 ^ (Cost.ceilBeta (DrvR.nextLvl lam) + 10) :=
-      Nat.pow_le_pow_right (by norm_num) (by unfold DrvR.nextLvl; omega)
+      Nat.pow_le_pow_right by_n (by unfold DrvR.nextLvl; omega)
     omega
   exact DownMath.cnt_step (A := 2 ^ (DrvR.regCap + 4)) (B := 1120 * (DrvR.regCap + 2))
     (Nat.one_le_two_pow) h16 hlp hK hn hG (DownMath.level_bound h1 h2)
@@ -73,44 +73,44 @@ theorem cost_le {R K K₂ M ν Λ κc κS κr X : ℕ} (hR : R = K + 1) (hK₂ :
       κS * (K + K₂ + (4 * K + 3) + 1) * (Nat.clog 2 (4 * M) + 1) + 2 +
         κr * (K + K₂ + 1) * X ≤
       (300 + 48 * κc + 5 * κS * κc + κr * κc) * R * Λ := by
-  have hRν : K₂ ≤ R * ν := hK₂.trans (Nat.mul_le_mul_left _ hM)
+  have hRν := hK₂.trans (Nat.mul_le_mul_left _ hM)
   have hMR : M * R ≤ R * ν := by rw [Nat.mul_comm]; exact Nat.mul_le_mul_left _ hM
   have hz : R * ν ≤ κc * (R * Λ) := by
     calc R * ν ≤ R * (κc * Λ) := Nat.mul_le_mul_left _ h1
-      _ = κc * (R * Λ) := by ring
+      _ = κc * (R * Λ) := by_r
   have hy : R ≤ R * Λ := Nat.le_mul_of_pos_right _ hΛ
-  have hR1 : 1 ≤ R := by omega
+  have hR1 : 1 ≤ R := by_o
   -- the gather
   have hg : (8 * K₂ + (35 * M + 32) * R + 26) + (5 * K₂ + 1) + 2 ≤
       61 * (R * Λ) + 48 * (κc * (R * Λ)) := by
-    have e : (35 * M + 32) * R = 35 * (M * R) + 32 * R := by ring
+    have e : (35 * M + 32) * R = 35 * (M * R) + 32 * R := by_r
     rw [e]; omega
   -- the splice
   have hc : Nat.clog 2 (4 * M) + 1 ≤ Nat.clog 2 (4 * ν + 4) + 1 :=
-    Nat.add_le_add_right (Nat.clog_mono_right 2 (by omega)) 1
+    Nat.add_le_add_right (Nat.clog_mono_right 2 by_o) 1
   have hs1 : K + K₂ + (4 * K + 3) + 1 ≤ 5 * (R * (ν + 1)) := by
-    have : R * (ν + 1) = R * ν + R := by ring
+    have : R * (ν + 1) = R * ν + R := by_r
     omega
   have hs : κS * (K + K₂ + (4 * K + 3) + 1) * (Nat.clog 2 (4 * M) + 1) ≤
       5 * κS * κc * (R * Λ) := by
     calc κS * (K + K₂ + (4 * K + 3) + 1) * (Nat.clog 2 (4 * M) + 1)
         ≤ κS * (5 * (R * (ν + 1))) * (Nat.clog 2 (4 * ν + 4) + 1) :=
           Nat.mul_le_mul (Nat.mul_le_mul_left _ hs1) hc
-      _ = 5 * κS * R * ((ν + 1) * (Nat.clog 2 (4 * ν + 4) + 1)) := by ring
+      _ = 5 * κS * R * ((ν + 1) * (Nat.clog 2 (4 * ν + 4) + 1)) := by_r
       _ ≤ 5 * κS * R * (κc * Λ) := Nat.mul_le_mul_left _ h2
-      _ = 5 * κS * κc * (R * Λ) := by ring
+      _ = 5 * κS * κc * (R * Λ) := by_r
   -- the rounds
   have hr1 : K + K₂ + 1 ≤ R * (ν + 1) := by
-    have : R * (ν + 1) = R * ν + R := by ring
+    have : R * (ν + 1) = R * ν + R := by_r
     omega
   have hr : κr * (K + K₂ + 1) * X ≤ κr * κc * (R * Λ) := by
     calc κr * (K + K₂ + 1) * X ≤ κr * (R * (ν + 1)) * X :=
           Nat.mul_le_mul_right _ (Nat.mul_le_mul_left _ hr1)
-      _ = κr * R * ((ν + 1) * X) := by ring
+      _ = κr * R * ((ν + 1) * X) := by_r
       _ ≤ κr * R * (κc * Λ) := Nat.mul_le_mul_left _ h3
-      _ = κr * κc * (R * Λ) := by ring
+      _ = κr * κc * (R * Λ) := by_r
   have e : (300 + 48 * κc + 5 * κS * κc + κr * κc) * R * Λ =
-      300 * (R * Λ) + 48 * (κc * (R * Λ)) + 5 * κS * κc * (R * Λ) + κr * κc * (R * Λ) := by ring
+      300 * (R * Λ) + 48 * (κc * (R * Λ)) + 5 * κS * κc * (R * Λ) + κr * κc * (R * Λ) := by_r
   rw [e]
   omega
 
@@ -123,11 +123,11 @@ theorem room_small {R K M ν Λ κc κS κr : ℕ} (hR : R = K + 1) (hM : M ≤ 
   have hy : R ≤ R * Λ := Nat.le_mul_of_pos_right _ hΛ
   have hz : M ≤ κc * (R * Λ) := by
     calc M ≤ κc * Λ := hM.trans h1
-      _ ≤ κc * (R * Λ) := Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_left _ (by omega))
+      _ ≤ κc * (R * Λ) := Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_left _ by_o)
   have e : (300 + 48 * κc + 5 * κS * κc + κr * κc) * R * Λ =
-      300 * (R * Λ) + 48 * (κc * (R * Λ)) + 5 * κS * κc * (R * Λ) + κr * κc * (R * Λ) := by ring
+      300 * (R * Λ) + 48 * (κc * (R * Λ)) + 5 * κS * κc * (R * Λ) + κr * κc * (R * Λ) := by_r
   rw [e]
-  refine ⟨by omega, by omega, by omega⟩
+  refine ⟨by_o, by_o, by_o⟩
 
 end
 

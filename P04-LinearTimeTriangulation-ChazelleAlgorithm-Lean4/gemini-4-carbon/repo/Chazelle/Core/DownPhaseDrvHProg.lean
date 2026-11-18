@@ -222,11 +222,11 @@ def Bjun (q : ℕ) : Bool := Bem q || decide (215060 ≤ q ∧ q ≤ 215065)
 /-- The registers `ldS` writes. -/
 def Bld (q : ℕ) : Bool := decide (215042 ≤ q ∧ q ≤ 215051)
 
-theorem wrM_setupS : wrM Ball setupS = true := by decide
-theorem wrM_chBody : wrM Bpart chBody = true := by decide
-theorem wrM_ldS : wrM Bld ldS = true := by decide
-theorem wrM_hostS : wrM Ball hostS = true := by decide
-theorem wrM2_hostS : wrM2 Ball (fun _ => false) hostS = true := by decide
+theorem wrM_setupS : wrM Ball setupS = true := by_d
+theorem wrM_chBody : wrM Bpart chBody = true := by_d
+theorem wrM_ldS : wrM Bld ldS = true := by_d
+theorem wrM_hostS : wrM Ball hostS = true := by_d
+theorem wrM2_hostS : wrM2 Ball (fun _ => false) hostS = true := by_d
 
 end
 

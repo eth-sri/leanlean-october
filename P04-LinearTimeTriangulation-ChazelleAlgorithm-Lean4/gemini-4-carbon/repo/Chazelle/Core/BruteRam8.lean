@@ -9,10 +9,6 @@ public import Chazelle.Core.BruteRam7
 set-up state, the loop over the tour positions writes the list `bruteList C` at `A₀ + 10`.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace Brute
@@ -62,14 +58,14 @@ theorem bbd_of_lp {c c' : Config} (F : FrameB Blp c c') : ∀ r, Bbd r = false �
 theorem bbd_of_co {c c' : Config} (F : FrameB Bco c c') : ∀ r, Bbd r = false → c'.nreg r = c.nreg r :=
   fun r hr => F.1 r (by
     unfold Bbd at hr; unfold Bco
-    simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; exact ⟨hr.1.1, by omega⟩)
+    simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; exact ⟨hr.1.1, by_o⟩)
 
 theorem bbd_of_em {c c' : Config} (h : ∀ r, Bem r = false → c'.nreg r = c.nreg r) :
     ∀ r, Bbd r = false → c'.nreg r = c.nreg r :=
   fun r hr => h r (by
     unfold Bbd at hr; unfold Bem Bsc
     simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢
-    exact ⟨⟨hr.1.1, by omega⟩, by omega⟩)
+    exact ⟨⟨hr.1.1, by_o⟩, by_o⟩)
 
 set_option maxHeartbeats 4000000 in
 /-- **One iteration of the loop.** -/
@@ -84,38 +80,38 @@ theorem bodyS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
   obtain ⟨hX, -, h31, h33b, h33, h19, h24, hL, hM, hR, hRR, hRM, hO⟩ := hI
   obtain ⟨x0, x1, x2, x10, x11, x12, x13, x15, x16, x17, x18, x23, x25, x26, x27, x28⟩ := hX
   set i := c.nreg 180030 with hid
-  have hi : i ≤ 2 * C.m := by omega
+  have hi : i ≤ 2 * C.m := by_o
   have hk := C.sideIdx_le C.sideBeta i
   -- indices
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, q32, q33, q35, q36, q37, q44, q30, q31⟩ := idxS_exec (P := P) (C := C) c hw
     hsn hW hi x0 x1 x11 x12 x27 rfl (h31 hi) rfl h33b
   have K₁ := bbd_of_lp F₁
-  have X₁ : Ctx P C γ A₀ c₁ := ctx_of_bbd ⟨x0, x1, x2, x10, x11, x12, x13, x15, x16, x17, x18, x23,
+  have X₁ := ctx_of_bbd ⟨x0, x1, x2, x10, x11, x12, x13, x15, x16, x17, x18, x23,
     x25, x26, x27, x28⟩ K₁
   -- the corner
-  obtain ⟨c₂, k₂, e₂, hk₂, F₂, b41, b42, t41, t42⟩ := cornerS_exec (P := P) hG (by omega) hC hsn hi
+  obtain ⟨c₂, k₂, e₂, hk₂, F₂, b41, b42, t41, t42⟩ := cornerS_exec (P := P) hG by_o hC hsn hi
     c₁ e₁.wb_right X₁.2.2.2.2.1 X₁.2.2.2.2.2.1 X₁.2.2.2.2.2.2.2.2.2.2.2.2.2.2.2 q30 q35
     (fun h => by rw [q36, h33 h]) (fun _ => q37)
   have K₂ := bbd_of_co F₂
-  have X₂ : Ctx P C γ A₀ c₂ := ctx_of_bbd X₁ K₂
-  have c35 : c₂.nreg 180035 = C.s + C.sideIdx C.sideBeta i := by rw [F₂.1 _ (by decide), q35]
-  have c44 : c₂.nreg 180044 = i + 6 := by rw [F₂.1 _ (by decide), q44]
+  have X₂ := ctx_of_bbd X₁ K₂
+  have c35 : c₂.nreg 180035 = C.s + C.sideIdx C.sideBeta i := by rw [F₂.1 _ by_d, q35]
+  have c44 : c₂.nreg 180044 = i + 6 := by rw [F₂.1 _ by_d, q44]
   have c24 : c₂.nreg 180024 = A₀ + 10 + 3 * (pre C i).length := by
-    rw [F₂.1 _ (by decide), F₁.1 _ (by decide), h24]
-  have c19 : c₂.nreg 180019 = (pre C i).length := by rw [F₂.1 _ (by decide), F₁.1 _ (by decide), h19]
+    rw [F₂.1 _ by_d, F₁.1 _ by_d, h24]
+  have c19 : c₂.nreg 180019 = (pre C i).length := by rw [F₂.1 _ by_d, F₁.1 _ by_d, h19]
   have m₂ : c₂.nmem = c.nmem := by rw [F₂.2.2.1, F₁.2.2.1]
   have hlen := pre_length_le C i
   -- east
   obtain ⟨c₃, k₃, e₃, hk₃, lb₃, p24, p19, pL, pM, R₃, RR₃, RM₃, O₃⟩ := emitB_exec (P := P) (d := 0) hG
-    (by omega) hW4 hC hsn (by omega) hi c₂ e₂.wb_right
+    by_o hW4 hC hsn by_o hi c₂ e₂.wb_right
     ⟨X₂.1, X₂.2.1, X₂.2.2.2.2.1, c35⟩ ⟨X₂.2.2.2.2.2.1, X₂.2.2.2.2.2.2.2.1, X₂.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1⟩
-    b41 t41 c44 (L := A₀ + 10) (l := pre C i) (M := M) c24 c19 (by rw [m₂]; exact hL) (by intro x hx; rw [m₂]; exact hM x hx)
-    (by omega)
+    b41 t41 c44 (L := A₀ + 10) (l := pre C i) (M := M) c24 c19 (by rwa [m₂]) (by intro x hx; rw [m₂]; exact hM x hx)
+    by_o
   have K₃ := bbd_of_em R₃
-  have X₃ : Ctx P C γ A₀ c₃ := ctx_of_bbd X₂ K₃
-  have d35 : c₃.nreg 180035 = C.s + C.sideIdx C.sideBeta i := by rw [R₃ _ (by decide), c35]
-  have d44 : c₃.nreg 180044 = i + 6 := by rw [R₃ _ (by decide), c44]
-  have d42 : c₃.nreg 180042 = c₂.nreg 180042 := R₃ _ (by decide)
+  have X₃ := ctx_of_bbd X₂ K₃
+  have d35 : c₃.nreg 180035 = C.s + C.sideIdx C.sideBeta i := by rw [R₃ _ by_d, c35]
+  have d44 : c₃.nreg 180044 = i + 6 := by rw [R₃ _ by_d, c44]
+  have d42 : c₃.nreg 180042 = c₂.nreg 180042 := R₃ _ by_d
   set l₁ := pre C i ++ (if Emit C i 0 then [trip C i 0] else []) with hl₁
   have hl₁len : l₁.length ≤ 2 * i + 1 := by
     rw [hl₁, List.length_append]; have : (if Emit C i 0 then [trip C i 0] else []).length ≤ 1 := by
@@ -123,45 +119,45 @@ theorem bodyS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
     omega
   -- west
   obtain ⟨c₄, k₄, e₄, hk₄, lb₄, r24, r19, rL, rM, R₄, RR₄, RM₄, O₄⟩ := emitB_exec (P := P) (d := 1) hG
-    (by omega) hW4 hC hsn (by omega) hi c₃ e₃.wb_right
+    by_o hW4 hC hsn by_o hi c₃ e₃.wb_right
     ⟨X₃.1, X₃.2.1, X₃.2.2.2.2.1, d35⟩ ⟨X₃.2.2.2.2.2.1, X₃.2.2.2.2.2.2.2.1, X₃.2.2.2.2.2.2.2.2.2.2.2.2.2.2.1⟩
-    (by rw [d42]; exact b42) (by rw [d42]; exact t42) d44 (l := l₁) (L := A₀ + 10) (M := M) p24 p19
-    pL pM (by omega)
+    (by rwa [d42]) (by rwa [d42]) d44 (l := l₁) (L := A₀ + 10) (M := M) p24 p19
+    pL pM by_o
   have K₄ := bbd_of_em R₄
-  have X₄ : Ctx P C γ A₀ c₄ := ctx_of_bbd X₃ K₄
+  have X₄ := ctx_of_bbd X₃ K₄
   -- advance
   have e30 : c₄.nreg 180030 = i := by
-    rw [R₄ _ (by decide), R₃ _ (by decide), F₂.1 _ (by decide), q30]
+    rw [R₄ _ by_d, R₃ _ by_d, F₂.1 _ by_d, q30]
   have e31 : c₄.nreg 180031 = (tS C + i) % (2 * C.m) := by
-    rw [R₄ _ (by decide), R₃ _ (by decide), F₂.1 _ (by decide), q31]
+    rw [R₄ _ by_d, R₃ _ by_d, F₂.1 _ by_d, q31]
     exact h31 hi
   have e32 : c₄.nreg 180032 = C.sideIdx C.sideBeta i := by
-    rw [R₄ _ (by decide), R₃ _ (by decide), F₂.1 _ (by decide), q32]
+    rw [R₄ _ by_d, R₃ _ by_d, F₂.1 _ by_d, q32]
   obtain ⟨c₅, k₅, e₅, hk₅, F₅, s33, s30, s31⟩ := advS_exec (P := P) (C := C) c₄ e₄.wb_right
-    (by omega) hi X₄.2.2.2.2.1 X₄.2.2.2.2.2.1 e30 e31
+    by_o hi X₄.2.2.2.2.1 X₄.2.2.2.2.2.1 e30 e31
   have K₅ := bbd_of_lp F₅
-  have X₅ : Ctx P C γ A₀ c₅ := ctx_of_bbd X₄ K₅
+  have X₅ := ctx_of_bbd X₄ K₅
   have ex : Exec P W bodyS c c₅ (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) :=
     .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ e₅)))
   have hpre : pre C (i + 1) = l₁ ++ (if Emit C i 1 then [trip C i 1] else []) := by
     rw [pre_succ, hl₁, List.append_assoc]
   have hlb : 3 * (pre C (i + 1)).length ≤ 3 * (pre C i).length + (k₁ + (k₂ + (k₃ + (k₄ + k₅)))) := by
     rw [hpre]; omega
-  refine ⟨c₅, _, ex, by omega, hlb, ⟨X₅, by rw [s30]; omega, fun h => by rw [s30]; exact s31 (by omega),
-    by rw [s33, e32]; exact hk, fun _ => by rw [s33, e32, s30]; rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
+  refine ⟨c₅, _, ex, by_o, hlb, ⟨X₅, by rw [s30]; omega, fun h => by rw [s30]; exact s31 by_o,
+    by rwa [s33, e32], fun _ => by rw [s33, e32, s30]; rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩,
     s30⟩
-  · rw [F₅.1 _ (by decide), r19, s30, hpre]
-  · rw [F₅.1 _ (by decide), r24, s30, hpre]
-  · rw [F₅.2.2.1, s30, hpre]; exact rL
+  · rw [F₅.1 _ by_d, r19, s30, hpre]
+  · rw [F₅.1 _ by_d, r24, s30, hpre]
+  · rwa [F₅.2.2.1, s30, hpre]
   · intro x hx; rw [F₅.2.2.1]; exact rM x hx
   · intro r hr; rw [K₅ r hr, K₄ r hr, K₃ r hr, K₂ r hr, K₁ r hr, hR r hr]
   · intro r hr
     have hb : Bsc r = false := by
       unfold Bbd at hr; unfold Bsc
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; exact ⟨hr.1.1, by omega⟩
+      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; exact ⟨hr.1.1, by_o⟩
     have hc : Bco r = false := by
       unfold Bbd at hr; unfold Bco
-      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; exact ⟨hr.1.1, by omega⟩
+      simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; exact ⟨hr.1.1, by_o⟩
     have hl : Blp r = false := by
       unfold Bbd at hr; unfold Blp
       simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega
@@ -183,12 +179,12 @@ theorem whileLtN_lb {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stmt} (I : Confi
     intro c hn hc
     by_cases ht : c.nreg a < c.nreg b
     · obtain ⟨c₁, k₁, e₁, hI₁, hk₁, hμ, hg⟩ := hbody c hc ht
-      obtain ⟨c', k₂, e₂, hI', hex, hk₂, hg'⟩ := ih (μ c₁) (by omega) c₁ rfl hI₁
-      refine ⟨c', _, .whileLtN_true ht e₁ e₂, hI', hex, ?_, by omega⟩
+      obtain ⟨c', k₂, e₂, hI', hex, hk₂, hg'⟩ := ih (μ c₁) by_o c₁ rfl hI₁
+      refine ⟨c', _, .whileLtN_true ht e₁ e₂, hI', hex, ?_, by_o⟩
       have : (B + 2) * (μ c₁ + 1) ≤ (B + 2) * μ c := Nat.mul_le_mul_left _ hμ
       rw [Nat.mul_add, Nat.mul_one] at this
       omega
-    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by omega, by omega⟩
+    · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht, by_o, by_o⟩
 
 set_option maxHeartbeats 1000000 in
 /-- **The main loop**: from the set-up state, the list `bruteList C` is written at `A₀ + 10`. -/
@@ -213,10 +209,10 @@ theorem loopS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
     · omega
     · omega
     · refine ⟨rfl, by config_simp, by config_simp, ?_, ⟨fun r hr => ?_, fun r _ => rfl, rfl, rfl, rfl⟩⟩
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_same]
         exact hX.2.2.2.2.2.2.2.1
       · unfold Blp at hr; simp only [decide_eq_false_iff_not] at hr
-        simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+        simp (disch := omega) only [Machine.upd_other]
   have K₁ := bbd_of_lp R₁
   have X₁ := ctx_of_bbd hX K₁
   have w₁ := e₁.wb_right
@@ -225,23 +221,23 @@ theorem loopS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
       c₂.nreg 180031 = (tS C + 0) % (2 * C.m) ∧ FrameB (fun r => decide (r = 180031)) c₁ c₂ := by
     have hts : tS C ≤ 2 * C.m := hS
     by_cases hlt : tS C < 2 * C.m
-    · exact ⟨c₁, _, .ifLtN_true (by rw [q31, X₁.2.2.2.2.2.1]; exact hlt) (.skip w₁), by omega,
+    · exact ⟨c₁, _, .ifLtN_true (by rwa [q31, X₁.2.2.2.2.2.1]) (.skip w₁), by_o,
         by rw [q31, add_zero, Nat.mod_eq_of_lt hlt], FrameB.refl _ _⟩
-    · refine ⟨_, _, .ifLtN_false (by rw [q31, X₁.2.2.2.2.2.1]; exact hlt)
-        (Exec.constN w₁ 180031 0 (by omega)), le_refl _, ?_, ⟨fun r hr => ?_, fun _ _ => rfl,
+    · refine ⟨_, _, .ifLtN_false (by rwa [q31, X₁.2.2.2.2.2.1])
+        (Exec.constN w₁ 180031 0 by_o), le_refl _, ?_, ⟨fun r hr => ?_, fun _ _ => rfl,
         rfl, rfl, rfl⟩⟩
-      · simp only [Config.nreg_mk, upd_same]
+      · simp only [upd_same]
         rw [add_zero, show tS C = 2 * C.m by omega, Nat.mod_self]
       · simp only [decide_eq_false_iff_not] at hr; simp [hr]
   have K₂ : ∀ r, Bbd r = false → c₂.nreg r = c₁.nreg r := fun r hr => R₂.1 r (by
     unfold Bbd at hr; simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not] at hr ⊢; omega)
   have X₂ := ctx_of_bbd X₁ K₂
   have hI : LI P C γ A₀ c.nmem c c₂ := by
-    have e30 : c₂.nreg 180030 = 0 := by rw [R₂.1 _ (by decide), q30]
-    refine ⟨X₂, by omega, fun _ => by rw [e30]; exact q31', by rw [R₂.1 _ (by decide), q33]; omega,
+    have e30 : c₂.nreg 180030 = 0 := by rw [R₂.1 _ by_d, q30]
+    refine ⟨X₂, by_o, fun _ => by rw [e30]; exact q31', by rw [R₂.1 _ by_d, q33]; omega,
       fun h => by omega, ?_, ?_, ?_, ?_, fun r hr => by rw [K₂ r hr, K₁ r hr], fun r hr => ?_, ?_, ?_⟩
-    · rw [e30, R₂.1 _ (by decide), R₁.1 _ (by decide), h19]; rfl
-    · rw [e30, R₂.1 _ (by decide), R₁.1 _ (by decide), h24]; rfl
+    · rw [e30, R₂.1 _ by_d, R₁.1 _ by_d, h19]; rfl
+    · rw [e30, R₂.1 _ by_d, R₁.1 _ by_d, h24]; rfl
     · rw [e30]; intro j hj; simp [pre] at hj
     · intro x _; rw [R₂.2.2.1, R₁.2.2.1]
     · have h31 : r ≠ 180031 := by
@@ -260,21 +256,21 @@ theorem loopS_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) {C : Chain} (hW : P.
         intro d ⟨wd, Id⟩ hlt
         rw [Id.1.2.2.2.2.2.2.2.2.2.2.2.2.1] at hlt
         obtain ⟨d', k', e', hk', lb', I', q'⟩ := bodyS_exec hG hW hW4 hC hsn hroom d wd Id hlt
-        exact ⟨d', k', e', ⟨e'.wb_right, I'⟩, hk', by omega, by show 3 * (pre C (d'.nreg 180030)).length ≤ 3 * (pre C (d.nreg 180030)).length + k'; rw [q']; exact lb'⟩)
+        exact ⟨d', k', e', ⟨e'.wb_right, I'⟩, hk', by_o, by show 3 * (pre C (d'.nreg 180030)).length ≤ 3 * (pre C (d.nreg 180030)).length + k'; rw [q']; exact lb'⟩)
       _ c₂ rfl ⟨e₂.wb_right, hI⟩
   obtain ⟨X₃, l30, -, -, -, s19, s24, sL, sM, sR, sRR, sRM, sO⟩ := hI₃
   rw [X₃.2.2.2.2.2.2.2.2.2.2.2.2.1] at hex
-  have e30 : c₃.nreg 180030 = 2 * C.m + 1 := by omega
+  have e30 : c₃.nreg 180030 = 2 * C.m + 1 := by_o
   rw [e30, pre_full] at s19 s24 sL
-  have : c₂.nreg 180030 = 0 := by rw [R₂.1 _ (by decide), q30]
-  have hg' : 3 * (pre C (c₃.nreg 180030)).length ≤ 3 * (pre C (c₂.nreg 180030)).length + k₃ := hg₃
+  have : c₂.nreg 180030 = 0 := by rw [R₂.1 _ by_d, q30]
+  have hg' := hg₃
   rw [this, e30, pre_full] at hg'
   have hp0 : (pre C 0).length = 0 := by simp [pre]
   rw [hp0] at hg'
-  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ?_, by omega, X₃, s19, s24, sL, sM, sR,
+  refine ⟨c₃, _, .seq e₁ (.seq e₂ e₃), ?_, by_o, X₃, s19, s24, sL, sM, sR,
     sRR, sRM, sO⟩
   rw [this, Nat.sub_zero] at hk₃
-  have e1 : (3300 * C.m + 1400 + 2) * (2 * C.m + 1) = (3300 * C.m + 1402) * (2 * C.m + 1) := by ring
+  have e1 : (3300 * C.m + 1400 + 2) * (2 * C.m + 1) = (3300 * C.m + 1402) * (2 * C.m + 1) := by_r
   rw [e1] at hk₃
   omega
 

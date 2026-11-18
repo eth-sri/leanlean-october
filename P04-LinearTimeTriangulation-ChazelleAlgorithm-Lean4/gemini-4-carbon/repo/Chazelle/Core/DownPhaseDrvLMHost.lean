@@ -98,7 +98,7 @@ theorem run_mem_regHost {li : Bool} {n : ℕ} {N : NF} {r a ℓ : ℕ}
   rw [List.mem_range] at ht
   refine ⟨_, ?_, run_mem_arcItems hmem⟩
   have hk : (t + 1) % (N.region r).arcs.length < (N.region r).arcs.length :=
-    Nat.mod_lt _ (by omega)
+    Nat.mod_lt _ by_o
   rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hk, Option.getD_some]
   exact List.getElem_mem hk
 
@@ -137,17 +137,17 @@ theorem runCnt_le (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
   · rw [ite_eq_left hv] at hne ⊢
     by_cases hxy : s.edge < e.edge
     · rw [show e.edge + 0 + Q.n - 1 - s.edge = (e.edge - s.edge - 1) + Q.n by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+        Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
       rw [show e.edge + Q.n - s.edge = (e.edge - s.edge) + Q.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega)] at hac
+        Nat.mod_eq_of_lt by_o] at hac
       omega
     by_cases hyx : e.edge < s.edge
-    · rw [Nat.mod_eq_of_lt (by omega)]
-      rw [Nat.mod_eq_of_lt (by omega)] at hac
+    · rw [Nat.mod_eq_of_lt by_o]
+      rw [Nat.mod_eq_of_lt by_o] at hac
       omega
     · -- the degenerate case: both ends on one walk edge, the end at its start vertex
       exfalso
-      have hxe : s.edge = e.edge := by omega
+      have hxe : s.edge = e.edge := by_o
       have hk : (interiorModel Q).key Q e = (e.edge : ℝ) := by
         have h1 := hvtx.1 hv
         rw [kb, DownHost.floor_add e0 e1] at h1
@@ -164,13 +164,13 @@ theorem runCnt_le (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
   · rw [ite_eq_right hv] at hne ⊢
     by_cases hxy : s.edge < e.edge
     · rw [show e.edge + 1 + Q.n - 1 - s.edge = (e.edge - s.edge) + Q.n by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+        Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
       rw [show e.edge + Q.n - s.edge = (e.edge - s.edge) + Q.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega)] at hac
+        Nat.mod_eq_of_lt by_o] at hac
       omega
     by_cases hyx : e.edge < s.edge
-    · rw [Nat.mod_eq_of_lt (by omega)]
-      rw [Nat.mod_eq_of_lt (by omega)] at hac
+    · rw [Nat.mod_eq_of_lt by_o]
+      rw [Nat.mod_eq_of_lt by_o] at hac
       omega
     · exfalso
       rw [show e.edge + 1 + Q.n - 1 - s.edge = 0 + Q.n by omega, Nat.add_mod_right,
@@ -187,7 +187,7 @@ theorem pts_length (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
   rw [DownMath.regHost_pts]
   split_ifs
   · exact hlen
-  · rw [List.length_reverse]; exact hlen
+  · rwa [List.length_reverse]
 
 /-- **The sizes of a region host** (degree `≤ 4`, weight `≤ γ`). -/
 theorem host_facts (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
@@ -203,8 +203,7 @@ theorem host_facts (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
       ((regHost li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r).pts Q.n).length ≤
         5 * γ + 8 := by
   have hR := B.hregs.1.1 r hr
-  have hd : (interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F (interiorModel Q) Q)
-      (reg r) ≤ 4 := hdeg _ hR
+  have hd := hdeg _ hR
   have hnA := DrvB.arcs_length_le B hr
   refine ⟨?_, fun a ℓ h => ?_, ?_, ?_⟩
   · have := regHost_length li Q.n (BuildNF.buildNF (interiorModel Q) Q L E) r
@@ -226,7 +225,7 @@ theorem host_facts (B : DrvB.BaseCtx Q L E reg li) {r : ℕ}
     rw [DrvB.regPts, DrvB.wlist_length] at h1
     have h2 : ((interiorModel Q).deg ((BuildNF.buildNF (interiorModel Q) Q L E).F
         (interiorModel Q) Q) (reg r) + 1) * γ ≤ 5 * γ :=
-      Nat.mul_le_mul_right _ (by omega)
+      Nat.mul_le_mul_right _ by_o
     omega
 
 end

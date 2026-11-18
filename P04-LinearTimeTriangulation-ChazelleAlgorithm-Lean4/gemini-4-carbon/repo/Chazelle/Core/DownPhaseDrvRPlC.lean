@@ -54,7 +54,7 @@ def ItemOK (n : ℕ) : HostItem → Prop
 /-- The registers `plS` writes. -/
 def Bpl (r : ℕ) : Bool := decide (219001 ≤ r ∧ r ≤ 219029) || decide (r = 9999)
 
-theorem wrM2_plS : wrM2 Bpl (fun _ => false) plS = true := by decide
+theorem wrM2_plS : wrM2 Bpl (fun _ => false) plS = true := by_d
 
 theorem hostLeaves_take_succ (n C : ℕ) (H : Host) {i : ℕ} (hi : i < H.length) :
     hostLeaves n C 0 (H.take (i + 1)) = hostLeaves n C 0 (H.take i) ++
@@ -109,13 +109,13 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
   have g₁ : ∀ r, ¬ (219009 ≤ r ∧ r ≤ 219011) → r ≠ 219021 → d₁.nreg r = d.nreg r :=
     fun r h1 h2 => fr₁.1 r (by simp only [Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
   have w₁ := e₁.wb_right
-  have kK : PlConst n C d₁ := hK.keep fun r hr => g₁ r (by omega) (by omega)
-  have k07 : d₁.nreg 219007 = p := by rw [g₁ _ (by omega) (by omega), h07]
-  have k16 : d₁.nreg 219016 = ptr := by rw [g₁ _ (by omega) (by omega), h16]
-  have k04 : d₁.nreg 219004 = k := by rw [g₁ _ (by omega) (by omega), h04]
-  have k05 : d₁.nreg 219005 = i := by rw [g₁ _ (by omega) (by omega), h05]
-  have k08 : d₁.nreg 219008 = addr := by rw [g₁ _ (by omega) (by omega), h08]
-  have hf₁ : FrameM Bitem d d₁ := exec_frameM e₁ (by decide)
+  have kK : PlConst n C d₁ := hK.keep fun r hr => g₁ r by_o by_o
+  have k07 : d₁.nreg 219007 = p := by rw [g₁ _ by_o by_o, h07]
+  have k16 : d₁.nreg 219016 = ptr := by rw [g₁ _ by_o by_o, h16]
+  have k04 : d₁.nreg 219004 = k := by rw [g₁ _ by_o by_o, h04]
+  have k05 : d₁.nreg 219005 = i := by rw [g₁ _ by_o by_o, h05]
+  have k08 : d₁.nreg 219008 = addr := by rw [g₁ _ by_o by_o, h08]
+  have hf₁ : FrameM Bitem d d₁ := exec_frameM e₁ by_d
   -- the tail: next address and index
   have tail : ∀ (d₂ : Config) (j₂ : ℕ), Exec P W
       (.ifLtN 219009 219018
@@ -138,7 +138,7 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
         (try simp only [a05, a08, a18, a20])
       first | rfl | (simp only [Machine.upd_apply]; split_ifs <;> first | rfl | omega)
     subst hj₃
-    exact ⟨d₃, e₃, b05, b08, gb, mb, exec_frameM e₃ (by decide)⟩
+    exact ⟨d₃, e₃, b05, b08, gb, mb, exec_frameM e₃ by_d⟩
   cases it with
   | run a ℓ =>
     obtain ⟨hk0, ha, hl⟩ := hit
@@ -147,11 +147,11 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
     have kK10 : d₁.nreg 219010 = a := by rw [v10, ha]
     have kK11 : d₁.nreg 219011 = ℓ := by rw [v11, hl]
     obtain ⟨d₂, j₂, e₂, hj₂, c16, c04, cL, cm, cf⟩ := plRun_exec (P := P) hC hn d₁ w₁ kK kK10
-      kK11 k07 k16 k04 han hln (by omega) hWt hWk
-    have g₂ : ∀ r, Brun r = false → d₂.nreg r = d₁.nreg r := cf.1
-    have kK₂ : PlConst n C d₂ := kK.keep fun r hr => g₂ r (brun_const hr)
-    have t07 : d₂.nreg 219007 = p := by rw [g₂ _ (by decide), k07]
-    have t11 : d₂.nreg 219011 = ℓ := by rw [g₂ _ (by decide), kK11]
+      kK11 k07 k16 k04 han hln by_o hWt hWk
+    have g₂ := cf.1
+    have kK₂ := kK.keep fun r hr => g₂ r (brun_const hr)
+    have t07 : d₂.nreg 219007 = p := by rw [g₂ _ by_d, k07]
+    have t11 : d₂.nreg 219011 = ℓ := by rw [g₂ _ by_d, kK11]
     -- `p := p + ℓ + 1`
     obtain ⟨d₃, j₃, e₃, hj₃, s07, gs, ms⟩ : ∃ d₃ j₃, Exec P W
         (block [.addN 219007 219007 219011, .addN 219007 219007 219018]) d₂ d₃ j₃ ∧ j₃ = 2 ∧
@@ -169,17 +169,17 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
         (block [.addN 219007 219007 219018])) d₁ d₃ (j₂ + j₃ + 1) :=
       .ifLtN_true (by rw [v09, hk0, kK.r18]; omega) (.seq e₂ e₃)
     obtain ⟨d₄, e₄, b05, b08, gb, mb, fb⟩ := tail d₃ _ ex₂
-      (by rw [gs _ (by decide), g₂ _ (by decide), k05])
-      (by rw [gs _ (by decide), g₂ _ (by decide), k08])
-      (by rw [gs _ (by decide), kK₂.r18]) (by rw [gs _ (by decide), kK₂.r20])
-    refine ⟨d₄, j₁ + ((j₂ + j₃ + 1) + 2), .seq e₁ (.seq ex₂ e₄), by omega, b05, b08, ?_, ?_, ?_, ?_,
+      (by rw [gs _ by_d, g₂ _ by_d, k05])
+      (by rw [gs _ by_d, g₂ _ by_d, k08])
+      (by rw [gs _ by_d, kK₂.r18]) (by rw [gs _ by_d, kK₂.r20])
+    refine ⟨d₄, j₁ + ((j₂ + j₃ + 1) + 2), .seq e₁ (.seq ex₂ e₄), by_o, b05, b08, ?_, ?_, ?_, ?_,
       fun x hx => ?_, ?_⟩
-    · rw [gb _ (by decide) (by decide), s07, DownMath.run_pts_length]
-    · rw [gb _ (by decide) (by decide), gs _ (by decide), c16]
-    · rw [gb _ (by decide) (by decide), gs _ (by decide), c04]
-    · rw [mb, ms]; exact cL
+    · rw [gb _ by_d by_d, s07, DownMath.run_pts_length]
+    · rw [gb _ by_d by_d, gs _ by_d, c16]
+    · rw [gb _ by_d by_d, gs _ by_d, c04]
+    · rwa [mb, ms]
     · rw [mb, ms, cm x hx, m₁]
-    · have f₃ : FrameM Bitem d₂ d₃ := exec_frameM e₃ (by decide)
+    · have f₃ : FrameM Bitem d₂ d₃ := exec_frameM e₃ by_d
       have up : FrameM Bitem d₁ d₂ :=
         ⟨fun r hr => cf.1 r (by simp only [Bitem, Bool.or_eq_false_iff] at hr; exact hr.1.1),
           fun r hr => cf.2.1 r (by simp only [Bitem, Bool.or_eq_false_iff] at hr; exact hr.1.1),
@@ -205,14 +205,14 @@ theorem plItem_exec {n C : ℕ} (hC : 1 ≤ C) (hn : 2 ≤ n) (d : Config) (hw :
         (.seq plRun (block [.addN 219007 219007 219011, .addN 219007 219007 219018]))
         (block [.addN 219007 219007 219018])) d₁ d₂ (j₂ + 2) := .ifLtN_false hk1 e₂
     obtain ⟨d₄, e₄, b05, b08, gb, mb, fb⟩ := tail d₂ _ ex₂
-      (by rw [gs _ (by decide), k05]) (by rw [gs _ (by decide), k08])
-      (by rw [gs _ (by decide), kK.r18]) (by rw [gs _ (by decide), kK.r20])
-    refine ⟨d₄, j₁ + ((j₂ + 2) + 2), .seq e₁ (.seq ex₂ e₄), by omega, b05, b08, ?_, ?_, ?_,
+      (by rw [gs _ by_d, k05]) (by rw [gs _ by_d, k08])
+      (by rw [gs _ by_d, kK.r18]) (by rw [gs _ by_d, kK.r20])
+    refine ⟨d₄, j₁ + ((j₂ + 2) + 2), .seq e₁ (.seq ex₂ e₄), by_o, b05, b08, ?_, ?_, ?_,
       fun i hi => by simp at hi, fun y _ => by rw [mb, ms, m₁], ?_⟩
-    · rw [gb _ (by decide) (by decide), s07]; rfl
-    · rw [gb _ (by decide) (by decide), gs _ (by decide), k16]
-    · rw [gb _ (by decide) (by decide), gs _ (by decide), k04]
-    · exact hf₁.trans ((exec_frameM e₂ (by decide)).trans fb)
+    · rw [gb _ by_d by_d, s07]; rfl
+    · rw [gb _ by_d by_d, gs _ by_d, k16]
+    · rw [gb _ by_d by_d, gs _ by_d, k04]
+    · exact hf₁.trans ((exec_frameM e₂ by_d).trans fb)
 
 end exec
 

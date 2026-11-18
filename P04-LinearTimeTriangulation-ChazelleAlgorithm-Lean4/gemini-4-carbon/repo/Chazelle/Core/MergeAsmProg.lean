@@ -96,12 +96,12 @@ def mergeMk (fMk : Stmt → Stmt) (rMk : Stmt → Stmt → Stmt) (gS : Stmt) (sh
 /-- A band predicate. -/
 def inBand (b : ℕ) (r : ℕ) : Bool := decide (bandOf r = b)
 
-theorem wr_setF : wr (inBand bFuse) setF = true := by decide
-theorem wr_setR : wr (inBand bRestore) setR = true := by decide
-theorem wr_setG : wr (inBand bGran) setG = true := by decide
-theorem wr_mdInit : wr (inBand bMerge) mdInit = true := by decide
-theorem wr_mdLoop : wr (inBand bMerge) mdLoop = true := by decide
-theorem wr_gamS : wr (inBand bMerge) gamS = true := by decide
+theorem wr_setF : wr (inBand bFuse) setF = true := by_d
+theorem wr_setR : wr (inBand bRestore) setR = true := by_d
+theorem wr_setG : wr (inBand bGran) setG = true := by_d
+theorem wr_mdInit : wr (inBand bMerge) mdInit = true := by_d
+theorem wr_mdLoop : wr (inBand bMerge) mdLoop = true := by_d
+theorem wr_gamS : wr (inBand bMerge) gamS = true := by_d
 
 theorem setF_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
     ∃ c' k, Exec P W setF c c' k ∧ k = 8 ∧
@@ -158,7 +158,7 @@ theorem outS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) :
     unfold outS
     exec_block
     exact ⟨rfl, by simp [rd, bandReg, bGran, bMerge]⟩
-  exact ⟨c', k, e, hk, h, exec_frameB e (by decide)⟩
+  exact ⟨c', k, e, hk, h, exec_frameB e by_d⟩
 
 /-! ## `γ_R` -/
 
@@ -200,21 +200,21 @@ theorem gamS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     obtain ⟨c₃, e₃, v₃, r₃⟩ := tail _ e₂.wb_right (by
         simp only [upd_same]; rw [v40]; rw [v40, v43] at hlt; omega)
       (by simp only [upd_other _ _ _ (show (100020 : ℕ) ≠ 100045 by decide)]
-          rw [r₁ _ (by decide), h20])
+          rw [r₁ _ by_d, h20])
     have ex : Exec P W gamS c c₃ (k₁ + ((1 + 0) + 1 + 1)) :=
       .seq e₁ (.seq (.ifLtN_true hlt (.seq e₂ (.skip e₂.wb_right))) e₃)
-    refine ⟨c₃, _, ex, by omega, v₃, exec_frameB ex wr_gamS, fun r hr => ?_⟩
-    rw [r₃ r (by omega)]
+    refine ⟨c₃, _, ex, by_o, v₃, exec_frameB ex wr_gamS, fun r hr => ?_⟩
+    rw [r₃ r by_o]
     simp only [upd_other _ _ _ (show r ≠ 100045 by omega)]; exact r₁ r hr
   · have e₂ := Exec.copyN (P := P) hw₁ 100045 100043
     obtain ⟨c₃, e₃, v₃, r₃⟩ := tail _ e₂.wb_right (by
         simp only [upd_same]; rw [v43]; rw [v40, v43] at hlt; omega)
       (by simp only [upd_other _ _ _ (show (100020 : ℕ) ≠ 100045 by decide)]
-          rw [r₁ _ (by decide), h20])
+          rw [r₁ _ by_d, h20])
     have ex : Exec P W gamS c c₃ (k₁ + ((1 + 0) + 2 + 1)) :=
       .seq e₁ (.seq (.ifLtN_false hlt (.seq e₂ (.skip e₂.wb_right))) e₃)
-    refine ⟨c₃, _, ex, by omega, v₃, exec_frameB ex wr_gamS, fun r hr => ?_⟩
-    rw [r₃ r (by omega)]
+    refine ⟨c₃, _, ex, by_o, v₃, exec_frameB ex wr_gamS, fun r hr => ?_⟩
+    rw [r₃ r by_o]
     simp only [upd_other _ _ _ (show r ≠ 100045 by omega)]; exact r₁ r hr
 
 end

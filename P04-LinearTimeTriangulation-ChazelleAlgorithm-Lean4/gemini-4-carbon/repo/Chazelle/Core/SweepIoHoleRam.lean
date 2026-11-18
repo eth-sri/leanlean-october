@@ -42,7 +42,7 @@ theorem Out.mono {c c' : Config} {L L' : List ℕ} (h : Out c c' L) (hL : ∀ r 
 theorem out_instr {i : Instr} {r v : ℕ}
     (hex : Exec P W (.instr i) c { c with nreg := upd c.nreg r v } 1) :
     ∃ c', Exec P W (.instr i) c c' 1 ∧ c'.nreg r = v ∧ Out c c' [r] :=
-  ⟨_, hex, by simp, fun q hq => by simp only [List.mem_singleton] at hq; simp [upd, hq],
+  ⟨_, hex, by_s, fun q hq => by simp only [List.mem_singleton] at hq; simp [upd, hq],
     rfl, rfl, rfl, rfl⟩
 
 /-! ## A conditional subtraction -/
@@ -57,9 +57,9 @@ theorem condSub_exec (hw : WordsBounded W c) (dst a b : ℕ) :
   unfold condSub
   by_cases h : c.nreg a < c.nreg b
   · obtain ⟨c', e, v, o⟩ := out_instr (P := P) (Exec.copyN hw dst a)
-    exact ⟨c', _, by omega, .ifLtN_true h e, by rw [v, ite_eq_left h], o⟩
+    exact ⟨c', _, by_o, .ifLtN_true h e, by rw [v, ite_eq_left h], o⟩
   · obtain ⟨c', e, v, o⟩ := out_instr (P := P) (Exec.subN hw dst a b)
-    exact ⟨c', _, by omega, .ifLtN_false h e, by rw [v, ite_eq_right h], o⟩
+    exact ⟨c', _, by_o, .ifLtN_false h e, by rw [v, ite_eq_right h], o⟩
 
 /-! ## The tour step of a tour position -/
 
@@ -78,12 +78,12 @@ theorem candS_exec (hw : WordsBounded W c) {dst jr sr mr : ℕ} (hd1 : dst ≠ j
   · obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.subN hw dst mr sr)
     obtain ⟨c₂, e₂, v₂, o₂⟩ := out_instr (P := P) (Exec.addN e₁.wb_right dst dst jr
       (by rw [v₁, o₁.1 jr (by simp [hd1.symm]), hm, hs, hj]; rw [hj, hs] at h; omega))
-    refine ⟨c₂, _, by omega, .ifLtN_true h (.seq e₁ e₂), ?_, (o₁.trans o₂).mono (by simp)⟩
+    refine ⟨c₂, _, by_o, .ifLtN_true h (.seq e₁ e₂), ?_, (o₁.trans o₂).mono by_s⟩
     rw [v₂, v₁, o₁.1 jr (by simp [hd1.symm]), hm, hs, hj]
     rw [hj, hs] at h
     unfold candIdx; rw [ite_eq_left h]; omega
   · obtain ⟨c₁, e₁, v₁, o₁⟩ := out_instr (P := P) (Exec.subN hw dst jr sr)
-    refine ⟨c₁, _, by omega, .ifLtN_false h e₁, ?_, o₁⟩
+    refine ⟨c₁, _, by_o, .ifLtN_false h e₁, ?_, o₁⟩
     rw [v₁, hj, hs]
     rw [hj, hs] at h
     unfold candIdx; rw [ite_eq_right h]
@@ -98,9 +98,9 @@ theorem nxtS_exec (hw : WordsBounded W c) (r nr : ℕ) :
       c'.nreg r = (if c.nreg r < c.nreg nr then c.nreg r else 0) ∧ Out c c' [r] := by
   unfold nxtS
   by_cases h : c.nreg r < c.nreg nr
-  · exact ⟨c, _, by omega, .ifLtN_true h (.skip hw), by rw [ite_eq_left h], Out.refl _ _⟩
+  · exact ⟨c, _, by_o, .ifLtN_true h (.skip hw), by rw [ite_eq_left h], Out.refl _ _⟩
   · obtain ⟨c', e, v, o⟩ := out_instr (P := P) (Exec.constN hw r 0 (Nat.zero_le _))
-    exact ⟨c', _, by omega, .ifLtN_false h e, by rw [v, ite_eq_right h], o⟩
+    exact ⟨c', _, by_o, .ifLtN_false h e, by rw [v, ite_eq_right h], o⟩
 
 /-- The wrap of `q + 1` below `n` is `(q + 1) % n`. -/
 theorem wrap_succ {q n : ℕ} (hq : q < n) : (if q + 1 < n then q + 1 else 0) = (q + 1) % n := by

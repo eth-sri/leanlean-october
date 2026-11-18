@@ -11,10 +11,6 @@ first (`ps = (slotsOf c 4).flatMap (slotPcs m n)`), sets the answer register `15
 the allocator past the list, within `42 |ps| + 60` steps, in the frame of the interior oracles.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace IOrc
@@ -78,7 +74,7 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
     · config_simp; rw [h11, hA9]
     · config_simp
     · config_simp; simp [upd, h1, h2, h3]
-  have F₁ : BuildRam.FrameM Basm' c c₁ := BuildRam.exec_frameM x₁ (by decide)
+  have F₁ : BuildRam.FrameM Basm' c c₁ := BuildRam.exec_frameM x₁ by_d
   have A₁ : AsmSt c.nmem n O (slotsOf c 0) c₁ :=
     ⟨a21, by simp [slotsOf, a22], by simp [slotsOf, a23], fun a _ => by rw [am],
       fun j hj => by simp [slotsOf] at hj⟩
@@ -95,15 +91,15 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
       omega
     obtain ⟨d', k', e', h1, h2, hA', F'⟩ := asmK_exec (P := P) k hk d wd (c₀ := c) (Hγ := Hγ)
       (e₁ := e₁) hA hsl
-      ((hF.1 _ (by decide)).trans h10) ((hF.1 _ (by decide)).trans h11) (hbit k hk)
-      (fun hf => SlotsOK.mem hok _ (mem_slotsOf_of hf (by omega))) hn hnW
-      (by have := hLle (k + 1) (by omega); simp only [hLf] at this; omega)
+      ((hF.1 _ by_d).trans h10) ((hF.1 _ by_d).trans h11) (hbit k hk)
+      (fun hf => SlotsOK.mem hok _ (mem_slotsOf_of hf by_o)) hn hnW
+      (by have := hLle (k + 1) by_o; simp only [hLf] at this; omega)
     exact ⟨d', k', e', h1, h2, hA', hF.trans (frameM_mono F' (fun r hr => by
       simp only [Basm', hr, Bool.true_or]))⟩
-  obtain ⟨c₂, k₂, e₂, p2, q2, A₂, F₂⟩ := step 0 (by norm_num) c₁ x₁.wb_right A₁ F₁
-  obtain ⟨c₃, k₃, e₃, p3, q3, A₃, F₃⟩ := step 1 (by norm_num) c₂ e₂.wb_right A₂ F₂
-  obtain ⟨c₄, k₄, e₄, p4, q4, A₄, F₄⟩ := step 2 (by norm_num) c₃ e₃.wb_right A₃ F₃
-  obtain ⟨c₅, k₅, e₅, p5, q5, A₅, F₅⟩ := step 3 (by norm_num) c₄ e₄.wb_right A₄ F₄
+  obtain ⟨c₂, k₂, e₂, p2, q2, A₂, F₂⟩ := step 0 by_n c₁ x₁.wb_right A₁ F₁
+  obtain ⟨c₃, k₃, e₃, p3, q3, A₃, F₃⟩ := step 1 by_n c₂ e₂.wb_right A₂ F₂
+  obtain ⟨c₄, k₄, e₄, p4, q4, A₄, F₄⟩ := step 2 by_n c₃ e₃.wb_right A₃ F₃
+  obtain ⟨c₅, k₅, e₅, p5, q5, A₅, F₅⟩ := step 3 by_n c₄ e₄.wb_right A₄ F₄
   rw [hL0] at p2 q2
   have w₅ := e₅.wb_right
   -- the end
@@ -126,10 +122,10 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
   have hk := asm_cost p2 p3 p4 p5
   have hl := asm_low q2 q3 q4 q5
   simp only [Nat.reduceAdd] at hl hk
-  refine ⟨c₆, _, ex, by rw [hk₁, hk₆]; exact hk, b10, by rw [bm, upd_same], fun j hj f hf => ?_,
+  refine ⟨c₆, _, ex, by rwa [hk₁, hk₆], b10, by rw [bm, upd_same], fun j hj f hf => ?_,
     bA, ⟨fun r hr ha => ?_, fun r hr => ?_, fun a ha => ?_, fun a _ => ?_, by rw [bo, F₅.2.2.2],
       by rw [bA]; omega, by rw [bA, hk₁, hk₆]; omega⟩⟩
-  · rw [bm, upd_other _ _ _ (by omega)]
+  · rw [bm, upd_other _ _ _ by_o]
     exact A₅.out j hj f hf
   · have hb : Basm' r = false := by
       cases hB : Basm' r
@@ -142,8 +138,8 @@ theorem asmC_exec (c : Config) (hw : WordsBounded W c) {n Hγ e₁ : ℕ} {V0 V 
       · rfl
       · exact absurd (basm_io hB).1 hr
     rw [brr]; exact F₅.2.1 r hb
-  · rw [bm, upd_other _ _ _ (by omega)]
-    exact A₅.lo a (by omega)
+  · rw [bm, upd_other _ _ _ by_o]
+    exact A₅.lo a by_o
   · rw [brm, F₅.2.2.1]
 
 end exec

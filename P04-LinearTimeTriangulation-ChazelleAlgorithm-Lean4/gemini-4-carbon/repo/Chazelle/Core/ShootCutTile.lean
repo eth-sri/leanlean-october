@@ -43,22 +43,22 @@ theorem wset_union {A B C : ℝ} (hAB : A ≤ B) (hBC : B ≤ C) :
   ext x
   constructor
   · rintro (⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩ | ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩)
-    · exact ⟨p, t, hp, h0, h1, ⟨X, hX1, by linarith, j, hj⟩, rfl⟩
-    · exact ⟨p, t, hp, h0, h1, ⟨X, by linarith, hX2, j, hj⟩, rfl⟩
+    · exact ⟨p, t, hp, h0, h1, ⟨X, hX1, by_l, j, hj⟩, rfl⟩
+    · exact ⟨p, t, hp, h0, h1, ⟨X, by_l, hX2, j, hj⟩, rfl⟩
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
     by_cases hXB : X ≤ B
     · exact Or.inl ⟨p, t, hp, h0, h1, ⟨X, hX1, hXB, j, hj⟩, rfl⟩
-    · exact Or.inr ⟨p, t, hp, h0, h1, ⟨X, by linarith, hX2, j, hj⟩, rfl⟩
+    · exact Or.inr ⟨p, t, hp, h0, h1, ⟨X, by_l, hX2, j, hj⟩, rfl⟩
 
 theorem wset_shift (A B : ℝ) (i : ℤ) :
     wset M (A + i * M.W.n) (B + i * M.W.n) = wset M A B := by
   ext x
   constructor
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
-    refine ⟨p, t, hp, h0, h1, ⟨X - i * M.W.n, by linarith, by linarith, j + i, ?_⟩, rfl⟩
+    refine ⟨p, t, hp, h0, h1, ⟨X - i * M.W.n, by_l, by_l, j + i, ?_⟩, rfl⟩
     push_cast; linarith
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
-    refine ⟨p, t, hp, h0, h1, ⟨X + i * M.W.n, by linarith, by linarith, j - i, ?_⟩, rfl⟩
+    refine ⟨p, t, hp, h0, h1, ⟨X + i * M.W.n, by_l, by_l, j - i, ?_⟩, rfl⟩
     push_cast; linarith
 
 /-- The last walk edge ends where the first begins. -/
@@ -81,7 +81,7 @@ theorem int_range {n y X : ℝ} {j : ℤ} (hn : 0 < n) (hy0 : 0 ≤ y) (hy1 : y 
 /-- **The point set of a closed cyclic key interval** as an unwrapped interval. -/
 theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ b) (hbn : b < M.W.n) :
     M.arcSet a b = wset M a (if a < b then b else b + M.W.n) := by
-  have hn : (0 : ℝ) < M.W.n := by linarith
+  have hn : (0 : ℝ) < M.W.n := by_l
   have hn' : 0 < M.W.n := by exact_mod_cast hn
   ext x
   constructor
@@ -89,7 +89,7 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
     have hpn : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
     refine ⟨p, t, hp, h0, h1, ?_, rfl⟩
     split_ifs with hab
-    · refine ⟨p + t, ?_, ?_, 0, by simp⟩
+    · refine ⟨p + t, ?_, ?_, 0, by_s⟩
       · rcases hc with hc | hc | hc
         · unfold sideInArc at hc; rw [ite_eq_left hab] at hc; exact hc.1.le
         · exact hc.ge
@@ -107,13 +107,13 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
         · exact Or.inl hc.ge
         · exact Or.inr hc.le
       rcases hy with hy | hy
-      · exact ⟨p + t, hy, by linarith, 0, by simp⟩
-      · exact ⟨p + t + M.W.n, by linarith [(Nat.cast_nonneg p : (0 : ℝ) ≤ p)], by linarith, -1,
+      · exact ⟨p + t, hy, by_l, 0, by_s⟩
+      · exact ⟨p + t + M.W.n, by linarith [(Nat.cast_nonneg p : (0 : ℝ) ≤ p)], by_l, -1,
           by push_cast; ring⟩
   · rintro ⟨p, t, hp, h0, h1, ⟨X, hX1, hX2, j, hj⟩, rfl⟩
     have hpn : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
-    have hy0 : 0 ≤ (p : ℝ) + t := by positivity
-    have hy1 : (p : ℝ) + t ≤ M.W.n := by linarith
+    have hy0 : 0 ≤ (p : ℝ) + t := by_p
+    have hy1 : (p : ℝ) + t ≤ M.W.n := by_l
     -- the alias of the key `n`: the walk vertex `0`
     have halias : (p : ℝ) + t = M.W.n → lerp (M.wa p) (M.wb p) t = lerp (M.wa 0) (M.wb 0) 0 := by
       intro he
@@ -122,14 +122,14 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
         have := lt_of_le_of_ne h1 hne
         linarith
       have hp1 : p = M.W.n - 1 := by
-        have : (p : ℝ) = M.W.n - 1 := by linarith
+        have : (p : ℝ) = M.W.n - 1 := by_l
         have : ((p + 1 : ℕ) : ℝ) = M.W.n := by push_cast; linarith
         have := (Nat.cast_inj (R := ℝ)).1 this
         omega
       rw [ht1, hp1, wb_last M hn']
       simp [lerp]
     have hX3 : X < 2 * M.W.n := by split_ifs at hX2 <;> linarith
-    rcases int_range hn hy0 hy1 (by linarith) hX3 hj with rfl | rfl | rfl
+    rcases int_range hn hy0 hy1 by_l hX3 hj with rfl | rfl | rfl
     · -- `j = -1`: `y = X - n`
       push_cast at hj
       split_ifs at hX2 with hab
@@ -155,9 +155,9 @@ theorem arcSet_eq_wset {a b : ℝ} (ha : 0 ≤ a) (han : a < M.W.n) (hb : 0 ≤ 
         · right; left; exact h.symm
     · -- `j = 1`: `y = X + n`, so `X = 0 = a` and `y = n`: the alias
       push_cast at hj
-      have hX0 : X = 0 := by linarith
-      have ha0 : a = 0 := by linarith
-      rw [halias (by linarith)]
+      have hX0 : X = 0 := by_l
+      have ha0 : a = 0 := by_l
+      rw [halias by_l]
       refine ⟨0, 0, hn', le_rfl, zero_le_one, Or.inr (Or.inl (by simp [ha0])), rfl⟩
 
 /-- The unwrapped length of the piece from key `k` to key `k'`. -/

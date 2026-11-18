@@ -58,7 +58,7 @@ theorem nChords_mul_le {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF} {γ 
   have hs := MergeAsm.size_le_n (chainModel C)
   rw [MergeAsm.chainModel_n] at hs
   calc N.nChords * (γ + 1) ≤ l23c 4 * ((chainModel C).size + 1) := h
-    _ ≤ l23c 4 * (2 * C.m + 8) := Nat.mul_le_mul_left _ (by omega)
+    _ ≤ l23c 4 * (2 * C.m + 8) := Nat.mul_le_mul_left _ by_o
 
 theorem one_le_gradeGran (g : ℕ) : 1 ≤ gradeGran g := by
   unfold gradeGran; have := Nat.one_le_two_pow (n := Cost.ceilBeta g); omega
@@ -66,7 +66,7 @@ theorem one_le_gradeGran (g : ℕ) : 1 ≤ gradeGran g := by
 theorem two_le_gradeGran {g : ℕ} (hg : 1 ≤ g) : 2 ≤ gradeGran g := by
   unfold gradeGran
   have h1 := Cost.one_le_ceilBeta hg
-  have : 2 ^ 1 ≤ 2 ^ Cost.ceilBeta g := Nat.pow_le_pow_right (by norm_num) h1
+  have : 2 ^ 1 ≤ 2 ^ Cost.ceilBeta g := Nat.pow_le_pow_right by_n h1
   omega
 
 theorem clogCost_mono (κ : ℕ) {x y : ℕ} (h : x ≤ y) :
@@ -80,15 +80,15 @@ theorem clogCost_mono (κ : ℕ) {x y : ℕ} (h : x ≤ y) :
 theorem single_child {n g i : ℕ} (hn : 2 ≤ n) (hg : 1 ≤ g) (hi : i < gradeCount n g)
     (hl : gradeLen n g i ≤ 2 ^ (g - 1)) :
     gradeCount n (g - 1) ≤ 2 * i + 1 ∧ gradeLen n (g - 1) (2 * i) = gradeLen n g i := by
-  have hgg : g - 1 + 1 = g := by omega
+  have hgg : g - 1 + 1 = g := by_o
   by_cases h : 2 * i + 1 < gradeCount n (g - 1)
   · exfalso
     obtain ⟨h1, h2, -⟩ := gradeLen_succ_two (g := g - 1) hn h
     rw [hgg] at h2
     have := gradeLen_pos (g := g - 1) (i := 2 * i + 1) hn h
     omega
-  · refine ⟨by omega, ?_⟩
-    have := gradeLen_succ_one (g := g - 1) (i := i) hn (by rw [hgg]; exact hi) (by omega)
+  · refine ⟨by_o, ?_⟩
+    have := gradeLen_succ_one (g := g - 1) (i := i) hn (by rwa [hgg]) by_o
     rw [hgg] at this; exact this.symm
 
 set_option maxHeartbeats 32000000 in
@@ -154,7 +154,7 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
   have hl2 := gradeLen_le P.n g i
   have hk0 : ∀ r, Kept r ∨ r = 170030 → bandOf r ∉ pkgBands := fun r hr => by
     rcases hr with hr | rfl
-    · exact hr.not_mem (by decide) (by decide) (by decide)
+    · exact hr.not_mem by_d by_d by_d
     · decide
   have hkm : ∀ r, Kept r ∨ r = 170030 → ¬ MdRG r := fun r hr => by
     rcases hr with hr | rfl
@@ -172,7 +172,7 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     rcases hr with hr | rfl
     · exact hr.ne_alloc
     · decide
-  have hb0 : ∀ r, OutB (bandOf r) → bandOf r ∉ pkgBands := fun r hr => hr.not_mem (by decide)
+  have hb0 : ∀ r, OutB (bandOf r) → bandOf r ∉ pkgBands := fun r hr => hr.not_mem by_d
   -- the chain of the case analysis
   let C0 := gChain P g i hn hi
   rcases Nat.lt_or_ge g 7 with hg7 | hg7
@@ -180,7 +180,7 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
     have hb : nfB κB κL κG g = κB * (2 ^ g + 1) ^ 3 + 5 := by unfold nfB; rw [ite_eq_left hg7]
     rw [hb] at hW ⊢
     have hpow : κB * (gradeLen P.n g i + 1) ^ 3 ≤ κB * (2 ^ g + 1) ^ 3 :=
-      Nat.mul_le_mul_left _ (Nat.pow_le_pow_left (by omega) 3)
+      Nat.mul_le_mul_left _ (Nat.pow_le_pow_left by_o 3)
     obtain ⟨c', k, e, hk, hw', a1, a2, ⟨C, N, hCP, hCs, hCm, hNW, hc⟩, m1, m2, o, fr, frr⟩ :=
       nfU_brute (P := P) (sL := sL) (sG := sG) hB hG hWh hw hu.r07 hu.r37 hg7 h16 h17 hu.r11
         hl1 (by unfold gradeStart at hfit ⊢; omega) (one_le_gradeGran g)
@@ -189,54 +189,54 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
           · left; subst h0; have := gradeLen_le P.n 0 i; simp at this; omega
           · exact Or.inr (two_le_gradeGran h0))
         (by rw [hA]; omega)
-    refine ⟨c', k, e, by omega, hw', by omega, by omega, fun C' a b f => ?_,
-      fun a ha => m1 a (by omega), fun a ha => m2 a (by omega), o,
+    refine ⟨c', k, e, by_o, hw', by_o, by_o, fun C' a b f => ?_,
+      fun a ha => m1 a by_o, fun a ha => m2 a by_o, o,
       fun r hr => fr r (hk0 r hr) (hkm r hr) (hk31 r hr) (hk34 r hr) (hkA r hr),
       fun r hr => frr r (hb0 r hr)⟩
     have : C = C' := chain_eq (hCP.trans a.symm) (hCs.trans b.symm) (hCm.trans f.symm)
     subst this; exact ⟨N, hNW, hc⟩
   · have hb : nfB κB κL κG g = κL * (lemma41Nat g + 1) + 8 +
         (κG 4 * (FB g * (Nat.clog 2 (FB g) + 1) + 1) + 37) := by
-      unfold nfB; rw [ite_eq_right (by omega)]
+      unfold nfB; rw [ite_eq_right by_o]
     rw [hb] at hW ⊢
     have hTh := hT.holds
     obtain ⟨hTab, hmh, hR⟩ := hTh
     by_cases hlen : 2 ^ (g - 1) < gradeLen P.n g i
     · -- Lemma 4.1
-      have hX : (gradeCtx O).holds P c.nmem h A :=
+      have hX :=
         holds_of_upTab hn (robust_of hT le_rfl fun m' h' => h'.1)
       obtain ⟨c', k, e, hk, hw', a1, a2, ⟨C, N, hCP, hCs, hCm, hNW, hc⟩, m1, m2, o, fr, frr⟩ :=
         nfU_l41 (P := P) (sB := sB) (sG := sG) hL hG hWh hw hu.r07 hu.r37 hg7 hu.r19 hu.r05 h16
-          h17 (by rw [hA]; exact hX) (by omega) (by unfold gradeStart at hfit ⊢; omega) hlen hl2
+          h17 (by rwa [hA]) by_o (by unfold gradeStart at hfit ⊢; omega) hlen hl2
           (by rw [hA]; omega)
-      refine ⟨c', k, e, by omega, hw', by omega, by omega, fun C' a b f => ?_,
-      fun a ha => m1 a (by omega), fun a ha => m2 a (by omega), o,
+      refine ⟨c', k, e, by_o, hw', by_o, by_o, fun C' a b f => ?_,
+      fun a ha => m1 a by_o, fun a ha => m2 a by_o, o,
         fun r hr => fr r (hk0 r hr) (hkm r hr) (hk31 r hr) (hk34 r hr) (hkA r hr),
         fun r hr => frr r (hb0 r hr)⟩
       have : C = C' := chain_eq (hCP.trans a.symm) (hCs.trans b.symm) (hCm.trans f.symm)
       subst this; exact ⟨N, hNW, hc⟩
     · -- coarsening the child
-      have hg1 : 1 ≤ g := by omega
-      obtain ⟨hsc, hlc⟩ := single_child hn hg1 hi (by omega)
+      have hg1 : 1 ≤ g := by_o
+      obtain ⟨hsc, hlc⟩ := single_child hn hg1 hi by_o
       have h2i := two_mul_lt_gradeCount hg1 hi
       have hR' := hR hg1
       obtain ⟨-, -, -, hH, hhp, -, -, hrow, hE⟩ := hTab
-      have hgm : g - 1 < c.nmem h := by omega
+      have hgm : g - 1 < c.nmem h := by_o
       have hrw := hrow (g - 1) hgm
       rw [hR'] at hrw
       obtain ⟨hNL, -⟩ := hE (g - 1) (2 * i) hgm h2i
-      have e6 : ∀ x, x + 3 * (2 * i) = x + 6 * i := fun x => by ring
+      have e6 : ∀ x, x + 3 * (2 * i) = x + 6 * i := fun x => by_r
       simp only [rowE, hR', e6] at hNL
       have hsc' : gradeStart (g - 1) (2 * i) = gradeStart g i := by
         rw [← gradeStart_succ, show g - 1 + 1 = g by omega]
       obtain ⟨-, -, -, -, -, -, N, hNW, hc⟩ := hNL C0 rfl hsc'.symm hlc.symm
-      have hP : C0.P.Simple := (shearInvariance (epsOf P) P).1 hG.1
+      have hP := (shearInvariance (epsOf P) P).1 hG.1
       have hcnt := nChords_mul_le hP hc
       have hFB : c.nmem (c.nmem (R + 6 * i + 1)) ≤ FB g := by
         have hNA := hNW.holds
         rw [hNA.1]
         unfold FB
-        rw [Nat.le_div_iff_mul_le (by omega)]
+        rw [Nat.le_div_iff_mul_le by_o]
         refine le_trans hcnt (Nat.mul_le_mul_left _ ?_)
         show 2 * gradeLen P.n g i + 8 ≤ 2 ^ g + 8
         have : 2 ^ g = 2 * 2 ^ (g - 1) := by
@@ -245,12 +245,12 @@ theorem nfU_exec {sB sL sG : Stmt} {κB κL : ℕ} {κG : ℕ → ℕ}
       have hcm := clogCost_mono (κG 4) hFB
       obtain ⟨c', k, e, hk, hw', a1, a2, ⟨N', hNW', hc'⟩, m1, m2, o, fr, frr⟩ :=
         nfU_gran (P := P) (sB := sB) (sL := sL) (C := C0) (N := N) (hp := hp) (q := 6 * i)
-          hGr hG hWh hw hu.r07 hu.r37 hg7 hu.r19 h17 (by omega) hu.r14 h35 (by omega) rfl hA
-          h30 hu.r11 hu.r20 hu.r25 hu.r26 hu.r29 (hdesc C0 rfl rfl rfl) hdh hd5 (by omega) rfl
+          hGr hG hWh hw hu.r07 hu.r37 hg7 hu.r19 h17 by_o hu.r14 h35 by_o rfl hA
+          h30 hu.r11 hu.r20 hu.r25 hu.r26 hu.r29 (hdesc C0 rfl rfl rfl) hdh hd5 by_o rfl
           (by show gradeStart g i + gradeLen P.n g i + 1 ≤ P.n; exact hfit) hNW hc
-          (gradeGran_mono (by omega)) (by omega)
-      refine ⟨c', k, e, by omega, hw', a1, a2, fun C' a b f => ?_,
-      fun a ha => m1 a (by omega), fun a ha => m2 a (by omega), o,
+          (gradeGran_mono by_o) by_o
+      refine ⟨c', k, e, by_o, hw', a1, a2, fun C' a b f => ?_,
+      fun a ha => m1 a by_o, fun a ha => m2 a by_o, o,
         fun r hr => fr r (hk0 r hr) (hkm r hr) (hk31 r hr) (hk34 r hr) (hkA r hr),
         fun r hr => frr r (hb0 r hr)⟩
       have : C0 = C' := chain_eq a.symm b.symm f.symm

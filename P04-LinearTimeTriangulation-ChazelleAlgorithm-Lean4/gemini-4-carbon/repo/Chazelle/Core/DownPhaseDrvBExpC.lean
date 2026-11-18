@@ -49,7 +49,7 @@ theorem pts_getD_mid (n : ℕ) {H : Host} {q j : ℕ} (hq : q < H.length)
     unfold Host.pts
     rw [← List.flatMap_append, List.take_append_drop]
   rw [e, List.getD_append _ _ _ _ (by rw [List.length_append]; omega),
-    List.getD_append_right _ _ _ _ (by omega), Nat.add_sub_cancel_left]
+    List.getD_append_right _ _ _ _ by_o, Nat.add_sub_cancel_left]
 
 theorem run_pts_getD (n a ℓ t : ℕ) (ht : t ≤ ℓ) (d : SymPt) :
     ((HostItem.run a ℓ).pts n).getD t d = .vtx ((a + t) % n) := by
@@ -74,8 +74,8 @@ def incB : List Instr :=
 /-- **One host item.** -/
 def itemS : Stmt := .seq (block loadB) (.seq dispS (block incB))
 
-theorem wr_loadB : wrM Bexp (block loadB) = true := by decide
-theorem wr_incB : wrM Bexp (block incB) = true := by decide
+theorem wr_loadB : wrM Bexp (block loadB) = true := by_d
+theorem wr_incB : wrM Bexp (block incB) = true := by_d
 theorem wr_dispS :
     wrM (fun r => decide (r = 212025 ∨ r = 212028 ∨ r = 212029 ∨ r = 212030)) dispS = true := by
   decide
@@ -111,7 +111,7 @@ theorem dispS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : �
   rw [List.length_append] at hlen ⊢
   have hmid := fun j hj => pts_getD_mid P.n hq (j := j) hj (.vtx 0)
   have h0 := hS.r0
-  have r2 : e.nreg 212002 = 2 := (hS.fr.1 _ (by decide)).trans h2
+  have r2 : e.nreg 212002 = 2 := (hS.fr.1 _ by_d).trans h2
   have hmem := host_mem_getD hq
   have hh := hH.2 q hq
   revert hmid hmem hh hlen
@@ -126,7 +126,7 @@ theorem dispS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : �
     obtain ⟨e', k, x, hk, hS', -⟩ := runS_exec (P := P) hS (h27.trans ka) (h28.trans kl) ha hl
       hlen (fun t ht => by
         rw [hmid t (by rw [hlr]; omega), run_pts_getD _ _ _ _ ht])
-    exact ⟨e', k + 1, .ifLtN_true (by rw [h26, k0, h0]; omega) x, by omega, hS'⟩
+    exact ⟨e', k + 1, .ifLtN_true (by rw [h26, k0, h0]; omega) x, by_o, hS'⟩
   | pt x =>
     cases x with
     | vtx j =>
@@ -141,22 +141,22 @@ theorem dispS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : �
           ⟨fun r hr => by
             simp only [Bexp, decide_eq_false_iff_not] at hr
             dsimp only; rw [Machine.upd_other]; omega,
-            fun _ _ => rfl, rfl, rfl⟩ (by simp) rfl, by simp [h27, kj]⟩
+            fun _ _ => rfl, rfl, rfl⟩ by_s rfl, by simp [h27, kj]⟩
       obtain ⟨x₁, hS₁, h30⟩ := x₁
-      obtain ⟨e', k, x, hk, hS', -⟩ := wrV_exec (P := P) hS₁ (by omega)
+      obtain ⟨e', k, x, hk, hS', -⟩ := wrV_exec (P := P) hS₁ by_o
         (by have := hmid 0 (by simp [HostItem.pts]); rw [Nat.add_zero] at this
             rw [h30, this]; rfl)
       refine ⟨e', 1 + k + 2 + 1, .ifLtN_false (by rw [h26, k0, h0]; omega)
-        (.ifLtN_true (by rw [h26, k0, r2]; omega) (.seq x₁ x)), by omega, hS'⟩
+        (.ifLtN_true (by rw [h26, k0, r2]; omega) (.seq x₁ x)), by_o, hS'⟩
     | onEdge ee hh' =>
       obtain ⟨k0, ke, kh⟩ := hh
       have hl1 : ((HostItem.pt (.onEdge ee hh')).pts P.n).length = 1 := rfl
       rw [hl1] at hlen ⊢
-      obtain ⟨e', k, x, hk, hS', -⟩ := wrE_exec (P := P) hS (by omega)
+      obtain ⟨e', k, x, hk, hS', -⟩ := wrE_exec (P := P) hS by_o
         (by have := hmid 0 (by simp [HostItem.pts]); rw [Nat.add_zero] at this
             rw [h27, h28, ke, kh, this]; rfl)
       refine ⟨e', k + 2 + 2, .ifLtN_false (by rw [h26, k0, h0]; omega)
-        (.ifLtN_false (by rw [h26, k0, r2]; omega) x), by omega, hS'⟩
+        (.ifLtN_false (by rw [h26, k0, r2]; omega) x), by_o, hS'⟩
 
 /-- **One host item**: its points are written, the item pointer and counter advance. -/
 theorem itemS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : ℕ}
@@ -179,18 +179,18 @@ theorem itemS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : �
     exec_block
     · config_simp; rw [h23, h0]; omega
     · config_simp; rw [h23, h0]; omega
-    · refine ⟨by omega, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp
-      · rw [h23]; exact hS.mem _ (Or.inl (by omega))
+    · refine ⟨by_o, ?_, ?_, ?_, ?_, ?_, ?_, rfl⟩ <;> config_simp
+      · rw [h23]; exact hS.mem _ (Or.inl by_o)
       · rw [h23, h0, show HB + 1 + 3 * q + 1 = HB + 2 + 3 * q by omega]
-        exact hS.mem _ (Or.inl (by omega))
+        exact hS.mem _ (Or.inl by_o)
       · rw [h23, h0, show HB + 1 + 3 * q + 1 + 1 = HB + 3 + 3 * q by omega]
-        exact hS.mem _ (Or.inl (by omega))
+        exact hS.mem _ (Or.inl by_o)
       · exact h23
       · exact h24
   have hS₁ := hS.frame x₁.wb_right (exec_frameM x₁ wr_loadB) h25' hm'
   obtain ⟨e₂, k₂, x₂, hk₂, hS₂, f₂⟩ := dispS_exec (P := P) hH hWF h2 hq hS₁ h26 h27 h28
-  have r23 : e₂.nreg 212023 = HB + 1 + 3 * q := (f₂.1 _ (by decide)).trans h23'
-  have r24 : e₂.nreg 212024 = q := (f₂.1 _ (by decide)).trans h24'
+  have r23 : e₂.nreg 212023 = HB + 1 + 3 * q := (f₂.1 _ by_d).trans h23'
+  have r24 : e₂.nreg 212024 = q := (f₂.1 _ by_d).trans h24'
   have hw₂ := hS₂.wb
   have h0' := hS₂.r0
   obtain ⟨e₃, k₃, x₃, hk₃, h23'', h24'', h25'', hm''⟩ : ∃ e₃ k₃,
@@ -203,7 +203,7 @@ theorem itemS_exec {PA HB : ℕ} {li : Bool} {H : Host} {c₀ e : Config} {q : �
     · config_simp; rw [r23, h0']; omega
     · config_simp; rw [r23, h0']; omega
     · config_simp; rw [r24, h0']; omega
-    · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
+    · refine ⟨by_o, ?_, ?_, ?_, rfl⟩ <;> config_simp
       · rw [r23, h0']; omega
       · rw [r24, h0']
   have hS₃ := hS₂.frame x₃.wb_right (exec_frameM x₃ wr_incB) h25'' hm''

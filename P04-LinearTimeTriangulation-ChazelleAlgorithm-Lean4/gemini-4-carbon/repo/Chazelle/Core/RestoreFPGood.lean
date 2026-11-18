@@ -31,7 +31,7 @@ theorem region_arcs_le {M : Model} {Q : Polygon} {N : NF} (hM : WalkAx M) (hNF :
   obtain ⟨hFam, -, -, reg, hRC, -, hArcs, hRg, -, -, -⟩ := hNF
   have hU := hRC.1 r hr
   set l := (N.region r).arcs
-  have hnd : l.Nodup := (hRg r hr).2.2.1
+  have hnd := (hRg r hr).2.2.1
   set f : ℕ → ℝ × ℝ := fun j => (M.key Q (N.arc j).s, M.key Q (N.arc j).e)
   have hinj : Set.InjOn f (↑l.toFinset : Set ℕ) := by
     intro j hj j' hj' he
@@ -80,7 +80,7 @@ theorem arc_isArc (hE : FGood E c₀) {reg : ℕ → Set Point}
     E.M.IsArc (E.N.F E.M (Qof E.P)) (reg E.r) (E.M.key (Qof E.P) (arcOf E.N E.r t).s)
       (E.M.key (Qof E.P) (arcOf E.N E.r t).e) := by
   obtain ⟨-, -, hArcs, -⟩ := hregs
-  have hr : E.r < E.N.nRegions := hE.hr
+  have hr := hE.hr
   set j := (E.N.region E.r).arcs.getD t 0 with hjdef
   have hjm : j ∈ (E.N.region E.r).arcs := by
     rw [hjdef, List.getD_eq_getElem?_getD, List.getElem?_eq_getElem ht, Option.getD_some]
@@ -99,7 +99,7 @@ theorem arc_ne (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t : �
   rcases hc with ⟨-, -, h⟩ | ⟨hF, -, -⟩
   · exact h
   · exfalso
-    have hr : E.r < E.N.nRegions := hE.hr
+    have hr := hE.hr
     obtain ⟨-, -, -, hRg⟩ := hregs
     obtain ⟨i, hi⟩ := List.exists_mem_of_ne_nil _ hch
     obtain ⟨hi', -⟩ := ((hRg E.r hr).1 i).1 hi
@@ -132,8 +132,7 @@ theorem tile_of_cut (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {
     exact key_bounds h2 h4
   · exact hk0.trans ku
   · exact hkq.trans kv
-  · have e1 : E.M.key (Qof E.P) ⟨(normOf E.M (Qof E.P) (arcOf E.N E.r t).e).edge,
-        (normOf E.M (Qof E.P) (arcOf E.N E.r t).e).hgt⟩ = E.M.key (Qof E.P) (arcOf E.N E.r t).e := kv
+  · have e1 := kv
     have := hin i hi
     dsimp only at this
     rw [e1] at this
@@ -145,7 +144,7 @@ theorem piece_wt_le {n a b : ℝ} {q : ℕ} {s e : ℕ → ℝ} {M : Model} (hn 
   refine Set.ncard_le_ncard (fun p hp => ?_) ((Set.finite_Iio M.W.n).subset fun x hx => hx.1)
   obtain ⟨hp, hc, τ, h0, h1, hin⟩ := hp
   have hpn : (p : ℝ) + 1 ≤ M.W.n := by exact_mod_cast hp
-  exact ⟨hp, hc, τ, h0, h1, tile_inner h hi ⟨by positivity, by rw [hn]; linarith⟩ hin⟩
+  exact ⟨hp, hc, τ, h0, h1, tile_inner h hi ⟨by_p, by rw [hn]; linarith⟩ hin⟩
 
 
 /-! ## A kind-1 piece -/
@@ -200,7 +199,7 @@ theorem k1hyp_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t :
   have hm1 := Cα.one_le
   -- the piece's chain lies on the model's chain
   have hsub : ∀ C : Chain, E.M = chainModel C → Cα.set ⊆ C.set := fun C hM => by
-    have hc := counted_of_wt (M := E.M) hs (by omega) hmn hwt'
+    have hc := counted_of_wt (M := E.M) hs by_o hmn hwt'
     have hdir' := hdir
     have hn' : n = (chainModel C).W.n := by rw [← hM]
     rw [hn'] at hdir'
@@ -216,7 +215,7 @@ theorem k1hyp_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t :
   have hGα : GoodModel (chainModel Cα) := Or.inl ⟨Cα, by rw [hQ]; exact qof_simple hE, rfl⟩
   have hMα := walkAx_of_goodModel hGα
   obtain ⟨hB7, hcb, -, -, -, -⟩ := nf_bounds hNW
-  have hAW : c'.nreg ALLOC ≤ E.W := hI'.hw.1 ALLOC
+  have hAW := hI'.hw.1 ALLOC
   refine ⟨Hs, Cα, N, γ', ⟨?_, hCD, hwf, hNW, hcan, hQ, hdir, hs, hmn, fun C hM => ?_, ?_, ?_, ?_⟩,
     hγ', hwγ⟩
   · show L + 1 + 7 * i + 6 < _
@@ -240,7 +239,7 @@ theorem k1hyp_of (hE : FGood E c₀) (hch : (E.N.region E.r).chords ≠ []) {t :
       Nat.clog_le_of_le_pow Nat.lt_two_pow_self
     rcases Nat.lt_or_ge N.nChords 2 with h | h
     · omega
-    · have := hcb (N.nChords - 1) (by omega)
+    · have := hcb (N.nChords - 1) by_o
       omega
 
 

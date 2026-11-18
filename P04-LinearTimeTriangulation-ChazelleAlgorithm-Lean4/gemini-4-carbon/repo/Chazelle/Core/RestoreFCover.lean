@@ -41,7 +41,7 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
   set n := M.W.n
   have hn : (0 : ℝ) < n := by linarith [ha.1, ha.2]
   have hnN : 0 < n := by exact_mod_cast hn
-  set y : ℝ := (max a j + (j + 1)) / 2 with hy
+  set y := (max a j + (j + 1)) / 2 with hy
   have hy1 : a < y := by
     have := le_max_left a (j : ℝ); have := max_lt (show a < (j : ℝ) + 1 by linarith)
       (show (j : ℝ) < (j : ℝ) + 1 by linarith); rw [hy]; linarith
@@ -56,13 +56,13 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
     rw [hy]; linarith
   have hub := (unwrapK_bounds ha hb).2
   -- the wrapped point
-  have hyb : 0 ≤ y ∧ y < 2 * n := ⟨by linarith [ha.1], by linarith⟩
+  have hyb : 0 ≤ y ∧ y < 2 * n := ⟨by linarith [ha.1], by_l⟩
   have hw := wrapK_bounds hyb.1 hyb.2
-  have huw : unwrapK n a (wrapK n y) = y := unwrapK_wrapK ha hy1.le (by linarith)
+  have huw : unwrapK n a (wrapK n y) = y := unwrapK_wrapK ha hy1.le by_l
   have hin : sideInArc a b (wrapK n y) :=
-    (cyc_unwrap ha ha hb hw (by rw [unwrapK_self]; exact hab)).2
-      ⟨by rw [unwrapK_self, huw]; exact hy1, by rw [huw]; linarith⟩
-  refine ⟨Nat.mod_lt _ hnN, y - j, by linarith, by linarith, ?_⟩
+    (cyc_unwrap ha ha hb hw (by rwa [unwrapK_self])).2
+      ⟨by rwa [unwrapK_self, huw], by rw [huw]; linarith⟩
+  refine ⟨Nat.mod_lt _ hnN, y - j, by_l, by_l, ?_⟩
   have e : ((j % n : ℕ) : ℝ) + (y - j) = wrapK n y := by
     unfold wrapK
     by_cases hj : j < n
@@ -72,15 +72,15 @@ theorem meets_of_unwrapped {M : Model} {a b : ℝ} (ha : 0 ≤ a ∧ a < M.W.n)
         linarith
       rw [ite_eq_left this]; ring
     · have hj2 : j - n < n := by
-        have : (j : ℝ) < 2 * n := by linarith
+        have : (j : ℝ) < 2 * n := by_l
         have : j < 2 * n := by exact_mod_cast this
         omega
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt hj2]
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt hj2]
       have : ¬ y < n := by
         have : (n : ℝ) ≤ j := by exact_mod_cast (by omega : n ≤ j)
         linarith
-      rw [ite_eq_right this, Nat.cast_sub (by omega)]; ring
-  rw [e]; exact hin
+      rw [ite_eq_right this, Nat.cast_sub by_o]; ring
+  rwa [e]
 
 /-- **The walk vertices of a light closed key interval** are within `9` steps of its start edge. -/
 theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
@@ -91,7 +91,7 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
     ∃ t, t < 10 ∧ (s.edge + t) % M.W.n = p := by
   classical
   set n := M.W.n with hndef
-  have hnN : 0 < n := by omega
+  have hnN : 0 < n := by_o
   set a := M.key Q s with hadef
   set b := M.key Q e with hbdef
   have hkey : a = s.edge + M.param Q s := rfl
@@ -104,12 +104,12 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
     split_ifs at * with h1
     · exact lt_of_le_of_ne h1 hne
     · linarith [ha.2, hke.1]
-  have hpn : (0 : ℝ) ≤ p ∧ (p : ℝ) < n := ⟨by positivity, by exact_mod_cast hp⟩
+  have hpn : (0 : ℝ) ≤ p ∧ (p : ℝ) < n := ⟨by_p, by exact_mod_cast hp⟩
   -- the unwrapped vertex
   set P := unwrapK n a p with hPdef
   have hPb : a ≤ P ∧ P ≤ unwrapK n a b := by
     rcases hx with hx | hx | hx
-    · have := (cyc_unwrap ha ha hke hpn (by rw [unwrapK_self]; exact hab)).1 hx
+    · have := (cyc_unwrap ha ha hke hpn (by rwa [unwrapK_self])).1 hx
       rw [unwrapK_self] at this; exact ⟨this.1.le, this.2.le⟩
     · rw [hPdef, hx, unwrapK_self]; exact ⟨le_rfl, hab.le⟩
     · rw [hPdef, hx]; exact ⟨hab.le, le_rfl⟩
@@ -131,14 +131,14 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
   -- the `t` edges before the vertex meet the interval
   have hmeet : ∀ d, d < t → MeetsArc M a b ((s.edge + d) % n) := fun d hd =>
     meets_of_unwrapped ha hke hab
-      (by have : (s.edge : ℝ) ≤ ((s.edge + d : ℕ) : ℝ) := by exact_mod_cast (by omega)
+      (by have : (s.edge : ℝ) ≤ ((s.edge + d : ℕ) : ℝ) := by exact_mod_cast by_o
           linarith [hs.2.1])
-      (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast (by omega)
+      (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast by_o
           linarith [hPb.2])
-      (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast (by omega)
+      (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast by_o
           linarith [hPb.2])
   -- counting
-  set S : Set ℕ := (fun d => (s.edge + d) % n) '' Set.Iio t with hS
+  set S := (fun d => (s.edge + d) % n) '' Set.Iio t with hS
   have hinj : Set.InjOn (fun d => (s.edge + d) % n) (Set.Iio t) := by
     intro x hx y hy hxy
     simp only [Set.mem_Iio] at hx hy
@@ -148,12 +148,12 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
     · obtain ⟨k, hk⟩ := (Nat.modEq_iff_dvd' h.le).1 (Nat.ModEq.add_left_cancel' _ hxy)
       rcases k with _ | k
       · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
+      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ by_o
         omega
     · obtain ⟨k, hk⟩ := (Nat.modEq_iff_dvd' h.le).1 (Nat.ModEq.add_left_cancel' _ hxy).symm
       rcases k with _ | k
       · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
+      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ by_o
         omega
   have hcS : S.ncard = t := by
     rw [hS, hinj.ncard_image, Set.ncard_eq_toFinset_card', Set.toFinset_Iio]
@@ -171,7 +171,7 @@ theorem light_cover {M : Model} {Q : Polygon} {n0 : ℕ}
       exact ⟨Nat.mod_lt _ hnN, hc⟩
     · exact (Set.finite_Iio n).subset (fun x hx => hx.1)
   have h3 := Set.ncard_inter_add_ncard_sdiff_eq_ncard S {p | M.counted p} hSf
-  refine ⟨t, by omega, ?_⟩
+  refine ⟨t, by_o, ?_⟩
   rw [htdef, show s.edge + (Pn - s.edge) = Pn by omega, hPmod]
 
 /-- **The steps from the start edge to a walk vertex of a closed key interval** are at most its
@@ -185,7 +185,7 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
       ((s.edge + t : ℕ) : ℝ) = unwrapK M.W.n (M.key Q s) p := by
   classical
   set n := M.W.n with hndef
-  have hnN : 0 < n := by omega
+  have hnN : 0 < n := by_o
   set a := M.key Q s with hadef
   set b := M.key Q e with hbdef
   have hkey : a = s.edge + M.param Q s := rfl
@@ -198,12 +198,12 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
     split_ifs at * with h1
     · exact lt_of_le_of_ne h1 hne
     · linarith [ha.2, hke.1]
-  have hpn : (0 : ℝ) ≤ p ∧ (p : ℝ) < n := ⟨by positivity, by exact_mod_cast hp⟩
+  have hpn : (0 : ℝ) ≤ p ∧ (p : ℝ) < n := ⟨by_p, by exact_mod_cast hp⟩
   -- the unwrapped vertex
   set P := unwrapK n a p with hPdef
   have hPb : a ≤ P ∧ P ≤ unwrapK n a b := by
     rcases hx with hx | hx | hx
-    · have := (cyc_unwrap ha ha hke hpn (by rw [unwrapK_self]; exact hab)).1 hx
+    · have := (cyc_unwrap ha ha hke hpn (by rwa [unwrapK_self])).1 hx
       rw [unwrapK_self] at this; exact ⟨this.1.le, this.2.le⟩
     · rw [hPdef, hx, unwrapK_self]; exact ⟨le_rfl, hab.le⟩
     · rw [hPdef, hx]; exact ⟨hab.le, le_rfl⟩
@@ -225,14 +225,14 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
   -- the `t` edges before the vertex meet the interval
   have hmeet : ∀ d, d < t → MeetsArc M a b ((s.edge + d) % n) := fun d hd =>
     meets_of_unwrapped ha hke hab
-      (by have : (s.edge : ℝ) ≤ ((s.edge + d : ℕ) : ℝ) := by exact_mod_cast (by omega)
+      (by have : (s.edge : ℝ) ≤ ((s.edge + d : ℕ) : ℝ) := by exact_mod_cast by_o
           linarith [hs.2.1])
-      (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast (by omega)
+      (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast by_o
           linarith [hPb.2])
-      (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast (by omega)
+      (by have : ((s.edge + d : ℕ) : ℝ) + 1 ≤ Pn := by exact_mod_cast by_o
           linarith [hPb.2])
   -- counting
-  set S : Set ℕ := (fun d => (s.edge + d) % n) '' Set.Iio t with hS
+  set S := (fun d => (s.edge + d) % n) '' Set.Iio t with hS
   have hinj : Set.InjOn (fun d => (s.edge + d) % n) (Set.Iio t) := by
     intro x hx y hy hxy
     simp only [Set.mem_Iio] at hx hy
@@ -242,12 +242,12 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
     · obtain ⟨k, hk⟩ := (Nat.modEq_iff_dvd' h.le).1 (Nat.ModEq.add_left_cancel' _ hxy)
       rcases k with _ | k
       · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
+      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ by_o
         omega
     · obtain ⟨k, hk⟩ := (Nat.modEq_iff_dvd' h.le).1 (Nat.ModEq.add_left_cancel' _ hxy).symm
       rcases k with _ | k
       · omega
-      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ (by omega)
+      · have : n * (k + 1) ≥ n := Nat.le_mul_of_pos_right _ by_o
         omega
   have hcS : S.ncard = t := by
     rw [hS, hinj.ncard_image, Set.ncard_eq_toFinset_card', Set.toFinset_Iio]
@@ -265,7 +265,7 @@ theorem steps_le {M : Model} {Q : Polygon} {n0 : ℕ}
       exact ⟨Nat.mod_lt _ hnN, hc⟩
     · exact (Set.finite_Iio n).subset (fun x hx => hx.1)
   have h3 := Set.ncard_inter_add_ncard_sdiff_eq_ncard S {p | M.counted p} hSf
-  refine ⟨t, by omega, ?_, ?_⟩
+  refine ⟨t, by_o, ?_, ?_⟩
   · rw [htdef, show s.edge + (Pn - s.edge) = Pn by omega, hPmod]
   · rw [htdef, show s.edge + (Pn - s.edge) = Pn by omega, hPn]
 

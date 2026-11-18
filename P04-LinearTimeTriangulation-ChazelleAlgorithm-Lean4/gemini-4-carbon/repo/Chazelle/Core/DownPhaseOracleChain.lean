@@ -42,7 +42,7 @@ theorem okModel_sub {P : Polygon} (hG : GoodEnv P) {hm' : m + 1 ≤ (Qof P).n} :
   have hn : 1 ≤ P.n := by have := hG.1.1; omega
   refine ⟨Host.whole P.n, subChain (Qof P) a m hm1 hm', by simp [HostOk, Host.whole],
     by rw [hQn]; exact L41.hostRegular_whole hn, ?_, ?_, rfl⟩
-  · have := L41.poly_whole (Qof P) (by omega); rw [hQn] at this; exact this.symm
+  · have := L41.poly_whole (Qof P) by_o; rw [hQn] at this; exact this.symm
   · exact (shearInvariance (epsOf P) P).1 hG.1
 
 /-- The start of the interior walk's pass along the chain. -/
@@ -60,10 +60,10 @@ theorem rev_idx {n r d : ℕ} (hr : r < n) (hd : d < n) :
     n - 1 - ((n - 1 - r + d) % n) = (r + n - d) % n := by
   rcases Nat.lt_or_ge d (r + 1) with h | h
   · rw [Nat.mod_eq_of_lt (by omega : n - 1 - r + d < n),
-      show r + n - d = (r - d) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      show r + n - d = (r - d) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     omega
   · rw [show n - 1 - r + d = (d - r - 1) + n by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega), Nat.mod_eq_of_lt (by omega)]
+      Nat.mod_eq_of_lt by_o, Nat.mod_eq_of_lt by_o]
     omega
 
 /-- `(a + (m - d)) mod n = ((a + m) mod n + n - d) mod n` for `d ≤ m`, `d < n`. -/
@@ -77,9 +77,9 @@ theorem sub_idx {n a m d : ℕ} (hn : 0 < n) (hd : d ≤ m) (hdn : d < n) :
   · obtain ⟨q', rfl⟩ : ∃ q', q = q' + 1 := by
       rcases Nat.eq_zero_or_pos q with h0 | h0
       · subst h0; rw [mul_zero, zero_add] at h1; omega
-      · exact ⟨q - 1, by omega⟩
+      · exact ⟨q - 1, by_o⟩
     have e2 : n * (q' + 1) = n * q' + n := by rw [mul_add, mul_one]
-    have e : a + (m - d) = (r + n - d) + n * q' := by omega
+    have e : a + (m - d) = (r + n - d) + n * q' := by_o
     rw [e, Nat.add_mul_mod_self_left]
   · have e : a + (m - d) = (r - d) + n * q := by omega
     rw [e, Nat.add_mul_mod_self_left, show r + n - d = (r - d) + n by omega, Nat.add_mod_right]
@@ -97,9 +97,9 @@ theorem iw_tour (hQn : 1 ≤ Q.n) {d : ℕ} (hd : d ≤ m) :
   · simp only [hL, ↓reduceIte]
     have e : WalkEmbed.tourV (subChain Q a m hm1 hm) m d =
         (subChain Q a m hm1 hm).vertex (m - d) := ShootCut.tourV_down _ hd
-    rw [e, Trans.iw_vtx_right hL (Nat.mod_lt _ (by omega)), subChain_vertex]
+    rw [e, Trans.iw_vtx_right hL (Nat.mod_lt _ by_o), subChain_vertex]
     congr 1
-    rw [rev_idx (Nat.mod_lt _ (by omega)) (by omega), sub_idx (by omega) hd (by omega)]
+    rw [rev_idx (Nat.mod_lt _ by_o) by_o, sub_idx by_o hd by_o]
 
 end
 

@@ -48,7 +48,7 @@ theorem TGood.chain_simple (hE : TGood P W M N c₀) {C : Chain} (hM : M = chain
 /-- **The candidate is a position the tests compare.** -/
 theorem TGood.xPosG (hE : TGood P W M N c₀) : PosG M (Qof P) P.n (xOf c₀) := by
   refine ⟨hE.hxe, hE.hxp, fun C hM => ?_⟩
-  have hy : |(M.pos (Qof P) (xOf c₀)).2| < C.radius :=
+  have hy :=
     lt_of_le_of_lt (C.abs_le_coordBound_of_mem_set (hE.hxC C hM)).2 C.coordBound_lt_radius
   subst hM
   exact (posOK_of hE.hxe hE.hxp hy).2.2
@@ -83,7 +83,7 @@ theorem TGood.arcPosG (hE : TGood P W M N c₀) (hne : (N.F M (Qof P)).Nonempty)
     have : ((N.arc j).e.edge : ℝ) < M.W.n := by
       have := he.1; unfold Model.key at hn'; linarith
     exact_mod_cast this
-  refine ⟨⟨e1, by rw [← hQ]; exact hs, fun C hM => ?_⟩, ⟨e2, by rw [← hQ]; exact he, fun C hM => ?_⟩⟩
+  refine ⟨⟨e1, by rwa [← hQ], fun C hM => ?_⟩, ⟨e2, by rwa [← hQ], fun C hM => ?_⟩⟩
   all_goals
     obtain ⟨C', hsC, hM'⟩ := hE.chain_simple hM
     have hNF := hE.hNF

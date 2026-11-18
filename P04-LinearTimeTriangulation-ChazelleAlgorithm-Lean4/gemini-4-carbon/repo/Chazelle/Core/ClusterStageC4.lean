@@ -60,7 +60,7 @@ theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have f4 : PFr StCRG (CMem g) c c4 := f3.trans (fr hf4 (fun a h => by unfold CMem; omega))
   obtain ⟨c5, k5, e5, hk5, hw5, hf5, hρ5, hmin5⟩ := argS_exec (P := P) hw4 (gr f4) hk hkμ hc4
     (fun r hr => cntBelow_le _ _ _) hW
-  have f5 : PFr StCRG (CMem g) c c5 := f4.trans (fr hf5 (fun a h => h.elim))
+  have f5 := f4.trans (fr hf5 (fun a h => h.elim))
   obtain ⟨c6, k6, e6, hk6, hw6, hf6, -, hlv6⟩ := lvS_exec (P := P) hw5 (gr f5) hk hkμ rfl hρ5 hW
   have f6 : PFr StCRG (CMem g) c c6 := f5.trans (fr hf6 (fun a h => by
     unfold LvMem at h; unfold CMem; omega))
@@ -68,11 +68,11 @@ theorem stageC_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       ¬ (g.base 34 ≤ a ∧ a < g.base 34 + g.k') → c6.nmem a = c2.nmem a := fun a h6 h3 h4 => by
     rw [hf6.2.2.2.2 a h6, hf5.2.2.2.2 a id, hf4.2.2.2.2 a h4, hf3.2.2.2.2 a h3]
   refine ⟨c6, k1 + (k2 + (k3 + (k4 + (k5 + k6)))),
-    .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 e6)))), by omega, hw6, f6,
+    .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 e6)))), by_o, hw6, f6,
     fun w hw' => ?_, fun j hj => ?_, c5.nreg 130836, hρ5, hlv6, hmin5⟩
-  · rw [k16 _ (by unfold LvMem; omega) (by omega) (by omega),
-      hf2.2.2.2.2 _ (by omega)]; exact hh1 w hw'
-  · rw [k16 _ (by unfold LvMem; omega) (by omega) (by omega)]; exact hp2 j hj
+  · rw [k16 _ (by unfold LvMem; omega) by_o by_o,
+      hf2.2.2.2.2 _ by_o]; exact hh1 w hw'
+  · rw [k16 _ (by unfold LvMem; omega) by_o by_o]; exact hp2 j hj
 
 end proofs
 

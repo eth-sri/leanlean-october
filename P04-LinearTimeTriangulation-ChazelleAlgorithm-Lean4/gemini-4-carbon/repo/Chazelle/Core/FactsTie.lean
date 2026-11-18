@@ -98,7 +98,7 @@ theorem ccw_down {B A : Point} {s : ℝ} (hs : 0 < s) (hB : B.2 < 0) (hW : sideC
   · nlinarith
   · nlinarith
   · -- reflex corner, `A` points down
-    have hA : A.2 < 0 := by nlinarith
+    have hA : A.2 < 0 := by_nl
     refine ⟨hA, fun X hX => Or.inr (Or.inl ⟨by simp only [sideCross]; linarith, ?_⟩)⟩
     simp only [sideCross]
     rcases hX with hX | hX | hX
@@ -157,7 +157,7 @@ theorem ccw_up {B A : Point} {s : ℝ} (hs : 0 < s) (hB : 0 < B.2) (hE : sideCcw
   rw [e1, e2, Prod.snd_neg]
   rcases h with h | h | h
   · exact Or.inl h
-  · exact Or.inr (Or.inl (by linarith))
+  · exact Or.inr (Or.inl by_l)
   · exact Or.inr (Or.inr h)
 
 /-! ## A cyclic fact -/
@@ -244,9 +244,9 @@ theorem attach_other_end (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p :
     · exact h2
     · exact absurd (h2.trans h1.symm) hne
   rcases hM.attach_endpoint hopen hA' with h | h
-  · refine ⟨b, by rw [h]; exact hab.symm, by rw [h]; exact hy.symm, by rw [h]; exact hcab,
-      by rw [h]; exact hopen, hnotD b hb, hother b (Or.inl ⟨h, rfl⟩)⟩
-  · refine ⟨a, by rw [h]; exact hab, by rw [h]; exact hy, (by rw [h, Geometry.segment_comm]; exact hcab), by rw [h]; exact open_rev hopen, hnotD a ha, hother a (Or.inr ⟨h, rfl⟩)⟩
+  · refine ⟨b, by rw [h]; exact hab.symm, by rw [h]; exact hy.symm, by rwa [h],
+      by rwa [h], hnotD b hb, hother b (Or.inl ⟨h, rfl⟩)⟩
+  · refine ⟨a, by rwa [h], by rwa [h], (by rwa [h, Geometry.segment_comm]), by rw [h]; exact open_rev hopen, hnotD a ha, hother a (Or.inr ⟨h, rfl⟩)⟩
 
 /-- Distance from the start of a segment to a point of it. -/
 theorem dist_lerp_left (v e : Point) {s : ℝ} (hs : 0 ≤ s) : dist (lerp v e s) v = s * dist v e := by
@@ -263,12 +263,12 @@ theorem exists_left_on_chord {c : Set Point} {p : ℕ} {t : ℝ} (hA : SideAttac
       sideLeft M.W p t (lerp (sidePt M.W p t) e s) := by
   obtain ⟨-, -, -, -, r₀, hr₀, hatt⟩ := hA
   set v := sidePt M.W p t
-  set r := min r₀ ρ with hr
-  have hr0 : 0 < r := lt_min hr₀ hρ
-  have hn : 0 < dist v e + 1 := by positivity
-  set s := min (r / (dist v e + 1)) (1 / 2) with hs
-  have hs0 : 0 < s := lt_min (div_pos hr0 hn) (by norm_num)
-  have hs1 : s < 1 := lt_of_le_of_lt (min_le_right _ _) (by norm_num)
+  set r := min r₀ ρ
+  have hr0 := lt_min hr₀ hρ
+  have hn : 0 < dist v e + 1 := by_p
+  set s := min (r / (dist v e + 1)) (1 / 2)
+  have hs0 : 0 < s := lt_min (div_pos hr0 hn) by_n
+  have hs1 : s < 1 := lt_of_le_of_lt (min_le_right _ _) by_n
   have hd : dist (lerp v e s) v < r := by
     rw [dist_lerp_left v e hs0.le]
     have h1 : s ≤ r / (dist v e + 1) := min_le_left _ _
@@ -304,9 +304,9 @@ theorem attach_east_unique (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
   obtain ⟨e, hev, hey, hce, hopen, heD, -⟩ := hM.attach_other_end (hF hc) hA
   obtain ⟨e', hev', hey', hce', hopen', heD', -⟩ := hM.attach_other_end (hF hc') hA'
   set v := sidePt M.W p t
-  have h1 : v.1 < e.1 := lt_of_le_of_ne (hE e (by rw [hce]; exact Geometry.right_mem_segment _ _))
+  have h1 := lt_of_le_of_ne (hE e (by rw [hce]; exact Geometry.right_mem_segment _ _))
     (fun h => hev (point_ext h.symm hey))
-  have h1' : v.1 < e'.1 := lt_of_le_of_ne
+  have h1' := lt_of_le_of_ne
     (hE' e' (by rw [hce']; exact Geometry.right_mem_segment _ _))
     (fun h => hev' (point_ext h.symm hey'))
   rcases lt_trichotomy e.1 e'.1 with h | h | h
@@ -317,7 +317,7 @@ theorem attach_east_unique (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
       · simp only [Geometry.lerp_fst]; rw [div_mul_cancel₀ _ (sub_pos.2 h1').ne']; ring
       · simp only [Geometry.lerp_snd]; rw [hey, hey']; ring
     rw [e1]
-    exact hopen' _ ⟨div_pos (by linarith) (by linarith), (div_lt_one (by linarith)).2 (by linarith)⟩
+    exact hopen' _ ⟨div_pos by_l by_l, (div_lt_one by_l).2 by_l⟩
   · rw [hce, hce', point_ext h (hey.trans hey'.symm)]
   · exfalso
     apply heD'
@@ -326,7 +326,7 @@ theorem attach_east_unique (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
       · simp only [Geometry.lerp_fst]; rw [div_mul_cancel₀ _ (sub_pos.2 h1).ne']; ring
       · simp only [Geometry.lerp_snd]; rw [hey, hey']; ring
     rw [e1]
-    exact hopen _ ⟨div_pos (by linarith) (by linarith), (div_lt_one (by linarith)).2 (by linarith)⟩
+    exact hopen _ ⟨div_pos by_l by_l, (div_lt_one by_l).2 by_l⟩
 
 /-- **Two chords of `F` attached at one position in the same direction are equal** (west). -/
 theorem attach_west_unique (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
@@ -336,9 +336,9 @@ theorem attach_west_unique (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
   obtain ⟨e, hev, hey, hce, hopen, heD, -⟩ := hM.attach_other_end (hF hc) hA
   obtain ⟨e', hev', hey', hce', hopen', heD', -⟩ := hM.attach_other_end (hF hc') hA'
   set v := sidePt M.W p t
-  have h1 : e.1 < v.1 := lt_of_le_of_ne (hW e (by rw [hce]; exact Geometry.right_mem_segment _ _))
+  have h1 := lt_of_le_of_ne (hW e (by rw [hce]; exact Geometry.right_mem_segment _ _))
     (fun h => hev (point_ext h hey))
-  have h1' : e'.1 < v.1 := lt_of_le_of_ne
+  have h1' := lt_of_le_of_ne
     (hW' e' (by rw [hce']; exact Geometry.right_mem_segment _ _))
     (fun h => hev' (point_ext h hey'))
   rcases lt_trichotomy e.1 e'.1 with h | h | h
@@ -351,7 +351,7 @@ theorem attach_west_unique (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
         ring
       · simp only [Geometry.lerp_snd]; rw [hey, hey']; ring
     rw [e1]
-    exact hopen _ ⟨div_pos (by linarith) (by linarith), (div_lt_one (by linarith)).2 (by linarith)⟩
+    exact hopen _ ⟨div_pos by_l by_l, (div_lt_one by_l).2 by_l⟩
   · rw [hce, hce', point_ext h (hey.trans hey'.symm)]
   · exfalso
     apply heD
@@ -362,7 +362,7 @@ theorem attach_west_unique (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
         ring
       · simp only [Geometry.lerp_snd]; rw [hey, hey']; ring
     rw [e1]
-    exact hopen' _ ⟨div_pos (by linarith) (by linarith), (div_lt_one (by linarith)).2 (by linarith)⟩
+    exact hopen' _ ⟨div_pos by_l by_l, (div_lt_one by_l).2 by_l⟩
 
 /-! ## Non-crossing -/
 
@@ -387,7 +387,7 @@ theorem no_cross (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     obtain ⟨e, hev, -, hde, hopen, -⟩ := hM.attach_other_end (hF hd) hQ
     obtain ⟨s, hs0, hs1, hdist, hleft⟩ := exists_left_on_chord hQ hde hev hr
     refine ⟨_, ⟨by rw [hde]; exact lerp_mem_segment _ _ hs0.le hs1.le, hopen s ⟨hs0, hs1⟩⟩,
-      hsecr _ (by rw [mem_ball]; exact hdist) hleft⟩
+      hsecr _ (by rwa [mem_ball]) hleft⟩
   obtain ⟨x₁, hx₁d, hx₁K⟩ := hpt hC (hK₁ pc hC.1 tc hC.2.1 hC.2.2.1 h1)
   obtain ⟨x₂, hx₂d, hx₂K⟩ := hpt hD (hK₂ pd hD.1 td hD.2.1 hD.2.2.1 h2)
   have hsub : d ∩ M.D ⊆ M.D \ c := fun x hx =>
@@ -413,11 +413,11 @@ theorem tie_setup (hM : WalkAx M) {ce cw : Set Point} (hce : ce ∈ M.Adm) (hcw 
       sideCcw (M.wb p - M.wa p) (-s₂, 0) (M.W.vtx ((p + M.W.n - 1) % M.W.n) - M.wa p) := by
   obtain ⟨we, hwev, hwey, hceq, -⟩ := hM.attach_other_end hce hAe
   obtain ⟨uw, huwv, huwy, hcwq, -⟩ := hM.attach_other_end hcw hAw
-  set v := sidePt M.W p t with hv
-  have hlte : v.1 < we.1 := lt_of_le_of_ne
+  set v := sidePt M.W p t
+  have hlte := lt_of_le_of_ne
     (hE we (by rw [hceq]; exact Geometry.right_mem_segment _ _))
     (fun h => hwev (point_ext h.symm hwey))
-  have hltw : uw.1 < v.1 := lt_of_le_of_ne
+  have hltw := lt_of_le_of_ne
     (hW uw (by rw [hcwq]; exact Geometry.right_mem_segment _ _))
     (fun h => huwv (point_ext h huwy))
   obtain ⟨s, hs0, hs1, -, hL⟩ := exists_left_on_chord hAe hceq hwev one_pos
@@ -441,13 +441,13 @@ theorem tie_setup (hM : WalkAx M) {ce cw : Set Point} (hce : ce ∈ M.Adm) (hcw 
       ring
     rw [key we s hwey] at hL
     rw [key uw s' huwy] at hL'
-    have h1 : 0 < s * (we.1 - v.1) := mul_pos hs0 (by linarith)
-    have h2 : 0 < s' * (v.1 - uw.1) := mul_pos hs0' (by linarith)
+    have h1 : 0 < s * (we.1 - v.1) := mul_pos hs0 by_l
+    have h2 : 0 < s' * (v.1 - uw.1) := mul_pos hs0' by_l
     nlinarith
   subst ht0
   have hv0 : v = M.W.vtx p := Chazelle.Chain.sidePt_zero M.W p
-  refine ⟨rfl, s * (we.1 - v.1), s' * (v.1 - uw.1), mul_pos hs0 (by linarith),
-    mul_pos hs0' (by linarith), ?_, ?_⟩
+  refine ⟨rfl, s * (we.1 - v.1), s' * (v.1 - uw.1), mul_pos hs0 by_l,
+    mul_pos hs0' by_l, ?_, ?_⟩
   · rw [Chazelle.Chain.sideLeft_zero] at hL
     unfold sideLeftOf at hL
     have e1 : lerp v we s - M.W.vtx p = (s * (we.1 - v.1), 0) := by
@@ -479,9 +479,9 @@ theorem local_free (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
   have hsys := hM.sys F hF hfin
   obtain ⟨r₁, hr₁, hcl⟩ := hM.clean p hp 0 le_rfl zero_lt_one
   rw [Chazelle.Chain.sidePt_zero] at hcl
-  set G := {c ∈ F | M.W.vtx p ∉ c} with hG
+  set G := {c ∈ F | M.W.vtx p ∉ c}
   have hGF : G ⊆ F := fun c hc => hc.1
-  have hGc : IsClosed (⋃₀ G) := hsys.isClosed_sUnion hGF
+  have hGc := hsys.isClosed_sUnion hGF
   have hvG : M.W.vtx p ∉ ⋃₀ G := fun ⟨c, hc, hvc⟩ => hc.2 hvc
   obtain ⟨r₂, hr₂, hb₂⟩ := Metric.isOpen_iff.1 hGc.isOpen_compl _ hvG
   refine ⟨min r₁ r₂, lt_min hr₁ hr₂, fun x hx hL hy => ⟨?_, ?_⟩⟩
@@ -528,7 +528,7 @@ theorem above_of_meets (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) 
 theorem eventually_vert {O : Set Point} (hO : IsOpen O) {z : Point} (hz : z ∈ O) (σ : ℝ) :
     ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z.1, z.2 + σ * δ) : Point) ∈ O := by
   have hc : Continuous fun δ : ℝ => ((z.1, z.2 + σ * δ) : Point) := by fun_prop
-  have h0 : ((z.1, z.2 + σ * 0) : Point) = z := by simp
+  have h0 : ((z.1, z.2 + σ * 0) : Point) = z := by_s
   have := hc.tendsto 0
   rw [h0] at this
   exact (this.eventually (hO.mem_nhds hz)).filter_mono nhdsWithin_le_nhds
@@ -549,7 +549,7 @@ theorem region_of_piece {F : Set (Set Point)} {p : ℕ} {r : ℝ}
       ∀ z' ∈ O, z'.2 = (M.W.vtx p).2 → ∀ᶠ δ in 𝓝[>] (0 : ℝ), ((z'.1, z'.2 + σ * δ) : Point) ∈ U := by
   set v := M.W.vtx p
   have hσσ : σ * σ = 1 := by rcases hσ with rfl | rfl <;> norm_num
-  set S := O ∩ {x : Point | 0 < σ * det v (v.1 + 1, v.2) x} with hS
+  set S := O ∩ {x : Point | 0 < σ * det v (v.1 + 1, v.2) x}
   have hdet : ∀ x : Point, det v (v.1 + 1, v.2) x = x.2 - v.2 := by
     intro x; simp only [det]; ring
   have hSc : Convex ℝ S := hOc.inter (Chazelle.Jordan.convex_det_pos _ _ σ)
@@ -581,7 +581,7 @@ theorem faces_after_of {p : ℕ} {U : Set Point} {r σ : ℝ} (hr : 0 < r) (hσ 
       0 < σ * (x.2 - (M.wa p).2) → x ∈ U) :
     ∃ δ₁ > (0 : ℝ), ∀ t', 0 < t' → t' < δ₁ → M.Faces p t' U := by
   set v := M.wa p
-  set B : Point := M.wb p - v with hBdef
+  set B := M.wb p - v
   have hB1 : B.1 = (M.wb p).1 - v.1 := rfl
   have hB2 : B.2 = (M.wb p).2 - v.2 := rfl
   rw [← hB2] at hB
@@ -591,13 +591,13 @@ theorem faces_after_of {p : ℕ} {U : Set Point} {r σ : ℝ} (hr : 0 < r) (hσ 
     · simp only [neg_one_mul, neg_le_neg_iff]; exact le_abs_self B.1
   have hB2ne : B.2 ≠ 0 := by intro h; rw [h, mul_zero] at hB; exact lt_irrefl _ hB
   set K := |B.1| + |B.2| + 1 with hK
-  have hK0 : 0 < K := by positivity
-  refine ⟨r / (2 * K), by positivity, fun t' ht0 ht1 => ?_⟩
-  have hpos : 0 < min t' (t' * (σ * B.2) / K) := lt_min ht0 (by positivity)
+  have hK0 : 0 < K := by_p
+  refine ⟨r / (2 * K), by_p, fun t' ht0 ht1 => ?_⟩
+  have hpos : 0 < min t' (t' * (σ * B.2) / K) := lt_min ht0 by_p
   unfold Model.Faces
   filter_upwards [Ioo_mem_nhdsGT hpos] with δ hδ
   have hδ0 := hδ.1
-  have hδ1 : δ < t' := hδ.2.trans_le (min_le_left _ _)
+  have hδ1 := hδ.2.trans_le (min_le_left _ _)
   have hδ2 : δ * K < t' * (σ * B.2) := by
     have := hδ.2.trans_le (min_le_right _ _)
     rwa [lt_div_iff₀ hK0] at this
@@ -609,8 +609,8 @@ theorem faces_after_of {p : ℕ} {U : Set Point} {r σ : ℝ} (hr : 0 < r) (hσ 
     simp only [x, offset, nrm, Geometry.add_snd, Geometry.smul_snd, Geometry.lerp_snd, hB1, hB2]
     ring
   have hK2 : (t' + δ) * K < r := by
-    have h1 : t' < r / (2 * K) := ht1
-    rw [lt_div_iff₀ (by positivity)] at h1
+    have h1 := ht1
+    rw [lt_div_iff₀ by_p] at h1
     nlinarith
   have a1 := le_abs_self B.1
   have a2 := neg_abs_le B.1
@@ -628,15 +628,15 @@ theorem faces_after_of {p : ℕ} {U : Set Point} {r σ : ℝ} (hr : 0 < r) (hσ 
     rw [hK]; ring
   apply hU
   · rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq, max_lt_iff, abs_lt, abs_lt, hx1, hx2]
-    refine ⟨⟨by linarith, by linarith⟩, ⟨by linarith, by linarith⟩⟩
+    refine ⟨⟨by_l, by_l⟩, ⟨by_l, by_l⟩⟩
   · have : sideCross B (x - v) = δ * (B.1 ^ 2 + B.2 ^ 2) := by
       simp only [sideCross, Prod.fst_sub, Prod.snd_sub, hx1, hx2]; ring
     rw [this]
-    exact mul_pos hδ0 (by positivity)
+    exact mul_pos hδ0 by_p
   · rw [hx2]
     have : δ * |B.1| ≤ δ * K := mul_le_mul_of_nonneg_left (by rw [hK]; linarith [abs_nonneg B.2])
       hδ0.le
-    have h3 : -(δ * |B.1|) ≤ δ * (σ * B.1) := by nlinarith
+    have h3 : -(δ * |B.1|) ≤ δ * (σ * B.1) := by_nl
     nlinarith
 
 /-- **The walk just before a vertex** (on the arriving edge `q`, near its end) faces the region
@@ -648,7 +648,7 @@ theorem faces_before_of {q : ℕ} {V : Set Point} {r σ : ℝ} (hr : 0 < r) (hσ
       0 < σ * (x.2 - (M.wb q).2) → x ∈ V) :
     ∃ δ₁ > (0 : ℝ), ∀ t', 1 - δ₁ < t' → t' < 1 → M.Faces q t' V := by
   set v := M.wb q
-  set A : Point := M.wa q - v with hAdef
+  set A := M.wa q - v
   have hA1 : A.1 = (M.wa q).1 - v.1 := rfl
   have hA2 : A.2 = (M.wa q).2 - v.2 := rfl
   rw [← hA2] at hA
@@ -658,16 +658,16 @@ theorem faces_before_of {q : ℕ} {V : Set Point} {r σ : ℝ} (hr : 0 < r) (hσ
     · simp only [neg_one_mul]; exact neg_le_abs A.1
   have hA2ne : A.2 ≠ 0 := by intro h; rw [h, mul_zero] at hA; exact lt_irrefl _ hA
   set K := |A.1| + |A.2| + 1 with hK
-  have hK0 : 0 < K := by positivity
-  refine ⟨r / (2 * K), by positivity, fun t' ht0 ht1 => ?_⟩
+  have hK0 : 0 < K := by_p
+  refine ⟨r / (2 * K), by_p, fun t' ht0 ht1 => ?_⟩
   set u := 1 - t' with hu
   have hu0 : 0 < u := by rw [hu]; linarith
   have hu1 : u < r / (2 * K) := by rw [hu]; linarith
-  have hpos : 0 < min u (u * (σ * A.2) / K) := lt_min hu0 (by positivity)
+  have hpos : 0 < min u (u * (σ * A.2) / K) := lt_min hu0 by_p
   unfold Model.Faces
   filter_upwards [Ioo_mem_nhdsGT hpos] with δ hδ
   have hδ0 := hδ.1
-  have hδ1 : δ < u := hδ.2.trans_le (min_le_left _ _)
+  have hδ1 := hδ.2.trans_le (min_le_left _ _)
   have hδ2 : δ * K < u * (σ * A.2) := by
     have := hδ.2.trans_le (min_le_right _ _)
     rwa [lt_div_iff₀ hK0] at this
@@ -679,7 +679,7 @@ theorem faces_before_of {q : ℕ} {V : Set Point} {r σ : ℝ} (hr : 0 < r) (hσ
     simp only [x, offset, nrm, Geometry.add_snd, Geometry.smul_snd, Geometry.lerp_snd, hA1, hA2, hu]
     ring
   have hK2 : (u + δ) * K < r := by
-    rw [lt_div_iff₀ (by positivity)] at hu1
+    rw [lt_div_iff₀ by_p] at hu1
     nlinarith
   have a1 := le_abs_self A.1
   have a2 := neg_abs_le A.1
@@ -697,16 +697,16 @@ theorem faces_before_of {q : ℕ} {V : Set Point} {r σ : ℝ} (hr : 0 < r) (hσ
     rw [hK]; ring
   apply hV
   · rw [mem_ball, Prod.dist_eq, Real.dist_eq, Real.dist_eq, max_lt_iff, abs_lt, abs_lt, hx1, hx2]
-    refine ⟨⟨by linarith, by linarith⟩, ⟨by linarith, by linarith⟩⟩
+    refine ⟨⟨by_l, by_l⟩, ⟨by_l, by_l⟩⟩
   · have : sideCross (x - v) A = δ * (A.1 ^ 2 + A.2 ^ 2) := by
       simp only [sideCross, Prod.fst_sub, Prod.snd_sub, hx1, hx2]; ring
     rw [this]
-    exact mul_pos hδ0 (by positivity)
+    exact mul_pos hδ0 by_p
   · rw [hx2]
     have : δ * |A.1| ≤ δ * K := mul_le_mul_of_nonneg_left (by rw [hK]; linarith [abs_nonneg A.2])
       hδ0.le
-    have h3 : δ * (σ * A.1) ≤ δ * |A.1| := mul_le_mul_of_nonneg_left hσA hδ0.le
-    have e : σ * (u * A.2 - δ * A.1) = u * (σ * A.2) - δ * (σ * A.1) := by ring
+    have h3 := mul_le_mul_of_nonneg_left hσA hδ0.le
+    have e : σ * (u * A.2 - δ * A.1) = u * (σ * A.2) - δ * (σ * A.1) := by_r
     rw [e]
     linarith
 
@@ -714,10 +714,10 @@ theorem faces_before_of {q : ℕ} {V : Set Point} {r σ : ℝ} (hr : 0 < r) (hσ
 theorem prev_succ {p n : ℕ} (hp : p < n) : ((p + n - 1) % n + 1) % n = p := by
   rcases p with _ | k
   · have hn : n - 1 < n := by omega
-    rw [Nat.zero_add, Nat.mod_eq_of_lt hn, Nat.sub_add_cancel (by omega), Nat.mod_self]
+    rw [Nat.zero_add, Nat.mod_eq_of_lt hn, Nat.sub_add_cancel by_o, Nat.mod_self]
   · have e : k + 1 + n - 1 = k + n := by omega
     have h1 : (k + 1 + n - 1) % n = k := by
-      rw [e, Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
+      rw [e, Nat.add_mod_right]; exact Nat.mod_eq_of_lt by_o
     rw [h1]; exact Nat.mod_eq_of_lt hp
 
 /-- Common data of a tie at a vertex: the other ends of the two chords and points of the chords
@@ -739,17 +739,17 @@ theorem tie_ends (hM : WalkAx M) {ce cw : Set Point} (hce : ce ∈ M.Adm) (hcw :
         dist ze (M.W.vtx p) < r ∧
       zw ∈ cw ∧ zw ∈ M.D ∧ zw.2 = (M.W.vtx p).2 ∧ zw.1 < (M.W.vtx p).1 ∧
         dist zw (M.W.vtx p) < r := by
-  have hv0 : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero M.W p
+  have hv0 := Chazelle.Chain.sidePt_zero M.W p
   obtain ⟨we, hwev, hwey, hceq, hopene, -, hothe⟩ := hM.attach_other_end hce hAe
   obtain ⟨uw, huwv, huwy, hcwq, hopenw, -, hothw⟩ := hM.attach_other_end hcw hAw
   obtain ⟨se, hse0, hse1, hsed, -⟩ := exists_left_on_chord hAe hceq hwev hr
   obtain ⟨sw, hsw0, hsw1, hswd, -⟩ := exists_left_on_chord hAw hcwq huwv hr
   rw [hv0] at hE hW hwev hwey hceq hopene hothe huwv huwy hcwq hopenw hothw hsed hswd
   set v := M.W.vtx p
-  have hlte : v.1 < we.1 := lt_of_le_of_ne
+  have hlte := lt_of_le_of_ne
     (hE we (by rw [hceq]; exact Geometry.right_mem_segment _ _))
     (fun h => hwev (point_ext h.symm hwey))
-  have hltw : uw.1 < v.1 := lt_of_le_of_ne
+  have hltw := lt_of_le_of_ne
     (hW uw (by rw [hcwq]; exact Geometry.right_mem_segment _ _))
     (fun h => huwv (point_ext h huwy))
   refine ⟨we, uw, lerp v we se, lerp v uw sw, hwey, huwy, hlte, hltw, hceq, hcwq, hopene, hopenw,
@@ -773,17 +773,17 @@ theorem tie_down (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     t = 0 ∧ M.TieDown F ce cw p := by
   obtain ⟨rfl, s₁, s₂, hs₁, hs₂, -, hsW⟩ := hM.tie_setup (hF hce) (hF hcw) hAe hAw hE hW
   refine ⟨rfl, ?_⟩
-  have hp : p < M.W.n := hAe.1
-  have hv0 : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero M.W p
+  have hp := hAe.1
+  have hv0 := Chazelle.Chain.sidePt_zero M.W p
   obtain ⟨r, hr, hfree⟩ := hM.local_free hF hfin hp
   obtain ⟨we, uw, ze, zw, hwey, huwy, hlte, hltw, hceq, hcwq, hopene, hopenw, hothe, hothw,
     hzec, hzeD, hzey, hzex, hzed, hzwc, hzwD, hzwy, hzwx, hzwd⟩ :=
     hM.tie_ends (hF hce) (hF hcw) hAe hAw hE hW hr
-  set v := M.W.vtx p with hv
+  set v := M.W.vtx p
   have hwa : M.wa p = v := rfl
-  set B : Point := M.wb p - v with hB
-  set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
-  set A : Point := a - v with hA
+  set B := M.wb p - v with hB
+  set a := M.W.vtx ((p + M.W.n - 1) % M.W.n)
+  set A := a - v
   have hB2 : B.2 < 0 := by simp only [hB, Prod.snd_sub]; rw [← hwa]; linarith
   obtain ⟨hA2, hsec⟩ := Tie.ccw_down hs₂ hB2 hsW
   have hA2' : A.2 < 0 := hA2
@@ -794,7 +794,7 @@ theorem tie_down (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     exact hsec _ hx
   have hcrossB : ∀ x : Point, sideCross B (x - v) = det v (M.wb p) x :=
     fun x => Chazelle.Chain.sideCross_out v (M.wb p) x
-  have hcrossA : ∀ x : Point, sideCross (x - v) A = det a v x :=
+  have hcrossA :=
     fun x => Chazelle.Chain.sideCross_in a v x
   -- the region below `ce` (after `v`)
   obtain ⟨U, hU, hUin, hUev⟩ := region_of_piece (σ := -1) hfree
@@ -802,13 +802,13 @@ theorem tie_down (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     ((convex_ball _ _).inter (Chazelle.Jordan.convex_det_pos _ _ 1)) inter_subset_left
     (Or.inr rfl) (fun x hx hy => hleft x (Or.inl (by
       rw [hcrossB]; have := hx.2; simp only [mem_ofPred_eq, one_mul] at this; exact this)))
-    (z := ze) ⟨by rw [mem_ball]; exact hzed, by
+    (z := ze) ⟨by rwa [mem_ball], by
       simp only [mem_ofPred_eq, one_mul]
       rw [← hcrossB]
       simp only [sideCross, Prod.fst_sub, Prod.snd_sub, hzey, sub_self, mul_zero, zero_sub]
       nlinarith⟩ hzey
-  have hUbelow : M.BelowOf ce U := hM.below_of_meets hF hfin hce hU hzec hzeD
-    ((hUev ze ⟨by rw [mem_ball]; exact hzed, by
+  have hUbelow := hM.below_of_meets hF hfin hce hU hzec hzeD
+    ((hUev ze ⟨by rwa [mem_ball], by
       simp only [mem_ofPred_eq, one_mul]
       rw [← hcrossB]
       simp only [sideCross, Prod.fst_sub, Prod.snd_sub, hzey, sub_self, mul_zero, zero_sub]
@@ -819,31 +819,31 @@ theorem tie_down (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     ((convex_ball _ _).inter (Chazelle.Jordan.convex_det_pos _ _ 1)) inter_subset_left
     (Or.inr rfl) (fun x hx hy => hleft x (Or.inr (Or.inr (by
       rw [hcrossA]; have := hx.2; simp only [mem_ofPred_eq, one_mul] at this; exact this))))
-    (z := zw) ⟨by rw [mem_ball]; exact hzwd, by
+    (z := zw) ⟨by rwa [mem_ball], by
       simp only [mem_ofPred_eq, one_mul]
       rw [← hcrossA]
       simp only [sideCross, Prod.fst_sub, Prod.snd_sub, hzwy, sub_self, zero_mul, sub_zero]
-      exact mul_pos_of_neg_of_neg (by linarith) hA2'⟩ hzwy
-  have hVbelow : M.BelowOf cw V := hM.below_of_meets hF hfin hcw hV hzwc hzwD
-    ((hVev zw ⟨by rw [mem_ball]; exact hzwd, by
+      exact mul_pos_of_neg_of_neg by_l hA2'⟩ hzwy
+  have hVbelow := hM.below_of_meets hF hfin hcw hV hzwc hzwD
+    ((hVev zw ⟨by rwa [mem_ball], by
       simp only [mem_ofPred_eq, one_mul]
       rw [← hcrossA]
       simp only [sideCross, Prod.fst_sub, Prod.snd_sub, hzwy, sub_self, zero_mul, sub_zero]
-      exact mul_pos_of_neg_of_neg (by linarith) hA2'⟩ hzwy).mono fun δ h => by rwa [neg_one_mul, ← sub_eq_add_neg] at h)
+      exact mul_pos_of_neg_of_neg by_l hA2'⟩ hzwy).mono fun δ h => by rwa [neg_one_mul, ← sub_eq_add_neg] at h)
   -- the region above both
   obtain ⟨R, hR, -, hRev⟩ := region_of_piece (σ := 1) hfree isOpen_ball (convex_ball _ _)
     subset_rfl (Or.inl rfl) (fun x hx hy => hleft x (Or.inr (Or.inl (by
       simp only [Prod.snd_sub]; linarith))))
-    (z := ze) (by rw [mem_ball]; exact hzed) hzey
-  have hRe : M.AboveOf ce R := hM.above_of_meets hF hfin hce hR hzec hzeD
-    ((hRev ze (by rw [mem_ball]; exact hzed) hzey).mono fun δ h => by rwa [one_mul] at h)
-  have hRw : M.AboveOf cw R := hM.above_of_meets hF hfin hcw hR hzwc hzwD
-    ((hRev zw (by rw [mem_ball]; exact hzwd) hzwy).mono fun δ h => by rwa [one_mul] at h)
+    (z := ze) (by rwa [mem_ball]) hzey
+  have hRe := hM.above_of_meets hF hfin hce hR hzec hzeD
+    ((hRev ze (by rwa [mem_ball]) hzey).mono fun δ h => by rwa [one_mul] at h)
+  have hRw := hM.above_of_meets hF hfin hcw hR hzwc hzwD
+    ((hRev zw (by rwa [mem_ball]) hzwy).mono fun δ h => by rwa [one_mul] at h)
   refine ⟨U, V, R, hU, hV, hR, hUbelow, hVbelow, hRe, hRw, ?_, ?_, ?_⟩
   · -- just after `v`
-    refine faces_after_of hr (Or.inr rfl) (by linarith) (fun x hx h1 h2 => hUin x
+    refine faces_after_of hr (Or.inr rfl) by_l (fun x hx h1 h2 => hUin x
       ⟨hx, ?_⟩ h2)
-    simp only [mem_ofPred_eq, one_mul]; rw [← hcrossB]; exact h1
+    simp only [mem_ofPred_eq, one_mul]; rwa [← hcrossB]
   · -- just before `v`
     set q := (p + M.W.n - 1) % M.W.n
     have hwbq : M.wb q = v := by
@@ -852,12 +852,12 @@ theorem tie_down (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     have hwaq : M.wa q = a := rfl
     have hA2'' : 0 < -1 * ((M.wa q).2 - (M.wb q).2) := by
       rw [hwbq, hwaq]; have : A.2 = a.2 - v.2 := rfl; linarith
-    refine faces_before_of hr (Or.inr rfl) hA2'' (fun x hx h1 h2 => hVin x ⟨by rw [hwbq] at hx; exact hx, ?_⟩ (by rw [hwbq] at h2; exact h2))
-    simp only [mem_ofPred_eq, one_mul]; rw [← hcrossA]; rw [hwbq, hwaq] at h1; exact h1
+    refine faces_before_of hr (Or.inr rfl) hA2'' (fun x hx h1 h2 => hVin x ⟨by rwa [hwbq] at hx, ?_⟩ (by rwa [hwbq] at h2))
+    simp only [mem_ofPred_eq, one_mul]; rw [← hcrossA]; rwa [hwbq, hwaq] at h1
   · -- the nesting order
     intro pe pw te tw hBe hBe' hBw hBw'
-    have hpe : sidePt M.W pe te = we := hothe pe te hBe hBe'
-    have hpw : sidePt M.W pw tw = uw := hothw pw tw hBw hBw'
+    have hpe := hothe pe te hBe hBe'
+    have hpw := hothw pw tw hBw hBw'
     obtain ⟨py, ty, hpy, hty0, hty1, hRf⟩ := hM.exists_faces hF hfin hR
     have hne1 : sidePt M.W p 0 ≠ sidePt M.W pe te := by rw [hv0]; exact Ne.symm hBe'
     have hne2 : sidePt M.W pw tw ≠ sidePt M.W p 0 := by rw [hv0]; exact hBw'
@@ -865,29 +865,29 @@ theorem tie_down (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
       have := key_ne_of_pt_ne hAe hBe hne1; rwa [add_zero] at this
     have hac : (p : ℝ) ≠ pw + tw := by
       have := key_ne_of_pt_ne hAw hBw (Ne.symm hne2); rwa [add_zero] at this
-    have hbc : (pe : ℝ) + te ≠ pw + tw := key_ne_of_pt_ne hBe hBw (by
+    have hbc := key_ne_of_pt_ne hBe hBw (by
       rw [hpe, hpw]; intro h; rw [h] at hlte; linarith)
     have hya : (py : ℝ) + ty ≠ p := by
       intro h
-      have := (sideKey_inj hty0.le hty1 le_rfl zero_lt_one (by rw [add_zero]; exact h)).2
+      have := (sideKey_inj hty0.le hty1 le_rfl zero_lt_one (by rwa [add_zero])).2
       linarith
     refine Tie.cyc_cover hab hac hbc hya (fun hin => ?_) (fun hin => ?_)
     · refine hM.not_left_of_after hF hce hAe hBe hne1 hR hpy ⟨hty0, hty1⟩
-        (by rw [add_zero]; exact hin) hRf ?_
+        (by rwa [add_zero]) hRf ?_
       rw [hv0, hpe]
       have hm : lerp v we (1 / 2) ∈ ce := by
-        rw [hceq]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-      refine (eventually_mul_pos (hRe _ hm (hopene _ ⟨by norm_num, by norm_num⟩))
+        rw [hceq]; exact lerp_mem_segment _ _ by_n by_n
+      refine (eventually_mul_pos (hRe _ hm (hopene _ ⟨by_n, by_n⟩))
         (sub_pos.2 hlte)).mono fun δ h => ?_
-      rw [Chazelle.Core.offset_mid_ab hwey.symm]; exact h
+      rwa [Chazelle.Core.offset_mid_ab hwey.symm]
     · refine hM.not_left_of_after hF hcw hBw hAw hne2 hR hpy ⟨hty0, hty1⟩
-        (by rw [add_zero]; exact hin) hRf ?_
+        (by rwa [add_zero]) hRf ?_
       rw [hv0, hpw]
       have hm : lerp uw v (1 / 2) ∈ cw := by
-        rw [hcwq, Geometry.segment_comm]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-      refine (eventually_mul_pos (hRw _ hm (open_rev hopenw _ ⟨by norm_num, by norm_num⟩))
+        rw [hcwq, Geometry.segment_comm]; exact lerp_mem_segment _ _ by_n by_n
+      refine (eventually_mul_pos (hRw _ hm (open_rev hopenw _ ⟨by_n, by_n⟩))
         (sub_pos.2 hltw)).mono fun δ h => ?_
-      rw [Chazelle.Core.offset_mid_ab huwy]; exact h
+      rwa [Chazelle.Core.offset_mid_ab huwy]
 
 /-- **The tie, leaving edge up.** -/
 theorem tie_up (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : F.Finite)
@@ -898,17 +898,17 @@ theorem tie_up (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : 
     t = 0 ∧ M.TieUp F ce cw p := by
   obtain ⟨rfl, s₁, s₂, hs₁, hs₂, hsE, -⟩ := hM.tie_setup (hF hce) (hF hcw) hAe hAw hE hW
   refine ⟨rfl, ?_⟩
-  have hp : p < M.W.n := hAe.1
-  have hv0 : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero M.W p
+  have hp := hAe.1
+  have hv0 := Chazelle.Chain.sidePt_zero M.W p
   obtain ⟨r, hr, hfree⟩ := hM.local_free hF hfin hp
   obtain ⟨we, uw, ze, zw, hwey, huwy, hlte, hltw, hceq, hcwq, hopene, hopenw, hothe, hothw,
     hzec, hzeD, hzey, hzex, hzed, hzwc, hzwD, hzwy, hzwx, hzwd⟩ :=
     hM.tie_ends (hF hce) (hF hcw) hAe hAw hE hW hr
-  set v := M.W.vtx p with hv
+  set v := M.W.vtx p
   have hwa : M.wa p = v := rfl
-  set B : Point := M.wb p - v with hB
-  set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
-  set A : Point := a - v with hA
+  set B := M.wb p - v with hB
+  set a := M.W.vtx ((p + M.W.n - 1) % M.W.n)
+  set A := a - v
   have hB2 : 0 < B.2 := by simp only [hB, Prod.snd_sub]; rw [← hwa]; linarith
   obtain ⟨hA2, hsec⟩ := Tie.ccw_up hs₁ hB2 hsE
   have hA2' : 0 < A.2 := hA2
@@ -919,18 +919,18 @@ theorem tie_up (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : 
     exact hsec _ hx
   have hcrossB : ∀ x : Point, sideCross B (x - v) = det v (M.wb p) x :=
     fun x => Chazelle.Chain.sideCross_out v (M.wb p) x
-  have hcrossA : ∀ x : Point, sideCross (x - v) A = det a v x :=
+  have hcrossA :=
     fun x => Chazelle.Chain.sideCross_in a v x
-  have hzwB : zw ∈ ball v r ∩ {x | 0 < 1 * det v (M.wb p) x} := ⟨by rw [mem_ball]; exact hzwd, by
+  have hzwB : zw ∈ ball v r ∩ {x | 0 < 1 * det v (M.wb p) x} := ⟨by rwa [mem_ball], by
       simp only [mem_ofPred_eq, one_mul]
       rw [← hcrossB]
       simp only [sideCross, Prod.fst_sub, Prod.snd_sub, hzwy, sub_self, mul_zero, zero_sub]
       nlinarith⟩
-  have hzeA : ze ∈ ball v r ∩ {x | 0 < 1 * det a v x} := ⟨by rw [mem_ball]; exact hzed, by
+  have hzeA : ze ∈ ball v r ∩ {x | 0 < 1 * det a v x} := ⟨by rwa [mem_ball], by
       simp only [mem_ofPred_eq, one_mul]
       rw [← hcrossA]
       simp only [sideCross, Prod.fst_sub, Prod.snd_sub, hzey, sub_self, zero_mul, sub_zero]
-      exact mul_pos (by linarith) hA2'⟩
+      exact mul_pos by_l hA2'⟩
   -- the region above `cw` (after `v`)
   obtain ⟨U, hU, hUin, hUev⟩ := region_of_piece (σ := 1) hfree
     ((isOpen_ball).inter (isOpen_det_pos v (M.wb p)))
@@ -938,7 +938,7 @@ theorem tie_up (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : 
     (Or.inl rfl) (fun x hx hy => hleft x (Or.inl (by
       rw [hcrossB]; have := hx.2; simp only [mem_ofPred_eq, one_mul] at this; exact this)))
     hzwB hzwy
-  have hUabove : M.AboveOf cw U := hM.above_of_meets hF hfin hcw hU hzwc hzwD
+  have hUabove := hM.above_of_meets hF hfin hcw hU hzwc hzwD
     ((hUev zw hzwB hzwy).mono fun δ h => by rwa [one_mul] at h)
   -- the region above `ce` (before `v`)
   obtain ⟨V, hV, hVin, hVev⟩ := region_of_piece (σ := 1) hfree
@@ -947,24 +947,24 @@ theorem tie_up (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : 
     (Or.inl rfl) (fun x hx hy => hleft x (Or.inr (Or.inr (by
       rw [hcrossA]; have := hx.2; simp only [mem_ofPred_eq, one_mul] at this; exact this))))
     hzeA hzey
-  have hVabove : M.AboveOf ce V := hM.above_of_meets hF hfin hce hV hzec hzeD
+  have hVabove := hM.above_of_meets hF hfin hce hV hzec hzeD
     ((hVev ze hzeA hzey).mono fun δ h => by rwa [one_mul] at h)
   -- the region below both
   obtain ⟨R, hR, -, hRev⟩ := region_of_piece (σ := -1) hfree isOpen_ball (convex_ball _ _)
     subset_rfl (Or.inr rfl) (fun x hx hy => hleft x (Or.inr (Or.inl (by
       simp only [Prod.snd_sub]; linarith))))
-    (z := ze) (by rw [mem_ball]; exact hzed) hzey
-  have hRe : M.BelowOf ce R := hM.below_of_meets hF hfin hce hR hzec hzeD
-    ((hRev ze (by rw [mem_ball]; exact hzed) hzey).mono fun δ h => by
+    (z := ze) (by rwa [mem_ball]) hzey
+  have hRe := hM.below_of_meets hF hfin hce hR hzec hzeD
+    ((hRev ze (by rwa [mem_ball]) hzey).mono fun δ h => by
       rwa [neg_one_mul, ← sub_eq_add_neg] at h)
-  have hRw : M.BelowOf cw R := hM.below_of_meets hF hfin hcw hR hzwc hzwD
-    ((hRev zw (by rw [mem_ball]; exact hzwd) hzwy).mono fun δ h => by
+  have hRw := hM.below_of_meets hF hfin hcw hR hzwc hzwD
+    ((hRev zw (by rwa [mem_ball]) hzwy).mono fun δ h => by
       rwa [neg_one_mul, ← sub_eq_add_neg] at h)
   refine ⟨U, V, R, hU, hV, hR, hUabove, hVabove, hRe, hRw, ?_, ?_, ?_⟩
   · -- just after `v`
-    refine faces_after_of hr (Or.inl rfl) (by linarith) (fun x hx h1 h2 => hUin x
+    refine faces_after_of hr (Or.inl rfl) by_l (fun x hx h1 h2 => hUin x
       ⟨hx, ?_⟩ h2)
-    simp only [mem_ofPred_eq, one_mul]; rw [← hcrossB]; exact h1
+    simp only [mem_ofPred_eq, one_mul]; rwa [← hcrossB]
   · -- just before `v`
     set q := (p + M.W.n - 1) % M.W.n
     have hwbq : M.wb q = v := by
@@ -974,12 +974,12 @@ theorem tie_up (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : 
     have hA2'' : 0 < 1 * ((M.wa q).2 - (M.wb q).2) := by
       rw [hwbq, hwaq]; have : A.2 = a.2 - v.2 := rfl; linarith
     refine faces_before_of hr (Or.inl rfl) hA2'' (fun x hx h1 h2 =>
-      hVin x ⟨by rw [hwbq] at hx; exact hx, ?_⟩ (by rw [hwbq] at h2; exact h2))
-    simp only [mem_ofPred_eq, one_mul]; rw [← hcrossA]; rw [hwbq, hwaq] at h1; exact h1
+      hVin x ⟨by rwa [hwbq] at hx, ?_⟩ (by rwa [hwbq] at h2))
+    simp only [mem_ofPred_eq, one_mul]; rw [← hcrossA]; rwa [hwbq, hwaq] at h1
   · -- the nesting order
     intro pe pw te tw hBe hBe' hBw hBw'
-    have hpe : sidePt M.W pe te = we := hothe pe te hBe hBe'
-    have hpw : sidePt M.W pw tw = uw := hothw pw tw hBw hBw'
+    have hpe := hothe pe te hBe hBe'
+    have hpw := hothw pw tw hBw hBw'
     obtain ⟨py, ty, hpy, hty0, hty1, hRf⟩ := hM.exists_faces hF hfin hR
     have hne1 : sidePt M.W p 0 ≠ sidePt M.W pw tw := by rw [hv0]; exact Ne.symm hBw'
     have hne2 : sidePt M.W pe te ≠ sidePt M.W p 0 := by rw [hv0]; exact hBe'
@@ -987,28 +987,28 @@ theorem tie_up (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin : 
       have := key_ne_of_pt_ne hAw hBw hne1; rwa [add_zero] at this
     have hac : (p : ℝ) ≠ pe + te := by
       have := key_ne_of_pt_ne hAe hBe (Ne.symm hne2); rwa [add_zero] at this
-    have hbc : (pw : ℝ) + tw ≠ pe + te := key_ne_of_pt_ne hBw hBe (by
+    have hbc := key_ne_of_pt_ne hBw hBe (by
       rw [hpe, hpw]; intro h; rw [← h] at hlte; linarith)
     have hya : (py : ℝ) + ty ≠ p := by
       intro h
-      have := (sideKey_inj hty0.le hty1 le_rfl zero_lt_one (by rw [add_zero]; exact h)).2
+      have := (sideKey_inj hty0.le hty1 le_rfl zero_lt_one (by rwa [add_zero])).2
       linarith
     refine Tie.cyc_cover hab hac hbc hya (fun hin => ?_) (fun hin => ?_)
     · refine hM.not_left_of_after hF hcw hAw hBw hne1 hR hpy ⟨hty0, hty1⟩
-        (by rw [add_zero]; exact hin) hRf ?_
+        (by rwa [add_zero]) hRf ?_
       rw [hv0, hpw]
       have hm : lerp v uw (1 / 2) ∈ cw := by
-        rw [hcwq]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-      refine (eventually_mul_pos (hRw _ hm (hopenw _ ⟨by norm_num, by norm_num⟩))
+        rw [hcwq]; exact lerp_mem_segment _ _ by_n by_n
+      refine (eventually_mul_pos (hRw _ hm (hopenw _ ⟨by_n, by_n⟩))
         (sub_pos.2 hltw)).mono fun δ h => ?_
       rw [Chazelle.Core.offset_mid_ab huwy.symm]
       convert h using 2; ring
     · refine hM.not_left_of_after hF hce hBe hAe hne2 hR hpy ⟨hty0, hty1⟩
-        (by rw [add_zero]; exact hin) hRf ?_
+        (by rwa [add_zero]) hRf ?_
       rw [hv0, hpe]
       have hm : lerp we v (1 / 2) ∈ ce := by
-        rw [hceq, Geometry.segment_comm]; exact lerp_mem_segment _ _ (by norm_num) (by norm_num)
-      refine (eventually_mul_pos (hRe _ hm (open_rev hopene _ ⟨by norm_num, by norm_num⟩))
+        rw [hceq, Geometry.segment_comm]; exact lerp_mem_segment _ _ by_n by_n
+      refine (eventually_mul_pos (hRe _ hm (open_rev hopene _ ⟨by_n, by_n⟩))
         (sub_pos.2 hlte)).mono fun δ h => ?_
       rw [Chazelle.Core.offset_mid_ab hwey]
       convert h using 2; ring

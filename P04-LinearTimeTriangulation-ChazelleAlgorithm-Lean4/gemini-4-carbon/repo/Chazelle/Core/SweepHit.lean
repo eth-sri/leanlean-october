@@ -93,7 +93,6 @@ theorem firstHitOpt_union {A B : Set Point} {p : Point} {σ : ℝ} {a b : Option
       · exact ha.2.2 t' h1 h2 h
       · exact hb t' h1 h
     | some tb =>
-      show FirstHit (A ∪ B) p σ (min ta tb)
       refine ⟨lt_min ha.1 hb.1, ?_, fun t' h1 h2 hmem => ?_⟩
       · rcases min_choice ta tb with h | h
         · rw [h]; exact Or.inl ha.2.1
@@ -148,7 +147,7 @@ theorem freeAt_whole_iff (J : Merge.Junction) {z : Point} (hz : z.2 ≤ J.whole.
   have key : ∀ t, rayPt z σ t ∈ J.whole.dom ↔ rayPt z σ t ∈ Chain.box J.whole.radius ∧
       rayPt z σ t ∉ J.left.set ∧ rayPt z σ t ∉ J.right.set := by
     intro t
-    have h := Merge.not_mem_dom_iff J.whole (p := rayPt z σ t) (by rw [rayPt_snd]; exact hz)
+    have h := Merge.not_mem_dom_iff J.whole (p := rayPt z σ t) (by rwa [rayPt_snd])
     rw [J.whole_set] at h
     constructor
     · intro hd

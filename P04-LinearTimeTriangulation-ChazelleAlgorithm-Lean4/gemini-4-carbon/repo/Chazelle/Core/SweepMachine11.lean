@@ -47,18 +47,18 @@ theorem record_ok (M : Model) (Q : Polygon) {z : Point} {σ : ℝ} (hσ : σ = 1
     have hset : (recOf (h, lp, rp)).toSet M Q = Chazelle.segment z (rayPt z 1 T) := by
       unfold CRec.toSet recOf CRec.lpos CRec.rpos
       simp only
-      rw [hz, hw, hwpt, hh, FactsChain.hseg_eq_segment (by linarith)]
+      rw [hz, hw, hwpt, hh, FactsChain.hseg_eq_segment by_l]
     refine ⟨hset, ?_, ?_⟩
-    · rw [hset]; exact hAz
-    · rw [hset]; exact hAw
+    · rwa [hset]
+    · rwa [hset]
   · obtain ⟨rfl, rfl⟩ := hlr.2 rfl
     have hset : (recOf (h, lp, rp)).toSet M Q = Chazelle.segment z (rayPt z (-1) T) := by
       unfold CRec.toSet recOf CRec.lpos CRec.rpos
       simp only
-      rw [hz, hw, hwpt, hh, FactsChain.hseg_eq_segment (by linarith), Geometry.segment_comm]
+      rw [hz, hw, hwpt, hh, FactsChain.hseg_eq_segment by_l, Geometry.segment_comm]
     refine ⟨hset, ?_, ?_⟩
-    · rw [hset]; exact hAw
-    · rw [hset]; exact hAz
+    · rwa [hset]
+    · rwa [hset]
 
 /-- **`SeesInWhole` from the answer**: the flag is `1` iff the direction is free for `C`, and when it
 is, the record is the one of `record_ok` at the first hit of `C`. -/

@@ -65,16 +65,16 @@ theorem levLeaves_congr (M : Model) (Q : Polygon) {c c' : Config} {R : ℕ}
   | f + 1, ℓ, hf, q => by
     simp only [levLeaves]
     have e1 : c'.nreg (R + 30 + ℓ) = c.nreg (R + 30 + ℓ) := by
-      rw [show R + 30 + ℓ = R + (30 + ℓ) by omega]; exact h _ (Or.inr (by omega))
-    have e2 : c'.nreg (R + 9) = c.nreg (R + 9) := h 9 (Or.inl (by omega))
+      rw [show R + 30 + ℓ = R + (30 + ℓ) by omega]; exact h _ (Or.inr by_o)
+    have e2 : c'.nreg (R + 9) = c.nreg (R + 9) := h 9 (Or.inl by_o)
     have e3 : c'.nreg (R + 10 + 2 * ℓ) = c.nreg (R + 10 + 2 * ℓ) :=
-      by rw [show R + 10 + 2 * ℓ = R + (10 + 2 * ℓ) by omega]; exact h _ (Or.inl (by omega))
+      by rw [show R + 10 + 2 * ℓ = R + (10 + 2 * ℓ) by omega]; exact h _ (Or.inl by_o)
     have e4 : c'.nreg (R + 11 + 2 * ℓ) = c.nreg (R + 11 + 2 * ℓ) :=
-      by rw [show R + 11 + 2 * ℓ = R + (11 + 2 * ℓ) by omega]; exact h _ (Or.inl (by omega))
+      by rw [show R + 11 + 2 * ℓ = R + (11 + 2 * ℓ) by omega]; exact h _ (Or.inl by_o)
     simp only [e1, e2, e3, e4]
     congr 1
     funext p
-    exact levLeaves_congr M Q h f (ℓ + 1) (by omega) p
+    exact levLeaves_congr M Q h f (ℓ + 1) by_o p
 
 /-! ## Pieces with good ends -/
 
@@ -176,16 +176,16 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     have hroom' : c.nreg ALLOC + F (c.nreg (R + 7)) + 17500 ≤ W := by
       refine le_trans ?_ hroom
       rw [add_assoc]
-      exact Nat.add_le_add_left (Nat.add_le_add_left (by norm_num) _) _
+      exact Nat.add_le_add_left (Nat.add_le_add_left by_n _) _
     obtain ⟨c', k, ex, hk, hb, fr⟩ := leaf_exec hsh hBs hXl hR c hw hctx n1.1 n2.1 e1 e2 i1 i2
       hwt ho hol hof hon hoy hbest hroom'
-    refine ⟨c', k, ex, by omega, ?_, fr.mono le_rfl (fun r hr => ?_) le_rfl⟩
+    refine ⟨c', k, ex, by_o, ?_, fr.mono le_rfl (fun r hr => ?_) le_rfl⟩
     · simp only [levLeaves, pcSet_single]; exact hb
     · rcases hr with hr | hr
       · exact Or.inl hr
       · right; unfold rL; unfold RegsOK at hR; omega
   | f + 1, ℓ, c, S, hf, hw, hctx, ho, hpc, hholes, hleaf, hbest, hroom => by
-    have hℓ : ℓ ≤ 2 := by omega
+    have hℓ : ℓ ≤ 2 := by_o
     have hR' := hR; unfold RegsOK at hR'
     set M := chainModel C with hM
     set Q := Qof P
@@ -199,11 +199,11 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     -- the cut
     obtain ⟨c₁, k₁, e₁, hk₁, pc₁, f₁⟩ := cutB_exec (P := P) hR hℓ c hw (by
       unfold hostWords at hHW; omega) hG hHW (H := H) (C := C) hctx.chainWF
-      (by rw [h34]; exact hC) hm (by omega) h30 na nb ea eb
+      (by rwa [h34]) hm by_o h30 na nb ea eb
     set ps := levPieces M Q (c.nreg (R + 30 + ℓ) < c.nreg (R + 9)) q.1 q.2
       (c.nreg (R + 10 + 2 * ℓ)) (c.nreg (R + 11 + 2 * ℓ)) with hps
     have k1 : ∀ r, R ≤ r → r < rL R ℓ + 4 → c₁.nreg r = c.nreg r := fun r h1 h2 => f₁.1 r (by
-      have hb := bprim_R' hR h1 (by omega)
+      have hb := bprim_R' hR h1 by_o
       simp only [Bcut, Bouts, cmpOuts, cmpList, Boff, Bform, hb, List.map_cons, List.map_nil,
         List.contains_eq_mem, List.mem_cons, List.not_mem_nil, or_false, Bool.or_false,
         Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
@@ -222,7 +222,7 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       · left; right; unfold rL; omega
       · left; right; unfold rL; omega
       · exact Or.inr (band_prim hr)
-      · exact Or.inr (band_locate (by omega))
+      · exact Or.inr (band_locate by_o)
       · left; right; unfold rL; omega
       · left; right; exact ⟨hr.1, by rw [hLd] at hr; omega⟩) (by
         unfold ALLOC
@@ -230,35 +230,35 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
           List.map_nil, List.contains_eq_mem, List.mem_cons, List.not_mem_nil, or_false,
           Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
         omega) _
-    have ctx₁ : ShotCtx P W X Ok R c₁ H C := ShotCtx.frame hXl hctx F01
-      (fun i hi => k1 _ (by omega) (by unfold rL; omega))
-    have ho₁ : OriginIn c₁ (R + 3) o := originIn_copy ho (k1 _ (by omega) (by unfold rL; omega))
-      (k1 _ (by omega) (by unfold rL; omega)) (k1 _ (by omega) (by unfold rL; omega))
-    have r6 : c₁.nreg (R + 6) = c.nreg (R + 6) := k1 _ (by omega) (by unfold rL; omega)
-    have r7 : c₁.nreg (R + 7) = c.nreg (R + 7) := k1 _ (by omega) (by unfold rL; omega)
+    have ctx₁ := ShotCtx.frame hXl hctx F01
+      (fun i hi => k1 _ by_o (by unfold rL; omega))
+    have ho₁ : OriginIn c₁ (R + 3) o := originIn_copy ho (k1 _ by_o (by unfold rL; omega))
+      (k1 _ by_o (by unfold rL; omega)) (k1 _ by_o (by unfold rL; omega))
+    have r6 : c₁.nreg (R + 6) = c.nreg (R + 6) := k1 _ by_o (by unfold rL; omega)
+    have r7 : c₁.nreg (R + 7) = c.nreg (R + 7) := k1 _ by_o (by unfold rL; omega)
     have best₁ : BestOK P C R c₁ S (o.eval M Q) (dirOf (c₁.nreg (R + 6))) := by
       rw [r6]
-      exact hbest.congr (k1 _ (by omega) (by unfold rL; omega))
-        (k1 _ (by omega) (by unfold rL; omega)) (k1 _ (by omega) (by unfold rL; omega))
-        (k1 _ (by omega) (by unfold rL; omega)) (k1 _ (by omega) (by unfold rL; omega))
-        (k1 _ (by omega) (by unfold rL; omega)) (k1 _ (by omega) (by unfold rL; omega))
+      exact hbest.congr (k1 _ by_o (by unfold rL; omega))
+        (k1 _ by_o (by unfold rL; omega)) (k1 _ by_o (by unfold rL; omega))
+        (k1 _ by_o (by unfold rL; omega)) (k1 _ by_o (by unfold rL; omega))
+        (k1 _ by_o (by unfold rL; omega)) (k1 _ by_o (by unfold rL; omega))
     have hlv : ∀ (c' : Config), (∀ i, (9 ≤ i ∧ i ≤ 15) ∨ (30 ≤ i ∧ i ≤ 33) →
         c'.nreg (R + i) = c.nreg (R + i)) → ∀ p, levLeaves M Q c' R f (ℓ + 1) p =
           levLeaves M Q c R f (ℓ + 1) p := fun c' h' =>
-      levLeaves_congr M Q h' f (ℓ + 1) (by omega)
+      levLeaves_congr M Q h' f (ℓ + 1) by_o
     have hleaves : levLeaves M Q c R (f + 1) ℓ q = ps.flatMap (levLeaves M Q c R f (ℓ + 1)) := rfl
     -- the pieces are good
     have hgood : ∀ p ∈ ps, PieceOK M Q P.n p := by
       intro p hp
       by_cases hpres : c.nreg (R + 30 + ℓ) < c.nreg (R + 9)
-      · obtain ⟨hx, hy⟩ := hholes ℓ le_rfl (by omega) hpres
+      · obtain ⟨hx, hy⟩ := hholes ℓ le_rfl by_o hpres
         exact pieceOK_levPieces ⟨na, nb, ea, eb, ia, ib⟩ hx hy hp
       · simp only [hps, levPieces, ite_no _ _ hpres, List.mem_singleton] at hp
         subst hp; exact ⟨na, nb, ea, eb, ia, ib⟩
     obtain ⟨hcnt, hlen, hp0, hp1⟩ := pc₁
     have w₁ := e₁.wb_right
-    have z₁ : c₁.nreg (R + 30) = 0 := by rw [k1 _ (by omega) (by unfold rL; omega), h30]
-    have o₁ : c₁.nreg (R + 31) = 1 := by rw [k1 _ (by omega) (by unfold rL; omega), h31]
+    have z₁ : c₁.nreg (R + 30) = 0 := by rw [k1 _ by_o (by unfold rL; omega), h30]
+    have o₁ : c₁.nreg (R + 31) = 1 := by rw [k1 _ by_o (by unfold rL; omega), h31]
     -- the recursive call on a piece in the registers of level `ℓ + 1`
     have call : ∀ (cc : Config) (S' : Set Point) (p : WPos × WPos), p ∈ ps → WordsBounded W cc →
         ShotCtx P W X Ok R cc H C → OriginIn cc (R + 3) o →
@@ -273,27 +273,27 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       intro cc S' p hp hwc hcc hoc hreg' hpc' hbc hrc
       have e6 := hreg' 6 (Or.inr (Or.inr (Or.inl rfl)))
       have e7 := hreg' 7 (Or.inr (Or.inr (Or.inr rfl)))
-      have hl := hlv cc (fun i hi => hreg' i (by omega))
+      have hl := hlv cc (fun i hi => hreg' i by_o)
       obtain ⟨c', k, ex, hk, hb, fr⟩ := lev_exec hsh hBs hXl hR hol hof hoy f (ℓ + 1) cc S'
-        (by omega) hwc hcc hoc (by rw [hpc']; exact hgood p hp)
+        by_o hwc hcc hoc (by rw [hpc']; exact hgood p hp)
         (fun j hj1 hj2 hj3 => by
-          have e30 := hreg' (30 + j) (Or.inr (Or.inl (by omega)))
-          have e9 := hreg' 9 (Or.inl (by omega))
-          have ex1 := hreg' (10 + 2 * j) (Or.inl (by omega))
-          have ex2 := hreg' (11 + 2 * j) (Or.inl (by omega))
-          have a1 : R + 30 + j = R + (30 + j) := by omega
-          have a2 : R + 10 + 2 * j = R + (10 + 2 * j) := by omega
-          have a3 : R + 11 + 2 * j = R + (11 + 2 * j) := by omega
+          have e30 := hreg' (30 + j) (Or.inr (Or.inl by_o))
+          have e9 := hreg' 9 (Or.inl by_o)
+          have ex1 := hreg' (10 + 2 * j) (Or.inl by_o)
+          have ex2 := hreg' (11 + 2 * j) (Or.inl by_o)
+          have a1 : R + 30 + j = R + (30 + j) := by_o
+          have a2 : R + 10 + 2 * j = R + (10 + 2 * j) := by_o
+          have a3 : R + 11 + 2 * j = R + (11 + 2 * j) := by_o
           rw [a1, e30, e9] at hj3
-          have hh := hholes j (by omega) hj2 (by rw [a1]; exact hj3)
+          have hh := hholes j by_o hj2 (by rwa [a1])
           rw [a2, a3] at hh ⊢
           rw [ex1, ex2]
           exact hh)
         (fun p' hp' => by
           rw [hpc', hl] at hp'
           have := hleaf p' (by rw [hleaves]; exact List.mem_flatMap.2 ⟨p, hp, hp'⟩)
-          rw [e7]; exact this)
-        (by rw [e6]; exact hbc) (by rw [e7]; exact hrc)
+          rwa [e7])
+        (by rwa [e6]) (by rwa [e7])
       rw [e7] at hk
       rw [hpc', hl, e6] at hb
       exact ⟨c', k, ex, hk, hb, fr⟩
@@ -304,7 +304,7 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     have hp1' : ∀ p, ps[1]? = some p → pieceR c₁ (rL R ℓ + 4) = p := hp1
     have regs1 : ∀ i, (9 ≤ i ∧ i ≤ 15) ∨ (30 ≤ i ∧ i ≤ 33) ∨ i = 6 ∨ i = 7 →
         c₁.nreg (R + i) = c.nreg (R + i) := fun i hi =>
-      k1 _ (by omega) (by unfold rL; omega)
+      k1 _ by_o (by unfold rL; omega)
     have wr1 : ∀ r, WrLev R (ℓ + 1) r → WrLev R ℓ r := fun r hr => by
       rcases hr with hr | hr
       · exact Or.inl hr
@@ -316,8 +316,8 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
     | nil =>
       rw [hcase] at hcnt'
       have g : ¬ c₁.nreg (R + 30) < c₁.nreg (rL R ℓ + 8) := by rw [z₁, hcnt']; simp
-      refine ⟨c₁, _, .seq e₁ (.ifLtN_false g (.skip w₁)), by omega, ?_, F01.mono le_rfl
-        (fun _ h => h) (by omega)⟩
+      refine ⟨c₁, _, .seq e₁ (.ifLtN_false g (.skip w₁)), by_o, ?_, F01.mono le_rfl
+        (fun _ h => h) by_o⟩
       simp only [List.flatMap_nil, pcSet_nil, Set.union_empty]
       exact best₁'
     | cons p₀ t =>
@@ -329,9 +329,9 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       have kp2 : ∀ i, i < 300 → ¬ WrLev R (ℓ + 1) (R + i) → c₂.nreg (R + i) = c₁.nreg (R + i) :=
         fun i hi hw' => frameR_keep hR fr₂ hi hw'
       have o₂ : c₂.nreg (R + 31) = 1 := by
-        rw [kp2 31 (by omega) (by unfold WrLev rL; omega), o₁]
+        rw [kp2 31 by_o (by unfold WrLev rL; omega), o₁]
       have cn₂ : c₂.nreg (rL R ℓ + 8) = c₁.nreg (rL R ℓ + 8) := by
-        have := kp2 (40 + 10 * ℓ + 8) (by omega) (by unfold WrLev rL; omega)
+        have := kp2 (40 + 10 * ℓ + 8) by_o (by unfold WrLev rL; omega)
         rw [show R + (40 + 10 * ℓ + 8) = rL R ℓ + 8 by unfold rL; omega] at this; exact this
       have w₂ := e₂.wb_right
       cases ht : t with
@@ -339,14 +339,14 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
         rw [hcase, ht] at hcnt'
         have g1 : ¬ c₂.nreg (R + 31) < c₂.nreg (rL R ℓ + 8) := by rw [o₂, cn₂, hcnt']; simp
         refine ⟨c₂, _, .seq e₁ (.ifLtN_true g0 (.seq e₂ (.ifLtN_false g1 (.skip w₂)))),
-          by omega, ?_, (F01.trans (fr₂.mono le_rfl wr1 le_rfl)).mono le_rfl (fun _ h => h)
-            (by omega)⟩
+          by_o, ?_, (F01.trans (fr₂.mono le_rfl wr1 le_rfl)).mono le_rfl (fun _ h => h)
+            by_o⟩
         simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil]
         exact b₂
       | cons p₁ t' =>
         have ht' : t' = [] := by
           have := hlen'; rw [hcase, ht] at this; simp only [List.length_cons] at this
-          exact List.length_eq_zero_iff.1 (by omega)
+          exact List.length_eq_zero_iff.1 by_o
         subst ht'
         rw [hcase, ht] at hcnt'
         have hp1m : p₁ ∈ ps := by rw [hcase, ht]; simp
@@ -364,59 +364,55 @@ theorem lev_exec {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
         have F23 : FrameR oracleBands (WrLev R ℓ) c₂ c₃ 4 := FrameR.of_frameB f₃ (fun r hr => by
           simp [copy2List] at hr; left; right; unfold rL at hr ⊢; omega)
           (by simp [copy2List, ALLOC]; unfold rL; omega) _
-        have F13 : FrameR oracleBands (WrLev R ℓ) c₁ c₃ (k₂ + 4) :=
+        have F13 :=
           (fr₂.mono le_rfl wr1 le_rfl).trans F23
         have regs3 : ∀ i, (9 ≤ i ∧ i ≤ 15) ∨ (30 ≤ i ∧ i ≤ 33) ∨ i = 6 ∨ i = 7 →
             c₃.nreg (R + i) = c.nreg (R + i) := fun i hi => by
-          rw [k3 _ (by unfold rL; omega), kp2 i (by omega) (by unfold WrLev rL; omega),
+          rw [k3 _ (by unfold rL; omega), kp2 i by_o (by unfold WrLev rL; omega),
             regs1 i hi]
         have ctx₃ : ShotCtx P W X Ok R c₃ H C := ShotCtx.frame hXl ctx₁ F13 (fun i hi => by
-          rw [k3 _ (by unfold rL; omega), kp2 i (by omega) (by unfold WrLev rL; omega)])
+          rw [k3 _ (by unfold rL; omega), kp2 i by_o (by unfold WrLev rL; omega)])
         have kk : ∀ i, i < 10 → c₃.nreg (R + i) = c₁.nreg (R + i) := fun i hi => by
-          rw [k3 _ (by unfold rL; omega)]; exact kp2 i (by omega) (by unfold WrLev rL; omega)
+          rw [k3 _ (by unfold rL; omega)]; exact kp2 i by_o (by unfold WrLev rL; omega)
         have ho₃ : OriginIn c₃ (R + 3) o := by
-          refine originIn_copy ho₁ (kk 3 (by omega)) ?_ ?_
-          · rw [show R + 3 + 1 = R + 4 by omega]; exact kk 4 (by omega)
-          · rw [show R + 3 + 2 = R + 5 by omega]; exact kk 5 (by omega)
+          refine originIn_copy ho₁ (kk 3 by_o) ?_ ?_
+          · rw [show R + 3 + 1 = R + 4 by omega]; exact kk 4 by_o
+          · rw [show R + 3 + 2 = R + 5 by omega]; exact kk 5 by_o
         have hpc₃ : pieceR c₃ (rL R (ℓ + 1)) = p₁ := by
           rw [← hp1' p₁ (by rw [hcase, ht]; rfl), rL_succ]
           simp only [pieceR, posR, Prod.mk.injEq, WPos.mk.injEq]
-          have s4 := kp2 (44 + 10 * ℓ) (by omega) (by unfold WrLev rL; omega)
-          have s5 := kp2 (45 + 10 * ℓ) (by omega) (by unfold WrLev rL; omega)
-          have s6 := kp2 (46 + 10 * ℓ) (by omega) (by unfold WrLev rL; omega)
-          have s7 := kp2 (47 + 10 * ℓ) (by omega) (by unfold WrLev rL; omega)
+          have s4 := kp2 (44 + 10 * ℓ) by_o (by unfold WrLev rL; omega)
+          have s5 := kp2 (45 + 10 * ℓ) by_o (by unfold WrLev rL; omega)
+          have s6 := kp2 (46 + 10 * ℓ) by_o (by unfold WrLev rL; omega)
+          have s7 := kp2 (47 + 10 * ℓ) by_o (by unfold WrLev rL; omega)
           have a4 : R + (44 + 10 * ℓ) = rL R ℓ + 4 := by unfold rL; omega
           have a5 : R + (45 + 10 * ℓ) = rL R ℓ + 4 + 1 := by unfold rL; omega
           have a6 : R + (46 + 10 * ℓ) = rL R ℓ + 4 + 2 := by unfold rL; omega
           have a7 : R + (47 + 10 * ℓ) = rL R ℓ + 4 + 3 := by unfold rL; omega
           rw [a4] at s4; rw [a5] at s5; rw [a6] at s6; rw [a7] at s7
-          have b0 : rL R ℓ + 10 + 1 = rL R ℓ + 11 := by omega
-          have b1 : rL R ℓ + 10 + 2 = rL R ℓ + 12 := by omega
-          have b2 : rL R ℓ + 10 + 3 = rL R ℓ + 13 := by omega
-          have c1 : rL R ℓ + 4 + 1 = rL R ℓ + 5 := by omega
-          have c2 : rL R ℓ + 4 + 2 = rL R ℓ + 6 := by omega
-          have c3 : rL R ℓ + 4 + 3 = rL R ℓ + 7 := by omega
+          have b0 : rL R ℓ + 10 + 1 = rL R ℓ + 11 := by_o
+          have b1 : rL R ℓ + 10 + 2 = rL R ℓ + 12 := by_o
+          have b2 : rL R ℓ + 10 + 3 = rL R ℓ + 13 := by_o
+          have c1 : rL R ℓ + 4 + 1 = rL R ℓ + 5 := by_o
+          have c2 : rL R ℓ + 4 + 2 = rL R ℓ + 6 := by_o
+          have c3 : rL R ℓ + 4 + 3 = rL R ℓ + 7 := by_o
           rw [b0, b1, b2, c1, c2, c3]
           rw [c1] at s5; rw [c2] at s6; rw [c3] at s7
           exact ⟨⟨by rw [v0, s4], by rw [v1, s5]⟩, by rw [v2, s6], by rw [v3, s7]⟩
-        have best₃ : BestOK P C R c₃ (S ∪ pcSet M Q (levLeaves M Q c R f (ℓ + 1) p₀))
-            (o.eval M Q) (dirOf (c.nreg (R + 6))) := b₂.congr
+        have best₃ := b₂.congr
           (k3 _ (by unfold rL; omega)) (k3 _ (by unfold rL; omega)) (k3 _ (by unfold rL; omega))
           (k3 _ (by unfold rL; omega)) (k3 _ (by unfold rL; omega)) (k3 _ (by unfold rL; omega))
           (k3 _ (by unfold rL; omega))
         have hA3 : c₃.nreg ALLOC ≤ c.nreg ALLOC + (k₂ + 4) := by
           have := F13.2.2.2.2.2.2; rw [hA1] at this; exact this
         obtain ⟨c₄, k₄, e₄, hk₄, b₄, fr₄⟩ := call c₃ _ p₁ hp1m e₃.wb_right ctx₃ ho₃ regs3 hpc₃
-          best₃ (by omega)
+          best₃ by_o
         refine ⟨c₄, _, .seq e₁ (.ifLtN_true g0 (.seq e₂ (.ifLtN_true g1 (.seq e₃ e₄)))),
           by simp only [copy2List, List.length_cons, List.length_nil]; omega, ?_,
           ((F01.trans F13).trans (fr₄.mono le_rfl wr1 le_rfl)).mono le_rfl (fun _ h => h)
             (by simp only [copy2List, List.length_cons, List.length_nil]; omega)⟩
         simp only [List.flatMap_cons, List.flatMap_nil, List.append_nil, pcSet_append]
-        rw [← Set.union_assoc]
-        exact b₄
-
-end
+        rwa [← Set.union_assoc]end
 
 end ShotList
 

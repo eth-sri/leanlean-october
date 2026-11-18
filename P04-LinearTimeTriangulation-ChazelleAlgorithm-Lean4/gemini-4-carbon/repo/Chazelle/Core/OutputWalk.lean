@@ -125,7 +125,7 @@ theorem walk_down {W : Polygon} (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (h
   have hδ0 : 0 < δ := by rw [hδ]; exact half_pos (lt_min hr hδ₀)
   have hδr : δ < r := by rw [hδ]; linarith [min_le_left r δ₀]
   have hδδ : δ < δ₀ := by rw [hδ]; linarith [min_le_right r δ₀]
-  set x : Point := ((sidePt W p t).1 + δ, (sidePt W p t).2) with hx
+  set x := ((sidePt W p t).1 + δ, (sidePt W p t).2) with hx
   have hxb : x ∈ ball (sidePt W p t) r := by
     rw [mem_ball, dist_comm, Prod.dist_eq]
     simp only [hx, Real.dist_eq, sub_self, abs_zero]
@@ -153,7 +153,7 @@ theorem walk_up {W : Polygon} (hW : W.Simple) (hL : orient W = 1) {p : ℕ} (hp 
   have hδ0 : 0 < δ := by rw [hδ]; exact half_pos (lt_min hr hδ₀)
   have hδr : δ < r := by rw [hδ]; linarith [min_le_left r δ₀]
   have hδδ : δ < δ₀ := by rw [hδ]; linarith [min_le_right r δ₀]
-  set x : Point := ((sidePt W p t).1 - δ, (sidePt W p t).2) with hx
+  set x := ((sidePt W p t).1 - δ, (sidePt W p t).2) with hx
   have hxb : x ∈ ball (sidePt W p t) r := by
     rw [mem_ball, dist_comm, Prod.dist_eq]
     simp only [hx, Real.dist_eq, sub_self, abs_zero]
@@ -187,7 +187,7 @@ theorem left_mid (hQ : Q.Simple) (D : TrapData Q) :
     intro k hk hkz
     have e1 : (Q.vtx k).1 = edgeX Q D.i ym := by rw [hkz]
     have e2 : (Q.vtx k).2 = ym := by rw [hkz]
-    exact D.isTrap.no_vertex k hk (by rw [e2]; exact hy1) (by rw [e2]; exact hy2)
+    exact D.isTrap.no_vertex k hk (by rwa [e2]) (by rwa [e2])
       (by rw [e1, e2]) (by rw [e1, e2]; exact hlt.le)
   refine ⟨t, ⟨?_, ?_⟩, hzt.symm⟩
   · rcases ht0.lt_or_eq with h | h
@@ -215,7 +215,7 @@ theorem right_mid (hQ : Q.Simple) (D : TrapData Q) :
     intro k hk hkz
     have e1 : (Q.vtx k).1 = edgeX Q D.j ym := by rw [hkz]
     have e2 : (Q.vtx k).2 = ym := by rw [hkz]
-    exact D.isTrap.no_vertex k hk (by rw [e2]; exact hy1) (by rw [e2]; exact hy2)
+    exact D.isTrap.no_vertex k hk (by rwa [e2]) (by rwa [e2])
       (by rw [e1, e2]; exact hlt.le) (by rw [e1, e2])
   refine ⟨t, ⟨?_, ?_⟩, hzt.symm⟩
   · rcases ht0.lt_or_eq with h | h
@@ -252,8 +252,8 @@ theorem walk_left (hQ : Q.Simple) (D : TrapData Q) :
   obtain ⟨t', ht', hz'⟩ := walk_pt hQ hi ht
   have hpW : inp (revOf Q) Q.n D.i < (interiorWalk Q).n := by rw [walk_n]; exact hp
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
-  have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by linarith
-  have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by linarith
+  have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by_l
+  have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by_l
   have hlt := D.isTrap.edgeX_lt hQ D.free hy1 hy2
   have := walk_down hWs hWo hpW ht' (sub_pos.2 hlt) (fun δ hδ hδ' => by
     rw [hWf, hWb, hz', hzt]
@@ -272,8 +272,8 @@ theorem walk_right (hQ : Q.Simple) (D : TrapData Q) :
   obtain ⟨t', ht', hz'⟩ := walk_pt hQ hj ht
   have hpW : inp (revOf Q) Q.n D.j < (interiorWalk Q).n := by rw [walk_n]; exact hp
   have h12 := D.isTrap.bot_lt.trans D.isTrap.lt_top
-  have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by linarith
-  have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by linarith
+  have hy1 : D.y₁ < (D.y₁ + D.y₂) / 2 := by_l
+  have hy2 : (D.y₁ + D.y₂) / 2 < D.y₂ := by_l
   have hlt := D.isTrap.edgeX_lt hQ D.free hy1 hy2
   have := walk_up hWs hWo hpW ht' (sub_pos.2 hlt) (fun δ hδ hδ' => by
     rw [hWf, hWb, hz', hzt]

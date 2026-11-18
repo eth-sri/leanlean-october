@@ -27,7 +27,7 @@ theorem slfEmits_spec : SlfEmitsSpec := by
   set k := c.nreg oKk with hkk
   set b := c.nreg oB with hbb
   set e := stopSet J (Qof P) N₂ kind k b with he
-  have hb : b ≤ 1 := hD.ok.2.1
+  have hb := hD.ok.2.1
   obtain ⟨i1, i2, -⟩ := orig_attach E.hP E.hNF₂ hD
   obtain ⟨A0, pt0⟩ := i1 _ _ arr0
   obtain ⟨A1, pt1⟩ := i2 _ _ arr1
@@ -39,9 +39,9 @@ theorem slfEmits_spec : SlfEmitsSpec := by
   -- 1. the reversed code
   refine (IRS.seq (K₁ := 1) (K₂ := 37 + 37) (IRS.block [.subN slfDc K1 oB] hI
     ⟨iscr_sw (by unfold slfDc sw; omega) (by unfold slfDc sw; omega), trivial⟩) ?_).mono
-    (by norm_num) (fun _ h => h)
+    by_n (fun _ h => h)
   rintro c₁ hI₁ - - rfl
-  set c₁ : Config := { c with nreg := regB c.nmem [.subN slfDc K1 oB] c.nreg } with hc₁
+  set c₁ := { c with nreg := regB c.nmem [.subN slfDc K1 oB] c.nreg } with hc₁
   have v1 : c₁.nreg slfDc = 1 - b := by simp [hc₁, regB, regI, upd, hK.2.1, hbb]
   have k1 : ∀ q, q ≠ slfDc → c₁.nreg q = c.nreg q := fun q hq => by
     simp [hc₁, regB, regI, upd, hq]
@@ -55,7 +55,7 @@ theorem slfEmits_spec : SlfEmitsSpec := by
   refine IRS.seq (K₁ := 37) (K₂ := 37) (slfMaybe_irs (bitr := slfO) (hX _ (Or.inl rfl))
     (hX _ (Or.inr (Or.inl rfl))) (hX _ (Or.inr (Or.inr (Or.inl rfl)))) hI₁
     (by rw [rr1 _ (Or.inr (Or.inl rfl))]; exact hK.1) (by rw [rr1 _ (Or.inr (Or.inr (Or.inl rfl)))]; exact hK.2.1)
-    (by rw [c1RB]; exact hR0) (by rw [c1RB, c1RC]; have := hI.hw.1 ALLOC; omega)
+    (by rwa [c1RB]) (by rw [c1RB, c1RC]; have := hI.hw.1 ALLOC; omega)
     (by rw [c1O]; exact bit0.1)) ?_
   rintro c₂ hI₂ - - ⟨g2, w2, m2, r2⟩
   simp only [c1O, c1RC, c1RB] at g2 w2 m2
@@ -76,8 +76,8 @@ theorem slfEmits_spec : SlfEmitsSpec := by
       (by unfold K0 slfDc sw; omega)]; exact hK.1)
     (by rw [c2r _ (by unfold K1 slfX sw; omega) (by unfold K1 gRC sw; omega)
       (by unfold K1 slfDc sw; omega)]; exact hK.2.1)
-    (by rw [c2RB]; exact hR0) (by rw [c2RB]; have := hI.hw.1 ALLOC; omega)
-    (by rw [c2O4]; exact bit1.1)).mono (by norm_num) ?_
+    (by rwa [c2RB]) (by rw [c2RB]; have := hI.hw.1 ALLOC; omega)
+    (by rw [c2O4]; exact bit1.1)).mono by_n ?_
   rintro c' ⟨g3, w3, m3, r3⟩
   simp only [c2O4, c2RB] at g3 w3 m3
   -- the facts
@@ -109,11 +109,11 @@ theorem slfEmits_spec : SlfEmitsSpec := by
       intro q hq
       exact k1 q (by rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
           simp only [oF0, oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfDc, sw] <;> omega)
-    rw [g (oF0 + 1) (by simp), g (oF0 + 2) (by simp), g oKd (by simp), g oKk (by simp),
-      g oB (by simp)] at q1
-    rw [g oB (by simp)] at q2
-    rw [g slfA (by simp), g slfN (by simp), g slfL0 (by simp), g slfL1 (by simp),
-      g oPar (by simp)] at q3
+    rw [g (oF0 + 1) by_s, g (oF0 + 2) by_s, g oKd by_s, g oKk by_s,
+      g oB by_s] at q1
+    rw [g oB by_s] at q2
+    rw [g slfA by_s, g slfN by_s, g slfL0 by_s, g slfL1 by_s,
+      g oPar by_s] at q3
     refine ⟨slfRawV hD hb A0 pt0 (hE0 h) pw0 (hax ⟨_, _, A0, hE0 h⟩) q1 q2 q3, q1⟩
   -- the record of `A₁` in `c'`
   have rec1 : c.nreg (slfO + 4) ≠ 1 → RawV P J N₂ c'.nmem (c.nreg gRB) (c₂.nreg gRC) ∧
@@ -134,15 +134,15 @@ theorem slfEmits_spec : SlfEmitsSpec := by
           simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, gRC, sw] <;> omega)
         (by rcases hq with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
           simp only [oKd, oKk, oB, slfA, slfN, slfL0, slfL1, oPar, slfDc, sw] <;> omega)
-    rw [e1, e2, g oKd (by simp), g oKk (by simp), g oB (by simp)] at q1
+    rw [e1, e2, g oKd by_s, g oKk by_s, g oB by_s] at q1
     rw [c2Dc] at q2
-    rw [g slfA (by simp), g slfN (by simp), g slfL0 (by simp), g slfL1 (by simp),
-      g oPar (by simp)] at q3
-    refine ⟨slfRawV hD (d := 1 - b) (by omega) A1 pt1 (hE1 h) pw1 (hax ⟨_, _, A1, hE1 h⟩) q1 q2 q3,
+    rw [g slfA by_s, g slfN by_s, g slfL0 by_s, g slfL1 by_s,
+      g oPar by_s] at q3
+    refine ⟨slfRawV hD (d := 1 - b) by_o A1 pt1 (hE1 h) pw1 (hax ⟨_, _, A1, hE1 h⟩) q1 q2 q3,
       q1⟩
   -- the post
-  have hO0 : c.nreg slfO ≤ 1 := bit0.1
-  have hO4 : c.nreg (slfO + 4) ≤ 1 := bit1.1
+  have hO0 := bit0.1
+  have hO4 := bit1.1
   refine ⟨by rw [g3, g2]; omega, by rw [g3, g2]; split_ifs <;> omega, fun i hi1 hi2 => ?_,
     fun _ p t hA hL => ?_, fun a ha hs => ?_, ?_, fun r hr hS hrA => ?_⟩
   · -- validity

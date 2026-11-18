@@ -27,11 +27,11 @@ theorem walk_vtx_tpos (C : Chain) {k : ℕ} (hk : k ≤ C.m) :
   have hn := cm_n C
   have hτ := tpos_lt C k
   have h1 := C.one_le
-  have := walk_tour C k 0 (by omega)
+  have := walk_tour C k 0 by_o
   rw [Nat.add_zero, Nat.mod_eq_of_lt (by rw [hn]; omega)] at this
   rw [this]
   unfold tourV
-  rw [Nat.add_zero, Nat.mod_eq_of_lt (by omega)]
+  rw [Nat.add_zero, Nat.mod_eq_of_lt by_o]
   unfold sideE; rw [ite_eq_left hk]
 
 /-- **A chain vertex as a walk position.** -/
@@ -110,7 +110,7 @@ theorem capPos₀ (Q : Polygon) (hgen : SharedGeneric J) (hx : SharedExtremum J)
     unfold Model.param Model.wa Model.wb; simp only
     rw [ha, hb, ite_eq_right (Ne.symm g1), hh, hnear]
   have hr := ratio_mem (a := (sharedU J).2 - (sharedV J).2) (b := (sharedW J).2 - (sharedV J).2)
-    hx (not_lt.1 hu) (fun h => g3 (by linarith))
+    hx (not_lt.1 hu) (fun h => g3 by_l)
   have hco : capOrigin J = Geometry.lerp (sharedV J) (sharedU J)
       (((sharedW J).2 - (sharedV J).2) / ((sharedU J).2 - (sharedV J).2)) := by
     unfold capOrigin; rw [hnear, hfar]
@@ -148,7 +148,7 @@ theorem capPos₁ (Q : Polygon) (hgen : SharedGeneric J) (hx : SharedExtremum J)
     have := hx; unfold SharedExtremum at this; linarith [mul_comm ((sharedU J).2 - (sharedV J).2)
       ((sharedW J).2 - (sharedV J).2)]
   have hr := ratio_mem (a := (sharedW J).2 - (sharedV J).2) (b := (sharedU J).2 - (sharedV J).2)
-    hx' (le_of_lt hu) (fun h => g3 (by linarith))
+    hx' (le_of_lt hu) (fun h => g3 by_l)
   have hco : capOrigin J = Geometry.lerp (sharedV J) (sharedW J)
       (((sharedU J).2 - (sharedV J).2) / ((sharedW J).2 - (sharedV J).2)) := by
     unfold capOrigin; rw [hnear, hfar]

@@ -11,10 +11,6 @@ the emissions (`cornerS`) and emits the chords (`emitS 0`, `emitS 1`).  The chor
 so far is `pre C i` (`loopS_exec`), and `pre C (2m + 1) = bruteList C` (`pre_full`).
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-
 namespace Chazelle.Core
 
 namespace Brute
@@ -83,7 +79,7 @@ theorem trip_eq {C : Chain} {i d : ℕ} (hsn : C.s + C.m + 1 ≤ C.P.n) :
       if d = 0 then farEdge C (C.sideIdx C.sideBeta i) (sig d) else i + 6) := by
   have hk := C.sideIdx_le C.sideBeta i
   unfold trip
-  rw [edgeIdx_eq (by omega)]
+  rw [edgeIdx_eq by_o]
   by_cases hd : d = 0
   · subst hd; simp [sig_zero]
   · simp [hd, sig_one hd]
@@ -116,17 +112,17 @@ theorem emitB_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : P.n + 8 ≤ W)
   · simp only [hE, ite_true]
     obtain ⟨c', k, e, hk', hk7, p24, p19, pm, R, rr, rm, o⟩ := emitS_exec (P := P) (d := d) hG hW hW4 hC
       hsn hd hk c hw hS hF (A := L + 3 * l.length) (len := l.length) (p := i + 6) h24 h19 h44
-      (by omega) (by omega)
-    refine ⟨c', _, .ifLtN_false (by rw [he.2 hE, hS.2.2.1]; omega) e, by omega,
+      by_o by_o
+    refine ⟨c', _, .ifLtN_false (by rw [he.2 hE, hS.2.2.1]; omega) e, by_o,
       by simp; omega, ?_, ?_, ?_, ?_, R, rr, rm, o⟩
     · rw [p24]; simp; ring
     · rw [p19]; simp
     · refine chordList_snoc hl _ ?_
-      rw [pm, trip_eq (by rw [hC, show (Qof P).n = P.n from shear_n _ _]; exact hsn)]
+      rw [pm, trip_eq (by rwa [hC, show (Qof P).n = P.n from shear_n _ _])]
     · intro x hx; rw [pm]; simp (disch := omega) only [Machine.upd_other]; exact hM x hx
   · simp only [hE, ite_false, List.append_nil]
     have h0 : c.nreg (180041 + d) = 0 := by have := mt he.1 hE; omega
-    exact ⟨c, _, .ifLtN_true (by rw [h0, hS.2.2.1]; omega) (.skip hw), by omega, by omega, h24, h19,
+    exact ⟨c, _, .ifLtN_true (by rw [h0, hS.2.2.1]; omega) (.skip hw), by_o, by_o, h24, h19,
       hl, hM,
       fun _ _ => rfl, fun _ _ => rfl, rfl, rfl⟩
 
@@ -147,9 +143,9 @@ theorem sideES_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
     unfold Chain.sideE; split_ifs <;> omega
   rw [hse]
   by_cases h : m < c.nreg x
-  · exact ⟨_, _, .ifLtN_true (by rw [h1]; exact h) (Exec.subN hw d 180012 x), by omega,
+  · exact ⟨_, _, .ifLtN_true (by rwa [h1]) (Exec.subN hw d 180012 x), by_o,
       by simp [h, h12], fr _⟩
-  · exact ⟨_, _, .ifLtN_false (by rw [h1]; exact h) (Exec.copyN hw d x), by omega,
+  · exact ⟨_, _, .ifLtN_false (by rwa [h1]) (Exec.copyN hw d x), by_o,
       by simp [h], fr _⟩
 
 /-- The indices of tour position `i`. -/
@@ -182,22 +178,22 @@ theorem idxS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBo
   have e32 : c₁.nreg 180032 = C.sideIdx C.sideBeta i := by rw [q32, Chain.sideIdx_eq]; rfl
   have r : ∀ q, q ≠ 180032 → c₁.nreg q = c.nreg q := fun q hq => fr1 F₁ hq
   have e₂ := Exec.addN (P := P) e₁.wb_right 180043 180031 180011 (by
-    rw [r _ (by decide), r _ (by decide), h31, h11]; have := Nat.mod_lt (tS C + i) hm; omega)
-  set c₂ : Config := { c₁ with nreg := upd c₁.nreg 180043 (c₁.nreg 180031 + c₁.nreg 180011) }
+    rw [r _ by_d, r _ by_d, h31, h11]; have := Nat.mod_lt (tS C + i) hm; omega)
+  set c₂ := { c₁ with nreg := upd c₁.nreg 180043 (c₁.nreg 180031 + c₁.nreg 180011) }
     with hc₂
   have q43 : c₂.nreg 180043 = (tS C + i) % (2 * C.m) + 1 := by
-    rw [hc₂]; simp only [Config.nreg_mk, upd_same]; rw [r _ (by decide), r _ (by decide), h31, h11]
+    rw [hc₂]; simp only [upd_same]; rw [r _ by_d, r _ by_d, h31, h11]
   have r₂ : ∀ q, q ≠ 180043 → c₂.nreg q = c₁.nreg q := fun q hq => by rw [hc₂]; simp [hq]
   obtain ⟨c₃, k₃, e₃, hk₃, q34, F₃⟩ := sideES_exec (P := P) (d := 180034) (x := 180043) c₂
-    e₂.wb_right (m := C.m) (by rw [r₂ _ (by decide), r _ (by decide), h1])
-    (by rw [r₂ _ (by decide), r _ (by decide), h12])
+    e₂.wb_right (m := C.m) (by rw [r₂ _ by_d, r _ by_d, h1])
+    (by rw [r₂ _ by_d, r _ by_d, h12])
   rw [q43] at q34
   have e34 : c₃.nreg 180034 = C.sideIdx C.sideBeta (i + 1) := by
     rw [q34, Chain.sideIdx_succ]; rfl
   have r₃ : ∀ q, q ≠ 180034 → q ≠ 180043 → q ≠ 180032 → c₃.nreg q = c.nreg q := fun q h1 h2 h3 =>
     by rw [fr1 F₃ h1, r₂ q h2, r q h3]
   have k32 : c₃.nreg 180032 = C.sideIdx C.sideBeta i := by
-    rw [fr1 F₃ (by decide), r₂ _ (by decide), e32]
+    rw [fr1 F₃ by_d, r₂ _ by_d, e32]
   obtain ⟨c₄, k₄, e₄, hk₄, q35, q36, q37, q44, R₄⟩ : ∃ c₄ k₄, Exec P W
       (block [.addN 180035 180000 180032, .addN 180036 180000 180033,
         .addN 180037 180000 180034, .addN 180044 180030 180027]) c₃ c₄ k₄ ∧ k₄ = 4 ∧
@@ -205,39 +201,39 @@ theorem idxS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBo
       c₄.nreg 180037 = C.s + C.sideIdx C.sideBeta (i + 1) ∧ c₄.nreg 180044 = i + 6 ∧
       FrameB (fun r => decide (r = 180035 ∨ r = 180036 ∨ r = 180037 ∨ r = 180044)) c₃ c₄ := by
     have w := e₃.wb_right
-    have a0 : c₃.nreg 180000 = C.s := by rw [r₃ _ (by decide) (by decide) (by decide), h0]
-    have a33 : c₃.nreg 180033 = kp := by rw [r₃ _ (by decide) (by decide) (by decide), h33]
-    have a30 : c₃.nreg 180030 = i := by rw [r₃ _ (by decide) (by decide) (by decide), h30]
-    have a27 : c₃.nreg 180027 = 6 := by rw [r₃ _ (by decide) (by decide) (by decide), h27]
+    have a0 : c₃.nreg 180000 = C.s := by rw [r₃ _ by_d by_d by_d, h0]
+    have a33 : c₃.nreg 180033 = kp := by rw [r₃ _ by_d by_d by_d, h33]
+    have a30 : c₃.nreg 180030 = i := by rw [r₃ _ by_d by_d by_d, h30]
+    have a27 : c₃.nreg 180027 = 6 := by rw [r₃ _ by_d by_d by_d, h27]
     have hk1 := hl i
     have hk2 := hl (i + 1)
     exec_block
-    · config_simp; rw [a0, k32]; omega
+    · rw [a0, k32]; omega
     · config_simp; rw [a0, a33]; omega
     · config_simp; rw [a0, e34]; omega
     · config_simp; rw [a30, a27]; omega
     · refine ⟨rfl, ?_, ?_, ?_, ?_, ⟨fun q hq => ?_, fun q _ => rfl, rfl, rfl, rfl⟩⟩
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
         rw [a0, k32]
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
         rw [a0, a33]
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
         rw [a0, e34]
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_same]
         rw [a30, a27]
       · simp only [decide_eq_false_iff_not, not_or] at hq
-        simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
-  have F₂ : FrameB Blp c₁ c₂ := lp_one (d := 180043) (by omega)
+        simp (disch := omega) only [Machine.upd_other]
+  have F₂ : FrameB Blp c₁ c₂ := lp_one (d := 180043) by_o
     ⟨fun q hq => r₂ q (by simpa using hq), fun _ _ => rfl, rfl, rfl, rfl⟩
   have F₄ : FrameB Blp c₃ c₄ := frameB_mono R₄ fun q hq => by
     unfold Blp at hq; simp only [decide_eq_false_iff_not] at hq ⊢; omega
-  refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by omega,
-    (((lp_one (by omega) F₁).trans F₂).trans (lp_one (by omega) F₃)).trans F₄, ?_, ?_, q35, q36,
+  refine ⟨c₄, _, .seq e₁ (.seq e₂ (.seq e₃ e₄)), by_o,
+    (((lp_one by_o F₁).trans F₂).trans (lp_one by_o F₃)).trans F₄, ?_, ?_, q35, q36,
     q37, q44, ?_, ?_⟩
-  · rw [R₄.1 _ (by decide), k32]
-  · rw [R₄.1 _ (by decide), r₃ _ (by decide) (by decide) (by decide), h33]
-  · rw [R₄.1 _ (by decide), r₃ _ (by decide) (by decide) (by decide), h30]
-  · rw [R₄.1 _ (by decide), r₃ _ (by decide) (by decide) (by decide)]
+  · rw [R₄.1 _ by_d, k32]
+  · rw [R₄.1 _ by_d, r₃ _ by_d by_d by_d, h33]
+  · rw [R₄.1 _ by_d, r₃ _ by_d by_d by_d, h30]
+  · rw [R₄.1 _ by_d, r₃ _ by_d by_d by_d]
 
 /-- Advance to the next tour position. -/
 def advS : Stmt :=
@@ -262,16 +258,16 @@ theorem advS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBo
     · config_simp; rw [h30, h11]; omega
     · config_simp; rw [h31, h11]; omega
     · refine ⟨rfl, ?_, ?_, ?_, ⟨fun q hq => ?_, fun q _ => rfl, rfl, rfl, rfl⟩⟩
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
         rw [h30, h11]
-      · simp (disch := omega) only [Config.nreg_mk, Machine.upd_same, Machine.upd_other]
+      · simp (disch := omega) only [Machine.upd_same]
         rw [h31, h11]
       · simp only [decide_eq_false_iff_not, not_or] at hq
-        simp (disch := omega) only [Config.nreg_mk, Machine.upd_other]
+        simp (disch := omega) only [Machine.upd_other]
   have G₁ : FrameB Blp c c₁ := frameB_mono R₁ fun q hq => by
     unfold Blp at hq; simp only [decide_eq_false_iff_not] at hq ⊢; omega
-  have k12 : c₁.nreg 180012 = 2 * C.m := by rw [R₁.1 _ (by decide), h12]
+  have k12 : c₁.nreg 180012 = 2 * C.m := by rw [R₁.1 _ by_d, h12]
   have w₁ := e₁.wb_right
   have hnext : (tS C + (i + 1)) % (2 * C.m) =
       if (tS C + i) % (2 * C.m) + 1 < 2 * C.m then (tS C + i) % (2 * C.m) + 1 else 0 := by
@@ -281,13 +277,13 @@ theorem advS_exec {P : Polygon} {W : ℕ} {C : Chain} (c : Config) (hw : WordsBo
     · exact Nat.mod_eq_of_lt h
     · rw [show (tS C + i) % (2 * C.m) + 1 = 2 * C.m by omega, Nat.mod_self]
   by_cases hlt : (tS C + i) % (2 * C.m) + 1 < 2 * C.m
-  · refine ⟨c₁, _, .seq e₁ (.ifLtN_true (by rw [q31, k12]; exact hlt) (.skip w₁)), by omega, G₁,
+  · refine ⟨c₁, _, .seq e₁ (.ifLtN_true (by rwa [q31, k12]) (.skip w₁)), by_o, G₁,
       q33, q30, fun _ => by rw [q31, hnext, ite_eq_left hlt]⟩
-  · have e₂ := Exec.constN (P := P) w₁ 180031 0 (by omega)
-    refine ⟨_, _, .seq e₁ (.ifLtN_false (by rw [q31, k12]; exact hlt) e₂), by omega,
-      G₁.trans (lp_one (d := 180031) (by omega) ⟨fun q hq => by simp only [decide_eq_false_iff_not] at hq; simp [hq],
+  · have e₂ := Exec.constN (P := P) w₁ 180031 0 by_o
+    refine ⟨_, _, .seq e₁ (.ifLtN_false (by rwa [q31, k12]) e₂), by_o,
+      G₁.trans (lp_one (d := 180031) by_o ⟨fun q hq => by simp only [decide_eq_false_iff_not] at hq; simp [hq],
         fun _ _ => rfl, rfl, rfl, rfl⟩), by simp [q33], by simp [q30],
-      fun _ => by simp only [Config.nreg_mk, upd_same]; rw [hnext, ite_eq_right hlt]⟩
+      fun _ => by simp only [upd_same]; rw [hnext, ite_eq_right hlt]⟩
 
 end
 

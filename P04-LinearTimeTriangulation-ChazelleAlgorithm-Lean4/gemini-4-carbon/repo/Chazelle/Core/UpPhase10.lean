@@ -75,8 +75,8 @@ theorem Kept.not_mem {r : ℕ} {B : Finset ℕ} (h : Kept r) (hsub : ∀ b ∈ B
     (h23 : bCore ∉ B) (h17 : bUp ∉ B) : bandOf r ∉ B := by
   rcases h with ⟨h1 | h1, -⟩ | ⟨h, -⟩
   · intro hm; have := hsub _ hm; unfold OutB at h1; omega
-  · rw [h1]; exact h23
-  · rw [h]; exact h17
+  · rwa [h1]
+  · rwa [h]
 
 /-- A register of an outside band is outside a set of phase bands. -/
 theorem OutB.not_mem {r : ℕ} {B : Finset ℕ} (h : OutB (bandOf r))
@@ -105,15 +105,15 @@ theorem URegs.of_frame {c c' : Config} {n hp h g cnt γ cntP R : ℕ}
     hk r (Or.inl ⟨a, b⟩)
   have k' : ∀ r, 170019 ≤ r → r < 170030 → c'.nreg r = c.nreg r := fun r a b =>
     hk r (Or.inr (Or.inl ⟨a, b⟩))
-  exact ⟨(k _ (by omega) (by omega)).trans hu.r01, (k _ (by omega) (by omega)).trans hu.r04,
-    (k _ (by omega) (by omega)).trans hu.r05, (k _ (by omega) (by omega)).trans hu.r07,
-    (k _ (by omega) (by omega)).trans hu.r08, (k _ (by omega) (by omega)).trans hu.r10,
-    (k _ (by omega) (by omega)).trans hu.r11, (k _ (by omega) (by omega)).trans hu.r12,
-    (k _ (by omega) (by omega)).trans hu.r14, (k' _ (by omega) (by omega)).trans hu.r19,
-    (k' _ (by omega) (by omega)).trans hu.r20, (k' _ (by omega) (by omega)).trans hu.r21,
-    (k' _ (by omega) (by omega)).trans hu.r22, (k' _ (by omega) (by omega)).trans hu.r23,
-    (k' _ (by omega) (by omega)).trans hu.r25, (k' _ (by omega) (by omega)).trans hu.r26,
-    (k' _ (by omega) (by omega)).trans hu.r28, (k' _ (by omega) (by omega)).trans hu.r29,
+  exact ⟨(k _ by_o by_o).trans hu.r01, (k _ by_o by_o).trans hu.r04,
+    (k _ by_o by_o).trans hu.r05, (k _ by_o by_o).trans hu.r07,
+    (k _ by_o by_o).trans hu.r08, (k _ by_o by_o).trans hu.r10,
+    (k _ by_o by_o).trans hu.r11, (k _ by_o by_o).trans hu.r12,
+    (k _ by_o by_o).trans hu.r14, (k' _ by_o by_o).trans hu.r19,
+    (k' _ by_o by_o).trans hu.r20, (k' _ by_o by_o).trans hu.r21,
+    (k' _ by_o by_o).trans hu.r22, (k' _ by_o by_o).trans hu.r23,
+    (k' _ by_o by_o).trans hu.r25, (k' _ by_o by_o).trans hu.r26,
+    (k' _ by_o by_o).trans hu.r28, (k' _ by_o by_o).trans hu.r29,
     (hk _ (Or.inr (Or.inr rfl))).trans hu.r37⟩
 
 theorem URegs.of_kept {c c' : Config} {n hp h g cnt γ cntP R : ℕ}
@@ -167,8 +167,7 @@ theorem cellB_exec {c : Config} (hw : WordsBounded W c) {A d f o x i s pg q t : 
     split_ifs <;> first | omega
   · config_simp; simp only [hA, h20, h30, h31, h32, h18, Machine.upd_apply]
     split_ifs <;> first | omega
-  · simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+  · upd_keep
 
 end proofs
 

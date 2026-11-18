@@ -42,7 +42,7 @@ theorem flBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       (flφ c.nmem FL v = none → c'.nreg 60104 = 0) ∧
       ∀ x, flφ c.nmem FL v = some x → c'.nreg 60104 = 1 ∧ c'.nreg 60105 = x.1 ∧
         c'.nreg 60105 = x.2 := by
-  have hwr : wr BFl flBody = true := by decide
+  have hwr : wr BFl flBody = true := by_d
   suffices H : ∃ c' k, Exec P W flBody c c' k ∧ k ≤ 8 ∧
       (flφ c.nmem FL v = none → c'.nreg 60104 = 0) ∧
       ∀ x, flφ c.nmem FL v = some x → c'.nreg 60104 = 1 ∧ c'.nreg 60105 = x.1 ∧
@@ -54,13 +54,13 @@ theorem flBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       c₁.nreg 60107 = c.nmem (FL + v) ∧ (∀ r, r ≠ 60107 → c₁.nreg r = c.nreg r) ∧
       c₁.nmem = c.nmem := by
     exec_block
-    · rw [hFL, hv]; exact hW
+    · rwa [hFL, hv]
     · refine ⟨rfl, by config_simp; rw [hFL, hv], fun r hr => ?_, rfl⟩
       config_simp; simp only [upd_apply, ite_eq_right hr]
   have hW1 : 1 ≤ W := by have := hw.1 120011; rw [h1] at this; exact this
   have w₁ := e₁.wb_right
-  have g1 : c₁.nreg 120011 = 1 := by rw [R₁ _ (by decide), h1]
-  have gv : c₁.nreg 60103 = v := by rw [R₁ _ (by decide), hv]
+  have g1 : c₁.nreg 120011 = 1 := by rw [R₁ _ by_d, h1]
+  have gv : c₁.nreg 60103 = v := by rw [R₁ _ by_d, hv]
   unfold flφ
   by_cases hf : c.nmem (FL + v) = 1
   · simp only [hf, ite_true, reduceCtorEq, false_imp_iff, Option.some.injEq, true_and]
@@ -70,16 +70,16 @@ theorem flBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
       · omega
       · exact ⟨rfl, by config_simp, by config_simp; exact gv⟩
     refine ⟨c₂, _, .seq e₁ (.ifLtN_false (by rw [v7, g1, hf]; omega)
-      (.ifLtN_false (by rw [v7, g1, hf]; omega) e₂)), by omega, fun x hx => ?_⟩
+      (.ifLtN_false (by rw [v7, g1, hf]; omega) e₂)), by_o, fun x hx => ?_⟩
     subst hx; exact ⟨a, b, b⟩
   · simp only [hf, ite_false, forall_const, reduceCtorEq, false_imp_iff, and_true]
     rcases Nat.lt_or_gt_of_ne hf with h | h
     · have e₂ := Exec.constN (P := P) w₁ 60104 0 (Nat.zero_le _)
-      exact ⟨_, _, .seq e₁ (.ifLtN_true (by rw [v7, g1]; exact h) e₂), by omega,
+      exact ⟨_, _, .seq e₁ (.ifLtN_true (by rwa [v7, g1]) e₂), by_o,
         by config_simp⟩
     · have e₂ := Exec.constN (P := P) w₁ 60104 0 (Nat.zero_le _)
       exact ⟨_, _, .seq e₁ (.ifLtN_false (by rw [v7, g1]; omega)
-        (.ifLtN_true (by rw [v7, g1]; exact h) e₂)), by omega, by config_simp⟩
+        (.ifLtN_true (by rwa [v7, g1]) e₂)), by_o, by config_simp⟩
 
 /-- **The list of `D*`.** -/
 def dlS : Stmt :=
@@ -116,29 +116,29 @@ theorem dlS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {�
   obtain ⟨c', k, ex, hk, r', rr', cnt, pairs, mem, rm, o, -⟩ := emitS_exec (P := P) (W := W)
     (ri := 60103) (rn := 60034) (r1 := 120011) (rf := 60104) (rv1 := 60105) (rv2 := 60105)
     (rR1 := 60100) (rR2 := 60101) (rc := 60102) (rt := 60106) (body := flBody) (B := BFl)
-    (by decide) (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
+    by_d by_d by_d by_d by_d by_d by_d
     (R1 := A₀) (R2 := A₀ + μ) (c₀ := 0) (n := μ) (κ := 8) J
-    (fun d d' hJd hr hm => ⟨by rw [hr _ (by decide) (by decide) (by decide) (by decide)]; exact hJd.1,
-      by rw [hr _ (by decide) (by decide) (by decide) (by decide)]; exact hJd.2.1,
-      fun a ha => by rw [hm a (Or.inl (by omega))]; exact hJd.2.2 a ha⟩)
+    (fun d d' hJd hr hm => ⟨by rw [hr _ by_d by_d by_d by_d]; exact hJd.1,
+      by rw [hr _ by_d by_d by_d by_d]; exact hJd.2.1,
+      fun a ha => by rw [hm a (Or.inl by_o)]; exact hJd.2.2 a ha⟩)
     (flφ c.nmem FL)
     (fun i d hi hJd hwd hri => by
-      obtain ⟨d', k, ex, hk, F, a, b⟩ := flBody_exec (P := P) hwd hJd.1 hri hJd.2.1 (by omega)
+      obtain ⟨d', k, ex, hk, F, a, b⟩ := flBody_exec (P := P) hwd hJd.1 hri hJd.2.1 by_o
       have e : flφ d.nmem FL i = flφ c.nmem FL i := by
-        unfold flφ; rw [hJd.2.2 _ (by omega)]
-      exact ⟨d', k, ex, hk, F, by rw [← e]; exact a, by rw [← e]; exact b⟩)
-    e₁.wb_right ⟨by rw [K₁ _ (by decide) (by decide) (by decide) (by decide), hFL],
-      by rw [K₁ _ (by decide) (by decide) (by decide) (by decide), h1], fun a _ => by rw [m₁]⟩
-    (by rw [K₁ _ (by decide) (by decide) (by decide) (by decide), hμ])
-    (by rw [K₁ _ (by decide) (by decide) (by decide) (by decide), h1]) a100 a101 a102
-    (by omega) (by omega)
+        unfold flφ; rw [hJd.2.2 _ by_o]
+      exact ⟨d', k, ex, hk, F, by rwa [← e], by rwa [← e]⟩)
+    e₁.wb_right ⟨by rw [K₁ _ by_d by_d by_d by_d, hFL],
+      by rw [K₁ _ by_d by_d by_d by_d, h1], fun a _ => by rw [m₁]⟩
+    (by rw [K₁ _ by_d by_d by_d by_d, hμ])
+    (by rw [K₁ _ by_d by_d by_d by_d, h1]) a100 a101 a102
+    by_o by_o
   simp only [Nat.add_zero, Nat.zero_add] at cnt pairs mem
-  refine ⟨c', _, .seq e₁ ex, by omega, fun r hr h9 => ?_, fun r hr => by rw [rr' r hr, rr₁],
+  refine ⟨c', _, .seq e₁ ex, by_o, fun r hr h9 => ?_, fun r hr => by rw [rr' r hr, rr₁],
     fun a ha => by rw [mem a (Or.inl ha), m₁], by rw [rm, rm₁], by rw [o, o₁], ?_, ?_, cnt, pairs⟩
-  · rw [r' r (by unfold BFl; simp only [decide_eq_false_iff_not]; omega) (by omega) (by omega)
-      (by omega), K₁ r (by omega) (by omega) h9 (by omega)]
-  · rw [r' _ (by decide) (by decide) (by decide) (by decide), a99]
-  · rw [r' _ (by decide) (by decide) (by decide) (by decide), a100]
+  · rw [r' r (by unfold BFl; simp only [decide_eq_false_iff_not]; omega) by_o by_o
+      by_o, K₁ r by_o by_o h9 by_o]
+  · rw [r' _ by_d by_d by_d by_d, a99]
+  · rw [r' _ by_d by_d by_d by_d, a100]
 
 /-- **The facts of the list of `D*`.** -/
 theorem dl_facts (m : ℕ → ℕ) (FL μ : ℕ) :
@@ -205,27 +205,27 @@ theorem OrdFacts.mono {m m' : ℕ → ℕ} {μ FL LAB DL nD ORD RK X : ℕ}
     (hFL : FL + μ ≤ X) (hLAB : LAB + μ ≤ X) (hDL : DL + nD ≤ X) (hORD : ORD + μ ≤ X)
     (hRK : RK + μ ≤ X) : OrdFacts m' μ FL LAB DL nD ORD RK where
   dl i hi := by
-    rw [hX _ (by omega)]; obtain ⟨a, b⟩ := h.dl i hi; rw [hX _ (by omega)]; exact ⟨a, b⟩
+    rw [hX _ by_o]; obtain ⟨a, b⟩ := h.dl i hi; rw [hX _ by_o]; exact ⟨a, b⟩
   dl_all v hv hf := by
-    rw [hX _ (by omega)] at hf
+    rw [hX _ by_o] at hf
     obtain ⟨i, hi, e⟩ := h.dl_all v hv hf
-    exact ⟨i, hi, by rw [hX _ (by omega)]; exact e⟩
+    exact ⟨i, hi, by rwa [hX _ by_o]⟩
   nD_eq := by
     rw [h.nD_eq]; congr 1; ext v
     simp only [Finset.mem_filter, Finset.mem_range]
     constructor
-    · rintro ⟨hv, e⟩; exact ⟨hv, by rw [hX _ (by omega)]; exact e⟩
-    · rintro ⟨hv, e⟩; exact ⟨hv, by rw [← hX _ (by omega)]; exact e⟩
-  ord_lt i hi := by rw [hX _ (by omega)]; exact h.ord_lt i hi
+    · rintro ⟨hv, e⟩; exact ⟨hv, by rwa [hX _ by_o]⟩
+    · rintro ⟨hv, e⟩; exact ⟨hv, by rwa [← hX _ by_o]⟩
+  ord_lt i hi := by rw [hX _ by_o]; exact h.ord_lt i hi
   ord_inj i j hi hj e := by
-    rw [hX _ (by omega), hX _ (by omega)] at e; exact h.ord_inj i j hi hj e
+    rw [hX _ by_o, hX _ by_o] at e; exact h.ord_inj i j hi hj e
   ord_rk u hu := by
     obtain ⟨a, b⟩ := h.ord_rk u hu
-    rw [hX _ (by omega), hX _ (by omega)]; exact ⟨a, b⟩
+    rw [hX _ by_o, hX _ by_o]; exact ⟨a, b⟩
   ord_sorted i j hij hj := by
-    have a := h.ord_lt i (by omega)
+    have a := h.ord_lt i by_o
     have b := h.ord_lt j hj
-    rw [hX (ORD + i) (by omega), hX (ORD + j) (by omega), hX _ (by omega), hX _ (by omega)]
+    rw [hX (ORD + i) by_o, hX (ORD + j) by_o, hX _ by_o, hX _ by_o]
     exact h.ord_sorted i j hij hj
 
 theorem rkBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {ORD RK i : ℕ}
@@ -234,16 +234,16 @@ theorem rkBody_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c)
     ∃ c' k, Exec P W rkBody c c' k ∧ k ≤ 4 ∧
       FrameB (fun r => decide (r = 60111 ∨ r = 60113 ∨ r = 60114)) c c' ∧
       c'.nreg 60113 = RK + c.nmem (ORD + i) ∧ c'.nreg 60114 = i := by
-  have hwr : wr (fun r => decide (r = 60111 ∨ r = 60113 ∨ r = 60114)) rkBody = true := by decide
+  have hwr : wr (fun r => decide (r = 60111 ∨ r = 60113 ∨ r = 60114)) rkBody = true := by_d
   suffices H : ∃ c' k, Exec P W rkBody c c' k ∧ k ≤ 4 ∧
       c'.nreg 60113 = RK + c.nmem (ORD + i) ∧ c'.nreg 60114 = i by
     obtain ⟨c', k, ex, hk, a, b⟩ := H
     exact ⟨c', k, ex, hk, exec_frameB ex hwr, a, b⟩
   unfold rkBody
   exec_block
-  · rw [h7, hi]; exact hb1
-  · config_simp; rw [h7, hi, h10]; exact hb2
-  · exact ⟨by omega, by config_simp; rw [h7, hi, h10], by config_simp; exact hi⟩
+  · rwa [h7, hi]
+  · config_simp; rwa [h7, hi, h10]
+  · exact ⟨by_o, by config_simp; rw [h7, hi, h10], by config_simp; exact hi⟩
 
 theorem rkS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {μ ORD A : ℕ}
     (h7 : c.nreg 60007 = ORD) (hμ : c.nreg 60034 = μ) (h1 : c.nreg 120011 = 1)
@@ -255,28 +255,28 @@ theorem rkS_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W c) {�
       c'.nreg 60110 = A ∧ c'.nreg 9999 = A + μ ∧
       c'.nmem = scat c.nmem (fun i => A + c.nmem (ORD + i)) (fun i => i) μ := by
   obtain ⟨c₁, k₁, e₁, hk₁, F₁, rr₁, a10, a99⟩ := allocS_exec (P := P) hw (rb := 60110) (rn := 60034)
-    (A := A) (n := μ) (by decide) hAl hμ (by decide) hW
-  have hm₁ : c₁.nmem = c.nmem := F₁.2.2.1
+    (A := A) (n := μ) by_d hAl hμ by_d hW
+  have hm₁ := F₁.2.2.1
   obtain ⟨c', k, ex, hk, r', rr', mm, rm, o, -, -⟩ := scatS_exec (P := P) (W := W)
     (ri := 60112) (rn := 60034) (r1 := 120011) (ra := 60113) (rv := 60114) (body := rkBody)
-    (B := fun r => decide (r = 60111 ∨ r = 60113 ∨ r = 60114)) (by decide) (by decide)
-    (by decide) (by decide) (by decide)
+    (B := fun r => decide (r = 60111 ∨ r = 60113 ∨ r = 60114)) by_d by_d
+    by_d by_d by_d
     (fun d => d.nreg 60007 = ORD ∧ d.nreg 60110 = A ∧ ∀ a, a < A → d.nmem a = c.nmem a) A
-    (fun d d' hJ hr hm => ⟨by rw [hr _ (by decide) (by decide)]; exact hJ.1,
-      by rw [hr _ (by decide) (by decide)]; exact hJ.2.1,
+    (fun d d' hJ hr hm => ⟨by rw [hr _ by_d by_d]; exact hJ.1,
+      by rw [hr _ by_d by_d]; exact hJ.2.1,
       fun a ha => by rw [hm a ha]; exact hJ.2.2 a ha⟩)
     (n := μ) (κ := 4) (fun i => A + c.nmem (ORD + i)) (fun i => i) (fun i _ => by omega)
     (fun i d hi hJd hwd hri => by
-      have e : d.nmem (ORD + i) = c.nmem (ORD + i) := hJd.2.2 _ (by omega)
-      obtain ⟨d', k, ex, hk, F, v1, v2⟩ := rkBody_exec (P := P) hwd hJd.1 hJd.2.1 hri (by omega)
+      have e : d.nmem (ORD + i) = c.nmem (ORD + i) := hJd.2.2 _ by_o
+      obtain ⟨d', k, ex, hk, F, v1, v2⟩ := rkBody_exec (P := P) hwd hJd.1 hJd.2.1 hri by_o
         (by rw [e]; have := hlt i hi; omega)
       exact ⟨d', k, ex, hk, F, by rw [v1, e], v2⟩)
-    e₁.wb_right ⟨by rw [F₁.1 _ (by decide), h7], a10, fun a _ => by rw [hm₁]⟩
-    (by rw [F₁.1 _ (by decide), hμ]) (by rw [F₁.1 _ (by decide), h1]) (by omega)
-  refine ⟨c', _, .seq e₁ ex, by nlinarith, fun r hr h9 => ?_, ?_, by rw [rm, F₁.2.2.2.1],
-    by rw [o, F₁.2.2.2.2], by rw [r' _ (by decide) (by decide), a10],
-    by rw [r' _ (by decide) (by decide), a99], by rw [mm, hm₁]⟩
-  · rw [r' r (by simp only [decide_eq_false_iff_not]; omega) (by omega),
+    e₁.wb_right ⟨by rw [F₁.1 _ by_d, h7], a10, fun a _ => by rw [hm₁]⟩
+    (by rw [F₁.1 _ by_d, hμ]) (by rw [F₁.1 _ by_d, h1]) by_o
+  refine ⟨c', _, .seq e₁ ex, by_nl, fun r hr h9 => ?_, ?_, by rw [rm, F₁.2.2.2.1],
+    by rw [o, F₁.2.2.2.2], by rw [r' _ by_d by_d, a10],
+    by rw [r' _ by_d by_d, a99], by rw [mm, hm₁]⟩
+  · rw [r' r (by simp only [decide_eq_false_iff_not]; omega) by_o,
       F₁.1 r (by simp only [decide_eq_false_iff_not]; omega)]
   · intro r hr
     rw [rr' r (by simp only [decide_eq_false_iff_not]; omega), rr₁]
@@ -307,12 +307,12 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
   set L := emitted (flφ c.nmem FL) μ with hL
   have hLlen : L.length ≤ μ := emitted_length_le _ _
   -- 2. the inputs of the sort
-  have b130005 : c₁.nreg 130005 = LAB := by rw [r₁ _ (by omega) (by omega), hLAB]
-  have b60034 : c₁.nreg 60034 = μ := by rw [r₁ _ (by omega) (by omega), hμ]
+  have b130005 : c₁.nreg 130005 = LAB := by rw [r₁ _ by_o by_o, hLAB]
+  have b60034 : c₁.nreg 60034 = μ := by rw [r₁ _ by_o by_o, hμ]
   obtain ⟨c₂, k₂, e₂, hk₂, F₂, w4, w5, w6⟩ : ∃ c₂ k₂, Exec P W ordPrep c₁ c₂ k₂ ∧ k₂ = 3 ∧
       FrameB (fun r => decide (60004 ≤ r ∧ r ≤ 60006)) c₁ c₂ ∧ c₂.nreg 60004 = LAB ∧
       c₂.nreg 60005 = LAB ∧ c₂.nreg 60006 = μ := by
-    have hwr : wr (fun r => decide (60004 ≤ r ∧ r ≤ 60006)) ordPrep = true := by decide
+    have hwr : wr (fun r => decide (60004 ≤ r ∧ r ≤ 60006)) ordPrep = true := by_d
     suffices H : ∃ c₂ k₂, Exec P W ordPrep c₁ c₂ k₂ ∧ k₂ = 3 ∧ c₂.nreg 60004 = LAB ∧
         c₂.nreg 60005 = LAB ∧ c₂.nreg 60006 = μ by
       obtain ⟨c₂, k₂, ex, hk, a, b, d⟩ := H
@@ -322,47 +322,47 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
     exec_block
     exact ⟨rfl, by config_simp; exact b130005, by config_simp; exact b130005,
       by config_simp; exact b60034⟩
-  have hm₂ : c₂.nmem = c₁.nmem := F₂.2.2.1
-  have c99 : c₂.nreg 9999 = A₀ + 2 * μ := by rw [F₂.1 _ (by decide), a99]
-  have c1 : c₂.nreg 120011 = 1 := by rw [F₂.1 _ (by decide), r₁ _ (by omega) (by omega), h1]
+  have hm₂ := F₂.2.2.1
+  have c99 : c₂.nreg 9999 = A₀ + 2 * μ := by rw [F₂.1 _ by_d, a99]
+  have c1 : c₂.nreg 120011 = 1 := by rw [F₂.1 _ by_d, r₁ _ by_o by_o, h1]
   -- 3. the sort
   obtain ⟨c₃, k₃, e₃, hk₃, F₃, al3a, al3b, R₃, sb₁, sb₂, hsort, hsurj, hlt⟩ :=
     sortCore_exec (P := P) e₂.wb_right (Z1 := LAB) (Z2 := LAB) (n := μ) (A₀ := A₀ + 2 * μ)
-      w4 w5 w6 c1 c99 (by omega) (by omega) (by omega)
+      w4 w5 w6 c1 c99 by_o by_o by_o
   rw [hAL] at al3a al3b
   set ORD := c₃.nreg 60007 with hORD
   set A₃ := c₃.nreg 9999 with hA₃
   have mem₃ : ∀ a, a < A₀ + 2 * μ → c₃.nmem a = c₁.nmem a := fun a ha => by
-    rw [F₃.2.2.1 a (by rw [hAL, c99]; exact ha), hm₂]
+    rw [F₃.2.2.1 a (by rwa [hAL, c99]), hm₂]
   -- 4. the ranks
   have d34 : c₃.nreg 60034 = μ := by
-    rw [R₃ _ (by unfold bandOf; norm_num) (by decide) (by decide) (by decide) (by decide),
-      F₂.1 _ (by decide), b60034]
+    rw [R₃ _ by_d by_d by_d by_d by_d,
+      F₂.1 _ by_d, b60034]
   have d1 : c₃.nreg 120011 = 1 := by
-    rw [F₃.1 _ (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]) (by decide), c1]
+    rw [F₃.1 _ (by simp [dBands, bSort, bDecomp, bOPrep, bandOf]) by_d, c1]
   obtain ⟨c₄, k₄, e₄, hk₄, r₄, rr₄, rm₄, o₄, v110, v99, mm₄⟩ := rkS_exec (P := P) e₃.wb_right
-    (ORD := ORD) (A := A₃) rfl d34 d1 rfl sb₂ (by omega) hlt
+    (ORD := ORD) (A := A₃) rfl d34 d1 rfl sb₂ by_o hlt
   have below₄ : ∀ a, a < A₃ → c₄.nmem a = c₃.nmem a := fun a ha => by
     rw [mm₄, scat_below (fun i _ => by omega) ha]
   have ex : Exec P W ordStage c c₄ _ := .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have K6 : ∀ r, bandOf r = 6 → OKeep r → c₄.nreg r = c.nreg r := fun r hr hk => by
     unfold OKeep at hk; unfold bandOf at hr
-    rw [r₄ r (by omega) (by omega), R₃ r (by unfold bandOf; omega) (by omega) (by omega) (by omega)
-      (by omega), F₂.1 r (by simp only [decide_eq_false_iff_not]; omega),
-      r₁ r (by omega) (by omega)]
+    rw [r₄ r by_o by_o, R₃ r (by unfold bandOf; omega) by_o by_o by_o
+      by_o, F₂.1 r (by simp only [decide_eq_false_iff_not]; omega),
+      r₁ r by_o by_o]
   have g100 : c₄.nreg 60100 = A₀ := by
-    rw [r₄ _ (by omega) (by omega), R₃ _ (by unfold bandOf; norm_num) (by decide) (by decide)
-      (by decide) (by decide), F₂.1 _ (by decide), a100]
+    rw [r₄ _ by_o by_o, R₃ _ by_d by_d by_d
+      by_d by_d, F₂.1 _ by_d, a100]
   have g102 : c₄.nreg 60102 = L.length := by
-    rw [r₄ _ (by omega) (by omega), R₃ _ (by unfold bandOf; norm_num) (by decide) (by decide)
-      (by decide) (by decide), F₂.1 _ (by decide), cnt]
-  have g7 : c₄.nreg 60007 = ORD := r₄ _ (by omega) (by omega)
+    rw [r₄ _ by_o by_o, R₃ _ by_d by_d by_d
+      by_d by_d, F₂.1 _ by_d, cnt]
+  have g7 : c₄.nreg 60007 = ORD := r₄ _ by_o by_o
   have mem : ∀ a, a < A₀ → c₄.nmem a = c.nmem a := fun a ha => by
-    rw [below₄ a (by omega), mem₃ a (by omega), mem₁ a ha]
+    rw [below₄ a by_o, mem₃ a by_o, mem₁ a ha]
   have hDL : ∀ i, i < L.length → c₄.nmem (A₀ + i) = (L.getD i (0, 0)).1 := fun i hi => by
-    rw [below₄ _ (by omega), mem₃ _ (by omega)]; exact (pairs i hi).1
+    rw [below₄ _ by_o, mem₃ _ by_o]; exact (pairs i hi).1
   have hORDm : ∀ t, t < μ → c₄.nmem (ORD + t) = c₃.nmem (ORD + t) := fun t ht =>
-    below₄ _ (by omega)
+    below₄ _ by_o
   obtain ⟨D1, D2, D3⟩ := dl_facts c.nmem FL μ
   refine ⟨c₄, _, ex, ?_, ?_, ?_, ?_, K6, mem, ?_, ?_, ?_, ?_⟩
   · have := SortR.sortCost_ge 20 μ; omega
@@ -376,23 +376,23 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
     have FA : FrameN dBands c c₂ := PF.frameN (B := fun r => decide (bandOf r = 6) || decide (r = 9999))
       ⟨fun r hr => by
         have := b6_ne hr
-        rw [F₂.1 r (by simp only [decide_eq_false_iff_not]; omega), r₁ r (by omega) this.1],
+        rw [F₂.1 r (by simp only [decide_eq_false_iff_not]; omega), r₁ r by_o this.1],
       fun r hr => by
         have := b6_ne hr
         rw [F₂.2.1 r (by simp only [decide_eq_false_iff_not]; omega),
           rr₁ r (by unfold BFl; simp only [decide_eq_false_iff_not]; omega)],
       fun a ha => by rw [hAL, hAl'] at ha; rw [hm₂, mem₁ a ha],
       fun a _ => by rw [F₂.2.2.2.1, rm₁], by rw [F₂.2.2.2.2, o₁]⟩ B6
-      (by rw [hAL, F₂.2.1 _ (by decide), rr₁ _ (by decide)])
-    have FC : FrameN dBands c₃ c₄ := PF.frameN (B := fun r => decide (bandOf r = 6) || decide (r = 9999))
+      (by rw [hAL, F₂.2.1 _ by_d, rr₁ _ by_d])
+    have FC := PF.frameN (B := fun r => decide (bandOf r = 6) || decide (r = 9999))
       ⟨fun r hr => by
         have := b6_ne hr
-        exact r₄ r (by omega) this.1,
+        exact r₄ r by_o this.1,
       fun r hr => by
         have := b6_ne hr
-        exact rr₄ r (by omega),
+        exact rr₄ r by_o,
       fun a ha => by rw [hAL] at ha; exact below₄ a ha,
-      fun a _ => by rw [rm₄], by rw [o₄]⟩ B6 (by rw [hAL]; exact rr₄ _ (by omega))
+      fun a _ => by rw [rm₄], by rw [o₄]⟩ B6 (by rw [hAL]; exact rr₄ _ by_o)
     exact (FA.trans F₃ (by rw [hAL, hAl', c99]; omega)).trans FC
       (by rw [hAL, hAl']; omega)
   · rw [hAL, v99]; omega
@@ -401,7 +401,7 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
   · rw [g7, hAL, v99]; omega
   · rw [v110, hAL, v99]
   · rw [g100, g102, g7, v110]
-    have hFLm : ∀ v, v < μ → c₄.nmem (FL + v) = c.nmem (FL + v) := fun v hv => mem _ (by omega)
+    have hFLm : ∀ v, v < μ → c₄.nmem (FL + v) = c.nmem (FL + v) := fun v hv => mem _ by_o
     have hinj : ∀ t t', t < μ → t' < μ → c₃.nmem (ORD + t) = c₃.nmem (ORD + t') → t = t' :=
       fun t t' ht ht' e => inj_of_surj hlt hsurj ht ht' e
     exact
@@ -415,8 +415,8 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
           rw [D3]; congr 1; ext v
           simp only [Finset.mem_filter, Finset.mem_range]
           constructor
-          · rintro ⟨hv, e⟩; exact ⟨hv, by rw [hFLm v hv]; exact e⟩
-          · rintro ⟨hv, e⟩; exact ⟨hv, by rw [← hFLm v hv]; exact e⟩
+          · rintro ⟨hv, e⟩; exact ⟨hv, by rwa [hFLm v hv]⟩
+          · rintro ⟨hv, e⟩; exact ⟨hv, by rwa [← hFLm v hv]⟩
         ord_lt := fun i hi => by rw [hORDm i hi]; exact hlt i hi
         ord_inj := fun i j hi hj e => by
           rw [hORDm i hi, hORDm j hj] at e; exact hinj i j hi hj e
@@ -427,15 +427,15 @@ theorem ordStage_exec {P : Polygon} {W : ℕ} {c : Config} (hw : WordsBounded W 
             exact scat_at (g := fun i => A₃ + c₃.nmem (ORD + i)) ht
               fun j hj htj e' => by
                 try simp only at e'
-                have := hinj j t hj ht (by omega)
+                have := hinj j t hj ht by_o
                 omega
           rw [this, hORDm t ht]; exact ⟨ht, e⟩
         ord_sorted := fun i j hij hj => by
           have hs := hsort i j hij hj
-          have ai := hlt i (by omega)
+          have ai := hlt i by_o
           have aj := hlt j hj
-          rw [hORDm i (by omega), hORDm j hj, below₄ (LAB + c₃.nmem (ORD + i)) (by omega),
-            below₄ (LAB + c₃.nmem (ORD + j)) (by omega)]
+          rw [hORDm i by_o, hORDm j hj, below₄ (LAB + c₃.nmem (ORD + i)) by_o,
+            below₄ (LAB + c₃.nmem (ORD + j)) by_o]
           simp only at hs
           rw [F₃.2.2.1 (LAB + c₃.nmem (ORD + i)) (by rw [hAL, c99]; omega),
             F₃.2.2.1 (LAB + c₃.nmem (ORD + j)) (by rw [hAL, c99]; omega)]

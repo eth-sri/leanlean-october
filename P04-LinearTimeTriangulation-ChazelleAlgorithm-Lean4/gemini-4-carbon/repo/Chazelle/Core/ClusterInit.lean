@@ -38,9 +38,9 @@ theorem mem_segL {j : ℕ} {p : ℕ × ℕ} :
     · rintro (h | ⟨b, h1, h2, h3⟩)
       · split_ifs at h with hs
         · simp only [List.mem_singleton] at h
-          exact ⟨j, by omega, by rw [cntLt_succ] at hs; omega, h⟩
+          exact ⟨j, by_o, by rw [cntLt_succ] at hs; omega, h⟩
         · simp at h
-      · exact ⟨b, by omega, h2, h3⟩
+      · exact ⟨b, by_o, h2, h3⟩
     · rintro ⟨b, h1, h2, h3⟩
       rcases Nat.lt_or_ge b j with h | h
       · exact Or.inr ⟨b, h, h2, h3⟩
@@ -67,7 +67,7 @@ theorem lv_iff {p : ℕ × ℕ} :
     · exact Or.inr ⟨b, h1, h, h3⟩
 
 theorem seg_disj {b b' : ℕ} (h : b < b') : (seg μ bo b).2 ≤ (seg μ bo b').1 :=
-  cntLt_mono bo μ (by omega)
+  cntLt_mono bo μ by_o
 
 theorem segL_nodup (j : ℕ) : (segL s μ bo j).Nodup := by
   induction j with
@@ -107,11 +107,11 @@ theorem items_seg {key act : ℕ → ℕ} (hinj : ∀ v w, v < μ → w < μ →
   constructor
   · rintro ⟨i, h1, h2, rfl⟩
     obtain ⟨w, hw, hbw, rfl⟩ := exists_plPos (key := key) hinj h1 h2
-    rw [hact w hw (by omega)]; exact ⟨hw, hbw⟩
+    rw [hact w hw by_o]; exact ⟨hw, hbw⟩
   · rintro ⟨hv, hbv⟩
-    refine ⟨plPos μ bo key v, ?_, ?_, hact v hv (by omega)⟩
-    · have := plPos_ge (μ := μ) (bo := bo) (key := key) v; rw [hbv] at this; exact this
-    · have := plPos_lt (μ := μ) (bo := bo) (key := key) hv; rw [hbv] at this; exact this
+    refine ⟨plPos μ bo key v, ?_, ?_, hact v hv by_o⟩
+    · have := plPos_ge (μ := μ) (bo := bo) (key := key) v; rwa [hbv] at this
+    · have := plPos_lt (μ := μ) (bo := bo) (key := key) hv; rwa [hbv] at this
 
 theorem inj_seg {key act : ℕ → ℕ} (hinj : ∀ v w, v < μ → w < μ → key v = key w → v = w)
     (hact : ∀ v, v < μ → bo v < μ → act (plPos μ bo key v) = v) {b : ℕ} (hb : b < μ) :
@@ -120,7 +120,7 @@ theorem inj_seg {key act : ℕ → ℕ} (hinj : ∀ v w, v < μ → w < μ → k
   simp only [Finset.coe_Ico, Set.mem_Ico] at hi hi'
   obtain ⟨w, hw, hbw, rfl⟩ := exists_plPos (key := key) hinj hi.1 hi.2
   obtain ⟨w', hw', hbw', rfl⟩ := exists_plPos (key := key) hinj hi'.1 hi'.2
-  rw [hact w hw (by omega), hact w' hw' (by omega)] at h
+  rw [hact w hw by_o, hact w' hw' by_o] at h
   rw [h]
 
 /-- **The initial state of the work stack.** -/
@@ -138,8 +138,8 @@ theorem SInv.init {k : ℕ} {H : Finset ℕ} {slab : ℕ → ℕ} {Adj : ℕ →
   refine ⟨fun p hp => ?_, fun p hp => ?_, fun p hp v hv => ?_, segL_nodup μ, fun p hp hf => ?_,
     fun p q hp hq hpq => ?_, fun p q hp hq hpq => ?_, fun p hp => ?_, fun p hp => ?_,
     fun v hv hvH _ => ?_, fun p hp v hv => ?_, fun p hp v hv w hw => ?_,
-    fun x y hxy hx _ hy _ => ?_, by simp, ?_, ?_⟩
-  · obtain ⟨b, hb, rfl⟩ := lv_iff.mp hp; exact cntLt_mono bo μ (by omega)
+    fun x y hxy hx _ hy _ => ?_, by_s, ?_, ?_⟩
+  · obtain ⟨b, hb, rfl⟩ := lv_iff.mp hp; exact cntLt_mono bo μ by_o
   · obtain ⟨b, hb, rfl⟩ := lv_iff.mp hp; exact inj_seg hinj hact hb
   · obtain ⟨b, hb, rfl, hi⟩ := hit p hp; rw [hi] at hv; simp at hv; exact hv.1
   · obtain ⟨b, -, h2, rfl⟩ := mem_segL.mp hp
@@ -155,17 +155,17 @@ theorem SInv.init {k : ℕ} {H : Finset ℕ} {slab : ℕ → ℕ} {Adj : ℕ →
     rw [hi, hi', Finset.disjoint_left]
     intro v h1 h2; simp only [Finset.mem_filter] at h1 h2
     exact hpq (by rw [← h1.2, ← h2.2])
-  · obtain ⟨b, -, h2, rfl⟩ := mem_segL.mp hp; rw [len_seg]; exact h2
-  · obtain ⟨b, -, h2, rfl⟩ := mem_finL.mp hp; rw [len_seg]; exact h2
+  · obtain ⟨b, -, h2, rfl⟩ := mem_segL.mp hp; rwa [len_seg]
+  · obtain ⟨b, -, h2, rfl⟩ := mem_finL.mp hp; rwa [len_seg]
   · have hb : bo v < μ := by by_contra h; exact hvH ((hH v hv).mpr h)
     refine ⟨seg μ bo (bo v), lv_iff.mpr ⟨bo v, hb, rfl⟩, ?_⟩
     rw [items_seg hinj hact hb]; simp [hv]
   · obtain ⟨b, hb, rfl, hi⟩ := hit p hp; rw [hi] at hv; simp only [Finset.mem_filter,
       Finset.mem_range] at hv
-    exact ⟨by simp, fun h => ((hH v hv.1).mp h) (by omega)⟩
+    exact ⟨by_s, fun h => ((hH v hv.1).mp h) by_o⟩
   · obtain ⟨b, hb, rfl, hi⟩ := hit p hp; rw [hi] at hv hw
     simp only [Finset.mem_filter, Finset.mem_range] at hv hw
-    exact hslab v w hv.1 hw.1 (by omega) (by omega)
+    exact hslab v w hv.1 hw.1 by_o by_o
   · obtain ⟨hxμ, hyμ, hb⟩ := hedge x y hxy hx hy
     have hbx : bo x < μ := by by_contra h; exact hx ((hH x hxμ).mpr h)
     refine ⟨seg μ bo (bo x), lv_iff.mpr ⟨bo x, hbx, rfl⟩, ?_, ?_⟩ <;>
@@ -174,9 +174,9 @@ theorem SInv.init {k : ℕ} {H : Finset ℕ} {slab : ℕ → ℕ} {Adj : ℕ →
     have h2 := cntLt_le bo μ μ
     rw [Finset.card_empty, Nat.mul_zero, Nat.zero_add, ← Finset.mul_sum]
     have : 3 * k * ∑ p ∈ (segL s μ bo μ).toFinset, (2 * len p - s) ≤ 3 * k * (2 * μ) :=
-      Nat.mul_le_mul_left _ (by omega)
+      Nat.mul_le_mul_left _ by_o
     calc _ ≤ 3 * k * (2 * μ) := this
-      _ = 6 * k * μ := by ring
+      _ = 6 * k * μ := by_r
   · have h1 := sum_segL (s := s) (μ := μ) (bo := bo) μ
     have h2 := cntLt_le bo μ μ
     rw [Nat.zero_mul, Nat.zero_add]; omega

@@ -84,56 +84,56 @@ theorem kind1_facts {O : OracleIface} {P : Polygon} {C : Chain} {m m' : ℕ → 
             Cα.vertex (Cα.m - d))) := by
   obtain ⟨hs, he, hsn, hen, -, -, h1⟩ := hok
   obtain ⟨g, b, hg1, hgΛ, hb, hE, hpw, hx0, hbn, hgran, hs0, he0, h6, hee, hem, hdir, hW⟩ := h1 hk
-  have hR' : Robust A m' fun m'' => GradeRaw O P m'' h A := hR.transport hm'
+  have hR' := hR.transport hm'
   have hΛ : g < m' h := by
     have := (grade_low hR).1
-    rw [hm' h (by omega)]; exact hgΛ
+    rw [hm' h by_o]; exact hgΛ
   obtain ⟨Hs, Cα, N, hC, hwf, hP, -, -, hsC, hmC, hN, hcan, -⟩ := hR'.holds.2.2.2 g b hΛ hb
-  have hPQ : Cα.P = Qof P := hP
+  have hPQ := hP
   have hent : m' (m' (h + 2) + g) + 3 * b = pc.entry := by
     obtain ⟨h2, hr, -⟩ := grade_entry hR hgΛ hb
-    have e1 : m' (h + 2) = m (h + 2) := hm' _ h2
-    have e2 : m' (m (h + 2) + g) = m (m (h + 2) + g) := hm' _ hr
+    have e1 := hm' _ h2
+    have e2 := hm' _ hr
     rw [e1, e2, hE]; rfl
   rw [hent] at hC hwf hN
   have hQn : (Qof P).n = P.n := shear_n _ _
   have hlen : Cα.m = 2 ^ g := by rw [hmC]; exact gradeLen_full hbn
   have hsα : Cα.s = b * 2 ^ g := by rw [hsC]; rfl
-  have hx : Cα.s + Cα.m < (Qof P).n := by rw [hlen, hsα, hQn]; exact hbn
+  have hx : Cα.s + Cα.m < (Qof P).n := by rwa [hlen, hsα, hQn]
   -- the walk agrees with the tour of `Cα`
   have hV : ∀ d, d ≤ Cα.m → (chainModel C).W.vtx (pc.s.edge + d) =
       WalkEmbed.tourV Cα (if pc.dir = 1 then 0 else Cα.m) d := by
     intro d hd
-    rw [hW d (by omega)]
+    rw [hW d by_o]
     split_ifs with hd1
     · rw [tourV_up Cα hd, grade_vertex hP hx hd, hsα]
-    · rw [tourV_down Cα hd, grade_vertex hP hx (by omega), hsα, hlen]
+    · rw [tourV_down Cα hd, grade_vertex hP hx by_o, hsα, hlen]
       congr 1; omega
-  have hn : (chainModel C).W.n = 2 * C.m + 7 := chainModel_n C
+  have hn := chainModel_n C
   have hsP : pc.s = ⟨pc.s.edge, 0⟩ := by rw [← hs0]
   have heP : pc.e = ⟨pc.s.edge + Cα.m, 0⟩ := by rw [hlen, ← hee, ← he0]
   refine ⟨hwf.mono hA', Hs, Cα, N, hC, hN.mono hA', ⟨gradeGran g, hgran, hcan⟩, ?_, ?_, ?_⟩
   · rw [hsP, heP, key_hgt0, key_hgt0]
-    refine arcSet_tour (J := if pc.dir = 1 then 0 else Cα.m) (by split_ifs <;> simp) (by omega)
+    refine arcSet_tour (J := if pc.dir = 1 then 0 else Cα.m) (by split_ifs <;> simp) by_o
       hV
   · rw [hsP, heP, key_hgt0, key_hgt0]
-    exact arcWt_chain_nat C (by rw [hlen]; exact Nat.one_le_two_pow) h6 (by omega)
+    exact arcWt_chain_nat C (by rw [hlen]; exact Nat.one_le_two_pow) h6 by_o
   · rw [hsP, heP]
     have hmod : (pc.s.edge + Cα.m) % (chainModel C).W.n = pc.s.edge + Cα.m :=
-      Nat.mod_eq_of_lt (by omega)
+      Nat.mod_eq_of_lt by_o
     have := pieceWalk_tour (M := chainModel C) (Cα := Cα) (p₀ := pc.s.edge)
-      (J := if pc.dir = 1 then 0 else Cα.m) (by omega) (fun d hd => by
-        rw [Nat.mod_eq_of_lt (by omega)]; exact hV d hd)
+      (J := if pc.dir = 1 then 0 else Cα.m) by_o (fun d hd => by
+        rw [Nat.mod_eq_of_lt by_o]; exact hV d hd)
     rw [hmod] at this
     refine ⟨this, hPQ, ?_⟩
     dsimp only
     rcases hdir with hd1 | hd0
     · left
       intro d hd
-      rw [Nat.mod_eq_of_lt (by omega), hV d hd, ite_eq_left hd1, tourV_up Cα hd]
+      rw [Nat.mod_eq_of_lt by_o, hV d hd, ite_eq_left hd1, tourV_up Cα hd]
     · right
       intro d hd
-      rw [Nat.mod_eq_of_lt (by omega), hV d hd, ite_eq_right (by omega), tourV_down Cα hd]
+      rw [Nat.mod_eq_of_lt by_o, hV d hd, ite_eq_right by_o, tourV_down Cα hd]
 
 end ShootCut
 

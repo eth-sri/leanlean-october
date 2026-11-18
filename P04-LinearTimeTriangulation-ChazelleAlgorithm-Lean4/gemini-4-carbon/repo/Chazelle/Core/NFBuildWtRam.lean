@@ -44,11 +44,11 @@ theorem arcWtNat_eq_wtF {lo hi ea eb pz lt : ℕ} {fa fb : ℝ} {counted : ℕ �
     by_cases hcb : counted eb
     · by_cases hf : fb = 0
       · have : pz = 0 := by
-          by_contra h; have := hpz.1 (by omega); exact this.2 hf
+          by_contra h; have := hpz.1 by_o; exact this.2 hf
         rw [ite_eq_left hf, this, Nat.add_zero]
       · have : pz = 1 := hpz.2 ⟨hcb, hf⟩
         rw [ite_eq_right hf, this]
-    · have : pz = 0 := by by_contra h; exact hcb (hpz.1 (by omega)).1
+    · have : pz = 0 := by by_contra h; exact hcb (hpz.1 by_o).1
       rw [this, Nat.add_zero]
       have hn := (not_congr hc).1 hcb
       split_ifs <;> omega
@@ -56,11 +56,11 @@ theorem arcWtNat_eq_wtF {lo hi ea eb pz lt : ℕ} {fa fb : ℝ} {counted : ℕ �
     by_cases hcb : counted eb
     · by_cases hf : fb = 0
       · have : pz = 0 := by
-          by_contra h; have := hpz.1 (by omega); exact this.2 hf
+          by_contra h; have := hpz.1 by_o; exact this.2 hf
         rw [ite_eq_left hf, this, Nat.add_zero]
       · have : pz = 1 := hpz.2 ⟨hcb, hf⟩
         rw [ite_eq_right hf, this]
-    · have : pz = 0 := by by_contra h; exact hcb (hpz.1 (by omega)).1
+    · have : pz = 0 := by by_contra h; exact hcb (hpz.1 by_o).1
       rw [this, Nat.add_zero]
       have hn := (not_congr hc).1 hcb
       split_ifs <;> omega
@@ -77,15 +77,15 @@ theorem countedIv {m : ℕ → ℕ} {D : ℕ} {P : Polygon} {M : Model}
     (∀ p, p < M.W.n → (M.counted p ↔ loOf m D ≤ p ∧ p < hiOf m D P.n)) ∧
       hiOf m D P.n ≤ M.W.n := by
   rcases hM with ⟨h0, H, C, hC, rfl⟩ | ⟨h1, -, rfl⟩
-  · have hm : m (D + 1 + 2) = C.m := hC.2.2.2.1
+  · have hm := hC.2.2.2.1
     unfold loOf hiOf
     rw [ite_eq_left h0, ite_eq_left h0, show D + 3 = D + 1 + 2 by omega, hm, chainModel_n]
-    exact ⟨fun p hp => chainModel_counted_iff C p (by rw [chainModel_n]; exact hp), by omega⟩
+    exact ⟨fun p hp => chainModel_counted_iff C p (by rwa [chainModel_n]), by_o⟩
   · have hn : (Qof P).n = P.n := shear_n _ _
     unfold loOf hiOf
-    rw [ite_eq_right (by omega), ite_eq_right (by omega), interiorModel_n, hn]
+    rw [ite_eq_right by_o, ite_eq_right by_o, interiorModel_n, hn]
     refine ⟨fun p hp => ?_, le_rfl⟩
-    rw [interiorModel_counted_iff _ p (by rw [interiorModel_n, hn]; exact hp), hn]
+    rw [interiorModel_counted_iff _ p (by rwa [interiorModel_n, hn]), hn]
 
 /-! ## The counted interval on the machine -/
 
@@ -105,7 +105,7 @@ def lohiS : Stmt :=
       (block [.constN 44020 0, .inputSize 44021]))
 
 theorem wr_lohiS : wr (fun r => decide (r = 41023 ∨ r = 41019 ∨ r = 44020 ∨ r = 44021 ∨
-    r = 44022)) lohiS = true := by decide
+    r = 44022)) lohiS = true := by_d
 
 /-- **The counted interval on the machine.** -/
 theorem lohiS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) {D : ℕ}
@@ -132,7 +132,7 @@ theorem lohiS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
     · omega
     · config_simp; rw [hD]; omega
     · config_simp; rw [hD, show 3 + D = D + 3 by omega]; omega
-    · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
+    · refine ⟨by_o, ?_, ?_, ?_, rfl⟩ <;> config_simp
       · unfold loOf; rw [ite_eq_left h0]
       · unfold hdOf; rw [ite_eq_left h0, hD, show 3 + D = D + 3 by omega]; ring
       · rw [hD]
@@ -140,7 +140,7 @@ theorem lohiS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d) 
     exec_block
     · omega
     · omega
-    · refine ⟨by omega, ?_, ?_, ?_, rfl⟩ <;> config_simp
+    · refine ⟨by_o, ?_, ?_, ?_, rfl⟩ <;> config_simp
       · unfold loOf; rw [ite_eq_right h0]
       · unfold hdOf; rw [ite_eq_right h0]
       · rw [hD]
@@ -173,7 +173,7 @@ theorem pzR_exec {P : Polygon} {W : ℕ} {M : Model} (hG : GoodEnv P) (hW : P.n 
     (he : e < M.W.n) (hh : h ≤ P.n) (hDW : D + 6 ≤ W) (hCW : LocChainWF P W d.nmem D) :
     ∃ d' k, Exec P W pzR d d' k ∧ k ≤ 6000 ∧ FrameB BpzR d d' ∧ d'.nreg 41112 ≤ 1 ∧
       (d'.nreg 41112 = 1 ↔ M.counted e ∧ M.param (Qof P) ⟨e, h⟩ ≠ 0) := by
-  have hw' : WordsBounded W (cfgRen σ d) := (wordsBounded_ren σ_σ d).2 hw
+  have hw' := (wordsBounded_ren σ_σ d).2 hw
   obtain ⟨c', k, ex, hk, hfr, h1, h2⟩ := Gran.pz_exec (P := P) (W := W) hG hW (cfgRen σ d) hw'
     (MD := D) (e := e) (h := h) h40 hM h23 h19 h110 h111 he hh hDW hCW
   refine ⟨cfgRen σ c', k, exec_of_ren σ_σ ex, hk, ⟨fun r hr => ?_, fun r hr => ?_, hfr.2.2.1,
@@ -196,7 +196,7 @@ def wtG (lo h ea eb pz lt : ℕ) : ℕ :=
 theorem wtF_eq_wtG {lo hi ea eb pz lt : ℕ} (hlh : lo ≤ hi) (hpz : pz = 1 → lo ≤ eb)
     (hpz1 : pz ≤ 1) : wtF lo hi ea eb pz lt = wtG lo (hi - lo) ea eb pz lt := by
   unfold wtF wtG
-  have : pz = 0 ∨ pz = 1 := by omega
+  have : pz = 0 ∨ pz = 1 := by_o
   rcases this with rfl | rfl
   · split_ifs <;> simp only [Nat.min_def, Nat.max_def] <;> split_ifs <;> omega
   · have := hpz rfl
@@ -212,7 +212,7 @@ def wtS : Stmt :=
       (.seq (.ifLtN 43122 44021 (.instr (.copyN 43123 43122)) (.instr (.copyN 43123 44021)))
         (.instr (.subN 43121 43123 43127))))
 
-theorem wr_wtS : wr (fun r => decide (43121 ≤ r ∧ r < 43128)) wtS = true := by decide
+theorem wr_wtS : wr (fun r => decide (43121 ≤ r ∧ r < 43128)) wtS = true := by_d
 
 /-- **The weight on the machine.** -/
 theorem wtS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
@@ -234,34 +234,34 @@ theorem wtS_exec {P : Polygon} {W : ℕ} (d : Config) (hw : WordsBounded W d)
   set t := d.nreg 42113 - d.nreg 44020 + d.nreg 41112 with ht
   set u := d.nreg 42110 - d.nreg 44020 with hu
   by_cases hl : d.nreg 43120 < 1
-  · refine spec_ifLtN_true (by config_simp; rw [h1]; exact hl) ?_
-    rw [ite_eq_right (by omega)]
+  · refine spec_ifLtN_true (by config_simp; rwa [h1]) ?_
+    rw [ite_eq_right by_o]
     refine spec_seq ?_
     by_cases a1 : u < d.nreg 44021
     · refine spec_ifLtN_true (by config_simp; exact a1)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
       exec_block
-      refine ⟨by omega, ?_⟩
+      refine ⟨by_o, ?_⟩
       config_simp
       rw [min_eq_left a1.le]
     · refine spec_ifLtN_false (by config_simp; exact a1)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
       exec_block
-      refine ⟨by omega, ?_⟩
+      refine ⟨by_o, ?_⟩
       config_simp
       rw [min_eq_right (not_lt.1 a1)]
-  · refine spec_ifLtN_false (by config_simp; rw [h1]; exact hl) ?_
-    rw [ite_eq_left (by omega)]
+  · refine spec_ifLtN_false (by config_simp; rwa [h1]) ?_
+    rw [ite_eq_left by_o]
     refine spec_seq ?_
     by_cases a1 : t < d.nreg 44021
     · refine spec_ifLtN_true (by config_simp; exact a1)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
-      refine spec_instr (Exec.subN hw₂ _ _ _) fun _ => ⟨by omega, ?_⟩
+      refine spec_instr (Exec.subN hw₂ _ _ _) fun _ => ⟨by_o, ?_⟩
       config_simp
       rw [min_eq_left a1.le]
     · refine spec_ifLtN_false (by config_simp; exact a1)
         (spec_instr (Exec.copyN ‹_› _ _) fun hw₂ => ?_)
-      refine spec_instr (Exec.subN hw₂ _ _ _) fun _ => ⟨by omega, ?_⟩
+      refine spec_instr (Exec.subN hw₂ _ _ _) fun _ => ⟨by_o, ?_⟩
       config_simp
       rw [min_eq_right (not_lt.1 a1)]
 

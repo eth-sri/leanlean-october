@@ -78,11 +78,11 @@ theorem tSetup_exec (hw : WordsBounded W c) (hMD : c.nreg 83000 + 6 ≤ c.nreg A
         rfl, rfl⟩
       intro r h1 h2 h3 h4
       simp [upd, h1, h2, h3, h4]
-  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC (by unfold ALLOC; omega)
-    (by unfold ALLOC; omega) (by unfold ALLOC; omega) (by unfold ALLOC; omega)
-  refine ⟨c', k, ex, hk, ⟨ex.wb_right, fun q h1 h2 => hr q (by omega) (by omega) (by omega)
-    (by omega), by omega, fun a _ => by rw [hm], q20, q21, q22, q23⟩, ?_⟩
-  exact rf_of_regs (fun r hr' => hr r (by omega) (by omega) (by omega) (by omega)) hrr hm hrm ho
+  have hA : c'.nreg ALLOC = c.nreg ALLOC := hr ALLOC by_ao
+    by_ao by_ao by_ao
+  refine ⟨c', k, ex, hk, ⟨ex.wb_right, fun q h1 h2 => hr q by_o by_o by_o
+    by_o, by_o, fun a _ => by rw [hm], q20, q21, q22, q23⟩, ?_⟩
+  exact rf_of_regs (fun r hr' => hr r by_o by_o by_o by_o) hrr hm hrm ho
 
 end
 

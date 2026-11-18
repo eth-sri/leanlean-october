@@ -117,7 +117,7 @@ theorem eq_of_isAnc_of_not_parent {v u : V} (h : T.IsAnc v u) (hp : ¬ T.IsAnc v
   obtain ⟨n, hn⟩ := h
   rcases n with _ | n
   · exact hn
-  · exact absurd ⟨n, by rw [← Function.iterate_succ_apply]; exact hn⟩ hp
+  · exact absurd ⟨n, by rwa [← Function.iterate_succ_apply]⟩ hp
 
 /-- A non-root vertex is not an ancestor of its parent. -/
 theorem not_isAnc_parent {v : V} (hv : v ≠ T.root) : ¬ T.IsAnc v (T.parent v) := by
@@ -134,7 +134,7 @@ theorem eq_of_isAnc_of_level_eq {v v' u : V} (h : T.IsAnc v u) (h' : T.IsAnc v' 
   obtain ⟨n', rfl⟩ := h'
   rw [T.level_iterate_parent, T.level_iterate_parent] at hl
   by_cases hn : T.level u ≤ n
-  · rw [T.iterate_parent_eq_root hn, T.iterate_parent_eq_root (by omega)]
+  · rw [T.iterate_parent_eq_root hn, T.iterate_parent_eq_root by_o]
   · by_cases hn' : T.level u ≤ n'
     · omega
     · have : n = n' := by omega
@@ -153,8 +153,8 @@ def IsTreeDart (d : D) : Prop := ∃ v, v ≠ T.root ∧ (d = T.par v ∨ d = M.
 theorem par_ne_opp_par {v w : V} (hv : v ≠ T.root) (hw : w ≠ T.root) :
     T.par v ≠ M.opp (T.par w) := by
   intro h
-  have h1 : T.level (M.head (T.par w)) + 1 = T.level w := T.level_head_par w hw
-  have h2 : T.level (M.head (T.par v)) + 1 = T.level v := T.level_head_par v hv
+  have h1 := T.level_head_par w hw
+  have h2 := T.level_head_par v hv
   have e1 : M.head (T.par w) = v := by
     rw [← T.vert_par v hv, h]; rfl
   have e2 : M.head (T.par v) = w := by
@@ -266,7 +266,7 @@ theorem exists_bfsTree (hM : M.Connected) (r : V) :
   obtain ⟨d0, -⟩ := M.vert_surj r
   let par : V → D := fun v =>
     if hv : v = r then d0 else Classical.choose (M.exists_dart_toward hM r v hv)
-  refine ⟨⟨r, fun v => M.graph.dist r v, par, by simp, ?_, ?_⟩, rfl, fun v => rfl⟩
+  refine ⟨⟨r, fun v => M.graph.dist r v, par, by_s, ?_, ?_⟩, rfl, fun v => rfl⟩
   · intro v hv
     simp only [par, dite_eq_right hv]
     exact (Classical.choose_spec (M.exists_dart_toward hM r v hv)).1

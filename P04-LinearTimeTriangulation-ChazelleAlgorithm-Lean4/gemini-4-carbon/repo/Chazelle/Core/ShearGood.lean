@@ -57,7 +57,7 @@ theorem evSign_of_continuous_of_ne {f : ℝ → ℝ} (hf : Continuous f)
     (∀ᶠ ε in 𝓝[>] (0 : ℝ), 0 < f ε) ∨ ∀ᶠ ε in 𝓝[>] (0 : ℝ), f ε < 0 := by
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 h
   have hδ0 : (0 : ℝ) < δ := hδ
-  have hc : δ / 2 ∈ Ioo 0 δ := ⟨by linarith, by linarith⟩
+  have hc : δ / 2 ∈ Ioo 0 δ := ⟨by_l, by_l⟩
   have hconn : (f '' Ioo 0 δ).OrdConnected :=
     (isPreconnected_Ioo.image f hf.continuousOn).ordConnected
   have key : ∀ x ∈ Ioo 0 δ, ∀ y ∈ Ioo 0 δ, f x < 0 → 0 < f y → False := by
@@ -127,11 +127,11 @@ theorem IsRatFn.congr {f g : ℝ → ℝ} (hf : IsRatFn f) (h : ∀ ε, f ε = g
 
 /-- Constants are rational functions. -/
 theorem isRatFn_const (c : ℝ) : IsRatFn (fun _ => c) :=
-  ⟨C c, 1, by simp, by simp⟩
+  ⟨C c, 1, by_s, by_s⟩
 
 /-- The identity is a rational function. -/
 theorem isRatFn_id : IsRatFn (fun ε => ε) :=
-  ⟨X, 1, by simp, by simp⟩
+  ⟨X, 1, by_s, by_s⟩
 
 /-- Sums of rational functions are rational functions. -/
 theorem IsRatFn.add {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
@@ -178,7 +178,7 @@ theorem IsRatFn.div {f g : ℝ → ℝ} (hf : IsRatFn f) (hg : IsRatFn g) :
   obtain ⟨p1, q1, hq1, hf1⟩ := hf
   obtain ⟨p2, q2, hq2, hg2⟩ := hg
   rcases poly_eventually_zero_or_ne p2 with hp | hp
-  · refine ⟨0, 1, by simp, ?_⟩
+  · refine ⟨0, 1, by_s, ?_⟩
     filter_upwards [hg2, hp] with ε h1 h2
     rw [h1, h2]
     simp
@@ -278,7 +278,7 @@ theorem evConst_signFacts (P : Polygon) (s₁ s₂ s₃ : SymPt) :
 /-- Two distinct points get distinct sheared heights for all small `ε > 0`. -/
 theorem shear_heights_ne_eventually {a b : Point} (hab : a ≠ b) :
     ∀ᶠ ε in 𝓝[>] (0 : ℝ), (shearPt ε a).2 ≠ (shearPt ε b).2 := by
-  have hr : IsRatFn (fun ε => (shearPt ε a).2 - (shearPt ε b).2) :=
+  have hr :=
     (isRatFn_shear_snd a).sub (isRatFn_shear_snd b)
   rcases hr.evSign with h | h | h
   · exact h.mono fun ε hε => (sub_pos.1 hε).ne'
@@ -286,16 +286,16 @@ theorem shear_heights_ne_eventually {a b : Point} (hab : a ≠ b) :
     obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 h
     have hδ0 : (0 : ℝ) < δ := hδ
     have e1 : (shearPt (δ / 2) a).2 - (shearPt (δ / 2) b).2 = 0 :=
-      hsub (show δ / 2 ∈ Ioo 0 δ from ⟨by linarith, by linarith⟩)
+      hsub (⟨by_l, by_l⟩)
     have e2 : (shearPt (δ / 4) a).2 - (shearPt (δ / 4) b).2 = 0 :=
-      hsub (show δ / 4 ∈ Ioo 0 δ from ⟨by linarith, by linarith⟩)
+      hsub (⟨by_l, by_l⟩)
     simp only [shearPt] at e1 e2
-    have h3 : (δ / 4) * (a.1 - b.1) = 0 := by linarith
+    have h3 : (δ / 4) * (a.1 - b.1) = 0 := by_l
     rcases mul_eq_zero.1 h3 with h4 | h4
     · linarith
     · have hx : a.1 = b.1 := by linarith
       rw [hx] at e1
-      exact hab (Prod.ext hx (by linarith))
+      exact hab (Prod.ext hx by_l)
   · exact h.mono fun ε hε => (sub_neg.1 hε).ne
 
 /-- The height of a sheared point is continuous in the parameter. -/
@@ -325,7 +325,7 @@ theorem ylex_shear_eventually (a b : Point) :
         nlinarith
     · rintro (h1 | ⟨-, h1⟩)
       · right
-        exact ⟨by nlinarith, by nlinarith⟩
+        exact ⟨by_nl, by_nl⟩
       · right
         exact ⟨by rw [h], h1⟩
   · have hc : ∀ᶠ ε in 𝓝 (0 : ℝ), (shearPt ε b).2 < (shearPt ε a).2 :=
@@ -351,7 +351,7 @@ theorem symPt_lt_finite (n : ℕ) : {s : SymPt | s.Lt n}.Finite := by
 /-- **WP-A: every simple polygon has a good shear parameter.** -/
 theorem goodShearExists : GoodShearExistsSpec := by
   intro P hP
-  have hS : {s : SymPt | s.Lt P.n}.Finite := symPt_lt_finite P.n
+  have hS := symPt_lt_finite P.n
   choose B hB using fun s₁ s₂ s₃ : SymPt => evConst_signFacts P s₁ s₂ s₃
   have hStab : ∀ᶠ ε in 𝓝[>] (0 : ℝ), ∀ s₁ ∈ {s : SymPt | s.Lt P.n},
       ∀ s₂ ∈ {s : SymPt | s.Lt P.n}, ∀ s₃ ∈ {s : SymPt | s.Lt P.n},
@@ -385,8 +385,8 @@ theorem goodShearExists : GoodShearExistsSpec := by
     exact ylex_shear_eventually _ _
   obtain ⟨δ, hδ, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1 (hStab.and (hDist.and hYlex))
   have hδ0 : (0 : ℝ) < δ := hδ
-  obtain ⟨hStε, hDε, hYε⟩ := hsub (show δ / 2 ∈ Ioo 0 δ from ⟨by linarith, by linarith⟩)
-  refine ⟨δ / 2, by linarith, ?_, ?_, ?_⟩
+  obtain ⟨hStε, hDε, hYε⟩ := hsub (show δ / 2 ∈ Ioo 0 δ from ⟨by_l, by_l⟩)
+  refine ⟨δ / 2, by_l, ?_, ?_, ?_⟩
   · intro i j hi hj hij
     rw [shear_n] at hi hj
     rw [shear_vtx, shear_vtx]
@@ -395,7 +395,7 @@ theorem goodShearExists : GoodShearExistsSpec := by
     rw [shear_vtx, shear_vtx]
     exact hYε i hi j hj
   · intro ε' hε' hle s₁ s₂ s₃ h₁ h₂ h₃
-    obtain ⟨hSt', -, -⟩ := hsub (show ε' ∈ Ioo 0 δ from ⟨hε', by linarith⟩)
+    obtain ⟨hSt', -, -⟩ := hsub (⟨hε', by_l⟩)
     rw [hStε s₁ h₁ s₂ h₂ s₃ h₃, hSt' s₁ h₁ s₂ h₂ s₃ h₃]
 
 end

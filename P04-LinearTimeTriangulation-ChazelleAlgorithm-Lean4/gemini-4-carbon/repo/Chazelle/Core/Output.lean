@@ -76,7 +76,7 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
   exec_block
   all_goals try omega
   refine Final.spec_name fun c1 hc1 => ?_
-  have hw1 : WordsBounded W c1 := by rw [hc1]; assumption
+  have hw1 : WordsBounded W c1 := by rwa [hc1]
   have r1 : c1.rreg 100 = σ := by rw [hc1]; config_simp; exact hσ
   have r0 : c1.rreg 220000 = 0 := by rw [hc1]; config_simp; simp
   have hA1 : ∀ bb : Bool, c1.nreg 220000 = P.n ∧ c1.nreg 220001 = 1 ∧ c1.nreg 220002 = 0 ∧
@@ -84,7 +84,7 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
       c1.nreg 220020 = 3 ∧ c1.nreg 220011 = 4 ∧ c1.nreg 220012 = 5 ∧ c1.nreg 220021 = 7 ∧
       c1.nreg 230003 = B ∧ c1.nreg 9999 = T0 := fun _ => by
     rw [hc1]; config_simp
-    exact ⟨by omega, hB, hT0⟩
+    exact ⟨by_o, hB, hT0⟩
   obtain ⟨b0, b1, b2, b17, b18, b19, b20, b11, b12, b21, b3, b9999⟩ := hA1 true
   have fr1 : ∀ r, 240000 ≤ r → c1.nreg r = c.nreg r := fun r hr => by
     rw [hc1]; simp (disch := omega) only [Machine.upd_other]
@@ -98,12 +98,12 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
       c2 = { c1 with nreg := upd c1.nreg 220003 (decide (σ < 0)).toNat } := by
     unfold revS
     by_cases hneg : σ < 0
-    · refine spec_ifLtR_true (by rw [r1, r0]; exact hneg)
-        (spec_instr (Exec.constN hw1 220003 1 (by omega)) fun _ => ?_)
-      exact ⟨by omega, by simp [hneg]⟩
-    · refine spec_ifLtR_false (by rw [r1, r0]; exact hneg)
-        (spec_instr (Exec.constN hw1 220003 0 (by omega)) fun _ => ?_)
-      exact ⟨by omega, by simp [hneg]⟩
+    · refine spec_ifLtR_true (by rwa [r1, r0])
+        (spec_instr (Exec.constN hw1 220003 1 by_o) fun _ => ?_)
+      exact ⟨by_o, by simp [hneg]⟩
+    · refine spec_ifLtR_false (by rwa [r1, r0])
+        (spec_instr (Exec.constN hw1 220003 0 by_o) fun _ => ?_)
+      exact ⟨by_o, by simp [hneg]⟩
   obtain ⟨c2, k2, e2, hk2, rfl⟩ := hrev
   refine spec_seq ⟨_, k2, e2, ?_⟩
   unfold readS
@@ -111,7 +111,7 @@ theorem prepS_spec {c : Config} (hc : WordsBounded W c) {σ : ℝ} {B T0 : ℕ}
   exec_block
   all_goals try (config_simp; simp only [b3, b19, b20, b12, b21]; omega)
   all_goals try omega
-  refine ⟨by omega, ⟨?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
+  refine ⟨by_o, ⟨?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     ?_, ?_, ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
   all_goals try (config_simp; simp only [b0, b1, b2, b17, b18, b19, b20, b11, b12, b21, b3, b9999, m1]; done)
   all_goals try (config_simp; done)
@@ -169,10 +169,10 @@ theorem outputSpecH : OutputSpecH := by
   intro P W c hw ⟨hge, hn3, hout, N, hRob, hNF, hfull, hhlt⟩ hroom
   have hQ : (Qof P).Simple := (shearInvariance (epsOf P) P).1 hge.1
   have hgs := goodShear_epsOf hge.2
-  have hdh : DistinctHeights (Qof P) := hgs.2.1
-  have hPQ : ShearRel P (Qof P) := shearRel_Qof hge.2
+  have hdh := hgs.2.1
+  have hPQ := shearRel_Qof hge.2
   have hQn : (Qof P).n = P.n := shear_n _ _
-  have hn3' : 3 ≤ P.n := hge.1.1
+  have hn3' := hge.1.1
   obtain ⟨reg, hcorr, hsides, -, hregs, -⟩ := hNF.2.2.2
   have H : RegCtx (Qof P) N reg :=
     ⟨hQ, hdh, hNF, hfull, fun k hk => hQn ▸ hhlt k hk, hcorr, hsides, hregs⟩
@@ -191,11 +191,11 @@ theorem outputSpecH : OutputSpecH := by
   have hB2 := hRd.nr
   -- stage 1: the orientation
   obtain ⟨c1, k1, e1, hk1, hσ, fn1, fr1, m1, rm1, o1⟩ :=
-    Final.orientStmt_exec (W := W) hPQ hQ c hw (by omega)
+    Final.orientStmt_exec (W := W) hPQ hQ c hw by_o
   -- stage 2: the preparation
   obtain ⟨c2, k2, e2, hk2, hA2, v5, v6, v7, v8, v9, v11, v12, v19, v20, v10, v13, v16, v9990, v9991,
     v9992, v9993, v9999, fn2, fr2, m2, rm2, o2⟩ := prepS_spec (P := P) e1.wb_right hσ
-      (by rw [fn1 _ (by omega)]) (by rw [fn1 _ (by omega)]) (by omega) (by omega)
+      (by rw [fn1 _ by_o]) (by rw [fn1 _ by_o]) by_o by_o
   rw [decide_orient_neg] at hA2
   rw [m1] at v5 v6 v7 v8 v13 v9991
   -- stage 3: the regions
@@ -216,9 +216,9 @@ theorem outputSpecH : OutputSpecH := by
       by rw [v13, v10]; ring, by rw [v16, v10]; ring, by rw [v9999, v10]; ring,
       fun a _ => by rw [m2, m1], fun s hs => by rw [v10] at hs; exact absurd hs (Nat.not_lt_zero _)⟩
   obtain ⟨c3, k3, e3, hI3, h10, hk3, hΨ⟩ := regionLoop_spec (P := P) hC hRd rfl rfl rfl
-    (fun r hr => chords_length_le H hr) hent hrec (by omega) (by omega) (by omega) hI0 v10
+    (fun r hr => chords_length_le H hr) hent hrec by_o by_o by_o hI0 v10
   obtain ⟨hw3, hfr3, hrr3, hrm3, ho3, -, -, -, hal3, hmem3, hrecs3⟩ := hI3
-  have eall : Exec P W Output.prog c c3 (k1 + (k2 + k3)) := e1.seq (e2.seq e3)
+  have eall := e1.seq (e2.seq e3)
   refine ⟨c3, _, eall, ?_, ?_, ?_⟩
   · -- cost
     have : 332 * N.nRegions ≤ 332 * (2 * P.n + 1) := Nat.mul_le_mul_left _ hnR
@@ -232,7 +232,7 @@ theorem outputSpecH : OutputSpecH := by
       intro i hi
       rw [List.length_map, List.length_range] at hi
       rw [getD_trapTable hi, hQn]
-      obtain ⟨t1, t2, t3, t4⟩ := hrecs3 i (by rw [h10]; exact hi)
+      obtain ⟨t1, t2, t3, t4⟩ := hrecs3 i (by rwa [h10])
       exact ⟨t1, t2, t3, t4⟩
     · show c3.nreg 9993 = _
       rw [hfr3 _ (by unfold regFree; omega), v9993]; rfl
@@ -244,10 +244,10 @@ theorem outputSpecH : OutputSpecH := by
     · rw [ho3, o2, o1, hout]
   · -- the frame
     refine ⟨fun r hr hra => ?_, fun r hr => ?_, fun a ha => ?_, fun a _ => ?_, ?_, ?_, ?_⟩
-    · have hr' : 240000 ≤ r := ge_of_band hr
-      rw [hfr3 _ (by unfold regFree; omega), fn2 _ hr', fn1 _ (by omega)]
-    · have hr' : 240000 ≤ r := ge_of_band hr
-      rw [hrr3 _ (by unfold regFree; omega), fr2 _ hr', fr1 _ (by omega) (by omega)]
+    · have hr' := ge_of_band hr
+      rw [hfr3 _ (by unfold regFree; omega), fn2 _ hr', fn1 _ by_o]
+    · have hr' := ge_of_band hr
+      rw [hrr3 _ (by unfold regFree; omega), fr2 _ hr', fr1 _ by_o by_o]
     · exact hmem3 a ha
     · rw [hrm3, rm2, rm1]
     · rw [ho3, o2, o1]
@@ -290,7 +290,7 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
   have hC : (κS + κU + κD + κO) * (P.n + 1) = bS + bU + bD + bO := by
     subst hbS hbU hbD hbO; ring
   rw [hsum] at hW
-  have hn3 : P.n + 3 ≤ W := by omega
+  have hn3 : P.n + 3 ≤ W := by_o
   have hw0 : WordsBounded W initConfig := ⟨fun _ => Nat.zero_le _, fun _ => Nat.zero_le _⟩
   have ha0 : initConfig.nreg ALLOC = 0 := rfl
   obtain ⟨c₁, k₁, e₁, hk₁, hq₁, hf₁⟩ := hS P W initConfig hw0 ⟨hge, hn3⟩
@@ -301,10 +301,10 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
     hU P W c₁ e₁.wb_right ⟨hge, hn3, hq₁⟩
       (show c₁.nreg ALLOC + κU * (P.n + 1) ≤ W by rw [← hbU]; omega)
   replace hk₂ : k₂ ≤ bU := by rw [hbU]; exact hk₂
-  have ha₂ : c₂.nreg ALLOC ≤ c₁.nreg ALLOC + k₂ := hf₂.2.2.2.2.2.2
+  have ha₂ := hf₂.2.2.2.2.2.2
   have hset₂ : Robust (c₂.nreg ALLOC) c₂.nmem
       (fun m => SetupAt m (c₂.nreg (coreReg 0)) P.n (c₂.nreg ALLOC)) := by
-    have h0 : c₂.nreg (coreReg 0) = c₁.nreg (coreReg 0) := hkeep₂ 0 (by simp)
+    have h0 : c₂.nreg (coreReg 0) = c₁.nreg (coreReg 0) := hkeep₂ 0 by_s
     rw [h0]
     intro m hm
     have hq := (hq₁.frame hf₂) m hm
@@ -313,14 +313,14 @@ theorem core_of_phasesH (hS : SetupSpec) (hUD : ∃ X : MemCtx, UpPhaseSpec X �
     hD P W c₂ e₂.wb_right ⟨hge, hn3, hset₂, hX₂, hcap₂, C, N, hC₂, hN₂, hcan₂⟩
       (show c₂.nreg ALLOC + κD * (P.n + 1) ≤ W by rw [← hbD]; omega)
   replace hk₃ : k₃ ≤ bD := by rw [hbD]; exact hk₃
-  have ha₃ : c₃.nreg ALLOC ≤ c₂.nreg ALLOC + k₃ := hf₃.2.2.2.2.2.2
+  have ha₃ := hf₃.2.2.2.2.2.2
   have hout₃ : c₃.output = [] := by
     rw [hf₃.2.2.2.2.1, hf₂.2.2.2.2.1, hf₁.2.2.2.2.1]; rfl
   obtain ⟨c₄, k₄, e₄, hk₄, hq₄, hf₄⟩ :=
     hO P W c₃ e₃.wb_right ⟨hge, hn3, hout₃, N', hN₃, hnf₃, hfull₃, hh₃⟩
       (show c₃.nreg ALLOC + κO * (P.n + 1) ≤ W by rw [← hbO]; omega)
   replace hk₄ : k₄ ≤ bO := by rw [hbO]; exact hk₄
-  have ha₄ : c₄.nreg ALLOC ≤ c₃.nreg ALLOC + k₄ := hf₄.2.2.2.2.2.2
+  have ha₄ := hf₄.2.2.2.2.2.2
   refine ⟨c₄, k₁ + (k₂ + (k₃ + k₄)), .seq e₁ (.seq e₂ (.seq e₃ e₄)), ?_, ?_,
     Qof P, shearRel_Qof (hgood P hP), (hsh (epsOf P) P).1 hP, hq₄⟩
   · rw [hC]; omega

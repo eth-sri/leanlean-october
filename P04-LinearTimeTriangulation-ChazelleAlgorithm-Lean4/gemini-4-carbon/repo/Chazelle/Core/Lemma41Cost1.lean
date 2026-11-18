@@ -59,7 +59,7 @@ theorem pair_le_sum (ns : List Shp) {q : ℕ} (hq : q < ns.length / 2) :
     intro x hx; simp only [Finset.mem_insert, Finset.mem_singleton] at hx
     simp only [Finset.mem_range]; omega
   have := Finset.sum_le_sum_of_subset (f := fun k => (nd ns k).2.1) hsub
-  rw [Finset.sum_pair (by omega)] at this
+  rw [Finset.sum_pair by_o] at this
   exact this
 
 /-- **One merge.** -/
@@ -75,7 +75,7 @@ theorem pairCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G)
           Nat.clog 2 ((nd ns (2 * q)).2.1 + (nd ns (2 * q + 1)).2.1 + 1) + 1)
       ≤ κ 4 * (kb (nd ns (2 * q)) + kb (nd ns (2 * q + 1)) + 1) * F Gl * G Gl *
         (H Gl + Nat.clog 2 ((ns.map fun x => x.2.1).sum + 1) + 1) := by gcongr
-    _ = _ := by ring
+    _ = _ := by_r
 
 /-- **One level.** -/
 theorem lvCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) (hH : Monotone H)
@@ -96,16 +96,16 @@ theorem lvCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) (
       Finset.sum_const, Finset.card_range, smul_eq_mul]
   have h3 : ∑ k ∈ range (2 * p), kb (nd ns k) ≤ (ns.map kb).sum := by
     rw [← sum_range_nd]
-    exact Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr (by omega))
+    exact Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr by_o)
   have h4 : (∑ k ∈ range (2 * p), kb (nd ns k)) * Φ ≤ (ns.map kb).sum * Φ :=
     Nat.mul_le_mul_right _ h3
   have h5 : p * (Φ + 331) ≤ ns.length * Φ + 331 * ns.length := by
-    have : p ≤ ns.length := by omega
+    have : p ≤ ns.length := by_o
     nlinarith
   unfold lvCost
   rw [← hp]
-  have h6 : 13 * ((ns.length + 1) / 2) ≤ 13 * ns.length := by omega
-  have h7 : Φ * ((ns.map kb).sum + ns.length) = (ns.map kb).sum * Φ + ns.length * Φ := by ring
+  have h6 : 13 * ((ns.length + 1) / 2) ≤ 13 * ns.length := by_o
+  have h7 : Φ * ((ns.map kb).sum + ns.length) = (ns.map kb).sum * Φ + ns.length * Φ := by_r
   omega
 
 theorem kb_split (G0 : ℕ) : ∀ ns : List Shp, (ns.map kb).sum =
@@ -135,12 +135,12 @@ theorem nonleaf_le (G0 : ℕ) : ∀ ns : List Shp, (∀ x ∈ ns, leafP G0 x = f
     cases hl : leafP G0 a
     · simp only [Bool.not_false, ite_true, List.map_cons, List.sum_cons]
       have ha := h a List.mem_cons_self hl
-      have hk : kb a ≤ 60 * (2 * a.2.1 + 7) / (G0 + 1) := Nat.div_le_div_left ha (by omega)
+      have hk : kb a ≤ 60 * (2 * a.2.1 + 7) / (G0 + 1) := Nat.div_le_div_left ha by_o
       omega
     · simp only [Bool.not_true, Bool.false_eq_true, ite_false]
       have : (l.map fun x => 60 * (2 * x.2.1 + 7)).sum / (G0 + 1) ≤
           (60 * (2 * a.2.1 + 7) + (l.map fun x => 60 * (2 * x.2.1 + 7)).sum) / (G0 + 1) :=
-        Nat.div_le_div_right (by omega)
+        Nat.div_le_div_right by_o
       omega
 
 /-- The leaves of the next level are leaves of this one. -/
@@ -154,7 +154,7 @@ theorem leaves_pairUp_sublist {G0 t : ℕ} (ht : G0 < t) : ∀ ns : List Shp,
       unfold leafP; simp only [decide_eq_false_iff_not]; omega
     simp only [pairUp, List.filter_cons, hm, Bool.false_eq_true, ite_false]
     refine ih.trans ?_
-    have h1 : rest.Sublist (a :: b :: rest) :=
+    have h1 :=
       (List.sublist_cons_self b rest).trans (List.sublist_cons_self a _)
     have := h1.filter (leafP G0)
     simpa [List.filter_cons] using this
@@ -197,26 +197,26 @@ theorem totCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) 
       rw [totCost, ite_eq_right hlen]
       rw [← ht]
       -- this level
-      have hlv := lvCost_le κ F G H hF hG hH ns (γ₀ := γ₀) (Gl := Gl) (by omega)
+      have hlv := lvCost_le κ F G H hF hG hH ns (γ₀ := γ₀) (Gl := Gl) by_o
       rw [hL] at hlv
       have hkb : (ns.map kb).sum ≤ LS0 + (120 * L + 420 * J) / (G0 + 1) := by
         rw [kb_split G0 ns]
         have := nonleaf_le G0 ns hnl
         rw [sum_lin, hL] at this
         have : (120 * L + 420 * ns.length) / (G0 + 1) ≤ (120 * L + 420 * J) / (G0 + 1) :=
-          Nat.div_le_div_right (by omega)
+          Nat.div_le_div_right by_o
         omega
       have hlvb : lvCost κ F G H ns γ₀ ≤ lvBound κ F G H Gl G0 J L LS0 := by
         unfold lvBound
         have : phiL κ F G H Gl L * ((ns.map kb).sum + ns.length) ≤
             phiL κ F G H Gl L * (LS0 + (120 * L + 420 * J) / (G0 + 1) + J) :=
-          Nat.mul_le_mul_left _ (by omega)
+          Nat.mul_le_mul_left _ by_o
         omega
       -- the next level
-      have hlen' : (pairUp ns t).length = (ns.length + 1) / 2 := pairUp_length ns t
+      have hlen' := pairUp_length ns t
       have hinv : PInv G0 Gl J L LS0 (pairUp ns t) t := by
-        refine ⟨by omega, by omega, by rw [pairUp_sum]; exact hL, ?_, by omega,
-          le_trans (sublist_sum_le ((leaves_pairUp_sublist (by omega) ns).map kb)) hLS,
+        refine ⟨by_o, by_o, by rwa [pairUp_sum], ?_, by_o,
+          le_trans (sublist_sum_le ((leaves_pairUp_sublist by_o ns).map kb)) hLS,
           fun x hx hxl => ?_⟩
         · rw [hlen', ht]; unfold lvTgt; split_ifs with h3
           · rw [show (ns.length + 1) / 2 = 1 by omega, Nat.clog_one_right]; omega
@@ -224,7 +224,7 @@ theorem totCost_le (κ F G H : ℕ → ℕ) (hF : Monotone F) (hG : Monotone G) 
         · rcases mem_pairUp hx with h' | h'
           · exact hnl x h' hxl
           · omega
-      have := ih (pairUp ns t) t (by omega) hinv
+      have := ih (pairUp ns t) t by_o hinv
       rw [hlen'] at this
       rw [hcl2]
       nlinarith

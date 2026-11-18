@@ -34,14 +34,14 @@ theorem stable_tinv {W : ℕ} {c₀ : Config} {Bo : Finset ℕ} (hB8 : bRestore 
   intro c c' k hI hw' hf
   obtain ⟨r₁, -, m₁, -, -, a₁, -⟩ := hf
   have keep : ∀ q, 80000 ≤ q → q < 84000 → c'.nreg q = c.nreg q := fun q h1 h2 =>
-    r₁ q (by rw [band8 h1 (by omega)]; exact hB8) (by unfold ALLOC; omega)
+    r₁ q (by rwa [band8 h1 by_o]) by_ao
       (by unfold RS0; omega)
-  refine ⟨hw', fun q h1 h2 => by rw [keep q h1 (by omega)]; exact hI.hin q h1 h2,
+  refine ⟨hw', fun q h1 h2 => by rw [keep q h1 by_o]; exact hI.hin q h1 h2,
     le_trans hI.hA a₁, fun a ha => by rw [m₁ a (by have := hI.hA; omega)]; exact hI.hm a ha,
-    by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h20,
-    by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h21,
-    by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h22,
-    by rw [keep _ (by norm_num) (by norm_num)]; exact hI.h23⟩
+    by rw [keep _ by_n by_n]; exact hI.h20,
+    by rw [keep _ by_n by_n]; exact hI.h21,
+    by rw [keep _ by_n by_n]; exact hI.h22,
+    by rw [keep _ by_n by_n]; exact hI.h23⟩
 
 /-- The registers written by `gKey`. -/
 def BgK (r : ℕ) : Bool := Bprim r || decide (50200 ≤ r ∧ r < 50210)
@@ -83,7 +83,7 @@ theorem wr_gKey (a b d e : ℕ) : wr BgK (gKey a b d e) = true := by
 theorem gKey_keyG {P : Polygon} {W : ℕ} {M : Model} {N : NF} {c₀ : Config}
     (hE : TGood P W M N c₀) : KeyG P W M RS0 (TInv W c₀) gKey BgK 11010 := by
   intro a b d e ha hb hd he c hw hctx hx hxe hx0 hy hye hy0 hroom
-  have hI : TInv W c₀ c := hctx.1
+  have hI := hctx.1
   have inR : ∀ r, InB RS0 r → InR r := fun r h => by unfold InB RS0 at h; unfold InR; omega
   obtain ⟨c', k, ex, hk, b1, -, -⟩ := gKey_ok a b d e (inR a ha) (inR b hb) (inR d hd) (inR e he)
     P W M N c₀ c hE hI ⟨hxe, hx, fun C _ h0 => by simp only at h0; omega⟩

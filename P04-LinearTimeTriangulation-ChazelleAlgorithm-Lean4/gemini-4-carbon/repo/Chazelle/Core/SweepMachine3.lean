@@ -52,7 +52,7 @@ theorem no_label_of_pocket (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hn := hC.n_pos
   set n := (chainModel J.whole).W.n with hndef
   set g := 6 + tpos J.whole J.m₁ with hgdef
-  have hg : g < n := hC.hg
+  have hg := hC.hg
   have hg0 : (0 : ℝ) ≤ (g : ℝ) := Nat.cast_nonneg _
   have hgn : (g : ℝ) < n := by exact_mod_cast hg
   have hne := (hC.hM.eq_iff_not_separates hC.hF hC.hfin hG hG hpx (Nat.mod_lt _ hn) htx ht hcx
@@ -98,8 +98,8 @@ theorem dir_opposite {M : Model} (hM : WalkAx M) {e : Set Point} (he : e ∈ M.A
   obtain ⟨a', b', -, hcab', hend⟩ := end_of_not_mem hM he
   have hAe := hA.2.2.2.1
   have hBe := hB.2.2.2.1
-  have hAD : sidePt M.W pa ta ∉ M.D := hM.trace pa hA.1 ta hA.2.1 hA.2.2.1.le
-  have hBD : sidePt M.W pb tb ∉ M.D := hM.trace pb hB.1 tb hB.2.1 hB.2.2.1.le
+  have hAD := hM.trace pa hA.1 ta hA.2.1 hA.2.2.1.le
+  have hBD := hM.trace pb hB.1 tb hB.2.1 hB.2.2.1.le
   have hA' := hend _ hAe hAD
   have hB' := hend _ hBe hBD
   rw [hcab'] at hAe hBe ⊢

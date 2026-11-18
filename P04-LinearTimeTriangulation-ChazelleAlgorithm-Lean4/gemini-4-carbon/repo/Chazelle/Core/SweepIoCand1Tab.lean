@@ -59,7 +59,7 @@ theorem tabL_val (m f : ℕ → ℕ) (hk : f K1 = 1) :
   have hk' : f 240611 = 1 := hk
   simp only [tabL, regB, regI, upd, tbA, tbF, tbE, tbH, tbT, sw, qJ, K1]
   norm_num [hk']
-  refine ⟨by ring, by ring_nf, by ring_nf, by ring_nf, fun q hq => ?_⟩
+  refine ⟨by_r, by ring_nf, by ring_nf, by ring_nf, fun q hq => ?_⟩
   split_ifs <;> first | rfl | omega
 
 theorem tabL_ok {W : ℕ} (m f : ℕ → ℕ) (hk : f K1 = 1)
@@ -67,14 +67,14 @@ theorem tabL_ok {W : ℕ} (m f : ℕ → ℕ) (hk : f K1 = 1)
   have hk' : f 240611 = 1 := hk
   have hW' : f 240302 + 3 * f 243227 + 2 ≤ W := hW
   have s : ∀ i, 4820 ≤ i → i ≤ 4824 → IScr (sw i) := fun i h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw by_so by_so
   simp only [tabL, okB, okI, regI, upd, tbA, tbF, tbE, tbH, tbT, qJ, K1, sw]
   norm_num [hk']
-  refine ⟨s 4820 (by norm_num) (by norm_num), ⟨s 4820 (by norm_num) (by norm_num), ?_⟩,
-    ⟨s 4820 (by norm_num) (by norm_num), ?_⟩, ⟨s 4820 (by norm_num) (by norm_num), ?_⟩,
-    s 4821 (by norm_num) (by norm_num), ⟨s 4820 (by norm_num) (by norm_num), ?_⟩,
-    s 4822 (by norm_num) (by norm_num), ⟨s 4820 (by norm_num) (by norm_num), ?_⟩,
-    s 4823 (by norm_num) (by norm_num), ⟨s 4824 (by norm_num) (by norm_num), ?_⟩⟩ <;> omega
+  refine ⟨s 4820 by_n by_n, ⟨s 4820 by_n by_n, ?_⟩,
+    ⟨s 4820 by_n by_n, ?_⟩, ⟨s 4820 by_n by_n, ?_⟩,
+    s 4821 by_n by_n, ⟨s 4820 by_n by_n, ?_⟩,
+    s 4822 by_n by_n, ⟨s 4820 by_n by_n, ?_⟩,
+    s 4823 by_n by_n, ⟨s 4824 by_n by_n, ?_⟩⟩ <;> omega
 
 set_option maxHeartbeats 4000000 in
 /-- **The table step of a regular endpoint query of side `1`.** -/
@@ -82,7 +82,7 @@ theorem tabStep : TabStepSpec := by
   refine ⟨tabB, tabK, ?_⟩
   intro P W X Ok J H N₁ N₂ E c₀ c L z hA hI hj hz hd hzR hzs hzt hacc hroom
   have hK := hA.hK.fix hI
-  have k1 : c.nreg K1 = 1 := hK.2.1
+  have k1 := hK.2.1
   set j := c.nreg qJ with hjdef
   set σ := dirOf (c.nreg qD) with hσdef
   have hσ : σ = 1 ∨ σ = -1 := by rw [hσdef]; unfold dirOf; split_ifs <;> simp
@@ -96,14 +96,14 @@ theorem tabStep : TabStepSpec := by
       c₀.nmem (rd c₀ bSweep 302 + 3 * j + i) := by
     intro i hi
     rw [hB]
-    exact hI.hm _ (by omega)
+    exact hI.hm _ by_o
   -- the facts of the table entry
   obtain ⟨-, -, -, -, -, -, -, -, -, -, hTab, hFl⟩ := hA.hout
-  have hT := hTab j hj (by rw [hz]; exact hzR) (by rw [hz]; exact hzs) (by rw [hz]; exact hzt)
+  have hT := hTab j hj (by rwa [hz]) (by rwa [hz]) (by rwa [hz])
   obtain ⟨hf1, hPW⟩ := hFl j hj
   have hfree : FreeAt J.whole z σ := by
     have := hT.1; rw [hz, hd] at this; exact this
-  have hz2 : z.2 ≤ J.whole.top.2 := J.whole.snd_le_top_of_mem_set (J.right_set_subset hzR)
+  have hz2 := J.whole.snd_le_top_of_mem_set (J.right_set_subset hzR)
   obtain ⟨hτ0, hon⟩ := hit_onCB J.whole hz2 hσ hfree
   -- the loads
   refine IRS.seq (K₁ := 10) (K₂ := offerK + 2) (IRS.block tabL hI (tabL_ok _ _ k1 hW)) ?_ |>.mono
@@ -114,14 +114,14 @@ theorem tabStep : TabStepSpec := by
     rw [hc1]; exact vo q hq
   have m1 : c₁.nmem = c.nmem := by rw [hc1]
   have f1 : c₁.nreg tbF = c₀.nmem (rd c₀ bSweep 302 + 3 * j) := by
-    rw [hc1]; simp only; rw [vF]; simpa using hmem 0 (by norm_num)
+    rw [hc1]; simp only; rw [vF]; simpa using hmem 0 by_n
   have e1 : c₁.nreg tbE = c₀.nmem (rd c₀ bSweep 302 + 3 * j + 1) := by
-    rw [hc1]; simp only; rw [vE]; exact hmem 1 (by norm_num)
+    rw [hc1]; simp only; rw [vE]; exact hmem 1 by_n
   have h1 : c₁.nreg tbH = c₀.nmem (rd c₀ bSweep 302 + 3 * j + 2) := by
-    rw [hc1]; simp only; rw [vH]; exact hmem 2 (by norm_num)
+    rw [hc1]; simp only; rw [vH]; exact hmem 2 by_n
   have t1 : c₁.nreg tbT = 2 := by rw [hc1]; simp only; rw [vT]
   have a1 : c₁.nreg ALLOC = c.nreg ALLOC := o1 _ (by unfold ALLOC tbA sw; omega)
-  have k1₁ : c₁.nreg K1 = 1 := (hA.hK.fix hI₁).2.1
+  have k1₁ := (hA.hK.fix hI₁).2.1
   have qD1 : c₁.nreg qD = c.nreg qD := o1 _ (by unfold qD tbA sw; omega)
   have acc1 : AccOK P accA (ModB J (c.nreg bL) (c.nreg bR)) J.whole.radius z σ L c₁ :=
     hacc.transport (fun i hi => o1 _ (by unfold accA tbA sw; omega))
@@ -155,16 +155,16 @@ theorem tabStep : TabStepSpec := by
       (by unfold accA sw; omega)
       (by unfold tbE tbH tbT qD sw; omega)
       (by unfold accA tbE tbH tbT qD sw; omega)
-      (by rw [qD1]; exact acc1) (by rw [t1])
+      (by rwa [qD1]) (by rw [t1])
       (by rw [hM2]; exact AEnv.ctxW hA hI₁) (by rw [hM2])
-      (by rw [hM2, e1]; exact hPe) (by rw [hM2, e1, h1]; exact hPp)
-      (by rw [hM2, e1, h1, qD1]; exact hpt) (Cand1.abs_lt_whole hzR).2
+      (by rwa [hM2, e1]) (by rwa [hM2, e1, h1])
+      (by rwa [hM2, e1, h1, qD1]) (Cand1.abs_lt_whole hzR).2
       (by rw [a1]; omega)).mono le_rfl ?_
     rintro c' ⟨hacc', hk, hal, hm⟩
     rw [qD1] at hacc'
     refine ⟨⟨insert (J.whole.hitParam z σ) L, hacc', Set.subset_insert _ _, fun τ hτ => ?_,
-      Or.inl (Set.mem_insert _ _)⟩, fun r hr0 hr1 hr2 hr3 hr4 => ?_, by rw [← a1]; exact hal,
-      fun a ha => by rw [hm a (by rw [a1]; exact ha), m1]⟩
+      Or.inl (Set.mem_insert _ _)⟩, fun r hr0 hr1 hr2 hr3 hr4 => ?_, by rwa [← a1],
+      fun a ha => by rw [hm a (by rwa [a1]), m1]⟩
     · rcases (Set.mem_insert_iff.1 hτ) with rfl | h
       · exact Or.inr ⟨hτ0, hon⟩
       · exact Or.inl h

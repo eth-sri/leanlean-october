@@ -36,11 +36,11 @@ theorem chord_height_lt {C : Chain} (hP : C.P.Simple) {c : Set Point}
     (hc : c ∈ (chainModel C).Adm) {z : Point} (hz : z ∈ c) : |z.2| < C.radius := by
   have hGM : GoodModel (chainModel C) := Or.inl ⟨C, hP, rfl⟩
   obtain ⟨y, a, b, hH, rfl⟩ := adm_hchord hGM hc
-  have hy : z.2 = y := hz.1
+  have hy := hz.1
   have hm : (((a + b) / 2, y) : Point) ∈ (chainModel C).D :=
     hH.open_mem _ (by linarith [hH.lt]) (by linarith [hH.lt])
   have := (C.dom_subset_box hm).2
-  rw [hy]; exact this
+  rwa [hy]
 
 /-- **A position at which an admissible chord is attached** is a valid input of `offCmp`. -/
 theorem posOK_of_attach {C : Chain} (hP : C.P.Simple) {Q : Polygon} {n : ℕ} {x : WPos}
@@ -62,7 +62,7 @@ theorem chord_posOK (hP : C.P.Simple) (hNF : IsNF (chainModel C) (Qof P) N) {i :
     PosOK C (Qof P) P.n (N.chord i).lpos ∧ PosOK C (Qof P) P.n (N.chord i).rpos := by
   obtain ⟨hFam, -, hat, reg, -, -, -, -, -, hh, -⟩ := hNF
   have hQ : (Qof P).n = P.n := shear_n _ _
-  have hadm : (N.chord i).toSet (chainModel C) (Qof P) ∈ (chainModel C).Adm :=
+  have hadm :=
     hFam.2.1 ⟨_, chord_mem_list hi, rfl⟩
   have hhn : (N.chord i).h + 1 ≤ P.n := by have := hh i hi; omega
   exact ⟨posOK_of_attach hP hadm (hat i hi).1 hhn, posOK_of_attach hP hadm (hat i hi).2 hhn⟩

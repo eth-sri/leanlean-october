@@ -76,7 +76,7 @@ theorem wrapK_edge {n p : ℕ} (_hn : 0 < n) (hp : p < 2 * n) {y : ℝ} (hy1 : (
       by_contra hpn; push Not at hpn
       have : (p : ℝ) + 1 ≤ n := by exact_mod_cast hpn
       linarith
-    rw [Nat.mod_eq_sub_mod hpn, Nat.mod_eq_of_lt (by omega)]
+    rw [Nat.mod_eq_sub_mod hpn, Nat.mod_eq_of_lt by_o]
     push_cast [hpn]; ring
 
 /-- **A piece of an arc**: chain edge `kl + j` lies on interior walk edge `p` (mod `n`). -/
@@ -103,11 +103,11 @@ theorem piece (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hfin := X.hFam.1
   have hdN := hA.hdN
   obtain ⟨p, hp1, hp2, hp3, hq⟩ := arc_piece hM hF hfin hA hj
-  have hjj := ukey_mono (U := R) hM hF hfin hA.hil (Nat.lt_succ_self j) (by omega)
+  have hjj := ukey_mono (U := R) hM hF hfin hA.hil (Nat.lt_succ_self j) by_o
   refine ⟨p, hp3, hp1, hp2, ?_, ?_, hq⟩
-  · rw [vertex_arc X hA.hil, ← wrapK_ukey hM hF hfin hA.hil (by omega)]
+  · rw [vertex_arc X hA.hil, ← wrapK_ukey hM hF hfin hA.hil by_o]
     exact hq _ le_rfl hjj.le
-  · rw [add_assoc, vertex_arc X hA.hil, ← wrapK_ukey hM hF hfin hA.hil (by omega)]
+  · rw [add_assoc, vertex_arc X hA.hil, ← wrapK_ukey hM hF hfin hA.hil by_o]
     exact hq _ hjj.le le_rfl
 
 /-- **Inner host keys are integers.** -/
@@ -119,7 +119,7 @@ theorem ukey_inner_int (X : Ctx Q S R) {l r : ℝ} {i_l d : ℕ}
   have hfin := X.hFam.1
   obtain ⟨⟨k, hk⟩, -⟩ := hA.inner j hj0 hjd
   have hdN := hA.hdN
-  rw [ukey_eq_unwrap hM hF hfin hA.hil (by omega), hk]
+  rw [ukey_eq_unwrap hM hF hfin hA.hil by_o, hk]
   unfold unwrapK
   split_ifs
   · exact ⟨k, rfl⟩
@@ -140,10 +140,10 @@ theorem piece_inner {i_l j p p' : ℕ} (K : ℕ)
   rw [hK] at hp1 hlt hp2' hlt'
   constructor
   · have h1 : p ≤ K := by exact_mod_cast hp1
-    have h2 : (K : ℝ) < p + 1 := lt_of_lt_of_le hlt hp2
+    have h2 := lt_of_lt_of_le hlt hp2
     have h2' : K < p + 1 := by exact_mod_cast h2
     omega
-  · have h1 : (p' : ℝ) < K := lt_of_le_of_lt hp1' hlt'
+  · have h1 := lt_of_le_of_lt hp1' hlt'
     have h1' : p' < K := by exact_mod_cast h1
     have h2 : K ≤ p' + 1 := by exact_mod_cast hp2'
     omega

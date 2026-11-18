@@ -66,16 +66,16 @@ theorem orgOut_transfer {R : ℕ → Prop} {N : NF} {kind k b : ℕ} {c₃ c' : 
 /-- The cost bound. -/
 theorem slf_cost {A B T Kp Ks Pc : ℕ} (hA : 1 ≤ A) (hB : T + 1 ≤ B) (hP : Pc ≤ Kp * A + 5) :
     44037 + (Pc + ((Ks * (T + 1) + 40) + 100)) ≤ (44200 + Kp + Ks) * A * B := by
-  have hB1 : 1 ≤ B := by omega
-  have h1 : 1 ≤ A * B := Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero (by omega) (by omega))
-  have h2 : Kp * A ≤ Kp * A * B := Nat.le_mul_of_pos_right _ (by omega)
+  have hB1 : 1 ≤ B := by_o
+  have h1 : 1 ≤ A * B := Nat.one_le_iff_ne_zero.2 (Nat.mul_ne_zero by_o by_o)
+  have h2 : Kp * A ≤ Kp * A * B := Nat.le_mul_of_pos_right _ by_o
   have h3 : Ks * (T + 1) ≤ Ks * A * B := by
     calc Ks * (T + 1) ≤ Ks * B := Nat.mul_le_mul_left _ hB
       _ ≤ Ks * A * B := by
-        rw [mul_assoc]; exact Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_left _ (by omega))
+        rw [mul_assoc]; exact Nat.mul_le_mul_left _ (Nat.le_mul_of_pos_left _ by_o)
   have h4 : 44200 ≤ 44200 * A * B := by
-    rw [mul_assoc]; exact Nat.le_mul_of_pos_right _ (by omega)
-  have e : (44200 + Kp + Ks) * A * B = 44200 * A * B + Kp * A * B + Ks * A * B := by ring
+    rw [mul_assoc]; exact Nat.le_mul_of_pos_right _ by_o
+  have e : (44200 + Kp + Ks) * A * B = 44200 * A * B + Kp * A * B + Ks * A * B := by_r
   rw [e]; omega
 
 set_option maxHeartbeats 32000000 in
@@ -108,7 +108,7 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
     (B := F (c₀.nreg (sw 5)) + c₀.nreg TLR + 1) (T := c₀.nreg TLR) (Kp := κp)
     (Ks := κs (c₀.nreg (sw 6)))
     (Pc := if kind = 1 then 5 else κp * (N₂.nChords + 1) + 4) (by split_ifs <;> omega)
-    (by omega) (by
+    by_o (by
       split_ifs with h
       · omega
       · have := Nat.mul_le_mul_left κp (show N₂.nChords + 1 ≤ N₁.nChords + N₂.nChords + 1 by omega)
@@ -122,7 +122,7 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
     have := hcost; omega
   unfold slfFin
   -- 1. the offsets
-  refine IRS.seq (K₁ := 44037) (slfOffs_irs E hI hat₀.1 hat₁.1 (by omega)) ?_
+  refine IRS.seq (K₁ := 44037) (slfOffs_irs E hI hat₀.1 hat₁.1 by_o) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨b0, b3, b4, b7, ha1, ha, fr1⟩
   have s1 : ∀ r, SlfSafe r → c₁.nreg r = c.nreg r := fun r hr => slf_keep fr1 slfOffR_safe hr
   have e1kd : c₁.nreg oKd = kind := by rw [s1 _ (by unfold SlfSafe oKd sw; omega), hkd]
@@ -133,8 +133,8 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
   -- 2. the parent
   refine IRS.seq (K₁ := if kind = 1 then 5 else κp * (N₂.nChords + 1) + 4)
     ((slfPar_irs E hI₁ (fun c' hI' => hps sh Bs F X Ok P W c₀ c' J N₁ N₂ E hI')
-      (by rw [e1kd, e1kk, e1kb]; exact hD)
-      (by rw [e1kd, e1kk, e1kb, e1pe, e1ph]; exact hpre2)
+      (by rwa [e1kd, e1kk, e1kb])
+      (by rwa [e1kd, e1kk, e1kb, e1pe, e1ph])
       (fun _ => by split_ifs at hroom' <;> omega)).mono (by rw [e1kd]) (fun _ h => h)) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨hpar, fr2⟩
   rw [e1kd, e1kk, e1kb] at hpar
@@ -142,7 +142,7 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
   have fr12 : SlfFr SlfFinR c c₂ :=
     (fr1.mono fun r h => Or.inl h).trans (fr2.mono fun r h => Or.inr (Or.inl h))
   have g2 : ∀ r, 240000 ≤ r → r < 250000 → ¬ SlfFinR r → c₂.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => fr12.1 r (band_sw_not ⟨h1, h2⟩) h3 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => fr12.1 r (band_sw_not ⟨h1, h2⟩) h3 by_ao
   have r01 := g2 (oF0 + 1) (by unfold oF0 sw; omega) (by unfold oF0 sw; omega)
     (by unfold SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar oF0 sw; omega)
   have r02 := g2 (oF0 + 2) (by unfold oF0 sw; omega) (by unfold oF0 sw; omega)
@@ -154,7 +154,7 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
   have o0 := slfOff_congr (P := P) (J := J) r01 r02
   have o1 := slfOff_congr (P := P) (J := J) r11 r12
   have k21 : ∀ r, 240000 ≤ r → r < 250000 → ¬ ParR r → c₂.nreg r = c₁.nreg r :=
-    fun r h1 h2 h3 => fr2.1 r (band_sw_not ⟨h1, h2⟩) h3 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => fr2.1 r (band_sw_not ⟨h1, h2⟩) h3 by_ao
   have eO : ∀ i, i ≤ 8 → c₂.nreg (slfO + i) = c₁.nreg (slfO + i) := fun i hi =>
     k21 _ (by unfold slfO sw; omega) (by unfold slfO sw; omega) (by unfold ParR oPar slfO sw; omega)
   have eA2 : c₂.nreg slfA = c₁.nreg slfA :=
@@ -162,17 +162,17 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
   -- 3. the labels
   refine IRS.seq (K₁ := κs (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 40)
     (slfLab_irs E hI₂ hsl hD (hat₀.congr r01 r02) (hat₁.congr r11 r12)
-      (by rw [o0]; exact b0.of_eq (eO 0 (by norm_num)))
-      (by rw [o0]; exact b3.of_eq (eO 3 (by norm_num)))
-      (by rw [o1]; exact b7.of_eq (eO 7 (by norm_num)))
-      (by rw [eA2]; exact ha1) (by rw [o0, o1, eA2]; exact ha)
-      (fun h => by rw [o0, o1]; exact hpk.1 h) hpar (by omega)) ?_
+      (by rw [o0]; exact b0.of_eq (eO 0 by_n))
+      (by rw [o0]; exact b3.of_eq (eO 3 by_n))
+      (by rw [o1]; exact b7.of_eq (eO 7 by_n))
+      (by rwa [eA2]) (by rwa [o0, o1, eA2])
+      (fun h => by rw [o0, o1]; exact hpk.1 h) hpar by_o) ?_
   rintro c₃ hI₃ hA₃ hA₃' ⟨hlab, fr3⟩
-  have fr13 : SlfFr SlfFinR c c₃ := fr12.trans (fr3.mono fun r h => Or.inr (Or.inr h))
+  have fr13 := fr12.trans (fr3.mono fun r h => Or.inr (Or.inr h))
   have g3 : ∀ r, 240000 ≤ r → r < 250000 → ¬ SlfFinR r → c₃.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => fr13.1 r (band_sw_not ⟨h1, h2⟩) h3 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => fr13.1 r (band_sw_not ⟨h1, h2⟩) h3 by_ao
   have k32 : ∀ r, 240000 ≤ r → r < 250000 → ¬ slfLabR r → c₃.nreg r = c₂.nreg r :=
-    fun r h1 h2 h3 => fr3.1 r (band_sw_not ⟨h1, h2⟩) h3 (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => fr3.1 r (band_sw_not ⟨h1, h2⟩) h3 by_ao
   have safe : ∀ r, SlfSafe r → ¬ SlfFinR r := fun r hr h => by
     unfold SlfSafe SlfFinR slfOffR ParR slfLabR StrR FRR frA frB slfN slfL0 slfL1 slfP slfY oPar
       sw at *
@@ -209,15 +209,15 @@ theorem finTask_of (hS : StrLabTask) (hEm : SlfEmitsSpec) : FinTask := by
     obtain ⟨p1, p2, p3⟩ := hpar
     rw [eA3, eA2]
     rw [eP3]
-    refine ⟨ha1, ?_, n1, n2, n3, fun h hnp => n4 (by rw [eA2]; exact h) hnp hC1, p1, p2, p3⟩
+    refine ⟨ha1, ?_, n1, n2, n3, fun h hnp => n4 (by rwa [eA2]) hnp hC1, p1, p2, p3⟩
     rw [ha, hbrk]; rfl
-  refine (hEm sh Bs F X Ok P W c₀ c₃ J N₁ N₂ E hI₃ (by rw [e3kd, e3kk, e3kb]; exact hD)
-    (by rw [e3kd, e3kk, e3kb, e3a, e3b]; exact hA0) (by rw [e3a, e3b]; exact hat₀.1)
-    (by rw [e3kd, e3kk, e3kb, e3c, e3d]; exact hA1) (by rw [e3c, e3d]; exact hat₁.1)
-    (by rw [q0]; exact b0.of_eq (eO3 0 (by norm_num)))
-    (by rw [q1]; exact b4.of_eq (eO3 4 (by norm_num)))
-    (by rw [e3kd, e3kk, e3kb]; exact haux) (by rw [e3RB]; exact hgA)
-    (by rw [e3RB, e3RC]; omega) (by omega)).mono le_rfl ?_
+  refine (hEm sh Bs F X Ok P W c₀ c₃ J N₁ N₂ E hI₃ (by rwa [e3kd, e3kk, e3kb])
+    (by rwa [e3kd, e3kk, e3kb, e3a, e3b]) (by rw [e3a, e3b]; exact hat₀.1)
+    (by rwa [e3kd, e3kk, e3kb, e3c, e3d]) (by rw [e3c, e3d]; exact hat₁.1)
+    (by rw [q0]; exact b0.of_eq (eO3 0 by_n))
+    (by rw [q1]; exact b4.of_eq (eO3 4 by_n))
+    (by rwa [e3kd, e3kk, e3kb]) (by rwa [e3RB])
+    (by rw [e3RB, e3RC]; omega) by_o).mono le_rfl ?_
   intro c' h
   rw [e3kd, e3kk, e3kb] at h
   exact orgOut_transfer slfFinR_sorg fr13 e3RB e3RC h

@@ -100,19 +100,18 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
       c'.nreg 70112 = c.nreg 70112 + 1 := by
   obtain ⟨j, hj⟩ : ∃ j, c.nreg 70112 = j := ⟨_, rfl⟩
   rw [hj] at ht
-  have hjL : j < L.length := by omega
-  have hreg : ∀ r, r ≠ 70110 → r ≠ 70112 → r ≠ 70113 → r ≠ 70114 → r ≠ 70115 → r ≠ 70119 →
-      r ≠ ALLOC → c.nreg r = c₀.nreg r := hI.regs
-  have r05 : c.nreg 70105 = 1 := by rw [hreg _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h05]
-  have r08 : c.nreg 70108 = 0 := by rw [hreg _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h08]
-  have r16 : c.nreg 70116 = 3 := by rw [hreg _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h16]
-  have r17 : c.nreg 70117 = 4 := by rw [hreg _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h17]
-  have r18 : c.nreg 70118 = 2 := by rw [hreg _ (by decide) (by decide) (by decide) (by decide)
-    (by decide) (by decide) (by decide), h18]
+  have hjL : j < L.length := by_o
+  have hreg := hI.regs
+  have r05 : c.nreg 70105 = 1 := by rw [hreg _ by_d by_d by_d by_d
+    by_d by_d by_d, h05]
+  have r08 : c.nreg 70108 = 0 := by rw [hreg _ by_d by_d by_d by_d
+    by_d by_d by_d, h08]
+  have r16 : c.nreg 70116 = 3 := by rw [hreg _ by_d by_d by_d by_d
+    by_d by_d by_d, h16]
+  have r17 : c.nreg 70117 = 4 := by rw [hreg _ by_d by_d by_d by_d
+    by_d by_d by_d, h17]
+  have r18 : c.nreg 70118 = 2 := by rw [hreg _ by_d by_d by_d by_d
+    by_d by_d by_d, h18]
   have hcur : c.nreg 70113 = RB + 4 * j := by rw [hI.cur, hj]
   have hqcur : c.nreg 70115 = QB + 3 * j := by rw [hI.qcur, hj]
   obtain ⟨q0, q1, q2, q3⟩ := hR j ht
@@ -121,8 +120,8 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
   set q := L.getD j (0, 0, 0) with hq
   set C0 := pre ++ collectQ (L.take j) (R.take j) with hC0
   have hmem : ∀ k, k < 4 → c.nmem (RB + 4 * j + k) = c₀.nmem (RB + 4 * j + k) :=
-    fun k hk => hI.low _ (by omega)
-  have hqmem : c.nmem (QB + 3 * j + 1) = c₀.nmem (QB + 3 * j + 1) := hI.low _ (by omega)
+    fun k hk => hI.low _ by_o
+  have hqmem : c.nmem (QB + 3 * j + 1) = c₀.nmem (QB + 3 * j + 1) := hI.low _ by_o
   have hlenj : (collectQ (L.take j) (R.take j)).length ≤ j :=
     (collectQ_length_le _ _).trans (by rw [List.length_take]; omega)
   have htake : R.take (j + 1) = R.take j ++ [r] := by
@@ -133,13 +132,13 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
   have hlenC : C0.length ≤ pre.length + j := by rw [hC0, List.length_append]; omega
   -- the flag
   have e₁ := Exec.loadN (P := P) hI.wb 70114 70113
-  set c₁ : Config := { c with nreg := upd c.nreg 70114 (c.nmem (c.nreg 70113)) } with hc₁
+  set c₁ := { c with nreg := upd c.nreg 70114 (c.nmem (c.nreg 70113)) } with hc₁
   have v14 : c₁.nreg 70114 = r.1 := by
     rw [hc₁]; simp only [upd_same]; rw [hcur]
-    have := hmem 0 (by omega); simp only [add_zero] at this; rw [this]; exact q0
+    have := hmem 0 by_o; simp only [add_zero] at this; rw [this]; exact q0
   have q₁ : ∀ x, x ≠ 70114 → c₁.nreg x = c.nreg x := fun x hx => by
     rw [hc₁]; simp [upd_other _ _ _ hx]
-  have hw₁ : WordsBounded W c₁ := e₁.wb_right
+  have hw₁ := e₁.wb_right
   -- the copy (or not)
   obtain ⟨c₂, k₂, e₂, hk₂, a₂, n₂, m₂, l₂, q₂, rr₂, rm₂, o₂⟩ : ∃ c₂ k₂, Exec P W
       (.ifLtN 70108 70114 (.ifLtN 70114 70118 clqCopy .skip) .skip) c₁ c₂ k₂ ∧ k₂ ≤ 16 ∧
@@ -157,17 +156,17 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
     by_cases hf : r.1 = 1
     · rw [ite_eq_left hf] at hc0
       have hlt1 : c₁.nreg 70108 < c₁.nreg 70114 := by
-        rw [v14, q₁ _ (by decide), r08, hf]; omega
+        rw [v14, q₁ _ by_d, r08, hf]; omega
       have hlt2 : c₁.nreg 70114 < c₁.nreg 70118 := by
-        rw [v14, q₁ _ (by decide), r18, hf]; omega
+        rw [v14, q₁ _ by_d, r18, hf]; omega
       set a := LB + 3 * C0.length
       obtain ⟨c₂, k₂, e₂, hk₂, a₂, mo, m0, m1, m2, n10, R₂, rr₂, rm₂, o₂⟩ := clqCopy_exec (P := P)
         c₁ hw₁ (s := RB + 4 * j) (t := QB + 3 * j) (a := a) (K := C0.length)
-        (by rw [q₁ _ (by decide), hcur]) (by rw [q₁ _ (by decide), hqcur])
-        (by rw [q₁ _ (by decide), hA0]) (by rw [q₁ _ (by decide), r05])
-        (by rw [q₁ _ (by decide), r18]) (by rw [q₁ _ (by decide), h10]) (by omega) (by omega)
-        (by omega) (by omega) (by omega) (by omega)
-      refine ⟨c₂, _, .ifLtN_true hlt1 (.ifLtN_true hlt2 e₂), by omega, ?_, ?_, fun x hx => ?_,
+        (by rw [q₁ _ by_d, hcur]) (by rw [q₁ _ by_d, hqcur])
+        (by rw [q₁ _ by_d, hA0]) (by rw [q₁ _ by_d, r05])
+        (by rw [q₁ _ by_d, r18]) (by rw [q₁ _ by_d, h10]) by_o by_o
+        by_o by_o by_o by_o
+      refine ⟨c₂, _, .ifLtN_true hlt1 (.ifLtN_true hlt2 e₂), by_o, ?_, ?_, fun x hx => ?_,
         ?_, fun x a1 a2 a3 a4 => ?_, by rw [rr₂], by rw [rm₂], by rw [o₂]⟩
       · rw [a₂, hc0, List.length_append, List.length_singleton]; simp only [a]; ring
       · rw [n10, hc0]; simp only [hC0, List.length_append, List.length_singleton]
@@ -178,13 +177,13 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
         have hl : ChordListAt c₂.nmem LB C0 := fun i hi => by
           obtain ⟨b0, b1, b2⟩ := hlist i hi
           refine ⟨?_, ?_, ?_⟩
-          · rw [mo _ (Or.inl (by omega))]; exact b0
-          · rw [mo _ (Or.inl (by omega))]; exact b1
-          · rw [mo _ (Or.inl (by omega))]; exact b2
+          · rwa [mo _ (Or.inl by_o)]
+          · rwa [mo _ (Or.inl by_o)]
+          · rw [mo _ (Or.inl by_o)]; exact b2
         refine chordListAt_append hl ?_ ?_ ?_
         · rw [m0, hqmem, p1]
-        · rw [m1, hmem 2 (by omega)]; exact q2
-        · rw [m2, hmem 3 (by omega)]; exact q3
+        · rwa [m1, hmem 2 by_o]
+        · rwa [m2, hmem 3 by_o]
       · rw [R₂ x a1 a2 a3 a4]
         exact q₁ x a2
     · rw [ite_eq_right hf, List.append_nil] at hc0
@@ -193,24 +192,24 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
         by_cases hlt1 : c₁.nreg 70108 < c₁.nreg 70114
         · rw [ite_eq_left hlt1]
           have hlt2 : ¬ c₁.nreg 70114 < c₁.nreg 70118 := by
-            rw [v14, q₁ _ (by decide), r18]
-            rw [v14, q₁ _ (by decide), r08] at hlt1; omega
+            rw [v14, q₁ _ by_d, r18]
+            rw [v14, q₁ _ by_d, r08] at hlt1; omega
           exact .ifLtN_true hlt1 (.ifLtN_false hlt2 (.skip hw₁))
         · rw [ite_eq_right hlt1]; exact .ifLtN_false hlt1 (.skip hw₁)
       refine ⟨c₁, _, hsk, by split_ifs <;> omega, ?_, ?_, fun x _ => rfl, ?_,
         fun x _ a2 _ _ => q₁ x a2, rfl, rfl, rfl⟩
-      · rw [q₁ _ (by decide), hA0, hc0]
-      · rw [q₁ _ (by decide), h10, hc0]
+      · rw [q₁ _ by_d, hA0, hc0]
+      · rw [q₁ _ by_d, h10, hc0]
       · rw [hc0]; have := hI.list; rw [hj] at this; exact this
   have hw₂ := e₂.wb_right
-  have c205 : c₂.nreg 70105 = 1 := (q₂ _ (by decide) (by decide) (by decide) (by decide)).trans r05
-  have c216 : c₂.nreg 70116 = 3 := (q₂ _ (by decide) (by decide) (by decide) (by decide)).trans r16
-  have c217 : c₂.nreg 70117 = 4 := (q₂ _ (by decide) (by decide) (by decide) (by decide)).trans r17
+  have c205 : c₂.nreg 70105 = 1 := (q₂ _ by_d by_d by_d by_d).trans r05
+  have c216 : c₂.nreg 70116 = 3 := (q₂ _ by_d by_d by_d by_d).trans r16
+  have c217 : c₂.nreg 70117 = 4 := (q₂ _ by_d by_d by_d by_d).trans r17
   have r13 : c₂.nreg 70113 = RB + 4 * j := by
-    rw [q₂ _ (by decide) (by decide) (by decide) (by decide), hcur]
+    rw [q₂ _ by_d by_d by_d by_d, hcur]
   have r15 : c₂.nreg 70115 = QB + 3 * j := by
-    rw [q₂ _ (by decide) (by decide) (by decide) (by decide), hqcur]
-  have r12 : c₂.nreg 70112 = j := by rw [q₂ _ (by decide) (by decide) (by decide) (by decide), hj]
+    rw [q₂ _ by_d by_d by_d by_d, hqcur]
+  have r12 : c₂.nreg 70112 = j := by rw [q₂ _ by_d by_d by_d by_d, hj]
   obtain ⟨c₃, k₃, e₃, hk₃, u13, u15, u12, u₃, um₃, urr₃, urm₃, uo₃⟩ : ∃ c₃ k₃, Exec P W
       (block [.addN 70113 70113 70117, .addN 70115 70115 70116, .addN 70112 70112 70105]) c₂ c₃ k₃ ∧
       k₃ = 3 ∧ c₃.nreg 70113 = RB + 4 * (j + 1) ∧ c₃.nreg 70115 = QB + 3 * (j + 1) ∧
@@ -227,14 +226,14 @@ theorem clqBody_step {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
   have ex : Exec P W clqBody c c₃ ((1 + 0) + (k₂ + k₃)) :=
     .seq (.seq e₁ (.skip hw₁)) (.seq e₂ e₃)
   refine ⟨c₃, _, ex, ⟨e₃.wb_right, by rw [u12]; omega, by rw [u13, u12], by rw [u15, u12],
-    by rw [u12, u₃ _ (by decide) (by decide) (by decide)]; exact a₂,
-    by rw [u12, u₃ _ (by decide) (by decide) (by decide)]; exact n₂,
-    fun x a1 a2 a3 a4 a5 a6 a7 => ?_, fun a ha => ?_, by rw [um₃, u12]; exact l₂,
+    by rwa [u12, u₃ _ by_d by_d by_d],
+    by rwa [u12, u₃ _ by_d by_d by_d],
+    fun x a1 a2 a3 a4 a5 a6 a7 => ?_, fun a ha => ?_, by rwa [um₃, u12],
     by rw [urr₃, rr₂, hI.rr], by rw [urm₃, rm₂, hI.rm], by rw [uo₃, o₂, hI.out]⟩,
-    by omega, by omega, by rw [u12, hj]⟩
+    by_o, by_o, by rw [u12, hj]⟩
   · rw [u₃ x a2 a3 a5, q₂ x a1 a4 a6 a7, hreg x a1 a2 a3 a4 a5 a6 a7]
   · have : pre.length ≤ C0.length := by rw [hC0, List.length_append]; omega
-    rw [um₃, m₂ a (by omega), hI.low a ha]
+    rw [um₃, m₂ a by_o, hI.low a ha]
 
 /-- **The collection loop.** -/
 theorem clqLoop_exec {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R : List (ℕ × ℕ × ℕ × ℕ)}
@@ -251,19 +250,19 @@ theorem clqLoop_exec {P : Polygon} {W : ℕ} {L : List (ℕ × ℕ × ℕ)} {R :
         c'.nreg 70112 = R.length
   | 0, c, hI, hn => by
     have h11' : c.nreg 70111 = R.length := by
-      rw [hI.regs 70111 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-        (by decide), h11]
-    exact ⟨c, 2, .whileLtN_false (by rw [h11']; omega) hI.wb, by omega, by omega, hI, by omega⟩
+      rw [hI.regs 70111 by_d by_d by_d by_d by_d by_d
+        by_d, h11]
+    exact ⟨c, 2, .whileLtN_false (by rw [h11']; omega) hI.wb, by_o, by_o, hI, by_o⟩
   | n + 1, c, hI, hn => by
-    have ht : c.nreg 70112 < R.length := by omega
+    have ht : c.nreg 70112 < R.length := by_o
     obtain ⟨c', k, e, hI', hk, hk4, hc'⟩ := clqBody_step (P := P) hI ht h05 h08 h16 h17 h18 hLR hR hQ
       hRB hQB hW hWK
     obtain ⟨c'', k₂, e₂, hk₂, hk₂', hI'', hK⟩ := clqLoop_exec h05 h08 h16 h17 h18 h11 hLR hR hQ hRB hQB
-      hW hWK n c' hI' (by omega)
+      hW hWK n c' hI' by_o
     have h11' : c.nreg 70111 = R.length := by
-      rw [hI.regs 70111 (by decide) (by decide) (by decide) (by decide) (by decide) (by decide)
-        (by decide), h11]
-    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rw [h11']; exact ht) e e₂, by omega, by omega,
+      rw [hI.regs 70111 by_d by_d by_d by_d by_d by_d
+        by_d, h11]
+    exact ⟨c'', k + 2 + k₂, .whileLtN_true (by rwa [h11']) e e₂, by_o, by_o,
       hI'', hK⟩
 
 end

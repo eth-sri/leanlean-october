@@ -36,11 +36,11 @@ theorem prepL_val (m f : ℕ → ℕ) :
 
 theorem prepL_ok {W : ℕ} (m f : ℕ → ℕ) : okB W m prepL f := by
   have s : ∀ j, 4800 ≤ j → j ≤ 4806 → IScr (sw j) := fun j h1 h2 =>
-    iscr_sw (by unfold sw; omega) (by unfold sw; omega)
+    iscr_sw by_so by_so
   simp only [prepL, okB, okI]
-  exact ⟨s 4800 le_rfl (by norm_num), s 4801 (by norm_num) (by norm_num),
-    s 4804 (by norm_num) (by norm_num), s 4805 (by norm_num) (by norm_num),
-    s 4806 (by norm_num) le_rfl, trivial⟩
+  exact ⟨s 4800 le_rfl by_n, s 4801 by_n by_n,
+    s 4804 by_n by_n, s 4805 by_n by_n,
+    s 4806 by_n le_rfl, trivial⟩
 
 variable {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx} {Ok : Polygon → Model → Prop}
   {P : Polygon} {W : ℕ} {c₀ c c₂ : Config} {J : Merge.Junction} {H : Host} {N₁ N₂ : NF}
@@ -79,19 +79,19 @@ theorem tourB_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteBo
   unfold tourB
   refine (IRS.seq (K₁ := 5) (K₂ := 11015 + (20 + (KK + 28)))
     ((IRS.block prepL hI₂ (prepL_ok c₂.nmem c₂.nreg)).mono (by simp [prepL]) (fun _ h => h))
-    ?_).mono (by omega) (fun _ h => h)
+    ?_).le
   rintro c₃ hI₃ hA₃ hA₃' rfl
   simp only at hA₃ hA₃'
   have hA3 : regB c₂.nmem prepL c₂.nreg ALLOC = c₂.nreg ALLOC :=
-    po _ (by unfold ALLOC sw; omega)
+    po _ by_so
   have hM₃ : Mid P J z c { c₂ with nreg := regB c₂.nmem prepL c₂.nreg } L :=
     mid_keep hM (fun r _ hr _ => po r (by unfold sw at hr ⊢; omega)) (by simp [hA3])
       (fun _ _ => rfl)
   have hK₃ := hA.hK.fix hI₃
   have hns := normS_irs (dsc := sw 21) (pe := tE) (ph := tH) (o := nO) hI₃ hK₃
     (AEnv.ctxR hA hI₃) (by unfold tE tH sw; omega) (by unfold nO tE tH sw; omega)
-    (by show regB _ _ _ tE < _; rw [p1, eE]; exact hqE)
-    (by show ProperPos _ _ _ ⟨regB _ _ _ tE, regB _ _ _ tH⟩; rw [p1, p2, eE, eH]; exact hpp)
+    (by show regB _ _ _ tE < _; rwa [p1, eE])
+    (by show ProperPos _ _ _ ⟨regB _ _ _ tE, regB _ _ _ tH⟩; rwa [p1, p2, eE, eH])
     (fun h => by
       exfalso
       have : regB c₂.nmem prepL c₂.nreg tE = c.nreg qE := by rw [p1, eE]
@@ -101,7 +101,7 @@ theorem tourB_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteBo
   refine IRS.seq hns ?_
   rintro c₄ hI₄ hA₄ hA₄' ⟨n1, n2, n3, n4, n5⟩
   simp only at n1 n2 n3 n4 n5 hA₄ hA₄'
-  have hM₄ : Mid P J z c c₄ L := mid_keep hM₃
+  have hM₄ := mid_keep hM₃
     (fun r a b d => n3 r a (by unfold sw at b; unfold tH sw; omega)
       (by unfold sw at b; unfold nO sw; omega) (by unfold sw at b; unfold nO sw; omega) d) n4 n5
   have hK₄ := hA.hK.fix hI₄
@@ -118,7 +118,7 @@ theorem tourB_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteBo
     not_oracle_sw h1 h2
   have h34' : c₂.nreg (sw 34) = 2 * J.right.m + 7 := by
     rw [hI₂.hin _ (by unfold IFix sw; omega)]; exact h34
-  have k1 : c₂.nreg K1 = 1 := hK₂.2.1
+  have k1 := hK₂.2.1
   have hNF : c₂.nmem (c₂.nreg (sw 4)) = N₂.nChords := by
     rw [hI₂.hin _ (by unfold IFix sw; omega)]
     exact (hA.hN₂ c₂.nmem (fun a ha => hI₂.hm a (by have := hA.hE; omega))).1
@@ -144,7 +144,7 @@ theorem tourB_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteBo
           (by unfold jx sw; omega)), p5, hNF, eJ]
       vt := t1
       v41 := by
-        rw [hI₅.hin _ (by unfold IFix sw; omega)]; exact h40 1 (by norm_num)
+        rw [hI₅.hin _ (by unfold IFix sw; omega)]; exact h40 1 by_n
       hK := hA.hK.fix hI₅ }
   have vH : c₅.nreg tH = nhgt (chainModel J.right) (Qof P) ⟨c.nreg qE, c.nreg qH⟩ := by
     rw [t2 tH (by unfold OutM tH sw; omega), n2, p1, p2, eE, eH]
@@ -175,9 +175,9 @@ theorem cand1P_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteB
   obtain ⟨KK, hKK⟩ : ∃ KK, KK = kD κT κS LK KB := ⟨_, rfl⟩
   have hKK' : KK = 16749 + κT + κS + LK + KB := by rw [hKK]; rfl
   rw [← hLK, ← hKK] at hroom ⊢
-  have hbr1 : c.nreg bR = 1 := (hq.hbR.2).2 hz₂
+  have hbr1 := (hq.hbR.2).2 hz₂
   have hMod : ModB J (c.nreg bL) (c.nreg bR) 1 = J.right := by
-    unfold ModB; rw [ite_eq_right (by omega), ite_eq_left ⟨rfl, hbr1⟩]
+    unfold ModB; rw [ite_eq_right by_o, ite_eq_left ⟨rfl, hbr1⟩]
   have hloc : (c.nreg qE = 1 ∨ c.nreg qE = 3) ∨ (6 ≤ c.nreg qE ∧ z ∈ J.right.set) := by
     by_cases hb : c.nreg qE = 1 ∨ c.nreg qE = 3
     · exact Or.inl hb
@@ -185,13 +185,13 @@ theorem cand1P_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteB
       rw [hzpos] at hzC
       exact Or.inr ⟨h6, hzC⟩
   have hlhs := lhsR_irs (e := qE) (t := 1) hsh hBs hXl hA (by unfold OutL qE sw; omega) hI
-    hqE hpp hzpos habs hloc (accOK_init accA _ _ _ _ hacc0) (by norm_num) hMod rfl
+    hqE hpp hzpos habs hloc (accOK_init accA _ _ _ _ hacc0) by_n hMod rfl
     (by rw [← hLK]; omega)
   rw [← hLK] at hlhs
   unfold cand1P
   refine IRS.seq (K₁ := LK) (K₂ := KK + 11076) hlhs ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨⟨L', a', s', g', geo'⟩, fr', hA', hm'⟩
-  have hM : Mid P J z c c₁ L' := ⟨a', fun τ hτ => (g' τ hτ).elim (fun h => absurd h (by simp))
+  have hM : Mid P J z c c₁ L' := ⟨a', fun τ hτ => (g' τ hτ).elim (fun h => absurd h by_s)
     (fun h => ⟨h.1, onCB_of_right J h.2⟩), geo' hgeo, candFr_lhw fr' hA' hm'⟩
   have hK₁ := hA.hK.fix hI₁
   have eE := candFr_qE hM.2.2.2
@@ -200,12 +200,12 @@ theorem cand1P_irs (hT : TabBody tabB κT) (hS : ShrBody shrB κS) (hBr : BruteB
     intro hb
     have h := boxB_irs hsh hBs hXl hA hq hI₁ hM hb (by rw [← hLK]; omega)
     rw [← hLK] at h
-    exact h.mono (by omega) (fun _ h => h)
-  refine irs_ifEq' (K := KK + 11072) (by omega) (fun e => ?_) (fun e => ?_)
+    exact h.le
+  refine irs_ifEq' (K := KK + 11072) by_o (fun e => ?_) (fun e => ?_)
   · rw [eE, hK₁.2.1] at e
-    exact (hbox (Or.inl e)).mono (by omega) (fun _ h => h)
+    exact (hbox (Or.inl e)).le
   · rw [eE, hK₁.2.1] at e
-    refine irs_ifEq' (K := KK + 11068) (by omega) (fun e' => ?_) (fun e' => ?_)
+    refine irs_ifEq' (K := KK + 11068) by_o (fun e' => ?_) (fun e' => ?_)
     · rw [eE, hK₁.2.2.2.2.2.2] at e'
       exact hbox (Or.inr e')
     · rw [eE, hK₁.2.2.2.2.2.2] at e'

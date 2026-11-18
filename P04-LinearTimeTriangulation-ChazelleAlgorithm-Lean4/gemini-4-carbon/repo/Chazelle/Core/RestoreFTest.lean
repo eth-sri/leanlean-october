@@ -133,7 +133,7 @@ variable {E : FEnv} {c₀ c : Config}
 /-- The memory below the initial allocator is the initial memory. -/
 theorem FInv.agree (hE : FGood E c₀) (hI : FInv E.W c₀ c) :
     ∀ a, a < E.A₀ → c.nmem a = E.m₀ a := fun a ha => by
-  rw [hI.hm a (by rw [hE.a0]; exact ha), hE.m0]
+  rw [hI.hm a (by rwa [hE.a0]), hE.m0]
 
 theorem FInv.allocA (hE : FGood E c₀) (hI : FInv E.W c₀ c) : E.A₀ ≤ c.nreg ALLOC := by
   rw [← hE.a0]; exact hI.hA
@@ -292,7 +292,7 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have i3 : c.nreg 81003 = E.γ := by rw [fx _ (by unfold FFix; omega), hE.i3]
     have i4 : c.nreg 81004 = E.g := by rw [fx _ (by unfold FFix; omega), hE.i4]
     have i5 : c.nreg 81005 = E.d := by rw [fx _ (by unfold FFix; omega), hE.i5]
-    set c₁ : Config := { c with nreg := regB c.nmem tArgsL c.nreg } with hc₁
+    set c₁ := { c with nreg := regB c.nmem tArgsL c.nreg } with hc₁
     have r0 : c₁.nreg 83000 = E.MD := by rw [hc₁]; exact a0.trans i0
     have r1 : c₁.nreg 83001 = E.NH := by rw [hc₁]; exact a1.trans i1
     have r2 : c₁.nreg 83002 = E.r := by rw [hc₁]; exact a2.trans i2
@@ -305,7 +305,7 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
     have r9 : c₁.nreg 83009 = E.d := by rw [hc₁]; exact a9.trans i5
     have rfr : ∀ q, (q < 83000 ∨ 83009 < q) → c₁.nreg q = c.nreg q := fun q hq => by
       rw [hc₁]; exact afr q hq
-    have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := rfr _ (by unfold ALLOC; omega)
+    have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := rfr _ by_ao
     have hc' : CandOK E ⟨c₁.nreg 83005, c₁.nreg 83006⟩ (c₁.nreg 83007) (c₁.nreg 83008) := by
       rw [r5, r6, r7, r8]; exact hc
     have pre := test_pre hE hI₁ r0 r1 r2 r3 r4 r9 hc'
@@ -326,12 +326,12 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
       rcases Nat.le_one_iff_eq_zero_or_eq_one.1 b14 with s0 | s1
       · have g' : ¬ c₂.nreg 81011 < c₂.nreg 83014 := by rw [z₂, s0]; omega
         refine (FRS.ifF g' (FRS.skip hI₂ (K := 0) (Q := fun c' => c' = c₂) rfl)).mono
-          (by omega) ?_
+          by_o ?_
         intro c' hc'
         rw [hc']
         have e7 : c₂.nreg 81007 = 0 := by
-          rw [hkeep 81007 (band8 (by omega) (by omega)) (by omega), rfr _ (by omega), h0]
-        exact ⟨fun _ _ => rfl, by rw [e7, s0], by omega, fun h => by omega⟩
+          rw [hkeep 81007 (band8 by_o by_o) by_o, rfr _ by_o, h0]
+        exact ⟨fun _ _ => rfl, by rw [e7, s0], by_o, fun h => by omega⟩
       · have g' : c₂.nreg 81011 < c₂.nreg 83014 := by rw [z₂, s1]; omega
         refine (FRS.ifT g' (FRS.block hB tWinL hI₂ (okB_tWin hW1 _ _))).mono
           (by simp [tWinL]) ?_
@@ -342,15 +342,15 @@ theorem tcall_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B)
           fun _ => ⟨w8, w9, w10⟩⟩
     refine hwin.mono le_rfl (fun c₃ ⟨h3fr, h3s, h3le, h3t⟩ => ?_)
     have keep₂ : ∀ q, 80000 ≤ q → q < 83000 → c₂.nreg q = c₁.nreg q := fun q h1 h2 =>
-      hkeep q (band8 h1 (by omega)) h2
+      hkeep q (band8 h1 by_o) h2
     refine ⟨fun q h1 h2 => ?_, h3le, fun h => by omega, fun _ => ?_⟩
-    · rw [h3fr q (by omega), keep₂ q (by omega) h2, rfr q (by omega)]
+    · rw [h3fr q by_o, keep₂ q by_o h2, rfr q by_o]
     -- the contract of the test, for the candidate of `c`
-    have e10 : c₃.nreg 83010 = c₂.nreg 83010 := h3fr _ (by omega)
-    have e11 : c₃.nreg 83011 = c₂.nreg 83011 := h3fr _ (by omega)
-    have e12 : c₃.nreg 83012 = c₂.nreg 83012 := h3fr _ (by omega)
-    have e13 : c₃.nreg 83013 = c₂.nreg 83013 := h3fr _ (by omega)
-    refine ⟨by rw [e10]; exact b10, by rw [e11]; exact b11, fun reg hregs => ?_⟩
+    have e10 : c₃.nreg 83010 = c₂.nreg 83010 := h3fr _ by_o
+    have e11 : c₃.nreg 83011 = c₂.nreg 83011 := h3fr _ by_o
+    have e12 : c₃.nreg 83012 = c₂.nreg 83012 := h3fr _ by_o
+    have e13 : c₃.nreg 83013 = c₂.nreg 83013 := h3fr _ by_o
+    refine ⟨by rwa [e10], by rwa [e11], fun reg hregs => ?_⟩
     have hag := hI.agree hE
     obtain ⟨hMD', -⟩ := Gran.desc_agree' hE.hwf hE.hMD hag
     have hMD₁ : ModelDescAt c₁.nmem (c₁.nreg 83000) (Qof E.P) E.M := by rw [r0]; exact hMD'

@@ -73,13 +73,13 @@ include h in
 theorem sub_he' : ee < L ∨ (ee = L ∧ eh = 0) := by
   rcases h.hee with ⟨h0, h1⟩ | ⟨-, h1, -⟩
   · exact Or.inr ⟨h1, h0⟩
-  · exact Or.inl (by omega)
+  · exact Or.inl by_o
 
 include h in
 theorem sub_keyCeil : keyCeil ee ((interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩) = L := by
   unfold keyCeil
   rcases h.hee with ⟨h0, h1⟩ | ⟨h0, h1, h2⟩
-  · rw [ite_eq_left (by rw [h0]; rfl)]; exact h1
+  · rwa [ite_eq_left (by rw [h0]; rfl)]
   · rw [ite_eq_right h2.ne']; exact h1
 
 include h in
@@ -105,24 +105,24 @@ theorem chainArcs_one (hs : tau Q u L h.h1 h.h2 ≤ L) {γ : ℕ} (hγ : L ≤ �
     chain_arcSet_one hu h.h1 h.h2 hs ⟨h.hs.1, h.hs.2.1⟩ ⟨h.he.1, h.he.2.1⟩ (sub_he' h) h.hxy⟩
   · right
     have := pos_agree (M := interiorModel Q) (M' := MC Q u L h.h1 h.h2) hA Q (d := 0)
-      (by omega) sh
+      by_o sh
     rw [Nat.add_zero, Nat.add_zero, mi_n, Nat.mod_eq_of_lt hu, hn,
-      Nat.mod_eq_of_lt (show 6 + τ < 2 * L + 7 by omega)] at this
+      Nat.mod_eq_of_lt (by omega)] at this
     exact innerPt_of_mi ch_P hu h.hs this.symm
   · by_cases h0 : eh = 0
     · left; exact h0
     right
     have hel : ee < L := by rcases sub_he' h with h' | ⟨-, h'⟩; exact h'; exact absurd h' h0
     have := pos_agree (M := interiorModel Q) (M' := MC Q u L h.h1 h.h2) hA Q (d := ee)
-      (by omega) eh
+      by_o eh
     rw [mi_n, hn, Nat.mod_eq_of_lt (show 6 + τ + ee < 2 * L + 7 by omega)] at this
-    exact innerPt_of_mi ch_P (Nat.mod_lt _ (by omega)) h.he this.symm
+    exact innerPt_of_mi ch_P (Nat.mod_lt _ by_o) h.he this.symm
   · have hc := chain_counted (ch Q u L h.h1 h.h2)
     have hk := sub_keyCeil h
     have hw := arcWt_off (chainModel (ch Q u L h.h1 h.h2)) (lo := 6) (hi := 2 * L + 6) hc
-      (by rw [hn]; omega) (u := 6 + τ) (e := ee) (by rw [hn]; omega) (by omega)
+      (by rw [hn]; omega) (u := 6 + τ) (e := ee) (by rw [hn]; omega) by_o
       h.hs.1 h.hs.2.1 h.he.1 h.he.2.1 h.hxy (Or.inr ⟨by rw [hk]; omega, by rw [hn]; omega⟩)
-    rw [hn, Nat.mod_eq_of_lt (show 6 + τ + ee < 2 * L + 7 by omega), hk] at hw
+    rw [hn, Nat.mod_eq_of_lt (by omega), hk] at hw
     rw [key_eq, key_eq, hps, hpe]
     exact hw.le.trans hγ
 
@@ -150,7 +150,7 @@ theorem chainArcs_two (hs : L < tau Q u L h.h1 h.h2) {γ : ℕ} (hγ : L ≤ γ)
   have hA2 := agree_post hu h.h1 h.h2 hs
   have hxy2 : (L₁ : ℝ) < ee + (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩ := by
     rcases h.hee with ⟨h0, h'⟩ | ⟨h0, h', hp⟩
-    · have : (L₁ : ℝ) < ee := by exact_mod_cast (show L₁ < ee by omega)
+    · have : (L₁ : ℝ) < ee := by exact_mod_cast (by omega)
       have : (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩ = 0 := by rw [h0]; rfl
       linarith
     · have : (L₁ : ℝ) ≤ ee := by exact_mod_cast hle
@@ -166,17 +166,17 @@ theorem chainArcs_two (hs : L < tau Q u L h.h1 h.h2) {γ : ℕ} (hγ : L ≤ γ)
       Or.inl rfl, ?_, hS1⟩
     · right
       have := pos_agree (M := interiorModel Q) (M' := MC Q u L h.h1 h.h2) hA Q (d := 0)
-        (by omega) sh
+        by_o sh
       rw [Nat.add_zero, Nat.add_zero, mi_n, Nat.mod_eq_of_lt hu, hn,
-        Nat.mod_eq_of_lt (show 6 + τ < 2 * L + 7 by omega)] at this
+        Nat.mod_eq_of_lt (by omega)] at this
       exact innerPt_of_mi ch_P hu h.hs this.symm
     · have hw := arcWt_off (chainModel (ch Q u L h.h1 h.h2)) (lo := 6) (hi := 2 * L + 6) hc
-        (by rw [hn]; omega) (u := 6 + τ) (e := L₁) (t₂ := 0) (by rw [hn]; omega) (by omega)
+        (by rw [hn]; omega) (u := 6 + τ) (e := L₁) (t₂ := 0) (by rw [hn]; omega) by_o
         h.hs.1 h.hs.2.1 le_rfl zero_lt_one
-        (by have : (1 : ℝ) ≤ L₁ := by exact_mod_cast (show 1 ≤ L₁ by omega)
+        (by have : (1 : ℝ) ≤ L₁ := by exact_mod_cast (by omega)
             linarith [h.hs.2.1])
         (Or.inr ⟨by unfold keyCeil; rw [ite_eq_left rfl]; omega, by rw [hn]; omega⟩)
-      rw [hn, Nat.mod_eq_of_lt (show 6 + τ + L₁ < 2 * L + 7 by omega)] at hw
+      rw [hn, Nat.mod_eq_of_lt (by omega)] at hw
       have hk0 : keyCeil L₁ (0 : ℝ) = L₁ := by unfold keyCeil; rw [ite_eq_left rfl]
       rw [key_eq, key_eq, hps, param_zero, add_zero,
         show ((2 * L + 6 : ℕ) : ℝ) = ((6 + τ + L₁ : ℕ) : ℝ) + 0 by
@@ -191,10 +191,10 @@ theorem chainArcs_two (hs : L < tau Q u L h.h1 h.h2) {γ : ℕ} (hγ : L ≤ γ)
       right
       have hel : ee < L := by rcases sub_he' h with h' | ⟨-, h'⟩; exact h'; exact absurd h' h0
       have := pos_agree (M := interiorModel Q) (M' := MC Q u L h.h1 h.h2) hA2 Q (d := ee - L₁)
-        (by omega) eh
+        by_o eh
       rw [mi_n, hn, Nat.mod_eq_of_lt (show 6 + (ee - L₁) < 2 * L + 7 by omega),
         show u + L₁ + (ee - L₁) = u + ee by omega] at this
-      exact innerPt_of_mi ch_P (Nat.mod_lt _ (by omega)) h.he this.symm
+      exact innerPt_of_mi ch_P (Nat.mod_lt _ by_o) h.he this.symm
     · have hpos : (0 : ℝ) < ((ee - L₁ : ℕ) : ℝ) + (interiorModel Q).param Q ⟨(u + ee) % Q.n, eh⟩ := by
         have e1 : ((ee - L₁ : ℕ) : ℝ) = ee - L₁ := Nat.cast_sub hle
         rw [e1]; linarith

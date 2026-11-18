@@ -81,7 +81,7 @@ theorem hk_gap (h2 : 2 ≤ nk M F U) {i : ℕ} (hi : i < nk M F U) {x : ℝ}
 theorem hk_succ_ne (h2 : 2 ≤ nk M F U) {i : ℕ} (hi : i < nk M F U) :
     hk M F U i ≠ hk M F U ((i + 1) % nk M F U) := by
   intro h
-  have := hk_inj hM hF hfin hi (Nat.mod_lt _ (by omega)) h
+  have := hk_inj hM hF hfin hi (Nat.mod_lt _ by_o) h
   by_cases h1 : i + 1 < nk M F U
   · rw [Nat.mod_eq_of_lt h1] at this; omega
   · rw [show i + 1 = nk M F U by omega, Nat.mod_self] at this; omega
@@ -105,7 +105,7 @@ def ChordGap (M : Model) (F : Set (Set Point)) (U : Set Point) (i : ℕ) : Prop 
 theorem gap_cases (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.Nonempty)
     (hU : U ∈ M.regions F) (h2 : 2 ≤ nk M F U) {i : ℕ} (hi : i < nk M F U) :
     ArcGap M F U i ∨ ChordGap M F U i := by
-  have hsi : (i + 1) % nk M F U < nk M F U := Nat.mod_lt _ (by omega)
+  have hsi : (i + 1) % nk M F U < nk M F U := Nat.mod_lt _ by_o
   rcases gap hM hF hfin hne hU (hk_mem hM hF hfin hi) (hk_mem hM hF hfin hsi)
     (hk_succ_ne hM hF hfin h2 hi) (fun x hx => hk_gap hM hF hfin h2 hi hx) with
     ⟨a, b, harc, hsub⟩ | h
@@ -118,7 +118,7 @@ theorem not_arc_and_chord (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
     (hC : ChordGap M F U i) : False := by
   obtain ⟨a', b', harc, hsub⟩ := hA
   obtain ⟨c, hc, p, p', t, t', hAt, hBt, ha, hb, hAB⟩ := hC
-  have hsi : (i + 1) % nk M F U < nk M F U := Nat.mod_lt _ (by omega)
+  have hsi : (i + 1) % nk M F U < nk M F U := Nat.mod_lt _ by_o
   have hb1 := hostKeys_bounds (hk_mem hM hF hfin hi)
   have hb2 := hostKeys_bounds (hk_mem hM hF hfin hsi)
   have hnv : ∀ k : ℕ, k < M.W.n →
@@ -135,8 +135,8 @@ theorem not_arc_and_chord (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite)
   obtain ⟨q, hq, s, hs0, hs1, hz, -⟩ := arcEdge_of_noVertex M.W hb1.1 hb1.2 hb2.1 hb2.2
     (hk_succ_ne hM hF hfin h2 hi) hnv
     (lerp (hostPt M.W (hk M F U i)) (hostPt M.W (hk M F U ((i + 1) % nk M F U))) (1 / 2))
-    (lerp_mem_segment _ _ (by norm_num) (by norm_num))
-  have hD := hopen (1 / 2) ⟨by norm_num, by norm_num⟩
+    (lerp_mem_segment _ _ by_n by_n)
+  have hD := hopen (1 / 2) ⟨by_n, by_n⟩
   rw [← hPa, ← hPb, hz] at hD
   exact hM.trace q hq s hs0 hs1.le hD
 

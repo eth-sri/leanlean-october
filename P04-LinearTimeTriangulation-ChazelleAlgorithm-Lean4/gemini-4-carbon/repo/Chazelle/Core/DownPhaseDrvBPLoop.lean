@@ -29,7 +29,7 @@ theorem flatMap_range_length_mono {α : Type*} (f : ℕ → List α) {m m' : ℕ
   | succ m' ih =>
     rcases Nat.lt_or_ge m (m' + 1) with h' | h'
     · rw [List.range_succ, List.flatMap_append, List.length_append]
-      exact (ih (by omega)).trans (Nat.le_add_right _ _)
+      exact (ih by_o).trans (Nat.le_add_right _ _)
     · have : m = m' + 1 := by omega
       subst this; exact le_rfl
 
@@ -50,8 +50,8 @@ theorem ptLoop_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c
   have hrecs : E.recs r = (List.range l.length).flatMap f := regList_eq_flatMap _ _ _
   -- the counter
   have e₀ := Exec.constN (P := E.P) hS.wb 212017 0 (Nat.zero_le _)
-  set c₀ : Config := { c with nreg := upd c.nreg 212017 0 } with hc₀
-  have f₀ : FrameB (fun q => decide (q = 212017)) c c₀ := exec_frameB e₀ (by decide)
+  set c₀ := { c with nreg := upd c.nreg 212017 0 } with hc₀
+  have f₀ : FrameB (fun q => decide (q = 212017)) c c₀ := exec_frameB e₀ by_d
   have S₀ : PtSt E r PA c₀ T := hS.regStep e₀.wb_right (fun q hq => f₀.1 q (by
     rcases hq with hq | hq
     · unfold FixP FixB at hq; simp only [decide_eq_false_iff_not]; omega
@@ -75,7 +75,7 @@ theorem ptLoop_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c
         rw [List.length_append, List.length_map]
         rw [hrecs] at hT
         omega
-      obtain ⟨e', k', x, hk', S', h17, FM'', M''⟩ := ptS_exec hE hr e S h1 (by omega) hlen
+      obtain ⟨e', k', x, hk', S', h17, FM'', M''⟩ := ptS_exec hE hr e S h1 by_o hlen
       refine ⟨e', k', x, ⟨x.wb_right, h17, S'.np, ?_, FM.trans FM'', fun a ha => ?_⟩, hk'⟩
       · rw [List.range_succ, List.flatMap_append, List.flatMap_singleton, List.map_append,
           ← List.append_assoc]
@@ -83,7 +83,7 @@ theorem ptLoop_exec {E : BEnv} (hE : BGood E) {r PA : ℕ} (hr : r < E.K + 1) (c
       · rw [M'' a ha, M a ha])
     I0 (Nat.zero_le _)
   rw [Nat.sub_zero] at hk
-  refine ⟨c', _, .seq e₀ ex, by omega, ?_, FM', M'⟩
+  refine ⟨c', _, .seq e₀ ex, by_o, ?_, FM', M'⟩
   rw [hrecs]; exact S'
 
 end exec

@@ -56,13 +56,13 @@ theorem slfCmp_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       (∀ r, bandOf r ∉ oracleBands → r ≠ o → r ≠ o + 1 → r ≠ ALLOC → c'.nreg r = c.nreg r) ∧
       c.nreg ALLOC ≤ c'.nreg ALLOC ∧ (∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a)) := by
   have hgw := E.gw' hI
-  have k0 : c.nreg K0 = 0 := (E.hK.fix hI).1
+  have k0 := (E.hK.fix hI).1
   have hgn : gW J < (chainModel J.whole).W.n := by
     unfold gW; rw [cm_n]; have := tpos_lt J.whole J.m₁; omega
   refine (callOff_irs (P := P) (C := J.whole) hI (E.ctxW' hI)
     ⟨by unfold sw; omega, by unfold sw; omega, hr.1, hr.2.1, hr.2.2.1, hr.2.2.2.1, hr.2.2.2.2.1,
       hr.2.2.2.2.2, by unfold K0 sw; omega, by unfold K0 sw; omega, by unfold cGW sw; omega,
-      by unfold cGW sw; omega⟩ ho hex hyn (by rw [hgw]; exact hgn) hpp
+      by unfold cGW sw; omega⟩ ho hex hyn (by rwa [hgw]) hpp
     (by rw [k0]; exact ⟨le_rfl, zero_lt_one, Nat.zero_le _⟩) h6 (fun _ => h6y) hroom).mono le_rfl ?_
   rintro c' ⟨b1, b2, fr, hA, hm⟩
   rw [hgw, k0] at b1 b2
@@ -101,17 +101,17 @@ theorem slfAnc_irs (hI : IInv W c₀ c) (k0 : c.nreg K0 = 0) (hb0 : c.nreg slfO 
   have hr : 240700 ≤ slfA ∧ slfA < 250000 := by unfold slfA sw; omega
   unfold slfAnc
   by_cases h0 : c.nreg K0 < c.nreg slfO
-  · refine (IRS.ifT h0 (set1_irs hI hr hW)).mono (by norm_num) ?_
+  · refine (IRS.ifT h0 (set1_irs hI hr hW)).mono by_n ?_
     rintro c' ⟨h1, h2, h3⟩
-    exact ⟨by omega, ⟨fun _ => Or.inl (by omega), fun _ => h1⟩, h2, h3⟩
+    exact ⟨by_o, ⟨fun _ => Or.inl by_o, fun _ => h1⟩, h2, h3⟩
   · refine (IRS.ifF h0 ?_).mono le_rfl (fun _ h => h)
     by_cases h4 : c.nreg K0 < c.nreg (slfO + 4)
-    · refine (IRS.ifT h4 (set1_irs hI hr hW)).mono (by norm_num) ?_
+    · refine (IRS.ifT h4 (set1_irs hI hr hW)).mono by_n ?_
       rintro c' ⟨h1, h2, h3⟩
-      exact ⟨by omega, ⟨fun _ => Or.inr (by omega), fun _ => h1⟩, h2, h3⟩
-    · refine (IRS.ifF h4 (set1_irs hI hr (by omega))).mono (by norm_num) ?_
+      exact ⟨by_o, ⟨fun _ => Or.inr by_o, fun _ => h1⟩, h2, h3⟩
+    · refine (IRS.ifF h4 (set1_irs hI hr by_o)).mono by_n ?_
       rintro c' ⟨h1, h2, h3⟩
-      exact ⟨by omega, ⟨fun h => by omega, fun h => by omega⟩, h2, h3⟩
+      exact ⟨by_o, ⟨fun h => by omega, fun h => by omega⟩, h2, h3⟩
 
 /-- The facts of a position compared in the offsets step. -/
 def SlfPos (P : Polygon) (J : Merge.Junction) (c : Config) (e h : ℕ) : Prop :=
@@ -120,7 +120,7 @@ def SlfPos (P : Polygon) (J : Merge.Junction) (c : Config) (e h : ℕ) : Prop :=
 
 theorem SlfPos.congr {e h : ℕ} {c c' : Config} (hp : SlfPos P J c e h) (he : c'.nreg e = c.nreg e)
     (hh : c'.nreg h = c.nreg h) : SlfPos P J c' e h := by
-  unfold SlfPos at *; rw [he, hh]; exact hp
+  unfold SlfPos at *; rwa [he, hh]
 
 theorem slfOff_congr {e h : ℕ} {c c' : Config} (he : c'.nreg e = c.nreg e)
     (hh : c'.nreg h = c.nreg h) : slfOff P J c' e h = slfOff P J c e h := by
@@ -143,27 +143,27 @@ theorem slfCmp2_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   have hcl : 240000 ≤ cGL ∧ cGL < 250000 := by unfold cGL sw; omega
   have hcw : 240000 ≤ cGW ∧ cGW < 250000 := by unfold cGW sw; omega
   refine IRS.seq (K₁ := 11008) (K₂ := 11008) (slfCmp_irs E hI ⟨hr.1, hr.2.1, hr.2.2.1, hr.2.2.2,
-    hcl.1, hcl.2⟩ ⟨ho.1, by omega⟩ hp.1 hp.2.1 hp.2.2 (by rw [hgl]; exact Nat.mod_lt _ (by omega))
+    hcl.1, hcl.2⟩ ⟨ho.1, by_o⟩ hp.1 hp.2.1 hp.2.2 (by rw [hgl]; exact Nat.mod_lt _ by_o)
     (by rw [hgl]; exact start_key_ge_six J) (v := (Lst J : ℝ)) (by
       rw [hgl, oW_def]
       have := off_key (t := 0) hgn hLn le_rfl one_pos
-      rw [this, add_zero]) (by omega)) ?_
+      rw [this, add_zero]) by_o) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨b1, -, fr1, -, hm1⟩
   have k1 : ∀ r, 240000 ≤ r → r < 250000 → r ≠ o → r ≠ o + 1 → c₁.nreg r = c.nreg r :=
-    fun r h1 h2 h3 h4 => fr1 r (band_sw_not ⟨h1, h2⟩) h3 h4 (by unfold ALLOC; omega)
-  have e1 := k1 ex hr.1 hr.2.1 (by omega) (by omega)
-  have h1 := k1 hx hr.2.2.1 hr.2.2.2 (by omega) (by omega)
+    fun r h1 h2 h3 h4 => fr1 r (band_sw_not ⟨h1, h2⟩) h3 h4 by_ao
+  have e1 := k1 ex hr.1 hr.2.1 by_o by_o
+  have h1 := k1 hx hr.2.2.1 hr.2.2.2 by_o by_o
   have hp1 := hp.congr e1 h1
-  refine (slfCmp_irs E hI₁ ⟨hr.1, hr.2.1, hr.2.2.1, hr.2.2.2, hcw.1, hcw.2⟩ ⟨by omega, by omega⟩
-    hp1.1 hp1.2.1 hp1.2.2 (by rw [E.gw' hI₁]; exact hgn) (by rw [E.gw' hI₁]; unfold gW; omega)
-    (v := 0) (by rw [E.gw' hI₁, add_zero, oW_def]; exact off_self _ _) (by omega)).mono le_rfl ?_
+  refine (slfCmp_irs E hI₁ ⟨hr.1, hr.2.1, hr.2.2.1, hr.2.2.2, hcw.1, hcw.2⟩ ⟨by_o, by_o⟩
+    hp1.1 hp1.2.1 hp1.2.2 (by rwa [E.gw' hI₁]) (by rw [E.gw' hI₁]; unfold gW; omega)
+    (v := 0) (by rw [E.gw' hI₁, add_zero, oW_def]; exact off_self _ _) by_o).mono le_rfl ?_
   rintro c₂ ⟨-, b2, fr2, hA2, hm2⟩
   rw [slfOff_congr e1 h1] at b2
-  refine ⟨b1.of_eq (fr2 o (band_sw_not ⟨by omega, by omega⟩) (by omega) (by omega)
-    (by unfold ALLOC; omega)), b2, ⟨fun r hb hr' ha => ?_, hA₁.trans hA2, fun a ha => ?_⟩⟩
+  refine ⟨b1.of_eq (fr2 o (band_sw_not ⟨by_o, by_o⟩) by_o by_o
+    by_ao), b2, ⟨fun r hb hr' ha => ?_, hA₁.trans hA2, fun a ha => ?_⟩⟩
   · simp only [not_and_or, not_le] at hr'
-    rw [fr2 r hb (by omega) (by omega) ha, fr1 r hb (by omega) (by omega) ha]
-  · rw [hm2 a (by omega), hm1 a ha]
+    rw [fr2 r hb by_o by_o ha, fr1 r hb by_o by_o ha]
+  · rw [hm2 a by_o, hm1 a ha]
 
 set_option maxHeartbeats 8000000 in
 /-- **The offsets step.** -/
@@ -185,27 +185,27 @@ theorem slfOffs_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c
   have k0 := (E.hK.fix hI).1
   unfold slfOffs
   refine IRS.seq (K₁ := 2 * 11008) (K₂ := 2 * 11008 + 5) (slfCmp2_irs E hI r0 hO
-    (by unfold oF0 slfO sw; omega) (by unfold oF0 slfO sw; omega) hp₀ (by omega)) ?_
+    (by unfold oF0 slfO sw; omega) (by unfold oF0 slfO sw; omega) hp₀ by_o) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨b0, b3, fr1⟩
   have k1 : ∀ r, 240000 ≤ r → r < 250000 → (r < slfO ∨ slfO + 3 < r) → c₁.nreg r = c.nreg r :=
-    fun r h1 h2 h3 => fr1.1 r (band_sw_not ⟨h1, h2⟩) (by omega) (by unfold ALLOC; omega)
+    fun r h1 h2 h3 => fr1.1 r (band_sw_not ⟨h1, h2⟩) by_o by_ao
   have e1 := k1 (a1F + 1) r1.1 r1.2.1 (by unfold a1F slfO sw; omega)
   have h1 := k1 (a1F + 2) r1.2.2.1 r1.2.2.2 (by unfold a1F slfO sw; omega)
   refine IRS.seq (K₁ := 2 * 11008) (K₂ := 5) (slfCmp2_irs E hI₁ r1
     (o := slfO + 4) (by unfold slfO sw; omega)
     (by unfold a1F slfO sw; omega) (by unfold a1F slfO sw; omega) (hp₁.congr e1 h1)
-    (by omega)) ?_
+    by_o) ?_
   rintro c₂ hI₂ hA₂ hA₂' ⟨b4, b7, fr2⟩
   rw [slfOff_congr e1 h1] at b4 b7
   have k2 : ∀ r, 240000 ≤ r → r < 250000 → (r < slfO + 4 ∨ slfO + 4 + 3 < r) →
       c₂.nreg r = c₁.nreg r :=
-    fun r h1 h2 h3 => fr2.1 r (band_sw_not ⟨h1, h2⟩) (by omega) (by unfold ALLOC; omega)
-  have b0' := b0.of_eq (k2 slfO (by unfold slfO sw; omega) (by unfold slfO sw; omega) (by omega))
+    fun r h1 h2 h3 => fr2.1 r (band_sw_not ⟨h1, h2⟩) by_o by_ao
+  have b0' := b0.of_eq (k2 slfO (by unfold slfO sw; omega) (by unfold slfO sw; omega) by_o)
   have b3' := b3.of_eq (k2 (slfO + 3) (by unfold slfO sw; omega) (by unfold slfO sw; omega)
-    (by omega))
-  refine (slfAnc_irs hI₂ (E.hK.fix hI₂).1 b0'.1 b4.1 (by omega)).mono le_rfl ?_
+    by_o)
+  refine (slfAnc_irs hI₂ (E.hK.fix hI₂).1 b0'.1 b4.1 by_o).mono le_rfl ?_
   rintro c₃ ⟨a1, a2, a3, a4⟩
-  have hne : ∀ q, (q < slfA ∨ slfA < q) → c₃.nreg q = c₂.nreg q := fun q hq => a3 q (by omega)
+  have hne : ∀ q, (q < slfA ∨ slfA < q) → c₃.nreg q = c₂.nreg q := fun q hq => a3 q by_o
   refine ⟨b0'.of_eq (hne _ (by unfold slfO slfA sw; omega)),
     b3'.of_eq (hne _ (by unfold slfO slfA sw; omega)),
     b4.of_eq (hne _ (by unfold slfO slfA sw; omega)),

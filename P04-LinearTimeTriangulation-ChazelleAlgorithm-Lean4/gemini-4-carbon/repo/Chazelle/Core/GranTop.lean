@@ -32,7 +32,7 @@ def granStmt (sB sD : Stmt) : Stmt :=
 theorem GF.frame {c c' : Config} {k : ℕ} (h : GF (c.nreg ALLOC) c c' k) :
     Frame granBands c c' k := h
 
-theorem gran_ne_alloc : bandOf ALLOC ∉ ({bGran} : Finset ℕ) := by decide
+theorem gran_ne_alloc : bandOf ALLOC ∉ ({bGran} : Finset ℕ) := by_d
 
 theorem band9_not {r : ℕ} (h1 : 90000 ≤ r) (h2 : r < 100000) : ¬ bandOf r ∉ ({bGran} : Finset ℕ) := by
   unfold bandOf bGran; simp; omega
@@ -96,7 +96,7 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
   rw [hK] at hroom ⊢
   set K := N.nChords with hKd
   set X := K * (Nat.clog 2 K + 1) + 1 with hXd
-  have hX1 : 1 ≤ X := by omega
+  have hX1 : 1 ≤ X := by_o
   have hκ : 12 + κB + κD * (D + 1) ≤ κGran κB κD D := by
     unfold κGran; nlinarith
   have hκX : κGran κB κD D ≤ κGran κB κD D * X := Nat.le_mul_of_pos_right _ hX1
@@ -115,21 +115,21 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
     subst this
     have hch := NFLoc.nfAt_chords_eq hNW.nfAt hN₀
     refine ⟨N', hA, hW, ?_, hN, ?_, ?_, hdec⟩
-    · rw [F_congr hch, hF]; exact hsub
-    · rw [hF]; exact hdg
+    · rwa [F_congr hch, hF]
+    · rwa [hF]
     · rw [hF]; exact hgr
   obtain ⟨c₁, k₁, e₁, hk₁, p19, p10, R₁, rr₁, m₁, rm₁, o₁⟩ :=
     pre_exec (P := P) c hw (le_trans (by unfold hostWords; omega) hWh)
   have w₁ := e₁.wb_right
-  have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := R₁ _ (by decide) (by decide)
+  have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := R₁ _ by_d by_d
   have F₁ : Frame {bGran} c c₁ k₁ := frame_of (fun r hr => R₁ r
-    (fun h => band9_not (by omega) (by omega) hr) (fun h => band9_not (by omega) (by omega) hr))
+    (fun h => band9_not by_o by_o hr) (fun h => band9_not by_o by_o hr))
     rr₁ m₁ rm₁ o₁ gran_ne_alloc
   rw [← hNFHd, hK] at p10
-  have q0 : c₁.nreg 90000 = MD := R₁ _ (by decide) (by decide)
-  have q1 : c₁.nreg 90001 = NFH := R₁ _ (by decide) (by decide)
-  have q2 : c₁.nreg 90002 = D := R₁ _ (by decide) (by decide)
-  have q3 : c₁.nreg 90003 = γ := R₁ _ (by decide) (by decide)
+  have q0 : c₁.nreg 90000 = MD := R₁ _ by_d by_d
+  have q1 : c₁.nreg 90001 = NFH := R₁ _ by_d by_d
+  have q2 : c₁.nreg 90002 = D := R₁ _ by_d by_d
+  have q3 : c₁.nreg 90003 = γ := R₁ _ by_d by_d
   rcases Nat.lt_or_ge K 1 with hK0 | hK1
   · -- no chords
     have hnil : N.chords = [] :=
@@ -140,44 +140,44 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
       rw [hFe]; ext x; simp [lset]
     obtain ⟨c₂, k₂, e₂, hk₂, s95, s28, R₂, rr₂, m₂, rm₂, o₂⟩ := empty_exec (P := P) c₁ w₁
     have F₂ : Frame {bGran} c₁ c₂ k₂ := frame_of (fun r hr => R₂ r
-      (fun h => band9_not (by omega) (by omega) hr) (fun h => band9_not (by omega) (by omega) hr))
+      (fun h => band9_not by_o by_o hr) (fun h => band9_not by_o by_o hr))
       rr₂ m₂ rm₂ o₂ gran_ne_alloc
-    have A₂ : c₂.nreg ALLOC = c.nreg ALLOC := by rw [R₂ _ (by decide) (by decide), A₁]
+    have A₂ : c₂.nreg ALLOC = c.nreg ALLOC := by rw [R₂ _ by_d by_d, A₁]
     have hm₂ : c₂.nmem = c.nmem := by rw [m₂, m₁]
     obtain ⟨c₃, k₃, e₃, hk₃, ⟨N', hA', hW', hN', hF', hdec'⟩, F₃⟩ := bd_exec (L := []) hsB hsD
-      e₂.wb_right hG hWh (by rw [R₂ _ (by decide) (by decide), q0])
-      (by rw [R₂ _ (by decide) (by decide), q2]) s28 s95 (by rw [A₂, hm₂]; exact hwf)
-      (by rw [hm₂]; exact hMD) hGM (fun i hi => by simp at hi) (by rw [A₂]; simp)
+      e₂.wb_right hG hWh (by rw [R₂ _ by_d by_d, q0])
+      (by rw [R₂ _ by_d by_d, q2]) s28 s95 (by rwa [A₂, hm₂])
+      (by rwa [hm₂]) hGM (fun i hi => by simp at hi) (by rw [A₂]; simp)
       ⟨by rw [show {c | ∃ x ∈ ([] : List (ℕ × ℕ × ℕ)), c = (recOf x).toSet M (Qof P)} =
           N.F M (Qof P) from hl]; exact hNF.1, List.nodup_nil, fun x hx => by simp at hx,
         fun x hx => by simp at hx⟩
-      (by rw [hl]; exact hdeg)
+      (by rwa [hl])
       (by rw [A₂]; unfold costBD; simp; omega)
     have e₁₂ : Exec P W (.ifLtN 90010 90019 emptyS mainStmt) c₁ c₂ (k₂ + 1) :=
       .ifLtN_true (by rw [p10, p19]; omega) e₂
     refine ⟨c₃, _, .seq e₁ (.seq e₁₂ e₃), ?_, ?_, ?_⟩
     · unfold costBD at hk₃; simp at hk₃; omega
     · rw [A₂] at hA'
-      exact post c₃ [] N' (by rw [hl]) (by rw [hl]; exact hdeg)
+      exact post c₃ [] N' (by rw [hl]) (by rwa [hl])
         (by rw [hl]; exact granular_empty hFe hsemi) hA' hW' hN' hF' hdec'
     · exact ((F₁.trans (F₂.mono (le_refl _) (by omega : k₂ ≤ k₂ + 1))).trans F₃).mono
-        (by decide) (by omega)
+        by_d by_o
   · -- the worklist
     have hne : (N.F M (Qof P)).Nonempty :=
-      ⟨cs M (Qof P) N 0, mem_F_iff.2 ⟨0, by omega, rfl⟩⟩
+      ⟨cs M (Qof P) N 0, mem_F_iff.2 ⟨0, by_o, rfl⟩⟩
     have hWA := walkAx_of_goodModel hGM
     have hAr := arcs_le hNF hWA hne
     have hRr := nRegions_eq hNF hWA
     have hct := cost_total (κB := κB) (κD := κD) (D := D) hAr hRr (le_refl K)
     rw [← hXd] at hct
     obtain ⟨c₂, k₂, L, e₂, hk₂, s00, s02, s95, hLK, hlist, hLB, hok, hsub, hdg, hgr, G₂⟩ :=
-      main_exec (P := P) w₁ q0 q1 q2 q3 hG hWh (by rw [A₁, m₁]; exact hwf)
-        (by rw [m₁]; exact hMD) hGM (by rw [A₁, m₁]; exact hNW) hNF hne hdeg hsemi
+      main_exec (P := P) w₁ q0 q1 q2 q3 hG hWh (by rwa [A₁, m₁])
+        (by rwa [m₁]) hGM (by rwa [A₁, m₁]) hNF hne hdeg hsemi
         (by rw [A₁]; nlinarith)
     have hmono : costBD κB κD D L.length ≤ costBD κB κD D K := costBD_mono hLK
     have A₂ := G₂.2.2.2.2.2.2
     have hlow : ∀ a, a < c.nreg ALLOC → c₂.nmem a = c.nmem a := fun a ha => by
-      rw [G₂.2.2.1 a (by omega), m₁]
+      rw [G₂.2.2.1 a by_o, m₁]
     obtain ⟨hMD₂, hwf₂⟩ := desc_agree' hwf hMD hlow
     obtain ⟨c₃, k₃, e₃, hk₃, ⟨N', hA', hW', hN', hF', hdec'⟩, F₃⟩ := bd_exec hsB hsD
       e₂.wb_right hG hWh s00 s02 rfl s95 (hwf₂.mono (by rw [← A₁]; exact G₂.2.2.2.2.2.1))
@@ -188,9 +188,9 @@ theorem granularize (hB : BuildNFSpec) (hD : DecompSpec) : GranularizeSpec := by
     refine ⟨c₃, _, .seq e₁ (.seq e₁₂ e₃), ?_, ?_, ?_⟩
     · omega
     · exact post c₃ L N' hsub hdg hgr (le_trans hA₂ hA') hW' hN' hF' hdec'
-    · have F₂ : Frame granBands c₁ c₂ k₂ := GF.frame G₂
+    · have F₂ := GF.frame G₂
       exact ((F₁.trans (F₂.mono (le_refl _) (by omega : k₂ ≤ k₂ + 2))).trans F₃).mono
-        (by decide) (by omega)
+        by_d by_o
 
 /-- **WP-F: granularity enforcement**, from the construction of normal forms alone. -/
 theorem granularize' (hB : BuildNFSpec) : GranularizeSpec := granularize hB DecR.decomp

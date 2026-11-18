@@ -153,7 +153,7 @@ theorem attach_unique (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p p' :
       Chazelle.segment a b = Chazelle.segment (sidePt M.W p t) e' ∧ e' ≠ sidePt M.W p t := by
     rcases hM.attach_endpoint hopen hA with h | h
     · exact ⟨b, h ▸ ha, by rw [h], by rw [h]; exact hab.symm⟩
-    · exact ⟨a, h ▸ hb, by rw [h, Geometry.segment_comm], by rw [h]; exact hab⟩
+    · exact ⟨a, h ▸ hb, by rw [h, Geometry.segment_comm], by rwa [h]⟩
   obtain ⟨-, hdisj⟩ := hend
   obtain ⟨r, hr, hsep⟩ := hdisj p p' t t' hA.1 hA.2.1 hA.2.2.1 hA'.1 hA'.2.1 hA'.2.2.1
     (fun h1 h2 => hne ⟨h1, h2⟩) rfl heq.symm
@@ -161,14 +161,14 @@ theorem attach_unique (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p p' :
   obtain ⟨-, -, -, -, r₂, hr₂, h₂⟩ := hA'
   set q := sidePt M.W p t with hq
   set ρ := min r (min r₁ r₂) with hρ
-  have hρ0 : 0 < ρ := lt_min hr (lt_min hr₁ hr₂)
-  have hn : 0 < dist q e' + 1 := by positivity
+  have hρ0 := lt_min hr (lt_min hr₁ hr₂)
+  have hn : 0 < dist q e' + 1 := by_p
   set s := min (ρ / (dist q e' + 1)) (1 / 2) with hs
-  have hs0 : 0 < s := lt_min (div_pos hρ0 hn) (by norm_num)
-  have hs1 : s < 1 := lt_of_le_of_lt (min_le_right _ _) (by norm_num)
+  have hs0 : 0 < s := lt_min (div_pos hρ0 hn) by_n
+  have hs1 : s < 1 := lt_of_le_of_lt (min_le_right _ _) by_n
   set x := lerp q e' s with hx
   have hxc : x ∈ Chazelle.segment q e' := lerp_mem_segment _ _ hs0.le hs1.le
-  have hxq : x ≠ q := Chazelle.Jordan.lerp_ne_left (Ne.symm he') hs0
+  have hxq := Chazelle.Jordan.lerp_ne_left (Ne.symm he') hs0
   have hdist : dist x q < ρ := by
     have e : dist x q = s * dist q e' := by
       rw [hx, dist_comm, dist_eq_norm, dist_eq_norm]
@@ -182,7 +182,7 @@ theorem attach_unique (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p p' :
       _ = ρ := div_mul_cancel₀ _ hn.ne'
   rw [hseq] at h₁ h₂
   have hl₁ := h₁ x hxc hxq (hdist.trans_le ((min_le_right _ _).trans (min_le_left _ _)))
-  have hl₂ := h₂ x hxc (by rw [← heq]; exact hxq) (by
+  have hl₂ := h₂ x hxc (by rwa [← heq]) (by
     rw [← heq]; exact hdist.trans_le ((min_le_right _ _).trans (min_le_right _ _)))
   exact hsep x (by rw [mem_ball]; exact hdist.trans_le (min_le_left _ _)) hl₁ hl₂
 
@@ -196,7 +196,7 @@ theorem other_attach (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : ℕ
   rw [hcab] at hA'
   rcases hM.attach_endpoint hopen hA' with h | h
   · exact ⟨pb, tb, hBb, by rw [hBb', h]; exact hab.symm⟩
-  · exact ⟨pa, ta, hAa, by rw [hAa', h]; exact hab⟩
+  · exact ⟨pa, ta, hAa, by rwa [hAa', h]⟩
 
 /-! ## The region of the exit chords -/
 
@@ -207,20 +207,20 @@ theorem region_of_exits {F : Set (Set Point)} (hsys : ChordSystem M.D F) {U : Se
     U = connectedComponentIn (freeIn M.D {c | c ∈ F ∧ TouchesIn M.D c U}) u := by
   set T := {c | c ∈ F ∧ TouchesIn M.D c U} with hT
   have hTF : T ⊆ F := fun c hc => hc.1
-  have hUF : U ⊆ freeIn M.D F := Chazelle.Chain.regionsIn_subset hU
-  have hUT : U ⊆ freeIn M.D T := hUF.trans (Chazelle.Chain.freeIn_anti M.D hTF)
+  have hUF := Chazelle.Chain.regionsIn_subset hU
+  have hUT := hUF.trans (Chazelle.Chain.freeIn_anti M.D hTF)
   have hUc := Chazelle.Chain.regionsIn_isPreconnected hU
-  have hUo : IsOpen U := hsys.regionsIn_open subset_rfl hU
+  have hUo := hsys.regionsIn_open subset_rfl hU
   apply Subset.antisymm (hUc.subset_connectedComponentIn hu hUT)
   refine isPreconnected_connectedComponentIn.subset_of_closure_inter_subset hUo
     ⟨u, mem_connectedComponentIn (hUT hu), hu⟩ ?_
   rintro x ⟨hxc, hxK⟩
-  have hxT : x ∈ freeIn M.D T := connectedComponentIn_subset _ _ hxK
+  have hxT := connectedComponentIn_subset _ _ hxK
   have hxF : x ∈ freeIn M.D F := by
     refine ⟨hxT.1, ?_⟩
     rintro ⟨c, hc, hxc'⟩
     exact hxT.2 ⟨c, ⟨hc, x, ⟨hxc', hxT.1⟩, hxc⟩, hxc'⟩
-  have hpre : IsPreconnected (closure U ∩ freeIn M.D F) :=
+  have hpre :=
     hUc.subset_closure (subset_inter subset_closure hUF) inter_subset_left
   have := hpre.subset_connectedComponentIn ⟨subset_closure hu, hUF hu⟩ inter_subset_right
   rw [← Chazelle.Chain.regionsIn_eq_component hU hu] at this
@@ -266,11 +266,11 @@ theorem exists_in_arc {F : Set (Set Point)} {U : Set Point} {a b : ℝ}
     · have : ε < b - a := by
         have e : ε = min (1 - t) (b - a) / 2 := by simp [hε, h]
         rw [e]; have := min_le_right (1 - t) (b - a)
-        have := lt_min (show 0 < 1 - t by linarith) (show 0 < b - a by linarith); linarith
+        have := lt_min (by linarith) (show 0 < b - a by linarith); linarith
       constructor <;> linarith
     · left; linarith
-  exact ⟨t + ε, ⟨by linarith, by linarith⟩, hin, harc _ hin,
-    hfac p (t + ε) hp (by linarith) (by linarith) hin⟩
+  exact ⟨t + ε, ⟨by_l, by_l⟩, hin, harc _ hin,
+    hfac p (t + ε) hp by_l by_l hin⟩
 
 /-- Unpacking an arc of a nonempty family. -/
 theorem arc_cuts {F : Set (Set Point)} (hne : F.Nonempty) {U : Set Point} {a b : ℝ}
@@ -287,7 +287,7 @@ theorem exists_exit_at_end (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
     ∃ c ∈ {c | c ∈ F ∧ TouchesIn M.D c U}, ∃ p t, SideAttach M.W c p t ∧ b = p + t := by
   set T := {c | c ∈ F ∧ TouchesIn M.D c U} with hT
   have hTF : T ⊆ F := fun c hc => hc.1
-  have hTfin : T.Finite := hfin.subset hTF
+  have hTfin := hfin.subset hTF
   have hsys := hM.sys F hF hfin
   obtain ⟨hcuta, hcutb, hab⟩ := arc_cuts hne harc
   obtain ⟨-, -, -, -, -, hfree, hfac⟩ := harc
@@ -301,24 +301,24 @@ theorem exists_exit_at_end (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.A
   obtain ⟨tx, htx, hxfree⟩ := hM.exists_after hF hfin hB₀.1 hB₀.2.1 hB₀.2.2.1
   have htx' : tx ∈ Ioo (0 : ℝ) 1 := ⟨by linarith [hB₀.2.1, htx.1], htx.2⟩
   have hbx : b < pb + tx := by rw [hb]; linarith [htx.1]
-  have hxcut : ¬ M.IsCut F (pb + tx) := fun h => hxfree _ h ⟨by linarith, le_rfl⟩
+  have hxcut : ¬ M.IsCut F (pb + tx) := fun h => hxfree _ h ⟨by_l, le_rfl⟩
   rw [← hb] at hxfree
   -- the region of `F` faced at `x` is `U`
   obtain ⟨V, hV, hxV⟩ := hM.exists_faces_of_not_cut hF hfin hB₀.1 htx' hxcut
   obtain ⟨v, hv⟩ := Chazelle.Chain.regionsIn_nonempty hV
   obtain ⟨u, hu⟩ := Chazelle.Chain.regionsIn_nonempty hU
-  have hVfree : V ⊆ freeIn M.D T :=
+  have hVfree :=
     (Chazelle.Chain.regionsIn_subset hV).trans (Chazelle.Chain.freeIn_anti M.D hTF)
   set VT := connectedComponentIn (freeIn M.D T) v with hVT
-  have hVVT : V ⊆ VT :=
+  have hVVT :=
     (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hVfree
   have hVTr : VT ∈ M.regions T := ⟨v, hVfree hv, rfl⟩
-  have hUT : U = connectedComponentIn (freeIn M.D T) u := region_of_exits hsys hU hu
+  have hUT := region_of_exits hsys hU hu
   have hUTr : U ∈ M.regions T := by
     rw [hUT]
     exact ⟨u, ((Chazelle.Chain.regionsIn_subset hU).trans
       (Chazelle.Chain.freeIn_anti M.D hTF)) hu, rfl⟩
-  have hxVT : M.Faces pb tx VT := hxV.mono fun δ h => hVVT h
+  have hxVT := hxV.mono fun δ h => hVVT h
   have hTcut : ∀ k, M.IsCut T k → M.IsCut F k := fun k ⟨c, hc, h⟩ => ⟨c, hc.1, h⟩
   have hkeys : ∀ k, M.IsCut T k → ¬ sideInArc a b k ∧ k ≠ b ∧ ¬ (b < k ∧ k ≤ pb + tx) := by
     intro k hk
@@ -392,7 +392,7 @@ theorem arcs_bound (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
     have hcf := hM.finite_cuts hF hfin
     have hSsub : S ⊆ {x | M.IsCut F x} ×ˢ {x | M.IsCut F x} := fun ab h =>
       ⟨(arc_cuts hne h).1, (arc_cuts hne h).2.1⟩
-    have hSfin : S.Finite := (hcf.prod hcf).subset hSsub
+    have hSfin := (hcf.prod hcf).subset hSsub
     refine ⟨hSfin, ?_⟩
     let f : ℝ × ℝ → Set Point := fun ab =>
       if h : ∃ c ∈ T, ∃ p t, SideAttach M.W c p t ∧ ab.2 = p + t then h.choose else ∅
@@ -409,7 +409,7 @@ theorem arcs_bound (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfi
       rw [← heq] at hA'
       simp only at hb hb'
       set c := f (a, b)
-      have hc : c ∈ F := hcT.1
+      have hc := hcT.1
       obtain ⟨-, hcutb, hab0⟩ := arc_cuts hne hab
       obtain ⟨-, hcutb', hab0'⟩ := arc_cuts hne hab'
       have hfree := hab.2.2.2.2.2.1

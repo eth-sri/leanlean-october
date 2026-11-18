@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Short
+
 public import Mathlib.Data.Nat.Log
 public import Mathlib.Tactic.Ring
 public import Mathlib.Tactic.Linarith
@@ -194,12 +196,12 @@ theorem mpass_append {w : ℕ} (hw : 0 < w) (t : ℕ) (l₁ l₂ : List α)
     have hl : l₁ ++ l₂ ≠ [] := by simp [hl₁]
     rw [mpass_eq hw hl, mpass_eq hw hl₁]
     have ht1 : (l₁ ++ l₂).take w = l₁.take w := by
-      rw [List.take_append_of_le_length (by omega)]
+      rw [List.take_append_of_le_length by_o]
     have ht2 : ((l₁ ++ l₂).drop w).take w = (l₁.drop w).take w := by
-      rw [List.drop_append_of_le_length (by omega),
+      rw [List.drop_append_of_le_length by_o,
         List.take_append_of_le_length (by simp only [List.length_drop]; omega)]
     have ht3 : (l₁ ++ l₂).drop (2 * w) = l₁.drop (2 * w) ++ l₂ := by
-      rw [List.drop_append_of_le_length (by omega)]
+      rw [List.drop_append_of_le_length by_o]
     rw [ht1, ht2, ht3, ih _ (by simp only [List.length_drop]; rw [h, Nat.succ_mul]; omega),
       List.append_assoc]
 
@@ -221,12 +223,12 @@ theorem mpass_drop {w : ℕ} (hw : 0 < w) (t : ℕ) (l : List α) :
     · subst hne; simp [mpass_nil]
     rw [mpass_eq hw hne]
     have hB := merge_block_length (le := le) w l
-    have e1 : (t + 1) * (2 * w) = 2 * w + t * (2 * w) := by ring
+    have e1 : (t + 1) * (2 * w) = 2 * w + t * (2 * w) := by_r
     by_cases hlen : 2 * w ≤ l.length
     · rw [e1, ← List.drop_drop, List.drop_left' (by rw [hB]; omega), ih, List.drop_drop]
-    · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le (by omega)
+    · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le by_o
       rw [h1, mpass_nil, List.append_nil, List.drop_of_length_le (by rw [hB]; omega),
-        List.drop_of_length_le (l := l) (by omega), mpass_nil]
+        List.drop_of_length_le (l := l) by_o, mpass_nil]
 
 /-- The first double block of a pass. -/
 theorem take_mpass {w : ℕ} (hw : 0 < w) (l : List α) :
@@ -237,7 +239,7 @@ theorem take_mpass {w : ℕ} (hw : 0 < w) (l : List α) :
   have hB := merge_block_length (le := le) w l
   by_cases hlen : 2 * w ≤ l.length
   · rw [List.take_left' (by rw [hB]; omega)]
-  · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le (by omega)
+  · have h1 : l.drop (2 * w) = [] := List.drop_of_length_le by_o
     rw [h1, mpass_nil, List.append_nil, List.take_of_length_le (by rw [hB]; omega)]
 
 /-! ## Sorted blocks -/

@@ -72,7 +72,7 @@ theorem noWr_passes : NoWr 60022 p1S = true ∧ NoWr 60023 p1S = true ∧ NoWr 6
     NoWr 60022 p2S = true ∧ NoWr 60023 p2S = true ∧ NoWr 60024 p2S = true ∧
     NoWr 60022 cpS = true ∧ NoWr 60023 cpS = true ∧ NoWr 60024 cpS = true ∧
     NoWr 60022 rootS = true ∧ NoWr 60023 rootS = true ∧
-    NoWr 60022 rpS = true ∧ NoWr 60024 rpS = true := by decide
+    NoWr 60022 rpS = true ∧ NoWr 60024 rpS = true := by_d
 
 end nowr
 
@@ -98,15 +98,15 @@ theorem round_facts (h : Rooted R K up dn ord pos prg pch)
     (∀ e, e < K → σ.pend e = 1 → top (chOf e) = chOf e) ∧
     (∀ r, r < R → top r ≠ r → pch r < R) ∧ top 0 = 0 := by
   have hKR : K < R := by have := h.hR; omega
-  have hR0 : 0 < R := by omega
-  have top0 : top 0 = 0 := top_self h hch hT hB hI hR0 (Or.inl rfl)
+  have hR0 : 0 < R := by_o
+  have top0 := top_self h hch hT hB hI hR0 (Or.inl rfl)
   refine ⟨fun u hu => top_self h hch hT hB hI (hT u hu).1 (hT u hu).2.1, fun x hx htx => ?_,
     fun t ht htt ha hs => ?_, fun e he hp => ?_, fun r hr htr => ?_, top0⟩
   · have htop := (top_iff h hch hT hB hI hx).1 htx
     rcases (hB x hx htop).2 with ⟨b1, -⟩ | ⟨b1, b2, b3, -⟩
-    · exact ⟨by rw [b1]; exact hx, fun hh => absurd b1 hh⟩
+    · exact ⟨by rwa [b1], fun hh => absurd b1 hh⟩
     · refine ⟨b1, fun _ => ?_⟩
-      have hnt : ¬ IsTop pch σ.rem (best x) := AncX.not_top b2 (Ne.symm b3)
+      have hnt := AncX.not_top b2 (Ne.symm b3)
       have hb0 : best x ≠ 0 := fun h0 => hnt (Or.inl h0)
       have := h.pch_lt _ b1 hb0
       omega
@@ -116,8 +116,8 @@ theorem round_facts (h : Rooted R K up dn ord pos prg pch)
     · omega
   · have hr := hI.i0 e he hp
     obtain ⟨c1, -, c3⟩ := hch e he
-    exact top_self h hch hT hB hI c1 (Or.inr (by rw [c3]; exact hr))
-  · have hr0 : r ≠ 0 := fun h0 => htr (by rw [h0]; exact top0)
+    exact top_self h hch hT hB hI c1 (Or.inr (by rwa [c3]))
+  · have hr0 : r ≠ 0 := fun h0 => htr (by rwa [h0])
     have := h.pch_lt r hr hr0
     omega
 
@@ -150,19 +150,19 @@ theorem round_mem {m0 m2 m3 m4 : ℕ → ℕ} {root fin root' fin' : ℕ} (hK : 
   have hnxt : nxt m2 A R K = next R K (tv m0 A R 3) (tv m0 A R 4) (tv m0 A R 5) (tv m0 A R 6)
       (tv m2 A R 8) (tv m2 A R 9) (rsOf m0 A R 0 0) := by
     unfold nxt rsOf
-    rw [t02 3 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 4 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 5 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 6 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 11 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 12 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 13 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 14 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 15 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 16 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 17 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 18 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num),
-      t02 0 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)]
+    rw [t02 3 by_n by_n by_n by_n by_n,
+      t02 4 by_n by_n by_n by_n by_n,
+      t02 5 by_n by_n by_n by_n by_n,
+      t02 6 by_n by_n by_n by_n by_n,
+      t02 11 by_n by_n by_n by_n by_n,
+      t02 12 by_n by_n by_n by_n by_n,
+      t02 13 by_n by_n by_n by_n by_n,
+      t02 14 by_n by_n by_n by_n by_n,
+      t02 15 by_n by_n by_n by_n by_n,
+      t02 16 by_n by_n by_n by_n by_n,
+      t02 17 by_n by_n by_n by_n by_n,
+      t02 18 by_n by_n by_n by_n by_n,
+      t02 0 by_n by_n by_n by_n by_n]
   set N := next R K (tv m0 A R 3) (tv m0 A R 4) (tv m0 A R 5) (tv m0 A R 6)
       (tv m2 A R 8) (tv m2 A R 9) (rsOf m0 A R root fin) with hN
   -- the chord fields
@@ -176,10 +176,10 @@ theorem round_mem {m0 m2 m3 m4 : ℕ → ℕ} {root fin root' fin' : ℕ} (hK : 
     · rw [ite_eq_left he, h34 f e hf he, ite_eq_right (cpf_not_rpf hc), h23 f e hf he]
       by_cases heK : e < K
       · rw [ite_eq_left ⟨heK, hc⟩, hF1 e heK]
-      · rw [ite_eq_right (fun hh => heK hh.1), hF2 e (by omega), tv_lt he,
+      · rw [ite_eq_right (fun hh => heK hh.1), hF2 e by_o, tv_lt he,
           h02 f e hf (by unfold CPF at hc; omega) (by unfold CPF at hc; omega)
             (by unfold CPF at hc; omega) (by unfold CPF at hc; omega) he]
-    · rw [ite_eq_right he, hF2 e (by omega)]
+    · rw [ite_eq_right he, hF2 e by_o]
       unfold tv; rw [ite_eq_right he]
   -- the facts read by the region pass
   have r2 : ∀ f x, f < 19 → ¬ CPF f → x < R → fv m3 A R f x = fv m2 A R f x :=
@@ -188,44 +188,44 @@ theorem round_mem {m0 m2 m3 m4 : ℕ → ℕ} {root fin root' fin' : ℕ} (hK : 
       fv m3 A R f x = tv m0 A R f x :=
     fun f x hf hc h7 h8 h9 h10 hx => by rw [r2 f x hf hc hx, h02 f x hf h7 h8 h9 h10 hx, tv_lt hx]
   have a8 : ∀ x, x < R → fv m3 A R 8 x = tv m2 A R 8 x := fun x hx => by
-    rw [r2 8 x (by norm_num) (by unfold CPF; omega) hx, tv_lt hx]
+    rw [r2 8 x by_n (by unfold CPF; omega) hx, tv_lt hx]
   have a9 : ∀ x, x < R → fv m3 A R 9 x = tv m2 A R 9 x := fun x hx => by
-    rw [r2 9 x (by norm_num) (by unfold CPF; omega) hx, tv_lt hx]
+    rw [r2 9 x by_n (by unfold CPF; omega) hx, tv_lt hx]
   have a4 : ∀ x, x < R → fv m3 A R 4 x = tv m0 A R 4 x := fun x hx =>
-    r0 4 x (by norm_num) (by unfold CPF; omega) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) hx
+    r0 4 x by_n (by unfold CPF; omega) by_n by_n by_n
+      by_n hx
   have a5 : ∀ x, x < R → fv m3 A R 5 x = tv m0 A R 5 x := fun x hx =>
-    r0 5 x (by norm_num) (by unfold CPF; omega) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) hx
+    r0 5 x by_n (by unfold CPF; omega) by_n by_n by_n
+      by_n hx
   have a13 : ∀ x, x < R → fv m3 A R 13 x = tv m0 A R 13 x := fun x hx =>
-    r0 13 x (by norm_num) (by unfold CPF; omega) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) hx
+    r0 13 x by_n (by unfold CPF; omega) by_n by_n by_n
+      by_n hx
   have a14 : ∀ x, x < R → fv m3 A R 14 x = tv m0 A R 14 x := fun x hx =>
-    r0 14 x (by norm_num) (by unfold CPF; omega) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) hx
+    r0 14 x by_n (by unfold CPF; omega) by_n by_n by_n
+      by_n hx
   have a15 : ∀ x, x < R → fv m3 A R 15 x = tv m0 A R 15 x := fun x hx =>
-    r0 15 x (by norm_num) (by unfold CPF; omega) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) hx
+    r0 15 x by_n (by unfold CPF; omega) by_n by_n by_n
+      by_n hx
   have a0 : ∀ x, x < R → fv m3 A R 0 x = tv m0 A R 0 x := fun x hx =>
-    r0 0 x (by norm_num) (by unfold CPF; omega) (by norm_num) (by norm_num) (by norm_num)
-      (by norm_num) hx
+    r0 0 x by_n (by unfold CPF; omega) by_n by_n by_n
+      by_n hx
   have a12 : ∀ e, e < R → fv m3 A R 12 e = N.pend e := fun e he => by
-    rw [h23 12 e (by norm_num) he]
+    rw [h23 12 e by_n he]
     by_cases heK : e < K
     · rw [ite_eq_left ⟨heK, by unfold CPF; omega⟩]
       unfold cpv; rw [hnxt]; rfl
-    · rw [ite_eq_right (fun hh => heK hh.1), h02 12 e (by norm_num) (by norm_num) (by norm_num)
-        (by norm_num) (by norm_num) he, hN]
+    · rw [ite_eq_right (fun hh => heK hh.1), h02 12 e by_n by_n by_n
+        by_n by_n he, hN]
       simp only [next, nPend, ite_eq_right heK, rsOf, tv_lt he]
   have hb' : ∀ r, r < R → tv m2 A R 8 r = r → tv m0 A R 13 r = 1 → tv m2 A R 9 r < R :=
     fun r hr h8 h13 => by
       rw [tv_lt hr] at h8 ⊢
-      rw [tv_lt hr, ← h02 13 r (by norm_num) (by norm_num) (by norm_num) (by norm_num)
-        (by norm_num) hr] at h13
+      rw [tv_lt hr, ← h02 13 r by_n by_n by_n by_n
+        by_n hr] at h13
       exact hb r hr h8 h13
   have hp' : ∀ r, r < R → tv m2 A R 8 r ≠ r → tv m0 A R 4 r < R := fun r hr h8 => by
     rw [tv_lt hr] at h8 ⊢
-    rw [← h02 4 r (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hr]
+    rw [← h02 4 r by_n by_n by_n by_n by_n hr]
     exact hp r hr h8
   -- the region fields
   have region : ∀ f, RPF f → f ≠ 7 → ∀ F : ℕ → ℕ, (∀ r, r < R → rpv m3 A R f r = F r) →
@@ -236,7 +236,7 @@ theorem round_mem {m0 m2 m3 m4 : ℕ → ℕ} {root fin root' fin' : ℕ} (hK : 
     unfold tv
     by_cases hr : r < R
     · rw [ite_eq_left hr, h34 f r hf hr, ite_eq_left hc, hF1 r hr]
-    · rw [ite_eq_right hr, hF2 r (by omega)]
+    · rw [ite_eq_right hr, hF2 r by_o]
   have eta : N = ⟨N.rem, N.pend, N.act, N.cpar, N.side, N.dpar, N.dlo, N.dhi, N.lpar, N.root,
       N.fin⟩ := rfl
   rw [eta]
@@ -246,7 +246,7 @@ theorem round_mem {m0 m2 m3 m4 : ℕ → ℕ} {root fin root' fin' : ℕ} (hK : 
       (fun e he => by rw [hN]; simp only [next, ite_eq_right (show ¬ e < K by omega), rsOf])
   · exact chord 12 (by unfold CPF; omega) _ (fun e he => by unfold cpv; rw [hnxt]; rfl)
       (fun e he => by rw [hN]; simp only [next, nPend, ite_eq_right (show ¬ e < K by omega), rsOf])
-  · refine region 13 (by unfold RPF; omega) (by norm_num) _ (fun r hr => ?_) (fun r hr => ?_)
+  · refine region 13 (by unfold RPF; omega) by_n _ (fun r hr => ?_) (fun r hr => ?_)
     · unfold rpv
       rw [a8 r hr, a13 r hr, a9 r hr, a14 r hr, a15 r hr, hN]
       by_cases ht : tv m2 A R 8 r = r
@@ -264,7 +264,7 @@ theorem round_mem {m0 m2 m3 m4 : ℕ → ℕ} {root fin root' fin' : ℕ} (hK : 
         clear * - ht
         split_ifs <;> simp_all
     · rw [hN]; simp only [next, rsOf, ite_eq_right (show ¬ r < R by omega), tv]
-  · refine region 14 (by unfold RPF; omega) (by norm_num) _ (fun r hr => ?_) (fun r hr => ?_)
+  · refine region 14 (by unfold RPF; omega) by_n _ (fun r hr => ?_) (fun r hr => ?_)
     · unfold rpv
       rw [a8 r hr, a13 r hr, a9 r hr, a14 r hr, a15 r hr, hN]
       by_cases ht : tv m2 A R 8 r = r
@@ -282,7 +282,7 @@ theorem round_mem {m0 m2 m3 m4 : ℕ → ℕ} {root fin root' fin' : ℕ} (hK : 
         clear * - ht
         split_ifs <;> simp_all
     · rw [hN]; simp only [next, rsOf, ite_eq_right (show ¬ r < R by omega), tv]
-  · refine region 15 (by unfold RPF; omega) (by norm_num) _ (fun r hr => ?_) (fun r hr => ?_)
+  · refine region 15 (by unfold RPF; omega) by_n _ (fun r hr => ?_) (fun r hr => ?_)
     · unfold rpv
       rw [a8 r hr, a13 r hr, a9 r hr, a14 r hr, a15 r hr, hN]
       by_cases ht : tv m2 A R 8 r = r
@@ -306,7 +306,7 @@ theorem round_mem {m0 m2 m3 m4 : ℕ → ℕ} {root fin root' fin' : ℕ} (hK : 
       (fun e he => by rw [hN]; simp only [next, ite_eq_right (show ¬ e < K by omega), rsOf])
   · exact chord 18 (by unfold CPF; omega) _ (fun e he => by unfold cpv; rw [hnxt]; rfl)
       (fun e he => by rw [hN]; simp only [next, ite_eq_right (show ¬ e < K by omega), rsOf])
-  · refine region 0 (by unfold RPF; omega) (by norm_num) _ (fun r hr => ?_) (fun r hr => ?_)
+  · refine region 0 (by unfold RPF; omega) by_n _ (fun r hr => ?_) (fun r hr => ?_)
     · unfold rpv
       rw [a8 r hr, a13 r hr, a9 r hr, a14 r hr, a15 r hr, a0 r hr, hN]
       by_cases ht : tv m2 A R 8 r = r
@@ -325,9 +325,9 @@ theorem round_mem {m0 m2 m3 m4 : ℕ → ℕ} {root fin root' fin' : ℕ} (hK : 
         split_ifs <;> simp_all
     · rw [hN]; simp only [next, rsOf, ite_eq_right (show ¬ r < R by omega), tv]
   · rw [hroot, hN]
-    have hR0 : 0 < R := by omega
+    have hR0 : 0 < R := by_o
     simp only [next, rsOf, tv_lt hR0]
-    rw [t02 4 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)]
+    rw [t02 4 by_n by_n by_n by_n by_n]
   · rw [hfin, hN]
     simp only [next, rsOf]
     congr 1
@@ -348,18 +348,18 @@ variable {P : Polygon} {W : ℕ} {A R K D CB RB LB : ℕ}
 theorem CPFacts.congr {m m' : ℕ → ℕ} (hF : CPFacts m A R K)
     (hs : ∀ f u, f < 19 → ¬ CPF f → u < R → fv m' A R f u = fv m A R f u) : CPFacts m' A R K := by
   have hKR := hF.hKR
-  have h6 := fun u => hs 6 u (by norm_num) (by unfold CPF; omega)
-  have h3 := fun u => hs 3 u (by norm_num) (by unfold CPF; omega)
-  have h8 := fun u => hs 8 u (by norm_num) (by unfold CPF; omega)
-  have h9 := fun u => hs 9 u (by norm_num) (by unfold CPF; omega)
-  have h4 := fun u => hs 4 u (by norm_num) (by unfold CPF; omega)
-  have h13 := fun u => hs 13 u (by norm_num) (by unfold CPF; omega)
-  have h14 := fun u => hs 14 u (by norm_num) (by unfold CPF; omega)
-  have h15 := fun u => hs 15 u (by norm_num) (by unfold CPF; omega)
+  have h6 := fun u => hs 6 u by_n (by unfold CPF; omega)
+  have h3 := fun u => hs 3 u by_n (by unfold CPF; omega)
+  have h8 := fun u => hs 8 u by_n (by unfold CPF; omega)
+  have h9 := fun u => hs 9 u by_n (by unfold CPF; omega)
+  have h4 := fun u => hs 4 u by_n (by unfold CPF; omega)
+  have h13 := fun u => hs 13 u by_n (by unfold CPF; omega)
+  have h14 := fun u => hs 14 u by_n (by unfold CPF; omega)
+  have h15 := fun u => hs 15 u by_n (by unfold CPF; omega)
   refine ⟨hKR, fun e' he' => ?_, fun u hu => ?_, fun u hu => ?_, fun x hx htx => ?_,
     fun t ht htt ha hs2 => ?_⟩
   · obtain ⟨a1, a2, a3⟩ := hF.chOf e' he'
-    rw [h6 _ (by omega), h3 _ a1]; exact ⟨a1, a2, a3⟩
+    rw [h6 _ by_o, h3 _ a1]; exact ⟨a1, a2, a3⟩
   · rw [h8 _ hu]; exact hF.topR u hu
   · rw [h8 _ hu, h8 _ (hF.topR u hu)]; exact hF.topTop u hu
   · rw [h8 _ hx] at htx
@@ -390,25 +390,25 @@ theorem roundBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB
       ∃ gc' cr', RInv R K D (tv mB A R 3) (tv mB A R 4) (tv mB A R 5) (tv mB A R 6) (j + 1)
         (rsOf c'.nmem A R (c'.nreg 60024) (c'.nreg 60023)) gc' cr' := by
   have hKR : K < R := by have := h.hR; omega
-  have hR0 : 0 < R := by omega
+  have hR0 : 0 < R := by_o
   obtain ⟨w1, w2, w3, w4, w5, w6, w7, w8, w9, w10, w11, w12, w13⟩ := noWr_passes
   have sv : ∀ f u, (f = 1 ∨ f = 3 ∨ f = 4 ∨ f = 5 ∨ f = 6) → u < R →
       fv c.nmem A R f u = tv mB A R f u := fun f u hf hu => by rw [hst f u hf hu, tv_lt hu]
   -- pass 1
   obtain ⟨c1, k1, e1, hk1, hw1, hf1, hv1⟩ := p1S_exec (P := P) hw hR hAW h
-    (rem := tv c.nmem A R 11) (fun u hu => sv 1 u (by simp) hu) (fun u hu => sv 3 u (by simp) hu)
-    (fun u hu => sv 4 u (by simp) hu) (fun u hu => (tv_lt hu).symm) h7
+    (rem := tv c.nmem A R 11) (fun u hu => sv 1 u by_s hu) (fun u hu => sv 3 u by_s hu)
+    (fun u hu => sv 4 u by_s hu) (fun u hu => (tv_lt hu).symm) h7
   have hR1 := hR.frame hf1
   have f01 : ∀ f u, f < 19 → f ≠ 7 → u < R → fv c1.nmem A R f u = fv c.nmem A R f u :=
     fun f u hf h7 hu => by rw [hv1 f u hf hu, ite_eq_right h7]
   -- pass 2
   obtain ⟨c2, k2, e2, hk2, hw2, hf2, hag, hv2⟩ := p2S_exec (P := P) hw1 hR1 hAW h
     (rem := tv c.nmem A R 11)
-    (fun u hu => by rw [f01 1 u (by norm_num) (by norm_num) hu]; exact sv 1 u (by simp) hu)
-    (fun u hu => by rw [f01 3 u (by norm_num) (by norm_num) hu]; exact sv 3 u (by simp) hu)
-    (fun u hu => by rw [f01 4 u (by norm_num) (by norm_num) hu]; exact sv 4 u (by simp) hu)
-    (fun u hu => by rw [f01 11 u (by norm_num) (by norm_num) hu, tv_lt hu])
-    (fun u hu => by rw [hv1 7 u (by norm_num) hu, ite_eq_left rfl])
+    (fun u hu => by rw [f01 1 u by_n by_n hu]; exact sv 1 u by_s hu)
+    (fun u hu => by rw [f01 3 u by_n by_n hu]; exact sv 3 u by_s hu)
+    (fun u hu => by rw [f01 4 u by_n by_n hu]; exact sv 4 u by_s hu)
+    (fun u hu => by rw [f01 11 u by_n by_n hu, tv_lt hu])
+    (fun u hu => by rw [hv1 7 u by_n hu, ite_eq_left rfl])
   have hR2 := hR1.frame hf2
   have f02 : ∀ f u, f < 19 → f ≠ 7 → f ≠ 8 → f ≠ 9 → f ≠ 10 → u < R →
       fv c2.nmem A R f u = fv c.nmem A R f u :=
@@ -441,38 +441,38 @@ theorem roundBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB
   have T9 : ∀ u, u < R → fv c2.nmem A R 9 u = best u := fun u hu => by rw [hbest, tv_lt hu]
   have S2 : ∀ f u, (f = 1 ∨ f = 3 ∨ f = 4 ∨ f = 5 ∨ f = 6) → u < R →
       fv c2.nmem A R f u = tv mB A R f u := fun f u hf hu => by
-    rw [f02 f u (by omega) (by omega) (by omega) (by omega) (by omega) hu]; exact sv f u hf hu
+    rw [f02 f u by_o by_o by_o by_o by_o hu]; exact sv f u hf hu
   have Q2 : ∀ f u, f < 19 → 11 ≤ f ∨ f = 0 → u < R → fv c2.nmem A R f u = tv c.nmem A R f u :=
     fun f u hf hf' hu => by
-      rw [f02 f u hf (by omega) (by omega) (by omega) (by omega) hu, tv_lt hu]
+      rw [f02 f u hf by_o by_o by_o by_o hu, tv_lt hu]
   have hF2 : CPFacts c2.nmem A R K := by
     refine ⟨hKR, fun e he => ?_, fun u hu => ?_, fun u hu => ?_, fun x hx htx => ?_,
       fun t ht htt ha hs => ?_⟩
     · obtain ⟨a1, a2, -⟩ := hch e he
-      rw [S2 6 e (by simp) (by omega), S2 3 _ (by simp) a1]
+      rw [S2 6 e by_s by_o, S2 3 _ by_s a1]
       exact ⟨a1, a2, h.prg_lt _ a1 a2⟩
     · rw [T8 u hu]; exact (hT u hu).1
     · rw [T8 u hu, T8 _ (hT u hu).1]; exact F1 u hu
     · rw [T8 x hx] at htx
       obtain ⟨b1, b2⟩ := F2 x hx htx
-      rw [T9 x hx]; refine ⟨b1, fun hb => ?_⟩; rw [S2 4 _ (by simp) b1]; exact b2 hb
-    · rw [T8 t ht] at htt; rw [Q2 13 t (by norm_num) (by omega) ht] at ha
-      rw [Q2 15 t (by norm_num) (by omega) ht] at hs
-      rw [Q2 14 t (by norm_num) (by omega) ht]; exact F3 t ht htt ha hs
+      rw [T9 x hx]; refine ⟨b1, fun hb => ?_⟩; rw [S2 4 _ by_s b1]; exact b2 hb
+    · rw [T8 t ht] at htt; rw [Q2 13 t by_n by_o ht] at ha
+      rw [Q2 15 t by_n by_o ht] at hs
+      rw [Q2 14 t by_n by_o ht]; exact F3 t ht htt ha hs
   -- the chord pass
   obtain ⟨c3, k3, e3, hk3, hw3, hf3, hv3⟩ := cpS_exec (P := P) hw2 hR2 hAW hF2
     (fun e he hp => by
-      have he' : e < R := by omega
-      rw [Q2 12 e (by norm_num) (by omega) he'] at hp
+      have he' : e < R := by_o
+      rw [Q2 12 e by_n by_o he'] at hp
       obtain ⟨a1, -, -⟩ := hch e he
-      rw [S2 6 e (by simp) he', T8 _ a1]; exact F4 e he hp)
+      rw [S2 6 e by_s he', T8 _ a1]; exact F4 e he hp)
   have hR3 := hR2.frame hf3
   have f23 : ∀ f u, f < 19 → ¬ CPF f → u < R → fv c3.nmem A R f u = fv c2.nmem A R f u :=
     fun f u hf hc hu => by rw [hv3 f u hf hu, ite_eq_right (fun hh => hc hh.2)]
   have hF3 := hF2.congr f23
   -- the root step
   obtain ⟨c4, k4, e4, hk4, m4, s4, r24⟩ := rootS_exec (P := P) hw3 hR3 hAW hF3
-    (by rw [f23 8 0 (by norm_num) (by unfold CPF; omega) hR0, T8 0 hR0]; exact F6)
+    (by rwa [f23 8 0 by_n (by unfold CPF; omega) hR0, T8 0 hR0])
   have hR4 := hR3.of_same s4 (by simp [Prot])
   -- the region pass
   have n23 : c3.nreg 60023 = c.nreg 60023 := by
@@ -483,31 +483,31 @@ theorem roundBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB
     rw [nreg_of_noWr e4 w10, nreg_of_noWr e3 w7, nreg_of_noWr e2 w4, nreg_of_noWr e1 w1]
   have n23' : c4.nreg 60023 = c.nreg 60023 := by rw [nreg_of_noWr e4 w11, n23]
   have g8 : ∀ u, u < R → fv c4.nmem A R 8 u = top u := fun u hu => by
-    rw [m4, f23 8 u (by norm_num) (by unfold CPF; omega) hu, T8 u hu]
+    rw [m4, f23 8 u by_n (by unfold CPF; omega) hu, T8 u hu]
   have g9 : ∀ u, u < R → fv c4.nmem A R 9 u = best u := fun u hu => by
-    rw [m4, f23 9 u (by norm_num) (by unfold CPF; omega) hu, T9 u hu]
+    rw [m4, f23 9 u by_n (by unfold CPF; omega) hu, T9 u hu]
   have gQ : ∀ f u, f < 19 → ¬ CPF f → 11 ≤ f → u < R → fv c4.nmem A R f u = tv c.nmem A R f u :=
-    fun f u hf hc hf' hu => by rw [m4, f23 f u hf hc hu, Q2 f u hf (by omega) hu]
+    fun f u hf hc hf' hu => by rw [m4, f23 f u hf hc hu, Q2 f u hf by_o hu]
   have g4 : ∀ u, u < R → fv c4.nmem A R 4 u = pch u := fun u hu => by
-    rw [m4, f23 4 u (by norm_num) (by unfold CPF; omega) hu, S2 4 u (by simp) hu]
+    rw [m4, f23 4 u by_n (by unfold CPF; omega) hu, S2 4 u by_s hu]
   obtain ⟨c5, k5, e5, hk5, hw5, hf5, r23, hv5⟩ := rpS_exec (P := P) e4.wb_right hR4 hAW
     (fun r hr htr ha => by
       rw [g8 r hr] at htr; rw [g9 r hr]; exact (F2 r hr htr).1)
     (fun r hr htr ha hbr hs => by
       rw [g8 r hr] at htr
-      rw [gQ 13 r (by norm_num) (by unfold CPF; omega) (by norm_num) hr] at ha
-      rw [gQ 15 r (by norm_num) (by unfold CPF; omega) (by norm_num) hr] at hs
-      rw [gQ 14 r (by norm_num) (by unfold CPF; omega) (by norm_num) hr]
+      rw [gQ 13 r by_n (by unfold CPF; omega) by_n hr] at ha
+      rw [gQ 15 r by_n (by unfold CPF; omega) by_n hr] at hs
+      rw [gQ 14 r by_n (by unfold CPF; omega) by_n hr]
       exact F3 r hr htr ha hs)
     (fun r hr htr => by rw [g8 r hr] at htr; rw [g4 r hr]; exact F5 r hr htr)
     (by rw [n23']; omega)
   have hR5 := hR4.frame hf5
   -- the round counter
   have n22' : c5.nreg 60022 = j := by rw [nreg_of_noWr e5 w12, n22, hj]
-  have e6 := Exec.addN (P := P) e5.wb_right 60022 60022 60011 (by rw [n22', hR5.one]; exact hjW)
+  have e6 := Exec.addN (P := P) e5.wb_right 60022 60022 60011 (by rwa [n22', hR5.one])
   set c6 := { c5 with nreg := upd c5.nreg 60022 (c5.nreg 60022 + c5.nreg 60011) } with hc6
   have hf6 : DFr (A + 12) (A + 12 + 19 * R) c5 c6 :=
-    DFr.nreg _ fun r hr _ => by unfold Prot at hr; rw [Machine.upd_other _ _ _ (by omega)]
+    DFr.nreg _ fun r hr _ => by unfold Prot at hr; rw [Machine.upd_other _ _ _ by_o]
   -- memory relations
   have m56 : c6.nmem = c5.nmem := rfl
   have h45 : ∀ f u, f < 19 → u < R → fv c6.nmem A R f u =
@@ -518,37 +518,37 @@ theorem roundBody_exec {c : Config} (hw : WordsBounded W c) (hR : DRegs A R K CB
     (fin' := c6.nreg 60023) hKR f02 hv3 h45
     (fun r hr htr ha => by
       rw [T8 r hr] at htr; rw [T9 r hr]; exact (F2 r hr htr).1)
-    (fun r hr htr => by rw [T8 r hr] at htr; rw [S2 4 r (by simp) hr]; exact F5 r hr htr)
+    (fun r hr htr => by rw [T8 r hr] at htr; rw [S2 4 r by_s hr]; exact F5 r hr htr)
     (by
       have e24 : c6.nreg 60024 = c4.nreg 60024 := by
         rw [hc6]; config_simp; rw [nreg_of_noWr e5 w13]
-      rw [e24, r24, n24, f23 13 0 (by norm_num) (by unfold CPF; omega) hR0,
-        f23 15 0 (by norm_num) (by unfold CPF; omega) hR0,
-        f02 13 0 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hR0,
-        f02 15 0 (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) hR0,
-        tv_congr (fun u hu => f23 9 u (by norm_num) (by unfold CPF; omega) hu),
-        tv_congr (fun u hu => f23 4 u (by norm_num) (by unfold CPF; omega) hu)])
+      rw [e24, r24, n24, f23 13 0 by_n (by unfold CPF; omega) hR0,
+        f23 15 0 by_n (by unfold CPF; omega) hR0,
+        f02 13 0 by_n by_n by_n by_n by_n hR0,
+        f02 15 0 by_n by_n by_n by_n by_n hR0,
+        tv_congr (fun u hu => f23 9 u by_n (by unfold CPF; omega) hu),
+        tv_congr (fun u hu => f23 4 u by_n (by unfold CPF; omega) hu)])
     (by
       have e23 : c6.nreg 60023 = c5.nreg 60023 := by rw [hc6]; config_simp
       rw [e23, r23, n23', m4])
   have tS : ∀ f, (f = 1 ∨ f = 3 ∨ f = 4 ∨ f = 5 ∨ f = 6) → tv c.nmem A R f = tv mB A R f :=
     fun f hf => tv_congr (fun u hu => hst f u hf hu)
-  rw [tS 3 (by simp), tS 4 (by simp), tS 5 (by simp), tS 6 (by simp)] at hmem
+  rw [tS 3 by_s, tS 4 by_s, tS 5 by_s, tS 6 by_s] at hmem
   -- conclusion
   have hS6 : ∀ f u, f < 19 → ¬ RPF f → ¬ CPF f → f ≠ 7 → f ≠ 8 → f ≠ 9 → f ≠ 10 → u < R →
       fv c6.nmem A R f u = fv c.nmem A R f u := fun f u hf hr hc h7 h8 h9 h10 hu => by
     rw [h45 f u hf hu, ite_eq_right hr, f23 f u hf hc hu, f02 f u hf h7 h8 h9 h10 hu]
   refine ⟨c6, k1 + (k2 + (k3 + (k4 + (k5 + 1)))), .seq e1 (.seq e2 (.seq e3 (.seq e4 (.seq e5 e6)))),
-    by omega, e6.wb_right, ?_, fun f u hf hu => ?_, fun u hu => ?_, ?_,
+    by_o, e6.wb_right, ?_, fun f u hf hu => ?_, fun u hu => ?_, ?_,
     gcNext R K prg pch (tv mB A R 6) top best σ gc,
     crNext K (tv mB A R 6) top best σ j cr, ?_⟩
   · refine ((((hf1.trans hf2).trans hf3).trans ?_).trans hf5).trans hf6
     exact DFr.of_same s4 (by simp [Prot]) (fun a _ => by rw [m4])
   · have hf' : f < 19 := by omega
-    rw [hS6 f u hf' (by unfold RPF; omega) (by unfold CPF; omega) (by omega) (by omega) (by omega)
-      (by omega) hu]
+    rw [hS6 f u hf' (by unfold RPF; omega) (by unfold CPF; omega) by_o by_o by_o
+      by_o hu]
     exact hst f u hf hu
-  · rw [h45 7 u (by norm_num) hu, ite_eq_left (by unfold RPF; omega)]; simp [rpv]
+  · rw [h45 7 u by_n hu, ite_eq_left (by unfold RPF; omega)]; simp [rpv]
   · rw [hc6]; config_simp; rw [n22', hR5.one]
   · rw [hmem]
     exact rinv_next h hch hT hB hI hdeg

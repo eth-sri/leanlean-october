@@ -65,13 +65,13 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   -- `DLAB := N`
   obtain ⟨c1, k1, x1, hk1, hw1, hf1, hl1⟩ := fillWith_exec (P := P) hw hG.one
     (hG.rbase 24 (by omega)) hG.rN hG.rN (by unfold FillRG; omega) (by unfold FillRG; omega)
-    (by unfold FillRG; omega) (by omega) (by omega)
+    (by unfold FillRG; omega) by_o by_o
   have f1 : PFr StBRG Wr c c1 := hf1.mono (fun r h => by unfold FillRG at h; unfold StBRG; omega)
     (fun a h => by simp only [hWr]; omega)
   have b3 := g.base_eq 3; have b5 := g.base_eq 5; have b6 := g.base_eq 6; have b7 := g.base_eq 7
-  have hA1 : AF g M T c1.nmem := hA.congr ⟨hO, hR, hV⟩
+  have hA1 := hA.congr ⟨hO, hR, hV⟩
     (fun x hx => hf1.2.2.2.2 x (by unfold KeepA at hx; omega))
-  have hB1 : B1F g M T a ha c1.nmem := hB.congr (fun x h1 h2 => hf1.2.2.2.2 x (by omega))
+  have hB1 : B1F g M T a ha c1.nmem := hB.congr (fun x h1 h2 => hf1.2.2.2.2 x by_o)
   -- the dual search
   obtain ⟨c2, k2, x2, hk2, hw2, hf2, C, hr0, hfpar2, hlt2, hROK, hq0, hRup⟩ :=
     dbfsP_exec (P := P) hw1 (hGR f1) hA1 hB1 hM hN hl1 hW
@@ -82,7 +82,7 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
   have f3 : PFr StBRG Wr c c3 := f2.trans (hf3.mono (fun r h => h) (fun a h => by
     simp only [hWr]; omega))
   have hlt3 : ∀ x, x < g.N → c3.nmem (g.base 26 + x) < 3 * g.N := fun x hx => by
-    rw [hf3.2.2.2.2 _ (by omega)]; exact hlt2 x hx
+    rw [hf3.2.2.2.2 _ by_o]; exact hlt2 x hx
   -- the dual parent array
   obtain ⟨c4, k4, x4, hk4, hw4, hf4, hp0, hp4⟩ := pfP_exec (P := P) hw3 (hGR f3) hN hlt3 hW
   have f4 : PFr StBRG Wr c c4 := f3.trans (hf4.mono (fun r h => h) (fun a h => by
@@ -98,12 +98,12 @@ theorem stageB2_exec {g : GV} {F : Type} [Fintype F] [DecidableEq F]
     · subst h0
       simp only [Nat.add_zero]; rw [hp0]
       unfold BTree.up; rw [ite_eq_left hRroot.symm]
-    · rw [hp4 y (by omega) hy]
+    · rw [hp4 y by_o hy]
       unfold BTree.up
-      rw [ite_eq_right (by rw [hRroot]; exact h0)]
+      rw [ite_eq_right (by rwa [hRroot])]
       show _ = c2.nmem (g.base 17 + c2.nmem (g.base 26 + y))
       have := hlt2 y hy
-      rw [hf3.2.2.2.2 (g.base 26 + y) (by omega), hf3.2.2.2.2 _ (by omega)]
+      rw [hf3.2.2.2.2 (g.base 26 + y) by_o, hf3.2.2.2.2 _ by_o]
   -- the dual table
   obtain ⟨c5, k5, x5, hk5, hw5, hf5, htab⟩ := updP_exec (P := P) hw4 (hGR f4) hN hL
     (fun y hy => by rw [hpf y hy]; exact hupN y hy) hW

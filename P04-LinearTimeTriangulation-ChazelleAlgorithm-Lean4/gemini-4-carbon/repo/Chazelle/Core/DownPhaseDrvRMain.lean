@@ -43,12 +43,12 @@ theorem whileLtN_potential_frame {P : Polygon} {W : ℕ} {a b : ℕ} {body : Stm
   | _ n ih =>
     by_cases ht : c.nreg a < c.nreg b
     · obtain ⟨c₁, k₁, hb, hI₁, hF₁, hΦ⟩ := hbody c hc ht
-      obtain ⟨c', k₂, hl, hI', ht', hF₂, hk₂⟩ := ih (Φ c₁) (by omega) hI₁ rfl
+      obtain ⟨c', k₂, hl, hI', ht', hF₂, hk₂⟩ := ih (Φ c₁) by_o hI₁ rfl
       refine ⟨c', k₁ + 2 + k₂, .whileLtN_true ht hb hl, hI', ht',
-        (hF₁.trans hF₂).mono (by simp) (by omega), by omega⟩
+        (hF₁.trans hF₂).mono by_s by_o, by_o⟩
     · exact ⟨c, 2, .whileLtN_false ht (hI c hc), hc, ht,
         ⟨fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl,
-          by omega⟩, by omega⟩
+          by_o⟩, by_o⟩
 
 /-! ## The loop invariant -/
 
@@ -68,7 +68,7 @@ theorem topGrade_le (n : ℕ) : topGrade n ≤ n := by
 
 /-- The setup record gives `λ ↦ ⌈λ/5⌉ + 11` for `λ ≤ p`. -/
 theorem setup_next {m : ℕ → ℕ} {S n E lam : ℕ} (h : SetupAt m S n E) (hl : lam ≤ topGrade n) :
-    m (S + topGrade n + 4 + lam) = Cost.ceilBeta lam := (h.2.2.1 lam (by omega)).2
+    m (S + topGrade n + 4 + lam) = Cost.ceilBeta lam := (h.2.2.1 lam by_o).2
 
 /-- `EnvD` in terms of the raw registers of `coreReg 0`. -/
 theorem EnvD.setup {X : MemCtx} {P : Polygon} {W : ℕ} {c : Config} (h : EnvD X P W c) :
@@ -106,9 +106,9 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
     have h1 : (rd c bDownDrv 3 + 1) * (lemma41Nat (nextLvl (rd c bDownDrv 0)) + 1) ≤
         (cnt (rd c bDownDrv 0) * (2 ^ topGrade P.n + 2 ^ Cost.ceilBeta (rd c bDownDrv 0)) /
             2 ^ Cost.ceilBeta (rd c bDownDrv 0) + 1) *
-          (lemma41Nat (nextLvl (rd c bDownDrv 0)) + 1) := Nat.mul_le_mul_right _ (by omega)
+          (lemma41Nat (nextLvl (rd c bDownDrv 0)) + 1) := Nat.mul_le_mul_right _ by_o
     have h2 : 1 ≤ (rd c bDownDrv 3 + 1) * (lemma41Nat (nextLvl (rd c bDownDrv 0)) + 1) :=
-      Nat.one_le_iff_ne_zero.2 (by positivity)
+      Nat.one_le_iff_ne_zero.2 by_p
     nlinarith
   have hpre : EnvD X P W c ∧ n₀ ≤ P.n ∧ 16 ≤ rd c bDownDrv 0 ∧ rd c bDownDrv 0 ≤ topGrade P.n ∧
       InvAt cnt P c (rd c bDownDrv 0) := ⟨hE, hn₀n, h16, hlp, hInv⟩
@@ -123,12 +123,12 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
   have hS₁ := hE₁.setup
   have hA₁ := hF₁.2.2.2.2.2.2
   -- `λ := ⌈λ/5⌉ + 11`
-  have hl₁ : c₁.nreg 210000 = rd c bDownDrv 0 := h0₁
-  have hp₁ : c₁.nmem (c₁.nreg 230000 + 1) = topGrade P.n := hS₁.2.1
+  have hl₁ := h0₁
+  have hp₁ := hS₁.2.1
   have hnext := setup_next hS₁ hlp
   have hpn := topGrade_le P.n
   have hSA := hS₁.2.2.2
-  have hS₁W : c₁.nreg 230000 + topGrade P.n + 4 + rd c bDownDrv 0 ≤ W := by omega
+  have hS₁W : c₁.nreg 230000 + topGrade P.n + 4 + rd c bDownDrv 0 ≤ W := by_o
   have hlt := Cost.ceilBeta_add_eleven_lt h16
   have hnW := hE.2.1
   obtain ⟨c₂, k₂, e₂, hk₂, hl₂, hr₂, hr₂', hm₂, hrr₂, hrm₂, ho₂⟩ :=
@@ -137,7 +137,7 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
   have hw₂ := e₂.wb_right
   -- the guard
   obtain ⟨c₃, k₃, e₃, hk₃, hg₃, h15₃, hr₃, hr₃', hl₃, hm₃, hrr₃, hrm₃, ho₃⟩ :=
-    guardS_exec (P := P) n₀ c₂ hw₂ hn₀ (by omega)
+    guardS_exec (P := P) n₀ c₂ hw₂ hn₀ by_o
   have hw₃ := e₃.wb_right
   -- frames
   have hF₂ : Frame {bDownDrv} c₁ c₂ k₂ := frame_drv hr₂ hm₂ hrr₂ hrm₂ ho₂
@@ -149,23 +149,23 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
     · exact hx
     · rw [hx]; exact bDownDrv_mem_drvBands
     · rw [hx]; exact bDownDrv_mem_drvBands
-  have hF : Frame drvBands c c₃ (k₁ + k₂ + k₃) := ((hF₁.trans hF₂).trans hF₃).mono hsub le_rfl
+  have hF := ((hF₁.trans hF₂).trans hF₃).mono hsub le_rfl
   have hlam₃ : rd c₃ bDownDrv 0 = nextLvl (rd c bDownDrv 0) := by
     rw [rd_drv, Nat.add_zero, hl₃, hl₂]; rfl
   have hr13 : ∀ i, 1 ≤ i → i ≤ 5 → rd c₃ bDownDrv i = rd c₁ bDownDrv i := by
     intro i h1 h5
-    rw [rd_drv, rd_drv, hr₃' _ (by omega) (by omega), hr₂' _ (by omega) (by omega)]
-  have hA2 : c₂.nreg ALLOC = c₁.nreg ALLOC := hr₂ ALLOC (by unfold ALLOC; omega)
-  have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := hr₃ ALLOC (by unfold ALLOC; omega)
+    rw [rd_drv, rd_drv, hr₃' _ by_o by_o, hr₂' _ by_o by_o]
+  have hA2 : c₂.nreg ALLOC = c₁.nreg ALLOC := hr₂ ALLOC by_ao
+  have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := hr₃ ALLOC by_ao
   have hInv₃ : InvAt cnt P c₃ (nextLvl (rd c bDownDrv 0)) :=
     hInv₁.transport hr13 (by rw [hA3, hA2]) (fun a _ => by rw [hm₃, hm₂])
   have hE₃ : EnvD X P W c₃ :=
-    hE₁.frame hX (hF₂.trans hF₃) (by decide)
+    hE₁.frame hX (hF₂.trans hF₃) by_d
   have hpotn := nextLvl_lt h16
   refine ⟨c₃, k₁ + (k₂ + k₃), Exec.seq e₁ (Exec.seq e₂ e₃),
-    ⟨hw₃, hE₃, ?_, ?_, ?_, h15₃, ?_⟩, hF.mono subset_rfl (by omega), ?_⟩
+    ⟨hw₃, hE₃, ?_, ?_, ?_, h15₃, ?_⟩, hF.mono subset_rfl by_o, ?_⟩
   · rw [hlam₃]; omega
-  · rw [hlam₃]; exact hInv₃
+  · rwa [hlam₃]
   · rw [hg₃, ite_eq_left hn₀n, ite_eq_left hn₀n, hl₃]
   · rw [hlam₃, hA3, hA2]; omega
   · rw [hlam₃]; omega
@@ -174,9 +174,9 @@ theorem levelBody_step {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {n₀ 
 theorem two_pow_topGrade_le (n : ℕ) : 2 ^ topGrade n ≤ 2 * n + 2 := by
   unfold topGrade
   rcases Nat.lt_or_ge (n - 1) 2 with h | h
-  · rw [Nat.clog_of_right_le_one (show n - 1 ≤ 1 by omega), pow_zero]; omega
-  · have h1 := Nat.pow_pred_clog_lt_self (b := 2) (by norm_num) (show 1 < n - 1 by omega)
-    have h2 : 1 ≤ Nat.clog 2 (n - 1) := Nat.clog_pos (by norm_num) (by omega)
+  · rw [Nat.clog_of_right_le_one (by omega), pow_zero]; omega
+  · have h1 := Nat.pow_pred_clog_lt_self (b := 2) by_n (show 1 < n - 1 by omega)
+    have h2 : 1 ≤ Nat.clog 2 (n - 1) := Nat.clog_pos by_n by_o
     obtain ⟨q, hq⟩ : ∃ q, Nat.clog 2 (n - 1) = q + 1 := ⟨_, (Nat.succ_pred_eq_of_pos h2).symm⟩
     rw [hq] at h1 ⊢
     rw [pow_succ]
@@ -211,11 +211,11 @@ theorem downPhaseH_of_parts {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {
   have hWh : hostWords P.n ≤ W := by
     have := hostWords_le (n := P.n) (show 272 ≤ κ by omega); omega
   have hE : EnvD X P W c := ⟨hG, hn3, hWh, hSet, hXh, hcap⟩
-  have hpot : pot f (topGrade P.n) ≤ potConst C (κL + 20) * (2 * P.n + 2) := hf ▸
+  have hpot := hf ▸
     (pot_lvlBudget_le hc (κL + 20) (topGrade P.n) _ le_rfl).trans
       (Nat.mul_le_mul_left _ (two_pow_topGrade_le P.n))
   have hbud : κT * (P.n + 1) + κB * (P.n + 1) + 1 + pot f (topGrade P.n) + 13 ≤ κ * (P.n + 1) := by
-    have : potConst C (κL + 20) * (2 * P.n + 2) = 2 * potConst C (κL + 20) * (P.n + 1) := by ring
+    have : potConst C (κL + 20) * (2 * P.n + 2) = 2 * potConst C (κL + 20) * (P.n + 1) := by_r
     rw [← hκ]; nlinarith
   -- the transition
   obtain ⟨c₁, k₁, e₁, hk₁, hInv₁, hF₁⟩ := hT P W c hw ⟨hE, hTop⟩ (by
@@ -228,24 +228,24 @@ theorem downPhaseH_of_parts {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {
   have hS₁ := hE₁.setup
   have hSA := hS₁.2.2.2
   obtain ⟨c₂, k₂, e₂, hk₂, hl₂, hr₂, hr₂', hm₂, hrr₂, hrm₂, ho₂⟩ :=
-    lamP_exec (P := P) c₁ hw₁ rfl (by omega)
+    lamP_exec (P := P) c₁ hw₁ rfl by_o
   have hw₂ := e₂.wb_right
   rw [hS₁.2.1] at hl₂
   obtain ⟨c₃, k₃, e₃, hk₃, hg₃, h15₃, hr₃, hr₃', hl₃, hm₃, hrr₃, hrm₃, ho₃⟩ :=
-    guardS_exec (P := P) n₀ c₂ hw₂ (by omega) (by omega)
+    guardS_exec (P := P) n₀ c₂ hw₂ by_o by_o
   have hw₃ := e₃.wb_right
   have hF₂ : Frame {bDownDrv} c₁ c₂ k₂ := frame_drv hr₂ hm₂ hrr₂ hrm₂ ho₂
   have hF₃ : Frame {bDownDrv} c₂ c₃ k₃ := frame_drv hr₃ hm₃ hrr₃ hrm₃ ho₃
-  have hA2 : c₂.nreg ALLOC = c₁.nreg ALLOC := hr₂ ALLOC (by unfold ALLOC; omega)
-  have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := hr₃ ALLOC (by unfold ALLOC; omega)
+  have hA2 : c₂.nreg ALLOC = c₁.nreg ALLOC := hr₂ ALLOC by_ao
+  have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := hr₃ ALLOC by_ao
   have hl3 : rd c₃ bDownDrv 0 = topGrade P.n := by rw [rd_drv, Nat.add_zero, hl₃, hl₂]
   have hInv₃ : InvAt cnt P c₃ (topGrade P.n) :=
     hInv₁.transport (fun i h1 h5 => by
-      rw [rd_drv, rd_drv, hr₃' _ (by omega) (by omega), hr₂' _ (by omega) (by omega)])
+      rw [rd_drv, rd_drv, hr₃' _ by_o by_o, hr₂' _ by_o by_o])
       (by rw [hA3, hA2]) (fun a _ => by rw [hm₃, hm₂])
   have hE₃ : EnvD X P W c₃ := hE₁.frame hX (hF₂.trans hF₃) (by simp [bCore, bDownDrv])
   have hI₃ : LoopI X cnt n₀ f (κB * (P.n + 1) + 1) P W c₃ := by
-    refine ⟨hw₃, hE₃, by rw [hl3], by rw [hl3]; exact hInv₃, ?_, h15₃, ?_⟩
+    refine ⟨hw₃, hE₃, by rw [hl3], by rwa [hl3], ?_, h15₃, ?_⟩
     · rw [hg₃, hl₃]
     · rw [hl3, hA3, hA2]; omega
   -- the level loop
@@ -253,7 +253,7 @@ theorem downPhaseH_of_parts {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {
     (a := 210008) (b := 210007) (body := levelBody sL n₀) (B := drvBands)
     (LoopI X cnt n₀ f (κB * (P.n + 1) + 1) P W) (fun c => pot f (rd c bDownDrv 0))
     (fun c h => h.1)
-    (fun c h ht => hf ▸ levelBody_step hX hL (P := P) (W := W) (by omega) (hf ▸ h) ht) hI₃
+    (fun c h ht => hf ▸ levelBody_step hX hL (P := P) (W := W) by_o (hf ▸ h) ht) hI₃
   rw [hl3] at hk₄
   obtain ⟨hw₄, hE₄, hlp₄, hInv₄, hg₄, h15₄, hroom₄⟩ := hI₄
   -- the base
@@ -262,7 +262,7 @@ theorem downPhaseH_of_parts {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {
     · rw [ite_eq_left h] at hg₄; left; show c₄.nreg 210000 < 16; omega
     · right; omega
   obtain ⟨c₅, k₅, e₅, hk₅, ⟨N, hN, hNF, hFull⟩, hF₅⟩ := hB P W c₄ hw₄
-    ⟨hE₄, rd c₄ bDownDrv 0, hlp₄, by omega, hInv₄⟩ (by
+    ⟨hE₄, rd c₄ bDownDrv 0, hlp₄, by_o, hInv₄⟩ (by
       show c₄.nreg ALLOC + κB * (P.n + 1) ≤ W; omega)
   replace hk₅ : k₅ ≤ κB * (P.n + 1) := hk₅
   have hw₅ := e₅.wb_right
@@ -278,7 +278,7 @@ theorem downPhaseH_of_parts {X : MemCtx} (hX : X.CapLocal) {cnt : ℕ → ℕ} {
       have hA : (upd c₅.nreg 230003 (c₅.nreg 210006)) ALLOC = c₅.nreg ALLOC := by
         rw [Machine.upd_other]; unfold ALLOC; omega
       show Robust ((upd c₅.nreg 230003 (c₅.nreg 210006)) ALLOC) c₅.nmem _
-      rw [hA]; exact hN
+      rwa [hA]
     · have := hNF.2.2.2.choose_spec.2.2.2.2.2.1 k hk
       rwa [show (Qof P).n = P.n from shear_n _ _] at this
   · have hF₆ : Frame {bCore} c₅ { c₅ with nreg := upd c₅.nreg 230003 (c₅.nreg 210006) } 1 :=

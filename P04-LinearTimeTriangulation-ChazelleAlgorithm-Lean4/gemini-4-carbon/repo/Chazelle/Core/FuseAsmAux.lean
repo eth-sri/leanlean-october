@@ -54,7 +54,7 @@ theorem frame_side {S : ℕ} (hS : S = 70150 ∨ S = 70151) {c c' : Config} {k x
     (ho : c'.output = c.output) (ha : c'.nreg ALLOC = c.nreg ALLOC + x) (hk : x ≤ k) :
     Frame FB c c' k :=
   ⟨fun r h1 h2 => hr r (bside_of_band hS h1 h2), fun r h1 => hrr r (br_of_band h1), hm,
-    fun a _ => by rw [hrm], ho, by omega, by omega⟩
+    fun a _ => by rw [hrm], ho, by_o, by_o⟩
 
 theorem junction_eq {m : ℕ → ℕ} {bl br bw : ℕ} {Q : Polygon} {H H' : Host}
     {J J' : Merge.Junction} (h : JunctionAt m bl br bw Q H J) (h' : JunctionAt m bl br bw Q H' J') :
@@ -75,7 +75,7 @@ theorem chords_eq_of_nfAt {m : ℕ → ℕ} {B : ℕ} {N N' : NF} (h : NFAt m B 
   have hext : ∀ r r' : CRec, r.h = r'.h → r.lp = r'.lp → r.rp = r'.rp → r.up = r'.up →
       r.dn = r'.dn → r = r' := by
     rintro ⟨⟩ ⟨⟩ h1 h2 h3 h4 h5; simp_all
-  apply List.ext_getElem (by omega)
+  apply List.ext_getElem by_o
   intro i hi hi'
   obtain ⟨a0, a1, a2, a3, a4⟩ := hc i hi
   obtain ⟨b0, b1, b2, b3, b4⟩ := hc' i hi'
@@ -103,7 +103,7 @@ theorem side₀_ok (J : Merge.Junction) (Q : Polygon) {N : NF}
     (pk : SharedExtremum J → ¬ NearU J → PtAns J Q 0 (capOrigin J) (capDir J) k₀)
     (nk : ¬ (SharedExtremum J ∧ ¬ NearU J) → k₀ = []) :
     ∀ q ∈ endQL N.chords ++ (v₁ ++ v₀ ++ t₁ ++ t₀ ++ k₀), QueryOK J Q 0 q ∧ HeightOK J Q 0 q := by
-  have hN' : IsNF (chainModel (sideChain J 0)) Q N := hN
+  have hN' := hN
   intro q hq
   simp only [List.mem_append] at hq
   rcases hq with h | ((((h | h) | h) | h) | h)
@@ -123,7 +123,7 @@ theorem side₁_ok (J : Merge.Junction) (Q : Polygon) {N : NF}
     (pk : SharedExtremum J → NearU J → PtAns J Q 1 (capOrigin J) (capDir J) k₁)
     (nk : ¬ (SharedExtremum J ∧ NearU J) → k₁ = []) :
     ∀ q ∈ endQL N.chords ++ (t₁ ++ t₀ ++ k₁), QueryOK J Q 1 q ∧ HeightOK J Q 1 q := by
-  have hN' : IsNF (chainModel (sideChain J 1)) Q N := hN
+  have hN' := hN
   intro q hq
   simp only [List.mem_append] at hq
   rcases hq with h | ((h | h) | h)

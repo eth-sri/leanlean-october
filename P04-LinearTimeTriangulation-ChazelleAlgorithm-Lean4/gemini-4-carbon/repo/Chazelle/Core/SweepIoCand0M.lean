@@ -74,7 +74,7 @@ theorem freeAt_right_of_whole {z : Point} (h₂ : z.2 ≤ J.right.top.2) {σ : �
     (h : FreeAt J.whole z σ) : FreeAt J.right z σ := by
   unfold FreeAt at h ⊢
   filter_upwards [h] with t ht
-  exact dom_right J ht (by rw [Chazelle.Visibility.rayPt_snd]; exact h₂)
+  exact dom_right J ht (by rwa [Chazelle.Visibility.rayPt_snd])
 
 /-! ## The log entry -/
 
@@ -101,7 +101,7 @@ theorem logIdx_exists {Q : Polygon} {N : NF} {S₂ : Set (Set Point)}
     have := Nat.findGreatest_le (P := p) (ls.length - 1); omega,
     Nat.findGreatest_spec (P := p) (m := 0) (Nat.zero_le _) h0, fun hi => ?_⟩
   have := Nat.findGreatest_is_greatest (P := p) (n := ls.length - 1) (k := Nat.findGreatest p (ls.length - 1) + 1)
-    (by omega) (by omega)
+    by_o by_o
   simp only [p, not_le] at this
   exact this
 
@@ -123,11 +123,11 @@ theorem shared_iff₁ (hP : J.P.Simple) (Q : Polygon) {x : WPos}
   rw [hm]
   constructor
   · rintro ⟨ht, h | ⟨h, h'⟩⟩
-    · exact ⟨ht, Or.inl (by omega)⟩
-    · exact ⟨ht, Or.inr ⟨by omega, by omega⟩⟩
+    · exact ⟨ht, Or.inl by_o⟩
+    · exact ⟨ht, Or.inr ⟨by_o, by_o⟩⟩
   · rintro ⟨ht, h | ⟨h, h'⟩⟩
-    · exact ⟨ht, Or.inl (by omega)⟩
-    · exact ⟨ht, Or.inr ⟨by omega, by omega⟩⟩
+    · exact ⟨ht, Or.inl by_o⟩
+    · exact ⟨ht, Or.inr ⟨by_o, by_o⟩⟩
 
 /-! ## The geometric conditions of the local hits -/
 
@@ -145,7 +145,7 @@ theorem lhGeo_query {P : Polygon} {q : ℕ × ℕ × ℕ} (hq : QueryOK J (Qof P
       (((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩).1 + dirOf q.2.2,
         ((chainModel J.left).pos (Qof P) ⟨q.1, q.2.1⟩).2) := by
     simp [rayPt]
-  rw [e]; exact hsec
+  rwa [e]
 
 /-- `sideLeft` at a position depends only on the edge ends when the parameter is positive. -/
 theorem sideLeft_congr {W W' : Polygon} {p p' : ℕ} {t : ℝ} (ht : t ≠ 0)
@@ -176,14 +176,13 @@ theorem lhGeo_box {P : Polygon} {x : WPos} {d : ℕ} (he : x.edge = 1 ∨ x.edge
     rcases he with h' | h' <;> rw [h'] at hy
     · rw [J.left.sideWalk_vtx_one] at hy; simp [abs_of_pos hR] at hy
     · rw [J.left.sideWalk_vtx_three] at hy; simp [abs_of_pos hR] at hy
-  have hx : (chainModel J.right).pos (Qof P) ⟨x.edge, x.hgt⟩ =
-      (chainModel J.left).pos (Qof P) ⟨x.edge, x.hgt⟩ := hpos.symm
+  have hx := hpos.symm
   refine ⟨⟨h, hxh, hhn, ?_, ?_, ?_⟩, hx⟩
-  · rw [hx]; exact hyz
+  · rwa [hx]
   · rw [hx, show (chainModel J.right).param (Qof P) x = (chainModel J.left).param (Qof P) x
       from hpar.symm]
     exact (sideLeft_congr ht ha hb _).1 hsec
-  · rw [hx]; exact h₂
+  · rwa [hx]
 
 /-- **An arrival position** at a point with a height code naming its height satisfies `LHGeo`
 with that code. -/
@@ -200,9 +199,9 @@ theorem lhGeo_arr {P : Polygon} {C : Chain} {z : Point} {σ : ℝ} {p : ℕ} {t 
   have epar := param_of_arrival (Qof P) ht0 ht1 hy hsec'
   have epos := pos_of_arrival (Qof P) ht0 ht1 hy hsec'
   rw [hpt] at epos
-  refine ⟨⟨h, rfl, hh, by rw [epos]; exact hhz, ?_, by rw [epos]; exact htop⟩, epos, epar⟩
+  refine ⟨⟨h, rfl, hh, by rwa [epos], ?_, by rwa [epos]⟩, epos, epar⟩
   simp only
-  rw [epos, epar, hd]; exact hsec
+  rwa [epos, epar, hd]
 
 
 /-! ## Positions -/
@@ -217,7 +216,7 @@ theorem posClass_mem {C : Chain} {Q : Polygon} {x : WPos} (hx : PosClass C Q x) 
   · omega
   · omega
   · have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := (chainModel C).param Q x)
-      (by omega) (fun h => by omega) h0 h1
+      by_o (fun h => by omega) h0 h1
     rwa [show x.edge - 6 + 6 = x.edge by omega] at this
   · rw [hend, hz]
     exact C.sideWalk_tour_pt_mem C.sideBeta (i := 2 * C.m) (t := 0) le_rfl (fun _ => rfl) le_rfl
@@ -234,8 +233,8 @@ theorem shared_pos₂ (hP : J.P.Simple) (Q : Polygon) {h : ℕ} (hh : (Q.vtx h).
   have hlt : cstR J 1 < (chainModel J.right).W.n := by rw [cstR_one, hn]; omega
   have hwa : (chainModel J.right).wa (cstR J 1) = J.shared := by
     have := (vtx_pos_iff J.right hP (k := 0) (Nat.zero_le _) (p := cstR J 1) hlt le_rfl
-      one_pos).2 ⟨rfl, tpos J.right 0, by omega, by rw [cstR_one]; ring,
-        (endIdx J.right (Or.inl rfl) (by omega)).2 (Or.inl rfl)⟩
+      one_pos).2 ⟨rfl, tpos J.right 0, by_o, by rw [cstR_one]; ring,
+        (endIdx J.right (Or.inl rfl) by_o).2 (Or.inl rfl)⟩
     rw [Chazelle.Chain.sidePt_zero] at this
     rw [← J.right_vertex_zero]; exact this
   have hpar : (chainModel J.right).param Q ⟨cstR J 1, h + 1⟩ = 0 := by

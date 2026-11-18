@@ -55,10 +55,10 @@ theorem chord_eq_shoot_of_end (C : Chain) {h : Set Point} (hh : h ∈ Merge.augC
       · exfalso; apply hTD
         rw [show rayPt w 1 (C.hitParam w 1) = ((w.1 + C.hitParam w 1, y) : Point) from
           point_ext (by simp [rayPt]) (by simp [rayPt, hwy])]
-        exact hH.open_mem _ (by linarith) (by linarith)
+        exact hH.open_mem _ by_l by_l
       · exact h
       · exfalso
-        have := hTdom (r - l) (by linarith) h
+        have := hTdom (r - l) by_l h
         rw [show rayPt w 1 (r - l) = ((r, y) : Point) from
           point_ext (by simp [rayPt]; linarith) (by simp [rayPt, hwy])] at this
         exact hH.right_not this
@@ -69,8 +69,8 @@ theorem chord_eq_shoot_of_end (C : Chain) {h : Set Point} (hh : h ∈ Merge.augC
     rw [Geometry.mem_segment_iff_lerp]
     constructor
     · rintro ⟨hzy, hzl, hzr⟩
-      refine ⟨(z.1 - l) / (r - l), div_nonneg (by linarith) (by linarith),
-        (div_le_one (by linarith)).2 (by linarith), ?_⟩
+      refine ⟨(z.1 - l) / (r - l), div_nonneg by_l by_l,
+        (div_le_one by_l).2 by_l, ?_⟩
       apply point_ext
       · simp only [Geometry.lerp_fst, rayPt_fst, hl]
         rw [show l + 1 * (r - l) - l = r - l by ring, div_mul_cancel₀ _ (by linarith : r - l ≠ 0)]
@@ -90,10 +90,10 @@ theorem chord_eq_shoot_of_end (C : Chain) {h : Set Point} (hh : h ∈ Merge.augC
       · exfalso; apply hTD
         rw [show rayPt w (-1) (C.hitParam w (-1)) = ((w.1 - C.hitParam w (-1), y) : Point) from
           point_ext (by simp [rayPt]; ring) (by simp [rayPt, hwy])]
-        exact hH.open_mem _ (by linarith) (by linarith)
+        exact hH.open_mem _ by_l by_l
       · exact h
       · exfalso
-        have := hTdom (r - l) (by linarith) h
+        have := hTdom (r - l) by_l h
         rw [show rayPt w (-1) (r - l) = ((l, y) : Point) from
           point_ext (by simp [rayPt]; linarith) (by simp [rayPt, hwy])] at this
         exact hH.left_not this
@@ -104,8 +104,8 @@ theorem chord_eq_shoot_of_end (C : Chain) {h : Set Point} (hh : h ∈ Merge.augC
     rw [Geometry.mem_segment_iff_lerp]
     constructor
     · rintro ⟨hzy, hzl, hzr⟩
-      refine ⟨(r - z.1) / (r - l), div_nonneg (by linarith) (by linarith),
-        (div_le_one (by linarith)).2 (by linarith), ?_⟩
+      refine ⟨(r - z.1) / (r - l), div_nonneg by_l by_l,
+        (div_le_one by_l).2 by_l, ?_⟩
       apply point_ext
       · simp only [Geometry.lerp_fst, rayPt_fst, hr]
         rw [show r + -1 * (r - l) - r = -(r - l) by ring, mul_neg,
@@ -130,7 +130,7 @@ theorem cand_cases {S₂ : Set (Set Point)} (hS₂ : S₂ ⊆ Merge.augChords J.
     (∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ FreeAt J.whole J.right.top σ ∧
       h = Merge.shoot J.whole J.right.top σ) := by
   obtain ⟨hF, hc⟩ := hh
-  have hA : h ∈ Merge.augChords J.whole := F₂plus_subset J hS₂ hF
+  have hA := F₂plus_subset J hS₂ hF
   have hvD : J.shared ∉ J.whole.dom := fun hd =>
     J.whole.not_mem_set_of_mem_dom hd (J.left_set_subset J.shared_mem_left)
   have htD : J.right.top ∉ J.whole.dom := fun hd =>

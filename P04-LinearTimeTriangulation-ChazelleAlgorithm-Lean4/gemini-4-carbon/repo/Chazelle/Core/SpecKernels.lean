@@ -2,7 +2,9 @@ module
 
 public import Chazelle.Core.SpecRam
 public import Chazelle.Core.SpecFacts
-public import Chazelle.Separator.Graph
+public import Chazelle.Separator.Clusters
+public import Chazelle.Separator.Cotree
+public import Mathlib.Data.Set.Card
 public import Chazelle.Cost.Oracle
 
 /-!

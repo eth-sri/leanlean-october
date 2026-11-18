@@ -322,7 +322,7 @@ theorem Host.pts_length_le {n : ℕ} {H : Host} (h : HostWF n H) :
   induction H with
   | nil => simp [Host.pts]
   | cons it H ih =>
-    have hit := h it (by simp)
+    have hit := h it by_s
     have ih' := ih fun it' hit' => h it' (List.mem_cons_of_mem _ hit')
     have e : (Host.pts n (it :: H)).length = (it.pts n).length + (Host.pts n H).length := by
       simp [Host.pts]

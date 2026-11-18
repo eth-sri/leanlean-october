@@ -43,10 +43,10 @@ theorem slfLdL_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3) :
   refine ⟨?_, ?_, ?_, fun q h1 h2 h3 h4 h5 => ?_⟩
   · simp only [slfLdL, regB, regI, upd, slfP, slfY, slfL0, slfL1, slfN, oPar, K1, K3, sw]
     simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
-    exact congrArg m (by ring)
+    exact congrArg m by_r
   · simp only [slfLdL, regB, regI, upd, slfP, slfY, slfL0, slfL1, slfN, oPar, K1, K3, sw]
     simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
-    exact congrArg m (by ring)
+    exact congrArg m by_r
   · simp only [slfLdL, regB, regI, upd, slfP, slfY, slfL0, slfL1, slfN, oPar, K1, K3, sw]
     simp
   · exact regB_other m slfLdL f (fun i hi => by
@@ -61,18 +61,18 @@ theorem slfLdL_ok {W : ℕ} (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hk3 : f K3 = 3
   have e1 : f 240611 = 1 := hk1
   have e3 : f 240616 = 3 := hk3
   have s : ∀ j, 4054 ≤ j → j ≤ 4110 → IScr (240000 + j) := fun j h1 h2 =>
-    iscr_sw (by omega) (by omega)
+    iscr_sw by_o by_o
   have hb' : f 240004 + 3 ≤ W := hb
   have hb2' : m (f 240004 + 3) + 5 * (f 244064 - 1) + 4 ≤ W := hb2
   simp only [slfLdL, okB, okI, regI, upd, slfP, slfY, slfL0, slfL1, slfN, oPar, K1, K3, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1, e3]
-  refine ⟨s 4101 (by norm_num) (by norm_num), ⟨s 4102 (by norm_num) (by norm_num), by omega⟩,
-    s 4102 (by norm_num) (by norm_num), ⟨s 4102 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4102 (by norm_num) (by norm_num), by omega⟩, ⟨s 4102 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4102 (by norm_num) (by norm_num), by omega⟩, ⟨s 4102 (by norm_num) (by norm_num), by omega⟩,
-    ⟨s 4102 (by norm_num) (by norm_num), by omega⟩, s 4065 (by norm_num) (by norm_num),
-    ⟨s 4102 (by norm_num) (by norm_num), by omega⟩, s 4066 (by norm_num) (by norm_num),
-    ⟨s 4063 (by norm_num) (by norm_num), by omega⟩, trivial⟩
+  refine ⟨s 4101 by_n by_n, ⟨s 4102 by_n by_n, by_o⟩,
+    s 4102 by_n by_n, ⟨s 4102 by_n by_n, by_o⟩,
+    ⟨s 4102 by_n by_n, by_o⟩, ⟨s 4102 by_n by_n, by_o⟩,
+    ⟨s 4102 by_n by_n, by_o⟩, ⟨s 4102 by_n by_n, by_o⟩,
+    ⟨s 4102 by_n by_n, by_o⟩, s 4065 by_n by_n,
+    ⟨s 4102 by_n by_n, by_o⟩, s 4066 by_n by_n,
+    ⟨s 4063 by_n by_n, by_o⟩, trivial⟩
 
 
 /-- The registers of the label step. -/
@@ -170,7 +170,7 @@ theorem slfCopy2_irs (hI : IInv W c₀ c) {r₁ a₁ r₂ a₂ : ℕ}
 
 theorem SlfAtt.congr {e : Set Point} {pe ph : ℕ} {c c' : Config} (h : SlfAtt P J e c pe ph)
     (he : c'.nreg pe = c.nreg pe) (hh : c'.nreg ph = c.nreg ph) : SlfAtt P J e c' pe ph := by
-  unfold SlfAtt SlfPos at *; rw [he, hh]; exact h
+  unfold SlfAtt SlfPos at *; rwa [he, hh]
 
 theorem slfOff_nonneg {e h : ℕ} (hp : SlfPos P J c e h) : 0 ≤ slfOff P J c e h := by
   have hgn : gW J < (chainModel J.whole).W.n := by
@@ -214,11 +214,11 @@ theorem slfStr_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     by_cases hb : c.nreg K0 < c.nreg slfO
     · have hl : slfOff P J c (oF0 + 1) (oF0 + 2) < Lst J := b0.2.1 (by have := b0.1; omega)
       exact ⟨_, _, hat₀, h0₀, hl, (IRS.ifT hb (slfCopy2_irs hI hSE hSH hEH
-        (by unfold slfSE oF0 sw; omega))).mono le_rfl (fun _ h => h)⟩
+        (by unfold slfSE oF0 sw; omega))).le⟩
     · have hn : ¬ slfOff P J c (oF0 + 1) (oF0 + 2) < Lst J := fun h => hb (by
         rw [k0, b0.2.2 h]; norm_num)
       exact ⟨_, _, hat₁, h0₁, hanc.resolve_left hn, (IRS.ifF hb (slfCopy2_irs hI hSE hSH hEH
-        (by unfold slfSE a1F sw; omega))).mono (by norm_num) (fun _ h => h)⟩
+        (by unfold slfSE a1F sw; omega))).mono by_n (fun _ h => h)⟩
   unfold slfStr
   refine IRS.seq (K₁ := 4) (K₂ := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 3) hpick ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨e1, e2, fr1, m1, al1⟩
@@ -238,7 +238,7 @@ theorem slfStr_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hW2 : 2 ≤ W := by have := hI.hw.1 ALLOC; omega
   refine (IRS.block [.copyN slfL0 frA, .copyN slfL1 frB, .constN slfN 2] hI₂
     ⟨iscr_sw hL0.1 hL0.2, iscr_sw hL1.1 hL1.2, ⟨iscr_sw hN'.1 hN'.2, hW2⟩, trivial⟩).mono
-    (by simp) ?_
+    by_s ?_
   rintro c₃ rfl
   have v0 : regB c₂.nmem [.copyN slfL0 frA, .copyN slfL1 frB, .constN slfN 2] c₂.nreg slfL0 =
       c₂.nreg frA := by
@@ -252,7 +252,7 @@ theorem slfStr_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       upd_other _ _ _ (by unfold frB slfL0 sw; omega)]
   have v2 : regB c₂.nmem [.copyN slfL0 frA, .copyN slfL1 frB, .constN slfN 2] c₂.nreg slfN = 2 := by
     simp only [regB, regI, upd_same]
-  refine ⟨v2, by simp only; rw [v0]; exact hfa, by simp only; rw [v1]; exact hfb,
+  refine ⟨v2, by simp only; rwa [v0], by simp only; rwa [v1],
     fun hnp hC1 => ?_, ?_⟩
   · simp only; rw [v0, v1]
     exact slf_lab_str E hD hat.2.2 hnp hC1 hnopar hd htd hpd hfa hfb hAf hB1 hB0
@@ -302,7 +302,7 @@ theorem slfLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
   have hN' : 240700 ≤ slfN ∧ slfN < 250000 := by unfold slfN sw; omega
   unfold slfLabS
   refine (IRS.seq (K₁ := 1) (K₂ := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 39)
-    (set1_irs hI (v := 0) hN' (Nat.zero_le _)) ?_).mono (by omega) (fun _ h => h)
+    (set1_irs hI (v := 0) hN' (Nat.zero_le _)) ?_).le
   rintro c₁ hI₁ hA₁ hA₁' ⟨n1, q1, m1⟩
   obtain ⟨k0, k1, -, -, -, -, k3⟩ := E.hK.fix hI₁
   have fr01 : SlfFr slfLabR c c₁ := ⟨fun r _ hr _ => q1 r (fun h => hr (Or.inl h)),
@@ -313,34 +313,28 @@ theorem slfLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
       0 < slfOff P J c (a1F + 1) (a1F + 2)) →
       IRS P W c₀ .skip c₁ 0 (fun c' => SlfLabOK P J N₂ (stopSet J (Qof P) N₂ kind k b)
         (c.nreg slfA) (c'.nreg slfN) (c'.nreg slfL0) (c'.nreg slfL1) ∧ SlfFr slfLabR c c') :=
-    fun hnt => IRS.skip hI₁ ⟨⟨by omega, fun h => by omega, fun h => by omega,
+    fun hnt => IRS.skip hI₁ ⟨⟨by_o, fun h => by omega, fun h => by omega,
       fun hA hnp' _ => absurd ⟨hA, lt_of_le_of_ne hnn₀ (hnp hnp').1.symm,
         lt_of_le_of_ne hnn₁ (hnp hnp').2.symm⟩ hnt⟩, fr01⟩
   have eA : c₁.nreg slfA = c.nreg slfA := qr _ (by unfold slfA sw; omega)
     (by unfold slfA sw; omega) (by unfold slfA slfN sw; omega)
   by_cases hA : c₁.nreg K0 < c₁.nreg slfA
   swap
-  · exact (IRS.ifF hA (skp (fun h => hA (by rw [k0, eA, h.1]; norm_num)))).mono (by omega)
-      (fun _ h => h)
+  · exact (IRS.ifF hA (skp (fun h => hA (by rw [k0, eA, h.1]; norm_num)))).le
   have hanc1 : c.nreg slfA = 1 := by rw [eA] at hA; omega
-  refine (IRS.ifT (K := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 37) hA ?_).mono (by omega)
-    (fun _ h => h)
+  refine (IRS.ifT (K := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 37) hA ?_).le
   have e3 : c₁.nreg (slfO + 3) = c.nreg (slfO + 3) := qr _ (by unfold slfO sw; omega)
     (by unfold slfO sw; omega) (by unfold slfO slfN sw; omega)
   by_cases h3 : c₁.nreg K0 < c₁.nreg (slfO + 3)
   swap
-  · exact (IRS.ifF h3 (skp (fun h => h3 (by rw [k0, e3, b3.2.2 h.2.1]; norm_num)))).mono
-      (by omega) (fun _ h => h)
-  refine (IRS.ifT (K := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 35) h3 ?_).mono (by omega)
-    (fun _ h => h)
+  · exact (IRS.ifF h3 (skp (fun h => h3 (by rw [k0, e3, b3.2.2 h.2.1]; norm_num)))).le
+  refine (IRS.ifT (K := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 35) h3 ?_).le
   have e7 : c₁.nreg (slfO + 7) = c.nreg (slfO + 7) := qr _ (by unfold slfO sw; omega)
     (by unfold slfO sw; omega) (by unfold slfO slfN sw; omega)
   by_cases h7 : c₁.nreg K0 < c₁.nreg (slfO + 7)
   swap
-  · exact (IRS.ifF h7 (skp (fun h => h7 (by rw [k0, e7, b7.2.2 h.2.2]; norm_num)))).mono
-      (by omega) (fun _ h => h)
-  refine (IRS.ifT (K := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 33) h7 ?_).mono (by omega)
-    (fun _ h => h)
+  · exact (IRS.ifF h7 (skp (fun h => h7 (by rw [k0, e7, b7.2.2 h.2.2]; norm_num)))).le
+  refine (IRS.ifT (K := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 33) h7 ?_).le
   have hp₀ : 0 < slfOff P J c (oF0 + 1) (oF0 + 2) := b3.2.1 (by rw [e3] at h3; have := b3.1; omega)
   have hp₁ : 0 < slfOff P J c (a1F + 1) (a1F + 2) := b7.2.1 (by rw [e7] at h7; have := b7.1; omega)
   have hanc := ha.1 hanc1
@@ -356,17 +350,17 @@ theorem slfLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     have hb2' := hb2 _ hiK
     rw [← eP] at hb2' hiK
     refine (IRS.ifT (K := 13) hq (IRS.block slfLdL hI₁ (slfLdL_ok c₁.nmem c₁.nreg k1 k3
-      (by omega) (by omega) (by omega) (by omega)))).mono (by omega) ?_
+      by_o by_o by_o by_o))).mono by_o ?_
     rintro c' rfl
     obtain ⟨v0, v1, v2, -⟩ := slfLdL_val c₁.nmem c₁.nreg k1 k3
-    have hNA : NFAt c₁.nmem (c₁.nreg (sw 4)) N₂ := hNW.holds
+    have hNA := hNW.holds
     obtain ⟨-, -, -, r3, r4⟩ := hNA.2.2.2.2.2.1 _ hiK
     rw [r3] at v0
     rw [r4] at v1
     rw [eP] at v0 v1 hiK
     obtain ⟨hu, hdn, -⟩ := (regOf_spec hN).2.1 _ hiK
-    refine ⟨⟨by simp only; omega, fun _ => by simp only; rw [v0]; exact hu,
-      fun _ => by simp only; rw [v1]; exact hdn, fun _ hnp' hC1 => ?_⟩, ?_⟩
+    refine ⟨⟨by simp only; omega, fun _ => by simp only; rwa [v0],
+      fun _ => by simp only; rwa [v1], fun _ hnp' hC1 => ?_⟩, ?_⟩
     · simp only; rw [v0, v1, v2]
       rcases hanc with hl | hl
       · exact slf_lab_par E hD hat₀.2.2 hp₀ hl hnp' hC1 hiK (hpar.2.2 hpp)
@@ -398,11 +392,10 @@ theorem slfLab_irs (E : EvEnv sh Bs F X Ok P W c₀ J N₁ N₂) (hI : IInv W c�
     have hAl : c₁.nreg ALLOC = c.nreg ALLOC := q1 ALLOC (by unfold ALLOC slfN sw; omega)
     refine (IRS.ifF (K := κ (c₀.nreg (sw 6)) * (c₀.nreg TLR + 1) + 7) hq
       ((slfStr_irs E hI₁ hsl hD (hat₀.congr r01 r02) (hat₁.congr r11 r12)
-        (by rw [o0]; exact b0.of_eq e0) (by rw [o0, o1]; exact hanc) (by rw [o0]; exact hp₀)
-        (by rw [o1]; exact hp₁) hnopar (by rw [hAl]; exact hroom)).mono (by omega)
-        (fun _ h => h))).mono (by omega) ?_
+        (by rw [o0]; exact b0.of_eq e0) (by rwa [o0, o1]) (by rwa [o0])
+        (by rwa [o1]) hnopar (by rwa [hAl])).le)).mono by_o ?_
     rintro c' ⟨hn2, hl0, hl1, hlab, fr⟩
-    exact ⟨⟨by omega, fun _ => hl0, fun _ => hl1, fun _ hnp' hC1 => by
+    exact ⟨⟨by_o, fun _ => hl0, fun _ => hl1, fun _ hnp' hC1 => by
       rw [hn2]; exact hlab hnp' hC1⟩, fr01.trans fr⟩
 
 end

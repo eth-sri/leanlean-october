@@ -1,5 +1,7 @@
 module
 
+public import Chazelle.Short
+
 public import Chazelle.Spec
 public import Mathlib.Analysis.Convex.Segment
 public import Mathlib.Analysis.Convex.Topology

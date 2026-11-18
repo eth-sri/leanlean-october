@@ -81,8 +81,7 @@ theorem bruteCall_exec {sB : Stmt} {κB : ℕ}
     exec_block
     refine ⟨rfl, ‹_›, by config_simp; exact h16, by config_simp; exact h17,
       by config_simp; exact h11, fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
   have hA1 : c1.nreg ALLOC = c.nreg ALLOC := fr1 _ (by rw [hAl]; decide) (by rw [hAl]; decide)
     (by rw [hAl]; decide)
   obtain ⟨c2, k2, e2, hk2, ⟨C, N, hCP, hCs, hCm, hNW, hc⟩, fr2⟩ :=
@@ -90,7 +89,7 @@ theorem bruteCall_exec {sB : Stmt} {κB : ℕ}
       by show c1.nreg 180000 + c1.nreg 180001 + 1 ≤ P.n; omega,
       by show 1 ≤ c1.nreg 180002; omega,
       by show c1.nreg 180001 = 1 ∨ 2 ≤ c1.nreg 180002; omega⟩
-      (by show c1.nreg ALLOC + κB * (c1.nreg 180001 + 1) ^ 3 ≤ W; rw [hA1, i1]; exact hbud)
+      (by show c1.nreg ALLOC + κB * (c1.nreg 180001 + 1) ^ 3 ≤ W; rwa [hA1, i1])
   replace hk2 : k2 ≤ κB * (c1.nreg 180001 + 1) ^ 3 := hk2
   rw [i1] at hk2
   obtain ⟨fr2r, fr2rr, fr2m, fr2rm, fr2o, fr2a, fr2b⟩ := fr2
@@ -101,21 +100,20 @@ theorem bruteCall_exec {sB : Stmt} {κB : ℕ}
       c3.nmem = c2.nmem ∧ c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output := by
     exec_block
     refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
   have hA3 : c3.nreg ALLOC = c2.nreg ALLOC := fr3 _ (by rw [hAl]; decide)
   have hbb : ∀ r, bandOf r ∉ bruteBands → r < 180000 ∨ 190000 ≤ r := by
     intro r hr
     by_contra hc
-    exact hr (by rw [band_brute (by omega) (by omega)]; decide)
-  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3, by rw [hA3, ← hA1]; exact fr2a,
-    by rw [hA3, ← hA1]; omega, ⟨C, N, hCP, by rw [hCs]; exact i0, by rw [hCm]; exact i1,
-      by rw [o31, hm3, hA3]; exact hNW, by rw [← i2]; exact hc⟩,
-    fun a ha => by rw [hm3, fr2m a (by rw [hA1]; exact ha), hm1],
-    fun a ha => by rw [hrm3, fr2rm a (by rw [hA1]; exact ha), hrm1],
+    exact hr (by rw [band_brute by_o by_o]; decide)
+  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by_o, hw3, by rwa [hA3, ← hA1],
+    by rw [hA3, ← hA1]; omega, ⟨C, N, hCP, by rwa [hCs], by rwa [hCm],
+      by rwa [o31, hm3, hA3], by rwa [← i2]⟩,
+    fun a ha => by rw [hm3, fr2m a (by rwa [hA1]), hm1],
+    fun a ha => by rw [hrm3, fr2rm a (by rwa [hA1]), hrm1],
     by rw [ho3, fr2o, ho1], fun r h1 h2 h3 => ?_, fun r h1 => by rw [hrr3, fr2rr r h1, hrr1]⟩
   have := hbb r h1
-  rw [fr3 r h2, fr2r r h1 h3, fr1 r (by omega) (by omega) (by omega)]
+  rw [fr3 r h2, fr2r r h1 h3, fr1 r by_o by_o by_o]
 
 end proofs
 

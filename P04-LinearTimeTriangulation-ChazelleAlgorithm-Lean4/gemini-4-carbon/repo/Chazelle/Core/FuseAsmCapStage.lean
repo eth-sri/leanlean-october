@@ -73,7 +73,7 @@ theorem capB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
   have hm := chain_m_le ⟨hB5, hwf'⟩ hC
   have hn : (Qof P).n = P.n := shear_n _ _
   unfold hostWords at hHW
-  have hmW : 2 * C.m + 7 ≤ W := by omega
+  have hmW : 2 * C.m + 7 ≤ W := by_o
   obtain ⟨X, hX⟩ : ∃ X, c.nreg D = X := ⟨_, rfl⟩
   rw [hX] at hC hB5 hwf'
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 50200 D, .copyN 50110 K])
@@ -87,15 +87,15 @@ theorem capB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
       hX, hk]
   obtain ⟨q00, q10, qr₁, qm₁, qrr₁, qrm₁, qo₁⟩ := q
   have w₁ := e₁.wb_right
-  obtain ⟨c₂, k₂, e₂, hk₂, q21, F₂⟩ := tposS_exec (P := P) c₁ w₁ (by rw [q00, qm₁]; exact hC)
+  obtain ⟨c₂, k₂, e₂, hk₂, q21, F₂⟩ := tposS_exec (P := P) c₁ w₁ (by rwa [q00, qm₁])
     q10 hkk (by rw [q00]; omega) hmW
   have w₂ := e₂.wb_right
   have r42 : c₂.nreg 70142 = code := by
-    rw [F₂.1 _ (by decide), qr₁ _ (by decide) (by decide), h42]
+    rw [F₂.1 _ by_d, qr₁ _ by_d by_d, h42]
   have r43 : c₂.nreg 70143 = ρ := by
-    rw [F₂.1 _ (by decide), qr₁ _ (by decide) (by decide), h43]
+    rw [F₂.1 _ by_d, qr₁ _ by_d by_d, h43]
   have r05 : c₂.nreg 70105 = 1 := by
-    rw [F₂.1 _ (by decide), qr₁ _ (by decide) (by decide), h05]
+    rw [F₂.1 _ by_d, qr₁ _ by_d by_d, h05]
   obtain ⟨c₃, k₃, e₃, hk₃, q⟩ : ∃ c₃ k₃, Exec P W (block [.copyN 50202 70142,
       .copyN 50203 70143, .subN 70124 70142 70105]) c₂ c₃ k₃ ∧ k₃ = 3 ∧
       (c₃.nreg 50202 = code ∧ c₃.nreg 50203 = ρ ∧ c₃.nreg 70124 = code - 1 ∧
@@ -112,43 +112,43 @@ theorem capB_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
     have hr' := hr
     simp only [Bpt, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
       at hr'
-    rw [qr₃ r (by omega) (by omega) (by omega), F₂.1 r (btp_of hr),
-      qr₁ r (by omega) (by omega)]
+    rw [qr₃ r by_o by_o by_o, F₂.1 r (btp_of hr),
+      qr₁ r by_o by_o]
   have k₃rr : ∀ r, BR r = false → c₃.rreg r = c.rreg r := fun r hr => by
     rw [qrr₃, F₂.2.1 r (br_tp hr), qrr₁]
   have a₃ : c₃.nreg ALLOC = c.nreg ALLOC := by
-    rw [qr₃ _ (by decide) (by decide) (by decide), F₂.1 _ (by decide),
-      qr₁ _ (by decide) (by decide)]
+    rw [qr₃ _ by_d by_d by_d, F₂.1 _ by_d,
+      qr₁ _ by_d by_d]
   have r300 : c₃.nreg 50200 = X := by
-    rw [qr₃ _ (by decide) (by decide) (by decide), F₂.1 _ (by decide), q00]
+    rw [qr₃ _ by_d by_d by_d, F₂.1 _ by_d, q00]
   have r301 : c₃.nreg 50201 = 6 + tpos C kk := by
-    rw [qr₃ _ (by decide) (by decide) (by decide), q21]
+    rw [qr₃ _ by_d by_d by_d, q21]
   have r328 : c₃.nreg 70128 = pre.length := by
-    rw [qr₃ _ (by decide) (by decide) (by decide), F₂.1 _ (by decide),
-      qr₁ _ (by decide) (by decide), h28]
+    rw [qr₃ _ by_d by_d by_d, F₂.1 _ by_d,
+      qr₁ _ by_d by_d, h28]
   obtain ⟨hpos, hp0, hp1, hzs⟩ := hgeo
   have hPC : C.P.Simple := by rw [hCdef, sideChain_P]; exact hP
   obtain ⟨c₄, k₄, l, e₄, hk₄, hk₄', hl, a₄, n₄, L₄, m₄, r₄, rr₄, rm₄, o₄, res⟩ :=
     ptQ_exec (P := P) c₃ w₃ hG (by unfold hostWords; omega)
-      (by rw [r300, a₃, m₃]; exact ⟨hB5, hwf'⟩) (by rw [r300, m₃]; exact hC)
-      ⟨⟨by rw [r301]; exact vpos_edge C kk, ⟨by rw [r301, q32]; exact hp0,
-        by rw [r301, q32]; exact hp1, by rw [q32]; show code ≤ P.n; exact hcn⟩,
+      (by rw [r300, a₃, m₃]; exact ⟨hB5, hwf'⟩) (by rwa [r300, m₃])
+      ⟨⟨by rw [r301]; exact vpos_edge C kk, ⟨by rwa [r301, q32],
+        by rwa [r301, q32], by rw [q32]; show code ≤ P.n; exact hcn⟩,
         by rw [r301, q32, hpos]; exact abs_snd_lt_radius C hzs⟩, hPC, hmW⟩
-      (by rw [k₃r _ (by decide), h05]) (by rw [k₃r _ (by decide), h08])
-      (by rw [a₃, hA]) r328 (by rw [m₃]; exact hL)
-      (by rw [a₃]; unfold capBCost at hroom; omega) (by rw [q24]; omega) (by omega)
+      (by rw [k₃r _ by_d, h05]) (by rw [k₃r _ by_d, h08])
+      (by rw [a₃, hA]) r328 (by rwa [m₃])
+      (by rw [a₃]; unfold capBCost at hroom; omega) (by rw [q24]; omega) by_o
   rw [r301, q32, q33, q24] at res
   have ex : Exec P W (capB D K) c c₄ (k₁ + (k₂ + (k₃ + k₄))) :=
     .seq e₁ (.seq e₂ (.seq e₃ e₄))
   have hvn : code - 1 < (Qof P).n := by rw [hn]; omega
-  have hcode : code = code - 1 + 1 := by omega
-  refine ⟨c₄, _, l, ex, by unfold capBCost; omega, by omega, hl, a₄, n₄, L₄,
+  have hcode : code = code - 1 + 1 := by_o
+  refine ⟨c₄, _, l, ex, by unfold capBCost; omega, by_o, hl, a₄, n₄, L₄,
     fun a ha => ?_, fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
-  · rw [m₄ a (by rw [a₃]; exact ha), m₃]
+  · rw [m₄ a (by rwa [a₃]), m₃]
   · have hr' := hr
     simp only [Bpt, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]
       at hr'
-    rw [r₄ r (bprim_of hr) (by omega) (by omega) (by omega), k₃r r hr]
+    rw [r₄ r (bprim_of hr) by_o by_o by_o, k₃r r hr]
   · rw [rr₄ r (br_prim hr), k₃rr r hr]
   · rw [rm₄, qrm₃, F₂.2.2.2.1, qrm₁]
   · rw [o₄, qo₃, F₂.2.2.2.2, qo₁]
@@ -183,13 +183,13 @@ structure CapRegs (P : Polygon) (J : Merge.Junction) (c : Config) : Prop where
 theorem CapRegs.keep {P : Polygon} {J : Merge.Junction} {c c' : Config} (h : CapRegs P J c)
     (hr : ∀ r, (r = 70126 ∨ (70140 ≤ r ∧ r < 70144)) → c'.nreg r = c.nreg r) :
     CapRegs P J c' :=
-  ⟨by rw [hr _ (by norm_num)]; exact h.m1,
-    h.ext.of_eq (hr _ (by norm_num)),
-    fun hx => (h.near hx).of_eq (hr _ (by norm_num)),
-    by rw [hr _ (by norm_num)]; exact h.code1,
-    by rw [hr _ (by norm_num)]; exact h.coden,
-    fun hx => by rw [hr _ (by norm_num)]; exact h.ht hx,
-    fun hx => (h.dir hx).of_eq (hr _ (by norm_num))⟩
+  ⟨by rw [hr _ by_n]; exact h.m1,
+    h.ext.of_eq (hr _ by_n),
+    fun hx => (h.near hx).of_eq (hr _ by_n),
+    by rw [hr _ by_n]; exact h.code1,
+    by rw [hr _ by_n]; exact h.coden,
+    fun hx => by rw [hr _ by_n]; exact h.ht hx,
+    fun hx => (h.dir hx).of_eq (hr _ by_n)⟩
 
 set_option maxHeartbeats 8000000 in
 theorem capS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (hG : GoodEnv P)
@@ -205,7 +205,7 @@ theorem capS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
   obtain ⟨X0, hX0'⟩ : ∃ X, c.nreg 70000 = X := ⟨_, rfl⟩
   rw [hX] at hwf hCw
   rw [hX0'] at hC0 hX0
-  have hm2 : c.nmem (X0 + 2) = J.m₁ := hC0.2.2.2.1
+  have hm2 := hC0.2.2.2.1
   obtain ⟨c₁, k₁, e₁, hk₁, q⟩ : ∃ c₁ k₁, Exec P W (block [.copyN 50200 70002, .constN 70131 2,
       .addN 70132 70000 70131, .loadN 70126 70132, .copyN 50201 70126]) c c₁ k₁ ∧ k₁ = 5 ∧
       (c₁.nreg 50200 = X ∧ c₁.nreg 70126 = J.m₁ ∧ c₁.nreg 50201 = J.m₁ ∧
@@ -222,12 +222,12 @@ theorem capS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
     all_goals exact hm2
   obtain ⟨q00, q26, q01, qr₁, qm₁, qrr₁, qrm₁, qo₁⟩ := q
   have w₁ := e₁.wb_right
-  have a₁ : c₁.nreg ALLOC = c.nreg ALLOC := qr₁ _ (by decide) (by decide) (by decide)
-    (by decide) (by decide)
+  have a₁ : c₁.nreg ALLOC = c.nreg ALLOC := qr₁ _ by_d by_d by_d
+    by_d by_d
   have hm1 := J.one_le_m₁
   have hm2' := J.one_le_m₂
   obtain ⟨c₂, k₂, e₂, hk₂, hout, F₂⟩ := primRun capPrim_meets wr_capPrim c₁ w₁ hG hHW
-    (by rw [q00, a₁, qm₁]; exact hwf) (by rw [q00, qm₁]; exact hCw)
+    (by rwa [q00, a₁, qm₁]) (by rwa [q00, qm₁])
     (show 1 ≤ c₁.nreg 50201 ∧ c₁.nreg 50201 + 1 ≤ J.whole.m by
       rw [q01]; exact ⟨hm1, by show J.m₁ + 1 ≤ J.m₁ + J.m₂; omega⟩)
     (by rw [a₁]; omega)
@@ -246,16 +246,16 @@ theorem capS_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c) (
     all_goals simp (disch := omega) only [Machine.upd_same, Machine.upd_other]
   obtain ⟨t40, t41, t42, t43, qr₃, qm₃, qrr₃, qrm₃, qo₃⟩ := q
   have ex : Exec P W capS c c₃ (k₁ + (k₂ + k₃)) := .seq e₁ (.seq e₂ e₃)
-  refine ⟨c₃, _, ex, by omega, ⟨?_, o1.of_eq t40, fun hx => (o2 hx).of_eq t41,
-    by rw [t42]; exact o3, by rw [t42]; exact o4, fun hx => by rw [t42]; exact o5 hx,
+  refine ⟨c₃, _, ex, by_o, ⟨?_, o1.of_eq t40, fun hx => (o2 hx).of_eq t41,
+    by rwa [t42], by rwa [t42], fun hx => by rw [t42]; exact o5 hx,
     fun hx => (o6 hx hgen.2.2).of_eq t43⟩, by rw [qm₃, F₂.2.2.1, qm₁], fun r hr => ?_,
     fun r hr => ?_, by rw [qrm₃, F₂.2.2.2.1, qrm₁], by rw [qo₃, F₂.2.2.2.2, qo₁]⟩
-  · rw [qr₃ _ (by decide) (by decide) (by decide) (by decide), frameB_reg F₂ (by omega), q26]
+  · rw [qr₃ _ by_d by_d by_d by_d, frameB_reg F₂ by_o, q26]
   · have hr' := hr
     simp only [Bcs, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not,
       beq_eq_false_iff_ne] at hr'
-    rw [qr₃ r (by omega) (by omega) (by omega) (by omega), F₂.1 r (bprim_of_bcs hr),
-      qr₁ r (by omega) (by omega) (by omega) (by omega) (by omega)]
+    rw [qr₃ r by_o by_o by_o by_o, F₂.1 r (bprim_of_bcs hr),
+      qr₁ r by_o by_o by_o by_o by_o]
   · rw [qrr₃, F₂.2.1 r (br_prim hr), qrr₁]
 
 /-- The cap query of side `0`. -/
@@ -283,35 +283,35 @@ theorem capQ₀_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       (SharedExtremum J → ¬ NearU J → PtAns J (Qof P) 0 (capOrigin J) (capDir J) l) ∧ (¬ (SharedExtremum J ∧ ¬ NearU J) → l = []) := by
   have e40 := hR.ext
   by_cases hx : c.nreg 70140 = 1
-  · have hX : SharedExtremum J := e40.2.1 hx
+  · have hX := e40.2.1 hx
     have e41 := hR.near hX
     have hlt1 : c.nreg 70108 < c.nreg 70140 := by rw [h08, hx]; omega
     by_cases hu : c.nreg 70141 = 1
-    · have hU : NearU J := e41.2.1 hu
+    · have hU := e41.2.1 hu
       have hlt2 : ¬ c.nreg 70141 < c.nreg 70105 := by rw [hu, h05]; omega
       refine ⟨c, _, [], .ifLtN_true hlt1 (.ifLtN_false hlt2 (.skip hw)),
-        by unfold capBCost; omega, by simp, by simp, by simpa using hA, by simpa using h28,
+        by unfold capBCost; omega, by_s, by_s, by simpa using hA, by simpa using h28,
         by simpa using hL, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, rfl,
         fun _ h => absurd hU h, fun _ => rfl⟩
     · have hU : ¬ NearU J := fun h => hu (e41.2.2 h)
       have h41 : c.nreg 70141 = 0 := by have := e41.1; omega
       have hlt2 : c.nreg 70141 < c.nreg 70105 := by rw [h41, h05]; omega
       obtain ⟨h1c, hcn, hht⟩ := And.intro hR.code1 (And.intro hR.coden (hR.ht hX))
-      have hh : ((Qof P).vtx (c.nreg 70142 - 1)).2 = (capNear J).2 := hht
+      have hh := hht
       have hgeo := capPos₀ J (Qof P) hgen hX hU hh
       rw [show c.nreg 70142 - 1 + 1 = c.nreg 70142 by omega] at hgeo
       obtain ⟨c', k, l, e, hk, hk', hl, a', n', L', m', r', rr', rm', o', hans⟩ :=
-        capB_exec (P := P) c hw hG hHW (D := 70000) (K := 70126) (by norm_num) (by norm_num)
+        capB_exec (P := P) c hw hG hHW (D := 70000) (K := 70126) by_n by_n
           hwf J 0 hC hP (kk := J.m₁) hR.m1 (by show J.m₁ ≤ J.m₁; exact le_rfl) rfl h1c hcn rfl
           (z := capOrigin J) hgeo
-          (by rw [capOrigin_snd J hgen]; exact hh) h05 h08 hA h28 hL hroom hcW
+          (by rwa [capOrigin_snd J hgen]) h05 h08 hA h28 hL hroom hcW
       rw [capDir_eq J (hR.dir hX)] at hans
-      exact ⟨c', _, l, .ifLtN_true hlt1 (.ifLtN_true hlt2 e), by omega, by omega, hl, a', n', L', m',
+      exact ⟨c', _, l, .ifLtN_true hlt1 (.ifLtN_true hlt2 e), by_o, by_o, hl, a', n', L', m',
         r', rr',
         rm', o', fun _ _ => hans, fun h => absurd ⟨hX, hU⟩ h⟩
   · have hX : ¬ SharedExtremum J := fun h => hx (e40.2.2 h)
     have hlt1 : ¬ c.nreg 70108 < c.nreg 70140 := by have := e40.1; rw [h08]; omega
-    refine ⟨c, _, [], .ifLtN_false hlt1 (.skip hw), by unfold capBCost; omega, by simp, by simp,
+    refine ⟨c, _, [], .ifLtN_false hlt1 (.skip hw), by unfold capBCost; omega, by_s, by_s,
       by simpa using hA, by simpa using h28, by simpa using hL, fun _ _ => rfl, fun _ _ => rfl,
       fun _ _ => rfl, rfl, rfl, fun h => absurd h hX, fun _ => rfl⟩
 
@@ -334,35 +334,35 @@ theorem capQ₁_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c
       (SharedExtremum J → NearU J → PtAns J (Qof P) 1 (capOrigin J) (capDir J) l) ∧ (¬ (SharedExtremum J ∧ NearU J) → l = []) := by
   have e40 := hR.ext
   by_cases hx : c.nreg 70140 = 1
-  · have hX : SharedExtremum J := e40.2.1 hx
+  · have hX := e40.2.1 hx
     have e41 := hR.near hX
     have hlt1 : c.nreg 70108 < c.nreg 70140 := by rw [h08, hx]; omega
     by_cases hu : c.nreg 70141 = 1
-    · have hU : NearU J := e41.2.1 hu
+    · have hU := e41.2.1 hu
       have hlt2 : c.nreg 70108 < c.nreg 70141 := by rw [hu, h08]; omega
       obtain ⟨h1c, hcn, hht⟩ := And.intro hR.code1 (And.intro hR.coden (hR.ht hX))
-      have hh : ((Qof P).vtx (c.nreg 70142 - 1)).2 = (capNear J).2 := hht
+      have hh := hht
       have hgeo := capPos₁ J (Qof P) hgen hX hU hh
       rw [show c.nreg 70142 - 1 + 1 = c.nreg 70142 by omega] at hgeo
       obtain ⟨c', k, l, e, hk, hk', hl, a', n', L', m', r', rr', rm', o', hans⟩ :=
-        capB_exec (P := P) c hw hG hHW (D := 70001) (K := 70108) (by norm_num) (by norm_num)
+        capB_exec (P := P) c hw hG hHW (D := 70001) (K := 70108) by_n by_n
           hwf J 1 hC hP (kk := 0) h08 (Nat.zero_le _) rfl h1c hcn rfl
           (z := capOrigin J) hgeo
-          (by rw [capOrigin_snd J hgen]; exact hh) h05 h08 hA h28 hL hroom hcW
+          (by rwa [capOrigin_snd J hgen]) h05 h08 hA h28 hL hroom hcW
       rw [capDir_eq J (hR.dir hX)] at hans
-      exact ⟨c', _, l, .ifLtN_true hlt1 (.ifLtN_true hlt2 e), by omega, by omega, hl, a', n', L', m',
+      exact ⟨c', _, l, .ifLtN_true hlt1 (.ifLtN_true hlt2 e), by_o, by_o, hl, a', n', L', m',
         r', rr',
         rm', o', fun _ _ => hans, fun h => absurd ⟨hX, hU⟩ h⟩
     · have hU : ¬ NearU J := fun h => hu (e41.2.2 h)
       have h41 : c.nreg 70141 = 0 := by have := e41.1; omega
       have hlt2 : ¬ c.nreg 70108 < c.nreg 70141 := by rw [h41, h08]; omega
       refine ⟨c, _, [], .ifLtN_true hlt1 (.ifLtN_false hlt2 (.skip hw)),
-        by unfold capBCost; omega, by simp, by simp, by simpa using hA, by simpa using h28,
+        by unfold capBCost; omega, by_s, by_s, by simpa using hA, by simpa using h28,
         by simpa using hL, fun _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, rfl,
         fun _ h => absurd h hU, fun _ => rfl⟩
   · have hX : ¬ SharedExtremum J := fun h => hx (e40.2.2 h)
     have hlt1 : ¬ c.nreg 70108 < c.nreg 70140 := by have := e40.1; rw [h08]; omega
-    refine ⟨c, _, [], .ifLtN_false hlt1 (.skip hw), by unfold capBCost; omega, by simp, by simp,
+    refine ⟨c, _, [], .ifLtN_false hlt1 (.skip hw), by unfold capBCost; omega, by_s, by_s,
       by simpa using hA, by simpa using h28, by simpa using hL, fun _ _ => rfl, fun _ _ => rfl,
       fun _ _ => rfl, rfl, rfl, fun h => absurd h hX, fun _ => rfl⟩
 

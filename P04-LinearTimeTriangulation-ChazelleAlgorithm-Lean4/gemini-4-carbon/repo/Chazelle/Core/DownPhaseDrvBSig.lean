@@ -41,8 +41,8 @@ theorem fbTrans {B : ℕ → Bool} {c₁ c₂ c₃ : Config} (h₁ : FrameB B c�
 /-- A register frame for fewer registers is one for more. -/
 theorem fbMono {B B' : ℕ → Bool} {c c' : Config} (h : FrameB B c c')
     (hB : ∀ r, B r = true → B' r = true) : FrameB B' c c' :=
-  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
-    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr (by simp)),
+  ⟨fun r hr => h.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr by_s),
+    fun r hr => h.2.1 r (by cases h' : B r; rfl; rw [hB r h'] at hr; exact absurd hr by_s),
     h.2.2.1, h.2.2.2.1, h.2.2.2.2⟩
 
 /-- Copy a register triple into the kernel registers from `s`. -/
@@ -70,7 +70,7 @@ theorem tstR_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {op : ℕ} (hop : op ≤
       c'.nreg d ≤ 1 ∧
       (c'.nreg d = 1 ↔ SignTest op (s₁.eval (Qof P)) (s₂.eval (Qof P)) (s₃.eval (Qof P))) := by
   unfold OutK at hx hy hz
-  have hop' : op ≤ W := by omega
+  have hop' : op ≤ W := by_o
   -- the loads
   obtain ⟨c₁, k₁, e₁, hk₁, q₁, q₂, q₃, q₉, hf₁⟩ : ∃ c₁ k₁, Exec P W (block (ldP 10000 x ++
       ldP 10003 y ++ ldP 10006 z ++ [.constN 10009 op])) c c₁ k₁ ∧ k₁ = 10 ∧
@@ -92,21 +92,21 @@ theorem tstR_exec (hG : GoodEnv P) (hW : P.n + 3 ≤ W) {op : ℕ} (hop : op ≤
       · refine ⟨rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, rfl, rfl, rfl, rfl⟩ <;>
           (try intro r hr) <;> config_simp <;>
           (try simp only [Machine.upd_apply]) <;> (try split_ifs) <;> (try omega) <;>
-          (repeat rw [ite_eq_right (by omega)])
+          (repeat rw [ite_eq_right by_o])
     refine ⟨c₁, k₁, e₁, hk₁, symPtIn_copy i₁ r0 r1 r2, symPtIn_copy i₂ r3 r4 r5,
       symPtIn_copy i₃ r6 r7 r8, r9, ⟨fun r hr => ?_, fun r _ => by rw [fr.2.1], fr.2.2.1,
       fr.2.2.2.1, fr.2.2.2.2⟩⟩
     · have : r < 10000 ∨ 10500 ≤ r := by unfold Bk at hr; simp at hr; omega
-      exact fr.1 r (by omega)
+      exact fr.1 r by_o
   have i₁' := i₁
   -- the kernel
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, b₂, s₂'⟩ := sig_exec (P := P) c₁ e₁.wb_right hG hW
-    (by rw [q₉]; exact hop) l₁ l₂ l₃ q₁ q₂ q₃
+    (by rwa [q₉]) l₁ l₂ l₃ q₁ q₂ q₃
   rw [q₉] at s₂'
   -- the answer
   have e₃ := Exec.copyN (P := P) e₂.wb_right d 10010
-  set c₃ : Config := { c₂ with nreg := upd c₂.nreg d (c₂.nreg 10010) } with hc₃
-  refine ⟨c₃, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by omega, ?_, by simp [c₃, b₂],
+  set c₃ := { c₂ with nreg := upd c₂.nreg d (c₂.nreg 10010) } with hc₃
+  refine ⟨c₃, k₁ + (k₂ + 1), .seq e₁ (.seq e₂ e₃), by_o, ?_, by simp [c₃, b₂],
     by simp [c₃]; exact s₂'⟩
   refine ⟨fun r hr => ?_, fun r hr => ?_, ?_, ?_, ?_⟩
   · have hr' : Bk r = false ∧ r ≠ d := by

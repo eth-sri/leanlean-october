@@ -62,7 +62,7 @@ theorem UpEntry.mono {m : ℕ → ℕ} {A A' hp g i d f o : ℕ} (h : UpEntry O 
 theorem UpTab.mono {m : ℕ → ℕ} {h hp A A' : ℕ} (hT : UpTab O P m h hp A) (hA : A ≤ A') :
     UpTab O P m h hp A' := by
   obtain ⟨h1, h2, h3, h4, h5, ⟨h7, h7b, h7c⟩, h8, h9, h6⟩ := hT
-  exact ⟨h1, h2, h3, h4, by omega, ⟨by omega, by omega, by omega⟩, by omega,
+  exact ⟨h1, h2, h3, h4, by_o, ⟨by_o, by_o, by_o⟩, by_o,
     fun g hg => by have := h9 g hg; omega,
     fun g i hg hi => (h6 g i hg hi).mono hA⟩
 
@@ -74,7 +74,7 @@ theorem Cells.mono {m : ℕ → ℕ} {A A' hp g : ℕ} (hA : A ≤ A') :
 /-- A robust fact implies its consequences, for a larger bound. -/
 theorem robust_of {A A' : ℕ} {m : ℕ → ℕ} {Φ Ψ : (ℕ → ℕ) → Prop} (h : Robust A m Φ)
     (hA : A ≤ A') (hΦ : ∀ m', Φ m' → Ψ m') : Robust A' m Ψ :=
-  fun m' hm' => hΦ m' (h m' fun a ha => hm' a (by omega))
+  fun m' hm' => hΦ m' (h m' fun a ha => hm' a by_o)
 
 /-- The chain of a table entry: its descriptor is on the whole host. -/
 theorem chainWF_of_node {m : ℕ → ℕ} {A hp d f γ : ℕ} {C : Chain} (hn : 1 ≤ P.n)
@@ -83,12 +83,12 @@ theorem chainWF_of_node {m : ℕ → ℕ} {A hp d f γ : ℕ} {C : Chain} (hn : 
   obtain ⟨hd, -, hdh, hd5, hhp, hfit, -⟩ := hN
   have hQn : (Qof P).n = P.n := shear_n _ _
   refine ⟨hd5, fun H C' hC => ?_⟩
-  have hH' : H = Host.whole P.n := hostAt_unique hC.1 (by rw [hdh]; exact hH)
+  have hH' : H = Host.whole P.n := hostAt_unique hC.1 (by rwa [hdh])
   subst hH'
   refine ⟨by simp [Host.whole], hostWF_whole hn, by rw [hdh]; simp [Host.whole]; omega, ?_⟩
-  have hs : C'.s = C.s := hC.2.2.1.symm.trans hd.2.2.1
+  have hs := hC.2.2.1.symm.trans hd.2.2.1
   have hP : C'.P = Qof P := by
-    rw [hC.2.1]; have := L41.poly_whole (Qof P) (by omega); rw [hQn] at this; exact this
+    rw [hC.2.1]; have := L41.poly_whole (Qof P) by_o; rw [hQn] at this; exact this
   rw [hs, hP, hQn]; have := C.one_le; omega
 
 /-- **`UpTab` gives the raw grade table.** -/
@@ -98,10 +98,10 @@ theorem upTab_gradeRaw {m : ℕ → ℕ} {h hp A : ℕ} (hn : 2 ≤ P.n) (hT : U
   refine ⟨h1, h2, h3, fun g i hg hi => ?_⟩
   obtain ⟨hN, hAt, e0, e1, e2⟩ := hE g i hg hi
   have hNo := hN (gChain P g i hn hi) rfl rfl rfl
-  have hwf := chainWF_of_node (by omega) hNo hH
+  have hwf := chainWF_of_node by_o hNo hH
   obtain ⟨hd, -, -, -, -, -, N, hNW, hc⟩ := hNo
   exact ⟨Host.whole P.n, gChain P g i hn hi, N, hd, hwf, rfl, by simp [Host.whole],
-    hostWF_whole (by omega), rfl, rfl, hNW, hc, hAt, e0, e1, e2⟩
+    hostWF_whole by_o, rfl, rfl, hNW, hc, hAt, e0, e1, e2⟩
 
 /-- **The grade context holds** at a robust `UpTab`. -/
 theorem holds_of_upTab {m : ℕ → ℕ} {h hp A : ℕ} (hn : 2 ≤ P.n)

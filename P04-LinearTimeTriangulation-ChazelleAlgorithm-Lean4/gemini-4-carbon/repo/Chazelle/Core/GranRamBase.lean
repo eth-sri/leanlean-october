@@ -96,11 +96,11 @@ variable {m : ℕ → ℕ} {d : Dm} {st : St}
 
 theorem slot_lt {D x t R : ℕ} (hx : x < R) (ht : t < D) : D * x + t < R * D := by
   have : D * x + t < D * (x + 1) := by rw [Nat.mul_succ]; omega
-  have : D * (x + 1) ≤ D * R := Nat.mul_le_mul_left _ (by omega)
+  have : D * (x + 1) ≤ D * R := Nat.mul_le_mul_left _ by_o
   rw [Nat.mul_comm R D]; omega
 
 theorem slot_div {D x t : ℕ} (ht : t < D) : (D * x + t) / D = x := by
-  have hD : 0 < D := by omega
+  have hD : 0 < D := by_o
   rw [Nat.add_comm, Nat.add_mul_div_left _ _ hD, Nat.div_eq_of_lt ht, Nat.zero_add]
 
 theorem slot_mod {D x t : ℕ} (ht : t < D) : (D * x + t) % D = t := by
@@ -115,7 +115,7 @@ theorem Enc.set_live (h : Enc m d st) {k : ℕ} (hk : k < d.K) (v : ℕ) :
   · intro i hi
     by_cases hq : i = k
     · subst hq; simp
-    · rw [Machine.upd_other _ _ _ (by omega)]
+    · rw [Machine.upd_other _ _ _ by_o]
       dsimp only
       rw [Function.update_of_ne hq]
       exact h.live i hi
@@ -640,7 +640,7 @@ theorem Enc.set_ex (h : Enc m d st) {x₀ t₀ : ℕ} (hx₀ : x₀ < d.R) (ht�
       · dsimp only; rw [ite_eq_right hq]; exact h.ex x t hx ht
       · intro he
         apply hq
-        have e1 : d.D * x + t = d.D * x₀ + t₀ := by omega
+        have e1 : d.D * x + t = d.D * x₀ + t₀ := by_o
         have e2 := congrArg (· / d.D) e1
         have e3 := congrArg (· % d.D) e1
         rw [slot_div ht, slot_div ht₀] at e2

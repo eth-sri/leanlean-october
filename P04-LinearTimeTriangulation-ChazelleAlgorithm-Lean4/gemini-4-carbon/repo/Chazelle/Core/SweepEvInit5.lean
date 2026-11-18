@@ -34,10 +34,10 @@ theorem modelDescAt_keep' {P : Polygon} {m m' : ℕ → ℕ} {D E E' : ℕ} {M :
   · obtain ⟨w', h0', hC'⟩ := ShotList.modelDesc_keep hwf h0 hC he hE
     exact ⟨Or.inl ⟨h0', H, C, hC', rfl⟩, w'⟩
   · have hD := hwf.1
-    have e0 : m' D = m D := he _ (by omega)
-    have e1 : m' (D + 1) = m (D + 1) := he _ (by omega)
-    exact ⟨Or.inr ⟨by rw [e0, h1], by rw [e1]; exact hbit, rfl⟩,
-      ⟨by omega, fun h => by rw [e0, h1] at h; exact absurd h (by norm_num)⟩⟩
+    have e0 : m' D = m D := he _ by_o
+    have e1 : m' (D + 1) = m (D + 1) := he _ by_o
+    exact ⟨Or.inr ⟨by rw [e0, h1], by rwa [e1], rfl⟩,
+      ⟨by_o, fun h => by rw [e0, h1] at h; exact absurd h by_n⟩⟩
 
 /-- Junction descriptors survive a change of the memory at or above the allocator. -/
 theorem junction_keep {P : Polygon} {m m' : ℕ → ℕ} {E E' b0 b1 b2 : ℕ} {H : Host}
@@ -60,36 +60,36 @@ theorem st0S_keep {P : Polygon} {c c' : Config} {H : Host} {J : Merge.Junction}
     St0S P c' H J := by
   obtain ⟨h90, h91, h92, h93, hJ, hJW, d20, w20, d21, w21, h23, h24, hR, hL, h33, h34, h35, md30,
     mw30, md31, mw31⟩ := h
-  have r : ∀ j, j < 100 → c'.nreg (sw j) = c.nreg (sw j) := hr
+  have r := hr
   obtain ⟨hJ', hJW'⟩ := junction_keep hJ hJW hm hA
   obtain ⟨d20', w20'⟩ := chainDesc_keep w20 d20 hm hA
   obtain ⟨d21', w21'⟩ := chainDesc_keep w21 d21 hm hA
   obtain ⟨m30, mw30'⟩ := modelDescAt_keep' mw30 md30 hm hA
   obtain ⟨m31, mw31'⟩ := modelDescAt_keep' mw31 md31 hm hA
-  refine ⟨by rw [r 90 (by norm_num)]; exact h90, by rw [r 91 (by norm_num)]; exact h91,
-    by rw [r 92 (by norm_num)]; exact h92, by rw [r 93 (by norm_num)]; exact h93,
-    by rw [r 0 (by norm_num), r 1 (by norm_num), r 2 (by norm_num)]; exact hJ',
-    by rw [r 0 (by norm_num), r 1 (by norm_num), r 2 (by norm_num)]; exact hJW',
-    by rw [r 20 (by norm_num)]; exact d20', by rw [r 20 (by norm_num)]; exact w20',
-    by rw [r 21 (by norm_num)]; exact d21', by rw [r 21 (by norm_num)]; exact w21',
-    by rw [r 23 (by norm_num), r 3 (by norm_num)]; exact h23,
-    by rw [r 24 (by norm_num), r 4 (by norm_num)]; exact h24,
-    fun k hk => by rw [r (40 + k) (by omega)]; exact hR k hk,
-    fun k hk => by rw [r (45 + k) (by omega)]; exact hL k hk,
-    by rw [r 33 (by norm_num)]; exact h33, by rw [r 34 (by norm_num)]; exact h34,
-    by rw [r 35 (by norm_num)]; exact h35, by rw [r 30 (by norm_num)]; exact m30,
-    by rw [r 30 (by norm_num)]; exact mw30', by rw [r 31 (by norm_num)]; exact m31,
-    by rw [r 31 (by norm_num)]; exact mw31'⟩
+  refine ⟨by rwa [r 90 by_n], by rwa [r 91 by_n],
+    by rwa [r 92 by_n], by rwa [r 93 by_n],
+    by rw [r 0 by_n, r 1 by_n, r 2 by_n]; exact hJ',
+    by rw [r 0 by_n, r 1 by_n, r 2 by_n]; exact hJW',
+    by rw [r 20 by_n]; exact d20', by rw [r 20 by_n]; exact w20',
+    by rw [r 21 by_n]; exact d21', by rw [r 21 by_n]; exact w21',
+    by rwa [r 23 by_n, r 3 by_n],
+    by rwa [r 24 by_n, r 4 by_n],
+    fun k hk => by rw [r (40 + k) by_o]; exact hR k hk,
+    fun k hk => by rw [r (45 + k) by_o]; exact hL k hk,
+    by rwa [r 33 by_n], by rwa [r 34 by_n],
+    by rwa [r 35 by_n], by rwa [r 30 by_n],
+    by rw [r 30 by_n]; exact mw30', by rwa [r 31 by_n],
+    by rw [r 31 by_n]; exact mw31'⟩
 
 /-! ## Arithmetic -/
 
 theorem clog_four_mul (x : ℕ) : Nat.clog 2 (4 * x) ≤ Nat.clog 2 x + 2 := by
-  rw [Nat.clog_le_iff_le_pow (by norm_num), pow_add]
+  rw [Nat.clog_le_iff_le_pow by_n, pow_add]
   have := Nat.le_pow_clog (by norm_num : 1 < 2) x
   norm_num; omega
 
 theorem clog_le_self' (x : ℕ) : Nat.clog 2 x ≤ x := by
-  rw [Nat.clog_le_iff_le_pow (by norm_num)]; exact Nat.lt_two_pow_self.le
+  rw [Nat.clog_le_iff_le_pow by_n]; exact Nat.lt_two_pow_self.le
 
 /-! ## The environment -/
 
@@ -111,12 +111,12 @@ theorem evEnv_of_init {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCt
   obtain ⟨hJ, hP, hOk1, hOk2, hNW1, hNW2, hNF1, hNF2, hdeg1, hdeg2, hsg1, hsg2, hst⟩ := hpa
   have hst' := hst
   obtain ⟨-, -, -, -, -, hJW, d20, w20, d21, w21, -⟩ := hst'
-  have hm : ∀ a, a < c.nreg ALLOC → c₀.nmem a = c.nmem a := R.mem
-  have hA : c.nreg ALLOC ≤ c₀.nreg ALLOC := fr.2.2.2.2.2.1
-  have hAk : c₀.nreg ALLOC ≤ c.nreg ALLOC + k := fr.2.2.2.2.2.2
+  have hm := R.mem
+  have hA := fr.2.2.2.2.2.1
+  have hAk := fr.2.2.2.2.2.2
   have kp : ∀ j, j < 600 → c₀.nreg (sw j) = c.nreg (sw j) := fun j hj =>
-    R.keep _ (not_oracle_sw (by unfold sw; omega) (by unfold sw; omega)) (by unfold sw ALLOC; omega)
-      (by unfold sw; omega)
+    R.keep _ (not_oracle_sw by_so by_so) by_so
+      by_so
   -- the normal forms
   have nN1 := hNW1.nfAt
   have nN2 := hNW2.nfAt
@@ -131,60 +131,60 @@ theorem evEnv_of_init {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCt
   have hL := R.hTLR
   rw [ha1, ha2] at hL
   have hpow : N₁.arcs.length + N₂.arcs.length + 1 ≤ 2 ^ c₀.nreg TLR := by
-    rw [hL]; exact Nat.le_pow_clog (by norm_num) _
+    rw [hL]; exact Nat.le_pow_clog by_n _
   have hLle := clog_le_self' (N₁.arcs.length + N₂.arcs.length + 1)
   have hMD := R.hA
   have hTB := R.hTBR
   have hAl := R.hAl
   -- the descriptor of `C₁`
-  have k20 : c₀.nreg (sw 20) = c.nreg (sw 20) := kp 20 (by norm_num)
+  have k20 : c₀.nreg (sw 20) = c.nreg (sw 20) := kp 20 by_n
   obtain ⟨hmd, hmwf, hCD⟩ := modelDesc_of_copy (E' := c₀.nreg ALLOC) w20 d20 hMD hm R.md0
-    (fun j hj => R.mdc j hj) (by omega)
+    (fun j hj => R.mdc j hj) by_o
   have ctx20 := chainCtx_of (W := W) hG hWh hP hJ hJW d20 w20
   have ctx21 := chainCtx_of (W := W) hG hWh hP hJ hJW d21 w21
   have ctxW := chainCtx_of (W := W) (d := sw 2) hG hWh hP hJ hJW hJ.2.2 hJW.2.2.1
-  have hWn : 2 * (chainModel J.whole).W.n ≤ W := walk_two_le hJW.2.2.1 hJ.2.2 hWh
-  have e10 := kp 10 (by norm_num)
-  have e5 := kp 5 (by norm_num)
-  have e6 := kp 6 (by norm_num)
-  have e3 := kp 3 (by norm_num)
-  have e4 := kp 4 (by norm_num)
+  have hWn := walk_two_le hJW.2.2.1 hJ.2.2 hWh
+  have e10 := kp 10 by_n
+  have e5 := kp 5 by_n
+  have e6 := kp 6 by_n
+  have e3 := kp 3 by_n
+  have e4 := kp 4 by_n
   refine ⟨hsh, hBs, hXl, hG, hWh, hP, ?_, ?_, hOk1, hNF1, ?_, ?_, hNF2, ?_, hmd, hmwf, R.md0,
     R.hcd, ?_, ?_, ?_, R.hK, R.hO, R.hM, R.hgw, ?_, ?_, hWn, ?_, ?_, hOk2, ?_, ?_, ?_, R.htab,
-    by omega, by omega, by omega, ?_, ?_, ?_, R.hTA⟩
+    by_o, by_o, by_o, ?_, ?_, ?_, R.hTA⟩
   · rw [e10]; exact X.mono _ _ _ _ _ hA (X.local_ P c.nmem c₀.nmem _ _ (fun a ha => (hm a ha).symm) hX)
   · have hc := hXl P c.nmem c₀.nmem _ _ hm hX
     rw [e10, e5]
     exact hcap.trans_eq hc.symm
-  · rw [e5]; exact hsg1
+  · rwa [e5]
   · rw [e3]; exact (hNW1.transport hm).mono hA
   · rw [e4]; exact (hNW2.transport hm).mono hA
   · obtain ⟨g1, g2, -, ⟨H', hd', hreg⟩, g5, g6⟩ := ctx20
     refine ⟨g1, g2, ?_, ⟨H, ?_, ?_⟩, g5, g6⟩
     · rw [R.hcd]; exact hmwf.2 R.md0
-    · rw [R.hcd]; exact hCD
+    · rwa [R.hcd]
     · exact hJW.2.2.2 H hJ.2.2.1
-  · exact ctx21.transport (kp 21 (by norm_num)) hm hA
-  · exact ctxW.transport (kp 2 (by norm_num)) hm hA
+  · exact ctx21.transport (kp 21 by_n) hm hA
+  · exact ctxW.transport (kp 2 by_n) hm hA
   · rw [R.hTA]
   · rw [R.hTA]; have := Nat.mul_le_mul_left κI (le_refl (N₁.nChords + N₂.nChords + 1))
     unfold κI at hroom; omega
-  · refine ⟨H, ?_, st0S_keep hst (fun j hj => kp j (by omega)) hm hA⟩
-    rw [kp 0 (by norm_num), kp 1 (by norm_num), kp 2 (by norm_num)]
+  · refine ⟨H, ?_, st0S_keep hst (fun j hj => kp j by_o) hm hA⟩
+    rw [kp 0 by_n, kp 1 by_n, kp 2 by_n]
     exact (junction_keep hJ hJW hm hA).1
-  · rw [kp 0 (by norm_num), kp 1 (by norm_num), kp 2 (by norm_num)]
+  · rw [kp 0 by_n, kp 1 by_n, kp 2 by_n]
     exact (junction_keep hJ hJW hm hA).2
-  · rw [e5]; exact hsg2
-  · rw [e6]; exact hdeg1
-  · rw [e6]; exact hdeg2
-  · rw [e3]; exact (hNW1.transport hm).mono (by omega)
-  · rw [e4]; exact (hNW2.transport hm).mono (by omega)
+  · rwa [e5]
+  · rwa [e6]
+  · rwa [e6]
+  · rw [e3]; exact (hNW1.transport hm).mono by_o
+  · rw [e4]; exact (hNW2.transport hm).mono by_o
   · rw [hL]
     calc Nat.clog 2 (N₁.arcs.length + N₂.arcs.length + 1)
         ≤ Nat.clog 2 (4 * (N₁.nChords + N₂.nChords + 1)) :=
           Nat.clog_mono_right _ (by unfold NF.nChords at *; omega)
       _ ≤ Nat.clog 2 (N₁.nChords + N₂.nChords + 1) + 2 := clog_four_mul _
-      _ ≤ _ := by omega
+      _ ≤ _ := by_o
 
 /-! ## Task I -/
 
@@ -192,8 +192,7 @@ theorem InitRes.keep200 {P : Polygon} {J : Merge.Junction} {c c₀ : Config}
     (R : InitRes P J c c₀) : ∀ j, j < 200 → c₀.nreg (sw j) = c.nreg (sw j) := fun j hj => by
   have h1 : 240000 ≤ sw j := by unfold sw; omega
   have h2 : sw j < 250000 := by unfold sw; omega
-  exact R.keep (sw j) (not_oracle_sw h1 h2) (by unfold sw ALLOC; omega) (Or.inl (by
-    unfold sw; omega))
+  exact R.keep (sw j) (not_oracle_sw h1 h2) by_so (Or.inl by_so)
 
 set_option maxRecDepth 20000 in
 /-- **Task I: the initialisation** (`initE`, constant `κI = 40000`). -/
@@ -206,12 +205,12 @@ theorem initTask : InitTask := by
   have nN2 := hNW2.nfAt
   have hA1 := arcsTask J₀.left (Qof P) N₁₀ hP₀ hNF1
   have hA2 := arcsTask J₀.right (Qof P) N₂₀ hP₀ hNF2
-  have hK1 : c.nmem (rd c bSweep 3) = N₁₀.nChords := nN1.1
-  have hK2 : c.nmem (rd c bSweep 4) = N₂₀.nChords := nN2.1
+  have hK1 := nN1.1
+  have hK2 := nN2.1
   have ha1 : c.nmem (c.nreg (sw 3) + 1) = N₁₀.arcs.length := nN1.2.1
   have ha2 : c.nmem (c.nreg (sw 4) + 1) = N₂₀.arcs.length := nN2.2.1
-  have h3 : c.nreg (sw 3) + 1 < c.nreg ALLOC := nfWithin_lt' hNW1
-  have h4 : c.nreg (sw 4) + 1 < c.nreg ALLOC := nfWithin_lt' hNW2
+  have h3 := nfWithin_lt' hNW1
+  have h4 := nfWithin_lt' hNW2
   have hroom' := hroom
   rw [hK1, hK2] at hroom'
   unfold κI at hroom'

@@ -69,19 +69,19 @@ theorem ptr_char (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂)
   refine ⟨hat i hi, fun hie => ?_⟩
   rcases (by omega : i = 0 ∨ i = 1 ∨ 2 ≤ i) with rfl | rfl | h2
   · have := h1a hi hie; omega
-  · have h0 : soff P J (rs[0]'(by omega)) = Lst J := by
-      have := stops_sorted hst (i := 0) (i' := 1) (by omega) hi
-      have := ge 0 (by omega)
+  · have h0 : soff P J (rs[0]' by_o) = Lst J := by
+      have := stops_sorted hst (i := 0) (i' := 1) by_o hi
+      have := ge 0 by_o
       linarith
-    have e1 : s1 = 1 := h1a (by omega) h0
+    have e1 : s1 = 1 := h1a by_o h0
     subst e1
     have := h2a hi hie
     omega
   · exfalso
-    have h3 := stops_two hP hN hst (i := i - 2) (by omega)
+    have h3 := stops_two hP hN hst (i := i - 2) by_o
     have e : rs[i - 2 + 2] = rs[i] := by congr 1; omega
     rw [e, hie] at h3
-    have := ge (i - 2) (by omega)
+    have := ge (i - 2) by_o
     linarith
 
 end Ptr
@@ -94,10 +94,10 @@ theorem stopData_transport {P : Polygon} {J : Merge.Junction} {N₂ : NF} {c c' 
     (hlay : c.nreg sB + 5 * c.nreg sC ≤ c.nreg ALLOC ∧ c.nreg aB + 5 * c.nreg sC ≤ c.nreg ALLOC)
     (hm : ∀ a, a < c.nreg ALLOC → c'.nmem a = c.nmem a) : StopData P J N₂ c' rs ax := by
   obtain ⟨hl, hlax, hSR, hAR, h5, h6, h7, h8⟩ := h
-  refine ⟨by rw [hsC]; exact hl, hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
-  · rw [hsB, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega)]
+  refine ⟨by rwa [hsC], hlax, fun i hi => ?_, fun i hi => ?_, h5, h6, h7, h8⟩
+  · rw [hsB, hm _ by_o, hm _ by_o, hm _ by_o, hm _ by_o, hm _ by_o]
     exact hSR i hi
-  · rw [haB, hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega), hm _ (by omega)]
+  · rw [haB, hm _ by_o, hm _ by_o, hm _ by_o, hm _ by_o, hm _ by_o]
     exact hAR i hi
 
 /-! ## Register sets -/

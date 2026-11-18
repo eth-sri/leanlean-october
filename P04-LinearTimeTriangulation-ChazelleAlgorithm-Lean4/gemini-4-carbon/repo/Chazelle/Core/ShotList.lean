@@ -170,7 +170,7 @@ theorem shInit_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBo
   obtain ⟨c₁, e₁, v₁, f₁⟩ := copies_run (P := P) [(R + 36, R + 1), (R + 34, R)] c hw
     (by simp only [List.mem_cons, List.not_mem_nil, or_false]
         rintro p (rfl | rfl) q (rfl | rfl) <;> simp)
-    (by simp)
+    by_s
   simp only [List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp, forall_eq] at v₁
   obtain ⟨a36, a34⟩ := v₁
   obtain ⟨c₂, e₂, v₂, f₂⟩ := consts_exec (P := P) (initConsts R) c₁ e₁.wb_right
@@ -180,13 +180,13 @@ theorem shInit_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBo
   simp only [initConsts, List.mem_cons, List.not_mem_nil, or_false, forall_eq_or_imp,
     forall_eq] at v₂
   obtain ⟨b30, b31, b32, b33, b20, b28, b37⟩ := v₂
-  have k2 : ∀ r, ((initConsts R).map Prod.fst).contains r = false → c₂.nreg r = c₁.nreg r := f₂.1
+  have k2 := f₂.1
   have c34 : c₂.nreg (R + 34) = c.nreg R := by rw [k2 _ (by simp [initConsts]), a34]
   have c36 : c₂.nreg (R + 36) = c.nreg (R + 1) := by rw [k2 _ (by simp [initConsts]), a36]
   have r6 : c₂.nreg (R + 6) = c.nreg (R + 6) := by
-    rw [k2 _ (by simp [initConsts]), f₁.1 _ (by simp)]
-  have e₃ := Exec.addN (P := P) e₂.wb_right (R + 34) (R + 34) (R + 31) (by rw [c34, b31]; exact hD)
-  set c₃ : Config := { c₂ with nreg := upd c₂.nreg (R + 34) (c₂.nreg (R + 34) + c₂.nreg (R + 31)) }
+    rw [k2 _ (by simp [initConsts]), f₁.1 _ by_s]
+  have e₃ := Exec.addN (P := P) e₂.wb_right (R + 34) (R + 34) (R + 31) (by rwa [c34, b31])
+  set c₃ := { c₂ with nreg := upd c₂.nreg (R + 34) (c₂.nreg (R + 34) + c₂.nreg (R + 31)) }
     with hc₃
   have w₃ := e₃.wb_right
   have k3 : ∀ r, r ≠ R + 34 → c₃.nreg r = c₂.nreg r := fun r hr => by rw [hc₃]; simp [upd, hr]
@@ -202,27 +202,27 @@ theorem shInit_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsBo
       c'.nreg (R + 34) = c.nreg R + 1 ∧ c'.nreg (R + 20) = 0 ∧ c'.nreg (R + 28) = 0 ∧
       c'.nreg (R + 36) = c.nreg (R + 1) ∧ c'.nreg (R + 37) = 4 ∧
       BitIs c' (R + 35) (c.nreg (R + 6) = 1) ∧ FrameB (Bmid R) c₃ c' := fun v hv hb => by
-    have e := Exec.constN (P := P) w₃ (R + 35) v (by omega)
+    have e := Exec.constN (P := P) w₃ (R + 35) v by_o
     refine ⟨_, 1, e, rfl, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ⟨?_, ?_⟩,
       exec_frameB e (by simp [wr, wrOK, Bmid])⟩ <;> simp only [upd_same]
     all_goals first
       | exact hv | exact hb
-      | (rw [upd_other _ _ _ (by omega), k3 _ (by omega)]; assumption)
-      | (rw [upd_other _ _ _ (by omega)]; exact d34)
+      | (rwa [upd_other _ _ _ by_o, k3 _ by_o])
+      | (rwa [upd_other _ _ _ by_o])
   unfold shInit
   have ex₃ : Exec P W (.seq (block (copies [(R + 36, R + 1), (R + 34, R)]))
       (.seq (block (consts (initConsts R))) (.instr (.addN (R + 34) (R + 34) (R + 31))))) c c₃ _ :=
     .seq e₁ (.seq e₂ e₃)
-  have r6' : c₃.nreg (R + 6) = c.nreg (R + 6) := by rw [k3 _ (by omega), r6]
-  have o31 : c₃.nreg (R + 31) = 1 := by rw [k3 _ (by omega), b31]
+  have r6' : c₃.nreg (R + 6) = c.nreg (R + 6) := by rw [k3 _ by_o, r6]
+  have o31 : c₃.nreg (R + 31) = 1 := by rw [k3 _ by_o, b31]
   by_cases g1 : c₃.nreg (R + 6) < c₃.nreg (R + 31)
-  · obtain ⟨c', k, e, hk, rest⟩ := fin 0 (by omega) (by rw [← r6']; omega)
+  · obtain ⟨c', k, e, hk, rest⟩ := fin 0 by_o (by rw [← r6']; omega)
     exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.ifLtN_true g1 e))), by simp [initConsts]; omega,
       rest.1, rest.2.1, rest.2.2.1, rest.2.2.2.1, rest.2.2.2.2.1, rest.2.2.2.2.2.1,
       rest.2.2.2.2.2.2.1, rest.2.2.2.2.2.2.2.1, rest.2.2.2.2.2.2.2.2.1, rest.2.2.2.2.2.2.2.2.2.1,
       F₃.trans rest.2.2.2.2.2.2.2.2.2.2⟩
   by_cases g2 : c₃.nreg (R + 31) < c₃.nreg (R + 6)
-  · obtain ⟨c', k, e, hk, rest⟩ := fin 0 (by omega) (by rw [← r6']; omega)
+  · obtain ⟨c', k, e, hk, rest⟩ := fin 0 by_o (by rw [← r6']; omega)
     exact ⟨c', _, .seq e₁ (.seq e₂ (.seq e₃ (.ifLtN_false g1 (.ifLtN_true g2 e)))),
       by simp [initConsts]; omega, rest.1, rest.2.1, rest.2.2.1, rest.2.2.2.1, rest.2.2.2.2.1,
       rest.2.2.2.2.2.1, rest.2.2.2.2.2.2.1, rest.2.2.2.2.2.2.2.1, rest.2.2.2.2.2.2.2.2.1,
@@ -242,41 +242,41 @@ theorem loadArc_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsB
       FrameB (fun r => decide (R + 38 ≤ r ∧ r < R + 44)) c c' := by
   set a := c.nreg (R + 36)
   have e₁ := Exec.loadN (P := P) hw (R + 40) (R + 36)
-  set c₁ : Config := { c with nreg := upd c.nreg (R + 40) (c.nmem a) } with hc₁
+  set c₁ := { c with nreg := upd c.nreg (R + 40) (c.nmem a) } with hc₁
   have r₁ : ∀ r, r ≠ R + 40 → c₁.nreg r = c.nreg r := fun r h => by rw [hc₁]; simp [upd, h]
   have e₂ := Exec.addN (P := P) e₁.wb_right (R + 38) (R + 36) (R + 31)
-    (by rw [r₁ _ (by omega), r₁ _ (by omega), h31]; omega)
-  set c₂ : Config := { c₁ with nreg := upd c₁.nreg (R + 38) (c₁.nreg (R + 36) + c₁.nreg (R + 31)) }
+    (by rw [r₁ _ by_o, r₁ _ by_o, h31]; omega)
+  set c₂ := { c₁ with nreg := upd c₁.nreg (R + 38) (c₁.nreg (R + 36) + c₁.nreg (R + 31)) }
     with hc₂
   have r₂ : ∀ r, r ≠ R + 38 → c₂.nreg r = c₁.nreg r := fun r h => by rw [hc₂]; simp [upd, h]
   have v₂ : c₂.nreg (R + 38) = a + 1 := by
-    rw [hc₂]; simp only [upd_same]; rw [r₁ _ (by omega), r₁ _ (by omega), h31]
+    rw [hc₂]; simp only [upd_same]; rw [r₁ _ by_o, r₁ _ by_o, h31]
   have e₃ := Exec.loadN (P := P) e₂.wb_right (R + 41) (R + 38)
-  set c₃ : Config := { c₂ with nreg := upd c₂.nreg (R + 41) (c₂.nmem (c₂.nreg (R + 38))) } with hc₃
+  set c₃ := { c₂ with nreg := upd c₂.nreg (R + 41) (c₂.nmem (c₂.nreg (R + 38))) } with hc₃
   have r₃ : ∀ r, r ≠ R + 41 → c₃.nreg r = c₂.nreg r := fun r h => by rw [hc₃]; simp [upd, h]
   have e₄ := Exec.addN (P := P) e₃.wb_right (R + 38) (R + 38) (R + 31)
-    (by rw [r₃ _ (by omega), r₃ _ (by omega), v₂, r₂ _ (by omega), r₁ _ (by omega), h31]; omega)
-  set c₄ : Config := { c₃ with nreg := upd c₃.nreg (R + 38) (c₃.nreg (R + 38) + c₃.nreg (R + 31)) }
+    (by rw [r₃ _ by_o, r₃ _ by_o, v₂, r₂ _ by_o, r₁ _ by_o, h31]; omega)
+  set c₄ := { c₃ with nreg := upd c₃.nreg (R + 38) (c₃.nreg (R + 38) + c₃.nreg (R + 31)) }
     with hc₄
   have r₄ : ∀ r, r ≠ R + 38 → c₄.nreg r = c₃.nreg r := fun r h => by rw [hc₄]; simp [upd, h]
   have v₄ : c₄.nreg (R + 38) = a + 2 := by
     rw [hc₄]; simp only [upd_same]
-    rw [r₃ _ (by omega), r₃ _ (by omega), v₂, r₂ _ (by omega), r₁ _ (by omega), h31]
+    rw [r₃ _ by_o, r₃ _ by_o, v₂, r₂ _ by_o, r₁ _ by_o, h31]
   have e₅ := Exec.loadN (P := P) e₄.wb_right (R + 42) (R + 38)
-  set c₅ : Config := { c₄ with nreg := upd c₄.nreg (R + 42) (c₄.nmem (c₄.nreg (R + 38))) } with hc₅
+  set c₅ := { c₄ with nreg := upd c₄.nreg (R + 42) (c₄.nmem (c₄.nreg (R + 38))) } with hc₅
   have r₅ : ∀ r, r ≠ R + 42 → c₅.nreg r = c₄.nreg r := fun r h => by rw [hc₅]; simp [upd, h]
   have e₆ := Exec.addN (P := P) e₅.wb_right (R + 38) (R + 38) (R + 31)
-    (by rw [r₅ _ (by omega), r₅ _ (by omega), v₄, r₄ _ (by omega), r₃ _ (by omega),
-      r₂ _ (by omega), r₁ _ (by omega), h31]; omega)
-  set c₆ : Config := { c₅ with nreg := upd c₅.nreg (R + 38) (c₅.nreg (R + 38) + c₅.nreg (R + 31)) }
+    (by rw [r₅ _ by_o, r₅ _ by_o, v₄, r₄ _ by_o, r₃ _ by_o,
+      r₂ _ by_o, r₁ _ by_o, h31]; omega)
+  set c₆ := { c₅ with nreg := upd c₅.nreg (R + 38) (c₅.nreg (R + 38) + c₅.nreg (R + 31)) }
     with hc₆
   have r₆ : ∀ r, r ≠ R + 38 → c₆.nreg r = c₅.nreg r := fun r h => by rw [hc₆]; simp [upd, h]
   have v₆ : c₆.nreg (R + 38) = a + 3 := by
     rw [hc₆]; simp only [upd_same]
-    rw [r₅ _ (by omega), r₅ _ (by omega), v₄, r₄ _ (by omega), r₃ _ (by omega),
-      r₂ _ (by omega), r₁ _ (by omega), h31]
+    rw [r₅ _ by_o, r₅ _ by_o, v₄, r₄ _ by_o, r₃ _ by_o,
+      r₂ _ by_o, r₁ _ by_o, h31]
   have e₇ := Exec.loadN (P := P) e₆.wb_right (R + 43) (R + 38)
-  set c₇ : Config := { c₆ with nreg := upd c₆.nreg (R + 43) (c₆.nmem (c₆.nreg (R + 38))) } with hc₇
+  set c₇ := { c₆ with nreg := upd c₆.nreg (R + 43) (c₆.nmem (c₆.nreg (R + 38))) } with hc₇
   have r₇ : ∀ r, r ≠ R + 43 → c₇.nreg r = c₆.nreg r := fun r h => by rw [hc₇]; simp [upd, h]
   have ex : Exec P W (loadArc R) c c₇ 7 := by
     unfold loadArc
@@ -286,11 +286,11 @@ theorem loadArc_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsB
   refine ⟨c₇, 7, ex, rfl, ?_, exec_frameB ex (by simp [loadArc, wr, block, wrOK])⟩
   simp only [pieceR, posR, arcAt, Nat.mul_zero, Nat.add_zero, Prod.mk.injEq, WPos.mk.injEq]
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩
-  · rw [r₇ _ (by omega), r₆ _ (by omega), r₅ _ (by omega), r₄ _ (by omega), r₃ _ (by omega),
-      r₂ _ (by omega), hc₁]; simp
-  · rw [r₇ _ (by omega), r₆ _ (by omega), r₅ _ (by omega), r₄ _ (by omega), hc₃]
+  · rw [r₇ _ by_o, r₆ _ by_o, r₅ _ by_o, r₄ _ by_o, r₃ _ by_o,
+      r₂ _ by_o, hc₁]; simp
+  · rw [r₇ _ by_o, r₆ _ by_o, r₅ _ by_o, r₄ _ by_o, hc₃]
     simp only [upd_same]; rw [v₂]
-  · rw [r₇ _ (by omega), r₆ _ (by omega), hc₅]; simp only [upd_same]; rw [v₄]
+  · rw [r₇ _ by_o, r₆ _ by_o, hc₅]; simp only [upd_same]; rw [v₄]
   · rw [hc₇]; simp only [upd_same]; rw [v₆]
 
 /-- **Advancing to the next arc.** -/
@@ -300,13 +300,13 @@ theorem stepArc_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsB
     ∃ c' k, Exec P W (stepArc R) c c' k ∧ k = 2 ∧ c'.nreg (R + 28) = c.nreg (R + 28) + 1 ∧
       c'.nreg (R + 36) = c.nreg (R + 36) + 4 ∧
       FrameB (fun r => r == R + 28 || r == R + 36) c c' := by
-  have e₁ := Exec.addN (P := P) hw (R + 28) (R + 28) (R + 31) (by rw [h31]; exact hj)
-  set c₁ : Config := { c with nreg := upd c.nreg (R + 28) (c.nreg (R + 28) + c.nreg (R + 31)) }
+  have e₁ := Exec.addN (P := P) hw (R + 28) (R + 28) (R + 31) (by rwa [h31])
+  set c₁ := { c with nreg := upd c.nreg (R + 28) (c.nreg (R + 28) + c.nreg (R + 31)) }
     with hc₁
   have r₁ : ∀ r, r ≠ R + 28 → c₁.nreg r = c.nreg r := fun r h => by rw [hc₁]; simp [upd, h]
   have e₂ := Exec.addN (P := P) e₁.wb_right (R + 36) (R + 36) (R + 37)
-    (by rw [r₁ _ (by omega), r₁ _ (by omega), h37]; exact hA)
-  set c₂ : Config := { c₁ with nreg := upd c₁.nreg (R + 36) (c₁.nreg (R + 36) + c₁.nreg (R + 37)) }
+    (by rwa [r₁ _ by_o, r₁ _ by_o, h37])
+  set c₂ := { c₁ with nreg := upd c₁.nreg (R + 36) (c₁.nreg (R + 36) + c₁.nreg (R + 37)) }
     with hc₂
   have ex : Exec P W (stepArc R) c c₂ 2 := by
     unfold stepArc
@@ -314,7 +314,7 @@ theorem stepArc_exec {P : Polygon} {W : ℕ} {R : ℕ} (c : Config) (hw : WordsB
   refine ⟨c₂, 2, ex, rfl, ?_, ?_, exec_frameB ex (by simp [stepArc, wr, block, wrOK])⟩
   · rw [hc₂]; simp only [upd, show R + 28 ≠ R + 36 by omega, ↓reduceIte]
     rw [hc₁]; simp [upd, h31]
-  · rw [hc₂]; simp only [upd_same]; rw [r₁ _ (by omega), r₁ _ (by omega), h37]
+  · rw [hc₂]; simp only [upd_same]; rw [r₁ _ by_o, r₁ _ by_o, h37]
 
 
 /-! ## Facts for the main theorem -/
@@ -330,24 +330,24 @@ theorem originIn_unique {c : Config} {r : ℕ} {o o' : Origin} (h : OriginIn c r
       | vtx i =>
         cases p' with
         | vtx i' => have := h.2.symm.trans h'.2; simp [this]
-        | onEdge e k => exact absurd (h.1.symm.trans h'.1) (by simp)
+        | onEdge e k => exact absurd (h.1.symm.trans h'.1) by_s
       | onEdge e k =>
         cases p' with
-        | vtx i' => exact absurd (h.1.symm.trans h'.1) (by simp)
+        | vtx i' => exact absurd (h.1.symm.trans h'.1) by_s
         | onEdge e' k' =>
           have e1 := h.2.1.symm.trans h'.2.1
           have e2 := h.2.2.symm.trans h'.2.2
           simp [e1, e2]
     | walk x =>
       cases p with
-      | vtx i => exact absurd (h.1.symm.trans h'.1) (by simp)
-      | onEdge e k => exact absurd (h.1.symm.trans h'.1) (by simp)
+      | vtx i => exact absurd (h.1.symm.trans h'.1) by_s
+      | onEdge e k => exact absurd (h.1.symm.trans h'.1) by_s
   | walk x =>
     cases o' with
     | sym p' =>
       cases p' with
-      | vtx i => exact absurd (h.1.symm.trans h'.1) (by simp)
-      | onEdge e k => exact absurd (h.1.symm.trans h'.1) (by simp)
+      | vtx i => exact absurd (h.1.symm.trans h'.1) by_s
+      | onEdge e k => exact absurd (h.1.symm.trans h'.1) by_s
     | walk x' =>
       obtain ⟨e, hh⟩ := x
       obtain ⟨e', hh'⟩ := x'

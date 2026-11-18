@@ -22,8 +22,7 @@ open Machine Machine.Stmt Programs SweepPrim
 theorem chain_vtx_mem (C : Chain) (Q : Polygon) {v : ℕ} (h6 : 6 ≤ v) (hv : v ≤ 2 * C.m + 6) :
     (chainModel C).pos Q ⟨v, 0⟩ ∈ C.set := by
   rw [pos_eq_sidePt, param_vtx]
-  show Chazelle.Chain.sidePt (C.sideWalk C.sideBeta) v 0 ∈ C.set
-  have := C.sideWalk_tour_pt_mem C.sideBeta (i := v - 6) (t := 0) (by omega) (fun _ => rfl)
+  have := C.sideWalk_tour_pt_mem C.sideBeta (i := v - 6) (t := 0) by_o (fun _ => rfl)
     le_rfl one_pos
   rwa [show v - 6 + 6 = v by omega] at this
 
@@ -36,9 +35,8 @@ theorem chain_vtx_six (C : Chain) (Q : Polygon) {v : ℕ}
 theorem chain_edge_mem (C : Chain) (Q : Polygon) {n e h : ℕ} (h6 : 6 ≤ e) (he : e < 2 * C.m + 6)
     (hp : ProperPos (chainModel C) Q n ⟨e, h⟩) : (chainModel C).pos Q ⟨e, h⟩ ∈ C.set := by
   rw [pos_eq_sidePt]
-  show Chazelle.Chain.sidePt (C.sideWalk C.sideBeta) e _ ∈ C.set
   have := C.sideWalk_tour_pt_mem C.sideBeta (i := e - 6)
-    (t := (chainModel C).param Q ⟨e, h⟩) (by omega) (fun h' => absurd h' (by omega)) hp.1 hp.2.1
+    (t := (chainModel C).param Q ⟨e, h⟩) by_o (fun h' => absurd h' by_o) hp.1 hp.2.1
   rwa [show e - 6 + 6 = e by omega] at this
 
 theorem chain_m_eq {C C' : Chain} (h : chainModel C = chainModel C') : C.m = C'.m := by
@@ -107,7 +105,7 @@ theorem find_start {P : Polygon} {W : ℕ} {c : Config} {M : Model} {N : NF} {X 
   have hk : c.nmem (c.nreg 81000) = 0 → 2 * c.nmem (c.nreg 81000 + 3) + 7 ≤ W := fun h0 => by
     rcases hMD with ⟨-, H', C', hC, hM⟩ | ⟨h1, -⟩
     · have := walk_le_W (P := P) (M := M) (W := W) (Or.inl ⟨h0, H', C', hC, hM⟩) hwf hWh hM
-      have hm : c.nmem (c.nreg 81000 + 1 + 2) = C'.m := hC.2.2.2.1
+      have hm := hC.2.2.2.1
       rw [show c.nreg 81000 + 1 + 2 = c.nreg 81000 + 3 by omega] at hm
       omega
     · omega
@@ -115,7 +113,7 @@ theorem find_start {P : Polygon} {W : ℕ} {c : Config} {M : Model} {N : NF} {X 
     vin⟩ := fInit_exec hw (by unfold hostWords at hWh; omega) (by unfold hostWords at hWh; omega)
       hX hhalf hwf.1 hk
   have fx : ∀ q, q < 81007 → c₀.nreg q = c.nreg q := fun q h => fr q (by unfold IniW; omega)
-  have hA : c₀.nreg ALLOC = c.nreg ALLOC := fx _ (by unfold ALLOC; omega)
+  have hA : c₀.nreg ALLOC = c.nreg ALLOC := fx _ by_ao
   refine ⟨c₀, k, ex, hk30, nm, rr, rm, ro, fr, v07, ?_⟩
   -- the walk data, by the kind of the model
   have hdata : c₀.nreg 81017 = M.W.n ∧
@@ -130,7 +128,7 @@ theorem find_start {P : Polygon} {W : ℕ} {c : Config} {M : Model} {N : NF} {X 
       (∀ e, e < M.W.n → M.counted e → c₀.nreg 81021 ≤ e ∧ e < c₀.nreg 81025) := by
     rcases hMD with ⟨h0, H', C', hC, hM⟩ | ⟨h1, -, hM⟩
     · obtain ⟨d21, d19, d25, d17⟩ := vch h0
-      have hm : c.nmem (c.nreg 81000 + 1 + 2) = C'.m := hC.2.2.2.1
+      have hm := hC.2.2.2.1
       rw [show c.nreg 81000 + 1 + 2 = c.nreg 81000 + 3 by omega] at hm
       rw [hm] at d19 d25 d17
       have hn : M.W.n = 2 * C'.m + 7 := by rw [hM]; exact chainModel_n C'
@@ -138,12 +136,12 @@ theorem find_start {P : Polygon} {W : ℕ} {c : Config} {M : Model} {N : NF} {X 
         fun e h he a b hp C hC' => ?_, fun e he hc => ?_⟩
       · rw [hC']
         have := chain_m_eq (hC'.symm.trans hM)
-        exact chain_vtx_mem C _ (by omega) (by omega)
+        exact chain_vtx_mem C _ by_o by_o
       · have h6 := chain_vtx_six C' (Qof P) (by rw [← hM]; exact h C' hM)
         omega
       · rw [hC'] at hp ⊢
         have := chain_m_eq (hC'.symm.trans hM)
-        exact chain_edge_mem C _ (by omega) (by omega) hp
+        exact chain_edge_mem C _ by_o by_o hp
       · rw [hM] at hc
         obtain ⟨c1, c2⟩ := hc
         omega
@@ -162,9 +160,9 @@ theorem find_start {P : Polygon} {W : ℕ} {c : Config} {M : Model} {N : NF} {X 
     hloc := hloc, hhalf := hhalf, hOkM := hOkM, hG := hG, hWh := hWh, hX := hX, hcap := hcap,
     hwf := hwf, hreg := hreg, hsimp := hsimp, hMD := hMD, hGM := hGM, hOk := hOk, hNW := hNW,
     hNF := hNF, hdeg := hdeg, hsg := hsg, hr := hr, a0 := hA, m0 := nm,
-    i0 := fx _ (by norm_num), i1 := fx _ (by norm_num), i2 := fx _ (by norm_num),
-    i3 := fx _ (by norm_num), i4 := fx _ (by norm_num), i5 := fx _ (by norm_num),
-    i6 := fx _ (by norm_num), k0 := v11, k1 := v12, k2 := v13, k3 := v14, k5 := v15, k7 := v16,
+    i0 := fx _ by_n, i1 := fx _ by_n, i2 := fx _ by_n,
+    i3 := fx _ by_n, i4 := fx _ by_n, i5 := fx _ by_n,
+    i6 := fx _ by_n, k0 := v11, k1 := v12, k2 := v13, k3 := v14, k5 := v15, k7 := v16,
     pn := v20, nE := v22, hE2 := v23, wn := wn, k10 := v24, hvr := hvr, hvc := hvc,
     vlo6 := vlo6, ehr := ehr, ehc := ehc }
 
@@ -197,9 +195,9 @@ theorem cnt_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
     exact Robust.transport h0 (fun a ha => hI.hm a ha)
   have hNA := hN.nfAt
   obtain ⟨hB7, -, -, hrb, -, -⟩ := nf_bounds hN
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
-  have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
-  have hrl : E.r < E.N.regions.length := hE.hr
+  have hA0 := hI.hA
+  have hAW := hI.hw.1 ALLOC
+  have hrl := hE.hr
   obtain ⟨hna, hnc, -⟩ := hNA.2.2.2.2.2.2.2.1 _ hrl
   have b1 := hrb _ hE.hr
   have e01 : c.nreg 81001 = E.NH := by rw [hI.hin _ (by unfold FFix; omega), hE.i1]
@@ -231,13 +229,13 @@ theorem cnt_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI : FI
   by_cases a : c₁.nreg 81011 < c₁.nreg 81115
   · have hne : (E.N.region E.r).chords ≠ [] := by
       intro h; rw [v15, h, k0] at a; simp at a
-    refine (FRS.ifT a (FRS.skip (K := 0) hI₁ ⟨v30, ?_, f₁⟩)).mono (by omega) (fun _ h => h)
+    refine (FRS.ifT a (FRS.skip (K := 0) hI₁ ⟨v30, ?_, f₁⟩)).le
     rw [v32]; unfold kOf; rw [ite_eq_right hne]
   · have he : (E.N.region E.r).chords = [] := by
-      rw [v15, k0] at a; exact List.length_eq_zero_iff.1 (by omega)
+      rw [v15, k0] at a; exact List.length_eq_zero_iff.1 by_o
     have ok2 : okB E.W c₁.nmem [.constN 81032 0] c₁.nreg := by
       simp only [okB, okI, FScr, FOut]; norm_num
-    refine (FRS.ifF a (FRS.block hB _ hI₁ ok2)).mono (by simp) (fun c' h' => ?_)
+    refine (FRS.ifF a (FRS.block hB _ hI₁ ok2)).mono by_s (fun c' h' => ?_)
     have e' : ∀ q, c'.nreg q = regB c₁.nmem [.constN 81032 0] c₁.nreg q := fun q => by rw [h']
     refine ⟨by rw [e']; simp [regB, regI, upd, v30], by rw [e']; simp [regB, regI, upd, kOf, he],
       fun q a b d e f g => by rw [e']; simp [regB, regI, upd, g]; exact f₁ q a b d e f g⟩

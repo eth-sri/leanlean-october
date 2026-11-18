@@ -72,11 +72,11 @@ theorem set_eq : C.set = C'.set := by
   · rintro ⟨k, hk, hp⟩
     refine ⟨k, h.m_eq ▸ hk, ?_⟩
     rw [Chain.chainEdge_eq] at hp ⊢
-    rwa [← h.vtx_eq k (by omega), ← h.vtx_eq (k + 1) (by omega)]
+    rwa [← h.vtx_eq k by_o, ← h.vtx_eq (k + 1) by_o]
   · rintro ⟨k, hk, hp⟩
     refine ⟨k, h.m_eq ▸ hk, ?_⟩
     rw [Chain.chainEdge_eq] at hp ⊢
-    rwa [h.vtx_eq k (by omega), h.vtx_eq (k + 1) (by omega)]
+    rwa [h.vtx_eq k by_o, h.vtx_eq (k + 1) by_o]
 
 /-- Points of the chain are well inside the fixed band. -/
 theorem abs_le_of_mem {p : Point} (hp : p ∈ C.set) :
@@ -152,7 +152,7 @@ theorem phi_mem_set_iff (p : Point) : phi C C' p ∈ C'.set ↔ p ∈ C.set := b
   · intro hp
     rw [← h.set_eq] at hp
     rwa [h.eq_of_phi_mem hp] at hp
-  · intro hp; rw [h.phi_fix hp, ← h.set_eq]; exact hp
+  · intro hp; rwa [h.phi_fix hp, ← h.set_eq]
 
 theorem phi_mem_slit_iff (p : Point) : phi C C' p ∈ C'.slit ↔ p ∈ C.slit := by
   rw [Chain.mem_slit_iff, Chain.mem_slit_iff, ← h.top_eq]
@@ -198,7 +198,7 @@ theorem sideIdx_eq (i : ℕ) : C.sideIdx C.sideBeta i = C'.sideIdx C'.sideBeta i
   · push Not at hend
     have hbeta : C.sideBeta = C'.sideBeta := by
       unfold Chain.sideBeta
-      rw [← h.top_eq, ← hT, ← h.vtx_eq _ (by omega), ← h.vtx_eq _ (by omega)]
+      rw [← h.top_eq, ← hT, ← h.vtx_eq _ by_o, ← h.vtx_eq _ by_o]
       congr 1
       apply propext
       -- the slit direction is `(0, R - top.2)` resp. `(0, R' - top.2)`: same direction
@@ -259,7 +259,7 @@ theorem phi_walk_vtx (i : ℕ) :
     · rw [Chain.sideWalk_vtx_five, Chain.sideWalk_vtx_five, h.phi_slitTop]
   · rcases Nat.lt_or_ge (i - 6) (2 * C.m + 1) with hi' | hi'
     · have e : i = (i - 6) + 6 := by omega
-      rw [e, C.sideWalk_vtx_tour _ (by omega), C'.sideWalk_vtx_tour _ (by omega)]
+      rw [e, C.sideWalk_vtx_tour _ by_o, C'.sideWalk_vtx_tour _ by_o]
       unfold Chain.sideTour
       rw [← h.sideIdx_eq, ← h.vtx_eq _ (h.sideIdx_le _),
         h.phi_fix (C.vertex_mem_set (h.sideIdx_le _))]

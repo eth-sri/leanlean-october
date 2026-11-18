@@ -73,17 +73,17 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
   set M := chainModel C with hMdef
   set F := N.F M Q with hFdef
   have hGM : GoodModel M := Or.inl ⟨C, hP, rfl⟩
-  have hM : WalkAx M := walkAx_of_goodModel hGM
-  have hFam : M.ChordFamily Q F := hN.1
-  have hF : F ⊆ M.Adm := hFam.2.1
-  have hfin : F.Finite := hFam.1
+  have hM := walkAx_of_goodModel hGM
+  have hFam := hN.1
+  have hF := hFam.2.1
+  have hfin := hFam.1
   obtain ⟨hRC, -, hArcs, -⟩ := regOf_spec hN
   have hp' : ((p : ℝ) + 0) = p := add_zero _
   by_cases hcut : M.IsCut F (p : ℝ)
   · obtain ⟨c, hc, -⟩ := id hcut
     have hne : F.Nonempty := ⟨c, hc⟩
     obtain ⟨hfa, hfb⟩ := faced_arcs hM hF hfin hp (le_refl (0 : ℝ)) zero_lt_one (fun _ => hp1)
-      (by rw [hp']; exact hcut) hV
+      (by rwa [hp']) hV
     obtain ⟨r, hr, rfl⟩ := regOf_surj hN hV
     refine ⟨r, ?_, rfl⟩
     rcases hW with hW | hW
@@ -93,7 +93,7 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
     · obtain ⟨a, harc⟩ := hfb hW
       rw [hp'] at harc
       exact region_of_arc_at hN hGM hne hj (hloc2 hcut) hr harc (Or.inr rfl)
-  · have hjA : sj N j < N.arcs.length := NFLoc.seq_lt hN hj
+  · have hjA := NFLoc.seq_lt hN hj
     obtain ⟨hr0, harc0⟩ := hArcs.1 (sj N j) hjA
     have hin : sideInArc (sk M Q N j) (ek M Q N j) (p : ℝ) := by
       rcases hloc1 hcut with hF0 | hin
@@ -105,7 +105,7 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
           unfold sideInArc; rw [ite_eq_right (lt_irrefl _)]; exact Or.inl hk0
       · exact hin
     set U₀ := regOf M Q N (N.arc (sj N j)).reg with hU₀
-    have hU₀m : U₀ ∈ M.regions F := hRC.1 _ hr0
+    have hU₀m := hRC.1 _ hr0
     have hmem : (N.arc (sj N j)).reg ∈ nbrRegs N j := by simp [nbrRegs]
     refine ⟨_, hmem, ?_⟩
     rw [← hU₀]
@@ -113,20 +113,20 @@ theorem gap_reg {C : Chain} (hP : C.P.Simple) {Q : Polygon} {N : NF}
     · obtain ⟨u, hu, hsub⟩ := exists_Ioo_of_eventually (sideInArc_eventually_add hin)
       have hA0 : AfterFaces M p 0 U₀ := by
         refine ⟨u, hu, fun s hs0 hsu hs1 => ?_⟩
-        refine harc0.2.2.2.2.2.2 p (0 + s) hp (by linarith) hs1 ?_
+        refine harc0.2.2.2.2.2.2 p (0 + s) hp by_l hs1 ?_
         have := hsub s hs0 hsu
         rw [zero_add]; exact this
       exact after_unique zero_lt_one hU₀m hV hA0 hW
     · obtain ⟨u, hu, hsub⟩ := exists_Ioo_of_eventually (sideInArc_eventually_sub hin)
       have hB0 : BeforeFaces M p 0 U₀ := by
         refine ⟨min u 1, lt_min hu one_pos, fun h => absurd h (lt_irrefl _), fun _ s hs0 hsu => ?_⟩
-        have hsu' : s < u := lt_of_lt_of_le hsu (min_le_left _ _)
-        have hs1 : s < 1 := lt_of_lt_of_le hsu (min_le_right _ _)
+        have hsu' := lt_of_lt_of_le hsu (min_le_left _ _)
+        have hs1 := lt_of_lt_of_le hsu (min_le_right _ _)
         have hpm : (p + M.W.n - 1) % M.W.n = p - 1 := by
           rw [show p + M.W.n - 1 = (p - 1) + M.W.n by omega, Nat.add_mod_right,
-            Nat.mod_eq_of_lt (by omega)]
+            Nat.mod_eq_of_lt by_o]
         rw [hpm]
-        refine harc0.2.2.2.2.2.2 (p - 1) (1 - s) (by omega) (by linarith) (by linarith) ?_
+        refine harc0.2.2.2.2.2.2 (p - 1) (1 - s) by_o by_l by_l ?_
         have e : ((p - 1 : ℕ) : ℝ) + (1 - s) = (p : ℝ) - s := by
           rw [Nat.cast_sub hp1]; push_cast; ring
         rw [e]; exact hsub s hs0 hsu'
@@ -143,7 +143,7 @@ theorem gap_pos (J : Merge.Junction) {S₂ : Set (Set Point)} {V : Set Point}
         BeforeFaces (chainModel J.right) 6 0 V) := by
   obtain ⟨hδ, hV, hW⟩ := h
   refine ⟨hV, ?_⟩
-  have hn : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
+  have hn := cm_n J.right
   have ht := tpos_lt J.right 0
   have hm2 : J.right.m = J.m₂ := rfl
   have key : rL1 J = 2 * J.right.m - tpos J.right 0 ∧ rδ J = 7 := by
@@ -152,10 +152,10 @@ theorem gap_pos (J : Merge.Junction) {S₂ : Set (Set Point)} {V : Set Point}
     split_ifs at hδ ⊢ with h1 h2 <;> first | omega
   obtain ⟨k1, k2⟩ := key
   have e1 : (6 + tpos J.right 0 + rL1 J) % (chainModel J.right).W.n = 2 * J.right.m + 6 := by
-    rw [hn, k1, Nat.mod_eq_of_lt (by omega)]; omega
+    rw [hn, k1, Nat.mod_eq_of_lt by_o]; omega
   have e2 : (6 + tpos J.right 0 + rL1 J + rδ J) % (chainModel J.right).W.n = 6 := by
     rw [hn, k1, k2, show 6 + tpos J.right 0 + (2 * J.right.m - tpos J.right 0) + 7 =
-      6 + (2 * J.right.m + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      6 + (2 * J.right.m + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
   rw [e1, e2] at hW
   exact hW
 
@@ -191,13 +191,13 @@ theorem logIdx_cases (hA : AEnv P W X Ok J H N₁ N₂ E c₀) {x : WPos} {t i :
   by_contra hne
   rcases (show i + 1 < t ∨ t < i by omega) with h | h
   · have h1 := ht1 (i + 1) h
-    have h2 := hlt (by omega)
+    have h2 := hlt by_o
     unfold S0C.lsPr at h1
-    rw [logKey_eq hls (by omega), hoW, hoW] at h2
+    rw [logKey_eq hls by_o, hoW, hoW] at h2
     exact absurd (lt_trans h1 h2) (lt_irrefl _)
-  · apply ht2 t le_rfl (by omega)
+  · apply ht2 t le_rfl by_o
     unfold S0C.lsPr
-    have h3 := S0C.log_sorted hA h (by omega)
+    have h3 := S0C.log_sorted hA h by_o
     rw [logKey_eq hls hil, hoW, hoW] at hle
     exact lt_of_lt_of_le h3 hle
 
@@ -217,10 +217,10 @@ theorem exit_mem_gather {P : Polygon} {C : Chain} (hP : C.P.Simple) {N : NF}
       ShotList.loSet (chainModel C) (Qof P) m A (regArcs N rs).length [] := by
   set M := chainModel C with hMdef
   set F := N.F M (Qof P) with hFdef
-  have hFam : M.ChordFamily (Qof P) F := hN.1
+  have hFam := hN.1
   obtain ⟨hRC, -, hArcs, -⟩ := regOf_spec hN
-  have hU : regOf M (Qof P) N r ∈ M.regions F := hRC.1 r hr
-  have hfree : FreeAt C z σ :=
+  have hU := hRC.1 r hr
+  have hfree :=
     hray.mono fun t ht => (Chazelle.Chain.regionsIn_subset (show regOf M (Qof P) N r ∈
       Chazelle.Chain.regionsIn C.dom F from hU) ht).1
   refine ⟨hfree, ?_⟩
@@ -230,7 +230,7 @@ theorem exit_mem_gather {P : Polygon} {C : Chain} (hP : C.P.Simple) {N : NF}
   have hL : ∀ a b, M.IsArc F (regOf M (Qof P) N r) a b → (a, b) ∈ L := by
     intro a b harc
     obtain ⟨i₀, hi₀, hir, his, hie⟩ := hArcs.2.2.1 r hr a b harc
-    have hmem : i₀ ∈ (N.region r).arcs := (hArcs.2.2.2 r hr i₀).2 ⟨hi₀, hir⟩
+    have hmem := (hArcs.2.2.2 r hr i₀).2 ⟨hi₀, hir⟩
     have hmem' : i₀ ∈ regArcs N rs := List.mem_flatMap.2 ⟨r, hrs, hmem⟩
     obtain ⟨k, hk, hki⟩ := List.mem_iff_getElem.1 hmem'
     refine List.mem_map.2 ⟨k, List.mem_range.2 hk, ?_⟩

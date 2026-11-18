@@ -47,13 +47,13 @@ theorem orgHt_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO 
   set a := (chainModel J.right).pos (Qof P) ⟨c.nreg oE, c.nreg oC⟩ with ha
   refine IRS.seq (K₁ := 31006) (K₂ := 294)
     (callSym_irs (P := P) (C := J.right) hI hctx (by unfold oE oC sw; omega)
-      (by unfold oSym sw; omega) h6 he hpp hnorm (by omega)) ?_ |>.mono (by norm_num) (fun _ h => h)
+      (by unfold oSym sw; omega) h6 he hpp hnorm by_o) ?_ |>.mono by_n (fun _ h => h)
   rintro c₁ hI₁ hA₁ hA₁' ⟨⟨s, hs, hsl, hse⟩, k₁, hA₁'', hm₁⟩
   have hk1₁ : c₁.nreg K1 = 1 := by
     rw [k₁ K1 (band_sw_not (by unfold K1 sw; omega)) (by unfold K1 oSym sw; omega)
       (by unfold K1 ALLOC sw; omega), k1]
   obtain ⟨t, ht, htl, hte⟩ := hO.t1
-  have ht₁ : SymPtIn c₁ cT1 t := symPtIn_transport ht
+  have ht₁ := symPtIn_transport ht
     (k₁ cT1 (band_sw_not (by unfold cT1 sw; omega)) (by unfold cT1 oSym sw; omega)
       (by unfold cT1 ALLOC sw; omega))
     (k₁ (cT1 + 1) (band_sw_not (by unfold cT1 sw; omega)) (by unfold cT1 oSym sw; omega)
@@ -62,20 +62,20 @@ theorem orgHt_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO 
       (by unfold cT1 ALLOC sw; omega))
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hb₂, hbit₂⟩ := kbit_exec (op := 1) (dst := oHb) hG hPW c₁ hI₁.hw
     (by unfold cT1 sw; omega) (by unfold oSym sw; omega) (by unfold cT1 sw; omega)
-    (by unfold oHb; omega) (by norm_num) htl hsl htl ht₁ hs ht₁
+    (by unfold oHb; omega) by_n htl hsl htl ht₁ hs ht₁
   have hOr : ∀ r, Bkb oHb r = true → bandOf r ∈ oracleBands := by
     intro r hr
     simp only [Bkb, WalkKey.Bk, Bool.or_eq_true, decide_eq_true_eq, beq_iff_eq, oHb] at hr
     rcases hr with h | h
-    · exact band1_oracle (by omega) (by omega)
-    · subst h; exact band5_oracle (by norm_num) (by norm_num)
+    · exact band1_oracle by_o by_o
+    · subst h; exact band5_oracle by_n by_n
   refine IRS.seq (K₁ := 241) (K₂ := 6) (IRS.ofFrameB hI₁ e₂ hk₂ f₂ hOr rfl) ?_ |>.mono
-    (by norm_num) (fun _ h => h)
+    by_n (fun _ h => h)
   rintro c₃ hI₃ hA₃ hA₃' rfl
   have hfr : ∀ r, Bkb oHb r = false → c₂.nreg r = c₁.nreg r := fun r hr => f₂.1 r hr
   have hk1₂ : c₂.nreg K1 = 1 := by
     rw [hfr K1 (by simp [Bkb, WalkKey.Bk, K1, oHb, sw]), hk1₁]
-  have hs₂ : SymPtIn c₂ oSym s := symPtIn_transport hs
+  have hs₂ := symPtIn_transport hs
     (hfr oSym (by simp [Bkb, WalkKey.Bk, oSym, oHb, sw]))
     (hfr (oSym + 1) (by simp [Bkb, WalkKey.Bk, oSym, oHb, sw]))
     (hfr (oSym + 2) (by simp [Bkb, WalkKey.Bk, oSym, oHb, sw]))
@@ -91,7 +91,7 @@ theorem orgHt_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO 
     intro v hv hvi
     refine (IRS.reg (P := P) hI₃ (iscr_sw (by simp [oCl, sw]) (by simp [oCl, sw]))
       (Exec.constN hI₃.hw oCl v (by have := hI₃.hw.1 K1; rw [hk1₂] at this; omega))).mono
-      (by norm_num) ?_
+      by_n ?_
     rintro c' rfl
     simp only [upd_same]
     refine ⟨⟨s, symPtIn_transport hs₂ (by simp only; rw [upd_other _ _ _ (by unfold oSym oCl sw; omega)])
@@ -108,14 +108,14 @@ theorem orgHt_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO 
       rw [upd_other _ _ _ (by unfold ALLOC oCl sw; omega), h3]; exact hA₁''
     · rw [f₂.2.2.1, hm₁ x hx]
   by_cases hb : c₂.nreg oHb < c₂.nreg K1
-  · refine (IRS.ifT hb (hfinal 1 le_rfl ?_)).mono (by norm_num) (fun _ h => h)
+  · refine (IRS.ifT hb (hfinal 1 le_rfl ?_)).mono by_n (fun _ h => h)
     rw [hk1₂] at hb
     have : ¬ (J.left.top.2 < a.2) := fun h => by have := hbit.2 h; omega
     exact ⟨fun _ => not_lt.1 this, fun _ => rfl⟩
-  · refine (IRS.ifF hb (hfinal 0 (by norm_num) ?_)).mono (by norm_num) (fun _ h => h)
+  · refine (IRS.ifF hb (hfinal 0 by_n ?_)).mono by_n (fun _ h => h)
     rw [hk1₂] at hb
     have : J.left.top.2 < a.2 := hbit.1 (by have := hb₂; omega)
-    exact ⟨fun h => absurd h (by norm_num), fun h => absurd this (not_lt.2 h)⟩
+    exact ⟨fun h => absurd h by_n, fun h => absurd this (not_lt.2 h)⟩
 
 end
 
@@ -160,7 +160,7 @@ theorem cls_const {J : Merge.Junction} {a : Point} (hI : IInv W c₀ c) (hW : 2 
     (hn1 : v ≠ 1) {K : ℕ} (hK : 1 ≤ K) :
     IRS P W c₀ (.instr (.constN oCl v)) c K (ClsOut P J a c) := by
   refine (IRS.reg (P := P) hI (iscr_sw (by simp [oCl, sw]) (by simp [oCl, sw]))
-    (Exec.constN hI.hw oCl v (by omega))).mono hK ?_
+    (Exec.constN hI.hw oCl v by_o)).mono hK ?_
   rintro c' rfl
   refine ⟨by simp [hv], by simp [h2], by simp [h1], fun h => absurd (by simpa using h) hn1,
     fun r _ hr hra => ?_, by simp only; rw [upd_other _ _ _ (by unfold ALLOC oCl sw; omega)],
@@ -181,7 +181,7 @@ theorem cls_ht {J : Merge.Junction} (hI : IInv W c₀ c) (hK : Consts c) (hO : O
   refine (orgHt_irs hI hK hO hctx h6 he hpp hnorm hroom).mono hK31 ?_
   rintro c' ⟨hsym, hcl, hle, hfr, hA, hm⟩
   rw [ha] at hsym hcl
-  refine ⟨by omega, ⟨fun h => by omega, fun h => absurd hmem h⟩, ?_, fun _ => hsym,
+  refine ⟨by_o, ⟨fun h => by omega, fun h => absurd hmem h⟩, ?_, fun _ => hsym,
     fun r hr hr2 hra => hfr r hr (by unfold oSym oCl oU sw at *; omega)
       (by unfold oCl oU sw at *; omega) hra, hA, hm⟩
   rw [hcl]
@@ -213,25 +213,25 @@ theorem orgCls_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
     (hroom : c.nreg ALLOC + 31410 ≤ W) :
     IRS P W c₀ orgCls c 31410
       (ClsOut P J ((chainModel J.right).pos (Qof P) ⟨c.nreg oE, c.nreg oC⟩) c) := by
-  have hK : Consts c := hK₀.fix hI
-  have hO : OrgK P J c := hO₀.fix hI
-  have hP : J.right.P.Simple := hctx.2.2.2.2.1
-  have hWm : 2 * J.right.m + 7 ≤ W := hctx.2.2.2.2.2
-  have k0 : c.nreg K0 = 0 := hK.1
-  have k1 : c.nreg K1 = 1 := hK.2.1
-  have k6 : c.nreg K6 = 6 := hK.2.2.1
+  have hK := hK₀.fix hI
+  have hO := hO₀.fix hI
+  have hP := hctx.2.2.2.2.1
+  have hWm := hctx.2.2.2.2.2
+  have k0 := hK.1
+  have k1 := hK.2.1
+  have k6 := hK.2.2.1
   have m2 := hO.m2
   have mtop := hO.top
   have m26 := hO.m26
   set e := c.nreg oE with hedef
   set a := (chainModel J.right).pos (Qof P) ⟨c.nreg oE, c.nreg oC⟩ with ha
-  have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
+  have hn₂ := cm_n J.right
   have hmemiff := pos_mem_set_iff J.right hP (Q := Qof P) (x := ⟨c.nreg oE, c.nreg oC⟩)
-    (by show e < _; rw [hn₂]; exact he) hpp.1 hpp.2.1 hnorm
+    (by show e < _; rwa [hn₂]) hpp.1 hpp.2.1 hnorm
   simp only at hmemiff
-  have hvzero : J.shared = J.right.vertex 0 := (Merge.Junction.right_vertex_zero J).symm
+  have hvzero := (Merge.Junction.right_vertex_zero J).symm
   have htop : J.right.top = J.right.vertex J.right.topIdx := rfl
-  have hW2 : 2 ≤ W := by omega
+  have hW2 : 2 ≤ W := by_o
   -- the vertex case
   have hvtx : c.nreg oC = 0 → 6 ≤ e → e ≤ 2 * J.right.m + 6 →
       IRS P W c₀ orgVtx c 31398 (ClsOut P J a c) := by
@@ -240,7 +240,7 @@ theorem orgCls_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
       pos_vertex J.right (Q := Qof P) (x := ⟨e, c.nreg oC⟩) h6 h26 h0
     have hamem : a ∈ J.right.set := by rw [hmemiff]; omega
     refine IRS.seq (K₁ := 12) (K₂ := 31386) (orgIdx_irs hI hK hO h6 h26 hWm) ?_ |>.mono
-      (by norm_num) (fun _ h => h)
+      by_n (fun _ h => h)
     rintro c₁ hI₁ hA₁ hA₁' ⟨hm₁, vJ, k₁⟩
     have hle := J.right.sideIdx_le J.right.sideBeta (e - 6)
     set idx := J.right.sideIdx J.right.sideBeta (e - 6) with hidx
@@ -254,10 +254,10 @@ theorem orgCls_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
       (by unfold oC oJ sw; omega)
     have lift : ∀ c', ClsOut P J a c₁ c' → ClsOut P J a c c' := by
       rintro c' ⟨h1, h2, h3, h4, h5, h6', h7⟩
-      refine ⟨h1, h2, h3, h4, fun r hr hr2 hra => ?_, by omega, fun x hx => ?_⟩
+      refine ⟨h1, h2, h3, h4, fun r hr hr2 hra => ?_, by_o, fun x hx => ?_⟩
       · rw [h5 r hr hr2 hra]
         exact kk r (by unfold oCl oT oU sw at *; omega) (by unfold oCl oJ oU sw at *; omega)
-      · rw [h7 x (by omega), hm₁]
+      · rw [h7 x by_o, hm₁]
     have hv_iff : a = J.shared ↔ idx = 0 := by
       rw [hav, hvzero]
       exact ⟨fun h => J.right.sideVertex_inj hP hle (Nat.zero_le _) h, fun h => by rw [h]⟩
@@ -274,70 +274,70 @@ theorem orgCls_irs {J : Merge.Junction} (hI : IInv W c₀ c) (hK₀ : Consts c�
       have hctx₁ : ChainCtx P W c₁ (sw 21) J.right :=
         hctx.transport (kk (sw 21) (by unfold oT oU sw; omega) (by unfold oJ sw; omega))
           (fun x _ => by rw [hm₁]) hA₁
-      refine (cls_ht hI₁ (hK₀.fix hI₁) (hO₀.fix hI₁) hctx₁ (by rw [kE₁]; exact h6)
-          (by rw [kE₁]; exact h2m hne) (by rw [kE₁, kC₁]; exact hpp) (by rw [kE₁, kC₁]; exact hnorm)
-          (by rw [kE₁, kC₁]) hamem hav0 (fun h => hne (ht_iff.1 h)) (by omega) le_rfl).mono le_rfl
+      refine (cls_ht hI₁ (hK₀.fix hI₁) (hO₀.fix hI₁) hctx₁ (by rwa [kE₁])
+          (by rw [kE₁]; exact h2m hne) (by rwa [kE₁, kC₁]) (by rwa [kE₁, kC₁])
+          (by rw [kE₁, kC₁]) hamem hav0 (fun h => hne (ht_iff.1 h)) by_o le_rfl).mono le_rfl
           (fun c' h => lift c' h)
     by_cases hj0 : c₁.nreg oJ < c₁.nreg K1
     · rw [vJ, k1₁] at hj0
-      refine IRS.ifT (K := 31384) (by rw [vJ, k1₁]; exact hj0) ?_ |>.mono (by norm_num)
+      refine IRS.ifT (K := 31384) (by rwa [vJ, k1₁]) ?_ |>.mono by_n
         (fun c' h => lift c' h)
-      refine cls_const (v := 0) hI₁ hW2 (by norm_num) ⟨fun h => by norm_num at h, fun h => absurd hamem h⟩
-        ⟨fun h => by norm_num at h, fun h => absurd (hv_iff.2 (by omega)) h.2.1⟩ (by norm_num)
-        (by norm_num)
+      refine cls_const (v := 0) hI₁ hW2 by_n ⟨fun h => by norm_num at h, fun h => absurd hamem h⟩
+        ⟨fun h => by norm_num at h, fun h => absurd (hv_iff.2 by_o) h.2.1⟩ by_n
+        by_n
     · have hj0' : ¬ idx < 1 := by rw [vJ, k1₁] at hj0; exact hj0
       have hav0 : a ≠ J.shared := fun h => hj0' (by rw [hv_iff.1 h]; norm_num)
-      refine IRS.ifF (K := 31384) hj0 ?_ |>.mono (by norm_num) (fun _ h => h)
+      refine IRS.ifF (K := 31384) hj0 ?_ |>.mono by_n (fun _ h => h)
       by_cases hlt : c₁.nreg oJ < c₁.nreg cTop
       · rw [vJ, kt₁] at hlt
-        exact (IRS.ifT (by rw [vJ, kt₁]; exact hlt) (hht (by omega) hav0)).mono (by norm_num)
+        exact (IRS.ifT (by rwa [vJ, kt₁]) (hht by_o hav0)).mono by_n
           (fun _ h => h)
       · have hlt' : ¬ idx < J.right.topIdx := by rw [vJ, kt₁] at hlt; exact hlt
-        refine IRS.ifF (K := 31382) hlt ?_ |>.mono (by norm_num) (fun _ h => h)
+        refine IRS.ifF (K := 31382) hlt ?_ |>.mono by_n (fun _ h => h)
         by_cases hgt : c₁.nreg cTop < c₁.nreg oJ
         · rw [vJ, kt₁] at hgt
-          exact (IRS.ifT (by rw [vJ, kt₁]; exact hgt) (hht (by omega) hav0)).mono (by norm_num)
+          exact (IRS.ifT (by rwa [vJ, kt₁]) (hht by_o hav0)).mono by_n
             (fun _ h => h)
         · have hgt' : ¬ J.right.topIdx < idx := by rw [vJ, kt₁] at hgt; exact hgt
-          have heq : idx = J.right.topIdx := by omega
-          refine (IRS.ifF hgt (cls_const (v := 0) (K := 1) hI₁ hW2 (by norm_num)
+          have heq : idx = J.right.topIdx := by_o
+          refine (IRS.ifF hgt (cls_const (v := 0) (K := 1) hI₁ hW2 by_n
             ⟨fun h => by norm_num at h, fun h => absurd hamem h⟩
-            ⟨fun h => by norm_num at h, fun h => absurd (ht_iff.2 heq) h.2.2.1⟩ (by norm_num)
-            le_rfl)).mono (by norm_num) (fun c' h => lift c' h)
+            ⟨fun h => by norm_num at h, fun h => absurd (ht_iff.2 heq) h.2.2.1⟩ by_n
+            le_rfl)).mono by_n (fun c' h => lift c' h)
   by_cases h6 : c.nreg oE < c.nreg K6
   · rw [k6] at h6
     have hna : a ∉ J.right.set := by rw [hmemiff]; omega
-    exact (IRS.ifT (by rw [k6]; exact h6) (cls_const hI hW2 (v := 2) (K := 1) (by norm_num)
+    exact (IRS.ifT (by rwa [k6]) (cls_const hI hW2 (v := 2) (K := 1) by_n
       ⟨fun _ => hna, fun _ => rfl⟩ ⟨fun h => by norm_num at h, fun h => absurd h.1 hna⟩
-      (by norm_num) (by norm_num))).mono (by norm_num) (fun _ h => h)
+      by_n by_n)).mono by_n (fun _ h => h)
   · have h6' : ¬ e < 6 := by rw [k6] at h6; exact h6
-    refine IRS.ifF (K := 31408) h6 ?_ |>.mono (by norm_num) (fun _ h => h)
+    refine IRS.ifF (K := 31408) h6 ?_ |>.mono by_n (fun _ h => h)
     by_cases h26 : c.nreg oE < c.nreg c2m6
     · have h26' : e < 2 * J.right.m + 6 := by rw [m26] at h26; exact h26
-      refine IRS.ifT (K := 31406) h26 ?_ |>.mono (by norm_num) (fun _ h => h)
+      refine IRS.ifT (K := 31406) h26 ?_ |>.mono by_n (fun _ h => h)
       by_cases h0 : c.nreg oC < c.nreg K1
       · rw [k1] at h0
-        exact (IRS.ifT (by rw [k1]; exact h0) (hvtx (by omega) (by omega) (by omega))).mono
-          (by norm_num) (fun _ h => h)
+        exact (IRS.ifT (by rwa [k1]) (hvtx by_o by_o by_o)).mono
+          by_n (fun _ h => h)
       · have h0' : c.nreg oC ≠ 0 := by rw [k1] at h0; omega
-        have hpar : 0 < (chainModel J.right).param (Qof P) ⟨c.nreg oE, c.nreg oC⟩ :=
+        have hpar :=
           lt_of_le_of_ne hpp.1 (fun h => h0' (hnorm.2 h.symm))
-        have hne : ∀ k, a ≠ J.right.vertex k := pos_ne_vertex J.right hP (x := ⟨c.nreg oE, c.nreg oC⟩)
+        have hne := pos_ne_vertex J.right hP (x := ⟨c.nreg oE, c.nreg oC⟩)
           (show 6 ≤ e by omega) (show e ≤ 2 * J.right.m + 5 by omega) hpar hpp.2.1
         have hamem : a ∈ J.right.set := by rw [hmemiff]; omega
-        exact (IRS.ifF h0 (cls_ht hI hK hO hctx (by omega) h26' hpp hnorm rfl hamem
-          (by rw [hvzero]; exact hne 0) (by rw [htop]; exact hne _) (by omega) le_rfl)).mono
-          (by norm_num) (fun _ h => h)
+        exact (IRS.ifF h0 (cls_ht hI hK hO hctx by_o h26' hpp hnorm rfl hamem
+          (by rw [hvzero]; exact hne 0) (by rw [htop]; exact hne _) by_o le_rfl)).mono
+          by_n (fun _ h => h)
     · have h26' : e = 2 * J.right.m + 6 := by rw [m26] at h26; omega
-      refine IRS.ifF (K := 31406) h26 ?_ |>.mono (by norm_num) (fun _ h => h)
+      refine IRS.ifF (K := 31406) h26 ?_ |>.mono by_n (fun _ h => h)
       by_cases hc : c.nreg K0 < c.nreg oC
       · rw [k0] at hc
         have hna : a ∉ J.right.set := by rw [hmemiff]; omega
-        exact (IRS.ifT (by rw [k0]; exact hc) (cls_const hI hW2 (v := 2) (K := 1) (by norm_num)
+        exact (IRS.ifT (by rwa [k0]) (cls_const hI hW2 (v := 2) (K := 1) by_n
           ⟨fun _ => hna, fun _ => rfl⟩ ⟨fun h => by norm_num at h, fun h => absurd h.1 hna⟩
-          (by norm_num) (by norm_num))).mono (by norm_num) (fun _ h => h)
+          by_n by_n)).mono by_n (fun _ h => h)
       · have hc' : c.nreg oC = 0 := by rw [k0] at hc; omega
-        exact (IRS.ifF hc (hvtx hc' (by omega) (by omega))).mono (by norm_num) (fun _ h => h)
+        exact (IRS.ifF hc (hvtx hc' by_o by_o)).mono by_n (fun _ h => h)
 
 end
 

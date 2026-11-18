@@ -38,7 +38,7 @@ theorem comp_new {j : ℕ} (hj : j < 2 * N₂.nChords) (hv : ValidJ J (Qof P) N�
     (h1 : keyOff P J c < oW J (p + t)) (h2 : oW J (p + t) ≤ keyOff P J c') :
     ∃ t' ∈ A, t'.1 = j := by
   have hP := S.E.hP
-  have hS₂a : N₂.F (chainModel J.right) (Qof P) ⊆ Merge.augChords J.right := S.E.hNF₂.1.2.1
+  have hS₂a := S.E.hNF₂.1.2.1
   obtain ⟨hc, ha⟩ := query_chord (J := J) (Q := Qof P) hj
   obtain ⟨haR, hav, hat⟩ := hv
   obtain ⟨-, hfree, -⟩ := origin_hit hP (hS₂a hc) ha haR hav hlt'
@@ -65,44 +65,44 @@ theorem tab' : TabInv P J N₂ c' (keyOff P J c') := by
     S.hI.2.2.2.2.2.2.2 hsome
   obtain ⟨hW, -, hR, -, -⟩ := S.hI
   obtain ⟨hkp, hmemS, -, -⟩ := stp_pre_frame hW hR
-  have eTBs : cs.nreg cTB = c.nreg cTB := hkp 661 (by omega)
-  have eTB' : c'.nreg cTB = c.nreg cTB := stp_iter_keep S.hI (k := 661) (by omega)
-  have elB : co.nreg lB = c.nreg lB := stp_co_keep S.hI (k := 2430) (by omega)
-  have elC : co.nreg lC = c.nreg lC := stp_co_keep S.hI (k := 2431) (by omega)
+  have eTBs : cs.nreg cTB = c.nreg cTB := hkp 661 by_o
+  have eTB' : c'.nreg cTB = c.nreg cTB := stp_iter_keep S.hI (k := 661) by_o
+  have elB : co.nreg lB = c.nreg lB := stp_co_keep S.hI (k := 2430) by_o
+  have elC : co.nreg lC = c.nreg lC := stp_co_keep S.hI (k := 2431) by_o
   have hAl := (stp_alloc_mono S.hI).1
   have l1 := S.L.lay1
   have l2 := S.L.lay2
   have l4 := S.L.lay4
   have hTc : ∀ x, x < c.nreg cTB + 6 * N₂.nChords → c'.nmem x = co.nmem x := fun x hx =>
-    hmK x (by omega) (Or.inl (by rw [elB, elC]; omega))
+    hmK x by_o (Or.inl (by rw [elB, elC]; omega))
   have hTs : ∀ x, x < c.nreg cTB + 6 * N₂.nChords → cs.nmem x = c.nmem x := fun x hx =>
-    hmemS x (by omega)
+    hmemS x by_o
   have hlt := (stp_next_key S.E S.L S.hI S.hd).1
   intro j hj
   rw [eTB']
   obtain ⟨o0, o1, o2⟩ := S.L.tab j hj
   have hslot := S.hBA.slot j hj
   rw [eTBs] at hslot
-  have hT0 : c'.nmem (c.nreg cTB + 3 * j) = co.nmem (c.nreg cTB + 3 * j) := hTc _ (by omega)
+  have hT0 : c'.nmem (c.nreg cTB + 3 * j) = co.nmem (c.nreg cTB + 3 * j) := hTc _ by_o
   have hT1 : c'.nmem (c.nreg cTB + 3 * j + 1) = co.nmem (c.nreg cTB + 3 * j + 1) :=
-    hTc _ (by omega)
+    hTc _ by_o
   have hT2 : c'.nmem (c.nreg cTB + 3 * j + 2) = co.nmem (c.nreg cTB + 3 * j + 2) :=
-    hTc _ (by omega)
+    hTc _ by_o
   rw [hT0, hT1, hT2]
   -- a flag of the key stays
   have hkeep : c.nmem (c.nreg cTB + 3 * j) = 1 → co.nmem (c.nreg cTB + 3 * j) = 1 := by
     intro h
     rcases hslot with ⟨s0, -, -⟩ | ⟨e, h', -, f0, -⟩
-    · rw [s0, hTs _ (by omega), h]
+    · rw [s0, hTs _ by_o, h]
     · exact f0
   refine ⟨?_, ?_, fun hv hlt' p t hA hpt hL hle => ?_⟩
   · rcases hslot with ⟨s0, -, -⟩ | ⟨e, h', -, f0, -⟩
-    · rw [s0, hTs _ (by omega)]; exact o0
+    · rwa [s0, hTs _ by_o]
     · rw [f0]
   · intro hf
     rcases hslot with ⟨s0, s1, s2⟩ | ⟨e, h', hmA, f0, f1, f2⟩
-    · rw [s0, hTs _ (by omega)] at hf
-      rw [s1, s2, hTs _ (by omega), hTs _ (by omega)]
+    · rw [s0, hTs _ by_o] at hf
+      rw [s1, s2, hTs _ by_o, hTs _ by_o]
       exact o1 hf
     · rw [f1, f2]
       exact (S.hBA.acc _ hmA).2.2

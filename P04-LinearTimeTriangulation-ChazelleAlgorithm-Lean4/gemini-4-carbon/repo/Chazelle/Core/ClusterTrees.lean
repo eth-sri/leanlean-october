@@ -62,7 +62,7 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     obtain ⟨hi, hqi⟩ := Classical.choose_spec (hq v)
     refine hI.par _ hi ?_
     by_contra h0
-    have : Classical.choose (hq v) = 0 := by omega
+    have : Classical.choose (hq v) = 0 := by_o
     rw [this, hI.q0] at hqi
     exact hv hqi.symm
   have hqv : ∀ v : Fin μ, q (Classical.choose (hq v)) = v := fun v =>
@@ -81,8 +81,7 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     obtain ⟨-, -, hh, -⟩ := hpar v (hne v hv)
     rw [hqv] at hh
     apply Fin.ext
-    rw [← hG.head (pd v), (hpd v (hne v hv)).2]
-    exact hh
+    rwa [← hG.head (pd v), (hpd v (hne v hv)).2]
   have hlev : ∀ v : Fin μ, v ≠ r → lev (M.vert (pd v)) + 1 = lev v := by
     intro v hv
     obtain ⟨-, -, -, j, -, hvj, hlj⟩ := hpar v (hne v hv)
@@ -100,7 +99,6 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     · show ((M.opp (pd v) : Fin N) : ℕ) = G.opp (par v)
       rw [← (hpd v (hne v hv)).2, hG.opp]
     · rw [SpanTree.parent_of_ne _ hv]
-      show ((M.head (M.opp (pd v)) : Fin μ) : ℕ) = G.vert (par v)
       rw [M.head_opp, ← (hpd v (hne v hv)).2, hG.vert]
   · show lev (M.head d) ≤ lev (M.vert d) + 1
     obtain ⟨i, hi, hqi⟩ := hq (M.vert d)
@@ -114,7 +112,7 @@ theorem primal_tree (hM : M.Connected) (hμ : 0 < μ) (hGN : G.N = N)
     have h2 := hI.tn
     have h3 : G.nv ≤ μ := by
       by_contra h
-      obtain ⟨w, hw⟩ := hG.eV_surj μ (by omega)
+      obtain ⟨w, hw⟩ := hG.eV_surj μ by_o
       have := w.2
       omega
     rw [hqi] at h1
@@ -209,7 +207,7 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
     obtain ⟨hi, hqi⟩ := Classical.choose_spec (hq g)
     refine hI.par _ hi ?_
     by_contra h0
-    have : Classical.choose (hq g) = 0 := by omega
+    have : Classical.choose (hq g) = 0 := by_o
     rw [this, hI.q0] at hqi
     exact hne g hg hqi.symm
   have hqv : ∀ g : Fin N, q (Classical.choose (hq g)) = g := fun g =>
@@ -219,7 +217,7 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
     intro g hg
     have := (hpar g hg).1
     rw [hqv, hGN] at this
-    exact hG.eD_surj _ (by rw [hGN]; exact this)
+    exact hG.eD_surj _ (by rwa [hGN])
   let fp : Fin N → Fin N ⊕ Fin N ⊕ Fin N := fun g =>
     if hg : g ≠ r0 then Classical.choose (hdec g hg) else .inl r0
   have hfp : ∀ g : Fin N, g ≠ r0 → enc N (fp g) = par g := by
@@ -248,7 +246,7 @@ theorem dual_cotree (hM : M.Connected) (hN : 0 < N) (hGN : G.N = 3 * N) (hGnv : 
     fun g hg => ⟨?_, hfp g hg⟩, ⟨hN, fun i hi => ?_, fun i hi j hj hij => hI.qinj i hi j hj hij,
     fun i hi0 hi => ?_⟩, fun g => ?_⟩
   · rw [← hfp g hg]; exact enc_lt _
-  · have := hI.qlt i hi; rw [hGnv] at this; exact this
+  · have := hI.qlt i hi; rwa [hGnv] at this
   · obtain ⟨-, -, -, j, hj, hvj, -⟩ := hI.par i hi hi0
     exact ⟨j, hj, hvj.symm⟩
   · -- the parents agree

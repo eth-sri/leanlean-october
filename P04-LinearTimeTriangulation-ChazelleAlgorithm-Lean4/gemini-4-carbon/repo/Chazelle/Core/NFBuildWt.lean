@@ -51,20 +51,20 @@ theorem mem_arcEdges_iff (a b : ℝ) (p : ℕ) :
   split_ifs with h
   · constructor
     · rintro ⟨t, ht0, ht1, h1, h2⟩
-      exact ⟨by linarith, by linarith⟩
+      exact ⟨by_l, by_l⟩
     · rintro ⟨h1, h2⟩
       -- a point of `(max a p, min b (p + 1))`
       refine ⟨(max a p + min b (p + 1)) / 2 - p, ?_, ?_, ?_, ?_⟩
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 by_l)
         have : (p : ℝ) ≤ max a p := le_max_right _ _
         linarith
       · have : min b (p + 1) ≤ (p : ℝ) + 1 := min_le_right _ _
-        have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+        have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 by_l)
         linarith
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 by_l)
         have : a ≤ max a p := le_max_left _ _
         linarith
-      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 (by linarith))
+      · have : max a p < min b (p + 1) := max_lt (lt_min h h2) (lt_min h1 by_l)
         have : min b (p + 1) ≤ b := min_le_left _ _
         linarith
   · constructor
@@ -73,21 +73,21 @@ theorem mem_arcEdges_iff (a b : ℝ) (p : ℕ) :
       · left; linarith
     · rintro (h1 | h1)
       · refine ⟨(min b (p + 1) - p) / 2, ?_, ?_, Or.inr ?_⟩
-        · have : (p : ℝ) < min b (p + 1) := lt_min h1 (by linarith)
+        · have : (p : ℝ) < min b (p + 1) := lt_min h1 by_l
           linarith
         · have : min b (p + 1) ≤ (p : ℝ) + 1 := min_le_right _ _
           linarith
-        · have : (p : ℝ) < min b (p + 1) := lt_min h1 (by linarith)
+        · have : (p : ℝ) < min b (p + 1) := lt_min h1 by_l
           have : min b (p + 1) ≤ b := min_le_left _ _
           linarith
       · refine ⟨(max a p + (p + 1)) / 2 - p, ?_, ?_, Or.inl ?_⟩
-        · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
+        · have : max a p < (p : ℝ) + 1 := max_lt h1 by_l
           have : (p : ℝ) ≤ max a p := le_max_right _ _
           linarith
-        · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
+        · have : max a p < (p : ℝ) + 1 := max_lt h1 by_l
           have : (p : ℝ) ≤ max a p := le_max_right _ _
           linarith
-        · have : max a p < (p : ℝ) + 1 := max_lt h1 (by linarith)
+        · have : max a p < (p : ℝ) + 1 := max_lt h1 by_l
           have : a ≤ max a p := le_max_left _ _
           linarith
 
@@ -97,13 +97,13 @@ theorem lt_key_iff {p e : ℕ} {f : ℝ} (hf : 0 ≤ f ∧ f < 1) :
   unfold keyCeil
   split_ifs with h
   · rw [h, add_zero]; exact Nat.cast_lt
-  · have hf0 : 0 < f := lt_of_le_of_ne hf.1 (Ne.symm h)
+  · have hf0 := lt_of_le_of_ne hf.1 (Ne.symm h)
     constructor
     · intro h1
       have : (p : ℝ) < e + 1 := by linarith [hf.2]
       exact_mod_cast this
     · intro h1
-      have : p ≤ e := by omega
+      have : p ≤ e := by_o
       have : (p : ℝ) ≤ e := by exact_mod_cast this
       linarith
 
@@ -138,7 +138,7 @@ theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ l
         obtain ⟨h1, h2⟩ := (hc p hp).1 hcp
         exact ⟨⟨h4, h1⟩, h3, h2⟩
       · rintro ⟨⟨h4, h1⟩, h3, h2⟩
-        exact ⟨by omega, (hc p (by omega)).2 ⟨h1, h2⟩, h3, h4⟩
+        exact ⟨by_o, (hc p by_o).2 ⟨h1, h2⟩, h3, h4⟩
     rw [hset, ncard_coe_finset, Nat.card_Ico]
   · have hset : {p : ℕ | p < M.W.n ∧ M.counted p ∧ ∃ t : ℝ, 0 < t ∧ t < 1 ∧
         sideInArc (ea + fa) (eb + fb) (p + t)} =
@@ -152,7 +152,7 @@ theorem arcWt_closed {lo hi : ℕ} (hc : ∀ p, p < M.W.n → (M.counted p ↔ l
         obtain ⟨h1, h2⟩ := (hc p hp).1 hcp
         refine ⟨⟨h1, h2⟩, ?_⟩; omega
       · rintro ⟨⟨h1, h2⟩, h3⟩
-        refine ⟨by omega, (hc p (by omega)).2 ⟨h1, h2⟩, ?_⟩; omega
+        refine ⟨by_o, (hc p by_o).2 ⟨h1, h2⟩, ?_⟩; omega
     rw [hset, ncard_coe_finset, Finset.card_sdiff_of_subset, Nat.card_Ico, Nat.card_Ico]
     intro p
     simp only [Finset.mem_Ico, max_le_iff, lt_min_iff]

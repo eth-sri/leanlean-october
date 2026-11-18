@@ -39,8 +39,8 @@ theorem arcEdge_pair (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a < W.n) (
     ∃ p, p < W.n ∧ ∃ t'' : ℝ, a - p < t'' ∧ t'' ≤ 1 ∧ 0 ≤ a - p ∧
       hostPt W a = sidePt W p (a - p) ∧ hostPt W b = sidePt W p t'' := by
   set p := ⌊a⌋₊ with hpdef
-  have hp : (p : ℝ) ≤ a := Nat.floor_le ha0
-  have hp1 : a < p + 1 := Nat.lt_floor_add_one a
+  have hp := Nat.floor_le ha0
+  have hp1 := Nat.lt_floor_add_one a
   have hpn : p < W.n := by
     have : (p : ℝ) < W.n := lt_of_le_of_lt hp han
     exact_mod_cast this
@@ -55,9 +55,9 @@ theorem arcEdge_pair (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a < W.n) (
         exact_mod_cast this
       apply hnv (p + 1) hk
       unfold sideInArc; rw [ite_eq_left hlt]; push_cast; exact ⟨hp1, h⟩
-    refine ⟨b - p, by linarith, by linarith, by linarith, hA, ?_⟩
+    refine ⟨b - p, by_l, by_l, by_l, hA, ?_⟩
     rcases hbp.lt_or_eq with hbp | hbp
-    · have := hostPt_eq W (p := p) (t := b - p) (by linarith) (by linarith)
+    · have := hostPt_eq W (p := p) (t := b - p) by_l by_l
       rwa [show (p : ℝ) + (b - p) = b by ring] at this
     · have hk : p + 1 < W.n := by
         have : ((p + 1 : ℕ) : ℝ) < W.n := by push_cast; linarith
@@ -68,15 +68,15 @@ theorem arcEdge_pair (W : Polygon) {a b : ℝ} (ha0 : 0 ≤ a) (han : a < W.n) (
         Nat.mod_eq_of_lt hk]
   · have hb0' : b = 0 := by
       by_contra h
-      have hbpos : 0 < b := lt_of_le_of_ne hb0 (Ne.symm h)
-      apply hnv 0 (by omega)
+      have hbpos := lt_of_le_of_ne hb0 (Ne.symm h)
+      apply hnv 0 by_o
       unfold sideInArc; rw [ite_eq_right hlt]; right; simpa using hbpos
     have hpn1 : p + 1 = W.n := by
       by_contra h
-      have hk : p + 1 < W.n := by omega
+      have hk : p + 1 < W.n := by_o
       apply hnv (p + 1) hk
       unfold sideInArc; rw [ite_eq_right hlt]; left; push_cast; exact hp1
-    refine ⟨1, by linarith, le_rfl, by linarith, hA, ?_⟩
+    refine ⟨1, by_l, le_rfl, by_l, hA, ?_⟩
     rw [hb0', show (0 : ℝ) = ((0 : ℕ) : ℝ) + 0 by simp, hostPt_eq W le_rfl one_pos,
       Chazelle.Chain.sidePt_zero, sidePt_one, hpn1, Nat.mod_self]
 
@@ -87,15 +87,15 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
     (hne : S.Nonempty) (hR : R ∈ (interiorModel Q).regions S) :
     Mountain.orient (hostPoly Q S R) = 1 := by
   set M := interiorModel Q with hMdef
-  have hM : WalkAx M := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have hF := hFam.2.1
   have hfin := hFam.1
   have hsys := hM.sys S hF hfin
-  have hRo : IsOpen R := hsys.regionsIn_open subset_rfl hR
+  have hRo := hsys.regionsIn_open subset_rfl hR
   have hH : (hostPoly Q S R).Simple := hostPts_simple hQ hFam hne hR
   have X : Extract.Ctx Q S R := ⟨hQ, hFam, hne, hR⟩
   have h3 := X.three
-  have hN2 : 2 ≤ nk M S R := le_trans (by norm_num) h3
+  have hN2 : 2 ≤ nk M S R := le_trans by_n h3
   obtain ⟨hWs, hWb, hWf, hWo⟩ := FactsInterior.interiorWalk_spec hQ
   obtain ⟨z, hzR, hzV⟩ := exists_mem_off_heights hRo (Chazelle.Chain.regionsIn_nonempty hR)
     ((Finset.range Q.n).image (fun i => (Q.vtx i).2))
@@ -103,7 +103,7 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
     hzV (Finset.mem_image.2 ⟨i, Finset.mem_range.2 hi, e.symm⟩)
   obtain ⟨s, -, i, i', hi, hi', rfl, lam, hlam, he, r, hr, hnear⟩ :=
     ray_hit hQ hFam hne hR hzR hvQ (Or.inl rfl)
-  set P : Point := ((z.1 + 1 * s, z.2) : Point) with hPdef
+  set P := ((z.1 + 1 * s, z.2) : Point) with hPdef
   set A := hostPt M.W (hk M S R i) with hAdef
   set B := hostPt M.W (hk M S R ((i + 1) % nk M S R)) with hBdef
   -- the ends are at vertex heights, the exit point is not
@@ -120,7 +120,7 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   have hlam' : lam ∈ Ioo (0 : ℝ) 1 :=
     ⟨lt_of_le_of_ne hlam.1 (Ne.symm hlam0), lt_of_le_of_ne hlam.2 hlam1⟩
   -- the gap is an arc gap
-  have hsi : (i + 1) % nk M S R < nk M S R := Nat.mod_lt _ (by omega)
+  have hsi : (i + 1) % nk M S R < nk M S R := Nat.mod_lt _ by_o
   rcases gap_cases hM hF hfin hne hR hN2 hi with ⟨a', b', harc, hsub⟩ | ⟨c, hc, p, p', t, t', hA,
       hB, hka, hkb, -⟩
   swap
@@ -149,7 +149,7 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
   have hvi' : (hostPoly Q S R).vtx ((i + 1) % (hostPoly Q S R).n) = B := by
     rw [hHn]; exact hostPoly_vtx hsi
   have hiH : i < (hostPoly Q S R).n := by rw [hHn]; exact hi
-  have hcpos : 0 < t'' - τ₀ := by linarith
+  have hcpos : 0 < t'' - τ₀ := by_l
   set t' := τ₀ + lam * (t'' - τ₀) with ht'
   have ht'I : t' ∈ Ioo (0 : ℝ) 1 := by
     constructor
@@ -157,7 +157,7 @@ theorem hostPoly_orient (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q 
     · have : lam * (t'' - τ₀) < 1 * (t'' - τ₀) := mul_lt_mul_of_pos_right hlam'.2 hcpos
       linarith
   have hWn : (interiorWalk Q).n = M.W.n := rfl
-  have hpW : p < (interiorWalk Q).n := hp
+  have hpW := hp
   have hoff : ∀ δ : ℝ, Chazelle.Jordan.offset ((hostPoly Q S R).vtx i)
       ((hostPoly Q S R).vtx ((i + 1) % (hostPoly Q S R).n)) lam δ =
       Chazelle.Jordan.offset ((interiorWalk Q).vtx p)

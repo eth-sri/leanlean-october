@@ -66,12 +66,12 @@ theorem rayPt_mem_edge_iff {e h : ℕ} (hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % 
   · rintro ⟨hsp, hx'⟩
     refine ⟨hsp, ?_⟩
     have : σ * (z.1 + σ * t) = σ * xe Q e h := by rw [hx']
-    have e2 : σ * (z.1 + σ * t) = σ * z.1 + (σ * σ) * t := by ring
+    have e2 : σ * (z.1 + σ * t) = σ * z.1 + (σ * σ) * t := by_r
     rw [e2, hs] at this
     linarith
   · rintro ⟨hsp, rfl⟩
     refine ⟨hsp, ?_⟩
-    have e2 : z.1 + σ * (σ * (xe Q e h - z.1)) = z.1 + (σ * σ) * (xe Q e h - z.1) := by ring
+    have e2 : z.1 + σ * (σ * (xe Q e h - z.1)) = z.1 + (σ * σ) * (xe Q e h - z.1) := by_r
     rw [e2, hs]; ring
 
 /-- **The answer for one edge.** -/
@@ -92,7 +92,7 @@ theorem spans_iff (hD : DistinctHeights Q) {e h : ℕ} (he : e < Q.n) (hh : h < 
     Spans Q e h ↔ (h = e ∨ h = (e + 1) % Q.n) ∨
       ((Q.vtx e).2 < (Q.vtx h).2 ∧ (Q.vtx h).2 < (Q.vtx ((e + 1) % Q.n)).2) ∨
       ((Q.vtx ((e + 1) % Q.n)).2 < (Q.vtx h).2 ∧ (Q.vtx h).2 < (Q.vtx e).2) := by
-  have hn : 0 < Q.n := by omega
+  have hn : 0 < Q.n := by_o
   have he1 : (e + 1) % Q.n < Q.n := Nat.mod_lt _ hn
   unfold Spans
   constructor
@@ -120,12 +120,12 @@ theorem ahead_iff {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (x z : ℝ) :
     0 < σ * (x - z) ↔ (σ = 1 ∧ z < x) ∨ (σ = -1 ∧ x < z) := by
   rcases hσ with rfl | rfl
   · constructor
-    · intro h; left; exact ⟨rfl, by linarith⟩
+    · intro h; left; exact ⟨rfl, by_l⟩
     · rintro (⟨-, h⟩ | ⟨h, -⟩)
       · linarith
       · norm_num at h
   · constructor
-    · intro h; right; exact ⟨rfl, by linarith⟩
+    · intro h; right; exact ⟨rfl, by_l⟩
     · rintro (⟨h, -⟩ | ⟨-, h⟩)
       · norm_num at h
       · linarith
@@ -135,12 +135,12 @@ theorem better_iff {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) (x x' z : ℝ) :
     σ * (x - z) < σ * (x' - z) ↔ (σ = 1 ∧ x < x') ∨ (σ = -1 ∧ x' < x) := by
   rcases hσ with rfl | rfl
   · constructor
-    · intro h; left; exact ⟨rfl, by linarith⟩
+    · intro h; left; exact ⟨rfl, by_l⟩
     · rintro (⟨-, h⟩ | ⟨h, -⟩)
       · linarith
       · norm_num at h
   · constructor
-    · intro h; right; exact ⟨rfl, by linarith⟩
+    · intro h; right; exact ⟨rfl, by_l⟩
     · rintro (⟨h, -⟩ | ⟨-, h⟩)
       · norm_num at h
       · linarith
@@ -182,8 +182,8 @@ theorem tour_seg (i : ℕ) :
     · subst e; simp only [le_refl, ↓reduceIte]; omega
     · simp [show ¬ x ≤ C.m by omega]
   split_ifs with h1
-  · rw [sE1 j h1.le, sE1 (j + 1) (by omega)]
-  · rw [sE3 j (by omega), sE3 (j + 1) (by omega), Geometry.segment_comm,
+  · rw [sE1 j h1.le, sE1 (j + 1) by_o]
+  · rw [sE3 j by_o, sE3 (j + 1) by_o, Geometry.segment_comm,
       show 2 * C.m - (j + 1) = 2 * C.m - 1 - j by omega,
       show 2 * C.m - j = 2 * C.m - 1 - j + 1 by omega]
 
@@ -200,13 +200,12 @@ theorem mem_scanSet_iff (Q : Polygon) (N : NF) (p : ℕ) (x : Point) :
   · rintro ⟨k, hk, i, hi, hidx, hx⟩
     refine ⟨k, hk, ?_⟩
     unfold wseg
-    rw [hidx, ite_eq_left (show 6 ≤ i + 6 ∧ i + 6 < 2 * C.m + 6 by omega), show i + 6 - 6 = i by omega, ← tour_seg]
-    exact hx
+    rwa [hidx, ite_eq_left (show 6 ≤ i + 6 ∧ i + 6 < 2 * C.m + 6 by omega), show i + 6 - 6 = i by omega, ← tour_seg]
   · rintro ⟨k, hk, hx⟩
     unfold wseg at hx
     split_ifs at hx with hw
-    · refine ⟨k, hk, scanIdx (chainModel C).W.n N p k - 6, by omega, by omega, ?_⟩
-      rw [tour_seg]; exact hx
+    · refine ⟨k, hk, scanIdx (chainModel C).W.n N p k - 6, by_o, by_o, ?_⟩
+      rwa [tour_seg]
     · exact absurd hx (Set.notMem_empty x)
 
 end Tour

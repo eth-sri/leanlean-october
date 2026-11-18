@@ -15,8 +15,6 @@ namespace Chazelle.Core.Dec
 
 open Relation Finset
 
-set_option linter.unusedSectionVars false
-
 section step
 
 variable {R K D : ℕ} {up dn ord pos prg pch isdn chOf : ℕ → ℕ}
@@ -77,12 +75,12 @@ theorem cut_chosen {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ
   obtain ⟨-, hB2⟩ := hB t ht htop
   rcases hB2 with ⟨e, -⟩ | ⟨b1, b2, b3, -⟩
   · exact absurd e hbt
-  have hnt : ¬ IsTop pch σ.rem (best t) := AncX.not_top b2 (Ne.symm b3)
+  have hnt := AncX.not_top b2 (Ne.symm b3)
   simp only [IsTop, not_or] at hnt
   have hch' := chOf_pch h hch hT hB hI b1 hnt.1
   have htop' := top_of h hch hT hB hI b1 htop b2
   refine ⟨b1, b2, hnt.1, h.pch_lt _ b1 hnt.1, hch', htop', ⟨hnt.2, ?_, ?_⟩, hnt.2⟩
-  · rw [hch', htop']; exact hact
+  · rwa [hch', htop']
   · rw [hch', htop']
 
 /-- A chosen chord is the parent chord of the best candidate of its component. -/
@@ -117,7 +115,7 @@ theorem pend_next {e : ℕ} (he : e < K) :
   by_cases hp : σ.pend e = 1
   · rw [ite_eq_left hp]
     have := hI.i0 e he hp
-    exact ⟨fun h1 => absurd h1 (by norm_num), fun h1 => absurd this h1.1⟩
+    exact ⟨fun h1 => absurd h1 by_n, fun h1 => absurd this h1.1⟩
   · rw [ite_eq_right hp]
     by_cases hc : Chosen σ top best chOf e
     · rw [ite_eq_left hc]; exact ⟨fun _ => hc, fun _ => rfl⟩
@@ -228,7 +226,7 @@ theorem sub_cut_t {t : ℕ} (ht : t < R) (htop : IsTop pch σ.rem t) (hact : σ.
   · rintro ⟨hv, hav⟩
     obtain ⟨htv, hkeep⟩ := (ancX_next h hch hT hB hI hv).1 hav
     refine ⟨⟨hv, htv⟩, fun hcv => ?_⟩
-    have hcv' : AncX R prg pch σ.rem (best t) v := (anc_member h b2 hv).2 ⟨htv, hcv⟩
+    have hcv' := (anc_member h b2 hv).2 ⟨htv, hcv⟩
     exact hkeep (best t) b2 hcv' hbt hcho
   · rintro ⟨⟨hv, htv⟩, hncv⟩
     refine ⟨hv, (ancX_next h hch hT hB hI hv).2 ⟨htv, fun w htw hwv hwt hc => ?_⟩⟩

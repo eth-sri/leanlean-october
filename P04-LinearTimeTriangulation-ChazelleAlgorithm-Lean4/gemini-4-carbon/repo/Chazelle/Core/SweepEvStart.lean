@@ -30,7 +30,7 @@ open WalkEmbed Sweep
 
 /-- The right stretch is shorter than the walk of `C`. -/
 theorem Lst_lt_n (J : Merge.Junction) : Lst J < (chainModel J.whole).W.n := by
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn := cm_n J.whole
   have hm : J.whole.m = J.m₁ + J.m₂ := rfl
   have h1 := J.one_le_m₁
   have hL : Lst J = rlen J := rL1_add_rL2 J
@@ -57,7 +57,7 @@ theorem startTask : StartTask := by
   have hn0 : 0 < n := by have := Lst_lt_n J; omega
   set pK := (gW J + Lst J) % n with hpKdef
   have hpK : pK < n := Nat.mod_lt _ hn0
-  have hoK : oW J ((pK : ℝ) + 0) = (Lst J : ℝ) := oW_start J hP hS₂a hS₂f
+  have hoK := oW_start J hP hS₂a hS₂f
   have hL0 := Lst_pos J
   intro p t hp ht hnc ho hbr
   by_cases hEx : EvEncl J S₂ (oW J (p + t))
@@ -65,7 +65,7 @@ theorem startTask : StartTask := by
   right
   intro G hG hf
   obtain ⟨R, hR, hWR, q, u, hq, hu, hncq, hfq, h1, h2, hgap⟩ :=
-    before_region_exists' hP hS₂a hS₂f hpK le_rfl one_pos (by rw [hoK]; exact hL0) hL0
+    before_region_exists' hP hS₂a hS₂f hpK le_rfl one_pos (by rwa [hoK]) hL0
   rw [hoK] at h1 h2 hgap
   -- the position before the start is not enclosed
   have hEq : ¬ EvEncl J S₂ (oW J (q + u)) := by
@@ -82,7 +82,7 @@ theorem startTask : StartTask := by
       obtain ⟨rfl, rfl⟩ := pos_eq_of_oW hP hS₂a hS₂f hA.1 hpK hA.2.1 hA.2.2.1 le_rfl one_pos heq
       exact hbrk e he hA
     · exact hbr e he q' s hA hgt hb
-  have hRG : R = G := evGL hP hS₂a hS₂f hq hp hu ht hncq hnc (by linarith) hEq hEx hbr' hR hG hfq hf
+  have hRG : R = G := evGL hP hS₂a hS₂f hq hp hu ht hncq hnc by_l hEq hEx hbr' hR hG hfq hf
   subst hRG
   refine ⟨V, Or.inl rfl, hV, ?_⟩
   exact valid_start J hP hS₂a hS₂f (by have := Lst_pos J; unfold Lst at this; exact_mod_cast this)

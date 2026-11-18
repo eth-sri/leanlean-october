@@ -48,7 +48,7 @@ theorem rk_nat (hc : c < n) {p : ℕ} (hp : p < n) : rk n c p = ((c + n - p) % n
   split_ifs with h
   · have h' : p ≤ c := by exact_mod_cast h
     rw [show (c + n - p) % n = c - p by
-      rw [show c + n - p = (c - p) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]]
+      rw [show c + n - p = (c - p) + n by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]]
     push_cast [h']; ring
   · have h' : c < p := by
       by_contra hh; push Not at hh; exact h (by exact_mod_cast hh)
@@ -66,9 +66,9 @@ theorem rk_edge (hc : c < n) {p : ℕ} (hp : p < n) {t : ℝ} (ht0 : 0 < t) (ht1
       linarith
     rw [show (c + 2 * n - 1 - p) % n = c - 1 - p by
       rw [show c + 2 * n - 1 - p = (c - 1 - p) + n * 2 by omega, Nat.add_mul_mod_self_left,
-        Nat.mod_eq_of_lt (by omega)]]
+        Nat.mod_eq_of_lt by_o]]
     have e : ((c - 1 - p : ℕ) : ℝ) = (c : ℝ) - 1 - p := by
-      rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]; push_cast; ring
+      rw [Nat.cast_sub by_o, Nat.cast_sub by_o]; push_cast; ring
     rw [e]; ring
   · have h' : c ≤ p := by
       by_contra hh; push Not at hh
@@ -76,9 +76,9 @@ theorem rk_edge (hc : c < n) {p : ℕ} (hp : p < n) {t : ℝ} (ht0 : 0 < t) (ht1
       linarith
     rw [show (c + 2 * n - 1 - p) % n = c + n - 1 - p by
       rw [show c + 2 * n - 1 - p = (c + n - 1 - p) + n * 1 by omega, Nat.add_mul_mod_self_left,
-        Nat.mod_eq_of_lt (by omega)]]
+        Nat.mod_eq_of_lt by_o]]
     have e : ((c + n - 1 - p : ℕ) : ℝ) = (c : ℝ) + n - 1 - p := by
-      rw [Nat.cast_sub (by omega), Nat.cast_sub (by omega)]; push_cast; ring
+      rw [Nat.cast_sub by_o, Nat.cast_sub by_o]; push_cast; ring
     rw [e]; ring
 
 /-- **The reflection reverses the cyclic order.** -/

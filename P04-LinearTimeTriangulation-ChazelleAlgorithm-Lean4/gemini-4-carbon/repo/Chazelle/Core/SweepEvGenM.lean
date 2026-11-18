@@ -63,13 +63,13 @@ theorem genuine_iff_rev {C : Chain} {a : Point} {σ τ : ℝ} (hσ : σ = 1 ∨ 
     rcases hle.lt_or_eq with hlt | heq
     · apply hTD
       rw [rayPt_rev]
-      exact hin' _ (by linarith) (by linarith)
+      exact hin' _ by_l by_l
     · apply hTD
       rw [heq, rayPt_rev, sub_self]
       simpa using ha
   · intro hlt
     refine ⟨h0, fun s hs1 hs2 => ?_, hw⟩
-    have := hin (τ - s) (by linarith) (by linarith)
+    have := hin (τ - s) by_l by_l
     rwa [rayPt_rev, show τ - (τ - s) = s by ring] at this
 
 /-- **Genuineness by abscissas**: the hit `h` of the reverse ray lies beyond `a`. -/
@@ -111,8 +111,8 @@ theorem arr_facts {C : Chain} {Q : Polygon} {N : ℕ} {x : WPos} {w : Point} {σ
       w ∉ C.dom := by
   have hpos : (chainModel C).pos Q x = w := by
     rw [pos_eq_sidePt']; exact harr.2.2.2.1
-  have hcl : PosClass C Q x := posClass_of he hpp.1 hpp.2.1 (by rw [hpos]; exact hy)
-    (Or.inl (by rw [hpos]; exact htop))
+  have hcl : PosClass C Q x := posClass_of he hpp.1 hpp.2.1 (by rwa [hpos])
+    (Or.inl (by rwa [hpos]))
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
   have hloc : (x.edge = 1 ∨ x.edge = 3) ∨ (6 ≤ x.edge ∧ (chainModel C).pos Q x ∈ C.set) := by
     rcases hcl with h | ⟨h6, hlt⟩ | ⟨hend, hz⟩
@@ -120,15 +120,15 @@ theorem arr_facts {C : Chain} {Q : Polygon} {N : ℕ} {x : WPos} {w : Point} {σ
     · refine Or.inr ⟨h6, ?_⟩
       rw [pos_eq_sidePt', hW]
       have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6)
-        (t := (chainModel C).param Q x) (by omega) (fun h => by omega) hpp.1 hpp.2.1
+        (t := (chainModel C).param Q x) by_o (fun h => by omega) hpp.1 hpp.2.1
       rwa [show x.edge - 6 + 6 = x.edge by omega] at this
-    · refine Or.inr ⟨by omega, ?_⟩
+    · refine Or.inr ⟨by_o, ?_⟩
       rw [pos_eq_sidePt', hW, hend, hz]
       exact C.sideWalk_tour_pt_mem C.sideBeta (i := 2 * C.m) (t := 0) le_rfl (fun _ => rfl)
         le_rfl one_pos
   refine ⟨hpos, hcl, hloc, ?_⟩
   rw [← hpos]
-  rcases posClass_pt hcl hpp.1 hpp.2.1 (by rw [hpos]; exact hy) with h | ⟨h, -⟩
+  rcases posClass_pt hcl hpp.1 hpp.2.1 (by rwa [hpos]) with h | ⟨h, -⟩
   · exact not_dom_of_onCB (Or.inl h)
   · exact not_dom_of_onCB (Or.inr (Or.inl h))
 
@@ -163,7 +163,7 @@ theorem pos_top_copies (C : Chain) (Q : Polygon) :
   have hW : (chainModel C).W = C.sideWalk C.sideBeta := rfl
   simp only [h0, h0', Chazelle.Chain.sidePt_zero, hW]
   have e1 := C.sideWalk_vtx_tour C.sideBeta (i := 2 * C.m) le_rfl
-  have e2 := C.sideWalk_vtx_tour C.sideBeta (i := 0) (by omega)
+  have e2 := C.sideWalk_vtx_tour C.sideBeta (i := 0) by_o
   rw [show 0 + 6 = 6 by rfl] at e2
   rw [e1, e2, C.sideTour_two_m, C.sideTour_zero]
 
@@ -181,7 +181,7 @@ theorem symHgt {P : Polygon} {c : Config} {o : ℕ} {s : SymPt} (hs : SymPtIn c 
     exact ⟨hl, rfl⟩
   | onEdge e h =>
     obtain ⟨h0, -, h2⟩ := hs
-    rw [ite_eq_right (by omega), h2]
+    rw [ite_eq_right by_o, h2]
     exact ⟨hl.2, rfl⟩
 
 /-! ## Region bounds -/

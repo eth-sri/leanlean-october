@@ -51,7 +51,7 @@ theorem uOf_up (hP : C.P = H.poly Q) {i d : ℕ} (hJ : tJ C i + d ≤ C.m) {r a 
   rw [hrun] at hsucc
   simp only [NFLoc.itemCnt] at hsucc
   rw [sideE_up C hJ, ← Nat.add_assoc, Nat.add_mod, hu, Nat.mod_eq_of_lt (show d < C.P.n by omega)]
-  rw [Nat.mod_eq_of_lt (by omega)]
+  rw [Nat.mod_eq_of_lt by_o]
   omega
 
 /-- **The host point along a descending stretch.** -/
@@ -72,13 +72,13 @@ theorem uOf_down (hP : C.P = H.poly Q) {i d : ℕ} (hm : C.m ≤ tJ C i) (hJ : t
     unfold sideE at *
     split_ifs at * <;> omega
   rw [sideE_down C hm hJ]
-  have hpos : 0 < C.P.n := C.n_pos
+  have hpos := C.n_pos
   have e := Nat.div_add_mod (C.s + sideE C.m (tJ C i)) C.P.n
   rw [hu] at e
   have e2 : C.s + (sideE C.m (tJ C i) - d) =
       C.P.n * ((C.s + sideE C.m (tJ C i)) / C.P.n) + (NFLoc.preLen Q.n H r + (t - d)) := by
     omega
-  rw [e2, Nat.mul_add_mod, Nat.mod_eq_of_lt (by omega)]
+  rw [e2, Nat.mul_add_mod, Nat.mod_eq_of_lt by_o]
 
 /-- The tour position `i` is a **breakpoint**: a turn of the tour or a break host point. -/
 def Brk (n : ℕ) (H : Host) (i : ℕ) : Prop :=
@@ -92,12 +92,10 @@ theorem brk_run {n : ℕ} {i r a ℓ t : ℕ} (hr : r < H.length) (hrun : H[r] =
   have hsucc := NFLoc.preLen_succ n H hr
   rw [hrun] at hsucc
   simp only [NFLoc.itemCnt] at hsucc
-  refine ⟨r, hr, by omega, by omega, ?_⟩
+  refine ⟨r, hr, by_o, by_o, ?_⟩
   rw [List.getD_eq_getElem?_getD, List.getElem?_eq_getElem hr, Option.getD_some, hrun]
   simp only
-  rw [hu, show NFLoc.preLen n H r + t - NFLoc.preLen n H r = t by omega]
-  exact hc
-
+  rwa [hu, show NFLoc.preLen n H r + t - NFLoc.preLen n H r = t by omega]
 /-- **A point item is a break.** -/
 theorem brk_pt {n : ℕ} {i r : ℕ} {x : SymPt} (hr : r < H.length) (hpt : H[r] = .pt x)
     (hu1 : NFLoc.preLen n H r ≤ uOf C i) (hu2 : uOf C i < NFLoc.preLen n H (r + 1)) :
@@ -114,7 +112,7 @@ end Run
 theorem lt_gradeCount {n g b : ℕ} (h : b * 2 ^ g + 2 ^ g ≤ n - 1) : b < gradeCount n g := by
   have hp := Nat.two_pow_pos g
   unfold gradeCount
-  have : b * 2 ^ g ≤ n - 2 := by omega
+  have : b * 2 ^ g ≤ n - 2 := by_o
   have := (Nat.le_div_iff_mul_le hp).2 this
   omega
 
@@ -136,11 +134,11 @@ theorem upBlocks_of (hR : Robust A₀ m₀ fun m' => GradeRaw O P m' h A₀) (hA
     UpBlocks (VPc P C m₀ h γ) m₀ W A₀ (m₀ (h + 2)) c₀ q₀ L := by
   intro g b hlo hhi
   have hp := Nat.two_pow_pos g
-  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
+  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by_r
   refine ⟨fun hg => ?_, fun e he => ?_⟩
-  · obtain ⟨h1, h2⟩ := entry_low hR hg (γ := γ) (b := b) (by omega) hcap (by omega)
-    exact ⟨h1, by omega⟩
-  · refine ⟨blockUp_ok hwalk h6 hcL hqL hLγ hcap hlo hhi fun hg => he (by omega), rfl, rfl,
+  · obtain ⟨h1, h2⟩ := entry_low hR hg (γ := γ) (b := b) by_o hcap by_o
+    exact ⟨h1, by_o⟩
+  · refine ⟨blockUp_ok hwalk h6 hcL hqL hLγ hcap hlo hhi fun hg => he by_o, rfl, rfl,
       by simp only [upPc]; omega⟩
 
 /-- **The blocks of a descending stretch** are valid pieces for the downward sweep. -/
@@ -151,11 +149,11 @@ theorem dnBlocks_of (hR : Robust A₀ m₀ fun m' => GradeRaw O P m' h A₀) (hA
     DnBlocks (VPc P C m₀ h γ) m₀ W A₀ (m₀ (h + 2)) c₀ q₀ L := by
   intro g b hlo hhi
   have hp := Nat.two_pow_pos g
-  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by ring
+  have e1 : (b + 1) * 2 ^ g = b * 2 ^ g + 2 ^ g := by_r
   refine ⟨fun hg => ?_, fun e he => ?_⟩
-  · obtain ⟨h1, h2⟩ := entry_low hR hg (γ := γ) (b := b) (by omega) hcap (by omega)
-    exact ⟨h1, by omega⟩
-  · refine ⟨blockDn_ok hwalk h6 hcL hq hLq hLγ hcap hlo hhi fun hg => he (by omega), rfl, rfl,
+  · obtain ⟨h1, h2⟩ := entry_low hR hg (γ := γ) (b := b) by_o hcap by_o
+    exact ⟨h1, by_o⟩
+  · refine ⟨blockDn_ok hwalk h6 hcL hq hLq hLγ hcap hlo hhi fun hg => he by_o, rfl, rfl,
       by simp only [dnPc]; omega⟩
 
 end ShootCut

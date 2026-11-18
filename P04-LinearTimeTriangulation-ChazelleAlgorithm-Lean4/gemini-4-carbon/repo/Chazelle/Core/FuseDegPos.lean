@@ -152,7 +152,7 @@ theorem ncard_attKeys_le (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) :
   have hkey : ∀ (p : ℕ) (t : ℝ), 0 ≤ t → t < 1 → f (p + t) = sidePt M.W p t := by
     intro p t ht ht1
     have hfl : ⌊(p : ℝ) + t⌋₊ = p := by
-      rw [Nat.floor_eq_iff (by positivity)]; constructor <;> linarith
+      rw [Nat.floor_eq_iff by_p]; constructor <;> linarith
     simp only [f, hfl]; congr 1; ring
   have hmaps : MapsTo f (attKeys M c) {a, b} := by
     rintro x ⟨p, t, hA, rfl⟩
@@ -187,19 +187,19 @@ theorem faced_before_zero {F : Set (Set Point)} {V : Set Point} {l : ℝ} {p : �
     (hp : p < M.W.n) (harcV : M.IsArc F V l (p + 0)) (hVne : l ≠ (p : ℝ) + 0) :
     ∀ᶠ s in 𝓝[>] (0 : ℝ), M.Faces ((p + M.W.n - 1) % M.W.n) (1 - s) V := by
   rcases Nat.eq_zero_or_pos p with h0 | h0
-  · have hl0 : 0 ≤ l := harcV.1
-    have hln : l < M.W.n := harcV.2.1
+  · have hl0 := harcV.1
+    have hln := harcV.2.1
     have hl0' : 0 < l := lt_of_le_of_ne hl0 (fun h => hVne (by rw [← h, h0]; simp))
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT (show (0 : ℝ) < min 1 (M.W.n - l) from
-      lt_min one_pos (by linarith))] with s hs hs'
+      lt_min one_pos by_l)] with s hs hs'
     have hs0 : (0 : ℝ) < s := hs
-    have hs1 : s < 1 := hs'.2.trans_le (min_le_left _ _)
-    have hs2 : s < M.W.n - l := hs'.2.trans_le (min_le_right _ _)
+    have hs1 := hs'.2.trans_le (min_le_left _ _)
+    have hs2 := hs'.2.trans_le (min_le_right _ _)
     have e : (0 + M.W.n - 1) % M.W.n = M.W.n - 1 := by
-      rw [Nat.mod_eq_of_lt (show 0 + M.W.n - 1 < M.W.n by omega)]; omega
+      rw [Nat.mod_eq_of_lt (by omega)]; omega
     rw [h0, e]
-    refine harcV.2.2.2.2.2.2 _ _ (by omega) (by linarith) (by linarith) ?_
-    have hc : ((M.W.n - 1 : ℕ) : ℝ) = M.W.n - 1 := by rw [Nat.cast_sub (by omega)]; simp
+    refine harcV.2.2.2.2.2.2 _ _ by_o by_l by_l ?_
+    have hc : ((M.W.n - 1 : ℕ) : ℝ) = M.W.n - 1 := by rw [Nat.cast_sub by_o]; simp
     rw [hc, h0]
     unfold sideInArc
     rw [ite_eq_right (by push_cast; linarith)]
@@ -207,13 +207,11 @@ theorem faced_before_zero {F : Set (Set Point)} {V : Set Point} {l : ℝ} {p : �
   · filter_upwards [eventually_before_end hVne, Ioo_mem_nhdsGT one_pos] with s h1 h2
     have e : (p + M.W.n - 1) % M.W.n = p - 1 := by
       rw [show p + M.W.n - 1 = p - 1 + M.W.n by omega, Nat.add_mod_right,
-        Nat.mod_eq_of_lt (by omega)]
+        Nat.mod_eq_of_lt by_o]
     rw [e]
-    refine harcV.2.2.2.2.2.2 _ _ (by omega) (by linarith [h2.2]) (by linarith [h2.1]) ?_
-    have hc : ((p - 1 : ℕ) : ℝ) = p - 1 := by rw [Nat.cast_sub (by omega)]; simp
-    rw [hc, show (p : ℝ) - 1 + (1 - s) = p + 0 - s by ring]
-    exact h1
-
+    refine harcV.2.2.2.2.2.2 _ _ by_o (by linarith [h2.2]) (by linarith [h2.1]) ?_
+    have hc : ((p - 1 : ℕ) : ℝ) = p - 1 := by rw [Nat.cast_sub by_o]; simp
+    rwa [hc, show (p : ℝ) - 1 + (1 - s) = p + 0 - s by ring]
 /-- **A region faced just after a cut position has an arc starting there.** -/
 theorem arc_start_of_faced (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     (hfin : F.Finite) {c : Set Point} (hc : c ∈ F) {p : ℕ} {t : ℝ} (hA : SideAttach M.W c p t)
@@ -302,46 +300,43 @@ theorem adj_near (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hfin 
     have h1 := faced_after (Nat.mod_lt _ hn) ht0 ht1 harc (WalkAx.arc_cuts hne harc).2.2
     obtain ⟨s, ⟨⟨hs1, hs2⟩, hs3⟩, hs4⟩ := (((h1.and (eventually_not_cut_after hM hF hfin
       ((p : ℝ) + t))).and self_mem_nhdsWithin).and (Ioo_mem_nhdsGT (show (0 : ℝ) <
-        min (1 - t) (b - (d + t)) from lt_min (by linarith) (by linarith)))).exists
-    have hs0 : (0 : ℝ) < s := hs3
-    have hs5 : s < 1 - t := hs4.2.trans_le (min_le_left _ _)
-    have hs6 : s < b - (d + t) := hs4.2.trans_le (min_le_right _ _)
-    refine ⟨d, t + s, le_rfl, ⟨by linarith, by linarith⟩, by linarith, by linarith, ?_, hs1⟩
-    rw [← add_assoc]; exact hs2
+        min (1 - t) (b - (d + t)) from lt_min by_l by_l))).exists
+    have hs0 := hs3
+    have hs5 := hs4.2.trans_le (min_le_left _ _)
+    have hs6 := hs4.2.trans_le (min_le_right _ _)
+    refine ⟨d, t + s, le_rfl, ⟨by_l, by_l⟩, by_l, by_l, ?_, hs1⟩
+    rwa [← add_assoc]
   · right
     intro a ha
     rcases ht0.lt_or_eq with ht0' | ht0'
     · have h1 := faced_before (Nat.mod_lt _ hn) ht0' ht1 harc (WalkAx.arc_cuts hne harc).2.2
       obtain ⟨s, ⟨⟨hs1, hs2⟩, hs3⟩, hs4⟩ := (((h1.and (eventually_not_cut_before hM hF hfin
         ((p : ℝ) + t))).and self_mem_nhdsWithin).and (Ioo_mem_nhdsGT (show (0 : ℝ) <
-          min t ((d + t) - a) from lt_min ht0' (by linarith)))).exists
-      have hs0 : (0 : ℝ) < s := hs3
-      have hs5 : s < t := hs4.2.trans_le (min_le_left _ _)
-      have hs6 : s < (d + t) - a := hs4.2.trans_le (min_le_right _ _)
-      refine ⟨d, t - s, le_rfl, ⟨by linarith, by linarith⟩, by linarith, by linarith, ?_, hs1⟩
-      rw [show (p : ℝ) + (t - s) = p + t - s by ring]; exact hs2
+          min t ((d + t) - a) from lt_min ht0' by_l))).exists
+      have hs0 := hs3
+      have hs5 := hs4.2.trans_le (min_le_left _ _)
+      have hs6 := hs4.2.trans_le (min_le_right _ _)
+      refine ⟨d, t - s, le_rfl, ⟨by_l, by_l⟩, by_l, by_l, ?_, hs1⟩
+      rwa [show (p : ℝ) + (t - s) = p + t - s by ring]
     · subst ht0'
       have hd1 : 1 ≤ d := by
-        have : (0 : ℝ) < d := by linarith
+        have : (0 : ℝ) < d := by_l
         exact_mod_cast this
       have h1 := faced_before_zero (Nat.mod_lt _ hn) harc (WalkAx.arc_cuts hne harc).2.2
-      have hpm : (p + M.W.n - 1) % M.W.n = (g + (d - 1)) % M.W.n := mod_pred_mod hn g hd1
+      have hpm := mod_pred_mod hn g hd1
       rw [hpm] at h1
       obtain ⟨s, ⟨⟨hs1, hs2⟩, hs3⟩, hs4⟩ := (((h1.and (eventually_not_cut_before hM hF hfin
         ((((g + (d - 1)) % M.W.n : ℕ) : ℝ) + 1))).and self_mem_nhdsWithin).and
         (Ioo_mem_nhdsGT (show (0 : ℝ) < min 1 ((d + 0) - a) from
-          lt_min one_pos (by linarith)))).exists
-      have hs0 : (0 : ℝ) < s := hs3
-      have hs5 : s < 1 := hs4.2.trans_le (min_le_left _ _)
-      have hs6 : s < (d + 0) - a := hs4.2.trans_le (min_le_right _ _)
+          lt_min one_pos by_l))).exists
+      have hs0 := hs3
+      have hs5 := hs4.2.trans_le (min_le_left _ _)
+      have hs6 := hs4.2.trans_le (min_le_right _ _)
       have hc : ((d - 1 : ℕ) : ℝ) = d - 1 := by rw [Nat.cast_sub hd1]; simp
-      refine ⟨d - 1, 1 - s, by omega, ⟨by linarith, by linarith⟩, by rw [hc]; linarith,
+      refine ⟨d - 1, 1 - s, by_o, ⟨by_l, by_l⟩, by rw [hc]; linarith,
         by rw [hc]; linarith, ?_, hs1⟩
-      rw [show (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + (1 - s) =
+      rwa [show (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + (1 - s) =
         (((g + (d - 1)) % M.W.n : ℕ) : ℝ) + 1 - s by ring]
-      exact hs2
-
-
 /-- The exit chords of `R` attached at an offset in `(0, L)` from `g` next to which `R` is faced,
 and whose other attachment is outside the stretch (the *crossing* chords of a piece). -/
 def CrossX (M : Model) (F : Set (Set Point)) (R : Set Point) (g L : ℕ) : Set (Set Point) :=
@@ -379,9 +374,9 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
     {g L : ℕ} (hg : g < M.W.n) (hLn : L < M.W.n) {R : Set Point} (hR : R ∈ M.regions F) :
     (CrossX M F R g L).ncard ≤ 4 := by
   set n := M.W.n with hn_def
-  have hn : 0 < n := by omega
+  have hn : 0 < n := by_o
   have hgR : (g : ℝ) < n := by exact_mod_cast hg
-  set O : Set ℝ := {o | ∃ f ∈ exits M F R, ∃ (d : ℕ) (t : ℝ), d < L ∧ 0 ≤ t ∧ t < 1 ∧
+  set O := {o | ∃ f ∈ exits M F R, ∃ (d : ℕ) (t : ℝ), d < L ∧ 0 ≤ t ∧ t < 1 ∧
     0 < (d : ℝ) + t ∧ SideAttach M.W f ((g + d) % n) t ∧ Adj M F R ((g + d) % n) t ∧
     (∃ (pb : ℕ) (tb : ℝ), SideAttach M.W f pb tb ∧
       sidePt M.W pb tb ≠ sidePt M.W ((g + d) % n) t ∧
@@ -390,7 +385,7 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
       0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < n := by
     intro p hp t ht ht1
     have : (p : ℝ) + 1 ≤ n := by exact_mod_cast hp
-    exact ⟨by positivity, by linarith⟩
+    exact ⟨by_p, by_l⟩
   have hLR : ∀ {d : ℕ} {t : ℝ}, d < L → t < 1 → (d : ℝ) + t < L := fun {d t} hd ht => by
     have : (d : ℝ) + 1 ≤ L := by exact_mod_cast hd
     linarith
@@ -407,10 +402,10 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
         ¬ M.IsCut F (((g + dx) % n : ℕ) + tx) → M.Faces ((g + dx) % n) tx R →
         ¬ M.IsCut F (((g + dy) % n : ℕ) + ty) → M.Faces ((g + dy) % n) ty R → False := by
       intro dx dy tx ty hdx hdy htx hty h0 h1 h2 h3 hcx hfx hcy hfy
-      have hox : off n g (((g + dx) % n : ℕ) + tx) = dx + tx := off_key hg hdx htx.1.le htx.2
-      have hoy : off n g (((g + dy) % n : ℕ) + ty) = dy + ty := off_key hg hdy hty.1.le hty.2
+      have hox := off_key hg hdx htx.1.le htx.2
+      have hoy := off_key hg hdy hty.1.le hty.2
       have hoA : off n g (((g + d₂) % n : ℕ) + t₂) = d₂ + t₂ :=
-        off_key hg (by omega) ht₂ ht₂1
+        off_key hg by_o ht₂ ht₂1
       have hKx := hkey (Nat.mod_lt (g + dx) hn) htx.1.le htx.2
       have hKy := hkey (Nat.mod_lt (g + dy) hn) hty.1.le hty.2
       have hKA := hkey (Nat.mod_lt (g + d₂) hn) ht₂ ht₂1
@@ -418,10 +413,10 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
       have hs : M.Separates f₂ (((g + dx) % n : ℕ) + tx) (((g + dy) % n : ℕ) + ty) := by
         refine ⟨(g + d₂) % n, pb, t₂, tb, hA₂, hB, Ne.symm hBne, ?_⟩
         refine off_sep (Nat.cast_nonneg g) hgR hKA.1 hKA.2 hKB.1 hKB.2 hKx.1 hKx.2 hKy.1 hKy.2
-          ⟨by rw [hox, hoA]; exact h1, by rw [hoy, hoA]; exact h2⟩ ?_
+          ⟨by rwa [hox, hoA], by rwa [hoy, hoA]⟩ ?_
         rw [hox, hoy]
         rcases hBo with h | h
-        · left; rw [h]; exact h0
+        · left; rwa [h]
         · right; linarith
       exact ((hM.eq_iff_not_separates hF hfin hR hR (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) htx hty
         hcx hcy hfx hfy).1 rfl) f₂ hf₂.1 hs
@@ -431,29 +426,29 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
         ¬ M.IsCut F (((g + dx) % n : ℕ) + tx) ∧ M.Faces ((g + dx) % n) tx R := by
       rcases adj_near hM hF hfin hne ht₁ ht₁1 hdt₁ hadj₁ with h | h
       · obtain ⟨dx, tx, hdx, htx, h1, h2, h3, h4⟩ := h _ h12
-        exact ⟨dx, tx, hdx, htx, by linarith, h2, h3, h4⟩
+        exact ⟨dx, tx, hdx, htx, by_l, h2, h3, h4⟩
       · obtain ⟨dx, tx, hdx, htx, h1, h2, h3, h4⟩ := h 0 hdt₁
-        exact ⟨dx, tx, hdx, htx, h1, by linarith, h3, h4⟩
+        exact ⟨dx, tx, hdx, htx, h1, by_l, h3, h4⟩
     -- a faced position of `R` near the third position, above the second
     obtain ⟨dz, tz, hdz, htz, hz0, hz1, hcz, hfz⟩ : ∃ (dz : ℕ) (tz : ℝ), dz ≤ d₃ ∧
         tz ∈ Ioo (0 : ℝ) 1 ∧ (d₂ : ℝ) + t₂ < dz + tz ∧ (dz : ℝ) + tz < L ∧
         ¬ M.IsCut F (((g + dz) % n : ℕ) + tz) ∧ M.Faces ((g + dz) % n) tz R := by
       rcases adj_near hM hF hfin hne ht₃ ht₃1 hdt₃ hadj₃ with h | h
       · obtain ⟨dz, tz, hdz, htz, h1, h2, h3, h4⟩ := h _ (hLR hd₃ ht₃1)
-        exact ⟨dz, tz, hdz, htz, by linarith, h2, h3, h4⟩
+        exact ⟨dz, tz, hdz, htz, by_l, h2, h3, h4⟩
       · obtain ⟨dz, tz, hdz, htz, h1, h2, h3, h4⟩ := h _ h23
         exact ⟨dz, tz, hdz, htz, h1, by linarith [hLR hd₃ ht₃1], h3, h4⟩
     rcases adj_near hM hF hfin hne ht₂ ht₂1 hdt₂ hadj₂ with h | h
     · obtain ⟨dy, ty, hdy, hty, h1, h2, h3, h4⟩ := h _ h23
-      exact hsep (by omega) (by omega) htx hty hx0 hx1 h1 (by linarith [hLR hd₃ ht₃1])
+      exact hsep by_o by_o htx hty hx0 hx1 h1 (by linarith [hLR hd₃ ht₃1])
         hcx hfx h3 h4
     · obtain ⟨dy, ty, hdy, hty, h1, h2, h3, h4⟩ := h _ h12
-      exact hsep (by omega) (by omega) hty htz (by linarith) h2 hz0 hz1 h3 h4 hcz hfz
+      exact hsep by_o by_o hty htz by_l h2 hz0 hz1 h3 h4 hcz hfz
   have hOfin : O.Finite := by
     refine ((hM.finite_cuts hF hfin).image (off n g)).subset ?_
     rintro _ ⟨f, hf, d, t, hd, ht, ht1, -, hA, -, -, rfl⟩
-    exact ⟨_, ⟨f, hf.1, _, _, hA, rfl⟩, off_key hg (by omega) ht ht1⟩
-  have hO2 : O.ncard ≤ 2 := ncard_le_two_of_no_three hno3
+    exact ⟨_, ⟨f, hf.1, _, _, hA, rfl⟩, off_key hg by_o ht ht1⟩
+  have hO2 := ncard_le_two_of_no_three hno3
   have hsub : CrossX M F R g L ⊆ ⋃ o ∈ O, {f | f ∈ F ∧ ∃ (d : ℕ) (t : ℝ), d < L ∧ 0 ≤ t ∧
       t < 1 ∧ o = d + t ∧ SideAttach M.W f ((g + d) % M.W.n) t} := by
     rintro f ⟨hf, d, t, hd, ht, ht1, hdt, hA, hadj, hX⟩
@@ -466,7 +461,7 @@ theorem crossX_ncard_le (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm)
         Set.ncard_le_ncard hsub (hfin.subset (by
           intro f hf; simp only [Set.mem_iUnion] at hf; obtain ⟨o, -, hf, -⟩ := hf; exact hf))
     _ ≤ 2 * O.ncard := ncard_biUnion_le_mul hOfin _ fun o _ => ncard_at_off_le hM hF hfin g L o
-    _ ≤ 4 := by omega
+    _ ≤ 4 := by_o
 
 end FuseDeg
 

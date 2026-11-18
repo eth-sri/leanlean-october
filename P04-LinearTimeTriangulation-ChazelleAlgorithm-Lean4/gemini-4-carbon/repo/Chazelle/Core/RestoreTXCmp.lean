@@ -96,23 +96,23 @@ def KindRad (P : Polygon) (M : Model) (c : Config) (Rd : ℝ) : Prop :=
 theorem kindRad_run (hE : TGood P W M N c₀) (hI : TInv W c₀ c) : ∃ Rd, KindRad P M c Rd := by
   have h21 := hI.h21
   have h20 := hI.h20
-  have i0 := hI.hin 83000 (by norm_num) (by norm_num)
+  have i0 := hI.hin 83000 by_n by_n
   have hD := hE.hwfMD.1
   rcases hE.kind with ⟨h0, C, hM⟩ | ⟨h1, hMi, hbit⟩
   · obtain ⟨H, C', hC, hM', hwf⟩ := hI.chain hE hM
     refine ⟨C'.radius, Or.inl ⟨by rw [h21, h0], H, C', hC, hM', hwf, ?_, rfl⟩⟩
-    have hr : HReg P c.nmem (c₀.nreg 83000) :=
+    have hr :=
       hreg_keep hE.hwfMD hE.hMD hE.hreg (fun a ha => hI.hm a ha)
-    exact hr (by rw [hI.hm _ (by omega)]; exact h0) H C' (by rw [← h20]; exact hC)
+    exact hr (by rwa [hI.hm _ by_o]) H C' (by rwa [← h20])
   · refine ⟨_, Or.inr ⟨by rw [h21, h1], hMi, ?_, rfl⟩⟩
-    rw [h20, hI.hm _ (by omega)]; exact hbit
+    rwa [h20, hI.hm _ by_o]
 
 /-- The radius survives a frame that keeps the memory and the registers `83020`, `83021` and the
 allocator. -/
 theorem KindRad.frame {Rd : ℝ} {c' : Config} (h : KindRad P M c Rd) (hm : c'.nmem = c.nmem)
     (h20 : c'.nreg 83020 = c.nreg 83020) (h21 : c'.nreg 83021 = c.nreg 83021)
     (hA : c'.nreg ALLOC = c.nreg ALLOC) : KindRad P M c' Rd := by
-  unfold KindRad; rw [hm, h20, h21, hA]; exact h
+  unfold KindRad; rwa [hm, h20, h21, hA]
 
 /-! ## One record -/
 
@@ -139,14 +139,14 @@ theorem gRec_exec (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {Rd : ℝ} (hK 
         have q1 := h1 (50201, a) (by simp [cRecL])
         have q2 := h1 (50202, b) (by simp [cRecL])
         simp only at q0 q1 q2
-        refine ⟨⟨by rw [q1, ← hMC]; exact he, by rw [q1, q2, ← hMC]; exact hp,
+        refine ⟨⟨by rwa [q1, ← hMC], by rwa [q1, q2, ← hMC],
           by rw [q1, q2, ← hMC]; exact hy C hMC⟩, fun H' hH' => ?_⟩
         rw [hm, q0] at hH'
         have := NFLoc.hostAt_unique hH' hC.1
         subst this
         have hn : (Qof P).n = P.n := shear_n _ _
-        rw [← hn]; exact hreg)
-      (by omega)
+        rwa [← hn])
+      by_o
     have q1 := h1 (50201, a) (by simp [cRecL])
     have q2 := h1 (50202, b) (by simp [cRecL])
     simp only at q1 q2
@@ -160,9 +160,9 @@ theorem gRec_exec (hE : TGood P W M N c₀) (hI : TInv W c₀ c) {Rd : ℝ} (hK 
     have hn := interior_n (P := P)
     obtain ⟨c', k, ex, hk, hr, -⟩ := iRec_exec (P := P) (W := W) hG
       (by unfold hostWords at hHW; omega) hI.hw (a := a) (b := b) hbit rfl hI.h22 ha hb hp
-      (by rw [← hn]; exact he)
+      (by rwa [← hn])
     have ex' : Exec P W (gRec a b) c c' (k + 2) := .ifLtN_false (by rw [h21, h23]; omega) ex
-    exact ⟨c', _, ex', by omega, hr, exec_frameB ex' (wr_gRec a b)⟩
+    exact ⟨c', _, ex', by_o, hr, exec_frameB ex' (wr_gRec a b)⟩
 
 /-! ## The comparison -/
 
@@ -173,7 +173,7 @@ def YR (M : Model) (y : ℝ) : Prop := ∀ C : Chain, M = chainModel C → |y| <
 theorem xcR_xG (hE : TGood P W M N c₀) :
     XG P W M RS0 (TInv W c₀) (YR M) xcR BxR 34000 := by
   intro a b d e ha hb hd he c hw hctx hp1 he1 hp2 he2 hyy hY hroom
-  have hI : TInv W c₀ c := hctx.1
+  have hI := hctx.1
   have inR : ∀ r, InB RS0 r → InR r := fun r h => by unfold InB RS0 at h; unfold InR; omega
   have ha' := inR a ha
   have hb' := inR b hb
@@ -183,7 +183,7 @@ theorem xcR_xG (hE : TGood P W M N c₀) :
   obtain ⟨Rd, hK⟩ := kindRad_run hE hI
   -- the first record
   obtain ⟨c₁, k₁, e₁, hk₁, r₁, f₁⟩ := gRec_exec hE hI hK (inR a ha) (inR b hb) hp1 he1 hY
-    (by omega)
+    by_o
   have g₁ : ∀ r, 80000 ≤ r → r < 90000 → c₁.nreg r = c.nreg r := fun r h1 h2 => f₁.1 r (by
     simp only [BgK, Bprim, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
   have hA1 : c₁.nreg ALLOC = c.nreg ALLOC := f₁.1 _ (by simp [BgK, Bprim, ALLOC])
@@ -204,22 +204,22 @@ theorem xcR_xG (hE : TGood P W M N c₀) :
   have F02 : FrameB BxR c c₂ := f₁'.trans (frameB_mono f₂ (fun r hr => by
     simp [recSave] at hr; simp only [BxR, Bool.or_eq_true, decide_eq_true_eq]; right; omega))
   have g₂ : ∀ r, 80000 ≤ r → r < 90000 → c₂.nreg r = c.nreg r := fun r h1 h2 => by
-    rw [k2 r (by omega)]; exact g₁ r h1 h2
-  have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := by rw [k2 _ (by unfold ALLOC; omega), hA1]
-  have hI2 : TInv W c₀ c₂ := stable_tinv (Bo := oracleBands) (by decide) c c₂ 0 hI e₂.wb_right
+    rw [k2 r by_o]; exact g₁ r h1 h2
+  have hA2 : c₂.nreg ALLOC = c.nreg ALLOC := by rw [k2 _ by_ao, hA1]
+  have hI2 : TInv W c₀ c₂ := stable_tinv (Bo := oracleBands) by_d c c₂ 0 hI e₂.wb_right
     (FrameR.of_frameB F02 (fun r hr => Or.inr (opW_BxR r hr).1) (opW_alloc opW_BxR) 0)
-  have hK2 : KindRad P M c₂ Rd := hK.frame F02.2.2.1 (g₂ _ (by norm_num) (by norm_num))
-    (g₂ _ (by norm_num) (by norm_num)) hA2
+  have hK2 : KindRad P M c₂ Rd := hK.frame F02.2.2.1 (g₂ _ by_n by_n)
+    (g₂ _ by_n by_n) hA2
   -- the second record
   obtain ⟨c₃, k₃, e₃, hk₃, r₃, f₃⟩ := gRec_exec hE hI2 hK2 (inR d hd) (inR e he)
-    (by rw [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2]; exact hp2)
-    (by rw [g₂ d hd'.1 hd'.2]; exact he2)
+    (by rwa [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2])
+    (by rwa [g₂ d hd'.1 hd'.2])
     (fun C hC => by rw [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2, ← hyy]; exact hY C hC)
     (by rw [hA2]; omega)
   rw [g₂ d hd'.1 hd'.2, g₂ e he'.1 he'.2] at r₃
   have r₂' : AbsRec P c₃ 10700 (M.pos (Qof P) ⟨c.nreg a, c.nreg b⟩).1 Rd :=
-    absRec_copy r₂ (f₃.1 _ (by decide)) (f₃.1 _ (by decide)) (f₃.1 _ (by decide))
-      (f₃.1 _ (by decide))
+    absRec_copy r₂ (f₃.1 _ by_d) (f₃.1 _ by_d) (f₃.1 _ by_d)
+      (f₃.1 _ by_d)
   -- load both
   obtain ⟨c₄, e₄, v₄, f₄⟩ := copies_run (P := P) recLoad c₃ e₃.wb_right
     (by simp only [recLoad, List.mem_cons, List.not_mem_nil, or_false]

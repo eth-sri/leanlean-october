@@ -52,7 +52,7 @@ theorem chordFamily_pair (J : Merge.Junction) {S₂ : Set (Set Point)}
     (hS₂ : S₂ ⊆ Merge.augChords J.right) (hS₂f : S₂.Finite) :
     ∃ Q : Polygon, (chainModel J.right).ChordFamily Q S₂ ∧
       (chainModel J.whole).ChordFamily Q (F₂plus J S₂) := by
-  have hfin : (S₂ ∪ F₂plus J S₂).Finite := hS₂f.union (F₂plus_finite J hS₂f)
+  have hfin := hS₂f.union (F₂plus_finite J hS₂f)
   refine ⟨hPolyS _ hfin, ⟨hS₂f, hS₂, fun c hc => hPolyS_vtx hfin (Or.inl hc) (hS₂ hc)⟩,
     ⟨F₂plus_finite J hS₂f, F₂plus_subset J hS₂, fun c hc =>
       hPolyS_vtx hfin (Or.inr hc) (F₂plus_subset J hS₂ hc)⟩⟩
@@ -97,7 +97,7 @@ theorem stops_sorted {rs : List (ℕ × ℕ × ℕ × ℕ × ℕ)}
     soff P J (rs[i]'(by omega)) ≤ soff P J rs[i'] := by
   rcases hii.lt_or_eq with h | rfl
   · have hl : (stopsOf J (Qof P) N₂ rs).length = rs.length := by simp [stopsOf]
-    have := List.pairwise_iff_getElem.1 hst.2.2.1 i i' (by omega) (by omega) h
+    have := List.pairwise_iff_getElem.1 hst.2.2.1 i i' by_o by_o h
     rw [stopsOf_getElem, stopsOf_getElem] at this
     exact this
   · exact le_rfl
@@ -109,18 +109,18 @@ theorem stops_two (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂
     (hi : i + 2 < rs.length) :
     soff P J (rs[i]'(by omega)) < soff P J rs[i + 2] := by
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
-  have hS₂ : S₂ ⊆ Merge.augChords J.right := hN.1.2.1
-  have hS₂f : S₂.Finite := hN.1.1
+  have hS₂ := hN.1.2.1
+  have hS₂f := hN.1.1
   have hC := corr_right0 J hP hS₂ hS₂f
-  have h01 := stops_sorted hst (i := i) (i' := i + 1) (by omega) (by omega)
-  have h12 := stops_sorted hst (i := i + 1) (i' := i + 2) (by omega) (by omega)
+  have h01 := stops_sorted hst (i := i) (i' := i + 1) by_o by_o
+  have h12 := stops_sorted hst (i := i + 1) (i' := i + 2) by_o by_o
   by_contra hlt
   push Not at hlt
-  have e01 : soff P J (rs[i]'(by omega)) = soff P J (rs[i + 1]'(by omega)) := by linarith
-  have e02 : soff P J (rs[i]'(by omega)) = soff P J rs[i + 2] := by linarith
-  obtain ⟨f0, -, a0, -⟩ := stop_facts hst (i := i) (by omega)
-  obtain ⟨f1, -, a1, -⟩ := stop_facts hst (i := i + 1) (by omega)
-  obtain ⟨f2, -, a2, -⟩ := stop_facts hst (i := i + 2) (by omega)
+  have e01 : soff P J (rs[i]' by_o) = soff P J (rs[i + 1]' by_o) := by_l
+  have e02 : soff P J (rs[i]' by_o) = soff P J rs[i + 2] := by_l
+  obtain ⟨f0, -, a0, -⟩ := stop_facts hst (i := i) by_o
+  obtain ⟨f1, -, a1, -⟩ := stop_facts hst (i := i + 1) by_o
+  obtain ⟨f2, -, a2, -⟩ := stop_facts hst (i := i + 2) by_o
   obtain ⟨p01, t01⟩ := pos_eq_of_oW hP hS₂ hS₂f a0.1 a1.1 a0.2.1 a0.2.2.1 a1.2.1 a1.2.2.1 e01
   obtain ⟨p02, t02⟩ := pos_eq_of_oW hP hS₂ hS₂f a0.1 a2.1 a0.2.1 a0.2.2.1 a2.2.1 a2.2.2.1 e02
   -- the chords are pairwise distinct (no duplicate stops)
@@ -134,12 +134,12 @@ theorem stops_two (hP : J.P.Simple) (hN : IsNF (chainModel J.right) (Qof P) N₂
         stopSet J (Qof P) N₂ (rs[b]).2.2.1 (rs[b]).2.2.2.1 (rs[b]).2.2.2.2 := by
     intro a b ha hb hab h1 h2 h3
     apply hab
-    have := (List.Nodup.getElem_inj_iff hnd (hi := by rw [hl]; exact ha) (hj := by rw [hl]; exact hb)).1 (by
+    have := (List.Nodup.getElem_inj_iff hnd (hi := by rw [hl]; exact ha) (hj := by rwa [hl])).1 (by
       rw [stopsOf_getElem ha, stopsOf_getElem hb, h2, h1, h3])
     exact this
-  have d01 := dist i (i + 1) (by omega) (by omega) (by omega) p01 t01
-  have d02 := dist i (i + 2) (by omega) (by omega) (by omega) p02 t02
-  have d12 := dist (i + 1) (i + 2) (by omega) (by omega) (by omega) (p01.symm.trans p02)
+  have d01 := dist i (i + 1) by_o by_o by_o p01 t01
+  have d02 := dist i (i + 2) by_o by_o by_o p02 t02
+  have d12 := dist (i + 1) (i + 2) by_o by_o by_o (p01.symm.trans p02)
     (t01.symm.trans t02)
   rw [← t01, ← p01] at a1
   rw [← t02, ← p02] at a2
@@ -186,8 +186,8 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
         BeforeFaces (chainModel J.right) (vEnd J) 0 V ∧ Λ = {V}) :
     EvInv J (N₂.F (chainModel J.right) (Qof P)) (Lst J) Λ := by
   set S₂ := N₂.F (chainModel J.right) (Qof P) with hS₂d
-  have hS₂ : S₂ ⊆ Merge.augChords J.right := hN.1.2.1
-  have hS₂f : S₂.Finite := hN.1.1
+  have hS₂ := hN.1.2.1
+  have hS₂f := hN.1.1
   have hC := corr_right0 J hP hS₂ hS₂f
   obtain ⟨Q', hQ₂, hQF⟩ := chordFamily_pair J hS₂ hS₂f
   obtain ⟨⟨hpKn, -, -⟩, hoK, hstop⟩ := startMathTask P J N₂ hP hN
@@ -207,8 +207,7 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
     obtain ⟨h1, h2, h3⟩ := hkx
     refine ⟨k, hk', ?_, h3⟩
     unfold soff
-    rw [h2, h1]
-    exact hoK'
+    rwa [h2, h1]
   -- a stop at the start key is attached at the start key
   have stopAt : ∀ i (hi : i < rs.length), soff P J rs[i] = Lst J →
       SideAttach (chainModel J.whole).W
@@ -219,12 +218,11 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
     obtain ⟨h1, h2⟩ := pos_eq_of_oW hP hS₂ hS₂f hA.1 hpKn hA.2.1 hA.2.2.1 le_rfl one_pos e
     rw [h2, h1] at hA
     exact hA
-  by_cases hanc : ∃ i, ∃ hi : i < rs.length, soff P J rs[i] = Lst J ∧ (ax[i]'(by omega)).1 = 1
+  by_cases hanc : ∃ i, ∃ hi : i < rs.length, soff P J rs[i] = Lst J ∧ (ax[i]' by_o).1 = 1
   · obtain ⟨i₀, hi₀, ho₀, ha₀⟩ := hanc
     have hZ := (stop_facts hst hi₀).1
     have hZK := stopAt i₀ hi₀ ho₀
-    have hZb : ¬ EvBrk J (stopSet J (Qof P) N₂ (rs[i₀]).2.2.1 (rs[i₀]).2.2.2.1
-        (rs[i₀]).2.2.2.2) := ((haux i₀ hi₀).2.1).1 ha₀
+    have hZb := ((haux i₀ hi₀).2.1).1 ha₀
     rw [← hoK']
     by_cases hpock : ∃ e ∈ F₂plus J S₂, SideAttach (chainModel J.whole).W e pK 0 ∧
         ∃ (q : ℕ) (s : ℝ), SideAttach (chainModel J.whole).W e q s ∧ oW J (q + s) = 0
@@ -242,7 +240,7 @@ theorem evInv_start {P : Polygon} {J : Merge.Junction} {N₂ : NF} (hP : J.P.Sim
     exact evInv_anchor hP hQ₂ hQF (noTieV hP hS₂) hpKn le_rfl one_pos (by rw [hoK']) hZ hZK hZz
       hzL (fun e he heK q s hQ => hpock e he heK q s hQ) (fun e he heK hnb _ => by
         obtain ⟨j, hj, hoj, rfl⟩ := atKey e he heK
-        have haj : (ax[j]'(by omega)).1 = 1 := ((haux j hj).2.1).2 hnb
+        have haj := ((haux j hj).2.1).2 hnb
         exact evSideLab_mono (hΛ j hj hoj haj)
           ((haux j hj).2.2.2.2.2.1 haj (fun q s hQ => hpock _ he heK q s hQ)))
   · push Not at hanc

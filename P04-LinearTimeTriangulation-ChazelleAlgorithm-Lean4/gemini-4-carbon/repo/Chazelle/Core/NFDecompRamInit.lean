@@ -44,7 +44,7 @@ theorem setupS_exec {c : Config} (hw : WordsBounded W c) {B K R CB RB LB : ℕ}
   have e3 : B + 2 + 1 = B + 3 := rfl
   have e5 : B + 2 + 1 + 2 = B + 5 := rfl
   have e7 : B + 2 + 1 + 2 + 2 = B + 7 := rfl
-  refine ⟨by omega, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_, rfl, rfl, rfl, rfl, ?_⟩
+  refine ⟨by_o, ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩, ?_, ?_, rfl, rfl, rfl, rfl, ?_⟩
   · config_simp
   · config_simp
   · config_simp
@@ -98,8 +98,8 @@ theorem initBody_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c
       ∀ f j, f < 19 → j < R → fv c'.nmem A R f j =
         if j = c.nreg 60020 ∧ (f = 2 ∨ f = 7 ∨ f = 11 ∨ f = 12) then (if f = 7 then 1 else 0)
         else fv c.nmem A R f j := by
-  have b2 := hR.b 2 (by norm_num); have b7 := hR.b 7 (by norm_num)
-  have b11 := hR.b 11 (by norm_num); have b12 := hR.b 12 (by norm_num)
+  have b2 := hR.b 2 by_n; have b7 := hR.b 7 by_n
+  have b11 := hR.b 11 by_n; have b12 := hR.b 12 by_n
   simp only [Nat.reduceAdd] at b2 b7 b11 b12
   have z := hR.zero
   have o := hR.one
@@ -141,19 +141,19 @@ theorem initLoop_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c
       have hRd := hR.frame hfd
       rw [hRd.rR] at ht
       obtain ⟨d', k', e', rfl, hf', hi', hv'⟩ := initBody_exec (P := P) hwd hRd ht hroom
-      refine ⟨d', 9, e', ⟨e'.wb_right, hfd.trans hf', by omega, fun j hj => ?_⟩, by omega⟩
+      refine ⟨d', 9, e', ⟨e'.wb_right, hfd.trans hf', by_o, fun j hj => ?_⟩, by_o⟩
       rw [hi'] at hj
-      have hjR : j < R := by omega
-      rw [hv' 2 j (by norm_num) hjR, hv' 7 j (by norm_num) hjR, hv' 11 j (by norm_num) hjR,
-        hv' 12 j (by norm_num) hjR]
+      have hjR : j < R := by_o
+      rw [hv' 2 j by_n hjR, hv' 7 j by_n hjR, hv' 11 j by_n hjR,
+        hv' 12 j by_n hjR]
       by_cases e : j = d.nreg 60020
       · simp [e]
       · simp only [e, false_and, ite_false]
-        exact hvd j (by omega))
-    ⟨hw, DFr.refl _ _ c, by omega, fun j hj => by omega⟩
+        exact hvd j by_o)
+    ⟨hw, DFr.refl _ _ c, by_o, fun j hj => by omega⟩
   have hR' := hR.frame hf'
   rw [hR'.rR] at htest
-  refine ⟨c', k, e, by rw [h0] at hk; omega, hw', hf', fun j hj => hv j (by omega)⟩
+  refine ⟨c', k, e, by rw [h0] at hk; omega, hw', hf', fun j hj => hv j by_o⟩
 
 /-- **The initialisation.** -/
 theorem initS_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
@@ -167,13 +167,13 @@ theorem initS_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
   refine spec_seq (spec_instr (Exec.constN hw 60020 0 (Nat.zero_le _)) fun hw1 => ?_)
   have hf1 : DFr (A + 12) (A + 12 + 19 * R) c
       { c with nreg := upd c.nreg 60020 0 } :=
-    DFr.nreg _ fun r hr _ => by unfold Prot at hr; rw [Machine.upd_other _ _ _ (by omega)]
+    DFr.nreg _ fun r hr _ => by unfold Prot at hr; rw [Machine.upd_other _ _ _ by_o]
   obtain ⟨c2, k2, e2, hk2, hw2, hf2, hv2⟩ := initLoop_exec (P := P) hw1 (hR.frame hf1)
     (by config_simp) hroom
   have hR2 := (hR.frame hf1).frame hf2
   refine spec_seq ⟨c2, k2, e2, ?_⟩
-  have b1 := hR2.b 1 (by norm_num); have b2 := hR2.b 2 (by norm_num)
-  have b13 := hR2.b 13 (by norm_num); have b15 := hR2.b 15 (by norm_num)
+  have b1 := hR2.b 1 by_n; have b2 := hR2.b 2 by_n
+  have b13 := hR2.b 13 by_n; have b15 := hR2.b 15 by_n
   simp only [Nat.reduceAdd] at b1 b2 b13 b15
   have z := hR2.zero; have o := hR2.one; have t := hR2.two
   unfold rootInit
@@ -181,8 +181,8 @@ theorem initS_exec {A R K CB RB LB : ℕ} {c : Config} (hw : WordsBounded W c)
   all_goals first
     | (config_simp; simp (config := { failIfUnchanged := false }) only [b1, b2, b13, b15, z]; omega)
     | skip
-  have hR0 : 0 < R := by omega
-  refine ⟨by omega, ‹_›, hf1.trans (hf2.trans ⟨fun r hr hra => ?_, rfl, rfl, rfl, fun a ha => ?_⟩),
+  have hR0 : 0 < R := by_o
+  refine ⟨by_o, ‹_›, hf1.trans (hf2.trans ⟨fun r hr hra => ?_, rfl, rfl, rfl, fun a ha => ?_⟩),
     fun j hj => ?_, ?_, ?_, ?_⟩
   · unfold Prot at hr; config_simp; simp (disch := omega) only [Machine.upd_other]
   · config_simp; simp only [b1, b2, b13, b15, z]

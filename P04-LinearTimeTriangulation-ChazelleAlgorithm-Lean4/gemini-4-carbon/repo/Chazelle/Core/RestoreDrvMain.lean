@@ -87,7 +87,7 @@ theorem rounds_exec {E : DrvEnv} (hE : DrvGood E) {c : Config} (hI : OutI E 0 c)
 theorem clog_two_pow_mul (j x : ℕ) : Nat.clog 2 (2 ^ j * x) ≤ j + Nat.clog 2 x := by
   apply Nat.clog_le_of_le_pow
   rw [pow_add]
-  exact Nat.mul_le_mul_left _ (Nat.le_pow_clog (by norm_num) x)
+  exact Nat.mul_le_mul_left _ (Nat.le_pow_clog by_n x)
 
 /-- The constant of the round bound. -/
 def C1 (κf : ℕ → ℕ) (κB d0 D : ℕ) : ℕ :=
@@ -108,11 +108,11 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
   set A := E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + Nat.clog 2 K1 + 1) with hA
   set A0 := E.F E.γ * E.G E.γ * (E.Hc E.γ + Nat.clog 2 E.γ + 1) with hA0
   set L := Nat.clog 2 K1 with hL
-  have hFG : 1 ≤ E.F E.γ * E.G E.γ := Nat.one_le_iff_ne_zero.2 (by positivity)
+  have hFG : 1 ≤ E.F E.γ * E.G E.γ := Nat.one_le_iff_ne_zero.2 by_p
   have hA1 : 1 ≤ A := by
     rw [hA]; nlinarith
   have hA0A : A0 ≤ A := by
-    rw [hA, hA0]; exact Nat.mul_le_mul_left _ (by omega)
+    rw [hA, hA0]; exact Nat.mul_le_mul_left _ by_o
   have hLA : L + 1 ≤ A := by
     rw [hA]
     calc L + 1 ≤ 1 * (E.Hc E.γ + Nat.clog 2 E.γ + L + 1) := by omega
@@ -125,14 +125,14 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
     rw [this]; exact clog_two_pow_mul _ _
   have hBr : E.Br = 40 + 21 * E.Kc + (E.Bf + 2) * E.Kc +
       E.κB * (2 * E.Kc * (Nat.clog 2 (2 * E.Kc) + 1) + 1) := rfl
-  have hK1p : 1 ≤ K1 := by omega
+  have hK1p : 1 ≤ K1 := by_o
   have hTp : 1 ≤ T := Nat.one_le_two_pow
   -- the four terms
-  have t1 : 40 ≤ 40 * K1 * A := by nlinarith
+  have t1 : 40 ≤ 40 * K1 * A := by_nl
   have t2 : 21 * E.Kc ≤ 21 * T * K1 * A := by rw [hKc]; nlinarith
   have t3 : (E.Bf + 2) * E.Kc ≤ (E.κf (E.d0 + E.D) + 22) * T * K1 * A := by
     rw [hBf, hKc]
-    have h1 : E.κf (E.d0 + E.D) * A0 + 22 ≤ (E.κf (E.d0 + E.D) + 22) * A := by nlinarith
+    have h1 : E.κf (E.d0 + E.D) * A0 + 22 ≤ (E.κf (E.d0 + E.D) + 22) * A := by_nl
     have h2 := Nat.mul_le_mul_right (T * K1) h1
     nlinarith
   have t4 : 2 * E.Kc * (Nat.clog 2 (2 * E.Kc) + 1) + 1 ≤
@@ -140,7 +140,7 @@ theorem Br_le (E : DrvEnv) (hF : 1 ≤ E.F E.γ) (hG : 1 ≤ E.G E.γ) :
     rw [hKc]
     have h1 : 2 * (T * K1) * (Nat.clog 2 (2 * (T * K1)) + 1) ≤
         2 * (T * K1) * (E.d0 + 3 + L) := Nat.mul_le_mul_left _ (by rw [← hKc]; omega)
-    have h2 : E.d0 + 3 + L ≤ (E.d0 + 3) * A := by nlinarith
+    have h2 : E.d0 + 3 + L ≤ (E.d0 + 3) * A := by_nl
     have h3 : 2 * (T * K1) * (E.d0 + 3 + L) ≤ 2 * (T * K1) * ((E.d0 + 3) * A) :=
       Nat.mul_le_mul_left _ h2
     nlinarith
@@ -185,54 +185,53 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
   have hK : c.nmem NFH = N.nChords := hNW.nfAt.1
   rw [hK] at hroom ⊢
   set K := N.nChords with hKd
-  have hγ1 : 1 ≤ γ := one_le_gamma hGM hNF.1 hsg
+  have hγ1 := one_le_gamma hGM hNF.1 hsg
   obtain ⟨hF1, hG1⟩ := oracle_pos hsh hcu hw hGE hWh hX hcap hwf hreg hMD hGM hOk hγ1
     (hw.1 _) (hw.1 _) (hw.1 _)
   -- the driver data
   set E : DrvEnv := ⟨P, W, M, c.nreg ALLOC, c.nmem, MD, d0, D, γ, g, mkF sh cu, sB, κf, κB, F, G,
     H, X, Ok, N.F M (Qof P), K⟩ with hEd
-  have hE : DrvGood E := ⟨hmkF sh cu Bs Bc F G H X Ok oracleBands subset_rfl (by decide) hloc hhalf
+  have hE : DrvGood E := ⟨hmkF sh cu Bs Bc F G H X Ok oracleBands subset_rfl by_d hloc hhalf
     (fun P M h => Or.inl (hOkM P M h))
     hBs hBc hsh hcu, hsB, hGE, hWh, hX,
     fun m hm => by
-      show γ ≤ X.cap P m g
-      rw [hloc P c.nmem m g (c.nreg ALLOC) hm hX]; exact hcap,
+      rwa [hloc P c.nmem m g (c.nreg ALLOC) hm hX],
     hwf, hMD, hreg, hsimp, hGM, hOk, hfull⟩
   -- cost bounds
   set A := F γ * G γ * (H γ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1) with hAd
-  have hFG : 1 ≤ F γ * G γ := Nat.one_le_iff_ne_zero.2 (by positivity)
+  have hFG : 1 ≤ F γ * G γ := Nat.one_le_iff_ne_zero.2 by_p
   have hA1 : 1 ≤ A := by rw [hAd]; nlinarith
   have hBr : E.Br ≤ C1 κf κB d0 D * (K + 1) * A := Br_le E hF1 hG1
   have hcost : κRestore κf κB d0 D * (K + 1) * F γ * G γ *
       (H γ + Nat.clog 2 γ + Nat.clog 2 (K + 1) + 1) = κRestore κf κB d0 D * (K + 1) * A := by
     rw [hAd]; ring
   rw [hcost] at hroom ⊢
-  have hK1A : 1 ≤ (K + 1) * A := Nat.one_le_iff_ne_zero.2 (by positivity)
+  have hK1A : 1 ≤ (K + 1) * A := Nat.one_le_iff_ne_zero.2 by_p
   have hbig : (E.Br + 2) * (E.d0 + 1) + 20 + d0 + D ≤ κRestore κf κB d0 D * (K + 1) * A := by
     have h1 : (E.Br + 2) * (d0 + 1) ≤ (C1 κf κB d0 D * (K + 1) * A + 2) * (d0 + 1) :=
-      Nat.mul_le_mul_right _ (by omega)
+      Nat.mul_le_mul_right _ by_o
     have h2 : κRestore κf κB d0 D * (K + 1) * A =
         (d0 + 1) * (C1 κf κB d0 D + 14) * ((K + 1) * A) + (d0 + D + 20) * ((K + 1) * A) := by
       unfold κRestore; ring
     have h3 : (C1 κf κB d0 D * (K + 1) * A + 2) * (d0 + 1) ≤
-        (d0 + 1) * (C1 κf κB d0 D + 14) * ((K + 1) * A) := by nlinarith
+        (d0 + 1) * (C1 κf κB d0 D + 14) * ((K + 1) * A) := by_nl
     have h4 : d0 + D + 20 ≤ (d0 + D + 20) * ((K + 1) * A) := Nat.le_mul_of_pos_right _ hK1A
     show (E.Br + 2) * (d0 + 1) + 20 + d0 + D ≤ _
     omega
   -- initialisation
-  have hn3 : 3 ≤ P.n := Jordan.simple_three_le hGE.1
+  have hn3 := Jordan.simple_three_le hGE.1
   have hW5 : 5 ≤ W := le_trans (by unfold hostWords; omega) hWh
-  have hAW : c.nreg ALLOC ≤ W := hw.1 ALLOC
+  have hAW := hw.1 ALLOC
   obtain ⟨c₁, k₁, e₁, hk₁, i20, i21, i22, i23, i24, i12, i10, i11, i19, R₁, rr₁, m₁, rm₁, o₁⟩ :=
-    init_exec (P := P) c hw hW5 (by omega) (by omega)
+    init_exec (P := P) c hw hW5 by_o by_o
   have w₁ := e₁.wb_right
-  have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := R₁ _ (by left; decide) (by decide)
+  have A₁ : c₁.nreg ALLOC = c.nreg ALLOC := R₁ _ (by left; decide) by_d
   have hI0 : OutI E 0 c₁ := by
-    refine ⟨w₁, R₁ _ (by left; decide) (by decide), R₁ _ (by left; decide) (by decide),
-      R₁ _ (by left; decide) (by decide), R₁ _ (by left; decide) (by decide),
-      R₁ _ (by left; decide) (by decide), i10, i11, i19, i20, i21, i22, i23, i24, ⟨N, ?_⟩,
-      fun a _ => by rw [m₁], by rw [A₁], by omega, ?_⟩
-    · refine ⟨by rw [i12, m₁, A₁]; exact hNW, hNF, subset_rfl, ?_, hsg, by show N.nChords + 1 ≤ 2 ^ 0 * (K + 1); simp [hKd], fun h => ?_⟩
+    refine ⟨w₁, R₁ _ (by left; decide) by_d, R₁ _ (by left; decide) by_d,
+      R₁ _ (by left; decide) by_d, R₁ _ (by left; decide) by_d,
+      R₁ _ (by left; decide) by_d, i10, i11, i19, i20, i21, i22, i23, i24, ⟨N, ?_⟩,
+      fun a _ => by rw [m₁], by rw [A₁], by_o, ?_⟩
+    · refine ⟨by rwa [i12, m₁, A₁], hNF, subset_rfl, ?_, hsg, by show N.nChords + 1 ≤ 2 ^ 0 * (K + 1); simp [hKd], fun h => ?_⟩
       · exact Model.DegLe.mono _ hdeg (by show d0 ≤ max D (d0 - 0); omega)
       · omega
     · rw [A₁]
@@ -246,29 +245,28 @@ theorem restoreSpecLocal_of_find (hB : BuildNFSpec) (hF : FindSpec) : RestoreSpe
   -- the output
   obtain ⟨c₃, k₃, e₃, hk₃, h05, R₃, rr₃, m₃, rm₃, o₃⟩ := copy1_exec' (P := P) c₂ I₂.wb 80005 80012
   have RF₁ : RF dBands (c.nreg ALLOC) c c₁ k₁ :=
-    rf_of_regs (fun r hr => R₁ r (by omega) (by omega)) rr₁ m₁ rm₁ o₁
+    rf_of_regs (fun r hr => R₁ r by_o by_o) rr₁ m₁ rm₁ o₁
   have RF₃ : RF dBands (c.nreg ALLOC) c₂ c₃ k₃ :=
-    rf_of_regs (fun r hr => R₃ r (by omega)) rr₃ m₃ rm₃ o₃
+    rf_of_regs (fun r hr => R₃ r by_o) rr₃ m₃ rm₃ o₃
   have RFall := RF₁.trans (RF₂.trans RF₃)
   refine ⟨c₃, k₁ + (k₂ + k₃), .seq e₁ (.seq e₂ e₃), ?_, ?_, RFall.to_frame⟩
   · show k₁ + (k₂ + k₃) ≤ _
     omega
   · intro M' N' hM' hN'
-    have hMM : M = M' := NFLoc.modelDesc_unique hMD hM'
+    have hMM := NFLoc.modelDesc_unique hMD hM'
     subst hMM
     have hch := NFLoc.nfAt_chords_eq hNW.nfAt hN'
     have hFeq : N'.F M (Qof P) = N.F M (Qof P) := Gran.F_congr hch
-    have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := R₃ _ (by decide)
+    have hA3 : c₃.nreg ALLOC = c₂.nreg ALLOC := R₃ _ by_d
     have hKN' : N'.nChords = K := by
       show N'.chords.length = N.chords.length; rw [hch]
     refine ⟨N₂, ?_, ?_, hcur₂.nf, by rw [hFeq]; exact hcur₂.sub, ?_, hcur₂.sg, ?_⟩
     · show c.nreg ALLOC ≤ c₃.nreg 80005
-      rw [h05]; exact hcur₂.fresh (by omega)
+      rw [h05]; exact hcur₂.fresh by_o
     · show NFWithin c₃.nmem (c₃.nreg 80005) (c₃.nreg ALLOC) N₂
       rw [h05, m₃, hA3]; exact hcur₂.nw
     · exact Model.DegLe.mono _ hcur₂.deg (by show max D (d0 - (d0 + 1)) ≤ D; omega)
     · have hs := hcur₂.size
-      show N₂.nChords ≤ 2 ^ (d0 + 1) * (N'.nChords + 1)
       rw [hKN']
       have : E.d0 = d0 := rfl
       have : E.K₀ = K := rfl

@@ -59,8 +59,8 @@ theorem pcSet_congr (M : Model) (sE : ℕ) (a : ℝ) {D D' : ℕ} {b b' : ℝ} {
   ext x
   simp only [mem_iUnion, List.mem_range, exists_prop]
   constructor
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [← h d (by omega)]; exact hx⟩
-  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rw [h d (by omega)]; exact hx⟩
+  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rwa [← h d by_o]⟩
+  · rintro ⟨d, hd, hx⟩; exact ⟨d, hd, by rwa [h d by_o]⟩
 
 theorem nat_split (k n : ℕ) : (k : ℝ) = ((k % n : ℕ) : ℝ) + ((k / n : ℕ) : ℤ) * (n : ℝ) := by
   rw [Int.cast_natCast]; exact_mod_cast (Nat.mod_add_div' k n).symm
@@ -101,7 +101,7 @@ theorem wset_decomp (M : Model) {sE : ℕ} (hn : 0 < M.W.n) {a : ℝ} (ha0 : 0 �
         simp only [q]; push_cast; ring
       rw [e1, e2]
       exact wset_edge M (Nat.mod_lt _ hn) le_rfl hb0 hb1 _
-    rw [← hlast, wset_union M (by linarith) (by push_cast; linarith)]
+    rw [← hlast, wset_union M by_l (by push_cast; linarith)]
 
 /-! ## The number of edges -/
 
@@ -150,16 +150,16 @@ theorem piece0_D_le {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
       have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast h
       linarith
     rw [show y.edge + (2 * C.m + 7) - x.edge = (y.edge - x.edge) + (2 * C.m + 7) by omega,
-      Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     omega
   · -- wrap in keys: `y.edge ≤ x.edge`
     have hle : y.edge ≤ x.edge := by
       by_contra h
       push Not at h
       have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast h
-      exact hlt (by linarith)
+      exact hlt by_l
     rcases hle.lt_or_eq with hlt' | heq
-    · rw [Nat.mod_eq_of_lt (by omega)]
+    · rw [Nat.mod_eq_of_lt by_o]
       omega
     · rw [heq, Nat.add_sub_cancel_left, Nat.mod_self]; omega
 
@@ -184,15 +184,15 @@ theorem piece0_end {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x)
       have : (y.edge : ℝ) + 1 ≤ x.edge := by exact_mod_cast h
       linarith
     rw [show y.edge + (2 * C.m + 7) - x.edge = (y.edge - x.edge) + (2 * C.m + 7) by omega,
-      Nat.add_mod_right, Nat.mod_eq_of_lt (by omega), Nat.cast_sub hle]
+      Nat.add_mod_right, Nat.mod_eq_of_lt by_o, Nat.cast_sub hle]
     ring
   · have hle : y.edge ≤ x.edge := by
       by_contra h
       push Not at h
       have : (x.edge : ℝ) + 1 ≤ y.edge := by exact_mod_cast h
-      exact hlt (by linarith)
+      exact hlt by_l
     rcases hle.lt_or_eq with hlt' | heq
-    · rw [Nat.mod_eq_of_lt (by omega)]
+    · rw [Nat.mod_eq_of_lt by_o]
       push_cast [show x.edge ≤ y.edge + (2 * C.m + 7) by omega]
       ring
     · exfalso
@@ -209,7 +209,7 @@ theorem piece0_union {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x
         ((chainModel C).param Q y) (pcD (2 * C.m + 7) x.edge y.edge) := by
   set M := chainModel C
   have hnW : M.W.n = 2 * C.m + 7 := chainModel_n C
-  have hn : 0 < M.W.n := by omega
+  have hn : 0 < M.W.n := by_o
   have kx := key_range hx hxn
   have ky := key_range hy hyn
   rw [← hnW] at kx ky
@@ -225,9 +225,9 @@ theorem piece0_union {n : ℕ} {x y : WPos} (hx : ProperPos (chainModel C) Q n x
   have hxy : x.edge = y.edge := by
     unfold pcD at hD
     rcases Nat.lt_or_ge y.edge x.edge with h | h
-    · rw [Nat.mod_eq_of_lt (by omega)] at hD; omega
+    · rw [Nat.mod_eq_of_lt by_o] at hD; omega
     · rw [show y.edge + (2 * C.m + 7) - x.edge = (y.edge - x.edge) + (2 * C.m + 7) by omega,
-        Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)] at hD
+        Nat.add_mod_right, Nat.mod_eq_of_lt by_o] at hD
       omega
   exact (piece0_nowrap hx hy hxy hxn hwt).le
 

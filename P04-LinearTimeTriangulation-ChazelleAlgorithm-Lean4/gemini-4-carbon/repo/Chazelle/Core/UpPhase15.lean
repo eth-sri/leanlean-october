@@ -76,8 +76,7 @@ theorem rowBody_exec {c : Config} (hw : WordsBounded W c) {j p x Al : ℕ}
   · config_simp; simp only [h42, h22, h41, h20, h21, Machine.upd_apply]
     split_ifs <;> first | omega
   · unfold RowBRG at h1
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
 
 set_option maxHeartbeats 32000000 in
 /-- **The row of grade `g`**: entry `i` at `R' + 3 i` holds the entry of cell `i`. -/
@@ -108,9 +107,8 @@ theorem rowS_exec {c : Config} (hw : WordsBounded W c) {hp g x cnt R' : ℕ}
     refine ⟨rfl, ‹_›, by config_simp; exact h08, by config_simp; simp only [hA, h08]; omega,
       by config_simp; exact h18, by config_simp; exact hA, fun r hr => ?_, rfl, rfl, rfl, rfl⟩
     unfold RowRG at hr
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
-  have g1 : ∀ r, ¬ RowRG r → c1.nreg r = c.nreg r := fr1
+    upd_keep
+  have g1 := fr1
   have c1A : c1.nreg ALLOC = R' := by rw [g1 _ (by unfold RowRG; rw [hAl]; omega)]; exact hA
   have c20 : ∀ c' : Config, (∀ r, ¬ RowRG r → r ≠ ALLOC → c'.nreg r = c1.nreg r) →
       c'.nreg 170020 = 1 ∧ c'.nreg 170021 = 2 ∧ c'.nreg 170022 = 3 ∧ c'.nreg 170029 = 0 :=
@@ -128,7 +126,7 @@ theorem rowS_exec {c : Config} (hw : WordsBounded W c) {hp g x cnt R' : ℕ}
     (∀ r, ¬ RowRG r → r ≠ ALLOC → c'.nreg r = c1.nreg r) ∧
     c'.rreg = c.rreg ∧ c'.rmem = c.rmem ∧ c'.output = c.output
   have hI1 : I c1 := ⟨cnt, le_rfl, hw1, i40, i41, by rw [c1A]; simp, i44,
-    by rw [i42]; exact hC, fun i h1 h2 => absurd h2 (by omega), fun a _ => by rw [hm1],
+    by rwa [i42], fun i h1 h2 => absurd h2 by_o, fun a _ => by rw [hm1],
     fun _ _ _ => rfl, hrr1, hrm1, ho1⟩
   obtain ⟨c', k, e, ⟨j, hj, hw', j40, j41, jA, j44, hCj, hE, hmem, fr, hrr, hrm, ho⟩, htest, hk,
       hψ⟩ :=
@@ -137,25 +135,25 @@ theorem rowS_exec {c : Config} (hw : WordsBounded W c) {hp g x cnt R' : ℕ}
       (fun c2 ⟨j, hj, hw2, j40, j41, jA, j44, hCj, hE, hmem, fr, hrr, hrm, ho⟩ htest => by
         obtain ⟨k20, k21, k22, k29⟩ := c20 c2 fr
         rw [k29, j40] at htest
-        obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := ⟨j - 1, by omega⟩
+        obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := ⟨j - 1, by_o⟩
         -- the cell of chain `j'`
-        have hx4 : c2.nreg 170042 + 4 ≤ R' := (hCj.holds).1
+        have hx4 := (hCj.holds).1
         obtain ⟨c3, k3, e3, hk3, hw3, l40, l41, l42, lA, w0, w1, w2, mw, fr3, hrr3, hrm3, ho3⟩ :=
-          rowBody_exec (P := P) hw2 j40 j41 rfl rfl k20 k21 k22 (by omega) (by omega)
-            (by omega) (by rw [jA]; omega) (by omega)
-        have e3' : R' + 3 * (j' + 1) - 3 = R' + 3 * j' := by omega
+          rowBody_exec (P := P) hw2 j40 j41 rfl rfl k20 k21 k22 by_o by_o
+            by_o (by rw [jA]; omega) by_o
+        have e3' : R' + 3 * (j' + 1) - 3 = R' + 3 * j' := by_o
         rw [e3'] at l41 w0 w1 w2 mw
         -- the values read are below `R'`
-        have r0 : c2.nmem (c2.nreg 170042) = c.nmem (c2.nreg 170042) := hmem _ (Or.inl (by omega))
+        have r0 : c2.nmem (c2.nreg 170042) = c.nmem (c2.nreg 170042) := hmem _ (Or.inl by_o)
         have r1 : c2.nmem (c2.nreg 170042 + 1) = c.nmem (c2.nreg 170042 + 1) :=
-          hmem _ (Or.inl (by omega))
+          hmem _ (Or.inl by_o)
         have r2 : c2.nmem (c2.nreg 170042 + 2) = c.nmem (c2.nreg 170042 + 2) :=
-          hmem _ (Or.inl (by omega))
+          hmem _ (Or.inl by_o)
         have r3 : c2.nmem (c2.nreg 170042 + 3) = c.nmem (c2.nreg 170042 + 3) :=
-          hmem _ (Or.inl (by omega))
-        refine ⟨c3, k3, e3, ⟨j', by omega, hw3, l40, l41, by rw [lA, jA]; omega,
-          by rw [fr3 170044 (by unfold RowBRG; omega) (by rw [hAl]; omega)]; exact j44, ?_, ?_,
-          fun a ha => by rw [mw a (by omega), hmem a (by omega)],
+          hmem _ (Or.inl by_o)
+        refine ⟨c3, k3, e3, ⟨j', by_o, hw3, l40, l41, by rw [lA, jA]; omega,
+          by rwa [fr3 170044 (by unfold RowBRG; omega) (by rw [hAl]; omega)], ?_, ?_,
+          fun a ha => by rw [mw a by_o, hmem a by_o],
           fun r h1 h2 => by
             rw [fr3 r (fun h => h1 (by unfold RowBRG at h; unfold RowRG; omega)) h2, fr r h1 h2],
           by rw [hrr3, hrr], by rw [hrm3, hrm],
@@ -163,7 +161,7 @@ theorem rowS_exec {c : Config} (hw : WordsBounded W c) {hp g x cnt R' : ℕ}
         · rw [l42, r3]
           intro m hm
           have := (hCj m hm).2.2
-          rwa [hm (c2.nreg 170042 + 3) (by omega)] at this
+          rwa [hm (c2.nreg 170042 + 3) by_o] at this
         · intro i h1 h2
           rcases Nat.lt_or_ge i (j' + 1) with h3 | h3
           · have hi : i = j' := by omega
@@ -171,11 +169,11 @@ theorem rowS_exec {c : Config} (hw : WordsBounded W c) {hp g x cnt R' : ℕ}
             rw [w0, w1, w2, r0, r1, r2]
             intro m hm
             have := (hCj m hm).2.1
-            rwa [hm (c2.nreg 170042) (by omega), hm (c2.nreg 170042 + 1) (by omega),
-              hm (c2.nreg 170042 + 2) (by omega)] at this
+            rwa [hm (c2.nreg 170042) by_o, hm (c2.nreg 170042 + 1) by_o,
+              hm (c2.nreg 170042 + 2) by_o] at this
           · have := hE i h3 h2
-            rw [mw (R' + 3 * i) (Or.inr (by omega)), mw (R' + 3 * i + 1) (Or.inr (by omega)),
-              mw (R' + 3 * i + 2) (Or.inr (by omega))]
+            rw [mw (R' + 3 * i) (Or.inr by_o), mw (R' + 3 * i + 1) (Or.inr by_o),
+              mw (R' + 3 * i + 2) (Or.inr by_o)]
             exact this)
       hI1
   have hj0 : j = 0 := by
@@ -183,7 +181,7 @@ theorem rowS_exec {c : Config} (hw : WordsBounded W c) {hp g x cnt R' : ℕ}
     rw [k29, j40] at htest; omega
   subst hj0
   refine ⟨c', k1 + k, .seq e1 e, by rw [i40] at hk; omega, hw', by rw [jA]; simp, by
-    rw [jA]; rw [c1A] at hψ; omega, j44, fun i h => hE i (by omega) h, fun a ha => hmem a (by omega),
+    rw [jA]; rw [c1A] at hψ; omega, j44, fun i h => hE i by_o h, fun a ha => hmem a by_o,
     fun r h1 h2 => by rw [fr r h1 h2, g1 r h1], by rw [hrr], by rw [hrm], by rw [ho]⟩
 
 end proofs

@@ -55,10 +55,10 @@ theorem mountainSign_spec (P : Polygon) (hM : IsMountain P) :
     intro h0; rw [h0, mul_zero] at h; exact lt_irrefl _ h
   unfold mountainSign
   split_ifs with hpos
-  · exact ⟨Or.inl rfl, by linarith⟩
-  · have hneg : det (P.vtx (P.n - 1)) (P.vtx 0) (P.vtx 1) < 0 :=
+  · exact ⟨Or.inl rfl, by_l⟩
+  · have hneg :=
       lt_of_le_of_ne (not_lt.1 hpos) hne
-    exact ⟨Or.inr rfl, by linarith⟩
+    exact ⟨Or.inr rfl, by_l⟩
 
 section init
 variable {P : Polygon} {W : ℕ}

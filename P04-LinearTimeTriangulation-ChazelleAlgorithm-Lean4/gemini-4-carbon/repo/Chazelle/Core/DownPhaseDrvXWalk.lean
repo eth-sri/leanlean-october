@@ -49,8 +49,8 @@ theorem tU_eq (β : Bool) (i : ℕ) :
 /-- **The tour vertex at the start of walk edge `p`.** -/
 theorem walk_vtx (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool) {p : ℕ} (h6 : 6 ≤ p)
     (hp : p ≤ 2 * C.m + 6) : (C.sideWalk β).vtx p = C.P.vtx (tK C.m C.topIdx β p) := by
-  obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
-  rw [C.sideWalk_vtx_tour β (by omega)]
+  obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by_o⟩
+  rw [C.sideWalk_vtx_tour β by_o]
   unfold Chain.sideTour
   rw [sideIdx_eq_tK, chain_vertex_eq hs (by have := tK_le β C.one_le (i + 6) (T := C.topIdx); omega)]
 
@@ -66,13 +66,13 @@ theorem walk_next (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool) {p : ℕ} (h
     (hp : p < 2 * C.m + 6) :
     (C.sideWalk β).vtx ((p + 1) % (C.sideWalk β).n) =
       C.P.vtx (kNext (decide (tU C.m C.topIdx β p < C.m)) (tK C.m C.topIdx β p)) := by
-  obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
+  obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by_o⟩
   have hm1 := C.one_le
-  rw [C.sideWalk_next_tour β (by omega), C.sideWalk_vtx_tour β (by omega)]
+  rw [C.sideWalk_next_tour β by_o, C.sideWalk_vtx_tour β by_o]
   unfold Chain.sideTour
   have hle := C.sideIdx_le β (i + 1)
   have hu := Nat.mod_lt (C.sideS β + i) (show 0 < 2 * C.m by omega)
-  rw [chain_vertex_eq hs (by omega), C.sideIdx_succ, tK, tU_eq, sideE_succ' hu]
+  rw [chain_vertex_eq hs by_o, C.sideIdx_succ, tK, tU_eq, sideE_succ' hu]
 
 theorem sideE_pred' {m u : ℕ} (hu0 : 1 ≤ u) (hu : u < 2 * m) (hum : u ≠ m) :
     sideE m (u - 1) = kPrev (decide (u < m)) (sideE m u) := by
@@ -83,7 +83,7 @@ theorem sideE_pred' {m u : ℕ} (hu0 : 1 ≤ u) (hu : u < 2 * m) (hum : u ≠ m)
 
 theorem mod_pred {x M : ℕ} (hM : 0 < M) (hx : 1 ≤ x % M) : (x - 1) % M = x % M - 1 := by
   have h1 := Nat.div_add_mod x M
-  have h2 : x - 1 = M * (x / M) + (x % M - 1) := by omega
+  have h2 : x - 1 = M * (x / M) + (x % M - 1) := by_o
   rw [h2, Nat.mul_add_mod, Nat.mod_eq_of_lt (by have := Nat.mod_lt x hM; omega)]
 
 /-- **The tour vertex before walk edge `p`** (away from the chain ends). -/
@@ -91,17 +91,17 @@ theorem walk_prev (hs : C.s = 0) (hm : C.m + 1 = C.P.n) (β : Bool) {p : ℕ} (h
     (hp : p ≤ 2 * C.m + 6) (hu0 : tU C.m C.topIdx β p ≠ 0) (hum : tU C.m C.topIdx β p ≠ C.m) :
     (C.sideWalk β).vtx ((p + (C.sideWalk β).n - 1) % (C.sideWalk β).n) =
       C.P.vtx (kPrev (decide (tU C.m C.topIdx β p < C.m)) (tK C.m C.topIdx β p)) := by
-  obtain ⟨i, rfl⟩ : ∃ i, p = (i + 1) + 6 := ⟨p - 7, by omega⟩
+  obtain ⟨i, rfl⟩ : ∃ i, p = (i + 1) + 6 := ⟨p - 7, by_o⟩
   have hm1 := C.one_le
-  rw [C.sideWalk_prev_tour β (by omega) (by omega), C.sideWalk_vtx_tour β (by omega)]
+  rw [C.sideWalk_prev_tour β by_o by_o, C.sideWalk_vtx_tour β by_o]
   unfold Chain.sideTour
   have hle := C.sideIdx_le β (i + 1 - 1)
-  rw [chain_vertex_eq hs (by omega), Nat.add_sub_cancel, Chain.sideIdx_eq, tK]
+  rw [chain_vertex_eq hs by_o, Nat.add_sub_cancel, Chain.sideIdx_eq, tK]
   have hu := tU_lt (T := C.topIdx) β hm1 (i + 1 + 6)
-  rw [← sideE_pred' (by omega) hu hum]
+  rw [← sideE_pred' by_o hu hum]
   congr 1
   rw [tU_eq] at hu0 ⊢
-  rw [← mod_pred (by omega) (by omega), show C.sideS β + (i + 1) - 1 = C.sideS β + i by omega]
+  rw [← mod_pred by_o by_o, show C.sideS β + (i + 1) - 1 = C.sideS β + i by omega]
 
 /-! ## Sectors -/
 
@@ -112,9 +112,9 @@ theorem walk_sector_edge (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n)
       0 < det (C.P.vtx (tK C.m C.topIdx β p))
         (C.P.vtx (kNext (decide (tU C.m C.topIdx β p < C.m)) (tK C.m C.topIdx β p))) x := by
   have hne : (C.sideWalk β).vtx p ≠ (C.sideWalk β).vtx ((p + 1) % (C.sideWalk β).n) := by
-    obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
-    rw [C.sideWalk_next_tour β (by omega), C.sideWalk_vtx_tour β (by omega),
-      C.sideWalk_vtx_tour β (by omega)]
+    obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by_o⟩
+    rw [C.sideWalk_next_tour β by_o, C.sideWalk_vtx_tour β by_o,
+      C.sideWalk_vtx_tour β by_o]
     unfold Chain.sideTour
     rcases C.sideTour_step β i with h | h
     · rw [h]; exact C.sideVertex_succ_ne hP _
@@ -137,15 +137,15 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
   rcases lt_or_eq_of_le h6 with h7 | h6'
   · rcases lt_or_eq_of_le hp with hp' | hp'
     · -- an inner tour vertex
-      obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by omega⟩
-      rw [C.sideLeft_tour_inner β (by omega) (by omega)] at h
-      have e1 := walk_prev hs hm β (show 7 ≤ i + 6 by omega) hp'.le hu0 hum
+      obtain ⟨i, rfl⟩ : ∃ i, p = i + 6 := ⟨p - 6, by_o⟩
+      rw [C.sideLeft_tour_inner β by_o by_o] at h
+      have e1 := walk_prev hs hm β (by omega) hp'.le hu0 hum
       have e2 := walk_next hs hm β h6 hp'
       have e3 := walk_vtx hs hm β h6 hp'.le
-      rw [C.sideWalk_prev_tour β (by omega) (by omega), C.sideWalk_vtx_tour β (by omega)] at e1
-      rw [C.sideWalk_next_tour β (by omega), C.sideWalk_vtx_tour β (by omega)] at e2
-      rw [C.sideWalk_vtx_tour β (by omega)] at e3
-      rw [← e1, ← e2, ← e3]; exact h
+      rw [C.sideWalk_prev_tour β by_o by_o, C.sideWalk_vtx_tour β by_o] at e1
+      rw [C.sideWalk_next_tour β by_o, C.sideWalk_vtx_tour β by_o] at e2
+      rw [C.sideWalk_vtx_tour β by_o] at e3
+      rwa [← e1, ← e2, ← e3]
     · -- the last position, up the slit
       subst hp'
       rw [C.sideLeft_tour_last] at h
@@ -161,11 +161,11 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
         · exact absurd h' hT0
         · exact absurd h' hTm
         · exact h'
-      have e1 := walk_prev hs hm β (show 7 ≤ 2 * C.m + 6 by omega) le_rfl hu0 hum
-      rw [C.sideWalk_prev_tour β (by omega) le_rfl, C.sideWalk_vtx_tour β (by omega)] at e1
-      have e2 := walk_next hs hm β (show 6 ≤ 6 by omega) (show 6 < 2 * C.m + 6 by omega)
-      rw [show 6 = 0 + 6 from rfl, C.sideWalk_next_tour β (by omega),
-        C.sideWalk_vtx_tour β (by omega)] at e2
+      have e1 := walk_prev hs hm β (by omega) le_rfl hu0 hum
+      rw [C.sideWalk_prev_tour β by_o le_rfl, C.sideWalk_vtx_tour β by_o] at e1
+      have e2 := walk_next hs hm β (by omega) (show 6 < 2 * C.m + 6 by omega)
+      rw [show 6 = 0 + 6 from rfl, C.sideWalk_next_tour β by_o,
+        C.sideWalk_vtx_tour β by_o] at e2
       have hU : tU C.m C.topIdx β (2 * C.m + 6) = tU C.m C.topIdx β 6 := tU_last _ _ _
       have hK6 : tK C.m C.topIdx β 6 = tK C.m C.topIdx β (2 * C.m + 6) := (tK_last _ _ _).symm
       rw [hK6, ← hU] at e2
@@ -194,13 +194,13 @@ theorem walk_sector_vtx (hP : C.P.Simple) (hs : C.s = 0) (hm : C.m + 1 = C.P.n) 
       · exact h'
     have hU : tU C.m C.topIdx β (2 * C.m + 6) = tU C.m C.topIdx β 6 := tU_last _ _ _
     have hK6 : tK C.m C.topIdx β (2 * C.m + 6) = tK C.m C.topIdx β 6 := tK_last _ _ _
-    have e1 := walk_prev hs hm β (show 7 ≤ 2 * C.m + 6 by omega) le_rfl
-      (by rw [hU]; exact hu0) (by rw [hU]; exact hum)
-    rw [C.sideWalk_prev_tour β (by omega) le_rfl, C.sideWalk_vtx_tour β (by omega), hU,
+    have e1 := walk_prev hs hm β (by omega) le_rfl
+      (by rwa [hU]) (by rwa [hU])
+    rw [C.sideWalk_prev_tour β by_o le_rfl, C.sideWalk_vtx_tour β by_o, hU,
       hK6] at e1
-    have e2 := walk_next hs hm β (show 6 ≤ 6 by omega) (show 6 < 2 * C.m + 6 by omega)
-    rw [show 6 = 0 + 6 from rfl, C.sideWalk_next_tour β (by omega),
-      C.sideWalk_vtx_tour β (by omega)] at e2
+    have e2 := walk_next hs hm β (by omega) (show 6 < 2 * C.m + 6 by omega)
+    rw [show 6 = 0 + 6 from rfl, C.sideWalk_next_tour β by_o,
+      C.sideWalk_vtx_tour β by_o] at e2
     have hTop : C.top = C.P.vtx (tK C.m C.topIdx β (0 + 6)) := by
       rw [show (0 + 6 : ℕ) = 6 from rfl, hT]; unfold Chain.top
       exact chain_vertex_eq hs (by have := C.topIdx_le; omega)
@@ -224,11 +224,11 @@ theorem walk_box (β : Bool) {p : ℕ} {t : ℝ} (_ht0 : 0 ≤ t) (ht1 : t < 1)
   have htr := C.top_snd_lt_radius
   rcases hp with hp | ⟨rfl, ht⟩
   · interval_cases p
-    · right; left; rw [b0]; simp only; rw [abs_of_pos hr0]; exact hr
-    · left; rw [b1]; simp only; rw [abs_neg, abs_of_pos hr0]; exact hr
-    · right; left; rw [b2]; simp only; rw [abs_neg, abs_of_pos hr0]; exact hr
-    · left; rw [b3]; simp only; rw [abs_of_pos hr0]; exact hr
-    · right; left; rw [b4]; simp only; rw [abs_of_pos hr0]; exact hr
+    · right; left; rw [b0]; simp only; rwa [abs_of_pos hr0]
+    · left; rw [b1]; simp only; rwa [abs_neg, abs_of_pos hr0]
+    · right; left; rw [b2]; simp only; rwa [abs_neg, abs_of_pos hr0]
+    · left; rw [b3]; simp only; rwa [abs_of_pos hr0]
+    · right; left; rw [b4]; simp only; rwa [abs_of_pos hr0]
     · right; right; rw [b5]; simp only; nlinarith
   · right; right; rw [b6]; simp only; nlinarith
 

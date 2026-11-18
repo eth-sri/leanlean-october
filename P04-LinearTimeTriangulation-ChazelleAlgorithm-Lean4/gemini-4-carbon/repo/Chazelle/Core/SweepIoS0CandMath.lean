@@ -50,13 +50,13 @@ theorem origin_ray (C : Chain) {o z : Point} {d : ℝ} (_hd : d = 1 ∨ d = -1)
     rcases (mul_nonneg hs0 h0).lt_or_eq with h1 | h1
     · exact h1
     · exfalso; apply hne; rw [hzs', ← h1]; ext <;> simp
-  have hle : h ≤ s * h := Chain.hitParam_le_of_not_mem_dom C o d hsh (by rw [← hzs']; exact hzd)
+  have hle : h ≤ s * h := Chain.hitParam_le_of_not_mem_dom C o d hsh (by rwa [← hzs'])
   have hpos : 0 < h := by
     rcases h0.lt_or_eq with h1 | h1
     · exact h1
     · rw [← h1, mul_zero] at hsh; exact absurd hsh (lt_irrefl _)
   have hs : s = 1 := by
-    have : 1 * h ≤ s * h := by linarith
+    have : 1 * h ≤ s * h := by_l
     have := le_of_mul_le_mul_right this hpos
     linarith
   refine ⟨hpos, ?_⟩
@@ -103,8 +103,8 @@ theorem cand_unique {J : Merge.Junction} {o₁ o₂ z : Point} {d : ℝ} (hd : d
       ext
       · simp only [rayPt_fst]; linear_combination hxab
       · simp only [rayPt_snd]; exact hab
-    have := Chain.hitParam_le_of_not_mem_dom J.whole b d (t := tb - ta) (by linarith)
-      (by rw [← hpt]; exact ha)
+    have := Chain.hitParam_le_of_not_mem_dom J.whole b d (t := tb - ta) by_l
+      (by rwa [← hpt])
     linarith
   rcases lt_trichotomy t₁ t₂ with hl | he | hl
   · exact (key o₁ o₂ t₁ t₂ hy hx p₁ hl rfl h₁.1).elim
@@ -145,9 +145,9 @@ theorem chord_mem_F {M : Model} {Q : Polygon} {N : NF} {k : ℕ} (hk : k < N.nCh
 theorem endOrigin_not_dom (J : Merge.Junction) {Q : Polygon} {N : NF}
     (hN : IsNF (chainModel J.right) Q N) {j : ℕ} (hj : j < 2 * N.nChords) :
     endOrigin J Q N j ∉ J.right.dom ∧ endOrigin J Q N j ∉ J.whole.dom := by
-  have hk : j / 2 < N.nChords := by omega
+  have hk : j / 2 < N.nChords := by_o
   have hmem := chord_mem_F (M := chainModel J.right) (Q := Q) hk
-  have haug : (N.chord (j / 2)).toSet (chainModel J.right) Q ∈ Merge.augChords J.right :=
+  have haug :=
     hN.1.2.1 hmem
   obtain ⟨y, a, b, hH, -, -, hl, hr⟩ := Merge.augChords_spec haug
   have hw := end_not_mem_dom J (S₂ := N.F (chainModel J.right) Q) (fun c hc => hN.1.2.1 hc) hmem
@@ -194,13 +194,13 @@ theorem off_inj {n g x y : ℝ} (_hg0 : 0 ≤ g) (_hgn : g < n) (hx0 : 0 ≤ x) 
 theorem key_split {e e' : ℕ} {t t' : ℝ} (ht0 : 0 ≤ t) (ht1 : t < 1) (ht0' : 0 ≤ t')
     (ht1' : t' < 1) (h : (e : ℝ) + t = e' + t') : e = e' ∧ t = t' := by
   have hee : e = e' := by
-    have h1 : (e : ℝ) < e' + 1 := by linarith
-    have h2 : (e' : ℝ) < e + 1 := by linarith
+    have h1 : (e : ℝ) < e' + 1 := by_l
+    have h2 : (e' : ℝ) < e + 1 := by_l
     have h1' : e < e' + 1 := by exact_mod_cast h1
     have h2' : e' < e + 1 := by exact_mod_cast h2
     omega
   subst hee
-  exact ⟨rfl, by linarith⟩
+  exact ⟨rfl, by_l⟩
 
 /-- The parameter of a point on a horizontal ray. -/
 theorem rayPt_param {z : Point} {σ τ τ' : ℝ} (hσ : σ = 1 ∨ σ = -1)

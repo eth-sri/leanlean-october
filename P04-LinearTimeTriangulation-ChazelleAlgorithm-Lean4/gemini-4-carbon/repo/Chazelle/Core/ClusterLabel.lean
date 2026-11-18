@@ -31,7 +31,7 @@ variable {G}
 theorem step_symm (hok : G.OK) (hs : G.Sym) {u w : ℕ} (h : G.Step u w) : G.Step w u := by
   obtain ⟨d, hd, hdb, hv, hh, hu, hw⟩ := h
   obtain ⟨h1, h2⟩ := hs d hd
-  refine ⟨G.opp d, hok.opp_lt d hd, by rw [h2]; exact hdb, hh, ?_, hw, hu⟩
+  refine ⟨G.opp d, hok.opp_lt d hd, by rwa [h2], hh, ?_, hw, hu⟩
   unfold head; rw [h1, hv]
 
 /-- Reachability is symmetric. -/
@@ -95,7 +95,7 @@ theorem LInv.fresh (hok : G.OK) (hs : G.Sym) {lab : ℕ → ℕ} {v : ℕ} (hI :
 theorem LInv.bfs (hok : G.OK) (hs : G.Sym) {lab lab' lev par q : ℕ → ℕ} {v t : ℕ}
     (hI : G.LInv lab v) (hv : v < G.nv)
     (hB : G.Inv v v lab lab' lev par q t t) : G.LInv lab' (v + 1) := by
-  have hQ : ∀ w, G.Reach v w ↔ ∃ i, i < t ∧ q i = w := hB.reach_iff
+  have hQ := hB.reach_iff
   have hin : ∀ w, G.Reach v w → lab' w = v := by
     intro w hw
     obtain ⟨i, hi, rfl⟩ := (hQ w).mp hw
@@ -103,7 +103,7 @@ theorem LInv.bfs (hok : G.OK) (hs : G.Sym) {lab lab' lev par q : ℕ → ℕ} {v
   have hout : ∀ w, w < G.nv → ¬ G.Reach v w → lab' w = lab w := by
     intro w hw hnot
     exact hB.lab_out w hw (fun i hi hqi => hnot ((hQ w).mpr ⟨i, hi, hqi⟩))
-  have hvn : v ≠ G.nv := by omega
+  have hvn : v ≠ G.nv := by_o
   refine ⟨fun x hx hne => ?_, fun x y hx hne hxy => ?_, fun x hx hxn hvb => ?_⟩
   · by_cases hr : G.Reach v x
     · obtain ⟨i, hi, rfl⟩ := (hQ x).mp hr
@@ -113,16 +113,16 @@ theorem LInv.bfs (hok : G.OK) (hs : G.Sym) {lab lab' lev par q : ℕ → ℕ} {v
       exact hI.lbl x hx hne
   · by_cases hr : G.Reach v x
     · rw [hin x hr, hin y (reach_trans hr hxy)]
-    · have hy : y < G.nv := reach_lt hok hxy hx
+    · have hy := reach_lt hok hxy hx
       have hry : ¬ G.Reach v y := fun h => hr (reach_trans h (reach_symm hok hs hxy))
       rw [hout x hx hr] at hne ⊢
       rw [hout y hy hry]
       exact hI.comp x y hx hne hxy
   · rcases Nat.lt_succ_iff_lt_or_eq.mp hx with hx' | rfl
     · by_cases hr : G.Reach v x
-      · rw [hin x hr]; exact hvn
+      · rwa [hin x hr]
       · rw [hout x hxn hr]; exact hI.cover x hx' hxn hvb
-    · rw [hin x Relation.ReflTransGen.refl]; exact hvn
+    · rwa [hin x Relation.ReflTransGen.refl]
 
 /-- **Accounting of a search step**: the unlabelled vertices after the search are those before
 it minus the queue (of length `t`); hence their number and degree sum drop by `t` and by the
@@ -136,12 +136,12 @@ theorem LInv.unlab_split (hok : G.OK) (hs : G.Sym) {lab lab' lev par q : ℕ →
       ∑ i ∈ Finset.range t, G.deg (q i) =
       ∑ x ∈ (Finset.range G.nv).filter (fun x => lab x = G.nv), G.deg x := by
   classical
-  have hQ : ∀ w, G.Reach v w ↔ ∃ i, i < t ∧ q i = w := hB.reach_iff
+  have hQ := hB.reach_iff
   have hfresh := hI.fresh hok hs hv hlv
   set U := (Finset.range G.nv).filter (fun x => lab x = G.nv)
   set U' := (Finset.range G.nv).filter (fun x => lab' x = G.nv)
   set Q := (Finset.range t).image q
-  have hvn : v ≠ G.nv := by omega
+  have hvn : v ≠ G.nv := by_o
   have hQU : Q ⊆ U := by
     intro x hx
     obtain ⟨i, hi, rfl⟩ := Finset.mem_image.mp hx
@@ -157,14 +157,14 @@ theorem LInv.unlab_split (hok : G.OK) (hs : G.Sym) {lab lab' lev par q : ℕ →
       by_cases hq : ∃ i, i < t ∧ q i = x
       · exact Or.inr hq
       · push Not at hq
-        exact Or.inl ⟨hx, by rw [hB.lab_out x hx hq]; exact hl⟩
+        exact Or.inl ⟨hx, by rwa [hB.lab_out x hx hq]⟩
     · rintro (⟨hx, hl⟩ | ⟨i, hi, rfl⟩)
       · refine ⟨hx, ?_⟩
         by_cases hq : ∃ i, i < t ∧ q i = x
         · obtain ⟨i, hi, rfl⟩ := hq
           rw [hB.lab_in i hi] at hl; exact absurd hl hvn
         · push Not at hq
-          rw [← hB.lab_out x hx hq]; exact hl
+          rwa [← hB.lab_out x hx hq]
       · exact ⟨hB.qlt i hi, hfresh _ (hB.qlt i hi) (hB.reach i hi).1⟩
   have hdisj : Disjoint U' Q := by
     rw [Finset.disjoint_left]

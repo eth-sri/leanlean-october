@@ -74,7 +74,7 @@ theorem evInv_mono {S₂ : Set (Set Point)} {oK oK' : ℝ} {Λ : Set (Set Point)
       oK < oW J (q + s) → oW J (q + s) ≤ oK' → EvBrk J e) :
     EvInv J S₂ oK' Λ := by
   intro p t hp ht hnc ho hb
-  refine h p t hp ht hnc (by linarith) fun e he q s hA h1 h2 => ?_
+  refine h p t hp ht hnc by_l fun e he q s hA h1 h2 => ?_
   rcases le_or_gt (oW J (q + s)) oK' with h3 | h3
   · exact hbr e he q s hA h1 h3
   · exact hb e he q s hA h3 h2
@@ -123,24 +123,24 @@ theorem after_pos_exists (hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨δ, hδ, hfac⟩ := hW
   obtain ⟨δ₁, hδ₁, hsub⟩ := mem_nhdsGT_iff_exists_Ioo_subset.1
     (eventually_not_cut_after hM hC.hF hC.hfin ((p : ℝ) + t))
-  have hδ₁' : (0 : ℝ) < δ₁ := hδ₁
+  have hδ₁' := hδ₁
   set s := min (min δ δ₁) (1 - t) / 2 with hs
-  have hm : 0 < min (min δ δ₁) (1 - t) := lt_min (lt_min hδ hδ₁') (by linarith)
+  have hm : 0 < min (min δ δ₁) (1 - t) := lt_min (lt_min hδ hδ₁') by_l
   have h1 := min_le_left (min δ δ₁) (1 - t)
   have h2 := min_le_right (min δ δ₁) (1 - t)
   have h3 := min_le_left δ δ₁
   have h4 := min_le_right δ δ₁
-  have hs0 : 0 < s := by linarith
+  have hs0 : 0 < s := by_l
   have hoff : oW J (p + (t + s)) = oW J (p + t) + s :=
-    off_add_small hC.hg hp ht0 hs0.le (by linarith)
-  refine ⟨s, hs0, by linarith, hfac s hs0 (by linarith) (by linarith), ?_, hoff, ?_⟩
+    off_add_small hC.hg hp ht0 hs0.le by_l
+  refine ⟨s, hs0, by_l, hfac s hs0 by_l by_l, ?_, hoff, ?_⟩
   · have := hsub ⟨show 0 < s by linarith, show s < δ₁ by linarith⟩
     rw [Set.mem_ofPred_eq] at this
     rwa [← add_assoc]
   · rintro x hx hx0 hxn ⟨hlo, hhi⟩
     rw [hoff] at hhi
-    have hu : 0 ≤ oW J x - oW J (p + t) := by linarith
-    have hx' := eq_of_off_small hC.hg hp ht0 hu (by linarith) hx0 hxn
+    have hu : 0 ≤ oW J x - oW J (p + t) := by_l
+    have hx' := eq_of_off_small hC.hg hp ht0 hu by_l hx0 hxn
       (show oW J x = oW J (p + t) + (oW J x - oW J (p + t)) by ring)
     have := hsub ⟨show 0 < oW J x - oW J (p + t) by linarith,
       show oW J x - oW J (p + t) < δ₁ by linarith⟩
@@ -156,12 +156,12 @@ theorem labIn_of_evInv (hP : J.P.Simple) {S₂ : Set (Set Point)}
     (h : EvInv J S₂ (oW J (p + t)) Λ) : LabIn J S₂ p t Λ := by
   intro G hG hW V hV hR
   obtain ⟨s, hs0, hs1, hf, hnc, hoff, hgap⟩ := after_pos_exists hP hS₂ hS₂f hp ht0 ht1 hW
-  have hpos := h p (t + s) hp ⟨by linarith, hs1⟩ hnc (by rw [hoff]; linarith)
+  have hpos := h p (t + s) hp ⟨by_l, hs1⟩ hnc (by rw [hoff]; linarith)
     (fun e he q s' hA h1 h2 => by
       obtain ⟨k0, k1⟩ := Corr.key_mem hA.1 hA.2.1 hA.2.2.1
       exact absurd ⟨h1, h2⟩ (hgap _ ⟨e, he, q, s', hA, rfl⟩ k0 k1))
   rcases hpos with hE | hval
-  · exact absurd hR (not_rlabel_of_encl hP hS₂ hS₂f hp ⟨by linarith, hs1⟩ hnc hE hG hf V)
+  · exact absurd hR (not_rlabel_of_encl hP hS₂ hS₂f hp ⟨by_l, hs1⟩ hnc hE hG hf V)
   · obtain ⟨L, hL, -, hv⟩ := hval G hG hf
     rcases hv.1 V hV hR with rfl | hg
     · rcases hL with hL | hL

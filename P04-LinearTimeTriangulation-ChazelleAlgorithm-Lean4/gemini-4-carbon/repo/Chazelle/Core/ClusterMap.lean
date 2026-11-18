@@ -42,7 +42,7 @@ theorem view_upd_out (m : ℕ → ℕ) (b n a x : ℕ) (h : a < b ∨ b + n ≤ 
   funext i
   unfold view
   split_ifs with hi
-  · rw [Machine.upd_other _ _ _ (by omega)]
+  · rw [Machine.upd_other _ _ _ by_o]
   · rfl
 
 /-- A write inside the array updates its view. -/
@@ -54,7 +54,7 @@ theorem view_upd_in (m : ℕ → ℕ) (b n w x : ℕ) (hw : w < n) :
   · subst hiw; simp [hw]
   · rw [Function.update_of_ne hiw]
     split_ifs with hi
-    · rw [Machine.upd_other _ _ _ (by omega)]
+    · rw [Machine.upd_other _ _ _ by_o]
     · rfl
 
 /-- Views agreeing memories: agreement on `[b, b + n)` gives equal views. -/
@@ -105,11 +105,11 @@ theorem exists_iterate_eq_self (hf : InjOn f N) {x : ℕ} (hx : x < N) :
   have hmaps : ∀ i ∈ Finset.range (N + 1), f^[i] x ∈ Finset.range N := fun i _ =>
     Finset.mem_range.mpr (hf.iterate_lt i hx)
   obtain ⟨i, hi, j, hj, hne, heq⟩ := Finset.exists_ne_map_eq_of_card_lt_of_maps_to
-    (by simp) hmaps
+    by_s hmaps
   rw [Finset.mem_range] at hi hj
   rcases Nat.lt_or_gt_of_ne hne with h | h
-  · exact ⟨j - i, by omega, by omega, hf.iterate_cancel hx h.le heq⟩
-  · exact ⟨i - j, by omega, by omega, hf.iterate_cancel hx h.le heq.symm⟩
+  · exact ⟨j - i, by_o, by_o, hf.iterate_cancel hx h.le heq⟩
+  · exact ⟨i - j, by_o, by_o, hf.iterate_cancel hx h.le heq.symm⟩
 
 open Classical in
 /-- The minimal period of `x` (`1` if `x` is out of range). -/
@@ -148,10 +148,10 @@ theorem iterate_ne_of_lt_per (_hf : InjOn f N) {x : ℕ} (_hx : x < N) {j : ℕ}
 theorem iterate_inj_of_lt_per (hf : InjOn f N) {x : ℕ} (hx : x < N) {i j : ℕ}
     (hi : i < per f N x) (hj : j < per f N x) (h : f^[i] x = f^[j] x) : i = j := by
   rcases Nat.lt_trichotomy i j with hij | hij | hij
-  · exact absurd (hf.iterate_cancel hx hij.le h) (iterate_ne_of_lt_per hf hx (by omega) (by omega))
+  · exact absurd (hf.iterate_cancel hx hij.le h) (iterate_ne_of_lt_per hf hx by_o by_o)
   · exact hij
   · exact absurd (hf.iterate_cancel hx hij.le h.symm)
-      (iterate_ne_of_lt_per hf hx (by omega) (by omega))
+      (iterate_ne_of_lt_per hf hx by_o by_o)
 
 /-- Iterates reduce modulo the period. -/
 theorem iterate_mod_per (hf : InjOn f N) {x : ℕ} (hx : x < N) (n : ℕ) :

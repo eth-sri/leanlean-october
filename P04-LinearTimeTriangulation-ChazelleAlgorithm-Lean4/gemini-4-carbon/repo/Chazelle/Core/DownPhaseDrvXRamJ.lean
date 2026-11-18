@@ -54,19 +54,19 @@ theorem xL_length_le (P : Polygon) (v : XV) (NR : NF) (i : ℕ) : (xL P v NR i).
 theorem endPos_append {L M : List (ℕ × ℕ × ℕ)} {q : ℕ} (hq : q < 2 * L.length) :
     endPos (L ++ M) q = endPos L q := by
   unfold endPos
-  rw [List.getD_append _ _ _ _ (by omega)]
+  rw [List.getD_append _ _ _ _ by_o]
 
 theorem endPos_last_l (L : List (ℕ × ℕ × ℕ)) (x : ℕ × ℕ × ℕ) :
     endPos (L ++ [x]) (2 * L.length) = (recOf x).lpos := by
   unfold endPos
-  rw [ite_eq_left (by omega), show 2 * L.length / 2 = L.length by omega,
+  rw [ite_eq_left by_o, show 2 * L.length / 2 = L.length by omega,
     List.getD_append_right _ _ _ _ (le_refl _), Nat.sub_self]
   rfl
 
 theorem endPos_last_r (L : List (ℕ × ℕ × ℕ)) (x : ℕ × ℕ × ℕ) :
     endPos (L ++ [x]) (2 * L.length + 1) = (recOf x).rpos := by
   unfold endPos
-  rw [ite_eq_right (by omega), show (2 * L.length + 1) / 2 = L.length by omega,
+  rw [ite_eq_right by_o, show (2 * L.length + 1) / 2 = L.length by omega,
     List.getD_append_right _ _ _ _ (le_refl _), Nat.sub_self]
   rfl
 
@@ -116,8 +116,8 @@ theorem loopS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBound
       have hlen := xL_length_le P v NR i
       obtain ⟨c', kc, ec, hkc, b39, b40, bk, bn, bf⟩ := chS_exec E c hwc cmem cg hi hlen c39 c40
         c38 c45 c46
-      have cg' : XG P v c' := cg.frameM bf (by decide)
-      refine ⟨c', kc, ec, ⟨ec.wb_right, b39, by rw [bf.1 _ (by decide), c28], cg', b40, ?_⟩, hkc⟩
+      have cg' : XG P v c' := cg.frameM bf by_d
+      refine ⟨c', kc, ec, ⟨ec.wb_right, b39, by rw [bf.1 _ by_d, c28], cg', b40, ?_⟩, hkc⟩
       by_cases hk : kR P v (NR.chord i)
       · obtain ⟨m', d38, d45, d46⟩ := bk hk
         rw [xL_kept hk]
@@ -156,7 +156,7 @@ theorem loopS_exec (E : XE P W v N NR ras A0 mem0) (d : Config) (hw : WordsBound
               split_ifs <;> first | omega | rfl
       · obtain ⟨m', d38, d45, d46⟩ := bn hk
         rw [xL_not hk]
-        exact ⟨d38, d45, d46, fun a ha => by rw [m']; exact cmem a ha, by rw [m']; exact clist,
+        exact ⟨d38, d45, d46, fun a ha => by rw [m']; exact cmem a ha, by rwa [m'],
           fun q hq => by rw [m']; exact cbkt q hq, cf.trans bf⟩)
     hI0 (Nat.zero_le _)
   have hk : k' ≤ 24002 * v.K + 2 := by

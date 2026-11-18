@@ -102,7 +102,7 @@ theorem exists_succ_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K
       exact hne (le_antisymm h2 h1)
     refine ⟨m₀, hm₀, hm₀k, fun m hm hin => ?_⟩
     unfold sideInArc at hin
-    have hlt : m₀ < k := lt_of_le_of_ne (hmin k hk) hm₀k
+    have hlt := lt_of_le_of_ne (hmin k hk) hm₀k
     rw [ite_eq_right_of_eq_false _ _ (eq_false (not_lt.2 hlt.le))] at hin
     rcases hin with h | h
     · linarith [hA m hm]
@@ -131,7 +131,7 @@ theorem exists_pred_gap {K : Set ℝ} (hK : K.Finite) {k k' : ℝ} (hk : k ∈ K
       exact hne (le_antisymm h1 h2)
     refine ⟨M₀, hM₀, hM₀k, fun m hm hin => ?_⟩
     unfold sideInArc at hin
-    have hlt : k < M₀ := lt_of_le_of_ne (hmax k hk) (Ne.symm hM₀k)
+    have hlt := lt_of_le_of_ne (hmax k hk) (Ne.symm hM₀k)
     rw [ite_eq_right_of_eq_false _ _ (eq_false (not_lt.2 hlt.le))] at hin
     rcases hin with h | h
     · linarith [hmax m hm]
@@ -149,7 +149,7 @@ theorem exists_exit_at_start (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
     ∃ c ∈ {c | c ∈ F ∧ TouchesIn M.D c U}, ∃ p t, SideAttach M.W c p t ∧ a = p + t := by
   set T := {c | c ∈ F ∧ TouchesIn M.D c U} with hT
   have hTF : T ⊆ F := fun c hc => hc.1
-  have hTfin : T.Finite := hfin.subset hTF
+  have hTfin := hfin.subset hTF
   have hsys := hM.sys F hF hfin
   have hK := hM.finite_cuts hF hfin
   obtain ⟨hcuta, hcutb, hab⟩ := arc_cuts hne harc
@@ -164,18 +164,18 @@ theorem exists_exit_at_start (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M
   -- `V = U`
   obtain ⟨v, hv⟩ := Chazelle.Chain.regionsIn_nonempty hV
   obtain ⟨u, hu⟩ := Chazelle.Chain.regionsIn_nonempty hU
-  have hVfree : V ⊆ freeIn M.D T :=
+  have hVfree :=
     (Chazelle.Chain.regionsIn_subset hV).trans (Chazelle.Chain.freeIn_anti M.D hTF)
   set VT := connectedComponentIn (freeIn M.D T) v with hVT
-  have hVVT : V ⊆ VT :=
+  have hVVT :=
     (Chazelle.Chain.regionsIn_isPreconnected hV).subset_connectedComponentIn hv hVfree
   have hVTr : VT ∈ M.regions T := ⟨v, hVfree hv, rfl⟩
-  have hUT : U = connectedComponentIn (freeIn M.D T) u := region_of_exits hsys hU hu
+  have hUT := region_of_exits hsys hU hu
   have hUTr : U ∈ M.regions T := by
     rw [hUT]
     exact ⟨u, ((Chazelle.Chain.regionsIn_subset hU).trans
       (Chazelle.Chain.freeIn_anti M.D hTF)) hu, rfl⟩
-  have hxVT : M.Faces px tx VT := hxV.mono fun δ h => hVVT h
+  have hxVT := hxV.mono fun δ h => hVVT h
   have hTcut : ∀ k, M.IsCut T k → M.IsCut F k := fun k ⟨c, hc, h⟩ => ⟨c, hc.1, h⟩
   have hlb : ¬ sideInArc a b l := fun h => hfree l h hl
   have hsame : VT = U := by
@@ -231,7 +231,7 @@ theorem attach_face (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hf
   have hk : M.IsCut F (p + t) := ⟨c, hc, p, t, hA, rfl⟩
   obtain ⟨pb, tb, hB, hBne⟩ := hM.other_attach (hF hc) hA
   have hkB : M.IsCut F (pb + tb) := ⟨c, hc, pb, tb, hB, rfl⟩
-  have hkne : (p : ℝ) + t ≠ pb + tb := key_ne_of_pt_ne hA hB (Ne.symm hBne)
+  have hkne := key_ne_of_pt_ne hA hB (Ne.symm hBne)
   obtain ⟨r, hr, hrk, hrgap⟩ := exists_succ_gap hK hk hkB hkne
   obtain ⟨l, hl, hlk, hlgap⟩ := exists_pred_gap hK hk hkB hkne
   obtain ⟨U, hU, harcU⟩ := hM.arc_of_gap hF hfin hk hr (Ne.symm hrk)
@@ -243,9 +243,9 @@ theorem attach_face (hM : WalkAx M) {F : Set (Set Point)} (hF : F ⊆ M.Adm) (hf
     obtain ⟨K₁, K₂, hne', ⟨k₁, rfl⟩, ⟨k₂, rfl⟩, hK₁, hK₂⟩ := hM.split (hF hc) hA hB (Ne.symm hBne)
     obtain ⟨py, hpy, ty, hty, hyin, -, hyf⟩ := exists_pos_in_arc hne harcU
     obtain ⟨px, hpx, tx, htx, hxin, -, hxf⟩ := exists_pos_in_arc hne harcV
-    have hyA : sideInArc (p + t) (pb + tb) (py + ty) :=
+    have hyA :=
       cyc_sub_start hyin (fun h => hrgap _ hkB h) (Ne.symm hkne)
-    have hxA : sideInArc (pb + tb) (p + t) (px + tx) :=
+    have hxA :=
       cyc_sub hxin (fun h => hlgap _ hkB h) (Ne.symm hkne)
     have hU1 := hM.region_subset_of_sector hc hU hpy hty hyf (hK₁ py hpy ty hty.1.le hty.2 hyA)
     rw [hUV] at hU1
@@ -283,8 +283,8 @@ theorem attachFaceNC : AttachFaceSpecNC := by
     exact absurd h.1 (Set.nonempty_iff_ne_empty.1 ⟨c, hc⟩))).2.2
   have hlk : l ≠ (p : ℝ) + t := (harcV.2.2.2.2.1.resolve_right (fun h => by
     exact absurd h.1 (Set.nonempty_iff_ne_empty.1 ⟨c, hc⟩))).2.2
-  set δ₁ : ℝ := if (p : ℝ) + t < r then r - (p + t) else r + M.W.n - (p + t) with hδ₁
-  set δ₂ : ℝ := if l < (p : ℝ) + t then (p + t) - l else (p + t) + M.W.n - l with hδ₂
+  set δ₁ := if (p : ℝ) + t < r then r - (p + t) else r + M.W.n - (p + t) with hδ₁
+  set δ₂ := if l < (p : ℝ) + t then (p + t) - l else (p + t) + M.W.n - l with hδ₂
   have hδ₁0 : 0 < δ₁ := by
     rw [hδ₁]; split_ifs with h
     · linarith

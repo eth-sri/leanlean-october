@@ -108,7 +108,7 @@ theorem convexHull_inter_level_le (s : Finset Point) (φ : Point →ₗ[ℝ] ℝ
         apply Finset.sum_congr rfl
         intro y _; ring
       rw [this, hw1, ← hφx, hxu]; ring
-    have hzero : ∀ y ∈ s, w y * (u - φ y) = 0 :=
+    have hzero :=
       (Finset.sum_eq_zero_iff_of_nonneg
         (fun y hy => mul_nonneg (hw0 y hy) (sub_nonneg.2 (hs y hy)))).1 hsum
     have hw' : ∀ y ∈ s, w y ≠ 0 → φ y = u := by
@@ -220,8 +220,8 @@ theorem convexHull_inter_convexHull_of_injOn {L : Set Point} (hL : Convex ℝ L)
     (hAB : ∀ y ∈ B, y ∈ convexHull ℝ A → y ∈ A)
     (hBA : ∀ y ∈ A, y ∈ convexHull ℝ B → y ∈ B) :
     convexHull ℝ A ∩ convexHull ℝ B = convexHull ℝ (A ∩ B) := by
-  have hAL : convexHull ℝ A ⊆ L := convexHull_min hA hL
-  have hBL : convexHull ℝ B ⊆ L := convexHull_min hB hL
+  have hAL := convexHull_min hA hL
+  have hBL := convexHull_min hB hL
   have hABL : convexHull ℝ (A ∩ B) ⊆ L := convexHull_min (Set.inter_subset_left.trans hA) hL
   apply Set.Subset.antisymm
   · rintro x ⟨hxA, hxB⟩
@@ -271,7 +271,7 @@ theorem conforming_of_disjoint_interiors {a b c d e f : Point}
   obtain ⟨φ, u, h₁, h₂⟩ := geometric_hahn_banach_open_open
     (convex_triangle a b c).interior isOpen_interior
     (convex_triangle d e f).interior isOpen_interior hdisj
-  set φl : Point →ₗ[ℝ] ℝ := (φ : Point →ₗ[ℝ] ℝ) with hφl
+  set φl := (φ : Point →ₗ[ℝ] ℝ) with hφl
   have hφl_apply : ∀ x, φl x = φ x := fun _ => rfl
   -- `φ ≤ u` on the first closed triangle, `φ ≥ u` on the second
   have hT₁ : ∀ x ∈ convexHull ℝ ({a, b, c} : Set Point), φl x ≤ u := by
@@ -294,8 +294,8 @@ theorem conforming_of_disjoint_interiors {a b c d e f : Point}
     rw [← hφl_apply, h0] at h1 h2
     simp at h1 h2
     linarith
-  set L : Set Point := {x | φl x = u} with hLdef
-  have hL : Convex ℝ L := convex_level φl u
+  set L := {x | φl x = u} with hLdef
+  have hL := convex_level φl u
   obtain ⟨ψ, hψ⟩ := exists_injOn_level hφ0 u
   -- the intersection lies on the line
   have hsub : convexHull ℝ ({a, b, c} : Set Point) ∩ convexHull ℝ ({d, e, f} : Set Point) ⊆ L :=

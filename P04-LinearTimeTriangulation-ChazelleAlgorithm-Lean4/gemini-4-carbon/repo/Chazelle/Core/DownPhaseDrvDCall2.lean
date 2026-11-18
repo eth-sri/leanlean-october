@@ -42,7 +42,7 @@ theorem rf_of_frameM {B : ℕ → Bool} (hB : InDrv B) {A₀ : ℕ} {c c' : Conf
     · rfl
     · exact absurd rfl (hB _ h').2)
   exact ⟨fun r hr _ => h.1 r (hnot r hr), fun r hr => h.2.1 r (hnot r hr), hm,
-    fun a _ => by rw [h.2.2.1], h.2.2.2, by omega, by omega⟩
+    fun a _ => by rw [h.2.2.1], h.2.2.2, by_o, by_o⟩
 
 theorem rf_of_frameB {B : ℕ → Bool} (hB : InDrv B) {A₀ : ℕ} {c c' : Config} {k : ℕ}
     (h : FrameB B c c') : Restore.RF DrvR.drvBands A₀ c c' k :=
@@ -51,12 +51,12 @@ theorem rf_of_frameB {B : ℕ → Bool} (hB : InDrv B) {A₀ : ℕ} {c c' : Conf
 theorem inDrv_scan : InDrv Bscan := by
   intro r hr
   simp only [Bscan, BuildRam.Bhalf, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨mem_drvBands by_o by_o, by unfold ALLOC; omega⟩
 
 theorem inDrv_appT : InDrv BappT := by
   intro r hr
   simp only [BappT, Bool.or_eq_true, decide_eq_true_eq] at hr
-  exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨mem_drvBands by_o by_o, by unfold ALLOC; omega⟩
 
 theorem inDrv_eq {q : ℕ} (h1 : 10000 ≤ q) (h2 : q < 230000) (hq : q ≠ ALLOC) :
     InDrv (fun r => decide (r = q)) := by
@@ -68,14 +68,14 @@ theorem inDrv_eq {q : ℕ} (h1 : 10000 ≤ q) (h2 : q < 230000) (hq : q ≠ ALLO
 theorem inDrv_arg : InDrv (fun r => decide (81000 ≤ r ∧ r ≤ 81006)) := by
   intro r hr
   simp only [decide_eq_true_eq] at hr
-  exact ⟨mem_drvBands (by omega) (by omega), by unfold ALLOC; omega⟩
+  exact ⟨mem_drvBands by_o by_o, by unfold ALLOC; omega⟩
 
-theorem find_bands : restoreBands ∪ DrvR.ioBandsD ⊆ DrvR.drvBands := by decide
+theorem find_bands : restoreBands ∪ DrvR.ioBandsD ⊆ DrvR.drvBands := by_d
 
 /-- The splitting step keeps the registers of `bDownDrv` and `coreReg 1`. -/
 theorem find_keeps {c c' : Config} {k : ℕ} (h : Frame (restoreBands ∪ DrvR.ioBandsD) c c' k)
     {q : ℕ} (hq : (210000 ≤ q ∧ q < 220000) ∨ q = 230001) : c'.nreg q = c.nreg q := by
-  refine h.1 q ?_ (by unfold ALLOC; omega)
+  refine h.1 q ?_ by_ao
   have : bandOf q = 21 ∨ bandOf q = 23 := by unfold bandOf; omega
   rcases this with h' | h' <;> rw [h'] <;> decide
 
@@ -119,10 +119,10 @@ theorem BktOK.snoc {M : Model} {Q : Polygon} {N : NF} {newL : List (ℕ × (ℕ 
     rcases Nat.lt_or_ge q (2 * newL.length) with hl | hl
     · left
       refine ⟨hl, ?_⟩
-      rw [List.getD_append _ _ _ _ (by omega)]
+      rw [List.getD_append _ _ _ _ by_o]
     · right
-      refine ⟨?_, by omega⟩
-      rw [List.getD_append_right _ _ _ _ (by omega), show q / 2 - newL.length = 0 by omega]
+      refine ⟨?_, by_o⟩
+      rw [List.getD_append_right _ _ _ _ by_o, show q / 2 - newL.length = 0 by omega]
       rfl
   constructor
   · intro q hq

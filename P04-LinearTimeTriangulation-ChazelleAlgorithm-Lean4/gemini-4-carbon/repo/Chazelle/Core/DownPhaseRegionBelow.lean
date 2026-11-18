@@ -45,10 +45,10 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   by_contra hzY
   push Not at hzY
   -- a small ball in `R`
-  have hRo : IsOpen R := hsys.regionsIn_open subset_rfl hR
+  have hRo := hsys.regionsIn_open subset_rfl hR
   obtain ⟨ρ, hρ, hball⟩ := Metric.isOpen_iff.1 hRo z hzR
   -- a height avoiding all vertex heights
-  set V : Finset ℝ := (Finset.range Q.n).image (fun i => (Q.vtx i).2) ∪
+  set V := (Finset.range Q.n).image (fun i => (Q.vtx i).2) ∪
     (Finset.range M.W.n).image (fun i => (M.W.vtx i).2)
   obtain ⟨η, ⟨hη0, hηρ⟩, hηV⟩ : ∃ η ∈ Ioo (0 : ℝ) ρ, η ∉ (V.image (· - z.2) : Set ℝ) :=
     ((Set.Ioo_infinite hρ).sdiff (Finset.finite_toSet _)).nonempty
@@ -57,7 +57,7 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     apply hηV
     rw [Finset.coe_image]
     exact ⟨y, hy, by simp only; linarith⟩
-  set z' : Point := (z.1, z.2 + η)
+  set z' := (z.1, z.2 + η)
   have hz'R : z' ∈ R := hball (by
     rw [Metric.mem_ball, Prod.dist_eq]
     simp only [z', Real.dist_eq, sub_self, abs_zero, add_sub_cancel_left, abs_of_pos hη0]
@@ -95,7 +95,7 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     have h1 := (Loc.tendsto_mul_const_nhdsGT (show 0 < 1 - t by linarith [ht.2])).eventually
       (cyc_open hin)
     filter_upwards [h1, Ioo_mem_nhdsGT (show (0 : ℝ) < 1 by norm_num)] with s h1 hs1
-    have hs0 : 0 < s := hs1.1
+    have hs0 := hs1.1
     refine harc.2.2.2.2.2.2 p _ hp (by nlinarith [ht.1, ht.2]) (by nlinarith [ht.1, ht.2, hs1.2]) ?_
     rw [← add_assoc]; exact h1
   obtain ⟨r0, hr0, hnear⟩ := Loc.near_sub_region hQ hF hfin hp ht.1.le ht.2 hncut hX hfX
@@ -119,11 +119,11 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   -- the walk point lies on a piece of the arc
   obtain ⟨i_l, d, hA⟩ := arc_keys hM hF hfin hne hX harc
   set N := nk M S X
-  set n : ℝ := (M.W.n : ℝ)
+  set n := (M.W.n : ℝ)
   have hb : ∀ i, i < N → 0 ≤ hk M S X i ∧ hk M S X i < n := fun i hi =>
     hostKeys_bounds (hk_mem hM hF hfin hi)
   have hab := (WalkAx.arc_cuts hne harc).2.2
-  have hlb : 0 ≤ a ∧ a < n := hA.hl ▸ hb _ hA.hil
+  have hlb := hA.hl ▸ hb _ hA.hil
   have hrb : 0 ≤ b ∧ b < n := hA.hr ▸ hb _ (Nat.mod_lt _ (by have := hA.hdN; omega))
   have hxb : 0 ≤ (p : ℝ) + t ∧ (p : ℝ) + t < n := by
     refine ⟨add_nonneg (Nat.cast_nonneg p) ht.1.le, ?_⟩
@@ -142,14 +142,14 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hd0 := hA.hd0
   -- the piece containing `xx`
   have hex : ∃ j, xx < ukey M S X i_l (j + 1) := ⟨d - 1, by
-    rw [Nat.sub_add_cancel hA.hd0]; exact hxd⟩
+    rwa [Nat.sub_add_cancel hA.hd0]⟩
   classical
   set j := Nat.find hex
-  have hj1 : xx < ukey M S X i_l (j + 1) := Nat.find_spec hex
+  have hj1 := Nat.find_spec hex
   have hjd : j < d := by
     by_contra h; push Not at h
     have := Nat.find_min' hex (show xx < ukey M S X i_l (d - 1 + 1) by
-      rw [Nat.sub_add_cancel hA.hd0]; exact hxd)
+      rwa [Nat.sub_add_cancel hA.hd0])
     omega
   have hj0 : ukey M S X i_l j ≤ xx := by
     rcases Nat.eq_zero_or_pos j with h0 | h0
@@ -167,8 +167,8 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
     have := hA.hdN; omega)).le le_rfl
   rw [wrapK_ukey hM hF hfin hA.hil (by have := hA.hdN; omega)] at e2
   rw [wrapK_ukey hM hF hfin hA.hil (by have := hA.hdN; omega)] at e3
-  have hY1 := hY _ (Nat.mod_lt (i_l + j) (show 0 < N by have := hA.hdN; omega))
-  have hY2 := hY _ (Nat.mod_lt (i_l + (j + 1)) (show 0 < N by have := hA.hdN; omega))
+  have hY1 := hY _ (Nat.mod_lt (i_l + j) (by have := hA.hdN; omega))
+  have hY2 := hY _ (Nat.mod_lt (i_l + (j + 1)) (by have := hA.hdN; omega))
   rw [e2] at hY1
   rw [e3] at hY2
   rw [hw, hpt] at e1
@@ -180,10 +180,10 @@ theorem region_below (hQ : Q.Simple) (hFam : (interiorModel Q).ChordFamily Q S)
   have hj1' := hj1.le
   rcases le_total u v with huv | huv
   · have : (xx - q) * (v - u) ≤ (ukey M S X i_l (j + 1) - q) * (v - u) :=
-      mul_le_mul_of_nonneg_right (by linarith) (by linarith)
+      mul_le_mul_of_nonneg_right by_l by_l
     linarith
   · have : (xx - q) * (v - u) ≤ (ukey M S X i_l j - q) * (v - u) :=
-      mul_le_mul_of_nonpos_right (by linarith) (by linarith)
+      mul_le_mul_of_nonpos_right by_l by_l
     linarith
 
 end

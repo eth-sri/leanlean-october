@@ -40,10 +40,8 @@ theorem attached_congr (M : Model) (Q : Polygon) {r r' : CRec}
     (hh : (Q.vtx r.h).2 = (Q.vtx r'.h).2) (hl : r.lp = r'.lp) (hr : r.rp = r'.rp)
     (hA : r.Attached M Q) : r'.Attached M Q := by
   unfold CRec.Attached CRec.lpos CRec.rpos at *
-  rw [← toSet_congr M Q hh hl hr, ← hl, ← hr, ← param_congr M Q r.lp hh,
+  rwa [← toSet_congr M Q hh hl hr, ← hl, ← hr, ← param_congr M Q r.lp hh,
     ← param_congr M Q r.rp hh]
-  exact hA
-
 /-- The height of a query agrees with its height code. -/
 def HeightOK (J : Merge.Junction) (Q : Polygon) (i : ℕ) (q : ℕ × ℕ × ℕ) : Prop :=
   ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩).2 = (Q.vtx (q.2.1 - 1)).2
@@ -79,7 +77,7 @@ theorem qtrip_eq (J : Merge.Junction) (Q : Polygon) (i : ℕ) {q : ℕ × ℕ ×
   have hz := Sweep.origin_mem J (a := (chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩)
     (σ := dirOf q.2.2)
   rw [← hset] at hz
-  have hy : ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩).2 = (Q.vtx (recOf r.2).h).2 := hz.1
+  have hy := hz.1
   have hh : (Q.vtx (recOf r.2).h).2 = (Q.vtx (recOf (qtrip (q, r))).h).2 := by
     rw [← hy]; exact hH
   exact ⟨(toSet_congr _ Q hh rfl rfl).symm, attached_congr _ Q hh rfl rfl hatt⟩
@@ -99,19 +97,19 @@ theorem collectQ_spec (J : Merge.Junction) (Q : Polygon) (i : ℕ) (L : List (�
     obtain ⟨p, ⟨hp, h1⟩, rfl⟩ := ht
     obtain ⟨j, hj, rfl⟩ := List.getElem_of_mem hp
     have hjL : j < L.length := by rw [List.length_zip] at hj; omega
-    have hjR : j < R.length := by omega
+    have hjR : j < R.length := by_o
     refine ⟨j, hjL, ?_, ?_⟩
     · rw [getD_lt hjR]; simpa using h1
     · rw [getD_lt hjL, getD_lt hjR]; simp
   have memk : ∀ j, j < L.length → (R.getD j (0, 0, 0, 0)).1 = 1 →
       qtrip (L.getD j (0, 0, 0), R.getD j (0, 0, 0, 0)) ∈ collectQ L R := by
     intro j hj h1
-    have hjR : j < R.length := by omega
+    have hjR : j < R.length := by_o
     simp only [collectQ, List.mem_map, List.mem_filter, beq_iff_eq]
     refine ⟨(L[j], R[j]), ⟨?_, ?_⟩, ?_⟩
     · have : (L.zip R)[j]'(by rw [List.length_zip]; omega) = (L[j], R[j]) := by simp
       rw [← this]; exact List.getElem_mem _
-    · rw [getD_lt hjR] at h1; exact h1
+    · rwa [getD_lt hjR] at h1
     · rw [getD_lt hj, getD_lt hjR]
   refine ⟨?_, fun t ht => ?_⟩
   · ext d

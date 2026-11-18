@@ -68,9 +68,9 @@ def Bx (r : ℕ) : Bool := decide ((217000 ≤ r ∧ r < 218000) ∨ r = 9999)
 /-- The real registers the extraction writes. -/
 def BxR (r : ℕ) : Bool := decide (217000 ≤ r ∧ r < 218000)
 
-theorem wrM_x : wrM Bx xS = true := by decide
+theorem wrM_x : wrM Bx xS = true := by_d
 
-theorem wrM2_x : wrM2 Bx BxR xS = true := by decide
+theorem wrM2_x : wrM2 Bx BxR xS = true := by_d
 
 section setup
 
@@ -124,7 +124,7 @@ theorem setupS_exec (d : Config) (hw : WordsBounded W d)
     exec_block
     all_goals (try (config_simp; simp (config := { failIfUnchanged := false }) only [h00, h01, h02,
       h03, h05, h06, mMD3, mMD4, mMD5, mHB, mBR, mBR3, mBN1, mBN4, mBN5, mBN7, mR0', mR1']; omega))
-    all_goals (try (refine ⟨by omega, ?_⟩))
+    all_goals (try (refine ⟨by_o, ?_⟩))
     all_goals (repeat' apply And.intro)
     all_goals (config_simp <;> simp (config := { failIfUnchanged := false }) only [h00, h01, h02,
       h03, h05, h06, mMD3, mMD4, mMD5, mHB, mBR, mBR3, mBN1, mBN4, mBN5, mBN7, mR0', mR1'])
@@ -133,23 +133,23 @@ theorem setupS_exec (d : Config) (hw : WordsBounded W d)
   obtain ⟨d2, k2, e2, hk2, n2⟩ := x_ifR (P := P) (W := W) (a := 217024) (b := 217027)
     (r := 217025) (t := block [.subN 217025 217022 217023])
     (e := .ifLtN 217027 217024 (block [.subN 217025 217022 217023]) (block [.copyN 217025 217023]))
-    (d := d1) (K := 3) (fun _ => x_mono (x_sub d1 hw1 217025 217022 217023) (by omega))
+    (d := d1) (K := 3) (fun _ => x_mono (x_sub d1 hw1 217025 217022 217023) by_o)
     (fun _ => x_ifR (fun _ => x_sub d1 hw1 217025 217022 217023)
       (fun _ => x_copy d1 hw1 217025 217023))
   have o : ∀ r, r ≠ 217025 → d2.nreg r = d1.nreg r := fun r hr => n2.other hr
-  refine ⟨d2, k1 + k2, .seq e1 e2, by omega, by rw [o _ (by decide), a20],
-    by rw [o _ (by decide), a21], by rw [o _ (by decide), a22], ?_,
-    by rw [o _ (by decide), a26], by rw [o _ (by decide), a27], by rw [o _ (by decide), a28],
-    by rw [o _ (by decide), a30], by rw [o _ (by decide), a31], by rw [o _ (by decide), a32],
-    by rw [o _ (by decide), a33], by rw [o _ (by decide), a34], by rw [o _ (by decide), a35],
-    by rw [o _ (by decide), a36], by rw [o _ (by decide), a37], by rw [o _ (by decide), a41],
-    by rw [o _ (by decide), a42], by rw [o _ (by decide), a44], by rw [o _ (by decide), a38],
-    by rw [o _ (by decide), a39], by rw [o _ (by decide), a40], by rw [o _ (by decide), a43],
-    by rw [o _ (by decide), a45], by rw [o _ (by decide), a46], by rw [o _ (by decide), a47],
-    by rw [o _ (by decide), a99], by rw [n2.2.2.1, m1]⟩
+  refine ⟨d2, k1 + k2, .seq e1 e2, by_o, by rw [o _ by_d, a20],
+    by rw [o _ by_d, a21], by rw [o _ by_d, a22], ?_,
+    by rw [o _ by_d, a26], by rw [o _ by_d, a27], by rw [o _ by_d, a28],
+    by rw [o _ by_d, a30], by rw [o _ by_d, a31], by rw [o _ by_d, a32],
+    by rw [o _ by_d, a33], by rw [o _ by_d, a34], by rw [o _ by_d, a35],
+    by rw [o _ by_d, a36], by rw [o _ by_d, a37], by rw [o _ by_d, a41],
+    by rw [o _ by_d, a42], by rw [o _ by_d, a44], by rw [o _ by_d, a38],
+    by rw [o _ by_d, a39], by rw [o _ by_d, a40], by rw [o _ by_d, a43],
+    by rw [o _ by_d, a45], by rw [o _ by_d, a46], by rw [o _ by_d, a47],
+    by rw [o _ by_d, a99], by rw [n2.2.2.1, m1]⟩
   rw [n2.same, a24, a27, a22, a23]
   by_cases h1 : b5 = 1
-  · rw [ite_eq_left h1, ite_eq_right (by omega), ite_eq_right (by omega)]
+  · rw [ite_eq_left h1, ite_eq_right by_o, ite_eq_right by_o]
   · rw [ite_eq_right h1]
     split_ifs <;> omega
 
@@ -165,23 +165,22 @@ theorem padS_exec (d : Config) (hw : WordsBounded W d) {N j : ℕ} (h43 : d.nreg
     ∃ d' k, Exec P W padS d d' k ∧ k = 3 * (N - j) + 2 ∧ NRegs d d' (upd d.nreg 217043 N) := by
   induction hn : N - j generalizing d j with
   | zero =>
-    have hjN : j = N := by omega
+    have hjN : j = N := by_o
     subst hjN
-    refine ⟨d, 2, .whileLtN_false (by rw [h43, h47]; omega) hw, by omega, ?_⟩
+    refine ⟨d, 2, .whileLtN_false (by rw [h43, h47]; omega) hw, by_o, ?_⟩
     refine ⟨?_, rfl, rfl, rfl, rfl⟩
     rw [← h43, Machine.upd_eq_self]
   | succ t ih =>
-    have hlt : j < N := by omega
+    have hlt : j < N := by_o
     have hb : d.nreg 217043 + d.nreg 217027 ≤ W := by rw [h43, h27]; omega
     have ea := Machine.Exec.addN (P := P) hw 217043 217043 217027 hb
-    have e1 : Exec P W (block [.addN 217043 217043 217027]) d
-        { d with nreg := upd d.nreg 217043 (d.nreg 217043 + d.nreg 217027) } (0 + 1) :=
+    have e1 :=
       Exec.block_cons ea (Exec.block_nil ea.wb_right)
     have b43 : ({ d with nreg := upd d.nreg 217043 (d.nreg 217043 + d.nreg 217027) } : Config).nreg
         217043 = j + 1 := by simp [h43, h27]
-    obtain ⟨d', k', e', hk', n'⟩ := ih _ e1.wb_right b43 (by simp [h47]) (by simp [h27]) (by omega)
-      (by omega)
-    refine ⟨d', 0 + 1 + 2 + k', .whileLtN_true (by rw [h43, h47]; exact hlt) e1 e', by omega, ?_⟩
+    obtain ⟨d', k', e', hk', n'⟩ := ih _ e1.wb_right b43 (by simp [h47]) (by simp [h27]) by_o
+      by_o
+    refine ⟨d', 0 + 1 + 2 + k', .whileLtN_true (by rwa [h43, h47]) e1 e', by_o, ?_⟩
     obtain ⟨n1, n2, n3, n4, n5⟩ := n'
     refine ⟨?_, n2, n3, n4, n5⟩
     rw [n1]; simp

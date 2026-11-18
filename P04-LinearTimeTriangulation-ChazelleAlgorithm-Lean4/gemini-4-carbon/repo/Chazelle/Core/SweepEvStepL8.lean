@@ -47,7 +47,7 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
       c'.nreg (kL + 2), c'.nreg (kL + 3)) := by
   classical
   have hP := S.E.hP
-  have hS₂ : (chainModel J.right).ChordFamily (Qof P) (N₂.F (chainModel J.right) (Qof P)) :=
+  have hS₂ :=
     S.E.hNF₂.1
   obtain ⟨hlt, hpw, -⟩ := stp_next_key S.E S.L S.hI S.hd
   obtain ⟨-, -, hcap, hlC'⟩ := stp_meas_step S.E S.L S.hI S.hd
@@ -55,17 +55,17 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
   have hsome := stp_key_some S.hI S.hd
   obtain ⟨-, -, -, -, -, -, -, -, -, hkN4, -, -, -, r0, r1, r2, r3, -⟩ :=
     S.hI.2.2.2.2.2.2.2 hsome
-  have elB : co.nreg lB = c.nreg lB := stp_co_keep S.hI (k := 2430) (by omega)
-  have elC : co.nreg lC = c.nreg lC := stp_co_keep S.hI (k := 2431) (by omega)
-  have elB' : c'.nreg lB = c.nreg lB := stp_iter_keep S.hI (k := 2430) (by omega)
+  have elB : co.nreg lB = c.nreg lB := stp_co_keep S.hI (k := 2430) by_o
+  have elC : co.nreg lC = c.nreg lC := stp_co_keep S.hI (k := 2431) by_o
+  have elB' : c'.nreg lB = c.nreg lB := stp_iter_keep S.hI (k := 2430) by_o
   rw [elB, elC] at r0 r1 r2 r3
   obtain ⟨ls, hlen, hrec, hwords, hpre, hlast⟩ := S.L.log
   have l1 := S.L.lay1
   have l2 := S.L.lay2
   have l4 := S.L.lay4
   have hm : ∀ x, c.nreg lB ≤ x → x < c.nreg lB + 7 * c.nreg lC → c'.nmem x = c.nmem x :=
-    fun x h1 h2 => stp_c'_mem S.L S.hI S.hd x (by omega) (by omega) (Or.inl h2)
-  set r' : ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ := (c'.nreg kE, c'.nreg kH, c'.nreg kN, c'.nreg kL,
+    fun x h1 h2 => stp_c'_mem S.L S.hI S.hd x by_o by_o (Or.inl h2)
+  set r' := (c'.nreg kE, c'.nreg kH, c'.nreg kN, c'.nreg kL,
     c'.nreg (kL + 1), c'.nreg (kL + 2), c'.nreg (kL + 3)) with hr'
   refine ⟨ls ++ [r'], by simp [hlen, hlC'], ?_, ?_, ?_, List.getLast?_concat⟩
   · -- the records
@@ -75,25 +75,25 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
     rcases Nat.lt_or_ge i ls.length with h | h
     · rw [List.getD_append _ _ _ _ h]
       obtain ⟨a0, a1, a2, a3, a4, a5, a6⟩ := hrec i h
-      have hi' : i < c.nreg lC := hlen ▸ h
+      have hi' := hlen ▸ h
       refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-      · rw [hm _ (by omega) (by omega)]; exact a0
-      · rw [hm _ (by omega) (by omega)]; exact a1
-      · rw [hm _ (by omega) (by omega)]; exact a2
-      · rw [hm _ (by omega) (by omega)]; exact a3
-      · rw [hm _ (by omega) (by omega)]; exact a4
-      · rw [hm _ (by omega) (by omega)]; exact a5
-      · rw [hm _ (by omega) (by omega)]; exact a6
+      · rwa [hm _ by_o by_o]
+      · rwa [hm _ by_o by_o]
+      · rwa [hm _ by_o by_o]
+      · rwa [hm _ by_o by_o]
+      · rwa [hm _ by_o by_o]
+      · rwa [hm _ by_o by_o]
+      · rwa [hm _ by_o by_o]
     · have hil : i = ls.length := by omega
       rw [List.getD_append_right _ _ _ _ h, show i - ls.length = 0 by omega, hil, hlen]
       simp only [List.getD_cons_zero]
       refine ⟨r0, r1, r2, ?_, ?_, ?_, ?_⟩
-      · have := r3 0 (by norm_num); simpa using this
-      · have := r3 1 (by norm_num)
+      · have := r3 0 by_n; simpa using this
+      · have := r3 1 by_n
         rwa [show c.nreg lB + 7 * c.nreg lC + 3 + 1 = c.nreg lB + 7 * c.nreg lC + 4 by ring] at this
-      · have := r3 2 (by norm_num)
+      · have := r3 2 by_n
         rwa [show c.nreg lB + 7 * c.nreg lC + 3 + 2 = c.nreg lB + 7 * c.nreg lC + 5 by ring] at this
-      · have := r3 3 (by norm_num)
+      · have := r3 3 by_n
         rwa [show c.nreg lB + 7 * c.nreg lC + 3 + 3 = c.nreg lB + 7 * c.nreg lC + 6 by ring] at this
   · -- the word facts
     intro r hr
@@ -107,13 +107,13 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
   · -- the log so far
     obtain ⟨hne, hall, hhead, hpwl, hcons, hlab⟩ := hpre
     set es := logOf J (Qof P) N₂ ls with hes
-    set x' : ℕ × ℝ × Set (Set Point) := (c'.nreg kE,
+    set x' := (c'.nreg kE,
       (chainModel J.whole).param (Qof P) ⟨c'.nreg kE, c'.nreg kH⟩, curLab P J N₂ c') with hx'
     have hmap : logOf J (Qof P) N₂ (ls ++ [r']) = es ++ [x'] := by
       simp [logOf, hes, hx', hr', curLab]
     rw [hmap]
     -- the last entry of the old log is the key
-    set xc : ℕ × ℝ × Set (Set Point) := (c.nreg kE,
+    set xc := (c.nreg kE,
       (chainModel J.whole).param (Qof P) ⟨c.nreg kE, c.nreg kH⟩, curLab P J N₂ c) with hxc
     have hlastE : es.getLast? = some xc := by
       rw [hes, logOf, List.getLast?_map, hlast]
@@ -121,7 +121,7 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
     have hxcoff : oW J (xc.1 + xc.2.1) = keyOff P J c := rfl
     have hx'off : oW J (x'.1 + x'.2.1) = keyOff P J c' := rfl
     obtain ⟨ys, hys⟩ := List.getLast?_eq_some_iff.1 hlastE
-    refine ⟨by simp, ?_, ?_, ?_, ?_, ?_⟩
+    refine ⟨by_s, ?_, ?_, ?_, ?_, ?_⟩
     · intro x hx
       rcases List.mem_append.1 hx with h | h
       · exact hall x h
@@ -146,16 +146,16 @@ theorem log' : ∃ ls : List (ℕ × ℕ × ℕ × ℕ × ℕ × ℕ × ℕ), ls
     · intro i hi
       simp only [List.length_append, List.length_singleton] at hi
       rcases Nat.lt_or_ge (i + 1) es.length with h | h
-      · rw [List.getD_append _ _ _ _ (by omega), List.getD_append _ _ _ _ h]
+      · rw [List.getD_append _ _ _ _ by_o, List.getD_append _ _ _ _ h]
         exact hcons i h
       · have hi' : i + 1 = es.length := by omega
         have hlen' : es.length = ys.length + 1 := by rw [hys]; simp
         have e1 : (es ++ [x']).getD i (0, 0, ∅) = xc := by
-          rw [List.getD_append _ _ _ _ (by omega), hys,
-            List.getD_append_right _ _ _ _ (by omega), show i - ys.length = 0 by omega]
+          rw [List.getD_append _ _ _ _ by_o, hys,
+            List.getD_append_right _ _ _ _ by_o, show i - ys.length = 0 by omega]
           simp
         have e2 : (es ++ [x']).getD (i + 1) (0, 0, ∅) = x' := by
-          rw [List.getD_append_right _ _ _ _ (by omega), show i + 1 - es.length = 0 by omega]
+          rw [List.getD_append_right _ _ _ _ by_o, show i + 1 - es.length = 0 by omega]
           simp
         rw [e1, e2, hxcoff, hx'off]
         exact no_cut_iter S.E S.L S.hI

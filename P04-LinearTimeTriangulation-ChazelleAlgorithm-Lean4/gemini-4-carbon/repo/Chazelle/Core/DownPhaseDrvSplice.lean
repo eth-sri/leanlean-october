@@ -33,7 +33,7 @@ theorem buildNF_arcs (hK : 0 < L.length) :
     (buildNF M Q L E).arcs = (gapStarts M Q L E).map (arcRec M Q L E) := by
   show arcList M Q L E = _
   unfold arcList
-  rw [ite_eq_right (by omega)]
+  rw [ite_eq_right by_o]
 
 /-- Arc `j` runs from the event at `gapStarts j` to the next event. -/
 theorem buildNF_arc (hK : 0 < L.length) {j : ℕ} (hj : j < (gapStarts M Q L E).length) :
@@ -54,7 +54,7 @@ theorem buildNF_seq : (buildNF M Q L E).seq = List.range (buildNF M Q L E).arcs.
 
 theorem getD_append_left {c : ℕ} (hc : c < 2 * L.length) :
     (L ++ L₂).getD (c / 2) (0, 0, 0) = L.getD (c / 2) (0, 0, 0) := by
-  rw [List.getD_append _ _ _ _ (by omega)]
+  rw [List.getD_append _ _ _ _ by_o]
 
 /-- **Old event codes name the same walk positions after appending chords.** -/
 theorem wposOf_append {c : ℕ} (hc : c < 2 * L.length) : wposOf (L ++ L₂) c = wposOf L c := by
@@ -100,9 +100,8 @@ theorem splice_ok (hperm : E.Perm (List.range (2 * L.length)))
       refine hsort.imp_of_mem fun {a b} ha hb hab => ?_
       have ha' := List.mem_range.1 (hperm.mem_iff.1 ha)
       have hb' := List.mem_range.1 (hperm.mem_iff.1 hb)
-      rw [codeLeB_iff, codeLe_append ha' hb']
-      exact hab
-    have hE₂ : E₂.Pairwise (fun a b => codeLeB M Q (L ++ L₂) a b = true) :=
+      rwa [codeLeB_iff, codeLe_append ha' hb']
+    have hE₂ :=
       hsort₂.imp fun h => (codeLeB_iff _ _).2 h
     have h := List.pairwise_merge (le := codeLeB M Q (L ++ L₂))
       (fun a b c h1 h2 => by

@@ -109,8 +109,8 @@ theorem nonstop_found (hP : J.P.Simple) {Q : Polygon} {S₂ : Set (Set Point)}
           s ⊆ c)) := by
   have hS₂a := hS₂.2.1
   have hS₂f := hS₂.1
-  have hNTV : NoTieV J S₂ := noTieV hP hS₂a
-  have hLt : (Lst J : ℝ) < oW J (pK + tK) := by linarith
+  have hNTV := noTieV hP hS₂a
+  have hLt : (Lst J : ℝ) < oW J (pK + tK) := by_l
   obtain ⟨c, hc, a, σ, ha, haR, hav, hat, hfree, rfl⟩ := nonstop_cases hS₂a he hns
   have hsub := shoot_sub_end hS₂a hc ha
   rcases det_of_evInv hP hS₂ hF hLK hInv hpK htK0 htK1 hoK hgap he heK with

@@ -69,20 +69,20 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
     hsimp, hNP, hNP3, hruns⟩ := hPre
   have hAL : ALLOC = 9999 := rfl
   have hqn : (Qof P).n = P.n := shear_n _ _
-  have hn3 : 3 ≤ P.n := hG.1.1
+  have hn3 := hG.1.1
   have hhw : hostWords P.n = 256 * P.n + 16 := rfl
   set μ := c.nreg 219202 with hμ
   set L := lemma41Nat μ with hLdef
   set pc := pcB κP (κ 130) κs L with hpc
   have hrgK : 121 * pc + 5000 ≤ rgK κP (κ 130) κs * (L + 1) := by
     unfold rgK; rw [hpc]; unfold pcB
-    have h1 : mcK (κ 130) κs * L ≤ mcK (κ 130) κs * (L + 1) := Nat.mul_le_mul_left _ (by omega)
+    have h1 : mcK (κ 130) κs * L ≤ mcK (κ 130) κs * (L + 1) := Nat.mul_le_mul_left _ by_o
     nlinarith
-  have hHA0' : HostAt c.nmem (c.nreg 219200) H := hHA0.holds
-  have hwfP : HostWF P.n H := hqn ▸ hwf
+  have hHA0' := hHA0.holds
+  have hwfP := hqn ▸ hwf
   have hK60 : (hostLeaves P.n (2 ^ μ) 0 H).length ≤ 60 := by
     have := hostLeaves_length_le (n := P.n) (C := 2 ^ μ) Nat.one_le_two_pow H 0
-      (fun a ℓ hm => by have := hruns a ℓ hm; rw [hC] at this; exact this)
+      (fun a ℓ hm => by have := hruns a ℓ hm; rwa [hC] at this)
     omega
   have hptsW : (Host.pts P.n H).length + 2 * P.n + 1 ≤ W := by
     have := Host.pts_length_le hwfP
@@ -91,7 +91,7 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
   -- the planner's arguments
   obtain ⟨c₁, k₁, e₁, hk₁, a00, a02, m₁, f₁, rr₁⟩ := rgInit0_exec (P := P) c hw
   have hw₁ := e₁.wb_right
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := f₁.1 ALLOC (by decide)
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := f₁.1 ALLOC by_d
   have g₁ : ∀ q, q ≠ 219000 → q ≠ 219002 → c₁.nreg q = c.nreg q := fun q h1 h2 => f₁.1 q (by
     simp only [decide_eq_false_iff_not]; omega)
   -- the leaf table
@@ -105,35 +105,35 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
     tB q (by simp only [Bpl, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega)
   -- the padding
   obtain ⟨c₃, e₃, g₃, rr₃, m₃, rm₃, ro₃⟩ := rgPad_exec (P := P) c₂ hw₂ (by rw [t03, t9]; omega)
-    (by omega)
+    by_o
   have hw₃ := e₃.wb_right
-  have t9₃ : c₃.nreg 9999 = c.nreg ALLOC + 3 * K := by rw [g₃ _ (by decide) (by decide), t9]
+  have t9₃ : c₃.nreg 9999 = c.nreg ALLOC + 3 * K := by rw [g₃ _ by_d by_d, t9]
   have hk₃ : 3 * (c₂.nreg 9999 - c₂.nreg 219003) + 4 = 9 * K + 4 := by rw [t03, t9]; omega
   have g₀₃ : ∀ q, (q < 219000 ∨ (219029 < q ∧ q ≠ 219250 ∧ q ≠ 219251)) → q ≠ 9999 →
       c₃.nreg q = c.nreg q := fun q h1 h2 => by
-    rw [g₃ q (by omega) (by omega), g₂ q (by omega) h2, g₁ q (by omega) (by omega)]
+    rw [g₃ q by_o by_o, g₂ q by_o h2, g₁ q by_o by_o]
   have hm₃ : ∀ a, a < c.nreg ALLOC → c₃.nmem a = c.nmem a := fun a ha => by
-    rw [m₃, tlow a (by rw [hA₁]; exact ha), m₁]
+    rw [m₃, tlow a (by rwa [hA₁]), m₁]
   -- the constants and the loop state
   obtain ⟨c₄, k₄, e₄, hk₄, mg₄, b100, b101, b103, b104, b107, b230, b231, b220, b221, b222, b223,
       b224, b9, hm₄, f₄, rr₄⟩ := rgInit1_exec (P := P) c₃ hw₃ (HB := c.nreg 219200)
     (NP := c.nreg 219201) (T := c.nreg ALLOC) (Hl := H.length)
-    (g₀₃ _ (by omega) (by decide)) (g₀₃ _ (by omega) (by decide)) (by rw [g₃ _ (by decide)
-      (by decide), t03, hA₁])
-    (by rw [hm₃ _ (by omega)]; exact hHA0'.1) (by rw [t9₃]; have := hrgK; omega)
+    (g₀₃ _ by_o by_d) (g₀₃ _ by_o by_d) (by rw [g₃ _ by_d
+      by_d, t03, hA₁])
+    (by rw [hm₃ _ by_o]; exact hHA0'.1) (by rw [t9₃]; have := hrgK; omega)
   have hw₄ := e₄.wb_right
-  have g₄ : ∀ q, Bi1 q = false → c₄.nreg q = c₃.nreg q := f₄.1
+  have g₄ := f₄.1
   have g₀₄ : ∀ q, (q < 219000 ∨ (219029 < q ∧ q < 219100) ∨ (219107 < q ∧ q < 219140) ∨
       (219146 < q ∧ q < 219220) ∨ (219231 < q ∧ q ≠ 219250 ∧ q ≠ 219251)) → q ≠ 9999 →
       c₄.nreg q = c.nreg q := fun q h1 h2 => by
     rw [g₄ q (by simp only [Bi1, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
-      g₀₃ q (by omega) h2]
+      g₀₃ q by_o h2]
   have hA₄ : c₄.nreg ALLOC = c.nreg ALLOC + 3 * K + 3 := by
     show c₄.nreg 9999 = _; rw [b9, t9₃]
   have hT₄ : c₄.nreg 219003 = c.nreg ALLOC := by
-    rw [g₄ _ (by decide), g₃ _ (by decide) (by decide), t03, hA₁]
+    rw [g₄ _ by_d, g₃ _ by_d by_d, t03, hA₁]
   have hK₄ : c₄.nreg 219004 = K := by
-    rw [g₄ _ (by decide), g₃ _ (by decide) (by decide), t04]
+    rw [g₄ _ by_d, g₃ _ by_d by_d, t04]
   have hm₄' : ∀ a, a < c.nreg ALLOC → c₄.nmem a = c.nmem a := fun a ha => by
     rw [hm₄, hm₃ a ha]
   -- the data of the run
@@ -141,32 +141,32 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
     c₄.nreg ALLOC, c.nreg ALLOC⟩
   have hleaves : R.leaves P = hostLeaves P.n (2 ^ μ) 0 H := by
     show hostLeaves (Qof P).n (2 ^ μ) 0 H = _; rw [hqn]
-  have hglt : c.nreg 219205 < c.nreg ALLOC := gradeRaw_handle_lt (O := O) hX0
+  have hglt := gradeRaw_handle_lt (O := O) hX0
   have hF : RFacts O P W R := by
     refine ⟨hG, hWn, (hHA0.transport hm₄').mono (by show c.nreg ALLOC ≤ c₄.nreg ALLOC; omega),
       by show c.nreg 219200 + 3 * H.length + 4 ≤ c₄.nreg ALLOC; omega, hHl, hwf, hreg, hsimp, hNP,
       hNP3,
-      fun a ℓ hm => by have := hruns a ℓ hm; rw [hC] at this; exact this, hμ7,
-      by show μ ≤ c₄.nmem (c.nreg 219205); rw [hm₄' _ hglt]; exact hμg0, hg0, h128, hg1,
+      fun a ℓ hm => by have := hruns a ℓ hm; rwa [hC] at this, hμ7,
+      by show μ ≤ c₄.nmem (c.nreg 219205); rwa [hm₄' _ hglt], hg0, h128, hg1,
       by show _ ≤ (gradeCtx O).cap P c₄.nmem (c.nreg 219205)
-         rw [gradeCtx_capLocal O P c.nmem c₄.nmem _ _ hm₄' hX0]; exact hcap0,
+         rwa [gradeCtx_capLocal O P c.nmem c₄.nmem _ _ hm₄' hX0],
       ((gradeCtx O).local_ P _ _ _ _ (fun a ha => (hm₄' a ha).symm) hX0 |> (gradeCtx O).mono P _ _ _
         _ (by show c.nreg ALLOC ≤ c₄.nreg ALLOC; omega)), ?_, ?_, ?_⟩
     · show ChordListAt c₄.nmem (c.nreg ALLOC) (R.leaves P)
-      rw [hleaves, hm₄, m₃, ← hA₁]; exact tT
+      rwa [hleaves, hm₄, m₃, ← hA₁]
     · show c.nreg ALLOC + 3 * (R.leaves P).length ≤ c₄.nreg ALLOC
       rw [hleaves, hA₄]; omega
-    · have := gradeCtx_cap_le (by omega) hX0
+    · have := gradeCtx_cap_le by_o hX0
       show c.nreg 219204 + 129 ≤ W; omega
   have hRl : (R.leaves P).length = K := by rw [hleaves]
-  have E₄ : REnv R c₄ := ⟨g₀₄ _ (by omega) (by decide), g₀₄ _ (by omega) (by decide),
-    g₀₄ _ (by omega) (by decide), g₀₄ _ (by omega) (by decide), g₀₄ _ (by omega) (by decide),
-    b230, b231, b223, hT₄, mg₄, b100, b101, b103, by rw [b104, g₀₃ _ (by omega) (by decide)],
+  have E₄ : REnv R c₄ := ⟨g₀₄ _ by_o by_d, g₀₄ _ by_o by_d,
+    g₀₄ _ by_o by_d, g₀₄ _ by_o by_d, g₀₄ _ by_o by_d,
+    b230, b231, b223, hT₄, mg₄, b100, b101, b103, by rw [b104, g₀₃ _ by_o by_d],
     b107, fun a _ => rfl, le_refl _⟩
   have hgap : GapsLe 64 ((R.leaves P).drop 0) 0 (R.NP - 1) := by
     rw [List.drop_zero]
-    have := hostLeaves_gaps (n := (Qof P).n) (C := 2 ^ μ) Nat.one_le_two_pow (by omega) hwf hHl
-      (degCount_le_one hsimp) (by omega)
+    have := hostLeaves_gaps (n := (Qof P).n) (C := 2 ^ μ) Nat.one_le_two_pow by_o hwf hHl
+      (degCount_le_one hsimp) by_o
     show GapsLe 64 (hostLeaves (Qof P).n (2 ^ μ) 0 H) 0 (c.nreg 219201 - 1)
     rw [hNP]; exact this
   have hKL : K * lfB pc ≤ 60 * lfB pc := Nat.mul_le_mul_right _ hK60
@@ -195,7 +195,7 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
       unfold rgOut
       exec_block
       refine ⟨rfl, ?_, ?_, ?_, rfl⟩ <;> config_simp
-    exact ⟨c₇, k₇, e₇, hk₇, z10, z11, z12, m₇, exec_frameM e₇ (by decide)⟩
+    exact ⟨c₇, k₇, e₇, hk₇, z10, z11, z12, m₇, exec_frameM e₇ by_d⟩
   -- the frames
   have Fr₁ : Frame drvBands c c₁ k₁ := frame_band (fun q hq => by
     simp only [decide_eq_true_eq] at hq; simp only [bandOf, bDownDrv]; omega) f₁ m₁ k₁
@@ -204,7 +204,7 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
       fun a ha => by rw [rm₃, rm₂], by rw [ro₃, ro₂], ?_, ?_⟩
     · have hb : bandOf r ≠ bDownDrv := fun h => hr (h ▸ bDownDrv_mem_drvBands)
       simp only [bandOf, bDownDrv] at hb
-      rw [g₃ r (by omega) (by omega), g₂ r (by omega) hrA]
+      rw [g₃ r by_o by_o, g₂ r by_o hrA]
     · rw [m₃, tlow a ha]
     · have hA1' : c₁.nreg 9999 = c.nreg 9999 := hA₁
       have t9' : c₃.nreg 9999 = c.nreg 9999 + 3 * K := t9₃
@@ -218,7 +218,7 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
     · have hb : bandOf r ≠ bDownDrv := fun h => hr (h ▸ bDownDrv_mem_drvBands)
       simp only [bandOf, bDownDrv] at hb
       simp only [Bi1, Bool.or_eq_false_iff, decide_eq_false_iff_not]
-      refine ⟨⟨⟨by omega, by omega⟩, by omega⟩, ?_⟩
+      refine ⟨⟨⟨by_o, by_o⟩, by_o⟩, ?_⟩
       intro h; exact hrA h
     · show c₃.nreg 9999 ≤ c₄.nreg 9999; rw [b9]; omega
     · show c₄.nreg 9999 ≤ c₃.nreg 9999 + k₄; rw [b9, hk₄]; omega
@@ -239,11 +239,11 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
     have := hrgK
     have := hHl
     omega
-  have hA₇ : c₇.nreg ALLOC = c₆.nreg ALLOC := f₇.1 ALLOC (by decide)
+  have hA₇ : c₇.nreg ALLOC = c₆.nreg ALLOC := f₇.1 ALLOC by_d
   have hNPn : (H.poly (Qof P)).n = c.nreg 219201 := by rw [DownMath.host_poly_n, hNP]
   refine ⟨c₇, _, .seq e₁ (.seq e₂ (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ e₇))))), hcost,
     ⟨fun q hq hq' => ?_, ?_, ?_, ?_, ?_, ?_, fun H' C hH' hP hs hm => ?_⟩,
-    Fr.mono (le_refl _) (by omega)⟩
+    Fr.mono (le_refl _) by_o⟩
   · rw [f₇.1 q (by simp only [bandOf, bDownDrv] at hq; simp only [decide_eq_false_iff_not]; omega),
       o₆ q hq hq']
     exact I₅.keep q hq hq'
@@ -253,22 +253,22 @@ theorem rgS_run {sp sM : Stmt} {κP κs : ℕ} {κ : ℕ → ℕ} (hsp : PcMeets
   · rw [z11]; have := A₆.lo2; show c.nreg ALLOC ≤ _
     have : R.A₁ = c₄.nreg ALLOC := rfl
     omega
-  · rw [z12, A₆.r13]; exact hγf
+  · rwa [z12, A₆.r13]
   · rw [z12, A₆.r13]; have : (R.leaves P).length ≤ 60 := by rw [hRl]; exact hK60
     show γf ≤ R.γ₀ + 128; omega
   · -- the model descriptor
-    have hC1 : 1 ≤ c.nreg 219201 - 1 := by omega
+    have hC1 : 1 ≤ c.nreg 219201 - 1 := by_o
     let C : Chain := ⟨H.poly (Qof P), 0, c.nreg 219201 - 1, hC1, by rw [hNPn]; omega⟩
     obtain ⟨hdR, N, hN, hc⟩ := A₆.desc C rfl rfl rfl
     obtain ⟨d0, d1, d2⟩ := hdR.holds
     have hHA6 : HostAt c₆.nmem (c.nreg 219200) H := (E₆.hostAt hF).holds
     refine ⟨by rw [z10, hA₇]; exact A₆.dA, fun _ => ?_⟩
     rw [z10, hA₇, m₇]
-    exact DrvR.chainWF_host hHA6 (by omega) hwfP
+    exact DrvR.chainWF_host hHA6 by_o hwfP
       (by have := E₆.alloc; have : R.A₁ = c₄.nreg ALLOC := rfl; omega) d2 d1
       (by have := A₆.dA; omega) (by show 0 < (H.poly (Qof P)).n; rw [hNPn]; omega)
   · -- the chain and its normal form
-    have hHH : H' = H := NFLoc.hostAt_unique hH' hHA0'
+    have hHH := NFLoc.hostAt_unique hH' hHA0'
     subst hHH
     have hmC : C.m = c.nreg 219201 - 1 := by rw [hP, hNPn] at hm; omega
     obtain ⟨hdR, N, hN, hc⟩ := A₆.desc C hP hs hmC
@@ -283,8 +283,7 @@ theorem regionSpec {O : OracleIface} (hM : MergeSpec) (hSC : ShootCutSpec O) (hP
   obtain ⟨sp, κP, hsp⟩ := (pieceSpec_iff O).1 hPc
   obtain ⟨sh, cu, κs, hsh, hcu⟩ := hSC
   obtain ⟨mk, κ, hmk⟩ := L41.mergeMeets_of hM
-  have hMM : L41.MergeMeets (mk sh cu) κ (L41.scF κs) (L41.scG κs) cutGran (gradeCtx O)
-      OkModel :=
+  have hMM :=
     hmk sh cu oracleBands oracleBands (L41.scF κs) (L41.scG κs) cutGran (gradeCtx O) OkModel
       (gradeCtx_capLocal O) (ShootCut.gradeCtx_halves O) (fun _ _ h => h) (L41.scF_mono κs)
       (L41.scG_mono κs) L41.cutGran_mono (subset_refl _) (subset_refl _) hsh hcu

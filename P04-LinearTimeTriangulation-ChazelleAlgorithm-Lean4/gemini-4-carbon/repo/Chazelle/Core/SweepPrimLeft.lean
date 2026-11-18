@@ -122,22 +122,22 @@ theorem intOut_exec {P : Polygon} {W : ℕ} (c : Config) (hw : WordsBounded W c)
       ∀ r, r ≠ 50210 → c'.nreg r = c.nreg r := by
   obtain ⟨c₁, k₁, e₁, hk₁, o₁, r₁⟩ := turnOut_exec (P := P) c hw hW h32 hd
   have w₁ := e₁.wb_right
-  have p₁ : c₁.nreg 50032 = 1 := by rw [r₁ _ (by decide), h32]
+  have p₁ : c₁.nreg 50032 = 1 := by rw [r₁ _ by_d, h32]
   set t := turnCode (c.nreg 10502) (c.nreg 50203)
   have fin : ∀ v, v ≤ 1 → (v = 1 ↔ t = 1) → ∃ c' k, Exec P W (.instr (.constN 50210 v)) c₁ c' k ∧
       k = 1 ∧ BitIs c' 50210 (t = 1) ∧ ∀ r, r ≠ 50210 → c'.nreg r = c.nreg r := fun v hv hvt =>
-    ⟨_, 1, Exec.constN w₁ _ _ (by omega), rfl, ⟨by simp [hv], by simp [hvt]⟩,
+    ⟨_, 1, Exec.constN w₁ _ _ by_o, rfl, ⟨by simp [hv], by simp [hvt]⟩,
       fun r hr => by simp [hr, r₁ r hr]⟩
   by_cases h0 : t < 1
-  · obtain ⟨c', k, e, hk, h1, h2⟩ := fin 0 (by omega) (by omega)
-    exact ⟨c', _, .seq e₁ (.ifLtN_true (by rw [o₁, p₁]; exact h0) e), by omega, h1, h2⟩
+  · obtain ⟨c', k, e, hk, h1, h2⟩ := fin 0 by_o by_o
+    exact ⟨c', _, .seq e₁ (.ifLtN_true (by rwa [o₁, p₁]) e), by_o, h1, h2⟩
   by_cases h2 : 1 < t
-  · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 0 (by omega) (by omega)
-    exact ⟨c', _, .seq e₁ (.ifLtN_false (by rw [o₁, p₁]; exact h0)
-      (.ifLtN_true (by rw [o₁, p₁]; exact h2) e)), by omega, h1, h3⟩
-  · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 1 le_rfl (by omega)
-    exact ⟨c', _, .seq e₁ (.ifLtN_false (by rw [o₁, p₁]; exact h0)
-      (.ifLtN_false (by rw [o₁, p₁]; exact h2) e)), by omega, h1, h3⟩
+  · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 0 by_o by_o
+    exact ⟨c', _, .seq e₁ (.ifLtN_false (by rwa [o₁, p₁])
+      (.ifLtN_true (by rwa [o₁, p₁]) e)), by_o, h1, h3⟩
+  · obtain ⟨c', k, e, hk, h1, h3⟩ := fin 1 le_rfl by_o
+    exact ⟨c', _, .seq e₁ (.ifLtN_false (by rwa [o₁, p₁])
+      (.ifLtN_false (by rwa [o₁, p₁]) e)), by_o, h1, h3⟩
 
 /-- The vertex case: the sector procedure at the tour vertex `e - 6`, answer copied. -/
 def vtxOut : Stmt :=
@@ -158,7 +158,7 @@ def leftSecCore : Stmt :=
 /-- **The primitive `leftSec`.** -/
 def leftSec : Stmt := .seq pHead leftSecCore
 
-theorem wr_leftSec : wr Bprim leftSec = true := by decide
+theorem wr_leftSec : wr Bprim leftSec = true := by_d
 
 /-- The vertex case of `leftSec`. -/
 theorem vtxOut_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
@@ -168,16 +168,16 @@ theorem vtxOut_exec {P : Polygon} {W : ℕ} {H : Host} {C : Chain} (c : Config)
       BitIs c' 50210 (sideLeft (chainModel C).W e 0
         (Visibility.rayPt ((chainModel C).W.vtx e) (dirOf (c.nreg 50203)) 1)) := by
   have e₁ := Exec.subN (P := P) hE.wb 50121 50201 50081
-  set c₁ : Config := { c with nreg := upd c.nreg 50121 (c.nreg 50201 - c.nreg 50081) } with hc₁
-  have hE₁ : CEnv P W H C c₁ := hE.frame (exec_frameB e₁ (B := fun r => r == 50121)
-    (by decide)) e₁.wb_right (by decide)
+  set c₁ := { c with nreg := upd c.nreg 50121 (c.nreg 50201 - c.nreg 50081) } with hc₁
+  have hE₁ := hE.frame (exec_frameB e₁ (B := fun r => r == 50121)
+    by_d) e₁.wb_right by_d
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, -, b₂⟩ := secAt_exec c₁ hE₁ (i := e - 6)
-    (by rw [hc₁]; simp [h01, hE.r81]) (by omega)
+    (by rw [hc₁]; simp [h01, hE.r81]) by_o
   have e₃ := Exec.copyN (P := P) e₂.wb_right 50210 50110
-  refine ⟨_, _, .seq e₁ (.seq e₂ e₃), by omega, ?_⟩
+  refine ⟨_, _, .seq e₁ (.seq e₂ e₃), by_o, ?_⟩
   have s₁ : c₁.nreg 50203 = c.nreg 50203 := by rw [hc₁]; simp
   rw [s₁, show e - 6 + 6 = e by omega] at b₂
-  exact b₂.of_eq (by simp)
+  exact b₂.of_eq by_s
 
 /-- The input condition of `leftSec`: a proper position of the walk whose point is strictly
 inside the height range of the box. -/
@@ -199,9 +199,9 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
     (fun _ _ => 17400) := by
   refine prim_meets (K := 16600) (fun r h => h) wr_leftSec ?_
   intro P W H C c₀ c _hC hE ⟨hen, ⟨hp0, hp1, hhn⟩, hy⟩ hinp
-  have i01 := hinp 50201 (by norm_num) (by norm_num)
-  have i02 := hinp 50202 (by norm_num) (by norm_num)
-  have i03 := hinp 50203 (by norm_num) (by norm_num)
+  have i01 := hinp 50201 by_n by_n
+  have i02 := hinp 50202 by_n by_n
+  have i03 := hinp 50203 by_n by_n
   unfold LeftOut
   set e := c₀.nreg 50201 with he_def
   set hc := c₀.nreg 50202 with hc_def
@@ -213,20 +213,20 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
   have hW := hE.hW
   -- the edge direction
   have e₁ := Exec.copyN (P := P) hE.wb 50002 50201
-  set c₁ : Config := { c with nreg := upd c.nreg 50002 (c.nreg 50201) } with hc₁
-  have hE₁ : CEnv P W H C c₁ := hE.frame (exec_frameB e₁ (B := fun r => r == 50002)
-    (by decide)) e₁.wb_right (by decide)
+  set c₁ := { c with nreg := upd c.nreg 50002 (c.nreg 50201) } with hc₁
+  have hE₁ := hE.frame (exec_frameB e₁ (B := fun r => r == 50002)
+    by_d) e₁.wb_right by_d
   obtain ⟨c₂, k₂, e₂, hk₂, f₂, hE₂, d₂⟩ := dirAt_exec c₁ hE₁ (e := e)
-    (by rw [hc₁]; simp [i01]) (by omega)
+    (by rw [hc₁]; simp [i01]) by_o
   have w₂ := e₂.wb_right
   have g₂ : ∀ r, 50200 ≤ r → r < 50210 → c₂.nreg r = c₀.nreg r := fun r h1 h2 => by
     rw [f₂.1 r (by simp only [Bdir, Bool.or_eq_false_iff, decide_eq_false_iff_not]; omega),
       hc₁]
     simp only
-    rw [upd_other _ _ _ (by omega), hinp r h1 h2]
-  have q01 := g₂ 50201 (by norm_num) (by norm_num)
-  have q02 := g₂ 50202 (by norm_num) (by norm_num)
-  have q03 := g₂ 50203 (by norm_num) (by norm_num)
+    rw [upd_other _ _ _ by_o, hinp r h1 h2]
+  have q01 := g₂ 50201 by_n by_n
+  have q02 := g₂ 50202 by_n by_n
+  have q03 := g₂ 50203 by_n by_n
   have hd2 : c₂.nreg 10502 ≤ 2 := by rw [d₂]; exact dirCode_le_two _ _
   -- the interior case, shared
   have interior : ∀ c₃ : Config, CEnv P W H C c₃ → c₃.nreg 10502 = dirCode M e →
@@ -235,7 +235,7 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
         BitIs c' 50210 (sideLeft M.W e (M.param (Qof P) x)
           (Visibility.rayPt (M.pos (Qof P) x) (dirOf σ) 1)) := by
     intro c₃ hE₃ d₃ s₃ hpos
-    obtain ⟨c', k, ex, hk, b, -⟩ := intOut_exec (P := P) c₃ hE₃.wb (by omega) hE₃.r32
+    obtain ⟨c', k, ex, hk, b, -⟩ := intOut_exec (P := P) c₃ hE₃.wb by_o hE₃.r32
       (by rw [d₃]; exact dirCode_le_two _ _)
     refine ⟨c', k, ex, hk, b.congr ?_⟩
     rw [d₃, s₃, ← interior_bit, pos_eq_sidePt]
@@ -247,22 +247,21 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
         BitIs c' 50210 (sideLeft M.W e (M.param (Qof P) x)
           (Visibility.rayPt (M.pos (Qof P) x) (dirOf σ) 1)) := by
     intro c₃ hE₃ e₃ s₃ h6 h0
-    obtain ⟨c', k, ex, hk, b⟩ := vtxOut_exec c₃ hE₃ e₃ h6 (by omega)
+    obtain ⟨c', k, ex, hk, b⟩ := vtxOut_exec c₃ hE₃ e₃ h6 by_o
     refine ⟨c', k, ex, hk, ?_⟩
-    rw [h0, pos_eq_sidePt, h0, Chazelle.Chain.sidePt_zero, ← s₃]
-    exact b
+    rwa [h0, pos_eq_sidePt, h0, Chazelle.Chain.sidePt_zero, ← s₃]
   by_cases hsm : e < 6
   · -- the box block
-    have hpos : 0 < M.param (Qof P) x := box_param_pos C hsm hp0 hy
+    have hpos := box_param_pos C hsm hp0 hy
     obtain ⟨c', k, ex, hk, b⟩ := interior c₂ hE₂ d₂ q03 hpos
-    exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_true (by rw [q01, hE₂.r81]; exact hsm) ex)),
-      by omega, b⟩
+    exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_true (by rwa [q01, hE₂.r81]) ex)),
+      by_o, b⟩
   have t1 : ¬ c₂.nreg 50201 < c₂.nreg 50081 := by rw [q01, hE₂.r81]; exact hsm
   by_cases hh0 : hc < 1
-  · obtain ⟨c', k, ex, hk, b⟩ := vertex c₂ hE₂ q01 q03 (by omega)
+  · obtain ⟨c', k, ex, hk, b⟩ := vertex c₂ hE₂ q01 q03 by_o
       ((param_eq_zero_iff _ _ _).2 (Or.inl (by simp [hx]; omega)))
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_true
-      (by rw [q02, hE₂.r32]; exact hh0) ex))), by omega, b⟩
+      (by rwa [q02, hE₂.r32]) ex))), by_o, b⟩
   have t2 : ¬ c₂.nreg 50202 < c₂.nreg 50032 := by rw [q02, hE₂.r32]; exact hh0
   by_cases hd0 : c₂.nreg 10502 < 1
   · have hdir : dirCode M e = 0 := by rw [← d₂]; omega
@@ -270,20 +269,20 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
       unfold dirCode at hdir
       split_ifs at hdir with h1 h2
       exact le_antisymm (not_lt.1 h2) (not_lt.1 h1)
-    obtain ⟨c', k, ex, hk, b⟩ := vertex c₂ hE₂ q01 q03 (by omega)
+    obtain ⟨c', k, ex, hk, b⟩ := vertex c₂ hE₂ q01 q03 by_o
       ((param_eq_zero_iff _ _ _).2 (Or.inr (Or.inl hhor)))
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_true
-      (by rw [hE₂.r32]; exact hd0) ex)))), by omega, b⟩
-  have t3 : ¬ c₂.nreg 10502 < c₂.nreg 50032 := by rw [hE₂.r32]; exact hd0
+      (by rwa [hE₂.r32]) ex)))), by_o, b⟩
+  have t3 : ¬ c₂.nreg 10502 < c₂.nreg 50032 := by rwa [hE₂.r32]
   -- the start vertex of the edge and the height vertex
   have e₃ := Exec.subN (P := P) w₂ 50120 50201 50081
-  set c₃ : Config := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50201 - c₂.nreg 50081) }
+  set c₃ := { c₂ with nreg := upd c₂.nreg 50120 (c₂.nreg 50201 - c₂.nreg 50081) }
     with hc₃
-  have hE₃ : CEnv P W H C c₃ := hE₂.frame (exec_frameB e₃ (B := fun r => r == 50120)
-    (by decide)) e₃.wb_right (by decide)
+  have hE₃ := hE₂.frame (exec_frameB e₃ (B := fun r => r == 50120)
+    by_d) e₃.wb_right by_d
   obtain ⟨c₄, k₄, e₄, hk₄, f₄, hE₄, sa, ia, la, va, -⟩ := tvLoad_exec c₃ hE₃ (i := e - 6)
-    (by rw [hc₃]; simp only [upd_same]; rw [q01, hE₂.r81]) (by omega)
-    (dst := 50133) (by norm_num)
+    (by rw [hc₃]; simp only [upd_same]; rw [q01, hE₂.r81]) by_o
+    (dst := 50133) by_n
   have w₄ := e₄.wb_right
   obtain ⟨c₅, k₅, e₅, hk₅, q⟩ : ∃ c₅ k₅, Exec P W (block [.constN 50160 0,
       .subN 50161 50202 50032]) c₄ c₅ k₅ ∧ k₅ = 2 ∧ (c₅.nreg 50160 = 0 ∧
@@ -292,38 +291,38 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
     · omega
     · refine ⟨rfl, by config_simp, ?_, fun r h1 h2 => by simp [h1, h2]⟩
       config_simp
-      rw [f₄.1 50202 (by decide), f₄.1 50032 (by decide), hc₃]
+      rw [f₄.1 50202 by_d, f₄.1 50032 by_d, hc₃]
       simp only
-      rw [upd_other _ _ _ (by decide), upd_other _ _ _ (by decide), q02, hE₂.r32]
+      rw [upd_other _ _ _ by_d, upd_other _ _ _ by_d, q02, hE₂.r32]
   obtain ⟨q60, q61, r₅⟩ := q
   have w₅ := e₅.wb_right
   have ih : SymPtIn c₅ 50160 (.vtx (hc - 1)) := ⟨q60, q61⟩
   have hhn' : hc ≤ P.n := hhn
   have lh : (SymPt.vtx (hc - 1)).Lt P.n := by show hc - 1 < P.n; omega
-  have ia₅ : SymPtIn c₅ 50133 sa := symPtIn_of_eq ia fun j h1 h2 => r₅ j (by omega) (by omega)
+  have ia₅ : SymPtIn c₅ 50133 sa := symPtIn_of_eq ia fun j h1 h2 => r₅ j by_o by_o
   obtain ⟨c₆, k₆, e₆, hk₆, f₆, b₆, t₆⟩ := kbit_exec (op := 1) (dst := 50170) hE.hG hW c₅ w₅
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) la lh la ia₅ ih ia₅
+    by_n by_n by_n by_n by_n la lh la ia₅ ih ia₅
   have ia₆ := symPtIn_keep ia₅ f₆ (by intro j h1 h2; interval_cases j <;> decide)
   have ih₆ := symPtIn_keep ih f₆ (by intro j h1 h2; interval_cases j <;> decide)
   obtain ⟨c₇, k₇, e₇, hk₇, f₇, b₇, t₇⟩ := kbit_exec (op := 1) (dst := 50171) hE.hG hW c₆
-    e₆.wb_right (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num) lh la lh
+    e₆.wb_right by_n by_n by_n by_n by_n lh la lh
     ih₆ ia₆ ih₆
   have w₇ := e₇.wb_right
-  have hE₅ : CEnv P W H C c₅ := hE₄.keep w₅ (exec_frameB e₅ (B := fun r => r == 50160 ||
-    r == 50161) (by decide)).2.2.1 (fun r hr => r₅ r (by intro h; subst h; revert hr; decide)
+  have hE₅ := hE₄.keep w₅ (exec_frameB e₅ (B := fun r => r == 50160 ||
+    r == 50161) by_d).2.2.1 (fun r hr => r₅ r (by intro h; subst h; revert hr; decide)
       (by intro h; subst h; revert hr; decide))
-  have hE₆ := hE₅.frame f₆ e₆.wb_right (by decide)
-  have hE₇ := hE₆.frame f₇ w₇ (by decide)
+  have hE₆ := hE₅.frame f₆ e₆.wb_right by_d
+  have hE₇ := hE₆.frame f₇ w₇ by_d
   -- registers kept since `c₂`
   have g₇ : ∀ r, r = 50201 ∨ r = 50203 ∨ r = 10502 → c₇.nreg r = c₂.nreg r := by
     intro r hr
     rw [f₇.1 r (by rcases hr with rfl | rfl | rfl <;> decide),
       f₆.1 r (by rcases hr with rfl | rfl | rfl <;> decide),
-      r₅ r (by omega) (by omega), f₄.1 r (by rcases hr with rfl | rfl | rfl <;> decide), hc₃]
+      r₅ r by_o by_o, f₄.1 r (by rcases hr with rfl | rfl | rfl <;> decide), hc₃]
     simp only
-    rw [upd_other _ _ _ (by omega)]
+    rw [upd_other _ _ _ by_o]
   have b70 : BitIs c₇ 50170 ((SymPt.eval (Qof P) sa).2 < ((SymPt.vtx (hc - 1)).eval (Qof P)).2) :=
-    BitIs.keep ⟨b₆, t₆⟩ f₇ (by decide)
+    BitIs.keep ⟨b₆, t₆⟩ f₇ by_d
   have b71 : BitIs c₇ 50171 (((SymPt.vtx (hc - 1)).eval (Qof P)).2 < (SymPt.eval (Qof P) sa).2) :=
     ⟨b₇, t₇⟩
   rw [va, show e - 6 + 6 = e by omega] at b70 b71
@@ -341,11 +340,11 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
       have heq : ((Qof P).vtx (x.hgt - 1)).2 = (M.wa x.edge).2 := by
         rw [hwa]; linarith [not_lt.1 n70, not_lt.1 n71]
       obtain ⟨c', k, ex, hk, b⟩ := vertex c₇ hE₇ (by rw [g₇ _ (Or.inl rfl), q01])
-        (by rw [g₇ _ (Or.inr (Or.inl rfl)), q03]) (by omega)
+        (by rw [g₇ _ (Or.inr (Or.inl rfl)), q03]) by_o
         ((param_eq_zero_iff _ _ _).2 (Or.inr (Or.inr heq)))
       exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
-        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
-          (.ifLtN_true (by rw [hE₇.r32]; exact hlt2) ex))))))))))), by omega, b⟩
+        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rwa [hE₇.r32])
+          (.ifLtN_true (by rwa [hE₇.r32]) ex))))))))))), by_o, b⟩
     · have p71 : ((Qof P).vtx (x.hgt - 1)).2 < (M.W.vtx e).2 := b71.2.1 (by
         have := b71.1; rw [hE₇.r32] at hlt2; omega)
       have hpos : 0 < M.param (Qof P) x := lt_of_le_of_ne hp0 (fun h => by
@@ -357,8 +356,8 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
       obtain ⟨c', k, ex, hk, b⟩ := interior c₇ hE₇ (by rw [g₇ _ (Or.inr (Or.inr rfl)), d₂])
         (by rw [g₇ _ (Or.inr (Or.inl rfl)), q03]) hpos
       exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
-        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rw [hE₇.r32]; exact hlt)
-          (.ifLtN_false hlt2 ex))))))))))), by omega, b⟩
+        (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_true (by rwa [hE₇.r32])
+          (.ifLtN_false hlt2 ex))))))))))), by_o, b⟩
   · have p70 : (M.W.vtx e).2 < ((Qof P).vtx (x.hgt - 1)).2 := b70.2.1 (by
       have := b70.1; rw [hE₇.r32] at hlt; omega)
     have hpos : 0 < M.param (Qof P) x := lt_of_le_of_ne hp0 (fun h => by
@@ -370,7 +369,7 @@ theorem leftSec_meets : Meets leftSec primBands (PrimPre LeftIn) (PrimPost LeftO
     obtain ⟨c', k, ex, hk, b⟩ := interior c₇ hE₇ (by rw [g₇ _ (Or.inr (Or.inr rfl)), d₂])
       (by rw [g₇ _ (Or.inr (Or.inl rfl)), q03]) hpos
     exact ⟨c', _, .seq e₁ (.seq e₂ (.ifLtN_false t1 (.ifLtN_false t2 (.ifLtN_false t3
-      (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_false hlt ex)))))))))), by omega, b⟩
+      (.seq e₃ (.seq e₄ (.seq e₅ (.seq e₆ (.seq e₇ (.ifLtN_false hlt ex)))))))))), by_o, b⟩
 
 end
 

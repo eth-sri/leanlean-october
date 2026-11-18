@@ -40,17 +40,17 @@ theorem cover_weight_desc {lam b : ℕ} (f : ℕ → ℕ) (h : ℕ) : ∀ x, h �
           have := Nat.pow_le_pow_right (show 0 < 2 by norm_num) (not_lt.mp hc2)
           rw [pow_succ] at this; omega
         have hok : GradeOK b x (g + 1) := by
-          refine ⟨(Nat.pow_dvd_pow 2 (by omega)).trans hd, ?_⟩
+          refine ⟨(Nat.pow_dvd_pow 2 by_o).trans hd, ?_⟩
           rw [pow_succ]; omega
-        have := le_nextG (lam := lam) (by omega) hok
+        have := le_nextG (lam := lam) by_o hok
         omega
-      have := ih g hgh (x + 2 ^ g) (by omega) (Nat.dvd_add hs.1 dvd_rfl) hrest
+      have := ih g hgh (x + 2 ^ g) by_o (Nat.dvd_add hs.1 dvd_rfl) hrest
       have hsub : ∑ k ∈ range (g + 1), f k ≤ ∑ k ∈ range h, f k :=
-        Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr (by omega))
+        Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr by_o)
       rw [Finset.sum_range_succ] at hsub
       dsimp only
       omega
-    · rw [cover_of_ge (by omega)]; simp
+    · rw [cover_of_ge by_o]; simp
 
 /-- The ascending phase. -/
 theorem cover_weight_asc {lam b : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (x : ℕ) : ∀ h, h < lam →
@@ -65,14 +65,14 @@ theorem cover_weight_asc {lam b : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (x : �
       have hs := nextG_spec (lam := lam) hx
       rw [← hg] at hs
       have hgl : g ≤ lam - 1 := nextG_le _ _ _
-      have hd' : 2 ^ g ∣ x + 2 ^ g := Nat.dvd_add hs.1 dvd_rfl
+      have hd' := Nat.dvd_add hs.1 dvd_rfl
       have hle : ∑ k ∈ range (g + 1), f k ≤ ∑ k ∈ range lam, f k :=
-        Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr (by omega))
+        Finset.sum_le_sum_of_subset (Finset.range_subset_range.mpr by_o)
       rw [Finset.sum_range_succ] at hle
       dsimp only
       by_cases hA : b < x + 2 ^ (g + 1)
       · have hr : b - (x + 2 ^ g) < 2 ^ g := by rw [pow_succ] at hA; omega
-        have := cover_weight_desc (lam := lam) (b := b) f g (x + 2 ^ g) (by omega) hd' hr
+        have := cover_weight_desc (lam := lam) (b := b) f g (x + 2 ^ g) by_o hd' hr
         omega
       · push Not at hA
         by_cases hB : g + 1 ≤ lam - 1
@@ -80,28 +80,28 @@ theorem cover_weight_asc {lam b : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (x : �
             (x := x) hB ⟨hc, hA⟩
           have hhg : h ≤ g := by
             by_contra hc
-            exact hnd ((Nat.pow_dvd_pow 2 (by omega)).trans hd)
+            exact hnd ((Nat.pow_dvd_pow 2 by_o).trans hd)
           obtain ⟨k, hk⟩ := hs.1
           have hodd : k % 2 = 1 := by
             by_contra hc
             apply hnd
             refine ⟨k / 2, ?_⟩
             rw [hk, pow_succ]
-            have : k = 2 * (k / 2) := by omega
+            have : k = 2 * (k / 2) := by_o
             conv_lhs => rw [this]
             ring
           have hd2 : 2 ^ (g + 1) ∣ x + 2 ^ g := by
             refine ⟨(k + 1) / 2, ?_⟩
             rw [hk, pow_succ]
-            have : k + 1 = 2 * ((k + 1) / 2) := by omega
+            have : k + 1 = 2 * ((k + 1) / 2) := by_o
             calc 2 ^ g * k + 2 ^ g = 2 ^ g * (k + 1) := by ring
               _ = 2 ^ g * (2 * ((k + 1) / 2)) := by rw [← this]
-              _ = 2 ^ g * 2 * ((k + 1) / 2) := by ring
-          have hglt : g + 1 < lam := by omega
-          have hb' : b - (x + 2 ^ g) ≤ 2 ^ lam := by omega
+              _ = 2 ^ g * 2 * ((k + 1) / 2) := by_r
+          have hglt : g + 1 < lam := by_o
+          have hb' : b - (x + 2 ^ g) ≤ 2 ^ lam := by_o
           have := ih (x + 2 ^ g) (step_lt hx) (g + 1) hglt hd2 hb'
           have hI : ∑ k ∈ Ico g lam, f k = f g + ∑ k ∈ Ico (g + 1) lam, f k :=
-            Finset.sum_eq_sum_Ico_succ_bot (by omega) _
+            Finset.sum_eq_sum_Ico_succ_bot by_o _
           have hI2 : ∑ k ∈ Ico g lam, f k ≤ ∑ k ∈ Ico h lam, f k :=
             Finset.sum_le_sum_of_subset (Finset.Ico_subset_Ico_left hhg)
           omega
@@ -110,29 +110,29 @@ theorem cover_weight_asc {lam b : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (x : �
             rw [hge, ← pow_succ']; congr 1; omega
           rw [pow_succ] at hA
           by_cases hC : b - (x + 2 ^ g) < 2 ^ g
-          · have := cover_weight_desc (lam := lam) (b := b) f g (x + 2 ^ g) (by omega) hd' hC
+          · have := cover_weight_desc (lam := lam) (b := b) f g (x + 2 ^ g) by_o hd' hC
             omega
           · have heq : x + 2 ^ g + 2 ^ g = b := by omega
             have hx' : x + 2 ^ g < b := by have := Nat.one_le_two_pow (n := g); omega
             rw [cover_of_lt hx']
-            have hok : GradeOK b (x + 2 ^ g) g := ⟨hd', by omega⟩
+            have hok : GradeOK b (x + 2 ^ g) g := ⟨hd', by_o⟩
             have hng : nextG lam b (x + 2 ^ g) = g := by
-              have h1 := le_nextG (lam := lam) (by omega) hok
+              have h1 := le_nextG (lam := lam) by_o hok
               have h2 := nextG_le lam b (x + 2 ^ g)
               omega
-            rw [hng, cover_of_ge (by omega)]
+            rw [hng, cover_of_ge by_o]
             simp only [List.map_cons, List.map_nil, List.sum_cons, List.sum_nil, add_zero]
             have hI : f g ≤ ∑ k ∈ Ico h lam, f k := by
               have := Finset.single_le_sum (f := f) (fun _ _ => Nat.zero_le _)
                 (show g ∈ Ico h lam by simp only [Finset.mem_Ico]; omega)
               exact this
             omega
-    · rw [cover_of_ge (by omega)]; simp
+    · rw [cover_of_ge by_o]; simp
 
 /-- **At most two pieces per grade.** -/
 theorem cover_weight_le {lam b x : ℕ} (f : ℕ → ℕ) (hl : 1 ≤ lam) (hb : b - x ≤ 2 ^ lam) :
     ((cover lam b x).map fun q => f q.1).sum ≤ 2 * ∑ g ∈ range lam, f g := by
-  have := cover_weight_asc (b := b) f hl x 0 (by omega) (by simp) hb
+  have := cover_weight_asc (b := b) f hl x 0 by_o by_s hb
   have hI : ∑ g ∈ Ico 0 lam, f g = ∑ g ∈ range lam, f g := by rw [Finset.range_eq_Ico]
   omega
 

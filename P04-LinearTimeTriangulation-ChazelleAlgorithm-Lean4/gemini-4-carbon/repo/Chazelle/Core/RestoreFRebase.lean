@@ -26,11 +26,11 @@ variable {E : FEnv} {c₀ c₀' : Config}
 
 /-- **Rebasing the run facts.** -/
 theorem FGood.rebase (hE : FGood E c₀) (hI : FInv E.W c₀ c₀') : FGood (E.re c₀') c₀' := by
-  have hag : ∀ a, a < E.A₀ → c₀'.nmem a = E.m₀ a := hI.agree hE
-  have hA : E.A₀ ≤ c₀'.nreg ALLOC := hI.allocA hE
+  have hag := hI.agree hE
+  have hA := hI.allocA hE
   have hag' : ∀ a, a < E.A₀ → E.m₀ a = c₀'.nmem a := fun a ha => (hag a ha).symm
   obtain ⟨hMD', hwf'⟩ := Gran.desc_agree' hE.hwf hE.hMD hag
-  have hfx : ∀ q, FFix q → c₀'.nreg q = c₀.nreg q := hI.hin
+  have hfx := hI.hin
   have hMD0 : c₀'.nmem E.MD = E.m₀ E.MD := hag _ (by have := hE.hwf.1; omega)
   have hback : c₀'.nmem E.MD = 0 → ∀ H C, ChainDescAt c₀'.nmem (E.MD + 1) (Qof E.P) H C →
       ChainDescAt E.m₀ (E.MD + 1) (Qof E.P) H C := fun h0 H C hC => by
@@ -44,8 +44,8 @@ theorem FGood.rebase (hE : FGood E c₀) (hI : FInv E.W c₀ c₀') : FGood (E.r
       show E.γ ≤ E.X.cap E.P c₀'.nmem E.g
       rw [hE.hloc _ _ _ _ _ hag hE.hX]; exact hE.hcap
     hwf := hwf'.mono hA
-    hreg := fun h0 H C hC => hE.hreg (by rw [← hMD0]; exact h0) H C (hback h0 H C hC)
-    hsimp := fun h0 H C hC => hE.hsimp (by rw [← hMD0]; exact h0) H C (hback h0 H C hC)
+    hreg := fun h0 H C hC => hE.hreg (by rwa [← hMD0]) H C (hback h0 H C hC)
+    hsimp := fun h0 H C hC => hE.hsimp (by rwa [← hMD0]) H C (hback h0 H C hC)
     hMD := hMD', hGM := hE.hGM, hOk := hE.hOk,
     hNW := (Robust.transport hE.hNW hag).mono hA
     hNF := hE.hNF, hdeg := hE.hdeg, hsg := hE.hsg, hr := hE.hr, a0 := rfl, m0 := rfl,
@@ -83,9 +83,9 @@ theorem FRS.restrict {B : Finset ℕ} {P : Polygon} {W : ℕ} {s : Stmt} {c : Co
     (hc : c₀.nreg ALLOC ≤ c₀'.nreg ALLOC) : FRS B P W c₀ s c K Q := by
   obtain ⟨c', k, ex, hk, hI', hrf, hq⟩ := h
   refine ⟨c', k, ex, hk, ⟨hI'.hw, fun q hq => (hI'.hin q hq).trans (hI.hin q hq), le_trans hI.hA hI'.hA,
-    fun a ha => (hI'.hm a (by omega)).trans (hI.hm a ha)⟩, ?_, hq⟩
+    fun a ha => (hI'.hm a by_o).trans (hI.hm a ha)⟩, ?_, hq⟩
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := hrf
-  exact ⟨r₁, rr₁, fun a ha => m₁ a (by omega), fun a ha => rm₁ a (by omega), o₁, a₁, b₁⟩
+  exact ⟨r₁, rr₁, fun a ha => m₁ a by_o, fun a ha => rm₁ a by_o, o₁, a₁, b₁⟩
 
 end
 

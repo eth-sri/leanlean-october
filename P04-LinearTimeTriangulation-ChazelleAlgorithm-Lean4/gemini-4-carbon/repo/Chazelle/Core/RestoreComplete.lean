@@ -46,7 +46,7 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
       0 < sideCross ((τ, 0) : Point) (M.W.vtx ((p + M.W.n - 1) % M.W.n) - M.W.vtx p) := by
   have hne := hM.nd p hp
   obtain ⟨d, hd, -, hcD, -⟩ := attached_opposite hM hc hA hτ hav
-  have hn0 : 0 < M.W.n := by omega
+  have hn0 : 0 < M.W.n := by_o
   have hwv : sidePt M.W p 0 = M.W.vtx p := Chazelle.Chain.sidePt_zero _ _
   set v := M.W.vtx p with hv
   set a := M.W.vtx ((p + M.W.n - 1) % M.W.n) with ha
@@ -62,14 +62,14 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
     rintro ⟨h1, h2⟩
     simp only [sideCross, sideDot, Prod.fst_sub, Prod.snd_sub] at h1 h2
     have hb2 : b.2 = v.2 := by
-      have h1' : (b.2 - v.2) * τ = 0 := by linarith
+      have h1' : (b.2 - v.2) * τ = 0 := by_l
       rcases mul_eq_zero.1 h1' with h | h
       · linarith
       · rcases hτ with rfl | rfl <;> norm_num at h
     set k := -(τ * (b.1 - v.1)) with hk
     have hk0 : 0 < k := by rw [hk]; nlinarith
     set s := min d k / 2 with hs
-    have hmin : 0 < min d k := lt_min hd hk0
+    have hmin := lt_min hd hk0
     have hs0 : 0 < s := by rw [hs]; linarith
     have hsd : s < d := by rw [hs]; linarith [min_le_left d k]
     have hsk : s ≤ k := by rw [hs]; linarith [min_le_right d k]
@@ -96,7 +96,7 @@ theorem cut_dichotomy (hM : WalkAx M) {c : Set Point} (hc : c ∈ M.Adm) {p : �
       rcases h3 with h3 | h3
       · exact absurd h4 h3
       · rw [sideCross_neg_dir, sideDot_neg_dir, h4]
-        exact ⟨by ring, by linarith⟩
+        exact ⟨by_r, by_l⟩
     · exact Or.inl h4
 
 /-- The ray along an admissible chord `e ∉ S` from its end meets no chord of `S` in the domain
@@ -137,7 +137,7 @@ theorem valid_complete (hGM : GoodModel M) {Q : Polygon} {S : Set (Set Point)}
   -- the ray points are in `R`
   have hrayR : ∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∈ R := by
     filter_upwards [self_mem_nhdsWithin, Ioo_mem_nhdsGT hT] with s hs hsT
-    have hs0 : (0 : ℝ) < s := hs
+    have hs0 := hs
     refine heR ⟨?_, hdom s hs0 hsT.2⟩
     rw [heq]; exact (mem_chordOf hσ hT.le).2 ⟨s, hs0.le, hsT.2.le, rfl⟩
   have same : ∀ X ∈ M.regions S, (∀ᶠ s in 𝓝[>] (0 : ℝ), rayPt (sidePt M.W p 0) σ s ∈ X) →

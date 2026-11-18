@@ -58,15 +58,15 @@ theorem lhSave_irs {sh : Stmt} {Bs : Finset ℕ} {F : ℕ → ℕ} {X : MemCtx}
       EFr (LHSW Fo) c c') := by
   unfold lhSave
   refine IRS.seq (lhRun_irs hsh hBs hXl hd hc hn hr hI hK hG hWh hM hPs hNF hX hcap hOk hsg
-    hdeg hnr hxE hxH hxD he hpp hcl hy hon (by omega)) ?_
+    hdeg hnr hxE hxH hxD he hpp hcl hy hon by_o) ?_
   rintro c₁ hI₁ hA₁ hA₁' ⟨L', hacc, hL, hgeo, hfr⟩
   refine (save_irs hI₁ hFo hacc hL (fun g => hgeo (hGd g)) (fun g => (hGd g).2)
     (SweepStop.dirOf_cases' _)).mono le_rfl ?_
   rintro c' ⟨hres, hk, hm⟩
-  have hAl : c'.nreg ALLOC = c₁.nreg ALLOC := hk ALLOC (by unfold ALLOC; omega)
+  have hAl : c'.nreg ALLOC = c₁.nreg ALLOC := hk ALLOC by_ao
   refine ⟨hres, fun r h1 h2 h3 => ?_, hAl ▸ hfr.2.1, fun a ha => ?_⟩
   · have h2' : ¬ (LHR r ∨ (Fo ≤ r ∧ r ≤ Fo + 6)) := h2
-    rw [hk r (by omega)]
+    rw [hk r by_o]
     exact hfr.1 r h1 (fun h => h2' (Or.inl h)) h3
   · rw [hm]; exact hfr.2.2 a ha
 

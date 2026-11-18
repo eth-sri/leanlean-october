@@ -56,8 +56,8 @@ theorem items_congr {act act' : ℕ → ℕ} {p : ℕ × ℕ}
   ext v
   simp only [mem_items]
   constructor
-  · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rw [← h i a b]; exact c⟩
-  · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rw [h i a b]; exact c⟩
+  · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rwa [← h i a b]⟩
+  · rintro ⟨i, a, b, c⟩; exact ⟨i, a, b, by rwa [h i a b]⟩
 
 section stack
 
@@ -121,19 +121,19 @@ theorem SplitOK.e_mono {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ → �
   | zero => rw [show t = 0 by omega]
   | succ n ih =>
     rcases Nat.lt_or_ge t (n + 1) with h | h
-    · exact le_trans (ih (by omega) (by omega)) (hS.mono n (by omega))
+    · exact le_trans (ih by_o by_o) (hS.mono n by_o)
     · rw [show t = n + 1 by omega]
 
 theorem SplitOK.scls_in {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ → ℕ} {sep : Finset ℕ}
     (hS : SplitOK (μ := μ) (k := k) (Adj := Adj) act act' p e sep) {t : ℕ} (ht : t < 3) :
     p.1 ≤ e t ∧ e t ≤ e (t + 1) ∧ e (t + 1) ≤ p.2 := by
-  refine ⟨le_trans hS.e0 (hS.e_mono (Nat.zero_le _) (by omega)), hS.mono t ht,
-    le_trans (hS.e_mono (by omega) le_rfl) hS.e3⟩
+  refine ⟨le_trans hS.e0 (hS.e_mono (Nat.zero_le _) by_o), hS.mono t ht,
+    le_trans (hS.e_mono by_o le_rfl) hS.e3⟩
 
 theorem SplitOK.scls_inj {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ → ℕ} {sep : Finset ℕ}
     (hS : SplitOK (μ := μ) (k := k) (Adj := Adj) act act' p e sep) {t : ℕ} (ht : t < 3) :
     Set.InjOn act' (Finset.Ico (e t) (e (t + 1))) := by
-  have a := hS.e_mono (Nat.zero_le t) (by omega)
+  have a := hS.e_mono (Nat.zero_le t) by_o
   have b := hS.e_mono (show t + 1 ≤ 3 by omega) le_rfl
   intro x hx y hy hxy
   simp only [Finset.coe_Ico, Set.mem_Ico] at hx hy
@@ -149,16 +149,16 @@ theorem SplitOK.scls_disj {act act' : ℕ → ℕ} {p : ℕ × ℕ} {e : ℕ →
   obtain ⟨i, a, b, c⟩ := mem_items.mp hv
   obtain ⟨i', a', b', c'⟩ := mem_items.mp hv'
   simp only [scls] at a b a' b'
-  have h0 := hS.e_mono (Nat.zero_le t) (by omega)
-  have h0' := hS.e_mono (Nat.zero_le t') (by omega)
+  have h0 := hS.e_mono (Nat.zero_le t) by_o
+  have h0' := hS.e_mono (Nat.zero_le t') by_o
   have h3 := hS.e_mono (show t + 1 ≤ 3 by omega) le_rfl
   have h3' := hS.e_mono (show t' + 1 ≤ 3 by omega) le_rfl
   have := hS.inj (by simp only [Finset.coe_Ico, Set.mem_Ico]; omega)
     (by simp only [Finset.coe_Ico, Set.mem_Ico]; omega) (c.trans c'.symm)
   subst this
   rcases Nat.lt_or_gt_of_ne hne with h | h
-  · have := hS.e_mono (show t + 1 ≤ t' by omega) (by omega); omega
-  · have := hS.e_mono (show t' + 1 ≤ t by omega) (by omega); omega
+  · have := hS.e_mono (show t + 1 ≤ t' by omega) by_o; omega
+  · have := hS.e_mono (show t' + 1 ≤ t by omega) by_o; omega
 
 /-- **Split the top segment.**  The large classes are pushed (`news`), the small nonempty ones
 finished. -/
@@ -193,7 +193,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     rcases hq with hq | hq
     · rcases List.mem_append.mp hq with hq | hq
       · obtain ⟨t, ht, rfl, hb⟩ := (hnews q).mp hq
-        exact Or.inr ⟨t, ht, rfl, by omega⟩
+        exact Or.inr ⟨t, ht, rfl, by_o⟩
       · refine Or.inl ⟨Or.inl (List.mem_cons_of_mem _ hq), fun h => ?_⟩
         subst h
         exact (List.nodup_cons.mp hI.nodup).1 hq
@@ -208,7 +208,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     by_cases hb : s < len (scls e t)
     · exact Or.inl (List.mem_append_left _ ((hnews _).mpr ⟨t, ht, rfl, hb⟩))
     · refine Or.inr (Finset.mem_union_right _ (Finset.mem_filter.mpr
-        ⟨Finset.mem_image.mpr ⟨t, Finset.mem_range.mpr ht, rfl⟩, hpos, by omega⟩))
+        ⟨Finset.mem_image.mpr ⟨t, Finset.mem_range.mpr ht, rfl⟩, hpos, by_o⟩))
   have hold_live : ∀ q, Lv (p :: rest) fin q → q ≠ p → Lv (news ++ rest) fin' q := by
     intro q hq hqp
     rcases hq with hq | hq
@@ -304,8 +304,8 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
     · have htt : t ≠ t' := fun h => hne (by rw [h])
       simp only [RDisj, scls]
       rcases Nat.lt_or_gt_of_ne htt with h | h
-      · left; exact hS.e_mono (show t + 1 ≤ t' by omega) (by omega)
-      · right; left; exact hS.e_mono (show t' + 1 ≤ t by omega) (by omega)
+      · left; exact hS.e_mono (by omega) by_o
+      · right; left; exact hS.e_mono (by omega) by_o
   · -- item disjointness
     rcases hlive q hq with ⟨h1, h2⟩ | ⟨t, ht, rfl, _⟩ <;>
       rcases hlive q' hq' with ⟨h1', h2'⟩ | ⟨t', ht', rfl, _⟩
@@ -335,7 +335,7 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         obtain ⟨i, a, b, _⟩ := mem_items.mp hvt
         unfold len scls; simp only at a b; omega
       exact ⟨scls e t, hcls_live t ht hpos, hvt⟩
-    · exact ⟨q, hold_live q hq hqp, by rw [hold q hq hqp]; exact hvq⟩
+    · exact ⟨q, hold_live q hq hqp, by rwa [hold q hq hqp]⟩
   · -- off
     rcases hlive q hq with ⟨h1, h2⟩ | ⟨t, ht, rfl, _⟩
     · rw [hold q h1 h2] at hv
@@ -364,16 +364,16 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         obtain ⟨i, a, b, _⟩ := mem_items.mp hxt
         unfold len scls; simp only at a b; omega
       exact ⟨scls e t, hcls_live t ht hpos, hxt, hyt⟩
-    · exact ⟨q, hold_live q hq hqp, by rw [hold q hq hqp]; exact hxq,
-        by rw [hold q hq hqp]; exact hyq⟩
+    · exact ⟨q, hold_live q hq hqp, by rwa [hold q hq hqp],
+        by rwa [hold q hq hqp]⟩
   · -- `D ∪ sep` stays off `H`
     rw [Finset.disjoint_union_left]
     exact ⟨hI.hD, Finset.disjoint_left.mpr (fun v hv => (hsep_off v hv).2)⟩
   · -- the potential
-    have hdisjDs : Disjoint D sep := Finset.disjoint_right.mpr (fun v hv => (hsep_off v hv).1)
+    have hdisjDs := Finset.disjoint_right.mpr (fun v hv => (hsep_off v hv).1)
     rw [Finset.card_union_of_disjoint hdisjDs]
     have hpot := hI.pot
-    have hpr : p ∉ rest := (List.nodup_cons.mp hI.nodup).1
+    have hpr := (List.nodup_cons.mp hI.nodup).1
     rw [List.toFinset_cons, Finset.sum_insert (by simpa using hpr)] at hpot
     rw [List.toFinset_append]
     have hdn : Disjoint news.toFinset rest.toFinset := by
@@ -417,12 +417,12 @@ theorem SInv.split {act act' : ℕ → ℕ} {p : ℕ × ℕ} {rest news : List (
         3 * k * (2 * len p - s) := Nat.mul_le_mul_left _ hb
     rw [Nat.mul_add, Finset.mul_sum] at hb3
     have hsc : s * sep.card ≤ s * (3 * k) := Nat.mul_le_mul_left _ hS.card
-    have : s * (3 * k) = 3 * k * s := by ring
+    have : s * (3 * k) = 3 * k * s := by_r
     rw [Nat.mul_add]
     omega
   · -- the split counter
     have hpot := hI.pot2
-    have hpr : p ∉ rest := (List.nodup_cons.mp hI.nodup).1
+    have hpr := (List.nodup_cons.mp hI.nodup).1
     rw [List.toFinset_cons, Finset.sum_insert (by simpa using hpr)] at hpot
     rw [List.toFinset_append]
     have hdn : Disjoint news.toFinset rest.toFinset := by
@@ -469,14 +469,13 @@ theorem split_size_pot (m : ℕ → ℕ) (M : ℕ) (hsum : ∑ t ∈ Finset.rang
     intro t ht
     rcases Nat.eq_zero_or_pos (m t) with h0 | hpos
     · rw [h0]; simp
-    · have h2 : Nat.size (2 * m t) ≤ Nat.size M := Nat.size_le_size (hhalf t ht)
+    · have h2 := Nat.size_le_size (hhalf t ht)
       have h3 : Nat.size (2 * m t) = Nat.size (m t) + 1 := by
         rw [show 2 * m t = m t <<< 1 by rw [Nat.shiftLeft_eq_mul_pow]; ring]
-        exact Nat.size_shiftLeft (by omega) 1
+        exact Nat.size_shiftLeft by_o 1
       calc m t * Nat.size (m t) + m t = m t * (Nat.size (m t) + 1) := by ring
-        _ ≤ m t * Nat.size M := Nat.mul_le_mul_left _ (by omega)
-  have h1 : ∑ t ∈ Finset.range 3, (m t * Nat.size (m t) + m t) ≤
-      ∑ t ∈ Finset.range 3, m t * Nat.size M :=
+        _ ≤ m t * Nat.size M := Nat.mul_le_mul_left _ by_o
+  have h1 :=
     Finset.sum_le_sum (fun t ht => hsz t (Finset.mem_range.mp ht))
   rw [Finset.sum_add_distrib, ← Finset.sum_mul] at h1
   have h2 : (∑ t ∈ Finset.range 3, m t) * Nat.size M ≤ M * Nat.size M :=
@@ -488,7 +487,7 @@ theorem split_size_pot (m : ℕ → ℕ) (M : ℕ) (hsum : ∑ t ∈ Finset.rang
       have := hhalf t (Finset.mem_range.mp ht); omega
     rw [Finset.sum_congr rfl (fun t ht => by rw [this t ht])]
     simp
-  · have hs1 : 1 ≤ Nat.size M := Nat.size_pos.mpr hM
+  · have hs1 := Nat.size_pos.mpr hM
     have h3 : (M - ∑ t ∈ Finset.range 3, m t) ≤ (M - ∑ t ∈ Finset.range 3, m t) * Nat.size M :=
       Nat.le_mul_of_pos_right _ hs1
     have h4 : (M - ∑ t ∈ Finset.range 3, m t) * Nat.size M + (∑ t ∈ Finset.range 3, m t) *

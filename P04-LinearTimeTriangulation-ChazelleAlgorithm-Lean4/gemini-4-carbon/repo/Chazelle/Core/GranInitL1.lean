@@ -31,7 +31,7 @@ def chLoop : Stmt := .seq (block [.constN 90070 0, .copyN 90071 90013, .constN 9
 /-- Registers written by the init loops. -/
 def Binit (r : ℕ) : Bool := decide (90070 ≤ r ∧ r < 90100)
 
-theorem wrS_chLoop : wrS Binit chLoop = true := by decide
+theorem wrS_chLoop : wrS Binit chLoop = true := by_d
 
 /-- The chord-loop invariant. -/
 structure ChI (W K CB : ℕ) (d : Dm) (chords : ℕ → CRec) (c₀ c : Config) : Prop where
@@ -57,11 +57,11 @@ theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
   obtain ⟨hw, hi, hp, h76, hr, hl, hs0, hs1, hm⟩ := hI
   obtain ⟨y1, y2, y3, y4, y5, y6, -⟩ := d.lay
   have yN : d.oNd0 = 3 * d.K := rfl
-  have b30 : c.nreg 90030 = d.b0 := by rw [hr _ (by decide), hB.bLive]
-  have b31 : c.nreg 90031 = d.b0 + d.oS0 := by rw [hr _ (by decide), hB.bS0]
-  have b32 : c.nreg 90032 = d.b0 + d.oS1 := by rw [hr _ (by decide), hB.bS1]
-  have c19 : c.nreg 90019 = 1 := by rw [hr _ (by decide), h19]
-  have c20 : c.nreg 90020 = 3 := by rw [hr _ (by decide), h20]
+  have b30 : c.nreg 90030 = d.b0 := by rw [hr _ by_d, hB.bLive]
+  have b31 : c.nreg 90031 = d.b0 + d.oS0 := by rw [hr _ by_d, hB.bS0]
+  have b32 : c.nreg 90032 = d.b0 + d.oS1 := by rw [hr _ by_d, hB.bS1]
+  have c19 : c.nreg 90019 = 1 := by rw [hr _ by_d, h19]
+  have c20 : c.nreg 90020 = 3 := by rw [hr _ by_d, h20]
   obtain ⟨rup, rdn⟩ := hrec _ ht
   have mup : c.nmem (CB + 5 * c.nreg 90070 + 3) = (chords (c.nreg 90070)).up := by
     rw [hm _ (by left; omega), rup]
@@ -70,17 +70,16 @@ theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
   have hEnd : d.oNd0 ≤ d.oEnd := by dm_simp; omega
   have v1 : upd c.nmem (d.b0 + c.nreg 90070) 1 (CB + 5 * c.nreg 90070 + 3) =
       (chords (c.nreg 90070)).up := by
-    rw [Machine.upd_other _ _ _ (by omega), mup]
+    rw [Machine.upd_other _ _ _ by_o, mup]
   have v2 : upd (upd c.nmem (d.b0 + c.nreg 90070) 1) (d.b0 + d.oS0 + c.nreg 90070)
       (chords (c.nreg 90070)).up (CB + 5 * c.nreg 90070 + 3 + 1) = (chords (c.nreg 90070)).dn := by
-    rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
-    exact mdn
+    rwa [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o]
   unfold chBody
   exec_block
   all_goals try (have : d.oNd0 ≤ d.oEnd := hEnd; omega)
   all_goals try (config_simp; simp only [b30, b31, b32, c19, c20, hp, h76]; omega)
   refine ⟨⟨by assumption, ?_, ?_, ?_, fun r hr' => ?_, fun u hu => ?_, fun u hu => ?_,
-    fun u hu => ?_, fun a ha => ?_⟩, by omega, ?_⟩ <;>
+    fun u hu => ?_, fun a ha => ?_⟩, by_o, ?_⟩ <;>
     config_simp <;> simp only [b30, b31, b32, c19, c20, hp, h76, v1] <;>
     (try simp only [v2])
   · omega
@@ -92,28 +91,28 @@ theorem chBody_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
   · config_simp at hu; simp only [c19] at hu
     by_cases hui : u = c.nreg 90070
     · subst hui
-      rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega)]
+      rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o]
       simp [upd]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
-      exact hl u (by omega)
+    · rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o]
+      exact hl u by_o
   · config_simp at hu; simp only [c19] at hu
     by_cases hui : u = c.nreg 90070
     · subst hui
-      rw [Machine.upd_other _ _ _ (by omega)]
+      rw [Machine.upd_other _ _ _ by_o]
       simp [upd]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
-      exact hs0 u (by omega)
+    · rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o]
+      exact hs0 u by_o
   · config_simp at hu; simp only [c19] at hu
     by_cases hui : u = c.nreg 90070
     · subst hui
       simp [upd]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega)]
-      exact hs1 u (by omega)
-  · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-      Machine.upd_other _ _ _ (by omega)]
+    · rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o]
+      exact hs1 u by_o
+  · rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+      Machine.upd_other _ _ _ by_o]
     exact hm a ha
 
 theorem chLoop_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec} {c₀ : Config}
@@ -154,13 +153,13 @@ theorem chLoop_exec {P : Polygon} {W K CB : ℕ} {d : Dm} {chords : ℕ → CRec
   obtain ⟨c', k, e, I', hx, hk⟩ := Exec.whileLtN_bounded (P := P) (a := 90070) (b := 90010)
     (body := chBody) (ChI W K CB d chords c₀) (fun c => K - c.nreg 90070) 13 (fun _ h => h.wb)
     (fun c I ht => by
-      have t : c.nreg 90070 < K := by rw [I.regs 90010 (by decide), h10] at ht; exact ht
+      have t : c.nreg 90070 < K := by rw [I.regs 90010 by_d, h10] at ht; exact ht
       obtain ⟨c', k, e, I', hk, hi⟩ := chBody_exec (P := P) I hB hK h10 h19 h20 hrec hCB hW t
-      exact ⟨c', k, e, I', hk, by omega⟩) q
+      exact ⟨c', k, e, I', hk, by_o⟩) q
   have hK' : c'.nreg 90070 = K := by
-    rw [I'.regs 90010 (by decide), h10] at hx; have := I'.i_le; omega
-  refine ⟨c', _, .seq e₁ e, ?_, fun u hu => ⟨I'.live u (by omega), I'.s0 u (by omega),
-    I'.s1 u (by omega)⟩, I'.mem⟩
+    rw [I'.regs 90010 by_d, h10] at hx; have := I'.i_le; omega
+  refine ⟨c', _, .seq e₁ e, ?_, fun u hu => ⟨I'.live u by_o, I'.s0 u by_o,
+    I'.s1 u by_o⟩, I'.mem⟩
   rw [q0] at hk
   omega
 
@@ -173,7 +172,7 @@ def stkBody : Stmt := block [.addN 90072 90043 90070, .storeN 90072 90070, .addN
 def stkLoop : Stmt := .seq (block [.constN 90070 0, .addN 90077 90010 90026])
   (.whileLtN 90070 90077 stkBody)
 
-theorem wrS_stkLoop : wrS Binit stkLoop = true := by decide
+theorem wrS_stkLoop : wrS Binit stkLoop = true := by_d
 
 /-- The stack-loop invariant. -/
 structure StkI (W : ℕ) (d : Dm) (c₀ c : Config) : Prop where
@@ -215,13 +214,13 @@ theorem stkLoop_exec {P : Polygon} {W : ℕ} {d : Dm} {c₀ : Config}
     (fun c I ht => by
       obtain ⟨hwc, hle, hc77, hr, hs, hm⟩ := I
       rw [hc77] at ht
-      have b43 : c.nreg 90043 = d.b0 + d.oStk := by rw [hr _ (by decide), hB.bStk]
-      have c19 : c.nreg 90019 = 1 := by rw [hr _ (by decide), h19]
+      have b43 : c.nreg 90043 = d.b0 + d.oStk := by rw [hr _ by_d, hB.bStk]
+      have c19 : c.nreg 90019 = 1 := by rw [hr _ by_d, h19]
       unfold stkBody
       exec_block
       · rw [b43]; omega
       · config_simp; rw [c19]; omega
-      · refine ⟨⟨by assumption, ?_, ?_, fun r hr' => ?_, fun u hu => ?_, fun a ha => ?_⟩, by omega,
+      · refine ⟨⟨by assumption, ?_, ?_, fun r hr' => ?_, fun u hu => ?_, fun a ha => ?_⟩, by_o,
           ?_⟩
         · config_simp; rw [c19]; omega
         · config_simp; exact hc77
@@ -231,11 +230,11 @@ theorem stkLoop_exec {P : Polygon} {W : ℕ} {d : Dm} {c₀ : Config}
           config_simp; rw [b43]
           by_cases hut : u = c.nreg 90070
           · rw [hut]; simp
-          · rw [Machine.upd_other _ _ _ (by omega)]; exact hs u (by omega)
-        · config_simp; rw [b43, Machine.upd_other _ _ _ (by omega)]; exact hm a ha
+          · rw [Machine.upd_other _ _ _ by_o]; exact hs u by_o
+        · config_simp; rw [b43, Machine.upd_other _ _ _ by_o]; exact hm a ha
         · config_simp; rw [c19]; omega) q
   have hfull : c'.nreg 90070 = d.cap := by rw [I'.cap] at hx; have := I'.t_le; omega
-  refine ⟨c', _, .seq e₁ e, ?_, fun u hu => I'.stk u (by omega), I'.mem⟩
+  refine ⟨c', _, .seq e₁ e, ?_, fun u hu => I'.stk u by_o, I'.mem⟩
   rw [q0] at hk
   omega
 

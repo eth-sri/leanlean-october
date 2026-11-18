@@ -62,8 +62,8 @@ theorem geo_ptAns {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)
   · cases l with
     | nil => exact absurd hf (h.2 rfl)
     | cons q l =>
-      obtain ⟨-, -, hp, hd⟩ := h.1 q (by simp)
-      exact ⟨q, by simp, by rw [hp, hd]⟩
+      obtain ⟨-, -, hp, hd⟩ := h.1 q by_s
+      exact ⟨q, by_s, by rw [hp, hd]⟩
 
 theorem ok_ptAns {i : ℕ} {z : Point} {σ : ℝ} {l : List (ℕ × ℕ × ℕ)} (h : PtAns J Q i z σ l) :
     ∀ q ∈ l, QueryOK J Q i q ∧ HeightOK J Q i q := fun q hq =>
@@ -75,7 +75,7 @@ theorem endQL_height (i : ℕ) {N : NF} (hN : IsNF (chainModel (sideChain J i)) 
   intro q hq
   simp only [endQL, List.mem_map, List.mem_range] at hq
   obtain ⟨j, hj, rfl⟩ := hq
-  have hk : j / 2 < N.chords.length := by omega
+  have hk : j / 2 < N.chords.length := by_o
   have hA := hN.2.2.1 (j / 2) hk
   unfold NF.chord at hA
   obtain ⟨⟨-, -, -, hml, -⟩, ⟨-, -, -, hmr, -⟩⟩ := hA
@@ -114,8 +114,8 @@ theorem cover_of {N₁ N₂ : NF} (hN₁ : IsNF (chainModel J.left) Q N₁)
       (∀ q ∈ endQL N₁.chords ++ (v₁ ++ v₀ ++ t₁ ++ t₀ ++ k₀),
         QueryOK J Q 0 q ∧ HeightOK J Q 0 q) ∧
       (∀ q ∈ endQL N₂.chords ++ (t'₁ ++ t'₀ ++ k₁), QueryOK J Q 1 q ∧ HeightOK J Q 1 q) := by
-  have hN₁' : IsNF (chainModel (sideChain J 0)) Q N₁ := hN₁
-  have hN₂' : IsNF (chainModel (sideChain J 1)) Q N₂ := hN₂
+  have hN₁' := hN₁
+  have hN₂' := hN₂
   obtain ⟨ok₁, ge₁⟩ := endQL_ok J Q 0 hN₁'
   obtain ⟨ok₂, ge₂⟩ := endQL_ok J Q 1 hN₂'
   have ge₁' : geoQ J Q 0 (endQL N₁.chords) = endQ (N₁.F (chainModel J.left) Q) := ge₁

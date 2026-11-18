@@ -59,9 +59,9 @@ theorem lctxR (h1 : c.nreg lMD = c₀.nreg (sw 31)) (h2 : c.nreg lCD = c₀.nreg
     · exact h
     · exact absurd hM (Restore.chainModel_ne_interior _ _)
   obtain ⟨-, -, hEb, -⟩ := w21.2 H J.right d21
-  have hcd : ChainDescAt c₀.nmem (c₀.nreg (sw 31) + 1) (Qof P) H J.right :=
+  have hcd :=
     MergeAsm.chainDescAt_copy d21 hEb (fun a _ => rfl) (fun j hj => hA.hmd₂ j hj)
-  have hwf' : ChainWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg (sw 31) + 1) :=
+  have hwf' :=
     MergeAsm.chainWF_copy w21 d21 (fun a _ => rfl) (fun j hj => hA.hmd₂ j hj)
       (by have := w31.1; omega) le_rfl
   have hmwf : ModelDescWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg (sw 31)) := ⟨w31.1, fun _ => hwf'⟩
@@ -73,7 +73,7 @@ theorem lctxR (h1 : c.nreg lMD = c₀.nreg (sw 31)) (h2 : c.nreg lCD = c₀.nreg
   refine
     { hG := hA.hG
       hWh := hA.hWh
-      hctx := ⟨hA.hG, hA.hWh, by rw [h2]; exact hw, ⟨H, by rw [h2]; exact hC, hA.hreg⟩,
+      hctx := ⟨hA.hG, hA.hWh, by rwa [h2], ⟨H, by rwa [h2], hA.hreg⟩,
         hA.hP, by have := hA.hWm; have : J.right.m ≤ J.whole.m := by
                     show J.m₂ ≤ J.m₁ + J.m₂; omega
                   omega⟩
@@ -101,9 +101,9 @@ theorem lctxL (h1 : c.nreg lMD = c₀.nreg (sw 30)) (h2 : c.nreg lCD = c₀.nreg
     · exact h
     · exact absurd hM (Restore.chainModel_ne_interior _ _)
   obtain ⟨-, -, hEb, -⟩ := w20.2 H J.left d20
-  have hcd : ChainDescAt c₀.nmem (c₀.nreg (sw 30) + 1) (Qof P) H J.left :=
+  have hcd :=
     MergeAsm.chainDescAt_copy d20 hEb (fun a _ => rfl) (fun j hj => hA.hmd₁ j hj)
-  have hwf' : ChainWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg (sw 30) + 1) :=
+  have hwf' :=
     MergeAsm.chainWF_copy w20 d20 (fun a _ => rfl) (fun j hj => hA.hmd₁ j hj)
       (by have := w30.1; omega) le_rfl
   have hmwf : ModelDescWF P (c₀.nreg ALLOC) c₀.nmem (c₀.nreg (sw 30)) := ⟨w30.1, fun _ => hwf'⟩
@@ -115,7 +115,7 @@ theorem lctxL (h1 : c.nreg lMD = c₀.nreg (sw 30)) (h2 : c.nreg lCD = c₀.nreg
   refine
     { hG := hA.hG
       hWh := hA.hWh
-      hctx := ⟨hA.hG, hA.hWh, by rw [h2]; exact hw, ⟨H, by rw [h2]; exact hC, hA.hreg⟩,
+      hctx := ⟨hA.hG, hA.hWh, by rwa [h2], ⟨H, by rwa [h2], hA.hreg⟩,
         hA.hP, by have := hA.hWm; have : J.left.m ≤ J.whole.m := by
                     show J.m₁ ≤ J.m₁ + J.m₂; omega
                   omega⟩
@@ -160,13 +160,13 @@ theorem q1_facts {z : Point} (hq : QState P J 1 z c) :
           ((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).2) := by
       simp [Chazelle.Visibility.rayPt]
     rw [e]; exact h7
-  have habs : |((chainModel J.right).pos (Qof P) ⟨c.nreg qE, c.nreg qH⟩).2| < J.right.radius :=
+  have habs :=
     query_abs h1 h4 h5 h6 hσ hsec
   have hpc := posClass_of h1 h4 h5 habs (Or.inl h6)
   rw [hz] at habs h6 hht
-  refine ⟨hz, h1, ⟨h4, h5, by rw [← hQn]; exact h3⟩, habs, h6, hpc,
-    ⟨c.nreg qH - 1, by show c.nreg qH = _; omega, by omega, by rw [hz, hht], hsec, by rw [hz]; exact h6⟩,
-    hσ, h2, by omega, hht.symm⟩
+  refine ⟨hz, h1, ⟨h4, h5, by rwa [← hQn]⟩, habs, h6, hpc,
+    ⟨c.nreg qH - 1, by show c.nreg qH = _; omega, by_o, by rw [hz, hht], hsec, by rwa [hz]⟩,
+    hσ, h2, by_o, hht.symm⟩
 
 end
 

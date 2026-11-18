@@ -62,7 +62,7 @@ theorem dir_bit {σ : ℝ} (hσ : σ = 1 ∨ σ = -1) :
     ∃ σb, σb ≤ 1 ∧ dirOf σb = σ := by
   rcases hσ with rfl | rfl
   · exact ⟨1, le_rfl, by simp [dirOf]⟩
-  · exact ⟨0, by norm_num, by simp [dirOf]⟩
+  · exact ⟨0, by_n, by simp [dirOf]⟩
 
 
 /-- **A pair run of the good vertex's arcs finds a success.** -/
@@ -78,8 +78,8 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
   have hcp' := hcp
   obtain ⟨hLq, -, hq1, -, -, -, -, hk0w, hk1w, hpos, hkind⟩ := hcp'
   -- the good vertex
-  have hX0 : X.hgt = 0 := hG.hgc.1
-  have hXe : X.edge < E.M.W.n := hG.hgc.2.1
+  have hX0 := hG.hgc.1
+  have hXe := hG.hgc.2.1
   have hXX : X = ⟨X.edge, 0⟩ := by cases X; simp only at hX0 ⊢; rw [hX0]
   have hxk : 0 ≤ (X.edge : ℝ) + 0 ∧ (X.edge : ℝ) + 0 < E.M.W.n := by
     have : (X.edge : ℝ) + 1 ≤ E.M.W.n := by exact_mod_cast hXe
@@ -89,7 +89,7 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
   obtain ⟨u1, u2⟩ := (closedArc_unwrap hT.ha hT.hb hxk hT.hab).1 hXi
   obtain ⟨i', hi', hs1, hs2⟩ := tile_cover hT hxk u1 u2
   obtain ⟨-, -, hse, -⟩ := tile_mono hT i' hi'
-  have hcl : ClosedArc (psK E c₃.nmem L i') (peK E c₃.nmem L i') ((X.edge : ℝ) + 0) :=
+  have hcl :=
     closed_of_unwrap hT.ha (hT.hs i' hi') hxk (hT.he i' hi') hse hs1 hs2
   rw [add_zero] at hcl
   have hspe : psK E c₃.nmem L i' ≠ peK E c₃.nmem L i' := fun h => by rw [h] at hse; exact lt_irrefl _ hse
@@ -107,17 +107,17 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
       show VSet E ((c₃.nmem (prOf L i') + t) % E.M.W.n)
       rw [e]; exact hG.hVX) σb hσb (by
       show GoodAt (E.re c₃) reg ((c₃.nmem (prOf L i') + t) % E.M.W.n) σb
-      rw [e]; exact hGA)
+      rwa [e])
   · -- a kind-1 piece
     obtain ⟨Hs, Cα, N, γ', hK, J, hV, htest, hst1, hst2⟩ := hPD.2 hk1
     obtain ⟨-, Hs', Cα', N', hCD', -, -, hset', hwt', hPW', -, -⟩ := hk1w i' hi' hk1
-    have hCC : Cα' = Cα := ShootCut.chainDesc_unique hCD' hK.hCD
+    have hCC := ShootCut.chainDesc_unique hCD' hK.hCD
     subst hCC
     obtain ⟨hpw0, hpw3, -, hpwe, -⟩ := hPW'
     set n := E.M.W.n with hndef
     set s := c₃.nmem (L + 1 + 7 * i' + 0) with hsdef
-    have hs : s < n := (hpos i' hi').2.2.1
-    have hmn : Cα'.m < n := hK.hmn
+    have hs := (hpos i' hi').2.2.1
+    have hmn := hK.hmn
     have hm1 := Cα'.one_le
     have kS : psK E c₃.nmem L i' = (s : ℝ) := by
       unfold psK; simp only at hpw0; rw [hpw0]; exact key_vtx' _ _ _
@@ -125,9 +125,9 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
       unfold peK; simp only at hpw3 hpwe; rw [hpw3, hpwe]; exact key_vtx' _ _ _
     have hwt'' : E.M.arcWt (s : ℝ) (((s + Cα'.m) % n : ℕ) : ℝ) = Cα'.m := by
       rw [← kS, ← kE]; exact hwt'
-    have hcnt := counted_of_wt (M := E.M) hs (by omega) hmn hwt''
+    have hcnt := counted_of_wt (M := E.M) hs by_o hmn hwt''
     rw [kS, kE] at hcl
-    obtain ⟨d, hd, hdx⟩ := closed_offset hs hmn (by omega) hXe hcl
+    obtain ⟨d, hd, hdx⟩ := closed_offset hs hmn by_o hXe hcl
     -- the piece's chain
     have hdir : (∀ e, e ≤ Cα'.m → E.M.W.vtx ((s + e) % n) = Cα'.vertex e) ∨
         (∀ e, e ≤ Cα'.m → E.M.W.vtx ((s + e) % n) = Cα'.vertex (Cα'.m - e)) := hK.hdir
@@ -148,9 +148,9 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
       have h1 := off_sideInArc hs hmn ht0 ht1 h0 hm
       rw [← kS, ← kE] at h1
       have hb : 0 ≤ (((s + k) % n : ℕ) : ℝ) + t ∧ (((s + k) % n : ℕ) : ℝ) + t < n := by
-        have h2 : ((s + k) % n : ℕ) + 1 ≤ n := Nat.mod_lt _ (by omega)
+        have h2 : ((s + k) % n : ℕ) + 1 ≤ n := Nat.mod_lt _ by_o
         have h2' : (((s + k) % n : ℕ) : ℝ) + 1 ≤ n := by exact_mod_cast h2
-        exact ⟨by positivity, by linarith⟩
+        exact ⟨by_p, by_l⟩
       exact tile_inner hT hi' hb h1
     -- the target
     have hAj := arc_isArc hE hregs hG.htj
@@ -160,7 +160,6 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
     have htc : 0 < c₃.nreg 81141 ∨ c₃.nreg 81021 ≤ c₃.nreg 81140 :=
       far_range hE₃ (far := ⟨c₃.nreg 81140, c₃.nreg 81141⟩) (by show _ < n; rw [h40]; exact hAOK.se)
         (fun C hC => by
-          show |(E.M.pos (Qof E.P) ⟨c₃.nreg 81140, c₃.nreg 81141⟩).2| < C.radius
           rw [h40, h41]; exact hAOK.sy C hC)
     have hij := hG.hij
     have hXj := hG.hXj
@@ -189,27 +188,27 @@ theorem pair_complete (hE : FGood E c₀) {reg : ℕ → Set Point}
     · obtain ⟨g1, g2, g3, g4, g5, g6⟩ := hgood s d hdx
       obtain ⟨regα, Tα, hD⟩ := descGood_mk hE₃ hregs hG.hch (arc_isArc hE hregs hG.hti) hAj hij hK
         hcnt hsetD hinB hin (g := s) (d0 := 0) (g' := 6 + WalkEmbed.tpos Cα' J) (L := Cα'.m)
-        (dX := d) (by show s = s % E.M.W.n; rw [Nat.mod_eq_of_lt hs]) (by omega) (by omega) hd0 hdm hσb
+        (dX := d) (by show s = s % E.M.W.n; rw [Nat.mod_eq_of_lt hs]) by_o by_o hd0 hdm hσb
         hdσ g1 g2 g3 g4 g5 hXj g6
       exact hst1 hone reg _ _ _ _ d regα Tα hD haj htc
-    · obtain ⟨hs1', hs2'⟩ := hst2 (by omega)
+    · obtain ⟨hs1', hs2'⟩ := hst2 by_o
       set L₁ := 2 * Cα'.m - WalkEmbed.tpos Cα' J with hL₁
       rcases (show d < L₁ ∨ d = L₁ ∨ L₁ < d by omega) with h1 | h1 | h1
       · obtain ⟨g1, g2, g3, g4, g5, g6⟩ := hgood s d hdx
         obtain ⟨regα, Tα, hD⟩ := descGood_mk hE₃ hregs hG.hch (arc_isArc hE hregs hG.hti) hAj
           hij hK hcnt hsetD hinB hin (g := s) (d0 := 0) (g' := 6 + WalkEmbed.tpos Cα' J) (L := L₁)
-          (dX := d) (by show s = s % E.M.W.n; rw [Nat.mod_eq_of_lt hs]) (by omega) (by omega) hd0 h1 hσb
+          (dX := d) (by show s = s % E.M.W.n; rw [Nat.mod_eq_of_lt hs]) by_o by_o hd0 h1 hσb
           hdσ g1 g2 g3 g4 g5 hXj g6
         exact hs1' reg _ _ _ _ d regα Tα hD haj htc
       · subst h1
-        exact htest reg hregs hG.hch X.edge (Or.inr (Or.inr ⟨by omega, by rw [hPRs]; exact hdx.symm⟩))
+        exact htest reg hregs hG.hch X.edge (Or.inr (Or.inr ⟨by_o, by rw [hPRs]; exact hdx.symm⟩))
           hG.hVX σb hσb hGA
       · have hgx : ((s + L₁) % n + (d - L₁)) % n = X.edge := by
           rw [Nat.mod_add_mod, show s + L₁ + (d - L₁) = s + d by omega, hdx]
         obtain ⟨g1, g2, g3, g4, g5, g6⟩ := hgood _ _ hgx
         obtain ⟨regα, Tα, hD⟩ := descGood_mk hE₃ hregs hG.hch (arc_isArc hE hregs hG.hti) hAj
           hij hK hcnt hsetD hinB hin (g := (s + L₁) % n) (d0 := L₁) (g' := 6) (L := Cα'.m - L₁)
-          (dX := d - L₁) rfl (by omega) (by omega) (by omega) (by omega) hσb hdσ g1 g2 g3 g4 g5
+          (dX := d - L₁) rfl by_o by_o by_o by_o hσb hdσ g1 g2 g3 g4 g5
           hXj g6
         exact hs2' reg _ _ _ _ (d - L₁) regα Tα hD haj htc
 

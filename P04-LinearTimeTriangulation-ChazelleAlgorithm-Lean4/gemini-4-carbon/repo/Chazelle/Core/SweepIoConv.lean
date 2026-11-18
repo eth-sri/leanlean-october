@@ -76,8 +76,8 @@ theorem sideConvR (J : Merge.Junction) (hP : J.P.Simple) :
     simp only [hm2] at hτ ⊢
     split_ifs with h1 h2
     · left; exact ⟨rfl, rfl, rfl⟩
-    · right; left; refine ⟨by omega, rfl, rfl, rfl⟩
-    · right; right; refine ⟨by omega, rfl, by omega, rfl⟩
+    · right; left; refine ⟨by_o, rfl, rfl, rfl⟩
+    · right; right; refine ⟨by_o, rfl, by_o, rfl⟩
   · obtain ⟨ha, hb, -, -⟩ := boxTwin_pos (FuseMath.radius_of_P J (C' := J.right) rfl) he
       ⟨[]⟩ 0
     exact ⟨ha.symm, hb.symm⟩
@@ -96,8 +96,8 @@ theorem sideConvL (J : Merge.Junction) (hP : J.P.Simple) :
     simp only [hm1] at hτ ⊢
     split_ifs with h1 h2
     · left; exact ⟨rfl, rfl, rfl⟩
-    · right; left; refine ⟨by omega, rfl, rfl, rfl⟩
-    · right; right; refine ⟨by omega, rfl, by omega, rfl⟩
+    · right; left; refine ⟨by_o, rfl, rfl, rfl⟩
+    · right; right; refine ⟨by_o, rfl, by_o, rfl⟩
   · obtain ⟨ha, hb, -, -⟩ := boxTwin_pos (FuseMath.radius_of_P J (C' := J.left) rfl) he
       ⟨[]⟩ 0
     exact ⟨ha.symm, hb.symm⟩
@@ -153,8 +153,8 @@ theorem conv_arith {m τ L1 L2 δ x : ℕ} (hτ : τ < 2 * m)
       (6 + τ + Sweep.dq L1 δ (convD (6 + τ) L1 δ (2 * m + 7) x)) % (2 * m + 7) = x := by
   have key : ∀ v, v = x ∨ v = x + (2 * m + 7) → v % (2 * m + 7) = x := by
     rintro v (rfl | rfl)
-    · exact Nat.mod_eq_of_lt (by omega)
-    · rw [Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
+    · exact Nat.mod_eq_of_lt by_o
+    · rw [Nat.add_mod_right]; exact Nat.mod_eq_of_lt by_o
   unfold Sweep.dq convD
   constructor
   · rcases hc with ⟨h1, h2, h3⟩ | ⟨h0, h1, h2, h3⟩ | ⟨h0, h1, h2, h3⟩ <;> subst h1 h2 h3 <;>
@@ -166,9 +166,9 @@ theorem conv_arith {m τ L1 L2 δ x : ℕ} (hτ : τ < 2 * m)
 theorem add_mod_cases {g d n : ℕ} (hg : g < n) (hd : d < n) : (g + d) % n = convM g n d := by
   unfold convM
   split_ifs with h
-  · exact Nat.mod_eq_of_lt (by omega)
+  · exact Nat.mod_eq_of_lt by_o
   · rw [show g + d = (d - (n - g)) + n by omega, Nat.add_mod_right]
-    exact Nat.mod_eq_of_lt (by omega)
+    exact Nat.mod_eq_of_lt by_o
 
 /-- **The converted position has the same point.** -/
 theorem conv_pos {M M' : Model} {C' : Chain} {g g' L1 L2 δ : ℕ}
@@ -180,7 +180,7 @@ theorem conv_pos {M M' : Model} {C' : Chain} {g g' L1 L2 δ : ℕ}
       M.pos Q ⟨convVal g g' L1 δ M'.W.n M.W.n e, h⟩ = M'.pos Q ⟨e, h⟩ := by
   obtain ⟨hM', ⟨τ, hg', hτ, hc⟩, hg, hMn, hL, hcorr, hbox⟩ := hS
   subst hM' hg'
-  have hn' : (chainModel C').W.n = 2 * C'.m + 7 := cm_n C'
+  have hn' := cm_n C'
   -- the tour case for an edge `x`
   have tour : ∀ x, 6 ≤ x → x < 2 * C'.m + 6 →
       convM g M.W.n (convD (6 + τ) L1 δ (chainModel C').W.n x) < M.W.n ∧
@@ -191,25 +191,25 @@ theorem conv_pos {M M' : Model} {C' : Chain} {g g' L1 L2 δ : ℕ}
     intro x hx6 hx
     rw [hn']
     obtain ⟨hdL, hmod⟩ := conv_arith hτ hc hx6 hx
-    have hdn : convD (6 + τ) L1 δ (2 * C'.m + 7) x < M.W.n := by omega
+    have hdn : convD (6 + τ) L1 δ (2 * C'.m + 7) x < M.W.n := by_o
     rw [← add_mod_cases hg hdn]
     have hs : ∀ t, sidePt M.W ((g + convD (6 + τ) L1 δ (2 * C'.m + 7) x) % M.W.n) t =
         sidePt (chainModel C').W x t := by
       intro t; rw [hcorr _ hdL t, hn', hmod]
     obtain ⟨ha, hb⟩ := wab_of_sidePt hs
     obtain ⟨hp, hq⟩ := param_pos_of_wab (M := M) (M' := chainModel C') ha hb Q h
-    exact ⟨Nat.mod_lt _ (by omega), hp, hq⟩
+    exact ⟨Nat.mod_lt _ by_o, hp, hq⟩
   unfold convVal
   rcases hv with he | ⟨he6, he⟩ | ⟨rfl, h0⟩
   · have he6 : e < 6 := by omega
     rw [ite_eq_left he6]
     obtain ⟨ha, hb⟩ := hbox e he
     obtain ⟨hp, hq⟩ := param_pos_of_wab ha hb Q h
-    exact ⟨by omega, hp, hq⟩
-  · rw [ite_eq_right (show ¬ e < 6 by omega),
+    exact ⟨by_o, hp, hq⟩
+  · rw [ite_eq_right (by omega),
       ite_eq_right (show ¬ (e + 1 = (chainModel C').W.n) by rw [hn']; omega)]
     exact tour e he6 he
-  · rw [ite_eq_right (show ¬ 2 * C'.m + 6 < 6 by omega),
+  · rw [ite_eq_right (by omega),
       ite_eq_left (show 2 * C'.m + 6 + 1 = (chainModel C').W.n by rw [hn'])]
     obtain ⟨h6, hpos⟩ := slit_start_pos C' Q h0
     obtain ⟨t1, t2, t3⟩ := tour 6 le_rfl (by have := C'.one_le; omega)
@@ -250,8 +250,8 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
         (c.nreg nr) (c.nreg (sw 35)) (c.nreg pe) ∧
       (∀ r, ¬ CvSet po r → c'.nreg r = c.nreg r) ∧ c'.nmem = c.nmem) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
-  have k6 : c.nreg K6 = 6 := hKc.2.2.1
+  have k1 := hKc.2.1
+  have k6 := hKc.2.2.1
   have hbl : 240040 ≤ b ∧ b ≤ 240045 := by rcases hbr with rfl | rfl <;> simp [sw]
   have hnl : 240033 ≤ nr ∧ nr ≤ 240034 := by rcases hnr with rfl | rfl <;> simp [sw]
   have eX : cX = 243300 := rfl
@@ -268,23 +268,23 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
   have hpoD := hpo.2.2.2
   unfold convS
   by_cases hbox : c.nreg pe < c.nreg K6
-  · refine (IRS.ifT hbox (IRS.instr1 (i := .copyN po pe) hI hpo.1)).mono (by norm_num) ?_
+  · refine (IRS.ifT hbox (IRS.instr1 (i := .copyN po pe) hI hpo.1)).mono by_n ?_
     rintro c' rfl
     refine ⟨?_, fun r hr => ?_, rfl⟩
     · show upd c.nreg po (c.nreg pe) po = _
-      rw [upd_same]; unfold convVal; rw [ite_eq_left (show c.nreg pe < 6 by rw [k6] at hbox; exact hbox)]
+      rw [upd_same]; unfold convVal; rw [ite_eq_left (by rw [k6] at hbox; exact hbox)]
     · show upd c.nreg po (c.nreg pe) r = _
       exact upd_other _ _ _ (fun h => hr (Or.inl h))
-  refine IRS.mono (K := 21) (IRS.ifF hbox ?_) (by norm_num) (fun _ h => h)
+  refine IRS.mono (K := 21) (IRS.ifF hbox ?_) by_n (fun _ h => h)
   -- the box test failed: `6 ≤ e`
   set e := c.nreg pe with he
-  have he6 : 6 ≤ e := by omega
+  have he6 : 6 ≤ e := by_o
   -- step 1
   have ok1 : okB W c.nmem [.copyN cX pe, .addN cT pe K1] c.nreg :=
     ⟨scX, ⟨scT, by
       simp only [regI, upd]
-      rw [ite_eq_right hpe.1, ite_eq_right (show ¬ K1 = cX by unfold K1 cX sw; norm_num), k1]; omega⟩, trivial⟩
-  refine (IRS.seq (K₂ := 17) (IRS.block _ hI ok1) ?_).mono (by simp) (fun _ h => h)
+      rw [ite_eq_right hpe.1, ite_eq_right (by unfold K1 cX sw; norm_num), k1]; omega⟩, trivial⟩
+  refine (IRS.seq (K₂ := 17) (IRS.block _ hI ok1) ?_).mono by_s (fun _ h => h)
   rintro c₁ hI₁ - - hc1
   have v1X : c₁.nreg cX = e := by
     rw [hc1]; show regB c.nmem [.copyN cX pe, .addN cT pe K1] c.nreg cX = _
@@ -299,38 +299,38 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
   have fx : ∀ r, 240000 ≤ r → r < 240700 → c₁.nreg r = c.nreg r := fun r h1 h2 =>
     k1r r (by rw [eX]; omega) (by rw [eT]; omega)
   -- step 2: `x := 6` at the end of the walk
-  have hnr1 : c₁.nreg nr = c.nreg nr := fx nr (by omega) (by omega)
+  have hnr1 : c₁.nreg nr = c.nreg nr := fx nr by_o by_o
   have k6' : c₁.nreg K6 = 6 := by rw [fx K6 (by rw [e6]; norm_num) (by rw [e6]; norm_num), k6]
   have st2 : IRS P W c₀ (eqT cT nr (.instr (.copyN cX K6))) c₁ 6 (fun c' =>
       c'.nreg cX = (if e + 1 = c.nreg nr then 6 else e) ∧
       (∀ r, r ≠ cX → c'.nreg r = c₁.nreg r) ∧ c'.nmem = c₁.nmem) := by
     unfold eqT
     by_cases h1 : c₁.nreg cT < c₁.nreg nr
-    · refine (IRS.ifT h1 (IRS.skip (K := 0) hI₁ ?_)).mono (by norm_num) (fun _ h => h)
+    · refine (IRS.ifT h1 (IRS.skip (K := 0) hI₁ ?_)).mono by_n (fun _ h => h)
       rw [v1T, hnr1] at h1
       exact ⟨by rw [v1X, ite_eq_right (show ¬ (e + 1 = c.nreg nr) by omega)], fun _ _ => rfl, rfl⟩
-    refine IRS.mono (K := 6) (IRS.ifF h1 ?_) (by norm_num) (fun _ h => h)
+    refine IRS.mono (K := 6) (IRS.ifF h1 ?_) by_n (fun _ h => h)
     by_cases h2 : c₁.nreg nr < c₁.nreg cT
-    · refine (IRS.ifT h2 (IRS.skip (K := 0) hI₁ ?_)).mono (by norm_num) (fun _ h => h)
+    · refine (IRS.ifT h2 (IRS.skip (K := 0) hI₁ ?_)).mono by_n (fun _ h => h)
       rw [v1T, hnr1] at h2
       exact ⟨by rw [v1X, ite_eq_right (show ¬ (e + 1 = c.nreg nr) by omega)], fun _ _ => rfl, rfl⟩
-    refine (IRS.ifF h2 (IRS.instr1 (i := .copyN cX K6) hI₁ scX)).mono (by norm_num) ?_
+    refine (IRS.ifF h2 (IRS.instr1 (i := .copyN cX K6) hI₁ scX)).mono by_n ?_
     rintro c' rfl
     refine ⟨?_, fun r hr => ?_, rfl⟩
     · show upd c₁.nreg cX (c₁.nreg K6) cX = _
       rw [v1T, hnr1] at h1 h2
-      rw [upd_same, k6', ite_eq_left (show e + 1 = c.nreg nr by omega)]
+      rw [upd_same, k6', ite_eq_left (by omega)]
     · show upd c₁.nreg cX (c₁.nreg K6) r = _
       exact upd_other _ _ _ hr
-  refine (IRS.seq (K₂ := 11) st2 ?_).mono (by norm_num) (fun _ h => h)
+  refine (IRS.seq (K₂ := 11) st2 ?_).mono by_n (fun _ h => h)
   rintro c₂ hI₂ - - ⟨v2X, k2r, hm2⟩
   set x := (if e + 1 = c.nreg nr then 6 else e) with hx
   have fx2 : ∀ r, 240000 ≤ r → r < 240700 → c₂.nreg r = c.nreg r := fun r h1 h2 => by
     rw [k2r r (by rw [eX]; omega), fx r h1 h2]
   have hxn : x < c.nreg nr := by rw [hx]; split_ifs <;> omega
   -- step 3: `d₂`
-  have g2 : c₂.nreg (b + 1) = c.nreg (b + 1) := fx2 _ (by omega) (by omega)
-  have n2 : c₂.nreg nr = c.nreg nr := fx2 _ (by omega) (by omega)
+  have g2 : c₂.nreg (b + 1) = c.nreg (b + 1) := fx2 _ by_o by_o
+  have n2 : c₂.nreg nr = c.nreg nr := fx2 _ by_o by_o
   have st3 : IRS P W c₀ (.ifLtN cX (b + 1) (block [.subN cT nr (b + 1), .addN cT cX cT])
       (.instr (.subN cT cX (b + 1)))) c₂ 4 (fun c' =>
       c'.nreg cT = (if x < c.nreg (b + 1) then x + (c.nreg nr - c.nreg (b + 1))
@@ -341,9 +341,9 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
         refine ⟨scT, ⟨scT, ?_⟩, trivial⟩
         show (upd c₂.nreg cT (c₂.nreg nr - c₂.nreg (b + 1))) cX +
           (upd c₂.nreg cT (c₂.nreg nr - c₂.nreg (b + 1))) cT ≤ W
-        rw [upd_other _ _ _ (show cX ≠ cT by rw [eX, eT]; norm_num), upd_same, n2, g2, v2X]
+        rw [upd_other _ _ _ (by rw [eX, eT]; norm_num), upd_same, n2, g2, v2X]
         rw [v2X, g2] at h1; omega
-      refine (IRS.ifT h1 (IRS.block _ hI₂ ok3)).mono (by norm_num) ?_
+      refine (IRS.ifT h1 (IRS.block _ hI₂ ok3)).mono by_n ?_
       rintro c' rfl
       refine ⟨?_, fun r hr => ?_, rfl⟩
       · show regB c₂.nmem [.subN cT nr (b + 1), .addN cT cX cT] c₂.nreg cT = _
@@ -352,14 +352,14 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
         rw [v2X, g2] at h1; rw [ite_eq_left h1]
       · show regB c₂.nmem [.subN cT nr (b + 1), .addN cT cX cT] c₂.nreg r = _
         simp only [regB, regI]; rw [upd_other _ _ _ hr, upd_other _ _ _ hr]
-    · refine (IRS.ifF h1 (IRS.instr1 (i := .subN cT cX (b + 1)) hI₂ scT)).mono (by norm_num) ?_
+    · refine (IRS.ifF h1 (IRS.instr1 (i := .subN cT cX (b + 1)) hI₂ scT)).mono by_n ?_
       rintro c' rfl
       refine ⟨?_, fun r hr => ?_, rfl⟩
       · show upd c₂.nreg cT (c₂.nreg cX - c₂.nreg (b + 1)) cT = _
         rw [upd_same, v2X, g2]; rw [v2X, g2] at h1; rw [ite_eq_right h1]
       · show upd c₂.nreg cT _ r = _
         exact upd_other _ _ _ hr
-  refine (IRS.seq (K₂ := 7) st3 ?_).mono (by norm_num) (fun _ h => h)
+  refine (IRS.seq (K₂ := 7) st3 ?_).mono by_n (fun _ h => h)
   rintro c₃ hI₃ - - ⟨v3T, k3r, hm3⟩
   set d₂ := (if x < c.nreg (b + 1) then x + (c.nreg nr - c.nreg (b + 1)) else x - c.nreg (b + 1))
     with hd₂
@@ -367,36 +367,36 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
   have fx3 : ∀ r, 240000 ≤ r → r < 240700 → c₃.nreg r = c.nreg r := fun r h1 h2 => by
     rw [k3r r (by rw [eT]; omega), fx2 r h1 h2]
   -- step 4: `d`
-  have l3 : c₃.nreg (b + 2) = c.nreg (b + 2) := fx3 _ (by omega) (by omega)
-  have δ3 : c₃.nreg (b + 4) = c.nreg (b + 4) := fx3 _ (by omega) (by omega)
+  have l3 : c₃.nreg (b + 2) = c.nreg (b + 2) := fx3 _ by_o by_o
+  have δ3 : c₃.nreg (b + 4) = c.nreg (b + 4) := fx3 _ by_o by_o
   have st4 : IRS P W c₀ (.ifLtN cT (b + 2) (.instr (.copyN cDd cT))
       (.instr (.subN cDd cT (b + 4)))) c₃ 3 (fun c' =>
       c'.nreg cDd = convD (c.nreg (b + 1)) (c.nreg (b + 2)) (c.nreg (b + 4)) (c.nreg nr) x ∧
       (∀ r, r ≠ cDd → c'.nreg r = c₃.nreg r) ∧ c'.nmem = c₃.nmem) := by
     by_cases h1 : c₃.nreg cT < c₃.nreg (b + 2)
-    · refine (IRS.ifT h1 (IRS.instr1 (i := .copyN cDd cT) hI₃ scD)).mono (by norm_num) ?_
+    · refine (IRS.ifT h1 (IRS.instr1 (i := .copyN cDd cT) hI₃ scD)).mono by_n ?_
       rintro c' rfl
       refine ⟨?_, fun r hr => ?_, rfl⟩
       · show upd c₃.nreg cDd (c₃.nreg cT) cDd = _
         rw [upd_same, v3T]; rw [v3T, l3] at h1; unfold convD; rw [← hd₂, ite_eq_left h1]
       · show upd c₃.nreg cDd _ r = _
         exact upd_other _ _ _ hr
-    · refine (IRS.ifF h1 (IRS.instr1 (i := .subN cDd cT (b + 4)) hI₃ scD)).mono (by norm_num) ?_
+    · refine (IRS.ifF h1 (IRS.instr1 (i := .subN cDd cT (b + 4)) hI₃ scD)).mono by_n ?_
       rintro c' rfl
       refine ⟨?_, fun r hr => ?_, rfl⟩
       · show upd c₃.nreg cDd (c₃.nreg cT - c₃.nreg (b + 4)) cDd = _
         rw [upd_same, v3T, δ3]; rw [v3T, l3] at h1; unfold convD; rw [← hd₂, ite_eq_right h1]
       · show upd c₃.nreg cDd _ r = _
         exact upd_other _ _ _ hr
-  refine (IRS.seq (K₂ := 4) st4 ?_).mono (by norm_num) (fun _ h => h)
+  refine (IRS.seq (K₂ := 4) st4 ?_).mono by_n (fun _ h => h)
   rintro c₄ hI₄ - - ⟨v4D, k4r, hm4⟩
   set d := convD (c.nreg (b + 1)) (c.nreg (b + 2)) (c.nreg (b + 4)) (c.nreg nr) x with hd
   have fx4 : ∀ r, 240000 ≤ r → r < 240700 → c₄.nreg r = c.nreg r := fun r h1 h2 => by
     rw [k4r r (by rw [eD]; omega), fx3 r h1 h2]
   -- step 5: `n - g`
-  have b4 : c₄.nreg b = c.nreg b := fx4 _ (by omega) (by omega)
+  have b4 : c₄.nreg b = c.nreg b := fx4 _ by_o by_o
   have n4 : c₄.nreg (sw 35) = c.nreg (sw 35) := fx4 _ (by rw [e35]; norm_num) (by rw [e35]; norm_num)
-  refine (IRS.seq (K₂ := 3) (IRS.instr1 (i := .subN cT (sw 35) b) hI₄ scT) ?_).mono (by norm_num)
+  refine (IRS.seq (K₂ := 3) (IRS.instr1 (i := .subN cT (sw 35) b) hI₄ scT) ?_).mono by_n
     (fun _ h => h)
   rintro c₅ hI₅ - - rfl
   have v5T : (upd c₄.nreg cT (c₄.nreg (sw 35) - c₄.nreg b)) cT = c.nreg (sw 35) - c.nreg b := by
@@ -406,7 +406,7 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
   have v5b : (upd c₄.nreg cT (c₄.nreg (sw 35) - c₄.nreg b)) b = c.nreg b := by
     rw [upd_other _ _ _ (by rw [eT]; omega), b4]
   -- step 6: the edge
-  set c₅ : Config := { c₄ with nreg := upd c₄.nreg cT (c₄.nreg (sw 35) - c₄.nreg b) } with hc5
+  set c₅ := { c₄ with nreg := upd c₄.nreg cT (c₄.nreg (sw 35) - c₄.nreg b) } with hc5
   have hpost : ∀ c' : Config, c'.nreg po = convVal (c.nreg b) (c.nreg (b + 1)) (c.nreg (b + 2))
       (c.nreg (b + 4)) (c.nreg nr) (c.nreg (sw 35)) e →
       (∀ r, r ≠ po → c'.nreg r = c₅.nreg r) → c'.nmem = c₅.nmem →
@@ -424,13 +424,13 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
       k1r r (fun h => hr (Or.inr (Or.inl h))) (fun h => hr (Or.inr (Or.inr (Or.inl h))))]
   have hval : convVal (c.nreg b) (c.nreg (b + 1)) (c.nreg (b + 2)) (c.nreg (b + 4)) (c.nreg nr)
       (c.nreg (sw 35)) e = convM (c.nreg b) (c.nreg (sw 35)) d := by
-    unfold convVal; rw [ite_eq_right (show ¬ e < 6 by omega)]
+    unfold convVal; rw [ite_eq_right (by omega)]
   by_cases h6 : c₅.nreg cDd < c₅.nreg cT
   · have ok6 : okI W c₅.nreg (.addN po b cDd) := ⟨hpo.1, by
       show (upd c₄.nreg cT (c₄.nreg (sw 35) - c₄.nreg b)) b +
         (upd c₄.nreg cT (c₄.nreg (sw 35) - c₄.nreg b)) cDd ≤ W
       rw [v5b, v5D]; have := h6; simp only [hc5] at this; rw [v5D, v5T] at this; omega⟩
-    refine (IRS.ifT h6 (IRS.instr1 hI₅ ok6)).mono (by norm_num) ?_
+    refine (IRS.ifT h6 (IRS.instr1 hI₅ ok6)).mono by_n ?_
     rintro c' rfl
     refine hpost _ ?_ (fun r hr => ?_) rfl
     · show upd c₅.nreg po (c₅.nreg b + c₅.nreg cDd) po = _
@@ -439,7 +439,7 @@ theorem convS_irs {b nr pe po : ℕ} (hbr : b = sw 40 ∨ b = sw 45) (hnr : nr =
       simp only [hc5]; rw [v5b, v5D]; unfold convM; rw [ite_eq_left h6']
     · show upd c₅.nreg po _ r = _
       exact upd_other _ _ _ hr
-  · refine (IRS.ifF h6 (IRS.instr1 (i := .subN po cDd cT) hI₅ hpo.1)).mono (by norm_num) ?_
+  · refine (IRS.ifF h6 (IRS.instr1 (i := .subN po cDd cT) hI₅ hpo.1)).mono by_n ?_
     rintro c' rfl
     refine hpost _ ?_ (fun r hr => ?_) rfl
     · show upd c₅.nreg po (c₅.nreg cDd - c₅.nreg cT) po = _

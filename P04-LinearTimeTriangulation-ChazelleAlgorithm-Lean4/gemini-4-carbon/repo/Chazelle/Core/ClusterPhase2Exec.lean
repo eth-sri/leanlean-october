@@ -66,7 +66,7 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
     unfold RegsR at hr; unfold StkRG; omega))
   have hG2 : GR g c2 := hG1.frame (fun r hr => hf2.1 r (by unfold GRReg at hr; unfold StkRG; omega))
   have hst2 : StaticEq g.A0 g.U c.nmem c2.nmem := fun x hx => by
-    rw [hf2.2.2.2.2 x (by omega), hm1]
+    rw [hf2.2.2.2.2 x by_o, hm1]
   have k2m : ∀ x, ¬ (g.base 46 ≤ x ∧ x < g.base 46 + 2 * g.μ) → c2.nmem x = c.nmem x :=
     fun x hx => by rw [hf2.2.2.2.2 x hx, hm1]
   have hSF2 := hD.sf.of_static hst2
@@ -78,45 +78,45 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have hbo2 : ∀ w, w < g.μ → boOf g c2.nmem w = boOf g c.nmem w := fun w hw => by
     have := hlevlt w hw
     simp only [boOf, blkOf]
-    rw [k2m (g.base 3 + w) (by omega), k2m (g.base 36 + c.nmem (g.base 3 + w)) (by omega),
-      k2m (g.base 35 + c.nmem (g.base 3 + w)) (by omega)]
+    rw [k2m (g.base 3 + w) by_o, k2m (g.base 36 + c.nmem (g.base 3 + w)) by_o,
+      k2m (g.base 35 + c.nmem (g.base 3 + w)) by_o]
   have hkey2 : ∀ w, w < g.μ → keyOf' g c2.nmem w = keyOf' g c.nmem w := fun w hw => by
     have := (hD.firstF w hw).1
     simp only [keyOf']
-    rw [k2m (g.base 0 + w) (by omega), k2m (g.base 29 + c.nmem (g.base 0 + w)) (by omega)]
+    rw [k2m (g.base 0 + w) by_o, k2m (g.base 29 + c.nmem (g.base 0 + w)) by_o]
   have hstk' : segL g.s g.μ (boOf g c2.nmem) g.μ = stkList c2.nmem (g.base 46)
       (segL g.s g.μ (boOf g c2.nmem) g.μ).length := by
     rw [segL_congr hbo2]; exact hstk2
   have hlv2 : ∀ l, l < g.μ → LvOK g c2.nmem cs l := fun l hl => by
     obtain ⟨h1, h2, h3, h4⟩ := hD.lv l hl
     refine ⟨?_, ?_, ?_, ?_⟩
-    · rw [k2m _ (by omega)]; exact h1
-    · rw [k2m _ (by omega)]; exact h2
-    · rw [k2m _ (by omega)]; exact h3
-    · rw [k2m _ (by omega)]; exact h4
+    · rwa [k2m _ by_o]
+    · rwa [k2m _ by_o]
+    · rwa [k2m _ by_o]
+    · rw [k2m _ by_o]; exact h4
   have hpc : ∀ v, v < g.μ → plPos g.μ (boOf g c2.nmem) (keyOf' g c2.nmem) v =
       plPos g.μ (boOf g c.nmem) (keyOf' g c.nmem) v := fun v hv => plPos_congr hbo2 hkey2 hv
-  have hI := dinv_init (W := W) hSF2 hD.head hk' (by omega) hkμ hlv2
+  have hI := dinv_init (W := W) hSF2 hD.head hk' by_o hkμ hlv2
     (fun v hv => by
       show c2.nmem (g.base 44 + v) = if boOf g c2.nmem v < g.μ then
         plPos g.μ (boOf g c2.nmem) (keyOf' g c2.nmem) v else g.μ
-      rw [k2m _ (by omega), hD.pos v hv, hbo2 v hv, hpc v hv])
+      rw [k2m _ by_o, hD.pos v hv, hbo2 v hv, hpc v hv])
     (fun v hv hb => by
       show c2.nmem (g.base 43 + plPos g.μ (boOf g c2.nmem) (keyOf' g c2.nmem) v) = v
       change boOf g c2.nmem v < g.μ at hb
       rw [hbo2 v hv] at hb
       have := plPos_lt_μ (key := keyOf' g c.nmem) hv hb
-      rw [hpc v hv, k2m _ (by omega)]; exact hD.act v hv hb)
-    (fun v hv => by rw [k2m _ (by omega)]; exact hD.df v hv) hstk'
+      rw [hpc v hv, k2m _ by_o]; exact hD.act v hv hb)
+    (fun v hv => by rw [k2m _ by_o]; exact hD.df v hv) hstk'
   have htp2' : c2.nreg 130701 = 2 * (segL g.s g.μ (boOf g c2.nmem) g.μ).length := by
     rw [segL_congr hbo2]; exact htp2
-  have hnsp2 : c2.nreg 130704 = 0 := by rw [hf2.1 _ (by unfold StkRG; omega)]; exact h704
+  have hnsp2 : c2.nreg 130704 = 0 := by rwa [hf2.1 _ (by unfold StkRG; omega)]
   -- the driver
   obtain ⟨c3, K, e3, hK, hw3, hR3, ⟨fin, D, nsp, hI3⟩, htp3, hst3, hr3, hrr3, hrm3, ho3⟩ :=
     driver_exec (P := P) hw2 hR2 hSF2 hI htp2' hnsp2 hk' hs
   have hG3 : GR g c3 := hG2.frame (fun r hr => hr3 r (by unfold GRReg at hr; unfold SplitRG; omega)
     (by unfold GRReg at hr; omega) (by unfold GRReg at hr; omega))
-  have hst03 : StaticEq g.A0 g.U c.nmem c3.nmem := hst2.trans hst3
+  have hst03 := hst2.trans hst3
   have hsp : segPot (segL g.s g.μ (boOf g c2.nmem) g.μ) ≤ g.L * g.μ := by
     have x1 := segPot_segL (s := g.s) (μ := g.μ) (L := g.L) (bo := boOf g c2.nmem)
       (fun b => by have := cntBelow_le (boOf g c2.nmem) g.μ b; omega) g.μ
@@ -125,14 +125,14 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
       _ ≤ g.L * g.μ := Nat.mul_le_mul_left _ x2
   -- the flags
   obtain ⟨c4, k4, e4, hk4, hw4, hf4, hdf4⟩ := flagS_exec (P := P) hw3 hG3
-    (fun v hv => by rw [hst03 _ (by omega)]; exact hlevlt v hv) hEND
+    (fun v hv => by rw [hst03 _ by_o]; exact hlevlt v hv) hEND
   have hG4 : GR g c4 := hG3.frame (fun r hr => hf4.1 r (by unfold GRReg at hr; unfold FlRG; omega))
   set H := Hset T cs g.k' with hH
   have hflag : ∀ v, v < g.μ → (c4.nmem (g.base 48 + v) = 1 ↔ v ∈ D ∨ v ∈ H) := fun v hv => by
-    rw [hdf4 v hv, hst03 (g.base 3 + v) (by omega), hlevc v hv]
+    rw [hdf4 v hv, hst03 (g.base 3 + v) by_o, hlevc v hv]
     have hl := hD.sf.lev_lt ⟨v, hv⟩
     obtain ⟨-, -, -, h36⟩ := hD.lv _ hl
-    rw [hst03 (g.base 36 + T.level ⟨v, hv⟩) (by omega), h36]
+    rw [hst03 (g.base 36 + T.level ⟨v, hv⟩) by_o, h36]
     have hdf := hI3.df v hv
     have hmod := Nat.mod_lt (T.level ⟨v, hv⟩ + cs) hk'
     have hHv : v ∈ H ↔ (T.level ⟨v, hv⟩ + cs) % g.k' = g.k' - 1 := by
@@ -174,16 +174,16 @@ theorem phase2a_exec {g : GV} {c : Config} (hw : WordsBounded W c) (hG : GR g c)
   have hb := dstar_bound (k := g.k) (k' := g.k') (s := g.s) hk hμ hμk rfl rfl hDcard hHcard
   refine ⟨c4, k1 + (k2 + (K + k4)), .seq e1 (.seq e2 (.seq e3 e4)), ?_, hw4, hG4,
     fun r hr => ?_, by rw [hf4.2.1, hrr3, hf2.2.1, hrr1], by rw [hf4.2.2.1, hrm3, hf2.2.2.1, hrm1],
-    by rw [hf4.2.2.2.1, ho3, hf2.2.2.2.1, ho1], fun x hx => ?_, by omega,
+    by rw [hf4.2.2.2.1, ho3, hf2.2.2.2.1, ho1], fun x hx => ?_, by_o,
     H, D, fin, nsp, ⟨_, hI3.sinv⟩, hflag⟩
   · unfold cost2a
     have hK' : K ≤ 120 * (g.L * g.μ) + splitC g.L g.k' * (2 * g.μ / g.s) + 2 :=
       le_trans hK (Nat.add_le_add_right (Nat.add_le_add (Nat.mul_le_mul_left 120 hsp)
         (le_of_eq (by rw [Nat.sub_zero]; rfl))) 2)
     omega
-  · rw [hf4.1 r (by unfold FlRG; omega), hr3 r (by unfold SplitRG; omega) (by omega) (by omega),
+  · rw [hf4.1 r (by unfold FlRG; omega), hr3 r (by unfold SplitRG; omega) by_o by_o,
       hf2.1 r (by unfold StkRG; omega), hr1 r (by unfold RegRG; omega)]
-  · rw [hf4.2.2.2.2 x (by omega)]; exact hst03 x (by omega)
+  · rw [hf4.2.2.2.2 x by_o]; exact hst03 x by_o
 
 end proofs
 

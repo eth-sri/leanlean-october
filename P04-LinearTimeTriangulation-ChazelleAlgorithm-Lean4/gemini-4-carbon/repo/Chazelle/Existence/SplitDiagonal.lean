@@ -45,11 +45,11 @@ theorem vtx_eq_chord_endpoint_of_common {P : Polygon} (hP : P.Simple) {s L : ℕ
   by_cases hkL : k = L
   · exact Or.inr (by rw [hkL])
   rcases Nat.lt_or_ge m P.n with hm | hm
-  · have := rot_index_inj (n := P.n) (s := s) (i := k) (j := m) (by omega) hm hidx
+  · have := rot_index_inj (n := P.n) (s := s) (i := k) (j := m) by_o hm hidx
     omega
   · have hmn : m = P.n := by omega
     rw [hmn, Nat.add_mod_right] at hidx
-    have := rot_index_inj (n := P.n) (s := s) (i := k) (j := 0) (by omega) hn
+    have := rot_index_inj (n := P.n) (s := s) (i := k) (j := 0) by_o hn
       (by rw [hidx, Nat.add_zero])
     subst this
     exact Or.inl (by rw [Nat.add_zero])
@@ -69,7 +69,7 @@ theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤
       have hij : (s + i) % P.n ≠ (s + L + j) % P.n := by
         intro h
         rw [Nat.add_assoc] at h
-        have := rot_index_inj (by omega) (by omega) h
+        have := rot_index_inj by_o by_o h
         omega
       have hmem : p ∈ P.edge ((s + i) % P.n) ∩ P.edge ((s + L + j) % P.n) := ⟨hpi, hpj⟩
       rw [hP.2.2 _ _ (Nat.mod_lt _ hn) (Nat.mod_lt _ hn) hij] at hmem
@@ -86,12 +86,12 @@ theorem boundary_arc_inter {P : Polygon} (hP : P.Simple) {s L : ℕ} (hL : L ≤
         · rw [h]; exact left_mem_segment _ _
         · rw [h]; exact right_mem_segment _ _
       rcases h₁ with h₁ | h₁ <;> rcases h₂ with h₂ | h₂
-      · exact key i (L + j) hi.le (by omega) (by omega) h₁ h₂
-      · exact key i (L + (j + 1)) hi.le (by omega) (by omega) h₁ h₂
-      · exact key (i + 1) (L + j) (by omega) (by omega) (by omega) h₁ h₂
-      · exact key (i + 1) (L + (j + 1)) (by omega) (by omega) (by omega) h₁ h₂
+      · exact key i (L + j) hi.le by_o by_o h₁ h₂
+      · exact key i (L + (j + 1)) hi.le by_o by_o h₁ h₂
+      · exact key (i + 1) (L + j) by_o by_o by_o h₁ h₂
+      · exact key (i + 1) (L + (j + 1)) by_o by_o by_o h₁ h₂
     · exact hpc
-  · rw [segment_comm]; exact hpc
+  · rwa [segment_comm]
 
 /-! ### The hypotheses of the splitting lemma -/
 

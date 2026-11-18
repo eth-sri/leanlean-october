@@ -81,7 +81,7 @@ theorem MarkCtx.of_frame {c c' : Config} {lo hi bLEV bUPT bPOW L bPV bPOS bDF μ
     MarkCtx c' lo hi bLEV bUPT bPOW L bPV bPOS bDF μ lbot ltop := by
   obtain ⟨h1, h2, h3, h4, h5, h6, h7, h8, h9, h10, h11, h12, h13, h14, h15⟩ := h
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩ <;>
-    (rw [hr _ (by unfold MarkRG; omega)]; assumption)
+    (rwa [hr _ (by unfold MarkRG; omega)])
 
 /-- The static memory of the marking. -/
 structure MarkMem (m : ℕ → ℕ) (W bLEV bUPT bPOW L bPV bPOS bDF μ : ℕ) (up : ℕ → ℕ) : Prop where
@@ -140,11 +140,11 @@ theorem ancLoop_exec {c : Config} (hw : WordsBounded W c)
     (fun c2 ⟨hw2, hm2, hr2, hrr2, hrm2, ho2, j, hjL, hj2, hrow2, hdj, hwj, hwlt⟩ htest => by
       have hC2 := hC.of_frame (fun r hr => hr2 r (fun h => hr (by unfold AncRG at h; unfold MarkRG; omega)))
       rw [hC2.zero, hj2] at htest
-      obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := ⟨j - 1, by omega⟩
+      obtain ⟨j', rfl⟩ : ∃ j', j = j' + 1 := ⟨j - 1, by_o⟩
       have hrowj : bUPT + (j' + 1) * μ = bUPT + j' * μ + μ := by rw [Nat.succ_mul]; ring
       have hjLμ : j' * μ + μ ≤ L * μ := by
-        have := Nat.mul_le_mul_right μ (show j' + 1 ≤ L by omega); rwa [Nat.succ_mul] at this
-      have hpow := hM.pow j' (by omega)
+        have := Nat.mul_le_mul_right μ (by omega); rwa [Nat.succ_mul] at this
+      have hpow := hM.pow j' by_o
       rw [← hm2] at hpow
       set w := c2.nreg 130616
       set df := c2.nreg 130613
@@ -159,26 +159,26 @@ theorem ancLoop_exec {c : Config} (hw : WordsBounded W c)
         all_goals try (config_simp; simp only [hC2.rPOW, hC2.one, hj2]; have := hM.wPOW; omega)
         refine ⟨rfl, ‹_›, by config_simp; rw [hj2, hC2.one]; omega, by
           config_simp; rw [hrow2, hC2.rμ, hrowj]; omega, by
-          config_simp; rw [hC2.rPOW, hj2, hC2.one, show j' + 1 - 1 = j' by omega]; exact hpow,
+          config_simp; rwa [hC2.rPOW, hj2, hC2.one, show j' + 1 - 1 = j' by omega],
           fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
         simp only [Machine.upd_apply, h1, h2, h3, ite_false]
-      have h3w : c3.nreg 130616 = w := h3r _ (by omega) (by omega) (by omega)
-      have h3d : c3.nreg 130613 = df := h3r _ (by omega) (by omega) (by omega)
+      have h3w : c3.nreg 130616 = w := h3r _ by_o by_o by_o
+      have h3d : c3.nreg 130613 = df := h3r _ by_o by_o by_o
       have hframe3 : ∀ r, ¬ AncRG r → c3.nreg r = c.nreg r := fun r hr =>
         (h3r r (by unfold AncRG at hr; omega) (by unfold AncRG at hr; omega)
           (by unfold AncRG at hr; omega)).trans (hr2 r hr)
       by_cases hlt : c3.nreg 130613 < c3.nreg 130618
       · -- no jump
         refine ⟨c3, k3 + (0 + 1), .seq e3 (.ifLtN_true hlt (.skip hw3)), ⟨hw3, hm3.trans hm2,
-          hframe3, hrr3.trans hrr2, hrm3.trans hrm2, ho3.trans ho2, j', by omega, h3j, h3row,
+          hframe3, hrr3.trans hrr2, hrm3.trans hrm2, ho3.trans ho2, j', by_o, h3j, h3row,
           ?_, ?_, ?_⟩, ?_⟩
-        · rw [h3d]; rw [h3d, h3p] at hlt; exact hlt
-        · rw [h3d, h3w]; exact hwj
-        · rw [h3w]; exact hwlt
+        · rw [h3d]; rwa [h3d, h3p] at hlt
+        · rwa [h3d, h3w]
+        · rwa [h3w]
         · rw [h3j, hj2]; subst hk3; omega
       · -- the jump
         have hwμ := hwlt
-        have htab := hM.tab j' (by omega) w hwμ
+        have htab := hM.tab j' by_o w hwμ
         rw [← hm2] at htab
         obtain ⟨c4, k4, e4, hk4, hw4, h4w, h4d, h4r, hrr4, hrm4, ho4, hm4⟩ : ∃ c4 k4,
             Exec P W (block [.addN 130619 130615 130616, .loadN 130616 130619,
@@ -193,30 +193,30 @@ theorem ancLoop_exec {c : Config} (hw : WordsBounded W c)
               config_simp; rw [h3d, h3p], fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
             simp only [Machine.upd_apply, h1, h2, h3, ite_false]
         rw [h3d, h3p] at hlt
-        refine ⟨c4, k3 + (k4 + 2), .seq e3 (.ifLtN_false (by rw [h3d, h3p]; exact hlt) e4),
+        refine ⟨c4, k3 + (k4 + 2), .seq e3 (.ifLtN_false (by rwa [h3d, h3p]) e4),
           ⟨hw4, hm4.trans (hm3.trans hm2), fun r hr => ?_, hrr4.trans (hrr3.trans hrr2),
-          hrm4.trans (hrm3.trans hrm2), ho4.trans (ho3.trans ho2), j', by omega, ?_, ?_, ?_, ?_,
+          hrm4.trans (hrm3.trans hrm2), ho4.trans (ho3.trans ho2), j', by_o, ?_, ?_, ?_, ?_,
           ?_⟩, ?_⟩
         · rw [h4r r (by unfold AncRG at hr; omega) (by unfold AncRG at hr; omega)
             (by unfold AncRG at hr; omega)]
           exact hframe3 r hr
-        · rw [h4r _ (by omega) (by omega) (by omega)]; exact h3j
-        · rw [h4r _ (by omega) (by omega) (by omega)]; exact h3row
+        · rwa [h4r _ by_o by_o by_o]
+        · rwa [h4r _ by_o by_o by_o]
         · rw [h4d]; rw [pow_succ] at hdj; omega
         · rw [h4d, h4w, ← Function.iterate_add_apply, show df - 2 ^ j' + 2 ^ j' = df by omega]
           exact hwj
         · rw [h4w]; exact iterate_lt_of hM.up_lt _ hwμ
-        · rw [h4r _ (by omega) (by omega) (by omega), h3j, hj2]; subst hk3 hk4; omega)
-    ⟨hw, rfl, fun _ _ => rfl, rfl, rfl, rfl, L, le_rfl, hj, hrow, by rw [hd]; exact hd0,
-      by rw [hd, hwu], by rw [hwu]; exact hu⟩
+        · rw [h4r _ by_o by_o by_o, h3j, hj2]; subst hk3 hk4; omega)
+    ⟨hw, rfl, fun _ _ => rfl, rfl, rfl, rfl, L, le_rfl, hj, hrow, by rwa [hd],
+      by rw [hd, hwu], by rwa [hwu]⟩
   have hC' := hC.of_frame (fun r hr => hr' r (fun h => hr (by unfold AncRG at h; unfold MarkRG; omega)))
   rw [hC'.zero, hj'] at htest
-  have hj0 : j = 0 := by omega
+  have hj0 : j = 0 := by_o
   subst hj0
   have : c'.nreg 130613 = 0 := by simp at hdj; omega
   refine ⟨c', k, e, ?_, hw', hm', hr', hrr', hrm', ho', ?_⟩
   · rw [hj] at hk; omega
-  · rw [this] at hwj; exact hwj
+  · rwa [this] at hwj
 
 open Classical in
 /-- The memory after marking the first `i` vertices `up^[i'] w0`, `i' < i`, found in `[lo, hi)`. -/
@@ -257,7 +257,7 @@ theorem markLoop_exec {c : Config} (hw : WordsBounded W c)
         rintro ⟨x, hx, -, -, i', -, rfl⟩
         have := iterate_lt_of hM.up_lt i' hw0
         omega
-      have hpos : c2.nmem (bPOS + w) = c.nmem (bPOS + w) := hread _ _ hM.dPOS.symm w hwlt
+      have hpos := hread _ _ hM.dPOS.symm w hwlt
       have hpv : c2.nmem (bPV + w) = up w := by
         rw [hread _ _ hM.dPV.symm w hwlt, hM.pv w hwlt]
       obtain ⟨c3, k3, e3, hk3, hw3, h3p, h3r, hrr3, hrm3, ho3, hm3⟩ : ∃ c3 k3, Exec P W
@@ -271,8 +271,8 @@ theorem markLoop_exec {c : Config} (hw : WordsBounded W c)
             rfl, rfl⟩
           simp only [Machine.upd_apply, hr, ite_false]
       have hC3 := hC2.of_frame (fun r hr => h3r r (by unfold MarkRG at hr; omega))
-      have h3w : c3.nreg 130616 = w := (h3r _ (by omega)).trans hw2'
-      have h3c : c3.nreg 130617 = cnt - i := (h3r _ (by omega)).trans hc2
+      have h3w : c3.nreg 130616 = w := (h3r _ by_o).trans hw2'
+      have h3c : c3.nreg 130617 = cnt - i := (h3r _ by_o).trans hc2
       -- the conditional mark
       set inseg := c.nmem (bPOS + w)
       obtain ⟨c4, k4, e4, hk4, hw4, h4r, hrr4, hrm4, ho4, hm4⟩ : ∃ c4 k4, Exec P W
@@ -282,7 +282,7 @@ theorem markLoop_exec {c : Config} (hw : WordsBounded W c)
           c4.rreg = c3.rreg ∧ c4.rmem = c3.rmem ∧ c4.output = c3.output ∧
           c4.nmem = if lo ≤ inseg ∧ inseg < hi then upd c3.nmem (bDF + w) 1 else c3.nmem := by
         by_cases h1 : c3.nreg 130618 < c3.nreg 130300
-        · refine ⟨c3, 0 + 1, .ifLtN_true h1 (.skip hw3), by omega, hw3, fun _ _ => rfl, rfl, rfl,
+        · refine ⟨c3, 0 + 1, .ifLtN_true h1 (.skip hw3), by_o, hw3, fun _ _ => rfl, rfl, rfl,
             rfl, ?_⟩
           rw [ite_eq_right]; rw [h3p, hC3.rlo] at h1; omega
         · by_cases h2 : c3.nreg 130618 < c3.nreg 130301
@@ -296,15 +296,15 @@ theorem markLoop_exec {c : Config} (hw : WordsBounded W c)
               · refine ⟨rfl, ‹_›, fun r hr => ?_, rfl, rfl, rfl, ?_⟩
                 · simp only [Machine.upd_apply, hr, ite_false]
                 · config_simp; rw [hC3.rDF, h3w, hC3.one]
-            refine ⟨c5, k5 + 1 + 2, .ifLtN_false h1 (.ifLtN_true h2 e5), by omega, hw5, h5r,
+            refine ⟨c5, k5 + 1 + 2, .ifLtN_false h1 (.ifLtN_true h2 e5), by_o, hw5, h5r,
               hrr5, hrm5, ho5, ?_⟩
             rw [ite_eq_left]; · exact hm5
             rw [h3p, hC3.rlo] at h1; rw [h3p, hC3.rhi] at h2; omega
-          · refine ⟨c3, 0 + 2 + 2, .ifLtN_false h1 (.ifLtN_false h2 (.skip hw3)), by omega, hw3,
+          · refine ⟨c3, 0 + 2 + 2, .ifLtN_false h1 (.ifLtN_false h2 (.skip hw3)), by_o, hw3,
               fun _ _ => rfl, rfl, rfl, rfl, ?_⟩
             rw [ite_eq_right]; rw [h3p, hC3.rhi] at h2; omega
-      have h4w : c4.nreg 130616 = w := (h4r _ (by omega)).trans h3w
-      have h4c : c4.nreg 130617 = cnt - i := (h4r _ (by omega)).trans h3c
+      have h4w : c4.nreg 130616 = w := (h4r _ by_o).trans h3w
+      have h4c : c4.nreg 130617 = cnt - i := (h4r _ by_o).trans h3c
       have hC4 := hC3.of_frame (fun r hr => h4r r (by unfold MarkRG at hr; omega))
       have hpv4 : c4.nmem (bPV + w) = up w := by
         rw [hm4]
@@ -322,7 +322,7 @@ theorem markLoop_exec {c : Config} (hw : WordsBounded W c)
         · refine ⟨rfl, ‹_›, by config_simp; rw [hC4.rPV, h4w, hpv4], by
             config_simp; rw [h4c, hC4.one], fun r h1 h2 h3 => ?_, rfl, rfl, rfl, rfl⟩
           simp only [Machine.upd_apply, h1, h2, h3, ite_false]
-      refine ⟨c5, k3 + (k4 + k5), .seq e3 (.seq e4 e5), ⟨hw5, i + 1, by omega, by rw [h5c]; omega,
+      refine ⟨c5, k3 + (k4 + k5), .seq e3 (.seq e4 e5), ⟨hw5, i + 1, by_o, by rw [h5c]; omega,
         by rw [h5w, Function.iterate_succ_apply'], by
           rw [Function.iterate_succ_apply']; exact hM.up_lt _ hwlt, ?_, fun r hr => ?_,
         hrr5.trans (hrr4.trans (hrr3.trans hrr2)), hrm5.trans (hrm4.trans (hrm3.trans hrm2)),
@@ -333,13 +333,13 @@ theorem markLoop_exec {c : Config} (hw : WordsBounded W c)
         by_cases hseg : lo ≤ inseg ∧ inseg < hi
         · rw [ite_eq_left hseg, Machine.upd_apply]
           by_cases ha : a = bDF + w
-          · rw [ite_eq_left ha, ite_eq_left ⟨w, ha, hseg.1, hseg.2, i, by omega, rfl⟩]
+          · rw [ite_eq_left ha, ite_eq_left ⟨w, ha, hseg.1, hseg.2, i, by_o, rfl⟩]
           · rw [ite_eq_right ha]
             by_cases hex : ∃ x, a = bDF + x ∧ lo ≤ c.nmem (bPOS + x) ∧ c.nmem (bPOS + x) < hi ∧
                 ∃ i', i' < i ∧ x = up^[i'] w0
             · rw [ite_eq_left hex, ite_eq_left (by
                 obtain ⟨x, h1, h2, h3, i', h4, h5⟩ := hex
-                exact ⟨x, h1, h2, h3, i', by omega, h5⟩)]
+                exact ⟨x, h1, h2, h3, i', by_o, h5⟩)]
             · rw [ite_eq_right hex, ite_eq_right]
               rintro ⟨x, h1, h2, h3, i', h4, h5⟩
               rcases Nat.lt_succ_iff_lt_or_eq.mp h4 with h4 | rfl
@@ -350,7 +350,7 @@ theorem markLoop_exec {c : Config} (hw : WordsBounded W c)
               ∃ i', i' < i ∧ x = up^[i'] w0
           · rw [ite_eq_left hex, ite_eq_left (by
               obtain ⟨x, h1, h2, h3, i', h4, h5⟩ := hex
-              exact ⟨x, h1, h2, h3, i', by omega, h5⟩)]
+              exact ⟨x, h1, h2, h3, i', by_o, h5⟩)]
           · rw [ite_eq_right hex, ite_eq_right]
             rintro ⟨x, h1, h2, h3, i', h4, h5⟩
             rcases Nat.lt_succ_iff_lt_or_eq.mp h4 with h4 | rfl
@@ -366,7 +366,7 @@ theorem markLoop_exec {c : Config} (hw : WordsBounded W c)
       fun _ _ => rfl, rfl, rfl, rfl⟩
   have hC' := hC.of_frame hr'
   rw [hC'.zero, hcnt'] at htest
-  have hic : i = cnt := by omega
+  have hic : i = cnt := by_o
   subst hic
   refine ⟨c', k, e, ?_, hw', hm', hr', hrr', hrm', ho'⟩
   rw [hcnt] at hk; omega
@@ -386,7 +386,7 @@ theorem markStmt_exec {c : Config} (hw : WordsBounded W c)
       c'.output = c.output := by
   set lu := c.nmem (bLEV + u)
   set t := min lu ltop
-  have hlu : lu < 2 ^ L := hM.lev_lt u huμ
+  have hlu := hM.lev_lt u huμ
   -- `lu` and `t`
   obtain ⟨c1, k1, e1, hk1, hw1, h1l, h1t, h1r, hrr1, hrm1, ho1, hm1⟩ : ∃ c1 k1, Exec P W
       (block [.addN 130618 130601 130600, .loadN 130611 130618, .copyN 130612 130611]) c c1 k1 ∧
@@ -411,7 +411,7 @@ theorem markStmt_exec {c : Config} (hw : WordsBounded W c)
       · simp only [Machine.upd_same, hC1.rtop]
         rw [hC1.rtop, h1t] at h; simp only [t]; omega
       · simp only [Machine.upd_apply]; unfold MarkRG at hr; split_ifs <;> omega
-    · refine ⟨c1, _, .ifLtN_false h (.skip hw1), by omega, hw1, h1l, ?_, fun _ _ => rfl, rfl,
+    · refine ⟨c1, _, .ifLtN_false h (.skip hw1), by_o, hw1, h1l, ?_, fun _ _ => rfl, rfl,
         rfl, rfl, rfl⟩
       rw [h1t]; rw [hC1.rtop, h1t] at h; simp only [t]; omega
   have hC2 := hC1.of_frame h2r
@@ -420,11 +420,11 @@ theorem markStmt_exec {c : Config} (hw : WordsBounded W c)
   by_cases hbot : c2.nreg 130612 < c2.nreg 130609
   · -- nothing to mark
     refine ⟨c2, k1 + (k2 + (0 + 1)), .seq e1 (.seq e2 (.ifLtN_true hbot (.skip hw2))),
-      by omega, hw2, ?_, hframe2, hrr2.trans hrr1, hrm2.trans hrm1, ho2.trans ho1⟩
+      by_o, hw2, ?_, hframe2, hrr2.trans hrr1, hrm2.trans hrm1, ho2.trans ho1⟩
     rw [h2t, hC2.rbot] at hbot
-    rw [ite_eq_right (by omega), hm2, hm1]
+    rw [ite_eq_right by_o, hm2, hm1]
   · have htb : lbot ≤ t := by rw [h2t, hC2.rbot] at hbot; omega
-    have hm21 : c2.nmem = c.nmem := hm2.trans hm1
+    have hm21 := hm2.trans hm1
     obtain ⟨c3, k3, e3, hk3, hw3, h3d, h3w, h3j, h3row, h3t, h3r, hrr3, hrm3, ho3, hm3⟩ :
         ∃ c3 k3, Exec P W (block [.subN 130613 130611 130612, .copyN 130616 130600,
           .copyN 130614 130604, .copyN 130615 130620]) c2 c3 k3 ∧ k3 = 4 ∧ WordsBounded W c3 ∧
@@ -441,7 +441,7 @@ theorem markStmt_exec {c : Config} (hw : WordsBounded W c)
     have hM3 : MarkMem c3.nmem W bLEV bUPT bPOW L bPV bPOS bDF μ up := by
       rw [hm3, hm21]; exact hM
     obtain ⟨c4, k4, e4, hk4, hw4, hm4, h4r, hrr4, hrm4, ho4, h4w⟩ := ancLoop_exec (P := P) hw3 hC3
-      hM3 huμ h3d (by omega) h3w h3j h3row
+      hM3 huμ h3d by_o h3w h3j h3row
     have hA4 : ∀ r, ¬ MarkRG r → ¬ AncRG r := fun r hr h => hr (by
       unfold AncRG at h; unfold MarkRG; omega)
     have hC4 := hC3.of_frame (fun r hr => h4r r (hA4 r hr))

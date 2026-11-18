@@ -52,8 +52,8 @@ def wr3 (m : ℕ → ℕ) (p a b c : ℕ) : ℕ → ℕ := upd (upd (upd m p a) 
 
 theorem wr3_lt {m : ℕ → ℕ} {p a b c x : ℕ} (hx : x < p) : wr3 m p a b c x = m x := by
   unfold wr3
-  rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-    Machine.upd_other _ _ _ (by omega)]
+  rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+    Machine.upd_other _ _ _ by_o]
 
 theorem ItemsAt.nil (m : ℕ → ℕ) (T : ℕ) : ItemsAt m T [] := fun i hi => by simp at hi
 
@@ -68,20 +68,20 @@ theorem ItemsAt.snoc {m : ℕ → ℕ} {T : ℕ} {xs : List HostItem} (h : Items
   · rw [List.getD_append _ _ _ _ h1]
     obtain ⟨a1, a2, a3⟩ := h i h1
     refine ⟨?_, ?_, ?_⟩
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), a1]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), a2]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
-        Machine.upd_other _ _ _ (by omega), a3]
+    · rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o, a1]
+    · rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o, a2]
+    · rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
+        Machine.upd_other _ _ _ by_o, a3]
   · have hi' : i = xs.length := by omega
     subst hi'
     rw [List.getD_append_right _ _ _ _ le_rfl, Nat.sub_self]
     simp only [List.getD_cons_zero]
     refine ⟨?_, ?_, ?_⟩
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_other _ _ _ (by omega),
+    · rw [Machine.upd_other _ _ _ by_o, Machine.upd_other _ _ _ by_o,
         Machine.upd_same]
-    · rw [Machine.upd_other _ _ _ (by omega), Machine.upd_same]
+    · rw [Machine.upd_other _ _ _ by_o, Machine.upd_same]
     · rw [Machine.upd_same]
 
 /-- Items survive a change of the memory outside their words. -/
@@ -89,8 +89,8 @@ theorem ItemsAt.congr {m m' : ℕ → ℕ} {T : ℕ} {xs : List HostItem} (h : I
     (hm : ∀ a, T ≤ a → a < T + 3 * xs.length → m' a = m a) : ItemsAt m' T xs := by
   intro i hi
   obtain ⟨a1, a2, a3⟩ := h i hi
-  exact ⟨by rw [hm _ (by omega) (by omega), a1], by rw [hm _ (by omega) (by omega), a2],
-    by rw [hm _ (by omega) (by omega), a3]⟩
+  exact ⟨by rw [hm _ by_o by_o, a1], by rw [hm _ by_o by_o, a2],
+    by rw [hm _ by_o by_o, a3]⟩
 
 /-- **The host layout** is the count word followed by the items. -/
 theorem hostAt_of {m : ℕ → ℕ} {B : ℕ} {H : Host} (h0 : m B = H.length) (h : ItemsAt m (B + 1) H) :
@@ -109,7 +109,7 @@ theorem hostAt_of {m : ℕ → ℕ} {B : ℕ} {H : Host} (h0 : m B = H.length) (
 theorem getD_reverse_items {xs : List HostItem} {i : ℕ} (hi : i < xs.length) :
     xs.reverse.getD i (.run 0 0) = xs.getD (xs.length - 1 - i) (.run 0 0) := by
   rw [List.getD_eq_getElem _ _ (by simpa using hi), List.getElem_reverse,
-    List.getD_eq_getElem _ _ (by omega)]
+    List.getD_eq_getElem _ _ by_o]
 
 /-! ## Point counts -/
 

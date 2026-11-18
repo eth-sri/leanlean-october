@@ -59,8 +59,7 @@ theorem l41Call_exec {O : OracleIface} {sL : Stmt} {κL : ℕ}
     refine ⟨rfl, ‹_›, by config_simp; exact h05, by config_simp; exact h16,
       by config_simp; exact h17, by config_simp; exact h07, fun r a1 a2 a3 a4 => ?_, rfl, rfl,
       rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
   have hA1 : c1.nreg ALLOC = c.nreg ALLOC := fr1 _ (by rw [hAl]; decide) (by rw [hAl]; decide)
     (by rw [hAl]; decide) (by rw [hAl]; decide)
   have hX1 : (gradeCtx O).holds P c1.nmem (rd c1 bL41 0) (c1.nreg ALLOC) := by
@@ -68,13 +67,13 @@ theorem l41Call_exec {O : OracleIface} {sL : Stmt} {κL : ℕ}
     rw [i0, hm1, hA1]; exact hX
   obtain ⟨c2, k2, e2, hk2, ⟨C, N, hCP, hCs, hCm, hNW, hc⟩, fr2⟩ :=
     hL P W c1 hw1 ⟨hG, hWh, hX1,
-      by show c1.nreg 160003 ≤ c1.nmem (c1.nreg 160000); rw [i3, i0, hm1]; exact hgΛ,
-      by show lemma41Start ≤ c1.nreg 160003; rw [i3]; exact h7,
+      by show c1.nreg 160003 ≤ c1.nmem (c1.nreg 160000); rwa [i3, i0, hm1],
+      by show lemma41Start ≤ c1.nreg 160003; rwa [i3],
       by show c1.nreg 160001 + c1.nreg 160002 + 1 ≤ P.n; omega,
-      by show 2 ^ (c1.nreg 160003 - 1) < c1.nreg 160002; rw [i3, i2]; exact hl1,
-      by show c1.nreg 160002 ≤ 2 ^ c1.nreg 160003; rw [i3, i2]; exact hl2⟩
+      by show 2 ^ (c1.nreg 160003 - 1) < c1.nreg 160002; rwa [i3, i2],
+      by show c1.nreg 160002 ≤ 2 ^ c1.nreg 160003; rwa [i3, i2]⟩
       (by show c1.nreg ALLOC + κL * (lemma41Nat (c1.nreg 160003) + 1) ≤ W
-          rw [hA1, i3]; exact hbud)
+          rwa [hA1, i3])
   replace hk2 : k2 ≤ κL * (lemma41Nat (c1.nreg 160003) + 1) := hk2
   rw [i3] at hk2
   obtain ⟨fr2r, fr2rr, fr2m, fr2rm, fr2o, fr2a, fr2b⟩ := fr2
@@ -85,21 +84,20 @@ theorem l41Call_exec {O : OracleIface} {sL : Stmt} {κL : ℕ}
       c3.nmem = c2.nmem ∧ c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output := by
     exec_block
     refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
   have hA3 : c3.nreg ALLOC = c2.nreg ALLOC := fr3 _ (by rw [hAl]; decide)
   have hbb : ∀ r, bandOf r ∉ l41Bands → r < 160000 ∨ 170000 ≤ r := by
     intro r hr
     by_contra hc
-    exact hr (by rw [band_l41' (by omega) (by omega)]; decide)
-  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3, by rw [hA3, ← hA1]; exact fr2a,
-    by rw [hA3, ← hA1]; omega, ⟨C, N, hCP, by rw [hCs]; exact i1, by rw [hCm]; exact i2,
-      by rw [o31, hm3, hA3]; exact hNW, by rw [← i3]; exact hc⟩,
-    fun a ha => by rw [hm3, fr2m a (by rw [hA1]; exact ha), hm1],
-    fun a ha => by rw [hrm3, fr2rm a (by rw [hA1]; exact ha), hrm1],
+    exact hr (by rw [band_l41' by_o by_o]; decide)
+  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by_o, hw3, by rwa [hA3, ← hA1],
+    by rw [hA3, ← hA1]; omega, ⟨C, N, hCP, by rwa [hCs], by rwa [hCm],
+      by rwa [o31, hm3, hA3], by rwa [← i3]⟩,
+    fun a ha => by rw [hm3, fr2m a (by rwa [hA1]), hm1],
+    fun a ha => by rw [hrm3, fr2rm a (by rwa [hA1]), hrm1],
     by rw [ho3, fr2o, ho1], fun r h1 h2 h3 => ?_, fun r h1 => by rw [hrr3, fr2rr r h1, hrr1]⟩
   have := hbb r h1
-  rw [fr3 r h2, fr2r r h1 h3, fr1 r (by omega) (by omega) (by omega) (by omega)]
+  rw [fr3 r h2, fr2r r h1 h3, fr1 r by_o by_o by_o by_o]
 
 set_option maxHeartbeats 16000000 in
 /-- **The oracle preprocessing, called from the up phase.** -/
@@ -132,8 +130,7 @@ theorem prepCall_exec {O : OracleIface} (hV : O.Valid) (hG : GoodEnv P)
     exec_block
     refine ⟨rfl, ‹_›, by config_simp; exact h30, by config_simp; exact h31,
       by config_simp; exact h11, fun r a1 a2 a3 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
   have hA1 : c1.nreg ALLOC = c.nreg ALLOC := fr1 _ (by rw [hAl]; decide) (by rw [hAl]; decide)
     (by rw [hAl]; decide)
   have hwf1 : ChainWF P (c1.nreg ALLOC) c1.nmem (rd c1 bOPrep 0) := by
@@ -152,7 +149,7 @@ theorem prepCall_exec {O : OracleIface} (hV : O.Valid) (hG : GoodEnv P)
     hVp P W c1 hw1 ⟨hG, hWh, hwf1, H, C, N, hd1, hCP, hN1, hc1⟩
       (by show c1.nreg ALLOC + O.κ * (c1.nmem (c1.nreg 110001) *
             (Nat.clog 2 (c1.nmem (c1.nreg 110000 + 2)) + 1) + 1) ≤ W
-          rw [hA1, i0, i1, hm1]; exact hbud)
+          rwa [hA1, i0, i1, hm1])
   replace hk2 : k2 ≤ O.κ * (c1.nmem (c1.nreg 110001) *
     (Nat.clog 2 (c1.nmem (c1.nreg 110000 + 2)) + 1) + 1) := hk2
   rw [i0, i1, hm1] at hk2
@@ -164,26 +161,25 @@ theorem prepCall_exec {O : OracleIface} (hV : O.Valid) (hG : GoodEnv P)
       c3.nmem = c2.nmem ∧ c3.rreg = c2.rreg ∧ c3.rmem = c2.rmem ∧ c3.output = c2.output := by
     exec_block
     refine ⟨rfl, ‹_›, by config_simp, fun r a1 => ?_, rfl, rfl, rfl, rfl⟩
-    simp only
-    repeat (rw [Machine.upd_other _ _ _ (by omega)])
+    upd_keep
   have hA3 : c3.nreg ALLOC = c2.nreg ALLOC := fr3 _ (by rw [hAl]; decide)
   have hbb : ∀ r, bandOf r ∉ oracleBands ∪ {bOPrep} → r < 110000 ∨ 120000 ≤ r := by
     intro r hr
     by_contra hc
-    exact hr (by rw [band_prep (by omega) (by omega)]; decide)
+    exact hr (by rw [band_prep by_o by_o]; decide)
   have hsub : ∀ r, bandOf r ∉ oracleBands ∪ {bOPrep} → bandOf r ∉ O.bands := fun r hr h' =>
     hr (hVb h')
-  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by omega, hw3, by rw [hA3, ← hA1]; exact fr2a,
-    by rw [hA3, ← hA1]; omega, by rw [o32, ← hA1]; exact q0, by rw [o32, hA3]; exact q0',
+  refine ⟨c3, k1 + (k2 + k3), .seq e1 (.seq e2 e3), by_o, hw3, by rwa [hA3, ← hA1],
+    by rw [hA3, ← hA1]; omega, by rwa [o32, ← hA1], by rw [o32, hA3]; exact q0',
     by rw [o32, hm3]; exact q1.trans i0, by rw [o32, hm3]; exact q2.trans i1,
     by rw [o32, hm3]; exact q3.trans i2,
     fun m' hm' => by rw [o32]; exact q4 m' (by rw [← hA3, ← hm3]; exact hm'),
-    fun a ha => by rw [hm3, fr2m a (by rw [hA1]; exact ha), hm1],
-    fun a ha => by rw [hrm3, fr2rm a (by rw [hA1]; exact ha), hrm1],
+    fun a ha => by rw [hm3, fr2m a (by rwa [hA1]), hm1],
+    fun a ha => by rw [hrm3, fr2rm a (by rwa [hA1]), hrm1],
     by rw [ho3, fr2o, ho1], fun r h1 h2 h3 => ?_,
     fun r h1 => by rw [hrr3, fr2rr r (hsub r h1), hrr1]⟩
   have := hbb r h1
-  rw [fr3 r h2, fr2r r (hsub r h1) h3, fr1 r (by omega) (by omega) (by omega)]
+  rw [fr3 r h2, fr2r r (hsub r h1) h3, fr1 r by_o by_o by_o]
 
 end proofs
 

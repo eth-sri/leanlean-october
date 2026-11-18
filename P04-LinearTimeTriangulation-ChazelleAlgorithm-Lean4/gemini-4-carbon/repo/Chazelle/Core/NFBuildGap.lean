@@ -42,9 +42,9 @@ theorem take_cntBelow {n : ℝ} {S : List Ev} (hs : S.Pairwise (EvLe n)) {x : �
     by_cases he : e.2.1 < x
     · simp only [he, decide_true, ite_true]
       rw [take_succ_cons, ih']
-    · have hgt : x < e.2.1 := lt_of_le_of_ne (not_lt.1 he) (Ne.symm (hx e mem_cons_self))
+    · have hgt := lt_of_le_of_ne (not_lt.1 he) (Ne.symm (hx e mem_cons_self))
       have hall : ∀ f ∈ S, ¬ f.2.1 < x := fun f hf h =>
-        absurd (h.trans_le' (key_le_of_evLe (hs.1 f hf))) (by linarith)
+        absurd (h.trans_le' (key_le_of_evLe (hs.1 f hf))) by_l
       have h0 : S.countP (fun e => decide (e.2.1 < x)) = 0 := by
         rw [countP_eq_zero]; intro f hf; simpa using hall f hf
       have h1 : S.filter (fun e => decide (e.2.1 < x)) = [] := by

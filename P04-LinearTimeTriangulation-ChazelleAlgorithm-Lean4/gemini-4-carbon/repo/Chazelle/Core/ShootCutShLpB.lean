@@ -10,11 +10,6 @@ and its piece shot at (`pieceK0` or `pieceK1`); the best first hit then covers o
 the invariant holds again, and the potential `(end - pointer) (K + 2)` pays for the steps.
 -/
 
-set_option linter.unusedSimpArgs false
-set_option linter.unusedTactic false
-set_option linter.unreachableTactic false
-set_option linter.unnecessarySeqFocus false
-
 namespace Chazelle.Core
 
 namespace ShootCut
@@ -79,12 +74,12 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
   obtain ⟨hw, E, Og, h08, h34, h100, hrec, hm0, hEA, fr, hbud, j, hj, h110, hB⟩ := hI
   have hjq : j < ps.length := by rw [h110, h100] at hlt; omega
   set pc := ps[j]'hjq with hpc
-  have hpcm : pc ∈ ps := List.getElem_mem hjq
+  have hpcm := List.getElem_mem hjq
   have hok := X.ok pc hpcm
   obtain ⟨r0, r1, r2, r3, r4, r58⟩ := hrec j hjq
   set p := A₀ + 1 + 9 * j with hp
   set L := A₀ + 1 + 9 * ps.length with hL
-  have hLp : L - p = (L - (p + 9)) + 9 := by omega
+  have hLp : L - p = (L - (p + 9)) + 9 := by_o
   have hbud' : c.nreg ALLOC + ((L - (p + 9)) * (K + 2) + 9 * (K + 2)) ≤ W := by
     rw [h110, hLp, Nat.add_mul] at hbud; exact hbud
   have hAW : c.nreg ALLOC + 9 * (K + 2) ≤ W := by
@@ -100,23 +95,23 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
     rw [hA]; exact Set.mem_biUnion hpcm hzp)
   -- the load
   obtain ⟨c₁, k₁, e₁, hk₁, q10, v50, v51, v52, v53, v54, v55, v56, v57, v58, f₁⟩ :=
-    lpLoad_exec (P := P) c hw E.k1 h110 (by omega)
+    lpLoad_exec (P := P) c hw E.k1 h110 by_o
   have w₁ := e₁.wb_right
   have E₁ := E.frame f₁ Blpl_env
   have Og₁ := Og.keep fun r a b => f₁.1 r (Blpl_org r a b)
-  have g1 : c₁.nreg K1 = 1 := E₁.k1
+  have g1 := E₁.k1
   have kl : ∀ r, LoopR r → r ≠ 140110 → c₁.nreg r = c.nreg r := fun r hr hr' =>
     f₁.1 r (by
       unfold LoopR at hr
       simp only [Blpl, ALLOC, Bool.or_eq_false_iff, decide_eq_false_iff_not,
         beq_eq_false_iff_ne] at hr ⊢
       omega)
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := kl _ (by unfold LoopR; simp) (by decide)
-  have hm₁ : c₁.nmem = c.nmem := f₁.2.2.1
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := kl _ (by unfold LoopR; simp) by_d
+  have hm₁ := f₁.2.2.1
   have hB₁ : CandAt P C c₁ 140210 (psSet C (Qof P) (ps.take j)) z σ :=
     hB.keep fun i hi => f₁.1 _ (by simp only [Blpl, Bool.or_eq_false_iff,
       decide_eq_false_iff_not, beq_eq_false_iff_ne]; omega)
-  have F₁ : Frame oracleBands c c₁ k₁ := frame_of_frameB f₁ (fun r hr =>
+  have F₁ := frame_of_frameB f₁ (fun r hr =>
     ⟨oracleBands_mem r (by have := (Blpl_ob r hr).1; omega), (Blpl_ob r hr).2⟩) k₁
   -- the ends of the piece
   have hends := X.arc.ends pc hpcm
@@ -128,7 +123,7 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
     rcases hends.2 with h' | h'
     · rw [h']; exact X.hein
     · exact Or.inl h'
-  have hW₀ : hostWords P.n ≤ W := E.hW
+  have hW₀ := E.hW
   -- the rest of the invariant after the piece
   have finish : ∀ (c₂ : Config) (k₂ : ℕ), Exec P W (.ifLtN 140254 K1 pieceK0 (pieceK1 O.query))
       c₁ c₂ k₂ → k₂ + 20 ≤ K → WordsBounded W c₂ → ShEnv P W H C z σ c₂ →
@@ -145,39 +140,39 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
     obtain ⟨-, -, fm, -, -, fa, fk⟩ := F
     have k2 : ∀ r, LoopR r → r ≠ ALLOC → r ≠ 140110 → c₂.nreg r = c.nreg r := fun r hr ha hr' =>
       (kr r hr ha).trans (kl r hr hr')
-    have n10 : c₂.nreg 140110 = p + 9 := by rw [kr _ (by unfold LoopR; simp) (by decide), q10]
-    have Og₂ : OrgOK P C z σ c₂ := Og₁.keep fun r a b =>
+    have n10 : c₂.nreg 140110 = p + 9 := by rw [kr _ (by unfold LoopR; simp) by_d, q10]
+    have Og₂ := Og₁.keep fun r a b =>
       kr r (by unfold LoopR; right; right; right; right; left; exact ⟨a, b⟩)
-        (by unfold ALLOC; omega)
+        by_ao
     refine ⟨c₂, _, ex, ⟨w₂, E₂, Og₂, ?_, ?_, ?_, ?_, ?_, ?_, FrameNK.step fr (F₁.trans F₂ |>.mono
-      (by simp) le_rfl), ?_, j + 1, by omega, by rw [n10]; ring, ?_⟩, ?_, by omega⟩
-    · rw [k2 _ (by unfold LoopR; simp) (by decide) (by decide)]; exact h08
-    · rw [k2 _ (by unfold LoopR; simp) (by decide) (by decide)]; exact h34
-    · rw [k2 _ (by unfold LoopR; simp) (by decide) (by decide)]; exact h100
+      by_s le_rfl), ?_, j + 1, by_o, by rw [n10]; ring, ?_⟩, ?_, by_o⟩
+    · rwa [k2 _ (by unfold LoopR; simp) by_d by_d]
+    · rwa [k2 _ (by unfold LoopR; simp) by_d by_d]
+    · rwa [k2 _ (by unfold LoopR; simp) by_d by_d]
     · intro i hi
       have := hrec i hi
       have hlt' : ∀ f, f < 9 → A₀ + 1 + 9 * i + f < c.nreg ALLOC := fun f hf => by
-        have : 9 * i + 9 ≤ 9 * ps.length := by omega
+        have : 9 * i + 9 ≤ 9 * ps.length := by_o
         omega
-      have h0' := hlt' 0 (by norm_num)
+      have h0' := hlt' 0 by_n
       rw [Nat.add_zero] at h0'
-      refine ⟨by rw [fm _ h0']; exact this.1, by rw [fm _ (hlt' 1 (by norm_num))]; exact this.2.1,
-        by rw [fm _ (hlt' 2 (by norm_num))]; exact this.2.2.1,
-        by rw [fm _ (hlt' 3 (by norm_num))]; exact this.2.2.2.1,
-        by rw [fm _ (hlt' 4 (by norm_num))]; exact this.2.2.2.2.1, fun hk => ?_⟩
+      refine ⟨by rw [fm _ h0']; exact this.1, by rw [fm _ (hlt' 1 by_n)]; exact this.2.1,
+        by rw [fm _ (hlt' 2 by_n)]; exact this.2.2.1,
+        by rw [fm _ (hlt' 3 by_n)]; exact this.2.2.2.1,
+        by rw [fm _ (hlt' 4 by_n)]; exact this.2.2.2.2.1, fun hk => ?_⟩
       obtain ⟨b5, b6, b7, b8⟩ := this.2.2.2.2.2 hk
-      exact ⟨by rw [fm _ (hlt' 5 (by norm_num))]; exact b5,
-        by rw [fm _ (hlt' 6 (by norm_num))]; exact b6,
-        by rw [fm _ (hlt' 7 (by norm_num))]; exact b7,
-        by rw [fm _ (hlt' 8 (by norm_num))]; exact b8⟩
+      exact ⟨by rwa [fm _ (hlt' 5 by_n)],
+        by rwa [fm _ (hlt' 6 by_n)],
+        by rwa [fm _ (hlt' 7 by_n)],
+        by rwa [fm _ (hlt' 8 by_n)]⟩
     · intro a ha
-      rw [fm a (by omega)]; exact hm0 a ha
+      rw [fm a by_o]; exact hm0 a ha
     · omega
     · rw [n10]
       show c₂.nreg ALLOC + (L - (p + 9)) * (K + 2) ≤ W
-      have : c₂.nreg ALLOC ≤ c.nreg ALLOC + (k₁ + k₂) := fk
+      have := fk
       omega
-    · rw [htk, psSet_append]; exact hB₂
+    · rwa [htk, psSet_append]
     · rw [n10, h110]
       show (L - (p + 9)) * (K + 2) + (k₁ + k₂) + 2 ≤ (L - p) * (K + 2)
       rw [hLp, Nat.add_mul]
@@ -189,9 +184,9 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
     obtain ⟨c₂, k₂, e₂, hk₂, hB₂, f₂⟩ := pieceK0_exec (P := P) (W := W) (H := H) (C := C)
       (z := z) (σ := σ) c₁ w₁ E₁ (x := pc.s) (y := pc.e) (by rw [v50, r0]) (by rw [v51, r1])
       (by rw [v52, r2]) (by rw [v53, r3])
-      (by rw [kl _ (by unfold LoopR; simp) (by decide)]; exact h34) hok.1 hok.2.1 hok.2.2.1
+      (by rwa [kl _ (by unfold LoopR; simp) by_d]) hok.1 hok.2.1 hok.2.2.1
       hok.2.2.2.1 (hok.2.2.2.2.2.1 hk0) hxe hye hzpc hB₁ X.hnW (by rw [hA₁]; omega)
-    exact finish c₂ _ (.ifLtN_true t e₂) (by omega) e₂.wb_right (E₁.frame f₂ Bk0_env)
+    exact finish c₂ _ (.ifLtN_true t e₂) by_o e₂.wb_right (E₁.frame f₂ Bk0_env)
       (frame_of_frameB f₂ (fun r hr => ⟨oracleBands_mem r (by have := (Bk0_ob r hr).1; omega),
         (Bk0_ob r hr).2⟩) _) (fun r hr _ => f₂.1 r (Bk0_loop r hr)) hB₂
   · -- kind 1
@@ -201,31 +196,31 @@ theorem lpBody_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
     obtain ⟨r5, r6, r7, r8⟩ := r58 hk1
     have hmA : ∀ a, a < A₀ → c₁.nmem a = m₀ a := fun a ha => by rw [hm₁]; exact hm0 a ha
     obtain ⟨hen, hAt, hCα, hgg, hMpw⟩ := kind1_query hok hk1 X.hR hmA
-    have hpwγ : pc.pw ≤ γ := kind1_pw_le_γ X.arc X.hsP X.heP X.hs1 X.he1 X.hwt hpcm hok hk1
+    have hpwγ := kind1_pw_le_γ X.arc X.hsP X.heP X.hs1 X.he1 X.hwt hpcm hok hk1
     have hcost := query_cost_le (κ := O.κ) hgg (show c₁.nmem (c₁.nmem (c₁.nmem (pc.entry + 2)) + 2)
-      ≤ γ by rw [hMpw]; exact hpwγ)
+      ≤ γ by rwa [hMpw])
     have hw1 : 1 ≤ pc.pw := by rw [hpw]; exact Nat.one_le_two_pow
     have hpp : pc.s.edge + pc.pw ≤ 2 * C.m + 6 := by rw [hpw]; omega
     have hQn : (Qof P).n = P.n := shear_n _ _
     have hPW : P.n ≤ W := by unfold hostWords at hW₀; omega
     have hnW := X.hnW
     obtain ⟨c₂, k₂, e₂, hk₂, hB₂, F₂, keep₂, E₂⟩ := pieceK1_exec (O := O) X.hV c₁ w₁ E₁
-      (by rw [kl _ (by unfold LoopR; simp) (by decide)]; exact h08) hB₁
+      (by rwa [kl _ (by unfold LoopR; simp) by_d]) hB₁
       (p₀ := pc.s.edge) (en := pc.entry) (x0 := pc.x0) (dir := pc.dir) (w := pc.pw)
       (by rw [v50, r0]) (by rw [v55, r5]) (by rw [v56, r6]) (by rw [v57, r7]) (by rw [v58, r8])
-      (by rw [hx0, hpw]; exact hWk) hw1 (by rw [hx0, hpw]; exact hbn) h6 hpp hdir hAt hCα
+      (by rwa [hx0, hpw]) hw1 (by rwa [hx0, hpw]) h6 hpp hdir hAt hCα
       Og₁.qk (fun h0 => Og₁.q0 h0 _ fun x hx => block_inC hw1 h6 hpp hx) Og₁.q1 X.hQs hcost
-      (by rw [hA₁]; omega) (by omega) (by omega) (by rw [hx0, hpw]; omega)
+      (by rw [hA₁]; omega) by_o by_o (by rw [hx0, hpw]; omega)
     have hset : pcSetOf C (Qof P) pc =
         (chainModel C).arcSet (pc.s.edge : ℝ) ((pc.s.edge + pc.pw : ℕ) : ℝ) := by
       unfold pcSetOf
       rw [show pc.s = ⟨pc.s.edge, 0⟩ by rw [← hs0], show pc.e = ⟨pc.e.edge, 0⟩ by rw [← he0],
         key_hgt0, key_hgt0, hee, hpw]
-    exact finish c₂ _ (.ifLtN_false t e₂) (by omega) e₂.wb_right E₂ (F₂.mono (subset_refl _)
-      (by omega))
+    exact finish c₂ _ (.ifLtN_false t e₂) by_o e₂.wb_right E₂ (F₂.mono (subset_refl _)
+      by_o)
       (fun r hr ha => keep₂ r (by unfold LoopR ALLOC at hr; unfold ALLOC at ha; omega)
         (by unfold LoopR ALLOC at hr; unfold ALLOC at ha; omega) (Wk1_loop r hr))
-      (by rw [hset]; exact hB₂)
+      (by rwa [hset])
 
 /-! ## The loop -/
 
@@ -257,18 +252,18 @@ theorem shLoop_exec {O : OracleIface} {m₀ : ℕ → ℕ} {h γ A₀ : ℕ} {s 
   have hwf := E.hwf
   have hnW := X.hnW
   obtain ⟨c₁, k₁, e₁, hk₁, v34, v10, v210, f₁⟩ := lpInit_exec (P := P) c hw E.k1 rfl
-    hD.2.2.2.1 h101 (by have := hwf.1; omega) (by omega) (by omega)
+    hD.2.2.2.1 h101 (by have := hwf.1; omega) by_o by_o
   have E₁ := E.frame f₁ Blpi_env
-  have k₁' : ∀ r, Blpi r = false → c₁.nreg r = c.nreg r := f₁.1
-  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := k₁' _ (by decide)
-  have F₁ : Frame oracleBands c c₁ k₁ := frame_of_frameB f₁ (fun r hr =>
+  have k₁' := f₁.1
+  have hA₁ : c₁.nreg ALLOC = c.nreg ALLOC := k₁' _ by_d
+  have F₁ := frame_of_frameB f₁ (fun r hr =>
     ⟨oracleBands_mem r (by have := (Blpi_ob r hr).1; omega), (Blpi_ob r hr).2⟩) k₁
   have I₁ : LpI P W H C z σ m₀ A₀ ps c K c₁ := by
     refine ⟨e₁.wb_right, E₁, Og.keep fun r a b => k₁' r (by simp only [Blpi,
       Bool.or_eq_false_iff, decide_eq_false_iff_not, beq_eq_false_iff_ne]; omega),
-      by rw [k₁' _ (by decide)]; exact h08, v34, by rw [k₁' _ (by decide)]; exact h100,
-      by rw [f₁.2.2.1]; exact hrec, fun a ha => by rw [f₁.2.2.1]; exact hm0 a ha,
-      by rw [hA₁]; exact hEA, FrameNK.step (FrameNK.refl c) F₁, ?_, 0, Nat.zero_le _,
+      by rwa [k₁' _ by_d], v34, by rwa [k₁' _ by_d],
+      by rwa [f₁.2.2.1], fun a ha => by rw [f₁.2.2.1]; exact hm0 a ha,
+      by rwa [hA₁], FrameNK.step (FrameNK.refl c) F₁, ?_, 0, Nat.zero_le _,
       by rw [v10], ?_⟩
     · rw [hA₁, v10, show A₀ + 1 + 9 * ps.length - (A₀ + 1) = 9 * ps.length by omega]
       exact hbud

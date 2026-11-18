@@ -66,10 +66,10 @@ theorem cAddr_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
   refine ⟨?_, ?_, fun q h1 h2 h3 => ?_⟩
   · simp only [cAddr, regB, regI, upd, kA, kE, kH, lsI, K1, sw]
     simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-    exact congrArg m (by ring)
+    exact congrArg m by_r
   · simp only [cAddr, regB, regI, upd, kA, kE, kH, lsI, K1, sw]
     simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-    exact congrArg m (by ring)
+    exact congrArg m by_r
   · refine regB_other m cAddr f (fun i hi => ?_)
     simp only [cAddr, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;>
@@ -85,8 +85,8 @@ theorem cAddr_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f (sw 300) + 7 * f l
   have hb' : f 240300 + 7 * f 244000 + 1 ≤ W := hb
   simp only [cAddr, okB, okI, regI, upd, kA, kE, kH, lsI, K1, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  refine ⟨s, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩,
-    ⟨s, by omega⟩, ⟨s, by omega⟩, sE, ⟨s, by omega⟩, sH, trivial⟩
+  refine ⟨s, ⟨s, by_o⟩, ⟨s, by_o⟩, ⟨s, by_o⟩, ⟨s, by_o⟩, ⟨s, by_o⟩,
+    ⟨s, by_o⟩, ⟨s, by_o⟩, sE, ⟨s, by_o⟩, sH, trivial⟩
 
 theorem cSlot_val (m f : ℕ → ℕ) :
     regB m cSlot f kS = f sB + 6 * f lsI ∧ ∀ q, q ≠ kS → regB m cSlot f q = f q := by
@@ -105,8 +105,8 @@ theorem cSlot_ok (m f : ℕ → ℕ) (hb : f sB + 6 * f lsI ≤ W) : okB W m cSl
   have hb' : f 240620 + 6 * f 244000 ≤ W := hb
   simp only [cSlot, okB, okI, regI, upd, kS, sB, lsI, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false]
-  refine ⟨s, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩, ⟨s, by omega⟩,
-    ⟨s, by omega⟩, trivial⟩
+  refine ⟨s, ⟨s, by_o⟩, ⟨s, by_o⟩, ⟨s, by_o⟩, ⟨s, by_o⟩, ⟨s, by_o⟩,
+    ⟨s, by_o⟩, trivial⟩
 
 theorem cRead_val (m f : ℕ → ℕ) (hk1 : f K1 = 1) :
     regB m cRead f kF = m (f kS) ∧ regB m cRead f kPe = m (f kS + 1) ∧
@@ -135,33 +135,33 @@ theorem cRead_ok (m f : ℕ → ℕ) (hk1 : f K1 = 1) (hb : f kS + 2 ≤ W) : ok
   have hb' : f 244106 + 2 ≤ W := hb
   simp only [cRead, okB, okI, regI, upd, kS, kF, kPe, kPh, K1, sw]
   simp only [Nat.reduceAdd, Nat.reduceEqDiff, ite_true, ite_false, e1]
-  exact ⟨sF, ⟨s, by omega⟩, sE, ⟨s, by omega⟩, sH, trivial⟩
+  exact ⟨sF, ⟨s, by_o⟩, sE, ⟨s, by_o⟩, sH, trivial⟩
 
 /-! ## The direction -/
 
 theorem cDir_irs (hI : IInv W c₀ c) (hK : Consts c) (hb : c.nreg kS + 3 ≤ W) :
     IRS P W c₀ cDir c 5 (fun c' => c'.nreg kS = c.nreg kS + 3 * qS (c.nreg qD) ∧
       (∀ q, q ≠ kS → c'.nreg q = c.nreg q) ∧ c'.nmem = c.nmem) := by
-  have k1 : c.nreg K1 = 1 := hK.2.1
-  have k3 : c.nreg K3 = 3 := hK.2.2.2.2.2.2
+  have k1 := hK.2.1
+  have k3 := hK.2.2.2.2.2.2
   unfold cDir
   by_cases h0 : c.nreg qD < c.nreg K1
-  · refine (IRS.ifT h0 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by norm_num)
+  · refine (IRS.ifT h0 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono by_n
       (fun _ h => h)
-    rw [k1] at h0; unfold qS; rw [ite_eq_right (by omega)]; ring
-  · refine (IRS.ifF h0 ?_).mono (K := 3 + 2) (by norm_num) (fun _ h => h)
+    rw [k1] at h0; unfold qS; rw [ite_eq_right by_o]; ring
+  · refine (IRS.ifF h0 ?_).mono (K := 3 + 2) by_n (fun _ h => h)
     by_cases h1 : c.nreg K1 < c.nreg qD
-    · refine (IRS.ifT h1 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono (by norm_num)
+    · refine (IRS.ifT h1 (IRS.skip (K := 0) hI ⟨?_, fun _ _ => rfl, rfl⟩)).mono by_n
         (fun _ h => h)
-      rw [k1] at h1; unfold qS; rw [ite_eq_right (by omega)]; ring
+      rw [k1] at h1; unfold qS; rw [ite_eq_right by_o]; ring
     · refine (IRS.ifF h1 (IRS.instr1 (i := .addN kS kS K3) hI
-        ⟨iscr_sw (by simp [kS, sw]) (by simp [kS, sw]), by rw [k3]; exact hb⟩)).mono
-        (by norm_num) ?_
+        ⟨iscr_sw (by simp [kS, sw]) (by simp [kS, sw]), by rwa [k3]⟩)).mono
+        by_n ?_
       rintro c' rfl
       rw [k1] at h0 h1
       refine ⟨?_, fun q hq => ?_, rfl⟩
       · simp only [regI, upd_same, k3]
-        unfold qS; rw [ite_eq_left (by omega)]
+        unfold qS; rw [ite_eq_left by_o]
       · simp only [regI]; exact upd_other _ _ _ hq
 
 end

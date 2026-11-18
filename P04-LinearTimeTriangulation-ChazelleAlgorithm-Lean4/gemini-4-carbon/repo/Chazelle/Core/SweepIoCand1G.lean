@@ -43,10 +43,10 @@ theorem tour_set (C : Chain) (Q : Polygon) {x : WPos} (hc : PosClass C Q x)
   · exact absurd hc hb
   · refine ⟨?_, hc.1, Or.inl hc⟩
     rw [pos_eq_sidePt' C Q x]
-    have e : x.edge = (x.edge - 6) + 6 := by omega
+    have e : x.edge = (x.edge - 6) + 6 := by_o
     rw [e]
-    exact C.sideWalk_tour_pt_mem C.sideBeta (by omega) (fun h => by omega) h0 h1
-  · refine ⟨?_, by omega, Or.inr hc⟩
+    exact C.sideWalk_tour_pt_mem C.sideBeta by_o (fun h => by omega) h0 h1
+  · refine ⟨?_, by_o, Or.inr hc⟩
     rw [pos_eq_sidePt' C Q x, hc.1, hc.2]
     exact C.sideWalk_tour_pt_mem C.sideBeta (i := 2 * C.m) le_rfl (fun _ => rfl) le_rfl one_pos
 
@@ -64,10 +64,10 @@ theorem shared_iffR (hP : J.P.Simple) (Q : Polygon) {x : WPos}
   constructor
   · rintro ⟨ht, h | ⟨h, h'⟩⟩
     · exact ⟨ht, Or.inl h⟩
-    · exact ⟨ht, Or.inr ⟨by omega, by omega⟩⟩
+    · exact ⟨ht, Or.inr ⟨by_o, by_o⟩⟩
   · rintro ⟨ht, h | ⟨h, h'⟩⟩
     · exact ⟨ht, Or.inl h⟩
-    · exact ⟨ht, Or.inr ⟨by omega, by omega⟩⟩
+    · exact ⟨ht, Or.inr ⟨by_o, by_o⟩⟩
 
 /-- **The top of `C₂`** among the positions of its model. -/
 theorem top_iffR (hP : J.P.Simple) (Q : Polygon) {x : WPos}
@@ -81,11 +81,11 @@ theorem top_iffR (hP : J.P.Simple) (Q : Polygon) {x : WPos}
   constructor
   · rintro ⟨ht, h | h | h⟩
     · exact ⟨ht, Or.inl h⟩
-    · exact ⟨ht, Or.inr (Or.inl (by omega))⟩
+    · exact ⟨ht, Or.inr (Or.inl by_o)⟩
     · exact ⟨ht, Or.inr (Or.inr h)⟩
   · rintro ⟨ht, h | h | h⟩
     · exact ⟨ht, Or.inl h⟩
-    · exact ⟨ht, Or.inr (Or.inl (by omega))⟩
+    · exact ⟨ht, Or.inr (Or.inl by_o)⟩
     · exact ⟨ht, Or.inr (Or.inr h)⟩
 
 theorem param_hgt0 (M : Model) (Q : Polygon) (e : ℕ) : M.param Q ⟨e, 0⟩ = 0 := rfl
@@ -134,15 +134,14 @@ theorem lhGeo_boxL {P : Polygon} {x : WPos} {d : ℕ} (he : x.edge = 1 ∨ x.edg
     rcases he with h' | h' <;> rw [h'] at hy
     · rw [J.right.sideWalk_vtx_one] at hy; simp [abs_of_pos hR] at hy
     · rw [J.right.sideWalk_vtx_three] at hy; simp [abs_of_pos hR] at hy
-  have hx : (chainModel J.left).pos (Qof P) ⟨x.edge, x.hgt⟩ =
-      (chainModel J.right).pos (Qof P) ⟨x.edge, x.hgt⟩ := hpos.symm
-  have hp : (chainModel J.left).param (Qof P) x = (chainModel J.right).param (Qof P) x :=
+  have hx := hpos.symm
+  have hp :=
     hpar.symm
   refine ⟨⟨h, hxh, hhn, ?_, ?_, ?_⟩, hx, hp⟩
-  · rw [hx]; exact hyz
+  · rwa [hx]
   · rw [hx, hp]
     exact (sideLeft_congr ht ha hb _).1 hsec
-  · rw [hx]; exact h₁
+  · rwa [hx]
 
 /-- **An arrival position** at a point with a height code naming its height satisfies `LHGeo`
 with that code. -/
@@ -159,9 +158,9 @@ theorem lhGeo_arr {P : Polygon} {C : Chain} {z : Point} {σ : ℝ} {p : ℕ} {t 
   have epar := param_of_arrival (Qof P) ht0 ht1 hy hsec'
   have epos := pos_of_arrival (Qof P) ht0 ht1 hy hsec'
   rw [hpt] at epos
-  refine ⟨⟨h, rfl, hh, by rw [epos]; exact hhz, ?_, by rw [epos]; exact htop⟩, epos, epar⟩
+  refine ⟨⟨h, rfl, hh, by rwa [epos], ?_, by rwa [epos]⟩, epos, epar⟩
   simp only
-  rw [epos, epar, hd]; exact hsec
+  rwa [epos, epar, hd]
 
 /-- **An endpoint query** starts at the origin `endOrigin j` in the direction `endDir j`. -/
 theorem endQ_facts {Q : Polygon} {N : NF} (hN : IsNF (chainModel J.right) Q N) {j : ℕ}
@@ -187,7 +186,7 @@ theorem endQ_facts {Q : Polygon} {N : NF} (hN : IsNF (chainModel J.right) Q N) {
   · rw [ite_eq_right hp] at hq
     simp only [Prod.mk.injEq] at hq
     obtain ⟨rfl, rfl, rfl⟩ := hq
-    rw [ite_eq_right (show ¬ j % 2 = 0 from hp), ite_eq_right (show j % 2 ≠ 0 from hp)]
+    rw [ite_eq_right (hp), ite_eq_right (hp)]
     exact ⟨rfl, by simp [dirOf]⟩
 
 /-- **The first hit of `C`** is a candidate when that of `C₂` is and, below the top of `C₁`,

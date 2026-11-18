@@ -1,7 +1,13 @@
 module
 
 public import Chazelle.Core.SweepMachine3
-public import Chazelle.Core.SweepWalkL
+public import Chazelle.Core.SweepQueryL
+public import Chazelle.Core.SweepEvent
+public import Chazelle.Core.SweepChain
+public import Chazelle.Core.SweepBracket
+public import Chazelle.Core.SweepTop
+public import Chazelle.Core.SweepLoop
+public import Chazelle.Core.SweepWalk
 public import Chazelle.Core.SweepLabelJL0
 
 /-!
@@ -69,7 +75,7 @@ theorem rlen_add_llen (hv : VNotTop J) : rlen J + llen J = (chainModel J.whole).
   · rw [Nat.mod_eq_of_lt hc]
     split_ifs <;> omega
   · rw [show tpos J.whole J.m₁ + 2 * J.m₂ = (tpos J.whole J.m₁ + 2 * J.m₂ - 2 * (J.m₁ + J.m₂)) +
-      2 * (J.m₁ + J.m₂) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      2 * (J.m₁ + J.m₂) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     split_ifs <;> omega
 
 /-- The left stretch starts where the right stretch ends (the shared vertex is not the top of
@@ -85,16 +91,16 @@ theorem base_left (hv : VNotTop J) :
   unfold rlen
   rw [hm] at h1 hv2 ⊢
   by_cases hc : tpos J.whole J.m₁ + 2 * J.m₂ < 2 * (J.m₁ + J.m₂)
-  · rw [Nat.mod_eq_of_lt hc, ite_eq_right (by omega), Nat.mod_eq_of_lt (by omega)]; ring
+  · rw [Nat.mod_eq_of_lt hc, ite_eq_right by_o, Nat.mod_eq_of_lt by_o]; ring
   · have hc' : 2 * (J.m₁ + J.m₂) < tpos J.whole J.m₁ + 2 * J.m₂ := by omega
-    rw [ite_eq_left (by omega)]
+    rw [ite_eq_left by_o]
     rw [show tpos J.whole J.m₁ + 2 * J.m₂ = (tpos J.whole J.m₁ + 2 * J.m₂ -
       2 * (J.m₁ + J.m₂)) + 2 * (J.m₁ + J.m₂) by omega, Nat.add_mod_right,
       Nat.mod_eq_of_lt (show tpos J.whole J.m₁ + 2 * J.m₂ - 2 * (J.m₁ + J.m₂) < 2 * (J.m₁ + J.m₂)
         by omega)]
     rw [show 6 + tpos J.whole J.m₁ + (2 * J.m₂ + 7) = (6 + (tpos J.whole J.m₁ + 2 * J.m₂ -
         2 * (J.m₁ + J.m₂))) + (2 * (J.m₁ + J.m₂) + 7) by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega)]
+      Nat.mod_eq_of_lt by_o]
 
 /-! ## Soundness: a genuine hit is a fused chord -/
 
@@ -151,9 +157,9 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
       Arrival (chainModel J.left).W (rayPt a σ (J.whole.hitParam a σ)) σ
         ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t := by
   have hC := corr_left0 J hP (S₁ := ∅) (empty_subset _) finite_empty
-  have hM₁ : WalkAx (chainModel J.left) := hC.hM₂
+  have hM₁ := hC.hM₂
   set T := J.whole.hitParam a σ with hT
-  have hz' : a.2 ≤ J.whole.top.2 := ha₁.trans J.left_top_le
+  have hz' := ha₁.trans J.left_top_le
   obtain ⟨hT0, hwD, hdom⟩ := Merge.hit_of_freeAt J.whole hz' hσ hfree
   have hA₁ := (hC.attach_iff hd hsec _).1 hA
   have hpt : sidePt (chainModel J.left).W
@@ -166,9 +172,9 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
   · refine ⟨hA₁.1, hA₁.2.1, hA₁.2.2.1, hpt, ?_⟩
     obtain ⟨r, hr, hnear⟩ := hA₁.2.2.2.2
     set s := min (T / 2) (r / 2) with hs
-    have hs0 : 0 < s := lt_min (by linarith) (by linarith)
-    have hsT : s < T := lt_of_le_of_lt (min_le_left _ _) (by linarith)
-    have hsr : s < r := lt_of_le_of_lt (min_le_right _ _) (by linarith)
+    have hs0 : 0 < s := lt_min by_l by_l
+    have hsT : s < T := lt_of_le_of_lt (min_le_left _ _) by_l
+    have hsr : s < r := lt_of_le_of_lt (min_le_right _ _) by_l
     have hmem : rayPt (rayPt a σ T) (-σ) s ∈ Merge.shoot J.whole a σ := by
       unfold Merge.shoot
       rw [← hT, rayPt_back]
@@ -186,7 +192,7 @@ theorem genuine_of_attach (hP : J.P.Simple) {a : Point}
     have hnσ : -σ = 1 ∨ -σ = -1 := by rcases hσ with rfl | rfl <;> norm_num
     have hdist : dist (rayPt (rayPt a σ T) (-σ) s) (rayPt a σ T) < r := by
       rw [dist_rayPt _ hnσ hs0.le]; exact hsr
-    have hl := hnear _ hmem (by rw [hpt]; exact hne) (by rw [hpt]; exact hdist)
+    have hl := hnear _ hmem (by rwa [hpt]) (by rwa [hpt])
     have h1 : sideLeft (chainModel J.left).W
         ((6 + tpos J.left J.m₁ + dq (lL1 J) (lδ J) d) % (chainModel J.left).W.n) t
         (rayPt (sidePt (chainModel J.left).W

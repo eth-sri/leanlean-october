@@ -70,7 +70,7 @@ theorem lemma23_chain {C : Chain} (hP : C.P.Simple) {Q : Polygon} {F : Set (Set 
     calc F.ncard * (γ + 1) ≤ 2 * (F.ncard * γ) := by nlinarith
       _ ≤ 2 * (2 * (D + 2) * (5 * (chainModel C).W.n)) := Nat.mul_le_mul_left _ h
       _ ≤ 2 * (2 * (D + 2) * (5 * (7 * ((chainModel C).size + 1)))) := by gcongr
-      _ = 140 * (D + 2) * ((chainModel C).size + 1) := by ring
+      _ = 140 * (D + 2) * ((chainModel C).size + 1) := by_r
 
 /-! ## The host sizes -/
 
@@ -82,7 +82,7 @@ theorem sum_nk_le' {Q : Polygon} (hQ : Q.Simple) {S : Set (Set Point)}
     (hFam : (interiorModel Q).ChordFamily Q S) (T : Finset (Set Point))
     (hT : ∀ R ∈ T, R ∈ (interiorModel Q).regions S) :
     ∑ R ∈ T, nk (interiorModel Q) S R ≤ Q.n + 4 * S.ncard := by
-  have hM : WalkAx (interiorModel Q) := walkAx_interiorModel hQ
+  have hM := walkAx_interiorModel hQ
   have hsum := DownDrv.sum_nk_le hM hFam.2.1 hFam.1
   have hsys := hM.sys _ hFam.2.1 hFam.1
   have hRfin : ((interiorModel Q).regions S).Finite :=
@@ -103,10 +103,10 @@ theorem level_bound {K K₁ K' A B n γ : ℕ} (h1 : K₁ * (γ + 1) ≤ K * (γ
     K' * (γ + 1) ≤ A * ((K + 1) * (γ + 1) + B * (n + 4 * K)) := by
   calc K' * (γ + 1) ≤ (K' + 1) * (γ + 1) := Nat.mul_le_mul_right _ (Nat.le_succ _)
     _ ≤ A * (K₁ + 1) * (γ + 1) := Nat.mul_le_mul_right _ h2
-    _ = A * (K₁ * (γ + 1) + (γ + 1)) := by ring
+    _ = A * (K₁ * (γ + 1) + (γ + 1)) := by_r
     _ ≤ A * (K * (γ + 1) + B * (n + 4 * K) + (γ + 1)) :=
         Nat.mul_le_mul_left _ (Nat.add_le_add_right h1 _)
-    _ = A * ((K + 1) * (γ + 1) + B * (n + 4 * K)) := by ring
+    _ = A * ((K + 1) * (γ + 1) + B * (n + 4 * K)) := by_r
 
 /-! ## The transition -/
 

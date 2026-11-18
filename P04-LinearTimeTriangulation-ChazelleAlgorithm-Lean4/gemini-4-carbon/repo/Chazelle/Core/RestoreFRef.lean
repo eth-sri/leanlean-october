@@ -70,9 +70,9 @@ theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     Robust.transport hN (fun a ha => hI.hm a ha)
   have hNA := hN'.nfAt
   obtain ⟨hB7, -, hab, hrb, hlb, -⟩ := nf_bounds hN'
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
-  have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
-  have hrl : c.nreg 81156 < N.regions.length := hdn
+  have hA0 := hI.hA
+  have hAW := hI.hw.1 ALLOC
+  have hrl := hdn
   obtain ⟨-, -, -, hl, -⟩ := hNA.2.2.2.2.2.2.2.1 _ hrl
   have rj := hl 0 har
   rw [Nat.add_zero] at rj
@@ -102,7 +102,7 @@ theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     simp only [refL1, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl | rfl <;> simp only [dstI] <;> omega
   obtain ⟨-, k7₁, -, -⟩ := fx c₁ hI₁
-  have w34 := f₁ 81134 (by norm_num)
+  have w34 := f₁ 81134 by_n
   -- stage 2
   have ok2 : okB E.W c₁.nmem refL2 c₁.nreg := by
     simp only [refL2, okB, okI, regI, upd]
@@ -119,8 +119,8 @@ theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
     simp only [refL2, List.mem_cons, List.not_mem_nil, or_false] at hi
     rcases hi with rfl | rfl | rfl | rfl <;> simp only [dstI] <;> omega
   obtain ⟨-, -, k3₂, k1₂⟩ := fx c₂ hI₂
-  have x34 := f₂ 81134 (by norm_num) (by norm_num)
-  have e4 : c.nreg 81134 + 3 + 1 = c.nreg 81134 + 4 := by ring
+  have x34 := f₂ 81134 by_n by_n
+  have e4 : c.nreg 81134 + 3 + 1 = c.nreg 81134 + 4 := by_r
   generalize hjdef : (N.region (c.nreg 81156)).arcs.getD 0 0 = j at v16' b3 s1 s2 ⊢
   -- stage 3
   have ok3 : okB E.W c₂.nmem refL3 c₂.nreg := by
@@ -132,7 +132,7 @@ theorem refLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   refine (FRS.block hB _ hI₂ ok3).mono (by simp [refL3]) (fun c₃ h₃ => ?_)
   have e₃ : ∀ q, c₃.nreg q = regB c₂.nmem refL3 c₂.nreg q := fun q => by rw [h₃]
   have ea : c.nmem (c.nreg 81134 + 4) + j + j + j + j + j + 1 =
-      c.nmem (c.nreg 81134 + 4) + 5 * j + 1 := by ring
+      c.nmem (c.nreg 81134 + 4) + 5 * j + 1 := by_r
   refine ⟨?_, ?_, fun q h1 h2 h3 h4 => ?_⟩
   · rw [e₃]; simp [refL3, regB, regI, upd, k3₂, k1₂, x34, v16', m₂, e4]; rw [ea, s1]
   · rw [e₃]; simp [refL3, regB, regI, upd, k3₂, k1₂, x34, v16', m₂, e4]
@@ -156,23 +156,23 @@ theorem kidLoad_fs (hE : FGood E c₀) {B : Finset ℕ} (hB : dBands ⊆ B) (hI 
   have hB8 : c.nreg 81134 + 11 < c₀.nreg ALLOC := by
     have := robust_addr (v := N.dec.length) fun m' hm' => (hN' m' hm').2.2.2.2.1
     omega
-  have hA0 : c₀.nreg ALLOC ≤ c.nreg ALLOC := hI.hA
-  have hAW : c.nreg ALLOC ≤ E.W := hI.hw.1 ALLOC
+  have hA0 := hI.hA
+  have hAW := hI.hw.1 ALLOC
   obtain ⟨-, r1, r2⟩ := hNA.2.2.2.2.2.2.2.2.2.1 _ hk
   have k7 : c.nreg 81016 = 7 := by rw [hI.hin _ (by unfold FFix; omega), hE.k7]
   have k1 : c.nreg 81012 = 1 := by rw [hI.hin _ (by unfold FFix; omega), hE.k1]
   set k := c.nreg 81121
   set B8 := c.nmem (c.nreg 81134 + 8)
-  have e8 : c.nreg 81134 + 7 + 1 = c.nreg 81134 + 8 := by ring
+  have e8 : c.nreg 81134 + 7 + 1 = c.nreg 81134 + 8 := by_r
   have ok : okB E.W c.nmem kidL c.nreg := by
     simp only [kidL, okB, okI, regI, upd]
     simp only [FScr, FOut, k7, k1]
     norm_num
     rw [e8]
-    refine ⟨by omega, by omega, by omega, by omega, by omega, by omega, by omega⟩
+    refine ⟨by_o, by_o, by_o, by_o, by_o, by_o, by_o⟩
   refine (FRS.block hB _ hI ok).mono (by simp [kidL]) (fun c' h' => ?_)
   have e' : ∀ q, c'.nreg q = regB c.nmem kidL c.nreg q := fun q => by rw [h']
-  have ea : B8 + k + k + k + 1 = B8 + 3 * k + 1 := by ring
+  have ea : B8 + k + k + k + 1 = B8 + 3 * k + 1 := by_r
   refine ⟨?_, ?_, fun q h1 h2 h3 => ?_⟩
   · rw [e']; simp [kidL, regB, regI, upd, k7, k1, e8]; rw [ea, r1]
   · rw [e']; simp [kidL, regB, regI, upd, k7, k1, e8]; rw [ea, show B8 + 3 * k + 1 + 1 = B8 + 3 * k + 2

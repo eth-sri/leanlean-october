@@ -47,7 +47,7 @@ theorem preS_exec (c : Config) (hw : WordsBounded W c) :
 /-- Stage 0 keeps `sw 99`. -/
 theorem initS_keep99 {c c' : Config} {k : ℕ} (h : Exec P W initS c c' k) :
     c'.nreg (sw 99) = c.nreg (sw 99) := by
-  have hw : BuildRam.wrM (fun r => decide (r ≠ 240099)) initS = true := by decide
+  have hw : BuildRam.wrM (fun r => decide (r ≠ 240099)) initS = true := by_d
   exact (BuildRam.exec_frameM h hw).1 _ (by simp [sw])
 
 /-! ## The cost -/
@@ -65,30 +65,30 @@ theorem asm_cost {κE κ0 κL f Λ l₁ n₁ nT K₁ K₂ Lq S Lg TLR A₁ k₂ 
     2 + (k₂ + (k₃ + (k₄ + (k₅ + (1 + k₇))))) ≤
       (κE + 238 * κ0 + 10 * κL + 1000) * nT * (f + Λ + 1) := by
   set X := nT * (f + Λ + 1) with hX
-  have hnT1 : 1 ≤ nT := by omega
+  have hnT1 : 1 ≤ nT := by_o
   have hX1 : Λ + 1 ≤ X := by
     have : 1 * (f + Λ + 1) ≤ nT * (f + Λ + 1) := Nat.mul_le_mul_right _ hnT1
     omega
   have e3 : k₃ ≤ κE * X := by
     calc k₃ ≤ κE * n₁ * (f + l₁ + 1) := h₃
       _ ≤ κE * nT * (f + Λ + 1) := by
-        apply Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (by omega)
+        apply Nat.mul_le_mul (Nat.mul_le_mul_left _ by_o) by_o
       _ = κE * X := by rw [hX, Nat.mul_assoc]
   have e5 : k₅ ≤ 238 * κ0 * X := by
     calc k₅ ≤ κ0 * (S + Lg + 2 * K₂ + 1) * (TLR + 1) := h₅
       _ ≤ κ0 * (34 * nT) * (7 * (f + Λ + 1)) := by
-        apply Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (by omega)
+        apply Nat.mul_le_mul (Nat.mul_le_mul_left _ by_o) by_o
       _ = 238 * κ0 * X := by rw [hX]; ring
   have e7 : k₇ ≤ 10 * κL * X := by
     have a : κL * (Lq + 1) * (f + TLR + 1) ≤ κL * nT * (7 * (f + Λ + 1)) :=
-      Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (by omega)
+      Nat.mul_le_mul (Nat.mul_le_mul_left _ by_o) by_o
     have b : κL * (A₁ + 1) * (f + 1) ≤ κL * (3 * nT) * (f + Λ + 1) :=
-      Nat.mul_le_mul (Nat.mul_le_mul_left _ (by omega)) (by omega)
+      Nat.mul_le_mul (Nat.mul_le_mul_left _ by_o) by_o
     calc k₇ ≤ κL * nT * (7 * (f + Λ + 1)) + κL * (3 * nT) * (f + Λ + 1) := by omega
       _ = 10 * κL * X := by rw [hX]; ring
-  have e0 : 2 + k₂ + k₄ + 1 ≤ 1000 * X := by omega
+  have e0 : 2 + k₂ + k₄ + 1 ≤ 1000 * X := by_o
   calc 2 + (k₂ + (k₃ + (k₄ + (k₅ + (1 + k₇))))) ≤
-        κE * X + 238 * κ0 * X + 10 * κL * X + 1000 * X := by omega
+        κE * X + 238 * κ0 * X + 10 * κL * X + 1000 * X := by_o
     _ = (κE + 238 * κ0 + 10 * κL + 1000) * nT * (f + Λ + 1) := by rw [hX]; ring
 
 end

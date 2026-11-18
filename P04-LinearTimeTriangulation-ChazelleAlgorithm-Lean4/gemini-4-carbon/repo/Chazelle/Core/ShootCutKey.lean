@@ -111,13 +111,13 @@ theorem e6_of_kpath {n : ℝ} (hn : 0 < n) :
     rcases i with _ | i
     · simp only [List.getElem_cons_zero]
       rw [hlast]
-      have hbp := hb pc (by simp)
+      have hbp := hb pc by_s
       have hbl := hb (ps.getLast hne') (by simp [List.getLast_mem])
       exact sideInArc_unw hn hbp.1.1 hbp.1.2 hbl.2.1 hbl.2.2 hbp.2.1 hbp.2.2 hs he
         (KPath.last hp hne') hV (hp.lt hne') hT
     · simp only [List.getElem_cons_succ]
       rw [hlast]
-      exact e6_of_kpath hn hp (by linarith) (fun q hq => hb q (by simp [hq])) hne' i
+      exact e6_of_kpath hn hp by_l (fun q hq => hb q (by simp [hq])) hne' i
         (by simp at hi; omega)
 
 /-- **A path of walk vertices** is a path of unwrapped keys. -/
@@ -127,7 +127,7 @@ theorem kpath_of_upath {n : ℕ} : ∀ {u : ℕ} {ps : List Pc} {u' : ℕ}, UPat
   | u, pc :: ps, u', ⟨h1, u₁, h2, h3, h4⟩ => by
     have ek : ∀ v : ℕ, ((v % n : ℕ) : ℝ) + ((v / n : ℕ) : ℝ) * (n : ℝ) = (v : ℝ) := fun v => by
       have := Nat.mod_add_div v n
-      exact_mod_cast (show v % n + v / n * n = v by rw [Nat.mul_comm]; exact this)
+      exact_mod_cast (by rw [Nat.mul_comm]; exact this)
     refine ⟨⟨((u / n : ℕ) : ℤ), ?_⟩, u₁, by exact_mod_cast h2, ⟨((u₁ / n : ℕ) : ℤ), ?_⟩,
       kpath_of_upath h4⟩
     · rw [h1, key_hgt0, Int.cast_natCast]; linarith [ek u]

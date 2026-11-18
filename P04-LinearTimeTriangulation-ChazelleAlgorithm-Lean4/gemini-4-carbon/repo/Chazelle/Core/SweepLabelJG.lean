@@ -65,14 +65,14 @@ theorem ccw_horiz_lower {σ₀ : ℝ} {A B : Point} (hA : A.2 ≤ 0) (hB : B.2 �
   simp only [sideCcw, sideCross, sideDot] at h0 ⊢
   rcases h0 with ⟨h1, h2, h3⟩ | ⟨h1, -⟩ | ⟨h1, h2, h3⟩ | ⟨h1, h2, -⟩
   · exfalso
-    have : 0 < (-(b2 * σ₀)) * (σ₀ * a2) := mul_pos (by linarith) (by linarith)
+    have : 0 < (-(b2 * σ₀)) * (σ₀ * a2) := mul_pos by_l by_l
     nlinarith [mul_nonneg (neg_nonneg.2 hB) (neg_nonneg.2 hA), sq_nonneg σ₀]
-  · exact Or.inl (by linarith)
+  · exact Or.inl by_l
   · exfalso
     have key : a2 * (b1 * a1 + b2 * a2) = b2 * (a1 ^ 2 + a2 ^ 2) := by
-      have : b1 * a2 = b2 * a1 := by linarith
+      have : b1 * a2 = b2 * a1 := by_l
       linear_combination a1 * this
-    have hl : 0 ≤ a2 * (b1 * a1 + b2 * a2) := mul_nonneg_of_nonpos_of_nonpos hA h2.le
+    have hl := mul_nonneg_of_nonpos_of_nonpos hA h2.le
     have hsq : 0 < a1 ^ 2 + a2 ^ 2 := by
       by_contra hc
       have ha1 : a1 = 0 := by nlinarith [sq_nonneg a1, sq_nonneg a2]
@@ -80,14 +80,14 @@ theorem ccw_horiz_lower {σ₀ : ℝ} {A B : Point} (hA : A.2 ≤ 0) (hB : B.2 �
       rw [ha1, ha2] at h2
       linarith
     have hb2 : b2 = 0 := by
-      have : 0 ≤ b2 * (a1 ^ 2 + a2 ^ 2) := key ▸ hl
+      have := key ▸ hl
       have : 0 ≤ b2 := by
         by_contra hc; push Not at hc
         nlinarith
       linarith
     rw [hb2] at h3
     linarith
-  · exact Or.inr ⟨by linarith, h2⟩
+  · exact Or.inr ⟨by_l, h2⟩
 
 /-- **The corner of a top vertex contains the corner before the slit**: if the corner from `B`
 to `A` (both not above the horizontal) contains a horizontal direction, it contains every
@@ -125,7 +125,7 @@ theorem ccw_lower_left {a x σ₀ : ℝ} {A B : Point} (ha : 0 < a) (hA : A.2 �
       subst hb2
       have hb1 : b1 ≠ 0 := by rintro rfl; simp at hd
       have ha2 : a2 = 0 := by
-        have : b1 * a2 = 0 := by linarith
+        have : b1 * a2 = 0 := by_l
         rcases mul_eq_zero.1 this with h' | h'
         · exact absurd h' hb1
         · exact h'
@@ -136,7 +136,7 @@ theorem ccw_lower_left {a x σ₀ : ℝ} {A B : Point} (ha : 0 < a) (hA : A.2 �
         nlinarith
     · left
       intro h'
-      have : b2 * x = 0 := by linarith
+      have : b2 * x = 0 := by_l
       rcases mul_eq_zero.1 this with h'' | h''
       · exact hb2 h''
       · linarith
@@ -180,7 +180,7 @@ theorem ccw_lower_right {a x σ₀ : ℝ} {A B : Point} (ha : 0 < a) (hA : A.2 �
       · nlinarith
     · left
       intro h'
-      have : b2 * x = 0 := by linarith
+      have : b2 * x = 0 := by_l
       rcases mul_eq_zero.1 this with h'' | h''
       · exact hb2 h''
       · linarith
@@ -200,16 +200,16 @@ theorem corr_right0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   set C₂ := J.right with hC₂
   set W := (chainModel C).W with hW
   set W₂ := (chainModel C₂).W with hW₂
-  have hn : W.n = 2 * C.m + 7 := cm_n C
-  have hn₂ : W₂.n = 2 * C₂.m + 7 := cm_n C₂
+  have hn := cm_n C
+  have hn₂ := cm_n C₂
   have hwm : C.m = J.m₁ + J.m₂ := rfl
   have hm2 : C₂.m = J.m₂ := rfl
   have h1 := J.one_le_m₁
   have h2 := J.one_le_m₂
   set τ := tpos C J.m₁ with hτ_def
   set τ' := tpos C₂ 0 with hτ'_def
-  have hτ : τ < 2 * C.m := tpos_lt C J.m₁
-  have hτ' : τ' < 2 * C₂.m := tpos_lt C₂ 0
+  have hτ := tpos_lt C J.m₁
+  have hτ' := tpos_lt C₂ 0
   set ℓ := 2 * J.m₂ with hℓ_def
   set s := 2 * C.m - τ with hs_def
   set s' := 2 * C₂.m - τ' with hs'_def
@@ -220,7 +220,7 @@ theorem corr_right0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
   have hg : 6 + τ < W.n := by rw [hn]; omega
   have hg' : 6 + τ' < W₂.n := by rw [hn₂]; omega
   have hv0 : W₂.vtx (6 + τ') = J.shared := by
-    have := walk_tour C₂ 0 0 (by omega)
+    have := walk_tour C₂ 0 0 by_o
     rw [add_zero, Nat.mod_eq_of_lt hg', tourV_right_zero] at this
     exact this
   have hnoV : ∀ L : ℝ, (τ' = 0 → L ≤ 2 * C₂.m) → ∀ p < W₂.n, ∀ t : ℝ, 0 ≤ t → t < 1 →
@@ -240,8 +240,8 @@ theorem corr_right0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
     fun e he e' he' h => augChords_nest (F₂plus_subset J hS₂ he) (F₂plus_subset J hS₂ he') h
   have hFs := F₂plus_subset J hS₂
   have hFf := F₂plus_finite J hS₂f
-  have hℓ : ℓ < 2 * C.m := by omega
-  have hℓ' : ℓ ≤ 2 * C₂.m := by omega
+  have hℓ : ℓ < 2 * C.m := by_o
+  have hℓ' : ℓ ≤ 2 * C₂.m := by_o
   have hℓ'R : (ℓ : ℝ) ≤ 2 * C₂.m := by exact_mod_cast hℓ'
   by_cases hsl : s < ℓ
   · -- case Sh: the two boxes at the same offset
@@ -250,33 +250,33 @@ theorem corr_right0 (hP : J.P.Simple) {S₂ : Set (Set Point)}
     rw [ite_eq_left hsl, ite_eq_left hsl, ite_eq_left hsl]
     refine ⟨hM, hM₂, hFs, hFf, hS₂, hS₂f, hg, hg', by rw [hn]; omega,
       by rw [hn₂]; omega, fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
-      hnoV _ (fun h0 => absurd h0 (by omega)), htrans, hnest⟩
+      hnoV _ (fun h0 => absurd h0 by_o), htrans, hnest⟩
     intro d hd
-    obtain rfl : d = 0 := by omega
+    obtain rfl : d = 0 := by_o
     simpa using hA (ℓ + 7) le_rfl
   push Not at hsl
   by_cases hsl' : ℓ ≤ s'
   · -- case N: no box inside the stretch
     have hA := agree_N hT hsl hsl'
-    rw [ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ s < ℓ by omega),
+    rw [ite_eq_right (by omega), ite_eq_right (show ¬ s < ℓ by omega),
       ite_eq_right (show ¬ s < ℓ by omega), ite_eq_left hsl', ite_eq_left hsl', ite_eq_left hsl']
     refine ⟨hM, hM₂, hFs, hFf, hS₂, hS₂f, hg, hg', by rw [hn]; omega,
       by rw [hn₂]; omega, fun _ => rfl, fun h => absurd h (lt_irrefl 0), hA, ?_,
       hnoV _ (fun _ => by push_cast; linarith), htrans, hnest⟩
     intro d hd
-    obtain rfl : d = 0 := by omega
+    obtain rfl : d = 0 := by_o
     simpa using hA ℓ le_rfl
   -- case G: only the box of `C₂` inside the stretch
   push Not at hsl'
   have hA1 := agree_G1 hT hsl hsl'
   have hA2 := agree_G2 hT hℓ' hsl hsl'
-  have hs'1 : 1 ≤ s' := by omega
-  rw [ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ s < ℓ by omega),
-    ite_eq_right (show ¬ s < ℓ by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega),
-    ite_eq_right (show ¬ ℓ ≤ s' by omega), ite_eq_right (show ¬ ℓ ≤ s' by omega)]
+  have hs'1 : 1 ≤ s' := by_o
+  rw [ite_eq_right (by omega), ite_eq_right (by omega),
+    ite_eq_right (by omega), ite_eq_right (by omega),
+    ite_eq_right (by omega), ite_eq_right (by omega)]
   refine ⟨hM, hM₂, hFs, hFf, hS₂, hS₂f, hg, hg', by rw [hn]; omega,
-    by rw [hn₂]; omega, fun h => absurd h (by norm_num), fun _ => by rw [hn₂]; omega, hA1, ?_,
-    hnoV _ (fun h0 => absurd h0 (by omega)), htrans, hnest⟩
+    by rw [hn₂]; omega, fun h => absurd h by_n, fun _ => by rw [hn₂]; omega, hA1, ?_,
+    hnoV _ (fun h0 => absurd h0 by_o), htrans, hnest⟩
   intro d hd
   have := hA2 d hd
   rwa [Nat.mod_add_mod, Nat.mod_add_mod] at this
@@ -313,10 +313,10 @@ theorem strPt_mem_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     unfold dq
     rw [hn₂, h1, h2]
     split_ifs with hdl
-    · exact ⟨tpos J.right 0 + d, by omega, by rw [Nat.mod_eq_of_lt (by omega)]; ring⟩
-    · refine ⟨d - (2 * J.right.m - tpos J.right 0), by omega, ?_⟩
+    · exact ⟨tpos J.right 0 + d, by_o, by rw [Nat.mod_eq_of_lt by_o]; ring⟩
+    · refine ⟨d - (2 * J.right.m - tpos J.right 0), by_o, ?_⟩
       rw [show 6 + tpos J.right 0 + (d + 7) = (d - (2 * J.right.m - tpos J.right 0) + 6) +
-        (2 * J.right.m + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+        (2 * J.right.m + 7) by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
   rw [hq]
   exact J.right.sideWalk_tour_pt_mem _ hi.le (fun h => by omega) ht0 ht1
 
@@ -329,9 +329,9 @@ theorem gap_not_mem (hδ : 0 < rδ J) {pa : ℕ} {ta : ℝ} (hpa : pa < (chainMo
     sidePt (chainModel J.right).W pa ta ∉ J.right.set := by
   obtain ⟨hL1, hδ7, -, -, -⟩ := caseG_consts J hδ
   set C₂ := J.right with hC₂
-  have hn₂ : (chainModel C₂).W.n = 2 * C₂.m + 7 := cm_n C₂
+  have hn₂ := cm_n C₂
   have hτ' := tpos_lt C₂ 0
-  have hg' : 6 + tpos C₂ 0 < (chainModel C₂).W.n := by omega
+  have hg' : 6 + tpos C₂ 0 < (chainModel C₂).W.n := by_o
   rw [off_key' hg' hpa hta0 hta1, hL1] at h1 h2
   rw [hδ7] at h2
   set e := dOf (chainModel C₂).W.n (6 + tpos C₂ 0) pa with he
@@ -364,17 +364,17 @@ theorem gap_not_mem (hδ : 0 < rδ J) {pa : ℕ} {ta : ℝ} (hpa : pa < (chainMo
   rcases Nat.eq_or_lt_of_le hge with heq | hlt
   · -- the slit above the top
     rw [← heq, show 6 + tpos C₂ 0 + (2 * C₂.m - tpos C₂ 0) = 2 * C₂.m + 6 by omega,
-      Nat.mod_eq_of_lt (by omega), b6]
+      Nat.mod_eq_of_lt by_o, b6]
     left
     have hta : 0 < ta := by
       rw [← heq] at h1; push_cast [show tpos C₂ 0 ≤ 2 * C₂.m by omega] at h1; linarith
     simp only
     nlinarith
   · obtain ⟨j, hj⟩ : ∃ j, e = 2 * C₂.m - tpos C₂ 0 + 1 + j := ⟨e - (2 * C₂.m - tpos C₂ 0 + 1),
-      by omega⟩
+      by_o⟩
     rw [show 6 + tpos C₂ 0 + e = j + (2 * C₂.m + 7) by omega, Nat.add_mod_right,
-      Nat.mod_eq_of_lt (by omega)]
-    have hj5 : j ≤ 5 := by omega
+      Nat.mod_eq_of_lt by_o]
+    have hj5 : j ≤ 5 := by_o
     interval_cases j
     · rw [b0]; right; right; simp only; rw [abs_of_pos hRp]
     · rw [b1]; right; left; simp only; rw [abs_neg, abs_of_pos hRp]
@@ -399,44 +399,44 @@ theorem split_facts (hδ : 0 < rδ J) :
   set W := (chainModel C).W with hW
   set W₂ := (chainModel C₂).W with hW₂
   have hn : W.n = 2 * C.m + 7 := cm_n C
-  have hn₂ : W₂.n = 2 * C₂.m + 7 := cm_n C₂
+  have hn₂ := cm_n C₂
   have hwm : C.m = J.m₁ + J.m₂ := rfl
   have hm2 : C₂.m = J.m₂ := rfl
   have h1 := J.one_le_m₁
   have h2 := J.one_le_m₂
   set τ := tpos C J.m₁ with hτ_def
   set τ' := tpos C₂ 0 with hτ'_def
-  have hτ : τ < 2 * C.m := tpos_lt C J.m₁
-  have hτ' : τ' < 2 * C₂.m := tpos_lt C₂ 0
+  have hτ := tpos_lt C J.m₁
+  have hτ' := tpos_lt C₂ 0
   set ℓ := 2 * J.m₂ with hℓ_def
   set s' := 2 * C₂.m - τ' with hs'_def
   have hT : ∀ e, e ≤ ℓ → tourV C J.m₁ e = tourV C₂ 0 e := fun e he => tourV_right J he
-  have hℓ' : ℓ ≤ 2 * C₂.m := by omega
-  have hsl : ℓ ≤ 2 * C.m - τ := hsl0
-  have hsl' : s' < ℓ := hsl0'
+  have hℓ' : ℓ ≤ 2 * C₂.m := by_o
+  have hsl := hsl0
+  have hsl' := hsl0'
   have hA1 := agree_G1 hT hsl hsl'
   have hA2 := agree_G2 hT hℓ' hsl hsl'
-  have hs'1 : 1 ≤ s' := by omega
+  have hs'1 : 1 ≤ s' := by_o
   set k₀ := (6 + τ + s') % W.n with hk₀
   have hpt : W.vtx k₀ = C₂.top := by
     rw [hA1 s' le_rfl]
-    have := walk_box C₂ 0 0 (by omega)
+    have := walk_box C₂ 0 0 by_o
     rw [add_zero] at this
     exact this
   have hprev : Chazelle.Chain.sidePrev W k₀ 0 = C₂.sideTour C₂.sideBeta (2 * C₂.m - 1) := by
     unfold Chazelle.Chain.sidePrev
-    rw [ite_eq_left rfl, hk₀, mod_pred_mod (by omega) _ hs'1, hA1 (s' - 1) (by omega),
+    rw [ite_eq_left rfl, hk₀, mod_pred_mod by_o _ hs'1, hA1 (s' - 1) by_o,
       show 6 + τ' + (s' - 1) = (2 * C₂.m - 1) + 6 by omega,
       Nat.mod_eq_of_lt (by rw [hn₂]; omega)]
-    exact C₂.sideWalk_vtx_tour _ (by omega)
+    exact C₂.sideWalk_vtx_tour _ by_o
   have hnext : Chazelle.Chain.sideNext W k₀ = C₂.sideTour C₂.sideBeta 1 := by
     unfold Chazelle.Chain.sideNext
-    rw [hk₀, hA2 1 (by omega)]
+    rw [hk₀, hA2 1 by_o]
     rw [show (6 + τ' + s' + 7) % W₂.n = 6 by
         rw [hn₂, show 6 + τ' + s' + 7 = 6 + (2 * C₂.m + 7) by omega, Nat.add_mod_right,
-          Nat.mod_eq_of_lt (by omega)],
-      Nat.mod_eq_of_lt (show 6 + 1 < W₂.n by rw [hn₂]; omega)]
-    exact C₂.sideWalk_vtx_tour _ (by omega)
+          Nat.mod_eq_of_lt by_o],
+      Nat.mod_eq_of_lt (by rw [hn₂]; omega)]
+    exact C₂.sideWalk_vtx_tour _ by_o
   have hpt' : sidePt W k₀ 0 = C₂.top := by rw [Chazelle.Chain.sidePt_zero, hpt]
   refine ⟨hpt', fun x => ?_⟩
   unfold sideLeft
@@ -454,23 +454,23 @@ theorem gap_walk (hδ : 0 < rδ J) :
     (chainModel J.right).W.vtx 5 = J.right.slitTop ∧
     (chainModel J.right).W.vtx 7 = J.right.sideTour J.right.sideBeta 1 := by
   obtain ⟨hL1, hδ7, -, -, -⟩ := caseG_consts J hδ
-  have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
+  have hn₂ := cm_n J.right
   have hτ' := tpos_lt J.right 0
   have hm := J.right.one_le
   rw [hL1, hδ7, hn₂]
   refine ⟨by rw [show 6 + tpos J.right 0 + (2 * J.right.m - tpos J.right 0) = 2 * J.right.m + 6
-      by omega]; exact Nat.mod_eq_of_lt (by omega), ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
+      by omega]; exact Nat.mod_eq_of_lt by_o, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · rw [show 6 + tpos J.right 0 + (2 * J.right.m - tpos J.right 0 + 7) = 6 + (2 * J.right.m + 7)
-      by omega, Nat.add_mod_right]; exact Nat.mod_eq_of_lt (by omega)
+      by omega, Nat.add_mod_right]; exact Nat.mod_eq_of_lt by_o
   · rw [cm_W, show 2 * J.right.m + 6 = 2 * J.right.m + 6 from rfl,
       J.right.sideWalk_vtx_tour _ le_rfl, J.right.sideTour_two_m]
   · rw [cm_W]; exact J.right.sideWalk_vtx_zero _
   · rw [cm_W, show 2 * J.right.m + 5 = (2 * J.right.m - 1) + 6 by omega,
-      J.right.sideWalk_vtx_tour _ (by omega)]
-  · rw [cm_W, show (6 : ℕ) = 0 + 6 from rfl, J.right.sideWalk_vtx_tour _ (by omega),
+      J.right.sideWalk_vtx_tour _ by_o]
+  · rw [cm_W, show (6 : ℕ) = 0 + 6 from rfl, J.right.sideWalk_vtx_tour _ by_o,
       J.right.sideTour_zero]
   · rw [cm_W]; exact J.right.sideWalk_vtx_five _
-  · rw [cm_W, show (7 : ℕ) = 1 + 6 from rfl, J.right.sideWalk_vtx_tour _ (by omega)]
+  · rw [cm_W, show (7 : ℕ) = 1 + 6 from rfl, J.right.sideWalk_vtx_tour _ by_o]
 
 
 /-- The slit of a chain leaves its top vertically. -/
@@ -496,9 +496,9 @@ theorem oneAt_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   intro k hk c hc c' hc' hA hA'
   by_contra hne
   have hM₂ := walkAx_chainModel (C := J.right) hP
-  have hS : S₂ ⊆ (chainModel J.right).Adm := hS₂
+  have hS := hS₂
   obtain ⟨g1, g2, v26, v0, v25, v6, v5, v7⟩ := gap_walk J hδ
-  have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
+  have hn₂ := cm_n J.right
   have hm := J.right.one_le
   have hRt := J.right.top_snd_lt_radius
   obtain ⟨ce, cw, hce, hcw, hAe, hAw, hE, hW⟩ : ∃ ce cw, ce ∈ S₂ ∧ cw ∈ S₂ ∧
@@ -520,19 +520,19 @@ theorem oneAt_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
         2 * J.right.m + 5 := by
       rw [hn₂, show 2 * J.right.m + 6 + (2 * J.right.m + 7) - 1 = (2 * J.right.m + 5) +
         (2 * J.right.m + 7) by omega, Nat.add_mod_right]
-      exact Nat.mod_eq_of_lt (by omega)
+      exact Nat.mod_eq_of_lt by_o
     rw [e1, e2, WalkAx.wa_eq, v0, v25, v26, slitTop_sub_top] at hsE
-    have := ccw_up_left (by linarith) (sideTour_sub_top_snd _ _ _) hsE
+    have := ccw_up_left by_l (sideTour_sub_top_snd _ _ _) hsE
     linarith
   · rw [g2] at hsW
     have e1 : (chainModel J.right).wb 6 = (chainModel J.right).W.vtx 7 := by
-      rw [WalkAx.wb_eq, hn₂, Nat.mod_eq_of_lt (by omega)]
+      rw [WalkAx.wb_eq, hn₂, Nat.mod_eq_of_lt by_o]
     have e2 : (6 + (chainModel J.right).W.n - 1) % (chainModel J.right).W.n = 5 := by
       rw [hn₂, show 6 + (2 * J.right.m + 7) - 1 = 5 + (2 * J.right.m + 7) by omega,
         Nat.add_mod_right]
-      exact Nat.mod_eq_of_lt (by omega)
+      exact Nat.mod_eq_of_lt by_o
     rw [e1, e2, WalkAx.wa_eq, v7, v5, v6, slitTop_sub_top] at hsW
-    have := ccw_up_right (by linarith) (sideTour_sub_top_snd _ _ _) hsW
+    have := ccw_up_right by_l (sideTour_sub_top_snd _ _ _) hsW
     linarith
 
 /-- **A horizontal segment from a point**, as a set of ray points. -/
@@ -542,23 +542,23 @@ theorem seg_ray {u w : Point} (hwu : w ≠ u) (hwy : w.2 = u.2) :
       ∀ z ∈ Chazelle.segment u w, ∃ s, 0 ≤ s ∧ s ≤ T ∧ z = rayPt u σ s := by
   have hne : w.1 ≠ u.1 := fun h => hwu (Geometry.point_ext h hwy)
   rcases lt_or_gt_of_ne hne with hlt | hgt
-  · refine ⟨-1, u.1 - w.1, Or.inr rfl, by linarith, fun s hs0 hs1 => ?_, fun z hz => ?_⟩
-    · refine ⟨s / (u.1 - w.1), div_nonneg hs0 (by linarith), (div_le_one (by linarith)).2 hs1, ?_⟩
+  · refine ⟨-1, u.1 - w.1, Or.inr rfl, by_l, fun s hs0 hs1 => ?_, fun z hz => ?_⟩
+    · refine ⟨s / (u.1 - w.1), div_nonneg hs0 by_l, (div_le_one by_l).2 hs1, ?_⟩
       apply Geometry.point_ext
       · simp only [rayPt]; field_simp; ring
       · simp only [rayPt]; rw [hwy]; ring
     · obtain ⟨t, ht0, ht1, rfl⟩ := hz
-      refine ⟨t * (u.1 - w.1), mul_nonneg ht0 (by linarith), by nlinarith, ?_⟩
+      refine ⟨t * (u.1 - w.1), mul_nonneg ht0 by_l, by_nl, ?_⟩
       apply Geometry.point_ext
       · simp only [rayPt]; ring
       · simp only [rayPt]; rw [hwy]; ring
-  · refine ⟨1, w.1 - u.1, Or.inl rfl, by linarith, fun s hs0 hs1 => ?_, fun z hz => ?_⟩
-    · refine ⟨s / (w.1 - u.1), div_nonneg hs0 (by linarith), (div_le_one (by linarith)).2 hs1, ?_⟩
+  · refine ⟨1, w.1 - u.1, Or.inl rfl, by_l, fun s hs0 hs1 => ?_, fun z hz => ?_⟩
+    · refine ⟨s / (w.1 - u.1), div_nonneg hs0 by_l, (div_le_one by_l).2 hs1, ?_⟩
       apply Geometry.point_ext
       · simp only [rayPt]; field_simp
       · simp only [rayPt]; rw [hwy]; ring
     · obtain ⟨t, ht0, ht1, rfl⟩ := hz
-      refine ⟨t * (w.1 - u.1), mul_nonneg ht0 (by linarith), by nlinarith, ?_⟩
+      refine ⟨t * (w.1 - u.1), mul_nonneg ht0 by_l, by_nl, ?_⟩
       apply Geometry.point_ext
       · simp only [rayPt]; ring
       · simp only [rayPt]; rw [hwy]; ring
@@ -576,16 +576,16 @@ theorem splitAttach_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   intro k hk c hc hAc e he hec hue
   obtain ⟨hpt, hsec⟩ := split_facts J hδ
   obtain ⟨g1, g2, v26, v0, v25, v6, v5, v7⟩ := gap_walk J hδ
-  have hn₂ : (chainModel J.right).W.n = 2 * J.right.m + 7 := cm_n J.right
-  have hn : (chainModel J.whole).W.n = 2 * J.whole.m + 7 := cm_n J.whole
+  have hn₂ := cm_n J.right
+  have hn := cm_n J.whole
   have hm := J.right.one_le
   have hRt := J.right.top_snd_lt_radius
   have hM := walkAx_chainModel (C := J.whole) hP
-  have heA : e ∈ (chainModel J.whole).Adm := F₂plus_subset J hS₂ he
+  have heA := F₂plus_subset J hS₂ he
   set u := J.right.top with hu_def
   rw [hpt] at hue
   have huD : u ∉ (chainModel J.whole).D := by
-    rw [← hpt]; exact hM.trace _ (Nat.mod_lt _ (by omega)) 0 le_rfl zero_le_one
+    rw [← hpt]; exact hM.trace _ (Nat.mod_lt _ by_o) 0 le_rfl zero_le_one
   -- `e` is a horizontal segment from `u`
   obtain ⟨w, hwu, hwy, hew⟩ : ∃ w, w ≠ u ∧ w.2 = u.2 ∧ e = Chazelle.segment u w := by
     obtain ⟨a, b, hab, heq, hy, hopen, -, -⟩ := hM.ends e heA
@@ -596,7 +596,7 @@ theorem splitAttach_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     · rcases hs1.lt_or_eq with hs1 | hs1
       · exact absurd (hs ▸ hopen s ⟨hs0, hs1⟩) huD
       · rw [hs1, Geometry.lerp_one] at hs
-        exact ⟨a, fun h => hab (h.trans hs), by rw [hs]; exact hy, by
+        exact ⟨a, fun h => hab (h.trans hs), by rwa [hs], by
           rw [heq, hs, Geometry.segment_comm]⟩
     · rw [← hs0, Geometry.lerp_zero] at hs
       exact ⟨b, fun h => hab (hs.symm.trans h.symm), by rw [hs]; exact hy.symm, by rw [heq, hs]⟩
@@ -611,13 +611,13 @@ theorem splitAttach_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
   obtain ⟨-, -, -, -, r, hr, hl⟩ := hAc
   have hsl₂ : sideLeft (chainModel J.right).W P 0 (rayPt u σ 1) := by
     set ε := min (r / 2) T with hε
-    have hε0 : 0 < ε := lt_min (by linarith) hT
+    have hε0 : 0 < ε := lt_min by_l hT
     have hz := hl (rayPt u σ ε) (hec (hray ε hε0.le (min_le_right _ _)))
       (by rw [Chazelle.Chain.sidePt_zero, hvP]; intro h
           have := congrArg Prod.fst h; simp only [rayPt] at this
           rcases hσ with rfl | rfl <;> linarith)
       (by rw [Chazelle.Chain.sidePt_zero, hvP, dist_rayPt _ hσ hε0.le]
-          exact lt_of_le_of_lt (min_le_left _ _) (by linarith))
+          exact lt_of_le_of_lt (min_le_left _ _) by_l)
     have hq : u = sidePt (chainModel J.right).W P 0 := by rw [Chazelle.Chain.sidePt_zero, hvP]
     rw [hq] at hz ⊢
     exact (FuseMath.sideLeft_rayPt hε0).1 hz
@@ -642,20 +642,20 @@ theorem splitAttach_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
           2 * J.right.m + 5 := by
         rw [hP_def, g1, hn₂, show 2 * J.right.m + 6 + (2 * J.right.m + 7) - 1 =
           (2 * J.right.m + 5) + (2 * J.right.m + 7) by omega, Nat.add_mod_right]
-        exact Nat.mod_eq_of_lt (by omega)
+        exact Nat.mod_eq_of_lt by_o
       rw [e1, e2, v0, v25, slitTop_sub_top] at hsl₂
-      exact ccw_lower_left (by linarith) hA hB hl₀ hsl₂
+      exact ccw_lower_left by_l hA hB hl₀ hsl₂
     · have e1 : (P + 1) % (chainModel J.right).W.n = 7 := by
-        rw [hP_def, g2, hn₂]; exact Nat.mod_eq_of_lt (by omega)
+        rw [hP_def, g2, hn₂]; exact Nat.mod_eq_of_lt by_o
       have e2 : (P + (chainModel J.right).W.n - 1) % (chainModel J.right).W.n = 5 := by
         rw [hP_def, g2, hn₂, show 6 + (2 * J.right.m + 7) - 1 = 5 + (2 * J.right.m + 7) by omega,
           Nat.add_mod_right]
-        exact Nat.mod_eq_of_lt (by omega)
+        exact Nat.mod_eq_of_lt by_o
       rw [e1, e2, v7, v5, slitTop_sub_top] at hsl₂
-      exact ccw_lower_right (by linarith) hA hB hl₀ hsl₂
+      exact ccw_lower_right by_l hA hB hl₀ hsl₂
   -- the attachment
-  refine ⟨Nat.mod_lt _ (by omega), le_rfl, zero_lt_one,
-    by rw [hpt, hew]; exact ⟨0, le_rfl, zero_le_one, by simp⟩, 1, one_pos, fun z hz hzu _ => ?_⟩
+  refine ⟨Nat.mod_lt _ by_o, le_rfl, zero_lt_one,
+    by rw [hpt, hew]; exact ⟨0, le_rfl, zero_le_one, by_s⟩, 1, one_pos, fun z hz hzu _ => ?_⟩
   rw [hew] at hz
   obtain ⟨s, hs0, -, rfl⟩ := hseg z hz
   have hs : 0 < s := by
@@ -686,9 +686,9 @@ theorem corrGap_right (hP : J.P.Simple) {S₂ : Set (Set Point)}
     first
     | exact h1.trans h2.symm
     | exact absurd (show sidePt (chainModel J.right).W pa ta ∈ J.right.set by
-        rw [h3, ← h1]; exact hxs) hw
+        rwa [h3, ← h1]) hw
     | exact absurd (show sidePt (chainModel J.right).W pa ta ∈ J.right.set by
-        rw [h3, ← h2]; exact hys) hw
+        rwa [h3, ← h2]) hw
 
 /-- **The regions of `S₂` at the two sides of the slit of `C₂`** (case G): faced just after the
 copy of the top before the slit, or just before the copy after it. -/

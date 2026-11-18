@@ -47,7 +47,7 @@ theorem prod_nonneg_of_cross_zero {B A : Point} (h : sideCross B A = 0) :
     0 ≤ (B.1 * A.1) * (B.2 * A.2) := by
   unfold sideCross at h
   have : (B.1 * A.1) * (B.2 * A.2) = (B.1 * A.2) * (B.1 * A.2) := by
-    have e : B.2 * A.1 = B.1 * A.2 := by linarith
+    have e : B.2 * A.1 = B.1 * A.2 := by_l
     calc (B.1 * A.1) * (B.2 * A.2) = (B.1 * A.2) * (B.2 * A.1) := by ring
       _ = (B.1 * A.2) * (B.1 * A.2) := by rw [e]
   rw [this]; exact mul_self_nonneg _
@@ -138,7 +138,7 @@ theorem sideCcw_horiz_iff (B A : Point) {s : ℝ} (hs : s = 1 ∨ s = -1) :
     have hdBX : sideDot B ((-1, 0) : Point) < 0 ↔ 0 < B.1 := by
       unfold sideDot; constructor <;> intro h <;> simp at h ⊢ <;> linarith
     rw [hBX, hXA, hdBX]
-    have hn : ¬ ((-1 : ℝ) = 1) := by norm_num
+    have hn : ¬ ((-1 : ℝ) = 1) := by_n
     simp only [hn, false_and, false_or, not_false_eq_true, true_and]
     by_cases hz : sideCross B A = 0
     · rw [dot_neg_iff_of_cross_zero hz, dot_pos_iff_of_cross_zero hz]

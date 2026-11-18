@@ -52,10 +52,10 @@ theorem first_e1 {i : ℕ} (hi : i < L.length) :
       (evs M Q L E).idxOf (e1 M Q L i) = (word M Q L E).idxOf i := by
   have hc := h.ctx
   set S := evs M Q L E with hS
-  have hmem : e1 M Q L i ∈ S := hc.e1_mem hi
+  have hmem := hc.e1_mem hi
   set k := S.idxOf (e1 M Q L i) with hk
-  have hkl : k < S.length := idxOf_lt_length_of_mem hmem
-  have hSk : S[k] = e1 M Q L i := getElem_idxOf hkl
+  have hkl := idxOf_lt_length_of_mem hmem
+  have hSk := getElem_idxOf hkl
   have hsplit : S = S.take k ++ e1 M Q L i :: S.drop (k + 1) := by
     conv_lhs => rw [← take_append_drop k S]
     rw [drop_eq_getElem_cons hkl, hSk]
@@ -86,9 +86,7 @@ theorem first_code {i : ℕ} (hi : i < L.length) :
   obtain ⟨hlt, hget, -⟩ := h.first_e1 hi
   unfold evs at hget
   rw [getElem?_map, getElem?_eq_getElem hlt, Option.map_some, Option.some_inj] at hget
-  rw [List.getD_eq_getElem?_getD, getElem?_eq_getElem hlt, Option.getD_some]
-  exact hget
-
+  rwa [List.getD_eq_getElem?_getD, getElem?_eq_getElem hlt, Option.getD_some]
 /-- The first occurrence of chord `i` is an event of chord `i`. -/
 theorem first_div {i : ℕ} (hi : i < L.length) :
     E.getD ((word M Q L E).idxOf i) 0 / 2 = i := by
@@ -142,10 +140,7 @@ theorem chordRec_eq {i : ℕ} (hi : i < L.length) :
 /-- The word is a parenthesis word. -/
 theorem word_ok : BuildStack.NoCross (E.map (· / 2)) ∧ BuildStack.Twice (E.map (· / 2)) := by
   have := h.ctx.word
-  rw [← word_eq M Q L E]
-  exact this
-
-end Input
+  rwa [← word_eq M Q L E]end Input
 
 /-! ## The stack pass -/
 
@@ -155,7 +150,7 @@ theorem push_iff {w : List ℕ} (htw : BuildStack.Twice w) (hnc : BuildStack.NoC
     (BuildStack.run (w.take m)).head? = some w[m] ↔ w[m] ∈ w.take m := by
   have hpre : w.take m ++ [w[m]] ++ w.drop (m + 1) = w := by
     rw [append_assoc, singleton_append, ← drop_eq_getElem_cons hm, take_append_drop]
-  have hxw : w.count w[m] = 2 := htw _ (getElem_mem hm)
+  have hxw := htw _ (getElem_mem hm)
   have hcx : (w.take m).count w[m] ≤ 1 := by
     have := congrArg (count w[m]) hpre
     rw [count_append, count_append, count_singleton_self] at this; omega
@@ -165,7 +160,7 @@ theorem push_iff {w : List ℕ} (htw : BuildStack.Twice w) (hnc : BuildStack.NoC
     have := BuildStack.mem_openList.1 (mem_of_mem_head? hh)
     omega
   · intro hpos
-    obtain ⟨rest, hrest⟩ := BuildStack.head_openList htw hnc hpre.symm (by omega)
+    obtain ⟨rest, hrest⟩ := BuildStack.head_openList htw hnc hpre.symm by_o
     rw [hrest]; rfl
 
 /-- The first occurrence of a new letter. -/
@@ -191,12 +186,12 @@ theorem Input.gap_iff (h : Input M Q L E) {m : ℕ} (hm : m < E.length) :
     · exact Or.inl h1
     · by_cases hm1 : m + 1 = E.length
       · exact Or.inl hm1
-      · right; rw [h.key_s hm, h.key_s (by omega)]; exact h1
+      · right; rwa [h.key_s hm, h.key_s by_o]
   · rintro (h1 | h1)
     · exact Or.inl h1
     · by_cases hm1 : m + 1 = E.length
       · exact Or.inl hm1
-      · right; rw [← h.key_s hm, ← h.key_s (by omega)]; exact h1
+      · right; rwa [← h.key_s hm, ← h.key_s by_o]
 
 end
 

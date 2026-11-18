@@ -40,15 +40,15 @@ theorem countP_half (P : ℕ → Bool) (m : ℕ) :
   | succ m ih =>
     rw [show 2 * (m + 1) = 2 * m + 1 + 1 by ring, List.range_succ, List.range_succ,
       List.countP_append, List.countP_append, ih, List.range_succ, List.countP_append]
-    have h1 : 2 * m / 2 = m := by omega
-    have h2 : (2 * m + 1) / 2 = m := by omega
+    have h1 : 2 * m / 2 = m := by_o
+    have h2 : (2 * m + 1) / 2 = m := by_o
     cases hP : P m <;> simp [h1, h2, hP]; omega
 
 /-- Counting the indices of a list by a predicate on its entries. -/
 theorem countP_range_getD {α : Type*} (l : List α) (d : α) (p : α → Bool) :
     (List.range l.length).countP (fun i => p (l.getD i d)) = l.countP p := by
   have e : (List.range l.length).map (fun i => l.getD i d) = l := by
-    apply List.ext_getElem (by simp)
+    apply List.ext_getElem by_s
     intro i h1 h2
     simp [List.getElem?_eq_getElem h2]
   conv_rhs => rw [← e]
@@ -74,8 +74,8 @@ theorem TL_countP (E : BEnv) (r s : ℕ) :
         rw [List.countP_eq_zero]; intro x _; simp [Ne.symm hrs]
       rw [this, add_zero]
       by_cases h : r < s
-      · rw [ite_eq_left h, ite_eq_left (by omega)]
-      · rw [ite_eq_right h, ite_eq_right (by omega)]
+      · rw [ite_eq_left h, ite_eq_left by_o]
+      · rw [ite_eq_right h, ite_eq_right by_o]
 
 /-- The tags of `TL s` are below `s`. -/
 theorem TL_mem_lt (E : BEnv) {s : ℕ} {x : ℕ × (ℕ × ℕ × ℕ)} (hx : x ∈ E.TL s) : x.1 < s := by
@@ -112,7 +112,7 @@ theorem bktMath : BktMathSpec := by
     · intro x hx
       rw [newLB_eq_flatMap] at hx
       obtain ⟨r, hr, hxr⟩ := List.mem_flatMap.1 hx
-      have hr' : r < E.K + 1 := List.mem_range.1 hr
+      have hr' := List.mem_range.1 hr
       obtain ⟨S, R, hFam, hR⟩ := hE.regOK hr'
       exact (regList_sound hE.hQ hE.hDH hE.hli hFam hR (hE.pts_lt hr') hxr).1
   · -- the buckets are at most the number of arcs
@@ -127,16 +127,16 @@ theorem bktMath : BktMathSpec := by
     · have hB := hbk hK
       have hok' : ChordTriplesOK E.I E.Q (E.L ++ newLB E.li E.Q E.L E.E) := by
         rw [newLB_pos _ _ _ hK]; exact newL_ok (hE.ctx hK)
-      have hM : WalkAx E.I := walkAx_interiorModel hE.hQ
+      have hM := walkAx_interiorModel hE.hQ
       have hkey : ∀ q, q < 2 * TLk.length →
           E.I.key E.Q (wposOf (E.L ++ newLB E.li E.Q E.L E.E) (2 * E.L.length + q)) =
             E.I.key E.Q (DrvD.endPos (TLk.getD (q / 2) DrvD.dflt).2 (q % 2)) := by
         intro q hq
-        rw [DrvD.wposOf_new (by rw [hlen]; exact hq), hnew, DrvD.getD_map_snd]
+        rw [DrvD.wposOf_new (by rwa [hlen]), hnew, DrvD.getD_map_snd]
       have hlen' : (E.L ++ newLB E.li E.Q E.L E.E).length = E.L.length + TLk.length := by
         rw [List.length_append, hlen]
-      refine DrvD.codeLe_of_bkt hM hok' hK hE.hperm hE.hsort (by omega) (by rw [hlen']; omega)
-        (by omega) (by rw [hlen']; omega) ?_ ?_ hbb
+      refine DrvD.codeLe_of_bkt hM hok' hK hE.hperm hE.hsort by_o (by rw [hlen']; omega)
+        by_o (by rw [hlen']; omega) ?_ ?_ hbb
       · rw [hkey q hq]; exact hB.key q hq
       · rw [hkey q' hq']; exact hB.key q' hq'
   · -- at most `4 MX` codes per bucket
@@ -150,7 +150,7 @@ theorem bktMath : BktMathSpec := by
         have e : TLk = (E.recs 0).map fun x => (0, x) := by
           rw [hTLk, hK, E.TL_succ]; simp [BEnv.TL]
         rw [e, List.length_map]
-        exact (regList_length_le _ _).trans (by have := hMX 0 (by omega); omega)
+        exact (regList_length_le _ _).trans (by have := hMX 0 by_o; omega)
       omega
     · have hB := hbk hK
       rw [bcnt_eq]
@@ -162,7 +162,7 @@ theorem bktMath : BktMathSpec := by
         have hreg : ∀ q, q < 2 * TLk.length → (TLk.getD (q / 2) DrvD.dflt).1 < E.N.nRegions := by
           intro q hq
           rw [hE.nRegions]
-          exact hmem _ (by omega)
+          exact hmem _ by_o
         -- the region of a code of bucket `b`
         have hone : ∀ q, q < 2 * TLk.length → bk q = b → (TLk.getD (q / 2) DrvD.dflt).1 = r₀ := by
           intro q hq hbq
@@ -173,7 +173,7 @@ theorem bktMath : BktMathSpec := by
           have e1 := ((hE.hregs.2.2.1.2.2.2 _ (hreg q hq) _).1 ha).2
           have e2 := ((hE.hregs.2.2.1.2.2.2 _ (hreg q₀ hq₀) _).1 ha₀).2
           rw [← e1]; exact e2
-        have hr₀K : r₀ < E.K + 1 := hmem _ (by omega)
+        have hr₀K : r₀ < E.K + 1 := hmem _ by_o
         calc (List.range (2 * TLk.length)).countP (fun q => decide (bk q = b))
             ≤ (List.range (2 * TLk.length)).countP
                 (fun q => decide ((TLk.getD (q / 2) DrvD.dflt).1 = r₀)) := by

@@ -64,11 +64,10 @@ theorem query_facts (J : Merge.Junction) {Q : Polygon} {i : ℕ} {q : ℕ × ℕ
   have hsec' : sideLeft (chainModel (sideChain J i)).W q.1
       ((chainModel (sideChain J i)).param Q ⟨q.1, q.2.1⟩)
       (rayPt ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩) (dirOf q.2.2) 1) := by
-    rw [show rayPt ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩) (dirOf q.2.2) 1 =
+    rwa [show rayPt ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩) (dirOf q.2.2) 1 =
       (((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩).1 + dirOf q.2.2,
         ((chainModel (sideChain J i)).pos Q ⟨q.1, q.2.1⟩).2) by
       unfold rayPt; rw [mul_one]]
-    exact hsec
   have hy := query_abs (C := sideChain J i) (x := ⟨q.1, q.2.1⟩) he h0 h1 htop hσ hsec'
   have hR := sideChain_radius J i
   have hcls := posClass_of (C := sideChain J i) (x := ⟨q.1, q.2.1⟩) he h0 h1 hy (Or.inl htop)
@@ -91,13 +90,13 @@ theorem convL_val {P : Polygon} {c : Config} {H : Host} {J : Merge.Junction}
         (chainModel J.left).pos Q ⟨e, h⟩ := by
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, -, h45, h33, -, h35, -⟩ := hst
   have e0 : c.nreg (sw 45) = 6 + tpos J.whole (J.m₁ + 2 * J.m₂) := by
-    rw [show sw 45 = sw (45 + 0) from rfl, h45 0 (by norm_num)]; rfl
+    rw [show sw 45 = sw (45 + 0) from rfl, h45 0 by_n]; rfl
   have e1 : c.nreg (sw 45 + 1) = 6 + tpos J.left J.m₁ := by
-    rw [show sw 45 + 1 = sw (45 + 1) from rfl, h45 1 (by norm_num)]; rfl
+    rw [show sw 45 + 1 = sw (45 + 1) from rfl, h45 1 by_n]; rfl
   have e2 : c.nreg (sw 45 + 2) = Sweep.lL1 J := by
-    rw [show sw 45 + 2 = sw (45 + 2) from rfl, h45 2 (by norm_num)]; rfl
+    rw [show sw 45 + 2 = sw (45 + 2) from rfl, h45 2 by_n]; rfl
   have e4 : c.nreg (sw 45 + 4) = Sweep.lδ J := by
-    rw [show sw 45 + 4 = sw (45 + 4) from rfl, h45 4 (by norm_num)]; rfl
+    rw [show sw 45 + 4 = sw (45 + 4) from rfl, h45 4 by_n]; rfl
   have en : c.nreg (sw 33) = (chainModel J.left).W.n := by rw [h33, cm_n]
   have en' : c.nreg (sw 35) = (chainModel J.whole).W.n := by rw [h35, cm_n]
   rw [e0, e1, e2, e4, en, en']
@@ -117,13 +116,13 @@ theorem convR_val {P : Polygon} {c : Config} {H : Host} {J : Merge.Junction}
         (chainModel J.right).pos Q ⟨e, h⟩ := by
   obtain ⟨-, -, -, -, -, -, -, -, -, -, -, -, h40, -, -, h34, h35, -⟩ := hst
   have e0 : c.nreg (sw 40) = 6 + tpos J.whole J.m₁ := by
-    rw [show sw 40 = sw (40 + 0) from rfl, h40 0 (by norm_num)]; rfl
+    rw [show sw 40 = sw (40 + 0) from rfl, h40 0 by_n]; rfl
   have e1 : c.nreg (sw 40 + 1) = 6 + tpos J.right 0 := by
-    rw [show sw 40 + 1 = sw (40 + 1) from rfl, h40 1 (by norm_num)]; rfl
+    rw [show sw 40 + 1 = sw (40 + 1) from rfl, h40 1 by_n]; rfl
   have e2 : c.nreg (sw 40 + 2) = Sweep.rL1 J := by
-    rw [show sw 40 + 2 = sw (40 + 2) from rfl, h40 2 (by norm_num)]; rfl
+    rw [show sw 40 + 2 = sw (40 + 2) from rfl, h40 2 by_n]; rfl
   have e4 : c.nreg (sw 40 + 4) = Sweep.rδ J := by
-    rw [show sw 40 + 4 = sw (40 + 4) from rfl, h40 4 (by norm_num)]; rfl
+    rw [show sw 40 + 4 = sw (40 + 4) from rfl, h40 4 by_n]; rfl
   have en : c.nreg (sw 34) = (chainModel J.right).W.n := by rw [h34, cm_n]
   have en' : c.nreg (sw 35) = (chainModel J.whole).W.n := by rw [h35, cm_n]
   rw [e0, e1, e2, e4, en, en']
@@ -154,7 +153,7 @@ theorem winner_eq {P : Polygon} {A : ℕ} {Mod : ℕ → Chain} {R₀ : ℝ} {J 
     · have := h0 h; rw [this] at hT; exact absurd hT (Set.notMem_empty _)
     · exact h
   obtain ⟨τ, hτ, hmin, ht, hpp, he, hpos, -⟩ := h1 hA
-  have e : τ = J.whole.hitParam z σ :=
+  have e :=
     le_antisymm (hmin _ hT) (hitParam_le_of_onCB J.whole (hgood τ hτ).1 (hgood τ hτ).2)
   rw [e] at hpos
   exact ⟨hA, ht, hpp, he, hpos⟩
@@ -195,10 +194,10 @@ theorem winQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hb : c.nreg bL ≤ 1 �
       (∀ r, r ≠ yE → r ≠ yH → r ≠ cX → r ≠ cT → r ≠ cDd → c'.nreg r = c.nreg r) ∧
       c'.nmem = c.nmem) := by
   have hKc := hK.fix hI
-  have k1 : c.nreg K1 = 1 := hKc.2.1
-  have k2 : c.nreg K2 = 2 := hKc.2.2.2.2.2.1
-  have syE : IScr yE := iscr_sw (by unfold yE sw; norm_num) (by unfold yE sw; norm_num)
-  have syH : IScr yH := iscr_sw (by unfold yH sw; norm_num) (by unfold yH sw; norm_num)
+  have k1 := hKc.2.1
+  have k2 := hKc.2.2.2.2.2.1
+  have syE : IScr yE := iscr_sw by_d by_d
+  have syH : IScr yH := iscr_sw by_d by_d
   have hyX : yE ≠ cX ∧ yE ≠ cT ∧ yE ≠ cDd := by unfold yE cX cT cDd sw; omega
   have hpe : accA + 1 ≠ cX ∧ accA + 1 ≠ cT ∧ accA + 1 ≠ cDd := by unfold accA cX cT cDd sw; omega
   -- the copy branch
@@ -219,14 +218,14 @@ theorem winQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hb : c.nreg bL ≤ 1 �
     · have t0' : c.nreg (accA + 3) = 0 := by omega
       refine IRS.mono (K := 28) (IRS.ifT t0 ?_) le_rfl (fun _ h => h)
       by_cases b0 : c.nreg bL < c.nreg K1
-      · refine (IRS.ifT b0 cp).mono (by norm_num) ?_
+      · refine (IRS.ifT b0 cp).mono by_n ?_
         rintro c₁ ⟨h1, h2, h3⟩
         refine ⟨?_, h2, h3⟩
-        rw [h1]; unfold winVal; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+        rw [h1]; unfold winVal; rw [ite_eq_right by_o, ite_eq_right by_o]
       · have b1 : c.nreg bL = 1 := by omega
         obtain ⟨a1, a2, a3, a4, a5⟩ := hl t0' b1
         refine (IRS.ifF b0 (convS_irs (Or.inr rfl) (Or.inl rfl) hpe ⟨syE, hyX⟩ hI hK a1 a2 a3
-          a4 a5)).mono (by norm_num) ?_
+          a4 a5)).mono by_n ?_
         rintro c₁ ⟨h1, h2, h3⟩
         refine ⟨?_, fun r r1 r2 r3 r4 => h2 r (by
           unfold CvSet; rintro (h | h | h | h) <;> simp_all), h3⟩
@@ -236,32 +235,32 @@ theorem winQ_irs (hI : IInv W c₀ c) (hK : Consts c₀) (hb : c.nreg bL ≤ 1 �
       · have t1' : c.nreg (accA + 3) = 1 := by omega
         refine IRS.mono (K := 26) (IRS.ifT t1 ?_) le_rfl (fun _ h => h)
         by_cases b0 : c.nreg bR < c.nreg K1
-        · refine (IRS.ifT b0 cp).mono (by norm_num) ?_
+        · refine (IRS.ifT b0 cp).mono by_n ?_
           rintro c₁ ⟨h1, h2, h3⟩
           refine ⟨?_, h2, h3⟩
-          rw [h1]; unfold winVal; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
+          rw [h1]; unfold winVal; rw [ite_eq_right by_o, ite_eq_right by_o]
         · have b1 : c.nreg bR = 1 := by omega
           obtain ⟨a1, a2, a3, a4, a5⟩ := hr t1' b1
           refine (IRS.ifF b0 (convS_irs (Or.inl rfl) (Or.inr rfl) hpe ⟨syE, hyX⟩ hI hK a1 a2 a3
-            a4 a5)).mono (by norm_num) ?_
+            a4 a5)).mono by_n ?_
           rintro c₁ ⟨h1, h2, h3⟩
           refine ⟨?_, fun r r1 r2 r3 r4 => h2 r (by
             unfold CvSet; rintro (h | h | h | h) <;> simp_all), h3⟩
-          rw [h1]; unfold winVal; rw [ite_eq_right (by omega), ite_eq_left ⟨t1', b1⟩]
-      · refine (IRS.ifF t1 cp).mono (by norm_num) ?_
+          rw [h1]; unfold winVal; rw [ite_eq_right by_o, ite_eq_left ⟨t1', b1⟩]
+      · refine (IRS.ifF t1 cp).mono by_n ?_
         rintro c₁ ⟨h1, h2, h3⟩
         refine ⟨?_, h2, h3⟩
-        rw [h1]; unfold winVal; rw [ite_eq_right (by omega), ite_eq_right (by omega)]
-  refine (IRS.seq (K₂ := 1) st1 ?_).mono (by norm_num) (fun _ h => h)
+        rw [h1]; unfold winVal; rw [ite_eq_right by_o, ite_eq_right by_o]
+  refine (IRS.seq (K₂ := 1) st1 ?_).mono by_n (fun _ h => h)
   rintro c₁ hI₁ - - ⟨h1, h2, h3⟩
   refine (IRS.instr1 (i := .copyN yH (accA + 2)) hI₁ syH).mono le_rfl ?_
   rintro c' rfl
   refine ⟨?_, ?_, fun r r1 r2 r3 r4 r5 => ?_, h3⟩
   · show upd c₁.nreg yH (c₁.nreg (accA + 2)) yE = _
-    rw [upd_other _ _ _ (by unfold yE yH sw; norm_num), h1]
+    rw [upd_other _ _ _ by_d, h1]
   · show upd c₁.nreg yH (c₁.nreg (accA + 2)) yH = _
-    rw [upd_same, h2 _ (by unfold yE accA sw; norm_num) (by unfold cX accA sw; norm_num)
-      (by unfold cT accA sw; norm_num) (by unfold cDd accA sw; norm_num)]
+    rw [upd_same, h2 _ by_d by_d
+      by_d by_d]
   · show upd c₁.nreg yH (c₁.nreg (accA + 2)) r = _
     rw [upd_other _ _ _ r2, h2 r r1 r3 r4 r5]
 

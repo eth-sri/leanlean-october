@@ -40,8 +40,8 @@ theorem xAt_eq_of_line {u w a b : Point} (huw : u.2 ≠ w.2) (hab : a.2 ≠ b.2)
     (hb : OnLine u w b) (y : ℝ) : xAt a b y = xAt u w y := by
   unfold OnLine at ha hb
   unfold xAt at ha hb ⊢
-  have h1 : w.2 - u.2 ≠ 0 := sub_ne_zero.2 (Ne.symm huw)
-  have h2 : b.2 - a.2 ≠ 0 := sub_ne_zero.2 (Ne.symm hab)
+  have h1 := sub_ne_zero.2 (Ne.symm huw)
+  have h2 := sub_ne_zero.2 (Ne.symm hab)
   rw [ha, hb]
   field_simp
   ring
@@ -58,7 +58,7 @@ theorem vtx_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e : ℕ} (he : e <
     OnLine (Q.vtx e) (Q.vtx ((e + 1) % Q.n)) (Q.vtx e) ∧
       OnLine (Q.vtx e) (Q.vtx ((e + 1) % Q.n)) (Q.vtx ((e + 1) % Q.n)) := by
   have hne : (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2 :=
-    hD _ _ he (Nat.mod_lt _ (by omega)) (by
+    hD _ _ he (Nat.mod_lt _ by_o) (by
       intro h
       rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h' | h'
       · rw [Nat.mod_eq_of_lt h'] at h; omega
@@ -68,7 +68,7 @@ theorem vtx_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e : ℕ} (he : e <
 /-- The edges of `Q` are not horizontal. -/
 theorem edge_nh (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {e : ℕ} (he : e < Q.n) :
     (Q.vtx e).2 ≠ (Q.vtx ((e + 1) % Q.n)).2 :=
-  hD _ _ he (Nat.mod_lt _ (by omega)) (by
+  hD _ _ he (Nat.mod_lt _ by_o) (by
       intro h
       rcases (show e + 1 < Q.n ∨ e + 1 = Q.n by omega) with h' | h'
       · rw [Nat.mod_eq_of_lt h'] at h; omega
@@ -96,7 +96,7 @@ theorem hostEdge_onLine (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {sp₁ sp₂ :
         exact ⟨hl₁, (vtx_onLine hD hn hl₁).1, (vtx_onLine hD hn hl₁).2⟩
       · have e : edgeOf Q.n (.vtx i) (.vtx j) = j := by simp [edgeOf, hj]
         rw [e]
-        have hi : i = (j + 1) % Q.n := hok.resolve_left hj
+        have hi := hok.resolve_left hj
         subst hi
         exact ⟨hl₂, (vtx_onLine hD hn hl₂).2, (vtx_onLine hD hn hl₂).1⟩
     | onEdge e h =>
@@ -132,7 +132,7 @@ theorem pos_eq_onEdge (M : Model) (hD : DistinctHeights Q) (hn : 2 ≤ Q.n) {p h
   have hQnh := edge_nh hD hn he
   unfold Model.pos Model.param
   simp only
-  rw [ite_eq_right (by rw [ha, hb]; exact hnh), ha, hb]
+  rw [ite_eq_right (by rwa [ha, hb]), ha, hb]
   have hy : (lerp (sp₁.eval Q) (sp₂.eval Q)
       (((Q.vtx h).2 - (sp₁.eval Q).2) / ((sp₂.eval Q).2 - (sp₁.eval Q).2))).2 = (Q.vtx h).2 :=
     hpar_snd hnh _
@@ -174,7 +174,7 @@ theorem firstHit_shift {S : Set Point} {z z' : Point} {σ : ℝ} (hσ : σ = 1 �
       have e : σ * (σ * (s - σ * (z'.1 - z.1))) = s - σ * (z'.1 - z.1) := by
         rw [← mul_assoc, hσ2, one_mul]
       nlinarith
-    exact ht'.2.2 _ hpos (by linarith) hsS
+    exact ht'.2.2 _ hpos by_l hsS
   · rw [key] at hS
     have hpos : 0 < t - σ * (z'.1 - z.1) := by
       have := (hahead _ hS (by simp [rayPt_snd, hy])).2

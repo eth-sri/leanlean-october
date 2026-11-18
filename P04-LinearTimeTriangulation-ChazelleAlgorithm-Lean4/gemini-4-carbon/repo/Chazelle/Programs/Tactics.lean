@@ -301,6 +301,22 @@ macro "exec_block" : tactic =>
 The block `nreg 0 := n; nreg 1 := 1; rreg 0 := x_{nreg 0}; rreg 1 := rreg 0 * rreg 0;
 nreg 2 := nreg 0 + nreg 1`, executed from any word-bounded `c` with `P.n + 1 ≤ W`. -/
 
+macro "upd_keep" : tactic =>
+  `(tactic| simp (config := { failIfUnchanged := false }) only [Config.nreg_mk, Config.rreg_mk,
+      Config.nmem_mk, Config.rmem_mk] <;>
+    first
+    | (simp only [Machine.upd]; split_ifs <;> first | rfl | omega)
+    | repeat (rw [Machine.upd_other _ _ _ (by omega)]))
+
+macro "eblk" : tactic =>
+  `(tactic| (exec_block; all_goals try (config_simp; omega)))
+
+macro "eblk" "[" hs:term,* "]" : tactic =>
+  `(tactic| (exec_block; all_goals try (config_simp; (try simp only [$[$hs:term],*]); omega)))
+
+macro "mem_at" "[" hs:term,* "]" : tactic =>
+  `(tactic| (config_simp; simp only [Machine.upd_apply, $[$hs:term],*]; split_ifs <;> first | rfl | omega))
+
 end
 
 end Programs

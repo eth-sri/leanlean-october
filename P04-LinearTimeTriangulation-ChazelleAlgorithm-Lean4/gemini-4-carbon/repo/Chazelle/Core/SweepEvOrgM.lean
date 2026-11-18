@@ -44,7 +44,7 @@ theorem rec_ends {C : Chain} {Q : Polygon} {N : NF} (hN : IsNF (chainModel C) Q 
     unfold NF.chord
     rw [NFLoc.getD_of_lt _ hk]
     exact List.getElem_mem _
-  obtain ⟨y, a, b, hH, -, heq, -, -⟩ := Merge.augChords_spec (show _ ∈ Merge.augChords C from hN.1.2.1 hmem)
+  obtain ⟨y, a, b, hH, -, heq, -, -⟩ := Merge.augChords_spec (hN.1.2.1 hmem)
   obtain ⟨h1, h2, h3⟩ := rec_pos_ends (hN.2.2.1 k hk) heq hH.lt
   exact ⟨y, a, b, hH.lt, heq, h1, h2, h3⟩
 
@@ -96,10 +96,10 @@ theorem pos_mem_set_iff (_hP : C.P.Simple) {Q : Polygon} {x : WPos}
     · exact absurd hm (C.sideWalk_box_pt C.sideBeta hb h0 h1).1
     · rcases hi.lt_or_eq with hi | hi
       · left; omega
-      · right; exact ⟨by omega, hnorm.2 (hit hi)⟩
+      · right; exact ⟨by_o, hnorm.2 (hit hi)⟩
   · rintro (⟨h6, h5⟩ | ⟨he, h0'⟩)
     · have := C.sideWalk_tour_pt_mem C.sideBeta (i := x.edge - 6) (t := (chainModel C).param Q x)
-        (by omega) (fun h => absurd h (by omega)) h0 h1
+        by_o (fun h => absurd h by_o) h0 h1
       rwa [show x.edge - 6 + 6 = x.edge by omega] at this
     · have := C.sideWalk_tour_pt_mem C.sideBeta (i := 2 * C.m) (t := (chainModel C).param Q x)
         le_rfl (fun _ => hnorm.1 h0') h0 h1
@@ -114,7 +114,7 @@ theorem pos_vertex {Q : Polygon} {x : WPos} (h6 : 6 ≤ x.edge) (he : x.edge ≤
   subst h0
   show sidePt (chainModel C).W e ((chainModel C).param Q ⟨e, 0⟩) = _
   rw [show (chainModel C).param Q ⟨e, 0⟩ = 0 from rfl, Chazelle.Chain.sidePt_zero, cm_W,
-    show e = (e - 6) + 6 by omega, C.sideWalk_vtx_tour _ (by omega)]
+    show e = (e - 6) + 6 by omega, C.sideWalk_vtx_tour _ by_o]
   simp only [Nat.add_sub_cancel]
   rfl
 
@@ -126,7 +126,7 @@ theorem pos_ne_vertex (hP : C.P.Simple) {Q : Polygon} {x : WPos} (h6 : 6 ≤ x.e
   simp only at h6 he
   show sidePt (chainModel C).W e ((chainModel C).param Q ⟨e, hgt⟩) ≠ _
   rw [cm_W]
-  obtain ⟨k', -, s, hs, hpt, -⟩ := C.sideTour_open C.sideBeta (i := e - 6) (by omega)
+  obtain ⟨k', -, s, hs, hpt, -⟩ := C.sideTour_open C.sideBeta (i := e - 6) by_o
     (t := (chainModel C).param Q ⟨e, hgt⟩) ⟨h0, h1⟩
   rw [show e - 6 + 6 = e by omega] at hpt
   rw [hpt]

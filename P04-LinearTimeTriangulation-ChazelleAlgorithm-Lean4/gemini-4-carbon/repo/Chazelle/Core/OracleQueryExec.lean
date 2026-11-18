@@ -74,17 +74,17 @@ theorem qry_exec {P : Polygon} {W : ℕ} (hG : GoodEnv P) (hW : 8 * P.n + 32 ≤
     (by rw [m₁]; exact hA'.qmem hEW) (by rw [m₁]; exact hA'.ordOK hEW)
     (by rw [m₁]; exact hA'.chordMem hEW) (by rw [m₁]; exact hA'.chordTab hEW)
     (by rw [m₁]; exact hA'.locMem hEW hHW) hDL hT.tv_lt (NC := NC) (CS := CS)
-    (by rw [m₁]; exact hNC) (by rw [m₁]; exact hCS)
+    (by rwa [m₁]) (by rwa [m₁])
     (by rw [m₁]; exact chPr_mono (hA'.chordRec hT))
     (by
       rw [m₁]
       intro t hpart hnd bD hD hbD kk hkk
       obtain ⟨X, hX⟩ := sel_facts (hA'.chordRec hT) hs hA.simple hpart hnd hD hbD
       obtain ⟨h1, h2⟩ := hX.stop.1 kk hkk
-      exact ⟨by rw [walk_n]; exact h1, h2⟩)
+      exact ⟨by rwa [walk_n], h2⟩)
   rw [m₁] at hk₂ tr
   have hk₂' : k₂ ≤ 715 * V.L + 700 + dstarCost m V' + 4 * candCost V' NC CS + 500 := hk₂
-  refine ⟨c₂, _, .seq e₁ e₂, by omega, ?_, ?_⟩
+  refine ⟨c₂, _, .seq e₁ e₂, by_o, ?_, ?_⟩
   · refine ⟨fun r hr => ?_, fun r hr => ?_, f₂.2.2.1.trans f₁.2.2.1,
       f₂.2.2.2.1.trans f₁.2.2.2.1, f₂.2.2.2.2.trans f₁.2.2.2.2⟩
     · simp only [BQ, Bool.or_eq_false_iff] at hr

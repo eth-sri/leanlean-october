@@ -135,7 +135,7 @@ theorem conn_of_graphOK (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
   set A := N.arcs.length
   have hnemp : ∀ p, p < A → reg (rgi N p) ≠ ∅ := by
     intro p hp h
-    have hU : reg (rgi N p) ∈ (chainModel C).regions (N.F (chainModel C) Q) :=
+    have hU :=
       hR.1 _ (hA.1 _ (NFLoc.seq_lt hN hp)).1
     have hne' : (reg (rgi N p)).Nonempty := Chazelle.Chain.regionsIn_nonempty (D := (chainModel C).D) hU
     rw [h] at hne'
@@ -148,16 +148,16 @@ theorem conn_of_graphOK (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
       exact hR.2.1 _ _ (hA.1 _ (NFLoc.seq_lt hN ha)).1 (hA.1 _ (NFLoc.seq_lt hN hb)).1 h'
     obtain ⟨m, hm, hmr, hmin, hlink⟩ := hB.I_complete a.1 ha
     obtain ⟨m', hm', hm'r, hmin', hlink'⟩ := hB.I_complete b.1 hb
-    have hmm : m = m' := le_antisymm (hmin m' hm' (hm'r.trans hr.symm))
+    have hmm := le_antisymm (hmin m' hm' (hm'r.trans hr.symm))
       (hmin' m hm (hmr.trans hr))
     subst hmm
-    have hmN : m < B.N := lt_of_lt_of_le hm hB.arcs_le
+    have hmN := lt_of_lt_of_le hm hB.arcs_le
     let mv : Fin B.N := ⟨m, hmN⟩
     have hrg : ∀ v : Fin B.N, v.1 < A → rgi N v.1 = rgi N a.1 →
         rgNode reg N B v = rgNode reg N B a := by
       intro v hv h
       unfold rgNode; rw [BookData.ite_t hv, BookData.ite_t ha, h]
-    have hmv : rgNode reg N B mv = rgNode reg N B a := hrg mv hm hmr
+    have hmv := hrg mv hm hmr
     -- a node of the region is joined to `mv` by one edge (or equals it)
     have link : ∀ v : Fin B.N, v.1 < A → rgi N v.1 = rgi N a.1 →
         (m = v.1 ∨ (m, v.1) ∈ B.I ∨ SpineAdj B.N m v.1) → m ≤ v.1 →
@@ -210,16 +210,16 @@ theorem conn_of_graphOK (hN : IsNF (chainModel C) Q N) {reg : ℕ → Set Point}
       | zero => intro u _ v hv; rw [Fin.ext (show v.1 = u.1 by omega)]
       | succ k ih =>
         intro u hu v hv
-        have hwN : u.1 + k < B.N := by omega
+        have hwN : u.1 + k < B.N := by_o
         let w : Fin B.N := ⟨u.1 + k, hwN⟩
         refine (ih u hu w rfl).tail ⟨?_, hpad w (by show ¬ u.1 + k < A; omega),
-          hpad v (by omega)⟩
+          hpad v by_o⟩
         have hv' : v.1 = w.1 + 1 := by show v.1 = u.1 + k + 1; omega
-        have := bookGraph_adj_of_spine (B := B) (u := w.1) (v := v.1) (by omega) v.2 (Or.inl hv')
+        have := bookGraph_adj_of_spine (B := B) (u := w.1) (v := v.1) by_o v.2 (Or.inl hv')
         exact this
     rcases le_total a.1 b.1 with hle | hle
-    · exact step (b.1 - a.1) a ha b (by omega)
-    · have := step (a.1 - b.1) b hb a (by omega)
+    · exact step (b.1 - a.1) a ha b by_o
+    · have := step (a.1 - b.1) b hb a by_o
       exact rtg_symm (fun u v ⟨h1, h2, h3⟩ => ⟨h1.symm, h3, h2⟩) this
 
 /-- **Regions facing each other across the chain have adjacent nodes.** -/
@@ -231,10 +231,10 @@ theorem cross_of_graphOK (hP : C.P.Simple) (hN : IsNF (chainModel C) Q N) {reg :
     (hcr : CrossAdj C U V) :
     ∃ a b : Fin B.N, rgNode reg N B a = U ∧ rgNode reg N B b = V ∧ (bookGraph B).Adj a b := by
   obtain ⟨p, q, hp, hq, hpU, hqV, hz⟩ := cross_zip C hP hN hR hA hU hV hUV hcr
-  have hpN : p < B.N := lt_of_lt_of_le hp hB.arcs_le
-  have hqN : q < B.N := lt_of_lt_of_le hq hB.arcs_le
-  refine ⟨⟨p, hpN⟩, ⟨q, hqN⟩, by unfold rgNode; rw [BookData.ite_t hp]; exact hpU,
-    by unfold rgNode; rw [BookData.ite_t hq]; exact hqV, ?_⟩
+  have hpN := lt_of_lt_of_le hp hB.arcs_le
+  have hqN := lt_of_lt_of_le hq hB.arcs_le
+  refine ⟨⟨p, hpN⟩, ⟨q, hqN⟩, by unfold rgNode; rwa [BookData.ite_t hp],
+    by unfold rgNode; rwa [BookData.ite_t hq], ?_⟩
   have hpq : p ≠ q := fun h => hUV (by rw [← hpU, ← hqV, h])
   rcases lt_or_gt_of_ne hpq with hlt | hlt
   · rcases hB.O_complete p q hlt hq hz with h | h

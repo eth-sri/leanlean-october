@@ -65,11 +65,11 @@ theorem ukey_mono {i₀ j j' : ℕ} (hi₀ : i₀ < nk M F U) (hjj : j < j') (hj
     hostKeys_bounds (hk_mem hM hF hfin hi)
   unfold ukey
   split_ifs with h1 h2 h2
-  · exact hk_strictMono hM hF hfin (by omega) h2
-  · have := hb _ h1; have := hb (i₀ + j' - nk M F U) (by omega); linarith
+  · exact hk_strictMono hM hF hfin by_o h2
+  · have := hb _ h1; have := hb (i₀ + j' - nk M F U) by_o; linarith
   · omega
   · have := hk_strictMono (U := U) hM hF hfin (i := i₀ + j - nk M F U)
-      (j := i₀ + j' - nk M F U) (by omega) (by omega)
+      (j := i₀ + j' - nk M F U) by_o by_o
     linarith
 
 theorem wrapK_ukey {i₀ j : ℕ} (hi₀ : i₀ < nk M F U) (hj : j < nk M F U) :
@@ -80,9 +80,9 @@ theorem wrapK_ukey {i₀ j : ℕ} (hi₀ : i₀ < nk M F U) (hj : j < nk M F U) 
   split_ifs with h1 h2 h2
   · rw [Nat.mod_eq_of_lt h1]
   · exfalso; exact h2 (hb _ h1).2
-  · exfalso; have := hb (i₀ + j - nk M F U) (by omega); linarith
+  · exfalso; have := hb (i₀ + j - nk M F U) by_o; linarith
   · rw [add_sub_cancel_right, show (i₀ + j) % nk M F U = i₀ + j - nk M F U by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]]
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]]
 
 /-- `ukey` is the unwrapped key relative to `hk i₀`. -/
 theorem ukey_eq_unwrap {i₀ j : ℕ} (hi₀ : i₀ < nk M F U) (hj : j < nk M F U) :
@@ -93,14 +93,14 @@ theorem ukey_eq_unwrap {i₀ j : ℕ} (hi₀ : i₀ < nk M F U) (hj : j < nk M F
   · exfalso; rw [Nat.mod_eq_of_lt h1] at h2
     rcases Nat.eq_zero_or_pos j with hj0 | hj0
     · subst hj0; exact h2 (by rw [add_zero])
-    · exact h2 (hk_strictMono hM hF hfin (by omega) h1).le
+    · exact h2 (hk_strictMono hM hF hfin by_o h1).le
   · exfalso
     rw [show (i₀ + j) % nk M F U = i₀ + j - nk M F U by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]] at h2
-    exact not_le.2 (hk_strictMono hM hF hfin (i := i₀ + j - nk M F U) (j := i₀) (by omega)
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]] at h2
+    exact not_le.2 (hk_strictMono hM hF hfin (i := i₀ + j - nk M F U) (j := i₀) by_o
       hi₀) h2
   · rw [show (i₀ + j) % nk M F U = i₀ + j - nk M F U by
-      rw [Nat.mod_eq_sub_mod (by omega), Nat.mod_eq_of_lt (by omega)]]
+      rw [Nat.mod_eq_sub_mod by_o, Nat.mod_eq_of_lt by_o]]
 
 omit hM hF hfin in
 theorem ukey_zero {i₀ : ℕ} (hi₀ : i₀ < nk M F U) : ukey M F U i₀ 0 = hk M F U i₀ := by
@@ -111,10 +111,10 @@ end
 /-- Steps from `a` to `b` modulo `N`. -/
 theorem add_steps_mod {N a b : ℕ} (ha : a < N) (hb : b < N) : (a + (b + N - a) % N) % N = b := by
   rcases Nat.lt_or_ge b a with h | h
-  · have e1 : (b + N - a) % N = b + N - a := Nat.mod_eq_of_lt (by omega)
+  · have e1 : (b + N - a) % N = b + N - a := Nat.mod_eq_of_lt by_o
     rw [e1, show a + (b + N - a) = b + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt hb]
   · have e1 : (b + N - a) % N = b - a := by
-      rw [show b + N - a = (b - a) + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt (by omega)]
+      rw [show b + N - a = (b - a) + N by omega, Nat.add_mod_right, Nat.mod_eq_of_lt by_o]
     rw [e1, show a + (b - a) = b by omega, Nat.mod_eq_of_lt hb]
 
 /-! ## The keys of an arc -/
@@ -144,7 +144,7 @@ theorem arc_keys (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.N
     (hU : U ∈ M.regions F) {l r : ℝ} (harc : M.IsArc F U l r) :
     ∃ i_l d, ArcData M F U l r i_l d := by
   set N := nk M F U with hN
-  set n : ℝ := (M.W.n : ℝ)
+  set n := (M.W.n : ℝ)
   obtain ⟨hcl, hcr, hlr⟩ := WalkAx.arc_cuts hne harc
   have hlK : l ∈ hostKeys M F U := by
     obtain ⟨c, ⟨hc, ht⟩, p, t, hA, h⟩ := hM.exists_exit_at_start hF hfin hne hU harc
@@ -155,39 +155,39 @@ theorem arc_keys (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.N
   obtain ⟨i_l, hil, hl⟩ := exists_hk hM hF hfin hlK
   obtain ⟨i_r, hir, hr⟩ := exists_hk hM hF hfin hrK
   have hne' : i_l ≠ i_r := fun h => hlr (by rw [← hl, ← hr, h])
-  have hN2 : 2 ≤ N := by omega
+  have hN2 : 2 ≤ N := by_o
   set d := (i_r + N - i_l) % N with hd
-  have hdN : d < N := Nat.mod_lt _ (by omega)
+  have hdN : d < N := Nat.mod_lt _ by_o
   have hid : (i_l + d) % N = i_r := add_steps_mod hil hir
   have hd0 : 0 < d := by
     by_contra h0; push Not at h0
-    have : d = 0 := by omega
+    have : d = 0 := by_o
     rw [this, add_zero, Nat.mod_eq_of_lt hil] at hid
     exact hne' hid
   have hb : ∀ i, i < N → 0 ≤ hk M F U i ∧ hk M F U i < n := fun i hi =>
     hostKeys_bounds (hk_mem hM hF hfin hi)
-  have hlb : 0 ≤ l ∧ l < n := hl ▸ hb i_l hil
-  have hrb : 0 ≤ r ∧ r < n := hr ▸ hb i_r hir
+  have hlb := hl ▸ hb i_l hil
+  have hrb := hr ▸ hb i_r hir
   -- the unwrapped keys
   have huk : ∀ j, j < N → ukey M F U i_l j = unwrapK n l (hk M F U ((i_l + j) % N)) := by
     intro j hj; rw [ukey_eq_unwrap hM hF hfin hil hj, hl]
   have hud : ukey M F U i_l d = unwrapK n l r := by rw [huk d hdN, hid, hr]
   have hu0 : ukey M F U i_l 0 = l := by rw [ukey_zero hil, hl]
   have hmem : ∀ j, j < N → 0 ≤ hk M F U ((i_l + j) % N) ∧ hk M F U ((i_l + j) % N) < n :=
-    fun j _ => hb _ (Nat.mod_lt _ (by omega))
+    fun j _ => hb _ (Nat.mod_lt _ by_o)
   have hlr' : unwrapK n l l < unwrapK n l r := by
     rw [unwrapK_self, ← hud, ← hu0]; exact ukey_mono hM hF hfin hil hd0 hdN
   -- inner keys are in the arc
   have hin : ∀ j, 0 < j → j < d → sideInArc l r (hk M F U ((i_l + j) % N)) := by
     intro j hj0 hjd
-    rw [cyc_unwrap hlb hlb hrb (hmem j (by omega)) hlr', unwrapK_self, ← huk j (by omega)]
+    rw [cyc_unwrap hlb hlb hrb (hmem j by_o) hlr', unwrapK_self, ← huk j by_o]
     refine ⟨?_, ?_⟩
-    · rw [← hu0]; exact ukey_mono hM hF hfin hil hj0 (by omega)
+    · rw [← hu0]; exact ukey_mono hM hF hfin hil hj0 by_o
     · rw [← hud]; exact ukey_mono hM hF hfin hil hjd hdN
   refine ⟨i_l, d, hil, hd0, hdN, hl, by rw [hid, hr], hud, fun j hj0 hjd => ⟨?_, hin j hj0 hjd⟩,
     ?_, ?_⟩
   · -- a host key inside an arc is a vertex key
-    have hK := hk_mem (U := U) hM hF hfin (Nat.mod_lt (i_l + j) (show 0 < N by omega))
+    have hK := hk_mem (U := U) hM hF hfin (Nat.mod_lt (i_l + j) (by omega))
     rcases hK with hx | ⟨k, -, e, -⟩
     · exact absurd (exitKeys_subset_cuts hx) (harc.2.2.2.2.2.1 _ (hin j hj0 hjd))
     · exact ⟨k, e⟩
@@ -199,14 +199,14 @@ theorem arc_keys (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.N
     have hxK : (k : ℝ) ∈ hostKeys M F U := Or.inr ⟨k, hkn, rfl, l, r, harc, hxin⟩
     obtain ⟨i, hi, hik⟩ := exists_hk hM hF hfin hxK
     set j := (i + N - i_l) % N with hj
-    have hjN : j < N := Nat.mod_lt _ (by omega)
-    have hij : (i_l + j) % N = i := add_steps_mod hil hi
+    have hjN : j < N := Nat.mod_lt _ by_o
+    have hij := add_steps_mod hil hi
     have hxb : 0 ≤ (k : ℝ) ∧ (k : ℝ) < n := ⟨hx0, hxn⟩
     have hxu := (cyc_unwrap hlb hlb hrb hxb hlr').1 hxin
     rw [unwrapK_self, ← hik, ← hij, ← huk j hjN] at hxu
     refine ⟨j, ?_, ?_, by rw [hij, hik]⟩
     · by_contra h0; push Not at h0
-      have : j = 0 := by omega
+      have : j = 0 := by_o
       rw [this, hu0] at hxu; exact lt_irrefl _ hxu.1
     · by_contra hjd; push Not at hjd
       rcases hjd.lt_or_eq with h | h
@@ -218,19 +218,19 @@ theorem arc_keys (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) (hne : F.N
   · -- the gaps along the arc
     intro j hjd y hy0 hyn hy
     have hyb : 0 ≤ y ∧ y < n := ⟨hy0, hyn⟩
-    have hj0 := hmem j (by omega)
-    have hj1 := hmem (j + 1) (by omega)
+    have hj0 := hmem j by_o
+    have hj1 := hmem (j + 1) by_o
     have hu01 : unwrapK n l (hk M F U ((i_l + j) % N)) <
         unwrapK n l (hk M F U ((i_l + (j + 1)) % N)) := by
-      rw [← huk j (by omega), ← huk (j + 1) (by omega)]
-      exact ukey_mono hM hF hfin hil (by omega) (by omega)
+      rw [← huk j by_o, ← huk (j + 1) by_o]
+      exact ukey_mono hM hF hfin hil by_o by_o
     have hy' := (cyc_unwrap hlb hj0 hj1 hyb hu01).1 hy
     rw [cyc_unwrap hlb hlb hrb hyb hlr', unwrapK_self]
-    rw [← huk j (by omega), ← huk (j + 1) (by omega)] at hy'
+    rw [← huk j by_o, ← huk (j + 1) by_o] at hy'
     constructor
     · rcases Nat.eq_zero_or_pos j with h0 | h0
       · rw [h0, hu0] at hy'; exact hy'.1
-      · have := ukey_mono (U := U) hM hF hfin hil h0 (show j < N by omega)
+      · have := ukey_mono (U := U) hM hF hfin hil h0 (by omega)
         rw [hu0] at this; linarith [hy'.1]
     · rcases (show j + 1 ≤ d by omega).lt_or_eq with h1 | h1
       · have := ukey_mono (U := U) hM hF hfin hil h1 hdN
@@ -258,8 +258,8 @@ theorem hostPt_wrap_lerp (W : Polygon) (hn : 0 < W.n) {p : ℕ} (hp : p < 2 * W.
   have hnr : (0 : ℝ) < n := by exact_mod_cast hn
   rcases hy2.lt_or_eq with hy2 | hy2
   · -- inside the edge
-    have ht0 : 0 ≤ y - p := by linarith
-    have ht1 : y - p < 1 := by linarith
+    have ht0 : 0 ≤ y - p := by_l
+    have ht1 : y - p < 1 := by_l
     unfold wrapK
     split_ifs with h
     · have hpn : p < n := by
@@ -274,7 +274,7 @@ theorem hostPt_wrap_lerp (W : Polygon) (hn : 0 < W.n) {p : ℕ} (hp : p < 2 * W.
         have : (p : ℝ) + 1 ≤ n := by exact_mod_cast hpn
         linarith
       have hmod : p % n = p - n := by
-        rw [Nat.mod_eq_sub_mod hpn, Nat.mod_eq_of_lt (by omega)]
+        rw [Nat.mod_eq_sub_mod hpn, Nat.mod_eq_of_lt by_o]
       rw [show y - n = ((p - n : ℕ) : ℝ) + (y - p) by push_cast [hpn]; ring,
         hostPt_eq W ht0 ht1, hmod]
       rfl
@@ -303,8 +303,8 @@ theorem hostPt_wrap_lerp (W : Polygon) (hn : 0 < W.n) {p : ℕ} (hp : p < 2 * W.
       rcases Nat.lt_or_ge p n with h' | h'
       · rw [Nat.mod_eq_of_lt h', show p + 1 = n by omega, Nat.mod_self]; omega
       · have e : p % n = p - n := by
-          rw [Nat.mod_eq_sub_mod h', Nat.mod_eq_of_lt (show p - n < n by omega)]
-        rw [e, Nat.mod_eq_of_lt (show p - n + 1 < n by omega)]
+          rw [Nat.mod_eq_sub_mod h', Nat.mod_eq_of_lt (by omega)]
+        rw [e, Nat.mod_eq_of_lt (by omega)]
         omega
 
 /-- **A piece of an arc** lies in one walk edge: between two consecutive host keys of an arc there
@@ -317,45 +317,45 @@ theorem arc_piece (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {l r : �
         hostPt M.W (wrapK M.W.n y) = Chazelle.Geometry.lerp (M.W.vtx (p % M.W.n))
           (M.W.vtx ((p % M.W.n + 1) % M.W.n)) (y - p) := by
   set N := nk M F U
-  set n : ℝ := (M.W.n : ℝ)
+  set n := (M.W.n : ℝ)
   have hil := hA.hil
   have hdN := hA.hdN
   have hb : ∀ i, i < N → 0 ≤ hk M F U i ∧ hk M F U i < n := fun i hi =>
     hostKeys_bounds (hk_mem hM hF hfin hi)
-  have hlb : 0 ≤ l ∧ l < n := hA.hl ▸ hb i_l hil
-  have hn : 0 < n := lt_of_le_of_lt hlb.1 hlb.2
+  have hlb := hA.hl ▸ hb i_l hil
+  have hn := lt_of_le_of_lt hlb.1 hlb.2
   have hnN : 0 < M.W.n := by
     have : (0 : ℝ) < (M.W.n : ℝ) := hn
     exact_mod_cast this
   have hu0 : ukey M F U i_l 0 = l := by rw [ukey_zero hil, hA.hl]
   have hab : ukey M F U i_l j < ukey M F U i_l (j + 1) :=
-    ukey_mono hM hF hfin hil (Nat.lt_succ_self j) (by omega)
+    ukey_mono hM hF hfin hil (Nat.lt_succ_self j) by_o
   have hla : l ≤ ukey M F U i_l j := by
     rcases Nat.eq_zero_or_pos j with h0 | h0
     · rw [h0, hu0]
-    · rw [← hu0]; exact (ukey_mono hM hF hfin hil h0 (by omega)).le
+    · rw [← hu0]; exact (ukey_mono hM hF hfin hil h0 by_o).le
   have hbr : ukey M F U i_l (j + 1) ≤ unwrapK n l r := by
     rw [← hA.hud]
     rcases (show j + 1 ≤ d by omega).lt_or_eq with h | h
     · exact (ukey_mono hM hF hfin hil h hdN).le
     · rw [h]
-  have hrb : 0 ≤ r ∧ r < n := hA.hr ▸ hb _ (Nat.mod_lt _ (by omega))
-  have hur : unwrapK n l r < l + n := (unwrapK_bounds hlb hrb).2
-  have ha0 : 0 ≤ ukey M F U i_l j := le_trans hlb.1 hla
+  have hrb : 0 ≤ r ∧ r < n := hA.hr ▸ hb _ (Nat.mod_lt _ by_o)
+  have hur := (unwrapK_bounds hlb hrb).2
+  have ha0 := le_trans hlb.1 hla
   set p := ⌊ukey M F U i_l j⌋₊ with hp
-  have hpa : (p : ℝ) ≤ ukey M F U i_l j := Nat.floor_le ha0
+  have hpa := Nat.floor_le ha0
   have hap : ukey M F U i_l j < p + 1 := Nat.lt_floor_add_one _
   -- no vertex key inside the piece
   have hbp : ukey M F U i_l (j + 1) ≤ p + 1 := by
     by_contra hbp
     push Not at hbp
-    set k : ℝ := (p : ℝ) + 1
-    have hk1 : l < k := lt_of_le_of_lt hla hap
-    have hk2 : k < unwrapK n l r := lt_of_lt_of_le hbp hbr
-    have hk3 : k < l + n := lt_trans hk2 hur
+    set k := (p : ℝ) + 1
+    have hk1 := lt_of_le_of_lt hla hap
+    have hk2 := lt_of_lt_of_le hbp hbr
+    have hk3 := lt_trans hk2 hur
     have hwk := ArcT.wrapK_nonneg (n := n) (le_trans hlb.1 hk1.le) (by linarith [hlb.2])
     have hwl := ArcT.wrapK_lt hn (le_trans hlb.1 hk1.le) (by linarith [hlb.2])
-    have huw : unwrapK n l (wrapK n k) = k := unwrapK_wrapK hlb.1 hn hk1.le hk3
+    have huw := unwrapK_wrapK hlb.1 hn hk1.le hk3
     have hlr' : unwrapK n l l < unwrapK n l r := by rw [unwrapK_self]; exact lt_trans hk1 hk2
     have hin : sideInArc l r (wrapK n k) := by
       rw [cyc_unwrap hlb hlb hrb ⟨hwk, hwl⟩ hlr', unwrapK_self, huw]
@@ -371,16 +371,16 @@ theorem arc_piece (hM : WalkAx M) (hF : F ⊆ M.Adm) (hfin : F.Finite) {l r : �
         push_cast [this]; ring
     obtain ⟨j', hj'0, hj'd, hj'⟩ := hA.vtx _ hwk hwl hin hint
     have hu' : ukey M F U i_l j' = k := by
-      rw [ukey_eq_unwrap hM hF hfin hil (by omega), hA.hl, hj', huw]
+      rw [ukey_eq_unwrap hM hF hfin hil by_o, hA.hl, hj', huw]
     have h1 : j < j' := by
       by_contra h; push Not at h
       rcases h.lt_or_eq with h | h
-      · have := ukey_mono hM hF hfin hil h (by omega); linarith
+      · have := ukey_mono hM hF hfin hil h by_o; linarith
       · rw [h] at hu'; linarith
     have h2 : j' < j + 1 := by
       by_contra h; push Not at h
       rcases h.lt_or_eq with h | h
-      · have := ukey_mono hM hF hfin hil h (by omega); linarith
+      · have := ukey_mono hM hF hfin hil h by_o; linarith
       · rw [← h] at hu'; linarith
     omega
   refine ⟨p, hpa, hbp, ?_, fun y hy1 hy2 => ?_⟩

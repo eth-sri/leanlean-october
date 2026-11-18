@@ -44,14 +44,14 @@ def FrameR (B : Finset ℕ) (Wr : ℕ → Prop) (c c' : Config) (k : ℕ) : Prop
     c'.output = c.output ∧ c.nreg ALLOC ≤ c'.nreg ALLOC ∧ c'.nreg ALLOC ≤ c.nreg ALLOC + k
 
 theorem FrameR.refl (B : Finset ℕ) (Wr : ℕ → Prop) (c : Config) : FrameR B Wr c c 0 :=
-  ⟨fun _ _ _ _ => rfl, fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by omega⟩
+  ⟨fun _ _ _ _ => rfl, fun _ _ _ => rfl, fun _ _ => rfl, fun _ _ => rfl, rfl, le_rfl, by_o⟩
 
 theorem FrameR.trans {B : Finset ℕ} {Wr : ℕ → Prop} {c c₁ c₂ : Config} {k₁ k₂ : ℕ}
     (h₁ : FrameR B Wr c c₁ k₁) (h₂ : FrameR B Wr c₁ c₂ k₂) : FrameR B Wr c c₂ (k₁ + k₂) := by
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h₁
   obtain ⟨r₂, rr₂, m₂, rm₂, o₂, a₂, b₂⟩ := h₂
   refine ⟨fun r hr ha hw => ?_, fun r hr hw => ?_, fun a ha => ?_, fun a ha => ?_, o₂.trans o₁,
-    a₁.trans a₂, by omega⟩
+    a₁.trans a₂, by_o⟩
   · rw [r₂ r hr ha hw, r₁ r hr ha hw]
   · rw [rr₂ r hr hw, rr₁ r hr hw]
   · rw [m₂ a (lt_of_lt_of_le ha a₁), m₁ a ha]
@@ -63,7 +63,7 @@ theorem FrameR.mono {B B' : Finset ℕ} {Wr Wr' : ℕ → Prop} {c c' : Config} 
   obtain ⟨r₁, rr₁, m₁, rm₁, o₁, a₁, b₁⟩ := h
   exact ⟨fun r hr ha hw => r₁ r (fun h => hr (hB h)) ha (fun h => hw (hW r h)),
     fun r hr hw => rr₁ r (fun h => hr (hB h)) (fun h => hw (hW r h)), m₁, rm₁, o₁, a₁,
-    by omega⟩
+    by_o⟩
 
 /-- A register frame gives a named frame. -/
 theorem FrameR.of_frameB {B : Finset ℕ} {Wr : ℕ → Prop} {Bw : ℕ → Bool} {c c' : Config}
@@ -96,19 +96,19 @@ theorem FrameR.of_frame {B : Finset ℕ} {Wr : ℕ → Prop} {c c' : Config} {k 
 theorem hostAt_agree {m m' : ℕ → ℕ} {h E : ℕ} {H : Host} (hH : HostAt m h H)
     (hE : h + 3 * H.length + 4 ≤ E) (he : ∀ a, a < E → m' a = m a) : HostAt m' h H := by
   obtain ⟨h0, h1⟩ := hH
-  refine ⟨by rw [he _ (by omega)]; exact h0, fun i hi => ?_⟩
+  refine ⟨by rwa [he _ by_o], fun i hi => ?_⟩
   have := h1 i hi
   revert this
   cases H.getD i (.run 0 0) with
   | run a l =>
     intro h; simp only at h ⊢
-    rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+    rwa [he _ by_o, he _ by_o, he _ by_o]
   | pt x =>
     cases x with
-    | vtx j => intro h; simp only at h ⊢; rw [he _ (by omega), he _ (by omega)]; exact h
+    | vtx j => intro h; simp only at h ⊢; rwa [he _ by_o, he _ by_o]
     | onEdge e j =>
       intro h; simp only at h ⊢
-      rw [he _ (by omega), he _ (by omega), he _ (by omega)]; exact h
+      rwa [he _ by_o, he _ by_o, he _ by_o]
 
 /-- **A copied chain descriptor** (host layout below `E`, the five words copied to `d`). -/
 theorem chainDescAt_copy {m m' : ℕ → ℕ} {bw d E : ℕ} {Q : Polygon} {H : Host} {C : Chain}
@@ -116,14 +116,14 @@ theorem chainDescAt_copy {m m' : ℕ → ℕ} {bw d E : ℕ} {Q : Polygon} {H : 
     (he : ∀ a, a < E → m' a = m a) (hc : ∀ j, j < 5 → m' (d + j) = m (bw + j)) :
     ChainDescAt m' d Q H C := by
   obtain ⟨h0, h1, h2, h3, h4, h5⟩ := hC
-  have c0 := hc 0 (by omega)
-  have c1 := hc 1 (by omega)
-  have c2 := hc 2 (by omega)
-  have c3 := hc 3 (by omega)
-  have c4 := hc 4 (by omega)
+  have c0 := hc 0 by_o
+  have c1 := hc 1 by_o
+  have c2 := hc 2 by_o
+  have c3 := hc 3 by_o
+  have c4 := hc 4 by_o
   simp only [add_zero] at c0
-  refine ⟨?_, h1, by rw [c1]; exact h2, by rw [c2]; exact h3, by rw [c3]; exact h4,
-    by rw [c4]; exact h5⟩
+  refine ⟨?_, h1, by rwa [c1], by rwa [c2], by rwa [c3],
+    by rwa [c4]⟩
   rw [c0]
   exact hostAt_agree h0 hE he
 
@@ -134,14 +134,14 @@ theorem chainWF_copy {P : Polygon} {m m' : ℕ → ℕ} {bw d E E' : ℕ} {H : H
     (hd : d + 5 ≤ E') (hEE : E ≤ E') : ChainWF P E' m' d := by
   obtain ⟨hl, hHW, hEb, hs⟩ := hwf.2 H C hC
   refine ⟨hd, fun H' C' hC' => ?_⟩
-  have c0 : m' d = m bw := by simpa using hc 0 (by omega)
-  have hH' : HostAt m' (m bw) H := hostAt_agree hC.1 hEb he
+  have c0 : m' d = m bw := by simpa using hc 0 by_o
+  have hH' := hostAt_agree hC.1 hEb he
   have hHH : H' = H := NFLoc.hostAt_unique (by rw [← c0]; exact hC'.1) hH'
   subst hHH
   refine ⟨hl, hHW, by rw [c0]; omega, ?_⟩
-  have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, hc 1 (by omega)]
+  have e1 : C'.s = C.s := by rw [← hC'.2.2.1, ← hC.2.2.1, hc 1 by_o]
   have e2 : C'.P = C.P := by rw [hC'.2.1, hC.2.1]
-  rw [e1, e2]; exact hs
+  rwa [e1, e2]
 
 
 end
