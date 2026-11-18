@@ -61,32 +61,9 @@ theorem card_pinnedClusterColoring [Finite V] [Finite C]
 def clusterColoringProbability [Finite V] [Finite C] (R : Setoid V) (σ : V → C) : ℝ :=
   if R ≤ Setoid.ker σ then ((Nat.card C : ℝ) ^ Nat.card (Quotient R))⁻¹ else 0
 
-theorem clusterColoringProbability_nonneg [Finite V] [Finite C]
-    (R : Setoid V) (σ : V → C) : 0 ≤ clusterColoringProbability R σ := by
-  unfold clusterColoringProbability
-  split_ifs <;> positivity
 
-theorem sum_clusterColoringProbability [Fintype V] [Fintype C] [Nonempty C]
-    (R : Setoid V) : ∑ σ : V → C, clusterColoringProbability R σ = 1 := by
-  classical
-  have hc : (Nat.card C : ℝ) ≠ 0 := by exact_mod_cast (Nat.card_pos (α := C)).ne'
-  have hn : (Nat.card (ClusterColoring R C) : ℝ) =
-      (Nat.card C : ℝ) ^ Nat.card (Quotient R) := by
-    exact_mod_cast card_clusterColoring (C := C) R
-  unfold clusterColoringProbability
-  simp only [Finset.sum_ite, Finset.sum_const_zero, add_zero, Finset.sum_const, nsmul_eq_mul,
-    ← Fintype.card_subtype, ← Nat.card_eq_fintype_card]
-  rw [hn, mul_inv_cancel₀ (pow_ne_zero _ hc)]
 
-/-- A genuine finite probability law for uniform independent cluster colours. -/
-def clusterColoringLaw [Fintype V] [Fintype C] [Nonempty C] (R : Setoid V) : PMF (V → C) :=
-  PMF.ofFintype (fun σ => ENNReal.ofReal (clusterColoringProbability R σ)) (by
-    rw [← ENNReal.ofReal_sum_of_nonneg (fun σ _ => clusterColoringProbability_nonneg R σ),
-      sum_clusterColoringProbability, ENNReal.ofReal_one])
 
-@[simp] theorem clusterColoringLaw_apply [Fintype V] [Fintype C] [Nonempty C]
-    (R : Setoid V) (σ : V → C) :
-    clusterColoringLaw R σ = ENNReal.ofReal (clusterColoringProbability R σ) := rfl
 
 end
 

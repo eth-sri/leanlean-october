@@ -41,14 +41,7 @@ cylinder with distinct bottom and top rows. -/
 def torusRCSeamClosed (A : RCConfig N M) : RCConfig N M :=
   fun e => if e.2.val = 0 then false else A e
 
-@[simp] theorem torusRCSeamClosed_seam (hM : 0 < M) (A : RCConfig N M)
-    (i : Fin N) : torusRCSeamClosed A (i, (⟨0, hM⟩ : Fin M)) = false := by
-  simp [torusRCSeamClosed]
 
-@[simp] theorem torusRCSeamClosed_away (A : RCConfig N M)
-    (i : Fin N) (j : Fin M) (hj : j.val ≠ 0) :
-    torusRCSeamClosed A (i, j) = A (i, j) := by
-  simp [torusRCSeamClosed, hj]
 
 /-- The clean cylinder crossing event used in the premise `hUr` below: there are `r` different
 open primal clusters of the seam-closed configuration, each joining row zero

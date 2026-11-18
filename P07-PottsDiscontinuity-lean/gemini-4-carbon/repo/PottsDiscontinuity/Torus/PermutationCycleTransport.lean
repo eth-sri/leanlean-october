@@ -50,9 +50,5 @@ def permutationCycleEquivOfInverseIntertwining (p : Perm α) (q : Perm β) (e : 
     change Quotient.mk _ (e (e.symm b)) = Quotient.mk _ b
     rw [Equiv.apply_symm_apply]
 
-@[simp] theorem permutationCycleEquivOfInverseIntertwining_mk
-    (p : Perm α) (q : Perm β) (e : α ≃ β) (he : ∀ x, e (p x) = q.symm (e x)) (x : α) :
-    permutationCycleEquivOfInverseIntertwining p q e he (Quotient.mk _ x) =
-      Quotient.mk _ (e x) := rfl
 
 end PottsDiscontinuity.Torus

@@ -2,7 +2,7 @@
 Namespaces/imports adapted to the shared FK library. -/
 module
 
-public import PottsDiscontinuity.Duality.RectangleFlowDimension
+public import PottsDiscontinuity.Duality.RectangleDualConfiguration
 public import Mathlib.Data.Int.Interval
 
 @[expose] public section

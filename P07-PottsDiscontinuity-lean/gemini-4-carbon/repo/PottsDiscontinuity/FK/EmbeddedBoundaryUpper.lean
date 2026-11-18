@@ -19,7 +19,6 @@ variable {V W : Type*} [Finite V] [Finite W]
 
 local instance embeddedUpperInnerEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance embeddedUpperOuterEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
-local instance embeddedUpperInnerEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 local instance embeddedUpperOuterEdgeDecidableEq : DecidableEq H.edgeSet := Classical.decEq _
 
 private theorem fkLaw_measure_toReal_eq_expectation

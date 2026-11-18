@@ -78,10 +78,6 @@ theorem positions_injective {N n : ℕ} : Function.Injective (positions (N := N)
   apply Subtype.ext
   rw [← image_orderEmbOfFin_univ x.1 x.2, ← image_orderEmbOfFin_univ y.1 y.2, hemb]
 
-@[simp] theorem stateOfTuple_positions {N n : ℕ} (x : State N n) :
-    stateOfTuple (positions x) (positions_mem_orderedTuples x) = x := by
-  apply positions_injective
-  exact positions_stateOfTuple _ _
 
 /-- Reindex a sum over the actual sector by its unique increasing coordinate tuples. -/
 theorem sum_states_eq_sum_orderedTuples {N n : ℕ} (F : (Fin n → ℤ) → ℂ) :

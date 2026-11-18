@@ -32,13 +32,13 @@ theorem free_no_infinite_clusters (θ : FK.Parameters)
         RCInfinite.infiniteAt 0 := by
       simpa [latticeTranslate] using (RCInfinite.infiniteAt_preimage x 0)
     rw [hpre] at htrans
-    simpa [Duality.infiniteClusterAt_eq_infiniteAt] using htrans.symm.trans hzero
+    exact htrans.symm.trans hzero
   have hunion : μ RCInfinite.infiniteClusterEvent = 0 := by
     rw [RCInfinite.infiniteClusterEvent_eq_iUnion]
     apply measure_iUnion_null
     intro x
     exact hsite x
-  simpa [Duality.existsInfiniteCluster_eq_infiniteClusterEvent] using hunion
+  exact hunion
 
 /-- The positive RC rate premise gives the free no-infinite-cluster and wired
 positive-origin conclusions at the exact Potts critical parameters. -/

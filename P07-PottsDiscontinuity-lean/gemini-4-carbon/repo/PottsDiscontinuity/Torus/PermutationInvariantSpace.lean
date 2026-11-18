@@ -53,10 +53,6 @@ theorem finrank_cycleFunctions (p : Perm α) :
 def cycleDifference (p : Perm α) (a b : α) : cycleFunctions p →ₗ[ℚ] ℚ :=
   ((LinearMap.proj a : (α → ℚ) →ₗ[ℚ] ℚ) - LinearMap.proj b).comp (cycleFunctions p).subtype
 
-omit [Fintype α] [DecidableEq α] in
-@[simp] theorem cycleDifference_apply (p : Perm α) (a b : α) (f : cycleFunctions p) :
-    cycleDifference p a b f = f.val a - f.val b := rfl
-
 omit [Fintype α] in
 theorem function_swap_eq_of_eq (f : α → ℚ) {a b : α} (hab : f a = f b) (x : α) :
     f (swap a b x) = f x := by

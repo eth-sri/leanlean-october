@@ -3,7 +3,7 @@ module
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
-public import PottsDiscontinuity.Duality.DistinctMeasures
+public import PottsDiscontinuity.Duality.DiagonalComparison
 public import PottsDiscontinuity.Duality.WiredPercolation
 
 /-! The discontinuity consequences of positive diagonal decay, including the
@@ -30,15 +30,13 @@ theorem critical_discontinuity_of_exponential_decay (q : Set.Ici (1 : ℝ))
   have hμ₁dual : IsRCInfiniteVolumeLimit (dualParameters (criticalParameters q)).toP
       (dualParameters (criticalParameters q)).toQ 1 μ₁ := by
     simpa only [dualParameters_criticalParameters] using hμ₁
-  refine ⟨?_, wired_origin_pos_of_free_exponential_decay (criticalParameters q)
-    μ₀ μ₁ hμ₀ hμ₁dual C c hC hc hdecay,
-    wired_existsInfiniteCluster_eq_one_of_free_decay (criticalParameters q)
-      μ₀ μ₁ hμ₀ hμ₁dual C c hC hc hdecay,
-    (free_ne_wired_at_critical_of_exponential_decay q μ₀ μ₁ hμ₀ hμ₁ C c hC hc hdecay).symm⟩
-  apply infiniteClusterAt_zero_of_exponential_decay μ₀ C c hc
-  intro x
-  rw [← ENNReal.ofReal_toReal (measure_ne_top μ₀ _)]
-  exact ENNReal.ofReal_le_ofReal (hdecay x)
+  have h0 : μ₀ (infiniteClusterAt 0) = 0 :=
+    infiniteClusterAt_zero_of_exponential_decay μ₀ C c hc fun x =>
+      ENNReal.ofReal_toReal (measure_ne_top μ₀ _) ▸ ENNReal.ofReal_le_ofReal (hdecay x)
+  have h1 : 0 < μ₁ (infiniteClusterAt 0) :=
+    wired_origin_pos_of_free_exponential_decay (criticalParameters q) μ₀ μ₁ hμ₀ hμ₁dual C c hC hc hdecay
+  exact ⟨h0, h1, wired_existsInfiniteCluster_eq_one_of_free_decay (criticalParameters q)
+    μ₀ μ₁ hμ₀ hμ₁dual C c hC hc hdecay, fun h => h1.ne' (h ▸ h0)⟩
 
 /-- The rate is taken along the exact frozen points
 `diagonalSite n = (floor(n/2), floor(n/2))`, with normalization 1/n. -/

@@ -12,8 +12,6 @@ open FK
 noncomputable section
 open scoped Classical
 attribute [local instance] configurationMeasurableSpace
-local instance edgeFintype {V : Type*} [Finite V] (G : SimpleGraph V) : Fintype G.edgeSet :=
-  Fintype.ofFinite _
 attribute [local instance] edgeDecidableEq
 
 /-- The original lattice edges belonging to a finite induced box. -/

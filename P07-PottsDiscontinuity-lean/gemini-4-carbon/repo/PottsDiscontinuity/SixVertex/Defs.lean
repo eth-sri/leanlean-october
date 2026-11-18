@@ -67,9 +67,6 @@ def ArrowConfig.equivProd (N M : ℕ) :
 instance (N M : ℕ) : Fintype (ArrowConfig N M) :=
   Fintype.ofEquiv _ (ArrowConfig.equivProd N M).symm
 
-instance (N M : ℕ) : DecidableEq (ArrowConfig N M) := fun ω ω' =>
-  decidable_of_iff (ω.horiz = ω'.horiz ∧ ω.vert = ω'.vert)
-    ⟨fun h => ArrowConfig.ext h.1 h.2, fun h => h ▸ ⟨rfl, rfl⟩⟩
 
 variable {N M : ℕ}
 

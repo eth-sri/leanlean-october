@@ -51,36 +51,4 @@ theorem pfRoot_eq_of_strictly_positive_eigenvector {A : Matrix S S ℝ}
 
 end PositiveEigenvector
 
-section Covers
-
-variable {S T : Type*} [Fintype S] [Fintype T] [DecidableEq S] [DecidableEq T]
-
-/-- The sum of edge weights into every fiber equals the corresponding quotient edge weight.
-This formulation includes multiple edges and non-free quotient actions. -/
-def IsRowCover (A : Matrix S S ℝ) (B : Matrix T T ℝ) (f : S → T) : Prop :=
-  ∀ x t, (∑ y ∈ univ.filter (fun y => f y = t), A x y) = B (f x) t
-
-omit [DecidableEq S] in
-/-- Pullback along a row cover intertwines the two adjacency operators. -/
-theorem IsRowCover.mulVec {A : Matrix S S ℝ} {B : Matrix T T ℝ} {f : S → T}
-    (hc : IsRowCover A B f) (v : T → ℝ) : A *ᵥ (v ∘ f) = (B *ᵥ v) ∘ f := by
-  funext x
-  change (∑ y, A x y * v (f y)) = ∑ t, B (f x) t * v t
-  calc
-    (∑ y, A x y * v (f y)) = ∑ y, ∑ t, if f y = t then A x y * v t else 0 := by
-      apply sum_congr rfl
-      intro y _
-      simp
-    _ = ∑ t, ∑ y, if f y = t then A x y * v t else 0 := sum_comm
-    _ = ∑ t, (∑ y ∈ univ.filter (fun y => f y = t), A x y) * v t := by
-      apply sum_congr rfl
-      intro t _
-      rw [sum_mul, sum_filter]
-    _ = ∑ t, B (f x) t * v t := by
-      apply sum_congr rfl
-      intro t _
-      rw [hc x t]
-
-end Covers
-
 end PottsDiscontinuity.SixVertex

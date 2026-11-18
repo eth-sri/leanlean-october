@@ -68,9 +68,6 @@ theorem boundaryConditionIso_free_empty (e : G ≃g H) :
     Homeomorph.piCongrLeft, Equiv.piCongrLeft, SimpleGraph.Iso.mapEdgeSet,
     SimpleGraph.Hom.mapEdgeSet, latticeTranslationIso, latticeTranslate]
 
-@[simp] theorem boxVertexTranslationIso_apply (a c : LatticeVertex) (r : ℕ)
-    (v : BoxVertex c r) :
-    (boxVertexTranslationIso a c r v).val = latticeTranslate a v.val := rfl
 
 theorem boxEdgeEmbedding_translation (a c : LatticeVertex) (r : ℕ)
     (e : (boxGraph c r).edgeSet) :

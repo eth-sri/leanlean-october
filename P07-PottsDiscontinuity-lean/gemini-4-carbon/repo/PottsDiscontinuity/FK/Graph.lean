@@ -65,8 +65,6 @@ theorem openGraph_edgeSet (G : SimpleGraph V) (A : Configuration G) :
 def ActualConnected (G : SimpleGraph V) (A : Configuration G) (u v : V) : Prop :=
   (openGraph G A).Reachable u v
 
-theorem actualConnected_iff_walk (G : SimpleGraph V) (A : Configuration G) (u v : V) :
-    ActualConnected G A u v ↔ Nonempty ((openGraph G A).Walk u v) := Iff.rfl
 
 @[simp] theorem actualConnected_empty (G : SimpleGraph V) (u v : V) :
     ActualConnected G ∅ u v ↔ u = v := by
@@ -163,14 +161,6 @@ noncomputable def componentCount [Finite V] (G : SimpleGraph V)
     (ξ : BoundaryCondition V) (A : Configuration G) : ℕ :=
   Nat.card (Quotient (componentSetoid G ξ A))
 
-@[simp] theorem componentCount_empty [Finite V] (G : SimpleGraph V)
-    (ξ : BoundaryCondition V) : componentCount G ξ ∅ = Nat.card (Quotient ξ.partition) := by
-  rw [componentCount, componentSetoid_empty]
 
-/-- With no open edges and no wiring, each vertex is its own component. -/
-@[simp] theorem componentCount_free_empty [Finite V] (G : SimpleGraph V) (B : Set V) :
-    componentCount G (BoundaryCondition.free B) ∅ = Nat.card V := by
-  rw [componentCount_empty]
-  exact Nat.card_congr Setoid.quotientBotEquiv
 
 end PottsDiscontinuity.FK

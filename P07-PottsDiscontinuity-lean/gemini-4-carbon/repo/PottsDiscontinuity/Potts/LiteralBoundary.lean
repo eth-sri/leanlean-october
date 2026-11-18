@@ -106,16 +106,6 @@ theorem sum_literalJointProbability (q : ℕ) (hq : 2 ≤ q)
   let : Nonempty (Set.Icc 1 q) := ⟨⟨1, le_rfl, by omega⟩⟩
   exact sum_constraintJointProbability β (literalAgreement q V i)
 
-/-- A genuine probability mass function realizing the literal finite-volume
-spin-bond expansion. -/
-def literalJointLaw (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
-    (β : ℝ) (hβ : 0 < β) (i : Fin (q + 1)) :
-    PMF (SpinConfiguration q V × (LiteralBond V → Bool)) := by
-  let : Nonempty (Set.Icc 1 q) := ⟨⟨1, le_rfl, by omega⟩⟩
-  exact PMF.ofFintype (fun z => ENNReal.ofReal (literalJointProbability q V β i z.1 z.2)) (by
-    rw [← ENNReal.ofReal_sum_of_nonneg (fun z _ =>
-      constraintJointProbability_nonneg hβ (literalAgreement q V i) z.1 z.2),
-      Fintype.sum_prod_type, sum_literalJointProbability q hq, ENNReal.ofReal_one])
 
 end
 

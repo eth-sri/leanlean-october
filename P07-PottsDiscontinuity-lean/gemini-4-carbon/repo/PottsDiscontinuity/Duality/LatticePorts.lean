@@ -2,7 +2,8 @@
 Namespaces/imports adapted to the shared FK library. -/
 module
 
-public import PottsDiscontinuity.Duality.LatticeEmbedding
+public import PottsDiscontinuity.FK.Lattice
+public import Mathlib.Tactic
 
 /-!
 # Actual square-lattice bonds and medial ports
@@ -31,9 +32,6 @@ inductive LatticeAxis
   | vertical
   deriving DecidableEq
 
-instance : Fintype LatticeAxis where
-  elems := {.horizontal, .vertical}
-  complete := by intro a; cases a <;> simp
 
 /-- A unit bond, based at its left endpoint if horizontal or lower endpoint if vertical. -/
 structure LatticeBond where
@@ -93,9 +91,6 @@ theorem existsUnique_of_adj {u v : LatticeVertex} (h : squareLattice.Adj u v) :
   obtain ⟨e, he⟩ := exists_of_adj h
   exact ⟨e, he, fun f hf => toSym2_injective (hf.trans he.symm)⟩
 
-/-- `false` is the normalized source, `true` is the target. -/
-def endpoint (e : LatticeBond) (tip : Bool) : LatticeVertex :=
-  if tip then e.target else e.source
 
 /-- Lower-left corner of an adjacent unit cell. For horizontal bonds `false`
 means below and `true` above; for vertical bonds `false` means left and `true` right. -/
@@ -105,10 +100,6 @@ def faceBase (e : LatticeBond) (side : Bool) : LatticeVertex :=
   | horizontal, true => e.base
   | vertical, false => (e.base.1 - 1, e.base.2)
   | vertical, true => e.base
-
-/-- The geometric medial vertex in the positive-mesh complex embedding. -/
-noncomputable def midpoint (e : LatticeBond) (δ : PositiveMesh) : ℂ :=
-  (latticeEmbed δ e.source + latticeEmbed δ e.target) / 2
 
 end LatticeBond
 
@@ -124,47 +115,19 @@ namespace LatticePort
 
 open LatticeAxis
 
-def primalVertex (p : LatticePort) : LatticeVertex := p.bond.endpoint p.tip
 
 def faceBase (p : LatticePort) : LatticeVertex := p.bond.faceBase p.side
 
-noncomputable def position (p : LatticePort) (δ : PositiveMesh) : ℂ := p.bond.midpoint δ
-
-/-- At an open primal edge, turn around a dual cell. -/
-def openPair (p : LatticePort) : LatticePort := ⟨p.bond, !p.tip, p.side⟩
 
 /-- At a closed primal edge, turn around a primal endpoint. -/
 def closedPair (p : LatticePort) : LatticePort := ⟨p.bond, p.tip, !p.side⟩
 
-@[simp] theorem openPair_bond (p : LatticePort) : p.openPair.bond = p.bond := rfl
-@[simp] theorem closedPair_bond (p : LatticePort) : p.closedPair.bond = p.bond := rfl
-@[simp] theorem openPair_faceBase (p : LatticePort) : p.openPair.faceBase = p.faceBase := rfl
-@[simp] theorem closedPair_primalVertex (p : LatticePort) :
-    p.closedPair.primalVertex = p.primalVertex := rfl
 
 theorem closedPair_faceBase_ne (p : LatticePort) :
     p.closedPair.faceBase ≠ p.faceBase := by
   rcases p with ⟨⟨⟨x, y⟩, ax⟩, t, s⟩
   cases ax <;> cases s <;>
     simp [closedPair, faceBase, LatticeBond.faceBase] <;> omega
-
-@[simp] theorem openPair_position (p : LatticePort) (δ : PositiveMesh) :
-    p.openPair.position δ = p.position δ := rfl
-
-@[simp] theorem closedPair_position (p : LatticePort) (δ : PositiveMesh) :
-    p.closedPair.position δ = p.position δ := rfl
-
-/-- The actual local pairing selected by a primal bond's open/closed state. -/
-def localPair (ω : LatticeBond → Bool) (p : LatticePort) : LatticePort :=
-  if ω p.bond then p.openPair else p.closedPair
-
-@[simp] theorem localPair_bond (ω : LatticeBond → Bool) (p : LatticePort) :
-    (localPair ω p).bond = p.bond := by
-  cases h : ω p.bond <;> simp [localPair, h]
-
-@[simp] theorem localPair_position (ω : LatticeBond → Bool) (p : LatticePort)
-    (δ : PositiveMesh) : (localPair ω p).position δ = p.position δ := by
-  cases h : ω p.bond <;> simp [localPair, h]
 
 end LatticePort
 

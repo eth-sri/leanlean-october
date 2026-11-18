@@ -1,6 +1,6 @@
 module
 
-public import FixedPointTheorems.brouwer
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path

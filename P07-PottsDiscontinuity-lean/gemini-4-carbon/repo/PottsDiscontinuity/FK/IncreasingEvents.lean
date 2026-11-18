@@ -22,7 +22,6 @@ noncomputable section
 
 variable {V : Type*} [Finite V] {G : SimpleGraph V}
 local instance increasingEventsEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance increasingEventsEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 theorem measure_toReal_eq_indicator_sum (q : Parameters) (ξ : BoundaryCondition V)
     (s : Set (Configuration G)) :

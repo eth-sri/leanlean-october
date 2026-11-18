@@ -145,7 +145,6 @@ theorem weight_edgeRestriction [Finite V] (q : Parameters) (ξ : BoundaryConditi
 section Finite
 
 variable [Finite V]
-local instance edgeRestrictionOriginalEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance edgeRestrictionRemainingEdgeFintype (R : Configuration G) :
     Fintype (edgeRestriction G R).edgeSet := Fintype.ofFinite _
 local instance edgeRestrictionConfigurationFintype (R : Configuration G) :

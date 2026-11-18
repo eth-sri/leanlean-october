@@ -43,8 +43,6 @@ lemma squareLattice_adj_iff (u v : LatticeVertex) :
 def latticeTranslate (a v : LatticeVertex) : LatticeVertex :=
   (v.1 + a.1, v.2 + a.2)
 
-lemma latticeTranslate_zero (v : LatticeVertex) : latticeTranslate 0 v = v := by
-  simp only [latticeTranslate, Prod.fst_zero, Prod.snd_zero, add_zero]
 
 lemma latticeTranslate_neg_cancel (a v : LatticeVertex) :
     latticeTranslate (-a) (latticeTranslate a v) = v := by

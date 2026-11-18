@@ -170,17 +170,6 @@ theorem localWiredSetoid_antitone (H : SimpleGraph (ℤ × ℤ)) (hH : H ≤ squ
   intro n
   exact (localWiredSetoid_succ_le_exterior H n).trans (exteriorMergedSetoid_le_localWired H hH n)
 
-theorem localWiredSetoid_mono {H K : SimpleGraph (ℤ × ℤ)} (h : H ≤ K) (n : ℕ) :
-    localWiredSetoid H n ≤ localWiredSetoid K n := by
-  have hg : finiteWiredConnectionGraph H n ≤ finiteWiredConnectionGraph K n := by
-    intro a b hab
-    cases a <;> cases b
-    · exact hab.elim
-    · exact hab
-    · exact hab
-    · exact h hab
-  intro a b hab
-  exact hab.mono hg
 
 end
 end PottsDiscontinuity.Potts

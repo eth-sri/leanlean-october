@@ -107,15 +107,6 @@ theorem free_map_dual_eq_wired (θ : Parameters)
     exact h.symm
   exact congrArg ProbabilityMeasure.toMeasure hprob
 
-/-- At the exact frozen critical parameter, the free and wired measures are
-exchanged by the actual planar dual transform with unchanged p and q. -/
-theorem free_map_dual_eq_wired_at_critical (q : Set.Ici (1 : ℝ))
-    (μ₀ μ₁ : Measure LatticeConfiguration)
-    (hμ₀ : IsRCInfiniteVolumeLimit (criticalParameters q).toP (criticalParameters q).toQ 0 μ₀)
-    (hμ₁ : IsRCInfiniteVolumeLimit (criticalParameters q).toP (criticalParameters q).toQ 1 μ₁) :
-    μ₀.map wholePlaneDualConfigurationHomeomorph = μ₁ := by
-  apply free_map_dual_eq_wired (criticalParameters q) μ₀ μ₁ hμ₀
-  simpa only [dualParameters_criticalParameters] using hμ₁
 
 end
 end PottsDiscontinuity.Duality

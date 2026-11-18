@@ -24,8 +24,6 @@ noncomputable section
 local instance rectangleInfiniteComparisonGenericEdgeFintype
     {V : Type*} [Finite V] {G : SimpleGraph V} : Fintype G.edgeSet := Fintype.ofFinite _
 
-local instance rectangleInfiniteComparisonGenericEdgeDecidableEq
-    {V : Type*} [Finite V] {G : SimpleGraph V} : DecidableEq G.edgeSet := Classical.decEq _
 
 private theorem originBoxEdgeEmbedding_compatible {r s : ℕ}
     (hrs : r ≤ s)

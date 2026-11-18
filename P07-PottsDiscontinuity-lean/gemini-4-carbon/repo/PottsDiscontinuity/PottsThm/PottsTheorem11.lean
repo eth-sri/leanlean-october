@@ -7,7 +7,6 @@ public import PottsDiscontinuity.Infra.Lambda
 public import PottsDiscontinuity.PottsThm.ColoringPushforward
 public import PottsDiscontinuity.PottsThm.CriticalLimits
 public import PottsDiscontinuity.PottsThm.Distinctness
-public import PottsDiscontinuity.PottsThm.MixtureSeparation
 public import PottsDiscontinuity.PottsThm.PottsColoringErgodicity
 public import PottsDiscontinuity.PottsThm.RateTransfer
 
@@ -23,6 +22,53 @@ open PottsDiscontinuity.FK
 open PottsDiscontinuity.Potts
 open PottsDiscontinuity.Duality
 open PottsDiscontinuity.RCInfinite
+
+private theorem eq_of_ac_of_translationErgodic {S : Type*} [MeasurableSpace S]
+    {μ ν : Measure (ℤ × ℤ → S)} [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
+    (hμ_inv : ∀ a : ℤ × ℤ, μ.map (fun σ x => σ (x + a)) = μ)
+    (hν_erg : IsTranslationErgodic ν) (hac : μ ≪ ν) : μ = ν := by
+  let T (a : ℤ × ℤ) (σ : ℤ × ℤ → S) : ℤ × ℤ → S := fun x => σ (x + a)
+  have hTm (a : ℤ × ℤ) : Measurable (T a) := by fun_prop
+  let f := μ.rnDeriv ν
+  have hf : Measurable f := Measure.measurable_rnDeriv μ ν
+  have hwd : ν.withDensity f = μ := Measure.withDensity_rnDeriv_eq μ ν hac
+  have hshift_ae (a : ℤ × ℤ) : (fun σ => f (T a σ)) =ᵐ[ν] f := by
+    refine ae_eq_of_forall_setLIntegral_eq_of_sigmaFinite (hf.comp (hTm a)) hf fun E hE _ => ?_
+    have hE' : MeasurableSet (T (-a) ⁻¹' E) := hTm (-a) hE
+    calc ∫⁻ σ in E, f (T a σ) ∂ν
+        = ∫⁻ σ, E.indicator (fun σ => f (T a σ)) σ ∂ν := (lintegral_indicator hE _).symm
+      _ = ∫⁻ σ, (T (-a) ⁻¹' E).indicator f (T a σ) ∂ν :=
+          lintegral_congr fun σ => by by_cases hσ : σ ∈ E <;> simp [Set.indicator, T, add_assoc, hσ]
+      _ = ∫⁻ τ, (T (-a) ⁻¹' E).indicator f τ ∂(ν.map (T a)) :=
+          (lintegral_map (hf.indicator hE') (hTm a)).symm
+      _ = ∫⁻ τ in T (-a) ⁻¹' E, f τ ∂ν := by rw [hν_erg.1 a, lintegral_indicator hE']
+      _ = μ (T (-a) ⁻¹' E) := by rw [← withDensity_apply f hE', hwd]
+      _ = (μ.map (T (-a))) E := (Measure.map_apply (hTm (-a)) hE).symm
+      _ = μ E := by rw [hμ_inv (-a)]
+      _ = ∫⁻ σ in E, f σ ∂ν := by rw [← withDensity_apply f hE, hwd]
+  let g : (ℤ × ℤ → S) → ℝ≥0∞ := fun σ => ⨆ a : ℤ × ℤ, f (T a σ)
+  have hg_meas : Measurable g := Measurable.iSup fun a => hf.comp (hTm a)
+  have hgf : g =ᵐ[ν] f := by
+    filter_upwards [ae_all_iff.mpr hshift_ae] with σ hσ; simp [g, hσ]
+  have hg_inv (b : ℤ × ℤ) (σ : ℤ × ℤ → S) : g (T b σ) = g σ := by
+    simpa [g, T, add_assoc, add_comm b] using
+      (Equiv.addRight b).iSup_comp (g := fun c => f (fun x => σ (x + c)))
+  have hint_g : ∫⁻ σ, g σ ∂ν = 1 := by
+    rw [lintegral_congr_ae hgf, ← setLIntegral_univ, ← withDensity_apply f MeasurableSet.univ,
+      hwd, measure_univ]
+  have hg1 : g =ᵐ[ν] (fun _ => 1) := by
+    rcases hν_erg.2 {σ | g σ ≤ 1} (measurableSet_le hg_meas measurable_const)
+        (fun b => by ext σ; change g (T b σ) ≤ 1 ↔ g σ ≤ 1; rw [hg_inv]) with h0 | h0
+    · have hle : (fun _ => (1 : ℝ≥0∞)) ≤ᵐ[ν] g := by
+        filter_upwards [mem_ae_iff.mpr (by rw [compl_compl]; exact h0)] with σ hσ
+        exact le_of_lt (not_le.mp hσ)
+      exact (ae_eq_of_ae_le_of_lintegral_le hle (by simp) hg_meas.aemeasurable
+        (by simp [hint_g])).symm
+    · exact ae_eq_of_ae_le_of_lintegral_le (mem_ae_iff.mpr h0) (by simp [hint_g])
+        measurable_const.aemeasurable (by simp [hint_g])
+  calc μ = ν.withDensity f := hwd.symm
+    _ = ν.withDensity 1 := withDensity_congr_ae (hgf.symm.trans hg1)
+    _ = ν := withDensity_one
 
 private theorem probabilityMeasure_eq_of_spinCylinder_real (q : ℕ) (hq : 2 ≤ q)
     (μ ν : ProbabilityMeasure (SpinSpace q))
@@ -149,8 +195,6 @@ theorem potts_theorem_1_1_of_rc_rate (q : ℕ) (hq : 4 < q)
     | succ k => simpa [μ] using hμp k
   have hdistinct := critical_potts_limits_pairwise_distinct q hq μP φ₀ φp
     hRC₀ hμ₀ hRCp hμp (lam₀ + 2 * S₀) hpositive₀ hrate₀
-  have hnotAverage := critical_potts_free_measure_ne_wired_average q hq μP φ₀ φp
-    hRC₀ hμ₀ hRCp hμp (lam₀ + 2 * S₀) hpositive₀ hrate₀
   have herg₀ : IsTranslationErgodic (μ 0) := by
     have hsampler := freeColoringMap_isFreeESC q hq φ₀ hno
     let samplerMeasure : Measure (SpinSpace q) :=
@@ -195,6 +239,17 @@ theorem potts_theorem_1_1_of_rc_rate (q : ℕ) (hq : 4 < q)
       simpa [μ] using congrArg ProbabilityMeasure.toMeasure hPM
     rw [← hmeasure]
     simpa [samplerPM, samplerMeasure, c₀] using hfactor
+  have hnotAverage : μ 0 ≠ (q : ℝ≥0∞)⁻¹ • ∑ i : Fin q, μ i.succ := by
+    intro heq
+    have hac : μ k₀.succ ≪ μ 0 := fun s hs => by
+      have hne : (q : ℝ≥0∞)⁻¹ ≠ 0 := ENNReal.inv_ne_zero.mpr (ENNReal.natCast_ne_top q)
+      rw [heq, Measure.smul_apply, smul_eq_mul, mul_eq_zero_iff_left hne,
+        Measure.coe_finset_sum, Finset.sum_apply, Finset.sum_eq_zero_iff] at hs
+      exact hs k₀ (Finset.mem_univ k₀)
+    have : IsProbabilityMeasure (μ k₀.succ) := (μP k₀.succ).prop
+    have : IsProbabilityMeasure (μ 0) := (μP 0).prop
+    exact hdistinct k₀.succ 0 (Fin.succ_ne_zero k₀)
+      (eq_of_ac_of_translationErgodic (hergp k₀).1 herg₀ hac)
   have hErgodic (i : Fin (q + 1)) : IsTranslationErgodic (μ i) := by
     cases i using Fin.cases with
     | zero => exact herg₀

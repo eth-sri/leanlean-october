@@ -14,12 +14,6 @@ namespace PottsDiscontinuity.Potts
 open Classical MeasureTheory
 noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
-local instance ghostCylinderPartitionLiteralDecidable (n : ℕ) : DecidableEq (LiteralBond (box n)) :=
-  fun _ _ => Classical.propDecidable _
-local instance ghostCylinderPartitionBoundary (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
-local instance ghostCylinderPartitionShell (n : ℕ) : Fintype (OuterShellEdge n) := Fintype.ofFinite _
-local instance ghostCylinderPartitionDiscrete {V : Type*} (G : SimpleGraph V) :
-    DiscreteMeasurableSpace (FK.Configuration G) := ⟨fun _ => trivial⟩
 
 variable {A : Type*} [Fintype A]
 

@@ -13,8 +13,6 @@ open Classical MeasureTheory
 noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
 local instance partitionBoundaryFintype (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
-local instance partitionShellFintype (n : ℕ) : Fintype (OuterShellEdge n) := Fintype.ofFinite _
-local instance partitionSetoidFintype {A : Type*} [Finite A] : Fintype (Setoid A) := Fintype.ofFinite _
 
 /-- The exact conditioned law transports every function of a finite marked
 partition to the literal ghost law. -/

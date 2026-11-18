@@ -42,22 +42,12 @@ lemma card_rectangleVertex (a : LatticeVertex) (w h : ℕ) :
 def rectangleGraph (a : LatticeVertex) (w h : ℕ) : SimpleGraph (RectangleVertex a w h) :=
   squareLattice.induce (latticeRectangle a w h : Set LatticeVertex)
 
-instance rectangleGraph_decidableAdj (a : LatticeVertex) (w h : ℕ) :
-    DecidableRel (rectangleGraph a w h).Adj := by
-  unfold rectangleGraph
-  infer_instance
 
 lemma rectangleGraph_adj_iff (a : LatticeVertex) (w h : ℕ)
     (u v : RectangleVertex a w h) :
     (rectangleGraph a w h).Adj u v ↔ squareLattice.Adj u.val v.val := Iff.rfl
 
-/-- Closed left side, with both corners included. -/
-def rectangleLeftSide (a : LatticeVertex) (w h : ℕ) : Finset LatticeVertex :=
-  (latticeRectangle a w h).filter (fun v => v.1 = a.1)
 
-/-- Closed right side, with both corners included. -/
-def rectangleRightSide (a : LatticeVertex) (w h : ℕ) : Finset LatticeVertex :=
-  (latticeRectangle a w h).filter (fun v => v.1 = a.1 + (w : ℤ))
 
 lemma latticeRectangle_box_eq (c : LatticeVertex) (r : ℕ) :
     latticeRectangle (c.1 - (r : ℤ), c.2 - (r : ℤ)) (2 * r) (2 * r) =

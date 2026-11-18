@@ -73,9 +73,6 @@ def dualDirectedEquiv (hN : Even N) (hM : Even M) :
     Equiv.Perm (DirectedDart (checkerArrows N M)) :=
   (dualDartTransport N M).subtypeEquiv (fun d => by rw [dartOut_dualDartTransport hN hM])
 
-@[simp] theorem dualDirectedEquiv_val (hN : Even N) (hM : Even M)
-    (d : DirectedDart (checkerArrows N M)) :
-    (dualDirectedEquiv hN hM d).val = shiftDart (edgeReverse d.val) := rfl
 
 theorem dualDartTransport_step (hN : Even N) (A : RCConfig N M) (d : Dart N M) :
     dualDartTransport N M (stepPerm (rcSmoothing A) d) =

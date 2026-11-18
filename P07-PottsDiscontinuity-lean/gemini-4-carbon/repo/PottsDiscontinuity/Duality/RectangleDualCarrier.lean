@@ -30,30 +30,10 @@ boundary/exterior class, including isolated corners and degenerate boxes. -/
 def rectangleDualBoundary (a : LatticeVertex) (w h : ℕ) : Finset LatticeVertex :=
   (rectangleDualExpanded a w h).filter fun z => z ∉ rectangleDualInterior a w h
 
-@[simp] theorem rectangleDualInterior_eq_empty_width_zero
-    (a : LatticeVertex) (h : ℕ) : rectangleDualInterior a 0 h = ∅ := by
-  ext z
-  simp [rectangleDualInterior]
-  omega
 
-@[simp] theorem rectangleDualInterior_eq_empty_height_zero
-    (a : LatticeVertex) (w : ℕ) : rectangleDualInterior a w 0 = ∅ := by
-  ext z
-  simp [rectangleDualInterior]
 
-@[simp] theorem rectangleDualExpanded_card (a : LatticeVertex) (w h : ℕ) :
-    (rectangleDualExpanded a w h).card = (w + 2) * (h + 2) := by
-  simp [rectangleDualExpanded, card_latticeRectangle]
 
-@[simp] theorem rectangleDualBoundary_eq_expanded_width_zero
-    (a : LatticeVertex) (h : ℕ) : rectangleDualBoundary a 0 h =
-      rectangleDualExpanded a 0 h := by
-  simp [rectangleDualBoundary, rectangleDualInterior_eq_empty_width_zero]
 
-@[simp] theorem rectangleDualBoundary_eq_expanded_height_zero
-    (a : LatticeVertex) (w : ℕ) : rectangleDualBoundary a w 0 =
-      rectangleDualExpanded a w 0 := by
-  simp [rectangleDualBoundary, rectangleDualInterior_eq_empty_height_zero]
 
 /-- A normalized original bond whose two endpoints lie in the primal rectangle. -/
 abbrev RectanglePrimalBond (a : LatticeVertex) (w h : ℕ) :=
@@ -228,19 +208,7 @@ def rectangleDualEdgeTarget (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) :
     (rectangleDualEdgeTarget a w h e).val = e.crossingBond.target := rfl
 
-theorem rectangleDualEdgeSource_faceBase (a : LatticeVertex) (w h : ℕ)
-    (e : RectangleDualEdgeCarrier a w h) :
-    (rectangleDualEdgeSource a w h e).val =
-      (rectanglePrimalEdgeBond a w h e.primalEdge).faceBase false := by
-  rw [rectangleDualEdgeSource_val, e.crossingBond_eq]
-  simp [rectangleCrossingDualBond, PottsDiscontinuity.FK.Medial.dualBondOfPrimal_source]
 
-theorem rectangleDualEdgeTarget_faceBase (a : LatticeVertex) (w h : ℕ)
-    (e : RectangleDualEdgeCarrier a w h) :
-    (rectangleDualEdgeTarget a w h e).val =
-      (rectanglePrimalEdgeBond a w h e.primalEdge).faceBase true := by
-  rw [rectangleDualEdgeTarget_val, e.crossingBond_eq]
-  simp [rectangleCrossingDualBond, PottsDiscontinuity.FK.Medial.dualBondOfPrimal_target]
 
 /-- The open primal subset `A` determines the open dual complement. -/
 

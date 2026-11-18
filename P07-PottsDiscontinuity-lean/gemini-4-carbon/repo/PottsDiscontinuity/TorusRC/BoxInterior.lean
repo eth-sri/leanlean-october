@@ -91,14 +91,8 @@ theorem liftedBoxGraph_map_projection_le_rightHalf (hN : Even N) (hM : Even M)
 
 noncomputable section
 
-local instance interiorGraphFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
 
-local instance interiorGraphDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 
-local instance interiorBoxFintype (c : RotatedVertex) (R : ℕ) :
-    Fintype (liftedBoxGraph c R).edgeSet := Fintype.ofFinite _
 
 local instance interiorDeletedFintype (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) :

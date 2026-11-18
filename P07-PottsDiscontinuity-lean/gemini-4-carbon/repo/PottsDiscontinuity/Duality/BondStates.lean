@@ -18,8 +18,6 @@ configuration carrier. -/
 def latticeConfigurationBondState (ω : LatticeConfiguration) (b : LatticeBond) : Bool :=
   ω (latticeBondEdge b)
 
-@[simp] theorem latticeConfigurationBondState_eq (ω : LatticeConfiguration) (b : LatticeBond) :
-    latticeConfigurationBondState ω b = ω ⟨b.toSym2, b.toSym2_mem_edgeSet⟩ := rfl
 
 /-- The literal open primal graph read from the existing unordered edge-state
 carrier. -/
@@ -41,8 +39,6 @@ def wholePlaneOpenPrimalGraph (ω : LatticeConfiguration) : SimpleGraph LatticeV
     rcases h with ⟨h, _⟩
     exact squareLattice.loopless.irrefl u h⟩
 
-def wholePlaneOpenCluster (ω : LatticeConfiguration) (u : LatticeVertex) : Set LatticeVertex :=
-  {v | Relation.EqvGen (wholePlaneOpenPrimalGraph ω).Adj u v}
 
 theorem wholePlaneOpenPrimalGraph_adj_bond (ω : LatticeConfiguration) (b : LatticeBond) :
     (wholePlaneOpenPrimalGraph ω).Adj b.source b.target ↔

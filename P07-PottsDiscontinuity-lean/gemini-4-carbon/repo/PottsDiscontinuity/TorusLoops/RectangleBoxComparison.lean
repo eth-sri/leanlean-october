@@ -29,25 +29,16 @@ local instance rectangleBoxComparisonGenericEdgeFintype
     {V : Type*} [Finite V] {G : SimpleGraph V} : Fintype G.edgeSet :=
   Fintype.ofFinite _
 
-local instance rectangleBoxComparisonGenericEdgeDecidableEq
-    {V : Type*} [Finite V] {G : SimpleGraph V} : DecidableEq G.edgeSet :=
-  Classical.decEq _
 
 local instance rectangleBoxComparisonRectangleEdgeFintype
     (hN : Even N) (hM : Even M) :
     Fintype (rectangleBaseGraph hN hM).edgeSet := Fintype.ofFinite _
 
-local instance rectangleBoxComparisonRectangleEdgeDecidableEq
-    (hN : Even N) (hM : Even M) :
-    DecidableEq (rectangleBaseGraph hN hM).edgeSet := Classical.decEq _
 
 local instance rectangleBoxComparisonBoxEdgeFintype (N M : ℕ) :
     Fintype (boxGraph (0, 0) (RectangleRotatedBoxRadius N M)).edgeSet :=
   Fintype.ofFinite _
 
-local instance rectangleBoxComparisonBoxEdgeDecidableEq (N M : ℕ) :
-    DecidableEq (boxGraph (0, 0) (RectangleRotatedBoxRadius N M)).edgeSet :=
-  Classical.decEq _
 
 private theorem fkLaw_measure_toReal_eq_expectation
     {V : Type*} [Finite V] {G : SimpleGraph V}

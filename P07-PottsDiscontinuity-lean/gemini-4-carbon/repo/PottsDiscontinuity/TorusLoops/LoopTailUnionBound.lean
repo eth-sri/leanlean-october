@@ -26,11 +26,7 @@ variable {N M : ℕ}
 
 noncomputable section
 
-local instance rectangleUnionEdgeFintype (hN : Even N) (hM : Even M) :
-    Fintype (rectangleBaseGraph hN hM).edgeSet := Fintype.ofFinite _
 
-local instance rectangleUnionEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (rectangleBaseGraph hN hM).edgeSet := Classical.decEq _
 
 /-- Left-boundary face vertices of the cut rectangle. -/
 abbrev RectangleLeftRoot (N M : ℕ) :=

@@ -18,10 +18,6 @@ local instance freeLimitVertexDecidableEq (V : Finset (ℤ × ℤ)) :
     DecidableEq ↥(V : Set (ℤ × ℤ)) := fun _ _ => Classical.propDecidable _
 local instance freeLimitVertexFintype (V : Finset (ℤ × ℤ)) :
     Fintype ↥(V : Set (ℤ × ℤ)) := Fintype.ofFinite _
-local instance freeLimitEdgeDecidableEq (V : Finset (ℤ × ℤ)) :
-    DecidableEq (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet := fun _ _ => Classical.propDecidable _
-local instance freeLimitEdgeFintype (V : Finset (ℤ × ℤ)) :
-    Fintype (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet := Fintype.ofFinite _
 
 theorem free_potts_cylinder_tendsto (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
     (φ : ProbabilityMeasure FK.LatticeConfiguration)

@@ -15,14 +15,7 @@ variable {V W : Type*} [Finite V] [Finite W]
   (G : SimpleGraph V) (H : SimpleGraph W) (f : V ↪ W)
   (hGH : G.map f ≤ H)
 
-local instance embeddedMarginalOuterEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
 local instance embeddedMarginalOuterEdgeDecidableEq : DecidableEq H.edgeSet := Classical.decEq _
-local instance embeddedMarginalInnerEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance embeddedMarginalInnerMappedEdgeFintype : Fintype (G.map f).edgeSet := Fintype.ofFinite _
-local instance embeddedMarginalRemainingFintype
-    (R : Configuration H) : Fintype (RemainingConfiguration H R) := Fintype.ofFinite _
-local instance embeddedMarginalRemovedFintype
-    (R : Configuration H) : Fintype (RemovedConfiguration H R) := Fintype.ofFinite _
 
 omit [Finite V] in
 private theorem embeddedConfigurationRestriction_union_subgraphRemoved

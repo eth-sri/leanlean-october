@@ -174,15 +174,6 @@ theorem infiniteAt_translation (a : LatticeVertex) (ω : LatticeConfiguration) (
   exact Set.infinite_image_iff (show Set.InjOn (latticeTranslate a) (cluster ω x) from
     (latticeTranslationIso a).injective.injOn)
 
-theorem infiniteClusterEvent_invariant (a : LatticeVertex) :
-    (edgeTranslate a) ⁻¹' infiniteClusterEvent = infiniteClusterEvent := by
-  ext ω
-  constructor
-  · rintro ⟨x, hx⟩
-    obtain ⟨z, rfl⟩ := (latticeTranslationIso a).surjective x
-    exact ⟨z, (infiniteAt_translation a ω z).mp hx⟩
-  · rintro ⟨x, hx⟩
-    exact ⟨latticeTranslate a x, (infiniteAt_translation a ω x).mpr hx⟩
 
 theorem infiniteClusterEvent_eq_iUnion : infiniteClusterEvent = ⋃ x, infiniteAt x := by
   ext ω

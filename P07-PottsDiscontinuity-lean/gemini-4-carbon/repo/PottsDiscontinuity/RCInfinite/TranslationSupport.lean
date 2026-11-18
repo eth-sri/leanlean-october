@@ -36,22 +36,6 @@ theorem eventually_finset_in_box (F : Finset Edge) :
   filter_upwards [h] with n hn
   exact fun e he => hn e he
 
-theorem translatedEdge_not_mem_box {e : Edge} {m k n : ℕ}
-    (he : e ∈ boxEdges (0, 0) k) (hn : m + k < n) :
-    translatedEdge (-((n : ℤ), 0)) e ∉ boxEdges (0, 0) m := by
-  intro ht
-  obtain ⟨⟨x, y⟩, hxy⟩ := Sym2.mk_surjective e.val
-  have hx : x ∈ e.val := by rw [← hxy]; simp
-  have hxk := (mem_boxEdges_iff (0, 0) k e).mp he x hx
-  have hxt : latticeTranslate (-((n : ℤ), 0)) x ∈
-      (translatedEdge (-((n : ℤ), 0)) e).val := by
-    change latticeTranslate (-((n : ℤ), 0)) x ∈
-      Sym2.map (latticeTranslate (-((n : ℤ), 0))) e.val
-    exact Sym2.mem_map.mpr ⟨x, hx, rfl⟩
-  have hxm := (mem_boxEdges_iff (0, 0) m _).mp ht _ hxt
-  simp only [mem_latticeBox, latticeTranslate, Prod.fst_neg, Prod.snd_neg,
-    neg_zero, add_zero, zero_sub, zero_add] at hxk hxm
-  omega
 
 theorem IsCylinder.preimage_translate {A : Set LatticeConfiguration} (hA : IsCylinder A)
     (a : LatticeVertex) : IsCylinder ((edgeTranslate a) ⁻¹' A) := by
@@ -64,24 +48,7 @@ theorem IsCylinder.preimage_translate {A : Set LatticeConfiguration} (hA : IsCyl
     Finset.mem_map.mpr ⟨e, he, rfl⟩
   simpa only [edgeTranslate, latticeConfigurationTranslate_apply, translatedEdge] using hω _ hmem
 
-theorem cylinder_translate_outside (m k n : ℕ) (hn : m + k < n)
-    {A : Set LatticeConfiguration} {F : Finset Edge} (hA : DependsOn (F : Set Edge) A)
-    (hF : (F : Set Edge) ⊆ boxEdges (0, 0) k) :
-    DependsOn (boxEdges (0, 0) m)ᶜ ((edgeTranslate ((n : ℤ), 0)) ⁻¹' A) := by
-  intro ω η hω
-  apply hA
-  intro e he
-  simpa only [edgeTranslate, latticeConfigurationTranslate_apply, translatedEdge] using
-    hω _ (translatedEdge_not_mem_box (hF he) hn)
 
-theorem eventually_cylinder_translate_outside (m : ℕ) {A : Set LatticeConfiguration}
-    (hA : IsCylinder A) :
-    ∀ᶠ n : ℕ in atTop,
-      DependsOn (boxEdges (0, 0) m)ᶜ ((edgeTranslate ((n : ℤ), 0)) ⁻¹' A) := by
-  obtain ⟨F, hF⟩ := hA
-  obtain ⟨k, hk⟩ := (eventually_finset_in_box F).exists
-  filter_upwards [eventually_gt_atTop (m + k)] with n hn
-  exact cylinder_translate_outside m k n hn hF hk
 
 theorem limit_translate_real (θ : Parameters) (i : Fin 2)
     (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ)

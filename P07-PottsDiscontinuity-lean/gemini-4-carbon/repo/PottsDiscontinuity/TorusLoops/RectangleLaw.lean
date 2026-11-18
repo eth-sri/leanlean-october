@@ -28,8 +28,6 @@ variable {N M : ℕ}
 local instance rectangleLawEdgeFintype (hN : Even N) (hM : Even M) :
     Fintype (rectangleBaseGraph hN hM).edgeSet := Fintype.ofFinite _
 
-local instance rectangleLawEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (rectangleBaseGraph hN hM).edgeSet := Classical.decEq _
 
 /-- A torus configuration is seam-closed when every deleted indexed edge is
 closed. -/

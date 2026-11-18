@@ -21,8 +21,6 @@ local instance finiteEnergyEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite G
 local instance finiteEnergyEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 local instance finiteEnergyRemainingFintype (R : Configuration G) :
     Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
-local instance finiteEnergyRemovedFintype (R : Configuration G) :
-    Fintype (RemovedConfiguration G R) := Fintype.ofFinite _
 
 def edgeRemovedBoolEquiv (e : G.edgeSet) :
     RemovedConfiguration G ({e} : Configuration G) ≃ Bool where
