@@ -1,7 +1,5 @@
 module
 
-public import RequestProject.OriginalChainNecessity
-public import RequestProject.OriginalCoverChains
 public import RequestProject.OriginalAcyclicChains
 
 @[expose] public section

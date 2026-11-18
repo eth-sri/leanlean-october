@@ -1,3 +1,0 @@
-module
-public import RequestProject.OrderComponentLabels
-public import RequestProject.OrderPosetCovering

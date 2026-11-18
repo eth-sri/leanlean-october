@@ -1,3 +1,0 @@
-module
-public import RequestProject.TopologicalSingular.SingularChainHomotopy
-public import RequestProject.TopologicalSingular.RelativeSingularPrism

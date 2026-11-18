@@ -1,4 +1,0 @@
-module
-public import RequestProject.TopologicalSingular.TetrahedronGeneralFaceRelation
-public import RequestProject.TopologicalSingular.CoherentTetrahedronNormalization
-public import RequestProject.TopologicalSingular.HurewiczSurjectivity
