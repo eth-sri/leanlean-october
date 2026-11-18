@@ -15,43 +15,24 @@ public import Mathlib.Algebra.GCDMonoid.Finset
 public import Mathlib.Data.Nat.GCD.Basic
 public import Mathlib.Order.Monotone.Basic
 public import Mathlib.Algebra.Group.Submonoid.Basic
-import SemigroupBetti
+import Mathlib.Algebra.BigOperators.Finsupp.Basic
+import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Algebra.Order.Pi
+import Mathlib.Algebra.Order.Sub.Basic
+import Mathlib.Algebra.Order.Sub.Prod
+import Mathlib.Data.Fin.VecNotation
+import Mathlib.Data.Fintype.BigOperators
+import Mathlib.Data.Fintype.Pi
+import Mathlib.LinearAlgebra.Matrix.DotProduct
+import Mathlib.Order.Interval.Finset.Nat
+import Mathlib.RingTheory.Ideal.Quotient.Operations
+import Mathlib.Tactic.FinCases
+import Mathlib.Tactic.GCongr
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.WLOG
 
 /-!
 # Linear upper bounds for the first Betti number of four-generated numerical semigroups
-
-Let `n 0 < n 1 < n 2 < n 3` be positive integers with greatest common divisor `1` which
-*minimally* generate the numerical semigroup `S = ⟨n 0, n 1, n 2, n 3⟩` (no generator is a
-sum of copies of the others).  The toric ideal `I` of `S` over a field `K` is the kernel of
-`K[X₀, X₁, X₂, X₃] → K[t]`, `Xᵢ ↦ t ^ (n i)`; its minimal number of generators `μ(I)` is the
-first Betti number `β₁` of `K[S]`.  Write `w = n 3 - n 0` for the width of `S` and
-`g = gcd (n 1 - n 0, n 2 - n 0, n 3 - n 0)`.
-
-* `SemigroupBetti.beta1_le_two_mul_normalizedWidth`: `μ(I) ≤ 2 * (w / g)`.
-* `SemigroupBetti.beta1_le_two_mul_width`: `μ(I) ≤ 2 * w` (the form stated in the paper).
-
-Here β₁ = μ_P(I_S), equivalently the cardinality of a minimal presentation of S, over every
-field. These declarations formalize the upper bounds only; sharpness (the bound 2w is attained
-for every w ≥ 4) and equality between spanRank and the combinatorial invariant are not
-formalized. Proofs are supplied in `Solution.lean`.
-
-The conjectured bound in the literature (Herzog–Stamate 2014; Caviglia–Moscariello–Sammartano
-2024) was `w.choose 2 + w`, i.e. `(w+1).choose 2`. Informal companion result (not formalized
-here): the bound `2w` is sharp for every `w ≥ 4`.
-Both theorems are stated with `Submodule.spanRank` (a cardinal), so no truncation is involved.
-
-## Proofs (this module)
-
-The declarations of `Challenge.lean`, restated verbatim (definitions `toricIdeal`,
-`MinimallyGenerates`, `normalizedWidth` and the two theorem statements) and proved.  As in the
-erdos266 submission, this module does not import `Challenge`; the comparator checks that the
-statements and the definitions they use agree with `Challenge.lean`.
-
-Each theorem is a thin bridge:
-* `GenData.ofChallenge` turns the hypotheses into generator data `G` with `G.n = n`;
-* `GenData.spanRank_le_beta1_of_n_eq` (Lemma 0, `SemigroupBetti/Bridge.lean`) gives
-  `μ(I) ≤ β₁`, where `β₁` is the combinatorial first Betti number;
-* `GenData.beta1_le_two_W` / `GenData.beta1_le_two_w` (`SemigroupBetti/Main.lean`) bound `β₁`.
 -/
 
 @[expose] public section
@@ -70,35 +51,246 @@ noncomputable def toricIdeal (K : Type*) [Field K] (n : Fin 4 → ℕ) :
 def MinimallyGenerates (n : Fin 4 → ℕ) : Prop :=
   ∀ i : Fin 4, n i ∉ AddSubmonoid.closure (n '' {j | j ≠ i})
 
-/-- The normalized width `w / gcd(a, b, w)` where `(a, b, w) = (n 1 - n 0, n 2 - n 0, n 3 - n 0)`. -/
+/-- The normalized width `w / gcd(a, b, w)` where `(a, b, w) = (n 1 - n 0, n 2 - n 0, n 3 - n 0)`.
+-/
 def normalizedWidth (n : Fin 4 → ℕ) : ℕ :=
   (n 3 - n 0) / Nat.gcd (n 1 - n 0) (Nat.gcd (n 2 - n 0) (n 3 - n 0))
 
 /-- **Main theorem.** For a minimally four-generated numerical semigroup, the first Betti number
 is at most `2W`, `W` the normalized width. -/
 theorem beta1_le_two_mul_normalizedWidth (K : Type*) [Field K] (n : Fin 4 → ℕ)
-    (hpos : 0 < n 0) (hmono : StrictMono n) (hgcd : Finset.univ.gcd n = 1)
-    (hmin : MinimallyGenerates n) :
+    (hpos : 0 < n 0) (hmono : StrictMono n) (_hgcd : Finset.univ.gcd n = 1)
+    (_hmin : MinimallyGenerates n) :
     (toricIdeal K n).spanRank ≤ (2 * normalizedWidth n : ℕ) := by
-  let G := GenData.ofChallenge n hpos hmono hgcd hmin
-  have hb : (toricIdeal K n).spanRank ≤ (G.beta1 : Cardinal) :=
-    G.spanRank_le_beta1_of_n_eq K (GenData.ofChallenge_n n hpos hmono hgcd hmin)
-  have hW : normalizedWidth n = G.W := rfl
-  refine hb.trans ?_
-  rw [hW]
-  exact_mod_cast G.beta1_le_two_W
+  classical
+  open Finset in
+  have n_pos i := hpos.trans_le (hmono.monotone (Fin.zero_le i))
+  have single_le {z : Fin 4 → ℕ} {i c} (h : c ≤ z i) : Pi.single i c ≤ z := fun _ => by grind
+  have dot_pred {z i} (h : 0 < z i) : z ⬝ᵥ n = n i + (z - Pi.single i 1) ⬝ᵥ n := by
+    simpa using congrArg (· ⬝ᵥ n) (add_tsub_cancel_of_le (single_le h)).symm
+  -- Fibers, factorization components, and component supports
+  let fiber d := {z : Fin 4 → ℕ // z ⬝ᵥ n = d}
+  let Comp d := Quot fun z y : fiber d => ∃ i, 0 < z.1 i ∧ 0 < y.1 i
+  let mk {d} : fiber d → Comp d := Quot.mk _
+  let rep {d} (C : Comp d) := C.out.1
+  let compSupp {d} (C : Comp d) := univ.filter fun i => ∃ z, mk z = C ∧ 0 < z.1 i
+  have mc {d} {C : Comp d} {i} : i ∈ compSupp C ↔ ∃ z, mk z = C ∧ 0 < z.1 i := by simp [compSupp]
+  clear_value compSupp
+  have swap_mem {d} (z : fiber d) {U V} (hUz : U ≤ z.1) k
+      (hk : U k < z.1 k) (hUV : U ⬝ᵥ n = V ⬝ᵥ n) {j} (hVj : 0 < V j) : j ∈ compSupp (mk z) :=
+    mc.2 ⟨⟨z.1 - U + V, by rw [add_dotProduct, ← hUV, ← add_dotProduct, tsub_add_cancel_of_le hUz,
+      z.2]⟩, Quot.sound ⟨k, by dsimp; omega, by omega⟩, by dsimp; omega⟩
+  have cdisj {d} {C C' : Comp d} (h : C ≠ C') : Disjoint (compSupp C) (compSupp C') :=
+    disjoint_left.2 fun i hi hi' => by
+      obtain ⟨z, rfl, hz⟩ := mc.1 hi; obtain ⟨z', rfl, hz'⟩ := mc.1 hi'
+      exact h (Quot.sound ⟨i, hz, hz'⟩)
+  have cne {d} {C D : Comp d} (hCD : C ≠ D) : (compSupp D).Nonempty := by
+    obtain ⟨i, hi⟩ := Function.ne_iff.1 fun e : rep D = 0 => hCD <|
+      Function.LeftInverse.injective Quot.out_eq <| Subtype.ext <| by
+        simpa [funext_iff, rep, dotProduct, (n_pos _).ne', e] using C.out.2.trans D.out.2.symm
+    exact ⟨i, mc.2 ⟨_, D.out_eq, Nat.pos_of_ne_zero hi⟩⟩
+  have _ d : Fintype (Comp d) := .ofInjective compSupp fun C D e => by
+    by_contra h; have := cdisj h; simp_all [(cne h).ne_empty]
+  -- 1. Cutoff `d ≤ H` when `C ≠ C'`
+  set H := ∑ i, n 3 * n i
+  have le_H {d} {C C' : Comp d} (hne : C ≠ C') : d ≤ H := by
+    obtain ⟨j, hj⟩ := cne hne
+    rw [← C.out.2]; exact sum_le_sum fun i _ => Nat.mul_le_mul_right _ <|
+      (le_of_not_gt fun hc => disjoint_left.1 (cdisj hne)
+        (C.out_eq ▸ swap_mem C.out (single_le hc.le) i (by simpa)
+          (V := Pi.single j (n i)) (by simp [mul_comm]) (by simpa using n_pos i)) hj).trans
+        (hmono.monotone (Fin.le_last j))
+  clear_value H
+  -- 2. Algebraic bridge
+  let base {d} (C : Comp d) := Classical.choice ⟨C⟩
+  let mono (z : Fin 4 → ℕ) := ∏ i, (X i : MvPolynomial _ K) ^ z i
+  let binomGens := (range (H + 1)).biUnion fun d =>
+    (univ.filter fun C : Comp d => C ≠ base C).image fun C => mono (rep C) - mono (rep (base C))
+  let J := Ideal.span (SetLike.coe binomGens)
+  rw [show toricIdeal K n = J by
+    have mon_eq u c : monomial u c = c • mono ⇑u := by
+      rw [monomial_eq, ← smul_eq_C_mul, Finsupp.prod_fintype _ _ (by simp)]
+    have aeval_m z : aeval (Polynomial.X ^ n ·) (mono z) =
+        (Polynomial.X : Polynomial K) ^ (z ⬝ᵥ n) := by
+      simp [mono, ← pow_mul, prod_pow_eq_pow_sum, dotProduct, mul_comm]
+    let π := Ideal.Quotient.mkₐ K J
+    have mono_pred {z i} (h : 0 < z i) :
+        mono z = mono (z - Pi.single i 1) * mono (Pi.single i 1) := by
+      rw [← tsub_add_cancel_of_le (single_le h)]; simp [mono, pow_add, prod_mul_distrib]
+    let g d := ∑ C : Comp d, if C = base C then π (mono (rep C)) else 0
+    have mspan d {z} (hz : z ⬝ᵥ n = d) : π (mono z) = g d := by
+      induction d using Nat.strong_induction_on generalizing z with
+      | _ d IH =>
+      let lift : Comp d → _ := Quot.lift (fun w => π (mono w.1)) fun u v ⟨i, hi, hi'⟩ => by
+        have := dot_pred hi; have := dot_pred hi'; have := u.2; have := v.2; have := n_pos i
+        rw [mono_pred hi, mono_pred hi', map_mul, map_mul]
+        exact congrArg (· * _) ((IH _ (by omega) rfl).trans (IH _ (by omega) (by omega)).symm)
+      let C := mk ⟨z, hz⟩; dsimp [g]; rw [Fintype.sum_ite_eq' (base C)]
+      exact (congrArg lift C.out_eq).symm.trans <| if e : C = base C then e ▸ rfl else
+        Ideal.Quotient.eq.2 <| Ideal.subset_span <|
+          by simpa [binomGens] using ⟨d, le_H e, C, e, rfl⟩
+    refine le_antisymm (fun f hf => Ideal.Quotient.eq_zero_iff_mem.1 <| show π f = 0 by
+      rw [f.as_sum] at hf ⊢
+      simp only [toricIdeal, RingHom.mem_ker, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
+        mon_eq, map_sum, map_smul, aeval_m] at hf
+      simpa [mon_eq, Polynomial.lsum, Polynomial.X_pow_eq_monomial, mspan _ rfl]
+        using congrArg (Polynomial.lsum fun d => LinearMap.toSpanSingleton K _ (g d)) hf)
+      (Ideal.span_le.2 (by simp [Set.subset_def, binomGens, toricIdeal, rep]; grind))]
+  grw [Submodule.spanRank_span_le_card]
+  refine Cardinal.mk_coe_finset.le.trans (Nat.cast_le.2 ?_)
+  grw [card_biUnion_le, card_image_le]
+  -- 3. Selected factorizations, pair splits, and graph decomposition
+  let IsSel d L (z : Fin 4 → ℕ) :=
+    ∃ hz : z ⬝ᵥ n = d, compSupp (mk ⟨z, hz⟩) = L ∧ ∀ i ∈ L, 0 < z i
+  let sel d L := Classical.epsilon (IsSel d L)
+  let Good d L := IsSel d L (sel d L)
+  let IsSplit d L := Good d L ∧ Good d Lᶜ
+  have split_of {d M L} (h : IsSplit d M) (hL : L = M ∨ L = Mᶜ := by decide) : IsSplit d L := by
+    rcases hL with rfl | rfl; exacts [h, ⟨h.2, by simpa using h.1⟩]
+  let sing d := univ.filter fun i => ∃ D C : Comp d, D ≠ C ∧ compSupp C = {i}
+  have hsing : ∑ d ∈ range (H + 1), #(sing d) ≤ 4 := by
+    rw [← card_biUnion fun d hd d' hd' hne => disjoint_left.2 fun i h1 h2 => by
+      clear hd hd'; wlog hlt : d < d' generalizing d d'
+      · exact this d' d hne.symm h2 h1 (by omega)
+      obtain ⟨-, D, C, hDC, hC⟩ := mem_filter.1 h1
+      obtain ⟨-, -, C', -, hC'⟩ := mem_filter.1 h2
+      have form {m} {E : Comp m} (hE : compSupp E = {i}) : m = rep E i * n i :=
+        E.out.2.symm.trans <| Fintype.sum_eq_single i fun j hj =>
+          mul_eq_zero_of_left (Nat.eq_zero_of_not_pos fun h0 => hj <| mem_singleton.1 <|
+            hE ▸ mc.2 ⟨_, E.out_eq, h0⟩) _
+      obtain ⟨j, hjD⟩ := cne hDC.symm
+      obtain ⟨y, -, hyj⟩ := mc.1 hjD
+      have hc : rep C i < rep C' i := by nlinarith [hlt, form hC, form hC']
+      exact disjoint_left.1 (cdisj hDC) hjD <| (hC'.trans hC.symm) ▸ C'.out_eq ▸
+        swap_mem C'.out (single_le hc.le) i (by simpa) (by simp [form hC, y.2]) hyj]
+    exact card_le_univ _
+  let b d L := if IsSplit d L then 1 else 0
+  grw [show ∀ d, #{C : Comp d | C ≠ base C} ≤
+      #(sing d) + b d {0, 1} + b d {0, 2} + b d {0, 3} by
+    intro d
+    rcases subsingleton_or_nontrivial (Comp d) with h | h
+    · simp [eq_iff_true_of_subsingleton]
+    let ⟨C1, C2, hne⟩ := h
+    dsimp [base]; rw [filter_ne' _ (base C1)]
+    have hle2 (C : Comp d) : 2 ≤ ∑ i ∈ compSupp C, (1 + if i ∈ sing d then 1 else 0) := by
+      obtain ⟨D, hDC⟩ := exists_ne C
+      rcases eq_or_ne #(compSupp C) 1 with h | h
+      · obtain ⟨i, hi⟩ := card_eq_one.1 h
+        have : i ∈ sing d := mem_filter.2 ⟨mem_univ _, D, C, hDC, hi⟩; simp [hi, this]
+      · have := (cne hDC).card_pos; simp [sum_add_distrib]; omega
+    have hs : Fintype.card (Comp d) * 2 ≤ 4 + #(sing d) := by
+      simpa [sum_add_distrib] using (univ.sum_le_sum fun C _ => hle2 C).trans <|
+        (sum_biUnion fun _ _ _ _ => cdisj).symm.trans_le <|
+          sum_le_univ_sum_of_nonneg fun _ => Nat.zero_le _
+    by_cases hs0 : #(sing d) = 0; swap; · simp; omega
+    have hc2 (C : Comp d) : 2 ≤ #(compSupp C) := by simpa [card_eq_zero.1 hs0] using hle2 C
+    have hside {C : Comp d} (hC : #(compSupp C) = 2) : Good d (compSupp C) := by
+      obtain ⟨i, j, -, hC⟩ := card_eq_two.1 hC
+      obtain ⟨z0, hz0, hz0i⟩ := mc.1 (hC ▸ mem_insert_self i _)
+      obtain ⟨z1, hz1, hz1j⟩ := mc.1 (hC ▸ mem_insert_of_mem (mem_singleton_self j))
+      dsimp [Good, sel]; apply Classical.epsilon_spec; by_contra! hno
+      replace hno {x} (hx : mk x = C) (h1 : 0 < x.1 i) (h2 : 0 < x.1 j) :=
+        hno x.1 ⟨x.2, congrArg _ hx, by simp [hC, h1, h2]⟩
+      exact hno hz1 ((congrArg (Quot.lift (fun x => mk x = C → 0 < x.1 i) fun u y ⟨k, h1, h2⟩ =>
+        propext <| by
+          clear swap_mem
+          grind [show mk u = mk y from Quot.sound ⟨k, h1, h2⟩, mc.2 ⟨u, rfl, h1⟩])
+        (hz0.trans hz1.symm)).mp (fun _ => hz0i) hz1) hz1j
+    obtain ⟨h1, h2, e, j, hj, hLA⟩ :=
+      (by decide : ∀ A B : Finset (Fin 4), Disjoint A B → 2 ≤ #A → 2 ≤ #B →
+        #A = 2 ∧ #B = 2 ∧ B = Aᶜ ∧ ∃ j ∈ [1, 2, 3], {0, j} = A ∨ {0, j} = Aᶜ)
+        _ _ (cdisj hne) (hc2 C1) (hc2 _)
+    rcases by simpa using hj with rfl | rfl | rfl <;>
+      · simp [b, split_of ⟨hside h1, e ▸ hside h2⟩ hLA]; omega]
+  let fam L := (range (H + 1)).filter (IsSplit · L)
+  have sb L : ∑ d ∈ _, b d L = #(fam L) := sum_boole _ _
+  simp only [sum_add_distrib, sb]
+  have split_of_fam {L M d} (hd : d ∈ fam L) (hM : M = L ∨ M = Lᶜ := by decide) :=
+    split_of (mem_filter.1 hd).2 hM
+  clear_value sel sing
+  -- 4. Antichain and coordinate counting lemmas
+  have sel_pos {d L} (hS : IsSplit d L) i (hi : i ∈ L := by simp) :
+      0 < sel d L i := hS.1.2.2 i hi
+  have eq_sel {d L} (hS : IsSplit d L) {U V} (hUV : U ⬝ᵥ n = V ⬝ᵥ n)
+      j (hVj : 0 < V j) (hj : j ∉ L := by decide)
+      (hle : U ≤ sel d L := by simp [Pi.le_def, Fin.forall_fin_succ]; omega) : U = sel d L :=
+    funext fun k => (hle k).eq_of_not_lt fun hk =>
+      hj <| hS.1.2.1 ▸ swap_mem ⟨_, hS.1.1⟩ hle k hk hUV hVj
+  have card_coord i k b {F} (h : ∀ d ∈ F, IsSplit d {i, k} ∧ sel d {i, k} i < b) : #F ≤ b - 1 := by
+    simpa using card_le_card_of_injOn (sel · {i, k} i)
+      (fun d hd => mem_Ico.2 ⟨sel_pos (h d hd).1 i, (h d hd).2⟩)
+      fun d hd d' hd' e => by
+        dsimp at e
+        wlog hk : sel d {i, k} k ≤ sel d' {i, k} k generalizing d d'
+        · exact (this d' hd' d hd e.symm (le_of_not_ge hk)).symm
+        let hS := (h d hd).1; let hS' := (h d' hd').1
+        obtain ⟨j, hj⟩ := (by decide : ∀ x y : Fin 4, Finset.Nonempty {x, y}ᶜ) i k
+        exact hS.1.1.symm.trans <|
+          (eq_sel hS' (hS.1.1.trans hS.2.1.symm) j (hS.2.2.2 j hj) (mem_compl.1 hj) <|
+            Pi.le_def.2 fun l => by
+              by_contra! hg
+              rcases by simpa [hS.1.2.1] using mc.2 ⟨⟨_, hS.1.1⟩, rfl, Nat.zero_lt_of_lt hg⟩
+                with rfl | rfl <;> omega) ▸ hS'.1.1
+  have fam_le M {i} k j {V c} (hV : V ⬝ᵥ n = c * n i) (hVj : 0 < V j)
+      (hm : ({i, k} = M ∨ {i, k} = Mᶜ) ∧ k ≠ i ∧ j ∉ ({i, k} : Finset _) := by decide) :=
+    card_coord i k c (F := fam M) fun d hd =>
+      let hS := split_of_fam hd hm.1
+      ⟨hS, lt_of_not_ge fun hge => by
+        simpa [← eq_sel hS ((single_dotProduct _ _ _).trans hV.symm) j hVj hm.2.2 (single_le hge),
+          hm.2.1] using sel_pos hS k⟩
+  -- 5. Normalized arithmetic and family bounds
+  let g := ({0, 1, 2, 3} : Finset _).gcd (n · - n 0)
+  let u i := (n i - n 0) / g
+  rw [show normalizedWidth n = u 3 by simp [normalizedWidth, u, g, GCDMonoid.gcd]]
+  have hn i : n i = n 0 + g * u i := by
+    rw [Nat.mul_div_cancel' (gcd_dvd (by fin_cases i <;> decide)),
+      Nat.add_sub_of_le (hmono.monotone (Fin.zero_le i))]
+  clear_value g u
+  have hu i j (h : i < j := by decide) : u i < u j := by nlinarith [hmono h, hn i, hn j]
+  have hA := pos_of_gt (hu 0 1)
+  obtain ⟨s, hs, hB⟩ := exists_pos_add_of_lt' (hu 1 2)
+  obtain ⟨t, ht, hW⟩ := exists_pos_add_of_lt' (hu 2 3)
+  obtain ⟨dg, p, q, hdg, hcop, dp, dq⟩ := Nat.exists_coprime' (Nat.gcd_pos_of_pos_left (u 1) ht)
+  have ⟨hp, hq, id1, id2, hid3⟩ :
+      1 ≤ p ∧ 1 ≤ q ∧ ![s, 0, u 1, 0] ⬝ᵥ n = u 2 * n 1 ∧
+      ![0, t, 0, s] ⬝ᵥ n = (t + s) * n 2 ∧ ![0, p, q, 0] ⬝ᵥ n = ![p, 0, 0, q] ⬝ᵥ n := by
+    simp [dotProduct, Fin.sum_univ_four]; grind
+  have := fam_le {0, 1} 0 2 id1 hA
+  have := fam_le {0, 1} 3 1 id2 ht
+  have := fam_le {0, 2} 3 2 id1 hA
+  have := fam_le {0, 2} 0 1 id2 ht
+  have :=
+    (card_filter_add_card_filter_not (s := fam {0, 3}) (sel · {1, 2} 1 ≤ p)).symm.trans_le <|
+      add_le_add
+        (card_coord 1 2 (p + 1) fun d hd =>
+          ⟨split_of_fam (mem_filter.1 hd).1, Nat.lt_succ_of_le (mem_filter.1 hd).2⟩)
+        (card_coord 2 1 q fun d hd => by
+          obtain ⟨hd, hgt⟩ := mem_filter.1 hd; rw [pair_comm] at hgt
+          exact ⟨split_of_fam hd, lt_of_not_ge fun hqge =>
+            hgt (congrFun (eq_sel (split_of_fam hd) hid3 0 hp) 1).ge⟩)
+  -- 6. Non-exceptional and exceptional cases
+  by_contra! hc
+  obtain rfl : dg = 1 := by
+    by_contra; have : q * 2 + p * 2 ≤ u 1 + t := (by rw [dp, dq]; gcongr <;> omega); omega
+  obtain rfl : p = q := by omega
+  simp only [Nat.coprime_self, mul_one] at hcop dp dq; subst hcop dp
+  obtain ⟨D, hD, hmax⟩ := exists_max_image (fam {0, 2}) (sel · {3, 1} 3) (card_pos.1 (by omega))
+  have := card_coord 3 1 (sel D {3, 1} 3 + 1) fun d hd =>
+    ⟨split_of_fam hd, Nat.lt_succ_of_le (hmax d hd)⟩
+  have hSD : IsSplit D {3, 1} := split_of_fam hD
+  let hS02 := (mem_filter.1 hD).2
+  have := sel_pos hSD 1
+  have hsub := hS02.1.1.trans <| hSD.1.1.symm.trans <|
+    eq_sel hSD (id2.trans (single_dotProduct _ _ _).symm) 2 (by simp) ▸ id2
+  rw [dot_pred (sel_pos hS02 2), one_add_mul] at hsub
+  have := fam_le {0, 1} 3 0 (add_left_cancel hsub) (by simpa using sel_pos hS02 0)
+  omega
 
 /-- The first Betti number is at most twice the width. -/
 theorem beta1_le_two_mul_width (K : Type*) [Field K] (n : Fin 4 → ℕ)
     (hpos : 0 < n 0) (hmono : StrictMono n) (hgcd : Finset.univ.gcd n = 1)
     (hmin : MinimallyGenerates n) :
     (toricIdeal K n).spanRank ≤ (2 * (n 3 - n 0) : ℕ) := by
-  let G := GenData.ofChallenge n hpos hmono hgcd hmin
-  have hb : (toricIdeal K n).spanRank ≤ (G.beta1 : Cardinal) :=
-    G.spanRank_le_beta1_of_n_eq K (GenData.ofChallenge_n n hpos hmono hgcd hmin)
-  have hw : n 3 - n 0 = G.w := rfl
-  refine hb.trans ?_
-  rw [hw]
-  exact_mod_cast G.beta1_le_two_w
+  grw [beta1_le_two_mul_normalizedWidth K n hpos hmono hgcd hmin, normalizedWidth, Nat.div_le_self]
 
 end SemigroupBetti
