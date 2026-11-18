@@ -97,27 +97,9 @@ theorem octMul_smul_right (r : ℝ) (x y : Octonion) :
     octMul x (r • y) = r • octMul x y := by
   simp [octMul, smul_sub, smul_add, smul_mul_assoc, mul_smul_comm]
 
-def octConjAddHom : Octonion →+ Octonion where
-  toFun := octConj
-  map_zero' := by simp [octConj]
-  map_add' := octConj_add
-
-theorem octConj_sum (f : Fin 3 → Octonion) :
-    octConj (∑ i, f i) = ∑ i, octConj (f i) := by
-  change octConjAddHom (∑ i, f i) = ∑ i, octConjAddHom (f i)
-  exact map_sum octConjAddHom f Finset.univ
-
 theorem octAdd_conj (x : Octonion) :
     x + octConj x = (2 : ℝ) • octScalar (octRe x) := by
-  apply Prod.ext <;> apply Quaternion.ext <;> simp [octConj, octScalar, octRe] <;> ring
-
-theorem octScalar_of_conj (x : Octonion) (h : octConj x = x) :
-    octScalar (octRe x) = x := by
-  have h2 : (2 : ℝ) • x = (2 : ℝ) • octScalar (octRe x) := by
-    simpa only [two_smul, h] using octAdd_conj x
-  have h1 := congrArg (fun z : Octonion => (1/2 : ℝ) • z) h2
-  norm_num [smul_smul] at h1
-  exact h1.symm
+  apply Prod.ext <;> apply Quaternion.ext <;> simp [octConj, octScalar, octRe]; ring
 
 @[simp] theorem octDot_self (x : Octonion) : octDot x x = octNormSq x := by
   rw [octDot_coordinates]
@@ -234,14 +216,9 @@ def jordan (x y : Albert) : Albert :=
 def trace (x : Albert) : ℝ := x.d0+x.d1+x.d2
 def inner (x y : Albert) : ℝ := trace (jordan x y)
 def traceless (x : Albert) : Albert := x - (trace x / 3) • (1 : Albert)
-def L (x z : Albert) : Albert := jordan x z
 def U (x z : Albert) : Albert := (2 : ℝ) • jordan x (jordan x z) - jordan (jordan x x) z
 def phi (x y z : Albert) : ℝ :=
   inner (U x (U y z) - U y (U x z)) (U z (jordan x y))
-
-def triple (x y z : Albert) : Fin 3 → Albert := ![x,y,z]
-def gram (x y z : Albert) : Matrix (Fin 3) (Fin 3) ℝ :=
-  fun i j => inner (traceless (triple x y z i)) (traceless (triple x y z j))
 
 /-- Ordered trace-one orthogonal idempotents summing to the unit. -/
 structure Frame (p : Fin 3 → Albert) : Prop where
@@ -264,52 +241,7 @@ def UniformLedger (p q r : Fin 3 → Albert) : Prop :=
 @[simp] theorem trace_smul (r : ℝ) (x : Albert) : trace (r • x) = r * trace x := by
   simp [trace]; ring
 @[simp] theorem trace_traceless (x : Albert) : trace (traceless x) = 0 := by
-  simp [traceless] <;> ring
-
-theorem toMatrix_hermitian (x : Albert) (i j : Fin 3) :
-    octConj (toMatrix x i j) = toMatrix x j i := by
-  fin_cases i <;> fin_cases j <;> simp [toMatrix]
-
-theorem fromMatrix_toMatrix (x : Albert) : fromMatrix (toMatrix x) = x := rfl
-
-theorem toMatrix_injective : Function.Injective toMatrix := by
-  intro x y h
-  simpa only [fromMatrix_toMatrix] using congrArg fromMatrix h
-
-theorem matrixMul_conj (x y : Albert) (i j : Fin 3) :
-    octConj (matrixMul (toMatrix x) (toMatrix y) i j) =
-      matrixMul (toMatrix y) (toMatrix x) j i := by
-  simp only [matrixMul, octConj_sum]
-  apply Finset.sum_congr rfl
-  intro k _
-  rw [octConj_mul, toMatrix_hermitian, toMatrix_hermitian]
-
-theorem toMatrix_fromMatrix_hermitian
-    (A : Matrix (Fin 3) (Fin 3) Octonion)
-    (h : ∀ i j, octConj (A i j) = A j i) : toMatrix (fromMatrix A) = A := by
-  apply Matrix.ext
-  intro i j
-  fin_cases i <;> fin_cases j
-  · simpa [toMatrix, fromMatrix] using octScalar_of_conj (A 0 0) (h 0 0)
-  · rfl
-  · rfl
-  · simpa [toMatrix, fromMatrix] using h 0 1
-  · simpa [toMatrix, fromMatrix] using octScalar_of_conj (A 1 1) (h 1 1)
-  · rfl
-  · simpa [toMatrix, fromMatrix] using h 0 2
-  · simpa [toMatrix, fromMatrix] using h 1 2
-  · simpa [toMatrix, fromMatrix] using octScalar_of_conj (A 2 2) (h 2 2)
-
-theorem toMatrix_jordan (x y : Albert) :
-    toMatrix (jordan x y) = (1/2 : ℝ) •
-      (matrixMul (toMatrix x) (toMatrix y) + matrixMul (toMatrix y) (toMatrix x)) := by
-  apply toMatrix_fromMatrix_hermitian
-  intro i j
-  change octConj ((1/2 : ℝ) • (matrixMul (toMatrix x) (toMatrix y) i j +
-    matrixMul (toMatrix y) (toMatrix x) i j)) =
-    (1/2 : ℝ) • (matrixMul (toMatrix x) (toMatrix y) j i +
-      matrixMul (toMatrix y) (toMatrix x) j i)
-  rw [octConj_smul, octConj_add, matrixMul_conj, matrixMul_conj, add_comm]
+  simp [traceless]
 
 theorem jordan_comm (x y : Albert) : jordan x y = jordan y x := by
   unfold jordan

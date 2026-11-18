@@ -88,8 +88,5 @@ theorem phi_swap_first_two (x y z : Albert) : phi y x z = -phi x y z := by
   rw [phi, phi, jordan_comm y x, inner_sub_left, inner_sub_left]
   ring
 
-@[simp] theorem phi_repeated_first_two (x z : Albert) : phi x x z = 0 := by
-  simp [phi]
-
 end
 end Glennie

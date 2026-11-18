@@ -1,21 +1,40 @@
-/- Actual full native differential of Phi and its forward generation consequence.
-All exposition and Lean code are AI-generated under Robert MacGregor's direction.
-No novelty is asserted.
--/
 module
-
-public import Glennie.Compact.GlennieDerivativeGenerationR01
+public import Glennie.BasicLaws
+public import Glennie.Compactness
 public import Glennie.Covariance
+public import Mathlib.Analysis.Calculus.FDeriv.Bilinear
+public import Mathlib.Analysis.Calculus.FDeriv.Add
 public import Mathlib.Analysis.Calculus.FDeriv.Prod
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
 public import Mathlib.Topology.Algebra.Module.ContinuousLinearMap.PiProd
+public import Mathlib.Tactic.Module
+public import Mathlib.Tactic.Ring
+
+@[expose] public section
+namespace Glennie.Compact.GlennieScalarPotentialR01
+open Glennie
+noncomputable section
+set_option autoImplicit false
+
+def commU (x y z : Albert) : Albert := U x (U y z) - U y (U x z)
+
+def doubledTriple (a z b : Albert) : Albert :=
+  (2 : ℝ) • (jordan a (jordan z b) + jordan (jordan a z) b - jordan (jordan a b) z)
+
+def glennieVector (x y z : Albert) : Albert :=
+  doubledTriple (commU x y z) z (jordan x y) - commU x y (U z (jordan x y))
+
+end
+end Glennie.Compact.GlennieScalarPotentialR01
 
 @[expose] public section
 namespace Glennie.Compact.GlennieFullDerivativeR01
 
 open Glennie
 open Glennie.Compact.GlennieScalarPotentialR01
-open Glennie.Compact.GlennieDerivativeR01
-open Glennie.Compact.GlennieDerivativeGenerationR01
+open Glennie.NativeGenerationEndpointR01
 
 noncomputable section
 set_option autoImplicit false
@@ -23,213 +42,147 @@ set_option maxHeartbeats 800000
 set_option backward.isDefEq.respectTransparency false
 set_option linter.unusedSimpArgs false
 
-/-- The ordinary native product space, with its existing product topology. -/
 abbrev NativeTriple := Albert × (Albert × Albert)
 
-/-- The literal native scalar on three independently variable Albert inputs. -/
 def phiTriple (p : NativeTriple) : ℝ := phi p.1 p.2.1 p.2.2
-
-theorem phi_cyclic (x y z : Albert) : phi y z x = phi x y z := by
-  rw [phi_swap_first_two z y x, phi_swap_first_third x y z, neg_neg]
-
-theorem hasFDerivAt_phi_first (x y z : Albert) :
-    HasFDerivAt (fun w : Albert => phi w y z)
-      (nativeInnerContinuous (glennieVector y z x)) x := by
-  have hfun : (fun w : Albert => phi w y z) = (fun w => phi y z w) := by
-    funext w
-    exact (phi_cyclic w y z).symm
-  rw [hfun]
-  exact hasFDerivAt_phi_third y z x
-
-theorem hasFDerivAt_phi_second (x y z : Albert) :
-    HasFDerivAt (fun w : Albert => phi x w z)
-      (nativeInnerContinuous (glennieVector z x y)) y := by
-  have hfun : (fun w : Albert => phi x w z) = (fun w => phi z x w) := by
-    funext w
-    exact phi_cyclic z x w
-  rw [hfun]
-  exact hasFDerivAt_phi_third z x y
-
-/-! Joint differentiability is proved independently of the partial formulas. -/
-
-theorem differentiable_jordan_triple {f g : NativeTriple → Albert}
-    (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) :
-    Differentiable ℝ (fun p => jordan (f p) (g p)) := by
-  have hd := jordanContinuous.isBoundedBilinearMap.differentiable.comp (hf.prodMk hg)
-  have hfun : ((fun q : Albert × Albert => jordanContinuous q.1 q.2) ∘
-      (fun p : NativeTriple => (f p, g p))) =
-      (fun p => jordan (f p) (g p)) := by
-    funext p
-    simp only [Function.comp_def, jordanContinuous_apply]
-  rw [hfun] at hd
-  exact hd
-
-theorem differentiable_U_triple {f g : NativeTriple → Albert}
-    (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) :
-    Differentiable ℝ (fun p => U (f p) (g p)) := by
-  have hfirst := differentiable_jordan_triple hf (differentiable_jordan_triple hf hg)
-  have hsecond := differentiable_jordan_triple (differentiable_jordan_triple hf hf) hg
-  have hd := (hfirst.const_smul (2 : ℝ)).sub hsecond
-  have hfun :
-      ((2 : ℝ) • (fun p : NativeTriple => jordan (f p) (jordan (f p) (g p))) -
-        (fun p => jordan (jordan (f p) (f p)) (g p))) =
-      (fun p => U (f p) (g p)) := by
-    funext p
-    simp only [Pi.sub_apply, Pi.smul_apply, U]
-  rw [hfun] at hd
-  exact hd
-
-/-- Genuine joint differentiability of the original polynomial on all triples. -/
-theorem differentiable_phiTriple : Differentiable ℝ phiTriple := by
-  have hx : Differentiable ℝ (fun p : NativeTriple => p.1) := differentiable_fst
-  have hyz : Differentiable ℝ (fun p : NativeTriple => p.2) := differentiable_snd
-  have hy : Differentiable ℝ (fun p : NativeTriple => p.2.1) := hyz.fst
-  have hz : Differentiable ℝ (fun p : NativeTriple => p.2.2) := hyz.snd
-  have hleft := (differentiable_U_triple hx (differentiable_U_triple hy hz)).sub
-    (differentiable_U_triple hy (differentiable_U_triple hx hz))
-  have hright := differentiable_U_triple hz (differentiable_jordan_triple hx hy)
-  have hd := nativeInnerContinuous.isBoundedBilinearMap.differentiable.comp
-    (hleft.prodMk hright)
-  have hfun :
-      ((fun q : Albert × Albert => nativeInnerContinuous q.1 q.2) ∘
-        (fun p : NativeTriple =>
-          (U p.1 (U p.2.1 p.2.2) - U p.2.1 (U p.1 p.2.2),
-            U p.2.2 (jordan p.1 p.2.1)))) = phiTriple := by
-    funext p
-    simp only [Function.comp_def, pairingContinuous_apply, phiTriple, phi]
-  simp only [Pi.sub_apply] at hd
-  rw [hfun] at hd
-  exact hd
 
 section StableFullDerivative
 set_option backward.isDefEq.respectTransparency false
 attribute [local instance 20000] Glennie.nativeRealSMulComm Glennie.nativeRealContinuousAdd Glennie.nativeRealContinuousSMul
-/-- Three continuous linear trace pairings, with the actual cyclic G8 values. -/
 def fullDerivative (x y z : Albert) : NativeTriple →L[ℝ] ℝ :=
   (nativeInnerContinuous (glennieVector y z x)).coprod
     ((nativeInnerContinuous (glennieVector z x y)).coprod
       (nativeInnerContinuous (glennieVector x y z)))
 end StableFullDerivative
 
-theorem fullDerivative_apply (x y z a b c : Albert) :
-    fullDerivative x y z (a, b, c) =
-      inner a (glennieVector y z x) + inner b (glennieVector z x y) +
-        inner c (glennieVector x y z) := by
-  simp only [fullDerivative, ContinuousLinearMap.coprod_apply, pairingContinuous_apply,
-    inner_comm (glennieVector y z x) a, inner_comm (glennieVector z x y) b,
-    inner_comm (glennieVector x y z) c, add_assoc]
+private def Uc (a : Albert) : Albert →L[ℝ] Albert :=
+  (2 : ℝ) • (jordanContinuous a).comp (jordanContinuous a) - jordanContinuous (jordan a a)
 
-/-- Identify the actual joint derivative by its three coordinate restrictions.
-Joint differentiability above supplies existence; it is not inferred from
-separate partial derivatives alone. -/
+private def cU (x y : Albert) : Albert →L[ℝ] Albert := (Uc x).comp (Uc y) - (Uc y).comp (Uc x)
+
+private def UBd (z p : Albert) : Albert →L[ℝ] Albert :=
+  (2 : ℝ) • (jordanContinuous (jordan z p) + (jordanContinuous z).comp (jordanContinuous p) -
+    (jordanContinuous p).comp (jordanContinuous z))
+
+private theorem hasFDerivAt_phi_third (x y z : Albert) :
+    HasFDerivAt (fun w : Albert => phi x y w) (nativeInnerContinuous (glennieVector x y z)) z := by
+  have hcU (w : Albert) : cU x y w = commU x y w := by
+    simp only [cU, Uc, sub_apply, smul_apply, ContinuousLinearMap.comp_apply, jordanContinuous_apply, commU, U]
+  have hj {f g : Albert → Albert} {f' g' : Albert →L[ℝ] Albert}
+      (hf : HasFDerivAt f f' z) (hg : HasFDerivAt g g' z) :
+      HasFDerivAt (fun w => jordan (f w) (g w))
+        ((jordanContinuous (f z)).comp g' + (jordanContinuous (g z)).comp f') z :=
+    (jordanContinuous.hasFDerivAt_of_bilinear hf hg).congr_fderiv <| ContinuousLinearMap.ext fun h => by
+      change jordan (f z) (g' h) + jordan (f' h) (g z) = _
+      rw [jordan_comm (f' h)]; rfl
+  let p := jordan x y
+  have hid : HasFDerivAt (fun w : Albert => w) (.id ℝ Albert) z := hasFDerivAt_id z
+  have hp0 : HasFDerivAt (fun w => jordan w p) (jordanContinuous p) z := by
+    simpa only [show (fun w => jordan w p) = jordanContinuous p from funext fun w => jordan_comm w p] using
+      (jordanContinuous p).hasFDerivAt (x := z)
+  have h1 := hj hid hp0
+  have h2 : HasFDerivAt (fun w => jordan (jordan w w) p)
+      ((jordanContinuous p).comp ((jordanContinuous z).comp (.id ℝ Albert) + (jordanContinuous z).comp (.id ℝ Albert))) z := by
+    simpa only [Function.comp_def, jordanContinuous_apply, jordan_comm p] using (jordanContinuous p).hasFDerivAt.comp z (hj hid hid)
+  have hUb : HasFDerivAt (fun w => U w p) (UBd z p) z :=
+    ((h1.const_smul (2 : ℝ)).fun_sub h2).congr_fderiv <| ContinuousLinearMap.ext fun h => by
+      simp only [UBd, sub_apply, smul_apply, add_apply, ContinuousLinearMap.comp_apply,
+        ContinuousLinearMap.id_apply, jordanContinuous_apply, jordan_add_right, smul_sub, two_smul]; abel
+  have hp := nativeInnerContinuous.hasFDerivAt_of_bilinear ((cU x y).hasFDerivAt (x := z)) hUb
+  rw [show (fun w => nativeInnerContinuous (cU x y w) (U w p)) = fun w => phi x y w from
+    funext fun w => by change inner (cU x y w) _ = _; rw [hcU]; rfl] at hp
+  refine hp.congr_fderiv (ContinuousLinearMap.ext fun h => ?_)
+  have hj_adj (u q r : Albert) : inner q (jordan u r) = inner (jordan u q) r := by
+    rw [← inner_jordan_associative, jordan_comm q u]
+  have hU_adj (u q r : Albert) : inner q (U u r) = inner (U u q) r := by
+    simp only [U, inner_sub_left, inner_sub_right, inner_smul_left, inner_smul_right, hj_adj]
+  have hdT_adj (a : Albert) : inner a (doubledTriple h p z) = inner h (doubledTriple a z p) := by
+    have k1 : inner a (jordan h (jordan p z)) = inner h (jordan a (jordan z p)) := by
+      rw [← inner_jordan_associative, jordan_comm a h, inner_jordan_associative, jordan_comm p z]
+    have k2 (q r : Albert) : inner a (jordan (jordan h q) r) = inner h (jordan (jordan a r) q) := by
+      rw [inner_comm a, inner_jordan_associative, inner_jordan_associative, jordan_comm r a, jordan_comm q (jordan a r)]
+    simp only [doubledTriple, inner_smul_right, inner_sub_right, inner_add_right, k1, k2]
+  have hUb_eq : UBd z p h = doubledTriple h p z := by
+    simp only [UBd, doubledTriple, sub_apply, smul_apply, add_apply, ContinuousLinearMap.comp_apply, jordanContinuous_apply,
+      jordan_comm z p, jordan_comm p h, jordan_comm (jordan p z) h, jordan_comm z (jordan h p), jordan_comm z h, jordan_comm p (jordan h z)]
+  change inner (cU x y z) (UBd z p h) + inner (cU x y h) (U z p) = inner (glennieVector x y z) h
+  rw [hcU, hcU, hUb_eq, hdT_adj, show inner (commU x y h) (U z p) = -inner h (commU x y (U z p)) by
+    simp only [commU, inner_sub_left, inner_sub_right, ← hU_adj]; ring,
+    inner_comm (glennieVector x y z) h, glennieVector, inner_sub_right]
+  ring
+
 theorem hasFDerivAt_phiTriple (x y z : Albert) :
     HasFDerivAt phiTriple (fullDerivative x y z) (x, y, z) := by
-  let D : NativeTriple →L[ℝ] ℝ := fderiv ℝ phiTriple (x, y, z)
-  have hd : HasFDerivAt phiTriple D (x, y, z) :=
-    (differentiable_phiTriple (x, y, z)).hasFDerivAt
-  have hix : HasFDerivAt (fun w : Albert => (w, y, z))
-      (ContinuousLinearMap.inl ℝ Albert (Albert × Albert)) x :=
-    hasFDerivAt_prodMk_left (𝕜 := ℝ) x (y, z)
-  have hx : HasFDerivAt (fun w : Albert => phi w y z)
-      (D.comp (ContinuousLinearMap.inl ℝ Albert (Albert × Albert))) x := by
-    simpa only [Function.comp_def, phiTriple] using
-      (HasFDerivAt.comp (𝕜 := ℝ) (f := fun w : Albert => (w, y, z))
-        (g := phiTriple) x hd hix)
-  have hiyz : HasFDerivAt (fun q : Albert × Albert => (x, q))
-      (ContinuousLinearMap.inr ℝ Albert (Albert × Albert)) (y, z) :=
-    hasFDerivAt_prodMk_right (𝕜 := ℝ) x (y, z)
+  have hj {f g : NativeTriple → Albert} (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) :
+      Differentiable ℝ (fun p => jordan (f p) (g p)) := by
+    simpa only [Function.comp_def, jordanContinuous_apply] using
+      jordanContinuous.isBoundedBilinearMap.differentiable.comp (hf.prodMk hg)
+  have hU {f g : NativeTriple → Albert} (hf : Differentiable ℝ f) (hg : Differentiable ℝ g) :
+      Differentiable ℝ (fun p => U (f p) (g p)) := by
+    simpa only [U, Pi.smul_apply] using ((hj hf (hj hf hg)).const_smul (2 : ℝ)).fun_sub (hj (hj hf hf) hg)
+  have hdiff : Differentiable ℝ phiTriple := by
+    have hl := (hU differentiable_fst (hU differentiable_snd.fst differentiable_snd.snd)).fun_sub
+      (hU differentiable_snd.fst (hU differentiable_fst differentiable_snd.snd))
+    have hr := hU differentiable_snd.snd (hj differentiable_fst differentiable_snd.fst)
+    simpa only [Function.comp_def, show (fun p : NativeTriple => nativeInnerContinuous _ _) = phiTriple from rfl] using
+      nativeInnerContinuous.isBoundedBilinearMap.differentiable.comp (hl.prodMk hr)
+  have hcyc (a b c : Albert) : phi b c a = phi a b c := by
+    rw [phi_swap_first_two c b a, phi_swap_first_third a b c, neg_neg]
+  have hd1 : HasFDerivAt (fun w => phi w y z) (nativeInnerContinuous (glennieVector y z x)) x := by
+    simpa only [show (fun w => phi w y z) = fun w => phi y z w from funext fun w => (hcyc w y z).symm] using
+      hasFDerivAt_phi_third y z x
+  have hd2 : HasFDerivAt (fun w => phi x w z) (nativeInnerContinuous (glennieVector z x y)) y := by
+    simpa only [show (fun w => phi x w z) = fun w => phi z x w from funext fun w => hcyc z x w] using
+      hasFDerivAt_phi_third z x y
+  let D := fderiv ℝ phiTriple (x, y, z)
+  have hd : HasFDerivAt phiTriple D (x, y, z) := (hdiff (x, y, z)).hasFDerivAt
+  have hx : HasFDerivAt (fun w => phi w y z) (D.comp (.inl ℝ Albert (Albert × Albert))) x := by
+    simpa only [Function.comp_def, phiTriple] using hd.comp x (hasFDerivAt_prodMk_left (𝕜 := ℝ) x (y, z))
   have hyz : HasFDerivAt (fun q : Albert × Albert => phi x q.1 q.2)
-      (D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))) (y, z) := by
-    simpa only [Function.comp_def, phiTriple] using
-      (HasFDerivAt.comp (𝕜 := ℝ) (f := fun q : Albert × Albert => (x, q))
-        (g := phiTriple) (y, z) hd hiyz)
-  have hiy : HasFDerivAt (fun w : Albert => (w, z))
-      (ContinuousLinearMap.inl ℝ Albert Albert) y :=
-    hasFDerivAt_prodMk_left (𝕜 := ℝ) y z
-  have hy : HasFDerivAt (fun w : Albert => phi x w z)
-      ((D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))).comp
-        (ContinuousLinearMap.inl ℝ Albert Albert)) y := by
-    simpa only [Function.comp_def] using
-      (HasFDerivAt.comp (𝕜 := ℝ) (f := fun w : Albert => (w, z))
-        (g := fun q : Albert × Albert => phi x q.1 q.2) y hyz hiy)
-  have hiz : HasFDerivAt (fun w : Albert => (y, w))
-      (ContinuousLinearMap.inr ℝ Albert Albert) z :=
-    hasFDerivAt_prodMk_right (𝕜 := ℝ) y z
-  have hz : HasFDerivAt (fun w : Albert => phi x y w)
-      ((D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))).comp
-        (ContinuousLinearMap.inr ℝ Albert Albert)) z := by
-    simpa only [Function.comp_def] using
-      (HasFDerivAt.comp (𝕜 := ℝ) (f := fun w : Albert => (y, w))
-        (g := fun q : Albert × Albert => phi x q.1 q.2) z hyz hiz)
-  have h1 := hx.unique (hasFDerivAt_phi_first x y z)
-  have h2 := hy.unique (hasFDerivAt_phi_second x y z)
-  have h3 := hz.unique (hasFDerivAt_phi_third x y z)
-  have h23 : D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert)) =
-      (nativeInnerContinuous (glennieVector z x y)).coprod
-        (nativeInnerContinuous (glennieVector x y z)) := by
-    calc
-      _ = ((D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))).comp
-            (ContinuousLinearMap.inl ℝ Albert Albert)).coprod
-          ((D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))).comp
-            (ContinuousLinearMap.inr ℝ Albert Albert)) :=
-        (ContinuousLinearMap.coprod_comp_inl_inr _).symm
-      _ = _ := by rw [h2, h3]
-  have hfull : D = fullDerivative x y z := by
-    calc
-      _ = (D.comp (ContinuousLinearMap.inl ℝ Albert (Albert × Albert))).coprod
-          (D.comp (ContinuousLinearMap.inr ℝ Albert (Albert × Albert))) :=
-        (ContinuousLinearMap.coprod_comp_inl_inr D).symm
-      _ = _ := by simp only [h1, h23, fullDerivative]
-  exact hd.congr_fderiv hfull
+      (D.comp (.inr ℝ Albert (Albert × Albert))) (y, z) := by
+    simpa only [Function.comp_def, phiTriple] using hd.comp (y, z) (hasFDerivAt_prodMk_right (𝕜 := ℝ) x (y, z))
+  have hy : HasFDerivAt (fun w => phi x w z)
+      ((D.comp (.inr ℝ Albert (Albert × Albert))).comp (.inl ℝ Albert Albert)) y := by
+    simpa only [Function.comp_def] using hyz.comp y (hasFDerivAt_prodMk_left (𝕜 := ℝ) y z)
+  have hz : HasFDerivAt (fun w => phi x y w)
+      ((D.comp (.inr ℝ Albert (Albert × Albert))).comp (.inr ℝ Albert Albert)) z := by
+    simpa only [Function.comp_def] using hyz.comp z (hasFDerivAt_prodMk_right (𝕜 := ℝ) y z)
+  refine hd.congr_fderiv ?_
+  rw [← ContinuousLinearMap.coprod_comp_inl_inr D, hx.unique hd1,
+    ← ContinuousLinearMap.coprod_comp_inl_inr (D.comp _), hy.unique hd2,
+    hz.unique (hasFDerivAt_phi_third x y z), fullDerivative]
 
-theorem fderiv_phiTriple (x y z : Albert) :
-    fderiv ℝ phiTriple (x, y, z) = fullDerivative x y z :=
-  (hasFDerivAt_phiTriple x y z).fderiv
-
-/-- The full differential on an arbitrary native direction (a,b,c). -/
-theorem fderiv_phiTriple_apply (x y z a b c : Albert) :
-    fderiv ℝ phiTriple (x, y, z) (a, b, c) =
-      inner a (glennieVector y z x) + inner b (glennieVector z x y) +
-        inner c (glennieVector x y z) := by
-  rw [fderiv_phiTriple, fullDerivative_apply]
-
-/-- Full ambient criticality is equivalent to vanishing of all three cyclic
-native G8 values. The forward proof tests the three coordinate directions. -/
-theorem fderiv_phiTriple_eq_zero_iff (x y z : Albert) :
-    fderiv ℝ phiTriple (x, y, z) = 0 ↔
-      glennieVector y z x = 0 ∧ glennieVector z x y = 0 ∧
-        glennieVector x y z = 0 := by
-  constructor
-  · intro hd
-    have h1 : inner (glennieVector y z x) (glennieVector y z x) = 0 := by
-      have h := fderiv_phiTriple_apply x y z (glennieVector y z x) 0 0
-      simpa only [hd, zero_apply, inner_zero_left, add_zero] using h.symm
-    have h2 : inner (glennieVector z x y) (glennieVector z x y) = 0 := by
-      have h := fderiv_phiTriple_apply x y z 0 (glennieVector z x y) 0
-      simpa only [hd, zero_apply, inner_zero_left, zero_add, add_zero] using h.symm
-    have h3 : inner (glennieVector x y z) (glennieVector x y z) = 0 := by
-      have h := fderiv_phiTriple_apply x y z 0 0 (glennieVector x y z)
-      simpa only [hd, zero_apply, inner_zero_left, zero_add] using h.symm
-    exact ⟨(inner_self_eq_zero _).mp h1, (inner_self_eq_zero _).mp h2,
-      (inner_self_eq_zero _).mp h3⟩
-  · rintro ⟨h1, h2, h3⟩
-    apply ContinuousLinearMap.ext
-    rintro ⟨a, b, c⟩
-    simp only [fderiv_phiTriple_apply, h1, h2, h3, inner_zero_right, add_zero, zero_apply]
-
-/-- A nonzero actual full differential forces full unital Jordan generation.
-The three membership permutations use the proper-submodule theorem. -/
 theorem eq_top_of_fderiv_phiTriple_ne_zero
     (K : Submodule ℝ Albert) (h1 : (1 : Albert) ∈ K)
     (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K)
     (x y z : Albert) (hx : x ∈ K) (hy : y ∈ K) (hz : z ∈ K)
     (hd : fderiv ℝ phiTriple (x, y, z) ≠ 0) : K = ⊤ := by
   by_contra hK
-  apply hd
-  apply (fderiv_phiTriple_eq_zero_iff x y z).mpr
-  exact ⟨glennieVector_eq_zero_of_ne_top K h1 hJ hK y z x hy hz hx,
-    glennieVector_eq_zero_of_ne_top K h1 hJ hK z x y hz hx hy,
-    glennieVector_eq_zero_of_ne_top K h1 hJ hK x y z hx hy hz⟩
+  have hU {a b : Albert} (ha : a ∈ K) (hb : b ∈ K) : U a b ∈ K :=
+    K.sub_mem (K.smul_mem 2 (hJ a ha _ (hJ a ha b hb))) (hJ _ (hJ a ha a ha) b hb)
+  have hcU {a b c : Albert} (ha : a ∈ K) (hb : b ∈ K) (hc : c ∈ K) : commU a b c ∈ K :=
+    K.sub_mem (hU ha (hU hb hc)) (hU hb (hU ha hc))
+  have hg0 {a b c : Albert} (ha : a ∈ K) (hb : b ∈ K) (hc : c ∈ K) : glennieVector a b c = 0 := by
+    have hp := hJ a ha b hb
+    have hg : glennieVector a b c ∈ K := K.sub_mem
+      (K.smul_mem 2 (K.sub_mem (K.add_mem (hJ _ (hcU ha hb hc) _ (hJ c hc _ hp))
+        (hJ _ (hJ _ (hcU ha hb hc) c hc) _ hp)) (hJ _ (hJ _ (hcU ha hb hc) _ hp) c hc)))
+      (hcU ha hb (hU hc hp))
+    have hcurve : (fun t : ℝ => phi a b (c + t • glennieVector a b c)) = fun _ => 0 := funext fun t => by
+      by_contra hne
+      exact hK (eq_top_of_phi_ne_zero K h1 hJ a b _ ha hb (K.add_mem hc (K.smul_mem t hg)) hne)
+    have hlin : HasDerivAt (fun t : ℝ => c + t • glennieVector a b c) (glennieVector a b c) 0 := by
+      simpa only [id_eq, one_smul] using HasDerivAt.const_add c ((hasDerivAt_id (0 : ℝ)).smul_const _)
+    have hder : HasDerivAt (fun t : ℝ => phi a b (c + t • glennieVector a b c))
+        (inner (glennieVector a b c) (glennieVector a b c)) 0 := by
+      simpa only [Function.comp_def, zero_smul, add_zero] using
+        ((hasFDerivAt_phi_third a b (c + (0 : ℝ) • glennieVector a b c)).comp_hasDerivAt 0 hlin).congr_deriv
+          (show (nativeInnerContinuous _) _ = inner _ _ from rfl)
+    rw [hcurve] at hder
+    exact (inner_self_eq_zero _).mp (hder.unique (hasDerivAt_const (0 : ℝ) (0 : ℝ)))
+  refine hd ((hasFDerivAt_phiTriple x y z).fderiv.trans (ContinuousLinearMap.ext fun ⟨a, b, c⟩ => ?_))
+  change inner (glennieVector y z x) a + (inner (glennieVector z x y) b + inner (glennieVector x y z) c) = 0
+  simp only [hg0 hy hz hx, hg0 hz hx hy, hg0 hx hy hz, inner_zero_left, add_zero]
 
 end
 end Glennie.Compact.GlennieFullDerivativeR01
