@@ -399,34 +399,4 @@ theorem tendsto_projObsDual_energy (hK : LipschitzWith K γ)
 
 end Energy
 
-/-! ### Parseval's identity in inner-product form -/
-
-section Identification
-
-variable {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
-
-/-- The normalized coefficients `2π λₙ^{-1/2} ĝ(n)` of a continuous function form an `ℓ²(ℤ)`
-sequence. -/
-lemma memℓp_normalizedCoeff {g : ℝ → ℂ} (hg : Continuous g) :
-    Memℓp (fun n : ℤ => ((2 * π / Real.sqrt (1 + |(n : ℝ)|) : ℝ) : ℂ) *
-      fourierCoeffOn two_pi_pos g n) 2 := by
-  refine memℓp_two_iff_summable.mpr ?_
-  refine Summable.of_nonneg_of_le (fun n => by positivity) (fun n => ?_)
-    ((hasSum_sq_fourierCoeffOn_of_continuous hg).summable.mul_left ((2 * π) ^ 2))
-  rw [norm_mul, mul_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs]
-  gcongr
-  have h1 : 1 ≤ Real.sqrt (1 + |(n : ℝ)|) := by
-    rw [Real.one_le_sqrt]; linarith [abs_nonneg (n : ℝ)]
-  exact div_le_self (by positivity) h1
-
-end Identification
-
-/-! ### The reduced observation of Lemma 7.4 -/
-
-section Reduced
-
-variable {γ : ℝ → ℂ} {K : NNReal} {Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2}
-
-end Reduced
-
 end PolyaNeumann

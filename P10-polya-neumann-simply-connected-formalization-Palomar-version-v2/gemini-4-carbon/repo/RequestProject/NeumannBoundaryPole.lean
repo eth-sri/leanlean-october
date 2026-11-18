@@ -334,23 +334,6 @@ theorem h1HelmholtzResolvent_eq_pole_add_regular {Ω : Set ℂ}
   rw [hleft]
   exact (h1PoleCandidate_solve hE₀ hne hunit u).symm
 
-/-- The genuine finite-rank boundary residue. H¹ normalization accounts for
-the factor `E₀ + 1`; in an L²-normalized eigenfunction basis this factor
-becomes the usual sum of boundary trace rank-one operators. -/
-def neumannBoundaryResidue {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E₀ : ℝ) :
-    BoundaryL2 →L[ℂ] BoundaryL2 :=
-  ((E₀ + 1 : ℝ) : ℂ) •
-    (h1BoundaryTrace hb hL hγ ∘L (h1ResonantSpace Ω E₀).starProjection ∘L
-      h1BoundaryLoad hb hL hγ)
-
-/-- The regular boundary operator is the actual trace sandwich of the
-complement inverse, including its genuine value at the reference energy. -/
-def neumannBoundaryRegular {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    (E₀ E : ℝ) : BoundaryL2 →L[ℂ] BoundaryL2 :=
-  h1BoundaryTrace hb hL hγ ∘L h1RegularResolvent Ω E₀ E ∘L h1BoundaryLoad hb hL hγ
-
 end PolyaNeumann
 
 end

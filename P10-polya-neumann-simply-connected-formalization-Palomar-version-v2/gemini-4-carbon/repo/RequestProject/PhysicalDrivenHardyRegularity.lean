@@ -1,7 +1,6 @@
 module
 
 public import RequestProject.PhysicalDrivenIntegrable
-public import RequestProject.PhysicalDrivenReconstruction
 public import RequestProject.FourierLipschitz
 public import RequestProject.CutFourier
 public import Mathlib.Analysis.Calculus.ContDiff.RCLike
@@ -183,13 +182,6 @@ theorem physicalDrivenShiftedGauge_weightedIntegral_hasSum_to
       Summable.of_nonneg_of_le (fun _ => norm_nonneg _) (fun l => hbd l s (hsub hs)) hu
     exact hsn.of_norm.hasSum.mul_left (w s)
 
-private theorem driven_c1_absolutelyContinuous {f : ℝ → ℂ} (hf : ContDiff ℝ 1 f) :
-    AbsolutelyContinuousOnInterval f 0 (2 * Real.pi) := by
-  obtain ⟨K, hK⟩ := hf.contDiffOn.exists_lipschitzOnWith
-    (by norm_num : (1 : WithTop ℕ∞) ≠ 0) (convex_Icc 0 (2 * Real.pi)) isCompact_Icc
-  apply LipschitzOnWith.absolutelyContinuousOnInterval
-  simpa only [uIcc_of_le Real.two_pi_pos.le] using hK
-
 private theorem driven_ac_congr {f h : ℝ → ℂ}
     (hf : AbsolutelyContinuousOnInterval f 0 (2 * Real.pi))
     (he : EqOn f h (Icc 0 (2 * Real.pi))) :
@@ -215,7 +207,7 @@ theorem physicalDrivenGaugePartial_zero_absolutelyContinuous_of_intervalIntegrab
     have hp : ContDiff ℝ 1 (physicalDrivenPower γ l) := by
       unfold physicalDrivenPower physicalDrivenCentered
       exact ((hγ.sub contDiff_const).neg.pow l).div_const _
-    have h_simpa := (driven_c1_absolutelyContinuous hp).smul
+    have h_simpa := (c1_absolutelyContinuousOnInterval hp).smul
       (physicalDrivenScaledRow_absolutelyContinuous_of_intervalIntegrable hK hW g hg l)
     simp only [physicalDrivenGaugeTerm, Nat.add_zero, Pi.smul_apply, smul_eq_mul] at h_simpa ⊢
     exact h_simpa
@@ -293,15 +285,6 @@ theorem physicalDrivenGaugeZeroContinuousPart_continuousOn
       ((continuousOn_const.mul
         (Complex.continuous_conj.comp hγ.continuous_deriv_one).continuousOn).mul
         (physicalDrivenShiftedGauge_continuousOn γ hγ.continuous E y hy))
-
-private theorem driven_continuousOn_memLp_two {f : ℝ → ℂ}
-    (hf : ContinuousOn f (Icc 0 (2 * Real.pi))) :
-    MemLp f 2 (volume.restrict (Ioc 0 (2 * Real.pi))) := by
-  obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hf
-  refine MemLp.of_bound ((hf.mono Ioc_subset_Icc_self).aestronglyMeasurable measurableSet_Ioc)
-    C ?_
-  exact ae_restrict_of_forall_mem measurableSet_Ioc fun x hx =>
-    hC x (Ioc_subset_Icc_self hx)
 
 private theorem physicalDrivenGaugePartial_zero_primitive
     {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) (hγ : ContDiff ℝ 1 γ)
@@ -486,124 +469,7 @@ theorem physicalDrivenGauge_zero_derivative_memLp
   have hc := physicalDrivenGaugeZeroContinuousPart_continuousOn hγ E _
     (physicalDrivenVector_continuousOn_of_intervalIntegrable hW.1 g
       (intervalIntegrable_boundary_of_memLp g hg))
-  exact (driven_continuousOn_memLp_two hc).sub (by
-    exact hg.const_smul Complex.I)
-
-/-- Genuine complex Fourier integration by parts for an absolutely
-continuous function and its actual a.e. derivative. This includes mode
-zero and uses the averaged Fourier normalization. -/
-theorem fourierCoeffOn_of_ac_ae_hasDerivAt
-    {f f' : ℝ → ℂ} (hf : AbsolutelyContinuousOnInterval f 0 (2 * Real.pi))
-    (hf' : MemLp f' 2 (volume.restrict (Ioc 0 (2 * Real.pi))))
-    (hd : ∀ᵐ θ, θ ∈ Ioo 0 (2 * Real.pi) → HasDerivAt f (f' θ) θ)
-    (hp : f 0 = f (2 * Real.pi)) (n : ℤ) :
-    fourierCoeffOn Real.two_pi_pos f' n =
-      (Complex.I * (n : ℂ)) * fourierCoeffOn Real.two_pi_pos f n := by
-  let e : ℝ → ℂ := fun θ => fourier (-n) (θ : AddCircle (2 * Real.pi))
-  let α : ℂ := -(Complex.I * (n : ℂ))
-  have hec : Continuous e := (map_continuous (fourier (-n))).comp (AddCircle.continuous_mk' _)
-  have hen (θ : ℝ) : ‖e θ‖ = 1 := norm_fourier_coe (-n) θ
-  have he1 : ContDiff ℝ 1 e := by
-    dsimp only [e]
-    simp_rw [fourier_coe_two_pi]
-    have harg : ContDiff ℝ 1 (fun θ : ℝ => ((-n : ℤ) : ℂ) * (θ : ℂ) * Complex.I) :=
-      (contDiff_const.mul Complex.ofRealCLM.contDiff).mul contDiff_const
-    exact harg.cexp
-  have heD (θ : ℝ) : HasDerivAt e (α * e θ) θ := by
-    have hα : -2 * (Real.pi : ℂ) * Complex.I * (n : ℂ) /
-        ((2 * Real.pi : ℝ) : ℂ) = α := by
-      dsimp only [α]
-      push_cast
-      field_simp [Real.pi_ne_zero]
-    simpa only [hα] using hasDerivAt_fourier_neg (2 * Real.pi) n θ
-  have hfC : ContinuousOn f (Icc 0 (2 * Real.pi)) := by
-    simpa only [uIcc_of_le Real.two_pi_pos.le] using hf.continuousOn
-  have hfi : IntegrableOn f (Icc 0 (2 * Real.pi)) := hfC.integrableOn_Icc
-  have hf'i : IntegrableOn f' (Icc 0 (2 * Real.pi)) := by
-    rw [integrableOn_Icc_iff_integrableOn_Ioc]
-    exact MemLp.integrable (by norm_num : (1 : ENNReal) ≤ 2) hf'
-  have hfe : IntegrableOn (fun θ => f θ * e θ) (Icc 0 (2 * Real.pi)) :=
-    hfi.mul_bdd hec.aestronglyMeasurable.restrict
-      (Eventually.of_forall fun θ => (hen θ).le)
-  have hf'e : IntegrableOn (fun θ => f' θ * e θ) (Icc 0 (2 * Real.pi)) :=
-    hf'i.mul_bdd hec.aestronglyMeasurable.restrict
-      (Eventually.of_forall fun θ => (hen θ).le)
-  have hprodAC : AbsolutelyContinuousOnInterval (fun θ => f θ * e θ) 0 (2 * Real.pi) := by
-    exact hf.smul (driven_c1_absolutelyContinuous he1)
-  have hprodD : ∀ᵐ θ, θ ∈ Ioo 0 (2 * Real.pi) →
-      HasDerivAt (fun θ => f θ * e θ) (f' θ * e θ + α * (f θ * e θ)) θ := by
-    filter_upwards [hd] with θ hθ hmem
-    convert (hθ hmem).mul (heD θ) using 1; ring
-  have hprodI : IntegrableOn (fun θ => f' θ * e θ + α * (f θ * e θ))
-      (Icc 0 (2 * Real.pi)) := hf'e.add (hfe.const_mul α)
-  have hFTC := eq_add_intervalIntegral_of_ac_ae_hasDerivAt Real.two_pi_pos.le
-    hprodAC hprodI hprodD (2 * Real.pi) ⟨Real.two_pi_pos.le, le_rfl⟩
-  have he0 : e 0 = 1 := by
-    change fourier (-n) ((0 : ℝ) : AddCircle (2 * Real.pi)) = 1
-    rw [AddCircle.coe_zero, fourier_eval_zero]
-  have heL : e (2 * Real.pi) = 1 := by
-    have hper : ((2 * Real.pi : ℝ) : AddCircle (2 * Real.pi)) = 0 := by
-      have h0 := AddCircle.coe_add_period (2 * Real.pi) (0 : ℝ)
-      rw [zero_add, AddCircle.coe_zero] at h0
-      exact h0
-    change fourier (-n) ((2 * Real.pi : ℝ) : AddCircle (2 * Real.pi)) = 1
-    rw [hper, fourier_eval_zero]
-  have hi0 : (∫ θ in (0 : ℝ)..(2 * Real.pi),
-      f' θ * e θ + α * (f θ * e θ)) = 0 := by
-    rw [he0, heL, mul_one, mul_one, ← hp] at hFTC
-    exact add_left_cancel (show f 0 + (∫ θ in (0 : ℝ)..(2 * Real.pi),
-      f' θ * e θ + α * (f θ * e θ)) = f 0 + 0 from by
-        simpa only [add_zero] using hFTC.symm)
-  have hife : IntervalIntegrable (fun θ => f θ * e θ) volume 0 (2 * Real.pi) := by
-    apply IntegrableOn.intervalIntegrable
-    simpa only [uIcc_of_le Real.two_pi_pos.le] using hfe
-  have hif'e : IntervalIntegrable (fun θ => f' θ * e θ) volume 0 (2 * Real.pi) := by
-    apply IntegrableOn.intervalIntegrable
-    simpa only [uIcc_of_le Real.two_pi_pos.le] using hf'e
-  rw [intervalIntegral.integral_add hif'e (hife.const_mul α),
-    intervalIntegral.integral_const_mul] at hi0
-  have hi : (∫ θ in (0 : ℝ)..(2 * Real.pi), f' θ * e θ) =
-      (Complex.I * (n : ℂ)) * (∫ θ in (0 : ℝ)..(2 * Real.pi), f θ * e θ) := by
-    dsimp only [α] at hi0
-    exact eq_of_sub_eq_zero (by simpa only [neg_mul, ← sub_eq_add_neg] using hi0)
-  have hi' : (∫ θ in (0 : ℝ)..(2 * Real.pi), e θ * f' θ) =
-      (Complex.I * (n : ℂ)) * (∫ θ in (0 : ℝ)..(2 * Real.pi), e θ * f θ) := by
-    simpa only [mul_comm] using hi
-  simp only [e, fourier_coe_apply] at hi'
-  simp only [fourierCoeffOn_eq_integral, smul_eq_mul, Complex.real_smul,
-    fourier_coe_apply, sub_zero]
-  rw [hi']
-  ring
-
-/-- Actual AC and an L² a.e. derivative give the project's true Fourier
-H¹ sequence, using Parseval for both value and derivative. -/
-theorem isSobolevSeq_one_fourierCoeffOn_of_ac_ae_hasDerivAt
-    {f f' : ℝ → ℂ} (hf : AbsolutelyContinuousOnInterval f 0 (2 * Real.pi))
-    (hf' : MemLp f' 2 (volume.restrict (Ioc 0 (2 * Real.pi))))
-    (hd : ∀ᵐ θ, θ ∈ Ioo 0 (2 * Real.pi) → HasDerivAt f (f' θ) θ)
-    (hp : f 0 = f (2 * Real.pi)) :
-    IsSobolevSeq 1 (fourierCoeffOn Real.two_pi_pos f) := by
-  have hfC : ContinuousOn f (Icc 0 (2 * Real.pi)) := by
-    simpa only [uIcc_of_le Real.two_pi_pos.le] using hf.continuousOn
-  have hs := (hasSum_sq_fourierCoeffOn Real.two_pi_pos
-    (driven_continuousOn_memLp_two hfC)).summable
-  have hs' := (hasSum_sq_fourierCoeffOn Real.two_pi_pos hf').summable
-  have hdn (n : ℤ) : ‖fourierCoeffOn Real.two_pi_pos f' n‖ ^ 2 =
-      (n : ℝ) ^ 2 * ‖fourierCoeffOn Real.two_pi_pos f n‖ ^ 2 := by
-    rw [fourierCoeffOn_of_ac_ae_hasDerivAt hf hf' hd hp n]
-    simp only [norm_mul, Complex.norm_I, one_mul, Complex.norm_intCast,
-      mul_pow, sq_abs]
-  change Summable (fun n : ℤ => (sobWeight n ^ (1 : ℝ) *
-    ‖fourierCoeffOn Real.two_pi_pos f n‖) ^ 2)
-  refine Summable.of_nonneg_of_le (fun _ => by positivity) (fun n => ?_)
-    ((hs.mul_left 2).add (hs'.mul_left 2))
-  rw [hdn]
-  simp only [sobWeight, Real.rpow_one]
-  have h0 := norm_nonneg (fourierCoeffOn Real.two_pi_pos f n)
-  have ha := abs_nonneg (n : ℝ)
-  have hsq := sq_nonneg ((|(n : ℝ)| - 1) * ‖fourierCoeffOn Real.two_pi_pos f n‖)
-  rw [← sq_abs (n : ℝ)]
-  nlinarith
+  exact (continuousOn_memLp_boundary hc).sub (hg.const_smul Complex.I)
 
 /-- The actual zeroth gauge of an L² driven observation-kernel vector has
 H¹ coefficients. No Sobolev premise on that vector is needed. -/

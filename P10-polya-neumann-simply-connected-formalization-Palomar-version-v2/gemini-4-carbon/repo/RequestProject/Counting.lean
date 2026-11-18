@@ -75,28 +75,6 @@ theorem count_of_eigen (V : ENNReal) (hV : V ≠ ⊤) (hμ : Monotone μ) (h0 : 
       _ = (m : ENNReal) * ENNReal.ofReal (4 * π) := by
         rw [mul_comm, ← ENNReal.ofReal_natCast, ← ENNReal.ofReal_mul (by positivity)]
 
-/-- Lemma 3.5, second implication: the counting inequality implies the eigenvalue
-inequality (given `0 < μ_j < ∞` for `j ≥ 1`). -/
-theorem eigen_of_count (V : ENNReal) (hμ : Monotone μ)
-    (hpos : ∀ j : ℕ, 1 ≤ j → 0 < μ j) (hfin : ∀ j : ℕ, 1 ≤ j → μ j ≠ ⊤)
-    (h : ∀ E : ℝ, 0 < E → V * ENNReal.ofReal E / ENNReal.ofReal (4 * π) <
-      (({i | μ i < ENNReal.ofReal E}.encard : ℕ∞) : ENNReal))
-    (j : ℕ) (hj : 1 ≤ j) : V * μ j < ENNReal.ofReal (4 * π * j) := by
-  have h4 : ENNReal.ofReal (4 * π) ≠ 0 := by
-    simp only [ne_eq, ENNReal.ofReal_eq_zero, not_le]; positivity
-  have hE : 0 < (μ j).toReal := ENNReal.toReal_pos (hpos j hj).ne' (hfin j hj)
-  have hh := h _ hE
-  rw [ENNReal.ofReal_toReal (hfin j hj)] at hh
-  have hc := encard_lt_le_of_monotone μ hμ j
-  have hc' : (({i | μ i < μ j}.encard : ℕ∞) : ENNReal) ≤ (j : ENNReal) := by
-    have := ENat.toENNReal_le.mpr hc
-    simpa using this
-  have := lt_of_lt_of_le hh hc'
-  rw [ENNReal.div_lt_iff (Or.inl h4) (Or.inl ENNReal.ofReal_ne_top)] at this
-  calc V * μ j < (j : ENNReal) * ENNReal.ofReal (4 * π) := this
-    _ = ENNReal.ofReal (4 * π * j) := by
-      rw [mul_comm, ← ENNReal.ofReal_natCast, ← ENNReal.ofReal_mul (by positivity)]
-
 end PolyaNeumann
 
 end

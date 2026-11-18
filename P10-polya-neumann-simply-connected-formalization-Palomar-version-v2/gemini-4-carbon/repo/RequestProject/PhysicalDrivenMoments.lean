@@ -2,6 +2,9 @@ module
 
 public import RequestProject.PhysicalMomentHardyCriterion
 public import RequestProject.CorrectedKernelSmooth
+public import RequestProject.Transmutation
+public import RequestProject.HardyVolterraBridge
+public import Mathlib.Topology.Algebra.InfiniteSum.Constructions
 public import Mathlib.Topology.Algebra.InfiniteSum.TsumUniformlyOn
 
 /-!
@@ -45,6 +48,12 @@ theorem physicalDrivenQ_ne_zero {E : ℝ} (hE : 0 < E) : physicalDrivenQ E ≠ 0
 
 theorem physicalDrivenQ_sq_ne_zero {E : ℝ} (hE : 0 < E) : physicalDrivenQ E ^ 2 ≠ 0 :=
   pow_ne_zero _ (physicalDrivenQ_ne_zero hE)
+
+theorem physicalDrivenQ_sq {E : ℝ} (hE : 0 ≤ E) :
+    physicalDrivenQ E ^ 2 = -(E : ℂ) / 4 := by
+  have hs : (Real.sqrt E : ℂ) ^ 2 = (E : ℂ) := by exact_mod_cast Real.sq_sqrt hE
+  simp only [physicalDrivenQ, div_pow, neg_sq, mul_pow, Complex.I_sq, hs]
+  ring
 
 /-- The actual driven vector with zero initial value, given by variation
 of constants.  No terminal value is built into this definition. -/
@@ -310,38 +319,57 @@ def physicalDrivenTailMoment (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2)
   ∫ θ in (0 : ℝ)..(2 * Real.pi), deriv γ θ * physicalDrivenPower γ N θ *
     physicalDrivenScaledRow E y (N + j + 2) θ * conj (physicalDrivenCentered γ θ) ^ m
 
-/-- A continuous weight can be integrated through the actual absolutely
-convergent gauge series.  The dominating series is derived from genuine
-Hilbert-space rows on the compact parameter interval. -/
-theorem physicalDrivenGauge_weightedIntegral_hasSum
+theorem physicalDrivenGauge_weightedIntegral_hasSum_to
     (γ : ℝ → ℂ) (hγ : Continuous γ) (E : ℝ) (y : ℝ → Ell2)
     (hy : ContinuousOn y (Icc 0 (2 * Real.pi))) (j : ℕ) (w : ℝ → ℂ)
-    (hw : ContinuousOn w (Icc 0 (2 * Real.pi))) :
-    HasSum (fun ℓ : ℕ => ∫ θ in (0 : ℝ)..(2 * Real.pi),
-      w θ * physicalDrivenGaugeTerm γ E y j ℓ θ)
-      (∫ θ in (0 : ℝ)..(2 * Real.pi), w θ * physicalDrivenGauge γ E y j θ) := by
+    (hw : ContinuousOn w (Icc 0 (2 * Real.pi))) {θ : ℝ}
+    (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
+    HasSum (fun l : ℕ => ∫ s in (0 : ℝ)..θ,
+      w s * physicalDrivenGaugeTerm γ E y j l s)
+      (∫ s in (0 : ℝ)..θ, w s * physicalDrivenGauge γ E y j s) := by
   obtain ⟨u, hu, hbd⟩ := exists_physicalDrivenGaugeTerm_majorant γ hγ E y hy j
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hw
-  have h0 : (0 : ℝ) ∈ Icc 0 (2 * Real.pi) := ⟨le_rfl, Real.two_pi_pos.le⟩
-  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0 h0)
-  have hsub : uIoc (0 : ℝ) (2 * Real.pi) ⊆ Icc 0 (2 * Real.pi) := by
-    rw [uIoc_of_le Real.two_pi_pos.le]
-    exact Ioc_subset_Icc_self
+  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0 ⟨le_rfl, Real.two_pi_pos.le⟩)
+  have hsub : uIoc (0 : ℝ) θ ⊆ Icc 0 (2 * Real.pi) := by
+    rw [uIoc_of_le hθ.1]
+    exact Ioc_subset_Icc_self.trans (Icc_subset_Icc le_rfl hθ.2)
   refine intervalIntegral.hasSum_integral_of_dominated_convergence
-    (μ := volume) (bound := fun ℓ _ => C * u ℓ) ?_ ?_ ?_ intervalIntegrable_const ?_
-  · intro ℓ
-    exact ((hw.mul (physicalDrivenGaugeTerm_continuousOn γ hγ E y hy j ℓ)).mono hsub).aestronglyMeasurable
+    (μ := volume) (bound := fun l _ => C * u l) ?_ ?_ ?_ intervalIntegrable_const ?_
+  · intro l
+    exact ((hw.mul (physicalDrivenGaugeTerm_continuousOn γ hγ E y hy j l)).mono hsub).aestronglyMeasurable
       measurableSet_uIoc
-  · intro ℓ
-    exact Eventually.of_forall fun θ hθ => by
+  · intro l
+    exact Eventually.of_forall fun s hs => by
       rw [norm_mul]
-      exact mul_le_mul (hC θ (hsub hθ)) (hbd ℓ θ (hsub hθ)) (norm_nonneg _) hC0
+      exact mul_le_mul (hC s (hsub hs)) (hbd l s (hsub hs)) (norm_nonneg _) hC0
   · exact Eventually.of_forall fun _ _ => hu.mul_left C
-  · exact Eventually.of_forall fun θ _ =>
-      ((summable_norm_physicalDrivenGaugeTerm γ E y j θ).of_norm.hasSum).mul_left (w θ)
+  · exact Eventually.of_forall fun s _ =>
+      ((summable_norm_physicalDrivenGaugeTerm γ E y j s).of_norm.hasSum).mul_left (w s)
 
-/-- The infinite physical moment is the integral of the actual factorial
-series, not a separately postulated Hardy function. -/
+theorem physicalDrivenGaugePartial_weightedIntegral_tendsto_to
+    (γ : ℝ → ℂ) (hγ : Continuous γ) (E : ℝ) (y : ℝ → Ell2)
+    (hy : ContinuousOn y (Icc 0 (2 * Real.pi))) (j : ℕ) (w : ℝ → ℂ)
+    (hw : ContinuousOn w (Icc 0 (2 * Real.pi))) {θ : ℝ}
+    (hθ : θ ∈ Icc 0 (2 * Real.pi)) :
+    Tendsto (fun N : ℕ => ∫ s in (0 : ℝ)..θ,
+      w s * physicalDrivenGaugePartial γ E y j N s) atTop
+      (𝓝 (∫ s in (0 : ℝ)..θ, w s * physicalDrivenGauge γ E y j s)) := by
+  have hs := physicalDrivenGauge_weightedIntegral_hasSum_to γ hγ E y hy j w hw hθ
+  have hsub : uIcc (0 : ℝ) θ ⊆ Icc 0 (2 * Real.pi) := by
+    rw [uIcc_of_le hθ.1]; exact Icc_subset_Icc le_rfl hθ.2
+  have he (N : ℕ) : (∫ s in (0 : ℝ)..θ,
+      w s * physicalDrivenGaugePartial γ E y j N s) =
+      ∑ l ∈ Finset.range (N + 1), ∫ s in (0 : ℝ)..θ,
+        w s * physicalDrivenGaugeTerm γ E y j l s := by
+    unfold physicalDrivenGaugePartial
+    simp_rw [Finset.mul_sum]
+    exact intervalIntegral.integral_finset_sum fun l _ =>
+      ((hw.mul (physicalDrivenGaugeTerm_continuousOn γ hγ E y hy j l)).mono hsub).intervalIntegrable
+  have h_simpa := hs.tendsto_sum_nat.comp (tendsto_add_atTop_nat 1)
+  simp only [Function.comp_apply, he, Function.comp_def] at h_simpa ⊢
+  exact h_simpa
+
+/-- The infinite physical moment is the integral of the actual factorial series. -/
 def physicalDrivenMoment (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (j m : ℕ) : ℂ :=
   ∫ θ in (0 : ℝ)..(2 * Real.pi), conj (deriv γ θ) *
     physicalDrivenGauge γ E y j θ * conj (physicalDrivenCentered γ θ) ^ m
@@ -355,37 +383,15 @@ theorem physicalDrivenMomentPartial_tendsto
   have hw : Continuous w :=
     (Complex.continuous_conj.comp hγ.continuous_deriv_one).mul
       ((Complex.continuous_conj.comp (hγ.continuous.sub continuous_const)).pow m)
-  have hs := physicalDrivenGauge_weightedIntegral_hasSum γ hγ.continuous E y hy j w hw.continuousOn
+  have ht := physicalDrivenGaugePartial_weightedIntegral_tendsto_to γ hγ.continuous E y hy j
+    w hw.continuousOn (θ := 2 * Real.pi) ⟨Real.two_pi_pos.le, le_rfl⟩
   have hm : (∫ θ in (0 : ℝ)..(2 * Real.pi), w θ * physicalDrivenGauge γ E y j θ) =
-      physicalDrivenMoment γ E y j m := by
-    apply intervalIntegral.integral_congr
-    intro θ _
-    dsimp only [w]
-    ring
-  rw [hm] at hs
-  have he (N : ℕ) : physicalDrivenMomentPartial γ E y j N m =
-      ∑ ℓ ∈ Finset.range (N + 1), ∫ θ in (0 : ℝ)..(2 * Real.pi),
-        w θ * physicalDrivenGaugeTerm γ E y j ℓ θ := by
-    calc
-      _ = ∫ θ in (0 : ℝ)..(2 * Real.pi), ∑ ℓ ∈ Finset.range (N + 1),
-          w θ * physicalDrivenGaugeTerm γ E y j ℓ θ := by
-        unfold physicalDrivenMomentPartial physicalDrivenGaugePartial
-        apply intervalIntegral.integral_congr
-        intro θ _
-        dsimp only
-        rw [Finset.mul_sum, Finset.sum_mul]
-        apply Finset.sum_congr rfl
-        intro ℓ _
-        dsimp only [w]
-        ring
-      _ = _ := intervalIntegral.integral_finset_sum (fun ℓ _ =>
-        ((hw.continuousOn.mul (physicalDrivenGaugeTerm_continuousOn γ hγ.continuous E y hy j ℓ)).mono
-          (by rw [uIcc_of_le Real.two_pi_pos.le])).intervalIntegrable)
-  simpa only [Function.comp_def, he] using hs.tendsto_sum_nat.comp (tendsto_add_atTop_nat 1)
+      physicalDrivenMoment γ E y j m :=
+    intervalIntegral.integral_congr fun _ _ => by dsimp only [w, physicalDrivenMoment]; ring
+  rw [hm] at ht
+  exact ht.congr fun N => intervalIntegral.integral_congr fun _ _ => by
+    dsimp only [w, physicalDrivenMomentPartial]; ring
 
-/-- The true finite tail tends to zero.  Its integral terms themselves
-form an absolutely convergent weighted gauge series, so no unproved
-termwise derivative limit is needed. -/
 theorem physicalDrivenTailMoment_tendsto_zero
     (γ : ℝ → ℂ) (hγ : ContDiff ℝ 1 γ) (E : ℝ) (y : ℝ → Ell2)
     (hy : ContinuousOn y (Icc 0 (2 * Real.pi))) (j m : ℕ) :
@@ -393,15 +399,13 @@ theorem physicalDrivenTailMoment_tendsto_zero
   let w : ℝ → ℂ := fun θ => deriv γ θ * conj (physicalDrivenCentered γ θ) ^ m
   have hw : Continuous w := hγ.continuous_deriv_one.mul
     ((Complex.continuous_conj.comp (hγ.continuous.sub continuous_const)).pow m)
-  have hs := physicalDrivenGauge_weightedIntegral_hasSum γ hγ.continuous E y hy (j + 2) w
-    hw.continuousOn
+  have hs := physicalDrivenGauge_weightedIntegral_hasSum_to γ hγ.continuous E y hy (j + 2) w
+    hw.continuousOn (θ := 2 * Real.pi) ⟨Real.two_pi_pos.le, le_rfl⟩
   have he (N : ℕ) : physicalDrivenTailMoment γ E y j N m =
-      ∫ θ in (0 : ℝ)..(2 * Real.pi), w θ * physicalDrivenGaugeTerm γ E y (j + 2) N θ := by
-    apply intervalIntegral.integral_congr
-    intro θ _
-    dsimp only [physicalDrivenTailMoment, physicalDrivenGaugeTerm, w]
-    rw [Nat.add_assoc]
-    ring
+      ∫ θ in (0 : ℝ)..(2 * Real.pi), w θ * physicalDrivenGaugeTerm γ E y (j + 2) N θ :=
+    intervalIntegral.integral_congr fun θ _ => by
+      dsimp only [physicalDrivenTailMoment, physicalDrivenGaugeTerm, w]
+      rw [Nat.add_assoc]; ring
   simpa only [he] using hs.summable.tendsto_atTop_zero
 
 /-- The genuine periodic representative of the actual driven gauge on the
@@ -434,6 +438,81 @@ theorem physicalDrivenPeriodicGauge_eqOn (γ : ℝ → ℂ) (E : ℝ)
     unfold physicalDrivenPeriodicGauge
     rw [AddCircle.coe_period, hlift, h0, hL]
   · exact AddCircle.liftIco_zero_coe_apply ⟨hθ.1, lt_of_le_of_ne hθ.2 hθL⟩
+
+/-! ## Absolute convergence and inversion of the factorial gauge -/
+
+def factorialGauge (z : ℂ) (d : ℕ → ℂ) (j : ℕ) : ℂ :=
+  ∑' l : ℕ, (-z) ^ l / (l.factorial : ℂ) * d (l + j)
+
+private def factorialGaugeInverseTerm (z : ℂ) (d : ℕ → ℂ) (p : ℕ × ℕ) : ℂ :=
+  z ^ p.1 / (p.1.factorial : ℂ) * ((-z) ^ p.2 / (p.2.factorial : ℂ) * d (p.2 + p.1))
+
+private theorem factorialGaugeInverseTerm_antidiagonal
+    (z : ℂ) (d : ℕ → ℂ) (n : ℕ) :
+    ∑ p ∈ Finset.antidiagonal n, factorialGaugeInverseTerm z d p =
+      if n = 0 then d 0 else 0 := by
+  rw [← Finset.Nat.sum_antidiagonal_swap (n := n) (f := factorialGaugeInverseTerm z d),
+    Finset.Nat.sum_antidiagonal_eq_sum_range_succ_mk]
+  have ht (l : ℕ) (hl : l ∈ Finset.range (n + 1)) :
+      factorialGaugeInverseTerm z d ((l, n - l).swap) =
+        (z ^ n * d n) * ((-1 : ℂ) ^ l /
+          ((l.factorial : ℂ) * ((n - l).factorial : ℂ))) := by
+    have hln : l ≤ n := by have := Finset.mem_range.mp hl; omega
+    unfold factorialGaugeInverseTerm
+    simp only [Prod.swap]
+    rw [show -z = (-1 : ℂ) * z by ring, mul_pow, show l + (n - l) = n by omega]
+    calc
+      _ = (z ^ (n - l) * z ^ l) * d n * ((-1 : ℂ) ^ l /
+          ((l.factorial : ℂ) * ((n - l).factorial : ℂ))) := by ring
+      _ = _ := by rw [← pow_add, Nat.sub_add_cancel hln]
+  rw [Finset.sum_congr rfl ht, ← Finset.mul_sum,
+    show ∑ l ∈ Finset.range (n + 1), (-1 : ℂ) ^ l / ((l.factorial : ℂ) * ((n - l).factorial : ℂ)) =
+      if n = 0 then 1 else 0 by
+        simpa [apply_ite] using congrArg (fun q : ℚ => (q : ℂ)) (alternating_factorial_sum n)]
+  by_cases hn : n = 0 <;> simp [hn]
+
+theorem factorialGauge_inverse_at (z : ℂ) (d : ℕ → ℂ)
+    {C a : ℝ} (ha : 0 ≤ a) (hd : ∀ n, ‖d n‖ ≤ C * a ^ n) (k : ℕ) :
+    (∑' j : ℕ, z ^ j / (j.factorial : ℂ) * factorialGauge z d (j + k)) = d k := by
+  let d' : ℕ → ℂ := fun n => d (n + k)
+  let T : ℕ × ℕ → ℂ := factorialGaugeInverseTerm z d'
+  let r : ℕ → ℝ := fun n => (‖z‖ * a) ^ n / (n.factorial : ℝ)
+  have hr₀ (n : ℕ) : 0 ≤ r n := by dsimp only [r]; positivity
+  have hr : Summable (fun n => ‖r n‖) := by
+    simp only [Real.norm_eq_abs, abs_of_nonneg (hr₀ _)]
+    exact Real.summable_pow_div_factorial (‖z‖ * a)
+  have hs : Summable T := Summable.of_norm <| Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
+    (fun p => by
+      unfold T factorialGaugeInverseTerm d'
+      rw [norm_mul, norm_mul]
+      refine (mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left (hd (p.2 + p.1 + k))
+        (norm_nonneg _)) (norm_nonneg _)).trans_eq ?_
+      simp only [norm_div, norm_pow, norm_neg, Complex.norm_natCast, r, pow_add, mul_pow]
+      ring)
+    ((summable_mul_of_summable_norm (R := ℝ) hr hr).mul_left (C * a ^ k))
+  have hg : (∑' j : ℕ, z ^ j / (j.factorial : ℂ) * factorialGauge z d (j + k)) =
+      ∑' p : ℕ × ℕ, T p := by
+    rw [hs.tsum_prod]
+    exact tsum_congr fun j => by
+      simp only [factorialGauge, T, factorialGaugeInverseTerm, d', Nat.add_assoc, ← tsum_mul_left]
+  rw [hg, ← Finset.HasAntidiagonal.sigmaAntidiagonalEquivProd.tsum_eq T]
+  have hσ : Summable (fun p : Σ n : ℕ, Finset.antidiagonal n => T p.2) :=
+    Finset.HasAntidiagonal.sigmaAntidiagonalEquivProd.summable_iff.mpr hs
+  change (∑' p : Σ n : ℕ, Finset.antidiagonal n, T p.2) = d k
+  rw [hσ.tsum_sigma]
+  simp_rw [tsum_fintype, Finset.sum_coe_sort, T, factorialGaugeInverseTerm_antidiagonal, d']
+  simp
+
+theorem physicalDrivenGauge_inverse_at
+    (γ : ℝ → ℂ) (E : ℝ) (y : ℝ → Ell2) (θ : ℝ) (k : ℕ) :
+    (∑' j : ℕ, physicalDrivenCentered γ θ ^ j / (j.factorial : ℂ) *
+      physicalDrivenGauge γ E y (j + k) θ) = physicalDrivenScaledRow E y k θ := by
+  have h := factorialGauge_inverse_at (physicalDrivenCentered γ θ)
+    (fun n => physicalDrivenScaledRow E y n θ)
+    (C := 2 * ‖y θ‖) (a := ‖physicalDrivenQ E‖) (norm_nonneg _)
+    (fun n => (norm_physicalDrivenScaledRow_le E y n θ).trans_eq (by ring)) k
+  simpa only [factorialGauge, physicalDrivenGauge, physicalDrivenGaugeTerm,
+    physicalDrivenPower] using h
 
 end PolyaNeumann
 

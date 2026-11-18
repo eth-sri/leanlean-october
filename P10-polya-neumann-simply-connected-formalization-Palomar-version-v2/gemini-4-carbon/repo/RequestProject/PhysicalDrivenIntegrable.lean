@@ -32,111 +32,6 @@ open scoped Topology ComplexConjugate
 local instance physicalDrivenIntegrableTwoPiPos : Fact (0 < 2 * Real.pi) :=
   ⟨Real.two_pi_pos⟩
 
-/-- A Banach-valued primitive is genuinely absolutely continuous. This is
-the norm-increment version of Mathlib's real-valued primitive proof. -/
-theorem absolutelyContinuousOnInterval_intervalIntegral_banach
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
-    {f : ℝ → V} {a b c : ℝ} (hf : IntervalIntegrable f volume a b)
-    (hc : c ∈ uIcc a b) :
-    AbsolutelyContinuousOnInterval (fun x => ∫ t in c..x, f t) a b := by
-  let s := fun E : ℕ × (ℕ → ℝ × ℝ) => ⋃ i ∈ Finset.range E.1, uIoc (E.2 i).1 (E.2 i).2
-  have hlim : Tendsto (fun i => ∫⁻ x in s i, ‖f x‖ₑ ∂volume.restrict (uIoc a b))
-      (totalLengthFilter ⊓ 𝓟 (disjWithin a b)) (𝓝 0) :=
-    tendsto_setLIntegral_zero (ne_of_lt (intervalIntegrable_iff.mp hf).hasFiniteIntegral)
-      (tendsto_volume_restrict_totalLengthFilter_disjWithin_nhds_zero _ _)
-  have hlim' := ENNReal.toReal_zero ▸
-    (ENNReal.continuousAt_toReal (by simp)).tendsto.comp hlim
-  refine squeeze_zero' ?_ ?_ hlim'
-  · filter_upwards with E
-    exact Finset.sum_nonneg (fun _ _ => dist_nonneg)
-  simp only [Function.comp_apply, s]
-  have hmem : ∀ᶠ E : ℕ × (ℕ → ℝ × ℝ) in totalLengthFilter ⊓ 𝓟 (disjWithin a b),
-      E ∈ disjWithin a b := eventually_inf_principal.mpr (by simp)
-  filter_upwards [hmem] with E hE
-  obtain ⟨hE1, hE2⟩ := mem_setOf_eq ▸ hE
-  rw [← integral_norm_eq_lintegral_enorm (hf.aestronglyMeasurable_restrict_uIoc.restrict),
-    integral_biUnion_finset _ (by simp +contextual [uIoc]) hE2]
-  · refine Finset.sum_le_sum (fun i hi => ?_)
-    rw [dist_eq_norm, intervalIntegral.integral_interval_sub_left
-      (by apply IntervalIntegrable.mono_set' hf; grind [uIoc, uIcc])
-      (by apply IntervalIntegrable.mono_set' hf; grind [uIoc, uIcc]),
-      Measure.restrict_restrict_of_subset
-        (uIoc_subset_of_mem_disjWithin hE (Finset.mem_range.mp hi))]
-    simpa only [uIoc_comm] using
-      (intervalIntegral.norm_integral_le_integral_norm_uIoc (f := f)
-        (a := (E.2 i).2) (b := (E.2 i).1))
-  · intro i hi
-    unfold IntegrableOn
-    have hsub := uIoc_subset_of_mem_disjWithin hE (Finset.mem_range.mp hi)
-    rw [Measure.restrict_restrict_of_subset hsub]
-    exact (IntegrableOn.mono_set hf.def'.norm hsub).integrable
-
-/-- The actual a.e. primitive derivative, localized to a finite interval. -/
-theorem ae_hasDerivAt_intervalIntegral_banach
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
-    {f : ℝ → V} {L : ℝ} (hL : 0 ≤ L) (hf : IntervalIntegrable f volume 0 L) :
-    ∀ᵐ x, x ∈ Ioo 0 L → HasDerivAt (fun x => ∫ t in (0 : ℝ)..x, f t) (f x) x := by
-  have hfi : IntegrableOn f (Icc 0 L) := by
-    rw [integrableOn_Icc_iff_integrableOn_Ioc]
-    exact (intervalIntegrable_iff_integrableOn_Ioc_of_le hL).mp hf
-  let G := (Icc 0 L).indicator f
-  have hGi : Integrable G := hfi.integrable_indicator measurableSet_Icc
-  filter_upwards [ae_hasDerivAt_integral_of_locallyIntegrable hGi.locallyIntegrable]
-    with x hx hmem
-  have hxc := Ioo_subset_Icc_self hmem
-  have hd := hx 0
-  rw [show G x = f x by simp [G, indicator_of_mem hxc]] at hd
-  refine hd.congr_of_eventuallyEq ?_
-  filter_upwards [Ioo_mem_nhds hmem.1 hmem.2] with y hy
-  apply intervalIntegral.integral_congr
-  intro t ht
-  have htc : t ∈ Icc 0 L := by
-    rw [uIcc_of_le hy.1.le] at ht
-    exact ⟨ht.1, ht.2.trans hy.2.le⟩
-  simp [G, indicator_of_mem htc]
-
-/-- True Banach-valued FTC from absolute continuity and the actual a.e.
-derivative, without a bounded-derivative or Lipschitz hypothesis. -/
-theorem eq_add_intervalIntegral_of_ac_ae_hasDerivAt
-    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
-    {f g : ℝ → V} {L : ℝ} (hL : 0 ≤ L)
-    (hf : AbsolutelyContinuousOnInterval f 0 L) (hg : IntegrableOn g (Icc 0 L))
-    (hd : ∀ᵐ x, x ∈ Ioo 0 L → HasDerivAt f (g x) x) :
-    ∀ θ ∈ Icc 0 L, f θ = f 0 + ∫ s in (0 : ℝ)..θ, g s := by
-  let G := (Icc 0 L).indicator g
-  have hGi : Integrable G := hg.integrable_indicator measurableSet_Icc
-  let P : ℝ → V := fun x => ∫ s in (0 : ℝ)..x, G s
-  have hP : AbsolutelyContinuousOnInterval P 0 L :=
-    absolutelyContinuousOnInterval_intervalIntegral_banach hGi.intervalIntegrable
-      (by rw [uIcc_of_le hL]; exact ⟨le_rfl, hL⟩)
-  have hPeq (θ : ℝ) (hθ : θ ∈ Icc 0 L) : P θ = ∫ s in (0 : ℝ)..θ, g s := by
-    apply intervalIntegral.integral_congr
-    intro s hs
-    have hsc : s ∈ Icc 0 L := by
-      rw [uIcc_of_le hθ.1] at hs
-      exact ⟨hs.1, hs.2.trans hθ.2⟩
-    simp [G, indicator_of_mem hsc]
-  have hz : ∀ᵐ x, x ∈ uIcc 0 L → HasDerivAt (f - P) 0 x := by
-    have h0 : ∀ᵐ x : ℝ, x ≠ 0 := by simp [ae_iff, measure_singleton]
-    have h1 : ∀ᵐ x : ℝ, x ≠ L := by simp [ae_iff, measure_singleton]
-    filter_upwards [hd, ae_hasDerivAt_integral_of_locallyIntegrable hGi.locallyIntegrable,
-      h0, h1] with x hx hxP hx0 hxL hxc
-    rw [uIcc_of_le hL] at hxc
-    have hxo : x ∈ Ioo 0 L :=
-      ⟨lt_of_le_of_ne hxc.1 (Ne.symm hx0), lt_of_le_of_ne hxc.2 hxL⟩
-    have h := (hx hxo).sub (hxP 0)
-    simpa only [P, G, indicator_of_mem hxc, sub_self] using h
-  obtain ⟨c, hc⟩ := (hf.sub hP).const_of_ae_hasDerivAt_zero hz
-  intro θ hθ
-  have hc0 := hc 0 (by rw [uIcc_of_le hL]; exact ⟨le_rfl, hL⟩)
-  have hcθ := hc θ (by rw [uIcc_of_le hL]; exact hθ)
-  simp only [Pi.sub_apply, P, intervalIntegral.integral_same, sub_zero] at hc0
-  change f θ - P θ = c at hcθ
-  rw [← hc0, hPeq θ hθ] at hcθ
-  calc
-    _ = (f θ - ∫ s in (0 : ℝ)..θ, g s) + ∫ s in (0 : ℝ)..θ, g s := by abel
-    _ = _ := by rw [hcθ]
-
 /-- A bounded linear image of a genuine absolutely continuous function. -/
 theorem absolutelyContinuousOnInterval_clm_comp
     {V Z : Type*} [NormedAddCommGroup V] [NormedSpace ℂ V]
@@ -353,25 +248,6 @@ theorem physicalDrivenScaledRow_absolutelyContinuous_of_intervalIntegrable
   simp only [smul_eq_mul] at h
   exact h
 
-/-- Positive physical scaled rows are absolutely continuous images of the
-constructed vector. This retains the actual sqrt(2) zeroth-row normalization. -/
-theorem physicalDrivenScaledRow_succ_absolutelyContinuous_of_intervalIntegrable
-    {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    (g : ℝ → ℂ) (hg : IntervalIntegrable g volume 0 (2 * Real.pi)) (n : ℕ) :
-    AbsolutelyContinuousOnInterval
-      (physicalDrivenScaledRow E (physicalDrivenVector W g) (n + 1)) 0 (2 * Real.pi) := by
-  have hac := absolutelyContinuousOnInterval_clm_comp (innerSL ℂ (basisVec (n + 1)))
-    (physicalDrivenVector_absolutelyContinuous_of_intervalIntegrable hK hW g hg)
-  have h := hac.const_smul (physicalDrivenQ E ^ (n + 1))
-  simp only [innerSL_apply_apply, inner_basisVec, smul_eq_mul] at h
-  have he : physicalDrivenScaledRow E (physicalDrivenVector W g) (n + 1) =
-      fun s => physicalDrivenQ E ^ (n + 1) * (physicalDrivenVector W g s : ℕ → ℂ) (n + 1) := by
-    funext s
-    simp [physicalDrivenScaledRow, physicalDrivenRow]
-  rw [he]
-  exact h
-
 /-- The direct forcing cancels in the positive rows. Their a.e. derivative
 has an actual continuous right-hand side. -/
 theorem physicalDrivenScaledRow_succ_ae_hasDerivAt_of_intervalIntegrable
@@ -409,7 +285,7 @@ theorem physicalDrivenScaledRow_hasDerivAt_succ_of_intervalIntegrable
       ((continuousOn_const.mul
         (Complex.continuous_conj.comp hγ.continuous_deriv_one).continuousOn).mul (hc n))
   have heq := eq_add_intervalIntegral_of_ac_ae_hasDerivAt Real.two_pi_pos.le
-    (physicalDrivenScaledRow_succ_absolutelyContinuous_of_intervalIntegrable hK hW g hg n)
+    (physicalDrivenScaledRow_absolutelyContinuous_of_intervalIntegrable hK hW g hg (n + 1))
     hd.integrableOn_Icc
     (physicalDrivenScaledRow_succ_ae_hasDerivAt_of_intervalIntegrable hK hγ hW g hg n)
   have htc := Ioo_subset_Icc_self hθ

@@ -92,51 +92,6 @@ lemma norm_eq_one_of_eigen {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] 
   field_simp at hn
   exact hn
 
-/-- A summable multiplicity-weighted phase sum is the sum over a family listing the nonunit
-eigenvalues of `U` with multiplicity. -/
-theorem exists_eigen_family {U : H →L[ℂ] H} (hU : U ∈ unitary (H →L[ℂ] H))
-    (hC : IsCompactOperator ⇑(U - 1)) (hs : Summable (phaseTerm U)) :
-    ∃ (ι : Type) (z : ι → ℂ), (∀ i, ‖z i‖ = 1) ∧ (∀ i, z i ≠ 1) ∧
-      (∀ (c : ℂ) (v : H), v ≠ 0 → U v = c • v → c ≠ 1 → ∃ i, z i = c) ∧
-      Summable (fun i => argNeg (z i)) ∧ ∑' i, argNeg (z i) = phaseSum U := by
-  have hfib : ∀ z : {z : ℂ // z ≠ 1},
-      ∑' k : Fin (eigenMult U z), -argNeg z = -phaseTerm U z := by
-    intro z
-    rw [tsum_fintype, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul,
-      phaseTerm]
-    ring
-  have hsum : Summable (fun p : (Σ z : {z : ℂ // z ≠ 1}, Fin (eigenMult U z)) =>
-      argNeg p.1.1) := by
-    have hneg : Summable (fun p : (Σ z : {z : ℂ // z ≠ 1}, Fin (eigenMult U z)) =>
-        -argNeg p.1.1) := by
-      rw [summable_sigma_of_nonneg (fun p => neg_nonneg.mpr (argNeg_nonpos _))]
-      refine ⟨fun z => (hasSum_fintype _).summable, ?_⟩
-      simp only [hfib]
-      exact hs.neg
-    simpa using hneg.neg
-  refine ⟨(Σ z : {z : ℂ // z ≠ 1}, Fin (eigenMult U z)), fun p => p.1.1, ?_, ?_, ?_, ?_, ?_⟩
-  · rintro ⟨z, k⟩
-    have hpos : 0 < eigenMult U z := Fin.pos k
-    haveI := finiteDimensional_eigenspace hC z.2
-    obtain ⟨⟨v, hv⟩, hv0⟩ := Module.finrank_pos_iff_exists_ne_zero.mp hpos
-    exact norm_eq_one_of_eigen hU (fun h => hv0 (by simp [h]))
-      (Module.End.mem_eigenspace_iff.mp hv)
-  · rintro ⟨z, k⟩
-    exact z.2
-  · intro c v hv0 hv hc
-    haveI := finiteDimensional_eigenspace hC hc
-    have hpos : 0 < eigenMult U c := Module.finrank_pos_iff_exists_ne_zero.mpr
-      ⟨⟨v, Module.End.mem_eigenspace_iff.mpr hv⟩, fun h => hv0 (by simpa using h)⟩
-    exact ⟨⟨⟨c, hc⟩, ⟨0, hpos⟩⟩, rfl⟩
-  · exact hsum
-  · rw [hsum.tsum_sigma, phaseSum]
-    congr 1
-    ext z
-    rw [tsum_fintype]
-    show ∑ _k : Fin (eigenMult U z), argNeg (z : ℂ) = _
-    rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul,
-      phaseTerm]
-
 end General
 
 open Classical in

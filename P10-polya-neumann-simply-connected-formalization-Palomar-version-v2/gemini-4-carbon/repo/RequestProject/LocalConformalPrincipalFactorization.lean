@@ -1,6 +1,6 @@
 module
 
-public import RequestProject.LocalConformalPrincipalModes
+public import RequestProject.LocalConformalWeakModes
 
 /-!
 # Compactness of the actual normalized Neumann principal remainder

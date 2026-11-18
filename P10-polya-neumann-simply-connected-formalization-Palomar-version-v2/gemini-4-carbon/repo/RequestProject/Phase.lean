@@ -122,36 +122,6 @@ theorem abs_argNeg_le_of_im_nonpos {z : ℂ} (hz : ‖z‖ = 1) (h1 : z ≠ 1) (
     nlinarith
   linarith
 
-/-- **Lemma 9.2 (phase remainder, abstract form).**  For a family `z` of unimodular numbers
-`≠ 1` (the nonunit eigenvalues of `U_E`, with multiplicity) whose negative arguments are
-summable, `-Φ₋ = -∑ Arg₋ z_i ≥ |z_j - 1|` for every `j`. -/
-theorem norm_sub_one_le_neg_tsum_argNeg {ι : Type*} {z : ι → ℂ} (hz : ∀ i, ‖z i‖ = 1)
-    (h1 : ∀ i, z i ≠ 1) (hs : Summable fun i => argNeg (z i)) (j : ι) :
-    ‖z j - 1‖ ≤ -∑' i, argNeg (z i) := by
-  have hnn : ∀ i, 0 ≤ -argNeg (z i) := fun i => by
-    linarith [(argNeg_mem_Ioo (hz i) (h1 i)).2]
-  rw [← tsum_neg]
-  exact (norm_sub_one_le_neg_argNeg (hz j)).trans
-    (hs.neg.le_tsum j fun i _ => hnn i)
-
-/-- **Lemma 9.2 (second inequality).**  With `Φ₋ = ∑ Arg₋ z_i` and
-`M = (E|Ω|/2 - Φ₋)/(2π)`, if the norm `‖U_E - I‖ = r` is attained as `|z_j - 1|`, then
-`M ≥ E|Ω|/(4π) + r/(2π)`.  (If the family is empty, take `r = 0`.) -/
-theorem phase_integer_ge {ι : Type*} {z : ι → ℂ} (hz : ∀ i, ‖z i‖ = 1) (h1 : ∀ i, z i ≠ 1)
-    (hs : Summable fun i => argNeg (z i)) (E area r : ℝ)
-    (hr : r = 0 ∨ ∃ j, ‖z j - 1‖ = r) :
-    E * area / (4 * π) + r / (2 * π) ≤ (E * area / 2 - ∑' i, argNeg (z i)) / (2 * π) := by
-  have key : r ≤ -∑' i, argNeg (z i) := by
-    rcases hr with rfl | ⟨j, rfl⟩
-    · rw [← tsum_neg]
-      exact tsum_nonneg fun i => by linarith [(argNeg_mem_Ioo (hz i) (h1 i)).2]
-    · exact norm_sub_one_le_neg_tsum_argNeg hz h1 hs j
-  have hpi := Real.pi_pos
-  rw [show E * area / (4 * π) + r / (2 * π) = (E * area / 2 + r) / (2 * π) by
-    field_simp; ring]
-  gcongr
-  linarith
-
 end PolyaNeumann
 
 end

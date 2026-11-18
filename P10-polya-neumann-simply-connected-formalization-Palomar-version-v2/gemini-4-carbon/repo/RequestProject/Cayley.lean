@@ -1,3 +1,0 @@
-module
-public import Mathlib.Analysis.InnerProductSpace.LinearPMap
-public import RequestProject.CurveContinuity

@@ -1,7 +1,14 @@
 module
 
-public import RequestProject.NeumannBoundaryDifference
-public import RequestProject.NeumannResidueRank
+public import RequestProject.NeumannBoundaryPole
+public import Mathlib.Tactic.Abel
+public import Mathlib.Tactic.Ring
+public import Mathlib.Analysis.InnerProductSpace.Adjoint
+public import Mathlib.LinearAlgebra.FiniteDimensional.Basic
+public import Mathlib.LinearAlgebra.Dimension.Finrank
+public import RequestProject.NeumannTraceInjective
+public import RequestProject.NeumannResonanceDimension
+public import RequestProject.NeumannConstantTrace
 public import RequestProject.SobolevCircle
 
 /-!

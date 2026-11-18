@@ -1,13 +1,11 @@
 module
 
-public import RequestProject.FourierFiniteRankRegularity
+public import RequestProject.PositiveFourierBasis
+public import RequestProject.ConormalNormalization
+public import Mathlib.Analysis.InnerProductSpace.Adjoint
 
 /-!
-# The regular principal correction of a finite Fourier chart
-
-The input and output vectors of the actual chart correction have finite
-Fourier support. Expanding its adjoint proves that the correction to the
-compressed positive principal part is regular at every Sobolev order.
+# Sobolev preservation and finite Fourier chart definition
 -/
 
 @[expose] public section
@@ -21,29 +19,40 @@ namespace PolyaNeumann
 open Set
 open scoped InnerProductSpace
 
-local notation "H₁" => nonpositiveFourierSubspaceᗮ
+def fourierSobolevSubmodule (s : ℝ) : Submodule ℂ L2Z where
+  carrier := {b | IsSobolevSeq s (b : ℤ → ℂ)}
+  zero_mem' := by simp [IsSobolevSeq]
+  add_mem' := by
+    intro b d hb hd
+    show IsSobolevSeq s ((b + d : L2Z) : ℤ → ℂ)
+    simpa only [lp.coeFn_add] using isSobolevSeq_add hb hd
+  smul_mem' := by
+    intro a b hb
+    show IsSobolevSeq s ((a • b : L2Z) : ℤ → ℂ)
+    simpa only [lp.coeFn_smul] using isSobolevSeq_smul a hb
 
-def finiteFourierChart {d : ℕ} (u : Fin d → H₁) (v : Fin d → L2Z) :
-    H₁ →L[ℂ] L2Z :=
-  Submodule.subtypeL H₁ + ∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)
+theorem isSobolevSeq_posProj {s : ℝ} {b : L2Z}
+    (hb : IsSobolevSeq s (b : ℤ → ℂ)) :
+    IsSobolevSeq s (posProj b : ℤ → ℂ) := by
+  refine Summable.of_nonneg_of_le (fun _ => sq_nonneg _) (fun n => ?_) hb
+  by_cases hn : 0 < n
+  · simp [posProj, diagOp_apply, hn]
+  · simpa [posProj, diagOp_apply, hn] using sq_nonneg (sobWeight n ^ s * ‖b n‖)
 
-theorem finiteFourierChart_correction_sobolev {d : ℕ}
-    (u : Fin d → H₁) (v : Fin d → L2Z)
-    (hv : ∀ r, (Function.support (v r : ℤ → ℂ)).Finite)
-    (s : ℝ) (z : H₁) :
-    IsSobolevSeq s ((finiteFourierChart u v z - (z : L2Z) : L2Z) : ℤ → ℂ) := by
-  have heq : finiteFourierChart u v z - (z : L2Z) =
-      (∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)) z := by
-    simp only [finiteFourierChart, ContinuousLinearMap.add_apply,
-      Submodule.subtypeL_apply, add_sub_cancel_left]
-  rw [heq]
-  change _ ∈ fourierSobolevSubmodule s
-  rw [ContinuousLinearMap.sum_apply]
-  apply Submodule.sum_mem
-  intro r _
-  rw [InnerProductSpace.rankOne_apply]
-  exact (fourierSobolevSubmodule s).smul_mem _
-    (isSobolevSeq_of_finite_fourier_support s (hv r))
+theorem nonpositive_orthogonal_starProjection :
+    nonpositiveFourierSubspaceᗮ.starProjection = posProj := by
+  ext1 b
+  have h := nonpositiveFourierSubspace.starProjection_add_starProjection_orthogonal b
+  rw [nonpositiveFourierSubspace_starProjection] at h
+  simp only [ContinuousLinearMap.sub_apply, ContinuousLinearMap.one_apply] at h
+  calc
+    _ = b - (b - posProj b) := by
+      rw [eq_sub_iff_add_eq]; simpa only [add_comm] using h
+    _ = _ := by abel
+
+def finiteFourierChart {d : ℕ} (u : Fin d → nonpositiveFourierSubspaceᗮ) (v : Fin d → L2Z) :
+    nonpositiveFourierSubspaceᗮ →L[ℂ] L2Z :=
+  Submodule.subtypeL nonpositiveFourierSubspaceᗮ + ∑ r, InnerProductSpace.rankOne ℂ (v r) (u r)
 
 end PolyaNeumann
 

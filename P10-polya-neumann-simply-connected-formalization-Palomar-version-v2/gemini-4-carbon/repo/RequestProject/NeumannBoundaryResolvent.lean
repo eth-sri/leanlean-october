@@ -141,12 +141,6 @@ theorem h1HelmholtzResolvent_isSelfAdjoint (Ω : Set ℂ) (E : ℝ) :
   exact (Ring.inverse_star (h1HelmholtzForm Ω E)).symm.trans
     (congrArg Ring.inverse (h1HelmholtzForm_isSelfAdjoint Ω E).star_eq)
 
-/-- The actual H¹ solution with prescribed L² conormal density. -/
-def neumannBoundaryPoisson {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E : ℝ) :
-    BoundaryL2 →L[ℂ] NeumannH1 Ω :=
-  (h1HelmholtzResolvent Ω E).comp (h1BoundaryLoad hb hL hγ)
-
 /-- The weak Helmholtz equation with the actual boundary conormal load.
 The boundary trace in the right hand side is the constructed genuine trace. -/
 def IsBoundaryNeumannSolution {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
@@ -170,19 +164,6 @@ theorem isBoundaryNeumannSolution_iff_form_eq {Ω : Set ℂ} (hb : Bornology.IsB
     exact hu v
   · intro hu v
     rw [← h1HelmholtzForm_inner, hu, h1BoundaryLoad_inner]
-
-/-- The genuine L² Neumann-to-Dirichlet map is the actual trace of the unique
-variational solution at nonresonant energies. -/
-def neumannToDirichletL2 {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E : ℝ) :
-    BoundaryL2 →L[ℂ] BoundaryL2 :=
-  (h1BoundaryTrace hb hL hγ).comp (neumannBoundaryPoisson hb hL hγ E)
-
-@[simp] theorem neumannToDirichletL2_apply {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    (E : ℝ) (g : BoundaryL2) :
-    neumannToDirichletL2 hb hL hγ E g =
-      h1BoundaryTrace hb hL hγ (neumannBoundaryPoisson hb hL hγ E g) := rfl
 
 end PolyaNeumann
 

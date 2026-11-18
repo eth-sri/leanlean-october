@@ -2,7 +2,8 @@ module
 
 public import RequestProject.PhysicalDrivenRowsReconstruction
 public import RequestProject.LocalConformalVekuaConormalBridge
-public import RequestProject.LocalConformalVekuaInjectivity
+public import RequestProject.NeumannResonanceDimension
+public import RequestProject.LocalConformalHardySubspace
 public import RequestProject.PhysicalDrivenHardyRegularity
 public import RequestProject.PhysicalDrivenKernelConormal
 public import RequestProject.PeriodicFourierDerivative

@@ -2,7 +2,9 @@ module
 
 public import RequestProject.Herglotz
 public import RequestProject.NeumannEigenspace
-public import RequestProject.CayleyFactorization
+public import RequestProject.Driven
+public import Mathlib.Analysis.InnerProductSpace.LinearPMap
+public import RequestProject.CurveContinuity
 
 /-!
 # The fixed space of the monodromy and Herglotz-compatible traces (Lemma 10.5)
