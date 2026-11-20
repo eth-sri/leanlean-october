@@ -49,49 +49,50 @@ theorem outerLevel_notMem (k : Fin (L - m)) : outerLevel Q hQ k ∉ Q :=
   mem_compl.mp (Qᶜ.orderEmbOfFin_mem (card_compl_of_card_eq Q hQ) k)
 
 /-- Every level of `Q` is the `k`-th lowest level of `Q` for some `k`. -/
-theorem exists_innerLevel {ℓ : Fin L} (hℓ : ℓ ∈ Q) : ∃ k, innerLevel Q hQ k = ℓ :=
+theorem exists_innerLevel {ℓ} (hℓ : ℓ ∈ Q) : ∃ k, innerLevel Q hQ k = ℓ :=
   (Q.range_orderEmbOfFin hQ).ge hℓ
 
 /-- Every level outside `Q` is the `k`-th lowest level outside `Q` for some `k`. -/
-theorem exists_outerLevel {ℓ : Fin L} (hℓ : ℓ ∉ Q) : ∃ k, outerLevel Q hQ k = ℓ :=
+theorem exists_outerLevel {ℓ} (hℓ : ℓ ∉ Q) : ∃ k, outerLevel Q hQ k = ℓ :=
   (Qᶜ.range_orderEmbOfFin (card_compl_of_card_eq Q hQ)).ge (mem_coe.mpr (mem_compl.mpr hℓ))
 
-/-- The levels of `Q` in order depend only on the set `Q`. -/
-theorem innerLevel_congr {Q' : Finset (Fin L)} (h : Q' = Q) (hQ' : Q'.card = m) :
-    innerLevel Q' hQ' = innerLevel Q hQ := by
-  subst h
-  rfl
+section
+variable {Q' : Finset (Fin L)}
+  (h : Q' = Q)
+  (hQ' : Q'.card = m)
+include h
 
-/-- The levels outside `Q` in order depend only on the set `Q`. -/
-theorem outerLevel_congr {Q' : Finset (Fin L)} (h : Q' = Q) (hQ' : Q'.card = m) :
-    outerLevel Q' hQ' = outerLevel Q hQ := by
-  subst h
-  rfl
+end
+
+section
+variable {P : Fin L → Prop}
 
 /-- A property holds at every level if and only if it holds at the levels of `Q` and at the levels
 outside `Q`. -/
-theorem forall_level_iff {P : Fin L → Prop} :
+theorem forall_level_iff :
     (∀ ℓ, P ℓ) ↔ (∀ k, P (innerLevel Q hQ k)) ∧ ∀ k, P (outerLevel Q hQ k) := by
   refine ⟨fun h => ⟨fun _ => h _, fun _ => h _⟩, fun ⟨hin, hout⟩ ℓ => ?_⟩
   by_cases hℓ : ℓ ∈ Q
   · obtain ⟨k, rfl⟩ := exists_innerLevel Q hQ hℓ
-    exact hin k
+    grind
   · obtain ⟨k, rfl⟩ := exists_outerLevel Q hQ hℓ
-    exact hout k
+    grind
 
 /-- A property cuts out the set `Q` if and only if it holds at the levels of `Q` and fails at the
 other levels. -/
-theorem filter_eq_iff_forall_level {P : Fin L → Prop} [DecidablePred P] :
+theorem filter_eq_iff_forall_level [DecidablePred P] :
     univ.filter P = Q ↔ (∀ k, P (innerLevel Q hQ k)) ∧ ∀ k, ¬ P (outerLevel Q hQ k) := by
-  simp only [Finset.ext_iff, forall_level_iff Q hQ, mem_filter, mem_univ, true_and,
-    innerLevel_mem, outerLevel_notMem, iff_true, iff_false]
+  simp [Finset.ext_iff, forall_level_iff Q hQ, mem_filter,
+    innerLevel_mem, outerLevel_notMem]
 
 /-- A property that holds at the `m` levels of `Q`, and at `m` levels in all, cuts out `Q`. -/
-theorem filter_eq_of_forall_innerLevel {P : Fin L → Prop} [DecidablePred P]
+theorem filter_eq_of_forall_innerLevel [DecidablePred P]
     (hin : ∀ k, P (innerLevel Q hQ k)) (hcard : (univ.filter P).card = m) : univ.filter P = Q := by
   refine (eq_of_subset_of_card_le (fun ℓ hℓ => ?_) (hcard.trans hQ.symm).le).symm
   obtain ⟨k, rfl⟩ := exists_innerLevel Q hQ hℓ
-  exact mem_filter.mpr ⟨mem_univ _, hin k⟩
+  grind
+
+end
 
 /-! ### Gluing two strings along a set of levels -/
 
@@ -118,37 +119,45 @@ theorem glue_outerLevel (f : Fin m → α) (g : Fin (L - m) → α) (k : Fin (L 
   rw [glue, dif_neg (outerLevel_notMem Q hQ k)]
   exact congrArg g ((OrderIso.symm_apply_eq _).mpr (Subtype.ext rfl))
 
+section
+variable (f : Fin m → α)
+  (g : Fin (L - m) → α)
+  {Q' : Finset (Fin L)}
+  (h : Q' = Q)
+  (hQ' : Q'.card = m)
+include h
+
 /-- At the `k`-th lowest level of a set `Q'` that is equal to `Q`, the string glued along `Q` has
 the `k`-th letter of `f`. -/
-private theorem glue_innerLevel_of_eq (f : Fin m → α) (g : Fin (L - m) → α) {Q' : Finset (Fin L)}
-    (h : Q' = Q) (hQ' : Q'.card = m) (k : Fin m) : glue Q hQ f g (innerLevel Q' hQ' k) = f k := by
-  rw [innerLevel_congr Q hQ h, glue_innerLevel]
+private theorem glue_innerLevel_of_eq (k : Fin m) : glue Q hQ f g (innerLevel Q' hQ' k) = f k := by
+  simp_all
 
 /-- At the `k`-th lowest level outside a set `Q'` that is equal to `Q`, the string glued along `Q`
 has the `k`-th letter of `g`. -/
-private theorem glue_outerLevel_of_eq (f : Fin m → α) (g : Fin (L - m) → α) {Q' : Finset (Fin L)}
-    (h : Q' = Q) (hQ' : Q'.card = m) (k : Fin (L - m)) :
+private theorem glue_outerLevel_of_eq (k : Fin (L - m)) :
     glue Q hQ f g (outerLevel Q' hQ' k) = g k := by
-  rw [outerLevel_congr Q hQ h, glue_outerLevel]
+  simp_all
+
+end
 
 variable {f f' : Fin m → α} {g g' : Fin (L - m) → α}
 
 /-- The glued string is the only string with the letters of `f` at the levels of `Q` and the letters
 of `g` at the other levels. -/
-theorem eq_glue_iff {u : Fin L → α} :
+theorem eq_glue_iff {u} :
     u = glue Q hQ f g
       ↔ (∀ k, u (innerLevel Q hQ k) = f k) ∧ ∀ k, u (outerLevel Q hQ k) = g k := by
-  simp only [funext_iff, forall_level_iff Q hQ, glue_innerLevel, glue_outerLevel]
+  simp [funext_iff, forall_level_iff Q hQ, glue_outerLevel]
 
 /-- The two strings can be read off the glued string. -/
 theorem glue_inj : glue Q hQ f g = glue Q hQ f' g' ↔ f = f' ∧ g = g' := by
   rw [eq_glue_iff]
-  simp only [glue_innerLevel, glue_outerLevel, funext_iff]
+  simp [glue_innerLevel, funext_iff]
 
 /-- A map applied to a glued string, letter by letter. -/
-theorem map_glue {β : Type*} (φ : α → β) :
+theorem map_glue {β} (φ : α → β) :
     (fun ℓ => φ (glue Q hQ f g ℓ)) = glue Q hQ (fun k => φ (f k)) (fun k => φ (g k)) := by
-  simp only [eq_glue_iff, glue_innerLevel, glue_outerLevel, implies_true, and_self]
+  simp [eq_glue_iff]
 
 /-! ### Alphabets with inner and outer letters -/
 
@@ -166,7 +175,7 @@ be `outer o` for its index `o = outerIndex s`. Then a string whose inner letters
 of `Q` is rebuilt by gluing the letters `inner i` and `outer o` for the indices of its letters. -/
 theorem glue_index {I O : Type*} {inner : I → α} {outer : O → α} {innerIndex : α → I}
     {outerIndex : α → O} (hI : ∀ s, IsInner s → inner (innerIndex s) = s)
-    (hO : ∀ s, ¬ IsInner s → outer (outerIndex s) = s) {u : Fin L → α}
+    (hO : ∀ s, ¬ IsInner s → outer (outerIndex s) = s) {u}
     (hu : (univ.filter fun ℓ => IsInner (u ℓ)) = Q) :
     u = glue Q hQ (fun k => inner (innerIndex (u (innerLevel Q hQ k))))
       (fun k => outer (outerIndex (u (outerLevel Q hQ k)))) := by
@@ -234,29 +243,11 @@ theorem outerPartR_rightStrOf (π : InnerStr m) (c : OuterStr L m)
   funext fun k => congrArg RightVar.outerIndex
     (glue_outerLevel_of_eq Q hQ _ _ (innerSetR_rightStrOf Q hQ π c) h k)
 
-/-- The variable of `outStrOf Q hQ r c` at the `k`-th lowest level outside its inner set. -/
-private theorem outStrOf_outerLevel (r c : OuterStr L m)
-    (h : (innerSetO (outStrOf Q hQ r c)).card = m) (k : Fin (L - m)) :
-    outStrOf Q hQ r c (outerLevel (innerSetO (outStrOf Q hQ r c)) h k) = .z (r k) (c k) := by
-  rw [outerLevel_congr Q hQ (innerSetO_outStrOf Q hQ r c), outStrOf, glue_outerLevel]
-
-/-- The row of `outStrOf Q hQ r c` is `r`. -/
-@[simp]
-theorem rowO_outStrOf (r c : OuterStr L m) (h : (innerSetO (outStrOf Q hQ r c)).card = m) :
-    rowO (outStrOf Q hQ r c) h = r :=
-  funext fun k => congrArg OutVar.rowIndex (outStrOf_outerLevel Q hQ r c h k)
-
-/-- The column of `outStrOf Q hQ r c` is `c`. -/
-@[simp]
-theorem colO_outStrOf (r c : OuterStr L m) (h : (innerSetO (outStrOf Q hQ r c)).card = m) :
-    colO (outStrOf Q hQ r c) h = c :=
-  funext fun k => congrArg OutVar.colIndex (outStrOf_outerLevel Q hQ r c h k)
-
 variable {Q}
 
 /-- A left string with inner set `Q` is the string `leftStrOf` of its outer part and its inner
 part. -/
-theorem leftStr_eq_leftStrOf {u : LeftStr L} (hu : innerSetL u = Q) (h : (innerSetL u).card = m) :
+theorem leftStr_eq_leftStrOf {u} (hu : innerSetL u = Q) (h : (innerSetL u).card = m) :
     u = leftStrOf Q hQ (outerPartL u h) (innerPartL u h) := by
   subst hu
   refine glue_index _ h LeftVar.IsInner (inner := fun π : Fin 2 × Fin 2 => .p π.1 π.2) ?_ ?_ rfl
@@ -267,7 +258,7 @@ theorem leftStr_eq_leftStrOf {u : LeftStr L} (hu : innerSetL u = Q) (h : (innerS
 
 /-- A right string with inner set `Q` is the string `rightStrOf` of its inner part and its outer
 part. -/
-theorem rightStr_eq_rightStrOf {v : RightStr L} (hv : innerSetR v = Q)
+theorem rightStr_eq_rightStrOf {v} (hv : innerSetR v = Q)
     (h : (innerSetR v).card = m) : v = rightStrOf Q hQ (innerPartR v h) (outerPartR v h) := by
   subst hv
   refine glue_index _ h RightVar.IsInner (inner := fun π : Fin 2 × Fin 2 => .q π.1 π.2) ?_ ?_ rfl
@@ -279,7 +270,7 @@ theorem rightStr_eq_rightStrOf {v : RightStr L} (hv : innerSetR v = Q)
 variable {hQ}
 
 /-- Left strings with the same inner set and different outer or inner parts are different. -/
-theorem leftStrOf_inj {r r' : OuterStr L m} {π π' : InnerStr m} :
+theorem leftStrOf_inj {r r'} {π π'} :
     leftStrOf Q hQ r π = leftStrOf Q hQ r' π' ↔ r = r' ∧ π = π' := by
   refine ⟨fun h => ?_, by rintro ⟨rfl, rfl⟩; rfl⟩
   obtain ⟨hp, hx⟩ := (glue_inj Q hQ).mp h

@@ -63,13 +63,13 @@ structure TriInst.Pre (x : TriInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
   belowAC : x.ac + x.n * x.n ≤ fr
 
 /-- An instance stays where it is if no cell below the free pointer changes. -/
-theorem TriInst.Pre.keep {x : TriInst} {μ μ' : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr)
+theorem TriInst.Pre.keep {x : TriInst} {μ μ' } {fr } (h : x.Pre μ fr)
     (hs : Kept μ μ' fr := by light_keep) : x.Pre μ' fr := by
   light_facts h
   exact { h with segAB := h.segAB.keep, segBC := h.segBC.keep, segAC := h.segAC.keep }
 
 /-- The free pointer may grow. -/
-theorem TriInst.Pre.mono {x : TriInst} {μ : ℕ → ℤ} {fr fr' : ℕ} (h : x.Pre μ fr) (hfr : fr ≤ fr') :
+theorem TriInst.Pre.mono {x : TriInst} {μ } {fr fr' } (h : x.Pre μ fr) (hfr : fr ≤ fr') :
     x.Pre μ fr' :=
   { h with
     belowAB := h.belowAB.trans hfr
@@ -77,7 +77,7 @@ theorem TriInst.Pre.mono {x : TriInst} {μ : ℕ → ℤ} {fr fr' : ℕ} (h : x.
     belowAC := h.belowAC.trans hfr }
 
 /-- Three matrices one after the other, with the free pointer behind them, are an instance. -/
-theorem triPre_of_arrays {n U base : ℕ} {AB BC AC : List ℤ} {μ : ℕ → ℤ} (hn : 1 ≤ n) (hU : 1 ≤ U)
+theorem triPre_of_arrays {n U base : ℕ} {AB BC AC } {μ } (hn : 1 ≤ n) (hU : 1 ≤ U)
     (hAB : ArrayAt μ base AB (n * n) U (base + 3 * (n * n)))
     (hBC : ArrayAt μ (base + n * n) BC (n * n) U (base + 3 * (n * n)))
     (hAC : ArrayAt μ (base + 2 * (n * n)) AC (n * n) U (base + 3 * (n * n))) :
@@ -95,16 +95,6 @@ noncomputable def etTask : Task where
   args x := [x.n, x.U, x.ab, x.bc, x.ac]
   Pre := TriInst.Pre
   Post x μ fr r μ' := r = flag (triOf x.n x.AB x.BC x.AC).HasZeroTriangle ∧ Kept μ μ' fr
-
-/-- **Negative Triangle**: nt(n, U, ab, bc, ac, fr) returns 1 if there is a negative triangle and 0
-if not. -/
-noncomputable def ntTask : Task where
-  Inst := TriInst
-  size x := x.n
-  bound x := x.U
-  args x := [x.n, x.U, x.ab, x.bc, x.ac]
-  Pre := TriInst.Pre
-  Post x μ fr r μ' := r = flag (triOf x.n x.AB x.BC x.AC).HasNegativeTriangle ∧ Kept μ μ' fr
 
 /-- A list of `N` numbers in the memory. -/
 structure VecInst : Type where
@@ -221,7 +211,7 @@ def apTask : Task where
     (∃ dist : Fin x.n → Fin x.n → WithTop ℤ, IsDistanceMatrix (graphOf x.n x.ADJ x.W) dist ∧
     ∀ i j : Fin x.n,
       (dist i j = ⊤ → μ' (x.out + 2 * (i.val * x.n + j.val)) = 0) ∧
-      ∀ z : ℤ, dist i j = (z : WithTop ℤ) →
+      ∀ z : ℤ, dist i j = z →
         μ' (x.out + 2 * (i.val * x.n + j.val)) = 1 ∧
           μ' (x.out + 2 * (i.val * x.n + j.val) + 1) = z) ∧
     KeptBut μ μ' fr x.out (2 * (x.n * x.n))
@@ -297,8 +287,6 @@ abbrev Rows : ℕ := 0
 abbrev Cols : ℕ := 1
 /-- The number w of wanted positions. -/
 abbrev Wanted : ℕ := 2
-/-- The bound U on the entries. -/
-abbrev Bound : ℕ := 3
 /-- The address of X. -/
 abbrev AdrX : ℕ := 4
 /-- The address of Y. -/
@@ -309,8 +297,6 @@ abbrev AdrWI : ℕ := 6
 abbrev AdrWJ : ℕ := 7
 /-- The address of the output. -/
 abbrev AdrOut : ℕ := 8
-/-- The free pointer. -/
-abbrev Free : ℕ := 9
 
 end ThinArg
 

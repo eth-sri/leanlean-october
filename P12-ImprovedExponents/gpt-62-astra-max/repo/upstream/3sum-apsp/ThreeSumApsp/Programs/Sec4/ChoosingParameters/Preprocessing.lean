@@ -35,25 +35,25 @@ variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix
 
 /-- What the preprocessing is given: besides what both routines are given, the matrices X and Y
 stand at aX and aY. -/
-structure PreInput31 (lim : Limits) (G : RatParams) {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ)
+structure PreInput31 (lim : Limits) (G : RatParams) {N D₀} (X : Matrix (Fin N) (Fin D₀) ℤ)
     (Y : Matrix (Fin D₀) (Fin N) ℤ) (aX aY fr : ℕ) (U : ℤ) (μ : ℕ → ℤ) : Prop
     extends Input31 lim G X Y aX aY fr U where
   matX : MatAt μ aX X
   matY : MatAt μ aY Y
 
 /-- **Y with zero rows**: a copy of Y followed by zeros is the padded matrix. -/
-theorem matAt_padInnerRows {F a : ℕ} (mY : MatAt μ aY Y)
+theorem matAt_padInnerRows {F a} (mY : MatAt μ aY Y)
     (hcopy : ∀ i < D₀ * N, μ' (a + i) = μ (aY + i))
     (hzero : ∀ i < (F - D₀) * N, μ' (a + D₀ * N + i) = 0) : MatAt μ' a (padInnerRows F Y) := by
   intro i j
   unfold padInnerRows
-  by_cases hi : (i : ℕ) < D₀
+  by_cases hi : i < D₀
   · rw [dif_pos hi, Nat.add_assoc, hcopy _ (Nat.mul_add_lt_mul hi j.isLt), ← Nat.add_assoc]
     exact mY ⟨i, hi⟩ j
-  · have hrow : (i : ℕ) * N = D₀ * N + ((i : ℕ) - D₀) * N := by
+  · have hrow : i * N = D₀ * N + (i - D₀) * N := by
       rw [← Nat.add_mul, Nat.add_sub_cancel' (not_lt.mp hi)]
-    have hidx := Nat.mul_add_lt_mul (by have := i.isLt; omega : (i : ℕ) - D₀ < F - D₀) j.isLt
-    rw [dif_neg hi, hrow, ← Nat.add_assoc, Nat.add_assoc (a + D₀ * N), hzero _ hidx]
+    have hidx := Nat.mul_add_lt_mul (by omega : (i : ℕ) - D₀ < F - D₀) j.isLt
+    grind
 
 /-! ## From the threshold on -/
 
@@ -85,12 +85,12 @@ def tPrePad31 (G : RatParams) (N D₀ : ℕ) : ℕ :=
 
 /-- The state after prePad31: the locals hold the parameters and the addresses, the padded matrices
 stand at their places, and only cells between fr and b0 have changed. -/
-def Padded31 (G : RatParams) {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ)
+def Padded31 (G : RatParams) {N D₀} (X : Matrix (Fin N) (Fin D₀) ℤ)
     (Y : Matrix (Fin D₀) (Fin N) ℤ)
     (aX aY fr : ℕ) (μ : ℕ → ℤ) (σ : State) : Prop :=
   ∃ (r : ℤ) (μ' : ℕ → ℤ),
     σ = ⟨frame [N, D₀, aX, aY, fr, logFour D₀, (D (logFour D₀) : ℕ), (G.L (logFour D₀) : ℕ),
-      (G.t (logFour D₀) : ℕ), (paddedXAt fr : ℕ), (paddedYAt N D₀ fr : ℕ), (blockAt N D₀ fr : ℕ), r,
+      (G.t (logFour D₀) : ℕ), (paddedXAt fr), (paddedYAt N D₀ fr : ℕ), (blockAt N D₀ fr : ℕ), r,
       (N * D (logFour D₀) : ℕ)], μ'⟩ ∧
     MatAt μ' (paddedXAt fr) (padInnerCols (D (logFour D₀)) X) ∧
     MatAt μ' (paddedYAt N D₀ fr) (padInnerRows (D (logFour D₀)) Y) ∧

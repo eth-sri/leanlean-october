@@ -38,20 +38,20 @@ then encodeP with the budget `j` ends within `cEncP · encWorkP L j` steps, the 
 procedure of Section 2.4.1 computes at every leaf with at most `j` symbols `P₀`, and only the
 output and the scratch area have changed. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/Encode/Meaning.lean (encode_str)
-theorem encodeP_str {α : Type} [Fintype α] (e : α ≃ Fin 7) (coef : Term → α → ℤ) {T : List ℤ}
+theorem encodeP_str {α} [Fintype α] (e : α ≃ Fin 7) (coef : Term → α → ℤ) {T}
     (hT : T.length = 70) (hc : ∀ x ∈ T, -1 ≤ x ∧ x ≤ 1)
-    (hcoef : ∀ lam s, T.getD (7 * (termIdx lam : ℕ) + (e s : ℕ)) 0 = coef lam s) {pS pE : ℕ}
+    (hcoef : ∀ lam s, T.getD (7 * (termIdx lam) + (e s)) 0 = coef lam s) {pS pE}
     (hS : P[pS]? = some encStepBody) (hE : P[pE]? = some (encodePBody pS pE))
     (lay : EncodeLayout lim src out scr tab p7 p10 L) (A : (Fin L → α) → ℤ)
     (hsrc : Seg μ src (arrStr e A)) (hV : ∀ u, |A u| ≤ V) (htab : Seg μ tab T)
-    (h7 : ∀ i < L, μ (p7 + i) = ((7 ^ i : ℕ) : ℤ)) (h10 : ∀ i < L, μ (p10 + i) = ((10 ^ i : ℕ) : ℤ))
-    (hVB : ((7 ^ L : ℕ) : ℤ) * V ≤ lim.word) (hd : d + L ≤ lim.depth) (hj : (j : ℤ) ≤ lim.word) :
+    (h7 : ∀ i < L, μ (p7 + i) = (7 ^ i : ℕ)) (h10 : ∀ i < L, μ (p10 + i) = (10 ^ i : ℕ))
+    (hVB : (7 ^ L : ℕ) * V ≤ lim.word) (hd : d + L ≤ lim.depth) (hj : j ≤ lim.word) :
     Ends lim P d (encodePBody pS pE) ⟨frame [L, j, src, out, scr, tab, p7, p10], μ⟩
       (cEncP * encWorkP L j) fun σ' => SegOn j σ'.mem out (computeEncoding coef L A) ∧
         SameOutside2 μ σ'.mem out (10 ^ L) scr (scrSize L) := by
   have hbound : ∀ x ∈ arrStr e A, -V ≤ x ∧ x ≤ V := fun x hx => by
     obtain ⟨c, -, rfl⟩ := List.mem_map.1 hx
-    exact abs_le.1 (hV _)
+    grind
   have pre := EncodePre.of_seg lay (length_arrStr e A) hsrc hbound hT htab hc h7 h10 hVB
   refine (encodeP_spec hS hE hd hj pre).mono (tEncP_le L j) fun σ' h => ⟨?_, h.2⟩
   intro τ hτ

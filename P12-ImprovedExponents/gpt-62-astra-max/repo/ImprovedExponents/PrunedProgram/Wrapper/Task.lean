@@ -22,16 +22,16 @@ open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec4
 /-- **Where the hypotheses of Theorem 30 hold from the threshold on**, the pruned offline routine
 solves the task. -/
 -- adapted from ImprovedExponents/Pipeline/ThinClaim.lean (offline32_meets_thinTask)
-theorem offline32P_meets_thinTask {lim : Limits} {P : Program} {G : RatParams} {c d : ℕ}
-    (task : OfflineSpec32P lim P c G) {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (hpre : x.Pre μ fr)
+theorem offline32P_meets_thinTask {lim } {P } {G } {c d }
+    (task : OfflineSpec32P lim P c G) {x } {μ } {fr } (hpre : x.Pre μ fr)
     (hfit : G.m₀ ≤ logFour x.D → Hyp30 (parOf G x.N x.D) (switchOf31 G x.D))
     (ok : (offline32Need G x.N x.D x.U).Ok lim fr d) :
     Meets lim P Proc.offline32P (d + 1) [x.N, x.D, x.w, x.U, x.x, x.y, x.wi, x.wj, x.out, fr] μ
       (tOffline32P c G x.N x.D x.w) fun r μ' => thinTask.Post x μ fr r μ' := by
-  have hU0 : (0 : ℤ) ≤ (x.U : ℤ) := by positivity
+  have hU0 : (0 : ℤ) ≤ (x.U : ℤ) := by simp
   have hdepth : d + (G.a * (4 * x.D) + 12) ≤ lim.depth := ok.depth
   have hm4 := logFour_le_four_mul hpre.D_pos
-  have hL : G.L (logFour x.D) ≤ G.a * (4 * x.D) :=
+  have hL :=
     (ratParams_L_le_mul G _).trans (Nat.mul_le_mul_left _ hm4)
   have spec := task x.N x.D x.x x.y x.wi x.wj x.out fr (thinMX x) (thinMY x) (x.U : ℤ) (x.U : ℤ) μ
     x.WI x.WJ
@@ -56,10 +56,9 @@ theorem offline32P_meets_thinTask {lim : Limits} {P : Program} {G : RatParams} {
 
 /-- The time of the pruned offline routine is monotone in the number of wanted positions. -/
 -- adapted from ImprovedExponents/Pipeline/ThinClaim.lean (tOffline32_mono)
-theorem tOffline32P_mono (c : ℕ) (G : RatParams) (N D₀ : ℕ) {w w' : ℕ} (hw : w ≤ w') :
+theorem tOffline32P_mono (c : ℕ) (G : RatParams) (N D₀ : ℕ) {w w' } (hw : w ≤ w') :
     tOffline32P c G N D₀ w ≤ tOffline32P c G N D₀ w' := by
   unfold tOffline32P
-  have := Nat.mul_le_mul_right (tQuery31 G D₀ + 30) hw
-  omega
+  gcongr
 
 end ImprovedExponents

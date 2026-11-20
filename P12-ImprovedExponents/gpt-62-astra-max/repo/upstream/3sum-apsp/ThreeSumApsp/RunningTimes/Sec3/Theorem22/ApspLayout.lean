@@ -37,13 +37,16 @@ def apspAdj (x : Bounded EndStatement.APSP) : List ℤ :=
 /-- The weights of an instance, as they are written into the memory. -/
 def apspWeights (x : Bounded EndStatement.APSP) : List ℤ := rowMajor fun i j => (x.x.1 i j).getD 0
 
+section
+variable (x : Bounded EndStatement.APSP)
+
 /-- The input: the size and the two matrices, row by row. -/
-theorem input_apsp (x : Bounded EndStatement.APSP) :
+theorem input_apsp :
     (ofEnd EndStatement.APSP).input x = (x.n : ℤ) :: (apspAdj x ++ apspWeights x) := by
-  simp only [EndStatement.APSP, rowByRow_eq, apspAdj, apspWeights]
+  simp [EndStatement.APSP, rowByRow_eq, apspAdj, apspWeights]
 
 /-- The graph that is read from the two lists is the graph of the instance. -/
-theorem graphOf_apsp (x : Bounded EndStatement.APSP) :
+theorem graphOf_apsp :
     graphOf x.n (apspAdj x) (apspWeights x) = fun i j => toTop (x.x.1 i j) := by
   funext i j
   unfold graphOf apspAdj apspWeights
@@ -51,11 +54,13 @@ theorem graphOf_apsp (x : Bounded EndStatement.APSP) :
   cases x.x.1 i j <;> simp [toTop]
 
 /-- The weights are within the bound. -/
-theorem abs_le_of_mem_apspWeights (x : Bounded EndStatement.APSP) {a : ℤ} (ha : a ∈ apspWeights x) :
-    |a| ≤ (x.U : ℤ) :=
+theorem abs_le_of_mem_apspWeights {a : ℤ} (ha : a ∈ apspWeights x) :
+    |a| ≤ x.U :=
   Bounded.abs_le (by
     simpa only [EndStatement.APSP, rowByRow_eq, apspAdj, apspWeights] using
       List.mem_append_right (apspAdj x) ha)
+
+end
 
 /-- The instance of the task: where the two matrices and the answer stand. -/
 def apspInst (x : Bounded EndStatement.APSP) : GraphInst :=
@@ -73,20 +78,18 @@ theorem pre_apsp (x : Bounded EndStatement.APSP) (hn : 1 ≤ x.n) (hU : 1 ≤ x.
     lenW := length_rowMajor _
     segADJ := seg_first _ _ _
     segW := by
-      have := seg_second (x.n : ℤ) (apspAdj x) (apspWeights x)
+      have := seg_second x.n (apspAdj x) (apspWeights x)
       rwa [hA] at this
     zeroOne := by
       intro a ha
       obtain ⟨i, j, rfl⟩ := mem_rowMajor ha
-      split_ifs
-      · exact Or.inr rfl
-      · exact Or.inl rfl
+      grind
     leW := fun a ha => abs_le_of_mem_apspWeights x ha
-    belowADJ := by simp only [apspInst]; omega
-    belowW := by simp only [apspInst]; omega
-    belowOut := by simp only [apspInst]; omega
-    apartADJ := Or.inl (by simp only [apspInst]; omega)
-    apartW := Or.inl (by simp only [apspInst]; omega)
+    belowADJ := by simp [apspInst]; omega
+    belowW := by simp [apspInst]; omega
+    belowOut := by simp [apspInst]; omega
+    apartADJ := Or.inl (by simp [apspInst]; omega)
+    apartW := Or.inl (by simp [apspInst]; omega)
     noNegativeCycle :=
       (congrArg NoNegativeCycle (graphOf_apsp x)).mpr (noNegativeCycle_toTop x.x.2) }
 
@@ -97,12 +100,12 @@ theorem post_apsp (x : Bounded EndStatement.APSP) (r : ℤ) (μ' : ℕ → ℤ)
     (ofEnd EndStatement.APSP).IsAnswer x (verdictOf false 1) fun i =>
       μ' (((ofEnd EndStatement.APSP).input x).length + i) := by
   obtain ⟨⟨dist, hdist, hcells⟩, -⟩ := h
-  have hdist' : IsDistanceMatrix (fun i j => toTop (x.x.1 i j)) dist :=
+  have hdist' :=
     (congrArg (fun w => IsDistanceMatrix w dist) (graphOf_apsp x)).mp hdist
   have hlen : ((ofEnd EndStatement.APSP).input x).length = 1 + 2 * (x.n * x.n) := by
     have hA : (apspAdj x).length = x.n * x.n := length_rowMajor _
     have hB : (apspWeights x).length = x.n * x.n := length_rowMajor _
-    rw [input_apsp, List.length_cons, List.length_append, hA, hB]
+    rw [input_apsp, List.length_cons, List.length_append]
     omega
   refine ⟨by simp [verdictOf, EndStatement.APSP], output_apsp x.x _ fun i j => ?_⟩
   rw [hlen]

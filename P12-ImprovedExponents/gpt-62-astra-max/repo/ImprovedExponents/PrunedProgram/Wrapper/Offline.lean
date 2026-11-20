@@ -41,17 +41,15 @@ theorem ready31P_congr (h : Ready31P G X Y aX aY fr μ)
   · rw [hX _ (by omega) ?_]
     · exact h.matX i j
     · have := Nat.mul_add_le_mul i.isLt (le_refl D₀)
-      have := j.isLt
       omega
   · rw [hY _ (by omega) ?_]
     · exact h.matY i j
     · have := Nat.mul_add_le_mul i.isLt (le_refl N)
-      have := j.isLt
       omega
   · rw [hfr _ le_rfl]
     exact h.small hs
   · obtain ⟨h1, h2, h3⟩ := h.large hl
-    refine ⟨by rw [hfr _ le_rfl]; exact h1, by rw [hfr _ (by omega)]; exact h2,
+    refine ⟨by grind, by grind,
       dsReadyP_congr h3 fun a ha => hfr a ?_⟩
     unfold blockAt at ha
     omega
@@ -71,7 +69,7 @@ def OfflineSpec32P (lim : Limits) (P : Program) (c : ℕ) (G : RatParams) : Prop
 /-- The specification holds for the program with more procedures appended. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Offline.lean
 -- (OfflineSpec32.append)
-theorem OfflineSpec32P.append {c : ℕ} (h : OfflineSpec32P lim P c G) (R : Program) :
+theorem OfflineSpec32P.append {c } (h : OfflineSpec32P lim P c G) (R : Program) :
     OfflineSpec32P lim (P ++ R) c G :=
   fun N D₀ aX aY aI aJ out fr X Y U u μ WI WJ hg hin d hd =>
     (h N D₀ aX aY aI aJ out fr X Y U u μ WI WJ hg hin d hd).append R
@@ -79,9 +77,9 @@ theorem OfflineSpec32P.append {c : ℕ} (h : OfflineSpec32P lim P c G) (R : Prog
 /-- **One round**: the answer for position i joins the answers that are there. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Offline.lean
 -- (offlineAsk32_ends)
-theorem offlineAsk32P_ends (hq : QuerySpec31P lim P G) {aI aJ out d : ℕ}
-    {u : ℤ} {WI WJ : List ℕ} (hg : Input31 lim G X Y aX aY fr U)
-    (hin : OfflineInput32 X Y aX aY aI aJ out fr WI WJ μ) (hd : d + 4 ≤ lim.depth) {i : ℕ}
+theorem offlineAsk32P_ends (hq : QuerySpec31P lim P G) {aI aJ out d }
+    {u } {WI WJ } (hg : Input31 lim G X Y aX aY fr U)
+    (hin : OfflineInput32 X Y aX aY aI aJ out fr WI WJ μ) (hd : d + 4 ≤ lim.depth) {i }
     (hi : i < WI.length) (r : ℤ)
     (hinv : Answered (Ready31P G X Y aX aY fr) (· < fr) out
       ((WI.zip WJ).map fun q => entryN X Y q.1 q.2) μ i μ') :
@@ -98,24 +96,24 @@ theorem offlineAsk32P_ends (hq : QuerySpec31P lim P G) {aI aJ out d : ℕ}
   have hcols := hin.cols_le
   have hout := hin.out_le
   have hiJ : i < WJ.length := by omega
-  have hIN : WI[i] < N := hin.rows_lt _ (List.getElem_mem hi)
-  have hJN : WJ[i] < N := hin.cols_lt _ (List.getElem_mem hiJ)
+  have hIN := hin.rows_lt _ (List.getElem_mem hi)
+  have hJN := hin.cols_lt _ (List.getElem_mem hiJ)
   -- the two indices are still in place
   have hrow : μ' (aI + i) = ((WI[i] : ℕ) : ℤ) :=
-    (hinv.read hin.rows (j := i) (by simpa using hi)
+    (hinv.read hin.rows (by simpa using hi)
       (by rcases hin.out_rows with h | h <;> omega) (by omega)).trans (List.getElem_map _)
   have hcol : μ' (aJ + i) = ((WJ[i] : ℕ) : ℤ) :=
-    (hinv.read hin.cols (j := i) (by simpa using hiJ)
+    (hinv.read hin.cols (by simpa using hiJ)
       (by rcases hin.out_cols with h | h <;> omega) (by omega)).trans (List.getElem_map _)
   -- Res := query31(mem[Rows + Pos], mem[Cols + Pos], N, D, x, y, fr)
   refine Ends.callToThen (hq N D₀ aX aY fr X Y U μ' ⟨WI[i], hIN⟩ ⟨WJ[i], hJN⟩ hg hinv.ready _
     (by omega)) ?_
-    (ha := by light_side [hrow, hcol])
+    
   rintro _ μ₂ ⟨rfl, hready, hquery⟩
   -- mem[Out + Pos] := Res
   light_store (out + i) ((X * Y) ⟨WI[i], hIN⟩ ⟨WJ[i], hJN⟩)
-  have hstep := hinv.step (by simpa [hlen] using hi) hquery (fun j hj => Or.inl (by omega))
-    (fun a ha => Or.inl (by omega)) (ready31P_congr hready
+  have hstep := hinv.step (by grind) hquery (fun j hj => Or.inl (by omega))
+    (by omega) (ready31P_congr hready
       (fun a h1 h2 => Function.update_of_ne (by rcases hin.out_matX with h | h <;> omega) _ _)
       (fun a h1 h2 => Function.update_of_ne (by rcases hin.out_matY with h | h <;> omega) _ _)
       fun a ha => Function.update_of_ne (by omega) _ _)
@@ -125,7 +123,7 @@ theorem offlineAsk32P_ends (hq : QuerySpec31P lim P G) {aI aJ out d : ℕ}
 /-- offline32P meets its specification if the pruned preprocessing and the query meet theirs. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Offline.lean
 -- (offline32_meets)
-theorem offline32P_meets {c : ℕ} (hP : P[Proc.offline32P]? = some offline32PBody)
+theorem offline32P_meets {c } (hP : P[Proc.offline32P]? = some offline32PBody)
     (hpre : PreSpec31P lim P c G) (hq : QuerySpec31P lim P G) : OfflineSpec32P lim P c G := by
   intro N D₀ aX aY aI aJ out fr X Y U u μ WI WJ hg hin
   refine fun d hd => ⟨offline32PBody, hP, ?_⟩
@@ -134,7 +132,7 @@ theorem offline32P_meets {c : ℕ} (hP : P[Proc.offline32P]? = some offline32PBo
   have hfr3 := add_three_le_structEnd G N D₀ fr
   have hlen := hin.length_eq
   have hout := hin.out_le
-  have hzip : (WI.zip WJ).length = WI.length := by simp [hlen]
+  have hzip : (WI.zip WJ).length = WI.length := by grind
   -- Res := pre31P(N, D, x, y, fr)
   refine Ends.callToThen (hpre N D₀ aX aY fr X Y U μ hg hin.matX hin.matY _ (by omega)) ?_
     (hT := by simp [tOffline32P]; omega)
@@ -145,18 +143,17 @@ theorem offline32P_meets {c : ℕ} (hP : P[Proc.offline32P]? = some offline32PBo
       Answered (Ready31P G X Y aX aY fr) (· < fr) out
         ((WI.zip WJ).map fun q => entryN X Y q.1 q.2) μ i μ')
     WI.length (tQuery31 G D₀ + 20) ?start ?round ?done ?bound
-    (hT := by simp [tOffline32P]; ring_nf; omega)
+    (hT := by simp [tOffline32P]; grind)
   case start =>
-    exact ⟨r, μ₁, by rw [update_frame_setLocal]; rfl, hready, Seg.nil,
-      SameOn.mono hblock fun a ha => Or.inl ha.2⟩
+    exact ⟨r, μ₁, by simp, hready, Seg.nil,
+      by tauto⟩
   case bound =>
-    rintro i _ - - ⟨r, μ', rfl, -⟩
-    simp
+    simp_all
   case done =>
     rintro _ - ⟨r, μ', rfl, hinv⟩
-    rw [← hzip, ← List.length_map (as := WI.zip WJ) fun q => entryN X Y q.1 q.2] at hinv
+    rw [← hzip, ← List.length_map fun q => entryN X Y q.1 q.2] at hinv
     refine ⟨hinv.all, fun a ha hoff => hinv.same a ⟨?_, ha⟩⟩
-    simpa [hlen] using hoff
+    grind
   case round =>
     rintro i _ hi - ⟨r, μ', rfl, hinv⟩
     refine (offlineAsk32P_ends hq hg hin (by omega) hi r hinv).mono le_rfl ?_

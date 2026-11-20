@@ -40,13 +40,7 @@ def blockAt (N D₀ fr : ℕ) : ℕ := fr + 3 + N * D (logFour D₀) + N * D (lo
 namespace Query31
 
 /-- The locals of query31 are its arguments I, J, N, D, aX, aY, fr; the answer replaces I. -/
-abbrev Row : ℕ := 0
-@[inherit_doc Row] abbrev Col : ℕ := 1
-@[inherit_doc Row] abbrev Size : ℕ := 2
-@[inherit_doc Row] abbrev Dim : ℕ := 3
-@[inherit_doc Row] abbrev MatX : ℕ := 4
-@[inherit_doc Row] abbrev MatY : ℕ := 5
-@[inherit_doc Row] abbrev Free : ℕ := 6
+slots 0 Row Col Size Dim MatX MatY Free
 
 end Query31
 
@@ -57,35 +51,31 @@ def query31Body : Stmt :=
   .ite (M (v Free) =' k 1) (.call Proc.queryAt [v Row, v Col, M (v Free +' k 1)] Row)
     (.call Proc.ipAt [v Row, v Col, v Size, v Dim, v MatX, v MatY] Row)
 
-theorem abs_padInnerCols_le {N D₀ D' : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ} {U : ℤ}
+theorem abs_padInnerCols_le {N D₀ D' } {X : Matrix (Fin N) (Fin D₀) ℤ} {U }
     (h : ∀ i j, |X i j| ≤ U) (hU : 0 ≤ U) (i : Fin N) (j : Fin D') :
     |padInnerCols D' X i j| ≤ U := by
   unfold padInnerCols
-  split_ifs
-  · exact h _ _
-  · simpa using hU
+  grind
 
-theorem abs_padInnerRows_le {N D₀ D' : ℕ} {Y : Matrix (Fin D₀) (Fin N) ℤ} {U : ℤ}
+theorem abs_padInnerRows_le {N D₀ D' } {Y : Matrix (Fin D₀) (Fin N) ℤ} {U }
     (h : ∀ i j, |Y i j| ≤ U) (hU : 0 ≤ U) (i : Fin D') (j : Fin N) :
     |padInnerRows D' Y i j| ≤ U := by
   unfold padInnerRows
-  split_ifs
-  · exact h _ _
-  · simpa using hU
+  grind
 
 theorem le_D_logFour (D₀ : ℕ) : D₀ ≤ D (logFour D₀) := Nat.le_pow_clog (by norm_num) D₀
 
 /-- The ceiling ⌈log₄ D⌉ in natural numbers. -/
 theorem ceil_logb_four (D₀ : ℕ) : ⌈Real.logb 4 (D₀ : ℝ)⌉₊ = logFour D₀ := by
   have := Real.natCeil_logb_natCast 4 D₀
-  simpa [logFour] using this
+  assumption
 
 /-- m ≤ 4 D, because m ≤ 4^m ≤ 4 D. -/
-theorem logFour_le_four_mul {D₀ : ℕ} (hD : 1 ≤ D₀) : logFour D₀ ≤ 4 * D₀ :=
-  le_trans (Nat.lt_pow_self (by norm_num)).le (Nat.pow_clog_le_mul (b := 4) (by norm_num) hD)
+theorem logFour_le_four_mul {D₀ } (hD : 1 ≤ D₀) : logFour D₀ ≤ 4 * D₀ :=
+  le_trans (Nat.lt_pow_self (by norm_num)).le (Nat.pow_clog_le_mul (by norm_num) hD)
 
 /-- m ≥ 1 means D ≥ 2. -/
-theorem two_le_of_clog {D₀ : ℕ} (h : 1 ≤ logFour D₀) : 2 ≤ D₀ := by
+theorem two_le_of_clog {D₀ } (h : 1 ≤ logFour D₀) : 2 ≤ D₀ := by
   by_contra hc
   have : logFour D₀ = 0 := Nat.clog_of_right_le_one (by omega) 4
   omega

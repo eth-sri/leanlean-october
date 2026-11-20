@@ -32,13 +32,9 @@ namespace Real
 theorem one_half_lt_log_two : 1 / 2 < log 2 :=
   lt_trans (by norm_num) log_two_gt_d9
 
-/-- `log 2 < 1`. -/
-theorem log_two_lt_one : log 2 < 1 :=
-  log_two_lt_d9.trans (by norm_num)
-
 /-- `log 4 = 2 log 2`. -/
 theorem log_four : log 4 = 2 * log 2 := by
-  rw [show (4 : ℝ) = 2 ^ 2 by norm_num, log_pow, Nat.cast_ofNat]
+  exact?
 
 /-- `log 9 = 2 log 3`. -/
 theorem log_nine : log 9 = 2 * log 3 := by
@@ -49,20 +45,16 @@ theorem one_le_log_four : 1 ≤ log 4 := by
   linarith [log_four, one_half_lt_log_two]
 
 /-- `1 ≤ log x` for `x ≥ 3`. -/
-theorem one_le_log_of_three_le {x : ℝ} (hx : 3 ≤ x) : 1 ≤ log x :=
+theorem one_le_log_of_three_le {x} (hx : 3 ≤ x) : 1 ≤ log x :=
   (le_log_iff_exp_le (by linarith)).2 (exp_one_lt_three.le.trans hx)
 
 /-- `1 ≤ log n` for a natural number `n ≥ 3`. -/
 theorem one_le_log_natCast_of_three_le {n : ℕ} (hn : 3 ≤ n) : 1 ≤ log n :=
-  one_le_log_of_three_le (by exact_mod_cast hn)
-
-/-- `1 / 2 ≤ log x` for `x ≥ 2`. -/
-theorem one_half_le_log_of_two_le {x : ℝ} (hx : 2 ≤ x) : 1 / 2 ≤ log x :=
-  one_half_lt_log_two.le.trans (log_le_log two_pos hx)
+  one_le_log_of_three_le (by simp_all)
 
 /-- `4 ≤ √D` for a natural number `D ≥ 16`. -/
-theorem four_le_sqrt_natCast_of_sixteen_le {D : ℕ} (hD : 16 ≤ D) : 4 ≤ √(D : ℝ) :=
-  le_sqrt_of_sq_le (by norm_num; exact_mod_cast hD)
+theorem four_le_sqrt_natCast_of_sixteen_le {D : ℕ} (hD : 16 ≤ D) : 4 ≤ √D :=
+  le_sqrt_of_sq_le (by exact_mod_cast hD)
 
 /-! ### The rounded logarithm `Nat.clog` -/
 
@@ -74,16 +66,16 @@ theorem natCast_clog_lt_logb_add_one (b n : ℕ) : (Nat.clog b n : ℝ) < logb b
 
 /-- `c ^ ⌈log_b n⌉ ≤ c * n ^ (log_b c)`, for natural numbers `b` and `n ≥ 1` and a real number
 `c ≥ 1`. -/
-theorem pow_clog_le_mul_rpow_logb (b : ℕ) {n : ℕ} {c : ℝ} (hn : 1 ≤ n) (hc : 1 ≤ c) :
-    c ^ Nat.clog b n ≤ c * (n : ℝ) ^ logb b c := by
-  have hc0 : 0 < c := zero_lt_one.trans_le hc
-  have hswap : c ^ logb b n = (n : ℝ) ^ logb b c := by
+theorem pow_clog_le_mul_rpow_logb (b : ℕ) {n} {c} (hn : 1 ≤ n) (hc : 1 ≤ c) :
+    c ^ Nat.clog b n ≤ c * n ^ logb b c := by
+  have hc0 := zero_lt_one.trans_le hc
+  have hswap : c ^ logb b n = n ^ logb b c := by
     rw [rpow_def_of_pos hc0, rpow_def_of_pos (Nat.cast_pos.2 hn), logb, logb]
     ring_nf
-  calc c ^ Nat.clog b n = c ^ (Nat.clog b n : ℝ) := (rpow_natCast c _).symm
+  calc c ^ Nat.clog b n = c ^ (Nat.clog b n : ℝ) := by simp
     _ ≤ c ^ (logb b n + 1) :=
         rpow_le_rpow_of_exponent_le hc (natCast_clog_lt_logb_add_one b n).le
-    _ = c * (n : ℝ) ^ logb b c := by rw [rpow_add_one hc0.ne', hswap, mul_comm]
+    _ = c * n ^ logb b c := by rw [rpow_add_one hc0.ne', hswap, mul_comm]
 
 end Real
 

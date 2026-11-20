@@ -5,7 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Correct
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Arrays
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.PrimeStage
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Time
 
 /-!
 # The host of Theorem 17: the program, assembled
@@ -23,15 +25,11 @@ namespace Light.Sec3
 
 open ThreeSumApsp ThreeSumApsp.Spec
 
-/-- The numbers of the procedures of Strassen's algorithm, if the list of the procedures of the host
-starts at the number `o`. -/
-def strNumsAt (o : ℕ) : StrNums := ⟨o + 12, o + 13, o + 14, o + 15, o + 16⟩
-
-/-- The numbers of the procedures that countPrime calls. -/
-def cpNumsAt (o : ℕ) : CpNums := ⟨o + 5, o + 6, o + 7, o + 8, o + 9, o + 10, o + 11, strNumsAt o⟩
+/-- Residues, power table, matrix maps, trace kernel and the two residue loops. -/
+def cpNumsAt (o : ℕ) : CpNums := ⟨o+4,o+5,o+6,o+7,o+8,o+9,o+10,o+11,o+12,o+14⟩
 
 /-- The numbers of the procedures that choosePrime calls. -/
-def chNumsAt (o : ℕ) : ChNums := ⟨o + 3, o + 4, o + 17, cpNumsAt o, o, o + 28⟩
+def chNumsAt (o : ℕ) : ChNums := ⟨o + 2, o + 3, o + 15, cpNumsAt o, o, o + 23⟩
 
 /-- The numbers of the procedures that the top procedure calls: `pS` is the solver, `pD` and `pG`
 compute the parameters. -/
@@ -39,22 +37,19 @@ def et17NumsAt (pS pD pG o : ℕ) : Et17Nums where
   pD := pD
   pG := pG
   pSqrt := o
-  pBrute := o + 2
   pScan := o + 1
-  pChoose := o + 18
-  pCap := o + 19
-  pCeil := o + 20
-  pBitLen := o + 4
-  pDbl := o + 5
-  pResid := o + 6
-  pResidues := o + 7
-  pClasses := o + 21
-  pChunks := o + 22
-  pLoop := o + 26
+  pChoose := o + 16
+  pCap := o + 17
+  pCeil := o + 18
+  pBitLen := o + 3
+  pDbl := o + 4
+  pResid := o + 5
+  pResidues := o + 6
+  pClasses := o + 19
+  pChunks := o + 20
   pS := pS
-  pWriteX := o + 23
-  pWriteY := o + 24
-  pScanPairs := o + 25
+  pWriteX := o + 21
+  pWriteY := o + 22
   ch := chNumsAt o
 
 variable {P₀ : Program} {pS pD pG : ℕ} {Tn : List ℕ → ℕ} {need : List ℕ → Need}

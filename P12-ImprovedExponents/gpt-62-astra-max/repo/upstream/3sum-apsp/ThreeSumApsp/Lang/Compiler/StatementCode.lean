@@ -86,11 +86,11 @@ def cNFP : ℤ := -19
 /-- The register D: the difference that a test branches on. -/
 def cD : ℤ := -21
 /-- The temporaries. -/
-def cT (k : ℕ) : ℤ := -(23 + 4 * (k : ℤ))
+def cT (k : ℕ) : ℤ := -(23 + 4 * k)
 /-- The pool of numbers. -/
-def cPool (n : ℕ) : ℤ := -(25 + 4 * (n : ℤ))
+def cPool (n : ℕ) : ℤ := -(25 + 4 * n)
 /-- The cell number j of the stack. -/
-def cStack (j : ℕ) : ℤ := -(2 * (j : ℤ))
+def cStack (j : ℕ) : ℤ := -(2 * j)
 /-- The frame of the outermost statement of a whole program: the first whose cells lie beyond the
 cells of the arguments and the result. -/
 def mainFrame : ℕ := 4
@@ -230,7 +230,7 @@ private theorem length_digitsCode (c : ℤ) (L : List ℕ) : (digitsCode c L).le
   induction L with
   | nil => rfl
   | cons d L ih =>
-    simp only [digitsCode, digitsLen, List.length_append, ih, List.length_singleton]
+    simp [digitsCode, digitsLen, ih]
     split_ifs <;> rfl
 
 /-- The code of an expression has the length defined on the text. -/
@@ -253,7 +253,7 @@ theorem length_argsCode (es : List Expr) (k : ℕ) : (argsCode es k).length = ar
 
 /-- Two instructions for each local variable of the new frame. -/
 private theorem length_frameInit (F n : ℕ) : (frameInit F n).length = 2 * F := by
-  simp [frameInit, List.length_flatMap, Nat.mul_comm]
+  simp [frameInit, Nat.mul_comm]
 
 /-- The code between the arguments and the jump has 2 F + 4 instructions. -/
 theorem length_newFrame (F n ret : ℕ) : (newFrame F n ret).length = 2 * F + 4 := by
@@ -330,7 +330,7 @@ section width
 
 variable {F x p : ℕ} {o : Op} {a b e : Expr} {c : Cond} {s t : Stmt} {args : List Expr}
 
-theorem maxOf_le_iff {α : Type} {f : α → ℕ} {l : List α} : maxOf f l ≤ F ↔ ∀ y ∈ l, f y ≤ F := by
+theorem maxOf_le_iff {α} {f} {l : List α} : maxOf f l ≤ F ↔ ∀ y ∈ l, f y ≤ F := by
   induction l <;> simp [maxOf, *]
 
 theorem Expr.vars_op_le_iff : (Expr.op o a b).vars ≤ F ↔ a.vars ≤ F ∧ b.vars ≤ F := max_le_iff
@@ -350,14 +350,14 @@ theorem Stmt.width_seq_le_iff : (Stmt.seq s t).width ≤ F ↔ s.width ≤ F ∧
 
 theorem Stmt.width_ite_le_iff :
     (Stmt.ite c s t).width ≤ F ↔ c.width ≤ F ∧ s.width ≤ F ∧ t.width ≤ F := by
-  simp only [Stmt.width, max_le_iff]
+  simp [Stmt.width]
 
 theorem Stmt.width_while_le_iff : (Stmt.while c s).width ≤ F ↔ c.width ≤ F ∧ s.width ≤ F :=
   max_le_iff
 
 theorem Stmt.width_call_le_iff :
     (Stmt.call p args x).width ≤ F ↔ x < F ∧ args.length ≤ F ∧ ∀ e ∈ args, e.width ≤ F := by
-  simp only [Stmt.width, max_le_iff, maxOf_le_iff, Nat.succ_le_iff]
+  simp [Stmt.width, maxOf_le_iff, Nat.succ_le_iff]
 
 end width
 

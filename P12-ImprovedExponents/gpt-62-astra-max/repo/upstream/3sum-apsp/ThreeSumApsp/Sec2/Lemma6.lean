@@ -43,50 +43,17 @@ namespace ThreeSumApsp
 
 /-! ### The alphabets -/
 
-/-- The left variables, listed: `x i` is `.inl i`, and `p i j` is `.inr (i, j)`. -/
-def LeftVar.equiv : LeftVar ≃ Fin 3 ⊕ Fin 2 × Fin 2 where
-  toFun
-    | .x i => .inl i
-    | .p i j => .inr (i, j)
-  invFun
-    | .inl i => .x i
-    | .inr (i, j) => .p i j
-  left_inv s := by cases s <;> rfl
-  right_inv s := by rcases s with _ | ⟨_, _⟩ <;> rfl
-
-/-- The right variables, listed: `y j` is `.inl j`, and `q i j` is `.inr (i, j)`. -/
-def RightVar.equiv : RightVar ≃ Fin 3 ⊕ Fin 2 × Fin 2 where
-  toFun
-    | .y j => .inl j
-    | .q i j => .inr (i, j)
-  invFun
-    | .inl j => .y j
-    | .inr (i, j) => .q i j
-  left_inv t := by cases t <;> rfl
-  right_inv t := by rcases t with _ | ⟨_, _⟩ <;> rfl
-
-/-- The terms, listed: `P i j` is `some (i, j)`, and `P0` is `none`. -/
-def Term.equiv : Term ≃ Option (Fin 3 × Fin 3) where
-  toFun
-    | .P i j => some (i, j)
-    | .P0 => none
-  invFun
-    | some (i, j) => .P i j
-    | none => .P0
-  left_inv t := by cases t <;> rfl
-  right_inv t := by rcases t with _ | ⟨_, _⟩ <;> rfl
-
 /-- Section 2.2: there are "seven left variables". -/
 theorem card_leftVar : Fintype.card LeftVar = 7 := by
-  simp [Fintype.card_congr LeftVar.equiv]
+  rfl
 
 /-- Section 2.2: there are "seven right variables". -/
 theorem card_rightVar : Fintype.card RightVar = 7 := by
-  simp [Fintype.card_congr RightVar.equiv]
+  rfl
 
 /-- Section 2.2: "Schönhage's identity has ten terms". -/
 theorem card_term : Fintype.card Term = 10 := by
-  simp [Fintype.card_congr Term.equiv]
+  rfl
 
 /-! ### Linear forms as polynomials -/
 
@@ -114,7 +81,7 @@ theorem Term.contributes_iff (lam : Term) (z : OutVar) :
 
 /-- A sum over the terms contributing to `z` has the one summand `P_ij` for `z = z_ij`, and runs
 over all terms for `z = z₀`. This is how step (4) of the recursions assembles the slice at `z`. -/
-theorem Term.sum_contributes {A : Type*} [AddCommMonoid A] (c : Term → A) (z : OutVar) :
+theorem Term.sum_contributes {A } [AddCommMonoid A] (c : Term → A) (z : OutVar) :
     ∑ lam : Term with lam.Contributes z, c lam
       = match z with
         | .z i j => c (.P i j)

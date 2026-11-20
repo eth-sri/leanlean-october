@@ -34,14 +34,7 @@ namespace Counters
 
 /-- The local variables of counters: Total = N, Blocks = K0, Width = N0, Dest = dst (the arguments);
 Row is the current row, and Band, Block, Offset are its band, its block and its offset. -/
-abbrev Total : ℕ := 0
-@[inherit_doc Total] abbrev Blocks : ℕ := 1
-@[inherit_doc Total] abbrev Width : ℕ := 2
-@[inherit_doc Total] abbrev Dest : ℕ := 3
-@[inherit_doc Total] abbrev Row : ℕ := 4
-@[inherit_doc Total] abbrev Band : ℕ := 5
-@[inherit_doc Total] abbrev Block : ℕ := 6
-@[inherit_doc Total] abbrev Offset : ℕ := 7
+slots 0 Total Blocks Width Dest Row Band Block Offset
 
 end Counters
 
@@ -78,8 +71,8 @@ def Counted (μ : ℕ → ℤ) (N K0 N0 dst i : ℕ) (μ' : ℕ → ℤ) : Prop 
 /-- The two cells that round i writes. -/
 theorem Counted.step (h : Counted μ N K0 N0 dst i μ') (hi : i < N) :
     Counted μ N K0 N0 dst (i + 1) (Function.update (Function.update μ' (dst + i)
-      ((Spec.ctrAt K0 N0 i).band : ℕ)) (dst + N + i) ((Spec.ctrAt K0 N0 i).block : ℕ)) := by
-  refine ⟨fun I hI => ?_, (h.2.update ⟨by omega, by omega⟩ _).update ⟨by omega, by omega⟩ _⟩
+      (Spec.ctrAt K0 N0 i).band) (dst + N + i) (Spec.ctrAt K0 N0 i).block) := by
+  refine ⟨fun I hI => ?_, (h.2.update (by grind) _).update (by grind) _⟩
   rcases Nat.lt_succ_iff_lt_or_eq.1 hI with hI | rfl
   · rw [Function.update_of_ne (by omega), Function.update_of_ne (by omega),
       Function.update_of_ne (by omega), Function.update_of_ne (by omega)]
@@ -98,15 +91,20 @@ open Counters
 
 variable {μ : ℕ → ℤ} {N K0 N0 dst : ℕ}
 
+section
+variable (std : Std lim)
+  (hsp : dst + 2 * N ≤ lim.space)
+  (hK : 0 < K0)
+  (hN0 : 0 < N0)
+  (hw : ((K0 + N0 : ℕ) : ℤ) ≤ lim.word)
+include std hsp hK hN0 hw
+
 /-- **One round** writes the band and the block of row `i` and steps the counters to those of row
 `i + 1`. -/
-theorem countersRound_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK : 0 < K0)
-    (hN0 : 0 < N0) (hw : ((K0 + N0 : ℕ) : ℤ) ≤ lim.word) {i : ℕ} (hi : i < N) {σ : State}
+theorem countersRound_spec {i : ℕ} (hi : i < N) {σ : State}
     (h : Inv μ N K0 N0 dst i σ) :
     Ends lim P d countersRound σ countersRound.blockCost (Inv μ N K0 N0 dst (i + 1)) := by
   obtain ⟨μ', rfl, hI⟩ := h
-  light_facts std
-  push_cast at hw
   have hnext := Spec.ctrAt_succ hK hN0 i
   have hstep := hI.step hi
   have hband : (Spec.ctrAt K0 N0 i).band ≤ i := Nat.div_le_self _ _
@@ -133,22 +131,19 @@ theorem countersRound_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK
     rw [hnext, if_neg (by simp at hc; omega), if_pos (by simp at hc'; omega)]
     rfl
   · -- The first row of the first block of the next band: Block := 0; Band := Band + 1
-    refine Ends.setToThen 0 (Ends.setTo ((c.band + 1 : ℕ) : ℤ) ⟨_, ?_, hstep⟩)
+    refine Ends.setToThen 0 (Ends.setTo (c.band + 1 : ℕ) ⟨_, ?_, hstep⟩)
     rw [hnext, if_neg (by simp at hc; omega), if_neg (by simp at hc'; omega)]
     rfl
 
 /-- **counters** writes the band and the block of every row and changes nothing else. -/
-theorem counters_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK : 0 < K0) (hN0 : 0 < N0)
-    (hw : ((K0 + N0 : ℕ) : ℤ) ≤ lim.word) :
+theorem counters_spec :
     Ends lim P d countersBody ⟨frame [N, K0, N0, dst], μ⟩ (44 * (N + 1)) fun σ' =>
       (∀ I < N, σ'.mem (dst + I) = (I / (K0 * N0) : ℕ) ∧
         σ'.mem (dst + N + I) = (I / N0 % K0 : ℕ)) ∧ SameOutside μ σ'.mem dst (2 * N) := by
-  have hspace := std.space_le
-  -- while Row < N; a round takes at most 40 steps
   refine Ends.whileConst (Inv μ N K0 N0 dst) N countersRound.blockCost ?start ?round ?done
     (by simp [countersRound]; omega)
   case start =>
-    refine ⟨μ, ?_, fun I hI => absurd hI (by omega), .refl⟩
+    refine ⟨μ, ?_, by omega, .refl⟩
     -- The row and the three counters start at 0.
     rw [← frame_append_zeros _ 4]
     simp [Spec.ctrAt]
@@ -156,13 +151,15 @@ theorem counters_spec (std : Std lim) (hsp : dst + 2 * N ≤ lim.space) (hK : 0 
     intro i σ hi h
     have hround := countersRound_spec (P := P) (d := d) std hsp hK hN0 hw hi h
     obtain ⟨μ', rfl, -⟩ := h
-    exact ⟨by light_side, by light_side, hround⟩
+    simp_all
   case done =>
     rintro _ ⟨μ', rfl, hcells, same⟩
-    exact ⟨by light_side, by light_side, hcells, same⟩
+    simp_all
+
+end
 
 /-- **The specification that the callers of counters assume.** -/
-theorem counters_entry (std : Std lim) (hP : P[pCounters]? = some countersBody) {c : ℕ}
+theorem counters_entry (std : Std lim) (hP : P[pCounters]? = some countersBody) {c}
     (hc : 44 ≤ c) : CountersSpec lim P c :=
   fun _ _ _ _ _ hsp hK hN0 hw _ _ => .mono_const (.of_body hP (counters_spec std hsp hK hN0 hw)) hc
 

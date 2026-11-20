@@ -65,28 +65,41 @@ def Decides (code : List Instr) (F pos size l : ℕ) (m : ℤ → BitVec W) (p :
   ∃ (m' : ℤ → BitVec W) (n : ℕ), n ≤ size ∧ AgreeOutside (Scratch F) m m' ∧
     (p → Steps code n ⟨pos, m⟩ ⟨pos + size, m'⟩) ∧ (¬ p → Steps code n ⟨pos, m⟩ ⟨l, m'⟩)
 
+section
+variable {F size : ℕ}
+  {p : Prop}
+  (h : Decides code F pos size l m p)
+include h
+
 /-- The test holds. -/
-theorem Decides.of_holds {F size : ℕ} {p : Prop} (h : Decides code F pos size l m p) (hp : p) :
+theorem Decides.of_holds (hp : p) :
     ∃ (m' : ℤ → BitVec W) (n : ℕ), n ≤ size ∧ AgreeOutside (Scratch F) m m' ∧
       Steps code n ⟨pos, m⟩ ⟨pos + size, m'⟩ :=
   let ⟨m', n, le, A, run, _⟩ := h
-  ⟨m', n, le, A, run hp⟩
+  by grind
 
 /-- The test fails. -/
-theorem Decides.of_fails {F size : ℕ} {p : Prop} (h : Decides code F pos size l m p) (hp : ¬ p) :
+theorem Decides.of_fails (hp : ¬ p) :
     ∃ (m' : ℤ → BitVec W) (n : ℕ), n ≤ size ∧ AgreeOutside (Scratch F) m m' ∧
       Steps code n ⟨pos, m⟩ ⟨l, m'⟩ :=
   let ⟨m', n, le, A, _, run⟩ := h
-  ⟨m', n, le, A, run hp⟩
+  by grind
+
+end
 
 /-- No overflow: the difference of two values fits in a word, and so does one less. -/
-private theorem inRange_sub (Z : Sizes W) {x y : ℤ} (hx : |x| ≤ Z.lim.word)
+private theorem inRange_sub (Z : Sizes W) {x y } (hx : |x| ≤ Z.lim.word)
     (hy : |y| ≤ Z.lim.word) : InRange W (x - y) ∧ InRange W (x - y - 1) := by
   obtain ⟨⟨hx₁, hx₂⟩, hy₁, hy₂⟩ := And.intro (abs_le.1 hx) (abs_le.1 hy)
   refine ⟨⟨?_, ?_⟩, ?_, ?_⟩ <;> linarith [Z.fits.word]
 
+section
+variable (I : Framed Z σ q m)
+  (hσ : σ.Bounded Z.lim)
+include I hσ
+
 /-- The test a < b. -/
-private theorem decides_lt (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
+private theorem decides_lt
     (hcode : CodeAt code pos (compileCond (.lt a b) l)) (hw : (Cond.lt a b).width ≤ Z.F)
     (hs : (Cond.lt a b).Safe Z.lim σ) :
     Decides code Z.F pos (Cond.lt a b).size l m (a.val σ < b.val σ) := by
@@ -97,16 +110,16 @@ private theorem decides_lt (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   -- D := b - a
   have run₂ := run₁.trans (steps_sub restCode vb va)
   -- D := D - 1
-  have run₃ := run₂.trans (steps_sub restCode.tail (Function.update_self _ _ _)
+  have run₃ := run₂.trans (steps_sub restCode.tail rfl
     (by cell_read using (I.rel.same A₁).one))
   -- leave if D < 0
-  have run₄ := run₃.trans (steps_bltz restCode.tail.tail (Function.update_self _ _ _)
+  have run₄ := run₃.trans (steps_bltz restCode.tail.tail rfl
     (inRange_sub Z (Expr.abs_val_le hσ b hsb) (Expr.abs_val_le hσ a hsa)).2)
-  exact ⟨_, _, by rw [Cond.size], (A₁.update (by cells) _).update (by cells) _,
-    run₄.branch (by omega) (by rw [Cond.size]; omega)⟩
+  exact ⟨_, _, by rfl, (A₁.update (by cells) _).update (by cells) _,
+    run₄.branch (by omega) (by rfl)⟩
 
 /-- The test a = b. -/
-private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
+private theorem decides_eq
     (hcode : CodeAt code pos (compileCond (.eq a b) l)) (hw : (Cond.eq a b).width ≤ Z.F)
     (hs : (Cond.eq a b).Safe Z.lim σ) :
     Decides code Z.F pos (Cond.eq a b).size l m (a.val σ = b.val σ) := by
@@ -120,29 +133,31 @@ private theorem decides_eq (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim)
   have run₂ := run₁.trans (steps_sub restCode va vb)
   have A₂ := A₁.update (a := cD) (by cells) (wd W (a.val σ - b.val σ))
   -- leave if D < 0
-  have run₃ := run₂.trans (steps_bltz restCode.tail (Function.update_self _ _ _)
+  have run₃ := run₂.trans (steps_bltz restCode.tail rfl
     (inRange_sub Z ha hb).1)
   by_cases hlt : a.val σ - b.val σ < 0
   · rw [if_pos hlt] at run₃
-    exact ⟨_, _, by rw [Cond.size]; omega, A₂, fun h => absurd h (by omega), fun _ => run₃⟩
+    exact ⟨_, _, by rw [Cond.size]; omega, A₂, by omega, fun _ => run₃⟩
   rw [if_neg hlt] at run₃
   -- D := 0 - D
   have run₄ := run₃.trans (steps_sub restCode.tail.tail
     (by cell_read using (I.rel.same A₁).zero)
-    (Function.update_self _ _ _))
+    rfl)
   rw [zero_sub, neg_sub] at run₄
   -- leave if D < 0
-  have run₅ := run₄.trans (steps_bltz restCode.tail.tail.tail (Function.update_self _ _ _)
+  have run₅ := run₄.trans (steps_bltz restCode.tail.tail.tail rfl
     (inRange_sub Z hb ha).1)
-  exact ⟨_, _, by rw [Cond.size], A₂.update (by cells) _,
-    run₅.branch (by omega) (by rw [Cond.size]; omega)⟩
+  exact ⟨_, _, by rfl, A₂.update (by cells) _,
+    run₅.branch (by omega) (by rfl)⟩
 
 /-- The code of a test decides the test. -/
-theorem decides_compileCond (I : Framed Z σ q m) (hσ : σ.Bounded Z.lim) (c : Cond)
+theorem decides_compileCond (c : Cond)
     (hcode : CodeAt code pos (compileCond c l)) (hw : c.width ≤ Z.F) (hs : c.Safe Z.lim σ) :
     Decides code Z.F pos c.size l m (c.Holds σ) := by
   cases c with
   | lt a b => exact decides_lt I hσ hcode hw hs
   | eq a b => exact decides_eq I hσ hcode hw hs
+
+end
 
 end Light.Compiler

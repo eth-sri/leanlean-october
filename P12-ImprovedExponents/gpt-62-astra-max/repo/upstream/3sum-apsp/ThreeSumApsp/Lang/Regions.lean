@@ -60,14 +60,6 @@ abbrev Outside (a n b : ℕ) : Prop := b < a ∨ a + n ≤ b
 /-- Two regions of the memory, of `n` cells from `a` and of `n'` cells from `a'`, do not meet. -/
 abbrev Apart (a n a' n' : ℕ) : Prop := a + n ≤ a' ∨ a' + n' ≤ a
 
-/-- A map of a part of the memory: the regions of the list lie one behind the other, in the order of
-the list, and the last one ends at or below `top`.  A region of the list is the pair of its first
-address and its number of cells. -/
-abbrev InOrder (top : ℕ) : List (ℕ × ℕ) → Prop
-  | [] => True
-  | [r] => r.1 + r.2 ≤ top
-  | r :: r' :: rs => r.1 + r.2 ≤ r'.1 ∧ InOrder top (r' :: rs)
-
 /-! ## Memories that agree on some cells -/
 
 /-- The memory `μ'` agrees with `μ` on every cell that satisfies `K`. -/
@@ -114,7 +106,7 @@ theorem SameOn.then (h₁ : SameOn K₁ μ μ') (h₂ : SameOn K₂ μ' μ'') (h
 /-- Writing a cell that need not be kept. -/
 theorem SameOn.write (h : SameOn K μ μ') (hb : ¬ K b) (x : ℤ) :
     SameOn K μ (Function.update μ' b x) := fun c hc => by
-  rw [Function.update_of_ne (by rintro rfl; exact hb hc)]; exact h c hc
+  rw [Function.update_of_ne (by grind)]; exact h c hc
 
 /-! ## Writing a region cell by cell -/
 
@@ -128,41 +120,33 @@ def wrote (μ : ℕ → ℤ) (dst : ℕ) (f : ℕ → ℤ) (j : ℕ) : ℕ → �
 theorem wrote_zero : wrote μ dst f 0 = μ := by
   funext a
   unfold wrote
-  rw [if_neg (by omega)]
+  omega
 
 /-- A cell that has been written. -/
-theorem wrote_done {i : ℕ} (h : i < j) : wrote μ dst f j (dst + i) = f i := by
+theorem wrote_done {i } (h : i < j) : wrote μ dst f j (dst + i) = f i := by
   unfold wrote
-  rw [if_pos (by omega), Nat.add_sub_cancel_left]
+  grind
 
 /-- A cell that has not been written (yet). -/
-theorem wrote_rest {a : ℕ} (h : Outside dst j a) : wrote μ dst f j a = μ a := by
+theorem wrote_rest {a } (h : Outside dst j a) : wrote μ dst f j a = μ a := by
   unfold wrote
-  rw [if_neg (by omega)]
+  omega
 
 /-- One more cell is written. -/
 theorem wrote_succ : Function.update (wrote μ dst f j) (dst + j) (f j) = wrote μ dst f (j + 1) := by
-  funext a
-  by_cases h : a = dst + j
-  · subst h
-    rw [Function.update_self, wrote_done (Nat.lt_succ_self j)]
-  · rw [Function.update_of_ne h]
-    unfold wrote
-    by_cases h' : dst ≤ a ∧ a < dst + j
-    · rw [if_pos h', if_pos (by omega)]
-    · rw [if_neg h', if_neg (by omega)]
+  grind [wrote]
 
 /-- A write outside the cells that have been written can be done first. -/
-theorem update_wrote {y : ℕ} (hy : Outside dst j y) (w : ℤ) :
+theorem update_wrote {y } (hy : Outside dst j y) (w : ℤ) :
     Function.update (wrote μ dst f j) y w = wrote (Function.update μ y w) dst f j := by
   funext a
   by_cases ha : a = y
   · subst ha
     rw [Function.update_self, wrote_rest hy, Function.update_self]
-  · simp only [wrote, Function.update_of_ne ha]
+  · simp [wrote, Function.update_of_ne ha]
 
 /-- Writing `j ≤ n` cells from `dst` changes no cell outside the `n` cells from `dst`. -/
-theorem sameOutside_wrote {n : ℕ} (h : j ≤ n) : SameOutside μ (wrote μ dst f j) dst n :=
+theorem sameOutside_wrote {n } (h : j ≤ n) : SameOutside μ (wrote μ dst f j) dst n :=
   fun _ hb => wrote_rest (by omega)
 
 /-! ## The tactics -/

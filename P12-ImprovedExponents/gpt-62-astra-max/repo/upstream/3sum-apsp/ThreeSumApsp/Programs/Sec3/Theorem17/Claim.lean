@@ -31,7 +31,7 @@ open ThreeSumApsp
 /-- The right-hand side of `Claim.Theorem_17`. -/
 noncomputable def bound17 (MM : ℕ → ℝ) (D g : ℕ → ℕ) (C : ℝ) (T : ℕ → ℕ → ℕ → ℝ) (n : ℕ)
     (κ : ℝ) : ℝ :=
-  4 * (n : ℝ) * (g n : ℝ) * (T n (D n) (queryCap n (D n)) + C * ((n : ℝ) ^ 2 / Real.sqrt (D n))) +
+  4 * n * (g n) * (T n (D n) (queryCap n (D n)) + C * (n ^ 2 / Real.sqrt (D n))) +
     C * (termScans n (g n) κ + termPrime MM n (D n) + termBuild n (D n) (g n))
 
 /-- The time of a host, as a function `time` of the time of the solver, obeys the bound of
@@ -40,7 +40,7 @@ bounds `time Tn`, under the hypotheses of the theorem. -/
 def ObeysBound17 (MM : ℕ → ℝ) (D g : ℕ → ℕ) (time : (List ℕ → ℕ) → ℕ → ℕ → ℕ) : Prop :=
   ∃ C : ℝ, 0 ≤ C ∧ ∀ (Tn : List ℕ → ℕ) (T : ℕ → ℕ → ℕ → ℝ),
     (∀ m d w w' : ℕ, 1 ≤ m → 1 ≤ d → w ≤ w' → (Tn [m, d, w] : ℝ) ≤ T m d w') →
-    ∀ (n U : ℕ) (κ : ℝ), 16 ≤ D n → D n ≤ n → 1 ≤ g n → (g n : ℝ) ≤ Real.sqrt (D n) → 1 ≤ κ →
-      (U : ℝ) ≤ (n : ℝ) ^ κ → (time Tn n U : ℝ) ≤ bound17 MM D g C T n κ
+    ∀ (n U : ℕ) (κ : ℝ), 16 ≤ D n → D n ≤ n → 1 ≤ g n → (g n) ≤ Real.sqrt (D n) → 1 ≤ κ →
+      (U : ℝ) ≤ n ^ κ → (time Tn n U : ℝ) ≤ bound17 MM D g C T n κ
 
 end Light.Sec3

@@ -43,22 +43,22 @@ theorem length_starBoxes_eq_length_nineStrs (L m t e : ℕ) :
   List.length_map _
 
 /-- Box number i comes from leaf number i. -/
-theorem starFirst_mem_starBoxes {L m t e i : ℕ} (hi : i < (nineStrs L e (m - t)).length) :
+theorem starFirst_mem_starBoxes {L m t e i } (hi : i < (nineStrs L e (m - t)).length) :
     starFirst e (nineStrs L e (m - t))[i] ∈ starBoxes L m t e :=
   List.mem_map.2 ⟨_, List.getElem_mem hi, rfl⟩
 
 /-- A member of the list comes from a leaf with between e and m - t symbols P₀. -/
-private theorem exists_leaf_of_mem_starBoxes {L m t e : ℕ} {l : List ℕ}
+private theorem exists_leaf_of_mem_starBoxes {L m t e } {l }
     (h : l ∈ starBoxes L m t e) :
     ∃ τ : Leaf L, e ≤ (P0Levels τ).card ∧ (P0Levels τ).card ≤ m - t ∧
       digitsC (starLowest e τ) = l := by
   obtain ⟨l', hl', rfl⟩ := List.mem_map.1 h
   obtain ⟨hlen, hdig, hlo, hhi⟩ := (mem_nineStrs l').1 hl'
-  obtain ⟨τ, rfl⟩ := exists_digitsT (L := L) l' hlen hdig
+  obtain ⟨τ, rfl⟩ := exists_digitsT l' hlen hdig
   exact ⟨τ, by rwa [card_P0Levels], by rwa [card_P0Levels], digitsC_starLowest e τ⟩
 
 /-- The list contains exactly the boxes with e stars. -/
-theorem mem_starBoxes {L : ℕ} (m t e : ℕ) (π : Cube L) :
+theorem mem_starBoxes {L } (m t e : ℕ) (π : Cube L) :
     digitsC π ∈ starBoxes L m t e ↔ π ∈ boxesWithStars L m t e := by
   rw [mem_boxesWithStars]
   constructor
@@ -81,14 +81,13 @@ theorem mem_starBoxes {L : ℕ} (m t e : ℕ) (π : Cube L) :
     · rw [← digitsC_starLowest, ← hπ]
 
 /-- Every member of the list is a cube. -/
-theorem exists_of_mem_starBoxes {L m t e : ℕ} (l : List ℕ) (h : l ∈ starBoxes L m t e) :
+theorem exists_of_mem_starBoxes {L m t e } (l : List ℕ) (h : l ∈ starBoxes L m t e) :
     ∃ π : Cube L, digitsC π = l := by
-  obtain ⟨τ, -, -, hτ⟩ := exists_leaf_of_mem_starBoxes h
-  exact ⟨_, hτ⟩
+  grind [exists_leaf_of_mem_starBoxes]
 
 /-- The number of stars can be read off a member of the list: the star is a symbol of its own, the
 digit 10.  So boxes with different numbers of stars are different strings. -/
-theorem starCount_of_mem_starBoxes {L m t e : ℕ} {l : List ℕ} (h : l ∈ starBoxes L m t e) :
+theorem starCount_of_mem_starBoxes {L m t e } {l } (h : l ∈ starBoxes L m t e) :
     starCount l = e := by
   obtain ⟨π, rfl⟩ := exists_of_mem_starBoxes l h
   rw [← card_starLevels]
@@ -97,31 +96,26 @@ theorem starCount_of_mem_starBoxes {L m t e : ℕ} {l : List ℕ} (h : l ∈ sta
 /-- The string l is a box: it is in the list of the boxes with its number of stars. -/
 abbrev IsBoxDigits (L m t : ℕ) (l : List ℕ) : Prop := l ∈ starBoxes L m t (starCount l)
 
-theorem isBoxDigits_of_mem_starBoxes {L m t e : ℕ} {l : List ℕ} (h : l ∈ starBoxes L m t e) :
-    IsBoxDigits L m t l := by
-  rwa [IsBoxDigits, starCount_of_mem_starBoxes h]
-
 /-- A string of symbols is in the list of the boxes with its number of stars exactly if it is a
 box. -/
-theorem isBoxDigits_digitsC {L : ℕ} (m t : ℕ) (π : Cube L) :
+theorem isBoxDigits_digitsC {L } (m t : ℕ) (π : Cube L) :
     IsBoxDigits L m t (digitsC π) ↔ π ∈ boxes L m t := by
-  rw [IsBoxDigits, ← card_starLevels, mem_starBoxes, mem_boxesWithStars, mem_boxes]
-  exact and_iff_left rfl
+  rw [IsBoxDigits, ← card_starLevels, mem_starBoxes]
+  simp
 
-/-- There are boxes with e stars only for e ≤ m - t. -/
-theorem le_of_mem_starBoxes {L m t e : ℕ} {l : List ℕ} (h : l ∈ starBoxes L m t e) : e ≤ m - t := by
-  obtain ⟨τ, hlo, hhi, -⟩ := exists_leaf_of_mem_starBoxes h
-  exact hlo.trans hhi
+section
+variable {L m t e : ℕ}
+  {l : List ℕ}
 
 /-- The members of the lists are strings of L digits below 11. -/
-theorem starBoxes_digits {L m t e : ℕ} {l : List ℕ} (h : l ∈ starBoxes L m t e) :
+theorem starBoxes_digits (h : l ∈ starBoxes L m t e) :
     l.length = L ∧ ∀ d ∈ l, d < 11 := by
   obtain ⟨π, rfl⟩ := exists_of_mem_starBoxes l h
   exact ⟨length_digitsC π, digitsC_lt π⟩
 
 /-- Replacing the highest star of a box with e + 1 stars by a term gives a box with e stars (proof
 of Lemma 29). -/
-theorem exists_lastStar_of_mem_starBoxes {L m t e : ℕ} {l : List ℕ}
+theorem exists_lastStar_of_mem_starBoxes
     (h : l ∈ starBoxes L m t (e + 1)) :
     ∃ p, lastStar l = some p ∧ ∀ d < 10, l.set p d ∈ starBoxes L m t e := by
   obtain ⟨π, rfl⟩ := exists_of_mem_starBoxes l h
@@ -131,9 +125,11 @@ theorem exists_lastStar_of_mem_starBoxes {L m t e : ℕ} {l : List ℕ}
   refine ⟨_, lastStar_digitsC π hne, fun d hd => ?_⟩
   have hsplit := lemma_29_split hπ hne (termEquiv.symm ⟨d, hd⟩)
   rw [← mem_starBoxes, digitsC_replace] at hsplit
-  have hidx : ((termIdx (termEquiv.symm ⟨d, hd⟩) : Fin 10) : ℕ) = d :=
+  have hidx : ((termIdx (termEquiv.symm ⟨d, hd⟩)) : ℕ) = d :=
     congrArg Fin.val (termEquiv.apply_symm_apply ⟨d, hd⟩)
   rwa [hidx] at hsplit
+
+end
 
 /-- No box occurs twice in the list: turning the stars back into nines gives the leaf. -/
 theorem starBoxes_nodup (L m t e : ℕ) : (starBoxes L m t e).Nodup := by
@@ -165,12 +161,10 @@ theorem sum_length_starBoxes (L m t : ℕ) :
       ((boxes L m t).filter fun π => (Cube.starLevels π).card = e).card := by
     refine Finset.card_eq_sum_card_fiberwise fun π hπ => ?_
     have := (mem_boxes.1 (Finset.mem_coe.1 hπ)).1
-    simp only [Finset.coe_range, Set.mem_Iio]
-    omega
+    grind
   rw [List.sum_map_range, hfibres]
   refine Finset.sum_congr rfl fun e _ => ?_
   rw [length_starBoxes]
-  refine congrArg Finset.card (Finset.ext fun π => ?_)
-  rw [mem_boxesWithStars, Finset.mem_filter, mem_boxes]
+  rfl
 
 end ThreeSumApsp.Spec

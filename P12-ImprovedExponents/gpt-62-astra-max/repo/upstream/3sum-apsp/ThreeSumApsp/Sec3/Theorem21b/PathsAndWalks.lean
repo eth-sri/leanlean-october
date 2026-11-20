@@ -35,13 +35,13 @@ variable {n : ℕ} {w : Fin n → Fin n → Option ℤ}
 
 /-- An optional weight, as a weight or `⊤`. -/
 @[expose] def toTop : Option ℤ → WithTop ℤ
-  | some z => (z : WithTop ℤ)
+  | some z => z
   | none => ⊤
 
 /-- A path of weight `d` is a walk of weight `d`. -/
-theorem exists_walk_of_path {i j : Fin n} {d : ℤ} (h : Path w i j d) :
+theorem exists_walk_of_path {i j} {d} (h : Path w i j d) :
     ∃ rest : List (Fin n), walkEnd i rest = j ∧
-      walkWeight (fun a b => toTop (w a b)) i rest = (d : WithTop ℤ) := by
+      walkWeight (fun a b => toTop (w a b)) i rest = d := by
   induction h with
   | nil i => exact ⟨[], rfl, rfl⟩
   | @cons i j k d e hd _ ih =>
@@ -52,7 +52,7 @@ theorem exists_walk_of_path {i j : Fin n} {d : ℤ} (h : Path w i j d) :
 
 /-- A walk of finite weight `d` is a path of weight `d`. -/
 theorem path_of_walk : ∀ (rest : List (Fin n)) (i : Fin n) (d : ℤ),
-    walkWeight (fun a b => toTop (w a b)) i rest = (d : WithTop ℤ) → Path w i (walkEnd i rest) d
+    walkWeight (fun a b => toTop (w a b)) i rest = d → Path w i (walkEnd i rest) d
   | [], i, d, h => by
     obtain rfl : d = 0 := by
       rw [walkWeight] at h
@@ -68,7 +68,7 @@ theorem path_of_walk : ∀ (rest : List (Fin n)) (i : Fin n) (d : ℤ),
       | coe b =>
         rw [hk, hr] at h
         obtain rfl : d = a + b := by
-          have : ((a + b : ℤ) : WithTop ℤ) = (d : WithTop ℤ) := h
+          have : ((a + b : ℤ) : WithTop ℤ) = d := h
           exact_mod_cast this.symm
         exact .cons hk (path_of_walk rest k b hr)
 
@@ -85,22 +85,23 @@ theorem noNegativeCycle_toTop (hneg : ∀ i d, Path w i i d → 0 ≤ d) :
 
 variable {dist : Fin n → Fin n → WithTop ℤ}
 
+section
+variable (hdist : IsDistanceMatrix (fun i j => toTop (w i j)) dist)
+  {i j : Fin n}
+include hdist
+
 /-- The distance is at most the weight of every path. -/
-theorem dist_le_of_path (hdist : IsDistanceMatrix (fun i j => toTop (w i j)) dist)
-    {i j : Fin n} {d : ℤ} (hp : Path w i j d) : dist i j ≤ (d : WithTop ℤ) :=
+theorem dist_le_of_path {d : ℤ} (hp : Path w i j d) : dist i j ≤ (d : WithTop ℤ) :=
   (hdist i j).2 (exists_walk_of_path hp)
 
 /-- Where the distance is `⊤` there is no path. -/
-theorem not_path_of_dist_eq_top (hdist : IsDistanceMatrix (fun i j => toTop (w i j)) dist)
-    {i j : Fin n} (htop : dist i j = ⊤) (d : ℤ) : ¬ Path w i j d := by
+theorem not_path_of_dist_eq_top (htop : dist i j = ⊤) (d : ℤ) : ¬ Path w i j d := by
   intro hp
   have hle := dist_le_of_path hdist hp
-  rw [htop] at hle
-  exact absurd hle (by simp)
+  simp_all
 
 /-- A finite distance is the weight of a path, and no path is lighter. -/
-theorem isLeast_path_of_dist_eq_coe (hdist : IsDistanceMatrix (fun i j => toTop (w i j)) dist)
-    {i j : Fin n} {z : ℤ} (hz : dist i j = (z : WithTop ℤ)) :
+theorem isLeast_path_of_dist_eq_coe {z : ℤ} (hz : dist i j = (z : WithTop ℤ)) :
     Path w i j z ∧ ∀ e, Path w i j e → z ≤ e := by
   obtain ⟨rest, hend, hw⟩ := (hdist i j).1
   rw [hz] at hw
@@ -108,21 +109,22 @@ theorem isLeast_path_of_dist_eq_coe (hdist : IsDistanceMatrix (fun i j => toTop 
   rw [hend] at hp
   refine ⟨hp, fun e he => ?_⟩
   have hle := dist_le_of_path hdist he
-  rw [hz] at hle
-  exact_mod_cast hle
+  simp_all
 
 /-- Two numbers written down for the pair `(i, j)` as APSP asks: 0 if the distance is `⊤`, and 1 and
 the distance otherwise.  Then either the first is 1 and the second is the least weight of a path, or
 the first is 0 and there is no path. -/
-theorem reachable_or_not (hdist : IsDistanceMatrix (fun i j => toTop (w i j)) dist) {i j : Fin n}
+theorem reachable_or_not
     {flag d : ℤ} (htop : dist i j = ⊤ → flag = 0)
-    (hfin : ∀ z : ℤ, dist i j = (z : WithTop ℤ) → flag = 1 ∧ d = z) :
+    (hfin : ∀ z : ℤ, dist i j = z → flag = 1 ∧ d = z) :
     (flag = 1 ∧ Path w i j d ∧ ∀ e, Path w i j e → d ≤ e) ∨ (flag = 0 ∧ ∀ e, ¬ Path w i j e) := by
   cases hd : dist i j with
   | top => exact Or.inr ⟨htop hd, not_path_of_dist_eq_top hdist hd⟩
   | coe z =>
     obtain ⟨hflag, rfl⟩ := hfin z hd
     exact Or.inl ⟨hflag, isLeast_path_of_dist_eq_coe hdist hd⟩
+
+end
 
 /-- The output condition of `EndStatement.APSP` is the either-or of `reachable_or_not` for every
 pair of vertices. -/

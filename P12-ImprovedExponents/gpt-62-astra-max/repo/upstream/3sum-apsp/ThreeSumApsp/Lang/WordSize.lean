@@ -6,14 +6,19 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import PaperStatements
-public import ThreeSumApsp.Util.Basic
-public import Mathlib.Algebra.Order.BigOperators.GroupWithZero.List
-public import Mathlib.Data.Nat.Size
-public import Mathlib.Data.Nat.SuccPred
+public import Mathlib.Algebra.Order.Field.Basic
+public import Mathlib.Algebra.Order.Ring.Abs
+public import Mathlib.Algebra.Order.Ring.Int
+public import Mathlib.Data.Int.Cast.Lemmas
+public import Mathlib.Data.Nat.Cast.Order.Ring
 public import Mathlib.Tactic.GCongr
+public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+public import Mathlib.Algebra.Order.BigOperators.GroupWithZero.List
+public import Mathlib.Data.Nat.Size
+public import Mathlib.Data.Nat.SuccPred
 
 /-!
 # A polynomial bound in the parameters fits in a word
@@ -42,21 +47,18 @@ private theorem prod_succ_le (params : List ℕ) :
   induction params with
   | nil => simp
   | cons p ps ih =>
-    simp only [List.map_cons, List.prod_cons, List.sum_cons, List.length_cons]
     calc (p + 1) * (ps.map (· + 1)).prod
         ≤ 2 ^ (p.log2 + 1) * 2 ^ ((ps.map Nat.log2).sum + ps.length) :=
           Nat.mul_le_mul Nat.lt_log2_self ih
       _ = 2 ^ (p.log2 + (ps.map Nat.log2).sum + (ps.length + 1)) := by
-          rw [← pow_add]
-          congr 1
-          omega
+          grind
 
 /-- At an admissible word size, words have room for a polynomial bound in the parameters, if the
 slope is large enough. -/
-theorem polyBound_le {b W s k r : ℕ} {params : List ℕ} (h : Admissible b params W)
+theorem polyBound_le {b W s k r } {params } (h : Admissible b params W)
     (hr : params.length ≤ r) (hb : s + k * r + k ≤ b) : polyBound s k params ≤ 2 ^ W := by
   set S := (params.map Nat.log2).sum
-  have hexp : s + (S + params.length) * k ≤ W :=
+  have hexp :=
     calc s + (S + params.length) * k ≤ s + (S + r) * k := by gcongr
       -- the difference is s S + k r S + k
       _ ≤ (s + k * r + k) * (S + 1) := Nat.le.intro (k := s * S + k * r * S + k) (by ring)
@@ -70,31 +72,11 @@ theorem polyBound_le {b W s k r : ℕ} {params : List ℕ} (h : Admissible b par
 /-- The bound is positive. -/
 theorem one_le_polyBound (s k : ℕ) (params : List ℕ) : 1 ≤ polyBound s k params := by
   have : 0 < (params.map (· + 1)).prod := List.prod_pos (by simp)
-  exact Nat.mul_pos (by positivity) (by positivity)
-
-/-- The bound grows with its first parameter. -/
-theorem polyBound_cons_le {p p' : ℕ} (h : p ≤ p') (s k : ℕ) (params : List ℕ) :
-    polyBound s k (p :: params) ≤ polyBound s k (p' :: params) := by
-  simp only [polyBound, List.map_cons, List.prod_cons]
-  gcongr
-
-/-- The bound grows with its two exponents. -/
-theorem polyBound_mono {s s' k k' : ℕ} (hs : s ≤ s') (hk : k ≤ k') (params : List ℕ) :
-    polyBound s k params ≤ polyBound s' k' params := by
-  have : 0 < (params.map (· + 1)).prod := List.prod_pos (by simp)
-  exact Nat.mul_le_mul (Nat.pow_le_pow_right (by norm_num) hs) (Nat.pow_le_pow_right this hk)
+  exact Nat.mul_pos (by simp) (by simp)
 
 /-- A power of two times the bound is a bound of the same form. -/
 theorem polyBound_mul (s s' k : ℕ) (params : List ℕ) :
     2 ^ s' * polyBound s k params = polyBound (s' + s) k params := by
-  simp only [polyBound, pow_add, mul_assoc]
-
-/-- The sum of two numbers with such bounds has such a bound. -/
-theorem add_le_polyBound {a b s s' k k' : ℕ} {params : List ℕ} (ha : a ≤ polyBound s k params)
-    (hb : b ≤ polyBound s' k' params) : a + b ≤ polyBound (1 + (s + s')) (k + k') params := by
-  have ha' := ha.trans (polyBound_mono (Nat.le_add_right s s') (Nat.le_add_right k k') params)
-  have hb' := hb.trans (polyBound_mono (Nat.le_add_left s' s) (Nat.le_add_left k' k) params)
-  rw [← polyBound_mul]
-  omega
+  simp [polyBound, pow_add, mul_assoc]
 
 end Light

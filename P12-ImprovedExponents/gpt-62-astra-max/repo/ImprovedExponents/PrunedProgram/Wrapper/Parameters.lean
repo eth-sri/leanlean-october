@@ -28,7 +28,7 @@ variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix
 /-- The data structure of Theorem 30 with pruned encodings for the padded matrices has been built
 in the cells after fr. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Parameters.lean (Built31)
-abbrev Built31P (G : RatParams) {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ)
+abbrev Built31P (G : RatParams) {N D₀} (X : Matrix (Fin N) (Fin D₀) ℤ)
     (Y : Matrix (Fin D₀) (Fin N) ℤ) (fr : ℕ) (μ : ℕ → ℤ) : Prop :=
   DSReadyP (parOf G N D₀) (switchOf31 G D₀) (logFour_le_levels G N D₀) (paddedXAt fr)
     (paddedYAt N D₀ fr) (blockAt N D₀ fr) (padInnerCols (D (logFour D₀)) X)
@@ -36,7 +36,7 @@ abbrev Built31P (G : RatParams) {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) �
 
 /-- **The cells from fr on hold what a query needs**, with pruned encodings. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/ChoosingParameters/Parameters.lean (Ready31)
-structure Ready31P (G : RatParams) {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ)
+structure Ready31P (G : RatParams) {N D₀} (X : Matrix (Fin N) (Fin D₀) ℤ)
     (Y : Matrix (Fin D₀) (Fin N) ℤ) (aX aY fr : ℕ) (μ : ℕ → ℤ) : Prop where
   matX : MatAt μ aX X
   matY : MatAt μ aY Y
@@ -49,7 +49,7 @@ structure behind its first three: upstream's procedure, with pruned encodings. -
 def QuerySpec31P (lim : Limits) (P : Program) (G : RatParams) : Prop :=
   ∀ (N D₀ aX aY fr : ℕ) (X : Matrix (Fin N) (Fin D₀) ℤ) (Y : Matrix (Fin D₀) (Fin N) ℤ) (U : ℤ)
       (μ : ℕ → ℤ) (I J : Fin N), Input31 lim G X Y aX aY fr U → Ready31P G X Y aX aY fr μ →
-    ∀ d, d + 3 ≤ lim.depth → Meets lim P Proc.query31 d [(I : ℕ), (J : ℕ), N, D₀, aX, aY, fr] μ
+    ∀ d, d + 3 ≤ lim.depth → Meets lim P Proc.query31 d [I, J, N, D₀, aX, aY, fr] μ
         (tQuery31 G D₀) fun r μ' =>
       r = (X * Y) I J ∧ Ready31P G X Y aX aY fr μ' ∧
           SameOutside μ μ' (fr + 3) (structEnd G N D₀ fr - (fr + 3))
@@ -64,8 +64,8 @@ theorem Ready31P.of_query (h : Ready31P G X Y aX aY fr μ) (bX : aX + N * D₀ �
   have hb0 := add_three_le_blockAt N D₀ fr
   obtain ⟨hflag, hbase, -⟩ := h.large hm
   exact ⟨h.matX.congr_below hkept (by omega), h.matY.congr_below hkept (by omega),
-    fun hm' => absurd hm (by omega),
-    fun _ => ⟨(hkept _ (by omega)).trans hflag, (hkept _ (by omega)).trans hbase, hDS⟩⟩
+    by omega,
+    by grind⟩
 
 /-- query31 reads the flag and calls the query of Theorem 30 if it is 1 and the inner product
 otherwise; it returns the entry (XY)[I, J] and keeps the structure ready. -/
@@ -79,23 +79,20 @@ theorem query31P_meets (G : RatParams) (hP : P[Proc.query31]? = some query31Body
   have bY := hin.belowY
   refine fun d hd => ⟨query31Body, hP, ?_⟩
   have hw := hlim.std.space_le
-  have h100 := hlim.std.const_le
   have hU0 := hin.zero_le_U
   have hfr3 := add_three_le_structEnd G N D₀ fr
   have hsp := hlim.space
-  unfold query31Body
-  -- if mem[fr] = 1
   refine Ends.iteLast (fun hflag => ?_) (fun hflag => ?_) (hT := by simp [tQuery31])
   · -- the data structure has been built: return queryAt(I, J, mem[fr + 1])
     have hlarge : G.m₀ ≤ logFour D₀ := by
       by_contra hc
       have hzero := hR.small (by omega)
-      have hone : μ fr = 1 := by simpa using hflag
+      have hone : μ fr = 1 := by assumption
       omega
     obtain ⟨-, hbase, hDS⟩ := hR.large hlarge
     have haddr : ((fr : ℤ) + 1).toNat = fr + 1 := by omega
     refine Ends.callTo
-      (hq (parOf G N D₀) (switchOf31 G D₀) (logFour_le_levels G N D₀) (paddedXAt fr)
+      (hq (parOf G N D₀) (switchOf31 G D₀) (by grind) (paddedXAt fr)
         (paddedYAt N D₀ fr) (blockAt N D₀ fr) _ _ U μ I J (G.t_le _) (hlim.large hlarge)
         (abs_padInnerCols_le hin.absX hU0) (abs_padInnerRows_le hin.absY hU0) hDS _ (by omega)) ?_
       (by light_side [haddr, hbase])

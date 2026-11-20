@@ -27,22 +27,20 @@ in `n`, `⌊√n⌋` and logarithms by following the expression, and no constant
 namespace ThreeSumApsp
 
 /-- `⌊log₂ n⌋ + 1 ≤ 4 ln n` for `n ≥ 2`. -/
-theorem natLog_succ_le {n : ℕ} (hn : 2 ≤ n) : ((Nat.log 2 n + 1 : ℕ) : ℝ) ≤ 4 * Real.log n := by
-  have hhalf : 1 / 2 ≤ Real.log 2 := Real.one_half_lt_log_two.le
-  have hlog2 : Real.log 2 ≤ Real.log n := Real.log_le_log (by norm_num) (by exact_mod_cast hn)
-  have hfloor : Nat.log 2 n * Real.log 2 ≤ Real.log n :=
+theorem natLog_succ_le {n } (hn : 2 ≤ n) : ((Nat.log 2 n + 1 : ℕ) : ℝ) ≤ 4 * Real.log n := by
+  have hhalf := Real.one_half_lt_log_two.le
+  have hlog2 : Real.log 2 ≤ Real.log n := Real.log_le_log (by norm_num) (by simp_all)
+  have hfloor :=
     calc Nat.log 2 n * Real.log 2 = Real.log ((2 ^ Nat.log 2 n : ℕ) : ℝ) := by
-          rw [Nat.cast_pow, Real.log_pow, Nat.cast_two]
-      _ ≤ Real.log n := Real.log_le_log (by positivity)
+          simp
+      _ ≤ Real.log n := Real.log_le_log (by simp)
           (by exact_mod_cast Nat.pow_log_le_self 2 (by omega))
-  have hmul := mul_le_mul_of_nonneg_left hhalf (Nat.cast_nonneg (α := ℝ) (Nat.log 2 n))
-  push_cast
-  -- `⌊log₂ n⌋ ≤ 2 ⌊log₂ n⌋ ln 2 ≤ 2 ln n` and `1 ≤ 2 ln 2 ≤ 2 ln n`
-  linarith [hmul, hfloor, hhalf, hlog2]
+  have hmul := mul_le_mul_of_nonneg_left hhalf (Nat.cast_nonneg (Nat.log 2 n))
+  grind
 
 /-- `⌊√n⌋ + 1 ≤ 2 √n` for `n ≥ 1`. -/
-theorem natSqrt_succ_le {n : ℕ} (hn : 1 ≤ n) : ((Nat.sqrt n + 1 : ℕ) : ℝ) ≤ 2 * √(n : ℝ) := by
-  have hone : 1 ≤ √(n : ℝ) := Real.one_le_sqrt.mpr (by exact_mod_cast hn)
+theorem natSqrt_succ_le {n } (hn : 1 ≤ n) : ((Nat.sqrt n + 1 : ℕ) : ℝ) ≤ 2 * √(n : ℝ) := by
+  have hone : 1 ≤ √(n : ℝ) := by simp_all
   push_cast
   linarith [Real.nat_sqrt_le_real_sqrt (a := n), hone]
 
@@ -52,8 +50,8 @@ noncomputable def sqrtScale : Scale ℕ (Fin 1) where
   dom n := 2 ≤ n
   hidden n := (Nat.log 2 n + 1 : ℕ)
   base _ n := (Nat.sqrt n + 1 : ℕ)
-  one_le_hidden _ _ := Nat.one_le_cast.2 (Nat.le_add_left 1 _)
-  one_le_base _ _ _ := Nat.one_le_cast.2 (Nat.le_add_left 1 _)
+  one_le_hidden _ _ := by simp
+  one_le_base _ _ _ := by simp
 
 /-- `F(n) ≤ K (⌊log₂ n⌋ + 1)^e (⌊√n⌋ + 1)^i` for all `n ≥ 2`, for some `K` and `e`. -/
 abbrev SoftOSqrtPow (F : ℕ → ℕ) (i : ℕ) : Prop := sqrtScale.SoftO F ![i]
@@ -76,14 +74,14 @@ theorem self : SoftOSqrtPow (fun n => n) 2 :=
     (Nat.lt_succ_sqrt n).le.trans (sq _).ge
 
 /-- The logarithm of a function with such a bound is a polylogarithm. -/
-theorem natLog_comp {e : Fin 1 → ℕ} (hF : sqrtScale.SoftO F e) :
+theorem natLog_comp {e } (hF : sqrtScale.SoftO F e) :
     SoftOSqrtPow (fun n => Nat.log 2 (F n)) 0 := by
   refine (Scale.SoftO.log2 (fun _ n _ => ?_) hF).mono (by decide)
   have hsqrt : Nat.sqrt n + 1 ≤ 2 ^ (Nat.log 2 n + 1) := by
     have := Nat.lt_pow_succ_log_self (by norm_num : 1 < 2) n
     have := Nat.sqrt_le_self n
     omega
-  simp only [sqrtScale, Real.rpow_natCast]
+  simp [sqrtScale]
   exact_mod_cast hsqrt
 
 /-- In the notation of the paper: `F(n) = Õ(n^{i/2})`. -/
@@ -93,7 +91,6 @@ theorem isPowPolylog (hF : SoftOSqrtPow F i) {a : ℝ} (ha : a = i / 2) :
   refine .of_abs_le (K * 4 ^ e * 2 ^ i) e 2 fun n hn => ?_
   have hsqrt : √(n : ℝ) ^ i = (n : ℝ) ^ a := by
     rw [ha, Real.sqrt_eq_rpow, ← Real.rpow_natCast, ← Real.rpow_mul (Nat.cast_nonneg n)]
-    congr 1
     ring
   rw [abs_of_nonneg (Nat.cast_nonneg _)]
   calc (F n : ℝ)

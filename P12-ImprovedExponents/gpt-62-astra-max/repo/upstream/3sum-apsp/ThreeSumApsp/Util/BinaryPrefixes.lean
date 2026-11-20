@@ -39,27 +39,36 @@ def shiftQ (P q r : ℤ) : ℤ := if 2 * r < P then 2 * q else 2 * q + 1
 /-- The new rest after one step. -/
 def shiftR (P r : ℤ) : ℤ := if 2 * r < P then 2 * r else 2 * r - P
 
+section
+variable {L : ℕ}
+  {z : ℤ}
+  (h0 : 0 ≤ z)
+  (h : z < 2 ^ L)
+include h0 h
+
 /-- At the top level the prefix is 0. -/
-theorem prefQ_start {L : ℕ} {z : ℤ} (h0 : 0 ≤ z) (h : z < 2 ^ L) : prefQ L z = 0 :=
+theorem prefQ_start : prefQ L z = 0 :=
   Int.ediv_eq_zero_of_lt h0 h
 
 /-- At the top level the rest is the number itself. -/
-theorem prefR_start {L : ℕ} {z : ℤ} (h0 : 0 ≤ z) (h : z < 2 ^ L) : prefR L L z = z := by
+theorem prefR_start : prefR L L z = z := by
   simp [prefR, Int.emod_eq_of_lt h0 h]
+
+end
 
 /-- **One step**: the prefix and the rest at the level `ℓ` are `shiftQ` and `shiftR` of those at the
 level `ℓ + 1`. -/
-theorem pref_step {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℤ) :
+theorem pref_step {L ℓ} (h : ℓ + 1 ≤ L) (z : ℤ) :
     prefQ ℓ z = shiftQ (2 ^ L) (prefQ (ℓ + 1) z) (prefR L (ℓ + 1) z) ∧
       prefR L ℓ z = shiftR (2 ^ L) (prefR L (ℓ + 1) z) := by
   -- In terms of `m = 2^ℓ` and `s = 2^(L - ℓ - 1)`.
   obtain ⟨j, rfl⟩ := Nat.exists_eq_add_of_le h
-  simp only [prefQ, prefR, shiftQ, shiftR, Nat.add_sub_cancel_left,
+  simp [prefQ, prefR, shiftQ, shiftR, Nat.add_sub_cancel_left,
     show ℓ + 1 + j - ℓ = j + 1 by omega]
   rw [show (2 : ℤ) ^ (ℓ + 1 + j) = 2 * 2 ^ ℓ * 2 ^ j by ring,
     show (2 : ℤ) ^ (ℓ + 1) = 2 * 2 ^ ℓ by ring, show (2 : ℤ) ^ (j + 1) = 2 * 2 ^ j by ring]
-  have hm : (0 : ℤ) < 2 ^ ℓ := by positivity
-  have hs : (0 : ℤ) < 2 ^ j := by positivity
+  have hm : (0 : ℤ) < 2 ^ ℓ := by simp
+  have hs : (0 : ℤ) < 2 ^ j := by simp
   generalize (2 : ℤ) ^ ℓ = m at hm
   generalize (2 : ℤ) ^ j = s at hs
   -- Write `z = 2 m a + b` with `0 ≤ b < 2 m`; the next bit of `z` is 0 exactly if `b < m`.
@@ -69,66 +78,65 @@ theorem pref_step {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℤ) :
   generalize z / (2 * m) = a at hz
   generalize z % (2 * m) = b at hz hb0 hb2
   by_cases hb : b < m
-  · have hcond : 2 * (b * s) < 2 * m * s := by linarith [mul_pos (sub_pos.2 hb) hs]
-    obtain ⟨hq, hr⟩ := (Int.ediv_emod_unique hm (a := z) (q := 2 * a) (r := b)).2
+  · have hcond : 2 * (b * s) < 2 * m * s := by nlinarith
+    obtain ⟨hq, hr⟩ := (Int.ediv_emod_unique hm  (q := 2 * a) ).2
       ⟨by linarith, hb0, hb⟩
-    rw [if_pos hcond, if_pos hcond, hq, hr]
-    exact ⟨rfl, by ring⟩
+    grind
   · have hcond : ¬ 2 * (b * s) < 2 * m * s := by
-      linarith [mul_nonneg (sub_nonneg.2 (not_lt.1 hb)) hs.le]
-    obtain ⟨hq, hr⟩ := (Int.ediv_emod_unique hm (a := z) (q := 2 * a + 1) (r := b - m)).2
+      nlinarith
+    obtain ⟨hq, hr⟩ := (Int.ediv_emod_unique hm  (q := 2 * a + 1) (r := b - m)).2
       ⟨by linarith, by omega, by omega⟩
-    rw [if_neg hcond, if_neg hcond, hq, hr]
-    exact ⟨rfl, by ring⟩
+    grind
+
+section
+variable {z : ℤ}
+  (h0 : 0 ≤ z)
+  (ℓ : ℕ)
+include h0
 
 /-- The prefixes of a nonnegative number are nonnegative. -/
-theorem prefQ_nonneg {z : ℤ} (h0 : 0 ≤ z) (ℓ : ℕ) : 0 ≤ prefQ ℓ z :=
-  Int.ediv_nonneg h0 (by positivity)
+theorem prefQ_nonneg : 0 ≤ prefQ ℓ z :=
+  Int.ediv_nonneg h0 (by simp)
 
 /-- The prefixes of a nonnegative number are at most the number. -/
-theorem prefQ_le {z : ℤ} (h0 : 0 ≤ z) (ℓ : ℕ) : prefQ ℓ z ≤ z := Int.ediv_le_self _ h0
+theorem prefQ_le : prefQ ℓ z ≤ z := Int.ediv_le_self _ h0
+
+end
 
 /-- The rests are nonnegative. -/
 theorem prefR_nonneg (L ℓ : ℕ) (z : ℤ) : 0 ≤ prefR L ℓ z :=
-  mul_nonneg (Int.emod_nonneg _ (by positivity)) (by positivity)
+  mul_nonneg (by omega) (by simp)
 
 /-- The rests have `L` bits. -/
-theorem prefR_lt {L ℓ : ℕ} (h : ℓ ≤ L) (z : ℤ) : prefR L ℓ z < 2 ^ L := by
-  have hmod : z % 2 ^ ℓ < 2 ^ ℓ := Int.emod_lt_of_pos _ (by positivity)
+theorem prefR_lt {L ℓ} (h : ℓ ≤ L) (z : ℤ) : prefR L ℓ z < 2 ^ L := by
+  have hmod : z % 2 ^ ℓ < 2 ^ ℓ := by omega
   rw [prefR, ← Nat.add_sub_cancel' h, pow_add, Nat.add_sub_cancel' h]
-  exact mul_lt_mul_of_pos_right hmod (by positivity)
+  gcongr
 
-/-- The prefix of a natural number is the quotient of natural numbers. -/
-theorem prefQ_natCast (ℓ z : ℕ) : prefQ ℓ (z : ℤ) = ((z / 2 ^ ℓ : ℕ) : ℤ) := by
-  simp [prefQ]
-
-/-- The bit that a step moves from the rest to the prefix is the binary digit number `ℓ`. -/
-theorem testBit_iff_shift {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (z : ℕ) :
-    z.testBit ℓ = true ↔ ¬ 2 * prefR L (ℓ + 1) (z : ℤ) < 2 ^ L := by
-  have hstep := (pref_step h (z : ℤ)).1
-  rw [prefQ_natCast, prefQ_natCast, shiftQ] at hstep
-  rw [Nat.testBit_eq_decide_div_mod_eq, decide_eq_true_eq]
-  split_ifs at hstep with hc
-  · exact iff_of_false (by omega) (not_not.2 hc)
-  · exact iff_of_true (by omega) hc
+section
+variable {L ℓ : ℕ}
+  (h : ℓ + 1 ≤ L)
+include h
 
 /-! ## The lists of the prefixes and of the rests -/
 
 /-- One step on the list of the prefixes. -/
-theorem zipWith_shiftQ {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (Z : List ℤ) :
+theorem zipWith_shiftQ (Z : List ℤ) :
     List.zipWith (shiftQ (2 ^ L)) (Z.map (prefQ (ℓ + 1))) (Z.map (prefR L (ℓ + 1))) =
       Z.map (prefQ ℓ) := by
   rw [List.zipWith_map, List.zipWith_self]
   exact List.map_congr_left fun z _ => (pref_step h z).1.symm
 
 /-- One step on the list of the rests. -/
-theorem map_shiftR {L ℓ : ℕ} (h : ℓ + 1 ≤ L) (Z : List ℤ) :
+theorem map_shiftR (Z : List ℤ) :
     (Z.map (prefR L (ℓ + 1))).map (shiftR (2 ^ L)) = Z.map (prefR L ℓ) := by
   rw [List.map_map]
   exact List.map_congr_left fun z _ => (pref_step h z).2.symm
 
+end
+
 /-- At the top level the rests are the numbers themselves. -/
-theorem map_prefR_start {L : ℕ} {Z : List ℤ} (h : ∀ z ∈ Z, 0 ≤ z ∧ z < 2 ^ L) :
+theorem map_prefR_start {L} {Z : List ℤ} (h : ∀ z ∈ Z, 0 ≤ z ∧ z < 2 ^ L) :
     Z.map (prefR L L) = Z := by
   conv_rhs => rw [← List.map_id Z]
   exact List.map_congr_left fun z hz => prefR_start (h z hz).1 (h z hz).2

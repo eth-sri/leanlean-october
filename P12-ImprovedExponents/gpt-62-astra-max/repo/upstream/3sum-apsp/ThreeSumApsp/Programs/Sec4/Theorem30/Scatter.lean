@@ -47,7 +47,7 @@ def nextRun (x y run : ℕ) : ℕ := if x = 9 ∧ y ≠ 9 then 0 else run
 def nextPtr (x o : ℕ) : ℕ := if x = 9 then o + 1 else o
 
 /-- The first digit of what is still to be written, and the rest. -/
-private theorem scatter_step {w s : List ℕ} {i o : ℕ} (run : ℕ) (hi : i < w.length)
+private theorem scatter_step {w s : List ℕ} {i o } (run : ℕ) (hi : i < w.length)
     (ho : w.getD i 0 = 9 → o < s.length) :
     scatter (w.drop i) (starRunIf (decide (run = 1)) (s.drop o)) =
       outDigit (w.getD i 0) (s.getD o 0) run :: scatter (w.drop (i + 1))
@@ -60,7 +60,7 @@ private theorem scatter_step {w s : List ℕ} {i o : ℕ} (run : ℕ) (hi : i < 
     generalize s.getD o 0 = y
     by_cases hy : y = 9
     · rw [hy, starRunIf_nine_cons, scatter_nine_cons]
-      by_cases hrun : run = 1 <;> simp [outDigit, nextRun, nextPtr, hrun]
+      by_cases hrun : run = 1 <;> simp [outDigit, nextRun, nextPtr]
     · rw [starRunIf_cons_of_ne hy, scatter_nine_cons]
       simp [outDigit, nextRun, nextPtr, hy]
   · rw [scatter_cons_of_ne hx]
@@ -77,32 +77,38 @@ structure Progress (star : Bool) (wl sl : List ℕ) (i run o : ℕ) (done : List
 
 theorem Progress.zero (star : Bool) (wl sl : List ℕ) :
     Progress star wl sl 0 (if star then 1 else 0) 0 [] :=
-  ⟨rfl, rfl, by cases star <;> rfl⟩
+  ⟨rfl, rfl, by simp⟩
 
 section
 
 variable {star : Bool} {wl sl done : List ℕ} {i run o : ℕ}
 
+section
+variable (h : Progress star wl sl i run o done)
+  (hi : i < wl.length)
+  (hsl : sl.length = wl.count 9)
+include h hi hsl
+
 /-- At a nine of the first string the pointer is inside the second string. -/
-theorem Progress.ptr_lt (h : Progress star wl sl i run o done) (hi : i < wl.length)
-    (hsl : sl.length = wl.count 9) (h9 : wl.getD i 0 = 9) : o < sl.length := by
+theorem Progress.ptr_lt (h9 : wl.getD i 0 = 9) : o < sl.length := by
   have hle : (wl.take (i + 1)).count 9 ≤ wl.count 9 := (List.take_sublist _ _).count_le _
   rw [List.count_take_succ_getD wl 9 hi 0, if_pos h9, ← h.ptr] at hle
   omega
 
 /-- One more position: the digit, the flag and the pointer are those that the three functions
 give. -/
-theorem Progress.succ (h : Progress star wl sl i run o done) (hi : i < wl.length)
-    (hsl : sl.length = wl.count 9) :
+theorem Progress.succ :
     Progress star wl sl (i + 1) (nextRun (wl.getD i 0) (sl.getD o 0) run)
       (nextPtr (wl.getD i 0) o) (done ++ [outDigit (wl.getD i 0) (sl.getD o 0) run]) where
   length := by rw [List.length_append, h.length, List.length_singleton]
   ptr := by
     rw [List.count_take_succ_getD wl 9 hi 0, ← h.ptr, nextPtr]
-    split_ifs <;> rfl
+    grind
   rest := by
     rw [List.append_assoc, List.singleton_append, ← scatter_step run hi (h.ptr_lt hi hsl)]
     exact h.rest
+
+end
 
 end
 
@@ -111,14 +117,7 @@ end
 /-- The local variables of scatter: the arguments (the addresses of the two strings and of the
 copy, the length, and the flag, whose first value is the argument star), the position, the pointer
 into the second string, and the digit to be written. -/
-abbrev First : ℕ := 0
-@[inherit_doc First] abbrev Second : ℕ := 1
-@[inherit_doc First] abbrev Dst : ℕ := 2
-@[inherit_doc First] abbrev Len : ℕ := 3
-@[inherit_doc First] abbrev Run : ℕ := 4
-@[inherit_doc First] abbrev Pos : ℕ := 5
-@[inherit_doc First] abbrev Ptr : ℕ := 6
-@[inherit_doc First] abbrev Digit : ℕ := 7
+slots 0 First Second Dst Len Run Pos Ptr Digit
 
 end Scatter
 
@@ -148,7 +147,7 @@ private theorem round_cost : scatterRound.blockCost = 37 := rfl
 
 /-- What a round does, for the digit x of the first string and the digit y of the second string at
 the pointer. -/
-private theorem round_runs {lim : Limits} (hs : Std lim) {μ : ℕ → ℤ}
+private theorem round_runs {lim } (hs : Std lim) {μ : ℕ → ℤ}
     {w s out L run i o dg x y : ℕ} (hw : w + L < lim.space) (hout : out + L < lim.space)
     (hi : i < L) (hx : μ (w + i) = x) (hy : x = 9 → μ (s + o) = y ∧ s + o + 1 < lim.space) :
     scatterRound.Runs lim ⟨frame [w, s, out, L, run, i, o, dg], μ⟩
@@ -157,15 +156,12 @@ private theorem round_runs {lim : Limits} (hs : Std lim) {μ : ℕ → ℤ}
   light_facts hs
   have hcastx : ((x : ℤ) = 9) = (x = 9) := by norm_cast
   have hcasty : ((y : ℤ) = 9) = (y = 9) := by norm_cast
-  have hcastr : ((run : ℤ) = 1) = (run = 1) := by norm_cast
-  have haddr : ((out : ℤ) + i).toNat = out + i := by omega
-  simp only [scatterRound, outDigit, nextRun, nextPtr]
+  simp [scatterRound, outDigit, nextRun, nextPtr]
   -- The tests of the program: a nine of the first string, a nine of the second, the flag.  In each
   -- case the block is run: the first goal says that every address is in range and every value fits
   -- in a word, the second that the last state is the one stated.
   by_cases h9 : x = 9
-  · obtain ⟨hcell, hptr⟩ := hy h9
-    by_cases hy9 : y = 9 <;> by_cases hrun : run = 1 <;> constructor <;>
+  · by_cases hy9 : y = 9 <;> by_cases hrun : run = 1 <;> constructor <;>
       simp [Limits.Addr, abs_le, update_frame_setLocal, *] <;>
       omega
   · constructor <;> simp [Limits.Addr, abs_le, update_frame_setLocal, *]
@@ -180,7 +176,7 @@ def Inv (w s out : ℕ) (star : Bool) (wl sl : List ℕ) (μ : ℕ → ℤ) (i :
 end Scatter
 
 /-- **scatter** writes `Spec.scatter wl (starRunIf star sl)`. -/
-theorem scatter_spec {lim : Limits} {P : Program} (hP : P[Proc.scatter]? = some scatterBody)
+theorem scatter_spec {lim } {P } (hP : P[Proc.scatter]? = some scatterBody)
     (hs : Std lim) : ScatterSpec lim P := by
   rintro w s out _ star wl sl μ hfirst hsecond rfl hsl hapartW hapartS hw_in hs_in hout_in
   refine fun d _ => ⟨scatterBody, hP, ?_⟩
@@ -191,7 +187,7 @@ theorem scatter_spec {lim : Limits} {P : Program} (hP : P[Proc.scatter]? = some 
   case start =>
     refine ⟨μ, _, 0, 0, [], ?_, Progress.zero star wl sl, Seg.nil, .refl⟩
     refine congrArg (State.mk · μ) ((frame_append_zeros _ 3).symm.trans ?_)
-    cases star <;> rfl
+    simp
   case round =>
     rintro i _ hi ⟨μ', run, o, dg, done, rfl, hprog, hdone, hsame⟩
     have hx : μ' (w + i) = (wl.getD i 0 : ℕ) :=
@@ -208,7 +204,7 @@ theorem scatter_spec {lim : Limits} {P : Program} (hP : P[Proc.scatter]? = some 
     rintro _ ⟨μ', run, o, dg, done, rfl, hprog, hdone, hsame⟩
     have hall : done = scatter wl (starRunIf star sl) := by
       have hrest := hprog.rest
-      rwa [List.drop_length, scatter, List.append_nil] at hrest
-    exact ⟨by simp, by simp, hall ▸ hdone, hsame⟩
+      simp_all [scatter]
+    simp_all
 
 end Light.Sec4

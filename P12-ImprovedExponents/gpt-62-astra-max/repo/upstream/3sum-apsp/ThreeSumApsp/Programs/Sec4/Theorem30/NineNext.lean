@@ -40,11 +40,7 @@ namespace Nine
 (whether a position that can be raised has been found, the last such position, the number of nines
 before it, the number of nines seen so far), and a digit. -/
 abbrev MaxNines : ℕ := 3
-@[inherit_doc MaxNines] abbrev Found : ℕ := 5
-@[inherit_doc MaxNines] abbrev Best : ℕ := 6
-@[inherit_doc MaxNines] abbrev Before : ℕ := 7
-@[inherit_doc MaxNines] abbrev Nines : ℕ := 8
-@[inherit_doc MaxNines] abbrev Digit : ℕ := 9
+slots 5 Found Best Before Nines Digit
 
 end Nine
 
@@ -76,14 +72,14 @@ def scanFrame (a n lo hi i : ℕ) (s : NineScan) (dg : ℕ) : ℕ → ℤ :=
   frame [a, n, lo, hi, i, s.found, s.pos, s.before, s.nines, dg]
 
 /-- One round of the scan is `Spec.nineScanStep`. -/
-private theorem scanRound_runs (hs : Std lim) {μ : ℕ → ℤ} {a n lo hi i dg dg' : ℕ} {s : NineScan}
+private theorem scanRound_runs (hs : Std lim) {μ : ℕ → ℤ} {a n lo hi i dg dg' : ℕ} {s }
     (ha : a + n < lim.space) (hi' : i < n) (hcell : μ (a + i) = dg) (hnines : s.nines ≤ i) :
     scanRound.Runs lim ⟨scanFrame a n lo hi i s dg', μ⟩
       (· = ⟨scanFrame a n lo hi (i + 1) (nineScanStep hi i dg s) dg, μ⟩) := by
   light_facts hs
   have hcast8 : ((dg : ℤ) = 8) = (dg = 8) := by norm_cast
   have hcast9 : ((dg : ℤ) = 9) = (dg = 9) := by norm_cast
-  simp only [scanRound, raiseTest, markStmt, scanFrame, nineScanStep, canRaise]
+  simp [scanRound, raiseTest, markStmt, scanFrame, nineScanStep, canRaise]
   -- The tests of the program tell five cases apart: the digit is below 8; it is 8, and one more
   -- nine is allowed or not; it is 9; it is above 9.  In each case the block is run: the first goal
   -- says that every address is in range and every value fits in a word, the second that the last
@@ -112,7 +108,7 @@ def needStmt : Stmt :=
 private theorem needStmt_cost : needStmt.blockCost = 23 := rfl
 
 /-- needStmt computes the subtraction of natural numbers in `Spec.raiseAt`. -/
-private theorem needStmt_runs (hs : Std lim) {μ : ℕ → ℤ} {a n lo hi i dg dg' : ℕ} {s : NineScan}
+private theorem needStmt_runs (hs : Std lim) {μ : ℕ → ℤ} {a n lo hi i dg dg' : ℕ} {s }
     (ha : a + n < lim.space) (hp : s.pos < n) (hcell : μ (a + s.pos) = dg) (hlo : lo ≤ n)
     (hbefore : s.before ≤ n) :
     needStmt.Runs lim ⟨scanFrame a n lo hi i s dg', μ⟩
@@ -126,7 +122,7 @@ private theorem needStmt_runs (hs : Std lim) {μ : ℕ → ℤ} {a n lo hi i dg 
   have hzero₀ : (lo : ℤ) - s.before < 0 → lo - s.before = 0 := by omega
   have hcast₀ : ¬ (lo : ℤ) - s.before < 0 → ((lo - s.before : ℕ) : ℤ) = (lo : ℤ) - s.before := by
     omega
-  simp only [needStmt, scanFrame]
+  simp [needStmt, scanFrame]
   -- The tests of the program tell four cases apart: whether the digit is an 8, and whether the
   -- difference that is then formed is negative.  In each case the block is run (first goal:
   -- everything is in range; second goal: the last state is the one stated).
@@ -138,15 +134,15 @@ private theorem needStmt_runs (hs : Std lim) {μ : ℕ → ℤ} {a n lo hi i dg 
 
 /-- The string with the digits before p kept, the digit at p raised and the least filling behind it
 is `Spec.raiseAt`. -/
-private theorem segN_raiseAt {μ μ' : ℕ → ℤ} {a lo p c : ℕ} {l : List ℕ} (hseg : SegN μ a l)
+private theorem segN_raiseAt {μ μ' : ℕ → ℤ} {a lo p c } {l } (hseg : SegN μ a l)
     (hp : p < l.length) (hkeep : ∀ b < a + p, μ' b = μ b)
     (hdigit : μ' (a + p) = (l.getD p 0 + 1 : ℕ))
     (htail : SegN μ' (a + (p + 1))
       (nineFirst (l.length - (p + 1)) (lo - c - if l.getD p 0 = 8 then 1 else 0))) :
     SegN μ' a (raiseAt lo p c l) := by
   have hlen : a + (List.map (fun x : ℕ => (x : ℤ)) (l.take p)).length = a + p := by
-    rw [List.length_map, List.length_take, min_eq_left hp.le]
-  rw [raiseAt, SegN, List.map_append, seg_append, List.map_cons, seg_cons, hlen, Nat.sub_sub,
+    grind
+  rw [raiseAt, SegN, List.map_append, seg_append, List.map_cons, seg_cons, hlen,
     List.map_take]
   exact ⟨(hseg.take p).congr fun i hi => hkeep _ (by simp at hi; omega), hdigit, htail⟩
 
@@ -161,7 +157,7 @@ def raiseStmt : Stmt :=
 
 /-- The second pass writes `Spec.raiseAt` for the position that the scan has found, and
 returns 1. -/
-private theorem raiseStmt_spec (hs : Std lim) {μ : ℕ → ℤ} {a lo hi dg' : ℕ} {l : List ℕ}
+private theorem raiseStmt_spec (hs : Std lim) {μ } {a lo hi dg' } {l }
     (hseg : SegN μ a l) (ha : a + l.length < lim.space) (hlo : lo ≤ l.count 9)
     (hfound : (nineScan hi l l.length).found = 1) :
     Ends lim P d raiseStmt ⟨scanFrame a l.length lo hi l.length (nineScan hi l l.length) dg', μ⟩
@@ -169,7 +165,6 @@ private theorem raiseStmt_spec (hs : Std lim) {μ : ℕ → ℤ} {a lo hi dg' : 
         SegN σ'.mem a
           (raiseAt lo (nineScan hi l l.length).pos (nineScan hi l l.length).before l) ∧
         σ'.loc 0 = 1 ∧ SameOutside μ σ'.mem a l.length := by
-  light_facts hs
   have hinv := nineScan_inv hi l le_rfl
   generalize nineScan hi l l.length = s at hinv hfound ⊢
   have hp := hinv.pos_lt hfound
@@ -179,13 +174,10 @@ private theorem raiseStmt_spec (hs : Std lim) {μ : ℕ → ℤ} {a lo hi dg' : 
   have hbefore : s.before ≤ l.length := by
     rw [hinv.before hfound]
     exact List.count_le_length.trans (List.length_take_le' _ _)
-  have hlon : lo ≤ l.length := hlo.trans List.count_le_length
+  have hlon := hlo.trans List.count_le_length
   have hcost := needStmt_cost
   obtain ⟨dg, hdg⟩ : ∃ dg, l.getD s.pos 0 = dg := ⟨_, rfl⟩
   obtain ⟨need, hneed⟩ : ∃ need, lo - s.before - (if dg = 8 then 1 else 0) = need := ⟨_, rfl⟩
-  have hneed_le : need ≤ lo - s.before := hneed ▸ Nat.sub_le _ _
-  rw [hdg] at hdigit_le
-  -- digit := mem[str + best]; need := max (lo - before - [digit = 8]) 0
   refine Ends.next _ (Ends.block
     ((needStmt_runs hs ha hp (hdg ▸ hseg.read hp) hlon hbefore).mono ?_) le_rfl)
   rintro _ rfl
@@ -195,7 +187,7 @@ private theorem raiseStmt_spec (hs : Std lim) {μ : ℕ → ℤ} {a lo hi dg' : 
   -- pos := best + 1
   light_set (s.pos + 1 : ℕ)
   -- fillTail
-  light_piece (fillTail_spec hs (i₀ := s.pos + 1) (need := need) ha (by omega) _ rfl rfl rfl
+  light_piece (fillTail_spec hs ha (by omega) _ rfl rfl rfl
     rfl) with ⟨_, μ'⟩ ⟨rfl, htail, hsame⟩
   -- return 1
   refine Ends.setLast ⟨segN_raiseAt hseg hp (fun b hb => ?_) ?_ (by rw [hdg, hneed]; exact htail),
@@ -239,17 +231,17 @@ theorem nineNext_spec (hP : P[Proc.nineNext]? = some nineNextBody) (hs : Std lim
   case done =>
     rintro _ ⟨dg', rfl⟩
     refine ⟨by simp, by simp [scanFrame], ?_⟩
-    simp only [scanRound_cost]
+    simp [scanRound_cost]
     rw [nineNext_eq_scan]
     -- if found = 1
     refine Ends.iteLast (fun hfound => ?_) (fun hfound => ?_) (by simp; omega)
     · have hfound' : (nineScan hi l l.length).found = 1 := by
         simpa [scanFrame] using hfound
-      simp only [if_pos hfound', Option.getD_some, Option.isSome_some, if_true]
+      simp [if_pos hfound']
       exact (raiseStmt_spec hs hseg ha hlo hfound').mono (by light_time) fun _ h => h
     · have hfound' : ¬ (nineScan hi l l.length).found = 1 := by
         simpa [scanFrame] using hfound
-      simp only [if_neg hfound', Option.getD_none, Option.isSome_none]
+      simp [if_neg hfound']
       -- return 0
       exact Ends.setLast ⟨hseg, by simp, SameOutside.refl⟩
 

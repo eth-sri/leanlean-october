@@ -71,25 +71,7 @@ calls: the two parameter procedures, sqrt, brute, scan, choosePrime, queryCapNat
 dblTable, resid, residues, classes, chunks, hostLoop, the solver, writeX, writeY, scanPairs, and
 the procedures below choosePrime. -/
 structure Et17Nums : Type where
-  pD : ℕ
-  pG : ℕ
-  pSqrt : ℕ
-  pBrute : ℕ
-  pScan : ℕ
-  pChoose : ℕ
-  pCap : ℕ
-  pCeil : ℕ
-  pBitLen : ℕ
-  pDbl : ℕ
-  pResid : ℕ
-  pResidues : ℕ
-  pClasses : ℕ
-  pChunks : ℕ
-  pLoop : ℕ
-  pS : ℕ
-  pWriteX : ℕ
-  pWriteY : ℕ
-  pScanPairs : ℕ
+  (pD pG pSqrt pScan pChoose pCap pCeil pBitLen pDbl pResid pResidues pClasses pChunks pS pWriteX pWriteY : ℕ)
   ch : ChNums
 
 namespace Et17
@@ -102,40 +84,10 @@ the running places, the rows and the columns of the sorted pairs, the three comp
 of chunks, `X`, `Y`, the answers, and the solver's free pointer.  Then `n² + p`, the number of
 chunks, the number of instances, a flag (also the place for results that are not used), and `n D`.
 -/
-abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Bound : ℕ := 1
-@[inherit_doc Size] abbrev AdrAB : ℕ := 2
-@[inherit_doc Size] abbrev AdrBC : ℕ := 3
-@[inherit_doc Size] abbrev AdrAC : ℕ := 4
-@[inherit_doc Size] abbrev Free : ℕ := 5
-@[inherit_doc Size] abbrev ParD : ℕ := 6
-@[inherit_doc Size] abbrev ParG : ℕ := 7
-@[inherit_doc Size] abbrev RootD : ℕ := 8
-@[inherit_doc Size] abbrev ThePrime : ℕ := 9
-@[inherit_doc Size] abbrev Cap : ℕ := 10
-@[inherit_doc Size] abbrev PieceLen : ℕ := 11
-@[inherit_doc Size] abbrev NumPieces : ℕ := 12
-@[inherit_doc Size] abbrev Bits : ℕ := 13
-@[inherit_doc Size] abbrev SizeSq : ℕ := 14
-@[inherit_doc Size] abbrev ResAB : ℕ := 16
-@[inherit_doc Size] abbrev ResBC : ℕ := 17
-@[inherit_doc Size] abbrev ResAC : ℕ := 18
-@[inherit_doc Size] abbrev Cls : ℕ := 19
-@[inherit_doc Size] abbrev Cur : ℕ := 20
-@[inherit_doc Size] abbrev Rows : ℕ := 21
-@[inherit_doc Size] abbrev Cols : ℕ := 22
-@[inherit_doc Size] abbrev TabR : ℕ := 23
-@[inherit_doc Size] abbrev TabL : ℕ := 24
-@[inherit_doc Size] abbrev TabW : ℕ := 25
-@[inherit_doc Size] abbrev MatX : ℕ := 26
-@[inherit_doc Size] abbrev MatY : ℕ := 27
-@[inherit_doc Size] abbrev AdrOut : ℕ := 28
-@[inherit_doc Size] abbrev SolverFree : ℕ := 29
-@[inherit_doc Size] abbrev Room : ℕ := 30
-@[inherit_doc Size] abbrev NumChunks : ℕ := 31
-@[inherit_doc Size] abbrev NumInst : ℕ := 32
-@[inherit_doc Size] abbrev Small : ℕ := 33
-@[inherit_doc Size] abbrev Area : ℕ := 34
+slots 0 Size Bound AdrAB AdrBC AdrAC Free ParD ParG RootD ThePrime Cap PieceLen NumPieces Bits
+  SizeSq
+slots 16 ResAB ResBC ResAC Cls Cur Rows Cols TabR TabL TabW MatX MatY AdrOut SolverFree Room
+  NumChunks NumInst Small Area
 
 end Et17
 
@@ -173,38 +125,6 @@ def et17Addr : Stmt :=
   .set SolverFree (v AdrOut +' v Cap) ;;
   .skip
 
-open Et17 in
-/-- The second part: the prime, the sizes, and the addresses of the arrays. -/
-def et17Sizes (ν : Et17Nums) : Stmt :=
-  .call ν.pChoose [v Size, v Bound, v AdrAB, v AdrBC, v AdrAC, v ParD, v Free] ThePrime ;;
-  .call ν.pCap [v Size, v ParD] Cap ;;
-  .call ν.pCeil [v RootD, v ParG] PieceLen ;;
-  .call ν.pCeil [v Size, v PieceLen] NumPieces ;;
-  .call ν.pBitLen [v Bound] Bits ;;
-  et17Addr
-
-open Et17 in
-/-- The third part: the residues, the classes, the chunks, and the loop over the instances. -/
-def et17Tables (ν : Et17Nums) : Stmt :=
-  .call ν.pDbl [v Free, v ThePrime, v Bits] Small ;;
-  .call ν.pResidues [v AdrAB, v ResAB, v SizeSq, v Free, v Bits] Small ;;
-  .call ν.pResidues [v AdrBC, v ResBC, v SizeSq, v Free, v Bits] Small ;;
-  .call ν.pResidues [v AdrAC, v ResAC, v SizeSq, v Free, v Bits] Small ;;
-  .call ν.pClasses [v ResAB, v Size, v ThePrime, v Cls, v Cur, v Rows, v Cols] Small ;;
-  .call ν.pChunks [v Cls, v ThePrime, v Cap, v TabR, v TabL, v TabW] NumChunks ;;
-  .set NumInst (v NumPieces *' v NumChunks) ;;
-  .call ν.pLoop [v Size, v ParD, v ThePrime, v PieceLen, v NumChunks, v NumInst, v AdrAB, v AdrBC,
-    v AdrAC, v ResAC, v ResBC, v Rows, v Cols, v TabR, v TabL, v TabW, v MatX, v MatY, v AdrOut,
-    v SolverFree] 0
-
-open Et17 in
-/-- et17(n, U, ab, bc, ac, fr). -/
-def et17Body (ν : Et17Nums) : Stmt :=
-  et17Params ν ;;
-  .ite (v Small =' k 1)
-    (.call ν.pBrute [v Size, v Bound, v AdrAB, v AdrBC, v AdrAC, v Free] 0)
-    (et17Sizes ν ;; et17Tables ν)
-
 /-! ## Time and need
 
 The additive constants in the time functions are upper bounds for the cost of evaluating arguments,
@@ -238,7 +158,7 @@ def hostSetup (tD tG : ℕ → ℕ) (n D : ℕ) : ℕ := tD n + tG D + (18 * Nat
 most q vertices and at most cap query pairs, and at most falsePositiveBound + 1 scans. -/
 noncomputable def hostLoopBound (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
   4 * n * g *
-      (tWrites n D (pieceSizeNat D g) + supTime Tn n D (queryCapNat n D)
+      (tWrites n D + supTime Tn n D (queryCapNat n D)
         + tAnswers (queryCapNat n D))
     + tScanCall (pieceSizeNat D g) * (falsePositiveBound n U D + 1) + 14
 
@@ -269,8 +189,6 @@ def hostWord (a b n U D g : ℕ) : ℕ :=
     + (2 * U + 2)                                           -- the number of binary digits of U
     + (2 * n + 1)                                           -- the power of two above n
     + Nat.sqrt D * 2 ^ (bitLen U + 1)                       -- the table of doubles
-    + 4 * (16 ^ Nat.clog 2 n * Nat.sqrt D)                  -- the entries in Strassen's algorithm
-    + n * n * (16 ^ Nat.clog 2 n * Nat.sqrt D)              -- the count for a prime
     + (4 * n ^ 4 + D + 2)                                   -- cap
     + (Nat.sqrt D + g + 1)                                  -- the size of a piece
     + (n + pieceSizeNat D g + 1)                                -- the number of pieces
@@ -301,10 +219,8 @@ def ParamProc (P : Program) (p : ℕ) (f t w : ℕ → ℕ) : Prop :=
 two parameter procedures. -/
 structure Et17Ctx (P₀ R : Program) (ν : Et17Nums) (Tn : List ℕ → ℕ) (need : List ℕ → Need)
     (Dfun Gfun tD tG wD wG : ℕ → ℕ) : Prop where
-  loop : HostCtx P₀ R ν.pS ν.pWriteX ν.pWriteY ν.pScanPairs ν.pScan Tn need
-  hLoop : (P₀ ++ R)[ν.pLoop]? = some (hostLoopBody ν.pS ν.pWriteX ν.pWriteY ν.pScanPairs)
+  loop : HostCtx P₀ R ν.pS ν.pWriteX ν.pWriteY ν.pScan Tn need
   hSqrt : (P₀ ++ R)[ν.pSqrt]? = some sqrtBody
-  hBrute : (P₀ ++ R)[ν.pBrute]? = some (bruteBody ν.pScan)
   hChoose : (P₀ ++ R)[ν.pChoose]? = some (choosePrimeBody ν.ch)
   ch : ChCtx (P₀ ++ R) ν.ch
   hCap : (P₀ ++ R)[ν.pCap]? = some queryCapNatBody
@@ -393,14 +309,5 @@ abbrev Et17.locals (x : TriInst) (X : HostData) (fr : ℕ) (g s nch res : ℤ) :
     ((aCw X x.U fr : ℕ) : ℤ), ((aX X x.U fr : ℕ) : ℤ), ((aY X x.U fr : ℕ) : ℤ),
     ((aOut X x.U fr : ℕ) : ℤ), ((aFr X x.U fr : ℕ) : ℤ), ((X.n * X.n + X.p : ℕ) : ℤ), nch, 0, res,
     ((X.n * X.D : ℕ) : ℤ)]
-
-/-- The locals after the second part (n is not small, so the flag is 0). -/
-def et17LocB (x : TriInst) (fr D g : ℕ) : List ℤ :=
-  Et17.locals x (hostData x D g) fr g (Nat.sqrt D : ℕ) 0 0
-
-/-- The time of the third part in a run: it depends on the data. -/
-def hostRunTime (Tn : List ℕ → ℕ) (X : HostData) (U : ℕ) : ℕ :=
-  tDblTable (bitLen U) + 3 * tResidues (X.n * X.n) (bitLen U) + tClasses X.n X.p
-    + tChunks X.p X.chunkCount + tHostLoop Tn X + 80
 
 end Light.Sec3

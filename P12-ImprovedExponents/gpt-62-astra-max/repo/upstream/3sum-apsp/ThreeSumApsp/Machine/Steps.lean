@@ -6,10 +6,17 @@ SPDX-License-Identifier: Apache-2.0
 module
 
 public import EndStatement
-public import ThreeSumApsp.Util.Basic
-public import Mathlib.Data.Set.Function
+public import Mathlib.Algebra.Order.Field.Basic
+public import Mathlib.Algebra.Order.Ring.Abs
+public import Mathlib.Algebra.Order.Ring.Int
+public import Mathlib.Data.Int.Cast.Lemmas
+public import Mathlib.Data.Nat.Cast.Order.Ring
+public import Mathlib.Tactic.GCongr
 public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.NormNum
+public import Mathlib.Tactic.Positivity
 public import Mathlib.Tactic.Ring
+public import Mathlib.Data.Set.Function
 
 /-!
 # Running the word RAM: words, steps, pieces of code, straight-line code, branches
@@ -50,13 +57,13 @@ variable {W : ℕ} {P : List Instr}
 /-! ## Words -/
 
 /-- The integer v is the signed value of a W-bit word. -/
-def InRange (W : ℕ) (v : ℤ) : Prop := -(2 : ℤ) ^ W ≤ 2 * v ∧ 2 * v < (2 : ℤ) ^ W
+def InRange (W : ℕ) (v : ℤ) : Prop := -2 ^ W ≤ 2 * v ∧ 2 * v < 2 ^ W
 
 /-- The word of an integer. -/
 abbrev wd (W : ℕ) (v : ℤ) : BitVec W := BitVec.ofInt W v
 
 /-- The word of a number in the range of words, read as a signed number, is that number. -/
-theorem toInt_wd {v : ℤ} (h : InRange W v) : (wd W v).toInt = v := by
+theorem toInt_wd {v} (h : InRange W v) : (wd W v).toInt = v := by
   obtain ⟨hlo, hhi⟩ := h
   rw [BitVec.toInt_ofInt]
   apply Int.bmod_eq_of_le_mul_two <;> push_cast <;> linarith
@@ -64,29 +71,29 @@ theorem toInt_wd {v : ℤ} (h : InRange W v) : (wd W v).toInt = v := by
 /-- Every word is the word of its signed value. -/
 theorem wd_toInt (w : BitVec W) : wd W w.toInt = w := BitVec.ofInt_toInt
 
-private theorem wd_add (a b : ℤ) : wd W a + wd W b = wd W (a + b) := (BitVec.ofInt_add a b).symm
+section
+variable (a b : ℤ)
 
-private theorem wd_mul (a b : ℤ) : wd W a * wd W b = wd W (a * b) := (BitVec.ofInt_mul a b).symm
+private theorem wd_add : wd W a + wd W b = wd W (a + b) := (BitVec.ofInt_add a b).symm
 
-private theorem wd_sub (a b : ℤ) : wd W a - wd W b = wd W (a - b) := by
+private theorem wd_mul : wd W a * wd W b = wd W (a * b) := (BitVec.ofInt_mul a b).symm
+
+private theorem wd_sub : wd W a - wd W b = wd W (a - b) := by
   rw [sub_eq_add_neg a b, wd, wd, wd, BitVec.ofInt_add, BitVec.ofInt_neg, BitVec.sub_eq_add_neg]
 
-private theorem wd_one : (1 : BitVec W) = wd W 1 := BitVec.eq_of_toNat_eq rfl
+end
+
+private theorem wd_one : 1 = wd W 1 := BitVec.eq_of_toNat_eq rfl
 
 /-- Numbers of absolute value at most B are in the range of words if 2 B < 2^W. -/
-theorem inRange_of_abs_le {v B : ℤ} (hB : 2 * B < (2 : ℤ) ^ W) (h : |v| ≤ B) : InRange W v := by
+theorem inRange_of_abs_le {v B} (hB : 2 * B < 2 ^ W) (h : |v| ≤ B) : InRange W v := by
   obtain ⟨hlo, hhi⟩ := abs_le.mp h
   constructor <;> linarith
 
 /-- The initial memory holds the input in the cells 0, 1, 2, …, followed by zeros. -/
 theorem loadWords_mem_nat (W : ℕ) (ws : List ℤ) (a : ℕ) :
-    loadWords W ws (a : ℤ) = wd W (ws.getD a 0) := by
-  simp [loadWords, show ¬ ((a : ℤ) < 0) by omega]
-
-/-- The negative cells of the initial memory hold zeros. -/
-theorem loadWords_mem_neg (W : ℕ) (ws : List ℤ) {a : ℤ} (ha : a < 0) :
-    loadWords W ws a = wd W 0 := by
-  simp [loadWords, ha]
+    loadWords W ws a = wd W (ws.getD a 0) := by
+  rfl
 
 /-! ## Configurations and single steps -/
 
@@ -98,7 +105,7 @@ structure Cfg (W : ℕ) where
 /-- One step: the next configuration, or the verdict. -/
 def step (P : List Instr) (c : Cfg W) : Cfg W ⊕ Bool :=
   let m := c.mem
-  let write (i : ℤ) (v : BitVec W) : Cfg W ⊕ Bool :=
+  let write (i : ℤ) (v : BitVec W) :=
     .inl ⟨c.pc + 1, fun x => if x = i then v else m x⟩
   match P.getD c.pc .reject with
   | .one i => write i 1
@@ -123,7 +130,7 @@ theorem Steps.refl (c : Cfg W) : Steps P 0 c c := rfl
 private theorem Steps.one {c c' : Cfg W} (h : step P c = .inl c') : Steps P 1 c c' := ⟨c', h, rfl⟩
 
 /-- One run after the other. -/
-theorem Steps.trans {n k : ℕ} {c c₁ c₂ : Cfg W} (h₁ : Steps P n c c₁) (h₂ : Steps P k c₁ c₂) :
+theorem Steps.trans {n k} {c c₁ c₂ : Cfg W} (h₁ : Steps P n c c₁) (h₂ : Steps P k c₁ c₂) :
     Steps P (n + k) c c₂ := by
   induction n generalizing c with
   | zero => obtain rfl := h₁; simpa using h₂
@@ -133,11 +140,11 @@ theorem Steps.trans {n k : ℕ} {c c₁ c₂ : Cfg W} (h₁ : Steps P n c c₁) 
     exact ⟨c', hs, ih hr⟩
 
 /-- A run, with its last position written differently. -/
-theorem Steps.cast_pos {n p p' : ℕ} {c : Cfg W} {m : ℤ → BitVec W} (h : Steps P n c ⟨p, m⟩)
+theorem Steps.cast_pos {n p p'} {c : Cfg W} {m} (h : Steps P n c ⟨p, m⟩)
     (hp : p = p') : Steps P n c ⟨p', m⟩ := hp ▸ h
 
 /-- A run, with its number of steps written differently. -/
-theorem Steps.cast_count {n n' : ℕ} {c c' : Cfg W} (h : Steps P n c c') (hn : n = n') :
+theorem Steps.cast_count {n n'} {c c' : Cfg W} (h : Steps P n c c') (hn : n = n') :
     Steps P n' c c' := hn ▸ h
 
 /-- Within no steps there is no verdict. -/
@@ -148,10 +155,10 @@ private theorem exec_succ (t : ℕ) (c : Cfg W) : exec P (t + 1) c.pc c.mem =
     | .inr verdict => some (verdict, c.mem)
     | .inl next => exec P t next.pc next.mem := by
   rw [exec, step]
-  cases P.getD c.pc .reject <;> rfl
+  grind
 
 /-- A step that gives a verdict ends the run. -/
-theorem exec_succ_of_verdict {c : Cfg W} {v : Bool} (h : step P c = .inr v) (t : ℕ) :
+theorem exec_succ_of_verdict {c : Cfg W} {v} (h : step P c = .inr v) (t : ℕ) :
     exec P (t + 1) c.pc c.mem = some (v, c.mem) := by rw [exec_succ, h]
 
 /-- After a step that gives no verdict the run goes on, with one step less. -/
@@ -159,7 +166,7 @@ theorem exec_succ_of_step {c c' : Cfg W} (h : step P c = .inl c') (t : ℕ) :
     exec P (t + 1) c.pc c.mem = exec P t c'.pc c'.mem := by rw [exec_succ, h]
 
 /-- A run that reaches a verdict. -/
-theorem exec_of_steps {n : ℕ} {c c' : Cfg W} {v : Bool} (h : Steps P n c c')
+theorem exec_of_steps {n} {c c' : Cfg W} {v} (h : Steps P n c c')
     (hv : step P c' = .inr v) : exec P (n + 1) c.pc c.mem = some (v, c'.mem) := by
   induction n generalizing c with
   | zero =>
@@ -171,7 +178,7 @@ theorem exec_of_steps {n : ℕ} {c c' : Cfg W} {v : Bool} (h : Steps P n c c')
     exact ih hr
 
 /-- More time does not change the outcome of a run. -/
-theorem exec_mono {t t' : ℕ} {c : Cfg W} {r : Bool × (ℤ → BitVec W)}
+theorem exec_mono {t t'} {c : Cfg W} {r}
     (h : exec P t c.pc c.mem = some r) (ht : t ≤ t') : exec P t' c.pc c.mem = some r := by
   induction t generalizing c t' with
   | zero => simp [exec_zero] at h
@@ -181,7 +188,7 @@ theorem exec_mono {t t' : ℕ} {c : Cfg W} {r : Bool × (ℤ → BitVec W)}
     | inr v => rwa [exec_succ_of_verdict hs] at h ⊢
     | inl n =>
       rw [exec_succ_of_step hs] at h ⊢
-      exact ih h (by omega)
+      grind
 
 /-! ## Pieces of code -/
 
@@ -191,34 +198,49 @@ def CodeAt (P : List Instr) (pos : ℕ) (l : List Instr) : Prop := l <+: P.drop 
 /-- The whole program, from position 0 on. -/
 theorem codeAt_self (l : List Instr) : CodeAt l 0 l := List.prefix_refl l
 
+section
+variable {pos : ℕ}
+  {l₁ l₂ : List Instr}
+  (h : CodeAt P pos (l₁ ++ l₂))
+include h
+
 /-- The first part of a piece of code. -/
-theorem CodeAt.left {pos : ℕ} {l₁ l₂ : List Instr} (h : CodeAt P pos (l₁ ++ l₂)) :
+theorem CodeAt.left :
     CodeAt P pos l₁ :=
   (List.prefix_append l₁ l₂).trans h
 
 /-- The second part of a piece of code follows the first. -/
-theorem CodeAt.right {pos : ℕ} {l₁ l₂ : List Instr} (h : CodeAt P pos (l₁ ++ l₂)) :
+theorem CodeAt.right :
     CodeAt P (pos + l₁.length) l₂ := by
   obtain ⟨r, hr⟩ := h
   refine ⟨r, ?_⟩
   rw [← List.drop_drop, ← hr, List.append_assoc, List.drop_left]
 
+end
+
+section
+variable {pos : ℕ}
+  {i : Instr}
+  {l : List Instr}
+  (h : CodeAt P pos (i :: l))
+include h
+
 /-- The first instruction of a piece of code is the one that the machine finds at its position. -/
-theorem CodeAt.head {pos : ℕ} {i : Instr} {l : List Instr} (h : CodeAt P pos (i :: l)) :
+theorem CodeAt.head :
     P.getD pos .reject = i := by
   obtain ⟨r, hr⟩ := h
   have : (P.drop pos)[0]? = some i := by rw [← hr]; rfl
-  rw [List.getElem?_drop, Nat.add_zero] at this
-  rw [List.getD_eq_getElem?_getD, this]
-  rfl
+  grind
 
 /-- A piece of code without its first instruction. -/
-theorem CodeAt.tail {pos : ℕ} {i : Instr} {l : List Instr} (h : CodeAt P pos (i :: l)) :
+theorem CodeAt.tail :
     CodeAt P (pos + 1) l :=
   CodeAt.right (l₁ := [i]) h
 
+end
+
 /-- A piece of code, with its position written differently. -/
-theorem CodeAt.cast_pos {pos pos' : ℕ} {l : List Instr} (h : CodeAt P pos l) (hp : pos = pos') :
+theorem CodeAt.cast_pos {pos pos'} {l} (h : CodeAt P pos l) (hp : pos = pos') :
     CodeAt P pos' l := hp ▸ h
 
 /-! ## Straight-line code -/
@@ -249,18 +271,17 @@ def effects (l : List Instr) (m : ℤ → BitVec W) : ℤ → BitVec W := l.fold
 
 theorem effects_append (l₁ l₂ : List Instr) (m : ℤ → BitVec W) :
     effects (l₁ ++ l₂) m = effects l₂ (effects l₁ m) := by
-  simp [effects, List.foldl_append]
+  simp [effects]
 
-private theorem step_straight {c : Cfg W} {i : Instr} (h : P.getD c.pc .reject = i)
+private theorem step_straight {c : Cfg W} {i} (h : P.getD c.pc .reject = i)
     (hi : Straight i) : step P c = .inl ⟨c.pc + 1, effect i c.mem⟩ := by
   have write (a : ℤ) (v : BitVec W) :
       (fun x => if x = a then v else c.mem x) = Function.update c.mem a v := by
-    funext x
-    simp [Function.update_apply]
-  cases i <;> simp only [Straight] at hi <;> simp only [step, h, effect, write, wd_one]
+    grind
+  cases i <;> simp [Straight] at hi <;> simp only [step, h, effect, write, wd_one]
 
 /-- One instruction that only changes the memory. -/
-private theorem steps_instr {rest : List Instr} {pos : ℕ} {i : Instr}
+private theorem steps_instr {rest} {pos} {i}
     (hcode : CodeAt P pos (i :: rest)) (hi : Straight i) (m : ℤ → BitVec W) :
     Steps P 1 ⟨pos, m⟩ ⟨pos + 1, effect i m⟩ :=
   Steps.one (step_straight hcode.head hi)
@@ -273,7 +294,7 @@ theorem steps_straight (l : List Instr) (pc : ℕ) (m : ℤ → BitVec W) (hcode
   | cons i l ih =>
     obtain ⟨hi, hl⟩ := List.forall_mem_cons.1 hl
     exact ⟨_, step_straight hcode.head hi,
-      (ih (pc + 1) (effect i m) hcode.tail hl).cast_pos (by rw [List.length_cons]; omega)⟩
+      (ih (pc + 1) (effect i m) hcode.tail hl).cast_pos (by grind)⟩
 
 /-! ## Single instructions on cells that hold known numbers -/
 
@@ -284,20 +305,28 @@ variable {m : ℤ → BitVec W} {i j k a b : ℤ}
 /-- The only constant. -/
 theorem effect_one (i : ℤ) : effect (.one i) m = Function.update m i (wd W 1) := rfl
 
+section
+variable (i : ℤ)
+  (hj : m j = wd W a)
+  (hk : m k = wd W b)
+include hj hk
+
 /-- The sum of two known numbers. -/
-theorem effect_add (i : ℤ) (hj : m j = wd W a) (hk : m k = wd W b) :
+theorem effect_add :
     effect (.add i j k) m = Function.update m i (wd W (a + b)) := by
   rw [effect, hj, hk, wd_add]
 
 /-- The difference of two known numbers. -/
-theorem effect_sub (i : ℤ) (hj : m j = wd W a) (hk : m k = wd W b) :
+theorem effect_sub :
     effect (.sub i j k) m = Function.update m i (wd W (a - b)) := by
   rw [effect, hj, hk, wd_sub]
 
 /-- The product of two known numbers. -/
-theorem effect_mul (i : ℤ) (hj : m j = wd W a) (hk : m k = wd W b) :
+theorem effect_mul :
     effect (.mul i j k) m = Function.update m i (wd W (a * b)) := by
   rw [effect, hj, hk, wd_mul]
+
+end
 
 /-- Loading from the address a that the cell j holds. -/
 theorem effect_load (i : ℤ) (hj : m j = wd W a) (ha : InRange W a) :
@@ -309,45 +338,48 @@ theorem effect_store (j : ℤ) (hi : m i = wd W a) (ha : InRange W a) :
     effect (.store i j) m = Function.update m a (m j) := by
   rw [effect, hi, toInt_wd ha]
 
-theorem steps_add {rest : List Instr} {pos : ℕ} (hcode : CodeAt P pos (.add i j k :: rest))
+section
+variable {rest : List Instr}
+  {pos : ℕ}
+
+theorem steps_add (hcode : CodeAt P pos (.add i j k :: rest))
     (hj : m j = wd W a) (hk : m k = wd W b) :
     Steps P 1 ⟨pos, m⟩ ⟨pos + 1, Function.update m i (wd W (a + b))⟩ :=
   effect_add i hj hk ▸ steps_instr hcode trivial m
 
-theorem steps_sub {rest : List Instr} {pos : ℕ} (hcode : CodeAt P pos (.sub i j k :: rest))
+theorem steps_sub (hcode : CodeAt P pos (.sub i j k :: rest))
     (hj : m j = wd W a) (hk : m k = wd W b) :
     Steps P 1 ⟨pos, m⟩ ⟨pos + 1, Function.update m i (wd W (a - b))⟩ :=
   effect_sub i hj hk ▸ steps_instr hcode trivial m
 
-theorem steps_load {rest : List Instr} {pos : ℕ} (hcode : CodeAt P pos (.load i j :: rest))
+theorem steps_load (hcode : CodeAt P pos (.load i j :: rest))
     (hj : m j = wd W a) (ha : InRange W a) :
     Steps P 1 ⟨pos, m⟩ ⟨pos + 1, Function.update m i (m a)⟩ :=
   effect_load i hj ha ▸ steps_instr hcode trivial m
 
-theorem steps_store {rest : List Instr} {pos : ℕ} (hcode : CodeAt P pos (.store i j :: rest))
+theorem steps_store (hcode : CodeAt P pos (.store i j :: rest))
     (hi : m i = wd W a) (ha : InRange W a) :
     Steps P 1 ⟨pos, m⟩ ⟨pos + 1, Function.update m a (m j)⟩ :=
   effect_store j hi ha ▸ steps_instr hcode trivial m
+
+end
 
 end known
 
 /-! ## Branches and verdicts -/
 
 /-- A branch on a cell that holds the number v: to l if v is negative, else to the next position. -/
-theorem steps_bltz {rest : List Instr} {pos l : ℕ} {c v : ℤ} {m : ℤ → BitVec W}
+theorem steps_bltz {rest} {pos l} {c v} {m}
     (hcode : CodeAt P pos (.bltz c l :: rest)) (hc : m c = wd W v) (hv : InRange W v) :
     Steps P 1 ⟨pos, m⟩ ⟨if v < 0 then l else pos + 1, m⟩ := by
   refine Steps.one ?_
   simp only [step, hcode.head, hc, toInt_wd hv]
 
 /-- A run that ends with a branch on the sign of v, where v is negative if and only if p fails. -/
-theorem Steps.branch {n l pos pos' : ℕ} {c : Cfg W} {m : ℤ → BitVec W} {v : ℤ} {p : Prop}
+theorem Steps.branch {n l pos pos'} {c : Cfg W} {m} {v : ℤ} {p}
     (h : Steps P n c ⟨if v < 0 then l else pos, m⟩) (hv : p ↔ ¬ v < 0) (hpos : pos = pos') :
     (p → Steps P n c ⟨pos', m⟩) ∧ (¬ p → Steps P n c ⟨l, m⟩) := by
-  subst hpos
-  by_cases hp : p
-  · exact ⟨fun _ => by rwa [if_neg (hv.1 hp)] at h, fun h' => absurd hp h'⟩
-  · exact ⟨fun h' => absurd h' hp, fun _ => by rwa [if_pos (not_not.1 (mt hv.2 hp))] at h⟩
+  grind
 
 theorem step_accept {c : Cfg W} (h : P.getD c.pc .reject = .accept) : step P c = .inr true := by
   simp only [step, h]
@@ -378,18 +410,24 @@ theorem AgreeOutside.trans_union (h₁ : AgreeOutside s m₁ m₂) (h₂ : Agree
     AgreeOutside (s ∪ t) m₁ m₃ :=
   (h₁.mono Set.subset_union_left).trans (h₂.mono Set.subset_union_right)
 
+section
+variable (h : AgreeOutside s m m')
+include h
+
 /-- A cell outside s is unchanged. -/
-theorem AgreeOutside.cell (h : AgreeOutside s m m') (ha : a ∉ s) : m' a = m a := h ha
+theorem AgreeOutside.cell (ha : a ∉ s) : m' a = m a := h ha
 
 /-- A cell outside s still holds v. -/
-theorem AgreeOutside.read (h : AgreeOutside s m m') (ha : a ∉ s) {v : BitVec W} (hv : m a = v) :
+theorem AgreeOutside.read (ha : a ∉ s) {v : BitVec W} (hv : m a = v) :
     m' a = v :=
   (h ha).trans hv
 
 /-- Writing a cell of s. -/
-theorem AgreeOutside.update (h : AgreeOutside s m m') (ha : a ∈ s) (v : BitVec W) :
+theorem AgreeOutside.update (ha : a ∈ s) (v : BitVec W) :
     AgreeOutside s m (Function.update m' a v) :=
   fun x hx => (Function.update_of_ne (fun e : x = a => hx (e ▸ ha)) _ _).trans (h hx)
+
+end
 
 /-- The instruction writes no cell outside s, whatever the memory holds. -/
 def WritesIn (s : Set ℤ) : Instr → Prop
@@ -397,16 +435,23 @@ def WritesIn (s : Set ℤ) : Instr → Prop
   | .store _ _ => False
   | _ => True
 
-theorem WritesIn.mono {i : Instr} (h : WritesIn s i) (hst : s ⊆ t) : WritesIn t i := by
+section
+variable {i : Instr}
+  (h : WritesIn s i)
+include h
+
+theorem WritesIn.mono (hst : s ⊆ t) : WritesIn t i := by
   cases i <;> first | exact hst h | exact h
 
-private theorem agreeOutside_effect {i : Instr} (h : WritesIn s i) (m : ℤ → BitVec W) :
+private theorem agreeOutside_effect (m : ℤ → BitVec W) :
     AgreeOutside s m (effect i m) := by
   cases i <;>
     first | exact (AgreeOutside.refl s m).update h _ | exact AgreeOutside.refl s m | exact h.elim
 
+end
+
 /-- Code without stores changes only the cells that its instructions name as their targets. -/
-theorem agreeOutside_effects {l : List Instr} (h : ∀ i ∈ l, WritesIn s i) (m : ℤ → BitVec W) :
+theorem agreeOutside_effects {l} (h : ∀ i ∈ l, WritesIn s i) (m : ℤ → BitVec W) :
     AgreeOutside s m (effects l m) := by
   induction l generalizing m with
   | nil => exact AgreeOutside.refl s m

@@ -32,10 +32,6 @@ open ThreeSumApsp
 
 namespace Et17
 
-/-- A call that puts its result into the local Small. -/
-theorem setLocal_res (x : TriInst) (X : HostData) (fr : ℕ) (g s nch res r : ℤ) :
-    setLocal (locals x X fr g s nch res) Small r = locals x X fr g s nch r := rfl
-
 /-- What the third part needs, for the data X of the loop: the limits, the prime, and the three
 matrices below the free pointer. -/
 structure Ready (lim : Limits) (d : ℕ) (x : TriInst) (X : HostData) (μ : ℕ → ℤ) (fr : ℕ) :
@@ -103,7 +99,7 @@ structure ClassMem (x : TriInst) (X : HostData) (fr : ℕ) (μ μ' : ℕ → ℤ
 
 /-- What residues needs, for a matrix below the free pointer and a destination between the table of
 doubles and the end of the arrays. -/
-theorem Ready.residuesPre (h : Ready lim d x X μ fr) {μ' : ℕ → ℤ} {src dst : ℕ} {l : List ℤ}
+theorem Ready.residuesPre (h : Ready lim d x X μ fr) {μ' } {src dst } {l }
     (hdbl : Seg μ' fr (dblList X.p (bitLen x.U))) (hsrc : Seg μ' src l)
     (hlen : l.length = X.n * X.n) (hle : AbsLe l x.U) (hbelow : src + X.n * X.n ≤ fr)
     (hlow : fr + (bitLen x.U + 1) ≤ dst := by omega)
@@ -125,9 +121,9 @@ theorem Ready.residuesPre (h : Ready lim d x X μ fr) {μ' : ℕ → ℤ} {src d
     word := h.word }
 
 /-- **The table of doubles and the three lists of residues**, followed by the rest t of the text. -/
-theorem resid_then {pDbl pResid pResidues : ℕ} (hDbl : P[pDbl]? = some dblTableBody)
+theorem resid_then {pDbl pResid pResidues } (hDbl : P[pDbl]? = some dblTableBody)
     (hResid : P[pResid]? = some residBody) (hResidues : P[pResidues]? = some (residuesBody pResid))
-    (hr : Ready lim d x X μ fr) {g s : ℤ} {t : Stmt} {T : ℕ} {Q : State → Prop}
+    (hr : Ready lim d x X μ fr) {g s } {t } {T } {Q }
     (h : ∀ res μ', ResidMem x X fr μ μ' → Ends lim P d t ⟨frame (locals x X fr g s 0 res), μ'⟩
       (T - (tDblTable (bitLen x.U) + 3 * tResidues (X.n * X.n) (bitLen x.U) + 26)) Q)
     (hT : tDblTable (bitLen x.U) + 3 * tResidues (X.n * X.n) (bitLen x.U) + 26 ≤ T) :
@@ -149,27 +145,16 @@ theorem resid_then {pDbl pResid pResidues : ℕ} (hDbl : P[pDbl]? = some dblTabl
   have hword : ((X.p * 2 ^ bitLen x.U : ℕ) : ℤ) ≤ lim.word := le_trans (by
     exact_mod_cast Nat.mul_le_mul_left _ (Nat.pow_le_pow_right (by norm_num) (Nat.le_succ _)))
     hr.word
-  have lenDbl : (dblList X.p (bitLen x.U)).length = bitLen x.U + 1 := by simp [dblList]
-  have lenRAB : X.RAB.length = X.n * X.n := (length_residList _ _).trans hr.lenAB
-  have lenRBC : X.RBC.length = X.n * X.n := (length_residList _ _).trans hr.lenBC
-  -- Small := pDbl(Free, ThePrime, Bits)
-  light_call (dblTable_meets (dst := fr) (p := X.p) (len := bitLen x.U) hDbl hr.space
+  light_call (dblTable_meets (dst := fr) hDbl hr.space
     (by omega) hword) with r₁ μ₁ ⟨hdbl, same₁⟩
-  rw [setLocal_res]
-  -- Small := pResidues(AdrAB, ResAB, SizeSq, Free, Bits)
   light_call (residues_meets hResidues hResid (by omega) (hr.residuesPre
     (dst := aRab X x.U fr) hdbl hr.segAB.keep hr.lenAB hr.leAB hr.belowAB)) with r₂ μ₂ ⟨hrab, same₂⟩
-  rw [setLocal_res]
-  -- Small := pResidues(AdrBC, ResBC, SizeSq, Free, Bits)
   light_call (residues_meets hResidues hResid (by omega) (hr.residuesPre
     (dst := aRbc X x.U fr) hdbl.keep hr.segBC.keep hr.lenBC hr.leBC hr.belowBC))
     with r₃ μ₃ ⟨hrbc, same₃⟩
-  rw [setLocal_res]
-  -- Small := pResidues(AdrAC, ResAC, SizeSq, Free, Bits)
   light_call (residues_meets hResidues hResid (by omega) (hr.residuesPre
     (dst := aRac X x.U fr) hdbl.keep hr.segAC.keep hr.lenAC hr.leAC hr.belowAC))
     with r₄ μ₄ ⟨hrac, same₄⟩
-  rw [setLocal_res]
   exact (h r₄ μ₄ ⟨hrab.keep, hrbc.keep, hrac, by light_keep⟩).mono (by simp; omega) fun _ hQ => hQ
 
 /-- There are at most n² + p chunks. -/
@@ -180,10 +165,10 @@ theorem Ready.chunkCount_le (hr : Ready lim d x X μ fr) (hcap : 1 ≤ X.cap) :
     exact List.getElem_mem _)
 
 /-- **The classes and the chunks**, followed by the rest t of the text. -/
-theorem classes_then {pClasses pChunks : ℕ} (hClasses : P[pClasses]? = some classesBody)
+theorem classes_then {pClasses pChunks } (hClasses : P[pClasses]? = some classesBody)
     (hChunks : P[pChunks]? = some chunksBody) (hr : Ready lim d x X μ fr) (hcap : 1 ≤ X.cap)
-    {μ₁ : ℕ → ℤ} (hrab : SegN μ₁ (aRab X x.U fr) X.RAB) {g s res : ℤ} {t : Stmt} {T : ℕ}
-    {Q : State → Prop}
+    {μ₁ } (hrab : SegN μ₁ (aRab X x.U fr) X.RAB) {g s res } {t } {T }
+    {Q }
     (h : ∀ res' μ', ClassMem x X fr μ₁ μ' → Ends lim P d t
       ⟨frame (locals x X fr g s X.chunkCount res'), μ'⟩
       (T - (tClasses X.n X.p + tChunks X.p X.chunkCount + 17)) Q)
@@ -200,7 +185,7 @@ theorem classes_then {pClasses pChunks : ℕ} (hClasses : P[pClasses]? = some cl
   have hplaces := class_places X x.U fr
   have lenRAB : X.RAB.length = X.n * X.n := (length_residList _ _).trans hr.lenAB
   have ltRAB : ∀ r ∈ X.RAB, r < X.p := fun r hmem => lt_of_mem_residList (by omega) hmem
-  have hroom : (chunkTabOf X.p X.cap (classStarts X.n X.p X.RAB)).length ≤ X.n * X.n + X.p :=
+  have hroom :=
     hr.chunkCount_le hcap
   -- Small := pClasses(ResAB, Size, ThePrime, Cls, Cur, Rows, Cols)
   refine Ends.callToThen (classes_meets hClasses hr.space
@@ -208,28 +193,25 @@ theorem classes_then {pClasses pChunks : ℕ} (hClasses : P[pClasses]? = some cl
       qi := aQi X x.U fr, qj := aQj X x.U fr, RAB := X.RAB } μ₁
     { seg := hrab, len := lenRAB, lt := ltRAB }) ?_ (by simp)
   rintro r₁ μ₂ ⟨hcls, hqi, hqj, same₂⟩
-  dsimp only at hcls hqi hqj same₂
-  rw [setLocal_res]
-  -- NumChunks := pChunks(Cls, ThePrime, Cap, TabR, TabL, TabW)
   refine Ends.callToThen (chunks_meets hChunks hr.space
     { cls := aCls X x.U fr, p := X.p, cap := X.cap, cr := aCr X x.U fr, cl := aCl X x.U fr,
       cw := aCw X x.U fr, R := X.n * X.n + X.p, B := X.n * X.n, C := classStarts X.n X.p X.RAB } μ₂
     { seg := hcls, len := length_classStarts X.n X.p X.RAB,
       le := fun y hy => le_of_mem_classStarts hy, room := hroom }) ?_ (by simp)
-    (hT := by simp only [ChunksArgs.table]; light_time)
+    (hT := by simp [ChunksArgs.table]; light_time)
   rintro _ μ₃ ⟨rfl, hcr, hcl, hcw, same₃⟩
-  simp only [ChunksArgs.table, ChunksArgs.Same] at hcr hcl hcw same₃ ⊢
+  simp [ChunksArgs.table, ChunksArgs.Same] at hcr hcl hcw same₃ ⊢
   have hsorted : (sortedIdx X.n X.p X.RAB).length ≤ X.n * X.n := by
     rw [length_sortedIdx_eq]
     exact classStart_le_sq X.n X.RAB X.p
-  have keep : ∀ {a : ℕ} {l : List ℕ}, SegN μ₂ a l → a + l.length ≤ aCr X x.U fr → SegN μ₃ a l := by
+  have keep : ∀ {a } {l }, SegN μ₂ a l → a + l.length ≤ aCr X x.U fr → SegN μ₃ a l := by
     intro a l hs hle
     refine Seg.congr hs fun i hi => same₃ _ ⟨Or.inl ?_, Or.inl ?_, Or.inl ?_⟩ <;>
-      (simp only [List.length_map] at hi; omega)
-  refine (h r₁ μ₃ ⟨keep hqi (by simp only [HostData.QI, queryRows, List.length_map]; omega),
-    keep hqj (by simp only [HostData.QJ, queryCols, List.length_map]; omega), hcr, hcl, hcw,
+      (grind)
+  refine (h r₁ μ₃ ⟨keep hqi (by simp [HostData.QI, queryRows]; omega),
+    keep hqj (by simp [HostData.QJ, queryCols]; omega), hcr, hcl, hcw,
     fun c hc => ?_⟩).mono (by simp; omega) fun _ hQ => hQ
-  exact (same₃ c ⟨by omega, by omega, by omega⟩).trans (same₂ c (by simp only [Outside]; omega))
+  exact (same₃ c ⟨by omega, by omega, by omega⟩).trans (same₂ c (by simp ; omega))
 
 /-- Where the arrays lie, for the addresses of et17. -/
 theorem hostLay_of (hr : Ready lim d x X μ fr) (hchunks : X.chunkCount ≤ X.n * X.n + X.p) :
@@ -240,14 +222,14 @@ theorem hostLay_of (hr : Ready lim d x X μ fr) (hchunks : X.chunkCount ≤ X.n 
   refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, fun t ht => ?_⟩
   case refine_13 =>
     have := X.w_le_cap ht
-    simp only [hostAddr]
+    simp [hostAddr]
     omega
   all_goals
-    simp only [hostAddr]
+    simp [hostAddr]
     omega
 
 /-- The arrays that the loop over the instances reads are in the memory. -/
-theorem hostMem_of (hr : Ready lim d x X μ fr) {μ₁ μ₂ : ℕ → ℤ}
+theorem hostMem_of (hr : Ready lim d x X μ fr) {μ₁ μ₂ }
     (hresid : ResidMem x X fr μ μ₁) (hclass : ClassMem x X fr μ₁ μ₂) :
     HostMem X (hostAddr x X fr) μ₂ := by
   light_facts hr hresid hclass
@@ -267,7 +249,7 @@ theorem hostMem_of (hr : Ready lim d x X μ fr) {μ₁ μ₂ : ℕ → ℤ}
       segCW := hclass.cw }
 
 /-- What the third part needs holds for the data of a run of et17. -/
-theorem ready_of {need : List ℕ → Need} {D g a b : ℕ} (hpre : x.Pre μ fr)
+theorem ready_of {need } {D g a b } (hpre : x.Pre μ fr)
     (hbig : BigCase x.n D g) (hok : (hostNeedAt a b need x.n x.U D g).Ok lim fr d) :
     Ready lim d x (hostData x D g) μ fr := by
   have hD16 := hbig.sixteen_le
@@ -276,7 +258,7 @@ theorem ready_of {need : List ℕ → Need} {D g a b : ℕ} (hpre : x.Pre μ fr)
   have htop := aFr_le (x := x) (g := g) hD16 fr
   have hp := two_le_hostData_p x g hD16
   have hps := Nat.mul_le_mul_right (2 ^ (bitLen x.U + 1)) (hostData_p_le x g hD16)
-  simp only [hostNeedAt] at hcells hdepth
+  simp [hostNeedAt] at hcells hdepth
   exact
     { space := hok.space
       depth := by omega
@@ -297,50 +279,5 @@ theorem ready_of {need : List ℕ → Need} {D g a b : ℕ} (hpre : x.Pre μ fr)
       belowAC := hpre.belowAC }
 
 end Et17
-
-open Et17 in
-/-- **The third part of et17**: the result of the loop over the instances; only cells from the free
-pointer on change. -/
-theorem et17Tables_spec {P₀ R : Program} {ν : Et17Nums} {Tn : List ℕ → ℕ} {need : List ℕ → Need}
-    {Dfun Gfun tD tG wD wG : ℕ → ℕ} (C : Et17Ctx P₀ R ν Tn need Dfun Gfun tD tG wD wG)
-    {lim : Limits} {d : ℕ} (x : TriInst) (μ : ℕ → ℤ) (fr D g a b : ℕ) (hpre : x.Pre μ fr)
-    (hbig : BigCase x.n D g) (hok : (hostNeedAt a b need x.n x.U D g).Ok lim fr d) :
-    Ends lim (P₀ ++ R) d (et17Tables ν) ⟨frame (et17LocB x fr D g), μ⟩
-      (hostRunTime Tn (hostData x D g) x.U)
-      fun σ' => σ'.loc 0 = bit ((hostData x D g).found (hostData x D g).m) ∧ Kept μ σ'.mem fr := by
-  have hr := ready_of hpre hbig hok
-  have hlim := hostLim_of_ok hbig hok
-  have hv := hostData_valid hpre hbig
-  unfold et17LocB
-  generalize hostData x D g = X at hr hlim hv ⊢
-  have hdepth := hr.depth
-  have hfr : fr ≤ aX X x.U fr := by
-    have := host_places X x.U fr
-    omega
-  unfold et17Tables hostRunTime
-  -- the table of doubles and the residues; the classes and the chunks
-  refine resid_then C.hDbl C.hResid C.hResidues hr (fun r₁ μ₁ hresid => ?_) (by omega)
-  refine classes_then C.hClasses C.hChunks hr hv.cap_pos hresid.rab
-    (fun r₂ μ₂ hclass => ?_) (by omega)
-  -- NumInst := NumPieces * NumChunks
-  have hcount := hlim.count
-  have hm : (X.m : ℤ) = (X.h : ℤ) * X.chunkCount := by
-    rw [HostData.m]
-    push_cast
-    rfl
-  have hpos : (0 : ℤ) ≤ (X.h : ℤ) * X.chunkCount := by positivity
-  light_set (X.m : ℕ) using hm
-  -- the result is pLoop(…)
-  light_call (Meets.of_body (Q := fun r μ' => r = bit (X.found X.m) ∧
-      Kept μ₂ μ' (hostAddr x X fr).x) C.hLoop
-    (hostLoop_spec C.loop ⟨hv, hr.leAB, hr.leBC, hr.leAC⟩ (hostMem_of hr hresid hclass)
-      (hostLay_of hr (hr.chunkCount_le hv.cap_pos)) hlim)) using hostLoopArgs, hostAddr
-    with r μ₃ ⟨rfl, hkept⟩
-  refine ⟨rfl, fun c hc => ?_⟩
-  have hcls : fr ≤ aCls X x.U fr := by
-    have := host_places X x.U fr
-    omega
-  exact (hkept c (lt_of_lt_of_le hc hfr)).trans ((hclass.same c (Or.inl (by omega))).trans
-    (hresid.same c (Or.inl hc)))
 
 end Light.Sec3

@@ -32,14 +32,14 @@ namespace ThreeSumApsp
 
 /-- Membership in the set of all boxes. -/
 @[simp]
-theorem mem_boxes {L m t : ℕ} {π : Cube L} : π ∈ boxes L m t ↔ IsBox m t π := by
+theorem mem_boxes {L m t} {π} : π ∈ boxes L m t ↔ IsBox m t π := by
   simp [boxes]
 
 /-- Membership in the set of the boxes with `e` stars. -/
 @[simp]
-theorem mem_boxesWithStars {L m t e : ℕ} {π : Cube L} :
+theorem mem_boxesWithStars {L m t e} {π} :
     π ∈ boxesWithStars L m t e ↔ IsBox m t π ∧ (Cube.starLevels π).card = e := by
-  simp [boxesWithStars, boxes]
+  simp [boxesWithStars]
 
 /-! ### The count -/
 
@@ -48,11 +48,7 @@ theorem mem_boxesWithStars {L m t e : ℕ} {π : Cube L} :
 private lemma card_leaves_P0 {L m f : ℕ} (hmL : m ≤ L) (hf : f ≤ m) :
     (univ.filter fun τ : Leaf L => (P0Levels τ).card = f).card = beta L m (m - f) := by
   rw [← card_filter_order_eq hmL (m - f) (Nat.sub_le _ _)]
-  congr 1
-  ext τ
-  rw [mem_filter, mem_filter, order]
-  simp only [mem_univ, true_and]
-  omega
+  simp_all [order]
 
 /-- Proof of Lemma 29, "The count": "There are hence (f+1) binom(L, f) 9^{L-f} = (f+1) β_{m-f} such
 boxes", namely boxes with `f` symbols `P₀` or stars, for `f ≤ m - t`. -/
@@ -64,8 +60,7 @@ theorem Lemma29.card_filter (L m t f : ℕ) (hmL : m ≤ L) (hf : f ≤ m - t) :
       = (f + 1) * beta L m (m - f) := by
     rw [card_product, card_leaves_P0 hmL (by omega), card_range, mul_comm]
   have hpair : ∀ p ∈ (univ.filter fun τ : Leaf L => (P0Levels τ).card = f) ×ˢ range (f + 1),
-      (P0Levels p.1).card = f ∧ p.2 < f + 1 := fun p hp =>
-    ⟨(mem_filter.1 (mem_product.1 hp).1).2, mem_range.1 (mem_product.1 hp).2⟩
+      (P0Levels p.1).card = f ∧ p.2 < f + 1 := by grind
   -- A box goes to "the leaf we get by replacing its stars with P₀" and the number of its stars;
   -- a pair goes to the cube obtained "by turning the e lowest symbols P₀ of that leaf into stars".
   rw [← hpairs]
@@ -74,7 +69,7 @@ theorem Lemma29.card_filter (L m t f : ℕ) (hmL : m ≤ L) (hf : f ≤ m - t) :
     fun p hp => ?_
   · -- the pair of such a box is such a pair
     have hf := (mem_filter.1 hπ).2
-    simp only [mem_product, mem_filter, mem_univ, true_and, mem_range,
+    simp [mem_product,
       card_P0Levels_starsToP0]
     omega
   · -- the cube of such a pair is such a box: its leaf is the leaf of the pair
@@ -85,7 +80,7 @@ theorem Lemma29.card_filter (L m t f : ℕ) (hmL : m ≤ L) (hf : f ≤ m - t) :
     exact (eq_starLowest_starsToP0 π (mem_boxes.1 (mem_filter.1 hπ).1).2).symm
   · -- from a pair `(τ, e)` to its cube and back: the cube has `min e f = e` stars
     obtain ⟨hτ, he⟩ := hpair p hp
-    rw [starsToP0_starLowest, starLevels_starLowest, card_lowest, hτ,
+    rw [starsToP0_starLowest, starLevels_starLowest, card_lowest,
       min_eq_left (by omega)]
 
 /-- **Lemma 29**, first sentence.  "There are at most (m+1) ∑_{d=t}^{m} β_d boxes." -/
@@ -97,27 +92,24 @@ theorem lemma_29_count (L m t : ℕ) (hL : 10 * m ≤ L) (ht : t ≤ m) :
         fun π => (Cube.starLevels π).card + (Cube.P0Levels π).card = f).card := by
     refine card_eq_sum_card_fiberwise fun π hπ => ?_
     have hi := (mem_boxes.1 (mem_coe.1 hπ)).1
-    simp only [coe_range, Set.mem_Iio]
-    omega
+    grind
   -- The order `d = m - f` runs from `t` to `m`.
   have hreflect : ∑ f ∈ range (m - t + 1), beta L m (m - f) = ∑ d ∈ Finset.Icc t m, beta L m d := by
     rw [range_eq_Ico, sum_Ico_reflect _ _ (by omega)]
     congr 1
-    ext d
-    simp only [mem_Ico, mem_Icc]
-    omega
+    grind
   -- "summing over f ≤ m - t gives the upper bound on the number of boxes", since `f + 1 ≤ m + 1`
   rw [hsort, ← hreflect, mul_sum]
   refine sum_le_sum fun f hf => ?_
-  have hfm : f < m - t + 1 := mem_range.1 hf
+  have hfm := mem_range.1 hf
   rw [Lemma29.card_filter L m t f (by omega) (by omega)]
-  exact Nat.mul_le_mul_right _ (by omega)
+  gcongr <;> omega
 
 /-! ### The values -/
 
 /-- Proof of Lemma 29, "The values": "The boxes without stars are the leaves with at most m - t
 symbols P₀". -/
-theorem Lemma29.no_stars {L : ℕ} (m t : ℕ) (π : Cube L) :
+theorem Lemma29.no_stars {L} (m t : ℕ) (π : Cube L) :
     π ∈ boxesWithStars L m t 0 ↔ ∃ τ : Leaf L, (P0Levels τ).card ≤ m - t ∧ π = Cube.ofLeaf τ := by
   rw [mem_boxesWithStars]
   constructor
@@ -127,19 +119,19 @@ theorem Lemma29.no_stars {L : ℕ} (m t : ℕ) (π : Cube L) :
     rw [card_P0Levels_starsToP0]
     exact hbox.1
   · rintro ⟨τ, hτ, rfl⟩
-    rw [IsBox, Cube.starLevels_ofLeaf, Cube.P0Levels_ofLeaf]
+    rw [IsBox]
     simpa using hτ
 
 /-- Proof of Lemma 29, "The values": "the value of each of them is the product of its two numbers in
 the encodings." -/
-theorem Lemma29.val_ofLeaf {L : ℕ} (a : LeftStr L → ℤ) (b : RightStr L → ℤ) (τ : Leaf L) :
+theorem Lemma29.val_ofLeaf {L} (a : LeftStr L → ℤ) (b : RightStr L → ℤ) (τ : Leaf L) :
     Cube.val a b (Cube.ofLeaf τ) = Phi τ a * Psi τ b := by
   rw [Cube.val, Cube.leaves_ofLeaf, sum_singleton, productAt]
 
 /-- Proof of **Lemma 29**, "The values": "For a box π with e ≥ 1 stars, let ℓ be the highest
 level at which π has a star. [...] each of these strings is again a box, with e - 1 stars."  The
 strings are the `π[ℓ ← λ]`, and `e + 1` stands for the paper's `e`. -/
-theorem lemma_29_split {L m t e : ℕ} {π : Cube L} (hπ : π ∈ boxesWithStars L m t (e + 1))
+theorem lemma_29_split {L m t e} {π} (hπ : π ∈ boxesWithStars L m t (e + 1))
     (hne : (Cube.starLevels π).Nonempty) (lam : Term) :
     Cube.replace π ((Cube.starLevels π).max' hne) lam ∈ boxesWithStars L m t e := by
   obtain ⟨⟨hcount, hbelow⟩, hcard⟩ := mem_boxesWithStars.1 hπ
@@ -155,12 +147,12 @@ theorem lemma_29_split {L m t e : ℕ} {π : Cube L} (hπ : π ∈ boxesWithStar
     rw [Cube.starLevels_replace, mem_erase] at hk
     rcases mem_insert.1 (hP0 hk') with hnew | hold
     · exact hnew ▸ lt_of_le_of_ne (le_max' _ k hk.2) hk.1
-    · exact hbelow k hk.2 k' hold
+    · grind
 
 /-- Proof of Lemma 29, "The values", the displayed recurrence: "val(π) = ∑_λ val(π[ℓ ← λ])", because
 "The leaves of π are the leaves of the ten strings π[ℓ ← λ]". It holds for a star at any level `ℓ`
 of any cube `π`. -/
-theorem Lemma29.recurrence {L : ℕ} (a : LeftStr L → ℤ) (b : RightStr L → ℤ) (π : Cube L)
+theorem Lemma29.recurrence {L} (a : LeftStr L → ℤ) (b : RightStr L → ℤ) (π : Cube L)
     (ℓ : Fin L) (hℓ : π ℓ = CubeSymbol.star) :
     Cube.val a b π = ∑ lam : Term, Cube.val a b (Cube.replace π ℓ lam) := by
   unfold Cube.val
@@ -189,6 +181,6 @@ theorem lemma_29_values (L m t e : ℕ) (a : LeftStr L → ℤ) (b : RightStr L 
       card_pos.1 ((mem_boxesWithStars.1 hπ).2 ▸ Nat.succ_pos e)
     rw [dpValue, dif_pos hne,
       Lemma29.recurrence a b π _ (Cube.mem_starLevels.1 (max'_mem _ hne))]
-    exact sum_congr rfl fun lam _ => ih _ (lemma_29_split hπ hne lam)
+    grind [lemma_29_split]
 
 end ThreeSumApsp

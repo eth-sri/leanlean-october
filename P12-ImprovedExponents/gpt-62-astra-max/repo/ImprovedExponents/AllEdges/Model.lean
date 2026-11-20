@@ -29,19 +29,6 @@ open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec HostMid
 noncomputable def lightModelAE : DetTimeModel :=
   { lightModel with exactTriangle := SolvedIn aeTask }
 
-@[simp] theorem lightModelAE_exactTriangle :
-    lightModelAE.exactTriangle = SolvedIn aeTask := rfl
-
-@[simp] theorem lightModelAE_lopDetect : lightModelAE.lopDetect = lightModel.lopDetect := rfl
-
-@[simp] theorem lightModelAE_thinProduct :
-    lightModelAE.thinProduct = lightModel.thinProduct := rfl
-
-@[simp] theorem lightModelAE_minPlusProduct :
-    lightModelAE.minPlusProduct = lightModel.minPlusProduct := rfl
-
-@[simp] theorem lightModelAE_apsp : lightModelAE.apsp = lightModel.apsp := rfl
-
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Claim.lean
 /-- **From an all-edges host to the claim**, as `ImprovedExponents.HostMid.claim17Mid_of_host`:
 `time` and `need` are the host's time and need as functions of those of the solver. -/

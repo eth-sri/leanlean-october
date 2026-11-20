@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Lang.PolyBounded
+public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Reduced.Solver
 public import ThreeSumApsp.Programs.LightModel
 public import ThreeSumApsp.Programs.Sec3.Theorem21a.ChanHe.Time
 public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Sizes
@@ -40,21 +40,15 @@ open ThreeSumApsp ThreeSumApsp.ChanHe Finset
 /-- The bound `V = 2 n^k` with which the host works. -/
 abbrev boundAt (k n : ℕ) : ℕ := 2 * n ^ k
 
-/-- The host's own work. -/
-def ownAt (k n : ℕ) : ℕ := 20 * k + 40 + coreOwn n (boundAt k n)
+abbrev sideAt (k n : ℕ) := mPar n (boundAt k n)
+abbrev magAt (k n : ℕ) := 2*(2*boundAt k n+1)+1
 
-/-- The number of calls of the solver. -/
-def callsAt (k n : ℕ) : ℕ := coreCalls n (boundAt k n)
+def ownAt (k n : ℕ) := 20*k+40+coreOwn n (boundAt k n)+coreCalls n*HashTriangle.own (sideAt k n)
+def callsAt (k n : ℕ) := coreCalls n*(sideAt k n+1)
 
-/-- The bound on the numbers of the instances that the solver is asked. -/
-def magAt (k n : ℕ) : ℕ := 60 * boundAt k n + 40
-
-/-- The time of the host is its own work plus the calls of the solver, which are all at one length
-and with one bound. -/
-theorem chTime_eq {k n U : ℕ} (hU : U ≤ n ^ k) (Tn : ℕ → ℕ → ℕ) :
-    chTime k Tn n U = ownAt k n + callsAt k n * Tn (lenOf k n) (magAt k n) := by
-  simp only [chTime, coreTime, lenOf, ownAt, callsAt, magAt, boundAt, max_eq_right hU]
-  omega
+theorem chTime_eq {k n U} (hU : U ≤ n^k) (T : ℕ→ℕ→ℕ) :
+    chTime k (HashTriangle.time T) n U = ownAt k n + callsAt k n * T (sideAt k n) (magAt k n) := by
+  simp only [chTime,coreTime,ownAt,callsAt,magAt,boundAt,sideAt,max_eq_right hU,HashTriangle.time]; ring
 
 namespace ClaimF
 
@@ -113,8 +107,8 @@ theorem softO_tModulus :
 /-- The array of a node has `O(m²) = Õ(n)` cells. -/
 theorem softO_tNodeArray :
     SoftOSqrtPow (fun n => tNodeArray (mPar n (boundAt k n)) n n n (boundAt k n)) 2 := by
-  unfold tNodeArray
-  growth_sqrt [softO_mPar k, softO_tResid k, softO_tTally]
+  unfold tNodeArray tRep tEmod
+  growth_sqrt [softO_mPar k]
 
 /-- One call of the recursive procedure, without the call of the solver. -/
 theorem softO_nodeOwn :
@@ -124,23 +118,28 @@ theorem softO_nodeOwn :
 
 /-- The recursive procedure is called polylogarithmically often for one three-set input. -/
 theorem softO_callsB : SoftOSqrtPow (fun n => callsB n) 0 := by
-  unfold callsB
+  suffices h : SoftOSqrtPow (fun n => 2*3^fuel n) 0 from h.of_le fun n _ => by
+    have := visits_eq (fuel n); rw [pow_succ] at this; unfold callsB; omega
   growth_sqrt [Scale.SoftO.of_forall_le three_pow_fuel_le]
 
 /-- The routines params and prep cost `Õ(n)`. -/
 theorem softO_tSetup : SoftOSqrtPow (fun n => tSetup n (boundAt k n)) 2 := by
-  unfold tSetup tParams tPrep tLog2 tPrimes tSort tDistinct tBits
+  unfold tSetup tParams tLog2 tPrimes
   growth_sqrt [softO_wPar k, softO_mPar k, softO_Lam k]
+
+private theorem index_bound : SoftOSqrtPow Separate.bound 0 := by
+  unfold Separate.bound Separate.width Lam
+  growth_sqrt []
 
 /-- The host's own work is `Õ(n^{3/2})`. -/
 theorem softO_ownAt : SoftOSqrtPow (ownAt k) 3 := by
-  unfold ownAt coreOwn inputsB tPick tTwice tZeroThree
-  growth_sqrt [softO_tSetup k, softO_nodeOwn k, softO_callsB, softO_Lam k]
+  unfold ownAt coreOwn coreCalls inputsB leafOwn Separate.tPick HashTriangle.own Trace.Grid.time sideAt
+  growth_sqrt [softO_tSetup k, softO_nodeOwn k, softO_callsB,index_bound,softO_mPar k]
 
 /-- The host calls the solver polylogarithmically often. -/
-theorem softO_callsAt : SoftOSqrtPow (callsAt k) 0 := by
-  unfold callsAt coreCalls inputsB
-  growth_sqrt [softO_callsB, softO_Lam k]
+theorem softO_callsAt : SoftOSqrtPow (callsAt k) 1 := by
+  unfold callsAt coreCalls inputsB sideAt
+  growth_sqrt [softO_callsB,index_bound,softO_mPar k]
 
 end own
 
@@ -157,39 +156,26 @@ theorem polyNeed_chNeed (κ : ℕ) (r : ℕ → ℕ → Need) (hr : PolyNeed r) 
   have hm : PolyBounded fun n U => mPar n (2 * max U (n ^ κ)) := by
     unfold mPar wPar Lam
     growth_poly []
-  unfold chNeed coreNeed coreCells nodesNeed modulusNeed wordNeed Lam
+  unfold chNeed coreNeed slack Separate.bound Separate.width nodesNeed modulusNeed wordNeed Lam
   poly_need [hr.word, hr.cells, hr.depth, hm, Scale.SoftO.of_forall_le hfuel]
 
-/-- [CH20, Theorem 5.1] for programs of the light language, from the host: 3SUM from
-Convolution-3SUM.  For inputs of absolute value at most `n^κ` the host is taken with the parameter
-`k = ⌈κ⌉`. -/
-theorem claim_CH20_Theorem_5_1_of_host (h : ∀ κ : ℕ, IsHost c3Task s3Task (chTime κ) (chNeed κ)) :
-    Claim.CH20_Theorem_5_1 lightModel := by
-  intro κ _
-  have hκ : κ ≤ ⌈κ⌉₊ := Nat.le_ceil κ
-  generalize ⌈κ⌉₊ = k at hκ
-  refine ⟨fun n => ownAt k n, fun n => callsAt k n, fun n => magAt k n, lenOf k, 160, k,
-    (ClaimF.softO_ownAt k).isPowPolylog (by norm_num),
-    (ClaimF.softO_callsAt k).isPowPolylog (by norm_num), isPowPolylog_lenOf k,
-    fun n hn => ⟨one_le_lenOf k n, ?_, ?_⟩, ?_⟩
-  · exact Nat.one_le_cast.2 (by unfold magAt boundAt; omega)
-  · have hpow : 1 ≤ n ^ k := Nat.one_le_pow _ _ hn
-    have hmag : magAt k n ≤ 160 * n ^ k := by unfold magAt boundAt; omega
-    rw [Real.rpow_natCast]
-    change (magAt k n : ℝ) ≤ _
-    exact_mod_cast hmag
-  rintro T ⟨P, p, Tn, r, hr, hsol, hT⟩
-  obtain ⟨R, p', hsol'⟩ := (h k).1 P p Tn r hsol
-  refine ⟨timeUpTo (chTime k Tn), hsol'.solvedIn ((h k).2 r hr), fun n hn =>
-    timeUpTo_le fun U hU => ?_⟩
+/-- The direct reduction charges one Exact Triangle call per shift, not a
+padding-and-unpadding detour through a Convolution-3SUM problem. -/
+theorem fixedBound (h : ∀ k, IsHost HashTriangle.task s3Task (chTime k) (chNeed k))
+    (κ : ℝ) (k : ℕ) (hκ : κ ≤ k) {T : ℕ→ℝ→ℝ} (et : SolvedIn etTask T) :
+    ∃ U, SolvedIn s3Task U ∧ ∀ n : ℕ, 1 ≤ n → U n ((n:ℝ)^κ) ≤
+      (ownAt k n:ℝ) + callsAt k n * T (sideAt k n) (magAt k n) := by
+  obtain ⟨P,p,Tn,r,hr,hsol,hT⟩ := et
+  obtain ⟨R,q,hash⟩ := HashTriangle.host.1 P p Tn r hsol
+  obtain ⟨S,v,sol⟩ := (h k).1 _ q _ _ hash
+  refine ⟨_,sol.solvedIn ((h k).2 _ (HashTriangle.host.2 _ hr)),fun n hn => timeUpTo_le fun U hU => ?_⟩
   have hUk : U ≤ n ^ k := by
     have hle : (U : ℝ) ≤ (n : ℝ) ^ (k : ℝ) := (hU.trans_eq (max_eq_left (by positivity))).trans
-      (Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hn) hκ)
-    rw [Real.rpow_natCast] at hle
+      (Real.rpow_le_rpow_of_exponent_le (by simp_all) hκ)
     exact_mod_cast hle
   rw [chTime_eq hUk]
   push_cast
   gcongr
-  exact hT _ _ _ (one_le_lenOf k n) (by unfold magAt boundAt; omega) le_rfl
+  exact hT _ _ _ (Nat.succ_le_of_lt (by unfold sideAt mPar; positivity)) (by unfold magAt; omega) (by simp [magAt,boundAt])
 
 end Light.Sec3.ChanHe

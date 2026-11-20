@@ -5,10 +5,12 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.Program
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Layout
-public import ThreeSumApsp.Programs.Sec4.Theorem30.OfflineLayout
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Routines
+public import ThreeSumApsp.Programs.LightModel
+public import ThreeSumApsp.Programs.Sec2.Theorem5.AllInstances.BruteForce
+public import ThreeSumApsp.Programs.Sec2.Theorem5.Program
+public import ThreeSumApsp.Lang.RowMajor
+public import ThreeSumApsp.Programs.Sec4.Theorem30.WordSize
+public import ThreeSumApsp.Programs.Sec4.Theorem30.Offline
 
 /-!
 # Theorem 30 on the word RAM: the program
@@ -32,27 +34,7 @@ namespace Light.Sec4
 
 open ThreeSumApsp ThreeSumApsp.WordRam
 
-/-- The procedures number 0 to 57: Section 2's program for the thin matrix product (0 to 28), eleven
-unused numbers, the routines of Section 4, the two routines that know the memory map, and the two
-routines of the offline form. -/
-def base58 : Program :=
-  Sec2.programThin ++ List.replicate 11 .skip ++ procs40 ++
-    [preCoreBody, queryAtBody, wantedCoreBody, wantedMainBody]
-
-theorem length_base58 : base58.length = 58 := rfl
-
-/-- A procedure of base58 is a procedure, with the same number, of every program that begins with
-base58. -/
-theorem at_base58 {p : ℕ} {body : Stmt} (h : base58[p]? = some body) (R : Program) :
-    (base58 ++ R)[p]? = some body :=
-  getElem?_append_of_eq_some h R
-
 /-- The constant of the shared stage. -/
 def cShared30 : ℕ := 12 * Sec2.cShared5 + 600
-
-theorem has40_base58 (R : Program) : Has40 (base58 ++ R) := by
-  have h := has40_of_append (A := Sec2.programThin ++ List.replicate 11 .skip)
-    (B := [preCoreBody, queryAtBody, wantedCoreBody, wantedMainBody] ++ R) rfl
-  rwa [← List.append_assoc] at h
 
 end Light.Sec4

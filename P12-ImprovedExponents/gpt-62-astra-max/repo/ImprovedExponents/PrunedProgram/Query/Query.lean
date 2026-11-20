@@ -1,8 +1,8 @@
 module
 
-public import ThreeSumApsp.Programs.Sec4.Theorem30.Program
+public import ThreeSumApsp.Programs.Sec4.Theorem30.Query
 public import ImprovedExponents.PrunedProgram.Pre.Defs
-public import ImprovedExponents.PrunedProgram.Query.QuerySum
+public import ImprovedExponents.PrunedProgram.Boxes.Routines
 
 @[expose] public section
 
@@ -42,10 +42,17 @@ variable {lim : Limits} {P : Program} {d : ℕ} {p : Sec2.Par} {t : ℕ} {hmL : 
 
 /-! ## The first part -/
 
+section
+variable (hlim : Lim30 lim p t b0 U)
+  (hds : DSReadyP p t hmL aX aY b0 X Y μ)
+  {I J : ℕ}
+  (hI : I < p.N)
+  (hJ : J < p.N)
+include hlim hds hI hJ
+
 /-- The first part reads the sizes, the addresses of the tables, and the two bands. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Query.lean (queryAtReads_spec)
-theorem queryAtReadsP_spec (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL aX aY b0 X Y μ)
-    {I J : ℕ} (hI : I < p.N) (hJ : J < p.N) :
+theorem queryAtReadsP_spec :
     Ends lim P d queryAtReads ⟨frame [(I : ℤ), (J : ℤ), (b0 : ℤ)], μ⟩ 90
       (· = ⟨frame (queryAtRead p t b0 I J), μ⟩) := by
   have hw := hlim.std.space_le
@@ -81,8 +88,7 @@ theorem queryAtReadsP_spec (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL a
 
 /-- The block holds what outDigits assumes. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Query.lean (outArgs_pre)
-theorem outArgsP_pre (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL aX aY b0 X Y μ)
-    {I J : ℕ} (hI : I < p.N) (hJ : J < p.N) : OutDigitsPre lim μ (outArgs p b0 I J) := by
+theorem outArgsP_pre : OutDigitsPre lim μ (outArgs p b0 I J) := by
   have hgI : I / p.N0 % p.K0 < p.K0 := Nat.mod_lt _ (K0_pos hmL)
   have hgJ : J / p.N0 % p.K0 < p.K0 := Nat.mod_lt _ (K0_pos hmL)
   have hidx : I / p.N0 % p.K0 * p.K0 + J / p.N0 % p.K0 < p.KK := Nat.mul_add_lt_mul hgI hgJ
@@ -115,13 +121,15 @@ theorem outArgsP_pre (hlim : Lim30 lim p t b0 U) (hds : DSReadyP p t hmL aX aY b
       spaceDest := ?_ }
   -- the six fields that are left: the tables lie apart from WD, and all within the memory
   all_goals
-    simp only [outArgs, OutDigitsArgs.base]
+    simp [outArgs, OutDigitsArgs.base]
     omega
+
+end
 
 /-- The third part writes the digits of the output string of (I, J) at WD. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Query.lean (queryAtOut_spec)
 theorem queryAtOutP_spec (hOut : OutDigitsSpec lim P) (hlim : Lim30 lim p t b0 U)
-    (hds : DSReadyP p t hmL aX aY b0 X Y μ) {I J : ℕ} (hI : I < p.N) (hJ : J < p.N)
+    (hds : DSReadyP p t hmL aX aY b0 X Y μ) {I J } (hI : I < p.N) (hJ : J < p.N)
     (hd : d + 1 ≤ lim.depth) :
     Ends lim P d queryAtOut ⟨frame (queryAtLocals p t b0 I J), μ⟩ (tOutDigits p.L + 40) fun σ' =>
       ∃ (r : ℤ) (μ' : ℕ → ℤ), σ' = ⟨frame (queryAtLocals p t b0 I J ++ [r]), μ'⟩ ∧
@@ -139,13 +147,9 @@ theorem queryAtOutP_spec (hOut : OutDigitsSpec lim P) (hlim : Lim30 lim p t b0 U
     obtain ⟨⟩ := areas p t b0
     omega
   have hprodI : ((p.aDIG3 b0 + I * p.Lo : ℕ) : ℤ) ≤ lim.space := by
-    exact_mod_cast (by omega : p.aDIG3 b0 + I * p.Lo ≤ lim.space)
+    exact_mod_cast (by omega)
   have hprodJ : ((p.aDIG3 b0 + J * p.Lo : ℕ) : ℤ) ≤ lim.space := by
-    exact_mod_cast (by omega : p.aDIG3 b0 + J * p.Lo ≤ lim.space)
-  have hI0 : (0 : ℤ) ≤ (I : ℤ) * p.Lo := by positivity
-  have hJ0 : (0 : ℤ) ≤ (J : ℤ) * p.Lo := by positivity
-  push_cast at hprodI hprodJ
-  -- outDigits(blockTab[I], blockTab[J], digitTab + I (L - m), digitTab + J (L - m), dir[21], …)
+    exact_mod_cast (by omega)
   light_call (hOut _ μ hpre) using queryAtLocals, queryAtRead, outArgs, blockI, blockJ,
     hds.shared.dirCells.mask with r μ' h
   refine ⟨r, μ', rfl, ?_, h.2⟩
@@ -154,58 +158,54 @@ theorem queryAtOutP_spec (hOut : OutDigitsSpec lim P) (hlim : Lim30 lim p t b0 U
 
 /-! ## The call of queryCore -/
 
-/-- The block, with the digits of the output string at WD, holds what queryCore assumes of pruned
-encodings: the encodings of the two bands are right at the leaves with at most m symbols `P₀`. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Query.lean (coreArgs_pre)
+/-- Choose the precomputed page by its row-major tile index. -/
+def pageArgs (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (b0 : ℕ)
+    (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ) (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (I J : ℕ) :
+    BoxTable.QueryCoreArgs where
+  toTile := (grid p t hmL b0 X Y).tile (I / (p.K0*p.N0)) (J / (p.K0*p.N0))
+  wd := aWD p b0
+  ss := aSS p b0
+  η := outStrOfPos (stdLayout hmL) I J
+
 theorem coreArgsP_pre (ht : t ≤ p.m) (hlim : Lim30 lim p t b0 U) (hX : ∀ i j, |X i j| ≤ U)
     (hY : ∀ i j, |Y i j| ≤ U) (hds : DSReadyP p t hmL aX aY b0 X Y μ) (I J : Fin p.N)
     (hwd : SegN μ (aWD p b0) (digitsO (outStrOfPos (stdLayout hmL) I J))) :
-    QueryCorePreP lim μ (coreArgs p t hmL b0 X Y I J) := by
-  have hU : 0 ≤ U := (abs_nonneg _).trans (hX I ⟨0, Nat.pow_pos (by norm_num)⟩)
+    BoxTable.Pre lim μ (pageArgs p t hmL b0 X Y I J) := by
+  have hU := (abs_nonneg _).trans (hX I ⟨0, Nat.pow_pos (by norm_num)⟩)
   have hβ : (I : ℕ) / (p.K0 * p.N0) < p.nB := bandOf_lt_numBands hmL p.N I I.isLt
   have hβ' : (J : ℕ) / (p.K0 * p.N0) < p.nB := bandOf_lt_numBands hmL p.N J J.isLt
-  -- the encodings lie below WD, the tries behind the scratch strings
+  let β := (I:ℕ) / (p.K0*p.N0)
+  let γ := (J:ℕ) / (p.K0*p.N0)
+  let x := grid p t hmL b0 X Y
   have hsp := hlim.space
-  have hlen := length_dsTries_le p t hmL X Y
-  have hrowA := Nat.mul_add_le_mul hβ (le_refl p.T)
-  have hrowB := Nat.mul_add_le_mul hβ' (le_refl p.T)
-  have hT : 10 ^ p.L = p.T := rfl
-  obtain ⟨⟩ := areas p t b0
-  refine
-    { std := hlim.std
-      t_le := ht
-      card := card_innerSetO_outStrOfPos (stdLayout hmL) I J
-      segA := hds.shared.encA _ hβ
-      segB := hds.shared.encB _ hβ'
-      segT := hds.trie
-      segDigits := hwd
-      walk := coreArgs_walk I J ht
-      sums := coreArgs_sums I J ht hlim hU hX hY
-      prod := abs_enc_mul_le hlim hU hX hY _ _
-      pow := hlim.pow_le
-      ss_wd := ?_
-      box_wd := ?_
-      ss_box := ?_
-      ss_aA := ?_
-      ss_aB := ?_
-      box_aA := ?_
-      box_aB := ?_
-      ss_tr := ?_
-      box_tr := ?_
-      aA_lt := ?_
-      aB_lt := ?_
-      tr_lt := ?_
-      wd_lt := ?_
-      ss_lt := ?_
-      box_lt := ?_ }
-  -- the fifteen fields that are left: the areas lie apart from each other and within the memory
-  all_goals
-    simp only [coreArgs]
+  have hx := hds.pages β hβ γ hβ' (Nat.mul_add_lt_mul hβ hβ')
+  have room := BoxTable.Grid.room (x:=x) hβ hβ'
+  have left := Nat.mul_add_le_mul hβ (le_refl p.T); have right := Nat.mul_add_le_mul hβ' (le_refl p.T)
+  have card := card_innerSetO_outStrOfPos (stdLayout hmL) I J
+  obtain ⟨hA,hB⟩ := abs_enc_le hmL X Y U hU hX hY β γ
+  refine ⟨hlim.std,ht,card,hds.shared.encA _ hβ,hds.shared.encB _ hβ',?_,hwd,
+    fun j => (abs_query_partial_sum_le hA hB ht card j).trans hlim.value,
+    abs_enc_mul_le hlim hU hX hY β γ,hlim.pow_le,?_⟩
+  · intro l hl
+    obtain ⟨π,hπ,rfl⟩ := exists_of_mem_boxesOf ht card l hl
+    obtain ⟨V,hV,hπ⟩ := Finset.mem_biUnion.mp hπ
+    have mem := (isBoxDigits_digitsC p.m t π).2 (Theorem30.lookup hV hπ)
+    apply hx _ _ mem (.inl ?_)
+    obtain ⟨s,hs,-⟩ := List.mem_map.1 mem
+    have := (mem_nineStrs _).1 hs
+    change starCount (digitsC π) < p.m-t+1; omega
+  · obtain ⟨⟩ := areas p t b0
+    dsimp only [pageArgs,BoxTable.Grid.tile,grid]
+    change aPage p b0 + (β*p.nB+γ)*(p.T*p.T) + p.T*p.T ≤ aPage p b0 + pageCells p at room
+    change p.aENCA b0 + β*p.T + p.T ≤ aWD p b0 ∧ p.aENCB b0 + γ*p.T + p.T ≤ aWD p b0 ∧ _ ∧ _ ∧
+      aSS p b0 + p.m ≤ aPage p b0 + (β*p.nB+γ)*(p.T*p.T) ∧
+      aPage p b0 + (β*p.nB+γ)*(p.T*p.T) + p.T*p.T < lim.space
+    change β*p.T + p.T ≤ _ at left; change γ*p.T + p.T ≤ _ at right
     omega
 
 /-- The fourth part returns (XY)[I, J] and changes the scratch strings BOX and SS only. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Query.lean (queryAtCore_spec)
-theorem queryAtCoreP_spec (hCore : QueryCoreSpecP lim P) (ht : t ≤ p.m)
+theorem queryAtCoreP_spec (hCore : BoxTable.QueryCoreSpecP lim P) (ht : t ≤ p.m)
     (hlim : Lim30 lim p t b0 U) (hX : ∀ i j, |X i j| ≤ U) (hY : ∀ i j, |Y i j| ≤ U)
     (hds : DSReadyP p t hmL aX aY b0 X Y μ) (I J : Fin p.N) (hd : d + 2 ≤ lim.depth) (r : ℤ)
     (hwd : SegN μ (aWD p b0) (digitsO (outStrOfPos (stdLayout hmL) I J))) :
@@ -214,41 +214,32 @@ theorem queryAtCoreP_spec (hCore : QueryCoreSpecP lim P) (ht : t ≤ p.m)
         σ'.loc 0 = (X * Y) I J ∧ SameOutside2 μ σ'.mem (aSS p b0) p.m (aBOX p b0) p.L := by
   have hw := hlim.std.space_le
   have hpre := coreArgsP_pre ht hlim hX hY hds I J hwd
-  have hvalue := coreArgs_value (hmL := hmL) (b0 := b0) (X := X) (Y := Y) I J ht
   have dir := hds.shared.dirCells
-  have htile := tileOf_lt I J hmL
-  have cellRoot : μ (aROOTS p b0 + tileOf p I J)
-      = ((dsTries p t hmL X Y).root (tileOf p I J) : ℕ) :=
-    hds.roots.read (by rw [length_dsTries_roots]; exact htile)
-  have hdir : b0 + 31 < lim.space ∧ aROOTS p b0 + p.nB * p.nB < lim.space := by
-    have hsp := hlim.space
-    obtain ⟨⟩ := areas p t b0
-    omega
-  have hmeets := (hCore _ μ hpre _ (by omega))
-  have hencA := hpre.aA_lt
-  have hencB := hpre.aB_lt
-  simp only [coreArgs, tileOf] at hmeets hvalue hencA hencB htile cellRoot
+  let x := pageArgs p t hmL b0 X Y I J
+  have hvalue : x.terms.sum = (X*Y) I J :=
+    (sum_queryTerms_storedD ht x.A x.B (card_innerSetO_outStrOfPos (stdLayout hmL) I J)).trans
+      (Theorem30.correct t ht (stdLayout hmL) X Y I J)
+  let β := (I:ℕ)/(p.K0*p.N0); let γ := (J:ℕ)/(p.K0*p.N0)
+  have layout := hpre.layout
+  change p.aENCA b0 + β*p.T + p.T ≤ aWD p b0 ∧ p.aENCB b0 + γ*p.T + p.T ≤ aWD p b0 ∧
+    aWD p b0 + p.L ≤ aBOX p b0 ∧ aBOX p b0 + p.L ≤ aSS p b0 ∧
+    aSS p b0 + p.m ≤ aPage p b0 + (β*p.nB+γ)*(p.T*p.T) ∧
+    aPage p b0 + (β*p.nB+γ)*(p.T*p.T) + p.T*p.T < lim.space at layout
+  have o := Nat.le_mul_of_pos_right (β*p.nB+γ) (Nat.mul_pos (show 0<p.T by exact pow_pos (by decide) _) (show 0<p.T by exact pow_pos (by decide) _))
+  have hd' := wd_ge p b0
+  have hn (a b : ℕ) : (0:ℤ) ≤ a*b := by positivity
+  have hn' : (0:ℤ) ≤ (β*p.nB+γ)*(p.T*p.T) := by positivity
+  have meets := hCore x μ hpre _ (by omega)
+  change Meets _ _ _ _ [p.aENCA b0 + β*p.T, p.aENCB b0 + γ*p.T, aPage p b0 + (β*p.nB+γ)*(p.T*p.T),
+    aWD p b0,aSS p b0,aBOX p b0,p.L,p.m,t] _ (tQueryCore p.L p.m t) _ at meets
   unfold queryAtLocals queryAtRead
-  -- the bands, the root and 10^L become variables; the products in the arguments, in the integers
-  generalize 10 ^ p.L = leaves at hencA hencB
-  generalize (I : ℕ) / (p.K0 * p.N0) = β at *
-  generalize (J : ℕ) / (p.K0 * p.N0) = β' at *
-  generalize (dsTries p t hmL X Y).root (β * p.nB + β') = root at *
-  have hencA' : ((p.aENCA b0 + β * p.T : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega)
-  have hencB' : ((p.aENCB b0 + β' * p.T : ℕ) : ℤ) ≤ lim.space := by exact_mod_cast (by omega)
-  have hroot' : ((aROOTS p b0 + (β * p.nB + β') : ℕ) : ℤ) < lim.space := by
-    exact_mod_cast (by omega)
-  have hrow0 : (0 : ℤ) ≤ (β : ℤ) * p.T := by positivity
-  have hcol0 : (0 : ℤ) ≤ (β' : ℤ) * p.T := by positivity
-  have hband0 : (0 : ℤ) ≤ (β : ℤ) * p.nB := by positivity
-  have haddr : ((aROOTS p b0 : ℤ) + ((β : ℤ) * p.nB + β')).toNat
-      = aROOTS p b0 + (β * p.nB + β') := by exact_mod_cast Int.toNat_natCast _
-  push_cast at hencA' hencB' hroot'
-  -- queryCore(dir[26] + bandI 10^L, dir[27] + bandJ 10^L, tries, roots[bandI nB + bandJ], …)
-  light_call hmeets using dir.encA, dir.encB, haddr, cellRoot with r' μ' h
-  refine ⟨?_, h.2⟩
-  simp only [setLocal, List.cons_append, frame, List.getD_cons_zero]
-  rw [h.1, hvalue]
+  dsimp only [β,γ] at layout o hn' meets
+  generalize (I : ℕ) / (p.K0*p.N0) = i at layout o hn' meets ⊢
+  generalize (J : ℕ) / (p.K0*p.N0) = j at layout o hn' meets ⊢
+  zify at layout o
+  have := hn i p.T; have := hn j p.T; have := hn i p.nB; have := hn p.T p.T
+  light_call meets using dir.encA,dir.encB with r' ν ⟨hr,same⟩
+  exact ⟨hr.trans hvalue,same⟩
 
 /-! ## The routine -/
 
@@ -257,7 +248,7 @@ assumption that the encodings of the bands are right at the leaves with at most 
 only. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Query.lean (queryAt_spec)
 theorem queryAtP_spec (hP : P[Proc.queryAt]? = some queryAtBody) (hOut : OutDigitsSpec lim P)
-    (hCore : QueryCoreSpecP lim P) : QueryAtSpecP lim P := by
+    (hCore : BoxTable.QueryCoreSpecP lim P) : QueryAtSpecP lim P := by
   intro p t hmL aX aY b0 X Y U μ I J ht hlim hX hY hds
   refine fun d hd => ⟨queryAtBody, hP, ?_⟩
   unfold tQueryAt
@@ -279,30 +270,9 @@ theorem queryAtP_spec (hP : P[Proc.queryAt]? = some queryAtBody) (hOut : OutDigi
 
 end Proof
 
-/-! ## The routine in a program that holds the routines of Section 4 -/
-
-/-- `queryCore` on pruned encodings, in every program that holds the routines of Section 4 at
-their numbers. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Routines.lean (specs40)
-theorem queryCoreSpecP_of {lim : Limits} {P : Program} (h : Has40 P) (hs : Std lim) :
-    QueryCoreSpecP lim P :=
-  have S := specs40 h hs
-  queryCoreP_spec (h 13 (by omega)) ⟨S.nineFirst, S.nineNext, S.scatter, S.horner, S.lookup⟩
-
-/-- A query at a given place of the memory on pruned encodings, for all limits. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Routines.lean (queryAtSpec_all)
-theorem queryAtSpecP_all {P : Program} (h : Has40 P)
-    (h55 : P[Proc.queryAt]? = some queryAtBody) : ∀ lim, QueryAtSpecP lim P :=
-  fun _ p t hmL aX aY b0 X Y U μ I J ht hlim =>
-    queryAtP_spec h55 (specs40 h hlim.std).outDigits (queryCoreSpecP_of h hlim.std)
-      p t hmL aX aY b0 X Y U μ I J ht hlim
-
-/-- **A query at a given place of the memory on pruned encodings**, in every program that begins
-with upstream's 58 procedures. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Program.lean (queryAt_base58)
-theorem queryAtP_of_base58 {lim : Limits} {P R : Program} (hP : P = base58 ++ R) :
-    QueryAtSpecP lim P := by
-  subst hP
-  exact queryAtSpecP_all (has40_base58 R) (at_base58 rfl R) lim
+theorem queryAtSpecP_all {P} (h : BoxTable.Has P) (h55 : P[Proc.queryAt]? = some queryAtBody) :
+    ∀ lim, QueryAtSpecP lim P := fun _ p t hmL aX aY b0 X Y U μ I J ht hlim =>
+  queryAtP_spec h55 (outDigits_spec (h 12 (by decide))) (BoxTable.querySpec h hlim.std)
+    p t hmL aX aY b0 X Y U μ I J ht hlim
 
 end Light.Sec4

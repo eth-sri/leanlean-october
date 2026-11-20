@@ -42,19 +42,19 @@ def ratProcs (a b c d o : ℕ) : Program :=
   [powLtBody, rootCeilBody o, dRatBody a b (o + 1), gRatBody c d (o + 1)]
 
 /-- `dRatBody a b` computes `⌊n^{a/b}⌋`. -/
-theorem paramProc_dRat {b : ℕ} (hb : b ≠ 0) (a c d : ℕ) (Q R : Program) :
+theorem paramProc_dRat {b} (hb : b ≠ 0) (a c d : ℕ) (Q R : Program) :
     ParamProc (Q ++ ratProcs a b c d Q.length ++ R) (Q.length + 2) (paramDRatNat a b)
       (tDRat a b) (wDRat a b) := by
   intro lim dep x μ _ _ hw hd
-  exact dRat_meets (getElem?_behind Q _ R (i := 2) rfl) (getElem?_behind Q _ R (i := 1) rfl)
+  exact dRat_meets (getElem?_behind Q _ R  rfl) (getElem?_behind Q _ R  rfl)
     (getElem?_behind Q _ R (i := 0) rfl) hb hw (by omega)
 
 /-- `gRatBody c d` computes `⌈D^{c/d}⌉`. -/
-theorem paramProc_gRat {d : ℕ} (hd : d ≠ 0) (a b c : ℕ) (Q R : Program) :
+theorem paramProc_gRat {d} (hd : d ≠ 0) (a b c : ℕ) (Q R : Program) :
     ParamProc (Q ++ ratProcs a b c d Q.length ++ R) (Q.length + 3) (paramGRatNat c d)
       (tGRat c d) (wGRat c d) := by
   intro lim dep x μ hx _ hw hd'
-  exact gRat_meets (getElem?_behind Q _ R (i := 3) rfl) (getElem?_behind Q _ R (i := 1) rfl)
+  exact gRat_meets (getElem?_behind Q _ R  rfl) (getElem?_behind Q _ R  rfl)
     (getElem?_behind Q _ R (i := 0) rfl) hd hx hw (by omega)
 
 /-! ## The parameters and the words are polynomially bounded -/
@@ -84,7 +84,7 @@ theorem polyBounded_wGRat (c d : ℕ) {D : ℕ → ℕ} (hD : PolyBounded fun n 
 
 /-- `dRatBody` takes a constant number of steps for each number up to `⌊n^{a/b}⌋ + 1`: `O(n^k)`
 steps if `a ≤ k b`. -/
-theorem steps_tDRat_pow {a b k : ℕ} (hb : b ≠ 0) (hab : a ≤ k * b) :
+theorem steps_tDRat_pow {a b k} (hb : b ≠ 0) (hab : a ≤ k * b) :
     StepsMon (fun θ => tDRat a b θ.n) k 0 0 := by
   have hD : StepsMon (fun θ => paramDRatNat a b θ.n) k 0 0 :=
     ((steps_n.pow k).mono fun i => by fin_cases i <;> simp).of_le fun _ hθ =>
@@ -92,22 +92,20 @@ theorem steps_tDRat_pow {a b k : ℕ} (hb : b ≠ 0) (hab : a ≤ k * b) :
   unfold tDRat
   apply Scale.SoftO.mono
   · growth_rules [hD]
-  · intro i
-    fin_cases i <;> simp
+  · simp
 
 /-- `dRatBody` takes `O(n²)` steps if `a ≤ 2 b`. -/
-theorem steps_tDRat {a b : ℕ} (hb : b ≠ 0) (hab : a ≤ 2 * b) :
+theorem steps_tDRat {a b} (hb : b ≠ 0) (hab : a ≤ 2 * b) :
     StepsMon (fun θ => tDRat a b θ.n) 2 2 0 :=
   (steps_tDRat_pow hb hab).mono (by decide)
 
 /-- `gRatBody` takes `O(n² D)` steps if `c ≤ 3 d`: it takes a constant number of steps for each
 number up to `⌈D^{c/d}⌉ ≤ D³`, and `D ≤ n`. -/
-theorem steps_tGRat {c d : ℕ} (hd : d ≠ 0) (hcd : c ≤ 3 * d) :
+theorem steps_tGRat {c d} (hd : d ≠ 0) (hcd : c ≤ 3 * d) :
     StepsMon (fun θ => tGRat c d θ.D) 2 2 0 := by
-  have hG : StepsMon (fun θ => paramGRatNat c d θ.D) 2 2 0 :=
+  have hG :=
     (by growth [steps_n, steps_D] : StepsMon (fun θ => θ.n ^ 2 * θ.D) 2 2 0).of_le fun θ hθ =>
       (paramGRatNat_le_pow hd hcd hθ.one_le_D_nat).trans (by
-        rw [pow_succ]
         exact Nat.mul_le_mul_right _ (Nat.pow_le_pow_left hθ.hDn 2))
   unfold tGRat
   growth [hG]

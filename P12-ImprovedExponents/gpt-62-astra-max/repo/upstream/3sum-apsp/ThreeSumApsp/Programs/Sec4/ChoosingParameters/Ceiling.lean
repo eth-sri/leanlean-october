@@ -25,10 +25,7 @@ namespace CeilMul
 
 /-- The locals of ceilMul: the argument m, which the result replaces; the product a m; a counter
 that goes up in steps of b; and the number of its steps. -/
-abbrev Arg : ℕ := 0
-@[inherit_doc Arg] abbrev Goal : ℕ := 1
-@[inherit_doc Arg] abbrev Reached : ℕ := 2
-@[inherit_doc Arg] abbrev Steps : ℕ := 3
+slots 0 Arg Goal Reached Steps
 
 end CeilMul
 
@@ -42,7 +39,7 @@ def ceilMulBody (a b : ℕ) : Stmt :=
         (.set Reached (v Reached +' k b) ;; .set Steps (v Steps +' k 1)) ;;
       .set Arg (v Steps))
 
-theorem ceilMul_meets {lim : Limits} {P : Program} {pn a b : ℕ} (hb : 1 ≤ b)
+theorem ceilMul_meets {lim } {P } {pn a b } (hb : 1 ≤ b)
     (hP : P[pn]? = some (ceilMulBody a b)) : CeilMulSpec lim P pn a b := by
   intro m μ hw
   refine fun d _ => ⟨ceilMulBody a b, hP, ?_⟩
@@ -50,18 +47,17 @@ theorem ceilMul_meets {lim : Limits} {P : Program} {pn a b : ℕ} (hb : 1 ≤ b)
   -- if m = 0
   refine Ends.iteLast (fun h0 => ?_) (fun h0 => ?_)
   · -- return m
-    obtain rfl : m = 0 := by simpa using h0
+    obtain rfl : m = 0 := by simp_all
     exact Ends.skip ⟨by simp [Nat.div_eq_of_lt (by omega : b - 1 < b)], rfl⟩
-  · have hm : m ≠ 0 := by simpa using h0
+  · have hm : m ≠ 0 := by simp_all
     have hax : a ≤ a * m := Nat.le_mul_of_pos_right a (by omega)
-    have hxZ : (a : ℤ) * m = (a * m : ℕ) := by push_cast; rfl
+    have hxZ : (a : ℤ) * m = (a * m : ℕ) := by rfl
     generalize a * m = x at hw hax hxZ ⊢
     have hlt : ∀ i, i < (x + b - 1) / b ↔ i * b < x := fun i => Nat.lt_ceilDiv_iff hb
     have hnx : (x + b - 1) / b ≤ x := by
       by_contra hc
       have := (hlt x).1 (by omega)
-      have := Nat.le_mul_of_pos_right x hb
-      omega
+      nlinarith
     generalize (x + b - 1) / b = n at hlt hnx ⊢
     -- am := a * m ; c := 0 ; steps := 0
     light_set x using hxZ
@@ -74,13 +70,10 @@ theorem ceilMul_meets {lim : Limits} {P : Program} {pn a b : ℕ} (hb : 1 ≤ b)
       rintro i _ hi rfl
       have hbi := (hlt i).1 hi
       rw [Nat.succ_mul]
-      generalize i * b = c at hbi ⊢
-      exact ⟨by light_side, by simp; omega, by light_side, by simp [update_frame_setLocal]⟩
+      exact ⟨by simp, by simp; omega, by light_side, by simp [update_frame_setLocal]⟩
     case done =>
       rintro _ rfl
       have hbn := mt (hlt n).2 (lt_irrefl n)
-      generalize n * b = c at hbn ⊢
-      -- return steps
-      exact ⟨by light_side, by simp; omega, Ends.setTo (n : ℤ) ⟨rfl, rfl⟩⟩
+      exact ⟨by simp, by simp; omega, Ends.setTo (n : ℤ) ⟨rfl, rfl⟩⟩
 
 end Light.Sec4

@@ -113,7 +113,7 @@ def termEquiv : Term ≃ Fin 10 where
 def termOfNat (t : ℕ) : Term := if h : t < 10 then termEquiv.symm ⟨t, h⟩ else .P0
 
 /-- The digit of the term with the digit `t`. -/
-theorem termIdx_termOfNat {t : ℕ} (h : t < 10) : ((termIdx (termOfNat t) : Fin 10) : ℕ) = t := by
+theorem termIdx_termOfNat {t } (h : t < 10) : ((termIdx (termOfNat t)) : ℕ) = t := by
   rw [termOfNat, dif_pos h]
   exact congrArg Fin.val (termEquiv.apply_symm_apply ⟨t, h⟩)
 
@@ -126,38 +126,29 @@ def pairEquiv : Fin 2 × Fin 2 ≃ Fin 4 where
 
 /-! Applying one of the five bijections gives the digit. -/
 
-@[simp] theorem leftEquiv_apply (s : LeftVar) : leftEquiv s = leftIdx s := rfl
-
-@[simp] theorem rightEquiv_apply (t : RightVar) : rightEquiv t = rightIdx t := rfl
-
 @[simp] theorem outEquiv_apply (z : OutVar) : outEquiv z = outIdx z := rfl
-
-@[simp] theorem termEquiv_apply (lam : Term) : termEquiv lam = termIdx lam := rfl
 
 @[simp] theorem pairEquiv_apply (p : Fin 2 × Fin 2) : pairEquiv p = pairIdx p := rfl
 
 /-! ## Codes of strings -/
 
 /-- The code of a left string, in base 7. -/
-def codeL {n : ℕ} (u : LeftStr n) : ℕ := codeStr leftEquiv u
+def codeL {n } (u : LeftStr n) : ℕ := codeStr leftEquiv u
 
 /-- The code of a right string, in base 7. -/
-def codeR {n : ℕ} (v : RightStr n) : ℕ := codeStr rightEquiv v
+def codeR {n } (v : RightStr n) : ℕ := codeStr rightEquiv v
 
 /-- The code of an output string, in base 10. -/
-def codeO {n : ℕ} (w : OutStr n) : ℕ := codeStr outEquiv w
+def codeO {n } (w : OutStr n) : ℕ := codeStr outEquiv w
 
 /-- The code of a vertex or a leaf, in base 10. -/
-def codeT {n : ℕ} (τ : Vertex n) : ℕ := codeStr termEquiv τ
+def codeT {n } (τ : Vertex n) : ℕ := codeStr termEquiv τ
 
 /-- The code of a string of indices of outer variables, in base 3. -/
-def codeOuter {n : ℕ} (r : Fin n → Fin 3) : ℕ := codeStr (Equiv.refl (Fin 3)) r
+def codeOuter {n } (r : Fin n → Fin 3) : ℕ := codeStr (Equiv.refl (Fin 3)) r
 
 /-- The code of a string of index pairs of inner variables, in base 4. -/
-def codeInner {n : ℕ} (π : Fin n → Fin 2 × Fin 2) : ℕ := codeStr pairEquiv π
-
-/-- The output string with a given code. -/
-def decodeO (n c : ℕ) : OutStr n := decodeStr outEquiv n c
+def codeInner {n } (π : Fin n → Fin 2 × Fin 2) : ℕ := codeStr pairEquiv π
 
 /-- The vertex or leaf with a given code. -/
 def decodeT (n c : ℕ) : Vertex n := decodeStr termEquiv n c
@@ -166,13 +157,8 @@ def decodeT (n c : ℕ) : Vertex n := decodeStr termEquiv n c
 
 The general facts about `codeStr`, under names of their own for the two codes that occur most. -/
 
-/-- The code of the term `λ` followed by the vertex `τ'`. -/
-theorem codeT_cons {n : ℕ} (lam : Term) (τ' : Vertex n) :
-    codeT (Fin.cons lam τ' : Vertex (n + 1)) = termIdx lam * 10 ^ n + codeT τ' :=
-  codeStr_cons termEquiv lam τ'
-
 /-- The code of a vertex at depth `n` is less than `10^n`. -/
-theorem codeT_lt {n : ℕ} (τ : Vertex n) : codeT τ < 10 ^ n :=
+theorem codeT_lt {n } (τ : Vertex n) : codeT τ < 10 ^ n :=
   codeStr_lt termEquiv τ
 
 /-! ## The structure of the identity, in digits -/
@@ -190,13 +176,10 @@ theorem contributes_iff (lam : Term) (z : OutVar) :
   decide
 
 /-- The digit of `z_ij` is `3 (i - 1) + (j - 1)`. -/
-theorem outIdx_z (i j : Fin 3) : ((outIdx (.z i j) : Fin 10) : ℕ) = 3 * i + j := rfl
-
-/-- The digit of `z₀` is 9. -/
-theorem outIdx_z0 : ((outIdx .z0 : Fin 10) : ℕ) = 9 := rfl
+theorem outIdx_z (i j : Fin 3) : ((outIdx (.z i j)) : ℕ) = 3 * i + j := rfl
 
 /-- The digit of `P₀` is 9. -/
-theorem termIdx_P0 : ((termIdx .P0 : Fin 10) : ℕ) = 9 := rfl
+theorem termIdx_P0 : ((termIdx .P0) : ℕ) = 9 := rfl
 
 /-- The digit of the inner left variable `p_ij` is 3 plus the digit of the pair `(i, j)`. -/
 theorem leftIdx_p (i j : Fin 2) : (leftIdx (.p i j) : ℕ) = 3 + pairIdx (i, j) :=

@@ -53,18 +53,16 @@ theorem le_card_primesLE_mul_log (w : ℕ) :
   have hw : w + 1 < 2 ^ (a + 1) := Nat.lt_pow_succ_log_self (by norm_num) _
   have ha : 2 * a + 4 ≤ 2 ^ (a + 2) := by
     have := Nat.lt_two_pow_self (n := a + 1)
-    rw [pow_succ]
-    omega
-  have hlog : Nat.log 2 m < 2 * a + 3 := Nat.log_lt_of_lt_pow (by positivity) <|
-    calc m < 2 ^ (a + 1) * 2 ^ (a + 2) := Nat.mul_lt_mul_of_lt_of_le hw ha (by positivity)
-      _ = 2 ^ (2 * a + 3) := by rw [← pow_add]; congr 1; omega
-  have hlt : (2 * a + 3) * (w + 1) < (2 * a + 3) * (#(Nat.primesLE m) + 1) :=
+    grind
+  have hlog := Nat.log_lt_of_lt_pow (by simp) <|
+    calc m < 2 ^ (a + 1) * 2 ^ (a + 2) := Nat.mul_lt_mul_of_lt_of_le hw ha (by simp)
+      _ = 2 ^ (2 * a + 3) := by rw [← pow_add]; grind
+  have hlt :=
     calc (2 * a + 3) * (w + 1) < (2 * a + 4) * (w + 1) :=
           Nat.mul_lt_mul_of_pos_right (by omega) (by omega)
       _ = m := mul_comm _ _
       _ ≤ (Nat.log 2 m + 1) * (#(Nat.primesLE m) + 1) := le_log_mul_card_primesLE m
       _ ≤ (2 * a + 3) * (#(Nat.primesLE m) + 1) := Nat.mul_le_mul_right _ hlog
-  have := Nat.lt_of_mul_lt_mul_left hlt
-  omega
+  nlinarith
 
 end Nat

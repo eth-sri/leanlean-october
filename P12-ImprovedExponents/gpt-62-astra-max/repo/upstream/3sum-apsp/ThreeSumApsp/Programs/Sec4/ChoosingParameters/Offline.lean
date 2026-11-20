@@ -41,7 +41,7 @@ variable {lim : Limits} {P : Program} {G : RatParams} {N D₀ : ℕ} {X : Matrix
 /-! ## The text -/
 
 /-- The entry (XY)[I, J] for natural numbers I, J (0 outside the matrix). -/
-def entryN {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ) (Y : Matrix (Fin D₀) (Fin N) ℤ) (I J : ℕ) :
+def entryN {N D₀ } (X : Matrix (Fin N) (Fin D₀) ℤ) (Y : Matrix (Fin D₀) (Fin N) ℤ) (I J : ℕ) :
     ℤ :=
   if h : I < N ∧ J < N then (X * Y) ⟨I, h.1⟩ ⟨J, h.2⟩ else 0
 
@@ -51,17 +51,8 @@ namespace Offline32
 that is not used, the addresses of X, of Y, of the rows and of the columns of the wanted positions
 and of the output, and the free pointer. Then come the number of the current position and the result
 of a call. -/
-abbrev Size : ℕ := 0
-@[inherit_doc Size] abbrev Dim : ℕ := 1
-@[inherit_doc Size] abbrev Count : ℕ := 2
-@[inherit_doc Size] abbrev MatX : ℕ := 4
-@[inherit_doc Size] abbrev MatY : ℕ := 5
-@[inherit_doc Size] abbrev Rows : ℕ := 6
-@[inherit_doc Size] abbrev Cols : ℕ := 7
-@[inherit_doc Size] abbrev Out : ℕ := 8
-@[inherit_doc Size] abbrev Free : ℕ := 9
-@[inherit_doc Size] abbrev Pos : ℕ := 10
-@[inherit_doc Size] abbrev Res : ℕ := 11
+slots 0 Size Dim Count
+slots 4 MatX MatY Rows Cols Out Free Pos Res
 
 end Offline32
 
@@ -72,19 +63,12 @@ def offlineAsk32 : Stmt :=
     v Free] Res ;;
   .store (v Out +' v Pos) (v Res)
 
-open Offline32 in
-/-- offline32(N, D, w, U, x, y, wi, wj, out, fr): preprocess, then ask one query for each wanted
-position and store its answer. -/
-def offline32Body : Stmt :=
-  .call Proc.pre31 [v Size, v Dim, v MatX, v MatY, v Free] Res ;;
-  .for Pos (v Count) offlineAsk32
-
 /-! ## What it does -/
 
 /-- **Where the input of offline32 stands**, beyond what `Input31` says: the matrices at aX and aY;
 the two lists of indices, which are below N, and the output, all below the free pointer; and the
 output meets neither the matrices nor the lists. -/
-structure OfflineInput32 {N D₀ : ℕ} (X : Matrix (Fin N) (Fin D₀) ℤ) (Y : Matrix (Fin D₀) (Fin N) ℤ)
+structure OfflineInput32 {N D₀ } (X : Matrix (Fin N) (Fin D₀) ℤ) (Y : Matrix (Fin D₀) (Fin N) ℤ)
     (aX aY aI aJ out fr : ℕ) (WI WJ : List ℕ) (μ : ℕ → ℤ) : Prop where
   matX : MatAt μ aX X
   matY : MatAt μ aY Y

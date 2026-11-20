@@ -31,30 +31,10 @@ variable {lim : Limits} {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {aX aY b0 :
   {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ} {U : ℤ}
   {μ μ' : ℕ → ℤ}
 
-/-! ## The directory -/
-
-/-! ## Sizes and limits -/
-
-/-- The number of roots: one for each tile. -/
-theorem length_dsTries_roots (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L)
-    (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ) (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) :
-    (dsTries p t hmL X Y).roots.length = p.nB * p.nB := by
-  unfold dsTries
-  rw [length_roots_allTries, length_tileList]
-
-/-- The trie array fits into the trie area. -/
-theorem length_dsTries_le (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L)
-    (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ) (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) :
-    (dsTries p t hmL X Y).cells.length ≤ trieCap p t := by
-  unfold dsTries trieCap
-  have hle := length_allTries_le p.L p.m t (tileList p.nB (encRow p hmL X) (encCol p hmL Y))
-  rwa [length_tileList] at hle
-
 /-- The number 10^L of leaves fits in a word. -/
-theorem Lim30.pow_le (h : Lim30 lim p t b0 U) : (10 : ℤ) ^ p.L ≤ lim.word := by
+theorem Lim30.pow_le (h : Lim30 lim p t b0 U) : 10 ^ p.L ≤ lim.word := by
   refine le_trans ?_ h.pow
-  push_cast
-  exact pow_le_pow_right₀ (by norm_num) (by omega)
+  grind
 
 /-- Proof of Theorem 30, "Word size": the encoded numbers are at most 7^L U in absolute value. -/
 theorem abs_enc_le (hmL : p.m ≤ p.L) (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)

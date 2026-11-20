@@ -76,9 +76,9 @@ structure SharedCalleesP (lim : Limits) (P : Program) (c : ℕ) : Prop
 /-- What the two calls of encodeBandsP and the stores of the directory leave in the memory. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/SharedStage.lean
 -- (SharedReady.of_calls)
-theorem SharedReadyP.of_calls {p : Par} (hmL : p.m ≤ p.L) {aX aY b0 : ℕ}
-    {X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ}
-    {Y : Matrix (Fin (ThreeSumApsp.D p.m)) (Fin p.N) ℤ} {μ μEncA μEncB μDir : ℕ → ℤ}
+theorem SharedReadyP.of_calls {p } (hmL : p.m ≤ p.L) {aX aY b0 }
+    {X }
+    {Y } {μ μEncA μEncB μDir }
     (tb : SharedTables p b0 μ)
     (sA : ∀ β < p.nB, SegOn p.m μEncA (p.aENCA b0 + β * p.T)
       (encodingL (bandArrayL (Spec.stdLayout hmL) X β)))
@@ -95,29 +95,25 @@ theorem SharedReadyP.of_calls {p : Par} (hmL : p.m ≤ p.L) {aX aY b0 : ℕ}
   refine ⟨{ tbDir with
     dir := sdir
     encA := fun β hβ => (sA β hβ).congr fun i hi => ?_
-    encB := fun β hβ => (sB β hβ).congr fun i hi => above _ (by omega) }, fun x hx => ?_⟩
+    encB := fun β hβ => (sB β hβ).congr (by grind) }, fun x hx => ?_⟩
   · have := Nat.mul_add_lt_mul hβ (show i < p.T from hi)
     rw [above _ (by omega), fEncB _ (Or.inl (by omega))]
-  · show μDir x = μ x
-    rw [fDir x (by omega), fEncB x (by omega), fEncA x (by omega)]
+  · rw [fDir x (by omega), fEncB x (by omega), fEncA x (by omega)]
 
 /-- **The third part of sharedP.** -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/SharedStage.lean (sharedC_spec)
-theorem sharedCP_spec (std : Std lim) {c : ℕ} (C : SharedCalleesP lim P c) {d : ℕ} {p : Par}
-    (hmL : p.m ≤ p.L) {aX aY b0 : ℕ} (hd : d + (p.L + 3) ≤ lim.depth)
+theorem sharedCP_spec (std : Std lim) {c } (C : SharedCalleesP lim P c) {d } {p }
+    (hmL : p.m ≤ p.L) {aX aY b0 } (hd : d + (p.L + 3) ≤ lim.depth)
     (hsp : p.sharedEnd b0 ≤ lim.space) (h10 : ((10 ^ (p.L + 1) : ℕ) : ℤ) ≤ lim.word)
-    (μ : ℕ → ℤ) (r0 : ℤ) {X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ}
-    {Y : Matrix (Fin (ThreeSumApsp.D p.m)) (Fin p.N) ℤ} {V : ℤ} (hX : MatAt μ aX X)
+    (μ : ℕ → ℤ) (r0 : ℤ) {X }
+    {Y } {V } (hX : MatAt μ aX X)
     (hY : MatAt μ aY Y) (hXle : aX + p.N * p.D ≤ b0) (hYle : aY + p.D * p.N ≤ b0) (hV0 : 0 ≤ V)
     (hVX : ∀ i j, |X i j| ≤ V) (hVY : ∀ i j, |Y i j| ≤ V) (hVB : 7 ^ (p.L + 1) * V ≤ lim.word)
     (tb : SharedTables p b0 μ) :
     Ends lim P d sharedCP ⟨frame (sharedLocB p aX aY b0 r0), μ⟩ (sharedTimeCP c p) fun σ' =>
       SharedReadyP p hmL aX aY b0 X Y σ'.mem ∧ SameOutside μ σ'.mem b0 (p.sharedEnd b0 - b0) := by
   have hw := std.space_le
-  have h100 := std.const_le
   have hplaces := p.places b0
-  have hsizes := p.sizes hmL
-  have hTw := Par.ten_T_le h10
   unfold sharedCP sharedTimeCP
   -- the number of bands
   refine Ends.next 13 ((sharedBands_spec std hmL hsp μ r0 tb).mono le_rfl ?_)
@@ -129,13 +125,13 @@ theorem sharedCP_spec (std : Std lim) {c : ℕ} (C : SharedCalleesP lim P c) {d 
   light_set (p.aZS b0 : ℕ)
   light_set (p.sharedEnd b0 : ℕ)
   -- the encodings of the row bands of X
-  have preA : BandsPre lim p μ (p.bandsArgs b0 (p.aPHI b0) (p.aENCA b0)) Spec.phiFlat V :=
+  have preA :=
     tb.bandsPre hsp hV0 hVB tb.phi (coef_le := by omega) (le_enc := le_rfl) (enc_le := by omega)
   light_call (C.bandsLP p hmL _ aX μ X V preA hX
     (hXle.trans (show b0 ≤ p.aENCA b0 by omega)) hVX) with rEncA μEncA ⟨sA, fEncA⟩
   -- the encodings of the column bands of Y
-  have lowEncA : ∀ x < p.aENCA b0, μEncA x = μ x := fun x hx => fEncA x (Or.inl hx)
-  have tbEncA : SharedTables p b0 μEncA := tb.congr fun x _ hx => lowEncA x hx
+  have lowEncA := fun x hx => fEncA x (Or.inl hx)
+  have tbEncA := tb.congr fun x _ hx => lowEncA x hx
   have hYle' : aY + ThreeSumApsp.D p.m * p.N ≤ p.aENCA b0 := le_trans hYle (by omega)
   have preB : BandsPre lim p μEncA (p.bandsArgs b0 (p.aPSI b0) (p.aENCB b0)) Spec.psiFlat V :=
     tbEncA.bandsPre hsp hV0 hVB tbEncA.psi (coef_le := by omega) (le_enc := by omega)
@@ -146,8 +142,8 @@ theorem sharedCP_spec (std : Std lim) {c : ℕ} (C : SharedCalleesP lim P c) {d 
   refine (storeLocals_spec hw (base := b0) _ (by simp) _ 0 μEncB (by simp; omega)).mono
     (by simp; omega) ?_
   rintro ⟨_, μDir⟩ ⟨sdir, fDir⟩
-  exact SharedReadyP.of_calls hmL tb sA fEncA sB fEncB (by simpa [SegN, dirList] using sdir)
-    (by simpa using fDir)
+  exact SharedReadyP.of_calls hmL tb sA fEncA sB fEncB (by assumption)
+    (by assumption)
 
 /-! ## The whole stage -/
 
@@ -158,32 +154,23 @@ theorem sharedTimeP_le (c : ℕ) (p : Par) :
   unfold sharedTimeA sharedTimeB sharedTimeCP sharedShapeP
   -- The terms that are not in the shape: L + 1 ≤ (L + 1)², N + 1 ≤ (N + 1) (L - m + 1), 1 ≤ (L +
   -- 1)².
-  have hL : p.L + 1 ≤ (p.L + 1) ^ 2 := Nat.le_self_pow (by omega) _
-  have hN : p.N + 1 ≤ (p.N + 1) * (p.Lo + 1) := Nat.le_mul_of_pos_right _ (by omega)
-  generalize (p.L + 1) ^ 2 = s, Nat.sqrt p.K + 1 = q, (p.KK + 1) * (p.L + 1) = u,
-    (p.N + 1) * (p.Lo + 1) = w, (p.D + 1) * (p.m + 1) = x,
-    p.nB * (encWorkP p.L p.m + bandArrayShape p) = y at hL hN ⊢
-  have hcL := Nat.mul_le_mul_left c hL
-  have hcN := Nat.mul_le_mul_left c hN
-  have hc1 := Nat.mul_le_mul_left c (show 1 ≤ s by omega)
-  have hy : c * (y + 1) = c * y + c := Nat.mul_succ c y
-  have hright : (12 * c + 600) * (s + q + u + w + x + y) = 12 * (c * s) + 12 * (c * q)
-      + 12 * (c * u) + 12 * (c * w) + 12 * (c * x) + 12 * (c * y)
-      + 600 * (s + q + u + w + x + y) := by ring
-  omega
+  grind
+
+section
+variable (std : Std lim)
+  (hP : P[Proc.sharedP]? = some sharedPBody)
+include std hP
 
 /-- **sharedP** meets its entry, for callees described by their entries: if every callee meets its
 entry with the constant c, then sharedP does with the constant 12 c + 600. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/SharedStage.lean (shared_entry)
-theorem sharedP_entry_of_callees (std : Std lim) (hP : P[Proc.sharedP]? = some sharedPBody)
-    {c : ℕ} (C : SharedCalleesP lim P c) {c' : ℕ} (hc : 12 * c + 600 ≤ c') :
+theorem sharedP_entry_of_callees
+    {c } (C : SharedCalleesP lim P c) {c' } (hc : 12 * c + 600 ≤ c') :
     SharedSpecP lim P c' := by
   intro p hmL aX aY b0 μ X Y V pre d hd
   have hplaces := p.places b0
   refine .mono_const (.of_body hP (Ends.mono ?_ (sharedTimeP_le c p) fun _ h => h)) hc
   rw [← frame_append_zeros [(p.L : ℤ), p.m, p.N, p.D, aX, aY, b0] 26]
-  unfold sharedPBody
-  -- the first part
   light_piece (sharedA_spec std C.toSharedCallees hmL hd pre.space pre.ten μ)
     with ⟨locA, μA⟩ ⟨⟨rA, hlocA⟩, hA⟩
   obtain rfl : locA = _ := hlocA
@@ -198,7 +185,7 @@ theorem sharedP_entry_of_callees (std : Std lim) (hP : P[Proc.sharedP]? = some s
     rw [hB.same x (Or.inl (by omega)), hA.same x (Or.inl (by omega))]
   have hVB' : 7 ^ (p.L + 1) * max V 0 ≤ lim.word := by
     rcases le_total V 0 with h | h
-    · rw [max_eq_right h, mul_zero]
+    · rw [max_eq_right h]
       exact le_trans (by norm_num) std.const_le
     · rw [max_eq_left h]
       exact pre.seven
@@ -214,16 +201,18 @@ entry with the constant c, and encodeBandsP, encodeP, encStep and bandArray are 
 their numbers with `cBandArray + cEncP + 51 ≤ c`, then sharedP meets `SharedSpecP` with the
 constant 12 c + 600 (upstream's `cShared5 = 2000` is enough: `120 + 778 + 51 ≤ 2000`). -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/SharedStage.lean (shared_entry)
-theorem sharedP_entry (std : Std lim) (hP : P[Proc.sharedP]? = some sharedPBody)
+theorem sharedP_entry
     (hPB : P[Proc.encodeBandsP]? = some encodeBandsPBody)
     (hBA : P[pBandArray]? = some bandArrayBody) (hS : P[pEncStep]? = some encStepBody)
     (hE : P[Proc.encodeP]? = some (encodePBody pEncStep Proc.encodeP))
-    {c : ℕ} (C : SharedCallees lim P c) (hcb : cBandArray + cEncP + 51 ≤ c)
-    {c' : ℕ} (hc : 12 * c + 600 ≤ c') : SharedSpecP lim P c' :=
+    {c } (C : SharedCallees lim P c) (hcb : cBandArray + cEncP + 51 ≤ c)
+    {c' } (hc : 12 * c + 600 ≤ c') : SharedSpecP lim P c' :=
   sharedP_entry_of_callees std hP
     { C with
       bandsLP := encodeBandsPL_entry std hPB hS hE (bandArrayL_entry std hBA) hcb
       bandsRP := encodeBandsPR_entry std hPB hS hE (bandArrayR_entry std hBA) hcb }
     hc
+
+end
 
 end Light.Sec2

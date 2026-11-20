@@ -46,7 +46,7 @@ theorem supTime_zero (n D cap : ℕ) : supTime (fun _ => 0) n D cap = 0 := by
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/TimeBound/Total.lean
 /-- Under the hypotheses of Theorem 17 the host does not fall back on the brute force. -/
 theorem not_smallCase_of_hyp {n D g : ℕ} (h16 : 16 ≤ D) (hDn : D ≤ n) (hg1 : 1 ≤ g)
-    (hg : (g : ℝ) ≤ Real.sqrt D) : ¬ SmallCase n D g := by
+    (hg : g ≤ Real.sqrt D) : ¬ SmallCase n D g := by
   have hgD : g ≤ Nat.sqrt D := by
     rw [Nat.le_sqrt']
     exact_mod_cast (Real.le_sqrt g.cast_nonneg D.cast_nonneg).1 hg
@@ -66,8 +66,8 @@ theorem hostLoopBoundAE_zero_le (n U D g : ℕ) :
   generalize queryCapNat n D = cap
   generalize falsePositiveBound n U D = F
   generalize 4 * n * g = A
-  have hanswers : A * (tWrites n D q + 0 + tAnswersAE cap)
-      ≤ A * (tWrites n D q + 0 + tAnswers cap) + A * (49 * cap) := by
+  have hanswers : A * (tWrites n D + 0 + tAnswersAE cap)
+      ≤ A * (tWrites n D + 0 + tAnswers cap) + A * (49 * cap) := by
     rw [← Nat.mul_add]
     refine Nat.mul_le_mul_left _ ?_
     unfold tAnswersAE tAnswers
@@ -78,49 +78,48 @@ theorem hostLoopBoundAE_zero_le (n U D g : ℕ) :
   have hscans : tScanCallAE q * (F + n * n)
       ≤ 2 * (tScanCall q * (F + 1)) + tScanCallAE q * (n * n) := by
     have hfails : tScanCallAE q * F ≤ 2 * (tScanCall q * (F + 1)) := by
-      rw [← Nat.mul_assoc]
-      exact Nat.mul_le_mul hcall (Nat.le_succ F)
-    rw [Nat.mul_add]
-    exact Nat.add_le_add_right hfails _
+      nlinarith
+    grind
   omega
+
+section
+variable {Dfun Gfun : ℕ → ℕ}
+  (tD tG : ℕ → ℕ)
 
 /-- Without the solver, the all-edges host takes at most twice the time of the variant host plus
 the excess, if `n` is not small. -/
-theorem hostTimeAE_zero_le {Dfun Gfun : ℕ → ℕ} (tD tG : ℕ → ℕ) {n U D g : ℕ} (hD : Dfun n = D)
+theorem hostTimeAE_zero_le {n U D g : ℕ} (hD : Dfun n = D)
     (hG : Gfun D = g) (hs : ¬ SmallCase n D g) :
     hostTimeAE Dfun Gfun tD tG (fun _ => 0) n U
       ≤ 2 * hostTime' Dfun Gfun tD tG (fun _ => 0) n U + extraAE n D g := by
-  have h := hostLoopBoundAE_zero_le n U D g
-  unfold hostTimeAE hostCoreTime hostTime' extraAE
-  rw [hD, hG]
-  simp only [ite_eq_right hs]
-  unfold hostMainAE hostMain'
-  omega
+  grind [hostTimeAE, hostCoreTime, hostTime', extraAE, hostMainAE, hostMain', hostLoopBoundAE_zero_le]
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/TimeBound/Total.lean
 /-- The time of the all-edges host is the time of `4ng` calls of the solver plus its time without
 the solver, if `n` is not small. -/
-theorem hostTimeAE_eq {Dfun Gfun : ℕ → ℕ} (tD tG : ℕ → ℕ) (Tn : List ℕ → ℕ) {n U D g : ℕ}
+theorem hostTimeAE_eq (Tn : List ℕ → ℕ) {n U D g : ℕ}
     (hD : Dfun n = D) (hG : Gfun D = g) (hs : ¬ SmallCase n D g) :
     hostTimeAE Dfun Gfun tD tG Tn n U
       = 4 * n * g * supTime Tn n (midSize D g) (queryCapNat n D)
         + hostTimeAE Dfun Gfun tD tG (fun _ => 0) n U := by
   unfold hostTimeAE hostCoreTime
   rw [hD, hG]
-  simp only [ite_eq_right hs]
+  simp [ite_eq_right hs]
   unfold hostMainAE hostLoopBoundAE
   rw [supTime_zero]
   ring
+
+end
 
 /-! ## The excess is within the bound -/
 
 /-- What bounds the excess: `ng · n²/√D`, for reading the answers of the instances, plus the three
 terms of the bound of Theorem 17. -/
 noncomputable def restBoundAE (θ : CostParams) : ℝ :=
-  (θ.n : ℝ) * θ.g * ((θ.n : ℝ) ^ 2 / Real.sqrt θ.D) + budget θ
+  θ.n * θ.g * (θ.n ^ 2 / Real.sqrt θ.D) + budget θ
 
 /-- What is within the three terms is within `restBoundAE`. -/
-theorem stepsRestAE_of_budget {t : CostParams → ℕ} (h : Steps t budget) : Steps t restBoundAE :=
+theorem stepsRestAE_of_budget {t} (h : Steps t budget) : Steps t restBoundAE :=
   h.mono_right fun θ _ => le_add_of_nonneg_left (by positivity)
 
 /-- A piece has `⌈s/g⌉ ≤ s` vertices. -/
@@ -147,10 +146,10 @@ theorem steps_copyAE : StepsMon (fun θ => copyTime (θ.n * θ.n)) 2 0 0 := by
 /-- Reading the answers with flags takes `O(ng) · O(n²/√D)` more steps than without. -/
 theorem steps_answersAE :
     Steps (fun θ => 4 * θ.n * θ.g * (49 * queryCapNat θ.n θ.D))
-      fun θ => (θ.n : ℝ) * θ.g * ((θ.n : ℝ) ^ 2 / Real.sqrt θ.D) := by
-  have hinst : Steps (fun θ => 4 * θ.n * θ.g) fun θ => (θ.n : ℝ) * θ.g :=
+      fun θ => θ.n * θ.g * (θ.n ^ 2 / Real.sqrt θ.D) := by
+  have hinst : Steps (fun θ => 4 * θ.n * θ.g) fun θ => θ.n * θ.g :=
     (Steps.const_mul (Dominated.refl _ _)).mul (Dominated.refl _ _)
-  have hcap : Steps (fun θ => 49 * queryCapNat θ.n θ.D) fun θ => (θ.n : ℝ) ^ 2 / Real.sqrt θ.D :=
+  have hcap : Steps (fun θ => 49 * queryCapNat θ.n θ.D) fun θ => θ.n ^ 2 / Real.sqrt θ.D :=
     Steps.const_mul (Dominated.of_le fun _ hθ => cast_queryCapNat_le hθ)
   exact hinst.mul hcap
 
@@ -167,9 +166,9 @@ theorem steps_extraAE : Steps (fun θ => extraAE θ.n θ.D θ.g) restBoundAE :=
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/TimeBound/Total.lean
 /-- A bound `T` on the time of the solver that is monotone in the number of query pairs bounds its
 largest time on the instances of the host. -/
-theorem cast_supTime_le {Tn : List ℕ → ℕ} {T : ℕ → ℕ → ℕ → ℝ}
-    (hT : ∀ n D w w' : ℕ, 1 ≤ n → 1 ≤ D → w ≤ w' → (Tn [n, D, w] : ℝ) ≤ T n D w') {n D : ℕ}
-    (hn : 1 ≤ n) (hD : 1 ≤ D) (cap : ℕ) : ((supTime Tn n D cap : ℕ) : ℝ) ≤ T n D cap := by
+theorem cast_supTime_le {Tn} {T : ℕ → ℕ → ℕ → ℝ}
+    (hT : ∀ n D w w' : ℕ, 1 ≤ n → 1 ≤ D → w ≤ w' → (Tn [n, D, w] : ℝ) ≤ T n D w') {n D}
+    (hn : 1 ≤ n) (hD : 1 ≤ D) (cap : ℕ) : (supTime Tn n D cap : ℕ) ≤ T n D cap := by
   obtain ⟨w, hw, hsup⟩ : ∃ w ∈ Finset.range (cap + 1),
       (Finset.range (cap + 1)).sup (fun w => Tn [n, D, w]) = Tn [n, D, w] :=
     Finset.exists_mem_eq_sup _ ⟨0, Finset.mem_range.2 (Nat.succ_pos _)⟩ _
@@ -180,39 +179,37 @@ theorem cast_supTime_le {Tn : List ℕ → ℕ} {T : ℕ → ℕ → ℕ → ℝ
 `ImprovedExponents.HostMid.obeysBound17Mid_hostTime`: the parameter routines compute `Dfun n` from
 `n` and `Gfun D` from `D`, these agree with the parameters `D n` and `g n` of the claim, and the
 routines run within the bound. -/
-theorem obeysBound17Mid_hostTimeAE (D g : ℕ → ℕ) {Dfun Gfun tD tG : ℕ → ℕ}
+theorem obeysBound17Mid_hostTimeAE (D g : ℕ → ℕ) {Dfun Gfun tD tG}
     (hDf : ∀ n, Dfun n = D n) (hGf : ∀ n, 1 ≤ n → Gfun (D n) = g n)
     (hD : Steps (fun θ => tD θ.n) budget) (hG : Steps (fun θ => tG θ.D) budget) :
     ObeysBound17Mid strassen D g (hostTimeAE Dfun Gfun tD tG) := by
   obtain ⟨C₀, hC₀, hbound⟩ := obeysBound17Mid_hostTime D g hDf hGf hD hG
   obtain ⟨C₁, hC₁, hextra⟩ := steps_extraAE
-  refine ⟨2 * C₀ + C₁, by positivity, fun Tn T hT n U κ h16 hDn hg1 hg hκ hU => ?_⟩
+  refine ⟨2 * C₀ + C₁, by grind, fun Tn T hT n U κ h16 hDn hg1 hg hκ hU => ?_⟩
   have hθ : CostParams.Hyp ⟨n, D n, g n, U, κ⟩ := ⟨h16, hDn, hg1, hg, hκ, hU⟩
-  have hn1 : 1 ≤ n := hθ.one_le_n_nat
-  have hD1 : 1 ≤ D n := hθ.one_le_D_nat
-  have hmid : 1 ≤ midSize (D n) (g n) := one_le_midSize h16 hg1
-  have hs : ¬ SmallCase n (D n) (g n) := not_smallCase_of_hyp h16 hDn hg1 hg
+  have hn1 := hθ.one_le_n_nat
+  have hD1 := hθ.one_le_D_nat
+  have hmid := one_le_midSize h16 hg1
+  have hs := not_smallCase_of_hyp h16 hDn hg1 hg
   -- the calls of the solver
   have hsolver := cast_supTime_le hT hn1 hmid (queryCapNat n (D n))
   -- the variant host without the solver, by its bound
-  have hzero : ((hostTime' Dfun Gfun tD tG (fun _ => 0) n U : ℕ) : ℝ)
-      ≤ bound17Mid strassen D g C₀ (fun _ _ _ => 0) n κ :=
+  have hzero :=
     hbound (fun _ => 0) (fun _ _ _ => 0) (fun _ _ _ _ _ _ _ => by simp) n U κ h16 hDn hg1 hg hκ hU
   -- the excess
   have hex := hextra ⟨n, D n, g n, U, κ⟩ hθ
   have hle := hostTimeAE_zero_le tD tG (hDf n) (hGf n hn1) hs (U := U)
-  have hcalls : (4 * (n : ℝ) * g n) * (supTime Tn n (midSize (D n) (g n)) (queryCapNat n (D n)) : ℝ)
-      ≤ (4 * (n : ℝ) * g n) * T n (midSize (D n) (g n)) (queryCapNat n (D n)) :=
+  have hcalls : (4 * n * g n) * (supTime Tn n (midSize (D n) (g n)) (queryCapNat n (D n)) : ℝ)
+      ≤ (4 * n * g n) * T n (midSize (D n) (g n)) (queryCapNat n (D n)) :=
     mul_le_mul_of_nonneg_left hsolver (by positivity)
-  have hquery : 0 ≤ C₁ * ((n : ℝ) * g n * ((n : ℝ) ^ 2 / Real.sqrt (D n))) := by positivity
+  have hquery : 0 ≤ C₁ * (n * g n * (n ^ 2 / Real.sqrt (D n))) := by positivity
   rw [hostTimeAE_eq tD tG Tn (hDf n) (hGf n hn1) hs]
   rw [queryCapNat_eq n hD1] at hcalls ⊢
   have hle' : ((hostTimeAE Dfun Gfun tD tG (fun _ => 0) n U : ℕ) : ℝ)
       ≤ 2 * (hostTime' Dfun Gfun tD tG (fun _ => 0) n U : ℕ) + (extraAE n (D n) (g n) : ℕ) := by
     exact_mod_cast hle
-  simp only [bound17Mid, restBoundAE, budget] at hzero hex ⊢
-  push_cast
-  linarith [hcalls, hle', hzero, hex, hquery]
+  simp [bound17Mid, restBoundAE, budget] at hzero hex ⊢
+  grind
 
 /-! ## The claim -/
 
@@ -225,7 +222,7 @@ results and the words are polynomially bounded, the routines agree with the para
 of the claim, and their times are within the budget of Theorem 17, then the all-edges host proves
 `Claim17Mid` for `D` and `g` in the model `lightModelAE`. -/
 theorem claim17MidAE_of_paramProcs (D g : ℕ → ℕ) {procs : ℕ → Program}
-    {Dfun Gfun tD tG wD wG : ℕ → ℕ} {i j : ℕ}
+    {Dfun Gfun tD tG wD wG} {i j}
     (hD : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + i) Dfun tD wD)
     (hG : ∀ Q R, ParamProc (Q ++ procs Q.length ++ R) (Q.length + j) Gfun tG wG)
     (hpos : ∀ n, 1 ≤ n → 1 ≤ Dfun n)
@@ -239,7 +236,7 @@ theorem claim17MidAE_of_paramProcs (D g : ℕ → ℕ) {procs : ℕ → Program}
     (obeysBound17Mid_hostTimeAE D g hDf hGf hstepsD hstepsG)
 
 /-- The all-edges host, for any parameter routines, as `ImprovedExponents.claim17Mid_of_pack`. -/
-theorem claim17MidAE_of_pack {D g : ℕ → ℕ} (pk : ParamPack D g) :
+theorem claim17MidAE_of_pack {D g} (pk : ParamPack D g) :
     Claim17Mid lightModelAE strassen D g :=
   claim17MidAE_of_paramProcs D g pk.procD pk.procG pk.D_pos pk.polyD pk.polyG pk.polyWD pk.polyWG
     pk.D_eq pk.G_eq pk.stepsD_budget pk.stepsG_budget

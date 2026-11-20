@@ -2,8 +2,8 @@ module
 
 public import ImprovedExponents.Pipeline.Fits
 public import ImprovedExponents.Pipeline.HostBound
-public import ImprovedExponents.Cost8X.Offline
-public import ImprovedExponents.HostMid.AtParameters
+public import ImprovedExponents.Cost8X.Dominated
+public import ImprovedExponents.HostMid.Total
 public import ImprovedExponents.ParamRoutines.Rat
 
 @[expose] public section
@@ -40,12 +40,6 @@ end thin
 
 /-! ## The reduction from Exact Triangle -/
 
-/-- The host that passes the true size of the middle part, for any parameter routines. -/
-theorem claim17Mid_of_pack {D g : ℕ → ℕ} (pk : ParamPack D g) :
-    Claim17Mid lightModel strassen D g :=
-  claim17Mid_of_paramProcs D g pk.procD pk.procG pk.D_pos pk.polyD pk.polyG pk.polyWD pk.polyWG
-    pk.D_eq pk.G_eq pk.stepsD_budget pk.stepsG_budget
-
 /-- `Claim17Mid` is `HostBound` with the solver charged at `⌈⌊√D⌋/g⌉ ⌊√D⌋`. -/
 theorem hostBound_iff_claim17Mid (M : DetTimeModel) (MM : ℕ → ℝ) (D g : ℕ → ℕ) :
     HostBound M MM D g (fun n => pieceSizeNat (D n) (g n) * Nat.sqrt (D n))
@@ -53,14 +47,6 @@ theorem hostBound_iff_claim17Mid (M : DetTimeModel) (MM : ℕ → ℝ) (D g : �
   Iff.rfl
 
 variable (a b c d : ℕ)
-
-/-- **Theorem 17 at rational exponents, charged at the true size of the middle part**:
-`D(n) = ⌊n^{a/b}⌋`, `g = ⌈D^{c/d}⌉`, every call of the solver charged at `⌈⌊√D⌋/g⌉ ⌊√D⌋`. -/
-theorem hostBound_mid_rat (hb : 1 ≤ b) (hd : 1 ≤ d) (hab : a ≤ 2 * b) (hcd : c ≤ 3 * d) :
-    HostBound lightModel strassen (paramDRat a b) (paramGRatOf a b c d)
-      (fun n => pieceSizeNat (paramDRat a b n) (paramGRatOf a b c d n)
-        * Nat.sqrt (paramDRat a b n)) :=
-  (hostBound_iff_claim17Mid _ _ _ _).2 (claim17Mid_of_pack (paramPackRat a b c d hb hd hab hcd))
 
 /-- **Theorem 17 charged at the true size of the middle part, at all rational exponents**, in the
 time model `M`: the statement `hostBound_mid_rat` makes about `lightModel`, as a property of `M`.
@@ -71,9 +57,5 @@ def MidHostRat (M : DetTimeModel) : Prop :=
     HostBound M strassen (paramDRat a b) (paramGRatOf a b c d)
       (fun n => pieceSizeNat (paramDRat a b n) (paramGRatOf a b c d n)
         * Nat.sqrt (paramDRat a b n))
-
-/-- `lightModel` has the host of Theorem 17 at the true size of the middle part. -/
-theorem midHostRat_light : MidHostRat lightModel := fun a b c d hb hd hab hcd =>
-  hostBound_mid_rat a b c d hb hd hab hcd
 
 end ImprovedExponents

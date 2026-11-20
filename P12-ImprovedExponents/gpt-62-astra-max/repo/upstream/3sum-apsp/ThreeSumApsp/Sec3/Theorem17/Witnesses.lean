@@ -59,7 +59,7 @@ variable {T D g p ans}
 failed scans", for any finite family `s` of scans and any notion "the scan `x` contains the triple
 `t`".  The scans of the accepted pairs (`card_failedScans_le`) and the scans of the program
 (`HostData.sum_fails_le`) are two such families. -/
-theorem card_le_F_of_distinct_scans (T : TriangleInstance ℤ n) {σ : Type*} (s : Finset σ)
+theorem card_le_F_of_distinct_scans (T : TriangleInstance ℤ n) {σ } (s : Finset σ)
     (contains : σ → Fin n × Fin n × Fin n → Prop)
     (hfalse : ∀ x ∈ s, ∃ t, contains x t ∧ T.IsFalsePositive p t)
     (hdistinct : ∀ t, ∀ x ∈ s, ∀ y ∈ s, contains x t → contains y t → x = y) :
@@ -67,8 +67,7 @@ theorem card_le_F_of_distinct_scans (T : TriangleInstance ℤ n) {σ : Type*} (s
   classical
   refine Finset.card_le_card_of_forall_subsingleton contains (fun x hx => ?_)
     fun t _ x hx y hy => hdistinct t x hx.1 y hy.1 hx.2 hy.2
-  obtain ⟨t, ht, hfp⟩ := hfalse x hx
-  exact ⟨t, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hfp⟩, ht⟩
+  grind
 
 end TriangleInstance
 

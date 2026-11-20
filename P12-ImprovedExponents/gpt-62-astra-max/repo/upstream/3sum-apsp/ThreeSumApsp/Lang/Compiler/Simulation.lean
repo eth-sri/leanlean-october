@@ -69,7 +69,6 @@ private theorem codeAt_ite (h : CodeAt code pos (compileStmt G (.ite c s t) pos)
         [.bltz cNEG (pos + c.size + s.size G.F + 1 + t.size G.F)] ∧
       CodeAt code (pos + c.size + s.size G.F + 1)
         (compileStmt G t (pos + c.size + s.size G.F + 1)) := by
-  rw [compileStmt] at h
   refine ⟨h.left.left.left, h.left.left.right.cast_pos ?_, h.left.right.cast_pos ?_,
     h.right.cast_pos ?_⟩ <;> simp +arith [length_compileCond, length_compileStmt]
 
@@ -78,7 +77,6 @@ private theorem codeAt_while (h : CodeAt code pos (compileStmt G (.while c s) po
     CodeAt code pos (compileCond c (pos + c.size + s.size G.F + 1)) ∧
       CodeAt code (pos + c.size) (compileStmt G s (pos + c.size)) ∧
       CodeAt code (pos + c.size + s.size G.F) [.bltz cNEG pos] := by
-  rw [compileStmt] at h
   refine ⟨h.left.left, h.left.right.cast_pos ?_, h.right.cast_pos ?_⟩ <;>
     simp +arith [length_compileCond, length_compileStmt]
 
@@ -122,26 +120,24 @@ for the dispatcher. -/
 def stepsPerStep (n : ℕ) : ℕ := 2 * n
 
 /-- At most n machine steps are within the bound for c ≥ 1 steps of the language. -/
-private theorem le_stepsPerStep_mul {a c n : ℕ} (h : a ≤ n) (hc : 1 ≤ c) :
+private theorem le_stepsPerStep_mul {a c n } (h : a ≤ n) (hc : 1 ≤ c) :
     a ≤ stepsPerStep n * c :=
   calc a ≤ stepsPerStep n * 1 := by rw [stepsPerStep]; omega
     _ ≤ stepsPerStep n * c := Nat.mul_le_mul_left _ hc
 
 /-- At most n machine steps, followed by b machine steps that are within the bound for k steps, are
 within the bound for c + k steps if c ≥ 1. -/
-private theorem add_le_stepsPerStep_mul {a b c k n : ℕ} (h : a ≤ n) (hc : 1 ≤ c)
+private theorem add_le_stepsPerStep_mul {a b c k n } (h : a ≤ n) (hc : 1 ≤ c)
     (hb : b ≤ stepsPerStep n * k) : a + b ≤ stepsPerStep n * (c + k) :=
   Nat.mul_add _ c k ▸ Nat.add_le_add (le_stepsPerStep_mul h hc) hb
 
 /-- The count for a call whose code is at pos and has size + 2 instructions: size steps to enter, b
 for the body, r + 2 (pos + size + 1) to leave, where r is the length of the return sequence, and 2
 to store the result.  The cost a of the arguments is not needed. -/
-private theorem call_le_stepsPerStep_mul {pos size b r a k n : ℕ} (hpos : pos + (size + 2) ≤ n)
+private theorem call_le_stepsPerStep_mul {pos size b r a k n } (hpos : pos + (size + 2) ≤ n)
     (hr : r ≤ n) (hb : b ≤ stepsPerStep n * k) :
     size + b + (r + 2 * (pos + size + 1)) + 2 ≤ stepsPerStep n * (a + 2 + k) := by
-  rw [Nat.mul_add (stepsPerStep n), Nat.mul_add (stepsPerStep n)]
-  have hK : stepsPerStep n * 2 = 4 * n := by rw [stepsPerStep]; omega
-  omega
+  grind [stepsPerStep]
 
 variable {W : ℕ} (S : Setting W)
 
@@ -179,8 +175,12 @@ def Simulates (d : ℕ) (s : Stmt) (σ σ' : State) (c : ℕ) : Prop :=
 
 variable {S} {d pos q : ℕ} {s s₁ s₂ : Stmt} {σ σ' σ₁ σ₂ : State} {m : ℤ → BitVec W}
 
+section
+variable (B : Start S d s σ pos q m)
+include B
+
 /-- The situation before a part t of the statement runs, in the same frame. -/
-private theorem Start.sub (B : Start S d s σ pos q m) {t : Stmt} {pos' : ℕ} {m' : ℤ → BitVec W}
+private theorem Start.sub {t : Stmt} {pos' : ℕ} {m' : ℤ → BitVec W}
     (hcode : CodeAt S.code pos' (compileStmt S.toCodeLayout t pos'))
     (hpos : pos' + t.size S.F ≤ S.disp) (hw : t.width ≤ S.F) (hσ : σ'.Bounded S.lim)
     (R : Rel S.toSizes σ' q m') : Start S d t σ' pos' q m' :=
@@ -188,17 +188,19 @@ private theorem Start.sub (B : Start S d s σ pos q m) {t : Stmt} {pos' : ℕ} {
     bounded := hσ, room := B.room }
 
 /-- The room on the stack, seen from the frame of a procedure that is called. -/
-private theorem Start.room_succ (B : Start S d s σ pos q m) (hd : d < S.lim.depth) :
+private theorem Start.room_succ (hd : d < S.lim.depth) :
     q + S.F + 1 + S.F + (S.F + 1) * (S.lim.depth - (d + 1)) ≤ S.Q := by
   have := B.room
   rw [show S.lim.depth - d = S.lim.depth - (d + 1) + 1 by omega, Nat.mul_succ] at this
   omega
 
 /-- The test of an if or a while that is at pos. -/
-private theorem Start.test (B : Start S d s σ pos q m) {c : Cond} {l : ℕ}
+private theorem Start.test {c : Cond} {l : ℕ}
     (hcode : CodeAt S.code pos (compileCond c l)) (hw : c.width ≤ S.F) (hs : c.Safe S.lim σ) :
     Decides S.code S.F pos c.size l m (c.Holds σ) :=
   decides_compileCond B.toFramed B.bounded c hcode hw hs
+
+end
 
 /-! ## Statements without calls -/
 
@@ -207,7 +209,7 @@ private theorem sim_skip : Simulates S d .skip σ σ 0 := fun _ _ m B =>
   ⟨m, 0, { run := Steps.refl _, le := Nat.zero_le _, rel := B.rel, agree := AgreeOutside.refl _ m }⟩
 
 /-- x := e: the code of e leaves the value in T₀, and two instructions store it in x. -/
-private theorem sim_set {x : ℕ} {e : Expr} (hs : e.Safe S.lim σ) :
+private theorem sim_set {x } {e } (hs : e.Safe S.lim σ) :
     Simulates S d (.set x e) σ { σ with loc := Function.update σ.loc x (e.val σ) }
       (e.cost + 1) := by
   intro pos q m B
@@ -222,14 +224,14 @@ private theorem sim_set {x : ℕ} {e : Expr} (hs : e.Safe S.lim σ) :
   -- x := T₀
   obtain ⟨m₂, run₂, R₂, A₂⟩ := steps_setVar (B.toFramed.same A₁) hx setCode val (by cells)
   exact ⟨m₂, _, {
-    run := (run₁.trans run₂).cast_pos (by rw [Stmt.size, Nat.add_assoc])
+    run := (run₁.trans run₂).cast_pos (by rfl)
     le := le_stepsPerStep_mul (by omega) (by omega)
     rel := R₂
     agree := (A₁.mono scratch_subset_writable).trans A₂ }⟩
 
 /-- The cell at a := e: the code of a and e leaves the values in T₀ and T₁, and one instruction
 stores. -/
-private theorem sim_store {a e : Expr} (hsa : a.Safe S.lim σ) (hse : e.Safe S.lim σ)
+private theorem sim_store {a e } (hsa : a.Safe S.lim σ) (hse : e.Safe S.lim σ)
     (haddr : S.lim.Addr (a.val σ)) :
     Simulates S d (.store a e) σ
       { σ with mem := Function.update σ.mem (a.val σ).toNat (e.val σ) } (a.cost + e.cost + 1) := by
@@ -242,13 +244,13 @@ private theorem sim_store {a e : Expr} (hsa : a.Safe S.lim σ) (hse : e.Safe S.l
   have run₂ := run₁.trans (steps_store (codeAt_after_pair B.codeAt) va (S.inRange_addr haddr))
   rw [ve] at run₂
   exact ⟨_, _, {
-    run := run₂.cast_pos (by rw [Stmt.size, Nat.add_assoc])
+    run := run₂.cast_pos (by rfl)
     le := le_stepsPerStep_mul (by omega) (by omega)
     rel := (B.rel.same A₁).setMem B.low haddr _
     agree := (A₁.mono scratch_subset_writable).update (mem_writable_of_addr haddr) _ }⟩
 
 /-- s₁; s₂: the code of s₁, then the code of s₂. -/
-private theorem sim_seq {c₁ c₂ : ℕ} (h₁ : Exec S.lim S.P d s₁ σ σ₁ c₁)
+private theorem sim_seq {c₁ c₂ } (h₁ : Exec S.lim S.P d s₁ σ σ₁ c₁)
     (ih₁ : Simulates S d s₁ σ σ₁ c₁) (ih₂ : Simulates S d s₂ σ₁ σ₂ c₂) :
     Simulates S d (.seq s₁ s₂) σ σ₂ (c₁ + c₂) := by
   intro pos q m B
@@ -264,9 +266,15 @@ private theorem sim_seq {c₁ c₂ : ℕ} (h₁ : Exec S.lim S.P d s₁ σ σ₁
     rel := R₂
     agree := A₁.trans A₂ }⟩
 
+section
+variable {c : Cond}
+  {k : ℕ}
+  (hs : c.Safe S.lim σ)
+include hs
+
 /-- if c then s₁ else s₂, when c holds: the test goes on to the code of s₁, and a jump leads over
 the code of s₂. -/
-private theorem sim_iteTrue {c : Cond} {k : ℕ} (hs : c.Safe S.lim σ) (holds : c.Holds σ)
+private theorem sim_iteTrue (holds : c.Holds σ)
     (ih : Simulates S d s₁ σ σ' k) : Simulates S d (.ite c s₁ s₂) σ σ' (c.cost + 1 + k) := by
   intro pos q m B
   obtain ⟨hwc, hw₁, -⟩ := Stmt.width_ite_le_iff.1 B.width
@@ -286,7 +294,7 @@ private theorem sim_iteTrue {c : Cond} {k : ℕ} (hs : c.Safe S.lim σ) (holds :
     agree := (A₀.mono scratch_subset_writable).trans A₁ }⟩
 
 /-- if c then s₁ else s₂, when c fails: the test jumps to the code of s₂. -/
-private theorem sim_iteFalse {c : Cond} {k : ℕ} (hs : c.Safe S.lim σ) (fails : ¬ c.Holds σ)
+private theorem sim_iteFalse (fails : ¬ c.Holds σ)
     (ih : Simulates S d s₂ σ σ' k) : Simulates S d (.ite c s₁ s₂) σ σ' (c.cost + 1 + k) := by
   intro pos q m B
   obtain ⟨hwc, -, hw₂⟩ := Stmt.width_ite_le_iff.1 B.width
@@ -303,8 +311,10 @@ private theorem sim_iteFalse {c : Cond} {k : ℕ} (hs : c.Safe S.lim σ) (fails 
     rel := R₁
     agree := (A₀.mono scratch_subset_writable).trans A₁ }⟩
 
+end
+
 /-- while c do s, when c fails: the test jumps to the position after the loop. -/
-private theorem sim_whileFalse {c : Cond} (hs : c.Safe S.lim σ) (fails : ¬ c.Holds σ) :
+private theorem sim_whileFalse {c } (hs : c.Safe S.lim σ) (fails : ¬ c.Holds σ) :
     Simulates S d (.while c s) σ σ (c.cost + 1) := by
   intro pos q m B
   obtain ⟨hwc, -⟩ := Stmt.width_while_le_iff.1 B.width
@@ -319,7 +329,7 @@ private theorem sim_whileFalse {c : Cond} (hs : c.Safe S.lim σ) (fails : ¬ c.H
 
 /-- while c do s, when c holds: the test goes on to the code of s, a jump leads back to the test,
 and the loop runs again. -/
-private theorem sim_whileTrue {c : Cond} {k₁ k₂ : ℕ} (hs : c.Safe S.lim σ) (holds : c.Holds σ)
+private theorem sim_whileTrue {c } {k₁ k₂ } (hs : c.Safe S.lim σ) (holds : c.Holds σ)
     (h₁ : Exec S.lim S.P d s σ σ₁ k₁) (ih₁ : Simulates S d s σ σ₁ k₁)
     (ih₂ : Simulates S d (.while c s) σ₁ σ₂ k₂) :
     Simulates S d (.while c s) σ σ₂ (c.cost + 1 + k₁ + k₂) := by
@@ -355,7 +365,7 @@ to the entry e.  Afterwards the memory represents the state in which the procedu
 frame q + F + 1, and the stack cell before that frame holds the position after the jump.  Of the
 stack, only cells from q + F on have changed. -/
 private theorem steps_callEnter (B : Start S d (.call p args x) σ pos q m)
-    (hsa : ∀ e ∈ args, e.Safe S.lim σ) (hd : d < S.lim.depth) {e : ℕ}
+    (hsa : ∀ e ∈ args, e.Safe S.lim σ) (hd : d < S.lim.depth) {e }
     (he : S.entry[p]? = some e) :
     ∃ m₂, Steps S.code (callSize S.F args) ⟨pos, m⟩ ⟨e, m₂⟩ ∧
       Rel S.toSizes ⟨frame (args.map (·.val σ)), σ.mem⟩ (q + S.F + 1) m₂ ∧
@@ -364,13 +374,13 @@ private theorem steps_callEnter (B : Start S d (.call p args x) σ pos q m)
   obtain ⟨-, hlen, hwa⟩ := Stmt.width_call_le_iff.1 B.width
   obtain ⟨frameCode, jumpCode, -⟩ := codeAt_call B.codeAt
   have hpos : pos + (callSize S.F args + 2) ≤ S.disp := B.below
-  rw [List.getD_eq_getElem?_getD, he, Option.getD_some] at jumpCode
+  rw [List.getD_eq_getElem?_getD, he] at jumpCode
   -- the arguments: there are at most F of them, each of width at most F
   obtain ⟨vals, A⟩ := effects_argsCode B.toFramed args 0 hwa hsa (by omega)
   have A₁ := A.mono temps_subset_scratch
   -- the new frame
   obtain ⟨R₂, hret, A₂⟩ := effects_newFrame (B.toFramed.same A₁)
-    ((Nat.le_add_right _ _).trans (B.room_succ hd)) args (by simpa using vals)
+    ((Nat.le_add_right _ _).trans (B.room_succ hd)) args (by grind)
     (ret := pos + callSize S.F args) (by omega)
   have run₂ := steps_straight _ pos m frameCode
     (List.forall_mem_append.2 ⟨straight_argsCode _ _, straight_newFrame _ _ _⟩)
@@ -392,7 +402,7 @@ private theorem steps_callLeave (S : Setting W) {ret : ℕ} (R : Rel S.toSizes �
       AgreeOutside (insert cFP (Scratch S.F)) m m' := by
   have hN := S.offsets_le
   -- RET := the cell at FP, which is local variable 0
-  have run₁ := steps_load (i := cRET) hcode R.fp (S.inRange_stack hQ)
+  have run₁ := steps_load hcode R.fp (S.inRange_stack hQ)
   rw [R.loc_zero hF] at run₁
   have A₁ := (AgreeOutside.refl (Scratch S.F) m).update (a := cRET) (by cells) (wd W (σ.loc 0))
   -- ADDR := FP + 2, the address of the stack cell before the frame
@@ -417,7 +427,7 @@ private theorem steps_callLeave (S : Setting W) {ret : ℕ} (R : Rel S.toSizes �
     ((A₃.mono (by cells)).update (by cells) _).update (by cells) _⟩
 
 /-- x := p(args): enter, the body, leave, store the result. -/
-private theorem sim_call {body : Stmt} {k : ℕ} (hsa : ∀ e ∈ args, e.Safe S.lim σ)
+private theorem sim_call {body } {k } (hsa : ∀ e ∈ args, e.Safe S.lim σ)
     (hp : S.P[p]? = some body) (hd : d < S.lim.depth)
     (ih : Simulates S (d + 1) body ⟨frame (args.map (·.val σ)), σ.mem⟩ σ' k) :
     Simulates S d (.call p args x) σ ⟨Function.update σ.loc x (σ'.loc 0), σ'.mem⟩
@@ -437,14 +447,14 @@ private theorem sim_call {body : Stmt} {k : ℕ} (hsa : ∀ e ∈ args, e.Safe S
       width := S.width body (List.mem_of_getElem? hp),
       bounded := bounded_callFrame B.bounded args hsa, room := hroom }
   -- the body writes the stack only from its frame on, so the position to return to is still there
-  have hret₂ := A₂.read (a := cStack (q + S.F)) (by cells) hret
+  have hret₂ := A₂.read (by cells) hret
   -- leave
   obtain ⟨m₃, run₃, hfp, hres, A₃⟩ := steps_callLeave S R₂
     (procCode.right.cast_pos (by rw [length_compileStmt])) hret₂ (by omega) (by omega)
     (Nat.zero_lt_of_lt hx)
   -- since the call began, the stack has changed only from cell q + F on: the local variables of the
   -- caller are as before, and the memory is as the procedure left it
-  have A : AgreeOutside (Writable S.toSizes (q + S.F)) m m₃ :=
+  have A :=
     (A₁.trans (A₂.mono (writable_subset_writable (by omega)))).trans
       (A₃.mono (Set.insert_subset (by cells) scratch_subset_writable))
   have I₃ : Framed S.toSizes ⟨σ.loc, σ'.mem⟩ q m₃ := ⟨R₂.of_agreeOutside A₃ (by cells) hfp
@@ -453,7 +463,7 @@ private theorem sim_call {body : Stmt} {k : ℕ} (hsa : ∀ e ∈ args, e.Safe S
   -- store the result
   obtain ⟨m₄, run₄, R₄, A₄⟩ := steps_setVar I₃ hx resultCode hres (by cells)
   exact ⟨m₄, _, {
-    run := (((run₁.trans run₂).trans run₃).trans run₄).cast_pos (by rw [Stmt.size, Nat.add_assoc])
+    run := (((run₁.trans run₂).trans run₃).trans run₄).cast_pos (by rfl)
     le := call_le_stepsPerStep_mul hpos (by omega) le₂
     rel := R₄
     agree := (A.mono (writable_subset_writable (by omega))).trans A₄ }⟩
@@ -463,7 +473,7 @@ end call
 /-! ## The theorem -/
 
 /-- **The simulation theorem.**  The code of a statement matches every run of the statement. -/
-theorem sim (S : Setting W) {c : ℕ} (h : Exec S.lim S.P d s σ σ' c) :
+theorem sim (S : Setting W) {c } (h : Exec S.lim S.P d s σ σ' c) :
     Simulates S d s σ σ' c := by
   induction h with
   | skip => exact sim_skip

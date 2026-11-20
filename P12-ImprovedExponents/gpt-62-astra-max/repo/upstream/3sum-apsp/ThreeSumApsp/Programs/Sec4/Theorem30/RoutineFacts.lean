@@ -26,7 +26,7 @@ open ThreeSumApsp.Spec
 /-! ## The digits of the output string of a position -/
 
 /-- The digits of the output string of the position (I, J), for the computable layout. -/
-theorem digitsO_outStrOfPos {L m : ℕ} (hmL : m ≤ L) (I J : ℕ) :
+theorem digitsO_outStrOfPos {L m} (hmL : m ≤ L) (I J : ℕ) :
     digitsO (outStrOfPos (stdLayout hmL) I J) = outDigitsOfPos L m I J := by
   have hdigits := digitList_ofDigitList _ (digitsO_lt (outStrOfPos (stdLayout hmL) I J))
   rw [length_digitsO, ofDigitList_digitsO, codeO_outStrOfPos, digitList_outCodeOfPos] at hdigits

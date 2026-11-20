@@ -18,7 +18,7 @@ open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
 
 /-- **The need of the variant host stays polynomial**, if the parameters, the numbers that the
 parameter procedures form, and the need of the solver are polynomially bounded. -/
-theorem hostNeed_poly' {Dfun Gfun wD wG : ℕ → ℕ} {need : List ℕ → Need}
+theorem hostNeed_poly' {Dfun Gfun wD wG } {need }
     (hD : PolyBounded fun n _ => Dfun n) (hG : PolyBounded fun n _ => Gfun (Dfun n))
     (hwD : PolyBounded fun n _ => wD n) (hwG : PolyBounded fun n _ => wG (Dfun n))
     (h : PolyNeedN need) :

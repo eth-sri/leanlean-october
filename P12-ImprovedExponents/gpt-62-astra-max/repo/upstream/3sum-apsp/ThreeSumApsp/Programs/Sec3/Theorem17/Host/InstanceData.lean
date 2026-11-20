@@ -111,13 +111,6 @@ def acc (t i : ℕ) : Bool := decide ((X.ans t).getD i 0 ≠ 0)
 def hit (t i : ℕ) : Bool :=
   scanHit X.n X.AB X.BC X.AC ((X.WI t).getD i 0) ((X.WJ t).getD i 0) (X.c0 t) (X.len t)
 
-/-- A zero triangle has been found before instance t. -/
-def found : ℕ → Bool
-  | 0 => false
-  | t + 1 => foundAt (X.acc t) (X.hit t) (found t) (X.w t)
-
-/-- The number of scans made for instance t. -/
-def execs (t : ℕ) : ℕ := execsUpto (X.acc t) (X.hit t) (X.found t) (X.w t)
 /-- The number of accepted query pairs of instance t whose scan fails or would fail. -/
 def fails (t : ℕ) : ℕ := failsUpto (X.acc t) (X.hit t) (X.w t)
 

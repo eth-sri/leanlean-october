@@ -36,10 +36,6 @@ def sortPos (kf : ℕ → ℕ) (N j : ℕ) : ℕ := cntLt kf (kf j) N + cntEq kf
 section
 variable (kf : ℕ → ℕ)
 
-@[simp] theorem cntEq_zero (t : ℕ) : cntEq kf t 0 = 0 := rfl
-
-@[simp] theorem cntLt_zero_right (t : ℕ) : cntLt kf t 0 = 0 := rfl
-
 @[simp] theorem cntLt_zero_left (j : ℕ) : cntLt kf 0 j = 0 := by simp [cntLt]
 
 /-- One more item: it is counted if its key is `t`. -/
@@ -55,11 +51,11 @@ theorem cntLt_succ_left (t j : ℕ) : cntLt kf (t + 1) j = cntLt kf t j + cntEq 
   induction j with
   | zero => rfl
   | succ j ih =>
-    rw [cntLt_succ_right, cntLt_succ_right, cntEq_succ, ih]
+    rw [cntLt_succ_right, cntLt_succ_right, cntEq_succ]
     split_ifs <;> omega
 
 /-- A larger bound counts more keys. -/
-theorem cntLt_mono_left {s t : ℕ} (h : s ≤ t) (j : ℕ) : cntLt kf s j ≤ cntLt kf t j :=
+theorem cntLt_mono_left {s t } (h : s ≤ t) (j : ℕ) : cntLt kf s j ≤ cntLt kf t j :=
   Nat.count_mono_left fun _ _ hlt => hlt.trans_le h
 
 /-- At most all items are counted. -/
@@ -73,32 +69,44 @@ variable {kf : ℕ → ℕ} {N K : ℕ}
 theorem cntLt_of_forall_lt (h : ∀ i < N, kf i < K) : cntLt kf K N = N :=
   Nat.count_iff_forall.mpr h
 
+section
+variable {j : ℕ}
+  (hj : j < N)
+include hj
+
 /-- Item `j` is itself one of the `N` items with its key. -/
-theorem cntEq_lt_of_lt {j : ℕ} (hj : j < N) : cntEq kf (kf j) j < cntEq kf (kf j) N :=
-  Nat.count_strict_mono (p := fun i => kf i = kf j) rfl hj
+theorem cntEq_lt_of_lt : cntEq kf (kf j) j < cntEq kf (kf j) N :=
+  Nat.count_strict_mono rfl hj
 
 /-- The place of an item lies before the places of the larger keys. -/
-theorem sortPos_lt_cntLt_succ {j : ℕ} (hj : j < N) : sortPos kf N j < cntLt kf (kf j + 1) N := by
+theorem sortPos_lt_cntLt_succ : sortPos kf N j < cntLt kf (kf j + 1) N := by
   rw [cntLt_succ_left, sortPos]
   exact Nat.add_lt_add_left (cntEq_lt_of_lt hj) _
 
+end
+
 /-- The places are below `N`. -/
-theorem sortPos_lt (kf : ℕ → ℕ) {j : ℕ} (hj : j < N) : sortPos kf N j < N :=
+theorem sortPos_lt (kf : ℕ → ℕ) {j } (hj : j < N) : sortPos kf N j < N :=
   calc sortPos kf N j < cntLt kf (kf j + 1) N := sortPos_lt_cntLt_succ hj
     _ ≤ N := cntLt_le ..
 
+section
+variable {i j : ℕ}
+  (hi : i < N)
+include hi
+
 /-- A smaller key comes first; among equal keys the earlier item comes first. -/
-theorem sortPos_lt_sortPos {i j : ℕ} (hi : i < N) (h : kf i < kf j ∨ (kf i = kf j ∧ i < j)) :
+theorem sortPos_lt_sortPos (h : kf i < kf j ∨ (kf i = kf j ∧ i < j)) :
     sortPos kf N i < sortPos kf N j := by
   rcases h with hlt | ⟨heq, hij⟩
   · calc sortPos kf N i < cntLt kf (kf i + 1) N := sortPos_lt_cntLt_succ hi
       _ ≤ cntLt kf (kf j) N := cntLt_mono_left kf hlt N
       _ ≤ sortPos kf N j := Nat.le_add_right ..
-  · rw [sortPos, sortPos, heq]
+  · rw [sortPos, heq]
     exact Nat.add_lt_add_left (heq ▸ cntEq_lt_of_lt hij) _
 
 /-- The order of the places is the order "smaller key, or same key and earlier". -/
-theorem sortPos_lt_sortPos_iff {i j : ℕ} (hi : i < N) (hj : j < N) :
+theorem sortPos_lt_sortPos_iff (hj : j < N) :
     sortPos kf N i < sortPos kf N j ↔ kf i < kf j ∨ (kf i = kf j ∧ i < j) := by
   refine ⟨fun h => ?_, sortPos_lt_sortPos hi⟩
   by_contra hc
@@ -108,17 +116,18 @@ theorem sortPos_lt_sortPos_iff {i j : ℕ} (hi : i < N) (hj : j < N) :
     omega
 
 /-- Different items get different places. -/
-theorem eq_of_sortPos_eq {i j : ℕ} (hi : i < N) (hj : j < N)
+theorem eq_of_sortPos_eq (hj : j < N)
     (h : sortPos kf N i = sortPos kf N j) : i = j := by
   have hij := sortPos_lt_sortPos_iff (kf := kf) hi hj
-  have hji := sortPos_lt_sortPos_iff (kf := kf) hj hi
-  omega
+  grind [sortPos_lt_sortPos_iff]
+
+end
 
 /-- Every place is taken. -/
-theorem exists_sortPos_eq (kf : ℕ → ℕ) {q : ℕ} (hq : q < N) : ∃ j < N, sortPos kf N j = q := by
-  have hsurj := Finset.surjOn_of_injOn_of_card_le (s := Finset.range N) (t := Finset.range N)
-    (sortPos kf N) (fun j hj => by simpa using sortPos_lt kf (by simpa using hj))
-    (fun i hi j hj => eq_of_sortPos_eq (by simpa using hi) (by simpa using hj)) le_rfl
-  simpa using hsurj (by simpa using hq)
+theorem exists_sortPos_eq (kf : ℕ → ℕ) {q } (hq : q < N) : ∃ j < N, sortPos kf N j = q := by
+  have hsurj := Finset.surjOn_of_injOn_of_card_le (s := Finset.range N) 
+    (sortPos kf N) (fun j hj => by grind [sortPos_lt])
+    (fun i hi j hj => eq_of_sortPos_eq (by grind) (by grind)) le_rfl
+  simpa using hsurj (by grind)
 
 end ThreeSumApsp

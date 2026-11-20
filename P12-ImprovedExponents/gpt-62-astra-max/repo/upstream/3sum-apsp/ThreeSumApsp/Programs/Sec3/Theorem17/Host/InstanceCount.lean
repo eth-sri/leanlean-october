@@ -26,7 +26,7 @@ open ThreeSumApsp ThreeSumApsp.Spec
 
 /-- Proof of Theorem 17: "There are at most 2√D h ≤ 2√D(ng/s + 1) ≤ 4ng instances".  Here `m` is the
 number of instances of the host. -/
-theorem HostData.m_le {n D g p : ℕ} {AB BC AC : List ℤ} (h : BigCase n D g)
+theorem HostData.m_le {n D g p} {AB BC AC} (h : BigCase n D g)
     (hp : p ∈ primesInRange D) :
     (⟨n, D, p, pieceSizeNat D g, queryCapNat n D, AB, BC, AC⟩ : HostData).m ≤ 4 * n * g := by
   obtain ⟨hD, hDn, hg, -⟩ := h
@@ -39,7 +39,7 @@ theorem HostData.m_le {n D g p : ℕ} {AB BC AC : List ℤ} (h : BigCase n D g)
   have hchunks : (⟨n, D, p, pieceSizeNat D g, queryCapNat n D, AB, BC, AC⟩ : HostData).chunkCount
       = (triOf n AB BC AC).totalChunks D p :=
     length_chunkTab_eq_totalChunks n AB BC AC (mem_primesInRange.mp hp).1.ne_zero hD1 hcap
-  have hcard : (((triOf n AB BC AC).instanceIndices D g p).card : ℝ) ≤ ((4 * n * g : ℕ) : ℝ) := by
+  have hcard : ((triOf n AB BC AC).instanceIndices D g p).card ≤ ((4 * n * g : ℕ) : ℝ) := by
     push_cast
     exact (triOf n AB BC AC).card_instanceIndices_le hD hDn hg hp
   rw [HostData.m, hpieces, hchunks, Nat.mul_comm, ← TriangleInstance.card_instanceIndices]

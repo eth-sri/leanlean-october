@@ -1,6 +1,17 @@
 module
 
-public import ThreeSumApsp.RunningTimes.Sec3.Theorem22
+public import ThreeSumApsp.Programs.Sec3.Theorem21b.Apsp.TimeBound
+public import ThreeSumApsp.Programs.Sec3.Theorem21b.MinPlus.Passes
+public import ThreeSumApsp.Programs.Sec3.Theorem21b.NegativeTriangle.Passes
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.NeedPolynomial
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Program
+public import ThreeSumApsp.Programs.Sec3.Theorem17.TimeBound.Total
+public import ThreeSumApsp.Programs.Sec3.Corollary15_16.CountAndDetect
+public import ThreeSumApsp.RunningTimes.FromClaims.Bounds
+public import ThreeSumApsp.RunningTimes.Sec3.Theorem19.Layout
+public import ThreeSumApsp.RunningTimes.Sec3.Theorem22.ApspLayout
+public import ThreeSumApsp.RunningTimes.Sec3.Theorem22.MinPlusLayout
+public import ThreeSumApsp.RunningTimes.Sec3.Theorem22.ThreeSumLayout
 public import ImprovedExponents.Pipeline.HostBound
 
 @[expose] public section
@@ -26,37 +37,17 @@ namespace ImprovedExponents
 
 open ThreeSumApsp ThreeSumApsp.WordRam Light Light.Sec3
 
-/-- What a saving `δ` for Exact Triangle gives for the four problems, on the word RAM. -/
-structure AllSolved (δ : ℝ) : Prop where
-  /-- Exact Triangle in `O(n^a)` steps for every `a > 3 - δ`. -/
-  exactTriangle : ∀ a : ℝ, 3 - δ < a → SolvedInTime EndStatement.ExactTriangle a 0
-  /-- 3SUM in `O(n^a)` steps for every `a > 2 - δ/2`. -/
-  threeSum : ∀ a : ℝ, 2 - δ / 2 < a → SolvedInTime EndStatement.ThreeSum a 0
-  /-- The (min,+)-product in `O(n^a)` steps for every `a > 3 - δ/3`. -/
-  minPlus : ∀ a : ℝ, 3 - δ / 3 < a → SolvedInTime EndStatement.MinPlusProduct a 0
-  /-- APSP in `O(n^a)` steps for every `a > 3 - δ/3`. -/
-  apsp : ∀ a : ℝ, 3 - δ / 3 < a → SolvedInTime EndStatement.APSP a 0
-
 /-- Exact Triangle in `O(n^a)` steps of the word RAM for every `a > 3 - δ`, from the explicit
 bound `K κ n^{3-δ} (log n)^e` from some size on. -/
-theorem exactTriangle_of_explicitFrom {δ : ℝ} {e : ℕ} (h : ExplicitFrom lightModel δ e) {a : ℝ}
+theorem exactTriangle_of_explicitFrom {δ } {e } (h : ExplicitFrom lightModel δ e) {a }
     (ha : 3 - δ < a) : SolvedInTime EndStatement.ExactTriangle a 0 := by
   obtain ⟨n₀, K, T, hT, hb⟩ := h
   refine FromClaims.solvedInTime_of_claim realized_exactTriangle fun κ _ =>
     ⟨T, hT, UpperPowPolylog.upperBigOPow ⟨K * max κ 1, e, ?_⟩ ha⟩
   filter_upwards [Filter.eventually_ge_atTop (max n₀ 1)] with n hn
-  have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast le_trans (le_max_right _ _) hn
-  have h := hb n (max κ 1) ((n : ℝ) ^ κ) (le_trans (le_max_left _ _) hn) (le_max_right _ _)
+  have hn1 : (1 : ℝ) ≤ n := by simp_all
+  have h := hb n (max κ 1) ((n : ℝ) ^ κ) (by omega) (le_max_right _ _)
     (Real.rpow_le_rpow_of_exponent_le hn1 (le_max_left _ _))
-  calc T n ((n : ℝ) ^ κ) ≤ K * (max κ 1 * ((n : ℝ) ^ (3 - δ) * Real.log n ^ e)) := h
-    _ = K * max κ 1 * ((n : ℝ) ^ (3 - δ) * Real.log n ^ e) := by ring
-
-/-- **From Exact Triangle to the four problems.** -/
-theorem allSolved_of_uniform {δ : ℝ} {e : ℕ} (hδ1 : δ ≤ 1) (hex : ExplicitFrom lightModel δ e)
-    (hu : Claim.ExactTriangleUniform lightModel δ e) : AllSolved δ :=
-  ⟨fun _ ha => exactTriangle_of_explicitFrom hex ha,
-    fun _ ha => threeSum_of_uniform hδ1 hu ha,
-    fun _ ha => (minPlus_polylog_of_uniform hδ1 hu).solvedInTime ha,
-    fun _ ha => (apsp_polylog_of_uniform hδ1 hu).solvedInTime ha⟩
+  linarith
 
 end ImprovedExponents

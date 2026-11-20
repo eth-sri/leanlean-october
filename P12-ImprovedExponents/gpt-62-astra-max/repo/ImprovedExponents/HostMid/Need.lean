@@ -21,19 +21,19 @@ open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
 /-! ## The data of a run -/
 
 /-- The chosen prime is at most √D. -/
-theorem hostData'_p_le (x : TriInst) {D : ℕ} (g : ℕ) (hD : 16 ≤ D) :
+theorem hostData'_p_le (x : TriInst) {D } (g : ℕ) (hD : 16 ≤ D) :
     (hostData' x D g).p ≤ Nat.sqrt D :=
   chosenPrime_le_sqrt x.AB x.BC x.AC hD
 
 /-- There are at most `4ng` instances: the number of instances does not depend on the inner
 dimension. -/
-theorem hostData'_m_le {x : TriInst} {D g : ℕ} (h : BigCase x.n D g) :
+theorem hostData'_m_le {x } {D g } (h : BigCase x.n D g) :
     (hostData' x D g).m ≤ 4 * x.n * g :=
   hostData_m_le h
 
 /-- The data of a run are valid: the middle part `piece × ℤ_p` of an instance has at most
 `q p ≤ q ⌊√D⌋ = midSize D g` vertices. -/
-theorem hostData'_valid {x : TriInst} {μ : ℕ → ℤ} {fr D g : ℕ} (hpre : x.Pre μ fr)
+theorem hostData'_valid {x } {μ } {fr D g } (hpre : x.Pre μ fr)
     (h : BigCase x.n D g) : (hostData' x D g).Valid :=
   have hv := hostData_valid hpre h
   { n_pos := hv.n_pos
@@ -48,29 +48,28 @@ theorem hostData'_valid {x : TriInst} {μ : ℕ → ℤ} {fr D g : ℕ} (hpre : 
 /-! ## The addresses -/
 
 /-- The arrays of the variant fit into the cells that upstream's `hostLayout` counts. -/
-theorem aFr_le' {x : TriInst} {D g : ℕ} (hD : 16 ≤ D) (fr : ℕ) :
+theorem aFr_le' {x } {D g } (hD : 16 ≤ D) (fr : ℕ) :
     aFr (hostData' x D g) x.U fr ≤ fr + hostLayout x.n x.U D := by
   have hp : chosenPrime x.n D x.AB x.BC x.AC ≤ Nat.sqrt D := chosenPrime_le_sqrt x.AB x.BC x.AC hD
   have hmid : x.n * midSize D g ≤ x.n * D := Nat.mul_le_mul_left _ (midSize_le D g)
-  simp only [aFr, aOut, aY, aX, aCw, aCl, aCr, aQj, aQi, aCur, aCls, aRac, aRbc, aRab, hostData']
+  simp [aFr, aOut, aY, aX, aCw, aCl, aCr, aQj, aQi, aCur, aCls, aRac, aRbc, aRab, hostData']
   unfold hostLayout
   omega
 
 /-! ## The limits -/
 
 /-- What hostLoop asks of the limits. -/
-theorem hostLim_of_ok' {lim : Limits} {d a b : ℕ} {need : List ℕ → Need} {x : TriInst}
-    {fr D g : ℕ} (hbig : BigCase x.n D g) (hok : (hostNeedAt' a b need x.n x.U D g).Ok lim fr d) :
+theorem hostLim_of_ok' {lim } {d a b } {need } {x }
+    {fr D g } (hbig : BigCase x.n D g) (hok : (hostNeedAt' a b need x.n x.U D g).Ok lim fr d) :
     HostLim lim (d + 1) (hostData' x D g) x.U (hostAddr x (hostData' x D g) fr) need := by
-  have hD : 16 ≤ D := hbig.sixteen_le
+  have hD := hbig.sixteen_le
   have hok0 : (hostNeedAt a b (fun ps => need (midArgs (fun _ => g) ps)) x.n x.U D g).Ok lim fr d :=
     hok
   have hcells : fr + (chooseCells x.n x.U D + hostLayout x.n x.U D
       + (supNeed need x.n (midSize D g) (queryCapNat x.n D)).cells + 2) ≤ lim.space := hok.cells
   have hdepth : d + (2 * Nat.clog 2 x.n + 8
       + (supNeed need x.n (midSize D g) (queryCapNat x.n D)).depth) ≤ lim.depth := hok.depth
-  have hword : ((hostWord a b x.n x.U D g
-      + (supNeed need x.n (midSize D g) (queryCapNat x.n D)).word : ℕ) : ℤ) ≤ lim.word := hok.word
+  have hword := hok.word
   have hfr := aFr_le' (x := x) (g := g) hD fr
   have hp := hostData'_p_le x g hD
   have hm := hostData'_m_le hbig
@@ -90,8 +89,7 @@ theorem hostLim_of_ok' {lim : Limits} {d a b : ℕ} {need : List ℕ → Need} {
         have hwc : (hostData' x D g).w t ≤ queryCapNat x.n D := (hostData' x D g).w_le_cap ht
         have hmem : (hostData' x D g).w t ∈ Finset.range (queryCapNat x.n D + 1) :=
           Finset.mem_range.2 (by omega)
-        have hsword : (need [x.n, midSize D g, (hostData' x D g).w t]).word
-            ≤ (supNeed need x.n (midSize D g) (queryCapNat x.n D)).word :=
+        have hsword :=
           Finset.le_sup (f := fun v => (need [x.n, midSize D g, v]).word) hmem
         have hscells : (need [x.n, midSize D g, (hostData' x D g).w t]).cells
             ≤ (supNeed need x.n (midSize D g) (queryCapNat x.n D)).cells :=
@@ -124,7 +122,7 @@ theorem et17Params_spec' (C : Et17Ctx P₀ R ν Tn need Dfun Gfun tD tG wD wG) (
     hok
   unfold hostNeed at hok
   have hdepth := hok.depth
-  simp only [hostNeedAt] at hdepth
+  simp [hostNeedAt] at hdepth
   generalize hD : Dfun x.n = D at *
   generalize hg : Gfun D = g at *
   -- The numbers that this part forms fit in a word.
@@ -139,28 +137,12 @@ theorem et17Params_spec' (C : Et17Ctx P₀ R ν Tn need Dfun Gfun tD tG wD wG) (
   light_call (C.gProc lim d D μ hDpos hok.space hwG (by omega)) with _ μ ⟨rfl, rfl⟩
   rw [hg]
   -- s := sqrt(D)
-  light_call (sqrt_meets (K := D) C.hSqrt μ hsqrt) with _ μ ⟨rfl, rfl⟩
+  light_call (sqrt_meets C.hSqrt μ hsqrt) with _ μ ⟨rfl, rfl⟩
   -- the four tests: D < 16, n < D, g < 1, s < g
   refine Ends.block ⟨by simp; omega, ?_⟩
   by_cases hD16 : D < 16 <;> by_cases hnD : x.n < D <;> by_cases hg0 : g = 0 <;>
     by_cases hsg : Nat.sqrt D < g <;> simp [update_frame_setLocal, SmallCase, hD16, hnD, hg0, hsg]
 
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/Host/ParametersStage.lean
-open Et17 in
-/-- **The small case**, within the limits of the variant: the call of the brute force. -/
-theorem et17Small_spec' (C : Et17Ctx P₀ R ν Tn need Dfun Gfun tD tG wD wG) (x : TriInst)
-    (μ : ℕ → ℤ) (fr D g a b : ℕ) (hpre : x.Pre μ fr)
-    (hok : (hostNeedAt' a b need x.n x.U D g).Ok lim fr d) :
-    Ends lim (P₀ ++ R) d (.call ν.pBrute [v Size, v Bound, v AdrAB, v AdrBC, v AdrAC, v Free] 0)
-      ⟨frame (et17LocA x fr D g), μ⟩ (tBrute x.n + 8)
-      fun σ' => etTask.Post x μ fr (σ'.loc 0) σ'.mem := by
-  have hbrute : (bruteNeed x.n x.U).Ok lim fr (d + 1) :=
-    hok.mono (by simp only [bruteNeed, hostNeedAt', hostWord]; omega)
-      (by simp only [bruteNeed]; omega) (by simp only [bruteNeed, hostNeedAt']; omega)
-  have hdepth := hok.depth
-  simp only [hostNeedAt'] at hdepth
-  refine Ends.callTo (brute_meets C.hBrute C.loop.scan x μ fr hpre hbrute) ?_ (by simp [et17LocA])
-  rintro _ _ ⟨rfl, rfl⟩
-  exact ⟨by simp [et17LocA], fun _ _ => rfl⟩
 
 end ImprovedExponents.HostMid

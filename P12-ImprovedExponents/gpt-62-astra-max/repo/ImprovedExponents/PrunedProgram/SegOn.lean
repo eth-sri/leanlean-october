@@ -30,24 +30,36 @@ cell `a + codeT τ` holds `enc τ`.  Nothing is said about the other cells. -/
 def SegOn (m : ℕ) (μ : ℕ → ℤ) (a : ℕ) (enc : Leaf L → ℤ) : Prop :=
   ∀ τ : Leaf L, (P0Levels τ).card ≤ m → μ (a + codeT τ) = enc τ
 
+section
+variable (h : SegOn m μ a enc)
+include h
+
 /-- Reading the cell of a leaf with at most `m` symbols `P₀`. -/
-theorem SegOn.get (h : SegOn m μ a enc) {τ : Leaf L} (hτ : (P0Levels τ).card ≤ m) :
+theorem SegOn.get {τ : Leaf L} (hτ : (P0Levels τ).card ≤ m) :
     μ (a + codeT τ) = enc τ := h τ hτ
 
 /-- The predicate only depends on the `10^L` cells of the array. -/
-theorem SegOn.congr (h : SegOn m μ a enc) (he : ∀ i < 10 ^ L, μ' (a + i) = μ (a + i)) :
+theorem SegOn.congr (he : ∀ i < 10 ^ L, μ' (a + i) = μ (a + i)) :
     SegOn m μ' a enc := fun τ hτ => by rw [he _ (codeT_lt τ), h τ hτ]
 
 /-- The predicate is kept if the cells of the array do not change.  By the default proof of `hs`,
 the term `h.keep` carries `h` to a later memory across the steps whose promises are in the
 context. -/
-theorem SegOn.keep (h : SegOn m μ a enc) (hs : SameOn (Inside a (10 ^ L)) μ μ' := by light_keep) :
+theorem SegOn.keep (hs : SameOn (Inside a (10 ^ L)) μ μ' := by light_keep) :
     SegOn m μ' a enc :=
   h.congr fun i hi => hs _ ⟨by omega, by omega⟩
 
+end
+
+section
+variable {η : OutStr L}
+  {τ : Leaf L}
+  (h : τ.Contributes η)
+include h
+
 /-- A leaf that contributes to an output string has the term `P₀` only at the inner levels of the
 string, since only `P_ij` contributes to `z_ij` (`Term.contributes_iff`). -/
-theorem P0Levels_subset_innerSetO {η : OutStr L} {τ : Leaf L} (h : τ.Contributes η) :
+theorem P0Levels_subset_innerSetO :
     P0Levels τ ⊆ innerSetO η := by
   intro ℓ hℓ
   rw [P0Levels, mem_filter] at hℓ
@@ -63,8 +75,10 @@ theorem P0Levels_subset_innerSetO {η : OutStr L} {τ : Leaf L} (h : τ.Contribu
 
 /-- A leaf that contributes to an output string with `m` inner levels has at most `m` symbols
 `P₀`. -/
-theorem card_P0Levels_le_of_contributes {η : OutStr L} {τ : Leaf L} (h : τ.Contributes η) :
+theorem card_P0Levels_le_of_contributes :
     (P0Levels τ).card ≤ (innerSetO η).card :=
   card_le_card (P0Levels_subset_innerSetO h)
+
+end
 
 end Light

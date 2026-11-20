@@ -50,7 +50,7 @@ def frameSize (P : Program) : ℕ := max 3 (maxOf Stmt.width P)
 theorem three_le_frameSize (P : Program) : 3 ≤ frameSize P := le_max_left _ _
 
 /-- Every body fits into a frame. -/
-theorem width_le_frameSize {P : Program} {b : Stmt} (hb : b ∈ P) : b.width ≤ frameSize P :=
+theorem width_le_frameSize {P} {b} (hb : b ∈ P) : b.width ≤ frameSize P :=
   (maxOf_le_iff.1 le_rfl b hb).trans (le_max_right _ _)
 
 /-! ## The parts of the code -/
@@ -166,7 +166,7 @@ theorem two_mul_frameSize_add_le_dispPos (P : Program) (dec : Bool) :
     2 * frameSize P + 17 ≤ dispPos P dec := by
   have : firstBody (frameSize P) dec ≤ dispPos P dec := le_endPos _ _ _
   have htail : 2 ≤ if dec then 5 else 2 := by split_ifs <;> omega
-  simp only [firstBody, tailPos, mainPos, size_mainStmt, length_tailCode] at this
+  simp [firstBody, tailPos, mainPos, size_mainStmt, length_tailCode] at this
   omega
 
 private theorem length_bodiesCode (G : CodeLayout) :
@@ -174,7 +174,7 @@ private theorem length_bodiesCode (G : CodeLayout) :
   | [], _ => rfl
   | b :: bs, pos => by
     have ih := length_bodiesCode G bs (pos + b.size G.F + epilogueSize)
-    simp only [bodiesCode, endPos, List.length_append, length_compileStmt, length_epilogue]
+    simp [bodiesCode, endPos, length_compileStmt, length_epilogue]
     omega
 
 section parts
@@ -183,9 +183,7 @@ variable (P : Program) (p0 : ℕ) (dec : Bool)
 
 private theorem length_through_mainCode :
     (headCode P dec ++ mainCode P p0 dec).length = firstBody (frameSize P) dec := by
-  simp only [headCode, headStraight, mainCode, List.length_append, length_compileStmt,
-    size_mainStmt, length_tailCode, firstBody, tailPos, mainPos, codeLayout, List.length_cons,
-    List.length_nil]
+  simp [headCode, headStraight, mainCode, length_compileStmt, size_mainStmt, length_tailCode, firstBody, tailPos, mainPos, codeLayout]
   omega
 
 private theorem length_through_bodiesCode :
@@ -219,7 +217,7 @@ theorem codeAt_tailCode :
     CodeAt (compileProgram P p0 dec) (tailPos (frameSize P))
       (tailCode dec (tailPos (frameSize P))) :=
   (codeAt_mainCode P p0 dec).right.cast_pos (by
-    simp only [length_compileStmt, size_mainStmt, tailPos, codeLayout])
+    simp [length_compileStmt, size_mainStmt, tailPos, codeLayout])
 
 /-- The bodies begin at `firstBody`. -/
 theorem codeAt_bodiesCode :
@@ -241,7 +239,7 @@ end parts
 
 /-- Every body is at its entry, followed by the return sequence, and ends at or before the position
 after the bodies. -/
-theorem codeAt_bodies {code : List Instr} (G : CodeLayout) :
+theorem codeAt_bodies {code} (G : CodeLayout) :
     ∀ (bs : List Stmt) (pos : ℕ), CodeAt code pos (bodiesCode G bs pos) →
       ∀ (p : ℕ) (b : Stmt), bs[p]? = some b → ∃ e, (entries G.F bs pos)[p]? = some e ∧
         CodeAt code e (compileStmt G b e ++ epilogue G) ∧

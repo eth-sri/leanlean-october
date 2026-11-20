@@ -1,5 +1,6 @@
 module
 
+public import ImprovedExponents.PrunedProgram.Boxes.All
 public import ThreeSumApsp.Programs.Sec4.Theorem30.Directory
 public import ImprovedExponents.PrunedProgram.Shared.Contracts
 
@@ -24,46 +25,53 @@ namespace Light.Sec4
 
 open ThreeSumApsp ThreeSumApsp.Spec ImprovedExponents
 
-/-- **The block from b0 on holds the data structure for X and Y**, with the encodings right at the
-leaves with at most `m` symbols `P₀`.  The pruned preprocessing establishes this, and every query
-needs it and keeps it. -/
--- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Memory.lean (DSReady)
+/-- Bind the abstract grid to the encodings and the pages in the preprocessing block. -/
+def grid (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (b0 : ℕ)
+    (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ) (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) : BoxTable.Grid :=
+  ⟨p.L,p.m,t,p.nB,p.aENCA b0,p.aENCB b0,aCUR p b0,aBOX p b0,aPage p b0,encRow p hmL X,encCol p hmL Y⟩
+
 structure DSReadyP (p : Sec2.Par) (t : ℕ) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
     (X : Matrix (Fin p.N) (Fin (D p.m)) ℤ)
     (Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop where
   shared : Sec2.SharedReadyP p hmL aX aY b0 X Y μ
   cellT : μ (b0 + 31) = t
-  roots : SegN μ (aROOTS p b0) (dsTries p t hmL X Y).roots
-  trie : Seg μ (aTR p b0) (dsTries p t hmL X Y).cells
+  pages : (grid p t hmL b0 X Y).Done μ (p.nB*p.nB)
 
 section
 
 variable {p : Sec2.Par} {t : ℕ} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
   {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ} {μ μ' : ℕ → ℤ}
 
+section
+variable (h : DSReadyP p t hmL aX aY b0 X Y μ)
+include h
+
 /-- The invariant depends only on the cells from b0 on, without the scratch strings WD, CUR, BOX,
 SS. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Memory.lean (DSReady.congr)
-theorem DSReadyP.congr (h : DSReadyP p t hmL aX aY b0 X Y μ)
+theorem DSReadyP.congr
     (he : ∀ a, b0 ≤ a → Outside (aWD p b0) (3 * p.L + p.m) a → μ' a = μ a) :
     DSReadyP p t hmL aX aY b0 X Y μ' := by
   have hend : p.sharedEnd b0 = aWD p b0 := rfl
   obtain ⟨⟩ := areas p t b0
   exact ⟨h.shared.congr fun a ha hlt _ => he a ha (by omega),
     by rw [he _ (by omega) (by omega)]; exact h.cellT,
-    h.roots.congr fun i _ => he _ (by omega) (by omega),
-    h.trie.congr fun i _ => he _ (by omega) (by omega)⟩
+    fun i hi j hj hk => BoxTable.Tile.Holds.keep (h.pages i hi j hj hk) (fun u hu => by
+      change Inside (aPage p b0 + _) _ u at hu
+      exact by grind)⟩
 
 /-- A memory that differs from one that holds the data structure only on the scratch strings WD,
 CUR, BOX, SS holds it too. -/
-theorem DSReadyP.of_same (h : DSReadyP p t hmL aX aY b0 X Y μ)
+theorem DSReadyP.of_same
     (hs : SameOutside μ μ' (aWD p b0) (3 * p.L + p.m)) : DSReadyP p t hmL aX aY b0 X Y μ' :=
   h.congr fun a _ ha => hs a ha
 
 /-- The invariant of the data structure only depends on the cells from b0 on. -/
-theorem dsReadyP_congr (h : DSReadyP p t hmL aX aY b0 X Y μ) (he : ∀ a, b0 ≤ a → μ' a = μ a) :
+theorem dsReadyP_congr (he : ∀ a, b0 ≤ a → μ' a = μ a) :
     DSReadyP p t hmL aX aY b0 X Y μ' :=
   h.congr fun a ha _ => he a ha
+
+end
 
 end
 
@@ -107,40 +115,45 @@ section
 variable {p : Sec2.Par} {hmL : p.m ≤ p.L} {aX aY b0 : ℕ}
   {X : Matrix (Fin p.N) (Fin (D p.m)) ℤ} {Y : Matrix (Fin (D p.m)) (Fin p.N) ℤ} {μ : ℕ → ℤ}
 
+section
+variable (h : Sec2.SharedReadyP p hmL aX aY b0 X Y μ)
+include h
+
 /-- A cell of the directory. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Areas.lean (dir_cell)
-theorem dir_cellP (h : Sec2.SharedReadyP p hmL aX aY b0 X Y μ) {j : ℕ} (hj : j < 31) :
+theorem dir_cellP {j : ℕ} (hj : j < 31) :
     μ (b0 + j) = (((Sec2.dirList p aX aY b0).getD j 0 : ℕ) : ℤ) :=
-  h.dir.read (by simpa [Sec2.dirList] using hj)
+  h.dir.read (by assumption)
 
 /-- Cell j of the directory, with the address in the form in which the evaluation of mem[b0 + j]
 meets it. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/CellDependencies.lean
 -- (SharedReady.dir_read)
-theorem _root_.Light.Sec2.SharedReadyP.dir_read (h : Sec2.SharedReadyP p hmL aX aY b0 X Y μ)
+theorem _root_.Light.Sec2.SharedReadyP.dir_read
     {j : ℕ} (hj : j < 31) :
     μ ((b0 : ℤ) + j).toNat = ((Sec2.dirList p aX aY b0).getD j 0 : ℕ) := by
-  rw [toNat_natCast_add_natCast]
   exact dir_cellP h hj
 
 /-- After the pruned shared stage the directory holds what `DirCells` says. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec4/Theorem30/Directory.lean
 -- (SharedReady.dirCells)
-theorem _root_.Light.Sec2.SharedReadyP.dirCells (h : Sec2.SharedReadyP p hmL aX aY b0 X Y μ) :
+theorem _root_.Light.Sec2.SharedReadyP.dirCells :
     DirCells p b0 μ where
   levels := dir_cellP h (j := Dir.levels) (by norm_num)
-  inner := dir_cellP h (j := Dir.inner) (by norm_num)
-  outer := h.dir_read (j := Dir.outer) (by norm_num)
-  blocks := h.dir_read (j := Dir.blocks) (by norm_num)
-  bands := h.dir_read (j := Dir.bands) (by norm_num)
-  leaves := h.dir_read (j := Dir.leaves) (by norm_num)
-  mask := h.dir_read (j := Dir.mask) (by norm_num)
-  band := h.dir_read (j := Dir.band) (by norm_num)
-  block := h.dir_read (j := Dir.block) (by norm_num)
-  digits := h.dir_read (j := Dir.digits) (by norm_num)
-  encA := h.dir_read (j := Dir.encA) (by norm_num)
-  encB := h.dir_read (j := Dir.encB) (by norm_num)
-  sharedEnd := h.dir_read (j := Dir.sharedEnd) (by norm_num)
+  inner := dir_cellP h (by norm_num)
+  outer := h.dir_read (by norm_num)
+  blocks := h.dir_read (by norm_num)
+  bands := h.dir_read (by norm_num)
+  leaves := h.dir_read (by norm_num)
+  mask := h.dir_read (by norm_num)
+  band := h.dir_read (by norm_num)
+  block := h.dir_read (by norm_num)
+  digits := h.dir_read (by norm_num)
+  encA := h.dir_read (by norm_num)
+  encB := h.dir_read (by norm_num)
+  sharedEnd := h.dir_read (by norm_num)
+
+end
 
 end
 

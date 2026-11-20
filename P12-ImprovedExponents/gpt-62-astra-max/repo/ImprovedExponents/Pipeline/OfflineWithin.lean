@@ -1,7 +1,11 @@
 module
 
 public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.RealParameters
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Program
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Ceiling
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.InnerProduct
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Pad
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Preprocessing
+public import ThreeSumApsp.Programs.Sec4.Theorem30.Program
 
 @[expose] public section
 
@@ -43,55 +47,47 @@ variable {N D₀ : ℕ}
 -- The next six lemmas are adapted from upstream
 -- `ThreeSumApsp/Programs/Sec4/ChoosingParameters/RealParameters.lean`, where they are private.
 
-/-- `D ≤ N^ε` with `ε ≤ 1` gives `D ≤ N`. -/
-theorem le_of_le_rpow {ε : ℝ} (hN : 1 ≤ N) (hε : ε ≤ 1) (h : (D₀ : ℝ) ≤ (N : ℝ) ^ ε) :
-    D₀ ≤ N := by
-  have hNR : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have : (D₀ : ℝ) ≤ (N : ℝ) :=
-    h.trans ((Real.rpow_le_rpow_of_exponent_le hNR hε).trans_eq (Real.rpow_one _))
-  exact_mod_cast this
-
 /-- `D ≤ N^ε` with `ε γ ≤ 1` gives `D^γ ≤ N²`. -/
 theorem rpow_le_sq {ε γ : ℝ} (hN : 1 ≤ N) (hγ : 0 ≤ γ) (hεγ : ε * γ ≤ 1)
     (h : (D₀ : ℝ) ≤ (N : ℝ) ^ ε) : (D₀ : ℝ) ^ γ ≤ (N : ℝ) ^ 2 := by
-  have hNR : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  calc (D₀ : ℝ) ^ γ ≤ ((N : ℝ) ^ ε) ^ γ := Real.rpow_le_rpow (by positivity) h hγ
-    _ = (N : ℝ) ^ (ε * γ) := by rw [← Real.rpow_mul (by positivity)]
+  have hNR : (1 : ℝ) ≤ N := by simp_all
+  calc (D₀ : ℝ) ^ γ ≤ ((N : ℝ) ^ ε) ^ γ := by gcongr
+    _ = (N : ℝ) ^ (ε * γ) := by rw [← Real.rpow_mul (by simp)]
     _ ≤ (N : ℝ) ^ (2 : ℝ) := Real.rpow_le_rpow_of_exponent_le hNR (by linarith)
     _ = (N : ℝ) ^ 2 := by norm_cast
 
 /-- The bound on the preprocessing is at least 1 if `D^γ ≤ N²`. -/
-theorem one_le_preBound31 {γ : ℝ} (hD : 1 ≤ D₀) (h : (D₀ : ℝ) ^ γ ≤ (N : ℝ) ^ 2) :
+theorem one_le_preBound31 {γ } (hD : 1 ≤ D₀) (h : (D₀ : ℝ) ^ γ ≤ (N : ℝ) ^ 2) :
     1 ≤ preBound31 γ N D₀ := by
-  have hDR : (1 : ℝ) ≤ D₀ := by exact_mod_cast hD
+  have hDR : (1 : ℝ) ≤ D₀ := by simp_all
   have hlog := Real.log_nonneg hDR
   unfold preBound31
   rw [le_div_iff₀ (Real.rpow_pos_of_pos (by linarith) _), one_mul]
-  exact h.trans (le_mul_of_one_le_right (by positivity) (one_le_pow₀ (by linarith)))
+  exact h.trans (le_mul_of_one_le_right (by simp) (one_le_pow₀ (by linarith)))
 
 /-- The bound on a query is at least 1. -/
-theorem one_le_queryBound31 {q : ℝ} (hD : 1 ≤ D₀) (hq : 0 ≤ q) : 1 ≤ queryBound31 q D₀ := by
-  have hDR : (1 : ℝ) ≤ D₀ := by exact_mod_cast hD
+theorem one_le_queryBound31 {q } (hD : 1 ≤ D₀) (hq : 0 ≤ q) : 1 ≤ queryBound31 q D₀ := by
+  have hDR : (1 : ℝ) ≤ D₀ := by simp_all
   have hlog := Real.log_nonneg hDR
   exact one_le_mul_of_one_le_of_one_le (Real.one_le_rpow hDR hq) (by linarith)
 
 /-- A larger exponent of `D` in the denominator, and `log D` in place of `log D + 1`, make the
 bound on the preprocessing smaller. -/
-theorem le_preBound31 {γ γ' : ℝ} (hD : 1 ≤ D₀) (hγ : γ ≤ γ') :
+theorem le_preBound31 {γ γ' } (hD : 1 ≤ D₀) (hγ : γ ≤ γ') :
     (N : ℝ) ^ 2 * Real.log (D₀ : ℝ) ^ 2 / (D₀ : ℝ) ^ γ' ≤ preBound31 γ N D₀ := by
-  have hDR : (1 : ℝ) ≤ D₀ := by exact_mod_cast hD
+  have hDR : (1 : ℝ) ≤ D₀ := by simp_all
   have hlog := Real.log_nonneg hDR
-  have hsq : Real.log (D₀ : ℝ) ^ 2 ≤ (Real.log D₀ + 1) ^ 2 := pow_le_pow_left₀ hlog (by linarith) 2
-  exact div_le_div₀ (by positivity) (mul_le_mul_of_nonneg_left hsq (by positivity))
+  have hsq : Real.log (D₀ : ℝ) ^ 2 ≤ (Real.log D₀ + 1) ^ 2 := by grind
+  exact div_le_div₀ (by positivity) (mul_le_mul_of_nonneg_left hsq (by simp))
     (Real.rpow_pos_of_pos (by linarith) _) (Real.rpow_le_rpow_of_exponent_le hDR hγ)
 
 /-- A smaller exponent of `D`, and `log D` in place of `log D + 1`, make the bound on a query
 smaller. -/
-theorem le_queryBound31 {q q' : ℝ} (hD : 1 ≤ D₀) (hq : q' ≤ q) :
+theorem le_queryBound31 {q q' } (hD : 1 ≤ D₀) (hq : q' ≤ q) :
     (D₀ : ℝ) ^ q' * Real.log (D₀ : ℝ) ≤ queryBound31 q D₀ := by
-  have hDR : (1 : ℝ) ≤ D₀ := by exact_mod_cast hD
+  have hDR : (1 : ℝ) ≤ D₀ := by simp_all
   have hlog := Real.log_nonneg hDR
-  exact mul_le_mul (Real.rpow_le_rpow_of_exponent_le hDR hq) (by linarith) hlog (by positivity)
+  exact mul_le_mul (by gcongr) (by linarith) hlog (by positivity)
 
 end bounds
 

@@ -7,7 +7,9 @@ module
 
 public import ThreeSumApsp.Lang.Lib.Pass
 public import ThreeSumApsp.Lang.Tactics
-public import ThreeSumApsp.Spec.Sec3.Theorem21b.NegativeTriangle
+public import ThreeSumApsp.Util.Asymptotics.PowLittleO
+public import ThreeSumApsp.Spec.Sec3.Problems
+public import ThreeSumApsp.Util.BinaryPrefixes
 
 /-!
 # Two loops over arrays for the reduction from Negative Triangle to Exact Triangle
@@ -92,21 +94,20 @@ def prefDownBody : Stmt := .for Idx (v Len) prefDownRound
 
 /-- **affine** writes the list of the numbers m x + c, for x in the list at src, to dst, and changes
 nothing else. -/
-theorem affine_meets {p : ℕ} (hp : P[p]? = some affineBody) {μ : ℕ → ℤ} {src dst : ℕ} {m c : ℤ}
-    {l : List ℤ} (hl : Seg μ src l) (hw : (lim.space : ℤ) ≤ lim.word)
+theorem affine_forward {p : ℕ} (hp : P[p]? = some affineBody) {μ : ℕ → ℤ} {src dst : ℕ} {m c : ℤ}
+    {l } (hl : Seg μ src l) (hw : (lim.space : ℤ) ≤ lim.word)
     (hsrc : src + l.length ≤ lim.space) (hdst : dst + l.length ≤ lim.space)
-    (hsep : src + l.length ≤ dst ∨ dst + l.length ≤ src)
+    (hsep : src + l.length ≤ dst ∨ dst ≤ src)
     (hb : ∀ x ∈ l, |m * x| ≤ lim.word ∧ |m * x + c| ≤ lim.word) :
     Meets lim P p d [l.length, src, m, c, dst] μ (20 * l.length + 6) fun _ μ' =>
       Seg μ' dst (affL m c l) ∧ SameOutside μ μ' dst l.length := by
   refine .of_body hp ?_
-  simp only [affineBody, Aff.Len, Aff.Src, Aff.Factor, Aff.Shift, Aff.Dst, Aff.Idx]
+  simp [affineBody, Aff.Src, Aff.Factor, Aff.Shift, Aff.Idx]
   refine Ends.pass (fun i => m * l.getD i 0 + c) (fun j hj => ?_) ?_ hw hdst rfl rfl
   · -- round j reads src[j], which lies outside the cells that are written
     have hread : wrote μ dst (fun i => m * l.getD i 0 + c) j (src + j) = l[j] :=
       (wrote_rest (by omega)).trans (hl j hj)
     obtain ⟨hfits, haddr⟩ := Limits.addr_of_lt hw (x := src + j) (by omega)
-    push_cast at hfits haddr
     obtain ⟨hprod, hsum⟩ := hb _ (List.getElem_mem hj)
     have hsrcLoc : frame [(l.length : ℤ), src, m, c, dst] 1 = src := rfl
     have hfactor : frame [(l.length : ℤ), src, m, c, dst] 2 = m := rfl
@@ -130,17 +131,17 @@ variable {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q R : List ℤ} {j : ℕ}
 
 /-- A cell of q that has made its step. -/
 private theorem prefMem_q_done (hsep : q + Q.length ≤ r ∨ r + Q.length ≤ q) (hj : j ≤ Q.length)
-    {i : ℕ} (hi : i < j) :
+    {i } (hi : i < j) :
     prefMem μ q r Pw Q R j (q + i) = shiftQ Pw (Q.getD i 0) (R.getD i 0) :=
   (wrote_rest (by omega)).trans (wrote_done hi)
 
 /-- A cell of r that has made its step. -/
-private theorem prefMem_r_done {i : ℕ} (hi : i < j) :
+private theorem prefMem_r_done {i } (hi : i < j) :
     prefMem μ q r Pw Q R j (r + i) = shiftR Pw (R.getD i 0) :=
   wrote_done hi
 
 /-- A cell that has not been written (yet). -/
-private theorem prefMem_rest {a : ℕ} (hq : a < q ∨ q + j ≤ a) (hr : a < r ∨ r + j ≤ a) :
+private theorem prefMem_rest {a } (hq : a < q ∨ q + j ≤ a) (hr : a < r ∨ r + j ≤ a) :
     prefMem μ q r Pw Q R j a = μ a :=
   (wrote_rest hr).trans (wrote_rest hq)
 
@@ -169,8 +170,8 @@ structure PrefPre (lim : Limits) (μ : ℕ → ℤ) (q r : ℕ) (Pw : ℤ) (Q R 
   fitsR : ∀ x ∈ R, |2 * x| ≤ lim.word ∧ |2 * x - Pw| ≤ lim.word
 
 /-- **One round of prefDown** makes the step on the pair (q[j], r[j]) and leaves 2 r[j] in Twice. -/
-private theorem prefDownRound_spec {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q R : List ℤ}
-    (C : PrefPre lim μ q r Pw Q R) {j : ℕ} (hj : j < Q.length) (s : ℤ) :
+private theorem prefDownRound_spec {μ } {q r } {Pw } {Q R }
+    (C : PrefPre lim μ q r Pw Q R) {j } (hj : j < Q.length) (s : ℤ) :
     Ends lim P d prefDownRound ⟨frame [Q.length, q, r, Pw, j, s], prefMem μ q r Pw Q R j⟩
       prefDownRound.blockCost fun σ' =>
         σ' = ⟨frame [Q.length, q, r, Pw, j, 2 * R.getD j 0], prefMem μ q r Pw Q R (j + 1)⟩ := by
@@ -179,7 +180,6 @@ private theorem prefDownRound_spec {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q 
   have hq := C.inQ
   have hr := C.inR
   have hsep := C.apart
-  have h2 := C.two_le
   have hreadQ : prefMem μ q r Pw Q R j (q + j) = Q.getD j 0 :=
     (prefMem_rest (by omega) (by omega)).trans (C.segQ.getD hj 0)
   have hreadR : prefMem μ q r Pw Q R j (r + j) = R.getD j 0 :=
@@ -198,26 +198,26 @@ private theorem prefDownRound_spec {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ} {Q 
   refine Ends.setToThen (2 * y) ?_ (by simp [Limits.Addr, abs_le, hreadR]; omega)
   -- if Twice < Power
   refine Ends.iteLast (fun hc => ?_) (fun hc => ?_)
-  · have hc' : 2 * y < Pw := by simpa using hc
+  · have hc' : 2 * y < Pw := by assumption
     rw [shiftQ, shiftR, if_pos hc', if_pos hc'] at hnext
     -- mem[ArrQ + Idx] := 2 * mem[ArrQ + Idx]
     refine Ends.storeToThen (q + j) (2 * x) ?_
       (by simp [Limits.Addr, abs_le, hreadQ]; omega)
     -- mem[ArrR + Idx] := Twice
     light_store (r + j) (2 * y)
-    exact by rw [hnext]; rfl
-  · have hc' : ¬ 2 * y < Pw := by simpa using hc
+    simp_all
+  · have hc' : ¬ 2 * y < Pw := by assumption
     rw [shiftQ, shiftR, if_neg hc', if_neg hc'] at hnext
     -- mem[ArrQ + Idx] := 2 * mem[ArrQ + Idx] + 1
     refine Ends.storeToThen (q + j) (2 * x + 1) ?_
       (by simp [Limits.Addr, abs_le, hreadQ]; omega)
     -- mem[ArrR + Idx] := Twice - Power
     light_store (r + j) (2 * y - Pw)
-    exact by rw [hnext]; rfl
+    simp_all
 
 /-- **prefDown** makes one step on every pair (q[i], r[i]), and changes nothing else. -/
-theorem prefDown_meets {p : ℕ} (hp : P[p]? = some prefDownBody) {μ : ℕ → ℤ} {q r : ℕ} {Pw : ℤ}
-    {Q R : List ℤ} (C : PrefPre lim μ q r Pw Q R) :
+theorem prefDown_meets {p } (hp : P[p]? = some prefDownBody) {μ } {q r } {Pw }
+    {Q R } (C : PrefPre lim μ q r Pw Q R) :
     Meets lim P p d [Q.length, q, r, Pw] μ (38 * Q.length + 6) fun _ μ' =>
       Seg μ' q (List.zipWith (shiftQ Pw) Q R) ∧ Seg μ' r (R.map (shiftR Pw)) ∧
         ∀ a, (a < q ∨ q + Q.length ≤ a) → (a < r ∨ r + Q.length ≤ a) → μ' a = μ a := by
@@ -239,13 +239,8 @@ theorem prefDown_meets {p : ℕ} (hp : P[p]? = some prefDownBody) {μ : ℕ → 
   case done =>
     rintro s _ rfl
     refine ⟨fun i hi => ?_, fun i hi => ?_, fun a ha hb => prefMem_rest ha hb⟩
-    · have hi' : i < Q.length := by simp at hi; omega
-      change prefMem μ q r Pw Q R Q.length (q + i) = _
-      rw [prefMem_q_done hsep le_rfl hi', List.getElem_zipWith, List.getD_eq_getElem _ _ hi',
-        List.getD_eq_getElem _ _ (hlen ▸ hi')]
-    · have hi' : i < Q.length := by simp at hi; omega
-      change prefMem μ q r Pw Q R Q.length (r + i) = _
-      rw [prefMem_r_done hi', List.getElem_map, List.getD_eq_getElem _ _ (hlen ▸ hi')]
+    · grind [prefMem, prefMem_q_done]
+    · grind [prefMem, prefMem_r_done]
 
 /-! ## affine with the factor ± 1 on a list with bounded entries -/
 

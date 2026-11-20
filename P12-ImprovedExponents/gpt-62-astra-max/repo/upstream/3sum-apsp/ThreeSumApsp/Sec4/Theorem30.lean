@@ -8,7 +8,12 @@ module
 public import ThreeSumApsp.Sec2.Tiling
 public import ThreeSumApsp.Sec4.Lemma27_28
 public import ThreeSumApsp.Sec4.Lemma29
-public import ThreeSumApsp.Util.Basic
+public import Mathlib.Algebra.Order.Ring.Abs
+public import Mathlib.Algebra.Order.Ring.Int
+public import Mathlib.Data.Int.Cast.Lemmas
+public import Mathlib.Data.Nat.Cast.Order.Ring
+public import Mathlib.Tactic.GCongr
+public import Mathlib.Tactic.NormNum
 public import Mathlib.Algebra.Order.Field.GeomSum
 
 /-!
@@ -53,14 +58,12 @@ namespace ThreeSumApsp
 /-- Section 4.3: `ρ = 9m/(L-m+1)` "is less than 1 since L ≥ 10m". -/
 theorem sec4_rho_lt_one (L m : ℕ) (hL : 10 * m ≤ L) : rho L m < 1 := by
   have hL' : (10 : ℝ) * m ≤ L := by exact_mod_cast hL
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   rw [rho, div_lt_one (by linarith)]
   linarith
 
 /-- The decay rate `ρ` is not negative when `L ≥ 10m`. -/
 theorem rho_nonneg {L m : ℕ} (hL : 10 * m ≤ L) : 0 ≤ rho L m := by
   have hL' : (10 : ℝ) * m ≤ L := by exact_mod_cast hL
-  have hm : (0 : ℝ) ≤ m := Nat.cast_nonneg m
   exact div_nonneg (by positivity) (by linarith)
 
 /-! ### Theorem 30, "Preprocessing": the count behind (8) -/
@@ -91,7 +94,7 @@ theorem Theorem30.subsets (L m : ℕ) : K L m * L ≤ 10 ^ L := by
 private lemma le_choose_of_le_half (L : ℕ) : ∀ r, 1 ≤ r → r ≤ L / 2 → L ≤ L.choose r := by
   intro r h1
   induction r, h1 using Nat.le_induction with
-  | base => intro _; simp
+  | base => simp
   | succ r hr ih =>
     intro h
     exact (ih (by omega)).trans (Nat.choose_le_succ_of_lt_half_left (by omega))
@@ -101,11 +104,17 @@ private lemma three_le_K0 (L m : ℕ) (hm : 1 ≤ m) (hL : 10 * m ≤ L) : 3 ≤
   have hK : L ≤ K L m := le_choose_of_le_half L m hm (by omega)
   exact Nat.le_sqrt.2 (by omega)
 
+section
+variable {L m N : ℕ}
+  (hm : 1 ≤ m)
+  (hL : 10 * m ≤ L)
+  (hN : sqrtKN0 L m ≤ N)
+include hm hL hN
+
 /-- The number `b` of row bands, `N/(K₀ N₀)` rounded up, satisfies `b √K N₀ ≤ 2N`. The two bounds of
 the paper's proof on the numbers of bands and of tiles rest on this. If `b ≤ 2` it is the hypothesis
 `N ≥ √K N₀`. If `b ≥ 3` then `(b - 1) K₀ N₀ < N`, `b ≤ 3(b - 1)/2`, and `√K ≤ K₀ + 1 ≤ 4K₀/3`. -/
-theorem Theorem30.numBands_mul_le {L m N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L)
-    (hN : sqrtKN0 L m ≤ N) :
+theorem Theorem30.numBands_mul_le :
     (numBands L m N : ℝ) * sqrtKN0 L m ≤ 2 * (N : ℝ) := by
   have hN0 : (0 : ℝ) < (N0 L m : ℝ) := by exact_mod_cast N0_pos L m
   have hK0 : (3 : ℝ) ≤ (K0 L m : ℝ) := by exact_mod_cast three_le_K0 L m hm hL
@@ -122,23 +131,23 @@ theorem Theorem30.numBands_mul_le {L m N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ 
     exact_mod_cast h'
   rcases Nat.lt_or_ge (numBands L m N) 3 with hb | hb
   · have hb' : (numBands L m N : ℝ) ≤ 2 := by exact_mod_cast Nat.le_of_lt_succ hb
-    exact (mul_le_mul_of_nonneg_right hb' (sqrtKN0_pos (by omega)).le).trans
-      (mul_le_mul_of_nonneg_left hN zero_le_two)
+    nlinarith
   · have hb' : (3 : ℝ) ≤ (numBands L m N : ℝ) := by exact_mod_cast hb
     have hwide : sqrtKN0 L m ≤ 4 / 3 * ((K0 L m : ℝ) * (N0 L m : ℝ)) := by
       unfold sqrtKN0
-      nlinarith [hsqrt, hK0, hN0]
+      nlinarith
     -- `b √K N₀ ≤ (4b/3) K₀ N₀ ≤ 2 (b - 1) K₀ N₀ ≤ 2N`
-    nlinarith [mul_le_mul_of_nonneg_left hwide (by linarith : (0 : ℝ) ≤ (numBands L m N : ℝ)),
-      mul_nonneg (by linarith : (0 : ℝ) ≤ (numBands L m N : ℝ) - 3) hband.le, hceil]
+    nlinarith
 
 /-- Proof of Theorem 30, "Preprocessing": "all row bands and column bands, at most 4N/(√K N₀) of
 them". There are `numBands L m N` row bands and as many column bands. Here `N` is the given size,
 not the padded one, and the bound comes from `Theorem30.numBands_mul_le`. -/
-theorem Theorem30.bands {L m N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (hN : sqrtKN0 L m ≤ N) :
+theorem Theorem30.bands :
     (2 * numBands L m N : ℝ) ≤ 4 * (N : ℝ) / sqrtKN0 L m := by
   rw [le_div_iff₀ (sqrtKN0_pos (by omega))]
   linarith [Theorem30.numBands_mul_le hm hL hN]
+
+end
 
 /-- Proof of Theorem 30, "Preprocessing": "K N₀ D ≤ 7^L". This bounds the number of nonzero entries
 of the input array of a band, which is why forming it takes `O(L · 7^L)` operations. -/
@@ -240,7 +249,7 @@ Stated after squaring, to stay in the natural numbers. -/
 theorem Theorem30.ten_pow_le (L m N : ℕ) (hL : 10 * m ≤ L) (hN : N0 L m ≤ N) :
     (10 ^ L) ^ 2 ≤ N ^ 5 := by
   -- squared once more: `10^{4L} ≤ 3^{9L} ≤ 3^{10(L-m)}`
-  have hsq : ((10 ^ L) ^ 2) ^ 2 ≤ ((3 ^ (L - m)) ^ 5) ^ 2 :=
+  have hsq :=
     calc ((10 ^ L) ^ 2) ^ 2 = 10000 ^ L := by
           rw [← pow_mul, ← pow_mul, mul_comm L, pow_mul]; norm_num
       _ ≤ 19683 ^ L := Nat.pow_le_pow_left (by norm_num) L

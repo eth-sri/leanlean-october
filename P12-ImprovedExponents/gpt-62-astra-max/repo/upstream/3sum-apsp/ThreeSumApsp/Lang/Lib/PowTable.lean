@@ -5,6 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import ThreeSumApsp.Lang.Slots
+
 public import ThreeSumApsp.Lang.Lib.Seg
 public import ThreeSumApsp.Lang.Tactics
 public import Mathlib.Data.Int.SuccPred
@@ -27,7 +29,7 @@ def powList (b L : ℕ) : List ℤ := (List.range L).map fun j => ((b ^ j : ℕ)
 
 @[simp] theorem length_powList (b L : ℕ) : (powList b L).length = L := by simp [powList]
 
-@[simp] theorem getElem_powList {b L j : ℕ} (h : j < (powList b L).length) :
+@[simp] theorem getElem_powList {b L j } (h : j < (powList b L).length) :
     (powList b L)[j] = ((b ^ j : ℕ) : ℤ) := by
   simp [powList]
 
@@ -35,11 +37,7 @@ namespace PowTable
 
 /-- The local variables of powTable: the arguments dst, L and b, the exponent j, and the power b^j.
 -/
-abbrev Dest : ℕ := 0
-@[inherit_doc Dest] abbrev Len : ℕ := 1
-@[inherit_doc Dest] abbrev Base : ℕ := 2
-@[inherit_doc Dest] abbrev Expo : ℕ := 3
-@[inherit_doc Dest] abbrev Power : ℕ := 4
+slots 0 Dest Len Base Expo Power
 
 end PowTable
 
@@ -67,7 +65,7 @@ def PowTable.Filled (μ : ℕ → ℤ) (dst L b : ℕ) (t : List ℤ) (j : ℕ) 
 
 /-- The body of powTable writes the powers of b and changes nothing else, whatever its local
 variables hold apart from the three arguments. -/
-theorem powTable_ends {μ : ℕ → ℤ} {dst L b : ℕ} (e p : ℤ) (t : List ℤ)
+theorem powTable_ends {μ } {dst L b } (e p : ℤ) (t : List ℤ)
     (hw : (lim.space : ℤ) ≤ lim.word) (hdst : dst + L ≤ lim.space)
     (hpow : ∀ j ≤ L, ((b ^ j : ℕ) : ℤ) ≤ lim.word) :
     Ends lim P d powTableBody ⟨frame (dst :: L :: b :: e :: p :: t), μ⟩ (powTableTime L) fun σ' =>
@@ -79,17 +77,16 @@ theorem powTable_ends {μ : ℕ → ℤ} {dst L b : ℕ} (e p : ℤ) (t : List �
   -- for j < L
   refine Ends.for (Filled μ dst L b t) L powTableRound.blockCost ?start ?round ?done ?bound
     (hT := by light_time [powTableRound])
-  case start => exact ⟨μ, by simp [update_frame_setLocal], fun i hi => absurd hi (by omega), .refl⟩
+  case start => exact ⟨μ, by simp [update_frame_setLocal], by omega, .refl⟩
   case bound =>
     rintro j _ - - ⟨μ', rfl, -⟩
-    light_side
+    simp
   case done =>
     rintro _ - ⟨μ', rfl, powers, same⟩
-    exact ⟨fun i hi => by rw [getElem_powList]; exact powers i (by simpa using hi), same⟩
+    exact ⟨fun i hi => by aesop, same⟩
   case round =>
     rintro j _ hj - ⟨μ', rfl, powers, same⟩
-    have hfits : (b : ℤ) ^ (j + 1) ≤ lim.word := by exact_mod_cast hpow (j + 1) (by omega)
-    have hnonneg : 0 ≤ (b : ℤ) ^ (j + 1) := by positivity
+    have hfits : (b : ℤ) ^ (j + 1) ≤ lim.word := by grind
     unfold powTableRound
     -- dst[j] := p
     light_store (dst + j) (b ^ j : ℕ)
@@ -97,9 +94,6 @@ theorem powTable_ends {μ : ℕ → ℤ} {dst L b : ℕ} (e p : ℤ) (t : List �
     light_set (b ^ (j + 1) : ℕ) using ← pow_succ
     refine ⟨by simp, Function.update μ' (dst + j) (b ^ j : ℕ), by simp [update_frame_setLocal],
       fun i hi => ?_, by light_keep⟩
-    obtain hi | rfl := Nat.lt_succ_iff_lt_or_eq.1 hi
-    · rw [Function.update_of_ne (by omega)]
-      exact powers i hi
-    · exact Function.update_self ..
+    grind
 
 end Light

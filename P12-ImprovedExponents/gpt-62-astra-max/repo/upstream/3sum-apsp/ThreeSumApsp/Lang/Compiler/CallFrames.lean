@@ -62,7 +62,7 @@ theorem effects_argsCode (I : Framed Z σ q m) (es : List Expr) (k : ℕ)
 /-- The code for one more local variable. -/
 private theorem frameInit_succ (F' n : ℕ) : frameInit (F' + 1) n = frameInit F' n ++
     [.sub cADDR cNFP (cPool (2 * F')), .store cADDR (if F' < n then cT F' else cZERO)] := by
-  simp [frameInit, List.range_succ, List.flatMap_append]
+  simp [frameInit, List.range_succ]
 
 private theorem straight_frameInit (n : ℕ) : ∀ F' : ℕ, ∀ i ∈ frameInit F' n, Straight i
   | 0 => by simp [frameInit]
@@ -74,7 +74,7 @@ private theorem straight_frameInit (n : ℕ) : ∀ F' : ℕ, ∀ i ∈ frameInit
 temporaries, the others with 0.  It changes nothing but ADDR and stack cells from q' on. -/
 private theorem effects_frameInit (Z : Sizes W) (n q' F' : ℕ) (m : ℤ → BitVec W)
     (hNFP : m cNFP = wd W (cStack q'))
-    (hpool : ∀ i < F', m (cPool (2 * i)) = wd W ((2 * i : ℕ) : ℤ)) (hQ : q' + F' ≤ Z.Q) :
+    (hpool : ∀ i < F', m (cPool (2 * i : ℕ)) = wd W (2 * i : ℕ)) (hQ : q' + F' ≤ Z.Q) :
     (∀ i < F',
         effects (frameInit F' n) m (cStack (q' + i)) = if i < n then m (cT i) else m cZERO) ∧
       AgreeOutside (insert cADDR (Stack q' Z.Q)) m (effects (frameInit F' n) m) := by
@@ -102,7 +102,7 @@ represents the state in which the procedure starts, in the frame q + F + 1, and 
 before that frame holds the position to return to.  Of the stack, only cells from q + F on have
 changed. -/
 theorem effects_newFrame (I : Framed Z σ q m) (hQ : q + Z.F + 1 + Z.F ≤ Z.Q) (args : List Expr)
-    (hargs : ∀ i < args.length, m (cT i) = wd W (frame (args.map (·.val σ)) i)) {ret : ℕ}
+    (hargs : ∀ i < args.length, m (cT i) = wd W (frame (args.map (·.val σ)) i)) {ret}
     (hret : ret ≤ Z.disp) :
     Rel Z ⟨frame (args.map (·.val σ)), σ.mem⟩ (q + Z.F + 1)
         (effects (newFrame Z.F args.length ret) m) ∧
@@ -120,8 +120,7 @@ theorem effects_newFrame (I : Framed Z σ q m) (hQ : q + Z.F + 1 + Z.F ≤ Z.Q) 
   -- the local variables of the new frame
   obtain ⟨val, A⟩ := effects_frameInit Z args.length (q + Z.F + 1) Z.F _
     (Function.update_self cNFP _ m) (fun i hi => (R.beyond hq A₁).pool _ (by omega)) hQ
-  generalize effects (frameInit Z.F args.length) _ = m₂ at val A ⊢
-  have hNFP : m₂ cNFP = wd W (cStack (q + Z.F + 1)) :=
+  have hNFP :=
     A.read (by cells) (Function.update_self _ _ _)
   have A₂ := A₁.trans (A.mono (by cells))
   -- ADDR := NFP + 2
@@ -133,7 +132,7 @@ theorem effects_newFrame (I : Framed Z σ q m) (hQ : q + Z.F + 1 + Z.F ≤ Z.Q) 
   have A₄ := A₃.update (a := cStack (q + Z.F)) (by cells) (wd W ret)
   have R₄ := R.beyond hq A₄
   -- FP := NFP + 0
-  rw [effect_add cFP (by cell_read using hNFP) R₄.zero, add_zero]
+  rw [effect_add cFP (by cell_read using hNFP) R₄.zero]
   refine ⟨?_, by cell_read,
     (A₄.mono (Set.union_subset scratch_subset_writable stack_subset_writable)).update (by cells) _⟩
   refine R₄.of_agreeOutside ((AgreeOutside.refl {cFP} _).update rfl _) (by cells)

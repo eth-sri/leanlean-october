@@ -8,7 +8,8 @@ module
 public import ThreeSumApsp.Lang.Lib.PowTable
 public import ThreeSumApsp.Programs.Sec2.Theorem5.Places
 public import ThreeSumApsp.Spec.Sec2.Theorem5.Layout
-public import ThreeSumApsp.Spec.Sec2.Theorem5.PrunedList
+public import ThreeSumApsp.Sec2.Lemma10
+public import Mathlib.Data.List.TakeWhile
 
 /-!
 # Theorem 5 in the light language: the map
@@ -44,12 +45,12 @@ open ThreeSumApsp
 
 /-- The cells from a on hold a list of bits, as 1 and 0. -/
 def SegB (μ : ℕ → ℤ) (a : ℕ) (l : List Bool) : Prop :=
-  Seg μ a (l.map fun b : Bool => if b then (1 : ℤ) else 0)
+  Seg μ a (l.map fun b : Bool => if b then 1 else 0)
 
 /-- A cell of a segment of bits. -/
-theorem SegB.get {μ : ℕ → ℤ} {a : ℕ} {l : List Bool} (h : SegB μ a l) {q : ℕ} (hq : q < l.length) :
+theorem SegB.get {μ} {a} {l} (h : SegB μ a l) {q} (hq : q < l.length) :
     μ (a + q) = if l.getD q false then 1 else 0 :=
-  (Seg.getD h (by rwa [List.length_map]) 0).trans (List.getD_map_of_lt _ hq false 0)
+  (Seg.getD h (by grind) 0).trans (List.getD_map_of_lt _ hq false 0)
 
 /-! ## The numbers of the procedures
 
@@ -57,8 +58,6 @@ Number 0 is empty.  1 to 25: the shared routines and those of Theorem 5.  26 to 
 regime, the brute force, and the solver for all instances.  29 to 39 are not used.  From 40 on:
 Section 4. -/
 
-/-- The number of shared. -/
-def pShared : ℕ := 1
 /-- The number of pow. -/
 def pPow : ℕ := 2
 /-- The number of binom. -/
@@ -77,38 +76,6 @@ def pCoef : ℕ := 8
 def pBandArray : ℕ := 9
 /-- The number of encStep. -/
 def pEncStep : ℕ := 10
-/-- The number of encode. -/
-def pEncode : ℕ := 11
-/-- The number of encodeBands. -/
-def pEncodeBands : ℕ := 12
-/-- The number of wanted. -/
-def pWanted : ℕ := 13
-/-- The number of countSort. -/
-def pCountSort : ℕ := 14
-/-- The number of sortWanted. -/
-def pSortWanted : ℕ := 15
-/-- The number of segBounds. -/
-def pSegBounds : ℕ := 16
-/-- The number of union. -/
-def pUnion : ℕ := 17
-/-- The number of pick. -/
-def pPick : ℕ := 18
-/-- The number of pruned. -/
-def pPruned : ℕ := 19
-/-- The number of runTiles. -/
-def pRunTiles : ℕ := 20
-/-- The number of report. -/
-def pReport : ℕ := 21
-/-- The number of fill. -/
-def pFill : ℕ := 22
-/-- The number of copy. -/
-def pCopy : ℕ := 23
-/-- The number of gather. -/
-def pGather : ℕ := 24
-/-- The number of the solver of Theorem 5. -/
-def pThm5 : ℕ := 25
-/-- The number of the test of the regime. -/
-def pRegime : ℕ := 26
 /-- The number of the brute force. -/
 def pThinBrute : ℕ := 27
 
@@ -122,30 +89,30 @@ variable (lim : Limits) (P : Program) (c : ℕ)
 def PowSpec : Prop :=
   ∀ (b n dst : ℕ) (μ : ℕ → ℤ),
     1 ≤ dst → dst + (n + 1) ≤ lim.space → 1 ≤ b →
-    ((b ^ (n + 1) : ℕ) : ℤ) ≤ lim.word →
+    (b ^ (n + 1) : ℕ) ≤ lim.word →
     ∀ d, d ≤ lim.depth → Meets lim P pPow d [b, n, dst] μ (c * (n + 1)) fun _ μ' =>
       Seg μ' dst (powList b (n + 1)) ∧ SameOutside μ μ' dst (n + 1)
 
 /-- binom(L, m, pas): returns binom(L, m), by Pascal's triangle in the L + 2 cells from pas. -/
 def BinomSpec : Prop :=
   ∀ (L m pas : ℕ) (μ : ℕ → ℤ),
-    pas + (L + 2) ≤ lim.space → m ≤ L → ((2 ^ L : ℕ) : ℤ) ≤ lim.word →
+    pas + (L + 2) ≤ lim.space → m ≤ L → (2 ^ L : ℕ) ≤ lim.word →
     ∀ d, d ≤ lim.depth → Meets lim P pBinom d [L, m, pas] μ (c * (L + 1) ^ 2) fun r μ' =>
-      r = (L.choose m : ℕ) ∧ SameOutside μ μ' pas (L + 2)
+      r = (L.choose m) ∧ SameOutside μ μ' pas (L + 2)
 
 /-- sqrt(K): returns ⌊√K⌋, by counting up.  Changes no cell. -/
 def SqrtSpec : Prop :=
   ∀ (K : ℕ) (μ : ℕ → ℤ),
-    ((4 * K + 4 : ℕ) : ℤ) ≤ lim.word →
+    (4 * K + 4 : ℕ) ≤ lim.word →
     ∀ d, d ≤ lim.depth → Meets lim P pSqrt d [K] μ (c * (Nat.sqrt K + 1)) fun r μ' =>
-      r = (Nat.sqrt K : ℕ) ∧ μ' = μ
+      r = (Nat.sqrt K) ∧ μ' = μ
 
 /-- subsets(L, m, KK, mask): writes the first KK subsets of size m of the L levels, as rows of L
 bits, in the order of Spec.unrank. -/
 def SubsetsSpec : Prop :=
   ∀ (L m KK mask : ℕ) (μ : ℕ → ℤ),
     mask + KK * L ≤ lim.space → m ≤ L → KK ≤ L.choose m →
-    ((KK + L : ℕ) : ℤ) ≤ lim.word →
+    (KK + L : ℕ) ≤ lim.word →
     ∀ d, d ≤ lim.depth →
     Meets lim P pSubsets d [L, m, KK, mask] μ (c * ((KK + 1) * (L + 1))) fun _ μ' =>
       (∀ s < KK, SegB μ' (mask + s * L) (Spec.unrank L m s)) ∧ SameOutside μ μ' mask (KK * L)
@@ -155,7 +122,7 @@ block I / N0 % K0 to band + N + I, by counting. -/
 def CountersSpec : Prop :=
   ∀ (N K0 N0 band : ℕ) (μ : ℕ → ℤ),
     band + 2 * N ≤ lim.space → 0 < K0 → 0 < N0 →
-    ((K0 + N0 : ℕ) : ℤ) ≤ lim.word →
+    (K0 + N0 : ℕ) ≤ lim.word →
     ∀ d, d ≤ lim.depth → Meets lim P pCounters d [N, K0, N0, band] μ (c * (N + 1)) fun _ μ' =>
       (∀ I < N, μ' (band + I) = (I / (K0 * N0) : ℕ) ∧ μ' (band + N + I) = (I / N0 % K0 : ℕ))
       ∧ SameOutside μ μ' band (2 * N)
@@ -164,8 +131,8 @@ def CountersSpec : Prop :=
 significant first, to dst + x len, by an odometer. -/
 def DigitsSpec : Prop :=
   ∀ (n b len dst : ℕ) (μ : ℕ → ℤ),
-    dst + n * len ≤ lim.space → 2 ≤ b → (b : ℤ) ≤ lim.word →
-    (n : ℤ) ≤ lim.word →
+    dst + n * len ≤ lim.space → 2 ≤ b → b ≤ lim.word →
+    n ≤ lim.word →
     ∀ d, d ≤ lim.depth →
     Meets lim P pDigits d [n, b, len, dst] μ (c * ((n + 1) * (len + 1))) fun _ μ' =>
       (∀ x < n, SegN μ' (dst + x * len) (ThreeSumApsp.digitList b len (x % b ^ len)))
@@ -233,27 +200,6 @@ structure EncodePlaces (n Lmax src dst scr tab p7 p10 : ℕ) (μ : ℕ → ℤ) 
   src_le : src + 7 ^ n ≤ scr
   scr_le : scr + 7 ^ n ≤ lim.space
 
-/-- encode(n, src, dst, scr, tab, p7, p10), the procedure of Section 2.4.1, recursive as
-printed, with the coefficients φ: from the array a at src it computes the encoding of a at dst. -/
-def EncodeLSpec : Prop :=
-  ∀ (n Lmax src dst scr tab p7 p10 : ℕ) (μ : ℕ → ℤ) (a : LeftStr n → ℤ) (V : ℤ),
-    EncodePlaces lim n Lmax src dst scr tab p7 p10 μ →
-    Seg μ tab Spec.phiFlat → Seg μ src (Spec.arrL a) → (∀ u, |a u| ≤ V) →
-    7 ^ (n + 1) * V ≤ lim.word →
-    ∀ d, d + (n + 1) ≤ lim.depth →
-    Meets lim P pEncode d [n, src, dst, scr, tab, p7, p10] μ (c * 10 ^ n) fun _ μ' =>
-      Seg μ' dst (Spec.arrT (encodingL a)) ∧ SameOutside2 μ μ' dst (10 ^ n) scr (7 ^ n)
-
-/-- The same procedure with the coefficients ψ. -/
-def EncodeRSpec : Prop :=
-  ∀ (n Lmax src dst scr tab p7 p10 : ℕ) (μ : ℕ → ℤ) (b : RightStr n → ℤ) (V : ℤ),
-    EncodePlaces lim n Lmax src dst scr tab p7 p10 μ →
-    Seg μ tab Spec.psiFlat → Seg μ src (Spec.arrR b) → (∀ v, |b v| ≤ V) →
-    7 ^ (n + 1) * V ≤ lim.word →
-    ∀ d, d + (n + 1) ≤ lim.depth →
-    Meets lim P pEncode d [n, src, dst, scr, tab, p7, p10] μ (c * 10 ^ n) fun _ μ' =>
-      Seg μ' dst (Spec.arrT (encodingR b)) ∧ SameOutside2 μ μ' dst (10 ^ n) scr (7 ^ n)
-
 /-! ## The shared stage -/
 
 /-- The tables of the powers of 3, 4, 7 and 10 in the shared block. -/
@@ -278,24 +224,6 @@ structure RowTables (p : Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop where
 structure SharedTables (p : Par) (b0 : ℕ) (μ : ℕ → ℤ) : Prop
   extends PowTables p b0 μ, RowTables p b0 μ
 
-/-- What the shared stage leaves behind: the tables, the directory, and the encodings of all bands.
-(Cell 31 of the directory is not used by it.) -/
-structure SharedReady (p : Par) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
-    (X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ)
-    (Y : Matrix (Fin (ThreeSumApsp.D p.m)) (Fin p.N) ℤ) (μ : ℕ → ℤ) : Prop
-  extends SharedTables p b0 μ where
-  dir : SegN μ (p.aDIR b0) (dirList p aX aY b0)
-  encA : ∀ β < p.nB, Seg μ (p.aENCA b0 + β * p.T)
-    (Spec.arrT (encodingL (bandArrayL (Spec.stdLayout hmL) X β)))
-  encB : ∀ β < p.nB, Seg μ (p.aENCB b0 + β * p.T)
-    (Spec.arrT (encodingR (bandArrayR (Spec.stdLayout hmL) Y β)))
-
-/-- The shape of the running time of the shared stage. -/
-def sharedShape (p : Par) : ℕ :=
-  (p.L + 1) ^ 2 + (Nat.sqrt p.K + 1) + (p.KK + 1) * (p.L + 1) + (p.N + 1) * (p.Lo + 1)
-    + (p.D + 1) * (p.m + 1)
-    + p.nB * (p.T + bandArrayShape p)
-
 /-- What the shared stage assumes: the shared block fits in the memory, X and Y stand below it, V
 bounds their entries, and the encoded numbers and the powers of ten fit in a word. -/
 structure SharedPre (p : Par) (aX aY b0 : ℕ) (X : Matrix (Fin p.N) (Fin (ThreeSumApsp.D p.m)) ℤ)
@@ -308,111 +236,13 @@ structure SharedPre (p : Par) (aX aY b0 : ℕ) (X : Matrix (Fin p.N) (Fin (Three
   absX : ∀ i j, |X i j| ≤ V
   absY : ∀ i j, |Y i j| ≤ V
   seven : 7 ^ (p.L + 1) * V ≤ lim.word
-  ten : ((10 ^ (p.L + 1) : ℕ) : ℤ) ≤ lim.word
+  ten : (10 ^ (p.L + 1) : ℕ) ≤ lim.word
 
 /-! ## Theorem 5 -/
 
-/-- What wanted reads, apart from the positions: all of it lies below the area it writes. -/
-structure WantedTables (p : Par) (μ : ℕ → ℤ) (band dig3 mask tid : ℕ) : Prop where
-  hband : ∀ I < p.N, μ (band + I) = (I / (p.K0 * p.N0) : ℕ)
-  hblock : ∀ I < p.N, μ (band + p.N + I) = (I / p.N0 % p.K0 : ℕ)
-  hdig3 : ∀ I < p.N, SegN μ (dig3 + I * p.Lo) (ThreeSumApsp.digitList 3 p.Lo (I % p.N0))
-  hmask : ∀ s < p.KK, SegB μ (mask + s * p.L) (Spec.unrank p.L p.m s)
-  band_le : band + 2 * p.N ≤ tid
-  dig3_le : dig3 + p.N * p.Lo ≤ tid
-  mask_le : mask + p.KK * p.L ≤ tid
-
-/-- What wanted assumes. -/
-structure Wanted.WantedPre (p : Par) (w aWI aWJ band dig3 mask tid : ℕ) (I J : ℕ → ℕ)
-    (μ : ℕ → ℤ) : Prop where
-  hmL : p.m ≤ p.L
-  tab : WantedTables p μ band dig3 mask tid
-  hI : ∀ i < w, μ (aWI + i) = I i ∧ I i < p.N
-  hJ : ∀ i < w, μ (aWJ + i) = J i ∧ J i < p.N
-  hpow : ((10 ^ (p.L + 1) : ℕ) : ℤ) ≤ lim.word
-  hnB : (((p.nB + 1) * (p.nB + 1) : ℕ) : ℤ) ≤ lim.word
-  room : tid + (2 * w + w * p.L) ≤ lim.space := by light_arith
-  hWI : aWI + w ≤ tid := by light_arith
-  hWJ : aWJ + w ≤ tid := by light_arith
-
 namespace SortWanted
 
-/-- The arguments of sortWanted. -/
-structure Args where
-  /-- the number of positions -/
-  w : ℕ
-  /-- the number of digits of a code -/
-  L : ℕ
-  /-- the number of tiles -/
-  nT : ℕ
-  /-- where the numbers of the tiles stand -/
-  tid : ℕ
-  /-- where the digits of the codes stand -/
-  dgt : ℕ
-  /-- where the sorted list goes -/
-  perm : ℕ
-
-/-- The number of cells from perm on that may change. -/
-def Args.room (A : Args) : ℕ := 2 * A.w + (A.nT + 11) + (A.nT + 1)
-
 end SortWanted
-
-/-- The arguments of pick but for the mode, with the data behind them: the list small stands at
-pSub, the list big at pU, the list values at pVal, and pDst is the destination. -/
-structure PickArgs : Type where
-  (pSub pU pVal pDst : ℕ)
-  (small big : List ℕ) (values : List ℤ)
-
-/-- What pick assumes: big is an increasing list, values has a value for each of its numbers, and
-small is an increasing list of numbers of big; all of it lies above the cells that pick writes. -/
-structure PickPre (μ : ℕ → ℤ) (x : PickArgs) : Prop where
-  small : SegN μ x.pSub x.small
-  big : SegN μ x.pU x.big
-  values : Seg μ x.pVal x.values
-  len : x.values.length = x.big.length
-  big_sorted : x.big.Pairwise (· < ·)
-  small_sorted : x.small.Pairwise (· < ·)
-  sub : ∀ c ∈ x.small, c ∈ x.big
-  dst_sub : x.pDst + x.small.length ≤ x.pSub := by light_arith
-  dst_big : x.pDst + x.small.length ≤ x.pU := by light_arith
-  dst_val : x.pDst + x.small.length ≤ x.pVal := by light_arith
-  sub_le : x.pSub + x.small.length ≤ lim.space := by light_arith
-  big_le : x.pU + x.big.length ≤ lim.space := by light_arith
-  val_le : x.pVal + x.big.length ≤ lim.space := by light_arith
-
-/-- The arguments of pruned but for the number n of levels that are left, with the data behind them.
-The two encodings are the lists EA at aEA and EB at aEB, and the parts of them below the current
-vertex begin at the position base.  The list codes stands at l, the values are written to out, the
-stack begins at sp, and the powers of ten up to 10^Lmax stand at p10.  A and B bound the numbers in
-the two encodings. -/
-structure PrunedArgs : Type where
-  (aEA aEB base l out sp p10 : ℕ)
-  (Lmax : ℕ) (EA EB : List ℤ) (codes : List ℕ) (A B : ℤ)
-
-/-- What a call of pruned with n levels left assumes.  The list codes is an increasing list of
-output strings, as numbers below 10^n.  The two encodings and the powers of ten lie below that list;
-then come the cells of out, one for each code; then, from sp on, the stack, n frames of 3 len + 11
-cells.  Sums of 10^n products of a number of EA and a number of EB fit in a word. -/
-structure PrunedPre (μ : ℕ → ℤ) (n : ℕ) (x : PrunedArgs) : Prop where
-  powers : Seg μ x.p10 (powList 10 (x.Lmax + 1))
-  encA : Seg μ x.aEA x.EA
-  encB : Seg μ x.aEB x.EB
-  list : SegN μ x.l x.codes
-  sorted : x.codes.Pairwise (· < ·)
-  lt : ∀ c ∈ x.codes, c < 10 ^ n
-  boundA : AbsLe x.EA x.A
-  boundB : AbsLe x.EB x.B
-  word : 10 ^ n * (x.A * x.B) ≤ lim.word
-  pow : ((10 ^ (n + 1) : ℕ) : ℤ) ≤ lim.word
-  levels : n ≤ x.Lmax := by light_arith
-  partA : x.base + 10 ^ n ≤ x.EA.length := by light_arith
-  partB : x.base + 10 ^ n ≤ x.EB.length := by light_arith
-  belowPowers : x.p10 + (x.Lmax + 1) ≤ x.l := by light_arith
-  belowA : x.aEA + x.EA.length ≤ x.l := by light_arith
-  belowB : x.aEB + x.EB.length ≤ x.l := by light_arith
-  belowOut : x.l + x.codes.length ≤ x.out := by light_arith
-  belowStack : x.out + x.codes.length ≤ x.sp := by light_arith
-  space : x.sp + n * (3 * x.codes.length + 11) ≤ lim.space := by light_arith
 
 end Entries
 

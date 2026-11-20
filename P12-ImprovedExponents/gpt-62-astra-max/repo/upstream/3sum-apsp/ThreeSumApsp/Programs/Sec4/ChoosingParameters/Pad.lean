@@ -26,13 +26,7 @@ namespace PadX
 
 /-- The local variables of padX: the arguments N, D, D', aX, aX', the row, and a result that is not
 used. -/
-abbrev Height : ℕ := 0
-@[inherit_doc Height] abbrev Width : ℕ := 1
-@[inherit_doc Height] abbrev Padded : ℕ := 2
-@[inherit_doc Height] abbrev Source : ℕ := 3
-@[inherit_doc Height] abbrev Dest : ℕ := 4
-@[inherit_doc Height] abbrev Row : ℕ := 5
-@[inherit_doc Height] abbrev Unused : ℕ := 6
+slots 0 Height Width Padded Source Dest Row Unused
 
 end PadX
 
@@ -51,7 +45,7 @@ variable {N D₀ D' aX aX' i : ℕ} {X : Matrix (Fin N) (Fin D₀) ℤ} {μ μ' 
 /-- The memory before row i: the first i rows of the padded matrix stand at aX', and no cell outside
 them has changed. -/
 def Rows (μ : ℕ → ℤ) (aX' D' : ℕ) (X : Matrix (Fin N) (Fin D₀) ℤ) (i : ℕ) (μ' : ℕ → ℤ) : Prop :=
-  (∀ (r : Fin N) (j : Fin D'), (r : ℕ) < i → μ' (aX' + r * D' + j) = padInnerCols D' X r j) ∧
+  (∀ (r : Fin N) (j : Fin D'), r < i → μ' (aX' + r * D' + j) = padInnerCols D' X r j) ∧
     SameOutside μ μ' aX' (i * D')
 
 /-- A round: row i of X has been copied, and zeros have been written behind it. -/
@@ -61,36 +55,35 @@ theorem Rows.succ (h : Rows μ aX' D' X i μ') (hX : MatAt μ aX X) (hsep : aX +
     (hfill : ∀ j < D' - D₀, μ₂ (aX' + i * D' + D₀ + j) = 0)
     (hout₂ : SameOutside μ₁ μ₂ (aX' + i * D' + D₀) (D' - D₀)) (hDD : D₀ ≤ D') :
     Rows μ aX' D' X (i + 1) μ₂ := by
-  have hrow : i * D₀ + D₀ ≤ N * D₀ := Nat.mul_add_le_mul hi le_rfl
+  have hrow : i * D₀ + D₀ ≤ N * D₀ := by nlinarith
   refine ⟨fun r j hr => ?_, fun b hb => ?_⟩
   · rcases Nat.lt_succ_iff_lt_or_eq.mp hr with hlt | heq
     · -- an earlier row lies below the cells that the round has written
       have := Nat.mul_add_lt_mul hlt j.isLt
       rw [hout₂ _ (.inl (by omega)), hout₁ _ (.inl (by omega))]
       exact h.1 r j hlt
-    · by_cases hj : (j : ℕ) < D₀
+    · by_cases hj : j < D₀
       · -- an entry of X, which is as at the start
         rw [heq, hout₂ _ (.inl (by omega)), hcopy _ hj, h.2 _ (.inl (by omega)), padInnerCols,
           dif_pos hj, ← heq]
         exact hX r ⟨j, hj⟩
       · -- a zero
-        have hcell : aX' + (r : ℕ) * D' + (j : ℕ) = aX' + i * D' + D₀ + ((j : ℕ) - D₀) := by
-          rw [heq]; omega
-        rw [hcell, hfill _ (by have := j.isLt; omega), padInnerCols, dif_neg hj]
+        have hcell : aX' + r * D' + j = aX' + i * D' + D₀ + (j - D₀) := by
+          grind
+        rw [hcell, hfill _ (by omega), padInnerCols, dif_neg hj]
   · rw [Nat.succ_mul] at hb
     rw [hout₂ b (by omega), hout₁ b (by omega), h.2 b (by omega)]
 
 end PadX
 
 open PadX in
-theorem padX_meets {lim : Limits} {P : Program} (hP : P[Proc.padX]? = some padXBody)
+theorem padX_meets {lim} {P} (hP : P[Proc.padX]? = some padXBody)
     (hcopy : CopySpec lim P) (hfill : FillSpec lim P) (hstd : Std lim) : PadXSpec lim P := by
   intro N D₀ D' aX aX' X μ hDD hD1 hX hsep hsp
   refine fun d hd => ⟨padXBody, hP, ?_⟩
   have hw := hstd.space_le
-  have h100 := hstd.const_le
   have hN : N ≤ N * D' := Nat.le_mul_of_pos_right _ hD1
-  have hsub : (D' : ℤ) - D₀ = ((D' - D₀ : ℕ) : ℤ) := (Nat.cast_sub hDD).symm
+  have hsub : D' - D₀ = ((D' - D₀ : ℕ) : ℤ) := by omega
   unfold padXBody tPadX
   -- for i < N
   refine Ends.for (fun i σ => ∃ (r : ℤ) (μ' : ℕ → ℤ),
@@ -98,10 +91,9 @@ theorem padX_meets {lim : Limits} {P : Program} (hP : P[Proc.padX]? = some padXB
     ?start ?round ?done ?bound
   case start =>
     exact ⟨0, μ, by rw [update_frame_setLocal, ← frame_append_zeros _ 1]; rfl,
-      fun r j hr => absurd hr (Nat.not_lt_zero _), fun _ _ => rfl⟩
+      by omega, fun _ _ => rfl⟩
   case bound =>
-    rintro i _ - - ⟨r, μ', rfl, -⟩
-    simp
+    simp_all
   case done =>
     rintro _ - ⟨r, μ', rfl, hrows, hout⟩
     exact ⟨fun r j => hrows r j r.isLt, hout⟩

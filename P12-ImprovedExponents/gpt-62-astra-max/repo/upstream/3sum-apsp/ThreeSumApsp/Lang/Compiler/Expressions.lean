@@ -73,7 +73,6 @@ private theorem effects_digitsCode {c : ℤ} (hc : cONE ≠ c) (L : List ℕ) (h
     obtain rfl | rfl := hd
     · refine ⟨?_, A.update (Set.mem_singleton c) _⟩
       rw [if_pos rfl, effects_nil, Function.update_self, Nat.ofDigits_cons]
-      congr 1
       push_cast
       ring
     · -- c := c + 1
@@ -81,7 +80,6 @@ private theorem effects_digitsCode {c : ℤ} (hc : cONE ≠ c) (L : List ℕ) (h
         ((Function.update_of_ne hc _ _).trans (A.read hc hone))]
       refine ⟨?_, (A.update (Set.mem_singleton c) _).update (Set.mem_singleton c) _⟩
       rw [Function.update_self, Nat.ofDigits_cons]
-      congr 1
       push_cast
       ring
 
@@ -106,9 +104,15 @@ private theorem effect_instr (o : Op) {m : ℤ → BitVec W} {j k a b : ℤ} (i 
 
 variable {Z : Sizes W} {σ : State} {q : ℕ} {m : ℤ → BitVec W}
 
+section
+variable (I : Framed Z σ q m)
+  (e : Expr)
+  (k : ℕ)
+include I
+
 /-- The code of an expression leaves its value in T_k and changes nothing but ADDR and the
 temporaries from T_k on. -/
-private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (hvars : e.vars ≤ Z.F)
+private theorem effects_compileExpr (hvars : e.vars ≤ Z.F)
     (hs : e.Safe Z.lim σ) (hT : k + e.height ≤ 2 * Z.F + 1) :
     effects (compileExpr e k) m (cT k) = wd W (e.val σ) ∧
       AgreeOutside (Temps k Z.F) m (effects (compileExpr e k) m) := by
@@ -148,7 +152,7 @@ private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (
     obtain ⟨hsa, haddr⟩ := hs
     obtain ⟨va, Aa⟩ := ih I k hvars hsa hT
     -- the address is not negative, so it is neither ADDR nor a temporary
-    have hnonneg : 0 ≤ a.val σ := haddr.1
+    have hnonneg := haddr.1
     -- T_k := the cell at T_k
     rw [compileExpr, effects_append, effects_cons, effects_nil,
       effect_load (cT k) va (Z.inRange_addr haddr), Aa.cell (by cells), I.rel.read haddr]
@@ -156,11 +160,13 @@ private theorem effects_compileExpr (I : Framed Z σ q m) (e : Expr) (k : ℕ) (
 
 /-- The code of an expression of width at most F, when there are F temporaries from T_k on, leaves
 its value in T_k and changes nothing but ADDR and the temporaries from T_k on. -/
-theorem effects_compileExpr_of_width (I : Framed Z σ q m) (e : Expr) (k : ℕ) (hw : e.width ≤ Z.F)
+theorem effects_compileExpr_of_width (hw : e.width ≤ Z.F)
     (hs : e.Safe Z.lim σ) (hk : k ≤ Z.F + 1) :
     effects (compileExpr e k) m (cT k) = wd W (e.val σ) ∧
       AgreeOutside (Temps k Z.F) m (effects (compileExpr e k) m) :=
   effects_compileExpr I e k (Expr.width_le_iff.1 hw).1 hs
     (by have := (Expr.width_le_iff.1 hw).2; omega)
+
+end
 
 end Light.Compiler

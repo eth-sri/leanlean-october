@@ -44,20 +44,24 @@ structure SharedReadyP (p : Par) (hmL : p.m ≤ p.L) (aX aY b0 : ℕ)
   encB : ∀ β < p.nB, SegOn p.m μ (p.aENCB b0 + β * p.T)
     (encodingR (bandArrayR (Spec.stdLayout hmL) Y β))
 
+section
+variable (h : SharedReadyP p hmL aX aY b0 X Y μ)
+include h
+
 /-- What the pruned shared stage leaves behind is kept by a memory that agrees on the cells of the
 shared block, but for cell 31 of the directory, which the shared stage does not use. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec2/Theorem5/CellDependencies.lean
 -- (SharedReady.congr)
-theorem SharedReadyP.congr (h : SharedReadyP p hmL aX aY b0 X Y μ)
+theorem SharedReadyP.congr
     (hag : ∀ a, b0 ≤ a → a < p.sharedEnd b0 → a ≠ b0 + 31 → μ' a = μ a) :
     SharedReadyP p hmL aX aY b0 X Y μ' := by
   have hplaces := p.places b0
-  have tb : SharedTables p b0 μ' :=
+  have tb :=
     h.toSharedTables.congr fun x hlo hx => hag x (by omega) (by omega) (by omega)
-  have henc : ∀ {a β i : ℕ}, p.aENCA b0 ≤ a → a + p.nB * p.T ≤ p.sharedEnd b0 → β < p.nB →
+  have henc : ∀ {a β i }, p.aENCA b0 ≤ a → a + p.nB * p.T ≤ p.sharedEnd b0 → β < p.nB →
       i < p.T → μ' (a + β * p.T + i) = μ (a + β * p.T + i) := fun ha hend hβ hi => by
     have := Nat.mul_add_lt_mul hβ hi
-    exact hag _ (by omega) (by omega) (by omega)
+    grind
   have hT : p.T = 10 ^ p.L := rfl
   refine
     { tb with
@@ -65,16 +69,17 @@ theorem SharedReadyP.congr (h : SharedReadyP p hmL aX aY b0 X Y μ)
       encA := fun β hβ => (h.encA β hβ).congr fun i hi => henc le_rfl (by omega) hβ (hT ▸ hi)
       encB := fun β hβ => (h.encB β hβ).congr fun i hi =>
         henc (by omega) (by omega) hβ (hT ▸ hi) }
-  simp only [dirList, List.length_map, List.length_cons, List.length_nil] at hi
-  simp only [Par.aDIR]
-  exact hag _ (by omega) (by omega) (by omega)
+  simp [dirList] at hi
+  grind
 
 /-- What the pruned shared stage leaves behind is kept by a memory that agrees on all cells below
 the end of the shared block, but for cell 31 of the directory. -/
-theorem SharedReadyP.of_agree (h : SharedReadyP p hmL aX aY b0 X Y μ)
+theorem SharedReadyP.of_agree
     (hag : ∀ a, a < p.sharedEnd b0 → a ≠ b0 + 31 → μ' a = μ a) :
     SharedReadyP p hmL aX aY b0 X Y μ' :=
   h.congr fun a _ => hag a
+
+end
 
 /-- The shape of the running time of the pruned shared stage: upstream's `sharedShape` with the
 work `encWorkP L m` of the pruned encoder in place of the `10^L` cells of a full encoding. -/

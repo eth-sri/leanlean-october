@@ -31,7 +31,7 @@ namespace ThreeSumApsp.Spec.Subsets
 def bit (b : Bool) : ℤ := if b then 1 else 0
 
 /-- Row 0 of the table is `m` ones followed by `L - m` zeros. -/
-theorem bit_unrank_zero {L m q : ℕ} (hm : m ≤ L) (hq : q < L) :
+theorem bit_unrank_zero {L m q} (hm : m ≤ L) (hq : q < L) :
     bit ((Spec.unrank L m 0).getD q false) = if q < m then 1 else 0 := by
   rw [Spec.unrank_zero hm]
   grind [bit]
@@ -74,13 +74,12 @@ def scanStep (x q : ℤ) (S : Scan) : Scan :=
 /-- The state of the scan of a row of length `L` after `j` rounds. -/
 def scanAt (row : ℕ → ℤ) (L : ℕ) : ℕ → Scan
   | 0 => ⟨0, 0, 0⟩
-  | j + 1 => scanStep (row (L - 1 - j)) ((L : ℤ) - 1 - (j : ℤ)) (scanAt row L j)
+  | j + 1 => scanStep (row (L - 1 - j)) (L - 1 - j) (scanAt row L j)
 
 /-- One round counts at most one more 1. -/
 private theorem scanStep_ones (x q : ℤ) (S : Scan) :
     (scanStep x q S).ones = S.ones ∨ (scanStep x q S).ones = S.ones + 1 := by
-  unfold scanStep
-  split_ifs <;> simp
+  grind [scanStep]
 
 /-- After `j` rounds at most `j` ones have been counted. -/
 theorem scanAt_ones_le (row : ℕ → ℤ) (L j : ℕ) :
@@ -88,9 +87,8 @@ theorem scanAt_ones_le (row : ℕ → ℤ) (L j : ℕ) :
   induction j with
   | zero => simp [scanAt]
   | succ j ih =>
-    have hstep := scanStep_ones (row (L - 1 - j)) ((L : ℤ) - 1 - (j : ℤ)) (scanAt row L j)
+    have hstep := scanStep_ones (row (L - 1 - j)) (L - 1 - j) (scanAt row L j)
     rw [scanAt]
-    push_cast
     omega
 
 section shape
@@ -103,7 +101,6 @@ include hL hrow
 before them, and 1 for the cell before these. -/
 private theorem row_sub (j : ℕ) (hj : j ≤ b + a + 1) :
     row (L - 1 - j) = if j < b then 1 else if j < b + a + 1 then 0 else 1 := by
-  rw [hrow _ (by omega), getD_shape]
   grind [bit]
 
 /-- Phase 0: the `b` ones at the end of the row are counted. -/
@@ -112,19 +109,19 @@ private theorem scanAt_count (j : ℕ) (hj : j ≤ b) : scanAt row L j = ⟨0, j
   | zero => rfl
   | succ j ih =>
     rw [scanAt, ih (by omega), row_sub hL hrow j (by omega), if_pos (by omega)]
-    simp [scanStep]
+    rfl
 
 /-- Phase 1: the `a + 1` zeros before the ones are passed. -/
 private theorem scanAt_pass (i : ℕ) (hi : i ≤ a) : scanAt row L (b + 1 + i) = ⟨1, b, 0⟩ := by
   induction i with
   | zero =>
-    rw [Nat.add_zero, scanAt, scanAt_count hL hrow b le_rfl, row_sub hL hrow b (by omega),
+    rw [scanAt, scanAt_count hL hrow b le_rfl, row_sub hL hrow b (by omega),
       if_neg (by omega), if_pos (by omega)]
-    simp [scanStep]
+    rfl
   | succ i ih =>
     rw [← Nat.add_assoc, scanAt, ih (by omega), row_sub hL hrow _ (by omega), if_neg (by omega),
       if_pos (by omega)]
-    simp [scanStep]
+    rfl
 
 /-- Phase 2: the 1 before the `a + 1` zeros is found, at the position after `pre`, and from then on
 the state stays as it is. -/
@@ -132,19 +129,17 @@ private theorem scanAt_found (i : ℕ) (hi : i ≤ pre.length) :
     scanAt row L (b + 1 + a + 1 + i) = ⟨2, b, pre.length⟩ := by
   induction i with
   | zero =>
-    rw [Nat.add_zero, scanAt, scanAt_pass hL hrow a le_rfl, row_sub hL hrow _ (by omega),
+    rw [scanAt, scanAt_pass hL hrow a le_rfl, row_sub hL hrow _ (by omega),
       if_neg (by omega), if_neg (by omega),
-      show (L : ℤ) - 1 - ((b + 1 + a : ℕ) : ℤ) = pre.length by omega]
-    simp [scanStep]
+      show (L : ℤ) - 1 - (b + 1 + a : ℕ) = pre.length by omega]
+    rfl
   | succ i ih =>
     rw [← Nat.add_assoc, scanAt, ih (by omega)]
     rfl
 
 /-- The scan of a row of the shape `pre 1 0 0^a 1^b` finds `b` and the length of `pre`. -/
 private theorem scanAt_shape : scanAt row L L = ⟨2, b, pre.length⟩ := by
-  rw [← scanAt_found hL hrow pre.length le_rfl]
-  congr 1
-  omega
+  grind [scanAt_found]
 
 end shape
 
@@ -161,21 +156,20 @@ include hs hrow
 
 /-- **From one row to the next.**  If row number `s` has a successor, the cells of row `s + 1` are
 given by `newCell`, from the cells of row `s` and the result of its scan. -/
-theorem bit_unrank_succ {q : ℕ} (hq : q < L) :
+theorem bit_unrank_succ {q} (hq : q < L) :
     bit ((Spec.unrank L m (s + 1)).getD q false) = newCell (scanAt row L L) (row q) q := by
   obtain ⟨pre, a, b, hL, hthis, hnext⟩ := Spec.unrank_succ_shape hs
   rw [hthis] at hrow
   rw [scanAt_shape hL hrow, hrow q hq, hnext, getD_shape, getD_shape, newCell]
   dsimp only
-  split_ifs <;> first | rfl | (exfalso; omega)
+  split_ifs <;> first | rfl | omega
 
 /-- The result of the scan of a row that has a successor fits into a row. -/
 theorem scanAt_fits : (scanAt row L L).Fits L := by
   obtain ⟨pre, a, b, hL, hthis, -⟩ := Spec.unrank_succ_shape hs
   rw [hthis] at hrow
   rw [scanAt_shape hL hrow, Scan.Fits]
-  dsimp only
-  omega
+  grind
 
 end next
 

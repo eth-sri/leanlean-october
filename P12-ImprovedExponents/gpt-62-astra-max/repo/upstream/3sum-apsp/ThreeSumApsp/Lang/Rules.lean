@@ -7,7 +7,6 @@ module
 
 public import ThreeSumApsp.Lang.Logic
 public import Mathlib.Algebra.Order.Group.Abs
-public import Mathlib.Algebra.Order.Ring.Abs
 
 /-!
 # Derived rules: time that is not typed, blocks, counting loops
@@ -118,22 +117,26 @@ theorem Stmt.Runs.mono {s : Stmt} {σ : State} {R R' : State → Prop} (h : s.Ru
     (hR : ∀ σ', R σ' → R' σ') : s.Runs lim σ R' :=
   ⟨h.1, hR _ h.2⟩
 
-/-- Two blocks, one after the other. -/
-theorem Stmt.Runs.seq {s t : Stmt} {σ : State} {R : State → Prop}
-    (h : s.Runs lim σ fun σ' => t.Runs lim σ' R) : (s ;; t).Runs lim σ R :=
-  ⟨⟨h.1, h.2.1⟩, h.2.2⟩
+section
+variable {c : Cond}
+  {s t : Stmt}
+  {σ : State}
+  {R : State → Prop}
+include s t
 
 /-- A branch whose test holds. -/
-theorem Stmt.Runs.ite_pos {c : Cond} {s t : Stmt} {σ : State} {R : State → Prop}
+theorem Stmt.Runs.ite_pos
     (h : s.Runs lim σ R) (hc : c.Holds σ := by light_side) (hs : c.Safe lim σ := by light_side) :
     (Stmt.ite c s t).Runs lim σ R :=
   ⟨⟨hs, fun _ => h.1, fun hn => absurd hc hn⟩, by simpa only [Stmt.after, if_pos hc] using h.2⟩
 
 /-- A branch whose test fails. -/
-theorem Stmt.Runs.ite_neg {c : Cond} {s t : Stmt} {σ : State} {R : State → Prop}
+theorem Stmt.Runs.ite_neg
     (h : t.Runs lim σ R) (hc : ¬ c.Holds σ := by light_side) (hs : c.Safe lim σ := by light_side) :
     (Stmt.ite c s t).Runs lim σ R :=
   ⟨⟨hs, fun hp => absurd hp hc, fun _ => h.1⟩, by simpa only [Stmt.after, if_neg hc] using h.2⟩
+
+end
 
 theorem Ends.of_blockSafe : ∀ {s : Stmt} {σ : State} {T : ℕ} {Q : State → Prop}, s.BlockSafe lim σ →
     s.blockCost ≤ T → Q (s.after σ) → Ends lim P d s σ T Q
@@ -161,15 +164,19 @@ theorem Ends.block {s : Stmt} {σ : State} {T : ℕ} {Q : State → Prop} (h : s
 
 /-! ## Sequencing: what is left of the time goes to the rest of the program -/
 
+section
+variable {σ : State}
+  {T : ℕ}
+
 /-- The first statement gets T₁ steps, the rest of the program what is left of T. -/
-theorem Ends.next {σ : State} {T : ℕ} {s₁ s₂ : Stmt} {Q : State → Prop} (T₁ : ℕ)
+theorem Ends.next {s₁ s₂ : Stmt} {Q : State → Prop} (T₁ : ℕ)
     (h : Ends lim P d s₁ σ T₁ fun σ' => Ends lim P d s₂ σ' (T - T₁) Q)
     (hT : T₁ ≤ T := by light_time) : Ends lim P d (s₁ ;; s₂) σ T Q :=
   Ends.seq T₁ (T - T₁) h (by omega)
 
 /-- Brackets do not matter: a piece of several statements, followed by the rest of the program, is
 run statement by statement. -/
-theorem Ends.seqAssoc {σ : State} {T : ℕ} {s₁ s₂ s₃ : Stmt} {Q : State → Prop}
+theorem Ends.seqAssoc {s₁ s₂ s₃ : Stmt} {Q : State → Prop}
     (h : Ends lim P d (s₁ ;; (s₂ ;; s₃)) σ T Q) : Ends lim P d ((s₁ ;; s₂) ;; s₃) σ T Q := by
   obtain ⟨σ', _, he, hc, hq⟩ := h
   cases he with
@@ -178,12 +185,12 @@ theorem Ends.seqAssoc {σ : State} {T : ℕ} {s₁ s₂ s₃ : Stmt} {Q : State 
     | seq he₂ he₃ => exact ⟨σ', _, .seq (.seq he₁ he₂) he₃, by omega, hq⟩
 
 /-- A `skip` before the rest of the program takes no step. -/
-theorem Ends.skipThen {σ : State} {T : ℕ} {s : Stmt} {Q : State → Prop} (h : Ends lim P d s σ T Q) :
+theorem Ends.skipThen {s : Stmt} {Q : State → Prop} (h : Ends lim P d s σ T Q) :
     Ends lim P d (.skip ;; s) σ T Q :=
   Ends.seq 0 T (Ends.skip h) (by omega)
 
 /-- A `skip` may be put behind a statement. -/
-theorem Ends.skipLast {σ : State} {T : ℕ} {s : Stmt} {Q : State → Prop}
+theorem Ends.skipLast {s : Stmt} {Q : State → Prop}
     (h : Ends lim P d (s ;; .skip) σ T Q) : Ends lim P d s σ T Q := by
   obtain ⟨σ', _, he, hc, hq⟩ := h
   cases he with
@@ -192,9 +199,11 @@ theorem Ends.skipLast {σ : State} {T : ℕ} {s : Stmt} {Q : State → Prop}
     exact ⟨σ', _, he₁, by omega, hq⟩
 
 /-- A program that is defined as a sequence may be treated as the sequence. -/
-theorem Ends.seqSelf {σ : State} {T : ℕ} {s₁ s₂ : Stmt} {Q : State → Prop}
+theorem Ends.seqSelf {s₁ s₂ : Stmt} {Q : State → Prop}
     (h : Ends lim P d (s₁ ;; s₂) σ T Q) : Ends lim P d (s₁ ;; s₂) σ T Q :=
   h
+
+end
 
 /-- A piece of the program about which `h` is known, followed by the rest of the program, which gets
 the steps that are left. -/
@@ -216,22 +225,21 @@ theorem Ends.setLast {loc μ : ℕ → ℤ} {T x : ℕ} {e : Expr} {Q : State �
     Ends lim P d (.set x e) ⟨loc, μ⟩ T Q :=
   Ends.set hs hT h
 
-/-- An assignment, followed by the rest of the program. -/
-theorem Ends.setThen {loc μ : ℕ → ℤ} {T x : ℕ} {e : Expr} {s : Stmt} {Q : State → Prop}
-    (h : Ends lim P d s ⟨Function.update loc x (e.val ⟨loc, μ⟩), μ⟩ (T - (e.cost + 1)) Q)
-    (hs : e.Safe lim ⟨loc, μ⟩ := by light_side) (hT : e.cost + 1 ≤ T := by light_time) :
-    Ends lim P d (.set x e ;; s) ⟨loc, μ⟩ T Q :=
-  Ends.next _ (Ends.set hs le_rfl h) hT
+section
+variable {loc μ : ℕ → ℤ}
+  {T : ℕ}
+  {a e : Expr}
+include T
 
 /-- A store at the end of the program. -/
-theorem Ends.storeLast {loc μ : ℕ → ℤ} {T : ℕ} {a e : Expr} {Q : State → Prop}
+theorem Ends.storeLast {Q : State → Prop}
     (h : Q ⟨loc, Function.update μ (a.val ⟨loc, μ⟩).toNat (e.val ⟨loc, μ⟩)⟩)
     (hs : a.Safe lim ⟨loc, μ⟩ ∧ e.Safe lim ⟨loc, μ⟩ ∧ lim.Addr (a.val ⟨loc, μ⟩) := by light_side)
     (hT : a.cost + e.cost + 1 ≤ T := by light_time) : Ends lim P d (.store a e) ⟨loc, μ⟩ T Q :=
   Ends.store hs.1 hs.2.1 hs.2.2 hT h
 
 /-- A store, followed by the rest of the program. -/
-theorem Ends.storeThen {loc μ : ℕ → ℤ} {T : ℕ} {a e : Expr} {s : Stmt} {Q : State → Prop}
+theorem Ends.storeThen {s : Stmt} {Q : State → Prop}
     (h : Ends lim P d s ⟨loc, Function.update μ (a.val ⟨loc, μ⟩).toNat (e.val ⟨loc, μ⟩)⟩
       (T - (a.cost + e.cost + 1)) Q)
     (hs : a.Safe lim ⟨loc, μ⟩ ∧ e.Safe lim ⟨loc, μ⟩ ∧ lim.Addr (a.val ⟨loc, μ⟩) := by light_side)
@@ -239,8 +247,15 @@ theorem Ends.storeThen {loc μ : ℕ → ℤ} {T : ℕ} {a e : Expr} {s : Stmt} 
     Ends lim P d (.store a e ;; s) ⟨loc, μ⟩ T Q :=
   Ends.next _ (Ends.storeLast h hs le_rfl) hT
 
+end
+
+section
+variable {σ : State}
+  {T : ℕ}
+  {c : Cond}
+
 /-- A branch at the end of the program: both sides get the steps that the test leaves. -/
-theorem Ends.iteLast {σ : State} {T : ℕ} {c : Cond} {s₁ s₂ : Stmt} {Q : State → Prop}
+theorem Ends.iteLast {s₁ s₂ : Stmt} {Q : State → Prop}
     (h₁ : c.Holds σ → Ends lim P d s₁ σ (T - (c.cost + 1)) Q)
     (h₂ : ¬ c.Holds σ → Ends lim P d s₂ σ (T - (c.cost + 1)) Q)
     (hs : c.Safe lim σ := by light_side) (hT : c.cost + 1 ≤ T := by light_time) :
@@ -249,7 +264,7 @@ theorem Ends.iteLast {σ : State} {T : ℕ} {c : Cond} {s₁ s₂ : Stmt} {Q : S
 
 /-- A branch, followed by the rest of the program: each side, with the rest of the program behind
 it, gets the steps that the test leaves. -/
-theorem Ends.iteThen {σ : State} {T : ℕ} {c : Cond} {s₁ s₂ s : Stmt} {Q : State → Prop}
+theorem Ends.iteThen {s₁ s₂ s : Stmt} {Q : State → Prop}
     (h₁ : c.Holds σ → Ends lim P d (s₁ ;; s) σ (T - (c.cost + 1)) Q)
     (h₂ : ¬ c.Holds σ → Ends lim P d (s₂ ;; s) σ (T - (c.cost + 1)) Q)
     (hs : c.Safe lim σ := by light_side) (hT : c.cost + 1 ≤ T := by light_time) :
@@ -264,12 +279,14 @@ theorem Ends.iteThen {σ : State} {T : ℕ} {c : Cond} {s₁ s₂ s : Stmt} {Q :
 
 /-- A branch, followed by the rest of the program, where the test says `p`: the first side is run
 under the hypothesis `p`, the second under `¬ p`. -/
-theorem Ends.iteIffThen {σ : State} {T : ℕ} {c : Cond} {s₁ s₂ s : Stmt} {Q : State → Prop}
+theorem Ends.iteIffThen {s₁ s₂ s : Stmt} {Q : State → Prop}
     (p : Prop) (h₁ : p → Ends lim P d (s₁ ;; s) σ (T - (c.cost + 1)) Q)
     (h₂ : ¬ p → Ends lim P d (s₂ ;; s) σ (T - (c.cost + 1)) Q)
     (hs : c.Safe lim σ ∧ (c.Holds σ ↔ p) := by light_side)
     (hT : c.cost + 1 ≤ T := by light_time) : Ends lim P d (.ite c s₁ s₂ ;; s) σ T Q :=
   Ends.iteThen (fun hc => h₁ (hs.2.1 hc)) (fun hc => h₂ fun hp => hc (hs.2.2 hp)) hs.1 hT
+
+end
 
 /-! ## Loops whose body is a block -/
 
@@ -306,10 +323,10 @@ theorem Ends.for {σ : State} {i : ℕ} {hi : Expr} {body : Stmt} {T : ℕ} {Q :
     (hn : (n : ℤ) ≤ lim.word := by omega)
     (hT : n * (hi.cost + b + 7) + hi.cost + 5 ≤ T := by light_time) :
     Ends lim P d (Stmt.for i hi body) σ T Q := by
-  have h0 : (0 : ℤ) ≤ lim.word := le_trans (Int.natCast_nonneg n) hn
+  have h0 := le_trans (Int.natCast_nonneg n) hn
   refine Ends.seq 2 (n * (hi.cost + b + 7) + hi.cost + 3)
-    (Ends.set (by simpa using h0) (by simp) ?_) (by omega)
-  refine Ends.whileConst (fun j σ => σ.loc i = j ∧ I j σ) n (b + 4) ⟨by simp, by simpa using start⟩
+    (Ends.set (by assumption) (by simp) ?_) (by omega)
+  refine Ends.whileConst (fun j σ => σ.loc i = j ∧ I j σ) n (b + 4) ⟨by simp, by assumption⟩
     ?_ ?_ (le_of_eq (by simp only [Cond.cost, Expr.cost]; ring))
   · rintro j σ hj ⟨hc, hI⟩
     obtain ⟨hs, hv⟩ := bound j σ hj.le hc hI
@@ -319,14 +336,11 @@ theorem Ends.for {σ : State} {i : ℕ} {hi : Expr} {body : Stmt} {T : ℕ} {Q :
       exact_mod_cast hj
     · rintro σ' ⟨hc', hI'⟩
       have hval : (v i +' k 1).val σ' = (j : ℤ) + 1 := by simp [hc']
-      have hj' : (j : ℤ) + 1 ≤ n := by exact_mod_cast hj
       refine Ends.set ⟨trivial, ?_, ?_⟩ (by simp) ⟨?_, ?_⟩
       · change ((1 : ℕ) : ℤ) ≤ lim.word
-        push_cast
         omega
       · change |(v i +' k 1).val σ'| ≤ lim.word
-        rw [hval, abs_of_nonneg (by omega)]
-        omega
+        grind
       · simp [hc']
       · rw [hval]
         exact hI'

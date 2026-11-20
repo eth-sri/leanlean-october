@@ -8,7 +8,6 @@ module
 public import PaperStatements
 public import ThreeSumApsp.Util.Asymptotics.Dominated
 public import ThreeSumApsp.Util.Asymptotics.Powers
-public import Mathlib.Tactic.Linarith
 
 /-!
 # The notions of solving are monotone
@@ -50,8 +49,8 @@ structure Bounded (Q : EndStatement.Problem) where
   bounded : ∀ a ∈ Q.input x, a.natAbs ≤ U
 
 /-- The numbers of the input of a bounded instance are within the bound. -/
-theorem Bounded.abs_le {Q : EndStatement.Problem} {x : Bounded Q} {a : ℤ} (ha : a ∈ Q.input x.x) :
-    |a| ≤ (x.U : ℤ) := by
+theorem Bounded.abs_le {Q} {x : Bounded Q} {a} (ha : a ∈ Q.input x.x) :
+    |a| ≤ x.U := by
   rw [Int.abs_eq_natAbs]
   exact_mod_cast x.bounded a ha
 
@@ -61,53 +60,52 @@ verdict has to be `accept` exactly if the answer is yes, and the output has to b
 abbrev ofEnd (Q : EndStatement.Problem) : Problem where
   Inst := Bounded Q
   params x := [x.n]
-  input x := (x.n : ℤ) :: Q.input x.x
+  input x := x.n :: Q.input x.x
   IsAnswer x verdict out := (verdict = true ↔ Q.yes x.x) ∧ Q.output x.x out
 
 /-- `EndStatement.Problem.SolvedBy` counts the output cells as `1 + len + i`, and `output` counts
 them as `(len + 1) + i`. -/
-theorem output_cons {W : ℕ} (c : ℤ → BitVec W) (n : ℤ) (l : List ℤ) :
-    (fun i : ℕ => (c ((1 + l.length + i : ℕ) : ℤ)).toInt) = output c (n :: l).length := by
-  funext i
-  simp only [output, List.length_cons, Nat.add_comm 1]
+theorem output_cons {W} (c : ℤ → BitVec W) (n : ℤ) (l : List ℤ) :
+    (fun i : ℕ => (c (1 + l.length + i : ℕ)).toInt) = output c (n :: l).length := by
+  simp [output, Nat.add_comm 1]
   rfl
 
 /-- `SolvesWithin` is `Solves` for the problem `ofEnd Q`, on the instances with `U = n^κ`. -/
-theorem solvesWithin_iff {Q : EndStatement.Problem} {κ : ℕ} {P : List Instr} {b : ℕ} {T : ℕ → ℝ} :
+theorem solvesWithin_iff {Q} {κ} {P} {b} {T} :
     SolvesWithin Q κ P b T ↔ Solves (ofEnd Q) P b (fun x => x.U = x.n ^ κ) fun x => T x.n := by
   constructor
   · intro h x hx bits hbits
     obtain ⟨t, ht, verdict, m, hexec, hyes, hout⟩ :=
-      h x.n x.x (hx ▸ x.bounded) bits (by simpa [Admissible] using hbits)
+      h x.n x.x (hx ▸ x.bounded) bits (by assumption)
     exact ⟨t, verdict, m, ht, hexec, hyes, output_cons m x.n (Q.input x.x) ▸ hout⟩
   · intro h n x hx W hW
     obtain ⟨t, verdict, c, ht, hrun, hyes, hout⟩ :=
-      h ⟨n, n ^ κ, x, hx⟩ rfl W (by simpa [Admissible] using hW)
+      h ⟨n, n ^ κ, x, hx⟩ rfl W (by assumption)
     exact ⟨t, ht, verdict, c, hrun, hyes, (output_cons c n (Q.input x)).symm ▸ hout⟩
 
 /-- `SolvedInTimeAt` in terms of `Solves`. -/
-theorem solvedInTimeAt_iff {Q : EndStatement.Problem} {κ : ℕ} {a : ℝ} {e : ℕ} :
+theorem solvedInTimeAt_iff {Q} {κ} {a} {e} :
     SolvedInTimeAt Q κ a e ↔ ∃ (P : List Instr) (b : ℕ) (C : ℝ),
       Solves (ofEnd Q) P b (fun x => x.U = x.n ^ κ)
-        fun x => C * ((x.n : ℝ) ^ a * Real.log x.n ^ e + 1) := by
-  simp only [SolvedInTimeAt, solvesWithin_iff]
+        fun x => C * (x.n ^ a * Real.log x.n ^ e + 1) := by
+  simp [SolvedInTimeAt, solvesWithin_iff]
 
 /-! ## Monotonicity -/
 
 /-- `Solves` stays true for a larger slope, a smaller set of instances and a larger time bound. -/
-theorem Solves.mono {prob : Problem} {P : List Instr} {b b' : ℕ} {dom dom' : prob.Inst → Prop}
-    {T T' : prob.Inst → ℝ} (h : Solves prob P b dom T) (hb : b ≤ b') (hdom : ∀ x, dom' x → dom x)
+theorem Solves.mono {prob} {P} {b b'} {dom dom'}
+    {T T'} (h : Solves prob P b dom T) (hb : b ≤ b') (hdom : ∀ x, dom' x → dom x)
     (hT : ∀ x, dom' x → T x ≤ T' x) : Solves prob P b' dom' T' := by
   intro x hx bits hadm
   obtain ⟨t, verdict, c, ht, he, ha⟩ :=
     h x (hdom x hx) bits (le_trans (Nat.mul_le_mul_right _ hb) hadm)
-  exact ⟨t, verdict, c, ht.trans (hT x hx), he, ha⟩
+  grind
 
 /-! ## Bounds up to a constant -/
 
 /-- A program that solves a problem in time `O(f)` solves it in time `O(f')` if `f = O(f')`. -/
-theorem exists_solves_of_dominated {prob : Problem} {dom dom' : prob.Inst → Prop}
-    {f f' : prob.Inst → ℝ}
+theorem exists_solves_of_dominated {prob} {dom dom'}
+    {f f'}
     (h : ∃ (P : List Instr) (b : ℕ) (C : ℝ), Solves prob P b dom fun x => C * f x)
     (hdom : ∀ x, dom' x → dom x) (hf : Dominated dom' f f')
     (hf0 : ∀ x, dom' x → 0 ≤ f x := by intro _ _; positivity) :
@@ -120,20 +118,19 @@ theorem exists_solves_of_dominated {prob : Problem} {dom dom' : prob.Inst → Pr
 
 /-- The bound `O(n^a (log n)^e)` may be replaced by a bound `O(n^a' (log n)^e')` that is at least as
 large, up to a constant, for all large `n`. -/
-theorem SolvedInTimeAt.of_eventually_le {Q : EndStatement.Problem} {κ : ℕ} {a a' C : ℝ} {e e' : ℕ}
+theorem SolvedInTimeAt.of_eventually_le {Q} {κ} {a a' C} {e e'}
     (h : SolvedInTimeAt Q κ a e)
     (hle : ∀ᶠ n : ℕ in atTop,
-      (n : ℝ) ^ a * Real.log n ^ e ≤ C * ((n : ℝ) ^ a' * Real.log n ^ e')) :
+      n ^ a * Real.log n ^ e ≤ C * (n ^ a' * Real.log n ^ e')) :
     SolvedInTimeAt Q κ a' e' := by
-  have hall : Dominated (fun _ : ℕ => True) (fun n => (n : ℝ) ^ a * Real.log n ^ e + 1)
-      fun n => (n : ℝ) ^ a' * Real.log n ^ e' + 1 :=
+  have hall :=
     (Dominated.of_eventually_add_one hle fun n => by positivity).add
       (.of_le fun n _ => le_add_of_nonneg_left (by positivity))
   exact solvedInTimeAt_iff.2 (exists_solves_of_dominated (solvedInTimeAt_iff.1 h) (fun _ hx => hx)
     (hall.comp (fun x : Bounded Q => x.n) fun _ _ => trivial))
 
 /-- A bound `O(n^a (log n)^{O(1)})` is a bound `O(n^a')` for `a < a'`. -/
-theorem SolvedInPolylogTime.solvedInTime {Q : EndStatement.Problem} {a a' : ℝ}
+theorem SolvedInPolylogTime.solvedInTime {Q} {a a'}
     (h : SolvedInPolylogTime Q a) (ha : a < a') : SolvedInTime Q a' 0 := fun κ =>
   let ⟨e, he⟩ := h κ
   he.of_eventually_le (C := 1) <| by

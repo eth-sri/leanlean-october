@@ -1,6 +1,8 @@
 module
 
-public import ThreeSumApsp.TimeClaims.Sec3.Theorem19
+public import ThreeSumApsp.Sec3.Theorem17.Witnesses
+public import Mathlib.Algebra.Order.Floor.Semifield
+public import ThreeSumApsp.Util.Asymptotics.LogU
 public import ImprovedExponents.Pipeline.ThinClaim
 
 @[expose] public section

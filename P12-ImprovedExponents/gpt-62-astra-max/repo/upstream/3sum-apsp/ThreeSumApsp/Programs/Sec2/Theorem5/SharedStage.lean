@@ -119,7 +119,7 @@ def storeLocals : ℕ → List ℕ → Stmt
 
 /-- **storeLocals** writes the values of the locals to the cells from base + i on, changes nothing
 else, and takes 5 steps for each. -/
-theorem storeLocals_spec {d : ℕ} (hw : (lim.space : ℤ) ≤ lim.word) {base : ℕ} (loc : ℕ → ℤ)
+theorem storeLocals_spec {d } (hw : (lim.space : ℤ) ≤ lim.word) {base : ℕ} (loc : ℕ → ℤ)
     (hbase : loc Base = base) (xs : List ℕ) :
     ∀ (i : ℕ) (μ : ℕ → ℤ), base + i + xs.length ≤ lim.space →
       Ends lim P d (storeLocals i xs) ⟨loc, μ⟩ (5 * xs.length) fun σ' =>
@@ -133,9 +133,9 @@ theorem storeLocals_spec {d : ℕ} (hw : (lim.space : ℤ) ≤ lim.word) {base :
     -- mem[base + i] := x
     refine Ends.storeThen ?_ (by light_side [hbase])
     rw [haddr]
-    refine (ih (i + 1) _ (by omega)).mono (by simp; omega) ?_
+    refine (ih (i + 1) _ (by omega)).mono (by rfl) ?_
     rintro σ' ⟨hs, hf⟩
-    refine ⟨seg_cons.2 ⟨?_, by rw [Nat.add_assoc]; exact hs⟩, fun b hb => ?_⟩
+    refine ⟨seg_cons.2 ⟨?_, by grind⟩, fun b hb => ?_⟩
     · rw [hf (base + i) (Or.inl (by omega)), Function.update_self]
       rfl
     · rw [hf b (by omega), Function.update_of_ne (by omega)]
@@ -183,27 +183,6 @@ def sharedB : Stmt :=
 def sharedBands : Stmt :=
   .ite (v Rows =' k 0) (.set Bands (k 0)) (.set Bands (M (v AdrBand +' (v Rows -' k 1)) +' k 1))
 
-/-- The third part of shared: the number of bands, the last addresses, the encodings of all bands,
-and the directory. -/
-def sharedC : Stmt :=
-  sharedBands ;;
-  .set AdrEncB (v AdrEncA +' v Bands *' v Leaves) ;;
-  .set AdrArr (v AdrEncB +' v Bands *' v Leaves) ;;
-  .set AdrZs (v AdrArr +' v Strings) ;;
-  .set AdrEnd (v AdrZs +' v Strings) ;;
-  .call pEncodeBands [v Levels, v Inner, v Rows, v Cols, v Root, v BlockRows, v Strings, v Leaves,
-    v Bands, k 0, v AdrX, v Cols, k 1, v AdrMask, v AdrDig3, v AdrDig4, v AdrArr, v AdrZs, v AdrPhi,
-    v AdrP7, v AdrP10, v AdrEncA] Void ;;
-  .call pEncodeBands [v Levels, v Inner, v Rows, v Cols, v Root, v BlockRows, v Strings, v Leaves,
-    v Bands, k 1, v AdrY, k 1, v Rows, v AdrMask, v AdrDig3, v AdrDig4, v AdrArr, v AdrZs, v AdrPsi,
-    v AdrP7, v AdrP10, v AdrEncB] Void ;;
-  storeLocals 0 [Levels, Inner, Rows, Cols, Outer, BlockRows, Subsets, Root, Table, Bands, Leaves,
-    Strings, AdrX, AdrY, AdrP3, AdrP4, AdrP7, AdrP10, AdrPas, AdrPhi, AdrPsi, AdrMask, AdrBand,
-    AdrBlock, AdrDig3, AdrDig4, AdrEncA, AdrEncB, AdrArr, AdrZs, AdrEnd]
-
-/-- shared(L, m, N, D, aX, aY, b0). -/
-def sharedBody : Stmt := sharedA ;; sharedB ;; sharedC
-
 /-- The time of the first part, if every callee meets its entry with the constant c. -/
 def sharedTimeA (c : ℕ) (p : Par) : ℕ := 4 * (c * (p.L + 1)) + 81
 
@@ -249,18 +228,16 @@ structure SharedCallees (lim : Limits) (P : Program) (c : ℕ) : Prop where
   subsets : SubsetsSpec lim P c
   counters : CountersSpec lim P c
   digits : DigitsSpec lim P c
-  bandsL : EncodeBandsLSpec lim P c
-  bandsR : EncodeBandsRSpec lim P c
 
 /-- The assumption on the word size, in terms of `T = 10^L`. -/
 theorem Par.ten_T_le {p : Par} (h10 : ((10 ^ (p.L + 1) : ℕ) : ℤ) ≤ lim.word) :
     10 * (p.T : ℤ) ≤ lim.word := by
   rw [pow_succ, Nat.mul_comm] at h10
-  exact_mod_cast h10
+  assumption
 
 /-- What the four calls of the first part leave in the memory: each writes its own area, above the
 areas of the calls before it. -/
-theorem SharedA.of_calls {p : Par} {b0 : ℕ} {μ μP3 μP4 μP7 μP10 : ℕ → ℤ}
+theorem SharedA.of_calls {p } {b0 } {μ μP3 μP4 μP7 μP10 }
     (sP3 : Seg μP3 (p.aP3 b0) (powList 3 (p.L + 1))) (fP3 : SameOutside μ μP3 (p.aP3 b0) (p.L + 1))
     (sP4 : Seg μP4 (p.aP4 b0) (powList 4 (p.L + 1)))
     (fP4 : SameOutside μP3 μP4 (p.aP4 b0) (p.L + 1))
@@ -279,27 +256,24 @@ theorem SharedA.of_calls {p : Par} {b0 : ℕ} {μ μP3 μP4 μP7 μP10 : ℕ →
   rw [fP10 x (by omega), fP7 x (by omega), fP4 x (by omega), fP3 x (by omega)]
 
 /-- The entry of pow, for a table of the powers b^0, …, b^L of a base b ≤ 10. -/
-theorem SharedCallees.powTable {c : ℕ} (C : SharedCallees lim P c) {p : Par}
+theorem SharedCallees.powTable {c } (C : SharedCallees lim P c) {p : Par}
     (h10 : ((10 ^ (p.L + 1) : ℕ) : ℤ) ≤ lim.word) (b dst : ℕ) (μ : ℕ → ℤ)
     (one_le : 1 ≤ b := by omega) (le_ten : b ≤ 10 := by omega) (dst_pos : 1 ≤ dst := by omega)
     (dst_le : dst + (p.L + 1) ≤ lim.space := by omega) :
     ∀ d, d ≤ lim.depth → Meets lim P pPow d [b, p.L, dst] μ (c * (p.L + 1)) fun _ μ' =>
       Seg μ' dst (powList b (p.L + 1)) ∧ SameOutside μ μ' dst (p.L + 1) :=
   C.pow b p.L dst μ dst_pos dst_le one_le
-    (le_trans (by exact_mod_cast Nat.pow_le_pow_left le_ten _) h10)
+    (le_trans (by gcongr) h10)
 
 /-- **The first part of shared.** -/
-theorem sharedA_spec (std : Std lim) {c : ℕ} (C : SharedCallees lim P c) {d : ℕ} {p : Par}
-    (hmL : p.m ≤ p.L) {aX aY b0 : ℕ} (hd : d + (p.L + 3) ≤ lim.depth)
+theorem sharedA_spec (std : Std lim) {c } (C : SharedCallees lim P c) {d } {p }
+    (hmL : p.m ≤ p.L) {aX aY b0 } (hd : d + (p.L + 3) ≤ lim.depth)
     (hsp : p.sharedEnd b0 ≤ lim.space) (h10 : ((10 ^ (p.L + 1) : ℕ) : ℤ) ≤ lim.word)
     (μ : ℕ → ℤ) :
     Ends lim P d sharedA ⟨frame (sharedLoc0 p aX aY b0), μ⟩ (sharedTimeA c p) fun σ' =>
       (∃ r, σ'.loc = frame (sharedLocA p aX aY b0 r)) ∧ SharedA p b0 μ σ'.mem := by
-  have hw := std.space_le
-  have h100 := std.const_le
   have hplaces := p.places b0
   have hsizes := p.sizes hmL
-  have hTw := Par.ten_T_le h10
   unfold sharedA sharedTimeA sharedLoc0
   -- the addresses of the first eight areas
   light_set (p.aP3 b0 : ℕ)
@@ -317,9 +291,9 @@ theorem sharedA_spec (std : Std lim) {c : ℕ} (C : SharedCallees lim P c) {d : 
   light_call (C.powTable h10 10 (p.aP10 b0) μP7) with rP10 μP10 ⟨sP10, fP10⟩
   have hA := SharedA.of_calls sP3 fP3 sP4 fP4 sP7 fP7 sP10 fP10
   -- L - m, and then N₀ = 3^{L-m}, 10^L and 7^L from the tables
-  have read : ∀ {b a i : ℕ}, Seg μP10 a (powList b (p.L + 1)) → i ≤ p.L →
+  have read : ∀ {b a i }, Seg μP10 a (powList b (p.L + 1)) → i ≤ p.L →
       μP10 (a + i) = (b ^ i : ℕ) :=
-    fun h hi => by rw [h.get (by rw [length_powList]; omega), getElem_powList]
+    fun h hi => by rw [h.get (by simp_all), getElem_powList]
   have hN0 : μP10 (p.aP3 b0 + p.Lo) = (p.N0 : ℕ) := read hA.p3 (by omega)
   have hT : μP10 (p.aP10 b0 + p.L) = (p.T : ℕ) := read hA.p10 le_rfl
   have hS7 : μP10 (p.aP7 b0 + p.L) = (p.S7 : ℕ) := read hA.p7 le_rfl
@@ -332,7 +306,7 @@ theorem sharedA_spec (std : Std lim) {c : ℕ} (C : SharedCallees lim P c) {d : 
 /-- What the six calls of the second part that write to the memory leave in it (the square root
 writes nothing): each writes its own area, above the areas of the calls before it, so that all the
 tables are there at the end. -/
-theorem SharedB.of_calls {p : Par} {b0 : ℕ} {μ μPas μPhi μMask μBand μDig3 μDig4 : ℕ → ℤ}
+theorem SharedB.of_calls {p } {b0 } {μ μPas μPhi μMask μBand μDig3 μDig4 : ℕ → ℤ}
     (fPas : SameOutside μ μPas (p.aPAS b0) (p.L + 2))
     (sphi : Seg μPhi (p.aPHI b0) Spec.phiFlat)
     (spsi : Seg μPhi (p.aPHI b0 + 70) Spec.psiFlat)
@@ -352,7 +326,7 @@ theorem SharedB.of_calls {p : Par} {b0 : ℕ} {μ μPas μPhi μMask μBand μDi
   have lphi := Spec.length_phiFlat
   have lpsi := Spec.length_psiFlat
   -- The last memory agrees with each earlier one below the area that was written next.
-  have lowDig3 : ∀ x < p.aDIG4 b0, μDig4 x = μDig3 x := fun x hx => fDig4 x (Or.inl hx)
+  have lowDig3 := fun x hx => fDig4 x (Or.inl hx)
   have lowBand : ∀ x < p.aDIG3 b0, μDig4 x = μBand x := fun x hx => by
     rw [lowDig3 x (by omega), fDig3 x (Or.inl hx)]
   have lowMask : ∀ x < p.aBAND b0, μDig4 x = μMask x := fun x hx => by
@@ -369,26 +343,23 @@ theorem SharedB.of_calls {p : Par} {b0 : ℕ} {μ μPas μPhi μMask μBand μDi
       dig4 := fun x hx => ?_
       same := fun x hx => ?_ }
   · rw [List.length_map, Spec.length_unrank] at hi
-    have := Nat.mul_add_lt_mul hs hi
-    omega
+    nlinarith
   · have hi' : i < p.Lo := by simpa [ThreeSumApsp.digitList] using hi
     have := Nat.mul_add_lt_mul hI hi'
     omega
   · have h := sdig4 x hx
     rwa [Nat.mod_eq_of_lt (show x < 4 ^ p.m from hx)] at h
-  · show μDig4 x = μ x
-    rw [fDig4 x (by omega), fDig3 x (by omega), fBand x (by omega), fMask x (by omega),
+  · rw [fDig4 x (by omega), fDig3 x (by omega), fBand x (by omega), fMask x (by omega),
       fPhi x (by omega), fPas x (by omega)]
 
 /-- **The second part of shared.** -/
-theorem sharedB_spec (std : Std lim) {c : ℕ} (C : SharedCallees lim P c) {d : ℕ} {p : Par}
-    (hmL : p.m ≤ p.L) {aX aY b0 : ℕ} (hd : d + (p.L + 3) ≤ lim.depth)
+theorem sharedB_spec (std : Std lim) {c } (C : SharedCallees lim P c) {d } {p }
+    (hmL : p.m ≤ p.L) {aX aY b0 } (hd : d + (p.L + 3) ≤ lim.depth)
     (hsp : p.sharedEnd b0 ≤ lim.space) (h10 : ((10 ^ (p.L + 1) : ℕ) : ℤ) ≤ lim.word)
     (μ : ℕ → ℤ) (r0 : ℤ) :
     Ends lim P d sharedB ⟨frame (sharedLocA p aX aY b0 r0), μ⟩ (sharedTimeB c p) fun σ' =>
       (∃ r, σ'.loc = frame (sharedLocB p aX aY b0 r)) ∧ SharedB p b0 μ σ'.mem := by
   have hw := std.space_le
-  have h100 := std.const_le
   have hplaces := p.places b0
   have hsizes := p.sizes hmL
   have eKK : p.KK = p.K0 * p.K0 := rfl
@@ -396,36 +367,36 @@ theorem sharedB_spec (std : Std lim) {c : ℕ} (C : SharedCallees lim P c) {d : 
   unfold sharedB sharedTimeB sharedLocA
   -- K := binom(L, m)
   light_call (C.binom p.L p.m (p.aPAS b0) μ (by omega) hmL
-    (le_trans (by exact_mod_cast p.two_pow_le_T) (by omega : (p.T : ℤ) ≤ lim.word)))
+    (le_trans (by omega) (by omega : (p.T : ℤ) ≤ lim.word)))
     with r μPas ⟨hr, fPas⟩
   obtain rfl : r = (p.K : ℕ) := hr
   -- K₀ := ⌊√K⌋ and K₀²
-  light_call (C.sqrt p.K μPas (by push_cast; omega)) with r μPas' ⟨hr, hμ⟩
+  light_call (C.sqrt p.K μPas (by omega)) with r μPas' ⟨hr, hμ⟩
   obtain rfl : r = (p.K0 : ℕ) := hr
   obtain rfl : μPas = μPas' := hμ.symm
   light_set (p.KK : ℕ)
   -- the coefficients and the table of subsets
   light_call (C.coef (p.aPHI b0) μPas (by omega)) with rPhi μPhi ⟨sphi, spsi, fPhi⟩
   light_call (C.subsets p.L p.m p.KK (p.aMASK b0) μPhi (by omega) hmL p.KK_le_K
-    (by push_cast; omega)) with rMask μMask ⟨smask, fMask⟩
+    (by grind)) with rMask μMask ⟨smask, fMask⟩
   -- band and block of every row
   light_set (p.aBAND b0 : ℕ)
   light_set (p.aBLOCK b0 : ℕ)
   light_set (p.aDIG3 b0 : ℕ)
   light_call (C.counters p.N p.K0 p.N0 (p.aBAND b0) μMask (by omega) (by omega)
-    (by omega) (by push_cast; omega)) with rBand μBand ⟨sband, fBand⟩
+    (by omega) (by omega)) with rBand μBand ⟨sband, fBand⟩
   -- the digits of every row and of every column
   light_call (C.digits p.N 3 p.Lo (p.aDIG3 b0) μBand (by omega) (by norm_num)
-    (by push_cast; omega) (by omega)) with rDig3 μDig3 ⟨sdig3, fDig3⟩
+    (by omega) (by omega)) with rDig3 μDig3 ⟨sdig3, fDig3⟩
   light_set (p.aDIG4 b0 : ℕ)
   light_call (C.digits p.D 4 p.m (p.aDIG4 b0) μDig3 (by omega) (by norm_num)
-    (by push_cast; omega) (by omega)) with rDig4 μDig4 ⟨sdig4, fDig4⟩
+    (by omega) (by omega)) with rDig4 μDig4 ⟨sdig4, fDig4⟩
   light_set (p.aENCA b0 : ℕ)
   exact ⟨⟨rDig4, rfl⟩,
     .of_calls fPas sphi spsi fPhi smask fMask sband fBand sdig3 fDig3 sdig4 fDig4⟩
 
 /-- What bandArray reads of the tables. -/
-theorem SharedTables.bandTables {p : Par} {b0 : ℕ} {μ : ℕ → ℤ} (h : SharedTables p b0 μ) :
+theorem SharedTables.bandTables {p } {b0 } {μ } (h : SharedTables p b0 μ) :
     BandTables p μ (p.aMASK b0) (p.aDIG3 b0) (p.aDIG4 b0) (p.aENCA b0) := by
   have hplaces := p.places b0
   exact ⟨h.mask, h.dig3, h.dig4, by omega, by omega, by omega⟩
@@ -445,7 +416,7 @@ encodings are written from enc on. -/
 
 /-- What encodeBands assumes holds once the tables are there, for either of the two areas enc of
 encodings. -/
-theorem SharedTables.bandsPre {p : Par} {b0 tab enc : ℕ} {μ : ℕ → ℤ} {coefs : List ℤ} {V : ℤ}
+theorem SharedTables.bandsPre {p } {b0 tab enc } {μ } {coefs } {V }
     (h : SharedTables p b0 μ) (hsp : p.sharedEnd b0 ≤ lim.space) (hV0 : 0 ≤ V)
     (hVB : 7 ^ (p.L + 1) * V ≤ lim.word) (coef : Seg μ tab coefs) (coef_le : tab + 70 ≤ enc)
     (le_enc : p.aENCA b0 ≤ enc) (enc_le : enc + p.nB * p.T ≤ p.aARR b0) :
@@ -471,31 +442,27 @@ theorem nB_eq (p : Par) (hmL : p.m ≤ p.L) :
   have hb : 0 < p.K0 * p.N0 := Nat.mul_pos (K0_pos hmL) (N0_pos _ _)
   have e : p.nB = (p.N + p.K0 * p.N0 - 1) / (p.K0 * p.N0) := rfl
   constructor
-  · intro h
-    rw [e, h, Nat.zero_add]
-    exact Nat.div_eq_of_lt (by omega)
+  · simp_all
   · intro h
     rw [e, ← Nat.add_div_right _ hb]
-    congr 1
-    omega
+    grind
 
 /-- **The number of bands**: 0 if there is no row, and else one more than the band of the last
 row. -/
-theorem sharedBands_spec (std : Std lim) {d : ℕ} {p : Par} (hmL : p.m ≤ p.L) {aX aY b0 : ℕ}
+theorem sharedBands_spec (std : Std lim) {d } {p } (hmL : p.m ≤ p.L) {aX aY b0 }
     (hsp : p.sharedEnd b0 ≤ lim.space) (μ : ℕ → ℤ) (r0 : ℤ) (tb : SharedTables p b0 μ) :
     Ends lim P d sharedBands ⟨frame (sharedLocB p aX aY b0 r0), μ⟩ 13 fun σ' =>
       σ' = ⟨frame (setLocal (sharedLocB p aX aY b0 r0) Bands (p.nB : ℕ)), μ⟩ := by
-  have hw := std.space_le
   have h100 := std.const_le
   have hplaces := p.places b0
   obtain ⟨hnB0, hnB1⟩ := nB_eq p hmL
   unfold sharedBands sharedLocB
   refine Ends.iteLast (fun hN => ?_) (fun hN => ?_)
   · -- nB := 0
-    have hNzero : p.N = 0 := by simpa using hN
-    exact Ends.setTo (p.nB : ℕ) rfl (by simp [hnB0 hNzero]; omega)
+    have hNzero : p.N = 0 := by simp_all
+    exact Ends.setTo (p.nB : ℕ) rfl (by simp ; omega)
   · -- nB := mem[BAND + (N - 1)] + 1
-    have hNpos : 0 < p.N := Nat.pos_of_ne_zero (by simpa using hN)
+    have hNpos := Nat.pos_of_ne_zero (by simpa using hN)
     have hlast := tb.band (p.N - 1) (by omega)
     have haddr : ((p.aBAND b0 : ℤ) + ((p.N : ℤ) - 1)).toNat = p.aBAND b0 + (p.N - 1) := by omega
     have hle : (p.N - 1) / (p.K0 * p.N0) ≤ p.N := (Nat.div_le_self _ _).trans (Nat.sub_le _ _)
@@ -504,7 +471,7 @@ theorem sharedBands_spec (std : Std lim) {d : ℕ} {p : Par} (hmL : p.m ≤ p.L)
     exact Ends.setTo (p.nB : ℕ) rfl (by light_side [haddr, hlast, hnB])
 
 /-- The tables of the first part are still there after the second part. -/
-theorem SharedTables.of_parts {p : Par} {b0 : ℕ} {μ μA μB : ℕ → ℤ} (hA : SharedA p b0 μ μA)
+theorem SharedTables.of_parts {p } {b0 } {μ μA μB } (hA : SharedA p b0 μ μA)
     (hB : SharedB p b0 μA μB) : SharedTables p b0 μB := by
   have hplaces := p.places b0
   have lp : ∀ b, (powList b (p.L + 1)).length = p.L + 1 := fun b => length_powList b _

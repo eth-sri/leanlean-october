@@ -27,19 +27,17 @@ namespace ThreeSumApsp
 
 /-- `L = ⌈c m⌉` for a rational `c = a/b`. -/
 theorem levelsOf_div (a m : ℕ) {b : ℕ} (hb : 1 ≤ b) :
-    levelsOf ((a : ℝ) / b) m = (a * m + b - 1) / b := by
+    levelsOf (a / b) m = (a * m + b - 1) / b := by
   unfold levelsOf
   rw [← Nat.ceilDiv_eq_add_pred_div, ← Nat.ceil_div_eq_ceilDiv (a * m) hb]
-  congr 1
   push_cast
   ring
 
 /-- `t = ⌈θ m⌉` for a rational `θ = p/q`. -/
 theorem switchOf_div (p m : ℕ) {q : ℕ} (hq : 1 ≤ q) :
-    switchOf ((p : ℝ) / q) m = (p * m + q - 1) / q := by
+    switchOf (p / q) m = (p * m + q - 1) / q := by
   unfold switchOf
   rw [← Nat.ceilDiv_eq_add_pred_div, ← Nat.ceil_div_eq_ceilDiv (p * m) hq]
-  congr 1
   push_cast
   ring
 

@@ -38,10 +38,9 @@ open ThreeSumApsp ThreeSumApsp.Spec Light Light.Sec3
 `Q.length + i` of every program that continues `Q ++ L`. -/
 -- adapted from upstream ThreeSumApsp/Programs/Sec3/Theorem17/ClaimAtParameters.lean
 -- (`paramProcs_get`, private there; here for an arbitrary list)
-theorem getElem?_behind (Q L R : Program) {i : ℕ} {body : Stmt} (h : L[i]? = some body) :
+theorem getElem?_behind (Q L R : Program) {i } {body } (h : L[i]? = some body) :
     (Q ++ L ++ R)[Q.length + i]? = some body := by
-  rw [List.append_assoc, List.getElem?_append_right (by omega), Nat.add_sub_cancel_left]
-  exact getElem?_append_of_eq_some h R
+  grind
 
 /-- **The routine-specific part of Theorem 17 for programs**: two parameter routines for the
 parameters `D n` and `g n` of the claim, with everything that a host of Theorem 17 needs to know

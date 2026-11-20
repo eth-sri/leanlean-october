@@ -5,8 +5,8 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import ThreeSumApsp.Lang.Slots
 public import ThreeSumApsp.Lang.Tactics
-public import Mathlib.Tactic.Positivity
 
 /-!
 # The integer square root by counting up
@@ -25,9 +25,7 @@ namespace Sqrt
 
 /-- The local variables of sqrt: the argument K, which the result replaces, the candidate k, and the
 square (k + 1)². -/
-abbrev Arg : ℕ := 0
-@[inherit_doc Arg] abbrev Cand : ℕ := 1
-@[inherit_doc Arg] abbrev Square : ℕ := 2
+slots 0 Arg Cand Square
 
 end Sqrt
 
@@ -45,15 +43,13 @@ def sqrtBody : Stmt :=
 @[simp] def sqrtTime (K : ℕ) : ℕ := 18 * Nat.sqrt K + 12
 
 /-- **sqrt(K)** returns ⌊√K⌋ and leaves the memory as it is. -/
-theorem sqrt_meets {p K : ℕ} (hp : P[p]? = some sqrtBody) (μ : ℕ → ℤ)
+theorem sqrt_meets {p K } (hp : P[p]? = some sqrtBody) (μ : ℕ → ℤ)
     (hword : ((3 * K + 4 : ℕ) : ℤ) ≤ lim.word) :
     Meets lim P p d [K] μ (sqrtTime K) fun r μ' => r = (Nat.sqrt K : ℤ) ∧ μ' = μ := by
-  have hle : Nat.sqrt K * Nat.sqrt K ≤ K := Nat.sqrt_le K
-  have hlt : K < (Nat.sqrt K + 1) * (Nat.sqrt K + 1) := Nat.lt_succ_sqrt K
-  have hself : Nat.sqrt K ≤ K := Nat.sqrt_le_self K
+  have hle := Nat.sqrt_le K
+  have hlt := Nat.lt_succ_sqrt K
+  have hself := Nat.sqrt_le_self K
   refine .of_body hp ?_
-  unfold sqrtBody sqrtTime
-  -- k := 0; sq := 1
   light_set 0
   light_set 1
   -- while sq ≤ K.  Before round i, k = i and sq = (i + 1)².
@@ -74,6 +70,6 @@ theorem sqrt_meets {p K : ℕ} (hp : P[p]? = some sqrtBody) (μ : ℕ → ℤ)
     refine ⟨by light_side, by light_side, ?_⟩
     -- the result is k
     light_set (Nat.sqrt K)
-    exact ⟨rfl, rfl⟩
+    simp
 
 end Light

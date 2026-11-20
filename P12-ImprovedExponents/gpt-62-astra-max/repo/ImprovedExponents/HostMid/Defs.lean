@@ -1,6 +1,8 @@
 module
 
-public import ThreeSumApsp.Programs.Sec3.Theorem17.ClaimAtParameters
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.NeedPolynomial
+public import ThreeSumApsp.Programs.Sec3.Theorem17.Host.Program
+public import ThreeSumApsp.Programs.Sec3.Theorem17.TimeBound.Total
 
 @[expose] public section
 
@@ -35,14 +37,14 @@ theorem pieceSizeNat_le_sqrt (D g : ℕ) : pieceSizeNat D g ≤ Nat.sqrt D := by
   unfold pieceSizeNat
   rcases Nat.eq_zero_or_pos g with rfl | hg
   · simp
-  · exact (ceilDiv_le_iff_le_smul hg).2 (by simpa using Nat.le_mul_of_pos_left _ hg)
+  · exact (ceilDiv_le_iff_le_smul hg).2 (by simpa using by nlinarith)
 
 /-- The inner dimension of the variant is at most `D`, for every `g`. -/
 theorem midSize_le (D g : ℕ) : midSize D g ≤ D :=
   (Nat.mul_le_mul_right _ (pieceSizeNat_le_sqrt D g)).trans (Nat.sqrt_le D)
 
 /-- The inner dimension of the variant is positive under the hypotheses of Theorem 17. -/
-theorem one_le_midSize {D g : ℕ} (hD : 16 ≤ D) (hg : 1 ≤ g) : 1 ≤ midSize D g := by
+theorem one_le_midSize {D g } (hD : 16 ≤ D) (hg : 1 ≤ g) : 1 ≤ midSize D g := by
   have hsqrt : 4 ≤ Nat.sqrt D := Nat.le_sqrt.2 (by omega)
   have hpiece : 1 ≤ pieceSizeNat D g := (Nat.lt_ceilDiv_iff hg).2 (by omega)
   exact Nat.mul_pos hpiece (by omega)
@@ -58,13 +60,13 @@ theorem polyBound_midArgs_le (G : ℕ → ℕ) (s k : ℕ) (ps : List ℕ) :
     polyBound s k (midArgs G ps) ≤ polyBound s k ps := by
   unfold midArgs
   split
-  · simp only [polyBound, List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
+  · simp [polyBound]
     gcongr
     exact midSize_le _ _
-  · exact le_rfl
+  · rfl
 
 /-- A polynomially bounded need stays so when the parameters are rewritten. -/
-theorem polyNeedN_midArgs {need : List ℕ → Need} (G : ℕ → ℕ) (h : PolyNeedN need) :
+theorem polyNeedN_midArgs {need } (G : ℕ → ℕ) (h : PolyNeedN need) :
     PolyNeedN fun ps => need (midArgs G ps) := by
   obtain ⟨s, k, hle⟩ := h
   exact ⟨s, k, fun ps => ⟨(hle _).1.trans (polyBound_midArgs_le G s k ps),
@@ -85,21 +87,13 @@ def et17Sizes' (ν : Et17Nums) : Stmt :=
   .set ParD (v PieceLen *' v RootD) ;;
   et17Addr
 
-open Et17 in
-/-- The variant of et17(n, U, ab, bc, ac, fr): upstream's `et17Body` with `et17Sizes'`. -/
-def et17Body' (ν : Et17Nums) : Stmt :=
-  et17Params ν ;;
-  .ite (v Small =' k 1)
-    (.call ν.pBrute [v Size, v Bound, v AdrAB, v AdrBC, v AdrAC, v Free] 0)
-    (et17Sizes' ν ;; et17Tables ν)
-
 /-! ## Time and need -/
 
 /-- A bound on the time of the loop over the instances of the variant: as upstream's
 `hostLoopBound`, with the solver at the inner dimension `midSize D g`. -/
 noncomputable def hostLoopBound' (Tn : List ℕ → ℕ) (n U D g : ℕ) : ℕ :=
   4 * n * g *
-      (tWrites n D (pieceSizeNat D g) + supTime Tn n (midSize D g) (queryCapNat n D)
+      (tWrites n D + supTime Tn n (midSize D g) (queryCapNat n D)
         + tAnswers (queryCapNat n D))
     + tScanCall (pieceSizeNat D g) * (falsePositiveBound n U D + 1) + 14
 
@@ -128,12 +122,6 @@ def hostNeedAt' (a b : ℕ) (need : List ℕ → Need) (n U D g : ℕ) : Need :=
 numbers that the parameter procedures form. -/
 def hostNeed' (Dfun Gfun wD wG : ℕ → ℕ) (need : List ℕ → Need) (n U : ℕ) : Need :=
   hostNeedAt' (wD n) (wG (Dfun n)) need n U (Dfun n) (Gfun (Dfun n))
-
-/-- The time of the variant is upstream's time over a solver with rewritten parameters. -/
-theorem hostTime'_eq (Dfun Gfun tD tG : ℕ → ℕ) (Tn : List ℕ → ℕ) (n U : ℕ) :
-    hostTime' Dfun Gfun tD tG Tn n U
-      = hostTime Dfun Gfun tD tG (fun ps => Tn (midArgs Gfun ps)) n U :=
-  rfl
 
 /-! ## The data and the local variables of a run -/
 

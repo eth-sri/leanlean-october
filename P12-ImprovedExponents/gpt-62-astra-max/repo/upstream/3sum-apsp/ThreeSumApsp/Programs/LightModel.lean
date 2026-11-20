@@ -34,7 +34,6 @@ noncomputable def lightModel : DetTimeModel where
   lopCount := LopSolvedIn lopCountTask
   lopDetect := LopSolvedIn lopDetectTask
   exactTriangle := SolvedIn etTask
-  negativeTriangle := SolvedIn ntTask
   convolution3SUM := SolvedIn c3Task
   threeSum := SolvedIn s3Task
   minPlusProduct := SolvedIn mpTask

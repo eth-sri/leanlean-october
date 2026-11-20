@@ -49,58 +49,43 @@ structure ArrayAt (μ : ℕ → ℤ) (a : ℕ) (l : List ℤ) (N : ℕ) (U : ℤ
 
 namespace ListAt
 
+section
+variable (h : ListAt μ a l N top)
+include h
+
 /-- A list stays in place when its cells do not change.  That they lie below `top` is said again in
 the description of the cells: so the promise `Kept μ μ' top` of a callee is enough as it stands. -/
-theorem keep (h : ListAt μ a l N top)
+theorem keep
     (hs : SameOn (fun b => Inside a N b ∧ b < top) μ μ' := by light_keep) : ListAt μ' a l N top :=
   { h with seg := h.seg.congr fun i hi => hs _ (by have := h.len; have := h.below; omega) }
 
-/-- The address `top` may grow. -/
-theorem mono (h : ListAt μ a l N top) (ht : top ≤ top' := by light_arith) : ListAt μ a l N top' :=
-  { h with below := h.below.trans ht }
-
 /-- Reading a cell. -/
-theorem read (h : ListAt μ a l N top) (hi : i < N) : μ (a + i) = l.getD i 0 :=
+theorem read (hi : i < N) : μ (a + i) = l.getD i 0 :=
   h.seg.getD (h.len ▸ hi) 0
 
-/-- The `n` entries from place `k` on. -/
-theorem drop_take (h : ListAt μ a l N top) (hk : k + n ≤ N) :
-    ListAt μ (a + k) ((l.drop k).take n) n top where
-  len := by rw [List.length_take, List.length_drop, h.len]; omega
-  seg := (h.seg.drop k).take n
-  below := by have := h.below; omega
+end
 
 end ListAt
 
 namespace ArrayAt
 
+section
+variable (h : ArrayAt μ a l N U top)
+include h
+
 /-- An array without the bound on its entries. -/
-theorem listAt (h : ArrayAt μ a l N U top) : ListAt μ a l N top := { h with }
+theorem listAt : ListAt μ a l N top := { h with}
 
 /-- An array stays in place when its cells do not change. -/
-theorem keep (h : ArrayAt μ a l N U top)
+theorem keep
     (hs : SameOn (fun b => Inside a N b ∧ b < top) μ μ' := by light_keep) :
     ArrayAt μ' a l N U top :=
   { h with seg := (h.listAt.keep hs).seg }
 
-/-- The bound `U` on the entries and the address `top` may grow. -/
-theorem mono (h : ArrayAt μ a l N U top) (hU : U ≤ U' := by light_arith)
-    (ht : top ≤ top' := by light_arith) : ArrayAt μ a l N U' top' :=
-  { h with bound := fun x hx => (h.bound x hx).trans hU, below := h.below.trans ht }
-
 /-- Reading a cell. -/
-theorem read (h : ArrayAt μ a l N U top) (hi : i < N) : μ (a + i) = l.getD i 0 := h.listAt.read hi
+theorem read (hi : i < N) : μ (a + i) = l.getD i 0 := h.listAt.read hi
 
-/-- A cell of an array holds a number of absolute value at most `U`. -/
-theorem abs_read_le (h : ArrayAt μ a l N U top) (hi : i < N) : |μ (a + i)| ≤ U := by
-  rw [h.seg i (h.len ▸ hi)]
-  exact h.bound.getElem _
-
-/-- The `n` entries from place `k` on. -/
-theorem drop_take (h : ArrayAt μ a l N U top) (hk : k + n ≤ N) :
-    ArrayAt μ (a + k) ((l.drop k).take n) n U top :=
-  { h.listAt.drop_take hk with
-    bound := fun x hx => h.bound x (List.mem_of_mem_drop (List.mem_of_mem_take hx)) }
+end
 
 end ArrayAt
 
@@ -116,26 +101,21 @@ namespace IndexAt
 
 variable {l : List ℕ} {p : ℕ}
 
-/-- A list of natural numbers stays in place when its cells do not change. -/
-theorem keep (h : IndexAt μ a l N p top)
-    (hs : SameOn (fun b => Inside a N b ∧ b < top) μ μ' := by light_keep) :
-    IndexAt μ' a l N p top :=
-  { h with
-    seg := Seg.congr h.seg fun i hi => hs _ (by
-      have := h.len
-      have := h.below
-      rw [List.length_map] at hi
-      omega) }
+section
+variable (h : IndexAt μ a l N p top)
+include h
 
 /-- Reading a cell. -/
-theorem read (h : IndexAt μ a l N p top) (hi : i < N) : μ (a + i) = (l.getD i 0 : ℕ) :=
+theorem read (hi : i < N) : μ (a + i) = (l.getD i 0 : ℕ) :=
   h.seg.read (h.len ▸ hi)
 
 /-- An entry is below `p`. -/
-theorem getD_lt (h : IndexAt μ a l N p top) (hi : i < N) : l.getD i 0 < p := by
-  have hl : i < l.length := h.len ▸ hi
+theorem getD_lt (hi : i < N) : l.getD i 0 < p := by
+  have hl := h.len ▸ hi
   rw [List.getD_eq_getElem _ 0 hl]
   exact h.lt _ (List.getElem_mem hl)
+
+end
 
 end IndexAt
 

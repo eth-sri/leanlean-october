@@ -5,7 +5,7 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.FromNumbers
+public import ThreeSumApsp.Sec3.Theorem21a.ChanHe.Recursion
 public import ThreeSumApsp.Util.Asymptotics.SoftOSqrtPow
 
 /-!
@@ -53,29 +53,15 @@ theorem softO_mPar (κ : ℕ) : SoftOSqrtPow (fun n => mPar n (2 * n ^ κ)) 1 :=
   unfold mPar
   growth_sqrt [softO_wPar κ]
 
-/-- The instances are not empty arrays. -/
-theorem one_le_lenOf (κ n : ℕ) : 1 ≤ lenOf κ n :=
-  Nat.succ_le_of_lt (by unfold lenOf mPar; positivity)
-
 /-! ## Correctness, the number of instances, their entries, and the count for the searches -/
 
 section input
 
 variable {κ n : ℕ} {x : Fin n → ℤ}
 
-/-- `Convolution3SUM` on the first `N` cells of an array `y : ℕ → ℤ` is the problem
-`ConvOne N y`. -/
-theorem convolution3SUM_iff_convOne (N : ℕ) (y : ℕ → ℤ) :
-    Convolution3SUM (fun i : Fin N => y i) ↔ ConvOne N y :=
-  ⟨fun ⟨i, j, h, e⟩ => ⟨i, j, h, e⟩, fun ⟨u, v, h, e⟩ => ⟨⟨u, by omega⟩, ⟨v, by omega⟩, h, e⟩⟩
-
 end input
 
 /-! ## The three bounds in asymptotic form -/
-
-/-- The length of the instances is `n` times a polylogarithm. -/
-theorem isPowPolylog_lenOf (κ : ℕ) : IsPowPolylog (fun n => (lenOf κ n : ℝ)) 1 :=
-  SoftOSqrtPow.isPowPolylog (i := 2) (by unfold lenOf; growth_sqrt [softO_mPar κ]) (by norm_num)
 
 end ChanHe
 

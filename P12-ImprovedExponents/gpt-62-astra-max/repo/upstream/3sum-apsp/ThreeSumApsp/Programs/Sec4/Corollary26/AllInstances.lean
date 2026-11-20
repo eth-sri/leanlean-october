@@ -5,8 +5,14 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
-public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Program
-public import ThreeSumApsp.Programs.Sec4.Corollary26.Regime
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Ceiling
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.InnerProduct
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Costs
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Pad
+public import ThreeSumApsp.Programs.Sec4.ChoosingParameters.Preprocessing
+public import ThreeSumApsp.Programs.Sec4.Theorem30.Program
+public import ThreeSumApsp.Sec4.Table2.LogBounds
+public import ThreeSumApsp.Sec4.Corollary31.RationalParameters
 
 /-!
 # Corollary 26, the offline form, on all instances
@@ -57,38 +63,45 @@ def thinMX (x : ThinInst) : Matrix (Fin x.N) (Fin x.D) ℤ := fun i j => x.X.get
 /-- The second matrix of an instance. -/
 def thinMY (x : ThinInst) : Matrix (Fin x.D) (Fin x.N) ℤ := fun i j => x.Y.getD (i * x.N + j) 0
 
-theorem matAt_thinMX {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr) : MatAt μ x.x
+section
+variable {x : ThinInst}
+  {μ : ℕ → ℤ}
+  {fr : ℕ}
+  (h : x.Pre μ fr)
+include h
+
+theorem matAt_thinMX : MatAt μ x.x
     (thinMX x) := by
   intro i j
-  have hlt : (i : ℕ) * x.D + j < x.X.length := by
+  have hlt : i * x.D + j < x.X.length := by
     rw [h.lenX]
     have := Nat.mul_add_le_mul i.isLt (le_refl x.D)
-    have := j.isLt
     omega
   rw [Nat.add_assoc, h.segX.getD hlt 0]
   rfl
 
-theorem matAt_thinMY {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr) : MatAt μ x.y
+theorem matAt_thinMY : MatAt μ x.y
     (thinMY x) := by
   intro i j
-  have hlt : (i : ℕ) * x.N + j < x.Y.length := by
+  have hlt : i * x.N + j < x.Y.length := by
     rw [h.lenY]
     have := Nat.mul_add_le_mul i.isLt (le_refl x.N)
-    have := j.isLt
     omega
   rw [Nat.add_assoc, h.segY.getD hlt 0]
   rfl
 
+end
+
 /-- The entry of the product of the two matrices is the entry that the task asks for. -/
-theorem entryN_thin (x : ThinInst) {I J : ℕ} (hI : I < x.N) (hJ : J < x.N) :
+theorem entryN_thin (x : ThinInst) {I J} (hI : I < x.N) (hJ : J < x.N) :
     entryN (thinMX x) (thinMY x) I J = thinEntry x.N x.D x.X x.Y I J := by
-  rw [entryN, dif_pos ⟨hI, hJ⟩, Matrix.mul_apply, thinEntry, List.sum_map_range, Finset.sum_range]
+  rw [entryN, dif_pos ⟨hI, hJ⟩, thinEntry, List.sum_map_range, Finset.sum_range]
   rfl
 
 /-! ## The routine -/
 
 /-- The answers of the offline routine are those that the task asks for. -/
-theorem map_entryN_thin {x : ThinInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr) :
+theorem map_entryN_thin {x : ThinInst} {μ} {fr} (h : x.Pre μ fr) :
     (x.WI.zip x.WJ).map (fun q => entryN (thinMX x) (thinMY x) q.1 q.2)
       = thinOut x.N x.D x.X x.Y x.WI x.WJ :=
   List.map_congr_left fun _ hq =>

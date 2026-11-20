@@ -30,22 +30,26 @@ def weaveList : List Bool → List ℕ → List ℕ → List ℕ
   | true :: mask, outer, inner => inner.headD 0 :: weaveList mask outer inner.tail
   | false :: mask, outer, inner => outer.headD 0 :: weaveList mask outer.tail inner
 
+section
+variable (mask : List Bool)
+  (outer inner : List ℕ)
+
 /-- `weaveList` has one digit for each level. -/
-@[simp] theorem length_weaveList (mask : List Bool) (outer inner : List ℕ) :
+@[simp] theorem length_weaveList :
     (weaveList mask outer inner).length = mask.length := by
   induction mask generalizing outer inner with
   | nil => simp [weaveList]
   | cons x mask ih => cases x <;> simp [weaveList, ih]
 
 /-- The digit of `weaveList` at level `ℓ`: the next unused digit of `inner` or of `outer`. -/
-theorem getD_weaveList (mask : List Bool) (outer inner : List ℕ) (ℓ : ℕ) :
+theorem getD_weaveList (ℓ : ℕ) :
     (weaveList mask outer inner).getD ℓ 0 =
       if ℓ < mask.length then
         if mask.getD ℓ false then inner.getD ((mask.take ℓ).count true) 0
         else outer.getD ((mask.take ℓ).count false) 0
       else 0 := by
   induction mask generalizing outer inner ℓ with
-  | nil => simp [weaveList]
+  | nil => rfl
   | cons x mask ih =>
     cases ℓ with
     | zero =>
@@ -61,8 +65,10 @@ theorem getD_weaveList (mask : List Bool) (outer inner : List ℕ) (ℓ : ℕ) :
         | nil => simpa [weaveList] using ih outer [] ℓ
         | cons i inner => simpa [weaveList] using ih outer inner ℓ
 
+end
+
 /-- If the digits of both lists are below a positive number `b`, so are the interleaved digits. -/
-theorem lt_of_mem_weaveList {b : ℕ} (hb : 0 < b) {mask : List Bool} {outer inner : List ℕ}
+theorem lt_of_mem_weaveList {b} (hb : 0 < b) {mask} {outer inner}
     (houter : ∀ d ∈ outer, d < b) (hinner : ∀ d ∈ inner, d < b) :
     ∀ d ∈ weaveList mask outer inner, d < b := by
   intro d hd

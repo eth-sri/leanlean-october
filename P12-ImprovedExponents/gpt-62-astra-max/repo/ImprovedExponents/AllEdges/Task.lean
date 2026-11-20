@@ -1,6 +1,5 @@
 module
 
-public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Programs.Sec3.Theorem17.Witnesses.Scan
 
 @[expose] public section
@@ -24,15 +23,8 @@ open Light Light.Sec3 ThreeSumApsp ThreeSumApsp.Spec
 
 /-- Three `n × n` matrices of weights in the memory, and the place for `n²` flags. -/
 structure AeInst : Type where
-  n : ℕ
-  U : ℕ
-  ab : ℕ
-  bc : ℕ
-  ac : ℕ
-  out : ℕ
-  AB : List ℤ
-  BC : List ℤ
-  AC : List ℤ
+  (n U ab bc ac out : ℕ)
+  (AB BC AC : List ℤ)
 
 /-- The three matrices and the place for the flags lie below the free pointer, the entries of the
 matrices are bounded by `U`, and the place for the flags does not meet the matrices. -/
@@ -60,8 +52,8 @@ structure AeInst.Pre (x : AeInst) (μ : ℕ → ℤ) (fr : ℕ) : Prop where
 def AeInst.tri (x : AeInst) : TriInst := ⟨x.n, x.U, x.ab, x.bc, x.ac, x.AB, x.BC, x.AC⟩
 
 /-- The matrices of an all-edges instance form an instance of Exact Triangle. -/
-theorem AeInst.Pre.tri {x : AeInst} {μ : ℕ → ℤ} {fr : ℕ} (h : x.Pre μ fr) : x.tri.Pre μ fr :=
-  { h with }
+theorem AeInst.Pre.tri {x : AeInst} {μ} {fr} (h : x.Pre μ fr) : x.tri.Pre μ fr :=
+  { h with}
 
 /-- The flags: cell `a n + b` holds 1 if `w(a,b) + w(b,c) + w(a,c) = 0` for some `c < n`, and 0 if
 not; the pair `(a, b)` of the cell `q < n²` is `(q / n, q % n)`. -/
@@ -74,14 +66,14 @@ noncomputable def aeFlags (n : ℕ) (AB BC AC : List ℤ) : List ℤ :=
   simp [aeFlags]
 
 /-- The flag of the cell `q < n²`. -/
-theorem aeFlags_getD {n : ℕ} (AB BC AC : List ℤ) {q : ℕ} (hq : q < n * n) :
+theorem aeFlags_getD {n} (AB BC AC : List ℤ) {q} (hq : q < n * n) :
     (aeFlags n AB BC AC).getD q 0 =
       flag (∃ c < n, AB.getD q 0 + BC.getD (q % n * n + c) 0 + AC.getD (q / n * n + c) 0 = 0) := by
-  simp [aeFlags, List.getD_eq_getElem?_getD, hq]
+  simp [aeFlags, hq]
 
 /-- The flag of the pair `(a, b)`, in terms of the scan of the whole part `C` (upstream's
 `scanHit n AB BC AC a b 0 n`, the pure function behind the brute force of Theorem 17). -/
-theorem aeFlags_getD_eq_bit_scanHit {n : ℕ} (AB BC AC : List ℤ) {a b : ℕ} (ha : a < n)
+theorem aeFlags_getD_eq_bit_scanHit {n} (AB BC AC : List ℤ) {a b} (ha : a < n)
     (hb : b < n) :
     (aeFlags n AB BC AC).getD (a * n + b) 0 = bit (scanHit n AB BC AC a b 0 n) := by
   have hq : a * n + b < n * n := by nlinarith
@@ -91,8 +83,7 @@ theorem aeFlags_getD_eq_bit_scanHit {n : ℕ} (AB BC AC : List ℤ) {a b : ℕ} 
   have hmod : (a * n + b) % n = b := by
     rw [Nat.add_comm, Nat.add_mul_mod_self_right, Nat.mod_eq_of_lt hb]
   rw [aeFlags_getD _ _ _ hq, hdiv, hmod, ← flag_eq_bit]
-  congr 1
-  simp only [scanHit, List.any_eq_true, List.mem_range, decide_eq_true_eq, Nat.add_zero]
+  simp [scanHit]
 
 /-- **All-edges Exact Triangle**: ae(n, U, ab, bc, ac, out, fr) writes the `n²` flags to `out`. -/
 noncomputable def aeTask : Task where

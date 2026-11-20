@@ -68,7 +68,7 @@ structure Scale (α ι : Type*) where
 namespace Scale
 
 /-- The scale with the given bases in which nothing is hidden. -/
-def ofBases {α ι : Type*} (dom : α → Prop) (base : ι → α → ℝ)
+def ofBases {α ι} (dom : α → Prop) (base : ι → α → ℝ)
     (h : ∀ i x, dom x → 1 ≤ base i x) : Scale α ι where
   dom := dom
   hidden _ := 1
@@ -84,18 +84,18 @@ noncomputable def mon (e : ι → ℕ) (x : α) : ℝ := ∏ i, s.base i x ^ e i
 /-- The count `t` is at most a constant times a power of `hidden` times the monomial with the
 exponents `e`, on the domain of the scale. -/
 def SoftO (t : α → ℕ) (e : ι → ℕ) : Prop :=
-  ∃ c : ℕ, Dominated s.dom (fun x => (t x : ℝ)) fun x => s.hidden x ^ c * s.mon e x
+  ∃ c : ℕ, Dominated s.dom (fun x => (t x)) fun x => s.hidden x ^ c * s.mon e x
 
 theorem mon_zero (x : α) : s.mon 0 x = 1 := by simp [mon]
 
 theorem mon_add (e e' : ι → ℕ) (x : α) : s.mon (e + e') x = s.mon e x * s.mon e' x := by
-  simp only [mon, Pi.add_apply, pow_add, Finset.prod_mul_distrib]
+  simp [mon, Pi.add_apply, pow_add, Finset.prod_mul_distrib]
 
 theorem mon_smul (k : ℕ) (e : ι → ℕ) (x : α) : s.mon (k • e) x = s.mon e x ^ k := by
-  simp only [mon, Pi.smul_apply, smul_eq_mul, ← Finset.prod_pow, ← pow_mul, mul_comm k]
+  simp [mon, Pi.smul_apply, smul_eq_mul, ← Finset.prod_pow, ← pow_mul, mul_comm k]
 
 theorem mon_single [DecidableEq ι] (i : ι) (x : α) : s.mon (Pi.single i 1) x = s.base i x := by
-  simp [mon, Pi.single_apply, pow_ite]
+  simp [mon, Pi.single_apply]
 
 variable {s} {x : α} {e e' : ι → ℕ} {c c' : ℕ}
 
@@ -121,34 +121,34 @@ variable {t t₁ t₂ : α → ℕ} {e₁ e₂ : ι → ℕ}
 /-! ### Entering and leaving -/
 
 /-- A count that is at most `hidden`. -/
-theorem of_le_hidden (h : ∀ x, s.dom x → (t x : ℝ) ≤ s.hidden x) : s.SoftO t 0 :=
+theorem of_le_hidden (h : ∀ x, s.dom x → (t x) ≤ s.hidden x) : s.SoftO t 0 :=
   ⟨1, .of_le fun x hx => by simpa only [pow_one, mon_zero, mul_one] using h x hx⟩
 
 /-- A count that is at most a constant times a base. -/
 theorem of_dominated_base [DecidableEq ι] (i : ι)
-    (h : Dominated s.dom (fun x => (t x : ℝ)) (s.base i)) : s.SoftO t (Pi.single i 1) :=
+    (h : Dominated s.dom (fun x => (t x)) (s.base i)) : s.SoftO t (Pi.single i 1) :=
   ⟨0, h.congr (fun _ _ => rfl) fun x _ => by rw [pow_zero, mon_single, one_mul]⟩
 
 /-- A count that is at most a base. -/
-theorem of_le_base [DecidableEq ι] (i : ι) (h : ∀ x, s.dom x → (t x : ℝ) ≤ s.base i x) :
+theorem of_le_base [DecidableEq ι] (i : ι) (h : ∀ x, s.dom x → (t x) ≤ s.base i x) :
     s.SoftO t (Pi.single i 1) :=
   of_dominated_base i (.of_le h)
 
 /-- A count that is at most a constant times a monomial. -/
-theorem of_dominated (h : Dominated s.dom (fun x => (t x : ℝ)) (s.mon e)) : s.SoftO t e :=
-  ⟨0, by simpa only [pow_zero, one_mul] using h⟩
+theorem of_dominated (h : Dominated s.dom (fun x => (t x)) (s.mon e)) : s.SoftO t e :=
+  ⟨0, by grind⟩
 
 /-- The bound, written out. -/
 theorem exists_le (h : s.SoftO t e) :
-    ∃ (C : ℝ) (c : ℕ), 0 ≤ C ∧ ∀ x, s.dom x → (t x : ℝ) ≤ C * (s.hidden x ^ c * s.mon e x) :=
+    ∃ (C : ℝ) (c : ℕ), 0 ≤ C ∧ ∀ x, s.dom x → (t x) ≤ C * (s.hidden x ^ c * s.mon e x) :=
   let ⟨c, C, hC, hle⟩ := h
   ⟨C, c, hC, hle⟩
 
 /-- If `hidden = 1`, the bound is the monomial. -/
 theorem dominated (h : s.SoftO t e) (hhidden : ∀ x, s.dom x → s.hidden x = 1) :
-    Dominated s.dom (fun x => (t x : ℝ)) (s.mon e) :=
+    Dominated s.dom (fun x => (t x)) (s.mon e) :=
   let ⟨_, h⟩ := h
-  h.congr (fun _ _ => rfl) fun x hx => by rw [hhidden x hx, one_pow, one_mul]
+  h.congr (fun _ _ => rfl) fun x hx => by simp_all
 
 /-! ### The rules -/
 
@@ -187,10 +187,6 @@ protected theorem add (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :
       pow_mul_mon_le (e' := e₁ ⊔ e₂) (le_max_left _ _) (fun _ => le_sup_left) hx).add
       (h₂.mono_right fun _ hx => pow_mul_mon_le (le_max_right _ _) (fun _ => le_sup_right) hx)
 
-/-- A sum of two counts with the same bound. -/
-theorem add_le (h₁ : s.SoftO t₁ e) (h₂ : s.SoftO t₂ e) : s.SoftO (fun x => t₁ x + t₂ x) e :=
-  (h₁.add h₂).mono fun _ => (sup_idem _).le
-
 /-- In a product the exponents add up. -/
 protected theorem mul (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :
     s.SoftO (fun x => t₁ x * t₂ x) (e₁ + e₂) := by
@@ -199,14 +195,14 @@ protected theorem mul (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :
   refine ⟨c₁ + c₂, ?_⟩
   simpa only [Nat.cast_mul] using
     (h₁.mul h₂ (fun _ _ => Nat.cast_nonneg _) fun _ _ => Nat.cast_nonneg _).congr (fun _ _ => rfl)
-      fun x _ => by rw [mon_add, pow_add, mul_mul_mul_comm]
+      fun x _ => by grind [mon_add]
 
 /-- The `k`-th power multiplies the exponents by `k`. -/
 protected theorem pow (h : s.SoftO t e) (k : ℕ) : s.SoftO (fun x => t x ^ k) (k • e) := by
   obtain ⟨c, h⟩ := h
   refine ⟨c * k, ?_⟩
   simpa only [Nat.cast_pow] using
-    (h.pow (fun _ _ => Nat.cast_nonneg _) k).congr (fun _ _ => rfl)
+    (h.pow (by simp) k).congr (fun _ _ => rfl)
       fun x _ => by rw [mon_smul, mul_pow, pow_mul]
 
 /-- A maximum has the larger exponents. -/
@@ -214,19 +210,11 @@ protected theorem max (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :
     s.SoftO (fun x => max (t₁ x) (t₂ x)) (e₁ ⊔ e₂) :=
   (h₁.add h₂).of_le fun _ _ => max_le (Nat.le_add_right _ _) (Nat.le_add_left _ _)
 
-/-- A difference has the exponents of its first term. -/
-protected theorem sub (h : s.SoftO t₁ e) (t₂ : α → ℕ) : s.SoftO (fun x => t₁ x - t₂ x) e :=
-  h.of_le fun _ _ => Nat.sub_le _ _
-
-/-- A quotient has the exponents of its numerator. -/
-protected theorem div (h : s.SoftO t₁ e) (t₂ : α → ℕ) : s.SoftO (fun x => t₁ x / t₂ x) e :=
-  h.of_le fun _ _ => Nat.div_le_self _ _
-
 /-- A quotient that is rounded up has the larger exponents of numerator and denominator. -/
 protected theorem ceilDiv (h₁ : s.SoftO t₁ e₁) (h₂ : s.SoftO t₂ e₂) :
     s.SoftO (fun x => t₁ x ⌈/⌉ t₂ x) (e₁ ⊔ e₂) :=
   (h₁.add h₂).of_le fun _ _ =>
-    (Nat.ceilDiv_eq_add_pred_div _ _).trans_le ((Nat.div_le_self _ _).trans (Nat.sub_le _ _))
+    rfl.trans_le ((Nat.div_le_self _ _).trans (Nat.sub_le _ _))
 
 /-- A logarithm is at most the number. -/
 protected theorem log (h : s.SoftO t e) (b : ℕ) : s.SoftO (fun x => Nat.log b (t x)) e :=
@@ -241,16 +229,15 @@ at most `2 ^ hidden`. -/
 theorem log2 (hs : ∀ i x, s.dom x → s.base i x ≤ 2 ^ s.hidden x) (h : s.SoftO t e) :
     s.SoftO (fun x => Nat.log 2 (t x)) 0 := by
   obtain ⟨C, c, hC, hle⟩ := h.exists_le
-  obtain ⟨K, hK⟩ := pow_unbounded_of_one_lt C (one_lt_two (α := ℝ))
-  refine ⟨1, K + c + ∑ i, e i, by positivity, fun x hx => ?_⟩
-  have hf : 1 ≤ s.hidden x := s.one_le_hidden x hx
+  obtain ⟨K, hK⟩ := pow_unbounded_of_one_lt C (one_lt_two )
+  refine ⟨1, K + c + ∑ i, e i, by grind, fun x hx => ?_⟩
+  have hf := s.one_le_hidden x hx
   have hhidden : s.hidden x ≤ 2 ^ s.hidden x := by
     have := one_add_mul_self_le_rpow_one_add (s := 1) (by norm_num) hf
-    norm_num at this
-    linarith
+    grind
   have hbase := fun i => zero_le_one.trans (s.one_le_base i x hx)
-  have hpow : (t x : ℝ) ≤ 2 ^ ((K + c + ∑ i, e i : ℕ) * s.hidden x) :=
-    calc (t x : ℝ) ≤ C * (s.hidden x ^ c * s.mon e x) := hle x hx
+  have hpow :=
+    calc (t x) ≤ C * (s.hidden x ^ c * s.mon e x) := hle x hx
       _ ≤ 2 ^ K * ((2 ^ s.hidden x) ^ c * ∏ i, (2 ^ s.hidden x) ^ e i) := by
           have hmon := zero_le_one.trans (one_le_mon e hx)
           gcongr
@@ -267,7 +254,6 @@ theorem log2 (hs : ∀ i x, s.dom x → s.base i x ≤ 2 ^ s.hidden x) (h : s.So
   · rw [h0, Nat.log_zero_right, Nat.cast_zero]
     positivity
   · have hlog : (2 : ℝ) ^ (Nat.log 2 (t x) : ℝ) ≤ t x := by
-      rw [Real.rpow_natCast]
       exact_mod_cast Nat.pow_log_le_self 2 hpos.ne'
     exact_mod_cast (Real.rpow_le_rpow_left_iff one_lt_two).1 (hlog.trans hpow)
 

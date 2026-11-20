@@ -37,19 +37,24 @@ theorem tailX_nonneg (L m t : ℕ) : 0 ≤ tailX L m t :=
 /-- The first term of `cost8X` is not negative. -/
 theorem cost8X_first_term_nonneg (L m t N : ℕ) :
     0 ≤ (L : ℝ) * (m : ℝ) * tailX L m t * (N : ℝ) ^ 2 :=
-  mul_nonneg (mul_nonneg (by positivity) (tailX_nonneg L m t)) (by positivity)
+  mul_nonneg (mul_nonneg (by positivity) (tailX_nonneg L m t)) (by simp)
+
+section
+variable {L m t N : ℕ}
+  (hm : 1 ≤ m)
+  (hL : 10 * m ≤ L)
+  (ht : t ≤ m)
+  (hN : sqrtKN0 L m ≤ N)
+include hm hL ht hN
 
 /-- The number of boxes of all tiles together is at most `4 (m+1) tailX(L, m, t) N²`: Lemma 29 for
 one tile, times the number of tiles. -/
-theorem boxes_totalX {L m t N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (ht : t ≤ m)
-    (hN : sqrtKN0 L m ≤ N) :
+theorem boxes_totalX :
     ((numBands L m N : ℝ)) ^ 2 * ((boxes L m t).card : ℝ)
       ≤ 4 * ((m : ℝ) + 1) * tailX L m t * (N : ℝ) ^ 2 := by
   have hboxes : ((boxes L m t).card : ℝ)
       ≤ ((m : ℝ) + 1) * ∑ d ∈ Finset.Icc t m, (beta L m d : ℝ) := by
     exact_mod_cast lemma_29_count L m t hL ht
-  have hsum : (0 : ℝ) ≤ ∑ d ∈ Finset.Icc t m, (beta L m d : ℝ) :=
-    sum_nonneg fun _ _ => Nat.cast_nonneg _
   calc ((numBands L m N : ℝ)) ^ 2 * ((boxes L m t).card : ℝ)
       ≤ (4 * (N : ℝ) ^ 2 / (M L m : ℝ))
           * (((m : ℝ) + 1) * ∑ d ∈ Finset.Icc t m, (beta L m d : ℝ)) :=
@@ -59,12 +64,11 @@ theorem boxes_totalX {L m t N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (ht : t 
         ring
 
 /-- The first term of `cost8X`: `L` operations for each box of each tile. -/
-theorem boxes_costX {L m t N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (ht : t ≤ m)
-    (hN : sqrtKN0 L m ≤ N) :
+theorem boxes_costX :
     (L : ℝ) * ((numBands L m N : ℝ) ^ 2 * ((boxes L m t).card : ℝ))
       ≤ 8 * ((L : ℝ) * (m : ℝ) * tailX L m t * (N : ℝ) ^ 2) := by
   have htail := tailX_nonneg L m t
-  have hm' : (1 : ℝ) ≤ m := by exact_mod_cast hm
+  have hm' : (1 : ℝ) ≤ m := by simp_all
   calc (L : ℝ) * ((numBands L m N : ℝ) ^ 2 * ((boxes L m t).card : ℝ))
       ≤ (L : ℝ) * (4 * ((m : ℝ) + 1) * tailX L m t * (N : ℝ) ^ 2) :=
         mul_le_mul_of_nonneg_left (boxes_totalX hm hL ht hN) (Nat.cast_nonneg L)
@@ -73,5 +77,7 @@ theorem boxes_costX {L m t N : ℕ} (hm : 1 ≤ m) (hL : 10 * m ≤ L) (ht : t �
         gcongr
         linarith
     _ = 8 * ((L : ℝ) * (m : ℝ) * tailX L m t * (N : ℝ) ^ 2) := by ring
+
+end
 
 end ImprovedExponents

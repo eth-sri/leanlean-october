@@ -76,17 +76,17 @@ private theorem card_contributing_term (z : OutVar) :
 
 /-- Membership in the set of levels at which a leaf chooses `P₀`. -/
 @[simp]
-theorem mem_P0Levels {L : ℕ} {τ : Leaf L} {ℓ : Fin L} : ℓ ∈ P0Levels τ ↔ τ ℓ = Term.P0 := by
+theorem mem_P0Levels {L } {τ } {ℓ : Fin L} : ℓ ∈ P0Levels τ ↔ τ ℓ = Term.P0 := by
   simp [P0Levels]
 
 /-- Membership in the inner set of an output string. -/
 @[simp]
-theorem mem_innerSetO {L : ℕ} {η : OutStr L} {ℓ : Fin L} : ℓ ∈ innerSetO η ↔ (η ℓ).IsInner := by
+theorem mem_innerSetO {L } {η } {ℓ : Fin L} : ℓ ∈ innerSetO η ↔ (η ℓ).IsInner := by
   simp [innerSetO]
 
 /-- Section 2.4.3: "A leaf contributing to an output string chooses P₀ only at levels of the output
 string's inner set". -/
-theorem P0Levels_subset {L : ℕ} {τ : Leaf L} {w : OutStr L} (h : Leaf.Contributes τ w) :
+theorem P0Levels_subset {L } {τ : Leaf L} {w } (h : Leaf.Contributes τ w) :
     P0Levels τ ⊆ innerSetO w := by
   intro ℓ hℓ
   rw [mem_P0Levels] at hℓ
@@ -96,7 +96,7 @@ theorem P0Levels_subset {L : ℕ} {τ : Leaf L} {w : OutStr L} (h : Leaf.Contrib
   · exact (OutVar.privateTerm_eq_P0_iff _).mp (hprivate.symm.trans hℓ)
 
 /-- Section 2.4.3: "so its order is at least 0." -/
-theorem order_nonneg {L m : ℕ} {w : OutStr L} (hw : (innerSetO w).card = m) {τ : Leaf L}
+theorem order_nonneg {L m } {w } (hw : (innerSetO w).card = m) {τ : Leaf L}
     (h : Leaf.Contributes τ w) : 0 ≤ order m τ := by
   have hc := card_le_card (P0Levels_subset h)
   unfold order
@@ -104,23 +104,29 @@ theorem order_nonneg {L m : ℕ} {w : OutStr L} (hw : (innerSetO w).card = m) {�
 
 /-- In the proof of Lemma 11: "every leaf of Leaves(U) has an order 0 ≤ d ≤ m".  The upper
 bound holds for every leaf. -/
-theorem order_le {L : ℕ} (m : ℕ) (τ : Leaf L) : order m τ ≤ m := by
+theorem order_le {L } (m : ℕ) (τ : Leaf L) : order m τ ≤ m := by
   unfold order
   omega
 
 /-- A leaf has order `d` exactly if it chooses `P₀` at `m - d` levels. -/
-theorem order_eq_iff {L : ℕ} (m d : ℕ) (τ : Leaf L) :
+theorem order_eq_iff {L } (m d : ℕ) (τ : Leaf L) :
     order m τ = d ↔ (P0Levels τ).card + d = m := by
   unfold order
   omega
 
 /-! ### The counts -/
 
+section
+variable {L m : ℕ}
+  (w : OutStr L)
+  (hw : (innerSetO w).card = m)
+include hw
+
 /-- Section 2.4.3: "A single output string has 10^m […] leaves contributing to it." -/
-theorem card_filter_contributes {L m : ℕ} (w : OutStr L) (hw : (innerSetO w).card = m) :
+theorem card_filter_contributes :
     (univ.filter fun τ : Leaf L => Leaf.Contributes τ w).card = 10 ^ m := by
   -- Ten terms contribute to `z₀` and one to `z_ij`.
-  simp only [Leaf.filter_contributes_eq_piFinset, Fintype.card_piFinset,
+  simp [Leaf.filter_contributes_eq_piFinset,
     card_contributing_term]
   rw [prod_ite, prod_const, prod_const_one, mul_one, ← hw]
   rfl
@@ -128,7 +134,7 @@ theorem card_filter_contributes {L m : ℕ} (w : OutStr L) (hw : (innerSetO w).c
 /-- Section 2.4.3: "exactly α_d := binom(m, d) 9^d leaves of order d contribute to an output
 string".  As everywhere in Section 2.4.3, the output strings are those whose inner sets have exactly
 m elements. -/
-theorem sec2_card_contributing_of_order {L m : ℕ} (w : OutStr L) (hw : (innerSetO w).card = m)
+theorem sec2_card_contributing_of_order
     (d : ℕ) :
     (univ.filter fun τ : Leaf L => Leaf.Contributes τ w ∧ order m τ = d).card = alpha m d := by
   by_cases hd : d ≤ m
@@ -137,23 +143,23 @@ theorem sec2_card_contributing_of_order {L m : ℕ} (w : OutStr L) (hw : (innerS
     have hcount := Finset.card_pi_places_card
       (fun ℓ => univ.filter fun lam : Term => lam.Contributes (w ℓ)) (fun lam => lam = Term.P0)
       (m - d)
-    simp only [card_contributing_P0, card_contributing_ne_P0] at hcount
+    simp [card_contributing_P0, card_contributing_ne_P0] at hcount
     -- Given `S`, there is no such string unless `S ⊆ Q`.  Then there are nine choices at each of
     -- the `|Q| - |S| = d` levels of `Q` outside `S`, and one choice at every other level.
-    have hgiven : ∀ S ∈ powersetCard (m - d) (univ : Finset (Fin L)),
+    have hgiven : ∀ S ∈ powersetCard (m - d) univ,
         (∏ ℓ, if ℓ ∈ S then (if (w ℓ).IsInner then 1 else 0) else (if (w ℓ).IsInner then 9 else 1))
           = if S ⊆ innerSetO w then 9 ^ d else 0 := by
       intro S hS
       have hQS := prod_ite_ite_subset (innerSetO w) S 9
       rw [hw, (mem_powersetCard.mp hS).2, Nat.sub_sub_self hd] at hQS
       rw [← hQS]
-      exact prod_congr rfl fun ℓ _ => by simp
+      simp
     -- There are `binom(m, m - d) = binom(m, d)` sets `S ⊆ Q`.
     rw [sum_congr rfl hgiven, sum_powersetCard_ite_subset, hw, Nat.choose_symm hd] at hcount
     -- These strings are the leaves of order `d` that contribute to `w`.
     rw [alpha, ← hcount]
     refine congrArg card (Finset.ext fun τ => ?_)
-    simp only [mem_filter, mem_univ, true_and, order_eq_iff]
+    simp [mem_filter, mem_univ, order_eq_iff]
     exact and_congr Iff.rfl (by unfold P0Levels; omega)
   · -- No leaf has order more than `m`.
     rw [alpha, Nat.choose_eq_zero_of_lt (by omega), zero_mul, card_eq_zero]
@@ -161,17 +167,19 @@ theorem sec2_card_contributing_of_order {L m : ℕ} (w : OutStr L) (hw : (innerS
     have hle := order_le m τ
     omega
 
+end
+
 /-- Section 2.4.3: "The total number of leaves of order d in the entire recursion tree is
 β_d := binom(L, m-d) 9^{L-m+d}".
 
 NOTE.  `d ≤ m` and `m ≤ L` are left implicit in the paper. -/
-theorem card_filter_order_eq {L m : ℕ} (hmL : m ≤ L) (d : ℕ) (hd : d ≤ m) :
+theorem card_filter_order_eq {L m } (hmL : m ≤ L) (d : ℕ) (hd : d ≤ m) :
     (univ.filter fun τ : Leaf L => order m τ = d).card = beta L m d := by
   -- The leaves of order `d` are the strings of terms with `P₀` at exactly `m - d` levels.
   have hsort : (univ.filter fun τ : Leaf L => order m τ = d)
       = univ.filter fun τ : Leaf L => (univ.filter fun ℓ => τ ℓ = Term.P0).card = m - d := by
     ext τ
-    simp only [mem_filter, mem_univ, true_and, order_eq_iff]
+    simp [mem_filter, mem_univ, order_eq_iff]
     unfold P0Levels
     omega
   rw [hsort, Finset.card_places_card (fun lam : Term => lam = Term.P0) (m - d), card_term_P0,
@@ -180,7 +188,7 @@ theorem card_filter_order_eq {L m : ℕ} (hmL : m ≤ L) (d : ℕ) (hd : d ≤ m
 
 /-- Section 2.4.3: "In particular, β₀ = binom(L, m) 9^{L-m}". -/
 theorem beta_zero (L m : ℕ) : beta L m 0 = L.choose m * 9 ^ (L - m) := by
-  simp [beta]
+  rfl
 
 /-- Section 2.4.3: "β₀ = binom(L, m) 9^{L-m} = M". -/
 theorem beta_zero_eq_M (L m : ℕ) : beta L m 0 = M L m := by

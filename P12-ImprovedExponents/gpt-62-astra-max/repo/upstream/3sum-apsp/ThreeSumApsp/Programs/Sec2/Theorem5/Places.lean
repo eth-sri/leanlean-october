@@ -57,8 +57,6 @@ def K0 (p : Par) : ℕ := ThreeSumApsp.K0 p.L p.m
 def KK (p : Par) : ℕ := p.K0 * p.K0
 /-- The number of row bands, and of column bands. -/
 def nB (p : Par) : ℕ := numBands p.L p.m p.N
-/-- The number of tiles. -/
-def nT (p : Par) : ℕ := p.nB * p.nB
 /-- The number `10^L` of leaves: the length of an encoding. -/
 def T (p : Par) : ℕ := 10 ^ p.L
 /-- The number `7^L` of left strings: the length of an input array. -/
@@ -143,7 +141,7 @@ theorem Par.places (p : Par) (b0 : ℕ) :
       ∧ p.aDIG4 b0 = p.aDIG3 b0 + p.N * p.Lo ∧ p.aENCA b0 = p.aDIG4 b0 + p.D * p.m
       ∧ p.aENCB b0 = p.aENCA b0 + p.nB * p.T ∧ p.aARR b0 = p.aENCB b0 + p.nB * p.T
       ∧ p.aZS b0 = p.aARR b0 + p.S7 ∧ p.sharedEnd b0 = p.aZS b0 + p.S7 :=
-  ⟨rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl, rfl⟩
+  by tauto
 
 namespace Par
 variable (p : Par)

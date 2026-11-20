@@ -27,7 +27,7 @@ def nextPair (A B N : ℕ) : Stmt :=
   .set B (v B +' k 1) ;; .ite (v B =' v N) (.set B (k 0) ;; .set A (v A +' k 1)) .skip
 
 /-- **From the pair number t to the pair number t + 1.** -/
-theorem Ends.nextPair {A B N n t T : ℕ} {l : List ℤ} {μ : ℕ → ℤ} {Q : State → Prop}
+theorem Ends.nextPair {A B N n t T : ℕ} {l } {μ } {Q }
     (h : Q ⟨frame (setLocal (setLocal l B ((t + 1) % n : ℕ)) A ((t + 1) / n : ℕ)), μ⟩)
     (hn : 0 < n) (ht : ((t + 1 : ℕ) : ℤ) ≤ lim.word) (hnw : (n : ℤ) ≤ lim.word)
     (hA : frame l A = (t / n : ℕ)) (hB : frame l B = (t % n : ℕ)) (hN : frame l N = n)
@@ -47,7 +47,7 @@ theorem Ends.nextPair {A B N n t T : ℕ} {l : List ℤ} {μ : ℕ → ℤ} {Q :
   · have he : b + 1 = n := by
       have : ((b + 1 : ℕ) : ℤ) = n := by
         simpa only [Cond.Holds, Expr.val, frame_setLocal, if_pos, if_neg hBN, hN] using he
-      exact_mod_cast this
+      grind
     rw [(hlast he).1, (hlast he).2] at h
     refine Ends.setToThen (0 : ℕ) (Ends.setTo (a + 1 : ℕ) ?_
       (by light_norm [Expr.Gives, frame_setLocal, if_neg hAB, hA, abs_le]; omega)
@@ -55,19 +55,14 @@ theorem Ends.nextPair {A B N n t T : ℕ} {l : List ℤ} {μ : ℕ → ℤ} {Q :
     convert h using 2
     funext y
     simp only [frame_setLocal]
-    split_ifs <;> rfl
-  · have he : b + 1 ≠ n := fun e => he (by
-      simp only [Cond.Holds, Expr.val, frame_setLocal, if_pos, if_neg hBN, hN]
+    grind
+  · have he := fun e => he (by
+      simp only [Cond.Holds, Expr.val, frame_setLocal]
       exact_mod_cast e)
-    rw [(hinner he).1, (hinner he).2] at h
     refine Ends.skip ?_
     convert h using 2
     funext y
     simp only [frame_setLocal]
-    split_ifs with h1 h2 h2
-    · exact absurd (h2.symm.trans h1) hAB
-    · rfl
-    · rw [h2, hA]
-    · rfl
+    grind
 
 end Light

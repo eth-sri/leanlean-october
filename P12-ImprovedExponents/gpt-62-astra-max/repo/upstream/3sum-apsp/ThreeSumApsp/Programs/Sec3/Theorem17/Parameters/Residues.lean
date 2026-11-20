@@ -5,9 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 -/
 module
 
+public import ThreeSumApsp.Lang.Slots
 public import ThreeSumApsp.Programs.Tasks
 public import ThreeSumApsp.Spec.Sec3.Theorem17.Hashing
-public import Mathlib.Data.Nat.Size
 
 /-!
 # Residues without division
@@ -38,9 +38,7 @@ variable {lim : Limits} {P : Program} {d : ℕ}
 namespace BitLen
 
 /-- The local variables of bitLen: the argument U, the number of doublings, and the power of two. -/
-abbrev Arg : ℕ := 0
-@[inherit_doc Arg] abbrev Len : ℕ := 1
-@[inherit_doc Arg] abbrev Pow : ℕ := 2
+slots 0 Arg Len Pow
 
 end BitLen
 
@@ -59,12 +57,11 @@ def tBitLen (U : ℕ) : ℕ := 14 * bitLen U + 12
 
 /-- **bitLen** returns the least len with U < 2^len and changes no cell.  It forms numbers up to
 2U + 1. -/
-theorem bitLen_spec {μ : ℕ → ℤ} {U : ℕ} (hU : ((2 * U + 2 : ℕ) : ℤ) ≤ lim.word) :
+theorem bitLen_spec {μ } {U } (hU : ((2 * U + 2 : ℕ) : ℤ) ≤ lim.word) :
     Ends lim P d bitLenBody ⟨frame [U], μ⟩ (tBitLen U) fun σ' =>
       σ'.loc 0 = (bitLen U : ℕ) ∧ σ'.mem = μ := by
   have hlow : ∀ j, j < bitLen U → 2 ^ j ≤ U := fun j hj => Nat.lt_size.1 hj
   have hup : U < 2 ^ bitLen U := Nat.lt_size_self U
-  push_cast at hU
   unfold tBitLen
   generalize bitLen U = n at hlow hup
   -- len := 0; pow := 1
@@ -83,7 +80,7 @@ theorem bitLen_spec {μ : ℕ → ℤ} {U : ℕ} (hU : ((2 * U + 2 : ℕ) : ℤ)
     exact ⟨by light_side, by light_side, by light_side, by simp [update_frame_setLocal]⟩
   case done =>
     rintro _ rfl
-    have hupZ : (U : ℤ) < 2 ^ n := by exact_mod_cast hup
+    have hupZ : (U : ℤ) < 2 ^ n := by grind
     -- return len
     exact ⟨by light_side, by light_side, Ends.setTo n (by simp)⟩
 
@@ -98,7 +95,7 @@ theorem dblList_succ (p len : ℕ) :
 @[simp] theorem length_dblList (p len : ℕ) : (dblList p len).length = len + 1 := by simp [dblList]
 
 /-- Entry j of the table is 2^j p. -/
-theorem read_dblList {μ : ℕ → ℤ} {dbl p len j : ℕ} (h : Seg μ dbl (dblList p len)) (hj : j ≤ len) :
+theorem read_dblList {μ } {dbl p len j } (h : Seg μ dbl (dblList p len)) (hj : j ≤ len) :
     μ (dbl + j) = ((p * 2 ^ j : ℕ) : ℤ) := by
   rw [h j (by simp; omega)]
   simp [dblList]
@@ -106,11 +103,7 @@ theorem read_dblList {μ : ℕ → ℤ} {dbl p len j : ℕ} (h : Seg μ dbl (dbl
 namespace DblTable
 
 /-- The local variables of dblTable: the arguments dst, p, len; the exponent; the entry. -/
-abbrev Dst : ℕ := 0
-@[inherit_doc Dst] abbrev Prime : ℕ := 1
-@[inherit_doc Dst] abbrev Len : ℕ := 2
-@[inherit_doc Dst] abbrev Exp : ℕ := 3
-@[inherit_doc Dst] abbrev Entry : ℕ := 4
+slots 0 Dst Prime Len Exp Entry
 
 end DblTable
 
@@ -136,12 +129,12 @@ def DblInv (μ : ℕ → ℤ) (dst p len j : ℕ) (σ : State) : Prop :=
 
 /-- **dblTable** writes p, 2p, …, 2^len p and changes nothing else.  It forms numbers up to
 2^len p. -/
-theorem dblTable_spec {μ : ℕ → ℤ} {dst p len : ℕ} (hw : (lim.space : ℤ) ≤ lim.word)
+theorem dblTable_spec {μ } {dst p len } (hw : (lim.space : ℤ) ≤ lim.word)
     (hdst : dst + (len + 1) ≤ lim.space) (hp : ((p * 2 ^ len : ℕ) : ℤ) ≤ lim.word) :
     Ends lim P d dblTableBody ⟨frame [dst, p, len], μ⟩ (tDblTable len) fun σ' =>
       Seg σ'.mem dst (dblList p len) ∧ SameOutside μ σ'.mem dst (len + 1) := by
   have hfits : ∀ j ≤ len, ((p * 2 ^ j : ℕ) : ℤ) ≤ lim.word := fun j hj =>
-    le_trans (by exact_mod_cast Nat.mul_le_mul_left p (Nat.pow_le_pow_right (by norm_num) hj)) hp
+    le_trans (by gcongr) hp
   unfold tDblTable
   -- exp := 0; entry := p; dst[0] := entry
   light_set (0 : ℕ)
@@ -151,7 +144,7 @@ theorem dblTable_spec {μ : ℕ → ℤ} {dst p len : ℕ} (hw : (lim.space : �
   refine Ends.whileBlock (DblInv μ dst p len) len ?start ?round ?done
   case start =>
     refine ⟨Function.update μ dst p, by simp, ?_, SameOutside.refl.update ⟨by omega, by omega⟩ _⟩
-    simpa [dblList] using (Seg.nil (μ := μ) (a := dst)).snoc p
+    simpa [dblList] using (Seg.nil ).snoc p
   case round =>
     rintro j _ hj ⟨μ', rfl, seg, rest⟩
     have hnext := hfits (j + 1) hj
@@ -160,9 +153,9 @@ theorem dblTable_spec {μ : ℕ → ℤ} {dst p len : ℕ} (hw : (lim.space : �
       rw [length_dblList]
       omega
     -- entry := entry + entry; exp := exp + 1; dst[exp] := entry
-    refine ⟨by light_side, by light_side, ?_, Function.update μ' (dst + (dblList p j).length)
+    refine ⟨by simp, by light_side, ?_, Function.update μ' (dst + (dblList p j).length)
       ((p * 2 ^ (j + 1) : ℕ) : ℤ), ?_, dblList_succ p j ▸ seg.snoc _,
-      rest.update ⟨by omega, by rw [length_dblList]; omega⟩ _⟩
+      rest.update ⟨by omega, by omega⟩ _⟩
     · rw [hdouble] at hnext
       generalize p * 2 ^ j = q at hnext
       light_side
@@ -170,7 +163,7 @@ theorem dblTable_spec {μ : ℕ → ℤ} {dst p len : ℕ} (hw : (lim.space : �
       simp [update_frame_setLocal, haddr]
   case done =>
     rintro _ ⟨μ', rfl, seg, rest⟩
-    exact ⟨by light_side, by light_side, seg, rest⟩
+    simp_all
 
 /-! ## One residue -/
 
@@ -183,20 +176,21 @@ def greedyAt (p len : ℕ) (w : ℤ) : ℕ → ℤ
       greedyAt p len w i - ((p * 2 ^ (len - i) : ℕ) : ℤ)
     else greedyAt p len w i
 
-/-- A multiple of p is congruent to 0. -/
-private theorem mul_pow_modEq_zero (p j : ℕ) : ((p * 2 ^ j : ℕ) : ℤ) ≡ 0 [ZMOD (p : ℤ)] := by
-  rw [Int.modEq_zero_iff_dvd, Nat.cast_mul]
-  exact Dvd.intro _ rfl
-
 /-- 2^(j+1) p is twice 2^j p. -/
 private theorem cast_mul_pow_succ (p j : ℕ) :
     ((p * 2 ^ (j + 1) : ℕ) : ℤ) = 2 * ((p * 2 ^ j : ℕ) : ℤ) := by
-  rw [pow_succ]
   push_cast
   ring
 
+section
+variable {p len : ℕ}
+  {w : ℤ}
+  (hp : 1 ≤ p)
+  (hw : |w| < 2 ^ len)
+include hp hw
+
 /-- After i rounds the number is not negative, below 2^(len+1-i) p, and congruent to w. -/
-theorem greedyAt_inv {p len : ℕ} {w : ℤ} (hp : 1 ≤ p) (hw : |w| < 2 ^ len) : ∀ i, i ≤ len + 1 →
+theorem greedyAt_inv : ∀ i, i ≤ len + 1 →
     0 ≤ greedyAt p len w i ∧ greedyAt p len w i < ((p * 2 ^ (len + 1 - i) : ℕ) : ℤ) ∧
       greedyAt p len w i ≡ w [ZMOD (p : ℤ)] := by
   intro i
@@ -208,7 +202,7 @@ theorem greedyAt_inv {p len : ℕ} {w : ℤ} (hp : 1 ≤ p) (hw : |w| < 2 ^ len)
       exact_mod_cast Nat.le_mul_of_pos_left (2 ^ len) hp
     rw [greedyAt, Nat.sub_zero, cast_mul_pow_succ]
     exact ⟨by linarith, by linarith,
-      by simpa only [add_zero] using (Int.ModEq.refl w).add (mul_pow_modEq_zero p len)⟩
+      by simp⟩
   | succ i ih =>
     intro hi
     obtain ⟨hlow, hhigh, hmod⟩ := ih (by omega)
@@ -216,11 +210,11 @@ theorem greedyAt_inv {p len : ℕ} {w : ℤ} (hp : 1 ≤ p) (hw : |w| < 2 ^ len)
     rw [show len + 1 - (i + 1) = len - i by omega, greedyAt]
     split_ifs with h
     · exact ⟨by linarith, by linarith,
-        by simpa only [sub_zero] using hmod.sub (mul_pow_modEq_zero p (len - i))⟩
-    · exact ⟨hlow, by linarith, hmod⟩
+        by simp_all⟩
+    · grind
 
 /-- Greedy subtraction gives the remainder. -/
-theorem greedyAt_end {p len : ℕ} {w : ℤ} (hp : 1 ≤ p) (hw : |w| < 2 ^ len) :
+theorem greedyAt_end :
     greedyAt p len w (len + 1) = (resid p w : ℕ) := by
   obtain ⟨hlow, hhigh, hmod⟩ := greedyAt_inv hp hw (len + 1) le_rfl
   rw [Nat.sub_self, pow_zero, mul_one] at hhigh
@@ -228,21 +222,19 @@ theorem greedyAt_end {p len : ℕ} {w : ℤ} (hp : 1 ≤ p) (hw : |w| < 2 ^ len)
   exact hmod
 
 /-- Every number that resid holds is below 2^(len+1) p. -/
-theorem greedyAt_lt {p len : ℕ} {w : ℤ} (hp : 1 ≤ p) (hw : |w| < 2 ^ len) {i : ℕ}
+theorem greedyAt_lt {i : ℕ}
     (hi : i ≤ len + 1) : greedyAt p len w i < ((p * 2 ^ (len + 1) : ℕ) : ℤ) := by
   obtain ⟨-, hhigh, -⟩ := greedyAt_inv hp hw i hi
   exact hhigh.trans_le (by
-    exact_mod_cast Nat.mul_le_mul_left p (Nat.pow_le_pow_right (by norm_num) (by omega)))
+    gcongr <;> omega)
+
+end
 
 namespace Resid
 
 /-- The local variables of resid: the arguments w, dbl, len; one more than the next exponent; the
 number that is reduced. -/
-abbrev Arg : ℕ := 0
-@[inherit_doc Arg] abbrev Dbl : ℕ := 1
-@[inherit_doc Arg] abbrev Len : ℕ := 2
-@[inherit_doc Arg] abbrev Exp : ℕ := 3
-@[inherit_doc Arg] abbrev Num : ℕ := 4
+slots 0 Arg Dbl Len Exp Num
 
 end Resid
 
@@ -260,7 +252,7 @@ def residBody : Stmt :=
 def tResid (len : ℕ) : ℕ := 24 * len + 41
 
 /-- **resid** returns w mod p and changes no cell.  It forms numbers up to 2^(len+1) p. -/
-theorem resid_meets {μ : ℕ → ℤ} {pResid dbl p len : ℕ} {w : ℤ} (hP : P[pResid]? = some residBody)
+theorem resid_meets {μ } {pResid dbl p len } {w } (hP : P[pResid]? = some residBody)
     (hw : (lim.space : ℤ) ≤ lim.word) (hp : 1 ≤ p) (hseg : Seg μ dbl (dblList p len))
     (hlt : |w| < 2 ^ len) (hdbl : dbl + (len + 1) ≤ lim.space)
     (hword : ((p * 2 ^ (len + 1) : ℕ) : ℤ) ≤ lim.word) :
@@ -287,20 +279,20 @@ theorem resid_meets {μ : ℕ → ℤ} {pResid dbl p len : ℕ} {w : ℤ} (hP : 
     have hexp : ((len + 1 - i : ℕ) : ℤ) - 1 = (len - i : ℕ) := by omega
     have hnext : len + 1 - (i + 1) = len - i := by omega
     have hpos : (0 : ℤ) ≤ ((p * 2 ^ (len - i) : ℕ) : ℤ) := Int.natCast_nonneg _
-    rw [hnext, greedyAt]
+    rw [greedyAt]
     generalize greedyAt p len w i = g at hlowi hhighi
     generalize ((p * 2 ^ (len - i) : ℕ) : ℤ) = q at hread hpos
     -- exp := exp - 1; if dbl[exp] ≤ num then num := num - dbl[exp]
     refine ⟨by light_side, by light_side, ?_, ?_⟩
-    · simp [Limits.Addr, abs_le, hexp, hread]
+    · simp [Limits.Addr, abs_le, hexp]
       omega
     · by_cases hle : q ≤ g <;> simp [update_frame_setLocal, hexp, hread, hle]
   case done =>
     rintro _ rfl
     -- return num
-    exact ⟨by light_side, by light_side,
+    exact ⟨by light_side, by simp,
       Ends.setTo (greedyAt p len w (len + 1)) (by simp [greedyAt_end hp hlt])
-      (hT := by simp; omega)⟩
+      ⟩
 
 /-! ## The residues of a list -/
 
@@ -308,13 +300,7 @@ namespace Residues
 
 /-- The local variables of residues: the arguments src, dst, m, dbl, len; the counter; the
 residue. -/
-abbrev Src : ℕ := 0
-@[inherit_doc Src] abbrev Dst : ℕ := 1
-@[inherit_doc Src] abbrev Num : ℕ := 2
-@[inherit_doc Src] abbrev Dbl : ℕ := 3
-@[inherit_doc Src] abbrev Len : ℕ := 4
-@[inherit_doc Src] abbrev Idx : ℕ := 5
-@[inherit_doc Src] abbrev Res : ℕ := 6
+slots 0 Src Dst Num Dbl Len Idx Res
 
 end Residues
 
@@ -356,21 +342,21 @@ def ResiduesInv (μ : ℕ → ℤ) (src dst m dbl p len : ℕ) (l : List ℤ) (i
     SegN μ' dst (residList p (l.take i)) ∧ SameOutside μ μ' dst m
 
 /-- One more residue. -/
-theorem residList_take_succ (p : ℕ) {l : List ℤ} {i : ℕ} (hi : i < l.length) :
+theorem residList_take_succ (p : ℕ) {l : List ℤ} {i } (hi : i < l.length) :
     residList p (l.take (i + 1)) = residList p (l.take i) ++ [resid p l[i]] := by
-  rw [residList, residList, List.take_add_one, List.getElem?_eq_getElem hi, List.map_append]
+  rw [residList, List.take_add_one, List.getElem?_eq_getElem hi, List.map_append]
   rfl
 
 open Residues in
 /-- **residues** writes the residues of a list and changes nothing else. -/
-theorem residues_spec {μ : ℕ → ℤ} {pResid src dst m dbl p len U : ℕ} {l : List ℤ}
+theorem residues_spec {μ } {pResid src dst m dbl p len U } {l }
     (hP : P[pResid]? = some residBody) (hd : d < lim.depth)
     (pre : ResiduesPre lim μ src dst m dbl p len U l) :
     Ends lim P d (residuesBody pResid) ⟨frame [src, dst, m, dbl, len], μ⟩ (tResidues m len)
       fun σ' => SegN σ'.mem dst (residList p l) ∧ SameOutside μ σ'.mem dst m := by
   obtain ⟨hw, hp, segDbl, segSrc, rfl, hle, hlt, spaceDbl, spaceSrc, spaceDst, hm, apartSrc,
     apartDbl, hword⟩ := pre
-  have hltZ : (U : ℤ) < 2 ^ len := by exact_mod_cast hlt
+  have hltZ : (U : ℤ) < 2 ^ len := by grind
   unfold tResidues
   -- for i < m
   refine Ends.for (ResiduesInv μ src dst l.length dbl p len l) l.length (tResid len + 13)
@@ -383,10 +369,10 @@ theorem residues_spec {μ : ℕ → ℤ} {pResid src dst m dbl p len U : ℕ} {l
     simp
   case round =>
     rintro i _ hi - ⟨r, μ', rfl, seg, rest⟩
-    have hread : μ' (src + i) = l[i] := (rest _ (by omega)).trans (segSrc.get hi)
+    have hread := (rest _ (by omega)).trans (segSrc.get hi)
     have hlen : (residList p (l.take i)).length = i := by simp [residList]; omega
     -- res := resid(src[i], dbl, len)
-    light_call (resid_meets (w := l[i]) hP hw hp
+    light_call (resid_meets hP hw hp
       (segDbl.keep (by light_keep [length_dblList]))
       ((hle.getElem hi).trans_lt hltZ) spaceDbl hword) using hread with _ μ₁ ⟨rfl, rfl⟩
     -- dst[i] := res
@@ -395,9 +381,9 @@ theorem residues_spec {μ : ℕ → ℤ} {pResid src dst m dbl p len U : ℕ} {l
       Function.update μ₁ (dst + i) (resid p l[i] : ℕ), by simp [update_frame_setLocal], ?_,
       rest.update ⟨by omega, by omega⟩ _⟩
     have hsnoc := seg.snoc (resid p l[i])
-    rwa [hlen, ← residList_take_succ p hi] at hsnoc
+    grind [residList_take_succ]
   case done =>
     rintro _ - ⟨r, μ', rfl, seg, rest⟩
-    exact ⟨by simpa using seg, rest⟩
+    grind
 
 end Light.Sec3

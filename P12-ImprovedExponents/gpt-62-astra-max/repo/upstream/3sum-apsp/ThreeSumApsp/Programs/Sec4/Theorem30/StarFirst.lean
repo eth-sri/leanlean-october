@@ -36,12 +36,10 @@ open ThreeSumApsp ThreeSumApsp.Spec
 private theorem lastStar_concat (l : List ℕ) (x : ℕ) :
     lastStar (l ++ [x]) = if x = 10 then some l.length else lastStar l := by
   induction l with
-  | nil => simp [lastStar]
+  | nil => rfl
   | cons d l ih =>
-    rw [List.cons_append, lastStar, ih, lastStar]
-    by_cases hx : x = 10
-    · simp [hx]
-    · simp only [hx, if_false]
+    rw [List.cons_append, lastStar, lastStar]
+    grind
 
 namespace StarFirst
 
@@ -72,7 +70,7 @@ private theorem turned_succ (hi : i < l.length) :
 private theorem lastPos_succ (hi : i < l.length) :
     lastPos e l (i + 1) = if (starFirst e l).getD i 0 = 10 then i else lastPos e l i := by
   have hi' : i < (starFirst e l).length := by rwa [length_starFirst]
-  rw [lastPos, lastPos, List.take_succ_getD _ hi' 0, lastStar_concat, List.length_take,
+  rw [lastPos, List.take_succ_getD _ hi' 0, lastStar_concat, List.length_take,
     Nat.min_eq_left hi'.le]
   split_ifs <;> rfl
 
@@ -82,14 +80,7 @@ private theorem lastPos_succ (hi : i < l.length) :
 copy, the length, the number of stars), the position, the position of the last star so far, the
 digit, and the number of nines turned into stars so far.  Local 0 also takes the result. -/
 abbrev Src : ℕ := 0
-@[inherit_doc Src] abbrev Result : ℕ := 0
-@[inherit_doc Src] abbrev Dst : ℕ := 1
-@[inherit_doc Src] abbrev Len : ℕ := 2
-@[inherit_doc Src] abbrev Stars : ℕ := 3
-@[inherit_doc Src] abbrev Pos : ℕ := 4
-@[inherit_doc Src] abbrev Last : ℕ := 5
-@[inherit_doc Src] abbrev Digit : ℕ := 6
-@[inherit_doc Src] abbrev Turned : ℕ := 7
+slots 0 Result Dst Len Stars Pos Last Digit Turned
 
 end StarFirst
 
@@ -116,7 +107,7 @@ namespace StarFirst
 private theorem round_cost : starFirstRound.blockCost = 34 := rfl
 
 /-- What a round does, for the digit x that is read, with c nines turned and the last star at p. -/
-private theorem round_runs {lim : Limits} (hs : Std lim) {μ : ℕ → ℤ} {cur box L e i p x dg c : ℕ}
+private theorem round_runs {lim } (hs : Std lim) {μ : ℕ → ℤ} {cur box L e i p x dg c : ℕ}
     (hcur : cur + L < lim.space) (hbox : box + L < lim.space) (hi : i < L) (hc : c ≤ i)
     (hcell : μ (cur + i) = x) :
     starFirstRound.Runs lim ⟨frame [cur, box, L, e, i, p, dg, c], μ⟩
@@ -128,8 +119,7 @@ private theorem round_runs {lim : Limits} (hs : Std lim) {μ : ℕ → ℤ} {cur
   light_facts hs
   have hcast9 : ((x : ℤ) = 9) = (x = 9) := by norm_cast
   have hcast10 : ((x : ℤ) = 10) = (x = 10) := by norm_cast
-  have haddr : ((box : ℤ) + i).toNat = box + i := by omega
-  simp only [starFirstRound]
+  simp [starFirstRound]
   -- The tests of the program: a nine, fewer than e turned, a star.  In each case the block is run:
   -- the first goal says that every address is in range and every value fits in a word, the second
   -- that the last state is the one stated.
@@ -148,11 +138,11 @@ end StarFirst
 
 /-- **starFirst** writes the copy with the first e nines as stars, and returns the position of its
 last star. -/
-theorem starFirst_spec {lim : Limits} {P : Program} (hP : P[Proc.starFirst]? = some starFirstBody)
+theorem starFirst_spec {lim } {P } (hP : P[Proc.starFirst]? = some starFirstBody)
     (hs : Std lim) : StarFirstSpec lim P := by
   rintro cur box _ e l μ hseg rfl hapart hcur hbox
   refine fun d _ => ⟨starFirstBody, hP, ?_⟩
-  have hlen : (starFirst e l).length = l.length := length_starFirst e l
+  have hlen := length_starFirst e l
   unfold tStarFirst
   -- while pos < len
   refine Ends.next _ (Ends.whileBlock (Inv cur box e l μ) l.length ?start ?round ?done
@@ -178,7 +168,7 @@ theorem starFirst_spec {lim : Limits} {P : Program} (hP : P[Proc.starFirst]? = s
     rintro _ ⟨μ', dg, rfl, hcopy, hsame⟩
     rw [← hlen, List.take_length] at hcopy
     refine ⟨by simp, by simp, ?_⟩
-    simp only [round_cost]
+    simp [round_cost]
     -- return last
     light_set (lastPos e l l.length)
     refine ⟨hcopy, ?_, hsame⟩

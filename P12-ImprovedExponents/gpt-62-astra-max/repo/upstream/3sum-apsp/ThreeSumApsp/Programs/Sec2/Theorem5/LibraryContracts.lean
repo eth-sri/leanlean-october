@@ -41,16 +41,15 @@ theorem pow_entry (std : Std lim) (hP : P[pPow]? = some powBody) (hc : 35 ≤ c)
     PowSpec lim P c := by
   intro b n dst μ hdst1 hdst hb hpow d _
   have hw := std.space_le
-  have h100 := std.const_le
   refine .mono_const (.of_body hP ?_) hc
   -- The arguments b, n, dst become dst, n + 1, b.
   light_set b
   light_set dst
   light_set b
   light_set (n + 1 : ℕ)
-  refine (powTable_ends (dst := dst) (L := n + 1) (b := b) 0 0 [b] hw hdst fun j hj => ?_).mono
+  refine (powTable_ends    0 0 [b] hw hdst fun j hj => ?_).mono
     (by simp [powTableTime]; omega) fun _ h => h
-  exact le_trans (by exact_mod_cast Nat.pow_le_pow_right hb hj) hpow
+  exact le_trans (by gcongr) hpow
 
 /-! ## Filling a segment -/
 
@@ -59,6 +58,6 @@ theorem pow_entry (std : Std lim) (hP : P[pPow]? = some powBody) (hc : 35 ≤ c)
 /-- **sqrt(K)** returns ⌊√K⌋, within 18 (⌊√K⌋ + 1) steps. -/
 theorem sqrt_entry (hP : P[pSqrt]? = some sqrtBody) (hc : 18 ≤ c) : SqrtSpec lim P c :=
   fun _ μ hw _ _ =>
-    ((sqrt_meets hP μ (by push_cast at hw ⊢; omega)).mono_time (by simp; omega)).mono_const hc
+    ((sqrt_meets hP μ (by omega)).mono_time (by simp; omega)).mono_const hc
 
 end Light.Sec2

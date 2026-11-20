@@ -35,12 +35,7 @@ theorem succ_sq_le_ten_pow (L : ℕ) : (L + 1) ^ 2 ≤ 10 ^ L := by
     induction L with
     | zero => simp
     | succ L ih =>
-      calc (L + 1 + 1) ^ 2 ≤ 4 * (L + 1) ^ 2 := by
-            rw [show (L + 1 + 1) ^ 2 = L * L + 4 * L + 4 by ring,
-              show 4 * (L + 1) ^ 2 = 4 * (L * L) + 8 * L + 4 by ring]
-            omega
-        _ ≤ 4 * 4 ^ L := Nat.mul_le_mul_left _ ih
-        _ = 4 ^ (L + 1) := by ring
+      grind
   exact hfour.trans (Nat.pow_le_pow_left (by norm_num) L)
 
 /-- The facts about the sizes that the two estimates below use; T is `10^L` and S7 is `7^L`. -/
@@ -77,43 +72,37 @@ theorem sharedEnd_sub_le (p : Sec2.Par) (b0 : ℕ) (hL1 : 1 ≤ p.L) (hmL : p.m 
   generalize p.S7 = S7 at *
   generalize p.K = K at *
   generalize p.KK = KK at *
-  generalize p.N0 = N0 at *
   generalize p.D = D at *
-  generalize p.nB = nB at *
   generalize p.Lo = Lo at *
   generalize p.N = N at *
   generalize p.L = L at *
   generalize p.m = m at *
-  have hLT : L + 1 ≤ T := (Nat.le_self_pow (by norm_num) _).trans sq
-  have hDS : D ≤ S7 := le_trans (Nat.le_mul_of_pos_left _ (Nat.mul_pos K1 N1)) KND
-  have hmask : KK * L ≤ K * L := Nat.mul_le_mul_right _ KKle
-  have hdig3 : N * Lo ≤ N * L := Nat.mul_le_mul_left _ hLo
-  have hdig4 : D * m ≤ L * S7 := (Nat.mul_le_mul hDS mL).trans (le_of_eq (Nat.mul_comm _ _))
-  rw [Nat.mul_add_one N L]
-  omega
+  have hLT := (Nat.le_self_pow (by norm_num) _).trans sq
+  have hDS := le_trans (Nat.le_mul_of_pos_left _ (Nat.mul_pos K1 N1)) KND
+  have hmask : KK * L ≤ K * L := by gcongr
+  have hdig3 : N * Lo ≤ N * L := by gcongr
+  have hdig4 := (Nat.mul_le_mul hDS mL).trans (le_of_eq (Nat.mul_comm _ _))
+  grind
 
 /-! ## Within (8) -/
 
 /-- The length of the block, split into the shared block, the scratch strings, and the tries with
 their roots. -/
 theorem top_sub_eq (p : Sec2.Par) (t b0 : ℕ) :
-    top p t b0 - b0 = (p.sharedEnd b0 - b0) + (3 * p.L + p.m + 2)
-      + (1 + p.nB * p.nB * (11 * (1 + p.L * (boxes p.L p.m t).card)) + p.nB * p.nB) := by
+    top p t b0 - b0 = (p.sharedEnd b0 - b0) + (3*p.L+p.m+1) + pageCells p := by
   have := base_le_sharedEnd p b0
-  simp only [top, aTR, aROOTS, aFP, aSS, aBOX, aCUR, aWD, trieCap]
-  omega
+  simp [top,aPage,aSS,aBOX,aCUR,aWD]; omega
 
 /-- **A query** takes `O(L ∑_{d ≤ t} α_d)` steps. -/
 theorem exists_tQueryAt_le : ∃ C : ℝ, 0 ≤ C ∧ ∀ (p : Sec2.Par) (t : ℕ), Hyp30 p t →
     (tQueryAt p.L p.m t : ℝ) ≤ C * costQuery p.L p.m t := by
   obtain ⟨C, hC, hcore⟩ := exists_tQueryCore_le
-  refine ⟨C + 510, by positivity, fun p t h => ?_⟩
+  refine ⟨C + 510, by grind, fun p t h => ?_⟩
   have hcore := hcore p.L p.m t h.L_pos h.m_le h.t_le
   have hL := cast_L_le_costQuery p.L p.m t
   have hL1 : (1 : ℝ) ≤ p.L := by exact_mod_cast h.L_pos
   -- tQueryAt = 70 L + 440 + tQueryCore
   unfold tQueryAt tOutDigits
-  push_cast
-  linarith
+  grind
 
 end Light.Sec4

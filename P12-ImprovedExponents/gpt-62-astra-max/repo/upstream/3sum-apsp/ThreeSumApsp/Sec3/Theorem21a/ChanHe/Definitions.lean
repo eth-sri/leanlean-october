@@ -29,19 +29,6 @@ open Finset
 same size). -/
 def HasSol (S₁ S₂ S₃ : Finset ℤ) : Prop := ∃ a ∈ S₁, ∃ b ∈ S₂, ∃ c ∈ S₃, a + b + c = 0
 
-/-- Convolution-3SUM on three arrays of length `N` (Definition 2.2 of [CH20]).  [CH20] does not say
-where the indices start or what happens when `i + j` leaves the array: we number the cells from 0
-and ask for `i + j < N`. -/
-def ConvSol (N : ℕ) (X Y Z : ℕ → ℤ) : Prop := ∃ i j : ℕ, i + j < N ∧ X i + Y j = Z (i + j)
-
-/-- Convolution-3SUM on one array of length `N`: the three arrays are the same.  This is the
-`Convolution3SUM` of Section 1.2 for the first `N` cells (`convolution3SUM_iff_convOne`). -/
-def ConvOne (N : ℕ) (y : ℕ → ℤ) : Prop := ConvSol N y y y
-
-/-- The Convolution-3SUM instance of the node has a solution, at length `N`. -/
-def Node.Conv (ν : Node) (U N : ℕ) : Prop :=
-  ConvSol N (arrXY ν.S₁ ν.M U) (arrXY ν.S₂ ν.M U) (arrZ ν.S₃ ν.M U)
-
 /-- All elements of `S` have absolute value at most `U`. -/
 def Bdd (U : ℕ) (S : Finset ℤ) : Prop := ∀ x ∈ S, |x| ≤ (U : ℤ)
 

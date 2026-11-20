@@ -64,8 +64,7 @@ theorem pow_spec {n : ℕ} (hn : 1 ≤ n) (a : ℤ) (μ : ℕ → ℤ) : ∀ κ 
     have hle : ((n ^ κ : ℕ) : ℤ) ≤ ((n ^ (κ + 1) : ℕ) : ℤ) := by
       exact_mod_cast Nat.pow_le_pow_right hn (by omega)
     have hval : ((n ^ κ : ℕ) : ℤ) * n = ((n ^ (κ + 1) : ℕ) : ℤ) := by
-      push_cast
-      ring
+      rfl
     unfold powStmt
     refine Ends.next (4 * κ) ((pow_spec hn a μ κ (hle.trans hw)).mono le_rfl ?_)
     rintro _ rfl
@@ -73,9 +72,8 @@ theorem pow_spec {n : ℕ} (hn : 1 ≤ n) (a : ℤ) (μ : ℕ → ℤ) : ∀ κ 
     refine Ends.setTo ((n ^ (κ + 1) : ℕ) : ℤ) rfl ⟨?_, ?_⟩
     · light_norm
       change |((n ^ κ : ℕ) : ℤ) * n| ≤ lim.word
-      rw [hval, abs_of_nonneg (Int.natCast_nonneg _)]
-      exact hw
-    · exact hval
+      grind
+    · rfl
 
 /-- The arguments n, U and four addresses 1, 1 + n², 1 + 2n², 1 + c n² are safe. -/
 theorem safe_fourAddresses {c : ℕ} (hc : c ≤ 4) {n : ℕ} {lim : Limits} {σ : State}
@@ -85,7 +83,6 @@ theorem safe_fourAddresses {c : ℕ} (hc : c ≤ 4) {n : ℕ} {lim : Limits} {σ
   have hcn : (c : ℤ) * ((n : ℤ) * n) ≤ 4 * ((n : ℤ) * n) :=
     mul_le_mul_of_nonneg_right (by exact_mod_cast hc) hnn
   have hcn0 : (0 : ℤ) ≤ (c : ℤ) * ((n : ℤ) * n) := by positivity
-  have hc' : (c : ℤ) ≤ 4 := by exact_mod_cast hc
   push_cast at hw h3
   simp only [List.forall_mem_cons, List.not_mem_nil, false_imp_iff, implies_true, and_true]
   simp only [Expr.Safe, Expr.val, Op.eval, h3, true_and, Nat.cast_ofNat, Nat.cast_one]
@@ -109,17 +106,14 @@ variable {Q : EndStatement.Problem} (x : Bounded Q)
 
 /-- Cell 0 holds the size. -/
 theorem ofEnd_cell0 (loc : ℕ → ℤ) : (M (k 0)).val ⟨loc, memOf ((ofEnd Q).input x)⟩ = x.n := by
-  simp [memOf]
+  rfl
 
 /-- All cells of the input are within the size and the bound. -/
 theorem ofEnd_input_le : ∀ a ∈ (ofEnd Q).input x, |a| ≤ ((x.n + x.U + 1 : ℕ) : ℤ) := by
   intro a ha
   rcases List.mem_cons.1 ha with rfl | ha
-  · rw [abs_of_nonneg (by positivity)]
-    push_cast
-    omega
+  · grind
   · have := Bounded.abs_le ha
-    push_cast
     omega
 
 /-- Cell 0 may be read. -/
@@ -138,8 +132,7 @@ private theorem polyBound_pow_le (s k κ n : ℕ) {r : ℕ} (hr : (κ + 1) * k �
   have hpos : 1 ≤ n + 1 := by omega
   have hU : n ^ κ + 1 ≤ 2 * (n + 1) ^ κ := by
     have h1 : n ^ κ ≤ (n + 1) ^ κ := Nat.pow_le_pow_left (by omega) κ
-    have h2 : 1 ≤ (n + 1) ^ κ := Nat.one_le_pow _ _ hpos
-    omega
+    grind
   unfold polyBound
   simp only [List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
   calc 2 ^ s * ((n + 1) * (n ^ κ + 1)) ^ k
@@ -225,8 +218,12 @@ theorem room (w : Wrap Q task dec) (need : ℕ → ℕ → Need) (x : Bounded Q)
 abbrev Answered (x : Bounded Q) (dec : Bool) (σ : State) : Prop :=
   (ofEnd Q).IsAnswer x (verdictOf dec (σ.loc 0)) fun i => σ.mem (((ofEnd Q).input x).length + i)
 
+section
+variable (w : Wrap Q task dec)
+include w
+
 /-- The run of the outermost procedure on an instance of size at least 1. -/
-theorem body_ends (w : Wrap Q task dec) {P : Program} {p : ℕ} {Tn : ℕ → ℕ → ℕ} {need : ℕ → ℕ → Need}
+theorem body_ends {P : Program} {p : ℕ} {Tn : ℕ → ℕ → ℕ} {need : ℕ → ℕ → Need}
     (hsol : Solves task P p Tn need) (κ : ℕ) (x : Bounded Q) (hn : 1 ≤ x.n) (hU : x.U = x.n ^ κ)
     {lim : Limits} (hroom : w.Room need x lim) :
     Ends lim (P ++ [topBody κ p w.args dec]) 1 (topBody κ p w.args dec)
@@ -235,8 +232,8 @@ theorem body_ends (w : Wrap Q task dec) {P : Program} {p : ℕ} {Tn : ℕ → �
   have hcells := hroom.cells
   have hdepth := hroom.depth
   have hcst : x.n * x.n + 1 ≤ w.cst * (x.n * x.n + 1) := Nat.le_mul_of_pos_left _ w.cst_pos
-  have hsquare : ((x.n * x.n : ℕ) : ℤ) ≤ lim.word := le_trans (Nat.cast_le.2 (by omega)) hcells
-  have hU1 : 1 ≤ x.U := hU ▸ Nat.one_le_pow _ _ hn
+  have hsquare := le_trans (Nat.cast_le.2 (by omega)) hcells
+  have hU1 := hU ▸ Nat.one_le_pow _ _ hn
   push_cast at hbound hsquare
   unfold topBody bodySteps
   -- n := mem[0]
@@ -246,7 +243,7 @@ theorem body_ends (w : Wrap Q task dec) {P : Program} {p : ℕ} {Tn : ℕ → �
   -- U := 1
   light_set 1
   -- U := U * n, κ times
-  refine Ends.next (4 * κ) ((pow_spec hn 0 _ κ (by rw [← hU]; omega)).mono le_rfl ?_)
+  refine Ends.next (4 * κ) ((pow_spec hn 0 _ κ (by omega)).mono le_rfl ?_)
   rintro _ rfl
   rw [← hU]
   -- local 3 := n * n
@@ -261,11 +258,11 @@ theorem body_ends (w : Wrap Q task dec) {P : Program} {p : ℕ} {Tn : ℕ → �
   have hanswer := w.post x r μ' hn hpost
   -- for a problem with an output: result := 1
   cases dec
-  · exact Ends.set (by light_norm; omega) (by light_time) (by simpa [Answered] using hanswer)
-  · exact Ends.skip (by simpa [Answered] using hanswer)
+  · exact Ends.set (by light_norm; omega) (by light_time) (by assumption)
+  · exact Ends.skip (by assumption)
 
 /-- The run of the outermost procedure on an instance of size 0. -/
-theorem body_ends_zero (w : Wrap Q task dec) (P : Program) (p κ : ℕ) (x : Bounded Q) (hn : x.n = 0)
+theorem body_ends_zero (P : Program) (p κ : ℕ) (x : Bounded Q) (hn : x.n = 0)
     {need : ℕ → ℕ → Need} {lim : Limits} (hroom : w.Room need x lim) :
     Ends lim (P ++ [topBody κ p w.args dec]) 1 (topBody κ p w.args dec)
       ⟨frame [0, 0], memOf ((ofEnd Q).input x)⟩ 9 (Answered x dec) := by
@@ -278,20 +275,20 @@ theorem body_ends_zero (w : Wrap Q task dec) (P : Program) (p κ : ℕ) (x : Bou
   refine Ends.iteLast (fun _ => ?_) (fun h => absurd (by simp [hn]) h)
   have hanswer := w.zero x hn
   cases dec <;>
-    exact Ends.set (by simp; omega) (by light_time) (by simpa [Answered, verdictOf] using hanswer _)
+    exact Ends.set (by simp; omega) (by rfl) (by simpa [Answered, verdictOf] using hanswer _)
 
 /-- The outermost call, from the run of its procedure. -/
-theorem ends_of_body (w : Wrap Q task dec) {P : Program} {p κ T : ℕ} (x : Bounded Q)
+theorem ends_of_body {P : Program} {p κ T : ℕ} (x : Bounded Q)
     {need : ℕ → ℕ → Need}
     (h : Ends (w.limits need x) (P ++ [topBody κ p w.args dec]) 1 (topBody κ p w.args dec)
       ⟨frame [0, 0], memOf ((ofEnd Q).input x)⟩ T (Answered x dec)) :
     Ends (w.limits need x) (P ++ [topBody κ p w.args dec]) 0 (mainStmt P.length)
       ⟨frame [0, 0, 0], memOf ((ofEnd Q).input x)⟩ (T + 4) (Answered x dec) :=
   Ends.call T (by simp) (by simp) (by simp only [limits]; omega)
-    (h.mono le_rfl fun _ hσ => by simpa [Answered] using hσ) (by light_time)
+    (h.mono le_rfl fun _ hσ => by assumption) (by light_time)
 
 /-- The limits are polynomial in the size. -/
-theorem small (w : Wrap Q task dec) {need : ℕ → ℕ → Need} (hpoly : PolyNeed need) (κ : ℕ) :
+theorem small {need : ℕ → ℕ → Need} (hpoly : PolyNeed need) (κ : ℕ) :
     ∃ s k : ℕ, ∀ x : Bounded Q, x.U = x.n ^ κ → Small s k [x.n] (w.limits need x) := by
   obtain ⟨s, k, hpoly⟩ := hpoly
   obtain ⟨r, hr⟩ : ∃ r, r = (κ + 1) * k + κ + 2 := ⟨_, rfl⟩
@@ -311,20 +308,17 @@ theorem small (w : Wrap Q task dec) {need : ℕ → ℕ → Need} (hpoly : PolyN
   have hgoal : polyBound (s + k + 5 + Nat.size w.cst) r [x.n] =
       32 * (2 ^ Nat.size w.cst * (2 ^ (s + k) * (x.n + 1) ^ r)) := by
     unfold polyBound
-    simp only [List.map_cons, List.map_nil, List.prod_cons, List.prod_nil, mul_one]
-    rw [pow_add 2 (s + k + 5) (Nat.size w.cst), pow_add 2 (s + k) 5]
-    ring
+    grind
   generalize 2 ^ (s + k) * (x.n + 1) ^ r = Z at *
   generalize (x.n + 1) ^ r = X at *
   -- `Y ≥ Z` takes in the constant of the layout
-  have hcst : w.cst * (x.n * x.n + 1) ≤ 2 ^ Nat.size w.cst * Z :=
+  have hcst :=
     Nat.mul_le_mul (Nat.lt_size_self w.cst).le (hsquare.trans hXZ)
   have hZY : Z ≤ 2 ^ Nat.size w.cst * Z := Nat.le_mul_of_pos_left _ Nat.one_le_two_pow
-  generalize 2 ^ Nat.size w.cst * Z = Y at *
   refine ⟨?_, ?_, ?_, ?_⟩ <;> simp only [limits, hgoal] <;> omega
 
 /-- The compiled program is run within these limits: what the interface to the machine asks for. -/
-theorem topSolves (w : Wrap Q task dec) {T : ℕ → ℝ → ℝ} {P : Program} {p : ℕ} {Tn : ℕ → ℕ → ℕ}
+theorem topSolves {T : ℕ → ℝ → ℝ} {P : Program} {p : ℕ} {Tn : ℕ → ℕ → ℕ}
     {need : ℕ → ℕ → Need} (hpoly : PolyNeed need) (hsol : Solves task P p Tn need)
     (hT : ∀ (n U : ℕ) (u : ℝ), 1 ≤ n → 1 ≤ U → (U : ℝ) ≤ u → (Tn n U : ℝ) ≤ T n u) (κ : ℕ) :
     ∃ s k : ℕ, ProgramSolves (ofEnd Q) (P ++ [topBody κ p w.args dec]) P.length dec s k
@@ -342,14 +336,14 @@ theorem topSolves (w : Wrap Q task dec) {T : ℕ → ℝ → ℝ} {P : Program} 
   · obtain ⟨σ', c, hrun, hc, hanswer⟩ :=
       w.ends_of_body x (w.body_ends hsol κ x hn hU (w.room need x))
     have hc' : (c : ℝ) ≤ (Tn x.n x.U : ℝ) + w.extra κ := by
-      exact_mod_cast hc.trans (by unfold extra; omega)
+      exact_mod_cast hc.trans (by rfl)
     have hTn := hT x.n x.U x.U hn (hU ▸ Nat.one_le_pow _ _ hn) le_rfl
     exact ⟨w.limits need x, σ', c, hrun, by linarith [le_max_left (T x.n x.U) 0], hinput,
       hsmall x hU, hanswer⟩
 
 /-- **If the task is solved in time T, the problem is solved on the word RAM within a constant times
 T.** -/
-theorem realized (w : Wrap Q task dec) {T : ℕ → ℝ → ℝ} (h : SolvedIn task T) : Realized Q T := by
+theorem realized {T : ℕ → ℝ → ℝ} (h : SolvedIn task T) : Realized Q T := by
   obtain ⟨P, p, Tn, need, hpoly, hsol, hT⟩ := h
   intro κ
   obtain ⟨s, k, htop⟩ := w.topSolves hpoly hsol hT κ
@@ -362,6 +356,8 @@ theorem realized (w : Wrap Q task dec) {T : ℕ → ℝ → ℝ} (h : SolvedIn t
   have hK : (0 : ℝ) ≤ (timeConst (P ++ [topBody κ p w.args dec]) dec : ℝ) := by positivity
   have hE : (0 : ℝ) ≤ (w.extra κ : ℝ) := by positivity
   nlinarith [mul_nonneg (mul_nonneg hK hE) hT0]
+
+end
 
 end Wrap
 

@@ -40,13 +40,13 @@ theorem length_classIdx_eq_card (hp : p ≠ 0) (ϱ : Fin p) :
   refine (Finset.card_bij (fun q _ => pairIndex q) (fun q hq => (hmem q).2 hq)
     (fun q _ q' _ h => ?_) fun x hx => ?_).symm
   · obtain ⟨hrow, hcol⟩ := Nat.mul_add_inj_of_lt q.2.isLt q'.2.isLt h
-    exact Prod.ext (Fin.ext hrow) (Fin.ext hcol)
+    grind
   · obtain ⟨a, ha, b, hb, rfl⟩ :=
     Nat.exists_eq_mul_add_of_lt_mul (mem_classIdx.1 (List.mem_toFinset.1 hx)).1
     exact ⟨(⟨a, ha⟩, ⟨b, hb⟩), (hmem _).1 hx, rfl⟩
 
 /-- The table has one entry for each chunk. -/
-theorem length_chunkTab_eq_totalChunks (hp : p ≠ 0) {D : ℕ} (hD : 1 ≤ D)
+theorem length_chunkTab_eq_totalChunks (hp : p ≠ 0) {D } (hD : 1 ≤ D)
     (hcap : 1 ≤ queryCapNat n D) :
     (chunkTab n p (queryCapNat n D) (residList p AB)).length =
       (triOf n AB BC AC).totalChunks D p := by

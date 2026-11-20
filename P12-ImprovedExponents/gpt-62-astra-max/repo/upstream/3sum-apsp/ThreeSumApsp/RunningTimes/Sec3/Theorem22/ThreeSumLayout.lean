@@ -27,9 +27,8 @@ namespace Light.Sec3
 open ThreeSumApsp ThreeSumApsp.WordRam ThreeSumApsp.Spec
 
 /-- The numbers of a list made from a function are the values of the function. -/
-theorem vecOf_ofFn {n : ℕ} (x : Fin n → ℤ) : vecOf n (List.ofFn x) = x := by
-  funext i
-  simp [vecOf, List.getD_eq_getElem?_getD]
+theorem vecOf_ofFn {n } (x : Fin n → ℤ) : vecOf n (List.ofFn x) = x := by
+  grind [vecOf]
 
 /-- The instance of the task: the numbers stand from cell 1 on. -/
 def threeSumInst (x : Bounded EndStatement.ThreeSum) : s3Task.Inst := ⟨x.n, x.U, 1, List.ofFn x.x⟩
@@ -39,7 +38,7 @@ theorem pre_threeSum (x : Bounded EndStatement.ThreeSum) (hn : 1 ≤ x.n) (hU : 
     s3Task.Pre (threeSumInst x) (memOf ((ofEnd EndStatement.ThreeSum).input x)) (x.n + 1) where
   N_pos := hn
   U_pos := hU
-  len := List.length_ofFn (f := x.x)
+  len := List.length_ofFn 
   seg := by
     simpa [EndStatement.ThreeSum, threeSumInst] using seg_memOf [(x.n : ℤ)] (List.ofFn x.x) []
   le := fun _ ha => Bounded.abs_le ha
@@ -63,15 +62,13 @@ noncomputable def wrap3Sum : Wrap EndStatement.ThreeSum s3Task true where
   bound_eq _ := rfl
   fr_pos x := by omega
   fr_le x := by
-    have := Nat.le_mul_self x.n
-    omega
+    nlinarith
   vals x σ hn hU _ := by simp [s3Task, threeSumInst, hn, hU]
   safe x lim σ hn _ _ hw := by
     have hnn : (x.n : ℤ) ≤ (x.n : ℤ) * x.n := by exact_mod_cast Nat.le_mul_self x.n
-    push_cast at hw
-    simp [hn, abs_le]
+    simp [abs_le]
     omega
-  zero x hn _ := ⟨⟨fun h => absurd h (by simp), fun ⟨i, _⟩ => absurd i.isLt (by omega)⟩, trivial⟩
+  zero x hn _ := ⟨⟨fun h => absurd h (by simp), fun ⟨i, _⟩ => by omega⟩, trivial⟩
   pre := pre_threeSum
   post x r μ' _ h := post_threeSum x r μ' h
 

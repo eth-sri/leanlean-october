@@ -50,17 +50,24 @@ private lemma card_Zof_eq (hτ : Leaf.Contributes τ η) (hord : order m τ = t)
 private lemma Vof_eq_self (Q Z : Finset (Fin L)) (hZ : Z.card = m - t) : Vof m t Q Z = Z := by
   simp [Vof, lowest, hZ]
 
+section
+variable (hτ : Leaf.Contributes τ η)
+  (hord : order m τ = t)
+include hτ hord
+
 /-- For a leaf of order exactly `t` contributing to `η`, the cube of the second description is the
 box of the leaf. -/
-theorem boxOfLeaf_eq_starBelow (hτ : Leaf.Contributes τ η) (hord : order m τ = t) :
+theorem boxOfLeaf_eq_starBelow :
     boxOfLeaf m t η τ = starBelow η τ := by
   rw [boxOfLeaf, starBelow, Vof_eq_self _ _ (card_Zof_eq hτ hord)]
 
 /-- Section 4.2: "The result is a box of w". -/
-theorem starBelow_mem (hτ : Leaf.Contributes τ η) (hord : order m τ = t) :
+theorem starBelow_mem :
     starBelow η τ ∈ (Vsets m t η).biUnion (BV η) := by
   have hmem := boxOfLeaf_mem_BV m t hτ
   rw [boxOfLeaf_eq_starBelow hτ hord, Vof_eq_self _ _ (card_Zof_eq hτ hord)] at hmem
   exact mem_biUnion.2 ⟨_, mem_powersetCard.2 ⟨filter_subset _ _, card_Zof_eq hτ hord⟩, hmem⟩
+
+end
 
 end ThreeSumApsp
