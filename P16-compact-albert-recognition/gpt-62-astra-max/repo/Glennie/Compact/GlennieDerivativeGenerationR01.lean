@@ -24,47 +24,14 @@ set_option backward.isDefEq.respectTransparency false
 /-! Polynomial closure uses only the submodule laws and native Jordan closure.
 The unit enters later, through the existing scalar-generation theorem. -/
 
-theorem U_mem (K : Submodule ℝ Albert)
-    (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K)
-    (a b : Albert) (ha : a ∈ K) (hb : b ∈ K) : U a b ∈ K := by
-  rw [U]
-  exact K.sub_mem
-    (K.smul_mem (2 : ℝ) (hJ a ha (jordan a b) (hJ a ha b hb)))
-    (hJ (jordan a a) (hJ a ha a ha) b hb)
-
-theorem commU_mem (K : Submodule ℝ Albert)
-    (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K)
-    (x y z : Albert) (hx : x ∈ K) (hy : y ∈ K) (hz : z ∈ K) :
-    commU x y z ∈ K := by
-  rw [commU]
-  exact K.sub_mem
-    (U_mem K hJ x (U y z) hx (U_mem K hJ y z hy hz))
-    (U_mem K hJ y (U x z) hy (U_mem K hJ x z hx hz))
-
-theorem doubledTriple_mem (K : Submodule ℝ Albert)
-    (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K)
-    (a b c : Albert) (ha : a ∈ K) (hb : b ∈ K) (hc : c ∈ K) :
-    doubledTriple a b c ∈ K := by
-  rw [doubledTriple]
-  exact K.smul_mem (2 : ℝ) (K.sub_mem
-    (K.add_mem
-      (hJ a ha (jordan b c) (hJ b hb c hc))
-      (hJ (jordan a b) (hJ a ha b hb) c hc))
-    (hJ (jordan a c) (hJ a ha c hc) b hb))
-
 /-- The actual native gradient vector stays in any Jordan-product-closed
 real submodule containing its three arguments. -/
 theorem glennieVector_mem (K : Submodule ℝ Albert)
     (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K)
     (x y z : Albert) (hx : x ∈ K) (hy : y ∈ K) (hz : z ∈ K) :
     glennieVector x y z ∈ K := by
-  have hp : jordan x y ∈ K := hJ x hx y hy
-  rw [glennieVector]
-  exact K.sub_mem
-    (doubledTriple_mem K hJ (commU x y z) z (jordan x y)
-      (commU_mem K hJ x y z hx hy hz) hz hp)
-    (commU_mem K hJ x y (U z (jordan x y)) hx hy
-      (U_mem K hJ z (jordan x y) hz hp))
+  unfold glennieVector commU doubledTriple U
+  repeat first | assumption | apply K.smul_mem | apply K.add_mem | apply K.sub_mem | apply hJ
 
 /-! Proper unital submodules force scalar and third-slot gradient vanishing. -/
 
@@ -85,7 +52,7 @@ theorem glennieVector_eq_zero_of_ne_top
     (hJ : ∀ p ∈ K, ∀ q ∈ K, jordan p q ∈ K) (hK : K ≠ ⊤)
     (x y z : Albert) (hx : x ∈ K) (hy : y ∈ K) (hz : z ∈ K) :
     glennieVector x y z = 0 := by
-  have hg : glennieVector x y z ∈ K := glennieVector_mem K hJ x y z hx hy hz
+  have hg := glennieVector_mem K hJ x y z hx hy hz
   have hcurve :
       (fun t : ℝ => phi x y (z + t • glennieVector x y z)) =
       (fun _ : ℝ => (0 : ℝ)) := by

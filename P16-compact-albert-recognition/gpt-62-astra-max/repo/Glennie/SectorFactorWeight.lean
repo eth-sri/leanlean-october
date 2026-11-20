@@ -41,8 +41,7 @@ theorem adjugate_argument_trace (a b c d e f : ℝ) (u v w : ℂ) :
 /-- Raw hidden metric factor two is retained at the scalar finishing step. -/
 theorem determinant_pairing_scalar (delta : ℂ) (t : ℝ) :
     2 * (-(star delta) * (⟨0,-t⟩ : ℂ)).re = 2*t*delta.im := by
-  simp [Complex.mul_re]
-  ring
+  simp <;> ring
 
 end
 end Glennie.SectorFactorWeight

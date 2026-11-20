@@ -39,53 +39,19 @@ def complexAlbert (a b c : ℝ) (u v w : ℂ) : Albert :=
 
 theorem oct_complex_hidden_decomposition (x : Octonion) :
     complexOct (complexPart x) + hiddenOct (hiddenColumn x) = x := by
-  apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [complexOct, complexPart, hiddenOct, hiddenColumn]
+  simp [complexOct, complexPart, hiddenOct, hiddenColumn]
 
 theorem complex_hidden_decomposition (z : Albert) :
     complexProjection z + hiddenAlbert (hiddenMatrix z) = z := by
-  apply Albert.ext
-  all_goals simp [complexProjection, hiddenAlbert, hiddenMatrix, hiddenColumn,
-    hiddenOct, complexPart, complexOct]
-  all_goals apply Prod.ext <;> apply Quaternion.ext <;> simp
+  ext <;> simp [complexProjection, hiddenAlbert, hiddenMatrix, hiddenColumn, hiddenOct, complexPart, complexOct]
 
 theorem complex_hidden_orthogonal (x : Albert) (M : Matrix (Fin 3) (Fin 3) ℂ) :
     inner (complexProjection x) (hiddenAlbert M) = 0 := by
   simp [inner_coordinates, octDot_coordinates, complexProjection, hiddenAlbert,
     complexOct, hiddenOct]
 
-theorem hiddenAlbert_norm (M : Matrix (Fin 3) (Fin 3) ℂ) :
-    inner (hiddenAlbert M) (hiddenAlbert M) =
-      2 * ∑ i, ∑ j, Complex.normSq (M i j) := by
-  simp [inner_coordinates, octDot_coordinates, octNormSq, Quaternion.normSq_def',
-    hiddenAlbert, hiddenOct, Complex.normSq_apply,
-    Fin.sum_univ_three]
-  ring
-
 def sectorColumnGram (M : Matrix (Fin 3) (Fin 3) ℂ) : Matrix (Fin 3) (Fin 3) ℂ :=
   M.conjTranspose * M
-
-def sectorFrobeniusSq (M : Matrix (Fin 3) (Fin 3) ℂ) : ℝ :=
-  ∑ i, ∑ j, Complex.normSq (M i j)
-
-/-- The full complex projection of the square, in the actual hidden-column gauge. -/
-theorem hidden_square_complexProjection (M : Matrix (Fin 3) (Fin 3) ℂ) :
-    complexProjection (jordan (hiddenAlbert M) (hiddenAlbert M)) =
-      complexAlbert
-        (sectorFrobeniusSq M - (sectorColumnGram M 0 0).re)
-        (sectorFrobeniusSq M - (sectorColumnGram M 1 1).re)
-        (sectorFrobeniusSq M - (sectorColumnGram M 2 2).re)
-        (-sectorColumnGram M 0 1) (-sectorColumnGram M 0 2)
-        (-sectorColumnGram M 1 2) := by
-  ext
-  all_goals simp [complexProjection, complexAlbert, complexOct, complexPart,
-    hiddenAlbert, hiddenOct, jordan_d0, jordan_d1, jordan_d2, jordan_o01,
-    jordan_o02, jordan_o12, octDot_coordinates, octNormSq, Quaternion.normSq_def',
-    octMul, octConj, Quaternion.re_mul, Quaternion.imI_mul, Quaternion.imJ_mul,
-    Quaternion.imK_mul, smul_eq_mul, sectorColumnGram, sectorFrobeniusSq,
-    Matrix.mul_apply, Matrix.conjTranspose_apply, Fin.sum_univ_three,
-    Complex.normSq_apply, Complex.mul_re, Complex.mul_im]
-  all_goals ring
 
 theorem U_diagonal (a b c : ℝ) (z : Albert) :
     U (diagonalAlbert a b c) z =

@@ -30,7 +30,7 @@ theorem newtonCubicNorm_coordinates (x : Albert) :
 /-- Every actual frame encoder has zero cubic norm, directly from its frame laws. -/
 theorem frame_encoder_cubicNorm (p : Fin 3 → Albert) (hp : Frame p) :
     newtonCubicNorm (encoder p) = 0 := by
-  simp [newtonCubicNorm, frame_encoder_trace p hp, frame_encoder_cube p hp]
+  simp_all [newtonCubicNorm, frame_encoder_trace, frame_encoder_cube]
 
 end
 end Glennie

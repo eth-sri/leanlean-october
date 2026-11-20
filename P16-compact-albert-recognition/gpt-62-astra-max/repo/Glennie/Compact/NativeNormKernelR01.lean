@@ -13,12 +13,9 @@ set_option autoImplicit false
  theorem norm_map (g : CompactAutomorphism) (x : Albert) : ‖g.equiv x‖ = ‖x‖ := by
   apply le_antisymm
   · apply (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
-    rw [native_norm_sq, native_norm_sq, g.inner_map]
+    simp [native_norm_sq, g.inner_map]
   · apply (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
-    rw [native_norm_sq, native_norm_sq, g.inner_map]
-
- theorem native_cauchy (x y : Albert) : |inner x y| ≤ ‖x‖ * ‖y‖ := by
-  exact abs_real_inner_le_norm x y
+    simp [native_norm_sq, g.inner_map]
 
  theorem octNormSq_smul (r : ℝ) (v : Octonion) :
     octNormSq (r • v) = r ^ 2 * octNormSq v := by
@@ -27,8 +24,7 @@ set_option autoImplicit false
 
  theorem diagonal_norm_sq (a b c : ℝ) :
     ‖diagonalAlbert a b c‖ ^ 2 = a ^ 2 + b ^ 2 + c ^ 2 := by
-  rw [native_norm_sq, inner_self_coordinates]
-  simp [diagonalAlbert, octNormSq, Quaternion.normSq_def']
+  simp [diagonalAlbert, native_norm_sq, inner_self_coordinates, octNormSq]
 
  theorem diagonal_jordan (a b c : ℝ) (y : Albert) :
     jordan (diagonalAlbert a b c) y =
@@ -39,7 +35,7 @@ set_option autoImplicit false
     jordan_o01, jordan_o02, jordan_o12, octDot_coordinates, octMul,
     octConj, smul_smul, smul_eq_mul]
   all_goals ring
-  all_goals exact Or.inl trivial
+  all_goals simp
 
  /-- Six orthogonal native coordinate blocks, with positive octonion weights. -/
  theorem diagonal_multiplier_sq (y : Albert) (t0 t1 t2 t01 t02 t12 q : ℝ)
@@ -53,47 +49,31 @@ set_option autoImplicit false
   have H01 := mul_le_mul_of_nonneg_right h01 (octNormSq_nonneg y.o01)
   have H02 := mul_le_mul_of_nonneg_right h02 (octNormSq_nonneg y.o02)
   have H12 := mul_le_mul_of_nonneg_right h12 (octNormSq_nonneg y.o12)
-  simp only [native_norm_sq, inner_self_coordinates, octNormSq_smul]
-  nlinarith only [H0,H1,H2,H01,H02,H12]
+  simp [native_norm_sq, inner_self_coordinates, octNormSq_smul] <;> linarith
 
  theorem diagonal_jordan_norm (a b c : ℝ) (y : Albert) :
     ‖jordan (diagonalAlbert a b c) y‖ ≤ ‖diagonalAlbert a b c‖ * ‖y‖ := by
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _))).mp
   rw [mul_pow, diagonal_norm_sq, diagonal_jordan]
   apply diagonal_multiplier_sq
-  · nlinarith only [sq_nonneg b, sq_nonneg c]
-  · nlinarith only [sq_nonneg a, sq_nonneg c]
-  · nlinarith only [sq_nonneg a, sq_nonneg b]
-  · nlinarith only [sq_nonneg (a-b), sq_nonneg a, sq_nonneg b, sq_nonneg c]
-  · nlinarith only [sq_nonneg (a-c), sq_nonneg a, sq_nonneg b, sq_nonneg c]
-  · nlinarith only [sq_nonneg (b-c), sq_nonneg a, sq_nonneg b, sq_nonneg c]
+  · nlinarith
+  · nlinarith
+  · nlinarith
+  · nlinarith
+  · nlinarith
+  nlinarith
 
  theorem diagonal_U_norm (a b c : ℝ) (y : Albert) :
     ‖U (diagonalAlbert a b c) y‖ ≤ ‖diagonalAlbert a b c‖ ^ 2 * ‖y‖ := by
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (sq_nonneg _) (norm_nonneg _))).mp
   rw [mul_pow, diagonal_norm_sq, U_diagonal]
   apply diagonal_multiplier_sq
-  · nlinarith only [sq_nonneg a, sq_nonneg b, sq_nonneg c,
-      sq_nonneg (b^2+c^2), mul_nonneg (sq_nonneg a) (sq_nonneg b),
-      mul_nonneg (sq_nonneg a) (sq_nonneg c)]
-  · nlinarith only [sq_nonneg a, sq_nonneg b, sq_nonneg c,
-      sq_nonneg (a^2+c^2), mul_nonneg (sq_nonneg b) (sq_nonneg a),
-      mul_nonneg (sq_nonneg b) (sq_nonneg c)]
-  · nlinarith only [sq_nonneg a, sq_nonneg b, sq_nonneg c,
-      sq_nonneg (a^2+b^2), mul_nonneg (sq_nonneg c) (sq_nonneg a),
-      mul_nonneg (sq_nonneg c) (sq_nonneg b)]
-  · nlinarith only [sq_nonneg (a^2+b^2+c^2), sq_nonneg (a^2-b^2),
-      sq_nonneg c, mul_nonneg (sq_nonneg c) (sq_nonneg a),
-      mul_nonneg (sq_nonneg c) (sq_nonneg b),
-      mul_nonneg (sq_nonneg a) (sq_nonneg b)]
-  · nlinarith only [sq_nonneg (a^2+b^2+c^2), sq_nonneg (a^2-c^2),
-      sq_nonneg b, mul_nonneg (sq_nonneg b) (sq_nonneg a),
-      mul_nonneg (sq_nonneg b) (sq_nonneg c),
-      mul_nonneg (sq_nonneg a) (sq_nonneg c)]
-  · nlinarith only [sq_nonneg (a^2+b^2+c^2), sq_nonneg (b^2-c^2),
-      sq_nonneg a, mul_nonneg (sq_nonneg a) (sq_nonneg b),
-      mul_nonneg (sq_nonneg a) (sq_nonneg c),
-      mul_nonneg (sq_nonneg b) (sq_nonneg c)]
+  · nlinarith
+  · nlinarith
+  · nlinarith
+  · nlinarith
+  · nlinarith
+  nlinarith
 
  theorem diagonal_reconstruct (x : Albert) (hx : IsDiagonal x) :
     x = diagonalAlbert x.d0 x.d1 x.d2 := by
@@ -103,17 +83,13 @@ set_option autoImplicit false
   obtain ⟨g,hg⟩ := native_diagonalization x
   have H := diagonal_jordan_norm (g.equiv x).d0 (g.equiv x).d1
     (g.equiv x).d2 (g.equiv y)
-  rw [← diagonal_reconstruct (g.equiv x) hg, ← g.map_jordan,
-    norm_map, norm_map, norm_map] at H
-  exact H
+  simp_all [← diagonal_reconstruct (g.equiv x) hg, ← g.map_jordan, norm_map]
 
  theorem U_norm (x y : Albert) : ‖U x y‖ ≤ ‖x‖ ^ 2 * ‖y‖ := by
   obtain ⟨g,hg⟩ := native_diagonalization x
   have H := diagonal_U_norm (g.equiv x).d0 (g.equiv x).d1
     (g.equiv x).d2 (g.equiv y)
-  rw [← diagonal_reconstruct (g.equiv x) hg, ← g.map_U,
-    norm_map, norm_map, norm_map] at H
-  exact H
+  simp_all [← diagonal_reconstruct (g.equiv x) hg, ← g.map_U, norm_map]
 
 end
 end Glennie.Compact.NativeNormKernel

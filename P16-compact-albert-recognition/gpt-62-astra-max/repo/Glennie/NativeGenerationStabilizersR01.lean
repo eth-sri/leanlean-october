@@ -16,7 +16,6 @@ open Glennie.Compact.Sections
 /-- Actual native automorphisms are determined by their linear equivalence. -/
 theorem automorphism_ext {g h : CompactAutomorphism} (he : g.equiv = h.equiv) : g = h := by
   cases g
-  cases h
   cases he
   rfl
 
@@ -37,7 +36,7 @@ theorem automorphism_fixes_all_of_phi_ne_zero
     (hphi : phi x y z ≠ 0)
     (hx : g.equiv x = x) (hy : g.equiv y = y) (hz : g.equiv z = z) :
     ∀ t : Albert, g.equiv t = t := by
-  have hK : fixedSubmodule g = ⊤ := eq_top_of_phi_ne_zero (fixedSubmodule g)
+  have hK := eq_top_of_phi_ne_zero (fixedSubmodule g)
     g.map_unit
     (by
       intro p hp q hq
@@ -57,14 +56,14 @@ theorem automorphism_eq_refl_of_phi_ne_zero
     g = CompactAutomorphism.refl := by
   apply automorphism_ext
   apply LinearEquiv.ext
-  exact automorphism_fixes_all_of_phi_ne_zero g x y z hphi hx hy hz
+  apply automorphism_fixes_all_of_phi_ne_zero <;> assumption
 
 /-- No trace-free condition is needed for this derivation consequence. -/
 theorem derivation_eq_zero_of_phi_ne_zero
     (D : Albert →ₗ[ℝ] Albert) (hD : IsJordanDerivation D)
     (x y z : Albert) (hphi : phi x y z ≠ 0)
     (hx : D x = 0) (hy : D y = 0) (hz : D z = 0) : D = 0 := by
-  have hK : LinearMap.ker D = ⊤ := eq_top_of_phi_ne_zero (LinearMap.ker D)
+  have hK := eq_top_of_phi_ne_zero (LinearMap.ker D)
     hD.map_one
     (by
       intro p hp q hq

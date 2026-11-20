@@ -44,7 +44,6 @@ theorem complex_U (y z : Albert) (hy : hiddenMatrix y = 0) :
     sectorComplexMatrix (jordan (jordan y y) z) = _
   simp only [hs, sectorComplexMatrix_jordan, hy, productComplex_complex_left]
   ext i j
-  fin_cases i <;> fin_cases j <;> apply Complex.ext
   all_goals simp [Matrix.mul_apply, Fin.sum_univ_three, smul_eq_mul,
     Complex.mul_re, Complex.mul_im]
   all_goals ring
@@ -54,8 +53,7 @@ adj(H), and the output is M*adj(H), without conjugating this adjugate. -/
 theorem hidden_U (y z : Albert) (hy : hiddenMatrix y = 0) :
     hiddenMatrix (U y z) = hiddenMatrix z * (sectorComplexMatrix y).adjugate := by
   have hs : hiddenMatrix (jordan y y) = 0 := by
-    rw [hiddenMatrix_jordan, hy, productHidden_complex_left]
-    simp
+    simp [hiddenMatrix_jordan, hy, productHidden_complex_left]
   change sectorHiddenLinear ((2:ℝ) • jordan y (jordan y z) -
     jordan (jordan y y) z) = _
   rw [map_sub, map_smul]
@@ -80,9 +78,7 @@ theorem hidden_commutator (x y z : Albert)
   change sectorHiddenLinear (U x (U y z) - U y (U x z)) = _
   rw [map_sub]
   change hiddenMatrix (U x (U y z)) - hiddenMatrix (U y (U x z)) = _
-  rw [hidden_U x (U y z) hx, hidden_U y z hy,
-    hidden_U y (U x z) hy, hidden_U x z hx]
-  rw [Matrix.mul_assoc, Matrix.mul_assoc, mul_sub]
+  simp [hidden_U x (U y z) hx, hidden_U y z hy, hidden_U y (U x z) hy, hidden_U x z hx, Matrix.mul_assoc, mul_sub]
 
 /-- The complementary complex commutator retains K explicitly. -/
 theorem complex_commutator (x y z : Albert)
@@ -96,9 +92,7 @@ theorem complex_commutator (x y z : Albert)
   rw [map_sub]
   change sectorComplexMatrix (U x (U y z)) -
     sectorComplexMatrix (U y (U x z)) = _
-  rw [complex_U x (U y z) hx, complex_U y z hy,
-    complex_U y (U x z) hy, complex_U x z hx]
-  simp only [Matrix.mul_assoc]
+  simp [complex_U x (U y z) hx, complex_U y z hy, complex_U y (U x z) hy, complex_U x z hx, Matrix.mul_assoc]
 
 end SectorAction
 end

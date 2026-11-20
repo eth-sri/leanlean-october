@@ -25,13 +25,7 @@ theorem quadratic_eq_sandwich (a b : M) : quadratic a b = a * b * a := by
 theorem cyclic_word_cancel (τ : M →ₗ[ℝ] ℝ)
     (hcyclic : ∀ a b : M, τ (a * b) = τ (b * a)) (P Q : M) :
     τ (P * Q * P + P * Q * Q - Q * P * P - Q * P * Q) = 0 := by
-  have h₁ : τ (P * Q * P) = τ (Q * P * P) := by
-    simpa only [mul_assoc] using hcyclic P (Q * P)
-  have h₂ : τ (P * Q * Q) = τ (Q * P * Q) := by
-    simpa only [mul_assoc] using hcyclic (P * Q) Q
-  simp only [map_add, map_sub]
-  rw [h₁, h₂]
-  ring
+  grind
 
 def scalarPhi (τ : M →ₗ[ℝ] ℝ) (x y z : M) : ℝ :=
   τ ((quadratic x (quadratic y z) - quadratic y (quadratic x z)) *
@@ -54,7 +48,6 @@ theorem scalarPhi_eq_zero (τ : M →ₗ[ℝ] ℝ)
     module
   have hz := cyclic_word_cancel τ hcyclic (x * y * z) (y * x * z)
   rw [← hexpand, map_smul] at hz
-  change 2 * scalarPhi τ x y z = 0 at hz
   exact (mul_eq_zero.mp hz).resolve_left (by norm_num)
 
 section Represented
@@ -71,7 +64,7 @@ def phiWith (j : E → E → E) (B : E → E → ℝ) (x y z : E) : ℝ :=
 theorem map_quadraticWith (j : E → E → E) (ρ : E →ₗ[ℝ] M)
     (hj : ∀ a b, ρ (j a b) = symmProd (ρ a) (ρ b)) (a b : E) :
     ρ (quadraticWith j a b) = quadratic (ρ a) (ρ b) := by
-  simp only [quadraticWith, map_sub, map_smul, hj, quadratic]
+  simp_all [quadraticWith, quadratic]
 
 /-- Actual compatible special-null producer: product and form compatibility
 are hypotheses; scalar nullness is proved by the associative cyclic kernel. -/
@@ -85,7 +78,7 @@ theorem phiWith_eq_zero_of_compatible_trace
   unfold phiWith
   rw [hB]
   simp only [map_sub, map_quadraticWith j ρ hj, hj]
-  exact scalarPhi_eq_zero τ hcyclic (ρ x) (ρ y) (ρ z)
+  apply scalarPhi_eq_zero <;> assumption
 
 end Represented
 end

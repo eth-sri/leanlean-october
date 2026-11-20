@@ -27,8 +27,7 @@ def glennieVector (x y z : Albert) : Albert :=
 /-- The commutator of the self-adjoint U operators is skew-adjoint for raw B. -/
 theorem commU_pairing (x y a b : Albert) :
     inner (commU x y a) b = -inner a (commU x y b) := by
-  simp only [commU, inner_sub_left, inner_sub_right, ← U_pairing_selfadjoint]
-  ring
+  simp [commU, inner_sub_left, inner_sub_right, U_pairing_selfadjoint]
 
 end
 end Glennie.Compact.GlennieScalarPotentialR01

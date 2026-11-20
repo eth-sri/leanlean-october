@@ -20,8 +20,7 @@ instance : FiniteDimensional ℝ Albert := by
   exact Albert.coordinateLinearEquiv.symm.finiteDimensional
 
 theorem albert_finrank : Module.finrank ℝ Albert = 27 := by
-  rw [Albert.coordinateLinearEquiv.finrank_eq]
-  simp [Albert.Coordinates, Octonion, Quaternion.finrank_eq_four]
+  simp [Albert.coordinateLinearEquiv.finrank_eq, Albert.Coordinates, Octonion, Quaternion.finrank_eq_four]
 
 instance : Inner ℝ Albert := ⟨Glennie.inner⟩
 
@@ -45,8 +44,7 @@ instance : InnerProductSpace ℝ Albert :=
 theorem hilbert_inner_eq_native (x y : Albert) :
     Inner.inner ℝ x y = Glennie.inner x y := rfl
 
-theorem native_norm_sq (x : Albert) : ‖x‖ ^ 2 = inner x x := by
-  exact real_inner_self_eq_norm_sq x |>.symm
+theorem native_norm_sq (x : Albert) : ‖x‖ ^ 2 = inner x x := real_inner_self_eq_norm_sq x |>.symm
 
 end
 end Glennie

@@ -25,7 +25,7 @@ theorem phi_of_diagonal_complex (x y z : Albert) (hx : IsDiagonal x)
       (complexPart y.o01*complexPart y.o12*star (complexPart y.o02)).im)*
       (hiddenMatrix z).det.im := by
   conv_lhs => rw [← diagonalAlbert_eq x hx, ← complexAlbert_eq y hy]
-  exact phi_diagonal_complex_factor _ _ _ _ _ _ _ _ _ _
+  exact phi_diagonal_complex_factor ..
 
 /-- Reuse the complete native sector linear map. No coordinate
 linearity proof or model-preservation assumption is duplicated here. -/

@@ -12,50 +12,8 @@ noncomputable section
 set_option maxHeartbeats 2000000
 set_option linter.unusedSimpArgs false
 
-theorem octMul_self_conj (x : Octonion) :
-    octMul x (octConj x) = octScalar (octNormSq x) := by
-  apply Prod.ext
-  · simp [octMul, octConj, octScalar, octNormSq,
-      Quaternion.self_mul_star, Quaternion.star_mul_self]
-  · simp [octMul, octConj, octScalar]
-
-theorem octMul_conj_self (x : Octonion) :
-    octMul (octConj x) x = octScalar (octNormSq x) := by
-  apply Prod.ext
-  · simp [octMul, octConj, octScalar, octNormSq,
-      Quaternion.self_mul_star, Quaternion.star_mul_self]
-  · simp [octMul, octConj, octScalar]
-
 theorem octScalar_smul (r s : ℝ) : r • octScalar s = octScalar (r*s) := by
-  apply Prod.ext <;> apply Quaternion.ext <;> simp [octScalar, smul_eq_mul]
-
-set_option maxHeartbeats 2000000 in
-theorem octNormSq_mul (x y : Octonion) :
-    octNormSq (octMul x y) = octNormSq x * octNormSq y := by
-  simp [octNormSq, octMul, Quaternion.normSq_def', Quaternion.re_mul,
-    Quaternion.imI_mul, Quaternion.imJ_mul, Quaternion.imK_mul]
-  ring
-
-set_option maxHeartbeats 2000000 in
-theorem octMul_left_alternative (x y : Octonion) :
-    octMul x (octMul x y) = octMul (octMul x x) y := by
-  apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [octMul, Quaternion.re_mul, Quaternion.imI_mul,
-      Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
-
-set_option maxHeartbeats 2000000 in
-theorem octMul_right_alternative (x y : Octonion) :
-    octMul (octMul x y) y = octMul x (octMul y y) := by
-  apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [octMul, Quaternion.re_mul, Quaternion.imI_mul,
-      Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
-
-set_option maxHeartbeats 8000000 in
-theorem octMul_moufang (x y z : Octonion) :
-    octMul (octMul x y) (octMul z x) = octMul (octMul x (octMul y z)) x := by
-  apply Prod.ext <;> apply Quaternion.ext <;>
-    simp [octMul, Quaternion.re_mul, Quaternion.imI_mul,
-      Quaternion.imJ_mul, Quaternion.imK_mul] <;> ring
+  ext <;> simp [octScalar]
 
 theorem octDot_add_left (x y z : Octonion) :
     octDot (x+y) z = octDot x z+octDot y z := by
@@ -79,7 +37,7 @@ theorem jordan_add_left (x y z : Albert) : jordan (x+y) z = jordan x z + jordan 
   all_goals module
 
 theorem jordan_add_right (x y z : Albert) : jordan x (y+z) = jordan x y + jordan x z := by
-  rw [jordan_comm, jordan_add_left, jordan_comm y x, jordan_comm z x]
+  grind [jordan_comm, jordan_add_left]
 
 theorem jordan_smul_left (r : ℝ) (x y : Albert) :
     jordan (r • x) y = r • jordan x y := by
@@ -95,7 +53,7 @@ theorem jordan_smul_left (r : ℝ) (x y : Albert) :
 
 theorem jordan_smul_right (r : ℝ) (x y : Albert) :
     jordan x (r • y) = r • jordan x y := by
-  rw [jordan_comm, jordan_smul_left, jordan_comm]
+  grind [jordan_comm, jordan_smul_left]
 
 @[simp] theorem jordan_neg_left (x y : Albert) : jordan (-x) y = -jordan x y := by
   simpa using jordan_smul_left (-1 : ℝ) x y

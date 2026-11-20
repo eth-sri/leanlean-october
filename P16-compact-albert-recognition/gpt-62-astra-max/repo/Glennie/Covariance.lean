@@ -19,7 +19,7 @@ theorem phi_third_add_first (x y z : Albert) (t : ℝ) :
     rw [map_add, map_smul]
     change hiddenMatrix (g.equiv z)+t • hiddenMatrix (g.equiv x) = hiddenMatrix (g.equiv z)
     rw [hiddenMatrix_eq_zero _ (diagonal_inComplex _ hx), smul_zero, add_zero]
-  rw [hm]
+  simp_all
 
 theorem phi_first_add_third (x y z : Albert) (t : ℝ) :
     phi (x+t • z) y z = phi x y z := by
@@ -31,10 +31,9 @@ theorem phi_first_add_third (x y z : Albert) (t : ℝ) :
       inner (U b (U y c)-U y (U b c)) (U c (jordan a y))+
         inner (crossU a b (U y c)-U y (crossU a b c)) (U c (jordan b y)),
       phi b y c, fun s => ?_⟩
-    rw [phi_line_first]
-    ring
+    grind [phi_line_first]
   · exact fun a b s => phi_smul_third s a y b
-  · exact fun a b s => phi_third_add_first a y b s
+  exact fun a b s => phi_third_add_first a y b s
 
 theorem phi_swap_first_third (x y z : Albert) : phi z y x = -phi x y z := by
   have h1 := phi_first_add_third x y z 1
@@ -50,7 +49,6 @@ theorem phi_swap_first_third (x y z : Albert) : phi z y x = -phi x y z := by
     rw [neg_smul, one_smul] at h
     rw [h]
     ring
-  rw [hn] at h3
   linarith
 
 end

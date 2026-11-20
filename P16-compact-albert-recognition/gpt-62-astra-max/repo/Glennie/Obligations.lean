@@ -1,4 +1,4 @@
-/- Exact unproved dependency propositions. Definitions here assert no theorem. -/
+/- Types for diagonal and complex normal forms. -/
 module
 public import Glennie.Native
 
@@ -21,7 +21,7 @@ def OctInComplex (x : Octonion) : Prop := x.1.imJ = 0 ∧ x.1.imK = 0 ∧ x.2 = 
 def InComplexSector (x : Albert) : Prop :=
   OctInComplex x.o01 ∧ OctInComplex x.o02 ∧ OctInComplex x.o12
 
-/-- Includes every pair, with zero slots and repeated spectra; presently unproved. -/
+/-- Includes pairs with zero slots and repeated spectra. -/
 def UniversalPairReduction : Prop := ∀ x y : Albert,
   ∃ g : CompactAutomorphism, IsDiagonal (g.equiv x) ∧ InComplexSector (g.equiv y)
 

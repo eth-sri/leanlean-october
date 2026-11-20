@@ -38,211 +38,40 @@ def automorphismV (g : CompactAutomorphism) : V ≃ₗ[ℝ] V where
     (automorphismV g x : Albert) = g.equiv (x : Albert) := rfl
 
 @[simp] theorem automorphismV_comp_apply (g f : CompactAutomorphism) (x : V) :
-    automorphismV (g.comp f) x = automorphismV g (automorphismV f x) := by
-  apply Subtype.ext
-  rfl
+    automorphismV (g.comp f) x = automorphismV g (automorphismV f x) := rfl
 
 /-- The specified metric scale remains trace/3 under the actual automorphism. -/
 theorem automorphismV_gA (g : CompactAutomorphism) (x y : V) :
-    gA (automorphismV g x) (automorphismV g y) = gA x y := by
-  exact congrArg (fun r : ℝ => r / 3) (g.inner_map (x : Albert) (y : Albert))
+    gA (automorphismV g x) (automorphismV g y) = gA x y := congrArg (fun r : ℝ => r / 3) (g.inner_map (x : Albert) (y : Albert))
 
 /-- Native projected Jordan multiplication is transported, never postulated. -/
 theorem automorphismV_KA (g : CompactAutomorphism) (x y : V) :
     automorphismV g (KA x y) = KA (automorphismV g x) (automorphismV g y) := by
   apply Subtype.ext
-  change g.equiv (traceless (jordan (x : Albert) (y : Albert))) =
-    traceless (jordan (g.equiv (x : Albert)) (g.equiv (y : Albert)))
-  rw [g.map_traceless, g.map_jordan]
+  simp [g.map_traceless, g.map_jordan]
 
-/-- Pullback of an arbitrary genuine symmetric trilinear form by a real equivalence. -/
-def pullbackCubic (T : V ≃ₗ[ℝ] V) (B : SymmetricCubic) : SymmetricCubic where
-  form :=
-    { toFun := fun x =>
-        { toFun := fun y => (B.form (T x) (T y)).comp T.toLinearMap
-          map_add' y z := by
-            apply LinearMap.ext
-            intro v
-            change B.form (T x) (T (y + z)) (T v) =
-              B.form (T x) (T y) (T v) + B.form (T x) (T z) (T v)
-            rw [map_add, map_add, LinearMap.add_apply]
-          map_smul' r y := by
-            simp only [RingHom.id_apply]
-            apply LinearMap.ext
-            intro v
-            change B.form (T x) (T (r • y)) (T v) =
-              r * B.form (T x) (T y) (T v)
-            rw [map_smul, map_smul, LinearMap.smul_apply, smul_eq_mul] }
-      map_add' x y := by
-        apply LinearMap.ext
-        intro z
-        apply LinearMap.ext
-        intro v
-        change B.form (T (x + y)) (T z) (T v) =
-          B.form (T x) (T z) (T v) + B.form (T y) (T z) (T v)
-        rw [map_add, map_add, LinearMap.add_apply, LinearMap.add_apply]
-      map_smul' r x := by
-        simp only [RingHom.id_apply]
-        apply LinearMap.ext
-        intro y
-        apply LinearMap.ext
-        intro z
-        change B.form (T (r • x)) (T y) (T z) =
-          r * B.form (T x) (T y) (T z)
-        rw [map_smul, map_smul, LinearMap.smul_apply, LinearMap.smul_apply,
-          smul_eq_mul] }
-  swap12 x y z := B.swap12 (T x) (T y) (T z)
-  swap23 x y z := B.swap23 (T x) (T y) (T z)
+def pull (g : CompactAutomorphism) (B : SymmetricCubic) : SymmetricCubic where
+  K := let T := automorphismV g; (B.K.compl₁₂ T.toLinearMap T.toLinearMap).compr₂ T.symm.toLinearMap
+  comm x y := congrArg (automorphismV g).symm (B.comm ..)
+  symm x y z := by
+    let T := automorphismV g
+    change gA (T.symm _) z = gA (T.symm _) y
+    rw [← automorphismV_gA g _ z, ← automorphismV_gA g _ y]; simp only [← show T = automorphismV g from rfl, LinearEquiv.apply_symm_apply]; apply B.symm
 
-@[simp] theorem pullbackCubic_form (T : V ≃ₗ[ℝ] V) (B : SymmetricCubic)
-    (x y z : V) : (pullbackCubic T B).form x y z = B.form (T x) (T y) (T z) := rfl
+theorem pull_K (g : CompactAutomorphism) (B : SymmetricCubic) (x y : V) :
+    automorphismV g ((pull g B).K x y) = B.K (automorphismV g x) (automorphismV g y) := (automorphismV g).apply_symm_apply _
+theorem pull_form (g : CompactAutomorphism) (B : SymmetricCubic) (x : V) :
+    (pull g B).form x x x = B.form (automorphismV g x) (automorphismV g x) (automorphismV g x) := by
+  change gA _ x = gA _ _; rw [← automorphismV_gA g _ x,pull_K]
+theorem q_pullback {B : SymmetricCubic} (hq : q B = q referenceCubic) (g : CompactAutomorphism) : q (pull g B) = q referenceCubic := by
+  funext x y; ext1 v; apply (automorphismV g).injective
+  simp only [q_apply, map_sub,pull_K]
+  change q B _ _ _ = _ - _; rw [hq,q_apply]; simp only [referenceCubic,automorphismV_KA]
 
-/-- Raising an index commutes with pullback because the actual metric is preserved.
-The transformed unknown is B(Tx,Ty,Tz); B itself is unrestricted. -/
-theorem automorphismV_KB_pullback (g : CompactAutomorphism) (B : SymmetricCubic)
-    (x y : V) :
-    automorphismV g (KB (pullbackCubic (automorphismV g) B) x y) =
-      KB B (automorphismV g x) (automorphismV g y) := by
-  apply metricDual.injective
-  apply LinearMap.ext
-  intro z
-  obtain ⟨w, rfl⟩ := (automorphismV g).surjective z
-  change gA (automorphismV g (KB (pullbackCubic (automorphismV g) B) x y))
-      (automorphismV g w) =
-    gA (KB B (automorphismV g x) (automorphismV g y)) (automorphismV g w)
-  rw [automorphismV_gA, KB_pairing, KB_pairing, pullbackCubic_form]
-
-/-- Transfer one proved scalar action of the pullback to the original unknown. -/
-theorem scalar_action_of_pullback (g : CompactAutomorphism) (B : SymmetricCubic)
-    (x y : V) (r : ℝ)
-    (hxy : KB (pullbackCubic (automorphismV g) B) x y = r • y) :
-    KB B (automorphismV g x) (automorphismV g y) =
-      r • automorphismV g y := by
-  rw [← automorphismV_KB_pullback, hxy, map_smul]
-
-private theorem intertwines_operatorComm (T : V ≃ₗ[ℝ] V)
-    (P Q R S : V →ₗ[ℝ] V)
-    (hP : ∀ v, T (P v) = R (T v)) (hQ : ∀ v, T (Q v) = S (T v))
-    (v : V) : T (operatorComm P Q v) = operatorComm R S (T v) := by
-  change T (P (Q v) - Q (P v)) = R (S (T v)) - S (R (T v))
-  simp only [map_sub, hP, hQ]
-
-/-- The actual reference-q tensor transports with the native automorphism. -/
-theorem automorphismV_q_reference (g : CompactAutomorphism) (x y v : V) :
-    automorphismV g (q referenceCubic x y v) =
-      q referenceCubic (automorphismV g x) (automorphismV g y)
-        (automorphismV g v) := by
-  simp only [q, KB_referenceCubic]
-  exact intertwines_operatorComm (automorphismV g)
-    (KA x) (KA y) (KA (automorphismV g x)) (KA (automorphismV g y))
-    (automorphismV_KA g x) (automorphismV_KA g y) v
-
-/-- Literal A(q) covariance for the pulled-back arbitrary cubic, pointwise. -/
-theorem automorphismV_A_q_pullback (g : CompactAutomorphism) (B : SymmetricCubic)
-    (x y z v : V) :
-    automorphismV g (A (q referenceCubic) (pullbackCubic (automorphismV g) B)
-      x y z v) =
-      A (q referenceCubic) B (automorphismV g x) (automorphismV g y)
-        (automorphismV g z) (automorphismV g v) := by
-  have hterm (u w s : V) :
-      automorphismV g
-        (operatorComm (KB (pullbackCubic (automorphismV g) B) u)
-          (q referenceCubic w s) v) =
-        operatorComm (KB B (automorphismV g u))
-          (q referenceCubic (automorphismV g w) (automorphismV g s))
-          (automorphismV g v) :=
-    intertwines_operatorComm (automorphismV g)
-      (KB (pullbackCubic (automorphismV g) B) u) (q referenceCubic w s)
-      (KB B (automorphismV g u))
-      (q referenceCubic (automorphismV g w) (automorphismV g s))
-      (automorphismV_KB_pullback g B u) (automorphismV_q_reference g w s) v
-  change automorphismV g
-      (operatorComm (KB (pullbackCubic (automorphismV g) B) x)
-          (q referenceCubic y z) v +
-        operatorComm (KB (pullbackCubic (automorphismV g) B) y)
-          (q referenceCubic z x) v +
-        operatorComm (KB (pullbackCubic (automorphismV g) B) z)
-          (q referenceCubic x y) v) =
-      operatorComm (KB B (automorphismV g x))
-          (q referenceCubic (automorphismV g y) (automorphismV g z))
-          (automorphismV g v) +
-        operatorComm (KB B (automorphismV g y))
-          (q referenceCubic (automorphismV g z) (automorphismV g x))
-          (automorphismV g v) +
-        operatorComm (KB B (automorphismV g z))
-          (q referenceCubic (automorphismV g x) (automorphismV g y))
-          (automorphismV g v)
-  rw [map_add, map_add]
-  exact congrArg₂ (fun a b : V => a + b)
-    (congrArg₂ (fun a b : V => a + b) (hterm x y z) (hterm y z x))
-    (hterm z x y)
-
-/-- The sole original Jacobi-kernel hypothesis is stable under actual pullback. -/
-theorem A_q_pullback_zero (g : CompactAutomorphism) (B : SymmetricCubic)
-    (hB : A (q referenceCubic) B = 0) :
-    A (q referenceCubic) (pullbackCubic (automorphismV g) B) = 0 := by
-  funext x y z
-  apply LinearMap.ext
-  intro v
-  apply (automorphismV g).injective
-  change automorphismV g
-    (A (q referenceCubic) (pullbackCubic (automorphismV g) B) x y z v) =
-      automorphismV g 0
-  rw [automorphismV_A_q_pullback, hB]
-  simp only [Pi.zero_apply, LinearMap.zero_apply, map_zero]
-
-namespace FixedFrame
-
-/-- Concrete native cyclic permutation: first swap01, then swap02. -/
-def cyclicAutomorphism : CompactAutomorphism :=
-  realSwap02Automorphism.comp realSwap01Automorphism
-
-def cyclicV : V ≃ₗ[ℝ] V := automorphismV cyclicAutomorphism
-
-theorem cyclicAutomorphism_coordinates (x : Albert) :
-    cyclicAutomorphism.equiv x =
-      ⟨x.d2,x.d0,x.d1,octConj x.o02,octConj x.o12,x.o01⟩ := by
-  change realConjugateAlbert realSwap02 (realConjugateAlbert realSwap01 x) = _
-  rw [realSwap01_coordinates, realSwap02_coordinates, octConj_conj]
-
-theorem cyclicV_coordinates (x : V) :
-    (cyclicV x : Albert) =
-      ⟨(x : Albert).d2,(x : Albert).d0,(x : Albert).d1,
-        octConj (x : Albert).o02,octConj (x : Albert).o12,(x : Albert).o01⟩ :=
-  cyclicAutomorphism_coordinates (x : Albert)
-
-@[simp] theorem cyclicV_h0 : cyclicV (h 0) = h 1 := by
-  apply Subtype.ext
-  rw [cyclicV_coordinates]
-  apply Albert.ext <;> norm_num [h, e, unit, octConj]
-
-@[simp] theorem cyclicV_h1 : cyclicV (h 1) = h 2 := by
-  apply Subtype.ext
-  rw [cyclicV_coordinates]
-  apply Albert.ext <;> norm_num [h, e, unit, octConj]
-
-@[simp] theorem cyclicV_h2 : cyclicV (h 2) = h 0 := by
-  apply Subtype.ext
-  rw [cyclicV_coordinates]
-  apply Albert.ext <;> norm_num [h, e, unit, octConj]
-
-@[simp] theorem cyclicV_X01 (u : Octonion) : cyclicV (X01 u) = X12 u := by
-  apply Subtype.ext
-  rw [cyclicV_coordinates]
-  apply Albert.ext <;> simp [X01, X12, octConj]
-
-@[simp] theorem cyclicV_X02 (u : Octonion) :
-    cyclicV (X02 u) = X01 (octConj u) := by
-  apply Subtype.ext
-  rw [cyclicV_coordinates]
-  apply Albert.ext <;> simp [X01, X02, octConj]
-
-@[simp] theorem cyclicV_X12 (u : Octonion) :
-    cyclicV (X12 u) = X02 (octConj u) := by
-  apply Subtype.ext
-  rw [cyclicV_coordinates]
-  apply Albert.ext <;> simp [X02, X12, octConj]
-
-end FixedFrame
+theorem move_h (i : Fin 3) : ∃ g : CompactAutomorphism, automorphismV g (h 0) = h i := by
+  fin_cases i
+  · exact ⟨CompactAutomorphism.refl,rfl⟩
+  · exact ⟨realSwap01Automorphism,Subtype.ext (by ext <;> simp [realSwap01_coordinates,h,e,octConj,unit])⟩
+  · exact ⟨realSwap02Automorphism,Subtype.ext (by ext <;> simp [realSwap02_coordinates,h,e,octConj,unit])⟩
 end
 end AlbertRecognition

@@ -27,11 +27,6 @@ theorem complexHermitianMatrix_isHermitian (q : ComplexHermitianCoordinates) :
   fin_cases i <;> fin_cases j <;>
     simp [complexHermitianMatrix, Matrix.conjTranspose_apply]
 
-theorem matrixComplexCoordinates_inverse (q : ComplexHermitianCoordinates) :
-    matrixComplexCoordinates (complexHermitianMatrix q)=q := by
-  rcases q with ⟨⟨a,b,c⟩,⟨u,v,w⟩⟩
-  simp [matrixComplexCoordinates,complexHermitianMatrix]
-
 theorem complexHermitianMatrix_inverse (H : Matrix (Fin 3) (Fin 3) ℂ)
     (hH : H.IsHermitian) : complexHermitianMatrix (matrixComplexCoordinates H)=H := by
   have hs (i j : Fin 3) : star (H j i)=H i j := congrFun (congrFun hH i) j
@@ -173,18 +168,13 @@ theorem inner_sector_model (x y : Albert) :
   ring
 
 @[simp] theorem sectorDecode_encode (x : Albert) :
-    sectorDecode (sectorComplexMatrix x) (hiddenMatrix x) = x := by
-  unfold sectorDecode sectorComplexMatrix
-  rw [matrixComplexCoordinates_inverse]
-  exact complex_hidden_decomposition x
+    sectorDecode (sectorComplexMatrix x) (hiddenMatrix x) = x := complex_hidden_decomposition x
 
 /-- Decoding arbitrary complex matrices is an inverse only on the stated
 Hermitian component; there is no silent extension to non-Hermitian inputs. -/
 theorem sectorComplexMatrix_decode (H M : Matrix (Fin 3) (Fin 3) ℂ)
     (hH : H.IsHermitian) : sectorComplexMatrix (sectorDecode H M) = H := by
-  simp only [sectorDecode, sectorComplexMatrix, map_add,
-    complexCoordinates_albert, complexCoordinates_hiddenAlbert, add_zero]
-  exact complexHermitianMatrix_inverse H hH
+  simp_all [sectorComplexMatrix, sectorDecode, complexCoordinates_albert, complexCoordinates_hiddenAlbert, complexHermitianMatrix_inverse]
 
 theorem hiddenMatrix_decode (H M : Matrix (Fin 3) (Fin 3) ℂ) :
     hiddenMatrix (sectorDecode H M) = M := by

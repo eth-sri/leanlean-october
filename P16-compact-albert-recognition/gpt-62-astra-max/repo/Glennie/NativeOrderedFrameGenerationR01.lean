@@ -24,10 +24,10 @@ theorem ordered_frame_atoms_generate
     exact K.add_mem (K.add_mem (hAtoms 0 0) (hAtoms 0 1)) (hAtoms 0 2)
   apply eq_top_of_phi_ne_zero K hu hJ
     (encoder (T 0)) (encoder (T 1)) (encoder (T 2))
-  · exact K.sub_mem (hAtoms 0 2) (hAtoms 0 0)
-  · exact K.sub_mem (hAtoms 1 2) (hAtoms 1 0)
-  · exact K.sub_mem (hAtoms 2 2) (hAtoms 2 0)
-  · exact hphi
+  · apply K.sub_mem <;> simp_all
+  · apply K.sub_mem <;> simp_all
+  · apply K.sub_mem <;> simp_all
+  assumption
 
 theorem ordered_frame_atoms_generate_of_score
     (T : Triple) (hT : ∀ a, Frame (T a)) (hs : score T ≠ 0)
@@ -36,8 +36,7 @@ theorem ordered_frame_atoms_generate_of_score
     (hAtoms : ∀ a i, T a i ∈ K) : K = ⊤ := by
   apply ordered_frame_atoms_generate T hT _ K hJ hAtoms
   intro hz
-  apply hs
-  rw [score_eq_two_phi, hz, mul_zero]
+  simp_all [score_eq_two_phi, hz, mul_zero]
 
 end
 end Glennie.NativeOrderedFrameGenerationR01

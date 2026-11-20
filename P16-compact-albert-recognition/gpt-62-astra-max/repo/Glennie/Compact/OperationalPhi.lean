@@ -1,6 +1,7 @@
 module
 
 public import Glennie.BasicLaws
+public import Glennie.ObservationLaws
 
 /- Pure native algebra only. No positivity,
 probability interpretation, normalization of effects, or operational framework
@@ -13,49 +14,36 @@ noncomputable section
 set_option autoImplicit false
 set_option maxHeartbeats 2000000
 
-/-- The swapped-order contrast, with an arbitrary unnormalized final argument. -/
-def contrast (x y z v : Albert) : ℝ :=
-  inner z (U y (U x (U z v)) - U x (U y (U z v)))
-
-/-- The amplitude h=(1+x)/2, expressed with real scalar multiplication. -/
-def halfAmplitude (x : Albert) : Albert := (1 / 2 : ℝ) • ((1 : Albert) + x)
-
-/-- The history difference Delta_a with arbitrary input rho. -/
-def delta (x y z a rho : Albert) : ℝ := contrast x y z (U a rho)
+export _root_.Glennie.SubmissionR03 (contrast halfAmplitude delta)
 
 theorem jordan_pairing_selfadjoint (x a b : Albert) :
     inner a (jordan x b) = inner (jordan x a) b := by
-  rw [← inner_jordan_associative, jordan_comm a x]
+  grind [inner_jordan_associative, jordan_comm]
 
 /-- Self-adjointness is derived from the native associative pairing. -/
 theorem U_pairing_selfadjoint (x a b : Albert) :
     inner a (U x b) = inner (U x a) b := by
-  simp only [U, inner_sub_left, inner_sub_right, inner_smul_left,
-    inner_smul_right, jordan_pairing_selfadjoint]
+  simp [U, inner_sub_left, inner_sub_right, inner_smul_left, inner_smul_right, jordan_pairing_selfadjoint]
 
 theorem contrast_sub (x y z u v : Albert) :
     contrast x y z (u - v) = contrast x y z u - contrast x y z v := by
-  simp only [contrast, U_sub_argument, inner_sub_right]
-  ring
+  grind [contrast, U_sub_argument, inner_sub_right]
 
 theorem contrast_smul (x y z v : Albert) (r : ℝ) :
     contrast x y z (r • v) = r * contrast x y z v := by
-  simp only [contrast, U_smul_argument, inner_sub_right, inner_smul_right]
-  ring
+  grind [contrast, U_smul_argument, inner_sub_right, inner_smul_right]
 
 /-- Reversing the commutator across the pairing fixes the contrast sign. -/
 theorem phi_eq_contrast (x y z : Albert) :
     phi x y z = contrast x y z (jordan x y) := by
-  simp only [phi, contrast, inner_sub_left, inner_sub_right,
-    ← U_pairing_selfadjoint]
+  grind [phi, contrast, inner_sub_left, inner_sub_right, U_pairing_selfadjoint]
 
 theorem U_one (w : Albert) : U (1 : Albert) w = w := by
   simp only [U, jordan_unit_left]
   module
 
 theorem crossU_one (x w : Albert) : crossU (1 : Albert) x w = (2 : ℝ) • jordan x w := by
-  simp only [crossU, jordan_unit_left]
-  module
+  simp [crossU, jordan_unit_left]
 
 /-- The required 4U_h-U_x-U_1=2L_x identity, with no spectral hypotheses. -/
 theorem four_U_halfAmplitude (x w : Albert) :
@@ -70,7 +58,7 @@ theorem phi_division_free (x y z : Albert) :
       2 * phi x y z := by
   have h := congrArg (contrast x y z) (four_U_halfAmplitude x y)
   simp only [contrast_sub, contrast_smul, ← phi_eq_contrast] at h
-  exact h
+  assumption
 
 end
 end Glennie.Compact.OperationalPhi

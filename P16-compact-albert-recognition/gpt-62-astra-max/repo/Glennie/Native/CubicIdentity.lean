@@ -46,9 +46,9 @@ set_option maxHeartbeats 2000000 in
 /-- The native compact Hermitian product satisfies the Jordan identity. -/
 theorem jordan_identity (x y : Albert) :
     jordan (jordan x y) (jordan x x) = jordan x (jordan y (jordan x x)) := by
-  have hc : ∀ a b, jordanLinear a b = jordanLinear b a := fun a b => by
+  have hc := fun a b => by
     simpa only [jordanLinear_apply] using jordan_comm a b
-  have hu : ∀ a, jordanLinear 1 a = a := fun a => by
+  have hu := fun a => by
     simpa only [jordanLinear_apply] using jordan_unit_left a
   have ht : ∀ a b c, traceLinear (jordanLinear (jordanLinear a b) c) =
       traceLinear (jordanLinear a (jordanLinear b c)) := fun a b c => by

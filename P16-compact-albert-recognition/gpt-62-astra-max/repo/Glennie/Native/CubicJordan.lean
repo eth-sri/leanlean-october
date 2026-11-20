@@ -47,12 +47,8 @@ theorem linearResidual_eq_zero
     linearResidual mul T e x y = (1 / 6 : ℝ) •
         (residual mul T e (x + y) - residual mul T e (x - y) -
           (2 : ℝ) • residual mul T e y) := by
-      simp only [linearResidual, residual, map_add, map_sub, map_smul,
-        LinearMap.add_apply, LinearMap.sub_apply, LinearMap.smul_apply,
-        smul_eq_mul]
-      simp only [comm y x, comm y (mul x x), ← assocTrace x x y]
-      module
-    _ = 0 := by rw [char, char, char]; simp
+      simp [linearResidual, residual, map_add, map_sub, map_smul, LinearMap.add_apply, LinearMap.sub_apply, LinearMap.smul_apply, smul_eq_mul, comm y x, comm y (mul x x), ← assocTrace x x y] <;> module
+    _ = 0 := by simp_all
 
 /-- Concrete commutativity, unit, trace associativity and Newton residual imply Jordan. -/
 theorem jordan_of_cubic_trace_identity
@@ -62,12 +58,12 @@ theorem jordan_of_cubic_trace_identity
     (assocTrace : ∀ x y z, T (mul (mul x y) z) = T (mul x (mul y z)))
     (char : ∀ x, residual mul T e x = 0) (x y : V) :
     mul (mul x y) (mul x x) = mul x (mul y (mul x x)) := by
-  have unitR (z : V) : mul z e = z := by rw [comm, unit]
+  have unitR (z : V) : mul z e = z := by simp_all
   have hB₁ : T (mul x (mul x y)) = T (mul (mul x x) y) :=
     (assocTrace x x y).symm
   have hB₂ : T (mul (mul x x) (mul x y)) =
       T (mul (mul x (mul x x)) y) := by
-    rw [← assocTrace, comm (mul x x) x]
+    grind
   have hlin := linearResidual_eq_zero mul T e comm assocTrace char
   have hj : mul (mul x x) (mul x y) - mul x (mul (mul x x) y) = 0 := by
     calc
@@ -81,9 +77,8 @@ theorem jordan_of_cubic_trace_identity
           LinearMap.add_apply, LinearMap.sub_apply, LinearMap.smul_apply,
           smul_eq_mul, unit, unitR, hB₁, hB₂]
         module
-      _ = 0 := by rw [hlin, hlin, char]; simp
-  have heq := sub_eq_zero.mp hj
-  simpa only [comm (mul x y) (mul x x), comm y (mul x x)] using heq
+      _ = 0 := by simp_all
+  grind
 
 end
 end Glennie.CubicJordan
