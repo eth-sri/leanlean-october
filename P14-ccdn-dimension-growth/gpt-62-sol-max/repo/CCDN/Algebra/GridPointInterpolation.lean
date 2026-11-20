@@ -22,9 +22,14 @@ private def gridPointSeparator {K σ : Type*} [Field K] [Fintype σ] [DecidableE
   ∏ j, ∏ t ∈ S.erase (a j),
     C ((a j - t)⁻¹) * (X j - C t)
 
-private lemma gridPointSeparator_eval {K σ : Type*} [Field K] [Fintype σ]
-    [DecidableEq K]
-    (S : Finset K) (a x : σ → K) (hx : ∀ j, x j ∈ S) :
+section
+
+variable {K σ : Type*} [Field K] [Fintype σ]
+  [DecidableEq K]
+  (S : Finset K)
+include K σ S
+
+private lemma gridPointSeparator_eval (a x : σ → K) (hx : ∀ j, x j ∈ S) :
     eval x (gridPointSeparator S a) = if x = a then 1 else 0 := by
   classical
   rw [gridPointSeparator, eval_prod]
@@ -35,9 +40,7 @@ private lemma gridPointSeparator_eval {K σ : Type*} [Field K] [Fintype σ]
     intro j _
     rw [eval_prod]
     apply Finset.prod_eq_one
-    intro t ht
-    simp only [eval_mul, eval_C, eval_sub, eval_X]
-    exact inv_mul_cancel₀ (sub_ne_zero.mpr (Finset.mem_erase.mp ht).1.symm)
+    grind [eval_mul, eval_C, eval_sub, eval_X]
   · rw [ite_eq_right h]
     obtain ⟨j, hj⟩ := Function.ne_iff.mp h
     apply Finset.prod_eq_zero (Finset.mem_univ j)
@@ -45,9 +48,7 @@ private lemma gridPointSeparator_eval {K σ : Type*} [Field K] [Fintype σ]
     apply Finset.prod_eq_zero (Finset.mem_erase.mpr ⟨hj, hx j⟩)
     simp
 
-private lemma gridPointSeparator_degree {K σ : Type*} [Field K] [Fintype σ]
-    [DecidableEq K]
-    (S : Finset K) (a : σ → K) (ha : ∀ j, a j ∈ S) :
+private lemma gridPointSeparator_degree (a : σ → K) (ha : ∀ j, a j ∈ S) :
     (gridPointSeparator S a).totalDegree ≤ Fintype.card σ * (S.card - 1) := by
   classical
   unfold gridPointSeparator
@@ -66,8 +67,10 @@ private lemma gridPointSeparator_degree {K σ : Type*} [Field K] [Fintype σ]
           apply (totalDegree_mul _ _).trans
           rw [totalDegree_C, Nat.zero_add]
           exact (totalDegree_sub _ _).trans (by simp)
-        _ = _ := by simp [Finset.card_erase_of_mem (ha j)]
+        _ = _ := by simp_all
     _ = _ := by simp
+
+end
 
 /-- Distinct points of a fixed coordinate grid give independent filtered
 coordinate classes at the grid-interpolation degree. -/
@@ -81,10 +84,9 @@ theorem grid_points_filtered_lower {K σ ι : Type*} [Field K]
     Fintype.card ι ≤ Module.finrank K (filteredCoordinateSpace I N) := by
   classical
   let q := Ideal.Quotient.mkₐ K I
-  let ψ : ι → (MvPolynomial σ K ⧸ I) →ₐ[K] K := fun i =>
+  let ψ := fun i =>
     Ideal.Quotient.liftₐ I (aeval (z i)) (by
-      intro f hf
-      simpa only [aeval_eq_eval] using hzI i f hf)
+      tauto)
   have hψ (i : ι) (f : MvPolynomial σ K) : ψ i (q f) = eval (z i) f := rfl
   let v : ι → filteredCoordinateSpace I N := fun j =>
     ⟨q (gridPointSeparator S (z j)), Submodule.mem_map.mpr

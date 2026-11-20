@@ -9,6 +9,7 @@ public import Mathlib.FieldTheory.IsAlgClosed.Basic
 public import Mathlib.FieldTheory.RatFunc.Basic
 public import Mathlib.RingTheory.Derivation.DifferentialRing
 public import Mathlib.RingTheory.SimpleRing.Principal
+public import Mathlib.RingTheory.Etale.Kaehler
 import Mathlib.FieldTheory.RatFunc.AsPolynomial
 
 /-! The formal derivative on a rational function field and its constant field. -/
@@ -18,83 +19,52 @@ namespace CCDN
 noncomputable section
 open Polynomial
 
-variable {K : Type*} [Field K]
+section Etale
 
-/-- The quotient-rule derivative `(p' * q - p * q') / q ^ 2` of the fraction `p / q`. -/
-def rationalDerivativeFraction (p q : K[X]) : RatFunc K :=
-  (algebraMap K[X] (RatFunc K) p.derivative * algebraMap K[X] (RatFunc K) q -
-    algebraMap K[X] (RatFunc K) p * algebraMap K[X] (RatFunc K) q.derivative) /
-      (algebraMap K[X] (RatFunc K) q) ^ 2
+variable {R S T : Type*} [CommRing R] [CommRing S] [CommRing T]
+  [Algebra R S] [Algebra R T] [Algebra S T] [IsScalarTower R S T] [Algebra.FormallyEtale S T]
 
-/-- The quotient-rule derivative of a fraction is unchanged by multiplying its numerator and
-denominator by the same nonzero polynomial. -/
-lemma rationalDerivativeFraction_mul {p q a : K[X]} (hq : q ≠ 0) (ha : a ≠ 0) :
-    rationalDerivativeFraction (a * p) (a * q) = rationalDerivativeFraction p q := by
-  simp only [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
-  field_simp [RatFunc.algebraMap_ne_zero hq, RatFunc.algebraMap_ne_zero ha]
-  ring
+/-- Extend a derivation along an étale map by base change of Kähler differentials. -/
+def etaleDerivation (d : Derivation R S S) : Derivation R T T :=
+  ((KaehlerDifferential.isBaseChange_of_formallyEtale R S T).lift
+    ((Algebra.linearMap S T).comp d.liftKaehlerDifferential)).compDer (KaehlerDifferential.D R T)
 
-/-- Formal rational differentiation, well-defined under changing fractions. -/
-def rationalDerivative (x : RatFunc K) : RatFunc K :=
-  x.liftOn' rationalDerivativeFraction (fun _hq _ha => rationalDerivativeFraction_mul _hq _ha)
+@[simp] lemma etaleDerivation_algebraMap (d : Derivation R S S) (x : S) :
+    etaleDerivation (T := T) d (algebraMap S T x) = algebraMap S T (d x) := by
+  change ((KaehlerDifferential.isBaseChange_of_formallyEtale R S T).lift
+    ((Algebra.linearMap S T).comp d.liftKaehlerDifferential))
+      (KaehlerDifferential.D R T (algebraMap S T x)) = _
+  rw [← KaehlerDifferential.map_D R R S T, IsBaseChange.lift_eq]
+  simp [Derivation.liftKaehlerDifferential_comp_D]
 
-private lemma rationalDerivative_div (p q : K[X]) :
-    rationalDerivative (algebraMap K[X] (RatFunc K) p / algebraMap K[X] (RatFunc K) q) =
-      rationalDerivativeFraction p q := by
-  rw [rationalDerivative, RatFunc.liftOn'_div]
-  intro p
-  simp [rationalDerivativeFraction]
+end Etale
 
-/-- The formal rational derivative of a polynomial is its ordinary derivative. -/
-lemma rationalDerivative_polynomial (p : K[X]) :
-    rationalDerivative (algebraMap K[X] (RatFunc K) p) =
-      algebraMap K[X] (RatFunc K) p.derivative := by
-  simpa [rationalDerivativeFraction] using rationalDerivative_div p 1
+/-- The differential ring structure on an étale algebra over a differential ring. -/
+@[reducible] def etaleDifferential (S T : Type*) [CommRing S] [CommRing T]
+    [Algebra S T] [Differential S] [Algebra.FormallyEtale S T] : Differential T :=
+  ⟨etaleDerivation (T := T) (Differential.deriv (R := S))⟩
 
-/-- The formal rational derivative is additive. -/
-lemma rationalDerivative_add (x y : RatFunc K) :
-    rationalDerivative (x + y) = rationalDerivative x + rationalDerivative y := by
-  induction x using RatFunc.induction_on with | _ p q hq
-  induction y using RatFunc.induction_on with | _ r s hs
-  have hq' := RatFunc.algebraMap_ne_zero hq
-  have hs' := RatFunc.algebraMap_ne_zero hs
-  rw [div_add_div _ _ hq' hs', ← map_mul, ← map_mul, ← map_add, ← map_mul,
-    rationalDerivative_div, rationalDerivative_div, rationalDerivative_div]
-  simp only [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
-  field_simp
-  ring
+lemma etaleDifferential_algebra (S T : Type*) [CommRing S] [CommRing T]
+    [Algebra S T] [Differential S] [Algebra.FormallyEtale S T] :
+    let := etaleDifferential S T
+    DifferentialAlgebra S T := by
+  solve_by_elim [CCDN.etaleDerivation_algebraMap]
 
-/-- The formal rational derivative satisfies the Leibniz rule. -/
-lemma rationalDerivative_mul (x y : RatFunc K) :
-    rationalDerivative (x * y) = x * rationalDerivative y + y * rationalDerivative x := by
-  induction x using RatFunc.induction_on with | _ p q hq
-  induction y using RatFunc.induction_on with | _ r s hs
-  rw [div_mul_div_comm, ← map_mul, ← map_mul,
-    rationalDerivative_div, rationalDerivative_div, rationalDerivative_div]
-  simp only [rationalDerivativeFraction, derivative_mul, map_add, map_mul]
-  field_simp
-  ring
+theorem ratFuncEtale (K : Type*) [Field K] : Algebra.FormallyEtale K[X] (RatFunc K) :=
+  Algebra.FormallyEtale.of_isLocalization (nonZeroDivisors K[X])
+attribute [local instance] ratFuncEtale
 
-/-- Rational formal differentiation as a derivation over the coefficient field. -/
-def rationalDerivation (K : Type*) [Field K] : Derivation K (RatFunc K) (RatFunc K) where
-  toFun := rationalDerivative
-  map_add' := rationalDerivative_add
-  map_smul' c x := by
-    rw [Algebra.smul_def, rationalDerivative_mul, Algebra.smul_def]
-    have hc : rationalDerivative (algebraMap K (RatFunc K) c) = 0 := by
-      rw [IsScalarTower.algebraMap_apply K K[X] (RatFunc K), rationalDerivative_polynomial]
-      simp
-    simp only [hc, mul_zero, add_zero, RingHom.id_apply]
-  map_one_eq_zero' := by
-    simpa using rationalDerivative_polynomial (1 : K[X])
-  leibniz' x y := rationalDerivative_mul x y
-
-/-- The differential field structure on `RatFunc K` given by formal rational differentiation; it
-is kept explicit to avoid introducing a competing global instance on rational functions. -/
-@[reducible]
-def rationalDifferential (K : Type*) [Field K] : Differential (RatFunc K) := by
+/-- Formal rational differentiation is the étale extension of polynomial differentiation. -/
+@[reducible] def rationalDifferential (K : Type*) [Field K] : Differential (RatFunc K) := by
   let : Algebra ℤ (RatFunc K) := Ring.toIntAlgebra _
-  exact ⟨(rationalDerivation K).restrictScalars ℤ⟩
+  exact ⟨(etaleDerivation (T := RatFunc K) (Polynomial.derivative' (R := K))).restrictScalars ℤ⟩
+
+attribute [local instance] rationalDifferential
+open scoped Differential
+
+@[simp] lemma rationalDerivative_polynomial {K : Type*} [Field K] (p : K[X]) :
+    (algebraMap K[X] (RatFunc K) p)′ = algebraMap K[X] (RatFunc K) p.derivative :=
+  etaleDerivation_algebraMap (T := RatFunc K) Polynomial.derivative' p
 
 end
 end CCDN

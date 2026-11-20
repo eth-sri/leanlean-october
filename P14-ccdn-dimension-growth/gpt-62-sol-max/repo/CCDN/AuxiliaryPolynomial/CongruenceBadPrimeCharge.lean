@@ -10,7 +10,6 @@ public import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimes
 public import CCDN.Plane.IntegerPlaneLogHeight
 import CCDN.AuxiliaryPolynomial.BadPrimeCharge
 import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeCoordinates
-import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeHeight
 
 /-! A single logarithmic-height witness bounds the combined charge of
 geometric bad primes and prescribed congruence primes. -/
@@ -20,32 +19,7 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Finset
 
-private theorem exists_fin_hypersurface_bad_prime_height_witness
-    {L : Type*} [Field L] [CharZero L] [IsAlgClosed L] {n : ℕ}
-    (f : MvPolynomial (Fin (n + 1)) ℤ)
-    (hf : Irreducible (map (Int.castRingHom L) f)) (hd : 0 < f.totalDegree)
-    (H : ℝ) (hH : 1 ≤ H) (hcoeff : CoefficientHeightLE f H) :
-    ∃ D : ℤ, 0 < D ∧
-      Real.log D ≤ (27 * (f.totalDegree : ℝ) ^ 4) *
-        (hypersurfaceHeightConstant (n + 1) *
-          (1 + Real.log H / (f.totalDegree : ℝ) ^ 2)) ∧
-      ∀ p, f.totalDegree < p → HypersurfaceBadReduction f p → (p : ℤ) ∣ D := by
-  let e : Fin (n + 1) ≃ Option (Fin n) := finSuccEquiv' 0
-  let g := rename e f
-  have hg : Irreducible (map (Int.castRingHom L) g) := by
-    rw [show g = rename e f from rfl, map_rename]
-    exact (MulEquiv.irreducible_iff (f := renameEquiv L e)).mpr hf
-  have hgd : g.totalDegree = f.totalDegree := totalDegree_renameEquiv e f
-  obtain ⟨D, hD, hheight, hdiv⟩ := exists_hypersurface_bad_prime_height_witness g hg
-    (hgd ▸ hd) H hH (polynomial_coefficient_bound_renameEquiv e f H hcoeff)
-  refine ⟨D, hD, ?_, ?_⟩
-  · simpa only [hgd, Fintype.card_option, Fintype.card_fin] using hheight
-  · intro p hp hbad
-    apply hdiv p (hgd ▸ hp)
-    exact (hypersurfaceBadReduction_renameEquiv e f p).mpr hbad
-
-/-- Multiplying a constructed bad-prime witness by the congruence modulus
-keeps the combined prime charge within one logarithm of their log heights. -/
+/-- Combine the logarithmic budget of the bad primes with that of the prescribed primes. -/
 theorem hypersurface_and_congruence_prime_charge
     {L : Type*} [Field L] [CharZero L] [IsAlgClosed L] {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℤ)
@@ -62,41 +36,29 @@ theorem hypersurface_and_congruence_prime_charge
   classical
   obtain ⟨D, hD, hheight, hdiv⟩ :=
     exists_fin_hypersurface_bad_prime_height_witness f hf hd H hH hcoeff
-  let q : ℤ := ∏ p ∈ P, (p : ℤ)
-  have hq : 0 < q := prod_pos fun p hp => by exact_mod_cast (hP p hp).pos
-  have hlogq : Real.log (q : ℝ) = ∑ p ∈ P, Real.log p := by
-    dsimp only [q]
-    rw [Int.cast_prod, Real.log_prod (fun p hp => by exact_mod_cast (hP p hp).ne_zero)]
-    simp only [Int.cast_natCast]
-  have hprime (p : ℕ) (hp : p ∈ bad ∪ P) : p.Prime := by
-    rcases mem_union.mp hp with hb | hp
-    · exact (hbad p hb).2.choose
-    · exact hP p hp
-  have hdvd (p : ℕ) (hp : p ∈ bad ∪ P) : (p : ℤ) ∣ D * q := by
-    rcases mem_union.mp hp with hb | hp
-    · apply dvd_mul_of_dvd_left (hdiv p ?_ (hbad p hb).2)
-      have hcut : 27 * f.totalDegree ^ 4 < p := (hbad p hb).1
-      have h₁ := Nat.le_mul_self f.totalDegree
-      have h₂ := Nat.le_mul_self (f.totalDegree * f.totalDegree)
-      nlinarith
-    · exact dvd_mul_of_dvd_right (dvd_prod_of_mem (fun p : ℕ => (p : ℤ)) hp) D
-  have hcharge := bad_prime_charge_of_height (bad ∪ P) (mul_pos hD hq) hprime hdvd
-    (L := (1 : ℝ)) (H := 1 + 27 * (f.totalDegree : ℝ) ^ 4 *
-      (hypersurfaceHeightConstant (n + 1) *
-        (1 + Real.log H / (f.totalDegree : ℝ) ^ 2)) + ∑ p ∈ P, Real.log p)
-    (by norm_num) ?_ ?_ ?_
-  · exact hcharge
-  · have hlogH := Real.log_nonneg hH
-    have hsum := sum_nonneg (s := P) (fun p _ => Real.log_natCast_nonneg p)
+  let A := 27 * (f.totalDegree : ℝ) ^ 4 * (hypersurfaceHeightConstant (n + 1) *
+    (1 + Real.log H / (f.totalDegree : ℝ) ^ 2))
+  have hprime p hp := (hbad p hp).2.choose
+  have hlog : (∑ p ∈ bad, Real.log p) ≤ A :=
+    (prime_divisor_log_sum_le bad hD hprime (fun p hp =>
+      hdiv p ((degree_le_stepanovThreshold _).trans_lt (hbad p hp).1) (hbad p hp).2)).trans hheight
+  have hsum : 0 ≤ ∑ p ∈ P, Real.log p := sum_nonneg (fun p _ => Real.log_natCast_nonneg p)
+  have hA : 0 ≤ A := by
     have hC := (hypersurfaceHeightConstant_one_le (n + 1)).trans' zero_le_one
-    have hterm : 0 ≤ 27 * (f.totalDegree : ℝ) ^ 4 *
-        (hypersurfaceHeightConstant (n + 1) *
-          (1 + Real.log H / (f.totalDegree : ℝ) ^ 2)) := by positivity
-    linarith
+    have hlogH := Real.log_nonneg hH
+    positivity
+  apply bad_prime_charge_of_log_sum (bad ∪ P) (L := 1)
+    (H := 1 + A + ∑ p ∈ P, Real.log p)
   · intro p hp
-    exact_mod_cast (hprime p hp).one_lt
-  · rw [Int.cast_mul, Real.log_mul (by exact_mod_cast hD.ne') (by exact_mod_cast hq.ne'),
-      hlogq, one_mul]
+    exact (mem_union.mp hp).elim (hprime p) (hP p)
+  · norm_num
+  · linarith
+  · intro p hp
+    exact_mod_cast ((mem_union.mp hp).elim (hprime p) (hP p)).one_lt
+  · rw [one_mul, ← sum_inter_add_sum_sdiff (bad ∪ P) P (fun p => Real.log p)] at ⊢
+    rw [union_inter_cancel_right]
+    have hh := sum_le_sum_of_subset_of_nonneg (s := (bad ∪ P) \ P) (t := bad)
+      (f := fun p : ℕ => Real.log p) (by intro p; simp; tauto) (fun p _ _ => Real.log_natCast_nonneg p)
     linarith
 
 end

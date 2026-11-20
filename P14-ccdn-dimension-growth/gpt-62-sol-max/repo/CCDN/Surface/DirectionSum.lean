@@ -7,8 +7,9 @@ module
 
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Height.ProjectiveZeroLocus
-import CCDN.AuxiliaryPolynomial.PlaneAuxiliaryCount
-import CCDN.Plane.ProjectivePlaneLinearCount
+import CCDN.Algebra.IntegerRationalIrreducibility
+import CCDN.Plane.ProjectivePlaneCount
+import CCDN.Analysis.GeometricShells
 
 /-! The reciprocal heights of distinct rational projective points on a
 plane curve of degree at least three have a uniform, coefficient-independent
@@ -20,102 +21,47 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private theorem sum_inv_height_geometric_bound {α : Type*}
-    (s : Finset α) (h : α → ℝ) (M : ℝ) (_hM : 0 ≤ M) (N : ℕ)
-    (hheight : ∀ x ∈ s, 1 ≤ h x)
-    (hmax : ∀ x ∈ s, h x ≤ (8 : ℝ) ^ N)
-    (hcount : ∀ k : ℕ,
-      ((s.filter (fun x => h x ≤ (8 : ℝ) ^ k)).card : ℝ) ≤ M * 4 ^ k) :
-    ∑ x ∈ s, 1 / h x ≤ 9 * M - 8 * M * (1 / 2 : ℝ) ^ N := by
-  classical
-  induction N generalizing s with
-  | zero =>
-    have he (x : α) (hx : x ∈ s) : h x = 1 := by
-      have := hmax x hx
-      have := hheight x hx
-      norm_num at *
-      linarith
-    have hs : s.filter (fun x => h x ≤ (8 : ℝ) ^ 0) = s := by
-      exact Finset.filter_eq_self.mpr hmax
-    have hc := hcount 0
-    rw [hs] at hc
-    have hsum : ∑ x ∈ s, 1 / h x = (s.card : ℝ) := by
-      calc
-        _ = ∑ _x ∈ s, (1 : ℝ) := Finset.sum_congr rfl (fun x hx => by rw [he x hx]; norm_num)
-        _ = _ := by simp
-    rw [hsum]
-    simpa only [pow_zero, mul_one, show 9 * M - 8 * M = M by ring] using hc
-  | succ N ih =>
-    let t := s.filter (fun x => h x ≤ (8 : ℝ) ^ N)
-    let u := s.filter (fun x => ¬h x ≤ (8 : ℝ) ^ N)
-    have ht : ∑ x ∈ t, 1 / h x ≤ 9 * M - 8 * M * (1 / 2 : ℝ) ^ N := by
-      apply ih t
-      · intro x hx
-        exact hheight x (Finset.mem_filter.mp hx).1
-      · intro x hx
-        exact (Finset.mem_filter.mp hx).2
-      · intro k
-        have hs : (t.filter (fun x => h x ≤ (8 : ℝ) ^ k)).card ≤
-            (s.filter (fun x => h x ≤ (8 : ℝ) ^ k)).card := by
-          apply Finset.card_le_card
-          intro x hx
-          obtain ⟨hx, hk⟩ := Finset.mem_filter.mp hx
-          exact Finset.mem_filter.mpr ⟨(Finset.mem_filter.mp hx).1, hk⟩
-        exact (show ((t.filter (fun x => h x ≤ (8 : ℝ) ^ k)).card : ℝ) ≤
-          ((s.filter (fun x => h x ≤ (8 : ℝ) ^ k)).card : ℝ) by
-            exact_mod_cast hs).trans (hcount k)
-    have hscard : (s.card : ℝ) ≤ M * 4 ^ (N + 1) := by
-      have hs : s.filter (fun x => h x ≤ (8 : ℝ) ^ (N + 1)) = s :=
-        Finset.filter_eq_self.mpr hmax
-      simpa only [hs] using hcount (N + 1)
-    have hu : ∑ x ∈ u, 1 / h x ≤ 4 * M * (1 / 2 : ℝ) ^ N := by
-      calc
-        _ ≤ ∑ _x ∈ u, 1 / (8 : ℝ) ^ N := by
-          apply Finset.sum_le_sum
-          intro x hx
-          exact one_div_le_one_div_of_le (by positivity)
-            (le_of_not_ge (Finset.mem_filter.mp hx).2)
-        _ = (u.card : ℝ) / (8 : ℝ) ^ N := by simp [div_eq_mul_inv]
-        _ ≤ (s.card : ℝ) / (8 : ℝ) ^ N := by
-          apply div_le_div_of_nonneg_right _ (by positivity)
-          exact_mod_cast Finset.card_le_card (Finset.filter_subset _ s)
-        _ ≤ (M * 4 ^ (N + 1)) / (8 : ℝ) ^ N :=
-          div_le_div_of_nonneg_right hscard (by positivity)
-        _ = 4 * M * (1 / 2 : ℝ) ^ N := by
-          rw [pow_succ]
-          calc
-            _ = 4 * M * ((4 : ℝ) ^ N / (8 : ℝ) ^ N) := by ring
-            _ = _ := by rw [← div_pow]; norm_num
-    have he : (∑ x ∈ t, 1 / h x) + (∑ x ∈ u, 1 / h x) =
-        ∑ x ∈ s, 1 / h x := Finset.sum_filter_add_sum_filter_not _ _ _
-    rw [pow_succ]
-    linarith
+section
 
-/-- A finite weighted-count lemma with geometric counting thresholds. Its
-application below obtains the threshold counts from the proved curve theorem. -/
-private theorem sum_inv_height_le_of_geometric_count {α : Type*}
-    (s : Finset α) (h : α → ℝ) (M : ℝ) (hM : 0 ≤ M)
+variable {α : Type*}
+  (s : Finset α) (h : α → ℝ) (M : ℝ)
+include α s h M
+
+/-- A finite weighted-count lemma with geometric counting thresholds. -/
+private theorem sum_inv_height_le_of_geometric_count (hM : 0 ≤ M)
     (hheight : ∀ x ∈ s, 1 ≤ h x)
     (hcount : ∀ k : ℕ,
       ((s.filter (fun x => h x ≤ (8 : ℝ) ^ k)).card : ℝ) ≤ M * 4 ^ k) :
     ∑ x ∈ s, 1 / h x ≤ 9 * M := by
   classical
-  obtain ⟨N, hN⟩ := pow_unbounded_of_one_lt (∑ x ∈ s, h x) (show (1 : ℝ) < 8 by norm_num)
-  have hmax (x : α) (hx : x ∈ s) : h x ≤ (8 : ℝ) ^ N := by
-    have hs : h x ≤ ∑ x ∈ s, h x := Finset.single_le_sum
-      (fun y hy => (zero_le_one.trans (hheight y hy))) hx
-    exact hs.trans hN.le
-  have hh := sum_inv_height_geometric_bound s h M hM N hheight hmax hcount
-  have hnonneg : 0 ≤ 8 * M * (1 / 2 : ℝ) ^ N := by positivity
-  linarith
+  have hgeom := sum_le_of_geometric_shells s h (fun x => 1 / h x) one_pos
+    (q := 8) (C := 4 * M) (D := M) (by norm_num) (by positivity)
+  refine (hgeom ?_ ?_).trans_eq (by ring)
+  · simpa using (calc
+      ∑ x ∈ s.filter (fun x => h x ≤ 1), 1 / h x ≤ ∑ _x ∈ s.filter (fun x => h x ≤ 1), (1 : ℝ) :=
+        Finset.sum_le_sum fun x hx => by simpa using
+          (one_div_le_one_div_of_le one_pos (hheight x (Finset.mem_filter.mp hx).1))
+      _ ≤ M := by simpa using hcount 0)
+  · intro n
+    let A := s.filter (fun x => 1 * (8 : ℝ) ^ n < h x ∧ h x ≤ 1 * (8 : ℝ) ^ (n + 1))
+    have hcard : (A.card : ℝ) ≤ M * 4 ^ (n + 1) := by
+      refine (Nat.cast_le.mpr (Finset.card_le_card (t := s.filter (fun x => h x ≤ (8 : ℝ) ^ (n + 1))) ?_)).trans
+        (hcount (n + 1))
+      intro x hx
+      exact Finset.mem_filter.mpr ⟨(Finset.mem_filter.mp hx).1, by simpa using (Finset.mem_filter.mp hx).2.2⟩
+    calc
+      _ ≤ ∑ _x ∈ A, 1 / (8 : ℝ) ^ n := Finset.sum_le_sum fun x hx =>
+        one_div_le_one_div_of_le (by positivity) (by simpa using (Finset.mem_filter.mp hx).2.1.le)
+      _ ≤ M * 4 ^ (n + 1) / (8 : ℝ) ^ n := by
+        simpa [div_eq_mul_inv] using mul_le_mul_of_nonneg_right hcard (by positivity : 0 ≤ ((8 : ℝ) ^ n)⁻¹)
+      _ = _ := by rw [pow_succ, show (1 / 2 : ℝ) = 4 / 8 by norm_num, div_pow]; ring
+
+end
 
 private lemma eight_pow_two_thirds (k : ℕ) :
     ((8 : ℝ) ^ k) ^ (2 / 3 : ℝ) = (4 : ℝ) ^ k := by
   have he : (8 : ℝ) ^ (2 / 3 : ℝ) = 4 := by
-    calc
-      _ = ((2 : ℝ) ^ (3 : ℝ)) ^ (2 / 3 : ℝ) := by norm_num
-      _ = (2 : ℝ) ^ ((3 : ℝ) * (2 / 3 : ℝ)) := (Real.rpow_mul (by norm_num) _ _).symm
-      _ = 4 := by norm_num
+    norm_num
   rw [← Real.rpow_natCast_mul (by norm_num), mul_comm (k : ℝ),
     Real.rpow_mul_natCast (by norm_num), he]
 

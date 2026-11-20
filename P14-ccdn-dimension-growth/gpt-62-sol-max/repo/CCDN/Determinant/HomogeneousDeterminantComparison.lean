@@ -5,197 +5,238 @@ Authors: Jason Davies
 -/
 module
 
-public import ArithmeticHeights.BombieriVaaler
 public import CCDN.Algebra.HomogeneousMonomials
+public import CCDN.AuxiliaryPolynomial.HypersurfaceRankProfile
+public import CCDN.Determinant.IntegerMinors
+public import CCDN.Height.IntegerCoefficientHeight
+public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 public import Mathlib.RingTheory.MvPolynomial.MonomialOrder
-import CCDN.Algebra.HomogeneousEvaluation
-import CCDN.Algebra.HomogeneousRankDichotomy
-import CCDN.Algebra.RowSelection
-import CCDN.AuxiliaryPolynomial.CoefficientBound
-import CCDN.Determinant.GramDeterminant
-import Mathlib.Algebra.Order.Star.Int
+import CCDN.ForMathlib.Matrix
+import CCDN.AuxiliaryPolynomial.WeightedMonomialDeterminant
+import CCDN.Hilbert.HomogeneousHilbert
+import CCDN.ForMathlib.Log
+import Mathlib.LinearAlgebra.Matrix.Block
+import Mathlib.Tactic
 
-/-!
-The exact-rank Bombieri--Vaaler comparison when no integral auxiliary
-polynomial exists. This is the finite-matrix step of CCDN §3.3.
-
-The arithmetic point is that a nonzero integer multiplier has a leading coefficient of
-absolute value at least one. This is the coefficient obstruction used in CCDN §3.3.
-The determinant bound needed to make the auxiliary polynomial small enough remains separate.
--/
+/-! The coefficient obstruction in the determinant method, using the complementary minor of
+ the evaluation matrix to a triangular minor of the polynomial multiplication map. -/
 
 @[expose] public section
-
-namespace CCDN
-
-private theorem abs_leadingCoeff_le_of_dvd {n : ℕ} (order : MonomialOrder (Fin n))
-    {f g : MvPolynomial (Fin n) ℤ} (hg : g ≠ 0) (hfg : f ∣ g) :
-    |order.leadingCoeff f| ≤ |order.leadingCoeff g| := by
-  obtain ⟨q, rfl⟩ := hfg
-  have hq : q ≠ 0 := by intro h; simp [h] at hg
-  have hq1 := Int.one_le_abs (order.leadingCoeff_ne_zero_iff.mpr hq)
-  rw [MonomialOrder.leadingCoeff_mul, abs_mul]
-  nlinarith [abs_nonneg (order.leadingCoeff f)]
-
-end CCDN
-
 namespace CCDN
 noncomputable section
 open MvPolynomial Matrix
 
-/-- Without an auxiliary polynomial, selected rows have exact Hilbert
-rank and their Bombieri--Vaaler bound is at least the leading coefficient. -/
-theorem homogeneous_no_auxiliary_comparison {n d M t : ℕ}
-    (order : MonomialOrder (Fin (n + 1)))
-    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
-    (points : Fin t → (Fin (n + 1) → ℤ)) (hzero : ∀ i, eval (points i) f = 0)
-    (hrel : ∀ g : MvPolynomial (Fin (n + 1)) ℤ, g.IsHomogeneous M →
-      (∀ i, eval (points i) g = 0) → f ∣ g) :
-    ∃ (s : ℕ) (a : Fin s → Fin t), Function.Injective a ∧ s < (n + M).choose M ∧
-      s + (n + (M - d)).choose (M - d) = (n + M).choose M ∧
-      LinearIndependent ℚ
-        ((evaluationMatrix (homogeneousMonomials n M) (points ∘ a)).map ((↑) : ℤ → ℚ)).row ∧
-      |((order.leadingCoeff f : ℤ) : ℝ)| ≤
-        (Real.sqrt (((evaluationMatrix (homogeneousMonomials n M) (points ∘ a) *
-          (evaluationMatrix (homogeneousMonomials n M) (points ∘ a))ᵀ).det : ℤ) : ℝ) /
-          (Int.Matrix.minorGcd (evaluationMatrix (homogeneousMonomials n M) (points ∘ a)) : ℝ)) ^
-            ((((n + M).choose M : ℝ) - s)⁻¹) := by
+/-- Columns of the multiplication-by-`f` map on homogeneous coefficient vectors. -/
+private def homogeneousMultiplication {n : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ) (M k : ℕ) :
+    Matrix (Fin ((n + M).choose M)) (Fin ((n + k).choose k)) ℤ :=
+  fun i j => (f * monomial (homogeneousMonomials n k j) 1).coeff (homogeneousMonomials n M i)
+
+private lemma homogeneousMultiplication_mulVec {n M k : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ)
+    (v : Fin ((n + k).choose k) → ℤ) (i : Fin ((n + M).choose M)) :
+    (homogeneousMultiplication f M k *ᵥ v) i =
+      (f * polynomialOfCoefficients (homogeneousMonomials n k) v).coeff (homogeneousMonomials n M i) := by
   classical
-  obtain ⟨s, a, ha, hli, hspan, hs⟩ :=
-    homogeneous_independent_evaluation_rows f hf hf0 hdM points hzero
+  simp only [homogeneousMultiplication, mulVec, dotProduct, polynomialOfCoefficients, Finset.mul_sum,
+    coeff_sum]
+  refine Finset.sum_congr rfl fun j _ => ?_
+  rw [show monomial (homogeneousMonomials n k j) (v j) =
+      v j • monomial (homogeneousMonomials n k j) (1 : ℤ) by simp [smul_monomial],
+    mul_smul_comm, coeff_smul, smul_eq_mul, mul_comm]
+
+private lemma homogeneousMultiplication_decode {n d M : ℕ}
+    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d) (hd : d ≤ M)
+    (u : Fin ((n + (M - d)).choose (M - d)) → ℤ) :
+    polynomialOfCoefficients (homogeneousMonomials n M) (homogeneousMultiplication f M (M - d) *ᵥ u) =
+      f * polynomialOfCoefficients (homogeneousMonomials n (M - d)) u := by
+  let q := polynomialOfCoefficients (homogeneousMonomials n (M - d)) u
+  have hg : (f * q).IsHomogeneous M := by
+    simpa [Nat.add_sub_of_le hd] using hf.mul (polynomialOfCoefficients_homogeneous _ _ u)
+  rw [funext (homogeneousMultiplication_mulVec f u)]
+  exact (homogeneous_eq_sum_coeff _ hg).symm
+
+private lemma homogeneous_evaluation_kernel_matrix {n d M s : ℕ} (f : MvPolynomial (Fin (n + 1)) ℤ)
+    (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : d ≤ M)
+    (x : Fin s → Fin (n + 1) → ℤ) (hx : ∀ i, eval (x i) f = 0)
+    (hrel : ∀ g : MvPolynomial (Fin (n + 1)) ℤ, g.IsHomogeneous M →
+      (∀ i, eval (x i) g = 0) → f ∣ g) (v : Fin ((n + M).choose M) → ℤ) :
+    evaluationMatrix (homogeneousMonomials n M) x *ᵥ v = 0 ↔
+      ∃ u, homogeneousMultiplication f M (M - d) *ᵥ u = v := by
+  let g := polynomialOfCoefficients (homogeneousMonomials n M) v
+  have hg : g.IsHomogeneous M := polynomialOfCoefficients_homogeneous n M v
+  constructor
+  · intro hv
+    obtain ⟨q, he⟩ := hrel g hg (fun i => (eval_polynomialOfCoefficients _ _ _ _).trans (congrFun hv i))
+    have hq := homogeneous_multiplier hf hf0 (he ▸ hg) hd
+    refine ⟨fun j => q.coeff (homogeneousMonomials n (M - d) j), ?_⟩
+    funext i
+    rw [homogeneousMultiplication_mulVec, show polynomialOfCoefficients _ _ = q from
+      (homogeneous_eq_sum_coeff q hq).symm, ← he,
+      coefficient_polynomialOfCoefficients _ (homogeneousMonomials_injective _ _)]
+  · rintro ⟨u, rfl⟩
+    funext i
+    rw [← eval_polynomialOfCoefficients, homogeneousMultiplication_decode f hf hd]
+    simp [hx]
+
+/-- The leading monomials of the multiples give a triangular minor of the multiplication map. -/
+private lemma homogeneousMultiplication_leading_minor {n d M : ℕ}
+    (order : MonomialOrder (Fin (n + 1))) (f : MvPolynomial (Fin (n + 1)) ℤ)
+    (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : d ≤ M) :
+    ∃ c : Fin ((n + (M - d)).choose (M - d)) → Fin ((n + M).choose M), Function.Injective c ∧
+      ((homogeneousMultiplication f M (M - d)).submatrix c id).det =
+        order.leadingCoeff f ^ ((n + (M - d)).choose (M - d)) := by
+  classical
+  let k := (n + (M - d)).choose (M - d)
+  let m := homogeneousMonomials n (M - d)
+  have hdeg (i : Fin k) : (order.degree f + m i).degree = M := by
+    have h : (order.degree f).degree = d := by
+      exact (hf.degree_eq_sum_deg_support ((order.degree_mem_support_iff f).mpr hf0)).symm
+    simp [map_add, h, m, homogeneousMonomials_degree, Nat.add_sub_of_le hd]
+  choose c hc using fun i => homogeneousMonomials_surjective n M _ (hdeg i)
+  refine ⟨c, ?_, ?_⟩
+  · intro i j hij
+    apply homogeneousMonomials_injective n (M - d)
+    exact add_left_cancel ((hc i).symm.trans ((congrArg (homogeneousMonomials n M) hij).trans (hc j)))
+  let lo := LinearOrder.lift' (order.toSyn ∘ m)
+    (order.toSyn.injective.comp (homogeneousMonomials_injective _ _))
+  let K := (homogeneousMultiplication f M (M - d)).submatrix c id
+  
+  have ht : @IsUpperTriangular (Fin k) ℤ _ lo.toLT K := by
+    intro i j hj
+    change order.toSyn (m j) < order.toSyn (m i) at hj
+    change (f * monomial (m j) 1).coeff (homogeneousMonomials n M (c i)) = 0
+    rw [hc i]
+    apply order.coeff_eq_zero_of_lt
+    rw [order.degree_mul hf0 (by simp), order.degree_monomial, ite_eq_right one_ne_zero,
+      map_add, map_add]
+    exact add_lt_add_right hj _
+  change K.det = _
+  rw [det_of_isUpperTriangular ht]
+  have hdiag (i : Fin k) : K i i = order.leadingCoeff f := by
+    change (f * monomial (m i) 1).coeff (homogeneousMonomials n M (c i)) = _
+    rw [hc i, coeff_mul_monomial, mul_one, MonomialOrder.leadingCoeff]
+  simp [hdiag, k]
+
+private lemma int_mulVec_eq_zero_iff {ι ν : Type*} [Fintype ν] (A : Matrix ι ν ℤ) (v : ν → ℤ) :
+    A.map (Int.castRingHom ℚ) *ᵥ (Int.castRingHom ℚ ∘ v) = 0 ↔ A *ᵥ v = 0 := by
+  simp_rw [funext_iff, ← RingHom.map_mulVec]
+  simp
+
+/-- A nonzero minor of the homogeneous multiplication map bounds the logarithm of the gcd of
+maximal evaluation minors. The determinant method only needs this coefficient obstruction. -/
+private lemma homogeneous_log_minor_bound {n d M t : ℕ}
+    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : d ≤ M)
+    (x : Fin t → Fin (n + 1) → ℤ) (hx : ∀ i, eval (x i) f = 0)
+    {B : ℝ} (hB : 1 ≤ B) (hbox : ∀ i, InBox (x i) B)
+    (hrel : ∀ g : MvPolynomial (Fin (n + 1)) ℤ, g.IsHomogeneous M →
+      (∀ i, eval (x i) g = 0) → f ∣ g)
+    (c : Fin ((n + (M - d)).choose (M - d)) → Fin ((n + M).choose M))
+    (hc : Function.Injective c) (hc0 : ((homogeneousMultiplication f M (M - d)).submatrix c id).det ≠ 0) :
+    let s := hypersurfaceRank n d M
+    ∃ a : Fin s → Fin t,
+      LinearIndependent ℚ ((evaluationMatrix (homogeneousMonomials n M) (x ∘ a)).map ((↑) : ℤ → ℚ)).row ∧
+      Real.log (minorGcd (evaluationMatrix (homogeneousMonomials n M) (x ∘ a)) : ℝ) +
+        Real.log |(((homogeneousMultiplication f M (M - d)).submatrix c id).det : ℝ)| ≤
+        Real.log (s.factorial : ℝ) + s * M * Real.log B := by
+  classical
   let mon := homogeneousMonomials n M
-  let A := evaluationMatrix mon (points ∘ a)
-  obtain ⟨v, hv, hAv, hsmall⟩ :=
-    Int.Matrix.exists_ne_zero_mulVec_eq_zero_iSup_abs_le_det_rpow A hli (by simpa using hs)
-  simp only [Fintype.card_fin] at hsmall
-  let g := polynomialOfCoefficients mon v
-  have hg0 : g ≠ 0 := polynomialOfCoefficients_ne_zero mon (homogeneousMonomials_injective n M) hv
-  have hghom : g.IsHomogeneous M := polynomialOfCoefficients_homogeneous n M v
-  have hgvan : ∀ i, eval (points i) g = 0 := by
-    intro i
-    apply vanishes_of_evaluation_row_mem_span mon (points ∘ a) v hAv (points i)
-    rw [hspan]
-    exact Submodule.subset_span ⟨i, rfl⟩
-  have hcoeff : ∀ e, |(g.coeff e : ℝ)| ≤
-      (Real.sqrt (((A * Aᵀ).det : ℤ) : ℝ) / (Int.Matrix.minorGcd A : ℝ)) ^
-        ((((n + M).choose M : ℝ) - s)⁻¹) := by
-    apply abs_coefficient_polynomialOfCoefficients_le mon (homogeneousMonomials_injective n M) v
-    · apply Real.rpow_nonneg
-      have hD := Int.Matrix.one_le_minorGcd hli
-      change 1 ≤ Int.Matrix.minorGcd A at hD
-      exact div_nonneg (Real.sqrt_nonneg _) (by exact_mod_cast (show (0 : ℤ) ≤ _ by omega))
-    · intro j
-      have hj : |v j| ≤ ⨆ k, |v k| := le_ciSup (Set.finite_range (fun k => |v k|)).bddAbove j
-      have hjR : |(v j : ℝ)| ≤ ((⨆ k, |v k| : ℤ) : ℝ) := by exact_mod_cast hj
-      exact hjR.trans hsmall
-  have hr := integer_homogeneous_evaluation_rank_eq f hf hf0 hdM points hzero hrel
-  have he : ((evaluationMatrix (homogeneousMonomials n M) points).map ((↑) : ℤ → ℚ)).rank = s := by
-    rw [Matrix.rank_eq_finrank_span_row, ← hspan, ← Matrix.rank_eq_finrank_span_row,
-      hli.rank_matrix, Fintype.card_fin]
-  rw [he] at hr
-  refine ⟨s, a, ha, hs, hr, hli, ?_⟩
-  have hle : |((order.leadingCoeff f : ℤ) : ℝ)| ≤ |((order.leadingCoeff g : ℤ) : ℝ)| := by
-    exact_mod_cast abs_leadingCoeff_le_of_dvd order hg0 (hrel g hghom hgvan)
-  exact hle.trans (hcoeff (order.degree g))
+  let Z := evaluationMatrix mon x
+  let φ := Int.castRingHom ℚ
+  obtain ⟨s, a, hi, hspan⟩ := exists_fin_linearIndependent_row_span_eq (Z.map φ)
+  let A := evaluationMatrix mon (x ∘ a)
+  have hk := ker_mulVecLin_submatrix_eq_of_span_row_eq (Z.map φ) a hspan
+  change (A.map φ).mulVecLin.ker = (Z.map φ).mulVecLin.ker at hk
+  have hker (v) : A *ᵥ v = 0 ↔ Z *ᵥ v = 0 := by
+    rw [← int_mulVec_eq_zero_iff A, ← int_mulVec_eq_zero_iff Z]
+    simpa only [LinearMap.mem_ker, mulVecLin_apply] using
+      (show φ ∘ v ∈ (A.map φ).mulVecLin.ker ↔ φ ∘ v ∈ (Z.map φ).mulVecLin.ker by rw [hk])
+  obtain ⟨hr, b, hb⟩ := complement_minor_bound A _ hi
+    (fun v => (hker v).trans (homogeneous_evaluation_kernel_matrix f hf hf0 hd x hx hrel v)) c hc hc0
+  have hs : s = hypersurfaceRank n d M := by unfold hypersurfaceRank; omega
+  subst s
+  refine ⟨a, hi, ?_⟩
+  let C := (homogeneousMultiplication f M (M - d)).submatrix c id
+  have hD : (0 : ℝ) < minorGcd A := by
+    exact_mod_cast (show 0 < minorGcd A from zero_lt_one.trans_le (one_le_minorGcd hi))
+  have hC : (0 : ℝ) < |(C.det : ℝ)| := abs_pos.mpr (by exact_mod_cast hc0)
+  have hbound : (minorGcd A : ℝ) * |(C.det : ℝ)| ≤ |((A.submatrix id b).det : ℝ)| := by
+    exact_mod_cast hb
+  have hA : (A.submatrix id b).det ≠ 0 := by
+    intro h
+    simp [h] at hbound
+    exact (not_le_of_gt (mul_pos hD hC)) hbound
+  have hlog := Real.log_le_log (mul_pos hD hC) hbound
+  rw [Real.log_mul hD.ne' hC.ne'] at hlog
+  have harch := weighted_evaluation_det_log_bound (mon ∘ b) (x ∘ a) hB (fun i => hbox (a i)) hA
+  simp only [mon, Function.comp_apply, homogeneousMonomials_degree, Finset.sum_const, Finset.card_univ,
+    Fintype.card_fin, nsmul_eq_mul] at harch
+  exact hlog.trans harch
 
-/-- Logarithmic form of the coefficient obstruction. Positivity of the Gram
-determinant follows from the positive coefficient bound itself. -/
-lemma log_gcd_le_of_coefficient_bound {L G D k : ℝ}
-    (hL : 0 < L) (hD : 0 < D) (hk : 0 < k)
-    (hbound : L ≤ (Real.sqrt G / D) ^ k⁻¹) :
-    0 < G ∧ Real.log D ≤ Real.log G / 2 - k * Real.log L := by
-  have hsqrt : 0 < Real.sqrt G := by
-    by_contra h
-    have hz : Real.sqrt G = 0 := le_antisymm (le_of_not_gt h) (Real.sqrt_nonneg G)
-    rw [hz, zero_div, Real.zero_rpow (inv_ne_zero hk.ne')] at hbound
-    linarith
-  have hG : 0 < G := Real.sqrt_pos.mp hsqrt
-  have hbase : 0 < Real.sqrt G / D := div_pos hsqrt hD
-  have hlog := Real.log_le_log hL hbound
-  rw [Real.log_rpow hbase, Real.log_div hsqrt.ne' hD.ne', Real.log_sqrt hG.le] at hlog
-  have hmul := mul_le_mul_of_nonneg_left hlog hk.le
-  rw [← mul_assoc, mul_inv_cancel₀ hk.ne', one_mul] at hmul
-  exact ⟨hG, by linarith⟩
-
-/-- The logarithmic determinant comparison with exact Hilbert rank, derived
-from the absence of an auxiliary polynomial. -/
-private theorem homogeneous_no_auxiliary_log_comparison {n d M t : ℕ}
-    (order : MonomialOrder (Fin (n + 1)))
-    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
-    (points : Fin t → (Fin (n + 1) → ℤ)) (hzero : ∀ i, eval (points i) f = 0)
-    (hrel : ∀ g : MvPolynomial (Fin (n + 1)) ℤ, g.IsHomogeneous M →
-      (∀ i, eval (points i) g = 0) → f ∣ g) :
-    ∃ (s : ℕ) (a : Fin s → Fin t), Function.Injective a ∧ s < (n + M).choose M ∧
-      s + (n + (M - d)).choose (M - d) = (n + M).choose M ∧
-      LinearIndependent ℚ
-        ((evaluationMatrix (homogeneousMonomials n M) (points ∘ a)).map ((↑) : ℤ → ℚ)).row ∧
-      let A := evaluationMatrix (homogeneousMonomials n M) (points ∘ a)
-      0 < (((A * Aᵀ).det : ℤ) : ℝ) ∧
-      Real.log (Int.Matrix.minorGcd A : ℝ) ≤
-        Real.log (((A * Aᵀ).det : ℤ) : ℝ) / 2 -
-          (((n + M).choose M : ℝ) - s) * Real.log |((order.leadingCoeff f : ℤ) : ℝ)| := by
-  obtain ⟨s, a, ha, hs, hr, hi, hb⟩ :=
-    homogeneous_no_auxiliary_comparison order f hf hf0 hdM points hzero hrel
-  refine ⟨s, a, ha, hs, hr, hi, ?_⟩
-  apply log_gcd_le_of_coefficient_bound (hbound := hb)
-  · exact abs_pos.mpr (by exact_mod_cast (order.leadingCoeff_ne_zero_iff.mpr hf0))
-  · have hD := Int.Matrix.one_le_minorGcd hi
-    exact_mod_cast (show (0 : ℤ) < _ by omega)
-  · exact sub_pos.mpr (by exact_mod_cast hs)
-
-/-- Archimedean logarithmic bound for an integral evaluation matrix. -/
-lemma evaluation_log_gram_le {n N s M : ℕ} (hN : 0 < N)
-    (mon : Fin N → (Fin n →₀ ℕ)) (points : Fin s → Fin n → ℤ)
-    {B : ℝ} (hB : 1 ≤ B) (hp : ∀ i, InBox (points i) B)
-    (hdeg : ∀ j, (mon j).degree ≤ M)
-    (hG : 0 < (((evaluationMatrix mon points * (evaluationMatrix mon points)ᵀ).det : ℤ) : ℝ)) :
-    Real.log (((evaluationMatrix mon points * (evaluationMatrix mon points)ᵀ).det : ℤ) : ℝ) / 2 ≤
-      Real.log (s.factorial : ℝ) / 2 + (s : ℝ) / 2 * Real.log N + s * M * Real.log B := by
-  let A := evaluationMatrix mon points
-  have he : (((A * Aᵀ).det : ℤ) : ℝ) = ((A.map ((↑) : ℤ → ℝ)) * (A.map ((↑) : ℤ → ℝ))ᵀ).det := by
-    change (Int.castRingHom ℝ) (A * Aᵀ).det = _
-    rw [RingHom.map_det]
-    congr 1
-    ext i j
-    simp [Matrix.mul_apply]
-  have hbound := evaluation_gram_det_le mon points hB hp hdeg
-  change |((A.map ((↑) : ℤ → ℝ)) * (A.map ((↑) : ℤ → ℝ))ᵀ).det| ≤ _ at hbound
-  rw [← he, abs_of_pos hG] at hbound
-  have hlog := Real.log_le_log hG hbound
-  have hB0 : 0 < B := by linarith
-  have hN0 : (0 : ℝ) < N := by exact_mod_cast hN
-  have hfact : (0 : ℝ) < s.factorial := by exact_mod_cast Nat.factorial_pos s
-  rw [Real.log_mul hfact.ne' (pow_pos (mul_pos hN0 (sq_pos_of_pos (pow_pos hB0 M))) s).ne',
-    Real.log_pow, Real.log_mul hN0.ne' (sq_pos_of_pos (pow_pos hB0 M)).ne',
-    Real.log_pow, Real.log_pow] at hlog
-  norm_num at hlog
-  nlinarith
-
-/-- The archimedean half of the determinant-method inequality, for
-bounded integer points and exact Hilbert rank. -/
+/-- Archimedean logarithmic bound from the leading triangular minor of the homogeneous
+multiplication map. -/
 theorem homogeneous_no_auxiliary_box_comparison {n d M t : ℕ}
-    (order : MonomialOrder (Fin (n + 1)))
-    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
+    (order : MonomialOrder (Fin (n + 1))) (f : MvPolynomial (Fin (n + 1)) ℤ)
+    (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
     (points : Fin t → (Fin (n + 1) → ℤ)) (hzero : ∀ i, eval (points i) f = 0)
     {B : ℝ} (hB : 1 ≤ B) (hp : ∀ i, InBox (points i) B)
     (hrel : ∀ g : MvPolynomial (Fin (n + 1)) ℤ, g.IsHomogeneous M →
       (∀ i, eval (points i) g = 0) → f ∣ g) :
-    ∃ (s : ℕ) (a : Fin s → Fin t), Function.Injective a ∧ s < (n + M).choose M ∧
-      s + (n + (M - d)).choose (M - d) = (n + M).choose M ∧
+    let s := hypersurfaceRank n d M
+    ∃ a : Fin s → Fin t,
       LinearIndependent ℚ
         ((evaluationMatrix (homogeneousMonomials n M) (points ∘ a)).map ((↑) : ℤ → ℚ)).row ∧
-      Real.log (Int.Matrix.minorGcd
-        (evaluationMatrix (homogeneousMonomials n M) (points ∘ a)) : ℝ) ≤
-        Real.log (s.factorial : ℝ) / 2 + (s : ℝ) / 2 * Real.log ((n + M).choose M) +
-          s * M * Real.log B -
-          (((n + M).choose M : ℝ) - s) * Real.log |((order.leadingCoeff f : ℤ) : ℝ)| := by
-  obtain ⟨s, a, ha, hs, hr, hi, hG, hlog⟩ :=
-    homogeneous_no_auxiliary_log_comparison order f hf hf0 hdM points hzero hrel
-  refine ⟨s, a, ha, hs, hr, hi, ?_⟩
-  have hb := evaluation_log_gram_le (by omega : 0 < (n + M).choose M)
-    (homogeneousMonomials n M) (points ∘ a) hB (fun i j => hp (a i) j)
-    (fun j => (homogeneousMonomials_degree n M j).le) hG
-  linarith
+      Real.log (minorGcd (evaluationMatrix (homogeneousMonomials n M) (points ∘ a)) : ℝ) ≤
+        Real.log (s.factorial : ℝ) + s * M * Real.log B -
+          ((n + (M - d)).choose (M - d) : ℝ) * Real.log |((order.leadingCoeff f : ℤ) : ℝ)| := by
+  obtain ⟨c, hi, hc⟩ := homogeneousMultiplication_leading_minor order f hf hf0 hdM
+  have hc0 := hc.trans_ne (pow_ne_zero _ (order.leadingCoeff_ne_zero_iff.mpr hf0))
+  obtain ⟨a, hli, hb⟩ := homogeneous_log_minor_bound f hf hf0 hdM points hzero hB hp hrel c hi hc0
+  rw [hc, Int.cast_pow, abs_pow, Real.log_pow] at hb
+  exact ⟨a, hli, le_sub_iff_add_le.mpr hb⟩
+
+/-- At the degree of the equation the multiplication map has just one column, so it gives a
+bound for every coefficient in terms of the evaluation minors. -/
+theorem homogeneous_no_auxiliary_coefficient_height {n d t : ℕ}
+    (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0)
+    (z : Fin t → IntPoint (n + 1)) (hz : ∀ i, eval (z i) f = 0)
+    {B : ℝ} (hB : 1 ≤ B) (hbox : ∀ i, InBox (z i) B)
+    (hrel : ∀ g : MvPolynomial (Fin (n + 1)) ℤ, g.IsHomogeneous d →
+      (∀ i, eval (z i) g = 0) → f ∣ g) :
+    Real.log (integerCoefficientHeight f : ℝ) ≤
+      ((n + d).choose d : ℝ) * Real.log ((n + d).choose d) +
+        ((n + d).choose d : ℝ) * d * Real.log B := by
+  classical
+  obtain ⟨m, hm, he⟩ := Finset.exists_mem_eq_sup f.support (support_nonempty.mpr hf0)
+    (fun m => (f.coeff m).natAbs)
+  obtain ⟨j, hj⟩ := homogeneousMonomials_surjective n d m
+    (hf.degree_eq_sum_deg_support hm).symm
+  have hk : (n + (d - d)).choose (d - d) = 1 := by simp
+  let c : Fin ((n + (d - d)).choose (d - d)) → Fin ((n + d).choose d) := fun _ => j
+  let : Unique (Fin ((n + (d - d)).choose (d - d))) := by rw [hk]; infer_instance
+  have hdet : ((homogeneousMultiplication f d (d - d)).submatrix c id).det = f.coeff m := by
+    rw [det_unique]
+    have h0 : homogeneousMonomials n (d - d) default = 0 := by
+      apply (Finsupp.degree_eq_zero_iff _).mp
+      rw [homogeneousMonomials_degree, Nat.sub_self]
+    change (f * monomial _ 1).coeff (homogeneousMonomials n d j) = f.coeff m
+    simp [h0, hj, ← C_apply]
+  have hdet0 := hdet.trans_ne (mem_support_iff.mp hm)
+  obtain ⟨a, hi, hb⟩ := homogeneous_log_minor_bound f hf hf0 le_rfl z hz hB hbox hrel c
+    (fun _ _ _ => Subsingleton.elim _ _) hdet0
+  have hD : (1 : ℝ) ≤ minorGcd (evaluationMatrix (homogeneousMonomials n d) (z ∘ a)) := by
+    exact_mod_cast one_le_minorGcd hi
+  let s := hypersurfaceRank n d d
+  have hs : s ≤ (n + d).choose d := Nat.sub_le ..
+  have hfac := Real.log_factorial_le_mul_log hs
+  have hN : (1 : ℝ) ≤ (n + d).choose d := by exact_mod_cast Nat.choose_pos (by omega : d ≤ n + d)
+  simp only [integerCoefficientHeight, he, Nat.cast_natAbs, Int.cast_abs]
+  rw [hdet] at hb
+  calc
+    _ ≤ (s : ℝ) * Real.log ((n + d).choose d) + s * d * Real.log B := by
+      linarith [Real.log_nonneg hD]
+    _ ≤ _ := by
+      have hℓ := Real.log_nonneg hN
+      have hℓB := Real.log_nonneg hB
+      gcongr
 
 end
 end CCDN

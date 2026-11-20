@@ -31,28 +31,28 @@ outer coefficient of `p`. -/
 lemma coeff_bivariateCoefficientDerivative {F : Type*} [CommRing F] (p : F[X][X]) (n : ℕ) :
     ((bivariateCoefficientDerivative F) p).coeff n = (p.coeff n).derivative := rfl
 
+section
+
+variable {R : Type*} [CommRing R] (m n : ℕ) (a : R)
+include R m n a
+
 /-- The inner derivative of the monomial with outer exponent `m`, inner exponent `n` and
 coefficient `a` is the monomial with exponents `m`, `n - 1` and coefficient `a * n`. -/
-lemma bivariateCoefficientDerivative_monomial {R : Type*} [CommRing R] (m n : ℕ) (a : R) :
+lemma bivariateCoefficientDerivative_monomial :
     (bivariateCoefficientDerivative R) (monomial m (monomial n a)) =
       monomial m (monomial (n - 1) (a * n)) := by
   ext i
   simp only [coeff_bivariateCoefficientDerivative, coeff_monomial]
   split_ifs <;> simp [derivative_monomial]
 
-/-- Differentiate a bivariate monomial in the outer variable. -/
-lemma bivariate_derivative_monomial {R : Type*} [CommRing R] (m n : ℕ) (a : R) :
-    (monomial m (monomial n a)).derivative = monomial (m - 1) (monomial n (a * m)) := by
-  rw [derivative_monomial, ← map_natCast (C : R →+* R[X]) m, monomial_mul_C]
+end
 
 /-- Mapping the inner coefficients of `p` into `RatFunc F` intertwines the inner derivative with
 coefficientwise rational differentiation. -/
 lemma bivariateCoefficientDerivative_map {F : Type*} [Field F] (p : F[X][X]) :
     ((bivariateCoefficientDerivative F) p).map (algebraMap F[X] (RatFunc F)) =
       Differential.mapCoeffs (p.map (algebraMap F[X] (RatFunc F))) := by
-  ext n
-  simp only [coeff_map, coeff_bivariateCoefficientDerivative, Differential.coeff_mapCoeffs]
-  exact (rationalDerivative_polynomial (p.coeff n)).symm
+  aesop
 
 end
 end CCDN

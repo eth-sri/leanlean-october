@@ -5,119 +5,78 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.Algebra.ProjectiveChartIdeal
-public import CCDN.Projection.DegreePreservingProjectionBox
-import CCDN.Algebra.ScaledHypersurfaceModel
-import CCDN.Projection.BoundedDegreePreservingProjection
-import CCDN.Projection.ProjectivePlaneProjection
+public import CCDN.Hilbert.ProjectiveCurveDegree
+public import CCDN.Projection.ProjectionHeight
+public import CCDN.Height.ProjectiveZeroLocus
+public import CCDN.Height.ProjectiveBox
+import CCDN.Projection.BoundedDegreeNormalizationFiber
+import CCDN.Projection.BoundedBirationalHypersurfaceProjection
+import CCDN.Projection.DerivativeReconstruction
+import CCDN.Projection.CurveRationalInverse
+import CCDN.Projection.HomogeneousProjectionEquation
+import CCDN.Projection.ProjectiveLinearCountTransfer
+import Mathlib.RingTheory.MvPolynomial.EulerIdentity
 
-/-! A projective curve with a proper standard chart reduces to a plane
-equation of the same degree. Projection loses at most d(d-1) affine points
-and at most d further points lie on the omitted hyperplane. -/
+/-! Projective curve projection uses the same reconstruction as the affine case;
+the proper derivative section accounts for the exceptional points. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- Let `I` be a prime ideal defining a projective curve of degree `d` not contained in the
-hyperplane `X₀ = 0`, and suppose the moment coordinates with parameters `k₀ ≤ n ^ 2 * d` and
-`k₁ ≤ n * d ^ 2` satisfy the plane relation `f` of degree `d` on its affine chart, losing at most
-`d * (d - 1)` points on any finite set of chart points. Then the curve has at most `d ^ 2` more
-rational points of height at most `B` than the projective plane curve defined by the homogenization
-of `f` has of height at most `projectionBoxFactor n d * B`. -/
-theorem projective_curve_count_le_of_moment_projection {n d k₀ k₁ : ℕ}
-    (I : Ideal (CoordinatePolynomial (n + 1))) [I.IsPrime] (hX : X 0 ∉ I)
-    (hd : 0 < d) (hdegree : HasProjectiveCurveDegree I d)
-    (f : MvPolynomial (Fin 2) ℚ) (hfd : f.totalDegree = d)
-    (hk₀ : k₀ ≤ n ^ 2 * d) (hk₁ : k₁ ≤ n * d ^ 2)
-    (hfI : aeval ![momentCoordinate ℚ n k₀, momentCoordinate ℚ n k₁] f ∈ projectiveChartIdeal I)
-    (hcount : ∀ S : Finset (Fin n → ℚ),
-      (∀ z ∈ S, ∀ g ∈ projectiveChartIdeal I, eval z g = 0) →
-      S.card ≤ (S.image (fun z i =>
-        eval z (![momentCoordinate ℚ n k₀, momentCoordinate ℚ n k₁] i))).card + d * (d - 1))
-    (B : ℝ) (hB : 1 ≤ B) :
-    projectiveCount (projectiveIdealZeroLocus I) B ≤
-      projectiveCount (projectiveZeroLocus (scaledHomogenize d 1 f))
-        (projectionBoxFactor n d * B) + d ^ 2 := by
-  classical
-  let S := projectivePoints (projectiveIdealZeroLocus I) B
-  let T := S.filter (fun x => x.rep 0 ≠ 0)
-  let U := S.filter (fun x => ¬ x.rep 0 ≠ 0)
-  let R := T.image projectiveAffineCoordinates
-  let π : RatPoint n → RatPoint 2 := fun z =>
-    ![eval z (momentCoordinate ℚ n k₀), eval z (momentCoordinate ℚ n k₁)]
-  have hR : ∀ z ∈ R, ∀ g ∈ projectiveChartIdeal I, eval z g = 0 := by
-    intro z hz
-    obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hz
-    obtain ⟨hxS, hx0⟩ := Finset.mem_filter.mp hx
-    exact projectiveChartIdeal_point I hX x (mem_projectivePoints.mp hxS).2 hx0
-  have hc := hcount R hR
-  have hRT : R.card = T.card := by
-    apply Finset.card_image_of_injOn
-    intro x hx y hy he
-    exact projectiveAffineCoordinates_injective (Finset.mem_filter.mp hx).2
-      (Finset.mem_filter.mp hy).2 he
-  have hπ : (fun z i => eval z
-      (![momentCoordinate ℚ n k₀, momentCoordinate ℚ n k₁] i)) = π := by
-    funext z i
-    fin_cases i <;> rfl
-  rw [hπ, hRT] at hc
-  have himage : (R.image π).card ≤
-      projectiveCount (projectiveZeroLocus (scaledHomogenize d 1 f))
-        (projectionBoxFactor n d * B) := by
-    rw [← Finset.card_image_of_injective (R.image π) (affineProjectivePoint_injective 2)]
-    apply Finset.card_le_card
-    intro y hy
-    obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hy
-    obtain ⟨v, hv, rfl⟩ := Finset.mem_image.mp hz
-    obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hv
-    obtain ⟨hxS, hx0⟩ := Finset.mem_filter.mp hx
-    obtain ⟨hxB, hxI⟩ := mem_projectivePoints.mp hxS
-    exact mem_projectivePoints.mpr
-      ⟨projectivePlaneChartProjection_height hk₀ hk₁ x hx0 hB hxB,
-        projectivePlaneChartProjection_zero I hX f hfd hfI x hxI hx0⟩
-  have hU : U.card ≤ d := by
-    have h := projective_section_card_le_degree I hdegree (X 0) (isHomogeneous_X _ _)
-      hX (fun x : U => x.val) Subtype.val_injective
-      (fun x => (mem_projectivePoints.mp (Finset.mem_filter.mp x.property).1).2)
-      (fun x => by simpa using (Finset.mem_filter.mp x.property).2)
-    simpa only [Fintype.card_coe, mul_one] using h
-  have hsum : T.card + U.card = S.card := Finset.card_filter_add_card_filter_not _
-  have hdcalc : d * (d - 1) + d = d ^ 2 := by
-    have h := Nat.sub_add_cancel hd
-    nlinarith
-  change S.card ≤ _
-  omega
-
-/-- A projective curve of degree `d > 0` in `ℙⁿ`, given by a prime ideal `I` not containing
-`X 0`, has at most `d ^ 2` more rational points of height at most `B` than some irreducible
-projective plane curve of degree `d` has of height at most `projectionBoxFactor n d * B`. -/
+/-- Bounded plane projection of a projective curve, with at most `d²` exceptional points. -/
 theorem exists_projective_plane_count_reduction {n d : ℕ}
-    (I : Ideal (CoordinatePolynomial (n + 1))) [I.IsPrime] (hX : X 0 ∉ I)
+    (I : Ideal (CoordinatePolynomial (n + 1))) [I.IsPrime]
     (hd : 0 < d) (hdegree : HasProjectiveCurveDegree I d) :
     ∃ f : MvPolynomial (Fin 3) ℚ, f.IsHomogeneous d ∧ Irreducible f ∧
-      ∀ B : ℝ, 1 ≤ B →
-        projectiveCount (projectiveIdealZeroLocus I) B ≤
-          projectiveCount (projectiveZeroLocus f) (projectionBoxFactor n d * B) + d ^ 2 := by
+      ∀ B : ℝ, 1 ≤ B → projectiveCount (projectiveIdealZeroLocus I) B ≤
+        projectiveCount (projectiveZeroLocus f) (projectionBoxFactor (n + 1) d * B) + d ^ 2 := by
   classical
-  let J := projectiveChartIdeal I
-  have hJ : HasAffineCurveDegree J d := projectiveChartIdeal_degree I hX hdegree
-  obtain ⟨k₀, k₁, f, hk₀, hk₁, hfir, hfd, hker, hcount⟩ :=
-    exists_bounded_projection_card_le J d hd hJ
-  have hfI : aeval ![momentCoordinate ℚ n k₀, momentCoordinate ℚ n k₁] f ∈ J :=
-    (hker f).mpr dvd_rfl
-  have hπ : (fun z i => eval z (![momentCoordinate ℚ n k₀, momentCoordinate ℚ n k₁] i)) =
-      fun z : Fin n → ℚ =>
-        ![eval z (momentCoordinate ℚ n k₀), eval z (momentCoordinate ℚ n k₁)] := by
-    funext z i
-    fin_cases i <;> rfl
-  refine ⟨scaledHomogenize d 1 f, scaledHomogenize_homogeneous 1 f hfd.le, ?_,
-    projective_curve_count_le_of_moment_projection I hX hd hdegree f hfd hk₀ hk₁ hfI ?_⟩
-  · simpa only [hfd] using scaledHomogenize_irreducible f hfir one_ne_zero
-  · intro S hS
-    rw [hπ]
-    exact hcount S hS
+  obtain ⟨J, hJ, hhom, hJI, hdeg, hdim⟩ := exists_homogeneous_projective_curve I hd hdegree
+  obtain ⟨b, f, hb, hN, hP, rfl⟩ := exists_bounded_birational_hypersurface_projection 1 (n + 1) J d hdim
+  let a := fun i => integerLinearForm (b i)
+  have ha (i) : (a i).IsHomogeneous 1 := linearForm_isHomogeneous _
+  have hf := homogeneous_projection_equation J hhom a ha f hP.irreducible.ne_zero hP.ker_eq
+  let Q := pderiv 0 f
+  let g := aeval a Q
+  have hg : g.IsHomogeneous (f.totalDegree - 1) := by
+    simpa only [one_mul] using (hf.pderiv (i := (0 : Fin 3))).aeval a ha
+  obtain ⟨P, hQ, hrec⟩ := exists_projection_reconstruction J a (fun i => (ha i).totalDegree_le)
+    hN.injective f hP.irreducible.ne_zero hdim hP.ker_eq
+  refine ⟨f, hf, hP.irreducible, fun B hB => ?_⟩
+  have hsub : projectiveIdealZeroLocus I ⊆ projectiveIdealZeroLocus J :=
+    fun _ hx v hv he p hp => hx v hv he p (hJI hp)
+  refine (projectiveCount_mono hsub le_rfl).trans ?_
+  let H := projectionEntryBound (n + 1) f.totalDegree
+  have hH : 0 ≤ H := (projectionEntryBound_one_le _ _).trans' zero_le_one
+  have hgood := projective_integer_linear_count_transfer J b f hf hP.aeval_mem g hg f.totalDegree 1
+    (fun s hs hz => linear_normalization_fiber_card_le J (fun i => a i.succ)
+      (fun i => (ha i.succ).totalDegree_le) hN.injective hN.filtered _ hdim 0 s hs
+      (fun x hx i => hz x hx i.succ))
+    (fun z s hs hgs hzs => Finset.card_le_one.mpr (fun x hx y hy =>
+      projection_injective_off_reconstruction J a Q P hrec x y (hs x hx) (hs y hy) (hgs x hx)
+        (funext fun i => (hzs x hx i).trans (hzs y hy i).symm)))
+    H B hH (fun i j => projectionEntryBound_le hd (hb i j))
+  rw [one_mul] at hgood
+  let S := projectivePoints (projectiveIdealZeroLocus J) B
+  let T := S.filter (fun x => ¬ eval x.rep g ≠ 0)
+  have hbad : T.card ≤ f.totalDegree * (f.totalDegree - 1) := by
+    simpa only [Fintype.card_coe] using projective_section_card_le_degree J hdeg g hg hQ
+      (fun x : T => x.val) Subtype.val_injective
+      (fun x => (mem_projectivePoints.mp (Finset.mem_filter.mp x.property).1).2)
+      (fun x => not_not.mp (Finset.mem_filter.mp x.property).2)
+  have hfib := Finset.card_filter_add_card_filter_not (s := S) (p := fun x => eval x.rep g ≠ 0)
+  have hheight : ((n + 1 : ℕ) : ℝ) * H * B ≤ projectionBoxFactor (n + 1) f.totalDegree * B := by
+    unfold projectionBoxFactor
+    gcongr
+    linarith
+  have himg := projectiveCount_mono (Set.Subset.rfl : projectiveZeroLocus f ⊆ projectiveZeroLocus f) hheight
+  have herr : f.totalDegree * (f.totalDegree - 1) ≤ f.totalDegree ^ 2 := by
+    simpa [pow_two] using Nat.mul_le_mul_left f.totalDegree (Nat.sub_le f.totalDegree 1)
+  change S.card ≤ _
+  rw [← hfib]
+  exact Nat.add_le_add (hgood.trans himg) (hbad.trans herr)
 
 end
 end CCDN

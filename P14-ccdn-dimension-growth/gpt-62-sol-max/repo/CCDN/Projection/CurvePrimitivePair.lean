@@ -21,13 +21,6 @@ open MvPolynomial
 def momentCoordinate (K : Type*) [CommRing K] (n k : ℕ) : MvPolynomial (Fin n) K :=
   ∑ j : Fin n, C ((k : K) ^ j.val) * X j
 
-/-- The moment coordinate has total degree at most one. -/
-lemma momentCoordinate_degree (K : Type*) [CommRing K] [Nontrivial K] (n k : ℕ) :
-    (momentCoordinate K n k).totalDegree ≤ 1 := by
-  apply totalDegree_finsetSum_le
-  intro j _
-  exact (totalDegree_mul _ _).trans (by rw [totalDegree_C, totalDegree_X])
-
 /-- In any field `F` receiving the quotient by `I` compatibly with `K`, the image of the moment
 coordinate with parameter `k` is `∑ j, x j * k ^ j`, where `x j` is the image of `X j`. -/
 lemma momentCoordinate_fraction {K F : Type*} [Field K] [Field F] [Algebra K F]
@@ -39,9 +32,7 @@ lemma momentCoordinate_fraction {K F : Type*} [Field K] [Field F] [Algebra K F]
       ∑ j : Fin n, algebraMap (MvPolynomial (Fin n) K ⧸ I) F
         ((Ideal.Quotient.mk I) (X j)) * (k : F) ^ j.val := by
   simp only [momentCoordinate, map_sum, map_mul, map_pow, map_natCast]
-  apply Finset.sum_congr rfl
-  intro j _
-  exact mul_comm _ _
+  grind
 
 end
 end CCDN

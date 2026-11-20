@@ -5,10 +5,11 @@ Authors: Jason Davies
 -/
 module
 
+import CCDN.Height.Box
 public import CCDN.Hilbert.FilteredPrimeDecomposition
 public import CCDN.Surface.CurveComponents
 public import CCDN.Surface.TopFormAuxiliary
-import CCDN.AuxiliaryPolynomial.PlaneAuxiliaryCount
+import CCDN.Algebra.IntegerRationalIrreducibility
 import CCDN.ForMathlib.MvPolynomial
 import CCDN.Surface.CompleteIntersectionDegreeBudget
 import CCDN.Surface.TopFormBadPrimes
@@ -21,86 +22,45 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- An absolutely irreducible top form supplies the auxiliary equation, the
-rational curve components, and their total degree bound. The component
-cover is exact on the auxiliary section and covers every original integer
-zero in the specified box. -/
+/-- The integral zeros are covered by prime curves of bounded total degree. -/
 theorem top_form_surface_curve_components
-    (f : MvPolynomial (Fin 3) ℤ)
-    (hir : HasAbsIrreducibleTopForm f)
-    {B : ℝ} (hB : 1 ≤ B) :
-    ∃ g : MvPolynomial (Fin 3) ℤ, g ≠ 0 ∧
-      ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g ∧
-      (g.totalDegree : ℝ) ≤ topFormAuxiliaryConstant 1 *
-        (f.totalDegree : ℝ) ^ (7 / 2 : ℝ) *
-          B ^ (1 / (f.totalDegree : ℝ) ^ (1 / 2 : ℝ)) ∧
-      (∀ x : IntPoint 3, InBox x B → eval x f = 0 → eval x g = 0) ∧
-      ∃ S : Finset (Ideal (CoordinatePolynomial 3)),
-        ∃ d : Ideal (CoordinatePolynomial 3) → ℕ,
-          (∀ P ∈ S, IsSectionCurve (map (Int.castRingHom ℚ) f) (map (Int.castRingHom ℚ) g) P
-            (d P)) ∧
-          zeroLocus (map (Int.castRingHom ℚ) f) ∩ zeroLocus (map (Int.castRingHom ℚ) g) =
-            ⋃ P ∈ S, idealZeroLocus P ∧
-          ((∑ P ∈ S, d P : ℕ) : ℝ) ≤ topFormAuxiliaryConstant 1 *
-            (f.totalDegree : ℝ) ^ (9 / 2 : ℝ) *
-              B ^ (1 / (f.totalDegree : ℝ) ^ (1 / 2 : ℝ)) ∧
-          (∀ P ∈ S, (polynomialSectionIdeal (map (Int.castRingHom ℚ) f)
-            (map (Int.castRingHom ℚ) g)).IsMinimalPrime P) ∧
-          ∀ x : IntPoint 3, InBox x B → eval x f = 0 →
-            ∃ P ∈ S, rationalPoint x ∈ idealZeroLocus P := by
+    (f : MvPolynomial (Fin 3) ℤ) (hir : HasAbsIrreducibleTopForm f) {B : ℝ} (hB : 1 ≤ B) :
+    ∃ (S : Finset (Ideal (CoordinatePolynomial 3))) (d : Ideal (CoordinatePolynomial 3) → ℕ),
+      (∀ P ∈ S, IsSurfaceCurve (map (Int.castRingHom ℚ) f) P (d P)) ∧
+      (∑ P ∈ S, (d P : ℝ)) ≤ topFormAuxiliaryConstant 1 *
+        (f.totalDegree : ℝ) ^ (9 / 2 : ℝ) * B ^ (1 / Real.sqrt f.totalDegree) ∧
+      ∀ x : IntPoint 3, InBox x B → eval x f = 0 →
+        ∃ P ∈ S, rationalPoint x ∈ idealZeroLocus P := by
   classical
   have habs := absolute_irreducible_of_top_homogeneousComponent_irreducible f hir
   have hfQ : Irreducible (map (Int.castRingHom ℚ) f) :=
     rational_irreducible_of_charZero_map f habs
   have hd : 0 < f.totalDegree := absolute_integer_polynomial_totalDegree_pos f habs
   have hdR : (0 : ℝ) < f.totalDegree := by exact_mod_cast hd
-  obtain ⟨g, hg0, hgnd, hgdeg, hgz⟩ := top_form_auxiliary_rational (n := 1) f hir hB
-  have hgdegree : (g.totalDegree : ℝ) ≤ topFormAuxiliaryConstant 1 *
-      (f.totalDegree : ℝ) ^ (7 / 2 : ℝ) *
-        B ^ (1 / (f.totalDegree : ℝ) ^ (1 / 2 : ℝ)) := by
-    norm_num at hgdeg ⊢
-    exact hgdeg
-  obtain ⟨S, d, hcomponents, hcover, hbudget, hminimal⟩ :=
+  obtain ⟨g, _, hgnd, hgdeg, hgz⟩ := top_form_auxiliary_rational (n := 1) f hir hB
+  obtain ⟨S, d, hcomponents, hcover, hbudget⟩ :=
     exists_completeIntersection_curve_components (map (Int.castRingHom ℚ) f)
       (map (Int.castRingHom ℚ) g) hfQ hgnd
-  have hmapdegree (p : MvPolynomial (Fin 3) ℤ) :
-      (map (Int.castRingHom ℚ) p).totalDegree = p.totalDegree :=
-      totalDegree_map_of_injective Int.cast_injective _
-  have hpower : (f.totalDegree : ℝ) * (f.totalDegree : ℝ) ^ (7 / 2 : ℝ) =
-      (f.totalDegree : ℝ) ^ (9 / 2 : ℝ) := by
-    calc
-      _ = (f.totalDegree : ℝ) ^ (1 : ℝ) * (f.totalDegree : ℝ) ^ (7 / 2 : ℝ) := by
-        rw [Real.rpow_one]
-      _ = (f.totalDegree : ℝ) ^ ((1 : ℝ) + 7 / 2) := (Real.rpow_add hdR _ _).symm
-      _ = _ := by norm_num
-  refine ⟨g, hg0, hgnd, hgdegree, hgz, S, d, hcomponents, hcover, ?_, hminimal, ?_⟩
-  · have hbudgetR : ((∑ P ∈ S, d P : ℕ) : ℝ) ≤
-        (f.totalDegree : ℝ) * g.totalDegree := by
-      rw [hmapdegree f, hmapdegree g] at hbudget
-      exact_mod_cast hbudget
-    calc
-      _ ≤ (f.totalDegree : ℝ) * g.totalDegree := hbudgetR
-      _ ≤ (f.totalDegree : ℝ) * (topFormAuxiliaryConstant 1 *
-          (f.totalDegree : ℝ) ^ (7 / 2 : ℝ) *
-            B ^ (1 / (f.totalDegree : ℝ) ^ (1 / 2 : ℝ))) :=
-        mul_le_mul_of_nonneg_left hgdegree hdR.le
-      _ = topFormAuxiliaryConstant 1 *
-          ((f.totalDegree : ℝ) * (f.totalDegree : ℝ) ^ (7 / 2 : ℝ)) *
-            B ^ (1 / (f.totalDegree : ℝ) ^ (1 / 2 : ℝ)) := by ring
-      _ = _ := by rw [hpower]
+  refine ⟨S, d, fun P hP => (hcomponents P hP).toIsSurfaceCurve, ?_, ?_⟩
+  · simp only [rational_map_totalDegree] at hbudget
+    have hb : (∑ P ∈ S, (d P : ℝ)) ≤ f.totalDegree * (g.totalDegree : ℝ) := by simpa only [Nat.cast_sum] using (show ((∑ P ∈ S, d P : ℕ) : ℝ) ≤ _ by exact_mod_cast hbudget)
+    apply hb.trans
+    have hc := mul_le_mul_of_nonneg_left hgdeg hdR.le
+    norm_num at hc
+    rw [Real.sqrt_eq_rpow]
+    have he : (f.totalDegree : ℝ) * (f.totalDegree : ℝ) ^ (7 / 2 : ℝ) =
+        (f.totalDegree : ℝ) ^ (9 / 2 : ℝ) := by
+      conv_lhs => arg 1; rw [← Real.rpow_one (f.totalDegree : ℝ)]
+      rw [← Real.rpow_add hdR]
+      norm_num
+    convert hc using 1
+    rw [← he]
+    ring_nf
   · intro x hx hxf
-    have hmapzero (p : MvPolynomial (Fin 3) ℤ) (hp : eval x p = 0) :
-        eval (rationalPoint x) (map (Int.castRingHom ℚ) p) = 0 := by
-      have hh := congrArg (Int.castRingHom ℚ) hp
-      rw [map_eval, map_zero] at hh
-      exact hh
-    have hxsection : rationalPoint x ∈
-        zeroLocus (map (Int.castRingHom ℚ) f) ∩ zeroLocus (map (Int.castRingHom ℚ) g) :=
-      ⟨hmapzero f hxf, hmapzero g (hgz x hx hxf)⟩
-    rw [hcover] at hxsection
-    obtain ⟨P, hxP⟩ := Set.mem_iUnion.mp hxsection
-    obtain ⟨hPS, hxP⟩ := Set.mem_iUnion.mp hxP
-    exact ⟨P, hPS, hxP⟩
+    have h : rationalPoint x ∈ zeroLocus (map (Int.castRingHom ℚ) f) ∩
+        zeroLocus (map (Int.castRingHom ℚ) g) :=
+      ⟨(eval_rationalPoint_map_eq_zero x f).mpr hxf, (eval_rationalPoint_map_eq_zero x g).mpr (hgz x hx hxf)⟩
+    simpa only [hcover, Set.mem_iUnion, exists_prop] using h
 
 end
 end CCDN

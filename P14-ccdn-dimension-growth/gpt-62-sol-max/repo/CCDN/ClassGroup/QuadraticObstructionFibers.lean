@@ -59,15 +59,20 @@ private theorem quadraticUnitNormQuotient_square (hd : Module.finrank F K = 2)
 
 variable [NumberField F]
 
+section
+
+variable (hd : Module.finrank F K = 2)
+include hd
+
 /-- For a quadratic extension `K / F` of number fields, the unit-norm quotient is finite. -/
-theorem quadraticUnitNormQuotient_finite (hd : Module.finrank F K = 2) :
+theorem quadraticUnitNormQuotient_finite :
     Finite (quadraticUnitNormQuotient F K) :=
   (numberFieldUnit_exponent_two_quotient F
     (QuotientGroup.mk' (relativeUnitNorm F K).range)
     (QuotientGroup.mk'_surjective _) (quadraticUnitNormQuotient_square F K hd)).1
 
 /-- Uniform bound on the unit-norm obstruction. -/
-private theorem quadraticUnitNormQuotient_card_le (hd : Module.finrank F K = 2) :
+private theorem quadraticUnitNormQuotient_card_le :
     Nat.card (quadraticUnitNormQuotient F K) ≤
       2 ^ (NumberField.Units.rank F + 1) :=
   (numberFieldUnit_exponent_two_quotient F
@@ -76,10 +81,12 @@ private theorem quadraticUnitNormQuotient_card_le (hd : Module.finrank F K = 2) 
 
 /-- For a quadratic extension `K / F` of number fields, the unit-norm quotient has order at most
 `2 ^ [F : ℚ]`. -/
-theorem quadraticUnitNormQuotient_card_le_degree (hd : Module.finrank F K = 2) :
+theorem quadraticUnitNormQuotient_card_le_degree :
     Nat.card (quadraticUnitNormQuotient F K) ≤ 2 ^ Module.finrank ℚ F :=
   (quadraticUnitNormQuotient_card_le F K hd).trans
     (Nat.pow_le_pow_right (by norm_num) (numberField_unit_rank_add_one_le_degree F))
+
+end
 
 end
 end CCDN
@@ -100,7 +107,7 @@ private theorem principalIdeal_of_ring_unit (u : Rˣ) :
   simp only [coe_toPrincipalIdeal, Units.coe_map, Units.val_one]
   change FractionalIdeal.spanSingleton R⁰ (algebraMap R K (u : R)) = 1
   rw [← FractionalIdeal.coeIdeal_span_singleton (S := R⁰) (P := K)]
-  simp only [Ideal.span_singleton_eq_top.mpr u.isUnit, FractionalIdeal.coeIdeal_top]
+  simp [Ideal.span_singleton_eq_top.mpr u.isUnit, FractionalIdeal.coeIdeal_top]
 
 end PrincipalUnits
 
@@ -142,10 +149,14 @@ theorem mem_stronglyAmbiguousClassGroup (σ : K ≃ₐ[F] K) (c : ClassGroup (�
   · rintro ⟨I, hI, rfl⟩
     exact ⟨⟨I, hI⟩, rfl⟩
 
+section
+
+variable (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
+include hd σ hσ
+
 /-- A scalar comparison whose norm is the norm of an integer unit has
 trivial obstruction and admits an invariant representative. -/
 private theorem exists_invariant_ideal_of_scalar_norm_unit
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
     (I : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (a : Kˣ) (u : (𝓞 K)ˣ)
     (hI : fractionalIdealUnitAction (K := K)
       (RingOfIntegers.mapAlgEquiv σ).toRingEquiv I = toPrincipalIdeal (𝓞 K) K a * I)
@@ -189,7 +200,6 @@ private theorem exists_invariant_ideal_of_scalar_norm_unit
 /-- Equality of the concrete unit obstructions places the quotient of
 two represented classes in the strongly ambiguous subgroup. -/
 theorem equal_unit_obstructions_stronglyAmbiguous
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
     (I J : (FractionalIdeal (𝓞 K)⁰ K)ˣ) (a b : Kˣ)
     (u v : (𝓞 F)ˣ)
     (hI : fractionalIdealUnitAction (K := K)
@@ -214,10 +224,7 @@ theorem equal_unit_obstructions_stronglyAmbiguous
     simp only [div_eq_mul_inv, Units.val_mul, Units.val_inv_eq_inv_val] at hh
     change Algebra.norm F ((w : 𝓞 K) : K) =
       ((u : 𝓞 F) : F) * (((v : 𝓞 F) : F))⁻¹ at hh
-    simp only [div_eq_mul_inv, Units.val_mul, Units.val_inv_eq_inv_val,
-      map_mul, Algebra.norm_inv]
-    rw [ha, hb]
-    exact hh.symm
+    simp_all [div_eq_mul_inv, Units.val_mul, Units.val_inv_eq_inv_val, map_mul, Algebra.norm_inv]
   have hquot : fractionalIdealUnitAction (K := K)
       (RingOfIntegers.mapAlgEquiv σ).toRingEquiv (I / J) =
       toPrincipalIdeal (𝓞 K) K (a / b) * (I / J) := by
@@ -225,6 +232,8 @@ theorem equal_unit_obstructions_stronglyAmbiguous
     exact mul_div_mul_comm _ _ _ _
   simpa only [map_div] using exists_invariant_ideal_of_scalar_norm_unit
     F K hd σ hσ (I / J) (a / b) w hquot hnorm
+
+end
 
 end
 end CCDN

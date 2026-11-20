@@ -53,58 +53,31 @@ lemma sum_preHilbertPoly_leading {ι : Type*} (s : Finset ι) (hs : s.Nonempty)
   have hc0 : P.coeff m ≠ 0 := by
     rw [hc]
     apply mul_ne_zero
-    · exact_mod_cast Nat.ne_of_gt hd
+    positivity
     · exact inv_ne_zero (by exact_mod_cast Nat.factorial_ne_zero m)
-  have he : P.natDegree = m := le_antisymm hle (Polynomial.le_natDegree_of_ne_zero hc0)
+  have he := le_antisymm hle (Polynomial.le_natDegree_of_ne_zero hc0)
   refine ⟨hd, he, ?_⟩
   rw [Polynomial.leadingCoeff, he, hc, div_eq_mul_inv]
 
-open Classical in
-/-- The cells `b ∈ {0, …, B}^σ` of the clamped orthant partition that lie in `S`. -/
-def lowerSetOrthantPatterns {σ : Type*} [Fintype σ]
-    (S : Set (σ → ℕ)) (B : ℕ) : Finset (σ → Fin (B + 1)) :=
-  Finset.univ.filter (fun b => (fun i => (b i).val) ∈ S)
-
-open Classical in
-/-- The orthant polynomial of `S` is the sum, over the cells of `S`, of the shifted binomial
-polynomials of the corresponding orthants. -/
-lemma lowerSetOrthantPolynomial_eq_sum {σ : Type*} [Fintype σ]
-    (S : Set (σ → ℕ)) (B : ℕ) :
-    lowerSetOrthantPolynomial S B =
-      ∑ b ∈ lowerSetOrthantPatterns S B,
-        Polynomial.preHilbertPoly ℚ (Fintype.card (orthantFree b)) (orthantBaseDegree b) := by
-  simp only [lowerSetOrthantPolynomial, lowerSetOrthantPatterns, Finset.sum_filter]
-
-/-- A nonempty lower set has a positive integer multiplicity and an eventual
-polynomial of degree at most the number of exponent coordinates. -/
-theorem lowerSet_eventually_polynomial_positive {σ : Type*} [Fintype σ]
-    (S : Set (σ → ℕ)) (hS : IsLowerSet S) (hSne : S.Nonempty) :
-    ∃ (P : Polynomial ℚ) (d : ℕ), 0 < d ∧
-      P.natDegree ≤ Fintype.card σ ∧
-      P.leadingCoeff = (d : ℚ) / P.natDegree.factorial ∧
-      ∃ N : ℕ, ∀ n ≥ N, P.eval (n : ℚ) =
-        (Nat.card {a : σ → ℕ // a ∈ S ∧ ∑ i, a i ≤ n} : ℚ) := by
+lemma lowerSetOrthantPatterns_nonempty {σ : Type*} [Fintype σ]
+    {S : Set (σ → ℕ)} {B : ℕ} (hB : ∀ a, a ∈ S ↔ clampExponent B a ∈ S) (hS : S.Nonempty) :
+    (lowerSetOrthantPatterns S B).Nonempty := by
   classical
-  obtain ⟨B, _, hB⟩ := lowerSet_clamp_stabilizes S hS
-  let s := lowerSetOrthantPatterns S B
-  have hs : s.Nonempty := by
-    obtain ⟨a, ha⟩ := hSne
-    refine ⟨exponentPattern B a, Finset.mem_filter.mpr ⟨Finset.mem_univ _, ?_⟩⟩
-    exact (hB a).mp ha
-  obtain ⟨hd, hdeg, hlc⟩ := sum_preHilbertPoly_leading s hs
+  obtain ⟨a, ha⟩ := hS
+  exact ⟨exponentPattern B a, Finset.mem_filter.mpr ⟨Finset.mem_univ _, (hB a).mp ha⟩⟩
+
+/-- A nonempty orthant polynomial has positive factorial-normalized multiplicity. -/
+theorem lowerSetOrthantPolynomial_positive {σ : Type*} [Fintype σ]
+    (S : Set (σ → ℕ)) (B : ℕ) (hs : (lowerSetOrthantPatterns S B).Nonempty) :
+    let P := lowerSetOrthantPolynomial S B
+    ∃ d : ℕ, 0 < d ∧ P.natDegree ≤ Fintype.card σ ∧
+      P.leadingCoeff = (d : ℚ) / P.natDegree.factorial := by
+  unfold lowerSetOrthantPolynomial
+  obtain ⟨hd, hdeg, hlc⟩ := sum_preHilbertPoly_leading _ hs
     (fun b => Fintype.card (orthantFree b)) orthantBaseDegree
-  let P := lowerSetOrthantPolynomial S B
-  have hPe : P = ∑ b ∈ s,
-      Polynomial.preHilbertPoly ℚ (Fintype.card (orthantFree b)) (orthantBaseDegree b) :=
-    lowerSetOrthantPolynomial_eq_sum S B
-  refine ⟨P, _, hd, ?_, ?_, Fintype.card σ * B,
-    fun n hn => lowerSetOrthantPolynomial_eval S B hB n hn⟩
-  · rw [hPe, hdeg]
-    apply Finset.sup_le
-    intro b _
-    exact Fintype.card_subtype_le _
-  · rw [hPe, hdeg]
-    exact hlc
+  dsimp only
+  rw [hdeg]
+  exact ⟨_, hd, Finset.sup_le fun b _ => Fintype.card_subtype_le _, hlc⟩
 
 end
 end CCDN

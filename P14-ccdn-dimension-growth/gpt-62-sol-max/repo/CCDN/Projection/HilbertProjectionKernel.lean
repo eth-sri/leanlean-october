@@ -33,8 +33,7 @@ private theorem proper_intersection_hilbert_dimension_le
     Polynomial.preHilbertPoly ℚ n 0
   have hQ : Q.natDegree ≤ n := by
     apply Polynomial.natDegree_mul_le.trans
-    simp only [Polynomial.natDegree_C, Polynomial.natDegree_preHilbertPoly, zero_add]
-    exact le_rfl
+    grind [Polynomial.natDegree_preHilbertPoly]
   apply (polynomial_natDegree_le_of_eventual_nat_eval_le
     (filteredHilbertPolynomial I) Q (filteredHilbertPolynomial_leadingCoeff_pos I hI) ?_).trans hQ
   obtain ⟨M, hM⟩ := filteredHilbertPolynomial_spec I
@@ -89,10 +88,9 @@ theorem exists_hypersurface_projection_equation
   have hker : RingHom.ker ψ ≠ ⊥ := by
     intro he
     exact linear_projection_not_injective_of_hilbert_dimension_lt I a ha
-      (by simpa only [Fintype.card_fin] using hd)
+      (by simp_all)
       ((RingHom.injective_iff_ker_eq_bot ψ.toRingHom).mpr he)
-  have hprime : (RingHom.ker ψ).IsPrime := RingHom.ker_isPrime ψ.toRingHom
-  obtain ⟨f, hfmem, hf⟩ := hprime.exists_mem_prime_of_ne_bot hker
+  obtain ⟨f, hfmem, hf⟩ := (RingHom.ker_isPrime ψ.toRingHom).exists_mem_prime_of_ne_bot hker
   refine ⟨f, hf.irreducible, ?_⟩
   ext g
   exact (hypersurface_map_eq_zero_iff_dvd f hf.irreducible ψ hfmem b hb hi g).trans

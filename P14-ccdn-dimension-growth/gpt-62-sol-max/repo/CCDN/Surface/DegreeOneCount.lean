@@ -9,97 +9,69 @@ public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Hilbert.AffineCurveDegree
 public import CCDN.Plane.IntegralAffineLine
+public import CCDN.Statements
+public import CCDN.Surface.CurveComponents
 public import Mathlib.RingTheory.Ideal.Height
-import CCDN.Plane.DegreeOneAffineLine
+import CCDN.Curve.AffineCurveCount
 import CCDN.Surface.LineContribution
+import CCDN.Surface.NonlinearCount
 
-/-!
-The proved line contribution applies to degree-one prime
-components, with the original number of components as the additive cost.
-
-A finite family of degree-one prime components gives a finite
-set of rational affine lines with the same rational zero-set union. Empty
-rational loci are discarded, and repeated line sets are counted only once.
--/
+/-! A common bound for a surface's finite curve cover separates the
+line contribution from the nonlinear curve bounds. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
-
-/-- The union of the rational zero sets of finitely many degree-one affine curves in
-three-space is a union of at most as many rational affine lines, each of which is the zero set
-of one of the curves. -/
-theorem degree_one_components_line_cover
-    (S : Finset (Ideal (CoordinatePolynomial 3)))
-    (hcurve : ∀ P ∈ S, P.IsPrime ∧ P.height = 2 ∧ HasAffineCurveDegree P 1) :
-    ∃ lines : Finset (Set (RatPoint 3)),
-      (⋃ P ∈ S, idealZeroLocus P) = (⋃ L ∈ lines, L) ∧
-      lines.card ≤ S.card ∧
-      ∀ L ∈ lines, (∃ P ∈ S, L = idealZeroLocus P) ∧
-        ∃ a v : RatPoint 3, v ≠ 0 ∧ L = rationalAffineLine a v := by
-  classical
-  let T := S.filter (fun P => (idealZeroLocus P).Nonempty)
-  let lines := T.image idealZeroLocus
-  refine ⟨lines, ?_, (Finset.card_image_le).trans (Finset.card_le_card
-    (Finset.filter_subset _ _)), ?_⟩
-  · ext x
-    constructor
-    · intro hx
-      obtain ⟨P, hx⟩ := Set.mem_iUnion.mp hx
-      obtain ⟨hPS, hxP⟩ := Set.mem_iUnion.mp hx
-      have hPT : P ∈ T := Finset.mem_filter.mpr ⟨hPS, ⟨x, hxP⟩⟩
-      exact Set.mem_iUnion.mpr ⟨idealZeroLocus P,
-        Set.mem_iUnion.mpr ⟨Finset.mem_image.mpr ⟨P, hPT, rfl⟩, hxP⟩⟩
-    · intro hx
-      obtain ⟨L, hx⟩ := Set.mem_iUnion.mp hx
-      obtain ⟨hLs, hxL⟩ := Set.mem_iUnion.mp hx
-      obtain ⟨P, hPT, rfl⟩ := Finset.mem_image.mp hLs
-      exact Set.mem_iUnion.mpr ⟨P,
-        Set.mem_iUnion.mpr ⟨(Finset.mem_filter.mp hPT).1, hxL⟩⟩
-  · intro L hL
-    obtain ⟨P, hPT, rfl⟩ := Finset.mem_image.mp hL
-    obtain ⟨hPS, z, hz⟩ := Finset.mem_filter.mp hPT
-    obtain ⟨hp, hheight, hdegree⟩ := hcurve P hPS
-    have : P.IsPrime := hp
-    obtain ⟨v, hv, he, _⟩ :=
-      degree_one_zeroLocus_eq_rationalAffineLine P hheight hdegree z hz
-    exact ⟨⟨P, hPS, rfl⟩, z, v, hv, he⟩
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
 open MvPolynomial
+noncomputable section
 
-/-- There is an absolute constant `C` such that, for an integer surface equation `f` of degree
-`d ≥ 3` with absolutely irreducible top-degree form, the integral points of height at most `B`
-on a finite family `S` of degree-one curves on the surface number at most
-`C d⁶ B + #S`. -/
-theorem surface_degree_one_component_contribution :
-    ∃ C : ℝ, 0 < C ∧
-      ∀ f : MvPolynomial (Fin 3) ℤ,
-      HasAbsIrreducibleTopForm f →
-      3 ≤ f.totalDegree → ∀ B : ℝ, 0 ≤ B →
-      ∀ S : Finset (Ideal (CoordinatePolynomial 3)),
-      (∀ P ∈ S, P.IsPrime ∧ P.height = 2 ∧ HasAffineCurveDegree P 1) →
-      (∀ P ∈ S, map (Int.castRingHom ℚ) f ∈ P) →
-      (count (⋃ P ∈ S, idealZeroLocus P) B : ℝ) ≤
-        C * (f.totalDegree : ℝ) ^ 6 * B + S.card := by
+/-- Separate lines from nonlinear curves, charging the additive cost of the lines
+against the total degree budget. -/
+theorem surface_curve_union_bound :
+    ∃ C K : ℝ, 0 < C ∧ 0 < K ∧
+      ∀ (f : MvPolynomial (Fin 3) ℤ), HasAbsIrreducibleTopForm f → 3 ≤ f.totalDegree →
+      ∀ (S : Finset (Ideal (CoordinatePolynomial 3))) (δ : Ideal (CoordinatePolynomial 3) → ℕ)
+        (B : ℝ), 1 ≤ B → (∀ P ∈ S, IsSurfaceCurve (map (Int.castRingHom ℚ) f) P (δ P)) →
+      (count (⋃ P ∈ S, idealZeroLocus P) B : ℝ) ≤ C * (f.totalDegree : ℝ) ^ 6 * B +
+        K * (∑ P ∈ S.filter (fun P => 2 ≤ δ P), curveBound (δ P) B) + ∑ P ∈ S, (δ P : ℝ) := by
+  classical
   obtain ⟨C, hC, hline⟩ := surface_line_contribution
-  refine ⟨C, hC, ?_⟩
-  intro f hir hd B hB S hcurve hSf
-  obtain ⟨lines, hcover, hcard, hlines⟩ := degree_one_components_line_cover S hcurve
-  have hh := (hline f hir hd B hB lines (by
-    intro L hL
-    obtain ⟨a, v, _, he⟩ := (hlines L hL).2
-    exact ⟨a, v, he⟩) (by
-      intro L hL x hx
-      obtain ⟨P, hPS, rfl⟩ := (hlines L hL).1
-      exact hx _ (hSf P hPS))).2
-  rw [← hcover] at hh
-  have hcardR : (lines.card : ℝ) ≤ S.card := by exact_mod_cast hcard
-  exact hh.trans (add_le_add le_rfl hcardR)
+  obtain ⟨K, hK, hcurve⟩ := affine_curve_count 3 (by omega)
+  refine ⟨C, K, hC, hK, ?_⟩
+  intro f htop hd S δ B hB hS
+  let L := S.filter (fun P => δ P = 1)
+  let T := S.filter (fun P => 2 ≤ δ P)
+  have hsplit : (⋃ P ∈ S, idealZeroLocus P) =
+      (⋃ P ∈ L, idealZeroLocus P) ∪ (⋃ P ∈ T, idealZeroLocus P) := by
+    ext x
+    simp only [L, T, Set.mem_union, Set.mem_iUnion, Finset.mem_filter, exists_prop]
+    constructor
+    · rintro ⟨P, hP, hx⟩
+      have hpos := (hS P hP).pos
+      by_cases hδ : δ P = 1
+      · exact Or.inl ⟨P, ⟨hP, hδ⟩, hx⟩
+      · exact Or.inr ⟨P, ⟨hP, by omega⟩, hx⟩
+    · rintro (⟨P, hP, hx⟩ | ⟨P, hP, hx⟩) <;> exact ⟨P, hP.1, hx⟩
+  have hL := hline f htop hd B (by linarith) L (fun P hP => by
+    obtain ⟨hPS, hδ⟩ := Finset.mem_filter.mp hP
+    exact hδ ▸ hS P hPS)
+  have hT : (count (⋃ P ∈ T, idealZeroLocus P) B : ℝ) ≤ K * ∑ P ∈ T, curveBound (δ P) B := by
+    rw [Finset.mul_sum]
+    refine (by exact_mod_cast count_biUnion_finset_le T idealZeroLocus B : _ ≤ ∑ P ∈ T, (count (idealZeroLocus P) B : ℝ)).trans
+      (Finset.sum_le_sum fun P hP => ?_)
+    obtain ⟨hPS, hδ⟩ := Finset.mem_filter.mp hP
+    exact hcurve P (hS P hPS).isPrime (δ P) (by omega) (hS P hPS).degree B hB
+  have hLcard : (L.card : ℝ) ≤ ∑ P ∈ S, (δ P : ℝ) := by
+    calc
+      _ = ∑ P ∈ L, (δ P : ℝ) := by
+        simp only [Finset.card_eq_sum_ones, Nat.cast_sum, Nat.cast_one]
+        exact Finset.sum_congr rfl (fun P hP => by simp [(Finset.mem_filter.mp hP).2])
+      _ ≤ _ := Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset ..) (by intros; positivity)
+  rw [hsplit]
+  have hsum : (count ((⋃ P ∈ L, idealZeroLocus P) ∪ (⋃ P ∈ T, idealZeroLocus P)) B : ℝ) ≤
+      (count (⋃ P ∈ L, idealZeroLocus P) B : ℝ) + count (⋃ P ∈ T, idealZeroLocus P) B := by
+    exact_mod_cast count_union_le _ _ B
+  change _ ≤ _ + K * (∑ P ∈ T, curveBound (δ P) B) + _
+  linarith
 
 end
 end CCDN

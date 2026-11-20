@@ -30,9 +30,8 @@ theorem rescale_integral_ideal_square (I : (Ideal R)⁰) {α : R} (hα : α ≠ 
     ∃ J : (Ideal R)⁰, ∃ β : R,
       ClassGroup.mk0 J = ClassGroup.mk0 I ∧ β ≠ 0 ∧
       algebraMap R K β = algebraMap R K α * κ ^ 2 ∧
-      (J : Ideal R) ^ 2 = Ideal.span {β} ∧
-      (J : FractionalIdeal R⁰ K) = spanSingleton R⁰ κ * (I : FractionalIdeal R⁰ K) := by
-  let F : FractionalIdeal R⁰ K := spanSingleton R⁰ κ * (I : FractionalIdeal R⁰ K)
+      (J : Ideal R) ^ 2 = Ideal.span {β} := by
+  let F := spanSingleton R⁰ κ * (I : FractionalIdeal R⁰ K)
   have hI0 : (I : FractionalIdeal R⁰ K) ≠ 0 :=
     coeIdeal_ne_zero.mpr (nonZeroDivisors.coe_ne_zero I)
   have hF0 : F ≠ 0 := mul_ne_zero (spanSingleton_ne_zero_iff.mpr hκ) hI0
@@ -46,7 +45,7 @@ theorem rescale_integral_ideal_square (I : (Ideal R)⁰) {α : R} (hα : α ≠ 
     apply hF0
     simp [← hJ₀, h]
   let J : (Ideal R)⁰ := ⟨J₀, mem_nonZeroDivisors_of_ne_zero hJ0⟩
-  have hJ : (J : FractionalIdeal R⁰ K) = F := hJ₀
+  have hJ := hJ₀
   have hsq : (J : FractionalIdeal R⁰ K) ^ 2 =
       spanSingleton R⁰ (algebraMap R K α * κ ^ 2) := by
     rw [hJ]
@@ -61,15 +60,10 @@ theorem rescale_integral_ideal_square (I : (Ideal R)⁰) {α : R} (hα : α ≠ 
     exact spanSingleton_le_iff_mem.mp hsle
   obtain ⟨β, hβ⟩ := (mem_one_iff R⁰).mp hβmem
   have hβ0 : β ≠ 0 := by
-    intro hb
-    have hαK : algebraMap R K α ≠ 0 := by
-      intro hz
-      apply hα
-      apply IsFractionRing.injective R K
-      simpa using hz
-    have hn := mul_ne_zero hαK (pow_ne_zero 2 hκ)
-    exact hn (by rw [← hβ, hb, map_zero])
-  refine ⟨J, β, ?_, hβ0, hβ, ?_, hJ⟩
+    intro he
+    have hαK : algebraMap R K α ≠ 0 := by simpa using (IsFractionRing.injective R K).ne hα
+    exact mul_ne_zero hαK (pow_ne_zero 2 hκ) (by rw [← hβ, he, map_zero])
+  refine ⟨J, β, ?_, hβ0, hβ, ?_⟩
   · apply Eq.symm
     apply (ClassGroup.mk0_eq_mk0_iff_exists_fraction_ring K).mpr
     exact ⟨κ, hκ, hJ.symm⟩

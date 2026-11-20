@@ -23,7 +23,7 @@ private lemma polynomial_coeff_prod_sum_of_natDegree_le
   | empty => simp
   | @insert i s hi ih =>
     rw [Finset.prod_insert hi, Finset.sum_insert hi, Finset.prod_insert hi]
-    have ht : (∏ j ∈ s, q j).natDegree ≤ ∑ j ∈ s, e j :=
+    have ht :=
       (Polynomial.natDegree_prod_le _ _).trans
         (Finset.sum_le_sum fun j hj => hq j (Finset.mem_insert_of_mem hj))
     rw [Polynomial.coeff_mul_add_eq_of_natDegree_le
@@ -48,10 +48,9 @@ private lemma affineLinePolynomial_monomial_top {R σ : Type*} [CommRing R]
     (affineLinePolynomial a b (MvPolynomial.monomial m c)).coeff d =
       if d = m.degree then c * m.prod (fun i e => b i ^ e) else 0 := by
   classical
-  let q : σ → Polynomial R := fun i => Polynomial.C (a i) + Polynomial.C (b i) * Polynomial.X
+  let q := fun i => Polynomial.C (a i) + Polynomial.C (b i) * Polynomial.X
   have hq (i : σ) : (q i).natDegree ≤ 1 := polynomial_affine_natDegree_le _ _
-  have hp (i : σ) : ((q i) ^ m i).natDegree ≤ m i := by
-    exact Polynomial.natDegree_pow_le.trans (by simpa using Nat.mul_le_mul_left (m i) (hq i))
+  have hp (i : σ) := Polynomial.natDegree_pow_le.trans (by simpa using Nat.mul_le_mul_left (m i) (hq i))
   have hprod : (m.prod (fun i e => (q i) ^ e)).natDegree ≤ m.degree :=
     (Polynomial.natDegree_prod_le _ _).trans (Finset.sum_le_sum fun i _ => hp i)
   rw [affineLinePolynomial, MvPolynomial.eval₂Hom_monomial]
@@ -66,8 +65,7 @@ private lemma affineLinePolynomial_monomial_top {R σ : Type*} [CommRing R]
     apply Finset.prod_congr rfl
     intro i _
     have hh := Polynomial.coeff_pow_of_natDegree_le (m := m i) (hq i)
-    simpa only [mul_one, q, Polynomial.coeff_add, Polynomial.coeff_C_succ,
-      Polynomial.coeff_C_mul_X, zero_add, ite_true] using hh
+    aesop
   · rw [ite_eq_right he,
       Polynomial.coeff_eq_zero_of_natDegree_lt (hprod.trans_lt (by omega)), mul_zero]
 
@@ -85,7 +83,7 @@ theorem affineLinePolynomial_top_coefficient {R σ : Type*} [CommRing R]
   intro m hm
   rw [affineLinePolynomial_monomial_top a b m _ d ((MvPolynomial.le_totalDegree hm).trans hd),
     MvPolynomial.homogeneousComponent_of_mem (MvPolynomial.isHomogeneous_monomial _ rfl)]
-  split_ifs <;> simp [MvPolynomial.eval_monomial]
+  grind [MvPolynomial.eval_monomial]
 
 end
 end CCDN

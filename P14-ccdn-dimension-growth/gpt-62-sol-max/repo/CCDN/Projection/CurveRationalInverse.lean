@@ -8,7 +8,7 @@ module
 public import CCDN.Algebra.IdealZeroLocus
 public import Mathlib.FieldTheory.IntermediateField.Adjoin.Defs
 public import Mathlib.RingTheory.Ideal.Quotient.Operations
-import CCDN.Height.PrimitivePairReconstruction
+import Mathlib.FieldTheory.IntermediateField.Adjoin.Basic
 import Mathlib.Algebra.MvPolynomial.CommRing
 
 /-! Birational projection coordinates admit a rational inverse in the original
@@ -35,14 +35,12 @@ theorem projection_injective_off_reconstruction {K σ τ : Type*} [Field K]
     change eval z (eval₂ C a p) = eval w (eval₂ C a p)
     rw [← eval_assoc, ← eval_assoc]
     change eval (fun j => eval z (a j)) p = eval (fun j => eval w (a j)) p
-    rw [he]
+    simp_all
   funext i
   apply mul_left_cancel₀ hQ
   have hz' := hz _ (hP i)
   have hw' := hw _ (hP i)
-  simp only [eval_sub, eval_mul, eval_X, sub_eq_zero] at hz' hw'
-  rw [hz', hev (P i), hev Q]
-  exact hw'.symm
+  grind [eval_X]
 
 end
 end CCDN

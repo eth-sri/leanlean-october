@@ -8,7 +8,7 @@ module
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Hilbert.LinearProjectionFiltration
 import CCDN.ForMathlib.MvPolynomial
-import CCDN.Projection.HomogeneousFilteredProjection
+import Mathlib.Algebra.MvPolynomial.Monad
 import CCDN.Projection.PlaneRelationSpace
 
 /-! The principal equation of the image of a homogeneous linear
@@ -43,8 +43,7 @@ theorem principal_generator_isHomogeneous
     (hI : IsHomogeneousIdeal I)
     (f : MvPolynomial σ K) (hf : f ≠ 0) (hgen : I = Ideal.span {f}) :
     f.IsHomogeneous f.totalDegree := by
-  have hmem : f ∈ I := by rw [hgen]; exact Ideal.subset_span (Set.mem_singleton f)
-  have ht := hI f hmem f.totalDegree
+  have ht := hI f (by simp_all) f.totalDegree
   rw [hgen, Ideal.mem_span_singleton] at ht
   obtain ⟨c, hc⟩ := eq_scalar_mul_of_dvd_of_totalDegree_le f
     (homogeneousComponent f.totalDegree f) hf ht
@@ -56,7 +55,7 @@ theorem principal_generator_isHomogeneous
   have hh := (homogeneousComponent_isHomogeneous f.totalDegree f).C_mul c⁻¹
   rw [hc] at hh
   rw [← smul_eq_C_mul] at hh
-  simpa only [smul_smul, inv_mul_cancel₀ hcne, one_smul] using hh
+  simp_all
 
 /-- If the kernel of the projection of a homogeneous ideal by homogeneous linear forms is generated
 by a nonzero polynomial `f`, then `f` is homogeneous of its total degree. -/

@@ -6,7 +6,7 @@ Authors: Jason Davies
 module
 
 public import CCDN.Hypersurface.HyperplaneSlicingInduction
-import CCDN.Hypersurface.IntegerGoodHyperplaneSlices
+import CCDN.Hypersurface.IntegerModel
 import CCDN.Surface.AffineSurfaceDimensionGrowth
 
 /-! Affine hypersurface dimension growth with the corrected degree exponent: the surface bound
@@ -34,7 +34,7 @@ theorem AffineHypersurfaceGrowth.rational {n e : ℕ} (h : AffineHypersurfaceGro
       (map_eval (Int.castRingHom ℚ) x g).symm
     rw [hx, Int.cast_eq_zero, hzero]
     rfl
-  simpa only [hdeg, count, hpoints] using hbound g htop (by omega) B hB
+  simpa [hdeg, count, hpoints] using hbound g htop (by omega) B hB
 
 /-- Affine dimension growth with degree exponent `18 + 3 * n` for integer polynomials in `n + 3`
 variables of degree at least five with absolutely irreducible top-degree form. -/

@@ -31,16 +31,7 @@ open scoped NumberField
 theorem classGroupTwoTorsionCard_eq_one_of_degree_one
     (K : Type*) [Field K] [NumberField K] (hd : Module.finrank ℚ K = 1) :
     classGroupTwoTorsionCard K = 1 := by
-  obtain ⟨e⟩ := Module.nonempty_algEquiv_iff_finrank_eq_one.mpr hd
-  let eO : ℤ ≃+* 𝓞 K :=
-    Rat.ringOfIntegersEquiv.symm.trans (RingOfIntegers.mapRingEquiv e.toRingEquiv)
-  have : IsPrincipalIdealRing (𝓞 K) :=
-    IsPrincipalIdealRing.of_surjective eO eO.surjective
-  apply Nat.le_antisymm
-  · exact (classGroupTwoTorsionCard_le_classNumber K).trans
-      (NumberField.classNumber_eq_one_iff.mpr inferInstance).le
-  · exact Nat.one_le_iff_ne_zero.mpr
-      (Nat.card_pos (α := classGroupTwoTorsion K)).ne'
+  exact Nonempty.casesOn (Module.nonempty_algEquiv_iff_finrank_eq_one.mpr hd) fun e =>   let eO := Rat.ringOfIntegersEquiv.symm.trans (RingOfIntegers.mapRingEquiv e.toRingEquiv);   have this := IsPrincipalIdealRing.of_surjective eO (RingEquiv.surjective eO);   Nat.le_antisymm (LE.le.trans (classGroupTwoTorsionCard_le_classNumber K) (Eq.le (classNumber_eq_one_iff.mpr inferInstance))) (Nat.one_le_iff_ne_zero.mpr (LT.lt.ne' Nat.card_pos))
 
 end
 end CCDN
@@ -74,7 +65,7 @@ theorem quadratic_classGroupTwoTorsion_descent
       Nat.pow_le_pow_left
         (Nat.mul_le_mul_right _
           (stronglyAmbiguousTwoTorsion_card_le_discriminant_primes F K hd σ hσ)) 2
-    _ = _ := by rw [mul_assoc, ← pow_add]
+    _ = _ := by ring
 
 /-- A quadratic number field `K` satisfies `h₂(K) ≤ 2 ^ (4 * ω(discr K) + 2)`, where `ω` counts
 distinct prime factors; this is subpower in the discriminant. -/
@@ -85,9 +76,7 @@ theorem quadratic_field_classGroupTwoTorsionCard_le
   have hh := quadratic_classGroupTwoTorsion_descent ℚ K hd
   rw [classGroupTwoTorsionCard_eq_one_of_degree_one ℚ (by simp),
     hd, Module.finrank_self, one_mul, ← pow_mul] at hh
-  convert hh using 1
-  congr 1
-  ring
+  grind
 
 end
 end CCDN

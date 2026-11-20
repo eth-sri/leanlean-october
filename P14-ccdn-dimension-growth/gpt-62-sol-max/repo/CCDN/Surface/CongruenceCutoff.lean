@@ -6,8 +6,9 @@ Authors: Jason Davies
 module
 
 public import CCDN.Surface.CongruenceAuxiliary
-import CCDN.AuxiliaryPolynomial.HypersurfaceRankArchimedean
 import Mathlib.Algebra.Order.Star.Real
+import CCDN.ForMathlib.Log
+import CCDN.AuxiliaryPolynomial.HypersurfaceRankProfile
 
 /-! Numerical degree selection for the smooth-congruence auxiliary on a
 surface. All constants are independent of coefficients and box radius. -/
@@ -30,37 +31,32 @@ def surfaceCongruenceGapConstant (d : ℕ) (K : ℝ) : ℝ :=
   8 * Real.log d + 2 * surfaceCongruenceChargeConstant d K +
     hypersurfaceDeterminantError 1 + 6 * d + 22
 
-private theorem surface_congruence_charge_le {d : ℕ} (hd : 0 < d)
+private theorem surface_congruence_charge_le {d : ℕ}
     {K B H Q : ℝ} (hK : 0 ≤ K) (hB : 1 ≤ B) (hH : 1 ≤ H) (hQ : 0 ≤ Q)
     (hheight : Real.log H ≤ K * (Real.log B + 1)) :
     congruenceHeightCharge 4 d H Q ≤
       Real.log (1 + Real.log B + Q) + surfaceCongruenceChargeConstant d K := by
-  have hdR : (0 : ℝ) < d := by exact_mod_cast hd
-  have hc : 0 ≤ hypersurfaceHeightConstant 4 :=
-    zero_le_one.trans (hypersurfaceHeightConstant_one_le 4)
-  have hlogB := Real.log_nonneg hB
+  have hc := hypersurfaceHeightConstant_one_le 4
   have hlogH := Real.log_nonneg hH
-  have hT : 1 ≤ 1 + Real.log B + Q := by linarith
-  have hheight' : Real.log H ≤ K * (1 + Real.log B + Q) := by nlinarith
   let A := 27 * (d : ℝ) ^ 4 * hypersurfaceHeightConstant 4
-  have hA : 0 ≤ A := by positivity
-  have hdiv := div_le_div_of_nonneg_right hheight' (sq_nonneg (d : ℝ))
-  have hinside : 1 + A * (1 + Real.log H / (d : ℝ) ^ 2) + Q ≤
-      (2 + A * (1 + K / (d : ℝ) ^ 2)) * (1 + Real.log B + Q) := by
-    have hm := mul_le_mul_of_nonneg_left hdiv hA
-    have hc1 := mul_le_mul_of_nonneg_left hT hA
-    have he : K * (1 + Real.log B + Q) / (d : ℝ) ^ 2 =
-        K / (d : ℝ) ^ 2 * (1 + Real.log B + Q) := by ring
-    rw [he] at hm
+  let T := 1 + Real.log B + Q
+  have hT : 1 ≤ T := by dsimp [T]; linarith [Real.log_nonneg hB]
+  have hdiv : Real.log H / (d : ℝ) ^ 2 ≤ K / (d : ℝ) ^ 2 * T := by
+    rw [div_mul_eq_mul_div]
+    apply div_le_div_of_nonneg_right _ (by positivity)
+    dsimp [T]
     nlinarith
-  have hleft : 0 < 1 + A * (1 + Real.log H / (d : ℝ) ^ 2) + Q := by positivity
-  have hright : 0 < 2 + A * (1 + K / (d : ℝ) ^ 2) := by positivity
-  have hh := Real.log_le_log hleft hinside
-  rw [Real.log_mul hright.ne' (by linarith : (1 + Real.log B + Q) ≠ 0)] at hh
-  unfold congruenceHeightCharge surfaceCongruenceChargeConstant
-  dsimp only [A] at hh
-  simp only [mul_assoc] at hh ⊢
-  nlinarith
+  have hA : 0 ≤ A := by positivity
+  have hinside : 1 + A * (1 + Real.log H / (d : ℝ) ^ 2) + Q ≤
+      (2 + A * (1 + K / (d : ℝ) ^ 2)) * T := by
+    have : 1 + Q ≤ T := by dsimp [T]; linarith [Real.log_nonneg hB]
+    have := mul_le_mul_of_nonneg_left (add_le_add hT hdiv) hA
+    linarith
+  have hh := Real.log_le_log (by positivity) hinside
+  rw [Real.log_mul (by positivity) (by positivity)] at hh
+  simp only [congruenceHeightCharge, surfaceCongruenceChargeConstant, ← mul_assoc]
+  dsimp only [T, A] at hh
+  linarith
 
 private theorem surface_congruence_lower_eq (d s : ℕ) (H Q : ℝ) :
     affineCongruenceDeterminantLower 1 d s H Q =
@@ -72,7 +68,7 @@ private theorem surface_congruence_lower_eq (d s : ℕ) (H Q : ℝ) :
   have hp : (s : ℝ) ^ (1 + 1 / 2 : ℝ) = s * Real.sqrt s := by
     rw [Real.rpow_add' hs (by norm_num), Real.rpow_one, ← Real.sqrt_eq_rpow]
   norm_num at hp
-  unfold affineCongruenceDeterminantLower hypersurfaceDeterminantMain
+  unfold affineCongruenceDeterminantLower hypersurfaceRankLowerBound hypersurfaceDeterminantMain factorialRoot
   norm_num only [Nat.reduceAdd, Nat.factorial, Nat.cast_ofNat, Nat.cast_mul,
     Nat.cast_one, Nat.cast_add, Nat.cast_succ, mul_one]
   rw [hp, ← Real.sqrt_eq_rpow]
@@ -90,56 +86,30 @@ private theorem surface_congruence_gap_of_log_rank {d s : ℕ}
       ((2 / 3 : ℝ) * s * Real.sqrt (2 * s / (d : ℝ)) + (2 * d + 2) * s) *
         Real.log B < affineCongruenceDeterminantLower 1 d s H Q := by
   have hsR : (0 : ℝ) < s := by exact_mod_cast hs
-  have hdR : (0 : ℝ) < d := by exact_mod_cast hd
-  have hsd : 0 < Real.sqrt (d : ℝ) := Real.sqrt_pos.mpr hdR
-  have hss : 0 < Real.sqrt (s : ℝ) := Real.sqrt_pos.mpr hsR
   have hlogB := Real.log_nonneg hB
-  have hfac : Real.log (s.factorial : ℝ) ≤ (s : ℝ) * Real.log s := by
-    have hh : (s.factorial : ℝ) ≤ (s : ℝ) ^ s := by exact_mod_cast Nat.factorial_le_pow s
-    simpa only [Real.log_pow] using Real.log_le_log (by positivity) hh
-  have hlog : Real.log (s : ℝ) ≤ 2 * Real.sqrt (s : ℝ) := by
-    have hh := log_le_dimension_root (r := 2) (by omega) hsR
-    simpa only [Nat.cast_ofNat, ← Real.sqrt_eq_rpow] using hh
-  have hfac' := hfac.trans (mul_le_mul_of_nonneg_left hlog hsR.le)
-  have hcharge := surface_congruence_charge_le hd hK hB hH hQ hheight
-  have hsqrt2 : (1 : ℝ) ≤ Real.sqrt 2 := by
-    exact Real.le_sqrt_of_sq_le (by norm_num)
+  have hfac : Real.log (s.factorial : ℝ) ≤ s * (Real.sqrt s * 2) := by
+    simpa [Real.sqrt_eq_rpow, div_eq_mul_inv] using
+      Real.log_factorial_le_mul_rpow s (show (0 : ℝ) < 1 / 2 by norm_num)
+  have hcharge := surface_congruence_charge_le (d := d) hK hB hH hQ hheight
   let A : ℝ := Real.sqrt 2 / 3 * s * Real.sqrt s
   have hA : 0 < A := by positivity
-  have hsplit : Real.sqrt (2 * s / (d : ℝ)) =
-      Real.sqrt 2 * Real.sqrt s / Real.sqrt d := by
-    rw [Real.sqrt_div (by positivity), Real.sqrt_mul (by norm_num)]
-  have hmain : (2 / 3 : ℝ) * s * Real.sqrt (2 * s / (d : ℝ)) =
-      A * (2 / Real.sqrt (d : ℝ)) := by
-    rw [hsplit]
-    dsimp only [A]
-    ring
   have herr : Real.log (s.factorial : ℝ) + (2 * d + 2) * s * Real.log B + 3 * s * Q ≤
       A * (6 * d + 21) := by
-    have hb : Real.log B ≤ Real.sqrt (s : ℝ) := by linarith
+    have hl : Real.log B ≤ Real.sqrt (s : ℝ) := by linarith
     have hq : Q ≤ Real.sqrt (s : ℝ) := by linarith
-    have hb' := mul_le_mul_of_nonneg_left hb
-      (show 0 ≤ (2 * (d : ℝ) + 2) * s by positivity)
-    have hq' := mul_le_mul_of_nonneg_left hq (show 0 ≤ 3 * (s : ℝ) by positivity)
-    have hA' : (s : ℝ) * Real.sqrt s ≤ 3 * A := by
-      have hh := mul_le_mul_of_nonneg_right hsqrt2
-        (show 0 ≤ (s : ℝ) * Real.sqrt s by positivity)
-      dsimp only [A]
-      nlinarith
-    have hscale := mul_le_mul_of_nonneg_left hA'
-      (show 0 ≤ 2 * (d : ℝ) + 7 by positivity)
-    nlinarith
-  have hbracket :
+    have h₂ : (1 : ℝ) ≤ Real.sqrt 2 := by simp
+    dsimp only [A]
+    linarith only [hfac, mul_le_mul_of_nonneg_left hl (show 0 ≤ (2 * (d : ℝ) + 2) * s by positivity),
+      mul_le_mul_of_nonneg_left hq (show 0 ≤ 3 * (s : ℝ) by positivity),
+      mul_le_mul_of_nonneg_right h₂ (show 0 ≤ (s : ℝ) * Real.sqrt s * (2 * d + 7) by positivity)]
+  rw [surface_congruence_lower_eq, Real.sqrt_div (by positivity), Real.sqrt_mul (by norm_num)]
+  unfold surfaceCongruenceGapConstant at hrank
+  have h := mul_le_mul_of_nonneg_left (show
       (2 / Real.sqrt (d : ℝ)) * Real.log B + (6 * d + 22) ≤
-        Real.log s + 2 * Q - 8 * Real.log d -
-          2 * congruenceHeightCharge 4 d H Q - hypersurfaceDeterminantError 1 := by
-    unfold surfaceCongruenceGapConstant at hrank
-    linarith
-  have hm := mul_le_mul_of_nonneg_left hbracket hA.le
-  rw [surface_congruence_lower_eq]
-  rw [hmain]
-  change _ < A * _ - _
-  nlinarith
+        Real.log s + 2 * Q - 8 * Real.log d - 2 * congruenceHeightCharge 4 d H Q -
+          hypersurfaceDeterminantError 1 by linarith) hA.le
+  dsimp only [A] at h hA herr
+  grind
 
 /-- The constant `d + 2 (exp (G / 2) + 1) + 1`, with `G` the gap constant
 `surfaceCongruenceGapConstant d K`, which scales the degree of the surface congruence
@@ -166,73 +136,39 @@ private theorem surface_congruence_degree_selection {d : ℕ} (hd : 0 < d)
           affineCongruenceDeterminantLower 1 d s H Q := by
   let T := 1 + Real.log B + Q
   let ρ := B ^ (1 / Real.sqrt (d : ℝ)) / Real.exp Q
-  let E := Real.exp (surfaceCongruenceGapConstant d K / 2) + 1
-  let S := E * (ρ + 1) * T
-  have hB0 : 0 < B := zero_lt_one.trans_le hB
+  let E := Real.exp (surfaceCongruenceGapConstant d K / 2)
+  let S := (E + 1) * (ρ + 1) * T
+  have hB0 : 0 < B := by linarith
   have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hT : 1 ≤ T := by dsimp only [T]; linarith [Real.log_nonneg hB]
-  have hT0 : 0 < T := zero_lt_one.trans_le hT
-  have hρ : 0 < ρ := by dsimp only [ρ]; positivity
-  have hE : 1 ≤ E := by
-    dsimp only [E]; linarith [Real.exp_pos (surfaceCongruenceGapConstant d K / 2)]
-  have hE0 : 0 < E := zero_lt_one.trans_le hE
-  have hS0 : 0 < S := by dsimp only [S]; positivity
-  have hST : T ≤ S := by
-    have hh := mul_le_mul hE (show 1 ≤ ρ + 1 by linarith) (by norm_num) hE0.le
-    have hh' := mul_le_mul_of_nonneg_right hh hT0.le
-    simpa only [one_mul] using hh'
+  have hT : 1 ≤ T := by linarith [Real.log_nonneg hB]
+  have hT0 : 0 < T := by linarith
+  have hρ : 0 < ρ := by positivity
+  have hE : 0 < E := Real.exp_pos _
+  have hS : 0 < S := by positivity
+  have hW : 1 ≤ (ρ + 1) * T := by nlinarith
   let M := d + ⌈2 * S⌉₊
-  have hMd : d ≤ M := Nat.le_add_right _ _
-  have hMl : 2 * S ≤ (M : ℝ) - d + 1 := by
-    have hh := Nat.le_ceil (2 * S)
-    dsimp only [M]
-    push_cast
-    linarith
-  have hMu : (M : ℝ) ≤ surfaceCongruenceDegreeConstant d K * (ρ + 1) * T := by
-    have hh := Nat.ceil_lt_add_one (show 0 ≤ 2 * S by positivity)
-    have hprod : 1 ≤ (ρ + 1) * T := by
-      nlinarith
-    have hscale := mul_le_mul_of_nonneg_left hprod (show 0 ≤ (d : ℝ) + 1 by positivity)
-    dsimp only [M] at *
-    push_cast
-    change _ ≤ ((d : ℝ) + 2 * E + 1) * (ρ + 1) * T
-    dsimp only [S] at hh
-    nlinarith
-  refine ⟨M, hMd, hMu, ?_⟩
-  intro s hs
+  refine ⟨M, Nat.le_add_right _ _, ?_, fun s hs => ?_⟩
+  · have hceil := Nat.ceil_lt_add_one (show 0 ≤ 2 * S by positivity)
+    have hmul := mul_le_mul_of_nonneg_left hW (show 0 ≤ (d : ℝ) + 1 by positivity)
+    change (M : ℝ) ≤ ((d : ℝ) + 2 * (E + 1) + 1) * (ρ + 1) * T
+    simp only [M, Nat.cast_add]
+    nlinarith [show S = (E + 1) * (ρ + 1) * T from rfl]
+  have hlow : 2 * S ≤ (M : ℝ) - d + 1 := by
+    simpa only [M, Nat.cast_add] using (Nat.le_ceil (2 * S)).trans (by linarith)
   have hsq : S ^ 2 ≤ (s : ℝ) := by
-    have hpow : (2 * S) ^ 2 ≤ ((M : ℝ) - d + 1) ^ 2 := by
-      exact pow_le_pow_left₀ (by positivity) hMl 2
-    have hmul := mul_le_mul_of_nonneg_right hdR
-      (sq_nonneg ((M : ℝ) - d + 1))
-    nlinarith [sq_nonneg S]
-  have hsR : (0 : ℝ) < s := lt_of_lt_of_le (sq_pos_of_pos hS0) hsq
-  have hsN : 0 < s := by exact_mod_cast hsR
-  have hroot : T ≤ Real.sqrt (s : ℝ) :=
-    hST.trans (Real.le_sqrt_of_sq_le hsq)
-  have hlogS : 2 * Real.log S ≤ Real.log (s : ℝ) := by
-    simpa only [Real.log_pow, Nat.cast_ofNat] using Real.log_le_log (sq_pos_of_pos hS0) hsq
-  have hlogE : surfaceCongruenceGapConstant d K / 2 ≤ Real.log E := by
-    have hh := Real.log_le_log (Real.exp_pos (surfaceCongruenceGapConstant d K / 2))
-      (show Real.exp (surfaceCongruenceGapConstant d K / 2) ≤ E by dsimp only [E]; linarith)
-    simpa only [Real.log_exp] using hh
-  have hlogρ : Real.log ρ ≤ Real.log (ρ + 1) :=
-    Real.log_le_log hρ (by linarith)
-  have hρeq : Real.log ρ = (1 / Real.sqrt (d : ℝ)) * Real.log B - Q := by
-    dsimp only [ρ]
-    rw [Real.log_div (by positivity) (Real.exp_ne_zero _), Real.log_rpow hB0, Real.log_exp]
-  have hSeq : Real.log S = Real.log E + Real.log (ρ + 1) + Real.log T := by
-    dsimp only [S]
-    rw [Real.log_mul (by positivity) hT0.ne', Real.log_mul hE0.ne' (by positivity)]
-  have hrank : (2 / Real.sqrt (d : ℝ)) * Real.log B +
-      2 * Real.log T + surfaceCongruenceGapConstant d K ≤ Real.log s + 2 * Q := by
-    rw [hSeq] at hlogS
-    rw [hρeq] at hlogρ
-    have heq : (2 / Real.sqrt (d : ℝ)) * Real.log B =
-        2 * ((1 / Real.sqrt (d : ℝ)) * Real.log B) := by ring
-    rw [heq]
-    linarith
-  exact surface_congruence_gap_of_log_rank hd hsN hK hB hH hQ hheight hroot hrank
+    have := pow_le_pow_left₀ (by positivity) hlow 2
+    nlinarith only [this, hs, mul_le_mul_of_nonneg_right hdR (sq_nonneg ((M : ℝ) - d + 1))]
+  have hsN : 0 < s := Nat.cast_pos.mp ((sq_pos_of_pos hS).trans_le hsq)
+  have hsqrt := Real.le_sqrt_of_sq_le hsq
+  have hroot : T ≤ Real.sqrt (s : ℝ) := (le_mul_of_one_le_left hT0.le (by nlinarith [mul_nonneg hE.le hρ.le])).trans hsqrt
+  have hle : E * ρ * T ≤ S := by dsimp only [S]; gcongr <;> linarith
+  have hlog := Real.log_le_log (by positivity) (hle.trans hsqrt)
+  rw [Real.log_sqrt (by positivity), Real.log_mul (by positivity) (by positivity),
+    Real.log_mul hE.ne' hρ.ne'] at hlog
+  dsimp only [E, ρ, T] at hlog
+  rw [Real.log_exp, Real.log_div (by positivity) (by positivity),
+    Real.log_rpow hB0, Real.log_exp] at hlog
+  exact surface_congruence_gap_of_log_rank hd hsN hK hB hH hQ hheight hroot (by linear_combination 2 * hlog)
 
 /-- The smooth residue classes have a proper auxiliary of degree
 O_d,K((B^(1/√d)/exp Q + 1)(1 + log B + Q)). -/
@@ -258,8 +194,7 @@ theorem exists_surface_congruence_auxiliary
     Real.log_nonneg (by exact_mod_cast (hP p hp).one_le)
   obtain ⟨M, hdM, hM, hgap⟩ :=
     surface_congruence_degree_selection hd hK hB hH hQ hheight
-  have hf : f ≠ 0 := by intro h; exact hir.ne_zero (by rw [h, map_zero])
-  have hg := hgap (surfaceCongruenceRank f M) (surface_congruence_rank_power_bounds f hf hdM).1
+  have hg := hgap _ (hypersurface_rank_power_bounds (r := 2) hdM).1
   obtain ⟨g, hg0, hgproper, hgM, hgz⟩ := exists_surface_congruence_auxiliary_of_gap
     f hir hd H hH hcoeff hdM hB P hP a ha hsmooth hg
   refine ⟨g, hg0, hgproper, le_trans ?_ hM, hgz⟩

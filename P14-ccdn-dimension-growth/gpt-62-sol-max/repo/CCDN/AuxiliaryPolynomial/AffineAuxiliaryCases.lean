@@ -5,12 +5,14 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.AuxiliaryPolynomial.PrimeScaledAffineMinimum
+public import CCDN.AuxiliaryPolynomial.AffineMinimum
 import CCDN.AuxiliaryPolynomial.AffineHeightCutoff
 import CCDN.AuxiliaryPolynomial.HypersurfaceAuxiliaryTheorem
-import CCDN.AuxiliaryPolynomial.UnscaledAffineMinimum
-import CCDN.AuxiliaryPolynomial.UnscaledHypersurfaceAuxiliary
+import CCDN.AuxiliaryPolynomial.ScaledAffineAuxiliary
 import CCDN.AuxiliaryPolynomial.UnscaledHypersurfaceBadPrimes
+import CCDN.AuxiliaryPolynomial.ScaledHypersurfaceBadPrimes
+public import CCDN.AuxiliaryPolynomial.ScalingPrime
+import CCDN.Algebra.ScaledHomogenizationPrimitive
 import CCDN.Height.ScaledHypersurfaceHeight
 
 /-! All box and coefficient cases for the affine auxiliary theorem when
@@ -21,58 +23,18 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- The affine auxiliary degree bound `affineMinimumAuxiliaryBound` is monotone in the
-comparison constant `A`, for `1 ≤ B`, `1 ≤ L` and `0 ≤ b`. -/
-lemma affineMinimumAuxiliaryBound_mono_A (n d : ℕ) {A A' B L b : ℝ}
-    (hA : A ≤ A') (hB : 1 ≤ B) (hL : 1 ≤ L) (hb : 0 ≤ b) :
-    affineMinimumAuxiliaryBound n d A B L b ≤ affineMinimumAuxiliaryBound n d A' B L b := by
-  have hT : 0 ≤ Real.log L + d * Real.log B + (d : ℝ) ^ 2 := by
-    exact add_nonneg (add_nonneg (Real.log_nonneg hL)
-      (mul_nonneg (Nat.cast_nonneg d) (Real.log_nonneg hB))) (sq_nonneg _)
-  have hmin := le_min hT (mul_nonneg (sq_nonneg (d : ℝ)) hb)
-  have hK : 0 ≤ max (affineHeightTransferConstant n) (Real.exp 1) :=
-    (Real.exp_pos 1).le.trans (le_max_right _ _)
-  have hC := (hypersurfaceAbsoluteAuxiliaryConstant_pos n).le
-  unfold affineMinimumAuxiliaryBound
-  gcongr
-
-/-- The affine auxiliary degree bound `affineMinimumAuxiliaryBound` is monotone in the
-bad-prime factor `b`, for `0 ≤ A`, `1 ≤ B` and `1 ≤ L`. -/
-lemma affineMinimumAuxiliaryBound_mono_b (n d : ℕ) {A B L b b' : ℝ}
-    (hA : 0 ≤ A) (hB : 1 ≤ B) (hL : 1 ≤ L) (hb : b ≤ b') :
-    affineMinimumAuxiliaryBound n d A B L b ≤ affineMinimumAuxiliaryBound n d A B L b' := by
-  have hK : 0 ≤ max (affineHeightTransferConstant n) (Real.exp 1) :=
-    (Real.exp_pos 1).le.trans (le_max_right _ _)
-  have hC := (hypersurfaceAbsoluteAuxiliaryConstant_pos n).le
-  unfold affineMinimumAuxiliaryBound
-  gcongr
-
-/-- The affine auxiliary degree bound is at least the degree `d` whenever `0 < d`, so the
-equation itself always meets it. -/
-lemma degree_le_affineMinimumAuxiliaryBound (n : ℕ) {d : ℕ} (hd : 0 < d)
-    {A B L b : ℝ} (hA : 0 ≤ A) (hB : 1 ≤ B) (hL : 1 ≤ L) (hb : 0 ≤ b) :
+private lemma degree_le_affineMinimumAuxiliaryBound (n : ℕ) {d : ℕ} (hd : 0 < d)
+    {A B L b : ℝ} (hB : 1 ≤ B) (hL : 1 ≤ L) (hb : 0 ≤ b) :
     (d : ℝ) ≤ affineMinimumAuxiliaryBound n d A B L b := by
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hn1 : (1 : ℝ) ≤ n + 1 := by have := Nat.cast_nonneg (α := ℝ) n; linarith
-  have hdD : (d : ℝ) ≤ (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) := le_rpow_four_sub_inv hd
-  have hT : 0 ≤ Real.log L + d * Real.log B + (d : ℝ) ^ 2 :=
-    add_nonneg (add_nonneg (Real.log_nonneg hL)
-      (mul_nonneg (Nat.cast_nonneg d) (Real.log_nonneg hB))) (sq_nonneg _)
-  have hmin := le_min hT (mul_nonneg (sq_nonneg (d : ℝ)) hb)
-  have hK : 0 ≤ max (affineHeightTransferConstant n) (Real.exp 1) :=
-    (Real.exp_pos 1).le.trans (le_max_right _ _)
-  have hlog := Real.log_nonneg hB
-  have hC := hypersurfaceAbsoluteAuxiliaryConstant_one_le n
-  let E := max (affineHeightTransferConstant n) (Real.exp 1) * A *
-      (d : ℝ) ^ (2 - 1 / (n + 1 : ℝ)) *
-      min (Real.log L + d * Real.log B + (d : ℝ) ^ 2) ((d : ℝ) ^ 2 * b) *
-      B ^ (1 / (d : ℝ) ^ (1 / (n + 1 : ℝ))) /
-        L ^ (1 / ((n + 1 : ℝ) * d * (d : ℝ) ^ (1 / (n + 1 : ℝ)))) +
-      (d : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B
-  have hE : 0 ≤ E := by dsimp only [E]; positivity
-  unfold affineMinimumAuxiliaryBound
-  exact (hdD.trans (le_add_of_nonneg_left hE)).trans
-    (le_mul_of_one_le_left (by positivity) hC)
+  have := Real.log_nonneg hB
+  have hQ : 1 ≤ B ^ (1 / degreeRoot n d) := Real.one_le_rpow hB (by positivity)
+  refine (le_auxDegreeScale (n := n) hd).trans ?_
+  have hC := affineMinimumConstant_one_le n A
+  have hmin : 0 ≤ min (1 + Real.log B / d) (b / L ^ heightExponent n d) := by positivity
+  unfold affineMinimumAuxiliaryBound affineAuxiliaryDegreeExpression
+  calc
+    _ = 1 * (auxDegreeScale n d * 1 * 1) := by ring
+    _ ≤ _ := by gcongr; linarith
 
 /-- The scale $4 R^2$, with `R = scalingPrimeRatio`, of the small-box threshold
 `affineAuxiliaryBoxScale * (d + 1) ^ affineAuxiliaryBoxExponent n` separating the unscaled
@@ -96,11 +58,6 @@ lemma affineAuxiliaryBoxScale_one_le : 1 ≤ affineAuxiliaryBoxScale := by
   unfold affineAuxiliaryBoxScale
   nlinarith
 
-/-- The comparison constant `affineAuxiliaryComparisonConstant n` is at least `1`. -/
-lemma affineAuxiliaryComparisonConstant_one_le (n : ℕ) :
-    1 ≤ affineAuxiliaryComparisonConstant n :=
-  scalingPrimeRatio_one_le.trans (le_max_left _ _)
-
 /-- Every primitive irreducible equation with nonzero constant coefficient
 has the affine auxiliary, uniformly over all box radii. -/
 theorem affine_auxiliary_minimum_nonzero_constant {n : ℕ}
@@ -113,46 +70,47 @@ theorem affine_auxiliary_minimum_nonzero_constant {n : ℕ}
         (integerCoefficientHeight (homogeneousComponent f.totalDegree f) : ℝ)
         (hypersurfaceBadPrimeFactor f) := by
   let d := f.totalDegree
-  let L := (integerCoefficientHeight (homogeneousComponent d f) : ℝ)
-  let b := hypersurfaceBadPrimeFactor (scaledHomogenize d 1 f)
-  have hL : 1 ≤ L := leading_height_one_le f hir.ne_zero
-  have hb : 0 ≤ b := hypersurfaceBadPrimeFactor_nonneg _
-  have hb' : b ≤ hypersurfaceBadPrimeFactor f :=
-    hypersurfaceBadPrimeFactor_unscaledHomogenize_le f hir.ne_zero
-  have hA : 1 ≤ affineAuxiliaryComparisonConstant n := affineAuxiliaryComparisonConstant_one_le n
+  let R := scalingPrimeRatio
+  have hb' := hypersurfaceBadPrimeFactor_unscaledHomogenize_le f hir.ne_zero
+  have hb := hypersurfaceBadPrimeFactor_nonneg f
+  have hL := leading_height_one_le f hir.ne_zero
+  have hE := Real.one_le_exp (by norm_num : (0 : ℝ) ≤ 1)
   by_cases hsmall : B ≤ affineAuxiliaryBoxScale * ((d : ℝ) + 1) ^ affineAuxiliaryBoxExponent n
-  · obtain ⟨g, hg, hgdeg⟩ := unscaled_affine_auxiliary_minimum f hprim hir hd
-      affineAuxiliaryBoxScale_one_le hB hsmall
-    refine ⟨g, hg, hgdeg.trans ?_⟩
-    exact (affineMinimumAuxiliaryBound_mono_A n d (le_max_right _ _) hB hL hb).trans
-      (affineMinimumAuxiliaryBound_mono_b n d (zero_le_one.trans hA) hB hL hb')
-  · have hBA : scalingPrimeRatio ≤ B := by
-      have hS : scalingPrimeRatio ≤ affineAuxiliaryBoxScale := by
+  · apply scaled_affine_auxiliary_minimum f hir hd (a := 1) le_rfl (hprim.scaledHomogenize_one _) hB
+      (by simpa using hB)
+    · simp only [Int.cast_one, div_one]
+      exact (polynomial_box_root_power_bound hd affineAuxiliaryBoxScale_one_le hB hsmall).trans (le_max_right _ _)
+    · exact hb'.trans (le_mul_of_one_le_left hb hE)
+  · have hBA : R ≤ B := by
+      have hS : R ≤ affineAuxiliaryBoxScale := by
         have h := scalingPrimeRatio_one_le
         unfold affineAuxiliaryBoxScale
+        dsimp [R]
         nlinarith
       have hpow : (1 : ℝ) ≤ ((d : ℝ) + 1) ^ affineAuxiliaryBoxExponent n :=
-        one_le_pow₀ (by have := Nat.cast_nonneg (α := ℝ) d; linarith)
-      have hS0 := zero_le_one.trans affineAuxiliaryBoxScale_one_le
-      exact (hS.trans (le_mul_of_one_le_right hS0 hpow)).trans (le_of_not_ge hsmall)
-    by_cases hheight : Real.log |(f.coeff 0 : ℝ)| < B / scalingPrimeRatio
-    · obtain ⟨g, hg, hgdeg⟩ := affine_auxiliary_minimum_of_small_constant_coefficient
-        f hprim hir hd hc hBA hheight
-      refine ⟨g, hg, hgdeg.trans ?_⟩
-      exact (affineMinimumAuxiliaryBound_mono_A n d (le_max_left _ _) hB hL hb).trans
-        (affineMinimumAuxiliaryBound_mono_b n d (zero_le_one.trans hA) hB hL hb')
-    · rcases affine_coefficient_height_dichotomy f hir.ne_zero hprim hB with hh | hg
-      · have hcoef : Real.log |(f.coeff 0 : ℝ)| ≤ Real.log (integerCoefficientHeight f : ℝ) :=
-          Real.log_le_log (abs_pos.mpr (Int.cast_ne_zero.mpr hc))
-            (coefficient_abs_le_integerCoefficientHeight f 0)
-        have hcut := affine_coefficient_height_cutoff (n + 2) d scalingPrimeRatio_one_le hB
-          ((le_of_not_gt hheight).trans (hcoef.trans hh))
-        exact (hsmall hcut).elim
-      · obtain ⟨g, hg, hgdeg⟩ := hg
-        refine ⟨g, hg, ?_⟩
-        have hgR : (g.totalDegree : ℝ) ≤ d := by exact_mod_cast hgdeg
-        exact hgR.trans (degree_le_affineMinimumAuxiliaryBound n hd (zero_le_one.trans hA) hB hL
-          (hypersurfaceBadPrimeFactor_nonneg f))
+        one_le_pow₀ (by simp)
+      exact hS.trans ((le_mul_of_one_le_right (zero_le_one.trans affineAuxiliaryBoxScale_one_le) hpow).trans (le_of_not_ge hsmall))
+    by_cases hheight : Real.log |(f.coeff 0 : ℝ)| < B / R
+    · obtain ⟨p, hp, hlo, hhi, hnd⟩ := exists_scaling_prime hBA hc hheight
+      apply scaled_affine_auxiliary_minimum f hir hd (a := (p : ℤ)) (by exact_mod_cast hp.one_le)
+        (hprim.scaledHomogenize _ hp hnd) hB (by exact_mod_cast hhi)
+      · have hp0 : (0 : ℝ) < p := by exact_mod_cast hp.pos
+        have hBR : B / (p : ℝ) ≤ R := by
+          rw [div_le_iff₀ hp0]
+          have h := (div_le_iff₀ (scalingPrimeRatio_one_le.trans_lt' zero_lt_one)).mp hlo.le
+          linarith
+        simpa only [Int.cast_natCast] using
+          ((Real.rpow_le_rpow (by positivity) hBR (by positivity)).trans
+            ((Real.rpow_le_rpow_of_exponent_le scalingPrimeRatio_one_le (scaleExponent_le_one n hd)).trans
+              ((Real.rpow_one _).le.trans (show R ≤ affineAuxiliaryComparisonConstant n from le_max_left _ _))))
+      · exact (hypersurfaceBadPrimeFactor_scaledHomogenize_le f hir.ne_zero hp).trans (by gcongr)
+    · rcases affine_coefficient_height_dichotomy f hir.ne_zero hprim hB with H | ⟨g, hg, hdeg⟩
+      · exfalso
+        apply hsmall
+        apply affine_coefficient_height_cutoff (n + 2) d scalingPrimeRatio_one_le hB
+        exact (le_of_not_gt hheight).trans ((Real.log_le_log (abs_pos.mpr (by exact_mod_cast hc))
+          (coefficient_abs_le_integerCoefficientHeight f 0)).trans H)
+      · exact ⟨g, hg, (Nat.cast_le.mpr hdeg).trans (degree_le_affineMinimumAuxiliaryBound n hd hB hL hb)⟩
 
 end
 end CCDN

@@ -5,9 +5,9 @@ Authors: Jason Davies
 -/
 module
 
+import CCDN.Algebra.IntegerPolynomialAvoidance
 public import CCDN.Algebra.AffineTranslation
-public import CCDN.Determinant.SingularReduction
-import CCDN.Plane.GridHeight
+public import CCDN.Height.PrimitiveIntegerPolynomial
 
 /-! Bounded translations remove a zero constant coefficient and preserve the
 finite-field residue count, primitivity and integer point families. -/
@@ -48,41 +48,14 @@ lemma PrimitiveIntegerPolynomial.translate_affine {n : ℕ} (a : Fin n → ℤ)
   rw [hC, AlgEquiv.symm_apply_apply] at he
   exact hf c ((C_dvd_iff_dvd_coeff c f).mp he)
 
-/-- Translation of the residue zero set, over ZMod p for every p. -/
-private def affineTranslationResidueEquiv (a : Fin 2 → ℤ) (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :
-    PlaneResidue (affineTranslation ℤ a f) p ≃ PlaneResidue f p where
-  toFun x := ⟨x.val + fun j => (a j : ZMod p), by
-    have h := x.property
-    rw [← eval_map] at h
-    rw [affineTranslation_map, affineTranslation_eval] at h
-    simpa only [eval_map, Function.comp_def, Int.coe_castRingHom] using h⟩
-  invFun x := ⟨x.val - fun j => (a j : ZMod p), by
-    rw [← eval_map]
-    rw [affineTranslation_map, affineTranslation_eval]
-    simpa only [Function.comp_def, Int.coe_castRingHom, sub_add_cancel, eval_map] using x.property⟩
-  left_inv x := by apply Subtype.ext; exact add_sub_cancel_right _ _
-  right_inv x := by apply Subtype.ext; exact sub_add_cancel _ _
-
-/-- An integral affine translation of a plane polynomial preserves the number of its zeros
-modulo `p` in the affine plane over `ZMod p`. -/
-lemma affineTranslation_residue_card (a : Fin 2 → ℤ) (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :
-    Nat.card (PlaneResidue (affineTranslation ℤ a f) p) = Nat.card (PlaneResidue f p) :=
-  Nat.card_congr (affineTranslationResidueEquiv a f p)
-
-/-- A nonzero integral plane polynomial `f` has an integral translate with nonzero constant
-coefficient by a vector whose entries lie in `[0, deg f]`. -/
-theorem exists_bounded_translation_nonzero_constant (f : MvPolynomial (Fin 2) ℤ) (hf : f ≠ 0) :
-    ∃ a : Fin 2 → ℤ, (∀ j, 0 ≤ a j ∧ a j ≤ f.totalDegree) ∧
+/-- A nonzero integral polynomial `f` in `n` variables has an integral translate with nonzero
+constant coefficient by a vector whose entries lie in `[0, deg f]`. -/
+theorem exists_bounded_affine_translation_nonzero_constant {n : ℕ}
+    (f : MvPolynomial (Fin n) ℤ) (hf : f ≠ 0) :
+    ∃ a : Fin n → ℤ, (∀ j, 0 ≤ a j ∧ a j ≤ f.totalDegree) ∧
       (affineTranslation ℤ a f).coeff 0 ≠ 0 := by
-  obtain ⟨x, y, hx, hy, hn, _⟩ := exists_integer_plane_grid_height_witness f hf le_rfl
-  refine ⟨![(x : ℤ), (y : ℤ)], ?_, ?_⟩
-  · intro j
-    fin_cases j
-    · change 0 ≤ (x : ℤ) ∧ (x : ℤ) ≤ f.totalDegree
-      exact ⟨by positivity, by exact_mod_cast hx⟩
-    · change 0 ≤ (y : ℤ) ∧ (y : ℤ) ≤ f.totalDegree
-      exact ⟨by positivity, by exact_mod_cast hy⟩
-  · rwa [affineTranslation_constantCoeff]
+  obtain ⟨a, ha, he⟩ := exists_integer_grid_eval_ne_zero f hf _ le_rfl
+  exact ⟨a, ha, by rwa [affineTranslation_constantCoeff]⟩
 
 end
 end CCDN

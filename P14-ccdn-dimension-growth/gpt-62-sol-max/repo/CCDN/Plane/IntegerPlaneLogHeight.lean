@@ -17,10 +17,15 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+section
+
+variable (m d : ℕ) (hd : 1 ≤ d)
+  (H : ℝ) (hH : 1 ≤ H)
+include m d hd H hH
+
 /-- For `d ≥ 1` and `H ≥ 1`, the interpolation height `integerPlaneHeight m d H (2 * d ^ 3)` is at
 least `1`. -/
-lemma integerPlaneHeight_one_le (m d : ℕ) (hd : 1 ≤ d)
-    (H : ℝ) (hH : 1 ≤ H) :
+lemma integerPlaneHeight_one_le :
     1 ≤ integerPlaneHeight m d H (2 * (d : ℝ) ^ 3) := by
   have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have hA : 1 ≤ 2 * (d : ℝ) ^ 3 := by nlinarith [one_le_pow₀ hdR (n := 3)]
@@ -31,8 +36,7 @@ lemma integerPlaneHeight_one_le (m d : ℕ) (hd : 1 ≤ d)
     · exact one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by linarith)) hH
     · exact one_le_pow₀ (one_le_mul_of_one_le_of_one_le hA (by linarith))
 
-private lemma integerPlaneHeight_log_le (m d : ℕ) (hd : 1 ≤ d)
-    (H : ℝ) (hH : 1 ≤ H) :
+private lemma integerPlaneHeight_log_le :
     Real.log (integerPlaneHeight m d H (2 * (d : ℝ) ^ 3)) ≤
       Real.log H + (m : ℝ) * d + 11 * (d : ℝ) ^ 2 := by
   have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
@@ -59,13 +63,14 @@ private lemma integerPlaneHeight_log_le (m d : ℕ) (hd : 1 ≤ d)
       gcongr
     _ ≤ _ := by nlinarith
 
+end
+
 /-- A dimension-dependent constant at the d⁴ cutoff. -/
 def hypersurfaceHeightConstant (m : ℕ) : ℝ := 28 * (m + 12)
 
 /-- The constant `hypersurfaceHeightConstant m` is at least `1`. -/
 lemma hypersurfaceHeightConstant_one_le (m : ℕ) : 1 ≤ hypersurfaceHeightConstant m := by
   unfold hypersurfaceHeightConstant
-  have := Nat.cast_nonneg (α := ℝ) m
   linarith
 
 /-- For `d ≥ 1` and `H ≥ 1`, with `L` the logarithm of the interpolation height
@@ -78,49 +83,33 @@ lemma integerPlaneHeight_scaled_log_le (m d : ℕ) (hd : 1 ≤ d)
           (1 + Real.log (integerPlaneHeight m d H (2 * (d : ℝ) ^ 3)) / (d : ℝ) ^ 2) ≤
       (27 * (d : ℝ) ^ 4) *
         (hypersurfaceHeightConstant m * (1 + Real.log H / (d : ℝ) ^ 2)) := by
+  let L := Real.log (integerPlaneHeight m d H (2 * (d : ℝ) ^ 3))
+  let D := (d : ℝ) ^ 2
+  let P := 27 * (d : ℝ) ^ 4
   have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hd0 : (0 : ℝ) < d := by linarith
-  have hlog := Real.log_nonneg hH
-  have hc := integerPlaneHeight_log_le m d hd H hH
-  have hd2 : (d : ℝ) ^ 2 ≤ (d : ℝ) ^ 4 := by
-    nlinarith [sq_nonneg ((d : ℝ) ^ 2 - 1)]
-  have hd3 : (d : ℝ) ^ 3 ≤ (d : ℝ) ^ 4 := by
-    nlinarith [mul_nonneg (show 0 ≤ (d : ℝ) ^ 3 by positivity) (sub_nonneg.mpr hd1)]
-  have hd12 : (d : ℝ) ≤ (d : ℝ) ^ 2 := by nlinarith
-  have hmul := mul_le_mul_of_nonneg_left hc (show 0 ≤ 1 + 27 * (d : ℝ) ^ 2 by positivity)
-  have hm : (m : ℝ) * d ≤ m * (d : ℝ) ^ 4 :=
-    mul_le_mul_of_nonneg_left (hd12.trans hd2) (Nat.cast_nonneg m)
-  have hm3 : (m : ℝ) * (d : ℝ) ^ 3 ≤ m * (d : ℝ) ^ 4 :=
-    mul_le_mul_of_nonneg_left hd3 (Nat.cast_nonneg m)
-  have hlog2 : Real.log H ≤ (d : ℝ) ^ 2 * Real.log H :=
-    le_mul_of_one_le_left hlog (one_le_pow₀ hd1)
-  have hmid : (1 + 27 * (d : ℝ) ^ 2) *
-      (Real.log H + (m : ℝ) * d + 11 * (d : ℝ) ^ 2) + 27 * (d : ℝ) ^ 4 ≤
-      28 * (d : ℝ) ^ 2 * Real.log H + hypersurfaceHeightConstant m * (d : ℝ) ^ 4 := by
-    unfold hypersurfaceHeightConstant
-    nlinarith
-  have hconst : 28 ≤ hypersurfaceHeightConstant m := by
-    unfold hypersurfaceHeightConstant
-    have := Nat.cast_nonneg (α := ℝ) m
+  have hD : 0 < D := by dsimp [D]; positivity
+  have hDP : D ≤ P := by
+    dsimp [D, P]
+    nlinarith [pow_le_pow_right₀ hd1 (show 2 ≤ 4 by decide)]
+  have hL : 0 ≤ L := Real.log_nonneg (integerPlaneHeight_one_le m d hd H hH)
+  have hq : L / D ≤ Real.log H / D + (m : ℝ) + 11 := by
+    apply (div_le_iff₀ hD).mpr
+    have h := integerPlaneHeight_log_le m d hd H hH
+    have hmd : (m : ℝ) * d ≤ m * D := by
+      exact mul_le_mul_of_nonneg_left (by dsimp [D]; nlinarith) (by positivity)
+    rw [add_mul, add_mul, div_mul_cancel₀ _ hD.ne']
+    dsimp [D, L] at *
     linarith
-  have hlast : 28 * (d : ℝ) ^ 2 * Real.log H + hypersurfaceHeightConstant m * (d : ℝ) ^ 4 ≤
-      27 * hypersurfaceHeightConstant m * (d : ℝ) ^ 4 +
-        27 * hypersurfaceHeightConstant m * (d : ℝ) ^ 2 * Real.log H := by
-    have h1 := mul_le_mul_of_nonneg_right hconst (mul_nonneg (sq_nonneg (d : ℝ)) hlog)
-    have h2 := mul_nonneg (show 0 ≤ hypersurfaceHeightConstant m by linarith)
-      (show 0 ≤ (d : ℝ) ^ 4 by positivity)
-    nlinarith
-  have he (S : ℝ) : S + 27 * (d : ℝ) ^ 4 * (1 + S / (d : ℝ) ^ 2) =
-      (1 + 27 * (d : ℝ) ^ 2) * S + 27 * (d : ℝ) ^ 4 := by
-    field_simp
-    ring
-  rw [he]
-  have hr : 27 * (d : ℝ) ^ 4 *
-      (hypersurfaceHeightConstant m * (1 + Real.log H / (d : ℝ) ^ 2)) =
-      27 * hypersurfaceHeightConstant m * (d : ℝ) ^ 4 +
-        27 * hypersurfaceHeightConstant m * (d : ℝ) ^ 2 * Real.log H := by field_simp
-  rw [hr]
-  exact (add_le_add hmul le_rfl).trans (hmid.trans hlast)
+  have ht := mul_le_mul_of_nonneg_right hDP (div_nonneg hL hD.le)
+  rw [mul_div_cancel₀ _ hD.ne'] at ht
+  change L + P * (1 + L / D) ≤ P * (hypersurfaceHeightConstant m * (1 + Real.log H / D))
+  calc
+    _ ≤ P * (1 + 2 * (L / D)) := by linarith
+    _ ≤ _ := by
+      apply mul_le_mul_of_nonneg_left _ (hD.le.trans hDP)
+      unfold hypersurfaceHeightConstant
+      nlinarith [div_nonneg (Real.log_nonneg hH) hD.le,
+        mul_nonneg (Nat.cast_nonneg (α := ℝ) m) (div_nonneg (Real.log_nonneg hH) hD.le)]
 
 end
 end CCDN

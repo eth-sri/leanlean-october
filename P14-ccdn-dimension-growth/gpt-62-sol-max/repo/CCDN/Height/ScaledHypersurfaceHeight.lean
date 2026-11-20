@@ -5,7 +5,7 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.Algebra.ScaledHomogenization
+public import CCDN.Algebra.HomogeneousChart
 public import CCDN.Height.IntegerCoefficientHeight
 import CCDN.ForMathlib.MvPolynomial
 
@@ -38,11 +38,11 @@ theorem scaledHomogenize_leading_height_lower {n : ℕ}
         (homogenizedExponent f.totalDegree m)
       rw [scaledHomogenize_coefficient, hm', Int.cast_mul, Int.cast_pow, abs_mul,
         abs_pow, abs_of_nonneg (by linarith : (0 : ℝ) ≤ h)] at he
-      exact (le_div_iff₀ hpow).mpr (by simpa only [mul_comm] using he)
+      exact (le_div_iff₀ hpow).mpr (by linarith)
     · simp only [Int.cast_zero, abs_zero]
       positivity
   have he := (le_div_iff₀ hpow).mp hc
-  simpa only [mul_comm] using he
+  linarith
 
 /-- The top homogeneous component of a nonzero integer polynomial has coefficient height at
 least `1`. -/

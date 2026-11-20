@@ -24,7 +24,7 @@ private lemma hypersurfaceBadReduction_affineTranslation {n : ℕ}
   unfold HypersurfaceBadReduction
   apply exists_congr
   intro hp
-  let : Fact p.Prime := ⟨hp⟩
+  
   dsimp only
   rw [affineTranslation_map, affineTranslation_totalDegree, affineTranslation_totalDegree,
     affineTranslation_irreducible_iff]
@@ -43,7 +43,7 @@ theorem hypersurfaceBadPrimeFactor_affineTranslation {n : ℕ}
       (absolute_integer_polynomial_totalDegree_pos f hf)).toFinset
     have hbad (p) : p ∈ bad ↔ stepanovThreshold f.totalDegree < p ∧
         HypersurfaceBadReduction f p := by
-      simp only [bad, Set.Finite.mem_toFinset, Set.mem_ofPred_eq]
+      aesop
     rw [hypersurfaceBadPrimeFactor_eq_exp f hf rfl bad hbad]
     exact hypersurfaceBadPrimeFactor_eq_exp _ (hir.mpr hf) (affineTranslation_totalDegree a f)
       bad (by intro p; rw [hbad, hypersurfaceBadReduction_affineTranslation])
@@ -56,19 +56,17 @@ theorem affine_auxiliary_translation_transport {n : ℕ}
     (hg : IsBoxAuxiliary (affineTranslation ℤ a f) g (B + D)) (ha : InBox a D) :
     ∃ G, IsBoxAuxiliary f G B ∧ G.totalDegree = g.totalDegree := by
   let G := (affineTranslation ℤ a).symm g
-  have hG0 : G ≠ 0 := (affineTranslation ℤ a).symm.injective.ne (by simpa using hg.ne_zero)
+  have hG0 := (affineTranslation ℤ a).symm.injective.ne (by simpa using hg.ne_zero)
   have hGnd : ¬ f ∣ G := by
     intro hd
     apply hg.not_dvd
     have hh := map_dvd (affineTranslation ℤ a).toRingHom hd
-    change affineTranslation ℤ a f ∣ affineTranslation ℤ a ((affineTranslation ℤ a).symm g) at hh
-    simpa only [AlgEquiv.apply_symm_apply] using hh
+    aesop
   refine ⟨G, ⟨hG0, hGnd, ?_⟩, affineTranslation_totalDegree (-a) g⟩
   intro x hx hxf
   have hx' (j) : |((x - a) j : ℝ)| ≤ B + D := by
     change |((x j - a j : ℤ) : ℝ)| ≤ _
-    rw [Int.cast_sub]
-    exact (abs_sub _ _).trans (add_le_add (hx j) (ha j))
+    grind
   have hf' : eval (x - a) (affineTranslation ℤ a f) = 0 := by
     rw [affineTranslation_eval, sub_add_cancel, hxf]
   change eval x (affineTranslation ℤ (-a) g) = 0

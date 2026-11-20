@@ -40,13 +40,7 @@ private theorem ambiguous_ideal_scalar_relative_unit
   have hnmap : Ideal.relNorm R ((I : Ideal S).map σ.toRingHom) =
       Ideal.relNorm R (I : Ideal S) := Ideal.relNorm_map_algEquiv σ I
   rw [hnmap] at hn
-  have hnI : Ideal.relNorm R (I : Ideal S) ≠ 0 := by
-    intro h
-    exact (mem_nonZeroDivisors_iff_ne_zero.mp I.property)
-      (Ideal.relNorm_eq_bot_iff.mp h)
-  have hspan := mul_right_cancel₀ hnI hn
-  obtain ⟨u, hu⟩ := Ideal.span_singleton_eq_span_singleton.mp hspan
-  exact ⟨x, y, u, hx, hy, hxy, hu⟩
+  exact have hnI := fun h => mem_nonZeroDivisors_iff_ne_zero.mp I.property (Ideal.relNorm_eq_bot_iff.mp h); have hspan := mul_right_cancel₀ hnI hn; Exists.casesOn (Ideal.span_singleton_eq_span_singleton.mp hspan) fun u hu => Exists.intro x (Exists.intro y (Exists.intro u ⟨hx, ⟨hy, ⟨hxy, hu⟩⟩⟩))
 
 section NumberFields
 open NumberField

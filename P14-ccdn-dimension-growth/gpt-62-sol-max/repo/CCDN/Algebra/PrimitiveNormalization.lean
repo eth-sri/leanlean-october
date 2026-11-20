@@ -9,6 +9,7 @@ public import CCDN.Height.PrimitiveIntegerPolynomial
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
 import CCDN.ForMathlib.MvPolynomial
+import Mathlib.Algebra.MvPolynomial.Nilpotent
 import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
 
 /-! Primitive models preserve the equation's degree and homogeneous grading,
@@ -19,77 +20,56 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma integer_scalar_factor_ne_zero {σ : Type*} {f g : MvPolynomial σ ℤ} {c : ℤ}
-    (hf : f ≠ 0) (he : f = C c * g) : g ≠ 0 := by
-  intro hg
-  apply hf
-  rw [he, hg, mul_zero]
+lemma associated_int_C_mul {σ K : Type*} [Field K] [CharZero K]
+    (f : MvPolynomial σ K) {c : ℤ} (hc : c ≠ 0) : Associated f (C (c : K) * f) := by
+  rw [mul_comm]
+  exact associated_mul_unit_right _ _ ((isUnit_iff_ne_zero.mpr (Int.cast_ne_zero.mpr hc)).map C)
 
-/-- If a nonzero integer polynomial factors as `f = C c * g` with `c ≠ 0`, then `g` has the
-same total degree as `f`. -/
-lemma integer_scalar_factor_degree {σ : Type*} {f g : MvPolynomial σ ℤ} {c : ℤ}
-    (hf : f ≠ 0) (hc : c ≠ 0) (he : f = C c * g) : g.totalDegree = f.totalDegree := by
-  have hg := integer_scalar_factor_ne_zero hf he
-  rw [he, totalDegree_mul_of_isDomain (C_eq_zero.not.mpr hc) hg, totalDegree_C, zero_add]
+/-- Clearing denominators changes the rational polynomial by a unit. -/
+theorem exists_integer_model {σ : Type*} (f : MvPolynomial σ ℚ) :
+    ∃ g : MvPolynomial σ ℤ, Associated f (map (Int.castRingHom ℚ) g) := by
+  obtain ⟨b, g, hb, hg⟩ := mvPolynomial_integer_multiple f
+  exact ⟨g, hg.symm ▸ associated_int_C_mul f hb⟩
 
-/-- If `f = C c * g` with a nonzero integer `c`, then every coefficient of `g` is at most the
-corresponding coefficient of `f` in absolute value. -/
-lemma integer_scalar_factor_coefficient_bound {σ : Type*}
-    {f g : MvPolynomial σ ℤ} {c : ℤ} (hc : c ≠ 0) (he : f = C c * g) (m : σ →₀ ℕ) :
-    |(g.coeff m : ℝ)| ≤ |(f.coeff m : ℝ)| := by
-  have hc1 : (1 : ℝ) ≤ |(c : ℝ)| := by exact_mod_cast Int.one_le_abs hc
-  rw [he, coeff_C_mul, Int.cast_mul, abs_mul]
-  nlinarith [abs_nonneg (g.coeff m : ℝ)]
-
-/-- Every nonzero rational multivariate polynomial has a primitive integer
-model differing by a nonzero rational scalar. -/
+/-- Removing content preserves the associated rational equation. -/
 theorem exists_primitive_integer_model {σ : Type*} (f : MvPolynomial σ ℚ) (hf : f ≠ 0) :
-    ∃ (g : MvPolynomial σ ℤ) (a : ℚ), PrimitiveIntegerPolynomial g ∧ a ≠ 0 ∧
-      MvPolynomial.map (Int.castRingHom ℚ) g = C a * f := by
-  obtain ⟨b, u, hb, hu⟩ := mvPolynomial_integer_multiple f
-  have hbQ : (b : ℚ) ≠ 0 := by exact_mod_cast hb
+    ∃ g : MvPolynomial σ ℤ, PrimitiveIntegerPolynomial g ∧ Associated f (map (Int.castRingHom ℚ) g) := by
+  obtain ⟨u, hu⟩ := exists_integer_model f
   have hu0 : u ≠ 0 := by
-    intro h
-    have hz : C (b : ℚ) * f = 0 := by simpa only [h, map_zero] using hu.symm
-    exact (mul_ne_zero (C_eq_zero.not.mpr hbQ) hf) hz
+    intro hz
+    exact hf (hu.eq_zero_iff.mpr (by simp [hz]))
   obtain ⟨c, g, hc, hg, he⟩ := exists_primitive_integer_factor u hu0
-  have hcQ : (c : ℚ) ≠ 0 := by exact_mod_cast hc
-  refine ⟨g, (b : ℚ) / c, hg, div_ne_zero hbQ hcQ, ?_⟩
-  have hh := congrArg (MvPolynomial.map (Int.castRingHom ℚ)) he
-  rw [hu, map_mul, map_C] at hh
-  simp only [Int.coe_castRingHom] at hh
-  apply mul_left_cancel₀ (C_eq_zero.not.mpr hcQ)
-  rw [← mul_assoc, ← C_mul, mul_div_cancel₀ _ hcQ]
-  exact hh.symm
+  refine ⟨g, hg, hu.trans ?_⟩
+  rw [he, map_mul, map_C, Int.coe_castRingHom]
+  exact (associated_int_C_mul _ hc).symm
 
-/-- An integer polynomial `g` whose image over `ℚ` is a nonzero rational multiple `C a * f` of
-a nonzero polynomial `f` has the same total degree as `f`. -/
-lemma rational_scalar_model_degree {σ : Type*} {f : MvPolynomial σ ℚ}
-    {g : MvPolynomial σ ℤ} {a : ℚ} (ha : a ≠ 0) (hf : f ≠ 0)
-    (he : MvPolynomial.map (Int.castRingHom ℚ) g = C a * f) : g.totalDegree = f.totalDegree := by
-  have hd : (MvPolynomial.map (Int.castRingHom ℚ) g).totalDegree = g.totalDegree :=
-      totalDegree_map_of_injective Int.cast_injective _
-  rw [he, totalDegree_mul_of_isDomain (C_eq_zero.not.mpr ha) hf, totalDegree_C, zero_add] at hd
-  exact hd.symm
+section
 
-/-- If the image over `ℚ` of an integer polynomial `g` is `C a * f` for a homogeneous
-polynomial `f` of degree `d`, then `g` is homogeneous of degree `d`. -/
-lemma rational_scalar_model_homogeneous {σ : Type*} {f : MvPolynomial σ ℚ}
-    {g : MvPolynomial σ ℤ} {a : ℚ} {d : ℕ}
-    (he : MvPolynomial.map (Int.castRingHom ℚ) g = C a * f) (hf : f.IsHomogeneous d) :
-    g.IsHomogeneous d := by
-  apply IsHomogeneous.of_map (f := Int.castRingHom ℚ) Int.cast_injective
-  rw [he]
-  exact hf.C_mul a
+variable {σ : Type*} {f : MvPolynomial σ ℚ} {g : MvPolynomial σ ℤ}
+  (he : Associated f (map (Int.castRingHom ℚ) g))
+include he
 
-/-- If the image over `ℚ` of an integer polynomial `g` is `C a * f` with `a ≠ 0`, then `g` and
-`f` have the same rational zeros. -/
-lemma rational_scalar_model_zero_iff {σ : Type*} {f : MvPolynomial σ ℚ}
-    {g : MvPolynomial σ ℤ} {a : ℚ} (ha : a ≠ 0)
-    (he : MvPolynomial.map (Int.castRingHom ℚ) g = C a * f) (x : σ → ℚ) :
-    eval x (MvPolynomial.map (Int.castRingHom ℚ) g) = 0 ↔ eval x f = 0 := by
-  rw [he, eval_mul, eval_C]
-  exact mul_eq_zero_iff_left ha
+lemma rational_model_eq_C_mul : ∃ a : ℚ, IsUnit a ∧ map (Int.castRingHom ℚ) g = C a * f := by
+  obtain ⟨u, hu⟩ := he
+  obtain ⟨a, ha, ea⟩ := isUnit_iff_eq_C_of_isReduced.mp u.isUnit
+  exact ⟨a, ha, by simpa [ea, mul_comm] using hu.symm⟩
 
+/-- Associated rational equations have the same total degree. -/
+lemma rational_model_degree (hf : f ≠ 0) : g.totalDegree = f.totalDegree := by
+  rw [← totalDegree_map_of_injective (f := Int.castRingHom ℚ) Int.cast_injective g]
+  exact le_antisymm (totalDegree_le_of_dvd_of_isDomain he.dvd' hf)
+    (totalDegree_le_of_dvd_of_isDomain he.dvd (he.ne_zero_iff.mp hf))
+
+lemma rational_model_homogeneous {d : ℕ} (hf : f.IsHomogeneous d) : g.IsHomogeneous d := by
+  obtain ⟨a, ha, h⟩ := rational_model_eq_C_mul he
+  exact IsHomogeneous.of_map Int.cast_injective (h.symm ▸ hf.C_mul a)
+
+lemma rational_model_zero_iff (x : σ → ℚ) :
+    eval x (map (Int.castRingHom ℚ) g) = 0 ↔ eval x f = 0 := by
+  obtain ⟨u, hu⟩ := he
+  rw [← hu, eval_mul, mul_eq_zero, or_iff_left]
+  exact (u.isUnit.map (eval x)).ne_zero
+
+end
 end
 end CCDN

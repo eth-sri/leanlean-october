@@ -34,12 +34,9 @@ private theorem card_le_subgroup_mul_obstruction
     intro x y h
     rw [← hr x, ← hr y]
     apply div_eq_one.mp
-    rw [← QuotientGroup.mk_div]
     exact (QuotientGroup.eq_one_iff _).mpr (ho _ _ h)
   have hc := Nat.card_le_card_of_injective _ hinj
-  calc
-    Nat.card G = Nat.card S * S.index := S.card_mul_index.symm
-    _ ≤ Nat.card S * Nat.card Q := Nat.mul_le_mul_left _ hc
+  exact Trans.trans (Eq.symm (Subgroup.card_mul_index S)) (Nat.mul_le_mul_left (Nat.card ↥S) hc)
 
 variable (F K : Type*) [Field F] [Field K] [NumberField F] [NumberField K]
   [Algebra F K]
@@ -69,15 +66,10 @@ private theorem nonempty_ambiguousClassWitness (σ : K ≃ₐ[F] K) (c : ClassGr
   obtain ⟨I, rfl⟩ := ClassGroup.mk0_surjective c
   obtain ⟨x, y, u, hx, hy, hxy, hu⟩ :=
     ambiguous_numberField_ideal_norm_unit F K σ I hc
-  let a : Kˣ := Units.mk0 (x : K) (RingOfIntegers.coe_ne_zero_iff.mpr hx)
-  let b : Kˣ := Units.mk0 (y : K) (RingOfIntegers.coe_ne_zero_iff.mpr hy)
-  refine ⟨⟨FractionalIdeal.mk0 K I, b / a, u,
+  refine ⟨⟨FractionalIdeal.mk0 K I, (Units.mk0 (y : K) (RingOfIntegers.coe_ne_zero_iff.mpr hy)) / (Units.mk0 (x : K) (RingOfIntegers.coe_ne_zero_iff.mpr hx)), u,
     ClassGroup.mk_mk0 K I, ?_, ?_⟩⟩
-  · exact integral_ideal_scalar_fractional_comparison
-      (RingOfIntegers.mapAlgEquiv σ).toRingEquiv I x y hx hy hxy
-  · simp only [div_eq_mul_inv, Units.val_mul, Units.val_inv_eq_inv_val]
-    change Algebra.norm F ((y : K) * (x : K)⁻¹) = ((u : 𝓞 F) : F)
-    simpa only [div_eq_mul_inv] using hu
+  exact integral_ideal_scalar_fractional_comparison (RingOfIntegers.mapAlgEquiv σ).toRingEquiv I x y hx hy hxy
+  aesop
 
 private def chosenAmbiguousClassWitness (σ : K ≃ₐ[F] K)
     (c : fixedClassGroupTwoTorsion K σ.toRingEquiv) :
@@ -108,8 +100,12 @@ abbrev stronglyAmbiguousTwoTorsion (σ : K ≃ₐ[F] K) :=
   (powMonoidHom 2 : stronglyAmbiguousClassGroup F K σ →*
     stronglyAmbiguousClassGroup F K σ).ker
 
-private theorem fixedClassGroupTwoTorsion_card_le
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) :
+section
+
+variable (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
+include hd σ hσ
+
+private theorem fixedClassGroupTwoTorsion_card_le :
     Nat.card (fixedClassGroupTwoTorsion K σ.toRingEquiv) ≤
       Nat.card (stronglyAmbiguousTwoTorsion F K σ) *
         Nat.card (quadraticUnitNormQuotient F K) := by
@@ -134,8 +130,7 @@ private theorem fixedClassGroupTwoTorsion_card_le
 
 /-- The unit contribution to quadratic genus theory is bounded by the
 degree of the base field, with the strongly ambiguous term left explicit. -/
-private theorem fixedClassGroupTwoTorsion_card_le_degree
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) :
+private theorem fixedClassGroupTwoTorsion_card_le_degree :
     Nat.card (fixedClassGroupTwoTorsion K σ.toRingEquiv) ≤
       Nat.card (stronglyAmbiguousTwoTorsion F K σ) * 2 ^ Module.finrank ℚ F :=
   (fixedClassGroupTwoTorsion_card_le F K hd σ hσ).trans
@@ -143,13 +138,14 @@ private theorem fixedClassGroupTwoTorsion_card_le_degree
 
 /-- The quadratic two-torsion count is reduced to the strongly
 ambiguous subgroup, with a proved degree-only unit factor. -/
-theorem classGroupTwoTorsionCard_le_stronglyAmbiguous
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) :
+theorem classGroupTwoTorsionCard_le_stronglyAmbiguous :
     classGroupTwoTorsionCard K ≤
       (Nat.card (stronglyAmbiguousTwoTorsion F K σ) * 2 ^ Module.finrank ℚ F) ^ 2 := by
   exact (classGroupTwoTorsionCard_le_fixed_square K σ.toRingEquiv
     (quadratic_automorphism_involutive F K hd σ)).trans
       (Nat.pow_le_pow_left (fixedClassGroupTwoTorsion_card_le_degree F K hd σ hσ) 2)
+
+end
 
 end
 end CCDN

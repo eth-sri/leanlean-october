@@ -28,8 +28,7 @@ variable (K : Type*) [Field K] [NumberField K]
 /-- The absolute discriminant, as the absolute value of an integer cast to `ℕ` and to `ℝ`. -/
 lemma numberField_discriminant_natAbs_cast :
     ((discr K).natAbs : ℝ) = |(discr K : ℝ)| := by
-  simpa only [Int.cast_natCast, Int.cast_abs] using
-    congrArg (fun z : ℤ => (z : ℝ)) (Int.natCast_natAbs (discr K))
+  simp
 
 /-- The absolute discriminant `(discr K).natAbs` of a number field is positive. -/
 lemma numberField_discriminant_natAbs_pos : 0 < (discr K).natAbs :=
@@ -109,89 +108,7 @@ private lemma square_generator_radius_product (I : Ideal (𝓞 K)) {α : 𝓞 K}
     simpa only [NNReal.coe_prod, NNReal.coe_pow,
       Real.coe_toNNReal _ (apply_nonneg _ _), NNReal.coe_natCast]
       using principal_square_infinite_product K I hIα
-  rw [hp, NNReal.sqrt_sq]
-
-/-- The anisotropic Minkowski step, with the radius left explicit. -/
-theorem exists_balanced_square_generator_of_radius
-    (I : (Ideal (𝓞 K))⁰) {α : 𝓞 K} (hα : α ≠ 0)
-    (hIα : (I : Ideal (𝓞 K)) ^ 2 = Ideal.span {α})
-    (T : ℝ≥0)
-    (hT : (2 : ℝ) ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)| <
-      (T : ℝ) ^ Module.finrank ℚ K) :
-    ∃ J : (Ideal (𝓞 K))⁰, ∃ β : 𝓞 K,
-      ClassGroup.mk0 J = ClassGroup.mk0 I ∧ β ≠ 0 ∧
-      (J : Ideal (𝓞 K)) ^ 2 = Ideal.span {β} ∧
-      ∀ w : InfinitePlace K, w (β : K) < (T : ℝ) ^ 2 := by
-  classical
-  let f : InfinitePlace K → ℝ≥0 :=
-    fun w ↦ T / NNReal.sqrt (Real.toNNReal (w (α : K)))
-  have hN : 0 < (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) := by
-    exact_mod_cast Ideal.absNorm_pos_of_nonZeroDivisors I
-  have hprod : (∏ w : InfinitePlace K, f w ^ mult w) =
-      T ^ Module.finrank ℚ K / (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ≥0) :=
-    square_generator_radius_product K _ hIα T
-  have hvol : volume (mixedEmbedding.convexBodyLT K f) =
-      ((mixedEmbedding.convexBodyLTFactor K *
-        (T ^ Module.finrank ℚ K /
-          (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ≥0)) : ℝ≥0) : ENNReal) := by
-    rw [mixedEmbedding.convexBodyLT_volume, ← ENNReal.coe_mul, hprod]
-  have hm : mixedEmbedding.minkowskiBound K (FractionalIdeal.mk0 K I)⁻¹ <
-      volume (mixedEmbedding.convexBodyLT K f) := by
-    apply (ENNReal.toReal_lt_toReal
-      (ne_of_lt (mixedEmbedding.minkowskiBound_lt_top K _)) (by rw [hvol]; finiteness)).mp
-    rw [inverse_ideal_minkowskiBound_toReal, hvol, ENNReal.coe_toReal,
-      NNReal.coe_mul, NNReal.coe_div, NNReal.coe_pow, NNReal.coe_natCast]
-    have hc : (2⁻¹ : ℝ) ^ nrComplexPlaces K ≤ 1 :=
-      pow_le_one₀ (by norm_num) (by norm_num)
-    have hf : (1 : ℝ) ≤ mixedEmbedding.convexBodyLTFactor K :=
-      NNReal.coe_le_coe.mpr (mixedEmbedding.one_le_convexBodyLTFactor K)
-    calc
-      _ ≤ (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ)⁻¹ *
-          Real.sqrt |(discr K : ℝ)| * 2 ^ Module.finrank ℚ K := by
-        gcongr
-        simpa using mul_le_mul_of_nonneg_left hc (inv_nonneg.mpr hN.le)
-      _ = ((2 : ℝ) ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)|) /
-          (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) := by ring
-      _ < (T : ℝ) ^ Module.finrank ℚ K /
-          (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) := div_lt_div_of_pos_right hT hN
-      _ ≤ _ := le_mul_of_one_le_left (by positivity) hf
-  obtain ⟨κ, hκI, hκ, hκw⟩ :=
-    mixedEmbedding.exists_ne_zero_mem_ideal_lt K (FractionalIdeal.mk0 K I)⁻¹ hm
-  obtain ⟨J, β, hJ, hβ, heq, hsq, _⟩ :=
-    rescale_integral_ideal_square (K := K) I hα hIα hκ hκI
-  refine ⟨J, β, hJ, hβ, hsq, fun w ↦ ?_⟩
-  have hαK : (α : K) ≠ 0 := by
-    simpa only [ne_eq, RingOfIntegers.coe_eq_zero_iff] using hα
-  have hαw : 0 < w (α : K) := InfinitePlace.pos_iff.mpr hαK
-  have hk : w κ < (T : ℝ) / Real.sqrt (w (α : K)) := by
-    simpa only [f, NNReal.coe_div, Real.coe_sqrt,
-      Real.coe_toNNReal _ (apply_nonneg _ _)] using hκw w
-  have hk2 := mul_lt_mul_of_pos_left
-    (pow_lt_pow_left₀ hk (apply_nonneg _ _) (by decide : (2 : ℕ) ≠ 0)) hαw
-  change (β : K) = (α : K) * κ ^ 2 at heq
-  rw [heq, map_mul, map_pow]
-  calc
-    _ < w (α : K) * ((T : ℝ) / Real.sqrt (w (α : K))) ^ 2 := hk2
-    _ = (T : ℝ) ^ 2 := by
-      rw [div_pow, Real.sq_sqrt hαw.le]
-      field_simp
-
-private lemma balanced_discriminant_radius_powers {D : ℝ} (hD : 0 < D)
-    {n : ℕ} (hn : 0 < n) :
-    (3 * D ^ (1 / (2 * (n : ℝ)))) ^ n = 3 ^ n * Real.sqrt D ∧
-    (3 * D ^ (1 / (2 * (n : ℝ)))) ^ 2 = 9 * D ^ (1 / (n : ℝ)) := by
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
-  constructor
-  · rw [mul_pow, ← Real.rpow_natCast (D ^ (1 / (2 * (n : ℝ)))) n,
-      ← Real.rpow_mul hD.le]
-    have he : (1 / (2 * (n : ℝ))) * (n : ℝ) = (1 / 2 : ℝ) := by
-      field_simp
-    rw [he, ← Real.sqrt_eq_rpow]
-  · rw [mul_pow, ← Real.rpow_natCast (D ^ (1 / (2 * (n : ℝ)))) 2,
-      ← Real.rpow_mul hD.le]
-    norm_num only [Nat.cast_ofNat]
-    have he : (1 / (2 * (n : ℝ))) * (2 : ℝ) = 1 / (n : ℝ) := by ring
-    rw [he]
+  simp_all
 
 /-- Every two-torsion class admits an integral square generator bounded
 at every infinite place by nine times the discriminant root. -/
@@ -204,26 +121,61 @@ private theorem exists_balanced_two_torsion_square_generator
       ∀ w : InfinitePlace K,
         w (β : K) < 9 * |(discr K : ℝ)| ^ (1 / (Module.finrank ℚ K : ℝ)) := by
   classical
-  obtain ⟨I, α, hIc, hα, hIα, _, _⟩ :=
-    exists_two_torsion_integral_square_representative K c
-  have hD : 0 < |(discr K : ℝ)| := zero_lt_one.trans_le (one_le_abs_discr K)
-  have hn : 0 < Module.finrank ℚ K := Module.finrank_pos
-  let T : ℝ≥0 := ⟨3 * |(discr K : ℝ)| ^
-    (1 / (2 * (Module.finrank ℚ K : ℝ))), by positivity⟩
-  obtain ⟨hTn, hT2⟩ := balanced_discriminant_radius_powers hD hn
-  have hT : (2 : ℝ) ^ Module.finrank ℚ K * Real.sqrt |(discr K : ℝ)| <
-      (T : ℝ) ^ Module.finrank ℚ K := by
-    change _ < (3 * |(discr K : ℝ)| ^
-      (1 / (2 * (Module.finrank ℚ K : ℝ)))) ^ Module.finrank ℚ K
-    rw [hTn]
-    exact mul_lt_mul_of_pos_right
-      (pow_lt_pow_left₀ (by norm_num : (2 : ℝ) < 3) (by norm_num) hn.ne')
-      (Real.sqrt_pos.mpr hD)
-  obtain ⟨J, β, hJ, hβ, hsq, hw⟩ :=
-    exists_balanced_square_generator_of_radius K I hα hIα T hT
-  refine ⟨J, β, hJ.trans hIc, hβ, hsq,
-    generator_absolute_norm_of_ideal_square K _ hsq, fun w ↦ ?_⟩
-  exact (hw w).trans_le (le_of_eq hT2)
+  obtain ⟨I, hIc⟩ := ClassGroup.mk0_surjective (c : ClassGroup (𝓞 K))
+  obtain ⟨α, hα, hIα⟩ := exists_generator_of_class_square_eq_one I (by aesop)
+  let n := Module.finrank ℚ K
+  let D := |(discr K : ℝ)|
+  let T : ℝ≥0 := ⟨3 * Real.sqrt (D ^ (1 / (n : ℝ))), by positivity⟩
+  have hn : 0 < n := Module.finrank_pos
+  have hn0 : (n : ℝ) ≠ 0 := by positivity
+  have hD : 0 < D := zero_lt_one.trans_le (one_le_abs_discr K)
+  have hT : (2 : ℝ) ^ n * Real.sqrt D < (T : ℝ) ^ n := by
+    change _ < (3 * Real.sqrt (D ^ (1 / (n : ℝ)))) ^ n
+    rw [mul_pow, Real.sqrt_eq_rpow (D ^ (1 / (n : ℝ))),
+      ← Real.rpow_mul_natCast (by positivity : 0 ≤ D ^ (1 / (n : ℝ))),
+      ← Real.rpow_mul hD.le, show (1 / (n : ℝ)) * (1 / 2 * n) = 1 / 2 by field_simp,
+      ← Real.sqrt_eq_rpow]
+    gcongr
+    norm_num
+  have hT2 : (T : ℝ) ^ 2 = 9 * D ^ (1 / (n : ℝ)) := by
+    change (3 * Real.sqrt (D ^ (1 / (n : ℝ)))) ^ 2 = _
+    rw [mul_pow, Real.sq_sqrt (by positivity)]
+    norm_num
+  let f : InfinitePlace K → ℝ≥0 :=
+    fun w ↦ T / NNReal.sqrt (Real.toNNReal (w (α : K)))
+  have hN : 0 < (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) := by
+    exact_mod_cast Ideal.absNorm_pos_of_nonZeroDivisors I
+  have hprod : (∏ w : InfinitePlace K, f w ^ mult w) =
+      T ^ Module.finrank ℚ K / (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ≥0) :=
+    square_generator_radius_product K _ hIα T
+  have hm : mixedEmbedding.minkowskiBound K (FractionalIdeal.mk0 K I)⁻¹ <
+      volume (mixedEmbedding.convexBodyLT K f) := by
+    rw [mixedEmbedding.convexBodyLT_volume, ← ENNReal.coe_mul, hprod]
+    apply (ENNReal.toReal_lt_toReal
+      (mixedEmbedding.minkowskiBound_lt_top K _).ne ENNReal.coe_ne_top).mp
+    rw [inverse_ideal_minkowskiBound_toReal, ENNReal.coe_toReal]
+    push_cast
+    have hc : (2⁻¹ : ℝ) ^ nrComplexPlaces K ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
+    have hf : (1 : ℝ) ≤ mixedEmbedding.convexBodyLTFactor K := by
+      exact_mod_cast mixedEmbedding.one_le_convexBodyLTFactor K
+    calc
+      _ ≤ (2 : ℝ) ^ n * Real.sqrt D / (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) := by
+        linear_combination ((Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ)⁻¹ * Real.sqrt D * 2 ^ n) * hc
+      _ < (T : ℝ) ^ n / (Ideal.absNorm (I : Ideal (𝓞 K)) : ℝ) := div_lt_div_of_pos_right hT hN
+      _ ≤ _ := le_mul_of_one_le_left (by positivity) hf
+  obtain ⟨κ, hκI, hκ, hκw⟩ :=
+    mixedEmbedding.exists_ne_zero_mem_ideal_lt K (FractionalIdeal.mk0 K I)⁻¹ hm
+  obtain ⟨J, β, hJ, hβ, heq, hsq⟩ :=
+    rescale_integral_ideal_square (K := K) I hα hIα hκ hκI
+  refine ⟨J, β, hJ.trans hIc, hβ, hsq, generator_absolute_norm_of_ideal_square K J hsq, fun w ↦ ?_⟩
+  have hw : 0 < w (α : K) := InfinitePlace.pos_iff.mpr (by simpa using hα)
+  have hk : w κ < (T : ℝ) / Real.sqrt (w (α : K)) := by
+    simpa [f, apply_nonneg] using hκw w
+  change (β : K) = (α : K) * κ ^ 2 at heq
+  rw [heq, map_mul, map_pow, ← hT2]
+  have h := pow_lt_pow_left₀ ((lt_div_iff₀ (Real.sqrt_pos.mpr hw)).mp hk)
+    (by positivity) (by decide : (2 : ℕ) ≠ 0)
+  rwa [mul_pow, Real.sq_sqrt hw.le, mul_comm (w κ ^ 2)] at h
 
 /-- The bounded generators can be chosen injectively; equality of generators
 forces equality of the corresponding ideals and hence of their ideal classes. -/

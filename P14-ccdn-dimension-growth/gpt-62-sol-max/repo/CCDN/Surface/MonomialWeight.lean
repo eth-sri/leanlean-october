@@ -36,16 +36,13 @@ theorem surface_standard_monomial_weight {K : Type*} [Field K]
   dsimp only
   let H : ℕ → ℕ := fun k => Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) k)
   have hrank (k : ℕ) (hk : f.totalDegree ≤ k) :
-      H k + (2 + 1 + (k - f.totalDegree)).choose (k - f.totalDegree) =
-        (2 + 1 + k).choose k := by
-    simpa only [H, finrank_restrictTotalDegree, Fintype.card_fin] using
-      principal_filtered_finrank f hf hk
+      H k = hypersurfaceRank 3 f.totalDegree k := by
+    simpa only [H, standardMonomialPrefix_card] using principal_standard_prefix_rank f hf hk
   have hbounds (k : ℕ) (hk : f.totalDegree ≤ k) :
       (f.totalDegree : ℝ) * ((k : ℝ) - f.totalDegree + 1) ^ 2 / 2 ≤ H k ∧
         (H k : ℝ) ≤ (f.totalDegree : ℝ) * ((k : ℝ) + 2) ^ 2 / 2 := by
-    have hb := hypersurface_rank_power_bounds hk (hrank k hk)
-    norm_num at hb
-    exact hb
+    rw [hrank k hk]
+    exact hypersurface_rank_power_bounds (r := 2) hk
   have hsum := surface_rank_prefix_sum_lower H hM (fun k hk => (hbounds k hk).1)
   have hid := standardMonomialPrefix_weight_identity (Ideal.span {f}) M
   have hidR :
@@ -77,7 +74,7 @@ theorem surface_standard_monomial_weight {K : Type*} [Field K]
     linarith
   have hh := surface_weight_root_bound hdR hMR (Nat.cast_nonneg (H M)) R hR
     hroot hlo hhi hw
-  simpa only [standardMonomialPrefix_card, H, R] using hh
+  simpa [standardMonomialPrefix_card, H, R] using hh
 
 end
 end CCDN

@@ -5,209 +5,101 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.Algebra.MonomialRays
+public import CCDN.Hilbert.PolynomialComparison
 public import Mathlib.RingTheory.Algebraic.Defs
-import CCDN.Hilbert.FunctionFieldRank
-import CCDN.Hilbert.StandardMonomials
+import Mathlib.RingTheory.AlgebraicIndependent.Transcendental
+import Mathlib.Algebra.Polynomial.Basis
 import Mathlib.LinearAlgebra.Dimension.Finite
-import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
+import Mathlib.Algebra.Polynomial.Degree.SmallDegree
 
-/-!
-# Eventual linearity from a linear Hilbert bound
-
-The standard monomial set eventually consists of finitely many disjoint rays.
-Its sufficiently high degree shells therefore have constant cardinality.
--/
+/-! Linear growth is detected by comparing the Hilbert polynomial with an affine polynomial. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
 
-/-- Full coordinate rays with uniquely normalized base points. -/
-private def fullExponentRays {σ : Type*} [Fintype σ] [DecidableEq σ]
-    (S : Set (σ →₀ ℕ)) (B : ℕ) :=
-  {p : σ × (σ → Fin B) // (p.2 p.1).val = 0 ∧
-    ∀ n, exponentRay B p.1 p.2 n ∈ S}
+open Polynomial in
+/-- An eventual linear upper bound forces an eventual affine Hilbert function. -/
+theorem filteredCoordinateSpace_eventually_linear
+    {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
+    (I : Ideal (MvPolynomial σ K)) (hI : I ≠ ⊤) (D T : ℕ)
+    (hbound : ∀ N ≥ T, Module.finrank K (filteredCoordinateSpace I N) ≤ D * (N + 2)) :
+    ∃ d, HasFilteredCurveDegree I d := by
+  let P := filteredHilbertPolynomial I
+  let Q := C (D : ℚ) * X + C (2 * (D : ℚ))
+  obtain ⟨N, hN⟩ := filteredHilbertPolynomial_spec I
+  have hdeg : P.natDegree ≤ Q.natDegree := by
+    apply polynomial_natDegree_le_of_eventual_nat_eval_le P Q
+      (filteredHilbertPolynomial_leadingCoeff_pos I hI)
+    refine ⟨max N T, fun n hn => ?_⟩
+    rw [show P.eval (n : ℚ) = _ from hN n (le_of_max_le_left hn)]
+    simp only [Q, eval_add, eval_mul, eval_C, eval_X]
+    exact_mod_cast (show Module.finrank K (filteredCoordinateSpace I n) ≤ D * n + 2 * D from
+      (hbound n (le_of_max_le_right hn)).trans_eq (by ring))
+  have hP : P.natDegree ≤ 1 := hdeg.trans (by
+    rw [show Q = _ from rfl, natDegree_add_C]
+    simpa only [pow_one] using (natDegree_C_mul_X_pow_le (D : ℚ) 1))
+  have hcoeff : ∃ d : ℕ, P.coeff 1 = (d : ℚ) := by
+    rcases Nat.le_one_iff_eq_zero_or_eq_one.mp hP with hp | hp
+    · exact ⟨0, by simpa using (coeff_eq_zero_of_natDegree_lt (show P.natDegree < 1 by omega))⟩
+    obtain ⟨d, _, _, hd⟩ := filteredHilbertPolynomial_positive_multiplicity I hI
+    exact ⟨d, by rw [← hp, coeff_natDegree, hd, hp]; simp⟩
+  obtain ⟨d, hd⟩ := hcoeff
+  have hline (n : ℕ) (hn : N ≤ n) :
+      (Module.finrank K (filteredCoordinateSpace I n) : ℚ) = (d : ℚ) * n + P.coeff 0 := by
+    rw [← hN n hn]
+    change P.eval _ = _
+    nth_rw 1 [eq_X_add_C_of_natDegree_le_one hP]
+    simp [hd]
+  refine ⟨d, N, (Module.finrank K (filteredCoordinateSpace I N) : ℤ) - (d : ℤ) * N, fun n hn => ?_⟩
+  have he := hline n hn
+  have he' := hline N le_rfl
+  exact_mod_cast (show (Module.finrank K (filteredCoordinateSpace I n) : ℚ) =
+    (d : ℚ) * n + ((Module.finrank K (filteredCoordinateSpace I N) : ℚ) - (d : ℚ) * N) by linarith)
 
-private lemma exponentRay_degree {σ : Type*} [Fintype σ] [DecidableEq σ]
-    (B : ℕ) (j : σ) (b : σ → Fin B) (n : ℕ) (hb : (b j).val = 0) :
-    Finsupp.degree (exponentRay B j b n) = n + ∑ k, (b k).val := by
-  have h := Finsupp.sum_update_add
-    (Finsupp.equivFunOnFinite.symm (fun k => (b k).val)) j n
-    (fun _ v => v) (fun _ => rfl) (fun _ _ _ => rfl)
-  change (exponentRay B j b n).sum (fun _ v => v) = _
-  simpa [exponentRay, Finsupp.sum_fintype, hb, add_comm] using h
+open Polynomial in
+/-- An eventual Hilbert slope is the linear coefficient of the Hilbert polynomial. -/
+theorem HasFilteredCurveDegree.polynomial_eq {K σ : Type*} [Field K] [Fintype σ]
+    [LinearOrder σ] {I : Ideal (MvPolynomial σ K)} {d : ℕ} (h : HasFilteredCurveDegree I d) :
+    ∃ c : ℤ, filteredHilbertPolynomial I = C (d : ℚ) * X + C (c : ℚ) := by
+  obtain ⟨N, c, hc⟩ := h
+  refine ⟨c, filteredHilbertPolynomial_eq_of_eventual I _ ⟨N, fun n hn => ?_⟩⟩
+  simp only [eval_add, eval_mul, eval_C, eval_X]
+  exact_mod_cast (hc n hn).symm
 
-private lemma rayBase_weight_le {σ : Type*} [Fintype σ] {B : ℕ} (b : σ → Fin B) :
-    (∑ k, (b k).val) ≤ Fintype.card σ * B := by
-  calc
-    _ ≤ ∑ _ : σ, B := Finset.sum_le_sum (fun k _ => (b k).isLt.le)
-    _ = _ := by simp [Nat.mul_comm]
+/-- Positive Hilbert slope means Hilbert dimension one. -/
+theorem HasFilteredCurveDegree.natDegree_eq_one {K σ : Type*} [Field K] [Fintype σ]
+    [LinearOrder σ] {I : Ideal (MvPolynomial σ K)} {d : ℕ} (h : HasFilteredCurveDegree I d)
+    (hd : 0 < d) : (filteredHilbertPolynomial I).natDegree = 1 := by
+  obtain ⟨c, hc⟩ := h.polynomial_eq
+  rw [hc, Polynomial.natDegree_linear (by positivity)]
 
-/-- A lower monomial set confined to coordinate rays has eventually constant
-shell cardinalities. -/
-private theorem lowerSet_shell_card_eventually_constant {σ : Type*} [Fintype σ] [DecidableEq σ]
-    (S : Set (σ →₀ ℕ)) (hS : IsLowerSet S) (B : ℕ) (hB : 0 < B)
-    (hunique : ∀ a ∈ S, ∀ i j, B ≤ a i → B ≤ a j → i = j) :
-    ∃ N, ∀ n ≥ N,
-      Nat.card {a : σ →₀ ℕ // a ∈ S ∧ Finsupp.degree a = n} =
-        Nat.card (fullExponentRays S B) := by
-  classical
-  obtain ⟨M, hMB, hM⟩ := lowerSet_rays_eventually_full S hS B
-  refine ⟨M + Fintype.card σ * B, ?_⟩
-  intro n hn
-  have hweight (b : σ → Fin B) : (∑ k, (b k).val) ≤ n := by
-    have := rayBase_weight_le b
-    omega
-  have htail (b : σ → Fin B) : M ≤ n - ∑ k, (b k).val := by
-    have := rayBase_weight_le b
-    omega
-  let φ : fullExponentRays S B → {a : σ →₀ ℕ // a ∈ S ∧ Finsupp.degree a = n} :=
-    fun p => ⟨exponentRay B p.val.1 p.val.2 (n - ∑ k, (p.val.2 k).val),
-      p.property.2 _, by
-        rw [exponentRay_degree B _ _ _ p.property.1]
-        exact Nat.sub_add_cancel (hweight p.val.2)⟩
-  have hinj : Function.Injective φ := by
-    intro p q he
-    have he' := congrArg Subtype.val he
-    have hj : p.val.1 = q.val.1 := by
-      by_contra hj
-      have hh := congrArg (fun a : σ →₀ ℕ => a p.val.1) he'
-      change exponentRay _ _ _ _ _ = exponentRay _ _ _ _ _ at hh
-      simp [hj] at hh
-      have := htail p.val.2
-      have := (q.val.2 p.val.1).isLt
-      omega
-    apply Subtype.ext
-    apply Prod.ext hj
-    funext k
-    apply Fin.ext
-    by_cases hk : k = p.val.1
-    · subst k
-      rw [p.property.1, hj, q.property.1]
-    · have hkq : k ≠ q.val.1 := by simpa [hj] using hk
-      have hh := congrArg (fun a : σ →₀ ℕ => a k) he'
-      change exponentRay _ _ _ _ _ = exponentRay _ _ _ _ _ at hh
-      simpa [hk, hkq] using hh
-  have hsurj : Function.Surjective φ := by
-    intro a
-    have hex : ∃ j, B ≤ a.val j := by
-      by_contra h
-      push Not at h
-      have hs : Finsupp.degree a.val ≤ Fintype.card σ * B := by
-        rw [Finsupp.degree_eq_sum]
-        exact (Finset.sum_le_sum (fun k _ => (h k).le)).trans_eq (by simp [Nat.mul_comm])
-      rw [a.property.2] at hs
-      omega
-    obtain ⟨j, hj⟩ := hex
-    have hsmall (k : σ) (hk : k ≠ j) : a.val k < B := by
-      by_contra h
-      have he := hunique a.val a.property.1 k j (by omega) hj
-      exact hk he
-    let b : σ → Fin B := fun k => if hk : k = j then ⟨0, hB⟩ else ⟨a.val k, hsmall k hk⟩
-    have hbj : (b j).val = 0 := by simp [b]
-    have heq : exponentRay B j b (a.val j) = a.val := by
-      ext k
-      simp only [exponentRay_apply]
-      by_cases hk : k = j <;> simp [hk, b]
-    have hdegree : a.val j + ∑ k, (b k).val = n := by
-      rw [← exponentRay_degree B j b _ hbj, heq]
-      exact a.property.2
-    have hjM : M ≤ a.val j := by
-      have := rayBase_weight_le b
-      omega
-    have hfull : ∀ k, exponentRay B j b k ∈ S :=
-      (hM j b (a.val j) hjM).mp (heq.symm ▸ a.property.1)
-    refine ⟨⟨(j, b), hbj, hfull⟩, ?_⟩
-    apply Subtype.ext
-    change exponentRay B j b (n - ∑ k, (b k).val) = a.val
-    have ht : n - ∑ k, (b k).val = a.val j := by omega
-    rw [ht, heq]
-  exact (Nat.card_congr (Equiv.ofBijective φ ⟨hinj, hsurj⟩)).symm
+/-- A positive eventual slope gives affine dimension one and the same multiplicity. -/
+theorem HasFilteredCurveDegree.dimension_degree {K σ : Type*} [Field K] [Fintype σ]
+    [LinearOrder σ] {I : Ideal (MvPolynomial σ K)} {d : ℕ} (h : HasFilteredCurveDegree I d)
+    (hd : 0 < d) : HasAffineDimensionDegree I 1 d := by
+  obtain ⟨c, hc⟩ := h.polynomial_eq
+  refine ⟨h.natDegree_eq_one hd, ?_⟩
+  rw [hc, Polynomial.leadingCoeff_linear (by positivity)]
+  simp
 
-/-- Splitting off the top degree shell gives the Hilbert-function increment. -/
-private theorem standard_card_succ {K σ : Type*} [Field K] [Fintype σ]
-    [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (N : ℕ) :
-    Module.finrank K (filteredCoordinateSpace I (N + 1)) =
-      Module.finrank K (filteredCoordinateSpace I N) +
-      Nat.card {a : σ →₀ ℕ // a ∈ Ideal.standardExponents I MonomialOrder.degLex ∧
-        Finsupp.degree a = N + 1} := by
-  classical
-  let S := Ideal.standardExponents I MonomialOrder.degLex
-  let A := Ideal.boundedStandardExponents I MonomialOrder.degLex (N + 1)
-  let B := Ideal.boundedStandardExponents I MonomialOrder.degLex N
-  let E := {a : σ →₀ ℕ // a ∈ S ∧ Finsupp.degree a = N + 1}
-  let φ : A → B ⊕ E := fun a =>
-    if h : Finsupp.degree a.val ≤ N then Sum.inl ⟨a.val, a.property.1, h⟩
-    else Sum.inr ⟨a.val, a.property.1, by
-      have ha : Finsupp.degree a.val ≤ N + 1 := a.property.2
-      omega⟩
-  let ψ : B ⊕ E → A := fun p => match p with
-    | .inl b => ⟨b.val, b.property.1, le_trans b.property.2 (by omega)⟩
-    | .inr e => ⟨e.val, e.property.1, le_of_eq e.property.2⟩
-  have hleft : Function.LeftInverse ψ φ := by
-    intro a
-    dsimp [φ]
-    split_ifs <;> rfl
-  have hright : Function.RightInverse ψ φ := by
-    intro p
-    rcases p with b | e
-    · have hb : Finsupp.degree b.val ≤ N := b.property.2
-      dsimp only [ψ, φ]
-      rw [dite_eq_left hb]
-    · have hn : ¬ Finsupp.degree e.val ≤ N := by rw [e.property.2]; omega
-      dsimp only [ψ, φ]
-      rw [dite_eq_right hn]
-  let equiv : A ≃ B ⊕ E := ⟨φ, ψ, hleft, hright⟩
-  let : Finite E := Finite.of_injective (fun e : E => ψ (Sum.inr e))
-    (fun a b h => Sum.inr.inj ((Function.RightInverse.injective hright) h))
-  rw [filteredCoordinateSpace_finrank_eq_standard_card,
-    filteredCoordinateSpace_finrank_eq_standard_card]
-  exact (Nat.card_congr equiv).trans Nat.card_sum
+/-- The powers `1, u, …, u ^ (N - 1)` of a transcendental element `u` are linearly independent. -/
+private lemma transcendental_powers_independent {K R : Type*} [Field K] [CommRing R] [Algebra K R]
+    (u : R) (hu : Transcendental K u) (N : ℕ) :
+    LinearIndependent K (fun i : Fin N => u ^ i.val) := by
+  have hb := (Polynomial.basisMonomials K).linearIndependent.map'
+    (Polynomial.aeval u).toLinearMap
+    (LinearMap.ker_eq_bot.mpr (transcendental_iff_injective.mp hu))
+  have hh := hb.comp (fun i : Fin N => i.val) Fin.val_injective
+  simpa only [Function.comp_def, Polynomial.coe_basisMonomials, AlgHom.toLinearMap_apply,
+    Polynomial.aeval_monomial, map_one, one_mul] using hh
 
-/-- Any linear upper bound on a filtered coordinate ring implies an eventually
-affine Hilbert function, with natural slope at most that upper-bound slope. -/
-theorem filteredCoordinateSpace_eventually_linear {K σ : Type*} [Field K] [Fintype σ]
-    [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (C : ℕ)
-    (hbound : ∀ N ≥ 14, Module.finrank K (filteredCoordinateSpace I N) ≤ C * (N + 2)) :
-    ∃ d ≤ C, HasFilteredCurveDegree I d := by
-  classical
-  let B := 2 * C + 14
-  obtain ⟨N, hN⟩ := lowerSet_shell_card_eventually_constant
-    (Ideal.standardExponents I MonomialOrder.degLex)
-    (Ideal.isLowerSet_standardExponents I MonomialOrder.degLex)
-    B (by dsimp [B]; omega)
-    (fun a ha i j hi hj => standard_at_most_one_large I C hbound ha hi hj)
-  let d := Nat.card (fullExponentRays (Ideal.standardExponents I MonomialOrder.degLex) B)
-  have hstep (n : ℕ) (hn : N ≤ n) :
-      Module.finrank K (filteredCoordinateSpace I (n + 1)) =
-        Module.finrank K (filteredCoordinateSpace I n) + d := by
-    rw [standard_card_succ, hN (n + 1) (by omega)]
-  have hformula (k : ℕ) : Module.finrank K (filteredCoordinateSpace I (N + k)) =
-      Module.finrank K (filteredCoordinateSpace I N) + d * k := by
-    induction k with
-    | zero => simp
-    | succ k hk =>
-      rw [show N + (k + 1) = (N + k) + 1 by omega, hstep (N + k) (by omega), hk]
-      ring
-  have hd : d ≤ C := by
-    by_contra h
-    have hbig := hbound (N + (C * (N + 16) + 14)) (by omega)
-    rw [hformula] at hbig
-    have hdc : C + 1 ≤ d := by omega
-    have hm := Nat.mul_le_mul_right (C * (N + 16) + 14) hdc
-    nlinarith
-  refine ⟨d, hd, N, (Module.finrank K (filteredCoordinateSpace I N) : ℤ) - d * N, ?_⟩
-  intro n hn
-  have he := hformula (n - N)
-  rw [Nat.add_sub_of_le hn] at he
-  rw [he]
-  push_cast
-  rw [Nat.cast_sub hn]
-  ring
+section
+variable {K σ : Type*} [Field K] [Fintype σ]
+include K σ
 
 /-- A transcendental coordinate contributes all of its powers to the filtration. -/
-theorem transcendental_coordinate_filtered_lower {K σ : Type*} [Field K] [Fintype σ]
+theorem transcendental_coordinate_filtered_lower
     (I : Ideal (MvPolynomial σ K)) {j : σ}
     (hj : Transcendental K ((Ideal.Quotient.mk I) (MvPolynomial.X j))) (N : ℕ) :
     N + 1 ≤ Module.finrank K (filteredCoordinateSpace I N) := by
@@ -216,15 +108,16 @@ theorem transcendental_coordinate_filtered_lower {K σ : Type*} [Field K] [Finty
     ((Ideal.Quotient.mk I) (MvPolynomial.X j)) hj (N + 1)
   have hmem (k : Fin (N + 1)) :
       ((Ideal.Quotient.mk I) (MvPolynomial.X j)) ^ k.val ∈ filteredCoordinateSpace I N := by
-    apply Submodule.mem_map.mpr
-    refine ⟨MvPolynomial.X j ^ k.val, ?_, by simp⟩
-    rw [MvPolynomial.mem_restrictTotalDegree, MvPolynomial.totalDegree_X_pow]
+    refine mem_filteredCoordinateSpace.mpr ⟨MvPolynomial.X j ^ k.val, ?_, by simp⟩
+    rw [MvPolynomial.totalDegree_X_pow]
     omega
   let v : Fin (N + 1) → filteredCoordinateSpace I N :=
     fun k => ⟨((Ideal.Quotient.mk I) (MvPolynomial.X j)) ^ k.val, hmem k⟩
   have hv : LinearIndependent K v :=
     LinearIndependent.of_comp (filteredCoordinateSpace I N).subtype hlin
   simpa using hv.fintype_card_le_finrank
+
+end
 
 end
 end CCDN

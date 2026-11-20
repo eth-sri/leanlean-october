@@ -18,7 +18,12 @@ noncomputable section
 open Polynomial NumberField IntermediateField Module
 open scoped IntermediateField
 
-private lemma powerBasis_norm_sub_gen {F E : Type*} [Field F] [Field E] [Algebra F E]
+section
+
+variable {F E : Type*} [Field F] [Field E] [Algebra F E]
+include F E
+
+private lemma powerBasis_norm_sub_gen
     (b : PowerBasis F E) (a : F) :
     Algebra.norm F (algebraMap F E a - b.gen) = (minpoly F b.gen).eval a := by
   rw [Algebra.norm_eq_matrix_det b.basis, map_sub,
@@ -26,24 +31,29 @@ private lemma powerBasis_norm_sub_gen {F E : Type*} [Field F] [Field E] [Algebra
   rw [← charpoly_leftMulMatrix b, Matrix.eval_charpoly]
   rfl
 
-private lemma norm_sub_eq_minpoly_eval_pow {F E : Type*} [Field F] [Field E]
-    [Algebra F E] [FiniteDimensional F E] (β : E) (a : F) :
+private lemma norm_sub_eq_minpoly_eval_pow [FiniteDimensional F E] (β : E) (a : F) :
     Algebra.norm F (algebraMap F E a - β) =
       (minpoly F β).eval a ^ Module.finrank F⟮β⟯ E := by
   let L := F⟮β⟯
   let γ : L := AdjoinSimple.gen F β
-  have hβ : IsIntegral F β := IsIntegral.of_finite F β
+  have hβ := IsIntegral.of_finite F β
   let b := IntermediateField.adjoin.powerBasis hβ
   have he : algebraMap L E (algebraMap F L a - γ) = algebraMap F E a - β := by
-    simp [γ, L]
+    rfl
   rw [← he, ← Algebra.norm_norm (S := L),
     Algebra.norm_algebraMap_of_basis (Module.Free.chooseBasis L E), map_pow,
     ← Module.finrank_eq_card_chooseBasisIndex]
   have hg : b.gen = γ := IntermediateField.adjoin.powerBasis_gen hβ
   rw [← hg, powerBasis_norm_sub_gen, hg, IntermediateField.minpoly_gen]
 
-private theorem integerNormPolynomial_map_eq_minpoly_pow
-    (K : Type*) [Field K] [NumberField K] (β : 𝓞 K) :
+end
+
+section
+
+variable (K : Type*) [Field K] [NumberField K] (β : 𝓞 K)
+include K β
+
+private theorem integerNormPolynomial_map_eq_minpoly_pow :
     (integerNormPolynomial K β).map (Int.castRingHom ℚ) =
       minpoly ℚ (β : K) ^ Module.finrank ℚ⟮(β : K)⟯ K := by
   apply Polynomial.eq_of_infinite_eval_eq
@@ -59,8 +69,7 @@ private theorem integerNormPolynomial_map_eq_minpoly_pow
 
 /-- Over an algebraic closure of `ℚ`, the integer norm polynomial of `β` is the minimal
 polynomial of `β` over `ℚ` raised to the power `[K : ℚ(β)]`. -/
-theorem integerNormPolynomial_map_eq_minpoly_pow_algebraicClosure
-    (K : Type*) [Field K] [NumberField K] (β : 𝓞 K) :
+theorem integerNormPolynomial_map_eq_minpoly_pow_algebraicClosure :
     (integerNormPolynomial K β).map (Int.castRingHom (AlgebraicClosure ℚ)) =
       (minpoly ℚ (β : K)).map (algebraMap ℚ (AlgebraicClosure ℚ)) ^
         Module.finrank ℚ⟮(β : K)⟯ K := by
@@ -70,6 +79,8 @@ theorem integerNormPolynomial_map_eq_minpoly_pow_algebraicClosure
     simp
   rw [he, ← Polynomial.map_map, integerNormPolynomial_map_eq_minpoly_pow,
     Polynomial.map_pow]
+
+end
 
 end
 end CCDN

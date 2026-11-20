@@ -54,14 +54,14 @@ theorem integral_ideal_scalar_fractional_comparison
     fractionalIdealUnitAction (K := K) σ (FractionalIdeal.mk0 K I) =
       toPrincipalIdeal R K
         (Units.mk0 (algebraMap R K y) (by
-          simpa only [map_zero] using (IsFractionRing.injective R K).ne hy) /
+          simp_all) /
         Units.mk0 (algebraMap R K x) (by
-          simpa only [map_zero] using (IsFractionRing.injective R K).ne hx)) *
+          simp_all)) *
       FractionalIdeal.mk0 K I := by
   let a : Kˣ := Units.mk0 (algebraMap R K x) (by
-    simpa only [map_zero] using (IsFractionRing.injective R K).ne hx)
+    simp_all)
   let b : Kˣ := Units.mk0 (algebraMap R K y) (by
-    simpa only [map_zero] using (IsFractionRing.injective R K).ne hy)
+    simp_all)
   have h : toPrincipalIdeal R K a *
       fractionalIdealUnitAction (K := K) σ (FractionalIdeal.mk0 K I) =
       toPrincipalIdeal R K b * FractionalIdeal.mk0 K I := by
@@ -86,7 +86,7 @@ theorem integral_ideal_scalar_fractional_comparison
         (toPrincipalIdeal R K b * FractionalIdeal.mk0 K I) := by
       rw [div_eq_mul_inv]
       ac_rfl
-    _ = _ := by rw [mul_inv_cancel, one_mul]
+    _ = _ := by simp
 
 end
 end CCDN

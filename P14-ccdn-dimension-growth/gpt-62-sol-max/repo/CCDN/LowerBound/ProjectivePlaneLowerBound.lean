@@ -7,7 +7,11 @@ module
 
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Height.ProjectiveZeroLocus
-import CCDN.AuxiliaryPolynomial.PlaneBadPrimes
+import CCDN.Analysis.PrimeCutoff
+import CCDN.AuxiliaryPolynomial.ConstantLeadingBadReduction
+import CCDN.AuxiliaryPolynomial.HypersurfaceBadReduction
+import CCDN.Height.IntegerCoefficientHeight
+import CCDN.Plane.FiniteFieldConstants
 import CCDN.LowerBound.GridLowerBoundNumerics
 import CCDN.LowerBound.GridProjectiveLowerBound
 import CCDN.Plane.ProjectivePlaneBezout
@@ -40,9 +44,9 @@ theorem projective_plane_lower_bound (d : ℕ) (hd : 0 < d) :
     refine ⟨F, 1, le_rfl, hhom, hdeg, hir, ?_⟩
     have hcountR : (2 : ℝ) ≤ projectiveCount (projectiveZeroLocus F) 1 := by exact_mod_cast hcount
     have hdR : (d : ℝ) ≤ 3 := by exact_mod_cast (show d ≤ 3 by omega)
-    have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d
+    
     simp only [Nat.cast_one, Real.one_rpow, mul_one]
-    nlinarith [mul_nonneg hd0 (show 0 ≤ 3 - (d : ℝ) by linarith)]
+    nlinarith
 
 end
 end CCDN

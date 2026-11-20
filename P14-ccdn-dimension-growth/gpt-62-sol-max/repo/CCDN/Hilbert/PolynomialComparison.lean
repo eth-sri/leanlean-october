@@ -7,6 +7,7 @@ module
 
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 import Mathlib.Analysis.Polynomial.Basic
+import Mathlib.Algebra.Polynomial.Taylor
 
 /-! Eventual inequalities compare the degree and leading coefficient of
 Hilbert polynomials. -/
@@ -28,13 +29,20 @@ lemma leadingCoeff_nonneg_of_eventual_nat_eval_nonneg (P : Polynomial ℚ)
     rw [he, Polynomial.eval_C] at hh
     exact hh
   · by_contra! hn
-    have hdeg : 0 < P.degree := Polynomial.natDegree_pos_iff_degree_pos.mp (Nat.pos_of_ne_zero hd)
-    have ht : Tendsto (fun n : ℕ => P.eval (n : ℚ)) atTop atBot :=
+    have hdeg := Polynomial.natDegree_pos_iff_degree_pos.mp (Nat.pos_of_ne_zero hd)
+    have ht :=
       (P.tendsto_atBot_of_leadingCoeff_nonpos hdeg hn.le).comp
         tendsto_natCast_atTop_atTop
     obtain ⟨n, hnN, hneg⟩ := ((eventually_ge_atTop N).and
       (ht.eventually_lt_atBot (0 : ℚ))).exists
     exact (not_lt_of_ge (hN n hnN)) hneg
+
+private lemma leadingCoeff_sub_nonneg {P Q : Polynomial ℚ}
+    (hle : ∃ N : ℕ, ∀ n ≥ N, P.eval (n : ℚ) ≤ Q.eval (n : ℚ)) :
+    0 ≤ (Q - P).leadingCoeff := by
+  obtain ⟨N, hN⟩ := hle
+  exact leadingCoeff_nonneg_of_eventual_nat_eval_nonneg _
+    ⟨N, fun n hn => by simpa only [Polynomial.eval_sub, sub_nonneg] using hN n hn⟩
 
 /-- If `P` has positive leading coefficient and `P(n) ≤ Q(n)` for all large `n`, then `deg P ≤ deg
 Q`. -/
@@ -42,10 +50,7 @@ lemma polynomial_natDegree_le_of_eventual_nat_eval_le
     (P Q : Polynomial ℚ) (hP : 0 < P.leadingCoeff)
     (hle : ∃ N : ℕ, ∀ n ≥ N, P.eval (n : ℚ) ≤ Q.eval (n : ℚ)) :
     P.natDegree ≤ Q.natDegree := by
-  have hnon : 0 ≤ (Q - P).leadingCoeff := by
-    apply leadingCoeff_nonneg_of_eventual_nat_eval_nonneg
-    obtain ⟨N, hN⟩ := hle
-    exact ⟨N, fun n hn => by simpa only [Polynomial.eval_sub, sub_nonneg] using hN n hn⟩
+  have hnon := leadingCoeff_sub_nonneg hle
   by_contra! hd
   rw [Polynomial.leadingCoeff_sub_of_degree_lt' (Polynomial.degree_lt_degree hd)] at hnon
   linarith
@@ -57,10 +62,7 @@ lemma polynomial_leadingCoeff_le_of_eventual_nat_eval_le
     (hd : P.natDegree = Q.natDegree)
     (hle : ∃ N : ℕ, ∀ n ≥ N, P.eval (n : ℚ) ≤ Q.eval (n : ℚ)) :
     P.leadingCoeff ≤ Q.leadingCoeff := by
-  have hnon : 0 ≤ (Q - P).leadingCoeff := by
-    apply leadingCoeff_nonneg_of_eventual_nat_eval_nonneg
-    obtain ⟨N, hN⟩ := hle
-    exact ⟨N, fun n hn => by simpa only [Polynomial.eval_sub, sub_nonneg] using hN n hn⟩
+  have hnon := leadingCoeff_sub_nonneg hle
   by_contra! hc
   have hdeg : Q.degree = P.degree := by
     rw [Polynomial.degree_eq_natDegree (Polynomial.leadingCoeff_ne_zero.mp (ne_of_gt hQ)),
@@ -76,42 +78,65 @@ lemma filteredHilbertPolynomial_leadingCoeff_pos {K σ : Type*} [Field K]
   rw [he]
   positivity
 
+section
+
+variable {K L σ τ : Type*} [Field K] [Field L] [Fintype σ] [Fintype τ]
+  [LinearOrder σ] [LinearOrder τ]
+  (I : Ideal (MvPolynomial σ K)) (J : Ideal (MvPolynomial τ L)) (hI : I ≠ ⊤)
+include K L σ τ I J hI
+
+/-- Multiplying either filtered function by a positive constant and shifting its argument
+compares the degrees and (when they agree) the scaled leading coefficients. -/
+theorem filteredHilbertPolynomial_compare (hJ : J ≠ ⊤) {r s : ℕ}
+    (hr : 0 < r) (hs : 0 < s) (D : ℕ)
+    (hle : ∀ N, r * Module.finrank K (filteredCoordinateSpace I N) ≤
+      s * Module.finrank L (filteredCoordinateSpace J (N + D))) :
+    let P := filteredHilbertPolynomial I
+    let Q := filteredHilbertPolynomial J
+    P.natDegree ≤ Q.natDegree ∧
+      (P.natDegree = Q.natDegree → (r : ℚ) * P.leadingCoeff ≤ (s : ℚ) * Q.leadingCoeff) := by
+  let P := Polynomial.C (r : ℚ) * filteredHilbertPolynomial I
+  let Q := Polynomial.C (s : ℚ) * Polynomial.taylor (D : ℚ) (filteredHilbertPolynomial J)
+  have hr' : (0 : ℚ) < r := by exact_mod_cast hr
+  have hs' : (0 : ℚ) < s := by exact_mod_cast hs
+  have hp : 0 < P.leadingCoeff := by
+    simpa only [P, Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C] using mul_pos hr' (filteredHilbertPolynomial_leadingCoeff_pos I hI)
+  have hq : 0 < Q.leadingCoeff := by
+    simpa only [Q, Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C, Polynomial.leadingCoeff_taylor] using mul_pos hs' (filteredHilbertPolynomial_leadingCoeff_pos J hJ)
+  have h : ∃ M : ℕ, ∀ N ≥ M, P.eval (N : ℚ) ≤ Q.eval (N : ℚ) := by
+    obtain ⟨M, hM⟩ := filteredHilbertPolynomial_spec I
+    obtain ⟨N, hN⟩ := filteredHilbertPolynomial_spec J
+    refine ⟨max M N, fun n hn => ?_⟩
+    simp only [P, Q, Polynomial.eval_mul, Polynomial.eval_C, Polynomial.taylor_eval]
+    rw [hM _ (by omega), ← Nat.cast_add, hN _ (by omega)]
+    exact_mod_cast hle n
+  change _ ≤ _ ∧ (_ = _ → _)
+  refine ⟨?_, fun hd => ?_⟩
+  · simpa only [P, Q, Polynomial.natDegree_C_mul hr'.ne', Polynomial.natDegree_C_mul hs'.ne', Polynomial.natDegree_taylor] using
+      polynomial_natDegree_le_of_eventual_nat_eval_le P Q hp h
+  · have hd' : P.natDegree = Q.natDegree := by
+      simpa only [P, Q, Polynomial.natDegree_C_mul hr'.ne', Polynomial.natDegree_C_mul hs'.ne', Polynomial.natDegree_taylor] using hd
+    simpa only [P, Q, Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C, Polynomial.leadingCoeff_taylor] using
+      polynomial_leadingCoeff_le_of_eventual_nat_eval_le P Q hp hq hd' h
+
 /-- Any filtered-dimension inequality between proper polynomial quotients
 compares their Hilbert dimensions. -/
-theorem filteredHilbertPolynomial_natDegree_le
-    {K L σ τ : Type*} [Field K] [Field L] [Fintype σ] [Fintype τ]
-    [LinearOrder σ] [LinearOrder τ]
-    (I : Ideal (MvPolynomial σ K)) (J : Ideal (MvPolynomial τ L)) (hI : I ≠ ⊤)
+theorem filteredHilbertPolynomial_natDegree_le (hJ : J ≠ ⊤)
     (hle : ∀ N, Module.finrank K (filteredCoordinateSpace I N) ≤
       Module.finrank L (filteredCoordinateSpace J N)) :
-    (filteredHilbertPolynomial I).natDegree ≤ (filteredHilbertPolynomial J).natDegree := by
-  apply polynomial_natDegree_le_of_eventual_nat_eval_le _ _
-    (filteredHilbertPolynomial_leadingCoeff_pos I hI)
-  obtain ⟨M, hM⟩ := filteredHilbertPolynomial_spec I
-  obtain ⟨N, hN⟩ := filteredHilbertPolynomial_spec J
-  refine ⟨max M N, fun n hn => ?_⟩
-  rw [hM n ((le_max_left _ _).trans hn), hN n ((le_max_right _ _).trans hn)]
-  exact_mod_cast hle n
+    (filteredHilbertPolynomial I).natDegree ≤ (filteredHilbertPolynomial J).natDegree :=
+  (filteredHilbertPolynomial_compare I J hI hJ one_pos one_pos 0 (by simpa)).1
 
 /-- When dimensions agree, filtered comparison also compares the
 leading coefficients, and hence the geometric multiplicities. -/
-theorem filteredHilbertPolynomial_leadingCoeff_le
-    {K L σ τ : Type*} [Field K] [Field L] [Fintype σ] [Fintype τ]
-    [LinearOrder σ] [LinearOrder τ]
-    (I : Ideal (MvPolynomial σ K)) (J : Ideal (MvPolynomial τ L))
-    (hI : I ≠ ⊤) (hJ : J ≠ ⊤)
+theorem filteredHilbertPolynomial_leadingCoeff_le (hJ : J ≠ ⊤)
     (hd : (filteredHilbertPolynomial I).natDegree = (filteredHilbertPolynomial J).natDegree)
     (hle : ∀ N, Module.finrank K (filteredCoordinateSpace I N) ≤
       Module.finrank L (filteredCoordinateSpace J N)) :
     (filteredHilbertPolynomial I).leadingCoeff ≤ (filteredHilbertPolynomial J).leadingCoeff := by
-  apply polynomial_leadingCoeff_le_of_eventual_nat_eval_le _ _
-    (filteredHilbertPolynomial_leadingCoeff_pos I hI)
-    (filteredHilbertPolynomial_leadingCoeff_pos J hJ) hd
-  obtain ⟨M, hM⟩ := filteredHilbertPolynomial_spec I
-  obtain ⟨N, hN⟩ := filteredHilbertPolynomial_spec J
-  refine ⟨max M N, fun n hn => ?_⟩
-  rw [hM n ((le_max_left _ _).trans hn), hN n ((le_max_right _ _).trans hn)]
-  exact_mod_cast hle n
+  simpa using (filteredHilbertPolynomial_compare I J hI hJ one_pos one_pos 0 (by simpa)).2 hd
+
+end
 
 end
 end CCDN

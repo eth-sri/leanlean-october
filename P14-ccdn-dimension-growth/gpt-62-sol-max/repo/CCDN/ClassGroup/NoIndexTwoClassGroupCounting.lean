@@ -6,12 +6,12 @@ Authors: Jason Davies
 module
 
 public import CCDN.ClassGroup.SmallSubfieldIntegerCount
-public import CCDN.Plane.AffineNonzeroConstant
-import CCDN.ClassGroup.NormCurveExceptionalReduction
+public import CCDN.Plane.CurveCount
+import CCDN.ClassGroup.NormCurveReduction
 import CCDN.ClassGroup.OddDegreeClassGroupCounting
 import CCDN.ClassGroup.OddDegreeNormCurveBaseChange
 import CCDN.ClassGroup.SquareNormCurveIrreducibility
-import CCDN.Plane.CurveCount
+import CCDN.Algebra.IntegerRationalIrreducibility
 
 /-!
 Counting the bounded square-norm integers in the absence of
@@ -30,10 +30,10 @@ open scoped NumberField IntermediateField
 /-- The absolute constant in the count of integral points on signed norm curves whose parameter
 generates a subfield of odd index. -/
 def oddIndexNormCurveCountConstant : ℝ :=
-  2 * Real.exp 1 * affineNonzeroConstantBound planeResidueConstant
+  affinePlaneCountConstant
 
 private lemma oddIndexNormCurveCountConstant_pos : 0 < oddIndexNormCurveCountConstant :=
-  mul_pos (by positivity) (affineNonzeroConstantBound_pos planeResidueConstant)
+  affinePlaneCountConstant_pos
 
 /-- If `[K : ℚ(β)]` is odd, `n = [K : ℚ] ≥ 2` and `ε ≠ 0`, then the signed norm curve
 `y ^ 2 = ε * N(x - β)` has at most `C * n ^ 3 * B ^ (1 / n) * (log B + n)` integral points of
@@ -49,14 +49,10 @@ theorem signed_norm_curve_count_of_odd_subfield_index
       oddIndexNormCurveCountConstant * (Module.finrank ℚ K : ℝ) ^ 3 *
         B ^ (1 / (Module.finrank ℚ K : ℝ)) *
           (Real.log B + Module.finrank ℚ K) := by
-  have hεQ : (ε : ℚ) ≠ 0 := by exact_mod_cast hε
-  have hd := signedNormCurvePolynomial_map_totalDegree K ℚ β hεQ hn
-  have hir : AbsolutelyIrreducibleRat
-      (MvPolynomial.map (Int.castRingHom ℚ) (signedNormCurvePolynomial K β ε)) :=
-    (absolutelyIrreducibleRat_map_iff _).mpr
-      (signedNormCurvePolynomial_absolute_irreducible_of_odd_subfield_index K β hε hindex)
-  have h := count_rational_plane_of_residue_bound _ hir (by omega) hB
-    planeResidueConstant_pos.le planeResidueBound
+  have hd := signedNormCurvePolynomial_map_totalDegree K ℚ β (by exact_mod_cast hε) hn
+  have hir := rational_irreducible_of_charZero_map _
+    (signedNormCurvePolynomial_absolute_irreducible_of_odd_subfield_index K β hε hindex)
+  have h := affine_plane_equation_bound _ hir (by omega) hB
   rw [hd] at h
   simpa only [curveBound, oddIndexNormCurveCountConstant, mul_assoc] using h
 
@@ -68,27 +64,40 @@ noncomputable section
 open NumberField NumberField.InfinitePlace
 open scoped IntermediateField
 
+variable (K : Type*) [Field K] [NumberField K]
+
+private lemma even_index_translate_mem_smallSubfield
+    (hnoTwo : ∀ L : IntermediateField ℚ K, Module.finrank L K ≠ 2)
+    (β : 𝓞 K) (hindex : ¬ Odd (Module.finrank ℚ⟮(β : K)⟯ K))
+    {B : ℝ} {α : 𝓞 K} (hα : α ∈ squareNormTranslateFiber K β B) :
+    α ∈ boundedSmallSubfieldIntegers K B := by
+  let L := ℚ⟮(β : K)⟯
+  have he : Even (Module.finrank L K) := by
+    aesop
+  have hpos : 0 < Module.finrank L K := Module.finrank_pos
+  have hne := hnoTwo L
+  have hfour : 4 ≤ Module.finrank L K := by
+    grind
+  have hdim : 4 * Module.finrank ℚ L ≤ Module.finrank ℚ K := by
+    have ht := Module.finrank_mul_finrank ℚ L K
+    nlinarith
+  refine ⟨hα.1.2.1, L, hdim, ?_⟩
+  obtain ⟨x, hx⟩ := hα.2
+  rw [hx]
+  exact L.sub_mem (L.intCast_mem x) (IntermediateField.mem_adjoin_simple_self ℚ (β : K))
+
 private lemma normCurveBoxHeight_log_le {n : ℕ} (hn : 2 ≤ n) {B : ℝ} (hB : 1 ≤ B) :
     Real.log (max (2 * B) (Real.sqrt (B ^ n))) + n ≤
       2 * (n : ℝ) * (Real.log B + 1) := by
-  have hB0 : 0 < B := zero_lt_one.trans_le hB
-  have hbase : 1 ≤ 2 * B := by linarith
-  have hpow : 1 ≤ B ^ n := one_le_pow₀ hB
-  have hH : max (2 * B) (Real.sqrt (B ^ n)) ≤ (2 * B) ^ n := by
-    apply max_le
-    · simpa using pow_le_pow_right₀ hbase (by omega : 1 ≤ n)
-    · have hs : Real.sqrt (B ^ n) ≤ B ^ n :=
-        (Real.sqrt_le_left (by positivity)).mpr (by nlinarith)
-      exact hs.trans (pow_le_pow_left₀ hB0.le (by linarith) n)
-  have hlog := Real.log_le_log (show 0 < max (2 * B) (Real.sqrt (B ^ n)) from
-    lt_of_lt_of_le (by positivity) (le_max_left _ _)) hH
-  rw [Real.log_pow, Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) hB0.ne'] at hlog
-  have htwo : Real.log (2 : ℝ) ≤ 1 := by
-    have hh := Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 2)
-    linarith
-  have hn0 : 0 ≤ (n : ℝ) := Nat.cast_nonneg _
-  have hlogB := Real.log_nonneg hB
-  nlinarith
+  have hB0 := zero_lt_one.trans_le hB
+  have hH := (show 0 < 2 * B by positivity).trans_le (le_max_left _ (Real.sqrt (B ^ n)))
+  have hn0 : (0 : ℝ) < n := by positivity
+  have h := Real.log_le_log (Real.rpow_pos_of_pos hH _) (normCurveBoxHeight_root_le hn hB)
+  rw [Real.log_rpow hH, Real.log_mul (by norm_num) (Real.sqrt_ne_zero'.mpr hB0),
+    Real.log_sqrt hB0.le, one_div, inv_mul_eq_div, div_le_iff₀ hn0] at h
+  have htwo := Real.log_le_sub_one_of_pos (show (0 : ℝ) < 2 by norm_num)
+  have hlog := Real.log_nonneg hB
+  nlinarith [mul_nonneg hn0.le hlog, mul_nonneg hn0.le (show 0 ≤ 1 - Real.log 2 by linarith)]
 
 /-- The degree-dependent constant bounding the contribution of one integer-translation class to the
 bounded square-norm count for fields of degree `n` without an index-two subfield. -/
@@ -102,7 +111,6 @@ lemma noIndexTwoCurveContributionConstant_nonneg (n : ℕ) :
   unfold noIndexTwoCurveContributionConstant
   positivity
 
-variable (K : Type*) [Field K] [NumberField K]
 
 /-- For a number field of degree `n ≥ 2` without an intermediate field of index two and `B ≥ 1`, the
 number of bounded square-norm integers is at most the number of bounded integers in small
@@ -115,59 +123,27 @@ theorem boundedSquareNormIntegers_no_index_two_count
       noIndexTwoCurveContributionConstant (Module.finrank ℚ K) *
         (boundedSquareNormTranslationClasses K B).card *
           Real.sqrt B * (Real.log B + 1) := by
-  obtain ⟨β, _, _, hcover⟩ := exists_norm_curve_exception_split K hnoTwo B
   let n := Module.finrank ℚ K
   let H := max (2 * B) (Real.sqrt (B ^ n))
-  have hH : 1 ≤ H := le_trans (by linarith) (le_max_left _ _)
-  have hroot := normCurveBoxHeight_root_le hn hB
-  have hlog := normCurveBoxHeight_log_le hn hB
-  have hC : 0 ≤ oddIndexNormCurveCountConstant * (n : ℝ) ^ 3 := by
-    have := oddIndexNormCurveCountConstant_pos
-    positivity
-  have hmain : 0 ≤ noIndexTwoCurveContributionConstant n *
-      Real.sqrt B * (Real.log B + 1) :=
-    mul_nonneg (mul_nonneg (noIndexTwoCurveContributionConstant_nonneg n)
-      (Real.sqrt_nonneg B)) (by linarith [Real.log_nonneg hB])
-  have hpair (q : boundedSquareNormTranslationClasses K B) :
-      ((if Odd (Module.finrank ℚ⟮(β q : K)⟯ K) then
-        count (signedNormCurveLocus K (β q) 1) H +
-          count (signedNormCurveLocus K (β q) (-1)) H else 0 : ℕ) : ℝ) ≤
-      noIndexTwoCurveContributionConstant n * Real.sqrt B * (Real.log B + 1) := by
-    by_cases ho : Odd (Module.finrank ℚ⟮(β q : K)⟯ K)
-    · simp only [ite_eq_left ho, Nat.cast_add]
-      have hp := signed_norm_curve_count_of_odd_subfield_index K (β q)
-        (ε := 1) (by norm_num) hn ho hH
-      have hm := signed_norm_curve_count_of_odd_subfield_index K (β q)
-        (ε := -1) (by norm_num) hn ho hH
-      change (count (signedNormCurveLocus K (β q) 1) H : ℝ) ≤ _ at hp
-      change (count (signedNormCurveLocus K (β q) (-1)) H : ℝ) ≤ _ at hm
-      have hprod : H ^ (1 / (n : ℝ)) * (Real.log H + n) ≤
-          (2 * Real.sqrt B) * (2 * (n : ℝ) * (Real.log B + 1)) :=
-        mul_le_mul hroot hlog
-          (by have hh := Real.log_nonneg hH; positivity) (by positivity)
-      have hh := mul_le_mul_of_nonneg_left hprod (show
-        0 ≤ 2 * (oddIndexNormCurveCountConstant * (n : ℝ) ^ 3) by positivity)
-      calc
-        _ ≤ 2 * (oddIndexNormCurveCountConstant * (n : ℝ) ^ 3) *
-            (H ^ (1 / (n : ℝ)) * (Real.log H + n)) := by linarith
-        _ ≤ _ := hh
-        _ = _ := by unfold noIndexTwoCurveContributionConstant; ring
-    · simpa only [ite_eq_right ho, Nat.cast_zero] using hmain
-  have hcoverR :
-      ((boundedSquareNormIntegers K B).ncard : ℝ) ≤
-        (boundedSmallSubfieldIntegers K B).ncard +
-          ∑ q : boundedSquareNormTranslationClasses K B,
-            ((if Odd (Module.finrank ℚ⟮(β q : K)⟯ K) then
-              count (signedNormCurveLocus K (β q) 1) H +
-                count (signedNormCurveLocus K (β q) (-1)) H else 0 : ℕ) : ℝ) := by
-    exact_mod_cast hcover
-  calc
-    _ ≤ _ := hcoverR
-    _ ≤ (boundedSmallSubfieldIntegers K B).ncard +
-        ∑ _q : boundedSquareNormTranslationClasses K B,
-          noIndexTwoCurveContributionConstant n * Real.sqrt B * (Real.log B + 1) :=
-      add_le_add le_rfl (Finset.sum_le_sum (fun q _ ↦ hpair q))
-    _ = _ := by simp; ring
+  let A := oddIndexNormCurveCountConstant * (n : ℝ) ^ 3
+  have hA : 0 ≤ A := by have := oddIndexNormCurveCountConstant_pos; positivity
+  have hH : 1 ≤ H := (show 1 ≤ 2 * B by linarith).trans (le_max_left _ _)
+  have hlog := Real.log_nonneg hB
+  have hlogH := Real.log_nonneg hH
+  have hh := squareNorm_count_le_of_curves K
+    (C := A * ((2 * Real.sqrt B) * (2 * (n : ℝ) * (Real.log B + 1)))) (by positivity)
+    _ (boundedSmallSubfieldIntegers_finite K B)
+    (fun β => Odd (Module.finrank ℚ⟮(β : K)⟯ K))
+    (fun β ho _ hx => even_index_translate_mem_smallSubfield K hnoTwo β ho hx)
+    (fun β ε ho hε => by
+      have hh := signed_norm_curve_count_of_odd_subfield_index K β hε.ne_zero hn ho hH
+      rw [mul_assoc] at hh
+      exact hh.trans (mul_le_mul_of_nonneg_left
+        (mul_le_mul (normCurveBoxHeight_root_le hn hB) (normCurveBoxHeight_log_le hn hB)
+          (by positivity) (by positivity)) hA))
+  convert hh using 1
+  simp only [A, n, noIndexTwoCurveContributionConstant]
+  ring
 
 end
 end CCDN

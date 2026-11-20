@@ -7,6 +7,7 @@ module
 
 public import CCDN.Noether.ClosedFormHeight
 public import Mathlib.Analysis.SpecialFunctions.Log.Basic
+import CCDN.ForMathlib.Log
 
 /-! The integer minor has the logarithmic height needed by the
 fourth-power prime cutoff. The charge applies to primes with proved matrix
@@ -16,15 +17,6 @@ rank drop; identifying these with the geometric bad primes is a separate step. -
 namespace CCDN
 noncomputable section
 open Polynomial Matrix Real
-
-private lemma log_factorial_le_square (r : ℕ) : Real.log (r.factorial : ℝ) ≤ (r : ℝ) ^ 2 := by
-  by_cases hr : r = 0
-  · simp [hr]
-  have hr0 : (0 : ℝ) < r := by exact_mod_cast Nat.pos_of_ne_zero hr
-  have hh : (r.factorial : ℝ) ≤ (r : ℝ) ^ r := by exact_mod_cast Nat.factorial_le_pow r
-  have hl := Real.log_le_log (by positivity : (0 : ℝ) < r.factorial) hh
-  rw [Real.log_pow] at hl
-  exact hl.trans (by nlinarith [Real.log_le_self hr0.le])
 
 /-- The determinant height fits the cutoff L=27*d^4 with scaled
 height 1+log(H)/d². -/
@@ -39,35 +31,27 @@ theorem closedForm_minor_log_height
       (27 * (d : ℝ) ^ 4) * (1 + Real.log H / (d : ℝ) ^ 2) := by
   have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have hd0 : (0 : ℝ) < d := by linarith
-  have hr0 : (0 : ℝ) ≤ r := Nat.cast_nonneg _
   have hr' : (r : ℝ) ≤ 2 * (d : ℝ) ^ 2 := by exact_mod_cast hr
   have hH0 : 0 < H := by linarith
-  have hlog : 0 ≤ Real.log H := Real.log_nonneg hH
-  have hE0 : 0 < 2 * (d : ℝ) * H := by positivity
-  have hb := closedForm_integer_minor_bound d r f H hH0.le hf houter hinner a c
-  have hD0 : (0 : ℝ) < |((((closedFormCoefficientMatrix d f).submatrix a c).det : ℤ) : ℝ)| :=
-    abs_pos.mpr (Int.cast_ne_zero.mpr hD)
-  have hl := Real.log_le_log hD0 hb
-  rw [Real.log_mul (by positivity : (r.factorial : ℝ) ≠ 0) (pow_ne_zero _ hE0.ne'),
-    Real.log_pow, Real.log_mul (by positivity : 2 * (d : ℝ) ≠ 0) hH0.ne',
-    Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) hd0.ne'] at hl
-  have hfac := log_factorial_le_square r
-  have hl2 := Real.log_le_self (by norm_num : (0 : ℝ) ≤ 2)
-  have hld := Real.log_le_self hd0.le
-  have hterm : (r : ℝ) * (Real.log 2 + Real.log d + Real.log H) ≤
-      2 * (d : ℝ) ^ 2 * (2 + d + Real.log H) := by
-    calc
-      _ ≤ (r : ℝ) * (2 + d + Real.log H) := mul_le_mul_of_nonneg_left (by linarith) hr0
-      _ ≤ _ := mul_le_mul_of_nonneg_right hr' (by positivity)
-  have hrsq : (r : ℝ) ^ 2 ≤ (2 * (d : ℝ) ^ 2) ^ 2 := by nlinarith
-  have hd2 : (d : ℝ) ^ 2 ≤ (d : ℝ) ^ 4 := by nlinarith [sq_nonneg ((d : ℝ) ^ 2 - 1)]
-  have hd3 : (d : ℝ) ^ 3 ≤ (d : ℝ) ^ 4 := by
-    nlinarith [mul_nonneg (show 0 ≤ (d : ℝ) ^ 3 by positivity) (sub_nonneg.mpr hd1)]
-  have he : (27 * (d : ℝ) ^ 4) * (1 + Real.log H / (d : ℝ) ^ 2) =
-      27 * (d : ℝ) ^ 4 + 27 * (d : ℝ) ^ 2 * Real.log H := by
-    field_simp
-  rw [he]
-  nlinarith [mul_nonneg (sq_nonneg (d : ℝ)) hlog]
+  have hl := Real.log_le_log (abs_pos.mpr (Int.cast_ne_zero.mpr hD))
+    (closedForm_integer_minor_bound d r f H hH0.le hf houter hinner a c)
+  rw [Real.log_mul (by positivity) (by positivity), Real.log_pow,
+    Real.log_mul (by positivity) hH0.ne', Real.log_mul (by norm_num) hd0.ne'] at hl
+  have hfct := (log_factorial_le_mul_log (s := r) le_rfl).trans
+    (mul_le_mul_of_nonneg_left (log_le_self (Nat.cast_nonneg r)) (Nat.cast_nonneg r))
+  
+  have hd3 := pow_le_pow_right₀ hd1 (show 3 ≤ 4 by decide)
+  have hlog := log_nonneg hH
+  calc
+    _ ≤ (r : ℝ) ^ 2 + r * (2 + d + log H) := by
+      nlinarith [log_le_self hd0.le, log_le_self (show (0 : ℝ) ≤ 2 by norm_num),
+        mul_le_mul_of_nonneg_left (log_le_self hd0.le) (Nat.cast_nonneg r),
+        mul_le_mul_of_nonneg_left (log_le_self (show (0 : ℝ) ≤ 2 by norm_num)) (Nat.cast_nonneg r)]
+    _ ≤ (2 * (d : ℝ) ^ 2) ^ 2 + 2 * (d : ℝ) ^ 2 * (2 + d + log H) := by gcongr
+    _ ≤ _ := by
+      rw [show 27 * (d : ℝ) ^ 4 * (1 + log H / (d : ℝ) ^ 2) =
+        27 * (d : ℝ) ^ 4 + 27 * (d : ℝ) ^ 2 * log H by field_simp]
+      nlinarith [mul_nonneg (sq_nonneg (d : ℝ)) hlog]
 
 end
 end CCDN

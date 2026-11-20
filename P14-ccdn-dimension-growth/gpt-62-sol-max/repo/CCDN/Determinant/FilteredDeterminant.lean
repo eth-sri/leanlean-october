@@ -9,7 +9,6 @@ public import CCDN.Determinant.SingularTangent
 public import Mathlib.Algebra.Field.ZMod
 public import Mathlib.LinearAlgebra.Matrix.Determinant.Basic
 public import Mathlib.RingTheory.MvPolynomial
-import CCDN.Determinant.LocalDeterminant
 import CCDN.Determinant.ModularOriginGenerators
 import CCDN.Determinant.SingularApproximation
 import CCDN.ForMathlib.Matrix
@@ -21,6 +20,19 @@ computed from the cumulative dimensions of the origin-adic layers. -/
 namespace CCDN
 noncomputable section
 open MvPolynomial
+
+/-- If row `i` is divisible by `d i`, the product of the row factors divides the determinant. -/
+private theorem prod_row_factors_dvd_det {R : Type*} [CommRing R] {s : ℕ}
+    (A : Matrix (Fin s) (Fin s) R)
+    (d : Fin s → R) (h : ∀ i j, d i ∣ A i j) : (∏ i, d i) ∣ A.det := by
+  classical
+  choose Q hQ using h
+  have hA : A = Matrix.of (fun i j => d i * Q i j) := by
+    ext i j
+    exact hQ i j
+  rw [hA]
+  exact ⟨(Matrix.of Q).det, Matrix.det_mul_column d (Matrix.of Q)⟩
+
 
 /-- The sum of the deficits below successive weights. For a graded profile
 this is a lower bound for the sum of the first s weights, with multiplicity. -/
@@ -40,32 +52,29 @@ lemma sum_weight_tail_counts_le {s : ℕ} (w : Fin s → ℕ) (K : ℕ) :
     exact min_le_right _ _
   simpa only [Finset.card_eq_sum_ones, Finset.sum_filter] using hcard
 
+section
+
+variable {s N : ℕ} (r : ℕ → ℕ)
+  (t : Fin s ↪ ((j : Fin N) × Fin (r j.val)))
+include s N r t
+
 /-- Distinct generators of weight at most k inject into all generators in
 layers zero through k, independently of the precision used to truncate them. -/
-lemma low_weight_card_le {s N : ℕ} (r : ℕ → ℕ)
-    (t : Fin s ↪ ((j : Fin N) × Fin (r j.val))) (k : ℕ) :
+lemma low_weight_card_le (k : ℕ) :
     (Finset.univ.filter fun i => (t i).1.val ≤ k).card ≤
       ∑ j : Fin (k + 1), r j.val := by
   classical
   let φ : {i : Fin s // (t i).1.val ≤ k} → ((j : Fin (k + 1)) × Fin (r j.val)) :=
     fun i => ⟨⟨(t i.val).1.val, by omega⟩, (t i.val).2⟩
-  have hφ : Function.Injective φ := by
-    intro a b h
-    apply Subtype.ext
-    apply t.injective
-    have he := congrArg
-      (fun v : (j : Fin (k + 1)) × Fin (r j.val) =>
-        (⟨v.1.val, v.2⟩ : (j : ℕ) × Fin (r j))) h
-    let forget : ((j : Fin N) × Fin (r j.val)) → ((j : ℕ) × Fin (r j)) :=
-      Sigma.map Fin.val (fun _ j => j)
-    have hinj : Function.Injective forget :=
-      Fin.val_injective.sigma_map (fun _ => Function.injective_id)
-    exact hinj he
-  have hc := Fintype.card_le_of_injective φ hφ
-  simpa only [Fintype.card_subtype, Fintype.card_sigma, Fintype.card_fin] using hc
+  let forget {J : ℕ} (v : (j : Fin J) × Fin (r j.val)) : (j : ℕ) × Fin (r j) := Sigma.map Fin.val (fun _ => id) v
+  have hf (J : ℕ) : Function.Injective (forget (J := J)) :=
+    Fin.val_injective.sigma_map fun _ => Function.injective_id
+  exact (by simpa only [Fintype.card_subtype, Fintype.card_sigma, Fintype.card_fin] using
+    Fintype.card_le_of_injective φ (Function.Injective.of_comp (f := forget (J := k + 1))
+      (show Function.Injective (forget ∘ (t ∘ Subtype.val)) from
+        (hf _).comp (t.injective.comp Subtype.val_injective))))
 
-private lemma filtrationExponent_le_weights {s N : ℕ} (r : ℕ → ℕ)
-    (t : Fin s ↪ ((j : Fin N) × Fin (r j.val))) :
+private lemma filtrationExponent_le_weights :
     filtrationExponent r s ≤ ∑ i, (t i).1.val := by
   classical
   apply le_trans ?_ (sum_weight_tail_counts_le (fun i => (t i).1.val) s)
@@ -78,26 +87,22 @@ private lemma filtrationExponent_le_weights {s N : ℕ} (r : ℕ → ℕ)
   simp only [Finset.card_univ, Fintype.card_fin, not_le] at hpart
   omega
 
-/-- Cauchy--Binet for a finite set of generators indexed in any way. -/
+end
+
+/-- A weighted factorization gives a divisor from the lightest possible selection of rows. -/
 theorem pow_dvd_det_of_weighted_factorization_fintype {R ι : Type*} [CommRing R]
-    [Fintype ι] [DecidableEq ι] {s : ℕ}
+    [Fintype ι] {s : ℕ}
     (U : Matrix (Fin s) ι R) (V : Matrix ι (Fin s) R)
     (p : R) (weight : ι → ℕ) (e : ℕ)
     (hV : ∀ i j, p ^ weight i ∣ V i j)
     (he : ∀ t : Fin s ↪ ι, e ≤ ∑ i, weight (t i)) :
     p ^ e ∣ (U * V).det := by
-  classical
-  let a := (Fintype.equivFin ι).symm
-  let U' := U.submatrix id a
-  let V' := V.submatrix a id
-  have hprod : U * V = U' * V' := by
-    ext i j
-    exact (Equiv.sum_comp a (fun z => U i z * V z j)).symm
-  rw [hprod]
-  apply pow_dvd_det_of_weighted_factorization U' V' p (fun z => weight (a z)) e
-    (fun i j => hV (a i) j)
+  apply Matrix.dvd_det_mul_of_row_minors U V
   intro t
-  exact he (t.toEmbedding.trans a.toEmbedding)
+  have hminor := prod_row_factors_dvd_det (V.submatrix t id)
+    (fun i => p ^ weight (t i)) (fun i j => hV (t i) j)
+  rw [Finset.prod_pow_eq_pow_sum] at hminor
+  exact (pow_dvd_pow p (he t)).trans hminor
 
 /-- A homogeneous local generating family gives a determinant divisor
 at any precision and in any dimension. -/
@@ -111,9 +116,7 @@ theorem origin_filtration_pow_dvd_det_mod {p n s e : ℕ} [Fact p.Prime]
     (p : ℤ) ^ e ∣ (Matrix.of fun i j => eval (x i) (F j)).det := by
   classical
   obtain ⟨r, g, hr, hg, hrep⟩ := exists_integer_hypersurface_generators (p := p) f
-  have hr' : r = fun k => Module.finrank (ZMod p)
-      (originLayer (map (Int.castRingHom (ZMod p)) f) k) := funext hr
-  rw [← hr'] at he
+  rw [← (funext hr)] at he
   let N := e
   choose c hc using fun j => integer_generators_approximate_mod f r g (hrep N) (F j)
   have hdiv (i : Fin s) (z : (k : Fin N) × Fin (r k.val)) :
@@ -123,7 +126,7 @@ theorem origin_filtration_pow_dvd_det_mod {p n s e : ℕ} [Fact p.Prime]
   let U : Matrix (Fin s) ((k : Fin N) × Fin (r k.val)) ℤ := U₀
   let V : Matrix ((k : Fin N) × Fin (r k.val)) (Fin s) ℤ :=
     fun z j => (p : ℤ) ^ z.1.val * c j z.1 z.2
-  have hdet : (p : ℤ) ^ N ∣ (U * V).det :=
+  have hdet :=
     pow_dvd_det_of_weighted_factorization_fintype U V (p : ℤ) (fun z => z.1.val) N
       (fun _ _ => dvd_mul_right _ _) (fun t => he.trans (filtrationExponent_le_weights r t))
   have hprod (i j : Fin s) : (U * V) i j =

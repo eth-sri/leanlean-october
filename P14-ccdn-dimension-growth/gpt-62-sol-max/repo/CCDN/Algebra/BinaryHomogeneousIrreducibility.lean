@@ -27,7 +27,7 @@ private theorem uniqueAlgEquiv_natDegree {R σ : Type*} [CommRing R] [Unique σ]
     rw [coeff_uniqueAlgEquiv]
     apply coeff_eq_zero_of_totalDegree_lt
     change f.totalDegree < (Finsupp.single (default : σ) k).degree
-    rwa [Finsupp.degree_single]
+    simp_all
   · unfold totalDegree
     apply Finset.sup_le
     intro m hm
@@ -36,12 +36,9 @@ private theorem uniqueAlgEquiv_natDegree {R σ : Type*} [CommRing R] [Unique σ]
       exact mem_support_iff.mp hm
     have hle := Polynomial.le_natDegree_of_ne_zero hc
     have he : m.degree = m default := by
-      calc
-        _ = (Finsupp.single default (m default)).degree :=
-          congrArg Finsupp.degree (Finsupp.unique_single m)
-        _ = _ := Finsupp.degree_single _ _
+      exact Trans.trans (congrArg (⇑Finsupp.degree) (Finsupp.unique_single m)) (Finsupp.degree_single default (m default))
     change m.degree ≤ _
-    rwa [he]
+    omega
 
 /-- Over an algebraically closed field, an irreducible homogeneous polynomial in two variables
 has degree at most `1`. -/
@@ -50,11 +47,10 @@ theorem binary_homogeneous_irreducible_degree_le_one
     (f : MvPolynomial (Fin 2) K) (hf : f.IsHomogeneous d)
     (hir : Irreducible f) : d ≤ 1 := by
   by_contra h
-  have hd : 2 ≤ d := by omega
-  have hX := variable_not_dvd_irreducible_homogeneous f hf hir hd 0
+  have hX := variable_not_dvd_irreducible_homogeneous f hf hir (by omega) 0
   have hdeg := affineChart_degree_of_not_variable_dvd f hf hX
   have hc := affineChart_irreducible_of_not_variable_dvd f hf hir hX
-  have hu : Irreducible ((uniqueAlgEquiv K (Fin 1)) (affineChart 1 f)) :=
+  have hu :=
     (MulEquiv.irreducible_iff (f := (uniqueAlgEquiv K (Fin 1)).toMulEquiv)).mpr hc
   have hh : ((uniqueAlgEquiv K (Fin 1)) (affineChart 1 f)).natDegree = 1 :=
     Polynomial.natDegree_eq_of_degree_eq_some

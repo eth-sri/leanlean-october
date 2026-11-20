@@ -17,18 +17,22 @@ noncomputable section
 open MvPolynomial
 variable {K : Type*} [Field K]
 
-/-- The affine coordinates `(x₁ / x₀, …, xₙ / x₀)` of a projective point `x`, computed from
-its chosen representative; meaningful on the standard chart `x₀ ≠ 0`. -/
-def projectiveAffineCoordinates {n : ℕ} (x : Projectivization K (Fin (n + 1) → K)) :
-    Fin n → K := fun j => x.rep j.succ / x.rep 0
+/-- Affine coordinates in the chart where `k` is the nonzero pivot. -/
+def projectiveAffineCoordinatesAt {n : ℕ} (k : Fin (n + 1))
+    (x : Projectivization K (Fin (n + 1) → K)) : Fin n → K := fun j =>
+  x.rep (Equiv.swap 0 k j.succ) / x.rep k
 
-private lemma projectiveAffineCoordinates_normalization {n : ℕ}
-    (x : Projectivization K (Fin (n + 1) → K)) (hx : x.rep 0 ≠ 0) :
-    Fin.cons 1 (projectiveAffineCoordinates x) = (x.rep 0)⁻¹ • x.rep := by
-  funext j
-  refine Fin.cases ?_ (fun k => ?_) j
-  · simp [hx]
-  · simp [projectiveAffineCoordinates, div_eq_mul_inv, mul_comm]
+lemma projectiveAffineCoordinatesAt_normalization {n : ℕ} {k : Fin (n + 1)}
+    (x : Projectivization K (Fin (n + 1) → K)) (hx : x.rep k ≠ 0) :
+    Fin.cons 1 (projectiveAffineCoordinatesAt k x) ∘ Equiv.swap 0 k = (x.rep k)⁻¹ • x.rep := by
+  have h : Fin.cons 1 (projectiveAffineCoordinatesAt k x) =
+      (x.rep k)⁻¹ • (x.rep ∘ Equiv.swap 0 k) := by
+    funext i
+    refine Fin.cases (by simp [hx]) (fun j => ?_) i
+    simp [projectiveAffineCoordinatesAt, div_eq_mul_inv, mul_comm]
+  rw [h]
+  ext i
+  simp
 
 /-- The vector `(1, a₁, …, aₙ)` is nonzero. -/
 lemma affineCoordinateVector_ne_zero {n : ℕ} (a : Fin n → K) :
@@ -37,36 +41,27 @@ lemma affineCoordinateVector_ne_zero {n : ℕ} (a : Fin n → K) :
   have hh := congrFun h 0
   simp at hh
 
-private lemma projectiveAffineCoordinates_mk {n : ℕ}
-    (x : Projectivization K (Fin (n + 1) → K)) (hx : x.rep 0 ≠ 0) :
-    Projectivization.mk K (Fin.cons 1 (projectiveAffineCoordinates x))
-      (affineCoordinateVector_ne_zero _) = x := by
-  calc
-    _ = Projectivization.mk K x.rep x.rep_nonzero := by
-      rw [Projectivization.mk_eq_mk_iff']
-      exact ⟨_, (projectiveAffineCoordinates_normalization x hx).symm⟩
-    _ = x := x.mk_rep
+private def affineProjectivePointAt {n : ℕ} (k : Fin (n + 1)) (a : Fin n → K) :
+    Projectivization K (Fin (n + 1) → K) :=
+  Projectivization.mk K (Fin.cons 1 a ∘ Equiv.swap 0 k) (by
+    intro h
+    have hh := congrFun h k
+    simp at hh)
 
-/-- Projective points with nonzero first coordinate are determined by their affine
-coordinates. -/
-theorem projectiveAffineCoordinates_injective {n : ℕ}
+private lemma projectiveAffineCoordinatesAt_mk {n : ℕ} {k : Fin (n + 1)}
+    (x : Projectivization K (Fin (n + 1) → K)) (hx : x.rep k ≠ 0) :
+    affineProjectivePointAt k (projectiveAffineCoordinatesAt k x) = x := by
+  conv_rhs => rw [← x.mk_rep]
+  rw [affineProjectivePointAt, Projectivization.mk_eq_mk_iff']
+  exact ⟨_, (projectiveAffineCoordinatesAt_normalization x hx).symm⟩
+
+/-- Projective points with nonzero pivot are determined by their affine coordinates. -/
+theorem projectiveAffineCoordinatesAt_injective {n : ℕ} {k : Fin (n + 1)}
     {x y : Projectivization K (Fin (n + 1) → K)}
-    (hx : x.rep 0 ≠ 0) (hy : y.rep 0 ≠ 0)
-    (hxy : projectiveAffineCoordinates x = projectiveAffineCoordinates y) : x = y := by
-  have h := congrArg (fun a : Fin n → K => Projectivization.mk K (Fin.cons 1 a : Fin (n + 1) → K)
-    (affineCoordinateVector_ne_zero a)) hxy
-  rwa [projectiveAffineCoordinates_mk x hx, projectiveAffineCoordinates_mk y hy] at h
-
-/-- If a projective point `x` with nonzero first coordinate lies on the zero locus of a
-homogeneous polynomial `f`, then the dehomogenization of `f` vanishes at the affine coordinates
-of `x`. -/
-theorem projectiveAffineCoordinates_zero {n d : ℕ}
-    (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d)
-    (x : Projectivization K (Fin (n + 1) → K)) (hx : x.rep 0 ≠ 0)
-    (hxf : x ∈ projectiveZeroLocus f) :
-    eval (projectiveAffineCoordinates x) (affineChart n f) = 0 := by
-  rw [affineChart_eval, projectiveAffineCoordinates_normalization x hx,
-    homogeneous_eval_smul hf, show eval x.rep f = 0 from hxf, mul_zero]
+    (hx : x.rep k ≠ 0) (hy : y.rep k ≠ 0)
+    (hxy : projectiveAffineCoordinatesAt k x = projectiveAffineCoordinatesAt k y) : x = y := by
+  simpa only [projectiveAffineCoordinatesAt_mk _ hx, projectiveAffineCoordinatesAt_mk _ hy] using
+    congrArg (affineProjectivePointAt k) hxy
 
 /-- The point `[1 : a]` of projective space on the standard chart. -/
 def affineProjectivePoint {K : Type*} [Field K] {n : ℕ} (a : Fin n → K) :
@@ -82,10 +77,7 @@ theorem affineProjectivePoint_injective {K : Type*} [Field K] (n : ℕ) :
     have h := congrFun hc 0
     change (c : K) * 1 = 1 at h
     simpa using h
-  funext j
-  have h := congrFun hc j.succ
-  change (c : K) * b j = a j at h
-  simpa [hc1] using h.symm
+  simp_all
 
 end
 end CCDN

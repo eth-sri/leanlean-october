@@ -18,7 +18,7 @@ for coefficient matrices indexed by all monomials; only the column index type is
 * `Matrix.exists_fin_linearIndependent_row_span_eq`: finitely many linearly independent rows
   span the row space.
 * `Matrix.exists_rank_linearIndependent_rows`: there are `A.rank` linearly independent rows.
-* `Matrix.exists_det_submatrix_ne_zero_of_le_rank`: every `r ≤ A.rank` is witnessed by a
+* `Matrix.hasNonzeroMinor_of_le_rank`: every `r ≤ A.rank` is witnessed by a
   nonzero `r × r` minor with distinct rows and columns.
 * `Matrix.le_rank_of_det_submatrix_ne_zero`: conversely, a nonzero `k × k` minor shows
   `k ≤ A.rank`.
@@ -40,21 +40,25 @@ namespace Matrix
 set is infinite. -/
 theorem exists_fin_linearIndependent_row_span_eq
     {F ι ν : Type*} [Field F] [Fintype ν] (A : Matrix ι ν F) :
-    ∃ (s : ℕ) (a : Fin s → ι), Function.Injective a ∧
+    ∃ (s : ℕ) (a : Fin s → ι),
       LinearIndependent F (A.submatrix a id).row ∧
       Submodule.span F (Set.range (A.submatrix a id).row) =
         Submodule.span F (Set.range A.row) := by
   classical
-  obtain ⟨κ, a, ha, hs, hi⟩ := exists_linearIndependent' F A.row
+  obtain ⟨κ, a, _, hs, hi⟩ := exists_linearIndependent' F A.row
   let : Finite κ := hi.finite
   let : Fintype κ := Fintype.ofFinite κ
   let e := (Fintype.equivFin κ).symm
-  have hli : LinearIndependent F (A.submatrix (a ∘ e) id).row := hi.comp e e.injective
-  refine ⟨Fintype.card κ, a ∘ e, ha.comp e.injective, hli, ?_⟩
+  refine ⟨Fintype.card κ, a ∘ e, hi.comp e e.injective, ?_⟩
   have hr : Set.range (A.submatrix (a ∘ e) id).row = Set.range (A.row ∘ a) := by
-    change Set.range ((A.row ∘ a) ∘ e) = _
-    exact e.surjective.range_comp _
-  rw [hr, hs]
+    exact id (Function.Surjective.range_comp (Equiv.surjective e) (A.row ∘ a))
+  simp_all
+
+private lemma mem_ker_mulVecLin_iff_span_row {F ι ν : Type*} [Field F] [Fintype ν]
+    (A : Matrix ι ν F) (v : ν → F) :
+    v ∈ A.mulVecLin.ker ↔ Submodule.span F (Set.range A.row) ≤ ((dotProductBilin F F).flip v).ker := by
+  rw [Submodule.span_le, Set.range_subset_iff, LinearMap.mem_ker]
+  simp [funext_iff, mulVec, Matrix.row]
 
 /-- Restriction to spanning rows preserves the exact kernel. -/
 theorem ker_mulVecLin_submatrix_eq_of_span_row_eq
@@ -63,77 +67,40 @@ theorem ker_mulVecLin_submatrix_eq_of_span_row_eq
       Submodule.span F (Set.range A.row)) :
     (A.submatrix a id).mulVecLin.ker = A.mulVecLin.ker := by
   ext v
-  simp only [LinearMap.mem_ker, Matrix.mulVecLin_apply]
-  constructor
-  · intro hv
-    ext i
-    have hm : A.row i ∈ Submodule.span F (Set.range (A.submatrix a id).row) := by
-      rw [hs]
-      exact Submodule.subset_span ⟨i, rfl⟩
-    change A.row i ⬝ᵥ v = 0
-    suffices hh : ∀ r ∈ Submodule.span F (Set.range (A.submatrix a id).row), r ⬝ᵥ v = 0 from hh _ hm
-    intro r hr
-    induction hr using Submodule.span_induction with
-    | mem r hr =>
-      obtain ⟨j, rfl⟩ := hr
-      exact congrFun hv j
-    | zero => simp
-    | add x y hx hy ihx ihy => simp [add_dotProduct, ihx, ihy]
-    | smul b x hx ih => simp [smul_dotProduct, ih]
-  · intro hv
-    ext i
-    exact congrFun hv (a i)
+  simp only [mem_ker_mulVecLin_iff_span_row, hs]
 
 /-- There are exactly rank-many independent rows. -/
-theorem exists_rank_linearIndependent_rows
+private theorem exists_rank_linearIndependent_rows
     {F ι ν : Type*} [Field F] [Fintype ν] (A : Matrix ι ν F) :
-    ∃ a : Fin A.rank → ι, Function.Injective a ∧
-      LinearIndependent F (A.submatrix a id).row := by
-  obtain ⟨s, a, ha, hi, hs⟩ := exists_fin_linearIndependent_row_span_eq A
-  have hk := ker_mulVecLin_submatrix_eq_of_span_row_eq A a hs
+    ∃ a : Fin A.rank → ι, LinearIndependent F (A.submatrix a id).row := by
+  obtain ⟨s, a, hi, hs⟩ := exists_fin_linearIndependent_row_span_eq A
   have h₁ := (A.submatrix a id).mulVecLin.finrank_range_add_finrank_ker
   have h₂ := A.mulVecLin.finrank_range_add_finrank_ker
   change (A.submatrix a id).rank + _ = _ at h₁
   change A.rank + _ = _ at h₂
-  rw [hi.rank_matrix, Fintype.card_fin, hk] at h₁
-  have he : s = A.rank := by omega
+  rw [hi.rank_matrix, Fintype.card_fin, ker_mulVecLin_submatrix_eq_of_span_row_eq A a hs] at h₁
+  have hr : s = A.rank := by omega
   subst s
-  exact ⟨a, ha, hi⟩
+  exact ⟨a, hi⟩
 
 /-- Full row rank supplies a nonzero square minor: some set of columns of the transpose is
 linearly independent. -/
 theorem exists_det_submatrix_ne_zero_of_linearIndependent_row
     {F ν : Type*} [Field F] [Fintype ν] {s : ℕ}
     (A : Matrix (Fin s) ν F) (hi : LinearIndependent F A.row) :
-    ∃ c : Fin s → ν, Function.Injective c ∧ (A.submatrix id c).det ≠ 0 := by
+    ∃ c : Fin s → ν, (A.submatrix id c).det ≠ 0 := by
   have hr : Aᵀ.rank = s := by rw [rank_transpose, hi.rank_matrix, Fintype.card_fin]
-  obtain ⟨c, hc, hli⟩ := exists_rank_linearIndependent_rows Aᵀ
+  obtain ⟨c, hli⟩ := exists_rank_linearIndependent_rows Aᵀ
   let e := finCongr hr
-  refine ⟨c ∘ e.symm, hc.comp e.symm.injective, ?_⟩
-  have hcol : LinearIndependent F (A.submatrix id (c ∘ e.symm)).col :=
-    hli.comp e.symm e.symm.injective
+  refine ⟨c ∘ e.symm, ?_⟩
   rw [← isUnit_iff_ne_zero, ← isUnit_iff_isUnit_det]
-  exact linearIndependent_col_iff_isUnit.mp hcol
-
-/-- Every rank lower bound is witnessed by a nonzero minor with distinct rows
-and distinct columns, without any finiteness requirement on the rows. -/
-theorem exists_det_submatrix_ne_zero_of_le_rank
-    {F ι ν : Type*} [Field F] [Fintype ν] (A : Matrix ι ν F)
-    (r : ℕ) (hr : r ≤ A.rank) :
-    ∃ (a : Fin r → ι) (c : Fin r → ν), Function.Injective a ∧
-      Function.Injective c ∧ (A.submatrix a c).det ≠ 0 := by
-  obtain ⟨a, ha, hi⟩ := exists_rank_linearIndependent_rows A
-  let b : Fin r → Fin A.rank := Fin.castLE hr
-  have hb : Function.Injective b := Fin.castLE_injective hr
-  have hli : LinearIndependent F (A.submatrix (a ∘ b) id).row := hi.comp b hb
-  obtain ⟨c, hc, hd⟩ := exists_det_submatrix_ne_zero_of_linearIndependent_row _ hli
-  exact ⟨a ∘ b, c, ha.comp hb, hc, hd⟩
+  exact linearIndependent_col_iff_isUnit.mp (hli.comp e.symm e.symm.injective)
 
 /-- A nonzero `k × k` minor shows that a matrix over a domain has rank at least `k`. -/
 theorem le_rank_of_det_submatrix_ne_zero {R ι ν : Type*} [CommRing R] [IsDomain R] [Fintype ν]
     {k : ℕ} (A : Matrix ι ν R) (r : Fin k → ι) (c : Fin k → ν)
     (h : (A.submatrix r c).det ≠ 0) : k ≤ A.rank := by
-  simpa only [rank_of_det_ne_zero h, Fintype.card_fin] using A.rank_submatrix_le r c
+  simpa [rank_of_det_ne_zero h, Fintype.card_fin] using A.rank_submatrix_le r c
 
 /-- `A` has a nonzero `r × r` minor: some choice of `r` rows and `r` columns of `A` whose
 square submatrix has nonzero determinant. The chosen rows and columns are automatically
@@ -144,9 +111,10 @@ def HasNonzeroMinor {R ι ν : Type*} [CommRing R] (A : Matrix ι ν R) (r : ℕ
 
 /-- Every rank lower bound over a field is witnessed by a nonzero minor. -/
 theorem hasNonzeroMinor_of_le_rank {F ι ν : Type*} [Field F] [Fintype ν] (A : Matrix ι ν F)
-    {r : ℕ} (hr : r ≤ A.rank) : A.HasNonzeroMinor r :=
-  let ⟨a, c, _, _, h⟩ := exists_det_submatrix_ne_zero_of_le_rank A r hr
-  ⟨a, c, h⟩
+    {r : ℕ} (hr : r ≤ A.rank) : A.HasNonzeroMinor r := by
+  obtain ⟨a, hi⟩ := exists_rank_linearIndependent_rows A
+  exact ⟨a ∘ Fin.castLE hr, exists_det_submatrix_ne_zero_of_linearIndependent_row _
+    (hi.comp _ (Fin.castLE_injective hr))⟩
 
 variable {o R : Type*} {m' : o → Type*} [Fintype o] [DecidableEq o]
   [∀ i, Fintype (m' i)] [∀ i, DecidableEq (m' i)] [CommRing R]
@@ -168,13 +136,11 @@ theorem det_blockDiagonal' (M : ∀ i, Matrix (m' i) (m' i) R) :
 /-- Entrywise congruence implies determinant congruence, for every modulus. -/
 theorem dvd_det_sub_det_of_dvd_sub {s : ℕ} (A B : Matrix (Fin s) (Fin s) ℤ)
     (m : ℤ) (h : ∀ i j, m ∣ A i j - B i j) : m ∣ A.det - B.det := by
-  let I : Ideal ℤ := Ideal.span {m}
+  let I := Ideal.span {m}
   let φ := Ideal.Quotient.mk I
   have he : A.map φ = B.map φ := by
     ext i j
     apply sub_eq_zero.mp
-    change φ (A i j) - φ (B i j) = 0
-    rw [← map_sub]
     exact Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr (h i j))
   apply Ideal.mem_span_singleton.mp
   change A.det - B.det ∈ I
@@ -183,5 +149,26 @@ theorem dvd_det_sub_det_of_dvd_sub {s : ℕ} (A B : Matrix (Fin s) (Fin s) ℤ)
   rw [map_sub, φ.map_det, φ.map_det]
   change (A.map φ).det - (B.map φ).det = 0
   rw [he, sub_self]
+
+/-- Divisibility of all maximal row minors is preserved by taking square row combinations.
+Expand the determinant by multilinearity; terms with repeated rows vanish. -/
+theorem dvd_det_mul_of_row_minors {R ι : Type*} [CommRing R] [Fintype ι] {s : ℕ}
+    (U : Matrix (Fin s) ι R) (V : Matrix ι (Fin s) R) {d : R}
+    (h : ∀ t : Fin s ↪ ι, d ∣ (V.submatrix t id).det) : d ∣ (U * V).det := by
+  classical
+  have he : U * V = fun i => ∑ j, U i j • V j := by
+    ext i k
+    simp [mul_apply]
+  change d ∣ detRowAlternating.toMultilinearMap (U * V)
+  rw [he, MultilinearMap.map_sum]
+  refine Finset.dvd_sum fun t _ => ?_
+  change d ∣ (Matrix.of fun i j => U i (t i) * V (t i) j).det
+  rw [show (Matrix.of fun i j => U i (t i) * V (t i) j) =
+    Matrix.of (fun i j => U i (t i) * (V.submatrix t id) i j) from rfl, det_mul_column]
+  by_cases ht : Function.Injective t
+  · exact dvd_mul_of_dvd_right (h ⟨t, ht⟩) _
+  · obtain ⟨i, j, e, hn⟩ := Function.not_injective_iff.mp ht
+    rw [det_zero_of_row_eq (M := V.submatrix t id) hn (funext fun k => congrArg (fun l => V l k) e), mul_zero]
+    exact dvd_zero _
 
 end Matrix

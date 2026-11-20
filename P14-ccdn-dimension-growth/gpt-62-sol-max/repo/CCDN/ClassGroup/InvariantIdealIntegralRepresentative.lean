@@ -33,11 +33,10 @@ theorem exists_invariant_integral_ideal_representative
   let a : R := (J : FractionalIdeal R⁰ K).den
   have ha : a ≠ 0 :=
     mem_nonZeroDivisors_iff_ne_zero.mp (J : FractionalIdeal R⁰ K).den.property
-  have hσa : σ a ≠ 0 := by
-    simpa only [map_zero] using σ.injective.ne ha
+  
   let u : Kˣ := Units.mk0 (algebraMap R K (σ a * a)) (by
-    simpa only [map_zero] using (IsFractionRing.injective R K).ne (mul_ne_zero hσa ha))
-  let I : Ideal R := Ideal.span {σ a} * (J : FractionalIdeal R⁰ K).num
+    simp_all)
+  let I := Ideal.span {σ a} * (J : FractionalIdeal R⁰ K).num
   have hI : (I : FractionalIdeal R⁰ K) = (toPrincipalIdeal R K u * J :
       (FractionalIdeal R⁰ K)ˣ) := by
     simp only [I, FractionalIdeal.coeIdeal_mul, FractionalIdeal.coeIdeal_span_singleton,
@@ -66,9 +65,7 @@ theorem exists_invariant_integral_ideal_representative
   · apply FractionalIdeal.coeIdeal_inj (K := K) |>.mp
     have h := congrArg (fun U : (FractionalIdeal R⁰ K)ˣ =>
       (U : FractionalIdeal R⁰ K)) hIfixed
-    change FractionalIdeal.ringEquivOfRingEquiv K K σ (I : FractionalIdeal R⁰ K) =
-      (I : FractionalIdeal R⁰ K) at h
-    simpa only [fractionalIdeal_conjugate_coeIdeal] using h
+    exact id (fun h => Eq.mp (congrFun' (congrArg Eq (fractionalIdeal_conjugate_coeIdeal σ I)) ↑I) h) h
   · rw [← ClassGroup.mk_mk0 K I₀, hIu, map_mul, classGroup_mk_principal, one_mul]
 
 end

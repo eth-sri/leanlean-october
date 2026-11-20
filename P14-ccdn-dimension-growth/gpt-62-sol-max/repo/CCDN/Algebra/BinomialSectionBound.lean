@@ -22,10 +22,7 @@ private lemma choose_shift_sum (n k d : ℕ) :
   | zero => simp
   | succ d ih =>
     rw [Finset.sum_range_succ]
-    rw [show n + 1 + (k + (d + 1)) = (n + 1 + (k + d)) + 1 by omega,
-      Nat.choose_succ_succ', ih]
-    rw [show n + 1 + (k + d) = n + (k + d + 1) by omega]
-    omega
+    grind
 
 private lemma choose_shift_bound (n k d : ℕ) :
     (n + 1 + (k + d)).choose (n + 1) ≤ (n + 1 + k).choose (n + 1) +
@@ -36,7 +33,7 @@ private lemma choose_shift_bound (n k d : ℕ) :
     _ ≤ ∑ _i ∈ Finset.range d, (n + (k + d)).choose n := by
       apply Finset.sum_le_sum
       intro i hi
-      exact Nat.choose_le_choose n (by have := Finset.mem_range.mp hi; omega)
+      exact Nat.choose_le_choose n (by simp_all)
     _ = _ := by simp
 
 /-- The second finite difference has the product-of-degrees factor and loses
@@ -59,14 +56,11 @@ private theorem choose_double_difference_bound (n k d e : ℕ) :
         have h := choose_shift_bound n (k + i + 1) e
         have hmono := Nat.choose_le_choose n
           (show n + (k + i + 1 + e) ≤ n + (k + d + e) by
-            have := Finset.mem_range.mp hi; omega)
+            simp_all)
         have hm := Nat.mul_le_mul_left e hmono
-        rw [show k + i + 1 + e = k + e + i + 1 by omega] at h hm
-        omega
+        grind
       _ = _ := by rw [Finset.sum_add_distrib]; simp [Nat.mul_assoc]
-  rw [show k + e + d = k + d + e by omega] at h1
-  rw [show n + 1 + 1 = n + 2 by omega] at h1 h2
-  omega
+  grind
 
 /-- The filtered Koszul bound reduces to a codimension-two binomial count. -/
 theorem filteredCoordinateSpace_codim_two_bound {K : Type*} [Field K] {n N : ℕ}

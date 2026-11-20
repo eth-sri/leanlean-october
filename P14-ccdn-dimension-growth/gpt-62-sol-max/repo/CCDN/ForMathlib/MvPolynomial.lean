@@ -7,6 +7,7 @@ module
 
 public import Mathlib.LinearAlgebra.Dimension.Finrank
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
+import Mathlib.Algebra.MvPolynomial.Nilpotent
 import Mathlib.Data.Sym.Card
 import Mathlib.LinearAlgebra.Dimension.StrongRankCondition
 
@@ -74,6 +75,17 @@ end Sym
 
 namespace Finsupp
 
+/-- Exponents of degree `n` correspond to multisets of cardinality `n`. -/
+noncomputable def degreeEqEquivSym (σ : Type*) [DecidableEq σ] [Fintype σ] (n : ℕ) :
+    {p : σ →₀ ℕ // p.degree = n} ≃ Sym σ n :=
+  (equivFunOnFinite.subtypeEquiv (fun p => by simp [degree_eq_sum])).trans
+    (Sym.equivNatSumOfFintype σ n).symm
+
+lemma card_degree_eq (σ : Type*) [Fintype σ] (n : ℕ) :
+    Nat.card {p : σ →₀ ℕ // p.degree = n} = (Fintype.card σ + n - 1).choose n := by
+  classical
+  rw [Nat.card_congr (degreeEqEquivSym σ n), Nat.card_eq_fintype_card, Sym.card_sym_eq_choose]
+
 /-- Exponent vectors of degree at most `n` on a finite type `α` correspond to multisets of
 size `n` on `Option α`. -/
 noncomputable def degreeLeEquivSym (α : Type*) [DecidableEq α] [Fintype α] (n : ℕ) :
@@ -88,6 +100,28 @@ namespace MvPolynomial
 variable {σ K : Type*}
 
 section TotalDegree
+
+/-- Substitution of polynomials of degree at most `n` multiplies total degree by at most `n`. -/
+theorem eval₂Hom_totalDegree_le_mul {R S σ τ : Type*} [CommSemiring R] [CommSemiring S]
+    (φ : R →+* S) (g : σ → MvPolynomial τ S) {n : ℕ} (hg : ∀ j, (g j).totalDegree ≤ n)
+    (f : MvPolynomial σ R) :
+    (eval₂Hom (C.comp φ) g f).totalDegree ≤ n * f.totalDegree := by
+  classical
+  conv_lhs => rw [f.as_sum, map_sum]
+  apply totalDegree_finsetSum_le
+  intro e he
+  rw [eval₂Hom_monomial, RingHom.comp_apply]
+  apply (totalDegree_mul _ _).trans
+  rw [totalDegree_C, zero_add]
+  calc
+    _ ≤ ∑ j ∈ e.support, (g j ^ e j).totalDegree := totalDegree_finsetProd _ _
+    _ ≤ ∑ j ∈ e.support, e j * n := Finset.sum_le_sum fun j _ =>
+      (totalDegree_pow _ _).trans (Nat.mul_le_mul_left _ (hg j))
+    _ = n * e.degree := by
+      change ∑ j ∈ e.support, e j * n = n * ∑ j ∈ e.support, e j
+      rw [← Finset.sum_mul, Nat.mul_comm]
+    _ ≤ _ := Nat.mul_le_mul_left _ (le_totalDegree he)
+
 
 variable {R S : Type*} [CommSemiring R] [CommSemiring S]
 
@@ -143,15 +177,11 @@ dimension `(Fintype.card σ + n - 1).choose n`, the number of monomials of degre
 theorem finrank_homogeneousSubmodule [Field K] [Fintype σ] (n : ℕ) :
     Module.finrank K (homogeneousSubmodule σ K n) = (Fintype.card σ + n - 1).choose n := by
   classical
-  let e : {p : σ →₀ ℕ // p.degree = n} ≃ Sym σ n :=
-    ((Sym.equivNatSum σ n).trans
-      (Equiv.subtypeEquivRight fun p => by simp [Finsupp.degree_apply, Finsupp.sum])).symm
   have he : homogeneousSubmodule σ K n = restrictSupport K {p | p.degree = n} := by
     rw [homogeneousSubmodule_eq_finsupp_supported]
     rfl
   rw [he, Module.finrank_eq_nat_card_basis (basisRestrictSupport K _)]
-  change Nat.card {p : σ →₀ ℕ // p.degree = n} = _
-  rw [Nat.card_congr e, Nat.card_eq_fintype_card, Sym.card_sym_eq_choose]
+  exact Finsupp.card_degree_eq σ n
 
 /-- The polynomials of total degree at most `N` in finitely many variables `σ` form a space of
 dimension `(Fintype.card σ + N).choose N`, the number of monomials of degree at most `N`. -/
@@ -175,3 +205,79 @@ theorem finrank_homogeneousSubmodule_fin [Field K] (n M : ℕ) :
   omega
 
 end MvPolynomial
+
+@[expose] public section
+namespace CCDN
+
+open MvPolynomial in
+/-- Substituting homogeneous linear forms commutes with taking homogeneous components: the
+degree-`N` component of `aeval a p` is `aeval a` of the degree-`N` component of `p`. -/
+lemma homogeneousComponent_aeval_linear {K σ τ : Type*} [CommSemiring K]
+    (a : σ → MvPolynomial τ K) (ha : ∀ i, (a i).IsHomogeneous 1)
+    (N : ℕ) (p : MvPolynomial σ K) :
+    homogeneousComponent N (aeval a p) = aeval a (homogeneousComponent N p) := by
+  classical
+  induction p using MvPolynomial.induction_on' with
+  | add p q hp hq => simp_all
+  | monomial e c =>
+    have h := isHomogeneous_monomial c (rfl : e.degree = e.degree)
+    have h' : (aeval a (monomial e c)).IsHomogeneous e.degree := by
+      simpa using h.aeval a ha
+    rw [homogeneousComponent_of_mem h, homogeneousComponent_of_mem h']
+    split_ifs <;> simp
+
+
+open MvPolynomial in
+/-- Substituting affine linear polynomials does not increase total degree. -/
+theorem linear_eval₂_totalDegree_le {R S σ τ : Type*} [CommRing R] [CommRing S]
+    (φ : R →+* S) (g : σ → MvPolynomial τ S) (hg : ∀ j, (g j).totalDegree ≤ 1)
+    (f : MvPolynomial σ R) :
+    (eval₂Hom (C.comp φ) g f).totalDegree ≤ f.totalDegree := by
+  simpa only [one_mul] using eval₂Hom_totalDegree_le_mul φ g hg f
+
+
+/-- A multivariate polynomial over a field whose image under a field homomorphism is irreducible
+is itself irreducible. -/
+lemma mvPolynomial_irreducible_of_field_map
+    {F K σ : Type*} [Field F] [Field K] (φ : F →+* K)
+    (f : MvPolynomial σ F) (hf : Irreducible (MvPolynomial.map φ f)) : Irreducible f := by
+  have hunit (q : MvPolynomial σ F) (hq : IsUnit (MvPolynomial.map φ q)) : IsUnit q := by
+    obtain ⟨hc, hd⟩ := MvPolynomial.isUnit_iff_totalDegree_of_isReduced.mp hq
+    have he :=
+      MvPolynomial.totalDegree_map_of_injective φ.injective q
+    apply MvPolynomial.isUnit_iff_totalDegree_of_isReduced.mpr
+    refine ⟨isUnit_iff_ne_zero.mpr ?_, he ▸ hd⟩
+    intro hz
+    apply hc.ne_zero
+    rw [MvPolynomial.coeff_map, hz, map_zero]
+  refine ⟨fun h => hf.not_isUnit (h.map (MvPolynomial.map φ)), ?_⟩
+  intro g h he
+  have hh := hf.isUnit_or_isUnit (by rw [he, map_mul])
+  exact hh.imp (hunit g) (hunit h)
+
+open MvPolynomial
+
+/-- Evaluating the composite `g ∘ τ` of a polynomial map `τ` and a polynomial `g` at `z` is
+evaluating `g` at `τ(z)`. -/
+lemma eval_polynomial_coordinate_map {R σ τ : Type*} [CommSemiring R]
+    (q : σ → MvPolynomial τ R) (f : MvPolynomial σ R) (z : τ → R) :
+    eval z (aeval q f) = eval (fun j => eval z (q j)) f :=
+  (eval_assoc q z f).symm
+
+/-- If `x ≡ y` coordinatewise modulo `q`, then `f(x) ≡ f(y)` modulo `q` for every integer polynomial
+`f`. -/
+lemma dvd_eval_sub_of_dvd_coordinates {σ : Type*} (q : ℤ)
+    (x y : σ → ℤ) (hxy : ∀ j, q ∣ x j - y j) (f : MvPolynomial σ ℤ) :
+    q ∣ eval x f - eval y f := by
+  induction f using MvPolynomial.induction_on with
+  | C c => simp
+  | add f g hf hg =>
+    simpa only [eval_add, add_sub_add_comm] using dvd_add hf hg
+  | mul_X f j hf =>
+    rw [eval_mul, eval_mul, eval_X, eval_X]
+    have he : eval x f * x j - eval y f * y j =
+        (eval x f - eval y f) * x j + eval y f * (x j - y j) := by ring
+    rw [he]
+    exact dvd_add (dvd_mul_of_dvd_left hf _) (dvd_mul_of_dvd_right (hxy j) _)
+
+end CCDN

@@ -24,9 +24,9 @@ lemma eq_scalar_mul_of_dvd_of_totalDegree_le {K σ : Type*} [Field K]
     (f g : MvPolynomial σ K) (hf : f ≠ 0) (hdiv : f ∣ g)
     (hdeg : g.totalDegree ≤ f.totalDegree) : ∃ c : K, g = c • f := by
   by_cases hg : g = 0
-  · exact ⟨0, by simp [hg]⟩
+  aesop
   obtain ⟨q, hq⟩ := hdiv
-  have hq0 : q ≠ 0 := by intro hz; apply hg; rw [hq, hz, mul_zero]
+  have hq0 : q ≠ 0 := by simp_all
   have hd := totalDegree_mul_of_isDomain hf hq0
   rw [← hq] at hd
   have hqd : q.totalDegree = 0 := by omega
@@ -34,15 +34,6 @@ lemma eq_scalar_mul_of_dvd_of_totalDegree_le {K σ : Type*} [Field K]
   refine ⟨q.coeff 0, ?_⟩
   rw [hq, hqC, Algebra.smul_def]
   simpa using (mul_comm f (C (q.coeff 0)))
-
-/-- Every relation no larger than the image equation is its scalar multiple. -/
-theorem plane_projection_relation_space {K τ : Type*} [Field K]
-    (I : Ideal (MvPolynomial τ K)) (a : Fin 2 → MvPolynomial τ K)
-    (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0)
-    (hker : ∀ g, aeval a g ∈ I ↔ f ∣ g)
-    (g : MvPolynomial (Fin 2) K) (hg : g.totalDegree ≤ f.totalDegree)
-    (hzero : aeval a g ∈ I) : ∃ c : K, g = c • f :=
-  eq_scalar_mul_of_dvd_of_totalDegree_le f g hf ((hker g).mp hzero) hg
 
 end
 end CCDN

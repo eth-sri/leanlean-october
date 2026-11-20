@@ -9,114 +9,87 @@ public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 public import CCDN.Hilbert.LinearProjectionFiltration
 public import Mathlib.RingTheory.IntegralClosure.IsIntegral.Defs
-import CCDN.Hilbert.BoundedDegreeFunctionFieldRank
+public import CCDN.Projection.FilteredProjectionRank
 import CCDN.Hilbert.LinearCoordinates
-import CCDN.Projection.IntegralFiberRank
+import CCDN.Algebra.BoundedLinearSeparation
+import Mathlib.FieldTheory.Minpoly.Finite
+import Mathlib.FieldTheory.Minpoly.IsIntegrallyClosed
+import Mathlib.RingTheory.Polynomial.RationalRoot
 import CCDN.Projection.PrimitiveCoordinateField
 import Mathlib.RingTheory.AlgebraicIndependent.Basic
 
-/-! Sharp fibers of integral polynomial parameters of degree at most q.
-The Hilbert multiplicity bounds the field degree by d*q^dimension;
-a separating integral element gives the same bound for every finite fiber. -/
+/-! A fiber of a linear normalization has at most the Hilbert multiplicity
+many points, by the function-field degree bound. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private theorem bounded_degree_normalization_fiber_card_le_of_fractionField
-    {K E : Type*} [Field K] [CharZero K] [Field E] [Algebra K E]
-    {n m : ℕ} (I : Ideal (MvPolynomial (Fin n) K)) [I.IsPrime]
-    [Algebra (MvPolynomial (Fin n) K ⧸ I) E]
-    [IsScalarTower K (MvPolynomial (Fin n) K ⧸ I) E]
-    [IsFractionRing (MvPolynomial (Fin n) K ⧸ I) E]
-    (q : ℕ) (hq : 0 < q)
-    (l : Fin (m + 1) → MvPolynomial (Fin n) K)
-    (hl : ∀ i, (l i).totalDegree ≤ q)
-    (hi : Function.Injective (projectionCoordinateMap I l))
-    (hint : (projectionCoordinateMap I l).IsIntegral)
-    (d : ℕ) (hdimdeg : HasProjectiveDimensionDegree I m d)
-    (z : Fin (m + 1) → K) (s : Finset (Fin n → K))
-    (hzero : ∀ x ∈ s, x ∈ idealZeroLocus I)
-    (hproj : ∀ x ∈ s, ∀ i, eval x (l i) = z i) :
-    s.card ≤ d * q ^ (m + 1) := by
-  classical
-  let A := MvPolynomial (Fin n) K ⧸ I
-  let η : A →ₐ[K] E := IsScalarTower.toAlgHom K A E
-  let v : Fin (m + 1) → E := fun i => η ((Ideal.Quotient.mk I) (l i))
-  let R := IntermediateField.adjoin K (Set.range v)
-  let u : Fin (m + 1) → R := fun i =>
-    ⟨v i, IntermediateField.subset_adjoin K _ ⟨i, rfl⟩⟩
-  have hiA : AlgebraicIndependent K (fun i => (Ideal.Quotient.mk I) (l i)) :=
-    injective_projectionCoordinateMap_iff.mp hi
-  have hiE : AlgebraicIndependent K v := hiA.map' (IsFractionRing.injective A E)
-  have hiR : AlgebraicIndependent K u :=
-    AlgebraicIndependent.of_comp (x := u) R.val hiE
-  obtain ⟨hfinite, hrank⟩ :=
-    bounded_degree_hilbert_functionField_finite_rank_le (R := R) (F := E) I d q hq
-      (by simpa only [Fintype.card_fin] using hdimdeg) l hl u hiR (fun _ => rfl)
-  let : Module.Finite R E := hfinite
-  let P := MvPolynomial (Fin (m + 1)) K
-  let ψ : P →ₐ[K] A := projectionCoordinateMap I l
-  let ρ : P →ₐ[K] R := aeval u
-  have hcomp : R.val.comp ρ = η.comp ψ := by
-    ext i
-    simp only [AlgHom.comp_apply, ρ, ψ, projectionCoordinateMap, aeval_X,
-      Ideal.Quotient.mkₐ_eq_mk]
-    rfl
-  let : Algebra P A := ψ.toRingHom.toAlgebra
-  let : Algebra P R := ρ.toRingHom.toAlgebra
-  let : Algebra P E := (η.comp ψ).toRingHom.toAlgebra
-  let : IsScalarTower P A E := IsScalarTower.of_algebraMap_eq (fun _ => rfl)
-  let : IsScalarTower P R E := IsScalarTower.of_algebraMap_eq
-    (fun p => congrArg (fun f : P →ₐ[K] E => f p) hcomp.symm)
-  have hgen : IntermediateField.adjoin K (Set.range u) = ⊤ := by
-    apply IntermediateField.lift_injective R
-    rw [IntermediateField.lift_adjoin, IntermediateField.lift_top, ← Set.range_comp]
-    rfl
-  let : IsFractionRing P R := isFractionRing_of_generating_tuple ρ hiR
-    (fun i => X i) (by
-      convert hgen using 2
-      congr 1
-      funext i
-      change (aeval u) (X i) = u i
-      rw [aeval_X])
-  have hbound := integral_projection_fiber_card_le_finrank I l rfl R E hint z s hzero hproj
-  simpa only [Fintype.card_fin] using
-    hbound.trans hrank
-
-/-- The fiber bound for the given normalization, with the function field
-and degree estimates obtained from the coordinate ring. -/
-theorem bounded_degree_normalization_fiber_card_le
-    {K : Type*} [Field K] [CharZero K] {n m : ℕ} (I : Ideal (MvPolynomial (Fin n) K)) [I.IsPrime]
-    (q : ℕ) (hq : 0 < q)
-    (l : Fin (m + 1) → MvPolynomial (Fin n) K)
-    (hl : ∀ i, (l i).totalDegree ≤ q)
-    (hi : Function.Injective (projectionCoordinateMap I l))
-    (hint : (projectionCoordinateMap I l).IsIntegral)
-    (d : ℕ) (hdimdeg : HasProjectiveDimensionDegree I m d)
-    (z : Fin (m + 1) → K) (s : Finset (Fin n → K))
-    (hzero : ∀ x ∈ s, x ∈ idealZeroLocus I)
-    (hproj : ∀ x ∈ s, ∀ i, eval x (l i) = z i) :
-    s.card ≤ d * q ^ (m + 1) :=
-  bounded_degree_normalization_fiber_card_le_of_fractionField
-    (E := FractionRing (MvPolynomial (Fin n) K ⧸ I)) I q hq l hl hi hint d hdimdeg z s hzero hproj
-
-/-- The linear case `q = 1` of `bounded_degree_normalization_fiber_card_le`:
-a fiber of a linear normalization has at most `d` points. -/
 theorem linear_normalization_fiber_card_le
     {K : Type*} [Field K] [CharZero K] {n m : ℕ} (I : Ideal (MvPolynomial (Fin n) K)) [I.IsPrime]
     (l : Fin (m + 1) → MvPolynomial (Fin n) K)
     (hl : ∀ i, (l i).totalDegree ≤ 1)
     (hi : Function.Injective (projectionCoordinateMap I l))
-    (hint : (projectionCoordinateMap I l).IsIntegral)
+    (hfg : HasFilteredGenerators I (projectionCoordinateMap I l))
     (d : ℕ) (hdimdeg : HasProjectiveDimensionDegree I m d)
     (z : Fin (m + 1) → K) (s : Finset (Fin n → K))
     (hzero : ∀ x ∈ s, x ∈ idealZeroLocus I)
     (hproj : ∀ x ∈ s, ∀ i, eval x (l i) = z i) :
     s.card ≤ d := by
-  simpa only [one_pow, mul_one] using bounded_degree_normalization_fiber_card_le I 1 one_pos l hl
-    hi hint d hdimdeg z s hzero hproj
+  classical
+  let A := MvPolynomial (Fin n) K ⧸ I
+  let E := FractionRing A
+  let η := IsScalarTower.toAlgHom K A E
+  let R := projectionImageField (F := E) I l
+  obtain ⟨hfinite, hrank⟩ := filtered_normalization_rank (F := E) I l hl hfg hi hdimdeg
+  let P := MvPolynomial (Fin (m + 1)) K
+  let ψ := projectionCoordinateMap I l
+  let ρ := projectionFieldMap (F := E) I l
+  let : Algebra P A := ψ.toRingHom.toAlgebra
+  let : Algebra P R := ρ.toRingHom.toAlgebra
+  let ag := (η.comp ψ).toRingHom.toAlgebra
+  let : SMul P E := ag.toSMul
+  let : IsScalarTower P A E := IsScalarTower.of_algebraMap_eq (fun _ => rfl)
+  let : IsScalarTower P R E := IsScalarTower.of_algebraMap_eq (fun p => (coe_projectionFieldMap I l p).symm)
+  have hρ : Function.Injective ρ := (RingHom.injective_iff_ker_eq_bot ρ.toRingHom).mpr <| by
+    change RingHom.ker (projectionFieldMap (F := E) I l) = ⊥
+    rw [projectionFieldMap_ker]
+    exact (RingHom.injective_iff_ker_eq_bot _).mp hi
+  let : IsFractionRing P R := projectionImageField_isFractionRing I l ρ hρ (AlgHom.id K P) rfl
+  obtain ⟨t, _, ht⟩ := exists_bounded_moment_separation (fun x : s => x.val) Subtype.val_injective
+  let g := ∑ j : Fin n, X j * C ((t : K) ^ j.val)
+  let b : A := Ideal.Quotient.mk I g
+  have hb := hfg.isIntegral b
+  let Q := minpoly P b
+  have hm : Q.Monic := minpoly.monic hb
+  have hdeg : Q.natDegree ≤ d := by
+    rw [← hm.natDegree_map (algebraMap P R), ← minpoly.isIntegrallyClosed_eq_field_fractions R E hb]
+    rw [← hrank]
+    exact minpoly.natDegree_le _
+  let L (x : Fin n → K) := eval x g
+  have hL : Set.InjOn L s := by
+    intro x hx y hy he
+    apply congrArg Subtype.val (ht (a₁ := ⟨x, hx⟩) (a₂ := ⟨y, hy⟩) ?_)
+    simpa [L, g, map_sum] using he
+  let q := Q.map (eval z)
+  have hq : q.Monic := hm.map _
+  have hroot (x : Fin n → K) (hx : x ∈ s) : L x ∈ q.roots := by
+    let φ := Ideal.Quotient.liftₐ I (aeval x) (hzero x hx)
+    have hφ : φ.comp ψ = aeval z := by
+      ext i
+      simp only [AlgHom.comp_apply, ψ, projectionCoordinateMap, aeval_X]
+      change eval x (l i) = z i
+      exact hproj x hx i
+    have he := congrArg φ (minpoly.aeval P b)
+    change φ.toRingHom (Q.eval₂ (algebraMap P A) b) = φ.toRingHom 0 at he
+    rw [Polynomial.hom_eval₂, map_zero, show φ.toRingHom.comp (algebraMap P A) = eval z from
+      congrArg AlgHom.toRingHom hφ] at he
+    exact Polynomial.mem_roots hq.ne_zero |>.mpr (by rwa [Polynomial.IsRoot, Polynomial.eval_map])
+  have hsub : s.image L ⊆ q.roots.toFinset := by grind
+  rw [← Finset.card_image_of_injOn hL]
+  exact (Finset.card_le_card hsub).trans ((Multiset.toFinset_card_le _).trans
+    ((Polynomial.card_roots' _).trans (Polynomial.natDegree_map_le.trans hdeg)))
 
 end
 end CCDN

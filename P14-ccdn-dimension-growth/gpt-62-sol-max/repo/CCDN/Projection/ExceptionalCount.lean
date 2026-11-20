@@ -33,7 +33,7 @@ private theorem reconstruction_exceptional_card_le {K σ τ ι : Type*} [Field K
     (hzQ : ∀ i, eval (z i) (aeval a Q) = 0) :
     Fintype.card ι ≤ d * Q.totalDegree := by
   apply polynomial_section_card_le_degree I d hdegree (aeval a Q) hQ Q.totalDegree
-    (by simpa only [one_mul] using aeval_totalDegree_le a ha Q) z hz hzi hzQ
+    (by simpa [one_mul] using aeval_totalDegree_le a ha Q) z hz hzi hzQ
 
 /-- For every finite set of source points, projection loses at most
  d*deg(Q) points, where Q is any proper reconstruction denominator. -/
@@ -48,7 +48,7 @@ theorem projection_card_le_image_add {K σ τ : Type*} [Field K] [Fintype σ] [F
     let π : (τ → K) → (σ → K) := fun z j => eval z (a j)
     S.card ≤ (S.image π).card + d * Q.totalDegree := by
   classical
-  let π : (τ → K) → (σ → K) := fun z j => eval z (a j)
+  let π := fun z j => eval z (a j)
   let T := S.filter (fun z => eval z (aeval a Q) = 0)
   let G := S.filter (fun z => eval z (aeval a Q) ≠ 0)
   have hT : T.card ≤ d * Q.totalDegree := by
@@ -60,15 +60,14 @@ theorem projection_card_le_image_add {K σ τ : Type*} [Field K] [Fintype σ] [F
   have hG : G.card ≤ (S.image π).card := by
     apply Finset.card_le_card_of_injOn π
     · intro z hz
-      exact Finset.mem_image.mpr ⟨z, (Finset.mem_filter.mp hz).1, rfl⟩
+      grind
     · intro z hz w hw he
       obtain ⟨hzS, hzQ⟩ := Finset.mem_filter.mp hz
       obtain ⟨hwS, _⟩ := Finset.mem_filter.mp hw
       exact projection_injective_off_reconstruction I a Q P hP z w
         (hS z hzS) (hS w hwS) hzQ he
   have hcard : T.card + G.card = S.card := Finset.card_filter_add_card_filter_not _
-  change S.card ≤ (S.image π).card + _
-  omega
+  linarith
 
 end
 end CCDN

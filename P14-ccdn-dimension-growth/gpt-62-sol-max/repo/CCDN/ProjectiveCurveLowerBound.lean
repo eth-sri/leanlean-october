@@ -5,9 +5,15 @@ Authors: Jason Davies
 -/
 module
 
+import CCDN.ForMathlib.MvPolynomial
+
 public import CCDN.Algebra.ProjectiveSection
 public import CCDN.Height.ProjectiveZeroLocus
-import CCDN.AuxiliaryPolynomial.PlaneBadPrimes
+import CCDN.Analysis.PrimeCutoff
+import CCDN.AuxiliaryPolynomial.ConstantLeadingBadReduction
+import CCDN.AuxiliaryPolynomial.HypersurfaceBadReduction
+import CCDN.Height.IntegerCoefficientHeight
+import CCDN.Plane.FiniteFieldConstants
 import CCDN.LowerBound.ProjectivePlaneLowerBound
 import CCDN.Plane.ProjectivePlaneBezout
 
@@ -30,7 +36,7 @@ theorem projective_integral_curve_lower_bound (d : ℕ) (hd : 0 < d) :
             ((d : ℝ) ^ 2 / 5) * (B : ℝ) ^ (2 / (d : ℝ)) ≤
               (projectiveCount (projectiveIdealZeroLocus (Ideal.span {F})) B : ℝ) := by
   obtain ⟨F, B, hB, hhom, hdeg, habs, hcount⟩ := projective_plane_lower_bound d hd
-  have hir : Irreducible F :=
+  have hir :=
     mvPolynomial_irreducible_of_field_map (algebraMap ℚ (AlgebraicClosure ℚ)) F habs
   refine ⟨F, B, hB, hhom, hdeg, habs, Ideal.isPrime_span_singleton_of_prime hir.prime,
     principal_plane_hasProjectiveCurveDegree F hhom hir.ne_zero, ?_⟩

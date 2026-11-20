@@ -22,11 +22,7 @@ namespace CCDN
 private theorem prime_power_product_dvd (P : Finset ℕ) (e : ℕ → ℕ) (D : ℤ)
     (hP : ∀ p ∈ P, Nat.Prime p) (hdiv : ∀ p ∈ P, (p : ℤ) ^ e p ∣ D) :
     (∏ p ∈ P, (p : ℤ) ^ e p) ∣ D := by
-  apply Finset.prod_dvd_of_coprime ?_ hdiv
-  intro p hp q hq hpq
-  have hcop : IsCoprime (p : ℤ) (q : ℤ) :=
-    Nat.isCoprime_iff_coprime.mpr ((Nat.coprime_primes (hP p hp) (hP q hq)).mpr hpq)
-  exact hcop.pow
+  exact Finset.prod_dvd_of_coprime   (fun ⦃p⦄ hp ⦃q⦄ hq hpq =>     have hcop := Nat.isCoprime_iff_coprime.mpr ((Nat.coprime_primes (hP p hp) (hP q hq)).mpr hpq);     IsCoprime.pow hcop)   hdiv
 
 /-- If each prime `p` in the finite set `P` has `p ^ e p` dividing the positive integer `D`,
 then `∑ p ∈ P, e p * log p ≤ log D`. -/
@@ -45,6 +41,6 @@ theorem sum_log_prime_powers_le_log (P : Finset ℕ) (e : ℕ → ℕ) {D : ℤ}
     exact pow_pos (hpR p hp) _
   have hlog := Real.log_le_log hpos hleR
   rw [Real.log_prod (fun p hp => (pow_pos (hpR p hp) (e p)).ne')] at hlog
-  simpa only [Real.log_pow] using hlog
+  simp_all
 
 end CCDN

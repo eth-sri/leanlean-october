@@ -10,20 +10,14 @@ public import CCDN.AuxiliaryPolynomial.DegreeBound
 public import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimes
 public import CCDN.Plane.IntegerPlaneLogHeight
 import CCDN.Algebra.IntegerPolynomialAvoidance
-import CCDN.AuxiliaryPolynomial.BadPrimeCharge
-import CCDN.AuxiliaryPolynomial.UniversalPlaneBadReduction
+import CCDN.Noether.UniversalPlaneBadWitness
+import CCDN.Plane.FullDegreeSectionIrreducibility
+import CCDN.ForMathlib.MvPolynomial
 import CCDN.Determinant.ClosedFormIntegerMinor
 import CCDN.Determinant.ClosedFormMinorCharge
 
-/-!
-The geometric bad-prime charge in arbitrary dimension is controlled by
-coefficient height, via an explicit integer witness with bounded height.
-
-A nonzero bad-prime witness obtained by evaluating the universal
-plane polynomial on a bounded integer grid.
-
-Explicit height estimates for the evaluated universal bad-prime witness.
--/
+/-! One bounded integral plane section supplies a nonzero witness for all bad primes.
+The logarithmic height of that witness controls the bad-prime charge. -/
 
 @[expose] public section
 namespace CCDN
@@ -60,9 +54,9 @@ private theorem universalPlaneBadWitness_eval_log_bound {σ : Type*} [Fintype σ
   let D := ((closedFormCoefficientMatrix f.totalDegree g).submatrix rows cols).det
   have he : eval v (universalPlaneBadWitness f rows cols) = c * D :=
     universalPlaneBadWitness_eval f rows cols v
-  have hc : c ≠ 0 := fun h => hw (by rw [he, h, zero_mul])
-  have hD : D ≠ 0 := fun h => hw (by rw [he, h, mul_zero])
-  have ht : bivariateTotalDegree g ≤ f.totalDegree :=
+  have hc : c ≠ 0 := fun h => hw (by simp_all)
+  have hD : D ≠ 0 := fun h => hw (by simp_all)
+  have ht :=
     universalPlanePolynomial_specialization_totalDegree f (eval v)
   have hb := closedForm_minor_log_height f.totalDegree (2 * f.totalDegree ^ 2 - 1)
     hd (Nat.sub_le _ _) g S hS hf
@@ -71,7 +65,7 @@ private theorem universalPlaneBadWitness_eval_log_bound {σ : Type*} [Fintype σ
   have hl := Real.log_le_log (abs_pos.mpr (Int.cast_ne_zero.mpr hc)) (hf f.totalDegree 0)
   rw [he, Int.cast_mul, abs_mul, Real.log_mul
     (abs_ne_zero.mpr (Int.cast_ne_zero.mpr hc)) (abs_ne_zero.mpr (Int.cast_ne_zero.mpr hD))]
-  exact add_le_add hl hb
+  linarith
 
 end
 end CCDN
@@ -90,11 +84,26 @@ private lemma bad_prime_dvd_universalPlaneBadWitness_eval {σ : Type*} [Fintype 
   classical
   obtain ⟨hpprime, hbad⟩ := hbad
   let : Fact p.Prime := ⟨hpprime⟩
-  rw [eval_eq']
-  apply Finset.dvd_sum
-  intro e _
-  exact dvd_mul_of_dvd_left
-    (bad_prime_dvd_universalPlaneBadWitness_coeff f hpos rows cols p hp hbad e) _
+  let L := AlgebraicClosure (ZMod p)
+  let φ := Int.castRingHom L
+  let w := φ ∘ v
+  let ψ := (eval w).comp (MvPolynomial.map φ)
+  apply (CharP.intCast_eq_zero_iff L p _).mp
+  change φ (eval v _) = 0
+  rw [map_eval]
+  change ψ _ = 0
+  by_contra h
+  obtain ⟨hdeg, hir⟩ := universalPlaneBadWitness_good_specialization
+    f hpos (.of_charP hp) rows cols ψ h
+  have he : universalPlaneSection (MvPolynomial.map φ f) w =
+      bivariateMap ψ (universalPlanePolynomial f) := by
+    rw [universalPlaneSection, universalPlanePolynomial_map, ← bivariateMap_comp_apply]
+  have hs := universalPlanePolynomial_specialization_totalDegree (MvPolynomial.map φ f) (eval w)
+  change bivariateTotalDegree (universalPlaneSection (MvPolynomial.map φ f) w) ≤ _ at hs
+  rw [he, hdeg] at hs
+  have hd := le_antisymm (totalDegree_map_le φ f) hs
+  exact hbad.elim (fun hn => hn hd) (fun hn => hn
+    (irreducible_of_full_degree_planeSection _ w (he ▸ hir) (by rw [he, hdeg, hd])))
 
 /-- The universal plane bad-prime witness of an absolutely irreducible integer polynomial
 takes a nonzero value at some integer parameter in the box `[0, 2d³]`, and every prime above
@@ -111,7 +120,7 @@ private theorem exists_bounded_integer_plane_witness
       eval v (universalPlaneBadWitness f rows cols) ≠ 0 ∧
       ∀ p : ℕ, f.totalDegree < p → HypersurfaceBadReduction f p →
         (p : ℤ) ∣ eval v (universalPlaneBadWitness f rows cols) := by
-  obtain ⟨rows, cols, hw, hd⟩ := exists_integer_universalPlane_badWitness f hf hpos
+  obtain ⟨rows, cols, hw, hd⟩ := exists_universalPlane_badWitness f _ Int.cast_injective hf hpos (.of_charZero _)
   obtain ⟨v, hv, he⟩ := exists_integer_grid_eval_ne_zero _ hw _ hd
   exact ⟨rows, cols, v, hv, he,
     fun p hp hbad => bad_prime_dvd_universalPlaneBadWitness_eval f hpos rows cols v p hp hbad⟩
@@ -138,11 +147,11 @@ theorem exists_hypersurface_bad_prime_height_witness
   obtain ⟨rows, cols, v, hv, hw, hdiv⟩ := exists_bounded_integer_plane_witness f hf hpos
   let S := integerPlaneHeight (Fintype.card (Option σ)) f.totalDegree H
     (2 * (f.totalDegree : ℝ) ^ 3)
-  have hd : 1 ≤ f.totalDegree := hpos
+  have hd := hpos
   have hdR : (1 : ℝ) ≤ f.totalDegree := by exact_mod_cast hd
   have hA : 1 ≤ 2 * (f.totalDegree : ℝ) ^ 3 := by nlinarith [one_le_pow₀ hdR (n := 3)]
   have hv' (i : PlaneParameters (Option σ)) : |(v i : ℝ)| ≤ 2 * (f.totalDegree : ℝ) ^ 3 := by
-    rw [abs_of_nonneg (by exact_mod_cast (hv i).1)]
+    rw [abs_of_nonneg (by simp_all)]
     exact_mod_cast (hv i).2
   have hS : 1 ≤ S := integerPlaneHeight_one_le _ _ hd H hH
   have hcoeffS : BivariateCoefficientBound (universalPlaneSection f v) S :=
@@ -153,35 +162,6 @@ theorem exists_hypersurface_bad_prime_height_witness
       (integerPlaneHeight_scaled_log_le _ _ hd H hH)
   · intro p hp hbad
     exact (dvd_abs _ _).mpr (hdiv p hp hbad)
-
-/-- The logarithmic charge bound for any finite family of bad primes.
-This includes degree-dropping primes as well as geometric reducibility. -/
-theorem hypersurface_bad_prime_charge
-    {L σ : Type*} [Field L] [CharZero L] [IsAlgClosed L] [Fintype σ]
-    (f : MvPolynomial (Option σ) ℤ)
-    (hf : Irreducible (MvPolynomial.map (Int.castRingHom L) f))
-    (hpos : 0 < f.totalDegree) (H : ℝ) (hH : 1 ≤ H)
-    (hcoeff : CoefficientHeightLE f H)
-    (P : Finset ℕ) (hP : ∀ p ∈ P, HypersurfaceBadReduction f p)
-    (hcut : ∀ p ∈ P, stepanovThreshold f.totalDegree < p) :
-    (∑ p ∈ P, Real.log p / p) ≤
-      Real.log (hypersurfaceHeightConstant (Fintype.card (Option σ)) *
-        (1 + Real.log H / (f.totalDegree : ℝ) ^ 2)) + 2 * mertensError + 1 := by
-  obtain ⟨D, hD, hheight, hdiv⟩ :=
-    exists_hypersurface_bad_prime_height_witness f hf hpos H hH hcoeff
-  have hd1 : (1 : ℝ) ≤ f.totalDegree := by exact_mod_cast hpos
-  apply bad_prime_charge_of_height P hD (fun p hp => (hP p hp).choose) _ _ _ _ hheight
-  · intro p hp
-    apply hdiv p _ (hP p hp)
-    have h1 := Nat.le_mul_self f.totalDegree
-    have h2 := Nat.le_mul_self (f.totalDegree * f.totalDegree)
-    have h3 : 27 * f.totalDegree ^ 4 < p := hcut p hp
-    nlinarith [h3]
-  · nlinarith [one_le_pow₀ hd1 (n := 4)]
-  · exact one_le_mul_of_one_le_of_one_le (hypersurfaceHeightConstant_one_le _)
-      (le_add_of_nonneg_right (div_nonneg (Real.log_nonneg hH) (sq_nonneg _)))
-  · intro p hp
-    exact_mod_cast hcut p hp
 
 end
 end CCDN

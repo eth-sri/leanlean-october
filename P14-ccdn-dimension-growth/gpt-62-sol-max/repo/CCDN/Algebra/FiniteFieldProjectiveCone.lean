@@ -17,71 +17,43 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private theorem homogeneous_affine_cone_card {K : Type*} [Field K] [Fintype K] {n d : ℕ}
+section
+
+variable {K : Type*} [Field K] [Fintype K] {n d : ℕ}
+include K n d
+
+private theorem homogeneous_affine_cone_card
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d) (hd : 0 < d) :
     Nat.card {v : Fin (n + 1) → K // eval v f = 0} =
       Nat.card (projectiveZeroLocus f) * (Fintype.card K - 1) + 1 := by
   classical
   let A := {v : Fin (n + 1) → K // eval v f = 0}
-  let P := projectiveZeroLocus f
-  let : Fintype A := Fintype.ofFinite _
-  let : Fintype P := Fintype.ofFinite _
   have hzero : eval (0 : Fin (n + 1) → K) f = 0 := by
-    have h := homogeneous_eval_smul hf (0 : K) (0 : Fin (n + 1) → K)
-    simpa [zero_pow (Nat.ne_of_gt hd)] using h
+    rw [MvPolynomial.eval_zero, constantCoeff_eq]
+    exact hf.coeff_eq_zero (by simpa using hd.ne)
   let zeroA : A := ⟨0, hzero⟩
-  let g : P × Kˣ → {v : A // v ≠ zeroA} := fun ru =>
-    ⟨⟨(ru.2 : K) • ru.1.val.rep,
-      (homogeneous_eval_zero_iff_smul hf ru.2.ne_zero _).mpr ru.1.property⟩,
-      by
-        intro h
-        have hv : (ru.2 : K) • ru.1.val.rep = 0 := congrArg Subtype.val h
-        exact ru.1.val.rep_nonzero ((smul_eq_zero.mp hv).resolve_left ru.2.ne_zero)⟩
-  have hg : Function.Bijective g := by
-    constructor
-    · rintro ⟨r, u⟩ ⟨t, w⟩ h
-      have hv : (u : K) • r.val.rep = (w : K) • t.val.rep :=
-        congrArg (fun v => v.val.val) h
-      have hrt : r = t := by
-        apply Subtype.ext
-        rw [← r.val.mk_rep, ← t.val.mk_rep, Projectivization.mk_eq_mk_iff']
-        refine ⟨(u : K)⁻¹ * (w : K), ?_⟩
-        have hh := congrArg (fun v => (u : K)⁻¹ • v) hv.symm
-        simpa only [smul_smul, inv_mul_cancel₀ u.ne_zero, one_smul] using hh
-      subst t
-      have huw : u = w := by
-        obtain ⟨j, hj⟩ := Function.ne_iff.mp r.val.rep_nonzero
-        apply Units.ext
-        exact mul_right_cancel₀ hj (congrFun hv j)
-      subst w
-      rfl
-    · intro v
-      have hv : v.val.val ≠ 0 := by
-        intro h
-        apply v.property
-        exact Subtype.ext h
-      let r : P := ⟨Projectivization.mk K v.val.val hv,
-        (mem_projectiveZeroLocus_mk hf _ hv).mpr v.val.property⟩
-      obtain ⟨u, hu⟩ := Projectivization.exists_smul_eq_mk_rep K v.val.val hv
-      refine ⟨(r, u⁻¹), ?_⟩
-      apply Subtype.ext
-      apply Subtype.ext
-      change (↑u⁻¹ : K) • (Projectivization.mk K v.val.val hv).rep = v.val.val
-      rw [← hu]
-      change (↑u⁻¹ : K) • (u : K) • v.val.val = v.val.val
-      simp [smul_smul]
-  have hc : Fintype.card {v : A // v ≠ zeroA} = Fintype.card P * (Fintype.card K - 1) := by
-    rw [← Fintype.card_of_bijective hg, Fintype.card_prod, Fintype.card_units]
-  have hn : 0 < Fintype.card A := Fintype.card_pos_iff.mpr ⟨zeroA⟩
-  have hcompl : Fintype.card {v : A // v ≠ zeroA} = Fintype.card A - 1 := by simp
-  rw [hcompl] at hc
-  have hfinish : Fintype.card A = Fintype.card P * (Fintype.card K - 1) + 1 := by omega
-  simpa only [Fintype.card_eq_nat_card] using hfinish
+  let e := Projectivization.nonZeroEquivProjectivizationProdUnits K (Fin (n + 1) → K)
+  let a : {v : A // v ≠ zeroA} ≃ {v : {v : Fin (n + 1) → K // v ≠ 0} // eval v.val f = 0} :=
+    ⟨fun v => ⟨⟨v.val.val, fun h => v.property (Subtype.ext h)⟩, v.val.property⟩,
+      fun v => ⟨⟨v.val.val, v.property⟩, fun h => v.val.property (congrArg Subtype.val h)⟩,
+      fun _ => rfl, fun _ => rfl⟩
+  let b := e.subtypeEquiv (q := fun x => x.1 ∈ projectiveZeroLocus f) (fun v => by
+    change eval v.val f = 0 ↔ Projectivization.mk K v.val v.property ∈ projectiveZeroLocus f
+    exact (mem_projectiveZeroLocus_mk hf _ _).symm)
+  have hc := Nat.card_congr (a.trans (b.trans Equiv.prodSubtypeFstEquivSubtypeProd))
+  rw [Nat.card_prod, Nat.card_units, Nat.card_eq_fintype_card (α := K)] at hc
+  let : Nonempty A := ⟨zeroA⟩
+  have hn : 0 < Nat.card A := Nat.card_pos
+  have hleft : Nat.card {v : A // v ≠ zeroA} = Nat.card A - 1 := by
+    simp [Nat.card_eq_fintype_card]
+  change Nat.card {v : A // v ≠ zeroA} = Nat.card (projectiveZeroLocus f) * (Fintype.card K - 1) at hc
+  rw [hleft] at hc
+  change Nat.card A = _
+  omega
 
 /-- Passing from the affine cone to its projective zero locus preserves the
 leading coefficient one, with an explicit lower-order error. -/
-theorem homogeneous_projective_count_of_cone_bound {K : Type*} [Field K] [Fintype K]
-    {n d : ℕ} (f : MvPolynomial (Fin (n + 3)) K) (hf : f.IsHomogeneous d) (hd : 0 < d)
+theorem homogeneous_projective_count_of_cone_bound (f : MvPolynomial (Fin (n + 3)) K) (hf : f.IsHomogeneous d) (hd : 0 < d)
     {H : ℝ} (hH : 0 ≤ H)
     (hcone : (Nat.card {v : Fin (n + 3) → K // eval v f = 0} : ℝ) ≤
       (Fintype.card K : ℝ) ^ (n + 2) + H * (Fintype.card K : ℝ) ^ (n + 1)) :
@@ -95,16 +67,11 @@ theorem homogeneous_projective_count_of_cone_bound {K : Type*} [Field K] [Fintyp
   rw [Nat.cast_sub (by omega : 1 ≤ Fintype.card K), Nat.cast_one] at hcone
   have herror : 0 ≤ (H + 1) * ((Fintype.card K : ℝ) - 2) * (Fintype.card K : ℝ) ^ n :=
     mul_nonneg (mul_nonneg (by linarith) (by linarith)) (by positivity)
-  have hmajor :
-      (Fintype.card K : ℝ) ^ (n + 2) + H * (Fintype.card K : ℝ) ^ (n + 1) ≤
-        ((Fintype.card K : ℝ) ^ (n + 1) + 2 * (H + 1) * (Fintype.card K : ℝ) ^ n) *
-          (Fintype.card K - 1) := by
-    simp only [pow_succ] at *
-    nlinarith only [herror]
-  have hmul : (Nat.card (projectiveZeroLocus f) : ℝ) * (Fintype.card K - 1) ≤
-      ((Fintype.card K : ℝ) ^ (n + 1) + 2 * (H + 1) * (Fintype.card K : ℝ) ^ n) *
-        (Fintype.card K - 1) := by linarith [hcone.trans hmajor]
-  exact (mul_le_mul_iff_left₀ (by linarith : (0 : ℝ) < Fintype.card K - 1)).mp hmul
+  apply (mul_le_mul_iff_left₀ (show (0 : ℝ) < Fintype.card K - 1 by linarith)).mp
+  simp only [pow_succ] at hcone ⊢
+  linarith only [hcone, herror]
+
+end
 
 end
 end CCDN

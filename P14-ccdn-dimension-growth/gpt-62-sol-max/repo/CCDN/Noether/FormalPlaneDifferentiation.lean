@@ -28,15 +28,20 @@ lemma planeTangent_apply {K : Type*} [CommRing K]
     (f h : MvPolynomial (Fin 2) K) (j : Fin 2) :
     planeTangent f j h = pderiv j.rev f * pderiv j h - pderiv j f * pderiv j.rev h := rfl
 
-private lemma powerSeries_plane_chain {K : Type*} [Field K]
+section
+
+variable {K : Type*} [Field K]
+include K
+
+private lemma powerSeries_plane_chain
     (ψ : MvPolynomial (Fin 2) K →ₐ[K] PowerSeries K)
     (h : MvPolynomial (Fin 2) K) (j : Fin 2) :
     PowerSeries.derivative (ψ h) =
       ψ (pderiv j h) * PowerSeries.derivative (ψ (X j)) +
       ψ (pderiv j.rev h) * PowerSeries.derivative (ψ (X j.rev)) := by
-  have hC (c : K) : ψ (C c) = PowerSeries.C c := ψ.commutes c
+  
   induction h using MvPolynomial.induction_on with
-  | C c => simp [hC]
+  | C c => simp
   | add h l hh hl => simp only [map_add, hh, hl]; ring
   | mul_X h k hh =>
     fin_cases j <;> fin_cases k <;>
@@ -44,7 +49,7 @@ private lemma powerSeries_plane_chain {K : Type*} [Field K]
 
 /-- Tangent differentiation becomes a unit times formal differentiation at a
 smooth point whose chosen coordinate is the parameter. -/
-private theorem formal_plane_tangent {K : Type*} [Field K]
+private theorem formal_plane_tangent
     (f : MvPolynomial (Fin 2) K)
     (ψ : MvPolynomial (Fin 2) K →ₐ[K] PowerSeries K) (hψ : ψ f = 0)
     (j : Fin 2) (a : K) (hparam : ψ (X j - C a) = PowerSeries.X)
@@ -52,16 +57,15 @@ private theorem formal_plane_tangent {K : Type*} [Field K]
     ψ (planeTangent f j h) = ψ (pderiv j.rev f) * PowerSeries.derivative (ψ h) := by
   have hdX : PowerSeries.derivative (ψ (X j)) = 1 := by
     have he := congrArg PowerSeries.derivative hparam
-    have hC : ψ (C a) = PowerSeries.C a := ψ.commutes a
-    simpa only [map_sub, hC, PowerSeries.derivative_C, sub_zero, PowerSeries.derivative_X] using he
+    simpa [map_sub, (ψ.commutes a), PowerSeries.derivative_C, sub_zero, PowerSeries.derivative_X] using he
   have hf := powerSeries_plane_chain ψ f j
   rw [hψ, map_zero, hdX, mul_one] at hf
   rw [powerSeries_plane_chain ψ h j, hdX, mul_one, planeTangent_apply, map_sub, map_mul, map_mul]
-  linear_combination ψ (pderiv j.rev h) * hf
+  grind
 
 /-- A unit multiple of d/dX detects multiplicity from its successive constant
 terms, as long as the positive integers below the requested order are invertible. -/
-private lemma powerSeries_weighted_derivatives_vanishing {K : Type*} [Field K]
+private lemma powerSeries_weighted_derivatives_vanishing
     (u : PowerSeries K) (hu : IsUnit u) (N : ℕ)
     (hchar : ∀ n, 0 < n → n < N → (n : K) ≠ 0)
     (g : PowerSeries K)
@@ -75,7 +79,7 @@ private lemma powerSeries_weighted_derivatives_vanishing {K : Type*} [Field K]
       apply ih (fun n hn hnN => hchar n hn (by omega))
       intro r hr
       have hh := hzero (r + 1) (by omega)
-      simpa only [Function.iterate_succ_apply] using hh
+      assumption
     have hd := hu.dvd_mul_left.mp ht
     apply PowerSeries.X_pow_dvd_iff.mpr
     intro n hn
@@ -86,11 +90,10 @@ private lemma powerSeries_weighted_derivatives_vanishing {K : Type*} [Field K]
     | succ n =>
       have he := PowerSeries.X_pow_dvd_iff.mp hd n (by omega)
       rw [PowerSeries.coeff_derivative] at he
-      exact (mul_eq_zero.mp he).resolve_right (by
-        simpa only [Nat.cast_add, Nat.cast_one] using hchar (n + 1) (by omega) hn)
+      grind
 
 /-- Polynomial tangent derivatives give local divisibility. -/
-theorem formal_plane_multiplicity_of_tangent {K : Type*} [Field K]
+theorem formal_plane_multiplicity_of_tangent
     (f : MvPolynomial (Fin 2) K)
     (ψ : MvPolynomial (Fin 2) K →ₐ[K] PowerSeries K) (hψ : ψ f = 0)
     (z : Fin 2 → K) (hconst : ∀ h, PowerSeries.constantCoeff (ψ h) = eval z h)
@@ -112,9 +115,9 @@ theorem formal_plane_multiplicity_of_tangent {K : Type*} [Field K]
     | succ r hr =>
       rw [Function.iterate_succ_apply', Function.iterate_succ_apply', hr]
       exact (formal_plane_tangent f ψ hψ j (z j) hparam _).symm
-  intro r hr
-  rw [hiter, hconst]
-  exact hzero r hr
+  simp_all
+
+end
 
 end
 end CCDN

@@ -69,7 +69,7 @@ private theorem principal_homogeneous_finrank {K σ : Type*} [Field K] [Finite �
       refine ⟨?_, Ideal.Quotient.eq_zero_iff_mem.mpr
         (Ideal.mem_span_singleton.mpr (dvd_mul_right f u))⟩
       change (f * u).IsHomogeneous M
-      simpa only [Nat.add_sub_of_le hM] using hf.mul hu
+      simpa [Nat.add_sub_of_le hM] using hf.mul hu
   let _ : Module.Finite K V := Module.Finite.of_fg (homogeneousSubmodule_fg σ K M)
   have h := φ.finrank_map_add_finrank_inf_ker V
   rw [hk, homogeneousMultiples_finrank f hf0] at h
@@ -81,7 +81,7 @@ theorem principal_homogeneous_hilbert_count {K : Type*} [Field K]
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hM : d ≤ M) :
     Module.finrank K (homogeneousCoordinateSpace (Ideal.span {f}) M) +
       (n + (M - d)).choose (M - d) = (n + M).choose M := by
-  simpa only [finrank_homogeneousSubmodule_fin] using principal_homogeneous_finrank f hf hf0 hM
+  simpa [finrank_homogeneousSubmodule_fin] using principal_homogeneous_finrank f hf hf0 hM
 
 end
 end CCDN

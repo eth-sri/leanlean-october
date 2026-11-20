@@ -17,49 +17,24 @@ namespace CCDN
 noncomputable section
 open Finset Real
 
-/-- Lower bound from the first Mertens estimate: for `1 ≤ L ≤ T`, the sum of `log p / p` over the
-primes `p` with `L < p ≤ T` is at least `log T - log L - 2 mertensError`. -/
-lemma prime_interval_weight_lower {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T) :
-    Real.log T - Real.log L - 2 * mertensError ≤
-      ∑ p ∈ ((Ioc 0 ⌊T⌋₊).filter Nat.Prime) \ ((Ioc 0 ⌊L⌋₊).filter Nat.Prime),
-        Real.log p / p := by
-  let U := (Ioc 0 ⌊L⌋₊).filter Nat.Prime
-  let V := (Ioc 0 ⌊T⌋₊).filter Nat.Prime
-  have hUV : U ⊆ V := by
-    intro p hp
-    have hp' := (mem_filter.mp hp).2
-    exact (prime_mem_upto_iff (by linarith) hp').mpr
-      (((prime_mem_upto_iff (by linarith) hp').mp hp).trans hLT)
-  have hsplit := sum_sdiff hUV (f := fun p : ℕ => Real.log p / p)
-  have hl := (abs_le.mp (Mertens.prime_sum_bounded_error hL)).2
-  have ht := (abs_le.mp (Mertens.prime_sum_bounded_error (hL.trans hLT))).1
-  change (∑ p ∈ U, Real.log p / p) - Real.log L ≤ mertensError at hl
-  change -mertensError ≤ (∑ p ∈ V, Real.log p / p) - Real.log T at ht
-  change _ ≤ ∑ p ∈ V \ U, Real.log p / p
-  linarith
+section
 
-private theorem exists_prime_interval_not_dvd {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
+variable {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
+include L T hL hLT
+
+private theorem exists_prime_interval_not_dvd
     {D : ℤ} (hD : 0 < D)
     (hheight : Real.log D / L < Real.log T - Real.log L - 2 * mertensError) :
     ∃ p : ℕ, p.Prime ∧ L < p ∧ (p : ℝ) ≤ T ∧ ¬ (p : ℤ) ∣ D := by
-  classical
-  let U := (Ioc 0 ⌊L⌋₊).filter Nat.Prime
-  let V := (Ioc 0 ⌊T⌋₊).filter Nat.Prime
-  have hmem (p : ℕ) (hp : p ∈ V \ U) : p.Prime ∧ L < p ∧ (p : ℝ) ≤ T := by
-    have hpV := (mem_sdiff.mp hp).1
-    have hpP := (mem_filter.mp hpV).2
-    refine ⟨hpP, ?_, (prime_mem_upto_iff (by linarith) hpP).mp hpV⟩
-    by_contra hle
-    exact (mem_sdiff.mp hp).2 ((prime_mem_upto_iff (by linarith) hpP).mpr (le_of_not_gt hle))
   by_contra hnone
-  have hdiv : ∀ p ∈ V \ U, (p : ℤ) ∣ D := by
-    intro p hp
-    by_contra hnd
-    exact hnone ⟨p, (hmem p hp).1, (hmem p hp).2.1, (hmem p hp).2.2, hnd⟩
-  have hupper := prime_divisor_charge_le (V \ U) hD (fun p hp => (hmem p hp).1) hdiv
-    (show 0 < L by linarith) (fun p hp => (hmem p hp).2.1.le)
-  have hlower := prime_interval_weight_lower hL hLT
-  exact (not_lt_of_ge (hlower.trans hupper)) hheight
+  have hdvd (p) (hp : p ∈ primesInInterval L T) : (p : ℤ) ∣ D := by
+    obtain ⟨hP, hlo, hhi⟩ := mem_primesInInterval.mp hp
+    grind
+  have hupper := prime_divisor_charge_le (primesInInterval L T) hD (fun p hp => (mem_primesInInterval.mp hp).1) hdvd
+    (show 0 < L by linarith) (fun p hp => (mem_primesInInterval.mp hp).2.1.le)
+  linarith [(prime_interval_weight_bounds hL hLT).1]
+
+end
 
 /-- The absolute constant `A = exp (2 mertensError + 2)` such that a prime in the interval
 `(B / A, B]` can be found avoiding the prime divisors of any nonzero integer `D` with
@@ -87,20 +62,13 @@ theorem exists_scaling_prime {B : ℝ} (hB : scalingPrimeRatio ≤ B)
     nlinarith
   have hwidth : Real.log B - Real.log (B / scalingPrimeRatio) - 2 * mertensError = 2 := by
     rw [Real.log_div hB0.ne' hA0.ne']
-    simp only [scalingPrimeRatio, Real.log_exp]
-    ring
+    simp [scalingPrimeRatio]
   have hheight' : Real.log (|D| : ℤ) / (B / scalingPrimeRatio) <
       Real.log B - Real.log (B / scalingPrimeRatio) - 2 * mertensError := by
-    rw [hwidth]
-    have he : ((|D| : ℤ) : ℝ) = |(D : ℝ)| := by norm_cast
-    rw [he]
-    have hh : Real.log |(D : ℝ)| / (B / scalingPrimeRatio) < 1 :=
-      (div_lt_one (by positivity)).mpr hheight
-    linarith
+    rw [Int.cast_abs, hwidth]
+    linarith [(div_lt_one (by positivity : 0 < B / scalingPrimeRatio)).mpr hheight]
   obtain ⟨p, hp, hlo, hhi, hnd⟩ := exists_prime_interval_not_dvd hL hLB (abs_pos.mpr hD) hheight'
-  refine ⟨p, hp, hlo, hhi, ?_⟩
-  intro hdiv
-  exact hnd ((dvd_abs _ _).mpr hdiv)
+  refine ⟨p, hp, hlo, hhi, ?_⟩; aesop
 
 end
 end CCDN

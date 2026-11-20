@@ -10,7 +10,7 @@ public import CCDN.Hilbert.LinearProjectionFiltration
 public import CCDN.Projection.CurvePrimitivePair
 public import Mathlib.FieldTheory.IntermediateField.Adjoin.Defs
 import CCDN.Height.BoundedPrimitiveElement
-import CCDN.Hilbert.BoundedDegreeFunctionFieldRank
+public import CCDN.Projection.FilteredProjectionRank
 import CCDN.Hilbert.LinearCoordinates
 import CCDN.Projection.PrimitiveCoordinateField
 import Mathlib.Algebra.CharP.IntermediateField
@@ -35,6 +35,7 @@ theorem exists_bounded_linear_parameter_primitive
     [IsFractionRing (MvPolynomial (Fin n) K ⧸ I) F]
     (l : Fin (m + 1) → MvPolynomial (Fin n) K)
     (hl : ∀ i, (l i).totalDegree ≤ 1)
+    (hfg : HasFilteredGenerators I (projectionCoordinateMap I l))
     (hi : Function.Injective (projectionCoordinateMap I l))
     (d : ℕ) (hdimdeg : HasProjectiveDimensionDegree I m d) :
     ∃ k : ℕ, k ≤ n * d ^ 2 ∧
@@ -44,26 +45,13 @@ theorem exists_bounded_linear_parameter_primitive
             ((Ideal.Quotient.mk I) (Fin.cases (momentCoordinate K n k) l i)))) = ⊤ := by
   let A := MvPolynomial (Fin n) K ⧸ I
   let φ := IsScalarTower.toAlgHom K A F
-  let u : Fin (m + 1) → F := fun i => φ ((Ideal.Quotient.mk I) (l i))
-  let R := IntermediateField.adjoin K (Set.range u)
-  let uR : Fin (m + 1) → R := fun i =>
-    ⟨u i, IntermediateField.subset_adjoin K _ ⟨i, rfl⟩⟩
-  have hiA : AlgebraicIndependent K (fun i => (Ideal.Quotient.mk I) (l i)) :=
-    injective_projectionCoordinateMap_iff.mp hi
-  have hiF : AlgebraicIndependent K u := hiA.map' (IsFractionRing.injective A F)
-  have hiR : AlgebraicIndependent K uR := AlgebraicIndependent.of_comp R.val hiF
-  obtain ⟨hfinite, hrank⟩ := hilbert_functionField_finite_rank_le (R := R) (F := F) I d
-    (by simpa only [Fintype.card_fin] using hdimdeg) l hl uR hiR (fun _ => rfl)
-  let : Module.Finite R F := hfinite
+  let u := fun i => φ ((Ideal.Quotient.mk I) (l i))
+  let R := projectionImageField (F := F) I l
+  obtain ⟨hfinite, hrank⟩ := filtered_normalization_rank (F := F) I l hl hfg hi hdimdeg
   obtain ⟨k, hk, hprim⟩ := exists_bounded_curve_primitive_element (R := R) (F := F) I
-  refine ⟨k, hk.trans (Nat.mul_le_mul_left n (Nat.pow_le_pow_left hrank 2)), ?_⟩
-  have hprim' : IntermediateField.adjoin R
-      {φ ((Ideal.Quotient.mk I) (momentCoordinate K n k))} = ⊤ := by
-    change IntermediateField.adjoin R
-      {algebraMap A F ((Ideal.Quotient.mk I) (momentCoordinate K n k))} = ⊤
-    rwa [momentCoordinate_fraction]
+  refine ⟨k, by simpa only [R, hrank] using hk, ?_⟩
   have hh := primitive_parameter_tuple_adjoin_top u
-    (φ ((Ideal.Quotient.mk I) (momentCoordinate K n k))) hprim'
+    (φ ((Ideal.Quotient.mk I) (momentCoordinate K n k))) hprim
   convert hh using 2
   congr 1
   funext i

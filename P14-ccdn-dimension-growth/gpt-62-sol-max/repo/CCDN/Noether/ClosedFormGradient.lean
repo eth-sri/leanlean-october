@@ -13,282 +13,103 @@ import CCDN.ForMathlib.Polynomial
 import CCDN.Noether.DifferentialConstantRelation
 import CCDN.Noether.DifferentialResidue
 import Mathlib.RingTheory.Polynomial.IsIntegral
+import Mathlib.RingTheory.Etale.Field
 
-/-!
-The monic irreducible closed-form criterion, in characteristic zero or in
-characteristic larger than the displayed degree bounds. Separability, the
-differential root extension and constant-residue descent are all constructed
-from the polynomial and the degree bounds.
-
-Constant residues in characteristic zero or large characteristic. The nonzero
-annihilating relation and its degree bound are constructed by a Sylvester
-resultant.
-
-Extend a differential structure to an explicitly separable monic root
-extension in any characteristic. The construction is the implicit-derivative
-quotient construction from Mathlib's characteristic-zero instance, with the
-nonvanishing derivative supplied by separability.
--/
+/-! A bounded closed form for a monic irreducible bivariate equation is
+proportional to the gradient. The residue is differentially constant in the
+separable root extension and descends to the base by elimination. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
 open Polynomial Differential
 open scoped Differential
-
-/-- The differential structure on `AdjoinRoot f` extending the derivation of `K`, for a monic
-irreducible separable `f`: the root `α` is sent to `-(f^D)(α) / f'(α)`, where `f^D` is `f` with
-its coefficients differentiated. -/
-@[reducible]
-def separableAdjoinRootDifferential {K : Type*} [Field K] [Differential K]
-    (f : K[X]) [Fact (Irreducible f)] [Fact f.Monic] (hsep : f.Separable) :
-    Differential (AdjoinRoot f) where
-  deriv := Derivation.liftOfSurjective (f := (AdjoinRoot.mk f).toIntAlgHom) AdjoinRoot.mk_surjective
-    (d := implicitDeriv <| AdjoinRoot.modByMonicHom Fact.out <|
-      - (aeval (AdjoinRoot.root f) (Differential.mapCoeffs f)) /
-        (aeval (AdjoinRoot.root f) f.derivative)) (by
-      rintro x hx
-      simp_all only [RingHom.toIntAlgHom_apply, AdjoinRoot.mk_eq_zero]
-      obtain ⟨q, rfl⟩ := hx
-      simp only [Derivation.leibniz, smul_eq_mul]
-      apply dvd_add (dvd_mul_right ..)
-      apply dvd_mul_of_dvd_right
-      rw [← AdjoinRoot.mk_eq_zero]
-      unfold implicitDeriv
-      simp only [AdjoinRoot.aeval_eq, Derivation.coe_add, Derivation.coe_smul, Pi.add_apply,
-        Pi.smul_apply, Derivation.restrictScalars_apply, derivative'_apply, smul_eq_mul, map_add,
-        map_mul, AdjoinRoot.mk_leftInverse Fact.out _]
-      rw [div_mul_cancel₀, add_neg_cancel]
-      have hc : aeval (AdjoinRoot.root f) f = 0 := by
-        rw [AdjoinRoot.aeval_eq, AdjoinRoot.mk_self]
-      simpa only [AdjoinRoot.aeval_eq] using hsep.aeval_derivative_ne_zero hc)
-
--- Needed by `rw [Derivation.liftOfSurjective_apply]` below. With the default setting
--- (Lean v4.35.0) the rewrite fails: the pattern `(Derivation.liftOfSurjective ?hf ?hd) (?m ?x)`
--- is not found in `(Derivation.liftOfSurjective ⋯ ⋯) ((AdjoinRoot.mk f).toIntAlgHom (C a))`,
--- since matching `?m ?x` against the `toIntAlgHom` coercion needs unfolding past the
--- transparency that the unifier otherwise respects.
-set_option backward.isDefEq.respectTransparency false in
-private theorem separableAdjoinRootDifferential_algebra {K : Type*} [Field K] [Differential K]
-    (f : K[X]) [Fact (Irreducible f)] [Fact f.Monic] (hsep : f.Separable) :
-    let := separableAdjoinRootDifferential f hsep
-    DifferentialAlgebra K (AdjoinRoot f) := by
-  dsimp only
-  let := separableAdjoinRootDifferential f hsep
-  refine { deriv_algebraMap := ?_ }
-  intro a
-  change (Derivation.liftOfSurjective _ _) ((AdjoinRoot.mk f).toIntAlgHom (C a)) = _
-  rw [Derivation.liftOfSurjective_apply, implicitDeriv_C]
-  rfl
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open Polynomial Differential
-open scoped Differential
-
-/-- The bounded-residue constant lemma used in the differential
-irreducibility criterion. This is the needed irreducible case of Gao's
-Lemma 2.4, proved directly by differentiating the constructed eliminant. -/
-private theorem simple_root_ratio_mem_base_of_differential_constant
-    {F L : Type*} [Field F] [IsAlgClosed F] [Field L] [Algebra F L]
-    [Differential L]
-    (hbase : ∀ a : F, (algebraMap F L a)′ = 0)
-    (t β : L) (ht : t′ = 1) (f g : F[X][X])
-    (hf : Irreducible (f.map (algebraMap F[X] (RatFunc F))))
-    (hdeg : g.natDegree < f.natDegree) (D : ℕ)
-    (hfD : ∀ i, (f.coeff i).natDegree ≤ D)
-    (hgD : ∀ i, (g.coeff i).natDegree ≤ D)
-    (hchar : CharZeroOrGT L ((f.natDegree + (f.natDegree - 1)) * D))
-    (hroot : (f.map (aeval t).toRingHom).eval β = 0)
-    (hsimple : (f.map (aeval t).toRingHom).derivative.eval β ≠ 0)
-    (hder : ((g.map (aeval t).toRingHom).eval β /
-      (f.map (aeval t).toRingHom).derivative.eval β)′ = 0) :
-    (g.map (aeval t).toRingHom).eval β /
-      (f.map (aeval t).toRingHom).derivative.eval β ∈ (algebraMap F L).range := by
-  by_cases hg : g = 0
-  · simp only [hg, Polynomial.map_zero, eval_zero, zero_div]
-    exact ⟨0, map_zero _⟩
-  · exact differential_constant_mem_base_of_relation hbase t _ ht hder
-      (residueEliminant f g) (residueEliminant_ne_zero f g hf hg hdeg)
-      (hchar.mono (residueEliminant_natDegree_le f g D hfD hgD))
-      (residueEliminant_eval_ratio_eq_zero t β f g hdeg hroot hsimple)
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open Polynomial Differential
-open scoped Differential
 attribute [local instance] rationalDifferential
 
-/-- An irreducible polynomial of degree below the characteristic is separable. -/
-private lemma irreducible_separable_of_natDegree_lt_char
-    {K : Type*} [Field K] (f : K[X]) (hf : Irreducible f)
-    (hchar : CharZeroOrGT K f.natDegree) :
-    f.Separable :=
-  (separable_iff_derivative_ne_zero hf).mpr (derivative_ne_zero_of_natCast_natDegree_ne_zero
-    (hchar.natCast_ne_zero hf.natDegree_pos.ne' le_rfl))
+section
 
-private lemma aeval_ratFunc_variable {F L : Type*} [Field F] [Field L]
-    [Algebra F L] [Algebra (RatFunc F) L] [IsScalarTower F (RatFunc F) L]
-    (a : F[X]) :
-    aeval (algebraMap (RatFunc F) L RatFunc.X) a =
-      algebraMap (RatFunc F) L (algebraMap F[X] (RatFunc F) a) := by
-  induction a using Polynomial.induction_on' with
-  | add a b ha hb => simp only [map_add, ha, hb]
-  | monomial n c =>
-    simp only [aeval_monomial, RatFunc.algebraMap_monomial, map_mul, map_pow,
-      ← RatFunc.algebraMap_eq_C, ← IsScalarTower.algebraMap_apply]
+variable {F : Type*} [Field F] [IsAlgClosed F]
+  (f g h : F[X][X]) (hf : Irreducible f) (hm : f.Monic)
+  (hgdeg : g.natDegree < f.natDegree) (hhdeg : h.natDegree < f.natDegree)
+  (D : ℕ) (hfD : ∀ i, (f.coeff i).natDegree ≤ D) (hgD : ∀ i, (g.coeff i).natDegree ≤ D)
+  (hmchar : CharZeroOrGT F f.natDegree)
+  (hchar : CharZeroOrGT F ((f.natDegree + (f.natDegree - 1)) * D))
+  (hclosed : (bivariateCoefficientDerivative F) g * f -
+  g * (bivariateCoefficientDerivative F) f = h.derivative * f - h * f.derivative)
+include F f g h hf hm hgdeg hhdeg D hfD hgD hmchar hchar hclosed
 
-/-- In a differential algebra over `F(t)`, the constants of `F` have derivative zero. -/
-private lemma deriv_algebraMap_ratFunc_base {F L : Type*} [Field F] [Field L]
-    [Algebra F L] [Algebra (RatFunc F) L] [IsScalarTower F (RatFunc F) L]
-    [Differential L] [DifferentialAlgebra (RatFunc F) L] (a : F) :
-    (algebraMap F L a)′ = 0 := by
-  rw [IsScalarTower.algebraMap_apply F (RatFunc F) L, deriv_algebraMap]
-  have ha : (algebraMap F (RatFunc F) a)′ = 0 := by
-    change rationalDerivative (algebraMap F (RatFunc F) a) = 0
-    rw [IsScalarTower.algebraMap_apply F F[X] (RatFunc F), rationalDerivative_polynomial]
-    simp
-  rw [ha, map_zero]
-
-/-- In a differential algebra over `F(t)`, the image of `t` has derivative one. -/
-private lemma deriv_algebraMap_ratFunc_X {F L : Type*} [Field F] [Field L]
-    [Algebra (RatFunc F) L] [Differential L] [DifferentialAlgebra (RatFunc F) L] :
-    (algebraMap (RatFunc F) L RatFunc.X)′ = 1 := by
-  rw [deriv_algebraMap]
-  have hX : (RatFunc.X : RatFunc F)′ = 1 := by
-    change rationalDerivative RatFunc.X = 1
-    rw [← RatFunc.algebraMap_X, rationalDerivative_polynomial, derivative_X, map_one]
-  rw [hX, map_one]
-
-/-- The closed-form equation persists over the rational function field. -/
-private lemma bivariate_closed_form_map_ratFunc {F : Type*} [Field F] (f g h : F[X][X])
-    (hclosed : (bivariateCoefficientDerivative F) g * f -
-        g * (bivariateCoefficientDerivative F) f = h.derivative * f - h * f.derivative) :
-    Differential.mapCoeffs (g.map (algebraMap F[X] (RatFunc F))) *
-        f.map (algebraMap F[X] (RatFunc F)) -
-      g.map (algebraMap F[X] (RatFunc F)) *
-        Differential.mapCoeffs (f.map (algebraMap F[X] (RatFunc F))) =
-      (h.map (algebraMap F[X] (RatFunc F))).derivative * f.map (algebraMap F[X] (RatFunc F)) -
-        h.map (algebraMap F[X] (RatFunc F)) * (f.map (algebraMap F[X] (RatFunc F))).derivative := by
-  rw [← bivariateCoefficientDerivative_map, ← bivariateCoefficientDerivative_map]
-  simpa only [Polynomial.map_sub, Polynomial.map_mul, derivative_map] using
-    congrArg (Polynomial.map (algebraMap F[X] (RatFunc F))) hclosed
-
-/-- At a simple root over `F(t)`, the residue of a closed form lies in `F`. This is
-the constant-residue descent, with the characteristic bounded by the residue
-eliminant's degree. -/
-private lemma closed_form_residue_mem_base {F L : Type*} [Field F] [IsAlgClosed F] [Field L]
-    [Algebra F L] [Algebra (RatFunc F) L] [IsScalarTower F (RatFunc F) L]
-    [Differential L] [DifferentialAlgebra (RatFunc F) L]
-    (f g h : F[X][X]) (hf : Irreducible (f.map (algebraMap F[X] (RatFunc F))))
-    (hgdeg : g.natDegree < f.natDegree) (D : ℕ)
-    (hfD : ∀ i, (f.coeff i).natDegree ≤ D) (hgD : ∀ i, (g.coeff i).natDegree ≤ D)
-    (hchar : CharZeroOrGT L ((f.natDegree + (f.natDegree - 1)) * D))
-    (hclosed : (bivariateCoefficientDerivative F) g * f -
-        g * (bivariateCoefficientDerivative F) f = h.derivative * f - h * f.derivative)
-    (β : L) (hβ : aeval β (f.map (algebraMap F[X] (RatFunc F))) = 0)
-    (hs : aeval β (f.map (algebraMap F[X] (RatFunc F))).derivative ≠ 0) :
-    aeval β (g.map (algebraMap F[X] (RatFunc F))) /
-      aeval β (f.map (algebraMap F[X] (RatFunc F))).derivative ∈ (algebraMap F L).range := by
-  let φ := algebraMap F[X] (RatFunc F)
-  let ψ := algebraMap (RatFunc F) L
-  let t : L := ψ RatFunc.X
-  have hmaps (q : F[X][X]) : q.map (aeval t).toRingHom = (q.map φ).map ψ := by
-    ext i
-    simp only [coeff_map]
-    exact aeval_ratFunc_variable _
-  have hclosedL : Differential.mapCoeffs ((g.map φ).map ψ) * (f.map φ).map ψ -
-      (g.map φ).map ψ * Differential.mapCoeffs ((f.map φ).map ψ) =
-      ((h.map φ).map ψ).derivative * (f.map φ).map ψ -
-        (h.map φ).map ψ * ((f.map φ).map ψ).derivative := by
-    dsimp only [ψ]
-    simp only [differential_mapCoeffs_map, derivative_map]
-    simpa only [Polynomial.map_sub, Polynomial.map_mul, derivative_map] using
-      congrArg (Polynomial.map (algebraMap (RatFunc F) L))
-        (bivariate_closed_form_map_ratFunc f g h hclosed)
-  have hrootL : ((f.map φ).map ψ).eval β = 0 := by simpa only [eval_map, aeval_def] using hβ
-  have hsL : ((f.map φ).map ψ).derivative.eval β ≠ 0 := by
-    simpa only [derivative_map, eval_map, aeval_def] using hs
-  have hder := closed_form_residue_deriv_eq_zero ((f.map φ).map ψ) ((g.map φ).map ψ)
-    ((h.map φ).map ψ) β
-    (by simpa only [aeval_def, Algebra.algebraMap_self, eval₂_id] using hrootL)
-    (by simpa only [aeval_def, Algebra.algebraMap_self, eval₂_id] using hsL) hclosedL
-  have hh := simple_root_ratio_mem_base_of_differential_constant
-    deriv_algebraMap_ratFunc_base t β deriv_algebraMap_ratFunc_X f g hf hgdeg D hfD hgD hchar
-    (by simpa only [hmaps] using hrootL) (by simpa only [hmaps] using hsL)
-    (by simpa only [hmaps, aeval_def, Algebra.algebraMap_self, eval₂_id] using hder)
-  simpa only [hmaps, ψ, derivative_map, eval_map, aeval_def] using hh
-
-/-- The closed-form criterion over `F(t)`: a closed form within the degree bounds
-is a constant multiple of the gradient. -/
-private lemma ratFunc_closed_form_eq_gradient {F : Type*} [Field F] [IsAlgClosed F]
-    (f g h : F[X][X]) (hf : Irreducible f) (hm : f.Monic)
-    (hgdeg : g.natDegree < f.natDegree) (hhdeg : h.natDegree < f.natDegree)
-    (D : ℕ) (hfD : ∀ i, (f.coeff i).natDegree ≤ D) (hgD : ∀ i, (g.coeff i).natDegree ≤ D)
-    (hmchar : CharZeroOrGT F f.natDegree)
-    (hchar : CharZeroOrGT F ((f.natDegree + (f.natDegree - 1)) * D))
-    (hclosed : (bivariateCoefficientDerivative F) g * f -
-        g * (bivariateCoefficientDerivative F) f = h.derivative * f - h * f.derivative) :
-    ∃ a : F,
-      g.map (algebraMap F[X] (RatFunc F)) = C (algebraMap F (RatFunc F) a) *
-        (f.map (algebraMap F[X] (RatFunc F))).derivative ∧
-      h.map (algebraMap F[X] (RatFunc F)) = C (algebraMap F (RatFunc F) a) *
-        Differential.mapCoeffs (f.map (algebraMap F[X] (RatFunc F))) := by
-  let φ := algebraMap F[X] (RatFunc F)
-  let fr := f.map φ
-  have hinj : Function.Injective φ := RatFunc.algebraMap_injective F
-  have hfr : Irreducible fr := (hm.irreducible_iff_irreducible_map_fraction_map).mp hf
-  have hfd : fr.natDegree = f.natDegree := natDegree_map_eq_of_injective hinj f
-  have hsep : fr.Separable := irreducible_separable_of_natDegree_lt_char fr hfr
-    (hfd ▸ (hmchar.map (algebraMap F (RatFunc F))))
-  let : Fact (Irreducible fr) := ⟨hfr⟩
-  let : Fact fr.Monic := ⟨hm.map φ⟩
-  let : Differential (AdjoinRoot fr) := separableAdjoinRootDifferential fr hsep
-  have : DifferentialAlgebra (RatFunc F) (AdjoinRoot fr) :=
-    separableAdjoinRootDifferential_algebra fr hsep
-  let β : AdjoinRoot fr := AdjoinRoot.root fr
-  have hβ : aeval β fr = 0 := by rw [AdjoinRoot.aeval_eq, AdjoinRoot.mk_self]
-  have hs : aeval β fr.derivative ≠ 0 := hsep.aeval_derivative_ne_zero hβ
-  have hres := closed_form_residue_mem_base f g h hfr hgdeg D hfD hgD
-    (hchar.map (algebraMap F (AdjoinRoot fr))) hclosed β hβ hs
-  have hdeg_lt (q : F[X][X]) (hq : q.natDegree < f.natDegree) : (q.map φ).degree < fr.degree := by
-    rw [degree_eq_natDegree hfr.ne_zero]
-    exact degree_le_natDegree.trans_lt
-      (by exact_mod_cast (natDegree_map_eq_of_injective hinj q).trans_lt (hfd ▸ hq))
-  exact closed_form_eq_constant_gradient_of_residue_mem_base fr (g.map φ) (h.map φ) hfr
-    (hm.map φ) β hβ hs (hdeg_lt g hgdeg) (hdeg_lt h hhdeg)
-    (bivariate_closed_form_map_ratFunc f g h hclosed) hres
-
-/-- Over an algebraically closed field `F` of characteristic zero or larger than the
-degree bounds, a monic irreducible bivariate equation has only constant-gradient closed
-forms within the strict outer-variable degree bounds. -/
-theorem bivariate_closed_form_eq_gradient
-    {F : Type*} [Field F] [IsAlgClosed F]
-    (f g h : F[X][X]) (hf : Irreducible f) (hm : f.Monic)
-    (hgdeg : g.natDegree < f.natDegree) (hhdeg : h.natDegree < f.natDegree)
-    (D : ℕ) (hfD : ∀ i, (f.coeff i).natDegree ≤ D)
-    (hgD : ∀ i, (g.coeff i).natDegree ≤ D)
-    (hmchar : CharZeroOrGT F f.natDegree)
-    (hchar : CharZeroOrGT F ((f.natDegree + (f.natDegree - 1)) * D))
-    (hclosed : (bivariateCoefficientDerivative F) g * f -
-        g * (bivariateCoefficientDerivative F) f = h.derivative * f - h * f.derivative) :
+/-- Over the algebraically closed base field, closed forms with the indicated
+bounds are constant multiples of the gradient. -/
+theorem bivariate_closed_form_eq_gradient :
     ∃ a : F, g = C (C a) * f.derivative ∧
       h = C (C a) * (bivariateCoefficientDerivative F) f := by
   let φ := algebraMap F[X] (RatFunc F)
-  have hinj : Function.Injective φ := RatFunc.algebraMap_injective F
-  obtain ⟨a, ha, hb⟩ := ratFunc_closed_form_eq_gradient f g h hf hm hgdeg hhdeg D hfD hgD
-    hmchar hchar hclosed
+  let fr := f.map φ
+  let gr := g.map φ
+  let hr := h.map φ
+  have hinj := RatFunc.algebraMap_injective F
+  have hfr : Irreducible fr := (hm.irreducible_iff_irreducible_map_fraction_map).mp hf
+  have hfm : fr.Monic := hm.map φ
+  have hfd := natDegree_map_eq_of_injective hinj f
+  have hcharR := hmchar.map (algebraMap F (RatFunc F))
+  have hsep : fr.Separable := (separable_iff_derivative_ne_zero hfr).mpr
+    (derivative_ne_zero_of_natCast_natDegree_ne_zero
+      (hcharR.natCast_ne_zero hfr.natDegree_pos.ne' hfd.le))
+  let : Fact (Irreducible fr) := ⟨hfr⟩
+  let β := AdjoinRoot.root fr
+  have hβ : aeval β fr = 0 := by simp [β]
+  have hs := hsep.aeval_derivative_ne_zero hβ
+  have hsepβ : IsSeparable (RatFunc F) β := by
+    simpa [IsSeparable, β, AdjoinRoot.minpoly_root hfr.ne_zero, hfm.leadingCoeff] using hsep
+  have hle : (⊤ : Subalgebra (RatFunc F) (AdjoinRoot fr)) ≤ (separableClosure _ _).toSubalgebra := by
+    rw [← AdjoinRoot.adjoinRoot_eq_top (f := fr)]
+    exact Algebra.adjoin_le (Set.singleton_subset_iff.mpr (mem_separableClosure_iff.mpr hsepβ))
+  let : Algebra.IsSeparable (RatFunc F) (AdjoinRoot fr) :=
+    ⟨fun x => mem_separableClosure_iff.mp (hle (show x ∈ (⊤ : Subalgebra _ _) by simp))⟩
+  let := Algebra.FormallyEtale.of_isSeparable (RatFunc F) (AdjoinRoot fr)
+  let := etaleDifferential (RatFunc F) (AdjoinRoot fr)
+  let := etaleDifferential_algebra (RatFunc F) (AdjoinRoot fr)
+  have hc : Differential.mapCoeffs gr * fr - gr * Differential.mapCoeffs fr =
+      hr.derivative * fr - hr * fr.derivative := by
+    simpa only [φ, fr, gr, hr, Polynomial.map_sub, Polynomial.map_mul, derivative_map,
+      bivariateCoefficientDerivative_map] using congrArg (Polynomial.map φ) hclosed
+  let ψ := algebraMap (RatFunc F) (AdjoinRoot fr)
+  let t := ψ RatFunc.X
+  have hmapp : (aeval t).toRingHom = ψ.comp φ := RingHom.ext fun p => by
+    change aeval t p = ψ (φ p)
+    rw [show t = algebraMap (RatFunc F) (AdjoinRoot fr) RatFunc.X by rfl,
+      aeval_algebraMap_apply, RatFunc.aeval_X_left_eq_algebraMap]
+  have hA (p : F[X][X]) : (p.map (aeval t).toRingHom).eval β = aeval β (p.map φ) := by
+    rw [hmapp, ← Polynomial.map_map, eval_map, aeval_def]
+  have hA' : (f.map (aeval t).toRingHom).derivative.eval β = aeval β fr.derivative := by
+    simpa only [derivative_map, fr] using hA f.derivative
+  have hres : aeval β gr / aeval β fr.derivative ∈ (algebraMap F (AdjoinRoot fr)).range := by
+    by_cases hg : g = 0
+    · simp [gr, hg]
+    have hD := closed_form_residue_deriv_eq_zero fr gr hr β hβ hs hc
+    have ht : t′ = 1 := by
+      change (algebraMap (RatFunc F) (AdjoinRoot fr) RatFunc.X)′ = 1
+      rw [deriv_algebraMap, ← RatFunc.algebraMap_X, rationalDerivative_polynomial]
+      simp
+    have hbase (a : F) : (algebraMap F (AdjoinRoot fr) a)′ = 0 := by
+      rw [IsScalarTower.algebraMap_apply F (RatFunc F), deriv_algebraMap, RatFunc.algebraMap_eq_C]
+      simp [← RatFunc.algebraMap_C]
+    apply differential_constant_mem_base_of_relation hbase t _ ht hD (residueEliminant f g)
+      (residueEliminant_ne_zero f g hfr hg hgdeg)
+      ((hchar.map (algebraMap F (AdjoinRoot fr))).mono (residueEliminant_natDegree_le f g D hfD hgD))
+    have hrel := residueEliminant_eval_ratio_eq_zero t β f g hgdeg
+      ((hA f).trans hβ) (hA'.trans_ne hs)
+    dsimp only at hrel
+    rwa [hA g, hA'] at hrel
+  have hd (q : F[X][X]) (hq : q.natDegree < f.natDegree) : (q.map φ).degree < fr.degree := by
+    rw [degree_map_eq_of_injective hinj, degree_eq_natDegree hfr.ne_zero, hfd]
+    exact degree_le_natDegree.trans_lt (by exact_mod_cast hq)
+  obtain ⟨a, ha, hb⟩ := closed_form_eq_constant_gradient_of_residue_mem_base fr gr hr hfr hfm β
+    hβ hs (hd g hgdeg) (hd h hhdeg) hc hres
   refine ⟨a, Polynomial.map_injective φ hinj ?_, Polynomial.map_injective φ hinj ?_⟩
-  · simpa only [φ, Polynomial.map_mul, Polynomial.map_C, RatFunc.algebraMap_C,
-      RatFunc.algebraMap_eq_C, derivative_map] using ha
-  · simpa only [φ, Polynomial.map_mul, Polynomial.map_C, RatFunc.algebraMap_C,
-      RatFunc.algebraMap_eq_C, bivariateCoefficientDerivative_map] using hb
+  · simpa [φ, gr, fr, RatFunc.algebraMap_C, RatFunc.algebraMap_eq_C, derivative_map] using ha
+  · simpa [φ, hr, fr, RatFunc.algebraMap_C, RatFunc.algebraMap_eq_C, bivariateCoefficientDerivative_map] using hb
 
+end
 end
 end CCDN

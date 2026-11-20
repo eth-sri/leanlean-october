@@ -37,10 +37,10 @@ theorem exists_field_basis_of_euclidean_lattice_basis
     apply LinearIndependent.of_comp (euclideanNumberFieldLinearMap K)
     simpa only [Function.comp_def, euclideanNumberFieldLinearMap_apply, hv] using
       b.linearIndependent.restrict_scalars' ℚ
-  have hcard : Fintype.card ι = Module.finrank ℚ K :=
+  have hcard :=
     (Module.finrank_eq_card_basis b).symm.trans (mixedEmbedding.euclidean.finrank K)
   let q := basisOfLinearIndependentOfCardEqFinrank' (fun i => (v i : K)) hi hcard
-  have hq (i) : q i = (v i : K) :=
+  have hq (i) :=
     congrFun (coe_basisOfLinearIndependentOfCardEqFinrank' _ hi hcard) i
   exact ⟨v, q, hq, fun i => (congrArg (euclideanNumberFieldEmbedding K) (hq i)).trans (hv i)⟩
 

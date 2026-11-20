@@ -36,34 +36,11 @@ def directionCoordinatesInv {K σ : Type*} [Field K] (b : Option σ → K) :
 for a direction `b` with nonzero first component. -/
 def directionCoordinates {K σ : Type*} [Field K] (b : Option σ → K) (hb : b none ≠ 0) :
     MvPolynomial (Option σ) K ≃ₐ[K] MvPolynomial (Option σ) K := by
-  have hu : (C (b none)⁻¹ : MvPolynomial (Option σ) K) * C (b none) = 1 := by
-    rw [← map_mul, inv_mul_cancel₀ hb, map_one]
-  refine AlgEquiv.ofAlgHom (directionCoordinatesHom b) (directionCoordinatesInv b) ?_ ?_
-  · apply MvPolynomial.algHom_ext
-    intro i
-    cases i with
-    | none =>
-      simp only [directionCoordinatesHom, directionCoordinatesInv, AlgHom.comp_apply,
-        aeval_X, Option.elim_none, map_mul, aeval_C, algebraMap_eq, add_zero, AlgHom.id_apply]
-      linear_combination X (none : Option σ) * hu
-    | some i =>
-      simp only [directionCoordinatesHom, directionCoordinatesInv, AlgHom.comp_apply,
-        aeval_X, Option.elim_some, Option.elim_none, map_sub, map_mul, aeval_C,
-        algebraMap_eq, add_zero, AlgHom.id_apply]
-      linear_combination -C (b (some i)) * X (none : Option σ) * hu
-  · apply MvPolynomial.algHom_ext
-    intro i
-    cases i with
-    | none =>
-      simp only [directionCoordinatesHom, directionCoordinatesInv, AlgHom.comp_apply,
-        aeval_X, Option.elim_none, map_mul, aeval_C, algebraMap_eq,
-        add_zero, AlgHom.id_apply]
-      linear_combination X (none : Option σ) * hu
-    | some i =>
-      simp only [directionCoordinatesHom, directionCoordinatesInv, AlgHom.comp_apply,
-        aeval_X, Option.elim_some, Option.elim_none, map_add, map_mul, aeval_C,
-        algebraMap_eq, AlgHom.id_apply]
-      ring
+  refine AlgEquiv.ofAlgHom (directionCoordinatesHom b) (directionCoordinatesInv b) ?_ ?_ <;>
+    (apply MvPolynomial.algHom_ext; rintro (_ | i)) <;>
+    simp [directionCoordinatesHom, directionCoordinatesInv]
+  all_goals
+    simp [← mul_assoc, ← C_mul, -map_mul, inv_mul_cancel₀ hb, mul_inv_cancel₀ hb, inv_mul_cancel_right₀ hb]
 
 /-- Substitute a_i+b_i*x_0+z_i, so the new origin is the old point a. -/
 def hypersurfaceAffineCoordinates {K σ : Type*} [Field K]
@@ -71,55 +48,55 @@ def hypersurfaceAffineCoordinates {K σ : Type*} [Field K]
     MvPolynomial (Option σ) K ≃ₐ[K] MvPolynomial (Option σ) K :=
   (originShiftEquiv a).trans (directionCoordinates b hb)
 
+section
+
+variable {K σ : Type*} [Field K]
+  (a b : Option σ → K) (hb : b none ≠ 0)
+include K σ a b hb
+
 /-- The affine coordinates substitute $a_i + b_i x_0 + z_i$ for the variable $x_i$, with no
 $z_0$ term for the distinguished variable. -/
-lemma hypersurfaceAffineCoordinates_X {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (i : Option σ) :
+lemma hypersurfaceAffineCoordinates_X (i : Option σ) :
     hypersurfaceAffineCoordinates a b hb (X i) =
       C (a i) + C (b i) * X none + Option.elim i 0 (fun j => X (some j)) := by
-  simp [hypersurfaceAffineCoordinates, directionCoordinates, directionCoordinatesHom]
+  simp [originShiftEquiv, hypersurfaceAffineCoordinates, directionCoordinates, directionCoordinatesHom]
   ring
 
-/-- The affine change of coordinates `hypersurfaceAffineCoordinates a b hb` does not increase
-the total degree. -/
-lemma hypersurfaceAffineCoordinates_totalDegree_le {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
+@[simp] lemma hypersurfaceAffineCoordinates_C (c : K) :
+    hypersurfaceAffineCoordinates a b hb (C c) = C c :=
+  (hypersurfaceAffineCoordinates a b hb).commutes c
+
+/-- The affine coordinate map as a polynomial substitution. -/
+lemma hypersurfaceAffineCoordinates_apply (f : MvPolynomial (Option σ) K) :
+    hypersurfaceAffineCoordinates a b hb f =
+      aeval (fun i => C (a i) + C (b i) * X none + Option.elim i 0 (fun j => X (some j))) f := by
+  refine AlgHom.congr_fun (φ₁ := (hypersurfaceAffineCoordinates a b hb).toAlgHom) ?_ f
+  ext i
+  simp [hypersurfaceAffineCoordinates_X]
+
+/-- The affine change of coordinates does not increase the total degree. -/
+lemma hypersurfaceAffineCoordinates_totalDegree_le (f : MvPolynomial (Option σ) K) :
     (hypersurfaceAffineCoordinates a b hb f).totalDegree ≤ f.totalDegree := by
-  have he : (hypersurfaceAffineCoordinates a b hb).toAlgHom =
-      aeval (fun i => C (a i) + C (b i) * X none + Option.elim i 0 (fun j => X (some j))) := by
-    apply MvPolynomial.algHom_ext
-    intro i
-    simp only [AlgEquiv.coe_toAlgHom, aeval_X]
-    exact hypersurfaceAffineCoordinates_X a b hb i
-  change ((hypersurfaceAffineCoordinates a b hb).toAlgHom f).totalDegree ≤ _
-  rw [he]
+  rw [hypersurfaceAffineCoordinates_apply]
   apply linear_eval₂_totalDegree_le _ _ _ f
   intro i
-  cases i <;>
-    apply (totalDegree_add _ _).trans <;>
-    apply max_le
-  all_goals first | simp | exact (totalDegree_add _ _).trans (max_le (by simp)
-    ((totalDegree_mul _ _).trans (by simp)))
+  refine (totalDegree_add _ _).trans (max_le ?_ ?_)
+  · exact (totalDegree_add _ _).trans
+      (max_le (by simp) ((totalDegree_mul _ _).trans (by simp)))
+  · cases i <;> simp
 
 /-- The affine coordinates carry the base point `a` to the origin: the transformed polynomial
 takes at `0` the value of `f` at `a`. -/
-lemma hypersurfaceAffineCoordinates_eval_zero {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
+lemma hypersurfaceAffineCoordinates_eval_zero (f : MvPolynomial (Option σ) K) :
     eval (0 : Option σ → K) (hypersurfaceAffineCoordinates a b hb f) = eval a f := by
-  have he :
-      (eval (0 : Option σ → K)).comp (hypersurfaceAffineCoordinates a b hb).toRingHom =
-        eval a := by
-    apply MvPolynomial.ringHom_ext
-    · intro r
-      change eval (0 : Option σ → K) (hypersurfaceAffineCoordinates a b hb (C r)) = eval a (C r)
-      rw [show hypersurfaceAffineCoordinates a b hb (C r) = C r from
-        (hypersurfaceAffineCoordinates a b hb).commutes r]
-      simp
-    · intro i
-      change eval (0 : Option σ → K) (hypersurfaceAffineCoordinates a b hb (X i)) = eval a (X i)
-      rw [hypersurfaceAffineCoordinates_X]
-      cases i <;> simp
-  exact RingHom.congr_fun he f
+  rw [hypersurfaceAffineCoordinates_apply, map_aeval, eval]
+  apply eval₂Hom_congr _ _ rfl
+  · ext r
+    simp
+  · funext i
+    cases i <;> simp
+
+end
 
 /-- In the affine coordinates, the first partial derivative at the origin is the derivative of
 `f` at `a` in the direction `b`. -/

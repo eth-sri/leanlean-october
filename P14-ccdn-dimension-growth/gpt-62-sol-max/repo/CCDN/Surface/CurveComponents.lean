@@ -19,14 +19,14 @@ two surfaces. -/
 namespace CCDN
 
 /-- `I` is an integral affine curve of degree `e` on the surface `f = 0` in affine
-three-space: a height-two prime ideal containing `f` whose affine Hilbert function has
+three-space: a prime ideal containing `f` whose affine Hilbert function has
 slope `e`. -/
 structure IsSurfaceCurve (f : CoordinatePolynomial 3) (I : Ideal (CoordinatePolynomial 3))
     (e : ℕ) : Prop where
   /-- The ideal `I` is prime. -/
   isPrime : I.IsPrime
-  /-- The ideal `I` has height two, so it defines a curve. -/
-  height_eq : I.height = 2
+  /-- The degree is positive. -/
+  pos : 0 < e
   /-- The curve lies on the surface: `f ∈ I`. -/
   mem : f ∈ I
   /-- The curve has degree `e`. -/
@@ -38,7 +38,5 @@ structure IsSectionCurve (f g : CoordinatePolynomial 3) (I : Ideal (CoordinatePo
     (e : ℕ) : Prop extends IsSurfaceCurve f I e where
   /-- The curve lies on the second surface: `g ∈ I`. -/
   mem_right : g ∈ I
-  /-- The degree `e` is positive. -/
-  pos : 0 < e
 
 end CCDN

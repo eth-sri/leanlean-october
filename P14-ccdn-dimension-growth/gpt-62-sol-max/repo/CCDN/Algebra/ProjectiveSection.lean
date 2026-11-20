@@ -80,49 +80,20 @@ private theorem projective_section_hilbert_drop {n m M : ℕ} {ι : Type*}
   classical
   let A := MvPolynomial (Fin (n + 1)) K ⧸ I
   let q := Ideal.Quotient.mkₐ K I
-  let ψ : ι → A →ₐ[K] K := fun i =>
-    Ideal.Quotient.liftₐ I (aeval (z i).rep) (by
-      intro g hg
-      simpa only [aeval_eq_eval] using projectiveIdealZeroLocus_rep (hzI i) g hg)
-  have hψ (i : ι) (g : MvPolynomial (Fin (n + 1)) K) :
-      ψ i (q g) = eval (z i).rep g := by
-    rfl
-  let φ : A →ₗ[K] (ι → K) := LinearMap.pi fun i => (ψ i).toLinearMap
+  let ψ := AlgHom.pi fun i =>
+    Ideal.Quotient.liftₐ I (aeval (z i).rep) (fun g hg => projectiveIdealZeroLocus_rep (hzI i) g hg)
+  have hψ (i : ι) (g : MvPolynomial (Fin (n + 1)) K) : ψ (q g) i = eval (z i).rep g := rfl
   let V := homogeneousCoordinateSpace I (m + M)
   let W := homogeneousCoordinateSpace I M
-  let U := W.map (LinearMap.mulLeft K (q f))
-  have hUV : U ≤ V := by
-    rintro a ha
-    obtain ⟨b, hb, rfl⟩ := Submodule.mem_map.mp ha
-    exact homogeneousCoordinateSpace_mul_mem I hf hb
-  have hUker : U ≤ φ.ker := by
-    rintro a ha
-    obtain ⟨b, hb, rfl⟩ := Submodule.mem_map.mp ha
-    apply LinearMap.mem_ker.mpr
-    ext i
-    change ψ i (q f * b) = 0
-    rw [map_mul, hψ, hzf, zero_mul]
-  have hf0 : q f ≠ 0 := by
-    exact fun he => hfI (Ideal.Quotient.eq_zero_iff_mem.mp he)
-  have hUdim : Module.finrank K U = projectiveHilbertFunction I M :=
-    (Submodule.equivMapOfInjective (LinearMap.mulLeft K (q f))
-      (fun a b h => mul_left_cancel₀ hf0 h) W).finrank_eq.symm
-  obtain ⟨h, hhom, heval⟩ := exists_projective_point_separators_degree z hz hM
-  have htop : V.map φ = ⊤ := by
-    apply top_unique
-    intro w _
-    apply Submodule.mem_map.mpr
-    refine ⟨∑ j, w j • q (h j), ?_, ?_⟩
-    · apply Submodule.sum_mem
-      intro j _
-      apply Submodule.smul_mem
-      exact Submodule.mem_map.mpr ⟨h j, hhom j, rfl⟩
-    · ext i
-      change ψ i (∑ j, w j • q (h j)) = w i
-      simp [hψ, heval]
-  have h := finrank_map_add_kernel_subspace_le φ V U hUV hUker
-  rw [htop, finrank_top, Module.finrank_pi, hUdim] at h
-  exact h
+  have h := finrank_map_add_le_of_mul_mem ψ V W (Ideal.Quotient.eq_zero_iff_mem.not.mpr hfI)
+    (funext hzf) (fun _ hw => homogeneousCoordinateSpace_mul_mem I hf hw)
+  obtain ⟨g, hhom, heval⟩ := exists_projective_point_separators_degree z hz hM
+  have htop : V.map ψ.toLinearMap = ⊤ := by
+    refine (Submodule.eq_top_iff_forall_basis_mem (Pi.basisFun K ι)).mpr fun i => ?_
+    refine Submodule.mem_map.mpr ⟨q (g i), Submodule.mem_map.mpr ⟨g i, hhom i, rfl⟩, ?_⟩
+    ext j
+    simp [hψ, heval, Pi.single_apply]
+  rwa [htop, finrank_top, Module.finrank_pi] at h
 
 /-- A proper section of degree `m` meets a degree-`d` projective prime curve
 in at most `dm` distinct points over the base field. -/
@@ -138,15 +109,10 @@ theorem projective_section_card_le_degree {n d m : ℕ} {ι : Type*}
   obtain ⟨N, c, hN⟩ := hdegree
   let M := max N (Fintype.card ι)
   have hlow := projective_section_hilbert_drop I f hf hfI z hz hzI hzf
-    (show Fintype.card ι - 1 ≤ m + M by dsimp [M]; omega)
-  have h0 := hN M (le_max_left _ _)
-  have h1 := hN (m + M) (by dsimp [M]; omega)
-  have hlowZ : (Fintype.card ι : ℤ) + projectiveHilbertFunction I M ≤
-      projectiveHilbertFunction I (m + M) := by exact_mod_cast hlow
-  rw [h0, h1] at hlowZ
-  push_cast at hlowZ
-  have hcard : (Fintype.card ι : ℤ) ≤ (d : ℤ) * m := by linarith
-  exact_mod_cast hcard
+    (show Fintype.card ι - 1 ≤ m + M by omega)
+  
+  
+  grind
 
 end
 end CCDN

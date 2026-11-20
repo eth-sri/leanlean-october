@@ -27,8 +27,7 @@ lemma map_homogeneousComponent {R S σ : Type*} [CommRing R] [CommRing S]
     map φ (homogeneousComponent d f) = homogeneousComponent d (map φ f) := by
   classical
   ext m
-  simp only [coeff_map, coeff_homogeneousComponent]
-  split_ifs <;> simp
+  grind [coeff_map, coeff_homogeneousComponent]
 
 private lemma isUnit_of_isUnit_top_homogeneousComponent {K σ : Type*} [Field K]
     (f : MvPolynomial σ K) (hu : IsUnit (homogeneousComponent f.totalDegree f)) :
@@ -39,30 +38,30 @@ private lemma isUnit_of_isUnit_top_homogeneousComponent {K σ : Type*} [Field K]
     omega
   have he := totalDegree_eq_zero_iff_eq_C.mp hd
   rw [hd, homogeneousComponent_zero] at hu
-  rwa [he]
+  grind
 
 /-- The product of highest components detects every proper factorization of
  the full equation, over any field. -/
 private theorem irreducible_of_top_homogeneousComponent_irreducible {K σ : Type*} [Field K]
     (f : MvPolynomial σ K)
     (hir : Irreducible (homogeneousComponent f.totalDegree f)) : Irreducible f := by
-  have hf : f ≠ 0 := by intro hz; exact hir.ne_zero (by rw [hz, map_zero])
+  have hf : f ≠ 0 := by aesop
   refine ⟨?_, ?_⟩
   · intro hu
     have hd := (isUnit_iff_totalDegree_of_isReduced.mp hu).2
     have he := totalDegree_eq_zero_iff_eq_C.mp hd
     apply hir.not_isUnit
     rw [hd, homogeneousComponent_zero]
-    rwa [he] at hu
+    grind
   · intro g h he
-    have hg : g ≠ 0 := by intro hz; exact hf (by rw [he, hz, zero_mul])
-    have hh : h ≠ 0 := by intro hz; exact hf (by rw [he, hz, mul_zero])
+    have hg : g ≠ 0 := by simp_all
+    have hh : h ≠ 0 := by simp_all
     have hprod : homogeneousComponent f.totalDegree f =
         homogeneousComponent g.totalDegree g * homogeneousComponent h.totalDegree h := by
       rw [he, totalDegree_mul_of_isDomain hg hh, top_homogeneousComponent_mul]
     rcases hir.isUnit_or_isUnit hprod with hu | hu
-    · exact Or.inl (isUnit_of_isUnit_top_homogeneousComponent g hu)
-    · exact Or.inr (isUnit_of_isUnit_top_homogeneousComponent h hu)
+    exact Or.inl (isUnit_of_isUnit_top_homogeneousComponent g hu)
+    exact Or.inr (isUnit_of_isUnit_top_homogeneousComponent h hu)
 
 /-- If the coefficient image of the original top component is irreducible,
  the full coefficient image has unchanged total degree and is irreducible. -/
@@ -80,7 +79,7 @@ theorem map_degree_and_irreducible_of_top_irreducible
   have he := le_antisymm hle hge
   refine ⟨he, ?_⟩
   apply irreducible_of_top_homogeneousComponent_irreducible
-  rwa [he]
+  simp_all
 
 end
 end CCDN

@@ -7,7 +7,7 @@ module
 
 public import CCDN.ForMathlib.StandardExponents
 public import CCDN.Hilbert.FilteredIntersection
-import CCDN.Hilbert.OrthantMultiplicity
+public import CCDN.Hilbert.OrthantMultiplicity
 import CCDN.Hilbert.StandardMonomials
 import Mathlib.Order.Interval.Set.Infinite
 
@@ -33,9 +33,14 @@ lemma standardExponentVectors_lower {K σ : Type*} [Field K] [Fintype σ]
   intro a b hab hb
   exact Ideal.isLowerSet_standardExponents I m (fun i => hab i) hb
 
+section
+
+variable {K σ : Type*} [Field K] [Fintype σ]
+  [LinearOrder σ] (I : Ideal (MvPolynomial σ K))
+include K σ I
+
 /-- A proper ideal has a standard exponent vector for the degree-lexicographic order. -/
-lemma standardExponentVectors_nonempty {K σ : Type*} [Field K] [Fintype σ]
-    [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (hI : I ≠ ⊤) :
+lemma standardExponentVectors_nonempty (hI : I ≠ ⊤) :
     (standardExponentVectors I MonomialOrder.degLex).Nonempty := by
   obtain ⟨r, hr, _, hmem⟩ := Ideal.exists_standard_representative_degLex I 1
   have hr0 : r ≠ 0 := by
@@ -51,8 +56,7 @@ lemma standardExponentVectors_nonempty {K σ : Type*} [Field K] [Fintype σ]
 
 /-- The affine Hilbert function of `I` at `N` equals the number of standard exponent vectors of `I`,
 for the degree-lexicographic order, of total degree at most `N`. -/
-lemma filteredCoordinateSpace_finrank_eq_vector_card {K σ : Type*} [Field K]
-    [Fintype σ] [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (N : ℕ) :
+lemma filteredCoordinateSpace_finrank_eq_vector_card (N : ℕ) :
     Module.finrank K (filteredCoordinateSpace I N) =
       Nat.card {a : σ → ℕ //
         a ∈ standardExponentVectors I MonomialOrder.degLex ∧ ∑ i, a i ≤ N} := by
@@ -61,17 +65,16 @@ lemma filteredCoordinateSpace_finrank_eq_vector_card {K σ : Type*} [Field K]
   exact Finsupp.equivFunOnFinite.subtypeEquiv (fun a => by
     simp [Ideal.boundedStandardExponents, standardExponentVectors, Finsupp.degree_eq_sum])
 
-/-- Eventual polynomiality of the filtered coordinate-space dimension. -/
-theorem filteredCoordinateSpace_eventually_polynomial {K σ : Type*} [Field K]
-    [Fintype σ] [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) :
-    ∃ P : Polynomial ℚ, ∃ N : ℕ, ∀ n ≥ N,
-      P.eval (n : ℚ) = (Module.finrank K (filteredCoordinateSpace I n) : ℚ) := by
-  obtain ⟨P, N, hN⟩ := lowerSet_eventually_polynomial
-    (standardExponentVectors I MonomialOrder.degLex)
-    (standardExponentVectors_lower I MonomialOrder.degLex)
-  refine ⟨P, N, fun n hn => ?_⟩
-  rw [filteredCoordinateSpace_finrank_eq_vector_card]
-  exact hN n hn
+/-- A clamping bound for the degree-lexicographic standard monomials. -/
+def standardExponentBound : ℕ :=
+  (lowerSet_clamp_stabilizes _ (standardExponentVectors_lower I MonomialOrder.degLex)).choose
+
+lemma standardExponentBound_spec (a : σ → ℕ) :
+    a ∈ standardExponentVectors I MonomialOrder.degLex ↔
+      clampExponent (standardExponentBound I) a ∈ standardExponentVectors I MonomialOrder.degLex :=
+  (lowerSet_clamp_stabilizes _ (standardExponentVectors_lower I MonomialOrder.degLex)).choose_spec a
+
+end
 
 /-- Two rational polynomials that agree at all sufficiently large natural numbers are equal. -/
 lemma polynomial_eq_of_eventual_nat_eval_eq (P Q : Polynomial ℚ)
@@ -85,7 +88,7 @@ lemma polynomial_eq_of_eventual_nat_eval_eq (P Q : Polynomial ℚ)
 /-- The uniquely determined filtered Hilbert polynomial. -/
 def filteredHilbertPolynomial {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
     (I : Ideal (MvPolynomial σ K)) : Polynomial ℚ :=
-  (filteredCoordinateSpace_eventually_polynomial I).choose
+  lowerSetOrthantPolynomial (standardExponentVectors I MonomialOrder.degLex) (standardExponentBound I)
 
 /-- The filtered Hilbert polynomial of `I` has degree `m` and leading coefficient `d / m!`:
 the affine variety cut out by `I` has dimension `m` and degree `d`. -/
@@ -103,18 +106,23 @@ abbrev HasProjectiveDimensionDegree {K σ : Type*} [Field K] [Fintype σ] [Linea
     (I : Ideal (MvPolynomial σ K)) (m d : ℕ) : Prop :=
   HasAffineDimensionDegree I (m + 1) d
 
+section
+
+variable {K σ : Type*} [Field K] [Fintype σ]
+  [LinearOrder σ] (I : Ideal (MvPolynomial σ K))
+include K σ I
+
 /-- The filtered Hilbert polynomial of `I` agrees at every sufficiently large `n` with the dimension
 of the image in `K[X] ⧸ I` of the polynomials of total degree at most `n`. -/
-theorem filteredHilbertPolynomial_spec {K σ : Type*} [Field K] [Fintype σ]
-    [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) :
+theorem filteredHilbertPolynomial_spec :
     ∃ N : ℕ, ∀ n ≥ N, (filteredHilbertPolynomial I).eval (n : ℚ) =
       (Module.finrank K (filteredCoordinateSpace I n) : ℚ) :=
-  (filteredCoordinateSpace_eventually_polynomial I).choose_spec
+  ⟨_, fun n hn => (lowerSetOrthantPolynomial_eval _ _ (standardExponentBound_spec I) n hn).trans
+    (congrArg Nat.cast (filteredCoordinateSpace_finrank_eq_vector_card I n).symm)⟩
 
 /-- Any rational polynomial that eventually agrees with the affine Hilbert function of `I` is the
 filtered Hilbert polynomial of `I`. -/
-theorem filteredHilbertPolynomial_eq_of_eventual {K σ : Type*} [Field K]
-    [Fintype σ] [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (P : Polynomial ℚ)
+theorem filteredHilbertPolynomial_eq_of_eventual (P : Polynomial ℚ)
     (hP : ∃ N : ℕ, ∀ n ≥ N, P.eval (n : ℚ) =
       (Module.finrank K (filteredCoordinateSpace I n) : ℚ)) :
     filteredHilbertPolynomial I = P := by
@@ -126,22 +134,15 @@ theorem filteredHilbertPolynomial_eq_of_eventual {K σ : Type*} [Field K]
 
 /-- Proper polynomial quotients have a positive integer factorial-normalized
 leading coefficient. -/
-theorem filteredHilbertPolynomial_positive_multiplicity {K σ : Type*} [Field K]
-    [Fintype σ] [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (hI : I ≠ ⊤) :
+theorem filteredHilbertPolynomial_positive_multiplicity (hI : I ≠ ⊤) :
     ∃ d : ℕ, 0 < d ∧
       (filteredHilbertPolynomial I).natDegree ≤ Fintype.card σ ∧
       (filteredHilbertPolynomial I).leadingCoeff =
-        (d : ℚ) / (filteredHilbertPolynomial I).natDegree.factorial := by
-  obtain ⟨P, d, hd, hdeg, hlc, N, hN⟩ := lowerSet_eventually_polynomial_positive
-    (standardExponentVectors I MonomialOrder.degLex)
-    (standardExponentVectors_lower I MonomialOrder.degLex)
-    (standardExponentVectors_nonempty I hI)
-  have he : filteredHilbertPolynomial I = P := by
-    apply filteredHilbertPolynomial_eq_of_eventual
-    refine ⟨N, fun n hn => ?_⟩
-    rw [filteredCoordinateSpace_finrank_eq_vector_card]
-    exact hN n hn
-  exact ⟨d, hd, he.symm ▸ hdeg, he.symm ▸ hlc⟩
+        (d : ℚ) / (filteredHilbertPolynomial I).natDegree.factorial :=
+  lowerSetOrthantPolynomial_positive _ _
+    (lowerSetOrthantPatterns_nonempty (standardExponentBound_spec I) (standardExponentVectors_nonempty I hI))
+
+end
 
 end
 end CCDN

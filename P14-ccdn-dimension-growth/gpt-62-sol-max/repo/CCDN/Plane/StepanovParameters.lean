@@ -24,11 +24,11 @@ lemma stepanov_numeric_dimension (d p x y N : ℕ) (hd : 0 < d)
     N * (x + y + d + d ^ 2 * N) < (x - d ^ 2) * (y - d ^ 2) := by
   unfold stepanovThreshold at hp
   let b := d ^ 2
-  have hb : d ≤ b := by simpa only [b, pow_two] using Nat.le_mul_self d
-  have hbpos : 0 < b := by dsimp [b]; positivity
-  have hbb : b ≤ b ^ 2 := by simpa only [pow_two] using Nat.le_mul_self b
-  have hp' : 27 * b ^ 2 < p := by dsimp [b]; nlinarith [hp]
-  have hNx : N + 4 * b = x := hN
+  have hb : d ≤ b := by simpa [b, pow_two] using Nat.le_mul_self d
+  have hbpos : 0 < b := by omega
+  
+  
+  
   have hxb : b ≤ x := by omega
   have hyb : b ≤ y := by nlinarith
   have hxp : 5 * x ≤ p := by
@@ -50,16 +50,13 @@ lemma stepanov_numeric_dimension (d p x y N : ℕ) (hd : 0 < d)
   have hsubx : x - b + b = x := Nat.sub_add_cancel hxb
   have hsuby : y - b + b = y := Nat.sub_add_cancel hyb
   have hc : 2 * b * x + 6 * b ^ 2 < b * p := by
-    nlinarith only [hp', hbp, h5bx]
+    grind
   have hv : N * (b + d + x + b * N) + 3 * b ^ 2 < 3 * b * y := by
-    nlinarith only [hc, hbp, h3y, hbd, hNb, hNd, hNx', hNp]
+    grind
   have hi : (x - b) * (y - b) + N * (b + d + x + b * N) + 3 * b ^ 2 =
       N * (x + y + d + b * N) + 3 * b * y := by
-    have hx' : x - b = N + 3 * b := by omega
-    rw [hx']
-    nlinarith only [hsuby, hNx]
-  change N * (x + y + d + b * N) < (x - b) * (y - b)
-  omega
+    grind
+  grind
 
 
 /-- Concrete integer degrees: A=floor(sqrt(p)/d), D=floor((p-1)/d),
@@ -74,37 +71,36 @@ theorem exists_stepanov_integer_parameters (d p : ℕ) (hd : 0 < d)
   let D := (p - 1) / d
   let x := d * A
   let y := d * D
-  have hb : d ≤ d ^ 2 := by simpa only [pow_two] using Nat.le_mul_self d
+  have hb : d ≤ d ^ 2 := by nlinarith
   have hbpos : 0 < d ^ 2 := by positivity
-  have hbb : d ^ 2 ≤ (d ^ 2) ^ 2 := by nlinarith only [Nat.le_mul_self (d ^ 2)]
-  have hp' : 27 * (d ^ 2) ^ 2 < p := by nlinarith only [hp]
+  have hbb : d ^ 2 ≤ (d ^ 2) ^ 2 := by nlinarith
+  have hp' : 27 * (d ^ 2) ^ 2 < p := by linarith
   have hp0 : 0 < p := by omega
   have hs := Nat.mod_add_div (Nat.sqrt p) d
   have hsm := Nat.mod_lt (Nat.sqrt p) hd
-  have hxs : x ≤ Nat.sqrt p := by dsimp only [x, A]; omega
-  have hsx : Nat.sqrt p + 1 ≤ x + d := by dsimp only [x, A]; omega
+  have hxs : x ≤ Nat.sqrt p := by grind
+  have hsx : Nat.sqrt p + 1 ≤ x + d := by grind
   have hx : x ^ 2 ≤ p := (Nat.pow_le_pow_left hxs 2).trans (Nat.sqrt_le' p)
   have hpx : p < (x + d) ^ 2 :=
     (Nat.lt_succ_sqrt' p).trans_le (Nat.pow_le_pow_left hsx 2)
   have hydiv := Nat.mod_add_div (p - 1) d
   have hymod := Nat.mod_lt (p - 1) hd
-  have hyp : y < p := by dsimp only [y, D]; omega
-  have hpy : p ≤ y + d := by dsimp only [y, D]; omega
+  have hyp : y < p := by grind
+  have hpy : p ≤ y + d := by grind
   have hx4 : 4 * d ^ 2 < x := by
     by_contra! hn
     have he : x + d ≤ 5 * d ^ 2 := by omega
     have he2 := Nat.pow_le_pow_left he 2
-    nlinarith only [hp', hpx, he2]
+    grind
   have hA : d ≤ A := by dsimp only [x] at hx4; nlinarith only [hx4, hd]
   have hD : d ≤ D := by
-    have hdy : d ^ 2 ≤ y := by nlinarith only [hp', hpy, hb, hbb]
+    have hdy : d ^ 2 ≤ y := by omega
     dsimp only [y] at hdy
     nlinarith only [hdy, hd]
   let N := x - 4 * d ^ 2
   have hNx : N + 4 * d ^ 2 = x := Nat.sub_add_cancel (Nat.le_of_lt hx4)
   have hNpos : 0 < N := Nat.sub_pos_of_lt hx4
-  have hxx : x ≤ x ^ 2 := by simpa only [pow_two] using Nat.le_mul_self x
-  have hxp : x ≤ p := hxx.trans hx
+  have hxx : x ≤ x ^ 2 := by simpa [pow_two] using Nat.le_mul_self x
   exact ⟨A, D, N, hA, hD, hyp, (by omega), hNx, hNpos, hx, hpy, hpx⟩
 
 end

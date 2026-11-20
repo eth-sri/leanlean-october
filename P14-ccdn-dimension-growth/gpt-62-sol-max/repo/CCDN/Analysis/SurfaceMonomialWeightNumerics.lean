@@ -24,8 +24,7 @@ private lemma sum_successor_squares_lower (M : ℕ) :
   | zero => simp
   | succ M ih =>
     rw [sum_range_succ]
-    push_cast
-    nlinarith [sq_nonneg (M : ℝ), Nat.cast_nonneg (α := ℝ) M]
+    grind
 
 /-- If `H k ≥ d * (k - d + 1) ^ 2 / 2` for all `k ≥ d`, then for `M ≥ d` the prefix sum
 `∑ k < M, H k` is at least `d * (M - d) ^ 3 / 6`. -/
@@ -37,11 +36,7 @@ theorem surface_rank_prefix_sum_lower (H : ℕ → ℕ) {d M : ℕ} (hdM : d ≤
       ∑ i ∈ range (M - d), (H (d + i) : ℝ) := by
     rw [mul_sum]
     apply sum_le_sum
-    intro i _
-    have h := hlower (d + i) (by omega)
-    push_cast at h
-    convert h using 1
-    ring
+    grind
   have hnum := mul_le_mul_of_nonneg_left (sum_successor_squares_lower (M - d))
     (show 0 ≤ (d : ℝ) / 2 by positivity)
   rw [Nat.cast_sub hdM] at hnum
@@ -49,8 +44,7 @@ theorem surface_rank_prefix_sum_lower (H : ℕ → ℕ) {d M : ℕ} (hdM : d ≤
       ∑ k ∈ range M, (H k : ℝ) := by
     conv_rhs => rw [show M = d + (M - d) by omega, sum_range_add]
     exact le_add_of_nonneg_left (sum_nonneg (fun _ _ => Nat.cast_nonneg _))
-  convert (hnum.trans hsum).trans hprefix using 1
-  ring
+  nlinarith
 
 /-- Let `R ≥ 0` satisfy `d * R ^ 2 = 2 * s` and `M - d ≤ R ≤ M + 2`, where `0 < d ≤ M` and
 `s ≥ 0`. If `W + d * (M - d) ^ 3 / 6 ≤ M * s`, then `W ≤ (2 / 3) * s * R + (2 * d + 2) * s`. -/
@@ -60,10 +54,10 @@ theorem surface_weight_root_bound {d M s W : ℝ}
     (hlo : M - d ≤ R) (hhi : R ≤ M + 2)
     (hweight : W + d * (M - d) ^ 3 / 6 ≤ M * s) :
     W ≤ (2 / 3 : ℝ) * s * R + (2 * d + 2) * s := by
-  have ht : 0 ≤ M - d := sub_nonneg.mpr hM
+  have ht := sub_nonneg.mpr hM
   have htR : (M - d) ^ 2 ≤ R ^ 2 := pow_le_pow_left₀ ht hlo 2
   have hprod : R * (M - d) ≤ R ^ 2 := by nlinarith
-  have hdiff : 0 ≤ R - (M - d) := sub_nonneg.mpr hlo
+  have hdiff := sub_nonneg.mpr hlo
   have hfactor : R ^ 2 + R * (M - d) + (M - d) ^ 2 ≤ 3 * R ^ 2 := by
     linarith
   have hcube : R ^ 3 - (M - d) ^ 3 ≤ 3 * (d + 2) * R ^ 2 := by
@@ -74,12 +68,10 @@ theorem surface_weight_root_bound {d M s W : ℝ}
       _ ≤ (d + 2) * (3 * R ^ 2) :=
         mul_le_mul_of_nonneg_right (by linarith) (by positivity)
       _ = _ := by ring
-  have hc := mul_le_mul_of_nonneg_left hcube hd.le
-  have hr3 : d * R ^ 3 = 2 * s * R := by nlinarith [congrArg (fun x : ℝ => x * R) hroot]
-  have hr2 : 3 * d * (d + 2) * R ^ 2 = 6 * (d + 2) * s := by
-    nlinarith [congrArg (fun x : ℝ => 3 * (d + 2) * x) hroot]
-  have hMs : M * s ≤ (R + d) * s :=
-    mul_le_mul_of_nonneg_right (by linarith) hs
+  
+  
+  
+  
   nlinarith
 
 end

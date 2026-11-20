@@ -27,21 +27,30 @@ open NumberField NumberField.InfinitePlace
 
 variable (K : Type*) [Field K] [NumberField K]
 
+/-- The set of algebraic integers `α ∈ 𝓞 K` with `w α ≤ B` at every infinite place `w`. -/
+def boundedArchimedeanIntegers (B : ℝ) : Set (𝓞 K) :=
+  {α | ∀ w : InfinitePlace K, w (α : K) ≤ B}
+
+/-- There are finitely many algebraic integers of `K` bounded by `B` at every infinite place. -/
+lemma boundedArchimedeanIntegers_finite (B : ℝ) :
+    (boundedArchimedeanIntegers K B).Finite := by
+  apply Set.Finite.of_injOn (f := fun β : 𝓞 K ↦ (β : K))
+    (t := {x : K | IsIntegral ℤ x ∧ ∀ φ : K →+* ℂ, ‖φ x‖ ≤ B})
+  · intro β hβ
+    exact ⟨β.isIntegral_coe, fun φ ↦ hβ (InfinitePlace.mk φ)⟩
+  · exact RingOfIntegers.coe_injective.injOn
+  · exact Embeddings.finite_of_norm_le K ℂ B
+
 /-- The set of nonzero algebraic integers `β ∈ 𝓞 K` bounded by `B` at every infinite place whose
 absolute norm `|N(β)|` is a perfect square. -/
 def boundedSquareNormIntegers (B : ℝ) : Set (𝓞 K) :=
   {β | β ≠ 0 ∧ (∀ w : InfinitePlace K, w (β : K) ≤ B) ∧
     ∃ m : ℕ, (Algebra.norm ℤ β).natAbs = m ^ 2}
 
-/-- There are finitely many bounded square-norm integers `boundedSquareNormIntegers K B`. -/
+/-- There are finitely many bounded square-norm integers. -/
 lemma boundedSquareNormIntegers_finite (B : ℝ) :
-    (boundedSquareNormIntegers K B).Finite := by
-  apply Set.Finite.of_injOn (f := fun β : 𝓞 K ↦ (β : K))
-    (t := {x : K | IsIntegral ℤ x ∧ ∀ φ : K →+* ℂ, ‖φ x‖ ≤ B})
-  · intro β hβ
-    exact ⟨β.isIntegral_coe, fun φ ↦ hβ.2.1 (InfinitePlace.mk φ)⟩
-  · exact RingOfIntegers.coe_injective.injOn
-  · exact Embeddings.finite_of_norm_le K ℂ B
+    (boundedSquareNormIntegers K B).Finite :=
+  (boundedArchimedeanIntegers_finite K B).subset (fun _ h => h.2.1)
 
 /-- The two-torsion subgroup of the class group of `K` has at most as many elements as there are
 bounded square-norm integers at the balanced radius `9 * |discr K| ^ (1 / [K : ℚ])`; the
@@ -57,17 +66,6 @@ theorem classGroupTwoTorsionCard_le_boundedSquareNormIntegers :
   obtain ⟨h0, hw, J, _, _, hnorm⟩ := hβ c
   exact ⟨h0, fun w ↦ (hw w).le, Ideal.absNorm (J : Ideal (𝓞 K)), hnorm⟩
 
-omit [NumberField K] in
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open scoped NumberField
-open NumberField NumberField.InfinitePlace
-
-variable (K : Type*) [Field K] [NumberField K]
-
 private lemma bounded_infinite_places_norm_le (α : 𝓞 K) {B : ℝ}
     (hα : ∀ w : InfinitePlace K, w (α : K) ≤ B) :
     ((Algebra.norm ℤ α).natAbs : ℝ) ≤ B ^ Module.finrank ℚ K := by
@@ -79,8 +77,7 @@ private lemma bounded_infinite_places_norm_le (α : 𝓞 K) {B : ℝ}
     exact (Nat.cast_natAbs (Algebra.norm ℤ α)).symm
   rw [← he, ← sum_mult_eq (K := K), ← Finset.prod_pow_eq_pow_sum]
   apply Finset.prod_le_prod₀
-  · intro w _
-    positivity
+  simp
   · intro w _
     exact pow_le_pow_left₀ (apply_nonneg _ _) (hα w) _
 
@@ -152,24 +149,18 @@ theorem squareNormTranslateFiber_count_le (β : 𝓞 K) {B : ℝ}
           (le_max_left _ _)
     · have hnorm : (Algebra.norm ℤ
           (algebraMap ℤ (𝓞 K) (x α) - β)).natAbs = m α ^ 2 := by
-        rw [← hx α]
-        exact hm α
+        grind
       rcases square_norm_yields_signedNormCurve_point K β (x α) (m α) hnorm with h | h
-      · left
+      all_goals
         have hc := congrArg (Int.castRingHom ℚ) h
         rw [MvPolynomial.map_eval, map_zero] at hc
-        exact hc
-      · right
-        have hc := congrArg (Int.castRingHom ℚ) h
-        rw [MvPolynomial.map_eval, map_zero] at hc
-        exact hc
+        first | exact Or.inl hc | exact Or.inr hc
   let ι : S → P := fun α ↦ ⟨![(m α : ℤ), x α], hpoint α⟩
   have hi : Function.Injective ι := by
     intro α γ he
     have h := congrArg (fun p : P ↦ p.val 1) he
     change x α = x γ at h
-    apply Subtype.ext
-    rw [hx α, hx γ, h]
+    grind
   have hcard : S.ncard ≤ count Z H := by
     have h := Nat.card_le_card_of_injective ι hi
     simpa only [Nat.card_coe_set_eq, Nat.card_eq_fintype_card,

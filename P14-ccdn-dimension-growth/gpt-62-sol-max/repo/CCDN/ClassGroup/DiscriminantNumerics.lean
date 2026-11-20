@@ -19,9 +19,9 @@ private lemma classGroup_balanced_radius_power_identity {D : ℝ} (hD : 0 < D)
         Real.sqrt (9 * D ^ (1 / (n : ℝ))) =
       (3 * (9 : ℝ) ^ (n - 1)) *
         D ^ (1 / 2 - 1 / (2 * (n : ℝ))) * Real.sqrt D := by
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
+  
   have hpred : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by
-    rw [Nat.cast_sub (by omega : 1 ≤ n), Nat.cast_one]
+    simp_all
   have hsqrt : Real.sqrt (9 * D ^ (1 / (n : ℝ))) =
       3 * D ^ (1 / (2 * (n : ℝ))) := by
     have h9 : Real.sqrt (9 : ℝ) = 3 :=
@@ -37,17 +37,10 @@ private lemma classGroup_balanced_radius_power_identity {D : ℝ} (hD : 0 < D)
     ring
   have hexp : ((n - 1 : ℕ) : ℝ) / n + 1 / (2 * (n : ℝ)) =
       (1 / 2 - 1 / (2 * (n : ℝ))) + 1 / 2 := by
-    rw [hpred]
-    field_simp
-    ring
-  rw [mul_pow, hp, hsqrt, Real.sqrt_eq_rpow]
-  calc
-    _ = (3 * (9 : ℝ) ^ (n - 1)) *
-        (D ^ (((n - 1 : ℕ) : ℝ) / n) * D ^ (1 / (2 * (n : ℝ)))) := by ring
-    _ = (3 * (9 : ℝ) ^ (n - 1)) *
-        (D ^ (1 / 2 - 1 / (2 * (n : ℝ))) * D ^ (1 / 2 : ℝ)) := by
-      rw [← Real.rpow_add hD, hexp, Real.rpow_add hD]
-    _ = _ := by ring
+    grind
+  rw [mul_pow, hp, hsqrt, Real.sqrt_eq_rpow, mul_mul_mul_comm,
+    ← Real.rpow_add hD, hexp, Real.rpow_add hD]
+  ring
 
 /-- If `N * √D ≤ A * R ^ (n - 1) * √R` for the balanced radius `R = 9 * D ^ (1 / n)`, then
 `N ≤ A * 3 * 9 ^ (n - 1) * D ^ (1 / 2 - 1 / (2 * n))`: the discriminant exponent obtained from
@@ -61,6 +54,6 @@ theorem classGroup_discriminant_bound_of_balanced_radius
       D ^ (1 / 2 - 1 / (2 * (n : ℝ))) := by
   rw [classGroup_balanced_radius_power_identity hD hn] at h
   apply (mul_le_mul_iff_left₀ (Real.sqrt_pos.mpr hD)).mp
-  nlinarith only [h]
+  linarith
 
 end CCDN

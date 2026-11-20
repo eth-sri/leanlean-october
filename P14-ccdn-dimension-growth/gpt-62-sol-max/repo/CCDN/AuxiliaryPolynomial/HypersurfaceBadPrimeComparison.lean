@@ -5,20 +5,16 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.AuxiliaryPolynomial.HypersurfaceRankArchimedean
+import CCDN.AuxiliaryPolynomial.HypersurfaceRankProfile
+import CCDN.ForMathlib.Log
+public import CCDN.AuxiliaryPolynomial.HypersurfaceRankRoots
 public import CCDN.Determinant.HypersurfaceDeterminantRank
+public import CCDN.Plane.IntegerPlaneLogHeight
 import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeCoordinates
-import CCDN.AuxiliaryPolynomial.HypersurfaceHeightComparison
-import CCDN.AuxiliaryPolynomial.HypersurfaceNormalizedComparison
 import CCDN.Determinant.HomogeneousDeterminantComparison
 
-/-! Preserve the bad-prime factor through the normalized no-auxiliary
-comparison, as required by the coefficient-sensitive CCDN Theorem 3.1.1.
-
-`AuxiliaryRankComparison order f d z bad` is the conclusion of the comparison for a
-finite prime set `bad`. It follows from a determinant lower bound with the charge of
-`bad` for every subfamily of the points (`auxiliaryRankComparison_of_determinant_lower`);
-the hypersurface instance uses the exact geometric bad-prime set. -/
+/-! Compare the archimedean minor bound with local divisibility, keeping the exact
+Hilbert rank and the bad-prime charge. -/
 
 @[expose] public section
 namespace CCDN
@@ -30,8 +26,52 @@ the bad-prime charge, for forms in `n + 3` variables: the determinant error plus
 archimedean error normalized by $(n + 2) / ((n + 1)!)^{1/(n + 1)}$. -/
 def hypersurfaceBadPrimeNormalizedError (n : ℕ) : ℝ :=
   hypersurfaceDeterminantError n +
-    (n + 2 : ℝ) * hypersurfaceArchimedeanError (n + 1) /
+    (n + 2 : ℝ) * (n + 1 : ℝ) /
       ((n + 1).factorial : ℝ) ^ (1 / (n + 1 : ℝ))
+
+/-- The bound on the bad-prime charge in terms of coefficient height. -/
+abbrev hypersurfaceHeightChargeBound (n d : ℕ) (H : ℝ) : ℝ :=
+  Real.log (hypersurfaceHeightConstant (n + 3) * (1 + Real.log H / (d : ℝ) ^ 2)) +
+    2 * mertensError + 1
+
+/-- Error in the normalized comparison after bounding the charge by height. -/
+def hypersurfaceNormalizedError (n : ℕ) : ℝ :=
+  hypersurfaceBadPrimeNormalizedError n +
+    (n + 1 : ℝ) * (Real.log (hypersurfaceHeightConstant (n + 3)) + 2 * mertensError + 1)
+
+/-- Divide the determinant bounds by the rank after absorbing the factorial. -/
+private theorem hypersurface_rank_comparison_normalized {r d M : ℕ}
+    (hr : 0 < r) (hd : 0 < d) (hdM : d ≤ M) (B L c E : ℝ) :
+    let s := hypersurfaceRank (r + 1) d M
+    (hcomparison : (r.factorial : ℝ) ^ (1 / (r : ℝ)) / (r + 1 : ℝ) *
+        (s : ℝ) ^ (1 + 1 / (r : ℝ)) *
+          (Real.log s - r * (4 * Real.log d + c) - E) ≤
+      Real.log (s.factorial : ℝ) + s * M * Real.log B -
+        ((r + 1 + (M - d)).choose (M - d) : ℝ) * Real.log L) →
+    NormalizedRankComparison r d M (Real.log B) (Real.log L) c
+      (E + (r + 1 : ℝ) * r / (r.factorial : ℝ) ^ (1 / (r : ℝ))) := by
+  intro s hcomparison
+  have hs : 0 < s := hypersurface_rank_pos hdM hd
+  have hs0 : (0 : ℝ) < s := by positivity
+  have hr0 : (0 : ℝ) < r := by positivity
+  let F := (r.factorial : ℝ) ^ (1 / (r : ℝ))
+  let S := (s : ℝ) ^ (1 / (r : ℝ))
+  let T := Real.log s - r * (4 * Real.log d + c) - E
+  have hF : F ≠ 0 := by positivity
+  
+  have hf := Real.log_factorial_le_mul_rpow s (one_div_pos.mpr hr0)
+  rw [div_div_eq_mul_div, div_one] at hf
+  rw [Real.rpow_add hs0, Real.rpow_one] at hcomparison
+  change F / (r + 1) * (s * S) * T ≤ _ at hcomparison
+  delta NormalizedRankComparison
+  dsimp only
+  rw [← sub_sub]
+  change F * S * (T - (r + 1) * r / F) ≤ (r + 1 : ℝ) *
+    (M * Real.log B - ((r + 1 + (M - d)).choose (M - d) : ℝ) / s * Real.log L)
+  apply le_of_mul_le_mul_right _ (show 0 < (s : ℝ) / (r + 1) by positivity)
+  convert (show F / (r + 1) * (s * S) * T - s * (S * r) ≤
+    s * M * Real.log B - ((r + 1 + (M - d)).choose (M - d) : ℝ) * Real.log L by
+      linarith only [hcomparison, hf]) using 1 <;> field_simp
 
 /-- The normalized no-auxiliary comparison with the charge of a finite prime set `bad`:
 for every radius `B ≥ 1` bounding the points `z` and every degree `M ≥ d` in which each
@@ -42,63 +82,42 @@ def AuxiliaryRankComparison {n t : ℕ} (order : MonomialOrder (Fin (n + 3)))
     (bad : Finset ℕ) : Prop :=
   ∀ ⦃B : ℝ⦄, 1 ≤ B → (∀ i, InBox (z i) B) → ∀ ⦃M : ℕ⦄, d ≤ M →
     (∀ g : MvPolynomial (Fin (n + 3)) ℤ, g.IsHomogeneous M → (∀ i, eval (z i) g = 0) → f ∣ g) →
-    ∃ s : ℕ, 0 < s ∧ s + (n + 2 + (M - d)).choose (M - d) = (n + 2 + M).choose M ∧
-      factorialRoot n * (s : ℝ) ^ (1 / (n + 1 : ℝ)) / ((n + 2 : ℝ) * M) *
-        (Real.log s - (n + 1 : ℝ) * (4 * Real.log d + (∑ p ∈ bad, Real.log p / p)) -
-          hypersurfaceBadPrimeNormalizedError n) ≤
-        Real.log B - ((n + 2 + (M - d)).choose (M - d) : ℝ) / ((M : ℝ) * s) *
-          Real.log |((order.leadingCoeff f : ℤ) : ℝ)|
-
-/-- The comparison follows from the rank-form determinant lower bound with the charge of
-`bad`, for every subfamily of the points and every family of common-degree forms. -/
-theorem auxiliaryRankComparison_of_determinant_lower {n d t : ℕ}
-    (order : MonomialOrder (Fin (n + 3))) (f : MvPolynomial (Fin (n + 3)) ℤ)
-    (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : 0 < d)
-    (z : Fin t → IntPoint (n + 3)) (hz : ∀ i, eval (z i) f = 0) (bad : Finset ℕ)
-    (hdet : ∀ ⦃s N M : ℕ⦄ (a : Fin s → Fin t) (F : Fin N → MvPolynomial (Fin (n + 3)) ℤ),
-      0 < s → (∀ j, (F j).IsHomogeneous M) →
-      LinearIndependent ℚ ((Matrix.of fun i j => eval (z (a i)) (F j)).map ((↑) : ℤ → ℚ)).row →
-      hypersurfaceRankLowerBound n s d (∑ p ∈ bad, Real.log p / p) ≤
-        Real.log (Int.Matrix.minorGcd (Matrix.of fun i j => eval (z (a i)) (F j)))) :
-    AuxiliaryRankComparison order f d z bad := by
-  intro B hB hbox M hdM hrel
-  obtain ⟨s, a, _, _, hr, hi, hupper⟩ :=
-    homogeneous_no_auxiliary_box_comparison order f hf hf0 hdM z hz hB hbox hrel
-  have hs := hypersurface_homogeneous_rank_pos hd hdM hr
-  let F := fun j => (monomial (homogeneousMonomials (n + 2) M j) 1 : MvPolynomial (Fin (n + 3)) ℤ)
-  have hF : ∀ j, (F j).IsHomogeneous M := fun j =>
-    isHomogeneous_monomial _ (homogeneousMonomials_degree (n + 2) M j)
-  have he : (Matrix.of fun i j => eval (z (a i)) (F j)) =
-      evaluationMatrix (homogeneousMonomials (n + 2) M) (z ∘ a) := by
-    ext i j
-    simp [F, evaluationMatrix, eval_monomial]
-  have hlower := hdet a F hs hF (by rw [he]; exact hi)
-  rw [he] at hlower
-  have hc := hlower.trans hupper
-  refine ⟨s, hs, hr, ?_⟩
-  have hnN : n + 1 + 1 = n + 2 := by omega
-  have hnR : (n : ℝ) + 1 + 1 = n + 2 := by ring
-  have hh := hypersurface_rank_comparison_normalized (r := n + 1) (by omega) hd hdM hr
-    B |((order.leadingCoeff f : ℤ) : ℝ)| (primeSetFactor bad)
-    (hypersurfaceDeterminantError n)
-    (by simpa only [hypersurfaceRankLowerBound, hnN, Nat.cast_add, Nat.cast_one, hnR,
-      Real.log_exp] using hc)
-  simpa only [hypersurfaceBadPrimeNormalizedError, hnN, Nat.cast_add, Nat.cast_one, hnR,
-    Real.log_exp] using hh
+    NormalizedRankComparison (n + 1) d M (Real.log B)
+        (Real.log |((order.leadingCoeff f : ℤ) : ℝ)|) (∑ p ∈ bad, Real.log p / p)
+        (hypersurfaceBadPrimeNormalizedError n)
 
 /-- The comparison retaining `log b(f)` for the exact geometric bad-prime set, rather
-than replacing it by the coefficient-height upper bound. -/
+than bounding it in terms of height. -/
 theorem hypersurface_auxiliaryRankComparison {n d t : ℕ}
     (order : MonomialOrder (Fin (n + 3))) (f : MvPolynomial (Fin (n + 3)) ℤ)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : 0 < d)
     (z : Fin t → IntPoint (n + 3)) (hprim : ∀ i, Finset.univ.gcd (z i) = 1)
     (hz : ∀ i, eval (z i) f = 0) (bad : Finset ℕ)
     (hbad : ∀ p, p ∈ bad ↔ stepanovThreshold d < p ∧ HypersurfaceBadReduction f p) :
-    AuxiliaryRankComparison order f d z bad :=
-  auxiliaryRankComparison_of_determinant_lower order f hf hf0 hd z hz bad
-    fun _ _ _ a F hs hF hi => hypersurface_determinant_log_lower_at_rank hs f hf hd F hF
-      (z ∘ a) (fun i => hprim (a i)) (fun i => hz (a i)) hi bad
-      fun p _ hp hcut => hasGoodReduction_of_not_mem hbad p (Finset.mem_sdiff.mp hp).2 hcut
+    AuxiliaryRankComparison order f d z bad := by
+  intro B hB hbox M hdM hrel
+  obtain ⟨a, hi, hupper⟩ :=
+    homogeneous_no_auxiliary_box_comparison order f hf hf0 hdM z hz hB hbox hrel
+  have hs := hypersurface_rank_pos (r := n + 1) hdM hd
+  let F := fun j => (monomial (homogeneousMonomials (n + 2) M j) 1 : MvPolynomial (Fin (n + 3)) ℤ)
+  have hF : ∀ j, (F j).IsHomogeneous M := fun j =>
+    isHomogeneous_monomial _ (homogeneousMonomials_degree (n + 2) M j)
+  have he : (Matrix.of fun i j => eval ((z ∘ a) i) (F j)) =
+      evaluationMatrix (homogeneousMonomials (n + 2) M) (z ∘ a) :=
+    evaluationMatrix_eq_eval _ _
+  have hlower := hypersurface_determinant_log_lower_at_rank (z := z ∘ a) hs f hf hd
+    ⟨hF, fun i => hprim (a i), fun i => hz (a i), by rwa [he]⟩ bad hbad
+    ∅ (by simp) 0 (by simp)
+  simp only [he, Finset.union_empty, CharP.cast_eq_zero, zero_mul, add_zero, Finset.sum_empty] at hlower
+  have hc := hlower.trans hupper
+  have hnN : n + 1 + 1 = n + 2 := by omega
+  have hnR : (n : ℝ) + 1 + 1 = n + 2 := by ring
+  have hh := hypersurface_rank_comparison_normalized (r := n + 1) (by omega) hd hdM
+    B |((order.leadingCoeff f : ℤ) : ℝ)| (∑ p ∈ bad, Real.log p / p)
+    (hypersurfaceDeterminantError n)
+    (by simpa only [hypersurfaceRankLowerBound, hnN, Nat.cast_add, Nat.cast_one, hnR,
+      Real.log_exp] using hc)
+  simpa only [hypersurfaceBadPrimeNormalizedError, Nat.cast_add, Nat.cast_one, hnR] using hh
 
 end
 end CCDN

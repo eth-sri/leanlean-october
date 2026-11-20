@@ -9,9 +9,13 @@ public import CCDN.Plane.FiniteFieldConstants
 public import CCDN.Plane.ParameterIncidence
 public import Mathlib.Algebra.Field.ZMod
 public import Mathlib.Analysis.Real.Sqrt
-import CCDN.AuxiliaryPolynomial.PlaneBadPrimes
+import CCDN.Analysis.PrimeCutoff
+import CCDN.AuxiliaryPolynomial.ConstantLeadingBadReduction
+import CCDN.AuxiliaryPolynomial.HypersurfaceBadReduction
+import CCDN.Height.IntegerCoefficientHeight
 import CCDN.Noether.ShearNormalization
-import CCDN.Plane.CurveCount
+import CCDN.ForMathlib.MvPolynomial
+import CCDN.Plane.FiniteFieldCount
 import CCDN.Plane.FiniteFieldZeroPlanes
 
 /-! Section-point bounds in the good, nonzero and unrestricted cases.
@@ -42,14 +46,18 @@ def planeSectionPolynomial {K σ : Type*} [CommRing K]
     (f : MvPolynomial σ K) (v : PlaneParameters σ → K) : MvPolynomial (Fin 2) K :=
   (bivariatePolynomialEquiv K).symm (universalPlaneSection f v)
 
+section
+
+variable {K σ : Type*} [CommRing K]
+  (f : MvPolynomial σ K) (v : PlaneParameters σ → K)
+include K σ f v
+
 /-- A plane section of `f` has total degree at most that of `f`. -/
-lemma planeSectionPolynomial_totalDegree {K σ : Type*} [CommRing K]
-    (f : MvPolynomial σ K) (v : PlaneParameters σ → K) :
+lemma planeSectionPolynomial_totalDegree :
     (planeSectionPolynomial f v).totalDegree ≤ f.totalDegree :=
   universalPlanePolynomial_specialization_totalDegree f (eval v)
 
-private lemma planeSectionPoints_card_eq {K σ : Type*} [CommRing K]
-    (f : MvPolynomial σ K) (v : PlaneParameters σ → K) :
+private lemma planeSectionPoints_card_eq :
     Nat.card (PlaneSectionPoints f v) =
       Nat.card {t : Fin 2 → K // eval t (planeSectionPolynomial f v) = 0} := by
   have he (t : Fin 2 → K) : eval t (planeSectionPolynomial f v) =
@@ -60,6 +68,8 @@ private lemma planeSectionPoints_card_eq {K σ : Type*} [CommRing K]
           invFun := fun t => ⟨t.val, by rw [← he]; exact t.property⟩
           left_inv := fun _ => rfl
           right_inv := fun _ => rfl }
+
+end
 
 /-- The number of points of a plane section over a finite ring `K` is at most `|K| ^ 2`. -/
 lemma planeSectionPoints_card_le_square {K σ : Type*} [CommRing K] [Fintype K]

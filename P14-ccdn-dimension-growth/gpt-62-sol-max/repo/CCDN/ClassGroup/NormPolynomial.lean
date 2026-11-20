@@ -8,6 +8,7 @@ module
 public import CCDN.Noether.BivariateTotalDegree
 public import Mathlib.LinearAlgebra.Charpoly.Basic
 public import Mathlib.NumberTheory.NumberField.Basic
+import CCDN.Noether.ShearNormalization
 import CCDN.Plane.GridHeight
 
 /-! Integral norm polynomials and the two signed plane equations
@@ -66,8 +67,7 @@ lemma square_norm_yields_signedNormCurve_point
     MvPolynomial.eval ![(m : ℤ), x] (signedNormCurvePolynomial K β 1) = 0 ∨
       MvPolynomial.eval ![(m : ℤ), x] (signedNormCurvePolynomial K β (-1)) = 0 := by
   have ha : |Algebra.norm ℤ (algebraMap ℤ (𝓞 K) x - β)| = (m : ℤ) ^ 2 := by
-    simpa only [Int.natCast_natAbs, Nat.cast_pow]
-      using congrArg (Nat.cast : ℕ → ℤ) h
+    linarith
   rcases (abs_eq (by positivity)).mp ha with hp | hn
   · left
     rw [signedNormCurvePolynomial_eval, hp]
@@ -75,6 +75,18 @@ lemma square_norm_yields_signedNormCurve_point
   · right
     rw [signedNormCurvePolynomial_eval, hn]
     ring
+
+/-- The signed norm equation after mapping integer coefficients to a field. -/
+lemma signedNormCurvePolynomial_bivariate_map (E : Type*) [Field E] (β : 𝓞 K) (ε : ℤ) :
+    bivariatePolynomialEquiv E
+      (MvPolynomial.map (Int.castRingHom E) (signedNormCurvePolynomial K β ε)) =
+      X ^ 2 - C (C (ε : E) *
+        (integerNormPolynomial K β).map (Int.castRingHom E)) := by
+  rw [← bivariatePolynomialEquiv_map]
+  simp only [signedNormCurvePolynomial, AlgEquiv.apply_symm_apply]
+  change Polynomial.map (Polynomial.mapRingHom (Int.castRingHom E))
+    (X ^ 2 - C (C ε * integerNormPolynomial K β)) = _
+  simp
 
 end
 end CCDN

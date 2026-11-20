@@ -89,7 +89,7 @@ theorem sum_planeSectionPoints_card {K σ : Type*} [CommRing K] [Fintype K] [Fin
   let (v : PlaneParameters σ → K) : Fintype (PlaneSectionPoints f v) :=
     inferInstanceAs (Fintype {t : Fin 2 → K //
       bivariateEval (t 0) (t 1) (universalPlaneSection f v) = 0})
-  simp only [Nat.card_eq_fintype_card, Fintype.card_sigma]
+  aesop
 
 end
 end CCDN

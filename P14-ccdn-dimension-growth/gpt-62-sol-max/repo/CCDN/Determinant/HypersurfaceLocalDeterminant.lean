@@ -7,6 +7,7 @@ module
 
 public import CCDN.Determinant.FilteredDeterminant
 import CCDN.Determinant.HypersurfaceHilbert
+import Mathlib.Data.Nat.Choose.Sum
 
 /-! A coefficient-independent local determinant exponent for hypersurfaces.
 The exponent is an explicit finite sum depending only on dimension,
@@ -42,16 +43,6 @@ private lemma hypersurface_cumulative_capacity_ge (n k : ℕ) {μ : ℕ} (hμ : 
   rw [Nat.add_comm 1 k, Nat.choose_succ_self_right] at h
   exact h.trans (Nat.le_mul_of_pos_left _ hμ)
 
-/-- Hockey-stick identity: `∑_{k < K} (n + k).choose n = (n + K).choose (n + 1)`. -/
-lemma sum_cumulative_binomial (n K : ℕ) :
-    (∑ k ∈ Finset.range K, (n + k).choose n) = (n + K).choose (n + 1) := by
-  induction K with
-  | zero => simp
-  | succ K ih =>
-    rw [Finset.sum_range_succ, ih]
-    rw [show n + (K + 1) = (n + K) + 1 by omega, Nat.choose_succ_succ']
-    omega
-
 /-- Cutoffs beyond s add no positive deficits. Hence the finite
 exponent controls every numerical cutoff. -/
 private lemma sum_hypersurface_deficits_le (n s K : ℕ) {μ : ℕ} (hμ : 0 < μ) :
@@ -65,7 +56,7 @@ private lemma sum_hypersurface_deficits_le (n s K : ℕ) {μ : ℕ} (hμ : 0 < �
     have he := Finset.sum_subset hsub (f := fun k => s - μ * (n + 1 + k).choose (n + 1))
     apply le_of_eq (he ?_).symm
     intro k _ hk
-    have hs : s ≤ k := by simpa only [Finset.mem_range, not_lt] using hk
+    have hs : s ≤ k := by grind
     have hc := hypersurface_cumulative_capacity_ge n k hμ
     omega
 
@@ -78,7 +69,12 @@ theorem hypersurfaceMultiplicityExponent_cutoff (n s K : ℕ) {μ : ℕ} (hμ : 
     (f := fun _ => s)
     (g := fun k => (s - μ * (n + 1 + k).choose (n + 1)) +
       μ * (n + 1 + k).choose (n + 1)) (fun k _ => by omega)
-  rw [Finset.sum_add_distrib, ← Finset.mul_sum, sum_cumulative_binomial] at hsum
+  have hchoose : (∑ k ∈ Finset.range K, (n + 1 + k).choose (n + 1)) =
+      (n + 1 + K).choose (n + 2) := by
+    cases K with
+    | zero => simp
+    | succ k => simpa [Nat.add_comm (n + 1), Nat.add_assoc, show 1 + (n + 1) = n + 2 by omega] using Nat.sum_range_add_choose k (n + 1)
+  rw [Finset.sum_add_distrib, ← Finset.mul_sum, hchoose] at hsum
   simp only [Finset.sum_const, Finset.card_range, smul_eq_mul] at hsum
   have h := sum_hypersurface_deficits_le n s K hμ
   nlinarith

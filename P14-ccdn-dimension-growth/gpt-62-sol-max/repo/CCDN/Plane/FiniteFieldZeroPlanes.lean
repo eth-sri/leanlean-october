@@ -64,7 +64,7 @@ theorem finite_field_zero_plane_parameters_card
       f.totalDegree ^ 3 * Fintype.card K ^ (3 * Fintype.card σ) := by
   have h := (zero_plane_parameters_card_le_cube f).trans
     (Nat.pow_le_pow_left (finite_field_polynomial_zeros_card f hf) 3)
-  simpa only [Fintype.card_option, Nat.add_sub_cancel, mul_pow, ← pow_mul, Nat.mul_comm] using h
+  simpa [Fintype.card_option, Nat.add_sub_cancel, mul_pow, ← pow_mul, Nat.mul_comm] using h
 
 end
 end CCDN

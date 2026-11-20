@@ -51,16 +51,14 @@ lemma hypersurfaceLayerBound_succ_succ (n μ k : ℕ) :
       (n + (k + 1)).choose n + hypersurfaceLayerBound (n + 1) μ k := by
   have hchoose : (n + 1 + (k + 1)).choose (n + 1) =
       (n + (k + 1)).choose n + (n + 1 + k).choose (n + 1) := by
-    rw [show n + 1 + (k + 1) = (n + 1 + k) + 1 by omega, Nat.choose_succ_succ']
-    rw [show n + 1 + k = n + (k + 1) by omega]
+    grind
   unfold hypersurfaceLayerBound
   rw [hchoose]
   by_cases hk : μ ≤ k
   · rw [ite_eq_left hk, ite_eq_left (by omega : μ + 1 ≤ k + 1), Nat.add_sub_add_right]
     have hmono := Nat.choose_le_choose (n + 1) (show n + 1 + (k - μ) ≤ n + 1 + k by omega)
     omega
-  · rw [ite_eq_right hk, ite_eq_right (by omega : ¬ μ + 1 ≤ k + 1)]
-    omega
+  grind
 
 /-- A uniform shifted bound with the exact leading coefficient. The dimension
 is n+1; unlike the sharper error in CCDN 2.1, the lower terms here may contain μ. -/
@@ -98,9 +96,7 @@ theorem originLayer_cumulative_le {K : Type*} [Field K] {n μ : ℕ}
     (hμ : homogeneousComponent μ f ≠ 0) (k : ℕ) :
     (∑ j : Fin (k + 1), Module.finrank K (originLayer f j.val)) ≤
       μ * (n + k + 1).choose (n + 1) := by
-  exact (Finset.sum_le_sum (fun j _ =>
-    originLayer_finrank_le_hypersurfaceLayerBound f hf hμ)).trans
-      (sum_hypersurfaceLayerBound_le n μ k)
+  exact LE.le.trans (Finset.sum_le_sum fun j x => originLayer_finrank_le_hypersurfaceLayerBound f hf hμ) (sum_hypersurfaceLayerBound_le n μ k)
 
 end
 end CCDN

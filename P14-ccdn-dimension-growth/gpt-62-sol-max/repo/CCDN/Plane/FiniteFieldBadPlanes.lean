@@ -34,8 +34,7 @@ homomorphism `ψ.comp φ` is the same as mapping along `φ` and then along `ψ`.
 lemma bivariateMap_comp_apply {R S T : Type*} [CommRing R] [CommRing S] [CommRing T]
     (φ : R →+* S) (ψ : S →+* T) (f : Polynomial (Polynomial R)) :
     bivariateMap (ψ.comp φ) f = bivariateMap ψ (bivariateMap φ f) := by
-  ext i j
-  simp only [bivariateMap_coeff, RingHom.comp_apply]
+  aesop
 
 private lemma badPlaneParameters_witness_zero {K σ : Type*} [Field K] {p : ℕ} [CharP K p]
     (f : MvPolynomial σ K) (hpos : 0 < f.totalDegree) (hchar : f.totalDegree < p)
@@ -46,27 +45,32 @@ private lemma badPlaneParameters_witness_zero {K σ : Type*} [Field K] {p : ℕ}
   have hbase := universalPlaneBadWitness_good_specialization f hpos (.of_charP hchar) rows cols
     (eval v.val) h
   rcases v.property with hdeg | hir
-  · exact hdeg hbase.2.1
+  tauto
   · let L := AlgebraicClosure K
-    let φ : K →+* L := algebraMap K L
+    let φ := algebraMap K L
     have hw : (φ.comp (eval v.val)) (universalPlaneBadWitness f rows cols) ≠ 0 :=
       (map_ne_zero_iff φ φ.injective).mpr h
     have hh := universalPlaneBadWitness_good_specialization f hpos
       ((CharZeroOrGT.of_charP hchar).map φ) rows cols _ hw
     apply hir
-    simpa only [bivariateMap_comp_apply, universalPlaneSection, φ] using hh.2.2
+    simpa [bivariateMap_comp_apply, universalPlaneSection, φ] using hh.2
+
+section
+
+variable {K σ : Type*} [Field K] [Fintype K] [Fintype σ] {p : ℕ} [CharP K p]
+  (f : MvPolynomial (Option σ) K)
+  (hf : Irreducible (MvPolynomial.map (algebraMap K (AlgebraicClosure K)) f))
+  (hpos : 0 < f.totalDegree) (hchar : 2 * f.totalDegree ^ 2 < p)
+include K σ p f hf hpos hchar
 
 /-- The proportion of geometrically bad plane parameters is at most 2*d^3/q. -/
-private theorem finite_field_bad_plane_parameters_mul_card
-    {K σ : Type*} [Field K] [Fintype K] [Fintype σ] {p : ℕ} [CharP K p]
-    (f : MvPolynomial (Option σ) K)
-    (hf : Irreducible (MvPolynomial.map (algebraMap K (AlgebraicClosure K)) f))
-    (hpos : 0 < f.totalDegree) (hchar : 2 * f.totalDegree ^ 2 < p) :
+private theorem finite_field_bad_plane_parameters_mul_card :
     Nat.card (BadPlaneParameters f) * Fintype.card K ≤
       (2 * f.totalDegree ^ 3) * Fintype.card K ^ Fintype.card (PlaneParameters (Option σ)) := by
   classical
-  obtain ⟨rows, cols, hw, hdeg⟩ := exists_universalPlane_badWitness f hf hpos
-    (.of_charP hchar)
+  obtain ⟨rows, cols, hw, hdeg⟩ := exists_universalPlane_badWitness f (algebraMap K (AlgebraicClosure K))
+    (algebraMap K (AlgebraicClosure K)).injective hf hpos
+    ((CharZeroOrGT.of_charP hchar).map (algebraMap K (AlgebraicClosure K)))
   let W := universalPlaneBadWitness f rows cols
   have hdp : f.totalDegree < p := by nlinarith
   let ψ : BadPlaneParameters f → {v : PlaneParameters (Option σ) → K // eval v W = 0} :=
@@ -83,23 +87,18 @@ private theorem finite_field_bad_plane_parameters_mul_card
 
 /-- In m ambient coordinates, at most 2*d^3*q^(3*m-1) parameter choices
 are bad. This counts triples (base point, first direction, second direction). -/
-theorem finite_field_bad_plane_parameters_card
-    {K σ : Type*} [Field K] [Fintype K] [Fintype σ] {p : ℕ} [CharP K p]
-    (f : MvPolynomial (Option σ) K)
-    (hf : Irreducible (MvPolynomial.map (algebraMap K (AlgebraicClosure K)) f))
-    (hpos : 0 < f.totalDegree) (hchar : 2 * f.totalDegree ^ 2 < p) :
+theorem finite_field_bad_plane_parameters_card :
     Nat.card (BadPlaneParameters f) ≤
       (2 * f.totalDegree ^ 3) * Fintype.card K ^ (3 * (Fintype.card σ + 1) - 1) := by
   have h := finite_field_bad_plane_parameters_mul_card f hf hpos hchar
-  have hN : 1 ≤ Fintype.card (PlaneParameters (Option σ)) := Fintype.card_pos
+  
   have he : Fintype.card K ^ Fintype.card (PlaneParameters (Option σ)) =
       Fintype.card K ^ (Fintype.card (PlaneParameters (Option σ)) - 1) * Fintype.card K := by
-    rw [← pow_succ, Nat.sub_add_cancel hN]
+    simp
   rw [he, ← Nat.mul_assoc] at h
-  have hc : Nat.card (BadPlaneParameters f) ≤
-      (2 * f.totalDegree ^ 3) * Fintype.card K ^ (Fintype.card (PlaneParameters (Option σ)) - 1) :=
-    Nat.le_of_mul_le_mul_right h Fintype.card_pos
-  simpa [PlaneParameters, Nat.mul_comm] using hc
+  simpa [PlaneParameters, Nat.mul_comm] using (Nat.le_of_mul_le_mul_right h Fintype.card_pos)
+
+end
 
 end
 end CCDN

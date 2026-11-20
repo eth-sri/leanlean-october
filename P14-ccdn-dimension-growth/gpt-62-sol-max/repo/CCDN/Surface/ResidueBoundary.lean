@@ -6,12 +6,13 @@ Authors: Jason Davies
 module
 
 public import CCDN.Surface.CongruenceFamily
-public import CCDN.Surface.CongruencePrimeWindow
+public import CCDN.Surface.SmoothPrimeWindow
 public import CCDN.Surface.CurveComponents
-import CCDN.AuxiliaryPolynomial.PlaneAuxiliaryCount
+import CCDN.Algebra.IntegerRationalIrreducibility
 import CCDN.Surface.CurveCrossing
-import CCDN.Surface.ResidueSubsetBoundary
-import CCDN.Surface.SmoothPrimeWindow
+import CCDN.Surface.CompleteIntersectionDegreeBudget
+import CCDN.Analysis.SmallDegreeSurfaceNumerics
+import Mathlib.Data.Finset.Max
 
 /-! A nonsingular point on a large-degree initial curve must cross a
 proper auxiliary section along a one-prime deletion edge. This constructs
@@ -22,81 +23,26 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Finset
 
-/-- The quantity `1 + log B + (log 4 + 4) c L`, with `c` the constant `scalingPrimeRatio`,
-which bounds `1 + log B + ∑ p ∈ R, log p` for every set `R` of primes in the prime window of
-logarithmic size `L`. -/
-def surfaceResidueLogBudget (B L : ℝ) : ℝ :=
-  1 + Real.log B + (Real.log 4 + 4) * scalingPrimeRatio * L
-
-/-- The parameters of the residue cover of the surface `f = 0` in the box of radius `B ≥ 1`:
-the coefficients of `f` are bounded by `H ≥ 1`; the logarithmic prime window `L ≥ 1` dominates
-`4 log(d + 1) + log H + d log B`, which bounds the logarithm of a partial derivative of `f` at
-a point of the box, where `d` is the degree of `f`; and the residue-modulus cutoff `X`
-satisfies `1 < X`, `B^(1/√d) ≤ X` and `X ≤ e^L`. -/
-structure IsSurfaceResidueWindow (f : MvPolynomial (Fin 3) ℤ) (B H L X : ℝ) : Prop where
-  /-- The box radius is at least one. -/
+/-- A prime window large enough that each nonsingular point retains 18 smooth primes. -/
+structure IsSurfaceResidueWindow (f : MvPolynomial (Fin 3) ℤ) (B H : ℝ) (W : Finset ℕ) : Prop where
   one_le_radius : 1 ≤ B
-  /-- The height bound is at least one. -/
   one_le_height : 1 ≤ H
-  /-- The logarithmic size of the prime window is at least one. -/
-  one_le_window : 1 ≤ L
-  /-- The coefficients of `f` are bounded by `H` in absolute value. -/
+  five_le_degree : 5 ≤ f.totalDegree
   coeff_le : CoefficientHeightLE f H
-  /-- The window dominates the logarithmic size of a partial derivative of `f` on the
-  box. -/
-  log_le_window : 4 * Real.log ((f.totalDegree : ℝ) + 1) +
-    Real.log H + f.totalDegree * Real.log B ≤ L
-  /-- The modulus cutoff exceeds one. -/
-  one_lt_cutoff : 1 < X
-  /-- The modulus cutoff is at least `B^(1/√d)`. -/
-  root_le_cutoff : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) ≤ X
-  /-- The modulus cutoff is at most `exp L`. -/
-  cutoff_le_exp : X ≤ Real.exp L
-
-/-- For a finite set `P` of primes, the exponential of `∑ p ∈ P, log p` is `∏ p ∈ P, p`. -/
-lemma exp_sum_log_primes (P : Finset ℕ) (hP : ∀ p ∈ P, p.Prime) :
-    Real.exp (∑ p ∈ P, Real.log p) = ∏ p ∈ P, (p : ℝ) := by
-  rw [Real.exp_sum]
-  apply prod_congr rfl
-  intro p hp
-  exact Real.exp_log (by exact_mod_cast (hP p hp).pos)
+  prime : ∀ p ∈ W, p.Prime
+  log_lower : ∀ p ∈ W, (Real.log B + 1) / 40 ≤ Real.log p
+  derivative_bound : 4 * Real.log ((f.totalDegree : ℝ) + 1) + Real.log H + f.totalDegree * Real.log B ≤
+    ((W.card : ℝ) - 18) * ((Real.log B + 1) / 40)
 
 private lemma SurfaceCongruenceFamily.terminal_degree_le
-    {f : MvPolynomial (Fin 3) ℤ} {B A L X : ℝ}
-    (F : SurfaceCongruenceFamily f B A) (hB : 1 ≤ B) (hA : 0 ≤ A) (hL : 1 ≤ L)
-    (P : Finset ℕ) (hPW : P ⊆ congruencePrimeWindow L)
-    (hP : ∀ p ∈ P, p.Prime) (r : SmoothAffineResidueFamily f P)
-    (hX : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) ≤ X)
-    (hprod : X ≤ ∏ p ∈ P, (p : ℝ)) :
-    ((F.auxiliary P hP r).totalDegree : ℝ) ≤ 2 * A * surfaceResidueLogBudget B L := by
-  have hQ : 0 ≤ ∑ p ∈ P, Real.log p := sum_nonneg (fun p _ => Real.log_natCast_nonneg p)
-  have hlogB := Real.log_nonneg hB
-  have hlog : (∑ p ∈ P, Real.log p) ≤
-      (Real.log 4 + 4) * scalingPrimeRatio * L :=
-    (sum_le_sum_of_subset_of_nonneg hPW (fun p _ _ => Real.log_natCast_nonneg p)).trans
-      (congruencePrimeWindow_log_upper hL)
+    {f : MvPolynomial (Fin 3) ℤ} {B A : ℝ} {W : Finset ℕ}
+    (F : SurfaceCongruenceFamily f B A) (hB : 1 ≤ B) (hA : 0 ≤ A)
+    (P : Finset ℕ) (hPW : P ⊆ W) (hP : ∀ p ∈ P, p.Prime) (r : SmoothAffineResidueFamily f P)
+    (hprod : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) ≤ ∏ p ∈ P, (p : ℝ)) :
+    ((F.auxiliary P hP r).totalDegree : ℝ) ≤ 2 * A * surfaceResidueLogBudget B W := by
   have hden : 0 < ∏ p ∈ P, (p : ℝ) := prod_pos (fun p hp => by exact_mod_cast (hP p hp).pos)
-  have hratio : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) /
-      Real.exp (∑ p ∈ P, Real.log p) ≤ 1 := by
-    rw [exp_sum_log_primes P hP]
-    exact (div_le_one hden).mpr (hX.trans hprod)
-  have hT : 0 ≤ surfaceResidueLogBudget B L := by
-    unfold surfaceResidueLogBudget
-    have hlogB := Real.log_nonneg hB
-    linarith
-  have hd := F.degree_le P hP r
-  calc
-    _ ≤ A * (B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) /
-        Real.exp (∑ p ∈ P, Real.log p) + 1) *
-        (1 + Real.log B + ∑ p ∈ P, Real.log p) := hd
-    _ ≤ A * 2 * surfaceResidueLogBudget B L := by
-      apply mul_le_mul
-      · exact mul_le_mul_of_nonneg_left (by linarith) hA
-      · dsimp only [surfaceResidueLogBudget]
-        linarith
-      · positivity
-      · positivity
-    _ = _ := by ring
+  apply le_of_mul_le_mul_right _ hden
+  linear_combination F.scaled_degree_le hA hB hprod hPW hP r
 
 private lemma surface_prime_curve_degree_le
     (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
@@ -104,112 +50,122 @@ private lemma surface_prime_curve_degree_le
     d ≤ f.totalDegree * g.totalDegree := by
   have hh := surface_prime_curve_degree_sum_le f g hf hfg {I} (fun _ => d)
     (fun P hP => by
-      have he : P = I := mem_singleton.mp hP
-      subst P
-      exact ⟨hI, hgI⟩)
-  simpa only [sum_singleton] using hh
+      simp_all)
+  assumption
 
-/-- A one-prime deletion edge `R.erase p ⊂ R` of the congruence family `F`, at the smooth
-residues `r`, crossing the curve `I` near the point `x`: the primes of `R` lie in the window of
-log-size `L`, the modulus of `R` is less than `c L X` and that of `R.erase p` is less than `X`
-(where `c` is `scalingPrimeRatio`), the parent auxiliary lies in `I`, the child auxiliary does
-not, and the child vanishes at `x`. -/
-structure IsSurfaceResidueEdge {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
-    (F : SurfaceCongruenceFamily f B A) (I : Ideal (CoordinatePolynomial 3)) (L X : ℝ)
-    (x : IntPoint 3) (R : Finset ℕ) (hR : ∀ p ∈ R, p.Prime) (p : ℕ)
-    (r : SmoothAffineResidueFamily f R) : Prop where
-  /-- The primes of `R` lie in the prime window of logarithmic size `L`. -/
-  subset_window : R ⊆ congruencePrimeWindow L
-  /-- The product of the primes of `R` is less than `c L X`, with `c` the constant
-  `scalingPrimeRatio`. -/
-  prod_lt : (∏ q ∈ R, (q : ℝ)) < scalingPrimeRatio * L * X
-  /-- The product of the primes of `R.erase p` is less than `X`. -/
-  erase_prod_lt : (∏ q ∈ R.erase p, (q : ℝ)) < X
-  /-- The auxiliary attached to `R.erase p`, over `ℚ`, lies in the ideal `I` of the curve. -/
-  parent_mem : map (Int.castRingHom ℚ)
-    (F.auxiliary (R.erase p) (fun q hq => hR q (mem_of_mem_erase hq))
-      (r.restrict (erase_subset p R))) ∈ I
-  /-- The auxiliary attached to `R`, over `ℚ`, does not lie in the ideal `I`. -/
-  child_not_mem : map (Int.castRingHom ℚ) (F.auxiliary R hR r) ∉ I
-  /-- The auxiliary attached to `R` vanishes at `x`. -/
-  child_vanishes : eval x (F.auxiliary R hR r) = 0
+private theorem exists_subset_erase_boundary {α : Type*} [DecidableEq α] (R : Finset α)
+    (W : Finset α → Prop) (hempty : ¬ W ∅) (hR : W R) :
+    ∃ T : Finset α, T ⊆ R ∧ ∃ p ∈ T, W T ∧ ¬ W (T.erase p) := by
+  classical
+  let S := R.powerset.filter W
+  have hS : S.Nonempty := ⟨R, mem_filter.mpr ⟨mem_powerset.mpr (Subset.refl _), hR⟩⟩
+  obtain ⟨T, hTS, hmin⟩ := S.exists_min_image Finset.card hS
+  obtain ⟨hTR, hWT⟩ := mem_filter.mp hTS
+  have hTne : T.Nonempty := by
+    apply nonempty_iff_ne_empty.mpr
+    rintro rfl
+    exact hempty hWT
+  obtain ⟨p, hp⟩ := hTne
+  refine ⟨T, mem_powerset.mp hTR, p, hp, hWT, ?_⟩
+  intro he
+  have herase : T.erase p ∈ S := mem_filter.mpr
+    ⟨mem_powerset.mpr (Subset.trans (erase_subset p T) (mem_powerset.mp hTR)), he⟩
+  exact (not_le_of_gt (card_lt_card (erase_ssubset hp))) (hmin _ herase)
+
+
+open Classical in
+/-- For a congruence family `F`, a set `R` of primes, a prime `p` and smooth residues `r`
+modulo `R`, the rational points on curves `I ∈ S` whose ideal contains the auxiliary of
+`R.erase p` but not the one of `R`, and at which the latter auxiliary vanishes. -/
+def surfaceResidueCrossing {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
+    (F : SurfaceCongruenceFamily f B A)
+    (S : Finset (Ideal (CoordinatePolynomial 3)))
+    (R : Finset ℕ) (hR : ∀ p ∈ R, p.Prime) (p : ℕ)
+    (r : SmoothAffineResidueFamily f R) : Set (RatPoint 3) :=
+  let g := map (Int.castRingHom ℚ) (F.eraseAuxiliary hR p r)
+  let h := map (Int.castRingHom ℚ) (F.auxiliary R hR r)
+  ⋃ I ∈ S.filter (fun I => g ∈ I ∧ h ∉ I), idealZeroLocus I ∩ zeroLocus h
+
+/-- Union over the primes in one residue modulus. -/
+def surfaceResidueSubsetLocus {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
+    (F : SurfaceCongruenceFamily f B A) (S : Finset (Ideal (CoordinatePolynomial 3)))
+    (W : Finset ℕ) (hW : ∀ p ∈ W, p.Prime) (R : Finset ℕ) : Set (RatPoint 3) :=
+  if hR : R ⊆ W then
+    ⋃ p ∈ R, ⋃ r : SmoothAffineResidueFamily f R,
+      surfaceResidueCrossing F S R (fun q hq => hW q (hR hq)) p r
+  else ∅
+
+/-- The union of crossing loci for moduli of at most 18 primes. -/
+def surfaceResidueResidualLocus {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
+    (F : SurfaceCongruenceFamily f B A) (S : Finset (Ideal (CoordinatePolynomial 3)))
+    (W : Finset ℕ) (hW : ∀ p ∈ W, p.Prime) : Set (RatPoint 3) :=
+  ⋃ R ∈ W.powerset.filter (fun R => R.card ≤ 18), surfaceResidueSubsetLocus F S W hW R
+
+private theorem mem_surfaceResidueResidualLocus
+    {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ} {W : Finset ℕ}
+    (F : SurfaceCongruenceFamily f B A) (S : Finset (Ideal (CoordinatePolynomial 3)))
+    (hW : ∀ p ∈ W, p.Prime) (R : Finset ℕ) (hRW : R ⊆ W) (hcard : R.card ≤ 18)
+    (hR : ∀ p ∈ R, p.Prime) (p : ℕ) (hp : p ∈ R)
+    (r : SmoothAffineResidueFamily f R) {x : RatPoint 3}
+    (hx : x ∈ surfaceResidueCrossing F S R hR p r) :
+    x ∈ surfaceResidueResidualLocus F S W hW := by
+  refine Set.mem_iUnion.mpr ⟨R, Set.mem_iUnion.mpr ⟨mem_filter.mpr ⟨mem_powerset.mpr hRW, hcard⟩, ?_⟩⟩
+  simp only [surfaceResidueSubsetLocus, dite_eq_left hRW]
+  exact Set.mem_iUnion.mpr ⟨p, Set.mem_iUnion.mpr ⟨hp, Set.mem_iUnion.mpr ⟨r, hx⟩⟩⟩
 
 /-- A point on an initial prime curve above the terminal degree cutoff
 lies in a proper section across a bounded-modulus residue edge. -/
-theorem surface_residue_boundary_of_large_curve
+theorem large_curve_point_mem_surfaceResidueResidualLocus
     (f : MvPolynomial (Fin 3) ℤ)
     (hir : Irreducible (map (Int.castRingHom ℚ) f))
-    {A B H L X : ℝ} (hA : 0 ≤ A) (hW : IsSurfaceResidueWindow f B H L X)
+    {A B H : ℝ} {W : Finset ℕ} (hA : 0 ≤ A) (hW : IsSurfaceResidueWindow f B H W)
     (F : SurfaceCongruenceFamily f B A)
-    (I : Ideal (CoordinatePolynomial 3)) {d : ℕ}
+    (S : Finset (Ideal (CoordinatePolynomial 3)))
+    (I : Ideal (CoordinatePolynomial 3)) (hIS : I ∈ S) {d : ℕ}
     (hI : IsSurfaceCurve (map (Int.castRingHom ℚ) f) I d)
     (hinitI : map (Int.castRingHom ℚ) F.initial ∈ I)
-    (hlarge : 2 * f.totalDegree * A * surfaceResidueLogBudget B L < d)
+    (hlarge : 2 * f.totalDegree * A * surfaceResidueLogBudget B W < d)
     (x : IntPoint 3) (hx : InBox x B) (hxf : eval x f = 0)
+    (hxI : rationalPoint x ∈ idealZeroLocus I)
     (hsmooth : ∃ j, eval x (pderiv j f) ≠ 0) :
-    ∃ R : Finset ℕ, ∃ hR : ∀ p ∈ R, p.Prime,
-      ∃ p ∈ R, ∃ r : SmoothAffineResidueFamily f R, IsSurfaceResidueEdge F I L X x R hR p r := by
+    rationalPoint x ∈ surfaceResidueResidualLocus F S W hW.prime := by
   classical
-  have hL := hW.one_le_window
-  obtain ⟨P, hPW, hPprod, hPsmooth⟩ := exists_smooth_prime_window_subset f hW.one_le_height
-    hW.one_le_radius hL hW.coeff_le (by norm_num; exact hW.log_le_window) x hx hsmooth
-  have hPprime (p : ℕ) (hp : p ∈ P) : p.Prime :=
-    ((mem_congruencePrimeWindow hL).mp (hPW hp)).1
-  obtain ⟨R₀, hR₀P, _, hR₀prod, hR₀proper, hR₀upper⟩ :=
-    exists_minimal_product_subset P hW.one_lt_cutoff
-      (fun p hp => by exact_mod_cast (hPprime p hp).pos)
-      (fun p hp => ((mem_congruencePrimeWindow hL).mp (hPW hp)).2.2)
-      (hW.cutoff_le_exp.trans hPprod)
-  have hR₀W : R₀ ⊆ congruencePrimeWindow L := hR₀P.trans hPW
-  have hR₀prime (q : ℕ) (hq : q ∈ R₀) : q.Prime := hPprime q (hR₀P hq)
-  have hR₀smooth (q : ℕ) (hq : q ∈ R₀) := hPsmooth q (hR₀P hq)
-  let aux (T : Finset ℕ) : MvPolynomial (Fin 3) ℤ :=
-    if hT : T ⊆ R₀ then F.auxiliary T (fun q hq => hR₀prime q (hT hq))
-      (smoothResidueFamilyOfPoint x hxf T (fun q hq => hR₀smooth q (hT hq))) else 1
-  have haux (T : Finset ℕ) (hT : T ⊆ R₀) :
-      aux T = F.auxiliary T (fun q hq => hR₀prime q (hT hq))
-        (smoothResidueFamilyOfPoint x hxf T (fun q hq => hR₀smooth q (hT hq))) := by
-    simp only [aux, dite_eq_left hT]
-  have hterminal : map (Int.castRingHom ℚ) (aux R₀) ∉ I := by
+  obtain ⟨R₀, hR₀W, hR₀card, hR₀smooth⟩ := exists_smooth_prime_subset f hW.one_le_height
+    hW.one_le_radius hW.coeff_le W hW.prime hW.log_lower (by norm_num; exact hW.derivative_bound)
+    x hx hsmooth
+  have hR₀prime (p) (hp : p ∈ R₀) : p.Prime := hW.prime p (hR₀W hp)
+  have hR₀prod : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) ≤ ∏ p ∈ R₀, (p : ℝ) := by
+    have hlo := sum_le_sum (s := R₀) (fun p hp => hW.log_lower p (hR₀W hp))
+    simp only [sum_const, nsmul_eq_mul, hR₀card] at hlo
+    have hlog := Real.log_nonneg hW.one_le_radius
+    rw [← exp_sum_log_primes R₀ hR₀prime, Real.rpow_def_of_pos (by linarith [hW.one_le_radius])]
+    apply Real.exp_le_exp.mpr
+    have hroot := surface_inverse_sqrt_le_nine_twentieths hW.five_le_degree
+    linarith [mul_le_mul_of_nonneg_left hroot hlog]
+  let aux (T : Finset ℕ) (hT : T ⊆ R₀) := F.auxiliary T (fun q hq => hR₀prime q (hT hq))
+    (smoothResidueFamilyOfPoint x hxf T (fun q hq => hR₀smooth q (hT hq)))
+  have hterminal : map (Int.castRingHom ℚ) (aux R₀ le_rfl) ∉ I := by
     intro hmem
-    rw [haux R₀ (Subset.refl _)] at hmem
-    have hdeg := F.terminal_degree_le hW.one_le_radius hA hL R₀ hR₀W hR₀prime
-      (smoothResidueFamilyOfPoint x hxf R₀ hR₀smooth) hW.root_le_cutoff hR₀prod
-    have hcurve := surface_prime_curve_degree_le (map (Int.castRingHom ℚ) f)
-      (map (Int.castRingHom ℚ) (F.auxiliary R₀ hR₀prime
-        (smoothResidueFamilyOfPoint x hxf R₀ hR₀smooth))) hir (F.proper _ _ _)
-      I hI hmem
+    have hdeg := F.terminal_degree_le hW.one_le_radius hA R₀ hR₀W hR₀prime
+      (smoothResidueFamilyOfPoint x hxf R₀ hR₀smooth) hR₀prod
+    have hcurve := surface_prime_curve_degree_le _ _ hir (F.proper _ _ _) I hI hmem
     rw [rational_map_totalDegree, rational_map_totalDegree] at hcurve
-    have hcurveR : (d : ℝ) ≤ (f.totalDegree : ℝ) *
-        (F.auxiliary R₀ hR₀prime
-          (smoothResidueFamilyOfPoint x hxf R₀ hR₀smooth)).totalDegree := by exact_mod_cast hcurve
-    have hh := mul_le_mul_of_nonneg_left hdeg (Nat.cast_nonneg (α := ℝ) f.totalDegree)
-    nlinarith
-  have hempty : ¬ (map (Int.castRingHom ℚ) (aux ∅) ∉ I) := by
-    rw [haux ∅ (empty_subset _), F.initial_eq]
-    exact not_not.mpr hinitI
-  obtain ⟨R, hRR₀, p, hp, hchild, hparent⟩ := exists_subset_erase_boundary R₀
-    (fun T => map (Int.castRingHom ℚ) (aux T) ∉ I) hempty hterminal
+    have hc : (d : ℝ) ≤ f.totalDegree * (aux R₀ le_rfl).totalDegree := by exact_mod_cast hcurve
+    apply (not_le_of_gt hlarge) (hc.trans ((mul_le_mul_of_nonneg_left hdeg (Nat.cast_nonneg _)).trans_eq (by ring)))
+  let bad (T : Finset ℕ) := ∃ hT : T ⊆ R₀, map (Int.castRingHom ℚ) (aux T hT) ∉ I
+  have hempty : ¬ bad ∅ := by
+    rintro ⟨hT, hbad⟩
+    exact hbad (by simpa only [aux, F.initial_eq] using hinitI)
+  obtain ⟨R, hRR₀, p, hp, ⟨hR, hchild⟩, hparent⟩ :=
+    exists_subset_erase_boundary R₀ bad hempty ⟨le_rfl, hterminal⟩
   have hRprime (q : ℕ) (hq : q ∈ R) : q.Prime := hR₀prime q (hRR₀ hq)
   have hRsmooth (q : ℕ) (hq : q ∈ R) := hR₀smooth q (hRR₀ hq)
   let r := smoothResidueFamilyOfPoint x hxf R hRsmooth
-  have hparentSub : R.erase p ⊆ R₀ := (erase_subset p R).trans hRR₀
-  have hparentEq : aux (R.erase p) =
-      F.auxiliary (R.erase p) (fun q hq => hRprime q (mem_of_mem_erase hq))
-        (r.restrict (erase_subset p R)) := by
-    rw [haux (R.erase p) hparentSub]
-    rfl
-  have hchildEq : aux R = F.auxiliary R hRprime r := haux R hRR₀
-  refine ⟨R, hRprime, p, hp, r, hRR₀.trans hR₀W, ?_, ?_, ?_, ?_, ?_⟩
-  · have hm : (∏ q ∈ R, (q : ℝ)) ≤ ∏ q ∈ R₀, (q : ℝ) :=
-      prod_le_prod_of_subset_of_one_le₀ hRR₀ (fun _ _ => Nat.cast_nonneg _)
-        (fun q hq _ => by exact_mod_cast (hR₀prime q hq).one_le)
-    exact hm.trans_lt hR₀upper
-  · exact hR₀proper _ ((erase_ssubset hp).trans_le hRR₀)
-  · rw [← hparentEq]
-    exact not_not.mp hparent
-  · rwa [← hchildEq]
-  · exact F.point_vanishes x hx hxf R hRprime hRsmooth
+  refine mem_surfaceResidueResidualLocus F S hW.prime R (hRR₀.trans hR₀W)
+    ((card_le_card hRR₀).trans hR₀card.le) hRprime p hp r ?_
+  simp only [surfaceResidueCrossing, Set.mem_iUnion, mem_filter, Set.mem_inter_iff]
+  exact ⟨I, ⟨hIS, not_not.mp (fun hn => hparent ⟨(erase_subset p R).trans hRR₀, hn⟩), hchild⟩,
+    hxI, (eval_rationalPoint_map_eq_zero x _).mpr (F.point_vanishes x hx hxf R hRprime hRsmooth)⟩
 
 end
 end CCDN

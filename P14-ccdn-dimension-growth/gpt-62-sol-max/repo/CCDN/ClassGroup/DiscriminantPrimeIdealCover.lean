@@ -35,8 +35,8 @@ private theorem mem_rationalPrimeIdealFiber (p : ℕ) (Q : Ideal (𝓞 K)) :
 
 private theorem rationalPrimeIdealFiber_card_le (p : ℕ) (hp : p.Prime) :
     (rationalPrimeIdealFiber K p).card ≤ Module.finrank ℚ K := by
-  have hpz : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp
-  let P : Ideal ℤ := Ideal.span {(p : ℤ)}
+  have hpz := Nat.prime_iff_prime_int.mp hp
+  let P := Ideal.span {(p : ℤ)}
   have : P.IsPrime := (Ideal.span_singleton_prime hpz.ne_zero).mpr hpz
   let : Fintype (P.primesOver (𝓞 K)) :=
     (Algebra.QuasiFinite.finite_primesOver (S := 𝓞 K) P).fintype
@@ -51,7 +51,7 @@ private theorem rationalPrimeIdealFiber_card_le (p : ℕ) (hp : p.Prime) :
     _ ≤ _ := by
       apply Finset.sum_le_sum
       intro Q _
-      have : Q.val.IsPrime := Q.property.1
+      
       exact Nat.one_le_iff_ne_zero.mpr
         (Nat.mul_pos (Q.val.ramificationIdx_pos ℤ) (Q.val.inertiaDeg_pos ℤ)).ne'
 
@@ -83,12 +83,12 @@ theorem absolute_discriminant_power_le :
   refine ⟨Ideal.absNorm (differentIdeal (𝓞 F) (𝓞 K)), ?_⟩
   rw [NumberField.natAbs_discr_eq_absNorm_differentIdeal_mul_natAbs_discr_pow
     F (𝓞 F) K (𝓞 K)]
-  exact Nat.mul_comm _ _
+  ring
 
 /-- For a quadratic extension `K / F` of number fields, `|discr F| ^ 2 ≤ |discr K|`. -/
 theorem quadratic_absolute_discriminant_square_le (hd : Module.finrank F K = 2) :
     (NumberField.discr F).natAbs ^ 2 ≤ (NumberField.discr K).natAbs := by
-  simpa only [hd] using absolute_discriminant_power_le K F
+  simpa [hd] using absolute_discriminant_power_le K F
 
 /-- Relative ramification index two forces the prime into the
 finite discriminant cover. -/
@@ -98,21 +98,18 @@ theorem mem_discriminantPrimeIdealCover_of_ramification_two
     Q ∈ discriminantPrimeIdealCover K := by
   have : Q.IsMaximal := (inferInstance : Q.IsPrime).isMaximal hQ
   obtain ⟨p, _, _, hpQ, hp, _⟩ := Ideal.exists_prime_and_absNorm_eq_pow Q
-  have hpz : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp
+  have hpz := Nat.prime_iff_prime_int.mp hp
   have hdiv : (p : ℤ) ∣ NumberField.discr K := by
     by_contra h
     have : Algebra.IsUnramifiedAt ℤ Q :=
       (NumberField.not_dvd_discr_iff_forall_mem K (𝓞 K) hpz).mp h
-        Q inferInstance (by simpa only [Int.cast_natCast] using hpQ)
+        Q inferInstance (by simp_all)
     have habs : Q.ramificationIdx ℤ = 1 := Q.ramificationIdx_eq_one ℤ
     have hdvd : Q.ramificationIdx (𝓞 F) ∣ Q.ramificationIdx ℤ :=
       Ideal.ramificationIdx_above_dvd (R := ℤ) (Q.under (𝓞 F)) Q
-    rw [he, habs] at hdvd
-    norm_num at hdvd
+    simp_all
   have hpf : p ∈ (NumberField.discr K).natAbs.primeFactors := by
-    apply Nat.Prime.mem_primeFactors hp
-    · simpa only [Int.natAbs_natCast] using Int.natAbs_dvd_natAbs.mpr hdiv
-    · exact Int.natAbs_ne_zero.mpr (NumberField.discr_ne_zero K)
+    exact Nat.Prime.mem_primeFactors hp (Int.natAbs_dvd_natAbs.mpr hdiv) (Int.natAbs_ne_zero.mpr (discr_ne_zero K))
   apply Finset.mem_biUnion.mpr
   refine ⟨p, hpf, (mem_rationalPrimeIdealFiber K p Q).mpr ⟨inferInstance, ?_⟩⟩
   apply (Ideal.liesOver_span_iff (inferInstance : Q.IsPrime).ne_top hpz).mpr

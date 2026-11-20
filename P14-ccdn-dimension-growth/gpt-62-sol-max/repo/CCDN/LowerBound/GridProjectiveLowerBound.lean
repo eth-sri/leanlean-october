@@ -5,7 +5,9 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.Projection.ProjectivePlaneProjection
+public import CCDN.Algebra.ProjectiveAffineChart
+public import CCDN.Algebra.PolynomialPredicates
+public import CCDN.Height.ProjectiveBox
 import CCDN.Algebra.ScaledHypersurfaceModel
 import CCDN.ForMathlib.MvPolynomial
 import CCDN.Height.ProjectiveIntegerHeight
@@ -29,16 +31,14 @@ private lemma affineProjectivePoint_integer_height_le {n : ℕ} (z : IntPoint n)
   have he : affineProjectivePoint (rationalPoint z) =
       Projectivization.mk ℚ (rationalPoint w)
         (rationalPoint_ne_zero (fun h => hw0 (congrFun h 0))) := by
-    convert affineProjectivePoint_eq_integer w hw0 using 1
+    unfold affineProjectivePoint
     congr 1
     funext j
-    simp [w, rationalPoint]
+    exact Fin.cases (by simp [w, rationalPoint]) (fun _ => rfl) j
   rw [he]
   apply projective_integer_height_le w (fun h => hw0 (congrFun h 0))
   intro j
-  refine Fin.cases ?_ (fun i => ?_) j
-  · simpa [w] using hB
-  · exact hz i
+  refine Fin.cases ?_ (fun i => ?_) j <;> aesop
 
 /-- A finite integral grid injects into projective space by z↦[1:z]. -/
 theorem integer_grid_le_projective_count {n d : ℕ}
@@ -49,7 +49,7 @@ theorem integer_grid_le_projective_count {n d : ℕ}
     s.card ^ n ≤ projectiveCount (projectiveZeroLocus (scaledHomogenize d 1 f)) B := by
   classical
   let S : Finset (IntPoint n) := Fintype.piFinset (fun _ => s)
-  have hScard : S.card = s.card ^ n := by simp [S, Fintype.card_piFinset]
+  have hScard : S.card = s.card ^ n := by aesop
   rw [← hScard]
   apply Finset.card_le_card_of_injOn (fun z => affineProjectivePoint (rationalPoint z))
   · intro z hz
@@ -59,7 +59,7 @@ theorem integer_grid_le_projective_count {n d : ℕ}
     unfold affineProjectivePoint
     rw [mem_projectiveZeroLocus_mk (scaledHomogenize_homogeneous 1 f hd),
       ← affineChart_eval, affineChart_scaledHomogenize_one]
-    exact hfzero z hz'
+    tauto
   · intro x _ y _ he
     have hh := affineProjectivePoint_injective n he
     funext j
@@ -78,13 +78,13 @@ lemma projective_closure_absolute_irreducible {n d : ℕ}
     intro h
     have hh := affineChart_scaledHomogenize_one d f
     rw [h, map_zero] at hh
-    exact hf.ne_zero (by rw [← hh, map_zero])
+    exact hf.ne_zero (by aesop)
   refine ⟨hhom, hhom.totalDegree h0, ?_⟩
   dsimp only [AbsolutelyIrreducibleRat]
   rw [scaledHomogenize_map, map_one]
   have hdeg : (map (algebraMap ℚ (AlgebraicClosure ℚ)) f).totalDegree = d :=
     (totalDegree_map_of_injective (algebraMap ℚ (AlgebraicClosure ℚ)).injective _).trans hd
-  simpa only [hdeg] using scaledHomogenize_irreducible _ hf one_ne_zero
+  grind [scaledHomogenize_irreducible]
 
 /-- For d≥4, the precise asymmetric integer grid used in Section 6 supplies
 (floor((d−1)/2)+1)² distinct projective points at the paper's chosen height. -/
@@ -99,20 +99,21 @@ theorem exists_projective_grid_lower_bound (d : ℕ) (hd : 4 ≤ d) :
   let q := (d - 1) / 2
   let r := (d - 1) / 4
   let B := q - r
-  have hrq : r ≤ q := by dsimp [q, r]; omega
-  have hB : 1 ≤ B := by dsimp [B, q, r]; omega
-  have hrB : r ≤ B := by dsimp [B, q, r]; omega
-  let s : Finset ℤ := Finset.Icc (-(B : ℤ)) (r : ℤ)
+  
+  have hB : 1 ≤ B := by omega
+  have hrB : r ≤ B := by omega
+  let s := Finset.Icc (-(B : ℤ)) (r : ℤ)
   have hs : s.card = q + 1 := by
     rw [Int.card_Icc]
     omega
-  let t : Finset ℚ := s.image (Int.castRingHom ℚ)
+  let t := s.image (Int.castRingHom ℚ)
   have ht : t.card = q + 1 := by
     change (s.image (fun x : ℤ => (x : ℚ))).card = _
     rw [Finset.card_image_of_injective _ Int.cast_injective, hs]
   obtain ⟨f, hfdeg, hfir, hfzero⟩ := exists_absolutely_irreducible_plane_grid
-    (algebraMap ℚ (AlgebraicClosure ℚ)) t (by rw [ht]; omega) d
-    (by rw [ht]; dsimp [q]; omega) (by rw [ht]; dsimp [q]; omega)
+    (algebraMap ℚ (AlgebraicClosure ℚ)) t
+    (Finset.mem_image.mpr ⟨0, Finset.mem_Icc.mpr ⟨by omega, by omega⟩, by simp⟩) d
+    (by omega) (by omega)
   obtain ⟨hhom, hdeg, hir⟩ := projective_closure_absolute_irreducible f hfdeg hfir
   refine ⟨scaledHomogenize d 1 f, hhom, hdeg, hir, ?_⟩
   change (q + 1) ^ 2 ≤ projectiveCount _ (B : ℝ)
@@ -120,8 +121,7 @@ theorem exists_projective_grid_lower_bound (d : ℕ) (hd : 4 ≤ d) :
   apply integer_grid_le_projective_count f hfdeg.le s (by exact_mod_cast hB)
   · intro a ha
     have hab := Finset.mem_Icc.mp ha
-    have har : a ≤ (B : ℤ) := hab.2.trans (by exact_mod_cast hrB)
-    exact_mod_cast abs_le.mpr ⟨hab.1, har⟩
+    exact_mod_cast abs_le.mpr ⟨hab.1, (hab.2.trans (by exact_mod_cast hrB))⟩
   · intro z hz
     apply hfzero
     intro j
@@ -137,7 +137,7 @@ theorem exists_projective_two_point_lower_bound (d : ℕ) (hd : 0 < d) :
           2 ≤ projectiveCount (projectiveZeroLocus F) 1 := by
   classical
   obtain ⟨f, hfdeg, hfir, hfzero, hfone⟩ := exists_irreducible_zero_one_equation
-    (algebraMap ℚ (AlgebraicClosure ℚ)) d 2 hd (by decide)
+    (algebraMap ℚ (AlgebraicClosure ℚ)) d hd
   obtain ⟨hhom, hdeg, hir⟩ := projective_closure_absolute_irreducible f hfdeg hfir
   refine ⟨scaledHomogenize d 1 f, hhom, hdeg, hir, ?_⟩
   have hc : ({(0 : ℤ), 1} : Finset ℤ).card = 2 := by decide
@@ -148,16 +148,11 @@ theorem exists_projective_two_point_lower_bound (d : ℕ) (hd : 0 < d) :
     have ha' : a = 0 ∨ a = 1 := by simpa using ha
     apply mem_projectivePoints.mpr
     refine ⟨affineProjectivePoint_integer_height_le _ le_rfl ?_, ?_⟩
-    · intro j
-      rcases ha' with rfl | rfl <;> norm_num
+    · rcases ha' with rfl | rfl <;> norm_num
     · unfold affineProjectivePoint
       rw [mem_projectiveZeroLocus_mk hhom,
         ← affineChart_eval, affineChart_scaledHomogenize_one]
-      rcases ha' with rfl | rfl
-      · change eval (0 : Fin 2 → ℚ) f = 0
-        exact hfzero
-      · change eval (fun _ => (1 : ℚ)) f = 0
-        exact hfone
+      rcases ha' with rfl | rfl <;> assumption
   · intro a _ b _ he
     have hh := affineProjectivePoint_injective 2 he
     have h := congrFun hh 0

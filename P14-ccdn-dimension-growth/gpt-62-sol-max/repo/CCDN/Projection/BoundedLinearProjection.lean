@@ -6,7 +6,8 @@ Authors: Jason Davies
 module
 
 public import CCDN.Height.ProjectiveBox
-import CCDN.Algebra.BoundedRowSeparation
+public import CCDN.Algebra.IntegerLinearForms
+import Mathlib.LinearAlgebra.Matrix.Adjugate
 import CCDN.Height.ProjectiveIntegerHeight
 
 /-! An explicit integral linear projection away from a bounded rational
@@ -18,7 +19,12 @@ namespace CCDN
 noncomputable section
 open Matrix
 
-private theorem integer_linear_map_box_bound {m n : ℕ}
+section
+
+variable {m n : ℕ}
+include m n
+
+theorem integer_linear_map_box_bound
     (P : Matrix (Fin m) (Fin n) ℤ) {H B : ℝ} (hH : 0 ≤ H)
     (hP : ∀ i j, |(P i j : ℝ)| ≤ H)
     (z : IntPoint n) (hz : InBox z B) :
@@ -37,7 +43,7 @@ private theorem integer_linear_map_box_bound {m n : ℕ}
 /-- An integer matrix with entries bounded by `H` maps an integer point of the box of radius
 `B` to a projective point of multiplicative height at most `n H B` (when the image is nonzero),
 since primitive reduction cannot enlarge an integral representative. -/
-private theorem projective_integer_linear_map_height {m n : ℕ}
+private theorem projective_integer_linear_map_height
     (P : Matrix (Fin (m + 1)) (Fin n) ℤ) {H B : ℝ} (hH : 0 ≤ H)
     (hP : ∀ i j, |(P i j : ℝ)| ≤ H)
     (z : IntPoint n) (hz : InBox z B) (himage : P *ᵥ z ≠ 0) :
@@ -45,17 +51,23 @@ private theorem projective_integer_linear_map_height {m n : ℕ}
       (rationalPoint_ne_zero himage)).mulHeight ≤ (n : ℝ) * H * B :=
   projective_integer_height_le _ himage (integer_linear_map_box_bound P hH hP z hz)
 
-private lemma rationalPoint_integer_mulVec {m n : ℕ}
+lemma rationalPoint_integer_mulVec
     (P : Matrix (Fin m) (Fin n) ℤ) (z : IntPoint n) :
     rationalPoint (P *ᵥ z) =
       (P.map (Int.castRingHom ℚ)) *ᵥ rationalPoint z := by
   funext i
   simp [rationalPoint, Matrix.mulVec, dotProduct]
 
+/-- An integer matrix over `ℚ` evaluates its rows as rational linear forms. -/
+lemma integer_mulVec_eq_eval (P : Matrix (Fin m) (Fin n) ℤ) (z : Fin n → ℚ) :
+    (P.map (Int.castRingHom ℚ)) *ᵥ z = fun i => MvPolynomial.eval z (integerLinearForm (P i)) := by
+  ext i
+  simp [Matrix.mulVec, dotProduct, eval_linearForm]
+
 /-- The height estimate for the projective linear image of any
 point outside the matrix kernel. The input height is its intrinsic
 multiplicative projective height. -/
-theorem projective_linear_map_height {m n : ℕ}
+theorem projective_linear_map_height
     (P : Matrix (Fin (m + 1)) (Fin (n + 1)) ℤ)
     {H : ℝ} (hH : 0 ≤ H) (hP : ∀ i j, |(P i j : ℝ)| ≤ H)
     (x : ProjectivePoint n)
@@ -74,10 +86,8 @@ theorem projective_linear_map_height {m n : ℕ}
     rfl
   have hw0 : w ≠ 0 := by
     intro hz
-    have hzero : (c : ℚ) • ((P.map (Int.castRingHom ℚ)) *ᵥ x.rep) = 0 := by
-      rw [← hw, hz]
-      rfl
-    exact himage ((smul_eq_zero.mp hzero).resolve_left c.ne_zero)
+    rw [hz, rationalPoint_zero] at hw
+    exact himage ((smul_eq_zero.mp hw.symm).resolve_left c.ne_zero)
   have hproj :
       Projectivization.mk ℚ (rationalPoint w) (rationalPoint_ne_zero hw0) =
         Projectivization.mk ℚ ((P.map (Int.castRingHom ℚ)) *ᵥ x.rep) himage := by
@@ -86,6 +96,8 @@ theorem projective_linear_map_height {m n : ℕ}
   rw [← hproj]
   exact projective_integer_linear_map_height P hH hP z
     (primitiveProjectiveRep_bound x) hw0
+
+end
 
 end
 end CCDN

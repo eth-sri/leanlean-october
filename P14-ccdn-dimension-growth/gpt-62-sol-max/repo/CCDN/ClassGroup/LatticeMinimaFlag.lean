@@ -27,15 +27,13 @@ theorem exists_orthonormal_basis_with_same_flag {n : ℕ}
     (b : Basis (Fin n) ℝ E) :
     ∃ c : OrthonormalBasis (Fin n) ℝ E, ∀ i,
       Submodule.span ℝ (c '' Set.Iio i) = Submodule.span ℝ (b '' Set.Iio i) := by
-  have hdim : Module.finrank ℝ E = Fintype.card (Fin n) := Module.finrank_eq_card_basis b
-  let c := gramSchmidtOrthonormalBasis hdim b
+  let c := gramSchmidtOrthonormalBasis (Module.finrank_eq_card_basis b) b
   have hc : (c : Fin n → E) = gramSchmidtNormed ℝ b := by
     funext i
     apply gramSchmidtOrthonormalBasis_apply
     intro he
     have hn := gramSchmidtNormed_unit_length i b.linearIndependent
-    rw [he, norm_zero] at hn
-    norm_num at hn
+    simp_all
   refine ⟨c, fun i => ?_⟩
   rw [hc, span_gramSchmidtNormed, span_gramSchmidt_Iio]
 
@@ -55,14 +53,12 @@ theorem lattice_flag_coordinate_box_zero
   have hS : S.Nonempty := by
     apply Finset.nonempty_iff_ne_empty.mpr
     intro he
-    have hr : c.toBasis.repr x = 0 := Finsupp.support_eq_empty.mp he
-    exact hx0 (c.toBasis.repr.injective (by simpa using hr))
+    exact hx0 (c.toBasis.repr.injective (by simpa using (Finsupp.support_eq_empty.mp he)))
   let j := S.max' hS
-  have hj : j ∈ S := Finset.max'_mem _ hS
   have hnot : x ∉ Submodule.span ℝ (c '' Set.Iio j) := by
     intro h
     have hsupport := c.toBasis.repr_support_subset_of_mem_span (Set.Iio j) h
-    exact (lt_irrefl j) (hsupport hj)
+    exact lt_irrefl j (hsupport (Finset.max'_mem _ hS))
   have hmin : a j ≤ ‖x‖ := hminimum j x hx hnot
   have hnj : 0 < a j := hpos j
   have hnR : (0 : ℝ) < n := by exact_mod_cast hn
@@ -89,7 +85,7 @@ theorem lattice_flag_coordinate_box_zero
         congr 1
         exact c.toBasis.sum_repr x |>.symm
       _ ≤ _ := norm_sum_le _ _
-  exact (not_lt_of_ge hmin) (hnorm.trans_lt hstrict)
+  linarith
 
 end
 end CCDN

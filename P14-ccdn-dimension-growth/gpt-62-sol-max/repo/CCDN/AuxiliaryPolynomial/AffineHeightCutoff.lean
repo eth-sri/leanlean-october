@@ -5,7 +5,7 @@ Authors: Jason Davies
 -/
 module
 
-public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+public import CCDN.AuxiliaryPolynomial.DegreeBound
 import CCDN.AuxiliaryPolynomial.HypersurfacePositionHeight
 
 /-! A polynomial box cutoff from the homogeneous coefficient-height bound.
@@ -28,7 +28,7 @@ private lemma box_le_of_logarithmic_height_bound {A B N D : ℝ}
     rw [← Real.sqrt_eq_rpow] at hh
     linarith
   have ht : 1 ≤ Real.sqrt B := by
-    simpa only [Real.sqrt_one] using Real.sqrt_le_sqrt hB
+    simp_all
   have ht0 : 0 < Real.sqrt B := by linarith
   have hNsq : N ≤ N ^ 2 := by nlinarith
   have hfirst : N * Real.log N ≤ N ^ 2 * Real.sqrt B := by
@@ -44,16 +44,15 @@ private lemma box_le_of_logarithmic_height_bound {A B N D : ℝ}
   have hmain : B ≤ (A * N ^ 2 * (1 + 2 * D)) * Real.sqrt B := by
     have hh := (div_le_iff₀ hA0).mp hheight
     have hh' := mul_le_mul_of_nonneg_left (add_le_add hfirst hsecond) hA0.le
-    nlinarith only [hh, hh']
+    linarith
   have hroot : Real.sqrt B ≤ A * N ^ 2 * (1 + 2 * D) := by
     apply (mul_le_mul_iff_right₀ ht0).mp
-    simpa only [← pow_two, Real.sq_sqrt hB0.le, mul_comm] using hmain
+    grind
   have hroot' : Real.sqrt B ≤ 2 * A * N ^ 2 * (D + 1) := by
     have hh : 0 ≤ A * N ^ 2 := by positivity
-    nlinarith only [hroot, hh]
+    linarith
   have hh := pow_le_pow_left₀ ht0.le hroot' 2
-  rw [Real.sq_sqrt hB0.le] at hh
-  nlinarith only [hh]
+  grind
 
 /-- If the constant-coefficient prime choice fails while the coefficient
 height obeys the determinant bound, the box is polynomially bounded in d. -/
@@ -72,55 +71,25 @@ theorem affine_coefficient_height_cutoff (n d : ℕ) {A B : ℝ}
     B ≤ 4 * A ^ 2 * ((n + d).choose d : ℝ) ^ 4 * ((d : ℝ) + 1) ^ 2 := hbound
     _ ≤ 4 * A ^ 2 * (((d : ℝ) + 1) ^ n) ^ 4 * ((d : ℝ) + 1) ^ 2 := by
       gcongr
-    _ = _ := by rw [pow_add, Nat.mul_comm 4 n, pow_mul]; ring
+    _ = _ := by ring
 
-/-- The extra projective box exponent is uniformly bounded on every
-polynomial range in the degree. -/
-private theorem polynomial_box_root_power_bound {r d k : ℕ} (hr : 0 < r) (hd : 0 < d)
-    {S B : ℝ} (hS : 1 ≤ S) (hB : 1 ≤ B)
-    (hbound : B ≤ S * ((d : ℝ) + 1) ^ k) :
-    B ^ (1 / ((r : ℝ) * (d : ℝ) ^ (1 / (r : ℝ)))) ≤
-      Real.exp (Real.log S + (k : ℝ) * ((r : ℝ) + 1)) := by
-  have hr1 : (1 : ℝ) ≤ r := by exact_mod_cast hr
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hS0 : 0 < S := by linarith
-  have hB0 : 0 < B := by linarith
-  have hroot : (1 : ℝ) ≤ (d : ℝ) ^ (1 / (r : ℝ)) :=
-    Real.one_le_rpow hd1 (by positivity)
-  have hden : (1 : ℝ) ≤ r * (d : ℝ) ^ (1 / (r : ℝ)) :=
-    one_le_mul_of_one_le_of_one_le hr1 hroot
-  have hlogS := Real.log_nonneg hS
-  have hlogd := log_nat_add_one_le_root hr hd
-  have hlog := Real.log_le_log hB0 hbound
-  rw [Real.log_mul hS0.ne' (by positivity), Real.log_pow] at hlog
-  have hstep : Real.log B ≤
-      (Real.log S + (k : ℝ) * ((r : ℝ) + 1)) *
-        ((r : ℝ) * (d : ℝ) ^ (1 / (r : ℝ))) := by
-    have hfirst := mul_le_mul_of_nonneg_left hden hlogS
-    have hsecond := mul_le_mul_of_nonneg_left hlogd (Nat.cast_nonneg (α := ℝ) k)
-    have hthird := mul_le_mul_of_nonneg_left hr1
-      (show 0 ≤ (k : ℝ) * ((r : ℝ) + 1) * (d : ℝ) ^ (1 / (r : ℝ)) by positivity)
-    nlinarith only [hlog, hfirst, hsecond, hthird]
-  rw [Real.rpow_def_of_pos hB0, Real.exp_le_exp, ← div_eq_mul_one_div]
-  exact (div_le_iff₀ (by linarith)).mpr hstep
-
-/-- On a polynomial box range, the projective main term has the affine
-box exponent up to a constant independent of the degree and the box. -/
-theorem polynomial_box_projective_power_bound {r d k : ℕ}
-    (hr : 0 < r) (hd : 0 < d) {S B : ℝ}
-    (hS : 1 ≤ S) (hB : 1 ≤ B)
-    (hbound : B ≤ S * ((d : ℝ) + 1) ^ k) :
-    B ^ (((r : ℝ) + 1) / ((r : ℝ) * (d : ℝ) ^ (1 / (r : ℝ)))) ≤
-      Real.exp (Real.log S + (k : ℝ) * ((r : ℝ) + 1)) *
-        B ^ (1 / (d : ℝ) ^ (1 / (r : ℝ))) := by
-  have hr0 : (0 : ℝ) < r := by exact_mod_cast hr
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
-  have hroot : (0 : ℝ) < (d : ℝ) ^ (1 / (r : ℝ)) := by positivity
-  have he : ((r : ℝ) + 1) / ((r : ℝ) * (d : ℝ) ^ (1 / (r : ℝ))) =
-      1 / ((r : ℝ) * (d : ℝ) ^ (1 / (r : ℝ))) +
-        1 / (d : ℝ) ^ (1 / (r : ℝ)) := by field_simp; ring
-  rw [he, Real.rpow_add (by linarith)]
-  exact mul_le_mul_of_nonneg_right
-    (polynomial_box_root_power_bound hr hd hS hB hbound) (by positivity)
+/-- The excess projective exponent costs a dimension constant on a polynomial box. -/
+theorem polynomial_box_root_power_bound {n d k : ℕ} (hd : 0 < d) {S B : ℝ}
+    (hS : 1 ≤ S) (hB : 1 ≤ B) (hbound : B ≤ S * ((d : ℝ) + 1) ^ k) :
+    B ^ scaleExponent n d ≤ Real.exp (Real.log S + (k : ℝ) * (n + 2 : ℝ)) := by
+  have hlog := Real.log_le_log (by linarith : 0 < B) hbound
+  rw [Real.log_mul (by linarith) (by positivity), Real.log_pow] at hlog
+  have hlogd := log_nat_add_one_le_degreeRoot (n := n) hd
+  have hroot : 1 ≤ degreeRoot n d := Real.one_le_rpow (by exact_mod_cast hd) (by positivity)
+  rw [Real.rpow_def_of_pos (by linarith), Real.exp_le_exp, ← div_eq_mul_one_div,
+    div_le_iff₀ (by positivity)]
+  have hSlog := Real.log_nonneg hS
+  calc
+    _ ≤ Real.log S + (k : ℝ) * ((n + 2 : ℝ) * degreeRoot n d) := hlog.trans (by gcongr)
+    _ ≤ (Real.log S + (k : ℝ) * (n + 2 : ℝ)) * degreeRoot n d := by
+      nlinarith only [mul_le_mul_of_nonneg_left hroot hSlog]
+    _ ≤ _ := by
+      rw [← mul_assoc]
+      exact mul_le_mul_of_nonneg_right (le_mul_of_one_le_right (by positivity) (by simp)) (by positivity)
 
 end CCDN

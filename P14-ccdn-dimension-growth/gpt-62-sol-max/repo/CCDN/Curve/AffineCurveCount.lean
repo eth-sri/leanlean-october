@@ -32,11 +32,9 @@ theorem affine_curve_count : AffineCurveBound := by
     positivity
   refine ⟨C * K + 1, by positivity, ?_⟩
   intro I hI d hd hdegree B hB
-  have : I.IsPrime := hI
+  
   obtain ⟨f, hf, hfd, hred⟩ := exists_plane_count_reduction I d hd hdegree
-  have hbox : 1 ≤ projectionBoxFactor n d * B :=
-    one_le_mul_of_one_le_of_one_le (projectionBoxFactor_one_le n d) hB
-  have hp := hplane f hf (hfd.symm ▸ hd) _ hbox
+  have hp := hplane f hf (hfd.symm ▸ hd) _ (one_le_mul_of_one_le_of_one_le (projectionBoxFactor_one_le n d) hB)
   rw [hfd] at hp
   have hredR : (count (idealZeroLocus I) B : ℝ) ≤
       count (zeroLocus f) (projectionBoxFactor n d * B) + (d * (d - 1) : ℕ) := by

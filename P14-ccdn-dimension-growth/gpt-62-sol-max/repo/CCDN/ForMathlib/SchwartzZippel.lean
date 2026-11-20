@@ -35,7 +35,7 @@ cardinalities: a nonzero polynomial `p` vanishes at no more than a proportion
 theorem schwartz_zippel_totalDegree_card {p : MvPolynomial σ R} (hp : p ≠ 0) (S : Finset R) :
     #{x ∈ piFinset fun _ : σ ↦ S | eval x p = 0} * #S ≤ p.totalDegree * #S ^ card σ := by
   let e := equivFin σ
-  have hq : rename e p ≠ 0 := (map_ne_zero_iff _ (rename_injective e e.injective)).mpr hp
+  have hq := (map_ne_zero_iff _ (rename_injective e e.injective)).mpr hp
   have hfin : #{x ∈ piFinset fun _ : Fin (card σ) ↦ S | eval x (rename e p) = 0} * #S ≤
       (rename e p).totalDegree * #S ^ card σ := by
     obtain rfl | hS := S.eq_empty_or_nonempty
@@ -53,8 +53,6 @@ theorem schwartz_zippel_totalDegree_card {p : MvPolynomial σ R} (hp : p ≠ 0) 
     · intro x _ y _ h
       funext i
       simpa using congrFun h (e i)
-  calc _ ≤ #{x ∈ piFinset fun _ : Fin (card σ) ↦ S | eval x (rename e p) = 0} * #S := by gcongr
-    _ ≤ (rename e p).totalDegree * #S ^ card σ := hfin
-    _ ≤ p.totalDegree * #S ^ card σ := by gcongr; exact totalDegree_rename_le e p
+  exact Trans.trans (Trans.trans (mul_le_mul' hcard (le_refl #S)) hfin) (mul_le_mul' (totalDegree_rename_le (⇑e) p) (le_refl (#S ^ Fintype.card σ)))
 
 end MvPolynomial

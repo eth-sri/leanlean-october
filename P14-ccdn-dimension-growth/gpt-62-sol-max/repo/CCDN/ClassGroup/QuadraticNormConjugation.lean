@@ -20,25 +20,28 @@ noncomputable section
 variable (F K : Type*) [Field F] [Field K] [Algebra F K]
   [FiniteDimensional F K] [Algebra.IsSeparable F K]
 
+section
+
+variable (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K)
+include hd σ
+
 /-- In a quadratic separable extension with a nontrivial automorphism `σ`, every automorphism is
 either the identity or `σ`. -/
-theorem quadratic_automorphism_eq_one_or
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
+theorem quadratic_automorphism_eq_one_or (hσ : σ ≠ 1)
     (τ : K ≃ₐ[F] K) : τ = 1 ∨ τ = σ := by
   classical
   let : Algebra.IsQuadraticExtension F K := ⟨hd⟩
   have hc : Fintype.card (K ≃ₐ[F] K) = 2 := by
     rw [← Nat.card_eq_fintype_card, IsGalois.card_aut_eq_finrank, hd]
   by_cases hτ : τ = 1
-  · exact Or.inl hτ
+  tauto
   · right
     have he : (Finset.univ.erase (1 : K ≃ₐ[F] K)).card ≤ 1 := by
-      rw [Finset.card_erase_of_mem (Finset.mem_univ _), Finset.card_univ, hc]
-    exact Finset.card_le_one.mp he _ (by simp [hτ]) _ (by simp [hσ])
+      simp_all
+    exact Finset.card_le_one.mp he _ (by simp_all) _ (by simp_all)
 
 /-- Every automorphism of a quadratic separable extension is an involution. -/
-theorem quadratic_automorphism_involutive
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) :
+theorem quadratic_automorphism_involutive :
     Function.Involutive σ := by
   let : Algebra.IsQuadraticExtension F K := ⟨hd⟩
   have hs : σ ^ 2 = 1 := by
@@ -50,16 +53,14 @@ theorem quadratic_automorphism_involutive
 
 /-- In a quadratic separable extension with nontrivial automorphism `σ`, the norm of `x` is
 `x * σ x`. -/
-theorem quadratic_norm_eq_mul_conjugate
-    (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) (x : K) :
+theorem quadratic_norm_eq_mul_conjugate (hσ : σ ≠ 1) (x : K) :
     algebraMap F K (Algebra.norm F x) = x * σ x := by
   classical
   let : Algebra.IsQuadraticExtension F K := ⟨hd⟩
   rw [Algebra.norm_eq_prod_automorphisms]
-  have hp := Fintype.prod_eq_mul (f := fun τ : K ≃ₐ[F] K ↦ τ x)
-    1 σ hσ.symm (fun τ hτ ↦
-      False.elim ((quadratic_automorphism_eq_one_or F K hd σ hσ τ).elim hτ.1 hτ.2))
-  simpa only [AlgEquiv.one_apply] using hp
+  exact have hp := Fintype.prod_eq_mul 1 σ (Ne.symm hσ) fun τ hτ => False.elim (Or.elim (quadratic_automorphism_eq_one_or F K hd σ hσ τ) hτ.left hτ.right); hp
+
+end
 
 end
 end CCDN

@@ -12,10 +12,10 @@ public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Hilbert.AffineCurveDegree
 public import CCDN.Plane.IntegralAffineLine
 import CCDN.Algebra.BinaryHomogeneousIrreducibility
-import CCDN.Determinant.PlaneSingularities
 import CCDN.ForMathlib.MvPolynomialDerivative
 import CCDN.Surface.LineDirections
 import CCDN.Surface.TopFormIrreducibility
+import Mathlib.Algebra.Polynomial.Derivation
 
 /-! Directional derivatives of surfaces with absolutely irreducible top form. -/
 
@@ -36,13 +36,12 @@ lemma directionalDerivative_totalDegree_le {K σ : Type*} [Field K] [Fintype σ]
   classical
   apply totalDegree_finsetSum_le
   intro i _
-  exact (totalDegree_mul _ _).trans (by simpa using pderiv_totalDegree_le f i)
+  exact (totalDegree_mul _ _).trans (by simp [pderiv_totalDegree_le])
 
 private lemma directionalDerivative_map {R S σ : Type*} [CommRing R] [CommRing S] [Fintype σ]
     (φ : R →+* S) (v : σ → R) (f : MvPolynomial σ R) :
     directionalDerivative (fun i => φ (v i)) (map φ f) = map φ (directionalDerivative v f) := by
-  classical
-  simp [directionalDerivative, pderiv_map]
+  simp_all [directionalDerivative, pderiv_map]
 
 private lemma pderiv_homogeneousComponent {R σ : Type*} [CommRing R]
     (i : σ) (f : MvPolynomial σ R) {d : ℕ} (hd : 0 < d) :
@@ -51,14 +50,8 @@ private lemma pderiv_homogeneousComponent {R σ : Type*} [CommRing R]
   ext m
   rw [coeff_pderiv, coeff_homogeneousComponent, coeff_homogeneousComponent, coeff_pderiv]
   have he : (m + Finsupp.single i 1).degree = m.degree + 1 := by
-    change (m + Finsupp.single i 1).sum (fun _ e => e) = m.sum (fun _ e => e) + 1
-    rw [Finsupp.sum_add_index (by simp) (by intros; rfl)]
     simp
-  rw [he]
-  by_cases hm : m.degree = d - 1
-  · simp [hm, Nat.sub_add_cancel hd]
-  · have hn : m.degree + 1 ≠ d := by omega
-    simp [hm, hn]
+  grind
 
 private lemma directionalDerivative_homogeneousComponent {R σ : Type*} [CommRing R] [Fintype σ]
     (v : σ → R) (f : MvPolynomial σ R) {d : ℕ} (hd : 0 < d) :
@@ -68,36 +61,26 @@ private lemma directionalDerivative_homogeneousComponent {R σ : Type*} [CommRin
   simp only [directionalDerivative, map_sum, homogeneousComponent_C_mul,
     pderiv_homogeneousComponent _ _ hd]
 
-private lemma irreducible_of_rename_succ {K : Type*} [Field K] {n : ℕ}
+section
+
+variable {K : Type*} [Field K]
+include K
+
+private lemma irreducible_of_rename_succ {n : ℕ}
     (f : MvPolynomial (Fin n) K) (hf : Irreducible (rename Fin.succ f)) :
     Irreducible f := by
-  have he (g : MvPolynomial (Fin n) K) :
-      eval₂Hom C (Fin.cons 0 X) (rename Fin.succ g) = g := by
-    rw [eval₂Hom_rename]
-    have hh : Fin.cons (0 : MvPolynomial (Fin n) K) X ∘ Fin.succ = X := by
-      funext i
-      simp
-    rw [hh]
-    simp
-  refine ⟨fun h => hf.not_isUnit (h.map (rename Fin.succ)), ?_⟩
-  intro a b hab
-  have h := hf.isUnit_or_isUnit (by rw [hab, map_mul])
-  rcases h with ha | hb
-  · exact Or.inl (by simpa only [he] using ha.map (eval₂Hom C (Fin.cons 0 X)))
-  · exact Or.inr (by simpa only [he] using hb.map (eval₂Hom C (Fin.cons 0 X)))
+  let : IsLocalHom (rename (R := K) (Fin.succ : Fin n → Fin (n + 1))) :=
+    isLocalHom_of_leftInverse (killCompl (Fin.succ_injective n))
+      (killCompl_rename_app (Fin.succ_injective n))
+  exact Irreducible.of_map hf
 
-private lemma ternary_homogeneous_irreducible_pderiv_zero_ne_zero
-    {K : Type*} [Field K] [CharZero K] [IsAlgClosed K] {d : ℕ}
+private lemma ternary_homogeneous_irreducible_pderiv_zero_ne_zero [CharZero K] [IsAlgClosed K] {d : ℕ}
     (f : MvPolynomial (Fin 3) K) (hf : f.IsHomogeneous d) (hir : Irreducible f)
     (hd : 2 ≤ d) : pderiv 0 f ≠ 0 := by
   intro hz
   have hv := notMem_vars_of_pderiv_eq_zero hz fun n hn _ ↦ Nat.cast_ne_zero.mpr hn.ne'
   have hs : ↑f.vars ⊆ Set.range (Fin.succ : Fin 2 → Fin 3) := by
-    intro i hi
-    revert hi
-    refine Fin.cases ?_ (fun j => ?_) i
-    · exact fun hi => False.elim (hv hi)
-    · exact fun _ => ⟨j, rfl⟩
+    simp_all
   obtain ⟨g, hg⟩ := exists_rename_eq_of_vars_subset_range f Fin.succ (Fin.succ_injective 2) hs
   have hgh : g.IsHomogeneous d :=
     (IsHomogeneous.rename_isHomogeneous_iff (Fin.succ_injective 2)).mp (hg ▸ hf)
@@ -105,7 +88,7 @@ private lemma ternary_homogeneous_irreducible_pderiv_zero_ne_zero
   have := binary_homogeneous_irreducible_degree_le_one g hgh hgi
   omega
 
-private lemma homogeneousTranslation_directionalDerivative {K : Type*} [Field K] {n : ℕ}
+private lemma homogeneousTranslation_directionalDerivative {n : ℕ}
     (v : Fin (n + 1) → K) (hv : v 0 ≠ 0) (f : MvPolynomial (Fin (n + 1)) K) :
     C (v 0) * pderiv 0 (homogeneousTranslation K (fun j => v j.succ / v 0) f) =
       homogeneousTranslation K (fun j => v j.succ / v 0) (directionalDerivative v f) := by
@@ -121,18 +104,15 @@ private lemma homogeneousTranslation_directionalDerivative {K : Type*} [Field K]
       congr 1
       field_simp
   change C (v 0) * pderiv 0 (e f) = e (directionalDerivative v f)
-  have hchain := MvPolynomial.pderiv_algHom e.toAlgHom f 0
-  change pderiv 0 (e f) = ∑ i, e (pderiv i f) * pderiv 0 (e (X i)) at hchain
-  rw [hchain, Finset.mul_sum]
-  simp only [directionalDerivative, map_sum, map_mul]
-  apply Finset.sum_congr rfl
-  intro i _
-  have hC : e (C (v i)) = C (v i) := e.commutes _
-  rw [hC]
-  calc
-    C (v 0) * (e (pderiv i f) * pderiv 0 (e (X i))) =
-        (C (v 0) * pderiv 0 (e (X i))) * e (pderiv i f) := by ring
-    _ = _ := by rw [hX]
+  let D : Derivation K (MvPolynomial (Fin (n + 1)) K) (MvPolynomial (Fin (n + 1)) K) :=
+    (C (σ := Fin (n + 1)) (v 0)) • pderiv (R := K) (0 : Fin (n + 1))
+  have hchain := derivation_algHom D e.toAlgHom f
+  dsimp only [D] at hchain
+  simp only [AlgEquiv.coe_toAlgHom, Derivation.smul_apply, smul_eq_mul, hX] at hchain
+  have hC (x : K) : e (C x) = C x := e.commutes x
+  simpa only [directionalDerivative, map_sum, map_mul, hC, mul_comm] using hchain
+
+end
 
 private lemma directionalDerivative_renameEquiv {K σ : Type*} [CommRing K] [Fintype σ]
     (e : σ ≃ σ) (v : σ → K) (f : MvPolynomial σ K) :
@@ -155,7 +135,7 @@ private lemma homogeneous_surface_directionalDerivative_ne_zero
   obtain ⟨j, hj⟩ := hex
   let e : Fin 3 ≃ Fin 3 := Equiv.swap j 0
   let w : Fin 3 → K := fun i => v (e.symm i)
-  have hw : w 0 ≠ 0 := by simpa [w, e] using hj
+  have hw : w 0 ≠ 0 := by aesop
   let F := rename e f
   have hF : F.IsHomogeneous d := hf.rename_isHomogeneous
   have hiF : Irreducible F :=
@@ -167,7 +147,6 @@ private lemma homogeneous_surface_directionalDerivative_ne_zero
     (MulEquiv.irreducible_iff (f := (homogeneousTranslation K a).toMulEquiv)).mpr hiF
   intro hz
   have hzw : directionalDerivative w F = 0 := by
-    change directionalDerivative (fun i => v (e.symm i)) (rename e f) = 0
     rw [directionalDerivative_renameEquiv, hz, map_zero]
   have h := homogeneousTranslation_directionalDerivative w hw F
   rw [hzw, map_zero] at h
@@ -186,7 +165,6 @@ private theorem top_irreducible_directionalDerivative_ne_zero
     intro hh
     apply hv
     funext i
-    apply φ.injective
     simpa using congrFun hh i
   intro hz
   have hh := homogeneous_surface_directionalDerivative_ne_zero _ hhom hir hd
@@ -208,43 +186,19 @@ theorem surface_directionalDerivative_ne_zero
   convert hir using 1
   congr 1
 
-/-- Every directional derivative of a constant polynomial is zero. -/
-@[simp] lemma directionalDerivative_C {R σ : Type*} [CommRing R] [Fintype σ]
-    (v : σ → R) (a : R) : directionalDerivative v (C a) = 0 := by
-  simp [directionalDerivative]
-
-/-- The derivative of the coordinate `X j` in the direction `v` is the constant `v j`. -/
-@[simp] lemma directionalDerivative_X {R σ : Type*} [CommRing R] [Fintype σ]
-    (v : σ → R) (j : σ) : directionalDerivative v (X j) = C (v j) := by
-  classical
-  simp [directionalDerivative, pderiv_X, Pi.single_apply]
-
-private lemma directionalDerivative_add {R σ : Type*} [CommRing R] [Fintype σ]
-    (v : σ → R) (f g : MvPolynomial σ R) :
-    directionalDerivative v (f + g) = directionalDerivative v f + directionalDerivative v g := by
-  simp [directionalDerivative, mul_add, Finset.sum_add_distrib]
-
-private lemma directionalDerivative_mul {R σ : Type*} [CommRing R] [Fintype σ]
-    (v : σ → R) (f g : MvPolynomial σ R) :
-    directionalDerivative v (f * g) =
-      directionalDerivative v f * g + f * directionalDerivative v g := by
-  classical
-  simp only [directionalDerivative, pderiv_mul, mul_add, Finset.sum_add_distrib,
-    Finset.sum_mul, Finset.mul_sum]
-  congr 1 <;> apply Finset.sum_congr rfl <;> intro i _ <;> ring
-
 private lemma derivative_affineLinePolynomial {R σ : Type*} [CommRing R] [Fintype σ]
     (a v : σ → R) (f : MvPolynomial σ R) :
     Polynomial.derivative (affineLinePolynomial a v f) =
       affineLinePolynomial a v (directionalDerivative v f) := by
-  classical
-  induction f using MvPolynomial.induction_on with
-  | C r => simp [affineLinePolynomial]
-  | add f g hf hg => simp only [map_add, directionalDerivative_add, hf, hg]
-  | mul_X f j hf =>
-    rw [map_mul, Polynomial.derivative_mul, hf, directionalDerivative_mul,
-      map_add, map_mul, map_mul, directionalDerivative_X]
-    simp [affineLinePolynomial, Polynomial.derivative_add, Polynomial.derivative_mul]
+  let ψ : MvPolynomial σ R →ₐ[R] Polynomial R :=
+    aeval (fun i => Polynomial.C (a i) + Polynomial.C (v i) * Polynomial.X)
+  change Polynomial.derivative' (ψ f) = ψ (directionalDerivative v f)
+  rw [derivation_algHom]
+  simp only [directionalDerivative, map_sum, map_mul]
+  apply Finset.sum_congr rfl
+  intro i _
+  rw [mul_comm]
+  simp [ψ, Polynomial.derivative'_apply]
 
 private theorem directionalDerivative_zero_on_line {K σ : Type*} [Field K] [Infinite K] [Fintype σ]
     (a v : σ → K) (f : MvPolynomial σ K)

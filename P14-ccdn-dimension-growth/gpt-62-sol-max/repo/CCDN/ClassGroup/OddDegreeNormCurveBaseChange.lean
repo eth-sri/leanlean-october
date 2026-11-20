@@ -7,6 +7,7 @@ module
 
 public import CCDN.ClassGroup.NormPolynomial
 import CCDN.ClassGroup.OddDegreeNormCurves
+import CCDN.ForMathlib.MvPolynomial
 import CCDN.Noether.ShearNormalization
 
 /-! Odd-degree norm curves keep their degree and irreducibility in every
@@ -21,21 +22,15 @@ open Polynomial NumberField
 
 variable (K E : Type*) [Field K] [NumberField K] [Field E]
 
-private lemma signedNormCurvePolynomial_bivariate_map (β : 𝓞 K) (ε : ℤ) :
-    bivariatePolynomialEquiv E
-      (MvPolynomial.map (Int.castRingHom E) (signedNormCurvePolynomial K β ε)) =
-      X ^ 2 - C (C (ε : E) *
-        (integerNormPolynomial K β).map (Int.castRingHom E)) := by
-  rw [← bivariatePolynomialEquiv_map]
-  simp only [signedNormCurvePolynomial, AlgEquiv.apply_symm_apply]
-  change Polynomial.map (Polynomial.mapRingHom (Int.castRingHom E))
-    (X ^ 2 - C (C ε * integerNormPolynomial K β)) = _
-  simp
+
+section
+
+variable (β : 𝓞 K) {ε : ℤ} (hε : (ε : E) ≠ 0)
+include β ε hε
 
 /-- If `[K : ℚ]` is odd and the sign `ε` is nonzero in the field `E`, then the signed norm-curve
 polynomial of `β` remains irreducible over `E`, in any characteristic. -/
-theorem signedNormCurvePolynomial_map_irreducible_in_every_characteristic
-    (β : 𝓞 K) {ε : ℤ} (hε : (ε : E) ≠ 0) (hn : Odd (Module.finrank ℚ K)) :
+theorem signedNormCurvePolynomial_map_irreducible_in_every_characteristic (hn : Odd (Module.finrank ℚ K)) :
     Irreducible (MvPolynomial.map (Int.castRingHom E)
       (signedNormCurvePolynomial K β ε)) := by
   apply (MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv E)).mp
@@ -47,8 +42,7 @@ theorem signedNormCurvePolynomial_map_irreducible_in_every_characteristic
 
 /-- If `[K : ℚ] ≥ 2` and the sign `ε` is nonzero in the field `E`, then the signed norm-curve
 polynomial of `β` has total degree `[K : ℚ]` over `E`. -/
-theorem signedNormCurvePolynomial_map_totalDegree
-    (β : 𝓞 K) {ε : ℤ} (hε : (ε : E) ≠ 0) (hn : 2 ≤ Module.finrank ℚ K) :
+theorem signedNormCurvePolynomial_map_totalDegree (hn : 2 ≤ Module.finrank ℚ K) :
     (MvPolynomial.map (Int.castRingHom E)
       (signedNormCurvePolynomial K β ε)).totalDegree = Module.finrank ℚ K := by
   have hd : (C (ε : E) * (integerNormPolynomial K β).map (Int.castRingHom E)).natDegree =
@@ -60,7 +54,16 @@ theorem signedNormCurvePolynomial_map_totalDegree
       Module.finrank ℚ K := by
     rw [signedNormCurvePolynomial_bivariate_map,
       double_cover_bivariateTotalDegree _ (by omega), hd]
-  simpa only [bivariateTotalDegree, AlgEquiv.symm_apply_apply] using hh
+  simpa [bivariateTotalDegree, AlgEquiv.symm_apply_apply] using hh
+
+end
+
+/-- The total degree over `ℤ` agrees with that over `ℚ`. -/
+theorem signedNormCurvePolynomial_totalDegree (β : 𝓞 K) {ε : ℤ} (hε : ε ≠ 0)
+    (hn : 2 ≤ Module.finrank ℚ K) :
+    (signedNormCurvePolynomial K β ε).totalDegree = Module.finrank ℚ K := by
+  have h := signedNormCurvePolynomial_map_totalDegree K ℚ β (by exact_mod_cast hε) hn
+  rwa [MvPolynomial.totalDegree_map_of_injective Int.cast_injective] at h
 
 end
 end CCDN

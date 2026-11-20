@@ -59,7 +59,7 @@ theorem natCast_ne_zero [AddMonoidWithOne R] {m n : ℕ} (h : CharZeroOrGT R n) 
 algebra map of a field extension. -/
 theorem map [DivisionRing R] [Semiring S] [Nontrivial S] {n : ℕ} (h : CharZeroOrGT R n)
     (φ : R →+* S) : CharZeroOrGT S n :=
-  fun m hm hmn ↦ by simpa only [map_natCast] using (map_ne_zero φ).mpr (h m hm hmn)
+  fun m hm hmn ↦ by simpa [map_natCast] using (map_ne_zero φ).mpr (h m hm hmn)
 
 end CharZeroOrGT
 

@@ -31,11 +31,7 @@ lemma universalPlaneSection_map {R S σ : Type*} [CommRing R] [CommRing S]
   rw [universalPlanePolynomial_map, ← bivariateMap_comp_apply,
     ← bivariateMap_comp_apply]
   congr 2
-  apply MvPolynomial.ringHom_ext
-  · intro r
-    simp
-  · intro i
-    simp
+  aesop
 
 /-- Height supplied by interpolation on the plane grid. -/
 def integerPlaneHeight (m d : ℕ) (H A : ℝ) : ℝ :=
@@ -59,7 +55,7 @@ theorem integer_plane_section_coefficient_bound {σ : Type*} [Fintype σ]
     exact (bivariateTotalDegree_map_le _ _).trans
       (universalPlanePolynomial_specialization_totalDegree f (eval v))
   have hB : 1 ≤ A * (1 + 2 * (f.totalDegree : ℝ)) := by
-    nlinarith [Nat.cast_nonneg (α := ℝ) f.totalDegree]
+    nlinarith
   have hgrid (x y : ℕ) (hx : x ≤ f.totalDegree) (hy : y ≤ f.totalDegree) :
       |(Polynomial.map (Polynomial.evalRingHom (y : ℝ)) g).eval (x : ℝ)| ≤
         ((f.totalDegree : ℝ) + 1) ^ Fintype.card σ * H *
@@ -80,9 +76,9 @@ theorem integer_plane_section_coefficient_bound {σ : Type*} [Fintype σ]
             (add_le_add (abs_add_le (v (i,0) : ℝ) ((v (i,1) : ℝ) * x)) le_rfl)
       _ ≤ A + A * x + A * y := by
         gcongr
-        · exact hv _
-        · exact hv _
-        · exact hv _
+        simp_all
+        simp_all
+        simp_all
       _ ≤ A * (1 + 2 * f.totalDegree) := by nlinarith
   intro i j
   have hh := bivariate_coefficient_bound_of_integer_grid g hd

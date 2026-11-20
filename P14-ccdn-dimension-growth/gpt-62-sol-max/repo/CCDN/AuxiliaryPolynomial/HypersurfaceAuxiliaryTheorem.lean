@@ -22,21 +22,14 @@ open MvPolynomial
 /-- The constant `hypersurfaceAbsoluteAuxiliaryConstant n` is at least `1`. -/
 lemma hypersurfaceAbsoluteAuxiliaryConstant_one_le (n : ℕ) :
     1 ≤ hypersurfaceAbsoluteAuxiliaryConstant n := by
-  have hC :
-      4 ≤ hypersurfacePositionedAuxiliaryConstant n (hypersurfaceAuxiliaryPositionConstant n) := by
-    unfold hypersurfacePositionedAuxiliaryConstant
-    have hE := Real.exp_pos (hypersurfaceLargeHeightError (n + 1) (hypersurfaceNormalizedError n)
-      (hypersurfaceAuxiliaryPositionConstant n))
-    have hS : 0 ≤ Real.exp (hypersurfaceAuxiliaryPositionConstant n / (n + 1 : ℝ)) *
-        Real.exp (hypersurfaceSmallHeightError (n + 1)
-          (hypersurfaceBadPrimeNormalizedError n)) := by positivity
-    have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-    linarith
-  unfold hypersurfaceAbsoluteAuxiliaryConstant
-  apply one_le_mul_of_one_le_of_one_le (by linarith)
-  have := Real.exp_pos ((n + 2 : ℝ) ^ 2 / (n + 1 : ℝ))
-  have := Nat.cast_nonneg (α := ℝ) n
-  linarith
+  unfold hypersurfaceAbsoluteAuxiliaryConstant hypersurfacePositionedAuxiliaryConstant
+  apply one_le_mul_of_one_le_of_one_le
+  · have hA : 0 ≤ positionedLargeFactor n (hypersurfaceAuxiliaryPositionConstant n) :=
+      (Real.exp_pos _).le
+    have hS : 0 ≤ positionedSmallFactor n (hypersurfaceAuxiliaryPositionConstant n) :=
+      (Real.exp_pos _).le
+    linarith [Nat.cast_nonneg (α := ℝ) n]
+  · linarith [Real.exp_pos ((n + 2 : ℝ) / (n + 1 : ℝ) * (n + 2 : ℝ)), Nat.cast_nonneg (α := ℝ) n]
 
 /-- CCDN Theorem 3.1.1: the full coefficient-sensitive auxiliary-polynomial
 bound, including equations that split over an algebraic closure. -/
@@ -60,14 +53,12 @@ theorem hypersurface_projective_auxiliary
       (by rw [hf.totalDegree hir.ne_zero]; exact hd)
     have hred : ¬ AbsolutelyIrreducibleRat (map (Int.castRingHom ℚ) f) :=
       (absolutelyIrreducibleRat_map_iff f).not.mpr habs
-    obtain ⟨g, hg0, hgh, hgnd, hzeros⟩ := nonabsolute_projective_auxiliary f hf hd hQ hred
+    obtain ⟨g, hg0, hgh, hgnd, hzeros⟩ := nonabsolute_projective_auxiliary f hf hQ hred
     refine ⟨d, ?_, g, hg0, hgh, fun x _ hx => hzeros hx, hgnd⟩
     unfold hypersurfaceAuxiliaryDegreeBound auxDegreeBound auxMainTerm
-    rw [hypersurfaceBadPrimeFactor_eq_zero f habs, mul_zero, zero_mul, zero_div, zero_add]
-    have hdD : (d : ℝ) ≤ (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) := le_rpow_four_sub_inv hd
-    have hl : 0 ≤ (d : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B :=
-      mul_nonneg (Real.rpow_nonneg (by positivity) _) (Real.log_nonneg hB)
-    exact (hdD.trans (le_add_of_nonneg_left hl)).trans
+    rw [hypersurfaceBadPrimeFactor_eq_zero f habs, zero_div, mul_zero, zero_add]
+    have hl : 0 ≤ auxLogTerm n d B := by have := Real.log_nonneg hB; positivity
+    exact ((le_auxDegreeScale hd).trans (le_add_of_nonneg_left hl)).trans
       (le_mul_of_one_le_left (by positivity) (hypersurfaceAbsoluteAuxiliaryConstant_one_le n))
 
 end

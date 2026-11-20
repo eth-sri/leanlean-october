@@ -9,7 +9,7 @@ public import CCDN.AuxiliaryPolynomial.AffineHypersurfaceAuxiliary
 public import CCDN.ClassGroup.NormPolynomial
 import CCDN.ClassGroup.OddDegreeNormCurveBaseChange
 import CCDN.ClassGroup.OddDegreeNormCurves
-import CCDN.Plane.AffinePlaneBadPrimeCount
+import CCDN.Plane.CurveCount
 
 /-! Signed norm curves in odd field degree have no bad reduction primes.
 Their integral point count has no logarithmic loss, as required
@@ -35,9 +35,13 @@ private theorem signedNormCurvePolynomial_primitive (β : 𝓞 K) (ε : ℤ) :
   have hh := hc (Finsupp.cons 2 (Finsupp.single 0 0))
   rwa [hcoef] at hh
 
-private theorem signedNormCurvePolynomial_no_bad_reduction
-    (β : 𝓞 K) {ε : ℤ} (hε : IsUnit ε)
-    (hn : 2 ≤ Module.finrank ℚ K) (hodd : Odd (Module.finrank ℚ K)) (p : ℕ) :
+section
+
+variable (β : 𝓞 K) {ε : ℤ} (hε : IsUnit ε)
+  (hn : 2 ≤ Module.finrank ℚ K) (hodd : Odd (Module.finrank ℚ K))
+include β ε hε hn hodd
+
+private theorem signedNormCurvePolynomial_no_bad_reduction (p : ℕ) :
     ¬ HypersurfaceBadReduction (signedNormCurvePolynomial K β ε) p := by
   rintro ⟨hp, hbad⟩
   let : Fact p.Prime := ⟨hp⟩
@@ -48,16 +52,12 @@ private theorem signedNormCurvePolynomial_no_bad_reduction
   have hdZ := signedNormCurvePolynomial_totalDegree K β hε.ne_zero hn
   have hir := signedNormCurvePolynomial_map_irreducible_in_every_characteristic K
     (AlgebraicClosure (ZMod p)) β hεp hodd
-  exact hbad.elim (fun h => h (hd.trans hdZ.symm)) (fun h => h hir)
+  simp_all
 
-private theorem signedNormCurvePolynomial_bad_prime_factor
-    (β : 𝓞 K) {ε : ℤ} (hε : IsUnit ε)
-    (hn : 2 ≤ Module.finrank ℚ K) (hodd : Odd (Module.finrank ℚ K)) :
+private theorem signedNormCurvePolynomial_bad_prime_factor :
     hypersurfaceBadPrimeFactor (signedNormCurvePolynomial K β ε) = 1 := by
-  have hεQ : (ε : AlgebraicClosure ℚ) ≠ 0 :=
-    (hε.map (Int.castRingHom (AlgebraicClosure ℚ))).ne_zero
   have hir := signedNormCurvePolynomial_map_irreducible_in_every_characteristic K
-    (AlgebraicClosure ℚ) β hεQ hodd
+    (AlgebraicClosure ℚ) β ((hε.map (Int.castRingHom (AlgebraicClosure ℚ))).ne_zero) hodd
   have hbad (p : ℕ) : p ∈ (∅ : Finset ℕ) ↔
       stepanovThreshold (signedNormCurvePolynomial K β ε).totalDegree < p ∧
         HypersurfaceBadReduction (signedNormCurvePolynomial K β ε) p := by
@@ -70,21 +70,20 @@ private theorem signedNormCurvePolynomial_bad_prime_factor
 /-- The constant is absolute and the degree dependence polynomial.
 The sign can be either unit of the integers, and the generator is arbitrary. -/
 theorem signed_norm_curve_log_free_count
-    (β : 𝓞 K) {ε : ℤ} (hε : IsUnit ε)
-    (hn : 2 ≤ Module.finrank ℚ K) (hodd : Odd (Module.finrank ℚ K))
     {B : ℝ} (hB : 1 ≤ B) :
     (count (zeroLocus (MvPolynomial.map (Int.castRingHom ℚ)
       (signedNormCurvePolynomial K β ε))) B : ℝ) ≤
       (3 * affineHypersurfaceAuxiliaryConstant 0) *
         (Module.finrank ℚ K : ℝ) ^ 4 * B ^ (1 / (Module.finrank ℚ K : ℝ)) := by
-  have hεQ : (ε : ℚ) ≠ 0 := (hε.map (Int.castRingHom ℚ)).ne_zero
-  have hir := signedNormCurvePolynomial_map_irreducible_in_every_characteristic K ℚ β hεQ hodd
+  have hir := signedNormCurvePolynomial_map_irreducible_in_every_characteristic K ℚ β ((hε.map (Int.castRingHom ℚ)).ne_zero) hodd
   have hdegree := signedNormCurvePolynomial_totalDegree K β hε.ne_zero hn
   have hh := affine_plane_count_bad_prime (signedNormCurvePolynomial K β ε)
     (signedNormCurvePolynomial_primitive K β ε) hir (by omega) hB
   rw [hdegree, signedNormCurvePolynomial_bad_prime_factor K β hε hn hodd] at hh
   convert hh using 1
   ring
+
+end
 
 end
 end CCDN

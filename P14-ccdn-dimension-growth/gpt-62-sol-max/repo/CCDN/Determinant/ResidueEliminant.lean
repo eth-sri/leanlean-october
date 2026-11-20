@@ -53,14 +53,19 @@ def residueEliminant {F : Type*} [CommRing F] (f g : F[X][X]) : F[X][X] :=
   (f.map residueParameterLift).resultant (residueEliminationEquation f g)
     f.natDegree (f.natDegree - 1)
 
+section
+
+variable {F : Type*} [CommRing F] (f g : F[X][X])
+include F f g
+
 /-- At `u = 0`, `residueEliminationEquation f g` specializes to `-g`. -/
-@[simp] lemma residueEliminationEquation_zero {F : Type*} [CommRing F] (f g : F[X][X]) :
+@[simp] lemma residueEliminationEquation_zero :
     (residueEliminationEquation f g).map residueParameterZero = -g := by
   simp only [residueEliminationEquation, Polynomial.map_sub, Polynomial.map_mul, Polynomial.map_C]
   rw [show residueParameterZero (C X : F[X][X]) = 0 by simp [residueParameterZero],
     C_0, zero_mul, zero_sub, residueParameterZero_map_lift]
 
-private lemma residueEliminant_zero {F : Type*} [CommRing F] (f g : F[X][X]) :
+private lemma residueEliminant_zero :
     residueParameterZero (residueEliminant f g) =
       f.resultant (-g) f.natDegree (f.natDegree - 1) := by
   rw [residueEliminant, ← resultant_map_map]
@@ -68,14 +73,15 @@ private lemma residueEliminant_zero {F : Type*} [CommRing F] (f g : F[X][X]) :
 
 /-- If `g` has smaller `z`-degree than `f`, then `residueEliminationEquation f g` has `z`-degree at
 most `deg_z f - 1`. -/
-lemma residueEliminationEquation_natDegree_le {F : Type*} [CommRing F]
-    (f g : F[X][X]) (hg : g.natDegree < f.natDegree) :
+lemma residueEliminationEquation_natDegree_le (hg : g.natDegree < f.natDegree) :
     (residueEliminationEquation f g).natDegree ≤ f.natDegree - 1 := by
   apply (natDegree_sub_le _ _).trans
   apply max_le
   · exact (natDegree_C_mul_le _ _).trans
       ((natDegree_derivative_le _).trans (Nat.sub_le_sub_right natDegree_map_le 1))
   · exact natDegree_map_le.trans (by omega)
+
+end
 
 private lemma coefficient_derivative_natDegree_le {R : Type*} [CommRing R]
     (f : R[X][X]) (D : ℕ) (hf : ∀ i, (f.coeff i).natDegree ≤ D) (i : ℕ) :
@@ -117,10 +123,9 @@ theorem residueEliminant_ne_zero {F : Type*} [Field F]
   have hinj : Function.Injective φ := RatFunc.algebraMap_injective F
   have hg0 : (-g).map φ ≠ 0 := by
     intro h
-    exact (neg_ne_zero.mpr hg)
-      ((Polynomial.map_injective φ hinj) (h.trans (Polynomial.map_zero φ).symm))
+    exact neg_ne_zero.mpr hg (map_injective φ hinj (Eq.trans h (Eq.symm (Polynomial.map_zero φ))))
   have hdegrees : ((-g).map φ).natDegree < (f.map φ).natDegree := by
-    simpa only [natDegree_map_eq_of_injective hinj, natDegree_neg] using hdeg
+    simpa [natDegree_map_eq_of_injective hinj, natDegree_neg] using hdeg
   have hn : ((-g).map φ).natDegree ≤ f.natDegree - 1 := by
     rw [natDegree_map_eq_of_injective hinj, natDegree_neg]
     omega
@@ -130,7 +135,7 @@ theorem residueEliminant_ne_zero {F : Type*} [Field F]
   have hz := congrArg φ (congrArg residueParameterZero h)
   rw [map_zero, map_zero, residueEliminant_zero, ← resultant_map_map] at hz
   apply hres
-  simpa only [natDegree_map_eq_of_injective hinj] using hz
+  simpa [natDegree_map_eq_of_injective hinj] using hz
 
 end
 end CCDN

@@ -25,47 +25,36 @@ def graphHyperplaneRestriction {K σ : Type*} [CommRing K] [Fintype σ]
     (a : σ → K) : MvPolynomial (Option σ) K →ₐ[K] MvPolynomial σ K :=
   aeval (fun i => Option.elim i (∑ j, C (a j) * X j) X)
 
+section
+
+variable {K σ : Type*}
+  [CommRing K]
+include K σ
+
+private lemma graphHyperplaneRestriction_X_homogeneous [Fintype σ] (a : σ → K) (i : Option σ) :
+    (Option.elim i (∑ j, C (a j) * X j) X).IsHomogeneous 1 := by
+  cases i
+  · exact IsHomogeneous.sum _ _ _ fun j _ => (isHomogeneous_X K j).C_mul (a j)
+  · exact isHomogeneous_X K _
+
 /-- Restriction to a graph hyperplane does not increase the total degree. -/
-lemma graphHyperplaneRestriction_totalDegree_le {K σ : Type*}
-    [Field K] [Fintype σ] (a : σ → K) (f : MvPolynomial (Option σ) K) :
-    (graphHyperplaneRestriction a f).totalDegree ≤ f.totalDegree := by
-  apply linear_eval₂_totalDegree_le
-  intro i
-  cases i with
-  | none =>
-    apply totalDegree_finsetSum_le
-    intro j _
-    exact (totalDegree_mul _ _).trans (by simp)
-  | some j => simp
+lemma graphHyperplaneRestriction_totalDegree_le [Fintype σ] (a : σ → K) (f : MvPolynomial (Option σ) K) :
+    (graphHyperplaneRestriction a f).totalDegree ≤ f.totalDegree :=
+  linear_eval₂_totalDegree_le (.id K) _ (fun i => (graphHyperplaneRestriction_X_homogeneous a i).totalDegree_le) f
 
 /-- Evaluating the restriction of `f` to the hyperplane `x_none = ∑ a j * x j` at `x` is
 evaluating `f` at the point of the hyperplane lying over `x`. -/
-lemma graphHyperplaneRestriction_eval {K σ : Type*} [CommRing K] [Fintype σ]
+lemma graphHyperplaneRestriction_eval [Fintype σ]
     (a x : σ → K) (f : MvPolynomial (Option σ) K) :
     eval x (graphHyperplaneRestriction a f) =
       eval (fun i => Option.elim i (∑ j, a j * x j) x) f := by
-  have he : (eval x).comp (graphHyperplaneRestriction a).toRingHom =
-      eval (fun i => Option.elim i (∑ j, a j * x j) x) := by
-    apply MvPolynomial.ringHom_ext
-    · intro r
-      simp [graphHyperplaneRestriction]
-    · intro i
-      cases i <;> simp [graphHyperplaneRestriction]
-  exact RingHom.congr_fun he f
+  change eval x (eval₂ C _ f) = _
+  rw [← eval_assoc]
+  congr 2
+  funext i
+  cases i <;> simp
 
-/-- Restriction to a graph hyperplane preserves homogeneity of degree `d`. -/
-lemma graphHyperplaneRestriction_homogeneous {K σ : Type*}
-    [CommRing K] [Fintype σ] (a : σ → K) {f : MvPolynomial (Option σ) K} {d : ℕ}
-    (hf : f.IsHomogeneous d) : (graphHyperplaneRestriction a f).IsHomogeneous d := by
-  let v : Option σ → MvPolynomial σ K :=
-    fun i => Option.elim i (∑ j, C (a j) * X j) X
-  have hv : ∀ i, (v i).IsHomogeneous 1 := by
-    intro i
-    cases i with
-    | none =>
-      exact IsHomogeneous.sum _ _ _ (fun j _ => (isHomogeneous_X K j).C_mul (a j))
-    | some j => exact isHomogeneous_X K j
-  simpa only [one_mul, v, graphHyperplaneRestriction] using hf.aeval v hv
+end
 
 /-- Restriction to the graph hyperplane commutes with applying a ring homomorphism `φ` to the
 coefficients, the hyperplane coefficients `a` being mapped by `φ` as well. -/
@@ -74,39 +63,34 @@ lemma graphHyperplaneRestriction_map {K L σ : Type*}
     (φ : K →+* L) (a : σ → K) (f : MvPolynomial (Option σ) K) :
     map φ (graphHyperplaneRestriction a f) =
       graphHyperplaneRestriction (φ ∘ a) (map φ f) := by
-  have he : (map φ).comp (graphHyperplaneRestriction a).toRingHom =
-      (graphHyperplaneRestriction (φ ∘ a)).toRingHom.comp (map φ) := by
-    apply MvPolynomial.ringHom_ext
-    · intro r
-      simp [graphHyperplaneRestriction]
-    · intro i
-      cases i <;> simp [graphHyperplaneRestriction]
-  exact RingHom.congr_fun he f
+  change map φ (eval₂ C _ f) = eval₂ C _ (map φ f)
+  rw [map_eval₂]
+  congr 1
+  funext i
+  cases i <;> simp
+
+section
+
+variable {K σ : Type*}
+include K σ
 
 /-- Restriction to a graph hyperplane commutes with taking the homogeneous component of
 degree `d`. -/
-lemma graphHyperplaneRestriction_homogeneousComponent {K σ : Type*}
+lemma graphHyperplaneRestriction_homogeneousComponent
     [CommRing K] [Fintype σ] (a : σ → K)
     (f : MvPolynomial (Option σ) K) (d : ℕ) :
     graphHyperplaneRestriction a (homogeneousComponent d f) =
       homogeneousComponent d (graphHyperplaneRestriction a f) := by
-  classical
-  induction f using MvPolynomial.induction_on' with
-  | monomial m c =>
-    have hm := isHomogeneous_monomial c (rfl : m.degree = m.degree)
-    rw [homogeneousComponent_of_mem hm,
-      homogeneousComponent_of_mem (graphHyperplaneRestriction_homogeneous a hm)]
-    split_ifs <;> simp
-  | add f g hf hg => simp only [map_add, hf, hg]
+  exact (homogeneousComponent_aeval_linear _ (graphHyperplaneRestriction_X_homogeneous a) d f).symm
 
-private lemma planeSectionPolynomial_eval {K σ : Type*} [CommRing K]
+private lemma planeSectionPolynomial_eval [CommRing K]
     (f : MvPolynomial σ K) (v : PlaneParameters σ → K) (t : Fin 2 → K) :
     eval t (planeSectionPolynomial f v) =
       eval (fun i => v (i, 0) + v (i, 1) * t 0 + v (i, 2) * t 1) f := by
   rw [← bivariateEval_equiv, planeSectionPolynomial, AlgEquiv.apply_symm_apply]
   exact universalPlaneSection_eval f v (t 0) (t 1)
 
-private lemma graphHyperplaneRestriction_planeSection {K σ : Type*}
+private lemma graphHyperplaneRestriction_planeSection
     [Field K] [Infinite K] [Fintype σ]
     (a : σ → K) (v : PlaneParameters (Option σ) → K)
     (hv : ∀ j : Fin 3, v (none, j) = ∑ i, a i * v (some i, j))
@@ -124,8 +108,7 @@ private lemma graphHyperplaneRestriction_planeSection {K σ : Type*}
 
 /-- Full degree and irreducibility of a concrete contained plane force both
 properties for the containing hyperplane. -/
-theorem graphHyperplaneRestriction_irreducible_of_plane
-    {K σ : Type*} [Field K] [Infinite K] [Fintype σ]
+theorem graphHyperplaneRestriction_irreducible_of_plane [Field K] [Infinite K] [Fintype σ]
     (f : MvPolynomial (Option σ) K) (a : σ → K)
     (v : PlaneParameters (Option σ) → K)
     (hv : ∀ j : Fin 3, v (none, j) = ∑ i, a i * v (some i, j))
@@ -145,11 +128,12 @@ theorem graphHyperplaneRestriction_irreducible_of_plane
     (fun g => planeSectionPolynomial_totalDegree g w)
   · change Irreducible (planeSectionPolynomial (graphHyperplaneRestriction a f) w)
     rw [show w = (fun p => v (some p.1, p.2)) from rfl, he]
-    exact (MulEquiv.irreducible_iff (f := (bivariatePolynomialEquiv K).symm)).mpr hir
+    exact (MulEquiv.irreducible_iff (bivariatePolynomialEquiv K).symm).mpr hir
   · change (planeSectionPolynomial (graphHyperplaneRestriction a f) w).totalDegree =
       (graphHyperplaneRestriction a f).totalDegree
-    rw [show w = (fun p => v (some p.1, p.2)) from rfl, he, hfull]
-    exact hdegree
+    aesop
+
+end
 
 end
 end CCDN

@@ -9,7 +9,10 @@ public import CCDN.Plane.FiniteFieldConstants
 public import Mathlib.Algebra.Field.ZMod
 public import Mathlib.Analysis.Real.Sqrt
 public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
-import CCDN.AuxiliaryPolynomial.PlaneBadPrimes
+import CCDN.Analysis.PrimeCutoff
+import CCDN.AuxiliaryPolynomial.ConstantLeadingBadReduction
+import CCDN.AuxiliaryPolynomial.HypersurfaceBadReduction
+import CCDN.Height.IntegerCoefficientHeight
 import CCDN.ForMathlib.MvPolynomial
 import CCDN.Plane.SectionSum
 
@@ -30,15 +33,15 @@ noncomputable section
 lemma hypersurface_bad_section_error {d p : ℝ} (hd : 1 ≤ d) (hp : stepanovThreshold d < p) :
     2 * d ^ 4 * p + d ^ 3 ≤ 3 * d ^ 2 * p * Real.sqrt p := by
   unfold stepanovThreshold at hp
-  have hd0 : 0 ≤ d := by linarith
+  
   have hd2 : 1 ≤ d ^ 2 := by nlinarith
-  have hd4 : 1 ≤ d ^ 4 := by nlinarith [sq_nonneg (d ^ 2 - 1)]
+  
   have hp1 : 1 ≤ p := by nlinarith
-  have hp0 : 0 ≤ p := by linarith
-  have hs : d ^ 2 ≤ Real.sqrt p := Real.le_sqrt_of_sq_le (by nlinarith [sq_nonneg (d ^ 2)])
+  
+  have hs : d ^ 2 ≤ Real.sqrt p := Real.le_sqrt_of_sq_le (by linarith)
   have hds : d ≤ Real.sqrt p := by nlinarith
   have h1 := mul_le_mul_of_nonneg_left hs (show 0 ≤ 2 * d ^ 2 * p by positivity)
-  have h2 := mul_le_mul_of_nonneg_left hds (sq_nonneg d)
+  
   have h3 := mul_le_mul_of_nonneg_right hp1 (show 0 ≤ d ^ 2 * Real.sqrt p by positivity)
   nlinarith
 
@@ -54,7 +57,7 @@ private theorem hypersurface_count_of_incidence_bound (n : ℕ) {d p N : ℝ}
   rw [hypersurfaceResidueConstant_eq]
   have herr := hypersurface_bad_section_error hd hp
   unfold stepanovThreshold at hp
-  have hp0 : 0 < p := lt_of_le_of_lt (by positivity) hp
+  have hp0 := lt_of_le_of_lt (by positivity) hp
   have hmajor := mul_le_mul_of_nonneg_left herr (pow_nonneg hp0.le (3 * n + 8))
   have hfact :
       p ^ (3 * n + 9) * (p + 161 * d ^ 2 * Real.sqrt p) +
@@ -64,8 +67,6 @@ private theorem hypersurface_count_of_incidence_bound (n : ℕ) {d p N : ℝ}
     nlinarith
   have he : p ^ (3 * n + 8) * (p ^ 2 + 164 * d ^ 2 * p * Real.sqrt p) =
       (p ^ (n + 2) + 164 * d ^ 2 * p ^ (n + 1) * Real.sqrt p) * p ^ (2 * n + 8) := by
-    rw [show 3 * n + 8 = (2 * n + 8) + n by omega, pow_add]
-    simp only [pow_add, pow_one]
     ring
   rw [he] at hfact
   exact (mul_le_mul_iff_left₀ (pow_pos hp0 _)).mp (hcount.trans hfact)
@@ -94,7 +95,6 @@ private theorem affine_hypersurface_finite_field_bound_option {n : ℕ}
   have hpN : 27 * f.totalDegree ^ 4 < p := by exact_mod_cast hsize
   have hchar : 2 * f.totalDegree ^ 2 < p := by
     have h2 : 1 ≤ f.totalDegree ^ 2 := by nlinarith
-    have h4 : f.totalDegree ^ 2 ≤ f.totalDegree ^ 4 := by nlinarith
     nlinarith
   have hbN := finite_field_bad_plane_parameters_card f hf hd hchar
   have hzN := finite_field_zero_plane_parameters_card f hir.ne_zero
@@ -120,8 +120,6 @@ private theorem affine_hypersurface_finite_field_bound_option {n : ℕ}
           (mul_le_mul_of_nonneg_right hb (show 0 ≤ (f.totalDegree : ℝ) * p by positivity)))
         (mul_le_mul_of_nonneg_right hz (show 0 ≤ (p : ℝ) ^ 2 by positivity)))
     _ = _ := by
-      rw [show 3 * n + 9 = (3 * n + 8) + 1 by omega, pow_succ,
-        show 3 * n + 8 = (3 * n + 6) + 2 by omega, pow_add]
       ring
 
 /-- Renaming coordinates preserves the number of affine zeros. -/
@@ -131,12 +129,12 @@ private lemma polynomial_zero_card_renameEquiv {K σ τ : Type*} [CommRing K]
       Nat.card {z : σ → K // eval z f = 0} := by
   apply Nat.card_congr
   exact {
-    toFun := fun z => ⟨z.val ∘ e, by simpa only [eval_rename] using z.property⟩
+    toFun := fun z => ⟨z.val ∘ e, by simpa [eval_rename] using z.property⟩
     invFun := fun z => ⟨z.val ∘ e.symm, by
       simpa only [eval_rename, Function.comp_assoc, Equiv.symm_comp_self, Function.comp_id] using
         z.property⟩
-    left_inv := fun z => by apply Subtype.ext; funext i; simp
-    right_inv := fun z => by apply Subtype.ext; funext i; simp }
+    left_inv := fun z => by aesop
+    right_inv := fun z => by aesop }
 
 /-- A geometrically irreducible affine hypersurface `f = 0` in `n + 3` variables over `ZMod p`,
 with `p` above the threshold `27 * (deg f) ^ 4`, has at most
@@ -152,7 +150,7 @@ theorem affine_hypersurface_finite_field_bound {n : ℕ}
   let g := rename e f
   have hg : Irreducible (MvPolynomial.map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p))) g) := by
     rw [show g = rename e f from rfl, map_rename]
-    exact (MulEquiv.irreducible_iff (f := renameEquiv (AlgebraicClosure (ZMod p)) e)).mpr hf
+    exact (MulEquiv.irreducible_iff (renameEquiv (AlgebraicClosure (ZMod p)) e)).mpr hf
   have hd : g.totalDegree = f.totalDegree := totalDegree_renameEquiv e f
   have h := affine_hypersurface_finite_field_bound_option p g hg (hd ▸ hsize)
   rw [hd, polynomial_zero_card_renameEquiv] at h

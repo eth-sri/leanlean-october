@@ -27,12 +27,10 @@ variable (K : Type*) [Field K] [NumberField K]
 def euclideanNumberFieldEmbedding : K →+* mixedEmbedding.euclidean.mixedSpace K where
   toFun x := (mixedEmbedding.euclidean.toMixed K).symm (mixedEmbedding K x)
   map_zero' := by simp
-  map_one' := by rw [map_one]; rfl
+  map_one' := by aesop
   map_add' x y := by simp
   map_mul' x y := by
-    change (mixedEmbedding.euclidean.toMixed K).symm (mixedEmbedding K (x * y)) = _
-    rw [map_mul]
-    rfl
+    aesop
 
 /-- Transporting the Euclidean embedding of `x` back to the mixed space gives the mixed embedding
 of `x`. -/
@@ -60,10 +58,7 @@ def euclideanNumberFieldLinearMap :
 /-- The Euclidean embedding of an algebraic integer lies in the Euclidean integer lattice. -/
 lemma euclideanNumberFieldEmbedding_mem_integerLattice (x : 𝓞 K) :
     euclideanNumberFieldEmbedding K (x : K) ∈ mixedEmbedding.euclidean.integerLattice K := by
-  change mixedEmbedding.euclidean.toMixed K (euclideanNumberFieldEmbedding K (x : K)) ∈
-    mixedEmbedding.integerLattice K
-  rw [toMixed_euclideanNumberFieldEmbedding]
-  exact ⟨x, rfl⟩
+  tauto
 
 /-- A vector lies in the Euclidean integer lattice if and only if it is the Euclidean embedding of
 an algebraic integer. -/
@@ -77,7 +72,7 @@ lemma mem_euclidean_integerLattice_iff
     rw [toMixed_euclideanNumberFieldEmbedding]
     exact hz
   · rintro ⟨z, rfl⟩
-    exact euclideanNumberFieldEmbedding_mem_integerLattice K z
+    tauto
 
 open Classical in
 private lemma infinitePlace_le_euclidean_norm (w : InfinitePlace K) (x : K) :
@@ -120,18 +115,6 @@ lemma one_le_euclidean_norm_integer {x : 𝓞 K} (hx : x ≠ 0) :
   exact (hw.trans (infinitePlace_le_euclidean_norm K w (x : K))).not_gt h
 
 open Classical in
-/-- Every nonzero vector of the Euclidean integer lattice has norm at least `1`. -/
-lemma one_le_euclidean_integerLattice_norm
-    {x : mixedEmbedding.euclidean.mixedSpace K}
-    (hx : x ∈ mixedEmbedding.euclidean.integerLattice K) (hne : x ≠ 0) :
-    1 ≤ ‖x‖ := by
-  obtain ⟨z, rfl⟩ := (mem_euclidean_integerLattice_iff K x).mp hx
-  apply one_le_euclidean_norm_integer K
-  intro hz
-  apply hne
-  simp [hz]
-
-open Classical in
 /-- If `w x ≤ B` at every infinite place `w`, then the Euclidean embedding of `x` has norm at most
 `√[K : ℚ] * B`. -/
 lemma euclideanNumberFieldEmbedding_norm_le {B : ℝ} (hB : 0 ≤ B)
@@ -151,15 +134,7 @@ lemma euclideanNumberFieldEmbedding_norm_le {B : ℝ} (hB : 0 ≤ B)
     exact_mod_cast card_add_two_mul_card_eq_rank K
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) hB)).mp
   rw [mul_pow, Real.sq_sqrt (Nat.cast_nonneg _), euclideanNumberFieldEmbedding_norm_sq]
-  nlinarith [congrArg (fun r : ℝ ↦ r * B ^ 2) hrank,
-    mul_nonneg (Nat.cast_nonneg (nrComplexPlaces K) (α := ℝ)) (sq_nonneg B)]
-
-open Classical in
-/-- The Euclidean embedding of `1` has norm at most `√[K : ℚ]`. -/
-lemma euclideanNumberFieldEmbedding_one_norm_le :
-    ‖euclideanNumberFieldEmbedding K 1‖ ≤ Real.sqrt (Module.finrank ℚ K) := by
-  simpa using euclideanNumberFieldEmbedding_norm_le K (B := 1) zero_le_one 1
-    (fun w ↦ by simp)
+  nlinarith
 
 open Classical in
 /-- The Euclidean norm is submultiplicative on embedded field elements: the norm of the embedding of
@@ -181,7 +156,7 @@ lemma euclideanNumberFieldEmbedding_norm_mul_le (x y : K) :
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (norm_nonneg _) (norm_nonneg _))).mp
   rw [mul_pow, euclideanNumberFieldEmbedding_norm_sq K (x * y),
     euclideanNumberFieldEmbedding_norm_sq K x]
-  nlinarith only [hreal, hcomplex]
+  linarith
 
 open Classical in
 /-- The Euclidean integer lattice has covolume `2 ^ (-r₂) * √|discr K|`, where `r₂` is the number of
@@ -194,9 +169,7 @@ lemma euclidean_integerLattice_covolume :
       (mixedEmbedding.euclidean.volumePreserving_toMixed K),
     ZLattice.covolume_eq_measure_fundamentalDomain (mixedEmbedding.integerLattice K) volume
       (mixedEmbedding.fundamentalDomain_integerLattice K)]
-  simp only [Measure.real, mixedEmbedding.volume_fundamentalDomain_latticeBasis,
-    ENNReal.toReal_mul, ENNReal.toReal_pow, ENNReal.toReal_inv, ENNReal.toReal_ofNat,
-    ENNReal.coe_toReal, Real.coe_sqrt, coe_nnnorm, Int.norm_eq_abs]
+  simp [Measure.real, mixedEmbedding.volume_fundamentalDomain_latticeBasis, ENNReal.toReal_mul, ENNReal.toReal_pow, ENNReal.toReal_inv, ENNReal.toReal_ofNat, ENNReal.coe_toReal, Real.coe_sqrt, coe_nnnorm, Int.norm_eq_abs]
 
 end
 end CCDN

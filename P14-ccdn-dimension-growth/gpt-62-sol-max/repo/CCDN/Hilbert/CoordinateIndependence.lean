@@ -32,7 +32,7 @@ private lemma algebraicIndependent_coordinates_of_standard
     ext i
     simp
   rw [he] at hp
-  have hmem : rename j p ∈ I := Ideal.Quotient.eq_zero_iff_mem.mp hp
+  have hmem := Ideal.Quotient.eq_zero_iff_mem.mp hp
   have hs : rename j p ∈ restrictSupport K (Ideal.standardExponents I m) := by
     intro a ha
     change a ∈ (rename j p).support at ha
@@ -40,7 +40,7 @@ private lemma algebraicIndependent_coordinates_of_standard
     obtain ⟨b, _, rfl⟩ := Finset.mem_image.mp ha
     exact hstd b
   have hz := Ideal.eq_zero_of_mem_restrictSupport_standardExponents I m hs hmem
-  exact (rename_injective j hj) (by simpa only [map_zero] using hz)
+  simp_all
 
 private lemma orthant_free_monomials_standard {K σ : Type*} [Field K] [Fintype σ]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (B : ℕ)
@@ -62,12 +62,10 @@ private lemma orthant_free_monomials_standard {K σ : Type*} [Field K] [Fintype 
   · have hh := Finsupp.mapDomain_apply_of_injective
       (Subtype.val_injective : Function.Injective (fun i : orthantFree b => i.val))
       t ⟨i, hi⟩
-    rw [hh]
-    simp [orthantExpand, hi]
+    grind [orthantExpand]
   · rw [Finsupp.mapDomain_of_notMem_range]
-    · exact Nat.zero_le _
-    · rintro ⟨j, rfl⟩
-      exact hi j.property
+    simp
+    grind
 
 /-- The independent coordinates are constructed from a maximal
 standard orthant, with exactly the degree of the Hilbert polynomial. -/
@@ -78,25 +76,18 @@ theorem exists_hilbert_dimension_independent_coordinates
       AlgebraicIndependent K (fun i : U => (Ideal.Quotient.mk I) (X i.val)) := by
   classical
   let S := standardExponentVectors I MonomialOrder.degLex
-  obtain ⟨B, _, hB⟩ := lowerSet_clamp_stabilizes S
-    (standardExponentVectors_lower I MonomialOrder.degLex)
+  let B := standardExponentBound I
+  have hB := standardExponentBound_spec I
   let s := lowerSetOrthantPatterns S B
-  have hs : s.Nonempty := by
-    obtain ⟨a, ha⟩ := standardExponentVectors_nonempty I hI
-    refine ⟨exponentPattern B a, ?_⟩
-    simp only [s, lowerSetOrthantPatterns, Finset.mem_filter, Finset.mem_univ, true_and]
-    exact (hB a).mp ha
-  have hpoly : filteredHilbertPolynomial I = lowerSetOrthantPolynomial S B := by
-    apply filteredHilbertPolynomial_eq_of_eventual
-    refine ⟨Fintype.card σ * B, fun n hn => ?_⟩
-    rw [lowerSetOrthantPolynomial_eval S B hB n hn,
-      filteredCoordinateSpace_finrank_eq_vector_card]
+  have hs := lowerSetOrthantPatterns_nonempty hB (standardExponentVectors_nonempty I hI)
   obtain ⟨_, hdeg, _⟩ := sum_preHilbertPoly_leading s hs
     (fun b => Fintype.card (orthantFree b)) orthantBaseDegree
   obtain ⟨b, hb, he⟩ := Finset.exists_mem_eq_sup s hs
     (fun b => Fintype.card (orthantFree b))
   refine ⟨{i | (b i).val = B}, ?_, ?_⟩
-  · rw [Nat.card_eq_fintype_card, hpoly, lowerSetOrthantPolynomial_eq_sum, hdeg, he]
+  · change Nat.card {i | (b i).val = B} = (∑ c ∈ s,
+      Polynomial.preHilbertPoly ℚ (Fintype.card (orthantFree c)) (orthantBaseDegree c)).natDegree
+    rw [Nat.card_eq_fintype_card, hdeg, he]
     exact Fintype.card_congr (Equiv.refl _)
   · exact algebraicIndependent_coordinates_of_standard I MonomialOrder.degLex
       Subtype.val Subtype.val_injective

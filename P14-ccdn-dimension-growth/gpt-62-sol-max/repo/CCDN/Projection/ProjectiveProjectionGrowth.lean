@@ -5,91 +5,69 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.Algebra.ProjectiveSection
-public import CCDN.Height.ProjectiveBox
-public import CCDN.Projection.BoundedBirationalHypersurfaceProjection
-import CCDN.Hypersurface.ProjectiveHypersurfaceDimensionGrowth
+public import CCDN.Statements
+import CCDN.Projection.BoundedBirationalHypersurfaceProjection
+import CCDN.Projection.BoundedDegreeNormalizationFiber
+import CCDN.Projection.HomogeneousProjectionEquation
 import CCDN.Projection.ProjectiveLinearCountTransfer
 
-/-! The quantitative counting step for the constructed projection. The
-height and finite-fiber losses remain polynomial in the original degree. -/
+/-! Transfer a hypersurface bound through the bounded integral projection. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- The exponent `18 + 3 * m + N + 2 * N * (m + 1)`, with `N = m + k + 2`, of the degree in the
-point-count bound obtained by projecting an `(m + 1)`-dimensional variety in `ℙ^(m + k + 1)` to a
-hypersurface in `ℙ^(m + 2)`. -/
-def projectionDegreeExponent (m k : ℕ) : ℕ :=
-  18 + 3 * m + (m + k + 2) + 2 * (m + k + 2) * (m + 1)
-
-/-- There is a constant `C` depending only on `m` and `k` with the following property. Let integer
-forms `b`, with coefficients bounded by the birational projection height, satisfy an irreducible
-homogeneous relation `f` of degree `d ≥ 5` modulo `I`, and let every affine fiber of the projection
-of the zero locus of `I` have at most `d ^ (m + k + 2)` points. Then the zero locus of `I` in
-`ℙ^(m + k + 1)` has at most `C * d ^ projectionDegreeExponent m k * B ^ (m + 1)` rational points of
-height at most `B`. -/
-theorem projective_projection_dimension_growth (m k : ℕ) :
+/-- The projection costs a factor of `d` for the fibers and the height loss raised to the
+projective dimension. The same argument applies to the plane and higher-dimensional bounds. -/
+theorem ProjectiveHypersurfaceGrowth.projected {m e : ℕ}
+    (h : ProjectiveHypersurfaceGrowth m e) (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧
-      ∀ (I : Ideal (MvPolynomial (Fin (m + k + 2)) ℚ)) (d : ℕ), 5 ≤ d →
-      ∀ b : Fin (m + 3) → Fin (m + k + 2) → ℤ,
-      (∀ i j, |b i j| ≤ integerBirationalProjectionHeight (m + k + 2) d) →
-      ∀ f : MvPolynomial (Fin (m + 3)) ℚ,
-      Irreducible f → f.IsHomogeneous d → f.totalDegree = d →
-      aeval (fun i => integerLinearForm (b i)) f ∈ I →
-      (∀ z : Fin (m + 3) → ℚ, ∀ s : Finset (Fin (m + k + 2) → ℚ),
-        (∀ x ∈ s, x ∈ idealZeroLocus I) →
-        (∀ x ∈ s, ∀ i, eval x (integerLinearForm (b i)) = z i) →
-        s.card ≤ d ^ (m + k + 2)) →
+      ∀ I : Ideal (MvPolynomial (Fin (n + 1)) ℚ), I.IsPrime → IsHomogeneousIdeal I →
+      ∀ d : ℕ, 5 ≤ d → HasProjectiveDimensionDegree I (m + 1) d →
       ∀ B : ℝ, 1 ≤ B →
       (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
-        C * (d : ℝ) ^ projectionDegreeExponent m k * B ^ (m + 1) := by
-  obtain ⟨C, hC, hcount⟩ := projective_hypersurface_dimension_growth m
-  let N := m + k + 2
-  let T : ℝ := N * birationalProjectionHeightConstant N
-  have hN : 1 ≤ N := by dsimp [N]; omega
-  have hT : 1 ≤ T := by
-    have hpos := birationalProjectionHeightConstant_pos N
-    have hh : 1 ≤ N * birationalProjectionHeightConstant N := by
-      exact Nat.succ_le_of_lt (Nat.mul_pos (by omega) hpos)
-    dsimp only [T]
-    exact_mod_cast hh
-  refine ⟨C * T ^ (m + 1), by positivity, ?_⟩
-  intro I d hd b hb f hf hfhom hfdeg hrel hfiber B hB
-  let H : ℝ := birationalProjectionHeightConstant N * (d : ℝ) ^ (2 * N)
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast (show 1 ≤ d by omega)
-  have hH : 1 ≤ H := by
-    have hconst : (1 : ℝ) ≤ birationalProjectionHeightConstant N := by
-      exact_mod_cast Nat.succ_le_of_lt (birationalProjectionHeightConstant_pos N)
-    exact one_le_mul_of_one_le_of_one_le hconst (one_le_pow₀ hd1)
+        C * (d : ℝ) ^ (e + 1 + 2 * (n + 1) * (m + 1)) * B ^ (m + 1) := by
+  obtain ⟨C, hC, hcount⟩ := h
+  let A : ℝ := birationalProjectionHeightConstant (n + 1)
+  let T : ℝ := ((n + 1 : ℕ) : ℝ) * A
+  have hA : 1 ≤ A := by
+    dsimp [A]
+    exact_mod_cast Nat.succ_le_of_lt (birationalProjectionHeightConstant_pos (n + 1))
+  refine ⟨C * T ^ (m + 1), by dsimp [T]; positivity, ?_⟩
+  intro I hprime hI d hd hdimdeg B hB
+  obtain ⟨b, f, hb, hN, hP, rfl⟩ :=
+    exists_bounded_birational_hypersurface_projection (m + 1) (n + 1)
+      I d hdimdeg
+  have hfhom := homogeneous_projection_equation I hI _ (fun _ => linearForm_isHomogeneous _)
+    f hP.irreducible.ne_zero hP.ker_eq
+  let H := A * (f.totalDegree : ℝ) ^ (2 * (n + 1))
+  have hH : 1 ≤ H := one_le_mul_of_one_le_of_one_le hA (one_le_pow₀ (by exact_mod_cast hd.trans' (by decide : 1 ≤ 5)))
   have hbH (i j) : |(b i j : ℝ)| ≤ H := by
-    have hh : |(b i j : ℝ)| ≤ integerBirationalProjectionHeight N d := by
-      exact_mod_cast hb i j
-    apply hh.trans
-    dsimp only [H]
-    exact_mod_cast integerBirationalProjectionHeight_le N d (by omega)
-  have hbound := projective_integer_linear_count_transfer
-    (n := m + k + 1) (m := m + 2) I b f (by rwa [hfdeg])
-    hrel (d ^ N) hfiber H B (by linarith) hbH
-  have hheight : 1 ≤ (N : ℝ) * H * B := by
-    exact one_le_mul_of_one_le_of_one_le
-      (one_le_mul_of_one_le_of_one_le (by exact_mod_cast hN) hH) hB
-  have htarget := hcount f (by rwa [hfdeg]) hf (by omega) ((N : ℝ) * H * B) hheight
-  rw [hfdeg] at htarget
-  have hnon : (0 : ℝ) ≤ (d : ℝ) ^ N := by positivity
-  have hh : (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
-      (d : ℝ) ^ N * (C * (d : ℝ) ^ (18 + 3 * m) *
-        ((N : ℝ) * H * B) ^ (m + 1)) := by
-    apply (show (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
-      (d : ℝ) ^ N * projectiveCount (projectiveZeroLocus f) ((N : ℝ) * H * B) by
-        exact_mod_cast hbound).trans
-    exact mul_le_mul_of_nonneg_left htarget hnon
-  convert hh using 1
-  dsimp only [projectionDegreeExponent, H, T, N]
-  simp only [pow_add, pow_mul, mul_pow]
-  ring
+    have hh := (hb i j).trans (Int.ofNat_le.mpr
+      (integerBirationalProjectionHeight_le (n + 1) f.totalDegree (by omega)))
+    dsimp [H, A]
+    exact_mod_cast hh
+  have hfiber (z : Fin (m + 3) → ℚ) (s : Finset (Fin (n + 1) → ℚ))
+      (hs : ∀ x ∈ s, x ∈ idealZeroLocus I)
+      (hz : ∀ x ∈ s, ∀ i, eval x (integerLinearForm (b i)) = z i) :=
+    linear_normalization_fiber_card_le I
+    (fun i => integerLinearForm (b i.succ)) (fun _ => linearForm_totalDegree_le _)
+    hN.injective hN.filtered f.totalDegree hdimdeg (z ∘ Fin.succ) s hs
+    (fun x hx i => hz x hx i.succ)
+  have hbound := projective_integer_linear_count_transfer I b f hfhom hP.aeval_mem
+    1 (isHomogeneous_one _ _) f.totalDegree f.totalDegree (hfiber 0)
+    (fun z s hs _ hz => hfiber z s hs hz) H B (by linarith) hbH
+  simp at hbound
+  have hheight : 1 ≤ ((n + 1 : ℕ) : ℝ) * H * B := by
+    exact one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le (by exact_mod_cast (show 1 ≤ n + 1 by omega)) hH) hB
+  calc
+    _ ≤ (f.totalDegree : ℝ) * projectiveCount (projectiveZeroLocus f) ((n + 1 : ℕ) * H * B) := by
+      exact_mod_cast hbound
+    _ ≤ (f.totalDegree : ℝ) * (C * (f.totalDegree : ℝ) ^ e *
+        (((n + 1 : ℕ) : ℝ) * H * B) ^ (m + 1)) :=
+      mul_le_mul_of_nonneg_left (hcount f hfhom hP.irreducible hd _ hheight) (by positivity)
+    _ = _ := by dsimp [T, H]; ring
 
 end
 end CCDN

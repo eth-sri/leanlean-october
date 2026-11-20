@@ -5,7 +5,8 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.Projection.DegreePreservingProjectionBox
+public import CCDN.Projection.ProjectionHeight
+import CCDN.Projection.BoundedBirationalHypersurfaceProjection
 public import CCDN.Statements
 import CCDN.ForMathlib.Log
 
@@ -16,62 +17,63 @@ only on ambient dimension, retaining the exact exponent 1/d and d³ factor. -/
 namespace CCDN
 noncomputable section
 
-/-- The constant `c = 2 * n ^ 2 + 3 * n`, for which `log (projectionBoxFactor n d) ≤ c * d`. -/
-def projectionLogConstant (n : ℕ) : ℝ := 2 * (n : ℝ) ^ 2 + 3 * n
+/-- The logarithm of the projection radius factor grows at most linearly with degree. -/
+def projectionLogConstant (n : ℕ) : ℝ :=
+  Real.log (((n : ℝ) + 1) * birationalProjectionHeightConstant n) + 2 * n
 
-/-- The projection log constant is nonnegative. -/
 lemma projectionLogConstant_nonneg (n : ℕ) : 0 ≤ projectionLogConstant n := by
-  unfold projectionLogConstant
-  positivity
+  have h : (1 : ℝ) ≤ birationalProjectionHeightConstant n := by
+    exact_mod_cast Nat.succ_le_of_lt (birationalProjectionHeightConstant_pos n)
+  exact add_nonneg (Real.log_nonneg (one_le_mul_of_one_le_of_one_le (le_add_of_nonneg_left (by positivity)) h)) (by positivity)
 
-/-- For `d > 0`, the logarithm of the projection box factor is at most
-`projectionLogConstant n * d`. -/
 lemma projectionBoxFactor_log_le (n : ℕ) {d : ℕ} (hd : 0 < d) :
     Real.log (projectionBoxFactor n d) ≤ projectionLogConstant n * d := by
-  have hn : (0 : ℝ) ≤ n := by positivity
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hn0 : (0 : ℝ) < n + 1 := by positivity
-  have hd0 : (0 : ℝ) < d + 1 := by positivity
-  have hln : Real.log ((n : ℝ) + 1) ≤ n := Real.log_add_one_le_self hn
-  have hld : Real.log ((d : ℝ) + 1) ≤ d := Real.log_add_one_le_self d.cast_nonneg
-  unfold projectionBoxFactor
-  rw [Real.log_mul hn0.ne' (pow_pos (pow_pos (mul_pos hn0 hd0) _) _).ne',
-    Real.log_pow, Real.log_pow, Real.log_mul hn0.ne' hd0.ne']
-  unfold projectionLogConstant
-  have hh := mul_le_mul_of_nonneg_left (add_le_add hln hld) (show 0 ≤ 2 * (n : ℝ) by positivity)
-  have hh₂ := mul_le_mul_of_nonneg_left hd1 (show 0 ≤ 2 * (n : ℝ) ^ 2 + n by positivity)
-  norm_num only [Nat.cast_ofNat]
-  nlinarith
+  have h : (1 : ℝ) ≤ birationalProjectionHeightConstant n := by
+    exact_mod_cast Nat.succ_le_of_lt (birationalProjectionHeightConstant_pos n)
+  have hA : (1 : ℝ) ≤ ((n : ℝ) + 1) * birationalProjectionHeightConstant n :=
+    one_le_mul_of_one_le_of_one_le (le_add_of_nonneg_left (by positivity)) h
+  have hd' : (1 : ℝ) ≤ d := by exact_mod_cast hd
+  have hl : Real.log ((d : ℝ) + 1) ≤ d := by
+    linarith [Real.log_le_sub_one_of_pos (by positivity : (0 : ℝ) < d + 1)]
+  unfold projectionBoxFactor projectionEntryBound projectionLogConstant
+  rw [← mul_assoc, Real.log_mul (zero_lt_one.trans_le hA).ne' (by positivity), Real.log_pow]
+  push_cast
+  nlinarith [mul_nonneg (Real.log_nonneg hA) (sub_nonneg.mpr hd'),
+    mul_le_mul_of_nonneg_left hl (by positivity : (0 : ℝ) ≤ 2 * n)]
 
-private lemma curveBound_scale_of_log_le {d : ℕ} (hd : 0 < d) {A B C : ℝ}
-    (hA : 1 ≤ A) (hB : 1 ≤ B) (hC : 0 ≤ C) (hlog : Real.log A ≤ C * d) :
-    curveBound d (A * B) ≤ Real.exp C * (C + 1) * curveBound d B := by
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
-  have hA0 : 0 < A := by linarith
-  have hB0 : 0 < B := by linarith
-  have hlogB := Real.log_nonneg hB
-  have hlogA := Real.log_nonneg hA
-  have hpow : A ^ (1 / (d : ℝ)) ≤ Real.exp C := by
-    rw [Real.rpow_def_of_pos hA0, Real.exp_le_exp, ← div_eq_mul_one_div]
-    exact (div_le_iff₀ hd0).mpr hlog
-  have hlog₂ : Real.log A + Real.log B + d ≤ (C + 1) * (Real.log B + d) := by
-    nlinarith [mul_nonneg hC hlogB]
-  unfold curveBound
-  rw [Real.mul_rpow hA0.le hB0.le, Real.log_mul hA0.ne' hB0.ne']
-  calc
-    _ ≤ (d : ℝ) ^ 3 * (Real.exp C * B ^ (1 / (d : ℝ))) *
-        ((C + 1) * (Real.log B + d)) := by gcongr
-    _ = _ := by ring
+lemma projectionBoxFactor_rpow_le (n : ℕ) {d : ℕ} (hd : 0 < d) {r : ℝ} (hr : 0 ≤ r) :
+    projectionBoxFactor n d ^ (r / (d : ℝ)) ≤ Real.exp (r * projectionLogConstant n) := by
+  rw [Real.rpow_def_of_pos (zero_lt_one.trans_le (projectionBoxFactor_one_le n d)),
+    Real.exp_le_exp, ← mul_div_assoc, mul_comm (Real.log _) r, mul_div_assoc]
+  exact mul_le_mul_of_nonneg_left ((div_le_iff₀ (by exact_mod_cast hd)).mpr (projectionBoxFactor_log_le n hd)) hr
 
-/-- Scaling the radius by the projection box factor multiplies the curve bound by at most a
-constant depending only on `n`: with `c = projectionLogConstant n`, for `d > 0` and `B ≥ 1`,
-`curveBound d (projectionBoxFactor n d * B) ≤ exp c * (c + 1) * curveBound d B`. -/
+/-- The enlarged box costs a constant depending only on the ambient dimension. -/
 theorem projection_curveBound_scale (n : ℕ) {d : ℕ} (hd : 0 < d)
     {B : ℝ} (hB : 1 ≤ B) :
     curveBound d (projectionBoxFactor n d * B) ≤
-      (Real.exp (projectionLogConstant n) * (projectionLogConstant n + 1)) * curveBound d B :=
-  curveBound_scale_of_log_le hd (projectionBoxFactor_one_le n d) hB
-    (projectionLogConstant_nonneg n) (projectionBoxFactor_log_le n hd)
+      (Real.exp (projectionLogConstant n) * (projectionLogConstant n + 1)) * curveBound d B := by
+  let A := projectionBoxFactor n d
+  let C := projectionLogConstant n
+  have hA := zero_lt_one.trans_le (projectionBoxFactor_one_le n d)
+  have hB' := zero_lt_one.trans_le hB
+  have hC := projectionLogConstant_nonneg n
+  have hlog : Real.log A + Real.log B + d ≤ (C + 1) * (Real.log B + d) := by
+    have := projectionBoxFactor_log_le n hd
+    have hh := mul_nonneg hC (Real.log_nonneg hB)
+    change Real.log A ≤ C * d at this
+    nlinarith
+  change curveBound d (A * B) ≤ _
+  unfold curveBound
+  rw [Real.mul_rpow hA.le hB'.le, Real.log_mul hA.ne' hB'.ne']
+  calc
+    _ ≤ (d : ℝ) ^ 3 * (Real.exp C * B ^ (1 / (d : ℝ))) *
+        ((C + 1) * (Real.log B + d)) := by
+      have hpow := projectionBoxFactor_rpow_le n hd zero_le_one
+      rw [one_mul] at hpow
+      have := Real.log_nonneg (projectionBoxFactor_one_le n d)
+      have := Real.log_nonneg hB
+      gcongr
+    _ = _ := by dsimp [C]; ring
 
 end
 end CCDN

@@ -29,50 +29,31 @@ theorem exists_mem_ideal_degree_le_multiplicity
   obtain ⟨U, hU, hAI⟩ := exists_hilbert_dimension_independent_coordinates I
     (Ideal.IsPrime.ne_top ‹I.IsPrime›)
   rw [Nat.card_eq_fintype_card, hdimdeg.natDegree_eq] at hU
-  let e : Fin (n + 1) ≃ U := Fintype.equivOfCardEq (by simpa only [Fintype.card_fin] using hU.symm)
+  let e : Fin (n + 1) ≃ U := Fintype.equivOfCardEq (by simp_all)
   obtain ⟨v, hv⟩ : ∃ v : σ, v ∉ U := by
     by_contra! hn
     have hUniv : U = Set.univ := Set.eq_univ_iff_forall.mpr hn
-    have hcard : Fintype.card U = Fintype.card σ := by simp [hUniv]
+    have hcard : Fintype.card U = Fintype.card σ := by simp_all
     omega
-  let j : Fin (n + 2) → σ := Fin.lastCases v (fun i => (e i).val)
-  have hj : Function.Injective j := by
-    intro i
-    refine Fin.lastCases ?_ (fun i => ?_) i
-    · intro k
-      refine Fin.lastCases ?_ (fun k => ?_) k
-      · intro _
-        rfl
-      · intro h
-        have he : v = (e k).val := by simpa only [j, Fin.lastCases_last,
-          Fin.lastCases_castSucc] using h
-        exact (hv (he ▸ (e k).property)).elim
-    · intro k
-      refine Fin.lastCases ?_ (fun k => ?_) k
-      · intro h
-        have he : (e i).val = v := by simpa only [j, Fin.lastCases_last,
-          Fin.lastCases_castSucc] using h
-        exact (hv (he ▸ (e i).property)).elim
-      · intro h
-        have he : (e i).val = (e k).val := by simpa only [j, Fin.lastCases_castSucc] using h
-        exact congrArg Fin.castSucc (e.injective (Subtype.ext he))
+  let j : Fin (n + 2) → σ := Fin.snoc (fun i => (e i).val) v
+  have hj : Function.Injective j := Fin.snoc_injective_of_injective
+    (Subtype.val_injective.comp e.injective) (by rintro ⟨i, rfl⟩; exact hv (e i).property)
   let a : Fin (n + 2) → MvPolynomial σ K := fun i => X (j i)
   let b : Fin (n + 1) → MvPolynomial (Fin (n + 2)) K := fun i => X i.castSucc
-  have ha : ∀ i, (a i).totalDegree ≤ 1 := fun i => by simp [a]
-  have hb : ∀ i, (b i).totalDegree ≤ 1 := fun i => by simp [b]
+  have ha : ∀ i, (a i).totalDegree ≤ 1 := fun i => by aesop
+  have hb : ∀ i, (b i).totalDegree ≤ 1 := fun i => by aesop
   have hi : AlgebraicIndependent K (fun i => projectionCoordinateMap I a (b i)) := by
     simpa only [projectionCoordinateMap, AlgHom.comp_apply, b, aeval_X, a, j,
-      Fin.lastCases_castSucc, Function.comp_def, Ideal.Quotient.mkₐ_eq_mk] using
+      Fin.snoc_castSucc, Function.comp_def, Ideal.Quotient.mkₐ_eq_mk] using
       hAI.comp e e.injective
-  obtain ⟨f, hf, _, hfd, hker⟩ := exists_hypersurface_projection_equation_degree_le
+  obtain ⟨f, hf, hfd, hker⟩ := exists_hypersurface_projection_equation_degree_le
     I a ha d hdimdeg b hb hi
   have he : aeval a = rename j := (rename_eq_aeval j).symm
   refine ⟨aeval a f, ?_, ?_, ?_⟩
   · rw [he]
-    exact fun hz => hf.ne_zero ((rename_injective j hj) (by simpa only [map_zero] using hz))
+    exact fun hz => hf.ne_zero ((rename_injective j hj) (by assumption))
   · have hmem : f ∈ RingHom.ker (projectionCoordinateMap I a) := by
-      rw [hker]
-      exact Ideal.subset_span (Set.mem_singleton f)
+      simp_all
     exact Ideal.Quotient.eq_zero_iff_mem.mp hmem
   · exact (aeval_totalDegree_le a ha f).trans (by simpa using hfd)
 

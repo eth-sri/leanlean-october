@@ -60,27 +60,24 @@ theorem integer_slice_map_of_option_equations {n : ℕ}
       zeroLocus (map (Int.castRingHom ℚ) (g k)) := by
   classical
   let e : Fin (n + 1) ≃ Option (Fin n) := finSuccEquiv' 0
-  let z : Option (Fin n) → ℤ := x ∘ e.symm
-  have hznone : z none = x 0 := by simp [z, e]
+  let z := x ∘ e.symm
+  
   have hzsome (i : Fin n) : z (some i) = deleteIntegerCoordinate 0 x i := by
-    simp [z, e, deleteIntegerCoordinate]
+    rfl
   have hlevel := (Finset.mem_filter.mp hx).2
   have hzlevel : D * z none - ∑ i, a i * z (some i) = k := by
     change (∑ i, graphIntegerNormal D a i * x i) = k at hlevel
     rw [Fin.sum_univ_succ] at hlevel
     simp only [graphIntegerNormal, Fin.cons_zero, Fin.cons_succ, neg_mul,
       Finset.sum_neg_distrib] at hlevel
-    simpa [hznone, hzsome, deleteIntegerCoordinate, sub_eq_add_neg] using hlevel
-  have hfxQ : eval (rationalPoint x) (map (Int.castRingHom ℚ) f) = 0 :=
+    assumption
+  have hfxQ :=
     (mem_integralPoints.mp (Finset.mem_filter.mp hx).1).2
   have hfxZ : eval x f = 0 := by
-    have he : ((eval x f : ℤ) : ℚ) =
-        eval (rationalPoint x) (map (Int.castRingHom ℚ) f) := by
-      exact map_eval (Int.castRingHom ℚ) x f
-    exact Int.cast_injective (he.trans hfxQ)
+    exact have he := map_eval (Int.castRingHom ℚ) x f; Int.cast_injective (Eq.trans he hfxQ)
   have hz : eval z (rename e f) = 0 := by
     rw [eval_rename]
-    simpa only [z, Function.comp_def, Equiv.symm_apply_apply] using hfxZ
+    simpa [z, Function.comp_def, Equiv.symm_apply_apply] using hfxZ
   have hgZ := hslice k z hzlevel hz
   change eval (rationalPoint (deleteIntegerCoordinate 0 x))
     (map (Int.castRingHom ℚ) (g k)) = 0

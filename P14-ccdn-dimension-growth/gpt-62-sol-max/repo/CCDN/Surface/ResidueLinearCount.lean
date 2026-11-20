@@ -6,183 +6,96 @@ Authors: Jason Davies
 module
 
 public import CCDN.Surface.ResidueCover
-import CCDN.Surface.PrimeWindowSubpower
-import Mathlib.Algebra.Order.Star.Real
+import CCDN.Analysis.SmallDegreeSurfaceNumerics
 
-/-! A degree-dependent logarithmic prime window discharges all height
-conditions of the surface residue cover. Its complete residual point count
-is O(B), uniformly in coefficients, auxiliaries and initial curve families. -/
+/-! The number of primes is fixed. A modulus of up to 18 primes of size
+`O(B^(1/40))` costs at most `O(B^(9/20))`; the deletion edge counts are still sublinear. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
+open MvPolynomial Finset
 
-/-- The constant `4 log (d + 1) + K + d + 2` scaling the logarithmic prime window of the residue
-cover for a surface of degree `d` with logarithmic height constant `K`. -/
-def surfaceResidueWindowScale (d : ℕ) (K : ℝ) : ℝ :=
-  4 * Real.log ((d : ℝ) + 1) + K + d + 2
+/-- Uniform coefficient for the logarithmic budget of the prime window. -/
+abbrev residueLogScale (N : ℕ) (U : ℝ) : ℝ := 1 + N * (Real.log U + 1)
 
-/-- The logarithmic size `surfaceResidueWindowScale d K * (log B + 1)` of the prime window of
-the residue cover for a surface of degree `d` in the box of radius `B`. -/
-def surfaceResidueWindow (d : ℕ) (K B : ℝ) : ℝ :=
-  surfaceResidueWindowScale d K * (Real.log B + 1)
-
-/-- The constant `1 + (log 4 + 4) c s`, with `c` the constant `scalingPrimeRatio` and `s` the
-window scale `surfaceResidueWindowScale d K`, by which the logarithmic budget of the residue
-cover is a multiple of `log B + 1`. -/
-def surfaceResidueLogScale (d : ℕ) (K : ℝ) : ℝ :=
-  1 + (Real.log 4 + 4) * scalingPrimeRatio * surfaceResidueWindowScale d K
-
-/-- For `K ≥ 0`, the window scale `surfaceResidueWindowScale d K` is at least two. -/
-theorem surfaceResidueWindowScale_two_le (d : ℕ) {K : ℝ} (hK : 0 ≤ K) :
-    2 ≤ surfaceResidueWindowScale d K := by
-  have hh := Real.log_nonneg (show (1 : ℝ) ≤ (d : ℝ) + 1 by
-    linarith [Nat.cast_nonneg (α := ℝ) d])
-  unfold surfaceResidueWindowScale
-  nlinarith [Nat.cast_nonneg (α := ℝ) d]
-
-/-- For `K ≥ 0` and `B ≥ 1`, the prime window size `surfaceResidueWindow d K B` is at
-least one. -/
-theorem surfaceResidueWindow_one_le (d : ℕ) {K B : ℝ} (hK : 0 ≤ K) (hB : 1 ≤ B) :
-    1 ≤ surfaceResidueWindow d K B := by
-  have hscale := surfaceResidueWindowScale_two_le d hK
-  have hlog := Real.log_nonneg hB
-  unfold surfaceResidueWindow
-  nlinarith
-
-/-- For `K ≥ 0`, the budget constant `surfaceResidueLogScale d K` is at least one. -/
-theorem surfaceResidueLogScale_one_le (d : ℕ) {K : ℝ} (hK : 0 ≤ K) :
-    1 ≤ surfaceResidueLogScale d K := by
-  have hs := surfaceResidueWindowScale_two_le d hK
-  have hp := scalingPrimeRatio_one_le
-  have hl := Real.log_nonneg (by norm_num : (1 : ℝ) ≤ 4)
-  unfold surfaceResidueLogScale
-  have hh : 0 ≤ (Real.log 4 + 4) * scalingPrimeRatio * surfaceResidueWindowScale d K := by
-    positivity
+lemma surfaceResidueLogBudget_le {B U : ℝ} (hB : 1 ≤ B) (hU : 1 ≤ U)
+    (W : Finset ℕ) (hW : ∀ p ∈ W, p.Prime) (hupper : ∀ p ∈ W, (p : ℝ) ≤ U * B ^ (1 / 40 : ℝ)) :
+    surfaceResidueLogBudget B W ≤ residueLogScale W.card U * (Real.log B + 1) := by
+  have hlogB := Real.log_nonneg hB
+  have hlogU := Real.log_nonneg hU
+  have h (p) (hp : p ∈ W) : Real.log p ≤ (Real.log U + 1) * (Real.log B + 1) := by
+    have hi := Real.log_le_log (by exact_mod_cast (hW p hp).pos) (hupper p hp)
+    rw [Real.log_mul (by linarith) (by positivity), Real.log_rpow (by linarith)] at hi
+    nlinarith
+  have hh := sum_le_sum h
+  simp only [sum_const, nsmul_eq_mul] at hh
+  unfold surfaceResidueLogBudget residueLogScale
   linarith
 
-/-- For the prime window `surfaceResidueWindow d K B`, the logarithmic budget of the residue
-cover equals `surfaceResidueLogScale d K * (log B + 1)`. -/
-theorem surfaceResidueLogBudget_window (d : ℕ) (K B : ℝ) :
-    surfaceResidueLogBudget B (surfaceResidueWindow d K B) =
-      surfaceResidueLogScale d K * (Real.log B + 1) := by
-  unfold surfaceResidueLogBudget surfaceResidueWindow surfaceResidueLogScale
-  ring
-
-/-- The chosen window meets both the derivative-height condition and the
-terminal-modulus threshold, even at B = 1. -/
-private theorem surfaceResidueWindow_parameters {d : ℕ} (hd : 1 ≤ d)
-    {K B H : ℝ} (hK : 0 ≤ K) (hB : 1 ≤ B)
-    (hheight : Real.log H ≤ K * (Real.log B + 1)) :
-    4 * Real.log ((d : ℝ) + 1) + Real.log H + d * Real.log B ≤
-        surfaceResidueWindow d K B ∧
-      1 < 2 * B ^ (1 / Real.sqrt (d : ℝ)) ∧
-      B ^ (1 / Real.sqrt (d : ℝ)) ≤ 2 * B ^ (1 / Real.sqrt (d : ℝ)) ∧
-      2 * B ^ (1 / Real.sqrt (d : ℝ)) ≤ Real.exp (surfaceResidueWindow d K B) := by
-  have hB0 : 0 < B := zero_lt_one.trans_le hB
-  have hlogB := Real.log_nonneg hB
-  have hlogd := Real.log_nonneg (show (1 : ℝ) ≤ (d : ℝ) + 1 by
-    linarith [Nat.cast_nonneg (α := ℝ) d])
-  have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hsqrt : 1 ≤ Real.sqrt (d : ℝ) := Real.le_sqrt_of_sq_le (by simpa using hdR)
-  have hroot : 0 ≤ 1 / Real.sqrt (d : ℝ) := by positivity
-  have hroot1 : 1 / Real.sqrt (d : ℝ) ≤ 1 := by
-    simpa using one_div_le_one_div_of_le zero_lt_one hsqrt
-  have hp : 1 ≤ B ^ (1 / Real.sqrt (d : ℝ)) := Real.one_le_rpow hB hroot
-  refine ⟨?_, by linarith, by linarith, ?_⟩
-  · unfold surfaceResidueWindow surfaceResidueWindowScale
-    nlinarith
-  · have hlog2 : Real.log 2 ≤ (2 : ℝ) := Real.log_le_self (by norm_num)
-    have hscale := surfaceResidueWindowScale_two_le d hK
-    have hlogX : Real.log (2 * B ^ (1 / Real.sqrt (d : ℝ))) ≤
-        surfaceResidueWindow d K B := by
-      rw [Real.log_mul (by norm_num) (by positivity), Real.log_rpow hB0]
-      unfold surfaceResidueWindow
-      have hh := mul_le_mul_of_nonneg_right hroot1 hlogB
-      nlinarith
-    have hh := Real.exp_le_exp.mpr hlogX
-    rwa [Real.exp_log (by positivity)] at hh
-
-/-- For a surface equation of degree `d ≥ 1` whose coefficients are bounded by `H ≥ 1` with
-`log H ≤ K (log B + 1)`, the chosen window `surfaceResidueWindow d K B` and the cutoff
-`2 B^(1/√d)` are residue-cover parameters. -/
-theorem isSurfaceResidueWindow_of_log_height {f : MvPolynomial (Fin 3) ℤ}
-    (hd : 1 ≤ f.totalDegree) {K B H : ℝ} (hK : 0 ≤ K) (hB : 1 ≤ B) (hH : 1 ≤ H)
-    (hcoeff : CoefficientHeightLE f H) (hheight : Real.log H ≤ K * (Real.log B + 1)) :
-    IsSurfaceResidueWindow f B H (surfaceResidueWindow f.totalDegree K B)
-      (2 * B ^ (1 / Real.sqrt (f.totalDegree : ℝ))) := by
-  obtain ⟨hderivative, hX, hBX, hXL⟩ := surfaceResidueWindow_parameters hd hK hB hheight
-  exact ⟨hB, hH, surfaceResidueWindow_one_le _ hK hB, hcoeff, hderivative, hX, hBX, hXL⟩
-
-/-- The residual locus has a uniform linear count. The constant is
-chosen before the equation, radius, congruence auxiliaries and curve family. -/
+/-- A window with a bounded number of such primes gives a uniform linear
+bound for the residual locus. -/
 theorem surface_residue_linear_count (d : ℕ) (hd : 5 ≤ d)
-    (K A : ℝ) (hK : 0 ≤ K) (hA : 0 ≤ A) :
+    (A U : ℝ) (hA : 0 ≤ A) (hU : 1 ≤ U) (N : ℕ) :
     ∃ C : ℝ, 0 < C ∧
       ∀ (f : MvPolynomial (Fin 3) ℤ), f.totalDegree = d →
-      ∀ B : ℝ, ∀ hB : 1 ≤ B, ∀ F : SurfaceCongruenceFamily f B A,
-      Irreducible (MvPolynomial.map (Int.castRingHom ℚ) f) →
-      ∀ (S : Finset (Ideal (CoordinatePolynomial 3)))
-        (δ : Ideal (CoordinatePolynomial 3) → ℕ),
-      (∀ I ∈ S, IsSurfaceCurve (MvPolynomial.map (Int.castRingHom ℚ) f) I (δ I)) →
-      (count (surfaceResidueResidualLocus F S (surfaceResidueWindow d K B)
-        (2 * B ^ (1 / Real.sqrt (d : ℝ))) (surfaceResidueWindow_one_le d hK hB)) B : ℝ) ≤
-          C * B := by
-  have hscale := surfaceResidueWindowScale_two_le d hK
-  have hlogscale := surfaceResidueLogScale_one_le d hK
-  have hratio := scalingPrimeRatio_one_le
-  have hdR : (5 : ℝ) ≤ d := by exact_mod_cast hd
-  let U := scalingPrimeRatio * surfaceResidueWindowScale d K + 1
-  have hU : 0 ≤ U := by dsimp only [U]; positivity
-  obtain ⟨C₀, hC₀, hbound⟩ := congruencePrimeWindow_surface_residual_bound
-    (show 1 ≤ surfaceResidueWindowScale d K by linarith)
-    (show 1 ≤ 2 * (d : ℝ) by linarith) 4
-  let E := 8 * (d : ℝ) * A ^ 2 * (surfaceResidueLogScale d K) ^ 2 * U ^ 2
-  have hE : 0 ≤ E := by dsimp only [E]; positivity
-  refine ⟨E * C₀ + 1, by positivity, ?_⟩
-  intro f hfd B hB F hir S δ hS
-  have hB0 : 0 < B := zero_lt_one.trans_le hB
+      ∀ B : ℝ, 1 ≤ B → ∀ W : Finset ℕ, W.card = N →
+      ∀ hW : ∀ p ∈ W, p.Prime,
+      (∀ p ∈ W, (p : ℝ) ≤ U * B ^ (1 / 40 : ℝ)) →
+      ∀ F : SurfaceCongruenceFamily f B A,
+      Irreducible (map (Int.castRingHom ℚ) f) →
+      ∀ (S : Finset (Ideal (CoordinatePolynomial 3))) (δ : Ideal (CoordinatePolynomial 3) → ℕ),
+      (∀ I ∈ S, IsSurfaceCurve (map (Int.castRingHom ℚ) f) I (δ I)) →
+      (count (surfaceResidueResidualLocus F S W hW) B : ℝ) ≤ C * B := by
+  let T := residueLogScale N U
+  let E := logarithmicBoxConstant 2 (3 / 40)
+  let L := (N : ℝ) * (2 * (d : ℝ)) ^ N * (2 * d * A ^ 2)
+  let C := L * T ^ 2 * (U + 1) * U ^ 36
+  have hT : 0 ≤ T := by dsimp [T, residueLogScale]; have := Real.log_nonneg hU; positivity
+  have hC : 0 ≤ C := by positivity
+  refine ⟨C * E + 1, by positivity, ?_⟩
+  intro f hfd B hB W hcard hW hupper F hir S δ hS
+  have hB0 : 0 < B := by linarith
+  let Y := B ^ (1 / 40 : ℝ)
+  let U' := U * Y
+  let X := U' ^ 18
+  have hY : 1 ≤ Y := Real.one_le_rpow hB (by norm_num)
+  have hU' : 1 ≤ U' := one_le_mul_of_one_le_of_one_le hU hY
+  have hy (k : ℕ) : Y ^ k = B ^ ((1 / 40 : ℝ) * k) := by
+    rw [← Real.rpow_natCast, ← Real.rpow_mul hB0.le]
+  have hX : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) ≤ X := calc
+    _ ≤ B ^ (9 / 20 : ℝ) := Real.rpow_le_rpow_of_exponent_le hB
+      (surface_inverse_sqrt_le_nine_twentieths (hfd ▸ hd))
+    _ = Y ^ 18 := by rw [hy]; norm_num
+    _ ≤ _ := pow_le_pow_left₀ (by positivity) (le_mul_of_one_le_left (by positivity) hU) _
+  have hprod (R : Finset ℕ) (hR : R ⊆ W) (hRc : R.card ≤ 18) :
+      (∏ p ∈ R, (p : ℝ)) ≤ X := calc
+    _ ≤ ∏ _p ∈ R, U' := prod_le_prod₀ (fun _ _ => by positivity) (fun p hp => hupper p (hR hp))
+    _ = U' ^ R.card := prod_const _
+    _ ≤ _ := pow_le_pow_right₀ hU' hRc
+  have hpoly := surface_residue_residual_count_le F hA hB (by omega) (zero_le_one.trans hU')
+    hX hir S δ hS W hW hupper hprod
+  have hlog := surfaceResidueLogBudget_le hB hU W hW hupper
+  rw [hcard] at hlog
   have hlogB := Real.log_nonneg hB
-  have hL := surfaceResidueWindow_one_le d hK hB
-  have hpoly := surface_residue_residual_count_le F hA hB hL
-    (by omega : 1 ≤ f.totalDegree)
-    (show 0 ≤ 2 * B ^ (1 / Real.sqrt (d : ℝ)) by positivity)
-    (by rw [hfd]; nlinarith [Real.rpow_pos_of_pos hB0 (1 / Real.sqrt (d : ℝ))])
-    hir S δ hS
-  rw [hfd, surfaceResidueLogBudget_window] at hpoly
-  have hu : scalingPrimeRatio * surfaceResidueWindow d K B + 1 ≤
-      U * (Real.log B + 1) := by
-    dsimp only [surfaceResidueWindow, U]
-    nlinarith
-  have hx : (2 * B ^ (1 / Real.sqrt (d : ℝ))) ^ 2 =
-      4 * B ^ (2 / Real.sqrt (d : ℝ)) := by
-    rw [mul_pow, ← Real.rpow_natCast (B ^ (1 / Real.sqrt (d : ℝ))) 2,
-      ← Real.rpow_mul hB0.le]
-    norm_num only [Nat.cast_ofNat]
-    congr 2
-    ring
-  rw [hx] at hpoly
-  have hestimate :
-      (count (surfaceResidueResidualLocus F S (surfaceResidueWindow d K B)
-        (2 * B ^ (1 / Real.sqrt (d : ℝ))) hL) B : ℝ) ≤
-      E * (((congruencePrimeWindow (surfaceResidueWindow d K B)).card *
-        (2 * (d : ℝ)) ^ (congruencePrimeWindow (surfaceResidueWindow d K B)).card) *
-        B ^ (2 / Real.sqrt (d : ℝ)) * (Real.log B + 1) ^ 4) := by
-    calc
-      _ ≤ _ := hpoly
-      _ ≤ 2 * (d : ℝ) * A ^ 2 *
-          (surfaceResidueLogScale d K * (Real.log B + 1)) ^ 2 *
-          (U * (Real.log B + 1)) ^ 2 *
-          (4 * B ^ (2 / Real.sqrt (d : ℝ))) *
-          (congruencePrimeWindow (surfaceResidueWindow d K B)).card *
-          (2 * (d : ℝ)) ^ (congruencePrimeWindow (surfaceResidueWindow d K B)).card := by
-        gcongr
-      _ = _ := by dsimp only [E]; ring
-  have hh := mul_le_mul_of_nonneg_left (hbound d hd B hB) hE
-  have hfinal : (count (surfaceResidueResidualLocus F S (surfaceResidueWindow d K B)
-        (2 * B ^ (1 / Real.sqrt (d : ℝ))) hL) B : ℝ) ≤ E * (C₀ * B) :=
-    hestimate.trans hh
-  nlinarith
+  have hXe : (U' + 1) * X ^ 2 ≤ (U + 1) * U ^ 36 * B ^ (37 / 40 : ℝ) := calc
+    _ ≤ ((U + 1) * Y) * X ^ 2 := by
+      apply mul_le_mul_of_nonneg_right _ (sq_nonneg X)
+      dsimp [U']; linarith
+    _ = (U + 1) * U ^ 36 * Y ^ 37 := by dsimp [X, U']; ring
+    _ = _ := by rw [hy]; norm_num
+  have hweight := box_polylog_weight 2 (by norm_num : (0 : ℝ) < 3 / 40) hB
+    (t := 37 / 40) (by norm_num)
+  have hT0 : 0 ≤ surfaceResidueLogBudget B W := by unfold surfaceResidueLogBudget; positivity
+  apply hpoly.trans
+  rw [hcard, hfd]
+  calc
+    _ = L * (surfaceResidueLogBudget B W) ^ 2 * ((U' + 1) * X ^ 2) := by
+      dsimp only [L, residueEdgeBudget]; ring
+    _ ≤ L * (T * (Real.log B + 1)) ^ 2 * ((U + 1) * U ^ 36 * B ^ (37 / 40 : ℝ)) := by gcongr
+    _ = C * (B ^ (37 / 40 : ℝ) * (Real.log B + 1) ^ 2) := by dsimp only [C]; ring
+    _ ≤ C * (E * B) := mul_le_mul_of_nonneg_left hweight hC
+    _ ≤ _ := by linarith
 
 end
 end CCDN

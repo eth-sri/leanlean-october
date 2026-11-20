@@ -34,13 +34,12 @@ theorem irreducible_of_full_degree_map {K σ τ : Type*} [Field K]
     (hdeg : (ψ f).totalDegree = f.totalDegree) : Irreducible f := by
   refine ⟨fun hu => hir.not_isUnit (hu.map ψ), ?_⟩
   intro a b he
-  have he' : ψ f = ψ a * ψ b := by rw [he, map_mul]
-  have ha : ψ a ≠ 0 := left_ne_zero_of_mul (he' ▸ hir.ne_zero)
-  have hb : ψ b ≠ 0 := right_ne_zero_of_mul (he' ▸ hir.ne_zero)
-  have ha0 : a ≠ 0 := by intro hz; exact ha (by rw [hz, map_zero])
-  have hb0 : b ≠ 0 := by intro hz; exact hb (by rw [hz, map_zero])
+  have he' : ψ f = ψ a * ψ b := by simp_all
+  have ha := left_ne_zero_of_mul (he' ▸ hir.ne_zero)
+  have ha0 : a ≠ 0 := by aesop
+  have hb0 : b ≠ 0 := by aesop
   have ht := totalDegree_mul_of_isDomain ha0 hb0
-  have ht' := totalDegree_mul_of_isDomain ha hb
+  have ht' := totalDegree_mul_of_isDomain ha (right_ne_zero_of_mul (he' ▸ hir.ne_zero))
   rw [← he] at ht
   rw [← he', hdeg] at ht'
   have hda := hψ a
@@ -68,9 +67,7 @@ theorem irreducible_of_full_degree_planeSection {K σ : Type*} [Field K]
     (f : MvPolynomial σ K) (v : PlaneParameters σ → K)
     (hir : Irreducible (universalPlaneSection f v))
     (hdeg : bivariateTotalDegree (universalPlaneSection f v) = f.totalDegree) : Irreducible f := by
-  apply irreducible_of_full_degree_map (planeSectionPolynomialHom v)
-    (fun g => planeSectionPolynomial_totalDegree g v) f _ hdeg
-  exact (MulEquiv.irreducible_iff (f := (bivariatePolynomialEquiv K).symm)).mpr hir
+  exact irreducible_of_full_degree_map (planeSectionPolynomialHom v) (fun g => planeSectionPolynomial_totalDegree g v) f ((MulEquiv.irreducible_iff (bivariatePolynomialEquiv K).symm).mpr hir) hdeg
 
 end
 end CCDN

@@ -23,27 +23,18 @@ private theorem two_torsion_card_le_involution_fixed_square
     {G : Type*} [CommGroup G] [Finite G]
     (σ : G →* G) (hσ : Function.Involutive σ) (hG : ∀ x : G, x ^ 2 = 1) :
     Nat.card G ≤ Nat.card (σ.eqLocus (MonoidHom.id G)) ^ 2 := by
-  let τ : G →* G := (MonoidHom.id G) * σ
+  let τ := (MonoidHom.id G) * σ
   have hker : τ.ker ≤ σ.eqLocus (MonoidHom.id G) := by
     intro x hx
     change x * σ x = 1 at hx
     change σ x = x
     apply mul_left_cancel (a := x)
-    exact hx.trans (by simpa only [pow_two] using (hG x).symm)
+    exact hx.trans (by simpa [pow_two] using (hG x).symm)
   have hrange : τ.range ≤ σ.eqLocus (MonoidHom.id G) := by
     rintro x ⟨y, rfl⟩
     change σ (y * σ y) = y * σ y
     rw [map_mul, hσ, mul_comm]
-  have hk := Nat.card_le_card_of_injective (Subgroup.inclusion hker)
-    (Subgroup.inclusion_injective hker)
-  have hr := Nat.card_le_card_of_injective (Subgroup.inclusion hrange)
-    (Subgroup.inclusion_injective hrange)
-  calc
-    Nat.card G = Nat.card τ.ker * Nat.card τ.range :=
-      (Subgroup.card_ker_mul_card_range τ).symm
-    _ ≤ Nat.card (σ.eqLocus (MonoidHom.id G)) *
-        Nat.card (σ.eqLocus (MonoidHom.id G)) := Nat.mul_le_mul hk hr
-    _ = Nat.card (σ.eqLocus (MonoidHom.id G)) ^ 2 := (pow_two _).symm
+  exact have hk := Nat.card_le_card_of_injective (⇑(Subgroup.inclusion hker)) (Subgroup.inclusion_injective hker); have hr := Nat.card_le_card_of_injective (⇑(Subgroup.inclusion hrange)) (Subgroup.inclusion_injective hrange); Trans.trans (Trans.trans (Eq.symm (Subgroup.card_ker_mul_card_range τ)) (Nat.mul_le_mul hk hr)) (Eq.symm (pow_two (Nat.card ↥(σ.eqLocus (MonoidHom.id G)))))
 
 private theorem classGroup_mulEquiv_involutive
     {R : Type*} [CommRing R] [IsDomain R]
@@ -57,7 +48,7 @@ private theorem classGroup_mulEquiv_involutive
   rw [ClassGroup.map_map]
   have hh : (σ : R →+* R).comp (σ : R →+* R) = RingHom.id R :=
     RingHom.ext hσ
-  simpa only [hh] using ClassGroup.map_id c
+  simp_all
 
 variable (K : Type*) [Field K]
 
@@ -101,8 +92,7 @@ theorem classGroupTwoTorsionCard_le_fixed_square (σ : K ≃+* K)
     classGroupTwoTorsionCard K ≤ Nat.card (fixedClassGroupTwoTorsion K σ) ^ 2 := by
   apply two_torsion_card_le_involution_fixed_square
     (classGroupTwoTorsionAction K σ) (classGroupTwoTorsionAction_involutive K σ hσ)
-  intro c
-  exact Subtype.ext c.property
+  simp
 
 end
 end CCDN

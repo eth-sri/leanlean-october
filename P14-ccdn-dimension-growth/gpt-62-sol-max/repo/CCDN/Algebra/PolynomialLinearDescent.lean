@@ -5,7 +5,7 @@ Authors: Jason Davies
 -/
 module
 
-public import Mathlib.Algebra.MvPolynomial.Degrees
+public import Mathlib.RingTheory.MvPolynomial.Homogeneous
 public import Mathlib.RingTheory.Ideal.Maps
 import Mathlib.LinearAlgebra.Dual.Lemmas
 
@@ -19,106 +19,50 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Module
 
-/-- Apply a linear coefficient map without changing any monomial. -/
-def polynomialCoefficientLinear {R A B σ : Type*} [CommSemiring R]
-    [CommRing A] [CommRing B] [Algebra R A] [Algebra R B]
-    (φ : A →ₗ[R] B) : MvPolynomial σ A →ₗ[R] MvPolynomial σ B :=
-  (AddMonoidAlgebra.coeffLinearEquiv R).symm.toLinearMap ∘ₗ
-    Finsupp.mapRange.linearMap φ ∘ₗ (AddMonoidAlgebra.coeffLinearEquiv R).toLinearMap
+private def coefficientDescent {k K σ : Type*} [Field k] [Field K] [Algebra k K]
+    (φ : K →ₗ[k] k) : MvPolynomial σ K →ₗ[k] MvPolynomial σ k :=
+  (AddMonoidAlgebra.coeffLinearEquiv k).symm.toLinearMap ∘ₗ
+    Finsupp.mapRange.linearMap φ ∘ₗ (AddMonoidAlgebra.coeffLinearEquiv k).toLinearMap
 
-/-- Each coefficient of `polynomialCoefficientLinear φ f` is the image under `φ` of the
-corresponding coefficient of `f`. -/
-@[simp] lemma polynomialCoefficientLinear_coeff {R A B σ : Type*}
-    [CommSemiring R] [CommRing A] [CommRing B] [Algebra R A] [Algebra R B]
-    (φ : A →ₗ[R] B) (f : MvPolynomial σ A) (e : σ →₀ ℕ) :
-    (polynomialCoefficientLinear φ f).coeff e = φ (f.coeff e) := rfl
+section
 
-/-- Applying the linear map `φ` coefficientwise sends the constant `C a` to `C (φ a)`. -/
-@[simp] lemma polynomialCoefficientLinear_C {R A B σ : Type*}
-    [CommSemiring R] [CommRing A] [CommRing B] [Algebra R A] [Algebra R B]
-    (φ : A →ₗ[R] B) (a : A) :
-    polynomialCoefficientLinear (σ := σ) φ (C a) = C (φ a) := by
-  classical
-  ext e
-  simp only [polynomialCoefficientLinear_coeff, coeff_C]
-  split_ifs <;> simp
+variable {k K σ : Type*} [Field k] [Field K] [Algebra k K]
+  (φ : K →ₗ[k] k) (f : MvPolynomial σ K)
 
-/-- If `φ (a * θ b) = φ a * b` for a ring map `θ : B →+* A`, then applying `φ` coefficientwise
-is linear over polynomials with coefficients in `B`: it sends `f * map θ g` to
-`polynomialCoefficientLinear φ f * g`. -/
-lemma polynomialCoefficientLinear_mul_compatible {R A B σ : Type*}
-    [CommSemiring R] [CommRing A] [CommRing B] [Algebra R A] [Algebra R B]
-    (φ : A →ₗ[R] B) (θ : B →+* A)
-    (hφ : ∀ a b, φ (a * θ b) = φ a * b)
-    (f : MvPolynomial σ A) (g : MvPolynomial σ B) :
-    polynomialCoefficientLinear φ (f * map θ g) =
-      polynomialCoefficientLinear φ f * g := by
-  classical
-  ext e
-  rw [polynomialCoefficientLinear_coeff, coeff_mul, coeff_mul, map_sum]
-  apply Finset.sum_congr rfl
-  intro p _
-  rw [coeff_map, polynomialCoefficientLinear_coeff, hφ]
+private lemma coefficientDescent_coeff (m : σ →₀ ℕ) :
+    (coefficientDescent φ f).coeff m = φ (f.coeff m) := rfl
 
-/-- For a field extension `L / K` and a `K`-linear functional `φ : L → K`, applying `φ`
-coefficientwise is linear over polynomials with coefficients in `K`: it sends
-`f * map (algebraMap K L) g` to `polynomialCoefficientLinear φ f * g`. -/
-lemma polynomialCoefficientLinear_mul_map {K L σ : Type*}
-    [Field K] [Field L] [Algebra K L]
-    (φ : L →ₗ[K] K) (f : MvPolynomial σ L) (g : MvPolynomial σ K) :
-    polynomialCoefficientLinear φ (f * map (algebraMap K L) g) =
-      polynomialCoefficientLinear φ f * g := by
-  apply polynomialCoefficientLinear_mul_compatible
-  intro a b
-  simpa only [Algebra.smul_def, smul_eq_mul, mul_comm, Algebra.algebraMap_self,
-    RingHom.id_apply] using φ.map_smul b a
-
-/-- Applying a linear map coefficientwise does not increase the total degree. -/
-lemma polynomialCoefficientLinear_totalDegree_le {R A B σ : Type*}
-    [CommSemiring R] [CommRing A] [CommRing B] [Algebra R A] [Algebra R B]
-    (φ : A →ₗ[R] B) (f : MvPolynomial σ A) :
-    (polynomialCoefficientLinear φ f).totalDegree ≤ f.totalDegree := by
-  classical
-  apply Finset.sup_le
+private lemma coefficientDescent_support : (coefficientDescent φ f).support ⊆ f.support := by
   intro m hm
-  apply le_totalDegree
-  rw [mem_support_iff, polynomialCoefficientLinear_coeff] at hm
-  rw [mem_support_iff]
-  intro hz
-  exact hm (by rw [hz, map_zero])
+  simp only [mem_support_iff, coefficientDescent_coeff] at hm ⊢
+  exact fun h => hm (by simp [h])
 
-/-- For a field extension `K / k` and a `k`-linear functional `φ : K → k`, evaluating the
-coefficientwise image of `f` under `φ` at a `k`-point `x` gives `φ` of the value of `f` at `x`. -/
-lemma polynomialCoefficientLinear_eval {k K σ : Type*} [Field k] [Field K] [Algebra k K]
-    (φ : K →ₗ[k] k) (f : MvPolynomial σ K) (x : σ → k) :
-    eval x (polynomialCoefficientLinear φ f) = φ (eval (algebraMap k K ∘ x) f) := by
-  induction f using MvPolynomial.induction_on with
-  | C c => simp
-  | add f g hf hg => simp only [map_add, hf, hg]
-  | mul_X f j hf =>
-    have hX : (X j : MvPolynomial σ K) = map (algebraMap k K) (X j) := by simp
-    rw [hX, polynomialCoefficientLinear_mul_map, map_X]
-    simp only [map_mul, eval_X, hf, Function.comp_apply]
-    rw [mul_comm _ (algebraMap k K (x j)), ← Algebra.smul_def, φ.map_smul, smul_eq_mul, mul_comm]
+private lemma coefficientDescent_eval (x : σ → k) :
+    eval x (coefficientDescent φ f) = φ (eval (algebraMap k K ∘ x) f) := by
+  classical
+  rw [eval_eq, eval_eq, map_sum, Finset.sum_subset (coefficientDescent_support φ f)]
+  · refine Finset.sum_congr rfl fun m _ => ?_
+    simp only [coefficientDescent_coeff, Function.comp_apply, ← map_pow, ← map_prod]
+    rw [mul_comm (f.coeff m), ← Algebra.smul_def, map_smul, smul_eq_mul, mul_comm]
+  · intro m _ hm
+    simp [notMem_support_iff.mp hm]
 
-/-- Linear coefficient descent: for a field extension `K / k`, a nonzero polynomial `f` over `K`
-has a nonzero polynomial over `k` of total degree at most that of `f` vanishing at every
-`k`-point where `f` vanishes. -/
-theorem exists_nonzero_polynomial_linear_descent {k K : Type*}
-    [Field k] [Field K] [Algebra k K] {n : ℕ}
-    (f : MvPolynomial (Fin n) K) (hf : f ≠ 0) :
-    ∃ g : MvPolynomial (Fin n) k, g ≠ 0 ∧ g.totalDegree ≤ f.totalDegree ∧
-      ∀ x : Fin n → k, eval (algebraMap k K ∘ x) f = 0 → eval x g = 0 := by
+end
+
+/-- Linear descent reduces the support and preserves vanishing at base-field points. -/
+theorem exists_nonzero_polynomial_linear_descent {k K σ : Type*}
+    [Field k] [Field K] [Algebra k K] (f : MvPolynomial σ K) (hf : f ≠ 0) :
+    ∃ g : MvPolynomial σ k, g ≠ 0 ∧ g.totalDegree ≤ f.totalDegree ∧
+      (∀ d, f.IsHomogeneous d → g.IsHomogeneous d) ∧
+      ∀ x : σ → k, eval (algebraMap k K ∘ x) f = 0 → eval x g = 0 := by
   obtain ⟨m, hm⟩ := exists_coeff_ne_zero hf
   obtain ⟨φ, hφ⟩ := Module.Projective.exists_dual_ne_zero k hm
-  refine ⟨polynomialCoefficientLinear φ f, ?_,
-    polynomialCoefficientLinear_totalDegree_le φ f, ?_⟩
+  have hs := coefficientDescent_support φ f
+  refine ⟨coefficientDescent φ f, ?_, Finset.sup_mono hs, fun _ h _ hm => h (mem_support_iff.mp (hs (mem_support_iff.mpr hm))), ?_⟩
   · intro he
-    have hh := polynomialCoefficientLinear_coeff φ f m
-    have hz : φ (f.coeff m) = 0 := by simpa [he] using hh.symm
-    exact hφ hz
+    exact hφ (by simpa [he] using (coefficientDescent_coeff φ f m).symm)
   · intro x hx
-    rw [polynomialCoefficientLinear_eval, hx, map_zero]
+    rw [coefficientDescent_eval, hx, map_zero]
 
 end
 end CCDN

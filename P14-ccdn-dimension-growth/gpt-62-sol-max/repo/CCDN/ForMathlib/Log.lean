@@ -6,6 +6,7 @@ Authors: Jason Davies
 module
 
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Data.Nat.Factorial.Basic
 
 /-!
 # Elementary logarithm comparisons
@@ -26,35 +27,39 @@ namespace Real
 
 /-- For nonnegative `x`, `Real.log (x + 1) ≤ x`. -/
 theorem log_add_one_le_self {x : ℝ} (hx : 0 ≤ x) : log (x + 1) ≤ x := by
-  simpa only [add_sub_cancel_right] using log_le_sub_one_of_pos (by linarith : 0 < x + 1)
+  grind [log_le_sub_one_of_pos]
 
 /-- A positive natural number is bounded by a positive real once their logarithms compare. -/
 theorem natCast_le_of_log_le_log {n : ℕ} {y : ℝ} (hn : 0 < n) (hy : 0 < y)
     (h : log n ≤ log y) : (n : ℝ) ≤ y :=
   (log_le_log_iff (Nat.cast_pos.mpr hn) hy).mp h
 
-/-- The logarithm `log (1 + x)` exceeds `x / 4` by at most `log 4 + 1` for `x ≥ 0`. -/
-theorem log_one_add_sub_div_four_le {x : ℝ} (hx : 0 ≤ x) :
-    Real.log (1 + x) - x / 4 ≤ Real.log 4 + 1 := by
-  have h := Real.log_le_sub_one_of_pos (show 0 < (1 + x) / 4 by positivity)
-  rw [Real.log_div (by positivity) (by norm_num)] at h
-  linarith
-
 /-- Absorb the logarithm with a specified positive exponent loss and an explicit constant. -/
 theorem rpow_half_mul_log_add_le {B ε D : ℝ} (hB : 1 ≤ B) (hε : 0 < ε) (hD : 0 ≤ D) :
     B ^ (1 / 2 : ℝ) * (Real.log B + D) ≤
       (1 / ε + D) * B ^ (1 / 2 + ε : ℝ) := by
   have hB0 : 0 < B := by linarith
-  have hp1 : 1 ≤ B ^ ε := Real.one_le_rpow hB hε.le
+  have hp1 := Real.one_le_rpow hB hε.le
   have hl := Real.log_le_rpow_div hB0.le hε
   have hd := mul_le_mul_of_nonneg_left hp1 hD
   have hsum : Real.log B + D ≤ (1 / ε + D) * B ^ ε := by
-    rw [div_eq_mul_inv] at hl
-    simp only [one_div]
-    nlinarith
+    grind
   calc
     _ ≤ B ^ (1 / 2 : ℝ) * ((1 / ε + D) * B ^ ε) :=
       mul_le_mul_of_nonneg_left hsum (Real.rpow_nonneg hB0.le _)
     _ = _ := by rw [Real.rpow_add hB0]; ring
+
+/-- Compare the factorial with a power before taking logarithms. -/
+lemma log_factorial_le_mul_log {s N : ℕ} (hN : s ≤ N) :
+    log (s.factorial : ℝ) ≤ s * log N := by
+  rw [← log_pow]
+  exact log_le_log (by positivity) (by
+    exact_mod_cast (Nat.factorial_le_pow s).trans (Nat.pow_le_pow_left hN s))
+
+/-- The factorial logarithm costs at most a dimension constant times the rank power. -/
+lemma log_factorial_le_mul_rpow (s : ℕ) {a : ℝ} (ha : 0 < a) :
+    log (s.factorial : ℝ) ≤ (s : ℝ) * ((s : ℝ) ^ a / a) :=
+  (log_factorial_le_mul_log le_rfl).trans
+    (mul_le_mul_of_nonneg_left (log_le_rpow_div (Nat.cast_nonneg s) ha) (Nat.cast_nonneg s))
 
 end Real

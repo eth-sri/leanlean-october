@@ -8,6 +8,7 @@ module
 public import Mathlib.Algebra.MvPolynomial.Degrees
 import CCDN.Algebra.BinomialSectionBound
 import CCDN.Algebra.GridPointInterpolation
+import CCDN.ForMathlib.MvPolynomial
 import Mathlib.Data.Nat.Choose.Bounds
 
 /-! A coordinate-grid bound for a proper complete intersection. The
@@ -18,6 +19,41 @@ is quadratic. -/
 namespace CCDN
 noncomputable section
 open MvPolynomial
+
+/-- At the grid interpolation degree, the complete-intersection bound retains the
+product of the two individual degrees. -/
+theorem proper_intersection_grid_card_le_mul {K ι : Type*} [Field K]
+    [Fintype ι] [DecidableEq ι] {n : ℕ}
+    (f g : MvPolynomial (Fin (n + 2)) K) (hf : Prime f) (hfg : ¬ f ∣ g)
+    (S : Finset K) (z : ι → Fin (n + 2) → K) (hz : Function.Injective z)
+    (hzS : ∀ i j, z i j ∈ S) (hzf : ∀ i, eval (z i) f = 0)
+    (hzg : ∀ i, eval (z i) g = 0)
+    (hN : f.totalDegree + g.totalDegree ≤ (n + 2) * (S.card - 1)) :
+    Fintype.card ι ≤ (n + 2) ^ n * f.totalDegree * g.totalDegree * S.card ^ n := by
+  let N := (n + 2) * (S.card - 1)
+  let I := Ideal.span {f, g}
+  have hzI (i : ι) : I ≤ RingHom.ker (eval (z i)) := by
+    rw [Ideal.span_le]
+    simp [Set.insert_subset_iff, hzf, hzg]
+  have h := (grid_points_filtered_lower I S z hz hzS (fun i _ h => hzI i h)
+    (N := N) (by simp [N])).trans
+    (filteredCoordinateSpace_codim_two_bound hf hfg I (Ideal.subset_span (by simp))
+      (Ideal.subset_span (by simp)) hN)
+  by_cases hS : S.card = 0
+  · have hfpos : 0 < f.totalDegree := totalDegree_pos_of_irreducible hf.irreducible
+    rw [hS] at hN
+    simp at hN
+    omega
+  have hchoose : (n + N).choose n ≤ ((n + 2) * S.card) ^ n := by
+    calc
+      _ ≤ (N + 1) ^ n := by simpa [Nat.add_comm] using Nat.choose_add_le_add_one_pow N n
+      _ ≤ _ := Nat.pow_le_pow_left (by
+        have he : N + (n + 2) = (n + 2) * S.card := by
+          dsimp only [N]
+          rw [← Nat.mul_add_one, Nat.sub_add_cancel (by omega)]
+        omega) n
+  simpa [mul_pow, mul_left_comm, mul_comm, mul_assoc] using
+    h.trans (Nat.mul_le_mul_left (f.totalDegree * g.totalDegree) hchoose)
 
 /-- If `f` is prime, `g` is not divisible by `f`, and both have total degree at most `d`, then the
 number of distinct common zeros of `f` and `g` in the grid `Sⁿ⁺²` is at most `(n + 2) ^ n · d² · |S|
@@ -41,54 +77,21 @@ theorem proper_intersection_grid_card_le {K ι : Type*} [Field K]
     simpa only [Fintype.card_coe, Fintype.card_piFinset, Finset.prod_const,
       Finset.card_univ, Fintype.card_fin, L] using Fintype.card_le_of_injective ψ hinj
   by_cases hL : L = 0
-  · have hz0 : Fintype.card ι = 0 :=
-      Nat.eq_zero_of_le_zero (by simpa only [hL, pow_succ, mul_zero] using hbox)
-    rw [hz0]
-    exact Nat.zero_le _
-  have hL1 : 1 ≤ L := by omega
+  simp_all
+  
   let N := (n + 2) * (L - 1)
   by_cases hN : f.totalDegree + g.totalDegree ≤ N
-  · let I : Ideal (MvPolynomial (Fin (n + 2)) K) := Ideal.span {f, g}
-    have hIf : f ∈ I := Ideal.subset_span (by simp)
-    have hIg : g ∈ I := Ideal.subset_span (by simp)
-    have hzI (i : ι) (q : MvPolynomial (Fin (n + 2)) K) (hq : q ∈ I) :
-        eval (z i) q = 0 := by
-      have hker : I ≤ RingHom.ker (eval (z i)) := by
-        apply Ideal.span_le.mpr
-        intro p hp
-        rcases Set.mem_insert_iff.mp hp with rfl | hp
-        · exact hzf i
-        · have hp' : p = g := Set.mem_singleton_iff.mp hp
-          subst p
-          exact hzg i
-      exact hker hq
-    have hlower : Fintype.card ι ≤ Module.finrank K (filteredCoordinateSpace I N) :=
-      grid_points_filtered_lower I S z hz hzS hzI (by simp only [Fintype.card_fin]; rfl)
-    have hupper := filteredCoordinateSpace_codim_two_bound hf hfg I hIf hIg hN
-    have hchoose : (n + N).choose n ≤ ((n + 2) * L) ^ n := by
-      calc
-        _ ≤ (N + 1) ^ n := by
-          simpa only [Nat.add_comm n N] using Nat.choose_add_le_add_one_pow N n
-        _ ≤ _ := Nat.pow_le_pow_left (by
-          have he : (n + 2) * (L - 1) + (n + 2) = (n + 2) * L := by
-            rw [← Nat.mul_add_one, Nat.sub_add_cancel hL1]
-          dsimp only [N]
-          omega) n
-    calc
-      _ ≤ f.totalDegree * g.totalDegree * (n + N).choose n := hlower.trans hupper
-      _ ≤ d * d * (((n + 2) * L) ^ n) :=
-        Nat.mul_le_mul (Nat.mul_le_mul hfd hgd) hchoose
-      _ = _ := by simp only [mul_pow, L]; ring
+  · refine (proper_intersection_grid_card_le_mul f g hf hfg S z hz hzS hzf hzg hN).trans ?_
+    simpa only [pow_two, ← mul_assoc] using
+      Nat.mul_le_mul_right (S.card ^ n) (Nat.mul_le_mul_left ((n + 2) ^ n) (Nat.mul_le_mul hfd hgd))
   · have htwo : 2 * (L - 1) ≤ N := Nat.mul_le_mul_right (L - 1) (by omega)
     have hLd : L ≤ d := by omega
-    have hconst : 1 ≤ (n + 2) ^ n :=
-      Nat.one_le_iff_ne_zero.mpr (pow_ne_zero _ (by omega))
     calc
       _ ≤ L ^ (n + 2) := hbox
-      _ = L ^ 2 * L ^ n := by rw [pow_add]; ring
+      _ = L ^ 2 * L ^ n := by ring
       _ ≤ d ^ 2 * L ^ n := Nat.mul_le_mul_right _ (Nat.pow_le_pow_left hLd 2)
-      _ ≤ (n + 2) ^ n * (d ^ 2 * L ^ n) := Nat.le_mul_of_pos_left _ hconst
-      _ = _ := by rw [Nat.mul_assoc]
+      _ ≤ (n + 2) ^ n * (d ^ 2 * L ^ n) := Nat.le_mul_of_pos_left _ (Nat.one_le_iff_ne_zero.mpr (pow_ne_zero _ (by omega)))
+      _ = _ := by ring
 
 end
 end CCDN

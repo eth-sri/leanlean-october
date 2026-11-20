@@ -5,10 +5,10 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.Algebra.MonomialRays
+public import CCDN.Hilbert.StandardMonomials
 import CCDN.ForMathlib.MvPolynomial
 import CCDN.Hilbert.PlaneHilbert
-import CCDN.Hilbert.StandardMonomials
+public import CCDN.AuxiliaryPolynomial.HypersurfaceRankProfile
 
 /-! Finite standard-monomial prefixes for a principal equation, their exact
 Hilbert ranks, and the sum of their total degrees. -/
@@ -22,11 +22,17 @@ open MvPolynomial Finset
 `N`. -/
 def standardMonomialPrefix {K σ : Type*} [Field K] [Fintype σ]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (N : ℕ) :
-    Finset (σ →₀ ℕ) := (Set.toFinite (Ideal.boundedStandardExponents I m N)).toFinset
+    Finset (σ →₀ ℕ) := ((Finsupp.finite_of_degree_le (σ := σ) N).subset
+      (t := Ideal.boundedStandardExponents I m N) fun _ ha => ha.2).toFinset
+
+section
+
+variable {K σ : Type*} [Field K] [Fintype σ]
+include K σ
 
 /-- An exponent lies in `standardMonomialPrefix I m N` exactly when it is a standard exponent of `I`
 of degree at most `N`. -/
-@[simp] lemma mem_standardMonomialPrefix {K σ : Type*} [Field K] [Fintype σ]
+@[simp] lemma mem_standardMonomialPrefix
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (N : ℕ) (a : σ →₀ ℕ) :
     a ∈ standardMonomialPrefix I m N ↔
       a ∈ Ideal.standardExponents I m ∧ Finsupp.degree a ≤ N := by
@@ -35,21 +41,20 @@ of degree at most `N`. -/
 
 /-- The number of degree-lexicographic standard exponents of `I` of degree at most `N` equals the
 affine Hilbert function of `I` at `N`. -/
-theorem standardMonomialPrefix_card {K σ : Type*} [Field K] [Fintype σ]
+theorem standardMonomialPrefix_card
     [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (N : ℕ) :
     (standardMonomialPrefix I MonomialOrder.degLex N).card =
       Module.finrank K (filteredCoordinateSpace I N) := by
   rw [filteredCoordinateSpace_finrank_eq_standard_card]
-  exact (Set.ncard_eq_toFinset_card _).symm
+  exact (Set.ncard_eq_toFinset_card _ ((Finsupp.finite_of_degree_le N).subset fun _ ha => ha.2)).symm
 
-private theorem standardMonomialPrefix_filter {K σ : Type*} [Field K] [Fintype σ]
+private theorem standardMonomialPrefix_filter
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) {N k : ℕ} (hk : k ≤ N) :
     (standardMonomialPrefix I m N).filter (fun a => Finsupp.degree a ≤ k) =
       standardMonomialPrefix I m k := by
-  classical
-  ext a
-  simp only [mem_filter, mem_standardMonomialPrefix]
-  exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hk⟩, h.2⟩⟩
+  grind [mem_standardMonomialPrefix]
+
+end
 
 /-- Summation by parts for a finite set of nonnegative weights. -/
 private theorem sum_weights_add_prefix_counts {α : Type*} (S : Finset α) (w : α → ℕ)
@@ -64,15 +69,10 @@ private theorem sum_weights_add_prefix_counts {α : Type*} (S : Finset α) (w : 
     apply sum_congr rfl
     intro a ha
     have he : (range N).filter (fun k => w a ≤ k) = Ico (w a) N := by
-      ext k
-      simp only [mem_filter, mem_range, mem_Ico]
-      omega
-    rw [← card_filter, he, Nat.card_Ico]
+      aesop
+    simp_all
   rw [hcount, ← sum_add_distrib]
-  have he : ∑ a ∈ S, (w a + (N - w a)) = ∑ _a ∈ S, N :=
-    sum_congr rfl (fun a ha => Nat.add_sub_of_le (hN a ha))
-  rw [he]
-  simp [Nat.mul_comm]
+  simp_all [Nat.mul_comm]
 
 /-- The total degree of a standard prefix is exactly the rank-weighted
 cutoff minus the preceding filtered Hilbert ranks. -/
@@ -88,7 +88,7 @@ theorem standardMonomialPrefix_weight_identity {K σ : Type*} [Field K] [Fintype
   convert h using 2
   apply sum_congr rfl
   intro k hk
-  rw [standardMonomialPrefix_filter I _ (by have := mem_range.mp hk; omega),
+  rw [standardMonomialPrefix_filter I _ (by grind),
     standardMonomialPrefix_card]
 
 /-- The exact principal Hilbert rank is the same binomial difference used
@@ -96,12 +96,11 @@ for homogeneous hypersurfaces with one extra variable. -/
 theorem principal_standard_prefix_rank {K : Type*} [Field K] {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f ≠ 0) {N : ℕ}
     (hN : f.totalDegree ≤ N) :
-    (standardMonomialPrefix (Ideal.span {f}) MonomialOrder.degLex N).card +
-      (n + 1 + (N - f.totalDegree)).choose (N - f.totalDegree) =
-        (n + 1 + N).choose N := by
+    (standardMonomialPrefix (Ideal.span {f}) MonomialOrder.degLex N).card =
+      hypersurfaceRank (n + 1) f.totalDegree N := by
   rw [standardMonomialPrefix_card]
-  simpa only [finrank_restrictTotalDegree, Fintype.card_fin] using
-    principal_filtered_finrank f hf hN
+  apply Nat.eq_sub_of_add_eq
+  simpa only [finrank_restrictTotalDegree, Fintype.card_fin] using principal_filtered_finrank f hf hN
 
 end
 end CCDN

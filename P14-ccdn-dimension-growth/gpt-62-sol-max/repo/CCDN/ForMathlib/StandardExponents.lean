@@ -57,7 +57,7 @@ lemma eq_zero_of_mem_restrictSupport_standardExponents
     {f : MvPolynomial σ K} (hf : f ∈ restrictSupport K (standardExponents I m))
     (hI : f ∈ I) : f = 0 := by
   by_contra hn
-  exact (hf (m.degree_mem_support hn)) f hI hn le_rfl
+  exact hf (MonomialOrder.degree_mem_support hn) f hI hn le_rfl
 
 /-- Division with respect to `degLex` gives a standard representative modulo `I` of no larger
 total degree. -/
@@ -67,7 +67,7 @@ theorem exists_standard_representative_degLex [LinearOrder σ] [WellFoundedGT σ
       r ∈ restrictSupport K (standardExponents I MonomialOrder.degLex) ∧
       r.totalDegree ≤ f.totalDegree ∧ f - r ∈ I := by
   classical
-  let B : Set (MvPolynomial σ K) := {b | b ∈ I ∧ b ≠ 0}
+  let B := {b | b ∈ I ∧ b ≠ 0}
   obtain ⟨g, r, hsum, hdeg, hstd⟩ :=
     MonomialOrder.div_set (m := MonomialOrder.degLex)
       (B := B) (fun b hb => MonomialOrder.isUnit_leadingCoeff.mpr hb.2) f
@@ -82,7 +82,7 @@ theorem exists_standard_representative_degLex [LinearOrder σ] [WellFoundedGT σ
       rw [smul_eq_mul, mul_comm, mem_restrictTotalDegree]
       exact degLex_totalDegree_monotone (hdeg b)
     have hr : r = f - Finsupp.linearCombination (MvPolynomial σ K)
-        (fun b : B => b.val) g := by rw [hsum]; ring
+        (fun b : B => b.val) g := by grind
     rw [← mem_restrictTotalDegree, hr]
     exact Submodule.sub_mem _ (by rw [mem_restrictTotalDegree]) hg
   · have hg : Finsupp.linearCombination (MvPolynomial σ K)
@@ -91,7 +91,7 @@ theorem exists_standard_representative_degLex [LinearOrder σ] [WellFoundedGT σ
       apply I.sum_mem
       intro b _
       exact I.mul_mem_left _ b.property.1
-    simpa only [hsum, add_sub_cancel_right] using hg
+    grind
 
 /-- Standard exponents of total degree at most `N`. -/
 def boundedStandardExponents (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (N : ℕ) :

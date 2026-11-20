@@ -5,11 +5,16 @@ Authors: Jason Davies
 -/
 module
 
+import CCDN.ForMathlib.MvPolynomial
+
 public import CCDN.Determinant.ProjectiveHypersurfaceResidueDeterminant
 public import CCDN.Height.ProjectiveZeroLocus
 public import CCDN.Plane.FiniteFieldConstants
 import CCDN.Algebra.FiniteFieldProjectiveCone
-import CCDN.AuxiliaryPolynomial.PlaneBadPrimes
+import CCDN.Analysis.PrimeCutoff
+import CCDN.AuxiliaryPolynomial.ConstantLeadingBadReduction
+import CCDN.AuxiliaryPolynomial.HypersurfaceBadReduction
+import CCDN.Height.IntegerCoefficientHeight
 import CCDN.Determinant.ProjectiveHypersurfaceMultiplicity
 import CCDN.Hypersurface.FiniteFieldCount
 
@@ -33,7 +38,7 @@ theorem projective_hypersurface_finite_field_bound {n d : ℕ}
       projectiveHypersurfaceResidueConstant * (d : ℝ) ^ 2 * (p : ℝ) ^ n * Real.sqrt p := by
   rw [projectiveHypersurfaceResidueConstant_eq]
   have hi := mvPolynomial_irreducible_of_field_map _ f hir
-  have hdeg : f.totalDegree = d := hf.totalDegree hi.ne_zero
+  have hdeg := hf.totalDegree hi.ne_zero
   have hcone := affine_hypersurface_finite_field_bound p f hir (hdeg ▸ hsize)
   rw [hdeg, hypersurfaceResidueConstant_eq] at hcone
   have h := homogeneous_projective_count_of_cone_bound f hf hd
@@ -43,31 +48,44 @@ theorem projective_hypersurface_finite_field_bound {n d : ℕ}
   have hp : (1 : ℝ) ≤ p := by exact_mod_cast (Fact.out : p.Prime).one_le
   have hs : 1 ≤ Real.sqrt (p : ℝ) := Real.le_sqrt_of_sq_le (by simpa using hp)
   have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hd2 : (1 : ℝ) ≤ (d : ℝ) ^ 2 := by nlinarith
-  have hds : (1 : ℝ) ≤ (d : ℝ) ^ 2 * Real.sqrt p := by nlinarith
+  
+  
   have he : 2 * (164 * (d : ℝ) ^ 2 * Real.sqrt p + 1) ≤
       330 * (d : ℝ) ^ 2 * Real.sqrt p := by nlinarith
   have hm := mul_le_mul_of_nonneg_right he (show 0 ≤ (p : ℝ) ^ n by positivity)
   apply h.trans
   nlinarith
 
+/-- Explicit dimension-only constant for the projective multiplicity count
+(`projective_hypersurface_totalMultiplicity_bound`) in `n + 3` coordinates: the projective
+point count contributes `projectiveHypersurfaceResidueConstant = 330`, and the multiplicities
+of the singular points contribute `(n + 3) (n + 4)ⁿ`
+(`projectiveHypersurfaceTotalMultiplicity_le_card_add_sqrt_error`). -/
+def hypersurfaceCountConstant (n : ℕ) : ℝ :=
+  projectiveHypersurfaceResidueConstant + ((n + 3) * (n + 2) ^ n : ℕ)
+
+/-- The constant `hypersurfaceCountConstant n` is nonnegative. -/
+lemma hypersurfaceCountConstant_nonneg (n : ℕ) : 0 ≤ hypersurfaceCountConstant n := by
+  unfold hypersurfaceCountConstant
+  exact add_nonneg projectiveHypersurfaceResidueConstant_pos.le (Nat.cast_nonneg _)
+
 /-- CCDN Lemma 2.7 for the total multiplicity of the projective residue
 space. The constant depends only on dimension, and all counting inputs are
 proved. Degree one is included using the exact multiplicity bounds. -/
 theorem projective_hypersurface_totalMultiplicity_bound {n p d : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d) (hd : 0 < d)
-    (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0)
     (hir : Irreducible (map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))
       (map (Int.castRingHom (ZMod p)) f)))
     (hsize : stepanovThreshold (d : ℝ) < p) :
-    (projectiveHypersurfaceTotalMultiplicity f hf hf0 : ℝ) ≤ (p : ℝ) ^ (n + 1) +
-      (projectiveHypersurfaceResidueConstant + ((n + 3) * (n + 4) ^ n : ℕ)) * (d : ℝ) ^ 2 *
+    (projectiveHypersurfaceTotalMultiplicity f p : ℝ) ≤ (p : ℝ) ^ (n + 1) +
+      hypersurfaceCountConstant n * (d : ℝ) ^ 2 *
         (p : ℝ) ^ n * Real.sqrt p := by
   have hi := mvPolynomial_irreducible_of_field_map _ _ hir
   have hc := projective_hypersurface_finite_field_bound p
     (map (Int.castRingHom (ZMod p)) f) (hf.map _) hd hir hsize
   change (Nat.card (ProjectiveHypersurfaceResidue f p) : ℝ) ≤ _ at hc
   rw [Nat.card_eq_fintype_card] at hc
+  unfold hypersurfaceCountConstant
   by_cases hd2 : 2 ≤ d
   · have hpN : 27 * d ^ 4 < p := by exact_mod_cast hsize
     have hs : d ^ 2 < p := by
@@ -79,12 +97,12 @@ theorem projective_hypersurface_totalMultiplicity_bound {n p d : ℕ} [Fact p.Pr
     ring
   · have hd1 : d = 1 := by omega
     subst d
-    have hm := (projectiveHypersurfaceTotalMultiplicity_bounds f hf hf0).2
+    have hm := (projectiveHypersurfaceTotalMultiplicity_bounds f hf hi.ne_zero).2
     rw [Nat.mul_one] at hm
-    have hmR : (projectiveHypersurfaceTotalMultiplicity f hf hf0 : ℝ) ≤
+    have hmR : (projectiveHypersurfaceTotalMultiplicity f p : ℝ) ≤
         Fintype.card (ProjectiveHypersurfaceResidue f p) := by exact_mod_cast hm
     apply (hmR.trans hc).trans
-    have he : (0 : ℝ) ≤ (((n + 3) * (n + 4) ^ n : ℕ) : ℝ) * (p : ℝ) ^ n * Real.sqrt p := by
+    have he : (0 : ℝ) ≤ (((n + 3) * (n + 2) ^ n : ℕ) : ℝ) * (p : ℝ) ^ n * Real.sqrt p := by
       positivity
     nlinarith
 

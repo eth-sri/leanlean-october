@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Projection.CurvePrimitivePair
 public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 import CCDN.Algebra.BoundedLinearSeparation
 import Mathlib.FieldTheory.PrimitiveElement
@@ -26,12 +27,10 @@ theorem exists_bounded_primitive_element {R F : Type*} [Field R] [CharZero R] [F
   obtain ⟨k, hk, hinj⟩ := exists_bounded_moment_separation
     (fun φ : F →ₐ[R] AlgebraicClosure R => fun j => φ (a j)) hsep
   refine ⟨k, ?_, ?_⟩
-  · simpa only [AlgHom.card R F (AlgebraicClosure R)] using hk
+  simp_all
   · apply (Field.primitive_element_iff_algHom_eq_of_eval' R (AlgebraicClosure R)
       (fun x => IsAlgClosed.splits _) _).mpr
-    intro φ ψ he
-    apply hinj
-    simpa only [map_sum, map_mul, map_pow, map_natCast] using he
+    aesop
 
 /-- Maps from a fraction field are determined by the images of the
 original affine coordinates, even when the scalar field contains a parameter. -/
@@ -70,8 +69,9 @@ theorem exists_bounded_curve_primitive_element {K R F : Type*}
     [IsFractionRing (MvPolynomial (Fin n) K ⧸ I) F] :
     ∃ k : ℕ, k ≤ n * (Module.finrank R F) ^ 2 ∧
       IntermediateField.adjoin R
-        {∑ j : Fin n, algebraMap (MvPolynomial (Fin n) K ⧸ I) F
-          ((Ideal.Quotient.mk I) (MvPolynomial.X j)) * (k : F) ^ j.val} = ⊤ := by
+        {algebraMap (MvPolynomial (Fin n) K ⧸ I) F
+          ((Ideal.Quotient.mk I) (momentCoordinate K n k))} = ⊤ := by
+  simp_rw [momentCoordinate_fraction]
   exact exists_bounded_primitive_element _ (curve_coordinate_embeddings_injective I)
 
 end

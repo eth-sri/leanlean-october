@@ -7,6 +7,7 @@ module
 
 public import CCDN.Height.IntegerCoefficientHeight
 public import Mathlib.Algebra.MvPolynomial.Degrees
+public import Mathlib.Data.Finsupp.Weight
 import Mathlib.Algebra.Order.BigOperators.Ring.Finset
 import Mathlib.Tactic.Linarith
 
@@ -35,6 +36,19 @@ private lemma polynomial_support_card_le {R σ : Type*} [CommSemiring R] [Fintyp
     exact congrArg (fun v => (v i).val) h
   simpa using Fintype.card_le_of_injective ψ hi
 
+/-- A monomial of degree at most `d` is bounded by `A^d` on a real box. -/
+lemma abs_finsupp_prod_pow_le {σ : Type*} (e : σ →₀ ℕ) (v : σ → ℝ) {A : ℝ}
+    (hA : 1 ≤ A) (hv : ∀ i, |v i| ≤ A) {d : ℕ} (he : e.degree ≤ d) :
+    |e.prod (fun i k => v i ^ k)| ≤ A ^ d := by
+  unfold Finsupp.prod
+  rw [Finset.abs_prod]
+  calc
+    _ ≤ ∏ i ∈ e.support, A ^ e i := Finset.prod_le_prod₀ (fun _ _ => abs_nonneg _) fun i _ => by
+      rw [abs_pow]
+      exact pow_le_pow_left₀ (abs_nonneg _) (hv i) _
+    _ = A ^ e.degree := Finset.prod_pow_eq_pow_sum _ _ _
+    _ ≤ _ := pow_le_pow_right₀ hA he
+
 /-- An evaluation estimate with no coefficient-dependent constants. -/
 theorem polynomial_eval₂_box_bound {σ : Type*} [Fintype σ]
     (f : MvPolynomial σ ℤ) (H A : ℝ) (hH : 0 ≤ H) (hA : 1 ≤ A)
@@ -43,30 +57,17 @@ theorem polynomial_eval₂_box_bound {σ : Type*} [Fintype σ]
     |eval₂ (Int.castRingHom ℝ) v f| ≤
       ((f.totalDegree : ℝ) + 1) ^ Fintype.card σ * H * A ^ f.totalDegree := by
   classical
-  rw [eval₂_eq']
+  rw [eval₂_eq]
   calc
-    |∑ e ∈ f.support, (Int.castRingHom ℝ) (f.coeff e) * ∏ i, v i ^ e i| ≤
-        ∑ e ∈ f.support, |(Int.castRingHom ℝ) (f.coeff e) * ∏ i, v i ^ e i| :=
+    |∑ e ∈ f.support, (Int.castRingHom ℝ) (f.coeff e) * e.prod (fun i k => v i ^ k)| ≤
+        ∑ e ∈ f.support, |(Int.castRingHom ℝ) (f.coeff e) * e.prod (fun i k => v i ^ k)| :=
       Finset.abs_sum_le_sum_abs _ _
     _ ≤ ∑ _e ∈ f.support, H * A ^ f.totalDegree := by
       apply Finset.sum_le_sum
       intro e he
-      have hd : ∑ i, e i ≤ f.totalDegree := by
-        simpa only [Finsupp.sum_fintype e (fun _ k => k) (fun _ => rfl)] using (le_totalDegree he)
-      have hp : |∏ i, v i ^ e i| ≤ A ^ f.totalDegree := by
-        rw [Finset.abs_prod]
-        calc
-          ∏ i, |v i ^ e i| ≤ ∏ i, A ^ e i := by
-            apply Finset.prod_le_prod₀
-            · intro i _
-              exact abs_nonneg _
-            · intro i _
-              rw [abs_pow]
-              exact pow_le_pow_left₀ (abs_nonneg _) (hv i) _
-          _ = A ^ (∑ i, e i) := Finset.prod_pow_eq_pow_sum _ _ _
-          _ ≤ A ^ f.totalDegree := pow_le_pow_right₀ hA hd
       rw [abs_mul]
-      exact mul_le_mul (hf e) hp (abs_nonneg _) hH
+      exact mul_le_mul (hf e) (abs_finsupp_prod_pow_le e v hA hv (le_totalDegree he))
+        (abs_nonneg _) hH
     _ = (f.support.card : ℝ) * H * A ^ f.totalDegree := by simp; ring
     _ ≤ ((f.totalDegree : ℝ) + 1) ^ Fintype.card σ * H * A ^ f.totalDegree := by
       have hc : (f.support.card : ℝ) ≤ ((f.totalDegree : ℝ) + 1) ^ Fintype.card σ := by

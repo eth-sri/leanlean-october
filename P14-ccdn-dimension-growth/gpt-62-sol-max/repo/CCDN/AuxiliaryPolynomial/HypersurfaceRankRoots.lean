@@ -6,7 +6,8 @@ Authors: Jason Davies
 module
 
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-import CCDN.AuxiliaryPolynomial.HypersurfaceRankProfile
+public import Mathlib.Analysis.SpecialFunctions.Log.Basic
+public import CCDN.AuxiliaryPolynomial.HypersurfaceRankProfile
 
 /-! Exact leading term for the dimension root of the homogeneous Hilbert rank. -/
 
@@ -14,14 +15,24 @@ import CCDN.AuxiliaryPolynomial.HypersurfaceRankProfile
 namespace CCDN
 noncomputable section
 
+/-- The dimension root of the rank, with the factorial leading coefficient. -/
+abbrev hypersurfaceRankRoot (r s : ℕ) : ℝ :=
+  (r.factorial : ℝ) ^ (1 / (r : ℝ)) * (s : ℝ) ^ (1 / (r : ℝ))
+
+/-- The determinant inequality after absorbing the archimedean error and cancelling the rank. -/
+def NormalizedRankComparison (r d M : ℕ) (b l c E : ℝ) : Prop :=
+  let s := hypersurfaceRank (r + 1) d M
+  hypersurfaceRankRoot r s * (Real.log s - r * (4 * Real.log d + c) - E) ≤
+    (r + 1 : ℝ) * ((M : ℝ) * b - ((r + 1 + (M - d)).choose (M - d) : ℝ) / s * l)
+
 /-- Taking the dimension root preserves the factorial leading coefficient. -/
-theorem hypersurface_rank_root_bounds {r d M s : ℕ} (hrpos : 0 < r) (hdM : d ≤ M)
-    (hr : s + (r + 1 + (M - d)).choose (M - d) = (r + 1 + M).choose M) :
+theorem hypersurface_rank_root_bounds {r d M : ℕ} (hrpos : 0 < r) (hdM : d ≤ M) :
+    let s := hypersurfaceRank (r + 1) d M
     (d : ℝ) ^ (1 / (r : ℝ)) * ((M : ℝ) - d + 1) ≤
-        (r.factorial : ℝ) ^ (1 / (r : ℝ)) * (s : ℝ) ^ (1 / (r : ℝ)) ∧
-      (r.factorial : ℝ) ^ (1 / (r : ℝ)) * (s : ℝ) ^ (1 / (r : ℝ)) ≤
+        hypersurfaceRankRoot r s ∧ hypersurfaceRankRoot r s ≤
         (d : ℝ) ^ (1 / (r : ℝ)) * ((M : ℝ) + r) := by
-  obtain ⟨hl, hu⟩ := hypersurface_rank_power_bounds hdM hr
+  intro s
+  obtain ⟨hl, hu⟩ := hypersurface_rank_power_bounds (r := r) hdM
   have hfac : (0 : ℝ) < r.factorial := by positivity
   have hmd : (0 : ℝ) ≤ (M : ℝ) - d + 1 := by
     have : (d : ℝ) ≤ M := by exact_mod_cast hdM
@@ -38,9 +49,7 @@ theorem hypersurface_rank_root_bounds {r d M s : ℕ} (hrpos : 0 < r) (hdM : d �
   rw [Real.mul_rpow (Nat.cast_nonneg s) hfac.le,
     Real.mul_rpow (Nat.cast_nonneg d) (by positivity), one_div,
     Real.pow_rpow_inv_natCast (by positivity) hrpos.ne'] at huroot
-  constructor
-  · simpa only [one_div, mul_comm] using hlroot
-  · simpa only [one_div, mul_comm] using huroot
+  grind
 
 end
 end CCDN

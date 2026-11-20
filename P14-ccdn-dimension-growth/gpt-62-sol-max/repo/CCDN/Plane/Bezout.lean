@@ -28,16 +28,15 @@ theorem plane_common_zeros_card_le {K ι : Type*} [Field K] [Fintype ι] [Decida
     (hzf : ∀ i, MvPolynomial.eval (z i) f = 0)
     (hzg : ∀ i, MvPolynomial.eval (z i) g = 0) :
     Fintype.card ι ≤ f.totalDegree * g.totalDegree := by
-  let I : Ideal (MvPolynomial (Fin 2) K) := Ideal.span {f}
+  let I := Ideal.span {f}
   have : I.IsPrime := Ideal.isPrime_span_singleton_of_prime hf.prime
   apply polynomial_section_card_le_degree I f.totalDegree
-    ⟨f.totalDegree, (f.totalDegree : ℤ) - f.totalDegree.choose 2,
-      fun N hN => principal_plane_hilbert_function f hf.ne_zero hN⟩
-    g (by simpa only [I, Ideal.mem_span_singleton] using hfg)
+    (principal_plane_curve_degree f hf.ne_zero)
+    g (by simpa [I, Ideal.mem_span_singleton] using hfg)
     g.totalDegree le_rfl z hz _ hzg
   intro i h hh
   obtain ⟨q, rfl⟩ := Ideal.mem_span_singleton.mp hh
-  rw [MvPolynomial.eval_mul, hzf, zero_mul]
+  simp_all
 
 /-- The section bound directly in the real-radius integer counting interface. -/
 theorem count_curve_section_le {n d : ℕ} (I : Ideal (CoordinatePolynomial n))
@@ -52,9 +51,9 @@ theorem count_curve_section_le {n d : ℕ} (I : Ideal (CoordinatePolynomial n))
     apply Subtype.ext
     funext j
     exact Int.cast_injective (congrFun h j)
-  have hzp (i : S) : z i ∈ idealZeroLocus I :=
+  have hzp (i : S) :=
     (mem_integralPoints.mp i.property).2.1
-  have hzg (i : S) : MvPolynomial.eval (z i) g = 0 :=
+  have hzg (i : S) :=
     (mem_integralPoints.mp i.property).2.2
   have h := polynomial_section_card_le_degree I d hd g hg g.totalDegree le_rfl z hz hzp hzg
   simpa only [Fintype.card_coe, S, count] using h

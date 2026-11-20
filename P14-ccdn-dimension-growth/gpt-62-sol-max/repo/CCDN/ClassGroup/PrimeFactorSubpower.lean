@@ -31,22 +31,20 @@ counted. This form also permits a real exponential base. -/
 private theorem primeFactors_pow_subpower {R ε : ℝ} (hR : 1 ≤ R) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ D : ℕ, 1 ≤ D →
       R ^ D.primeFactors.card ≤ C * (D : ℝ) ^ ε := by
-  have hR0 : 0 < R := zero_lt_one.trans_le hR
-  have hlogR : 0 ≤ Real.log R := Real.log_nonneg hR
+  have hR0 := zero_lt_one.trans_le hR
+  have hlogR := Real.log_nonneg hR
   obtain ⟨M, hM⟩ := exists_nat_gt (Real.exp (Real.log R / ε))
-  have hM0 : (0 : ℝ) < M := (Real.exp_pos _).trans hM
+  have hM0 := (Real.exp_pos _).trans hM
   have hcut : Real.log R ≤ ε * Real.log (M : ℝ) := by
     have hh := Real.log_le_log (Real.exp_pos _) hM.le
     rw [Real.log_exp] at hh
     have hh := (div_le_iff₀ hε).mp hh
-    simpa only [mul_comm] using hh
+    linarith
   refine ⟨Real.exp ((M : ℝ) * Real.log R), Real.exp_pos _, ?_⟩
   intro D hD
-  have hD0 : (0 : ℝ) < D := by exact_mod_cast (by omega : 0 < D)
+  have hD0 : (0 : ℝ) < D := by positivity
   have hsmall : (D.primeFactors.filter (· < M)).card ≤ M := by
-    calc
-      _ ≤ (range M).card := card_le_card (fun p hp => mem_range.mpr (mem_filter.mp hp).2)
-      _ = _ := card_range M
+    exact Trans.trans (card_le_card fun p hp => mem_range.mpr (mem_filter.mp hp).right) (card_range M)
   have hterm : ∀ p ∈ D.primeFactors,
       Real.log R ≤ (if p < M then Real.log R else 0) + ε * Real.log (p : ℝ) := by
     intro p hp
@@ -87,7 +85,7 @@ theorem two_pow_primeFactors_subpower (a : ℕ) {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨C, hC, hbound⟩ := primeFactors_pow_subpower
     (show (1 : ℝ) ≤ 2 ^ a by exact one_le_pow₀ (by norm_num)) hε
   refine ⟨C, hC, fun D hD => ?_⟩
-  simpa only [pow_mul] using hbound D hD
+  simpa [pow_mul] using hbound D hD
 
 end
 end CCDN

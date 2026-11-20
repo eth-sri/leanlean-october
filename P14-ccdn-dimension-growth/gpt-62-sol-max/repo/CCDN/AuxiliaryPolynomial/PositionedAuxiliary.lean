@@ -5,135 +5,39 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.AuxiliaryPolynomial.HypersurfaceLargeHeightDegree
-public import CCDN.AuxiliaryPolynomial.HypersurfaceNormalizedComparison
-public import CCDN.AuxiliaryPolynomial.HypersurfaceSmallHeightAuxiliary
-import CCDN.AuxiliaryPolynomial.HypersurfaceLargeHeightAuxiliary
+public import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeComparison
+public import CCDN.AuxiliaryPolynomial.HypersurfaceDegreeComparison
+public import CCDN.AuxiliaryPolynomial.Nonmultiple
+import CCDN.AuxiliaryPolynomial.DegreeBound
 
-/-! Combine the two height ranges under the paper's explicit leading-coefficient
-position condition. The main term retains the bad-prime factor of any finite prime
-set whose normalized comparison holds. -/
+/-! Choose one auxiliary degree above both thresholds, then use the appropriate
+logarithmic comparison according to the height of the hypersurface. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma inverse_rpow_le_of_log_position {H L q D : ℝ} (hH : 0 < H) (hL : 0 < L)
-    (hq : 0 ≤ q) (hposition : Real.log H ≤ Real.log L + D) :
-    1 / L ^ q ≤ Real.exp (q * D) / H ^ q := by
-  apply (Real.log_le_log_iff (by positivity) (by positivity)).mp
-  rw [Real.log_div one_ne_zero (by positivity), Real.log_div (Real.exp_pos _).ne' (by positivity),
-    Real.log_one, Real.log_exp, Real.log_rpow hL, Real.log_rpow hH]
-  nlinarith [mul_le_mul_of_nonneg_left hposition hq]
+abbrev positionedSmallFactor (n : ℕ) (T : ℝ) : ℝ :=
+  Real.exp (hypersurfaceSmallHeightError (n + 1) (hypersurfaceBadPrimeNormalizedError n) T)
 
-/-- Replacing the coefficient height `H` by the leading height `L` in the small-height threshold
-costs at most a factor `exp (T / (n + 1))`, provided `log H ≤ log L + T d d^(1/(n+1))`. -/
-lemma hypersurfaceSmallThreshold_position {n d : ℕ} {B H L A T : ℝ}
-    (hd : 0 < d) (hB : 0 ≤ B) (hH : 0 < H) (hL : 0 < L) (hA : 0 ≤ A)
-    (hposition : Real.log H ≤ Real.log L + T * d * degreeRoot n d) :
-    hypersurfaceSmallThreshold n d B L A ≤
-      Real.exp (T / (n + 1 : ℝ)) * hypersurfaceSmallThreshold n d B H A := by
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
-  have hX : (0 : ℝ) < (d : ℝ) ^ (1 / (n + 1 : ℝ)) := by positivity
-  have hh := inverse_rpow_le_of_log_position hH hL
-    (show 0 ≤ 1 / ((n + 1 : ℝ) * d * (d : ℝ) ^ (1 / (n + 1 : ℝ))) by positivity) hposition
-  have he : (1 / ((n + 1 : ℝ) * d * (d : ℝ) ^ (1 / (n + 1 : ℝ)))) *
-      (T * d * (d : ℝ) ^ (1 / (n + 1 : ℝ))) = T / (n + 1 : ℝ) := by field_simp
-  rw [he] at hh
-  have hm := mul_le_mul_of_nonneg_left hh
-    (show 0 ≤
-      Real.exp (hypersurfaceSmallHeightError (n + 1) (hypersurfaceBadPrimeNormalizedError n)) *
-      (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) * A *
-        B ^ ((n + 2 : ℝ) / ((n + 1 : ℝ) * (d : ℝ) ^ (1 / (n + 1 : ℝ)))) by positivity)
-  simpa only [hypersurfaceSmallThreshold, div_eq_mul_inv, one_mul, mul_assoc, mul_left_comm,
-    mul_comm] using hm
+abbrev positionedLargeFactor (n : ℕ) (T : ℝ) : ℝ :=
+  Real.exp (hypersurfaceLargeHeightError (n + 1) (hypersurfaceNormalizedError n) T)
 
 /-- Explicit constant for the positioned absolutely irreducible case. -/
 def hypersurfacePositionedAuxiliaryConstant (n : ℕ) (T : ℝ) : ℝ :=
-  4 + 8 * (n + 2 : ℝ) +
-    Real.exp (hypersurfaceLargeHeightError (n + 1) (hypersurfaceNormalizedError n) T) +
-    Real.exp (T / (n + 1 : ℝ)) *
-      Real.exp (hypersurfaceSmallHeightError (n + 1) (hypersurfaceBadPrimeNormalizedError n))
+  4 + 8 * (n + 2 : ℝ) + positionedLargeFactor n T + positionedSmallFactor n T
 
-/-- The small-height degree bound fits under the positioned bound. -/
-private lemma small_height_bound_le_positioned {n d : ℕ} (hd : 0 < d) {B b H T : ℝ} (hB : 1 ≤ B)
-    (hb : 0 ≤ b) (hH : 0 ≤ H) :
-    2 * d + (d : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B +
-        Real.exp (T / (n + 1 : ℝ)) * Real.exp (hypersurfaceSmallHeightError (n + 1)
-          (hypersurfaceBadPrimeNormalizedError n)) * auxMainTerm n d B b H + 2 ≤
-      hypersurfacePositionedAuxiliaryConstant n T * auxDegreeBound n d B b H := by
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  let Q := auxMainTerm n d B b H
-  let l := (d : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B
-  let D := (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ))
-  let C := hypersurfacePositionedAuxiliaryConstant n T
-  let Cs := Real.exp (T / (n + 1 : ℝ)) *
-    Real.exp (hypersurfaceSmallHeightError (n + 1) (hypersurfaceBadPrimeNormalizedError n))
-  have hQ : 0 ≤ Q := by
-    have : (0 : ℝ) ≤ B := by linarith
-    dsimp [Q, auxMainTerm]; positivity
-  have hl : 0 ≤ l := mul_nonneg (Real.rpow_nonneg hd0.le _) (Real.log_nonneg hB)
-  have hD : 0 ≤ D := Real.rpow_nonneg hd0.le _
-  have hlarge := Real.exp_pos
-    (hypersurfaceLargeHeightError (n + 1) (hypersurfaceNormalizedError n) T)
-  have hn : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  have hCs : Cs ≤ C := by
-    dsimp only [Cs, C, hypersurfacePositionedAuxiliaryConstant]
-    linarith
-  have hC4 : 4 ≤ C := by
-    have : 0 < Cs := mul_pos (Real.exp_pos _) (Real.exp_pos _)
-    dsimp only [C, hypersurfacePositionedAuxiliaryConstant]
-    dsimp only [Cs] at this
-    linarith
-  have hdD : (d : ℝ) ≤ D := le_rpow_four_sub_inv hd
-  change 2 * d + l + Cs * Q + 2 ≤ C * (Q + l + D)
-  have h1 := mul_le_mul_of_nonneg_right hCs hQ
-  have h2 := mul_le_mul_of_nonneg_right (show 1 ≤ C by linarith) hl
-  have h3 := mul_le_mul_of_nonneg_right hC4 hD
-  nlinarith
-
-/-- The large-height degree bound fits under the positioned bound. -/
-private lemma large_height_bound_le_positioned {n d : ℕ} (hd : 0 < d) {B b H T : ℝ} (hB : 1 ≤ B)
-    (hb : 0 ≤ b) (hH : 0 ≤ H) :
-    (8 * (n + 2 : ℝ) + Real.exp (hypersurfaceLargeHeightError (n + 1)
-        (hypersurfaceNormalizedError n) T) + 2) * (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) ≤
-      hypersurfacePositionedAuxiliaryConstant n T * auxDegreeBound n d B b H := by
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
-  have hD : 0 ≤ (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) := Real.rpow_nonneg hd0.le _
-  have hQl : 0 ≤ auxMainTerm n d B b H + (d : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B := by
-    have : (0 : ℝ) ≤ B := by linarith
-    have := Real.log_nonneg hB
-    unfold auxMainTerm; positivity
-  have hS : 0 < Real.exp (T / (n + 1 : ℝ)) *
-      Real.exp (hypersurfaceSmallHeightError (n + 1) (hypersurfaceBadPrimeNormalizedError n)) :=
-    mul_pos (Real.exp_pos _) (Real.exp_pos _)
-  have hlarge := Real.exp_pos
-    (hypersurfaceLargeHeightError (n + 1) (hypersurfaceNormalizedError n) T)
-  have hCl : 8 * (n + 2 : ℝ) + Real.exp (hypersurfaceLargeHeightError (n + 1)
-      (hypersurfaceNormalizedError n) T) + 2 ≤ hypersurfacePositionedAuxiliaryConstant n T := by
-    unfold hypersurfacePositionedAuxiliaryConstant
-    linarith
-  have hC : 0 ≤ hypersurfacePositionedAuxiliaryConstant n T := by
-    have := Nat.cast_nonneg (α := ℝ) n
-    linarith
-  unfold auxDegreeBound
-  nlinarith [mul_le_mul_of_nonneg_right hCl hD, mul_nonneg hC hQl]
-
-/-- The coefficient-sensitive auxiliary theorem for an absolutely irreducible
-homogeneous equation satisfying explicit leading-coefficient positioning, for any
-finite prime set `bad` for which the normalized comparison holds. Both height ranges
-and the degree are constructed. -/
+/-- The coefficient-sensitive auxiliary theorem for an equation satisfying the
+leading-coefficient positioning inequality. -/
 theorem positioned_auxiliary_degree_of_comparison
-    {K : Type*} [Field K] [CharZero K] [IsAlgClosed K] {n d t : ℕ}
+    {n d t : ℕ}
     (order : MonomialOrder (Fin (n + 3))) (f : MvPolynomial (Fin (n + 3)) ℤ)
-    (hf : f.IsHomogeneous d) (hd : 0 < d)
-    (hir : Irreducible (map (Int.castRingHom K) f))
+    (hf0 : f ≠ 0) (hd : 0 < d)
     (H : ℝ) (hH : 1 ≤ H) (hcoeff : CoefficientHeightLE f H)
-    {B : ℝ} {z : Fin t → IntPoint (n + 3)} (hzB : IsPrimitiveBoxZeroFamily f B z)
+    (z : Fin t → IntPoint (n + 3)) {B : ℝ} (hB : 1 ≤ B) (hbox : ∀ i, InBox (z i) B)
     (bad : Finset ℕ) (hcomp : AuxiliaryRankComparison order f d z bad)
-
+    (hcharge : (∑ p ∈ bad, Real.log p / p) ≤ hypersurfaceHeightChargeBound n d H)
     (T : ℝ) (hT : 0 ≤ T)
     (hposition : Real.log H ≤ Real.log |((order.leadingCoeff f : ℤ) : ℝ)| +
       T * d * degreeRoot n d) :
@@ -141,29 +45,69 @@ theorem positioned_auxiliary_degree_of_comparison
       (M : ℝ) ≤ hypersurfacePositionedAuxiliaryConstant n T *
         auxDegreeBound n d B (primeSetFactor bad) H ∧
       ∃ g, IsPointAuxiliary f g M z := by
-  obtain ⟨⟨hB, hz, hbox⟩, hprim⟩ := hzB
-  have hf0 := ne_zero_of_irreducible_map hir
-  have hL : 0 < |((order.leadingCoeff f : ℤ) : ℝ)| :=
-    abs_pos.mpr (Int.cast_ne_zero.mpr (order.leadingCoeff_ne_zero_iff.mpr hf0))
-  have hb : 0 ≤ primeSetFactor bad := (Real.exp_pos _).le
+  let L := |((order.leadingCoeff f : ℤ) : ℝ)|
+  let Q := auxMainTerm n d B (primeSetFactor bad) H
+  let D := auxDegreeScale n d
+  let l := auxLogTerm n d B
+  let S := positionedSmallFactor n T
+  let A := positionedLargeFactor n T
+  let C₀ := hypersurfacePositionedAuxiliaryConstant n T
+  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
+  have hd0 : (0 : ℝ) < d := by positivity
+  have hB0 : 0 < B := by linarith
+  have hH0 : 0 < H := by linarith
+  have hQ : 0 ≤ Q := by dsimp [Q, auxMainTerm]; positivity
+  have hl : 0 ≤ l := by dsimp only [l, auxLogTerm]; have := Real.log_nonneg hB; positivity
+  have hD : (d : ℝ) ≤ D := le_auxDegreeScale hd
+  have hA : 0 ≤ A := (Real.exp_pos _).le
+  have hS : 0 ≤ S := by dsimp [S]; positivity
+  obtain ⟨M, hM, hscale, hthreshold, hbound⟩ :=
+    auxiliary_integer_degree_selection (8 * d * (n + 2)) hl
+      (add_nonneg (mul_nonneg hS hQ) (mul_nonneg hA (hd0.le.trans hD)))
+  refine ⟨M, ?_, ?_⟩
+  · push_cast at hbound
+    have hC : C₀ = 4 + 8 * (n + 2 : ℝ) + A + S := rfl
+    have hn : (0 : ℝ) ≤ n := by positivity
+    have hdD := mul_le_mul_of_nonneg_left hD (show 0 ≤ 8 * (n + 2 : ℝ) by positivity)
+    change (M : ℝ) ≤ C₀ * (Q + l + D)
+    nlinarith only [hbound, hdD, hd1, hD,
+      mul_le_mul_of_nonneg_right (show A + 2 + 8 * (n + 2 : ℝ) ≤ C₀ by linarith) (show 0 ≤ D by positivity),
+      mul_le_mul_of_nonneg_right (show 1 ≤ C₀ by linarith) hl,
+      mul_le_mul_of_nonneg_right (show S ≤ C₀ by linarith) hQ]
+  have hMd : d ≤ M := by nlinarith
+  by_contra hnone
+  have hc := hcomp hB hbox hMd (dvd_of_not_exists_isPointAuxiliary hnone)
+  have hL : 1 ≤ L := by
+    dsimp [L]
+    exact_mod_cast Int.one_le_abs (order.leadingCoeff_ne_zero_iff.mpr hf0)
+  have hL0 : 0 < L := by linarith
+  have hnR : (n : ℝ) + 1 + 1 = n + 2 := by ring
+  have hn : 0 < n + 1 := Nat.succ_pos _
+  apply (not_le_of_gt hthreshold)
   by_cases hsmall : Real.log H ≤ 2 * d * (n + 2 : ℝ) * Real.log B
-  · have hlead : |((order.leadingCoeff f : ℤ) : ℝ)| ≤ H := hcoeff (order.degree f)
-    obtain ⟨M, hbound, hg⟩ := auxiliary_small_height_degree_of_comparison order f hf0 hd z hB
-      hbox bad hcomp ((Real.log_le_log hL hlead).trans hsmall)
-    have hp := hypersurfaceSmallThreshold_position hd (by linarith : 0 ≤ B)
-      (by linarith : 0 < H) hL hb hposition
-    have hp' : hypersurfaceSmallThreshold n d B |((order.leadingCoeff f : ℤ) : ℝ)|
-        (primeSetFactor bad) ≤ Real.exp (T / (n + 1 : ℝ)) *
-          Real.exp (hypersurfaceSmallHeightError (n + 1) (hypersurfaceBadPrimeNormalizedError n)) *
-          auxMainTerm n d B (primeSetFactor bad) H := by
-      convert hp using 1
-      unfold hypersurfaceSmallThreshold auxMainTerm
-      ring
-    refine ⟨M, le_trans ?_ (small_height_bound_le_positioned hd hB hb (by linarith)), hg⟩
-    linarith
-  · obtain ⟨M, hbound, g, hg⟩ := hypersurface_auxiliary_large_height_degree order f hf hd hir H hH
-      hcoeff z hprim hz hB hbox T hT (le_of_not_ge hsmall) hposition
-    exact ⟨M, hbound.trans (large_height_bound_le_positioned hd hB hb (by linarith)), g,
-      isPointAuxiliary_iff.mpr hg⟩
+  · have hheight := (Real.log_le_log hL0 (show L ≤ H from hcoeff (order.degree f))).trans hsmall
+    have hscale' := (div_le_iff₀ (show 0 < degreeRoot n d by positivity)).mp hscale
+    rw [mul_comm (M : ℝ)] at hscale'
+    have hMQ := hypersurface_small_height_degree_bound (A := primeSetFactor bad) hd (show 2 * d ≤ M by nlinarith)
+      hB hL hH0 (Real.exp_pos _) hheight hscale' hposition
+      (by simpa only [primeSetFactor, Real.log_exp] using hc)
+    exact hMQ.trans (le_add_of_nonneg_right (by positivity))
+  · have hC := hypersurfaceHeightConstant_one_le (n + 3)
+    have := Real.log_nonneg hH
+    have hH' : 0 < 1 + Real.log H / (d : ℝ) ^ 2 := by positivity
+    dsimp only [hypersurfaceHeightChargeBound] at hcharge
+    rw [Real.log_mul (by positivity) hH'.ne'] at hcharge
+    have hMbound := hypersurface_large_height_degree_bound hn hd hM
+      B L H (hypersurfaceNormalizedError n) T hL hH hT
+      (by simpa only [Nat.cast_add, Nat.cast_one, hnR] using le_of_not_ge hsmall)
+      (by simpa only [Nat.cast_add, Nat.cast_one] using hposition)
+      (by
+        unfold NormalizedRankComparison at hc ⊢
+        refine le_trans ?_ hc
+        apply mul_le_mul_of_nonneg_left _ (by positivity)
+        simp only [hypersurfaceNormalizedError, Nat.cast_add, Nat.cast_one]
+        linarith [mul_le_mul_of_nonneg_left hcharge (show 0 ≤ (n + 1 : ℝ) by positivity)])
+    exact (show (M : ℝ) ≤ A * D by simpa only [A, D, positionedLargeFactor, Nat.cast_add, Nat.cast_one] using hMbound).trans
+      (le_add_of_nonneg_left (by positivity))
 end
 end CCDN

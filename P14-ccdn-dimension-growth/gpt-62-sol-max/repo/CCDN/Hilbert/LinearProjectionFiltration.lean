@@ -6,6 +6,7 @@ Authors: Jason Davies
 module
 
 public import CCDN.Hilbert.FilteredIntersection
+import CCDN.ForMathlib.MvPolynomial
 import Mathlib.LinearAlgebra.Dimension.StrongRankCondition
 import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
 
@@ -19,30 +20,28 @@ open MvPolynomial
 
 /-- Substituting polynomials of total degree at most `m` multiplies the total degree by at most `m`.
 -/
-lemma aeval_totalDegree_le {K σ τ : Type*} [Field K] [Fintype σ]
+lemma aeval_totalDegree_le {K σ τ : Type*} [CommSemiring K]
     (a : σ → MvPolynomial τ K) {m : ℕ} (ha : ∀ i, (a i).totalDegree ≤ m)
-    (f : MvPolynomial σ K) : (aeval a f).totalDegree ≤ m * f.totalDegree := by
-  classical
-  conv_lhs => rw [f.as_sum, map_sum]
-  apply totalDegree_finsetSum_le
-  intro e he
-  rw [aeval_monomial]
-  change (C (f.coeff e) * e.prod (fun i k => a i ^ k)).totalDegree ≤ _
-  apply (totalDegree_mul _ _).trans
-  rw [totalDegree_C, zero_add, Finsupp.prod_fintype _ _ (by simp)]
-  calc
-    _ ≤ ∑ i, (a i ^ e i).totalDegree := totalDegree_finsetProd _ _
-    _ ≤ ∑ i, e i * m := Finset.sum_le_sum (fun i _ =>
-      (totalDegree_pow _ _).trans (Nat.mul_le_mul_left _ (ha i)))
-    _ = m * e.sum (fun _ k => k) := by
-      rw [← Finset.sum_mul, Finsupp.sum_fintype _ _ (by simp), Nat.mul_comm]
-    _ ≤ _ := Nat.mul_le_mul_left m (le_totalDegree he)
+    (f : MvPolynomial σ K) : (aeval a f).totalDegree ≤ m * f.totalDegree :=
+  eval₂Hom_totalDegree_le_mul (RingHom.id K) a ha f
 
 /-- The map from projection coordinates to the original coordinate ring. -/
 def projectionCoordinateMap {K σ τ : Type*} [Field K]
     (I : Ideal (MvPolynomial τ K)) (a : σ → MvPolynomial τ K) :
     MvPolynomial σ K →ₐ[K] (MvPolynomial τ K ⧸ I) :=
   (Ideal.Quotient.mkₐ K I).comp (aeval a)
+
+@[simp] lemma projectionCoordinateMap_X {K σ τ : Type*} [Field K]
+    (I : Ideal (MvPolynomial τ K)) (a : σ → MvPolynomial τ K) (i : σ) :
+    projectionCoordinateMap I a (X i) = Ideal.Quotient.mk I (a i) := by
+  simp [projectionCoordinateMap]
+
+lemma projectionCoordinateMap_eq_zero_iff {K σ τ : Type*} [Field K]
+    {I : Ideal (MvPolynomial τ K)} {a : σ → MvPolynomial τ K} {f g : MvPolynomial σ K}
+    (hker : RingHom.ker (projectionCoordinateMap I a) = Ideal.span {f}) :
+    projectionCoordinateMap I a g = 0 ↔ f ∣ g := by
+  change g ∈ RingHom.ker (projectionCoordinateMap I a) ↔ _
+  rw [hker, Ideal.mem_span_singleton]
 
 /-- A linear coordinate substitution maps polynomials of total degree at most `M` into the filtered
 piece of degree `M` of the coordinate ring. -/
@@ -51,10 +50,17 @@ lemma projectionCoordinateMap_filtered {K σ τ : Type*} [Field K] [Fintype σ]
     (ha : ∀ i, (a i).totalDegree ≤ 1) {M : ℕ}
     (f : MvPolynomial σ K) (hf : f.totalDegree ≤ M) :
     projectionCoordinateMap I a f ∈ filteredCoordinateSpace I M := by
-  apply Submodule.mem_map.mpr
-  refine ⟨aeval a f, ?_, rfl⟩
-  rw [mem_restrictTotalDegree]
-  exact (aeval_totalDegree_le a ha f).trans (by simpa using hf)
+  exact mem_filteredCoordinateSpace.mpr ⟨aeval a f,
+    (aeval_totalDegree_le a ha f).trans (by simpa using hf), rfl⟩
+
+lemma projectionKerLift_filtered {K σ τ : Type*} [Field K] [Fintype σ]
+    (I : Ideal (MvPolynomial τ K)) (a : σ → MvPolynomial τ K)
+    (ha : ∀ i, (a i).totalDegree ≤ 1) {M : ℕ}
+    {v : MvPolynomial σ K ⧸ RingHom.ker (projectionCoordinateMap I a)}
+    (hv : v ∈ filteredCoordinateSpace (RingHom.ker (projectionCoordinateMap I a)) M) :
+    Ideal.kerLiftAlg (projectionCoordinateMap I a) v ∈ filteredCoordinateSpace I M := by
+  obtain ⟨p, hp, rfl⟩ := mem_filteredCoordinateSpace.mp hv
+  exact projectionCoordinateMap_filtered I a ha p hp
 
 /-- Linear projection cannot increase any filtered coordinate-ring dimension. -/
 theorem linear_projection_filtered_finrank_le {K σ τ : Type*} [Field K]
@@ -66,19 +72,10 @@ theorem linear_projection_filtered_finrank_le {K σ τ : Type*} [Field K]
   let ψ := projectionCoordinateMap I a
   let φ := Ideal.kerLiftAlg ψ
   let V := filteredCoordinateSpace (RingHom.ker ψ) M
-  have hmem (v : V) : φ v.val ∈ filteredCoordinateSpace I M := by
-    obtain ⟨f, hf, he⟩ := Submodule.mem_map.mp v.property
-    change (Ideal.Quotient.mk (RingHom.ker ψ)) f = v.val at he
-    rw [← he]
-    exact projectionCoordinateMap_filtered I a ha f ((mem_restrictTotalDegree _ _ _).mp hf)
-  let T : V →ₗ[K] filteredCoordinateSpace I M :=
-    (φ.toLinearMap.comp V.subtype).codRestrict _ hmem
-  have hi : Function.Injective T := by
-    intro x y h
-    apply Subtype.ext
-    apply Ideal.kerLiftAlg_injective ψ
-    exact congrArg Subtype.val h
-  exact LinearMap.finrank_le_finrank_of_injective hi
+  let L := (φ.toLinearMap.comp V.subtype).codRestrict _
+    (fun v => projectionKerLift_filtered I a ha v.property)
+  exact LinearMap.finrank_le_finrank_of_injective (f := L)
+    (fun _ _ h => Subtype.ext (Ideal.kerLiftAlg_injective ψ (congrArg Subtype.val h)))
 
 end
 end CCDN

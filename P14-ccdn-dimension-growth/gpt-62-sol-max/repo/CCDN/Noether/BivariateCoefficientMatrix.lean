@@ -31,28 +31,31 @@ def bivariateGridPolynomial (R : Type*) [CommRing R] (d : ℕ) :
   map_smul' a v := by
     simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply]
     rw [Finset.smul_sum]
-    apply Finset.sum_congr rfl
-    intro i _
-    simp only [smul_monomial, smul_eq_mul]
+    simp [smul_monomial]
+
+section
+
+variable {R : Type*} [CommRing R]
+include R
 
 /-- The coefficient with outer exponent `i` and inner exponent `j` of the polynomial with grid
 coefficients `v` is `v (i, j)`. -/
-lemma bivariateGridPolynomial_coeff {R : Type*} [CommRing R] {d : ℕ}
+lemma bivariateGridPolynomial_coeff {d : ℕ}
     (v : BivariateGrid d → R) (i j : Fin d) :
     ((bivariateGridPolynomial R d v).coeff i.val).coeff j.val = v (i,j) := by
   classical
   simp [bivariateGridPolynomial, coeff_monomial, Fintype.sum_prod_type, Fin.val_inj]
 
-private lemma bivariateGridPolynomial_injective {R : Type*} [CommRing R] (d : ℕ) :
+private lemma bivariateGridPolynomial_injective (d : ℕ) :
     Function.Injective (bivariateGridPolynomial R d) := by
   intro v w h
   funext i
   have hh := congrArg (fun p : R[X][X] => (p.coeff i.1.val).coeff i.2.val) h
-  simpa only [bivariateGridPolynomial_coeff] using hh
+  simpa [bivariateGridPolynomial_coeff] using hh
 
 /-- The polynomial with coefficients `v` on the grid `BivariateGrid d` has outer degree less than
 `d`. -/
-lemma bivariateGridPolynomial_degree_lt {R : Type*} [CommRing R] {d : ℕ}
+lemma bivariateGridPolynomial_degree_lt {d : ℕ}
     (v : BivariateGrid d → R) : (bivariateGridPolynomial R d v).degree < d := by
   classical
   rw [degree_lt_iff_coeff_zero]
@@ -62,6 +65,8 @@ lemma bivariateGridPolynomial_degree_lt {R : Type*} [CommRing R] {d : ℕ}
   intro i _
   rw [coeff_monomial, ite_eq_right]
   omega
+
+end
 
 /-- Decode the two blocks of the unknown coefficient vector. -/
 def closedFormPair (R : Type*) [CommRing R] (d : ℕ) :
@@ -97,11 +102,7 @@ def closedFormOperator {R : Type*} [CommRing R] (f : R[X][X]) :
     simp only [Prod.fst_add, Prod.snd_add, map_add, add_mul]
     ring
   map_smul' a u := by
-    change (bivariateCoefficientDerivative R) (a • u.1) * f -
-      (a • u.1) * (bivariateCoefficientDerivative R) f -
-      (a • u.2).derivative * f + (a • u.2) * f.derivative = a • _
-    rw [(bivariateCoefficientDerivative R).map_smul]
-    simp only [derivative_smul, smul_mul_assoc, smul_sub, smul_add]
+    simp_all [smul_sub]
 
 /-- All polynomial coefficients as a linear map. -/
 def bivariateCoefficients (R : Type*) [CommRing R] : R[X][X] →ₗ[R] (ℕ × ℕ → R) where
@@ -123,19 +124,101 @@ def closedFormCoefficientMatrix {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X])
   LinearMap.toMatrix'
     ((bivariateCoefficients R).comp ((closedFormOperator f).comp (closedFormPair R d)))
 
-private lemma closedFormCoefficientMatrix_mulVec {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X])
-    (v : ClosedFormColumns d → R) :
+section
+
+variable {R : Type*} [CommRing R]
+
+private lemma coeff_monomial_mul_at (f : R[X]) (a : R) (n k : ℕ) :
+    (monomial n a * f).coeff k = if n ≤ k then a * f.coeff (k - n) else 0 := by
+  rw [← C_mul_X_pow_eq_monomial, mul_assoc, coeff_C_mul, coeff_X_pow_mul']
+  split_ifs <;> simp_all
+
+/-- The two terms in the monomial Wronskian use the same shifted coefficient. -/
+private lemma coeff_monomial_wronskian (f : R[X]) (a : R) (n k : ℕ) :
+    ((monomial n a).derivative * f - monomial n a * f.derivative).coeff k =
+      if n ≤ k + 1 then a * ((n : R) - (k + 1 - n : ℕ)) * f.coeff (k + 1 - n) else 0 := by
+  rw [coeff_sub, derivative_monomial, coeff_monomial_mul_at, coeff_monomial_mul_at]
+  by_cases hn : n = 0
+  · subst n
+    simp [coeff_derivative]
+    ring
+  by_cases hk : n ≤ k
+  · rw [ite_eq_left (by omega), ite_eq_left hk, ite_eq_left (by omega), coeff_derivative,
+      show k - (n - 1) = k + 1 - n by omega,
+      ← Nat.cast_succ]
+    simp only [Nat.succ_eq_add_one, show k - n + 1 = k + 1 - n by omega]
+    ring
+  by_cases he : n = k + 1
+  · subst n
+    simp [show ¬ k + 1 ≤ k by omega]
+  · rw [ite_eq_right (by omega), ite_eq_right hk, ite_eq_right (by omega), sub_zero]
+
+private lemma closedFormPair_single_inl {d : ℕ} (j : BivariateGrid d) :
+    closedFormPair R d (Pi.single (.inl j) 1) =
+      (monomial j.1.val (monomial j.2.val 1), 0) := by
+  classical
+  simp [closedFormPair, bivariateGridPolynomial, Pi.single_apply, apply_ite]
+
+private lemma closedFormPair_single_inr {d : ℕ} (j : BivariateGrid d) :
+    closedFormPair R d (Pi.single (.inr j) 1) =
+      (0, monomial j.1.val (monomial j.2.val 1)) := by
+  classical
+  simp [closedFormPair, bivariateGridPolynomial, Pi.single_apply, apply_ite]
+
+variable {d : ℕ} (f : R[X][X]) (i : ℕ × ℕ) (j : BivariateGrid d)
+
+/-- An inner-derivative column is a scalar multiple of a single shifted coefficient. -/
+lemma closedFormCoefficientMatrix_inl :
+    closedFormCoefficientMatrix d f i (.inl j) =
+      if j.1.val ≤ i.1 ∧ j.2.val ≤ i.2 + 1 then
+        ((j.2.val : R) - (i.2 + 1 - j.2.val : ℕ)) * ((f.coeff (i.1 - j.1.val)).coeff (i.2 + 1 - j.2.val))
+      else 0 := by
+  change ((closedFormOperator f (closedFormPair R d (Pi.single (.inl j) 1))).coeff i.1).coeff i.2 = _
+  simp only [closedFormPair_single_inl, closedFormOperator, LinearMap.coe_mk, AddHom.coe_mk,
+    map_zero, zero_mul, sub_zero, add_zero, bivariateCoefficientDerivative_monomial,
+    coeff_sub, coeff_monomial_mul_at]
+  by_cases h : j.1.val ≤ i.1
+  · simpa [h, derivative_monomial, coeff_bivariateCoefficientDerivative] using
+      coeff_monomial_wronskian (f.coeff (i.1 - j.1.val)) (1 : R) j.2.val i.2
+  · simp [h]
+
+/-- The corresponding outer-derivative column has the opposite sign. -/
+lemma closedFormCoefficientMatrix_inr :
+    closedFormCoefficientMatrix d f i (.inr j) =
+      if j.1.val ≤ i.1 + 1 ∧ j.2.val ≤ i.2 then
+        -(((j.1.val : R) - (i.1 + 1 - j.1.val : ℕ)) * ((f.coeff (i.1 + 1 - j.1.val)).coeff (i.2 - j.2.val)))
+      else 0 := by
+  change ((closedFormOperator f (closedFormPair R d (Pi.single (.inr j) 1))).coeff i.1).coeff i.2 = _
+  simp only [closedFormPair_single_inr, closedFormOperator, LinearMap.coe_mk, AddHom.coe_mk,
+    map_zero, zero_mul, sub_zero, zero_sub]
+  rw [← sub_eq_neg_add, ← neg_sub, coeff_neg, coeff_neg, coeff_monomial_wronskian]
+  by_cases h : j.1.val ≤ i.1 + 1
+  · simp only [h, ite_true, true_and]
+    rw [← C_eq_natCast, ← C_eq_natCast, ← map_sub, monomial_mul_C, coeff_monomial_mul_at]
+    split_ifs <;> simp
+  · simp [h]
+
+end
+
+section
+
+variable {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X])
+  (v : ClosedFormColumns d → R)
+include R d f v
+
+private lemma closedFormCoefficientMatrix_mulVec :
     closedFormCoefficientMatrix d f *ᵥ v =
       bivariateCoefficients R (closedFormOperator f (closedFormPair R d v)) := by
   exact congrArg (fun u => u v) (Matrix.toLin'_toMatrix' _)
 
 /-- Matrix kernel membership is precisely the polynomial closed-form equation. -/
-theorem closedFormCoefficientMatrix_kernel {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X])
-    (v : ClosedFormColumns d → R) :
+theorem closedFormCoefficientMatrix_kernel :
     closedFormCoefficientMatrix d f *ᵥ v = 0 ↔
       closedFormOperator f (closedFormPair R d v) = 0 := by
   rw [closedFormCoefficientMatrix_mulVec]
-  exact (bivariateCoefficients_injective.eq_iff' (map_zero _))
+  exact bivariateCoefficients_injective.eq_iff' (map_zero _)
+
+end
 
 end
 end CCDN

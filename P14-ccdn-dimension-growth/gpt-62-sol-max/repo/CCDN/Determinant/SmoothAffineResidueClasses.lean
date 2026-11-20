@@ -41,14 +41,10 @@ private theorem smoothAffineResidue_card_le {n p : ℕ} [Fact p.Prime]
   · have hempty : IsEmpty (SmoothAffineResidue f p) := by
       refine ⟨fun a => ?_⟩
       obtain ⟨j, hj⟩ := a.property.2
-      change eval a.val (pderiv j g) ≠ 0 at hj
-      simp only [hg, map_zero] at hj
-      exact hj rfl
-    let := hempty
-    simp only [Fintype.card_of_isEmpty]
-    omega
+      aesop
+    simp
   · let φ : SmoothAffineResidue f p → {a : Fin (n + 1) → ZMod p // eval a g = 0} :=
-      fun a => ⟨a.val, by simpa only [g, eval_map] using a.property.1⟩
+      fun a => ⟨a.val, by simpa [g, eval_map] using a.property.1⟩
     have hφ : Function.Injective φ := by
       intro a b h
       apply Subtype.ext
@@ -63,7 +59,7 @@ private theorem smoothAffineResidue_card_le {n p : ℕ} [Fact p.Prime]
     have hbound := ((Nat.mul_le_mul_right p hcard).trans hsz).trans
       (Nat.mul_le_mul_right (p ^ (n + 1)) hdeg)
     rw [pow_succ, ← Nat.mul_assoc] at hbound
-    exact le_of_mul_le_mul_right hbound (Fact.out : p.Prime).pos
+    exact le_of_mul_le_mul_right hbound (Nat.Prime.pos Fact.out)
 
 /-- A choice, for each prime `p` in `P`, of a nonsingular `𝔽_p`-point of `f mod p`. -/
 def SmoothAffineResidueFamily {n : ℕ} (f : MvPolynomial (Fin n) ℤ) (P : Finset ℕ) :=
@@ -78,7 +74,7 @@ theorem smoothAffineResidueFamily_card_le {n : ℕ}
       f.totalDegree ^ P.card * (∏ p ∈ P, p) ^ n := by
   classical
   let (p : P) : Fact p.val.Prime := ⟨hP p.val p.property⟩
-  let (p : P) : NeZero p.val := ⟨(hP p.val p.property).ne_zero⟩
+  
   let : Fintype (SmoothAffineResidueFamily f P) := Pi.instFintype
   rw [Nat.card_eq_fintype_card]
   change Fintype.card ((p : P) → SmoothAffineResidue f p.val) ≤ _
@@ -98,26 +94,30 @@ def smoothResidueIntegerLift {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
     {P : Finset ℕ} (r : SmoothAffineResidueFamily f P) : ℕ → IntPoint n :=
   fun p j => if hp : p ∈ P then ((r ⟨p, hp⟩).val j).val else 0
 
-private lemma smoothResidueIntegerLift_cast {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
-    {P : Finset ℕ} (r : SmoothAffineResidueFamily f P) (p : P) [NeZero p.val] (j : Fin n) :
+section
+
+variable {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
+  {P : Finset ℕ} (r : SmoothAffineResidueFamily f P)
+include n f P r
+
+private lemma smoothResidueIntegerLift_cast (p : P) [NeZero p.val] (j : Fin n) :
     (smoothResidueIntegerLift r p.val j : ZMod p.val) = (r p).val j := by
-  simp only [smoothResidueIntegerLift, dite_eq_left p.property, Int.cast_natCast,
-    ZMod.natCast_zmod_val]
+  simp [smoothResidueIntegerLift]
 
 /-- The reduction of `f` modulo `p ∈ P` vanishes at the lift of the residue point chosen by `r`. -/
-theorem smoothResidueIntegerLift_zero {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
-    {P : Finset ℕ} (r : SmoothAffineResidueFamily f P) (p : ℕ) [NeZero p] (hp : p ∈ P) :
+theorem smoothResidueIntegerLift_zero (p : ℕ) [NeZero p] (hp : p ∈ P) :
     eval₂ (Int.castRingHom (ZMod p)) (fun j => (smoothResidueIntegerLift r p j : ZMod p)) f =
       0 := by
-  simpa only [smoothResidueIntegerLift_cast r ⟨p, hp⟩] using (r ⟨p, hp⟩).property.1
+  simpa [smoothResidueIntegerLift_cast r ⟨p, hp⟩] using (r ⟨p, hp⟩).property.1
 
 /-- The lift of the residue point chosen by `r` modulo `p ∈ P` is a nonsingular point of `f mod p`.
 -/
-theorem smoothResidueIntegerLift_smooth {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
-    {P : Finset ℕ} (r : SmoothAffineResidueFamily f P) (p : ℕ) [NeZero p] (hp : p ∈ P) :
+theorem smoothResidueIntegerLift_smooth (p : ℕ) [NeZero p] (hp : p ∈ P) :
     ∃ j, eval (fun i => (smoothResidueIntegerLift r p i : ZMod p))
       (pderiv j (map (Int.castRingHom (ZMod p)) f)) ≠ 0 := by
   simpa only [smoothResidueIntegerLift_cast r ⟨p, hp⟩] using (r ⟨p, hp⟩).property.2
+
+end
 
 /-- The family of residue points obtained by reducing an integer zero `x` of `f` modulo each prime
 in `P` at which it is nonsingular. -/
@@ -131,7 +131,7 @@ def smoothResidueFamilyOfPoint {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
     · have h := congrArg (Int.castRingHom (ZMod p.val)) hxf
       rw [map_eval, map_zero, eval_map] at h
       exact h
-    · exact hs p.val p.property⟩
+    grind⟩
 
 /-- An integer zero `x` of `f` is congruent modulo each `p ∈ P` to the integer lift of its own
 residue family. -/

@@ -53,8 +53,7 @@ lemma integer_generators_approximate_mod {σ : Type*} {p N : ℕ} (f : MvPolynom
     intro k
     induction k with
     | zero =>
-      intro _ u
-      exact ⟨fun _ _ => 0, fun _ _ _ => by simp only [pow_zero, one_dvd]⟩
+      simp
     | succ k ih =>
       intro hk u
       obtain ⟨c, h, v, w, hv, he⟩ := hrep u
@@ -75,23 +74,7 @@ lemma integer_generators_approximate_mod {σ : Type*} {p N : ℕ} (f : MvPolynom
         ((pow_dvd_pow (p : ℤ) hk).trans (dvd_mul_of_dvd_left hfx _))
         ((pow_dvd_pow (p : ℤ) hk).trans hvdiv))
       simpa only [pow_succ, mul_comm (p : ℤ)] using mul_dvd_mul_left (p : ℤ) hbdiv
-  exact hprec N le_rfl u
-
-/-- For a plane equation of multiplicity `μ` at the origin modulo `p`, a family of at most `μ`
-integer homogeneous generators in each degree approximates every polynomial modulo `p^N` at all
-zeros of `f` modulo `p^N` divisible by `p`, with one choice of coefficients for all such zeros.
-This permits normalization of projective points modulo prime powers. -/
-theorem exists_singular_plane_approximation_mod {p μ : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 2) ℤ)
-    (hf : map (Int.castRingHom (ZMod p)) f ∈ idealOfVars (Fin 2) (ZMod p) ^ μ)
-    (hμ : homogeneousComponent μ (map (Int.castRingHom (ZMod p)) f) ≠ 0) :
-    ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → MvPolynomial (Fin 2) ℤ),
-      (∀ k, r k ≤ μ) ∧ (∀ k j, (g k j).IsHomogeneous k) ∧
-      ∀ N u, ∃ c : (k : Fin N) → Fin (r k.val) → ℤ, ∀ x : Fin 2 → ℤ,
-        (p : ℤ) ^ N ∣ eval x f → (∀ j, (p : ℤ) ∣ x j) →
-        (p : ℤ) ^ N ∣ eval x u - ∑ k : Fin N, ∑ j, c k j * eval x (g k.val j) := by
-  obtain ⟨r, g, hr, hg, hrep⟩ := exists_integer_origin_generators f hf hμ
-  exact ⟨r, g, hr, hg, fun N u => integer_generators_approximate_mod f r g (hrep N) u⟩
+  tauto
 
 end
 end CCDN

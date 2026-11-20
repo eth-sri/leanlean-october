@@ -28,45 +28,25 @@ private theorem prime_separator_lifts_independent {K σ ι : Type*} [Field K]
     LinearIndependent K (fun t : Sigma κ =>
       (Ideal.Quotient.mkₐ K I) (a t.1 * v t.1 t.2)) := by
   classical
-  let φ (i : ι) : (MvPolynomial σ K ⧸ I) →ₐ[K] (MvPolynomial σ K ⧸ P i) :=
-    Ideal.Quotient.liftₐ I (Ideal.Quotient.mkₐ K (P i))
-      (fun p hp => Ideal.Quotient.eq_zero_iff_mem.mpr (hIP i hp))
-  have hφ (i : ι) (p : MvPolynomial σ K) :
-      φ i ((Ideal.Quotient.mkₐ K I) p) = (Ideal.Quotient.mkₐ K (P i)) p := by
-    exact congrArg (fun ψ : MvPolynomial σ K →ₐ[K] (MvPolynomial σ K ⧸ P i) => ψ p)
-      (Ideal.Quotient.liftₐ_comp I (Ideal.Quotient.mkₐ K (P i))
-        (fun p hp => Ideal.Quotient.eq_zero_iff_mem.mpr (hIP i hp)))
   rw [Fintype.linearIndependent_iff]
-  intro c hc t
-  let i := t.1
-  have : (P i).IsPrime := hprime i
-  have hane : (Ideal.Quotient.mkₐ K (P i)) (a i) ≠ 0 :=
-    fun h => ha i (Ideal.Quotient.eq_zero_iff_mem.mp h)
-  have hz (j : ι) (hji : j ≠ i) :
-      (Ideal.Quotient.mkₐ K (P i)) (a j) = 0 :=
-    Ideal.Quotient.eq_zero_iff_mem.mpr (hsep j i hji)
-  have he := congrArg (φ i) hc
-  simp only [map_sum, map_smul, hφ, map_mul, map_zero, Fintype.sum_sigma] at he
-  have houter :
-      (∑ j, ∑ k, c ⟨j, k⟩ •
-        ((Ideal.Quotient.mkₐ K (P i)) (a j) * (Ideal.Quotient.mkₐ K (P i)) (v j k))) =
-      ∑ k, c ⟨i, k⟩ •
-        ((Ideal.Quotient.mkₐ K (P i)) (a i) * (Ideal.Quotient.mkₐ K (P i)) (v i k)) := by
-    apply Finset.sum_eq_single i
-    · intro j _ hji
-      simp only [hz j hji, zero_mul, smul_zero, Finset.sum_const_zero]
-    · simp
-  rw [houter] at he
-  have he' : (Ideal.Quotient.mkₐ K (P i)) (a i) *
-      (∑ k, c ⟨i, k⟩ • (Ideal.Quotient.mkₐ K (P i)) (v i k)) = 0 := by
-    simpa only [Finset.mul_sum, mul_smul_comm] using he
-  have hsum := (mul_eq_zero.mp he').resolve_left hane
-  exact Fintype.linearIndependent_iff.mp (hv i) (fun k => c ⟨i, k⟩) hsum t.2
+  rintro c hc ⟨i, k⟩
+  let q := Ideal.Quotient.mkₐ K (P i)
+  have he := congrArg (Ideal.Quotient.factorₐ K (hIP i)) hc
+  simp only [map_sum, map_smul, map_zero, map_mul, ← AlgHom.comp_apply, Ideal.Quotient.factorₐ_comp_mk,
+    Fintype.sum_sigma] at he
+  rw [Finset.sum_eq_single i] at he
+  · have hqi : q (a i) ≠ 0 := fun h => ha i (Ideal.Quotient.eq_zero_iff_mem.mp h)
+    have hs : q (a i) * ∑ j, c ⟨i, j⟩ • q (v i j) = 0 := by
+      simpa only [Finset.mul_sum, mul_smul_comm] using he
+    exact Fintype.linearIndependent_iff.mp (hv i) _ ((mul_eq_zero.mp hs).resolve_left hqi) k
+  · intro j _ hj
+    simp [Ideal.Quotient.eq_zero_iff_mem.mpr (hsep j i hj)]
+  · simp
 
 /-- The sum of the component filtration dimensions injects into the
 original coordinate filtration after a fixed shift independent of N. -/
-private theorem prime_components_filtered_rank_lower {K σ ι : Type*} [Field K]
-    [Finite σ] [Fintype ι] [DecidableEq ι]
+theorem prime_components_filtered_rank_lower {K σ ι : Type*} [Field K]
+    [Finite σ] [Fintype ι]
     (I : Ideal (MvPolynomial σ K)) (P : ι → Ideal (MvPolynomial σ K))
     (hprime : ∀ i, (P i).IsPrime) (hIP : ∀ i, I ≤ P i)
     (hanti : ∀ i j, P i ≤ P j → i = j) :
@@ -83,31 +63,14 @@ private theorem prime_components_filtered_rank_lower {K σ ι : Type*} [Field K]
   have hlin := prime_separator_lifts_independent κ I P hprime hIP a ha hsep v hvlin
   have hmem (t : Sigma κ) : (Ideal.Quotient.mkₐ K I) (a t.1 * v t.1 t.2) ∈
       filteredCoordinateSpace I (D + N) := by
-    apply Submodule.mem_map.mpr
-    refine ⟨a t.1 * v t.1 t.2, ?_, rfl⟩
-    rw [mem_restrictTotalDegree]
+    refine mem_filteredCoordinateSpace.mpr ⟨a t.1 * v t.1 t.2, ?_, rfl⟩
     exact (totalDegree_mul _ _).trans (Nat.add_le_add
       (Finset.le_sup (f := fun i => (a i).totalDegree) (Finset.mem_univ t.1)) (hvdeg t.1 t.2))
   let w : Sigma κ → filteredCoordinateSpace I (D + N) :=
     fun t => ⟨(Ideal.Quotient.mkₐ K I) (a t.1 * v t.1 t.2), hmem t⟩
   have hw : LinearIndependent K w :=
     LinearIndependent.of_comp (filteredCoordinateSpace I (D + N)).subtype hlin
-  have hh := hw.fintype_card_le_finrank
-  simpa only [Fintype.card_sigma, Fintype.card_fin, κ] using hh
-
-/-- The dimension comparison for the canonical finite set of minimal primes,
-with constructed separators. -/
-theorem minimalPrimeComponents_filtered_rank_lower {K σ : Type*} [Field K] [Finite σ]
-    (I : Ideal (MvPolynomial σ K)) :
-    ∃ D : ℕ, ∀ N : ℕ,
-      (∑ P : minimalPrimeComponents I, Module.finrank K (filteredCoordinateSpace P.val N)) ≤
-        Module.finrank K (filteredCoordinateSpace I (D + N)) := by
-  classical
-  apply prime_components_filtered_rank_lower I (fun P : minimalPrimeComponents I => P.val)
-  · exact fun P => minimalPrimeComponents_isPrime P.property
-  · exact fun P => le_minimalPrimeComponents P.property
-  · intro P Q hPQ
-    exact Subtype.ext (minimalPrimeComponents_eq_of_le P.property Q.property hPQ)
+  simpa only [Fintype.card_sigma, Fintype.card_fin, κ] using hw.fintype_card_le_finrank
 
 end
 end CCDN

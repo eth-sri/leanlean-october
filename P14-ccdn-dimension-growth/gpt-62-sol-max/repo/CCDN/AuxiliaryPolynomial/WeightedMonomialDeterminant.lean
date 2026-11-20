@@ -36,13 +36,17 @@ private theorem abs_det_le_factorial_mul_column_bounds {s : ℕ}
       rfl
     _ ≤ ∑ _σ : Equiv.Perm (Fin s), ∏ j, b j := by
       apply sum_le_sum
-      intro σ _
-      exact prod_le_prod₀ (fun j _ => abs_nonneg _) (fun j _ => hA (σ j) j)
+      grind [Finset.prod_le_prod₀]
     _ = _ := by simp [Fintype.card_perm]
 
-private theorem weighted_evaluation_det_bound {n s : ℕ}
-    (mon : Fin s → (Fin n →₀ ℕ)) (z : Fin s → (Fin n → ℤ))
-    {B : ℝ} (hB : 1 ≤ B) (hz : ∀ i, InBox (z i) B) :
+section
+
+variable {n s : ℕ}
+  (mon : Fin s → (Fin n →₀ ℕ)) (z : Fin s → (Fin n → ℤ))
+  {B : ℝ} (hB : 1 ≤ B) (hz : ∀ i, InBox (z i) B)
+include n s mon z B hB hz
+
+private theorem weighted_evaluation_det_bound :
     |((evaluationMatrix mon z).det : ℝ)| ≤
       (s.factorial : ℝ) * B ^ (∑ j, Finsupp.degree (mon j)) := by
   have hh := abs_det_le_factorial_mul_column_bounds
@@ -57,9 +61,7 @@ private theorem weighted_evaluation_det_bound {n s : ℕ}
 
 /-- A nonzero integer determinant has the sharp sum-of-degrees logarithmic
 upper bound. -/
-theorem weighted_evaluation_det_log_bound {n s : ℕ}
-    (mon : Fin s → (Fin n →₀ ℕ)) (z : Fin s → (Fin n → ℤ))
-    {B : ℝ} (hB : 1 ≤ B) (hz : ∀ i, InBox (z i) B)
+theorem weighted_evaluation_det_log_bound
     (hne : (evaluationMatrix mon z).det ≠ 0) :
     Real.log |((evaluationMatrix mon z).det : ℝ)| ≤
       Real.log (s.factorial : ℝ) +
@@ -71,6 +73,8 @@ theorem weighted_evaluation_det_log_bound {n s : ℕ}
   have hlog := Real.log_le_log hdet (weighted_evaluation_det_bound mon z hB hz)
   rw [Real.log_mul hfac.ne' (pow_pos hB0 _).ne', Real.log_pow] at hlog
   simpa only [Nat.cast_sum] using hlog
+
+end
 
 end
 end CCDN

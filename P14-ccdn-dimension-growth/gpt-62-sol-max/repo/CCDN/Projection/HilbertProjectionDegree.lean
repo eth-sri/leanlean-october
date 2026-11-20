@@ -22,9 +22,13 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private theorem hypersurface_projection_equation_degree_le
-    {K τ : Type*} [Field K] [Fintype τ] [LinearOrder τ] {n : ℕ}
-    (I : Ideal (MvPolynomial τ K)) (hI : I ≠ ⊤)
+section
+
+variable {K τ : Type*} [Field K] [Fintype τ] [LinearOrder τ] {n : ℕ}
+  (I : Ideal (MvPolynomial τ K))
+include K τ n I
+
+private theorem hypersurface_projection_equation_degree_le (hI : I ≠ ⊤)
     (a : Fin (n + 1) → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1)
     (d : ℕ) (hdimdeg : HasAffineDimensionDegree I n d)
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f ≠ 0) (hfdeg : 0 < f.totalDegree)
@@ -40,27 +44,26 @@ private theorem hypersurface_projection_equation_degree_le
       rw [← hker]
       exact linear_projection_filtered_finrank_le I a ha N)
   rw [principal_filteredHilbertPolynomial_leadingCoeff f hf hfdeg, hdimdeg.leadingCoeff_eq] at hh
-  have hfac : (0 : ℚ) < n.factorial := by positivity
-  exact_mod_cast (div_le_div_iff_of_pos_right hfac).mp hh
+  exact_mod_cast (div_le_div_iff_of_pos_right (by positivity)).mp hh
 
 /-- The equation and its degree bound are constructed from the projection. -/
-theorem exists_hypersurface_projection_equation_degree_le
-    {K τ : Type*} [Field K] [Fintype τ] [LinearOrder τ] {n : ℕ}
-    (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
+theorem exists_hypersurface_projection_equation_degree_le [I.IsPrime]
     (a : Fin (n + 2) → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1)
     (d : ℕ) (hdimdeg : HasProjectiveDimensionDegree I n d)
     (b : Fin (n + 1) → MvPolynomial (Fin (n + 2)) K)
     (hb : ∀ i, (b i).totalDegree ≤ 1)
     (hi : AlgebraicIndependent K (fun i => projectionCoordinateMap I a (b i))) :
     ∃ f : MvPolynomial (Fin (n + 2)) K, Irreducible f ∧
-      0 < f.totalDegree ∧ f.totalDegree ≤ d ∧
+      f.totalDegree ≤ d ∧
       RingHom.ker (projectionCoordinateMap I a) = Ideal.span {f} := by
   obtain ⟨f, hf, hker⟩ := exists_hypersurface_projection_equation I a ha
     (by rw [hdimdeg.natDegree_eq]; omega) b hb hi
-  have hfdeg : 0 < f.totalDegree :=
+  have hfdeg :=
     totalDegree_pos_of_ne_zero_of_not_isUnit hf.ne_zero hf.not_isUnit
-  exact ⟨f, hf, hfdeg, hypersurface_projection_equation_degree_le I
+  exact ⟨f, hf, hypersurface_projection_equation_degree_le I
     (Ideal.IsPrime.ne_top ‹I.IsPrime›) a ha d hdimdeg f hf.ne_zero hfdeg hker, hker⟩
+
+end
 
 end
 end CCDN

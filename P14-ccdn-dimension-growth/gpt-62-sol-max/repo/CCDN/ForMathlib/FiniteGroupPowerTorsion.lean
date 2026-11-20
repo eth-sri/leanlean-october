@@ -67,19 +67,11 @@ theorem card_powMonoidHom_ker_le_mul [Finite G] [Finite H]
     fun x ↦ ⟨⟨x.val.val, by
       have hx := congrArg Subtype.val x.property
       exact hx⟩, by
-        apply Subtype.ext
-        exact x.val.property⟩
+        aesop⟩
   have hj : Function.Injective j := by
     intro x y h
-    apply Subtype.ext
-    apply Subtype.ext
-    exact congrArg (fun z : (powMonoidHom n : φ.ker →* φ.ker).ker ↦ z.val.val) h
-  have hk := Nat.card_le_card_of_injective j hj
-  have hr := Subgroup.card_le_card_group ψ.range
-  calc
-    Nat.card (powMonoidHom n : G →* G).ker = Nat.card ψ.ker * Nat.card ψ.range :=
-      (Subgroup.card_ker_mul_card_range ψ).symm
-    _ ≤ _ := Nat.mul_le_mul hk hr
+    grind
+  exact have hk := Nat.card_le_card_of_injective j hj; have hr := Subgroup.card_le_card_group ψ.range; Trans.trans (Eq.symm (Subgroup.card_ker_mul_card_range ψ)) (Nat.mul_le_mul hk hr)
 
 /-- A subgroup covered by finitely many cosets of the image of `φ` has `m`-torsion bounded by the
 `m`-torsion of the source times the number of cosets. -/
@@ -91,7 +83,7 @@ theorem card_powMonoidHom_ker_le_of_coset_cover
     Nat.card (powMonoidHom m : S →* S).ker ≤
       Nat.card (powMonoidHom m : A →* A).ker * Fintype.card ι := by
   let π := QuotientGroup.mk' φ.range
-  let ψ : S →* G ⧸ φ.range := π.comp S.subtype
+  let ψ := π.comp S.subtype
   let δ := ψ.rangeRestrict
   have hφ (a : A) : π (φ a) = 1 :=
     (QuotientGroup.eq_one_iff _).mpr ⟨a, rfl⟩
@@ -101,18 +93,16 @@ theorem card_powMonoidHom_ker_le_of_coset_cover
     refine ⟨i, ?_⟩
     rw [← hx]
     change π x.val = _
-    rw [he, map_mul, hφ, one_mul]
+    grind
   choose i hi using hex
   have hinj : Function.Injective i := by
     intro x y h
-    apply Subtype.ext
-    rw [hi x, hi y, h]
+    grind
   have hrange : Nat.card ψ.range ≤ Fintype.card ι := by
     simpa only [Nat.card_eq_fintype_card] using Nat.card_le_card_of_injective i hinj
   let j : δ.ker →* φ.range :=
     { toFun := fun x ↦ ⟨x.val.val, by
         have hh := congrArg Subtype.val x.property
-        change QuotientGroup.mk x.val.val = 1 at hh
         exact (QuotientGroup.eq_one_iff _).mp hh⟩
       map_one' := Subtype.ext rfl
       map_mul' := fun _ _ ↦ Subtype.ext rfl }
@@ -126,13 +116,9 @@ theorem card_powMonoidHom_ker_le_of_coset_cover
     apply Subtype.ext
     apply hj
     exact congrArg Subtype.val h
-  have hker :
-      Nat.card (powMonoidHom m : δ.ker →* δ.ker).ker ≤
-        Nat.card (powMonoidHom m : A →* A).ker :=
+  have hker :=
     (Nat.card_le_card_of_injective _ hjtor).trans
       (card_powMonoidHom_ker_le_of_surjective φ.rangeRestrict φ.rangeRestrict_surjective m)
-  have hr : Nat.card (powMonoidHom m : ψ.range →* ψ.range).ker ≤ Fintype.card ι :=
-    (Subgroup.card_le_card_group _).trans hrange
-  exact (card_powMonoidHom_ker_le_mul δ m).trans (Nat.mul_le_mul hker hr)
+  exact (card_powMonoidHom_ker_le_mul δ m).trans (Nat.mul_le_mul hker ((Subgroup.card_le_card_group _).trans hrange))
 
 end MonoidHom
