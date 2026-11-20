@@ -24,26 +24,22 @@ open scoped Classical
 
 variable {N M : ℕ}
 
-theorem prob_cover (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
+section
+
+variable (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
+
+theorem prob_cover
     (E1 E2 E3 : Set (RCConfig N M)) (h : ∀ A, A ∈ E1 ∨ A ∈ E2 ∨ A ∈ E3) :
     1 ≤ torusRCProbability hN hM q E1 + torusRCProbability hN hM q E2 +
       torusRCProbability hN hM q E3 := by
-  rw [torusRCProbability_eq_sum, torusRCProbability_eq_sum, torusRCProbability_eq_sum,
-    ← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
-  calc (1 : ℝ) = ∑ A, torusRCMass hN hM q A := (sum_torusRCMass hN hM q).symm
-    _ ≤ _ := by
-      apply Finset.sum_le_sum
-      intro A _
-      have hm := (torusRCMass_pos hN hM q A).le
-      have n1 : 0 ≤ E1.indicator (torusRCMass hN hM q) A := Set.indicator_nonneg (fun _ _ => (torusRCMass_pos hN hM q _).le) A
-      have n2 : 0 ≤ E2.indicator (torusRCMass hN hM q) A := Set.indicator_nonneg (fun _ _ => (torusRCMass_pos hN hM q _).le) A
-      have n3 : 0 ≤ E3.indicator (torusRCMass hN hM q) A := Set.indicator_nonneg (fun _ _ => (torusRCMass_pos hN hM q _).le) A
-      rcases h A with h1 | h2 | h3
-      · rw [Set.indicator_of_mem h1]; linarith
-      · rw [Set.indicator_of_mem h2]; linarith
-      · rw [Set.indicator_of_mem h3]; linarith
+  have hsub : Set.univ ⊆ (E1 ∪ E2) ∪ E3 :=
+    fun A _ => by simpa only [Set.mem_union, or_assoc] using h A
+  rw [← torusRCProbability_univ hN hM q]
+  exact (torusRCProbability_mono hN hM q hsub).trans
+    ((MeasureTheory.measureReal_union_le _ _).trans
+      (add_le_add (MeasureTheory.measureReal_union_le _ _) le_rfl))
 
-theorem prob_dual_le (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
+theorem prob_dual_le
     (E : Set (RCConfig N M)) :
     torusRCProbability hN hM q {A | translatedDualConfig A ∈ E} ≤
       q.val ^ 2 * torusRCProbability hN hM q E := by
@@ -52,6 +48,8 @@ theorem prob_dual_le (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
   rw [div_le_iff₀ hq] at h
   change torusRCProbability hN hM q (translatedDualConfig ⁻¹' E) ≤ _
   linarith
+
+end
 
 /-- The core estimate, for suitable parameters of the board. -/
 theorem core_bound (q : Set.Ici (1 : ℝ)) (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
@@ -64,13 +62,11 @@ theorem core_bound (q : Set.Ici (1 : ℝ)) (hN : Even N) (hM : Even M) (hNp : 0 
   set Q : Rect := ⟨0, 0, s, s⟩ with hQ
   have hg : Q.Geo n n := ⟨by simp [hQ]; omega, hn, hn, by simp [hQ]; omega⟩
   have hsq : Q.w = Q.h := rfl
-  have hodd : Q.w % 2 = 1 := hs
+  have hodd := hs
   have hQN : Q.w + 1 ≤ N := by simp [hQ]; omega
   have hQM : Q.h + 1 ≤ M := by simp [hQ]; omega
   set p₀ := torusRCProbability hN hM q {A | vCross hNp hMp n 0 0 A} with hp₀
   have hq1 : 1 ≤ q.val := q.property
-  have hq0 : 0 < q.val := lt_of_lt_of_le zero_lt_one hq1
-  -- crossing event
   have hF : torusRCProbability hN hM q {A | Q.crossEv n n (boardOf Q hNp hMp A)} ≤ p₀ := by
     have hsub : {A | Q.crossEv n n (boardOf Q hNp hMp A)} ⊆ {A | vCross hNp hMp n 0 ρF A} := by
       intro A hA
@@ -79,44 +75,33 @@ theorem core_bound (q : Set.Ici (1 : ℝ)) (hN : Even N) (hM : Even M) (hNp : 0 
       · simp [hQ]; omega
     exact (torusRCProbability_mono hN hM q hsub).trans
       (prob_vCross_le hN hM hNp hMp q n 0 ρF (by simpa using hρFe))
-  -- the barriers
-  have hB : torusRCProbability hN hM q {A | ¬ Q.barB n (boardOf Q hNp hMp A)} ≤ q.val ^ 2 * p₀ := by
-    have hsub : {A | ¬ Q.barB n (boardOf Q hNp hMp A)} ⊆
-        {A | translatedDualConfig A ∈ {A | vCross hNp hMp n 0 0 A}} := by
-      intro A hA
-      exact notBarB_to_vCross hNp hMp Q A hg n hn 0 0 ⟨by simp [hQ], by simp [hQ]; omega⟩
-        (by simp [hQ]) (by simp [hQ]) hA
-    exact (torusRCProbability_mono hN hM q hsub).trans (prob_dual_le hN hM q _)
-  have hT : torusRCProbability hN hM q {A | ¬ Q.barT n (boardOf Q hNp hMp A)} ≤ q.val ^ 2 * p₀ := by
-    have hsub : {A | ¬ Q.barT n (boardOf Q hNp hMp A)} ⊆
-        {A | translatedDualConfig A ∈ {A | vCross hNp hMp n aT ((s : ℤ) - n) A}} := by
-      intro A hA
-      refine notBarT_to_vCross hNp hMp Q A hg n hn aT ((s : ℤ) - n)
-        ⟨by simp [hQ]; omega, by simp [hQ]; omega⟩ (by simp [hQ]) (by simp [hQ]) hA
-    calc _ ≤ _ := torusRCProbability_mono hN hM q hsub
-      _ ≤ q.val ^ 2 * torusRCProbability hN hM q {A | vCross hNp hMp n aT ((s : ℤ) - n) A} :=
-          prob_dual_le hN hM q _
-      _ ≤ q.val ^ 2 * p₀ := by
-          apply mul_le_mul_of_nonneg_left _ (sq_nonneg _)
-          exact prob_vCross_le hN hM hNp hMp q n aT ((s : ℤ) - n) hρTe
+  have hbnd (side : Side) (a ρ : ℤ) (he : Even (a + ρ))
+      (hcol : a ≤ Q.x0 + 1 ∧ Q.x0 + Q.w + 1 ≤ a + 3 * (n : ℤ))
+      (hlo : (Q.endBoard side n).y0 ≤ ρ) (hhi : ρ + n ≤ (Q.endBoard side n).y0 + n) :
+      torusRCProbability hN hM q {A | ¬ Q.hasBarrier side n (boardOf Q hNp hMp A)} ≤ q.val ^ 2 * p₀ := by
+    have hsub : {A | ¬ Q.hasBarrier side n (boardOf Q hNp hMp A)} ⊆
+        {A | translatedDualConfig A ∈ {A | vCross hNp hMp n a ρ A}} :=
+      fun A hA => notBar_to_vCross hNp hMp Q A side (by simp [hQ]; omega) hn a ρ hcol hlo hhi hA
+    exact ((torusRCProbability_mono hN hM q hsub).trans (prob_dual_le hN hM q _)).trans
+      (mul_le_mul_of_nonneg_left (prob_vCross_le hN hM hNp hMp q n a ρ he) (sq_nonneg _))
+  have hB := hbnd .lower 0 0 (by decide)
+    ⟨by simp [hQ], by simp [hQ]; omega⟩ (by simp [Rect.endBoard, hQ]) (by simp [Rect.endBoard, hQ])
+  have hT := hbnd .upper aT ((s : ℤ) - n) hρTe
+    ⟨by simp [hQ]; omega, by simp [hQ]; omega⟩ (by simp [Rect.endBoard, hQ]) (by simp [Rect.endBoard, hQ])
   -- covering
   have hcov := prob_cover hN hM q {A | Q.barAll n n (boardOf Q hNp hMp A)}
-    {A | ¬ Q.barB n (boardOf Q hNp hMp A)} {A | ¬ Q.barT n (boardOf Q hNp hMp A)} (by
+    {A | ¬ Q.hasBarrier .lower n (boardOf Q hNp hMp A)} {A | ¬ Q.hasBarrier .upper n (boardOf Q hNp hMp A)} (by
       intro A
-      by_cases h1 : Q.barB n (boardOf Q hNp hMp A)
-      · by_cases h2 : Q.barT n (boardOf Q hNp hMp A)
-        · exact Or.inl ⟨h1, h2⟩
-        · exact Or.inr (Or.inr h2)
-      · exact Or.inr (Or.inl h1))
+      simp only [Set.mem_setOf_eq, Rect.barAll]
+      tauto)
   -- the board estimate
   have hbl := torus_bl q hN hM hNp hMp hN4 hM4 Q hg hQN hQM
-  have hκ : 1 / (1 + q.val) ≤ (FK.measure Q.pG (critParams q) Q.sepBC Q.crossP).toReal :=
+  have hκ :=
     Rect.crossing_ge Q q hsq hodd (by simp [hQ]; omega)
   set κ := (FK.measure Q.pG (critParams q) Q.sepBC Q.crossP).toReal with hκd
   set Pbar := torusRCProbability hN hM q {A | Q.barAll n n (boardOf Q hNp hMp A)} with hPbar
   have hPbar : 1 - 2 * (q.val ^ 2 * p₀) ≤ Pbar := by linarith
-  have hmain : κ * Pbar ≤ p₀ := hbl.trans hF
-  have hPnn : 0 ≤ Pbar := torusRCProbability_nonneg hN hM q _
+  have hmain := hbl.trans hF
   have hp0nn : 0 ≤ p₀ := torusRCProbability_nonneg hN hM q _
   -- final algebra
   have hc0 : 0 < 1 / (1 + q.val) := by positivity
@@ -128,7 +113,7 @@ theorem core_bound (q : Set.Ici (1 : ℝ)) (hN : Even N) (hM : Even M) (hNp : 0 
       calc _ ≤ κ * (1 - 2 * (q.val ^ 2 * p₀)) :=
             mul_le_mul_of_nonneg_right hκ hcase.le
         _ ≤ κ * Pbar := mul_le_mul_of_nonneg_left hPbar (hc0.le.trans hκ)
-    have h2 : 1 / (1 + q.val) * (1 - 2 * (q.val ^ 2 * p₀)) ≤ p₀ := h1.trans hmain
+    have h2 := h1.trans hmain
     have h3 : 1 - 2 * (q.val ^ 2 * p₀) ≤ (1 + q.val) * p₀ := by
       have := mul_le_mul_of_nonneg_left h2 (show (0 : ℝ) ≤ 1 + q.val by positivity)
       field_simp at this
@@ -145,26 +130,18 @@ theorem one_bound (q : Set.Ici (1 : ℝ)) (hN : Even N) (hM : Even M) (hNp : 0 <
   rw [Finset.card_singleton, pow_one] at h
   refine h.trans (torusRCProbability_mono hN hM q ?_)
   intro A hA
-  have hA' : A (periodicCoordinate hNp 1, periodicCoordinate hMp 1) = true :=
+  have hA' :=
     hA _ (Finset.mem_singleton_self _)
   let u : RotatedVertex := ⟨(0, 0), ⟨0, rfl⟩⟩
   let v : RotatedVertex := ⟨(1, 1), ⟨1, rfl⟩⟩
   have hadj : (liftedStripGraph hNp hMp A 0 (0 + 3 * ((1 : ℕ) : ℤ))).Adj u v := by
-    refine ⟨?_, ?_, ⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
-    · change |(0 : ℤ) - 1| = 1 ∧ |(0 : ℤ) - 1| = 1
-      norm_num
-    · change A (periodicCoordinate hNp (max 0 1), periodicCoordinate hMp (max 0 1)) = true
-      simpa using hA'
-    all_goals norm_num
+    norm_cast
   refine ⟨u, v, rfl, rfl, SimpleGraph.Walk.cons hadj SimpleGraph.Walk.nil, ?_⟩
-  intro z hz
-  simp only [SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil, List.mem_cons, List.not_mem_nil, or_false] at hz
-  rcases hz with rfl | rfl <;> constructor <;> norm_num [u, v]
+  norm_num
 
 /-- **Equation (3.19)**: the crossing estimate for the torus. -/
 theorem h319_proved (q : Set.Ici (1 : ℝ)) : h319 q := by
   have hq1 : 1 ≤ q.val := q.property
-  have hq0 : 0 < q.val := lt_of_lt_of_le zero_lt_one hq1
   refine ⟨min (fkOpenEnergy (torusRCBridgeParameters q)) (1 / (1 + q.val + 2 * q.val ^ 2)),
     lt_min (fkOpenEnergy_pos _) (by positivity), ?_⟩
   intro N M n hN hM hN4 hM4 hn h3N h3M hNpos hMpos

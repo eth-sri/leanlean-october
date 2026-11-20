@@ -44,7 +44,6 @@ theorem isUpperSet_crossP : IsUpperSet R.crossP := by
 
 theorem wcell_mem_pcells (hw : 0 < R.w) (j : ℤ) (hj1 : R.y0 ≤ j) (hj2 : j ≤ R.y0 + R.h) :
     R.wcell j ∈ R.pcells := by
-  have hw' : (0 : ℤ) < R.w := by exact_mod_cast hw
   rw [mem_pcells, mem_cells]
   have := R.wcell_primal j
   have h2 := R.wcell_row j
@@ -59,11 +58,11 @@ theorem togBC_wireStep (hw : 0 < R.w) :
   · intro a b hab
     rcases hab with h | h | h
     · exact Or.inl h
-    · exact Or.inr ⟨Or.inl h.1, Or.inl h.2⟩
-    · exact Or.inr ⟨Or.inr h.1, Or.inr h.2⟩
+    · tauto
+    tauto
   · intro x y hxy
     rcases hxy with h | ⟨hx, hy⟩
-    · exact Or.inl (Or.inl h)
+    · simp_all
     · refine Or.inr ⟨?_, ?_⟩ <;> [skip; skip]
       · rcases hx with hx | hx
         · left; exact Or.inr (Or.inl ⟨hx, R.wcell_row _⟩)
@@ -72,18 +71,20 @@ theorem togBC_wireStep (hw : 0 < R.w) :
         · left; exact Or.inr (Or.inl ⟨hy, R.wcell_row _⟩)
         · right; exact Or.inr (Or.inr ⟨hy, R.wcell_row _⟩)
 
+section
 
-theorem rotIso_symm_val (hsq : R.w = R.h) (hodd : R.w % 2 = 1) (a : R.pcells) :
+variable (hsq : R.w = R.h) (hodd : R.w % 2 = 1)
+
+theorem rotIso_symm_val (a : R.pcells) :
     (((R.rotIso hsq hodd).symm a : R.dcells) : Cell) = R.rotInv a.1 := rfl
 
-theorem rotIso_val (hsq : R.w = R.h) (hodd : R.w % 2 = 1) (z : R.dcells) :
+theorem rotIso_val (z : R.dcells) :
     (((R.rotIso hsq hodd) z : R.pcells) : Cell) = R.rot z.1 := rfl
 
-theorem boundaryIso_partition (hsq : R.w = R.h) (hodd : R.w % 2 = 1) :
+theorem boundaryIso_partition :
     (FK.boundaryConditionIso (R.rotIso hsq hodd) R.dualBC).partition = R.togBC.partition := by
   apply Setoid.ext
   intro a b
-  have hw : (R.w : ℤ) = R.h := by exact_mod_cast hsq
   have key : ∀ c : R.pcells,
       ((R.rotIso hsq hodd).symm c).1.1 = R.x0 ∨ ((R.rotIso hsq hodd).symm c).1.1 = R.x0 + R.w ↔
         (c.1.2 = R.y0 ∨ c.1.2 = R.y0 + R.h) := by
@@ -103,31 +104,29 @@ theorem boundaryIso_partition (hsq : R.w = R.h) (hodd : R.w % 2 = 1) :
     · exact Or.inl (congrArg _ h)
     · exact Or.inr ⟨(key a).2 h1, (key b).2 h2⟩
 
-theorem crossD_eq_preimage (hsq : R.w = R.h) (hodd : R.w % 2 = 1) :
+theorem crossD_eq_preimage :
     R.crossD = (FK.configurationIso (R.rotIso hsq hodd)) ⁻¹' R.crossP := by
-  have hw : (R.w : ℤ) = R.h := by exact_mod_cast hsq
   ext D
   simp only [Set.mem_preimage, crossD, crossP, Set.mem_ofPred_eq]
   constructor
   · rintro ⟨z, z', hz, hz', h⟩
     refine ⟨(R.rotIso hsq hodd) z', (R.rotIso hsq hodd) z, ?_, ?_, ?_⟩
-    · rw [rotIso_val]; unfold rot; dsimp only; omega
-    · rw [rotIso_val]; unfold rot; dsimp only; omega
+    · rw [rotIso_val]; unfold rot; simp_all
+    · rw [rotIso_val]; unfold rot; simp_all
     · rw [FK.actualConnected_configurationIso]
       exact h.symm
   · rintro ⟨u, v, hu, hv, h⟩
     refine ⟨(R.rotIso hsq hodd).symm v, (R.rotIso hsq hodd).symm u, ?_, ?_, ?_⟩
-    · rw [rotIso_symm_val]; unfold rotInv; dsimp only; omega
-    · rw [rotIso_symm_val]; unfold rotInv; dsimp only; omega
+    · rw [rotIso_symm_val]; unfold rotInv; simp_all
+    · rw [rotIso_symm_val]; unfold rotInv; simp_all
     · have := (FK.actualConnected_configurationIso (R.rotIso hsq hodd) D
         ((R.rotIso hsq hodd).symm v) ((R.rotIso hsq hodd).symm u)).1
       rw [RelIso.apply_symm_apply, RelIso.apply_symm_apply] at this
       exact this h.symm
 
-attribute [local instance] FK.configurationMeasurableSpace
+end
 
-noncomputable local instance pEdgeFintype' : Fintype R.pG.edgeSet := Fintype.ofFinite _
-noncomputable local instance dEdgeFintype' : Fintype R.dG.edgeSet := Fintype.ofFinite _
+attribute [local instance] FK.configurationMeasurableSpace
 
 theorem measure_dual_crossD (hsq : R.w = R.h) (hodd : R.w % 2 = 1) (q : Set.Ici (1 : ℝ)) :
     FK.measure R.dG (critParams q) R.dualBC R.crossD =
@@ -142,14 +141,12 @@ theorem measure_dual_crossD (hsq : R.w = R.h) (hodd : R.w % 2 = 1) (q : Set.Ici 
   rw [← MeasureTheory.Measure.map_apply measurable_from_top MeasurableSpace.measurableSet_top]
   exact congrArg (fun μ : MeasureTheory.Measure (FK.Configuration R.pG) => μ R.crossP) hmap
 
-
 theorem crossP_connected_wcells (hw : 0 < R.w) :
     ∀ C ∈ R.crossP, (FK.componentSetoid R.pG R.sepBC C).r
       ⟨R.wcell R.y0, R.wcell_mem_pcells hw R.y0 le_rfl (by omega)⟩
       ⟨R.wcell (R.y0 + R.h), R.wcell_mem_pcells hw _ (by omega) le_rfl⟩ := by
   intro C ⟨u, v, hu, hv, h⟩
-  have s := FK.componentSetoid R.pG R.sepBC C
-  have h1 : (FK.componentSetoid R.pG R.sepBC C).r u v :=
+  have h1 :=
     FK.actualConnected_component R.pG R.sepBC C h
   have h2 : (FK.componentSetoid R.pG R.sepBC C).r
       ⟨R.wcell R.y0, R.wcell_mem_pcells hw R.y0 le_rfl (by omega)⟩ u :=
@@ -187,7 +184,6 @@ theorem crossing_ge (q : Set.Ici (1 : ℝ)) (hs : R.w = R.h) (hodd : R.w % 2 = 1
     (R.crossP_connected_wcells hw)
   rw [critParams_val] at h3
   rw [h1] at h2
-  have h4 : 1 - x ≤ q.val * x := h2.trans h3
   rw [div_le_iff₀ (by linarith)]
   nlinarith
 

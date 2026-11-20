@@ -41,7 +41,7 @@ def allOpen (F : Finset squareLattice.edgeSet) : Set LatticeConfiguration :=
 theorem allOpen_isClopen (F : Finset squareLattice.edgeSet) : IsClopen (allOpen F) := by
   classical
   induction F using Finset.induction_on with
-  | empty => rw [allOpen_empty]; exact isClopen_univ
+  | empty => simpa using isClopen_univ
   | insert e F he ih =>
     rw [allOpen_insert]
     exact ((isClopen_discrete ({true} : Set Bool)).preimage (continuous_apply e)).inter ih

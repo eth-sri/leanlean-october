@@ -39,25 +39,16 @@ theorem rectangleOpenGraph_toggleEdge_seam (hN : Even N) (hM : Even M)
   constructor
   · rintro ⟨⟨e, he, hx, hy, hp⟩, hne⟩
     have hev : e ≠ v := by
-      intro heq
-      subst e
-      rcases hseam with hzero | hzero
-      · exact hx hzero
-      · exact hy hzero
+      grind
     have hA : A e = true := by
-      rw [toggleEdge_away A hev] at he
-      exact he
+      simpa [toggleEdge_away A hev] using he
     exact ⟨⟨e, hA, hx, hy, hp⟩, hne⟩
   · rintro ⟨⟨e, he, hx, hy, hp⟩, hne⟩
     have hev : e ≠ v := by
-      intro heq
-      subst e
-      rcases hseam with hzero | hzero
-      · exact hx hzero
-      · exact hy hzero
+      grind
     have htoggle : toggleEdge A v e = A e := by
       rw [toggleEdge_away A hev]
-    exact ⟨⟨e, by simpa [htoggle] using he, hx, hy, hp⟩, hne⟩
+    exact ⟨⟨e, by simp_all, hx, hy, hp⟩, hne⟩
 
 /-- The cut graphs before and after a seam toggle are canonically isomorphic. -/
 def rectangleOpenGraph_toggleEdge_iso (hN : Even N) (hM : Even M)
@@ -93,14 +84,7 @@ theorem rectangleCrossingComponents_card_toggleEdge_seam
       rcases Finset.mem_filter.mp hd with ⟨_, u, w, hu, hw, hdu, hreach⟩
       subst c
       refine Finset.mem_filter.mpr ⟨Finset.mem_univ _, u, w, hu, hw, ?_, ?_⟩
-      · calc
-          (rectangleOpenGraph hN hM A).connectedComponentMk u =
-              (rectangleOpenGraph hN hM A).connectedComponentMk (φ u) :=
-                congrArg _ (by rfl)
-          _ = e ((rectangleOpenGraph hN hM (toggleEdge A v)).connectedComponentMk u) := by
-                symm
-                simp [e]
-          _ = e d := congrArg e hdu
+      · aesop
       · have hreachA : (rectangleOpenGraph hN hM A).Reachable u w := by
           rw [← rectangleOpenGraph_toggleEdge_seam hN hM A v hseam]
           exact hreach
@@ -115,19 +99,11 @@ theorem rectangleCrossingComponents_card_toggleEdge_seam
           exact hreach
       have hdu :
           (rectangleOpenGraph hN hM (toggleEdge A v)).connectedComponentMk u = d := by
-        calc
-          (rectangleOpenGraph hN hM (toggleEdge A v)).connectedComponentMk u =
-              (rectangleOpenGraph hN hM (toggleEdge A v)).connectedComponentMk (φ.symm u) :=
-                congrArg _ (by rfl)
-          _ = e.symm ((rectangleOpenGraph hN hM A).connectedComponentMk u) := by
-                symm
-                simp [e]
-          _ = e.symm c := congrArg e.symm hcu
+        aesop
       refine Finset.mem_map.mpr ⟨d,
         Finset.mem_filter.mpr ⟨Finset.mem_univ _, u, w, hu, hw, hdu, hreach'⟩, ?_⟩
       simp [d]
-  have hcard := congrArg Finset.card hmap
-  simpa [Finset.card_map] using hcard
+  grind
 
 /-- The event that at least `k` distinct cut-rectangle components cross
 horizontally. -/

@@ -33,9 +33,7 @@ noncomputable def closedWalkPair (hN : Even N) (hM : Even M)
     change diamondBoundary hN hM (openRCConfig N M) _ = 0
     rw [map_add,boundary_fullChainExtension,boundary_fullChainExtension,
       IndexedWalk.boundary_chain,IndexedWalk.boundary_chain]
-    ext w
-    simp only [Pi.add_apply,Pi.sub_apply,Pi.zero_apply]
-    ring⟩
+    simp⟩
 
 /-- Every bottom-to-top cylinder path admits a conserved closure using only
 seam edges for its return. -/
@@ -49,6 +47,6 @@ theorem exists_seamClosure (hN : Even N) (hM : Even M)
           fullDiamondChainExtension (seamOnlyConfig N M) s.chain := by
   obtain ⟨s⟩ := exists_indexedWalk_of_reachable hN hM _
     (top_bottom_seam_reachable hN hM hNp hMp u v hu hv)
-  exact ⟨s,rfl⟩
+  solve_by_elim
 
 end PottsDiscontinuity.TorusExploration

@@ -19,10 +19,6 @@ def DependsOn (E : Set Edge) (A : Set LatticeConfiguration) : Prop :=
 def IsCylinder (A : Set LatticeConfiguration) : Prop :=
   ∃ F : Finset Edge, DependsOn (F : Set Edge) A
 
-theorem DependsOn.mono {E F : Set Edge} {A : Set LatticeConfiguration}
-    (h : DependsOn E A) (hEF : E ⊆ F) : DependsOn F A :=
-  fun ω η hω => h ω η (fun e he => hω e (hEF he))
-
 theorem DependsOn.compl {E : Set Edge} {A : Set LatticeConfiguration}
     (h : DependsOn E A) : DependsOn E Aᶜ := by
   intro ω η hω
@@ -49,17 +45,14 @@ theorem isCylinder_coordinate (e : Edge) (b : Bool) :
     IsCylinder {ω : LatticeConfiguration | ω e = b} := by
   refine ⟨{e}, ?_⟩
   intro ω η hω
-  change ω e = b ↔ η e = b
-  rw [hω e (by simp)]
+  simp_all
 
 theorem isCylinder_allOpen (F : Finset Edge) :
     IsCylinder (LatticeConfiguration.allOpen F) := by
   refine ⟨F, ?_⟩
   intro ω η hω
   change (∀ e ∈ F, ω e = true) ↔ (∀ e ∈ F, η e = true)
-  constructor <;> intro h e he
-  · rw [← hω e he]; exact h e he
-  · rw [hω e he]; exact h e he
+  grind
 
 theorem IsCylinder.isClopen {A : Set LatticeConfiguration} (hA : IsCylinder A) :
     IsClopen A := by
@@ -73,34 +66,18 @@ theorem IsCylinder.isClopen {A : Set LatticeConfiguration} (hA : IsCylinder A) :
     ext ω
     exact hF ω (extend (restrict ω)) (by
       intro e he
-      have he' : e ∈ F := he
-      simp [extend, restrict, he'])
+      aesop)
   rw [heq]
   exact (isClopen_discrete (extend ⁻¹' A)).preimage hcont
 
 theorem IsCylinder.measurableSet {A : Set LatticeConfiguration} (hA : IsCylinder A) :
     MeasurableSet A := hA.isClopen.isOpen.measurableSet
 
-/-- The two actual finite-box laws, with their respective exterior extensions. -/
-noncomputable def boxMeasure (θ : Parameters) (i : Fin 2) (c : LatticeVertex) (r : ℕ) :
-    ProbabilityMeasure LatticeConfiguration :=
-  if i = 0 then boxProbabilityMeasure θ c r else wiredBoxProbabilityMeasure θ c r
-
-@[simp] theorem boxMeasure_free (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
-    boxMeasure θ 0 c r = boxProbabilityMeasure θ c r := by simp [boxMeasure]
-
-@[simp] theorem boxMeasure_wired (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
-    boxMeasure θ 1 c r = wiredBoxProbabilityMeasure θ c r := by simp [boxMeasure]
-
 theorem boxMeasure_tendsto (θ : Parameters) (i : Fin 2)
     (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ) :
     Tendsto (fun n => boxMeasure θ i (0, 0) n) atTop
-      (𝓝 (⟨μ, hμ.1⟩ : ProbabilityMeasure LatticeConfiguration)) := by
-  fin_cases i
-  · simpa using free_box_exhaustion θ μ hμ (fun _ => (0, 0)) (fun n => n)
-      origin_latticeBox_nested origin_latticeBox_exhaustive
-  · simpa using wired_box_exhaustion θ μ hμ (fun _ => (0, 0)) (fun n => n)
-      origin_latticeBox_nested origin_latticeBox_exhaustive
+      (𝓝 (⟨μ, hμ.1⟩ : ProbabilityMeasure LatticeConfiguration)) :=
+  (box_exhaustion θ i μ hμ).atOrigin
 
 theorem tendsto_cylinder_probability (θ : Parameters) (i : Fin 2)
     (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ)

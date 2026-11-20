@@ -25,9 +25,7 @@ theorem bind_toMeasure_real {α β : Type*} [Fintype α] [MeasurableSpace β] (p
     (f : α → PMF β) (S : Set β) (hS : MeasurableSet S) :
     ((p.bind f).toMeasure S).toReal = ∑ a, (p a).toReal * ((f a).toMeasure S).toReal := by
   rw [PMF.toMeasure_bind_apply _ _ _ hS, tsum_fintype, ENNReal.toReal_sum]
-  · apply Finset.sum_congr rfl
-    intro a _
-    rw [ENNReal.toReal_mul]
+  · simp
   · intro a _
     exact ENNReal.mul_ne_top (PMF.apply_ne_top p a) (MeasureTheory.measure_ne_top _ _)
 
@@ -74,8 +72,7 @@ theorem torus_event_image {N M : ℕ} (hN : Even N) (hM : Even M) (hNp : 0 < N) 
   ext C
   simp only [Set.mem_image, Set.mem_ofPred_eq]
   constructor
-  · rintro ⟨A, hA, rfl⟩
-    rwa [openMedials_restr_torus Q hN hM hNp hMp hN4 hM4 hQN hQM A]
+  · grind [openMedials_restr_torus]
   · intro hC
     obtain ⟨A, rfl⟩ := (torusRCConfigurationEquiv hN hM hN4 hM4).surjective C
     refine ⟨A, ?_, rfl⟩

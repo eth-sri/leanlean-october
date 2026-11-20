@@ -16,7 +16,6 @@ open FK MeasureTheory Filter Topology
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
-local instance finiteFreeComparisonEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 
 /-- The free law on any finite embedded graph is dominated by the actual free
 limit on the increasing cylinder events of its original edges. -/
@@ -34,9 +33,7 @@ theorem finiteFree_event_le_freeLimit (θ : Parameters) (μ : Measure LatticeCon
     exact latticeBox_mono (0,0) (Finset.le_sup (f := R) (Finset.mem_univ v)) (hR v)
   obtain ⟨R,hR⟩ := hcontained
   let ν := Classical.choose (freeBoxLimit_existsUnique θ)
-  have hν := (Classical.choose_spec (freeBoxLimit_existsUnique θ)).1
-    (fun _ => (0,0)) (fun n => n) origin_latticeBox_nested origin_latticeBox_exhaustive
-  have ht := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hν
+  have ht := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto (CorrLength.selected_freeBox_tendsto θ)
     (embeddedCylinderEvent_isClopen G f hG E)
   have htr := (NNReal.continuous_coe.continuousAt.tendsto).comp ht
   rw [Duality.free_limit_eq_selected θ μ hμ]
@@ -46,7 +43,7 @@ theorem finiteFree_event_le_freeLimit (θ : Parameters) (μ : Measure LatticeCon
   filter_upwards [eventually_ge_atTop R] with n hn
   have hc := finiteFree_event_le_box G θ f hG n
     (fun v => latticeBox_mono (0,0) hn (hR v)) E hE
-  simpa only [Function.comp_apply,ProbabilityMeasure.measureReal_eq_coe_coeFn] using hc
+  simpa using hc
 
 /-- Actual connectivity in an arbitrary finite planar subgraph under free FK
 is bounded by the actual infinite-volume free two-point probability. -/

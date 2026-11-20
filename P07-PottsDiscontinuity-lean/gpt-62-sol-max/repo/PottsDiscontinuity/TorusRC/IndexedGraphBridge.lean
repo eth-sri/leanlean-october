@@ -1,7 +1,7 @@
 module
 
 public import PottsDiscontinuity.FK.PositiveAssociation
-public import PottsDiscontinuity.SixVertex.InfinityEndpointOrder
+public import PottsDiscontinuity.SixVertex.Rotate
 public import PottsDiscontinuity.TorusLoops.FiniteEnergy
 public import PottsDiscontinuity.TorusRC.IndexedFK
 
@@ -19,10 +19,7 @@ private theorem prv_ne_self_of_two_le {n : ℕ} (hn : 2 ≤ n) (i : Fin n) :
     prv i ≠ i := by
   intro h
   by_cases hi : i.val = 0
-  · have hp := PottsDiscontinuity.SixVertex.prv_val_zero i hi
-    have hv := congrArg Fin.val h
-    rw [hi] at hv
-    omega
+  · grind [PottsDiscontinuity.SixVertex.prv_val_zero]
   · have hp := PottsDiscontinuity.SixVertex.prv_val_of_pos i
       (Nat.pos_of_ne_zero hi)
     have hv := congrArg Fin.val h
@@ -46,41 +43,42 @@ private theorem prv_prv_ne_self_of_three_le {n : ℕ} (hn : 3 ≤ n) (i : Fin n)
     · have hprevzero : (prv i).val = 0 := by omega
       have hprevprev := PottsDiscontinuity.SixVertex.prv_val_zero
         (prv i) hprevzero
-      have hv := congrArg Fin.val h
       omega
     · have hprevpos : 0 < (prv i).val := by rw [hprev]; omega
       have hprevprev := PottsDiscontinuity.SixVertex.prv_val_of_pos
         (prv i) hprevpos
       have hv := congrArg Fin.val h
-      rw [hprevprev] at hv
-      rw [hprev] at hv
+      rw [hprevprev, hprev] at hv
       omega
 
 private theorem prv_injective {n : ℕ} (i j : Fin n) (h : prv i = prv j) : i = j := by
-  have hn := congrArg nxt h
-  simpa only [nxt, prv, Equiv.apply_symm_apply] using hn
+  grind [Equiv.apply_symm_apply]
 
-private theorem torusEndpointX0 (hN : Even N) (hM : Even M)
-    (v : Fin N × Fin M) :
+section
+
+variable
+  (hN : Even N) (hM : Even M)
+    (v : Fin N × Fin M)
+
+private theorem torusEndpointX0 :
     (faceEndpoint hN hM true v false).val.1 =
       if checker v then v.1 else prv v.1 := by
   cases hc : checker v <;> simp [faceEndpoint, faceEndpointRaw, hc]
 
-private theorem torusEndpointX1 (hN : Even N) (hM : Even M)
-    (v : Fin N × Fin M) :
+private theorem torusEndpointX1 :
     (faceEndpoint hN hM true v true).val.1 =
       if checker v then prv v.1 else v.1 := by
   cases hc : checker v <;> simp [faceEndpoint, faceEndpointRaw, hc]
 
-private theorem torusEndpointY0 (hN : Even N) (hM : Even M)
-    (v : Fin N × Fin M) :
+private theorem torusEndpointY0 :
     (faceEndpoint hN hM true v false).val.2 = v.2 := by
   cases hc : checker v <;> simp [faceEndpoint, faceEndpointRaw, hc]
 
-private theorem torusEndpointY1 (hN : Even N) (hM : Even M)
-    (v : Fin N × Fin M) :
+private theorem torusEndpointY1 :
     (faceEndpoint hN hM true v true).val.2 = prv v.2 := by
   cases hc : checker v <;> simp [faceEndpoint, faceEndpointRaw, hc]
+
+end
 
 private theorem torusEndpoints_ne (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (v : Fin N × Fin M) :
@@ -114,11 +112,9 @@ private theorem torusEndpointPair_injective (hN : Even N) (hM : Even M)
           _ = v.1 := h11x.symm
       exact (prv_prv_ne_self_of_three_le (by omega) v.1 hcycle).elim
     · have hcycle : prv (prv v.1) = v.1 := by
-        calc
-          prv (prv v.1) = prv w.1 := congrArg prv h11x
-          _ = v.1 := h00x.symm
+        simp_all
       exact (prv_prv_ne_self_of_three_le (by omega) v.1 hcycle).elim
-    · exact Prod.ext h00x h00y
+    grind
   · have h01x := congrArg (fun z : FaceVertex N M true => z.val.1) h01
     have h10x := congrArg (fun z : FaceVertex N M true => z.val.1) h10
     have h01y := congrArg (fun z : FaceVertex N M true => z.val.2) h01
@@ -128,24 +124,16 @@ private theorem torusEndpointPair_injective (hN : Even N) (hM : Even M)
     cases hv : checker v <;> cases hw : checker w <;>
       simp only [hv, hw, Bool.false_eq_true, ite_true, ite_false] at h01x h10x h01y h10y
     · have hcycle : prv (prv v.1) = v.1 := by
-        calc
-          prv (prv v.1) = prv w.1 := congrArg prv h01x
-          _ = v.1 := h10x.symm
+        simp_all
       exact (prv_prv_ne_self_of_three_le (by omega) v.1 hcycle).elim
     · have hcycle : prv (prv v.2) = v.2 := by
-        calc
-          prv (prv v.2) = prv w.2 := congrArg prv h10y
-          _ = v.2 := h01y.symm
+        simp_all
       exact (prv_prv_ne_self_of_three_le (by omega) v.2 hcycle).elim
     · have hcycle : prv (prv v.2) = v.2 := by
-        calc
-          prv (prv v.2) = prv w.2 := congrArg prv h10y
-          _ = v.2 := h01y.symm
+        simp_all
       exact (prv_prv_ne_self_of_three_le (by omega) v.2 hcycle).elim
     · have hcycle : prv (prv v.1) = v.1 := by
-        calc
-          prv (prv v.1) = prv w.1 := congrArg prv h10x
-          _ = v.1 := h01x.symm
+        simp_all
       exact (prv_prv_ne_self_of_three_le (by omega) v.1 hcycle).elim
 
 /-- The indexed medial site embeds as a simple edge of the primal diamond graph. -/
@@ -157,7 +145,6 @@ def torusIndexedEdgeEmbedding (hN : Even N) (hM : Even M)
     rw [fullDiamondGraph, diamondOpenGraph, SimpleGraph.edgeSet_fromEdgeSet]
     refine ⟨⟨v, rfl, rfl⟩, ?_⟩
     intro hd
-    simp only [Sym2.mem_diagSet, Sym2.mk_isDiag_iff] at hd
     exact torusEndpoints_ne hN hM hN4 v hd
   ⟩
   inj' := by
@@ -248,12 +235,10 @@ theorem simpleConfiguration_eq_torusRCConfigurationEquiv
         torusIndexedEdgeEmbedding hN hM hN4 hM4 v := by
       apply Subtype.ext
       exact hpair.symm
-    have : w = v := (torusIndexedEdgeEmbedding hN hM hN4 hM4).injective hwe
-    subst w
-    exact (mem_torusRCConfigurationEquiv hN hM hN4 hM4 A v).2 hw
+    aesop
   · intro he
     have hv := (mem_torusRCConfigurationEquiv hN hM hN4 hM4 A v).1 he
-    exact ⟨v, hv, rfl⟩
+    tauto
 
 noncomputable def torusRCFKParameters (q : Set.Ici (1 : ℝ)) : FK.Parameters :=
   ⟨q.val, q.property,
@@ -300,10 +285,8 @@ theorem torusRCWeight_eq_fk_weight (hN : Even N) (hM : Even M)
     omega
   have hclosed' : Nat.card (fullDiamondGraph hN hM).edgeSet - openCount A =
       closedCount A := by
-    rw [Nat.card_eq_fintype_card, htotal]
-    have hsplit := openCount_add_closedCount A
     omega
   rw [hcomp, hopen, hclosed']
-  simp [torusRCFKParameters, FK.edgeParameter]
+  rfl
 
 end PottsDiscontinuity.TorusRC

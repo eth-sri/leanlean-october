@@ -21,13 +21,13 @@ theorem conditioned_decreasing_event_le (q : FK.Parameters) (ξ : FK.BoundaryCon
     (hpos : 0 < (FK.measure G q ξ B).toReal) :
     (FK.measure G q ξ (S ∩ B)).toReal / (FK.measure G q ξ B).toReal ≤
       (FK.measure G q ξ S).toReal := by
-  have hc : IsUpperSet Bᶜ := hB.compl
+  have hc := hB.compl
   have hfkg := FK.measure_positive_association q ξ S Bᶜ hS hc
   have hsplit := measureReal_inter_add_sdiff (μ := FK.measure G q ξ)
     (s := S) (MeasurableSpace.measurableSet_top (s := Bᶜ))
   have hcompl := measureReal_compl (μ := FK.measure G q ξ)
     (MeasurableSpace.measurableSet_top (s := B))
-  have hdiff : S \ Bᶜ = S ∩ B := by ext x; simp
+  have hdiff : S \ Bᶜ = S ∩ B := by simp
   rw [hdiff] at hsplit
   simp only [Measure.real, measure_univ, ENNReal.toReal_one] at hcompl
   change (FK.measure G q ξ Bᶜ).toReal = 1 - (FK.measure G q ξ B).toReal at hcompl
@@ -49,13 +49,8 @@ theorem conditioned_squeeze_bounds {u c g b δ : ℝ}
     (hδ : 0 < δ) (hδb : δ ≤ b) (hgu : g ≤ u) (hcu : u ≤ c)
     (hsplit : u ≤ b * g + (1 - b) * c) :
     u - (c - u) / δ ≤ g ∧ g ≤ u := by
-  have hb0 : 0 < b := hδ.trans_le hδb
-  have h1 : b * (u - g) ≤ (1 - b) * (c - u) := by nlinarith
   have h2 : δ * (u - g) ≤ c - u := by
-    have ha := mul_le_mul_of_nonneg_right hδb (sub_nonneg.mpr hgu)
-    have hright : (1 - b) * (c - u) ≤ c - u := by
-      nlinarith [mul_nonneg hb0.le (sub_nonneg.mpr hcu)]
-    linarith
+    nlinarith
   constructor
   · have := (le_div_iff₀ hδ).mpr (by nlinarith : (u - g) * δ ≤ c - u)
     linarith

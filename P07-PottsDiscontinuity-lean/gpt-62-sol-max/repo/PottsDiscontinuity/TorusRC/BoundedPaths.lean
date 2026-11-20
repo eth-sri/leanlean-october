@@ -31,33 +31,12 @@ theorem liftedEdgeIndex_row_ne_zero (hNp : 0 < N) (hMp : 0 < M)
     have hd := huv.2
     have hne : u.val.2 ≠ v.val.2 := by
       intro heq
-      simp [heq] at hd
+      simp_all
     omega
   have hval := periodicCoordinate_val hMp (max u.val.2 v.val.2)
   rw [Int.emod_eq_of_lt hmax.le (max_lt hu.2 hv.2)] at hval
   change (periodicCoordinate hMp (max u.val.2 v.val.2)).val ≠ 0
   omega
-
-private theorem walk_rebuild_away_seam (hNp : 0 < N) (hMp : 0 < M)
-    (A B : RCConfig N M) (a b H : ℤ) (hH : H < (M : ℤ))
-    (hagree : ∀ e : Fin N × Fin M, e.2.val ≠ 0 → A e = B e)
-    {u v : RotatedVertex} (w : (liftedStripGraph hNp hMp A a b).Walk u v) :
-    (∀ z ∈ w.support, 0 ≤ z.val.2 ∧ z.val.2 ≤ H) →
-    ∃ w' : (liftedStripGraph hNp hMp B a b).Walk u v, w'.support = w.support := by
-  induction w with
-  | nil => exact fun _ => ⟨.nil,rfl⟩
-  | @cons u v z huv p ih =>
-    intro hw
-    have hu := hw u (by simp)
-    have hv := hw v (by simp)
-    have hidx := liftedEdgeIndex_row_ne_zero hNp hMp huv.1
-      ⟨hu.1,hu.2.trans_lt hH⟩ ⟨hv.1,hv.2.trans_lt hH⟩
-    have huvB : (liftedStripGraph hNp hMp B a b).Adj u v := by
-      refine ⟨huv.1,?_,huv.2.2⟩
-      rw [← hagree _ hidx]
-      exact huv.2.1
-    obtain ⟨p',hp'⟩ := ih (fun z hz => hw z (by simpa using List.mem_cons_of_mem u hz))
-    exact ⟨.cons huvB p',by simp [hp']⟩
 
 /-- Changing only the indexed seam edges leaves every bounded path below
 height M unchanged. This is the locality needed before closing the seam. -/
@@ -72,9 +51,18 @@ theorem liftedBoundedConnection_congr_away_seam (hNp : 0 < N) (hMp : 0 < M)
       (hconn : liftedBoundedConnection hNp hMp A a b lo hi u v) :
       liftedBoundedConnection hNp hMp B a b lo hi u v := by
     obtain ⟨w,hw⟩ := hconn
-    obtain ⟨w',hs⟩ := walk_rebuild_away_seam hNp hMp A B a b hi hhi heq w
-      (fun z hz => ⟨hlo.trans (hw z hz).1,(hw z hz).2⟩)
-    exact ⟨w',by simpa only [hs] using hw⟩
+    have hB : ∀ e, e ∈ w.edges → e ∈ (liftedStripGraph hNp hMp B a b).edgeSet := by
+      intro e
+      induction e using Sym2.ind with
+      | h x y =>
+        intro he
+        have h := w.adj_of_mem_edges he
+        have hx := hw x (w.fst_mem_support_of_mem_edges he)
+        have hy := hw y (w.snd_mem_support_of_mem_edges he)
+        have hi := liftedEdgeIndex_row_ne_zero hNp hMp h.1
+          ⟨hlo.trans hx.1, hx.2.trans_lt hhi⟩ ⟨hlo.trans hy.1, hy.2.trans_lt hhi⟩
+        exact ⟨h.1, heq _ hi ▸ h.2.1, h.2.2⟩
+    exact ⟨w.transfer _ hB, by simpa only [SimpleGraph.Walk.support_transfer] using hw⟩
   exact ⟨hforward A B hagree, hforward B A (fun e he => (hagree e he).symm)⟩
 
 /-- In particular, bounded connections are invariant under toggling any
@@ -87,6 +75,6 @@ theorem liftedBoundedConnection_toggle_seam (hNp : 0 < N) (hMp : 0 < M)
   apply liftedBoundedConnection_congr_away_seam hNp hMp A (toggleEdge A e)
     a b lo hi hlo hhi _ u v
   intro f hf
-  exact (toggleEdge_away A (show f ≠ e by intro h; subst f; exact hf he)).symm
+  exact (toggleEdge_away A (show f ≠ e by grind)).symm
 
 end PottsDiscontinuity.TorusRC

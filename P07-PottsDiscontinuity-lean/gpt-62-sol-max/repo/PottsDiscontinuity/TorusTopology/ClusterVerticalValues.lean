@@ -22,7 +22,8 @@ theorem sum_vertical_winding_at_cluster_zero
     (c : (diamondOpenGraph hN hM true A).ConnectedComponent) :
     (∑ q with loopPrimalCluster hN hM A q = c,
       loopVertical _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j q) = 0 := by
-  have he := loopDisplacementY_primal_sum hN hM A c
+  have he := loopDisplacement_primal_sum hN hM A true c
+  change (∑ q with loopPrimalCluster hN hM A q = c, loopDisplacementY hN hM A q) = 0 at he
   simp only [loopDisplacementY,loop_vertical_displacement _ _ _ j,
     Int.cast_mul,Int.cast_natCast] at he
   rw [← Finset.mul_sum] at he
@@ -38,23 +39,16 @@ lemma values_of_support_card_le_two {α : Type*} [DecidableEq α]
   by_cases hfr : f r = 0
   · exact Or.inl hfr
   by_cases heq : q = r
-  · exact Or.inr (Or.inl (heq ▸ rfl))
+  · simp_all
   have hp : ({q,r} : Finset α) ⊆ S.filter fun x => f x ≠ 0 := by
-    intro x hx
-    rcases Finset.mem_insert.1 hx with rfl | hx
-    · exact Finset.mem_filter.2 ⟨hq,hfq⟩
-    · have hxr := Finset.mem_singleton.1 hx
-      subst x
-      exact Finset.mem_filter.2 ⟨hr,hfr⟩
-  have hc : ({q,r} : Finset α).card = 2 := by simp [heq]
-  have he : S.filter (fun x => f x ≠ 0) = {q,r} :=
+    grind
+  have hc : ({q,r} : Finset α).card = 2 := by simp_all
+  have he :=
     (Finset.eq_of_subset_of_card_le hp (by omega)).symm
   have hsum' : ∑ x ∈ S.filter (fun x => f x ≠ 0), f x = 0 := by
     rw [Finset.sum_filter_ne_zero]
     exact hsum
-  rw [he] at hsum'
-  simp only [Finset.sum_pair heq] at hsum'
-  exact Or.inr (Or.inr (by omega))
+  grind
 
 /-- All nonzero vertical loop windings at a cluster are the same up to sign.
 Their common absolute value may exceed one, as required for helical classes. -/
@@ -79,7 +73,7 @@ theorem vertical_winding_values_at_cluster
     refine Finset.mem_filter.2 ⟨?_,(Finset.mem_filter.1 hrS).2⟩
     simp only [windingLoopSet,Finset.mem_filter,Finset.mem_univ,true_and]
     exact Or.inl hrf
-  have hsum : ∑ r ∈ S, f r = 0 := sum_vertical_winding_at_cluster_zero hN hM j A c
+  have hsum := sum_vertical_winding_at_cluster_zero hN hM j A c
   intro r hr
   exact values_of_support_card_le_two S f hcard hsum q (by simp [S,c]) hq r (by simp [S,c,hr])
 
@@ -103,7 +97,7 @@ theorem incident_vertical_winding_divides_integral_cycle
     exact dvd_zero _
   · rw [h]
   · rw [h]
-    exact dvd_neg.2 (dvd_refl _)
+    simp
 
 end
 end PottsDiscontinuity.TorusTopology

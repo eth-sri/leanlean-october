@@ -22,8 +22,7 @@ variable {N : ℕ} {c : ℝ}
 theorem transferMatrix_apply (c : ℝ) (x y : Finset (Fin N)) :
     transferMatrix N c x y =
       if x = y then 2 else
-        if Interlaced x y then c ^ (univ.filter fun i => Psi x i ≠ Psi y i).card else 0 := by
-  rfl
+        if Interlaced x y then c ^ (univ.filter fun i => Psi x i ≠ Psi y i).card else 0 := rfl
 
 @[simp] theorem transferMatrix_apply_self (c : ℝ) (x : Finset (Fin N)) :
     transferMatrix N c x x = 2 := by
@@ -84,7 +83,7 @@ theorem transferBlock_apply (c : ℝ) (n : ℕ) (x y : State N n) :
 
 @[simp] theorem transferBlock_apply_self (c : ℝ) (n : ℕ) (x : State N n) :
     transferBlock N c n x x = 2 := by
-  rw [transferBlock_apply, transferMatrix_apply_self]
+  simp [transferBlock_apply]
 
 theorem transferBlock_transpose (n : ℕ) : (transferBlock N c n)ᵀ = transferBlock N c n := by
   ext x y

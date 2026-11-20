@@ -23,7 +23,11 @@ namespace Rect
 
 variable {R : Rect}
 
-theorem mem_expRm_iff {p₁ p₂ : ℤ} {A : Finset Cell} {m : Cell} :
+section
+
+variable {p₁ p₂ : ℤ} {A : Finset Cell} {m : Cell}
+
+theorem mem_expRm_iff :
     m ∈ R.expRm p₁ p₂ A ↔ m ∈ R.inner ∧
       ¬ ((dualEnds m).1 ∈ R.expU p₁ p₂ A ∧ (dualEnds m).2 ∈ R.expU p₁ p₂ A) := by
   unfold expRm expX
@@ -32,9 +36,7 @@ theorem mem_expRm_iff {p₁ p₂ : ℤ} {A : Finset Cell} {m : Cell} :
   · rintro ⟨hm, h⟩
     refine ⟨hm, ?_⟩
     rintro ⟨h1, h2⟩
-    rcases h with h | h
-    · exact (Finset.mem_sdiff.1 h).2 h1
-    · exact (Finset.mem_sdiff.1 h).2 h2
+    simp_all
   · rintro ⟨hm, h⟩
     refine ⟨hm, ?_⟩
     have hmem := R.dData.mem m hm
@@ -44,15 +46,13 @@ theorem mem_expRm_iff {p₁ p₂ : ℤ} {A : Finset Cell} {m : Cell} :
     · left
       exact Finset.mem_sdiff.2 ⟨hmem.1, h1⟩
 
-theorem mem_unexplored_iff {p₁ p₂ : ℤ} {A : Finset Cell} {m : Cell} :
+theorem mem_unexplored_iff :
     (m ∈ R.inner ∧ m ∉ R.expRm p₁ p₂ A) ↔ m ∈ R.inner ∧
       ((dualEnds m).1 ∈ R.expU p₁ p₂ A ∧ (dualEnds m).2 ∈ R.expU p₁ p₂ A) := by
   rw [mem_expRm_iff]
-  constructor
-  · rintro ⟨hm, h⟩
-    exact ⟨hm, by_contra fun h' => h ⟨hm, h'⟩⟩
-  · rintro ⟨hm, h⟩
-    exact ⟨hm, fun h' => h'.2 h⟩
+  simp_all
+
+end
 
 /-- Every corner of a primal cell has a dual end in the row of the cell. -/
 theorem corner_dual_row (c : Cell) (hc : IsPrimal c) {e : Cell} (he : e ∈ corners c) :
@@ -62,12 +62,7 @@ theorem corner_dual_row (c : Cell) (hc : IsPrimal c) {e : Cell} (he : e ∈ corn
   have c3 := dualEnds_corner3 c hc
   have c4 := dualEnds_corner4 c hc
   unfold corners at he
-  simp only [Finset.mem_insert, Finset.mem_singleton] at he
-  rcases he with h | h | h | h <;> rw [h]
-  · rw [c1]; exact ⟨(c.1 - 1, c.2), Or.inl rfl, rfl⟩
-  · rw [c2]; exact ⟨(c.1 + 1, c.2), Or.inl rfl, rfl⟩
-  · rw [c3]; exact ⟨(c.1 - 1, c.2), Or.inr rfl, rfl⟩
-  · rw [c4]; exact ⟨(c.1 + 1, c.2), Or.inr rfl, rfl⟩
+  grind
 
 theorem corner_expRm_of_row_p1 {p₁ p₂ : ℤ} {A : Finset Cell} {c e : Cell} (hc : c ∈ R.pcells)
     (hcr : c.2 = p₁) (he : e ∈ corners c) (hein : e ∈ R.inner) :
@@ -95,7 +90,7 @@ theorem corner_expBd_of_row_p2 {p₁ p₂ : ℤ} {A : Finset Cell}
     rcases hz with rfl | rfl
     · exact this.1
     · exact this.2
-  have hzU : z ∈ R.expU p₁ p₂ A := R.mem_expU_of_faceRow hb (R.faceRow_mem.2 ⟨hzc, by omega⟩)
+  have hzU := R.mem_expU_of_faceRow hb (R.faceRow_mem.2 ⟨hzc, by omega⟩)
   rw [mem_expRm_iff] at hex
   rw [R.mem_expBd_iff]
   refine ⟨hein, ?_⟩
@@ -103,7 +98,7 @@ theorem corner_expBd_of_row_p2 {p₁ p₂ : ℤ} {A : Finset Cell}
   change ((dualEnds e).1 ∈ R.expU p₁ p₂ A ↔ ¬ (dualEnds e).2 ∈ R.expU p₁ p₂ A)
   rcases hz with rfl | rfl
   · exact ⟨fun _ h2 => hex.2 ⟨hzU, h2⟩, fun _ => hzU⟩
-  · exact ⟨fun h1 _ => hex.2 ⟨h1, hzU⟩, fun h => absurd hzU h⟩
+  simp_all
 
 /-- A primal cell seeing an explored and an unexplored edge sees a boundary edge. -/
 theorem vex_vun (hh : 0 < R.h) {p₁ p₂ : ℤ} {A : Finset Cell}
@@ -114,13 +109,12 @@ theorem vex_vun (hh : 0 < R.h) {p₁ p₂ : ℤ} {A : Finset Cell}
     (h1 : ∃ e ∈ corners c, e ∈ R.expRm p₁ p₂ A)
     (h2 : ∃ e ∈ corners c, e ∈ Qinn ∧ e ∉ R.expRm p₁ p₂ A) :
     ∃ e ∈ corners c, e ∈ R.expBd p₁ p₂ A := by
-  have hh' : (0 : ℤ) < R.h := by exact_mod_cast hh
   obtain ⟨e, he, hex⟩ := h1
   obtain ⟨e', he', hQ, hne'⟩ := h2
-  have hexin : e ∈ R.inner := ((mem_expRm_iff).1 hex).1
+  have hexin := ((mem_expRm_iff).1 hex).1
   by_cases hc2 : c.2 = p₂
   · exact ⟨e, he, corner_expBd_of_row_p2 hb hc hc2 he hexin hex⟩
-  · have he'in : e' ∈ R.inner := hamb c hc hc2 e' he' hQ
+  · have he'in := hamb c hc hc2 e' he' hQ
     by_cases hc1 : c.2 = p₁
     · exact absurd (corner_expRm_of_row_p1 (A := A) (p₂ := p₂) hc hc1 he' he'in) hne'
     · have hcc := Rect.mem_pcells.1 hc

@@ -40,14 +40,14 @@ theorem wiredObservation_reachableSetoid (n : ℕ)
         (fun hxy => (show (wiredObservationGraph n C).Adj (some _) (some _) from hxy).reachable)) hxy
     · intro x y hxy
       rcases (FK.BoundaryCondition.wired_rel B x y).mp hxy with rfl | ⟨hx, hy⟩
-      · exact R.refl (some x)
+      · simp
       · exact (show (wiredObservationGraph n C).Adj (some x) none from hx).reachable.trans
           (show (wiredObservationGraph n C).Adj none (some y) from hy).reachable
   have hbridge (a : Option ↥(box n : Set (ℤ × ℤ))) : R a (some (wiredRepresentative n a)) := by
     cases a with
     | none => exact (show (wiredObservationGraph n C).Adj none (some (boxBoundaryAnchor n)) from
         boxBoundaryAnchor_mem n).reachable
-    | some x => exact R.refl (some x)
+    | some x => solve_by_elim
   apply le_antisymm
   · apply FK.reachableSetoid_le_of_adj
     intro a b hab

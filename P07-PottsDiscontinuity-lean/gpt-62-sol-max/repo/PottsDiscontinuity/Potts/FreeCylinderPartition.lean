@@ -13,10 +13,6 @@ namespace PottsDiscontinuity.Potts
 open Classical MeasureTheory
 noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
-local instance cylinderVertexDecidableEq (V : Finset (ℤ × ℤ)) :
-    DecidableEq ↥(V : Set (ℤ × ℤ)) := fun _ _ => Classical.propDecidable _
-local instance cylinderVertexFintype (V : Finset (ℤ × ℤ)) :
-    Fintype ↥(V : Set (ℤ × ℤ)) := Fintype.ofFinite _
 local instance cylinderEdgeDecidableEq (V : Finset (ℤ × ℤ)) :
     DecidableEq (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet := fun _ _ => Classical.propDecidable _
 local instance cylinderEdgeFintype (V : Finset (ℤ × ℤ)) :
@@ -33,11 +29,8 @@ theorem potts_free_cylinder_eq_partitionExpectation
       if ∀ a, σ ⟨v a, hv a⟩ = ξ a then pottsProb q (box n) β 0 σ else 0) =
     partitionExpectation (closedBoxProbabilityMeasure (fkParameters q hq β hβ) n).toMeasure
       (observedFreePartition v n) (fun R => clusterCylinderProbability R id ξ) := by
-  trans ∑ ω : (squareLattice.induce (box n : Set (ℤ × ℤ))).edgeSet → Bool,
-    rcProb (box n) (fkParameters q hq β hβ).toP (fkParameters q hq β hβ).toQ 0 ω *
-      clusterCylinderProbability (rcOpenGraph (box n) ω).reachableSetoid (fun a => ⟨v a, hv a⟩) ξ
-  · apply Eq.trans _ (pottsProb_free_cylinder q hq (box n) β hβ (fun a => ⟨v a, hv a⟩) ξ)
-    apply Finset.sum_congr
+  refine Eq.trans ?_ ((pottsProb_free_cylinder q hq (box n) β hβ (fun a => ⟨v a, hv a⟩) ξ).trans ?_)
+  · apply Finset.sum_congr
     · ext σ; simp
     · intro σ _
       split_ifs <;> rfl
@@ -47,10 +40,8 @@ theorem potts_free_cylinder_eq_partitionExpectation
     (observedFreePartition v n) _ = _
   rw [partitionExpectation_map _ _ measurable_from_top _ _ (by
     intro a b
-    have he : {ω | observedFreePartition v n ω a b} = freeDataEvent n {(v a, v b)} := by
-      ext ω; simp [freeDataEvent]; rfl
-    rw [he]
-    exact (freeDataEvent_isClopen _ _).isOpen.measurableSet), partitionExpectation_pmf]
+    simpa only [freeDataEvent, Finset.mem_singleton, forall_eq] using!
+      (freeDataEvent_isClopen n {(v a, v b)}).isOpen.measurableSet), partitionExpectation_pmf]
   rw [← (FK.boolConfigurationEquiv (squareLattice.induce (box n : Set (ℤ × ℤ)))).sum_comp]
   apply Finset.sum_congr
   · ext ω; simp
@@ -68,7 +59,7 @@ theorem potts_free_cylinder_eq_partitionExpectation
         boxObservation_closedExtension_self, FK.rcOpenGraph_eq]
       rfl
     simp only [Function.comp_def, hR]
-    rw [← clusterCylinderProbability_factor]
+    solve_by_elim
 
 end
 end PottsDiscontinuity.Potts

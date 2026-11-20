@@ -23,8 +23,7 @@ variable {N M : ℕ}
 abbrev OpenDiamondEdge (A : RCConfig N M) := {v : Fin N × Fin M // A v = true}
 
 theorem card_openDiamondEdge (A : RCConfig N M) :
-    Fintype.card (OpenDiamondEdge A) = openCount A := by
-  exact Fintype.card_subtype _
+    Fintype.card (OpenDiamondEdge A) = openCount A := Fintype.card_subtype _
 
 /-- Signed incidence: each indexed edge points from endpoint false to endpoint true. -/
 def diamondIncidence (hN : Even N) (hM : Even M) (A : RCConfig N M) :

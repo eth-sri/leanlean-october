@@ -15,19 +15,22 @@ open Torus TorusRC CorrLength
 variable {N M : ℕ}
 noncomputable section
 
+section
+
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (K : ℕ)
+
 /-- Connection to the strip's right boundary, within the vertical annulus. -/
-def stripReachesRight (hN : Even N) (hM : Even M) (A : RCConfig N M) (K : ℕ)
+def stripReachesRight
     (u : FaceVertex N M true) : Prop :=
   ∃ v, v.val.1.val = K ∧ (finiteStripGraph hN hM A K).Reachable u v
 
 /-- The side of the barrier facing the right boundary, extended constantly
 through the complementary horizontal interval. -/
-def stripRightSide (hN : Even N) (hM : Even M) (A : RCConfig N M) (K : ℕ)
+def stripRightSide
     (u : FaceVertex N M true) : Prop :=
   K ≤ u.val.1.val ∨ stripReachesRight hN hM A K u
 
-lemma stripRightSide_iff_of_le (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (K : ℕ) (u : FaceVertex N M true) (hu : u.val.1.val ≤ K) :
+lemma stripRightSide_iff_of_le (u : FaceVertex N M true) (hu : u.val.1.val ≤ K) :
     stripRightSide hN hM A K u ↔ stripReachesRight hN hM A K u := by
   constructor
   · rintro (h | h)
@@ -35,8 +38,7 @@ lemma stripRightSide_iff_of_le (hN : Even N) (hM : Even M) (A : RCConfig N M)
     · exact h
   · exact Or.inr
 
-lemma stripRightSide_congr_of_reachable (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (K : ℕ) {u v : FaceVertex N M true}
+lemma stripRightSide_congr_of_reachable {u v : FaceVertex N M true}
     (hu : u.val.1.val ≤ K) (hv : v.val.1.val ≤ K)
     (h : (finiteStripGraph hN hM A K).Reachable u v) :
     stripRightSide hN hM A K u ↔ stripRightSide hN hM A K v := by
@@ -47,17 +49,18 @@ lemma stripRightSide_congr_of_reachable (hN : Even N) (hM : Even M)
   · rintro ⟨w,hw,hvw⟩
     exact ⟨w,hw,h.trans hvw⟩
 
-lemma strip_endpoints_reachable (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (K : ℕ) (e : OpenDiamondEdge A) (hx : e.val.1.val ≠ 0)
+lemma strip_endpoints_reachable (e : OpenDiamondEdge A) (hx : e.val.1.val ≠ 0)
     (hf : (faceEndpoint hN hM true e.val false).val.1.val ≤ K)
     (ht : (faceEndpoint hN hM true e.val true).val.1.val ≤ K) :
     (finiteStripGraph hN hM A K).Reachable (faceEndpoint hN hM true e.val false)
       (faceEndpoint hN hM true e.val true) := by
   by_cases he : faceEndpoint hN hM true e.val false = faceEndpoint hN hM true e.val true
-  · rw [he]
+  · simp_all
   · apply SimpleGraph.Adj.reachable
     rw [finiteStripGraph,SimpleGraph.fromEdgeSet_adj]
     exact ⟨⟨e.val,e.property,hx,hf,ht,rfl⟩,he⟩
+
+end
 
 /-- The endpoint x coordinates are the index x and its predecessor, in the
 checkerboard-dependent order. -/
@@ -81,7 +84,7 @@ theorem exists_horizontal_seam_potential_of_no_strip_crossing
     have hr : ¬ stripReachesRight hN hM A K u := by
       rintro ⟨v,hv,hr⟩
       exact hno (finiteStrip_crossing_implies_lifted hN hM hNp hMp A n u v hu hv hr)
-    simp [g,stripRightSide,hu,K,show ¬ 3*n ≤ 0 by omega,hr]
+    grind [stripRightSide]
   have hright (u : FaceVertex N M true) (hu : K ≤ u.val.1.val) : g u = -1 := by
     simp [g,stripRightSide,hu]
   refine ⟨g,fun e => ?_⟩
@@ -96,13 +99,13 @@ theorem exists_horizontal_seam_potential_of_no_strip_crossing
       simp
     cases hc : checker e.val
     · simp only [hc,Bool.false_eq_true,ite_false] at hxf hxt
-      have hf : K ≤ (faceEndpoint hN hM true e.val false).val.1.val := by rw [hxf]; dsimp [K]; omega
-      have ht : (faceEndpoint hN hM true e.val true).val.1.val = 0 := by rw [hxt]; exact hx
+      have hf : K ≤ (faceEndpoint hN hM true e.val false).val.1.val := by rw [hxf]; omega
+      have ht : (faceEndpoint hN hM true e.val true).val.1.val = 0 := by simpa [hxt] using hx
       rw [hright _ hf,hleft _ ht]
       simp [diamondSeamCrossX,hx,hc]
     · simp only [hc,ite_true] at hxf hxt
-      have hf : (faceEndpoint hN hM true e.val false).val.1.val = 0 := by rw [hxf]; exact hx
-      have ht : K ≤ (faceEndpoint hN hM true e.val true).val.1.val := by rw [hxt]; dsimp [K]; omega
+      have hf : (faceEndpoint hN hM true e.val false).val.1.val = 0 := by simpa [hxf] using hx
+      have ht : K ≤ (faceEndpoint hN hM true e.val true).val.1.val := by rw [hxt]; omega
       rw [hright _ ht,hleft _ hf]
       simp [diamondSeamCrossX,hx,hc]
   · have hp := prv_val_of_pos e.val.1 (Nat.pos_of_ne_zero hx)
@@ -140,7 +143,7 @@ theorem horizontal_displacement_zero_of_no_strip_crossing
     unfold diamondWindingX
     simp_rw [← hg]
     exact he.symm
-  rw [← diamondWindingX_mul_period hN hM A f,hw,mul_zero]
+  simp [← diamondWindingX_mul_period hN hM A f, hw]
 
 end
 end PottsDiscontinuity.TorusTopology

@@ -19,15 +19,13 @@ noncomputable def rectangleDualConfigurationEquiv (a : LatticeVertex) (w h : ℕ
 
 @[simp] theorem rectangleDualConfigurationEquiv_apply (a : LatticeVertex) (w h : ℕ)
     (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    rectangleDualConfigurationEquiv a w h A = rectangleDualConfiguration a w h A := by
-  simp [rectangleDualConfigurationEquiv, rectangleDualConfiguration,
-    Equiv.finsetCongr_apply]
+    rectangleDualConfigurationEquiv a w h A = rectangleDualConfiguration a w h A := rfl
 
 @[simp] theorem rectangleDualConfigurationEquiv_card (a : LatticeVertex) (w h : ℕ)
     (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
     (rectangleDualConfigurationEquiv a w h A).card =
       (rectangleDualComplementEquiv a w h A).card := by
-  simp [rectangleDualConfigurationEquiv, Equiv.finsetCongr_apply, Finset.card_map]
+  simp [rectangleDualConfigurationEquiv]
 
 theorem rectangleDualConfiguration_card_add (a : LatticeVertex) (w h : ℕ)
     (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
@@ -60,8 +58,7 @@ theorem rectangleDualConfiguration_card_add_eq_primal_edgeSet
     (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
     A.card + (rectangleDualConfiguration a w h A).card =
       Nat.card (rectangleGraph a w h).edgeSet := by
-  rw [← rectangleDualConfigurationEquiv_apply]
-  rw [rectangleDualConfiguration_card_add]
+  rw [← rectangleDualConfigurationEquiv_apply, rectangleDualConfiguration_card_add]
   exact rectangleDualGraph_edgeSet_card_eq_primal_edgeSet a w h
 
 end PottsDiscontinuity.FK

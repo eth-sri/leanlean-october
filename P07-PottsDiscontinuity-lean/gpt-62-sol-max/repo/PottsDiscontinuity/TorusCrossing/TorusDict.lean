@@ -27,37 +27,34 @@ variable {N M : ℕ}
 def toRV (c : Cell) (hc : IsPrimal c) : RotatedVertex :=
   ⟨c, Int.even_iff.2 hc⟩
 
+section
+
+variable (hNp : 0 < N) (hMp : 0 < M) (m : Cell)
+
 /-- Torus index of a medial vertex. -/
-def toFin (hNp : 0 < N) (hMp : 0 < M) (m : Cell) : Fin N × Fin M :=
+def toFin : Fin N × Fin M :=
   (periodicCoordinate hNp m.1, periodicCoordinate hMp m.2)
 
-theorem liftedEdgeIndex_primalEnds (hNp : 0 < N) (hMp : 0 < M) (m : Cell) :
+theorem liftedEdgeIndex_primalEnds :
     liftedEdgeIndex hNp hMp (toRV (primalEnds m).1 (primalEnds_fst_primal m))
       (toRV (primalEnds m).2 (primalEnds_snd_primal m)) = toFin hNp hMp m := by
   unfold liftedEdgeIndex toFin toRV primalEnds
-  by_cases h : (m.1 + m.2) % 2 = 0
-  · simp only [h, ite_true]
-    rw [max_eq_left (by omega), max_eq_left (by omega)]
-  · simp only [h, ite_false]
-    rw [max_eq_right (by omega), max_eq_left (by omega)]
+  grind
+
+end
 
 theorem rotAdj_primalEnds (m : Cell) :
     rotatedLattice.Adj (toRV (primalEnds m).1 (primalEnds_fst_primal m))
       (toRV (primalEnds m).2 (primalEnds_snd_primal m)) := by
   unfold toRV primalEnds
   change |_| = 1 ∧ |_| = 1
-  by_cases h : (m.1 + m.2) % 2 = 0
-  · simp only [h, ite_true]
-    constructor <;> rw [abs_eq (by norm_num)] <;> omega
-  · simp only [h, ite_false]
-    constructor <;> rw [abs_eq (by norm_num)] <;> omega
+  grind
 
 theorem periodic_inj (hNp : 0 < N) {z z' : ℤ}
     (h : periodicCoordinate hNp z = periodicCoordinate hNp z') (hlt : |z - z'| < N) : z = z' := by
   have h1 : z % (N : ℤ) = z' % (N : ℤ) := by
-    have := congrArg (fun i : Fin N => (i.val : ℤ)) h
-    simpa only [periodicCoordinate_val] using this
-  have h2 : (N : ℤ) ∣ z - z' := Int.ModEq.dvd h1.symm
+    grind [periodicCoordinate_val]
+  have h2 := Int.ModEq.dvd h1.symm
   have := Int.eq_zero_of_abs_lt_dvd h2 hlt
   omega
 
@@ -80,9 +77,9 @@ theorem iotaFun_inj (hQN : Q.w + 1 ≤ N) (hQM : Q.h + 1 ≤ M) :
   rw [iotaFun_val, iotaFun_val, Prod.ext_iff] at h'
   have hc := Rect.mem_cells.1 (Rect.mem_pcells.1 c.2).1
   have hd := Rect.mem_cells.1 (Rect.mem_pcells.1 d.2).1
-  have e1 : c.1.1 = d.1.1 := periodic_inj hNp h'.1 (by
+  have e1 := periodic_inj hNp h'.1 (by
     rw [abs_lt]; constructor <;> omega)
-  have e2 : c.1.2 = d.1.2 := periodic_inj hMp h'.2 (by
+  have e2 := periodic_inj hMp h'.2 (by
     rw [abs_lt]; constructor <;> omega)
   exact Subtype.ext (Prod.ext e1 e2)
 
@@ -122,7 +119,7 @@ theorem iota_le (hQN : Q.w + 1 ≤ N) (hQM : Q.h + 1 ≤ M) :
         congr 1
         apply Subtype.ext
         exact (congrArg Prod.snd h).symm
-      rw [ha, hb]; exact hlift
+      simpa [ha, hb] using hlift
     · have ha : iotaFun Q hN hM hNp hMp a = liftedFaceVertex hN hM hNp hMp
           (toRV (primalEnds m).2 (primalEnds_snd_primal m)) := by
         unfold iotaFun
@@ -135,7 +132,7 @@ theorem iota_le (hQN : Q.w + 1 ≤ N) (hQM : Q.h + 1 ≤ M) :
         congr 1
         apply Subtype.ext
         exact (congrArg Prod.fst h).symm
-      rw [ha, hb, Sym2.eq_swap]; exact hlift
+      simpa [ha, hb, Sym2.eq_swap] using hlift
   rcases hm with ⟨m, _, hmm⟩ | ⟨m, _, hmm⟩
   · exact ⟨toFin hNp hMp m, rfl, key m (Or.inl hmm)⟩
   · exact ⟨toFin hNp hMp m, rfl, key m (Or.inr hmm)⟩
@@ -151,8 +148,7 @@ theorem iota_edge (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (hQN : Q.w + 1 ≤ N) (hQM : Q
     (toRV (primalEnds m).1 (primalEnds_fst_primal m))
     (toRV (primalEnds m).2 (primalEnds_snd_primal m)) (rotAdj_primalEnds m)
   rw [liftedEdgeIndex_primalEnds] at hlift
-  change s(iotaFun Q hN hM hNp hMp _, iotaFun Q hN hM hNp hMp _) = _
-  exact hlift
+  assumption
 
 /-- The board configuration read off a torus configuration. -/
 noncomputable def boardOf (hNp : 0 < N) (hMp : 0 < M) (A : RCConfig N M) : Finset Cell :=

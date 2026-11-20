@@ -37,18 +37,7 @@ theorem mem_latticeCellBoundaryBonds (S : Finset LatticeVertex) (e : LatticeBond
   · intro h
     refine ⟨?_, h⟩
     rw [Finset.mem_biUnion]
-    by_cases ht : e.faceBase true ∈ S
-    · exact ⟨e.faceBase true, ht,
-        (mem_cellBoundaryBonds_faceBase _ _).2 (Or.inr rfl)⟩
-    · have hf : e.faceBase false ∈ S := by
-        by_contra hf
-        exact h (by simp [ht, hf])
-      exact ⟨e.faceBase false, hf,
-        (mem_cellBoundaryBonds_faceBase _ _).2 (Or.inl rfl)⟩
-
-theorem latticeCellBoundaryBonds_finite (S : Finset LatticeVertex) :
-    (latticeCellBoundaryBonds S : Set LatticeBond).Finite := by
-  exact Finset.finite_toSet _
+    grind [mem_cellBoundaryBonds_faceBase]
 
 /-- The graph whose edges are precisely the actual bonds crossing the face boundary. -/
 def latticeCellBoundaryGraph (S : Finset LatticeVertex) : SimpleGraph LatticeVertex where
@@ -58,8 +47,7 @@ def latticeCellBoundaryGraph (S : Finset LatticeVertex) : SimpleGraph LatticeVer
     rcases h with ⟨hadj, e, he, hsym⟩
     exact ⟨hadj.symm, e, he, hsym.trans Sym2.eq_swap⟩⟩
   loopless := ⟨by
-    intro u h
-    exact squareLattice.loopless.irrefl u h.1⟩
+    simp⟩
 
 theorem latticeCellBoundaryGraph_le (S : Finset LatticeVertex) :
     latticeCellBoundaryGraph S ≤ squareLattice := by

@@ -42,14 +42,14 @@ theorem dartOut_shiftDart (hN : Even N) (hM : Even M) (d : Dart N M) :
   rcases d with ⟨⟨i, j⟩, p⟩
   change dartOut (checkerArrows N M) ((nxt i, j), p) =
     !dartOut (checkerArrows N M) ((i, j), p)
-  cases p <;> simp only [dartOut_checker_at hN hM, checker_nxt_x hN, Bool.not_not]
+  cases p <;> simp only [dartOut_checker_at hN hM, checker_nxt_x hN]
 
 theorem rcSmoothing_translatedDual_shift (hN : Even N) (A : RCConfig N M) (v : Fin N × Fin M) :
     rcSmoothing (translatedDualConfig A) (nxt v.1, v.2) = rcSmoothing A v := by
   unfold rcSmoothing translatedDualConfig
   rw [checker_nxt_x hN, shiftRCConfig_nxt]
   change Bool.xor (!checker v) (!A v) = Bool.xor (checker v) (A v)
-  cases checker v <;> cases A v <;> rfl
+  simp
 
 theorem shiftDart_strandReverse_dual (hN : Even N) (A : RCConfig N M) (d : Dart N M) :
     shiftDart (strandReverse (rcSmoothing A) d) =
@@ -66,26 +66,25 @@ def dualDartTransport (N M : ℕ) : Equiv.Perm (Dart N M) :=
 theorem dartOut_dualDartTransport (hN : Even N) (hM : Even M) (d : Dart N M) :
     dartOut (checkerArrows N M) (dualDartTransport N M d) = dartOut (checkerArrows N M) d := by
   change dartOut (checkerArrows N M) (shiftDart (edgeReverse d)) = _
-  rw [dartOut_shiftDart hN hM, dartOut_edgeReverse, Bool.not_not]
+  simp [dartOut_shiftDart hN hM]
 
 /-- The primal/dual dart correspondence on the actual canonical outgoing edges. -/
 def dualDirectedEquiv (hN : Even N) (hM : Even M) :
     Equiv.Perm (DirectedDart (checkerArrows N M)) :=
   (dualDartTransport N M).subtypeEquiv (fun d => by rw [dartOut_dualDartTransport hN hM])
 
-@[simp] theorem dualDirectedEquiv_val (hN : Even N) (hM : Even M)
-    (d : DirectedDart (checkerArrows N M)) :
-    (dualDirectedEquiv hN hM d).val = shiftDart (edgeReverse d.val) := rfl
-
 theorem dualDartTransport_step (hN : Even N) (A : RCConfig N M) (d : Dart N M) :
     dualDartTransport N M (stepPerm (rcSmoothing A) d) =
       (stepPerm (rcSmoothing (translatedDualConfig A))).symm (dualDartTransport N M d) := by
   change shiftDart (edgeReverse (stepPerm (rcSmoothing A) d)) =
     (stepPerm (rcSmoothing (translatedDualConfig A))).symm (shiftDart (edgeReverse d))
-  rw [edgeReverse_step, stepPerm_symm_apply, stepPerm_symm_apply,
-    shiftDart_edgeReverse, shiftDart_strandReverse_dual hN]
+  simp [shiftDart_edgeReverse, shiftDart_strandReverse_dual hN]
 
-theorem dualDirectedEquiv_boundary (hN : Even N) (hM : Even M) (A : RCConfig N M)
+section
+
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
+
+theorem dualDirectedEquiv_boundary
     (d : DirectedDart (checkerArrows N M)) :
     dualDirectedEquiv hN hM (ribbonBoundary hN hM A d) =
       (ribbonBoundary hN hM (translatedDualConfig A)).symm (dualDirectedEquiv hN hM d) := by
@@ -94,17 +93,19 @@ theorem dualDirectedEquiv_boundary (hN : Even N) (hM : Even M) (A : RCConfig N M
   exact dualDartTransport_step hN A d.val
 
 /-- Individual primal boundary loops are the reversed translated dual boundary loops. -/
-def dualBoundaryLoopEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def dualBoundaryLoopEquiv :
     RibbonBoundaryComponent hN hM A ≃ RibbonBoundaryComponent hN hM (translatedDualConfig A) :=
   permutationCycleEquivOfInverseIntertwining _ _ (dualDirectedEquiv hN hM)
     (dualDirectedEquiv_boundary hN hM A)
 
-theorem rcLoopCount_translatedDual (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+theorem rcLoopCount_translatedDual :
     rcLoopCount hN hM A = rcLoopCount hN hM (translatedDualConfig A) := by
   calc
     _ = Nat.card (RibbonBoundaryComponent hN hM A) := (card_ribbonBoundaryComponent hN hM A).symm
     _ = Nat.card (RibbonBoundaryComponent hN hM (translatedDualConfig A)) :=
       Nat.card_congr (dualBoundaryLoopEquiv hN hM A)
     _ = _ := card_ribbonBoundaryComponent hN hM _
+
+end
 
 end PottsDiscontinuity.Torus

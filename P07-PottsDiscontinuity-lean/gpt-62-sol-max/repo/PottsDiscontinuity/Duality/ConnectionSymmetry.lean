@@ -16,38 +16,11 @@ namespace PottsDiscontinuity.Duality
 open FK FK.Medial
 noncomputable section
 
-/-- A lattice isomorphism transports the actual open graph edge by edge. -/
-def wholePlaneOpenGraphIso (e : squareLattice ≃g squareLattice) (ω : LatticeConfiguration) :
-    wholePlaneOpenPrimalGraph ω ≃g
-      wholePlaneOpenPrimalGraph (latticeConfigurationIsoHomeomorph e ω) where
-  toEquiv := e.toEquiv
-  map_rel_iff' := by
-    intro u v
-    have hidx (h : squareLattice.Adj (e.toEquiv u) (e.toEquiv v)) :
-        SimpleGraph.Iso.mapEdgeSet e.symm ⟨s(e.toEquiv u, e.toEquiv v), squareLattice.mem_edgeSet.mpr h⟩ =
-          ⟨s(u, v), squareLattice.mem_edgeSet.mpr (e.map_rel_iff'.1 h)⟩ := by
-      apply Subtype.ext
-      change Sym2.map e.symm s(e.toEquiv u, e.toEquiv v) = s(u, v)
-      simp
-    constructor
-    · rintro ⟨hadj, hopen⟩
-      refine ⟨e.map_rel_iff'.1 hadj, ?_⟩
-      rw [latticeConfigurationIsoHomeomorph_apply, hidx hadj] at hopen
-      exact hopen
-    · rintro ⟨hadj, hopen⟩
-      refine ⟨e.map_rel_iff'.2 hadj, ?_⟩
-      rw [latticeConfigurationIsoHomeomorph_apply, hidx (e.map_rel_iff'.2 hadj)]
-      exact hopen
-
 lemma connectionEvent_preimage_iso (e : squareLattice ≃g squareLattice) (u v : LatticeVertex) :
     (latticeConfigurationIsoHomeomorph e) ⁻¹' connectionEvent (e u) (e v) =
       connectionEvent u v := by
   ext ω
-  change (rcInfiniteOpenGraph (latticeConfigurationIsoHomeomorph e ω)).Reachable (e u) (e v) ↔
-    (rcInfiniteOpenGraph ω).Reachable u v
-  rw [← wholePlaneOpenPrimalGraph_eq_rcInfiniteOpenGraph,
-    ← wholePlaneOpenPrimalGraph_eq_rcInfiniteOpenGraph]
-  exact SimpleGraph.Iso.reachable_iff (φ := wholePlaneOpenGraphIso e ω)
+  exact SimpleGraph.Iso.reachable_iff (φ := CorrLength.rcInfiniteOpenGraphIso e ω)
 
 /-- Actual free connectivity probabilities respect every box-preserving lattice symmetry. -/
 theorem free_connection_symmetry (θ : Parameters) (μ : Measure LatticeConfiguration)
@@ -86,7 +59,7 @@ theorem twoPoint_mul_le (θ : Parameters) (μ : Measure LatticeConfiguration)
   simp only [zero_add, add_comm y x] at ht
   rw [ht] at h
   have hr := ENNReal.toReal_mono (measure_ne_top μ (connectionEvent 0 (x + y))) h
-  simpa only [twoPoint, Measure.real_def, ENNReal.toReal_mul] using hr
+  simpa [twoPoint, Measure.real_def] using hr
 
 lemma twoPoint_neg (θ : Parameters) (μ : Measure LatticeConfiguration)
     (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex) :
@@ -103,9 +76,7 @@ def latticeFlipYIso : squareLattice ≃g squareLattice where
   right_inv v := by simp
   map_rel_iff' := by
     intro u v
-    change squareLattice.Adj (u.1, -u.2) (v.1, -v.2) ↔ squareLattice.Adj u v
-    simp only [squareLattice_adj_iff]
-    omega
+    grind [squareLattice_adj_iff]
 
 lemma mem_latticeBox_flipY_iff (c v : LatticeVertex) (r : ℕ) :
     latticeFlipYIso v ∈ latticeBox (latticeFlipYIso c) r ↔ v ∈ latticeBox c r := by

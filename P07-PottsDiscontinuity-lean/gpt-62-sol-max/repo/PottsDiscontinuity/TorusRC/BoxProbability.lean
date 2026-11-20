@@ -27,9 +27,9 @@ theorem torusRCFiberEventProbability_pos_of_mem {α : Type*} [Fintype α]
   unfold torusRCFiberEventProbability FK.FiniteProbability.expectation
   apply lt_of_lt_of_le _ (Finset.single_le_sum
     (fun b _ => mul_nonneg ENNReal.toReal_nonneg (by
-      by_cases hb : b ∈ E <;> simp [Set.indicator,hb])) (Finset.mem_univ a))
-  simpa only [Set.indicator_of_mem ha, mul_one] using
-    (ENNReal.toReal_pos hp.ne' (p.apply_ne_top a))
+      by_cases hb : b ∈ E <;> simp [hb])) (Finset.mem_univ a))
+  simpa [Set.indicator_of_mem ha] using
+      (ENNReal.toReal_pos hp.ne' (p.apply_ne_top a))
 
 /-- The explicit two-column zigzag fits in every native box of radius at
 least 2n. Thus the connection probability used in (3.15) is strictly positive. -/
@@ -53,7 +53,7 @@ theorem liftedBoxFreeDiagonalProbability_pos (θ : FK.Parameters)
       apply (ih (by omega)).trans
       apply FK.actualConnected_of_adj
       rw [FK.openGraph_adj]
-      have hadj : (liftedBoxGraph rotatedLatticeOrigin R).Adj (z k (by omega)) (z (k+1) hk) :=
+      have hadj :=
         columnZigzagSite_adj 0 ⟨0,rfl⟩ k
       exact ⟨⟨s(z k (by omega),z (k+1) hk),(liftedBoxGraph rotatedLatticeOrigin R).mem_edgeSet.mpr hadj⟩,
         Finset.mem_univ _,rfl⟩
@@ -67,9 +67,9 @@ theorem liftedBoxFreeDiagonalProbability_pos (θ : FK.Parameters)
       rotatedLatticeOrigin (rotatedDiagonalSite n) := by
     have h := hreach (2*n) le_rfl
     have hu : inLiftedBox R rotatedLatticeOrigin rotatedLatticeOrigin := by
-      simpa only [hzero] using hz 0 (by omega)
+      simpa [hzero] using hz 0 (by omega)
     have hv : inLiftedBox R rotatedLatticeOrigin (rotatedDiagonalSite n) := by
-      simpa only [hend] using hz (2*n) le_rfl
+      simpa [hend] using hz (2*n) le_rfl
     have hzu : z 0 (by omega) = ⟨rotatedLatticeOrigin,hu⟩ := Subtype.ext hzero
     have hzv : z (2*n) le_rfl = ⟨rotatedDiagonalSite n,hv⟩ := Subtype.ext hend
     rw [hzu,hzv] at h

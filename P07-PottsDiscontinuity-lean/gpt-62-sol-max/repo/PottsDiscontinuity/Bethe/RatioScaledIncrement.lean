@@ -22,7 +22,7 @@ theorem ratio_scaled_increment_tendsto {ι : Type*} {l : Filter ι}
       (fun i => u i - v i) := by
     have h := (hasStrictDerivAt_iff_hasStrictFDerivAt.mp hf).isLittleO.comp_tendsto
       (hu.prodMk_nhds hv)
-    simpa only [Function.comp_def, ContinuousLinearMap.toSpanSingleton_apply, smul_eq_mul] using h
+    assumption
   have hmul := (isBigO_refl a l).smul_isLittleO hrem
   have hz : Tendsto (fun i => a i * (f (u i) - f (v i) - (u i - v i) * f')) l (𝓝 0) := by
     apply hmul.tendsto_zero_of_tendsto

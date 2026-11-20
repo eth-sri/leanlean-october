@@ -65,18 +65,14 @@ lemma cylinderIndexedConfiguration_seam (hN : Even N) (hM : Even M)
     rw [Equiv.apply_symm_apply] at hm
     obtain ⟨d,_,hd⟩ := Finset.mem_map.1 hm
     have hv := congrArg Subtype.val hd
-    have hcyl : (torusIndexedEdgeEmbedding hN hM hN4 hM4 e).val ∈
-        (fullCylinderGraph hN hM).edgeSet := hv ▸ d.property
-    exact ((indexedEdge_mem_cylinder_iff hN hM hN4 hM4 e).1 hcyl he).elim
+    have hcyl := hv ▸ d.property
+    simp_all [indexedEdge_mem_cylinder_iff]
 
 lemma cylinderIndexedConfiguration_eq_seamClosed (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (C : Configuration (fullCylinderGraph hN hM)) :
     TorusRC.torusRCSeamClosed (cylinderIndexedConfiguration hN hM hN4 hM4 C) =
       cylinderIndexedConfiguration hN hM hN4 hM4 C := by
-  funext e
-  by_cases he : e.2.val=0
-  · simp [TorusRC.torusRCSeamClosed,he,cylinderIndexedConfiguration_seam hN hM hN4 hM4 C e he]
-  · simp [TorusRC.torusRCSeamClosed,he]
+  grind [TorusRC.torusRCSeamClosed, cylinderIndexedConfiguration_seam]
 
 lemma openGraph_cylinderIndexedConfiguration (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (C : Configuration (fullCylinderGraph hN hM)) :
@@ -85,7 +81,7 @@ lemma openGraph_cylinderIndexedConfiguration (hN : Even N) (hM : Even M)
   rw [cylinderIndexedConfiguration_eq_seamClosed,← openGraph_simpleConfiguration,
     simpleConfiguration_eq_torusRCConfigurationEquiv hN hM hN4 hM4]
   unfold cylinderIndexedConfiguration
-  rw [Equiv.apply_symm_apply,openGraph_subgraphConfigurationEmbedding]
+  simp [openGraph_subgraphConfigurationEmbedding]
 
 end
 end PottsDiscontinuity.TorusExploration

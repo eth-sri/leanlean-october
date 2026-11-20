@@ -1,7 +1,7 @@
 module
 
 public import PottsDiscontinuity.FK.PositiveAssociation
-public import PottsDiscontinuity.SixVertex.InfinityDescent
+public import PottsDiscontinuity.SixVertex.Rotate
 public import PottsDiscontinuity.TorusLoops.FiniteEnergy
 
 /-!
@@ -43,29 +43,37 @@ noncomputable def rectangleFKParameters (q : Set.Ici (1 : ℝ)) : FK.Parameters 
       PottsDiscontinuity.TorusRC.criticalParameter_pos q,
       PottsDiscontinuity.TorusRC.criticalParameter_lt_one q⟩⟩
 
-private theorem rectangleEndpointXFalse (hN : Even N) (hM : Even M)
-    (v : Fin N × Fin M) :
+section
+
+variable
+  (hN : Even N) (hM : Even M)
+    (v : Fin N × Fin M)
+
+private theorem rectangleEndpointXFalse :
     (faceEndpoint hN hM true v false).val.1.val =
       if checker v then v.1.val else (prv v.1).val := by
   cases hc : checker v <;> simp [faceEndpoint, faceEndpointRaw, hc]
 
-private theorem rectangleEndpointXTrue (hN : Even N) (hM : Even M)
-    (v : Fin N × Fin M) :
+private theorem rectangleEndpointXTrue :
     (faceEndpoint hN hM true v true).val.1.val =
       if checker v then (prv v.1).val else v.1.val := by
   cases hc : checker v <;> simp [faceEndpoint, faceEndpointRaw, hc]
 
-private theorem rectangleEndpointYFalse (hN : Even N) (hM : Even M)
-    (v : Fin N × Fin M) :
+private theorem rectangleEndpointYFalse :
     (faceEndpoint hN hM true v false).val.2.val = v.2.val := by
   cases hc : checker v <;> simp [faceEndpoint, faceEndpointRaw, hc]
 
-private theorem rectangleEndpointYTrue (hN : Even N) (hM : Even M)
-    (v : Fin N × Fin M) :
+private theorem rectangleEndpointYTrue :
     (faceEndpoint hN hM true v true).val.2.val = (prv v.2).val := by
   cases hc : checker v <;> simp [faceEndpoint, faceEndpointRaw, hc]
 
-private theorem rectangleEndpointMaxX (hN : Even N) (hM : Even M)
+end
+
+section
+
+variable (hN : Even N) (hM : Even M)
+
+private theorem rectangleEndpointMaxX
     (v : RectangleEdgeIndex (N := N) (M := M)) :
     max (faceEndpoint hN hM true v.val false).val.1.val
         (faceEndpoint hN hM true v.val true).val.1.val = v.val.1.val := by
@@ -73,12 +81,12 @@ private theorem rectangleEndpointMaxX (hN : Even N) (hM : Even M)
   have hfin : v.val.1 ≠ 0 := by
     intro hz
     apply v.property.1
-    simpa using congrArg Fin.val hz
+    simp_all
   rw [rectangleEndpointXFalse, rectangleEndpointXTrue]
   cases checker v.val <;> simp <;>
     exact Fin.one_le_of_ne_zero hfin
 
-private theorem rectangleEndpointMaxY (hN : Even N) (hM : Even M)
+private theorem rectangleEndpointMaxY
     (v : RectangleEdgeIndex (N := N) (M := M)) :
     max (faceEndpoint hN hM true v.val false).val.2.val
         (faceEndpoint hN hM true v.val true).val.2.val = v.val.2.val := by
@@ -86,7 +94,7 @@ private theorem rectangleEndpointMaxY (hN : Even N) (hM : Even M)
   rw [rectangleEndpointYFalse, rectangleEndpointYTrue]
   omega
 
-private theorem rectangleEdgeIndex_endpoints_injective (hN : Even N) (hM : Even M)
+private theorem rectangleEdgeIndex_endpoints_injective
     (v w : RectangleEdgeIndex (N := N) (M := M))
     (he : Sym2.mk (faceEndpoint hN hM true v.val false)
         (faceEndpoint hN hM true v.val true) =
@@ -130,7 +138,7 @@ private theorem rectangleEdgeIndex_endpoints_injective (hN : Even N) (hM : Even 
     apply Subtype.ext
     apply Prod.ext <;> apply Fin.ext <;> assumption
 
-private theorem rectangleEndpoints_ne (hN : Even N) (hM : Even M)
+private theorem rectangleEndpoints_ne
     (v : RectangleEdgeIndex (N := N) (M := M)) :
     faceEndpoint hN hM true v.val false ≠ faceEndpoint hN hM true v.val true := by
   intro he
@@ -147,24 +155,23 @@ private theorem rectangleEndpoints_ne (hN : Even N) (hM : Even M)
     omega
 
 /-- The medial index embeds into the unordered edges of the fixed rectangle graph. -/
-def rectangleBaseEdgeEmbedding (hN : Even N) (hM : Even M) :
+def rectangleBaseEdgeEmbedding :
     RectangleEdgeIndex (N := N) (M := M) ↪ (rectangleBaseGraph hN hM).edgeSet where
   toFun v := ⟨Sym2.mk (faceEndpoint hN hM true v.val false)
       (faceEndpoint hN hM true v.val true), by
     rw [rectangleBaseGraph, SimpleGraph.edgeSet_fromEdgeSet]
     refine ⟨⟨v, rfl⟩, ?_⟩
     intro hd
-    simp only [Sym2.mem_diagSet, Sym2.mk_isDiag_iff] at hd
     exact rectangleEndpoints_ne hN hM v hd
   ⟩
   inj' := by
     intro v w hvw
     apply rectangleEdgeIndex_endpoints_injective hN hM
-    exact congrArg Subtype.val hvw
+    simp_all
 
 /-- Every edge of the rectangle graph is represented by a unique interior
 medial index. -/
-noncomputable def rectangleBaseEdgeEquiv (hN : Even N) (hM : Even M) :
+noncomputable def rectangleBaseEdgeEquiv :
     RectangleEdgeIndex (N := N) (M := M) ≃ (rectangleBaseGraph hN hM).edgeSet :=
   Equiv.ofBijective (rectangleBaseEdgeEmbedding hN hM) ⟨
     (rectangleBaseEdgeEmbedding hN hM).injective,
@@ -177,13 +184,12 @@ noncomputable def rectangleBaseEdgeEquiv (hN : Even N) (hM : Even M) :
 
 /-- The rectangle configuration induced by the interior states of a torus
 configuration. -/
-noncomputable def rectangleConfigurationOfRC (hN : Even N) (hM : Even M)
+noncomputable def rectangleConfigurationOfRC
     (A : RCConfig N M) : FK.Configuration (rectangleBaseGraph hN hM) :=
   (Finset.univ.filter (fun v : RectangleEdgeIndex => A v.val = true)).map
     (rectangleBaseEdgeEmbedding hN hM)
 
-@[simp] theorem mem_rectangleConfigurationOfRC
-    (hN : Even N) (hM : Even M) (A : RCConfig N M)
+@[simp] theorem mem_rectangleConfigurationOfRC (A : RCConfig N M)
     (v : RectangleEdgeIndex (N := N) (M := M)) :
     rectangleBaseEdgeEmbedding hN hM v ∈ rectangleConfigurationOfRC hN hM A ↔
       A v.val = true := by
@@ -197,17 +203,22 @@ noncomputable def rectangleConfigurationOfRC (hN : Even N) (hM : Even M)
   · intro hv
     exact ⟨v, Finset.mem_filter.mpr ⟨Finset.mem_univ _, hv⟩, rfl⟩
 
+end
+
+section
+
+variable
+  (hN : Even N) (hM : Even M)
+    (C : FK.Configuration (rectangleBaseGraph hN hM))
+
 /-- Extend a rectangle FK configuration to the full indexed torus by keeping
 all seam states closed. -/
-noncomputable def rectangleRCConfigOfConfiguration (hN : Even N) (hM : Even M)
-    (C : FK.Configuration (rectangleBaseGraph hN hM)) : RCConfig N M := by
+noncomputable def rectangleRCConfigOfConfiguration : RCConfig N M := by
   classical
   exact fun v => if h : v.1.val ≠ 0 ∧ v.2.val ≠ 0 then
     decide (rectangleBaseEdgeEmbedding hN hM ⟨v, h⟩ ∈ C) else false
 
 @[simp] theorem rectangleRCConfigOfConfiguration_interior
-    (hN : Even N) (hM : Even M)
-    (C : FK.Configuration (rectangleBaseGraph hN hM))
     (v : RectangleEdgeIndex (N := N) (M := M)) :
     rectangleRCConfigOfConfiguration hN hM C v.val =
       decide (rectangleBaseEdgeEmbedding hN hM v ∈ C) := by
@@ -215,20 +226,14 @@ noncomputable def rectangleRCConfigOfConfiguration (hN : Even N) (hM : Even M)
   simp [rectangleRCConfigOfConfiguration, v.property]
 
 theorem rectangleRCConfigOfConfiguration_closedOnSeams
-    (hN : Even N) (hM : Even M)
-    (C : FK.Configuration (rectangleBaseGraph hN hM))
     (v : Fin N × Fin M) (hseam : v.1.val = 0 ∨ v.2.val = 0) :
     rectangleRCConfigOfConfiguration hN hM C v = false := by
   classical
   by_cases hi : v.1.val ≠ 0 ∧ v.2.val ≠ 0
-  · rcases hseam with hx | hy
-    · exact (hi.1 hx).elim
-    · exact (hi.2 hy).elim
+  · simp_all
   · simp [rectangleRCConfigOfConfiguration, hi]
 
-theorem rectangleConfigurationOfRC_rectangleRCConfigOfConfiguration
-    (hN : Even N) (hM : Even M)
-    (C : FK.Configuration (rectangleBaseGraph hN hM)) :
+theorem rectangleConfigurationOfRC_rectangleRCConfigOfConfiguration :
     rectangleConfigurationOfRC hN hM
       (rectangleRCConfigOfConfiguration hN hM C) = C := by
   classical
@@ -240,8 +245,13 @@ theorem rectangleConfigurationOfRC_rectangleRCConfigOfConfiguration
     rectangleRCConfigOfConfiguration_interior]
   simp
 
+end
+
+section
+
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
+
 theorem rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC
-    (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (hclosed : ∀ v : Fin N × Fin M,
       v.1.val = 0 ∨ v.2.val = 0 → A v = false) :
     rectangleRCConfigOfConfiguration hN hM (rectangleConfigurationOfRC hN hM A) = A := by
@@ -249,19 +259,15 @@ theorem rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC
   by_cases hs : v.1.val = 0 ∨ v.2.val = 0
   · rw [rectangleRCConfigOfConfiguration_closedOnSeams hN hM _ v hs, hclosed v hs]
   · have hx : v.1.val ≠ 0 := by
-      intro hz
-      exact hs (Or.inl hz)
+      omega
     have hy : v.2.val ≠ 0 := by
-      intro hz
-      exact hs (Or.inr hz)
+      omega
     let w : RectangleEdgeIndex (N := N) (M := M) := ⟨v, hx, hy⟩
     change rectangleRCConfigOfConfiguration hN hM
       (rectangleConfigurationOfRC hN hM A) w.val = A w.val
-    rw [rectangleRCConfigOfConfiguration_interior]
-    cases hav : A v <;> simp [rectangleConfigurationOfRC, hav, w]
+    simp
 
-theorem rectangleOpenEdges_eq (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) :
+theorem rectangleOpenEdges_eq :
     FK.openEdges (rectangleBaseGraph hN hM) (rectangleConfigurationOfRC hN hM A) =
       {p | ∃ v : RectangleEdgeIndex (N := N) (M := M), A v.val = true ∧
         p = Sym2.mk (faceEndpoint hN hM true v.val false)
@@ -275,8 +281,9 @@ theorem rectangleOpenEdges_eq (hN : Even N) (hM : Even M)
   · rintro ⟨v, hv, hp⟩
     refine ⟨rectangleBaseEdgeEmbedding hN hM v,
       (mem_rectangleConfigurationOfRC hN hM A v).2 hv, ?_⟩
-    change Sym2.mk _ _ = p
     exact hp.symm
+
+end
 
 /-- Closing the two indexed seams makes the torus primal open graph exactly the
 FK open graph of the cut rectangle. -/
@@ -297,20 +304,13 @@ theorem rectangleOpenGraph_eq_diamondOpenGraph_closedOnSeams
         (faceEndpoint hN hM true v.val false)
         (faceEndpoint hN hM true v.val true)).IsDiag := by
       have hd : (Sym2.mk u w).IsDiag := Sym2.mk_isDiag_iff.mpr huw
-      rw [← hp]
-      exact hd
+      grind
     exact rectangleEndpoints_ne hN hM v (Sym2.mk_isDiag_iff.mp hdiag)
   · rintro ⟨⟨v, hv, hp⟩, _⟩
     have hx : v.1.val ≠ 0 := by
-      intro hz
-      have hc := hclosed v (Or.inl hz)
-      rw [hc] at hv
-      contradiction
+      grind
     have hy : v.2.val ≠ 0 := by
-      intro hz
-      have hc := hclosed v (Or.inr hz)
-      rw [hc] at hv
-      contradiction
+      grind
     exact ⟨⟨v, hx, hy⟩, hv, hp⟩
 
 theorem rectangleConfiguration_card_eq_openCount
@@ -329,14 +329,7 @@ theorem rectangleConfiguration_card_eq_openCount
     constructor
     · intro hv
       have hinterior : v.1.val ≠ 0 ∧ v.2.val ≠ 0 := by
-        by_contra hnot
-        have hseam : v.1.val = 0 ∨ v.2.val = 0 := by
-          by_contra hseam
-          exact hnot ⟨by intro hz; exact hseam (Or.inl hz),
-            by intro hz; exact hseam (Or.inr hz)⟩
-        have hclosedv := hclosed v hseam
-        rw [hclosedv] at hv
-        contradiction
+        grind
       exact ⟨⟨v, hinterior⟩, hv, rfl⟩
     · rintro ⟨w, hw, rfl⟩
       exact hw
@@ -420,7 +413,6 @@ theorem torusRCWeight_eq_seamFactor_mul_rectangleFKWeight
     rectangleConfiguration_closedCount_eq_seam_add_freeClosedCount hN hM A hclosed,
     ← rectangleFreeComponentCount_eq_clusterCount hN hM A hclosed]
   simp only [rectangleFKParameters, FK.edgeParameter]
-  rw [pow_add]
   ring
 
 end PottsDiscontinuity.TorusLoops

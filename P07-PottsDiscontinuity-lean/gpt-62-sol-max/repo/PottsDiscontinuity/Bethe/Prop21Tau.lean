@@ -18,7 +18,7 @@ terms vanish, so the *literal* series is `0` there (`tau_pi`, `tau_neg_pi`), whi
 solution has `τ_c(±π) = ∓1/2` (`tauCont_pi`, `tauCont_neg_pi`).  Consequently the literal `τ`
 solves (cOE) on `(-π, π)` (`tau_cOE_on_Ioo`) but not at the end points (`tau_not_cOE_pi`); the
 continuous representative `tauCont` solves (cOE) on all of `[-π, π]` (`tauCont_isCOESolution`),
-and uniqueness holds in `L²` (`eq_tauCont_of_isCOESolution_of_integrableOn`), i.e. up to a null set.
+and is the unique integrable solution there (`eq_tauCont_of_isCOESolution_of_integrableOn`).
 
 * `TcontFn_add_xiConv`: `T + (1/2π) Ξ_{2λ} * T = Ψ`, i.e. (cOE'), for `T = -α + U_λ`;
 * `tauU_add_xiConv`: `U + (1/2π) Ξ_{2λ} * U = -2 sawS(2λ)`, from the Poisson action on the sine
@@ -63,22 +63,26 @@ theorem one_sub_tanh_eq (x : ℝ) : 1 - Real.tanh x = Real.exp (-x) / Real.cosh 
   rw [Real.tanh_eq_sinh_div_cosh]
   have hc : Real.cosh x ≠ 0 := (Real.cosh_pos x).ne'
   field_simp
-  rw [Real.cosh_sub_sinh]
+  simp
 
-theorem one_sub_tanh_eq_mul_secCoeff (lam : ℝ) (n : ℕ) :
+section
+
+variable (lam : ℝ) (n : ℕ)
+
+theorem one_sub_tanh_eq_mul_secCoeff :
     1 - Real.tanh (lam * ((n + 1 : ℕ) : ℝ)) = Real.exp (-lam) ^ (n + 1) * secCoeff lam n := by
   rw [one_sub_tanh_eq]
   unfold secCoeff
   have h2 : Real.exp (-lam) ^ (n + 1) = Real.exp (-(lam * ((n + 1 : ℕ) : ℝ))) := by
-    rw [← Real.exp_nat_mul]; congr 1; push_cast; ring
+    rw [← Real.exp_nat_mul]; ring
   rw [h2]; ring
 
-theorem secCoeff_le_one (lam : ℝ) (n : ℕ) : secCoeff lam n ≤ 1 := by
+theorem secCoeff_le_one : secCoeff lam n ≤ 1 := by
   unfold secCoeff
   rw [div_le_one (Real.cosh_pos _)]
   exact Real.one_le_cosh _
 
-theorem abs_tauCoeff_le (lam : ℝ) (n : ℕ) :
+theorem abs_tauCoeff_le :
     |tauCoeff lam n| ≤ 2 * Real.exp (-lam) ^ (n + 1) := by
   have hq : 0 < Real.exp (-lam) ^ (n + 1) := by positivity
   have h1 := one_sub_tanh_eq_mul_secCoeff lam n
@@ -93,15 +97,16 @@ theorem abs_tauCoeff_le (lam : ℝ) (n : ℕ) :
   rw [abs_div, abs_of_pos hn, abs_mul, abs_mul, abs_pow, abs_neg, abs_one, one_pow,
     abs_of_pos (two_pos : (0:ℝ) < 2), abs_of_nonneg h4]
   rw [div_le_iff₀ hn]
-  have : (1 : ℝ) ≤ (n : ℝ) + 1 := by linarith [(Nat.cast_nonneg n : (0:ℝ) ≤ n)]
   nlinarith
+
+end
 
 theorem summable_tauCoeff {lam : ℝ} (hlam : 0 < lam) : Summable (tauCoeff lam) := by
   have hr : 0 < Real.exp (-lam) := Real.exp_pos _
-  have hr1 : Real.exp (-lam) < 1 := by rw [Real.exp_lt_one_iff]; linarith
+  have hr1 : Real.exp (-lam) < 1 := by simp_all
   have hs : Summable (fun n : ℕ => 2 * Real.exp (-lam) ^ (n + 1)) := by
     have := (summable_geometric_of_lt_one hr.le hr1).mul_left (2 * Real.exp (-lam))
-    exact this.congr fun n => by ring
+    grind
   exact Summable.of_norm_bounded hs (fun n => by rw [Real.norm_eq_abs]; exact abs_tauCoeff_le lam n)
 
 theorem continuous_tauU {lam : ℝ} (hlam : 0 < lam) : Continuous (tauU lam) :=
@@ -118,64 +123,21 @@ theorem one_add_mul_tauCoeff {lam : ℝ} (n : ℕ) :
   have h2 := one_add_exp_two_mul_div_cosh (lam := lam) n
   have h3 : Real.exp (-(2 * lam)) ^ (n + 1) = Real.exp (-lam) ^ (n + 1) * Real.exp (-lam) ^ (n + 1) := by
     have e : Real.exp (-(2 * lam)) = Real.exp (-lam) * Real.exp (-lam) := by
-      rw [← Real.exp_add]; congr 1; ring
+      rw [← Real.exp_add]; ring
     rw [e, mul_pow]
-  have hn : ((n : ℝ) + 1) ≠ 0 := by positivity
   unfold tauCoeff
   rw [h1]
-  have : (1 + Real.exp (-(2 * lam)) ^ (n + 1)) * (2 * (-1) ^ n *
-      (Real.exp (-lam) ^ (n + 1) * secCoeff lam n) / ((n : ℝ) + 1)) =
-      2 * (-1) ^ n * Real.exp (-lam) ^ (n + 1) * ((1 + Real.exp (-(2 * lam)) ^ (n + 1)) * secCoeff lam n) /
-        ((n : ℝ) + 1) := by ring
-  rw [this, h2, h3]
-  rw [pow_succ (-1 : ℝ) n]
-  field_simp
+  grind
 
 /-- `U + (1/2π) Ξ_{2λ} * U = -2 sawS(2λ)`. -/
 theorem tauU_add_xiConv {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
     tauU lam α + xiConv (2 * lam) (tauU lam) α = -2 * sawS (2 * lam) α := by
-  have hlam2 : 0 < 2 * lam := by linarith
-  have hr : 0 < Real.exp (-(2 * lam)) := Real.exp_pos _
-  have hr1 : Real.exp (-(2 * lam)) < 1 := by rw [Real.exp_lt_one_iff]; linarith
-  have hu := summable_tauCoeff hlam
-  have hz : Summable (fun _ : ℕ => (0 : ℝ)) := summable_zero
-  have hX : xiConv (2 * lam) (tauU lam) α =
-      trigSeries 0 (fun n => Real.exp (-(2 * lam)) ^ (n + 1) * 0)
-        (fun n => Real.exp (-(2 * lam)) ^ (n + 1) * tauCoeff lam n) α :=
-    xiConv_trigSeries hlam2 hz hu 0 α
-  have hu2 : Summable (fun n => Real.exp (-(2 * lam)) ^ (n + 1) * tauCoeff lam n) :=
-    summable_pow_succ_mul hu hr.le hr1.le
-  have hz2 : Summable (fun n : ℕ => Real.exp (-(2 * lam)) ^ (n + 1) * 0) := by simp
-  have h1 := hasSum_trigTerm hz hu α
-  have h2 := hasSum_trigTerm hz2 hu2 α
-  have h3 := h1.add h2
-  have h4 := (hasSum_xiConv_neg_id hlam2 α).mul_left (-2)
-  have e1 : tauU lam α = 0 + ∑' n, trigTerm (fun _ => 0) (tauCoeff lam) n α := rfl
-  have e2 : xiConv (2 * lam) (tauU lam) α = 0 +
-      ∑' n, trigTerm (fun n => Real.exp (-(2 * lam)) ^ (n + 1) * 0)
-        (fun n => Real.exp (-(2 * lam)) ^ (n + 1) * tauCoeff lam n) n α := by
-    rw [hX]; rfl
-  have h5 : (fun n => trigTerm (fun _ => 0) (tauCoeff lam) n α +
-      trigTerm (fun n => Real.exp (-(2 * lam)) ^ (n + 1) * 0)
-        (fun n => Real.exp (-(2 * lam)) ^ (n + 1) * tauCoeff lam n) n α) =
-      fun n : ℕ => -2 * (2 * (-1) ^ (n + 1) * Real.exp (-(2 * lam)) ^ (n + 1) / ((n : ℝ) + 1) *
-        Real.sin (((n + 1 : ℕ) : ℝ) * α)) := by
-    funext n
-    unfold trigTerm
-    have := one_add_mul_tauCoeff (lam := lam) n
-    have e : tauCoeff lam n + Real.exp (-(2 * lam)) ^ (n + 1) * tauCoeff lam n =
-        (1 + Real.exp (-(2 * lam)) ^ (n + 1)) * tauCoeff lam n := by ring
-    calc 0 * Real.cos (((n + 1 : ℕ) : ℝ) * α) + tauCoeff lam n * Real.sin (((n + 1 : ℕ) : ℝ) * α) +
-        (Real.exp (-(2 * lam)) ^ (n + 1) * 0 * Real.cos (((n + 1 : ℕ) : ℝ) * α) +
-          Real.exp (-(2 * lam)) ^ (n + 1) * tauCoeff lam n * Real.sin (((n + 1 : ℕ) : ℝ) * α))
-        = (tauCoeff lam n + Real.exp (-(2 * lam)) ^ (n + 1) * tauCoeff lam n) *
-            Real.sin (((n + 1 : ℕ) : ℝ) * α) := by ring
-      _ = _ := by rw [e, this]; ring
-  rw [h5] at h3
-  have h6 := h3.unique h4
-  rw [xiConv_neg_id hlam2] at h6
-  rw [e1, e2]
-  linarith
+  unfold tauU
+  rw [trigSeries_add_xiConv (by positivity) summable_zero (summable_tauCoeff hlam), trigSeries, sawS, ← tsum_mul_left]
+  simp only [mul_zero, zero_add, one_add_mul_tauCoeff]
+  congr 1
+  funext n
+  ring
 
 /-- The key identity of the existence half for `τ`: `T + (1/2π) Ξ_{2λ} * T = Ψ`
 (equation (cOE') of the source) for `T = -α + U_λ`. -/
@@ -195,12 +157,7 @@ theorem TcontFn_add_xiConv {Δ : ℝ} (hΔ : Δ < -1) (α : ℝ) :
 
 theorem Ttrans_tauCont {Δ : ℝ} (hΔ : Δ < -1) :
     Ttrans Δ (tauCont Δ) = TcontFn (lamOf Δ) := by
-  have hlam := lamOf_pos hΔ
-  have hpi := Real.pi_pos
-  funext α
-  unfold Ttrans tauCont
-  rw [kInv_kMap hlam]
-  field_simp
+  grind [kInv_kMap, Ttrans, tauCont, Real.pi_pos, lamOf_pos]
 
 /-- **Proposition 2.1, existence for `τ`**: the continuous representative `τ_c` of `τ` solves
 (cOE_Δ) at every `x ∈ [-π, π]`, including the end points (where `τ_c(±π) = ∓1/2`). -/
@@ -213,75 +170,12 @@ theorem continuous_tauCont {Δ : ℝ} (hΔ : Δ < -1) : Continuous (tauCont Δ) 
   have hlam := lamOf_pos hΔ
   exact ((continuous_TcontFn hlam).comp (continuous_kInv hlam)).div_const _
 
-/-- **Proposition 2.1, uniqueness for `τ`** (integrable version): every integrable solution of
-(cOE_Δ) on `[-π, π]` coincides with `τ_c` at every point of `[-π, π]`. -/
-theorem eq_tauCont_of_isCOESolution_of_integrableOn {Δ : ℝ} (hΔ : Δ < -1) {τ' : ℝ → ℝ}
-    (hτ' : IntegrableOn τ' (Icc (-π) π) volume) (h : IsCOESolution Δ τ') :
-    ∀ x ∈ Icc (-π) π, τ' x = tauCont Δ x := by
-  have hlam := lamOf_pos hΔ
-  have hlam2 : 0 < 2 * lamOf Δ := by linarith
-  have hpi := Real.pi_pos
-  have hT'eq := (isCOESolution_iff hΔ τ').1 h
-  have hTeq := (isCOESolution_iff hΔ (tauCont Δ)).1 (tauCont_isCOESolution hΔ)
-  have hTrho : Ttrans Δ (tauCont Δ) = TcontFn (lamOf Δ) := Ttrans_tauCont hΔ
-  rw [hTrho] at hTeq
-  have hT'int : IntegrableOn (Ttrans Δ τ') (Icc (-π) π) volume := by
-    have : IntegrableOn (fun β => 2 * π * τ' (kMap (lamOf Δ) β)) (Icc (-π) π) volume :=
-      (integrableOn_comp_kMap_of_Xi hlam hτ').const_mul (2 * π)
-    exact this
-  have hT'ii := intervalIntegrable_of_integrableOn_Icc hT'int
-  have hTii : IntervalIntegrable (TcontFn (lamOf Δ)) volume (-π) π :=
-    ((continuous_TcontFn hlam).intervalIntegrable _ _)
-  have hD : ∀ α ∈ Ioc (-π) π,
-      (fun β => Ttrans Δ τ' β - TcontFn (lamOf Δ) β) α =
-        -xiConv (2 * lamOf Δ) (fun β => Ttrans Δ τ' β - TcontFn (lamOf Δ) β) α := by
-    intro α hα
-    have hα' : α ∈ Icc (-π) π := Ioc_subset_Icc_self hα
-    rw [xiConv_sub hlam2 hT'ii hTii]
-    have h1 := hT'eq α hα'
-    have h2 := hTeq α hα'
-    simp only
-    linarith
-  have hD0 := eq_zero_of_eq_neg_xiConv hlam2 (hT'ii.sub hTii) hD
-  have hae : ∀ᵐ β ∂(volume.restrict (Icc (-π) π)),
-      τ' (kMap (lamOf Δ) β) = tauCont Δ (kMap (lamOf Δ) β) := by
-    have h1 : ∀ᵐ β ∂(volume.restrict (Icc (-π) π)),
-        Ttrans Δ τ' β - TcontFn (lamOf Δ) β = 0 := by
-      rw [Measure.restrict_congr_set Ioc_ae_eq_Icc.symm]
-      exact hD0
-    filter_upwards [h1] with β hβ
-    have : Ttrans Δ τ' β = Ttrans Δ (tauCont Δ) β := by
-      rw [hTrho]; linarith
-    unfold Ttrans at this
-    have h2 : 2 * π ≠ 0 := by positivity
-    exact mul_left_cancel₀ h2 this
-  have hτc : IntegrableOn (tauCont Δ) (Icc (-π) π) volume :=
-    integrableOn_Icc_of_continuous (continuous_tauCont hΔ)
-  have hae2 := ae_eq_of_comp_kMap hlam hτ' hτc hae
-  intro x hx
-  have h3 := h x hx
-  have h4 := tauCont_isCOESolution hΔ x hx
-  have h5 : cOEop Δ τ' x = cOEop Δ (tauCont Δ) x := by
-    unfold cOEop
-    congr 1
-    rw [intervalIntegral.integral_of_le (by linarith), intervalIntegral.integral_of_le (by linarith)]
-    refine integral_congr_ae ?_
-    have : ∀ᵐ y ∂(volume.restrict (Ioc (-π) π)), τ' y = tauCont Δ y := by
-      rw [Measure.restrict_congr_set Ioc_ae_eq_Icc]
-      exact hae2
-    filter_upwards [this] with y hy
-    rw [hy]
-  have h6 : 2 * π * τ' x = 2 * π * tauCont Δ x := by rw [h3, h4, h5]
-  have h7 : 2 * π ≠ 0 := by positivity
-  exact mul_left_cancel₀ h7 h6
-
 /-! ### The literal series (2.1) for `τ` -/
 
 /-- For `|α| < π` the partial sums of the series (2.1) for `τ` converge to `T(α)/(2π)`
 with `T = -α + U_λ`, i.e. to the continuous representative. -/
 theorem tendsto_tauPartial {lam : ℝ} (hlam : 0 < lam) {α : ℝ} (hα : |α| < π) :
     Tendsto (tauPartial lam α) atTop (𝓝 (TcontFn lam α / (2 * π))) := by
-  have hpi := Real.pi_pos
   have h1 := tendsto_sawtooth hα
   have hU := (hasSum_trigTerm (a := fun _ => (0 : ℝ)) (b := tauCoeff lam) summable_zero
     (summable_tauCoeff hlam) α).tendsto_sum_nat
@@ -298,7 +192,6 @@ theorem tendsto_tauPartial {lam : ℝ} (hlam : 0 < lam) {α : ℝ} (hα : |α| <
   rw [Finset.mul_sum, ← Finset.sum_add_distrib, Finset.mul_sum]
   refine Finset.sum_congr rfl (fun i _ => ?_)
   unfold tauCoeff trigTerm
-  have hn : ((i : ℝ) + 1) ≠ 0 := by positivity
   field_simp
   rw [pow_succ (-1 : ℝ) i]
   ring
@@ -307,48 +200,20 @@ theorem tauSeries_eq {lam : ℝ} (hlam : 0 < lam) {α : ℝ} (hα : |α| < π) :
     tauSeries lam α = TcontFn lam α / (2 * π) :=
   (tendsto_tauPartial hlam hα).limUnder_eq
 
-theorem tauPartial_pi (lam : ℝ) (N : ℕ) : tauPartial lam π N = 0 := by
-  unfold tauPartial
-  refine Finset.sum_eq_zero fun i _ => ?_
-  rw [Real.sin_nat_mul_pi]; simp [mul_comm]
+section
 
-theorem tauPartial_neg_pi (lam : ℝ) (N : ℕ) : tauPartial lam (-π) N = 0 := by
-  unfold tauPartial
-  refine Finset.sum_eq_zero fun i _ => ?_
-  rw [mul_neg, Real.sin_neg, Real.sin_nat_mul_pi]; simp
+variable (lam : ℝ)
 
-/-- At the end points the *literal* series of (2.1) vanishes (every `sin(mπ) = 0`). -/
-theorem tauSeries_pi (lam : ℝ) : tauSeries lam π = 0 := by
-  have : tauPartial lam π = fun _ => 0 := funext (tauPartial_pi lam)
-  unfold tauSeries
-  rw [this]
-  exact (tendsto_const_nhds (x := (0:ℝ))).limUnder_eq
-
-theorem tauSeries_neg_pi (lam : ℝ) : tauSeries lam (-π) = 0 := by
-  have : tauPartial lam (-π) = fun _ => 0 := funext (tauPartial_neg_pi lam)
-  unfold tauSeries
-  rw [this]
-  exact (tendsto_const_nhds (x := (0:ℝ))).limUnder_eq
+end
 
 theorem abs_kInv_lt {Δ : ℝ} (hΔ : Δ < -1) {x : ℝ} (hx : x ∈ Ioo (-π) π) :
     |kInv (lamOf Δ) x| < π := by
   have hlam := lamOf_pos hΔ
-  have hx' : x ∈ Icc (-π) π := Ioo_subset_Icc_self hx
-  have hm := kInv_mem_Icc hlam hx'
-  rw [abs_lt]
-  have hk := kMap_kInv hlam x
-  refine ⟨lt_of_le_of_ne hm.1 ?_, lt_of_le_of_ne hm.2 ?_⟩
-  · intro h
-    have : x = -π := by rw [← hk, ← h, kMap_neg_pi]
-    exact hx.1.ne this.symm
-  · intro h
-    have : x = π := by rw [← hk, h, kMap_pi]
-    exact hx.2.ne this
+  grind [kMap_pi, kMap_neg_pi, lt_of_le_of_ne, kMap_kInv, kInv_mem_Icc]
 
 /-- In the open interval the literal series (2.1) is the continuous representative. -/
 theorem tau_eq_tauCont {Δ : ℝ} (hΔ : Δ < -1) {x : ℝ} (hx : x ∈ Ioo (-π) π) :
     tau Δ x = tauCont Δ x := by
-  unfold tau tauCont
   exact tauSeries_eq (lamOf_pos hΔ) (abs_kInv_lt hΔ hx)
 
 end PottsDiscontinuity.Bethe

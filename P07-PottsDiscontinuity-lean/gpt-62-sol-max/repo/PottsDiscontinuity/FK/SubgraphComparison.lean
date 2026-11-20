@@ -31,7 +31,7 @@ def subgraphEdgeEmbedding : G.edgeSet ↪ H.edgeSet where
   toFun e := ⟨e.val, SimpleGraph.edgeSet_mono hGH e.property⟩
   inj' := by
     intro a b h
-    exact Subtype.ext (congrArg (fun e : H.edgeSet => e.val) h)
+    grind
 
 @[simp] theorem subgraphEdgeEmbedding_coe (e : G.edgeSet) :
     (subgraphEdgeEmbedding hGH e).val = e.val := rfl
@@ -52,9 +52,6 @@ def subgraphConfigurationRestriction (A : Configuration H) : Configuration G :=
 @[simp] theorem subgraphConfigurationRestriction_embedding (A : Configuration G) :
     subgraphConfigurationRestriction hGH (subgraphConfigurationEmbedding hGH A) = A :=
   Finset.preimage_map _ _
-
-theorem subgraphConfigurationRestriction_monotone : Monotone (subgraphConfigurationRestriction hGH) :=
-  Finset.monotone_preimage (subgraphEdgeEmbedding hGH).injective
 
 /-- The open graph keeps the same vertices and exactly the same selected edges. -/
 theorem openGraph_subgraphConfigurationEmbedding (A : Configuration G) :
@@ -93,7 +90,7 @@ theorem edgeRestriction_subgraphRemovedEdges :
   · intro heG
     refine ⟨SimpleGraph.edgeSet_mono hGH heG, ?_⟩
     rintro ⟨e, heR, rfl⟩
-    exact (mem_subgraphRemovedEdges e).mp heR heG
+    simp_all
 
 /-- Configurations of a subgraph are all and only the remaining-edge configurations. -/
 def subgraphRemainingConfigurationEquiv :
@@ -103,7 +100,7 @@ def subgraphRemainingConfigurationEquiv :
     apply Finset.disjoint_left.mpr
     intro e he heR
     obtain ⟨a, ha, rfl⟩ := Finset.mem_map.mp he
-    exact (mem_subgraphRemovedEdges _).mp heR a.property⟩
+    simp_all⟩
   invFun A := subgraphConfigurationRestriction hGH A.val
   left_inv := subgraphConfigurationRestriction_embedding hGH
   right_inv A := by
@@ -114,7 +111,7 @@ def subgraphRemainingConfigurationEquiv :
     constructor
     · intro he
       obtain ⟨a, ha, rfl⟩ := Finset.mem_map.mp he
-      exact (mem_subgraphConfigurationRestriction hGH A.val a).mp ha
+      simp_all
     · intro he
       have heG : e.val ∈ G.edgeSet := by
         by_contra hn
@@ -139,10 +136,7 @@ theorem subgraphRemainingConfigurationEquiv_symm_split (A : Configuration H) :
   apply Finset.ext
   intro e
   change e ∈ subgraphConfigurationRestriction hGH (A \ subgraphRemovedEdges G H) ↔ _
-  rw [mem_subgraphConfigurationRestriction]
-  simp only [Finset.mem_sdiff, mem_subgraphRemovedEdges, subgraphEdgeEmbedding_coe,
-    e.property, not_true_eq_false, not_false_eq_true, and_true,
-    mem_subgraphConfigurationRestriction]
+  simp
 
 include hGH in
 /-- Counts of sampled edges agree exactly, including the closed-edge exponent. -/
@@ -156,7 +150,7 @@ theorem remainingWeight_subgraph (q : Parameters) (ξ : BoundaryCondition V)
     remainingWeight H q ξ (subgraphRemovedEdges G H) (subgraphRemainingConfigurationEquiv hGH A) =
       weight G q ξ A := by
   have hc : componentCount H ξ (subgraphConfigurationEmbedding hGH A) = componentCount G ξ A := by
-    simp only [componentCount, componentSetoid, openGraph_subgraphConfigurationEmbedding]
+    simp [componentCount, componentSetoid, openGraph_subgraphConfigurationEmbedding]
   rw [remainingWeight, subgraphRemainingConfigurationEquiv_val, weight, subgraph_edge_card hGH, hc]
   change _ ^ (A.map _).card * _ ^ (_ - (A.map _).card) * _ = _
   rw [Finset.card_map]
@@ -183,7 +177,7 @@ theorem subgraph_expectation_le (q : Parameters) (ξ : BoundaryCondition V)
     (fun A => F ((subgraphRemainingConfigurationEquiv hGH).symm A))
     (fun A => hF0 _) (hF.comp (subgraphRemainingConfigurationOrderIso hGH).symm.monotone)
   rw [← law_subgraphRemaining_map hGH, expectation_map] at h
-  simpa only [Equiv.symm_apply_apply, subgraphRemainingConfigurationEquiv_symm_split] using h
+  simpa [subgraphRemainingConfigurationEquiv_symm_split] using h
 
 end SameVertices
 
@@ -210,7 +204,6 @@ def embeddedConfigurationRestriction (A : Configuration H) : Configuration G :=
 /-- The configuration embedding is the literal finite image along original edges. -/
 theorem embeddedConfigurationEmbedding_eq_map (A : Configuration G) :
     embeddedConfigurationEmbedding G H f hGH A = A.map (embeddedEdgeEmbedding G H f hGH) := by
-  change (A.map (isolatedExtensionEdgeEquiv G f).toEmbedding).map (subgraphEdgeEmbedding hGH) = _
   exact Finset.map_map _ _ _
 
 /-- Restriction reads exactly the large-graph state of each embedded original edge. -/
@@ -221,13 +214,6 @@ theorem embeddedConfigurationEmbedding_eq_map (A : Configuration G) :
     Equiv.symm_symm, mem_subgraphConfigurationRestriction]
   rfl
 
-@[simp] theorem embeddedConfigurationRestriction_embedding (A : Configuration G) :
-    embeddedConfigurationRestriction G H f hGH (embeddedConfigurationEmbedding G H f hGH A) = A := by
-  change (isolatedExtensionConfigurationEquiv G f).symm
-    (subgraphConfigurationRestriction hGH
-      (subgraphConfigurationEmbedding hGH (isolatedExtensionConfigurationEquiv G f A))) = A
-  rw [subgraphConfigurationRestriction_embedding, Equiv.symm_apply_apply]
-
 /-- Reading original edges and extending by closed edges is contained in the
 actual full configuration, including when the two vertex carriers differ. -/
 theorem embeddedConfigurationEmbedding_restriction_subset (A : Configuration H) :
@@ -235,15 +221,9 @@ theorem embeddedConfigurationEmbedding_restriction_subset (A : Configuration H) 
   rw [embeddedConfigurationEmbedding_eq_map]
   intro e he
   obtain ⟨a, ha, rfl⟩ := Finset.mem_map.mp he
-  exact (mem_embeddedConfigurationRestriction G H f hGH A a).mp ha
-
-theorem embeddedConfigurationRestriction_monotone : Monotone (embeddedConfigurationRestriction G H f hGH) :=
-  (isolatedExtensionConfigurationOrderIso G f).symm.monotone.comp
-    (subgraphConfigurationRestriction_monotone hGH)
+  simp_all
 
 variable [Finite V] [Finite W]
-local instance subgraphComparisonEmbeddedSmallEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance subgraphComparisonEmbeddedMappedEdgeFintype : Fintype (G.map f).edgeSet := Fintype.ofFinite _
 local instance subgraphComparisonEmbeddedLargeEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
 
 /-- The genuine larger free FK law dominates the smaller free law on every

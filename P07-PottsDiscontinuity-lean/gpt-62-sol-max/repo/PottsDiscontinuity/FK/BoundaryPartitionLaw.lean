@@ -26,11 +26,9 @@ theorem law_eq_of_boundary_partition_eq {V : Type*} [Finite V]
   have hpartition : partitionFunction G q ξ = partitionFunction G q η := by
     unfold partitionFunction FiniteProbability.partition
     congr 1
-    funext A
-    exact hw A
+    grind
   ext A
-  rw [law_apply, law_apply, configurationProbability, configurationProbability,
-    hw A, hpartition]
+  simp [law_apply, configurationProbability, hw A, hpartition]
 
 end
 end PottsDiscontinuity.FK

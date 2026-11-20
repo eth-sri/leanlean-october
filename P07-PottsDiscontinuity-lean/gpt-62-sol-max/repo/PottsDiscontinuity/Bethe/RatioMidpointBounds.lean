@@ -22,13 +22,13 @@ theorem ratio_midpoint_second_difference (f f' f'' : ℝ → ℝ) {a b L : ℝ}
       |f' v - f' u| ≤ L * |v - u| := by
     have ht := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
       (fun x hx => (hf' x hx).hasDerivWithinAt)
-      (fun x hx => by simpa only [Real.norm_eq_abs] using hbound x hx)
+      (fun x hx => by simpa using hbound x hx)
       (convex_Icc a b) hu hv
-    simpa only [Real.norm_eq_abs] using ht
+    assumption
   let g : ℝ → ℝ := fun x => f x - f' m * x
   have hg (x : ℝ) (hx : x ∈ Icc a b) : HasDerivAt g (f' x - f' m) x := by
-    simpa only [g, Pi.sub_apply, id_eq, mul_one] using!
-      (hf x hx).sub ((hasDerivAt_id x).const_mul (f' m))
+    simpa using!
+          (hf x hx).sub ((hasDerivAt_id x).const_mul (f' m))
   have hgBound (x : ℝ) (hx : x ∈ Icc a b) : |f' x - f' m| ≤ L * (b - a) := by
     apply (hLip m hm x hx).trans
     apply mul_le_mul_of_nonneg_left _ hL
@@ -37,23 +37,20 @@ theorem ratio_midpoint_second_difference (f f' f'' : ℝ → ℝ) {a b L : ℝ}
   have hgLip (x : ℝ) (hx : x ∈ Icc a b) : |g x - g m| ≤ L * (b - a) * |x - m| := by
     have ht := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
       (fun y hy => (hg y hy).hasDerivWithinAt)
-      (fun y hy => by simpa only [Real.norm_eq_abs] using hgBound y hy)
+      (fun y hy => by simpa using hgBound y hy)
       (convex_Icc a b) hm hx
-    simpa only [Real.norm_eq_abs] using ht
+    assumption
   have ha := hgLip a ⟨le_rfl, hab⟩
   have hb := hgLip b ⟨hab, le_rfl⟩
   have ham : |a - m| = (b - a) / 2 := by
     rw [abs_of_nonpos (sub_nonpos.mpr hm.1)]
-    dsimp [m]
     ring
   have hbm : |b - m| = (b - a) / 2 := by
     rw [abs_of_nonneg (sub_nonneg.mpr hm.2)]
-    dsimp [m]
     ring
   rw [ham] at ha
   rw [hbm] at hb
   have he : 2 * f m - f a - f b = -(g a - g m) - (g b - g m) := by
-    dsimp [g, m]
     ring
   change |2 * f m - f a - f b| ≤ _
   rw [he]
@@ -74,7 +71,7 @@ theorem ratio_midpoint_log_bound {c : ℝ} (hc : 2 < c) :
   have hbound (x : ℝ) (hx : x ∈ Icc a b) : |ratioEllSecond c x| ≤ B / a ^ 2 := by
     have ht := hbnd x (Ioo_subset_Icc_self (hInt x hx))
     rw [abs_mul, abs_of_nonneg (sq_nonneg x)] at ht
-    have hax : a ^ 2 ≤ x ^ 2 := (sq_le_sq₀ ha.le (hxpos x hx).le).mpr hx.1
+    have hax := (sq_le_sq₀ ha.le (hxpos x hx).le).mpr hx.1
     have hm := mul_le_mul_of_nonneg_right hax (abs_nonneg (ratioEllSecond c x))
     apply (le_div_iff₀ (sq_pos_of_pos ha)).mpr
     nlinarith only [ht, hm]
@@ -100,13 +97,13 @@ theorem ratio_midpoint_rank_bound {c B M D a b : ℝ} {N k : ℕ}
   have hkpos : (0 : ℝ) < (k : ℝ) + 1 := by positivity
   have hrank' : (k : ℝ) + 1 ≤ 2 * (M * N) * a := by
     nlinarith only [hrank, (Nat.cast_nonneg k : (0 : ℝ) ≤ k)]
-  have hgap' : (b - a) * (N : ℝ) ≤ D := (le_div_iff₀ hNp).mp hgap
+  have hgap' := (le_div_iff₀ hNp).mp hgap
   have h₁ := mul_le_mul_of_nonneg_right hrank' (sub_nonneg.mpr hab)
   have h₂ := mul_le_mul_of_nonneg_left hgap' (mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hM) ha.le)
   have hratio : (b - a) / a ≤ (2 * M * D) / ((k : ℝ) + 1) := by
     apply (div_le_div_iff₀ ha hkpos).mpr
     nlinarith only [h₁, h₂]
-  have hsquare : ((b - a) / a) ^ 2 ≤ ((2 * M * D) / ((k : ℝ) + 1)) ^ 2 :=
+  have hsquare :=
     (sq_le_sq₀ (div_nonneg (sub_nonneg.mpr hab) ha.le) (by positivity)).mpr hratio
   apply (hprofile a b ha hab hb).trans
   have hh := mul_le_mul_of_nonneg_left hsquare hB

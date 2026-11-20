@@ -20,9 +20,7 @@ theorem sourceRightColumn_even (hN : 8 ∣ N) : Even (sourceRightColumn N) := by
   rw [hk]
   refine ⟨(3 * k : ℤ), ?_⟩
   dsimp [sourceRightColumn]
-  have hdiv : (8 : ℤ) * k / 4 = 2 * k := by omega
-  rw [hdiv]
-  ring
+  omega
 
 /-- The chain up to the last complete `2n` block, followed by a final lifted
 segment to height `M`. Every path is localized to its specified lift. -/
@@ -54,9 +52,7 @@ theorem liftedCPrime_vertical_connection (hN : 0 < N) (hM : 0 < M)
   let k := M / (2 * n)
   let y := liftedChainSite x hx n
   have hchain := liftedChainEvent_reachable hN hM a b R y k A hA.1
-  have hstart : y 0 = liftedColumnSite x 0 hx ⟨0, rfl⟩ := by
-    apply Subtype.ext
-    simp [y, liftedChainSite, liftedColumnSite]
+  have hstart : y 0 = liftedColumnSite x 0 hx ⟨0, rfl⟩ := rfl
   rw [hstart] at hchain
   obtain ⟨w, _hw⟩ := hA.2
   exact hchain.trans ⟨w⟩

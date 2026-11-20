@@ -42,9 +42,6 @@ for `c ≥ 1`. -/
 theorem term_le {c : ℝ} (hc : 1 ≤ c) (k : ℕ) :
     Real.exp c * (4 / ((2 * (k : ℝ) + 1) * Real.sinh ((2 * (k : ℝ) + 1) * c))) ≤
       16 * Real.exp (-(2 * (k : ℝ) * c)) := by
-  have hk1 : (1 : ℝ) ≤ 2 * (k : ℝ) + 1 := by
-    have : (0 : ℝ) ≤ k := Nat.cast_nonneg k
-    linarith
   have hy : 1 ≤ (2 * (k : ℝ) + 1) * c := by nlinarith
   have hs := exp_div_four_le_sinh hy
   have hepos := Real.exp_pos ((2 * (k : ℝ) + 1) * c)
@@ -68,37 +65,25 @@ theorem term_le {c : ℝ} (hc : 1 ≤ c) (k : ℕ) :
 
 theorem term_nonneg {c : ℝ} (hc : 0 < c) (k : ℕ) :
     0 ≤ Real.exp c * (4 / ((2 * (k : ℝ) + 1) * Real.sinh ((2 * (k : ℝ) + 1) * c))) := by
-  have : 0 < Real.sinh ((2 * (k : ℝ) + 1) * c) := Real.sinh_pos_iff.2 (by positivity)
   positivity
 
 theorem tendsto_term_zero :
     Tendsto (fun c : ℝ => Real.exp c * (4 / ((2 * ((0 : ℕ) : ℝ) + 1) *
       Real.sinh ((2 * ((0 : ℕ) : ℝ) + 1) * c)))) atTop (𝓝 8) := by
-  have h1 : Tendsto (fun c : ℝ => Real.exp (-(2 * c))) atTop (𝓝 0) :=
+  have h1 :=
     Real.tendsto_exp_neg_atTop_nhds_zero.comp (tendsto_id.const_mul_atTop two_pos)
   have h2 : Tendsto (fun c : ℝ => 8 / (1 - Real.exp (-(2 * c)))) atTop (𝓝 8) := by
     have := (tendsto_const_nhds (x := (8 : ℝ))).div
       ((tendsto_const_nhds (x := (1 : ℝ))).sub h1) (by norm_num : (1 : ℝ) - 0 ≠ 0)
-    simpa [Pi.div_def] using this
+    aesop
   refine h2.congr' ?_
   filter_upwards [eventually_gt_atTop 0] with c hc
   have hE : Real.exp (-(2 * c)) = (Real.exp c)⁻¹ * (Real.exp c)⁻¹ := by
     rw [show -(2 * c) = -c + -c by ring, Real.exp_add, Real.exp_neg]
-  have hpos := Real.exp_pos c
   have hs : Real.sinh c = (Real.exp c - (Real.exp c)⁻¹) / 2 := by
     rw [Real.sinh_eq, Real.exp_neg]
-  have hgt : 1 < Real.exp c := Real.one_lt_exp_iff.2 hc
-  have hne : Real.exp c - (Real.exp c)⁻¹ ≠ 0 := by
-    have : (Real.exp c)⁻¹ < 1 := inv_lt_one_of_one_lt₀ hgt
-    linarith
-  have hne2 : 1 - (Real.exp c)⁻¹ * (Real.exp c)⁻¹ ≠ 0 := by
-    have h0 : (Real.exp c)⁻¹ < 1 := inv_lt_one_of_one_lt₀ hgt
-    have h00 : 0 < (Real.exp c)⁻¹ := inv_pos.2 hpos
-    nlinarith
-  simp only [Nat.cast_zero, mul_zero, zero_add, one_mul]
-  rw [hE, hs]
-  field_simp
-  ring
+  have hgt := Real.one_lt_exp_iff.2 hc
+  grind
 
 theorem tendsto_term_zero_of_pos {k : ℕ} (hk : 0 < k) :
     Tendsto (fun c : ℝ => Real.exp c * (4 / ((2 * (k : ℝ) + 1) *
@@ -120,9 +105,8 @@ theorem tendsto_exp_mul_hyperbolic_series :
     Tendsto (fun c : ℝ => Real.exp c *
       ∑' k : ℕ, 4 / ((2 * (k : ℝ) + 1) * Real.sinh ((2 * (k : ℝ) + 1) * c))) atTop (𝓝 8) := by
   have hlt : Real.exp (-2) < 1 := by
-    rw [Real.exp_lt_one_iff]
-    norm_num
-  have hsum : Summable (fun k : ℕ => 16 * (Real.exp (-2)) ^ k) :=
+    simp
+  have hsum :=
     (summable_geometric_of_lt_one (Real.exp_pos _).le hlt).mul_left 16
   have hT := tendsto_tsum_of_dominated_convergence (𝓕 := (atTop : Filter ℝ))
     (f := fun (c : ℝ) (k : ℕ) =>
@@ -140,11 +124,9 @@ theorem tendsto_exp_mul_hyperbolic_series :
       rw [← Real.exp_nat_mul]
       have : Real.exp (-(2 * (k : ℝ) * c)) ≤ Real.exp ((k : ℝ) * -2) := by
         apply Real.exp_le_exp.2
-        have hk0 : (0 : ℝ) ≤ k := Nat.cast_nonneg k
         nlinarith
       linarith)
   have hg : ∑' k : ℕ, (if k = 0 then (8 : ℝ) else 0) = 8 := by
-    rw [tsum_eq_single 0 (fun b hb => by simp [hb])]
     simp
   rw [hg] at hT
   refine hT.congr fun c => ?_
@@ -159,10 +141,10 @@ theorem sinh_le_mul_cosh {x : ℝ} (hx : 0 ≤ x) : Real.sinh x ≤ x * Real.cos
     have := ((hasDerivAt_id y).mul (Real.hasDerivAt_cosh y)).sub (Real.hasDerivAt_sinh y)
     convert this using 1
     · rfl
-    · simp only [id]; ring
+    simp
   have hmono : MonotoneOn (fun x : ℝ => x * Real.cosh x - Real.sinh x) (Set.Ici 0) := by
     apply monotoneOn_of_deriv_nonneg (convex_Ici 0)
-    · exact (fun y _ => (hd y).continuousAt.continuousWithinAt)
+    · fun_prop
     · exact (fun y _ => (hd y).differentiableAt.differentiableWithinAt)
     · intro y hy
       rw [interior_Ici] at hy
@@ -173,24 +155,21 @@ theorem sinh_le_mul_cosh {x : ℝ} (hx : 0 ≤ x) : Real.sinh x ≤ x * Real.cos
 
 theorem inv_sub_inv_sinh_le {x : ℝ} (hx : 0 < x) :
     0 ≤ 1 / x - 1 / Real.sinh x ∧ 1 / x - 1 / Real.sinh x ≤ (Real.cosh x - 1) / x := by
-  have hs : x ≤ Real.sinh x := Real.self_le_sinh_iff.2 hx.le
-  have hspos : 0 < Real.sinh x := lt_of_lt_of_le hx hs
+  have hs := Real.self_le_sinh_iff.2 hx.le
   have hc1 : 1 ≤ Real.cosh x := Real.one_le_cosh x
   have hsc := sinh_le_mul_cosh hx.le
   have e : 1 / x - 1 / Real.sinh x = (Real.sinh x - x) / (x * Real.sinh x) := by
     field_simp
   rw [e]
   constructor
-  · apply div_nonneg <;> nlinarith
+  · positivity
   · rw [div_le_div_iff₀ (by positivity) hx]
     nlinarith [mul_nonneg (sub_nonneg.2 hc1) (sub_nonneg.2 hs)]
 
 theorem tendsto_cosh_sub_one_div :
     Tendsto (fun x : ℝ => (Real.cosh x - 1) / x) (𝓝[>] 0) (𝓝 0) := by
   have h := (Real.hasDerivAt_cosh 0).tendsto_slope_zero_right
-  simp only [Real.sinh_zero, zero_add, Real.cosh_zero, smul_eq_mul] at h
-  refine h.congr fun x => ?_
-  rw [inv_mul_eq_div]
+  simp_all [inv_mul_eq_div]
 
 theorem tendsto_inv_sinh_sub_inv :
     Tendsto (fun x : ℝ => 1 / Real.sinh x - 1 / x) (𝓝[>] 0) (𝓝 0) := by
@@ -199,9 +178,7 @@ theorem tendsto_inv_sinh_sub_inv :
     · filter_upwards [self_mem_nhdsWithin] with x hx using (inv_sub_inv_sinh_le hx).1
     · filter_upwards [self_mem_nhdsWithin] with x hx using (inv_sub_inv_sinh_le hx).2
   have := h.neg
-  simp only [neg_zero] at this
-  refine this.congr fun x => ?_
-  ring
+  simp_all
 
 /-! ### The parameter `lam(q) = arcosh (√q / 2)` -/
 
@@ -209,12 +186,11 @@ theorem two_mul_sinh_arcosh_sqrt_div_two {q : ℝ} (hq : 4 < q) :
     2 * Real.sinh (Real.arcosh (Real.sqrt q / 2)) = Real.sqrt (q - 4) := by
   have h2 : (2 : ℝ) < Real.sqrt q := by
     rw [show (2 : ℝ) = Real.sqrt 4 by
-      rw [show (4 : ℝ) = 2 ^ 2 by norm_num, Real.sqrt_sq (by norm_num)]]
-    exact Real.sqrt_lt_sqrt (by norm_num) hq
+      norm_num]
+    simp_all
   rw [Real.sinh_arcosh (by linarith)]
   have h4 : (Real.sqrt q / 2) ^ 2 - 1 = (q - 4) / 2 ^ 2 := by
-    rw [div_pow, Real.sq_sqrt (by linarith)]
-    ring
+    grind
   rw [h4, Real.sqrt_div (by linarith), Real.sqrt_sq (by norm_num)]
   ring
 
@@ -237,8 +213,7 @@ theorem tendsto_arcosh_sqrt_div_two :
     have hq' : 4 < q := hq
     simp only [Function.comp]
     rw [← two_mul_sinh_arcosh_sqrt_div_two hq']
-    rw [show 2 * Real.sinh (Real.arcosh (Real.sqrt q / 2)) / 2 =
-      Real.sinh (Real.arcosh (Real.sqrt q / 2)) by ring, Real.arsinh_sinh]
+    simp
   · filter_upwards [self_mem_nhdsWithin] with q hq
     exact (arcosh_pos_of_gt4 q hq).1
 
@@ -251,7 +226,7 @@ theorem asymptotic13 :
       (fun q => 8 * Real.exp (-(π ^ 2 / Real.sqrt (q - 4)))) := by
   apply Asymptotics.isEquivalent_of_tendsto_one
   set L : ℝ → ℝ := fun q => Real.arcosh (Real.sqrt q / 2) with hL
-  have hLt : Tendsto L (𝓝[>] 4) (𝓝[>] 0) := tendsto_arcosh_sqrt_div_two
+  have hLt := tendsto_arcosh_sqrt_div_two
   have hc : Tendsto (fun q => π ^ 2 / 2 * (L q)⁻¹) (𝓝[>] 4) atTop :=
     Tendsto.const_mul_atTop (by positivity) (tendsto_inv_nhdsGT_zero.comp hLt)
   have hG := tendsto_exp_mul_hyperbolic_series.comp hc
@@ -264,7 +239,7 @@ theorem asymptotic13 :
     have h2 := two_mul_sinh_arcosh_sqrt_div_two hq'
     simp only [Function.comp]
     rw [← h2]
-    have hpos : 0 < Real.sinh (L q) := Real.sinh_pos_iff.2 (arcosh_pos_of_gt4 q hq').1
+    have hpos := Real.sinh_pos_iff.2 (arcosh_pos_of_gt4 q hq').1
     simp only [hL] at hpos ⊢
     field_simp
   have hlim := (hG.div_const 8).mul (hd.rexp)
@@ -272,9 +247,6 @@ theorem asymptotic13 :
   rw [show (8 : ℝ) / 8 = 1 by norm_num] at hlim
   refine hlim.congr' ?_
   filter_upwards [self_mem_nhdsWithin] with q hq
-  have hq' : 4 < q := hq
-  have hLpos : 0 < L q := (arcosh_pos_of_gt4 q hq').1
-  have hsq : 0 < Real.sqrt (q - 4) := Real.sqrt_pos.2 (by linarith)
   simp only [Function.comp, Pi.div_apply]
   set c := π ^ 2 / 2 * (L q)⁻¹ with hcdef
   set s := π ^ 2 / Real.sqrt (q - 4) with hsdef
@@ -288,8 +260,6 @@ theorem asymptotic13 :
   rw [hu]
   generalize (∑' k : ℕ, 4 / ((2 * (k : ℝ) + 1) * Real.sinh ((2 * (k : ℝ) + 1) * c))) = H
   rw [Real.exp_sub, Real.exp_neg]
-  have h1 := Real.exp_pos c
-  have h2 := Real.exp_pos s
   field_simp
 
 end PottsDiscontinuity

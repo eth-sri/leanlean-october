@@ -16,8 +16,8 @@ theorem arcosh_pos_of_gt4 (q : ℝ) (hq : 4 < q) :
     0 < Real.arcosh (Real.sqrt q / 2) ∧ Real.cosh (Real.arcosh (Real.sqrt q / 2)) = Real.sqrt q / 2 := by
   have h2 : (2:ℝ) < Real.sqrt q := by
     rw [show (2:ℝ) = Real.sqrt 4 by
-      rw [show (4:ℝ) = 2^2 by norm_num, Real.sqrt_sq (by norm_num)]]
-    exact Real.sqrt_lt_sqrt (by norm_num) hq
+      norm_num]
+    simp_all
   have h1 : (1:ℝ) < Real.sqrt q / 2 := by linarith
   exact ⟨Real.arcosh_pos h1, Real.cosh_arcosh (by linarith)⟩
 

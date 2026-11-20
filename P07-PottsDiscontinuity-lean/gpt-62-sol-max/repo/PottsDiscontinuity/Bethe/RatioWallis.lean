@@ -17,7 +17,7 @@ noncomputable def ratioWallisFactor (k : ℕ) : ℝ :=
   1 - (1 / 2 : ℝ) ^ 2 / ((k : ℝ) + 1) ^ 2
 
 theorem ratio_wallisFactor_pos (k : ℕ) : 0 < ratioWallisFactor k := by
-  have hk : (1 : ℝ) ≤ (k : ℝ) + 1 := by linarith [(Nat.cast_nonneg k : (0 : ℝ) ≤ k)]
+  have hk : (1 : ℝ) ≤ (k : ℝ) + 1 := by simp
   have hden : (1 : ℝ) ≤ ((k : ℝ) + 1) ^ 2 := by nlinarith
   have hq : (1 / 2 : ℝ) ^ 2 / ((k : ℝ) + 1) ^ 2 ≤ (1 / 2 : ℝ) ^ 2 :=
     div_le_self (by positivity) hden
@@ -34,7 +34,7 @@ theorem ratio_wallis_product_tendsto :
   apply ht.congr
   intro n
   unfold ratioWallisFactor
-  field_simp [Real.pi_ne_zero]
+  simp
 
 theorem ratio_summable_rank_bound (C : ℝ) :
     Summable (fun k : ℕ => C / ((k : ℝ) + 1) ^ 2) := by
@@ -54,7 +54,7 @@ theorem ratio_wallis_limit_of_log_bounds (t : ℕ → ℕ) (v : ℕ → ℕ → 
   have hdom := ratio_summable_rank_bound C
   have hlogBound (k : ℕ) : ‖Real.log (ratioWallisFactor k)‖ ≤ C / ((k : ℝ) + 1) ^ 2 :=
     le_of_tendsto (hpoint k).norm (hbound.mono (fun i hi => hi k))
-  have hlogSummable : Summable (fun k => Real.log (ratioWallisFactor k)) :=
+  have hlogSummable :=
     Summable.of_norm_bounded hdom hlogBound
   have hseries := tendsto_tsum_of_dominated_convergence hdom hpoint hbound
   have hlogs := (Real.continuous_exp.tendsto _).comp hlogSummable.hasSum.tendsto_sum_nat
@@ -67,12 +67,12 @@ theorem ratio_wallis_limit_of_log_bounds (t : ℕ → ℕ) (v : ℕ → ℕ → 
   have hlogValue : Real.exp (∑' k, Real.log (ratioWallisFactor k)) = 2 / Real.pi := by
     have ht : Tendsto (fun n => ∏ k ∈ range n, ratioWallisFactor k) atTop
         (𝓝 (Real.exp (∑' k, Real.log (ratioWallisFactor k)))) := by
-      simpa only [Function.comp_def, hfinite] using hlogs
+      simpa [Function.comp_def, hfinite] using hlogs
     exact tendsto_nhds_unique ht ratio_wallis_product_tendsto
   have ht := (Real.continuous_exp.tendsto _).comp hseries
   rw [hlogValue] at ht
   have hs (i : ℕ) : (∑' k, v i k) = ∑ k ∈ range (t i), v i k :=
     tsum_eq_sum (fun k hk => hzero i k (Nat.le_of_not_gt (fun h => hk (mem_range.mpr h))))
-  simpa only [Function.comp_def, hs] using ht
+  simpa [Function.comp_def, hs] using ht
 
 end PottsDiscontinuity.Bethe

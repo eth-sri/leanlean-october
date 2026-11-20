@@ -26,12 +26,6 @@ variable {N M : ℕ}
 
 noncomputable section
 
-local instance rectangleUnionEdgeFintype (hN : Even N) (hM : Even M) :
-    Fintype (rectangleBaseGraph hN hM).edgeSet := Fintype.ofFinite _
-
-local instance rectangleUnionEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (rectangleBaseGraph hN hM).edgeSet := Classical.decEq _
-
 /-- Left-boundary face vertices of the cut rectangle. -/
 abbrev RectangleLeftRoot (N M : ℕ) :=
   {u : FaceVertex N M true // u.val.1.val = 0}
@@ -52,16 +46,12 @@ private theorem rectangleCutGraph_eq_fullDiamondGraph_closedOnSeams
     SimpleGraph.fromEdgeSet_adj]
   constructor
   · rintro ⟨⟨v, hv, _, _, hp⟩, hne⟩
-    exact ⟨⟨v, hv, hp⟩, hne⟩
+    tauto
   · rintro ⟨⟨v, hv, hp⟩, hne⟩
     have hx : v.1.val ≠ 0 := by
-      intro hz
-      rw [hclosed v (Or.inl hz)] at hv
-      contradiction
+      grind
     have hy : v.2.val ≠ 0 := by
-      intro hz
-      rw [hclosed v (Or.inr hz)] at hv
-      contradiction
+      grind
     exact ⟨⟨v, hv, hx, hy, hp⟩, hne⟩
 
 theorem rectangleFKCrossingEvent_exists_rootSet
@@ -74,7 +64,7 @@ theorem rectangleFKCrossingEvent_exists_rootSet
   let A := rectangleRCConfigOfConfiguration hN hM C
   let R := rectangleOpenGraph hN hM A
   let K := rectangleCrossingComponents hN hM A
-  have hK : k ≤ K.card := hC
+  have hK := hC
   obtain ⟨T, hTK, hTcard⟩ := Finset.exists_subset_card_eq hK
   have hclosed : ∀ v : Fin N × Fin M,
       v.1.val = 0 ∨ v.2.val = 0 → A v = false := by
@@ -88,10 +78,7 @@ theorem rectangleFKCrossingEvent_exists_rootSet
     have hFKDiamond :=
       PottsDiscontinuity.TorusLoops.rectangleOpenGraph_eq_diamondOpenGraph_closedOnSeams
         hN hM A hclosed
-    change rectangleOpenGraph hN hM A =
-      FK.openGraph (rectangleBaseGraph hN hM) C
-    rw [hcutDiamond, ← hconfig]
-    exact hFKDiamond.symm
+    grind
   let witness : ∀ c : R.ConnectedComponent, c ∈ T →
       ∃ x : RectangleLeftRoot N M, ∃ y : FaceVertex N M true,
         y.val.1.val + 1 = N ∧ R.connectedComponentMk x.val = c ∧ R.Reachable x.val y := by
@@ -99,7 +86,7 @@ theorem rectangleFKCrossingEvent_exists_rootSet
     have hcK : c ∈ K := hTK hc
     rcases Finset.mem_filter.mp hcK with ⟨_, x, y, hx, hy, hxc, hreach⟩
     exact ⟨⟨x, hx⟩, y, hy, hxc, hreach⟩
-  let chosen : ∀ c : R.ConnectedComponent, c ∈ T → RectangleLeftRoot N M :=
+  let chosen :=
     fun c hc => Classical.choose (witness c hc)
   have chosen_data : ∀ c (hc : c ∈ T),
       ∃ y : FaceVertex N M true, y.val.1.val + 1 = N ∧
@@ -107,7 +94,7 @@ theorem rectangleFKCrossingEvent_exists_rootSet
           R.Reachable (chosen c hc).val y := by
     intro c hc
     exact Classical.choose_spec (witness c hc)
-  let S : Finset (RectangleLeftRoot N M) :=
+  let S :=
     T.attach.image fun c => chosen c.val c.property
   have hchosen_inj : ∀ a ∈ T.attach, ∀ b ∈ T.attach,
       chosen a.val a.property = chosen b.val b.property → a = b := by
@@ -124,13 +111,11 @@ theorem rectangleFKCrossingEvent_exists_rootSet
         _ = b.val := hcb
     exact heq
   have hScard : S.card = k := by
-    dsimp [S]
     rw [Finset.card_image_iff.mpr hchosen_inj, Finset.card_attach, hTcard]
   refine ⟨S, hScard, ?_⟩
   have hnodup : (S.toList.map Subtype.val).Nodup := by
     apply List.Nodup.map
-    · intro x y hxy
-      exact Subtype.ext hxy
+    · simp
     · exact Finset.nodup_toList S
   have hallcross : ∀ x ∈ S.toList.map Subtype.val,
       C ∈ rectangleRootCrossingEvent hN hM x := by
@@ -141,7 +126,7 @@ theorem rectangleFKCrossingEvent_exists_rootSet
     have hd := chosen_data c.val c.property
     let y := Classical.choose hd
     have hdSpec := Classical.choose_spec hd
-    have hy : y.val.1.val + 1 = N := hdSpec.1
+    have hy := hdSpec.1
     have hreach := hdSpec.2.2
     refine ⟨y, hy, ?_⟩
     change (FK.openGraph (rectangleBaseGraph hN hM) C).Reachable
@@ -166,8 +151,7 @@ theorem rectangleFKCrossingEvent_exists_rootSet
           (chosen c.val c.property).val (chosen d.val d.property).val := by
       change (FK.openGraph (rectangleBaseGraph hN hM) C).Reachable
         (↑xr) (↑yr) at hconn
-      rw [← hcx, ← hdy] at hconn
-      exact hconn
+      simpa [← hcx, ← hdy] using hconn
     have hreach : R.Reachable (chosen c.val c.property).val
         (chosen d.val d.property).val := hgraph.symm ▸ hconn'
     have heq : c.val = d.val := by
@@ -180,7 +164,7 @@ theorem rectangleFKCrossingEvent_exists_rootSet
     subst d
     apply hxy
     exact congrArg Subtype.val (hcx.symm.trans hdy)
-  exact ⟨hallcross, hnodup, hdistinct⟩
+  trivial
 
 /-- There are at most `M` choices for a left-boundary face root. -/
 theorem rectangleLeftRoot_card_le (N M : ℕ) :
@@ -188,31 +172,11 @@ theorem rectangleLeftRoot_card_le (N M : ℕ) :
   classical
   let f : RectangleLeftRoot N M → Fin M := fun u => u.val.val.2
   have hf : Function.Injective f := by
-    intro a b hab
-    apply Subtype.ext
-    apply Subtype.ext
-    apply Prod.ext
-    · apply Fin.ext
-      exact a.property.trans b.property.symm
-    · exact hab
+    intro x; grind
   calc
     Fintype.card (RectangleLeftRoot N M) ≤ Fintype.card (Fin M) :=
       Fintype.card_le_of_injective f hf
     _ = M := Fintype.card_fin M
-
-private theorem rectangleFKEventProbability_eq_measure
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
-    (E : Set (Configuration (rectangleBaseGraph hN hM))) :
-    rectangleFKEventProbability hN hM q E =
-      (measure (rectangleBaseGraph hN hM) (rectangleFKParameters q)
-        (BoundaryCondition.free ∅) E).toReal := by
-  rw [measure_toReal_eq_indicator_sum]
-  unfold rectangleFKEventProbability rectangleFKEventWeight
-  rw [Finset.sum_div]
-  apply Finset.sum_congr rfl
-  intro C hC
-  by_cases h : C ∈ E <;> simp [Set.indicator, h, configurationProbability,
-    mul_comm]
 
 /-- The free-rectangle probability of at least `k` horizontal crossing
 components is at most the number of left-root sets times the exploration
@@ -231,7 +195,7 @@ theorem rectangleFKCrossingEvent_probability_le_rootUnion
   let μ := measure (rectangleBaseGraph hN hM) (rectangleFKParameters q)
     (BoundaryCondition.free ∅)
   let ρ := rectangleFreeOneArmProbability q (N / 2 - 1)
-  have hcardLeft : Fintype.card Left ≤ M := rectangleLeftRoot_card_le N M
+  have hcardLeft := rectangleLeftRoot_card_le N M
   have hcardI : Fintype.card I ≤ 2 ^ M := by
     calc
       Fintype.card I ≤ Fintype.card (Finset Left) :=
@@ -265,7 +229,7 @@ theorem rectangleFKCrossingEvent_probability_le_rootUnion
     calc
       (∑ S : I, μ.real (event S)) ≤ ∑ _S : I, ρ ^ k :=
         Finset.sum_le_sum fun S _ => by
-          simpa [μ, Measure.real, rectangleBaseEventProbability] using hprobS S
+          simpa [Measure.real, rectangleBaseEventProbability] using hprobS S
       _ = (Fintype.card I : ℝ) * ρ ^ k := by simp
   have hcardR : (Fintype.card I : ℝ) ≤ (2 : ℝ) ^ M := by
     exact_mod_cast hcardI
@@ -274,8 +238,8 @@ theorem rectangleFKCrossingEvent_probability_le_rootUnion
     unfold rectangleFreeOneArmProbability
     exact NNReal.coe_nonneg _
   rw [rectangleFKEventProbability_eq_measure hN hM q]
-  simpa [μ, Measure.real] using hUnionReal.trans (hsum.trans
-    (mul_le_mul_of_nonneg_right hcardR (pow_nonneg hρ k)))
+  simpa [Measure.real] using hUnionReal.trans (hsum.trans
+      (mul_le_mul_of_nonneg_right hcardR (pow_nonneg hρ k)))
 
 end
 

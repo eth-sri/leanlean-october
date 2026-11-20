@@ -66,7 +66,7 @@ noncomputable def subEmb : (Q.vrx Ex) ↪ Q.pcells where
   toFun v := ⟨v.1, vrx_subset_pcells Q Ex v.2⟩
   inj' := by
     intro a b h
-    exact Subtype.ext (by simpa using congrArg Subtype.val h)
+    simp_all
 
 theorem subLe : (Q.subG Ex).map (subEmb Q Ex) ≤ Q.pG := by
   intro x y hxy
@@ -103,15 +103,12 @@ theorem endEdge_mem_remG {m : Cell} (hm : m ∈ Q.inner) :
     · have : m' = m := primalEnds_inj (Or.inl (by rw [he, ha', hb']))
       rw [← this]; exact hm'
     · have : m' = m := primalEnds_inj (Or.inr (by rw [he, ha', hb']; rfl))
-      rw [← this]; exact hm'
+      simpa [← this] using hm'
 
 theorem embeddedEdge_endEdge {m : Cell} (hm : m ∈ Q.unx Ex) :
     FK.embeddedEdgeEmbedding (Q.subG Ex) Q.pG (Q.subEmb Ex) (Q.subLe Ex)
       (endEdgeEquiv (Q.subData Ex) ⟨m, hm⟩) =
-        endEdgeEquiv Q.pData ⟨m, unx_subset_inner Q Ex hm⟩ := by
-  apply Subtype.ext
-  rw [FK.embeddedEdgeEmbedding_coe, endEdgeEquiv_val, endEdgeEquiv_val]
-  rfl
+        endEdgeEquiv Q.pData ⟨m, unx_subset_inner Q Ex hm⟩ := rfl
 
 theorem openMedials_restr (C : FK.Configuration Q.pG) :
     openMedials (Q.subData Ex)
@@ -123,7 +120,7 @@ theorem openMedials_restr (C : FK.Configuration Q.pG) :
   · rintro ⟨hm, h⟩
     rw [FK.mem_embeddedConfigurationRestriction] at h
     refine ⟨⟨unx_subset_inner Q Ex hm, ?_⟩, hm⟩
-    rwa [embeddedEdge_endEdge] at h
+    assumption
   · rintro ⟨⟨hm, h⟩, hmU⟩
     refine ⟨hmU, ?_⟩
     rw [FK.mem_embeddedConfigurationRestriction, embeddedEdge_endEdge]
@@ -173,14 +170,14 @@ theorem frozen_iff (hEx : Ex ⊆ Q.inner) {H₀ : Finset Cell} (hH : H₀ ⊆ Ex
       exact (mem_cfgOf Q.pData H₀ ⟨m, hmI⟩).1 ((h _).1 h1)
     · intro hm
       have hmI := hEx (hH hm)
-      have h1 : endEdgeEquiv Q.pData ⟨m, hmI⟩ ∈ cfgOf Q.pData H₀ :=
+      have h1 :=
         (mem_cfgOf Q.pData H₀ ⟨m, hmI⟩).2 hm
       exact (mem_inter_remG C hmI).1 ((h _).2 h1)
   · intro h e
     obtain ⟨m, rfl⟩ := (endEdgeEquiv Q.pData).surjective e
     rw [mem_inter_remG C m.2]
     change _ ↔ endEdgeEquiv Q.pData m ∈ cfgOf Q.pData H₀
-    rw [mem_cfgOf, ← h, Finset.mem_inter]
+    simp [mem_cfgOf, ← h]
 
 /-- A boundary condition given by a setoid on all vertices. -/
 def bcOfSetoid {V : Type*} (s : Setoid V) : FK.BoundaryCondition V where
@@ -217,29 +214,21 @@ theorem markov_cell (θ : FK.Parameters) (ξ : FK.BoundaryCondition Q.pcells) (h
     simp only [Set.mem_inter_iff, Set.mem_ofPred_eq]
     rw [openMedials_restr]
     have := frozen_iff hEx hH C
-    constructor
-    · rintro ⟨h1, h2⟩; exact ⟨this.1 h2, h1⟩
-    · rintro ⟨h1, h2⟩; exact ⟨h2, this.2 h1⟩
+    tauto
   have hset2 : FK.frozenStateEvent (FK.subgraphRemovedEdges ((Q.subG Ex).map (Q.subEmb Ex)) Q.pG)
       (froz hH) = {C | openMedials Q.pData C ∩ Ex = H₀} := by
     ext C
     exact frozen_iff hEx hH C
   rw [hset1, hset2] at h
-  rw [h]
-  unfold nuMeasure
-  congr 1
+  assumption
 
 theorem openMedials_mono' {C C' : FK.Configuration Q.pG} (h : C ⊆ C') :
     openMedials Q.pData C ⊆ openMedials Q.pData C' := by
-  intro m hm
-  obtain ⟨hmI, he⟩ := (mem_openMedials Q.pData C m).1 hm
-  exact (mem_openMedials Q.pData C' m).2 ⟨hmI, h he⟩
+  grind [mem_openMedials]
 
 theorem openMedials_mono_sub {C C' : FK.Configuration (Q.subG Ex)} (h : C ⊆ C') :
     openMedials (Q.subData Ex) C ⊆ openMedials (Q.subData Ex) C' := by
-  intro m hm
-  obtain ⟨hmI, he⟩ := (mem_openMedials (Q.subData Ex) C m).1 hm
-  exact (mem_openMedials (Q.subData Ex) C' m).2 ⟨hmI, h he⟩
+  grind [mem_openMedials]
 
 attribute [local instance] FK.configurationMeasurableSpace in
 theorem nu_mono (θ : FK.Parameters) {P P' : Setoid Q.pcells}

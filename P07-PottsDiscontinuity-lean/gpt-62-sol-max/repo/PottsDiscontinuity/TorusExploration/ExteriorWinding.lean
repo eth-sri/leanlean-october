@@ -1,5 +1,6 @@
 module
 
+
 public import PottsDiscontinuity.TorusExploration.ExteriorConfig
 public import PottsDiscontinuity.TorusExploration.SeamClosureWinding
 public import PottsDiscontinuity.TorusExploration.CylinderIntersectionZero
@@ -26,11 +27,11 @@ lemma seamClosure_zero_at_exterior (hN : Even N) (hM : Even M)
     fullFlowAt (closedWalkPair hN hM p s).val (faceCorner w.val c).1 = 0 := by
   have hp := path_extension_zero_at_exterior hN hM p w hw c
   have hs : seamOnlyConfig N M (faceCorner w.val c).1 = false := by
-    simp only [seamOnlyConfig,hc,decide_false]
+    simp [seamOnlyConfig, hc]
   change fullDiamondChainExtension _ p.chain _ + fullDiamondChainExtension _ s.chain _ = 0
   rw [hp]
   change 0 + extendDiamondChain (seamOnlyConfig N M) s.chain _ = 0
-  rw [extendDiamondChain_closed _ _ _ hs,add_zero]
+  simp_all
 
 /-- Every conserved indexed cycle outside a bottom-to-top cylinder cluster has
 zero horizontal winding. This is the topological input for unrolling the region. -/
@@ -50,7 +51,7 @@ theorem cylinderExterior_windingX_zero (hN : Even N) (hM : Even M)
   obtain ⟨s,_⟩ := exists_seamClosure hN hM hNp (by omega) hu hv p
   let f := closedWalkPair hN hM p s
   let G := fullDiamondCycleExtension hN hM D g
-  have hi : ribbonIntersection hN hM (openRCConfig N M) f G = 0 := by
+  have hi : fullIntersection hN hM f G = 0 := by
     apply cylinder_exterior_intersection_zero
     intro e he
     have hed : D e.val = true := by
@@ -69,18 +70,18 @@ theorem cylinderExterior_windingX_zero (hN : Even N) (hM : Even M)
     rw [show G.val = fullDiamondChainExtension D g.val from rfl,windingY_fullChainExtension]
     apply sum_eq_zero
     intro e _
-    simp only [diamondSeamCrossY,(hD e).1,ite_false,zero_mul]
-  have hfy : diamondWindingY (openRCConfig N M) f.val = 1 :=
+    simp [diamondSeamCrossY, (hD e).1]
+  have hfy :=
     closedWalkPair_windingY hN hM hMlarge hu hv p s
-  have hd := ribbonIntersection_mul_area hN hM hNp (by omega) f G
-  rw [hi,← diamondWindingX_mul_period hN hM _ f,
-    ← diamondWindingY_mul_period hN hM _ G,
-    ← diamondWindingY_mul_period hN hM _ f,
-    ← diamondWindingX_mul_period hN hM _ G,hGy,hfy] at hd
-  have hz : (M : ℚ)*(N : ℚ)*diamondWindingX (openRCConfig N M) G.val = 0 := by
-    simpa only [mul_zero,zero_mul,mul_one,zero_sub,neg_eq_zero,mul_assoc] using hd.symm
-  have hmn : (M : ℚ)*(N : ℚ) ≠ 0 := mul_ne_zero (by positivity) (by positivity)
-  have hGx := (mul_eq_zero.mp hz).resolve_left hmn
+  have hgY : diamondVerticalDisplacement _ G.val = 0 := by
+    simp [← diamondWindingY_mul_period hN hM _ G, hGy]
+  have hfY : diamondVerticalDisplacement _ f.val ≠ 0 := by
+    rw [← diamondWindingY_mul_period hN hM _ f, hfy, mul_one]
+    positivity
+  have hgX := horizontalDisplacement_zero_of_intersection_zero hN hM hNp (by omega) f G hfY hgY hi
+  have hpX := diamondWindingX_mul_period hN hM (openRCConfig N M) G
+  rw [hgX] at hpX
+  have hGx := (mul_eq_zero.mp hpX).resolve_left (by positivity)
   change diamondWindingX D g.val=0
   unfold diamondWindingX
   rw [← sum_fullDiamondChainExtension D g.val diamondSeamCrossX]

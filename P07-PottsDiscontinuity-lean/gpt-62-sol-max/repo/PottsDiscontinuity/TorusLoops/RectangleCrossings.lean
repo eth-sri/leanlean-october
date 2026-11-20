@@ -31,19 +31,18 @@ def rectangleOpenGraph (hN : Even N) (hM : Even M) (A : RCConfig N M) :
 private theorem prv_ne_self_of_even_pos (hN : Even N) (hNp : 0 < N) (i : Fin N) :
     prv i ≠ i := by
   intro h
-  have hN2 : 2 ≤ N := by rcases hN with ⟨k, hk⟩; omega
   have hv := congrArg Fin.val h
   by_cases hz : i.val = 0
   · obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hNp.ne'
-    have hi : i = 0 := Fin.ext (by simpa using hz)
-    subst i
-    rw [prv_zero] at hv
-    simp only [Fin.val_last, Fin.val_zero] at hv
-    omega
+    simp_all
   · have hi := prv_val_of_pos i (Nat.pos_of_ne_zero hz)
     omega
 
-private theorem endpoint_x_ne (hN : Even N) (hM : Even M) (hNp : 0 < N)
+section
+
+variable (hN : Even N) (hM : Even M)
+
+private theorem endpoint_x_ne (hNp : 0 < N)
     (v : Fin N × Fin M) :
     (faceEndpoint hN hM true v false).val.1 ≠
       (faceEndpoint hN hM true v true).val.1 := by
@@ -58,19 +57,19 @@ private theorem endpoint_x_ne (hN : Even N) (hM : Even M) (hNp : 0 < N)
   · exact prv_ne_self_of_even_pos hN hNp v.1
   · exact (prv_ne_self_of_even_pos hN hNp v.1).symm
 
-private theorem endpoint_x_false (hN : Even N) (hM : Even M)
+private theorem endpoint_x_false
     (v : Fin N × Fin M) :
     (faceEndpoint hN hM true v false).val.1 =
       if checker v then v.1 else prv v.1 := by
   cases hc : checker v <;> simp [faceEndpoint, faceEndpointRaw, hc]
 
-private theorem endpoint_x_true (hN : Even N) (hM : Even M)
+private theorem endpoint_x_true
     (v : Fin N × Fin M) :
     (faceEndpoint hN hM true v true).val.1 =
       if checker v then prv v.1 else v.1 := by
   cases hc : checker v <;> simp [faceEndpoint, faceEndpointRaw, hc]
 
-private theorem endpoint_x_seam (hN : Even N) (hM : Even M) (hNp : 0 < N)
+private theorem endpoint_x_seam (hNp : 0 < N)
     (v : Fin N × Fin M) (hv : v.1.val = 0) :
     if checker v then
       (faceEndpoint hN hM true v false).val.1.val = 0 ∧
@@ -83,6 +82,8 @@ private theorem endpoint_x_seam (hN : Even N) (hM : Even M) (hNp : 0 < N)
   have hprv : prv v.1 = Fin.last n := by rw [hv', prv_zero]
   rw [endpoint_x_false, endpoint_x_true, hprv, hv']
   cases checker v <;> simp
+
+end
 
 theorem rectangleOpenGraph_edge_adj (hN : Even N) (hM : Even M) (hNp : 0 < N)
     (A : RCConfig N M) (e : OpenDiamondEdge A)
@@ -103,13 +104,17 @@ theorem rectangleOpenGraph_reachable_edge (hN : Even N) (hM : Even M)
       (faceEndpoint hN hM true e.val true) :=
   (rectangleOpenGraph_edge_adj hN hM hNp A e hx hy).reachable
 
+section
+
+variable
+  (hN : Even N) (hM : Even M)
+    (A : RCConfig N M)
+
 /-- A cut component reaches the right side when it contains a right-boundary vertex. -/
-def rectangleReachesRight (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (u : FaceVertex N M true) : Prop :=
+def rectangleReachesRight (u : FaceVertex N M true) : Prop :=
   ∃ v, v.val.1.val + 1 = N ∧ (rectangleOpenGraph hN hM A).Reachable u v
 
-private theorem rectangleReachesRight_congr (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) {u v : FaceVertex N M true}
+private theorem rectangleReachesRight_congr {u v : FaceVertex N M true}
     (h : (rectangleOpenGraph hN hM A).Reachable u v) :
     rectangleReachesRight hN hM A u ↔ rectangleReachesRight hN hM A v := by
   constructor
@@ -119,20 +124,18 @@ private theorem rectangleReachesRight_congr (hN : Even N) (hM : Even M)
     exact ⟨w, hw, h.trans hvw⟩
 
 /-- An original primal cluster contains a left-to-right component of the cut rectangle. -/
-def hasRectangleCrossingX (hN : Even N) (hM : Even M) (A : RCConfig N M)
+def hasRectangleCrossingX
     (c : (diamondOpenGraph hN hM true A).ConnectedComponent) : Prop :=
   ∃ u v : FaceVertex N M true, u.val.1.val = 0 ∧ v.val.1.val + 1 = N ∧
     (diamondOpenGraph hN hM true A).connectedComponentMk u = c ∧
       (rectangleOpenGraph hN hM A).Reachable u v
 
-noncomputable def rectanglePotential (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (u : FaceVertex N M true) : ℚ :=
+noncomputable def rectanglePotential (u : FaceVertex N M true) : ℚ :=
   by
     classical
     exact if rectangleReachesRight hN hM A u then -1 else 0
 
-private theorem rectanglePotential_eq_zero_of_left (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (c : (diamondOpenGraph hN hM true A).ConnectedComponent)
+private theorem rectanglePotential_eq_zero_of_left (c : (diamondOpenGraph hN hM true A).ConnectedComponent)
     (hnc : ¬ hasRectangleCrossingX hN hM A c) (u : FaceVertex N M true)
     (hu : u.val.1.val = 0)
     (hcu : (diamondOpenGraph hN hM true A).connectedComponentMk u = c) :
@@ -142,16 +145,17 @@ private theorem rectanglePotential_eq_zero_of_left (hN : Even N) (hM : Even M)
   by_cases hr : rectangleReachesRight hN hM A u
   · obtain ⟨v, hv, huv⟩ := hr
     exact (hnc ⟨u, v, hu, hv, hcu, huv⟩).elim
-  · simp [hr]
+  simp_all
 
-private theorem rectanglePotential_eq_neg_one_of_right (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (u : FaceVertex N M true) (hu : u.val.1.val + 1 = N) :
+private theorem rectanglePotential_eq_neg_one_of_right (u : FaceVertex N M true) (hu : u.val.1.val + 1 = N) :
     rectanglePotential hN hM A u = -1 := by
   classical
   unfold rectanglePotential
   have hr : rectangleReachesRight hN hM A u :=
     ⟨u, hu, SimpleGraph.Reachable.refl _⟩
-  simp [hr]
+  simp_all
+
+end
 
 /-- A supported conserved flow with nonzero horizontal displacement forces a
 left-to-right crossing in its actual primal cluster, provided the chain uses no
@@ -166,7 +170,7 @@ theorem supportedCycle_nonzero_horizontal_hasRectangleCrossingX
     hasRectangleCrossingX hN hM A c := by
   classical
   by_contra hnc
-  let g : FaceVertex N M true → ℚ := rectanglePotential hN hM A
+  let g := rectanglePotential hN hM A
   have hpair := diamondBoundary_pairing hN hM A g f.val
   rw [f.property] at hpair
   have hzero : (∑ e, diamondCoboundary hN hM A g e * f.val e) = 0 := by
@@ -290,22 +294,13 @@ private theorem badHorizontalWindingLoops_subset_seamEnds
         (rcSmoothing A)) (ribbonEndEquiv hN hM (e.val, true)) = q then (1 : ℚ) else 0) -
       (if directedLoopOf _ _ (checkerArrows_compatible hN hM
         (rcSmoothing A)) (ribbonEndEquiv hN hM (e.val, false)) = q then 1 else 0) ≠ 0 := by
-    change (loopBoundaryCycle hN hM A q).val e ≠ 0 at heCoeff
-    change loopBoundaryFunction hN hM A q
-        (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (e.val, true))) -
-      loopBoundaryFunction hN hM A q
-        (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (e.val, false))) ≠ 0 at heCoeff
-    simpa only [loopBoundaryFunction_corner] using heCoeff
+    assumption
   have he0 : e.val.2 = ⟨0, hMp⟩ := Fin.ext (by simpa using heRow)
   have heVal : ((e.val.1, ⟨0, hMp⟩) : Fin N × Fin M) = e.val :=
     Prod.ext rfl he0.symm
   by_cases htrue : directedLoopOf _ _ (checkerArrows_compatible hN hM
       (rcSmoothing A)) (ribbonEndEquiv hN hM (e.val, true)) = q
-  · have hfalse : directedLoopOf _ _ (checkerArrows_compatible hN hM
-        (rcSmoothing A)) (ribbonEndEquiv hN hM (e.val, false)) ≠ q := by
-      intro hf
-      simp [htrue, hf] at hCoeff'
-    refine Finset.mem_image.mpr ⟨(e.val.1, true), Finset.mem_univ _, ?_⟩
+  · refine Finset.mem_image.mpr ⟨(e.val.1, true), Finset.mem_univ _, ?_⟩
     change horizontalSeamEndLoop hN hM hMp A e.val.1 true = q
     rw [← htrue, ← heVal]
     rfl
@@ -358,11 +353,11 @@ private theorem verticalWindingLoopSet_card_le (hN : Even N) (hM : Even M)
         unfold loopDisplacementY
         rw [loop_vertical_displacement (checkerArrows N M) (rcSmoothing A)
           (checkerArrows_compatible hN hM (rcSmoothing A)) j q]
-        simp [hz]
+        simp_all
       exact (Finset.mem_filter.mp hq).2 hzdisp
     have hv' : loopSum (checkerArrows N M) (rcSmoothing A)
         (checkerArrows_compatible hN hM (rcSmoothing A)) (verticalCross j) q ≠ 0 := by
-      simpa [loopVertical] using hv
+      assumption
     obtain ⟨d, hdq, hdv⟩ := exists_dart_of_loopSum_ne_zero
       (checkerArrows N M) (rcSmoothing A)
       (checkerArrows_compatible hN hM (rcSmoothing A)) (verticalCross j) q hv'
@@ -432,13 +427,10 @@ theorem windingLoopCount_le_threeN_add_two_mul_rectangleCrossings
     ext q
     simp only [Finset.mem_filter]
     constructor
-    · exact fun h => h.2
+    · simp
     · intro hq
       exact ⟨hcleanSubset hq, hq⟩
-  have hbadEq : xset.filter (fun q => q ∉ clean) = bad := by
-    ext q
-    simp [bad, badHorizontalWindingLoopSet, xset, clean,
-      horizontalWindingLoopSet, cleanHorizontalWindingLoops]
+  have hbadEq : xset.filter (fun q => q ∉ clean) = bad := rfl
   have hsplit := Finset.card_filter_add_card_filter_not
     (s := xset) (p := fun q => q ∈ clean)
   rw [hcleanEq, hbadEq] at hsplit
@@ -455,7 +447,7 @@ theorem windingLoopCount_le_threeN_add_two_mul_rectangleCrossings
         (windingLoopSet hN hM ⟨0, hNp⟩ ⟨0, hMp⟩ A).card := rfl
     _ ≤ (xset ∪ yset).card := hW
     _ ≤ xset.card + yset.card := hxy
-    _ ≤ clean.card + bad.card + N := by rw [← hsplit]; omega
+    _ ≤ clean.card + bad.card + N := by simp_all
     _ ≤ clean.card + 2 * N + N := by omega
     _ ≤ 2 * (horizontalCrossingPrimalClusters hN hM A).card + 3 * N := by
       have hc := cleanHorizontalWindingLoops_card_le_two_crossingClusters hN hM hNp hMp A

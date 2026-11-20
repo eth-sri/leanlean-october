@@ -42,7 +42,7 @@ theorem orderEmbOfFin_le_iff {x : Finset (Fin N)} {n : ℕ} (h : x.card = n) (k 
       intro a ha
       rw [mem_filter] at ha
       have : a ∈ Set.range (x.orderEmbOfFin h) := by
-        rw [Finset.range_orderEmbOfFin]; exact ha.1
+        simp_all
       obtain ⟨m, rfl⟩ := this
       refine mem_image.2 ⟨m, mem_Iio.2 ?_, rfl⟩
       exact (x.orderEmbOfFin h).lt_iff_lt.1 (lt_of_le_of_lt ha.2 hlt)
@@ -64,29 +64,29 @@ theorem interlacedLE_iff (x y : Finset (Fin N)) :
     refine ⟨h, fun t => ⟨?_, ?_⟩⟩
     · by_contra hlt
       replace hlt := not_le.1 hlt
-      have hm : cnt x t < x.card := lt_of_lt_of_le hlt (h ▸ cnt_le_card y t)
+      have hm := lt_of_lt_of_le hlt (h ▸ cnt_le_card y t)
       have hy : y.orderEmbOfFin h.symm ⟨cnt x t, hm⟩ ≤ t :=
         (orderEmbOfFin_le_iff h.symm _ t).2 hlt
-      have hx : x.orderEmbOfFin rfl ⟨cnt x t, hm⟩ ≤ t := le_trans (h1 _) hy
+      have hx := le_trans (h1 _) hy
       have := (orderEmbOfFin_le_iff rfl _ t).1 hx
       simp at this
     · by_contra hlt
       replace hlt := not_le.1 hlt
-      have hm : cnt y t + 1 < x.card := lt_of_lt_of_le hlt (cnt_le_card x t)
+      have hm := lt_of_lt_of_le hlt (cnt_le_card x t)
       have hk : cnt y t < x.card := by omega
       have hx : x.orderEmbOfFin rfl ⟨cnt y t + 1, hm⟩ ≤ t :=
         (orderEmbOfFin_le_iff rfl _ t).2 hlt
-      have hy : y.orderEmbOfFin h.symm ⟨cnt y t, hk⟩ ≤ t :=
+      have hy :=
         le_trans (h2 ⟨cnt y t, hk⟩ ⟨cnt y t + 1, hm⟩ rfl) hx
       have := (orderEmbOfFin_le_iff h.symm _ t).1 hy
       simp at this
   · rintro ⟨h, hc⟩
     refine ⟨h, fun k => ?_, fun k l hkl => ?_⟩
     · set t := y.orderEmbOfFin h.symm k with ht
-      have h1 : k.val < cnt y t := (orderEmbOfFin_le_iff h.symm k t).1 le_rfl
+      have h1 := (orderEmbOfFin_le_iff h.symm k t).1 le_rfl
       exact (orderEmbOfFin_le_iff rfl k t).2 (lt_of_lt_of_le h1 (hc t).1)
     · set t := x.orderEmbOfFin rfl l with ht
-      have h1 : l.val < cnt x t := (orderEmbOfFin_le_iff rfl l t).1 le_rfl
+      have h1 := (orderEmbOfFin_le_iff rfl l t).1 le_rfl
       refine (orderEmbOfFin_le_iff h.symm k t).2 ?_
       have := (hc t).2
       omega
@@ -96,15 +96,7 @@ theorem interlaced_iff (x y : Finset (Fin N)) :
     Interlaced x y ↔ x.card = y.card ∧
       ((∀ t, cnt y t ≤ cnt x t ∧ cnt x t ≤ cnt y t + 1) ∨
         ∀ t, cnt x t ≤ cnt y t ∧ cnt y t ≤ cnt x t + 1) := by
-  unfold Interlaced
-  rw [interlacedLE_iff, interlacedLE_iff]
-  constructor
-  · rintro (⟨h, h'⟩ | ⟨h, h'⟩)
-    · exact ⟨h, Or.inl h'⟩
-    · exact ⟨h.symm, Or.inr h'⟩
-  · rintro ⟨h, h' | h'⟩
-    · exact Or.inl ⟨h, h'⟩
-    · exact Or.inr ⟨h.symm, h'⟩
+  grind [interlacedLE_iff, Interlaced]
 
 theorem Interlaced.symm {x y : Finset (Fin N)} (h : Interlaced x y) : Interlaced y x :=
   Or.symm h
@@ -114,8 +106,5 @@ theorem interlaced_comm (x y : Finset (Fin N)) : Interlaced x y ↔ Interlaced y
 
 theorem Interlaced.card_eq {x y : Finset (Fin N)} (h : Interlaced x y) : x.card = y.card :=
   ((interlaced_iff x y).1 h).1
-
-theorem interlaced_refl (x : Finset (Fin N)) : Interlaced x x :=
-  Or.inl ((interlacedLE_iff x x).2 ⟨rfl, fun _ => ⟨le_rfl, Nat.le_succ _⟩⟩)
 
 end PottsDiscontinuity.SixVertex

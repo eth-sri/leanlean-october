@@ -48,8 +48,7 @@ theorem boolean_pattern_probability_tendsto
     Tendsto (fun n => (μs n).toMeasure.real (booleanEventPattern (E n) T C)) atTop
       (𝓝 (μ.toMeasure.real (booleanEventPattern Einf T C))) := by
   induction C using Finset.induction_on generalizing T with
-  | empty => simpa only [booleanEventPattern, Finset.notMem_empty, IsEmpty.forall_iff, implies_true,
-      and_true] using hmom T
+  | empty => simpa [booleanEventPattern] using hmom T
   | @insert i C hi ih =>
       have ht := (ih T).sub (ih (insert i T))
       have hsub (E' : I → Set X) : booleanEventPattern E' (insert i T) C ⊆ booleanEventPattern E' T C := by

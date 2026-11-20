@@ -84,11 +84,6 @@ theorem toroidal_change_of_variables {N n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
       apply Finset.sum_congr rfl
       intro σ _
       have h := amplitude_planeWave_rotate hΔ p hBE σ x
-      calc
-        _ = f (σ * finRotate (n + 1)) *
-            (amplitude Δ p (σ * finRotate (n + 1)) * planeWave p (σ * finRotate (n + 1)) x) := by ring
-        _ = f (σ * finRotate (n + 1)) *
-            (amplitude Δ p σ * planeWave p σ (cyclicPredecessorPositions N x)) := by rw [h]
-        _ = _ := by ring
+      grind
 
 end PottsDiscontinuity.BetheAnsatz

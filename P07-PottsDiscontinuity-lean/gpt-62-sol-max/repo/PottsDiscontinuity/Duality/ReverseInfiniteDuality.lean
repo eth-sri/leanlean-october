@@ -30,9 +30,7 @@ lemma dualConfiguration_twice (ω : LatticeConfiguration) :
   apply Subtype.ext
   rcases b with ⟨⟨x,y⟩, ax⟩
   cases ax <;>
-    simp [primalBondOfDual, wholePlaneBondEdgeEquiv, latticeBondEdge, LatticeBond.toSym2, LatticeBond.source,
-      LatticeBond.target, SimpleGraph.Iso.mapEdgeSet_apply, SimpleGraph.Hom.mapEdgeSet_coe,
-      latticeTranslationIso, latticeTranslate]
+    solve_by_elim
 
 /-- The wired measure at p* maps to the free measure at p under the actual dual
 transform. Its square is the harmless lattice translation (-1,-1). -/

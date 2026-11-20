@@ -1,11 +1,11 @@
 module
 
-public import PottsDiscontinuity.Torus.NetEuler
+public import PottsDiscontinuity.Torus.BoundaryDisplacement
 public import PottsDiscontinuity.TorusLoops.LoopClusterProjection
 
 /-! Boundary-loop chains span the primal conserved chains whenever the
 horizontal displacement vanishes on all primal cycles. This replaces the
-planar-lift separation argument by the proved exact cellular radical theorem. -/
+planar-lift separation argument by descending full-torus face potentials. -/
 
 @[expose] public section
 
@@ -61,20 +61,8 @@ theorem boundary_vertical_displacement_zero_of_loops_zero
     change diamondVerticalDisplacement A (loopBoundaryCycle hN hM A q).val = 0
     rw [loopBoundaryCycle_displacement_y,loop_vertical_displacement _ _ _ j q,hzero q,mul_zero]
     rfl
-  have hq' : (∑ e, (loopBoundaryCycle hN hM A q).val e) = 0 := neg_eq_zero.1 hq
-  rw [hq',mul_zero,neg_zero]
-
-/-- When all primal cycles are vertically aligned, each is an actual ribbon
-boundary, by the exact intersection-radical theorem. -/
-theorem mem_boundary_of_horizontal_displacement_zero
-    (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    (A : RCConfig N M)
-    (hX : ∀ f : diamondCycleSpace hN hM A, diamondHorizontalDisplacement A f.val = 0)
-    (f : diamondCycleSpace hN hM A) : f ∈ ribbonBoundarySpace hN hM A := by
-  apply mem_ribbonBoundarySpace_of_intersection_zero hN hM A f
-  intro g
-  apply (ribbonIntersection_eq_zero_iff_windingDeterminant_zero hN hM hNp hMp A f g).2
-  simp only [diamondWindingDeterminant,hX f,hX g,zero_mul,mul_zero,sub_self]
+  have hq' := neg_eq_zero.1 hq
+  simp [hq']
 
 /-- A nonzero vertical primal cycle with no horizontal primal homology forces
 an actual vertically winding medial loop. -/

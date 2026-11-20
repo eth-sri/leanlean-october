@@ -31,7 +31,7 @@ theorem gap_coordinate_occupied_iff {N n : ℕ} {x y : Fin (n + 1) → ℤ}
   have hu := ((mem_gapTuples.mp hy) k).2
   constructor
   · rintro ⟨j, he⟩
-    have hd : (N : ℤ) ∣ x j - y k := Int.modEq_iff_dvd.mp he
+    have hd := Int.modEq_iff_dvd.mp he
     have hxj := hbase j
     have heq : x j = y k ∨ x j - y k = N := by
       by_cases hp : x j - y k = N
@@ -65,19 +65,16 @@ theorem gap_coordinate_occupied_iff {N n : ℕ} {x y : Fin (n + 1) → ℤ}
         rw [cyclicPredecessorPositions_succ] at hl
         have hxl := hbase l.castSucc
         omega
-      left
-      rw [hk, cyclicPredecessorPositions_zero]
-      simpa only [hk] using hyk
+      simp_all
   · rintro (hl | hu)
     · induction k using Fin.cases with
       | zero =>
         refine ⟨Fin.last n, ?_⟩
-        rw [hl, cyclicPredecessorPositions_zero]
-        simp
+        simp_all
       | succ k =>
         refine ⟨k.castSucc, ?_⟩
-        rw [hl, cyclicPredecessorPositions_succ]
-    · exact ⟨k, by rw [hu]⟩
+        simp_all
+    tauto
 
 /-- Rewrite the extended weight as a product testing occupied residues. -/
 theorem gapWeight_eq_residue_product {N n : ℕ} (c : ℝ) {x y : Fin (n + 1) → ℤ}
@@ -88,15 +85,14 @@ theorem gapWeight_eq_residue_product {N n : ℕ} (c : ℝ) {x y : Fin (n + 1) �
   unfold gapWeight
   apply Finset.prod_congr rfl
   intro k _
-  simp only [gap_coordinate_occupied_iff hx hspan hy]
+  simp [gap_coordinate_occupied_iff hx hspan hy]
 
 /-- The exponent in (1.5) is twice the number of particles of y outside x. -/
 theorem transfer_exponent_eq_twice_sdiff {N : ℕ} {x y : Finset (Fin N)} (hcard : x.card = y.card) :
     (univ.filter fun i => Psi x i ≠ Psi y i).card = 2 * (y \ x).card := by
   have he : (univ.filter fun i => Psi x i ≠ Psi y i) = (x \ y) ∪ (y \ x) := by
     ext i
-    simp only [mem_filter, mem_univ, true_and, mem_union, mem_sdiff]
-    by_cases hx : i ∈ x <;> by_cases hy : i ∈ y <;> simp [Psi, hx, hy]
+    grind [Psi]
   have hd : Disjoint (x \ y) (y \ x) := disjoint_left.mpr fun i hi hj =>
     (mem_sdiff.mp hi).2 (mem_sdiff.mp hj).1
   rw [he, card_union_of_disjoint hd, Finset.card_sdiff_comm hcard]
@@ -115,17 +111,12 @@ theorem positions_occupied_iff {N n : ℕ} (x : State N n) (i : Fin N) :
       apply Fin.ext
       unfold positions at hj
       exact_mod_cast hj.symm
-    rw [← he]
-    exact orderEmbOfFin_mem _ _ _
+    aesop
   · intro hi
     have hr : i ∈ Set.range (x.1.orderEmbOfFin x.2) := by
-      rw [range_orderEmbOfFin]
-      exact hi
+      simp_all
     obtain ⟨j, rfl⟩ := hr
-    refine ⟨j, ?_⟩
-    change positions x j = positions x j % (N : ℤ)
-    have hpos := (mem_orderedTuples.mp (positions_mem_orderedTuples x)).1 j
-    exact (Int.emod_eq_of_lt hpos.1 hpos.2).symm
+    tauto
 
 /-- Product of the outside-particle weights, in the actual increasing enumeration. -/
 theorem positions_outside_product {N m : ℕ} (c : ℝ) (x y : State N m) :
@@ -137,15 +128,18 @@ theorem positions_outside_product {N m : ℕ} (c : ℝ) (x y : State N m) :
         _ = ∏ i ∈ univ.image (y.1.orderEmbOfFin y.2),
             if i ∈ x.1 then (1 : ℂ) else (c : ℂ) ^ 2 :=
           (Finset.prod_image (y.1.orderEmbOfFin y.2).injective.injOn).symm
-        _ = _ := by rw [image_orderEmbOfFin_univ]
+        _ = _ := by simp
     _ = ((c : ℂ) ^ 2) ^ (y.1 \ x.1).card := by
-      rw [Finset.prod_ite, Finset.prod_const_one, one_mul, Finset.prod_const,
-        Finset.filter_notMem_eq_sdiff]
+      simp [Finset.prod_ite, Finset.filter_notMem_eq_sdiff]
     _ = _ := by
       rw [← pow_mul, transfer_exponent_eq_twice_sdiff (x.2.trans y.2.symm)]
 
+section
+
+variable {N n : ℕ} (c : ℝ) (x y : State N (n + 1))
+
 /-- The lower orientation's gap weight is the exact complexified entry weight. -/
-theorem gapWeight_positions {N n : ℕ} (c : ℝ) (x y : State N (n + 1))
+theorem gapWeight_positions
     (hy : positions y ∈ gapTuples N (positions x)) :
     gapWeight c N (positions x) (positions y) =
       (c : ℂ) ^ (univ.filter fun i => Psi x.1 i ≠ Psi y.1 i).card := by
@@ -156,7 +150,7 @@ theorem gapWeight_positions {N n : ℕ} (c : ℝ) (x y : State N (n + 1))
   exact positions_outside_product c x y
 
 /-- The shifted upper orientation has the same actual entry weight, including the seam. -/
-theorem gapWeight_shift_positions {N n : ℕ} (c : ℝ) (x y : State N (n + 1))
+theorem gapWeight_shift_positions
     (hy : cyclicPredecessorPositions N (positions y) ∈ gapTuples N (positions x)) :
     gapWeight c N (positions x) (cyclicPredecessorPositions N (positions y)) =
       (c : ℂ) ^ (univ.filter fun i => Psi x.1 i ≠ Psi y.1 i).card := by
@@ -168,5 +162,7 @@ theorem gapWeight_shift_positions {N n : ℕ} (c : ℝ) (x y : State N (n + 1))
       y.1.orderEmbOfFin y.2 k ∈ x.1 := fun k => positions_occupied_iff x _
   simp_rw [he]
   exact positions_outside_product c x y
+
+end
 
 end PottsDiscontinuity.BetheAnsatz

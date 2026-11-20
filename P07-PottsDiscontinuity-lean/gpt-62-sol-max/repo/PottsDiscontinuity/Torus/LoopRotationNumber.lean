@@ -28,8 +28,7 @@ theorem loopTurn_eq_four_mul_rotationNumber (ω : ArrowConfig N M) (s : Smoothin
     (h : CompatibleConfig ω s) (q : DirectedLoop ω s h) :
     loopTurn ω s h q = 4 * loopRotationNumber ω s h q := by
   have hz := loopTurn_mod_four ω s h q
-  have hd : (4 : ℤ) ∣ loopTurn ω s h q := by
-    exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hz
+  have hd : (4 : ℤ) ∣ loopTurn ω s h q := (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp hz
   have hc := Int.ediv_mul_cancel hd
   dsimp [loopRotationNumber]
   nlinarith [hc]
@@ -46,13 +45,6 @@ theorem loopRotationNumber_reorient (ω₀ ω₁ : ArrowConfig N M) (s : Smoothi
   split_ifs with hor
   · rfl
   · have ht := loopTurn_eq_four_mul_rotationNumber ω₀ s h₀ q
-    rw [ht]
-    have hp : (4 * loopRotationNumber ω₀ s h₀ q) / 4 =
-        loopRotationNumber ω₀ s h₀ q :=
-      Int.ediv_eq_of_eq_mul_left (by norm_num) (by ring)
-    have hn : (-(4 * loopRotationNumber ω₀ s h₀ q)) / 4 =
-        -loopRotationNumber ω₀ s h₀ q :=
-      Int.ediv_eq_of_eq_mul_left (by norm_num) (by ring)
-    rw [hn, hp]
+    omega
 
 end PottsDiscontinuity.Torus

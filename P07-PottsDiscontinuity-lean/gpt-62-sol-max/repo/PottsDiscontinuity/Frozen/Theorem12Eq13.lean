@@ -1,13 +1,14 @@
 module
 
 public import Mathlib
-public import PottsDiscontinuity.Provider.Theorem12Eq13
+public import PottsDiscontinuity.Analysis.Identity44
+public import PottsDiscontinuity.Analysis.Asymptotic13
 
 /-!
 # Theorem statement `rc_theorem_1_2_positivity_eq_1_3` (arXiv:1611.09877v2)
 
 This declaration is reproduced verbatim in `Challenge.lean`; Comparator checks that the two
-agree. Its proof is the assembled result from `PottsDiscontinuity/Provider/`.
+agree.
 -/
 
 @[expose] public section
@@ -30,6 +31,6 @@ theorem rc_theorem_1_2_positivity_eq_1_3 :
       (fun q => ∑' k : ℕ, 4 / ((2 * k + 1) *
         Real.sinh (π ^ 2 * (2 * k + 1) / (2 * Real.arcosh (Real.sqrt q / 2)))))
       (fun q => 8 * Real.exp (-(π ^ 2 / Real.sqrt (q - 4)))) :=
-  by exact PottsDiscontinuity.Provider.rc_theorem_1_2_positivity_eq_1_3
+  ⟨fun _ _ lam hlam _ => identity44 lam hlam, asymptotic13⟩
 
 end PottsDiscontinuity

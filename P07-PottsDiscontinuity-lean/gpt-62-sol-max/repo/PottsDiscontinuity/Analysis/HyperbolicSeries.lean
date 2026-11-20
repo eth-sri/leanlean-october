@@ -26,9 +26,7 @@ theorem summable_inv_sq_add_succ_sq (a : ℝ) :
     simpa using this
   refine Summable.of_nonneg_of_le (fun n => ?_) (fun n => ?_) h1
   · positivity
-  · have hp : (0 : ℝ) < ((n : ℝ) + 1) ^ 2 := by positivity
-    apply one_div_le_one_div_of_le hp
-    nlinarith [sq_nonneg a]
+  · bound
 
 /-- The `coth` series, from Mathlib's `cot_series_rep'` evaluated at `i a`. -/
 theorem pi_coth_eq (a : ℝ) (ha : 0 < a) :
@@ -49,13 +47,10 @@ theorem pi_coth_eq (a : ℝ) (ha : 0 < a) :
       show (π : ℂ) * ((a : ℂ) * Complex.I) = ((π * a : ℝ) : ℂ) * Complex.I by push_cast; ring,
       Complex.cos_mul_I, Complex.sin_mul_I]
     have hs' : Complex.sinh ((π : ℂ) * a) ≠ 0 := by
-      have := hs
-      rw [Complex.ofReal_sinh] at this
-      push_cast at this
-      exact this
+      simp_all
     push_cast
     field_simp
-    simp [Complex.I_sq]
+    simp
   have hterm : ∀ n : ℕ, (1 / ((a : ℂ) * Complex.I - ((n : ℂ) + 1)) +
       1 / ((a : ℂ) * Complex.I + ((n : ℂ) + 1))) =
       -(Complex.I * ((2 * a / (a ^ 2 + ((n : ℝ) + 1) ^ 2) : ℝ) : ℂ)) := by
@@ -84,16 +79,12 @@ theorem pi_coth_eq (a : ℝ) (ha : 0 < a) :
     rw [Complex.ofReal_tsum, tsum_neg, tsum_mul_left]
   rw [h4] at h
   have h5 : (1 : ℂ) / ((a : ℂ) * Complex.I) = -(Complex.I * ((1 / a : ℝ) : ℂ)) := by
-    push_cast
-    field_simp
-    simp [Complex.I_sq]
+    simp
   rw [h5] at h
-  have h6 : (π : ℂ) * -(Complex.I * ((Real.cosh (π * a) / Real.sinh (π * a) : ℝ) : ℂ)) -
-      -(Complex.I * ((1 / a : ℝ) : ℂ)) =
-      -(Complex.I * ((∑' n : ℕ, 2 * a / (a ^ 2 + ((n : ℝ) + 1) ^ 2) : ℝ) : ℂ)) := h
+  have h6 := h
   have h7 : ((π * (Real.cosh (π * a) / Real.sinh (π * a)) : ℝ) : ℂ) =
       ((1 / a + ∑' n : ℕ, 2 * a / (a ^ 2 + ((n : ℝ) + 1) ^ 2) : ℝ) : ℂ) := by
-    have hI : Complex.I ≠ 0 := Complex.I_ne_zero
+    have hI := Complex.I_ne_zero
     apply mul_left_cancel₀ hI
     push_cast at h6 ⊢
     linear_combination (-1 : ℂ) * h6
@@ -109,14 +100,8 @@ theorem hasSum_inv_sq_add_sq {a : ℝ} (ha : 0 < a) :
   have hsum : HasSum (fun n : ℕ => 2 * a * (1 / (a ^ 2 + ((n : ℝ) + 1) ^ 2)))
       (π * (Real.cosh (π * a) / Real.sinh (π * a)) - 1 / a) := by
     have := ((summable_inv_sq_add_succ_sq a).mul_left (2 * a)).hasSum
-    have e : ∑' n : ℕ, 2 * a * (1 / (a ^ 2 + ((n : ℝ) + 1) ^ 2)) =
-        π * (Real.cosh (π * a) / Real.sinh (π * a)) - 1 / a := by
-      rw [h0]
-      simp_rw [mul_one_div]
-      ring
-    rwa [e] at this
+    grind
   have hsum2 := hsum.div_const (2 * a)
-  have hne : (2 * a) ≠ 0 := by positivity
   have hsum3 : HasSum (fun n : ℕ => 1 / (a ^ 2 + (((n + 1 : ℕ) : ℝ)) ^ 2))
       ((π * (Real.cosh (π * a) / Real.sinh (π * a)) - 1 / a) / (2 * a)) := by
     convert hsum2 using 1
@@ -136,17 +121,17 @@ theorem hasSum_inv_sq_add_sq {a : ℝ} (ha : 0 < a) :
 theorem two_coth_two_mul_sub_coth (x : ℝ) (hx : 0 < x) :
     2 * (Real.cosh (2 * x) / Real.sinh (2 * x)) - Real.cosh x / Real.sinh x =
       Real.sinh x / Real.cosh x := by
-  have hs : Real.sinh x ≠ 0 := (Real.sinh_pos_iff.2 hx).ne'
-  have hc : Real.cosh x ≠ 0 := (Real.cosh_pos x).ne'
+  have hs := (Real.sinh_pos_iff.2 hx).ne'
+  have hc := (Real.cosh_pos x).ne'
   rw [Real.sinh_two_mul, Real.cosh_two_mul]
   field_simp
-  nlinarith [Real.cosh_sq x]
+  simp
 
 theorem coth_sub_coth_two_mul (x : ℝ) (hx : 0 < x) :
     Real.cosh x / Real.sinh x - Real.cosh (2 * x) / Real.sinh (2 * x) =
       1 / Real.sinh (2 * x) := by
-  have hs : Real.sinh x ≠ 0 := (Real.sinh_pos_iff.2 hx).ne'
-  have hc : Real.cosh x ≠ 0 := (Real.cosh_pos x).ne'
+  have hs := (Real.sinh_pos_iff.2 hx).ne'
+  have hc := (Real.cosh_pos x).ne'
   rw [Real.sinh_two_mul, Real.cosh_two_mul]
   field_simp
   nlinarith [Real.cosh_sq x]
@@ -160,19 +145,19 @@ theorem hasSum_inv_sq_add_even {a : ℝ} (ha : 0 < a) :
   field_simp
   norm_num
 
+/-- Recover the odd-indexed subseries by subtracting the even one. -/
+theorem hasSum_odd_of_even {f : ℕ → ℝ} {S E : ℝ} (h : HasSum f S)
+    (he : HasSum (fun k => f (2 * k)) E) : HasSum (fun k => f (2 * k + 1)) (S - E) := by
+  have ho : Summable (fun k => f (2 * k + 1)) :=
+    h.summable.comp_injective (i := fun k : ℕ => 2 * k + 1) (by intro a b hab; dsimp at hab; omega)
+  have hh := h.unique (HasSum.even_add_odd he ho.hasSum)
+  rw [show S - E = ∑' k, f (2 * k + 1) by linarith]
+  exact ho.hasSum
+
 theorem hasSum_inv_sq_add_odd {a : ℝ} (ha : 0 < a) :
     HasSum (fun k : ℕ => 1 / (a ^ 2 + ((2 * k + 1 : ℕ) : ℝ) ^ 2))
-      (invSqSumValue a - invSqSumValue (a / 2) / 4) := by
-  have hf := hasSum_inv_sq_add_sq ha
-  have hodd : Summable (fun k : ℕ => 1 / (a ^ 2 + ((2 * k + 1 : ℕ) : ℝ) ^ 2)) :=
-    hf.summable.comp_injective (i := fun k : ℕ => 2 * k + 1) (fun x y h => by simp only at h; omega)
-  have h2 := HasSum.even_add_odd (f := fun n : ℕ => 1 / (a ^ 2 + (n : ℝ) ^ 2))
-    (hasSum_inv_sq_add_even ha) hodd.hasSum
-  have h3 := hf.unique h2
-  have : ∑' k : ℕ, 1 / (a ^ 2 + ((2 * k + 1 : ℕ) : ℝ) ^ 2) =
-      invSqSumValue a - invSqSumValue (a / 2) / 4 := by linarith
-  rw [← this]
-  exact hodd.hasSum
+      (invSqSumValue a - invSqSumValue (a / 2) / 4) :=
+  hasSum_odd_of_even (hasSum_inv_sq_add_sq ha) (hasSum_inv_sq_add_even ha)
 
 /-- The `tanh` partial fractions: `∑_{k ≥ 0} 1 / (a² + (2k+1)²) = (π / (4a)) tanh (π a / 2)`. -/
 theorem hasSum_inv_sq_add_odd_sq {a : ℝ} (ha : 0 < a) :
@@ -184,10 +169,8 @@ theorem hasSum_inv_sq_add_odd_sq {a : ℝ} (ha : 0 < a) :
   rw [show 2 * (π * a / 2) = π * a by ring] at H
   rw [Real.tanh_eq_sinh_div_cosh, ← H]
   convert h using 1
-  · funext k
-    push_cast
-    rfl
-  · simp only [invSqSumValue]
+  · simp
+  · simp [invSqSumValue]
     rw [show π * (a / 2) = π * a / 2 by ring]
     have ha0 : a ≠ 0 := ha.ne'
     field_simp
@@ -203,8 +186,7 @@ theorem hasSum_alt_inv_sq_add_sq {a : ℝ} (ha : 0 < a) :
   have h := HasSum.even_add_odd (f := fun n : ℕ => (-1 : ℝ) ^ n / (a ^ 2 + (n : ℝ) ^ 2))
     (by
       convert he using 1
-      funext k
-      simp [pow_mul])
+      simp)
     (by
       convert ho using 1
       funext k
@@ -217,7 +199,6 @@ theorem hasSum_alt_inv_sq_add_sq {a : ℝ} (ha : 0 < a) :
   simp only [invSqSumValue]
   rw [show π * (a / 2) = π * a / 2 by ring]
   have ha0 : a ≠ 0 := ha.ne'
-  have hs : Real.sinh (π * a) ≠ 0 := (Real.sinh_pos_iff.2 (by positivity)).ne'
   have e : Real.cosh (π * a / 2) / Real.sinh (π * a / 2) =
       Real.cosh (π * a) / Real.sinh (π * a) + 1 / Real.sinh (π * a) := by linarith
   rw [e]

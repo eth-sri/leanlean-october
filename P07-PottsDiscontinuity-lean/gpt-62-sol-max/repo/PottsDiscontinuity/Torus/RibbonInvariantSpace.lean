@@ -71,12 +71,6 @@ def ribbonDifference (hN : Even N) (hM : Even M) (A : RCConfig N M)
     LinearMap.proj (ribbonEndEquiv hN hM (v, true))).comp
       (ribbonFunctions hN hM A).subtype
 
-@[simp] theorem ribbonDifference_apply (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (v : Fin N × Fin M) (f : ribbonFunctions hN hM A) :
-    ribbonDifference hN hM A v f =
-      f.val (ribbonEndEquiv hN hM (v, false)) -
-        f.val (ribbonEndEquiv hN hM (v, true)) := rfl
-
 theorem ribbonDifference_eq_zero_of_connected (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (v : Fin N × Fin M)
     (h : RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
@@ -98,6 +92,6 @@ theorem ribbonDifference_ne_zero_of_not_connected (hN : Even N) (hM : Even M)
     (if q = Quotient.mk _ (ribbonEndEquiv hN hM (v, true)) then 1 else 0) = 0 at he
   have hq : q ≠ Quotient.mk _ (ribbonEndEquiv hN hM (v, true)) :=
     fun he => h (Quotient.exact he)
-  simp only [hq, ite_true, ite_false, sub_zero, one_ne_zero] at he
+  simp_all
 
 end PottsDiscontinuity.Torus

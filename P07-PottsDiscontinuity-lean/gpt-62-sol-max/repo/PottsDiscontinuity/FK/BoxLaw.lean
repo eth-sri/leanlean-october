@@ -60,7 +60,7 @@ theorem boxConfiguration_outside (c : LatticeVertex) (r : ℕ)
   simp only [boxConfiguration, decide_eq_false_iff_not]
   intro h
   obtain ⟨a, ha, hmap⟩ := Finset.mem_map.mp h
-  exact he ⟨a,hmap⟩
+  tauto
 
 /-- The actual free finite-box FK law, pushed to a common whole-lattice carrier. -/
 def boxLaw (q : Parameters) (c : LatticeVertex) (r : ℕ) : PMF LatticeConfiguration :=

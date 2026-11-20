@@ -23,16 +23,8 @@ theorem rectangleDoubleConnection_mono (hNp : 0 < N) (hMp : 0 < M)
     (hA : A ∈ rectangleDoubleConnection hNp hMp n i) :
     B ∈ rectangleDoubleConnection hNp hMp n i := by
   obtain ⟨u,v,hu,hv,w,hw⟩ := hA
-  let F : liftedStripGraph hNp hMp A 0 (3 * (n : ℤ)) →g
-      liftedStripGraph hNp hMp B 0 (3 * (n : ℤ)) :=
-    ⟨id,fun h => liftedStripGraph_mono hNp hMp 0 (3 * (n : ℤ)) hAB h⟩
-  refine ⟨u,v,hu,hv,w.map F,?_⟩
-  intro z hz
-  rw [SimpleGraph.Walk.support_map] at hz
-  obtain ⟨z',hz',heq⟩ := List.mem_map.mp hz
-  change z' = z at heq
-  subst z
-  exact hw z' hz'
+  refine ⟨u,v,hu,hv,w.mapLe (liftedStripGraph_mono hNp hMp _ _ hAB), ?_⟩ 
+  simpa only [SimpleGraph.Walk.support_mapLe_eq_support] using hw
 
 /-- FKG k times, using the exact reflection symmetry at every block. -/
 theorem rectangleBlocks_probability_ge_power (hN : Even N) (hM : Even M)

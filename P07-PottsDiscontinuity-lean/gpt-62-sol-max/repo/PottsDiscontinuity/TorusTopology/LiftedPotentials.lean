@@ -1,5 +1,7 @@
 module
 
+public import PottsDiscontinuity.Torus.DiamondCycleAnnihilator
+
 public import PottsDiscontinuity.Torus.DiamondDisplacement
 public import PottsDiscontinuity.TorusRC.LiftedPaths
 
@@ -22,21 +24,11 @@ lemma periodicCoordinate_ne_of_unit_difference (hM : 2 ≤ M)
   rw [periodicCoordinate_val,periodicCoordinate_val] at he'
   have hd : (M : ℤ) ∣ b-a := Int.modEq_iff_dvd.1 he'
   have hunit : b-a = 1 ∨ b-a = -1 := by
-    have h := abs_sub_comm a b
-    rw [hab] at h
-    rcases le_total 0 (b-a) with hp | hn
-    · rw [abs_of_nonneg hp] at h
-      exact Or.inl h.symm
-    · rw [abs_of_nonpos hn] at h
-      right
-      omega
+    grind
   have hd1 : (M : ℤ) ∣ 1 := by
-    rcases hunit with h | h
-    · rwa [h] at hd
-    · simpa only [h, dvd_neg] using hd
+    aesop
   have hn : M ∣ 1 := by exact_mod_cast hd1
-  have hb := Nat.le_of_dvd (by decide : 0 < 1) hn
-  omega
+  simp_all
 
 lemma faceEndpoint_false_y (hN : Even N) (hM : Even M) (e : Fin N × Fin M) :
     (faceEndpoint hN hM true e false).val.2 = e.2 := by
@@ -55,12 +47,7 @@ theorem potential_vertical_difference_of_lifted_adj
   have hM2 : 2 ≤ M := by rcases hM with ⟨k,hk⟩; omega
   have hyunit := huv.1.2
   have hy : u.val.2-v.val.2 = 1 ∨ u.val.2-v.val.2 = -1 := by
-    rcases le_total 0 (u.val.2-v.val.2) with hp | hn
-    · rw [abs_of_nonneg hp] at hyunit
-      exact Or.inl hyunit
-    · rw [abs_of_nonpos hn] at hyunit
-      right
-      omega
+    grind
   let e : OpenDiamondEdge A := ⟨liftedEdgeIndex hNp hMp u v,huv.2.1⟩
   have hge := hg e
   rw [diamondCoboundary_apply] at hge
@@ -76,8 +63,7 @@ theorem potential_vertical_difference_of_lifted_adj
       rw [max_eq_right_of_lt hl, ← h.1] at hef
       exact hne hef
     have hdiff : v.val.2-u.val.2 = -1 := by omega
-    rw [h.1,h.2,hdiff]
-    simpa only [Int.cast_neg, Int.cast_one] using hge
+    rwa [h.1,h.2,hdiff]
   · have hypos : u.val.2 ≤ v.val.2 := by
       by_contra hn
       have hl : v.val.2 < u.val.2 := by omega
@@ -119,7 +105,7 @@ theorem exists_vertical_cycle_of_lifted_period
   obtain ⟨g,hg⟩ := exists_diamondPotential_of_cycle_annihilator hN hM A
     (fun _ => -1) (fun f => by
       simpa only [neg_one_mul,Finset.sum_neg_distrib,diamondVerticalDisplacement] using hn f)
-  have hg' : ∀ e : OpenDiamondEdge A, diamondCoboundary hN hM A g e = -1 :=
+  have hg' :=
     fun e => congrFun hg e
   obtain ⟨p⟩ := hconn
   have he := potential_vertical_difference_of_lifted_walk hN hM hNp hMp A g hg' a b p

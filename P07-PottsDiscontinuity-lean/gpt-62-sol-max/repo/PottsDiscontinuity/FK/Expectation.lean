@@ -23,12 +23,11 @@ variable {α β : Type*} [Fintype α] [Fintype β]
 def expectation (p : PMF α) (f : α → ℝ) : ℝ := ∑ a, (p a).toReal * f a
 
 theorem sum_mass_toReal (p : PMF α) : ∑ a, (p a).toReal = 1 := by
-  have hs : ∑ a, p a = 1 := by simpa only [tsum_fintype] using p.tsum_coe
-  rw [← ENNReal.toReal_sum (fun a _ => p.apply_ne_top a),
-    hs, ENNReal.toReal_one]
+  have hs : ∑ a, p a = 1 := by simpa using p.tsum_coe
+  simp [← ENNReal.toReal_sum (fun a _ => p.apply_ne_top a), hs]
 
 theorem expectation_const (p : PMF α) (c : ℝ) : expectation p (fun _ => c) = c := by
-  rw [expectation, ← Finset.sum_mul, sum_mass_toReal, one_mul]
+  simp [expectation, ← Finset.sum_mul, sum_mass_toReal]
 
 theorem expectation_nonneg (p : PMF α) (f : α → ℝ) (hf : ∀ a, 0 ≤ f a) :
     0 ≤ expectation p f :=
@@ -56,13 +55,13 @@ theorem expectation_bind (p : PMF α) (q : α → PMF β) (f : β → ℝ) :
 @[simp] theorem expectation_pure (a : α) (f : α → ℝ) :
     expectation (PMF.pure a) f = f a := by
   classical
-  simp [expectation, PMF.pure_apply, apply_ite, ite_mul]
+  simp [expectation, apply_ite]
 
 /-- Pushforward expectations retain the original random variable exactly. -/
 theorem expectation_map (p : PMF α) (g : α → β) (f : β → ℝ) :
     expectation (p.map g) f = expectation p (fun a => f (g a)) := by
   rw [PMF.map, expectation_bind]
-  simp only [Function.comp_apply, expectation_pure]
+  simp
 
 /-- Any proved lower bound for every genuine conditional law bounds the mixture. -/
 theorem le_expectation_bind (p : PMF α) (q : α → PMF β) (f : β → ℝ)

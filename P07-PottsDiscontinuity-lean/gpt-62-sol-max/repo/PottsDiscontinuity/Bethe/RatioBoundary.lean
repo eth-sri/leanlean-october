@@ -38,8 +38,12 @@ theorem ratio_continuousAt_M {x : ℝ} (hx : z x ≠ 1) (c : ℝ) :
   exact continuousAt_const.sub (continuousAt_const.div
     (continuousAt_const.sub hz.continuousAt) (sub_ne_zero.mpr (Ne.symm hx)))
 
+section
+
+variable {ι : Type*} {f : Filter ι}
+
 /-- An eventual mesh estimate suffices for endpoint convergence. -/
-theorem ratio_tendsto_root_left_of_eventual_mesh {ι : Type*} {f : Filter ι}
+theorem ratio_tendsto_root_left_of_eventual_mesh
     (n : ι → ℕ) (hn : ∀ i, 0 < n i) (p : ∀ i, Fin (n i) → ℝ)
     (hp : ∀ i, p i ∈ S_n (n i)) (d : ι → ℝ) (hd : Tendsto d f (𝓝 0))
     (hdnonneg : ∀ i, 0 ≤ d i)
@@ -49,7 +53,7 @@ theorem ratio_tendsto_root_left_of_eventual_mesh {ι : Type*} {f : Filter ι}
     (j : ∀ i, Fin (n i)) (J : ℕ) (hrank : ∀ i, (j i).val ≤ J) :
     Tendsto (fun i => p i (j i)) f (𝓝 (-Real.pi)) := by
   have hb : Tendsto (fun i => ((J : ℝ) + 1) * d i) f (𝓝 0) := by
-    simpa only [mul_zero] using hd.const_mul ((J : ℝ) + 1)
+    simpa using hd.const_mul ((J : ℝ) + 1)
   apply Metric.tendsto_nhds.mpr
   intro ε hε
   filter_upwards [hmesh, hb.eventually (gt_mem_nhds hε)] with i hi hbi
@@ -61,33 +65,33 @@ theorem ratio_tendsto_root_left_of_eventual_mesh {ι : Type*} {f : Filter ι}
   exact he.trans_lt ((mul_le_mul_of_nonneg_right hr (hdnonneg i)).trans_lt hbi)
 
 /-- Fixed-rank roots under the source density-convergence hypotheses. -/
-theorem ratio_tendsto_root_left {ι : Type*} {f : Filter ι} {Δ : ℝ} (hΔ : Δ < -1)
+theorem ratio_tendsto_root_left {Δ : ℝ} (hΔ : Δ < -1)
     (r : ℕ) (N n : ι → ℕ) (p : ∀ i, Fin (n i) → ℝ)
     (hp : ∀ i, p i ∈ S_n (n i)) (hn : ∀ i, 0 < n i) (hs : ∀ i, 2 * n i ≤ N i)
     (hcount : ∀ i, N i = 2 * (n i + r))
     (hNlim : Tendsto (fun i => (N i : ℝ)) f atTop)
-    (hb : ∀ i, BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
-      |Xi (lamOf Δ) α * (rootStepDensity (N i) (n i) (p i) (hp i) (hn i) (hs i)
-        (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|))
-    (hlim : Tendsto (fun i => densityNorm Δ hΔ
-      (fun x => rootStepDensity (N i) (n i) (p i) (hp i) (hn i) (hs i) x - rho Δ x) (hb i)) f (𝓝 0))
+    (hb : ∀ i, BddAbove (densityValues Δ (rootStepError Δ (N i) (p i) (hn i))))
+    (hlim : Tendsto (fun i => densityNorm Δ
+      (rootStepError Δ (N i) (p i) (hn i))) f (𝓝 0))
     (j : ∀ i, Fin (n i)) (J : ℕ) (hrank : ∀ i, (j i).val ≤ J) :
     Tendsto (fun i => p i (j i)) f (𝓝 (-Real.pi)) := by
   obtain ⟨m, hm, hmesh⟩ := eventually_rootPartition_gap_le hΔ r N n p hp hn hs hcount hb hlim
   let d := fun i => 2 * (2 * r + 1 : ℝ) / (m * (N i : ℝ))
   have hd : Tendsto d f (𝓝 0) := by
     have ht := (tendsto_inv_atTop_zero.comp hNlim).const_mul (2 * (2 * r + 1 : ℝ) / m)
-    simpa only [d, div_mul_eq_div_mul_one_div, one_div, mul_zero, Function.comp_def] using ht
-  exact ratio_tendsto_root_left_of_eventual_mesh n hn p hp d hd (fun i => by dsimp [d]; positivity)
+    simpa [d, div_mul_eq_div_mul_one_div] using ht
+  exact ratio_tendsto_root_left_of_eventual_mesh n hn p hp d hd (fun i => by positivity)
     hmesh j J hrank
 
 /-- Continuity of the spectral modulus at the endpoint. -/
-theorem ratio_modulus_tendsto_endpoint {ι : Type*} {f : Filter ι} {x : ι → ℝ}
+theorem ratio_modulus_tendsto_endpoint {x : ι → ℝ}
     (hx : Tendsto x f (𝓝 (-Real.pi))) (c : ℝ) :
     Tendsto (fun i => ‖M c (z (x i))‖) f (𝓝 |anisotropy c|) := by
   have hz : z (-Real.pi) ≠ 1 := by rw [ratio_z_neg_pi]; norm_num
   have ht := ((ratio_continuousAt_M hz c).norm.tendsto).comp hx
-  simpa only [ratio_M_neg_pi, Complex.norm_real, Real.norm_eq_abs, Function.comp_def] using ht
+  simpa [ratio_M_neg_pi, Function.comp_def] using ht
+
+end
 
 /-- The even source term (2), once the fixed-rank endpoint limits are known. -/
 theorem ratio_even_boundary_tendsto {ι : Type*} {f : Filter ι} {c : ℝ}
@@ -102,7 +106,7 @@ theorem ratio_even_boundary_tendsto {ι : Type*} {f : Filter ι} {c : ℝ}
     apply pow_ne_zero
     apply pow_ne_zero
     exact abs_ne_zero.mpr (by linarith)
-  simpa only [prod_const, card_univ, Fintype.card_fin] using (ht.pow 2).inv₀ hn
+  simpa using (ht.pow 2).inv₀ hn
 
 /-- The odd source term (2), with one unpaired endpoint factor. -/
 theorem ratio_odd_boundary_tendsto {ι : Type*} {f : Filter ι} {c : ℝ}
@@ -115,7 +119,6 @@ theorem ratio_odd_boundary_tendsto {ι : Type*} {f : Filter ι} {c : ℝ}
   simp only [prod_const, card_univ, Fintype.card_fin] at ht
   have he : |anisotropy c| * (|anisotropy c| ^ s) ^ 2 =
       |anisotropy c| ^ (2 * s + 1) := by
-    rw [show 2 * s + 1 = s * 2 + 1 by omega, pow_add, pow_mul]
     ring
   have hlim := (ratio_modulus_tendsto_endpoint hy c).mul (ht.pow 2)
   rw [he] at hlim

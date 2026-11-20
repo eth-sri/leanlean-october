@@ -2,7 +2,8 @@ module
 
 public import PottsDiscontinuity.Potts.ObservedPartitionLimits
 public import PottsDiscontinuity.Potts.ColourKernelPartitions
-public import PottsDiscontinuity.Potts.GhostPartitionExpectation
+public import PottsDiscontinuity.Potts.GhostConnectionLaw
+public import PottsDiscontinuity.Potts.FinitePartitionLimits
 public import PottsDiscontinuity.Potts.GhostCylinder
 
 /-! Exact literal Potts cylinders as expectations of marked connection partitions. -/
@@ -14,12 +15,6 @@ namespace PottsDiscontinuity.Potts
 open Classical MeasureTheory
 noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
-local instance ghostCylinderPartitionLiteralDecidable (n : ℕ) : DecidableEq (LiteralBond (box n)) :=
-  fun _ _ => Classical.propDecidable _
-local instance ghostCylinderPartitionBoundary (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
-local instance ghostCylinderPartitionShell (n : ℕ) : Fintype (OuterShellEdge n) := Fintype.ofFinite _
-local instance ghostCylinderPartitionDiscrete {V : Type*} (G : SimpleGraph V) :
-    DiscreteMeasurableSpace (FK.Configuration G) := ⟨fun _ => trivial⟩
 
 variable {A : Type*} [Fintype A]
 
@@ -31,25 +26,15 @@ private theorem restored_observedWiredPartition (n : ℕ) (hn : 0 < n)
       (openExtension (box (n + 1)) (FK.boolConfigurationEquiv _ (restoreGhostBonds n hn ω η))) =
     (ghostOpenGraph (box n) ω).reachableSetoid.comap
       (markedMap (fun a => some (⟨v a, hv a⟩ : ↥(box n : Set (ℤ × ℤ)))) none) := by
-  apply Setoid.ext
-  intro a b
-  change (finiteWiredConnectionGraph (rcInfiniteOpenGraph
-    (openExtension (box (n + 1)) (FK.boolConfigurationEquiv _ (restoreGhostBonds n hn ω η))))
-      (n + 1)).reachableSetoid (boxGhostProjection (n + 1) (Option.map v a))
-      (boxGhostProjection (n + 1) (Option.map v b)) ↔ _
-  rw [← wiredObservationGraph_eq, boxObservation_openExtension_self,
-    restored_wiredObservation_reachableSetoid]
-  change (ghostOpenGraph (box n) ω).reachableSetoid
-    (collapseOuterGhost n (boxGhostProjection (n + 1) (Option.map v a)))
-    (collapseOuterGhost n (boxGhostProjection (n + 1) (Option.map v b))) ↔ _
-  rw [collapseOuterGhost_projection, collapseOuterGhost_projection]
-  have hp (a : Option A) : boxGhostProjection n (Option.map v a) =
-      markedMap (fun a => some (⟨v a, hv a⟩ : ↥(box n : Set (ℤ × ℤ)))) none a := by
-    cases a with
-    | none => rfl
-    | some a => simp [boxGhostProjection, hv a, markedMap]
-  rw [hp a, hp b]
-  rfl
+  rw [observedWiredPartition, localWiredSetoid, ← wiredObservationGraph_eq,
+    boxObservation_openExtension_self, restored_wiredObservation_reachableSetoid,
+    ← Setoid.comap_comp, ← Setoid.comap_comp]
+  congr 1
+  funext a
+  simp only [Function.comp_apply, collapseOuterGhost_projection]
+  cases a with
+  | none => rfl
+  | some a => simp [boxGhostProjection, hv a, markedMap]
 
 theorem potts_ghost_cylinder_eq_partitionExpectation
     (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ))
@@ -62,28 +47,35 @@ theorem potts_ghost_cylinder_eq_partitionExpectation
   let vf : A → ↥(box n : Set (ℤ × ℤ)) := fun a => ⟨v a, hv a⟩
   refine Eq.trans ?_ ((pottsProb_ghost_cylinder q hq (box n) β i hi vf ξ).trans ?_)
   · apply Finset.sum_congr
-    · ext σ; simp
-    · intro σ _
-      split_ifs <;> rfl
+    · rfl
+    grind
   symm
   change partitionExpectation (((conditionedOuterLaw (fkParameters q hq β hβ) n).map
     (openExtension (box (n + 1)))).toMeasure) (observedWiredPartition (Option.map v) n) _ = _
   rw [partitionExpectation_map _ _ measurable_from_top _ _ (by
     intro a b
-    have he : {ω | observedWiredPartition (Option.map v) n ω a b} =
-        wiredDataEvent (n + 1) {(Option.map v a, Option.map v b)} := by
-      ext ω; simp [wiredDataEvent]; rfl
-    rw [he]
-    exact (wiredDataEvent_isClopen _ _).isOpen.measurableSet)]
-  rw [conditionedOuterLaw_partitionExpectation q hq β hβ n hn _
-    (fun ω => (ghostOpenGraph (box n) ω).reachableSetoid.comap (markedMap (some ∘ vf) none)) _
-    (restored_observedWiredPartition n hn v hv)]
+    simpa only [wiredDataEvent, Finset.mem_singleton, forall_eq] using!
+      (wiredDataEvent_isClopen (n + 1) {(Option.map v a, Option.map v b)}).isOpen.measurableSet)]
+  let G (ω : LiteralBond (box n) → Bool) :=
+    (ghostOpenGraph (box n) ω).reachableSetoid.comap (markedMap (some ∘ vf) none)
+  unfold partitionExpectation
+  have h (R : Setoid (Option A)) := conditionedOuterLaw_event_eq_ghost q hq β hβ n hn
+    {C | observedWiredPartition (Option.map v) n (openExtension (box (n + 1)) C) = R}
+    {ω | G ω = R} (fun ω η => by
+      simp only [Set.mem_ofPred_eq, restored_observedWiredPartition n hn v hv]
+      rfl)
+  simp_rw [Function.comp_apply, h, Finset.sum_mul]
+  rw [Finset.sum_comm]
   apply Finset.sum_congr
   · ext ω; simp
   · intro ω _
-    exact congrArg (fun c : ℝ => ghostRCProbability q (box n) β ω * c)
-      (pinnedClusterCylinderProbability_factor (ghostOpenGraph (box n) ω).reachableSetoid
-        (some ∘ vf) ξ none (boundaryColor q i hi)).symm
+    rw [Finset.sum_eq_single (G ω)]
+    · simpa using congrArg (fun c : ℝ => ghostRCProbability q (box n) β ω * c)
+        (pinnedClusterCylinderProbability_factor (ghostOpenGraph (box n) ω).reachableSetoid
+          (some ∘ vf) ξ none (boundaryColor q i hi)).symm
+    · intro R _ hR
+      simp [hR.symm]
+    · simp
 
 end
 end PottsDiscontinuity.Potts

@@ -67,7 +67,7 @@ def ribbonEndEquiv (hN : Even N) (hM : Even M) :
   left_inv x := by
     apply Prod.ext
     · rfl
-    · exact ribbonEnd_side x.1 x.2
+    simp
   right_inv d := Subtype.ext (ribbonEnd_recover hN hM d)
 
 @[simp] theorem ribbonEndEquiv_val (hN : Even N) (hM : Even M)
@@ -78,16 +78,13 @@ def ribbonEndEquiv (hN : Even N) (hM : Even M) :
 theorem leftFace_ribbonEnd (v : Fin N × Fin M) (b : Bool) :
     leftFace (ribbonEnd v b) = faceEndpointRaw true v b := by
   cases hc : checker v <;> cases b <;>
-    simp only [ribbonEnd, hc, Bool.false_eq_true, ite_false, ite_true,
-      leftFace, faceEndpointRaw]
+    simp [ribbonEnd, hc, leftFace, faceEndpointRaw]
 
 /-- An open indexed ribbon exchanges its two ends; a closed ribbon fixes them. -/
 theorem ribbonSwitch_ribbonEnd (A : RCConfig N M) (v : Fin N × Fin M) (b : Bool) :
     ribbonSwitch A (ribbonEnd v b) = ribbonEnd v (Bool.xor (A v) b) := by
   cases hc : checker v <;> cases ha : A v <;> cases b <;>
-    simp only [ribbonSwitch, strandReverse, rcSmoothing, ribbonEnd, hc, ha,
-      Bool.false_eq_true, ite_false, ite_true, Bool.xor_false, Bool.xor_true,
-      Bool.not_false, Bool.not_true, pairedPort]
+    simp [ribbonSwitch, strandReverse, rcSmoothing, ribbonEnd, hc, ha, pairedPort]
 
 theorem ribbonEdgePairing_end (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (v : Fin N × Fin M) (b : Bool) :

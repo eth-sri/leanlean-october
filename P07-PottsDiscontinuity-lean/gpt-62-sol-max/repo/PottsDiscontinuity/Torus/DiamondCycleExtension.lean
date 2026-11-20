@@ -6,8 +6,7 @@ public import PottsDiscontinuity.Torus.DiamondDisplacement
 # Extending subgraph cycles to the full torus
 
 The inclusion extends indexed chains by zero on closed edges. It preserves vertex
-conservation, the normalized corner primitives, the cyclic-order intersection form,
-and both lifted displacement coordinates.
+conservation and both lifted displacement coordinates.
 -/
 
 @[expose] public section
@@ -18,32 +17,28 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
-/-- The fully open edge subtype is explicitly the full indexed edge carrier. -/
-def fullDiamondEdgeEquiv (N M : ℕ) : OpenDiamondEdge (openRCConfig N M) ≃ Fin N × Fin M where
-  toFun e := e.val
-  invFun v := ⟨v, rfl⟩
-  left_inv _ := rfl
-  right_inv _ := rfl
+section
+
+variable (A : RCConfig N M) (f : OpenDiamondEdge A → ℚ)
 
 /-- Extend a chain to all primal edges, with coefficient zero on absent edges. -/
-def fullDiamondChainExtension (A : RCConfig N M) (f : OpenDiamondEdge A → ℚ) :
+def fullDiamondChainExtension :
     OpenDiamondEdge (openRCConfig N M) → ℚ := fun e => extendDiamondChain A f e.val
 
-@[simp] theorem extendDiamondChain_fullExtension (A : RCConfig N M)
-    (f : OpenDiamondEdge A → ℚ) (v : Fin N × Fin M) :
-    extendDiamondChain (openRCConfig N M) (fullDiamondChainExtension A f) v =
-      extendDiamondChain A f v := by
-  rw [extendDiamondChain_open _ _ v rfl]
-  rfl
+end
 
 theorem ribbonHalfFlow_fullExtension (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (f : OpenDiamondEdge A → ℚ) (d : DirectedDart (checkerArrows N M)) :
     ribbonHalfFlow hN hM (openRCConfig N M) (fullDiamondChainExtension A f) d =
-      ribbonHalfFlow hN hM A f d := by
-  rw [ribbonHalfFlow_raw, ribbonHalfFlow_raw, extendDiamondChain_fullExtension]
+      ribbonHalfFlow hN hM A f d := rfl
 
-theorem fullDiamondChainExtension_mem (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f : diamondCycleSpace hN hM A) :
+section
+
+variable
+  (hN : Even N) (hM : Even M) (A : RCConfig N M)
+    (f : diamondCycleSpace hN hM A)
+
+theorem fullDiamondChainExtension_mem :
     fullDiamondChainExtension A f.val ∈ diamondCycleSpace hN hM (openRCConfig N M) := by
   rw [diamondCycleSpace_mem_iff_corners]
   intro v
@@ -51,29 +46,11 @@ theorem fullDiamondChainExtension_mem (hN : Even N) (hM : Even M) (A : RCConfig 
   exact sum_ribbonHalfFlow_corners hN hM A f v
 
 /-- The actual inclusion of conserved indexed flows into the full torus cycle space. -/
-def fullDiamondCycleExtension (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f : diamondCycleSpace hN hM A) : diamondCycleSpace hN hM (openRCConfig N M) :=
+def fullDiamondCycleExtension : diamondCycleSpace hN hM (openRCConfig N M) :=
   ⟨fullDiamondChainExtension A f.val, fullDiamondChainExtension_mem hN hM A f⟩
 
-theorem ribbonCornerPrimitive_fullExtension (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f : diamondCycleSpace hN hM A) (d : DirectedDart (checkerArrows N M)) :
-    ribbonCornerPrimitive hN hM (openRCConfig N M) (fullDiamondCycleExtension hN hM A f) d =
-      ribbonCornerPrimitive hN hM A f d := by
-  obtain ⟨⟨v, p⟩, rfl⟩ := (ribbonCornerEquiv hN hM).surjective d
-  rw [ribbonCornerPrimitive_corner, ribbonCornerPrimitive_corner]
-  change cornerPrimitiveValue (fun q => ribbonHalfFlow hN hM (openRCConfig N M)
-    (fullDiamondChainExtension A f.val) (ribbonCornerEquiv hN hM (v, q))) p = _
-  simp_rw [ribbonHalfFlow_fullExtension]
 
-theorem ribbonIntersectionCoefficient_fullExtension (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f : diamondCycleSpace hN hM A) (e : OpenDiamondEdge A) :
-    ribbonIntersectionCoefficient hN hM (openRCConfig N M)
-      (fullDiamondCycleExtension hN hM A f) ⟨e.val, rfl⟩ =
-        ribbonIntersectionCoefficient hN hM A f e := by
-  unfold ribbonIntersectionCoefficient
-  rw [ribbonCornerPrimitive_fullExtension, ribbonCornerPrimitive_fullExtension]
-  change _ - _ - extendDiamondChain A f.val e.val = _
-  rw [extendDiamondChain_open A f.val e.val e.property]
+end
 
 theorem sum_fullDiamondChainExtension (A : RCConfig N M) (f : OpenDiamondEdge A → ℚ)
     (c : Fin N × Fin M → ℚ) :
@@ -90,40 +67,25 @@ theorem sum_fullDiamondChainExtension (A : RCConfig N M) (f : OpenDiamondEdge A 
   apply Finset.sum_congr rfl
   intro v _
   cases ha : A v
-  · simp only [extendDiamondChain_closed A f v ha, mul_zero, Bool.false_eq_true, ite_false]
-  · simp only [ite_true]
+  · simp [extendDiamondChain_closed A f v ha]
+  rfl
 
-/-- Cellular intersection is preserved by the actual subgraph inclusion. -/
-theorem ribbonIntersection_fullExtension (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f g : diamondCycleSpace hN hM A) :
-    ribbonIntersection hN hM (openRCConfig N M)
-      (fullDiamondCycleExtension hN hM A f) (fullDiamondCycleExtension hN hM A g) =
-        ribbonIntersection hN hM A f g := by
-  unfold ribbonIntersection
-  change (∑ e : OpenDiamondEdge (openRCConfig N M),
-    ribbonIntersectionCoefficient hN hM (openRCConfig N M) (fullDiamondCycleExtension hN hM A f) e *
-      fullDiamondChainExtension A g.val e) = _
-  have he := sum_fullDiamondChainExtension A g.val
-    (fun v => ribbonIntersectionCoefficient hN hM (openRCConfig N M)
-      (fullDiamondCycleExtension hN hM A f) ⟨v, rfl⟩)
-  change (∑ e : OpenDiamondEdge (openRCConfig N M),
-    ribbonIntersectionCoefficient hN hM (openRCConfig N M) (fullDiamondCycleExtension hN hM A f) e *
-      fullDiamondChainExtension A g.val e) = _ at he
-  rw [he]
-  exact Finset.sum_congr rfl (fun e _ => by rw [ribbonIntersectionCoefficient_fullExtension])
+section
 
-theorem diamondHorizontalDisplacement_fullExtension (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (f : diamondCycleSpace hN hM A) :
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
+
+theorem diamondHorizontalDisplacement_fullExtension (f : diamondCycleSpace hN hM A) :
     diamondHorizontalDisplacement (openRCConfig N M) (fullDiamondCycleExtension hN hM A f).val =
       diamondHorizontalDisplacement A f.val :=
   sum_fullDiamondChainExtension A f.val (fun v => if checker v then -1 else 1)
 
-theorem diamondVerticalDisplacement_fullExtension (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (f : diamondCycleSpace hN hM A) :
+theorem diamondVerticalDisplacement_fullExtension (f : diamondCycleSpace hN hM A) :
     diamondVerticalDisplacement (openRCConfig N M) (fullDiamondCycleExtension hN hM A f).val =
       diamondVerticalDisplacement A f.val := by
   have he := sum_fullDiamondChainExtension A f.val (fun _ => 1)
   simp only [one_mul] at he
   exact congrArg Neg.neg he
+
+end
 
 end PottsDiscontinuity.Torus

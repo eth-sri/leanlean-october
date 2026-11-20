@@ -31,7 +31,7 @@ variable {V : Type*} {G : SimpleGraph V}
   classical
   apply Subtype.ext
   simp only [collapseComponent]
-  simp only [Quotient.sound hxy]
+  simp [Quotient.sound hxy]
 
  theorem collapseComponent_surjective (s : Setoid V) (u v : V)
     (hne : ¬ s.r u v) : Function.Surjective (collapseComponent s u v hne) := by
@@ -61,9 +61,7 @@ noncomputable def componentQuotientInsertEquiv [DecidableEq G.edgeSet]
     rw [openGraph_adj]
     exact ⟨⟨s(u,v), G.mem_edgeSet.mpr huv⟩, Finset.mem_insert_self _ _, rfl⟩
   have huvf : f u = f v := by
-    apply Subtype.ext
-    simp [f, collapseComponent, show Quotient.mk s u ≠ Quotient.mk s v from
-      fun h => hne (Quotient.exact h)]
+    grind only [collapseComponent]
   have hle : t ≤ Setoid.ker f := by
     apply componentSetoid_le
     · apply reachableSetoid_le_of_adj
@@ -79,7 +77,7 @@ noncomputable def componentQuotientInsertEquiv [DecidableEq G.edgeSet]
         apply actualConnected_component
         apply actualConnected_of_adj
         rw [openGraph_adj]
-        exact ⟨e,he,hexy⟩
+        tauto
     · intro x y hxy
       exact collapseComponent_respects s u v hne (boundary_component G ξ A hxy)
   have hge : Setoid.ker f ≤ t := by

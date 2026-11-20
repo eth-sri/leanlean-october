@@ -2,7 +2,7 @@
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
 
-public import PottsDiscontinuity.FK.FreeBoxLimitV1
+public import PottsDiscontinuity.FK.FreeBoxLimit
 
 @[expose] public section
 
@@ -22,49 +22,39 @@ theorem boxConfiguration_mono (c : LatticeVertex) (r : ℕ)
     (Finset.map_subset_map).2 hAB
   intro e
   by_cases hA : e ∈ A.map (boxEdgeEmbedding c r)
-  · have hB : e ∈ B.map (boxEdgeEmbedding c r) := hmap hA
+  · have hB := hmap hA
     simp [boxConfiguration, hA, hB]
   · simp [boxConfiguration, hA]
 
-private theorem boxProbabilityMeasure_apply_preimage (q : Parameters)
-    (c : LatticeVertex) (r : ℕ) (s : Set LatticeConfiguration)
-    (hs : MeasurableSet s) :
-    (boxProbabilityMeasure q c r : Measure LatticeConfiguration) s =
-      measure (boxGraph c r) q (BoundaryCondition.free ∅)
-        {A | boxConfiguration c r A ∈ s} := by
-  change ((law (boxGraph c r) q (BoundaryCondition.free ∅)).map
-    (boxConfiguration c r)).toMeasure s = _
-  rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top hs]
-  rfl
+/-- FKG is preserved by the monotone embedding of finite-box configurations. -/
+theorem boxMap_positive_association (q : Parameters) (c : LatticeVertex) (r : ℕ)
+    (ξ : BoundaryCondition (BoxVertex c r)) (f : Configuration (boxGraph c r) → LatticeConfiguration)
+    (hf : Monotone f) {s t : Set LatticeConfiguration}
+    (hsUpper : IsUpperSet s) (htUpper : IsUpperSet t)
+    (hs : MeasurableSet s) (ht : MeasurableSet t) :
+    ((law (boxGraph c r) q ξ).map f).toMeasure.real s *
+      ((law (boxGraph c r) q ξ).map f).toMeasure.real t ≤
+      ((law (boxGraph c r) q ξ).map f).toMeasure.real (s ∩ t) := by
+  simp only [Measure.real_def, PMF.toMeasure_map_apply _ _ _ measurable_from_top hs,
+    PMF.toMeasure_map_apply _ _ _ measurable_from_top ht,
+    PMF.toMeasure_map_apply _ _ _ measurable_from_top (hs.inter ht)]
+  exact measure_positive_association q ξ _ _ (hsUpper.preimage hf) (htUpper.preimage hf)
 
-private theorem boxProbabilityMeasure_finite_positive_association
-    (q : Parameters) (c : LatticeVertex) (r : ℕ)
-    (s t : Set LatticeConfiguration) (hsUpper : IsUpperSet s)
-    (htUpper : IsUpperSet t) (hsMeas : MeasurableSet s) (htMeas : MeasurableSet t) :
-    (boxProbabilityMeasure q c r : Measure LatticeConfiguration).real s *
-      (boxProbabilityMeasure q c r : Measure LatticeConfiguration).real t ≤
-        (boxProbabilityMeasure q c r : Measure LatticeConfiguration).real (s ∩ t) := by
-  let sbox : Set (Configuration (boxGraph c r)) :=
-    {A | boxConfiguration c r A ∈ s}
-  let tbox : Set (Configuration (boxGraph c r)) :=
-    {A | boxConfiguration c r A ∈ t}
-  have hsbox : IsUpperSet sbox := by
-    intro A B hAB hA
-    exact hsUpper (boxConfiguration_mono c r hAB) hA
-  have htbox : IsUpperSet tbox := by
-    intro A B hAB hA
-    exact htUpper (boxConfiguration_mono c r hAB) hA
-  have h := measure_positive_association q (BoundaryCondition.free ∅) sbox tbox hsbox htbox
-  have hS := boxProbabilityMeasure_apply_preimage q c r s hsMeas
-  have hT := boxProbabilityMeasure_apply_preimage q c r t htMeas
-  have hST := boxProbabilityMeasure_apply_preimage q c r (s ∩ t) (hsMeas.inter htMeas)
-  have hsets : sbox ∩ tbox = {A | boxConfiguration c r A ∈ s ∩ t} := by
-    ext A
-    simp [sbox, tbox]
-  rw [Measure.real_def, Measure.real_def, Measure.real_def]
-  rw [hS, hT, hST]
-  rw [hsets] at h
-  exact h
+/-- Pass a finite positive-association inequality to the weak limit on clopen events. -/
+theorem clopen_positive_association_of_tendsto
+    {μ : ℕ → ProbabilityMeasure LatticeConfiguration} {φ : ProbabilityMeasure LatticeConfiguration}
+    (hφ : Tendsto μ atTop (𝓝 φ)) {s t : Set LatticeConfiguration}
+    (hs : IsClopen s) (ht : IsClopen t)
+    (hfinite : ∀ n, (μ n).toMeasure.real s * (μ n).toMeasure.real t ≤
+      (μ n).toMeasure.real (s ∩ t)) :
+    φ.toMeasure.real s * φ.toMeasure.real t ≤ φ.toMeasure.real (s ∩ t) := by
+  have conv {A : Set LatticeConfiguration} (hA : IsClopen A) :
+      Tendsto (fun n => (μ n A : ℝ)) atTop (𝓝 (φ A : ℝ)) :=
+    NNReal.continuous_coe.continuousAt.tendsto.comp
+      (ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hφ hA)
+  simpa using
+      le_of_tendsto_of_tendsto' ((conv hs).mul (conv ht)) (conv (hs.inter ht))
+        (by assumption)
 
 /-- Positive association under the unique free-box law for any two increasing clopen events of the original lattice configuration space. -/
 theorem freeBoxLimit_clopen_positive_association (q : Parameters)
@@ -73,44 +63,16 @@ theorem freeBoxLimit_clopen_positive_association (q : Parameters)
     (Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q) s : ℝ) *
       (Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q) t : ℝ) ≤
         (Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q) (s ∩ t) : ℝ) := by
-  let μ : ProbabilityMeasure LatticeConfiguration :=
+  let μ :=
     Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q)
-  have hweak : Tendsto (fun n => boxProbabilityMeasure q (0, 0) n) atTop (𝓝 μ) :=
+  have hweak :=
     (Classical.choose_spec (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q)).1
       (fun _ => (0, 0)) (fun n => n) origin_latticeBox_nested origin_latticeBox_exhaustive
-  have hS : Tendsto (fun n => boxProbabilityMeasure q (0, 0) n s) atTop (𝓝 (μ s)) :=
-    ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hweak hsClopen
-  have hT : Tendsto (fun n => boxProbabilityMeasure q (0, 0) n t) atTop (𝓝 (μ t)) :=
-    ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hweak htClopen
-  have hST : Tendsto (fun n => boxProbabilityMeasure q (0, 0) n (s ∩ t)) atTop
-      (𝓝 (μ (s ∩ t))) :=
-    ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hweak
-      (hsClopen.inter htClopen)
-  have hSreal : Tendsto (fun n =>
-      (((boxProbabilityMeasure q (0, 0) n : ProbabilityMeasure LatticeConfiguration) s : NNReal) : ℝ)) atTop
-      (𝓝 ((μ s : NNReal) : ℝ)) :=
-    (NNReal.continuous_coe.continuousAt.tendsto).comp hS
-  have hTreal : Tendsto (fun n =>
-      (((boxProbabilityMeasure q (0, 0) n : ProbabilityMeasure LatticeConfiguration) t : NNReal) : ℝ)) atTop
-      (𝓝 ((μ t : NNReal) : ℝ)) :=
-    (NNReal.continuous_coe.continuousAt.tendsto).comp hT
-  have hSTreal : Tendsto (fun n =>
-      (((boxProbabilityMeasure q (0, 0) n : ProbabilityMeasure LatticeConfiguration) (s ∩ t) : NNReal) : ℝ)) atTop
-      (𝓝 ((μ (s ∩ t) : NNReal) : ℝ)) :=
-    (NNReal.continuous_coe.continuousAt.tendsto).comp hST
-  have hprod : Tendsto (fun n =>
-      (((boxProbabilityMeasure q (0, 0) n : ProbabilityMeasure LatticeConfiguration) s : NNReal) : ℝ) *
-        (((boxProbabilityMeasure q (0, 0) n : ProbabilityMeasure LatticeConfiguration) t : NNReal) : ℝ)) atTop
-      (𝓝 (((μ s : NNReal) : ℝ) * ((μ t : NNReal) : ℝ))) := hSreal.mul hTreal
-  have hfinite (n : ℕ) :
-      (((boxProbabilityMeasure q (0, 0) n : ProbabilityMeasure LatticeConfiguration) s : NNReal) : ℝ) *
-        (((boxProbabilityMeasure q (0, 0) n : ProbabilityMeasure LatticeConfiguration) t : NNReal) : ℝ) ≤
-          (((boxProbabilityMeasure q (0, 0) n : ProbabilityMeasure LatticeConfiguration) (s ∩ t) : NNReal) : ℝ) := by
-    have h := boxProbabilityMeasure_finite_positive_association q (0, 0) n s t
-      hsUpper htUpper hsClopen.2.measurableSet htClopen.2.measurableSet
-    simpa [ProbabilityMeasure.measureReal_eq_coe_coeFn] using h
-  have hlimit := le_of_tendsto_of_tendsto' hprod hSTreal hfinite
-  simpa [μ] using hlimit
+  simpa using
+      clopen_positive_association_of_tendsto hweak hsClopen htClopen (fun n =>
+        boxMap_positive_association q (0, 0) n (BoundaryCondition.free ∅) _
+          (fun _ _ => boxConfiguration_mono (0, 0) n)
+          hsUpper htUpper hsClopen.isOpen.measurableSet htClopen.isOpen.measurableSet)
 
 end
 end PottsDiscontinuity.FK.Internal

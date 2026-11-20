@@ -28,42 +28,28 @@ theorem dual_to_bottom (hw : 0 < R.w) :
   induction n with
   | zero =>
     intro z hz hn
-    exact ⟨z, hz, by have := mem_cells.1 (mem_dcells.1 hz).1; omega, Relation.ReflTransGen.refl⟩
+    exact ⟨z, hz, by omega, Relation.ReflTransGen.refl⟩
   | succ n ih =>
     intro z hz hn
     have hzc := mem_cells.1 (mem_dcells.1 hz).1
     have hzp := (mem_dcells.1 hz).2
-    have hw' : (0 : ℤ) < R.w := by exact_mod_cast hw
-    by_cases hx : R.x0 < z.1
-    · -- step to (z.1 - 1, z.2 - 1) through the medial vertex z
-      have hm : z ∈ R.inner := by
-        rw [mem_inner]; push_cast at hn; omega
-      have hends : dualEnds z = (z, (z.1 - 1, z.2 - 1)) := by
-        unfold dualEnds; unfold IsPrimal at hzp
-        rw [ite_eq_right (by omega)]
-      have hz' : ((z.1 - 1, z.2 - 1) : Cell) ∈ R.dcells := by
-        rw [mem_dcells, mem_cells]; unfold IsPrimal at *
-        refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩ <;> dsimp only <;> push_cast at hn <;> omega
-      obtain ⟨b, hb, hb2, hr⟩ := ih (z.1 - 1, z.2 - 1) hz' (by dsimp only; push_cast at hn; omega)
-      refine ⟨b, hb, hb2, Relation.ReflTransGen.head ?_ hr⟩
-      have := R.step_of_inner hm
-      rw [hends] at this
-      exact this
-    · have hxz : z.1 = R.x0 := by omega
-      have hm : (z.1 + 1, z.2) ∈ R.inner := by
-        rw [mem_inner]; dsimp only; push_cast at hn; omega
-      have hends : dualEnds (z.1 + 1, z.2) = (z, (z.1 + 1, z.2 - 1)) := by
-        unfold dualEnds; unfold IsPrimal at hzp
-        rw [ite_eq_left (by dsimp only; omega)]
-        simp
-      have hz' : ((z.1 + 1, z.2 - 1) : Cell) ∈ R.dcells := by
-        rw [mem_dcells, mem_cells]; unfold IsPrimal at *
-        refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩ <;> dsimp only <;> push_cast at hn <;> omega
-      obtain ⟨b, hb, hb2, hr⟩ := ih (z.1 + 1, z.2 - 1) hz' (by dsimp only; push_cast at hn; omega)
-      refine ⟨b, hb, hb2, Relation.ReflTransGen.head ?_ hr⟩
-      have := R.step_of_inner hm
-      rw [hends] at this
-      exact this
+    let d : ℤ := if R.x0 < z.1 then -1 else 1
+    let m := if R.x0 < z.1 then z else (z.1 + 1, z.2)
+    let z' : Cell := (z.1 + d, z.2 - 1)
+    have hm : m ∈ R.inner := by rw [mem_inner]; dsimp [m]; split_ifs <;> omega
+    have hends : dualEnds m = (z, z') := by
+      unfold IsPrimal at hzp
+      by_cases hx : R.x0 < z.1
+      · simp [m, z', d, hx, dualEnds, hzp, sub_eq_add_neg]
+      · have hp : (z.1 + 1 + z.2) % 2 = 0 := by omega
+        simp [m, z', d, hx, dualEnds, hp]
+    have hz' : z' ∈ R.dcells := by
+      simp only [mem_dcells, mem_cells, IsPrimal, z', d] at *
+      split_ifs <;> omega
+    obtain ⟨b, hb, hb2, hr⟩ := ih z' hz' (by dsimp [z']; omega)
+    have hs := R.step_of_inner hm
+    rw [hends] at hs
+    exact ⟨b, hb, hb2, hr.head hs⟩
 
 
 /-- Two bottom-row odd cells two apart are joined through the cell between them one row up. -/
@@ -72,7 +58,6 @@ theorem bottom_step (hh : 0 < R.h) {z : Cell} (hz : z ∈ R.dcells) (hzy : z.2 =
     Relation.ReflTransGen (StepRel dualEnds R.inner) z (z.1 + 2, z.2) := by
   have hzc := mem_cells.1 (mem_dcells.1 hz).1
   have hzp := (mem_dcells.1 hz).2
-  have hh' : (0 : ℤ) < R.h := by exact_mod_cast hh
   unfold IsPrimal at hzp
   have hm1 : (z.1 + 1, z.2 + 1) ∈ R.inner := by rw [mem_inner]; dsimp only; omega
   have hm2 : (z.1 + 2, z.2 + 1) ∈ R.inner := by rw [mem_inner]; dsimp only; omega
@@ -88,6 +73,31 @@ theorem bottom_step (hh : 0 < R.h) {z : Cell} (hz : z ∈ R.dcells) (hzy : z.2 =
   rw [e2] at s2
   exact (Relation.ReflTransGen.single (stepRel_symm s1)).tail s2
 
+/-- An equivalence relation valid across successive dual cells of a row is valid
+between any two of its dual cells. -/
+theorem rel_of_same_dual_row {r : ℤ} {rel : Cell → Cell → Prop} (hrel : Equivalence rel)
+    (hstep : ∀ z ∈ R.dcells, z.2 = r → (z.1 + 2, z.2) ∈ R.dcells → rel z (z.1 + 2, z.2))
+    {z z' : Cell} (hz : z ∈ R.dcells) (hz' : z' ∈ R.dcells) (hr : z.2 = r) (hr' : z'.2 = r) :
+    rel z z' := by
+  let rec go (x y : Cell) (hx : x ∈ R.dcells) (hy : y ∈ R.dcells)
+      (hxr : x.2 = r) (hyr : y.2 = r) (hle : x.1 ≤ y.1) : rel x y := by
+    have hxc := mem_dcells.1 hx
+    have hyc := mem_dcells.1 hy
+    simp only [mem_cells, IsPrimal] at hxc hyc
+    by_cases he : x.1 = y.1
+    · rw [Prod.ext he (hxr.trans hyr.symm)]
+      exact hrel.refl _
+    · have hlim : x.1 + 2 ≤ y.1 := by omega
+      have hmid : ((x.1 + 2, x.2) : Cell) ∈ R.dcells := by
+        simp only [mem_dcells, mem_cells, IsPrimal]
+        omega
+      exact hrel.trans (hstep x hx hxr hmid) (go _ y hmid hy hxr hyr hlim)
+  termination_by (y.1 - x.1).toNat
+  decreasing_by omega
+  rcases le_total z.1 z'.1 with h | h
+  · exact go z z' hz hz' hr hr' h
+  · exact hrel.symm (go z' z hz' hz hr' hr h)
+
 /-- The dual board graph (all inner edges) is connected. -/
 theorem dual_connected (hw : 0 < R.w) (hh : 0 < R.h) {z z' : Cell} (hz : z ∈ R.dcells)
     (hz' : z' ∈ R.dcells) :
@@ -96,49 +106,11 @@ theorem dual_connected (hw : 0 < R.w) (hh : 0 < R.h) {z z' : Cell} (hz : z ∈ R
     have := mem_cells.1 (mem_dcells.1 hz).1; omega)
   obtain ⟨b', hb', hby', hr'⟩ := R.dual_to_bottom hw (z'.2 - R.y0).toNat z' hz' (by
     have := mem_cells.1 (mem_dcells.1 hz').1; omega)
-  have hsymm : ∀ {x y : Cell}, Relation.ReflTransGen (StepRel dualEnds R.inner) x y →
-      Relation.ReflTransGen (StepRel dualEnds R.inner) y x := by
-    intro x y h
-    induction h with
-    | refl => exact Relation.ReflTransGen.refl
-    | tail _ hstep ih => exact (Relation.ReflTransGen.single (stepRel_symm hstep)).trans ih
-  have hbb : ∀ n : ℕ, ∀ x y : Cell, x ∈ R.dcells → y ∈ R.dcells → x.2 = R.y0 → y.2 = R.y0 →
-      (y.1 - x.1).natAbs = 2 * n →
-      Relation.ReflTransGen (StepRel dualEnds R.inner) x y := by
-    intro n
-    induction n with
-    | zero =>
-      intro x y _ _ hx hy hn
-      have : x = y := Prod.ext (by omega) (by omega)
-      rw [this]
-    | succ n ih =>
-      intro x y hx hy hxy hyy hn
-      have hxc := mem_cells.1 (mem_dcells.1 hx).1
-      have hyc := mem_cells.1 (mem_dcells.1 hy).1
-      have hxp := (mem_dcells.1 hx).2
-      have hyp := (mem_dcells.1 hy).2
-      unfold IsPrimal at hxp hyp
-      by_cases hlt : x.1 < y.1
-      · have hx2 : x.1 + 2 ≤ R.x0 + R.w := by omega
-        have hmid : ((x.1 + 2, x.2) : Cell) ∈ R.dcells := by
-          rw [mem_dcells, mem_cells]; unfold IsPrimal
-          refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩ <;> dsimp only <;> omega
-        exact (R.bottom_step hh hx hxy hx2).trans (ih _ y hmid hy (by dsimp only; omega) hyy
-          (by dsimp only; omega))
-      · have hgt : y.1 < x.1 := by omega
-        have hy2 : y.1 + 2 ≤ R.x0 + R.w := by omega
-        have hmid : ((y.1 + 2, y.2) : Cell) ∈ R.dcells := by
-          rw [mem_dcells, mem_cells]; unfold IsPrimal
-          refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩ <;> dsimp only <;> omega
-        have := (R.bottom_step hh hy hyy hy2)
-        have h2 := ih x (y.1 + 2, y.2) hx hmid hxy (by dsimp only; omega) (by dsimp only; omega)
-        exact h2.trans (hsymm this)
-  have hbc : Relation.ReflTransGen (StepRel dualEnds R.inner) b b' := by
-    have hbp := (mem_dcells.1 hb).2
-    have hbp' := (mem_dcells.1 hb').2
-    unfold IsPrimal at hbp hbp'
-    exact hbb ((b'.1 - b.1).natAbs / 2) b b' hb hb' hby hby' (by omega)
-  exact hr.trans (hbc.trans (hsymm hr'))
+  have hbb := R.rel_of_same_dual_row
+    ⟨fun _ => Relation.ReflTransGen.refl, symm, Relation.ReflTransGen.trans⟩
+    (fun z hz hy hz' => R.bottom_step hh hz hy (mem_cells.1 (mem_dcells.1 hz').1).2.1)
+    hb hb' hby hby'
+  exact hr.trans (hbb.trans (symm hr'))
 
 end Rect
 

@@ -1,7 +1,6 @@
 module
 
-public import PottsDiscontinuity.FK.EndpointLimits
-public import PottsDiscontinuity.Potts.NestedBoxComparison
+public import PottsDiscontinuity.FK.BoxLimits
 
 /-! Actual free connection data is the increasing limit of finite open paths. -/
 
@@ -22,15 +21,16 @@ def localFreeGraph (H : SimpleGraph (ℤ × ℤ)) (n : ℕ) : SimpleGraph (ℤ �
     exact ⟨hxy.symm, hy, hx⟩
   loopless := by
     constructor
-    intro x h
-    exact H.irrefl h.1
+    simp
 
 theorem localFreeGraph_le (H : SimpleGraph (ℤ × ℤ)) (n : ℕ) : localFreeGraph H n ≤ H :=
   fun _ _ h => h.1
 
 theorem localFreeGraph_mono (H : SimpleGraph (ℤ × ℤ)) : Monotone (localFreeGraph H) := by
   intro m n hmn x y hxy
-  exact ⟨hxy.1, box_mono hmn hxy.2.1, box_mono hmn hxy.2.2⟩
+  have hbox : box m ⊆ box n := by
+    simpa [FK.latticeBox_origin_eq_box] using FK.latticeBox_mono (0, 0) hmn
+  exact ⟨hxy.1, hbox hxy.2.1, hbox hxy.2.2⟩
 
 theorem localFreeGraph_reachable_mono (H : SimpleGraph (ℤ × ℤ)) (x y : ℤ × ℤ) :
     Monotone (fun n => (localFreeGraph H n).Reachable x y) := by
@@ -43,8 +43,8 @@ theorem reachable_iff_exists_localFree (H : SimpleGraph (ℤ × ℤ)) (x y : ℤ
   constructor
   · rintro ⟨w⟩
     have he : ∀ᶠ n : ℕ in atTop, ∀ z ∈ w.support, z ∈ box n := by
-      simpa only [List.mem_toFinset] using
-        (eventually_all_finset w.support.toFinset).mpr (fun z _ => FK.eventually_mem_box z)
+      simpa using
+              (eventually_all_finset w.support.toFinset).mpr (fun z _ => FK.eventually_mem_box z)
     obtain ⟨n, hn⟩ := he.exists
     let f : H.induce (box n : Set (ℤ × ℤ)) →g localFreeGraph H n :=
       { toFun := Subtype.val

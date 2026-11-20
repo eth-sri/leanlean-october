@@ -31,10 +31,10 @@ theorem verticalMass_even (hN : Even N) (ω : ArrowConfig N M) (s : Smoothing N 
       simp only [verticalMass, Nat.cast_sum, Int.cast_sum, ZMod.natAbs_mod_two]
     _ = ((2 * (ω.absUp : ℤ) - N : ℤ) : ZMod 2) := by rw [sum_loopVertical]
     _ = 0 := by
-      have hn : (N : ZMod 2) = 0 := hN.natCast_zmod_two
+      have hn := hN.natCast_zmod_two
       have htwo : (2 : ZMod 2) = 0 := by decide
       push_cast
-      rw [htwo, zero_mul, hn, sub_self]
+      simp [htwo, hn]
 
 /-- Half the actual absolute vertical displacement winding, for a directed loop partition. -/
 noncomputable def verticalWindingCount (ω : ArrowConfig N M) (s : Smoothing N M)
@@ -42,8 +42,7 @@ noncomputable def verticalWindingCount (ω : ArrowConfig N M) (s : Smoothing N M
 
 theorem two_mul_verticalWindingCount (hN : Even N) (ω : ArrowConfig N M)
     (s : Smoothing N M) (h : CompatibleConfig ω s) (j : Fin M) :
-    2 * verticalWindingCount ω s h j = verticalMass ω s h j := by
-  exact Nat.mul_div_cancel' (verticalMass_even hN ω s h j).two_dvd
+    2 * verticalWindingCount ω s h j = verticalMass ω s h j := Nat.mul_div_cancel' (verticalMass_even hN ω s h j).two_dvd
 
 /-- The up-arrow sector forces at least r pairs of absolute vertical windings. -/
 theorem sector_le_verticalWindingCount (hN : Even N) (ω : ArrowConfig N M)

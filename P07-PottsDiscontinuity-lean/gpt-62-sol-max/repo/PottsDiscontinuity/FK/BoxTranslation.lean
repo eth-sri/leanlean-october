@@ -4,50 +4,37 @@ module
 
 public import PottsDiscontinuity.FK.BoxCompactness
 public import PottsDiscontinuity.FK.Isomorphism
+public import PottsDiscontinuity.FK.BoundaryPartitionLaw
 
 @[expose] public section
 
 namespace PottsDiscontinuity.FK
 open MeasureTheory
 noncomputable section
-variable {V W : Type*} {G : SimpleGraph V} {H : SimpleGraph W}
+/-- Isometries preserving box membership restrict to the finite induced graphs. -/
+def boxGraphIsoOfLatticeIso (e : squareLattice ≃g squareLattice)
+    (hbox : ∀ c v r, e v ∈ latticeBox (e c) r ↔ v ∈ latticeBox c r)
+    (c : LatticeVertex) (r : ℕ) : boxGraph c r ≃g boxGraph (e c) r where
+  toEquiv := e.toEquiv.subtypeEquiv (fun v => (hbox c v r).symm)
+  map_rel_iff' := e.map_rel_iff'
 
-/-- Translation identifies every vertex of a finite lattice box with the
-corresponding vertex in the translated-center box. -/
-def boxVertexTranslationIso (a c : LatticeVertex) (r : ℕ) :
-    boxGraph c r ≃g boxGraph (latticeTranslate a c) r where
-  toEquiv :=
-    { toFun := fun v => ⟨latticeTranslate a v.val,
-        (mem_latticeBox_translate_iff a c v.val r).mpr v.property⟩
-      invFun := fun v => ⟨latticeTranslate (-a) v.val,
-        by
-          have h := (mem_latticeBox_translate_iff (-a) (latticeTranslate a c) v.val r).mpr v.property
-          simpa [latticeTranslate_neg_cancel] using h⟩
-      left_inv := by
-        intro v
-        apply Subtype.ext
-        exact latticeTranslate_neg_cancel a v.val
-      right_inv := by
-        intro v
-        apply Subtype.ext
-        ext <;> dsimp [latticeTranslate] <;> omega }
-  map_rel_iff' := by
-    intro u v
-    exact squareLattice_adj_translate_iff a u.val v.val
-
-/-- Translation of a whole-lattice edge state: its value at an edge is the
-old value at that edge translated back by `a`. -/
-def latticeConfigurationTranslationHomeomorph (a : LatticeVertex) :
+/-- Transport an edge state along a lattice isomorphism. -/
+def latticeConfigurationIsoHomeomorph (e : squareLattice ≃g squareLattice) :
     LatticeConfiguration ≃ₜ LatticeConfiguration :=
   Homeomorph.piCongrLeft (Y := fun _ : squareLattice.edgeSet => Bool)
-    (SimpleGraph.Iso.mapEdgeSet (latticeTranslationIso a))
+    (SimpleGraph.Iso.mapEdgeSet e)
 
-def latticeConfigurationTranslate (a : LatticeVertex) : LatticeConfiguration ≃ LatticeConfiguration :=
-  (latticeConfigurationTranslationHomeomorph a).toEquiv
+@[simp] theorem latticeConfigurationIsoHomeomorph_apply
+    (e : squareLattice ≃g squareLattice) (ω : LatticeConfiguration) (b : squareLattice.edgeSet) :
+    latticeConfigurationIsoHomeomorph e ω b = ω (SimpleGraph.Iso.mapEdgeSet e.symm b) := by
+  simp [latticeConfigurationIsoHomeomorph, Homeomorph.piCongrLeft, Equiv.piCongrLeft]
 
-theorem latticeConfigurationTranslate_measurable (a : LatticeVertex) :
-    Measurable (latticeConfigurationTranslate a) :=
-  (latticeConfigurationTranslationHomeomorph a).continuous_toFun.measurable
+theorem latticeConfigurationIsoHomeomorph_measurable (e : squareLattice ≃g squareLattice) :
+    Measurable (latticeConfigurationIsoHomeomorph e) :=
+  (latticeConfigurationIsoHomeomorph e).continuous.measurable
+
+section
+variable {V W : Type*} {G : SimpleGraph V} {H : SimpleGraph W}
 
 theorem boundaryConditionIso_free_empty (e : G ≃g H) :
     boundaryConditionIso e (BoundaryCondition.free (∅ : Set V)) =
@@ -57,94 +44,108 @@ theorem boundaryConditionIso_free_empty (e : G ≃g H) :
   congr 1
   · simp
   · apply Setoid.ext
-    intro x y
     simp
 
+end
+
+def latticeConfigurationTranslationHomeomorph (a : LatticeVertex) :
+    LatticeConfiguration ≃ₜ LatticeConfiguration :=
+  latticeConfigurationIsoHomeomorph (latticeTranslationIso a)
+
+def latticeConfigurationTranslate (a : LatticeVertex) : LatticeConfiguration ≃ LatticeConfiguration :=
+  (latticeConfigurationTranslationHomeomorph a).toEquiv
+
+theorem latticeConfigurationTranslate_measurable (a : LatticeVertex) :
+    Measurable (latticeConfigurationTranslate a) :=
+  (latticeConfigurationTranslationHomeomorph a).continuous_toFun.measurable
+
 @[simp] theorem latticeConfigurationTranslate_apply (a : LatticeVertex)
-    (ω : LatticeConfiguration) (e : squareLattice.edgeSet) :
-    latticeConfigurationTranslate a ω e =
-      ω (SimpleGraph.Iso.mapEdgeSet (latticeTranslationIso (-a)) e) := by
-  simp [latticeConfigurationTranslate, latticeConfigurationTranslationHomeomorph,
-    Homeomorph.piCongrLeft, Equiv.piCongrLeft, SimpleGraph.Iso.mapEdgeSet,
-    SimpleGraph.Hom.mapEdgeSet, latticeTranslationIso, latticeTranslate]
+    (ω : LatticeConfiguration) (b : squareLattice.edgeSet) :
+    latticeConfigurationTranslate a ω b =
+      ω (SimpleGraph.Iso.mapEdgeSet (latticeTranslationIso (-a)) b) := by
+  simp [latticeConfigurationTranslate, latticeConfigurationTranslationHomeomorph, SimpleGraph.Hom.mapEdgeSet, latticeTranslationIso]
 
-@[simp] theorem boxVertexTranslationIso_apply (a c : LatticeVertex) (r : ℕ)
-    (v : BoxVertex c r) :
-    (boxVertexTranslationIso a c r v).val = latticeTranslate a v.val := rfl
-
-theorem boxEdgeEmbedding_translation (a c : LatticeVertex) (r : ℕ)
-    (e : (boxGraph c r).edgeSet) :
-    boxEdgeEmbedding (latticeTranslate a c) r
-        (SimpleGraph.Iso.mapEdgeSet (boxVertexTranslationIso a c r) e) =
-      SimpleGraph.Iso.mapEdgeSet (latticeTranslationIso a) (boxEdgeEmbedding c r e) := by
+lemma boxEdgeEmbedding_iso_commute
+    (e : squareLattice ≃g squareLattice)
+    (hbox : ∀ c v r, e v ∈ latticeBox (e c) r ↔ v ∈ latticeBox c r)
+    (c : LatticeVertex) (r : ℕ) (b : (boxGraph c r).edgeSet) :
+    boxEdgeEmbedding (e c) r
+        (SimpleGraph.Iso.mapEdgeSet (boxGraphIsoOfLatticeIso e hbox c r) b) =
+      SimpleGraph.Iso.mapEdgeSet e (boxEdgeEmbedding c r b) := by
   apply Subtype.ext
-  simp only [boxEdgeEmbedding, boxGraphEmbedding, SimpleGraph.Embedding.mapEdgeSet_apply,
-    SimpleGraph.Iso.mapEdgeSet_apply, SimpleGraph.Hom.mapEdgeSet_coe,
-    RelEmbedding.coe_toRelHom, RelIso.coe_toRelEmbedding]
+  simp only [boxEdgeEmbedding, boxGraphEmbedding,
+    SimpleGraph.Embedding.mapEdgeSet_apply, SimpleGraph.Iso.mapEdgeSet_apply,
+    SimpleGraph.Hom.mapEdgeSet_coe, RelEmbedding.coe_toRelHom,
+    RelIso.coe_toRelEmbedding]
   rw [Sym2.map_map, Sym2.map_map]
   congr 1
 
-theorem boxEmbeddedEdgeSet_translation (a c : LatticeVertex) (r : ℕ)
+section Transport
+
+variable (e : squareLattice ≃g squareLattice)
+  (hbox : ∀ c v r, e v ∈ latticeBox (e c) r ↔ v ∈ latticeBox c r)
+  (c : LatticeVertex) (r : ℕ)
+
+/-- The extension commutes with transport: at an embedded edge use its finite
+state, and otherwise use the common exterior state. -/
+theorem boxExtension_iso_commute
+    (F : (a : LatticeVertex) → (s : ℕ) → Configuration (boxGraph a s) → LatticeConfiguration)
+    (z : Bool)
+    (hin : ∀ a s A b, F a s A (boxEdgeEmbedding a s b) = decide (b ∈ A))
+    (hout : ∀ a s A b, b ∉ Set.range (boxEdgeEmbedding a s) → F a s A b = z)
     (A : Configuration (boxGraph c r)) :
-    (configurationIso (boxVertexTranslationIso a c r) A).map
-      (boxEdgeEmbedding (latticeTranslate a c) r) =
-      (A.map (boxEdgeEmbedding c r)).map
-        (SimpleGraph.Iso.mapEdgeSet (latticeTranslationIso a)).toEmbedding := by
-  change (A.map (configurationIsoEdgeEquiv (boxVertexTranslationIso a c r)).toEmbedding).map
-      (boxEdgeEmbedding (latticeTranslate a c) r) =
-    (A.map (boxEdgeEmbedding c r)).map
-      (SimpleGraph.Iso.mapEdgeSet (latticeTranslationIso a)).toEmbedding
-  rw [Finset.map_map, Finset.map_map]
-  have hEmb :
-      (configurationIsoEdgeEquiv (boxVertexTranslationIso a c r)).toEmbedding.trans
-          (boxEdgeEmbedding (latticeTranslate a c) r) =
-        (boxEdgeEmbedding c r).trans
-          (SimpleGraph.Iso.mapEdgeSet (latticeTranslationIso a)).toEmbedding := by
-    apply Function.Embedding.ext
-    intro e
-    exact boxEdgeEmbedding_translation a c r e
-  rw [hEmb]
+    F (e c) r (configurationIso (boxGraphIsoOfLatticeIso e hbox c r) A) =
+      latticeConfigurationIsoHomeomorph e (F c r A) := by
+  let E := SimpleGraph.Iso.mapEdgeSet e
+  let I := SimpleGraph.Iso.mapEdgeSet (boxGraphIsoOfLatticeIso e hbox c r)
+  funext b
+  obtain ⟨b, rfl⟩ := E.surjective b
+  rw [latticeConfigurationIsoHomeomorph, Homeomorph.piCongrLeft_apply_apply]
+  by_cases hb : b ∈ Set.range (boxEdgeEmbedding c r)
+  · obtain ⟨b, rfl⟩ := hb
+    rw [← boxEdgeEmbedding_iso_commute e hbox, hin, hin]
+    change decide (I b ∈ A.map I.toEmbedding) = decide (b ∈ A)
+    simp
+  · rw [hout _ _ _ _ hb, hout]
+    rintro ⟨b', hb'⟩
+    obtain ⟨x, rfl⟩ := I.surjective b'
+    exact hb ⟨x, E.injective ((boxEdgeEmbedding_iso_commute e hbox c r x).symm.trans hb')⟩
 
-theorem boxConfiguration_translation_commute (a c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) :
-    boxConfiguration (latticeTranslate a c) r (configurationIso (boxVertexTranslationIso a c r) A) =
-      latticeConfigurationTranslate a (boxConfiguration c r A) := by
-  funext e
-  simp only [boxConfiguration, latticeConfigurationTranslate_apply]
-  apply Bool.eq_iff_iff.mpr
-  simp only [decide_eq_true_eq]
-  rw [boxEmbeddedEdgeSet_translation]
-  rw [Finset.mem_map_equiv]
-  simp [SimpleGraph.Iso.mapEdgeSet, SimpleGraph.Hom.mapEdgeSet,
-    latticeTranslationIso, latticeTranslate]
+/-- Transport the FK law and its extension together. The boundary partition
+is the only boundary datum needed by the finite law. -/
+theorem boxLaw_iso_map_of_commute (q : Parameters)
+    (ξ : BoundaryCondition (BoxVertex c r)) (η : BoundaryCondition (BoxVertex (e c) r))
+    (hξ : (boundaryConditionIso (boxGraphIsoOfLatticeIso e hbox c r) ξ).partition = η.partition)
+    (F : Configuration (boxGraph c r) → LatticeConfiguration)
+    (F' : Configuration (boxGraph (e c) r) → LatticeConfiguration)
+    (hF : ∀ A, F' (configurationIso (boxGraphIsoOfLatticeIso e hbox c r) A) =
+      latticeConfigurationIsoHomeomorph e (F A)) :
+    ((law (boxGraph c r) q ξ).map F).map (latticeConfigurationIsoHomeomorph e) =
+      (law (boxGraph (e c) r) q η).map F' := by
+  rw [PMF.map_comp, show (latticeConfigurationIsoHomeomorph e : LatticeConfiguration → _) ∘ F =
+      F' ∘ configurationIso (boxGraphIsoOfLatticeIso e hbox c r) from funext fun A => (hF A).symm,
+    ← PMF.map_comp, law_configurationIso_map, law_eq_of_boundary_partition_eq q _ _ hξ]
 
-/-- The finite free box PMF translates exactly to the same-radius box at the
-translated center. -/
-theorem boxLaw_translation_map (q : Parameters) (a c : LatticeVertex) (r : ℕ) :
-    PMF.map (latticeConfigurationTranslate a) (boxLaw q c r) =
-      boxLaw q (latticeTranslate a c) r := by
-  rw [boxLaw, boxLaw, PMF.map_comp]
-  have hcomp :
-      latticeConfigurationTranslate a ∘ boxConfiguration c r =
-        boxConfiguration (latticeTranslate a c) r ∘ configurationIso (boxVertexTranslationIso a c r) := by
-    funext A
-    exact (boxConfiguration_translation_commute a c r A).symm
-  rw [hcomp, ← PMF.map_comp]
-  rw [law_configurationIso_map q (boxVertexTranslationIso a c r)
-      (BoundaryCondition.free (∅ : Set (BoxVertex c r)))]
-  rw [boundaryConditionIso_free_empty]
+end Transport
 
-/-- The same exact translation identity for the associated probability
-measures, using the measurable product homeomorphism. -/
-theorem boxProbabilityMeasure_translation_map (q : Parameters)
-    (a c : LatticeVertex) (r : ℕ) :
-    ProbabilityMeasure.map (boxProbabilityMeasure q c r) (latticeConfigurationTranslate a) =
-      boxProbabilityMeasure q (latticeTranslate a c) r := by
-  apply MeasureTheory.ProbabilityMeasure.toMeasure_injective
-  change Measure.map (latticeConfigurationTranslate a) (boxLaw q c r).toMeasure =
-    (boxLaw q (latticeTranslate a c) r).toMeasure
-  rw [PMF.toMeasure_map _ _ (latticeConfigurationTranslate_measurable a)]
-  exact congrArg PMF.toMeasure (boxLaw_translation_map q a c r)
+theorem probabilityMeasureMap_eq_of_PMF {Ω : Type*} [MeasurableSpace Ω]
+    {μ ν : PMF Ω} {f : Ω → Ω} (hf : Measurable f) (h : μ.map f = ν) :
+    ProbabilityMeasure.map ⟨μ.toMeasure, PMF.toMeasure.isProbabilityMeasure _⟩ f =
+      ⟨ν.toMeasure, PMF.toMeasure.isProbabilityMeasure _⟩ := by
+  apply ProbabilityMeasure.toMeasure_injective
+  change Measure.map f μ.toMeasure = ν.toMeasure
+  rw [PMF.toMeasure_map _ _ hf, h]
+
+theorem boxProbabilityMeasure_iso_map (q : Parameters) (e : squareLattice ≃g squareLattice)
+    (hbox : ∀ c v r, e v ∈ latticeBox (e c) r ↔ v ∈ latticeBox c r)
+    (c : LatticeVertex) (r : ℕ) :
+    ProbabilityMeasure.map (boxProbabilityMeasure q c r) (latticeConfigurationIsoHomeomorph e) =
+      boxProbabilityMeasure q (e c) r := by
+  refine probabilityMeasureMap_eq_of_PMF (latticeConfigurationIsoHomeomorph e).continuous.measurable
+    (boxLaw_iso_map_of_commute e hbox c r q _ _ ?_ _ _ ?_)
+  · rw [boundaryConditionIso_free_empty]
+  · exact boxExtension_iso_commute e hbox c r boxConfiguration false
+      boxConfiguration_at boxConfiguration_outside
 
 end
 end PottsDiscontinuity.FK

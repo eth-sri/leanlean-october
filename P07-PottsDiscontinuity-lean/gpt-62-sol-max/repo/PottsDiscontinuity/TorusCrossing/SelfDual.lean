@@ -27,26 +27,32 @@ namespace Rect
 
 variable (R : Rect)
 
+section
+
+variable (q : Set.Ici (1 : ℝ)) (A : Finset Cell)
+
 /-- Weight of the primal configuration `A` (rows wired). -/
-noncomputable def wP (q : Set.Ici (1 : ℝ)) (A : Finset Cell) : ℝ :=
+noncomputable def wP : ℝ :=
   FK.weight R.pG (critParams q) R.sepBC (cfgOf R.pData A)
 
 /-- Weight of the complementary dual configuration (side columns wired). -/
-noncomputable def wD (q : Set.Ici (1 : ℝ)) (A : Finset Cell) : ℝ :=
+noncomputable def wD : ℝ :=
   FK.weight R.dG (critParams q) R.dualBC (cfgOf R.dData (R.inner \ A))
 
-theorem wP_pos (q : Set.Ici (1 : ℝ)) (A : Finset Cell) : 0 < R.wP q A :=
+theorem wP_pos : 0 < R.wP q A :=
   FK.weight_pos _ _ _ _
 
-theorem wD_pos (q : Set.Ici (1 : ℝ)) (A : Finset Cell) : 0 < R.wD q A :=
+theorem wD_pos : 0 < R.wD q A :=
   FK.weight_pos _ _ _ _
+
+end
 
 /-- The cross-multiplied form of the exact weight duality. -/
 theorem weight_cross (hh : 0 < R.h) (q : Set.Ici (1 : ℝ)) (A : Finset Cell) (hA : A ⊆ R.inner) :
     R.wP q A * R.wD q ∅ = R.wP q ∅ * R.wD q A := by
   have hE := R.euler hh A hA
-  have hcard : A.card ≤ R.inner.card := Finset.card_le_card hA
-  have hcardd : (R.inner \ A).card = R.inner.card - A.card := Finset.card_sdiff_of_subset hA
+  have hcard := Finset.card_le_card hA
+  have hcardd := Finset.card_sdiff_of_subset hA
   unfold wP wD FK.weight
   rw [card_endEdgeSet R.pData, card_endEdgeSet R.dData, card_cfgOf R.pData A hA,
     card_cfgOf R.pData ∅ (Finset.empty_subset _), card_cfgOf R.dData _ Finset.sdiff_subset,
@@ -54,18 +60,14 @@ theorem weight_cross (hh : 0 < R.h) (q : Set.Ici (1 : ℝ)) (A : Finset Cell) (h
   simp only [Finset.card_empty, Nat.sub_zero, Nat.sub_self, pow_zero, mul_one, one_mul, critParams_val]
   have hq : 0 < q.val := lt_of_lt_of_le zero_lt_one q.property
   set s := Real.sqrt q.val with hs
-  have hs0 : 0 < s := Real.sqrt_pos.2 hq
-  have hss : s ^ 2 = q.val := Real.sq_sqrt hq.le
+  have hss := Real.sq_sqrt hq.le
   have hp : FK.edgeParameter (critParams q) = s * (1 - FK.edgeParameter (critParams q)) := by
     rw [critParams_edge]
     field_simp
     ring
   set p := FK.edgeParameter (critParams q) with hpdef
   set t := 1 - p with ht
-  have ht0 : 0 < t := FK.one_sub_edgeParameter_pos (critParams q)
-  -- Euler relation in natural-number form
   have hnat : R.kD A + R.kP ∅ = R.kP A + A.card + R.kD ∅ := by
-    unfold kD kP at *
     omega
   unfold kP kD at hnat
   rw [Finset.sdiff_empty] at hnat
@@ -126,8 +128,7 @@ lemma pmf_scale {α : Type*} [Fintype α] [Nonempty α] (c : ℝ) (hc : 0 < c) (
   rw [FK.FiniteProbability.pmf_apply, FK.FiniteProbability.pmf_apply]
   unfold FK.FiniteProbability.partition
   rw [← Finset.mul_sum]
-  congr 1
-  exact mul_div_mul_left _ _ hc.ne'
+  grind
 
 
 namespace Rect
@@ -141,7 +142,7 @@ noncomputable local instance dEdgeFintype : Fintype R.dG.edgeSet := Fintype.ofFi
 theorem law_map_dualEquiv (hh : 0 < R.h) (q : Set.Ici (1 : ℝ)) :
     (FK.law R.pG (critParams q) R.sepBC).map R.dualEquiv =
       FK.law R.dG (critParams q) R.dualBC := by
-  have hc : 0 < R.wP q ∅ / R.wD q ∅ := div_pos (R.wP_pos q ∅) (R.wD_pos q ∅)
+  have hc := div_pos (R.wP_pos q ∅) (R.wD_pos q ∅)
   have h1 := FK.FiniteProbability.pmf_map_equiv_of_weight_eq R.dualEquiv
     (FK.weight R.pG (critParams q) R.sepBC)
     (fun b => (R.wP q ∅ / R.wD q ∅) * FK.weight R.dG (critParams q) R.dualBC b)

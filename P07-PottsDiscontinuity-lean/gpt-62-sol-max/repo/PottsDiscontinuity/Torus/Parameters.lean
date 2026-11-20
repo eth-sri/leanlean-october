@@ -20,9 +20,7 @@ namespace PottsDiscontinuity.Torus
 theorem exp_add_exp_neg_arcosh (q : ℝ) (hq : 4 < q) :
     Real.exp (Real.arcosh (Real.sqrt q / 2)) +
       Real.exp (-Real.arcosh (Real.sqrt q / 2)) = Real.sqrt q := by
-  have h := (arcosh_pos_of_gt4 q hq).2
-  rw [Real.cosh_eq] at h
-  linarith only [h]
+  grind [Real.cosh_eq, arcosh_pos_of_gt4]
 
 /-- Squaring the half-parameter sum gives (3.12); positivity chooses the positive square root. -/
 theorem half_exp_add_eq_sqrt (q lam : ℝ)
@@ -37,7 +35,7 @@ theorem half_exp_add_eq_sqrt (q lam : ℝ)
     congr 1
     ring
   have hm : Real.exp (lam / 2) * Real.exp (-lam / 2) = 1 := by
-    rw [← Real.exp_add, show lam / 2 + -lam / 2 = 0 by ring, Real.exp_zero]
+    simp [← Real.exp_add, show lam / 2 + -lam / 2 = 0 by ring]
   have hs : (Real.exp (lam / 2) + Real.exp (-lam / 2)) ^ 2 = 2 + Real.sqrt q := by
     nlinarith only [hp, hn, hm, h]
   have hpos : 0 ≤ Real.exp (lam / 2) + Real.exp (-lam / 2) :=

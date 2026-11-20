@@ -12,7 +12,6 @@ open FK
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
-local instance clusterRecordEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance clusterRecordEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- The revealed edge set together with all its recorded open edges. -/
@@ -22,12 +21,7 @@ def clusterRecord (S : Finset V) (A : Configuration G) : Configuration G × Conf
 lemma clusterRecord_eq_iff (S : Finset V) (A B : Configuration G) :
     clusterRecord G S B=clusterRecord G S A ↔
       B ∈ revealRecordEvent G (actualMultiClusterReveal G S) A := by
-  simp only [clusterRecord,Prod.mk.injEq,revealRecordEvent,Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨hR,hA⟩
-    exact ⟨hR,by simpa only [hR] using hA⟩
-  · rintro ⟨hR,hA⟩
-    exact ⟨hR,by simpa only [hR] using hA⟩
+  simp_all [clusterRecord, revealRecordEvent]
 
 lemma seed_connection_iff_of_record (S : Finset V) (A B : Configuration G)
     (h : clusterRecord G S B=clusterRecord G S A) {s : V} (hs : s ∈ S) (v : V) :

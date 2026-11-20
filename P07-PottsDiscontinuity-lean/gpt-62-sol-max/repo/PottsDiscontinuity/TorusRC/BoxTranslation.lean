@@ -48,8 +48,6 @@ def liftedBoxRecenterIso (c d : RotatedVertex) (R : ℕ) :
 
 noncomputable local instance recenterBoxEdges (c : RotatedVertex) (R : ℕ) :
     Fintype (liftedBoxGraph c R).edgeSet := Fintype.ofFinite _
-noncomputable local instance recenterBoxEdgeDecidableEq (c : RotatedVertex) (R : ℕ) :
-    DecidableEq (liftedBoxGraph c R).edgeSet := Classical.decEq _
 
 noncomputable section
 
@@ -79,7 +77,7 @@ theorem liftedBoxFreeConnectionProbability_recenter (θ : FK.Parameters)
         (inLiftedBox_recenter_iff c d v R).mpr hv,
         (FK.actualConnected_configurationIso e A ⟨u,hu⟩ ⟨v,hv⟩).mpr hconn⟩
   by_cases hA : A ∈ liftedBoxFreeConnectionEvent c R u v <;>
-    simp [Set.indicator, hevent, hA]
+    simp_all
 
 /-- All complete 2n blocks in the source chain have the same native free-box
 connection probability, centered at the origin. -/
@@ -101,8 +99,7 @@ theorem liftedBoxFreeConnectionProbability_chain (θ : FK.Parameters)
     apply Subtype.ext
     ext <;> dsimp [liftedRecenter, liftedChainSite, liftedColumnSite,
       rotatedLatticeOrigin, rotatedDiagonalSite] <;> ring
-  rw [hc,hv] at h
-  exact h.symm
+  simp_all
 
 end
 

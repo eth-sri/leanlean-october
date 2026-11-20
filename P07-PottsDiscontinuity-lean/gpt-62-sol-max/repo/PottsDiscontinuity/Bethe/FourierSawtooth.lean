@@ -23,7 +23,7 @@ namespace PottsDiscontinuity.Bethe
 `∑_{m≥1} 2(-1)^m e^{-μ m} sin(mα)/m = -2 arctan (sin α / (e^μ + cos α))`. -/
 theorem sawS_eq_arctan {μ : ℝ} (hμ : 0 < μ) (α : ℝ) :
     sawS μ α = -2 * Real.arctan (Real.sin α / (Real.exp μ + Real.cos α)) := by
-  have hE : 1 < Real.exp μ := by simpa using hμ
+  have hE : 1 < Real.exp μ := by simp_all
   have hd : ∀ x : ℝ, HasDerivAt (fun y => sawS μ y + 2 * Real.arctan (Real.sin y / (Real.exp μ + Real.cos y))) 0 x := by
     intro x
     have ha : Real.exp μ + Real.cos x ≠ 0 := by
@@ -56,7 +56,7 @@ theorem sawS_eq_arctan {μ : ℝ} (hμ : 0 < μ) (α : ℝ) :
       have h4 : (E + E⁻¹) / 2 - -c = (E ^ 2 + 2 * E * c + 1) / (2 * E) := by
         field_simp; ring
       have h4' : (E + E⁻¹) / 2 - -c ≠ 0 := by
-        rw [h4]; exact div_ne_zero hE2 (by positivity)
+        simpa [h4] using div_ne_zero hE2 (by positivity)
       rw [div_sub_one h4', div_eq_div_iff h4' hE2]
       field_simp
       ring
@@ -99,14 +99,9 @@ theorem abs_sum_sin_le {θ : ℝ} (h : Real.sin (θ / 2) ≠ 0) (n : ℕ) :
     |∑ i ∈ Finset.range n, Real.sin (((i + 1 : ℕ) : ℝ) * θ)| ≤ 1 / |Real.sin (θ / 2)| := by
   have h1 := two_sin_half_mul_sum_sin θ n
   have h2 : |2 * Real.sin (θ / 2) * ∑ i ∈ Finset.range n, Real.sin (((i + 1 : ℕ) : ℝ) * θ)| ≤ 2 := by
-    rw [h1]
-    have := Real.abs_cos_le_one (θ / 2)
-    have := Real.abs_cos_le_one (((n : ℝ) + 1 / 2) * θ)
-    calc |Real.cos (θ / 2) - Real.cos (((n : ℝ) + 1 / 2) * θ)|
-        ≤ |Real.cos (θ / 2)| + |Real.cos (((n : ℝ) + 1 / 2) * θ)| := abs_sub _ _
-      _ ≤ 2 := by linarith
+    grind [Real.abs_cos_le_one]
   rw [abs_mul, abs_mul, abs_of_pos (two_pos : (0:ℝ) < 2)] at h2
-  have hpos : 0 < |Real.sin (θ / 2)| := abs_pos.2 h
+  have hpos := abs_pos.2 h
   rw [le_div_iff₀ hpos]
   linarith
 
@@ -186,7 +181,7 @@ theorem tendsto_sawtooth {α : ℝ} (hα : |α| < π) :
       linarith
     have h1 := sawS_eq_arctan hμ α
     have hexp : Real.exp (-Real.log x) = x⁻¹ := by rw [Real.exp_neg, Real.exp_log hx0]
-    have hexp2 : Real.exp (-(-Real.log x)) = x := by rw [neg_neg, Real.exp_log hx0]
+    have hexp2 : Real.exp (-(-Real.log x)) = x := by simp [Real.exp_log hx0]
     rw [hexp] at h1
     unfold sawS at h1
     rw [hexp2] at h1
@@ -207,7 +202,7 @@ theorem tendsto_sawtooth {α : ℝ} (hα : |α| < π) :
     have h := abs_lt.1 hα
     have : Real.cos α ≠ -1 := by
       intro hh
-      have h2 : Real.cos α = Real.cos π := by rw [hh, Real.cos_pi]
+      have h2 : Real.cos α = Real.cos π := by simp [hh]
       rcases lt_or_ge α 0 with hneg | hpos
       · have := Real.cos_lt_cos_of_nonneg_of_le_pi (by linarith : 0 ≤ -α) (by linarith : π ≤ π)
           (by linarith : -α < π)
@@ -231,7 +226,7 @@ theorem tendsto_sawtooth {α : ℝ} (hα : |α| < π) :
     ring
   have hlim2 := hab.congr' hev
   rw [hG1] at hlim
-  have hu : ℓ = -α / 2 := tendsto_nhds_unique hlim2 hlim
+  have hu := tendsto_nhds_unique hlim2 hlim
   rw [← hu]
   exact hℓ
 

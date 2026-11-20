@@ -30,7 +30,6 @@ theorem criticalParameter_pos (q : Set.Ici (1 : ℝ)) :
 
 theorem criticalParameter_lt_one (q : Set.Ici (1 : ℝ)) :
     (rcCriticalParameter q).val < 1 := by
-  change Real.sqrt q.val / (1 + Real.sqrt q.val) < 1
   exact (div_lt_one (by positivity)).2 (by linarith)
 
 theorem torusRCWeight_pos (hN : Even N) (hM : Even M)

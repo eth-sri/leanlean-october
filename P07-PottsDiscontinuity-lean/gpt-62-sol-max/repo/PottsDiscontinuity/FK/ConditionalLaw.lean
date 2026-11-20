@@ -41,8 +41,7 @@ theorem frozenStateEvent_support (q : Parameters) (ξ : BoundaryCondition V)
     ∃ C ∈ frozenStateEvent R H, C ∈ (law G q ξ).support := by
   refine ⟨H.val, ?_, ?_⟩
   · exact Finset.inter_eq_left.mpr H.property
-  · change law G q ξ H.val ≠ 0
-    exact (law_pos G q ξ H.val).ne'
+  · exact (law_pos G q ξ H.val).ne'
 
 private theorem frozen_event_mass_sum (q : Parameters) (ξ : BoundaryCondition V)
     (R : Configuration G) (H : RemovedConfiguration G R) :

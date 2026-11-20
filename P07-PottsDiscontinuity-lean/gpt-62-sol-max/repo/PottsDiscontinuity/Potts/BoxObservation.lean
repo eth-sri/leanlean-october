@@ -1,5 +1,7 @@
 module
 
+public import PottsDiscontinuity.Infra.ClopenProbability
+
 public import PottsDiscontinuity.Potts.GhostBoxCylinders
 
 /-! Local finite edge observations and their probabilities under box limits. -/
@@ -12,99 +14,81 @@ open Classical MeasureTheory Filter Topology
 noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
 
-/-- Read precisely the internal bonds of the frozen box. -/
-def boxObservation (n : ℕ) (ω : FK.LatticeConfiguration) :
-    FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))) :=
-  FK.boolConfigurationEquiv _ (fun e => ω (FK.frozenEdgeEmbedding (box n) e))
+/-- Read precisely the internal bonds of the frozen domain. -/
+def frozenObservation (V : Finset (ℤ × ℤ)) (ω : FK.LatticeConfiguration) :
+    FK.Configuration (squareLattice.induce (V : Set (ℤ × ℤ))) :=
+  FK.boolConfigurationEquiv _ (fun e => ω (FK.frozenEdgeEmbedding V e))
+
+abbrev boxObservation (n : ℕ) := frozenObservation (box n)
 
 def boxObservationEvent (n : ℕ)
     (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))))) :
-    Set FK.LatticeConfiguration := {ω | boxObservation n ω ∈ S}
+    Set FK.LatticeConfiguration := boxObservation n ⁻¹' S
 
 theorem boxObservationEvent_isClopen (n : ℕ)
     (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))))) :
-    IsClopen (boxObservationEvent n S) := by
-  exact (isClopen_discrete {η | FK.boolConfigurationEquiv _ η ∈ S}).preimage
+    IsClopen (boxObservationEvent n S) :=
+  (isClopen_discrete ((FK.boolConfigurationEquiv _) ⁻¹' S)).preimage
     (continuous_pi (fun e => continuous_apply (FK.frozenEdgeEmbedding (box n) e)))
 
-theorem boxObservation_openExtension {m n : ℕ} (h : m ≤ n)
-    (C : FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))) :
-    boxObservation m (openExtension (box n) C) =
-      FK.embeddedConfigurationRestriction _ _ (nestedBoxEmbedding h) (nestedBox_map_le h) C := by
+theorem boxObservation_dependsOn (n : ℕ)
+    (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))))) :
+    RCInfinite.DependsOn (RCInfinite.boxEdges (0, 0) n) (boxObservationEvent n S) := by
+  rw [boxEdges_origin_eq_range]
+  intro ω η h
+  have he : boxObservation n ω = boxObservation n η := congrArg (FK.boolConfigurationEquiv _)
+    (funext fun e => h _ ⟨e, rfl⟩)
+  change boxObservation n ω ∈ S ↔ boxObservation n η ∈ S
+  rw [he]
+
+theorem observation_ext_eq (V : Finset (ℤ × ℤ))
+    (f : FK.Configuration (squareLattice.induce (V : Set (ℤ × ℤ))) → FK.LatticeConfiguration)
+    (hf : ∀ C e, f C (FK.frozenEdgeEmbedding V e) = decide (e ∈ C)) (C) :
+    frozenObservation V (f C) = C := by
   ext e
-  unfold boxObservation
-  rw [FK.mem_embeddedConfigurationRestriction, FK.mem_boolConfigurationEquiv]
-  rw [← nestedEdgeEmbedding_compatible h e, openExtension_at, decide_eq_true_eq]
+  simp [frozenObservation, hf]
 
-theorem openBoxProbabilityMeasure_observation (θ : FK.Parameters) {m n : ℕ} (h : m ≤ n)
-    (S : Set (FK.Configuration (squareLattice.induce (box m : Set (ℤ × ℤ))))) :
-    (openBoxProbabilityMeasure θ n).toMeasure (boxObservationEvent m S) =
-      FK.measure _ θ (FK.BoundaryCondition.wired {x | x.val ∈ vertexBoundary (box n)})
-        (nestedBoxEvent h S) := by
-  change (((FK.law _ θ (FK.frozenBoundaryCondition (box n) 1)).map
-    (openExtension (box n))).toMeasure _) = _
-  rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top
-    (boxObservationEvent_isClopen m S).isOpen.measurableSet]
-  congr 1
-  ext C
-  exact congrArg (fun A => A ∈ S) (boxObservation_openExtension h C) |>.to_iff
+theorem boxObservation_upper_of_extension (i : Fin 2) (n : ℕ)
+    (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))))
+    (hS : IsUpperSet S) :
+    IsUpperSet (RCInfinite.boxExtension i (0, 0) n ⁻¹' boxObservationEvent n S) := by
+  suffices ∀ V (hV : FK.latticeBox (0, 0) n = V)
+      (T : Set (FK.Configuration (squareLattice.induce (V : Set (ℤ × ℤ))))) (hT : IsUpperSet T),
+      IsUpperSet (RCInfinite.boxExtension i (0, 0) n ⁻¹' (frozenObservation V ⁻¹' T)) from
+    this _ (FK.latticeBox_origin_eq_box n) S hS
+  rintro _ rfl T hT
+  intro C D hCD hC
+  change frozenObservation _ (RCInfinite.boxExtension i (0, 0) n D) ∈ T
+  change frozenObservation _ (RCInfinite.boxExtension i (0, 0) n C) ∈ T at hC
+  have hf (A : FK.Configuration (FK.boxGraph (0, 0) n)) :
+      frozenObservation (FK.latticeBox (0, 0) n) (RCInfinite.boxExtension i (0, 0) n A) = A :=
+    observation_ext_eq (FK.latticeBox (0, 0) n) (RCInfinite.boxExtension i (0, 0) n)
+      (fun B e => (RCInfinite.boxExtension_at i (0, 0) n B e).trans
+        (congrArg (@decide (e ∈ B)) (Subsingleton.elim _ _))) A
+  rw [hf D]
+  exact hT hCD (hf C ▸ hC)
 
-/-- Every increasing event on a finite box has wired-limit probability at
-most its probability with that finite box boundary wired. -/
-theorem wired_limit_observation_le (θ : FK.Parameters)
+open RCInfinite in
+/-- The clopen observation comparison passes to the limit with either boundary condition. -/
+theorem boxObservation_limit_compare (θ : FK.Parameters) (i : Fin 2)
     (μ : ProbabilityMeasure FK.LatticeConfiguration)
-    (hμ : Tendsto (fun n => FK.wiredBoxProbabilityMeasure θ (0, 0) n) atTop (𝓝 μ))
+    (hμ : Tendsto (boxMeasure θ i (0, 0)) atTop (𝓝 μ))
     (m : ℕ) (S : Set (FK.Configuration (squareLattice.induce (box m : Set (ℤ × ℤ)))))
     (hS : IsUpperSet S) :
-    μ.toMeasure.real (boxObservationEvent m S) ≤
-      (FK.measure _ θ (FK.BoundaryCondition.wired {x | x.val ∈ vertexBoundary (box m)}) S).toReal := by
-  have ht := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hμ
-    (boxObservationEvent_isClopen m S)
-  have hreal : Tendsto (fun n => (openBoxProbabilityMeasure θ n).toMeasure.real
-      (boxObservationEvent m S)) atTop (𝓝 (μ.toMeasure.real (boxObservationEvent m S))) := by
-    simpa only [openBoxProbabilityMeasure_eq_wired, ProbabilityMeasure.measureReal_eq_coe_coeFn,
-      Function.comp_def] using NNReal.continuous_coe.continuousAt.tendsto.comp ht
-  apply le_of_tendsto hreal
+    comparisonSign i * μ.toMeasure.real (boxObservationEvent m S) ≤
+      comparisonSign i * (boxMeasure θ i (0, 0) m).toMeasure.real (boxObservationEvent m S) := by
+  have hcl := boxObservationEvent_isClopen m S
+  apply le_of_tendsto ((ProbabilityMeasure.tendsto_real_clopen hμ hcl).const_mul _)
   filter_upwards [eventually_ge_atTop m] with n hn
-  rw [Measure.real, openBoxProbabilityMeasure_observation θ hn]
-  exact FK.embeddedConfigurationRestriction_preimage_measure_le_wired_of_closedInterior
-    (nestedBoxEmbedding hn) (nestedBox_map_le hn) θ
-    (FK.BoundaryCondition.wired {x | x.val ∈ vertexBoundary (box n)})
-    {x | x.val ∈ vertexBoundary (box m)}
-    (fun _ hx _ hxy => nestedBox_interior_closed _ hx hxy)
-    (fun _ hx => nestedBox_avoids_boundary _ hx) S hS
-
-theorem nestedBoxEvent_refl (n : ℕ)
-    (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))))) :
-    nestedBoxEvent (Nat.le_refl n) S = S := by
-  ext C
-  have hC : FK.embeddedConfigurationRestriction _ _ (nestedBoxEmbedding (Nat.le_refl n))
-      (nestedBox_map_le (Nat.le_refl n)) C = C := by
-    ext e
-    rw [FK.mem_embeddedConfigurationRestriction]
-    have he : FK.embeddedEdgeEmbedding _ _ (nestedBoxEmbedding (Nat.le_refl n))
-        (nestedBox_map_le (Nat.le_refl n)) e = e := by
-      apply Subtype.ext
-      change Sym2.map (nestedBoxEmbedding (Nat.le_refl n)) e.val = e.val
-      have hf : (nestedBoxEmbedding (Nat.le_refl n) : _ → _) = id :=
-        funext (fun x => Subtype.ext rfl)
-      rw [hf, Sym2.map_id]
-      rfl
-    rw [he]
-  exact congrArg (fun A => A ∈ S) hC |>.to_iff
-
-theorem openBoxProbabilityMeasure_observation_self (θ : FK.Parameters) (n : ℕ)
-    (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))))) :
-    (openBoxProbabilityMeasure θ n).toMeasure (boxObservationEvent n S) =
-      FK.measure _ θ (FK.BoundaryCondition.wired {x | x.val ∈ vertexBoundary (box n)}) S := by
-  rw [openBoxProbabilityMeasure_observation θ (Nat.le_refl n), nestedBoxEvent_refl]
+  simpa only [Set.inter_univ, measureReal_def, measure_univ, ENNReal.toReal_one, mul_one] using
+    box_event_joint_compare θ i (FK.latticeBox_mono (0, 0) hn) (boxObservationEvent m S)
+      Set.univ hcl.isOpen.measurableSet MeasurableSet.univ (boxObservation_dependsOn m S)
+      (by simp [RCInfinite.DependsOn]) (boxObservation_upper_of_extension i m S hS)
 
 @[simp] theorem boxObservation_openExtension_self (n : ℕ)
     (C : FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))) :
-    boxObservation n (openExtension (box n) C) = C := by
-  ext e
-  unfold boxObservation
-  rw [FK.mem_boolConfigurationEquiv, openExtension_at, decide_eq_true_eq]
+    boxObservation n (openExtension (box n) C) = C :=
+  observation_ext_eq _ (openExtension (box n)) (openExtension_at (box n)) C
 
 end
 end PottsDiscontinuity.Potts

@@ -82,7 +82,7 @@ theorem exists_analytic_implicit_family_on_open_interval
         (hunique ⟨t, hmem⟩).unique hzero (hq ⟨t, hmem⟩)
       simpa only [ψ, dite_eq_left hmem] using congrArg Subtype.val heq
     · simp only [ψ, dite_eq_right hmem]
-  have hψanalyticb : AnalyticAt ℝ ψ b := hηanalytic.congr hηψ
+  have hψanalyticb := hηanalytic.congr hηψ
   have hψzerob : ∀ᶠ t in 𝓝 b, F (t, ψ t) = 0 := by
     filter_upwards [hηzero, hηψ] with t ht heq
     rw [← heq]

@@ -30,38 +30,29 @@ theorem analyticAt_thetaFirstInv {ε : ℝ} (hε : |ε| < 1) (x y : ℝ) :
 
 theorem hasDerivAt_thetaInv_left {ε : ℝ} (hε : |ε| < 1) (x y : ℝ) :
     HasDerivAt (fun s => thetaInv ε s y) (thetaFirstInv ε x y) x := by
-  have hp : HasDerivAt (fun s : ℝ => ((ε, s, y) : ℝ × ℝ × ℝ))
-      (0, 1, 0) x :=
+  have hp :=
     (hasDerivAt_const x ε).prodMk ((hasDerivAt_id x).prodMk (hasDerivAt_const x y))
   exact (analyticAt_thetaInv hε x y).differentiableAt.hasFDerivAt.comp_hasDerivAt x hp
 
-theorem abs_inverse_parameter_lt_one {Δ : ℝ} (hΔ : Δ < -1) : |1 / Δ| < 1 := by
-  rw [abs_div, abs_one]
-  have habs : 1 < |Δ| := by rw [abs_of_neg (by linarith : Δ < 0)]; linarith
-  exact (div_lt_one (by linarith : 0 < |Δ|)).2 habs
-
 theorem d1Theta_eq_thetaFirstInv {Δ : ℝ} (hΔ : Δ < -1) (x y : ℝ) :
     d1Theta Δ x y = thetaFirstInv (1 / Δ) x y := by
-  have heq : (fun s => theta Δ s y) = fun s => thetaInv (1 / Δ) s y :=
+  have heq :=
     funext fun s => theta_eq_thetaInv hΔ s y
   unfold d1Theta
   rw [heq]
   exact (hasDerivAt_thetaInv_left (abs_inverse_parameter_lt_one hΔ) x y).deriv
 
+theorem continuous_d1Theta_pair {Δ : ℝ} (hΔ : Δ < -1) :
+    Continuous (fun z : ℝ × ℝ => d1Theta Δ z.1 z.2) := by
+  simp_rw [d1Theta_eq_thetaFirstInv hΔ]
+  refine continuous_iff_continuousAt.mpr fun ⟨x, y⟩ => ?_
+  have hc : Continuous (fun z : ℝ × ℝ => ((1 / Δ, z.1, z.2) : ℝ × ℝ × ℝ)) := by fun_prop
+  exact ContinuousAt.comp (f := fun z : ℝ × ℝ => ((1 / Δ, z.1, z.2) : ℝ × ℝ × ℝ))
+    (x := (x, y)) (analyticAt_thetaFirstInv (abs_inverse_parameter_lt_one hΔ) x y).continuousAt hc.continuousAt
+
 theorem continuous_d1Theta_right {Δ : ℝ} (hΔ : Δ < -1) (x : ℝ) :
     Continuous (d1Theta Δ x) := by
-  apply continuous_iff_continuousAt.2
-  intro y
-  have ht : AnalyticAt ℝ (fun t : ℝ => ((1 / Δ, x, t) : ℝ × ℝ × ℝ)) y :=
-    analyticAt_const.prod (analyticAt_const.prod analyticAt_id)
-  have ha : AnalyticAt ℝ (fun t => thetaFirstInv (1 / Δ) x t) y :=
-    AnalyticAt.comp (f := fun t : ℝ => ((1 / Δ, x, t) : ℝ × ℝ × ℝ))
-      (g := fun z : ℝ × ℝ × ℝ => thetaFirstInv z.1 z.2.1 z.2.2)
-      (analyticAt_thetaFirstInv (abs_inverse_parameter_lt_one hΔ) x y) ht
-  have heq : (fun t => thetaFirstInv (1 / Δ) x t) = d1Theta Δ x :=
-    funext fun t => (d1Theta_eq_thetaFirstInv hΔ x t).symm
-  rw [heq] at ha
-  exact ha.continuousAt
+  exact (continuous_d1Theta_pair hΔ).comp (continuous_const.prodMk continuous_id)
 
 theorem inverse_parameter_mem {Δ₀ Δ : ℝ} (hΔ₀ : Δ₀ < -1) (hΔ : Δ ≤ Δ₀) :
     1 / Δ ∈ Icc (1 / Δ₀) 0 := by
@@ -80,7 +71,7 @@ theorem exists_uniform_thetaFirstInv_box_bounds {Δ₀ : ℝ} (hΔ₀ : Δ₀ < 
   have hK : IsCompact K := isCompact_Icc.prod (isCompact_Icc.prod isCompact_Icc)
   have heps (z : ℝ × ℝ × ℝ) (hz : z ∈ K) : |z.1| < 1 := by
     have h0 := abs_lt.mp (abs_inverse_parameter_lt_one hΔ₀)
-    exact abs_lt.2 ⟨by linarith [hz.1.1], by linarith [hz.1.2]⟩
+    grind
   have hc : ContinuousOn (fun z : ℝ × ℝ × ℝ => thetaFirstInv z.1 z.2.1 z.2.2) K :=
     fun z hz => (analyticAt_thetaFirstInv (heps z hz) _ _).continuousAt.continuousWithinAt
   have hd : ContinuousOn
@@ -100,16 +91,15 @@ theorem hasDerivAt_d1Theta_right_inv {Δ : ℝ} (hΔ : Δ < -1) (x y : ℝ) :
     HasDerivAt (d1Theta Δ x)
       (fderiv ℝ (fun w : ℝ × ℝ × ℝ => thetaFirstInv w.1 w.2.1 w.2.2)
         (1 / Δ, x, y) (0, 0, 1)) y := by
-  have hp : HasDerivAt (fun t : ℝ => ((1 / Δ, x, t) : ℝ × ℝ × ℝ))
-      (0, 0, 1) y :=
+  have hp :=
     (hasDerivAt_const y (1 / Δ)).prodMk
       ((hasDerivAt_const y x).prodMk (hasDerivAt_id y))
   have hf := (analyticAt_thetaFirstInv (abs_inverse_parameter_lt_one hΔ) x y).differentiableAt.hasFDerivAt
   have hc := hf.comp_hasDerivAt y hp
-  have heq : (fun t => thetaFirstInv (1 / Δ) x t) = d1Theta Δ x :=
+  have heq :=
     funext fun t => (d1Theta_eq_thetaFirstInv hΔ x t).symm
   change HasDerivAt (fun t => thetaFirstInv (1 / Δ) x t) _ y at hc
-  rwa [heq] at hc
+  simp_all
 
 /-- Uniform kernel, mixed-derivative, and joint Lipschitz bounds on the physical
 square, including the full range `Δ ≤ Δ₀`. -/
@@ -144,13 +134,13 @@ theorem exists_uniform_d1Theta_box_bounds {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) (R
         ‖fderiv ℝ F (1 / Δ, x, y) (0, 0, 1)‖ ≤
             ‖fderiv ℝ F (1 / Δ, x, y)‖ * ‖((0, 0, 1) : ℝ × ℝ × ℝ)‖ :=
           (fderiv ℝ F _).le_opNorm _
-        _ = ‖fderiv ℝ F (1 / Δ, x, y)‖ := by simp [Prod.norm_def]
+        _ = ‖fderiv ℝ F (1 / Δ, x, y)‖ := by simp
         _ ≤ C := (hC _ (hmem hx hy)).2
   · intro x hx y hy x' hx' y' hy'
     have hconv : Convex ℝ K := (convex_Icc _ _).prod ((convex_Icc _ _).prod (convex_Icc _ _))
     have hmv := hconv.norm_image_sub_le_of_norm_fderiv_le hdiff
       (fun w hw => (hC w hw).2) (hmem hx' hy') (hmem hx hy)
-    simpa [F, d1Theta_eq_thetaFirstInv hΔvalid, Prod.norm_def, Real.norm_eq_abs] using hmv
+    simpa [d1Theta_eq_thetaFirstInv hΔvalid] using hmv
 
 theorem exists_uniform_d1Theta_bounds {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) :
     ∃ C : ℝ, 0 < C ∧ ∀ Δ ≤ Δ₀,

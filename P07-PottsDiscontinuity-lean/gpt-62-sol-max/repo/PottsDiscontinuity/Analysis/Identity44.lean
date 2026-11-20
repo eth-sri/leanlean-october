@@ -28,7 +28,7 @@ namespace PottsDiscontinuity
 theorem alt_partial_sum_bounds : ∀ (N : ℕ) (u : ℕ → ℝ), Antitone u → (∀ i, 0 ≤ u i) →
     0 ≤ ∑ i ∈ Finset.range N, (-1 : ℝ) ^ i * u i ∧
       ∑ i ∈ Finset.range N, (-1 : ℝ) ^ i * u i ≤ u 0
-  | 0, u, _, h0 => by simp [h0 0]
+  | 0, u, _, h0 => by simp_all
   | N + 1, u, hu, h0 => by
     have ih := alt_partial_sum_bounds N (fun i => u (i + 1))
       (fun a b hab => hu (by omega)) (fun i => h0 _)
@@ -41,45 +41,27 @@ theorem alt_partial_sum_bounds : ∀ (N : ℕ) (u : ℕ → ℝ), Antitone u →
       rw [pow_succ]
       ring
     rw [e]
-    simp only [pow_zero, one_mul]
     constructor <;> linarith [ih.1, ih.2]
 
 theorem sum_Icc_one_eq_sum_range (g : ℕ → ℝ) (N : ℕ) :
     ∑ k ∈ Finset.Icc 1 N, g k = ∑ n ∈ Finset.range N, g (n + 1) := by
-  induction N with
-  | zero => simp
-  | succ N ih => rw [Finset.sum_Icc_succ_top (by omega), ih, Finset.sum_range_succ]
+  rw [← Finset.Ico_add_one_right_eq_Icc, Finset.sum_Ico_eq_sum_range, Nat.add_sub_cancel]
+  simp [Nat.add_comm]
 
 /-! ### The sum of the odd reciprocal squares -/
 
 theorem hasSum_odd_inv_sq : HasSum (fun j : ℕ => 1 / (2 * (j : ℝ) + 1) ^ 2) (π ^ 2 / 8) := by
-  have hz := hasSum_zeta_two
   have hev : HasSum (fun k : ℕ => 1 / ((2 * k : ℕ) : ℝ) ^ 2) (π ^ 2 / 6 / 4) := by
-    have h := hz.div_const 4
-    convert h using 1
-    funext k
-    rcases Nat.eq_zero_or_pos k with rfl | hk
-    · simp
-    · push_cast
-      have : (k : ℝ) ≠ 0 := by positivity
-      field_simp
-      norm_num
-  have hodd : Summable (fun j : ℕ => 1 / ((2 * j + 1 : ℕ) : ℝ) ^ 2) :=
-    hz.summable.comp_injective (i := fun k : ℕ => 2 * k + 1) (fun x y h => by simp only at h; omega)
-  have h2 := HasSum.even_add_odd (f := fun n : ℕ => 1 / (n : ℝ) ^ 2) hev hodd.hasSum
-  have h3 := hz.unique h2
-  have e : ∑' j : ℕ, 1 / ((2 * j + 1 : ℕ) : ℝ) ^ 2 = π ^ 2 / 8 := by linarith
-  rw [← e]
-  convert hodd.hasSum using 1
-  funext j
-  push_cast
-  rfl
+    have h := hasSum_zeta_two.div_const 4
+    grind
+  convert hasSum_odd_of_even hasSum_zeta_two hev using 1
+  · simp
+  · ring
 
 theorem hasSum_odd_inv_sq_mul (c : ℝ) :
     HasSum (fun j : ℕ => c / (2 * (j : ℝ) + 1) ^ 2) (c * (π ^ 2 / 8)) := by
   convert hasSum_odd_inv_sq.mul_left c using 1
-  funext j
-  rw [mul_one_div]
+  ring
 
 /-! ### The partial-fraction terms -/
 
@@ -121,7 +103,6 @@ theorem hasSum_alt_cTerm {lam : ℝ} (hlam : 0 < lam) (j : ℕ) :
   have h2 := h.mul_left (2 / lam)
   have hpi : π ≠ 0 := Real.pi_ne_zero
   have hl0 : lam ≠ 0 := hlam.ne'
-  have hb0 : b ≠ 0 := hbpos.ne'
   have hj : (2 * (j : ℝ) + 1) ≠ 0 := by positivity
   convert h2 using 1
   · funext n
@@ -139,8 +120,6 @@ theorem hasSum_alt_cTerm {lam : ℝ} (hlam : 0 < lam) (j : ℕ) :
       field_simp
     rw [e]
     simp only [hb]
-    have hs : Real.sinh (π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam)) ≠ 0 :=
-      (Real.sinh_pos_iff.2 (by positivity)).ne'
     field_simp
     ring
 
@@ -180,27 +159,19 @@ theorem norm_partial_cTerm_le {lam : ℝ} (hlam : 0 < lam) (j N : ℕ) :
 theorem summable_bound {lam : ℝ} (hlam : 0 < lam) :
     HasSum (fun j : ℕ => 8 * lam / ((2 * (j : ℝ) + 1) ^ 2 * π ^ 2)) (lam) := by
   have h := hasSum_odd_inv_sq_mul (8 * lam / π ^ 2)
-  have hpi : π ≠ 0 := Real.pi_ne_zero
-  convert h using 1
-  · funext j
-    have : (2 * (j : ℝ) + 1) ≠ 0 := by positivity
-    field_simp
-  · field_simp
+  grind [Real.pi_ne_zero]
 
 /-! ### The terms `4 / ((2k+1) sinh (π² (2k+1) / (2 lam)))` -/
 
 theorem tTerm_pos {lam : ℝ} (hlam : 0 < lam) (k : ℕ) :
     0 < 4 / ((2 * (k : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam))) := by
-  have : 0 < Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam)) :=
-    Real.sinh_pos_iff.2 (by positivity)
   positivity
 
 theorem tTerm_le {lam : ℝ} (hlam : 0 < lam) (k : ℕ) :
     4 / ((2 * (k : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam))) ≤
       8 * lam / ((2 * (k : ℝ) + 1) ^ 2 * π ^ 2) := by
   have hy : 0 < π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam) := by positivity
-  have hs : π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam) ≤
-      Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam)) := Real.self_le_sinh_iff.2 hy.le
+  have hs := Real.self_le_sinh_iff.2 hy.le
   have hk : 0 < 2 * (k : ℝ) + 1 := by positivity
   calc 4 / ((2 * (k : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam)))
       ≤ 4 / ((2 * (k : ℝ) + 1) * (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam))) := by
@@ -220,13 +191,7 @@ theorem dTerm_eq {lam : ℝ} (hlam : 0 < lam) (j : ℕ) :
     dTerm lam j =
       (4 / ((2 * (j : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam)))) / 2 -
         4 * lam / ((2 * (j : ℝ) + 1) ^ 2 * π ^ 2) := by
-  unfold dTerm
-  have hs : Real.sinh (π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam)) ≠ 0 :=
-    (Real.sinh_pos_iff.2 (by positivity)).ne'
-  have : (2 * (j : ℝ) + 1) ≠ 0 := by positivity
-  generalize Real.sinh (π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam)) = s at hs ⊢
-  field_simp
-  ring
+  grind [dTerm]
 
 /-! ### The main identity -/
 
@@ -250,7 +215,6 @@ theorem identity44 (lam : ℝ) (hlam : 0 < lam) :
     convert h using 1
     · funext j
       rw [dTerm_eq hlam j]
-      have : (2 * (j : ℝ) + 1) ≠ 0 := by positivity
       field_simp
     · field_simp
       ring

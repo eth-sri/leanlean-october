@@ -35,29 +35,23 @@ theorem permutationCycleTag_eq_iff (p : Perm α) (x y : α) :
   · have hs : p.SameCycle x y ↔ x = y :=
       ⟨fun h => h.eq_of_left hx, fun h => h.sameCycle p⟩
     by_cases hy : p y = y
-    · simpa only [permutationCycleTag, hx, hy, dite_true, Sum.inl.injEq,
-        Subtype.ext_iff] using hs.symm
+    · simpa [permutationCycleTag, hx, hy, Subtype.ext_iff] using hs.symm
     · simp only [permutationCycleTag, hx, hy, dite_true, dite_false, Sum.inl_ne_inr,
         false_iff, hs]
-      intro he
-      exact hy (he ▸ hx)
+      grind
   · by_cases hy : p y = y
     · have hs : ¬p.SameCycle x y := by
         intro h
         exact hx ((h.apply_eq_self_iff).mpr hy)
-      simp only [permutationCycleTag, hx, hy, dite_true, dite_false,
-        Sum.inr_ne_inl, hs]
-    · simpa only [permutationCycleTag, hx, hy, dite_false, Sum.inr.injEq,
-        Subtype.mk.injEq] using
-        (sameCycle_iff_cycleOf_eq_of_mem_support (mem_support.mpr hx)
-          (mem_support.mpr hy)).symm
+      simp [permutationCycleTag, hx, hy, hs]
+    simp_all [permutationCycleTag, sameCycle_iff_cycleOf_eq_of_mem_support]
 
 theorem permutationCycleTag_surjective (p : Perm α) :
     Function.Surjective (permutationCycleTag p) := by
   intro z
   rcases z with x | ⟨c, hc⟩
   · have hx : p x.val = x.val := x.property
-    exact ⟨x.val, by simp only [permutationCycleTag, hx, dite_true]⟩
+    exact ⟨x.val, by simp [permutationCycleTag, hx]⟩
   · obtain ⟨x, hx⟩ := (mem_cycleFactorsFinset_iff.mp hc).1.nonempty_support
     have hpx : p x ≠ x := mem_support.mp (mem_cycleFactorsFinset_support_le hc hx)
     refine ⟨x, ?_⟩
@@ -75,9 +69,7 @@ noncomputable def permutationCycleEquiv (p : Perm α) :
       induction x using Quotient.inductionOn
       induction y using Quotient.inductionOn
       exact Quotient.sound ((permutationCycleTag_eq_iff p _ _).mp h)
-    · intro z
-      obtain ⟨x, hx⟩ := permutationCycleTag_surjective p z
-      exact ⟨Quotient.mk _ x, hx⟩)
+    simp [permutationCycleTag_surjective])
 
 theorem permutationCycleCount_eq (p : Perm α) :
     permutationCycleCount p = Fintype.card (Function.fixedPoints p) +

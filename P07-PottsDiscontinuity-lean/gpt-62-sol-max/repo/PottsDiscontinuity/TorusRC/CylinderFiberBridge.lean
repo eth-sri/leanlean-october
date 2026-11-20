@@ -13,9 +13,6 @@ open Torus
 
 variable {N M : ℕ}
 
-noncomputable local instance torusFiberGraphFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
-
 noncomputable local instance torusFiberGraphDecidableEq (hN : Even N) (hM : Even M) :
     DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 
@@ -62,30 +59,10 @@ theorem torusRCFiberLaw_eq_remainingLaw (hN : Even N) (hM : Even M)
     torusRCFiberLaw hN hM hN4 hM4 q R H =
       FK.remainingLaw (fullDiamondGraph hN hM) (torusRCBridgeParameters q)
         (FK.frozenBoundary (FK.BoundaryCondition.free ∅) H.val) R := by
-  classical
-  have hmass (A : FK.RemainingConfiguration (fullDiamondGraph hN hM) R) :=
-    torusRCFiberMass_eq_fk hN hM hN4 hM4 q R H A
-  have hden :
-      (∑ A : FK.RemainingConfiguration (fullDiamondGraph hN hM) R,
-        torusRCMass hN hM q
-          ((torusRCConfigurationEquiv hN hM hN4 hM4).symm (A.val ∪ H.val))) =
-      ∑ A : FK.RemainingConfiguration (fullDiamondGraph hN hM) R,
-        FK.configurationProbability (fullDiamondGraph hN hM)
-          (torusRCBridgeParameters q) (FK.BoundaryCondition.free ∅)
-          (A.val ∪ H.val) := by
-    apply Finset.sum_congr rfl
-    intro A _
-    exact hmass A
-  have hfiber : torusRCFiberLaw hN hM hN4 hM4 q R H =
-      FK.frozenFiberLaw (torusRCBridgeParameters q)
-        (FK.BoundaryCondition.free ∅) R H := by
-    ext A
-    simp only [torusRCFiberLaw, FK.frozenFiberLaw,
-      FK.FiniteProbability.pmf_apply, FK.FiniteProbability.partition]
-    rw [hmass A, hden]
-  rw [hfiber]
-  exact FK.frozenFiberLaw_eq_remainingLaw
-    (torusRCBridgeParameters q) (FK.BoundaryCondition.free ∅) R H
+  rw [← FK.frozenFiberLaw_eq_remainingLaw]
+  ext A
+  simp only [torusRCFiberLaw, FK.frozenFiberLaw, FK.FiniteProbability.pmf_apply,
+    FK.FiniteProbability.partition, torusRCFiberMass_eq_fk]
 
 end
 

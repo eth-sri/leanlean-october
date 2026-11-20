@@ -31,28 +31,25 @@ lemma map_mk_apply (q : PMF β) (a : α) (x : α × β) :
     q.map (Prod.mk a) x = if x.1 = a then q x.2 else 0 := by
   classical
   rcases x with ⟨x, y⟩
-  by_cases hx : x = a
-  · subst a
-    simp only [PMF.map_apply, Prod.mk.injEq, true_and, ite_true, tsum_ite_eq']
-  · simp only [PMF.map_apply, Prod.mk.injEq, hx, false_and, ite_false, tsum_zero]
+  aesop
 
 lemma productPMF_apply (p : PMF α) (q : PMF β) (x : α × β) :
     productPMF p q x = p x.1 * q x.2 := by
   classical
   rw [productPMF, PMF.bind_apply]
   simp_rw [map_mk_apply]
-  simp only [mul_ite, mul_zero, tsum_ite_eq']
+  simp
 
 lemma productPMF_map_fst (p : PMF α) (q : PMF β) :
     (productPMF p q).map Prod.fst = p := by
-  simp only [productPMF, PMF.map_bind, PMF.map_comp, Function.comp_def]
+  simp only [productPMF, PMF.map_bind, PMF.map_comp]
   change (p.bind (fun a => q.map (Function.const β a))) = p
-  simp only [PMF.map_const, PMF.bind_pure]
+  simp
 
 lemma map_equiv_apply (p : PMF α) (e : α ≃ β) (b : β) :
     p.map e b = p (e.symm b) := by
   classical
-  simp only [PMF.map_apply, ← e.symm_apply_eq, tsum_ite_eq']
+  simp [← e.symm_apply_eq]
 
 section Finite
 
@@ -98,7 +95,7 @@ lemma pmf_map_equiv (e : α ≃ β) (v : β → ℝ) (hv : ∀ b, 0 < v b) :
 lemma pmf_map_equiv_of_weight_eq (e : α ≃ β) (w : α → ℝ) (v : β → ℝ)
     (hw : ∀ a, 0 < w a) (hv : ∀ b, 0 < v b)
     (h : ∀ a, w a = v (e a)) : (pmf w hw).map e = pmf v hv := by
-  have hweights : w = (fun a => v (e a)) := funext h
+  have hweights := funext h
   subst w
   exact pmf_map_equiv e v hv
 

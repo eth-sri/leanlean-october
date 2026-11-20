@@ -37,12 +37,12 @@ theorem open_edgeAgreement_iff (G : SimpleGraph V) (A : FK.Configuration G) (σ 
     intro x y hxy
     rcases (FK.openGraph_adj G A x y).mp hxy with ⟨e, he, hexy⟩
     exact h e he x
-      (by rw [hexy]; exact Sym2.mem_mk_left x y) y
-      (by rw [hexy]; exact Sym2.mem_mk_right x y)
+      (by simp [*]) y
+      (by simp [*])
   · intro h e he x hx y hy
     by_cases hxy : x = y
-    · exact congrArg σ hxy
-    · have ha : (FK.openGraph G A).Adj x y :=
+    · simp_all
+    · have ha :=
         (FK.openGraph_adj G A x y).mpr
           ⟨e, he, (Sym2.mem_and_mem_iff hxy).mp ⟨hx, hy⟩⟩
       exact h ha.reachable
@@ -66,16 +66,19 @@ theorem card_edgeAgreement (ω : G.edgeSet → Bool) :
       Nat.card C ^ FK.componentCount G (FK.BoundaryCondition.free ∅)
         (FK.boolConfigurationEquiv G ω) := by
   rw [Nat.card_congr (Equiv.subtypeEquivRight (fun σ => bool_edgeAgreement_iff G σ ω))]
-  change Nat.card (ClusterColoring _ C) = _
   rw [card_clusterColoring, FK.componentCount, FK.componentSetoid_free]
 
 @[simp] theorem card_pottsColors (q : ℕ) : Nat.card (Set.Icc 1 q) = q := by
   rw [Nat.card_eq_fintype_card, Fintype.card_Icc, Nat.card_Icc]
   omega
 
+section
+
+variable (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
+
 /-- The free random-cluster weight is the Bernoulli bond weight times the
 number of compatible Potts colourings. -/
-theorem fk_weight_eq_bernoulli (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
+theorem fk_weight_eq_bernoulli
     (ω : G.edgeSet → Bool) :
     FK.weight G (fkParameters q hq β hβ) (FK.BoundaryCondition.free ∅)
         (FK.boolConfigurationEquiv G ω) =
@@ -86,7 +89,7 @@ theorem fk_weight_eq_bernoulli (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β
   rfl
 
 /-- Summing the spin variable gives exactly the free random-cluster weight. -/
-theorem sum_graphJointWeight_spins (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
+theorem sum_graphJointWeight_spins
     (ω : G.edgeSet → Bool) :
     (∑ σ : V → Set.Icc 1 q, constraintJointWeight β (edgeAgreement G) σ ω) =
       FK.weight G (fkParameters q hq β hβ) (FK.BoundaryCondition.free ∅)
@@ -95,7 +98,7 @@ theorem sum_graphJointWeight_spins (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 
     fk_weight_eq_bernoulli, Nat.cast_pow]
 
 /-- The joint spin-bond partition function is exactly the FK partition function. -/
-theorem graphJointPartition_eq_fk (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) :
+theorem graphJointPartition_eq_fk :
     constraintJointPartition β (edgeAgreement G (C := Set.Icc 1 q)) =
       FK.partitionFunction G (fkParameters q hq β hβ) (FK.BoundaryCondition.free ∅) := by
   unfold constraintJointPartition
@@ -106,14 +109,13 @@ theorem graphJointPartition_eq_fk (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 <
 /-- The joint weight factors into the FK weight and the probability of the
 given colouring under independent uniform colours on open components. -/
 theorem graphJointWeight_eq_fk_mul_coloring
-    (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
     (σ : V → Set.Icc 1 q) (ω : G.edgeSet → Bool) :
     constraintJointWeight β (edgeAgreement G) σ ω =
       FK.weight G (fkParameters q hq β hβ) (FK.BoundaryCondition.free ∅)
         (FK.boolConfigurationEquiv G ω) *
       clusterColoringProbability
         (FK.openGraph G (FK.boolConfigurationEquiv G ω)).reachableSetoid σ := by
-  have hq0 : (q : ℝ) ≠ 0 := by exact_mod_cast (show q ≠ 0 by omega)
+  have hq0 : (q : ℝ) ≠ 0 := by positivity
   rw [constraintJointWeight_eq, fk_weight_eq_bernoulli, clusterColoringProbability]
   simp only [bool_edgeAgreement_iff, card_pottsColors, FK.componentCount,
     FK.componentSetoid_free]
@@ -122,7 +124,6 @@ theorem graphJointWeight_eq_fk_mul_coloring
 /-- Finite Edwards–Sokal disintegration: conditionally on the bonds, each
 actual connected component receives one independent uniform colour. -/
 theorem graphJointProbability_eq_fk_mul_coloring
-    (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
     (σ : V → Set.Icc 1 q) (ω : G.edgeSet → Bool) :
     constraintJointProbability β (edgeAgreement G) σ ω =
       FK.configurationProbability G (fkParameters q hq β hβ) (FK.BoundaryCondition.free ∅)
@@ -135,8 +136,7 @@ theorem graphJointProbability_eq_fk_mul_coloring
 
 /-- The finite free Gibbs spin law is the mixture of uniform component
 colourings against the actual finite free FK law. -/
-theorem graphGibbsProbability_eq_clusterMixture
-    (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) (σ : V → Set.Icc 1 q) :
+theorem graphGibbsProbability_eq_clusterMixture (σ : V → Set.Icc 1 q) :
     constraintGibbsWeight β (edgeAgreement G) σ /
         ∑ τ : V → Set.Icc 1 q, constraintGibbsWeight β (edgeAgreement G) τ =
       ∑ ω : G.edgeSet → Bool,
@@ -152,8 +152,7 @@ theorem graphGibbsProbability_eq_clusterMixture
 
 /-- Every finite spin event, in particular every spin cylinder, is given by
 the corresponding mixture of component-colouring probabilities. -/
-theorem graphGibbsProbability_event_eq_clusterMixture
-    (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) (s : Set (V → Set.Icc 1 q)) :
+theorem graphGibbsProbability_event_eq_clusterMixture (s : Set (V → Set.Icc 1 q)) :
     (∑ σ : V → Set.Icc 1 q,
       if σ ∈ s then constraintGibbsWeight β (edgeAgreement G) σ /
         (∑ τ : V → Set.Icc 1 q, constraintGibbsWeight β (edgeAgreement G) τ) else 0) =
@@ -172,8 +171,10 @@ theorem graphGibbsProbability_event_eq_clusterMixture
           (FK.openGraph G (FK.boolConfigurationEquiv G ω)).reachableSetoid σ else 0) := by
       apply Finset.sum_congr rfl
       intro σ _
-      by_cases hs : σ ∈ s <;> simp only [hs, ↓reduceIte, mul_zero, Finset.sum_const_zero]
+      simp
     _ = _ := by rw [Finset.sum_comm]; simp only [Finset.mul_sum]
+
+end
 
 end
 

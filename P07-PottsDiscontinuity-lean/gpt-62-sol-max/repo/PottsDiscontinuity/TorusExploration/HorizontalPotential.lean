@@ -1,5 +1,7 @@
 module
 
+public import PottsDiscontinuity.Torus.DiamondCycleAnnihilator
+
 public import Mathlib.Algebra.Order.Floor.Ring
 public import PottsDiscontinuity.Torus.DiamondSeamWinding
 
@@ -37,9 +39,6 @@ theorem exists_int_horizontalPotential (hN : Even N) (hM : Even M)
   rw [← integerSeamCrossX_cast] at he
   have he' : G (faceEndpoint hN hM true e.val true) =
       G (faceEndpoint hN hM true e.val false) + (integerSeamCrossX e.val : ℚ) := by linarith
-  change ⌊G (faceEndpoint hN hM true e.val true)⌋ -
-    ⌊G (faceEndpoint hN hM true e.val false)⌋ = integerSeamCrossX e.val
-  rw [he',Int.floor_add_intCast]
-  omega
+  simp_all
 
 end PottsDiscontinuity.TorusExploration

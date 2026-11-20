@@ -36,7 +36,7 @@ theorem unexploredCylinder_integerPotential (hN : Even N) (hM : Even M)
   intro g
   apply cylinderExterior_windingX_zero hN hM hNp hMlarge hu hv hp _ _ g
   intro e
-  simpa only [unexploredCylinderConfig,decide_eq_true_eq] using e.property
+  simpa [unexploredCylinderConfig] using e.property
 
 end
 end PottsDiscontinuity.TorusExploration

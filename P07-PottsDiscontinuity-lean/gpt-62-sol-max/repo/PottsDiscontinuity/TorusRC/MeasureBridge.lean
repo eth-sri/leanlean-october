@@ -51,7 +51,6 @@ theorem torusRCPartition_eq_fk (hN : Even N) (hM : Even M)
         (FK.BoundaryCondition.free ∅) := by
   classical
   let e := torusRCConfigurationEquiv hN hM hN4 hM4
-  unfold torusRCPartition FK.partitionFunction FK.FiniteProbability.partition
   calc
     (∑ A, torusRCWeight hN hM q A) =
         ∑ A, FK.weight (fullDiamondGraph hN hM) (torusRCBridgeParameters q)
@@ -85,11 +84,7 @@ theorem torusRCMeasure_map_edgeEquiv (hN : Even N) (hM : Even M)
       FK.measure (fullDiamondGraph hN hM) (torusRCBridgeParameters q)
         (FK.BoundaryCondition.free ∅) := by
   have hpmf := torusRCPMF_map_edgeEquiv hN hM hN4 hM4 q
-  have hmeasure := congrArg
-    (fun p : PMF (FK.Configuration (fullDiamondGraph hN hM)) =>
-      @PMF.toMeasure _ (FK.configurationMeasurableSpace (fullDiamondGraph hN hM)) p) hpmf
-  rw [← PMF.toMeasure_map _ _ (Measurable.of_discrete)] at hmeasure
-  simpa [torusRCMeasure, FK.measure] using hmeasure
+  simp_all [torusRCMeasure, FK.measure, Measurable.of_discrete]
 
 /-- Event probabilities transport exactly through the indexed-edge equivalence. -/
 theorem torusRCProbability_eq_fk_image (hN : Even N) (hM : Even M)
@@ -102,7 +97,7 @@ theorem torusRCProbability_eq_fk_image (hN : Even N) (hM : Even M)
   rw [← torusRCMeasure_map_edgeEquiv hN hM hN4 hM4 q]
   unfold torusRCProbability Measure.real
   rw [Measure.map_apply (Measurable.of_discrete) MeasurableSpace.measurableSet_top]
-  simp only [Set.preimage_image_eq _ (torusRCConfigurationEquiv hN hM hN4 hM4).injective]
+  simp
 
 end
 

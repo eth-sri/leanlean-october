@@ -34,10 +34,7 @@ theorem rectangleDualAmbient_law_restrict_to_dual
     rw [rectangleDualBoundaryCondition_rel]
     right
     have hnot : ¬ G.Adj u v := by
-      intro hadj
-      have hedge : s(u, v) ∈ G.edgeSet := G.mem_edgeSet.mpr hadj
-      have hremoved := (mem_subgraphRemovedEdges (G := G) (H := H) _).mp he
-      exact hremoved (by simpa using hedge)
+      intro hadj <;> aesop
     exact rectangleDualAmbient_extraEdge_endpoints_boundary a w h u v huv hnot
   have hremove := law_map_remove H q (rectangleDualBoundaryCondition a w h) R hR
   have hsubgraph := law_subgraphRemaining_map hGH q (rectangleDualBoundaryCondition a w h)
@@ -50,19 +47,15 @@ theorem rectangleDualAmbient_law_restrict_to_dual
         rw [PMF.map_comp]
         congr 1
         funext C
-        simpa only [Function.comp_apply, R] using
-          (subgraphRemainingConfigurationEquiv_symm_split hGH C).symm
+        simpa using
+                  (subgraphRemainingConfigurationEquiv_symm_split hGH C).symm
     _ = ((law G q (rectangleDualBoundaryCondition a w h)).map
         (subgraphRemainingConfigurationEquiv hGH)).map
           (subgraphRemainingConfigurationEquiv hGH).symm := by
         rw [hremove, hsubgraph]
     _ = law G q (rectangleDualBoundaryCondition a w h) := by
         rw [PMF.map_comp]
-        have heq : ((subgraphRemainingConfigurationEquiv hGH).symm ∘
-            subgraphRemainingConfigurationEquiv hGH) = id := by
-          funext A
-          exact Equiv.symm_apply_apply (subgraphRemainingConfigurationEquiv hGH) A
-        rw [heq, PMF.map_id]
+        simp [PMF.map_id]
 
 end
 

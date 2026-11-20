@@ -22,7 +22,7 @@ def edgePairFunctional (A : RCConfig N M) (c : OpenDiamondEdge A → ℚ) :
     (OpenDiamondEdge A → ℚ) →ₗ[ℚ] ℚ where
   toFun f := ∑ e, c e * f e
   map_add' f g := by
-    simp only [Pi.add_apply, mul_add, Finset.sum_add_distrib]
+    simp [mul_add, Finset.sum_add_distrib]
   map_smul' a f := by
     simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply]
     rw [Finset.mul_sum]
@@ -30,7 +30,7 @@ def edgePairFunctional (A : RCConfig N M) (c : OpenDiamondEdge A → ℚ) :
 
 @[simp] theorem edgePairFunctional_single (A : RCConfig N M) (c : OpenDiamondEdge A → ℚ)
     (e : OpenDiamondEdge A) : edgePairFunctional A c (Pi.single e 1) = c e := by
-  simp [edgePairFunctional, Pi.single_apply, mul_ite]
+  simp [edgePairFunctional, Pi.single_apply]
 
 theorem diamondBoundary_single (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (e : OpenDiamondEdge A) :
@@ -41,7 +41,7 @@ theorem diamondBoundary_single (hN : Even N) (hM : Even M) (A : RCConfig N M)
   change ((diamondIncidence hN hM A) *ᵥ Pi.single e 1) u = _
   rw [Matrix.mulVec_single_one]
   simp only [Matrix.col_apply, diamondIncidence, Pi.sub_apply, Pi.single_apply]
-  congr 1 <;> simp only [eq_comm]
+  congr 1 <;> simp [eq_comm]
 
 /-- Every coefficient annihilating conserved indexed flows is an actual vertex coboundary. -/
 theorem exists_diamondPotential_of_cycle_annihilator (hN : Even N) (hM : Even M)
@@ -57,9 +57,6 @@ theorem exists_diamondPotential_of_cycle_annihilator (hN : Even N) (hM : Even M)
   refine ⟨fun u => H (Pi.single u 1), ?_⟩
   funext e
   have he := LinearMap.congr_fun hH (Pi.single e 1)
-  change H (diamondBoundary hN hM A (Pi.single e 1)) =
-    edgePairFunctional A c (Pi.single e 1) at he
-  rw [diamondBoundary_single, map_sub, edgePairFunctional_single] at he
-  exact he
+  simpa [diamondBoundary_single] using he
 
 end PottsDiscontinuity.Torus

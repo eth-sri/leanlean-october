@@ -85,10 +85,6 @@ theorem openCount_add_closedCount (A : RCConfig N M) :
 /-- The closed dual edge is open exactly when the primal edge is closed. -/
 def dualConfig (A : RCConfig N M) : RCConfig N M := fun v => !A v
 
-@[simp] theorem dualConfig_dualConfig (A : RCConfig N M) : dualConfig (dualConfig A) = A := by
-  funext v
-  exact Bool.not_not _
-
 /-- The open/closed-to-pairing dictionary at a primal/dual crossing. -/
 def rcSmoothing (A : RCConfig N M) : Smoothing N M := fun v => Bool.xor (checker v) (A v)
 
@@ -98,12 +94,12 @@ def smoothingRC (s : Smoothing N M) : RCConfig N M := fun v => Bool.xor (checker
 @[simp] theorem smoothingRC_rcSmoothing (A : RCConfig N M) : smoothingRC (rcSmoothing A) = A := by
   funext v
   change Bool.xor (checker v) (Bool.xor (checker v) (A v)) = A v
-  cases checker v <;> cases A v <;> rfl
+  simp
 
 @[simp] theorem rcSmoothing_smoothingRC (s : Smoothing N M) : rcSmoothing (smoothingRC s) = s := by
   funext v
   change Bool.xor (checker v) (Bool.xor (checker v) (s v)) = s v
-  cases checker v <;> cases s v <;> rfl
+  simp
 
 /-- The local crossing dictionary is a genuine bijection, without counting arguments. -/
 def rcSmoothingEquiv (N M : ℕ) : RCConfig N M ≃ Smoothing N M where

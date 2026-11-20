@@ -37,7 +37,7 @@ theorem patternCylinder_isClopen (A : Finset squareLattice.edgeSet)
         ext ω
         simp [patternCylinder]
       rw [h]
-      exact ((isClopen_discrete ({ξ e} : Set Bool)).preimage (continuous_apply e)).inter ih
+      exact IsClopen.inter (IsClopen.preimage (isClopen_discrete {ξ e}) (continuous_apply e)) ih
 
 /-- The exact frozen finite law, mapped by any chosen whole-lattice extension. -/
 def frozenExtendedProbabilityMeasure (θ : Parameters) (S : Finset (ℤ × ℤ)) (i : Fin 2)
@@ -68,9 +68,7 @@ theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
           Sym2.map Subtype.val f.1 = e.1 ∧ ω f = ξ e := by
     have hvalue (f : (squareLattice.induce (S : Set (ℤ × ℤ))).edgeSet) :
         ext (boolConfigurationEquiv _ ω) (frozenEdgeEmbedding S f) = ω f := by
-      rw [hExt]
-      simp only [mem_boolConfigurationEquiv]
-      cases ω f <;> rfl
+      simp [*]
     constructor
     · intro h e he
       obtain ⟨f, hf⟩ := hA e he
@@ -81,7 +79,7 @@ theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
       obtain ⟨f, hf, hω⟩ := h e he
       have hf' : frozenEdgeEmbedding S f = e := Subtype.ext hf
       rw [← hf', hvalue]
-      simpa only [hf'] using hω
+      simpa [hf'] using hω
   change (((law _ θ (frozenBoundaryCondition S i)).map ext).toMeasure
     (patternCylinder A ξ)).toReal = _
   rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top
@@ -91,9 +89,8 @@ theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
   symm
   refine Finset.sum_bij (fun ω _ => boolConfigurationEquiv _ ω) ?_ ?_ ?_ ?_
   · intro ω _
-    simp only [Finset.mem_univ]
-  · intro ω _ η _ h
-    exact (boolConfigurationEquiv _).injective h
+    simp
+  · simp
   · intro C _
     exact ⟨(boolConfigurationEquiv _).symm C, Finset.mem_univ _,
       (boolConfigurationEquiv _).apply_symm_apply C⟩
@@ -121,12 +118,9 @@ theorem isRCInfiniteVolumeLimit_of_extended_tendsto (θ : Parameters) (i : Fin 2
     have hreal : Tendsto
         (fun n => (frozenExtendedProbabilityMeasure θ (box n) i (ext n)).toMeasure.real
           (patternCylinder A ξ)) atTop (𝓝 (μ.toMeasure.real (patternCylinder A ξ))) := by
-      simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn, Function.comp_def] using
-        NNReal.continuous_coe.continuousAt.tendsto.comp hconv
+      simp [*]
     refine hreal.congr' ?_
-    have hsupp : ∀ᶠ n : ℕ in atTop, ∀ e ∈ A,
-        ∃ f : (squareLattice.induce (box n : Set (ℤ × ℤ))).edgeSet,
-          Sym2.map Subtype.val f.1 = e.1 :=
+    have hsupp :=
       (eventually_all_finset A).2 fun e _ => eventually_edge_lift_box e
     filter_upwards [hsupp] with n hn
     have hA : ∀ e ∈ A, ∃ f, frozenEdgeEmbedding (box n) f = e := by
@@ -138,7 +132,7 @@ theorem isRCInfiniteVolumeLimit_of_extended_tendsto (θ : Parameters) (i : Fin 2
     rw [h]
     refine Finset.sum_congr ?_ ?_
     · ext ω
-      simp only [Finset.mem_univ]
+      simp
     · intro ω _
       split_ifs <;> rfl
 

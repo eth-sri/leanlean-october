@@ -11,6 +11,16 @@ namespace PottsDiscontinuity.Potts
 open MeasureTheory Filter Topology
 noncomputable section
 
+/-- One-sided control by approximations whose iterated limit is `x`. -/
+theorem eventually_lt_of_lower_limits {α : Type*} [LinearOrder α] [TopologicalSpace α]
+    [OrderTopology α] {u l : ℕ → α} {v : ℕ → ℕ → α} {x : α}
+    (h : Tendsto l atTop (𝓝 x)) (hv : ∀ m, Tendsto (v m) atTop (𝓝 (l m)))
+    (hle : ∀ m, ∀ᶠ n in atTop, v m n ≤ u n) (a : α) (ha : a < x) :
+    ∀ᶠ n in atTop, a < u n := by
+  obtain ⟨m, hm⟩ := (h.eventually (lt_mem_nhds ha)).exists
+  filter_upwards [(hv m).eventually (lt_mem_nhds hm), hle m] with n hn hle'
+  exact hn.trans_le hle'
+
 variable {X : Type*} [MeasurableSpace X]
 
 /-- Increasing finite-path events may grow with the volume if each finite law
@@ -22,15 +32,10 @@ theorem increasing_event_diagonal_tendsto (μs : ℕ → ProbabilityMeasure X) (
     Tendsto (fun n => (μs n).toMeasure.real (E n)) atTop (𝓝 (μ.toMeasure.real (⋃ n, E n))) := by
   have hcont : Tendsto (fun n => μ.toMeasure.real (E n)) atTop (𝓝 (μ.toMeasure.real (⋃ n, E n))) :=
     (ENNReal.tendsto_toReal (measure_ne_top _ _)).comp (tendsto_measure_iUnion_atTop hE)
-  apply tendsto_order.mpr
-  constructor
-  · intro a ha
-    obtain ⟨m, hm⟩ := (hcont.eventually (lt_mem_nhds ha)).exists
-    filter_upwards [(hlocal m).eventually (lt_mem_nhds hm), eventually_ge_atTop m] with n hn hmn
-    exact hn.trans_le (measureReal_mono (hE hmn))
+  refine tendsto_order.2 ⟨eventually_lt_of_lower_limits hcont hlocal ?_, ?_⟩
+  · exact fun m => (eventually_ge_atTop m).mono fun _ hn => measureReal_mono (hE hn)
   · intro b hb
-    filter_upwards [hcont.eventually (gt_mem_nhds hb)] with n hn
-    exact (hdom n).trans_lt hn
+    exact (hcont.eventually (gt_mem_nhds hb)).mono fun n hn => (hdom n).trans_lt hn
 
 /-- Decreasing wired events may grow with the volume if every finite law
  dominates the limiting law on that event. -/
@@ -42,15 +47,10 @@ theorem decreasing_event_diagonal_tendsto (μs : ℕ → ProbabilityMeasure X) (
   have hcont : Tendsto (fun n => μ.toMeasure.real (E n)) atTop (𝓝 (μ.toMeasure.real (⋂ n, E n))) :=
     (ENNReal.tendsto_toReal (measure_ne_top _ _)).comp
       (tendsto_measure_iInter_atTop (fun n => (hmeas n).nullMeasurableSet) hE ⟨0, measure_ne_top _ _⟩)
-  apply tendsto_order.mpr
-  constructor
+  refine tendsto_order.2 ⟨?_, eventually_lt_of_lower_limits (α := ℝᵒᵈ) hcont hlocal ?_⟩
   · intro a ha
-    filter_upwards [hcont.eventually (lt_mem_nhds ha)] with n hn
-    exact hn.trans_le (hdom n)
-  · intro b hb
-    obtain ⟨m, hm⟩ := (hcont.eventually (gt_mem_nhds hb)).exists
-    filter_upwards [(hlocal m).eventually (gt_mem_nhds hm), eventually_ge_atTop m] with n hn hmn
-    exact (measureReal_mono (hE hmn)).trans_lt hn
+    exact (hcont.eventually (lt_mem_nhds ha)).mono fun n hn => hn.trans_le (hdom n)
+  · exact fun m => (eventually_ge_atTop m).mono fun _ hn => measureReal_mono (hE hn)
 
 end
 end PottsDiscontinuity.Potts

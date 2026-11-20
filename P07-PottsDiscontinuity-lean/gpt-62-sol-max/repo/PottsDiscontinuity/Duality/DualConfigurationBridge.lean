@@ -66,9 +66,7 @@ theorem dual_closedRectangleConfiguration_at (a : LatticeVertex) (w h : ℕ)
   change Bool.not (closedRectangleConfiguration a w h A
     (latticeBondEdge (primalBondOfDual e.crossingBond))) = _
   rw [rectangleDualEdge_crossing_originalEdge]
-  rw [closedRectangleConfiguration_at a w h A e.primalEdge]
-  simp only [mem_rectanglePrimalDualConfigurationEquiv]
-  by_cases he : e.primalEdge ∈ A <;> simp [he] <;> exact he
+  rw [closedRectangleConfiguration_at a w h A e.primalEdge] <;> aesop
 
 end
 end PottsDiscontinuity.Duality

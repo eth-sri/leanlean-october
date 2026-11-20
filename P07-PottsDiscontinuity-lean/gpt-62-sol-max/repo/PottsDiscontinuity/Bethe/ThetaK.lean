@@ -46,20 +46,13 @@ theorem key_algebra {K : Type*} [Field K] (E w w' u v : K) (hE : E ≠ 0) (hE2 :
     field_simp
     ring
   rw [hden, hnum, hu, hv]
-  have h7 : E ^ 2 - w / w' ≠ 0 := by
-    intro h
-    apply h5
-    field_simp at h
-    linear_combination h
   field_simp
 
 theorem ofReal_mul_sub_ne_zero {r : ℝ} (hr : 1 < r) {w w' : ℂ} (hw : ‖w‖ = 1) (hw' : ‖w'‖ = 1) :
     (r : ℂ) * w' - w ≠ 0 := by
   intro h
   have : (r : ℂ) * w' = w := sub_eq_zero.mp h
-  have h2 : ‖(r : ℂ) * w'‖ = ‖w‖ := by rw [this]
-  rw [norm_mul, hw, hw', Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)] at h2
-  linarith
+  grind [norm_mul, Complex.norm_real, Real.norm_eq_abs]
 
 /-- `e^{ik(α)} = (E w - 1)/(E - w)` with `w = e^{iα}`, `E = e^λ`. -/
 theorem exp_I_mul_kMap_unit {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
@@ -67,10 +60,7 @@ theorem exp_I_mul_kMap_unit {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
       ((Real.exp lam : ℂ) * Complex.exp (I * α) - 1) /
         ((Real.exp lam : ℂ) - Complex.exp (I * α)) := by
   rw [exp_I_mul_kMap_aux hlam α, Complex.exp_neg]
-  have hE : (1 : ℝ) < Real.exp lam := by simpa using hlam
-  have hne := ofReal_sub_ne_zero hE (norm_exp_I_mul' α)
-  have hw0 := Complex.exp_ne_zero (I * (α : ℂ))
-  field_simp
+  grind only [Complex.exp_ne_zero]
 
 theorem cosh_eq_neg_iff_lt {lam Δ : ℝ} (hlam : 0 < lam) (hΔ : Real.cosh lam = -Δ) : Δ < -1 := by
   have := Real.one_lt_cosh.mpr hlam.ne'
@@ -113,14 +103,13 @@ theorem exp_neg_I_theta_kMap {lam Δ : ℝ} (hlam : 0 < lam) (hΔ : Real.cosh la
   rw [e1, e2, e3, hd, sub_neg_eq_add, sub_neg_eq_add, e4, e5]
   set E : ℂ := (Real.exp lam : ℂ) with hEdef
   have hEne : E ≠ 0 := by
-    rw [hEdef]; exact_mod_cast (Real.exp_pos lam).ne'
+    simp_all
   have hE2c : E ^ 2 - 1 ≠ 0 := by
     have h : E ^ 2 - 1 = (((Real.exp lam ^ 2 - 1 : ℝ)) : ℂ) := by
-      rw [hEdef]; push_cast; ring
+      simp_all
     rw [h]
     exact Complex.ofReal_ne_zero.mpr (by linarith : Real.exp lam ^ 2 - 1 ≠ 0)
   have hE2r : (((Real.exp lam ^ 2 : ℝ)) : ℂ) = E ^ 2 := by rw [hEdef]; push_cast; ring
-  have hw0 := Complex.exp_ne_zero (I * (α : ℂ))
   have hw0' := Complex.exp_ne_zero (I * (β : ℂ))
   have a1 := ofReal_sub_ne_zero hE hw
   have a2 := ofReal_mul_sub_one_ne_zero hE hw
@@ -129,14 +118,12 @@ theorem exp_neg_I_theta_kMap {lam Δ : ℝ} (hlam : 0 < lam) (hΔ : Real.cosh la
   have a5 := ofReal_mul_sub_ne_zero hE2 hw hw'
   have a6 := ofReal_mul_sub_ne_zero hE2 hw' hw
   rw [hE2r] at a5 a6
-  have a7 : (Complex.exp (I * (kMap lam α : ℂ))) =
-      (E * Complex.exp (I * α) - 1) / (E - Complex.exp (I * α)) := exp_I_mul_kMap_unit hlam α
-  have a8 : (Complex.exp (I * (kMap lam β : ℂ))) =
-      (E * Complex.exp (I * β) - 1) / (E - Complex.exp (I * β)) := exp_I_mul_kMap_unit hlam β
+  have a7 := exp_I_mul_kMap_unit hlam α
+  have a8 := exp_I_mul_kMap_unit hlam β
   have := key_algebra E (Complex.exp (I * α)) (Complex.exp (I * β))
     (Complex.exp (I * (kMap lam α : ℂ))) (Complex.exp (I * (kMap lam β : ℂ)))
     hEne hE2c a7 a8 a1 a2 a3 a4 a5 a6 hw0'
-  rw [this]
+  assumption
 
 /-- Footnote 5 (integrated form): `Θ_Δ(k_λ(α), k_λ(β)) = -k_{2λ}(α - β)`, for `Δ < -1`,
 `λ > 0`, `cosh λ = -Δ`, and all real `α, β`. -/
@@ -168,7 +155,7 @@ theorem hasDerivAt_theta_kMap_left {lam Δ : ℝ} (hlam : 0 < lam) (hΔ : Real.c
     HasDerivAt (fun a => theta Δ (kMap lam a) (kMap lam β)) (-Xi (2 * lam) (α - β)) α := by
   have hlam2 : 0 < 2 * lam := by linarith
   have h := ((hasDerivAt_kMap hlam2 (α - β)).comp_sub_const α β).neg
-  have e : (fun a => theta Δ (kMap lam a) (kMap lam β)) = fun a => -kMap (2 * lam) (a - β) :=
+  have e :=
     funext fun a => theta_kMap_kMap hlam hΔ a β
   rw [e]
   exact h
@@ -180,11 +167,7 @@ theorem hasDerivAt_theta_kMap_right {lam Δ : ℝ} (hlam : 0 < lam) (hΔ : Real.
   have hlam2 : 0 < 2 * lam := by linarith
   have h0 := (hasDerivAt_kMap hlam2 (α - β)).comp_const_sub α β
   have h3 : HasDerivAt (fun b => -kMap (2 * lam) (α - b)) (-(-Xi (2 * lam) (α - β))) β := h0.neg
-  have e : (fun b => theta Δ (kMap lam α) (kMap lam b)) = fun b => -kMap (2 * lam) (α - b) :=
-    funext fun b => theta_kMap_kMap hlam hΔ α b
-  rw [e]
-  rw [neg_neg] at h3
-  exact h3
+  grind only [neg_neg, theta_kMap_kMap]
 
 /-- Chain-rule form: `∂₁Θ(k(α), k(β)) = -Ξ_{2λ}(α - β) / k'(α)` with `k' = Ξ_λ`. -/
 theorem deriv_theta_left_kMap {lam Δ : ℝ} (hlam : 0 < lam) (hΔ : Real.cosh lam = -Δ)
@@ -192,8 +175,7 @@ theorem deriv_theta_left_kMap {lam Δ : ℝ} (hlam : 0 < lam) (hΔ : Real.cosh l
     deriv (fun s => theta Δ s (kMap lam β)) (kMap lam α) =
       -Xi (2 * lam) (α - β) / Xi lam α := by
   have hΔ1 := cosh_eq_neg_iff_lt hlam hΔ
-  have h1 : HasDerivAt (fun s => theta Δ s (kMap lam β))
-      (deriv (fun s => theta Δ s (kMap lam β)) (kMap lam α)) (kMap lam α) :=
+  have h1 :=
     (analyticAt_theta_left hΔ1 (kMap lam α) (kMap lam β)).differentiableAt.hasDerivAt
   have h2 := h1.comp α (hasDerivAt_kMap hlam α)
   have h3 := hasDerivAt_theta_kMap_left hlam hΔ α β
@@ -208,8 +190,7 @@ theorem deriv_theta_right_kMap {lam Δ : ℝ} (hlam : 0 < lam) (hΔ : Real.cosh 
     deriv (fun t => theta Δ (kMap lam α) t) (kMap lam β) =
       Xi (2 * lam) (α - β) / Xi lam β := by
   have hΔ1 := cosh_eq_neg_iff_lt hlam hΔ
-  have h1 : HasDerivAt (fun t => theta Δ (kMap lam α) t)
-      (deriv (fun t => theta Δ (kMap lam α) t) (kMap lam β)) (kMap lam β) :=
+  have h1 :=
     (analyticAt_theta_right hΔ1 (kMap lam α) (kMap lam β)).differentiableAt.hasDerivAt
   have h2 := h1.comp β (hasDerivAt_kMap hlam β)
   have h3 := hasDerivAt_theta_kMap_right hlam hΔ α β
@@ -219,11 +200,5 @@ theorem deriv_theta_right_kMap {lam Δ : ℝ} (hlam : 0 < lam) (hΔ : Real.cosh 
   linarith
 
 /-! ### Corollaries in terms of `Δ` alone -/
-
-/-- For `Δ < -1`, with `k = k_{λ(Δ)}` and `λ(Δ) = arcosh(-Δ)`:
-`Θ_Δ(k(α), k(β)) = -k_{2λ(Δ)}(α - β)`. -/
-theorem theta_kMap_lamOf {Δ : ℝ} (hΔ : Δ < -1) (α β : ℝ) :
-    theta Δ (kMap (lamOf Δ) α) (kMap (lamOf Δ) β) = -kMap (2 * lamOf Δ) (α - β) :=
-  theta_kMap_kMap (lamOf_pos hΔ) (cosh_lamOf hΔ) α β
 
 end PottsDiscontinuity.Bethe

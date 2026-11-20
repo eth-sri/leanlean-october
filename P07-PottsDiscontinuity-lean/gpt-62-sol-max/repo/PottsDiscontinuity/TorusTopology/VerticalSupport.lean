@@ -34,7 +34,6 @@ theorem verticalWindingLoops_card_le_mass (hN : Even N) (hM : Even M) (j : Fin M
       apply Finset.sum_le_sum
       intro q hq
       have hn := (Finset.mem_filter.1 hq).2
-      have hp := Int.natAbs_pos.2 hn
       omega
     _ ≤ verticalMass _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j :=
       Finset.sum_le_sum_of_subset (Finset.filter_subset _ _)
@@ -49,8 +48,7 @@ theorem verticalWindingLoops_card_le_two_of_U_eq_one
   have he := two_mul_verticalWindingCount hN (checkerArrows N M) (rcSmoothing A)
     (checkerArrows_compatible hN hM (rcSmoothing A)) j
   change 2 * rcVerticalWinding hN hM j A = _ at he
-  rw [hU] at he
-  exact (verticalWindingLoops_card_le_mass hN hM j A).trans (by omega)
+  simpa using (verticalWindingLoops_card_le_mass hN hM j A).trans (by omega)
 
 end
 end PottsDiscontinuity.TorusTopology

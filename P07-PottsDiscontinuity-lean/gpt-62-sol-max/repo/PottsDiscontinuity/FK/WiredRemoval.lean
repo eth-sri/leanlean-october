@@ -39,13 +39,11 @@ instance removedConfiguration_nonempty (R : Configuration G) :
 
 instance remainingConfiguration_finite [Finite V] (R : Configuration G) :
     Finite (RemainingConfiguration G R) := by
-  let : Fintype G.edgeSet := Fintype.ofFinite G.edgeSet
-  infer_instance
+  exact inferInstance
 
 instance removedConfiguration_finite [Finite V] (R : Configuration G) :
     Finite (RemovedConfiguration G R) := by
-  let : Fintype G.edgeSet := Fintype.ofFinite G.edgeSet
-  infer_instance
+  exact inferInstance
 
 variable [DecidableEq G.edgeSet]
 
@@ -100,8 +98,7 @@ theorem componentSetoid_union_removed (ξ : BoundaryCondition V) (R : Configurat
     intro S
     induction S using Finset.induction_on with
     | empty =>
-      intro _
-      rw [Finset.union_empty]
+      simp
     | @insert e S _ ih =>
       intro hS
       have heR : e ∈ R := hS (Finset.mem_insert_self e S)
@@ -115,7 +112,7 @@ theorem componentSetoid_union_removed (ξ : BoundaryCondition V) (R : Configurat
       rw [Finset.union_insert, componentSetoid_insert_eq_of_boundary ξ (A ∪ S) huv
         (hR u v huv heR)]
       exact ih hSR
-  exact haux B.val B.property
+  grind
 
 theorem componentCount_union_removed [Finite V] (ξ : BoundaryCondition V)
     (R : Configuration G)
@@ -123,7 +120,7 @@ theorem componentCount_union_removed [Finite V] (ξ : BoundaryCondition V)
       (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∈ R → ξ.partition.r u v)
     (A : Configuration G) (B : RemovedConfiguration G R) :
     componentCount G ξ (A ∪ B.val) = componentCount G ξ A := by
-  rw [componentCount, componentCount, componentSetoid_union_removed G ξ R hR A B]
+  simp [componentCount, componentSetoid_union_removed G ξ R hR A B]
 
 /-- The FK weight with only edges outside `R` sampled. The component count is
 still taken on all original vertices with the same boundary partition. -/

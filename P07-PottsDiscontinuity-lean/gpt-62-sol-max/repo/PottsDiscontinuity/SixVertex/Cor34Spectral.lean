@@ -20,7 +20,11 @@ open PottsDiscontinuity.PerronFrobenius
 
 namespace PottsDiscontinuity.SixVertex
 
-private theorem cor34_transferBlock_sqrt_entry {N n : ℕ} (x y : State N n) {Δ : ℝ}
+section
+
+variable {N n : ℕ} (x y : State N n) {Δ : ℝ}
+
+private theorem cor34_transferBlock_sqrt_entry
     (hΔ : Δ < 1) :
     transferBlock N (Real.sqrt (2 - 2 * Δ)) n x y =
       if x = y then 2 else
@@ -38,10 +42,9 @@ private theorem cor34_transferBlock_sqrt_entry {N n : ℕ} (x y : State N n) {Δ
         simpa [arrowDistance] using arrowDistance_state x y
       rw [hcard, pow_mul, Real.sq_sqrt]
       · linarith
-    · simp [hi]
+    simp_all
 
-private theorem cor34_transferBlock_entry_analyticAt {N n : ℕ} (x y : State N n)
-    {Δ : ℝ} (hΔ : Δ < -1) :
+private theorem cor34_transferBlock_entry_analyticAt (hΔ : Δ < -1) :
     AnalyticAt ℝ (fun d => transferBlock N (Real.sqrt (2 - 2 * d)) n x y) Δ := by
   classical
   let P : ℝ → ℝ := fun d =>
@@ -65,6 +68,8 @@ private theorem cor34_transferBlock_entry_analyticAt {N n : ℕ} (x y : State N 
     exact cor34_transferBlock_sqrt_entry x y hd
   exact hP.congr hEq.symm
 
+end
+
 /-- For every `n ≤ N` and `Δ < -1`, the Perron root of the transfer block is a simple
 characteristic root. The proof uses primitivity of the block at `c = √(2 - 2Δ)`. -/
 theorem cor34_transferBlock_pfRoot_simple {N n : ℕ} (hn : n ≤ N) {Δ : ℝ}
@@ -72,8 +77,7 @@ theorem cor34_transferBlock_pfRoot_simple {N n : ℕ} (hn : n ≤ N) {Δ : ℝ}
     (transferBlock N (Real.sqrt (2 - 2 * Δ)) n).charpoly.rootMultiplicity
       (pfRoot (transferBlock N (Real.sqrt (2 - 2 * Δ)) n)) = 1 := by
   have hc : 0 < Real.sqrt (2 - 2 * Δ) := Real.sqrt_pos.2 (by linarith)
-  obtain ⟨_, _, _, _, hsimple, _⟩ := transferBlock_perronFrobenius hc hn
-  exact hsimple
+  exact (transferBlock_perronFrobenius hc hn).2.2
 
 /-- The transfer-block Perron root is real-analytic at every `Δ < -1`, hence real-analytic on
 the whole source interval `(-∞,-1)`. -/
@@ -89,10 +93,10 @@ theorem cor34_analyticAt_pfRoot_transferBlock {N n : ℕ} (hn : n ≤ N) {Δ : �
     exact cor34_transferBlock_entry_analyticAt i j hΔ
   have hHerm : ∀ d, (A d).IsHermitian := fun d => transferBlock_isHermitian n
   have hsimple : (A Δ).charpoly.rootMultiplicity (sSup (spectrum ℝ (A Δ))) = 1 := by
-    simpa [A, pfRoot] using cor34_transferBlock_pfRoot_simple hn hΔ
+    simpa [pfRoot] using cor34_transferBlock_pfRoot_simple hn hΔ
   have hanalytic := AnalyticTools.analyticAt_pfRoot_of_simple hA (hHerm Δ)
     (Filter.Eventually.of_forall hHerm) hsimple
-  simpa [A, pfRoot] using hanalytic
+  assumption
 
 /-- Polynomial extension in ε = 1/Δ of the normalized transfer block. -/
 noncomputable def cor34_normalizedTransferBlock (N n : ℕ) (ε : ℝ) :
@@ -115,8 +119,8 @@ theorem cor34_normalizedTransferBlock_zero (N n : ℕ) :
   by_cases hxy : x = y
   · subst y
     by_cases hn0 : n = 0
-    · simp [cor34_normalizedTransferBlock, infinityBlock, hn0]
-    · simp [cor34_normalizedTransferBlock, infinityBlock, hn0]
+    · simp [cor34_normalizedTransferBlock, hn0]
+    · simp [cor34_normalizedTransferBlock, hn0]
   · by_cases hi : Interlaced x.1 y.1
     · let m := (x.1 \ y.1).card
       have hmle : m ≤ n := cor34_state_sdiff_le x y
@@ -124,7 +128,7 @@ theorem cor34_normalizedTransferBlock_zero (N n : ℕ) :
         constructor
         · intro hm
           apply (arrowDistance_eq_two_mul_iff x y).1
-          have hmc : (x.1 \ y.1).card = n := by simpa [m] using hm
+          have hmc : (x.1 \ y.1).card = n := by assumption
           rw [arrowDistance_state, hmc]
         · intro hd
           have h := (arrowDistance_eq_two_mul_iff x y).2 hd
@@ -132,11 +136,11 @@ theorem cor34_normalizedTransferBlock_zero (N n : ℕ) :
           omega
       by_cases hd : Disjoint x.1 y.1
       · have hm : m = n := hdis.mpr hd
-        simp [cor34_normalizedTransferBlock, infinityBlock, hxy, hi, hd, m, hm]
+        simp [cor34_normalizedTransferBlock, infinityBlock, hxy, hd, m, hm]
       · have hm : m ≠ n := fun h => hd (hdis.mp h)
         have hmn : m < n := lt_of_le_of_ne hmle hm
         have hexp : n - m ≠ 0 := Nat.sub_ne_zero_of_lt hmn
-        simp [cor34_normalizedTransferBlock, infinityBlock, hxy, hi, hd, m, hexp]
+        simp [cor34_normalizedTransferBlock, infinityBlock, hxy, hd, m, hexp]
     · simp [cor34_normalizedTransferBlock, infinityBlock, hxy, hi]
 
 /-- Every matrix entry of the normalized family is analytic at every real ε. -/
@@ -162,7 +166,7 @@ theorem cor34_normalizedTransferBlock_symm {N n : ℕ} (ε : ℝ)
   by_cases hxy : x = y
   · subst y
     rfl
-  · have hcard : (x.1 \ y.1).card = (y.1 \ x.1).card :=
+  · have hcard :=
       Finset.card_sdiff_comm (x.2.trans y.2.symm)
     simp [cor34_normalizedTransferBlock, hxy, eq_comm, interlaced_comm, hcard]
 
@@ -181,11 +185,9 @@ private theorem cor34_normalized_power_identity {n m : ℕ} (hm : m ≤ n)
   let q : ℝ := -2 / ε
   have hεne : ε ≠ 0 := ne_of_lt hε
   have hq : q ≠ 0 := by
-    dsimp [q]
-    exact div_ne_zero (by norm_num) hεne
+    positivity
   have hqinv : q⁻¹ = -ε / 2 := by
-    dsimp [q]
-    field_simp [hεne]
+    grind
   have hbase : 2 - 2 / ε = q * (1 - ε) := by
     dsimp [q]
     field_simp [hεne]
@@ -199,12 +201,12 @@ private theorem cor34_normalized_power_identity {n m : ℕ} (hm : m ≤ n)
   calc
     (-ε / 2) ^ (n - m) * (1 - ε) ^ m =
         (q⁻¹) ^ (n - m) * (1 - ε) ^ m := by rw [hqinv]
-    _ = (q ^ (n - m))⁻¹ * (1 - ε) ^ m := by rw [← inv_pow]
+    _ = (q ^ (n - m))⁻¹ * (1 - ε) ^ m := by simp
     _ = (q ^ n)⁻¹ * (q ^ m * (1 - ε) ^ m) := by
       rw [hqpow]
       field_simp [hq]
     _ = (q ^ n)⁻¹ * (2 - 2 / ε) ^ m := by rw [← mul_pow, hbase]
-    _ = ((-2 / ε : ℝ) ^ n)⁻¹ * (2 - 2 / ε) ^ m := by rfl
+    _ = ((-2 / ε : ℝ) ^ n)⁻¹ * (2 - 2 / ε) ^ m := rfl
 
 /-- For ε < 0, the polynomial matrix is exactly the transfer block divided by
 (-2/ε)^n, that is, by (-2Δ)^n with Δ = 1/ε. -/
@@ -218,7 +220,7 @@ theorem cor34_normalizedTransferBlock_eq_scaled_transferBlock {N n : ℕ} (ε : 
   by_cases hxy : x = y
   · subst y
     have hqinv : ((-2 / ε : ℝ)⁻¹) = -ε / 2 := by
-      field_simp [ne_of_lt hε]
+      grind
     have hqpow : ((-2 / ε : ℝ) ^ n)⁻¹ = (-ε / 2) ^ n := by
       rw [← inv_pow, hqinv]
     simp [cor34_normalizedTransferBlock, Matrix.smul_apply, smul_eq_mul,
@@ -230,20 +232,17 @@ theorem cor34_normalizedTransferBlock_eq_scaled_transferBlock {N n : ℕ} (ε : 
       have hmle : m ≤ n := cor34_state_sdiff_le x y
       have hdelta : 1 / ε < 1 := by
         have hinv : 1 / ε < 0 := one_div_neg.mpr hε
-        have hone : (1 : ℝ) / ε = ε⁻¹ := by simp
-        rw [hone]
         linarith
       have hraw :
           transferBlock N (Real.sqrt (2 - 2 / ε)) n x y =
             (2 - 2 / ε) ^ m := by
-        simpa [m, div_eq_mul_inv, hxy, hval, hi] using
-          cor34_transferBlock_sqrt_entry x y hdelta
+        simpa [div_eq_mul_inv, hxy, hi] using
+                  cor34_transferBlock_sqrt_entry x y hdelta
       simp only [cor34_normalizedTransferBlock, hxy, hi, Matrix.smul_apply,
         smul_eq_mul]
       rw [hraw]
       exact cor34_normalized_power_identity hmle hε
-    · simp [cor34_normalizedTransferBlock, hxy, hval, hi, Matrix.smul_apply,
-        transferBlock_apply, transferMatrix_apply]
+    · simp [cor34_normalizedTransferBlock, hxy, hval, hi, transferBlock_apply, transferMatrix_apply]
 
 /-- Multiplication of a Hermitian matrix by a nonnegative real scales its largest spectral
 value by the same factor. -/
@@ -269,7 +268,7 @@ theorem cor34_pfRoot_normalizedTransferBlock_eq {N n : ℕ} (hn : n ≤ N)
   have hbase : 0 < (-2 / ε : ℝ) := by
     rw [show (-2 : ℝ) / ε = 2 / (-ε) by field_simp [ne_of_lt hε]]
     exact div_pos (by norm_num) (neg_pos.mpr hε)
-  have hq : 0 ≤ ((-2 / ε : ℝ) ^ n)⁻¹ :=
+  have hq :=
     (inv_pos.mpr (pow_pos hbase n)).le
   calc
     pfRoot (cor34_normalizedTransferBlock N n ε) =

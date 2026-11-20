@@ -18,74 +18,38 @@ local instance lawOuterEdgeFintype (n : ℕ) : Fintype (OuterBoxEdge n) := Finty
 local instance lawExtraFunctionsFintype (n : ℕ) :
     Fintype ((Bool × Bool → Bool) × (OuterShellEdge n → Bool)) := instFintypeProd _ _
 
-def readLiteralBonds (n : ℕ) (Ω : OuterBoxEdge n → Bool) : LiteralBond (box n) → Bool :=
-  fun b => Ω (literalBondOuterEdge n b)
-
-def restoreOuterBonds (n : ℕ) (hn : 0 < n) (ω : LiteralBond (box n) → Bool)
-    (κ : Bool × Bool → Bool) (η : OuterShellEdge n → Bool) : OuterBoxEdge n → Bool :=
-  fun e => ((outerBoxEdgeEquiv n hn).symm e).elim ω (fun b => b.elim κ η)
-
-theorem restoreOuterBonds_piece (n : ℕ) (hn : 0 < n) (ω : LiteralBond (box n) → Bool)
-    (κ : Bool × Bool → Bool) (η : OuterShellEdge n → Bool) (b : OuterEdgePiece n) :
-    restoreOuterBonds n hn ω κ η (outerEdgeFromPiece n b) = b.elim ω (fun c => c.elim κ η) := by
-  change (((outerBoxEdgeEquiv n hn).symm ((outerBoxEdgeEquiv n hn) b)).elim ω
-    (fun c => c.elim κ η)) = _
-  rw [Equiv.symm_apply_apply]
-
-def outerBondEquiv (n : ℕ) (hn : 0 < n) : (OuterBoxEdge n → Bool) ≃
-    (LiteralBond (box n) → Bool) × ((Bool × Bool → Bool) × (OuterShellEdge n → Bool)) where
-  toFun Ω := (readLiteralBonds n Ω, (fun b => Ω (cornerCutEdge n b), fun e => Ω e.val))
-  invFun z := restoreOuterBonds n hn z.1 z.2.1 z.2.2
-  left_inv Ω := by
-    funext e
-    obtain ⟨b, rfl⟩ := outerEdgeFromPiece_surjective n hn e
-    dsimp only
-    rw [restoreOuterBonds_piece]
-    cases b with
-    | inl b => rfl
-    | inr b => cases b <;> rfl
-  right_inv z := by
-    rcases z with ⟨ω, κ, η⟩
-    apply Prod.ext
-    · funext b
-      exact restoreOuterBonds_piece n hn ω κ η (.inl b)
-    · apply Prod.ext
-      · funext b
-        exact restoreOuterBonds_piece n hn ω κ η (.inr (.inl b))
-      · funext e
-        exact restoreOuterBonds_piece n hn ω κ η (.inr (.inr e))
+private def outerBondEquiv (n : ℕ) (hn : 0 < n) : (OuterBoxEdge n → Bool) ≃
+    (LiteralBond (box n) → Bool) × ((Bool × Bool → Bool) × (OuterShellEdge n → Bool)) :=
+  (Equiv.arrowCongr (outerBoxEdgeEquiv n hn).symm (Equiv.refl Bool)).trans
+    ((Equiv.sumArrowEquivProdArrow _ _ _).trans
+      ((Equiv.refl _).prodCongr (Equiv.sumArrowEquivProdArrow _ _ _)))
 
 def outerCornerClosed (n : ℕ) (Ω : OuterBoxEdge n → Bool) : Prop :=
   ∀ b : Bool × Bool, Ω (cornerCutEdge n b) = false
 
-theorem outerCornerClosed_restore_iff (n : ℕ) (hn : 0 < n)
+section
+
+variable (n : ℕ) (hn : 0 < n)
+
+private theorem outerCornerClosed_restore_iff
     (ω : LiteralBond (box n) → Bool) (κ : Bool × Bool → Bool) (η : OuterShellEdge n → Bool) :
-    outerCornerClosed n (restoreOuterBonds n hn ω κ η) ↔ κ = fun _ => false := by
-  change (∀ b, restoreOuterBonds n hn ω κ η (outerEdgeFromPiece n (.inr (.inl b))) = false) ↔ _
-  simp only [restoreOuterBonds_piece, Sum.elim_inr, Sum.elim_inl]
-  exact funext_iff.symm
+    outerCornerClosed n ((outerBondEquiv n hn).symm (ω, κ, η)) ↔ κ = fun _ => false := by
+  change (∀ b, (((outerBoxEdgeEquiv n hn).symm ((outerBoxEdgeEquiv n hn) (.inr (.inl b)))).elim ω
+    (fun c => c.elim κ η)) = false) ↔ _
+  simp [funext_iff]
 
-theorem readLiteralBonds_restore (n : ℕ) (hn : 0 < n)
-    (ω : LiteralBond (box n) → Bool) (η : OuterShellEdge n → Bool) :
-    readLiteralBonds n (restoreGhostBonds n hn ω η) = ω := by
-  funext b
-  exact restoreGhostBonds_piece n hn ω η (.inl b)
-
-theorem sum_outerCornerClosed (n : ℕ) (hn : 0 < n) (f : (OuterBoxEdge n → Bool) → ℝ) :
+theorem sum_outerCornerClosed (f : (OuterBoxEdge n → Bool) → ℝ) :
     (∑ Ω, if outerCornerClosed n Ω then f Ω else 0) =
       ∑ ω : LiteralBond (box n) → Bool, ∑ η : OuterShellEdge n → Bool,
         f (restoreGhostBonds n hn ω η) := by
   classical
   rw [← (outerBondEquiv n hn).symm.sum_comp, Fintype.sum_prod_type]
-  apply Finset.sum_congr rfl
-  intro ω _
-  rw [Fintype.sum_prod_type]
-  change (∑ κ, ∑ η, if outerCornerClosed n (restoreOuterBonds n hn ω κ η)
-    then f (restoreOuterBonds n hn ω κ η) else 0) = _
-  simp_rw [outerCornerClosed_restore_iff]
-  rw [Finset.sum_comm]
-  simp only [Finset.sum_ite_eq', Finset.mem_univ, ite_true]
+  refine Finset.sum_congr rfl fun ω _ => ?_
+  rw [Fintype.sum_prod_type, Finset.sum_comm]
+  simp_rw [outerCornerClosed_restore_iff, Finset.sum_ite_eq', Finset.mem_univ, ite_true]
   rfl
+
+end
 
 theorem bernoulliBondWeight_restoreGhost (β : ℝ) (n : ℕ) (hn : 0 < n)
     (ω : LiteralBond (box n) → Bool) (η : OuterShellEdge n → Bool) :
@@ -103,13 +67,7 @@ theorem bernoulliBondWeight_restoreGhost (β : ℝ) (n : ℕ) (hn : 0 < n)
     Finset.prod_const, Finset.card_univ, Fintype.card_prod, Fintype.card_bool]
   norm_num only [Nat.reduceMul]
   rw [← mul_assoc]
-  apply congrArg₂ (fun (a : ℝ) (c : ℝ) => a * Real.exp (-β) ^ 4 * c)
-  · apply Finset.prod_congr
-    · ext b; simp
-    · intro b _; rfl
-  · apply Finset.prod_congr
-    · ext b; simp
-    · intro b _; rfl
+  rfl
 
 theorem sum_bernoulliBondWeight {E : Type*} [Fintype E] (β : ℝ) :
     ∑ ω : E → Bool, bernoulliBondWeight β ω = 1 := by
@@ -149,57 +107,23 @@ theorem outer_weight_restoreGhost (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 <
         (bernoulliBondWeight β ω * (q : ℝ) ^ ghostComponentCount (box n) ω) := by ring
     _ = _ := by rw [← hg]; ring
 
-/-- Integrating the free shell bonds gives the exact unnormalised ghost law. -/
+/-- Integrating out the shell bonds multiplies the ghost weights by one constant. -/
 theorem sum_outerCornerClosed_weight_test (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
-    (n : ℕ) (hn : 0 < n) (f : (LiteralBond (box n) → Bool) → ℝ) :
+    (n : ℕ) (hn : 0 < n) (f : (OuterBoxEdge n → Bool) → ℝ) (g : (LiteralBond (box n) → Bool) → ℝ)
+    (hfg : ∀ ω η, f (restoreGhostBonds n hn ω η) = g ω) :
     (∑ Ω, if outerCornerClosed n Ω then
       FK.weight _ (fkParameters q hq β hβ) (outerBoxWiring n)
-        (FK.boolConfigurationEquiv _ Ω) * f (readLiteralBonds n Ω) else 0) =
-      ((q : ℝ) * Real.exp (-β) ^ 4) * ∑ ω, ghostRCWeight q (box n) β ω * f ω := by
-  rw [sum_outerCornerClosed n hn]
-  simp_rw [outer_weight_restoreGhost, readLiteralBonds_restore]
-  rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro ω _
-  calc
-    _ = ∑ η : OuterShellEdge n → Bool,
-        (((q : ℝ) * Real.exp (-β) ^ 4) * (ghostRCWeight q (box n) β ω * f ω)) *
-          bernoulliBondWeight β η := by
-      apply Finset.sum_congr rfl
-      intro η _
-      ring
-    _ = _ := by
-      rw [← Finset.mul_sum]
-      have hs : (∑ η : OuterShellEdge n → Bool, bernoulliBondWeight β η) = 1 := by
-        calc
-          _ = _ := Finset.sum_congr (by ext η; simp) (fun _ _ => rfl)
-          _ = 1 := sum_bernoulliBondWeight (E := OuterShellEdge n) β
-      rw [hs, mul_one]
-
-/-- The literal ghost expectation is the outer wired weight conditioned on the
-four corner edges being closed. This identity includes the ghost bonds themselves. -/
-theorem ghost_expectation_eq_conditioned_outer_weight
-    (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) (n : ℕ) (hn : 0 < n)
-    (f : (LiteralBond (box n) → Bool) → ℝ) :
-    (∑ Ω, if outerCornerClosed n Ω then
-      FK.weight _ (fkParameters q hq β hβ) (outerBoxWiring n)
-        (FK.boolConfigurationEquiv _ Ω) * f (readLiteralBonds n Ω) else 0) /
-    (∑ Ω, if outerCornerClosed n Ω then
-      FK.weight _ (fkParameters q hq β hβ) (outerBoxWiring n)
-        (FK.boolConfigurationEquiv _ Ω) else 0) =
-      ∑ ω, ghostRCProbability q (box n) β ω * f ω := by
-  have hd := sum_outerCornerClosed_weight_test q hq β hβ n hn (fun _ => 1)
-  simp only [mul_one] at hd
-  rw [sum_outerCornerClosed_weight_test q hq β hβ n hn f, hd]
-  have hc : (q : ℝ) * Real.exp (-β) ^ 4 ≠ 0 :=
-    mul_ne_zero (by exact_mod_cast (show q ≠ 0 by omega)) (pow_ne_zero _ (Real.exp_ne_zero _))
-  rw [mul_div_mul_left _ _ hc]
-  unfold ghostRCProbability ghostRCPartition
-  simp_rw [div_mul_eq_mul_div]
-  rw [← Finset.sum_div]
-  apply congrArg₂ (fun (a : ℝ) (b : ℝ) => a / b)
-  · exact Finset.sum_congr (by ext ω; simp) (fun _ _ => rfl)
-  · exact Finset.sum_congr (by ext ω; simp) (fun _ _ => rfl)
+        (FK.boolConfigurationEquiv _ Ω) * f Ω else 0) =
+      ((q : ℝ) * Real.exp (-β) ^ 4) * ∑ ω, ghostRCWeight q (box n) β ω * g ω := by
+  rw [sum_outerCornerClosed n hn, Finset.mul_sum]
+  simp_rw [outer_weight_restoreGhost, hfg]
+  refine Finset.sum_congr rfl fun ω _ => ?_
+  simp_rw [mul_right_comm (_ * ghostRCWeight q (box n) β ω) _ (g ω)]
+  rw [← Finset.mul_sum]
+  have hs : (∑ η : OuterShellEdge n → Bool, bernoulliBondWeight β η) = 1 :=
+    (Finset.sum_congr (by ext η; simp) (fun _ _ => rfl)).trans (sum_bernoulliBondWeight β)
+  rw [hs, mul_one]
+  ring
 
 theorem outerCornerClosed_iff_mem (n : ℕ) (Ω : OuterBoxEdge n → Bool) :
     outerCornerClosed n Ω ↔ FK.boolConfigurationEquiv _ Ω ∈ cornerClosureEvent n := by
@@ -218,54 +142,7 @@ theorem outerCornerClosed_iff_mem (n : ℕ) (Ω : OuterBoxEdge n → Bool) :
       intro ht
       exact h (Finset.mem_image.mpr ⟨b, Finset.mem_univ _, rfl⟩)
         ((FK.mem_boolConfigurationEquiv _ Ω _).mpr ht)
-    cases hb : Ω (cornerCutEdge n b) <;> simp_all
-
-private theorem conditional_ratio_div {E : Type*} [Fintype E]
-    (w f : E → ℝ) (B : E → Prop) (Z : ℝ) (hZ : Z ≠ 0) :
-    (∑ e, if B e then w e / Z * f e else 0) /
-      (∑ e, if B e then w e / Z else 0) =
-    (∑ e, if B e then w e * f e else 0) /
-      (∑ e, if B e then w e else 0) := by
-  classical
-  have hnum : (∑ e, if B e then w e / Z * f e else 0) =
-      (∑ e, if B e then w e * f e else 0) / Z := by
-    rw [Finset.sum_div]
-    apply Finset.sum_congr rfl
-    intro e _
-    by_cases h : B e <;> simp [h, div_mul_eq_mul_div]
-  have hden : (∑ e, if B e then w e / Z else 0) =
-      (∑ e, if B e then w e else 0) / Z := by
-    rw [Finset.sum_div]
-    apply Finset.sum_congr rfl
-    intro e _
-    by_cases h : B e <;> simp [h]
-  rw [hnum, hden, div_div_div_cancel_right₀ hZ]
-
-/-- Exact conditional expectation under the normalized, frozen wired RC law.
-For observables depending only on internal bonds this is the requested edge marginal. -/
-theorem ghost_expectation_eq_conditioned_wired_box
-    (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) (n : ℕ) (hn : 0 < n)
-    (f : (LiteralBond (box n) → Bool) → ℝ) :
-    (∑ Ω, if outerCornerClosed n Ω then
-      rcProb (box (n + 1)) (fkParameters q hq β hβ).toP
-        (fkParameters q hq β hβ).toQ 1 Ω * f (readLiteralBonds n Ω) else 0) /
-    (∑ Ω, if outerCornerClosed n Ω then
-      rcProb (box (n + 1)) (fkParameters q hq β hβ).toP
-        (fkParameters q hq β hβ).toQ 1 Ω else 0) =
-      ∑ ω, ghostRCProbability q (box n) β ω * f ω := by
-  have hp (Ω : OuterBoxEdge n → Bool) :
-      rcProb (box (n + 1)) (fkParameters q hq β hβ).toP
-        (fkParameters q hq β hβ).toQ 1 Ω =
-      FK.weight _ (fkParameters q hq β hβ) (outerBoxWiring n)
-        (FK.boolConfigurationEquiv _ Ω) /
-      FK.partitionFunction (squareLattice.induce (box (n + 1) : Set (ℤ × ℤ)))
-        (fkParameters q hq β hβ) (outerBoxWiring n) := by
-    rw [← FK.configurationProbability_eq_rcProb]
-    rfl
-  simp_rw [hp]
-  rw [conditional_ratio_div _ _ _ _ (FK.partitionFunction_pos (squareLattice.induce (box (n + 1) : Set (ℤ × ℤ)))
-    (fkParameters q hq β hβ) (outerBoxWiring n)).ne']
-  exact ghost_expectation_eq_conditioned_outer_weight q hq β hβ n hn f
+    grind
 
 end
 end PottsDiscontinuity.Potts

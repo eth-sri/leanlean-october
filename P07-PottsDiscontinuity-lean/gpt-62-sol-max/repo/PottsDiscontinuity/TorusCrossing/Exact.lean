@@ -37,41 +37,42 @@ def leftCorr (x0 y0 : ℤ) (f : Cell → ZMod 2) (j : ℤ) : ZMod 2 :=
 def leftPotential (x0 y0 : ℤ) (f : Cell → ZMod 2) (z : Cell) : ZMod 2 :=
   rowSum x0 f z.2 z.1 + leftCorr x0 y0 f z.2
 
-theorem rowSum_succ (x0 : ℤ) (f : Cell → ZMod 2) (j i : ℤ) (h : x0 ≤ i) :
+section
+
+variable (x0 : ℤ) (f : Cell → ZMod 2)
+
+theorem rowSum_succ (j i : ℤ) (h : x0 ≤ i) :
     rowSum x0 f j (i + 1) = rowSum x0 f j i + f (i + 1, j) := by
   unfold rowSum
   rw [show Finset.Icc (x0 + 1) (i + 1) = insert (i + 1) (Finset.Icc (x0 + 1) i) by
-    ext a; simp only [Finset.mem_Icc, Finset.mem_insert]; omega]
+    grind]
   rw [Finset.sum_insert (by simp)]
   ring
 
-theorem rowSum_of_le (x0 : ℤ) (f : Cell → ZMod 2) (j i : ℤ) (h : i ≤ x0) :
+theorem rowSum_of_le (j i : ℤ) (h : i ≤ x0) :
     rowSum x0 f j i = 0 := by
   unfold rowSum
-  rw [Finset.Icc_eq_empty (by omega)]
-  simp
+  simp_all
 
 /-- The two-step recursion for the sum of two consecutive row sums. -/
-theorem rowSum_pair_step (x0 : ℤ) (f : Cell → ZMod 2) (b X : ℤ) (hX : x0 ≤ X - 2) :
+theorem rowSum_pair_step (b X : ℤ) (hX : x0 ≤ X - 2) :
     rowSum x0 f b X + rowSum x0 f (b - 1) X =
       rowSum x0 f b (X - 2) + rowSum x0 f (b - 1) (X - 2) + cdeg f (X - 1, b - 1) := by
   have h1 : rowSum x0 f b X = rowSum x0 f b (X - 2) + f (X - 1, b) + f (X, b) := by
     have := rowSum_succ x0 f b (X - 2) hX
     have h2 := rowSum_succ x0 f b (X - 1) (by omega)
-    rw [show X - 2 + 1 = X - 1 by ring] at this
-    rw [show X - 1 + 1 = X by ring] at h2
-    rw [h2, this]
+    grind
   have h2 : rowSum x0 f (b - 1) X =
       rowSum x0 f (b - 1) (X - 2) + f (X - 1, b - 1) + f (X, b - 1) := by
     have := rowSum_succ x0 f (b - 1) (X - 2) hX
     have h2 := rowSum_succ x0 f (b - 1) (X - 1) (by omega)
-    rw [show X - 2 + 1 = X - 1 by ring] at this
-    rw [show X - 1 + 1 = X by ring] at h2
-    rw [h2, this]
+    grind
   rw [h1, h2]
   unfold cdeg
   rw [show X - 1 + 1 = X by ring, show b - 1 + 1 = b by ring]
   ring
+
+end
 
 /-- Core identity: with left defects absorbed, consecutive row sums add up to the defect of the
 left line. -/
@@ -98,7 +99,7 @@ theorem rowSum_pair (x0 : ℤ) (w : ℤ) (f : Cell → ZMod 2)
         simp
       · -- n = 1
         have hprim : IsPrimal (x0, b - 1) := by
-          unfold IsPrimal; dsimp only; push_cast at hpar; omega
+          unfold IsPrimal; dsimp only; omega
         unfold leftDefect; simp only [hprim, ite_true]
         unfold cdeg
         have e1 : rowSum x0 f b (x0 + ((1 : ℕ) : ℤ)) = f (x0 + 1, b) := by
@@ -107,19 +108,17 @@ theorem rowSum_pair (x0 : ℤ) (w : ℤ) (f : Cell → ZMod 2)
         have e2 : rowSum x0 f (b - 1) (x0 + ((1 : ℕ) : ℤ)) = f (x0 + 1, b - 1) := by
           push_cast
           rw [rowSum_succ x0 f (b - 1) x0 le_rfl, rowSum_of_le x0 f (b - 1) x0 le_rfl]; simp
-        rw [e1, e2, hx0 (x0, b - 1) (by dsimp only; omega), hx0 (x0, b - 1 + 1) (by dsimp only; omega)]
-        simp only [zero_add]
+        rw [e1, e2, hx0 (x0, b - 1) (by rfl), hx0 (x0, b - 1 + 1) (by rfl)]
         ring_nf
     · -- n ≥ 2
       obtain ⟨k, rfl⟩ : ∃ k : ℕ, n = k + 2 := ⟨n - 2, by omega⟩
       have hprim : IsPrimal (x0 + ((k + 2 : ℕ) : ℤ) - 1, b - 1) := by
-        unfold IsPrimal; dsimp only; push_cast at hpar ⊢; omega
+        unfold IsPrimal; dsimp only; omega
       have hstep := rowSum_pair_step x0 f b (x0 + ((k + 2 : ℕ) : ℤ)) (by push_cast; omega)
-      have hih := ih k (by omega) (by push_cast at hn ⊢; omega) (by push_cast at hpar ⊢; omega)
+      have hih := ih k (by omega) (by omega) (by omega)
       have hd := hdeg (x0 + ((k + 2 : ℕ) : ℤ) - 1, b - 1) hprim (by push_cast; omega)
-        (by push_cast at hn ⊢; omega)
-      rw [hstep, hd, add_zero]
-      rw [show x0 + ((k + 2 : ℕ) : ℤ) - 2 = x0 + (k : ℤ) by push_cast; ring]
+        (by omega)
+      rw [hstep, hd, add_zero, show x0 + ((k + 2 : ℕ) : ℤ) - 2 = x0 + (k : ℤ) by push_cast; ring]
       exact hih
 
 
@@ -138,23 +137,12 @@ theorem leftCorr_succ (x0 y0 : ℤ) (f : Cell → ZMod 2)
   by_cases h : y0 ≤ b - 1
   · unfold leftCorr
     rw [show Finset.Ico y0 b = insert (b - 1) (Finset.Ico y0 (b - 1)) by
-      ext a; simp only [Finset.mem_Ico, Finset.mem_insert]; omega,
+      ext a; simp_all,
       Finset.sum_insert (by simp)]
-    have two : ∀ z : ZMod 2, z + z = 0 := fun z => by fin_cases z <;> decide
-    generalize ∑ k ∈ Finset.Ico y0 (b - 1), leftDefect x0 f k = S
-    generalize leftDefect x0 f (b - 1) = d
-    calc d + S + S = d + (S + S) := by ring
-      _ = d := by rw [two S, add_zero]
+    grind
   · unfold leftCorr
     rw [Finset.Ico_eq_empty (by omega), Finset.Ico_eq_empty (by omega)]
-    have hd : leftDefect x0 f (b - 1) = 0 := by
-      unfold leftDefect cdeg
-      split_ifs
-      · rw [hy0 (x0, b - 1) (by dsimp only; omega), hy0 (x0 + 1, b - 1) (by dsimp only; omega),
-          hy0 (x0, b - 1 + 1) (by dsimp only; omega), hy0 (x0 + 1, b - 1 + 1) (by dsimp only; omega)]
-        simp
-      · rfl
-    rw [hd]; simp
+    grind [leftDefect, cdeg]
 
 /-- **Planar Poincare lemma** (relative to the left line).  If the cochain `f` vanishes on and
 to the left of the line `x0`, on and below the row `y0`, and has vanishing degree at every
@@ -215,18 +203,16 @@ theorem rowSum_full_zero (x0 y0 w : ℤ) (f : Cell → ZMod 2)
       rwa [hld] at this
     · have := rowSum_pair' x0 (w + 1) f hx0 hdeg' b (x0 + w + 1) (by omega) (by omega) (by omega)
       rw [hld, rowSum_succ x0 f b (x0 + w) (by omega), rowSum_succ x0 f (b - 1) (x0 + w) (by omega),
-        hxw (x0 + w + 1, b) (by dsimp only; omega), hxw (x0 + w + 1, b - 1) (by dsimp only; omega)]
+        hxw (x0 + w + 1, b) (by simp), hxw (x0 + w + 1, b - 1) (by simp)]
         at this
       simpa using this
-  have two : ∀ z : ZMod 2, z + z = 0 := fun z => by fin_cases z <;> decide
-  -- induction upward from the row y0
   have hup : ∀ n : ℕ, rowSum x0 f (y0 + n) (x0 + w) = 0 := by
     intro n
     induction n with
     | zero =>
       unfold rowSum
       apply Finset.sum_eq_zero
-      intro a _; exact hy0 _ (by dsimp only; omega)
+      intro a _; exact hy0 _ (by simp)
     | succ n ih =>
       have := hpair (y0 + ((n + 1 : ℕ) : ℤ))
       rw [show y0 + ((n + 1 : ℕ) : ℤ) - 1 = y0 + (n : ℤ) by push_cast; ring, ih, add_zero] at this
@@ -258,7 +244,7 @@ theorem leftPotential_zero_of_closed (x0 y0 w : ℤ) (f : Cell → ZMod 2)
   · exact rowSum_of_le x0 f _ _ hz
   · have h0 := rowSum_full_zero x0 y0 w f hx0 hxw hy0 hclosed hw z.2
     by_cases hzw : z.1 = x0 + w
-    · rw [hzw]; exact h0
+    · simpa [hzw] using h0
     · have : z.1 = x0 + w + (z.1 - (x0 + w)) := by ring
       -- extend by zeros beyond the strip
       unfold rowSum at h0 ⊢

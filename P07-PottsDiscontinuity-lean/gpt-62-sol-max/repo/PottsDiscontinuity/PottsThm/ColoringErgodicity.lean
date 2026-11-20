@@ -12,9 +12,28 @@ open PottsDiscontinuity.RCInfinite
 
 noncomputable section
 
+def spinShift {C : Type*} (a : Vertex) (σ : Vertex → C) (x : Vertex) : C := σ (x - a)
+
+def IsTranslationMixing {C : Type*} [MeasurableSpace C] (μ : Measure (Vertex → C)) : Prop :=
+  (∀ a, MeasurePreserving (spinShift a) μ μ) ∧
+    ∀ A B, MeasurableSet A → MeasurableSet B → MixingLimit μ spinShift cofinite A B
+
+theorem IsTranslationMixing.ergodic {C : Type*} [MeasurableSpace C] {μ : Measure (Vertex → C)}
+    [IsProbabilityMeasure μ] (hm : IsTranslationMixing μ) :
+    PottsDiscontinuity.IsTranslationErgodic μ := by
+  have hs (a : Vertex) : spinShift (-a) = (fun σ : Vertex → C => fun x => σ (x + a)) := by
+    funext σ x
+    change σ (x - -a) = σ (x + a)
+    simp
+  refine ⟨fun a => hs a ▸ (hm.1 (-a)).map_eq, ?_⟩
+  intro A hA hInv
+  refine zero_or_compl_zero_of_mixing μ hA (hm.2 A A hA hA) fun a => ?_
+  rw [← neg_neg a, hs]
+  exact hInv (-a)
+
 /-- A measurable equivariant factor of the product of two mixing lattice
-actions is translation ergodic. -/
-theorem mixingProduct_factor_translationErgodic {C : Type*} [MeasurableSpace C]
+actions inherits mixing. -/
+theorem mixingProduct_factor {C : Type*} [MeasurableSpace C]
     {μ : Measure LatticeConfiguration} {ν : Measure (Vertex → C)}
     [IsProbabilityMeasure μ] [IsProbabilityMeasure ν]
     (T : Vertex → LatticeConfiguration → LatticeConfiguration)
@@ -30,49 +49,29 @@ theorem mixingProduct_factor_translationErgodic {C : Type*} [MeasurableSpace C]
     (F : LatticeConfiguration × (Vertex → C) → Vertex → C)
     (hF : Measurable F)
     (hFshift : ∀ a z x, F (productShift T S a z) x = F z (x - a)) :
-    PottsDiscontinuity.IsTranslationErgodic
-      ((μ.prod ν).map F) := by
+    IsTranslationMixing ((μ.prod ν).map F) := by
   classical
-  let Q : Vertex → LatticeConfiguration × (Vertex → C) →
-      LatticeConfiguration × (Vertex → C) := productShift T S
-  have hQmeas (a : Vertex) : Measurable (Q a) := by
-    dsimp [Q, productShift]
-    exact ((hTpres a).measurable.comp measurable_fst).prodMk
-      ((hSpres a).measurable.comp measurable_snd)
-  have hQpres (a : Vertex) : MeasurePreserving (Q a) (μ.prod ν) (μ.prod ν) := by
-    change MeasurePreserving (Prod.map (T a) (S a)) (μ.prod ν) (μ.prod ν)
-    exact (hTpres a).prod (hSpres a)
-  have hτmeas (a : Vertex) : Measurable (fun σ : Vertex → C => fun x => σ (x + a)) :=
-    measurable_pi_iff.mpr fun x => measurable_pi_apply (x + a)
+  let Q := productShift T S
+  have hQpres (a : Vertex) : MeasurePreserving (Q a) (μ.prod ν) (μ.prod ν) :=
+    (hTpres a).prod (hSpres a)
+  have hs (a : Vertex) : Measurable (spinShift a : (Vertex → C) → Vertex → C) :=
+    measurable_pi_iff.mpr fun x => measurable_pi_apply (x - a)
+  have hc (a : Vertex) : spinShift a ∘ F = F ∘ Q a := by
+    funext z x
+    exact (hFshift a z x).symm
   constructor
   · intro a
-    rw [Measure.map_map (hτmeas a) hF]
-    have hcomp : (fun σ : Vertex → C => fun x => σ (x + a)) ∘ F = F ∘ Q (-a) := by
-      funext z x
-      simpa [Function.comp_apply, sub_neg_eq_add] using (hFshift (-a) z x).symm
-    rw [hcomp, ← Measure.map_map hF (hQmeas (-a)), (hQpres (-a)).map_eq]
-  · intro A hA hAinv
-    let E : Set (LatticeConfiguration × (Vertex → C)) := F ⁻¹' A
-    have hE : MeasurableSet E := hF hA
-    have hEinv : ∀ a, (Q a) ⁻¹' E = E := by
-      intro a
-      ext z
-      change F (Q a z) ∈ A ↔ F z ∈ A
-      have hspin : F (Q a z) = fun x => F z (x - a) := funext (hFshift a z)
-      rw [hspin]
-      have hinv := Set.ext_iff.mp (hAinv (-a)) (F z)
-      have hshiftEq : (fun x => F z (x - a)) = (fun x => F z (x + -a)) := by
-        funext x
-        simp [sub_eq_add_neg]
-      rw [hshiftEq]
-      exact hinv
-    rcases mixingProduct_invariant_event μ ν T S hTpres hSpres hTmix hSmix hE hEinv with h | h
-    · left
-      rw [Measure.map_apply hF hA]
-      exact h
-    · right
-      rw [Measure.map_apply hF hA.compl]
-      simpa only [E, Set.preimage_compl] using h
+    refine ⟨hs a, ?_⟩
+    rw [Measure.map_map (hs a) hF, hc, ← Measure.map_map hF (hQpres a).measurable, (hQpres a).map_eq]
+  · intro A B hA hB
+    have hp (a : Vertex) : F ⁻¹' (A ∩ spinShift a ⁻¹' B) = F ⁻¹' A ∩ Q a ⁻¹' (F ⁻¹' B) := by
+      simp [Set.preimage_inter, ← Set.preimage_comp, hc]
+    have hr (D : Set (Vertex → C)) (hD : MeasurableSet D) :
+        ((μ.prod ν).map F).real D = (μ.prod ν).real (F ⁻¹' D) := by
+      simp [Measure.real_def, Measure.map_apply hF hD]
+    unfold MixingLimit
+    simp_rw [hr A hA, hr B hB, fun a => hr _ (hA.inter ((hs a) hB)), hp]
+    exact mixingProduct μ ν T S hTpres hSpres hTmix hSmix (hF hA) (hF hB)
 
 end
 end PottsDiscontinuity.PottsThm

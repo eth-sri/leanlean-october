@@ -45,7 +45,7 @@ theorem componentSetoid_mono (ξ : BoundaryCondition V) {A B : Configuration G}
 theorem componentCount_antitone [Finite V] (ξ : BoundaryCondition V)
     {A B : Configuration G} (hAB : A ⊆ B) :
     componentCount G ξ B ≤ componentCount G ξ A := by
-  let f : Quotient (componentSetoid G ξ A) → Quotient (componentSetoid G ξ B) :=
+  let f :=
     Setoid.map_of_le (componentSetoid_mono ξ hAB)
   have hf : Function.Surjective f := by
     intro q
@@ -87,7 +87,7 @@ theorem componentSetoid_insert_eq_of_related (ξ : BoundaryCondition V)
       · apply actualConnected_component G ξ A
         apply actualConnected_of_adj
         rw [openGraph_adj]
-        exact ⟨e, he, hexy⟩
+        tauto
     · intro x y hxy
       exact boundary_component G ξ A hxy
   · exact componentSetoid_mono ξ (Finset.subset_insert _ _)
@@ -97,7 +97,7 @@ theorem componentCount_insert_eq_of_related [Finite V] (ξ : BoundaryCondition V
     (hrelated : (componentSetoid G ξ A).r u v) :
     componentCount G ξ (insert ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ A) =
       componentCount G ξ A := by
-  rw [componentCount, componentCount, componentSetoid_insert_eq_of_related ξ A huv hrelated]
+  simp [componentCount, componentSetoid_insert_eq_of_related ξ A huv hrelated]
 
 /-- Boundary identification alone suffices for insertion invariance. -/
 theorem componentSetoid_insert_eq_of_boundary (ξ : BoundaryCondition V)

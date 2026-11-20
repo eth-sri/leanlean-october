@@ -37,8 +37,7 @@ theorem exponential_bound_of_pos_logarithmic_rate
       Real.one_le_exp_iff.2 (mul_nonneg hc.le (Nat.cast_nonneg _))
     calc
       f n ≤ Real.exp (-c * (n : ℝ)) := Real.le_exp_of_log_le hlog
-      _ ≤ Real.exp (c * (N : ℝ)) * Real.exp (-c * (n : ℝ)) := by
-        exact le_mul_of_one_le_left (Real.exp_nonneg _) hC
+      _ ≤ Real.exp (c * (N : ℝ)) * Real.exp (-c * (n : ℝ)) := le_mul_of_one_le_left (Real.exp_nonneg _) hC
   · have hnN : (n : ℝ) ≤ (N : ℝ) := by exact_mod_cast (Nat.le_of_lt (lt_of_not_ge hn))
     calc
       f n ≤ 1 := hf n
@@ -57,7 +56,7 @@ theorem diagonal_exponential_bound_of_pos_rate
       μ.real (connectionEvent 0 (diagonalSite n)) ≤ C * Real.exp (-c * (n : ℝ)) := by
   obtain ⟨C, hC, hbound⟩ := exponential_bound_of_pos_logarithmic_rate
     (fun n => μ.real (connectionEvent 0 (diagonalSite n)))
-    (fun _ => measureReal_le_one) L (L / 2) (by positivity) (by linarith only [hL]) hrate
+    (fun _ => measureReal_le_one) L (L / 2) (by positivity) (by simp_all) hrate
   exact ⟨C, L / 2, hC, by positivity, hbound⟩
 
 end PottsDiscontinuity.Duality

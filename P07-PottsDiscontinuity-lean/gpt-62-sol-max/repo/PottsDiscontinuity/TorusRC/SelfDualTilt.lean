@@ -26,7 +26,7 @@ theorem torusRCTiltWeight_eq_standard_div_net (hN : Even N) (hM : Even M)
       torusRCWeight hN hM q A / q.val ^ rcNetIndicator hN hM A := by
   have hq : q.val = (Real.sqrt q.val) ^ 2 := by
     rw [Real.sq_sqrt]
-    exact le_trans (by norm_num) q.property
+    grind
   have hpow : q.val ^ rcNetIndicator hN hM A =
       Real.sqrt q.val ^ (2 * rcNetIndicator hN hM A) := by
     calc
@@ -38,8 +38,7 @@ theorem torusRCTiltWeight_eq_standard_div_net (hN : Even N) (hM : Even M)
     Real.sqrt_pos.2 (lt_of_lt_of_le zero_lt_one q.property)
   have hden : Real.sqrt q.val ^ (2 * rcNetIndicator hN hM A) ≠ 0 :=
     pow_ne_zero _ hroot.ne'
-  rw [torusRCTiltWeight, torusRCWeight_eq_loopWeight hN hM q A, hpow]
-  rw [pow_add]
+  rw [torusRCTiltWeight, torusRCWeight_eq_loopWeight hN hM q A, hpow, pow_add]
   field_simp [hden]
 
 /-- The tilted weight is invariant under the translated complementary duality. -/

@@ -51,10 +51,8 @@ theorem log_sqrt_diagonal_rate (D : ℕ → ℝ) (hD : ∀ n, 0 ≤ D n) (ξ : �
   filter_upwards [] with m
   simp only [Function.comp_apply]
   rw [Real.log_sqrt (hD _)]
-  have hm : 0 < positiveEvenPeriod m := positiveEvenPeriod_pos m
+  have hm := positiveEvenPeriod_pos m
   have hi : 0 < 2*(positiveEvenPeriod m-1) := by dsimp [positiveEvenPeriod]; omega
-  have hmn : (positiveEvenPeriod m : ℝ) ≠ 0 := by positivity
-  have hin : ((2*(positiveEvenPeriod m-1) : ℕ) : ℝ) ≠ 0 := by positivity
   field_simp
 
 /-- A width-dependent finite prefactor has no effect on the height-normalized
@@ -73,7 +71,7 @@ theorem log_tail_limsup_le (D p : ℕ → ℝ) (hD : ∀ n, 0 < D n)
     (tendsto_const_div_atTop_nhds_zero_nat (Real.log K)).comp positiveEvenPeriod_tendsto
   have hF : Tendsto F atTop (𝓝 (-((s : ℝ))*ξ)) := by
     have h := hconst.add ((log_sqrt_diagonal_rate D (fun n => (hD n).le) ξ hRate).const_mul (s : ℝ))
-    simpa only [zero_add,mul_neg,neg_mul] using h
+    simpa using h
   have hle : ∀ᶠ m in atTop,
       ((Real.log (p m)/(positiveEvenPeriod m : ℝ) : ℝ) : EReal) ≤ (F m : EReal) := by
     filter_upwards [hp] with m hm
@@ -82,8 +80,8 @@ theorem log_tail_limsup_le (D p : ℕ → ℝ) (hD : ∀ n, 0 < D n)
     have hlog := Real.log_le_log hm.1 hm.2
     rw [Real.log_mul hK.ne' (pow_pos hsqrt s).ne',Real.log_pow] at hlog
     have hdiv := div_le_div_of_nonneg_right hlog (Nat.cast_nonneg (positiveEvenPeriod m))
-    simpa only [F,add_div,mul_div_assoc] using hdiv
-  have hFE : Tendsto (fun m => (F m : EReal)) atTop (𝓝 ((-((s : ℝ))*ξ : ℝ) : EReal)) :=
+    simpa [add_div, mul_div_assoc] using hdiv
+  have hFE :=
     EReal.tendsto_coe.mpr hF
   rw [← hFE.limsup_eq]
   exact limsup_le_limsup hle

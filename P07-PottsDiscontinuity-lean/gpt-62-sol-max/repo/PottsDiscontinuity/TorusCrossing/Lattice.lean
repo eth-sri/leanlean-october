@@ -78,11 +78,11 @@ theorem mem_dualEnds_iff (z m : Cell) (hz : ¬ IsPrimal z) :
 theorem primalEnds_inj {m m' : Cell}
     (h : primalEnds m = primalEnds m' ∨ primalEnds m = (primalEnds m').swap) : m = m' := by
   unfold primalEnds at h
-  split_ifs at h <;> simp only [Prod.swap, Prod.ext_iff] at h <;> (rw [Prod.ext_iff]; omega)
+  split_ifs at h <;> simp only [Prod.swap, Prod.ext_iff] at h <;> grind
 
 theorem dualEnds_inj {m m' : Cell}
     (h : dualEnds m = dualEnds m' ∨ dualEnds m = (dualEnds m').swap) : m = m' := by
   unfold dualEnds at h
-  split_ifs at h <;> simp only [Prod.swap, Prod.ext_iff] at h <;> (rw [Prod.ext_iff]; omega)
+  split_ifs at h <;> simp only [Prod.swap, Prod.ext_iff] at h <;> grind
 
 end PottsDiscontinuity.TorusCrossing

@@ -75,15 +75,13 @@ theorem wiredBoxProbabilityMeasure_allOpen_antitone (θ : Parameters)
         (LatticeConfiguration.allOpen F) := by
   classical
   let f := boxVertexEmbedding hbox
-  have hGH : (boxGraph c r).map f ≤ boxGraph d s := boxGraph_map_boxVertexEmbedding hbox
+  have hGH := boxGraph_map_boxVertexEmbedding hbox
   have hcmp := embeddedConfigurationRestriction_preimage_measure_le_wired_of_closedInterior
     f hGH θ (BoundaryCondition.wired (boxVertexBoundary d s)) (boxVertexBoundary c r)
     (fun _ hx _ hxy => boxInterior_neighbor_closed hbox hx hxy)
     (fun _ hx => boxInterior_avoids_outerBoundary hbox hx)
     (wiredBoxCylinderEvent c r F) (wiredBoxCylinderEvent_upper c r F)
-  have hsub : wiredBoxCylinderEvent d s F ⊆
-      {A | embeddedConfigurationRestriction (boxGraph c r) (boxGraph d s)
-        f hGH A ∈ wiredBoxCylinderEvent c r F} :=
+  have hsub :=
     fun A hA => wiredBoxCylinderEvent_restrict_of_large hbox hGH F A hA
   rw [wiredBoxProbabilityMeasure_allOpen, wiredBoxProbabilityMeasure_allOpen]
   apply (ENNReal.toReal_le_toReal (measure_ne_top _ _) (measure_ne_top _ _)).mp

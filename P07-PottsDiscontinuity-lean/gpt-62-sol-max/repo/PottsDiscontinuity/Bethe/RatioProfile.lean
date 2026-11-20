@@ -40,16 +40,14 @@ theorem ratio_numerator_pos {c : ℝ} (hc : 2 < c) (x : ℝ) :
 theorem ratio_one_sub_cos_lower {x : ℝ} (hx : x ∈ Icc (-Real.pi) Real.pi) :
     2 * x ^ 2 / Real.pi ^ 2 ≤ 1 - Real.cos x := by
   have hxhalf : |x / 2| ≤ Real.pi / 2 := by
-    rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-    have := abs_le.mpr ⟨by linarith [hx.1], hx.2⟩
-    linarith
+    grind
   have hj := Real.mul_abs_le_abs_sin hxhalf
   have hsq := (sq_le_sq₀ (by positivity) (abs_nonneg _)).mpr hj
-  have habs : |x / 2| = |x| / 2 := by rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
+  have habs : |x / 2| = |x| / 2 := by simp [abs_div]
   rw [habs, mul_pow, div_pow, sq_abs] at hsq
   have hsin := Real.sin_sq_eq_half_sub (x / 2)
   rw [show 2 * (x / 2) = x by ring] at hsin
-  have hpi : 0 < Real.pi ^ 2 := sq_pos_of_pos Real.pi_pos
+  have hpi := sq_pos_of_pos Real.pi_pos
   field_simp at hsq
   rw [sq_abs, hsin] at hsq
   apply (div_le_iff₀ hpi).mpr
@@ -62,7 +60,7 @@ theorem ratio_one_sub_cos_pos {x : ℝ} (hx : x ∈ Icc (-Real.pi) Real.pi) (hx0
 
 theorem ratio_normSq_M {c x : ℝ} (hx : z x ≠ 1) :
     Complex.normSq (M c (z x)) = ratioNumerator c x / (2 * (1 - Real.cos x)) := by
-  have hden : 1 - z x ≠ 0 := sub_ne_zero.mpr (Ne.symm hx)
+  have hden := sub_ne_zero.mpr (Ne.symm hx)
   have hM : M c (z x) = (1 - (c : ℂ) ^ 2 - z x) / (1 - z x) := by
     unfold M
     field_simp
@@ -75,7 +73,7 @@ theorem ratio_normSq_M {c x : ℝ} (hx : z x ≠ 1) :
     one_re, one_im, ofReal_re, ofReal_im, pow_two, I_re, I_im, mul_zero, zero_mul,
     mul_one, zero_add, add_zero, sub_zero, zero_sub]
   unfold ratioNumerator
-  congr 1 <;> nlinarith only [hsin]
+  congr 1 <;> linarith
 
 theorem ratio_ell_eq_logs {c x : ℝ} (hc : 2 < c)
     (hx : x ∈ Ioo (-Real.pi) Real.pi) (hx0 : x ≠ 0) :
@@ -91,24 +89,26 @@ theorem ratio_ell_eq_logs {c x : ℝ} (hc : 2 < c)
   unfold ratioEll
   linarith only [hl]
 
+theorem ratio_hasDerivAt_numerator (c x : ℝ) :
+    HasDerivAt (ratioNumerator c) (-2 * (c ^ 2 - 1) * Real.sin x) x := by
+  have hraw := (((Real.hasDerivAt_cos x).const_add 1).const_mul
+    (2 * (c ^ 2 - 1))).const_add ((c ^ 2 - 2) ^ 2)
+  convert hraw using 1
+  · rfl
+  · ring
+
+theorem ratio_hasDerivAt_two_sub_cos (x : ℝ) :
+    HasDerivAt (fun y => 2 * (1 - Real.cos y)) (2 * Real.sin x) x := by
+  convert ((Real.hasDerivAt_cos x).const_sub 1).const_mul 2 using 1
+  ring
+
 theorem ratio_hasDerivAt_ell {c x : ℝ} (hc : 2 < c)
     (hx : x ∈ Ioo (-Real.pi) Real.pi) (hx0 : x ≠ 0) :
     HasDerivAt (ratioEll c) (ratioEllPrime c x) x := by
   have hn := ratio_numerator_pos hc x
   have hd := ratio_one_sub_cos_pos (Ioo_subset_Icc_self hx) hx0
-  have hnum : HasDerivAt (ratioNumerator c) (-2 * (c ^ 2 - 1) * Real.sin x) x := by
-    have hraw := (((Real.hasDerivAt_cos x).const_add 1).const_mul
-      (2 * (c ^ 2 - 1))).const_add ((c ^ 2 - 2) ^ 2)
-    convert hraw using 1
-    · funext y
-      unfold ratioNumerator
-      ring
-    · ring
-  have hden : HasDerivAt (fun y => 2 * (1 - Real.cos y)) (2 * Real.sin x) x := by
-    convert ((Real.hasDerivAt_cos x).const_sub 1).const_mul 2 using 1
-    ring
-  have h := ((hnum.log hn.ne').const_mul (1 / 2 : ℝ)).sub
-    ((hden.log (mul_pos (by norm_num) hd).ne').const_mul (1 / 2 : ℝ))
+  have h := (((ratio_hasDerivAt_numerator c x).log hn.ne').const_mul (1 / 2 : ℝ)).sub
+    (((ratio_hasDerivAt_two_sub_cos x).log (mul_pos (by norm_num) hd).ne').const_mul (1 / 2 : ℝ))
   have hder : (1 / 2 : ℝ) * ((-2 * (c ^ 2 - 1) * Real.sin x) / ratioNumerator c x) -
       (1 / 2 : ℝ) * ((2 * Real.sin x) / (2 * (1 - Real.cos x))) = ratioEllPrime c x := by
     unfold ratioEllPrime
@@ -131,7 +131,7 @@ theorem ratio_ellPrime_weighted_bound {c : ℝ} (hc : 2 < c)
     have hs : 0 ≤ 2 * (c ^ 2 - 1) * (1 + Real.cos x) :=
       mul_nonneg (by linarith) (by linarith [Real.neg_one_le_cos x])
     linarith only [hs]
-  have hxabs : |x| ≤ Real.pi := abs_le.mpr ⟨by linarith [hx.1], hx.2⟩
+  have hxabs := abs_le.mpr ⟨by simp_all, hx.2⟩
   by_cases hx0 : x = 0
   · subst x
     simp only [zero_mul, abs_zero]
@@ -157,7 +157,7 @@ theorem ratio_ellPrime_weighted_bound {c : ℝ} (hc : 2 < c)
     apply (div_le_iff₀ (mul_pos (by norm_num) hd)).mpr
     have hsin : |x| * |Real.sin x| ≤ x ^ 2 := by
       have ht := mul_le_mul_of_nonneg_left (Real.abs_sin_le_abs (x := x)) (abs_nonneg x)
-      simpa only [← pow_two, sq_abs] using ht
+      simpa [← pow_two] using ht
     have hcos := (div_le_iff₀ (sq_pos_of_pos Real.pi_pos)).mp (ratio_one_sub_cos_lower hx)
     apply hsin.trans
     nlinarith only [hcos]
@@ -168,9 +168,9 @@ theorem ratio_ellPrime_weighted_bound {c : ℝ} (hc : 2 < c)
 theorem ratio_continuousAt_ellPrime {c x : ℝ} (hc : 2 < c)
     (hx : x ∈ Icc (-Real.pi) Real.pi) (hx0 : x ≠ 0) :
     ContinuousAt (ratioEllPrime c) x := by
-  have hn : (c ^ 2 - 2) ^ 2 + 2 * (c ^ 2 - 1) * (1 + Real.cos x) ≠ 0 :=
+  have hn :=
     (ratio_numerator_pos hc x).ne'
-  have hd : 2 * (1 - Real.cos x) ≠ 0 :=
+  have hd :=
     mul_ne_zero two_ne_zero (ratio_one_sub_cos_pos hx hx0).ne'
   unfold ratioEllPrime ratioNumerator
   fun_prop (disch := assumption)

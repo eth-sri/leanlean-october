@@ -55,7 +55,7 @@ theorem remainingLaw_le_original_expectation (q : Parameters) (ξ : BoundaryCond
     (hf0 : ∀ A, 0 ≤ f A) (hf : Monotone f) :
     expectation (remainingLaw G q ξ R) f ≤
       expectation (law G q ξ) (fun C => f (configurationSplitEquiv G R C).1) := by
-  simpa only [expectation_map] using remainingLaw_le_original_marginal q ξ R f hf0 hf
+  simpa [expectation_map] using remainingLaw_le_original_marginal q ξ R f hf0 hf
 
 end
 end PottsDiscontinuity.FK

@@ -20,10 +20,10 @@ lemma pmf_le_filter_of_mem (p : PMF α) (T : Set α)
     rw [← p.tsum_coe]
     apply ENNReal.tsum_le_tsum
     intro b
-    by_cases hb : b ∈ T <;> simp [hb]
+    by_cases hb : b ∈ T <;> simp_all
   have hinv : (1 : ENNReal) ≤ (∑' b, T.indicator p b)⁻¹ := by
     simpa using ENNReal.inv_le_inv.mpr hden
-  simpa only [mul_one] using mul_le_mul' (le_refl (p a)) hinv
+  simpa using mul_le_mul' (le_refl (p a)) hinv
 
 /-- No independence is asserted: conditioning divides by a probability ≤1. -/
 theorem joint_expectation_le_filter (p : PMF α) (T E : Set α)
@@ -37,11 +37,7 @@ theorem joint_expectation_le_filter (p : PMF α) (T E : Set α)
     · simp only [Set.indicator_of_mem (show a ∈ T ∩ E from ⟨ha,he⟩),Set.indicator_of_mem he,mul_one]
       exact ENNReal.toReal_mono ((p.filter T hT).apply_ne_top a) (pmf_le_filter_of_mem p T hT a ha)
     · simp [he]
-  · simp only [Set.indicator_of_notMem (show a ∉ T ∩ E from fun h => ha h.1),mul_zero]
-    by_cases he : a ∈ E
-    · rw [Set.indicator_of_mem he,mul_one]
-      exact ENNReal.toReal_nonneg
-    · simp only [Set.indicator_of_notMem he,mul_zero,le_refl]
+  simp_all
 
 end
 end PottsDiscontinuity.TorusExploration

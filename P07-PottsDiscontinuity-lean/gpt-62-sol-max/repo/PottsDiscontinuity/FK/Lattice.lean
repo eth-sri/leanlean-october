@@ -2,7 +2,7 @@
 Parameter generalization: independent 0 < p < 1 and 1 ≤ q, with no upper bound on q. -/
 module
 
-public import PottsDiscontinuity.Frozen.Defs.SquareLattice
+public import PottsDiscontinuity.Frozen.Defs.VertexBoundary
 public import Mathlib.Combinatorics.SimpleGraph.Maps
 public import Mathlib.Data.Finset.Prod
 public import Mathlib.Data.Fintype.Card
@@ -39,12 +39,27 @@ lemma squareLattice_adj_iff (u v : LatticeVertex) :
   simp only [abs_eq_max_neg]
   omega
 
+/-- The boundary of a closed integer rectangle is the union of its four sides. -/
+theorem vertexBoundary_rect {V : Finset LatticeVertex} {l r b t : ℤ}
+    (hV : ∀ x : LatticeVertex, x ∈ V ↔ (l ≤ x.1 ∧ x.1 ≤ r) ∧ (b ≤ x.2 ∧ x.2 ≤ t))
+    (x : LatticeVertex) : x ∈ vertexBoundary V ↔
+      x ∈ V ∧ (x.1 = l ∨ x.1 = r ∨ x.2 = b ∨ x.2 = t) := by
+  constructor
+  · rintro ⟨hx, y, hxy, hy⟩
+    have hx' := (hV x).1 hx
+    rw [hV] at hy
+    rw [squareLattice_adj_iff] at hxy
+    exact ⟨hx, by omega⟩
+  · rintro ⟨hx, hs⟩
+    refine ⟨hx, if x.1 = l then (x.1 - 1, x.2) else if x.1 = r then (x.1 + 1, x.2)
+      else if x.2 = b then (x.1, x.2 - 1) else (x.1, x.2 + 1), ?_⟩
+    split_ifs <;> constructor <;> first
+    | rw [squareLattice_adj_iff]; dsimp; omega
+    | rw [hV]; dsimp; omega
+
 /-- Translation by an integer lattice vector. -/
 def latticeTranslate (a v : LatticeVertex) : LatticeVertex :=
   (v.1 + a.1, v.2 + a.2)
-
-lemma latticeTranslate_zero (v : LatticeVertex) : latticeTranslate 0 v = v := by
-  simp only [latticeTranslate, Prod.fst_zero, Prod.snd_zero, add_zero]
 
 lemma latticeTranslate_neg_cancel (a v : LatticeVertex) :
     latticeTranslate (-a) (latticeTranslate a v) = v := by
@@ -73,7 +88,7 @@ lemma mem_latticeBox (c v : LatticeVertex) (r : ℕ) :
     v ∈ latticeBox c r ↔
       (c.1 - (r : ℤ) ≤ v.1 ∧ v.1 ≤ c.1 + (r : ℤ)) ∧
       (c.2 - (r : ℤ) ≤ v.2 ∧ v.2 ≤ c.2 + (r : ℤ)) := by
-  simp only [latticeBox, Finset.mem_product, Finset.mem_Icc]
+  simp [latticeBox]
 
 lemma center_mem_latticeBox (c : LatticeVertex) (r : ℕ) : c ∈ latticeBox c r := by
   rw [mem_latticeBox]

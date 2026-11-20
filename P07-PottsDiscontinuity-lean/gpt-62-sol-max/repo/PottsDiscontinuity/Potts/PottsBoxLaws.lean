@@ -1,5 +1,7 @@
 module
 
+public import PottsDiscontinuity.Infra.ClopenProbability
+
 public import PottsDiscontinuity.FK.EndpointLimits
 public import PottsDiscontinuity.Potts.BoolMeasureBridge
 public import PottsDiscontinuity.Potts.LimitCompactness
@@ -44,20 +46,59 @@ def pottsFiniteLaw (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ)) (β : ℝ)
     (hβ : 0 < β) (i : Fin (q + 1)) (σ : SpinConfiguration q V) :
     pottsFiniteLaw q hq V β hβ i σ = ENNReal.ofReal (pottsProb q V β i σ) := rfl
 
+section
+
+variable
+  (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
+    (σ : SpinConfiguration q V)
+
 /-- Extend the finite spin state by colour one outside the sampled box.
 Every cylinder eventually lies inside the box, so the extension preserves its finite law. -/
-def spinExtension (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
-    (σ : SpinConfiguration q V) : SpinSpace q :=
+def spinExtension : SpinSpace q :=
   fun x => if hx : x ∈ V then σ ⟨x, hx⟩ else ⟨1, le_rfl, by omega⟩
 
-@[simp] theorem spinExtension_at (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
-    (σ : SpinConfiguration q V) (x : ↥(V : Set (ℤ × ℤ))) :
+@[simp] theorem spinExtension_at (x : ↥(V : Set (ℤ × ℤ))) :
     spinExtension q hq V σ x.val = σ x := by simp [spinExtension]
+
+end
 
 def pottsBoxProbabilityMeasure (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
     (i : Fin (q + 1)) (n : ℕ) : ProbabilityMeasure (SpinSpace q) :=
   ⟨((pottsFiniteLaw q hq (box n) β hβ i).map (spinExtension q hq (box n))).toMeasure,
     PMF.toMeasure.isProbabilityMeasure _⟩
+
+section
+
+variable {A : Type*} [Fintype A]
+
+/-- A prescribed spin pattern on a finite family of observed vertices. -/
+def spinObservationEvent (q : ℕ) (v : A → ℤ × ℤ) (ξ : A → Set.Icc 1 q) : Set (SpinSpace q) :=
+  {σ | ∀ a, σ (v a) = ξ a}
+
+theorem spinObservationEvent_isClopen (q : ℕ) (v : A → ℤ × ℤ) (ξ : A → Set.Icc 1 q) :
+    IsClopen (spinObservationEvent q v ξ) := by
+  exact (isClopen_discrete {η : A → Set.Icc 1 q | ∀ a, η a = ξ a}).preimage
+    (continuous_pi (fun a => continuous_apply (v a)))
+
+/-- The finite observation formula is independent of which finite enumeration
+of the vertex carrier is used by a finite coupling theorem. -/
+theorem pottsBoxProbabilityMeasure_observed
+    (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) (i : Fin (q + 1)) (n : ℕ)
+    [Fintype ↥(box n : Set (ℤ × ℤ))] [DecidableEq ↥(box n : Set (ℤ × ℤ))]
+    (v : A → ℤ × ℤ) (hv : ∀ a, v a ∈ box n) (ξ : A → Set.Icc 1 q) :
+    (pottsBoxProbabilityMeasure q hq β hβ i n).toMeasure.real (spinObservationEvent q v ξ) =
+      ∑ σ : SpinConfiguration q (box n),
+        if ∀ a, σ ⟨v a, hv a⟩ = ξ a then pottsProb q (box n) β i σ else 0 := by
+  change (((pottsFiniteLaw q hq (box n) β hβ i).map (spinExtension q hq (box n))).toMeasure _).toReal = _
+  rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top (spinObservationEvent_isClopen q v ξ).isOpen.measurableSet, ← Measure.real, finite_pmf_measureReal_sum]
+  simp [spinObservationEvent, spinExtension, hv, pottsProb_nonneg q hq _ β hβ]
+
+end
+
+theorem spinObservationEvent_subtype (q : ℕ) (B : Finset (ℤ × ℤ)) (ξ : SpinSpace q) :
+    spinObservationEvent q (fun a : ↥B => a.val) (fun a => ξ a.val) = spinCylinder q B ξ := by
+  ext σ
+  simp [spinObservationEvent, spinCylinder]
 
 /-- Exact agreement with the frozen finite cylinder sum once its support is inside. -/
 theorem pottsBoxProbabilityMeasure_cylinder (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
@@ -66,25 +107,11 @@ theorem pottsBoxProbabilityMeasure_cylinder (q : ℕ) (hq : 2 ≤ q) (β : ℝ) 
     (pottsBoxProbabilityMeasure q hq β hβ i n).toMeasure.real (spinCylinder q A ξ) =
       ∑ σ : SpinConfiguration q (box n),
         if ∀ x ∈ A, ∃ h : x ∈ box n, σ ⟨x, h⟩ = ξ x then pottsProb q (box n) β i σ else 0 := by
-  change (((pottsFiniteLaw q hq (box n) β hβ i).map (spinExtension q hq (box n))).toMeasure _).toReal = _
-  rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top (spinCylinder_isClopen q A ξ).isOpen.measurableSet]
-  rw [← Measure.real, finite_pmf_measureReal_sum]
-  apply Finset.sum_congr
-  · ext σ; simp
-  · intro σ _
-    rw [pottsFiniteLaw_apply, ENNReal.toReal_ofReal (pottsProb_nonneg q hq (box n) β hβ i σ)]
-    have he : spinExtension q hq (box n) σ ∈ spinCylinder q A ξ ↔
-        ∀ x ∈ A, ∃ h : x ∈ box n, σ ⟨x, h⟩ = ξ x := by
-      constructor
-      · intro h x hx
-        exact ⟨hA hx, by simpa only [← spinExtension_at q hq (box n) σ ⟨x, hA hx⟩] using h x hx⟩
-      · intro h x hx
-        obtain ⟨hx', hs⟩ := h x hx
-        simpa only [spinExtension_at q hq (box n) σ ⟨x, hx'⟩] using hs
-    by_cases h : spinExtension q hq (box n) σ ∈ spinCylinder q A ξ
-    · simp only [Set.mem_preimage, h, ite_true]
-      exact (ite_eq_left (he.mp h)).symm
-    · simp only [Set.mem_preimage, h, mt he.mpr h, ite_false]
+  rw [← spinObservationEvent_subtype, pottsBoxProbabilityMeasure_observed _ hq _ hβ i n _
+    (fun a : ↥A => hA a.property) _]
+  refine Finset.sum_congr rfl fun σ _ => ?_
+  congr 1
+  exact propext ⟨fun h x hx => ⟨hA hx, h ⟨x, hx⟩⟩, fun h a => (h a a.property).elim fun _ hs => hs⟩
 
 /-- Weak convergence of the actual Potts box laws implies exactly the frozen
 infinite-volume predicate, for the full sequence of boxes. -/
@@ -94,13 +121,8 @@ theorem isPottsInfiniteVolumeLimit_of_box_tendsto (q : ℕ) (hq : 2 ≤ q) (β :
     IsPottsInfiniteVolumeLimit q β i μ.toMeasure := by
   refine ⟨μ.prop, ?_⟩
   intro A ξ
-  have ht := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hμ (spinCylinder_isClopen q A ξ)
-  have hr : Tendsto (fun n => (pottsBoxProbabilityMeasure q hq β hβ i n).toMeasure.real (spinCylinder q A ξ))
-      atTop (𝓝 (μ.toMeasure.real (spinCylinder q A ξ))) := by
-    simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn, Function.comp_def] using
-      NNReal.continuous_coe.continuousAt.tendsto.comp ht
-  apply hr.congr'
-  have hs : ∀ᶠ n : ℕ in atTop, A ⊆ box n :=
+  apply (ProbabilityMeasure.tendsto_real_clopen hμ (spinCylinder_isClopen q A ξ)).congr'
+  have hs :=
     (eventually_all_finset A).mpr (fun x _ => FK.eventually_mem_box x)
   filter_upwards [hs] with n hn
   exact pottsBoxProbabilityMeasure_cylinder q hq β hβ i n A ξ hn

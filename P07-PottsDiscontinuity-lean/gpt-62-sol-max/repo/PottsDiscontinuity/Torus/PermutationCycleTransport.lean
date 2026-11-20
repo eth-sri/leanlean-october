@@ -21,10 +21,7 @@ variable {α β : Type*}
 theorem inverseIntertwining_symm (p : Perm α) (q : Perm β) (e : α ≃ β)
     (he : ∀ x, e (p x) = q.symm (e x)) (y : β) :
     e.symm (q y) = p.symm (e.symm y) := by
-  apply e.injective
-  rw [Equiv.apply_symm_apply]
-  have h := congrArg q (he (p.symm (e.symm y)))
-  simpa only [Equiv.apply_symm_apply] using h
+  grind [Equiv.apply_symm_apply]
 
 variable [Finite α] [Finite β]
 
@@ -41,18 +38,9 @@ def permutationCycleEquivOfInverseIntertwining (p : Perm α) (q : Perm β) (e : 
       exact Quotient.sound SameCycle.rfl.symm_apply_left) h)
   left_inv x := by
     refine Quotient.inductionOn x ?_
-    intro a
-    change Quotient.mk _ (e.symm (e a)) = Quotient.mk _ a
-    rw [Equiv.symm_apply_apply]
+    simp
   right_inv y := by
     refine Quotient.inductionOn y ?_
-    intro b
-    change Quotient.mk _ (e (e.symm b)) = Quotient.mk _ b
-    rw [Equiv.apply_symm_apply]
-
-@[simp] theorem permutationCycleEquivOfInverseIntertwining_mk
-    (p : Perm α) (q : Perm β) (e : α ≃ β) (he : ∀ x, e (p x) = q.symm (e x)) (x : α) :
-    permutationCycleEquivOfInverseIntertwining p q e he (Quotient.mk _ x) =
-      Quotient.mk _ (e x) := rfl
+    simp
 
 end PottsDiscontinuity.Torus

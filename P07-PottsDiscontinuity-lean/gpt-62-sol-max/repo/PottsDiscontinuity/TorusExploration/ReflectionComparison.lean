@@ -48,6 +48,6 @@ theorem connection_sq_le_diagonalSite_of_sum (θ : Parameters) (μ : Measure Lat
     μ.real (CorrLength.connectionEvent (0,0) x) ^ 2 ≤
       μ.real (CorrLength.connectionEvent (0,0) (diagonalSite (2*k))) := by
   rw [CorrLength.diagonalSite_even]
-  simpa only [hk] using connection_sq_le_diagonal_sum θ μ hμ x
+  simpa [hk] using connection_sq_le_diagonal_sum θ μ hμ x
 
 end PottsDiscontinuity.TorusExploration

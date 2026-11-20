@@ -65,7 +65,7 @@ lemma embeddedBox_mem_cylinder (f : V ↪ LatticeVertex) (hG : G.map f ≤ squar
   intro e he
   obtain ⟨d,hd,rfl⟩ := Finset.mem_map.1 he
   rw [← embeddedBox_edge_commute G f hG n h d,boxConfiguration_at]
-  exact decide_eq_true ((mem_embeddedConfigurationRestriction _ _ _ _ _ _).1 hd)
+  simp_all
 
 /-- A finite embedded free law is dominated by the free containing box on its
 original increasing events. -/

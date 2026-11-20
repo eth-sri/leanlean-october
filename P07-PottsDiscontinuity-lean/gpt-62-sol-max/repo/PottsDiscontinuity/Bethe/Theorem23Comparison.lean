@@ -1,7 +1,7 @@
 module
 
 public import PottsDiscontinuity.Bethe.Theorem23MeanValue
-public import PottsDiscontinuity.Bethe.Theorem23StabilityEstimate
+public import PottsDiscontinuity.Bethe.Theorem23Density
 
 /-! # Comparing the step density with the derivative of the counting function -/
 
@@ -21,9 +21,9 @@ theorem rootPartitionPoint_mem_large {k : ℕ} {p : Fin (k + 1) → ℝ}
     constructor <;> linarith [hb.1, hb.2, Real.pi_pos]
   · split
     · have hb := hp.1 ⟨0, by omega⟩
-      constructor <;> linarith [hb.1, hb.2, Real.pi_pos]
+      constructor <;> linarith
     · have hb := hp.1 ⟨i.val - 1, by omega⟩
-      constructor <;> linarith [hb.1, hb.2, Real.pi_pos]
+      constructor <;> linarith
 
 theorem exists_rootPartition_cell {k : ℕ} {p : Fin (k + 1) → ℝ}
     (hp : p ∈ S_n (k + 1)) {t : ℝ} (ht : t ∈ Icc (-Real.pi) Real.pi) :
@@ -32,7 +32,7 @@ theorem exists_rootPartition_cell {k : ℕ} {p : Fin (k + 1) → ℝ}
   let q := rootPartitionPoint (k + 1) p (by omega)
   have hleft : q 0 ≤ t := by
     have heq : q 0 = p (Fin.last k) - 2 * Real.pi := by
-      convert rootPartitionPoint_zero p (by omega) using 1 <;> congr 1
+      rfl
     rw [heq]
     linarith [ht.1, (hp.1 (Fin.last k)).2]
   have hright : t < q (Fin.last (k + 2)) := by
@@ -79,6 +79,32 @@ theorem exists_uniform_countingDerivative_lipschitz {Δ₀ : ℝ} (hΔ₀ : Δ�
   apply hsum.trans_eq
   field_simp
 
+theorem step_counting_pointwise_comparison {Δ : ℝ} (hΔ : Δ < -1) {N n : ℕ}
+    {p : Fin n → ℝ} (hp : p ∈ S_n n) (hn : 0 < n) (hs : 2 * n ≤ N)
+    (hBE : DiscreteBetheEquation Δ N n p) {L d : ℝ} (hL : 0 ≤ L)
+    (hLip : ∀ x ∈ Icc (-(3 * Real.pi)) (3 * Real.pi), ∀ y ∈ Icc (-(3 * Real.pi)) (3 * Real.pi),
+      |betheCountingDerivative Δ N n p x - betheCountingDerivative Δ N n p y| ≤ L * |x - y|)
+    (hmesh : ∀ j : Fin (n + 1), rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc ≤ d)
+    {t : ℝ} (ht : t ∈ Icc (-Real.pi) Real.pi) :
+    |rootStepDensity N n p hn t - betheCountingDerivative Δ N n p t| ≤ L * d := by
+  obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
+  have hN : 0 < N := by omega
+  obtain ⟨j, hcell⟩ := exists_rootPartition_cell hp ht
+  obtain ⟨ξ, hξ, hmean⟩ := exists_betheCountingDerivative_cell_mean hΔ hN p hp hs hBE j
+  have hξlarge : ξ ∈ Icc (-(3 * Real.pi)) (3 * Real.pi) :=
+    ⟨(rootPartitionPoint_mem_large hp j.castSucc).1.trans hξ.1.le,
+      hξ.2.le.trans (rootPartitionPoint_mem_large hp j.succ).2⟩
+  have htlarge : t ∈ Icc (-(3 * Real.pi)) (3 * Real.pi) := by
+    constructor <;> linarith [ht.1, ht.2, Real.pi_pos]
+  have hdist : |ξ - t| ≤ rootPartitionPoint (k + 1) p (by omega) j.succ -
+      rootPartitionPoint (k + 1) p (by omega) j.castSucc := by
+    apply abs_le.2
+    constructor <;> linarith [hcell.1, hcell.2, hξ.1, hξ.2]
+  have hstep :=
+    (rootStepDensity_on_cell hp (by omega) hs j hcell).trans hmean.symm
+  rw [hstep]
+  exact (hLip ξ hξlarge t htlarge).trans (mul_le_mul_of_nonneg_left (hdist.trans (hmesh j)) hL)
+
 /-- Step-density error is bounded by the counting derivative error plus a mesh
 term. Comparing `f_p'(ξ)` directly with `f_p'(t)` avoids evaluating the density
 or the weighted norm outside the physical interval. -/
@@ -87,65 +113,39 @@ theorem exists_uniform_step_counting_comparison {Δ₀ : ℝ} (hΔ₀ : Δ₀ < 
       ∀ (N k : ℕ) (p : Fin (k + 1) → ℝ) (hp : p ∈ S_n (k + 1))
         (hs : 2 * (k + 1) ≤ N), DiscreteBetheEquation Δ N (k + 1) p →
       ∀ (D : ℝ), 0 ≤ D →
-      ∀ (hbdd : BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
-        |Xi (lamOf Δ) α *
-          (rootStepDensity N (k + 1) p hp (by omega) hs (kMap (lamOf Δ) α) -
-            rho Δ (kMap (lamOf Δ) α))|)),
       (∀ j : Fin (k + 2),
         rootPartitionPoint (k + 1) p (by omega) j.succ -
           rootPartitionPoint (k + 1) p (by omega) j.castSucc ≤ D / (N : ℝ)) →
-      densityNorm Δ (lt_of_le_of_lt hΔ hΔ₀)
-        (fun x => rootStepDensity N (k + 1) p hp (by omega) hs x - rho Δ x) hbdd ≤
-      densityNorm Δ (lt_of_le_of_lt hΔ hΔ₀)
-        (fun x => betheCountingDerivative Δ N (k + 1) p x - rho Δ x)
-        (countingError_bddAbove (lt_of_le_of_lt hΔ hΔ₀) N (k + 1) p) + A * D / N := by
+      densityNorm Δ
+        (rootStepError Δ N p (by omega)) ≤
+      densityNorm Δ
+        (fun x => betheCountingDerivative Δ N (k + 1) p x - rho Δ x) + A * D / N := by
   obtain ⟨L, hL, hLip⟩ := exists_uniform_countingDerivative_lipschitz hΔ₀
   obtain ⟨X, hX, hupper⟩ := exists_uniform_Xi_upper_bound hΔ₀
-  refine ⟨X * L, mul_pos hX hL, fun Δ hΔ N k p hp hs hBE D hD hbdd hmesh => ?_⟩
+  refine ⟨X * L, mul_pos hX hL, fun Δ hΔ N k p hp hs hBE D hD hmesh => ?_⟩
   have hNnat : 0 < N := by omega
   have hΔvalid := lt_of_le_of_lt hΔ hΔ₀
-  let s := rootStepDensity N (k + 1) p hp (by omega) hs
-  let Sf := densityNorm Δ hΔvalid
+  let s := rootStepDensity N (k + 1) p (by omega)
+  let Sf := densityNorm Δ
     (fun x => betheCountingDerivative Δ N (k + 1) p x - rho Δ x)
-    (countingError_bddAbove hΔvalid N (k + 1) p)
   have hpoint (α : ℝ) (hα : α ∈ Icc (-Real.pi) Real.pi) :
       |Xi (lamOf Δ) α * (s (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))| ≤
         Sf + (X * L) * D / N := by
     let t := kMap (lamOf Δ) α
-    have ht : t ∈ Icc (-Real.pi) Real.pi := kMap_mem_Icc (lamOf_pos hΔvalid) hα
-    obtain ⟨j, hcell⟩ := exists_rootPartition_cell hp ht
-    obtain ⟨ξ, hξ, hmean⟩ := exists_betheCountingDerivative_cell_mean hΔvalid hNnat p hp hs hBE j
-    have hξlarge : ξ ∈ Icc (-(3 * Real.pi)) (3 * Real.pi) :=
-      ⟨(rootPartitionPoint_mem_large hp j.castSucc).1.trans hξ.1.le,
-        hξ.2.le.trans (rootPartitionPoint_mem_large hp j.succ).2⟩
-    have htlarge : t ∈ Icc (-(3 * Real.pi)) (3 * Real.pi) := by
-      constructor <;> linarith [ht.1, ht.2, Real.pi_pos]
-    have hdist : |ξ - t| ≤ rootPartitionPoint (k + 1) p (by omega) j.succ -
-        rootPartitionPoint (k + 1) p (by omega) j.castSucc := by
-      apply abs_le.2
-      constructor <;> linarith [hcell.1, hcell.2, hξ.1, hξ.2]
-    have hstep : s t = betheCountingDerivative Δ N (k + 1) p ξ :=
-      (rootStepDensity_on_cell hp (by omega) hs j hcell).trans hmean.symm
-    have herr : |s t - betheCountingDerivative Δ N (k + 1) p t| ≤ L * (D / (N : ℝ)) := by
-      rw [hstep]
-      apply (hLip Δ hΔ N (k + 1) hNnat p hp hs ξ hξlarge t htlarge).trans
-      exact mul_le_mul_of_nonneg_left (hdist.trans (hmesh j)) hL.le
+    have ht := kMap_mem_Icc (lamOf_pos hΔvalid) hα
+    have herr :=
+      step_counting_pointwise_comparison hΔvalid hp (by omega) hs hBE hL.le
+        (hLip Δ hΔ N (k + 1) hNnat p hp hs) hmesh ht
     have hweighted : |Xi (lamOf Δ) α * (s t - betheCountingDerivative Δ N (k + 1) p t)| ≤
         X * (L * (D / (N : ℝ))) := by
       rw [abs_mul, abs_of_pos (Xi_pos (lamOf_pos hΔvalid) α)]
       exact mul_le_mul (hupper Δ hΔ α) herr (abs_nonneg _) hX.le
-    have hfpoint : |Xi (lamOf Δ) α * (betheCountingDerivative Δ N (k + 1) p t - rho Δ t)| ≤ Sf :=
-      densityNorm_pointwise_le hΔvalid _ (countingError_bddAbove hΔvalid N (k + 1) p) Sf le_rfl hα
-    have hid : Xi (lamOf Δ) α * (s t - rho Δ t) =
-        Xi (lamOf Δ) α * (s t - betheCountingDerivative Δ N (k + 1) p t) +
-          Xi (lamOf Δ) α * (betheCountingDerivative Δ N (k + 1) p t - rho Δ t) := by ring
+    have hfpoint :=
+      densityNorm_pointwise_le _ (countingError_bddAbove hΔvalid N (k + 1) p) Sf le_rfl hα
     change |Xi (lamOf Δ) α * (s t - rho Δ t)| ≤ _
-    rw [hid]
-    calc
-      _ ≤ |Xi (lamOf Δ) α * (s t - betheCountingDerivative Δ N (k + 1) p t)| +
-          |Xi (lamOf Δ) α * (betheCountingDerivative Δ N (k + 1) p t - rho Δ t)| := abs_add_le _ _
-      _ ≤ X * (L * (D / (N : ℝ))) + Sf := add_le_add hweighted hfpoint
-      _ = _ := by ring
+    rw [show s t - rho Δ t = (s t - betheCountingDerivative Δ N (k + 1) p t) +
+      (betheCountingDerivative Δ N (k + 1) p t - rho Δ t) by ring, mul_add]
+    exact (abs_add_le ..).trans ((add_le_add hweighted hfpoint).trans_eq (by ring))
   unfold densityNorm
   apply csSup_le
   · have hzero : (0 : ℝ) ∈ Icc (-Real.pi) Real.pi := by constructor <;> linarith [Real.pi_pos]

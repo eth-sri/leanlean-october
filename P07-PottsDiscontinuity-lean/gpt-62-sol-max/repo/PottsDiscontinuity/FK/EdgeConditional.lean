@@ -50,8 +50,7 @@ theorem configurationProbability_insert_balance_of_related (q : Parameters)
         configurationProbability G q ξ (insert ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ A) =
       edgeParameter q * configurationProbability G q ξ A := by
   unfold configurationProbability
-  rw [← mul_div_assoc, ← mul_div_assoc,
-    weight_insert_balance_of_related q ξ A huv he hrelated]
+  simp [← mul_div_assoc, weight_insert_balance_of_related q ξ A huv he hrelated]
 
 /-- The open probability conditional on the two possible states of this edge,
 with every other original edge fixed by `A`, equals the edge parameter. -/

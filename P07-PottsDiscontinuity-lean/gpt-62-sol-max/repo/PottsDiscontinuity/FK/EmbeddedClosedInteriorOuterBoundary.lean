@@ -13,9 +13,13 @@ namespace PottsDiscontinuity.FK
 
 noncomputable section
 
-private theorem removedEdge_endpoint_not_image_compl_general
-    {V W : Type*} [Finite V] [Finite W]
+section
+
+variable
+  {V W : Type*} [Finite V] [Finite W]
     {G : SimpleGraph V} {H : SimpleGraph W} (f : V ↪ W)
+
+private theorem removedEdge_endpoint_not_image_compl_general
     (_hGH : G.map f ≤ H) (B : Set V)
     (hclosed : ∀ ⦃x : V⦄, x ∉ B → ∀ ⦃y : W⦄, H.Adj (f x) y →
       ∃ z : V, f z = y ∧ G.Adj x z)
@@ -47,7 +51,7 @@ private theorem removedEdge_endpoint_not_image_compl_general
         _ = Sym2.mk (f x) (f z) := by rw [← hxa, ← hzb]
     apply hnot
     rw [he']
-    exact (G.map f).mem_edgeSet.mpr hmapAdj
+    assumption
   · have hxb : f x = b := hfx.trans hwb
     obtain ⟨z, hza, hxz⟩ := hclosed hxB (by simpa [hxb] using habAdj.symm)
     have hmapAdj : (G.map f).Adj (f x) (f z) :=
@@ -59,16 +63,13 @@ private theorem removedEdge_endpoint_not_image_compl_general
           apply Sym2.eq_iff.mpr
           exact Or.inr ⟨hza.symm, hxb.symm⟩
     apply hnot
-    rw [he']
-    exact (G.map f).mem_edgeSet.mpr hmapAdj
+    rwa [he']
 
 /-- Frozen configurations in an exterior region pull back to a partition
 finer than the partition wiring `B`, for any outer boundary whose boundary
 points avoid the embedded complement of `B`. Neighbor closure ensures frozen
 removed edges cannot identify a point in that complement. -/
 theorem isolatedExtensionPullback_frozenBoundary_partition_le_wired_of_closedInterior
-    {V W : Type*} [Finite V] [Finite W]
-    {G : SimpleGraph V} {H : SimpleGraph W} (f : V ↪ W)
     (hGH : G.map f ≤ H) (B : Set V)
     (hclosed : ∀ ⦃x : V⦄, x ∉ B → ∀ ⦃y : W⦄, H.Adj (f x) y →
       ∃ z : V, f z = y ∧ G.Adj x z)
@@ -79,16 +80,14 @@ theorem isolatedExtensionPullback_frozenBoundary_partition_le_wired_of_closedInt
       (BoundaryCondition.wired B).partition := by
   classical
   let D : Set W := (f '' Bᶜ)ᶜ
-  have hcomp : componentSetoid H ξ K.val ≤
-      (BoundaryCondition.wired (ξ.boundary ∪ D)).partition :=
+  have hcomp :=
     componentSetoid_le_wired_union_of_edge_endpoints ξ D K.val (by
       intro e he w hw
       exact removedEdge_endpoint_not_image_compl_general f hGH B hclosed K he hw)
   intro x y hxy
-  have houter : (componentSetoid H ξ K.val).r (f x) (f y) :=
+  have houter :=
     (Setoid.comap_rel f (frozenBoundary ξ K.val).partition x y).mp hxy
-  have hbig : (BoundaryCondition.wired (ξ.boundary ∪ D)).partition.r
-      (f x) (f y) := hcomp houter
+  have hbig := hcomp houter
   rcases (BoundaryCondition.wired_rel (ξ.boundary ∪ D) (f x) (f y)).mp hbig with
     heq | ⟨hx, hy⟩
   · exact (BoundaryCondition.wired_rel B x y).mpr (Or.inl (f.injective heq))
@@ -103,6 +102,8 @@ theorem isolatedExtensionPullback_frozenBoundary_partition_le_wired_of_closedInt
       · exact False.elim (hξavoid hyB hξ)
       · exact hD ⟨y, hyB, rfl⟩
     exact (BoundaryCondition.wired_rel B x y).mpr (Or.inr ⟨hxB, hyB⟩)
+
+end
 
 end
 end PottsDiscontinuity.FK

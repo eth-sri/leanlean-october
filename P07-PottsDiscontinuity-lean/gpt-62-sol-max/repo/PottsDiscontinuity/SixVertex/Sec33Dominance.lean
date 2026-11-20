@@ -55,7 +55,7 @@ theorem LambdaMax_eq_Lambda0_of_dominance (hc : 0 < c) (hEven : Even N) (hN : 0 
     LambdaMax c N = Lambda c N 0 := by
   obtain ⟨n, hn, hmax⟩ := exists_pfRoot_eq_LambdaMax (c := c) (N := N)
   obtain ⟨r, hr, hroot⟩ := exists_Lambda_offset_eq_pfRoot (N := N) (c := c) hEven hn
-  have hmaxroot : LambdaMax c N = Lambda c N r := hmax.symm.trans hroot
+  have hmaxroot := hmax.symm.trans hroot
   by_cases hr0 : r = 0
   · simpa [hr0] using hmaxroot
   · by_cases hr1 : r = 1
@@ -69,25 +69,9 @@ theorem LambdaMax_eq_Lambda0_of_dominance (hc : 0 < c) (hEven : Even N) (hN : 0 
       have hexp : Real.exp (-η) < 1 :=
         (Real.exp_lt_one_iff).2 (by linarith)
       have hlt : Real.exp (-η) * LambdaMax c N < LambdaMax c N :=
-        by simpa only [one_mul] using
-          mul_lt_mul_of_pos_right hexp (LambdaMax_pos (c := c) (N := N) hc)
+        by simpa using
+                     mul_lt_mul_of_pos_right hexp (LambdaMax_pos (c := c) (N := N) hc)
       rw [← hmaxroot] at hgap
       linarith
-
-/-- With the center block known to maximize the full transfer matrix, the fixed-width ratio has
-the paper's stated growth rate. -/
-theorem tendsto_log_Z6V_ratio_eq_Lambda_ratio (hc : 0 < c) (hN : 0 < N)
-    {r : ℕ} (hr : r ≤ N / 2) (hmax : LambdaMax c N = Lambda c N 0) :
-    Tendsto (fun M : ℕ => (1 / (M : ℝ)) *
-      Real.log (Z6Vr c N M r / Z6V c N M)) atTop
-      (𝓝 (Real.log (Lambda c N r / Lambda c N 0))) := by
-  have hrate := tendsto_log_Z6V_ratio (N := N) hc hN hr
-  have hcenter := Lambda_pos (N := N) hc (Nat.zero_le _)
-  have hrpos := Lambda_pos (N := N) hc hr
-  have hlog : Real.log (Lambda c N r) - Real.log (Lambda c N 0) =
-      Real.log (Lambda c N r / Lambda c N 0) := by
-    rw [Real.log_div (ne_of_gt hrpos) (ne_of_gt hcenter)]
-  rw [hmax, hlog] at hrate
-  exact hrate
 
 end PottsDiscontinuity.SixVertex

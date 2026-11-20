@@ -20,13 +20,13 @@ noncomputable def discreteSymLift (n : ℕ) : (Fin (n / 2) → ℝ) →ₗ[ℝ] 
 theorem discreteSymLift_half (n : ℕ) (q : Fin (n / 2) → ℝ) (i : Fin (n / 2)) :
     discreteSymLift n q (discreteHalfIndex n i) = q i := by
   classical
-  simp [discreteSymLift, Finset.sum_apply, discreteSymBasis_at_half]
+  simp [discreteSymLift, discreteSymBasis_at_half]
 
 @[simp]
 theorem discreteSymLift_single (n : ℕ) (i : Fin (n / 2)) :
     discreteSymLift n (Pi.single i 1) = discreteSymBasis n i := by
   classical
-  simp [discreteSymLift, Pi.single_apply, ite_smul, Finset.sum_ite_eq']
+  simp [discreteSymLift]
 
 theorem discreteSymLift_mem (n : ℕ) (q : Fin (n / 2) → ℝ) :
     discreteSymLift n q ∈ R_n_sym n := by
@@ -62,7 +62,6 @@ theorem discreteSym_ext {n : ℕ} {p q : Fin n → ℝ}
 theorem discreteSymLift_coordinates {n : ℕ} (p : Fin n → ℝ) (hp : p ∈ R_n_sym n) :
     discreteSymLift n (fun i => p (discreteHalfIndex n i)) = p := by
   apply discreteSym_ext (discreteSymLift_mem _ _) hp
-  intro i
-  exact discreteSymLift_half _ _ _
+  simp
 
 end PottsDiscontinuity.Bethe

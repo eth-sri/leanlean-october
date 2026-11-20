@@ -22,7 +22,7 @@ instance finiteObservedSetoid [Finite A] : Finite (Setoid A) := by
   apply Setoid.ext
   intro a b
   have hh := congrArg (fun c : Bool => c = true) (congrFun h (a, b))
-  simpa only [f, decide_eq_true_eq] using hh.to_iff
+  grind
 
 local instance observedSetoidFintype [Finite A] : Fintype (Setoid A) := Fintype.ofFinite _
 
@@ -45,13 +45,18 @@ theorem partition_eq_event [Fintype A] (r : X → Setoid A) (R : Setoid A) :
     apply Setoid.ext
     intro a b
     by_cases h : R a b
-    · exact ⟨fun _ => h, fun _ => hp (a, b) (by simp [h])⟩
-    · exact ⟨fun hr => (hn (a, b) (by simp [h]) hr).elim, fun hr => (h hr).elim⟩
+    · exact ⟨fun _ => h, fun _ => hp (a, b) (by grind)⟩
+    · exact ⟨fun hr => (hn (a, b) (by grind) hr).elim, fun hr => (h hr).elim⟩
 
-/-- Convergence of all positive relation moments gives the entire partition law. -/
-theorem partition_probability_tendsto [Fintype A] [MeasurableSpace X]
+section
+
+variable
+  [Fintype A] [MeasurableSpace X]
     (μs : ℕ → ProbabilityMeasure X) (μ : ProbabilityMeasure X)
     (r : ℕ → X → Setoid A) (rinf : X → Setoid A)
+
+/-- Convergence of all positive relation moments gives the entire partition law. -/
+theorem partition_probability_tendsto
     (hr : ∀ n a b, MeasurableSet {x | r n x a b})
     (hri : ∀ a b, MeasurableSet {x | rinf x a b})
     (hmom : ∀ F : Finset (A × A), Tendsto
@@ -64,14 +69,43 @@ theorem partition_probability_tendsto [Fintype A] [MeasurableSpace X]
     (fun (z : A × A) => {x | rinf x z.1 z.2}) (fun n (z : A × A) => hr n z.1 z.2)
     (fun (z : A × A) => hri z.1 z.2) hmom _ _
 
-theorem partitionExpectation_tendsto [Fintype A] [MeasurableSpace X]
-    (μs : ℕ → ProbabilityMeasure X) (μ : ProbabilityMeasure X)
-    (r : ℕ → X → Setoid A) (rinf : X → Setoid A) (K : Setoid A → ℝ)
+theorem partitionExpectation_tendsto (K : Setoid A → ℝ)
     (h : ∀ R : Setoid A, Tendsto (fun n => (μs n).toMeasure.real {x | r n x = R}) atTop
       (𝓝 (μ.toMeasure.real {x | rinf x = R}))) :
     Tendsto (fun n => partitionExpectation (μs n).toMeasure (r n) K) atTop
-      (𝓝 (partitionExpectation μ.toMeasure rinf K)) := by
-  exact tendsto_finsetSum _ (fun R _ => (h R).mul_const (K R))
+      (𝓝 (partitionExpectation μ.toMeasure rinf K)) := tendsto_finsetSum _ (fun R _ => (h R).mul_const (K R))
+
+end
+
+private theorem comap_relation_moments {B : Type*} (v : A → B) (r : X → Setoid B)
+    (F : Finset (A × A)) :
+    {x | ∀ z ∈ F, (r x).comap v z.1 z.2} =
+      {x | ∀ z ∈ F.image (Prod.map v v), r x z.1 z.2} := by
+  ext x
+  exact (Finset.forall_mem_image (s := F) (f := Prod.map v v) (p := fun z => r x z.1 z.2)).symm
+
+theorem measurable_comap_relation {B : Type*} [MeasurableSpace X] (v : A → B) (r : X → Setoid B)
+    (hr : ∀ F : Finset (B × B), MeasurableSet {x | ∀ z ∈ F, r x z.1 z.2}) (a b : A) :
+    MeasurableSet {x | (r x).comap v a b} := by
+  change MeasurableSet {x | r x (v a) (v b)}
+  simpa using hr {(v a, v b)}
+
+/-- The observed law only needs finite moments of the underlying relation. -/
+theorem partition_probability_tendsto_comap {B : Type*} [Fintype A] [MeasurableSpace X]
+    (μs : ℕ → ProbabilityMeasure X) (μ : ProbabilityMeasure X) (v : A → B)
+    (r : ℕ → X → Setoid B) (rinf : X → Setoid B)
+    (hr : ∀ n (F : Finset (B × B)), MeasurableSet {x | ∀ z ∈ F, r n x z.1 z.2})
+    (hri : ∀ F : Finset (B × B), MeasurableSet {x | ∀ z ∈ F, rinf x z.1 z.2})
+    (hmom : ∀ F : Finset (B × B), Tendsto
+      (fun n => (μs n).toMeasure.real {x | ∀ z ∈ F, r n x z.1 z.2}) atTop
+      (𝓝 (μ.toMeasure.real {x | ∀ z ∈ F, rinf x z.1 z.2}))) (R : Setoid A) :
+    Tendsto (fun n => (μs n).toMeasure.real {x | (r n x).comap v = R}) atTop
+      (𝓝 (μ.toMeasure.real {x | (rinf x).comap v = R})) := by
+  apply partition_probability_tendsto _ _ _ _
+    (fun n => measurable_comap_relation v (r n) (hr n)) (measurable_comap_relation v rinf hri)
+  intro F
+  have he (n : ℕ) := comap_relation_moments v (r n) F
+  simpa only [he, comap_relation_moments v rinf F] using hmom (F.image (Prod.map v v))
 
 /-- On a finite sample space, partition expectation is the ordinary weighted sum. -/
 theorem partitionExpectation_pmf [Finite A] [Fintype X] [MeasurableSpace X]
@@ -80,13 +114,7 @@ theorem partitionExpectation_pmf [Finite A] [Fintype X] [MeasurableSpace X]
   unfold partitionExpectation
   simp_rw [finite_pmf_measureReal_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro x _
-  rw [Finset.sum_eq_single (r x)]
-  · simp
-  · intro R _ hR
-    simp [Ne.symm hR]
-  · simp
+  simp
 
 theorem partition_event_measurable [Fintype A] [MeasurableSpace X]
     (r : X → Setoid A) (hr : ∀ a b, MeasurableSet {x | r x a b}) (R : Setoid A) :

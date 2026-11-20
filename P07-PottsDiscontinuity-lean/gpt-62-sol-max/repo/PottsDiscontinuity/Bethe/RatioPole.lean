@@ -23,9 +23,6 @@ noncomputable def ratioRegularPart (c x : ℝ) : ℝ :=
 
 theorem ratio_regularPart_zero (c : ℝ) : ratioRegularPart c 0 = c ^ 2 := by
   unfold ratioRegularPart
-  rw [z_zero]
-  have he : (1 : ℂ) - (c : ℂ) ^ 2 - 1 = -((c : ℂ) ^ 2) := by ring
-  rw [he, norm_neg, norm_pow, Complex.norm_real, Real.norm_eq_abs, sq_abs]
   simp
 
 theorem ratio_continuousAt_regularPart_zero (c : ℝ) : ContinuousAt (ratioRegularPart c) 0 := by
@@ -34,7 +31,7 @@ theorem ratio_continuousAt_regularPart_zero (c : ℝ) : ContinuousAt (ratioRegul
 
 theorem ratio_norm_denominator (x : ℝ) : ‖1 - z x‖ = |x| * |Real.sinc (x / 2)| := by
   by_cases hx : x = 0
-  · simp [hx]
+  · simp_all
   have hhalf : x / 2 ≠ 0 := div_ne_zero hx (by norm_num)
   calc
     ‖1 - z x‖ = ‖z x - 1‖ := norm_sub_rev _ _
@@ -50,7 +47,7 @@ theorem ratio_regularPart_eq_mul_norm {c x : ℝ}
     (hx : x ∈ Ioo (-Real.pi) Real.pi) (hx0 : x ≠ 0) :
     ratioRegularPart c x = |x| * ‖M c (z x)‖ := by
   have hzx := z_ne_one hx hx0
-  have hden : 1 - z x ≠ 0 := sub_ne_zero.mpr (Ne.symm hzx)
+  have hden := sub_ne_zero.mpr (Ne.symm hzx)
   have hM : M c (z x) = (1 - (c : ℂ) ^ 2 - z x) / (1 - z x) := by
     unfold M
     field_simp
@@ -59,12 +56,16 @@ theorem ratio_regularPart_eq_mul_norm {c x : ℝ}
   have hsinc : |Real.sinc (x / 2)| ≠ 0 := by
     have hd := norm_ne_zero_iff.mpr hden
     rw [ratio_norm_denominator] at hd
-    exact (mul_ne_zero_iff.mp hd).2
+    simp_all
   rw [hM, norm_div, ratio_norm_denominator]
   unfold ratioRegularPart
   field_simp
 
-theorem ratio_norm_div_size_tendsto {ι : Type*} {l : Filter ι} {c a : ℝ}
+section
+
+variable {ι : Type*} {l : Filter ι}
+
+theorem ratio_norm_div_size_tendsto {c a : ℝ}
     (ha : 0 < a) (N : ι → ℝ) (hN : ∀ i, N i ≠ 0)
     (x : ι → ℝ) (hx : ∀ i, x i ∈ Ioo (-Real.pi) Real.pi) (hxpos : ∀ i, 0 < x i)
     (hxlim : Tendsto x l (𝓝 0)) (hscale : Tendsto (fun i => N i * x i) l (𝓝 a)) :
@@ -79,7 +80,7 @@ theorem ratio_norm_div_size_tendsto {ι : Type*} {l : Filter ι} {c a : ℝ}
   field_simp [(hxpos i).ne', hN i]
 
 /-- In particular, this is the source term (3) after the central root scaling. -/
-theorem ratio_scaled_inverse_norm_tendsto {ι : Type*} {l : Filter ι} {c a : ℝ}
+theorem ratio_scaled_inverse_norm_tendsto {c a : ℝ}
     (hc : 2 < c) (N : ι → ℝ) (x : ι → ℝ)
     (hx : ∀ i, x i ∈ Ioo (-Real.pi) Real.pi) (hxpos : ∀ i, 0 < x i)
     (hxlim : Tendsto x l (𝓝 0)) (hscale : Tendsto (fun i => N i * x i) l (𝓝 a)) :
@@ -96,7 +97,7 @@ theorem ratio_scaled_inverse_norm_tendsto {ι : Type*} {l : Filter ι} {c a : �
 
 /-- The fixed-rank midpoint factor; half-integer root scales give the
 Wallis factor `1-1/(4(k+1)²)` after substitution. -/
-theorem ratio_midpoint_factor_tendsto {ι : Type*} {l : Filter ι} {c a b : ℝ}
+theorem ratio_midpoint_factor_tendsto {c a b : ℝ}
     (hc : 2 < c) (ha : 0 < a) (hb : 0 < b) (N : ι → ℝ) (hN : ∀ i, N i ≠ 0)
     (x y : ι → ℝ) (hx : ∀ i, x i ∈ Ioo (-Real.pi) Real.pi)
     (hy : ∀ i, y i ∈ Ioo (-Real.pi) Real.pi) (hxpos : ∀ i, 0 < x i) (hypos : ∀ i, 0 < y i)
@@ -109,12 +110,11 @@ theorem ratio_midpoint_factor_tendsto {ι : Type*} {l : Filter ι} {c a b : ℝ}
   have hmid (i : ι) : zmid i ∈ Ioo (-Real.pi) Real.pi := by
     constructor <;> dsimp [zmid] <;> linarith [(hx i).1, (hx i).2, (hy i).1, (hy i).2]
   have hmidpos (i : ι) : 0 < zmid i := div_pos (add_pos (hxpos i) (hypos i)) (by norm_num)
-  have hmidlim : Tendsto zmid l (𝓝 0) := by simpa [zmid] using (hxlim.add hylim).div_const 2
+  have hmidlim : Tendsto zmid l (𝓝 0) := by simpa using (hxlim.add hylim).div_const 2
   have hmidscale : Tendsto (fun i => N i * zmid i) l (𝓝 ((a + b) / 2)) := by
     have ht := (hscaleX.add hscaleY).div_const 2
     apply ht.congr
     intro i
-    dsimp [zmid]
     ring
   have hX := ratio_norm_div_size_tendsto (c := c) ha N hN x hx hxpos hxlim hscaleX
   have hY := ratio_norm_div_size_tendsto (c := c) hb N hN y hy hypos hylim hscaleY
@@ -135,5 +135,7 @@ theorem ratio_midpoint_factor_tendsto {ι : Type*} {l : Filter ι} {c a b : ℝ}
   dsimp only [zmid]
   field_simp [hN i, norm_ne_zero_iff.mpr (ratio_M_ne_zero hc (x i)),
     norm_ne_zero_iff.mpr (ratio_M_ne_zero hc (y i))]
+
+end
 
 end PottsDiscontinuity.Bethe

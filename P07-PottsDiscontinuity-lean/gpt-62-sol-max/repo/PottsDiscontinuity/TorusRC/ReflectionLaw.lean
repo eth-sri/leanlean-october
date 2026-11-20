@@ -26,8 +26,8 @@ private theorem stateCount_reflect (hMp : 0 < M) (t : ℤ) (A : RCConfig N M) (b
     refine ⟨reflectEdgeIndex hMp t e, ?_, reflectEdgeIndex_involutive hMp t e⟩
     apply Finset.mem_filter.mpr
     exact ⟨Finset.mem_univ _, by
-      simpa only [reflectRCConfig, reflectEdgeIndex_involutive hMp t e] using
-        (Finset.mem_filter.mp he).2⟩
+      simpa [reflectRCConfig, reflectEdgeIndex_involutive hMp t e] using
+              (Finset.mem_filter.mp he).2⟩
 
 theorem torusRCWeight_reflect (hN : Even N) (hM : Even M)
     (hNp : 0 < N) (hMp : 0 < M) (t : ℤ) (ht : Even t)

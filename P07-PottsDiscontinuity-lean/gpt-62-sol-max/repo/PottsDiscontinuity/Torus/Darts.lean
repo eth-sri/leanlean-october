@@ -62,34 +62,46 @@ def edgeReverse : Dart N M → Dart N M
 def edgePerm (N M : ℕ) : Equiv.Perm (Dart N M) :=
   ⟨edgeReverse, edgeReverse, edgeReverse_involutive, edgeReverse_involutive⟩
 
+section
+
+variable (s : Smoothing N M)
+
 /-- Reverse direction along the local strand, without crossing a torus edge. -/
-def strandReverse (s : Smoothing N M) (d : Dart N M) : Dart N M :=
+def strandReverse (d : Dart N M) : Dart N M :=
   (d.1, pairedPort (s d.1) d.2)
 
-@[simp] theorem strandReverse_involutive (s : Smoothing N M) :
+@[simp] theorem strandReverse_involutive :
     Function.Involutive (strandReverse s) := by
   rintro ⟨v, p⟩
   exact Prod.ext rfl (pairedPort_involutive (s v) p)
 
 /-- The local strand-reversal permutation. -/
-def strandPerm (s : Smoothing N M) : Equiv.Perm (Dart N M) :=
+def strandPerm : Equiv.Perm (Dart N M) :=
   ⟨strandReverse s, strandReverse s,
     strandReverse_involutive s, strandReverse_involutive s⟩
 
 /-- Traverse one torus edge and then turn along the chosen strand at its endpoint. -/
-def stepPerm (s : Smoothing N M) : Equiv.Perm (Dart N M) :=
+def stepPerm : Equiv.Perm (Dart N M) :=
   (edgePerm N M).trans (strandPerm s)
 
-@[simp] theorem stepPerm_apply (s : Smoothing N M) (d : Dart N M) :
+end
+
+section
+
+variable (s : Smoothing N M) (d : Dart N M)
+
+@[simp] theorem stepPerm_apply :
     stepPerm s d = strandReverse s (edgeReverse d) := rfl
 
-@[simp] theorem stepPerm_symm_apply (s : Smoothing N M) (d : Dart N M) :
+@[simp] theorem stepPerm_symm_apply :
     (stepPerm s).symm d = edgeReverse (strandReverse s d) := rfl
 
 /-- Edge reversal conjugates a path step into its inverse. -/
-theorem edgeReverse_step (s : Smoothing N M) (d : Dart N M) :
+theorem edgeReverse_step :
     edgeReverse (stepPerm s d) = (stepPerm s).symm (edgeReverse d) := by
   simp
+
+end
 
 /-- Whether a local edge slot points out of its vertex. -/
 def localOut (l r d u : Bool) : Port → Bool
@@ -123,7 +135,7 @@ theorem dartOut_strandReverse {ω : ArrowConfig N M} {s : Smoothing N M}
 theorem dartOut_step {ω : ArrowConfig N M} {s : Smoothing N M}
     (h : CompatibleConfig ω s) (d : Dart N M) :
     dartOut ω (stepPerm s d) = dartOut ω d := by
-  rw [stepPerm_apply, dartOut_strandReverse h, dartOut_edgeReverse, Bool.not_not]
+  simp [dartOut_strandReverse h]
 
 /-- One directed representative of every edge, selected by its arrow. -/
 abbrev DirectedDart (ω : ArrowConfig N M) := {d : Dart N M // dartOut ω d = true}

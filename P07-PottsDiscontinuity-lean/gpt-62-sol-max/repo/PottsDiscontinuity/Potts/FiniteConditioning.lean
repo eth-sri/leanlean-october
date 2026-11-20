@@ -35,43 +35,13 @@ theorem finite_filter_measure (p : PMF E) (B S : Set E)
       simp [Set.indicator, PMF.filter_apply, hS, hB]
   rw [PMF.toMeasure_apply_fintype]
   simp_rw [ht]
-  rw [← Finset.sum_mul, PMF.toMeasure_apply_fintype, PMF.toMeasure_apply_fintype,
-    tsum_fintype, div_eq_mul_inv]
+  simp [← Finset.sum_mul, div_eq_mul_inv]
 
 theorem finite_filter_measureReal (p : PMF E) (B S : Set E)
     (h : ∃ a ∈ B, a ∈ p.support) :
     (p.filter B h).toMeasure.real S = p.toMeasure.real (S ∩ B) / p.toMeasure.real B := by
   rw [Measure.real, finite_filter_measure, ENNReal.toReal_div]
   rfl
-
-/-- Partitioning a finite probability by the value of a random variable. -/
-theorem finite_measure_fibers (p : PMF E) (r : E → D) (S : Set E) (T : Set D) :
-    p.toMeasure.real {e | e ∈ S ∧ r e ∈ T} =
-      ∑ d : D, if d ∈ T then p.toMeasure.real (S ∩ {e | r e = d}) else 0 := by
-  classical
-  have h (U : Set E) : p.toMeasure.real U =
-      ∑ e : E, if e ∈ U then (p e).toReal else 0 := by
-    rw [Measure.real, PMF.toMeasure_apply_fintype, ENNReal.toReal_sum]
-    · apply Finset.sum_congr rfl
-      intro e _
-      by_cases he : e ∈ U <;> simp [Set.indicator, he]
-    · intro e _
-      by_cases he : e ∈ U <;> simp [Set.indicator, he, p.apply_ne_top]
-  simp_rw [h]
-  trans ∑ d : D, ∑ e : E,
-    if d ∈ T then (if e ∈ S ∩ {e | r e = d} then (p e).toReal else 0) else 0
-  · rw [Finset.sum_comm]
-    apply Finset.sum_congr rfl
-    intro e _
-    symm
-    rw [Finset.sum_eq_single (r e)]
-    · by_cases he : e ∈ S <;> by_cases ht : r e ∈ T <;> simp [he, ht]
-    · intro d _ hd
-      simp [Ne.symm hd]
-    · simp
-  · apply Finset.sum_congr rfl
-    intro d _
-    by_cases hd : d ∈ T <;> simp [hd]
 
 end
 end PottsDiscontinuity.Potts

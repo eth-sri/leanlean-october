@@ -27,7 +27,7 @@ theorem sum_eq_zero_of_mem_R_n_sym {n : ℕ} {p : Fin n → ℝ}
         apply Finset.sum_congr rfl
         intro j hj
         exact hp j
-      _ = -(∑ j : Fin n, p j) := by rw [Finset.sum_neg_distrib]
+      _ = -(∑ j : Fin n, p j) := by simp
   linarith
 
 /-- The limiting Bethe equations obtained by setting `Θ(x,y)=y-x`. -/
@@ -51,25 +51,19 @@ private theorem baseDenom_ge_n {N n : ℕ} (hn : 2 * n ≤ N) :
 
 private theorem discreteBetheIndex_abs_bound (n : ℕ) (j : Fin n) :
     |discreteBetheIndex n j| ≤ ((n : ℝ) - 1) / 2 := by
-  have hj0 : (0 : ℝ) ≤ (j.val : ℝ) := Nat.cast_nonneg _
   have hj1 : (j.val : ℝ) + 1 ≤ (n : ℝ) := by
-    have hnat : j.val + 1 ≤ n := Nat.succ_le_of_lt j.isLt
+    have hnat := Nat.succ_le_of_lt j.isLt
     exact_mod_cast hnat
-  have hj2 : (1 : ℝ) ≤ (j.val : ℝ) + 1 := by linarith
   apply abs_le.mpr
   constructor <;> dsimp [discreteBetheIndex] <;> linarith
 
 /-- The explicit limiting solution belongs to the ordered symmetric configuration space. -/
 theorem discreteBaseSolution_mem_S_n {N n : ℕ} (hN : 0 < N) (hn : 2 * n ≤ N) :
     discreteBaseSolution N n ∈ S_n n := by
-  have hD : 0 < ((N - n : ℕ) : ℝ) := baseDenom_pos hN hn
-  have hDge : (n : ℝ) ≤ ((N - n : ℕ) : ℝ) := baseDenom_ge_n hn
+  have hD := baseDenom_pos hN hn
+  have hDge := baseDenom_ge_n hn
   constructor
   · intro j
-    have hnpos : (1 : ℝ) ≤ (n : ℝ) := by
-      have hnNat : 0 < n := lt_of_le_of_lt (Nat.zero_le j.val) j.isLt
-      have hnat : 1 ≤ n := Nat.succ_le_of_lt hnNat
-      exact_mod_cast hnat
     have hI := discreteBetheIndex_abs_bound n j
     have hI2 : 2 * |discreteBetheIndex n j| < ((N - n : ℕ) : ℝ) := by
       nlinarith
@@ -79,20 +73,17 @@ theorem discreteBaseSolution_mem_S_n {N n : ℕ} (hN : 0 < N) (hn : 2 * n ≤ N)
     have habs :
         |2 * Real.pi * discreteBetheIndex n j / ((N - n : ℕ) : ℝ)| =
           (2 * Real.pi * |discreteBetheIndex n j|) / ((N - n : ℕ) : ℝ) := by
-      rw [abs_div, abs_mul, abs_of_pos (by positivity : 0 < 2 * Real.pi), abs_of_pos hD]
+      simp [abs_div]
     have hlt :
         |2 * Real.pi * discreteBetheIndex n j / ((N - n : ℕ) : ℝ)| < Real.pi := by
       rw [habs]
       exact (div_lt_iff₀ hD).2 hnum
     have hbounds := abs_lt.mp hlt
-    exact ⟨by simpa [discreteBaseSolution] using hbounds.1,
-      by simpa [discreteBaseSolution] using hbounds.2⟩
+    assumption
   constructor
   · intro i j hij
     have hI : discreteBetheIndex n i < discreteBetheIndex n j := by
-      dsimp [discreteBetheIndex]
-      have hcast : (i.val : ℝ) < (j.val : ℝ) := by exact_mod_cast hij
-      linarith
+      simp_all [discreteBetheIndex]
     dsimp [discreteBaseSolution]
     apply (div_lt_div_iff₀ hD hD).2
     have hnum : 2 * Real.pi * discreteBetheIndex n i <
@@ -117,7 +108,7 @@ theorem discreteBaseSolution_solves_at_infinity {N n : ℕ}
     ring
   have hpsum := sum_eq_zero_of_mem_R_n_sym hpSym
   have hNdecomp : (N : ℝ) = ((N - n : ℕ) : ℝ) + (n : ℝ) := by
-    have hnat : N - n + n = N := Nat.sub_add_cancel (by omega : n ≤ N)
+    have hnat := Nat.sub_add_cancel (by omega : n ≤ N)
     exact_mod_cast hnat.symm
   have hgap (j : Fin n) :
       (∑ k : Fin n, (discreteBaseSolution N n k - discreteBaseSolution N n j)) =

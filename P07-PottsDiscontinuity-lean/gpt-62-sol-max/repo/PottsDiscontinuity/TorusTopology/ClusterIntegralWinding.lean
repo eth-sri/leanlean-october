@@ -47,7 +47,7 @@ theorem exists_integral_loop_expansion_supported
     mul_sub,mul_ite,mul_one,mul_zero,Finset.sum_sub_distrib,
     Finset.sum_ite_eq,Finset.mem_filter,Finset.mem_univ,true_and,loopPrimalCluster_end]
   by_cases hc : diamondEdgeCluster hN hM A e = c
-  · simpa only [hc,ite_true,loopBoundaryIntLabel,directedLoopOf,Quotient.lift_mk] using he.symm
+  · simpa [hc, loopBoundaryIntLabel, directedLoopOf] using he.symm
   · simp only [hc,ite_false,sub_self]
     exact hs e hc
 

@@ -15,15 +15,11 @@ variable {N M : ℕ}
 /-- A nearest-neighbor zigzag in the two columns x and x+1. -/
 def columnZigzagSite (x : ℤ) (hx : Even x) (t : ℕ) : RotatedVertex :=
   ⟨(x + (t % 2 : ℕ), t), by
-    obtain ⟨k, hk⟩ := hx
-    refine ⟨k + ((t + 1) / 2 : ℕ), ?_⟩
-    omega⟩
+    grind⟩
 
 theorem columnZigzagSite_adj (x : ℤ) (hx : Even x) (t : ℕ) :
     rotatedLattice.Adj (columnZigzagSite x hx t) (columnZigzagSite x hx (t + 1)) := by
-  have ht : t % 2 = 0 ∨ t % 2 = 1 := by omega
-  rcases ht with ht | ht <;>
-    norm_num [rotatedLattice, columnZigzagSite, Nat.add_mod, ht]
+  grind [rotatedLattice, columnZigzagSite]
 
 theorem columnZigzagSite_even (x : ℤ) (hx : Even x) (t : ℕ) (ht : Even t) :
     columnZigzagSite x hx t = liftedColumnSite x t hx (by exact_mod_cast ht) := by
@@ -44,6 +40,35 @@ theorem columnZigzagSite_index (hNp : 0 < N) (hMp : 0 < M)
   rw [hxmax, max_eq_right (by omega)]
   rfl
 
+/-- An open zigzag in the strip has a walk supported on the indicated integer interval. -/
+theorem columnZigzag_walk (hNp : 0 < N) (hMp : 0 < M)
+    (A : RCConfig N M) (a b x : ℤ) (hx : Even x) (s t : ℕ)
+    (hst : s ≤ t) (ha : a ≤ x) (hb : x + 1 ≤ b)
+    (hopen : ∀ k, s ≤ k → k < t →
+      A (periodicCoordinate hNp (x + 1), periodicCoordinate hMp (k + 1)) = true) :
+    ∃ w : (liftedStripGraph hNp hMp A a b).Walk (columnZigzagSite x hx s) (columnZigzagSite x hx t),
+      ∀ z ∈ w.support, ∃ k, s ≤ k ∧ k ≤ t ∧ z = columnZigzagSite x hx k := by
+  have hstrip (k : ℕ) : a ≤ (columnZigzagSite x hx k).val.1 ∧ (columnZigzagSite x hx k).val.1 ≤ b := by
+    dsimp [columnZigzagSite]; omega
+  induction t, hst using Nat.le_induction with
+  | base =>
+    refine ⟨.nil, ?_⟩
+    simp only [SimpleGraph.Walk.support_nil, List.mem_singleton]
+    rintro _ rfl
+    exact ⟨s, le_rfl, le_rfl, rfl⟩
+  | succ t ht ih =>
+    obtain ⟨w, hw⟩ := ih (fun k hk hkt => hopen k hk (by omega))
+    let h : (liftedStripGraph hNp hMp A a b).Adj (columnZigzagSite x hx t) (columnZigzagSite x hx (t + 1)) :=
+      ⟨columnZigzagSite_adj x hx t, by rw [columnZigzagSite_index]; exact hopen _ ht (by omega),
+        hstrip t, hstrip (t + 1)⟩
+    refine ⟨w.append h.toWalk, ?_⟩
+    simp only [SimpleGraph.Walk.support_append, SimpleGraph.Adj.support_toWalk, List.tail_cons,
+      List.mem_append, List.mem_singleton]
+    rintro z (hz | rfl)
+    · obtain ⟨k, hk, hkt, rfl⟩ := hw z hz
+      exact ⟨k, hk, hkt.step, rfl⟩
+    · exact ⟨t + 1, ht.step, le_rfl, rfl⟩
+
 /-- Every finite portion of an open zigzag gives a localized lifted path.
 The endpoint is allowed to be the top seam lift at height M. -/
 theorem columnZigzag_box_connection (hNp : 0 < N) (hMp : 0 < M)
@@ -54,40 +79,10 @@ theorem columnZigzag_box_connection (hNp : 0 < N) (hMp : 0 < M)
       A (periodicCoordinate hNp (x + 1), periodicCoordinate hMp (k + 1)) = true) :
     liftedBoxConnection hNp hMp A a b R
       (columnZigzagSite x hx s) (columnZigzagSite x hx t) := by
-  have hwalk (d : ℕ) (hd : s + d ≤ t) :
-      ∃ w : (liftedStripGraph hNp hMp A a b).Walk
-          (columnZigzagSite x hx s) (columnZigzagSite x hx (s + d)),
-        ∀ z ∈ w.support, inLiftedBox R (columnZigzagSite x hx s) z := by
-    induction d with
-    | zero =>
-      refine ⟨.nil, ?_⟩
-      intro z hz
-      simp only [SimpleGraph.Walk.support_nil, List.mem_singleton] at hz
-      subst z
-      simp [inLiftedBox]
-    | succ d ih =>
-      obtain ⟨w, hw⟩ := ih (by omega)
-      have hadj : (liftedStripGraph hNp hMp A a b).Adj
-          (columnZigzagSite x hx (s + d)) (columnZigzagSite x hx (s + (d + 1))) := by
-        refine ⟨columnZigzagSite_adj x hx (s + d), ?_, ?_, ?_⟩
-        · rw [← Nat.add_assoc, columnZigzagSite_index]
-          exact hopen (s + d) (by omega) (by omega)
-        · dsimp [columnZigzagSite]
-          constructor <;> omega
-        · dsimp [columnZigzagSite]
-          constructor <;> omega
-      refine ⟨w.append (.cons hadj .nil), ?_⟩
-      intro z hz
-      rw [SimpleGraph.Walk.support_append] at hz
-      rcases List.mem_append.mp hz with hz | hz
-      · exact hw z hz
-      · simp only [SimpleGraph.Walk.support_cons, SimpleGraph.Walk.support_nil,
-          List.tail_cons, List.mem_singleton] at hz
-        subst z
-        dsimp [inLiftedBox, columnZigzagSite]
-        constructor <;> apply abs_le.mpr <;> constructor <;> omega
-  have hw := hwalk (t - s) (by omega)
-  rw [Nat.add_sub_of_le hst] at hw
-  exact hw
+  obtain ⟨w, hw⟩ := columnZigzag_walk hNp hMp A a b x hx s t hst ha hb hopen
+  refine ⟨w, fun z hz => ?_⟩
+  obtain ⟨k, hsk, hkt, rfl⟩ := hw z hz
+  simp only [inLiftedBox, columnZigzagSite, abs_le]
+  omega
 
 end PottsDiscontinuity.TorusRC

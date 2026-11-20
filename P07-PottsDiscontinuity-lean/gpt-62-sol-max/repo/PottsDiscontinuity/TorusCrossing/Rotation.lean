@@ -34,13 +34,13 @@ def rotMed (m : Cell) : Cell := (R.x0 + (m.2 - R.y0), R.y0 + R.w + 1 - (m.1 - R.
 def rotMedInv (m : Cell) : Cell := (R.x0 + R.w + 1 - (m.2 - R.y0), R.y0 + (m.1 - R.x0))
 
 theorem rot_rotInv (c : Cell) : R.rot (R.rotInv c) = c := by
-  unfold rot rotInv; ext <;> simp; ring
+  unfold rot rotInv; ring
 
 theorem rotInv_rot (c : Cell) : R.rotInv (R.rot c) = c := by
-  unfold rot rotInv; ext <;> simp; ring
+  unfold rot rotInv; ring
 
 theorem rotMed_rotMedInv (m : Cell) : R.rotMed (R.rotMedInv m) = m := by
-  unfold rotMed rotMedInv; ext <;> simp; ring
+  unfold rotMed rotMedInv; ring
 
 theorem rot_injective : Function.Injective R.rot := fun a b h => by
   rw [← R.rotInv_rot a, ← R.rotInv_rot b, h]
@@ -60,7 +60,6 @@ theorem rotMed_mem_inner (hsq : R.w = R.h) {m : Cell} (hm : m ∈ R.inner) :
   rw [mem_inner] at hm ⊢
   unfold rotMed
   dsimp only
-  have : (R.w : ℤ) = R.h := by exact_mod_cast hsq
   omega
 
 theorem rotMedInv_mem_inner (hsq : R.w = R.h) {m : Cell} (hm : m ∈ R.inner) :
@@ -68,7 +67,6 @@ theorem rotMedInv_mem_inner (hsq : R.w = R.h) {m : Cell} (hm : m ∈ R.inner) :
   rw [mem_inner] at hm ⊢
   unfold rotMedInv
   dsimp only
-  have : (R.w : ℤ) = R.h := by exact_mod_cast hsq
   omega
 
 theorem rot_mem_pcells (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c : Cell} (hc : c ∈ R.dcells) :
@@ -77,7 +75,6 @@ theorem rot_mem_pcells (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c : Cell} (hc : c
   rw [mem_pcells, mem_cells]
   unfold rot IsPrimal at *
   dsimp only
-  have : (R.w : ℤ) = R.h := by exact_mod_cast hsq
   refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩ <;> omega
 
 theorem rotInv_mem_dcells (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c : Cell} (hc : c ∈ R.pcells) :
@@ -85,9 +82,7 @@ theorem rotInv_mem_dcells (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c : Cell} (hc 
   rw [mem_pcells, mem_cells] at hc
   rw [mem_dcells, mem_cells]
   unfold rotInv IsPrimal at *
-  dsimp only
-  have : (R.w : ℤ) = R.h := by exact_mod_cast hsq
-  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩ <;> omega
+  omega
 
 /-- The quarter-turn bijection from odd cells to primal cells. -/
 def rotEquiv (hsq : R.w = R.h) (hodd : R.w % 2 = 1) : R.dcells ≃ R.pcells where

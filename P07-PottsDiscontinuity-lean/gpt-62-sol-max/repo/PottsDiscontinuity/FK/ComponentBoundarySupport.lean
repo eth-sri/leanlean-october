@@ -24,8 +24,8 @@ theorem componentSetoid_le_wired_union_of_edge_endpoints
     apply (BoundaryCondition.wired_rel (ξ.boundary ∪ D) x y).2
     right
     constructor
-    · exact Set.mem_union_right _ (hA heA (by rw [hexy]; exact (Sym2.mem_iff').2 (Or.inl rfl)))
-    · exact Set.mem_union_right _ (hA heA (by rw [hexy]; exact (Sym2.mem_iff').2 (Or.inr rfl)))
+    · exact Set.mem_union_right _ (hA heA (by rw [hexy]; simp))
+    · exact Set.mem_union_right _ (hA heA (by rw [hexy]; simp))
   · intro x y hxy
     apply (BoundaryCondition.wired_rel (ξ.boundary ∪ D) x y).2
     rcases ξ.supported hxy with rfl | ⟨hx, hy⟩

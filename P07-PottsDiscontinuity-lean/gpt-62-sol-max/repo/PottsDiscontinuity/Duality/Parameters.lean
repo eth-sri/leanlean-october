@@ -30,7 +30,7 @@ lemma dualParameter_pos {q p : ℝ} (hq : 0 < q) (hp : 0 < p) (hp1 : p < 1) :
 lemma dualParameter_lt_one {q p : ℝ} (hq : 0 < q) (hp : 0 < p) (hp1 : p < 1) :
     dualParameter q p < 1 := by
   rw [dualParameter, div_lt_one (dualParameter_den_pos hq hp hp1)]
-  linarith only [hp]
+  simp_all
 
 lemma one_sub_dualParameter {q p : ℝ} (hq : 0 < q) (hp : 0 < p) (hp1 : p < 1) :
     1 - dualParameter q p = p / (p + q * (1 - p)) := by
@@ -41,19 +41,17 @@ lemma one_sub_dualParameter {q p : ℝ} (hq : 0 < q) (hp : 0 < p) (hp1 : p < 1) 
 /-- The existing critical parameter lies in the interior for every `q ≥ 1`. -/
 lemma rcCriticalParameter_mem_Ioo (q : Set.Ici (1 : ℝ)) :
     (rcCriticalParameter q : ℝ) ∈ Set.Ioo (0 : ℝ) 1 := by
-  have hq : 0 < (q : ℝ) := lt_of_lt_of_le zero_lt_one q.property
-  have hs : 0 < Real.sqrt (q : ℝ) := Real.sqrt_pos.2 hq
+  have hq := lt_of_lt_of_le zero_lt_one q.property
   change 0 < Real.sqrt (q : ℝ) / (1 + Real.sqrt (q : ℝ)) ∧
     Real.sqrt (q : ℝ) / (1 + Real.sqrt (q : ℝ)) < 1
   constructor
-  · exact div_pos hs (by positivity)
-  · exact (div_lt_one (by positivity)).2 (by linarith only [hs])
+  · positivity
+  · exact (div_lt_one (by positivity)).2 (by simp)
 
 /-- The parameter `√q / (1 + √q)` is fixed by planar FK parameter duality. -/
 theorem dualParameter_rcCriticalParameter (q : Set.Ici (1 : ℝ)) :
     dualParameter q (rcCriticalParameter q) = rcCriticalParameter q := by
-  have hq : 0 < (q : ℝ) := lt_of_lt_of_le zero_lt_one q.property
-  have hs := Real.sqrt_pos.2 hq
+  have hq := lt_of_lt_of_le zero_lt_one q.property
   have hs2 := Real.sq_sqrt hq.le
   have hsub : 1 - Real.sqrt (q : ℝ) / (1 + Real.sqrt (q : ℝ)) =
       1 / (1 + Real.sqrt (q : ℝ)) := by

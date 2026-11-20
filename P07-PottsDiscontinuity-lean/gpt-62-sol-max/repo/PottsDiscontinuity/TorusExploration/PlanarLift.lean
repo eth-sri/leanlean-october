@@ -20,7 +20,7 @@ lemma potentialLiftCoordinates_even (hN : Even N)
     Even ((potentialLiftCoordinates F v).1+(potentialLiftCoordinates F v).2) := by
   have hv : Even (v.val.1.val+v.val.2.val) := by
     apply Nat.even_iff.mpr
-    simpa only [checker,decide_eq_true_eq] using v.property
+    simpa [checker] using v.property
   have hv' : Even ((v.val.1.val : ℤ)+(v.val.2.val : ℤ)) := by exact_mod_cast hv
   have hN' : Even (N : ℤ) := by exact_mod_cast hN
   convert hv'.add (hN'.mul_right (F v)) using 1; dsimp [potentialLiftCoordinates]; ring

@@ -35,27 +35,15 @@ theorem boxMeasure_apply (θ : Parameters) (i : Fin 2) (c : LatticeVertex) (r : 
   classical
   unfold boxMeasure boxBoundary boxExtension
   split_ifs
-  · change ((law (boxGraph c r) θ (BoundaryCondition.free ∅)).map
-      (boxConfiguration c r)).toMeasure A =
-        (law (boxGraph c r) θ (BoundaryCondition.free ∅)).toMeasure
-          ((boxConfiguration c r) ⁻¹' A)
-    exact PMF.toMeasure_map_apply _ _ _ measurable_from_top hA
-  · change ((law (boxGraph c r) θ (BoundaryCondition.wired (boxVertexBoundary c r))).map
-      (wiredBoxConfiguration c r)).toMeasure A =
-        (law (boxGraph c r) θ (BoundaryCondition.wired (boxVertexBoundary c r))).toMeasure
-          ((wiredBoxConfiguration c r) ⁻¹' A)
-    exact PMF.toMeasure_map_apply _ _ _ measurable_from_top hA
+  · exact PMF.toMeasure_map_apply _ _ _ measurable_from_top hA
+  · exact PMF.toMeasure_map_apply _ _ _ measurable_from_top hA
 
 theorem eventually_edge_in_box (e : Edge) :
     ∀ᶠ n : ℕ in atTop, ∃ f : (boxGraph (0, 0) n).edgeSet,
       boxEdgeEmbedding (0, 0) n f = e := by
-  rcases e with ⟨e, he⟩
-  induction e using Sym2.inductionOn with
-  | _ x y =>
-    filter_upwards [eventually_mem_box x, eventually_mem_box y] with n hx hy
-    have hx' : x ∈ latticeBox (0, 0) n := by rwa [latticeBox_origin_eq_box]
-    have hy' : y ∈ latticeBox (0, 0) n := by rwa [latticeBox_origin_eq_box]
-    exact ⟨⟨s(⟨x, hx'⟩, ⟨y, hy'⟩), he⟩, rfl⟩
+  filter_upwards [eventually_edge_lift_box e] with n hn
+  rw [← latticeBox_origin_eq_box] at hn
+  exact hn.imp fun f hf => Subtype.ext hf
 
 end
 end PottsDiscontinuity.RCInfinite

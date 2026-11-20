@@ -66,15 +66,14 @@ theorem multiComplement_embedding (hN : Even N) (hM : Even M)
       intro b
       cases b
       · rw [← he0]; exact hn u
-      · rw [← he1]; exact hn v
+      · simpa [← he1] using hn v
     · change u.val = faceEndpoint hN hM true e true at he0
       change v.val = faceEndpoint hN hM true e false at he1
       intro b
       cases b
-      · rw [← he1]; exact hn v
-      · rw [← he0]; exact hn u
-  have hd : unexploredCylinderConfig hN hM A s e=true := by
-    exact decide_eq_true ⟨hrow,hend⟩
+      · simpa [← he1] using hn v
+      · simpa [← he0] using hn u
+  have hd : unexploredCylinderConfig hN hM A s e=true := decide_eq_true ⟨hrow,hend⟩
   rw [diamondOpenGraph,SimpleGraph.fromEdgeSet_adj]
   exact ⟨⟨e,hd,hep⟩,hne⟩
 

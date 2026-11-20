@@ -1,4 +1,5 @@
 module
+public import PottsDiscontinuity.Torus.DiamondFullConnectivity
 
 public import PottsDiscontinuity.TorusLoops.LoopClusterProjection
 public import PottsDiscontinuity.TorusLoops.DualTranslation
@@ -21,35 +22,38 @@ open PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
+section
+
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
+
 /-- The actual dual cluster incident to a loop, in translated primal coordinates. -/
-def loopDualCluster (hN : Even N) (hM : Even M) (A : RCConfig N M)
+def loopDualCluster
     (q : Loop hN hM (rcSmoothing A)) :
     (diamondOpenGraph hN hM true (translatedDual A)).ConnectedComponent :=
   loopPrimalCluster hN hM (translatedDual A) (translatedDualLoopEquiv hN hM A q)
 
-@[simp] theorem loopDualCluster_loopOf (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (d : DirectedDart (checkerArrows N M)) :
+@[simp] theorem loopDualCluster_loopOf (d : DirectedDart (checkerArrows N M)) :
     loopDualCluster hN hM A (directedLoopOf _ _
         (checkerArrows_compatible hN hM (rcSmoothing A)) d) =
       (diamondOpenGraph hN hM true (translatedDual A)).connectedComponentMk
         (ribbonFace hN hM (dualDartEquiv hN hM d)) := by
-  unfold loopDualCluster
-  rw [translatedDualLoopEquiv_loopOf, loopPrimalCluster_loopOf]
+  solve_by_elim
 
-theorem loopDualCluster_ends_of_closed (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false) :
+theorem loopDualCluster_ends_of_closed (v : Fin N × Fin M) (hv : A v = false) :
     loopDualCluster hN hM A (directedLoopOf _ _
       (checkerArrows_compatible hN hM (rcSmoothing A)) (ribbonEndEquiv hN hM (v, false))) =
     loopDualCluster hN hM A (directedLoopOf _ _
       (checkerArrows_compatible hN hM (rcSmoothing A)) (ribbonEndEquiv hN hM (v, true))) := by
   rw [loopDualCluster_loopOf, loopDualCluster_loopOf,
     ribbonFace_dualDart_end, ribbonFace_dualDart_end]
-  have ho : translatedDual A (columnShift v) = true := by rw [translatedDual_shift, hv]; rfl
+  have ho : translatedDual A (columnShift v) = true := by simp_all
   have hr := diamond_endpoints_reachable hN hM (translatedDual A) (columnShift v) ho
   apply SimpleGraph.ConnectedComponent.sound
   cases hc : checker v
-  · simpa only [hc, Bool.false_xor] using hr
-  · simpa only [hc, Bool.true_xor, Bool.not_false, Bool.not_true] using hr.symm
+  · simp_all
+  solve_by_elim
+
+end
 
 /-- Any labels agreeing across each loop agree between the two ends of every
 indexed ribbon, using the primal edge when open and the dual edge when closed. -/
@@ -70,11 +74,11 @@ theorem compatible_cluster_labels_ends {β : Type*} (hN : Even N) (hM : Even M)
       (ribbonEndEquiv hN hM (v, true))
     have h₀ := hfg q₀
     have h₁ := hfg q₁
-    have hd : loopDualCluster hN hM A q₀ = loopDualCluster hN hM A q₁ :=
+    have hd :=
       loopDualCluster_ends_of_closed hN hM A v hv
     rw [← hd] at h₁
     have he := h₀.trans h₁.symm
-    simpa only [q₀, q₁, loopPrimalCluster_loopOf, ribbonFace_end] using he
+    simpa [q₀, q₁] using he
   · exact congrArg f (SimpleGraph.ConnectedComponent.sound
       (diamond_endpoints_reachable hN hM A v hv))
 
@@ -102,20 +106,25 @@ theorem compatible_cluster_labels_constant {β : Type*} (hN : Even N) (hM : Even
         · exact compatible_cluster_labels_ends hN hM A f g hfg e
         · exact (compatible_cluster_labels_ends hN hM A f g hfg e).symm
 
-theorem loopPrimalCluster_surjective (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+section
+
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
+
+theorem loopPrimalCluster_surjective :
     Function.Surjective (loopPrimalCluster hN hM A) := by
   intro c
   induction c using Quot.inductionOn with
   | h v =>
     refine ⟨directedLoopOf _ _ (checkerArrows_compatible hN hM (rcSmoothing A))
       (ribbonVertexDart hN hM v), ?_⟩
-    rw [loopPrimalCluster_loopOf, ribbonFace_vertexDart]
-    rfl
+    solve_by_elim
 
-theorem loopDualCluster_surjective (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+theorem loopDualCluster_surjective :
     Function.Surjective (loopDualCluster hN hM A) :=
   (loopPrimalCluster_surjective hN hM (translatedDual A)).comp
     (translatedDualLoopEquiv hN hM A).surjective
+
+end
 
 noncomputable section
 
@@ -195,11 +204,10 @@ theorem finrank_loopIncidenceCycleSpace_le_one (hN : Even N) (hM : Even M)
     Module.finrank ℚ (LinearMap.ker (loopIncidenceBoundary hN hM A)) ≤ 1 := by
   classical
   have hk : Module.finrank ℚ (LinearMap.ker (loopIncidenceCoboundary hN hM A)) = 1 := by
-    rw [(incidenceKernelConstantEquiv hN hM hNp hMp A).finrank_eq, Module.finrank_self]
+    simp [(incidenceKernelConstantEquiv hN hM hNp hMp A).finrank_eq]
   have hr : Module.finrank ℚ (LinearMap.range (loopIncidenceBoundary hN hM A)) =
       Module.finrank ℚ (LinearMap.range (loopIncidenceCoboundary hN hM A)) := by
     rw [loopIncidenceCoboundary_eq_transpose]
-    change (loopIncidenceMatrix hN hM A).rank = (loopIncidenceMatrix hN hM A).transpose.rank
     exact (Matrix.rank_transpose _).symm
   have hb := LinearMap.finrank_range_add_finrank_ker (loopIncidenceBoundary hN hM A)
   have hc := LinearMap.finrank_range_add_finrank_ker (loopIncidenceCoboundary hN hM A)

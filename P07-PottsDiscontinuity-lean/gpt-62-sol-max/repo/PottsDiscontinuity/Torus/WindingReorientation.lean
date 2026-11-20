@@ -39,8 +39,8 @@ theorem verticalMass_reorient (ω₀ ω₁ : ArrowConfig N M) (s : Smoothing N M
   refine Finset.sum_congr rfl fun q _ => ?_
   rw [loopVertical_reorient]
   by_cases hq : loopOrientation ω₀ s h₀ ω₁ h₁ q = true
-  · simp only [hq, ite_true]
-  · simp only [Bool.eq_false_iff.mpr hq, Bool.false_eq_true, ite_false, Int.natAbs_neg]
+  · simp [hq]
+  · simp [Bool.eq_false_iff.mpr hq]
 
 theorem verticalWindingCount_reorient (ω₀ ω₁ : ArrowConfig N M) (s : Smoothing N M)
     (h₀ : CompatibleConfig ω₀ s) (h₁ : CompatibleConfig ω₁ s) (j : Fin M) :

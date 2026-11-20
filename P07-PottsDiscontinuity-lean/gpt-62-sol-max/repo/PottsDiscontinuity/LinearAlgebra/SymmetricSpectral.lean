@@ -26,22 +26,23 @@ namespace PottsDiscontinuity.PerronFrobenius
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι] {A : Matrix ι ι ℝ}
 
-/-- The orthonormal eigenvector basis of a real symmetric matrix, as plain functions `ι → ℝ`. -/
-noncomputable def eigvec (hA : A.IsHermitian) (i : ι) : ι → ℝ := ⇑(hA.eigenvectorBasis i)
+section
 
-theorem eigvec_dot (hA : A.IsHermitian) (i j : ι) :
+variable (hA : A.IsHermitian)
+
+/-- The orthonormal eigenvector basis of a real symmetric matrix, as plain functions `ι → ℝ`. -/
+noncomputable def eigvec (i : ι) : ι → ℝ := ⇑(hA.eigenvectorBasis i)
+
+theorem eigvec_dot (i j : ι) :
     eigvec hA i ⬝ᵥ eigvec hA j = if i = j then 1 else 0 := by
   have := hA.eigenvectorBasis.orthonormal
-  rw [orthonormal_iff_ite] at this
-  have h := this i j
-  rw [EuclideanSpace.inner_eq_star_dotProduct] at h
-  simpa [eigvec, dotProduct_comm] using h
+  simp_all [eigvec, dotProduct_comm, EuclideanSpace.inner_eq_star_dotProduct, orthonormal_iff_ite]
 
-theorem mulVec_eigvec (hA : A.IsHermitian) (i : ι) :
+theorem mulVec_eigvec (i : ι) :
     A *ᵥ eigvec hA i = hA.eigenvalues i • eigvec hA i :=
   hA.mulVec_eigenvectorBasis i
 
-theorem expansion (hA : A.IsHermitian) (x : ι → ℝ) :
+theorem expansion (x : ι → ℝ) :
     x = ∑ i, (eigvec hA i ⬝ᵥ x) • eigvec hA i := by
   have h := hA.eigenvectorBasis.sum_repr' (WithLp.toLp 2 x)
   have := congrArg WithLp.ofLp h
@@ -52,7 +53,7 @@ theorem expansion (hA : A.IsHermitian) (x : ι → ℝ) :
   rw [dotProduct_comm]
   rfl
 
-theorem mulVec_pow_eigvec (hA : A.IsHermitian) (M : ℕ) (i : ι) :
+theorem mulVec_pow_eigvec (M : ℕ) (i : ι) :
     (A ^ M) *ᵥ eigvec hA i = (hA.eigenvalues i) ^ M • eigvec hA i := by
   induction M with
   | zero => simp
@@ -60,7 +61,7 @@ theorem mulVec_pow_eigvec (hA : A.IsHermitian) (M : ℕ) (i : ι) :
     rw [pow_succ', ← mulVec_mulVec, ih, mulVec_smul, mulVec_eigvec, smul_smul, ← pow_succ]
 
 /-- Spectral expansion of the bilinear form `x ⬝ᵥ A ^ M *ᵥ y`. -/
-theorem dotProduct_pow_mulVec (hA : A.IsHermitian) (M : ℕ) (x y : ι → ℝ) :
+theorem dotProduct_pow_mulVec (M : ℕ) (x y : ι → ℝ) :
     x ⬝ᵥ ((A ^ M) *ᵥ y) =
       ∑ i, hA.eigenvalues i ^ M * ((eigvec hA i ⬝ᵥ x) * (eigvec hA i ⬝ᵥ y)) := by
   have hy := congrArg (fun z => x ⬝ᵥ ((A ^ M) *ᵥ z)) (expansion hA y)
@@ -70,22 +71,24 @@ theorem dotProduct_pow_mulVec (hA : A.IsHermitian) (M : ℕ) (x y : ι → ℝ) 
   ring
 
 /-- `trace (A ^ M)` is the sum of the `M`-th powers of the eigenvalues. -/
-theorem trace_pow_eq_sum (hA : A.IsHermitian) (M : ℕ) :
+theorem trace_pow_eq_sum (M : ℕ) :
     (A ^ M).trace = ∑ i, hA.eigenvalues i ^ M := by
   conv_lhs =>
     rw [hA.spectral_theorem, ← map_pow, Unitary.conjStarAlgAut_apply, trace_mul_comm,
       ← mul_assoc]
-  simp [diagonal_pow, trace_diagonal]
+  simp [diagonal_pow]
 
-theorem dotProduct_self_eq_sum (hA : A.IsHermitian) (x : ι → ℝ) :
+theorem dotProduct_self_eq_sum (x : ι → ℝ) :
     x ⬝ᵥ x = ∑ i, (eigvec hA i ⬝ᵥ x) ^ 2 := by
   have h := dotProduct_pow_mulVec hA 0 x x
   simpa [sq] using h
 
-theorem dotProduct_mulVec_eq_sum (hA : A.IsHermitian) (x : ι → ℝ) :
+theorem dotProduct_mulVec_eq_sum (x : ι → ℝ) :
     x ⬝ᵥ (A *ᵥ x) = ∑ i, hA.eigenvalues i * (eigvec hA i ⬝ᵥ x) ^ 2 := by
   have h := dotProduct_pow_mulVec hA 1 x x
-  simpa [sq] using h
+  grind
+
+end
 
 /-- Rayleigh bound: if `ρ` bounds the eigenvalues above then `x ⬝ᵥ A x ≤ ρ * (x ⬝ᵥ x)`. -/
 theorem dotProduct_mulVec_le (hA : A.IsHermitian) {ρ : ℝ} (hρ : ∀ i, hA.eigenvalues i ≤ ρ)
@@ -97,30 +100,13 @@ theorem dotProduct_mulVec_le (hA : A.IsHermitian) {ρ : ℝ} (hρ : ∀ i, hA.ei
 theorem mulVec_eq_of_dotProduct_mulVec_eq (hA : A.IsHermitian) {ρ : ℝ}
     (hρ : ∀ i, hA.eigenvalues i ≤ ρ) (x : ι → ℝ)
     (hx : x ⬝ᵥ (A *ᵥ x) = ρ * (x ⬝ᵥ x)) : A *ᵥ x = ρ • x := by
-  rw [dotProduct_mulVec_eq_sum hA, dotProduct_self_eq_sum hA, Finset.mul_sum] at hx
-  have h0 : ∑ i, (ρ * (eigvec hA i ⬝ᵥ x) ^ 2 - hA.eigenvalues i * (eigvec hA i ⬝ᵥ x) ^ 2) = 0 := by
-    rw [Finset.sum_sub_distrib]; linarith
-  have hnn : ∀ i ∈ Finset.univ, 0 ≤ ρ * (eigvec hA i ⬝ᵥ x) ^ 2
-      - hA.eigenvalues i * (eigvec hA i ⬝ᵥ x) ^ 2 := fun i _ => by
-    nlinarith [hρ i, sq_nonneg (eigvec hA i ⬝ᵥ x)]
-  have hz := (Finset.sum_eq_zero_iff_of_nonneg hnn).1 h0
-  have key : ∀ i, hA.eigenvalues i • (eigvec hA i ⬝ᵥ x) = ρ • (eigvec hA i ⬝ᵥ x) := by
-    intro i
-    have := hz i (Finset.mem_univ i)
-    have h2 : (ρ - hA.eigenvalues i) * (eigvec hA i ⬝ᵥ x) ^ 2 = 0 := by linarith
-    rcases mul_eq_zero.1 h2 with h | h
-    · have : hA.eigenvalues i = ρ := by linarith
-      rw [this]
-    · have : eigvec hA i ⬝ᵥ x = 0 := pow_eq_zero_iff (two_ne_zero) |>.1 h
-      simp [this]
-  conv_lhs => rw [expansion hA x]
-  rw [mulVec_sum]
-  conv_rhs => rw [expansion hA x, Finset.smul_sum]
-  refine Finset.sum_congr rfl fun i _ => ?_
-  rw [mulVec_smul, mulVec_eigvec, smul_smul, smul_smul]
-  have := key i
-  rw [smul_eq_mul, smul_eq_mul] at this
-  rw [mul_comm (eigvec hA i ⬝ᵥ x), this]
+  have hP : (ρ • (1 : Matrix ι ι ℝ) - A).PosSemidef :=
+    .of_dotProduct_mulVec_nonneg ((isHermitian_one.smul (IsSelfAdjoint.all ρ)).sub hA) fun y => by
+      simpa [sub_mulVec, smul_mulVec] using
+              dotProduct_mulVec_le hA hρ y
+  have hz : (ρ • (1 : Matrix ι ι ℝ) - A) *ᵥ x = 0 :=
+    hP.dotProduct_mulVec_zero_iff.mp (by simp [sub_mulVec, smul_mulVec, hx])
+  simpa [sub_mulVec, smul_mulVec, sub_eq_zero, eq_comm] using hz
 
 /-! ### The largest eigenvalue -/
 
@@ -142,8 +128,7 @@ theorem eigenvalues_le_pfRoot [Nonempty ι] (hA : A.IsHermitian) (i : ι) :
 theorem exists_eigenvalues_eq_pfRoot [Nonempty ι] (hA : A.IsHermitian) :
     ∃ i, hA.eigenvalues i = pfRoot A := by
   have := (isGreatest_pfRoot hA).1
-  rw [hA.spectrum_real_eq_range_eigenvalues] at this
-  exact this
+  simpa [hA.spectrum_real_eq_range_eigenvalues] using this
 
 theorem dotProduct_mulVec_le_pfRoot [Nonempty ι] (hA : A.IsHermitian) (x : ι → ℝ) :
     x ⬝ᵥ (A *ᵥ x) ≤ pfRoot A * (x ⬝ᵥ x) :=

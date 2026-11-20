@@ -46,7 +46,7 @@ theorem loopSum_edgeReverse_turn (ω : ArrowConfig N M) (s : Smoothing N M)
     intro d _
     by_cases hq : directedLoopOf ω s h d = q
     · simp [hq, strandTurn_edgeReverse_eq_neg_step]
-    · simp [hq]
+    grind
   unfold loopTurn
   calc
     _ = -loopSum ω s h (fun d => strandTurn (s (stepPerm s d).1)
@@ -59,12 +59,11 @@ private theorem arrowDart_eq_dart_if_direction (ω : ArrowConfig N M) (d : Dart 
     arrowDart ω (dartEdge d) = if dartOut ω d then d else edgeReverse d := by
   by_cases hd : dartOut ω d = true
   · simpa [hd] using arrowDart_dartEdge ω ⟨d, hd⟩
-  · have hdF : dartOut ω d = false := Bool.eq_false_iff.mpr hd
+  · have hdF := Bool.eq_false_iff.mpr hd
     have hr : dartOut ω (edgeReverse d) = true := by
-      simp [dartOut_edgeReverse, hdF]
+      simp_all
     have h := arrowDart_dartEdge ω ⟨edgeReverse d, hr⟩
-    rw [dartEdge_edgeReverse] at h
-    simpa [hdF] using h
+    simp_all
 
 /-- A compatible arrow orientation preserves a loop turn, while reversing that loop negates it. -/
 theorem loopTurn_reorient (ω₀ ω₁ : ArrowConfig N M) (s : Smoothing N M)
@@ -83,10 +82,7 @@ theorem loopTurn_reorient (ω₀ ω₁ : ArrowConfig N M) (s : Smoothing N M)
           (arrowDart ω₁ (dartEdge d.val)).2 =
         if b then strandTurn (s d.val.1) d.val.2
         else strandTurn (s (edgeReverse d.val).1) (edgeReverse d.val).2 := by
-    have horient : dartOut ω₁ d.val = b := by
-      rw [← loopOrientation_apply ω₀ s h₀ ω₁ h₁ d, hd]
-    rw [arrowDart_eq_dart_if_direction ω₁ d.val, horient]
-    cases b <;> rfl
+    grind only [arrowDart_eq_dart_if_direction, loopOrientation_apply]
   have hsum :
       loopSum ω₀ s h₀
           (fun d => strandTurn (s (arrowDart ω₁ (dartEdge d)).1)

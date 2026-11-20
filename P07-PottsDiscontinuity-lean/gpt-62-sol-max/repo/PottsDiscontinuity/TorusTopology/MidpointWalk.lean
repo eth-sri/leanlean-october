@@ -47,7 +47,6 @@ lemma loopMidpointWalk_support (ω : ArrowConfig N M) (s : Smoothing N M)
   induction n with
   | zero => rfl
   | succ n ih =>
-    simp only [loopMidpointWalk,SimpleGraph.Walk.support_concat,ih,List.range_succ,
-      List.map_append,List.map_singleton]
+    simp [loopMidpointWalk, ih, List.range_succ]
 
 end PottsDiscontinuity.TorusTopology

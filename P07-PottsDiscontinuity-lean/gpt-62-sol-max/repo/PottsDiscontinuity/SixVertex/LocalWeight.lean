@@ -55,8 +55,7 @@ theorem w6V_eq_prod (a b c : ℝ) (ω : ArrowConfig N M) :
       ∏ v : Fin N × Fin M, localWeight a b c (ω.left v) (ω.right v) (ω.below v) (ω.above v) := by
   unfold w6V
   split_ifs with hice
-  · have hne : ∀ v : Fin N × Fin M,
-        vertexType? (ω.left v) (ω.right v) (ω.below v) (ω.above v) ≠ none :=
+  · have hne :=
       fun v => (inDegree_eq_two_iff_isSome _ _ _ _).1 (hice v)
     rw [Finset.prod_congr rfl (fun v _ => localWeight_eq_pow a b c _ _ _ _ (hne v))]
     rw [Finset.prod_mul_distrib, Finset.prod_mul_distrib, Finset.prod_pow_eq_pow_sum,
@@ -78,7 +77,7 @@ to whether the two vertical arrows differ (types 5, 6) or not. -/
 theorem localWeight_one_one (c : ℝ) (l r d u : Bool) :
     localWeight 1 1 c l r d u = if inDegree l r d u = 2 then (if d = u then 1 else c) else 0 := by
   cases l <;> cases r <;> cases d <;> cases u <;>
-    simp [localWeight, vertexType?, vertexWeight, inDegree]
+    rfl
 
 theorem w6V1_eq_prod (c : ℝ) (ω : ArrowConfig N M) :
     w6V1 c ω =

@@ -27,10 +27,7 @@ def boolConfigurationEquiv : (G.edgeSet → Bool) ≃ Configuration G := by
     { toFun := fun ω => Finset.univ.filter (fun e => ω e = true)
       invFun := fun A e => decide (e ∈ A)
       left_inv := by
-        intro ω
-        funext e
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-        cases ω e <;> rfl
+        grind
       right_inv := by
         intro A
         ext e
@@ -60,7 +57,7 @@ theorem openEdges_boolConfigurationEquiv (ω : G.edgeSet → Bool) :
   ext e
   constructor
   · rintro ⟨f, hf, rfl⟩
-    exact ⟨f.property, (mem_boolConfigurationEquiv G ω f).mp hf⟩
+    simp_all
   · rintro ⟨h, hω⟩
     exact ⟨⟨e, h⟩, (mem_boolConfigurationEquiv G ω ⟨e, h⟩).mpr hω, rfl⟩
 

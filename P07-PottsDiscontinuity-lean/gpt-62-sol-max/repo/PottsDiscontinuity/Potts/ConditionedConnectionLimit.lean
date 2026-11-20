@@ -46,16 +46,8 @@ theorem conditioned_connection_moments_tendsto
     ((1 - FK.edgeParameter θ) ^ 4) (pow_pos (FK.one_sub_edgeParameter_pos θ) 4)
   · filter_upwards [eventually_gt_atTop 0] with n hn S hS
     exact conditionedOuterBox_density θ n hn S hS
-  · intro m
-    have ht := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hweak
-      (wiredDataEvent_isClopen (m + 1) F)
-    simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn, Function.comp_def] using
-      NNReal.continuous_coe.continuousAt.tendsto.comp ht
-  · intro m
-    have ht := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hν
-      (wiredDataEvent_isClopen (m + 1) F)
-    simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn, Function.comp_def] using
-      NNReal.continuous_coe.continuousAt.tendsto.comp ht
+  · exact fun m => ProbabilityMeasure.tendsto_real_clopen hweak (wiredDataEvent_isClopen (m + 1) F)
+  · exact fun m => ProbabilityMeasure.tendsto_real_clopen hν (wiredDataEvent_isClopen (m + 1) F)
   · rw [iInter_wiredDataEvent_succ]
     exact (wired_connection_moments_tendsto θ μ hμ F).comp (tendsto_add_atTop_nat 1)
 

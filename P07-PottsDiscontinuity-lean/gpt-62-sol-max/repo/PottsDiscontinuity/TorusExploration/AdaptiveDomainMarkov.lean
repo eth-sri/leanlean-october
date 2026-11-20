@@ -14,7 +14,6 @@ noncomputable section
 
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 
-local instance adaptiveDomainMarkovEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance adaptiveDomainMarkovEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- The record produced by a revealed edge set stores both which edges were
@@ -40,9 +39,7 @@ theorem revealRecordEvent_eq_frozenStateEvent
   constructor
   · intro h
     exact h.2
-  · intro h
-    have hrevealed := hstable C₀ C (by simpa [h])
-    exact ⟨hrevealed, h⟩
+  tauto
 
 end
 

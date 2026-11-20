@@ -21,7 +21,7 @@ lemma corner_edgeCluster (hN : Even N) (hM : Even M) (A : RCConfig N M)
   obtain ⟨⟨w,b⟩,hd⟩ := (ribbonEndEquiv hN hM).surjective d
   have hw : w = (faceCorner v.val p).1 := by
     have hh := congrArg (fun x : DirectedDart (checkerArrows N M) => x.val.1) hd
-    simpa only [d,ribbonEndEquiv_val,ribbonEnd,ribbonCornerEquiv_val] using hh
+    solve_by_elim
   subst w
   have hh := ribbonCornerCluster_end hN hM A ⟨(faceCorner v.val p).1,he⟩ b
   rw [hd] at hh
@@ -37,7 +37,7 @@ lemma path_extension_zero_at_exterior (hN : Even N) (hM : Even M)
     fullDiamondChainExtension A p.chain ⟨(faceCorner w.val c).1,rfl⟩ = 0 := by
   change extendDiamondChain A p.chain _ = 0
   cases he : A (faceCorner w.val c).1 with
-  | false => exact extendDiamondChain_closed A _ _ he
+  | false => simp_all
   | true =>
     rw [extendDiamondChain_open A _ _ he]
     apply p.chain_supported

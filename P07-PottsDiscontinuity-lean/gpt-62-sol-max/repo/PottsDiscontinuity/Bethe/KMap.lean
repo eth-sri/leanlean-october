@@ -47,8 +47,7 @@ theorem Xi_pos {μ : ℝ} (hμ : 0 < μ) (α : ℝ) : 0 < Xi μ α := by
   unfold Xi
   have h1 := Real.sinh_pos_iff.mpr hμ
   have h2 : 1 < Real.cosh μ := by
-    have := Real.one_lt_cosh.mpr hμ.ne'
-    exact this
+    aesop
   have := Real.cos_le_one α
   exact div_pos h1 (by linarith)
 
@@ -59,10 +58,6 @@ theorem kMap_zero (lam : ℝ) : kMap lam 0 = 0 := by simp [kMap]
 /-- `k` is odd. -/
 theorem kMap_neg (lam α : ℝ) : kMap lam (-α) = -kMap lam α := by
   simp only [kMap, Real.sin_neg, Real.cos_neg, neg_div, Real.arctan_neg]
-  ring
-
-theorem kMap_add_two_pi (lam α : ℝ) : kMap lam (α + 2 * Real.pi) = kMap lam α + 2 * Real.pi := by
-  simp only [kMap, Real.sin_add_two_pi, Real.cos_add_two_pi]
   ring
 
 /-- `k(π) = π`. -/
@@ -93,19 +88,15 @@ theorem norm_exp_I_mul' (α : ℝ) : ‖Complex.exp (I * (α : ℂ))‖ = 1 :=
 
 theorem ofReal_sub_ne_zero {E : ℝ} (hE : 1 < E) {w : ℂ} (hw : ‖w‖ = 1) : (E : ℂ) - w ≠ 0 := by
   intro h
-  have : (E : ℂ) = w := sub_eq_zero.mp h
-  have h2 : ‖(E : ℂ)‖ = ‖w‖ := by rw [this]
-  rw [hw, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)] at h2
-  linarith
+  grind [Complex.norm_real, Real.norm_eq_abs]
 
 theorem ofReal_mul_sub_one_ne_zero {E : ℝ} (hE : 1 < E) {w : ℂ} (hw : ‖w‖ = 1) :
     (E : ℂ) * w - 1 ≠ 0 := by
   intro h
   have : (E : ℂ) * w = 1 := sub_eq_zero.mp h
-  have h2 : ‖(E : ℂ) * w‖ = ‖(1 : ℂ)‖ := by rw [this]
+  have h2 : ‖(E : ℂ) * w‖ = ‖(1 : ℂ)‖ := by simp_all
   rw [norm_mul, hw, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)] at h2
-  simp at h2
-  linarith
+  simp_all
 
 /-- The exponential identity of `k` in unit-circle form with `w = e^{iα}` and `E = e^λ`:
 `e^{ik(α)} = w (E - w⁻¹) / (E - w)`. -/
@@ -113,22 +104,16 @@ theorem exp_I_mul_kMap_aux {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
     Complex.exp (I * (kMap lam α : ℂ)) =
       Complex.exp (I * α) * ((Real.exp lam : ℂ) - Complex.exp (-(I * α))) /
         ((Real.exp lam : ℂ) - Complex.exp (I * α)) := by
-  set a : ℝ := Real.exp lam - Real.cos α with ha
-  set b : ℝ := Real.sin α with hb
-  have ha0 : 0 < a := exp_sub_cos_pos hlam α
-  have ha' : (a : ℂ) ≠ 0 := by exact_mod_cast ha0.ne'
-  have hD1 : (Real.exp lam : ℂ) - Complex.exp (I * α) = (a : ℂ) - (b : ℂ) * I := by
-    rw [exp_I_mul_ofReal, ha, hb]; push_cast; ring
-  have hD2 : (Real.exp lam : ℂ) - Complex.exp (-(I * α)) = (a : ℂ) + (b : ℂ) * I := by
-    rw [exp_neg_I_mul_ofReal, ha, hb]; push_cast; ring
-  have hne : (a : ℂ) - (b : ℂ) * I ≠ 0 := by
-    intro h; have := congrArg Complex.re h; simp at this; exact ha0.ne' this
-  have hth : kMap lam α = α + 2 * Real.arctan (b / a) := rfl
-  have h1 : I * (kMap lam α : ℂ) = I * α + (((2 * Real.arctan (b / a) : ℝ) : ℂ)) * I := by
-    rw [hth]; push_cast; ring
-  rw [h1, Complex.exp_add, exp_two_arctan_mul_I, hD1, hD2]
-  push_cast
-  field_simp
+  let a := Real.exp lam - Real.cos α
+  let b := Real.sin α
+  have he : I * (kMap lam α : ℂ) = I * α + (((2 * Real.arctan (b / a) : ℝ) : ℂ) * I) := by
+    simp [kMap, a, b]; ring
+  have hplus : (a : ℂ) + (b : ℂ) * I = (Real.exp lam : ℂ) - Complex.exp (-(I * α)) := by
+    rw [exp_neg_I_mul_ofReal]; dsimp [a, b]; push_cast; ring
+  have hminus : (a : ℂ) - (b : ℂ) * I = (Real.exp lam : ℂ) - Complex.exp (I * α) := by
+    rw [exp_I_mul_ofReal]; dsimp [a, b]; push_cast; ring
+  rw [he, Complex.exp_add, exp_two_arctan_div_mul_I (b := b) (exp_sub_cos_pos hlam α).ne',
+    hplus, hminus, mul_div_assoc']
 
 /-! ### Derivative `k' = Ξ_λ`, monotonicity -/
 
@@ -147,7 +132,6 @@ theorem hasDerivAt_kMap {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
   have hs : Real.sin α ^ 2 + Real.cos α ^ 2 = 1 := Real.sin_sq_add_cos_sq α
   simp only [Xi, Real.sinh_eq, Real.cosh_eq, Real.exp_neg]
   have hpos : 0 < (Real.exp lam - Real.cos α)^2 + Real.sin α ^2 := by
-    have := exp_sub_cos_pos hlam α
     positivity
   have hden : (Real.exp lam + (Real.exp lam)⁻¹) / 2 - Real.cos α ≠ 0 := by
     have : (Real.exp lam + (Real.exp lam)⁻¹) / 2 - Real.cos α =
@@ -199,7 +183,7 @@ constants `sinh λ / (cosh λ + 1)` and `sinh λ / (cosh λ - 1)`. -/
 theorem Xi_bounds {μ : ℝ} (hμ : 0 < μ) (α : ℝ) :
     Real.sinh μ / (Real.cosh μ + 1) ≤ Xi μ α ∧ Xi μ α ≤ Real.sinh μ / (Real.cosh μ - 1) := by
   have h1 := Real.sinh_pos_iff.mpr hμ
-  have h2 : 1 < Real.cosh μ := Real.one_lt_cosh.mpr hμ.ne'
+  have h2 := Real.one_lt_cosh.mpr hμ.ne'
   have hc1 := Real.cos_le_one α
   have hc2 := Real.neg_one_le_cos α
   unfold Xi

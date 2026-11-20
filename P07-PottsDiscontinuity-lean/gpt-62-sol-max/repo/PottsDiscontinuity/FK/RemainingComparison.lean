@@ -22,7 +22,6 @@ noncomputable section
 
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 
-local instance remainingComparisonEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance remainingComparisonDeletedEdgeFintype (R : Configuration G) :
     Fintype (edgeRestriction G R).edgeSet := Fintype.ofFinite _
 local instance remainingComparisonConfigurationFintype (R : Configuration G) :
@@ -55,8 +54,9 @@ theorem remainingLaw_boundary_comparison (q : Parameters) (ξ η : BoundaryCondi
     (f : RemainingConfiguration G R → ℝ) (hf0 : ∀ A, 0 ≤ f A) (hf : Monotone f) :
     (∑ A, (remainingLaw G q ξ R A).toReal * f A) ≤
       ∑ A, (remainingLaw G q η R A).toReal * f A := by
+  classical
   rw [remainingLaw_sum_toReal, remainingLaw_sum_toReal]
-  have hmono : Monotone (fun C => f (edgeRestrictionConfigurationEquiv G R C)) :=
+  have hmono :=
     hf.comp (edgeRestrictionConfigurationOrderIso G R).monotone
   simpa only [mul_comm] using configurationProbability_boundary_comparison
     (G := edgeRestriction G R) q ξ η hξη
@@ -79,25 +79,6 @@ theorem remainingLaw_positive_association (q : Parameters) (ξ : BoundaryConditi
     (hf.comp (edgeRestrictionConfigurationOrderIso G R).monotone)
     (hg.comp (edgeRestrictionConfigurationOrderIso G R).monotone)
 
-/-- Every subset of the finite remaining-configuration carrier is measurable. -/
-abbrev remainingConfigurationMeasurableSpace (R : Configuration G) :
-    MeasurableSpace (RemainingConfiguration G R) := ⊤
-
-attribute [local instance] remainingConfigurationMeasurableSpace
-
-local instance remainingComparisonDiscrete (R : Configuration G) :
-    DiscreteMeasurableSpace (RemainingConfiguration G R) :=
-  ⟨fun _ => MeasurableSpace.measurableSet_top⟩
-
-/-- The genuine probability measure induced by the existing remaining-edge PMF
-on the full power-set sigma algebra. -/
-def remainingMeasure (q : Parameters) (ξ : BoundaryCondition V) (R : Configuration G) :
-    MeasureTheory.Measure (RemainingConfiguration G R) := (remainingLaw G q ξ R).toMeasure
-
-instance remainingMeasure_isProbabilityMeasure (q : Parameters)
-    (ξ : BoundaryCondition V) (R : Configuration G) :
-    MeasureTheory.IsProbabilityMeasure (remainingMeasure G q ξ R) :=
-  PMF.toMeasure.isProbabilityMeasure _
 
 end
 end PottsDiscontinuity.FK

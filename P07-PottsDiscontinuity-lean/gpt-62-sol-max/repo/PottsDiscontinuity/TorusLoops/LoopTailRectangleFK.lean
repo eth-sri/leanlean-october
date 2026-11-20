@@ -57,8 +57,7 @@ theorem rectangleCrossings_closedEvent_eq_lift
         (rectangleConfigurationOfRC hN hM A))).card
     have hA := rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC
       hN hM A (by
-        intro v hv
-        exact hseam v hv)
+        solve_by_elim)
     have hcard := congrArg
       (fun B : RCConfig N M => (rectangleCrossingComponents hN hM B).card) hA
     rw [hcard]
@@ -71,12 +70,10 @@ theorem rectangleCrossings_closedEvent_eq_lift
         (rectangleConfigurationOfRC hN hM A))).card at hcross
     have hA := rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC
       hN hM A (by
-        intro v hv
-        exact hseam v hv)
+        solve_by_elim)
     have hcard := congrArg
       (fun B : RCConfig N M => (rectangleCrossingComponents hN hM B).card) hA
-    rw [← hcard]
-    exact hcross
+    simp_all
 
 /-- Corrected (3.17): a large winding-loop tail is bounded by a free-rectangle
 FK event, with the exact seam finite-energy factor and rounded factor-two
@@ -93,7 +90,6 @@ theorem torusRCProbability_windingTail_le_rectangleFKCrossings
     hN hM hNp hMp q m
   rw [rectangleCrossings_closedEvent_eq_lift hN hM
     ((m - 3 * N + 1) / 2)] at hfinite
-  exact hfinite.trans (phi_T_probability_rectangleClosedLift_le_rectangleFK
-    hN hM q (rectangleFKCrossingEvent hN hM ((m - 3 * N + 1) / 2)))
+  grind [phi_T_probability_rectangleClosedLift_le_rectangleFK]
 
 end PottsDiscontinuity.TorusLoops

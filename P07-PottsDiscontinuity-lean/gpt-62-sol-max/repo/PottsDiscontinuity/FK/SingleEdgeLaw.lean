@@ -56,8 +56,7 @@ theorem configurationProbability_pair_ratio_of_not_related (q : Parameters)
       configurationProbability G q ξ (insert ⟨s(u,v),G.mem_edgeSet.mpr huv⟩ A) =
       edgeParameter q * configurationProbability G q ξ A := by
     unfold configurationProbability
-    rw [← mul_div_assoc, ← mul_div_assoc,
-      weight_insert_balance_of_not_related q ξ A huv he hne]
+    simp [← mul_div_assoc, weight_insert_balance_of_not_related q ξ A huv he hne]
   apply (div_eq_iff (add_pos (configurationProbability_pos G q ξ A)
     (configurationProbability_pos G q ξ _)).ne').mpr
   rw [div_mul_eq_mul_div]

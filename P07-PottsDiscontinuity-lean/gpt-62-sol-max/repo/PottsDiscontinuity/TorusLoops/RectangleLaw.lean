@@ -28,9 +28,6 @@ variable {N M : ℕ}
 local instance rectangleLawEdgeFintype (hN : Even N) (hM : Even M) :
     Fintype (rectangleBaseGraph hN hM).edgeSet := Fintype.ofFinite _
 
-local instance rectangleLawEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (rectangleBaseGraph hN hM).edgeSet := Classical.decEq _
-
 /-- A torus configuration is seam-closed when every deleted indexed edge is
 closed. -/
 def rectangleSeamsClosed (A : RCConfig N M) : Prop :=
@@ -57,28 +54,29 @@ noncomputable def rectangleConfigurationClosedFiberEquiv
     exact rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC
       hN hM A.val A.property
 
-/-- Unnormalized free-rectangle FK weight of an event. -/
-noncomputable def rectangleFKEventWeight (hN : Even N) (hM : Even M)
+section
+
+variable
+  (hN : Even N) (hM : Even M)
     (q : Set.Ici (1 : ℝ))
-    (E : Set (Configuration (rectangleBaseGraph hN hM))) : ℝ := by
+    (E : Set (Configuration (rectangleBaseGraph hN hM)))
+
+/-- Unnormalized free-rectangle FK weight of an event. -/
+noncomputable def rectangleFKEventWeight : ℝ := by
   classical
   exact ∑ C, E.indicator
       (FK.weight (rectangleBaseGraph hN hM) (rectangleFKParameters q)
         (BoundaryCondition.free ∅)) C
 
 /-- Normalized free-rectangle FK probability of an event. -/
-noncomputable def rectangleFKEventProbability (hN : Even N) (hM : Even M)
-    (q : Set.Ici (1 : ℝ))
-    (E : Set (Configuration (rectangleBaseGraph hN hM))) : ℝ :=
+noncomputable def rectangleFKEventProbability : ℝ :=
   rectangleFKEventWeight hN hM q E /
     FK.partitionFunction (rectangleBaseGraph hN hM) (rectangleFKParameters q)
       (BoundaryCondition.free ∅)
 
 /-- Unnormalized torus weight of the rectangle-event lift on the closed seam
 fiber. -/
-noncomputable def rectangleTorusClosedLiftWeight (hN : Even N) (hM : Even M)
-    (q : Set.Ici (1 : ℝ))
-    (E : Set (Configuration (rectangleBaseGraph hN hM))) : ℝ := by
+noncomputable def rectangleTorusClosedLiftWeight : ℝ := by
   classical
   exact ∑ A : {A : RCConfig N M // rectangleSeamsClosed A},
       if rectangleConfigurationOfRC hN hM A.val ∈ E then
@@ -86,9 +84,7 @@ noncomputable def rectangleTorusClosedLiftWeight (hN : Even N) (hM : Even M)
 
 /-- The closed-fiber event weight is exactly the rectangle event weight times
 the constant seam factor. -/
-theorem rectangleTorusClosedLiftWeight_eq
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
-    (E : Set (Configuration (rectangleBaseGraph hN hM))) :
+theorem rectangleTorusClosedLiftWeight_eq :
     rectangleTorusClosedLiftWeight hN hM q E =
       (1 - (rcCriticalParameter q).val) ^
           (rectangleSeamIndices (N := N) (M := M)).card *
@@ -96,12 +92,11 @@ theorem rectangleTorusClosedLiftWeight_eq
   classical
   let e := rectangleConfigurationClosedFiberEquiv hN hM
   unfold rectangleTorusClosedLiftWeight rectangleFKEventWeight
-  rw [← e.sum_comp]
-  rw [Finset.mul_sum]
+  rw [← e.sum_comp, Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro C _
   let A := e C
-  have hclosed : rectangleSeamsClosed A.val := A.property
+  have hclosed := A.property
   have hrec : rectangleConfigurationOfRC hN hM A.val = C := e.symm_apply_apply C
   by_cases hE : C ∈ E
   · change (if rectangleConfigurationOfRC hN hM A.val ∈ E then
@@ -118,6 +113,8 @@ theorem rectangleTorusClosedLiftWeight_eq
     have hAE : rectangleConfigurationOfRC hN hM A.val ∉ E := by
       simpa [hrec] using hE
     simp [hAE, hE]
+
+end
 
 /-- Every torus event probability is its unnormalized weight sum divided by
 the torus partition function. -/
@@ -138,14 +135,18 @@ private theorem phi_T_probability_eq_weightSum_div
     by_cases hA : A ∈ E <;> simp [hA, torusRCMass]
   rw [hterms, ← Finset.sum_div]
 
-private theorem rectangleClosedLiftEvent_weight_sum
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
-    (E : Set (Configuration (rectangleBaseGraph hN hM))) :
+section
+
+variable
+  (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
+    (E : Set (Configuration (rectangleBaseGraph hN hM)))
+
+private theorem rectangleClosedLiftEvent_weight_sum :
     (∑ A, (rectangleClosedLiftEvent hN hM E).indicator
       (torusRCWeight hN hM q) A) = rectangleTorusClosedLiftWeight hN hM q E := by
   classical
   let P : RCConfig N M → Prop := rectangleSeamsClosed
-  let g : RCConfig N M → ℝ := (rectangleClosedLiftEvent hN hM E).indicator
+  let g := (rectangleClosedLiftEvent hN hM E).indicator
     (torusRCWeight hN hM q)
   have hsplit := Fintype.sum_subtype_add_sum_subtype P g
   have hpos :
@@ -180,13 +181,11 @@ private theorem rectangleClosedLiftEvent_weight_sum
         (torusRCWeight hN hM q) A) =
       (∑ A : {A : RCConfig N M // P A}, g A.val) +
         ∑ A : {A : RCConfig N M // ¬ P A}, g A.val := hsplit.symm
-    _ = rectangleTorusClosedLiftWeight hN hM q E := by rw [hpos, hzero, add_zero]
+    _ = rectangleTorusClosedLiftWeight hN hM q E := by simp [hpos, hzero]
 
 /-- The torus probability of a lifted event is its unnormalized closed-fiber
 weight divided by the torus partition function. -/
-theorem phi_T_probability_rectangleClosedLift_eq
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
-    (E : Set (Configuration (rectangleBaseGraph hN hM))) :
+theorem phi_T_probability_rectangleClosedLift_eq :
     phi_T_probability hN hM q (rectangleClosedLiftEvent hN hM E) =
       rectangleTorusClosedLiftWeight hN hM q E / torusRCPartition hN hM q := by
   rw [phi_T_probability_eq_weightSum_div,
@@ -194,9 +193,7 @@ theorem phi_T_probability_rectangleClosedLift_eq
 
 /-- Every normalized seam-closed lifted event is bounded by its probability
 under the free rectangle FK law. -/
-theorem phi_T_probability_rectangleClosedLift_le_rectangleFK
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
-    (E : Set (Configuration (rectangleBaseGraph hN hM))) :
+theorem phi_T_probability_rectangleClosedLift_le_rectangleFK :
     phi_T_probability hN hM q (rectangleClosedLiftEvent hN hM E) ≤
       rectangleFKEventProbability hN hM q E := by
   classical
@@ -223,8 +220,7 @@ theorem phi_T_probability_rectangleClosedLift_le_rectangleFK
             torusRCWeight hN hM q A.val := by
       unfold rectangleTorusClosedLiftWeight
       apply Finset.sum_congr rfl
-      intro A _
-      simp
+      grind
     have hclosedSum :
         rectangleTorusClosedLiftWeight hN hM q Set.univ ≤ ZT := by
       rw [hsum]
@@ -243,18 +239,18 @@ theorem phi_T_probability_rectangleClosedLift_le_rectangleFK
       unfold rectangleFKEventWeight ZR FK.partitionFunction FK.FiniteProbability.partition
       simp
     rw [hfactor, hrectsum] at hclosedSum
-    simpa [f] using hclosedSum
+    gcongr
   have hprobT :
       phi_T_probability hN hM q (rectangleClosedLiftEvent hN hM E) = f * nR / ZT := by
     rw [phi_T_probability_rectangleClosedLift_eq hN hM q E,
       rectangleTorusClosedLiftWeight_eq hN hM q E]
-  have hprobR : rectangleFKEventProbability hN hM q E = nR / ZR := by
-    rfl
-  rw [hprobT, hprobR]
-  rw [div_le_div_iff₀ hZT hZR]
+  have hprobR : rectangleFKEventProbability hN hM q E = nR / ZR := rfl
+  rw [hprobT, hprobR, div_le_div_iff₀ hZT hZR]
   calc
     f * nR * ZR = nR * (f * ZR) := by ring
     _ ≤ nR * ZT := mul_le_mul_of_nonneg_left hdenom hnum
+
+end
 
 end
 

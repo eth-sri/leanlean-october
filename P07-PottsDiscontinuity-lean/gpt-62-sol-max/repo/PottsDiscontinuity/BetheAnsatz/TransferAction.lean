@@ -24,11 +24,7 @@ theorem interlacedLE_antisymm {N : ℕ} {x y : Finset (Fin N)}
   | zero => exact Subsingleton.elim _ _
   | succ m =>
     apply (eq_iff_Dd_zero x y).mpr
-    intro i
-    have h1 := ((interlacedLE_iff x y).mp hxy).2 i
-    have h2 := ((interlacedLE_iff y x).mp hyx).2 i
-    unfold Dd
-    omega
+    grind [Dd, interlacedLE_iff]
 
 /-- The entry (1.5) is the sum of its two oriented interlacing contributions. -/
 theorem transferMatrix_eq_two_orientations {N : ℕ} (c : ℝ) (x y : Finset (Fin N)) :
@@ -38,7 +34,7 @@ theorem transferMatrix_eq_two_orientations {N : ℕ} (c : ℝ) (x y : Finset (Fi
   classical
   by_cases he : x = y
   · subst y
-    have hi : InterlacedLE x x := (interlacedLE_iff x x).mpr
+    have hi := (interlacedLE_iff x x).mpr
       ⟨rfl, fun _ => ⟨le_rfl, Nat.le_succ _⟩⟩
     norm_num [transferMatrix_apply_self, hi]
   · have hn : ¬ (InterlacedLE x y ∧ InterlacedLE y x) :=
@@ -46,8 +42,8 @@ theorem transferMatrix_eq_two_orientations {N : ℕ} (c : ℝ) (x y : Finset (Fi
     rw [transferMatrix_apply]
     by_cases hxy : InterlacedLE x y <;> by_cases hyx : InterlacedLE y x
     · exact (hn ⟨hxy, hyx⟩).elim
-    · simp [he, Interlaced, hxy, hyx]
-    · simp [he, Interlaced, hxy, hyx]
-    · simp [he, Interlaced, hxy, hyx]
+    · simp [he, Interlaced, hyx]
+    · simp [he, Interlaced, hxy]
+    · simp [he, Interlaced, hyx]
 
 end PottsDiscontinuity.BetheAnsatz

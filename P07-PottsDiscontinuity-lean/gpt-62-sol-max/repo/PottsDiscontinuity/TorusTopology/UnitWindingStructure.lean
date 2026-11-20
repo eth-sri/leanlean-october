@@ -31,7 +31,7 @@ theorem U_one_vertical_loop_structure
     (checkerArrows_compatible hN hM (rcSmoothing A)) j
   let S := verticalWindingLoops hN hM j A
   have hmem (q) : q ∈ S ↔ f q ≠ 0 := by simp [S,verticalWindingLoops,f]
-  have hcard : S.card ≤ 2 := verticalWindingLoops_card_le_two_of_U_eq_one hN hM j A hU
+  have hcard := verticalWindingLoops_card_le_two_of_U_eq_one hN hM j A hU
   have hmass : ∑ q ∈ S, (f q).natAbs = 2 := by
     have he := two_mul_verticalWindingCount hN (checkerArrows N M) (rcSmoothing A)
       (checkerArrows_compatible hN hM (rcSmoothing A)) j
@@ -57,9 +57,7 @@ theorem U_one_vertical_loop_structure
       ext r
       simp only [Finset.mem_singleton]
       constructor
-      · intro hr
-        by_contra hne
-        exact h ⟨r,hr,Ne.symm hne⟩
+      · intro x; grind
       · rintro rfl
         exact hq
     rw [he,Finset.sum_singleton] at hsum
@@ -71,16 +69,13 @@ theorem U_one_vertical_loop_structure
   have hq0 := (hmem q).mp hq
   have hr0 := (hmem r).mp hr
   have hqabs : (f q).natAbs = 1 := by
-    have := Int.natAbs_pos.mpr hq0
-    have := Int.natAbs_pos.mpr hr0
     omega
   have hqpm : f q = 1 ∨ f q = -1 := by
     have ha := Int.natCast_natAbs (f q)
     rw [hqabs] at ha
     rcases le_total 0 (f q) with hp | hn
     · left
-      rw [abs_of_nonneg hp] at ha
-      exact ha.symm
+      simpa [abs_of_nonneg hp] using ha.symm
     · right
       rw [abs_of_nonpos hn] at ha
       omega

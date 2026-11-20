@@ -30,9 +30,7 @@ instance liftedBoxVertex_finite (c : RotatedVertex) (R : ℕ) :
       constructor <;> omega⟩)
   apply Finite.of_injective f
   intro u v huv
-  apply Subtype.ext
-  apply Subtype.ext
-  exact Prod.ext (congrArg (fun z => z.1.val) huv) (congrArg (fun z => z.2.val) huv)
+  grind
 
 /-- The native induced graph in the lifted square, with no periodic edges. -/
 def liftedBoxGraph (c : RotatedVertex) (R : ℕ) : SimpleGraph (LiftedBoxVertex c R) :=
@@ -73,10 +71,15 @@ theorem periodicCoordinate_eq_of_interval (hp : 0 < N) (L a b : ℤ)
     Int.emod_eq_of_lt (by omega) (by omega)] at hshift
   omega
 
+section
+
+variable
+  (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
+    (c : RotatedVertex) (R : ℕ) (hRN : 2 * R < N) (hRM : 2 * R < M)
+
 /-- An injective vertex projection of a box whose diameter is smaller than
 both periods. -/
-def liftedBoxProjection (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    (c : RotatedVertex) (R : ℕ) (hRN : 2 * R < N) (hRM : 2 * R < M) :
+def liftedBoxProjection :
     LiftedBoxVertex c R ↪ FaceVertex N M true where
   toFun z := liftedFaceVertex hN hM hNp hMp z.val
   inj' := by
@@ -96,20 +99,20 @@ def liftedBoxProjection (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
     exact Subtype.ext (Subtype.ext (Prod.ext hxeq hyeq))
 
 /-- Every native box edge projects to its actual indexed diamond edge. -/
-theorem liftedBoxGraph_map_projection_le (hN : Even N) (hM : Even M)
-    (hNp : 0 < N) (hMp : 0 < M) (c : RotatedVertex) (R : ℕ)
-    (hRN : 2 * R < N) (hRM : 2 * R < M) :
+theorem liftedBoxGraph_map_projection_le :
     (liftedBoxGraph c R).map (liftedBoxProjection hN hM hNp hMp c R hRN hRM) ≤
       fullDiamondGraph hN hM := by
   intro x y hxy
   rw [SimpleGraph.map_adj] at hxy
   rcases hxy with ⟨u, v, huv, rfl, rfl⟩
-  have hlat : rotatedLattice.Adj u.val v.val := huv
+  have hlat := huv
   have hne := (liftedBoxProjection hN hM hNp hMp c R hRN hRM).injective.ne huv.ne
   change (diamondOpenGraph hN hM true (fun _ => true)).Adj _ _
   rw [diamondOpenGraph, SimpleGraph.fromEdgeSet_adj]
   exact ⟨⟨liftedEdgeIndex hNp hMp u.val v.val, rfl,
     liftedFaceEndpoints_eq hN hM hNp hMp u.val v.val hlat⟩, hne⟩
+
+end
 
 end
 

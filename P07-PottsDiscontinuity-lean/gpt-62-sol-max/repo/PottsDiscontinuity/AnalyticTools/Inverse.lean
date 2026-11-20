@@ -26,9 +26,9 @@ theorem analyticAt_localInverse
     (hstrict : HasStrictFDerivAt f (e : E →L[ℝ] F) a) :
     AnalyticAt ℝ (hstrict.toOpenPartialHomeomorph f).symm (f a) := by
   let R := hstrict.toOpenPartialHomeomorph f
-  have hsource : a ∈ R.source := hstrict.mem_toOpenPartialHomeomorph_source
+  have hsource := hstrict.mem_toOpenPartialHomeomorph_source
   have hR : AnalyticAt ℝ (R : E → F) a := by
-    simpa [R] using hf
+    assumption
   have hderiv : fderiv ℝ (R : E → F) a = (e : E →L[ℝ] F) := by
     simpa [R] using hstrict.hasFDerivAt.fderiv
   exact R.analyticAt_symm' hsource hR hderiv

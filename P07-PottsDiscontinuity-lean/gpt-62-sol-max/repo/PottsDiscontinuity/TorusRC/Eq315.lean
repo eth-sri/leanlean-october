@@ -21,19 +21,13 @@ estimate h319 is a premise here. It is proved by `TorusCrossing.h319_proved`
 (`TorusCrossing/Final.lean`). -/
 theorem eq315 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
     ((-inverseCorrelationLength q:ℝ):EReal) ≤ torusRCUOneIteratedLiminf q := by
-  obtain ⟨c,hc,_,hbound⟩ := torusRCU_one_outer_liminf_of_h319 q hh319
-  have hrate : Tendsto (fun n : ℕ =>
-      Real.log ((rotatedDiagonalConnectionProbability (torusRCBridgeParameters q) n : NNReal):ℝ) /
-        ((2*n:ℕ):ℝ)) atTop (𝓝 (-inverseCorrelationLength q)) := by
-    simpa only [neg_div,neg_neg] using (tendsto_inverseCorrelationLength q).neg
-  have hlim : Tendsto (fun n : ℕ =>
-      ((Real.log (c/(9*(n:ℝ)^2))/(n:ℝ) +
-        Real.log ((rotatedDiagonalConnectionProbability (torusRCBridgeParameters q) n : NNReal):ℝ) /
-          ((2*n:ℕ):ℝ):ℝ):EReal)) atTop (𝓝 ((-inverseCorrelationLength q:ℝ):EReal)) := by
-    apply EReal.tendsto_coe.mpr
-    simpa only [zero_add] using (tendsto_block_log_rate_zero c hc).add hrate
-  apply le_of_tendsto hlim
-  filter_upwards [eventually_ge_atTop 2] with n hn
-  exact hbound n hn
+  obtain ⟨c, hc, hbound⟩ := torusRCU_one_outer_liminf_of_h319 q hh319
+  have hshift : Tendsto (fun n : ℕ => n+1) atTop atTop :=
+    tendsto_atTop_mono (fun n => Nat.le_succ n) tendsto_id
+  have hrate := ((tendsto_inverseCorrelationLength q).neg).comp hshift
+  simp only [neg_div, neg_neg] at hrate
+  have hlim := EReal.tendsto_coe.mpr ((tendsto_block_log_rate_zero c hc).add hrate)
+  simp only [zero_add] at hlim
+  exact le_of_tendsto hlim ((eventually_gt_atTop 0).mono hbound)
 
 end PottsDiscontinuity.TorusRC

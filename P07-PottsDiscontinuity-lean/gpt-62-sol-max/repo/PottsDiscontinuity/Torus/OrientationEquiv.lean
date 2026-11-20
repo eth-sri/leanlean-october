@@ -36,16 +36,8 @@ theorem dartOut_orientArrows (F : DirectedLoop ω₀ s h₀ → Bool) (d : Dart 
   | east => rfl
   | north => rfl
   | west =>
-    have hq : loopOfDart ω₀ s h₀ ((prv i, j), .east) =
-        loopOfDart ω₀ s h₀ ((i, j), .west) :=
-      loopOfDart_edgeReverse ω₀ s h₀ ((i, j), .west)
-    simp only [dartOut, localOut, ArrowConfig.left, orientArrows, hq]
     exact hb _ _
   | south =>
-    have hq : loopOfDart ω₀ s h₀ ((i, prv j), .north) =
-        loopOfDart ω₀ s h₀ ((i, j), .south) :=
-      loopOfDart_edgeReverse ω₀ s h₀ ((i, j), .south)
-    simp only [dartOut, localOut, ArrowConfig.below, orientArrows, hq]
     exact hb _ _
 
 /-- Independent loop reversals preserve every local in-to-out strand pairing. -/

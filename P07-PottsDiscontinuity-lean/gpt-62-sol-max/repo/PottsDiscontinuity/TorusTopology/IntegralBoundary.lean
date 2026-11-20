@@ -1,6 +1,6 @@
 module
 
-public import PottsDiscontinuity.Torus.NetEuler
+public import PottsDiscontinuity.Torus.BoundaryDisplacement
 public import PottsDiscontinuity.TorusLoops.LoopClusterProjection
 
 /-! Integral saturation of the actual ribbon face boundary map. Its edge
@@ -50,27 +50,8 @@ theorem all_cycles_mem_boundary_of_vertical_loop
   have hy : diamondVerticalDisplacement A b.val ≠ 0 := by
     rw [show b = loopBoundaryCycle hN hM A q from rfl,
       loopBoundaryCycle_displacement_y,loop_vertical_displacement _ _ _ j q]
-    exact_mod_cast mul_ne_zero (by exact_mod_cast hMp.ne' : (M : ℤ) ≠ 0) hq
-  have hd (g : diamondCycleSpace hN hM A) : diamondWindingDeterminant A b.val g.val = 0 :=
-    (ribbonIntersection_eq_zero_iff_windingDeterminant_zero hN hM hNp hMp A b g).1
-      (ribbonIntersection_zero_of_mem_boundary hN hM A b g hb)
-  apply mem_ribbonBoundarySpace_of_intersection_zero hN hM A f
-  intro g
-  apply (ribbonIntersection_eq_zero_iff_windingDeterminant_zero hN hM hNp hMp A f g).2
-  have hbf := hd f
-  have hbg := hd g
-  unfold diamondWindingDeterminant at hbf hbg ⊢
-  apply (mul_eq_zero.mp (show diamondVerticalDisplacement A b.val *
-      (diamondHorizontalDisplacement A f.val * diamondVerticalDisplacement A g.val -
-        diamondVerticalDisplacement A f.val * diamondHorizontalDisplacement A g.val) = 0 by
-    calc
-      _ = diamondVerticalDisplacement A f.val *
-          (diamondHorizontalDisplacement A b.val * diamondVerticalDisplacement A g.val -
-            diamondVerticalDisplacement A b.val * diamondHorizontalDisplacement A g.val) -
-          diamondVerticalDisplacement A g.val *
-          (diamondHorizontalDisplacement A b.val * diamondVerticalDisplacement A f.val -
-            diamondVerticalDisplacement A b.val * diamondHorizontalDisplacement A f.val) := by ring
-      _ = 0 := by rw [hbf,hbg,mul_zero,mul_zero,sub_self])).resolve_left hy
+    positivity
+  exact mem_boundary_of_boundary_winds_vertically hN hM hNp hMp A b hb hy f
 
 end
 end PottsDiscontinuity.TorusTopology

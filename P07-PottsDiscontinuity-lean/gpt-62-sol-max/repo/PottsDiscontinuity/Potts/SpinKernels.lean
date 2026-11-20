@@ -20,7 +20,7 @@ private theorem setoid_top_of_two_classes {A : Type*} (R : Setoid A) (x y : A)
   · exact R.refl _
   · exact hxy
   · exact R.symm hxy
-  · exact R.refl _
+  rfl
 
 private theorem setoid_bot_of_two_classes {A : Type*} (R : Setoid A) (x y : A)
     (hcover : ∀ a, a = x ∨ a = y) (hxy : ¬ R x y) : R = ⊥ := by
@@ -28,7 +28,7 @@ private theorem setoid_bot_of_two_classes {A : Type*} (R : Setoid A) (x y : A)
   intro a b hab
   rcases hcover a with rfl | rfl <;> rcases hcover b with rfl | rfl
   · rfl
-  · exact (hxy hab).elim
+  · trivial
   · exact (hxy (R.symm hab)).elim
   · rfl
 
@@ -47,39 +47,12 @@ theorem free_two_point_kernel (q : ℕ) (c : Set.Icc 1 q) (R : Setoid Bool) :
   rw [ite_eq_left hcomp, card_pottsColors]
   have hcount : observedClassCount R id = Nat.card (Quotient R) := rfl
   rw [hcount]
-  have hcover : ∀ b : Bool, b = false ∨ b = true := by intro b; cases b <;> simp
+  have hcover : ∀ b : Bool, b = false ∨ b = true := by trivial
   by_cases h : R false true
   · rw [ite_eq_left h, setoid_top_of_two_classes R false true hcover h, card_quotient_top, pow_one]
   · rw [ite_eq_right h, setoid_bot_of_two_classes R false true hcover h,
       Nat.card_congr (Setoid.quotientBotEquiv : Quotient (⊥ : Setoid Bool) ≃ Bool)]
-    norm_num [Nat.card_eq_fintype_card]
-
-/-- An observed spin equals the pinned colour certainly in the ghost class,
-and with uniform probability otherwise. -/
-theorem wired_one_point_kernel (q : ℕ) (c : Set.Icc 1 q) (R : Setoid (Option PUnit)) :
-    pinnedClusterCylinderProbability R some (fun _ : PUnit => c) none c =
-      if R (some PUnit.unit) none then 1 else (q : ℝ)⁻¹ := by
-  have hcomp : R.comap (markedMap some none) ≤ Setoid.ker (markedMap (fun _ : PUnit => c) c) := by
-    intro a b _
-    cases a <;> cases b <;> rfl
-  unfold pinnedClusterCylinderProbability
-  rw [ite_eq_left hcomp, card_pottsColors]
-  have hid : markedMap some none = (id : Option PUnit → Option PUnit) := by
-    funext a; cases a <;> rfl
-  have hcount : observedClassCount R (markedMap some none) = Nat.card (Quotient R) := by
-    rw [hid]
-    rfl
-  rw [hcount]
-  have hcover : ∀ a : Option PUnit, a = some PUnit.unit ∨ a = none := by
-    intro a; cases a with
-    | none => simp
-    | some a => cases a; simp
-  by_cases h : R (some PUnit.unit) none
-  · rw [ite_eq_left h, setoid_top_of_two_classes R _ _ hcover h, card_quotient_top]
-    norm_num
-  · rw [ite_eq_right h, setoid_bot_of_two_classes R _ _ hcover h,
-      Nat.card_congr (Setoid.quotientBotEquiv : Quotient (⊥ : Setoid (Option PUnit)) ≃ Option PUnit)]
-    norm_num
+    simp
 
 end
 end PottsDiscontinuity.Potts

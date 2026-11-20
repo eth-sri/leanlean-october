@@ -24,7 +24,7 @@ def checker (v : Fin N × Fin M) : Bool := decide ((v.1.val + v.2.val) % 2 = 0)
 
 private theorem nxt_mod_two (hN : Even N) (i : Fin N) :
     (nxt i).val % 2 = 1 - i.val % 2 := by
-  have hn : N % 2 = 0 := by rcases hN with ⟨k, hk⟩; omega
+  have hn : N % 2 = 0 := by grind
   obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Fin.pos i).ne'
   rw [nxt, coe_finRotate]
   split_ifs with hi
@@ -55,13 +55,13 @@ theorem checker_prv_x (hN : Even N) (i : Fin N) (j : Fin M) :
     checker (prv i, j) = !checker (i, j) := by
   have h := checker_nxt_x hN (prv i) j
   simp only [nxt, prv, Equiv.apply_symm_apply] at h
-  rw [h, Bool.not_not]
+  simp_all
 
 theorem checker_prv_y (hM : Even M) (i : Fin N) (j : Fin M) :
     checker (i, prv j) = !checker (i, j) := by
   have h := checker_nxt_y hM i (prv j)
   simp only [nxt, prv, Equiv.apply_symm_apply] at h
-  rw [h, Bool.not_not]
+  simp_all
 
 /-- Orient each edge with its black checkerboard face on the same side. -/
 def checkerArrows (N M : ℕ) : ArrowConfig N M where

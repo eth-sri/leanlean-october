@@ -32,7 +32,7 @@ variable {ends P M}
 theorem endGraph_adj (c d : P) :
     (endGraph ends P M).Adj c d ↔
       c ≠ d ∧ ((∃ m ∈ M, ends m = (c.1, d.1)) ∨ (∃ m ∈ M, ends m = (d.1, c.1))) := by
-  unfold endGraph; rw [SimpleGraph.fromRel_adj]
+  rfl
 
 /-- Structural hypotheses making `m ↦ ends m` an honest edge indexing. -/
 structure EndData (ends : Cell → Cell × Cell) (P M : Finset Cell) : Prop where
@@ -55,9 +55,7 @@ theorem endEdge_injective : Function.Injective (endEdge hD) := by
   have h' := congrArg Subtype.val h
   simp only [endEdge, Sym2.eq_iff] at h'
   apply hD.inj
-  rcases h' with ⟨h1, h2⟩ | ⟨h1, h2⟩
-  · left; exact Prod.ext (congrArg Subtype.val h1) (congrArg Subtype.val h2)
-  · right; exact Prod.ext (congrArg Subtype.val h1) (congrArg Subtype.val h2)
+  grind
 
 theorem endEdge_surjective : Function.Surjective (endEdge hD) := by
   rintro ⟨e, he⟩
@@ -83,22 +81,24 @@ are ignored). -/
 noncomputable def cfgOf (A : Finset Cell) : FK.Configuration (endGraph ends P M) :=
   (A.subtype (· ∈ M)).map (endEdgeEquiv hD).toEmbedding
 
+section
+
+variable (C : FK.Configuration (endGraph ends P M))
+
 /-- The medial vertices carrying the open edges of an FK configuration. -/
-noncomputable def openMedials (C : FK.Configuration (endGraph ends P M)) : Finset Cell :=
+noncomputable def openMedials : Finset Cell :=
   (C.map (endEdgeEquiv hD).symm.toEmbedding).map ⟨Subtype.val, Subtype.val_injective⟩
 
-theorem mem_openMedials (C : FK.Configuration (endGraph ends P M)) (m : Cell) :
+theorem mem_openMedials (m : Cell) :
     m ∈ openMedials hD C ↔ ∃ hm : m ∈ M, endEdgeEquiv hD ⟨m, hm⟩ ∈ C := by
   unfold openMedials
   simp only [Finset.mem_map, Function.Embedding.coeFn_mk]
-  constructor
-  · rintro ⟨x, ⟨e, he, rfl⟩, rfl⟩
-    exact ⟨((endEdgeEquiv hD).symm e).2, by simpa using he⟩
-  · rintro ⟨hm, h⟩
-    exact ⟨_, ⟨_, h, rfl⟩, by simp⟩
+  grind
 
-theorem openMedials_subset (C : FK.Configuration (endGraph ends P M)) :
+theorem openMedials_subset :
     openMedials hD C ⊆ M := fun m hm => ((mem_openMedials hD C m).1 hm).1
+
+end
 
 theorem mem_cfgOf (A : Finset Cell) (m : M) :
     endEdgeEquiv hD m ∈ cfgOf hD A ↔ m.1 ∈ A := by
@@ -108,20 +108,14 @@ theorem mem_cfgOf (A : Finset Cell) (m : M) :
 theorem openMedials_cfgOf (A : Finset Cell) (hA : A ⊆ M) : openMedials hD (cfgOf hD A) = A := by
   ext m
   rw [mem_openMedials]
-  constructor
-  · rintro ⟨hm, h⟩
-    exact (mem_cfgOf hD A ⟨m, hm⟩).1 h
-  · intro h
-    exact ⟨hA h, (mem_cfgOf hD A ⟨m, hA h⟩).2 h⟩
+  grind [mem_cfgOf]
 
 theorem cfgOf_openMedials (C : FK.Configuration (endGraph ends P M)) :
     cfgOf hD (openMedials hD C) = C := by
   ext e
   obtain ⟨m, rfl⟩ := (endEdgeEquiv hD).surjective e
   rw [mem_cfgOf, mem_openMedials]
-  constructor
-  · rintro ⟨hm, h⟩; exact h
-  · intro h; exact ⟨m.2, h⟩
+  simp
 
 theorem card_cfgOf (A : Finset Cell) (hA : A ⊆ M) : (cfgOf hD A).card = A.card := by
   have := congrArg Finset.card (openMedials_cfgOf hD A hA)
@@ -144,23 +138,22 @@ theorem openGraph_adj_iff (C : FK.Configuration (endGraph ends P M)) (c d : P) :
     obtain ⟨m, rfl⟩ := (endEdgeEquiv hD).surjective e
     refine ⟨m.1, (mem_openMedials hD C _).2 ⟨m.2, he⟩, ?_⟩
     rw [endEdgeEquiv_val, Sym2.eq_iff] at heq
-    rcases heq with ⟨h1, h2⟩ | ⟨h1, h2⟩
-    · left; exact Prod.ext (congrArg Subtype.val h1) (congrArg Subtype.val h2)
-    · right; exact Prod.ext (congrArg Subtype.val h1) (congrArg Subtype.val h2)
+    grind
   · rintro ⟨m, hm, h⟩
     obtain ⟨hmM, hmC⟩ := (mem_openMedials hD C m).1 hm
     refine ⟨endEdgeEquiv hD ⟨m, hmM⟩, hmC, ?_⟩
     rw [endEdgeEquiv_val, Sym2.eq_iff]
     rcases h with h | h
-    · left
-      exact ⟨Subtype.ext (congrArg Prod.fst h), Subtype.ext (congrArg Prod.snd h)⟩
-    · right
-      exact ⟨Subtype.ext (congrArg Prod.fst h), Subtype.ext (congrArg Prod.snd h)⟩
+    · simp_all
+    simp_all
 
 omit hD in
 theorem stepRel_symm {A : Finset Cell} {x y : Cell} (h : StepRel ends A x y) : StepRel ends A y x := by
   obtain ⟨m, hm, h⟩ := h
-  exact ⟨m, hm, h.symm⟩
+  solve_by_elim
+
+omit hD in
+instance (A : Finset Cell) : Std.Symm (StepRel ends A) := ⟨fun _ _ => stepRel_symm⟩
 
 /-- Actual open connectivity equals reflexive-transitive closure of cell-level steps. -/
 theorem actualConnected_iff (C : FK.Configuration (endGraph ends P M)) (c d : P) :
@@ -176,21 +169,19 @@ theorem actualConnected_iff (C : FK.Configuration (endGraph ends P M)) (c d : P)
         ∃ y' : P, y'.1 = y ∧ Relation.ReflTransGen (FK.openGraph (endGraph ends P M) C).Adj c y' := by
       intro y hy
       induction hy with
-      | refl => exact ⟨c, rfl, Relation.ReflTransGen.refl⟩
+      | refl => tauto
       | @tail b z _ hstep ih =>
         obtain ⟨y', rfl, hy'⟩ := ih
         obtain ⟨m, hm, hmz⟩ := hstep
         have hmM := openMedials_subset hD C hm
         have hz : z ∈ P := by
           rcases hmz with hmz | hmz
-          · have := (hD.mem m hmM).2; rwa [hmz] at this
-          · have := (hD.mem m hmM).1; rwa [hmz] at this
+          · have := (hD.mem m hmM).2; simp_all
+          · have := (hD.mem m hmM).1; simp_all
         refine ⟨⟨z, hz⟩, rfl, hy'.tail ?_⟩
         rw [openGraph_adj_iff hD]
         exact ⟨m, hm, hmz⟩
-    obtain ⟨y', hy', hr⟩ := key d.1 h
-    have : y' = d := Subtype.ext hy'
-    rwa [this] at hr
+    grind
 
 /-- The end of `m` different from `z` (when `z` is an end of `m`). -/
 def otherEnd (ends : Cell → Cell × Cell) (z m : Cell) : Cell :=
@@ -200,31 +191,15 @@ omit hD in
 theorem ends_eq_of_mem {m z : Cell} (hne : (ends m).1 ≠ (ends m).2) (hz : z = (ends m).1 ∨ z = (ends m).2) :
     ends m = (z, otherEnd ends z m) ∨ ends m = (otherEnd ends z m, z) := by
   unfold otherEnd
-  rcases hz with hz | hz
-  · left
-    have h1 : (ends m).1 = z := hz.symm
-    simp only [h1, ite_true]
-    exact Prod.ext hz.symm rfl
-  · right
-    have : ¬ (ends m).1 = z := fun e => hne (e.trans hz)
-    simp only [this, ite_false]
-    exact Prod.ext rfl hz.symm
+  grind
 
 omit hD in
 theorem otherEnd_ne {m z : Cell} (hne : (ends m).1 ≠ (ends m).2) (hz : z = (ends m).1 ∨ z = (ends m).2) :
     otherEnd ends z m ≠ z := by
   intro e
   rcases ends_eq_of_mem hne hz with h | h
-  · apply hne
-    have h1 := congrArg Prod.fst h
-    have h2 := congrArg Prod.snd h
-    simp only at h1 h2
-    rw [h1, h2, e]
-  · apply hne
-    have h1 := congrArg Prod.fst h
-    have h2 := congrArg Prod.snd h
-    simp only at h1 h2
-    rw [h1, h2, e]
+  · simp_all
+  simp_all
 
 /-- The degree of a vertex is the number of medial vertices having it as an end. -/
 theorem degree_eq [DecidableEq Cell] (z : P) [DecidableRel (endGraph ends P M).Adj] :
@@ -237,9 +212,7 @@ theorem degree_eq [DecidableEq Cell] (z : P) [DecidableRel (endGraph ends P M).A
     intro m hm hz
     have h1 := hD.mem m hm
     unfold otherEnd
-    split_ifs
-    · exact h1.2
-    · exact h1.1
+    grind
   refine Finset.card_bij
     (fun m hm => (⟨otherEnd ends z.1 m, hmem m (Finset.mem_filter.1 hm).1
       (Finset.mem_filter.1 hm).2⟩ : P)) ?_ ?_ ?_
@@ -254,23 +227,22 @@ theorem degree_eq [DecidableEq Cell] (z : P) [DecidableRel (endGraph ends P M).A
   · intro m hm m' hm' h
     obtain ⟨hmM, hz⟩ := Finset.mem_filter.1 hm
     obtain ⟨hmM', hz'⟩ := Finset.mem_filter.1 hm'
-    have h' : otherEnd ends z.1 m = otherEnd ends z.1 m' := congrArg Subtype.val h
     apply hD.inj
     rcases ends_eq_of_mem (hD.ne m) hz with e | e <;>
       rcases ends_eq_of_mem (hD.ne m') hz' with e' | e'
-    · left; rw [e, e', h']
-    · right; rw [e, e', h']; rfl
-    · right; rw [e, e', h']; rfl
-    · left; rw [e, e', h']
+    · simp_all
+    · simp_all
+    · simp_all
+    simp_all
   · intro d hd
     rw [SimpleGraph.mem_neighborFinset, endGraph_adj] at hd
     obtain ⟨hzd, hd⟩ := hd
     rcases hd with ⟨m, hm, h⟩ | ⟨m, hm, h⟩
-    · have hz : z.1 = (ends m).1 := (congrArg Prod.fst h).symm
+    · have hz := (congrArg Prod.fst h).symm
       refine ⟨m, Finset.mem_filter.2 ⟨hm, Or.inl hz⟩, Subtype.ext ?_⟩
       show otherEnd ends z.1 m = d.1
-      unfold otherEnd; simp only [← hz, ite_true]; exact congrArg Prod.snd h
-    · have hz : z.1 = (ends m).2 := (congrArg Prod.snd h).symm
+      unfold otherEnd; simpa [← hz] using congrArg Prod.snd h
+    · have hz := (congrArg Prod.snd h).symm
       refine ⟨m, Finset.mem_filter.2 ⟨hm, Or.inr hz⟩, Subtype.ext ?_⟩
       show otherEnd ends z.1 m = d.1
       have hne : ¬ (ends m).1 = z.1 := by
@@ -279,8 +251,8 @@ theorem degree_eq [DecidableEq Cell] (z : P) [DecidableRel (endGraph ends P M).A
         apply Subtype.ext
         have := congrArg Prod.fst h
         simp only at this
-        rw [← this]; exact e.symm
-      unfold otherEnd; simp only [hne, ite_false]; exact congrArg Prod.fst h
+        simpa [← this] using e.symm
+      unfold otherEnd; simpa [hne] using congrArg Prod.fst h
 
 end EndGraph
 

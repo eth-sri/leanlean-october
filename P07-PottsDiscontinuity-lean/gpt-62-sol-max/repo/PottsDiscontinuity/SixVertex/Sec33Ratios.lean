@@ -21,10 +21,8 @@ variable {N M : ℕ} {c : ℝ}
 /-- A fixed winding sector is strictly positive at every positive height. -/
 theorem Z6Vr_pos (hc : 0 < c) (hN : 0 < N) (hM : 0 < M) {r : ℕ}
     (hr : r ≤ N / 2) : 0 < Z6Vr c N M r := by
-  rw [Z6Vr_eq_trace_block hN hM c hr]
-  let : Nonempty (State N (N / 2 - r)) := ⟨packed (by omega)⟩
-  exact trace_pow_pos_of_nonneg_pos_diag (transferBlock_nonneg hc.le _)
-    (fun x => by rw [transferBlock_apply_self]; norm_num) M
+  rw [Z6Vr_eq_Z6Vn c N M r hr]
+  exact Z6Vn_pos hc hN hM (by omega)
 
 /-- The full six-vertex partition function is positive at every positive height. -/
 theorem Z6V_pos (hc : 0 < c) (hN : 0 < N) (hM : 0 < M) : 0 < Z6V c N M := by
@@ -36,7 +34,10 @@ theorem tendsto_log_Z6V_ratio (hc : 0 < c) (hN : 0 < N) {r : ℕ} (hr : r ≤ N 
     Tendsto (fun M : ℕ => (1 / (M : ℝ)) *
       Real.log (Z6Vr c N M r / Z6V c N M)) atTop
       (𝓝 (Real.log (Lambda c N r) - Real.log (LambdaMax c N))) := by
-  have hnum := tendsto_log_Z6Vr (N := N) hc hN hr
+  have hnum : Tendsto (fun M : ℕ => (1 / (M : ℝ)) * Real.log (Z6Vr c N M r)) atTop
+      (𝓝 (Real.log (Lambda c N r))) := by
+    simpa only [Z6Vr_eq_Z6Vn c N _ r hr, Lambda] using
+      tendsto_log_Z6Vn hc hN (n := N / 2 - r) (by omega)
   have hden := tendsto_log_Z6V (N := N) hc hN
   have hdiff := hnum.sub hden
   have hEq : (fun M : ℕ => (1 / (M : ℝ)) *
@@ -49,20 +50,5 @@ theorem tendsto_log_Z6V_ratio (hc : 0 < c) (hN : 0 < N) {r : ℕ} (hr : r ≤ N 
     rw [Real.log_div (ne_of_gt hnumpos) (ne_of_gt hdenpos)]
     ring
   exact hdiff.congr' hEq.symm
-
-/-- The centered-block limsup comparison follows from the exact ratio rate and
-`Lambda c N 0 ≤ LambdaMax c N`. -/
-theorem limsup_log_Z6V_ratio_le_center (hc : 0 < c) (hN : 0 < N) {r : ℕ}
-    (hr : r ≤ N / 2) :
-    Filter.limsup (fun M : ℕ => (1 / (M : ℝ)) *
-      Real.log (Z6Vr c N M r / Z6V c N M)) atTop ≤
-      Real.log (Lambda c N r) - Real.log (Lambda c N 0) := by
-  rw [(tendsto_log_Z6V_ratio (N := N) hc hN hr).limsup_eq]
-  have hcenter : Lambda c N 0 ≤ LambdaMax c N := by
-    unfold Lambda
-    exact pfRoot_transferBlock_le_LambdaMax (N := N) (c := c) (by omega)
-  have hcenterpos := Lambda_pos (N := N) hc (Nat.zero_le _)
-  have hlog := Real.log_le_log hcenterpos hcenter
-  linarith
 
 end PottsDiscontinuity.SixVertex

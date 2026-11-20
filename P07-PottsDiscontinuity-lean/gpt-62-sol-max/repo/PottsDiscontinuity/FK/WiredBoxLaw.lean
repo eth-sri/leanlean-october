@@ -37,11 +37,8 @@ theorem wiredBoxConfiguration_open_iff (c : LatticeVertex) (r : ℕ)
     wiredBoxConfiguration c r A (boxEdgeEmbedding c r e) = decide (e ∈ A) := by
   classical
   have h : (∀ f, boxEdgeEmbedding c r f = boxEdgeEmbedding c r e → f ∈ A) ↔ e ∈ A := by
-    constructor
-    · exact fun h => h e rfl
-    · intro he f hf
-      exact (boxEdgeEmbedding c r).injective hf ▸ he
-  simp only [wiredBoxConfiguration, h]
+    simp
+  simp [wiredBoxConfiguration]
 
 theorem wiredBoxConfiguration_outside (c : LatticeVertex) (r : ℕ)
     (A : Configuration (boxGraph c r)) (e : squareLattice.edgeSet)
@@ -49,7 +46,7 @@ theorem wiredBoxConfiguration_outside (c : LatticeVertex) (r : ℕ)
     wiredBoxConfiguration c r A e = true := by
   rw [wiredBoxConfiguration_open_iff]
   intro f hf
-  exact (he ⟨f, hf⟩).elim
+  solve_by_elim
 
 /-- The exact finite wired law, followed by the open exterior extension. -/
 def wiredBoxLaw (θ : Parameters) (c : LatticeVertex) (r : ℕ) : PMF LatticeConfiguration :=
@@ -69,7 +66,7 @@ def wiredBoxCylinderEvent (c : LatticeVertex) (r : ℕ)
 theorem wiredBoxCylinderEvent_upper (c : LatticeVertex) (r : ℕ)
     (F : Finset squareLattice.edgeSet) : IsUpperSet (wiredBoxCylinderEvent c r F) := by
   intro A B hAB hA e he f hf
-  exact hAB (hA e he f hf)
+  solve_by_elim
 
 theorem wiredBoxConfiguration_mem_allOpen (c : LatticeVertex) (r : ℕ)
     (A : Configuration (boxGraph c r)) (F : Finset squareLattice.edgeSet) :

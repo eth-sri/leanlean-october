@@ -20,8 +20,6 @@ noncomputable section
 
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 
-local instance eventEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite G.edgeSet
-
 attribute [local instance] configurationMeasurableSpace
 
 theorem law_support (q : Parameters) (ξ : BoundaryCondition V) :
@@ -38,7 +36,7 @@ theorem measure_eq_zero_iff (q : Parameters) (ξ : BoundaryCondition V)
 
 theorem measure_pos_iff (q : Parameters) (ξ : BoundaryCondition V)
     (s : Set (Configuration G)) : 0 < measure G q ξ s ↔ s.Nonempty := by
-  rw [pos_iff_ne_zero, ne_eq, measure_eq_zero_iff, Set.nonempty_iff_ne_empty]
+  simp [pos_iff_ne_zero, measure_eq_zero_iff, Set.nonempty_iff_ne_empty]
 
 /-- The actual open path event between two original vertices. -/
 def connectivityEvent (u v : V) : Set (Configuration G) :=

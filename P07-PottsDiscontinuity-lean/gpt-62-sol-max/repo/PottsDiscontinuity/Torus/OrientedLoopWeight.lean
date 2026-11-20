@@ -25,11 +25,16 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
+section
+
+variable
+  (hN : Even N) (hM : Even M) (i : Fin N) (j : Fin M)
+    (A : RCConfig N M)
+
 /-- The turning classification for zero homological winding, stated on the torus loop carrier
 `Loop hN hM (rcSmoothing A)`: every such loop has rotation number `±1`. It is proved by
 `TorusTopology.loopRotationNumber_eq_pm_one_of_zero_winding`. -/
-def ZeroWindingTurnPremise (hN : Even N) (hM : Even M) (i : Fin N) (j : Fin M)
-    (A : RCConfig N M) : Prop :=
+def ZeroWindingTurnPremise : Prop :=
   ∀ q : Loop hN hM (rcSmoothing A),
     loopVertical (checkerArrows N M) (rcSmoothing A)
         (checkerArrows_compatible hN hM (rcSmoothing A)) j q = 0 →
@@ -43,8 +48,7 @@ def ZeroWindingTurnPremise (hN : Even N) (hM : Even M) (i : Fin N) (j : Fin M)
 /-- The turning classification for nonzero homological winding, stated on the torus loop
 carrier `Loop hN hM (rcSmoothing A)`: every such loop has rotation number `0`. It is proved by
 `TorusTopology.loopRotationNumber_eq_zero_of_nonzero_winding`. -/
-def NonzeroWindingTurnPremise (hN : Even N) (hM : Even M) (i : Fin N) (j : Fin M)
-    (A : RCConfig N M) : Prop :=
+def NonzeroWindingTurnPremise : Prop :=
   ∀ q : Loop hN hM (rcSmoothing A),
     (loopVertical (checkerArrows N M) (rcSmoothing A)
         (checkerArrows_compatible hN hM (rcSmoothing A)) j q ≠ 0 ∨
@@ -53,13 +57,19 @@ def NonzeroWindingTurnPremise (hN : Even N) (hM : Even M) (i : Fin N) (j : Fin M
     loopRotationNumber (checkerArrows N M) (rcSmoothing A)
         (checkerArrows_compatible hN hM (rcSmoothing A)) q = 0
 
+end
+
+section
+
+variable (lam : ℝ)
+
 /-- Product of the exponential full-turn weights of all oriented loops. -/
-noncomputable def orientedLoopWeight (lam : ℝ) (ω : ArrowConfig N M)
+noncomputable def orientedLoopWeight (ω : ArrowConfig N M)
     (s : Smoothing N M) (h : CompatibleConfig ω s) : ℝ :=
   ∏ q : DirectedLoop ω s h, Real.exp (lam * (loopRotationNumber ω s h q : ℤ))
 
 /-- Loop-factor product for an explicit Boolean choice of each canonical loop direction. -/
-noncomputable def chosenLoopWeight (lam : ℝ) (hN : Even N) (hM : Even M)
+noncomputable def chosenLoopWeight (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (F : Loop hN hM (rcSmoothing A) → Bool) : ℝ :=
   ∏ q : Loop hN hM (rcSmoothing A),
     Real.exp (lam * (if F q then
@@ -69,7 +79,7 @@ noncomputable def chosenLoopWeight (lam : ℝ) (hN : Even N) (hM : Even M)
         (checkerArrows_compatible hN hM (rcSmoothing A)) q : ℤ))
 
 /-- The exponential loop weight agrees with the local turn product. -/
-theorem orientedLoopWeight_eq_smoothingWeight (lam : ℝ) (ω : ArrowConfig N M)
+theorem orientedLoopWeight_eq_smoothingWeight (ω : ArrowConfig N M)
     (s : Smoothing N M) (h : CompatibleConfig ω s) :
     orientedLoopWeight lam ω s h = smoothingWeight lam ω s := by
   unfold orientedLoopWeight
@@ -93,7 +103,7 @@ theorem orientedLoopWeight_eq_smoothingWeight (lam : ℝ) (ω : ArrowConfig N M)
   exact (smoothingWeight_eq_exp h lam).symm
 
 /-- Reorientation identifies the cyclic-loop weight with the Boolean loop-factor product. -/
-theorem orientedLoopWeight_eq_chosenLoopWeight (lam : ℝ) (hN : Even N) (hM : Even M)
+theorem orientedLoopWeight_eq_chosenLoopWeight (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (ω : ArrowConfig N M)
     (h : CompatibleConfig ω (rcSmoothing A)) :
     orientedLoopWeight lam ω (rcSmoothing A) h =
@@ -108,6 +118,8 @@ theorem orientedLoopWeight_eq_chosenLoopWeight (lam : ℝ) (hN : Even N) (hM : E
   apply Finset.prod_congr rfl
   intro q _
   rw [loopRotationNumber_reorient]
+
+end
 
 /-- Summing the oriented loop weights gives one factor `2` per winding loop and
 one factor `sqrt q` per zero-winding loop. The two global turn classifications are
@@ -184,18 +196,17 @@ theorem sum_chosenLoopWeight_eq_loopFactors (lam qval : ℝ)
   have hfilter :
       Finset.univ.filter (fun q : Loop hN hM (rcSmoothing A) => q ∈ W) = W := by
     ext q
-    simp [W]
+    simp
   have hcardcomp :
       (Finset.univ.filter fun q : Loop hN hM (rcSmoothing A) => q ∉ W).card =
         Fintype.card (Loop hN hM (rcSmoothing A)) - W.card := by
     have hs := hsplit
     rw [hfilter] at hs
     omega
-  rw [Finset.prod_ite]
-  rw [hfilter]
+  rw [Finset.prod_ite, hfilter]
   simp only [Finset.prod_const]
   rw [hcardcomp]
-  simp [W, windingLoopCount, rcLoopCount, loopCount]
+  rfl
 
 /-- The compatible arrow fields are exactly the Boolean loop orientations, so their
 oriented weight sum is the same product of loop factors. -/
@@ -241,13 +252,13 @@ theorem sum_compatibleOrientedLoopWeight_eq_sum_smoothingWeight (lam : ℝ)
         ∑ ω : ArrowConfig N M, smoothingWeight lam ω s := by
     rw [← Finset.sum_subtype
       (Finset.univ.filter fun ω : ArrowConfig N M => CompatibleConfig ω s)
-      (by intro ω; simp) (fun ω => smoothingWeight lam ω s)]
+      (by simp) (fun ω => smoothingWeight lam ω s)]
     rw [Finset.sum_filter]
     apply Finset.sum_congr rfl
     intro ω _
     by_cases hc : CompatibleConfig ω s
     · simp [hc]
-    · simp [hc, smoothingWeight_eq_zero_of_not_compatible lam ω s hc]
+    · simp [smoothingWeight_eq_zero_of_not_compatible lam ω s hc]
   calc
     _ = ∑ x : {ω : ArrowConfig N M // CompatibleConfig ω s}, smoothingWeight lam x.val s := by
       apply Fintype.sum_congr
@@ -279,6 +290,17 @@ theorem torusCorrectedRCWeight_eq_normalization_mul_orientedSum
         (Real.arcosh (Real.sqrt q.val / 2)) q.val hLam hN hM i j A hzero hnonzero]
       ring
 
+/-- Normalization factors out of a sum over any finite family of configurations. -/
+theorem sum_corrected_eq_normalization {B : Type*} [Fintype B] (A : B → RCConfig N M)
+    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ)) (hq : 4 < q.val) (i : Fin N) (j : Fin M)
+    (hturn : ∀ C : RCConfig N M, ZeroWindingTurnPremise hN hM i j C ∧ NonzeroWindingTurnPremise hN hM i j C) :
+    (∑ b, torusCorrectedRCWeight hN hM i j q (A b)) = torusNormalization q N M *
+      ∑ b, ∑ x : {ω : ArrowConfig N M // CompatibleConfig ω (rcSmoothing (A b))},
+        orientedLoopWeight (Real.arcosh (Real.sqrt q.val / 2)) x.val (rcSmoothing (A b)) x.property := by
+  rw [Finset.mul_sum]
+  exact Finset.sum_congr rfl fun b _ => torusCorrectedRCWeight_eq_normalization_mul_orientedSum
+    hN hM i j q hq (A b) (hturn _).1 (hturn _).2
+
 /-- Corollary 3.13(i), conditional only on the two homological turning classifications;
 the unconditional form is `corollary_313_i_final` in `Torus/Corollary313Final.lean`. -/
 theorem corollary_313_i
@@ -289,40 +311,13 @@ theorem corollary_313_i
     (∑ A : RCConfig N M, torusCorrectedRCWeight hN hM i j q A) =
       torusNormalization q N M *
         Z6V (Real.sqrt (2 + Real.sqrt q.val)) N M := by
-  classical
-  let lam := Real.arcosh (Real.sqrt q.val / 2)
-  have hLam := exp_add_exp_neg_arcosh q.val hq
-  calc
-    _ = ∑ A : RCConfig N M,
-          torusNormalization q N M *
-            (∑ x : {ω : ArrowConfig N M // CompatibleConfig ω (rcSmoothing A)},
-              orientedLoopWeight lam x.val (rcSmoothing A) x.property) := by
-      apply Finset.sum_congr rfl
-      intro A _
-      exact torusCorrectedRCWeight_eq_normalization_mul_orientedSum hN hM i j q hq A
-        (hturn A).1 (hturn A).2
-    _ = torusNormalization q N M *
-          ∑ A : RCConfig N M,
-            ∑ x : {ω : ArrowConfig N M // CompatibleConfig ω (rcSmoothing A)},
-              orientedLoopWeight lam x.val (rcSmoothing A) x.property := by
-      rw [Finset.mul_sum]
-    _ = torusNormalization q N M *
-          ∑ s : Smoothing N M,
-            ∑ x : {ω : ArrowConfig N M // CompatibleConfig ω s},
-              orientedLoopWeight lam x.val s x.property := by
-      refine congrArg (fun x : ℝ => torusNormalization q N M * x) ?_
-      exact Fintype.sum_equiv (rcSmoothingEquiv N M) _ _ (by intro A; rfl)
-    _ = torusNormalization q N M *
-          ∑ s : Smoothing N M, ∑ ω : ArrowConfig N M, smoothingWeight lam ω s := by
-      apply congrArg (fun x : ℝ => torusNormalization q N M * x)
-      exact Finset.sum_congr rfl
-        (fun s _ => sum_compatibleOrientedLoopWeight_eq_sum_smoothingWeight lam s)
-    _ = torusNormalization q N M *
-          ∑ ω : ArrowConfig N M, ∑ s : Smoothing N M, smoothingWeight lam ω s := by
-      refine congrArg (fun x : ℝ => torusNormalization q N M * x) ?_
-      rw [Finset.sum_comm]
-    _ = torusNormalization q N M *
-          Z6V (Real.sqrt (2 + Real.sqrt q.val)) N M := by
-      rw [sum_smoothingWeight_eq_Z6V_sqrt q.val hq]
+  have h := sum_corrected_eq_normalization (fun A : RCConfig N M => A) hN hM q hq i j hturn
+  rw [h, ← sum_smoothingWeight_eq_Z6V_sqrt q.val hq]
+  congr 1
+  simp_rw [sum_compatibleOrientedLoopWeight_eq_sum_smoothingWeight]
+  rw [← (rcSmoothingEquiv N M).symm.sum_comp]
+  simpa [rcSmoothingEquiv] using
+    (Finset.sum_comm (f := fun (s : Smoothing N M) (ω : ArrowConfig N M) =>
+      smoothingWeight (Real.arcosh (Real.sqrt q.val / 2)) ω s))
 
 end PottsDiscontinuity.Torus

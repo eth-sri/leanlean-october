@@ -42,9 +42,7 @@ theorem rectangleSeamIndices_card_le_add
     · intro hv
       refine ⟨v.2, ?_⟩
       exact Prod.ext (Fin.ext hv.symm) rfl
-    · rintro ⟨j, h⟩
-      have hv := congrArg (fun z : Fin N × Fin M => z.1.val) h
-      simpa using hv.symm
+    grind [Fin]
   have hsy : sy = Finset.univ.image (fun i : Fin N => (i, 0)) := by
     ext v
     simp only [sy, Finset.mem_filter, Finset.mem_univ, true_and,
@@ -59,17 +57,17 @@ theorem rectangleSeamIndices_card_le_add
   have hsx_card : sx.card = M := by
     rw [hsx, Finset.card_image_of_injective _ (by
       intro a b h
-      exact congrArg Prod.snd h)]
+      simp_all)]
     simp
   have hsy_card : sy.card = N := by
     rw [hsy, Finset.card_image_of_injective _ (by
       intro a b h
-      exact congrArg Prod.fst h)]
+      simp_all)]
     simp
   rw [hsplit]
   calc
     (sx ∪ sy).card ≤ sx.card + sy.card := Finset.card_union_le _ _
-    _ = M + N := by rw [hsx_card, hsy_card]
+    _ = M + N := by simp_all
     _ = N + M := Nat.add_comm _ _
 
 /-- Corrected (3.17) followed by the exploration union bound, before division
@@ -103,8 +101,7 @@ theorem torusRCProbability_windingTail_le_rootUnion
       ((2 : ℝ) ^ M * rectangleFreeOneArmProbability q (N / 2 - 1) ^
         ((m - 3 * N + 1) / 2)) /
         (1 - (rcCriticalParameter q).val) ^ (N + M) := by
-  have hα : 0 < 1 - (rcCriticalParameter q).val := by
-    exact sub_pos.mpr (criticalParameter_lt_one q)
+  have hα := sub_pos.mpr (criticalParameter_lt_one q)
   have hαle : 1 - (rcCriticalParameter q).val ≤ 1 := by
     linarith [criticalParameter_pos q]
   have hcard := rectangleSeamIndices_card_le_add hNp hMp

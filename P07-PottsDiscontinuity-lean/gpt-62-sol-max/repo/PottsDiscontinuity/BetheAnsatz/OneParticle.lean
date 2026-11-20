@@ -30,26 +30,12 @@ theorem interlaced_singletons (a b : Fin N) : Interlaced {a} {b} := by
   rcases le_total a b with hab | hba
   · left
     refine ⟨by simp, ?_, ?_⟩
-    · intro k
-      have ha := ({a} : Finset (Fin N)).orderEmbOfFin_mem rfl k
-      have hb := ({b} : Finset (Fin N)).orderEmbOfFin_mem (by simp) k
-      simp only [Finset.mem_singleton] at ha hb
-      rwa [ha, hb]
-    · intro k l hkl
-      have hk : k.val < 1 := k.isLt
-      have hl : l.val < 1 := l.isLt
-      omega
+    · grind only [Finset.mem_singleton, orderEmbOfFin_mem]
+    grind
   · right
     refine ⟨by simp, ?_, ?_⟩
-    · intro k
-      have hb := ({b} : Finset (Fin N)).orderEmbOfFin_mem rfl k
-      have ha := ({a} : Finset (Fin N)).orderEmbOfFin_mem (by simp) k
-      simp only [Finset.mem_singleton] at ha hb
-      rwa [hb, ha]
-    · intro k l hkl
-      have hk : k.val < 1 := k.isLt
-      have hl : l.val < 1 := l.isLt
-      omega
+    · grind only [Finset.mem_singleton, orderEmbOfFin_mem]
+    grind
 
 theorem transferMatrix_singletons (c : ℝ) (a b : Fin N) :
     transferMatrix N c {a} {b} = (if a = b then 2 - c ^ 2 else 0) + c ^ 2 := by
@@ -63,8 +49,7 @@ theorem transferMatrix_singletons (c : ℝ) (a b : Fin N) :
         {a, b} := by
       ext i
       by_cases ha : i = a <;> by_cases hb : i = b <;> simp_all [Psi]
-    rw [hf]
-    simp [hab]
+    simp_all
 
 /-- A function supported on one-element configurations is summed by its singleton values. -/
 theorem sum_supported_singletons (f : Finset (Fin N) → ℂ)
@@ -72,7 +57,7 @@ theorem sum_supported_singletons (f : Finset (Fin N) → ℂ)
     (∑ s, f s) = ∑ j : Fin N, f {j} := by
   classical
   let t := Finset.univ.image (fun j : Fin N => ({j} : Finset (Fin N)))
-  have ht : (∑ s ∈ t, f s) = ∑ s, f s :=
+  have ht :=
     Finset.sum_subset (Finset.subset_univ t) (by
       intro s _ hst
       apply hf s
@@ -92,7 +77,7 @@ theorem complex_transfer_mulVec_supported (c : ℝ) (n : ℕ)
   refine Finset.sum_eq_zero fun y _ => ?_
   by_cases hy : y.card = n
   · have hxy : x.card ≠ y.card := by omega
-    simp [Matrix.map_apply, transferMatrix_apply_eq_zero_of_card_ne hxy]
+    simp [transferMatrix_apply_eq_zero_of_card_ne hxy]
   · simp [hv y hy]
 
 theorem complex_transfer_mulVec_singleton (c : ℝ) (v : Finset (Fin N) → ℂ)
@@ -100,8 +85,7 @@ theorem complex_transfer_mulVec_singleton (c : ℝ) (v : Finset (Fin N) → ℂ)
     ((transferMatrix N c).map (algebraMap ℝ ℂ) *ᵥ v) {a} =
       (2 - (c : ℂ) ^ 2) * v {a} + (c : ℂ) ^ 2 * ∑ b : Fin N, v {b} := by
   classical
-  rw [Matrix.mulVec, dotProduct]
-  rw [sum_supported_singletons _ (fun s hs => by simp [hv s hs])]
+  rw [Matrix.mulVec, dotProduct, sum_supported_singletons _ (fun s hs => by simp [hv s hs])]
   calc
     _ = ∑ b : Fin N,
         ((if a = b then (2 - (c : ℂ) ^ 2) * v {b} else 0) +
@@ -123,7 +107,7 @@ theorem complex_transfer_mulVec_singleton (c : ℝ) (v : Finset (Fin N) → ℂ)
 @[simp] theorem betheVector_zero (Δ : ℝ) (p : Fin 0 → ℝ) (x : Finset (Fin N)) :
     betheVector Δ p x = if x = ∅ then 1 else 0 := by
   classical
-  simp [betheVector, extendByZero, blockWave, Finset.card_eq_zero]
+  simp [betheVector, extendByZero, blockWave]
 
 @[simp] theorem eigenvalueRegular_zero (c : ℝ) (p : Fin 0 → ℝ) :
     eigenvalueRegular c p = 2 := by norm_num [eigenvalueRegular]
@@ -136,25 +120,28 @@ theorem betheAnsatz_zero (N : ℕ) (c : ℝ) (p : Fin 0 → ℝ) :
   funext x
   by_cases hx : x = ∅
   · subst x
-    simp [Matrix.mulVec, dotProduct, Matrix.map_apply, mul_ite]
+    simp [Matrix.mulVec, dotProduct]
   · have hcard : x.card ≠ (∅ : Finset (Fin N)).card := by
-      intro hc
-      exact hx (Finset.card_eq_zero.mp hc)
+      simp_all
     have he := transferMatrix_apply_eq_zero_of_card_ne (c := c) hcard
-    simp [Matrix.mulVec, dotProduct, Matrix.map_apply, mul_ite, hx, he]
+    simp [Matrix.mulVec, dotProduct, hx, he]
 
-@[simp] theorem amplitude_one (Δ : ℝ) (p : Fin 1 → ℝ) (σ : Equiv.Perm (Fin 1)) :
+section
+
+variable (Δ : ℝ) (p : Fin 1 → ℝ)
+
+@[simp] theorem amplitude_one (σ : Equiv.Perm (Fin 1)) :
     amplitude Δ p σ = 1 := by
   have hσ : σ = Equiv.refl _ := Subsingleton.elim _ _
   subst σ
   simp [amplitude]
 
-@[simp] theorem coordinateWave_one (Δ : ℝ) (p : Fin 1 → ℝ) (x : Fin 1 → ℤ) :
+@[simp] theorem coordinateWave_one (x : Fin 1 → ℤ) :
     coordinateWave Δ p x = Complex.exp (I * (p 0 : ℂ) * (x 0 : ℂ)) := by
   rw [coordinateWave, Fintype.sum_subsingleton _ (Equiv.refl _)]
   simp [planeWave]
 
-theorem betheVector_singleton (Δ : ℝ) (p : Fin 1 → ℝ) (a : Fin N) :
+theorem betheVector_singleton (a : Fin N) :
     betheVector Δ p {a} = z (p 0) ^ a.val := by
   classical
   simp only [betheVector, extendByZero, Finset.card_singleton, ↓reduceDIte,
@@ -163,6 +150,8 @@ theorem betheVector_singleton (Δ : ℝ) (p : Fin 1 → ℝ) (a : Fin N) :
   congr 1
   push_cast
   ring
+
+end
 
 theorem BetheEquations.one_root {Δ : ℝ} {p : Fin 1 → ℝ}
     (hBE : BetheEquations N Δ p) : z (p 0) ^ N = 1 := by
@@ -183,7 +172,7 @@ theorem sum_one_particle_wave_eq_zero {Δ : ℝ} {p : Fin 1 → ℝ}
 
 theorem eigenvalueRegular_one (c : ℝ) (p : Fin 1 → ℝ) (hz : z (p 0) ≠ 1) :
     eigenvalueRegular c p = 2 - (c : ℂ) ^ 2 := by
-  simpa only [eigenvalueRegular, Fin.prod_univ_one] using L_add_M c hz
+  simpa [eigenvalueRegular] using L_add_M c hz
 
 /-- The nonzero-root branch of Theorem 3.1 in the one-particle sector.
 The proof is valid for every `N` and `c`; no half-filling bound is needed in this sector. -/

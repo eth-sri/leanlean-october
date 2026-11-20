@@ -3,6 +3,7 @@ Generalized open bounds: p/(p+(1-p)q) and p; closed bounds: 1-p and 1-p/(p+(1-p)
 module
 
 public import PottsDiscontinuity.FK.SingleEdgeLaw
+public import PottsDiscontinuity.Infra.PairedMass
 public import PottsDiscontinuity.FK.IncreasingEvents
 public import PottsDiscontinuity.FK.WiredRemoval
 public import Mathlib.Algebra.BigOperators.Ring.Finset
@@ -21,25 +22,14 @@ local instance finiteEnergyEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite G
 local instance finiteEnergyEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 local instance finiteEnergyRemainingFintype (R : Configuration G) :
     Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
-local instance finiteEnergyRemovedFintype (R : Configuration G) :
-    Fintype (RemovedConfiguration G R) := Fintype.ofFinite _
 
 def edgeRemovedBoolEquiv (e : G.edgeSet) :
     RemovedConfiguration G ({e} : Configuration G) ≃ Bool where
   toFun B := decide (e ∈ B.val)
   invFun b := if b then ⟨{e}, by simp⟩ else ⟨∅, by simp⟩
   left_inv B := by
-    apply Subtype.ext
-    by_cases he : e ∈ B.val
-    · have hB : B.val = {e} := Finset.eq_singleton_iff_unique_mem.mpr
-        ⟨he, fun x hx => by simpa using B.property hx⟩
-      simp [hB]
-    · have hB : B.val = ∅ := by
-        rcases Finset.subset_singleton_iff.mp B.property with hEmpty | hSingle
-        · exact hEmpty
-        · exact (he (by simp [hSingle])).elim
-      simp [hB]
-  right_inv b := by cases b <;> simp
+    aesop
+  right_inv b := by grind
 
 def configurationEdgeStateEquiv (e : G.edgeSet) :
     Configuration G ≃ RemainingConfiguration G ({e} : Configuration G) × Bool :=
@@ -60,20 +50,6 @@ omit [Finite V] in
   simp [configurationEdgeStateEquiv, configurationSplitEquiv_symm_apply,
     edgeRemovedBoolEquiv]
 
-private theorem configurationProbability_edgeState_sum (q : Parameters)
-    (ξ : BoundaryCondition V) (e : G.edgeSet) (f : Configuration G → ℝ) :
-    (∑ C : Configuration G, configurationProbability G q ξ C * f C) =
-      ∑ A : RemainingConfiguration G ({e} : Configuration G),
-        (configurationProbability G q ξ A.val * f A.val +
-          configurationProbability G q ξ (insert e A.val) * f (insert e A.val)) := by
-  classical
-  rw [← (configurationEdgeStateEquiv e).symm.sum_comp, Fintype.sum_prod_type]
-  simp only [configurationEdgeStateEquiv_symm_apply_false,
-    configurationEdgeStateEquiv_symm_apply_true, Fintype.sum_bool]
-  apply Finset.sum_congr rfl
-  intro A hA
-  ring
-
 /-- For an event invariant under toggling one original edge, its open-edge mass
 lies between the FK single-edge conditional weights times its total mass. -/
 theorem configurationProbability_edge_finite_energy
@@ -86,127 +62,64 @@ theorem configurationProbability_edge_finite_energy
         edgeParameter q * (measure G q ξ s).toReal := by
   classical
   let e : G.edgeSet := ⟨s(u, v), G.mem_edgeSet.mpr huv⟩
-  let P : Configuration G → ℝ := configurationProbability G q ξ
-  let eventIndicator (t : Set (Configuration G)) : Configuration G → ℝ :=
-    t.indicator (fun _ => (1 : ℝ))
+  let P := configurationProbability G q ξ
   have habsent (A : RemainingConfiguration G {e}) : e ∉ A.val := by
-    intro heA
-    exact (Finset.disjoint_left.mp A.property heA) (by simp)
-  have hstableInsert (A : RemainingConfiguration G {e}) :
-      insert e A.val ∈ s ↔ A.val ∈ s := by
-    have hh := hstable (insert e A.val)
-    simpa [e, habsent A] using hh
-  have hbaseIndicator (A : RemainingConfiguration G {e}) :
-      eventIndicator s A.val = if A.val ∈ s then 1 else 0 := by
-    simp [eventIndicator, Set.indicator]
-  have hinsertIndicator (A : RemainingConfiguration G {e}) :
-      eventIndicator s (insert e A.val) = if A.val ∈ s then 1 else 0 := by
-    simp [eventIndicator, Set.indicator, hstableInsert A]
-  have hmass : (measure G q ξ s).toReal =
-      ∑ A : RemainingConfiguration G {e},
-        if A.val ∈ s then P A.val + P (insert e A.val) else 0 := by
-    rw [measure_toReal_eq_indicator_sum]
-    rw [configurationProbability_edgeState_sum q ξ e (eventIndicator s)]
-    apply Finset.sum_congr rfl
-    intro A hA
-    by_cases hsA : A.val ∈ s <;> simp [P, eventIndicator, hstableInsert, hsA]
-  have hopen :
-      (measure G q ξ (s ∩ {A | e ∈ A})).toReal =
-        ∑ A : RemainingConfiguration G {e},
-          if A.val ∈ s then P (insert e A.val) else 0 := by
-    rw [measure_toReal_eq_indicator_sum]
-    rw [configurationProbability_edgeState_sum q ξ e (eventIndicator (s ∩ {A | e ∈ A}))]
-    simp [P, eventIndicator, Set.indicator, habsent, hstableInsert]
-  have htermLower (A : RemainingConfiguration G {e}) :
-      (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)) *
-          (if A.val ∈ s then P A.val + P (insert e A.val) else 0) ≤
-        (if A.val ∈ s then P (insert e A.val) else 0) := by
-    by_cases hA : A.val ∈ s
-    · simp only [ite_eq_left hA]
-      have hr := configurationProbability_pair_ratio_bounds q ξ A.val huv
-        (by simpa [e] using habsent A)
-      have hden : 0 < P A.val + P (insert e A.val) := by
-        exact add_pos (configurationProbability_pos G q ξ A.val)
-          (configurationProbability_pos G q ξ (insert e A.val))
-      have h := (le_div_iff₀ hden).mp hr.1
-      simpa [P] using h
-    · simp [hA]
-  have htermUpper (A : RemainingConfiguration G {e}) :
-      (if A.val ∈ s then P (insert e A.val) else 0) ≤
-        edgeParameter q *
-          (if A.val ∈ s then P A.val + P (insert e A.val) else 0) := by
-    by_cases hA : A.val ∈ s
-    · simp only [ite_eq_left hA]
-      have hr := configurationProbability_pair_ratio_bounds q ξ A.val huv
-        (by simpa [e] using habsent A)
-      have hden : 0 < P A.val + P (insert e A.val) := by
-        exact add_pos (configurationProbability_pos G q ξ A.val)
-          (configurationProbability_pos G q ξ (insert e A.val))
-      have h := (div_le_iff₀ hden).mp hr.2
-      simpa [P] using h
-    · simp [hA]
-  constructor
-  · rw [hmass, hopen]
-    calc
-      (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)) *
-          (∑ A : RemainingConfiguration G {e},
-            if A.val ∈ s then P A.val + P (insert e A.val) else 0) =
-        ∑ A : RemainingConfiguration G {e},
-          (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)) *
-            (if A.val ∈ s then P A.val + P (insert e A.val) else 0) := by
-              rw [Finset.mul_sum]
-      _ ≤ ∑ A : RemainingConfiguration G {e},
-          (if A.val ∈ s then P (insert e A.val) else 0) :=
-        Finset.sum_le_sum (fun A _ => htermLower A)
-  · rw [hmass, hopen]
-    calc
-      (∑ A : RemainingConfiguration G {e},
-          (if A.val ∈ s then P (insert e A.val) else 0) ) ≤
-        ∑ A : RemainingConfiguration G {e},
-          edgeParameter q *
-            (if A.val ∈ s then P A.val + P (insert e A.val) else 0) :=
-        Finset.sum_le_sum (fun A _ => htermUpper A)
-      _ = edgeParameter q *
-          (∑ A : RemainingConfiguration G {e},
-            if A.val ∈ s then P A.val + P (insert e A.val) else 0) := by
-              rw [Finset.mul_sum]
+    intro he
+    exact (Finset.disjoint_left.mp A.property he) (by simp)
+  have hs (A : RemainingConfiguration G {e}) : insert e A.val ∈ s ↔ A.val ∈ s := by
+    simpa [e, habsent A] using hstable (insert e A.val)
+  simp only [measure_toReal_eq_indicator_sum, ← Set.indicator_mul_right, mul_one]
+  apply pairedMass_bounds (configurationEdgeStateEquiv e) P s {A | e ∈ A} true
+  · simpa only [configurationEdgeStateEquiv_symm_apply_false,
+      configurationEdgeStateEquiv_symm_apply_true] using hs
+  · intro A i
+    cases i <;> simp [habsent]
+  · intro A
+    simp only [configurationEdgeStateEquiv_symm_apply_false, configurationEdgeStateEquiv_symm_apply_true]
+    have h := configurationProbability_pair_ratio_bounds q ξ A.val huv (habsent A)
+    have hden := add_pos (configurationProbability_pos G q ξ A.val)
+      (configurationProbability_pos G q ξ (insert e A.val))
+    exact ⟨(le_div_iff₀ hden).mp h.1, (div_le_iff₀ hden).mp h.2⟩
 
-
-/-- For an event invariant under toggling one original edge, its closed-edge mass
-lies between the FK single-edge conditional weights times its total mass. -/
-theorem configurationProbability_edge_finite_energy_closed
-    (q : Parameters) (ξ : BoundaryCondition V) (s : Set (Configuration G))
-    {u v : V} (huv : G.Adj u v)
-    (hstable : ∀ A, A ∈ s ↔ A.erase ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ ∈ s) :
-    (1 - edgeParameter q) * (measure G q ξ s).toReal ≤
-        (measure G q ξ (s ∩ {A | (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∉ A})).toReal ∧
-      (measure G q ξ (s ∩ {A | (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∉ A})).toReal ≤
-        (1 - (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val))) * (measure G q ξ s).toReal := by
+/-- Prescribing a common edge state costs one finite-energy factor per edge. -/
+theorem measure_prescribed_edges_lower_bound (q : Parameters) (ξ : BoundaryCondition V)
+    (b : Bool) (s : Configuration G) :
+    (if b then edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)
+      else 1 - edgeParameter q) ^ s.card ≤
+      (measure G q ξ {A | ∀ e ∈ s, (e ∈ A ↔ b = true)}).toReal := by
   classical
-  let e : G.edgeSet := ⟨s(u, v), G.mem_edgeSet.mpr huv⟩
-  let opened : Set (Configuration G) := {A | e ∈ A}
-  have hopen := configurationProbability_edge_finite_energy q ξ s huv hstable
-  have hpartition :
-      (measure G q ξ (s ∩ opened)).toReal +
-        (measure G q ξ (s ∩ {A | e ∉ A})).toReal =
-          (measure G q ξ s).toReal := by
-    have h := MeasureTheory.measureReal_inter_add_sdiff (μ := measure G q ξ) (s := s)
-      (t := opened) (by simp [opened])
-    have hset : s \ opened = s ∩ {A | e ∉ A} := by
-      ext A
-      simp [opened]
-    change ((measure G q ξ (s ∩ opened)).toReal) +
-      ((measure G q ξ (s ∩ {A | e ∉ A})).toReal) =
-        ((measure G q ξ s).toReal)
-    rw [← hset]
-    exact h
-  have hopen' :
-      (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)) * (measure G q ξ s).toReal ≤
-        (measure G q ξ (s ∩ opened)).toReal ∧
-      (measure G q ξ (s ∩ opened)).toReal ≤
-        edgeParameter q * (measure G q ξ s).toReal := by
-    simpa [e, opened] using hopen
-  constructor <;> nlinarith [hpartition, hopen'.1, hopen'.2]
+  let c := if b then edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)
+    else 1 - edgeParameter q
+  have hc : 0 ≤ c := by
+    cases b
+    · exact (one_sub_edgeParameter_pos q).le
+    · exact div_nonneg (edgeParameter_pos q).le (edge_conditional_denominator_pos q).le
+  change c ^ s.card ≤ _
+  induction s using Finset.induction_on with
+  | empty => simp
+  | @insert e s he ih =>
+    obtain ⟨u,v,huv,rfl⟩ : ∃ u v, ∃ h : G.Adj u v, e = ⟨s(u,v), G.mem_edgeSet.mpr h⟩ := by
+      rcases e with ⟨e, h⟩
+      induction e using Sym2.inductionOn with
+      | hf u v => exact ⟨u,v,G.mem_edgeSet.mp h,rfl⟩
+    let e : G.edgeSet := ⟨s(u,v), G.mem_edgeSet.mpr huv⟩
+    let T : Set (Configuration G) := {A | ∀ f ∈ s, (f ∈ A ↔ b = true)}
+    have hs : ∀ A, A ∈ T ↔ A.erase e ∈ T := by
+      simp only [T, Set.mem_ofPred_eq, Finset.mem_erase]
+      grind
+    have hf := configurationProbability_edge_finite_energy q ξ T huv hs
+    rw [Finset.card_insert_of_notMem he, pow_succ, mul_comm]
+    refine (mul_le_mul_of_nonneg_left ih hc).trans ?_
+    simp only [Finset.forall_mem_insert, Set.ofPred_and]
+    rw [Set.inter_comm]
+    cases b
+    · have hpart : (measure G q ξ (T ∩ {A | e ∈ A})).toReal +
+          (measure G q ξ (T ∩ {A | e ∉ A})).toReal = (measure G q ξ T).toReal :=
+        MeasureTheory.measureReal_inter_add_sdiff (t := {A | e ∈ A}) (by trivial)
+      have h : (1 - edgeParameter q) * (measure G q ξ T).toReal ≤
+          (measure G q ξ (T ∩ {A | e ∉ A})).toReal := by linarith [hf.2]
+      simpa only [c, T, Bool.false_eq_true, iff_false, ↓reduceIte] using h
+    · simpa only [c, T, iff_true, ↓reduceIte] using hf.1
 
 end
 end PottsDiscontinuity.FK

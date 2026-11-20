@@ -26,6 +26,9 @@ theorem ind_apply_of_mem {A : Finset Cell} {m : Cell} (h : m ∈ A) : ind A m = 
 theorem ind_apply_of_not_mem {A : Finset Cell} {m : Cell} (h : m ∉ A) : ind A m = 0 := by
   simp [ind, h]
 
+theorem mem_of_ind_ne_zero {A : Finset Cell} {m : Cell} (h : ind A m ≠ 0) : m ∈ A :=
+  not_not.mp fun hn => h (ind_apply_of_not_mem hn)
+
 theorem cdeg_add (f g : Cell → ZMod 2) (c : Cell) :
     cdeg (fun m => f m + g m) c = cdeg f c + cdeg g c := by
   unfold cdeg; ring
@@ -34,6 +37,22 @@ theorem cdeg_zero (c : Cell) : cdeg (fun _ => (0 : ZMod 2)) c = 0 := by
   unfold cdeg; simp
 
 theorem zmod2_two (z : ZMod 2) : z + z = 0 := by fin_cases z <;> decide
+
+theorem zmod2_add_eq_zero_iff (a b : ZMod 2) : a + b = 0 ↔ a = b := by
+  constructor
+  · intro h
+    linear_combination h - zmod2_two b
+  · rintro rfl
+    exact zmod2_two a
+
+/-- A dual step across a zero cochain entry preserves the potential. -/
+theorem potential_eq_of_ends {g : Cell → ZMod 2} {m x y : Cell}
+    (hg : g (dualEnds m).1 + g (dualEnds m).2 = 0)
+    (h : dualEnds m = (x,y) ∨ dualEnds m = (y,x)) : g x = g y := by
+  rw [zmod2_add_eq_zero_iff] at hg
+  rcases h with h | h <;> rw [h] at hg
+  · exact hg
+  · exact hg.symm
 
 /-- The degree of the indicator of a single medial vertex at a primal cell. -/
 theorem cdeg_ind_single (m c : Cell) (hc : IsPrimal c) :

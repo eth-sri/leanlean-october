@@ -2,6 +2,8 @@ module
 
 public import PottsDiscontinuity.Potts.WiredGhostRelation
 public import PottsDiscontinuity.Potts.ConditionedOuterLaw
+public import PottsDiscontinuity.Potts.GhostBoxLaw
+public import PottsDiscontinuity.Potts.BoolMeasureBridge
 
 /-! The conditioned outer law preserves the full marked ghost connection data. -/
 
@@ -14,19 +16,8 @@ noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
 local instance connectionBoundaryFintype (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
 local instance connectionOuterEdgeFintype (n : ℕ) : Fintype (OuterBoxEdge n) := Fintype.ofFinite _
-local instance connectionShellFintype (n : ℕ) : Fintype (OuterShellEdge n) := Fintype.ofFinite _
 
-/-- Every state in the conditioning event has a unique literal/shell decomposition. -/
-theorem outerClosed_eq_restore (n : ℕ) (hn : 0 < n) (Ω : OuterBoxEdge n → Bool)
-    (hΩ : outerCornerClosed n Ω) :
-    restoreGhostBonds n hn (readLiteralBonds n Ω) (fun e : OuterShellEdge n => Ω e.val) = Ω := by
-  have h := (outerBondEquiv n hn).left_inv Ω
-  change restoreOuterBonds n hn (readLiteralBonds n Ω) (fun b => Ω (cornerCutEdge n b))
-    (fun e => Ω e.val) = Ω at h
-  have hc : (fun b => Ω (cornerCutEdge n b)) = fun _ => false := funext hΩ
-  rw [hc] at h
-  exact h
-
+set_option maxHeartbeats 1200000 in
 /-- Every event whose restored value is determined by the literal bonds has
 its exact ghost-law probability under the conditioned outer law. -/
 theorem conditionedOuterLaw_event_eq_ghost
@@ -38,40 +29,31 @@ theorem conditionedOuterLaw_event_eq_ghost
       ∑ ω, ghostRCProbability q (box n) β ω * (if ω ∈ T then 1 else 0) := by
   change ((FK.law _ (fkParameters q hq β hβ) (outerBoxWiring n)).filter _ _).toMeasure.real S = _
   rw [finite_filter_measureReal]
-  have hid := ghost_expectation_eq_conditioned_wired_box q hq β hβ n hn
-    (fun ω => if ω ∈ T then (1 : ℝ) else 0)
-  rw [← hid]
-  change (FK.measure _ (fkParameters q hq β hβ) (outerBoxWiring n)
-      (S ∩ cornerClosureEvent n)).toReal /
+  change (FK.measure _ (fkParameters q hq β hβ) (outerBoxWiring n) (S ∩ cornerClosureEvent n)).toReal /
     (FK.measure _ (fkParameters q hq β hβ) (outerBoxWiring n) (cornerClosureEvent n)).toReal = _
-  rw [fk_measureReal_eq_bool_sum, fk_measureReal_eq_bool_sum]
-  apply congrArg₂ (fun (a : ℝ) (b : ℝ) => a / b)
-  · apply Finset.sum_congr
-    · ext Ω; simp
-    · intro Ω _
-      have hp := FK.configurationProbability_eq_rcProb (fkParameters q hq β hβ) (box (n + 1)) 1 Ω
-      change FK.configurationProbability _ _ (outerBoxWiring n) _ = _ at hp
-      rw [hp]
-      by_cases hB : outerCornerClosed n Ω
-      · have hb := (outerCornerClosed_iff_mem n Ω).mp hB
-        have hst : FK.boolConfigurationEquiv _ Ω ∈ S ↔ readLiteralBonds n Ω ∈ T := by
-          rw [← outerClosed_eq_restore n hn Ω hB]
-          rw [readLiteralBonds_restore]
-          exact hST _ _
-        by_cases ht : readLiteralBonds n Ω ∈ T
-        · simp [hb, hB, hst.mpr ht, ht]
-        · simp [hb, hB, mt hst.mp ht, ht]
-      · have hb := mt (outerCornerClosed_iff_mem n Ω).mpr hB
-        simp [hb, hB]
-  · apply Finset.sum_congr
-    · ext Ω; simp
-    · intro Ω _
-      have hp := FK.configurationProbability_eq_rcProb (fkParameters q hq β hβ) (box (n + 1)) 1 Ω
-      change FK.configurationProbability _ _ (outerBoxWiring n) _ = _ at hp
-      rw [hp]
-      by_cases hB : outerCornerClosed n Ω
-      · simp [hB, (outerCornerClosed_iff_mem n Ω).mp hB]
-      · simp [hB, mt (outerCornerClosed_iff_mem n Ω).mpr hB]
+  rw [fk_measureReal_eq_bool_weight_sum, fk_measureReal_eq_bool_weight_sum,
+    div_div_div_cancel_right₀ (FK.partitionFunction_pos _ _ _).ne']
+  have hite (P Q : Prop) [Decidable P] [Decidable Q] [Decidable (P ∧ Q)] (w : ℝ) :
+      (if P ∧ Q then w else 0) = if Q then w * (if P then 1 else 0) else 0 := by
+    split <;> split <;> simp_all
+  simp_rw [Set.mem_inter_iff, ← outerCornerClosed_iff_mem n, hite]
+  have hs := sum_outerCornerClosed_weight_test q hq β hβ n hn
+    (fun Ω => if FK.boolConfigurationEquiv _ Ω ∈ S then 1 else 0) (fun ω => if ω ∈ T then 1 else 0)
+    (fun ω η => if_congr (hST ω η) rfl rfl)
+  have hd := sum_outerCornerClosed_weight_test q hq β hβ n hn (fun _ => 1) (fun _ => 1) (fun _ _ => rfl)
+  simp only [mul_one] at hd
+  trans ((q : ℝ) * Real.exp (-β) ^ 4) * (∑ ω, ghostRCWeight q (box n) β ω * (if ω ∈ T then 1 else 0)) /
+    (((q : ℝ) * Real.exp (-β) ^ 4) * ghostRCPartition q (box n) β)
+  · apply congrArg₂ (fun x y : ℝ => x / y)
+    · refine Eq.trans ?_ hs
+      exact Finset.sum_congr (by ext Ω; simp) (fun _ _ => rfl)
+    · refine Eq.trans ?_ (hd.trans ?_)
+      · exact Finset.sum_congr (by ext Ω; simp only [Finset.mem_univ]) (fun _ _ => rfl)
+      · unfold ghostRCPartition
+        apply congrArg (fun x : ℝ => (q : ℝ) * Real.exp (-β) ^ 4 * x)
+        exact Finset.sum_congr (by ext ω; simp only [Finset.mem_univ]) (fun _ _ => rfl)
+  · rw [mul_div_mul_left _ _ (by positivity : (q : ℝ) * Real.exp (-β) ^ 4 ≠ 0)]
+    simp_rw [ghostRCProbability, div_mul_eq_mul_div, ← Finset.sum_div]
 
 theorem collapseOuterGhost_projection (n : ℕ) (a : Option (ℤ × ℤ)) :
     collapseOuterGhost n (boxGhostProjection (n + 1) a) = boxGhostProjection n a := by

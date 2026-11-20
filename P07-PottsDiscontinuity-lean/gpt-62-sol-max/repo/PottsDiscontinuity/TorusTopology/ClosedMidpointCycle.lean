@@ -42,10 +42,7 @@ lemma three_le_loopPeriod_of_zero_winding
   have h1 := lift_ne_start_one ω s h d
   have h2 := lift_ne_start_two ω s h d
   by_contra hn
-  have he : loopPeriod ω s h d = 1 ∨ loopPeriod ω s h d = 2 := by omega
-  rcases he with he | he <;> rw [he] at hz
-  · exact h1 hz
-  · exact h2 hz
+  grind
 
 /-- The closed lattice polygon is obtained from the actual orbit, with its
 original starting dart retained. No cycle is selected from mere existence. -/

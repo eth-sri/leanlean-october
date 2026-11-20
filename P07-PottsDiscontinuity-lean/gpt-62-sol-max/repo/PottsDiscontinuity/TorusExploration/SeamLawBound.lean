@@ -18,10 +18,6 @@ open Torus TorusRC FK FK.FiniteProbability MeasureTheory
 variable {N M : ℕ}
 noncomputable section
 open scoped Classical
-local instance seamLawFullEdgeFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
-local instance seamLawCylinderEdgeFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullCylinderGraph hN hM).edgeSet := Fintype.ofFinite _
 local instance seamLawFullEdgeDecidableEq (hN : Even N) (hM : Even M) :
     DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 attribute [local instance] configurationMeasurableSpace
@@ -41,14 +37,13 @@ lemma torusSeamClosed_mem_record (hN : Even N) (hM : Even M)
   have hdA : A d=true := by
     apply (mem_torusRCConfigurationEquiv hN hM hN4 hM4 A d).1
     change torusIndexedEdgeEquiv hN hM hN4 hM4 d ∈ _
-    rw [hd]
-    exact heA
+    simp_all
   have hrow : d.2.val ≠ 0 := by
     intro hz
     have hy : d.2=(⟨0,hMp⟩ : Fin M) := Fin.ext hz
     have hc := hA d.1
     rw [← hy] at hc
-    exact Bool.noConfusion (hdA.symm.trans hc)
+    simp_all
   apply hn
   rw [← hd]
   exact (indexedEdge_mem_cylinder_iff hN hM hN4 hM4 d).2 hrow
@@ -65,7 +60,7 @@ theorem torus_seam_joint_le_cylinder (hN : Even N) (hM : Even M)
   let G := fullCylinderGraph hN hM
   let H := fullDiamondGraph hN hM
   let hGH : G ≤ H := fullCylinderGraph_le_full hN hM
-  let E : Set (Configuration G) := {C | torusRCSeamClosedCylinderCrossings hN hM r
+  let E := {C | torusRCSeamClosedCylinderCrossings hN hM r
     (cylinderIndexedConfiguration hN hM hN4 hM4 C)}
   let T := frozenStateEvent (subgraphRemovedEdges G H) (closedSubgraphRecord G H)
   let J := T ∩ (subgraphRemainderRead hGH) ⁻¹' E
@@ -79,7 +74,7 @@ theorem torus_seam_joint_le_cylinder (hN : Even N) (hM : Even M)
     have hidx : cylinderIndexedConfiguration hN hM hN4 hM4
         (subgraphRemainderRead hGH (torusRCConfigurationEquiv hN hM hN4 hM4 A)) = A := by
       unfold cylinderIndexedConfiguration
-      rw [he,Equiv.symm_apply_apply]
+      simp_all
     change torusRCSeamClosedCylinderCrossings hN hM r _
     rw [hidx]
     have hseam : torusRCSeamClosed A=A := by
@@ -87,10 +82,10 @@ theorem torus_seam_joint_le_cylinder (hN : Even N) (hM : Even M)
       by_cases hz : e.2.val=0
       · have hy : e.2=(⟨0,hMp⟩ : Fin M) := Fin.ext hz
         simp only [torusRCSeamClosed,hz,ite_true]
-        simpa only [← hy,Prod.eta] using (hclosed e.1).symm
+        simpa [← hy] using (hclosed e.1).symm
       · simp [torusRCSeamClosed,hz]
     change torusRCSeamClosedCylinderCrossings hN hM r (torusRCSeamClosed A) at hcross
-    rwa [hseam] at hcross
+    simp_all
   refine (measureReal_mono hsub).trans ?_
   rw [Measure.real_def,fk_measureReal_eq_expectation,fk_measureReal_eq_expectation]
   exact closedSubgraph_joint_le hGH (torusRCBridgeParameters q) E

@@ -26,9 +26,7 @@ theorem ribbonHandleCount_closed (hN : Even N) (hM : Even M) :
 theorem ribbonHandleCount_open (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M) :
     ribbonHandleCount hN hM (openRCConfig N M) = 1 := by
   have he := euler_ribbonHandleCount hN hM (openRCConfig N M)
-  rw [clusterCount_open hN hM hNp hMp, rcLoopCount_open, openCount_open] at he
-  have ht : 2 * (N * M / 2) = N * M := Nat.mul_div_cancel' (hN.mul_right M).two_dvd
-  omega
+  grind only [clusterCount_open, rcLoopCount_open, openCount_open]
 
 /-- The total number of handles of any primal sub-ribbon graph is zero or one. -/
 theorem ribbonHandleCount_le_one (hN : Even N) (hM : Even M) (A : RCConfig N M) :
@@ -40,11 +38,8 @@ theorem ribbonHandleCount_le_one (hN : Even N) (hM : Even M) (A : RCConfig N M) 
     omega
   · by_cases hm : M = 0
     · subst M
-      have ha : A = closedRCConfig N 0 := by funext v; exact Fin.elim0 v.2
-      rw [ha, ribbonHandleCount_closed]
-      omega
+      solve_by_elim
     · have hb := ribbonHandleCount_mono hN hM A (openRCConfig N M) (fun _ _ => rfl)
-      rw [ribbonHandleCount_open hN hM (Nat.pos_of_ne_zero hn) (Nat.pos_of_ne_zero hm)] at hb
-      exact hb
+      simpa [ribbonHandleCount_open hN hM (Nat.pos_of_ne_zero hn) (Nat.pos_of_ne_zero hm)] using hb
 
 end PottsDiscontinuity.Torus

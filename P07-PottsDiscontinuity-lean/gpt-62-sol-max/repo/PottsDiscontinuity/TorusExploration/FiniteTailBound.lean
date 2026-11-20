@@ -30,7 +30,7 @@ theorem windingTail_probability_le (hN : Even N) (hM : Even M)
     torusRCProbability hN hM q (torusRCVerticalTail hN hM ⟨0,by omega⟩ r) ≤
       ((N : ℝ)^(2*r)/(1-(rcCriticalParameter q).val)^N) *
         (Real.sqrt (μ.real (CorrLength.connectionEvent (0,0) (diagonalSite (2*(M-1))))))^(r-1) := by
-  have hp : 0 < (1-(rcCriticalParameter q).val)^N :=
+  have hp :=
     pow_pos (sub_pos.2 (criticalParameter_lt_one q)) N
   have hc := torusRCVerticalTail_close_seam_le_unconditional hN hM (by omega) q r
   have hs := torus_seam_joint_le_cylinder hN hM hN4 hM4 (by omega) q r
@@ -38,7 +38,7 @@ theorem windingTail_probability_le (hN : Even N) (hM : Even M)
     (by rwa [torusRCBridgeParameters_eq_critical]) r hr
   rw [div_mul_eq_mul_div]
   apply (le_div_iff₀ hp).2
-  simpa only [mul_comm] using hc.trans (hs.trans hb)
+  simpa [mul_comm] using hc.trans (hs.trans hb)
 
 end
 end PottsDiscontinuity.TorusExploration

@@ -23,7 +23,7 @@ theorem box_tendsto_of_isPottsInfiniteVolumeLimit (q : ℕ) (hq : 2 ≤ q) (β :
   apply NNReal.tendsto_coe.mp
   have ht := hμ.2 A ξ
   change Tendsto _ atTop (𝓝 (μ.toMeasure.real (spinCylinder q A ξ))) at ht
-  have hs : ∀ᶠ n : ℕ in atTop, A ⊆ box n :=
+  have hs :=
     (eventually_all_finset A).mpr (fun x _ => FK.eventually_mem_box x)
   have he : ∀ᶠ n : ℕ in atTop,
       (∑ σ : SpinConfiguration q (box n),
@@ -32,7 +32,7 @@ theorem box_tendsto_of_isPottsInfiniteVolumeLimit (q : ℕ) (hq : 2 ≤ q) (β :
     filter_upwards [hs] with n hn
     exact (pottsBoxProbabilityMeasure_cylinder q hq β hβ i n A ξ hn).symm
   have hreal := ht.congr' he
-  simpa only [spinCylinderCoordinates, Function.comp_def, ProbabilityMeasure.measureReal_eq_coe_coeFn] using hreal
+  assumption
 
 end
 end PottsDiscontinuity.Potts

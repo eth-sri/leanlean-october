@@ -24,15 +24,13 @@ def orderedTuples (N n : ℕ) : Finset (Fin n → ℤ) :=
 
 @[simp] theorem mem_orderedTuples {N n : ℕ} {y : Fin n → ℤ} :
     y ∈ orderedTuples N n ↔ (∀ k, 0 ≤ y k ∧ y k < N) ∧ StrictMono y := by
-  simp only [orderedTuples, mem_filter, Fintype.mem_piFinset, mem_Ico]
+  simp [orderedTuples]
 
 theorem positions_mem_orderedTuples {N n : ℕ} (x : State N n) :
     positions x ∈ orderedTuples N n := by
   refine mem_orderedTuples.mpr ⟨?_, positions_strictMono x⟩
   intro k
-  have h := (x.1.orderEmbOfFin x.2 k).isLt
-  unfold positions
-  omega
+  unfold positions <;> simp_all
 
 /-- A coordinate viewed in `Fin N`, using the proved bounds of the ordered tuple. -/
 def tuplePosition {N n : ℕ} (y : Fin n → ℤ) (hy : y ∈ orderedTuples N n) (k : Fin n) : Fin N :=
@@ -46,15 +44,12 @@ theorem tuplePosition_strictMono {N n : ℕ} (y : Fin n → ℤ)
     (hy : y ∈ orderedTuples N n) : StrictMono (tuplePosition y hy) := by
   intro i j hij
   have h := (mem_orderedTuples.mp hy).2 hij
-  have hi := tuplePosition_val_int y hy i
-  have hj := tuplePosition_val_int y hy j
-  change (tuplePosition y hy i).val < (tuplePosition y hy j).val
-  omega
+  grind [tuplePosition_val_int]
 
 /-- The row state represented by a bounded increasing integer tuple. -/
 def stateOfTuple {N n : ℕ} (y : Fin n → ℤ) (hy : y ∈ orderedTuples N n) : State N n :=
   ⟨univ.image (tuplePosition y hy), by
-    rw [card_image_of_injective _ (tuplePosition_strictMono y hy).injective, card_univ, Fintype.card_fin]⟩
+    simp [card_image_of_injective _ (tuplePosition_strictMono y hy).injective]⟩
 
 @[simp] theorem positions_stateOfTuple {N n : ℕ} (y : Fin n → ℤ)
     (hy : y ∈ orderedTuples N n) : positions (stateOfTuple y hy) = y := by
@@ -65,7 +60,7 @@ def stateOfTuple {N n : ℕ} (y : Fin n → ℤ) (hy : y ∈ orderedTuples N n) 
   funext k
   change (((stateOfTuple y hy).1.orderEmbOfFin (stateOfTuple y hy).2 k).val : ℤ) = y k
   rw [← hsort]
-  exact tuplePosition_val_int y hy k
+  simp
 
 theorem positions_injective {N n : ℕ} : Function.Injective (positions (N := N) (n := n)) := by
   intro x y he
@@ -76,12 +71,7 @@ theorem positions_injective {N n : ℕ} : Function.Injective (positions (N := N)
     unfold positions at h
     exact_mod_cast h
   apply Subtype.ext
-  rw [← image_orderEmbOfFin_univ x.1 x.2, ← image_orderEmbOfFin_univ y.1 y.2, hemb]
-
-@[simp] theorem stateOfTuple_positions {N n : ℕ} (x : State N n) :
-    stateOfTuple (positions x) (positions_mem_orderedTuples x) = x := by
-  apply positions_injective
-  exact positions_stateOfTuple _ _
+  grind [image_orderEmbOfFin_univ]
 
 /-- Reindex a sum over the actual sector by its unique increasing coordinate tuples. -/
 theorem sum_states_eq_sum_orderedTuples {N n : ℕ} (F : (Fin n → ℤ) → ℂ) :
@@ -93,7 +83,6 @@ theorem sum_states_eq_sum_orderedTuples {N n : ℕ} (F : (Fin n → ℤ) → ℂ
     exact positions_injective he
   · intro y hy
     exact ⟨stateOfTuple y hy, mem_univ _, positions_stateOfTuple y hy⟩
-  · intro x _
-    rfl
+  simp
 
 end PottsDiscontinuity.BetheAnsatz

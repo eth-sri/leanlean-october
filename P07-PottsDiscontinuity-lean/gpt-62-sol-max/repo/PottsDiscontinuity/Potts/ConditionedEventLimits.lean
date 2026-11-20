@@ -1,6 +1,6 @@
 module
 
-public import Mathlib.MeasureTheory.Measure.Portmanteau
+public import PottsDiscontinuity.Potts.MonotoneEventLimits
 
 /-! Transfer of connection-data limits through uniformly positive conditioning. -/
 
@@ -37,25 +37,17 @@ theorem decreasing_event_limit_of_density
     have hd := hn (E m \ E n) ((hmeas m).diff (hmeas n))
     rw [measureReal_sdiff (hE hmn) (hmeas n),
       measureReal_sdiff (hE hmn) (hmeas n)] at hd
-    have hle : (νs n).toMeasure.real (E m) - (νs n).toMeasure.real (E n) ≤
-        ((μs n).toMeasure.real (E m) - (μs n).toMeasure.real (E n)) / δ :=
+    have hle :=
       (le_div_iff₀ hδ).mpr (by simpa only [mul_comm] using hd)
     linarith
   have halimit : Tendsto (fun m => μ.toMeasure.real (E m) - (μ.toMeasure.real (E m) - L) / δ)
       atTop (𝓝 L) := by
     have ht := hcont.sub ((hcont.sub (tendsto_const_nhds (x := L))).div_const δ)
-    simpa only [sub_self, zero_div, sub_zero] using ht
-  apply tendsto_order.mpr
-  constructor
-  · intro a ha
-    obtain ⟨m, hm⟩ := (halimit.eventually (lt_mem_nhds ha)).exists
-    have ht := (hνlocal m).sub (((hμlocal m).sub hdiag).div_const δ)
-    filter_upwards [ht.eventually (lt_mem_nhds hm), hlower m] with n hn hlow
-    exact hn.trans_le hlow
-  · intro b hb
-    obtain ⟨m, hm⟩ := (hcont.eventually (gt_mem_nhds hb)).exists
-    filter_upwards [(hνlocal m).eventually (gt_mem_nhds hm), eventually_ge_atTop m] with n hn hmn
-    exact (measureReal_mono (hE hmn)).trans_lt hn
+    simpa using ht
+  refine tendsto_order.2 ⟨eventually_lt_of_lower_limits halimit ?_ hlower,
+    eventually_lt_of_lower_limits (α := ℝᵒᵈ) hcont hνlocal ?_⟩
+  · exact fun m => (hνlocal m).sub (((hμlocal m).sub hdiag).div_const δ)
+  · exact fun m => (eventually_ge_atTop m).mono fun _ hn => measureReal_mono (hE hn)
 
 end
 end PottsDiscontinuity.Potts

@@ -23,6 +23,7 @@ noncomputable section
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 
 local instance marginalEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite G.edgeSet
+
 local instance remainingFintype (R : Configuration G) :
     Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
 local instance removedFintype (R : Configuration G) :
@@ -61,7 +62,7 @@ theorem law_map_split (q : Parameters) (ξ : BoundaryCondition V)
   apply FiniteProbability.pmf_map_equiv_of_weight_eq
   intro C
   let P := configurationSplitEquiv G R C
-  have hC : P.1.val ∪ P.2.val = C := (configurationSplitEquiv G R).symm_apply_apply C
+  have hC := (configurationSplitEquiv G R).symm_apply_apply C
   exact (congrArg (weight G q ξ) hC).symm.trans
     (weight_union_factorization G q ξ R hR P.1 P.2)
 

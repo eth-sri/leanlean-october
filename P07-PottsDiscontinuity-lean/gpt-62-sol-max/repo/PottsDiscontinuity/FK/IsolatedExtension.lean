@@ -46,13 +46,7 @@ theorem reachable_isolatedExtension (x y : W) :
 /-- No new connection is created between original vertices. -/
 theorem reachable_isolatedExtension_apply (u v : V) :
     (G.map f).Reachable (f u) (f v) ↔ G.Reachable u v := by
-  rw [reachable_isolatedExtension]
-  constructor
-  · rintro (h | ⟨a, b, hab, ha, hb⟩)
-    · exact f.injective h ▸ SimpleGraph.Reachable.refl _
-    · simpa only [f.injective ha, f.injective hb] using hab
-  · intro h
-    exact Or.inr ⟨u, v, h, rfl, rfl⟩
+  simp_all [reachable_isolatedExtension]
 
 /-- Each added vertex really is isolated, including for actual path connectivity. -/
 theorem reachable_isolatedExtension_outside {x y : W} (hx : x ∉ Set.range f) :
@@ -103,14 +97,11 @@ def isolatedExtensionComponentEquiv :
 def isolatedExtensionEdgeEquiv : G.edgeSet ≃ (G.map f).edgeSet :=
   Equiv.ofBijective (SimpleGraph.Embedding.map f G).mapEdgeSet (by
     constructor
-    · exact (SimpleGraph.Embedding.map f G).mapEdgeSet.injective
+    · grind
     · rintro ⟨e, he⟩
       rw [SimpleGraph.edgeSet_map] at he
       obtain ⟨a, ha, rfl⟩ := he
-      exact ⟨⟨a, ha⟩, rfl⟩)
-
-@[simp] theorem isolatedExtensionEdgeEquiv_coe (e : G.edgeSet) :
-    (isolatedExtensionEdgeEquiv G f e).val = f.sym2Map e.val := rfl
+      tauto)
 
 /-- Transport precisely the sampled original edges, not the added vertices. -/
 def isolatedExtensionConfigurationEquiv : Configuration G ≃ Configuration (G.map f) :=
@@ -167,18 +158,22 @@ omit [Finite V] [Finite W] in
 theorem isolatedExtension_edge_card : Nat.card (G.map f).edgeSet = Nat.card G.edgeSet :=
   (Nat.card_congr (isolatedExtensionEdgeEquiv G f)).symm
 
+section
+
+variable (q : Parameters) (B : Set V) (C : Set W)
+
 /-- Added isolated vertices contribute a fixed positive factor to every weight.
 The labels of the free boundary sets can be arbitrary on either vertex carrier. -/
-theorem weight_isolatedExtension (q : Parameters) (B : Set V) (C : Set W)
+theorem weight_isolatedExtension
     (A : Configuration G) :
     weight (G.map f) q (BoundaryCondition.free C) (isolatedExtensionConfigurationEquiv G f A) =
       weight G q (BoundaryCondition.free B) A * q.val ^ Nat.card {w : W // w ∉ Set.range f} := by
   rw [weight, weight, card_isolatedExtensionConfigurationEquiv, isolatedExtension_edge_card,
     componentCount_isolatedExtension G f B C A, pow_add]
-  simp only [mul_assoc]
+  ring
 
 /-- The very same factor appears in the complete finite partition function. -/
-theorem partitionFunction_isolatedExtension (q : Parameters) (B : Set V) (C : Set W) :
+theorem partitionFunction_isolatedExtension :
     partitionFunction (G.map f) q (BoundaryCondition.free C) =
       partitionFunction G q (BoundaryCondition.free B) * q.val ^ Nat.card {w : W // w ∉ Set.range f} := by
   unfold partitionFunction FiniteProbability.partition
@@ -187,8 +182,7 @@ theorem partitionFunction_isolatedExtension (q : Parameters) (B : Set V) (C : Se
   rw [Finset.sum_mul]
 
 /-- The isolated-vertex factor cancels, yielding exact normalized probabilities. -/
-theorem configurationProbability_isolatedExtension (q : Parameters)
-    (B : Set V) (C : Set W) (A : Configuration G) :
+theorem configurationProbability_isolatedExtension (A : Configuration G) :
     configurationProbability (G.map f) q (BoundaryCondition.free C)
         (isolatedExtensionConfigurationEquiv G f A) =
       configurationProbability G q (BoundaryCondition.free B) A := by
@@ -198,13 +192,15 @@ theorem configurationProbability_isolatedExtension (q : Parameters)
 
 /-- The entire free FK probability law is unchanged by adding isolated vertices,
 under the proved bijection of actual original-edge configurations. -/
-theorem law_isolatedExtension_map (q : Parameters) (B : Set V) (C : Set W) :
+theorem law_isolatedExtension_map :
     (law G q (BoundaryCondition.free B)).map (isolatedExtensionConfigurationEquiv G f) =
       law (G.map f) q (BoundaryCondition.free C) := by
   ext A
   obtain ⟨A, rfl⟩ := (isolatedExtensionConfigurationEquiv G f).surjective A
   rw [FiniteProbability.map_equiv_apply, Equiv.symm_apply_apply, law_apply, law_apply,
     configurationProbability_isolatedExtension G f q B C A]
+
+end
 
 end Finite
 end

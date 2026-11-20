@@ -37,7 +37,6 @@ theorem tendsto_rectangleFreeOneArmProbability_of_boundaryConnection_zero
   have hcomp := hzero.comp hrad
   refine hcomp.congr' ?_
   filter_upwards with n
-  simp [Function.comp_apply, rectangleFreeOneArmProbability,
-    boundaryConnectionEvent_eq_oneArmEvent]
+  simp [rectangleFreeOneArmProbability, boundaryConnectionEvent_eq_oneArmEvent]
 
 end PottsDiscontinuity.TorusLoops

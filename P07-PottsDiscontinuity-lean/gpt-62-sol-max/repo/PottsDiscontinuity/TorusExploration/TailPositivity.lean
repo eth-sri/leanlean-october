@@ -30,9 +30,9 @@ theorem windingTail_nonempty (hN : Even N) (hM : Even M) (j : Fin M)
   obtain ⟨s,hs⟩ := (exists_compatibleConfig_iff (negativeArrows N M)).2 negativeArrows_ice
   let A := smoothingRC s
   have hA : CompatibleConfig (negativeArrows N M) (rcSmoothing A) := by
-    simpa only [A,rcSmoothing_smoothingRC] using hs
+    simpa [A] using hs
   have hU := sector_le_rcVerticalWinding hN hM j A (negativeArrows N M) hA
-    (r := N/2) (by rw [negativeArrows_absUp,zero_add])
+    (r := N/2) (by simp [negativeArrows_absUp])
   exact ⟨A,hr.trans hU⟩
 
 /-- The real logarithm in the winding-tail rate is taken at a positive number

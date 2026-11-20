@@ -33,8 +33,7 @@ theorem arrowDistance_eq (x y : Finset (Fin N)) :
     arrowDistance x y = (x \ y).card + (y \ x).card := by
   have he : (univ.filter fun i => Psi x i ≠ Psi y i) = (x \ y) ∪ (y \ x) := by
     ext i
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union, Finset.mem_sdiff]
-    by_cases hx : i ∈ x <;> by_cases hy : i ∈ y <;> simp [Psi, hx, hy]
+    grind [Psi]
   rw [arrowDistance, he, card_union_of_disjoint]
   exact disjoint_left.mpr (by simp only [Finset.mem_sdiff]; tauto)
 
@@ -58,18 +57,13 @@ theorem arrowDistance_eq_two_mul_iff (x y : State N n) :
 theorem infinityBlock_eq_one_iff (hn : 0 < n) (x y : State N n) :
     infinityBlock N n x y = 1 ↔ Interlaced x.1 y.1 ∧ Disjoint x.1 y.1 := by
   by_cases hxy : x = y
-  · subst y
-    have hx : ¬ Disjoint x.1 x.1 := by
-      simp only [disjoint_self, Finset.bot_eq_empty, ← card_eq_zero, x.2]
-      omega
-    simp only [infinityBlock_apply_self, Nat.ne_of_gt hn, ↓reduceIte, hx, and_false]
-    norm_num
+  · aesop
   · simp only [infinityBlock, hxy, ↓reduceIte]
     split_ifs <;> simp_all
 
 theorem infinityBlock_symm (x y : State N n) :
     infinityBlock N n x y = infinityBlock N n y x := by
-  simp only [infinityBlock, eq_comm, interlaced_comm x.1 y.1, disjoint_comm]
+  simp [infinityBlock, eq_comm, interlaced_comm x.1 y.1, disjoint_comm]
 
 theorem infinityBlock_isHermitian : (infinityBlock N n).IsHermitian := by
   rw [Matrix.isHermitian_iff_isSymm]

@@ -37,11 +37,7 @@ omit [Finite V] in
 private theorem openGraph_adj_to_config_mem (A : Configuration G) {u w : V}
     (h : (openGraph G A).Adj u w) :
     (⟨s(u,w), G.mem_edgeSet.mpr ((openGraph_le G A) h)⟩ : G.edgeSet) ∈ A := by
-  have hmem : s(u,w) ∈ openEdges G A := (openGraph_adj G A u w).mp h
-  rcases hmem with ⟨e, heA, heq⟩
-  have he : e = ⟨s(u,w), G.mem_edgeSet.mpr ((openGraph_le G A) h)⟩ :=
-    Subtype.ext heq
-  simpa [he] using heA
+  grind [openEdges, openGraph_adj]
 
 omit [Finite V] in
 private theorem config_mem_to_openGraph_adj (A : Configuration G) {u w : V}
@@ -51,66 +47,6 @@ private theorem config_mem_to_openGraph_adj (A : Configuration G) {u w : V}
   rw [openGraph_adj]
   exact ⟨⟨s(u,w), G.mem_edgeSet.mpr huw⟩, he, rfl⟩
 
-private theorem revealed_edge_state_iff
-    (v : V) (A B : Configuration G)
-    (hagree : B ∩ actualClusterReveal G v A = A ∩ actualClusterReveal G v A)
-    {e : G.edgeSet} (he : e ∈ actualClusterReveal G v A) :
-    e ∈ B ↔ e ∈ A := by
-  have h := Finset.ext_iff.mp hagree e
-  simpa [Finset.mem_inter, he] using h
-
-private theorem actualConnected_mono_reveal
-    (v : V) (A B : Configuration G)
-    (hagree : B ∩ actualClusterReveal G v A = A ∩ actualClusterReveal G v A) :
-    ∀ {u : V}, ActualConnected G A v u → ActualConnected G B v u := by
-  intro u hu
-  change (openGraph G A).Reachable v u at hu
-  change (openGraph G B).Reachable v u
-  rw [SimpleGraph.reachable_iff_reflTransGen] at hu ⊢
-  induction hu with
-  | refl => exact Relation.ReflTransGen.refl
-  | @tail y z hprefix hedge ih =>
-      have hyA : ActualConnected G A v y := by
-        change (openGraph G A).Reachable v y
-        rw [SimpleGraph.reachable_iff_reflTransGen]
-        exact hprefix
-      have hG : G.Adj y z := (openGraph_le G A) hedge
-      let e : G.edgeSet := ⟨s(y,z), G.mem_edgeSet.mpr hG⟩
-      have heA : e ∈ A := openGraph_adj_to_config_mem G A hedge
-      have heR : e ∈ actualClusterReveal G v A := by
-        rw [actualClusterReveal_mem_iff]
-        exact ⟨y, (Sym2.mem_iff').2 (Or.inl rfl), hyA⟩
-      have heB : e ∈ B := (revealed_edge_state_iff G v A B hagree heR).mpr heA
-      have hedgeB : (openGraph G B).Adj y z := by
-        exact config_mem_to_openGraph_adj G B hG (by simpa [e] using heB)
-      exact Relation.ReflTransGen.tail ih hedgeB
-
-private theorem actualConnected_antitone_reveal
-    (v : V) (A B : Configuration G)
-    (hagree : B ∩ actualClusterReveal G v A = A ∩ actualClusterReveal G v A) :
-    ∀ {u : V}, ActualConnected G B v u → ActualConnected G A v u := by
-  intro u hu
-  change (openGraph G B).Reachable v u at hu
-  change (openGraph G A).Reachable v u
-  rw [SimpleGraph.reachable_iff_reflTransGen] at hu ⊢
-  induction hu with
-  | refl => exact Relation.ReflTransGen.refl
-  | @tail y z hprefix hedge ih =>
-      have hyA : ActualConnected G A v y := by
-        change (openGraph G A).Reachable v y
-        rw [SimpleGraph.reachable_iff_reflTransGen]
-        exact ih
-      have hG : G.Adj y z := (openGraph_le G B) hedge
-      let e : G.edgeSet := ⟨s(y,z), G.mem_edgeSet.mpr hG⟩
-      have heR : e ∈ actualClusterReveal G v A := by
-        rw [actualClusterReveal_mem_iff]
-        exact ⟨y, (Sym2.mem_iff').2 (Or.inl rfl), hyA⟩
-      have heB : e ∈ B := openGraph_adj_to_config_mem G B hedge
-      have heA : e ∈ A := (revealed_edge_state_iff G v A B hagree heR).mp heB
-      have hedgeA : (openGraph G A).Adj y z := by
-        exact config_mem_to_openGraph_adj G A hG (by simpa [e] using heA)
-      exact Relation.ReflTransGen.tail ih hedgeA
-
 /-- Agreement on every edge incident to the seed's actual open cluster makes the
 actual open cluster itself identical. -/
 theorem actualConnected_iff_of_reveal_agreement
@@ -118,9 +54,23 @@ theorem actualConnected_iff_of_reveal_agreement
     (hagree : B ∩ actualClusterReveal G v A = A ∩ actualClusterReveal G v A)
     (u : V) :
     ActualConnected G B v u ↔ ActualConnected G A v u := by
-  constructor
-  · exact actualConnected_antitone_reveal G v A B hagree
-  · exact actualConnected_mono_reveal G v A B hagree
+  have hstep {y z} (hy : (openGraph G A).Reachable v y) :
+      (openGraph G B).Adj y z ↔ (openGraph G A).Adj y z := by
+    have he {h : G.Adj y z} :
+        (⟨s(y,z), G.mem_edgeSet.mpr h⟩ : G.edgeSet) ∈ B ↔
+          (⟨s(y,z), G.mem_edgeSet.mpr h⟩ : G.edgeSet) ∈ A := by
+      have hr : (⟨s(y,z), G.mem_edgeSet.mpr h⟩ : G.edgeSet) ∈ actualClusterReveal G v A :=
+        (actualClusterReveal_mem_iff ..).2 ⟨y, by simp, hy⟩
+      simpa [hr] using Finset.ext_iff.mp hagree ⟨s(y,z), G.mem_edgeSet.mpr h⟩
+    exact ⟨fun hb => config_mem_to_openGraph_adj G A (openGraph_le G B hb)
+      ((he (h := openGraph_le G B hb)).1 (openGraph_adj_to_config_mem G B hb)),
+      fun ha => config_mem_to_openGraph_adj G B (openGraph_le G A ha)
+        ((he (h := openGraph_le G A ha)).2 (openGraph_adj_to_config_mem G A ha))⟩
+  simp only [ActualConnected, SimpleGraph.reachable_iff_reflTransGen]
+  constructor <;> intro h <;> induction h with
+  | refl => rfl
+  | tail hp he ih =>
+    grind [SimpleGraph.reachable_iff_reflTransGen]
 
 end
 

@@ -24,13 +24,15 @@ noncomputable section
 local instance rectangleInfiniteComparisonGenericEdgeFintype
     {V : Type*} [Finite V] {G : SimpleGraph V} : Fintype G.edgeSet := Fintype.ofFinite _
 
-local instance rectangleInfiniteComparisonGenericEdgeDecidableEq
-    {V : Type*} [Finite V] {G : SimpleGraph V} : DecidableEq G.edgeSet := Classical.decEq _
+section
 
-private theorem originBoxEdgeEmbedding_compatible {r s : ℕ}
+variable
+  {r s : ℕ}
     (hrs : r ≤ s)
     (hGH : (boxGraph (0, 0) r).map
         (boxVertexEmbedding (latticeBox_mono (0, 0) hrs)) ≤ boxGraph (0, 0) s)
+
+private theorem originBoxEdgeEmbedding_compatible
     (e : (boxGraph (0, 0) r).edgeSet) :
     boxEdgeEmbedding (0, 0) s
         (embeddedEdgeEmbedding (boxGraph (0, 0) r) (boxGraph (0, 0) s)
@@ -43,9 +45,7 @@ private theorem originBoxEdgeEmbedding_compatible {r s : ℕ}
   rw [Sym2.map_map]
   congr 1
 
-private theorem boxConfiguration_restriction_le {r s : ℕ} (hrs : r ≤ s)
-    (hGH : (boxGraph (0, 0) r).map
-        (boxVertexEmbedding (latticeBox_mono (0, 0) hrs)) ≤ boxGraph (0, 0) s)
+private theorem boxConfiguration_restriction_le
     (B : Configuration (boxGraph (0, 0) s)) :
     boxConfiguration (0, 0) r
         (embeddedConfigurationRestriction (boxGraph (0, 0) r) (boxGraph (0, 0) s)
@@ -65,6 +65,8 @@ private theorem boxConfiguration_restriction_le {r s : ℕ} (hrs : r ≤ s)
       boxEdgeEmbedding (0, 0) r a := originBoxEdgeEmbedding_compatible hrs hGH a
     _ = e := hae
 
+end
+
 private theorem fkLaw_measure_toReal_eq_expectation
     {V : Type*} [Finite V] {G : SimpleGraph V}
     (q : Parameters) (ξ : BoundaryCondition V)
@@ -75,11 +77,7 @@ private theorem fkLaw_measure_toReal_eq_expectation
   rw [measure_toReal_eq_indicator_sum]
   unfold FiniteProbability.expectation
   apply Finset.sum_congr rfl
-  intro A hA
-  by_cases h : A ∈ S
-  · simp [Set.indicator, h, law_apply,
-      ENNReal.toReal_ofReal (configurationProbability_pos G q ξ A).le]
-  · simp [Set.indicator, h]
+  grind only [law_apply, ENNReal.toReal_ofReal, configurationProbability_pos]
 
 private theorem boxProbabilityMeasure_event_eq_expectation (q : Parameters)
     (r : ℕ) (E : Set LatticeConfiguration) (hE : MeasurableSet E) :
@@ -95,9 +93,7 @@ private theorem boxProbabilityMeasure_event_eq_expectation (q : Parameters)
       (boxConfiguration (0, 0) r)).toMeasure E = _
     rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top hE]
     rfl
-  rw [← ProbabilityMeasure.measureReal_eq_coe_coeFn]
-  rw [Measure.real_def]
-  rw [hpre]
+  rw [← ProbabilityMeasure.measureReal_eq_coe_coeFn, Measure.real_def, hpre]
   exact fkLaw_measure_toReal_eq_expectation q (BoundaryCondition.free ∅) _
 
 /-- The free origin-box laws are increasing on every clopen increasing event
@@ -108,11 +104,11 @@ theorem boxProbabilityMeasure_clopen_upper_mono (q : Parameters)
     boxProbabilityMeasure q (0, 0) r E ≤ boxProbabilityMeasure q (0, 0) s E := by
   classical
   let f := boxVertexEmbedding (latticeBox_mono (0, 0) hrs)
-  have hGH : (boxGraph (0, 0) r).map f ≤ boxGraph (0, 0) s :=
+  have hGH :=
     boxGraph_map_boxVertexEmbedding (latticeBox_mono (0, 0) hrs)
-  let S : Set (Configuration (boxGraph (0, 0) r)) :=
+  let S :=
     {A | boxConfiguration (0, 0) r A ∈ E}
-  let F : Configuration (boxGraph (0, 0) r) → ℝ :=
+  let F :=
     S.indicator (fun _ => (1 : ℝ))
   have hF0 : ∀ A, 0 ≤ F A := by
     intro A
@@ -121,7 +117,7 @@ theorem boxProbabilityMeasure_clopen_upper_mono (q : Parameters)
     intro A B hAB
     by_cases hA : A ∈ S
     · have hB : B ∈ S := hEupper (boxConfiguration_mono (0, 0) r hAB)
-        (by simpa [S] using hA)
+        (by assumption)
       simp [F, hA, hB]
     · simp only [F, Set.indicator_of_notMem hA]
       exact hF0 B
@@ -139,10 +135,10 @@ theorem boxProbabilityMeasure_clopen_upper_mono (q : Parameters)
     have horder := boxConfiguration_restriction_le hrs hGH B
     by_cases hsmall : boxConfiguration (0, 0) r
         (embeddedConfigurationRestriction (boxGraph (0, 0) r) (boxGraph (0, 0) s) f hGH B) ∈ E
-    · have hlarge : boxConfiguration (0, 0) s B ∈ E := hEupper horder hsmall
-      simp [F, S, Set.indicator, hsmall, hlarge]
+    · have hlarge := hEupper horder hsmall
+      simp [F, S, hsmall, hlarge]
     · by_cases hlarge : boxConfiguration (0, 0) s B ∈ E <;>
-        simp [F, S, Set.indicator, hsmall, hlarge]
+        simp [F, S, hsmall, hlarge]
   have hprob_r := boxProbabilityMeasure_event_eq_expectation q r E hEclopen.2.measurableSet
   have hprob_s := boxProbabilityMeasure_event_eq_expectation q s E hEclopen.2.measurableSet
   have hreal :
@@ -159,9 +155,7 @@ theorem freeBoxLimit_clopen_upper_ge_box (q : Parameters)
     (hEclopen : IsClopen E) (hEupper : IsUpperSet E) :
     boxProbabilityMeasure q (0, 0) r E ≤
       (Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q)) E := by
-  let μ : ProbabilityMeasure LatticeConfiguration :=
-    Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q)
-  have hweak : Tendsto (fun n => boxProbabilityMeasure q (0, 0) n) atTop (𝓝 μ) :=
+  have hweak :=
     (Classical.choose_spec (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q)).1
       (fun _ => (0, 0)) (fun n => n) origin_latticeBox_nested origin_latticeBox_exhaustive
   have hnr : Tendsto (fun n : ℕ => n + r) atTop atTop := by
@@ -169,16 +163,14 @@ theorem freeBoxLimit_clopen_upper_ge_box (q : Parameters)
     intro b
     filter_upwards [eventually_ge_atTop b] with n hn
     omega
-  have hweakShift : Tendsto (fun n => boxProbabilityMeasure q (0, 0) (n + r)) atTop
-      (𝓝 μ) := hweak.comp hnr
-  have hprob : Tendsto (fun n => boxProbabilityMeasure q (0, 0) (n + r) E) atTop
-      (𝓝 (μ E)) :=
+  have hweakShift := hweak.comp hnr
+  have hprob :=
     ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hweakShift hEclopen
   have hfixed (n : ℕ) :
       boxProbabilityMeasure q (0, 0) r E ≤ boxProbabilityMeasure q (0, 0) (n + r) E :=
     boxProbabilityMeasure_clopen_upper_mono q r (n + r) (by omega) E hEclopen hEupper
   have hlim := le_of_tendsto_of_tendsto' tendsto_const_nhds hprob hfixed
-  simpa [μ] using hlim
+  assumption
 
 end
 end PottsDiscontinuity.TorusLoops

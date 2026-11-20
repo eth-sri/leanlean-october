@@ -28,14 +28,12 @@ def translatedDualConfigEquiv : RCConfig N M ≃ RCConfig N M where
   invFun A := fun v => Bool.not (A (nxt v.1, v.2))
   left_inv A := by
     funext v
-    change Bool.not (translatedDualConfig A (nxt v.1, v.2)) = A v
-    rw [translatedDualConfig_apply_nxt]
-    simp
+    grind [translatedDualConfig_apply_nxt]
   right_inv A := by
     funext v
     have h := translatedDualConfig_apply_nxt
       (fun w => Bool.not (A (nxt w.1, w.2))) (prv v.1, v.2)
-    simpa only [nxt, prv, Equiv.apply_symm_apply, Bool.not_not] using h
+    simpa only [Equiv.apply_symm_apply, Bool.not_not] using h
 
 private theorem torusRCTiltEventWeight_translatedDual
     (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
@@ -61,7 +59,7 @@ private theorem torusRCTiltEventWeight_translatedDual
       by_cases hA : translatedDualConfig A ∈ E
       · simp only [hA, ite_true]
         exact (torusRCTiltWeight_translatedDual hN hM q A).symm
-      · simp only [hA, ite_false]
+      simp_all
 
 /-- The normalized self-dual tilt assigns the same probability to an event and
 to its inverse image under translated complementary duality. -/

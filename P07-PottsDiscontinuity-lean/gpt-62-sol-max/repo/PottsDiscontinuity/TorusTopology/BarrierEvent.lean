@@ -25,8 +25,7 @@ theorem one_le_U_of_vertical_loop (hN : Even N) (hM : Even M) (j : Fin M)
   classical
   obtain ⟨q,hq⟩ := hloop
   have hp := Int.natAbs_pos.2 hq
-  have hb : (loopVertical _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j q).natAbs ≤
-      verticalMass _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j :=
+  have hb :=
     Finset.single_le_sum (fun r _ => Nat.zero_le
       ((loopVertical _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j r).natAbs))
       (Finset.mem_univ q)
@@ -45,13 +44,13 @@ theorem one_le_U_of_barrier_and_CPrime
     (A : RCConfig N M) (hB : A ∈ torusRCBarrier hNp hMp n)
     (hC : A ∈ torusCPrime hNp hMp hNdiv hM n) :
     1 ≤ rcVerticalWinding hN hM ⟨0,hMp⟩ A := by
-  have hno : ¬ torusRCLeftStripCrossing hNp hMp A n := hB.1
+  have hno := hB.1
   have hn : 0 < n := by
     by_contra h
     have hn0 : n = 0 := by omega
     subst n
     let u : RotatedVertex := ⟨(0,0),⟨0,rfl⟩⟩
-    exact hno ⟨u,u,rfl,by simp [u],SimpleGraph.Reachable.refl _⟩
+    exact hno ⟨u,u,rfl,rfl,SimpleGraph.Reachable.refl _⟩
   have hwidth : 3*n < N := by omega
   have hX := horizontal_displacement_zero_of_no_strip_crossing hN hM hNp hMp A n hn hwidth hno
   have hconn := torusCPrime_vertical_connection hNp hMp hNdiv hM n A hC

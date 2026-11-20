@@ -38,15 +38,14 @@ theorem discreteCoordinateResidualInv_base_unique {N n : ℕ} (hN : 0 < N)
   refine ⟨discreteBaseCoordinates N n, discreteCoordinateResidualInv_base_zero hN hs,
     fun q hq => ?_⟩
   have hNc : (0 : ℝ) < N := by exact_mod_cast hN
-  have hnN : (n : ℝ) < N := by exact_mod_cast (show n < N by omega)
-  have ha : 0 < 1 - (n : ℝ) / N := sub_pos.mpr ((div_lt_one hNc).2 hnN)
+  have hnN : (n : ℝ) < N := by norm_cast at *; omega
+  have ha := sub_pos.mpr ((div_lt_one hNc).2 hnN)
   have hb := discreteCoordinateResidualInv_base_zero hN hs
   dsimp only at hq
   rw [discreteCoordinateResidualInv_zero] at hq hb
   funext i
   have hqi := congrFun hq i
   have hbi := congrFun hb i
-  dsimp only [Pi.zero_apply] at hqi hbi
   nlinarith only [hqi, hbi, ha]
 
 /-- Exact cyclic gaps of the explicit base solution. -/
@@ -54,71 +53,13 @@ theorem discreteBaseSolution_cyclic_gap {N k : ℕ} (_hN : 0 < N)
     (hs : 2 * (k + 1) ≤ N) (j : Fin (k + 2)) :
     rootPartitionPoint (k + 1) (discreteBaseSolution N (k + 1)) (by omega) j.succ -
       rootPartitionPoint (k + 1) (discreteBaseSolution N (k + 1)) (by omega) j.castSucc =
-      2 * Real.pi * rootGapMultiplicity N (k + 1) hs j / ((N : ℝ) - (k + 1 : ℕ)) := by
-  have hden : ((N - (k + 1) : ℕ) : ℝ) = (N : ℝ) - (k + 1 : ℕ) :=
-    Nat.cast_sub (by omega)
-  have hpos : 0 < (N : ℝ) - (k + 1 : ℕ) := by
-    apply sub_pos.mpr
-    exact_mod_cast (show k + 1 < N by omega)
-  have hmass : ((N + 1 - 2 * (k + 1) : ℕ) : ℝ) =
-      (N : ℝ) + 1 - 2 * ((k : ℝ) + 1) := by
-    rw [Nat.cast_sub (by omega : 2 * (k + 1) ≤ N + 1)]
-    push_cast
-    ring
-  by_cases hj0 : j.val = 0
-  · have hj : j = 0 := Fin.ext hj0
-    subst j
-    have ha : rootPartitionPoint (k + 1) (discreteBaseSolution N (k + 1))
-        (by omega) (0 : Fin (k + 2)).castSucc =
-          discreteBaseSolution N (k + 1) (Fin.last k) - 2 * Real.pi := by
-      convert rootPartitionPoint_zero (discreteBaseSolution N (k + 1)) (by omega) using 1 <;> congr 1
-    have hb : rootPartitionPoint (k + 1) (discreteBaseSolution N (k + 1))
-        (by omega) (0 : Fin (k + 2)).succ = discreteBaseSolution N (k + 1) 0 := by
-      convert rootPartitionPoint_root (discreteBaseSolution N (k + 1)) (by omega)
-        (0 : Fin (k + 1)) using 1
-      congr 1
-    rw [ha, hb]
-    simp only [rootGapMultiplicity, Fin.val_zero, true_or, ite_true,
-      discreteBaseSolution, discreteBetheIndex, Fin.val_last, hden, hmass]
-    field_simp [hpos.ne']
-    push_cast
-    ring
-  · by_cases hjlast : j.val = k + 1
-    · have hj : j = Fin.last (k + 1) := Fin.ext hjlast
-      subst j
-      have ha : rootPartitionPoint (k + 1) (discreteBaseSolution N (k + 1))
-          (by omega) (Fin.last (k + 1)).castSucc = discreteBaseSolution N (k + 1) (Fin.last k) := by
-        convert rootPartitionPoint_root (discreteBaseSolution N (k + 1)) (by omega)
-          (Fin.last k) using 1
-        congr 1
-      have hb : rootPartitionPoint (k + 1) (discreteBaseSolution N (k + 1))
-          (by omega) (Fin.last (k + 1)).succ = discreteBaseSolution N (k + 1) 0 + 2 * Real.pi := by
-        convert rootPartitionPoint_end (discreteBaseSolution N (k + 1)) (by omega) using 1 <;> congr 1
-      rw [ha, hb]
-      simp only [rootGapMultiplicity, Fin.val_last, or_true, ite_true,
-        discreteBaseSolution, discreteBetheIndex, Fin.val_zero, hden, hmass]
-      field_simp [hpos.ne']
-      push_cast
-      ring
-    · let lo : Fin (k + 1) := ⟨j.val - 1, by omega⟩
-      let hi : Fin (k + 1) := ⟨j.val, by omega⟩
-      have ha : rootPartitionPoint (k + 1) (discreteBaseSolution N (k + 1))
-          (by omega) j.castSucc = discreteBaseSolution N (k + 1) lo := by
-        convert rootPartitionPoint_root (discreteBaseSolution N (k + 1)) (by omega) lo using 1
-        congr 1
-        apply Fin.ext
-        dsimp [lo]
-        omega
-      have hb : rootPartitionPoint (k + 1) (discreteBaseSolution N (k + 1))
-          (by omega) j.succ = discreteBaseSolution N (k + 1) hi := by
-        convert rootPartitionPoint_root (discreteBaseSolution N (k + 1)) (by omega) hi using 1
-        congr 1
-      rw [ha, hb]
-      simp only [rootGapMultiplicity, ite_eq_right (not_or.mpr ⟨hj0, hjlast⟩),
-        discreteBaseSolution, discreteBetheIndex, lo, hi, hden]
-      rw [Nat.cast_sub (by omega : 1 ≤ j.val)]
-      push_cast
-      ring
+      2 * Real.pi * rootGapMultiplicity N (k + 1) j / ((N : ℝ) - (k + 1 : ℕ)) := by
+  have hden : ((N - (k + 1) : ℕ) : ℝ) = (N : ℝ) - (k + 1 : ℕ) := Nat.cast_sub (by omega)
+  have hn : (k + 1 : ℕ) < (N : ℝ) := by exact_mod_cast (show k + 1 < N by omega)
+  have h := rootPartitionPoint_increment hs (p := discreteBaseSolution N (k + 1)) id
+    (2 * Real.pi / ((N : ℝ) - (k + 1 : ℕ))) (fun i => by simp [discreteBaseSolution, hden]; ring)
+    (fun x => by simp only [id_eq, mul_div_cancel₀ _ (sub_pos.mpr hn).ne']) j
+  simpa [← mul_div_assoc, mul_comm _ (2 * Real.pi)] using h
 
 /-- The explicit base configuration is strictly inside the gap region used by
 the bootstrap. -/
@@ -143,19 +84,18 @@ theorem discreteBaseCoordinates_strict_gaps {N k r : ℕ} (hN : 0 < N)
     push_cast
     linarith
   have hdenN : (N : ℝ) - (k + 1 : ℕ) ≤ N := by
-    have hh : (0 : ℝ) ≤ (k + 1 : ℕ) := Nat.cast_nonneg _
     linarith
   have hm := one_le_rootGapMultiplicity hs j
   have hmcap := rootGapMultiplicity_le_offset hs hcount j
   constructor
   · have hlo : 2 * Real.pi / (N : ℝ) ≤
-        2 * Real.pi * rootGapMultiplicity N (k + 1) hs j / ((N : ℝ) - (k + 1 : ℕ)) := by
+        2 * Real.pi * rootGapMultiplicity N (k + 1) j / ((N : ℝ) - (k + 1 : ℕ)) := by
       apply (div_le_div_iff₀ hNc hden).2
       have h₁ := mul_le_mul_of_nonneg_left hdenN (by positivity : 0 ≤ 2 * Real.pi)
       have h₂ := mul_le_mul_of_nonneg_left hm (by positivity : 0 ≤ 2 * Real.pi * (N : ℝ))
       nlinarith only [h₁, h₂]
     exact (div_lt_div_of_pos_right (by linarith [Real.pi_pos] : c < 2 * Real.pi) hNc).trans_le hlo
-  · have hu : 2 * Real.pi * rootGapMultiplicity N (k + 1) hs j /
+  · have hu : 2 * Real.pi * rootGapMultiplicity N (k + 1) j /
         ((N : ℝ) - (k + 1 : ℕ)) ≤ 4 * Real.pi * (2 * r + 1 : ℝ) / (N : ℝ) := by
       apply (div_le_div_iff₀ hden hNc).2
       have h₁ := mul_le_mul_of_nonneg_left hmcap (by positivity : 0 ≤ 2 * Real.pi * (N : ℝ))

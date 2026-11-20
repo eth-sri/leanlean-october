@@ -71,15 +71,13 @@ theorem diamondCoboundary_eq_transpose (hN : Even N) (hM : Even M) (A : RCConfig
   funext e
   change f (faceEndpoint hN hM true e.val true) - f (faceEndpoint hN hM true e.val false) =
     ∑ u, diamondIncidence hN hM A u e * f u
-  simp only [diamondIncidence, sub_mul, Finset.sum_sub_distrib, ite_mul, one_mul,
-    zero_mul, Finset.sum_ite_eq, Finset.mem_univ, ite_true]
+  simp [diamondIncidence, sub_mul]
 
 theorem finrank_range_diamondBoundary_eq_coboundary (hN : Even N) (hM : Even M)
     (A : RCConfig N M) :
     finrank ℚ (LinearMap.range (diamondBoundary hN hM A)) =
       finrank ℚ (LinearMap.range (diamondCoboundary hN hM A)) := by
   rw [diamondCoboundary_eq_transpose]
-  change (diamondIncidence hN hM A).rank = (diamondIncidence hN hM A).transpose.rank
   exact (Matrix.rank_transpose _).symm
 
 /-- The cycle-rank identity counts indexed edges, not distinct endpoint pairs. -/

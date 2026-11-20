@@ -14,16 +14,15 @@ local instance boolBridgeEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 attribute [local instance] FK.configurationMeasurableSpace
 
 /-- The exact finite FK event probability on the Boolean carrier. -/
-theorem fk_measureReal_eq_bool_sum (θ : FK.Parameters) (ξ : FK.BoundaryCondition V)
+theorem fk_measureReal_eq_bool_weight_sum (θ : FK.Parameters) (ξ : FK.BoundaryCondition V)
     (S : Set (FK.Configuration G)) :
     (FK.measure G θ ξ S).toReal =
-      ∑ ω : G.edgeSet → Bool,
+      (∑ ω : G.edgeSet → Bool,
         if FK.boolConfigurationEquiv G ω ∈ S then
-          FK.configurationProbability G θ ξ (FK.boolConfigurationEquiv G ω) else 0 := by
-  rw [FK.measure_toReal_eq_indicator_sum, ← (FK.boolConfigurationEquiv G).sum_comp]
-  apply Finset.sum_congr rfl
-  intro ω _
-  by_cases h : FK.boolConfigurationEquiv G ω ∈ S <;> simp [Set.indicator, h]
+          FK.weight G θ ξ (FK.boolConfigurationEquiv G ω) else 0) / FK.partitionFunction G θ ξ := by
+  rw [FK.measure_toReal_eq_indicator_sum, ← (FK.boolConfigurationEquiv G).sum_comp, Finset.sum_div]
+  refine Finset.sum_congr rfl fun ω _ => ?_
+  by_cases h : FK.boolConfigurationEquiv G ω ∈ S <;> simp [Set.indicator, h, FK.configurationProbability]
 
 /-- Real event probabilities are finite sums of the original PMF masses. -/
 theorem finite_pmf_measureReal_sum {E : Type*} [Fintype E] [MeasurableSpace E]

@@ -1,6 +1,6 @@
 module
 
-public import PottsDiscontinuity.Duality.ScreenBridge
+public import PottsDiscontinuity.Duality.BondStates
 public import PottsDiscontinuity.RCInfinite.TranslationSupport
 
 @[expose] public section
@@ -34,21 +34,13 @@ theorem rcInfiniteOpenGraph_adj (ω : LatticeConfiguration) (x y : LatticeVertex
 theorem measurableSet_open_adj (x y : LatticeVertex) :
     MeasurableSet {ω : LatticeConfiguration | (rcInfiniteOpenGraph ω).Adj x y} := by
   by_cases h : squareLattice.Adj x y
-  · have he : s(x, y) ∈ squareLattice.edgeSet := squareLattice.mem_edgeSet.mpr h
+  · have he := squareLattice.mem_edgeSet.mpr h
     have heq : {ω : LatticeConfiguration | (rcInfiniteOpenGraph ω).Adj x y} =
         {ω | ω ⟨s(x, y), he⟩ = true} := by
-      ext ω
-      simp only [mem_ofPred_eq, rcInfiniteOpenGraph_adj]
-      exact ⟨fun ⟨_, hh⟩ => hh, fun hh => ⟨he, hh⟩⟩
+      simp_all [rcInfiniteOpenGraph_adj]
     rw [heq]
     exact (isCylinder_coordinate _ true).measurableSet
-  · have heq : {ω : LatticeConfiguration | (rcInfiniteOpenGraph ω).Adj x y} = ∅ := by
-      ext ω
-      simp only [mem_ofPred_eq, mem_empty_iff_false, iff_false, rcInfiniteOpenGraph_adj]
-      rintro ⟨he, _⟩
-      exact h (squareLattice.mem_edgeSet.mp he)
-    rw [heq]
-    exact MeasurableSet.empty
+  simp_all [rcInfiniteOpenGraph]
 
 def openChain : ℕ → LatticeConfiguration → LatticeVertex → LatticeVertex → Prop
   | 0, _, x, y => x = y
@@ -67,7 +59,7 @@ theorem reachable_iff_openChain (ω : LatticeConfiguration) (x y : LatticeVertex
   constructor
   · rintro ⟨w⟩
     induction w with
-    | nil => exact ⟨0, rfl⟩
+    | nil => tauto
     | cons h w ih =>
       obtain ⟨n, hn⟩ := ih
       exact ⟨n + 1, _, h, hn⟩
@@ -78,7 +70,7 @@ theorem measurableSet_openChain (n : ℕ) (x y : LatticeVertex) :
     MeasurableSet {ω : LatticeConfiguration | openChain n ω x y} := by
   induction n generalizing x with
   | zero =>
-    by_cases h : x = y <;> simp [openChain, h]
+    by_cases h : x = y <;> simp [openChain]
   | succ n ih =>
     have h := MeasurableSet.iUnion (fun z : LatticeVertex =>
       (measurableSet_open_adj x z).inter (ih z))
@@ -91,7 +83,7 @@ theorem measurableSet_open_reachable (x y : LatticeVertex) :
   have h := MeasurableSet.iUnion (fun n : ℕ => measurableSet_openChain n x y)
   convert h using 1
   ext ω
-  simp only [mem_ofPred_eq, reachable_iff_openChain, mem_iUnion]
+  simp [reachable_iff_openChain]
 
 theorem infinite_cluster_iff (ω : LatticeConfiguration) (x : LatticeVertex) :
     (cluster ω x).Infinite ↔ ∀ F : Finset LatticeVertex,
@@ -99,7 +91,7 @@ theorem infinite_cluster_iff (ω : LatticeConfiguration) (x : LatticeVertex) :
   constructor
   · intro h F
     obtain ⟨y, hy, hyF⟩ := h.exists_notMem_finset F
-    exact ⟨y, hyF, hy⟩
+    tauto
   · intro h hfin
     obtain ⟨y, hyF, hy⟩ := h hfin.toFinset
     exact hyF (hfin.mem_toFinset.mpr hy)
@@ -121,7 +113,11 @@ theorem measurableSet_infiniteClusterEvent : MeasurableSet infiniteClusterEvent 
   ext ω
   simp [infiniteClusterEvent]
 
-theorem edgeTranslate_at_translatedEdge (a : LatticeVertex) (ω : LatticeConfiguration) (e : Edge) :
+section
+
+variable (a : LatticeVertex) (ω : LatticeConfiguration)
+
+theorem edgeTranslate_at_translatedEdge (e : Edge) :
     edgeTranslate a ω (translatedEdge a e) = ω e := by
   rw [latticeConfigurationTranslate_apply]
   congr 1
@@ -135,7 +131,7 @@ theorem edgeTranslate_at_translatedEdge (a : LatticeVertex) (ω : LatticeConfigu
   rfl
 
 /-- The open graph translates as a graph, including all original vertices. -/
-def openGraphTranslationIso (a : LatticeVertex) (ω : LatticeConfiguration) :
+def openGraphTranslationIso :
     rcInfiniteOpenGraph ω ≃g rcInfiniteOpenGraph (edgeTranslate a ω) where
   toEquiv := (latticeTranslationIso a).toEquiv
   map_rel_iff' := by
@@ -151,11 +147,9 @@ def openGraphTranslationIso (a : LatticeVertex) (ω : LatticeConfiguration) :
         fun ⟨_, hh⟩ => ⟨ht, hstate.symm ▸ hh⟩⟩
     · have ht : ¬squareLattice.Adj (latticeTranslate a x) (latticeTranslate a y) :=
         fun hh => h ((squareLattice_adj_translate_iff a x y).mp hh)
-      constructor
-      · rintro ⟨he, _⟩; exact (ht (squareLattice.mem_edgeSet.mp he)).elim
-      · rintro ⟨he, _⟩; exact (h (squareLattice.mem_edgeSet.mp he)).elim
+      tauto
 
-theorem cluster_translation (a : LatticeVertex) (ω : LatticeConfiguration) (x : LatticeVertex) :
+theorem cluster_translation (x : LatticeVertex) :
     cluster (edgeTranslate a ω) (latticeTranslate a x) = latticeTranslate a '' cluster ω x := by
   ext y
   obtain ⟨z, rfl⟩ := (latticeTranslationIso a).surjective y
@@ -167,22 +161,14 @@ theorem cluster_translation (a : LatticeVertex) (ω : LatticeConfiguration) (x :
     subst w
     exact (openGraphTranslationIso a ω).reachable_iff.mpr hw
 
-theorem infiniteAt_translation (a : LatticeVertex) (ω : LatticeConfiguration) (x : LatticeVertex) :
+theorem infiniteAt_translation (x : LatticeVertex) :
     edgeTranslate a ω ∈ infiniteAt (latticeTranslate a x) ↔ ω ∈ infiniteAt x := by
   change (cluster (edgeTranslate a ω) (latticeTranslate a x)).Infinite ↔ (cluster ω x).Infinite
   rw [cluster_translation]
   exact Set.infinite_image_iff (show Set.InjOn (latticeTranslate a) (cluster ω x) from
     (latticeTranslationIso a).injective.injOn)
 
-theorem infiniteClusterEvent_invariant (a : LatticeVertex) :
-    (edgeTranslate a) ⁻¹' infiniteClusterEvent = infiniteClusterEvent := by
-  ext ω
-  constructor
-  · rintro ⟨x, hx⟩
-    obtain ⟨z, rfl⟩ := (latticeTranslationIso a).surjective x
-    exact ⟨z, (infiniteAt_translation a ω z).mp hx⟩
-  · rintro ⟨x, hx⟩
-    exact ⟨latticeTranslate a x, (infiniteAt_translation a ω x).mpr hx⟩
+end
 
 theorem infiniteClusterEvent_eq_iUnion : infiniteClusterEvent = ⋃ x, infiniteAt x := by
   ext ω

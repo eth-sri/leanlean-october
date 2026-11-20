@@ -1,6 +1,7 @@
 module
 
 public import PottsDiscontinuity.BetheAnsatz.GapGeometry
+public import PottsDiscontinuity.BetheAnsatz.GapGeometric
 
 /-!
 # Inclusion-exclusion for the finite cyclic gap sum
@@ -29,7 +30,7 @@ theorem no_events_indicator_eq_powerset {ι : Type*} [Fintype ι] (C : ι → Pr
       by_cases hi : C i <;> simp [hi]
     simp_rw [hlocal]
     rw [Finset.prod_ite_zero]
-    simp only [mem_univ, forall_const, Finset.prod_const_one]
+    simp
   rw [he] at hp
   simpa only [Finset.prod_const_one, mul_one, Finset.prod_ite_zero] using hp
 
@@ -42,30 +43,41 @@ theorem sum_no_events_eq_powerset {ι α : Type*} [Fintype ι] (s : Finset α)
   rw [Finset.sum_filter]
   have hi : ∀ a, (if ∀ i, ¬ C i a then F a else 0) =
       (if ∀ i, ¬ C i a then (1 : ℂ) else 0) * F a := by
-    intro a
-    by_cases ha : ∀ i, ¬ C i a <;> simp [ha]
+    simp
   simp_rw [hi, no_events_indicator_eq_powerset, Finset.sum_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro S _
   rw [Finset.sum_filter, Finset.mul_sum]
   apply Finset.sum_congr rfl
-  intro a _
-  by_cases ha : ∀ i ∈ S, C i a <;> simp [ha]
+  simp
+
+/-- Finite gap sums with a common choice of endpoint weights. -/
+noncomputable def weightedGapWeight {N n : ℕ} (b d : ℂ) (x y : Fin (n+1) → ℤ) : ℂ :=
+  ∏ k, gapPointWeight b d (cyclicPredecessorPositions N x k) (x k) (y k)
+
+noncomputable def weightedGapSum {N n : ℕ} (b d : ℂ) (x : Fin (n+1) → ℤ)
+    (p : Fin (n+1) → ℝ) (σ : Equiv.Perm (Fin (n+1))) : ℂ :=
+  ∑ y ∈ distinctGapTuples N x, weightedGapWeight (N := N) b d x y * planeWave p σ y
+
+lemma weightedGapSum_eq_cyclicGapSum {N n : ℕ} (c : ℝ) (x : Fin (n+1) → ℤ)
+    (p : Fin (n+1) → ℝ) (σ : Equiv.Perm (Fin (n+1))) :
+    weightedGapSum (N := N) 1 ((c:ℂ)^2) x p σ = cyclicGapSum c N x p σ := by
+  simp [weightedGapSum, weightedGapWeight, cyclicGapSum, gapWeight, gapPointWeight, ite_or]
 
 /-- The source's `R_σ(S)`, with every collision in S imposed. -/
-noncomputable def restrictedGapSum {N n : ℕ} (c : ℝ) (x : Fin (n + 1) → ℤ)
+noncomputable def restrictedGapSum {N n : ℕ} (B D : ℂ) (x : Fin (n + 1) → ℤ)
     (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1))) (S : Finset (Fin (n + 1))) : ℂ :=
   ∑ y ∈ (gapTuples N x).filter (fun y => ∀ k ∈ S, gapCollision N x y k),
-    gapWeight c N x y * planeWave p σ y
+    weightedGapWeight (N := N) B D x y * planeWave p σ y
 
 /-- Equation `eq:RS`, retaining exactly the modulo-N exclusion of the source gap sum. -/
-theorem cyclicGapSum_inclusion_exclusion {N n : ℕ} (c : ℝ) (x : Fin (n + 2) → ℤ)
+theorem weightedGapSum_inclusion_exclusion {N n : ℕ} (B D : ℂ) (x : Fin (n + 2) → ℤ)
     (p : Fin (n + 2) → ℝ) (σ : Equiv.Perm (Fin (n + 2)))
     (hx : StrictMono x) (hspan : x (Fin.last (n + 1)) - x 0 < (N : ℤ)) :
-    cyclicGapSum c N x p σ =
+    weightedGapSum (N := N) B D x p σ =
       ∑ S ∈ (univ : Finset (Fin (n + 2))).powerset,
-        (-1 : ℂ) ^ S.card * restrictedGapSum (N := N) c x p σ S := by
+        (-1 : ℂ) ^ S.card * restrictedGapSum (N := N) B D x p σ S := by
   have he : distinctGapTuples N x =
       (gapTuples N x).filter (fun y => ∀ k, ¬ gapCollision N x y k) := by
     ext y
@@ -75,22 +87,20 @@ theorem cyclicGapSum_inclusion_exclusion {N n : ℕ} (c : ℝ) (x : Fin (n + 2) 
       exact ⟨hy, (distinct_residues_iff_no_gapCollision hx hspan hy).mp hi⟩
     · rintro ⟨hy, hi⟩
       exact ⟨hy, (distinct_residues_iff_no_gapCollision hx hspan hy).mpr hi⟩
-  unfold cyclicGapSum restrictedGapSum
+  unfold weightedGapSum restrictedGapSum
   rw [he]
   convert sum_no_events_eq_powerset (gapTuples N x) (fun k y => gapCollision N x y k)
-    (fun y => gapWeight c N x y * planeWave p σ y) using 1
+    (fun y => weightedGapWeight (N := N) B D x y * planeWave p σ y) using 1
   · apply Finset.sum_congr
     · ext y
-      simp only [mem_filter]
-    · intro y _
-      rfl
+      simp
+    simp
   · apply Finset.sum_congr rfl
     intro S _
     congr 1
     apply Finset.sum_congr
     · ext y
-      simp only [mem_filter]
-    · intro y _
-      rfl
+      simp
+    simp
 
 end PottsDiscontinuity.BetheAnsatz

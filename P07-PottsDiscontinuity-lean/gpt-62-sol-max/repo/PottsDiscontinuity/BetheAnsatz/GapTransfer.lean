@@ -42,8 +42,8 @@ theorem sum_distinctGapTuples_eq_sum_states {N n : ℕ} (x : State N (n + 1))
 theorem coordinateWave_cyclicPredecessor {N n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
     (p : Fin (n + 1) → ℝ) (hBE : BetheEquations N Δ p) (y : Fin (n + 1) → ℤ) :
     coordinateWave Δ p y = coordinateWave Δ p (cyclicPredecessorPositions N y) := by
-  simpa only [coordinateWave, mul_one] using
-    toroidal_change_of_variables hΔ p hBE y (fun _ => 1)
+  simpa [coordinateWave] using
+      toroidal_change_of_variables hΔ p hBE y (fun _ => 1)
 
 /-- Expanding the amplitude-weighted finite gap sums gives the coordinate wave summand. -/
 theorem sum_amplitude_cyclicGapSum {N n : ℕ} (c Δ : ℝ) (x : Fin (n + 1) → ℤ)

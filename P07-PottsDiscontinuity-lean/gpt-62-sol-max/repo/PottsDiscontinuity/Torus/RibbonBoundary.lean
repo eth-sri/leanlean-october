@@ -36,16 +36,13 @@ theorem ribbonSwitch_eq_self_iff (A : RCConfig N M) (d : Dart N M) :
   have ht : ∀ (c a : Bool) (p : Port),
       pairedPort (Bool.xor c a) (pairedPort c p) = p ↔ a = false := by decide
   rcases d with ⟨v, p⟩
-  simpa only [ribbonSwitch, strandReverse, rcSmoothing, Prod.mk.injEq,
-    true_and] using ht (checker v) (A v) p
+  simpa [ribbonSwitch, strandReverse, rcSmoothing] using ht (checker v) (A v) p
 
 theorem dartOut_ribbonSwitch (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (d : Dart N M) :
     dartOut (checkerArrows N M) (ribbonSwitch A d) =
       dartOut (checkerArrows N M) d := by
-  unfold ribbonSwitch
-  rw [dartOut_strandReverse (checkerArrows_compatible hN hM _),
-    dartOut_strandReverse (checkerArrows_compatible hN hM _), Bool.not_not]
+  simp_all [dartOut_strandReverse, checkerArrows_compatible, ribbonSwitch]
 
 /-- The edge pairing fixes closed slots and interchanges the two sides of each open ribbon. -/
 def ribbonEdgePairing (hN : Even N) (hM : Even M) (A : RCConfig N M) :
@@ -70,7 +67,7 @@ theorem ribbonEdgePairing_involutive (hN : Even N) (hM : Even M)
 theorem ribbonEdgePairing_eq_self_iff (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (d : DirectedDart (checkerArrows N M)) :
     ribbonEdgePairing hN hM A d = d ↔ A d.val.1 = false := by
-  rw [Subtype.ext_iff, ribbonEdgePairing_val, ribbonSwitch_eq_self_iff]
+  simp [Subtype.ext_iff, ribbonSwitch_eq_self_iff]
 
 /-- Boundary traversal of the primal vertex discs with their open ribbons attached. -/
 def ribbonBoundary (hN : Even N) (hM : Even M) (A : RCConfig N M) :

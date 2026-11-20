@@ -18,54 +18,27 @@ open Torus CorrLength
 The extended-real carrier permits an unbounded negative rate. -/
 noncomputable def torusRCUOneRateE {N : ℕ} (hN : Even N)
     (q : Set.Ici (1 : ℝ)) (m : ℕ) : EReal :=
-  ((Real.log (torusRCProbability hN (positiveEvenPeriod_even m) q
-    {A | rcVerticalWinding hN (positiveEvenPeriod_even m)
-      ⟨0,positiveEvenPeriod_pos m⟩ A = 1}) / (positiveEvenPeriod m:ℝ):ℝ):EReal)
+  let p := torusRCUOneProbability hN (positiveEvenPeriod_even m) q (positiveEvenPeriod_pos m)
+  if p = 0 then ⊥ else (Real.log p / (positiveEvenPeriod m : ℝ) : ℝ)
 
-/-- The inner M→∞ passage of (3.15), with actual native free-box
-probabilities. All finite-energy losses are independent of M. -/
+/-- The inner M→∞ passage; all finite-energy losses are independent of M. -/
 theorem torusRCU_one_inner_liminf_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
-    ∃ c : ℝ, 0 < c ∧ c ≤ 1 ∧ ∀ (N n : ℕ) (hN : Even N)
-      (_hN4 : 4 ≤ N) (_hNdiv : 8 ∣ N) (_hn : 2 ≤ n) (_h8nN : 8*n ≤ N),
-      ((Real.log (c/(9*(n:ℝ)^2))/(n:ℝ) +
-        Real.log (liftedBoxFreeConnectionProbability (torusRCBridgeParameters q)
-          rotatedLatticeOrigin (N/4) rotatedLatticeOrigin (rotatedDiagonalSite n)) /
-          ((2*n:ℕ):ℝ):ℝ):EReal) ≤ liminf (torusRCUOneRateE hN q) atTop := by
-  obtain ⟨c,hc,hc1,hfinite⟩ := torusRCU_one_lower_of_h319 q hh319
-  refine ⟨c,hc,hc1,?_⟩
-  intro N n hN hN4 hNdiv hn h8nN
-  let height := positiveEvenPeriod
-  have hheight : Tendsto height atTop atTop := by
-    apply tendsto_atTop.2
-    intro k
-    filter_upwards [eventually_ge_atTop k] with m hm
-    dsimp [height,positiveEvenPeriod]
-    omega
-  let p : ℕ → ℝ := fun m => torusRCProbability hN (positiveEvenPeriod_even m) q
-    {A | rcVerticalWinding hN (positiveEvenPeriod_even m)
-      ⟨0,positiveEvenPeriod_pos m⟩ A = 1}
-  let b := liftedBoxFreeConnectionProbability (torusRCBridgeParameters q)
-    rotatedLatticeOrigin (N/4) rotatedLatticeOrigin (rotatedDiagonalSite n)
-  let C := fkOpenEnergy (torusRCBridgeParameters q) ^ (2*(N/4+2*n)) *
-    torusRCSurgeryEnergy q ^ (2*n+N) / q.val^2
-  have hC : 0 < C := div_pos
-    (mul_pos (pow_pos (fkOpenEnergy_pos _) _) (pow_pos (torusRCSurgeryEnergy_pos q) _))
-    (pow_pos (lt_of_lt_of_le zero_lt_one q.property) _)
-  have hb : 0 < b := liftedBoxFreeDiagonalProbability_pos _ n (N/4) (by omega)
-    ((Nat.le_div_iff_mul_le (by norm_num)).mpr (by omega))
-  have hp : ∀ᶠ m in atTop,
-      C * (c/(9*(n:ℝ)^2))^((height m:ℝ)/(n:ℝ)) * b^(height m/(2*n)) ≤ p m := by
-    filter_upwards [hheight.eventually (eventually_ge_atTop (max 4 (max (4*n) (N/2+1))))]
-      with m hm
-    have hM4 : 4 ≤ height m := (le_max_left _ _).trans hm
-    have h4nM : 4*n ≤ height m := (le_max_left _ _).trans ((le_max_right _ _).trans hm)
-    have hNM : N/2 < height m := by
-      have h := (le_max_right (4*n) (N/2+1)).trans ((le_max_right _ _).trans hm)
-      omega
-    have h := hfinite N (height m) n hN (positiveEvenPeriod_even m) hN4 hM4 hNdiv hn h8nN h4nM hNM
-    change _ ≤ p m at h
-    convert h using 1; dsimp [C,b]; ring
-  exact log_block_product_liminf height hheight p C (c/(9*(n:ℝ)^2)) b hC
-    (by positivity) hb n (2*n) (by omega) (by omega) hp
+    ∃ c : ℝ, 0 < c ∧ ∀ (N n : ℕ) (hN : Even N)
+      (_ : 8 ∣ N) (_ : 0 < n) (_ : 8*(n+1) ≤ N),
+      ((Real.log (blockPenalty c n) / n +
+        Real.log (nativeDiagonalProbability q (N/4) (n+1)) / ((2*(n+1):ℕ):ℝ) : ℝ) : EReal)
+        ≤ liminf (torusRCUOneRateE hN q) atTop := by
+  obtain ⟨c, hc, hfinite⟩ := torusRCU_one_lower_of_h319 q hh319
+  refine ⟨c, hc, fun N n hN hdiv hn hwidth => ?_⟩
+  have hheight : Tendsto positiveEvenPeriod atTop atTop :=
+    tendsto_atTop_mono (fun m => by dsimp [positiveEvenPeriod]; omega) tendsto_id
+  have hb : 0 < nativeDiagonalProbability q (N/4) (n+1) :=
+    liftedBoxFreeDiagonalProbability_pos _ _ _ (by omega) (by omega)
+  refine log_block_product_liminf positiveEvenPeriod hheight
+    (fun m => torusRCUOneProbability hN (positiveEvenPeriod_even m) q (positiveEvenPeriod_pos m))
+    _ _ _ (surgeryCost_pos q N n) (by unfold blockPenalty; positivity) hb n (2*(n+1)) hn (by omega) ?_
+  filter_upwards [hheight.eventually (eventually_ge_atTop (4*(n+1))),
+    hheight.eventually (eventually_gt_atTop (N/2))] with m hM hNM
+  exact hfinite N _ n hN (positiveEvenPeriod_even m) hdiv hn hwidth hM hNM
 
 end PottsDiscontinuity.TorusRC

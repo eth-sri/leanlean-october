@@ -44,14 +44,13 @@ theorem filter_closedSubgraph_map (hGH : G ≤ H) (θ : Parameters) :
     rw [PMF.map_comp]
     rfl
   change P.map (subgraphRemainderRead hGH) = _
-  rw [he,law_filter_frozen_map_remaining]
-  rw [← law_subgraphRemaining_map hGH θ (frozenBoundary (BoundaryCondition.free ∅) K.val),PMF.map_comp]
+  rw [he,law_filter_frozen_map_remaining, ← law_subgraphRemaining_map hGH θ (frozenBoundary (BoundaryCondition.free ∅) K.val),PMF.map_comp]
   have hid : (subgraphRemainingConfigurationEquiv hGH).symm ∘
-      subgraphRemainingConfigurationEquiv hGH = id := by funext C; simp
+      subgraphRemainingConfigurationEquiv hGH = id := by simp
   rw [hid,PMF.map_id]
   apply law_eq_of_boundary_partition_eq
   change componentSetoid H (BoundaryCondition.free ∅) ∅ = _
-  rw [componentSetoid_empty]
+  simp
 
 lemma closedSubgraph_reconstruct (hGH : G ≤ H) (C : Configuration H)
     (hC : C ∈ frozenStateEvent (subgraphRemovedEdges G H) (closedSubgraphRecord G H)) :
@@ -60,9 +59,7 @@ lemma closedSubgraph_reconstruct (hGH : G ≤ H) (C : Configuration H)
     (configurationSplitEquiv H (subgraphRemovedEdges G H) C).1)
   change subgraphConfigurationEmbedding hGH (subgraphRemainderRead hGH C) =
     C \ subgraphRemovedEdges G H at he
-  change C ∩ subgraphRemovedEdges G H = ∅ at hC
-  rw [Finset.sdiff_eq_self_of_disjoint (Finset.disjoint_iff_inter_eq_empty.2 hC)] at he
-  exact he
+  simpa [Finset.sdiff_eq_self_of_disjoint (Finset.disjoint_iff_inter_eq_empty.2 hC)] using he
 
 /-- The full-law probability of a subgraph event with all other edges closed
 is at most its exact free subgraph probability. -/

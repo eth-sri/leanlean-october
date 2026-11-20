@@ -4,6 +4,7 @@ module
 
 public import PottsDiscontinuity.FK.Lattice
 public import Mathlib.Tactic
+public import Mathlib.Topology.Order.OrderClosed
 
 /-!
 # Cofinality of increasing lattice boxes
@@ -34,11 +35,11 @@ theorem latticeBox_subset_eventually_of_nested_exhaustive
     (a : LatticeVertex) (R : ℕ) :
     ∃ N, ∀ n ≥ N, latticeBox a R ⊆ latticeBox (c n) (r n) := by
   classical
-  let i : LatticeVertex → ℕ := fun v => Classical.choose (hexhaust v)
+  let i := fun v => Classical.choose (hexhaust v)
   let N := (latticeBox a R).sup i
   refine ⟨N, fun n hn v hv => ?_⟩
   have hi : i v ≤ N := Finset.le_sup hv
-  have hiv : v ∈ latticeBox (c (i v)) (r (i v)) := Classical.choose_spec (hexhaust v)
+  have hiv := Classical.choose_spec (hexhaust v)
   exact (latticeBox_subset_of_nested hnest (hi.trans hn)) hiv
 
 /-- The canonical origin-centered boxes are nested. -/
@@ -51,6 +52,47 @@ theorem origin_latticeBox_exhaustive (v : LatticeVertex) :
     ∃ n, v ∈ latticeBox (0, 0) n := by
   refine ⟨max v.1.natAbs v.2.natAbs, ?_⟩
   rw [mem_latticeBox]
-  constructor <;> constructor <;> simp only [zero_sub, zero_add] <;> omega
+  omega
+
+open Filter Topology
+
+/-- A common weak limit along every nested exhaustive sequence of boxes. -/
+def WeakBoxLimit {X : Type*} [TopologicalSpace X] (law : LatticeVertex → ℕ → X) (μ : X) : Prop :=
+  ∀ (c : ℕ → LatticeVertex) (r : ℕ → ℕ),
+    (∀ n, latticeBox (c n) (r n) ⊆ latticeBox (c (n + 1)) (r (n + 1))) →
+    (∀ v, ∃ n, v ∈ latticeBox (c n) (r n)) →
+    Tendsto (fun n => law (c n) (r n)) atTop (𝓝 μ)
+
+theorem WeakBoxLimit.atOrigin {X : Type*} [TopologicalSpace X] {law : LatticeVertex → ℕ → X}
+    {μ : X} (h : WeakBoxLimit law μ) : Tendsto (law (0, 0)) atTop (𝓝 μ) :=
+  h _ id origin_latticeBox_nested origin_latticeBox_exhaustive
+
+/-- Comparison on a continuous, injective system of ordered coordinates makes
+weak box limits independent of the nested exhaustive sequence. -/
+theorem boxLimit_existsUnique_of_compare {X Y : Type*} [TopologicalSpace X] [T2Space X]
+    [PartialOrder Y] [TopologicalSpace Y] [OrderClosedTopology Y]
+    (law : LatticeVertex → ℕ → X) (κ : X → Y) (hc : Continuous κ) (hi : Function.Injective κ)
+    (hcompare : ∀ a b r s, latticeBox a r ⊆ latticeBox b s → κ (law a r) ≤ κ (law b s))
+    (hconv : ∀ (c : ℕ → LatticeVertex) (r : ℕ → ℕ),
+      (∀ n, latticeBox (c n) (r n) ⊆ latticeBox (c (n + 1)) (r (n + 1))) →
+      ∃ μ, Tendsto (fun n => law (c n) (r n)) atTop (𝓝 μ)) :
+    ∃! μ, WeakBoxLimit law μ := by
+  have hle {c d : ℕ → LatticeVertex} {r s : ℕ → ℕ} {μ ν : X}
+      (hμ : Tendsto (fun n => law (c n) (r n)) atTop (𝓝 μ))
+      (hν : Tendsto (fun n => law (d n) (s n)) atTop (𝓝 ν))
+      (hn : ∀ n, latticeBox (d n) (s n) ⊆ latticeBox (d (n + 1)) (s (n + 1)))
+      (he : ∀ v, ∃ n, v ∈ latticeBox (d n) (s n)) : κ μ ≤ κ ν := by
+    refine le_of_tendsto' ((hc.tendsto μ).comp hμ) fun j => ?_
+    obtain ⟨K, hK⟩ := latticeBox_subset_eventually_of_nested_exhaustive hn he (c j) (r j)
+    exact le_of_tendsto_of_tendsto tendsto_const_nhds ((hc.tendsto ν).comp hν)
+      (eventually_atTop.2 ⟨K, fun k hk => hcompare _ _ _ _ (hK k hk)⟩)
+  obtain ⟨μ, hμ⟩ := hconv (fun _ => (0, 0)) id origin_latticeBox_nested
+  refine ⟨μ, ?_, fun _ hν => tendsto_nhds_unique
+    hν.atOrigin hμ⟩
+  intro c r hn he
+  obtain ⟨ν, hν⟩ := hconv c r hn
+  have e := hi (le_antisymm (hle hν hμ origin_latticeBox_nested origin_latticeBox_exhaustive)
+    (hle hμ hν hn he))
+  exact e ▸ hν
 
 end PottsDiscontinuity.FK

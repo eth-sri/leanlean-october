@@ -13,11 +13,6 @@ open Torus
 
 variable {N M : ℕ}
 
-noncomputable local instance indexedOpeningEdges (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
-noncomputable local instance indexedOpeningEdgeEq (hN : Even N) (hM : Even M) :
-    DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
-
 noncomputable section
 
 /-- Exact indexed finite-energy bound, obtained through the simple-edge
@@ -31,7 +26,6 @@ theorem torusRCProbability_allOpen_ge (hN : Even N) (hM : Even M)
   let f := torusIndexedEdgeEquiv hN hM hN4 hM4
   let g := torusRCConfigurationEquiv hN hM hN4 hM4
   have hmem (A : RCConfig N M) (e : Fin N × Fin M) : f e ∈ g A ↔ A e = true := by
-    change torusIndexedEdgeEmbedding hN hM hN4 hM4 e ∈ g A ↔ _
     exact mem_torusRCConfigurationEquiv hN hM hN4 hM4 A e
   have himage : g '' {A | ∀ e ∈ s, A e = true} = {C | s.map f.toEmbedding ⊆ C} := by
     ext C
@@ -48,7 +42,7 @@ theorem torusRCProbability_allOpen_ge (hN : Even N) (hM : Even M)
   rw [torusRCProbability_eq_fk_image hN hM hN4 hM4 q, himage]
   have h := fk_allOpen_probability_ge (fullDiamondGraph hN hM)
     (torusRCBridgeParameters q) (FK.BoundaryCondition.free ∅) (s.map f.toEmbedding)
-  simpa only [Finset.card_map,MeasureTheory.Measure.real] using h
+  simpa [MeasureTheory.Measure.real] using h
 
 /-- Prescribing open edges costs its finite-energy factor even when combined
 with any increasing event. -/
@@ -64,7 +58,7 @@ theorem torusRCProbability_allOpen_inter_ge (hN : Even N) (hM : Even M)
     have h := hAB e
     rw [hA e he] at h
     cases hB : B e
-    · exact False.elim ((by decide : ¬ (true ≤ false)) (by simpa only [hB] using h))
+    · exact False.elim ((by decide : ¬ (true ≤ false)) (by simpa [hB] using h))
     · rfl
   exact (mul_le_mul_of_nonneg_right
     (torusRCProbability_allOpen_ge hN hM hN4 hM4 q s)

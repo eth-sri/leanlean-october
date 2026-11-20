@@ -53,9 +53,6 @@ theorem trace_pow_succ_eq_sum_chain {S R : Type*} [Fintype S] [DecidableEq S] [C
   refine Finset.sum_congr rfl fun x _ => ?_
   simp only [Finset.sum_ite_eq, mem_univ, ↓reduceIte]
   rw [Fin.prod_univ_castSucc]
-  congr 1
-  · refine Finset.prod_congr rfl fun j _ => ?_
-    simp [Fin.coeSucc_eq_succ]
-  · simp only [finRotate_last]
+  simp
 
 end PottsDiscontinuity.SixVertex

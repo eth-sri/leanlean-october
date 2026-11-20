@@ -24,8 +24,7 @@ variable {α : Type*} [Fintype α]
 noncomputable def partition (w : α → ℝ) : ℝ := ∑ a, w a
 
 theorem partition_pos [Nonempty α] (w : α → ℝ) (hw : ∀ a, 0 < w a) :
-    0 < partition w := by
-  exact Finset.sum_pos (fun a _ => hw a) Finset.univ_nonempty
+    0 < partition w := Finset.sum_pos (fun a _ => hw a) Finset.univ_nonempty
 
 /-- The normalized weight of a strictly positive finite family. -/
 noncomputable def probability [Nonempty α] (w : α → ℝ)
@@ -44,8 +43,7 @@ theorem sum_probability [Nonempty α] (w : α → ℝ) (hw : ∀ a, 0 < w a) :
 
 theorem sum_ofReal_probability [Nonempty α] (w : α → ℝ) (hw : ∀ a, 0 < w a) :
     ∑ a, ENNReal.ofReal (probability w hw a) = 1 := by
-  rw [← ENNReal.ofReal_sum_of_nonneg (fun a _ => (probability_pos w hw a).le)]
-  rw [sum_probability, ENNReal.ofReal_one]
+  simp [← ENNReal.ofReal_sum_of_nonneg (fun a _ => (probability_pos w hw a).le), sum_probability]
 
 /-- The probability mass function with the prescribed positive weights. -/
 noncomputable def pmf [Nonempty α] (w : α → ℝ) (hw : ∀ a, 0 < w a) : PMF α :=

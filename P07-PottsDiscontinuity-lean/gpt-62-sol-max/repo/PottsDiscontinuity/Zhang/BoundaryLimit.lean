@@ -25,8 +25,6 @@ lemma boxRadius_le_iff (x : LatticeVertex) (n : ℕ) :
   simp only [boxRadius, mem_latticeBox, zero_sub, zero_add]
   omega
 
-lemma boxRadius_zero : boxRadius (0, 0) = 0 := rfl
-
 lemma boxRadius_step {x y : LatticeVertex} (h : squareLattice.Adj x y) :
     boxRadius y ≤ boxRadius x + 1 := by
   rw [squareLattice_adj_iff] at h
@@ -52,7 +50,7 @@ lemma measurableSet_oneArmEvent (n : ℕ) : MeasurableSet (oneArmEvent n) := by
     measurableSet_open_reachable (0, 0) y.val
   convert h using 1
   ext ω
-  simp only [oneArmEvent, Set.mem_ofPred_eq, Set.mem_iUnion, Subtype.exists, exists_prop]
+  simp [oneArmEvent]
 
 /-- A nearest-neighbor walk starting inside a radius and ending beyond it
 visits the exact radius. -/
@@ -66,7 +64,7 @@ lemma walk_hits_radius {ω : LatticeConfiguration} {x y : LatticeVertex}
     by_cases ha : boxRadius a = n
     · exact ⟨a, ha, SimpleGraph.Reachable.refl a⟩
     · obtain ⟨he, _⟩ := (rcInfiniteOpenGraph_adj ω a b).mp hab
-      have hstep : boxRadius b ≤ boxRadius a + 1 :=
+      have hstep :=
         boxRadius_step (squareLattice.mem_edgeSet.mp he)
       have hb : boxRadius b ≤ n := by omega
       obtain ⟨z, hz, hbz⟩ := ih hb hy
@@ -79,7 +77,7 @@ lemma boundaryConnectionEvent_eq_oneArmEvent (n : ℕ) :
   · rintro ⟨y, hy, hconn⟩
     exact ⟨y, hy.ge, hconn⟩
   · rintro ⟨y, hy, ⟨w⟩⟩
-    exact walk_hits_radius w n (by rw [boxRadius_zero]; exact Nat.zero_le _) hy
+    exact walk_hits_radius w n (Nat.zero_le _) hy
 
 /-- Reaching arbitrarily large finite box boundaries is exactly infinitude of
 the actual open cluster; no probability or uniqueness input is involved. -/
@@ -92,9 +90,7 @@ theorem iInter_oneArmEvent : (⋂ n, oneArmEvent n) = infiniteAt (0, 0) := by
     intro F
     obtain ⟨y, hy, hconn⟩ := h (F.sup boxRadius + 1)
     refine ⟨y, ?_, hconn⟩
-    intro hyF
-    have := Finset.le_sup (f := boxRadius) hyF
-    omega
+    grind [Finset.le_sup]
   · intro h n
     obtain ⟨y, hy, hconn⟩ := (infinite_cluster_iff ω (0, 0)).mp h
       (latticeBox (0, 0) n)
@@ -109,7 +105,7 @@ theorem tendsto_boundaryConnection_probability
   have h := tendsto_measure_iInter_atTop
     (μ := μ) (fun n => (measurableSet_oneArmEvent n).nullMeasurableSet)
     oneArmEvent_antitone ⟨0, measure_ne_top μ _⟩
-  simpa only [Function.comp_def, iInter_oneArmEvent] using h
+  simpa [Function.comp_def, iInter_oneArmEvent] using h
 
 /-- The exact missing input for the zero boundary limit is origin
 nonpercolation. This equivalence is not a proof of critical nonpercolation. -/
@@ -121,6 +117,6 @@ theorem tendsto_boundaryConnection_zero_iff
   · intro h
     exact tendsto_nhds_unique (tendsto_boundaryConnection_probability μ) h
   · intro h
-    simpa only [h] using tendsto_boundaryConnection_probability μ
+    simpa [h] using tendsto_boundaryConnection_probability μ
 
 end PottsDiscontinuity.Zhang

@@ -62,21 +62,27 @@ noncomputable def coordinateWave {n : ℕ} (Δ : ℝ) (p : Fin n → ℝ)
     (x : Fin n → ℤ) : ℂ :=
   ∑ σ : Equiv.Perm (Fin n), amplitude Δ p σ * planeWave p σ x
 
+section
+
+variable {N n : ℕ}
+
 /-- Increasing zero-based positions of a state. -/
-noncomputable def positions {N n : ℕ} (x : State N n) : Fin n → ℤ :=
+noncomputable def positions (x : State N n) : Fin n → ℤ :=
   fun k => ((x.1.orderEmbOfFin x.2 k).val : ℤ)
 
 /-- The coordinate wave on `Ω_n`. -/
-noncomputable def blockWave {N n : ℕ} (Δ : ℝ) (p : Fin n → ℝ) (x : State N n) : ℂ :=
+noncomputable def blockWave (Δ : ℝ) (p : Fin n → ℝ) (x : State N n) : ℂ :=
   coordinateWave Δ p (positions x)
 
 /-- Extension by zero from the n-particle sector to all configurations. -/
-noncomputable def extendByZero {N n : ℕ} (v : State N n → ℂ) (x : Finset (Fin N)) : ℂ :=
+noncomputable def extendByZero (v : State N n → ℂ) (x : Finset (Fin N)) : ℂ :=
   if h : x.card = n then v ⟨x, h⟩ else 0
 
 /-- The vector in Theorem 3.1, with zero-based positions and zero outside `Ω_n`. -/
-noncomputable def betheVector {N n : ℕ} (Δ : ℝ) (p : Fin n → ℝ) : Finset (Fin N) → ℂ :=
+noncomputable def betheVector (Δ : ℝ) (p : Fin n → ℝ) : Finset (Fin N) → ℂ :=
   extendByZero (blockWave Δ p)
+
+end
 
 /-- Eigenvalue expression when no momentum is zero. -/
 noncomputable def eigenvalueRegular {n : ℕ} (c : ℝ) (p : Fin n → ℝ) : ℂ :=
@@ -91,20 +97,26 @@ noncomputable def eigenvalueZero {n : ℕ} (N : ℕ) (c : ℝ) (p : Fin n → �
 
 theorem anisotropy_lt_neg_one {c : ℝ} (hc : 2 < c) : anisotropy c < -1 := by
   unfold anisotropy
-  nlinarith [sq_nonneg (c - 2)]
+  nlinarith
 
 @[simp] theorem z_zero : z 0 = 1 := by
   simp [z]
 
 theorem z_ne_zero (p : ℝ) : z p ≠ 0 := Complex.exp_ne_zero _
 
-@[simp] theorem extendByZero_coe {N n : ℕ} (v : State N n → ℂ) (x : State N n) :
-    extendByZero v x.1 = v x := by
-  simp only [extendByZero, x.2, ↓reduceDIte]
+section
 
-@[simp] theorem extendByZero_eq_zero {N n : ℕ} (v : State N n → ℂ)
+variable {N n : ℕ} (v : State N n → ℂ)
+
+@[simp] theorem extendByZero_coe (x : State N n) :
+    extendByZero v x.1 = v x := by
+  simp [extendByZero, x.2]
+
+@[simp] theorem extendByZero_eq_zero
     {x : Finset (Fin N)} (hx : x.card ≠ n) : extendByZero v x = 0 := by
-  simp only [extendByZero, hx, ↓reduceDIte]
+  simp [extendByZero, hx]
+
+end
 
 theorem betheVector_eq_zero {N n : ℕ} (Δ : ℝ) (p : Fin n → ℝ)
     {x : Finset (Fin N)} (hx : x.card ≠ n) : betheVector (N := N) Δ p x = 0 :=

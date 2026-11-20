@@ -21,49 +21,51 @@ open PottsDiscontinuity.FK
 
 noncomputable section
 
-private theorem squareLattice_reachable_origin_posX (n : ℕ) :
+section
+
+variable (n : ℕ)
+
+private theorem squareLattice_reachable_origin_posX :
     squareLattice.Reachable (0, 0) ((n : ℤ), 0) := by
   induction n with
   | zero => exact SimpleGraph.Reachable.refl _
   | succ n ih =>
       have hadj : squareLattice.Adj ((n : ℤ), 0) (((n + 1 : ℕ) : ℤ), 0) := by
         rw [squareLattice_adj_iff]
-        left
-        exact ⟨Or.inl (by simp), rfl⟩
+        simp
       exact ih.trans hadj.reachable
 
-private theorem squareLattice_reachable_origin_negX (n : ℕ) :
+private theorem squareLattice_reachable_origin_negX :
     squareLattice.Reachable (0, 0) (-((n : ℤ)), 0) := by
   induction n with
   | zero => exact SimpleGraph.Reachable.refl _
   | succ n ih =>
       have hadj : squareLattice.Adj (-(n : ℤ), 0) (-((n + 1 : ℕ) : ℤ), 0) := by
         rw [squareLattice_adj_iff]
-        left
-        exact ⟨Or.inr (by omega), rfl⟩
+        simp
       exact ih.trans hadj.reachable
 
-private theorem squareLattice_reachable_origin_posY (n : ℕ) :
+private theorem squareLattice_reachable_origin_posY :
     squareLattice.Reachable (0, 0) (0, (n : ℤ)) := by
   induction n with
   | zero => exact SimpleGraph.Reachable.refl _
   | succ n ih =>
       have hadj : squareLattice.Adj (0, (n : ℤ)) (0, ((n + 1 : ℕ) : ℤ)) := by
         rw [squareLattice_adj_iff]
-        right
-        exact ⟨rfl, Or.inl (by simp)⟩
+        simp
       exact ih.trans hadj.reachable
 
-private theorem squareLattice_reachable_origin_negY (n : ℕ) :
+private theorem squareLattice_reachable_origin_negY :
     squareLattice.Reachable (0, 0) (0, -((n : ℤ))) := by
   induction n with
   | zero => exact SimpleGraph.Reachable.refl _
   | succ n ih =>
       have hadj : squareLattice.Adj (0, -(n : ℤ)) (0, -((n + 1 : ℕ) : ℤ)) := by
         rw [squareLattice_adj_iff]
-        right
-        exact ⟨rfl, Or.inr (by omega)⟩
+        simp
       exact ih.trans hadj.reachable
+
+end
 
 private theorem squareLattice_reachable_origin_x (a : ℤ) :
     squareLattice.Reachable (0, 0) (a, 0) := by
@@ -91,7 +93,7 @@ private theorem squareLattice_reachable_all (u v : LatticeVertex) :
   have hy' : squareLattice.Reachable (d.1, 0) (d.1, d.2) := by
     have h := (SimpleGraph.Iso.reachable_iff
       (φ := latticeTranslationIso (d.1, 0)) (u := (0, 0)) (v := (0, d.2))).mpr hy
-    simpa [d, latticeTranslationIso, latticeTranslate] using h
+    simpa [latticeTranslationIso, latticeTranslate] using h
   have h := hx.trans hy'
   have h' : squareLattice.Reachable (latticeTranslate u (0, 0))
       (latticeTranslate u d) := by
@@ -112,8 +114,7 @@ private theorem squareLattice_reachable_finite_actualConnected {u v : LatticeVer
       have hfirst : ActualConnected squareLattice (insert e F) u v := by
         have hAdj : (openGraph squareLattice (insert e F)).Adj u v := by
           apply (openGraph_adj squareLattice (insert e F) u v).mpr
-          change s(u, v) ∈ Subtype.val '' (↑(insert e F) : Set squareLattice.edgeSet)
-          exact ⟨e, by simp [e], rfl⟩
+          exact ⟨e, by simp, rfl⟩
         exact hAdj.reachable
       exact hfirst.trans (actualConnected_mono (Finset.subset_insert e F) hF)
 
@@ -136,22 +137,19 @@ private theorem eventually_edge_lift_origin_boxGraph (e : squareLattice.edgeSet)
         exact hy
       let u : BoxVertex (0, 0) n := ⟨x, hx'⟩
       let v : BoxVertex (0, 0) n := ⟨y, hy'⟩
-      have hAdj : squareLattice.Adj x y := squareLattice.mem_edgeSet.mp he
+      have hAdj := squareLattice.mem_edgeSet.mp he
       have hboxAdj : (boxGraph (0, 0) n).Adj u v := by
-        rw [boxGraph_adj_iff]
-        exact hAdj
-      have hboxEdge : s(u, v) ∈ (boxGraph (0, 0) n).edgeSet :=
+        assumption
+      have hboxEdge :=
         (boxGraph (0, 0) n).mem_edgeSet.mpr hboxAdj
       refine ⟨⟨s(u, v), hboxEdge⟩, ?_⟩
-      simp [u, v]
+      rfl
 
 private theorem freeBoxLimit_allOpen_pos (θ : Parameters)
     (F : Finset squareLattice.edgeSet) :
     Classical.choose (freeBoxLimit_existsUnique θ) (LatticeConfiguration.allOpen F) > 0 := by
   classical
-  have hLift : ∀ᶠ n : ℕ in atTop, ∀ e ∈ F,
-      ∃ f : (boxGraph (0, 0) n).edgeSet,
-        Sym2.map Subtype.val f.1 = e.1 :=
+  have hLift :=
     (eventually_all_finset F).2 fun e _ => eventually_edge_lift_origin_boxGraph e
   obtain ⟨N, hN⟩ := Filter.eventually_atTop.mp hLift
   have hnonempty :
@@ -160,13 +158,12 @@ private theorem freeBoxLimit_allOpen_pos (θ : Parameters)
     refine ⟨Finset.univ, ?_⟩
     intro e he
     let ex := hN N le_rfl e he
-    let f : (boxGraph (0, 0) N).edgeSet := Classical.choose ex
+    let f := Classical.choose ex
     have hfe := Classical.choose_spec ex
     apply Finset.mem_map.mpr
     refine ⟨f, Finset.mem_univ _, ?_⟩
     apply Subtype.ext
-    change Sym2.map Subtype.val f.1 = e.1
-    exact hfe
+    assumption
   have hbox : 0 < ((boxProbabilityMeasure θ (0, 0) N : Measure LatticeConfiguration)
       (LatticeConfiguration.allOpen F)) := by
     rw [boxProbabilityMeasure_allOpen]
@@ -175,13 +172,7 @@ private theorem freeBoxLimit_allOpen_pos (θ : Parameters)
       (LatticeConfiguration.allOpen F) := by
     rw [← ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure] at hbox
     exact ENNReal.coe_pos.mp hbox
-  let ν : ProbabilityMeasure LatticeConfiguration :=
-    Classical.choose (freeBoxLimit_existsUnique θ)
-  have hweak : Tendsto (fun n => boxProbabilityMeasure θ (0, 0) n) atTop (𝓝 ν) :=
-    (Classical.choose_spec (freeBoxLimit_existsUnique θ)).1
-      (fun _ => (0, 0)) (fun n => n)
-      origin_latticeBox_nested origin_latticeBox_exhaustive
-  have hconv := LatticeConfiguration.tendsto_allOpen_of_weak hweak F
+  have hconv := LatticeConfiguration.tendsto_allOpen_of_weak (selected_freeBox_tendsto θ) F
   have hmono (n : ℕ) (hn : N ≤ n) :
       boxProbabilityMeasure θ (0, 0) N (LatticeConfiguration.allOpen F) ≤
         boxProbabilityMeasure θ (0, 0) n (LatticeConfiguration.allOpen F) := by
@@ -190,8 +181,7 @@ private theorem freeBoxLimit_allOpen_pos (θ : Parameters)
     rw [← ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure,
       ← ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure] at h
     exact ENNReal.coe_le_coe.mp h
-  have hlimit : boxProbabilityMeasure θ (0, 0) N
-      (LatticeConfiguration.allOpen F) ≤ ν (LatticeConfiguration.allOpen F) :=
+  have hlimit :=
     le_of_tendsto_of_tendsto tendsto_const_nhds hconv
       (Filter.eventually_atTop.2 ⟨N, fun n hn => hmono n hn⟩)
   exact lt_of_lt_of_le hboxNN hlimit
@@ -203,21 +193,19 @@ theorem freeBoxLimit_connection_positive (θ : Parameters) (u v : LatticeVertex)
       LatticeConfiguration).toMeasure).real (connectionEvent u v) > 0 := by
   obtain ⟨F, hF⟩ := exists_finite_connection_witness u v
   have hsubset : LatticeConfiguration.allOpen F ⊆ connectionEvent u v := by
-    intro ω hω
-    exact ⟨F, hF, hω⟩
-  let ν : ProbabilityMeasure LatticeConfiguration :=
+    tauto
+  let ν :=
     Classical.choose (freeBoxLimit_existsUnique θ)
   have hbox := freeBoxLimit_allOpen_pos θ F
-  have hmono : ν.toMeasure (LatticeConfiguration.allOpen F) ≤
-      ν.toMeasure (connectionEvent u v) :=
+  have hmono :=
     measure_mono (μ := ν.toMeasure) hsubset
   have hpos : 0 < ν.toMeasure (connectionEvent u v) := by
     have hleft : 0 < ν.toMeasure (LatticeConfiguration.allOpen F) := by
       rw [← ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure]
-      exact ENNReal.coe_pos.mpr (by simpa only [Prod.forall, gt_iff_lt, ν] using hbox)
+      positivity
     exact lt_of_lt_of_le hleft hmono
-  simpa only [Prod.forall, Measure.real_def, gt_iff_lt, ν] using
-    ENNReal.toReal_pos (ne_of_gt hpos) (measure_ne_top _ _)
+  simpa [Measure.real_def] using
+      ENNReal.toReal_pos (ne_of_gt hpos) (measure_ne_top _ _)
 
 /-- Every free infinite-volume limit has strictly positive probability of a
 finite-distance connection. -/
@@ -226,18 +214,7 @@ theorem isRCInfiniteVolumeLimit_connection_positive (θ : Parameters)
     (hμ : PottsDiscontinuity.IsRCInfiniteVolumeLimit
       θ.toP θ.toQ 0 μ) (u v : LatticeVertex) :
     μ.real (connectionEvent u v) > 0 := by
-  let ν : ProbabilityMeasure LatticeConfiguration :=
-    Classical.choose (freeBoxLimit_existsUnique θ)
-  have hweak : Tendsto (fun n => boxProbabilityMeasure θ (0, 0) n) atTop (𝓝 ν) :=
-    (Classical.choose_spec (freeBoxLimit_existsUnique θ)).1
-      (fun _ => (0, 0)) (fun n => n)
-      origin_latticeBox_nested origin_latticeBox_exhaustive
-  have hν : PottsDiscontinuity.IsRCInfiniteVolumeLimit
-      θ.toP θ.toQ 0 ν.toMeasure :=
-    isRCInfiniteVolumeLimit_of_freeBox_tendsto θ ν hweak
-  have hEq : μ = ν.toMeasure :=
-    PottsDiscontinuity.rc_limit_unique θ.toP θ.toQ 0 μ ν.toMeasure hμ hν
-  rw [hEq]
+  rw [free_limit_eq_selected θ μ hμ]
   exact freeBoxLimit_connection_positive θ u v
 
 end

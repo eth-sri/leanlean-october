@@ -29,8 +29,7 @@ def ribbonBoundaryOf (hN : Even N) (hM : Even M) (A : RCConfig N M)
 
 @[simp] theorem ribbonBoundaryOf_step (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (d : DirectedDart (checkerArrows N M)) :
-    ribbonBoundaryOf hN hM A (ribbonBoundary hN hM A d) = ribbonBoundaryOf hN hM A d := by
-  exact Quotient.sound (Equiv.Perm.SameCycle.rfl.apply_left)
+    ribbonBoundaryOf hN hM A (ribbonBoundary hN hM A d) = ribbonBoundaryOf hN hM A d := Quotient.sound (Equiv.Perm.SameCycle.rfl.apply_left)
 
 /-- Signed boundary chains of the capped ribbon faces, on the indexed open edges. -/
 def ribbonFaceBoundary (hN : Even N) (hM : Even M) (A : RCConfig N M) :
@@ -48,7 +47,7 @@ theorem ribbonFaceBoundary_kernel_pairing (hN : Even N) (hM : Even M) (A : RCCon
   obtain ⟨⟨v, b⟩, rfl⟩ := (ribbonEndEquiv hN hM).surjective d
   rw [ribbonEdgePairing_end]
   cases ha : A v
-  · rw [Bool.false_xor]
+  · simp
   · have he := congrFun f.property (⟨v, ha⟩ : OpenDiamondEdge A)
     change f.val (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (v, true))) -
       f.val (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (v, false))) = 0 at he

@@ -11,21 +11,27 @@ namespace PottsDiscontinuity.FK
 
 noncomputable section
 
+section
+
+variable
+  {V W : Type*} (f : V ↪ W)
+    (ξ : BoundaryCondition W)
+
 /-- Pull back an arbitrary boundary partition along an injective vertex map. -/
-def isolatedExtensionPullbackBoundary {V W : Type*} (f : V ↪ W)
-    (ξ : BoundaryCondition W) : BoundaryCondition V where
+def isolatedExtensionPullbackBoundary : BoundaryCondition V where
   boundary := f ⁻¹' ξ.boundary
   partition := Setoid.comap f ξ.partition
   supported := by
     intro u v huv
     have h := (Setoid.comap_rel f ξ.partition u v).mp huv
     rcases ξ.supported h with heq | ⟨hu, hv⟩
-    · exact Or.inl (f.injective heq)
-    · exact Or.inr ⟨hu, hv⟩
+    · simp_all
+    simp_all
 
-def isolatedExtensionExteriorBoundaryClasses {V W : Type*} (f : V ↪ W)
-    (ξ : BoundaryCondition W) :=
+def isolatedExtensionExteriorBoundaryClasses :=
   {C : Quotient ξ.partition // ∀ v : V, Quotient.mk ξ.partition (f v) ≠ C}
+
+end
 
 def isolatedBoundaryComponentLabel {V W : Type*} (G : SimpleGraph V)
     (f : V ↪ W) (ξ : BoundaryCondition W) (A : Configuration G) (x : W) :
@@ -52,7 +58,7 @@ private theorem isolatedBoundaryLabel_of_hit {V W : Type*} (G : SimpleGraph V)
   apply boundary_component G (isolatedExtensionPullbackBoundary f ξ) A
   apply (Setoid.comap_rel f ξ.partition _ _).mpr
   let hhit : ∃ z : V, ξ.partition.r (f z) x := ⟨u, hux⟩
-  have hchoose : ξ.partition.r (f (Classical.choose hhit)) x :=
+  have hchoose :=
     Classical.choose_spec hhit
   exact Setoid.trans' ξ.partition hchoose (Setoid.symm' ξ.partition hux)
 
@@ -66,7 +72,7 @@ private theorem isolatedBoundaryLabel_of_no_hit {V W : Type*} (G : SimpleGraph V
         exact ⟨u, Quotient.exact heq⟩⟩ := by
   classical
   unfold isolatedBoundaryComponentLabel
-  rw [dite_eq_right hx]
+  simp_all
 
 private theorem actualConnected_isolatedExtension_iff_explicit
     {V W : Type*} (G : SimpleGraph V) (f : V ↪ W) (A : Configuration G)
@@ -122,7 +128,7 @@ def isolatedBoundaryComponentRelation {V W : Type*} (G : SimpleGraph V)
     | symm x y hxy ih =>
         rcases ih with hξ | ⟨u, v, hxu, huv, hvy⟩
         · exact Or.inl (Setoid.symm' ξ.partition hξ)
-        · exact Or.inr ⟨v, u, Setoid.symm' ξ.partition hvy, Setoid.symm' (componentSetoid G (isolatedExtensionPullbackBoundary f ξ) A) huv, Setoid.symm' ξ.partition hxu⟩
+        tauto
     | trans x y z hxy hyz ih₁ ih₂ =>
         rcases ih₁ with hxy | ⟨u, v, hxu, huv, hvy⟩
         · rcases ih₂ with hyz | ⟨u', v', hyu', hu'v', hv'z⟩
@@ -130,11 +136,10 @@ def isolatedBoundaryComponentRelation {V W : Type*} (G : SimpleGraph V)
           · exact Or.inr ⟨u', v', Setoid.trans' ξ.partition hxy hyu', hu'v', hv'z⟩
         · rcases ih₂ with hyz | ⟨u', v', hyu', hu'v', hv'z⟩
           · exact Or.inr ⟨u, v, hxu, huv, Setoid.trans' ξ.partition hvy hyz⟩
-          · have hvu' : (isolatedExtensionPullbackBoundary f ξ).partition.r v u' :=
+          · have hvu' :=
               (Setoid.comap_rel f ξ.partition v u').mpr
                 (Setoid.trans' ξ.partition hvy hyu')
-            have hcomp :
-                (componentSetoid G (isolatedExtensionPullbackBoundary f ξ) A).r v u' :=
+            have hcomp :=
               boundary_component G (isolatedExtensionPullbackBoundary f ξ) A hvu'
             exact Or.inr ⟨u, v', hxu, Setoid.trans' (componentSetoid G (isolatedExtensionPullbackBoundary f ξ) A) huv (Setoid.trans' (componentSetoid G (isolatedExtensionPullbackBoundary f ξ) A) hcomp hu'v'), hv'z⟩
   · intro h
@@ -162,10 +167,7 @@ def isolatedBoundaryComponentRelation {V W : Type*} (G : SimpleGraph V)
   · intro h
     rcases h with hξ | ⟨u, v, hxu, huv, hvy⟩
     · by_cases hx : ∃ z : V, ξ.partition.r (f z) x
-      · have hy : ∃ z : V, ξ.partition.r (f z) y := by
-          rcases hx with ⟨z, hzx⟩
-          exact ⟨z, Setoid.trans' ξ.partition hzx hξ⟩
-        rw [isolatedBoundaryLabel_of_hit G f ξ A (Classical.choose hx) x
+      · rw [isolatedBoundaryLabel_of_hit G f ξ A (Classical.choose hx) x
               (Classical.choose_spec hx),
             isolatedBoundaryLabel_of_hit G f ξ A (Classical.choose hx) y
               (Setoid.trans' ξ.partition (Classical.choose_spec hx) hξ)]
@@ -188,8 +190,7 @@ def isolatedBoundaryComponentRelation {V W : Type*} (G : SimpleGraph V)
               (Classical.choose_spec hx),
             isolatedBoundaryLabel_of_hit G f ξ A (Classical.choose hy) y
               (Classical.choose_spec hy)] at h
-        have hq : Quotient.mk _ (Classical.choose hx) =
-            Quotient.mk _ (Classical.choose hy) := Sum.inl.inj h
+        have hq := Sum.inl.inj h
         have huv := Quotient.exact hq
         exact Or.inr ⟨Classical.choose hx, Classical.choose hy,
           Setoid.symm' ξ.partition (Classical.choose_spec hx), huv,
@@ -197,16 +198,16 @@ def isolatedBoundaryComponentRelation {V W : Type*} (G : SimpleGraph V)
       · rw [isolatedBoundaryLabel_of_hit G f ξ A (Classical.choose hx) x
               (Classical.choose_spec hx),
             isolatedBoundaryLabel_of_no_hit G f ξ A y hy] at h
-        exact False.elim (Sum.inl_ne_inr h)
+        trivial
     · by_cases hy : ∃ v : V, ξ.partition.r (f v) y
       · rw [isolatedBoundaryLabel_of_no_hit G f ξ A x hx,
             isolatedBoundaryLabel_of_hit G f ξ A (Classical.choose hy) y
               (Classical.choose_spec hy)] at h
-        exact False.elim (Sum.inr_ne_inl h)
+        trivial
       · rw [isolatedBoundaryLabel_of_no_hit G f ξ A x hx,
             isolatedBoundaryLabel_of_no_hit G f ξ A y hy] at h
         have hsub := Sum.inr.inj h
-        have hq : Quotient.mk ξ.partition x = Quotient.mk ξ.partition y :=
+        have hq :=
           congrArg Subtype.val hsub
         exact Or.inl (Quotient.exact hq)
 
@@ -226,9 +227,7 @@ def isolatedBoundaryComponentRelation {V W : Type*} (G : SimpleGraph V)
       exact (Quotient.sound hrel).trans hx
     refine ⟨x, ?_⟩
     rw [isolatedBoundaryLabel_of_no_hit G f ξ A x hno]
-    congr 1
-    apply Subtype.ext
-    exact hx
+    aesop
 
 /-- The component classes of an isolated vertex extension split into the
 components represented by the original vertices and the exterior boundary

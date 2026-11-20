@@ -43,8 +43,7 @@ lemma actualConnected_embeddedEdges (f : V ↪ LatticeVertex) (hG : G.map f ≤ 
   unfold ActualConnected at hh
   rw [← openGraph_subgraphConfigurationEmbedding hG] at hh
   change ActualConnected squareLattice (embeddedConfigurationEmbedding G squareLattice f hG A) _ _ at hh
-  rw [embeddedConfigurationEmbedding_eq_map] at hh
-  exact hh
+  simpa [embeddedConfigurationEmbedding_eq_map] using hh
 
 lemma embeddedConnectivityEvent_subset (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice)
     (u v : V) : embeddedCylinderEvent G f hG (connectivityEvent G u v) ⊆

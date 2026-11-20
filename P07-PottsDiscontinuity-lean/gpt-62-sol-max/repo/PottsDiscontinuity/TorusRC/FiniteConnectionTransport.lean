@@ -51,7 +51,7 @@ theorem actualConnected_embeddedRestriction {V W : Type*} {G : SimpleGraph V}
     (h : ActualConnected G (embeddedConfigurationRestriction G H f hGH A) u v) :
     ActualConnected H A (f u) (f v) := by
   let B := embeddedConfigurationRestriction G H f hGH A
-  have hm : ActualConnected (G.map f) (isolatedExtensionConfigurationEquiv G f B) (f u) (f v) :=
+  have hm :=
     (actualConnected_isolatedExtension G f B u v).mpr h
   have he : ActualConnected H (embeddedConfigurationEmbedding G H f hGH B) (f u) (f v) := by
     change (openGraph H (subgraphConfigurationEmbedding hGH

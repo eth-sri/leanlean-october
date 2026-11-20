@@ -68,7 +68,7 @@ theorem loopSum_reorient_edges (f : Dart N M → ℤ) (q : DirectedLoop ω₀ s 
   rw [Finset.sum_filter, ← (edgeReorientEquiv ω₀ ω₁).sum_comp, Finset.sum_filter]
   refine Finset.sum_congr rfl fun d _ => ?_
   rw [← loopReorientEquiv_apply ω₀ ω₁ s h₀ h₁ d]
-  simp only [Equiv.apply_eq_iff_eq, edgeReorientEquiv_val]
+  simp
 
 /-- An edge-antisymmetric function changes sign exactly when its loop is reversed. -/
 theorem edgeReorient_value (f : Dart N M → ℤ)
@@ -82,8 +82,7 @@ theorem edgeReorient_value (f : Dart N M → ℤ)
   · simp only [hd, ite_true]
     rw [arrowDart_dartEdge ω₁ ⟨d.val, hd⟩]
   · have hd' : dartOut ω₁ (edgeReverse d.val) = true := by
-      rw [dartOut_edgeReverse, Bool.eq_false_iff.mpr hd]
-      rfl
+      simp [*]
     simp only [Bool.eq_false_iff.mpr hd, Bool.false_eq_true, ite_false]
     rw [← dartEdge_edgeReverse d.val, arrowDart_dartEdge ω₁ ⟨edgeReverse d.val, hd'⟩, hf]
 
@@ -101,9 +100,8 @@ theorem loopSum_reorient (f : Dart N M → ℤ) (hf : ∀ d, f (edgeReverse d) =
       ∑ d : DirectedDart ω₀ with directedLoopOf ω₀ s h₀ d = q,
         if loopOrientation ω₀ s h₀ ω₁ h₁ q then f d.val else -f d.val := by
     refine Finset.sum_congr rfl fun d hd => ?_
-    rw [← edgeReorientEquiv_val ω₀ ω₁ d]
-    rw [edgeReorient_value ω₀ ω₁ s h₀ h₁ f hf]
-    rw [(Finset.mem_filter.mp hd).2]
+    rw [← edgeReorientEquiv_val ω₀ ω₁ d, edgeReorient_value ω₀ ω₁ s h₀ h₁ f hf]
+    grind
   rw [hv]
   by_cases hq : loopOrientation ω₀ s h₀ ω₁ h₁ q = true
   · simp only [hq, ite_true]

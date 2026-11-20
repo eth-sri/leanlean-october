@@ -77,14 +77,12 @@ theorem partitionFunction_eq_rcPartition (θ : Parameters) (S : Finset (ℤ × �
   unfold partitionFunction FiniteProbability.partition
   symm
   refine Finset.sum_bij (fun ω _ => boolConfigurationEquiv _ ω) ?_ ?_ ?_ ?_
-  · intro ω _
-    simp only [Finset.mem_univ]
-  · intro ω _ η _ h
-    exact (boolConfigurationEquiv _).injective h
+  · grind
+  · simp
   · intro A _
     refine ⟨(boolConfigurationEquiv _).symm A, ?_,
       (boolConfigurationEquiv _).apply_symm_apply A⟩
-    simp only [Finset.mem_univ]
+    simp
   · intro ω _
     exact (weight_eq_rcWeight θ S i ω).symm
 

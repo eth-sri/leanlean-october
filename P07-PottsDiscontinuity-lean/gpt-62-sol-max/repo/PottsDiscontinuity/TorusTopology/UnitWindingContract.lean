@@ -43,8 +43,8 @@ theorem U_one_loop_homology_structure
         rw [ha,hv,mul_zero] at hh
         exact hh rfl
     · exact Or.inl
-  · rw [ha,h₁,mul_one]
-  · rw [ha,h₂,mul_neg_one]
+  · simp [ha, h₁]
+  · simp [ha, h₂]
 
 /-- The source homological winding-loop count is exactly two in the U=1 sector. -/
 theorem windingLoopCount_eq_two_of_U_eq_one

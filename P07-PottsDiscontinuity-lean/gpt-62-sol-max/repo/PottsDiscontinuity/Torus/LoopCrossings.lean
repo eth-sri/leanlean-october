@@ -33,23 +33,28 @@ theorem verticalCross_edgeReverse (j : Fin M) (d : Dart N M) :
   cases p <;> simp only [verticalCross, edgeReverse, prv, nxt,
     Equiv.symm_apply_apply, neg_zero, neg_ite, neg_neg]
 
+section
+
+variable
+  (ω : ArrowConfig N M) (s : Smoothing N M)
+    (h : CompatibleConfig ω s)
+
 /-- A genuine finite sum over the directed edges in one cyclic orbit. -/
-noncomputable def loopSum (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (f : Dart N M → ℤ) (q : DirectedLoop ω s h) : ℤ := by
+noncomputable def loopSum (f : Dart N M → ℤ) (q : DirectedLoop ω s h) : ℤ := by
   classical
   exact ∑ d : DirectedDart ω with directedLoopOf ω s h d = q, f d.val
 
 /-- The directed loop classes partition the indexed edge set. -/
-theorem sum_loopSum (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (f : Dart N M → ℤ) :
+theorem sum_loopSum (f : Dart N M → ℤ) :
     ∑ q : DirectedLoop ω s h, loopSum ω s h f q = ∑ d : DirectedDart ω, f d.val := by
   classical
   exact Finset.sum_fiberwise univ (directedLoopOf ω s h) (fun d => f d.val)
 
 /-- The algebraic vertical intersection number of one loop with a fixed reference row. -/
-noncomputable def loopVertical (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (j : Fin M) (q : DirectedLoop ω s h) : ℤ :=
+noncomputable def loopVertical (j : Fin M) (q : DirectedLoop ω s h) : ℤ :=
   loopSum ω s h (verticalCross j) q
+
+end
 
 theorem verticalCross_arrowDart (ω : ArrowConfig N M) (j : Fin M)
     (v : Fin N × Fin M) (b : Bool) :
@@ -78,17 +83,23 @@ theorem sum_verticalCross (ω : ArrowConfig N M) (j : Fin M) :
   simp only [ArrowConfig.rowUp, card_filter, Nat.cast_sum, Nat.cast_ite,
     Nat.cast_one, Nat.cast_zero]
 
+section
+
+variable
+  (ω : ArrowConfig N M) (s : Smoothing N M)
+    (h : CompatibleConfig ω s) (j : Fin M)
+
 /-- The source's signed row-flux identity, for the actual cyclic loop carrier. -/
-theorem sum_loopVertical (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (j : Fin M) :
+theorem sum_loopVertical :
     ∑ q : DirectedLoop ω s h, loopVertical ω s h j q = 2 * (ω.absUp : ℤ) - N := by
   change (∑ q : DirectedLoop ω s h, loopSum ω s h (verticalCross j) q) = _
   rw [sum_loopSum, sum_verticalCross, rowUp_eq_absUp h.iceRule]
 
 /-- Total absolute intersection count, prior to division by two in the definition of U. -/
-noncomputable def verticalMass (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (j : Fin M) : ℕ :=
+noncomputable def verticalMass : ℕ :=
   ∑ q : DirectedLoop ω s h, (loopVertical ω s h j q).natAbs
+
+end
 
 /-- A configuration with `N/2-r` up arrows has at least `2r` absolute vertical loop crossings.
 This is the counting part of the up-arrow counting argument in the proof of Corollary 3.13
@@ -96,7 +107,7 @@ This is the counting part of the up-arrow counting argument in the proof of Coro
 theorem two_mul_sector_le_verticalMass (hN : Even N) (ω : ArrowConfig N M)
     (s : Smoothing N M) (h : CompatibleConfig ω s) (j : Fin M) {r : ℕ}
     (hr : ω.absUp + r = N / 2) : 2 * r ≤ verticalMass ω s h j := by
-  have he : N % 2 = 0 := by rcases hN with ⟨k, hk⟩; omega
+  have he : N % 2 = 0 := by grind
   have hflux := sum_loopVertical ω s h j
   have hs : (∑ q : DirectedLoop ω s h, loopVertical ω s h j q) = -(2 * (r : ℤ)) := by
     omega
@@ -105,7 +116,7 @@ theorem two_mul_sector_le_verticalMass (hN : Even N) (ω : ArrowConfig N M)
   rw [hs, abs_neg, abs_of_nonneg (by positivity)] at hb
   have hm : (verticalMass ω s h j : ℤ) =
       ∑ q : DirectedLoop ω s h, |loopVertical ω s h j q| := by
-    simp only [verticalMass, Nat.cast_sum, Int.natCast_natAbs]
+    simp [verticalMass]
   rw [← hm] at hb
   exact_mod_cast hb
 

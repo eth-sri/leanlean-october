@@ -29,7 +29,7 @@ theorem exists_crossing_family_indexed_by_vertical_phases
   let X (s : VerticalPhaseIndex hN hM ⟨0,hMp⟩ A) := x s.1 s.2
   refine ⟨X,fun s => ⟨((hx s.1).1 s.2).1,((hx s.1).1 s.2).2.2⟩,?_⟩
   rintro ⟨q,i⟩ ⟨r,k⟩ he
-  have hr : (diamondOpenGraph hN hM true (torusRCSeamClosed A)).Reachable (x q i) (x r k) :=
+  have hr :=
     SimpleGraph.ConnectedComponent.eq.1 he
   have hro := SimpleGraph.ConnectedComponent.sound (hr.mono (seamClosed_graph_le hN hM A))
   have hqr : q=r := positive_vertical_loops_primalCluster_injective hN hM ⟨0,hMp⟩ A

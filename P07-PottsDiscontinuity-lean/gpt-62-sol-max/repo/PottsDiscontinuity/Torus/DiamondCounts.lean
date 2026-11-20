@@ -20,10 +20,9 @@ def faceFlipEquiv (hN : Even N) (c : Bool) : FaceVertex N M c ≃ FaceVertex N M
   invFun v := ⟨(prv v.val.1, v.val.2), by rw [checker_prv_x hN, v.property, Bool.not_not]⟩
   left_inv v := by
     apply Subtype.ext
-    simp only [nxt, prv, Equiv.symm_apply_apply]
+    simp only [Equiv.symm_apply_apply]
   right_inv v := by
-    apply Subtype.ext
-    simp only [nxt, prv, Equiv.apply_symm_apply]
+    grind
 
 /-- Each of the primal and dual graphs has exactly NM/2 face vertices. -/
 theorem card_faceVertex (hN : Even N) (c : Bool) :

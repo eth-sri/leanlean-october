@@ -27,7 +27,7 @@ lemma windingY_seamClosed (A : RCConfig N M)
   simp [diamondSeamCrossY,he]
 
 lemma seamOnly_row (e : OpenDiamondEdge (seamOnlyConfig N M)) : e.val.2.val=0 := by
-  simpa only [seamOnlyConfig,decide_eq_true_eq] using e.property
+  simpa [seamOnlyConfig] using e.property
 
 /-- A seam-only return from the top to the bottom has signed winding one. -/
 theorem seamReturn_windingY (hN : Even N) (hM : Even M) (hMlarge : 1 < M)
@@ -73,7 +73,6 @@ theorem closedWalkPair_windingY (hN : Even N) (hM : Even M) (hMlarge : 1 < M)
   rw [sum_add_distrib]
   change diamondWindingY _ (fullDiamondChainExtension _ p.chain) +
     diamondWindingY _ (fullDiamondChainExtension _ s.chain) = 1
-  rw [windingY_fullChainExtension,windingY_fullChainExtension,windingY_seamClosed,
-    seamReturn_windingY hN hM hMlarge hu hv s,zero_add]
+  simp [windingY_fullChainExtension, windingY_seamClosed, seamReturn_windingY hN hM hMlarge hu hv s]
 
 end PottsDiscontinuity.TorusExploration

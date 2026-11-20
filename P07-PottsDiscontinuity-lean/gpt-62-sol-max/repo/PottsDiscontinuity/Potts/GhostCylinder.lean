@@ -26,36 +26,18 @@ local instance ghostCylinderLiteralBondDecidableEq (V : Finset (ℤ × ℤ)) :
 local instance ghostCylinderBoundaryVertexFintype (V : Finset (ℤ × ℤ)) :
     Fintype (BoundaryVertex V) := Fintype.ofFinite _
 
-/-- The literal colouring correspondence preserves every observed spin. -/
-def literalCylinderEquiv (q : ℕ) (V : Finset (ℤ × ℤ))
-    (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ)) (ω : LiteralBond V → Bool)
-    {A : Type*} (v : A → ↥(V : Set (ℤ × ℤ))) (ξ : A → Set.Icc 1 q) :
-    {σ : SpinConfiguration q V //
-      (∀ e, ω e = true → literalAgreement q V i σ e) ∧ ∀ a, σ (v a) = ξ a} ≃
-      {τ : PinnedClusterColoring (ghostOpenGraph V ω).reachableSetoid none (boundaryColor q i hi) //
-        ∀ a, τ.val.val (some (v a)) = ξ a} :=
-  (Equiv.subtypeSubtypeEquivSubtypeInter
-    (fun σ : SpinConfiguration q V => ∀ e, ω e = true → literalAgreement q V i σ e)
-    (fun σ => ∀ a, σ (v a) = ξ a)).symm.trans
-      ((literalColoringEquiv q V i hi ω).subtypeEquiv
-        (p := fun σ => ∀ a, σ.val (v a) = ξ a)
-        (q := fun τ => ∀ a, τ.val.val (some (v a)) = ξ a) (fun _ => Iff.rfl))
-
-/-- Number of original spin configurations realizing a compatible cylinder
-under the literal ghost-bond constraints. -/
-theorem card_literalAgreement_cylinder (q : ℕ) (V : Finset (ℤ × ℤ))
-    (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ)) (ω : LiteralBond V → Bool)
-    {A : Type*} (v : A → ↥(V : Set (ℤ × ℤ))) (ξ : A → Set.Icc 1 q) :
-    Nat.card {σ : SpinConfiguration q V //
-      (∀ e, ω e = true → literalAgreement q V i σ e) ∧ ∀ a, σ (v a) = ξ a} =
-      if (ghostOpenGraph V ω).reachableSetoid.comap (markedMap (some ∘ v) none) ≤
-          Setoid.ker (markedMap ξ (boundaryColor q i hi)) then
-        q ^ (ghostComponentCount V ω -
-          observedClassCount (ghostOpenGraph V ω).reachableSetoid (markedMap (some ∘ v) none))
-      else 0 := by
-  rw [Nat.card_congr (literalCylinderEquiv q V i hi ω v ξ),
-    card_pinnedClusterColoring_cylinder, card_pottsColors]
-  rfl
+/-- Every colouring with a prescribed ghost spin is the extension of a unique literal colouring. -/
+private def ghostExtensionEquiv {q : ℕ} {V : Finset (ℤ × ℤ)} (c : Set.Icc 1 q) :
+    SpinConfiguration q V ≃ {τ : Option ↥(V : Set (ℤ × ℤ)) → Set.Icc 1 q // τ none = c} where
+  toFun σ := ⟨ghostExtension c σ, rfl⟩
+  invFun τ v := τ.val (some v)
+  left_inv _ := rfl
+  right_inv τ := by
+    apply Subtype.ext
+    funext a
+    cases a with
+    | none => exact τ.property.symm
+    | some a => rfl
 
 /-- The original-spin cylinder mass under uniform ghost-pinned component
 colours depends only on the marked connection partition. -/
@@ -66,32 +48,32 @@ theorem ghostColoringProbability_cylinder (q : ℕ) (hq : 2 ≤ q) (V : Finset (
       if ∀ a, σ (v a) = ξ a then ghostColoringProbability q V i hi ω σ else 0) =
       pinnedClusterCylinderProbability (ghostOpenGraph V ω).reachableSetoid
         (some ∘ v) ξ none (boundaryColor q i hi) := by
-  have hq0 : (q : ℝ) ≠ 0 := by exact_mod_cast (show q ≠ 0 by omega)
-  have ht (σ : SpinConfiguration q V) :
-      (if ∀ a, σ (v a) = ξ a then ghostColoringProbability q V i hi ω σ else 0) =
-      if (∀ e, ω e = true → literalAgreement q V i σ e) ∧ ∀ a, σ (v a) = ξ a then
-        ((q : ℝ) ^ (ghostComponentCount V ω - 1))⁻¹ else 0 := by
-    unfold ghostColoringProbability
-    simp only [← literalAgreement_iff_ghost q V i hi]
-    by_cases ho : ∀ a, σ (v a) = ξ a <;> simp [ho]
-  simp only [ht, Finset.sum_ite, Finset.sum_const_zero, add_zero, Finset.sum_const,
-    nsmul_eq_mul, ← Fintype.card_subtype, ← Nat.card_eq_fintype_card,
-    card_literalAgreement_cylinder q V i hi ω v ξ, pinnedClusterCylinderProbability, card_pottsColors]
-  by_cases hξ : (ghostOpenGraph V ω).reachableSetoid.comap (markedMap (some ∘ v) none) ≤
-      Setoid.ker (markedMap ξ (boundaryColor q i hi))
-  · simp only [hξ, ↓reduceIte, Nat.cast_pow]
-    have hm := observedClassCount_marked_pos (ghostOpenGraph V ω).reachableSetoid (some ∘ v) none
-    have hmk : observedClassCount (ghostOpenGraph V ω).reachableSetoid
-        (markedMap (some ∘ v) none) ≤ ghostComponentCount V ω :=
-      observedClassCount_le (ghostOpenGraph V ω).reachableSetoid (markedMap (some ∘ v) none)
-    have he : ghostComponentCount V ω -
-          observedClassCount (ghostOpenGraph V ω).reachableSetoid (markedMap (some ∘ v) none) =
-        (ghostComponentCount V ω - 1) -
-          (observedClassCount (ghostOpenGraph V ω).reachableSetoid (markedMap (some ∘ v) none) - 1) := by
-      omega
-    rw [he, pow_sub₀ _ hq0 (Nat.sub_le_sub_right hmk 1), mul_right_comm,
-      mul_inv_cancel₀ (pow_ne_zero _ hq0), one_mul]
-  · simp only [hξ, ↓reduceIte, Nat.cast_zero, zero_mul]
+  let R := (ghostOpenGraph V ω).reachableSetoid
+  let c := boundaryColor q i hi
+  let : Nonempty (Set.Icc 1 q) := ⟨c⟩
+  have hq0 : (q : ℝ) ≠ 0 := by positivity
+  have scale (k : ℕ) (hk : 0 < k) : (q : ℝ) * ((q : ℝ)^k)⁻¹ = ((q : ℝ)^(k-1))⁻¹ := by
+    rw [← Nat.sub_add_cancel (by omega : 1 ≤ k), pow_succ]
+    simp_all
+  have hmul (σ : SpinConfiguration q V) : (q : ℝ) * clusterColoringProbability R (ghostExtension c σ) =
+      ghostColoringProbability q V i hi ω σ := by
+    simp only [clusterColoringProbability, ghostColoringProbability, card_pottsColors, mul_ite_zero]
+    change (if _ then _ else _) = (if _ then _ else _)
+    split_ifs
+    · exact scale _ (ghostComponentCount_pos V ω)
+    rfl
+  have hp : pinnedClusterCylinderProbability R (some ∘ v) ξ none c =
+      (q : ℝ) * clusterCylinderProbability R (markedMap (some ∘ v) none) (markedMap ξ c) := by
+    simp only [pinnedClusterCylinderProbability, clusterCylinderProbability, card_pottsColors, mul_ite_zero]
+    split_ifs
+    · exact (scale _ (observedClassCount_marked_pos R (some ∘ v) none)).symm
+    · rfl
+  rw [hp, ← clusterColoringProbability_cylinder, Finset.mul_sum]
+  simp_rw [markedMap_agreement_iff, mul_ite_zero, ite_and]
+  conv_rhs => rw [← Finset.sum_filter, Finset.sum_subtype (p := fun τ => τ none = c) _ (by simp), ← (ghostExtensionEquiv (V := V) c).sum_comp]
+  apply Finset.sum_congr rfl
+  intro σ _
+  simp [ghostExtensionEquiv, ghostExtension, hmul]
 
 /-- Exact cylinder formula for the frozen finite Potts law with its literal
 one-field-term-per-boundary-vertex Hamiltonian and positive boundary colour. -/

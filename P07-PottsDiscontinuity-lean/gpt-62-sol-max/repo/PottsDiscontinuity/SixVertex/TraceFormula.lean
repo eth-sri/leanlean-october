@@ -56,7 +56,7 @@ theorem sum_prod_rows (G : Fin M → (Fin N → Bool) → ℝ) :
         Fintype.sum_equiv e _ _ (fun H => rfl)
     _ = ∏ j, ∑ h : Fin N → Bool, G j h := by
         have := Finset.sum_prod_piFinset (univ : Finset (Fin N → Bool)) G
-        rwa [Fintype.piFinset_univ] at this
+        assumption
 
 /-- The key decomposition of the sum over arrow configurations into rows. -/
 theorem sum_weight_mul (c : ℝ) (Φ : (Fin M → Finset (Fin N)) → ℝ) :
@@ -95,7 +95,7 @@ theorem prod_prv_eq_prod_nxt {S : Type*} (A : S → S → ℝ) (x : Fin M → S)
       = ∏ j : Fin M, A (x (prv (finRotate M j))) (x (finRotate M j)) :=
         (Equiv.prod_comp (finRotate M) (fun j => A (x (prv j)) (x j))).symm
     _ = ∏ j : Fin M, A (x j) (x (finRotate M j)) :=
-        Finset.prod_congr rfl fun j _ => by simp only [prv, Equiv.symm_apply_apply]
+        Finset.prod_congr rfl fun j _ => by simp only [Equiv.symm_apply_apply]
 
 /-! ### Blocks -/
 
@@ -142,11 +142,10 @@ theorem trace_block_pow_eq_sum_chain (hM : 0 < M) (c : ℝ) (n : ℕ) :
     Matrix.trace ((transferBlock N c n) ^ M) = ∑ x : Fin M → Finset (Fin N),
       if (∀ j, (x j).card = n) then ∏ j, transferMatrix N c (x (prv j)) (x j) else 0 := by
   obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hM.ne'
-  rw [trace_pow_succ_eq_sum_chain]
-  rw [← Finset.sum_filter]
+  rw [trace_pow_succ_eq_sum_chain, ← Finset.sum_filter]
   rw [Finset.sum_subtype (Finset.univ.filter fun x : Fin (m + 1) → Finset (Fin N) =>
     ∀ j, (x j).card = n) (p := fun x : Fin (m + 1) → Finset (Fin N) => ∀ j, (x j).card = n)
-    (by intro x; simp)]
+    (by simp)]
   rw [← (Equiv.subtypePiEquivPi (β := fun _ : Fin (m + 1) => Finset (Fin N))
     (p := fun _ s => s.card = n)).sum_comp]
   refine Finset.sum_congr rfl fun x _ => ?_
@@ -161,24 +160,9 @@ theorem Z6Vn_eq_trace_block (hN : 0 < N) (hM : 0 < M) (c : ℝ) (n : ℕ) :
   refine Finset.sum_congr rfl fun x _ => ?_
   by_cases hp : ∏ j, transferMatrix N c (x (prv j)) (x j) = 0
   · rw [hp]
-    simp only [ite_self]
+    simp
   · have hc := card_const_of_prod_ne_zero hM c x hp
-    by_cases h0 : (x ⟨0, hM⟩).card = n
-    · have : ∀ j, (x j).card = n := fun j => (hc j).trans h0
-      simp [h0, this]
-    · have : ¬ ∀ j, (x j).card = n := fun h => h0 (h _)
-      simp [h0, this]
-
-/-- **Trace formula for `Z^{(r)}_{6V}`.** For `0 ≤ r ≤ N/2`,
-`Z^{(r)}_{6V}(N, M) = tr ((V^{[N/2-r]})^M)`. -/
-theorem Z6Vr_eq_trace_block (hN : 0 < N) (hM : 0 < M) (c : ℝ) {r : ℕ} (hr : r ≤ N / 2) :
-    Z6Vr c N M r = Matrix.trace ((transferBlock N c (N / 2 - r)) ^ M) := by
-  rw [← Z6Vn_eq_trace_block hN hM]
-  unfold Z6Vr Z6Vn
-  refine Finset.sum_congr ?_ fun _ _ => rfl
-  ext ω
-  simp only [mem_filter, mem_univ, true_and]
-  omega
+    grind
 
 theorem absUp_le (hM : 0 < M) (ω : ArrowConfig N M) : ω.absUp ≤ N := by
   rw [absUp_eq_card hM]
@@ -214,9 +198,7 @@ theorem rowUp_eq_absUp {ω : ArrowConfig N M} (h : ω.IceRule) (j : Fin M) :
   have hstep : ∀ j : Fin M, (stateRows ω.vert (prv j)).card = (stateRows ω.vert j).card := by
     intro j
     rcases Nat.eq_zero_or_pos N with hN | hN
-    · subst hN
-      rw [Finset.eq_empty_of_isEmpty (stateRows ω.vert (prv j)),
-        Finset.eq_empty_of_isEmpty (stateRows ω.vert j)]
+    · aesop
     · obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hN.ne'
       exact (flux_of_iceRule h j).card_eq
   have key : ∀ j : Fin M, (stateRows ω.vert j).card = (stateRows ω.vert ⟨0, hM⟩).card := by

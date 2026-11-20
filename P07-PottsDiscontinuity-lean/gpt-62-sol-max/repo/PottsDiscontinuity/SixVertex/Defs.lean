@@ -67,25 +67,27 @@ def ArrowConfig.equivProd (N M : ℕ) :
 instance (N M : ℕ) : Fintype (ArrowConfig N M) :=
   Fintype.ofEquiv _ (ArrowConfig.equivProd N M).symm
 
-instance (N M : ℕ) : DecidableEq (ArrowConfig N M) := fun ω ω' =>
-  decidable_of_iff (ω.horiz = ω'.horiz ∧ ω.vert = ω'.vert)
-    ⟨fun h => ArrowConfig.ext h.1 h.2, fun h => h ▸ ⟨rfl, rfl⟩⟩
-
 variable {N M : ℕ}
 
 namespace ArrowConfig
 
+section
+
+variable (ω : ArrowConfig N M) (v : Fin N × Fin M)
+
 /-- The edge to the left of `v` (from `v - (1,0)` to `v`); `true` iff it points towards `v`. -/
-def left (ω : ArrowConfig N M) (v : Fin N × Fin M) : Bool := ω.horiz (prv v.1, v.2)
+def left : Bool := ω.horiz (prv v.1, v.2)
 
 /-- The edge to the right of `v` (from `v` to `v + (1,0)`); `true` iff it points away from `v`. -/
-def right (ω : ArrowConfig N M) (v : Fin N × Fin M) : Bool := ω.horiz v
+def right : Bool := ω.horiz v
 
 /-- The edge below `v` (from `v - (0,1)` to `v`); `true` iff it points towards `v` (up arrow). -/
-def below (ω : ArrowConfig N M) (v : Fin N × Fin M) : Bool := ω.vert (v.1, prv v.2)
+def below : Bool := ω.vert (v.1, prv v.2)
 
 /-- The edge above `v` (from `v` to `v + (0,1)`); `true` iff it points away from `v` (up arrow). -/
-def above (ω : ArrowConfig N M) (v : Fin N × Fin M) : Bool := ω.vert v
+def above : Bool := ω.vert v
+
+end
 
 end ArrowConfig
 

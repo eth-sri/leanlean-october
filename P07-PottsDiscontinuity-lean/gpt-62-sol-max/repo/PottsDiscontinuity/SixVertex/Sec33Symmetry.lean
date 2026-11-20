@@ -25,9 +25,7 @@ theorem cnt_compl_add_cnt (x : Finset (Fin N)) (t : Fin N) :
   have h := Finset.card_filter_add_card_filter_not
     (s := Finset.Iic t) (p := fun i : Fin N => i ∈ x)
   have h₁ : (Finset.Iic t).filter (fun i => i ∈ x) = x.filter (· ≤ t) := by
-    ext i
-    simp only [mem_filter, mem_Iic]
-    tauto
+    grind
   have h₂ : (Finset.Iic t).filter (fun i => ¬ i ∈ x) = xᶜ.filter (· ≤ t) := by
     ext i
     simp only [mem_filter, mem_Iic, mem_compl]
@@ -64,14 +62,11 @@ theorem interlaced_compl_iff (x y : Finset (Fin N)) :
     · refine ⟨?_, Or.inr fun t => ?_⟩
       · have hx : xᶜ.card = N - x.card := by
           have hx := Finset.card_compl x
-          rw [Fintype.card_fin] at hx
-          exact hx
+          simpa using hx
         have hy : yᶜ.card = N - y.card := by
           have hy := Finset.card_compl y
-          rw [Fintype.card_fin] at hy
-          exact hy
-        rw [hx, hy]
-        exact congrArg (fun k : ℕ => N - k) hcard
+          simpa using hy
+        simp_all
       have hct := hcounts t
       have hx := cnt_compl_add_cnt x t
       have hy := cnt_compl_add_cnt y t
@@ -79,14 +74,11 @@ theorem interlaced_compl_iff (x y : Finset (Fin N)) :
     · refine ⟨?_, Or.inl fun t => ?_⟩
       · have hx : xᶜ.card = N - x.card := by
           have hx := Finset.card_compl x
-          rw [Fintype.card_fin] at hx
-          exact hx
+          simpa using hx
         have hy : yᶜ.card = N - y.card := by
           have hy := Finset.card_compl y
-          rw [Fintype.card_fin] at hy
-          exact hy
-        rw [hx, hy]
-        exact congrArg (fun k : ℕ => N - k) hcard
+          simpa using hy
+        simp_all
       have hct := hcounts t
       have hx := cnt_compl_add_cnt x t
       have hy := cnt_compl_add_cnt y t
@@ -102,38 +94,27 @@ theorem transferMatrix_compl (c : ℝ) (x y : Finset (Fin N)) :
     ext i
     simp only [mem_filter, mem_univ, true_and]
     have hx : Psi xᶜ i = -Psi x i := by
-      by_cases hi : i ∈ x <;> simp [Psi, mem_compl, hi]
+      by_cases hi : i ∈ x <;> simp [Psi, hi]
     have hy : Psi yᶜ i = -Psi y i := by
-      by_cases hi : i ∈ y <;> simp [Psi, mem_compl, hi]
-    rw [hx, hy]
-    simp
+      by_cases hi : i ∈ y <;> simp [Psi, hi]
+    simp_all
   rw [transferMatrix_apply, transferMatrix_apply]
   by_cases hxy : x = y
   · subst y
     simp
   · have hcompl : xᶜ ≠ yᶜ := by
-      intro h
-      apply hxy
-      ext i
-      have heq := congrArg (fun s : Finset (Fin N) => i ∈ s) h
-      have hi' : (i ∉ x) ↔ (i ∉ y) := by
-        simpa only [mem_compl] using Iff.of_eq heq
-      simpa only [not_not] using not_congr hi'
+      simp_all
     simp only [hxy, hcompl, ↓reduceIte]
-    have hinter : Interlaced xᶜ yᶜ ↔ Interlaced x y := interlaced_compl_iff x y
-    by_cases hi : Interlaced x y
-    · have hci := hinter.mpr hi
-      simp [hi, hci, hdist]
-    · have hci : ¬ Interlaced xᶜ yᶜ := fun h => hi (hinter.mp h)
-      simp [hi, hci]
+    have hinter := interlaced_compl_iff x y
+    simp_all
 
 /-- Complementation identifies the `n`-particle and `(N-n)`-particle state spaces. -/
 noncomputable def stateComplement {n : ℕ} (hn : n ≤ N) :
     State N n ≃ State N (N - n) where
-  toFun x := ⟨x.1ᶜ, by rw [Finset.card_compl, x.2, Fintype.card_fin]⟩
+  toFun x := ⟨x.1ᶜ, by simp [Finset.card_compl, x.2]⟩
   invFun x := ⟨x.1ᶜ, by rw [Finset.card_compl, x.2, Fintype.card_fin]; omega⟩
-  left_inv x := by apply Subtype.ext; exact compl_compl x.1
-  right_inv x := by apply Subtype.ext; exact compl_compl x.1
+  left_inv x := by simp
+  right_inv x := by simp
 
 /-- The two blocks related by global arrow flip are conjugate by `stateComplement`. -/
 theorem transferBlock_compl_reindex (c : ℝ) {n : ℕ} (hn : n ≤ N) :

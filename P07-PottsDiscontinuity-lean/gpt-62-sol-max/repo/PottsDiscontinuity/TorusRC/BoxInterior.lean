@@ -80,7 +80,6 @@ theorem liftedBoxGraph_map_projection_le_rightHalf (hN : Even N) (hM : Even M)
     exact ((mem_rightHalfFrozenEdges hN hM hN4 hM4 idx).mp he) hsite
   have hpair : e.val = s(liftedFaceVertex hN hM hNp hMp u.val,
       liftedFaceVertex hN hM hNp hMp v.val) := by
-    change s(faceEndpoint hN hM true idx false, faceEndpoint hN hM true idx true) = _
     exact (liftedFaceEndpoints_eq hN hM hNp hMp u.val v.val huv).symm
   intro hopen
   apply hnot
@@ -90,15 +89,6 @@ theorem liftedBoxGraph_map_projection_le_rightHalf (hN : Even N) (hM : Even M)
   exact hopen
 
 noncomputable section
-
-local instance interiorGraphFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
-
-local instance interiorGraphDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
-
-local instance interiorBoxFintype (c : RotatedVertex) (R : ℕ) :
-    Fintype (liftedBoxGraph c R).edgeSet := Fintype.ofFinite _
 
 local instance interiorDeletedFintype (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) :
@@ -110,10 +100,15 @@ local instance interiorRemainingFintype (hN : Even N) (hM : Even M)
     Fintype (FK.RemainingConfiguration (fullDiamondGraph hN hM)
       (rightHalfFrozenEdges hN hM hN4 hM4)) := Fintype.ofFinite _
 
+section
+
+variable
+  (hN : Even N) (hM : Even M)
+    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (hNp : 0 < N) (hMp : 0 < M)
+
 /-- An actual connection in the embedded box restriction lifts back to the
 prescribed box connection after the exterior state is restored. -/
-theorem embeddedBox_connection_lifts (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (hNp : 0 < N) (hMp : 0 < M)
+theorem embeddedBox_connection_lifts
     (c : RotatedVertex) (R : ℕ) (hRN : 2 * R < N) (hRM : 2 * R < M)
     (hleft : (N / 2 : ℤ) ≤ c.val.1 - R) (hright : c.val.1 + R ≤ (N : ℤ))
     (hGH : (liftedBoxGraph c R).map
@@ -156,9 +151,6 @@ theorem embeddedBox_connection_lifts (hN : Even N) (hM : Even M)
             torusIndexedEdgeEquiv hN hM hN4 hM4 idx := by
           apply Subtype.ext
           rw [FK.edgeRestrictionEdgeEmbedding_coe, FK.embeddedEdgeEmbedding_coe, heuw]
-          change s(liftedFaceVertex hN hM hNp hMp u.val,
-            liftedFaceVertex hN hM hNp hMp w.val) =
-            s(faceEndpoint hN hM true idx false, faceEndpoint hN hM true idx true)
           exact liftedFaceEndpoints_eq hN hM hNp hMp u.val w.val hlat
         have heA : torusIndexedEdgeEquiv hN hM hN4 hM4 idx ∈ A.val := by
           rw [FK.edgeRestrictionConfigurationEquiv_val]
@@ -178,8 +170,7 @@ theorem embeddedBox_connection_lifts (hN : Even N) (hM : Even M)
 /-- On every right-half fiber, a local box away from the seam has connection
 probability at least its native free-box probability. The exterior state is
 arbitrary, including every exterior state compatible with B. -/
-theorem liftedBoxFreeConnectionProbability_le_free_remaining (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (hNp : 0 < N) (hMp : 0 < M)
+theorem liftedBoxFreeConnectionProbability_le_free_remaining
     (q : Set.Ici (1 : ℝ)) (c : RotatedVertex) (R : ℕ) (v : RotatedVertex)
     (hRN : 2 * R < N) (hRM : 2 * R < M)
     (hleft : (N / 2 : ℤ) ≤ c.val.1 - R) (hright : c.val.1 + R ≤ (N : ℤ))
@@ -204,34 +195,24 @@ theorem liftedBoxFreeConnectionProbability_le_free_remaining (hN : Even N) (hM :
       (N / 2 : ℤ) (N : ℤ) R c v}
   let S := liftedBoxFreeConnectionEvent c R c v
   let ind : FK.Configuration (liftedBoxGraph c R) → ℝ := S.indicator (fun _ => 1)
-  have hind0 : ∀ A, 0 ≤ ind A := by
-    intro A
-    by_cases hA : A ∈ S <;> simp [ind, hA]
-  have hind : Monotone ind := by
-    intro A B hAB
-    by_cases hA : A ∈ S
-    · have hB : B ∈ S := liftedBoxFreeConnectionEvent_upper c R c v hAB hA
-      simp [ind, hA, hB]
-    · simpa [ind, Set.indicator, hA] using hind0 B
   have hcmp := FK.embedded_free_expectation_le (liftedBoxGraph c R) D f hGH
-    (torusRCBridgeParameters q) ∅ ∅ ind hind0 hind
-  have hdom : FK.FiniteProbability.expectation (FK.law D (torusRCBridgeParameters q)
-      (FK.BoundaryCondition.free ∅))
-      (fun C => ind (FK.embeddedConfigurationRestriction (liftedBoxGraph c R) D f hGH C)) ≤
-      FK.FiniteProbability.expectation (FK.remainingLaw G (torusRCBridgeParameters q)
-        (FK.BoundaryCondition.free ∅) R₀) (E.indicator (fun _ => (1 : ℝ))) := by
-    rw [← FK.law_edgeRestriction_map, FK.FiniteProbability.expectation_map]
-    apply FK.FiniteProbability.expectation_mono
-    intro C
-    by_cases hc : FK.embeddedConfigurationRestriction (liftedBoxGraph c R) D f hGH C ∈ S
-    · have he := embeddedBox_connection_lifts hN hM hN4 hM4 hNp hMp c R hRN hRM
-        hleft hright hGH H C v hc
-      have heE : FK.edgeRestrictionConfigurationEquiv G R₀ C ∈ E := he
-      simp only [ind, Set.indicator_of_mem hc, Set.indicator_of_mem heE, le_refl]
-    · simp only [ind, Set.indicator_of_notMem hc]
-      by_cases he : FK.edgeRestrictionConfigurationEquiv G R₀ C ∈ E <;>
-        simp [Set.indicator, he]
-  exact hcmp.trans hdom
+    (torusRCBridgeParameters q) ∅ ∅ ind (Set.indicator_nonneg fun _ _ => zero_le_one)
+    (FK.event_indicator_monotone (liftedBoxFreeConnectionEvent_upper c R c v))
+  apply hcmp.trans
+  change _ ≤ FK.FiniteProbability.expectation
+    (FK.remainingLaw G (torusRCBridgeParameters q) (FK.BoundaryCondition.free ∅) R₀)
+    (E.indicator (fun _ => (1 : ℝ)))
+  rw [← FK.law_edgeRestriction_map, FK.FiniteProbability.expectation_map]
+  apply FK.FiniteProbability.expectation_mono
+  intro C
+  change S.indicator _ _ ≤ E.indicator _ _
+  rw [← Set.indicator_comp_right (FK.embeddedConfigurationRestriction (liftedBoxGraph c R) D f hGH),
+    ← Set.indicator_comp_right (FK.edgeRestrictionConfigurationEquiv G R₀)]
+  exact Set.indicator_le_indicator_apply_of_subset
+    (fun A hA => embeddedBox_connection_lifts hN hM hN4 hM4 hNp hMp c R hRN hRM
+      hleft hright hGH H A v hA) zero_le_one
+
+end
 
 end
 

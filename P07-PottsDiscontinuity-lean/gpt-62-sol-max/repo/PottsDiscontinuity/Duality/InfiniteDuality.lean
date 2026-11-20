@@ -5,7 +5,7 @@ public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
 public import PottsDiscontinuity.Duality.DualCylinderLaw
 public import PottsDiscontinuity.Duality.WiredDomainLimit
-public import PottsDiscontinuity.FK.FreeBoxLimitV1
+public import PottsDiscontinuity.FK.FreeBoxLimit
 
 /-! Infinite-volume free/wired duality for the actual frozen box limits. -/
 
@@ -21,8 +21,8 @@ def originBoxAnchor (n : ℕ) : LatticeVertex := (-(n : ℤ), -(n : ℤ))
 
 lemma originBoxRectangle_eq (n : ℕ) :
     latticeRectangle (originBoxAnchor n) (2 * n) (2 * n) = box n := by
-  simpa only [originBoxAnchor, zero_sub, Prod.fst_zero, Prod.snd_zero] using
-    (latticeRectangle_box_eq (0, 0) n).trans (latticeBox_origin_eq_box n)
+  simpa [originBoxAnchor] using
+      (latticeRectangle_box_eq (0, 0) n).trans (latticeBox_origin_eq_box n)
 
 /-- Every fixed original lattice edge eventually belongs to the genuine dual
 edge carrier, rather than merely to the larger ambient induced graph. -/
@@ -80,7 +80,7 @@ theorem free_map_dual_eq_wired (θ : Parameters)
     (rc_limit_unique θ.toP θ.toQ 0 μ₀ ν.toMeasure hμ₀
       (isRCInfiniteVolumeLimit_of_freeBox_tendsto θ ν hνorigin))
   have hfree : Tendsto (fun n => boxProbabilityMeasure θ (0, 0) n) atTop (𝓝 ν₀) := by
-    rw [heq]; exact hνorigin
+    simpa [heq] using hνorigin
   have hdual := ProbabilityMeasure.tendsto_map_of_tendsto_of_continuous _ _ hfree
     wholePlaneDualConfigurationHomeomorph.continuous
   have hwired := wiredDomainProbabilityMeasure_tendsto_of_box_sandwich
@@ -103,19 +103,8 @@ theorem free_map_dual_eq_wired (θ : Parameters)
         boxProbabilityMeasure θ (0, 0) n := by
       simpa only [originBoxAnchor, Prod.fst_zero, Prod.snd_zero, zero_sub] using
         freeRectangleProbabilityMeasure_box θ (0, 0) n
-    rw [hb] at h
-    exact h.symm
+    simpa [hb] using h.symm
   exact congrArg ProbabilityMeasure.toMeasure hprob
-
-/-- At the exact frozen critical parameter, the free and wired measures are
-exchanged by the actual planar dual transform with unchanged p and q. -/
-theorem free_map_dual_eq_wired_at_critical (q : Set.Ici (1 : ℝ))
-    (μ₀ μ₁ : Measure LatticeConfiguration)
-    (hμ₀ : IsRCInfiniteVolumeLimit (criticalParameters q).toP (criticalParameters q).toQ 0 μ₀)
-    (hμ₁ : IsRCInfiniteVolumeLimit (criticalParameters q).toP (criticalParameters q).toQ 1 μ₁) :
-    μ₀.map wholePlaneDualConfigurationHomeomorph = μ₁ := by
-  apply free_map_dual_eq_wired (criticalParameters q) μ₀ μ₁ hμ₀
-  simpa only [dualParameters_criticalParameters] using hμ₁
 
 end
 end PottsDiscontinuity.Duality

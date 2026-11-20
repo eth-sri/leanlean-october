@@ -33,7 +33,7 @@ theorem nonconstant_word_has_ML {n : ℕ} (w : Fin (n + 1) → Bool)
     · decide
   have hfirst : w 0 = true := by
     by_contra h
-    have h0 : w 0 = false := Bool.eq_false_of_not_eq_true h
+    have h0 := Bool.eq_false_of_not_eq_true h
     apply hM
     funext k
     have hk := hm (Fin.zero_le k)
@@ -41,7 +41,7 @@ theorem nonconstant_word_has_ML {n : ℕ} (w : Fin (n + 1) → Bool)
     omega
   have hlast : w (Fin.last n) = false := by
     by_contra h
-    have h0 : w (Fin.last n) = true := Bool.eq_true_of_not_eq_false h
+    have h0 := Bool.eq_true_of_not_eq_false h
     apply hL
     funext k
     have hk := hm (Fin.le_last k)
@@ -50,32 +50,13 @@ theorem nonconstant_word_has_ML {n : ℕ} (w : Fin (n + 1) → Bool)
   exact ⟨hlast, hfirst⟩
 
 /-- Companion Lemma `lem:2`, word by word, including the periodic boundary edge. -/
-theorem sum_wordTerm_eq_zero_of_nonconstant {N n : ℕ} {c : ℝ} (hc : 2 < c)
-    (x : Fin (n + 2) → ℤ) (p : Fin (n + 2) → ℝ) (hp : ∀ j, z (p j) ≠ 1)
+theorem sum_wordTerm_eq_zero_of_nonconstant {N n : ℕ} {c : ℝ} (hc : 2 < c) (r : WordWeights (n+1))
+    (x : Fin (n + 2) → ℤ) (p : Fin (n + 2) → ℝ) (hr : r.Compatible (anisotropy c) p)
     (hBE : BetheEquations N (anisotropy c) p) (w : Fin (n + 2) → Bool)
     (hL : w ≠ fun _ => true) (hM : w ≠ fun _ => false) :
-    (∑ σ, wordTerm (N := N) c x p σ w) = 0 := by
+    (∑ σ, wordTerm (N := N) c r x p σ w) = 0 := by
   rcases nonconstant_word_has_ML w hL hM with ⟨a, ha, hb⟩ | ⟨ha, hb⟩
-  · exact sum_wordTerm_eq_zero_of_adjacentML hc x p hp w a ha hb
-  · exact sum_wordTerm_eq_zero_of_boundaryML hc x p hp hBE w ha hb
-
-/-- Only the two constant words survive in the total word expansion. -/
-theorem sum_wordTerms_eq_constant_words {N n : ℕ} {c : ℝ} (hc : 2 < c)
-    (x : Fin (n + 2) → ℤ) (p : Fin (n + 2) → ℝ) (hp : ∀ j, z (p j) ≠ 1)
-    (hBE : BetheEquations N (anisotropy c) p) :
-    (∑ w : Fin (n + 2) → Bool, ∑ σ, wordTerm (N := N) c x p σ w) =
-      (∑ σ, wordTerm (N := N) c x p σ (fun _ => true)) +
-        ∑ σ, wordTerm (N := N) c x p σ (fun _ => false) := by
-  have hne : (fun _ : Fin (n + 2) => true) ≠ (fun _ => false) := by
-    intro he
-    have := congrFun he 0
-    contradiction
-  rw [← Finset.sum_subset (show ({(fun _ => true), (fun _ => false)} :
-    Finset (Fin (n + 2) → Bool)) ⊆ univ by simp)]
-  · rw [Finset.sum_pair hne]
-  · intro w _ hw
-    have hL : w ≠ fun _ => true := by intro he; subst w; exact hw (by simp)
-    have hM : w ≠ fun _ => false := by intro he; subst w; exact hw (by simp)
-    exact sum_wordTerm_eq_zero_of_nonconstant hc x p hp hBE w hL hM
+  · exact sum_wordTerm_eq_zero_of_adjacentML hc r x p hr w a ha hb
+  · exact sum_wordTerm_eq_zero_of_boundaryML hc r x p hr hBE w ha hb
 
 end PottsDiscontinuity.BetheAnsatz

@@ -1,9 +1,9 @@
 module
 
-public import PottsDiscontinuity.Bethe.RatioCentralScaling
-public import PottsDiscontinuity.Bethe.RatioOffsetProjection
+public import PottsDiscontinuity.Bethe.CountingAlignment
 
-/-! # The positive half of the source full-root family -/
+/-! The counting function quantizes the positive-root ranks. Its uniform derivative
+bounds give both the spacing estimates and the central scaling of those ranks. -/
 
 @[expose] public section
 
@@ -12,95 +12,138 @@ open scoped Topology
 
 namespace PottsDiscontinuity.Bethe
 
-/-- The positive roots of the N/2-root symmetric family, indexed from zero. -/
+local notation "J" => Icc (-Real.pi) Real.pi
+
+/-- The positive half of the full symmetric root tuple. -/
 noncomputable def ratioPositiveRoot (N : ℕ) (h4 : 4 ∣ N) (p : Fin (N / 2) → ℝ)
-    (j : Fin (N / 4)) : ℝ := p ⟨N / 4 + j.val, by obtain ⟨z, hz⟩ := h4; omega⟩
+    (j : Fin (N / 4)) : ℝ := p ⟨N / 4 + j.val, by omega⟩
 
 theorem ratio_positiveRoot_pos {N : ℕ} (h4 : 4 ∣ N) {p : Fin (N / 2) → ℝ}
     (hp : p ∈ S_n (N / 2)) (j : Fin (N / 4)) : 0 < ratioPositiveRoot N h4 p j := by
-  let i : Fin (N / 2) := ⟨N / 4 + j.val, by obtain ⟨z, hz⟩ := h4; omega⟩
-  have hi : Fin.rev i < i := by
-    change (Fin.rev i).val < i.val
-    simp only [Fin.val_rev]
-    dsimp only [i]
-    obtain ⟨z, hz⟩ := h4
-    omega
-  have h := hp.2.1 hi
-  rw [show p (Fin.rev i) = -p i from hp.2.2 i] at h
-  change 0 < p i
-  linarith
+  let i : Fin (N / 2) := ⟨N / 4 + j.val, by omega⟩
+  have h := hp.2.1 (show Fin.rev i < i by grind)
+  rw [hp.2.2 i] at h
+  aesop
 
-theorem ratio_positiveRoot_mem_Ioo {N : ℕ} (h4 : 4 ∣ N) {p : Fin (N / 2) → ℝ}
-    (hp : p ∈ S_n (N / 2)) (j : Fin (N / 4)) :
-    ratioPositiveRoot N h4 p j ∈ Ioo (-Real.pi) Real.pi := hp.1 _
+/-- The full-root family with the asymptotic estimates for its counting derivative. -/
+structure FullRoots (Δ : ℝ) (N : ℕ → ℕ) (p : ∀ i, Fin (N i / 2) → ℝ) where
+  hΔ : Δ < -1
+  four : ∀ i, 4 ∣ N i
+  pos : ∀ i, 0 < N i
+  mem : ∀ i, p i ∈ S_n (N i / 2)
+  bethe : ∀ i, DiscreteBetheEquation Δ (N i) (N i / 2) (p i)
+  widthLimit : Tendsto (fun i => (N i : ℝ)) atTop atTop
+  m : ℝ
+  U : ℝ
+  E : ℝ
+  mpos : 0 < m
+  bounds : ∀ᶠ i in atTop, ∀ x ∈ J,
+    m ≤ betheCountingDerivative Δ (N i) (N i / 2) (p i) x ∧
+    betheCountingDerivative Δ (N i) (N i / 2) (p i) x ≤ U
+  approx : ∀ᶠ i in atTop, ∀ x ∈ J,
+    |betheCountingDerivative Δ (N i) (N i / 2) (p i) x - rho Δ x| ≤ E / N i
 
-/-- The source positive-root separation, in the corrected N/4-centered indexing. -/
-theorem ratio_positiveRoot_lower {N : ℕ} (h4 : 4 ∣ N) {p : Fin (N / 2) → ℝ}
-    (hp : p ∈ S_n (N / 2)) (hn : 0 < N / 2) {M : ℝ}
-    (hupper : ∀ x ∈ Icc (-Real.pi) Real.pi,
-      rootStepDensity N (N / 2) p hp hn (by omega) x ≤ M) (j : Fin (N / 4)) :
-    (j.val : ℝ) + 1 / 2 ≤ (M * N) * ratioPositiveRoot N h4 p j := by
-  have hc : 2 * (N / 4) = N / 2 := by obtain ⟨z, hz⟩ := h4; omega
-  have hm : 0 < N / 4 := Nat.zero_lt_of_lt j.isLt
-  let p' : Fin (2 * (N / 4)) → ℝ := fun i => p (Fin.cast hc i)
-  have hp' : p' ∈ S_n (2 * (N / 4)) := mem_S_n_cast hc hp
-  have hs' : 2 * (2 * (N / 4)) ≤ N := by rw [hc]; omega
-  have hupper' : ∀ x ∈ Icc (-Real.pi) Real.pi,
-      rootStepDensity N (2 * (N / 4)) p' hp' (by omega) hs' x ≤ M := by
-    intro x hx
-    rw [congrFun (rootStepDensity_cast hc p hp (by omega) hn hs' (by omega)) x]
-    exact hupper x hx
-  exact ratio_positive_rank_lower hm hp' hs' hupper' j.val j.isLt
+namespace FullRoots
 
-/-- The source full family has the proved fixed-rank half-integer scaling.
-Only weighted density convergence is required for this auxiliary result. -/
-theorem ratio_full_positive_rank_scaling {Δ : ℝ} (hΔ : Δ < -1)
-    (N : ℕ → ℕ) (h4 : ∀ i, 4 ∣ N i) (hN : ∀ i, 0 < N i)
-    (p : ∀ i, Fin (N i / 2) → ℝ) (hp : ∀ i, p i ∈ S_n (N i / 2))
-    (hNlim : Tendsto (fun i => (N i : ℝ)) atTop atTop)
-    (hb : ∀ i, BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
-      |Xi (lamOf Δ) α * (rootStepDensity (N i) (N i / 2) (p i) (hp i)
-        (by obtain ⟨z, hz⟩ := h4 i; have := hN i; omega) (by omega)
-        (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|))
-    (hlim : Tendsto (fun i => densityNorm Δ hΔ
-      (fun x => rootStepDensity (N i) (N i / 2) (p i) (hp i)
-        (by obtain ⟨z, hz⟩ := h4 i; have := hN i; omega) (by omega) x - rho Δ x) (hb i)) atTop (𝓝 0))
-    (k : ℕ) (hk : ∀ i, k < N i / 4) :
-    Tendsto (fun i => (N i : ℝ) * ratioPositiveRoot (N i) (h4 i) (p i) ⟨k, hk i⟩) atTop
-      (𝓝 (((k : ℝ) + 1 / 2) / rho Δ 0)) := by
-  let m := fun i => N i / 4
-  have hm (i : ℕ) : 0 < m i := by dsimp [m]; obtain ⟨z, hz⟩ := h4 i; have := hN i; omega
-  have hc (i : ℕ) : 2 * m i = N i / 2 := by dsimp [m]; obtain ⟨z, hz⟩ := h4 i; omega
-  let P : ∀ i, Fin (2 * m i) → ℝ := fun i j => p i (Fin.cast (hc i) j)
-  have hP (i : ℕ) : P i ∈ S_n (2 * m i) := mem_S_n_cast (hc i) (hp i)
-  have hs (i : ℕ) : 2 * (2 * m i) ≤ N i := by rw [hc i]; omega
-  have hρcast (i : ℕ) : rootStepDensity (N i) (2 * m i) (P i) (hP i) (by have := hm i; omega) (hs i) =
-      rootStepDensity (N i) (N i / 2) (p i) (hp i) (by have := hc i; have := hm i; omega) (by omega) :=
-    rootStepDensity_cast (hc i) (p i) (hp i) (by have := hm i; omega) (by have := hc i; have := hm i; omega) (hs i) (by omega)
-  have hB (i : ℕ) : BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
-      |Xi (lamOf Δ) α * (rootStepDensity (N i) (2 * m i) (P i) (hP i)
-        (by have := hm i; omega) (hs i) (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|) := by
-    simpa only [hρcast i] using hb i
-  have hL : Tendsto (fun i => densityNorm Δ hΔ
-      (fun x => rootStepDensity (N i) (2 * m i) (P i) (hP i)
-        (by have := hm i; omega) (hs i) x - rho Δ x) (hB i)) atTop (𝓝 0) := by
-    simpa only [hρcast] using hlim
-  have hnP (i : ℕ) : 0 < N i / 2 := by have := hc i; have := hm i; omega
-  have hcount (i : ℕ) : N i = 2 * (N i / 2 + 0) := by obtain ⟨z, hz⟩ := h4 i; omega
-  obtain ⟨mρ, hmρ, hmesh⟩ := eventually_rootPartition_gap_le hΔ 0 N (fun i => N i / 2)
-    p hp hnP (fun i => by omega) hcount hb hlim
-  let d := fun i => (2 / mρ) / (N i : ℝ)
-  have hd : Tendsto d atTop (𝓝 0) := tendsto_const_nhds.div_atTop hNlim
-  have hmesh' : ∀ᶠ i in atTop, ∀ j : Fin (2 * m i + 1),
-      rootPartitionPoint (2 * m i) (P i) (by have := hm i; omega) j.succ -
-        rootPartitionPoint (2 * m i) (P i) (by have := hm i; omega) j.castSucc ≤ d i := by
-    filter_upwards [hmesh] with i hi
-    apply ratio_root_mesh_cast (hc i) (by have := hm i; omega) (hnP i) (p i)
-    intro j
-    apply (hi j).trans_eq
-    dsimp [d]
-    norm_num
-    ring
-  exact ratio_positive_rank_scaling hΔ N m hm P hP hs hB hL d hd hmesh' hNlim k hk
+variable {Δ : ℝ} {N : ℕ → ℕ} {p : ∀ i, Fin (N i / 2) → ℝ} (R : FullRoots Δ N p)
+
+local notation "F[" i "]" => betheCountingFunction Δ (N i) (N i / 2) (p i)
+local notation "D[" i "]" => betheCountingDerivative Δ (N i) (N i / 2) (p i)
+
+/-- Missing ranks in the finite initial segment may be filled by any value in `(0,π)`. -/
+noncomputable def rank (k i : ℕ) : ℝ :=
+  if h : k < N i / 4 then ratioPositiveRoot (N i) (R.four i) (p i) ⟨k, h⟩ else Real.pi / 2
+
+theorem rank_eq {k i : ℕ} (h : k < N i / 4) :
+    R.rank k i = ratioPositiveRoot (N i) (R.four i) (p i) ⟨k, h⟩ := dite_eq_left h
+
+theorem rank_mem (k i : ℕ) : R.rank k i ∈ Ioo (-Real.pi) Real.pi := by
+  unfold rank
+  split_ifs
+  · exact (R.mem i).1 _
+  · constructor <;> linarith [Real.pi_pos]
+
+theorem rank_pos (k i : ℕ) : 0 < R.rank k i := by
+  unfold rank
+  split_ifs
+  · exact ratio_positiveRoot_pos (R.four i) (R.mem i) _
+  · positivity
+
+private theorem root_value {k i : ℕ} (hk : k < N i / 4) :
+    F[i] (R.rank k i) = ((k : ℝ) + 1 / 2) / N i := by
+  rw [R.rank_eq hk, ratioPositiveRoot, betheCountingFunction_root_value (R.pos i) (p i) (R.bethe i)]
+  congr 1
+  have h : N i / 2 = 2 * (N i / 4) := by obtain ⟨w, hw⟩ := R.four i; omega
+  simp [discreteBetheIndex, h]
+  ring
+
+private theorem root_mean (k i : ℕ) : ∃ t ∈ Icc 0 (R.rank k i),
+    F[i] (R.rank k i) = D[i] t * R.rank k i := by
+  obtain ⟨t, ht, he⟩ := exists_mean_deriv (hasDerivAt_betheCountingFunction R.hΔ (N i) _ (p i)) 0 (R.rank k i)
+  exact ⟨t, by rwa [uIcc_of_le (R.rank_pos k i).le] at ht, by simpa [betheCountingFunction_zero (R.mem i)] using he⟩
+
+private theorem mean_mem {k i : ℕ} {t : ℝ} (ht : t ∈ Icc 0 (R.rank k i)) : t ∈ J :=
+  ⟨(neg_nonpos.mpr Real.pi_pos.le).trans ht.1, ht.2.trans (R.rank_mem k i).2.le⟩
+
+theorem rank_lower {i k : ℕ} (h : k < N i / 4) (hu : ∀ x ∈ J, D[i] x ≤ R.U) :
+    (k : ℝ) + 1 / 2 ≤ (R.U * N i) * R.rank k i := by
+  obtain ⟨t, ht, he⟩ := R.root_mean k i
+  rw [R.root_value h, div_eq_iff ((Nat.cast_pos.mpr (R.pos i) : (0 : ℝ) < N i).ne')] at he
+  rw [he]
+  nlinarith only [mul_le_mul_of_nonneg_right (hu t (R.mean_mem ht))
+    (mul_nonneg (R.rank_pos k i).le (Nat.cast_nonneg (α := ℝ) (N i)))]
+
+theorem rank_gap {i k : ℕ} (h : k + 1 < N i / 4) (hl : ∀ x ∈ J, R.m ≤ D[i] x) :
+    R.rank (k + 1) i - R.rank k i ≤ (1 / R.m) / N i := by
+  have hk : k < N i / 4 := by omega
+  have hxy : R.rank k i ≤ R.rank (k + 1) i := by
+    rw [R.rank_eq hk, R.rank_eq h]
+    exact (R.mem i).2.1.monotone (by change N i / 4 + k ≤ N i / 4 + (k + 1); omega)
+  have hl' := counting_length_le R.mpos (hasDerivAt_betheCountingFunction R.hΔ (N i) _ (p i)) hl
+    (Ioo_subset_Icc_self (R.rank_mem k i)) (Ioo_subset_Icc_self (R.rank_mem (k + 1) i)) hxy
+  convert hl' using 1
+  rw [R.root_value h, R.root_value hk]
+  push_cast
+  ring
+
+include R in
+theorem eventually_rank_exists (k : ℕ) : ∀ᶠ i in atTop, k < N i / 4 := by
+  filter_upwards [R.widthLimit.eventually (eventually_ge_atTop (((4 * (k + 1) : ℕ) : ℝ)))] with i hi
+  have : 4 * (k + 1) ≤ N i := by exact_mod_cast hi
+  omega
+
+/-- The central scale comes from the exact value of the counting function at a root. -/
+theorem rank_limits (k : ℕ) : Tendsto (R.rank k) atTop (𝓝 0) ∧
+    Tendsto (fun i => (N i : ℝ) * R.rank k i) atTop (𝓝 (((k : ℝ) + 1 / 2) / rho Δ 0)) := by
+  classical
+  choose t hmem hmean using R.root_mean k
+  have hj (i : ℕ) := R.mean_mem (hmem i)
+  have hN (i : ℕ) : (0 : ℝ) < N i := Nat.cast_pos.mpr (R.pos i)
+  have he := (R.eventually_rank_exists k).mono fun i hi => (R.root_value hi).symm.trans (hmean i)
+  have hx : Tendsto (R.rank k) atTop (𝓝 0) := by
+    refine squeeze_zero' (Eventually.of_forall fun i => (R.rank_pos k i).le) ?_
+      (tendsto_const_nhds.div_atTop R.widthLimit :
+        Tendsto (fun i => (((k : ℝ) + 1 / 2) / R.m) / N i) atTop (𝓝 0))
+    filter_upwards [he, R.bounds] with i hi hb
+    rw [div_div, le_div_iff₀ (mul_pos R.mpos (hN i))]
+    have hh := mul_le_mul_of_nonneg_right ((hb _ (hj i)).1) (R.rank_pos k i).le
+    rw [← hi] at hh
+    nlinarith only [mul_le_mul_of_nonneg_right hh (hN i).le, div_mul_cancel₀ ((k : ℝ) + 1 / 2) (hN i).ne']
+  have ht := squeeze_zero (fun i => (hmem i).1) (fun i => (hmem i).2) hx
+  have hDρ := (continuous_rho R.hΔ).continuousAt.tendsto.comp ht
+  have hD₀ : Tendsto (fun i => D[i] (t i) - rho Δ (t i)) atTop (𝓝 0) :=
+    squeeze_zero_norm' (R.approx.mono fun i hi => by
+      simpa using hi (t i) (hj i)) (tendsto_const_nhds.div_atTop R.widthLimit)
+  have hD : Tendsto (fun i => D[i] (t i)) atTop (𝓝 (rho Δ 0)) := by
+    simpa using hD₀.add hDρ
+  refine ⟨hx, (tendsto_const_nhds.div hD (rho_pos R.hΔ 0).ne').congr' ?_⟩
+  filter_upwards [he, R.bounds] with i hi hb
+  have hd := R.mpos.trans_le (hb (t i) (hj i)).1
+  change ((k : ℝ) + 1 / 2) / D[i] (t i) = (N i : ℝ) * R.rank k i
+  rw [div_eq_iff hd.ne']
+  rw [div_eq_iff (hN i).ne'] at hi
+  linear_combination hi
+
+end FullRoots
 
 end PottsDiscontinuity.Bethe

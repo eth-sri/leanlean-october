@@ -15,34 +15,30 @@ noncomputable def discreteCoordinateResidual (Δ : ℝ) (N n : ℕ)
     (q : Fin (n / 2) → ℝ) : Fin (n / 2) → ℝ := fun i =>
   discreteBetheResidual Δ N n (discreteSymLift n q) (discreteHalfIndex n i)
 
+/-- Joint analyticity depends only on the analyticity of the two-body phase. -/
+theorem analyticAt_coordinateResidual_of_phase {θ : ℝ × ℝ × ℝ → ℝ} {t : ℝ}
+    (hθ : ∀ a b, AnalyticAt ℝ θ (t, a, b)) (N n : ℕ) (q : Fin (n / 2) → ℝ) :
+    AnalyticAt ℝ (fun z : ℝ × (Fin (n / 2) → ℝ) => fun i =>
+      z.2 i - (2 * Real.pi * discreteBetheIndex n (discreteHalfIndex n i) / N -
+        (∑ j : Fin n, θ (z.1, discreteSymLift n z.2 (discreteHalfIndex n i), discreteSymLift n z.2 j)) / N)) (t, q) := by
+  have hlift : AnalyticAt ℝ (fun z : ℝ × (Fin (n / 2) → ℝ) => discreteSymLift n z.2) (t, q) :=
+    ((discreteSymLift n).toContinuousLinearMap.analyticAt _).comp analyticAt_snd
+  have hc := analyticAt_pi_iff.mp hlift
+  apply AnalyticAt.pi
+  intro i
+  have hsum := Finset.analyticAt_fun_sum Finset.univ (fun (j : Fin n) _ =>
+    AnalyticAt.comp (f := fun z : ℝ × (Fin (n / 2) → ℝ) =>
+      (z.1, discreteSymLift n z.2 (discreteHalfIndex n i), discreteSymLift n z.2 j))
+      (hθ _ _) (analyticAt_fst.prod ((hc (discreteHalfIndex n i)).prod (hc j))))
+  exact ((analyticAt_pi_iff.mp analyticAt_snd) i).sub (analyticAt_const.sub hsum.div_const)
+
 theorem analyticAt_discreteCoordinateResidual {Δ : ℝ} (hΔ : Δ < -1)
     (N n : ℕ) (q : Fin (n / 2) → ℝ) :
     AnalyticAt ℝ (fun z : ℝ × (Fin (n / 2) → ℝ) =>
       discreteCoordinateResidual z.1 N n z.2) (Δ, q) := by
-  have hlift : AnalyticAt ℝ (fun z : ℝ × (Fin (n / 2) → ℝ) => discreteSymLift n z.2) (Δ, q) :=
-    (discreteSymLift n).toContinuousLinearMap.analyticAt _ |>.comp analyticAt_snd
-  have hcoord (j : Fin n) : AnalyticAt ℝ
-      (fun z : ℝ × (Fin (n / 2) → ℝ) => discreteSymLift n z.2 j) (Δ, q) :=
-    (((ContinuousLinearMap.proj j : (Fin n → ℝ) →L[ℝ] ℝ)).analyticAt _).comp hlift
-  apply AnalyticAt.pi
-  intro i
-  have hphase (j : Fin n) : AnalyticAt ℝ
-      (fun z : ℝ × (Fin (n / 2) → ℝ) =>
-        theta z.1 (discreteSymLift n z.2 (discreteHalfIndex n i))
-          (discreteSymLift n z.2 j)) (Δ, q) :=
-    AnalyticAt.comp
-      (g := fun w : ℝ × ℝ × ℝ => theta w.1 w.2.1 w.2.2)
-      (f := fun z : ℝ × (Fin (n / 2) → ℝ) =>
-        (z.1, discreteSymLift n z.2 (discreteHalfIndex n i), discreteSymLift n z.2 j))
-      (analyticAt_theta hΔ _ _) (analyticAt_fst.prod ((hcoord _).prod (hcoord j)))
-  have hsum := Finset.analyticAt_fun_sum Finset.univ (fun j _ => hphase j)
-  change AnalyticAt ℝ (fun z : ℝ × (Fin (n / 2) → ℝ) =>
-    discreteSymLift n z.2 (discreteHalfIndex n i) -
-      (2 * Real.pi * discreteBetheIndex n (discreteHalfIndex n i) / (N : ℝ) -
-        (∑ j : Fin n, theta z.1 (discreteSymLift n z.2 (discreteHalfIndex n i))
-          (discreteSymLift n z.2 j)) / (N : ℝ))) (Δ, q)
-  simp only [div_eq_mul_inv]
-  exact (hcoord _).sub (analyticAt_const.sub (hsum.mul analyticAt_const))
+  unfold discreteCoordinateResidual discreteBetheResidual discreteBetheMap
+  simpa only [discreteSymLift_half] using
+    analyticAt_coordinateResidual_of_phase (analyticAt_theta hΔ) N n q
 
 /-- Each column of the state Frechet derivative is the displayed source
 Jacobian column, in the actual coordinates of the symmetric subspace. -/
@@ -55,12 +51,9 @@ theorem discreteCoordinateResidual_stateDerivative_column {Δ : ℝ} (hΔ : Δ <
   let F := fun z : ℝ × (Fin (n / 2) → ℝ) => discreteCoordinateResidual z.1 N n z.2
   let e : Fin (n / 2) → ℝ := Pi.single k 1
   have hq : HasDerivAt (fun t : ℝ => q + t • e) e 0 := by
-    change HasDerivAt ((fun _ : ℝ => q) + (fun t : ℝ => t • e)) e 0
-    convert (hasDerivAt_const (0 : ℝ) q).add
-      ((hasDerivAt_id (0 : ℝ)).smul_const e) using 1
-    all_goals first | rfl | simp only [zero_add, one_smul]
+    simpa using ((hasDerivAt_id' (0 : ℝ)).smul_const e).const_add q
   have hpath := (hasDerivAt_const (0 : ℝ) Δ).prodMk hq
-  have hF : HasFDerivAt F (fderiv ℝ F (Δ, q)) (Δ, q) :=
+  have hF :=
     (analyticAt_discreteCoordinateResidual hΔ N n q).differentiableAt.hasFDerivAt
   have hF0 : HasFDerivAt F (fderiv ℝ F (Δ, q)) (Δ, q + (0 : ℝ) • e) := by
     simpa only [zero_smul, add_zero] using hF
@@ -89,18 +82,15 @@ theorem discreteCoordinateResidual_stateDerivative {Δ : ℝ} (hΔ : Δ < -1)
         (ContinuousLinearMap.inr ℝ ℝ (Fin (n / 2) → ℝ)) =
       (Matrix.toLin' (discreteBetheMatrixA Δ N n (discreteSymLift n q))).toContinuousLinearMap := by
   classical
-  let D := (fderiv ℝ (fun z : ℝ × (Fin (n / 2) → ℝ) =>
-    discreteCoordinateResidual z.1 N n z.2) (Δ, q)).comp
-      (ContinuousLinearMap.inr ℝ ℝ (Fin (n / 2) → ℝ))
-  have hlin : D.toLinearMap = Matrix.toLin' (discreteBetheMatrixA Δ N n (discreteSymLift n q)) := by
-    apply (Pi.basisFun ℝ (Fin (n / 2))).ext
-    intro k
-    funext i
-    simp only [Pi.basisFun_apply, Matrix.toLin'_apply, Matrix.mulVec_single_one,
-      Matrix.col_apply]
-    convert discreteCoordinateResidual_stateDerivative_column hΔ N n q i k using 1
-  ext q' i
-  exact congrFun (LinearMap.congr_fun hlin q') i
+  apply ContinuousLinearMap.coe_injective
+  apply (Pi.basisFun ℝ (Fin (n / 2))).ext
+  intro k
+  funext i
+  change _ = Matrix.toLin' (discreteBetheMatrixA Δ N n (discreteSymLift n q))
+    (Pi.basisFun ℝ (Fin (n / 2)) k) i
+  simpa only [ContinuousLinearMap.coe_coe, Pi.basisFun_apply, Matrix.toLin'_apply,
+    Matrix.mulVec_single_one, Matrix.col_apply] using
+    discreteCoordinateResidual_stateDerivative_column hΔ N n q i k
 
 /-- Nonsingularity of the matrix supplies precisely the continuous linear
 equivalence required by the analytic implicit function theorem. -/
@@ -118,9 +108,6 @@ theorem exists_discreteCoordinateResidual_stateEquiv {Δ : ℝ} (hΔ : Δ < -1)
     (isUnit_iff_ne_zero.mpr hdet)).toContinuousLinearEquiv
   refine ⟨e, ?_⟩
   rw [discreteCoordinateResidual_stateDerivative hΔ]
-  ext v i
-  change (Matrix.toLin' A v) i = (Matrix.toLin (Pi.basisFun ℝ (Fin (n / 2)))
-    (Pi.basisFun ℝ (Fin (n / 2))) A v) i
-  rw [Matrix.toLin_eq_toLin']
+  rfl
 
 end PottsDiscontinuity.Bethe

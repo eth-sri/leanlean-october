@@ -30,10 +30,7 @@ lemma twoPoint_pow_four_le_diagonal (θ : Parameters) (μ : Measure LatticeConfi
   rw [hrot, ← pow_two] at h₂
   have heq₂ : (2 * x.1, 0) + (0, 2 * x.1) = (2 * x.1, 2 * x.1) := by simp
   rw [heq₂] at h₂
-  calc
-    twoPoint μ x ^ 4 = (twoPoint μ x ^ 2) ^ 2 := by ring
-    _ ≤ twoPoint μ (2 * x.1, 0) ^ 2 := pow_le_pow_left₀ (sq_nonneg _) h₁ 2
-    _ ≤ _ := h₂
+  nlinarith
 
 lemma twoPoint_pow_four_le_diagonalSite_fst (θ : Parameters)
     (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
@@ -41,12 +38,11 @@ lemma twoPoint_pow_four_le_diagonalSite_fst (θ : Parameters)
     twoPoint μ x ^ 4 ≤ twoPoint μ (diagonalSite (4 * x.1.natAbs)) := by
   have hd (m : ℕ) : diagonalSite (4 * m) = (2 * (m : ℤ), 2 * (m : ℤ)) := by
     unfold diagonalSite
-    have : 4 * m / 2 = 2 * m := by omega
-    simp only [this, Nat.cast_mul, Nat.cast_ofNat]
+    grind
   rw [hd]
   by_cases hx : 0 ≤ x.1
-  · simpa only [Int.natCast_natAbs, abs_of_nonneg hx] using
-      twoPoint_pow_four_le_diagonal θ μ hμ x
+  · simpa [abs_of_nonneg hx] using
+          twoPoint_pow_four_le_diagonal θ μ hμ x
   · have heq : (2 * (x.1.natAbs : ℤ), 2 * (x.1.natAbs : ℤ)) =
         -(2 * x.1, 2 * x.1) := by
       simp only [Int.natCast_natAbs, abs_of_nonpos (le_of_not_ge hx), Prod.neg_mk]
@@ -65,7 +61,7 @@ theorem twoPoint_pow_four_le_diagonalSite (θ : Parameters)
     exact twoPoint_pow_four_le_diagonalSite_fst θ μ hμ x
   · rw [max_eq_right (le_of_not_ge hx)]
     have h := twoPoint_pow_four_le_diagonalSite_fst θ μ hμ (-x.2, x.1)
-    simpa only [Int.natAbs_neg, twoPoint_quarterTurn θ μ hμ] using h
+    simpa [twoPoint_quarterTurn θ μ hμ] using h
 
 /-- Diagonal exponential decay implies exponential decay in every lattice direction.
 The constants reflect the exact frozen diagonal indexing. -/
@@ -79,20 +75,16 @@ theorem free_exponential_decay_of_diagonal_bound (θ : Parameters)
   let m := max x.1.natAbs x.2.natAbs
   let s : ℝ := |(x.1 : ℝ)| + |(x.2 : ℝ)|
   have hm₁ : |(x.1 : ℝ)| ≤ (m : ℝ) := by
-    have hi : |x.1| ≤ (m : ℤ) := by
-      rw [← Int.natCast_natAbs]
-      exact_mod_cast (show x.1.natAbs ≤ m from le_max_left _ _)
-    exact_mod_cast hi
+    aesop
   have hm₂ : |(x.2 : ℝ)| ≤ (m : ℝ) := by
     have hi : |x.2| ≤ (m : ℤ) := by
       rw [← Int.natCast_natAbs]
       exact_mod_cast (show x.2.natAbs ≤ m from le_max_right _ _)
     exact_mod_cast hi
-  have hs : s ≤ 2 * (m : ℝ) := by dsimp [s]; linarith
+  have hs : s ≤ 2 * (m : ℝ) := by linarith
   have hcoeff : C ≤ (C + 1) ^ 4 := by
     have h₁ : 1 ≤ C + 1 := by linarith
-    have h₂ : C + 1 ≤ (C + 1) ^ 4 := by
-      exact le_self_pow₀ h₁ (by decide : 4 ≠ 0)
+    have h₂ := le_self_pow₀ h₁ (by decide : 4 ≠ 0)
     linarith
   apply le_of_pow_le_pow_left₀ (by decide : 4 ≠ 0)
     (mul_nonneg (by linarith : 0 ≤ C + 1) (Real.exp_nonneg _))

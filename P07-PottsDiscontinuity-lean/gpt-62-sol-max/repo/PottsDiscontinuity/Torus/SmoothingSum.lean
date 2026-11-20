@@ -57,11 +57,10 @@ theorem exists_compatibleConfig_iff (ω : ArrowConfig N M) :
       (ω.below v) (ω.above v)), fun v => ?_⟩
     obtain ⟨b, hb⟩ := (exists_compatible_iff _ _ _ _).2 (h v)
     by_cases hf : Compatible false (ω.left v) (ω.right v) (ω.below v) (ω.above v)
-    · simp only [hf, decide_true, Bool.not_true]
+    · simp_all
     · cases b
-      · exact (hf hb).elim
-      · simp only [hf, decide_false, Bool.not_false]
-        exact hb
+      · trivial
+      simp_all
 
 theorem smoothingWeight_nonneg (lam : ℝ) (ω : ArrowConfig N M) (s : Smoothing N M) :
     0 ≤ smoothingWeight lam ω s :=
@@ -97,13 +96,13 @@ No FK partition function or global loop statistic occurs in this intermediate id
 theorem sum_smoothingWeight_eq_Z6V (lam : ℝ) :
     (∑ ω : ArrowConfig N M, ∑ s : Smoothing N M, smoothingWeight lam ω s) =
       Z6V (Real.exp (lam / 2) + Real.exp (-lam / 2)) N M := by
-  simp only [sum_smoothingWeight, Z6V]
+  simp [sum_smoothingWeight, Z6V]
 
 /-- The same expansion preserves the existing row sector, with no truncated subtraction. -/
 theorem sum_smoothingWeight_eq_Z6Vr (lam : ℝ) (r : ℕ) :
     (∑ ω : ArrowConfig N M with ω.absUp + r = N / 2,
       ∑ s : Smoothing N M, smoothingWeight lam ω s) =
       Z6Vr (Real.exp (lam / 2) + Real.exp (-lam / 2)) N M r := by
-  simp only [sum_smoothingWeight, Z6Vr]
+  simp [sum_smoothingWeight, Z6Vr]
 
 end PottsDiscontinuity.Torus

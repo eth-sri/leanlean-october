@@ -37,7 +37,7 @@ theorem log_block_product_liminf (height : ℕ → ℕ)
     (hp : ∀ᶠ k in atTop,
       C * a ^ ((height k:ℝ)/(d:ℝ)) * b ^ (height k/e) ≤ p k) :
     ((Real.log a/(d:ℝ) + Real.log b/(e:ℝ):ℝ):EReal) ≤
-      liminf (fun k => ((Real.log (p k)/(height k:ℝ):ℝ):EReal)) atTop := by
+      liminf (fun k => if p k = 0 then ⊥ else ((Real.log (p k)/(height k:ℝ):ℝ):EReal)) atTop := by
   let f : ℕ → ℝ := fun M => Real.log C/(M:ℝ) + Real.log a/(d:ℝ) +
     (((M/e:ℕ):ℝ)/(M:ℝ))*Real.log b
   have hf : Tendsto f atTop (𝓝 (Real.log a/(d:ℝ)+Real.log b/(e:ℝ))) := by
@@ -45,20 +45,20 @@ theorem log_block_product_liminf (height : ℕ → ℕ)
       (Real.log a/(d:ℝ))).add ((tendsto_completeBlocks_div e he).mul_const (Real.log b))
     simpa only [zero_add,one_div_mul_eq_div] using h
   have hle : ∀ᶠ k in atTop, ((f (height k):ℝ):EReal) ≤
-      ((Real.log (p k)/(height k:ℝ):ℝ):EReal) := by
+      (if p k = 0 then ⊥ else ((Real.log (p k)/(height k:ℝ):ℝ):EReal)) := by
     filter_upwards [hp,hheight.eventually (eventually_ge_atTop 1)] with k hk hH
     have hpos : 0 < C*a^((height k:ℝ)/(d:ℝ))*b^(height k/e) := by positivity
     have hlog := Real.log_le_log hpos hk
     rw [Real.log_mul (by positivity) (by positivity),
       Real.log_mul hC.ne' (Real.rpow_pos_of_pos ha _).ne',
       Real.log_rpow ha,Real.log_pow] at hlog
+    rw [if_neg (hpos.trans_le hk).ne']
     apply EReal.coe_le_coe_iff.mpr
     have hHpos : (0:ℝ)<height k := by exact_mod_cast (show 0<height k by omega)
     have hdiv := div_le_div_of_nonneg_right hlog hHpos.le
     dsimp [f]
     convert hdiv using 1; field_simp
-  have hlim : Tendsto (fun k => ((f (height k):ℝ):EReal)) atTop
-      (𝓝 ((Real.log a/(d:ℝ)+Real.log b/(e:ℝ):ℝ):EReal)) :=
+  have hlim :=
     EReal.tendsto_coe.mpr (hf.comp hheight)
   rw [← hlim.liminf_eq]
   exact liminf_le_liminf hle

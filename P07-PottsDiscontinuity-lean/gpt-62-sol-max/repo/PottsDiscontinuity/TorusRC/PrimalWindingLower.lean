@@ -14,18 +14,19 @@ open Torus CorrLength
 
 variable {N M : ℕ}
 
+section
+
+variable (q : Set.Ici (1 : ℝ))
+
 /-- A uniform surgery factor covering both openings and closings. Its square
 allows one complete block to be reserved for the seam-free terminal surgery. -/
-noncomputable def torusRCSurgeryEnergy (q : Set.Ici (1 : ℝ)) : ℝ :=
+noncomputable def torusRCSurgeryEnergy : ℝ :=
   (min (1-(rcCriticalParameter q).val) (fkOpenEnergy (torusRCBridgeParameters q))) ^ 2
 
-theorem torusRCSurgeryEnergy_pos (q : Set.Ici (1 : ℝ)) : 0 < torusRCSurgeryEnergy q :=
+theorem torusRCSurgeryEnergy_pos : 0 < torusRCSurgeryEnergy q :=
   pow_pos (lt_min (sub_pos.mpr (criticalParameter_lt_one q)) (fkOpenEnergy_pos _)) _
 
-theorem torusRCSurgeryEnergy_le_one (q : Set.Ici (1 : ℝ)) : torusRCSurgeryEnergy q ≤ 1 := by
-  apply pow_le_one₀
-  · exact (lt_min (sub_pos.mpr (criticalParameter_lt_one q)) (fkOpenEnergy_pos _)).le
-  · exact (min_le_right _ _).trans (fkOpenEnergy_le_one _)
+end
 
 /-- Finite-energy completion with k=floor(M/(2n))-1. Reserving the final
 complete block guarantees that the chain itself never uses the seam. -/
@@ -49,7 +50,7 @@ theorem primalWinding_probability_ge_double (hN : Even N) (hM : Even M)
   have hd0 : 0 ≤ d :=
     (lt_min (sub_pos.mpr (criticalParameter_lt_one q)) (fkOpenEnergy_pos _)).le
   have hd1 : d ≤ 1 := (min_le_right _ _).trans (fkOpenEnergy_le_one _)
-  have hc0 : 0 ≤ 1-(rcCriticalParameter q).val := (sub_pos.mpr (criticalParameter_lt_one q)).le
+  have hc0 := (sub_pos.mpr (criticalParameter_lt_one q)).le
   have ho0 := (fkOpenEnergy_pos (torusRCBridgeParameters q)).le
   have hfac : torusRCSurgeryEnergy q ^ (2*n+N) ≤
       (1-(rcCriticalParameter q).val)^N *
@@ -72,32 +73,30 @@ theorem primalWinding_probability_ge_double (hN : Even N) (hM : Even M)
 unproved premise. The strip is enlarged by one lattice unit for the explicit
 terminal zigzag; this is absorbed by a one-unit margin in the barrier strip. -/
 theorem primal_winding_lower_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
-    ∃ c : ℝ, 0 < c ∧ c ≤ 1 ∧ ∀ (N M n : ℕ) (hN : Even N) (hM : Even M)
+    ∃ c : ℝ, 0 < c ∧ ∀ (N M n : ℕ) (hN : Even N) (hM : Even M)
       (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (hn : 0 < n)
       (h3nN : 3*n ≤ N) (h4nM : 4*n ≤ M),
       let hNp : 0 < N := by omega
       let hMp : 0 < M := by omega
       torusRCSurgeryEnergy q ^ (2*n+N) *
-        (c/(9*(n:ℝ)^2)) ^ ((M:ℝ)/(n:ℝ)) ≤
+        (blockPenalty c n) ^ ((M:ℝ)/(n:ℝ)) ≤
         torusRCProbability hN hM q (primalWindingSingleSeam hNp hMp hM (3*n+1)) := by
-  obtain ⟨c₀,hc₀,hdouble⟩ := double_connection_of_h319 q hh319
+  obtain ⟨c₀, hc₀, hcross⟩ := hh319
   let c := min c₀ 1
   have hc : 0 < c := lt_min hc₀ zero_lt_one
-  refine ⟨c,hc,min_le_right _ _,?_⟩
+  refine ⟨c, hc, ?_⟩
   intro N M n hN hM hN4 hM4 hn h3nN h4nM
   let hNp : 0 < N := by omega
   let hMp : 0 < M := by omega
-  obtain ⟨i,hp⟩ := hdouble N M n hN hM hN4 hM4 hn h3nN (by omega)
-  have hbase : 0 < c/(9*(n:ℝ)^2) := by positivity
-  have hbasele : c/(9*(n:ℝ)^2) ≤ 1 := by
-    have hnR : 1 ≤ (n:ℝ) := by exact_mod_cast hn
-    apply (div_le_one (by positivity)).mpr
-    have hc1 : c ≤ 1 := min_le_right _ _
-    nlinarith
-  have hp' : (c/(9*(n:ℝ)^2))^2 ≤
-      torusRCProbability hN hM q (rectangleDoubleConnection hNp hMp n i) :=
-    (pow_le_pow_left₀ hbase.le
-      (div_le_div_of_nonneg_right (min_le_left _ _) (by positivity)) 2).trans hp
+  obtain ⟨ij, hij⟩ := rectanglePair_probability_ge hN hM hNp hMp q n hn c
+    ((min_le_left _ _).trans (hcross N M n hN hM hN4 hM4 hn h3nN (by omega)))
+  let i := ij.1
+  have hbase : 0 < blockPenalty c n := by unfold blockPenalty; positivity
+  have hbasele : blockPenalty c n ≤ 1 := by
+    apply (div_le_one (by positivity)).2
+    exact (min_le_right _ _).trans (by nlinarith [show (0 : ℝ) ≤ n by positivity])
+  have hp' := (pow_le_pow_left₀ hbase.le hij 2).trans
+    (rectangleDouble_probability_ge_pair_sq hN hM hNp hMp q n ij.1 ij.2)
   have hi := rectangleDoubleConnection_endpoint_even hNp hMp n i
     ((torusRCProbability_pos_iff hN hM q _).mp ((pow_pos hbase 2).trans_le hp'))
   let k := M/(2*n)-1
@@ -111,7 +110,7 @@ theorem primal_winding_lower_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
     nlinarith
   have hrpow := Real.rpow_le_rpow_of_exponent_ge hbase hbasele hkR
   rw [Real.rpow_natCast] at hrpow
-  have hpow := pow_le_pow_left₀ (sq_nonneg (c/(9*(n:ℝ)^2))) hp' k
+  have hpow := pow_le_pow_left₀ (sq_nonneg (blockPenalty c n)) hp' k
   rw [← pow_mul] at hpow
   have hconn := primalWinding_probability_ge_double hN hM hN4 hM4 hNp hMp q n hn h4nM i hi
   exact (mul_le_mul_of_nonneg_left (hrpow.trans hpow)

@@ -44,7 +44,7 @@ theorem sum_loopTurn (ω : ArrowConfig N M) (s : Smoothing N M)
     loopSum ω s h (fun d => strandTurn (s d.1) d.2) q) = _
   rw [sum_loopSum]
   rw [← Finset.sum_subtype (univ.filter fun d => dartOut ω d = true)
-    (by intro d; simp) (fun d => strandTurn (s d.1) d.2), Finset.sum_filter]
+    (by grind) (fun d => strandTurn (s d.1) d.2), Finset.sum_filter]
   rw [Fintype.sum_prod_type]
   exact Finset.sum_congr rfl fun v _ => sum_outgoing_strandTurn _ _ _ _ _ (h v)
 

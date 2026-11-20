@@ -31,7 +31,7 @@ theorem windingLoopCount_le_rcLoopCount
     (windingLoopSet hN hM i j A).card ≤
         (Finset.univ : Finset (Loop hN hM (rcSmoothing A))).card :=
       Finset.card_le_card (Finset.filter_subset _ _)
-    _ = rcLoopCount hN hM A := by simp [rcLoopCount, loopCount]
+    _ = rcLoopCount hN hM A := by solve_by_elim
 
 /-- Lemma 3.9 rewrites the corrected RC summand as one factor per
 homologically contractible or winding loop, with `ell₀` taken to be the homological
@@ -49,11 +49,10 @@ theorem torusCorrectedRCWeight_eq_loopFactors
   let ell₀ := windingLoopCount hN hM i j A
   let s := rcNetIndicator hN hM A
   have hq : 0 ≤ q.val := le_trans (by norm_num) q.property
-  have ht : 0 < t := by dsimp [t]; exact Real.sqrt_pos.2 (lt_of_lt_of_le (by norm_num) q.property)
-  have ht2 : t ^ 2 = q.val := by dsimp [t]; exact Real.sq_sqrt hq
+  have ht : 0 < t := by grind [Real.sqrt_pos]
+  have ht2 := Real.sq_sqrt hq
   have hell : ell₀ ≤ ell := by
-    dsimp [ell, ell₀]
-    exact windingLoopCount_le_rcLoopCount hN hM i j A
+    grind [windingLoopCount_le_rcLoopCount]
   have hqpow : q.val ^ s = t ^ (2 * s) := by
     rw [← ht2, pow_mul]
   have hratio : (2 / t) ^ ell₀ = (2 : ℝ) ^ ell₀ / t ^ ell₀ := by

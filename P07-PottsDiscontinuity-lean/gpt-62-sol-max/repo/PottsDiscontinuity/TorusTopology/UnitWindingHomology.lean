@@ -21,9 +21,9 @@ theorem loop_displacement_determinant_zero (hN : Even N) (hM : Even M)
     loopDisplacementX hN hM A q * loopDisplacementY hN hM A r -
       loopDisplacementX hN hM A r * loopDisplacementY hN hM A q = 0 := by
   let X : LinearMap.ker (loopIncidenceBoundary hN hM A) :=
-    ⟨loopDisplacementX hN hM A,loopDisplacementX_mem_incidenceCycleSpace hN hM A⟩
+    ⟨loopDisplacementX hN hM A,loopDisplacement_mem_incidenceCycleSpace hN hM A false⟩
   let Y : LinearMap.ker (loopIncidenceBoundary hN hM A) :=
-    ⟨loopDisplacementY hN hM A,loopDisplacementY_mem_incidenceCycleSpace hN hM A⟩
+    ⟨loopDisplacementY hN hM A,loopDisplacement_mem_incidenceCycleSpace hN hM A true⟩
   obtain ⟨v,hv⟩ := (finrank_le_one_iff (K := ℚ)).mp
     (finrank_loopIncidenceCycleSpace_le_one hN hM hNp hMp A)
   obtain ⟨a,ha⟩ := hv X
@@ -85,7 +85,6 @@ theorem U_one_horizontal_multiple_vertical
   refine ⟨loopSum _ _ (checkerArrows_compatible hN hM _) (horizontalCross i) q,?_⟩
   intro t
   have he := loop_winding_determinant_zero hN hM i j A t q
-  rw [hq,mul_one] at he
-  exact sub_eq_zero.mp he
+  simpa [hq] using sub_eq_zero.mp he
 
 end PottsDiscontinuity.TorusTopology

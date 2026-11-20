@@ -1,6 +1,6 @@
 module
 
-public import PottsDiscontinuity.SixVertex.InfinityDescent
+public import PottsDiscontinuity.SixVertex.Rotate
 public import PottsDiscontinuity.TorusRC.LiftedPaths
 
 /-! Explicit integer lifts of indexed diamond endpoints and vertical deck
@@ -17,7 +17,7 @@ lemma periodicCoordinate_nat (hN : 0 < N) (i : Fin N) :
     periodicCoordinate hN (i.val : ℤ) = i := by
   apply Fin.ext
   change ((i.val : ℤ) % (N : ℤ)).toNat = i.val
-  rw [Int.emod_eq_of_lt (Int.natCast_nonneg _) (by exact_mod_cast i.isLt), Int.toNat_natCast]
+  simp [Int.emod_eq_of_lt]
 
 lemma periodicCoordinate_sub_one (hN : 0 < N) (z : ℤ) :
     periodicCoordinate hN (z-1) = prv (periodicCoordinate hN z) := by
@@ -35,31 +35,36 @@ lemma periodicCoordinate_add_period_mul (hN : 0 < N) (z k : ℤ) :
   apply Fin.ext
   simp [periodicCoordinate,Int.add_emod]
 
+section
+
+variable (e : Fin N × Fin M) (b : Bool)
+
 /-- Canonical integer endpoint coordinates of an indexed primal diamond edge. -/
-def edgeLiftRaw (e : Fin N × Fin M) (b : Bool) : ℤ × ℤ :=
+def edgeLiftRaw : ℤ × ℤ :=
   if b then
     (if checker e then (e.1.val : ℤ)-1 else e.1.val, (e.2.val : ℤ)-1)
   else (if checker e then e.1.val else (e.1.val : ℤ)-1, e.2.val)
 
-lemma edgeLiftRaw_even (e : Fin N × Fin M) (b : Bool) :
+lemma edgeLiftRaw_even :
     Even ((edgeLiftRaw e b).1 + (edgeLiftRaw e b).2) := by
   have hmod : (e.1.val + e.2.val) % 2 = 0 ∨ (e.1.val + e.2.val) % 2 = 1 := by omega
   rcases hmod with hc | hc
   · have hb : checker e = true := by simp [checker,hc]
-    have he : Even (e.1.val+e.2.val) := Nat.even_iff.2 hc
+    have he := Nat.even_iff.2 hc
     have hz : Even ((e.1.val : ℤ)+(e.2.val : ℤ)) := by exact_mod_cast he
     rcases hz with ⟨k,hk⟩
     cases b <;> simp only [edgeLiftRaw,hb,Bool.false_eq_true,ite_true,ite_false]
-    · exact ⟨k,hk⟩
+    · simp_all
     · exact ⟨k-1,by omega⟩
   · have hb : checker e = false := by simp [checker,hc]
-    have hz : ((e.1.val : ℤ)+(e.2.val : ℤ)) % 2 = 1 := by exact_mod_cast hc
     cases b <;> simp only [edgeLiftRaw,hb,Bool.false_eq_true,ite_true,ite_false] <;>
-      exact ⟨((e.1.val : ℤ)+(e.2.val : ℤ))/2,by omega⟩
+      grind
 
 /-- A canonical lift of one endpoint, with no choice of path or representative. -/
-def edgeLift (e : Fin N × Fin M) (b : Bool) : RotatedVertex :=
+def edgeLift : RotatedVertex :=
   ⟨edgeLiftRaw e b,edgeLiftRaw_even e b⟩
+
+end
 
 theorem edgeLift_adj (e : Fin N × Fin M) :
     rotatedLattice.Adj (edgeLift e false) (edgeLift e true) := by
@@ -67,10 +72,7 @@ theorem edgeLift_adj (e : Fin N × Fin M) :
 
 theorem edgeLift_index (hNp : 0 < N) (hMp : 0 < M) (e : Fin N × Fin M) :
     liftedEdgeIndex hNp hMp (edgeLift e false) (edgeLift e true) = e := by
-  have hx : max (e.1.val : ℤ) ((e.1.val : ℤ)-1) = e.1.val := max_eq_left (by omega)
-  have hy : max (e.2.val : ℤ) ((e.2.val : ℤ)-1) = e.2.val := max_eq_left (by omega)
-  cases hc : checker e <;>
-    simp [liftedEdgeIndex,edgeLift,edgeLiftRaw,hc,periodicCoordinate_nat]
+  grind [liftedEdgeIndex, edgeLift, edgeLiftRaw, periodicCoordinate_nat]
 
 theorem edgeLift_projects (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
     (e : Fin N × Fin M) (b : Bool) :
@@ -84,7 +86,7 @@ theorem edgeLift_projects (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M
 def verticalDeck (hM : Even M) (k : ℤ) (u : RotatedVertex) : RotatedVertex :=
   ⟨(u.val.1,u.val.2+(M : ℤ)*k), by
     have he : Even ((M : ℤ)*k) := (show Even (M : ℤ) by exact_mod_cast hM).mul_right k
-    simpa only [add_assoc] using u.property.add he⟩
+    simpa [add_assoc] using u.property.add he⟩
 
 lemma verticalDeck_projects (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
     (k : ℤ) (u : RotatedVertex) :

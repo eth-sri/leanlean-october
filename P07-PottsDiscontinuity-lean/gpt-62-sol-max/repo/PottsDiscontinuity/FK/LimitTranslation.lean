@@ -1,16 +1,14 @@
 module
 
 public import PottsDiscontinuity.FK.BoxLimits
-public import PottsDiscontinuity.FK.FreeBoxTranslation
-public import PottsDiscontinuity.FK.WiredLimitTranslation
-public import PottsDiscontinuity.Infra.CylinderUniqueness
+public import PottsDiscontinuity.FK.WiredBoxTranslation
 
 /-!
 # Translation invariance on the exact frozen carrier
 
 Uniqueness of the frozen cylinder characterization transfers the invariance of
 the canonical free and wired limits to every measure satisfying that
-characterization. The endpoint measures are invariant Dirac measures.
+characterization at interior edge parameters.
 -/
 
 @[expose] public section
@@ -21,64 +19,45 @@ namespace PottsDiscontinuity.FK
 
 noncomputable section
 
-theorem dirac_constant_translation_invariant (b : Bool) (a : LatticeVertex) :
-    (Measure.dirac (fun _ : squareLattice.edgeSet => b)).map
-      (latticeConfigurationTranslate a) = Measure.dirac (fun _ => b) := by
-  rw [Measure.map_dirac]
-  congr 1
-  funext e
-  rw [latticeConfigurationTranslate_apply]
+/-- Fixed-center exhaustions give the same limit before and after transport. -/
+private theorem boxLimit_map_eq {F : LatticeVertex → ℕ → ProbabilityMeasure LatticeConfiguration}
+    {μ : ProbabilityMeasure LatticeConfiguration}
+    (h : WeakBoxLimit F μ)
+    (e : squareLattice ≃g squareLattice)
+    (hm : ∀ c r, (F c r).map (latticeConfigurationIsoHomeomorph e) = F (e c) r) :
+    μ.map (latticeConfigurationIsoHomeomorph e) = μ := by
+  have hc (c : LatticeVertex) : Tendsto (fun n => F c n) atTop (𝓝 μ) := by
+    refine h (fun _ => c) id (fun n => latticeBox_mono c (Nat.le_succ n)) (fun v => ?_)
+    obtain ⟨n, hn⟩ := origin_latticeBox_exhaustive (latticeTranslate (-c) v)
+    exact ⟨n, by simpa [latticeTranslate] using
+      (mem_latticeBox_translate_iff c (0, 0) (latticeTranslate (-c) v) n).mpr hn⟩
+  have ht := ((ProbabilityMeasure.continuous_map
+    (latticeConfigurationIsoHomeomorph e).continuous).tendsto μ).comp (hc (0, 0))
+  change Tendsto (fun n => (F (0, 0) n).map (latticeConfigurationIsoHomeomorph e)) _ _ at ht
+  exact tendsto_nhds_unique (by simpa only [hm] using ht) (hc (e (0, 0)))
+
+theorem Internal.freeBoxLimit_latticeIso_invariant (q : Parameters) (e : squareLattice ≃g squareLattice)
+    (hbox : ∀ c v r, e v ∈ latticeBox (e c) r ↔ v ∈ latticeBox c r) :
+    ProbabilityMeasure.map (Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q))
+        (latticeConfigurationIsoHomeomorph e) = Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q) :=
+  boxLimit_map_eq (Classical.choose_spec (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q)).1 e
+    (boxProbabilityMeasure_iso_map q e hbox)
+
+open RCInfinite
 
 /-- Every interior-parameter frozen limit is invariant under every lattice translation. -/
 theorem isRCInfiniteVolumeLimit_interior_translation_invariant
     (θ : Parameters) (i : Fin 2) (μ : Measure LatticeConfiguration)
     (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ) (a : LatticeVertex) :
     μ.map (latticeConfigurationTranslate a) = μ := by
+  obtain ⟨ν, hν, _⟩ := boxMeasure_existsUnique θ i
+  rw [rc_limit_eq_of_weakBoxLimit hμ hν]
+  apply congrArg ProbabilityMeasure.toMeasure
+    (boxLimit_map_eq hν (latticeTranslationIso a) ?_)
+  intro c r
   fin_cases i
-  · let ν := Classical.choose (freeBoxLimit_existsUnique θ)
-    have hν := (Classical.choose_spec (freeBoxLimit_existsUnique θ)).1
-      (fun _ => (0, 0)) (fun n => n)
-      origin_latticeBox_nested origin_latticeBox_exhaustive
-    have heq : μ = ν.toMeasure := rc_limit_unique θ.toP θ.toQ 0 μ ν.toMeasure hμ
-      (isRCInfiniteVolumeLimit_of_freeBox_tendsto θ ν hν)
-    rw [heq]
-    exact congrArg ProbabilityMeasure.toMeasure
-      (Internal.freeBoxLimit_translation_invariant θ a)
-  · let ν := Classical.choose (wiredBoxLimit_existsUnique θ)
-    have hν := (Classical.choose_spec (wiredBoxLimit_existsUnique θ)).1
-      (fun _ => (0, 0)) (fun n => n)
-      origin_latticeBox_nested origin_latticeBox_exhaustive
-    have heq : μ = ν.toMeasure := rc_limit_unique θ.toP θ.toQ 1 μ ν.toMeasure hμ
-      (isRCInfiniteVolumeLimit_of_wiredBox_tendsto θ ν hν)
-    rw [heq]
-    exact congrArg ProbabilityMeasure.toMeasure (wiredBoxLimit_translation_invariant θ a)
-
-/-- Translation invariance of every frozen box limit, including both endpoint parameters. -/
-theorem isRCInfiniteVolumeLimit_translation_invariant
-    (p : Set.Icc (0 : ℝ) 1) (q : Set.Ioi (0 : ℝ)) (hq : 1 ≤ (q : ℝ)) (i : Fin 2)
-    (μ : Measure (PottsDiscontinuity.squareLattice.edgeSet → Bool))
-    (hμ : IsRCInfiniteVolumeLimit p q i μ) (a : LatticeVertex) :
-    μ.map (latticeConfigurationTranslate a) = μ := by
-  by_cases hp0 : (p : ℝ) = 0
-  · have hp : p = endpointParameter false := Subtype.ext hp0
-    subst p
-    have heq := rc_limit_unique (endpointParameter false) q i μ
-      (Measure.dirac (fun _ => false)) hμ (isRCInfiniteVolumeLimit_endpoint q i false)
-    rw [heq]
-    exact dirac_constant_translation_invariant false a
-  by_cases hp1 : (p : ℝ) = 1
-  · have hp : p = endpointParameter true := Subtype.ext hp1
-    subst p
-    have heq := rc_limit_unique (endpointParameter true) q i μ
-      (Measure.dirac (fun _ => true)) hμ (isRCInfiniteVolumeLimit_endpoint q i true)
-    rw [heq]
-    exact dirac_constant_translation_invariant true a
-  let θ : Parameters :=
-    { val := q
-      property := hq
-      edgeProbability := ⟨p, lt_of_le_of_ne p.property.1 (Ne.symm hp0),
-        lt_of_le_of_ne p.property.2 hp1⟩ }
-  exact isRCInfiniteVolumeLimit_interior_translation_invariant θ i μ hμ a
+  · exact boxProbabilityMeasure_iso_map θ (latticeTranslationIso a) (mem_latticeBox_translate_iff a) c r
+  · exact wiredBoxProbabilityMeasure_iso_map (latticeTranslationIso a) (mem_latticeBox_translate_iff a) c r θ
 
 end
 

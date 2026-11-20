@@ -21,55 +21,67 @@ open scoped Classical
 
 variable {N M : ℕ}
 
-theorem periodicCoordinate_congr (hp : 0 < N) {z z' : ℤ} (h : z % (N : ℤ) = z' % (N : ℤ)) :
+section
+
+variable (hp : 0 < N)
+
+theorem periodicCoordinate_congr {z z' : ℤ} (h : z % (N : ℤ) = z' % (N : ℤ)) :
     periodicCoordinate hp z = periodicCoordinate hp z' := by
   apply Fin.ext
   unfold periodicCoordinate
-  simp only [h]
+  simp_all
 
-theorem periodicCoordinate_val_add (hp : 0 < N) (z a : ℤ) :
+theorem periodicCoordinate_val_add (z a : ℤ) :
     periodicCoordinate hp (((periodicCoordinate hp z).val : ℤ) + a) = periodicCoordinate hp (z + a) := by
   apply periodicCoordinate_congr
-  rw [periodicCoordinate_val, Int.emod_add_emod]
+  simp [periodicCoordinate_val]
 
 /-- Cyclic translation of a coordinate. -/
-def periodicShift (hp : 0 < N) (a : ℤ) : Fin N ≃ Fin N where
+def periodicShift (a : ℤ) : Fin N ≃ Fin N where
   toFun j := periodicCoordinate hp ((j.val : ℤ) + a)
   invFun j := periodicCoordinate hp ((j.val : ℤ) - a)
   left_inv j := by
     change periodicCoordinate hp (((periodicCoordinate hp ((j.val : ℤ) + a)).val : ℤ) - a) = j
-    rw [sub_eq_add_neg, periodicCoordinate_val_add, add_assoc, add_neg_cancel, add_zero,
-      periodicCoordinate_nat hp]
+    simp [sub_eq_add_neg, periodicCoordinate_val_add, periodicCoordinate_nat hp]
   right_inv j := by
-    change periodicCoordinate hp (((periodicCoordinate hp ((j.val : ℤ) - a)).val : ℤ) + a) = j
-    rw [periodicCoordinate_val_add, sub_add_cancel, periodicCoordinate_nat hp]
+    grind only [periodicCoordinate_val_add, periodicCoordinate_nat]
 
-theorem periodicShift_periodicCoordinate (hp : 0 < N) (a z : ℤ) :
+theorem periodicShift_periodicCoordinate (a z : ℤ) :
     periodicShift hp a (periodicCoordinate hp z) = periodicCoordinate hp (z + a) :=
   periodicCoordinate_val_add hp z a
 
+end
+
+section
+
+variable (hNp : 0 < N) (hMp : 0 < M) (a b : ℤ)
+
 /-- Translation of the torus indices. -/
-def shiftIdx (hNp : 0 < N) (hMp : 0 < M) (a b : ℤ) : (Fin N × Fin M) ≃ (Fin N × Fin M) :=
+def shiftIdx : (Fin N × Fin M) ≃ (Fin N × Fin M) :=
   Equiv.prodCongr (periodicShift hNp a) (periodicShift hMp b)
 
 /-- Translation of an indexed configuration: `(translRC a b A) v = A (v + (a,b))`. -/
-def translRC (hNp : 0 < N) (hMp : 0 < M) (a b : ℤ) (A : RCConfig N M) : RCConfig N M :=
+def translRC (A : RCConfig N M) : RCConfig N M :=
   fun v => A (shiftIdx hNp hMp a b v)
 
-/-- Translation of the lifted lattice by `(a, b)`, `a + b` even. -/
-def shiftRV (a b : ℤ) (hab : Even (a + b)) (z : RotatedVertex) : RotatedVertex :=
-  ⟨(z.val.1 + a, z.val.2 + b), by
-    obtain ⟨k, hk⟩ := z.property
-    obtain ⟨l, hl⟩ := hab
-    exact ⟨k + l, by dsimp only at *; omega⟩⟩
+end
 
-theorem shiftRV_adj (a b : ℤ) (hab : Even (a + b)) {u v : RotatedVertex} :
+section
+
+variable (a b : ℤ) (hab : Even (a + b))
+
+/-- Translation of the lifted lattice by `(a, b)`, `a + b` even. -/
+def shiftRV (z : RotatedVertex) : RotatedVertex :=
+  ⟨(z.val.1 + a, z.val.2 + b), by
+    grind⟩
+
+theorem shiftRV_adj {u v : RotatedVertex} :
     rotatedLattice.Adj (shiftRV a b hab u) (shiftRV a b hab v) ↔ rotatedLattice.Adj u v := by
   change (|(u.val.1 + a) - (v.val.1 + a)| = 1 ∧ |(u.val.2 + b) - (v.val.2 + b)| = 1) ↔
     (|u.val.1 - v.val.1| = 1 ∧ |u.val.2 - v.val.2| = 1)
-  have h1 : (u.val.1 + a) - (v.val.1 + a) = u.val.1 - v.val.1 := by ring
-  have h2 : (u.val.2 + b) - (v.val.2 + b) = u.val.2 - v.val.2 := by ring
-  rw [h1, h2]
+  simp
+
+end
 
 theorem liftedEdgeIndex_shift (hNp : 0 < N) (hMp : 0 < M) (a b : ℤ) (hab : Even (a + b))
     (u v : RotatedVertex) :
@@ -79,10 +91,10 @@ theorem liftedEdgeIndex_shift (hNp : 0 < N) (hMp : 0 < M) (a b : ℤ) (hab : Eve
   apply Prod.ext
   · change periodicCoordinate hNp (max (u.val.1 + a) (v.val.1 + a)) =
       periodicShift hNp a (periodicCoordinate hNp (max u.val.1 v.val.1))
-    rw [periodicShift_periodicCoordinate, max_add_add_right]
+    simp [periodicShift_periodicCoordinate]
   · change periodicCoordinate hMp (max (u.val.2 + b) (v.val.2 + b)) =
       periodicShift hMp b (periodicCoordinate hMp (max u.val.2 v.val.2))
-    rw [periodicShift_periodicCoordinate, max_add_add_right]
+    simp [periodicShift_periodicCoordinate]
 
 section Faces
 
@@ -97,12 +109,8 @@ theorem translatePrimalFace_projects (u : RotatedVertex) :
       liftedFaceVertex hN hM hNp hMp (shiftRV a b hab u) := by
   apply Subtype.ext
   apply Prod.ext
-  · change periodicCoordinate hNp (((periodicCoordinate hNp u.val.1).val : ℤ) + a) =
-      periodicCoordinate hNp (u.val.1 + a)
-    exact periodicCoordinate_val_add hNp _ _
-  · change periodicCoordinate hMp (((periodicCoordinate hMp u.val.2).val : ℤ) + b) =
-      periodicCoordinate hMp (u.val.2 + b)
-    exact periodicCoordinate_val_add hMp _ _
+  · exact periodicCoordinate_val_add hNp _ _
+  · exact periodicCoordinate_val_add hMp _ _
 
 theorem lifted_canonical (v : FaceVertex N M true) :
     liftedFaceVertex hN hM hNp hMp (canonicalPrimalLift v) = v := by
@@ -111,19 +119,24 @@ theorem lifted_canonical (v : FaceVertex N M true) :
   · exact periodicCoordinate_nat hNp _
   · exact periodicCoordinate_nat hMp _
 
-theorem shiftRV_shiftRV (hab' : Even (-a + -b)) (u : RotatedVertex) :
+section
+
+variable (hab' : Even (-a + -b)) (u : RotatedVertex)
+
+theorem shiftRV_shiftRV :
     shiftRV (-a) (-b) hab' (shiftRV a b hab u) = u := by
   apply Subtype.ext
   apply Prod.ext <;> simp [shiftRV]
 
-theorem shiftRV_shiftRV' (hab' : Even (-a + -b)) (u : RotatedVertex) :
+theorem shiftRV_shiftRV' :
     shiftRV a b hab (shiftRV (-a) (-b) hab' u) = u := by
   apply Subtype.ext
   apply Prod.ext <;> simp [shiftRV]
 
+end
+
 theorem even_neg_add (hab : Even (a + b)) : Even (-a + -b) := by
-  have : -a + -b = -(a + b) := by ring
-  rw [this]; exact hab.neg
+  grind
 
 /-- Translation of the primal vertices as an equivalence. -/
 def translatePrimalFaceEquiv : FaceVertex N M true ≃ FaceVertex N M true where
@@ -150,22 +163,21 @@ theorem translatePrimalFace_edge (e : Fin N × Fin M) :
     translatePrimalFace_projects, translatePrimalFace_projects]
   have h := liftedFaceEndpoints_eq hN hM hNp hMp (shiftRV a b hab (edgeLift e false))
     (shiftRV a b hab (edgeLift e true)) ((shiftRV_adj a b hab).2 (edgeLift_adj e))
-  rw [liftedEdgeIndex_shift, edgeLift_index] at h
-  exact h
+  simpa [liftedEdgeIndex_shift, edgeLift_index] using h
 
 theorem diamondOpen_translate_adj_iff (A : RCConfig N M) {u v : FaceVertex N M true} :
     (diamondOpenGraph hN hM true A).Adj (translatePrimalFace hN hM hNp hMp a b hab u)
       (translatePrimalFace hN hM hNp hMp a b hab v) ↔
     (diamondOpenGraph hN hM true (translRC hNp hMp a b A)).Adj u v := by
-  have hinj : Function.Injective (translatePrimalFace hN hM hNp hMp a b hab) :=
+  have hinj :=
     (translatePrimalFaceEquiv hN hM hNp hMp a b hab).injective
   unfold diamondOpenGraph
   rw [SimpleGraph.fromEdgeSet_adj, SimpleGraph.fromEdgeSet_adj]
   constructor
   · rintro ⟨⟨idx', hA, hs⟩, hne⟩
-    refine ⟨⟨(shiftIdx hNp hMp a b).symm idx', ?_, ?_⟩, fun h => hne (by rw [h])⟩
+    refine ⟨⟨(shiftIdx hNp hMp a b).symm idx', ?_, ?_⟩, fun h => hne (by simp_all)⟩
     · unfold translRC
-      rwa [Equiv.apply_symm_apply]
+      simp_all
     · apply Sym2.map.injective hinj
       have hL : Sym2.map (translatePrimalFace hN hM hNp hMp a b hab) s(u, v) =
           s(faceEndpoint hN hM true idx' false, faceEndpoint hN hM true idx' true) := hs
@@ -194,9 +206,7 @@ theorem clusterCount_translate (A : RCConfig N M) :
   Nat.card_congr (translateIso hN hM hNp hMp a b hab A).connectedComponentEquiv
 
 theorem periodicShift_neg (hp : 0 < N) (a : ℤ) : periodicShift hp (-a) = (periodicShift hp a).symm := by
-  refine Equiv.ext fun j => ?_
-  show periodicCoordinate hp ((j.val : ℤ) + -a) = periodicCoordinate hp ((j.val : ℤ) - a)
-  rw [sub_eq_add_neg]
+  aesop
 
 theorem openCount_translate (A : RCConfig N M) :
     openCount (translRC hNp hMp a b A) = openCount A := by
@@ -231,7 +241,7 @@ def translRCEquiv : RCConfig N M ≃ RCConfig N M where
       unfold shiftIdx
       rw [periodicShift_neg, periodicShift_neg]
       rfl
-    rw [this, Equiv.apply_symm_apply]
+    simp [this]
   right_inv A := by
     funext v
     change A (shiftIdx hNp hMp (-a) (-b) (shiftIdx hNp hMp a b v)) = A v
@@ -239,7 +249,7 @@ def translRCEquiv : RCConfig N M ≃ RCConfig N M where
       unfold shiftIdx
       rw [periodicShift_neg, periodicShift_neg]
       rfl
-    rw [this, Equiv.symm_apply_apply]
+    simp [this]
 
 include hab in
 theorem torusRCMass_translate (q : Set.Ici (1 : ℝ)) (A : RCConfig N M) :
@@ -260,8 +270,7 @@ theorem torusRCProbability_translate (q : Set.Ici (1 : ℝ)) (E : Set (RCConfig 
         by_cases h : A ∈ translRC hNp hMp a b ⁻¹' E
         · rw [Set.indicator_of_mem h, Set.indicator_of_mem (show translRC hNp hMp a b A ∈ E from h),
             torusRCMass_translate hN hM hNp hMp a b hab]
-        · rw [Set.indicator_of_notMem h,
-            Set.indicator_of_notMem (show translRC hNp hMp a b A ∉ E from h)]
+        simp_all
     _ = _ := Equiv.sum_comp (translRCEquiv hNp hMp a b) (E.indicator (torusRCMass hN hM q))
 
 end Faces
@@ -280,11 +289,7 @@ theorem strip_adj_shift (hNp : 0 < N) (hMp : 0 < M) (a b : ℤ) (hab : Even (a +
       (α' ≤ u.val.1 ∧ u.val.1 ≤ β') ∧ (α' ≤ v.val.1 ∧ v.val.1 ≤ β'))
   rw [shiftRV_adj, liftedEdgeIndex_shift]
   change _ ↔ rotatedLattice.Adj u v ∧ A (shiftIdx hNp hMp a b (liftedEdgeIndex hNp hMp u v)) = true ∧ _
-  constructor
-  · rintro ⟨h1, h2, ⟨h3, h4⟩, ⟨h5, h6⟩⟩
-    exact ⟨h1, h2, ⟨by omega, by omega⟩, ⟨by omega, by omega⟩⟩
-  · rintro ⟨h1, h2, ⟨h3, h4⟩, ⟨h5, h6⟩⟩
-    exact ⟨h1, h2, ⟨by omega, by omega⟩, ⟨by omega, by omega⟩⟩
+  simp
 
 /-- Translation of the lifted lattice as an equivalence. -/
 def shiftRVEquiv (a b : ℤ) (hab : Even (a + b)) : RotatedVertex ≃ RotatedVertex where
@@ -326,8 +331,7 @@ theorem prob_vCross_le (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
     (q : Set.Ici (1 : ℝ)) (n : ℕ) (a b : ℤ) (hab : Even (a + b)) :
     torusRCProbability hN hM q {A | vCross hNp hMp n a b A} ≤
       torusRCProbability hN hM q {A | vCross hNp hMp n 0 0 A} := by
-  have hsub : {A | vCross hNp hMp n a b A} ⊆
-      translRC hNp hMp a b ⁻¹' {A | vCross hNp hMp n 0 0 A} :=
+  have hsub :=
     fun A hA => vCross_translate hNp hMp n a b hab A hA
   calc _ ≤ torusRCProbability hN hM q (translRC hNp hMp a b ⁻¹' {A | vCross hNp hMp n 0 0 A}) :=
         torusRCProbability_mono hN hM q hsub

@@ -63,7 +63,7 @@ def ribbonCornerEquiv (hN : Even N) (hM : Even M) :
   left_inv x := by
     rcases x with ⟨v, p⟩
     apply Prod.ext
-    · exact Subtype.ext (leftFace_faceCorner v.val p)
+    · simp
     · cases p <;> rfl
   right_inv d := Subtype.ext (faceCorner_leftFace d.val)
 
@@ -86,7 +86,7 @@ def cwPort : Port → Port
   | .north => .east
 
 def ccwPortPerm : Equiv.Perm Port :=
-  ⟨ccwPort, cwPort, by intro p; cases p <;> rfl, by intro p; cases p <;> rfl⟩
+  ⟨ccwPort, cwPort, by trivial, by trivial⟩
 
 /-- The boundary of the disjoint primal vertex discs, before any open ribbon is attached. -/
 def faceRotation (hN : Even N) (hM : Even M) :
@@ -106,36 +106,38 @@ theorem faceRotation_corner (hN : Even N) (hM : Even M)
     nxt, prv, Equiv.symm_apply_apply, checker_nxt_x hN, checker_nxt_y hM,
     hv, Bool.not_true, Bool.not_false, ccwPort, pairedPort]
 
-theorem faceRotation_pow_corner (hN : Even N) (hM : Even M)
-    (v : FaceVertex N M true) (p : Port) (n : ℕ) :
-    (faceRotation hN hM ^ n) (ribbonCornerEquiv hN hM (v, p)) =
-      ribbonCornerEquiv hN hM (v, (ccwPortPerm ^ n) p) := by
-  induction n with
-  | zero => rfl
-  | succ n ih =>
-    rw [pow_succ', Equiv.Perm.mul_apply, ih, faceRotation_corner]
-    rw [pow_succ', Equiv.Perm.mul_apply]
-    rfl
+/-- A permutation rotating each fiber in the same way has one orbit per fiber. -/
+theorem sameCycle_of_fiber_rotation {X Y Z : Type*} [Finite Y] [Finite Z]
+    (e : X × Y ≃ Z) (P : Equiv.Perm Z) (r : Equiv.Perm Y)
+    (he : ∀ x y, P (e (x, y)) = e (x, r y))
+    (hr : ∀ y z, r.SameCycle y z) (d d' : Z) :
+    P.SameCycle d d' ↔ (e.symm d).1 = (e.symm d').1 := by
+  constructor
+  · apply sameCycle_invariant P (fun a => (e.symm a).1)
+    rintro a
+    obtain ⟨⟨x, y⟩, rfl⟩ := e.surjective a
+    simp [he]
+  · obtain ⟨⟨x, y⟩, rfl⟩ := e.surjective d
+    obtain ⟨⟨x', y'⟩, rfl⟩ := e.surjective d'
+    simp only [Equiv.symm_apply_apply]
+    rintro rfl
+    obtain ⟨n, hn⟩ := (hr y y').exists_nat_pow_eq
+    have hp (k : ℕ) : (P ^ k) (e (x,y)) = e (x, (r ^ k) y) := by
+      induction k with
+      | zero => rfl
+      | succ k ih => simp [pow_succ', ih, he]
+    exact ⟨n, by simp [hp, hn]⟩
+
+theorem ccwPort_sameCycle (p q : Port) : ccwPortPerm.SameCycle p q := by
+  have h : ∀ p q : Port, ∃ n : Fin 4, (ccwPortPerm ^ n.val) p = q := by decide
+  obtain ⟨n, hn⟩ := h p q
+  exact ⟨n.val, by simpa using hn⟩
 
 /-- The vertex cycles of the ribbon rotation are exactly the primal face vertices. -/
 theorem sameCycle_faceRotation (hN : Even N) (hM : Even M)
     (d e : DirectedDart (checkerArrows N M)) :
     (faceRotation hN hM).SameCycle d e ↔ leftFace d.val = leftFace e.val := by
-  constructor
-  · apply sameCycle_invariant (faceRotation hN hM) (fun d => leftFace d.val)
-    intro x
-    obtain ⟨⟨v, p⟩, rfl⟩ := (ribbonCornerEquiv hN hM).surjective x
-    rw [faceRotation_corner]
-    simp only [ribbonCornerEquiv_val, leftFace_faceCorner]
-  · intro hde
-    obtain ⟨⟨v, p⟩, rfl⟩ := (ribbonCornerEquiv hN hM).surjective d
-    obtain ⟨⟨w, q⟩, rfl⟩ := (ribbonCornerEquiv hN hM).surjective e
-    have hvw : v = w := Subtype.ext (by
-      simpa only [ribbonCornerEquiv_val, leftFace_faceCorner] using hde)
-    subst w
-    have hc : ∀ p q : Port, ∃ n : Fin 4, (ccwPortPerm ^ n.val) p = q := by decide
-    obtain ⟨n, hn⟩ := hc p q
-    refine ⟨(n.val : ℤ), ?_⟩
-    rw [zpow_natCast, faceRotation_pow_corner, hn]
+  exact (sameCycle_of_fiber_rotation (ribbonCornerEquiv hN hM) _ ccwPortPerm
+    (faceRotation_corner hN hM) ccwPort_sameCycle d e).trans Subtype.ext_iff
 
 end PottsDiscontinuity.Torus

@@ -32,7 +32,7 @@ private theorem rectangleReachable_sub_diamond (hN : Even N) (hM : Even M)
       rcases hadj with ⟨⟨e, he, hx, hy, hp⟩, hne⟩
       have hadj' : (diamondOpenGraph hN hM true A).Adj w z := by
         rw [diamondOpenGraph, SimpleGraph.fromEdgeSet_adj]
-        exact ⟨⟨e, he, hp⟩, hne⟩
+        tauto
       exact (SimpleGraph.reachable_iff_reflTransGen w z).mp hadj'.reachable
 
 private theorem horizontalCrossingPrimalClusters_hasCrossing
@@ -63,26 +63,26 @@ theorem horizontalCrossingPrimalClusters_card_le_rectangleCrossingComponents
           G.connectedComponentMk u = c ∧ R.Reachable u v := by
     intro c hc
     exact horizontalCrossingPrimalClusters_hasCrossing hN hM hNp A c hc
-  let u₀ : FaceVertex N M true := faceEndpoint hN hM true
+  let u₀ := faceEndpoint hN hM true
     (⟨⟨0, hNp⟩, ⟨0, hMp⟩⟩) false
-  let d₀ : R.ConnectedComponent := R.connectedComponentMk u₀
-  let f : G.ConnectedComponent → R.ConnectedComponent := fun c =>
+  let d₀ := R.connectedComponentMk u₀
+  let f := fun c =>
     if hc : c ∈ H then R.connectedComponentMk (Classical.choose (crossData c hc)) else d₀
   have hmaps : Set.MapsTo f H K := by
     intro c hc
     have hdata := Classical.choose_spec (Classical.choose_spec (crossData c hc))
     let u := Classical.choose (crossData c hc)
     let w := Classical.choose (Classical.choose_spec (crossData c hc))
-    have hu : u.val.1.val = 0 := hdata.1
-    have hw : w.val.1.val + 1 = N := hdata.2.1
-    have hreach : R.Reachable u w := hdata.2.2.2
+    have hu := hdata.1
+    have hw := hdata.2.1
+    have hreach := hdata.2.2.2
     dsimp [f]
     split_ifs with h
     · change R.connectedComponentMk u ∈ rectangleCrossingComponents hN hM A
       unfold rectangleCrossingComponents
       simp only [Finset.mem_filter, Finset.mem_univ, true_and]
       exact ⟨u, w, hu, hw, rfl, hreach⟩
-    · exact (h hc).elim
+    trivial
   have hinj : Set.InjOn f H := by
     intro c hc d hd hcd
     have hcData := Classical.choose_spec (Classical.choose_spec (crossData c hc))
@@ -93,25 +93,25 @@ theorem horizontalCrossingPrimalClusters_card_le_rectangleCrossingComponents
       dsimp [f]
       split_ifs with h
       · rfl
-      · exact (h hc).elim
+      trivial
     have hfd : f d = R.connectedComponentMk u' := by
       dsimp [f]
       split_ifs with h
       · rfl
-      · exact (h hd).elim
-    have hrect : R.connectedComponentMk u = R.connectedComponentMk u' :=
+      trivial
+    have hrect :=
       hfc.symm.trans (hcd.trans hfd)
-    have hreach : R.Reachable u u' := SimpleGraph.ConnectedComponent.exact hrect
-    have hdiamond : G.Reachable u u' := rectangleReachable_sub_diamond hN hM A hreach
-    have hcomp : G.connectedComponentMk u = G.connectedComponentMk u' :=
+    have hreach := SimpleGraph.ConnectedComponent.exact hrect
+    have hdiamond := rectangleReachable_sub_diamond hN hM A hreach
+    have hcomp :=
       SimpleGraph.ConnectedComponent.sound hdiamond
-    have hcu : G.connectedComponentMk u = c := hcData.2.2.1
-    have hdu : G.connectedComponentMk u' = d := hdData.2.2.1
+    have hcu := hcData.2.2.1
+    have hdu := hdData.2.2.1
     calc
       c = G.connectedComponentMk u := hcu.symm
       _ = G.connectedComponentMk u' := hcomp
       _ = d := hdu
-  simpa [H, K] using Finset.card_le_card_of_injOn f hmaps hinj
+  simpa using Finset.card_le_card_of_injOn f hmaps hinj
 
 /-- Corrected loop-to-crossing count using the number of distinct components
 of the cut rectangle. The factor two is retained. -/

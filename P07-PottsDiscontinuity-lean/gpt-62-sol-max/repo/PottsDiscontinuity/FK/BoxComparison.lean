@@ -25,58 +25,67 @@ local instance boxComparisonSmallEdgeFintype (c : LatticeVertex) (r : ℕ) :
     Fintype (boxGraph c r).edgeSet := Fintype.ofFinite _
 local instance boxComparisonLargeEdgeFintype (c : LatticeVertex) (r : ℕ) :
     Fintype (boxGraph c r).edgeSet := Fintype.ofFinite _
-local instance boxComparisonSmallEdgeDecidableEq (c : LatticeVertex) (r : ℕ) :
-    DecidableEq (boxGraph c r).edgeSet := Classical.decEq _
+
+section
+
+variable
+  {c d : LatticeVertex} {r s : ℕ}
+    (hbox : latticeBox c r ⊆ latticeBox d s)
 
 /-- The actual inclusion of vertex carriers induced by containment of boxes. -/
-def boxVertexEmbedding {c d : LatticeVertex} {r s : ℕ}
-    (hbox : latticeBox c r ⊆ latticeBox d s) : BoxVertex c r ↪ BoxVertex d s where
+def boxVertexEmbedding : BoxVertex c r ↪ BoxVertex d s where
   toFun v := ⟨v.val, hbox v.property⟩
   inj' := by
     intro u v h
-    apply Subtype.ext
-    change u.val = v.val
-    exact congrArg (fun w : BoxVertex d s => w.val) h
+    simp_all
 
 /-- The induced small graph maps into the actual induced large graph. -/
-theorem boxGraph_map_boxVertexEmbedding {c d : LatticeVertex} {r s : ℕ}
-    (hbox : latticeBox c r ⊆ latticeBox d s) :
+theorem boxGraph_map_boxVertexEmbedding :
     (boxGraph c r).map (boxVertexEmbedding hbox) ≤ boxGraph d s := by
   intro x y hxy
   rw [SimpleGraph.map_adj] at hxy
   rcases hxy with ⟨u, v, huv, rfl, rfl⟩
-  exact (boxGraph_adj_iff d s _ _).2 ((boxGraph_adj_iff c r _ _).1 huv)
+  assumption
 
-def boxCylinderEvent (c : LatticeVertex) (r : ℕ)
-    (F : Finset squareLattice.edgeSet) : Set (Configuration (boxGraph c r)) :=
+end
+
+section
+
+variable
+  (c : LatticeVertex) (r : ℕ)
+    (F : Finset squareLattice.edgeSet)
+
+def boxCylinderEvent : Set (Configuration (boxGraph c r)) :=
   {A | F ⊆ A.map (boxEdgeEmbedding c r)}
 
-private theorem boxCylinderEvent_upper (c : LatticeVertex) (r : ℕ)
-    (F : Finset squareLattice.edgeSet) :
+private theorem boxCylinderEvent_upper :
     IsUpperSet (boxCylinderEvent c r F) := by
   intro A B hAB hA
   exact hA.trans (Finset.map_subset_map.mpr hAB)
 
-private theorem boxCylinderEvent_indicator_nonneg (c : LatticeVertex) (r : ℕ)
-    (F : Finset squareLattice.edgeSet) :
+private theorem boxCylinderEvent_indicator_nonneg :
     ∀ A, 0 ≤ (boxCylinderEvent c r F).indicator (fun _ => (1 : ℝ)) A := by
-  classical
-  intro A
-  by_cases h : A ∈ boxCylinderEvent c r F <;> simp [Set.indicator, h]
+  grind [Set.indicator]
 
-private theorem boxCylinderEvent_indicator_mono (c : LatticeVertex) (r : ℕ)
-    (F : Finset squareLattice.edgeSet) :
+private theorem boxCylinderEvent_indicator_mono :
     Monotone ((boxCylinderEvent c r F).indicator (fun _ => (1 : ℝ))) := by
   intro A B hAB
   by_cases hA : A ∈ boxCylinderEvent c r F
   · have hB := boxCylinderEvent_upper c r F hAB hA
-    simp [Set.indicator, hA, hB]
+    simp_all
   · simp only [Set.indicator_of_notMem hA]
     exact boxCylinderEvent_indicator_nonneg c r F B
 
-private theorem boxEdgeEmbedding_compatible {c d : LatticeVertex} {r s : ℕ}
+end
+
+section
+
+variable
+  {c d : LatticeVertex} {r s : ℕ}
     (hbox : latticeBox c r ⊆ latticeBox d s)
     (hGH : (boxGraph c r).map (boxVertexEmbedding hbox) ≤ boxGraph d s)
+
+private theorem boxEdgeEmbedding_compatible
     (e : (boxGraph c r).edgeSet) :
     boxEdgeEmbedding d s (embeddedEdgeEmbedding (boxGraph c r) (boxGraph d s)
       (boxVertexEmbedding hbox) hGH e) = boxEdgeEmbedding c r e := by
@@ -87,9 +96,7 @@ private theorem boxEdgeEmbedding_compatible {c d : LatticeVertex} {r s : ℕ}
   rw [Sym2.map_map]
   congr 1
 
-private theorem boxCylinderEvent_restrict_iff {c d : LatticeVertex} {r s : ℕ}
-    (hbox : latticeBox c r ⊆ latticeBox d s)
-    (hGH : (boxGraph c r).map (boxVertexEmbedding hbox) ≤ boxGraph d s)
+private theorem boxCylinderEvent_restrict_iff
     (F : Finset squareLattice.edgeSet)
     (hF : ∀ e ∈ F, e ∈ Set.range (boxEdgeEmbedding c r))
     (A : Configuration (boxGraph d s)) :
@@ -105,12 +112,7 @@ private theorem boxCylinderEvent_restrict_iff {c d : LatticeVertex} {r s : ℕ}
     have hyx : embeddedEdgeEmbedding (boxGraph c r) (boxGraph d s)
         (boxVertexEmbedding hbox) hGH x = y := by
       apply (boxEdgeEmbedding d s).injective
-      calc
-        boxEdgeEmbedding d s
-            (embeddedEdgeEmbedding (boxGraph c r) (boxGraph d s)
-              (boxVertexEmbedding hbox) hGH x) = boxEdgeEmbedding c r x := hcompat
-        _ = e := hx
-        _ = boxEdgeEmbedding d s y := hye.symm
+      grind
     have hy' : embeddedEdgeEmbedding (boxGraph c r) (boxGraph d s)
         (boxVertexEmbedding hbox) hGH x ∈ A := by rw [hyx]; exact hy
     have hrestrict := (mem_embeddedConfigurationRestriction _ _ _ _ A x).mpr hy'
@@ -129,6 +131,8 @@ private theorem boxCylinderEvent_restrict_iff {c d : LatticeVertex} {r s : ℕ}
     apply Finset.mem_map.mpr
     exact ⟨embeddedEdgeEmbedding (boxGraph c r) (boxGraph d s)
       (boxVertexEmbedding hbox) hGH x, hy', hcompat.trans hx⟩
+
+end
 
 private theorem boxCylinder_toReal_eq_expectation (q : Parameters)
     (c : LatticeVertex) (r : ℕ) (F : Finset squareLattice.edgeSet) :
@@ -178,12 +182,12 @@ theorem boxProbabilityMeasure_allOpen_mono (q : Parameters)
       by_cases h : A ∈ boxCylinderEvent d s F
       · have hr : embeddedConfigurationRestriction (boxGraph c r) (boxGraph d s)
             f hGH A ∈ boxCylinderEvent c r F := heq.mp h
-        simp [Set.indicator, h, hr]
+        simp [h, hr]
       · have hr : embeddedConfigurationRestriction (boxGraph c r) (boxGraph d s)
             f hGH A ∉ boxCylinderEvent c r F := by
           intro hs
           exact h (heq.mpr hs)
-        simp [Set.indicator, h, hr]
+        simp [h, hr]
     have hcmp' := hcmp.trans_eq hlarge
     have hreal :
         (((boxProbabilityMeasure q c r : Measure LatticeConfiguration)
@@ -206,13 +210,12 @@ theorem boxProbabilityMeasure_allOpen_mono (q : Parameters)
       · intro hA
         have heMap : e ∈ A.map (boxEdgeEmbedding c r) := hA heF
         obtain ⟨a, ha, hEq⟩ := Finset.mem_map.mp heMap
-        exact heRange ⟨a, hEq⟩
+        tauto
       · simp
     rw [boxProbabilityMeasure_allOpen q c r F]
     change measure (boxGraph c r) q (BoundaryCondition.free ∅)
       (boxCylinderEvent c r F) ≤ _
-    rw [hempty, measure_empty]
-    exact bot_le
+    simp [*]
 
 end
 end PottsDiscontinuity.FK

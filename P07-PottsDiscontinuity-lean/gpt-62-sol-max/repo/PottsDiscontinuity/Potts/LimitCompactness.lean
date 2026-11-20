@@ -66,49 +66,19 @@ theorem spinCylinderCoordinates_injective (q : ℕ) (hq : 2 ≤ q) :
     (ν : Measure (SpinSpace q)) (fun _ => ⟨1, by omega, by omega⟩)
   intro A ξ
   have hc : μ (spinCylinder q A ξ) = ν (spinCylinder q A ξ) := congrFun h (A, ξ)
-  simpa only [spinCylinder, ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure] using
-    congrArg (fun x : NNReal => (x : ENNReal)) hc
+  grind only [spinCylinder, ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure]
 
-/-- If every finite spin cylinder has a limiting probability, the whole sequence
-converges weakly to the unique probability measure with those cylinder values.
-
-This theorem supplies only the compactness and uniqueness step. Its cylinder
-convergence hypothesis must be established separately for the Potts box laws.
--/
+/-- Finite-cylinder probabilities determine weak convergence of spin laws. -/
 theorem probabilityMeasures_tendsto_of_spinCylinder_tendsto (q : ℕ) (hq : 2 ≤ q)
-    (μs : ℕ → ProbabilityMeasure (SpinSpace q))
-    (cyl : SpinCylinderIndex q → NNReal)
-    (hcyl : ∀ A ξ,
-      Tendsto (fun n => μs n (spinCylinder q A ξ)) atTop (𝓝 (cyl (A, ξ)))) :
-    ∃! μ : ProbabilityMeasure (SpinSpace q),
-      Tendsto μs atTop (𝓝 μ) ∧
-        ∀ A ξ, μ (spinCylinder q A ξ) = cyl (A, ξ) := by
-  classical
-  obtain ⟨μ, φ, hφ, hsub⟩ := CompactSpace.tendsto_subseq μs
-  have hμcyl (A : Finset (ℤ × ℤ)) (ξ : SpinSpace q) :
-      μ (spinCylinder q A ξ) = cyl (A, ξ) := by
-    have hweak := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hsub
-      (spinCylinder_isClopen q A ξ)
-    have hgiven := (hcyl A ξ).comp hφ.tendsto_atTop
-    exact tendsto_nhds_unique hweak hgiven
-  let κ : ProbabilityMeasure (SpinSpace q) → SpinCylinderIndex q → NNReal :=
-    spinCylinderCoordinates q
-  have hκcont : Continuous κ := continuous_spinCylinderCoordinates q
-  have hκinj : Function.Injective κ := spinCylinderCoordinates_injective q hq
-  have hκembed : IsClosedEmbedding κ := hκcont.isClosedEmbedding hκinj
-  have hcoords : Tendsto (fun n => κ (μs n)) atTop (𝓝 (κ μ)) := by
-    apply tendsto_pi_nhds.2
-    intro i
-    rcases i with ⟨A, ξ⟩
-    change Tendsto (fun n => μs n (spinCylinder q A ξ)) atTop
-      (𝓝 (μ (spinCylinder q A ξ)))
-    rw [hμcyl A ξ]
-    exact hcyl A ξ
-  have hweak : Tendsto μs atTop (𝓝 μ) := hκembed.tendsto_nhds_iff.mpr hcoords
-  refine ⟨μ, ⟨hweak, hμcyl⟩, ?_⟩
-  intro ν hν
-  exact tendsto_nhds_unique hν.1 hweak
+    (μs : ℕ → ProbabilityMeasure (SpinSpace q)) (μ : ProbabilityMeasure (SpinSpace q))
+    (hcyl : ∀ A ξ, Tendsto (fun n => (μs n).toMeasure.real (spinCylinder q A ξ))
+        atTop (𝓝 (μ.toMeasure.real (spinCylinder q A ξ)))) : Tendsto μs atTop (𝓝 μ) := by
+  apply ((continuous_spinCylinderCoordinates q).isClosedEmbedding
+    (spinCylinderCoordinates_injective q hq)).tendsto_nhds_iff.mpr
+  apply tendsto_pi_nhds.mpr
+  rintro ⟨A, ξ⟩
+  apply NNReal.tendsto_coe.mp
+  simpa [spinCylinderCoordinates] using hcyl A ξ
 
 end
-
 end PottsDiscontinuity.Potts

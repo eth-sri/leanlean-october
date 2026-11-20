@@ -53,9 +53,6 @@ theorem loopTurn_mod_four (ω : ArrowConfig N M) (s : Smoothing N M)
       (loopTurn ω s h q : ZMod 4) =
         (loopSum ω s h (fun d => strandTurn (s (stepPerm s d).1)
           (stepPerm s d).2) q : ZMod 4) := by
-    change (loopSum ω s h (fun d => strandTurn (s d.1) d.2) q : ZMod 4) =
-      (loopSum ω s h (fun d => strandTurn (s (stepPerm s d).1)
-        (stepPerm s d).2) q : ZMod 4)
     exact congrArg (fun z : ℤ => (z : ZMod 4)) hstep.symm
   have hlocal :
       (loopSum ω s h (fun d => strandTurn (s (stepPerm s d).1)
@@ -76,7 +73,7 @@ theorem loopTurn_mod_four (ω : ArrowConfig N M) (s : Smoothing N M)
         if directedLoopOf ω s h d = q then portAngle (stepPerm s d.val).2 else 0) =
       ∑ d : DirectedDart ω,
         if directedLoopOf ω s h d = q then portAngle d.val.2 else 0 := by
-    let g : DirectedDart ω → ZMod 4 := fun d =>
+    let g := fun d =>
       if directedLoopOf ω s h d = q then portAngle d.val.2 else 0
     calc
       _ = ∑ d : DirectedDart ω, g (directedStep ω s h d) := by

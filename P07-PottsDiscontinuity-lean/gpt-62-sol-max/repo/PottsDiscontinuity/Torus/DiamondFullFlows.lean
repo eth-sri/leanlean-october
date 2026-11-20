@@ -1,13 +1,13 @@
 module
 
-public import PottsDiscontinuity.Torus.RibbonCornerPrimitive
+public import PottsDiscontinuity.Torus.RibbonHalfFlow
 public import PottsDiscontinuity.Torus.RibbonFullBoundary
 
 /-!
 # Explicit horizontal and vertical full-torus flows
 
 The all-one indexed flow and the checker-sign indexed flow are conserved. Their
-corner tables will identify intersection coordinates with lifted displacement.
+corner tables normalize the two displacement coordinates.
 -/
 
 @[expose] public section
@@ -18,40 +18,35 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
+theorem sum_port (t : Port → ℚ) :
+    ∑ p : Port, t p = t .west + t .east + t .south + t .north := by
+  have hu : (univ : Finset Port) = {.west, .east, .south, .north} := by decide
+  rw [hu]
+  simp [add_assoc]
+
+/-- The fully open edge subtype is explicitly the full indexed edge carrier. -/
+def fullDiamondEdgeEquiv (N M : ℕ) : OpenDiamondEdge (openRCConfig N M) ≃ Fin N × Fin M where
+  toFun e := e.val
+  invFun v := ⟨v, rfl⟩
+  left_inv _ := rfl
+  right_inv _ := rfl
+
+
+
 theorem ribbonHalfFlow_raw (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (f : OpenDiamondEdge A → ℚ) (d : DirectedDart (checkerArrows N M)) :
     ribbonHalfFlow hN hM A f d =
       if ribbonEndSide d.val.2 then -extendDiamondChain A f d.val.1
         else extendDiamondChain A f d.val.1 := rfl
 
-theorem sum_ribbonHalfFlow_corners_eq_neg_boundary (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (f : OpenDiamondEdge A → ℚ) (v : FaceVertex N M true) :
-    (∑ p : Port, ribbonHalfFlow hN hM A f (ribbonCornerEquiv hN hM (v, p))) =
-      -diamondBoundary hN hM A f v := by
-  classical
-  have he := sum_ribbonHalfFlow_pairing hN hM A f (fun w => if v = w then 1 else 0)
-  rw [← (ribbonCornerEquiv hN hM).sum_comp, Fintype.sum_prod_type] at he
-  have hx : ∀ (w : FaceVertex N M true) (p : Port),
-      ribbonFace hN hM (ribbonCornerEquiv hN hM (w, p)) = w :=
-    fun w p => Subtype.ext (leftFace_faceCorner w.val p)
-  simpa only [hx, ite_mul, one_mul, zero_mul, Finset.sum_ite_irrel,
-    Finset.sum_const_zero, Finset.sum_ite_eq, Finset.mem_univ, ite_true] using he
-
 theorem diamondCycleSpace_mem_iff_corners (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (f : OpenDiamondEdge A → ℚ) :
     f ∈ diamondCycleSpace hN hM A ↔
       ∀ v : FaceVertex N M true,
         (∑ p : Port, ribbonHalfFlow hN hM A f (ribbonCornerEquiv hN hM (v, p))) = 0 := by
-  constructor
-  · intro hf v
-    exact sum_ribbonHalfFlow_corners hN hM A ⟨f, hf⟩ v
-  · intro h
-    change diamondBoundary hN hM A f = 0
-    funext v
-    have he := sum_ribbonHalfFlow_corners_eq_neg_boundary hN hM A f v
-    rw [h v] at he
-    simp only [Pi.zero_apply]
-    linarith
+  simp only [sum_ribbonHalfFlow_corners_eq_neg_boundary, neg_eq_zero]
+  change diamondBoundary hN hM A f = 0 ↔ _
+  exact funext_iff
 
 /-- The indexed flow pointing downward on every oriented primal edge. -/
 def verticalDiamondFlow (N M : ℕ) : OpenDiamondEdge (openRCConfig N M) → ℚ := fun _ => 1

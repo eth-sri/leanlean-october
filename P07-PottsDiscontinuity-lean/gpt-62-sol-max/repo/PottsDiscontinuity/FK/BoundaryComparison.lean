@@ -22,7 +22,7 @@ noncomputable section
 
 variable {V : Type*} [Finite V] {G : SimpleGraph V}
 local instance boundaryComparisonEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance boundaryComparisonEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
+variable [DecidableEq G.edgeSet]
 
 omit [Finite V] in
 theorem componentSetoid_mono_edges_boundary (ξ η : BoundaryCondition V)
@@ -39,8 +39,8 @@ theorem componentCount_insert_increment_mono_boundary (ξ η : BoundaryCondition
     componentCount G ξ (insert e A) + componentCount G η B ≤
       componentCount G η (insert e B) + componentCount G ξ A := by
   obtain ⟨⟨u,v⟩,he⟩ := Sym2.mk_surjective e.val
-  have he0 : s(u,v) = e.val := he
-  have huv : G.Adj u v := G.mem_edgeSet.mp (by rw [he0]; exact e.property)
+  have he0 := he
+  have huv : G.Adj u v := G.mem_edgeSet.mp (by simp_all)
   have he' : e = ⟨s(u,v),G.mem_edgeSet.mpr huv⟩ := Subtype.ext he.symm
   subst e
   by_cases hA : (componentSetoid G ξ A).r u v
@@ -89,11 +89,7 @@ theorem weight_cross_lattice_condition (q : Parameters) (ξ η : BoundaryConditi
   have hclosed : (Nat.card G.edgeSet - A.card) + (Nat.card G.edgeSet - B.card) =
       (Nat.card G.edgeSet - (A ∩ B).card) +
         (Nat.card G.edgeSet - (A ∪ B).card) := by
-    have ha := hc A
-    have hb := hc B
-    have hi := hc (A ∩ B)
-    have hu := hc (A ∪ B)
-    omega
+    grind
   have hproduct (C D : Configuration G) :
       weight G q ξ C * weight G q η D =
         (edgeParameter q ^ (C.card+D.card) *
@@ -127,7 +123,7 @@ theorem configurationProbability_boundary_comparison (q : Parameters)
     (g := configurationProbability G q η) hf0
     (fun A => (configurationProbability_pos G q ξ A).le)
     (fun A => (configurationProbability_pos G q η A).le) hf
-    (by rw [sum_configurationProbability, sum_configurationProbability])
+    (by simp [sum_configurationProbability])
     (configurationProbability_cross_lattice_condition q ξ η hξη)
 
 end

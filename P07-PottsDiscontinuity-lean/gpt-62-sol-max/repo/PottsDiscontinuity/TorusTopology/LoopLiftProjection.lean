@@ -17,9 +17,7 @@ variable {N M : ℕ}
 lemma periodicCoordinate_add_one (hN : 0 < N) (z : ℤ) :
     periodicCoordinate hN (z+1) = nxt (periodicCoordinate hN z) := by
   have hh := periodicCoordinate_sub_one hN (z+1)
-  rw [add_sub_cancel_right] at hh
-  apply (finRotate N).symm.injective
-  simpa only [prv,nxt,Equiv.symm_apply_apply] using hh.symm
+  grind [Equiv.symm_apply_apply]
 
 /-- Integer nearest-neighbor steps project to precisely the medial step's vertex. -/
 lemma loopLiftPosition_step_projection
@@ -49,7 +47,7 @@ theorem loopLiftPosition_projection (ω : ArrowConfig N M) (s : Smoothing N M)
     have hy := congrArg Prod.snd ih
     have hh := loopLiftPosition_step_projection (Fin.pos d.val.1.1) (Fin.pos d.val.1.2)
       s (((directedStep ω s h)^[n] d).val) (loopLiftPosition ω s h d n) hx hy
-    simpa only [Prod.fst_add,Prod.snd_add,Function.iterate_succ_apply',directedStep_val] using hh
+    simpa [Function.iterate_succ_apply'] using hh
 
 /-- Distinct times before the least period represent distinct actual directed darts. -/
 theorem loopOrbit_dart_injective (ω : ArrowConfig N M) (s : Smoothing N M)
@@ -72,7 +70,7 @@ theorem loopLiftPosition_port_injective (ω : ArrowConfig N M) (s : Smoothing N 
   have hp := congrArg Prod.snd hh
   apply loopOrbit_dart_injective ω s h d
   apply Prod.ext
-  · rw [← loopLiftPosition_projection,← loopLiftPosition_projection,hz]
+  · simp [← loopLiftPosition_projection, hz]
   · exact hp
 
 end PottsDiscontinuity.TorusTopology

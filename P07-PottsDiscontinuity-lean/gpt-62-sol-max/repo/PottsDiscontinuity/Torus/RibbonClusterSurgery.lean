@@ -40,9 +40,7 @@ theorem ribbonFunctions_toggle_iff (hN : Even N) (hM : Even M)
       exact hf.2
     have hab : f a = f b := by
       have he := hfq a
-      change f (Equiv.swap a b (ribbonEdgePairing hN hM A a)) = f a at he
-      rw [hpa, Equiv.swap_apply_left] at he
-      exact he.symm
+      simp_all
     exact ⟨⟨hf.1, (cycleFunctions_swap_mul_iff _ a b f hab).mp hfq⟩, hab⟩
   · rintro ⟨hf, hab⟩
     refine ⟨hf.1, ?_⟩
@@ -90,7 +88,7 @@ theorem clusterCount_toggle_of_reachable (hN : Even N) (hM : Even M)
     clusterCount hN hM true (toggleEdge A v) = clusterCount hN hM true A := by
   apply clusterCount_toggle_of_connected hN hM A v hv
   apply (ribbonConnected_iff_reachable hN hM A _ _).mpr
-  simpa only [ribbonFace_end] using h
+  simp_all
 
 theorem clusterCount_toggle_of_not_reachable (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
@@ -100,6 +98,6 @@ theorem clusterCount_toggle_of_not_reachable (hN : Even N) (hM : Even M)
   apply clusterCount_toggle_of_not_connected hN hM A v hv
   intro he
   apply h
-  simpa only [ribbonFace_end] using ribbonConnected_reachable hN hM A he
+  simpa using ribbonConnected_reachable hN hM A he
 
 end PottsDiscontinuity.Torus

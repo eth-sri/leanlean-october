@@ -18,25 +18,11 @@ theorem pottsCriticalBeta_pos (q : ℕ) (hq : 4 < q) : 0 < pottsCriticalBeta q :
   have hs : 0 < Real.sqrt (q : ℝ) := Real.sqrt_pos.2 (by linarith)
   linarith
 
-noncomputable def criticalFKParameters (q : ℕ) (hq : 4 < q) : FK.Parameters :=
-  fkParameters q (by omega) (pottsCriticalBeta q) (pottsCriticalBeta_pos q hq)
-
-theorem fkCritical_toP_toQ (q : ℕ) (hq : 4 < q) :
-    (criticalFKParameters q hq).toP =
-        (PottsDiscontinuity.FK.criticalParameters
-          ⟨(q : ℝ), by
-            change (1 : ℝ) ≤ (q : ℝ)
-            exact_mod_cast (show 1 ≤ q by omega)⟩).toP ∧
-    (criticalFKParameters q hq).toQ =
-        (PottsDiscontinuity.FK.criticalParameters
-          ⟨(q : ℝ), by
-            change (1 : ℝ) ≤ (q : ℝ)
-            exact_mod_cast (show 1 ≤ q by omega)⟩).toQ := by
-  constructor
-  · apply Subtype.ext
-    change bondProbability (pottsCriticalBeta q) = _
-    exact bondProbability_pottsCriticalBeta q (by omega)
-  · apply Subtype.ext
-    rfl
+theorem fkParameters_pottsCriticalBeta (q : ℕ) (hq : 2 ≤ q) (hβ : 0 < pottsCriticalBeta q) :
+    fkParameters q hq (pottsCriticalBeta q) hβ =
+      FK.criticalParameters ⟨q, Set.mem_Ici.2 (by exact_mod_cast (show 1 ≤ q by omega))⟩ := by
+  unfold fkParameters FK.criticalParameters
+  congr 1
+  exact Subtype.ext (bondProbability_pottsCriticalBeta q hq)
 
 end PottsDiscontinuity.PottsThm

@@ -62,31 +62,19 @@ theorem squareBox_connection_probability_le_native (θ : Parameters)
   let H := liftedBoxGraph rotatedLatticeOrigin R
   let f := squareBoxToLiftedBox r R hR
   let hGH := squareBoxGraph_map_le_liftedBox r R hR
-  let E : Set (Configuration G) := {A | ActualConnected G A u v}
+  let E := {A | ActualConnected G A u v}
   let F : Configuration G → ℝ := E.indicator (fun _ => 1)
-  have hF0 : ∀ A, 0 ≤ F A := by
-    intro A
-    by_cases hA : A ∈ E <;> simp [F,hA]
-  have hF : Monotone F := by
-    intro A B hAB
-    by_cases hA : A ∈ E
-    · have hB : B ∈ E := actualConnected_mono hAB hA
-      simp [F,hA,hB]
-    · by_cases hB : B ∈ E <;> simp [F,hA,hB]
-  have h := embedded_free_expectation_le G H f hGH θ ∅ ∅ F hF0 hF
-  apply h.trans
+  refine (embedded_free_expectation_le G H f hGH θ ∅ ∅ F
+    (Set.indicator_nonneg fun _ _ => zero_le_one)
+    (event_indicator_monotone (fun _ _ hAB hA => actualConnected_mono hAB hA))).trans ?_
   apply FiniteProbability.expectation_mono
   intro A
-  by_cases hA : embeddedConfigurationRestriction G H f hGH A ∈ E
-  · have hconn := actualConnected_embeddedRestriction f hGH A u v hA
-    have hevent : A ∈ liftedBoxFreeConnectionEvent rotatedLatticeOrigin R
-        (squareToRotatedVertex u.val) (squareToRotatedVertex v.val) :=
-      ⟨squareBox_mem_liftedBox r R hR u,squareBox_mem_liftedBox r R hR v,hconn⟩
-    simp [F,Set.indicator,hA,hevent]
-  · simp only [F,Set.indicator_of_notMem hA]
-    by_cases hB : A ∈ liftedBoxFreeConnectionEvent rotatedLatticeOrigin R
-      (squareToRotatedVertex u.val) (squareToRotatedVertex v.val) <;>
-      simp [Set.indicator,hB]
+  change E.indicator _ _ ≤ (liftedBoxFreeConnectionEvent rotatedLatticeOrigin R
+    (squareToRotatedVertex u.val) (squareToRotatedVertex v.val)).indicator _ _
+  rw [← Set.indicator_comp_right (embeddedConfigurationRestriction G H f hGH)]
+  exact Set.indicator_le_indicator_apply_of_subset (fun B hB =>
+    ⟨squareBox_mem_liftedBox r R hR u, squareBox_mem_liftedBox r R hR v,
+      actualConnected_embeddedRestriction f hGH B u v hB⟩) zero_le_one
 
 end
 end PottsDiscontinuity.TorusRC

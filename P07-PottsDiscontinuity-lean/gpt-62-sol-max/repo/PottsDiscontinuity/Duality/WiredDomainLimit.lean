@@ -28,7 +28,7 @@ theorem wiredDomainProbabilityMeasure_tendsto_of_box_sandwich
   have heq' : (⟨μ, hμ.1⟩ : ProbabilityMeasure LatticeConfiguration) = ν :=
     ProbabilityMeasure.toMeasure_injective heq
   rw [heq']
-  have hκembed : IsClosedEmbedding cylinderProbabilityCoordinates :=
+  have hκembed :=
     continuous_cylinderProbabilityCoordinates.isClosedEmbedding (by
       intro α β h
       exact LatticeConfiguration.probabilityMeasure_eq_of_allOpen

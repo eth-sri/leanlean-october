@@ -23,40 +23,9 @@ lemma rectangleDualBoundary_eq_vertexBoundary (a : LatticeVertex) (w h : ℕ)
       (a.2 - 1 ≤ z.2 ∧ z.2 ≤ a.2 + (h : ℤ)) := by
     simp only [rectangleDualExpanded, mem_latticeRectangle, Nat.cast_add, Nat.cast_one]
     omega
-  constructor
-  · intro hx
-    obtain ⟨hxS, hxI⟩ := Finset.mem_filter.1 hx
-    have hxcoord := (hcoords x).1 hxS
-    have hside : x.1 = a.1 - 1 ∨ x.1 = a.1 + (w : ℤ) ∨
-        x.2 = a.2 - 1 ∨ x.2 = a.2 + (h : ℤ) := by
-      have hi : ¬ (a.1 ≤ x.1 ∧ x.1 < a.1 + (w : ℤ) ∧
-          a.2 ≤ x.2 ∧ x.2 < a.2 + (h : ℤ)) := by
-        intro hc
-        exact hxI (Finset.mem_filter.mpr ⟨hxS, hc⟩)
-      omega
-    refine ⟨hxS, ?_⟩
-    rcases hside with hx | hx | hx | hx
-    · refine ⟨(x.1 - 1, x.2), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
-    · refine ⟨(x.1 + 1, x.2), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
-    · refine ⟨(x.1, x.2 - 1), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
-    · refine ⟨(x.1, x.2 + 1), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
-  · rintro ⟨hxS, y, hxy, hyS⟩
-    apply Finset.mem_filter.2
-    refine ⟨hxS, ?_⟩
-    intro hxI
-    have hxcoord := (Finset.mem_filter.1 hxI).2
-    have hxycoord := (squareLattice_adj_iff x y).1 hxy
-    apply hyS
-    rw [hcoords]
-    omega
+  rw [vertexBoundary_rect hcoords]
+  simp only [rectangleDualBoundary, rectangleDualInterior, Finset.mem_filter, hcoords]
+  omega
 
 lemma rectangleDualBoundaryCondition_eq_frozen (a : LatticeVertex) (w h : ℕ) :
     rectangleDualBoundaryCondition a w h =
@@ -111,15 +80,11 @@ theorem freeRectangle_dual_allOpen (θ : Parameters) (a : LatticeVertex) (w h : 
     constructor
     · intro hA e he g hg
       have ht := hA e he
-      change wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A) e = true at ht
-      rw [← hg] at ht
-      rw [dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq] at ht
-      exact ht
+      grind only [dual_closedRectangleConfiguration_at]
     · intro hA e he
       obtain ⟨g, hg⟩ := hF e he
       change wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A) e = true
-      rw [← hg]
-      rw [dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq]
+      rw [← hg, dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq]
       exact hA e he g hg
   have hambient : wiredDomainCylinderEvent (rectangleDualExpanded a w h) F =
       (subgraphConfigurationRestriction (rectangleDualGraph_le_ambient a w h)) ⁻¹' E := by

@@ -1,6 +1,6 @@
 module
 
-public import PottsDiscontinuity.FK.ComponentSupermodular
+public import PottsDiscontinuity.FK.BoundaryComparison
 public import PottsDiscontinuity.Torus.RibbonConnectivity
 
 /-!
@@ -42,13 +42,13 @@ theorem openGraph_simpleConfiguration (hN : Even N) (hM : Even M)
   · rintro ⟨e, he, heq⟩
     obtain ⟨i, hi, hie⟩ := (mem_filter.mp he).2
     have huv : u ≠ v := (fullDiamondGraph hN hM).mem_edgeSet.mp
-      (by rw [← heq]; exact e.property) |>.ne
+      (by simp [← heq]) |>.ne
     exact ⟨⟨i, hi, heq.symm.trans hie⟩, huv⟩
   · rintro ⟨⟨i, hi, hie⟩, huv⟩
     have he : s(u, v) ∈ (fullDiamondGraph hN hM).edgeSet := by
       rw [SimpleGraph.mem_edgeSet, fullDiamondGraph, diamondOpenGraph,
         SimpleGraph.fromEdgeSet_adj]
-      exact ⟨⟨i, rfl, hie⟩, huv⟩
+      tauto
     refine ⟨⟨s(u,v), he⟩, mem_filter.mpr ⟨mem_univ _, ⟨i, hi, hie⟩⟩, rfl⟩
 
 theorem clusterCount_eq_componentCount (hN : Even N) (hM : Even M)
@@ -82,17 +82,13 @@ theorem simpleConfiguration_sup (hN : Even N) (hM : Even M)
   constructor
   · rintro ⟨i, hi, he⟩
     have hior : A i = true ∨ B i = true := by
-      cases hA : A i <;> cases hB : B i <;> simp_all
+      simp_all
     exact hior.elim (fun h => Or.inl ⟨i, h, he⟩) (fun h => Or.inr ⟨i, h, he⟩)
   · rintro (⟨i, hi, he⟩ | ⟨i, hi, he⟩)
     · refine ⟨i, ?_, he⟩
-      change (A i ⊔ B i) = true
-      rw [hi]
-      cases B i <;> rfl
+      simp_all
     · refine ⟨i, ?_, he⟩
-      change (A i ⊔ B i) = true
-      rw [hi]
-      cases A i <;> rfl
+      simp_all
 
 theorem simpleConfiguration_inf_subset (hN : Even N) (hM : Even M)
     (A B : RCConfig N M) :
@@ -110,7 +106,8 @@ theorem clusterCount_supermodular (hN : Even N) (hM : Even M)
       clusterCount hN hM true (A ⊓ B) + clusterCount hN hM true (A ⊔ B) := by
   classical
   simp only [clusterCount_eq_componentCount, simpleConfiguration_sup]
-  have h := FK.componentCount_supermodular (FK.BoundaryCondition.free ∅)
+  have h := FK.componentCount_cross_supermodular (FK.BoundaryCondition.free ∅)
+    (FK.BoundaryCondition.free ∅) le_rfl
     (simpleConfiguration hN hM A) (simpleConfiguration hN hM B)
   have hm := FK.componentCount_antitone (G := fullDiamondGraph hN hM)
     (FK.BoundaryCondition.free ∅) (simpleConfiguration_inf_subset hN hM A B)

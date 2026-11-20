@@ -27,7 +27,7 @@ theorem weight_isolatedExtension_boundary_pullback (G : SimpleGraph V) (f : V �
         q.val ^ Nat.card (isolatedExtensionExteriorBoundaryClasses f ξ) := by
   rw [weight, weight, card_isolatedExtensionConfigurationEquiv, isolatedExtension_edge_card,
     componentCount_isolatedExtension_boundary_pullback G f ξ A, pow_add]
-  simp only [mul_assoc]
+  ring
 
 theorem partitionFunction_isolatedExtension_boundary_pullback
     (G : SimpleGraph V) (f : V ↪ W) (q : Parameters) (ξ : BoundaryCondition W) :

@@ -1,3 +1,0 @@
-module
-public import PottsDiscontinuity.RCInfinite.CylinderApproximation
-public import PottsDiscontinuity.RCInfinite.FiniteEnergy

@@ -1,6 +1,7 @@
 module
 
 public import PottsDiscontinuity.PottsThm.LatticeColorNoise
+public import PottsDiscontinuity.PottsThm.ColorNoiseMixing
 public import PottsDiscontinuity.PottsThm.ProductErgodicity
 public import PottsDiscontinuity.RCInfinite.ClusterEvents
 public import Mathlib.Data.Prod.Lex
@@ -25,19 +26,22 @@ private theorem vertexLex_translate_le_iff (a x y : Vertex) :
   simp only [vertexLex, Prod.Lex.toLex_le_toLex, latticeTranslate]
   omega
 
+section
+
+variable (ω : LatticeConfiguration)
+
 /-- The distinguished representative records absence explicitly on infinite
 clusters. Finite nonempty clusters are represented by their lexicographic
 minimum. -/
-def clusterRepresentative (ω : LatticeConfiguration) (x : Vertex) : Option Vertex := by
+def clusterRepresentative (x : Vertex) : Option Vertex := by
   classical
   exact if h : (cluster ω x).Finite then
     some (Classical.choose (Set.exists_min_image (cluster ω x) vertexLex h ⟨x, by
-      change (rcInfiniteOpenGraph ω).Reachable x x
       exact SimpleGraph.Reachable.refl x⟩))
   else
     none
 
-theorem clusterRepresentative_spec (ω : LatticeConfiguration) (x y : Vertex) :
+theorem clusterRepresentative_spec (x y : Vertex) :
     clusterRepresentative ω x = some y ↔
       (cluster ω x).Finite ∧ y ∈ cluster ω x ∧
         ∀ z ∈ cluster ω x, vertexLex y ≤ vertexLex z := by
@@ -45,48 +49,33 @@ theorem clusterRepresentative_spec (ω : LatticeConfiguration) (x y : Vertex) :
   unfold clusterRepresentative
   split_ifs with h
   · constructor
-    · intro heq
-      have hspec := Classical.choose_spec
-        (Set.exists_min_image (cluster ω x) vertexLex h ⟨x, by
-          change (rcInfiniteOpenGraph ω).Reachable x x
-          exact SimpleGraph.Reachable.refl x⟩)
-      cases heq
-      exact ⟨h, hspec.1, hspec.2⟩
+    · grind
     · rintro ⟨_, hy, hmin⟩
       have hspec := Classical.choose_spec
         (Set.exists_min_image (cluster ω x) vertexLex h ⟨x, by
-          change (rcInfiniteOpenGraph ω).Reachable x x
           exact SimpleGraph.Reachable.refl x⟩)
       have heq : Classical.choose
           (Set.exists_min_image (cluster ω x) vertexLex h ⟨x, by
-            change (rcInfiniteOpenGraph ω).Reachable x x
             exact SimpleGraph.Reachable.refl x⟩) = y := by
         apply toLex_inj.mp
         apply le_antisymm
         · exact hspec.2 _ hy
         · exact hmin _ hspec.1
       exact congrArg some heq
-  · constructor
-    · simp
-    · rintro ⟨hfinite, _, _⟩
-      exact (h hfinite).elim
+  simp_all
 
-private theorem cluster_eq_of_reachable (ω : LatticeConfiguration) {x y : Vertex}
+private theorem cluster_eq_of_reachable {x y : Vertex}
     (hxy : (rcInfiniteOpenGraph ω).Reachable x y) : cluster ω x = cluster ω y := by
   ext z
   constructor
   · intro hz
-    change (rcInfiniteOpenGraph ω).Reachable x z at hz
-    change (rcInfiniteOpenGraph ω).Reachable y z
     exact hxy.symm.trans hz
   · intro hz
-    change (rcInfiniteOpenGraph ω).Reachable y z at hz
-    change (rcInfiniteOpenGraph ω).Reachable x z
     exact hxy.trans hz
 
 /-- Canonical finite-cluster representatives agree exactly on connected
 vertices. -/
-theorem clusterRepresentative_eq_iff_reachable (ω : LatticeConfiguration)
+theorem clusterRepresentative_eq_iff_reachable
     (x y : Vertex) (hfiniteX : (cluster ω x).Finite)
     (hfiniteY : (cluster ω y).Finite) :
     clusterRepresentative ω x = clusterRepresentative ω y ↔
@@ -99,29 +88,29 @@ theorem clusterRepresentative_eq_iff_reachable (ω : LatticeConfiguration)
     have hsome : ∃ z, clusterRepresentative ω x = some z := by
       cases h : clusterRepresentative ω x with
       | none =>
-        exact (hne h).elim
-      | some z => exact ⟨z, rfl⟩
+        trivial
+      | some z => simp
     obtain ⟨z, hz⟩ := hsome
-    have hzy : clusterRepresentative ω y = some z := by rw [← heq, hz]
-    have hxz : z ∈ cluster ω x := (clusterRepresentative_spec ω x z).mp hz |>.2.1
-    have hyz : z ∈ cluster ω y := (clusterRepresentative_spec ω y z).mp hzy |>.2.1
-    change (rcInfiniteOpenGraph ω).Reachable x z at hxz
-    change (rcInfiniteOpenGraph ω).Reachable y z at hyz
+    have hzy : clusterRepresentative ω y = some z := by simp_all
+    have hxz := (clusterRepresentative_spec ω x z).mp hz |>.2.1
+    have hyz := (clusterRepresentative_spec ω y z).mp hzy |>.2.1
     exact hxz.trans hyz.symm
   · intro hxy
     have hclusters := cluster_eq_of_reachable ω hxy
     obtain ⟨a, ha, hminA⟩ := Set.exists_min_image (cluster ω x) vertexLex hfiniteX
-      ⟨x, by change (rcInfiniteOpenGraph ω).Reachable x x; exact SimpleGraph.Reachable.refl x⟩
+      ⟨x, by exact SimpleGraph.Reachable.refl x⟩
     obtain ⟨b, hb, hminB⟩ := Set.exists_min_image (cluster ω y) vertexLex hfiniteY
-      ⟨y, by change (rcInfiniteOpenGraph ω).Reachable y y; exact SimpleGraph.Reachable.refl y⟩
-    have hba : b ∈ cluster ω x := by rw [hclusters]; exact hb
-    have hab : a ∈ cluster ω y := by rw [← hclusters]; exact ha
-    have hle₁ : vertexLex a ≤ vertexLex b := hminA b hba
-    have hle₂ : vertexLex b ≤ vertexLex a := hminB a hab
+      ⟨y, by exact SimpleGraph.Reachable.refl y⟩
+    have hba : b ∈ cluster ω x := by simp_all
+    have hab : a ∈ cluster ω y := by simp_all
+    have hle₁ := hminA b hba
+    have hle₂ := hminB a hab
     have hab' : a = b := toLex_inj.mp (le_antisymm hle₁ hle₂)
     have hrepA := (clusterRepresentative_spec ω x a).2 ⟨hfiniteX, ha, hminA⟩
     have hrepB := (clusterRepresentative_spec ω y b).2 ⟨hfiniteY, hb, hminB⟩
-    rw [hrepA, hrepB, hab']
+    simp_all
+
+end
 
 theorem clusterRepresentative_covariant (a : Vertex) (ω : LatticeConfiguration) (x : Vertex) :
     clusterRepresentative (edgeTranslate a ω) (latticeTranslate a x) =
@@ -129,7 +118,7 @@ theorem clusterRepresentative_covariant (a : Vertex) (ω : LatticeConfiguration)
   classical
   by_cases hfin : (cluster ω x).Finite
   · obtain ⟨y, hy, hmin⟩ := Set.exists_min_image (cluster ω x) vertexLex hfin
-      ⟨x, by change (rcInfiniteOpenGraph ω).Reachable x x; exact SimpleGraph.Reachable.refl x⟩
+      ⟨x, by exact SimpleGraph.Reachable.refl x⟩
     have himage : (cluster (edgeTranslate a ω) (latticeTranslate a x)).Finite := by
       rw [cluster_translation]
       exact hfin.image _
@@ -146,7 +135,7 @@ theorem clusterRepresentative_covariant (a : Vertex) (ω : LatticeConfiguration)
     have hold := (clusterRepresentative_spec ω x y).2 ⟨hfin, hy, hmin⟩
     have hnew := (clusterRepresentative_spec (edgeTranslate a ω)
       (latticeTranslate a x) (latticeTranslate a y)).2 ⟨himage, hyspec, hminspec⟩
-    simp [hold, hnew]
+    simp_all
   · have hnewInf : (cluster (edgeTranslate a ω) (latticeTranslate a x)).Infinite := by
       rw [cluster_translation]
       exact (Set.infinite_image_iff
@@ -160,14 +149,7 @@ theorem clusterRepresentative_covariant (a : Vertex) (ω : LatticeConfiguration)
 
 theorem clusterRepresentative_none_iff (ω : LatticeConfiguration) (x : Vertex) :
     clusterRepresentative ω x = none ↔ (cluster ω x).Infinite := by
-  classical
-  by_cases h : (cluster ω x).Finite
-  · simp [clusterRepresentative, h]
-  · constructor
-    · intro _
-      exact h
-    · intro _
-      simp [clusterRepresentative, h]
+  simp [clusterRepresentative]
 
 /-- Colour finite clusters from the iid coordinate of their canonical
 representative and pin infinite clusters to `c₀`. -/
@@ -185,7 +167,7 @@ theorem measurableSet_clusterRepresentative (x y : Vertex) :
       tauto
     rw [heq]
     exact (measurableSet_infiniteAt x).compl
-  have hmem : MeasurableSet {ω : LatticeConfiguration | y ∈ cluster ω x} :=
+  have hmem :=
     measurableSet_open_reachable x y
   have hmin : MeasurableSet {ω : LatticeConfiguration |
       ∀ z, z ∈ cluster ω x → vertexLex y ≤ vertexLex z} := by
@@ -200,9 +182,7 @@ theorem measurableSet_clusterRepresentative (x y : Vertex) :
     intro z
     by_cases hle : vertexLex y ≤ vertexLex z
     · simp [hle]
-    · have hreach : {ω : LatticeConfiguration | z ∈ cluster ω x} =
-          {ω | (rcInfiniteOpenGraph ω).Reachable x z} := rfl
-      rw [show {ω : LatticeConfiguration | z ∈ cluster ω x →
+    · rw [show {ω : LatticeConfiguration | z ∈ cluster ω x →
           vertexLex y ≤ vertexLex z} =
           {ω : LatticeConfiguration | z ∉ cluster ω x} by
             ext ω
@@ -217,7 +197,6 @@ theorem measurableSet_clusterRepresentative (x y : Vertex) :
       {ω | (cluster ω x).Finite ∧ y ∈ cluster ω x ∧
         ∀ z ∈ cluster ω x, vertexLex y ≤ vertexLex z} by
         ext ω
-        change clusterRepresentative ω x = some y ↔ _
         exact clusterRepresentative_spec ω x y]
   exact hfinite.inter (hmem.inter hmin)
 
@@ -266,7 +245,7 @@ theorem measurable_clusterColoring {C : Type*} [MeasurableSpace C]
   rw [hpre]
   apply MeasurableSet.union
   · apply (measurableSet_infiniteAt x).prod
-    by_cases h : c₀ = c.1 <;> simp [h]
+    simp
   · exact MeasurableSet.iUnion fun y =>
       (measurableSet_clusterRepresentative x y).prod <| by
         have heval : Measurable (fun u : Vertex → C => u y) := measurable_pi_apply y
@@ -288,31 +267,25 @@ theorem clusterColoring_equivariant {C : Type*} (c₀ : C) (a : Vertex)
   have hcancel : latticeTranslate a (latticeTranslate (-a) x) = x := by
     simpa using (latticeTranslate_neg_cancel (-a) x)
   rw [hcancel] at hrep
-  have hcoord : latticeTranslate (-a) x = x - a := by
-    ext <;> simp [latticeTranslate, sub_eq_add_neg]
+  have hcoord : latticeTranslate (-a) x = x - a := rfl
   cases hr : clusterRepresentative ω (x - a) with
   | none =>
     rw [← hcoord] at hr
-    have hnone : clusterRepresentative ω (latticeTranslate (-a) x) = none := by
-      exact hr
+    have hnone := hr
     have hnone' : clusterRepresentative ω (x - a) = none := by
-      rw [← hcoord]
-      exact hnone
-    simp [clusterColoring, productShift, latticeShiftEquiv, hrep, hnone,
-      hnone']
+      assumption
+    simp [clusterColoring, productShift, hrep, hnone, hnone']
   | some y =>
     rw [← hcoord] at hr
-    have hsome : clusterRepresentative ω (latticeTranslate (-a) x) = some y := by
-      exact hr
+    have hsome := hr
     have hsome' : clusterRepresentative ω (x - a) = some y := by
-      rw [← hcoord]
-      exact hsome
+      assumption
     have harg : (latticeTranslate a y) - a = y := by
       ext <;> dsimp [latticeTranslate] <;> omega
     have hshift : iidFieldShift (latticeShiftEquiv a) u (latticeTranslate a y) = u y := by
       rw [iidFieldShift]
       change u ((latticeTranslate a y) - a) = u y
-      rw [harg]
+      simp_all
     simp only [clusterColoring, productShift, hrep, hsome, hsome', Option.map_some,
       Option.elim_some]
     exact hshift

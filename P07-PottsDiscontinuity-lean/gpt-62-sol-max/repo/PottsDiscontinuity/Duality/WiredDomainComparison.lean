@@ -34,14 +34,6 @@ lemma domainGraph_map {S T : Finset LatticeVertex} (hST : S ⊆ T) :
 def wiredDomainConfiguration (S : Finset LatticeVertex) (A : Configuration (domainGraph S)) :
     LatticeConfiguration := fun e => decide (∀ f, frozenEdgeEmbedding S f = e → f ∈ A)
 
-@[simp] lemma wiredDomainConfiguration_at (S : Finset LatticeVertex)
-    (A : Configuration (domainGraph S)) (f : (domainGraph S).edgeSet) :
-    wiredDomainConfiguration S A (frozenEdgeEmbedding S f) = decide (f ∈ A) := by
-  simp only [wiredDomainConfiguration]
-  congr 1
-  exact propext ⟨fun h => h f rfl,
-    fun hf g hg => (frozenEdgeEmbedding S).injective hg ▸ hf⟩
-
 /-- The genuine wired FK law on a finite domain on the common configuration carrier. -/
 def wiredDomainProbabilityMeasure (θ : Parameters) (S : Finset LatticeVertex) :
     ProbabilityMeasure LatticeConfiguration :=

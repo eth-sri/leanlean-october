@@ -35,7 +35,7 @@ theorem pmf_filter_toMeasure {X : Type*} [Fintype X] [MeasurableSpace X]
   · rw [Set.indicator_of_mem hxT, PMF.filter_apply, hc]
     by_cases hxF : x ∈ F
     · rw [Set.indicator_of_mem (show x ∈ T ∩ F from ⟨hxT, hxF⟩)]
-      simp only [Set.indicator_of_mem hxF, mul_comm]
+      simp [Set.indicator_of_mem hxF, mul_comm]
     · rw [Set.indicator_of_notMem (show x ∉ T ∩ F from fun h => hxF h.2)]
       simp [Set.indicator_of_notMem hxF]
   · rw [Set.indicator_of_notMem hxT, Set.indicator_of_notMem (show x ∉ T ∩ F from fun h => hxT h.1)]
@@ -67,8 +67,7 @@ theorem embedded_frozen_measure_eq {V W : Type*} [Finite V] [Finite W] (G : Simp
   have hpos : 0 < FK.measure H q ξ
       (FK.frozenStateEvent (FK.subgraphRemovedEdges (G.map f) H) K) := by
     rw [FK.measure_pos_iff]
-    obtain ⟨C, hC, _⟩ := hF
-    exact ⟨C, hC⟩
+    tauto
   have hfin : FK.measure H q ξ (FK.frozenStateEvent (FK.subgraphRemovedEdges (G.map f) H) K) ≠ ⊤ :=
     MeasureTheory.measure_ne_top _ _
   change FK.measure H q ξ _ = (FK.law G q _).toMeasure S * FK.measure H q ξ _

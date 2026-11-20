@@ -12,7 +12,6 @@ namespace PottsDiscontinuity.FK
 noncomputable section
 variable {V : Type*} [Finite V] {G : SimpleGraph V}
 local instance complementFreeEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
-local instance complementFreeEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 
 lemma no_revealed_open_edge_at_cluster_complement (S : Finset V) (A : Configuration G)
     (u : actualMultiClusterComplementSet G S A) (w : V) :
@@ -48,8 +47,7 @@ theorem actualMultiClusterComplement_frozen_partition_free
     by_cases hp : p.Nil
     · exact Subtype.ext hp.eq
     · exact (no_revealed_open_edge_at_cluster_complement S A u _ (p.adj_snd hp)).elim
-  · rintro rfl
-    exact SimpleGraph.Reachable.refl _
+  simp_all
 
 /-- Adaptive domain Markov with the induced boundary discharged: after revealing
 the clusters of all seeds, the unobserved induced graph has exactly its free law. -/

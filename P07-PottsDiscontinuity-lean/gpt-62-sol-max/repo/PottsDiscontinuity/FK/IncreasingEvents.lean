@@ -22,7 +22,6 @@ noncomputable section
 
 variable {V : Type*} [Finite V] {G : SimpleGraph V}
 local instance increasingEventsEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance increasingEventsEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 theorem measure_toReal_eq_indicator_sum (q : Parameters) (ξ : BoundaryCondition V)
     (s : Set (Configuration G)) :
@@ -35,29 +34,11 @@ theorem measure_toReal_eq_indicator_sum (q : Parameters) (ξ : BoundaryCondition
     by_cases h : A ∈ s
     · simp [Set.indicator, h, law_apply,
         ENNReal.toReal_ofReal (configurationProbability_pos G q ξ A).le]
-    · simp [Set.indicator, h]
+    simp [*]
   · intro A hA
     by_cases h : A ∈ s
     · simpa [Set.indicator, h] using (law G q ξ).apply_ne_top A
-    · simp [Set.indicator, h]
-
-omit [Finite V] in
-private theorem event_indicator_nonneg (s : Set (Configuration G)) :
-    ∀ A, 0 ≤ s.indicator (fun _ => (1 : ℝ)) A := by
-  classical
-  intro A
-  by_cases h : A ∈ s <;> simp [Set.indicator, h]
-
-omit [Finite V] in
-private theorem event_indicator_monotone (s : Set (Configuration G)) (hs : IsUpperSet s) :
-    Monotone (s.indicator (fun _ => (1 : ℝ))) := by
-  classical
-  intro A B hAB
-  by_cases hA : A ∈ s
-  · have hB := hs hAB hA
-    simp [Set.indicator, hA, hB]
-  · simp only [Set.indicator_of_notMem hA]
-    exact event_indicator_nonneg s B
+    simp [*]
 
 /-- Any two increasing events are positively correlated under the actual FK measure. -/
 theorem measure_positive_association (q : Parameters) (ξ : BoundaryCondition V)
@@ -65,24 +46,18 @@ theorem measure_positive_association (q : Parameters) (ξ : BoundaryCondition V)
     (measure G q ξ s).toReal * (measure G q ξ t).toReal ≤
       (measure G q ξ (s ∩ t)).toReal := by
   classical
-  have h := configurationProbability_positive_association q ξ
-    (s.indicator fun _ => (1 : ℝ)) (t.indicator fun _ => (1 : ℝ))
-    (event_indicator_nonneg s) (event_indicator_nonneg t)
-    (event_indicator_monotone s hs) (event_indicator_monotone t ht)
-  have hi (A : Configuration G) :
-      s.indicator (fun _ => (1 : ℝ)) A * t.indicator (fun _ => (1 : ℝ)) A =
-        (s ∩ t).indicator (fun _ => (1 : ℝ)) A := by
-    by_cases hsA : A ∈ s <;> by_cases htA : A ∈ t <;>
-      simp [Set.indicator, hsA, htA]
-  simp_rw [hi] at h
-  simpa only [measure_toReal_eq_indicator_sum] using h
+  simp only [measure_toReal_eq_indicator_sum, ← Set.indicator_mul_right, mul_one]
+  exact fkg_events _ (fun A => (configurationProbability_pos G q ξ A).le)
+    (sum_configurationProbability G q ξ) (configurationProbability_cross_lattice_condition q ξ ξ le_rfl)
+    s t hs ht
 
 /-- Increasing event probabilities increase when boundary identifications are added. -/
 theorem measure_boundary_comparison (q : Parameters) (ξ η : BoundaryCondition V)
     (hξη : ξ.partition ≤ η.partition) (s : Set (Configuration G)) (hs : IsUpperSet s) :
     (measure G q ξ s).toReal ≤ (measure G q η s).toReal := by
+  classical
   have h := configurationProbability_boundary_comparison q ξ η hξη
-    (s.indicator fun _ => (1 : ℝ)) (event_indicator_nonneg s) (event_indicator_monotone s hs)
+    (s.indicator fun _ => (1 : ℝ)) (Set.indicator_nonneg fun _ _ => zero_le_one) (event_indicator_monotone hs)
   simpa only [measure_toReal_eq_indicator_sum, mul_comm] using h
 
 end

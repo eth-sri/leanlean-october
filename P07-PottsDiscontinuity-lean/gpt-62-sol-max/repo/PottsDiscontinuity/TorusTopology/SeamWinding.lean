@@ -29,8 +29,13 @@ theorem loopBoundaryCycle_windingY (hN : Even N) (hM : Even M) (hMp : 0 < M)
   push_cast
   rfl
 
-lemma loopVertical_translatedDual (hN : Even N) (hM : Even M) (j : Fin M)
-    (A : RCConfig N M) (q : Loop hN hM (rcSmoothing A)) :
+section
+
+variable
+  (hN : Even N) (hM : Even M) (j : Fin M)
+    (A : RCConfig N M)
+
+lemma loopVertical_translatedDual (q : Loop hN hM (rcSmoothing A)) :
     loopVertical _ _ (checkerArrows_compatible hN hM (rcSmoothing (translatedDual A))) j
       (translatedDualLoopEquiv hN hM A q) =
       -loopVertical _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j q := by
@@ -48,13 +53,14 @@ lemma loopVertical_translatedDual (hN : Even N) (hM : Even M) (j : Fin M)
   simp only [loopSum, Finset.sum_neg_distrib]
 
 /-- Complement and column translation preserve the absolute vertical mass. -/
-theorem verticalMass_translatedDual (hN : Even N) (hM : Even M) (j : Fin M)
-    (A : RCConfig N M) :
+theorem verticalMass_translatedDual :
     verticalMass _ _ (checkerArrows_compatible hN hM (rcSmoothing (translatedDual A))) j =
       verticalMass _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j := by
   unfold verticalMass
   rw [← (translatedDualLoopEquiv hN hM A).sum_comp]
   simp_rw [loopVertical_translatedDual, Int.natAbs_neg]
+
+end
 
 /-- If exactly one primal seam edge is open, every loop's vertical winding is
 the difference of the two incidence indicators at that edge. -/
@@ -116,7 +122,7 @@ theorem rcVerticalWinding_le_one_of_seamAllButOneOpen
     rcVerticalWinding hN hM j A ≤ 1 := by
   obtain ⟨i₀,hi₀,hother⟩ := hA
   have hdual : translatedDual A (nxt i₀,⟨0,hMp⟩) = true := by
-    simp only [translatedDual, prv, nxt, Equiv.symm_apply_apply, hi₀, Bool.not_false]
+    simp only [translatedDual, Equiv.symm_apply_apply, hi₀, Bool.not_false]
   have hdualo : ∀ i : Fin N, i ≠ nxt i₀ →
       translatedDual A (i,⟨0,hMp⟩) = false := by
     intro i hi

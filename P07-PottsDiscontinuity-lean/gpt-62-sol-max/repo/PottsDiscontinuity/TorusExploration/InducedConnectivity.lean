@@ -11,8 +11,6 @@ open FK
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
-local instance inducedConnectivityEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance inducedConnectivityEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- The literal inclusion of an induced vertex set. -/
 def inducedVertexEmbedding (T : Set V) : T ↪ V := ⟨Subtype.val,Subtype.val_injective⟩
@@ -34,19 +32,12 @@ lemma inducedRestriction_open_adj (T : Set V) (A : Configuration G) (u v : T) :
     refine ⟨embeddedEdgeEmbedding _ _ _ _ e,
       (mem_embeddedConfigurationRestriction _ _ _ _ _ _).1 he,?_⟩
     change Sym2.map Subtype.val e.val=s(u.val,v.val)
-    rw [hep]
-    rfl
+    simp_all
   · rintro ⟨e,he,hep⟩
-    have hg : G.Adj u.val v.val := G.mem_edgeSet.1 (hep ▸ e.property)
+    have hg := G.mem_edgeSet.1 (hep ▸ e.property)
     let d : (G.induce T).edgeSet := ⟨s(u,v),hg⟩
     refine ⟨d,?_,rfl⟩
-    apply (mem_embeddedConfigurationRestriction (G.induce T) G (inducedVertexEmbedding T)
-      (inducedVertexGraph_le G T) A d).2
-    have hed : embeddedEdgeEmbedding (G.induce T) G (inducedVertexEmbedding T)
-        (inducedVertexGraph_le G T) d=e := by
-      apply Subtype.ext
-      exact hep.symm
-    rwa [hed]
+    aesop
 
 omit [Finite V] in
 /-- If the vertex set is closed under actual open steps, every actual path

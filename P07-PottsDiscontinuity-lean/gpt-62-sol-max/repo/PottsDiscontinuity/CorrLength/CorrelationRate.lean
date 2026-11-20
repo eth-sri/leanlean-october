@@ -42,13 +42,7 @@ private theorem diagonalConnectionProbability_le_one (θ : Parameters)
   let ν : ProbabilityMeasure LatticeConfiguration := ⟨μ, hμ.1⟩
   have hle := ProbabilityMeasure.apply_le_one ν
     (connectionEvent (0, 0) ((n : ℤ), (n : ℤ)))
-  have heq : diagonalConnectionProbability μ n =
-      ((ν (connectionEvent (0, 0) ((n : ℤ), (n : ℤ))) : NNReal) : ℝ) := by
-    change (ν : Measure LatticeConfiguration).real
-        (connectionEvent (0, 0) ((n : ℤ), (n : ℤ))) = _
-    exact ProbabilityMeasure.measureReal_eq_coe_coeFn ν _
-  rw [heq]
-  exact_mod_cast hle
+  solve_by_elim
 
 private theorem diagonalConnectionProbability_supermultiplicative
     (θ : Parameters) (μ : Measure LatticeConfiguration)
@@ -58,7 +52,7 @@ private theorem diagonalConnectionProbability_supermultiplicative
       diagonalConnectionProbability μ (m + n) := by
   have h := isRCInfiniteVolumeLimit_origin_connection_supermultiplicative θ μ hμ
     ((m : ℤ), (m : ℤ)) ((n : ℤ), (n : ℤ))
-  simpa [diagonalConnectionProbability, Nat.cast_add] using h
+  solve_by_elim
 
 /-- There is a finite nonnegative limit for the negative logarithmic rate along
 the points `(n,n)`. -/
@@ -91,14 +85,13 @@ theorem diagonalSite_correlation_rate_exists (θ : Parameters)
     -Real.log (μ.real (connectionEvent (0, 0)
       (PottsDiscontinuity.diagonalSite n)))
   have hEven (m : ℕ) : b (2 * m) = a m := by
-    simp [a, b, diagonalConnectionProbability, diagonalSite_even]
+    simp [a, b, diagonalConnectionProbability]
   have hOdd (m : ℕ) : b (2 * m + 1) = a m := by
-    simp [a, b, diagonalConnectionProbability, diagonalSite_odd]
+    simp [a, b, diagonalConnectionProbability]
   have hrate' : Tendsto (fun m : ℕ => a m / (m : ℝ)) atTop (𝓝 aInf) := by
-    simpa [a] using hrate
+    gcongr
   have hdiag := tendsto_rate_of_even_odd_subsequence a b aInf hrate' hEven hOdd
-  refine ⟨aInf, haInf, ?_⟩
-  simpa [b] using hdiag
+  solve_by_elim
 
 end
 

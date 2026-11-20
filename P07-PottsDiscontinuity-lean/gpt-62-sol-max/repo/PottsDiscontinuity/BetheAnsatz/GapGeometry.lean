@@ -16,53 +16,65 @@ open Finset Complex Classical
 
 namespace PottsDiscontinuity.BetheAnsatz
 
+section
+
+variable {n : ℕ} (N : ℕ) (x : Fin (n + 1) → ℤ)
+
 /-- All integer choices in the closed predecessor gaps. -/
-def gapTuples {n : ℕ} (N : ℕ) (x : Fin (n + 1) → ℤ) : Finset (Fin (n + 1) → ℤ) :=
+def gapTuples : Finset (Fin (n + 1) → ℤ) :=
   Fintype.piFinset (fun k => Icc (cyclicPredecessorPositions N x k) (x k))
 
 /-- Gap choices whose positions are distinct modulo the circumference. -/
-def distinctGapTuples {n : ℕ} (N : ℕ) (x : Fin (n + 1) → ℤ) :
+def distinctGapTuples :
     Finset (Fin (n + 1) → ℤ) :=
   (gapTuples N x).filter (fun y => Function.Injective (fun k => y k % (N : ℤ)))
 
+end
+
+section
+
+variable {n : ℕ}
+
 /-- The extended weight in the companion paper's gap sum. -/
-noncomputable def gapWeight {n : ℕ} (c : ℝ) (N : ℕ)
+noncomputable def gapWeight (c : ℝ) (N : ℕ)
     (x y : Fin (n + 1) → ℤ) : ℂ :=
   ∏ k, if y k = cyclicPredecessorPositions N x k ∨ y k = x k then 1 else (c : ℂ) ^ 2
 
 /-- The finite cyclic gap sum `R_σ`; no Bethe equation is part of its definition. -/
-noncomputable def cyclicGapSum {n : ℕ} (c : ℝ) (N : ℕ) (x : Fin (n + 1) → ℤ)
+noncomputable def cyclicGapSum (c : ℝ) (N : ℕ) (x : Fin (n + 1) → ℤ)
     (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1))) : ℂ :=
   ∑ y ∈ distinctGapTuples N x, gapWeight c N x y * planeWave p σ y
 
 /-- A collision of consecutive gap choices at their common endpoint, including the seam. -/
-def gapCollision {n : ℕ} (N : ℕ) (x y : Fin (n + 1) → ℤ) (k : Fin (n + 1)) : Prop :=
+def gapCollision (N : ℕ) (x y : Fin (n + 1) → ℤ) (k : Fin (n + 1)) : Prop :=
   y k = x k ∧ y (finRotate (n + 1) k) =
     cyclicPredecessorPositions N x (finRotate (n + 1) k)
 
-@[simp] theorem mem_gapTuples {n : ℕ} {N : ℕ} {x y : Fin (n + 1) → ℤ} :
+@[simp] theorem mem_gapTuples {N : ℕ} {x y : Fin (n + 1) → ℤ} :
     y ∈ gapTuples N x ↔ ∀ k, cyclicPredecessorPositions N x k ≤ y k ∧ y k ≤ x k := by
-  simp only [gapTuples, Fintype.mem_piFinset, mem_Icc]
+  simp [gapTuples]
 
-@[simp] theorem cyclicPredecessorPositions_zero {n : ℕ} (N : ℕ) (x : Fin (n + 1) → ℤ) :
+end
+
+section
+
+variable {n : ℕ} (N : ℕ) (x : Fin (n + 1) → ℤ)
+
+@[simp] theorem cyclicPredecessorPositions_zero :
     cyclicPredecessorPositions N x 0 = x (Fin.last n) - N := by
-  have h : (finRotate (n + 1)).symm 0 = Fin.last n :=
-    (Equiv.symm_apply_eq _).mpr finRotate_last.symm
-  simp only [cyclicPredecessorPositions, h, ↓reduceIte]
+  rfl
 
-@[simp] theorem cyclicPredecessorPositions_succ {n : ℕ} (N : ℕ)
-    (x : Fin (n + 1) → ℤ) (k : Fin n) :
+@[simp] theorem cyclicPredecessorPositions_succ (k : Fin n) :
     cyclicPredecessorPositions N x k.succ = x k.castSucc := by
   have h : (finRotate (n + 1)).symm k.succ = k.castSucc :=
     (Equiv.symm_apply_eq _).mpr (finRotate_of_lt k.isLt).symm
-  simp only [cyclicPredecessorPositions, h, Fin.succ_ne_zero, ↓reduceIte, sub_zero]
+  simp_all [cyclicPredecessorPositions]
+
+end
 
 theorem positions_strictMono {N n : ℕ} (x : SixVertex.State N n) : StrictMono (positions x) := by
   intro i j hij
-  have h : (x.1.orderEmbOfFin x.2 i).val < (x.1.orderEmbOfFin x.2 j).val :=
-    (x.1.orderEmbOfFin x.2).strictMono hij
-  unfold positions
-  exact_mod_cast h
+  simp_all [positions]
 
 theorem positions_span_lt {N n : ℕ} (x : SixVertex.State N (n + 1)) :
     positions x (Fin.last n) - positions x 0 < (N : ℤ) := by
@@ -70,8 +82,12 @@ theorem positions_span_lt {N n : ℕ} (x : SixVertex.State N (n + 1)) :
   unfold positions
   omega
 
+section
+
+variable {N n : ℕ} {x y : Fin (n + 1) → ℤ}
+
 /-- Gap choices are weakly increasing, before imposing residue distinctness. -/
-theorem gapTuples_monotone {N n : ℕ} {x y : Fin (n + 1) → ℤ}
+theorem gapTuples_monotone
     (hy : y ∈ gapTuples N x) : Monotone y := by
   apply Fin.monotone_iff_le_succ.mpr
   intro k
@@ -81,7 +97,7 @@ theorem gapTuples_monotone {N n : ℕ} {x y : Fin (n + 1) → ℤ}
   exact h1.2.trans h2.1
 
 /-- Every coordinate belongs to the same closed interval of length N. -/
-theorem gapTuples_global_bounds {N n : ℕ} {x y : Fin (n + 1) → ℤ}
+theorem gapTuples_global_bounds
     (hx : StrictMono x) (hy : y ∈ gapTuples N x) (k : Fin (n + 1)) :
     x (Fin.last n) - N ≤ y k ∧ y k ≤ x (Fin.last n) := by
   have hm := gapTuples_monotone hy
@@ -91,14 +107,14 @@ theorem gapTuples_global_bounds {N n : ℕ} {x y : Fin (n + 1) → ℤ}
     (hx.monotone (Fin.le_last k))⟩
 
 /-- Two ordered coordinates in a gap tuple with the same residue differ by 0 or N. -/
-theorem gapTuples_equal_residue {N n : ℕ} {x y : Fin (n + 1) → ℤ}
+theorem gapTuples_equal_residue
     (hx : StrictMono x) (hy : y ∈ gapTuples N x)
     {i j : Fin (n + 1)} (hij : i < j) (he : y i % (N : ℤ) = y j % (N : ℤ)) :
     y j = y i ∨ y j - y i = N := by
   have hb1 := gapTuples_global_bounds hx hy i
   have hb2 := gapTuples_global_bounds hx hy j
   have hm := gapTuples_monotone hy hij.le
-  have hd : (N : ℤ) ∣ y j - y i := Int.modEq_iff_dvd.mp he
+  have hd := Int.modEq_iff_dvd.mp he
   by_cases h : y j - y i = N
   · exact Or.inr h
   · left
@@ -109,11 +125,11 @@ theorem gapTuples_equal_residue {N n : ℕ} {x y : Fin (n + 1) → ℤ}
     omega
 
 /-- Equal ordered gap coordinates can only be a common endpoint of neighboring gaps. -/
-theorem gapTuples_equal_coordinates {N n : ℕ} {x y : Fin (n + 1) → ℤ}
+theorem gapTuples_equal_coordinates
     (hx : StrictMono x) (hy : y ∈ gapTuples N x)
     {i j : Fin (n + 1)} (hij : i < j) (he : y i = y j) :
     ∃ k : Fin n, i = k.castSucc ∧ j = k.succ ∧ y i = x i ∧ y j = x i := by
-  have hj : j ≠ 0 := by intro hj; subst j; exact (not_lt_of_ge (Fin.zero_le i)) hij
+  have hj : j ≠ 0 := by aesop
   obtain ⟨k, rfl⟩ := Fin.exists_succ_eq.mpr hj
   have hl := ((mem_gapTuples.mp hy) k.succ).1
   rw [cyclicPredecessorPositions_succ] at hl
@@ -130,7 +146,7 @@ theorem gapTuples_equal_coordinates {N n : ℕ} {x y : Fin (n + 1) → ℤ}
   refine ⟨k, rfl, rfl, ?_, ?_⟩ <;> omega
 
 /-- A gap-coordinate difference N occurs only at the two endpoints of the period. -/
-theorem gapTuples_period_difference {N n : ℕ} {x y : Fin (n + 1) → ℤ}
+theorem gapTuples_period_difference
     (hx : StrictMono x) (hspan : x (Fin.last n) - x 0 < (N : ℤ))
     (hy : y ∈ gapTuples N x) {i j : Fin (n + 1)}
     (he : y j - y i = N) :
@@ -151,14 +167,16 @@ theorem gapTuples_period_difference {N n : ℕ} {x y : Fin (n + 1) → ℤ}
     have hstrict := hx (lt_of_le_of_ne (Fin.le_last j) hj)
     have hu := ((mem_gapTuples.mp hy) j).2
     omega
-  exact ⟨hi, hj, hei, hej⟩
+  trivial
 
-theorem gapCollision_equal_residue {N n : ℕ} {x y : Fin (n + 1) → ℤ}
+theorem gapCollision_equal_residue
     {k : Fin (n + 1)} (hk : gapCollision N x y k) :
     y k % (N : ℤ) = y (finRotate (n + 1) k) % (N : ℤ) := by
   rw [hk.1, hk.2]
   simp only [cyclicPredecessorPositions, Equiv.symm_apply_apply]
   split_ifs <;> simp
+
+end
 
 /-- Residue distinctness is exactly exclusion of the local endpoint collisions.
 At least two gaps are present, so each successor is a different coordinate. -/
@@ -169,7 +187,7 @@ theorem distinct_residues_iff_no_gapCollision {N n : ℕ} {x y : Fin (n + 2) →
   constructor
   · intro hinj k hk
     have he := hinj (gapCollision_equal_residue hk)
-    have hs : k ∈ (finRotate (n + 2)).support := by rw [support_finRotate]; exact mem_univ k
+    have hs : k ∈ (finRotate (n + 2)).support := by simp
     exact (Equiv.Perm.mem_support.mp hs) he.symm
   · intro hn
     have hord : ∀ i j : Fin (n + 2), i < j → y i % (N : ℤ) ≠ y j % (N : ℤ) := by
@@ -178,15 +196,12 @@ theorem distinct_residues_iff_no_gapCollision {N n : ℕ} {x y : Fin (n + 2) →
       · obtain ⟨k, hi, hj, hu, hl⟩ := gapTuples_equal_coordinates hx hy hij heq.symm
         apply hn i
         refine ⟨hu, ?_⟩
-        rw [hi, show finRotate (n + 2) k.castSucc = k.succ from finRotate_of_lt k.isLt,
-          cyclicPredecessorPositions_succ]
-        simpa only [hi, hj] using hl
+        simp_all
       · obtain ⟨hi, hj, hl, hu⟩ := gapTuples_period_difference hx hspan hy hperiod
         apply hn j
         refine ⟨?_, ?_⟩
-        · simpa only [hj] using hu
-        · rw [hj, finRotate_last, cyclicPredecessorPositions_zero]
-          simpa only [hi] using hl
+        · simp_all
+        simp_all
     intro i j he
     rcases lt_trichotomy i j with hij | hij | hij
     · exact (hord i j hij he).elim

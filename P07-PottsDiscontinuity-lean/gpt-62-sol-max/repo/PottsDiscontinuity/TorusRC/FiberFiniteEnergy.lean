@@ -34,38 +34,8 @@ single-edge factor per edge, for every boundary condition. -/
 theorem fk_allOpen_probability_ge (θ : FK.Parameters) (ξ : FK.BoundaryCondition V)
     (s : FK.Configuration G) :
     fkOpenEnergy θ ^ s.card ≤ (FK.measure G θ ξ {A | s ⊆ A}).toReal := by
-  classical
-  have hc0 : 0 ≤ fkOpenEnergy θ := by
-    exact div_nonneg (FK.edgeParameter_pos θ).le (FK.edge_conditional_denominator_pos θ).le
-  induction s using Finset.induction_on with
-  | empty => simp
-  | @insert e s hes ih =>
-    have hrepr : ∃ u v : V, ∃ huv : G.Adj u v,
-        e = ⟨s(u,v), G.mem_edgeSet.mpr huv⟩ := by
-      obtain ⟨uv, huv⟩ := e
-      induction uv using Sym2.inductionOn with
-      | hf u v => exact ⟨u,v,G.mem_edgeSet.mp huv,rfl⟩
-    obtain ⟨u,v,huv,rfl⟩ := hrepr
-    let e : G.edgeSet := ⟨s(u,v), G.mem_edgeSet.mpr huv⟩
-    change e ∉ s at hes
-    have hstable : ∀ A : FK.Configuration G, s ⊆ A ↔ s ⊆ A.erase e := by
-      intro A
-      constructor
-      · intro hs f hf
-        exact Finset.mem_erase.mpr ⟨fun heq => hes (heq ▸ hf), hs hf⟩
-      · intro hs f hf
-        exact Finset.mem_of_mem_erase (hs hf)
-    have henergy := (FK.configurationProbability_edge_finite_energy θ ξ
-      {A | s ⊆ A} huv hstable).1
-    have hevent : ({A : FK.Configuration G | s ⊆ A} ∩ {A | e ∈ A}) =
-        {A | insert e s ⊆ A} := by
-      ext A
-      simp only [Set.mem_inter_iff, Set.mem_ofPred_eq, Finset.insert_subset_iff]
-      exact and_comm
-    rw [hevent] at henergy
-    rw [Finset.card_insert_of_notMem hes, pow_succ]
-    rw [mul_comm]
-    exact (mul_le_mul_of_nonneg_left ih hc0).trans henergy
+  simpa only [Finset.subset_iff, iff_true, ↓reduceIte, fkOpenEnergy] using
+    FK.measure_prescribed_edges_lower_bound θ ξ true s
 
 /-- Expectation form of the finite-set opening bound. -/
 theorem fk_allOpen_eventProbability_ge (θ : FK.Parameters) (ξ : FK.BoundaryCondition V)

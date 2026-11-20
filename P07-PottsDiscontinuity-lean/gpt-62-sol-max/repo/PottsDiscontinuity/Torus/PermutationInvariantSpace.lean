@@ -24,9 +24,9 @@ variable {α : Type*} [Fintype α] [DecidableEq α]
 /-- Rational functions invariant on the cycles of a permutation. -/
 def cycleFunctions (p : Perm α) : Submodule ℚ (α → ℚ) where
   carrier := {f | ∀ x, f (p x) = f x}
-  zero_mem' := by intro x; rfl
-  add_mem' := by intro f g hf hg x; change f (p x) + g (p x) = _; rw [hf, hg]; rfl
-  smul_mem' := by intro c f hf x; change c • f (p x) = _; rw [hf]; rfl
+  zero_mem' := by simp
+  add_mem' := by intro f g hf hg x; simp_all
+  smul_mem' := by intro c f hf x; simp_all
 
 /-- An invariant function is precisely a function on the actual orbit quotient. -/
 def cycleFunctionEquiv (p : Perm α) :
@@ -53,24 +53,16 @@ theorem finrank_cycleFunctions (p : Perm α) :
 def cycleDifference (p : Perm α) (a b : α) : cycleFunctions p →ₗ[ℚ] ℚ :=
   ((LinearMap.proj a : (α → ℚ) →ₗ[ℚ] ℚ) - LinearMap.proj b).comp (cycleFunctions p).subtype
 
-omit [Fintype α] [DecidableEq α] in
-@[simp] theorem cycleDifference_apply (p : Perm α) (a b : α) (f : cycleFunctions p) :
-    cycleDifference p a b f = f.val a - f.val b := rfl
-
 omit [Fintype α] in
 theorem function_swap_eq_of_eq (f : α → ℚ) {a b : α} (hab : f a = f b) (x : α) :
     f (swap a b x) = f x := by
-  by_cases ha : x = a
-  · subst x; rw [swap_apply_left, hab]
-  · by_cases hb : x = b
-    · subst x; rw [swap_apply_right, hab]
-    · rw [swap_apply_of_ne_of_ne ha hb]
+  grind
 
 omit [Fintype α] in
 theorem cycleFunctions_swap_mul_iff (p : Perm α) (a b : α) (f : α → ℚ)
     (hab : f a = f b) : f ∈ cycleFunctions (swap a b * p) ↔ f ∈ cycleFunctions p := by
   change (∀ x, f (swap a b (p x)) = f x) ↔ ∀ x, f (p x) = f x
-  simp only [function_swap_eq_of_eq f hab]
+  simp [function_swap_eq_of_eq f hab]
 
 /-- The common equal-value invariant space on the two sides of a transposition surgery. -/
 def cycleDifferenceKernelEquiv (p : Perm α) (a b : α) :
@@ -88,8 +80,8 @@ def cycleDifferenceKernelEquiv (p : Perm α) (a b : α) :
 omit [Fintype α] [DecidableEq α] in
 theorem finrank_cycleDifference_range_le (p : Perm α) (a b : α) :
     finrank ℚ (LinearMap.range (cycleDifference p a b)) ≤ 1 := by
-  simpa only [finrank_self] using
-    (Submodule.finrank_le (LinearMap.range (cycleDifference p a b)))
+  simpa using
+      (Submodule.finrank_le (LinearMap.range (cycleDifference p a b)))
 
 /-- A transposition can change the number of cyclic orbits by at most one. -/
 theorem permutationCycleCount_swap_bounds (p : Perm α) (a b : α) :

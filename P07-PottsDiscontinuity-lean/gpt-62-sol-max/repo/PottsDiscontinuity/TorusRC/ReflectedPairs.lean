@@ -13,9 +13,13 @@ open Torus CorrLength
 
 variable {N M : ℕ}
 
+section
+
+variable (hNp : 0 < N) (hMp : 0 < M)
+
 /-- Reflection maps every sampled open edge to the corresponding sampled
 open edge of the reflected configuration, with unchanged horizontal strip. -/
-abbrev liftedReflectionStripHom (hNp : 0 < N) (hMp : 0 < M) (t : ℤ) (ht : Even t)
+abbrev liftedReflectionStripHom (t : ℤ) (ht : Even t)
     (A : RCConfig N M) (a b : ℤ) :
     liftedStripGraph hNp hMp (reflectRCConfig hMp t A) a b →g
       liftedStripGraph hNp hMp A a b where
@@ -27,14 +31,14 @@ abbrev liftedReflectionStripHom (hNp : 0 < N) (hMp : 0 < M) (t : ℤ) (ht : Even
     exact huv.2.1
 
 /-- Connection from (i,0) to (i,2n) within [0,3n] times [0,2n]. -/
-def rectangleDoubleConnection (hNp : 0 < N) (hMp : 0 < M) (n : ℕ)
+def rectangleDoubleConnection (n : ℕ)
     (i : Fin (3 * n + 1)) : Set (RCConfig N M) :=
   {A | ∃ u v : RotatedVertex,
     u.val = ((i.val : ℤ), 0) ∧ v.val = ((i.val : ℤ), 2 * (n : ℤ)) ∧
       ∃ w : (liftedStripGraph hNp hMp A 0 (3 * (n : ℤ))).Walk u v,
         ∀ z ∈ w.support, 0 ≤ z.val.2 ∧ z.val.2 ≤ 2 * (n : ℤ)}
 
-theorem rectanglePair_reflected_inter_subset (hNp : 0 < N) (hMp : 0 < M)
+theorem rectanglePair_reflected_inter_subset
     (n : ℕ) (i j : Fin (3 * n + 1)) :
     rectanglePairConnection hNp hMp n i j ∩
       (reflectRCConfig hMp (2 * (n : ℤ)) ⁻¹' rectanglePairConnection hNp hMp n i j) ⊆
@@ -69,23 +73,15 @@ theorem rectanglePair_reflected_inter_subset (hNp : 0 < N) (hMp : 0 < M)
       change 0 ≤ 2 * (n : ℤ) - z'.val.2 ∧ 2 * (n : ℤ) - z'.val.2 ≤ 2 * (n : ℤ)
       constructor <;> omega
 
-private theorem rectanglePair_walk_mono {V : Type*} {G H : SimpleGraph V}
-    (hGH : G ≤ H) {u v : V} (w : G.Walk u v) :
-    ∃ w' : H.Walk u v, w'.support = w.support := by
-  induction w with
-  | nil => exact ⟨.nil,rfl⟩
-  | @cons u v w hadj p ih =>
-    obtain ⟨p',hp⟩ := ih
-    exact ⟨.cons (hGH hadj) p',by simp [hp]⟩
+end
 
 theorem rectanglePairConnection_mono (hNp : 0 < N) (hMp : 0 < M)
     (n : ℕ) (i j : Fin (3 * n + 1)) {A B : RCConfig N M} (hAB : A ≤ B)
     (hA : A ∈ rectanglePairConnection hNp hMp n i j) :
     B ∈ rectanglePairConnection hNp hMp n i j := by
   obtain ⟨u,v,hu,hv,w,hw⟩ := hA
-  obtain ⟨w',hs⟩ := rectanglePair_walk_mono
-    (liftedStripGraph_mono hNp hMp 0 (3 * (n : ℤ)) hAB) w
-  exact ⟨u,v,hu,hv,w',by simpa only [hs] using hw⟩
+  refine ⟨u,v,hu,hv,w.mapLe (liftedStripGraph_mono hNp hMp _ _ hAB),?_⟩
+  simpa only [SimpleGraph.Walk.support_mapLe_eq_support] using hw
 
 /-- The reflected-pair FKG step in the source, with the exact torus-law
 reflection and explicit local paths. -/
@@ -109,24 +105,5 @@ theorem rectangleDouble_probability_ge_pair_sq (hN : Even N) (hM : Even M)
   rw [pow_two]
   exact h.trans (torusRCProbability_mono hN hM q
     (rectanglePair_reflected_inter_subset hNp hMp n i j))
-
-/-- The source's uniformly positive double-height point connection, obtained
-from h319 by endpoint extraction, reflection symmetry, and FKG. -/
-theorem double_connection_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
-    ∃ c : ℝ, 0 < c ∧ ∀ (N M n : ℕ) (hN : Even N) (hM : Even M)
-      (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (hn : 0 < n)
-      (h3nN : 3 * n ≤ N) (h3nM : 3 * n ≤ M),
-      let hNp : 0 < N := by omega
-      let hMp : 0 < M := by omega
-      ∃ i : Fin (3 * n + 1),
-        (c / (9 * (n : ℝ) ^ 2)) ^ 2 ≤ torusRCProbability hN hM q
-          (rectangleDoubleConnection hNp hMp n i) := by
-  obtain ⟨c,hc,hpair⟩ := point_pair_of_h319 q hh319
-  refine ⟨c,hc,?_⟩
-  intro N M n hN hM hN4 hM4 hn h3nN h3nM
-  obtain ⟨ij,hij⟩ := hpair N M n hN hM hN4 hM4 hn h3nN h3nM
-  refine ⟨ij.1, ?_⟩
-  exact (pow_le_pow_left₀ (by positivity) hij 2).trans
-    (rectangleDouble_probability_ge_pair_sq hN hM (by omega) (by omega) q n ij.1 ij.2)
 
 end PottsDiscontinuity.TorusRC

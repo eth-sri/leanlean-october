@@ -1,5 +1,7 @@
 module
 
+public import PottsDiscontinuity.Infra.ClopenProbability
+
 public import PottsDiscontinuity.Potts.FreeBoxObservation
 public import PottsDiscontinuity.Potts.FreeConnectionEvents
 public import PottsDiscontinuity.Potts.MonotoneEventLimits
@@ -24,14 +26,12 @@ theorem free_connection_moments_tendsto (θ : FK.Parameters)
   rw [← iUnion_freeDataEvent F]
   apply increasing_event_diagonal_tendsto _ μ _ (freeDataEvent_monotone F)
   · intro m
-    have ht := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hμ (freeDataEvent_isClopen m F)
-    simpa only [closedBoxProbabilityMeasure_eq_free, ProbabilityMeasure.measureReal_eq_coe_coeFn,
-      Function.comp_def] using NNReal.continuous_coe.continuousAt.tendsto.comp ht
+    simpa only [closedBoxProbabilityMeasure_eq_free] using
+      ProbabilityMeasure.tendsto_real_clopen hμ (freeDataEvent_isClopen m F)
   · intro n
-    rw [freeDataEvent_eq_observation]
-    simp only [Measure.real]
-    rw [closedBoxProbabilityMeasure_observation θ (Nat.le_refl n), nestedBoxEvent_refl]
-    exact free_observation_le_limit θ μ hμ n (freeDataFiniteEvent n F) (freeDataFiniteEvent_upper n F)
+    simpa only [RCInfinite.comparisonSign_zero, neg_one_mul, neg_le_neg_iff, RCInfinite.boxMeasure_free,
+      ← closedBoxProbabilityMeasure_eq_free, ← freeDataEvent_eq_observation] using
+      boxObservation_limit_compare θ 0 μ hμ n (freeDataFiniteEvent n F) (freeDataFiniteEvent_upper n F)
 
 end
 end PottsDiscontinuity.Potts

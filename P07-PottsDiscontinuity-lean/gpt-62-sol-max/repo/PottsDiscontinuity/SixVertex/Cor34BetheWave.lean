@@ -30,14 +30,18 @@ noncomputable def cor34_amplitudeFactor (ε x y : ℝ) : ℂ :=
     (1 + (((-ε / 2 : ℝ) : ℂ) *
       (Complex.exp (-(I * (x : ℂ))) + BetheAnsatz.z y)))
 
+section
+
+variable {n : ℕ}
+
 /-- The regularized coefficient `(-2Δ)^(-n(n-1)/2) A_σ`, extended to `ε=0`. -/
-noncomputable def cor34_normalizedAmplitude {n : ℕ} (ε : ℝ) (p : Fin n → ℝ)
+noncomputable def cor34_normalizedAmplitude (ε : ℝ) (p : Fin n → ℝ)
     (σ : Equiv.Perm (Fin n)) : ℂ :=
   (Equiv.Perm.sign σ : ℤ) *
     ∏ k : Fin n, ∏ l ∈ Finset.Ioi k,
       cor34_amplitudeFactor ε (p (σ k)) (p (σ l))
 
-@[simp] theorem cor34_normalizedAmplitude_zero {n : ℕ} (p : Fin n → ℝ)
+@[simp] theorem cor34_normalizedAmplitude_zero (p : Fin n → ℝ)
     (σ : Equiv.Perm (Fin n)) :
     cor34_normalizedAmplitude 0 p σ =
       (Equiv.Perm.sign σ : ℤ) *
@@ -47,7 +51,7 @@ noncomputable def cor34_normalizedAmplitude {n : ℕ} (ε : ℝ) (p : Fin n → 
 
 /-- At nonzero ε, the regularized coefficient is exactly the source coefficient multiplied by
 `(-ε/2)^(n(n-1)/2)`. -/
-theorem cor34_normalizedAmplitude_eq_scaled_amplitude {n : ℕ} (ε : ℝ) (p : Fin n → ℝ)
+theorem cor34_normalizedAmplitude_eq_scaled_amplitude (ε : ℝ) (p : Fin n → ℝ)
     (σ : Equiv.Perm (Fin n)) (hε : ε ≠ 0) :
     cor34_normalizedAmplitude ε p σ =
       (((-ε / 2 : ℝ) : ℂ) ^ cor34_pairCount n) *
@@ -57,41 +61,16 @@ theorem cor34_normalizedAmplitude_eq_scaled_amplitude {n : ℕ} (ε : ℝ) (p : 
   have hfactor (x y : ℝ) :
       cor34_amplitudeFactor ε x y =
         q * (BetheAnsatz.z x * BetheAnsatz.scattering (1 / ε) x y) := by
-    have hInv : BetheAnsatz.z x * Complex.exp (-(I * (x : ℂ))) = 1 := by
-      rw [BetheAnsatz.z, ← Complex.exp_add]
-      have harg : I * (x : ℂ) + -(I * (x : ℂ)) = 0 := by ring
-      rw [harg, Complex.exp_zero]
     have hscale : q * (-2 * ((1 / ε : ℝ) : ℂ)) = 1 := by
       dsimp [q]
       push_cast
       field_simp [hε]
-    have hcancel : q *
-        (BetheAnsatz.z x * (-2 * ((1 / ε : ℝ) : ℂ))) = BetheAnsatz.z x := by
-      calc
-        q * (BetheAnsatz.z x * (-2 * ((1 / ε : ℝ) : ℂ))) =
-            (q * (-2 * ((1 / ε : ℝ) : ℂ))) * BetheAnsatz.z x := by ring
-        _ = BetheAnsatz.z x := by rw [hscale, one_mul]
     change BetheAnsatz.z x *
       (1 + q * (Complex.exp (-(I * (x : ℂ))) + BetheAnsatz.z y)) =
       q * (BetheAnsatz.z x *
         (Complex.exp (-(I * (x : ℂ))) + BetheAnsatz.z y -
           2 * ((1 / ε : ℝ) : ℂ)))
-    have hRhs : q * (BetheAnsatz.z x *
-        (Complex.exp (-(I * (x : ℂ))) + BetheAnsatz.z y -
-          2 * ((1 / ε : ℝ) : ℂ))) =
-        BetheAnsatz.z x + q + q * (BetheAnsatz.z x * BetheAnsatz.z y) := by
-      calc
-        _ = q * (BetheAnsatz.z x * Complex.exp (-(I * (x : ℂ)))) +
-              q * (BetheAnsatz.z x * BetheAnsatz.z y) +
-              q * (BetheAnsatz.z x * (-2 * ((1 / ε : ℝ) : ℂ))) := by ring
-        _ = _ := by rw [hInv, hcancel]; ring
-    calc
-      _ = BetheAnsatz.z x + q *
-          (BetheAnsatz.z x * Complex.exp (-(I * (x : ℂ)))) +
-            q * (BetheAnsatz.z x * BetheAnsatz.z y) := by ring
-      _ = BetheAnsatz.z x + q + q *
-          (BetheAnsatz.z x * BetheAnsatz.z y) := by rw [hInv]; ring
-      _ = _ := hRhs.symm
+    grind
   have hinner (k : Fin n) :
       (∏ l ∈ Finset.Ioi k, q *
         (BetheAnsatz.z (p (σ k)) *
@@ -101,7 +80,7 @@ theorem cor34_normalizedAmplitude_eq_scaled_amplitude {n : ℕ} (ε : ℝ) (p : 
           (BetheAnsatz.z (p (σ k)) *
             BetheAnsatz.scattering (1 / ε) (p (σ k)) (p (σ l))) := by
     rw [Finset.prod_mul_distrib]
-    simp [Finset.prod_const]
+    simp
   have houter :
       (∏ k : Fin n, ∏ l ∈ Finset.Ioi k, q *
         (BetheAnsatz.z (p (σ k)) *
@@ -129,21 +108,17 @@ theorem cor34_normalizedAmplitude_eq_scaled_amplitude {n : ℕ} (ε : ℝ) (p : 
       simp only [cor34_pairCount]
       rw [houter, Finset.prod_mul_distrib, Finset.prod_pow_eq_pow_sum]
       ring
-    _ = _ := by simp [q, BetheAnsatz.amplitude]
-
-/-- The source coordinate tuple `(2,4,...,2n)` as an integer-position function. -/
-def cor34_sourceEvenPositions {n : ℕ} : Fin n → ℤ :=
-  fun k => (2 * (k.val + 1) : ℕ)
+    _ = _ := rfl
 
 /-- The regularized coordinate Bethe wave.  This is defined at ε=0 by the continuous extension
 of each coefficient, so no default branch is used. -/
-noncomputable def cor34_normalizedCoordinate {n : ℕ} (ε : ℝ) (p : Fin n → ℝ)
+noncomputable def cor34_normalizedCoordinate (ε : ℝ) (p : Fin n → ℝ)
     (x : Fin n → ℤ) : ℂ :=
   ∑ σ : Equiv.Perm (Fin n),
     cor34_normalizedAmplitude ε p σ * BetheAnsatz.planeWave p σ x
 
 /-- The regularized coordinate wave is continuous in `(ε,p)`. -/
-theorem cor34_normalizedCoordinate_tendsto {n : ℕ} {p : ℝ → Fin n → ℝ}
+theorem cor34_normalizedCoordinate_tendsto {p : ℝ → Fin n → ℝ}
     (hp : ContinuousAt p 0) (x : Fin n → ℤ) :
     Tendsto (fun ε => cor34_normalizedCoordinate ε (p ε) x) (𝓝 0)
       (𝓝 (cor34_normalizedCoordinate 0 (p 0) x)) := by
@@ -179,14 +154,14 @@ theorem cor34_normalizedCoordinate_tendsto {n : ℕ} {p : ℝ → Fin n → ℝ}
         dsimp [BetheAnsatz.planeWave, BetheAnsatz.z]
         fun_prop)
     exact hsum.continuousAt
-  have hpair : Tendsto (fun ε => (ε, p ε)) (𝓝 0) (𝓝 (0, p 0)) :=
+  have hpair :=
     continuousAt_id.tendsto.prodMk_nhds hp
   have hlim := hF.tendsto.comp hpair
-  simpa only [Function.comp_def] using hlim
+  assumption
 
 /-- Away from `ε=0`, the regularized coordinate is exactly the source coordinate wave multiplied
 by `(-ε/2)^(n(n-1)/2)`. -/
-theorem cor34_normalizedCoordinate_eq_scaled_coordinateWave {n : ℕ} (ε : ℝ)
+theorem cor34_normalizedCoordinate_eq_scaled_coordinateWave (ε : ℝ)
     (p : Fin n → ℝ) (x : Fin n → ℤ) (hε : ε ≠ 0) :
     cor34_normalizedCoordinate ε p x =
       (((-ε / 2 : ℝ) : ℂ) ^ cor34_pairCount n) *
@@ -205,43 +180,23 @@ theorem cor34_normalizedCoordinate_eq_scaled_coordinateWave {n : ℕ} (ε : ℝ)
         ring
     _ = _ := by rw [Finset.mul_sum]
 
+end
+
+section
+
+variable {N n : ℕ} (hN : 2 * n ≤ N)
+
 /-- The zero-based state corresponding to the paper's one-based sites `(2,4,...,2n)`. -/
-noncomputable def cor34_evenCoordinateState {N n : ℕ} (hN : 2 * n ≤ N) : State N n := by
+noncomputable def cor34_evenCoordinateState : State N n := by
   let f : Fin n → Fin N := fun k => ⟨2 * k.val + 1, by omega⟩
   have hf : Function.Injective f := by
     intro i j hij
-    apply Fin.ext
-    have := congrArg Fin.val hij
-    dsimp [f] at this
-    omega
+    grind
   refine ⟨Finset.univ.image f, ?_⟩
   rw [Finset.card_image_of_injective _ hf]
   simp
 
-/-- The state sites are exactly the zero-based indices one less than the source's even tuple. -/
-theorem cor34_evenCoordinateState_mem {N n : ℕ} (hN : 2 * n ≤ N) (k : Fin n) :
-    (⟨2 * k.val + 1, by omega⟩ : Fin N) ∈ (cor34_evenCoordinateState hN).1 := by
-  simp [cor34_evenCoordinateState]
 
-/-- The increasing zero-based positions in this state are `1,3,...,2n-1`; these encode the
-one-based source sites `2,4,...,2n`. -/
-theorem cor34_evenCoordinateState_positions {N n : ℕ} (hN : 2 * n ≤ N) :
-    BetheAnsatz.positions (cor34_evenCoordinateState hN) =
-      fun k => ((2 * k.val + 1 : ℕ) : ℤ) := by
-  classical
-  let x := cor34_evenCoordinateState hN
-  let f : Fin n → Fin N := fun k => ⟨2 * k.val + 1, by omega⟩
-  have hfmem : ∀ k, f k ∈ x.1 := by
-    intro k
-    simpa [x] using cor34_evenCoordinateState_mem hN k
-  have hfmono : StrictMono f := by
-    intro i j hij
-    change 2 * i.val + 1 < 2 * j.val + 1
-    omega
-  have horder : f = x.1.orderEmbOfFin x.2 :=
-    Finset.orderEmbOfFin_unique x.2 hfmem hfmono
-  funext k
-  change ((x.1.orderEmbOfFin x.2 k).val : ℤ) = ((2 * k.val + 1 : ℕ) : ℤ)
-  rw [← horder]
+end
 
 end PottsDiscontinuity.SixVertex

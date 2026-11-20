@@ -25,28 +25,15 @@ theorem ivt_lower (hstep : ∀ p q, R p q → r q ≤ r p + 1 ∧ r p ≤ r q + 
     ∃ x, r x = c ∧ ReflTransGen (fun p q => R p q ∧ c ≤ r p ∧ c ≤ r q) x b := by
   have hge : ∀ x b, r x = c →
       ReflTransGen (fun p q => R p q ∧ c ≤ r p ∧ c ≤ r q) x b → c ≤ r b := by
-    intro x b hx hxb
-    induction hxb with
-    | refl => exact hx.ge
-    | tail _ hstep _ => exact hstep.2.2
+    grind
   have key : ∀ b, ReflTransGen R a b →
       r b < c ∨ ∃ x, r x = c ∧ ReflTransGen (fun p q => R p q ∧ c ≤ r p ∧ c ≤ r q) x b := by
     intro b hb
     induction hb with
     | refl =>
-      by_cases h : r a < c
-      · exact Or.inl h
-      · exact Or.inr ⟨a, by omega, ReflTransGen.refl⟩
+      grind
     | @tail b b' _ hbb' ih =>
-      have hs := hstep b b' hbb'
-      rcases ih with h | ⟨x, hx, hxb⟩
-      · by_cases h' : r b' < c
-        · exact Or.inl h'
-        · exact Or.inr ⟨b', by omega, ReflTransGen.refl⟩
-      · have hrb := hge x b hx hxb
-        by_cases h' : r b' < c
-        · exact Or.inl h'
-        · exact Or.inr ⟨x, hx, hxb.tail ⟨hbb', hrb, by omega⟩⟩
+      grind
   rcases key b hab with h | h
   · omega
   · exact h

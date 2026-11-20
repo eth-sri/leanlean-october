@@ -46,8 +46,7 @@ private theorem finiteConnectionEvent_isClopen (u v : LatticeVertex)
     IsClopen (finiteConnectionEvent u v F) := by
   by_cases hconn : ActualConnected squareLattice F u v
   · simpa [finiteConnectionEvent, hconn] using LatticeConfiguration.allOpen_isClopen F
-  · simpa [finiteConnectionEvent, hconn] using
-      (isClopen_empty : IsClopen (∅ : Set LatticeConfiguration))
+  grind [finiteConnectionEvent, isClopen_empty]
 
 theorem freeOneArmApprox_mono (k : ℕ) : Monotone (freeOneArmApprox k) := by
   intro n m hnm ω hω
@@ -61,10 +60,8 @@ theorem freeOneArmApprox_isClopen (k n : ℕ) : IsClopen (freeOneArmApprox k n) 
   apply isClopen_iUnion_of_finite
   intro i
   by_cases hk : k ≤ boxRadius (oneArmWitnessEnumeration i).1
-  · simpa [freeOneArmApprox, hk] using
-      (finiteConnectionEvent_isClopen (0, 0) (oneArmWitnessEnumeration i).1
-        (oneArmWitnessEnumeration i).2)
-  · simpa [hk] using (isClopen_empty : IsClopen (∅ : Set LatticeConfiguration))
+  · simp_all [finiteConnectionEvent_isClopen]
+  grind [isClopen_empty]
 
 theorem freeOneArmApprox_isUpperSet (k n : ℕ) : IsUpperSet (freeOneArmApprox k n) := by
   intro ω η hωη hω
@@ -74,9 +71,9 @@ theorem freeOneArmApprox_isUpperSet (k n : ℕ) : IsUpperSet (freeOneArmApprox k
   by_cases hk : k ≤ boxRadius (oneArmWitnessEnumeration i).1
   · have hη := finiteConnectionEvent_isUpperSet (0, 0)
       (oneArmWitnessEnumeration i).1 (oneArmWitnessEnumeration i).2 hωη
-      (by simpa [hk] using hi)
-    simpa [hk] using hη
-  · simp [hk] at hi
+      (by simp_all)
+    simp_all
+  simp_all
 
 theorem iUnion_freeOneArmApprox (k : ℕ) :
     (⋃ n, freeOneArmApprox k n) = oneArmEvent k := by
@@ -86,17 +83,16 @@ theorem iUnion_freeOneArmApprox (k : ℕ) :
     rcases Set.mem_iUnion.mp hω with ⟨n, hn⟩
     rcases Set.mem_iUnion.mp hn with ⟨i, hi⟩
     have hk : k ≤ boxRadius (oneArmWitnessEnumeration i).1 := by
-      by_contra h
-      simp [h] at hi
+      simp_all
     have hconn : ω ∈ finiteConnectionEvent (0, 0)
         (oneArmWitnessEnumeration i).1 (oneArmWitnessEnumeration i).2 := by
-      simpa [hk] using hi
+      simp_all
     refine ⟨(oneArmWitnessEnumeration i).1, hk, ?_⟩
     exact (connectionEvent_iff_rcInfiniteReachable (0, 0)
       (oneArmWitnessEnumeration i).1 ω).mp
         ⟨(oneArmWitnessEnumeration i).2, hconn.1, hconn.2⟩
   · rintro ⟨y, hy, hreach⟩
-    have hconn : ω ∈ connectionEvent (0, 0) y :=
+    have hconn :=
       (connectionEvent_iff_rcInfiniteReachable (0, 0) y ω).mpr hreach
     rcases hconn with ⟨F, hFconn, hFopen⟩
     obtain ⟨i, hi⟩ := oneArmWitnessEnumeration_surjective (y, F)
@@ -105,13 +101,7 @@ theorem iUnion_freeOneArmApprox (k : ℕ) :
     unfold freeOneArmApprox
     apply Set.mem_iUnion.mpr
     refine ⟨⟨i, le_rfl⟩, ?_⟩
-    have hk : k ≤ boxRadius (oneArmWitnessEnumeration i).1 := by
-      simpa [hi] using hy
-    have hfin : ω ∈ finiteConnectionEvent (0, 0)
-        (oneArmWitnessEnumeration i).1 (oneArmWitnessEnumeration i).2 := by
-      simpa [hi] using (show ω ∈ finiteConnectionEvent (0, 0) y F from
-        ⟨hFconn, hFopen⟩)
-    simp [hk, hfin]
+    simp_all [finiteConnectionEvent]
 
 end
 end PottsDiscontinuity.TorusLoops

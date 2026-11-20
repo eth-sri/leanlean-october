@@ -22,12 +22,10 @@ theorem permutationCycleCount_swap_ne (p : Perm α) {a b : α} (hab : a ≠ b) :
     permutationCycleCount (swap a b * p) ≠ permutationCycleCount p := by
   intro hc
   have hs : (swap a b * p).sign = -p.sign := by
-    rw [map_mul, sign_swap hab, neg_one_mul]
+    simp_all
   have he : (swap a b * p).sign = p.sign := by
     rw [sign_eq_pow_permutationCycleCount, hc, ← sign_eq_pow_permutationCycleCount]
-  have hv : (p.sign : ℤ) = -(p.sign : ℤ) := congrArg Units.val (he.symm.trans hs)
-  have hn : (p.sign : ℤ) ≠ 0 := Units.ne_zero _
-  omega
+  simp_all
 
 omit [DecidableEq α] in
 theorem cycleDifference_eq_zero_of_sameCycle (p : Perm α) {a b : α}
@@ -40,12 +38,12 @@ theorem cycleDifference_ne_zero_of_not_sameCycle (p : Perm α) {a b : α}
     (h : ¬p.SameCycle a b) : cycleDifference p a b ≠ 0 := by
   let f : cycleFunctions p := ⟨fun x => if p.SameCycle a x then 1 else 0, by
     intro x
-    simp only [sameCycle_apply_right]⟩
+    simp⟩
   intro hz
   have he := LinearMap.congr_fun hz f
   change (if p.SameCycle a a then (1 : ℚ) else 0) -
     (if p.SameCycle a b then 1 else 0) = 0 at he
-  simp only [SameCycle.rfl, h, ite_true, ite_false, sub_zero, one_ne_zero] at he
+  simp [SameCycle.rfl, h] at he
 
 /-- Two distinct marked ends on one boundary cycle split that cycle into two. -/
 theorem permutationCycleCount_swap_split (p : Perm α) {a b : α}

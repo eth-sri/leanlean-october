@@ -1,6 +1,6 @@
 module
 
-public import PottsDiscontinuity.Torus.DiamondIntersectionLocality
+public import PottsDiscontinuity.Torus.DiamondClusterProjection
 public import PottsDiscontinuity.TorusTopology.IndexedWalk
 
 /-! An integer winding divisor gives a modular vertex phase, constant on
@@ -15,6 +15,14 @@ open Torus
 variable {N M : ℕ}
 noncomputable section
 
+/-- A vertex phase that drops by one across the seam and is constant on other edges. -/
+abbrev IsWindingPhase (hN : Even N) (hM : Even M) (A : RCConfig N M)
+    (c : (diamondOpenGraph hN hM true A).ConnectedComponent) {b : ℕ}
+    (g : FaceVertex N M true → ZMod b) : Prop :=
+  ∀ e : OpenDiamondEdge A, diamondEdgeCluster hN hM A e = c →
+    g (faceEndpoint hN hM true e.val true) - g (faceEndpoint hN hM true e.val false) =
+      if e.val.2.val = 0 then -1 else 0
+
 /-- An integral cycle-flux divisor in one primal cluster gives an actual
 modular potential for the seam cocycle on all edges of that cluster. -/
 theorem exists_winding_phase_of_integral_divisor
@@ -24,10 +32,7 @@ theorem exists_winding_phase_of_integral_divisor
       SupportedOnDiamondCluster hN hM A c f →
       (∀ e : OpenDiamondEdge A, ∃ z : ℤ, f.val e = z) →
       ∃ z : ℤ, diamondWindingY A f.val = (((b : ℤ)*z : ℤ) : ℚ)) :
-    ∃ g : FaceVertex N M true → ZMod b,
-      ∀ e : OpenDiamondEdge A, diamondEdgeCluster hN hM A e = c →
-        g (faceEndpoint hN hM true e.val true) - g (faceEndpoint hN hM true e.val false) =
-          if e.val.2.val=0 then -1 else 0 := by
+    ∃ g : FaceVertex N M true → ZMod b, IsWindingPhase hN hM A c g := by
   classical
   obtain ⟨u₀,hu₀⟩ : ∃ u : FaceVertex N M true,
       (diamondOpenGraph hN hM true A).connectedComponentMk u = c := by
@@ -43,20 +48,17 @@ theorem exists_winding_phase_of_integral_divisor
       then ((p ⟨u,hu⟩).winding : ℤ) else 0
   refine ⟨g,?_⟩
   intro e hec
-  have ht : (diamondOpenGraph hN hM true A).connectedComponentMk
-      (faceEndpoint hN hM true e.val true) = c :=
+  have ht :=
     (SimpleGraph.ConnectedComponent.sound
       (diamond_endpoints_reachable hN hM A e.val e.property)).symm.trans hec
   let pu := p ⟨faceEndpoint hN hM true e.val false,hec⟩
   let pv := p ⟨faceEndpoint hN hM true e.val true,ht⟩
-  let F : OpenDiamondEdge A → ℚ := pu.chain + Pi.single e 1 - pv.chain
+  let F := pu.chain + Pi.single e 1 - pv.chain
   have hF : F ∈ diamondCycleSpace hN hM A := by
     change diamondBoundary hN hM A F = 0
     dsimp [F]
     rw [map_sub,map_add,pu.boundary_chain,pv.boundary_chain,diamondBoundary_single]
-    ext u
-    simp only [Pi.sub_apply,Pi.add_apply,Pi.zero_apply]
-    ring
+    simp
   let f : diamondCycleSpace hN hM A := ⟨F,hF⟩
   have hs : SupportedOnDiamondCluster hN hM A c f := by
     intro d hd
@@ -73,7 +75,7 @@ theorem exists_winding_phase_of_integral_divisor
     refine ⟨zu+(if d=e then 1 else 0)-zv,?_⟩
     change pu.chain d + (Pi.single e (1 : ℚ) : OpenDiamondEdge A → ℚ) d - pv.chain d = _
     simp only [hzu,hzv,Pi.single_apply]
-    split_ifs <;> push_cast <;> rfl
+    simp
   let s : ℤ := if e.val.2.val=0 then -1 else 0
   have hw : diamondWindingY A f.val = ((pu.winding+s-pv.winding : ℤ) : ℚ) := by
     change diamondWindingY A (pu.chain + Pi.single e 1 - pv.chain) = _
@@ -94,11 +96,10 @@ theorem exists_winding_phase_of_integral_divisor
         (faceEndpoint hN hM true e.val false) = c := hec
     dsimp only [g]
     rw [dite_eq_left ht,dite_eq_left hf₀]
-    change ((pv.winding : ℤ) : ZMod b) - ((pu.winding : ℤ) : ZMod b) = _
     linear_combination -hcast
   rw [hg]
   dsimp [s]
-  split_ifs <;> simp
+  simp
 
 end
 end PottsDiscontinuity.TorusTopology

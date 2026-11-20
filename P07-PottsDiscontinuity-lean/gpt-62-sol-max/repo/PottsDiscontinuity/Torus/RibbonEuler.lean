@@ -21,8 +21,12 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
+section
+
+variable (hN : Even N) (hM : Even M)
+
 /-- A ribbon joins different boundaries of one component, thereby creating a handle. -/
-def IsHandleAttachment (hN : Even N) (hM : Even M) (A : RCConfig N M)
+def IsHandleAttachment (A : RCConfig N M)
     (v : Fin N × Fin M) : Prop :=
   RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
     (ribbonEndEquiv hN hM (v, true)) ∧
@@ -31,14 +35,16 @@ def IsHandleAttachment (hN : Even N) (hM : Even M) (A : RCConfig N M)
 
 /-- Number of handle-creating attachments, reading the list from right to left.
 Repeated indices do not attach an already present ribbon again. -/
-noncomputable def attachmentHandleCount (hN : Even N) (hM : Even M)
+noncomputable def attachmentHandleCount
     (L : List (Fin N × Fin M)) : ℕ := by
   classical
   exact L.rec 0 (fun v L g => g +
     if v ∈ L then 0 else if IsHandleAttachment hN hM (configOfList L) v then 1 else 0)
 
-@[simp] theorem attachmentHandleCount_nil (hN : Even N) (hM : Even M) :
+@[simp] theorem attachmentHandleCount_nil :
     attachmentHandleCount hN hM [] = 0 := rfl
+
+end
 
 open scoped Classical in
 theorem attachmentHandleCount_cons (hN : Even N) (hM : Even M)
@@ -48,8 +54,12 @@ theorem attachmentHandleCount_cons (hN : Even N) (hM : Even M)
   classical
   rfl
 
+section
+
+variable (hN : Even N) (hM : Even M)
+
 /-- The cellular Euler identity for any duplicate-free ribbon attachment order. -/
-theorem euler_attachmentHandleCount (hN : Even N) (hM : Even M)
+theorem euler_attachmentHandleCount
     (L : List (Fin N × Fin M)) (hL : L.Nodup) :
     2 * clusterCount hN hM true (configOfList L) + L.length =
       rcLoopCount hN hM (configOfList L) + Fintype.card (FaceVertex N M true) +
@@ -63,7 +73,7 @@ theorem euler_attachmentHandleCount (hN : Even N) (hM : Even M)
   | cons v L ih =>
     obtain ⟨hv, ht⟩ := List.nodup_cons.mp hL
     have hi := ih ht
-    have hc : configOfList L v = false := by simp only [configOfList, hv, decide_false]
+    have hc : configOfList L v = false := by simp [configOfList, hv]
     rw [configOfList_cons v L hv, List.length_cons]
     by_cases hconn : RibbonConnected hN hM (configOfList L)
         (ribbonEndEquiv hN hM (v, false)) (ribbonEndEquiv hN hM (v, true))
@@ -81,8 +91,7 @@ theorem euler_attachmentHandleCount (hN : Even N) (hM : Even M)
         simp only [hv, ite_false, hh, ite_true]
         omega
     · have hk := clusterCount_toggle_of_not_connected hN hM (configOfList L) v hc hconn
-      have hbound : ¬(ribbonBoundary hN hM (configOfList L)).SameCycle
-          (ribbonEndEquiv hN hM (v, false)) (ribbonEndEquiv hN hM (v, true)) :=
+      have hbound :=
         fun h => hconn (ribbonConnected_of_boundary_sameCycle hN hM (configOfList L) h)
       have hl := rcLoopCount_toggle_join hN hM (configOfList L) v hbound
       have hh : ¬IsHandleAttachment hN hM (configOfList L) v := fun h => hconn h.1
@@ -91,20 +100,19 @@ theorem euler_attachmentHandleCount (hN : Even N) (hM : Even M)
       omega
 
 /-- The handle count in the explicit coordinate order, rather than an Euler-defect definition. -/
-noncomputable def ribbonHandleCount (hN : Even N) (hM : Even M) (A : RCConfig N M) : ℕ :=
+noncomputable def ribbonHandleCount (A : RCConfig N M) : ℕ :=
   attachmentHandleCount hN hM (openEdgeList A)
 
 /-- The genuine RC statistics satisfy Euler counting with the attachment handle count.
 Identifying this count with the winding-defined net indicator is a separate obligation. -/
-theorem euler_ribbonHandleCount (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+theorem euler_ribbonHandleCount (A : RCConfig N M) :
     2 * clusterCount hN hM true A + openCount A =
       rcLoopCount hN hM A + N * M / 2 + 2 * ribbonHandleCount hN hM A := by
   have he := euler_attachmentHandleCount hN hM (openEdgeList A) (openEdgeList_nodup A)
-  simpa only [configOfList_openEdgeList, length_openEdgeList, card_faceVertex hN,
-    ribbonHandleCount] using he
+  simpa [length_openEdgeList, card_faceVertex hN, ribbonHandleCount] using he
 
 /-- Handle counting is independent of the duplicate-free order of the same open edges. -/
-theorem attachmentHandleCount_order_independent (hN : Even N) (hM : Even M)
+theorem attachmentHandleCount_order_independent
     (L K : List (Fin N × Fin M)) (hL : L.Nodup) (hK : K.Nodup)
     (h : configOfList L = configOfList K) :
     attachmentHandleCount hN hM L = attachmentHandleCount hN hM K := by
@@ -114,5 +122,7 @@ theorem attachmentHandleCount_order_independent (hN : Even N) (hM : Even M)
     rw [← openCount_configOfList_of_nodup L hL, h, openCount_configOfList_of_nodup K hK]
   rw [h, hn] at hl
   omega
+
+end
 
 end PottsDiscontinuity.Torus

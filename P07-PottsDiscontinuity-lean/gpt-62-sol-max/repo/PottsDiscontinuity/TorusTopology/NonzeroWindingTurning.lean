@@ -1,6 +1,8 @@
 module
 
 public import PottsDiscontinuity.TorusTopology.PeriodicLatticeTurning
+public import PottsDiscontinuity.TorusTopology.MidpointCyclicTurning
+public import PottsDiscontinuity.TorusTopology.PeriodicCurveBasics
 
 /-! The essential-loop turning classification, on the exact torus loop carrier
 `Torus.Loop` used in Corollary 3.13. -/
@@ -29,13 +31,11 @@ theorem loopRotationNumber_eq_zero_of_nonzero_winding
   let f := loopMidpointPosition ω s h d
   let D := ((loopDeckDisplacement ω s h d i j).1+(loopDeckDisplacement ω s h d i j).2,
     (loopDeckDisplacement ω s h d i j).2-(loopDeckDisplacement ω s h d i j).1)
-  have hadj : ∀ n, FK.squareLattice.Adj (f n) (f (n+1)) := loopMidpointPosition_adj ω s h d
-  have hinj : Function.Injective f := loopMidpointPosition_injective_of_nonzero_winding ω s h d i j hw
-  have hper : ∀ n, f (n+loopPeriod ω s h d)=f n+D :=
+  have hadj := loopMidpointPosition_adj ω s h d
+  have hinj := loopMidpointPosition_injective_of_nonzero_winding ω s h d i j hw
+  have hper :=
     loopMidpointPosition_add_period ω s h d i j
-  have hD : D ≠ (0,0) := (rotated_loopDeckDisplacement_ne_zero_iff ω s h d i j).mpr hw
-  have hz := periodic_lattice_turn_eq_zero f hadj hinj (loopPeriod ω s h d) D
-    (loopPeriod_pos ω s h d) hD hper
+  have hz := periodic_lattice_turn_eq_zero f hadj hinj (loopPeriod ω s h d) D hper
   have hdir (n : ℕ) : sequenceCompass f hadj n =
       portCompass (midpointDirection s ((directedStep ω s h)^[n] d).val) := by
     exact squareDartCompass_eq_portCompass _ _

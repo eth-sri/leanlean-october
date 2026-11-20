@@ -1,6 +1,6 @@
 module
 
-public import PottsDiscontinuity.Duality.ScreenBridge
+public import PottsDiscontinuity.Duality.BondStates
 public import PottsDiscontinuity.FK.FreeBoxPositiveAssociation
 public import PottsDiscontinuity.FK.LimitTranslation
 
@@ -33,21 +33,25 @@ theorem finiteEdgeSetEnumeration_surjective :
     Function.Surjective finiteEdgeSetEnumeration :=
   (exists_surjective_nat (Finset squareLattice.edgeSet)).choose_spec
 
+section
+
+variable (u v : LatticeVertex)
+
 /-- The event that a fixed finite edge set is open and connects the endpoints. -/
-def finiteConnectionEvent (u v : LatticeVertex) (F : Finset squareLattice.edgeSet) :
+def finiteConnectionEvent (F : Finset squareLattice.edgeSet) :
     Set LatticeConfiguration :=
   {ω | ActualConnected squareLattice F u v ∧ ω ∈ LatticeConfiguration.allOpen F}
 
 /-- Finite approximations to connection, enumerated by finite edge sets. -/
-def connectionApprox (u v : LatticeVertex) (n : ℕ) : Set LatticeConfiguration :=
+def connectionApprox (n : ℕ) : Set LatticeConfiguration :=
   ⋃ i : {i : ℕ // i ≤ n}, finiteConnectionEvent u v (finiteEdgeSetEnumeration i)
 
 /-- Connection by some finite set of open edges. -/
-def connectionEvent (u v : LatticeVertex) : Set LatticeConfiguration :=
+def connectionEvent : Set LatticeConfiguration :=
   {ω | ∃ F : Finset squareLattice.edgeSet,
     ActualConnected squareLattice F u v ∧ ω ∈ LatticeConfiguration.allOpen F}
 
-theorem mem_connectionApprox_iff (u v : LatticeVertex) (n : ℕ)
+theorem mem_connectionApprox_iff (n : ℕ)
     (ω : LatticeConfiguration) :
     ω ∈ connectionApprox u v n ↔
       ∃ i ≤ n, ActualConnected squareLattice (finiteEdgeSetEnumeration i) u v ∧
@@ -56,45 +60,39 @@ theorem mem_connectionApprox_iff (u v : LatticeVertex) (n : ℕ)
   simp only [Set.mem_iUnion]
   constructor
   · rintro ⟨i, hconn, hopen⟩
-    exact ⟨i.1, i.2, hconn, hopen⟩
+    grind
   · rintro ⟨i, hi, hconn, hopen⟩
     exact ⟨⟨i, hi⟩, hconn, hopen⟩
 
-theorem connectionApprox_mono (u v : LatticeVertex) :
+theorem connectionApprox_mono :
     Monotone (connectionApprox u v) := by
   intro n m hnm ω hω
-  rcases (mem_connectionApprox_iff u v n ω).mp hω with ⟨i, hi, hconn, hopen⟩
-  exact (mem_connectionApprox_iff u v m ω).mpr
-    ⟨i, hi.trans hnm, hconn, hopen⟩
+  grind [mem_connectionApprox_iff]
 
-theorem connectionEvent_eq_iUnion_connectionApprox (u v : LatticeVertex) :
+theorem connectionEvent_eq_iUnion_connectionApprox :
     connectionEvent u v = ⋃ n, connectionApprox u v n := by
   ext ω
   constructor
   · rintro ⟨F, hconn, hopen⟩
     obtain ⟨i, hi⟩ := finiteEdgeSetEnumeration_surjective F
     refine Set.mem_iUnion.mpr ⟨i, ?_⟩
-    have hconn' : ActualConnected squareLattice (finiteEdgeSetEnumeration i) u v := by
-      simpa [hi] using hconn
-    have hopen' : ω ∈ LatticeConfiguration.allOpen (finiteEdgeSetEnumeration i) := by
-      simpa [hi] using hopen
-    exact (mem_connectionApprox_iff u v i ω).mpr ⟨i, le_rfl, hconn', hopen'⟩
+    grind only [mem_connectionApprox_iff]
   · intro h
     rcases Set.mem_iUnion.mp h with ⟨n, hn⟩
     rcases (mem_connectionApprox_iff u v n ω).mp hn with ⟨i, hi, hconn, hopen⟩
     exact ⟨finiteEdgeSetEnumeration i, hconn, hopen⟩
 
-theorem connectionApprox_isClopen (u v : LatticeVertex) (n : ℕ) :
+theorem connectionApprox_isClopen (n : ℕ) :
     IsClopen (connectionApprox u v n) := by
   apply isClopen_iUnion_of_finite
   intro i
   by_cases hconn : ActualConnected squareLattice (finiteEdgeSetEnumeration i) u v
-  · simpa [connectionApprox, finiteConnectionEvent, hconn] using
-      LatticeConfiguration.allOpen_isClopen (finiteEdgeSetEnumeration i)
-  · simpa [connectionApprox, finiteConnectionEvent, hconn] using
-      (isClopen_empty : IsClopen (∅ : Set LatticeConfiguration))
+  · simpa [finiteConnectionEvent, hconn] using
+          LatticeConfiguration.allOpen_isClopen (finiteEdgeSetEnumeration i)
+  · simpa [finiteConnectionEvent, hconn] using
+          (isClopen_empty : IsClopen (∅ : Set LatticeConfiguration))
 
-theorem finiteConnectionEvent_isUpperSet (u v : LatticeVertex)
+theorem finiteConnectionEvent_isUpperSet
     (F : Finset squareLattice.edgeSet) :
     IsUpperSet (finiteConnectionEvent u v F) := by
   intro ω η hωη hω
@@ -103,68 +101,24 @@ theorem finiteConnectionEvent_isUpperSet (u v : LatticeVertex)
   have h := hωη e
   have hopen := hω.2 e he
   rw [hopen] at h
-  cases hηe : η e
-  · exact False.elim ((by decide : ¬ (true ≤ false)) (by simpa [hηe] using h))
-  · rfl
+  aesop
 
-theorem connectionApprox_isUpperSet (u v : LatticeVertex) (n : ℕ) :
+theorem connectionApprox_isUpperSet (n : ℕ) :
     IsUpperSet (connectionApprox u v n) := by
   intro ω η hωη hω
   rcases (mem_connectionApprox_iff u v n ω).mp hω with ⟨i, hi, hconn, hopen⟩
   refine (mem_connectionApprox_iff u v n η).mpr ⟨i, hi, hconn, ?_⟩
   intro e he
-  have h := hωη e
-  have ho := hopen e he
-  rw [ho] at h
-  cases hηe : η e
-  · exact False.elim ((by decide : ¬ (true ≤ false)) (by simpa [hηe] using h))
-  · rfl
+  aesop
 
-theorem connectionEvent_isMeasurableSet (u v : LatticeVertex) :
-    MeasurableSet (connectionEvent u v) := by
+theorem connectionEvent_isOpen : IsOpen (connectionEvent u v) := by
   rw [connectionEvent_eq_iUnion_connectionApprox]
-  exact MeasurableSet.iUnion fun n => (connectionApprox_isClopen u v n).2.measurableSet
+  exact isOpen_iUnion fun n => (connectionApprox_isClopen u v n).isOpen
 
-theorem tendsto_connectionApprox_probability (ν : ProbabilityMeasure LatticeConfiguration)
-    (u v : LatticeVertex) :
-    Tendsto (fun n : ℕ => ν.toFiniteMeasure (connectionApprox u v n)) atTop
-      (𝓝 (ν.toFiniteMeasure (connectionEvent u v))) := by
-  have hacc (n : ℕ) : Set.accumulate (connectionApprox u v) n = connectionApprox u v n := by
-    ext ω
-    rw [Set.mem_accumulate]
-    constructor
-    · rintro ⟨m, hmn, hm⟩
-      exact (connectionApprox_mono u v hmn) hm
-    · intro hn
-      exact ⟨n, le_rfl, hn⟩
-  have h := ν.toFiniteMeasure.tendsto_measure_iUnion_accumulate
-    (f := connectionApprox u v)
-  have h' : Tendsto (fun n => ν.toFiniteMeasure (connectionApprox u v n)) atTop
-      (𝓝 (ν.toFiniteMeasure (⋃ n, connectionApprox u v n))) := by
-    refine h.congr' ?_
-    filter_upwards with n
-    rw [← hacc n]
-  simpa [ProbabilityMeasure.toFiniteMeasure_apply,
-    connectionEvent_eq_iUnion_connectionApprox] using h'
+theorem connectionEvent_isMeasurableSet : MeasurableSet (connectionEvent u v) :=
+  (connectionEvent_isOpen u v).measurableSet
 
-theorem finiteConnection_union (u v w : LatticeVertex)
-    (F G : Finset squareLattice.edgeSet)
-    (hF : ActualConnected squareLattice F u v)
-    (hG : ActualConnected squareLattice G v w)
-    (ω : LatticeConfiguration)
-    (hopenF : ω ∈ LatticeConfiguration.allOpen F)
-    (hopenG : ω ∈ LatticeConfiguration.allOpen G) :
-    ω ∈ connectionEvent u w := by
-  refine ⟨F ∪ G, ?_, ?_⟩
-  · have hF' : ActualConnected squareLattice (F ∪ G) u v :=
-      actualConnected_mono Finset.subset_union_left hF
-    have hG' : ActualConnected squareLattice (F ∪ G) v w :=
-      actualConnected_mono Finset.subset_union_right hG
-    exact hF'.trans hG'
-  · intro e he
-    rcases Finset.mem_union.mp he with heF | heG
-    · exact hopenF e heF
-    · exact hopenG e heG
+end
 
 private theorem openGraph_subset_rcInfiniteOpenGraph (ω : LatticeConfiguration)
     (F : Finset squareLattice.edgeSet)
@@ -172,53 +126,28 @@ private theorem openGraph_subset_rcInfiniteOpenGraph (ω : LatticeConfiguration)
     openGraph squareLattice F ≤ PottsDiscontinuity.rcInfiniteOpenGraph ω := by
   intro u v huv
   obtain ⟨e, heF, heq⟩ := (openGraph_adj squareLattice F u v).mp huv
-  have hEdge : s(u, v) ∈ squareLattice.edgeSet := by
-    rw [← heq]
-    exact e.property
-  have he : (⟨s(u, v), hEdge⟩ : squareLattice.edgeSet) = e := by
-    apply Subtype.ext
-    exact heq.symm
-  have hω : ω ⟨s(u, v), hEdge⟩ = true := by
-    rw [he]
-    exact hopen e heF
-  rw [PottsDiscontinuity.rcInfiniteOpenGraph, SimpleGraph.fromEdgeSet_adj]
-  refine ⟨⟨hEdge, hω⟩, ?_⟩
-  exact squareLattice.not_isDiag_of_mem_edgeSet hEdge
+  have h := openGraph_le _ _ huv
+  refine (FK.Medial.rcInfiniteOpenGraph_adj_iff ω u v).2 ⟨h, ?_⟩
+  rw [← (Subtype.ext heq : e = ⟨s(u, v), squareLattice.mem_edgeSet.mpr h⟩)]
+  exact hopen e heF
 
 private theorem reachable_to_finiteConnectionEvent (ω : LatticeConfiguration)
-    {u v : LatticeVertex}
-    (h : (PottsDiscontinuity.rcInfiniteOpenGraph ω).Reachable u v) :
+    {u v : LatticeVertex} (h : (rcInfiniteOpenGraph ω).Reachable u v) :
     ω ∈ connectionEvent u v := by
-  rcases h with ⟨p⟩
+  obtain ⟨p⟩ := h
   induction p with
-  | nil =>
-      refine ⟨∅, ?_, ?_⟩
-      · simp
-      · simp [LatticeConfiguration.allOpen]
-  | @cons u v w huv p ih =>
-      change s(u, v) ∈ {e | ∃ he : s(u, v) ∈ squareLattice.edgeSet,
-        ω ⟨s(u, v), he⟩ = true} ∧ u ≠ v at huv
-      have hEdge := huv.1
-      change ∃ he : s(u, v) ∈ squareLattice.edgeSet,
-        ω ⟨s(u, v), he⟩ = true at hEdge
-      obtain ⟨he, hω⟩ := hEdge
-      obtain ⟨F, hF, hopen⟩ := ih
-      let e : squareLattice.edgeSet := ⟨s(u, v), he⟩
-      refine ⟨insert e F, ?_, ?_⟩
-      · have hfirst :
-            ActualConnected squareLattice (insert e F) u v := by
-          have hAdj : (openGraph squareLattice (insert e F)).Adj u v := by
-            apply (openGraph_adj squareLattice (insert e F) u v).mpr
-            change s(u, v) ∈ Subtype.val '' (↑(insert e F) : Set squareLattice.edgeSet)
-            exact ⟨e, by simp [e], rfl⟩
-          exact hAdj.reachable
-        have htail : ActualConnected squareLattice (insert e F) v w :=
-          actualConnected_mono (Finset.subset_insert e F) hF
-        exact hfirst.trans htail
-      · intro f hf
-        rcases Finset.mem_insert.mp hf with rfl | hf
-        · exact hω
-        · exact hopen f hf
+  | nil => exact ⟨∅, SimpleGraph.Reachable.refl _, by simp⟩
+  | @cons a b c hab p ih =>
+    obtain ⟨F, hconn, hF⟩ := ih
+    obtain ⟨hG, hopen⟩ := (FK.Medial.rcInfiniteOpenGraph_adj_iff _ _ _).1 hab
+    let e : squareLattice.edgeSet := ⟨s(a, b), squareLattice.mem_edgeSet.mpr hG⟩
+    have hadj : (openGraph squareLattice (insert e F)).Adj a b :=
+      (openGraph_adj _ _ _ _).2 ⟨e, Finset.mem_insert_self _ _, rfl⟩
+    refine ⟨insert e F, hadj.reachable.trans (actualConnected_mono (Finset.subset_insert _ _) hconn), ?_⟩
+    intro d hd
+    rcases Finset.mem_insert.1 hd with rfl | hd
+    · exact hopen
+    · exact hF d hd
 
 /-- The finite-witness event is exactly reachability in the frozen infinite open graph. -/
 theorem connectionEvent_iff_rcInfiniteReachable (u v : LatticeVertex)
@@ -231,55 +160,27 @@ theorem connectionEvent_iff_rcInfiniteReachable (u v : LatticeVertex)
       (openGraph_subset_rcInfiniteOpenGraph ω F hopen) hF
   · exact reachable_to_finiteConnectionEvent ω
 
-def rcInfiniteOpenGraphTranslationIso (a : LatticeVertex)
-    (ω : LatticeConfiguration) :
-    PottsDiscontinuity.rcInfiniteOpenGraph ω ≃g
-      PottsDiscontinuity.rcInfiniteOpenGraph
-        (latticeConfigurationTranslate a ω) where
-  toEquiv := latticeTranslationIso a
+/-- A lattice isomorphism transports the actual open graph edge by edge. -/
+def rcInfiniteOpenGraphIso (e : squareLattice ≃g squareLattice) (ω : LatticeConfiguration) :
+    rcInfiniteOpenGraph ω ≃g
+      rcInfiniteOpenGraph (latticeConfigurationIsoHomeomorph e ω) where
+  toEquiv := e.toEquiv
   map_rel_iff' := by
     intro u v
-    rw [PottsDiscontinuity.rcInfiniteOpenGraph,
-      PottsDiscontinuity.rcInfiniteOpenGraph, SimpleGraph.fromEdgeSet_adj,
-      SimpleGraph.fromEdgeSet_adj]
+    have hidx (h : squareLattice.Adj (e.toEquiv u) (e.toEquiv v)) :
+        SimpleGraph.Iso.mapEdgeSet e.symm ⟨s(e.toEquiv u, e.toEquiv v), squareLattice.mem_edgeSet.mpr h⟩ =
+          ⟨s(u, v), squareLattice.mem_edgeSet.mpr (e.map_rel_iff'.1 h)⟩ := by
+      aesop
+    simp only [FK.Medial.rcInfiniteOpenGraph_adj_iff]
     constructor
-    · rintro ⟨hmem, hne⟩
-      change ∃ he : s(latticeTranslate a u, latticeTranslate a v) ∈ squareLattice.edgeSet,
-        latticeConfigurationTranslate a ω
-          ⟨s(latticeTranslate a u, latticeTranslate a v), he⟩ = true at hmem
-      obtain ⟨hEdge, hOpen⟩ := hmem
-      have hAdj : squareLattice.Adj (latticeTranslate a u) (latticeTranslate a v) :=
-        squareLattice.mem_edgeSet.mp hEdge
-      have hAdj' : squareLattice.Adj u v :=
-        (squareLattice_adj_translate_iff a u v).mp hAdj
-      have hBack : s(u, v) ∈ squareLattice.edgeSet := squareLattice.mem_edgeSet.mpr hAdj'
-      let e' : squareLattice.edgeSet := ⟨s(latticeTranslate a u, latticeTranslate a v), hEdge⟩
-      let e : squareLattice.edgeSet := ⟨s(u, v), hBack⟩
-      have he : SimpleGraph.Iso.mapEdgeSet (latticeTranslationIso (-a)) e' = e := by
-        apply Subtype.ext
-        simp [e', e, latticeTranslationIso, latticeTranslate]
-      have hOpen' : latticeConfigurationTranslate a ω e' = ω e := by
-        rw [latticeConfigurationTranslate_apply, he]
-      refine ⟨⟨hBack, ?_⟩, fun heq => hne (congrArg (latticeTranslate a) heq)⟩
-      simpa [e', e] using hOpen'.symm.trans hOpen
-    · rintro ⟨hmem, hne⟩
-      change ∃ he : s(u, v) ∈ squareLattice.edgeSet,
-        ω ⟨s(u, v), he⟩ = true at hmem
-      obtain ⟨hEdge, hOpen⟩ := hmem
-      have hAdj : squareLattice.Adj u v := squareLattice.mem_edgeSet.mp hEdge
-      have hAdj' : squareLattice.Adj (latticeTranslate a u) (latticeTranslate a v) :=
-        (squareLattice_adj_translate_iff a u v).mpr hAdj
-      have hFwd : s(latticeTranslate a u, latticeTranslate a v) ∈ squareLattice.edgeSet :=
-        squareLattice.mem_edgeSet.mpr hAdj'
-      let e' : squareLattice.edgeSet := ⟨s(latticeTranslate a u, latticeTranslate a v), hFwd⟩
-      let e : squareLattice.edgeSet := ⟨s(u, v), hEdge⟩
-      have he : SimpleGraph.Iso.mapEdgeSet (latticeTranslationIso (-a)) e' = e := by
-        apply Subtype.ext
-        simp [e', e, latticeTranslationIso, latticeTranslate]
-      have hOpen' : latticeConfigurationTranslate a ω e' = ω e := by
-        rw [latticeConfigurationTranslate_apply, he]
-      refine ⟨⟨hFwd, ?_⟩, fun heq => hne ((latticeTranslationIso a).injective heq)⟩
-      simpa [e', e, latticeTranslationIso, latticeTranslate] using hOpen'.trans hOpen
+    · rintro ⟨hadj, hopen⟩
+      refine ⟨e.map_rel_iff'.1 hadj, ?_⟩
+      rw [latticeConfigurationIsoHomeomorph_apply, hidx hadj] at hopen
+      exact hopen
+    · rintro ⟨hadj, hopen⟩
+      refine ⟨e.map_rel_iff'.2 hadj, ?_⟩
+      rw [latticeConfigurationIsoHomeomorph_apply, hidx (e.map_rel_iff'.2 hadj)]
+      exact hopen
 
 theorem connectionEvent_translation (a u v : LatticeVertex) (ω : LatticeConfiguration) :
     latticeConfigurationTranslate a ω ∈
@@ -287,18 +188,16 @@ theorem connectionEvent_translation (a u v : LatticeVertex) (ω : LatticeConfigu
       ω ∈ connectionEvent u v := by
   rw [connectionEvent_iff_rcInfiniteReachable, connectionEvent_iff_rcInfiniteReachable]
   exact SimpleGraph.Iso.reachable_iff
-    (φ := rcInfiniteOpenGraphTranslationIso a ω) (u := u) (v := v)
+    (φ := rcInfiniteOpenGraphIso (latticeTranslationIso a) ω) (u := u) (v := v)
 
-/-- Every frozen limit has translation-invariant connection probabilities. -/
+/-- The frozen free limit has translation-invariant connection probabilities. -/
 theorem isRCInfiniteVolumeLimit_connection_translation_invariant
-    (p : Set.Icc (0 : ℝ) 1) (q : Set.Ioi (0 : ℝ)) (hq : 1 ≤ (q : ℝ))
-    (μ : Measure LatticeConfiguration)
-    (hμ : PottsDiscontinuity.IsRCInfiniteVolumeLimit p q 0 μ)
+    (θ : Parameters) (μ : Measure LatticeConfiguration)
+    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
     (a u v : LatticeVertex) :
     μ.real (connectionEvent (latticeTranslate a u) (latticeTranslate a v)) =
       μ.real (connectionEvent u v) := by
-  have hinv := PottsDiscontinuity.FK.isRCInfiniteVolumeLimit_translation_invariant
-    p q hq 0 μ hμ a
+  have hinv := isRCInfiniteVolumeLimit_interior_translation_invariant θ 0 μ hμ a
   have hmeas := connectionEvent_isMeasurableSet (latticeTranslate a u) (latticeTranslate a v)
   have hmap := congrArg (fun ν : Measure LatticeConfiguration =>
     ν (connectionEvent (latticeTranslate a u) (latticeTranslate a v))) hinv
@@ -312,98 +211,51 @@ theorem isRCInfiniteVolumeLimit_connection_translation_invariant
   rw [hpre] at hmap
   simpa [Measure.real_def] using (congrArg ENNReal.toReal hmap).symm
 
-/-- Connection probabilities in the canonical free limit are supermultiplicative. -/
-theorem freeLimit_connection_supermultiplicative (q : Parameters)
-    (x y : LatticeVertex) :
-    Classical.choose (freeBoxLimit_existsUnique q)
-      (connectionEvent (0, 0) (x.1 + y.1, x.2 + y.2)) ≥
-      Classical.choose (freeBoxLimit_existsUnique q)
-        (connectionEvent (0, 0) x) *
-      Classical.choose (freeBoxLimit_existsUnique q)
-        (connectionEvent x (x.1 + y.1, x.2 + y.2)) := by
-  let ν : ProbabilityMeasure LatticeConfiguration :=
-    Classical.choose (freeBoxLimit_existsUnique q)
-  have hA := tendsto_connectionApprox_probability ν (0, 0) x
-  have hB := tendsto_connectionApprox_probability ν x (x.1 + y.1, x.2 + y.2)
-  have hprod := hA.mul hB
-  have hbound (n : ℕ) :
-      ν.toFiniteMeasure (connectionApprox (0, 0) x n) *
-        ν.toFiniteMeasure (connectionApprox x (x.1 + y.1, x.2 + y.2) n) ≤
-          ν.toFiniteMeasure (connectionEvent (0, 0) (x.1 + y.1, x.2 + y.2)) := by
-    have hfk := PottsDiscontinuity.FK.Internal.freeBoxLimit_clopen_positive_association
-      q (connectionApprox (0, 0) x n)
-      (connectionApprox x (x.1 + y.1, x.2 + y.2) n)
-      (connectionApprox_isClopen (0, 0) x n)
-      (connectionApprox_isClopen x (x.1 + y.1, x.2 + y.2) n)
-      (connectionApprox_isUpperSet (0, 0) x n)
-      (connectionApprox_isUpperSet x (x.1 + y.1, x.2 + y.2) n)
-    have hsubset :
-        connectionApprox (0, 0) x n ∩
-          connectionApprox x (x.1 + y.1, x.2 + y.2) n ⊆
-            connectionEvent (0, 0) (x.1 + y.1, x.2 + y.2) := by
-      intro ω hω
-      rcases (mem_connectionApprox_iff (0, 0) x n ω).mp hω.1 with
-        ⟨i, hi, hconn₁, hopen₁⟩
-      rcases (mem_connectionApprox_iff x (x.1 + y.1, x.2 + y.2) n ω).mp hω.2 with
-        ⟨j, hj, hconn₂, hopen₂⟩
-      exact finiteConnection_union (0, 0) x (x.1 + y.1, x.2 + y.2)
-        (finiteEdgeSetEnumeration i) (finiteEdgeSetEnumeration j)
-        hconn₁ hconn₂ ω hopen₁ hopen₂
-    have hmono := ν.toFiniteMeasure.apply_mono hsubset
-    have hfk' :
-        ν.toFiniteMeasure (connectionApprox (0, 0) x n) *
-          ν.toFiniteMeasure (connectionApprox x (x.1 + y.1, x.2 + y.2) n) ≤
-            ν.toFiniteMeasure (connectionApprox (0, 0) x n ∩
-              connectionApprox x (x.1 + y.1, x.2 + y.2) n) := by
-      apply (NNReal.coe_le_coe).mp
-      simpa only [Prod.forall, FiniteMeasure.self_eq_mass_mul_normalize,
-          ProbabilityMeasure.mass_toFiniteMeasure,
-          ProbabilityMeasure.toFiniteMeasure_normalize_eq_self, one_mul, NNReal.coe_mul,
-          ν] using hfk
-    have hmono' :
-        ν.toFiniteMeasure (connectionApprox (0, 0) x n ∩
-          connectionApprox x (x.1 + y.1, x.2 + y.2) n) ≤
-            ν.toFiniteMeasure (connectionEvent (0, 0) (x.1 + y.1, x.2 + y.2)) := hmono
-    exact hfk'.trans hmono'
-  have hlimit := le_of_tendsto_of_tendsto' hprod (tendsto_const_nhds) hbound
-  simpa only [Prod.forall, ge_iff_le, FiniteMeasure.self_eq_mass_mul_normalize,
-      ProbabilityMeasure.mass_toFiniteMeasure, ProbabilityMeasure.toFiniteMeasure_normalize_eq_self,
-      one_mul, ν] using hlimit
-
-/-- The same supermultiplicativity holds for every measure satisfying the
-frozen free infinite-volume limit characterization. -/
-theorem isRCInfiniteVolumeLimit_connection_supermultiplicative
-    (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : PottsDiscontinuity.IsRCInfiniteVolumeLimit
-      θ.toP θ.toQ 0 μ) (x y : LatticeVertex) :
-    μ.real (connectionEvent (0, 0) (x.1 + y.1, x.2 + y.2)) ≥
-      μ.real (connectionEvent (0, 0) x) *
-        μ.real (connectionEvent x (x.1 + y.1, x.2 + y.2)) := by
-  let ν : ProbabilityMeasure LatticeConfiguration :=
-    Classical.choose (freeBoxLimit_existsUnique θ)
-  have hνorigin := (Classical.choose_spec (freeBoxLimit_existsUnique θ)).1
-    (fun _ => (0, 0)) (fun n => n)
+/-- The canonical free box limit along the origin-centered exhaustion. -/
+theorem selected_freeBox_tendsto (θ : Parameters) :
+    Tendsto (fun n => boxProbabilityMeasure θ (0, 0) n) atTop
+      (𝓝 (Classical.choose (freeBoxLimit_existsUnique θ))) :=
+  (Classical.choose_spec (freeBoxLimit_existsUnique θ)).1 _ _
     origin_latticeBox_nested origin_latticeBox_exhaustive
-  have hν : PottsDiscontinuity.IsRCInfiniteVolumeLimit
-      θ.toP θ.toQ 0 ν.toMeasure :=
-    isRCInfiniteVolumeLimit_of_freeBox_tendsto θ ν hνorigin
-  have hEq : μ = ν.toMeasure :=
-    PottsDiscontinuity.rc_limit_unique θ.toP θ.toQ 0 μ ν.toMeasure hμ hν
-  rw [hEq]
-  have h := freeLimit_connection_supermultiplicative θ x y
-  have hNN :
-      ν.toFiniteMeasure (connectionEvent (0, 0) x) *
-        ν.toFiniteMeasure (connectionEvent x (x.1 + y.1, x.2 + y.2)) ≤
-          ν.toFiniteMeasure (connectionEvent (0, 0) (x.1 + y.1, x.2 + y.2)) := by
-    simpa only [Prod.forall, FiniteMeasure.self_eq_mass_mul_normalize,
-        ProbabilityMeasure.mass_toFiniteMeasure,
-        ProbabilityMeasure.toFiniteMeasure_normalize_eq_self, one_mul, ge_iff_le, ν] using h
-  have hreal :
-      ((ν.toFiniteMeasure (connectionEvent (0, 0) x) : NNReal) : ℝ) *
-        ((ν.toFiniteMeasure (connectionEvent x (x.1 + y.1, x.2 + y.2)) : NNReal) : ℝ) ≤
-          ((ν.toFiniteMeasure (connectionEvent (0, 0) (x.1 + y.1, x.2 + y.2)) : NNReal) : ℝ) := by
-    exact_mod_cast hNN
-  simpa [ProbabilityMeasure.measureReal_eq_coe_coeFn] using hreal
+
+/-- The frozen free limit coincides with the canonical box limit. -/
+theorem free_limit_eq_selected (θ : Parameters) (μ : Measure LatticeConfiguration)
+    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) :
+    μ = (Classical.choose (freeBoxLimit_existsUnique θ)).toMeasure :=
+  rc_limit_unique θ.toP θ.toQ 0 μ _ hμ
+    (isRCInfiniteVolumeLimit_of_freeBox_tendsto θ _ (selected_freeBox_tendsto θ))
+
+/-- Extend clopen FKG to connections by approximation from below. -/
+theorem free_connection_positive_association (θ : Parameters) (μ : Measure LatticeConfiguration)
+    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (u v x y : LatticeVertex) :
+    μ (connectionEvent u v) * μ (connectionEvent x y) ≤ μ (connectionEvent u v ∩ connectionEvent x y) := by
+  have := hμ.1
+  have hFK (s t : Set LatticeConfiguration) (hs : IsClopen s) (ht : IsClopen t)
+      (hsu : IsUpperSet s) (htu : IsUpperSet t) : μ s * μ t ≤ μ (s ∩ t) := by
+    apply (ENNReal.toReal_le_toReal
+      (ENNReal.mul_ne_top (measure_ne_top μ s) (measure_ne_top μ t)) (measure_ne_top μ _)).1
+    rw [ENNReal.toReal_mul, free_limit_eq_selected θ μ hμ]
+    simpa [← ProbabilityMeasure.measureReal_eq_coe_coeFn, Measure.real_def] using
+          Internal.freeBoxLimit_clopen_positive_association θ s t hs ht hsu htu
+  calc
+    _ = (⨆ n, μ (connectionApprox u v n)) * (⨆ n, μ (connectionApprox x y n)) := by
+      congr 1 <;> rw [connectionEvent_eq_iUnion_connectionApprox,
+        (connectionApprox_mono _ _).directed_le.measure_iUnion]
+    _ ≤ _ := by
+      rw [ENNReal.iSup_mul]
+      refine iSup_le fun n => ?_
+      rw [ENNReal.mul_iSup]
+      refine iSup_le fun m => (hFK _ _ (connectionApprox_isClopen u v n)
+        (connectionApprox_isClopen x y m) (connectionApprox_isUpperSet u v n)
+        (connectionApprox_isUpperSet x y m)).trans (measure_mono (Set.inter_subset_inter ?_ ?_))
+      all_goals rw [connectionEvent_eq_iUnion_connectionApprox]; exact Set.subset_iUnion _ _
+
+theorem free_connection_mul_le (θ : Parameters) (μ : Measure LatticeConfiguration)
+    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (u v w : LatticeVertex) :
+    μ (connectionEvent u v) * μ (connectionEvent v w) ≤ μ (connectionEvent u w) := by
+  refine (free_connection_positive_association θ μ hμ u v v w).trans (measure_mono ?_)
+  simp only [Set.subset_def, Set.mem_inter_iff, connectionEvent_iff_rcInfiniteReachable]
+  exact fun _ h => h.1.trans h.2
 
 /-- In the free limit, translation invariance turns the FKG inequality into
 supermultiplicativity of probabilities based at the origin. -/
@@ -414,15 +266,17 @@ theorem isRCInfiniteVolumeLimit_origin_connection_supermultiplicative
     μ.real (connectionEvent (0, 0) (x.1 + y.1, x.2 + y.2)) ≥
       μ.real (connectionEvent (0, 0) x) *
         μ.real (connectionEvent (0, 0) y) := by
-  have hmul := isRCInfiniteVolumeLimit_connection_supermultiplicative θ μ hμ x y
+  have := hμ.1
+  have hmul := ENNReal.toReal_mono (measure_ne_top μ _)
+    (free_connection_mul_le θ μ hμ (0,0) x (x.1 + y.1, x.2 + y.2))
+  simp only [ENNReal.toReal_mul, ← Measure.real_def] at hmul
   have htrans := isRCInfiniteVolumeLimit_connection_translation_invariant
-    θ.toP θ.toQ θ.property μ hμ (-x) x (x.1 + y.1, x.2 + y.2)
+    θ μ hμ (-x) x (x.1 + y.1, x.2 + y.2)
   have hxy :
       μ.real (connectionEvent x (x.1 + y.1, x.2 + y.2)) =
         μ.real (connectionEvent (0, 0) y) := by
     simpa [latticeTranslate] using htrans.symm
-  rw [hxy] at hmul
-  exact hmul
+  simp_all
 
 end
 

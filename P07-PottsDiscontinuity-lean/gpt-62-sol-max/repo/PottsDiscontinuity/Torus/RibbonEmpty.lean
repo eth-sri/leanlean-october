@@ -61,7 +61,7 @@ def faceRotationCycleEquiv (hN : Even N) (hM : Even M) :
     intro d
     apply Quotient.sound
     apply (sameCycle_faceRotation hN hM _ _).mpr
-    exact congrArg Subtype.val (ribbonFace_vertexDart hN hM (ribbonFace hN hM d))
+    rfl
   right_inv v := ribbonFace_vertexDart hN hM v
 
 theorem rcLoopCount_closed (hN : Even N) (hM : Even M) :

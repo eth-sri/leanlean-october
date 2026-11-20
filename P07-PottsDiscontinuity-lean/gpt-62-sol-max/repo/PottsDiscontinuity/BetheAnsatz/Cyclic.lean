@@ -15,14 +15,18 @@ open Finset Complex
 
 namespace PottsDiscontinuity.BetheAnsatz
 
-private theorem pair_product_succ (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) → ℂ) :
+section
+
+variable (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) → ℂ)
+
+private theorem pair_product_succ :
     (∏ i, ∏ j ∈ Ioi i, f i j) =
       (∏ j : Fin n, f 0 j.succ) * (∏ i : Fin n, ∏ j ∈ Ioi i, f i.succ j.succ) := by
   rw [Fin.prod_univ_succ, Fin.prod_Ioi_zero]
   congr 1
   exact Finset.prod_congr rfl fun i _ => Fin.prod_Ioi_succ (f i.succ) i
 
-private theorem pair_product_last (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) → ℂ) :
+private theorem pair_product_last :
     (∏ i, ∏ j ∈ Ioi i, f i j) =
       (∏ i : Fin n, ∏ j ∈ Ioi i, f i.castSucc j.castSucc) *
         (∏ i : Fin n, f i.castSucc (Fin.last n)) := by
@@ -42,7 +46,7 @@ private theorem pair_product_last (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) →
   rw [Finset.prod_mul_distrib]
 
 /-- Moving the first index to the end reverses exactly its pair factors. -/
-theorem pair_product_rotate (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) → ℂ) :
+theorem pair_product_rotate :
     (∏ i, ∏ j ∈ Ioi i, f (finRotate (n + 1) i) (finRotate (n + 1) j)) *
       (∏ j : Fin n, f 0 j.succ) =
       (∏ i, ∏ j ∈ Ioi i, f i j) * (∏ j : Fin n, f j.succ 0) := by
@@ -52,13 +56,15 @@ theorem pair_product_rotate (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) → ℂ) 
   simp_rw [hr, finRotate_last]
   ring
 
+end
+
 /-- Cyclic amplitude relation before imposing BE. The phase sum is over all root labels. -/
 theorem amplitude_rotate_phase {n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
     (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1))) :
     amplitude Δ p (σ * finRotate (n + 1)) =
       (-1 : ℂ) ^ n * Complex.exp (I * ((∑ k, Bethe.theta Δ (p (σ 0)) (p k) : ℝ) : ℂ)) *
         amplitude Δ p σ := by
-  let f : Fin (n + 1) → Fin (n + 1) → ℂ := fun i j =>
+  let f := fun i j =>
     z (p (σ i)) * scattering Δ (p (σ i)) (p (σ j))
   let U := ∏ j : Fin n, f 0 j.succ
   let V := ∏ j : Fin n, f j.succ 0
@@ -78,7 +84,7 @@ theorem amplitude_rotate_phase {n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
     rw [Finset.prod_div_distrib]
   have hsign : (((Equiv.Perm.sign (σ * finRotate (n + 1)) : ℤ) : ℂ)) =
       (((Equiv.Perm.sign σ : ℤ) : ℂ)) * (-1 : ℂ) ^ n := by
-    simp [Equiv.Perm.sign_mul]
+    simp
   have hcross : amplitude Δ p (σ * finRotate (n + 1)) * U =
       (-1 : ℂ) ^ n * amplitude Δ p σ * V := by
     have hp := pair_product_rotate n f
@@ -87,7 +93,6 @@ theorem amplitude_rotate_phase {n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
     change (((((Equiv.Perm.sign σ : ℤ) : ℂ)) * (-1 : ℂ) ^ n) *
       (∏ i, ∏ j ∈ Ioi i, f (finRotate (n + 1) i) (finRotate (n + 1) j))) * U =
       (-1 : ℂ) ^ n * ((((Equiv.Perm.sign σ : ℤ) : ℂ)) * (∏ i, ∏ j ∈ Ioi i, f i j)) * V
-    dsimp [U, V]
     linear_combination ((((Equiv.Perm.sign σ : ℤ) : ℂ)) * (-1 : ℂ) ^ n) * hp
   apply mul_right_cancel₀ hU
   rw [he]

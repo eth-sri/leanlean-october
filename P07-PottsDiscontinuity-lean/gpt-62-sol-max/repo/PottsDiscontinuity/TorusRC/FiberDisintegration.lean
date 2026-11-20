@@ -13,9 +13,6 @@ open Torus
 
 variable {N M : ℕ}
 
-noncomputable local instance splitGraphFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
-
 noncomputable local instance splitGraphDecidableEq (hN : Even N) (hM : Even M) :
     DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 
@@ -26,10 +23,7 @@ private theorem map_pair_right_apply {α β : Type*} (p : PMF α) (b : β) (x : 
     p.map (fun a => (a, b)) x = if x.2 = b then p x.1 else 0 := by
   classical
   rcases x with ⟨x, y⟩
-  by_cases hy : y = b
-  · subst b
-    simp only [PMF.map_apply, Prod.mk.injEq, and_true, ite_true, tsum_ite_eq']
-  · simp only [PMF.map_apply, Prod.mk.injEq, hy, and_false, ite_false, tsum_zero]
+  by_cases hy : y = b <;> simp_all
 
 /-- The torus law disintegrates jointly into the actual exterior marginal and
 the exact conditional FK fiber law, retaining the exterior as a coordinate. -/
@@ -50,8 +44,7 @@ theorem torusRCPMF_map_split_eq_bind_fiber (hN : Even N) (hM : Even M)
             (torusRCConfigurationEquiv hN hM hN4 hM4 A)) =
         ((torusRCPMF hN hM q).map
           (torusRCConfigurationEquiv hN hM hN4 hM4)).map
-          (FK.configurationSplitEquiv (fullDiamondGraph hN hM) R) := by
-    exact (PMF.map_comp _ _ _).symm
+          (FK.configurationSplitEquiv (fullDiamondGraph hN hM) R) := (PMF.map_comp _ _ _).symm
   rw [hmap, torusRCPMF_map_edgeEquiv hN hM hN4 hM4 q]
   ext ⟨A, H⟩
   rw [FK.FiniteProbability.map_equiv_apply, FK.configurationSplitEquiv_symm_apply,
@@ -70,10 +63,7 @@ theorem torusRCProbability_eq_expectation (hN : Even N) (hM : Even M)
   classical
   rw [torusRCProbability_eq_sum, FK.FiniteProbability.expectation]
   apply Finset.sum_congr rfl
-  intro A _
-  by_cases hA : A ∈ E <;>
-    simp [Set.indicator, hA, torusRCPMF_apply,
-      ENNReal.toReal_ofReal (torusRCMass_pos hN hM q A).le]
+  grind [Set.indicator, torusRCPMF_apply, ENNReal.toReal_ofReal, torusRCMass_pos]
 
 local instance splitRemainingFintype (hN : Even N) (hM : Even M)
     (R : FK.Configuration (fullDiamondGraph hN hM)) :
@@ -83,11 +73,16 @@ local instance splitRemovedFintype (hN : Even N) (hM : Even M)
     (R : FK.Configuration (fullDiamondGraph hN hM)) :
     Fintype (FK.RemovedConfiguration (fullDiamondGraph hN hM) R) := Fintype.ofFinite _
 
-/-- Exact expectation disintegration, with both the retained and frozen edge
-states available to the observable. -/
-theorem torusRCPMF_expectation_split (hN : Even N) (hM : Even M)
+section
+
+variable
+  (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (q : Set.Ici (1 : ℝ))
     (R : FK.Configuration (fullDiamondGraph hN hM))
+
+/-- Exact expectation disintegration, with both the retained and frozen edge
+states available to the observable. -/
+theorem torusRCPMF_expectation_split
     (f : FK.RemainingConfiguration (fullDiamondGraph hN hM) R ×
       FK.RemovedConfiguration (fullDiamondGraph hN hM) R → ℝ) :
     FK.FiniteProbability.expectation (torusRCPMF hN hM q)
@@ -104,9 +99,7 @@ theorem torusRCPMF_expectation_split (hN : Even N) (hM : Even M)
 
 /-- Joint event probabilities are averaged over exactly the exterior states
 in the exterior event, using their actual marginal probabilities. -/
-theorem torusRCProbability_split_event (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (q : Set.Ici (1 : ℝ))
-    (R : FK.Configuration (fullDiamondGraph hN hM))
+theorem torusRCProbability_split_event
     (S : Set (FK.RemovedConfiguration (fullDiamondGraph hN hM) R))
     (E : FK.RemovedConfiguration (fullDiamondGraph hN hM) R →
       Set (FK.RemainingConfiguration (fullDiamondGraph hN hM) R)) :
@@ -139,14 +132,12 @@ theorem torusRCProbability_split_event (hN : Even N) (hM : Even M)
     have hz : (fun A : FK.RemainingConfiguration (fullDiamondGraph hN hM) R =>
         T.indicator (fun _ => (1 : ℝ)) (A, H)) = fun _ => 0 := by
       funext A
-      simp [T, Set.indicator, hH]
+      simp [T, hH]
     rw [hz, FK.FiniteProbability.expectation_const]
 
 /-- A uniform conditional-fiber bound survives conditioning on any event
 determined by the frozen edges. No association of that exterior event is needed. -/
-theorem torusRCProbability_fiber_lower_bound (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (q : Set.Ici (1 : ℝ))
-    (R : FK.Configuration (fullDiamondGraph hN hM))
+theorem torusRCProbability_fiber_lower_bound
     (S : Set (FK.RemovedConfiguration (fullDiamondGraph hN hM) R))
     (E : FK.RemovedConfiguration (fullDiamondGraph hN hM) R →
       Set (FK.RemainingConfiguration (fullDiamondGraph hN hM) R))
@@ -173,6 +164,8 @@ theorem torusRCProbability_fiber_lower_bound (hN : Even N) (hM : Even M)
     rw [mul_comm c]
     exact mul_le_mul_of_nonneg_left (hc H hH) ENNReal.toReal_nonneg
   · simp [Set.indicator_of_notMem hH]
+
+end
 
 end
 

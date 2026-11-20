@@ -47,8 +47,7 @@ theorem torusRCProbability_windingTail_le_seamClosedCrossings
   have hstable : ∀ v ∈ S, ∀ A,
       A ∈ C ↔ toggleEdge A v ∈ C := by
     intro v hv A
-    have hseam : v.1.val = 0 ∨ v.2.val = 0 := by
-      exact (Finset.mem_filter.mp hv).2
+    have hseam : v.1.val = 0 ∨ v.2.val = 0 := (Finset.mem_filter.mp hv).2
     exact hasAtLeastRectangleCrossings_toggleEdge_seam hN hM k A v hseam
   have hclosed := torusRCProbability_close_finite_set hN hM q S C hstable
   have hmono := torusRCProbability_mono hN hM q hsub
@@ -58,9 +57,6 @@ theorem torusRCProbability_windingTail_le_seamClosedCrossings
       (1 - (rcCriticalParameter q).val) ^ S.card *
           phi_T_probability hN hM q C ≤
         phi_T_probability hN hM q (C ∩ {A | ∀ v ∈ S, A v = false}) := by
-    change (1 - (rcCriticalParameter q).val) ^ S.card *
-        phi_T_probability hN hM q C ≤
-      phi_T_probability hN hM q (C ∩ {A | ∀ v ∈ S, A v = false}) at hclosed
     exact hclosed
   calc
     (1 - (rcCriticalParameter q).val) ^ S.card *
@@ -68,10 +64,9 @@ theorem torusRCProbability_windingTail_le_seamClosedCrossings
       (1 - (rcCriticalParameter q).val) ^ S.card *
         phi_T_probability hN hM q C := mul_le_mul_of_nonneg_left hmono hfactor
     _ ≤ phi_T_probability hN hM q (C ∩ {A | ∀ v ∈ S, A v = false}) := by
-      simpa [S, C] using hclosed'
+      gcongr
     _ = phi_T_probability hN hM q
         (hasAtLeastRectangleCrossings hN hM k ∩
-          {A | ∀ v ∈ rectangleSeamIndices (N := N) (M := M), A v = false}) := by
-      rfl
+          {A | ∀ v ∈ rectangleSeamIndices (N := N) (M := M), A v = false}) := rfl
 
 end PottsDiscontinuity.TorusLoops

@@ -26,16 +26,8 @@ private theorem boundedChain_mono (hNp : 0 < N) (hMp : 0 < M)
     (hA : A ∈ boundedRectangleChain hNp hMp n i hi k) :
     B ∈ boundedRectangleChain hNp hMp n i hi k := by
   obtain ⟨w,hw⟩ := hA
-  let F : liftedStripGraph hNp hMp A 0 (3*(n:ℤ)) →g
-      liftedStripGraph hNp hMp B 0 (3*(n:ℤ)) :=
-    ⟨id,fun h => liftedStripGraph_mono hNp hMp 0 (3*(n:ℤ)) hAB h⟩
-  refine ⟨w.map F,?_⟩
-  intro z hz
-  rw [SimpleGraph.Walk.support_map] at hz
-  obtain ⟨z',hz',heq⟩ := List.mem_map.mp hz
-  change z' = z at heq
-  subst z
-  exact hw z' hz'
+  refine ⟨w.mapLe (liftedStripGraph_mono hNp hMp _ _ hAB), ?_⟩ 
+  simpa only [SimpleGraph.Walk.support_mapLe_eq_support] using hw
 
 /-- Complete a bounded chain with its terminal zigzag, and close every seam
 edge except the chosen one. Both costs are finite-energy costs on actual
@@ -70,18 +62,8 @@ theorem primalWinding_probability_ge_boundedChain (hN : Even N) (hM : Even M)
       have hc := terminalZigzagEdges_column hNp hMp i.val (2*n*k) f hf
       rw [hfe] at hc
       exact hjne hc
-    constructor
-    · rintro ⟨hc,hu⟩
-      refine ⟨hchain.mp hc,?_⟩
-      intro f hf
-      rw [haway f hf]
-      exact hu f hf
-    · rintro ⟨hc,hu⟩
-      refine ⟨hchain.mpr hc,?_⟩
-      intro f hf
-      have h := hu f hf
-      rw [haway f hf] at h
-      exact h
+    change (_ ∧ ∀ f ∈ T, A f = true) ↔ (_ ∧ ∀ f ∈ T, toggleEdge A (j, ⟨0, hMp⟩) f = true)
+    exact hchain.and (forall₂_congr fun f hf => by rw [haway f hf])
   have hclose := TorusLoops.torusRCProbability_close_finite_set hN hM q S (E ∩ U) hstable
   change (1 - (rcCriticalParameter q).val) ^ S.card *
       torusRCProbability hN hM q (E ∩ U) ≤
@@ -97,7 +79,7 @@ theorem primalWinding_probability_ge_boundedChain (hN : Even N) (hM : Even M)
     intro j hj
     exact hcl (j,⟨0,hMp⟩) (Finset.mem_image.mpr
       ⟨j,Finset.mem_erase.mpr ⟨hj,Finset.mem_univ _⟩,rfl⟩)
-  have hc0 : 0 ≤ 1 - (rcCriticalParameter q).val := (sub_pos.mpr (criticalParameter_lt_one q)).le
+  have hc0 := (sub_pos.mpr (criticalParameter_lt_one q)).le
   have hc1 : 1 - (rcCriticalParameter q).val ≤ 1 := by
     have h := criticalParameter_pos q
     linarith
@@ -107,15 +89,9 @@ theorem primalWinding_probability_ge_boundedChain (hN : Even N) (hM : Even M)
     (pow_le_pow_of_le_one hc0 hc1 (seamOtherEdges_card_le hMp i₀))
     (pow_le_pow_of_le_one ho0 ho1 (terminalZigzagEdges_card_le hNp hMp i.val (2*n*k)))
     (pow_nonneg ho0 _) (pow_nonneg hc0 S.card)
-  calc
-    _ ≤ ((1-(rcCriticalParameter q).val)^S.card *
-        fkOpenEnergy (torusRCBridgeParameters q)^T.card) * torusRCProbability hN hM q E :=
-      mul_le_mul_of_nonneg_right hfac (torusRCProbability_nonneg hN hM q E)
-    _ = (1-(rcCriticalParameter q).val)^S.card *
-        (fkOpenEnergy (torusRCBridgeParameters q)^T.card * torusRCProbability hN hM q E) := by ring
-    _ ≤ (1-(rcCriticalParameter q).val)^S.card * torusRCProbability hN hM q (E ∩ U) :=
-      mul_le_mul_of_nonneg_left hopen (pow_nonneg hc0 _)
-    _ ≤ torusRCProbability hN hM q (primalWindingSingleSeam hNp hMp hM (3*n+1)) :=
-      hclose.trans (torusRCProbability_mono hN hM q hsub)
+  refine (mul_le_mul_of_nonneg_right hfac (torusRCProbability_nonneg hN hM q E)).trans ?_
+  rw [mul_assoc]
+  exact (mul_le_mul_of_nonneg_left hopen (pow_nonneg hc0 _)).trans
+    (hclose.trans (torusRCProbability_mono hN hM q hsub))
 
 end PottsDiscontinuity.TorusRC

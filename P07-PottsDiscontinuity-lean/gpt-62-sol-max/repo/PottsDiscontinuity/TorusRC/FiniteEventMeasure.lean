@@ -51,11 +51,6 @@ theorem boxProbabilityMeasure_connection_eq (θ : Parameters) (c : LatticeVertex
   ext A
   exact boxConfiguration_connection_iff c r A u v
 
-/-- Finite-witness connection is an open event in the edge product topology. -/
-theorem connectionEvent_isOpen (u v : LatticeVertex) : IsOpen (connectionEvent u v) := by
-  rw [connectionEvent_eq_iUnion_connectionApprox]
-  exact isOpen_iUnion fun k => (connectionApprox_isClopen u v k).isOpen
-
 /-- Weak convergence makes every strict lower bound on an open-event limit
 probability hold eventually for the finite measures. -/
 theorem open_probability_eventually_gt {Ω : Type*} [MeasurableSpace Ω]
@@ -64,7 +59,7 @@ theorem open_probability_eventually_gt {Ω : Type*} [MeasurableSpace Ω]
     (hweak : Tendsto μs atTop (𝓝 μ)) (E : Set Ω) (hE : IsOpen E)
     (t : ℝ) (ht : 0 ≤ t) (htμ : t < μ.toMeasure.real E) :
     ∀ᶠ k in atTop, t < (μs k).toMeasure.real E := by
-  have hlt : ENNReal.ofReal t < μ.toMeasure E :=
+  have hlt :=
     (ENNReal.ofReal_lt_iff_lt_toReal ht (measure_ne_top _ _)).mpr htμ
   have hlower := ProbabilityMeasure.le_liminf_measure_open_of_tendsto hweak hE
   have h := eventually_lt_of_lt_liminf (hlt.trans_le hlower)

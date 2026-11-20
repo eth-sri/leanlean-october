@@ -32,8 +32,7 @@ theorem diamondBoundary_pairing (hN : Even N) (hM : Even M) (A : RCConfig N M)
       rw [Finset.sum_mul]
       exact Finset.sum_congr rfl (fun _ _ => by ring)
     _ = diamondCoboundary hN hM A g e * f e := by
-      simp only [diamondIncidence, sub_mul, Finset.sum_sub_distrib, ite_mul, one_mul,
-        zero_mul, Finset.sum_ite_eq, Finset.mem_univ, ite_true, diamondCoboundary_apply]
+      simp [diamondIncidence, sub_mul]
 
 theorem ribbon_corner_pairing (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (g : FaceVertex N M true → ℚ) (f : RibbonBoundaryComponent hN hM A → ℚ) :
@@ -79,7 +78,7 @@ theorem sum_ribbon_corner_pairing_eq_zero (hN : Even N) (hM : Even M) (A : RCCon
   rw [hp]
   have hr : ribbonFace hN hM (faceRotation hN hM d) = ribbonFace hN hM d :=
     Subtype.ext ((sameCycle_faceRotation hN hM _ _).mp Equiv.Perm.SameCycle.rfl.apply_left)
-  rw [hr]
+  simp_all
 
 /-- A capped ribbon face boundary is a conserved chain on the actual open graph. -/
 theorem ribbonFaceBoundary_mem_cycleSpace (hN : Even N) (hM : Even M) (A : RCConfig N M)
@@ -93,6 +92,6 @@ theorem ribbonFaceBoundary_mem_cycleSpace (hN : Even N) (hM : Even M) (A : RCCon
     (ribbonFaceBoundary hN hM A f)
   rw [ribbon_corner_pairing] at he
   have hz := sum_ribbon_corner_pairing_eq_zero hN hM A (fun v => if u = v then 1 else 0) f
-  simpa only [ite_mul, one_mul, zero_mul, Finset.sum_ite_eq, Finset.mem_univ, ite_true] using he.trans hz
+  simpa using he.trans hz
 
 end PottsDiscontinuity.Torus

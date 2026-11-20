@@ -49,8 +49,7 @@ lemma rotate_range_map_one {α : Type*} (f : ℕ → α) (L : ℕ) (hL : 0 < L)
   obtain ⟨k,rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : L ≠ 0)
   conv_lhs => rw [List.range_succ_eq_map,List.map_cons,List.rotate_cons_succ,List.rotate_zero]
   rw [List.range_succ,List.map_append,List.map_singleton]
-  simp only [List.map_map,Function.comp_def]
-  rw [hf]
+  simp_all
 
 lemma closedLoopMidpointWalk_cyclicTurn
     (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s)
@@ -69,23 +68,18 @@ lemma closedLoopMidpointWalk_cyclicTurn
         portCompass (midpointDirection s ((directedStep ω s h)^[0] d).val) := by
     rw [show loopPeriod ω s h d = 0+loopPeriod ω s h d by omega,loopOrbit_add_period]
   unfold squareWalkCyclicTurn
-  rw [hdirs,rotate_range_map_one _ _ (loopPeriod_pos ω s h d) hf]
-  rw [List.zipWith_map]
+  rw [hdirs,rotate_range_map_one _ _ (loopPeriod_pos ω s h d) hf, List.zipWith_map]
   simp only [List.zipWith_self]
   have htable : ∀ k, primalCompassQuarterTurn
       (portCompass (midpointDirection s ((directedStep ω s h)^[k] d).val))
       (portCompass (midpointDirection s ((directedStep ω s h)^[k+1] d).val)) =
       midpointQuarterTurn s ((directedStep ω s h)^[k] d).val := by
     intro k
-    rw [portCompass_quarterTurn]
-    rw [Function.iterate_succ_apply',directedStep_val]
+    rw [portCompass_quarterTurn, Function.iterate_succ_apply',directedStep_val]
     rfl
   simp_rw [htable]
   have hsum (f : ℕ → ℤ) (n : ℕ) :
-      ((List.range n).map f).sum = ∑ k ∈ Finset.range n, f k := by
-    induction n with
-    | zero => simp
-    | succ n ih => simp [List.range_succ,Finset.sum_range_succ,ih]
+      ((List.range n).map f).sum = ∑ k ∈ Finset.range n, f k := rfl
   rw [hsum]
   exact sum_period_midpointQuarterTurn_eq_four_mul_rotationNumber ω s h d
 

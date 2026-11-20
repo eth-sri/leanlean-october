@@ -37,7 +37,7 @@ theorem exists_pfRoot_eq_LambdaMax :
   obtain ⟨i, hi, hle⟩ := (Finset.le_sup'_iff (s := Finset.univ)
     (H := Finset.univ_nonempty) (f := fun n : Fin (N + 1) =>
       pfRoot (transferBlock N c n.val))).mp hself
-  have hlow : pfRoot (transferBlock N c i.val) ≤ LambdaMax c N :=
+  have hlow :=
     pfRoot_transferBlock_le_LambdaMax (N := N) (c := c)
       (Nat.lt_succ_iff.mp i.isLt)
   exact ⟨i.val, Nat.lt_succ_iff.mp i.isLt, le_antisymm hlow hle⟩
@@ -59,10 +59,7 @@ noncomputable def stateCardEquiv (N : ℕ) :
   invFun p := p.2.1
   left_inv _ := rfl
   right_inv p := by
-    rcases p with ⟨⟨n, hn⟩, ⟨s, hs⟩⟩
-    change s.card = n at hs
-    subst n
-    rfl
+    grind
 
 theorem sum_state_card_eq_two_pow (N : ℕ) :
     (∑ n ∈ Finset.range (N + 1), Fintype.card (State N n)) = 2 ^ N := by
@@ -76,81 +73,6 @@ theorem sum_state_card_eq_two_pow (N : ℕ) :
     (∑ n ∈ Finset.range (N + 1), Fintype.card (State N n)) =
         ∑ i : Fin (N + 1), Fintype.card (State N i.val) := hsum.symm
     _ = 2 ^ N := hcard.symm
-
-/-- For a symmetric nonnegative matrix, every trace power is bounded by its dimension times the
-`M`-th power of its largest eigenvalue. -/
-theorem trace_pow_le_card_mul_pfRoot_pow {ι : Type*} [Fintype ι] [DecidableEq ι]
-    [Nonempty ι] {A : Matrix ι ι ℝ} (hA : A.IsHermitian)
-    (hnn : ∀ i j, 0 ≤ A i j) (_hρ : 0 < pfRoot A) (M : ℕ) :
-    (A ^ M).trace ≤ (Fintype.card ι : ℝ) * pfRoot A ^ M := by
-  rw [trace_pow_eq_sum hA]
-  calc
-    (∑ i, hA.eigenvalues i ^ M) ≤ ∑ _i : ι, pfRoot A ^ M := by
-      apply Finset.sum_le_sum
-      intro i _
-      have hμ := abs_le_pfRoot_of_mem_spectrum hA hnn (hA.eigenvalues_mem_spectrum_real i)
-      calc
-        hA.eigenvalues i ^ M ≤ |hA.eigenvalues i| ^ M := by
-          have := le_abs_self (hA.eigenvalues i ^ M)
-          simpa only [abs_pow] using this
-        _ ≤ pfRoot A ^ M := pow_le_pow_left₀ (abs_nonneg _) hμ M
-    _ = (Fintype.card ι : ℝ) * pfRoot A ^ M := by simp
-
-/-- For even `M`, the trace of a symmetric nonnegative matrix is at least the `M`-th power of its
-largest eigenvalue. -/
-theorem trace_pow_ge_pfRoot_pow_even {ι : Type*} [Fintype ι] [DecidableEq ι]
-    [Nonempty ι] {A : Matrix ι ι ℝ} (hA : A.IsHermitian) {M : ℕ}
-    (hM : Even M) : pfRoot A ^ M ≤ (A ^ M).trace := by
-  rw [trace_pow_eq_sum hA]
-  obtain ⟨i₀, hi₀⟩ := exists_eigenvalues_eq_pfRoot hA
-  have hsingle := Finset.single_le_sum
-    (s := Finset.univ) (f := fun i : ι => hA.eigenvalues i ^ M)
-    (fun i _ => by
-      rcases hM with ⟨k, rfl⟩
-      rw [pow_add]
-      exact mul_self_nonneg _)
-    (Finset.mem_univ i₀)
-  rw [hi₀] at hsingle
-  exact hsingle
-
-/-- Powers of a matrix with nonnegative entries still have nonnegative entries. -/
-theorem matrix_pow_entry_nonneg {ι : Type*} [Fintype ι] [DecidableEq ι]
-    {A : Matrix ι ι ℝ} (hA : ∀ i j, 0 ≤ A i j) :
-    ∀ k i j, 0 ≤ (A ^ k) i j := by
-  intro k
-  induction k with
-  | zero =>
-      intro i j
-      by_cases h : i = j <;> simp [h]
-  | succ k ih =>
-      intro i j
-      rw [pow_succ]
-      simp only [Matrix.mul_apply]
-      exact Finset.sum_nonneg fun l _ => mul_nonneg (ih i l) (hA l j)
-
-/-- Positive diagonal entries persist under every matrix power when all entries are
-nonnegative. -/
-theorem matrix_pow_diag_pos {ι : Type*} [Fintype ι] [DecidableEq ι]
-    {A : Matrix ι ι ℝ} (hA : ∀ i j, 0 ≤ A i j) (hdiag : ∀ i, 0 < A i i) :
-    ∀ k i, 0 < (A ^ k) i i := by
-  intro k
-  induction k with
-  | zero => intro i; simp
-  | succ k ih =>
-      intro i
-      rw [pow_succ]
-      simp only [Matrix.mul_apply]
-      exact Finset.sum_pos' (fun j _ =>
-        mul_nonneg (matrix_pow_entry_nonneg hA k i j) (hA j i))
-        ⟨i, Finset.mem_univ i, mul_pos (ih i) (hdiag i)⟩
-
-/-- A symmetric or nonsymmetric matrix with nonnegative entries and positive diagonal has
-positive trace in every power. -/
-theorem trace_pow_pos_of_nonneg_pos_diag {ι : Type*} [Fintype ι] [DecidableEq ι]
-    [Nonempty ι] {A : Matrix ι ι ℝ} (hA : ∀ i j, 0 ≤ A i j)
-    (hdiag : ∀ i, 0 < A i i) (M : ℕ) : 0 < (A ^ M).trace := by
-  rw [Matrix.trace]
-  exact Finset.sum_pos (fun i _ => matrix_pow_diag_pos hA hdiag M i) Finset.univ_nonempty
 
 /-- Every fixed-arrow-number sector is nonnegative when `c ≥ 0`. -/
 theorem Z6Vn_nonneg (hc : 0 ≤ c) (M n : ℕ) : 0 ≤ Z6Vn c N M n := by
@@ -167,18 +89,15 @@ theorem Z6Vn_le_card_mul_pfRoot_pow (hc : 0 < c) (hN : 0 < N) (hM : 0 < M)
       pfRoot (transferBlock N c n) ^ M := by
   rw [Z6Vn_eq_trace_block hN hM c n]
   let : Nonempty (State N n) := ⟨packed hn⟩
-  have hρ := (transferBlock_perronFrobenius (N := N) hc hn).1
-  exact trace_pow_le_card_mul_pfRoot_pow (transferBlock_isHermitian (N := N) (c := c) n)
-    (transferBlock_nonneg hc.le n) hρ M
+  exact trace_pow_le_card_mul_pfRoot_pow (transferBlock_isHermitian n)
+    (transferBlock_nonneg hc.le n) M
 
 /-- Every fixed-arrow-number sector with an admissible cardinality is strictly positive for
 positive height. -/
 theorem Z6Vn_pos (hc : 0 < c) (hN : 0 < N) (hM : 0 < M) {n : ℕ}
     (hn : n ≤ N) : 0 < Z6Vn c N M n := by
   rw [Z6Vn_eq_trace_block hN hM c n]
-  let : Nonempty (State N n) := ⟨packed hn⟩
-  exact trace_pow_pos_of_nonneg_pos_diag (transferBlock_nonneg hc.le n)
-    (fun x => by rw [transferBlock_apply_self]; norm_num) M
+  exact transferBlock_trace_pos hc hn M
 
 /-- The full partition function dominates each fixed-arrow-number sector. -/
 theorem Z6Vn_le_Z6V (hc : 0 ≤ c) (hM : 0 < M) {n : ℕ} (hn : n ≤ N) :
@@ -186,16 +105,6 @@ theorem Z6Vn_le_Z6V (hc : 0 ≤ c) (hM : 0 < M) {n : ℕ} (hn : n ≤ N) :
   rw [Z6V_eq_sum_Z6Vn hM c]
   exact Finset.single_le_sum (fun k _ => Z6Vn_nonneg (N := N) hc M k)
     (Finset.mem_range.mpr (Nat.lt_succ_of_le hn))
-
-/-- The `r`-sector trace dominates its Perron root on positive even heights. -/
-theorem Lambda_pow_le_Z6Vr_even (_hc : 0 < c) (hN : 0 < N) (hM : 0 < M)
-    {r : ℕ} (hr : r ≤ N / 2) (heven : Even M) :
-    Lambda c N r ^ M ≤ Z6Vr c N M r := by
-  rw [Z6Vr_eq_trace_block hN hM c hr]
-  unfold Lambda
-  let : Nonempty (State N (N / 2 - r)) := ⟨packed (by omega)⟩
-  have hA := transferBlock_isHermitian (N := N) (c := c) (N / 2 - r)
-  exact trace_pow_ge_pfRoot_pow_even hA heven
 
 /-- The full six-vertex partition function has the uniform trace upper bound from the largest
 block root. -/
@@ -233,43 +142,21 @@ theorem tendsto_log_Z6V (hc : 0 < c) (hN : 0 < N) :
   have hsector := tendsto_log_Z6Vn (N := N) hc hN hn
   have hsector' : Tendsto (fun M : ℕ => (1 / (M : ℝ)) * Real.log (Z6Vn c N M n))
       atTop (𝓝 (Real.log (LambdaMax c N))) := by
-    simpa [hmax] using hsector
-  have hlam := LambdaMax_pos (c := c) (N := N) hc
-  have hconst : 0 < (2 ^ N : ℝ) := by positivity
-  have hinv : Tendsto (fun M : ℕ => 1 / (M : ℝ)) atTop (𝓝 0) :=
-    tendsto_one_div_atTop_nhds_zero_nat
-  have hsmall : Tendsto (fun M : ℕ => (1 / (M : ℝ)) * Real.log (2 ^ N : ℝ))
-      atTop (𝓝 0) := by simpa using hinv.mul_const (Real.log (2 ^ N : ℝ))
-  have hupper' : Tendsto (fun M : ℕ => Real.log (LambdaMax c N) +
-      (1 / (M : ℝ)) * Real.log (2 ^ N : ℝ)) atTop
-      (𝓝 (Real.log (LambdaMax c N))) := by
-    simpa using (tendsto_const_nhds (x := Real.log (LambdaMax c N))).add hsmall
-  have hupper : Tendsto (fun M : ℕ => (1 / (M : ℝ)) *
-      Real.log ((2 ^ N : ℝ) * LambdaMax c N ^ M)) atTop
-      (𝓝 (Real.log (LambdaMax c N))) := by
-    refine hupper'.congr' ?_
-    filter_upwards [eventually_gt_atTop 0] with M hM
-    have hMne : (M : ℝ) ≠ 0 := by exact_mod_cast hM.ne'
-    have hpow : LambdaMax c N ^ M ≠ 0 := pow_ne_zero _ hlam.ne'
-    rw [Real.log_mul hconst.ne' hpow]
-    simp only [Real.log_pow]
-    field_simp
-    ring_nf
+    simp_all
+  have hu := tendsto_scaled_log_mul_pow (C := 2 ^ N) (by positivity) (LambdaMax_pos (N := N) hc)
   apply tendsto_of_tendsto_of_tendsto_of_le_of_le'
     (f := fun M : ℕ => (1 / (M : ℝ)) * Real.log (Z6V c N M))
     (g := fun M : ℕ => (1 / (M : ℝ)) * Real.log (Z6Vn c N M n))
     (h := fun M : ℕ => (1 / (M : ℝ)) *
       Real.log ((2 ^ N : ℝ) * LambdaMax c N ^ M))
-    hsector' hupper
+    hsector' hu
   · filter_upwards [eventually_gt_atTop 0] with M hM
     have hsectorpos := Z6Vn_pos (N := N) hc hN hM hn
-    have hfullpos : 0 < Z6V c N M := lt_of_lt_of_le hsectorpos
-      (Z6Vn_le_Z6V (N := N) hc.le hM hn)
     have hlog := Real.log_le_log hsectorpos (Z6Vn_le_Z6V (N := N) hc.le hM hn)
     exact mul_le_mul_of_nonneg_left hlog (by positivity)
   · filter_upwards [eventually_gt_atTop 0] with M hM
     have hsectorpos := Z6Vn_pos (N := N) hc hN hM hn
-    have hfullpos : 0 < Z6V c N M := lt_of_lt_of_le hsectorpos
+    have hfullpos := lt_of_lt_of_le hsectorpos
       (Z6Vn_le_Z6V (N := N) hc.le hM hn)
     have hup := Z6V_le_two_pow_mul_LambdaMax_pow (N := N) hc hN hM
     have hlog := Real.log_le_log hfullpos hup

@@ -1,5 +1,7 @@
 module
 
+public import PottsDiscontinuity.SixVertex.Rotate
+
 public import PottsDiscontinuity.Torus.DiamondDisplacement
 
 /-!
@@ -37,11 +39,7 @@ theorem prv_coordinate_step (i : Fin N) :
     (i.val : ℚ) - (prv i).val = 1 - (N : ℚ) * (if i.val = 0 then 1 else 0) := by
   by_cases hi : i.val = 0
   · obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Fin.pos i).ne'
-    have hz : i = 0 := Fin.ext hi
-    subst i
-    rw [prv_zero]
-    simp only [Fin.val_zero, Fin.val_last, ite_true, mul_one, Nat.cast_succ]
-    ring
+    simp_all
   · have hp := prv_val_of_pos i (by omega)
     have hn : (prv i).val + 1 = i.val := by omega
     have hq : ((prv i).val : ℚ) + 1 = i.val := by exact_mod_cast hn
@@ -70,7 +68,7 @@ theorem diamondWindingX_mul_period (hN : Even N) (hM : Even M) (A : RCConfig N M
     (f : diamondCycleSpace hN hM A) :
     (N : ℚ) * diamondWindingX A f.val = diamondHorizontalDisplacement A f.val := by
   have he := diamondBoundary_pairing hN hM A (fun u => (u.val.1.val : ℚ)) f.val
-  have hf : diamondBoundary hN hM A f.val = 0 := f.property
+  have hf := f.property
   rw [hf] at he
   simp only [Pi.zero_apply, mul_zero, Finset.sum_const_zero] at he
   simp_rw [diamondCoordinateX_coboundary, sub_mul, mul_assoc] at he
@@ -81,7 +79,7 @@ theorem diamondWindingY_mul_period (hN : Even N) (hM : Even M) (A : RCConfig N M
     (f : diamondCycleSpace hN hM A) :
     (M : ℚ) * diamondWindingY A f.val = diamondVerticalDisplacement A f.val := by
   have he := diamondBoundary_pairing hN hM A (fun u => (u.val.2.val : ℚ)) f.val
-  have hf : diamondBoundary hN hM A f.val = 0 := f.property
+  have hf := f.property
   rw [hf] at he
   simp only [Pi.zero_apply, mul_zero, Finset.sum_const_zero] at he
   simp_rw [diamondCoordinateY_coboundary, sub_mul, mul_assoc, neg_one_mul] at he

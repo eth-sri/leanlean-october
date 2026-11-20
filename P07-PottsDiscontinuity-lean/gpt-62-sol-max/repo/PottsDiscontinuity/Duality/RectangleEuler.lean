@@ -1,260 +1,205 @@
-/- Adapted from an earlier, unpublished formalization of the planar FK model by the same author.
-Namespaces/imports adapted to the shared FK library. -/
 module
 
-public import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 public import PottsDiscontinuity.Duality.RectangleDualPotential
-public import PottsDiscontinuity.Duality.RectangleOpenFlow
+public import PottsDiscontinuity.Duality.RectangleFaceFlow
+public import PottsDiscontinuity.Duality.NormalizedPotentialSpace
 
 @[expose] public section
 
 namespace PottsDiscontinuity.FK
 
-open PottsDiscontinuity.FK PottsDiscontinuity.FK.Medial
+open Finset Medial
+open scoped Classical
 
 noncomputable section
 
-def rectangleConfigurationOfCarrier (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    Configuration (rectangleGraph a w h) := by
-  change Finset (rectangleGraph a w h).edgeSet
-  exact A
+variable (a : LatticeVertex) (w h : ℕ)
 
-def rectangleCarrierOfConfiguration (a : LatticeVertex) (w h : ℕ)
-    (A : Configuration (rectangleGraph a w h)) :
-    Finset (rectanglePrimalEdgeCarrier a w h) := by
-  change Finset (rectangleGraph a w h).edgeSet
-  exact A
+local notation "G₀" => rectangleGraph a w h
+local notation "G₁" => rectangleDualGraph a w h
+local notation "V₀" => RectangleVertex a w h
+local notation "V₁" => RectangleDualVertex a w h
+local notation "F₀" => Subtype (fun z => z ∈ rectangleDualInterior a w h)
+local notation "E₀" => OpenEdgeIndex G₀ (rectangleAllEdges a w h)
+local notation "β₁" => rectangleDualBoundaryCondition a w h
+local notation "v₁" => rectangleDualBaseVertex a w h
 
-abbrev rectangleOpenDivSpace (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :=
-  @Min.min (Submodule ℝ (RectanglePrimalFlow a w h)) inferInstance
-    (rectangleOpenFlowSubmodule a w h (rectangleConfigurationOfCarrier a w h A))
-    (rectangleDivergenceFreeFlowSubmodule a w h)
+local instance : Fintype V₁ := Fintype.ofFinite _
 
-def rectanglePrimalBondSubtype (a : LatticeVertex) (w h : ℕ)
-    (e : rectanglePrimalEdgeCarrier a w h) : RectanglePrimalBond a w h :=
-  ⟨rectanglePrimalEdgeBond a w h e,
-    rectanglePrimalEdgeBond_endpoints_mem_public a w h e⟩
+variable (A : Configuration (rectangleGraph a w h))
+local notation "Eₐ" => OpenEdgeIndex G₀ A
+local notation "A₁" => rectangleDualConfiguration a w h A
+local notation "Dₐ" => signedDivergence G₀ A (rectangleOpenEdgeOrientation a w h A)
+local notation "D₀" => rectangleFullDivergence a w h
+local notation "curl₀" => rectangleFaceCurl a w h
 
- theorem rectangleDualCurlKernel_openSupport
-    (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h))
-    (φ : rectangleDualPotentialCurlKernel a w h A)
-    (b : RectanglePrimalBond a w h)
-    (hb : rectanglePrimalBondToEdge a w h b ∉ A) :
-    rectanglePotentialCurlMap a w h φ.1 b = 0 := by
-  let e := rectanglePrimalBondToEdge a w h b
-  have heq : rectanglePrimalEdgeBondEquiv a w h e = b := by
-    exact (rectanglePrimalEdgeBondEquiv a w h).right_inv b
-  have hzero := φ.2 e (by simpa [e] using hb)
-  change rectanglePotentialCurlMap a w h φ.1
-    (rectanglePrimalBondSubtype a w h e) = 0 at hzero
-  have hbond : rectanglePrimalBondSubtype a w h e =
-      rectanglePrimalEdgeBondEquiv a w h e := by
-    apply Subtype.ext
-    rfl
-  have hvalue : rectanglePotentialCurlMap a w h φ.1
-      (rectanglePrimalBondSubtype a w h e) =
-      rectanglePotentialCurlMap a w h φ.1 b := by
-    rw [hbond, heq]
-  rw [hvalue] at hzero
-  exact hzero
+private def supportedPotential (A : Configuration (rectangleGraph a w h)) : Submodule ℝ (F₀ → ℝ) :=
+  ⨅ e : {e : E₀ // e.val ∉ A}, LinearMap.ker ((LinearMap.proj e.val).comp curl₀)
 
- theorem rectangleOpenFlow_mem_curlKernel
-    (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h))
-    (F : rectangleOpenDivSpace a w h A) :
-    (rectanglePotentialCurlLinearEquiv a w h).symm
-      ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩ ∈
-      rectangleDualPotentialCurlKernel a w h A := by
-  intro e he
-  have hclosed : rectanglePrimalBondToEdge a w h
-      ((rectanglePrimalEdgeBondEquiv a w h) e) ∉ A := by
-    have hedge : rectanglePrimalBondToEdge a w h
-      ((rectanglePrimalEdgeBondEquiv a w h) e) = e :=
-      (rectanglePrimalEdgeBondEquiv a w h).left_inv e
-    rw [hedge]
-    exact he
-  have hzero := (Submodule.mem_inf.mp F.2).1
-    ((rectanglePrimalEdgeBondEquiv a w h) e) hclosed
-  have hF : rectanglePotentialCurlMap a w h
-      ((rectanglePotentialCurlLinearEquiv a w h).symm
-        ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩) = F.1 := by
-    have hh := congrArg Subtype.val
-      ((rectanglePotentialCurlLinearEquiv a w h).apply_symm_apply
-        ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩)
-    change rectanglePotentialCurlMap a w h
-      ((rectanglePotentialCurlLinearEquiv a w h).symm
-        ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩) = F.1 at hh
-    exact hh
-  have hFedge := congrFun hF (rectanglePrimalEdgeBondEquiv a w h e)
-  have hbond : rectanglePrimalBondSubtype a w h e =
-      rectanglePrimalEdgeBondEquiv a w h e := by
-    apply Subtype.ext
-    rfl
-  change rectanglePotentialCurlMap a w h
-    ((rectanglePotentialCurlLinearEquiv a w h).symm
-      ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩)
-    (rectanglePrimalBondSubtype a w h e) = 0
-  rw [hbond, hFedge]
-  exact hzero
+private theorem mem_supported (φ : F₀ → ℝ) : φ ∈ supportedPotential a w h A ↔
+    ∀ e : E₀, e.val ∉ A → curl₀ φ e = 0 := by
+  simp [supportedPotential, LinearMap.mem_ker]
 
-def rectangleDualCurlKernelToOpenIntersection
-    (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    rectangleDualPotentialCurlKernel a w h A →ₗ[ℝ]
-      rectangleOpenDivSpace a w h A where
-  toFun φ := by
-    refine ⟨(rectanglePotentialCurlLinearEquiv a w h φ.1).1, ?_⟩
-    apply Submodule.mem_inf.mpr
-    constructor
-    · intro b hb
-      exact rectangleDualCurlKernel_openSupport a w h A φ b hb
-    · exact (rectanglePotentialCurlLinearEquiv a w h φ.1).2
+private theorem pad_boundary (φ : F₀ → ℝ) {z : LatticeVertex}
+    (hz : z ∈ rectangleDualBoundary a w h) : facePotentialPad a w h φ z = 0 := by
+  exact dite_eq_right (mem_filter.mp hz).2
+
+private theorem curl_zero_iff (φ : F₀ → ℝ) (e : E₀) :
+    curl₀ φ e = 0 ↔
+      facePotentialPad a w h φ (rectangleDualEdgeSource a w h (rectanglePrimalDualEdgeEquiv a w h e.val)).val =
+        facePotentialPad a w h φ (rectangleDualEdgeTarget a w h (rectanglePrimalDualEdgeEquiv a w h e.val)).val := by
+  rw [rectangleDualEdgeSource_faceBase, rectangleDualEdgeTarget_faceBase, rectangleFaceCurl_eval]
+  dsimp [rectanglePrimalDualEdgeEquiv]
+  split <;> (constructor <;> intro hh <;> linarith)
+
+private theorem pad_componentConstant (φ : supportedPotential a w h A) :
+    (fun z : V₁ => facePotentialPad a w h φ.val z.val) ∈ componentConstantFunctions G₁ β₁ A₁ := by
+  apply (componentConstant_iff_local G₁ β₁ A₁ _).2
+  constructor
+  · intro x y hxy
+    obtain ⟨d, hd, he⟩ := (rectangleDualOpen_adj_iff a w h A x y).1 hxy
+    let e : E₀ := ⟨d.primalEdge, mem_rectangleAllEdges a w h _⟩
+    have hc := (curl_zero_iff a w h φ.val e).1 ((mem_supported a w h A φ.val).1 φ.prop e hd)
+    change _ = _ at hc
+    have hde : rectanglePrimalDualEdgeEquiv a w h e.val = d :=
+      (rectanglePrimalDualEdgeEquiv a w h).apply_symm_apply d
+    rw [hde] at hc
+    rw [rectangleDualCarrierPair, Sym2.eq_iff] at he
+    rcases he with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
+    · exact hc
+    · exact hc.symm
+  · intro x y hxy
+    rcases (rectangleDualBoundaryCondition_rel a w h x y).1 hxy with rfl | ⟨hx, hy⟩
+    · rfl
+    · exact (pad_boundary a w h _ hx).trans (pad_boundary a w h _ hy).symm
+
+private abbrev DualNorm := normalizedComponentPotentials G₁ β₁ A₁ v₁
+
+private def padLinear : supportedPotential a w h A →ₗ[ℝ] DualNorm a w h A where
+  toFun φ := ⟨⟨_, pad_componentConstant a w h A φ⟩, pad_boundary a w h _ (rectangleDualBaseVertex_boundary a w h)⟩
   map_add' φ ψ := by
     apply Subtype.ext
-    change (rectanglePotentialCurlLinearEquiv a w h (φ.1 + ψ.1)).1 =
-      (rectanglePotentialCurlLinearEquiv a w h φ.1).1 +
-        (rectanglePotentialCurlLinearEquiv a w h ψ.1).1
-    exact congrArg Subtype.val
-      (map_add (rectanglePotentialCurlLinearEquiv a w h).toLinearMap φ.1 ψ.1)
+    apply Subtype.ext
+    funext z
+    change facePotentialPad a w h (φ.val + ψ.val) z.val =
+      facePotentialPad a w h φ.val z.val + facePotentialPad a w h ψ.val z.val
+    by_cases hz : z.val ∈ rectangleDualInterior a w h <;>
+      simp [facePotentialPad, hz]
   map_smul' c φ := by
     apply Subtype.ext
-    change (rectanglePotentialCurlLinearEquiv a w h (c • φ.1)).1 =
-      c • (rectanglePotentialCurlLinearEquiv a w h φ.1).1
-    exact congrArg Subtype.val
-      (map_smul (rectanglePotentialCurlLinearEquiv a w h).toLinearMap c φ.1)
-
-def rectangleOpenIntersectionToDualCurlKernel
-    (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    (rectangleOpenDivSpace a w h A) →ₗ[ℝ]
-      rectangleDualPotentialCurlKernel a w h A where
-  toFun F := by
-    let d : rectangleDivergenceFreeFlowSubmodule a w h :=
-      ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩
-    refine ⟨(rectanglePotentialCurlLinearEquiv a w h).symm d, ?_⟩
-    exact rectangleOpenFlow_mem_curlKernel a w h A F
-  map_add' F G := by
     apply Subtype.ext
-    change (rectanglePotentialCurlLinearEquiv a w h).symm
-        ⟨F.1 + G.1, ?_⟩ =
-      (rectanglePotentialCurlLinearEquiv a w h).symm
-          ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩ +
-        (rectanglePotentialCurlLinearEquiv a w h).symm
-          ⟨G.1, (Submodule.mem_inf.mp G.2).2⟩
-    · exact map_add ((rectanglePotentialCurlLinearEquiv a w h).symm).toLinearMap
-        ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩
-        ⟨G.1, (Submodule.mem_inf.mp G.2).2⟩
-  map_smul' c F := by
-    apply Subtype.ext
-    change (rectanglePotentialCurlLinearEquiv a w h).symm
-        ⟨c • F.1, ?_⟩ =
-      c • (rectanglePotentialCurlLinearEquiv a w h).symm
-        ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩
-    · exact map_smul ((rectanglePotentialCurlLinearEquiv a w h).symm).toLinearMap c
-        ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩
+    funext z
+    change facePotentialPad a w h (c • φ.val) z.val = c • facePotentialPad a w h φ.val z.val
+    by_cases hz : z.val ∈ rectangleDualInterior a w h <;>
+      simp [facePotentialPad]
 
- theorem rectangleDualCurlKernelOpenEquiv_bijective
-    (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    Function.Bijective (rectangleDualCurlKernelToOpenIntersection a w h A) := by
+private def faceAsDual (f : F₀) : V₁ :=
+  ⟨f.val, (mem_filter.1 f.prop).1⟩
+
+private theorem padLinear_bijective : Function.Bijective (padLinear a w h A) := by
   constructor
-  · intro φ ψ hxy
-    have hflow := congrArg Subtype.val hxy
+  · intro φ ψ hφψ
     apply Subtype.ext
-    apply (rectanglePotentialCurlLinearEquiv a w h).injective
+    funext f
+    have he := congrArg (fun g : DualNorm a w h A => g.val.val (faceAsDual a w h f)) hφψ
+    change facePotentialPad a w h φ.val f.val = facePotentialPad a w h ψ.val f.val at he
+    simpa [facePotentialPad] using he
+  · intro ψ
+    let φ (f : F₀) := ψ.val.val (faceAsDual a w h f)
+    have hp (z : V₁) : facePotentialPad a w h φ z.val = ψ.val.val z := by
+      by_cases hz : z.val ∈ rectangleDualInterior a w h
+      · simp [facePotentialPad, hz, φ, faceAsDual]
+      have hzb : z.val ∈ rectangleDualBoundary a w h := mem_filter.2 ⟨z.prop, hz⟩
+      have hl := (componentConstant_iff_local G₁ β₁ A₁ _).1 ψ.val.prop
+      have he := hl.2 ((rectangleDualBoundaryCondition_rel a w h z v₁).2
+        (Or.inr ⟨hzb, rectangleDualBaseVertex_boundary a w h⟩))
+      rw [pad_boundary a w h φ hzb, he]
+      exact ψ.prop.symm
+    have hs : φ ∈ supportedPotential a w h A := (mem_supported a w h A φ).2 fun e he => by
+      let d := rectanglePrimalDualEdgeEquiv a w h e.val
+      apply (curl_zero_iff a w h φ e).2
+      rw [hp, hp]
+      exact ((componentConstant_iff_local G₁ β₁ A₁ _).1 ψ.val.prop).1
+        ((rectangleDualOpen_adj_iff a w h A _ _).2 ⟨d, he, rfl⟩)
+    refine ⟨⟨φ, hs⟩, ?_⟩
     apply Subtype.ext
-    exact hflow
-  · intro F
-    refine ⟨rectangleOpenIntersectionToDualCurlKernel a w h A F, ?_⟩
     apply Subtype.ext
-    have hval := congrArg Subtype.val
-      ((rectanglePotentialCurlLinearEquiv a w h).apply_symm_apply
-        ⟨F.1, (Submodule.mem_inf.mp F.2).2⟩)
-    exact hval
+    funext z
+    exact hp z
 
-noncomputable def rectangleDualCurlKernelOpenLinearEquiv
-    (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    rectangleDualPotentialCurlKernel a w h A ≃ₗ[ℝ]
-      rectangleOpenDivSpace a w h A :=
-  LinearEquiv.ofBijective (rectangleDualCurlKernelToOpenIntersection a w h A)
-    (rectangleDualCurlKernelOpenEquiv_bijective a w h A)
+private def allEdge (e : Eₐ) : E₀ := ⟨e.val, mem_rectangleAllEdges a w h _⟩
 
-noncomputable def rectangleDualPotentialCurlKernelSignedKernelEquiv
-    (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    rectangleDualPotentialCurlKernel a w h A ≃ₗ[ℝ]
-      LinearMap.ker (signedDivergence (rectangleGraph a w h)
-        (rectangleConfigurationOfCarrier a w h A)
-        (rectangleOpenEdgeOrientation a w h (rectangleConfigurationOfCarrier a w h A))) :=
-  (rectangleDualCurlKernelOpenLinearEquiv a w h A).trans
-    (rectangleOpenFlowDivergenceKernelEquiv a w h (rectangleConfigurationOfCarrier a w h A)).symm
+/-- Inserting zeros on missing edges does not change the vertex divergences. -/
+private theorem full_div_restrict (f : E₀ → ℝ) (hf : ∀ e : E₀, e.val ∉ A → f e = 0) :
+    D₀ f = Dₐ (fun e : Eₐ => f (allEdge a w h A e)) := by
+  letI : Fintype E₀ := openEdgeIndexFintype G₀ (rectangleAllEdges a w h)
+  letI : Fintype Eₐ := openEdgeIndexFintype G₀ A
+  have hs (g : E₀ → ℝ) (hg : ∀ e : E₀, e.val ∉ A → g e = 0) :
+      (∑ e : Eₐ, g (allEdge a w h A e)) = ∑ e : E₀, g e := by
+    let s := univ.filter fun e : E₀ => e.val ∈ A
+    calc
+      _ = ∑ e ∈ s, g e := by
+        apply sum_bij (fun e _ => allEdge a w h A e)
+        · intro e _; exact mem_filter.2 ⟨mem_univ _, e.prop⟩
+        · intro e _ e' _ he; exact Subtype.ext (congrArg (fun g : E₀ => g.val) he)
+        · intro e he
+          refine ⟨⟨e.val, (mem_filter.1 he).2⟩, mem_univ _, Subtype.ext rfl⟩
+        grind
+      _ = _ := sum_subset (filter_subset _ _) fun e _ he => hg e (by simpa [s] using he)
+  funext v
+  unfold rectangleFullDivergence
+  rw [signedDivergence_apply, signedDivergence_apply]
+  congr 1
+  · exact (hs (fun e => if (rectangleOpenEdgeOrientation a w h (rectangleAllEdges a w h)).source e = v then f e else 0)
+      (fun e he => by simp [hf e he])).symm
+  · exact (hs (fun e => if (rectangleOpenEdgeOrientation a w h (rectangleAllEdges a w h)).target e = v then f e else 0)
+      (fun e he => by simp [hf e he])).symm
 
-private theorem rectangleDualComponentCount_eq_potentialFinrank_add_one
-    (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    componentCount (rectangleDualGraph a w h)
-      (rectangleDualBoundaryCondition a w h)
-      (rectangleDualConfiguration a w h A) =
-      Module.finrank ℝ (rectangleDualPotentialCurlKernel a w h A) + 1 := by
-  exact (rectangleDualPotentialCurlKernel_finrank_add_one a w h A).symm
+private def restrictCurl : supportedPotential a w h A →ₗ[ℝ] LinearMap.ker Dₐ where
+  toFun φ := ⟨fun e => curl₀ φ.val (allEdge a w h A e), by
+    rw [LinearMap.mem_ker, ← full_div_restrict a w h A _ ((mem_supported a w h A _).1 φ.prop)]
+    exact rectangleFullDivergence_faceCurl a w h φ.val⟩
+  map_add' φ ψ := by ext e; exact congrFun (map_add curl₀ φ.val ψ.val) _
+  map_smul' c φ := by ext e; exact congrFun (map_smul curl₀ c φ.val) _
 
- theorem rectangleEuler_additive (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    componentCount (rectangleDualGraph a w h)
-        (rectangleDualBoundaryCondition a w h)
-        (rectangleDualConfiguration a w h A) +
-        Fintype.card (RectangleVertex a w h) =
-      A.card + componentCount (rectangleGraph a w h)
-        (BoundaryCondition.free (∅ : Set (RectangleVertex a w h)))
-          (rectangleConfigurationOfCarrier a w h A) + 1 := by
-  have hdim := rectangleSignedFlowDimension a w h (rectangleConfigurationOfCarrier a w h A)
-  have heq := (rectangleDualPotentialCurlKernelSignedKernelEquiv a w h A).finrank_eq
-  have hpot := rectangleDualComponentCount_eq_potentialFinrank_add_one a w h A
-  calc
-    componentCount (rectangleDualGraph a w h) (rectangleDualBoundaryCondition a w h)
-        (rectangleDualConfiguration a w h A) + Fintype.card (RectangleVertex a w h) =
-        (Module.finrank ℝ (rectangleDualPotentialCurlKernel a w h A) + 1) +
-          Fintype.card (RectangleVertex a w h) := by rw [hpot]
-    _ = Module.finrank ℝ (LinearMap.ker
-        (signedDivergence (rectangleGraph a w h)
-          (rectangleConfigurationOfCarrier a w h A)
-          (rectangleOpenEdgeOrientation a w h (rectangleConfigurationOfCarrier a w h A)))) +
-          Fintype.card (RectangleVertex a w h) + 1 := by rw [heq]; ring
-    _ = A.card + componentCount (rectangleGraph a w h)
-        (BoundaryCondition.free (∅ : Set (RectangleVertex a w h)))
-          (rectangleConfigurationOfCarrier a w h A) + 1 := by
-      rw [hdim]
-      rfl
+private theorem restrictCurl_bijective : Function.Bijective (restrictCurl a w h A) := by
+  constructor
+  · intro φ ψ he
+    apply Subtype.ext
+    apply curl_injective a w h
+    funext e
+    by_cases hA : e.val ∈ A
+    · exact congrArg (fun g : LinearMap.ker Dₐ => g.val ⟨e.val, hA⟩) he
+    · rw [(mem_supported a w h A _).1 φ.prop e hA, (mem_supported a w h A _).1 ψ.prop e hA]
+  · intro y
+    let f (e : E₀) := if he : e.val ∈ A then y.val ⟨e.val, he⟩ else 0
+    have hf (e : E₀) (he : e.val ∉ A) : f e = 0 := dif_neg he
+    have hres : (fun e : Eₐ => f (allEdge a w h A e)) = y.val := by
+      funext e
+      exact dif_pos e.prop
+    have hh : f ∈ LinearMap.range curl₀ := by
+      rw [rectangleFaceCurl_range, LinearMap.mem_ker, full_div_restrict a w h A f hf, hres]
+      exact y.prop
+    obtain ⟨φ, hφ⟩ := hh
+    refine ⟨⟨φ, (mem_supported a w h A φ).2 (hφ ▸ hf)⟩, ?_⟩
+    apply Subtype.ext
+    change (fun e : Eₐ => curl₀ φ (allEdge a w h A e)) = y.val
+    rwa [hφ]
 
-theorem rectangleEuler_additive_config (a : LatticeVertex) (w h : ℕ)
-    (A : Configuration (rectangleGraph a w h)) :
-    componentCount (rectangleDualGraph a w h)
-        (rectangleDualBoundaryCondition a w h)
-        (rectangleDualConfiguration a w h (rectangleCarrierOfConfiguration a w h A)) +
-        Fintype.card (RectangleVertex a w h) =
-      A.card + componentCount (rectangleGraph a w h)
-        (BoundaryCondition.free (∅ : Set (RectangleVertex a w h))) A + 1 := by
-  have hEuler := rectangleEuler_additive a w h (rectangleCarrierOfConfiguration a w h A)
-  have hc : (rectangleCarrierOfConfiguration a w h A).card = A.card := rfl
-  calc
-    _ = (rectangleCarrierOfConfiguration a w h A).card +
-        componentCount (rectangleGraph a w h)
-          (BoundaryCondition.free (∅ : Set (RectangleVertex a w h))) A + 1 := hEuler
-    _ = A.card + componentCount (rectangleGraph a w h)
-        (BoundaryCondition.free (∅ : Set (RectangleVertex a w h))) A + 1 := by rw [hc]
+/-- Euler's relation follows from identifying the dual potentials constant on
+closed edges with the divergence-free flows on the open primal graph. -/
+theorem rectangleEuler_additive_config :
+    componentCount G₁ β₁ A₁ + Fintype.card V₀ =
+      A.card + componentCount G₀ (BoundaryCondition.free (∅ : Set V₀)) A + 1 := by
+  have hd := rectangleSignedFlowDimension a w h A
+  have hpot := normalizedComponentPotentials_finrank_add_one G₁ β₁ A₁ v₁
+  rw [← (LinearEquiv.ofBijective _ (padLinear_bijective a w h A)).finrank_eq,
+    (LinearEquiv.ofBijective _ (restrictCurl_bijective a w h A)).finrank_eq] at hpot
+  omega
 
- theorem rectangleEuler_additive_card_config (a : LatticeVertex) (w h : ℕ)
-    (A : Configuration (rectangleGraph a w h)) :
-    componentCount (rectangleDualGraph a w h)
-        (rectangleDualBoundaryCondition a w h)
-        (rectangleDualConfiguration a w h (rectangleCarrierOfConfiguration a w h A)) +
-        (w + 1) * (h + 1) =
-      A.card + componentCount (rectangleGraph a w h)
-        (BoundaryCondition.free (∅ : Set (RectangleVertex a w h))) A + 1 := by
+theorem rectangleEuler_additive_card_config :
+    componentCount G₁ β₁ A₁ + (w + 1) * (h + 1) =
+      A.card + componentCount G₀ (BoundaryCondition.free (∅ : Set V₀)) A + 1 := by
   rw [← card_rectangleVertex a w h]
   exact rectangleEuler_additive_config a w h A
 

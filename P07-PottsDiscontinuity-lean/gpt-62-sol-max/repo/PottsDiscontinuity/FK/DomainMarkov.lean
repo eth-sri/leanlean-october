@@ -44,12 +44,12 @@ theorem componentSetoid_union_frozen (ξ : BoundaryCondition V) (A H : Configura
       · apply actualConnected_component
         apply actualConnected_of_adj
         rw [openGraph_adj]
-        exact ⟨e,he,hexy⟩
+        tauto
       · apply boundary_component
         apply actualConnected_component
         apply actualConnected_of_adj
         rw [openGraph_adj]
-        exact ⟨e,he,hexy⟩
+        tauto
     · intro x y hxy
       exact boundary_component G (frozenBoundary ξ H) A (boundary_component G ξ H hxy)
   · apply componentSetoid_le
@@ -61,7 +61,7 @@ theorem componentSetoid_union_frozen (ξ : BoundaryCondition V) (A H : Configura
 theorem componentCount_union_frozen [Finite V] (ξ : BoundaryCondition V)
     (A H : Configuration G) :
     componentCount G ξ (A ∪ H) = componentCount G (frozenBoundary ξ H) A := by
-  rw [componentCount, componentCount, componentSetoid_union_frozen]
+  simp [componentCount, componentSetoid_union_frozen]
 
 /-- No prewiring assumption on R is needed: freezing its state induces the
 correct actual partition. Every original vertex remains in the component count. -/
@@ -83,7 +83,6 @@ noncomputable section
 open scoped BigOperators
 
 variable [Finite V]
-local instance domainMarkovEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance domainMarkovEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 local instance domainMarkovRemainingFintype (R : Configuration G) : Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
 
@@ -102,9 +101,7 @@ theorem configurationProbability_frozen_fiber_ratio (q : Parameters)
   change (_ * removedWeight G q R H / partitionFunction G q ξ) /
     (remainingPartitionFunction G q (frozenBoundary ξ H.val) R *
       removedWeight G q R H / partitionFunction G q ξ) = _
-  field_simp [(partitionFunction_pos G q ξ).ne',
-    (remainingPartitionFunction_pos G q (frozenBoundary ξ H.val) R).ne',
-    (removedWeight_pos G q R H).ne']
+  grind only [partitionFunction_pos, removedWeight_pos]
 
 /-- A PMF obtained by normalizing the original probabilities on the exact frozen
 configuration fiber. No Markov property is placed in this definition. -/

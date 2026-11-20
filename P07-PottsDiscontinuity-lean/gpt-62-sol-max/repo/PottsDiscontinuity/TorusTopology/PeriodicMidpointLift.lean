@@ -57,8 +57,7 @@ theorem loopMidpointPosition_add_period (ω : ArrowConfig N M) (s : Smoothing N 
       loopMidpointPosition ω s h d n +
         ((loopDeckDisplacement ω s h d i j).1 + (loopDeckDisplacement ω s h d i j).2,
          (loopDeckDisplacement ω s h d i j).2 - (loopDeckDisplacement ω s h d i j).1) := by
-  simp only [loopMidpointPosition,loopOrbit_add_period,
-    loopLiftPosition_add_period ω s h d i j,rotatedMidpoint_translate]
+  simp [loopMidpointPosition, loopOrbit_add_period, loopLiftPosition_add_period ω s h d i j, rotatedMidpoint_translate]
 
 /-- Nonzero winding is precisely nonzero translation of the midpoint lift. -/
 theorem rotated_loopDeckDisplacement_ne_zero_iff
@@ -68,11 +67,10 @@ theorem rotated_loopDeckDisplacement_ne_zero_iff
      (loopDeckDisplacement ω s h d i j).2 - (loopDeckDisplacement ω s h d i j).1) ≠ (0,0) ↔
       loopVertical ω s h j (directedLoopOf ω s h d) ≠ 0 ∨
       loopSum ω s h (horizontalCross i) (directedLoopOf ω s h d) ≠ 0 := by
-  have hN0 : (N : ℤ) ≠ 0 := by exact_mod_cast (Fin.pos i).ne'
-  have hM0 : (M : ℤ) ≠ 0 := by exact_mod_cast (Fin.pos j).ne'
+  have hN0 : (N : ℤ) ≠ 0 := by grind
+  have hM0 : (M : ℤ) ≠ 0 := by grind
   have hrot (a b : ℤ) : (a+b,b-a) = (0,0) ↔ a=0 ∧ b=0 := by
-    simp only [Prod.mk.injEq]
-    omega
+    grind
   simp only [ne_eq,hrot]
   simp only [loopDeckDisplacement,mul_eq_zero,hN0,hM0,false_or,not_and_or]
   exact or_comm
