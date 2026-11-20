@@ -1,0 +1,17 @@
+{
+  "problem_idx": 29,
+  "key": "PALOMAR-2026-10-21-000002-v2",
+  "model_name": "GPT-6.2 Sol (max)",
+  "model_id": "gpt-62-sol-max",
+  "harness": "Codex 0.169.0",
+  "status": "verified",
+  "verified": true,
+  "failure_label": null,
+  "verification_note": "Final verification passed.",
+  "baseline_tokens": 17726,
+  "final_tokens": 3304,
+  "compression_percent": 81.36071307683629,
+  "credited_compression_percent": 81.36071307683629,
+  "cost": 10.9217168,
+  "elapsed_seconds": 10105.17171178013
+}
