@@ -23,49 +23,28 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 
 /-! ## The terms of the series -/
 
-theorem dualTerm_of_get?_eq_none {w : Word N} {n : ℕ} (h : w.get? n = none) (z : ℂ) :
-    Φ.dualTerm w n z = 0 := by
-  simp [dualTerm, h]
-
-theorem dualTerm_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N} (h : w.get? n = some i)
-    (z : ℂ) :
-    Φ.dualTerm w n z =
-      Φ.nonlin i (Φ.comp (w.take n).reverse z) * deriv (Φ.comp (w.take n).reverse) z := by
-  simp [dualTerm, h]
-
-/-- If `w` has a letter in position `n`, then its prefix of length `n` has length `n`. -/
-private theorem length_take_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N}
-    (h : w.get? n = some i) : (w.take n).length = n := by
-  cases w with
-  | fin w =>
-    simp only [Word.get?_fin] at h
-    have := (List.getElem?_eq_some_iff.1 h).1
-    simp only [Word.take_fin, List.length_take]
-    omega
-  | inf w => simp
-
-/-- The terms of (1.4) decay geometrically on `cl B_ε`, uniformly in the word. -/
-theorem exists_dualTerm_bound : ∃ C, 0 ≤ C ∧ ∀ (w : Word N) (n : ℕ), ∀ z ∈ closure (nbhd ε),
-    ‖Φ.dualTerm w n z‖ ≤ C * Φ.cmax ^ n := by
-  obtain ⟨C, hC0, hC⟩ := Φ.exists_nonlin_bound
-  refine ⟨C, hC0, fun w n z hz => ?_⟩
+theorem norm_dualTerm_le {c C : ℝ} (hc : 0 ≤ c) (hC : 0 ≤ C) (w : Word N) (n : ℕ) (z : ℂ)
+    (hd : ∀ v, ‖deriv (Φ.comp v) z‖ ≤ c ^ v.length)
+    (hn : ∀ i v, ‖Φ.nonlin i (Φ.comp v z)‖ ≤ C) : ‖Φ.dualTerm w n z‖ ≤ C * c ^ n := by
   cases h : w.get? n with
-  | none =>
-    rw [Φ.dualTerm_of_get?_eq_none h, norm_zero]
-    exact mul_nonneg hC0 (pow_nonneg Φ.cmax_nonneg n)
+  | none => simp_all [dualTerm, mul_nonneg, pow_nonneg]
   | some i =>
-    rw [Φ.dualTerm_of_get?_eq_some h, norm_mul]
-    have h1 := hC i _ (Φ.mapsTo_comp_closure (w.take n).reverse hz)
-    have h2 := Φ.norm_deriv_comp_le (w.take n).reverse hz
-    rw [List.length_reverse, length_take_of_get?_eq_some h] at h2
-    exact mul_le_mul h1 h2 (norm_nonneg _) hC0
+    grind [dualTerm, norm_mul, Word.length_take_of_get?_eq_some, mul_le_mul, norm_nonneg]
 
-theorem summable_dualTerm (w : Word N) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
+/-- The terms are uniformly dominated by a summable sequence on `cl B_ε`. -/
+private theorem exists_dualTerm_bound : ∃ B : ℕ → ℝ, Summable B ∧ (∀ n, 0 ≤ B n) ∧
+    ∀ w n z, z ∈ closedNbhd ε → ‖Φ.dualTerm w n z‖ ≤ B n := by
+  obtain ⟨C, hC₀, hC⟩ := Φ.exists_nonlin_bound
+  exact ⟨fun n => C * Φ.cmax ^ n,
+    (summable_geometric_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).mul_left C,
+    fun n => mul_nonneg hC₀ (pow_nonneg Φ.cmax_nonneg n),
+    fun w n z hz => Φ.norm_dualTerm_le Φ.cmax_nonneg hC₀ w n z
+      (fun v => (Φ.norm_deriv_comp_bounds v hz).2) (fun i v => hC i _ (Φ.mapsTo_comp_closure v hz))⟩
+
+theorem summable_dualTerm (w : Word N) {z : ℂ} (hz : z ∈ closedNbhd ε) :
     Summable fun n => Φ.dualTerm w n z := by
-  obtain ⟨C, -, hC⟩ := Φ.exists_dualTerm_bound
-  exact Summable.of_norm_bounded
-    ((summable_geometric_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).mul_left C)
-    fun n => hC w n z hz
+  obtain ⟨B, hs, -, hB⟩ := Φ.exists_dualTerm_bound
+  exact Summable.of_norm_bounded hs fun n => hB w n z hz
 
 @[simp] theorem dualProj_nil : Φ.dualProj (.fin []) = 0 := by
   funext z
@@ -74,195 +53,111 @@ theorem summable_dualTerm (w : Word N) {z : ℂ} (hz : z ∈ closure (nbhd ε)) 
 /-- For a finite word, `H_a` is the finite sum of its `|a|` terms. -/
 theorem dualProj_fin_eq_sum (a : List (Fin N)) (z : ℂ) :
     Φ.dualProj (.fin a) z = ∑ n ∈ Finset.range a.length, Φ.dualTerm (.fin a) n z := by
-  refine tsum_eq_sum fun n hn => Φ.dualTerm_of_get?_eq_none ?_ z
-  simp only [Finset.mem_range, not_lt] at hn
-  simp [hn]
+  refine tsum_eq_sum fun n hn => ?_
+  simp_all [dualTerm]
 
 theorem dualProj_singleton (i : Fin N) (z : ℂ) : Φ.dualProj (.fin [i]) z = Φ.nonlin i z := by
-  rw [dualProj_fin_eq_sum]
-  simp [dualTerm]
+  simp [dualProj_fin_eq_sum, dualTerm]
 
 /-! ## Bounds -/
 
 /-- The uniform bound `‖H_w‖ ≤ M` on `cl B_ε`. -/
 theorem exists_norm_dualProj_le :
-    ∃ M, 0 ≤ M ∧ ∀ w : Word N, ∀ z ∈ closure (nbhd ε), ‖Φ.dualProj w z‖ ≤ M := by
-  obtain ⟨C, hC0, hC⟩ := Φ.exists_dualTerm_bound
-  refine ⟨C * (1 - Φ.cmax)⁻¹,
-    mul_nonneg hC0 (inv_nonneg.2 (sub_nonneg.2 Φ.cmax_lt_one.le)), fun w z hz => ?_⟩
-  exact tsum_of_norm_bounded
-    ((hasSum_geometric_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).mul_left C) fun n => hC w n z hz
+    ∃ M, 0 ≤ M ∧ ∀ w : Word N, ∀ z ∈ closedNbhd ε, ‖Φ.dualProj w z‖ ≤ M := by
+  obtain ⟨B, hs, h₀, hB⟩ := Φ.exists_dualTerm_bound
+  exact ⟨∑' n, B n, tsum_nonneg h₀, fun w z hz =>
+    tsum_of_norm_bounded hs.hasSum fun n => hB w n z hz⟩
 
-/-! ## Holomorphy and realness -/
+/-! ## Holomorphy -/
 
 theorem differentiableOn_dualTerm (w : Word N) (n : ℕ) :
     DifferentiableOn ℂ (Φ.dualTerm w n) (nbhd ε) := by
-  cases h : w.get? n with
-  | none =>
-    have : Φ.dualTerm w n = fun _ => 0 := funext (Φ.dualTerm_of_get?_eq_none h)
-    rw [this]
-    exact differentiableOn_const 0
-  | some i =>
-    have : Φ.dualTerm w n = fun z => Φ.nonlin i (Φ.comp (w.take n).reverse z) *
-        deriv (Φ.comp (w.take n).reverse) z := funext (Φ.dualTerm_of_get?_eq_some h)
-    rw [this]
-    obtain ⟨U, -, hU, -, hnl⟩ := Φ.exists_differentiableOn_nonlin i
-    obtain ⟨V, hVo, hV, hc⟩ := Φ.exists_differentiableOn_comp (w.take n).reverse
-    refine DifferentiableOn.mul ?_ ?_
-    · exact hnl.comp (Φ.differentiableOn_comp _) fun z hz =>
-        hU (subset_closure (Φ.mapsTo_comp _ hz))
-    · exact (hc.deriv hVo).mono (subset_closure.trans hV)
+  intro z hz
+  unfold dualTerm
+  split
+  · fun_prop
+  · rename_i i _
+    have h := Φ.analyticAt_comp (w.take n).reverse (subset_closure hz)
+    exact (((Φ.analyticAt_nonlin i (Φ.mapsTo_comp_closure _ (subset_closure hz))).comp h).mul
+      h.deriv).differentiableAt.differentiableWithinAt
 
 theorem differentiableOn_dualProj (w : Word N) : DifferentiableOn ℂ (Φ.dualProj w) (nbhd ε) := by
-  obtain ⟨C, -, hC⟩ := Φ.exists_dualTerm_bound
-  exact Complex.differentiableOn_tsum_of_summable_norm
-    ((summable_geometric_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).mul_left C)
+  obtain ⟨B, hs, -, hB⟩ := Φ.exists_dualTerm_bound
+  exact Complex.differentiableOn_tsum_of_summable_norm hs
     (fun n => Φ.differentiableOn_dualTerm w n) (isOpen_nbhd ε)
-    fun n z hz => hC w n z (subset_closure hz)
-
-/-- Every term of (1.4) is continuous on `cl B_ε`. -/
-theorem continuousOn_dualTerm (w : Word N) (n : ℕ) :
-    ContinuousOn (Φ.dualTerm w n) (closure (nbhd ε)) := by
-  cases h : w.get? n with
-  | none =>
-    have : Φ.dualTerm w n = fun _ => 0 := funext (Φ.dualTerm_of_get?_eq_none h)
-    rw [this]
-    exact continuousOn_const
-  | some i =>
-    have : Φ.dualTerm w n = fun z => Φ.nonlin i (Φ.comp (w.take n).reverse z) *
-        deriv (Φ.comp (w.take n).reverse) z := funext (Φ.dualTerm_of_get?_eq_some h)
-    rw [this]
-    obtain ⟨U, -, hU, -, hnl⟩ := Φ.exists_differentiableOn_nonlin i
-    obtain ⟨V, hVo, hV, hc⟩ := Φ.exists_differentiableOn_comp (w.take n).reverse
-    exact (hnl.continuousOn.comp (hc.continuousOn.mono hV)
-      (fun z hz => hU (Φ.mapsTo_comp_closure _ hz))).mul
-      ((hc.deriv hVo).continuousOn.mono hV)
-
-/-- The geometric bound on `cl B_ε` makes (1.4) a uniformly convergent series of continuous
-functions there. In particular, `H_w` has the boundary continuity required in Section 2.1. -/
-theorem continuousOn_dualProj (w : Word N) :
-    ContinuousOn (Φ.dualProj w) (closure (nbhd ε)) := by
-  obtain ⟨C, -, hC⟩ := Φ.exists_dualTerm_bound
-  exact continuousOn_tsum (Φ.continuousOn_dualTerm w)
-    ((summable_geometric_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).mul_left C) (hC w)
-
-theorem im_dualTerm_ofReal (w : Word N) (n : ℕ) {t : ℝ} (ht : (t : ℂ) ∈ nbhd ε) :
-    (Φ.dualTerm w n t).im = 0 := by
-  cases h : w.get? n with
-  | none => simp [Φ.dualTerm_of_get?_eq_none h]
-  | some i =>
-    rw [Φ.dualTerm_of_get?_eq_some h]
-    have h1 : Φ.comp (w.take n).reverse t = ((Φ.comp (w.take n).reverse t).re : ℂ) := by
-      apply Complex.ext <;> simp [Φ.im_comp_ofReal _ ht]
-    have h2 : ((Φ.comp (w.take n).reverse t).re : ℂ) ∈ nbhd ε := h1 ▸ Φ.mapsTo_comp _ ht
-    have h3 := Φ.im_nonlin_ofReal i h2
-    rw [← h1] at h3
-    simp [Complex.mul_im, h3, Φ.im_deriv_comp_ofReal _ ht]
-
-theorem im_dualProj_ofReal (w : Word N) {t : ℝ} (ht : (t : ℂ) ∈ nbhd ε) :
-    (Φ.dualProj w t).im = 0 := by
-  rw [dualProj, Complex.im_tsum (Φ.summable_dualTerm w (subset_closure ht))]
-  simp [Φ.im_dualTerm_ofReal w _ ht]
+    fun n z hz => hB w n z (subset_closure hz)
 
 /-! ## The cocycle identity and (2.7) -/
 
-/-- The cocycle identity: `H_{a w}(z) = H_a(z) + f_{a^←}'(z) · H_w(f_{a^←}(z))`, where
-`f_{a^←} = f_{a_{|a|}} ∘ ⋯ ∘ f_{a_1}`. -/
-theorem dualProj_prepend (a : List (Fin N)) (w : Word N) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
-    Φ.dualProj (w.prepend a) z =
-      Φ.dualProj (.fin a) z + deriv (Φ.comp a.reverse) z * Φ.dualProj w (Φ.comp a.reverse z) := by
-  rw [dualProj_fin_eq_sum]
+/-- Split the dual cocycle at a prefix of length `n`. -/
+theorem dualProj_split (w : Word N) (n : ℕ) (hn : (w.take n).length = n) {z : ℂ}
+    (hz : z ∈ closedNbhd ε) : Φ.dualProj w z =
+      Φ.dualProj (.fin (w.take n)) z + deriv (Φ.comp (w.take n).reverse) z *
+        Φ.dualProj (w.drop n) (Φ.comp (w.take n).reverse z) := by
+  rw [dualProj_fin_eq_sum, hn]
   unfold dualProj
-  rw [← (Φ.summable_dualTerm (w.prepend a) hz).sum_add_tsum_nat_add a.length, ← tsum_mul_left]
+  rw [← (Φ.summable_dualTerm w hz).sum_add_tsum_nat_add n, ← tsum_mul_left]
   congr 1
-  · refine Finset.sum_congr rfl fun n hn => ?_
-    have hn' : n < a.length := Finset.mem_range.1 hn
-    have hg : (w.prepend a).get? n = (Word.fin a).get? n := Word.get?_prepend_of_lt a w hn'
-    have ht : (w.prepend a).take n = (Word.fin a).take n := Word.take_prepend_of_le a w hn'.le
-    cases h : (Word.fin a).get? n with
-    | none => rw [Φ.dualTerm_of_get?_eq_none (hg.trans h), Φ.dualTerm_of_get?_eq_none h]
-    | some i => rw [Φ.dualTerm_of_get?_eq_some (hg.trans h), Φ.dualTerm_of_get?_eq_some h, ht]
-  · refine tsum_congr fun m => ?_
-    have hg : (w.prepend a).get? (m + a.length) = w.get? m := by
-      rw [add_comm]; exact Word.get?_prepend_add a w m
-    have ht : (w.prepend a).take (m + a.length) = a ++ w.take m := by
-      rw [add_comm]; exact Word.take_prepend_add a w m
-    cases h : w.get? m with
-    | none =>
-      rw [Φ.dualTerm_of_get?_eq_none (hg.trans h), Φ.dualTerm_of_get?_eq_none h, mul_zero]
-    | some i =>
-      rw [Φ.dualTerm_of_get?_eq_some (hg.trans h), Φ.dualTerm_of_get?_eq_some h, ht,
-        List.reverse_append, Φ.deriv_comp_append _ _ hz, Φ.comp_append, Function.comp_apply]
+  · refine Finset.sum_congr rfl fun k hk => ?_
+    have h := Finset.mem_range.1 hk
+    have htake : (w.take n).take k = w.take k :=
+      List.ext_getElem? fun j => by simp only [List.getElem?_take, Word.getElem?_take_word]; grind
+    simp only [dualTerm, Word.get?_fin, Word.getElem?_take_word, ite_eq_left h, Word.take_fin, htake]
+  · refine tsum_congr fun k => ?_
+    simp only [Nat.add_comm k n, dualTerm, Word.get?_drop, Word.take_add_drop]
+    split
+    · simp
+    · rw [List.reverse_append, Φ.deriv_comp_append _ _ hz, Φ.comp_append, Function.comp_apply]
       ring
 
-/-- The second derivative of `f_i ∘ f_v` by the chain rule. -/
-theorem deriv_deriv_comp_cons (i : Fin N) (v : List (Fin N)) {z : ℂ}
-    (hz : z ∈ closure (nbhd ε)) :
-    deriv (deriv (Φ.comp (i :: v))) z =
-      deriv (deriv (Φ.f i)) (Φ.comp v z) * deriv (Φ.comp v) z ^ 2 +
-        deriv (Φ.f i) (Φ.comp v z) * deriv (deriv (Φ.comp v)) z := by
-  obtain ⟨U, hUo, hU, hd⟩ := Φ.exists_differentiableOn_comp v
-  have hfi := Φ.differentiableOn_f i
-  have ho2 := isOpen_nbhd (2 * ε)
-  have hW : IsOpen (U ∩ Φ.comp v ⁻¹' nbhd (2 * ε)) :=
-    hd.continuousOn.isOpen_inter_preimage hUo ho2
-  have hzW : z ∈ U ∩ Φ.comp v ⁻¹' nbhd (2 * ε) :=
-    ⟨hU hz, closure_nbhd_subset_two (Φ.mapsTo_comp_closure v hz)⟩
-  have heq : deriv (Φ.comp (i :: v)) =ᶠ[𝓝 z]
-      fun u => deriv (Φ.f i) (Φ.comp v u) * deriv (Φ.comp v) u := by
-    filter_upwards [hW.mem_nhds hzW] with u hu
-    rw [Φ.comp_cons]
-    exact deriv_comp u ((hfi _ hu.2).differentiableAt (ho2.mem_nhds hu.2))
-      ((hd u hu.1).differentiableAt (hUo.mem_nhds hu.1))
-  have hdf : DifferentiableAt ℂ (deriv (Φ.f i)) (Φ.comp v z) :=
-    ((hfi.deriv ho2) _ hzW.2).differentiableAt (ho2.mem_nhds hzW.2)
-  have hhd : DifferentiableAt ℂ (Φ.comp v) z := (hd z hzW.1).differentiableAt (hUo.mem_nhds hzW.1)
-  have hdh : DifferentiableAt ℂ (deriv (Φ.comp v)) z :=
-    ((hd.deriv hUo) z hzW.1).differentiableAt (hUo.mem_nhds hzW.1)
-  rw [heq.deriv_eq]
-  exact ((hdf.hasDerivAt.comp z hhd.hasDerivAt).mul hdh.hasDerivAt).deriv.trans (by rw [Function.comp_apply]; ring)
+theorem dualTerm_inf_succ (w : ℕ → Fin N) (n : ℕ) {z : ℂ}
+    (hz : z ∈ closedNbhd ε) : Φ.dualTerm (.inf w) (n + 1) z =
+    deriv (Φ.f (w 0)) z * Φ.dualTerm (.inf (Word.shift w 1)) n (Φ.f (w 0) z) := by
+  simp only [IFS.dualTerm, Word.get?_inf, Word.take_inf, List.ofFn_succ, List.reverse_cons, Fin.val_succ]
+  rw [Φ.deriv_comp_append _ _ hz, Φ.comp_append]
+  simp; ring
+
+/-- The cocycle identity for the first letter of an infinite word. -/
+theorem dualProj_inf_head (w : ℕ → Fin N) {z : ℂ} (hz : z ∈ closedNbhd ε) :
+    Φ.dualProj (.inf w) z = Φ.nonlin (w 0) z + deriv (Φ.f (w 0)) z *
+      Φ.dualProj (.inf fun k => w (k + 1)) (Φ.f (w 0) z) := by
+  simpa [Word.drop, dualProj_singleton] using Φ.dualProj_split (.inf w) 1 (by simp) hz
 
 /-- (2.7): `H_{v^←} = f_v''/f_v'` for a finite word `v`. -/
-theorem dualProj_fin_reverse (v : List (Fin N)) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
+theorem dualProj_fin_reverse (v : List (Fin N)) {z : ℂ} (hz : z ∈ closedNbhd ε) :
     Φ.dualProj (.fin v.reverse) z = deriv (deriv (Φ.comp v)) z / deriv (Φ.comp v) z := by
   induction v with
-  | nil => simp [deriv_id']
+  | nil => simp
   | cons i v ih =>
-    have hfin : (Word.fin [i]).prepend v.reverse = Word.fin (i :: v).reverse := by
-      rw [List.reverse_cons]; rfl
-    rw [← hfin, Φ.dualProj_prepend _ _ hz, ih, List.reverse_reverse, dualProj_singleton,
-      Φ.deriv_deriv_comp_cons i v hz, Φ.deriv_comp_cons i v hz, nonlin]
-    have h1 : deriv (Φ.f i) (Φ.comp v z) ≠ 0 :=
-      (Φ.inClass i).deriv_ne_zero _ (Φ.mapsTo_comp_closure v hz)
-    have h2 : deriv (Φ.comp v) z ≠ 0 := Φ.deriv_comp_ne_zero v hz
-    field_simp
-    ring
+    rw [Φ.dualProj_split (.fin (i :: v).reverse) v.reverse.length (by simp) hz]
+    simp only [List.reverse_cons, Word.take_fin, Word.drop, List.take_left, List.drop_left,
+      ih, List.reverse_reverse, dualProj_singleton, Φ.deriv_comp_cons i v hz, nonlin]
+    have h := iteratedDeriv_comp_two (Φ.analyticAt_f i (Φ.mapsTo_comp_closure v hz)).contDiffAt
+      (Φ.analyticAt_comp v hz).contDiffAt
+    simp only [iteratedDeriv_succ, iteratedDeriv_zero, ← comp_cons] at h
+    rw [h]
+    have := (Φ.inClass i).deriv_ne_zero _ (Φ.mapsTo_comp_closure v hz)
+    grind
 
-/-! ## Lemma 2.5 -/
-
-/-- Uniform bound for `H_w` on `cl B_ε` and the bound `2M c_max^m` for words sharing a prefix of
-length `m`. -/
-theorem exists_dualProj_bounds :
-    ∃ M, 0 ≤ M ∧ (∀ w : Word N, ∀ z ∈ closure (nbhd ε), ‖Φ.dualProj w z‖ ≤ M) ∧
-      ∀ (i j : Word N) (m : ℕ), (m : ℕ∞) ≤ i.commonPrefixLength j →
-        ∀ z ∈ closure (nbhd ε), ‖Φ.dualProj i z - Φ.dualProj j z‖ ≤ 2 * M * Φ.cmax ^ m := by
-  obtain ⟨M, hM0, hM⟩ := Φ.exists_norm_dualProj_le
-  refine ⟨M, hM0, hM, fun i j m hm z hz => ?_⟩
-  obtain ⟨a, i', j', ha, rfl, rfl⟩ := Word.exists_eq_prepend hm
-  rw [Φ.dualProj_prepend a i' hz, Φ.dualProj_prepend a j' hz, add_sub_add_left_eq_sub,
-    ← mul_sub, norm_mul]
-  have hz' := Φ.mapsTo_comp_closure a.reverse hz
-  have h1 := Φ.norm_deriv_comp_le a.reverse hz
-  rw [List.length_reverse, ha] at h1
-  have h2 : ‖Φ.dualProj i' (Φ.comp a.reverse z) - Φ.dualProj j' (Φ.comp a.reverse z)‖ ≤
-      2 * M := by
-    calc _ ≤ ‖Φ.dualProj i' (Φ.comp a.reverse z)‖ + ‖Φ.dualProj j' (Φ.comp a.reverse z)‖ :=
-          norm_sub_le _ _
-      _ ≤ M + M := add_le_add (hM _ _ hz') (hM _ _ hz')
-      _ = 2 * M := by ring
-  calc _ ≤ Φ.cmax ^ m * (2 * M) :=
-        mul_le_mul h1 h2 (norm_nonneg _) (pow_nonneg Φ.cmax_nonneg _)
-    _ = 2 * M * Φ.cmax ^ m := by ring
+/-- Long shared prefixes imply uniform convergence of the projections. -/
+theorem tendstoUniformlyOn_dualProj {a : ℕ → Word N} {w : ℕ → Fin N}
+    (h : ∀ n, ∀ᶠ k in atTop, (a k).take n = (Word.inf w).take n) :
+    TendstoUniformlyOn (fun k => Φ.dualProj (a k)) (Φ.dualProj (.inf w)) atTop (closedNbhd ε) := by
+  obtain ⟨M, hM₀, hM⟩ := Φ.exists_norm_dualProj_le
+  rw [Metric.tendstoUniformlyOn_iff]
+  intro δ hδ
+  have hlim : Tendsto (fun n => Φ.cmax ^ n * (2 * M)) atTop (𝓝 0) := by
+    simpa using (tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).mul_const (2 * M)
+  obtain ⟨n, hn⟩ := (hlim.eventually (gt_mem_nhds hδ)).exists
+  set p := (Word.inf w).take n
+  filter_upwards [h n] with k hk z hz
+  rw [Φ.dualProj_split (a k) n (by simp_all) hz,
+    Φ.dualProj_split (.inf w) n (by simp) hz, hk, dist_eq_norm, add_sub_add_left_eq_sub, ← mul_sub, norm_mul]
+  have hza := Φ.mapsTo_comp_closure p.reverse hz
+  refine lt_of_le_of_lt (mul_le_mul ?_ ?_ (norm_nonneg _) (pow_nonneg Φ.cmax_nonneg _)) hn
+  · change ‖deriv (Φ.comp p.reverse) z‖ ≤ Φ.cmax ^ n
+    simpa only [List.length_reverse, p, Word.take_inf, List.length_ofFn] using (Φ.norm_deriv_comp_bounds p.reverse hz).2
+  · exact (norm_sub_le ..).trans (by grind)
 
 end IFS
 

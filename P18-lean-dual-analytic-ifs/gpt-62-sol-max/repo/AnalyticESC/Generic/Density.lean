@@ -1,452 +1,169 @@
 module
 
+public import AnalyticESC.Generic.Class
 public import AnalyticESC.Generic.Continuity
-public import AnalyticESC.Generic.Agreement
-public import AnalyticESC.Generic.MultiplicativeBump
-public import AnalyticESC.Generic.Points
+public import AnalyticESC.Main.Closeness
 
 @[expose] public section
 
-/-!
-# The density step of Theorem 1.4
+namespace AnalyticESC.IFS
+open Set Metric Filter Topology Continuity
 
-The proof of Theorem 1.4 in Section 4.2, after the interpolation `IFS.exists_noCoincidence_near`: an IFS whose maps
-send `[0,1]` into `(0,1)` and whose compositions along distinct finite words differ on `[0,1]` has
-arbitrarily `d₂`-close perturbations whose dual IFS satisfies the SSC.
+variable {N : ℕ} {ε : ℝ}
 
-The proof follows the paper with words of length `n + 1`, to match Lemma 2.6. The points of
-Lemma 4.1 and their orbits are split, for each letter `ℓ`, into the set `𝒴_ℓ` of the points
-`x_{i,j}` of the bad pairs with `i₁ = ℓ` and the set `𝒵_ℓ` of the remaining orbit points, and
-Proposition 4.2 perturbs each map accordingly. A strictly invariant cylinder is fixed first;
-uniform continuity estimates in the `d₂` metric give a neighbourhood where its strict
-inclusions persist. Only then are `δ` and the word length chosen.
--/
-
-namespace AnalyticESC
-
-open Set Metric Filter Topology
-
-namespace IFS
-
-variable {N : ℕ} {ε ε' : ℝ}
-
-/-! ## Orbits -/
-
-/-- The point of index `m ≤ |w|` lies on the orbit `𝒪_w(t)`. -/
-private theorem re_comp_take_mem_orbit (Φ : IFS N ε) {w : List (Fin N)} {m : ℕ}
-    (hm : m ≤ w.length) (t : ℝ) : (Φ.comp (w.take m).reverse t).re ∈ Φ.orbit w t :=
-  List.mem_map.2 ⟨m, List.mem_range.2 (Nat.lt_succ_of_le hm), rfl⟩
-
-/-- The base point `t` is the first point of the orbit `𝒪_w(t)`. -/
-private theorem self_mem_orbit (Φ : IFS N ε) (w : List (Fin N)) (t : ℝ) : t ∈ Φ.orbit w t := by
-  simpa using Φ.re_comp_take_mem_orbit (Nat.zero_le w.length) t
-
-/-- On an injective orbit, the points after the first differ from the base point. -/
-private theorem re_comp_take_ne (Φ : IFS N ε) {w : List (Fin N)} {t : ℝ}
-    (hnd : (Φ.orbit w t).Nodup) {m : ℕ} (h0 : 0 < m) (hm : m ≤ w.length) :
-    (Φ.comp (w.take m).reverse t).re ≠ t := by
-  intro h
-  have := List.inj_on_of_nodup_map hnd (List.mem_range.2 (Nat.lt_succ_of_le hm))
-    (List.mem_range.2 (Nat.succ_pos w.length)) (by simpa using h)
-  omega
-
-/-- The points of an orbit from a point of `I` lie in `I`. -/
-private theorem mem_I_of_mem_orbit (Φ : IFS N ε) {w : List (Fin N)} {t y : ℝ} (ht : t ∈ I)
-    (hy : y ∈ Φ.orbit w t) : y ∈ I := by
-  obtain ⟨l, -, rfl⟩ := List.mem_map.1 hy
-  exact Φ.re_comp_mem_I _ ht
-
-/-! ## The point sets `𝒴_ℓ` and `𝒵_ℓ` -/
-
-/-- The pairs of `ℬ_{n+1}` as a finite set. -/
-private noncomputable def pairsFinset (N n : ℕ) :
-    Finset ((Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N)) := by
-  classical exact Finset.univ.filter (· ∈ pairs N (n + 1))
-
-private theorem mem_pairsFinset {n : ℕ} {p : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N)} :
-    p ∈ pairsFinset N n ↔ p ∈ pairs N (n + 1) := by
-  simp [pairsFinset]
-
-/-- A pair `(i, j)` is bad when `F_i(k,K)` and `F_j(k,K)` are not disjoint in the sense
-of (2.2). -/
-private def Bad (Φ : IFS N ε) (k K : ℝ) {n : ℕ} (p : (Fin n → Fin N) × (Fin n → Fin N)) :
-    Prop :=
-  ¬ Φ.DualCylDisjoint k K (List.ofFn p.1) (List.ofFn p.2)
-
-/-- The union of the orbits `𝒪_i(x_{i,j}) ∪ 𝒪_j(x_{i,j})` over `(i, j) ∈ ℬ_{n+1}`. -/
-private noncomputable def orbitPoints (Φ : IFS N ε) (n : ℕ)
-    (x : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N) → ℝ) : Finset ℝ := by
-  classical exact (pairsFinset N n).biUnion fun p =>
-    (Φ.orbit (List.ofFn p.1) (x p) ++ Φ.orbit (List.ofFn p.2) (x p)).toFinset
-
-/-- The set `𝒴_ℓ`: the points `x_{i,j}` of the bad pairs `(i, j)` with `i₁ = ℓ`. -/
-private noncomputable def badPoints (Φ : IFS N ε) (k K : ℝ) (n : ℕ)
-    (x : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N) → ℝ) (ℓ : Fin N) : Finset ℝ := by
-  classical exact ((pairsFinset N n).filter fun p => Φ.Bad k K p ∧ p.1 0 = ℓ).image x
-
-/-- The set `𝒵_ℓ`: the orbit points outside `𝒴_ℓ`. -/
-private noncomputable def goodPoints (Φ : IFS N ε) (k K : ℝ) (n : ℕ)
-    (x : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N) → ℝ) (ℓ : Fin N) : Finset ℝ := by
-  classical exact Φ.orbitPoints n x \ Φ.badPoints k K n x ℓ
-
-private theorem mem_orbitPoints {Φ : IFS N ε} {n : ℕ}
-    {x : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N) → ℝ} {y : ℝ} :
-    y ∈ Φ.orbitPoints n x ↔ ∃ p ∈ pairs N (n + 1),
-      y ∈ Φ.orbit (List.ofFn p.1) (x p) ++ Φ.orbit (List.ofFn p.2) (x p) := by
-  simp only [orbitPoints, Finset.mem_biUnion, List.mem_toFinset, mem_pairsFinset]
-
-private theorem mem_badPoints {Φ : IFS N ε} {k K : ℝ} {n : ℕ}
-    {x : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N) → ℝ} {ℓ : Fin N} {y : ℝ} :
-    y ∈ Φ.badPoints k K n x ℓ ↔
-      ∃ p ∈ pairs N (n + 1), (Φ.Bad k K p ∧ p.1 0 = ℓ) ∧ x p = y := by
-  simp only [badPoints, Finset.mem_image, Finset.mem_filter, mem_pairsFinset, and_assoc]
-
-private theorem mem_goodPoints {Φ : IFS N ε} {k K : ℝ} {n : ℕ}
-    {x : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N) → ℝ} {ℓ : Fin N} {y : ℝ} :
-    y ∈ Φ.goodPoints k K n x ℓ ↔ y ∈ Φ.orbitPoints n x ∧ y ∉ Φ.badPoints k K n x ℓ := by
-  simp only [goodPoints, Finset.mem_sdiff]
-
-/-- The conclusions of Lemma 4.1 for the points `x` and words of length `n + 1`, without the
-condition that the two orbits of a pair meet only at the base point, which is not needed. -/
-private structure IsPointChoice (Φ : IFS N ε) (k K : ℝ) (n : ℕ)
-    (x : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N) → ℝ) : Prop where
-  mem_I : ∀ p ∈ pairs N (n + 1), x p ∈ I
-  disjoint : ∀ p ∈ pairs N (n + 1), Φ.DualCylDisjoint k K (List.ofFn p.1) (List.ofFn p.2) →
-    Disjoint (Φ.dualCylAt k K (List.ofFn p.1) (x p)) (Φ.dualCylAt k K (List.ofFn p.2) (x p))
-  nodup_fst : ∀ p ∈ pairs N (n + 1), (Φ.orbit (List.ofFn p.1) (x p)).Nodup
-  nodup_snd : ∀ p ∈ pairs N (n + 1), (Φ.orbit (List.ofFn p.2) (x p)).Nodup
-  sep : ∀ p ∈ pairs N (n + 1), ∀ q ∈ pairs N (n + 1), p ≠ q →
-    ∀ y ∈ Φ.orbit (List.ofFn p.1) (x p) ++ Φ.orbit (List.ofFn p.2) (x p),
-      y ∉ Φ.orbit (List.ofFn q.1) (x q) ++ Φ.orbit (List.ofFn q.2) (x q)
-
-namespace IsPointChoice
-
-variable {Φ : IFS N ε} {k K : ℝ} {n : ℕ}
-  {x : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N) → ℝ}
-
-/-- Distinct pairs have distinct points `x_{i,j}`. -/
-private theorem eq_of_eq (hx : IsPointChoice Φ k K n x)
-    {p q : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N)} (hp : p ∈ pairs N (n + 1))
-    (hq : q ∈ pairs N (n + 1)) (h : x p = x q) : p = q := by
-  by_contra hpq
-  refine hx.sep p hp q hq hpq (x p) (List.mem_append_left _ (Φ.self_mem_orbit _ _)) ?_
-  rw [h]
-  exact List.mem_append_left _ (Φ.self_mem_orbit _ _)
-
-/-- `x_{i,j} ∈ 𝒴_ℓ` exactly when `(i, j)` is bad and `i₁ = ℓ`. -/
-private theorem mem_badPoints_iff (hx : IsPointChoice Φ k K n x)
-    {p : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N)} (hp : p ∈ pairs N (n + 1)) (ℓ : Fin N) :
-    x p ∈ Φ.badPoints k K n x ℓ ↔ Φ.Bad k K p ∧ p.1 0 = ℓ := by
-  rw [mem_badPoints]
-  constructor
-  · rintro ⟨q, hq, hqb, hqx⟩
-    rwa [← hx.eq_of_eq hq hp hqx]
-  · exact fun h => ⟨p, hp, h, rfl⟩
-
-/-- The orbit points of a pair other than its base point lie in every `𝒵_ℓ`. -/
-private theorem mem_goodPoints_of_ne (hx : IsPointChoice Φ k K n x)
-    {p : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N)} (hp : p ∈ pairs N (n + 1)) {y : ℝ}
-    (hy : y ∈ Φ.orbit (List.ofFn p.1) (x p) ++ Φ.orbit (List.ofFn p.2) (x p)) (hne : y ≠ x p)
-    (ℓ : Fin N) : y ∈ Φ.goodPoints k K n x ℓ := by
-  refine mem_goodPoints.2 ⟨mem_orbitPoints.2 ⟨p, hp, hy⟩, fun hY => ?_⟩
-  obtain ⟨q, hq, -, rfl⟩ := mem_badPoints.1 hY
-  have hpq : p ≠ q := by
-    rintro rfl
-    exact hne rfl
-  exact hx.sep p hp q hq hpq (x q) hy (List.mem_append_left _ (Φ.self_mem_orbit _ _))
-
-/-- The base point `x_{i,j}` lies in `𝒵_ℓ` unless `(i, j)` is bad and `i₁ = ℓ`. -/
-private theorem self_mem_goodPoints (hx : IsPointChoice Φ k K n x)
-    {p : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N)} (hp : p ∈ pairs N (n + 1)) {ℓ : Fin N}
-    (h : ¬ (Φ.Bad k K p ∧ p.1 0 = ℓ)) : x p ∈ Φ.goodPoints k K n x ℓ :=
-  mem_goodPoints.2 ⟨mem_orbitPoints.2 ⟨p, hp, List.mem_append_left _ (Φ.self_mem_orbit _ _)⟩,
-    fun hY => h ((hx.mem_badPoints_iff hp ℓ).1 hY)⟩
-
-/-- The later points of the orbit of the first word of a pair lie in every `𝒵_ℓ`. -/
-private theorem re_comp_fst_mem_goodPoints (hx : IsPointChoice Φ k K n x)
-    {p : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N)} (hp : p ∈ pairs N (n + 1)) {m : ℕ}
-    (h0 : 0 < m) (hm : m ≤ n + 1) (ℓ : Fin N) :
-    (Φ.comp ((List.ofFn p.1).take m).reverse (x p)).re ∈ Φ.goodPoints k K n x ℓ := by
-  have hm' : m ≤ (List.ofFn p.1).length := by rwa [List.length_ofFn]
-  exact hx.mem_goodPoints_of_ne hp (List.mem_append_left _ (Φ.re_comp_take_mem_orbit hm' _))
-    (Φ.re_comp_take_ne (hx.nodup_fst p hp) h0 hm') ℓ
-
-/-- The later points of the orbit of the second word of a pair lie in every `𝒵_ℓ`. -/
-private theorem re_comp_snd_mem_goodPoints (hx : IsPointChoice Φ k K n x)
-    {p : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N)} (hp : p ∈ pairs N (n + 1)) {m : ℕ}
-    (h0 : 0 < m) (hm : m ≤ n + 1) (ℓ : Fin N) :
-    (Φ.comp ((List.ofFn p.2).take m).reverse (x p)).re ∈ Φ.goodPoints k K n x ℓ := by
-  have hm' : m ≤ (List.ofFn p.2).length := by rwa [List.length_ofFn]
-  exact hx.mem_goodPoints_of_ne hp (List.mem_append_right _ (Φ.re_comp_take_mem_orbit hm' _))
-    (Φ.re_comp_take_ne (hx.nodup_snd p hp) h0 hm') ℓ
-
-private theorem badPoints_subset_I (hx : IsPointChoice Φ k K n x) (ℓ : Fin N) :
-    ∀ y ∈ Φ.badPoints k K n x ℓ, y ∈ I := by
-  intro y hy
-  obtain ⟨p, hp, -, rfl⟩ := mem_badPoints.1 hy
-  exact hx.mem_I p hp
-
-private theorem goodPoints_subset_I (hx : IsPointChoice Φ k K n x) (ℓ : Fin N) :
-    ∀ y ∈ Φ.goodPoints k K n x ℓ, y ∈ I := by
-  intro y hy
-  obtain ⟨p, hp, hy⟩ := mem_orbitPoints.1 (mem_goodPoints.1 hy).1
-  rcases List.mem_append.1 hy with hy | hy
-  · exact Φ.mem_I_of_mem_orbit (hx.mem_I p hp) hy
-  · exact Φ.mem_I_of_mem_orbit (hx.mem_I p hp) hy
-
-end IsPointChoice
-
-private theorem disjoint_badPoints_goodPoints (Φ : IFS N ε) (k K : ℝ) (n : ℕ)
-    (x : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N) → ℝ) (ℓ : Fin N) :
-    Disjoint (Φ.badPoints k K n x ℓ) (Φ.goodPoints k K n x ℓ) :=
-  Finset.disjoint_left.2 fun _ hY hZ => (mem_goodPoints.1 hZ).2 hY
-
-/-! ## Agreement along orbits -/
-
-/-- Agreement at a point of an orbit from a point of `I`, from agreement at the real points
-of `𝒵_ℓ`. -/
-private theorem agreeAt_comp (Φ : IFS N ε) (Ψ : IFS N ε') {Z : Fin N → Finset ℝ}
-    (hZ : ∀ ℓ, ∀ z ∈ Z ℓ, AgreeAt (Φ.f ℓ) (Ψ.f ℓ) z) {t : ℝ} (ht : t ∈ I) {v : List (Fin N)}
-    {ℓ : Fin N} (h : (Φ.comp v t).re ∈ Z ℓ) : AgreeAt (Φ.f ℓ) (Ψ.f ℓ) (Φ.comp v t) := by
-  rw [Φ.comp_ofReal v ht]
-  exact hZ ℓ _ h
-
-/-- The orbit of `w` from `f_i(z)` is the tail of the orbit of `i w` from `z`. -/
-private theorem comp_take_reverse_f (Φ : IFS N ε) (i : Fin N) (w : List (Fin N)) (m : ℕ)
-    (z : ℂ) : Φ.comp (w.take m).reverse (Φ.f i z) = Φ.comp ((i :: w).take (m + 1)).reverse z := by
-  rw [List.take_succ_cons, List.reverse_cons, Φ.comp_append]
-  rfl
-
-/-- If the points of the orbit of `w` from `t` lie in the sets `𝒵` of the corresponding letters,
-the cylinder intervals of `Φ` and `Ψ` at `t` agree. -/
-private theorem dualCylAt_eq_of_mem (Φ : IFS N ε) (Ψ : IFS N ε') {Z : Fin N → Finset ℝ}
-    (hZ : ∀ ℓ, ∀ z ∈ Z ℓ, AgreeAt (Φ.f ℓ) (Ψ.f ℓ) z) (k K : ℝ) {w : List (Fin N)} {t : ℝ}
-    (ht : t ∈ I) (h : ∀ m (hm : m < w.length), (Φ.comp (w.take m).reverse t).re ∈ Z w[m]) :
-    Ψ.dualCylAt k K w t = Φ.dualCylAt k K w t :=
-  dualCylAt_eq_of_agreeAt Φ Ψ k K fun m hm => agreeAt_comp Φ Ψ hZ ht (h m hm)
-
-/-- If `g_i` agrees with `f_i` to first order at `t` and the later points of the orbit of `i w`
-from `t` lie in the sets `𝒵` of the corresponding letters, the cylinder interval of `Ψ` at `t` is
-that of `Φ` shifted by the change of `f_i''/f_i'` at `t`. -/
-private theorem dualCylAt_cons_eq_of_mem (Φ : IFS N ε) (Ψ : IFS N ε') {Z : Fin N → Finset ℝ}
-    (hZ : ∀ ℓ, ∀ z ∈ Z ℓ, AgreeAt (Φ.f ℓ) (Ψ.f ℓ) z) (k K : ℝ) {i : Fin N} {w : List (Fin N)}
-    {t : ℝ} (ht : t ∈ I) (h0 : Ψ.f i t = Φ.f i t) (h1 : deriv (Ψ.f i) t = deriv (Φ.f i) t)
-    (h : ∀ m (hm : m < w.length), (Φ.comp ((i :: w).take (m + 1)).reverse t).re ∈ Z w[m]) :
-    Ψ.dualCylAt k K (i :: w) t =
-      (· + (Ψ.nonlin i t - Φ.nonlin i t).re) '' Φ.dualCylAt k K (i :: w) t :=
-  dualCylAt_cons_eq_of_agreeAt Φ Ψ k K h0 h1 fun m hm => by
-    rw [comp_take_reverse_f]
-    exact agreeAt_comp Φ Ψ hZ ht (h m hm)
-
-/-- At a point of `I`, the change of `f_i''/f_i'` is real. -/
-private theorem le_abs_re_nonlin_sub (Φ : IFS N ε) (Ψ : IFS N ε') (i : Fin N) {t : ℝ}
-    (ht : t ∈ I) {δ : ℝ} (h : δ ≤ ‖Ψ.nonlin i t - Φ.nonlin i t‖) :
-    δ ≤ |(Ψ.nonlin i t - Φ.nonlin i t).re| := by
-  rwa [Complex.abs_re_eq_norm.2]
-  rw [Complex.sub_im, Ψ.im_nonlin_ofReal i (ofReal_mem_nbhd Ψ.ε_pos ht),
-    Φ.im_nonlin_ofReal i (ofReal_mem_nbhd Φ.ε_pos ht), sub_zero]
-
-/-- The cylinders of a bad pair become disjoint after the shift. -/
-private theorem disjoint_dualCylAt_of_not_disjoint (Φ : IFS N ε) (Ψ : IFS N ε')
-    {Z : Fin N → Finset ℝ} (hZ : ∀ ℓ, ∀ z ∈ Z ℓ, AgreeAt (Φ.f ℓ) (Ψ.f ℓ) z) {k K δ : ℝ}
-    (hkK : k ≤ K) {t : ℝ} (ht : t ∈ I) {i : Fin N} {u v : List (Fin N)}
-    (hu : Φ.cmax ^ (u.length + 1) * (K - k) < δ / 3) (hv : Φ.cmax ^ v.length * (K - k) < δ / 3)
-    (h0 : Ψ.f i t = Φ.f i t) (h1 : deriv (Ψ.f i) t = deriv (Φ.f i) t)
-    (hτ : δ ≤ ‖Ψ.nonlin i t - Φ.nonlin i t‖)
-    (hu' : ∀ m (hm : m < u.length), (Φ.comp ((i :: u).take (m + 1)).reverse t).re ∈ Z u[m])
-    (hv' : ∀ m (hm : m < v.length), (Φ.comp (v.take m).reverse t).re ∈ Z v[m])
-    (hbad : ¬ Disjoint (Φ.dualCylAt k K (i :: u) t) (Φ.dualCylAt k K v t)) :
-    Disjoint (Ψ.dualCylAt k K (i :: u) t) (Ψ.dualCylAt k K v t) := by
-  rw [dualCylAt_cons_eq_of_mem Φ Ψ hZ k K ht h0 h1 hu', dualCylAt_eq_of_mem Φ Ψ hZ k K ht hv']
-  refine disjoint_image_add_of_abs_sub_lt (fun a ha a' ha' => ?_) (fun b hb b' hb' => ?_)
-    (not_disjoint_iff_nonempty_inter.1 hbad) (le_abs_re_nonlin_sub Φ Ψ i ht hτ)
-  · exact (Φ.abs_sub_le_cmax_pow_of_mem_dualCylAt hkK _ ht ha ha').trans_lt hu
-  · exact (Φ.abs_sub_le_cmax_pow_of_mem_dualCylAt hkK _ ht hb hb').trans_lt hv
-
-/-- The cylinders of `Ψ` of every pair of `ℬ_{n+1}` are disjoint, if `g_ℓ` agrees with `f_ℓ` to
-second order on `𝒵_ℓ`, and to first order on `𝒴_ℓ` with a change of `f_ℓ''/f_ℓ'` by at least `δ`,
-where the cylinder intervals are shorter than `δ / 3`. -/
-private theorem IsPointChoice.dualCylDisjoint {Φ : IFS N ε} (Ψ : IFS N ε') {k K δ : ℝ}
-    (hkK : k ≤ K) {n : ℕ} {x : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N) → ℝ}
-    (hx : IsPointChoice Φ k K n x) (hn : Φ.cmax ^ (n + 1) * (K - k) < δ / 3)
-    (hY : ∀ ℓ, ∀ y ∈ Φ.badPoints k K n x ℓ, Ψ.f ℓ y = Φ.f ℓ y ∧
-      deriv (Ψ.f ℓ) y = deriv (Φ.f ℓ) y ∧ δ ≤ ‖Ψ.nonlin ℓ y - Φ.nonlin ℓ y‖)
-    (hZ : ∀ ℓ, ∀ z ∈ Φ.goodPoints k K n x ℓ, AgreeAt (Φ.f ℓ) (Ψ.f ℓ) z)
-    {p : (Fin (n + 1) → Fin N) × (Fin (n + 1) → Fin N)} (hp : p ∈ pairs N (n + 1)) :
-    Ψ.DualCylDisjoint k K (List.ofFn p.1) (List.ofFn p.2) := by
-  have ht := hx.mem_I p hp
-  refine ⟨x p, ht, ?_⟩
-  -- the orbit of the second word, with its base point in `𝒵_{j₁}`
-  have hsnd : x p ∈ Φ.goodPoints k K n x (p.2 0) →
-      ∀ m (hm : m < (List.ofFn p.2).length),
-        (Φ.comp ((List.ofFn p.2).take m).reverse (x p)).re ∈
-          Φ.goodPoints k K n x (List.ofFn p.2)[m] := by
-    intro h0 m hm
-    rcases Nat.eq_zero_or_pos m with rfl | hm0
-    · simpa using h0
-    · exact hx.re_comp_snd_mem_goodPoints hp hm0 (by simpa using hm.le) _
-  by_cases hb : Φ.Bad k K p
-  · -- a bad pair: `x_{i,j} ∈ 𝒴_{i₁}` and `x_{i,j} ∈ 𝒵_{j₁}`
-    obtain ⟨h0, h1, hτ⟩ := hY _ _ ((hx.mem_badPoints_iff hp _).2 ⟨hb, rfl⟩)
-    have hZ0 : x p ∈ Φ.goodPoints k K n x (p.2 0) := by
-      have hlt : p.1 0 < p.2 0 := by
-        obtain ⟨_, h⟩ := hp
-        exact h
-      exact hx.self_mem_goodPoints hp fun h => hlt.ne h.2
-    have hbad : ¬ Disjoint (Φ.dualCylAt k K (List.ofFn p.1) (x p))
-        (Φ.dualCylAt k K (List.ofFn p.2) (x p)) := fun hd => hb ⟨x p, ht, hd⟩
-    rw [List.ofFn_succ (f := p.1)] at hbad ⊢
-    refine disjoint_dualCylAt_of_not_disjoint Φ Ψ hZ hkK ht (by simpa using hn)
-      (by simpa using hn) h0 h1 hτ (fun m hm => ?_) (hsnd hZ0) hbad
-    rw [← List.ofFn_succ]
-    rw [List.length_ofFn] at hm
-    exact hx.re_comp_fst_mem_goodPoints hp (Nat.succ_pos m) (by omega) _
-  · -- a pair that is not bad: all orbit points lie in `𝒵`
-    have hZ0 : ∀ ℓ, x p ∈ Φ.goodPoints k K n x ℓ :=
-      fun ℓ => hx.self_mem_goodPoints hp fun h => hb h.1
-    have hfst : ∀ m (hm : m < (List.ofFn p.1).length),
-        (Φ.comp ((List.ofFn p.1).take m).reverse (x p)).re ∈
-          Φ.goodPoints k K n x (List.ofFn p.1)[m] := by
-      intro m hm
-      rcases Nat.eq_zero_or_pos m with rfl | hm0
-      · simpa using hZ0 (List.ofFn p.1)[0]
-      · exact hx.re_comp_fst_mem_goodPoints hp hm0 (by simpa using hm.le) _
-    rw [dualCylAt_eq_of_mem Φ Ψ hZ k K ht hfst, dualCylAt_eq_of_mem Φ Ψ hZ k K ht (hsnd (hZ0 _))]
-    exact hx.disjoint p hp (not_not.1 hb)
-
-/-! ## Bounds for the perturbation -/
-
-/-- A choice of `δ`. -/
-private theorem exists_delta {a b C r : ℝ} (ha : 0 < a) (hb : 0 < b) (hC : 0 ≤ C) (hr : 0 < r) :
-    ∃ δ > 0, δ ≤ 1 ∧ δ ≤ a ∧ δ ≤ b ∧ (C + 3) * δ < r := by
-  have hr' : 0 < r / (2 * (C + 3)) := div_pos hr (by linarith)
-  refine ⟨min (min 1 a) (min b (r / (2 * (C + 3)))), by positivity,
-    (min_le_left _ _).trans (min_le_left _ _), (min_le_left _ _).trans (min_le_right _ _),
-    (min_le_right _ _).trans (min_le_left _ _), ?_⟩
-  calc (C + 3) * min (min 1 a) (min b (r / (2 * (C + 3))))
-      ≤ (C + 3) * (r / (2 * (C + 3))) :=
-        mul_le_mul_of_nonneg_left ((min_le_right _ _).trans (min_le_right _ _)) (by linarith)
-    _ = r / 2 := by field_simp
-    _ < r := by linarith
-
-/-- A strictly invariant cylinder persists in a `d₂` neighbourhood. This is the continuity
-step in Section 4.2, before choosing the perturbation size and the word length. -/
-theorem exists_invariant_cylinder_near (Φ : IFS N ε) :
-    ∃ K > 0, ∃ η > 0, ∀ {ε' : ℝ} (Ψ : IFS N ε'), d2 Φ Ψ < η →
-      ∀ i, MapsTo (Ψ.dualOp i) (dualCylClosed ε' (-K) K) (dualCyl ε' (-K) K) := by
-  obtain ⟨B, hB0, hB⟩ := Φ.exists_nonlin_bound
-  obtain ⟨A, η₀, hη₀, hcont⟩ := Φ.exists_dualProj_sub_le_d2
-  let c := (1 + Φ.cmax) / 2
-  let M := B + 1
-  let K := M / (1 - c) + 1
-  have hc : 0 < 1 - c := by dsimp [c]; linarith [Φ.cmax_lt_one]
-  have hM : 0 < M := by dsimp [M]; linarith
-  have hK : 0 < K := by dsimp [K]; positivity
-  have hmargin : c * K + M < K := by
-    have he := mul_div_cancel₀ M hc.ne'
-    change (1 - c) * (M / (1 - c)) = M at he
-    dsimp [K]
-    nlinarith
-  let η := min η₀ (min ((1 - Φ.cmax) / 2) (1 / (|A| + 1)))
-  have hcmax : 0 < 1 - Φ.cmax := sub_pos.2 Φ.cmax_lt_one
-  have hη : 0 < η := by dsimp [η]; positivity
-  refine ⟨K, hK, η, hη, fun {ε'} Ψ hΨ => ?_⟩
-  have hηA : d2 Φ Ψ < 1 / (|A| + 1) :=
-    hΨ.trans_le ((min_le_right _ _).trans (min_le_right _ _))
-  have hA : A * d2 Φ Ψ < 1 := by
-    have hd := Continuity.d2_nonneg Φ Ψ
-    have h := (lt_div_iff₀ (by positivity : 0 < |A| + 1)).1 hηA
-    nlinarith [le_abs_self A, mul_le_mul_of_nonneg_right (le_abs_self A) hd]
-  apply Ψ.mapsTo_dualOp_dualCylClosed_of_le (c := c) (M := M) (K := K) _ _ hmargin
-  · intro i x hx
-    have he := (Continuity.norm_sub_le_d2 Φ Ψ i hx).2.1
-    have hd := Φ.norm_deriv_le_cmax i (subset_closure (ofReal_mem_nbhd Φ.ε_pos hx))
-    have hsmall : d2 Φ Ψ < (1 - Φ.cmax) / 2 :=
-      hΨ.trans_le ((min_le_right _ _).trans (min_le_left _ _))
-    have ht := norm_sub_norm_le (deriv (Ψ.f i) x) (deriv (Φ.f i) x)
-    rw [norm_sub_rev] at ht
-    dsimp [c]
-    linarith
-  · intro i x hx
-    have he := hcont Ψ (hΨ.trans_le (min_le_left _ _)) (.fin [i]) x hx
-    simp only [Φ.dualProj_singleton, Ψ.dualProj_singleton] at he
-    have hb := hB i x (subset_closure (ofReal_mem_nbhd Φ.ε_pos hx))
-    have ht := norm_sub_norm_le (Ψ.nonlin i x) (Φ.nonlin i x)
-    rw [norm_sub_rev] at ht
-    dsimp [M]
-    linarith
-
-/-- The `d₂` distance from bounds on the three differences on `I`. -/
-private theorem d2_le (hN : 0 < N) (Φ : IFS N ε) (Ψ : IFS N ε') {a b e : ℝ}
-    (h0 : ∀ i, ∀ x ∈ I, ‖Ψ.f i x - Φ.f i x‖ ≤ a)
-    (h1 : ∀ i, ∀ x ∈ I, ‖deriv (Ψ.f i) x - deriv (Φ.f i) x‖ ≤ b)
-    (h2 : ∀ i, ∀ x ∈ I, ‖deriv (deriv (Ψ.f i)) x - deriv (deriv (Φ.f i)) x‖ ≤ e) :
-    d2 Φ Ψ ≤ a + b + e := by
-  have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
-  have : Nonempty I := ⟨⟨0, left_mem_Icc.2 zero_le_one⟩⟩
-  refine ciSup_le fun i => add_le_add (add_le_add ?_ ?_) ?_
-  · exact ciSup_le fun x => by rw [norm_sub_rev]; exact h0 i x x.2
-  · exact ciSup_le fun x => by rw [norm_sub_rev]; exact h1 i x x.2
-  · exact ciSup_le fun x => by rw [norm_sub_rev]; exact h2 i x x.2
-
-/-! ## The density step -/
-
-/-- The density step in the proof of Theorem 1.4. -/
-theorem exists_dualSSC_near (hN : 0 < N) (Φ : IFS N ε)
-    (hI : ∀ i, ∀ x ∈ I, (Φ.f i x).re ∈ Ioo 0 1) (hnc : Φ.NoCoincidence) {r : ℝ} (hr : 0 < r) :
+/-- An entire near-identity perturbation inserts a simple critical point just outside `I`.
+Cauchy's estimate controls the jets. -/
+theorem exists_dualSSC_near (Φ : IFS N ε) (hN : 0 < N) {m : ℝ} (hm : 0 < m)
+    (hI : ∀ i x, x ∈ I → (Φ.f i x).re ∈ Icc m (1 - m)) {r : ℝ} (hr : 0 < r) :
     ∃ ε' : ℝ, ∃ Ψ : IFS N ε', d2 Φ Ψ < r ∧ Ψ.DualSSC := by
-  -- the constants of Proposition 4.2 and their sum `C`
-  choose C₀ hC₀ hbump using fun i => proposition_4_2 Φ.ε_pos (Φ.inClass i) (hI i)
-  set C := ∑ i, C₀ i with hC_def
-  have hCle : ∀ i, C₀ i ≤ C := fun i =>
-    Finset.single_le_sum (f := C₀) (fun j _ => (hC₀ j).le) (Finset.mem_univ i)
-  have hC : 0 ≤ C := Finset.sum_nonneg fun j _ => (hC₀ j).le
-  -- Fix an invariant cylinder, then choose `δ` within its continuity neighbourhood.
-  obtain ⟨K, hK0, η, hη, hstable⟩ := Φ.exists_invariant_cylinder_near
-  obtain ⟨δ, hδ, -, -, -, hδr⟩ :=
-    exists_delta (a := 1) (b := 1) one_pos one_pos hC (lt_min hr hη)
-  have hkK : -K ≤ K := by linarith
-  have hc1 := Φ.cmax_lt_one
-  have hc0 := Φ.cmax_nonneg
-  -- the length `n + 1` of the words
-  obtain ⟨n, hn⟩ : ∃ n : ℕ, Φ.cmax ^ (n + 1) * (K - -K) < δ / 3 := by
-    obtain ⟨n, hn⟩ := exists_pow_lt_of_lt_one
-      (show 0 < δ / 3 / (K - -K) from div_pos (by linarith) (by linarith)) hc1
-    refine ⟨n, ?_⟩
-    rw [lt_div_iff₀ (by linarith)] at hn
-    exact (mul_le_mul_of_nonneg_right (pow_le_pow_of_le_one hc0 hc1.le (Nat.le_succ n))
-      (by linarith)).trans_lt hn
-  -- the points of Lemma 4.1
-  obtain ⟨x, hxI, hxd, hxo, hxs⟩ := Φ.lemma_4_1 (n + 1) (-K) K hnc
-  have hx : IsPointChoice Φ (-K) K n x :=
-    ⟨hxI, hxd, fun p hp => (hxo p hp).1, fun p hp => (hxo p hp).2.1, hxs⟩
-  -- the perturbation of Proposition 4.2
-  choose g hg using fun i => hbump i (Φ.badPoints (-K) K n x i) (Φ.goodPoints (-K) K n x i)
-    (hx.badPoints_subset_I i) (hx.goodPoints_subset_I i)
-    (Φ.disjoint_badPoints_goodPoints (-K) K n x i) δ hδ δ hδ
-  obtain ⟨ε', hε', hgε'⟩ := exists_inClass_forall fun i => (hg i).1
-  obtain ⟨Ψ, rfl⟩ : ∃ Ψ : IFS N ε', Ψ.f = g := ⟨⟨g, hε', hgε'⟩, rfl⟩
-  have hd : d2 Φ Ψ < min r η := by
-    refine lt_of_le_of_lt (d2_le hN Φ Ψ (a := δ) (b := δ) (e := C * δ + δ)
-      (fun i y hy => ((hg i).2.2.2.2.1 y hy).le) (fun i y hy => ((hg i).2.2.2.2.2.1 y hy).le)
-      (fun i y hy => ((hg i).2.2.2.2.2.2 y hy).le.trans ?_)) ?_
-    · linarith [mul_le_mul_of_nonneg_right (hCle i) hδ.le]
-    · linarith
-  refine ⟨ε', Ψ, hd.trans_le (min_le_left _ _), ?_⟩
-  have hY : ∀ ℓ, ∀ y ∈ Φ.badPoints (-K) K n x ℓ, Ψ.f ℓ y = Φ.f ℓ y ∧
-      deriv (Ψ.f ℓ) y = deriv (Φ.f ℓ) y ∧ δ ≤ ‖Ψ.nonlin ℓ y - Φ.nonlin ℓ y‖ :=
-    fun ℓ y hy => ⟨((hg ℓ).2.1 y (Finset.mem_union_left _ hy)).1,
-      ((hg ℓ).2.1 y (Finset.mem_union_left _ hy)).2, (hg ℓ).2.2.2.1 y hy⟩
-  have hZ : ∀ ℓ, ∀ z ∈ Φ.goodPoints (-K) K n x ℓ, AgreeAt (Φ.f ℓ) (Ψ.f ℓ) z :=
-    fun ℓ z hz => ⟨((hg ℓ).2.1 z (Finset.mem_union_right _ hz)).1,
-      ((hg ℓ).2.1 z (Finset.mem_union_right _ hz)).2, (hg ℓ).2.2.1 z hz⟩
-  refine (Ψ.lemma_2_6 hN).1.2 ⟨-K, K, by linarith, n,
-    hstable Ψ (hd.trans_le (min_le_right _ _)), fun i j hij => ?_⟩
-  rcases lt_or_gt_of_ne hij with h | h
-  · exact hx.dualCylDisjoint Ψ hkK hn hY hZ (p := (i, j)) ⟨Nat.succ_pos n, h⟩
-  · obtain ⟨t, ht, hd⟩ := hx.dualCylDisjoint Ψ hkK hn hY hZ (p := (j, i)) ⟨Nat.succ_pos n, h⟩
-    exact ⟨t, ht, hd.symm⟩
+  let _ : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
+  obtain ⟨s, hs, H⟩ := exists_between (half_pos (lt_min Φ.ε_pos hm))
+  have ⟨hsε, hsm⟩ := lt_min_iff.1 (show 2*s < min ε m by linarith)
+  have hsub := nbhd_mono hsε.le
+  have flip (i : Fin N) {z y : ℂ} (hz : z ∈ nbhd ε) (hy : y ∈ nbhd ε) :
+      ‖Φ.f i z - Φ.f i y‖ ≤ ‖z - y‖ := by
+    have H := Φ.norm_comp_sub_le [i] (subset_closure hz) (subset_closure hy)
+    exact (by simp_all : ‖Φ.f i z - Φ.f i y‖ ≤ Φ.cmax * ‖z-y‖).trans
+      (mul_le_of_le_one_left (norm_nonneg _) Φ.cmax_lt_one.le)
+  have himage (i : Fin N) {z : ℂ} (hz : z ∈ nbhd (2*s)) : (Φ.f i z).re ∈ I := by
+    have hze := hsub hz
+    obtain ⟨x, hx, H⟩ := hz
+    have H' := (Complex.abs_re_le_norm _).trans ((flip i hze (Φ.real_mem_open hx)).trans H.le)
+    grind [Complex.sub_re]
+  let ρ := s/4
+  have hρ : 0 < ρ := by positivity
+  let C (j : Fin 3) : ℝ := j.val.factorial / ρ^j.val
+  let M := ∑ j, C j
+  have hM : 0 ≤ M := by positivity
+  let R := min r (min Φ.cmin (1-Φ.cmax))
+  have hR : 0 < R := by dsimp [R]; positivity [Φ.cmin_pos hN, Φ.cmax_lt_one]
+  let E := Real.exp 1
+  obtain ⟨t, ht, Ht⟩ := exists_between (show 0 < min (s/E) (R/(E*M+1)) by positivity)
+  have hsE : t * E < s := (lt_div_iff₀ (Real.exp_pos 1)).1 (lt_min_iff.1 Ht).1
+  have hMR : t*E*M < R := by linarith [(lt_div_iff₀ (by positivity)).1 (lt_min_iff.1 Ht).2]
+  have ht0 : (t : ℂ) ≠ 0 := by aesop
+  let _ : Infinite (Ioo (-s) (min 0 (-s + t))) := (Ioo_infinite (by grind)).to_subtype
+  let a := (Fin.valEmbedding (n := N)).trans (Infinite.natEmbedding (Ioo (-s) (min 0 (-s + t))))
+  let p (i : Fin N) : ℝ := a i
+  have hp i : p i ∈ Ioo (-s) (min 0 (-s + t)) := (a i).2
+  have hinj : Function.Injective p := fun _ _ h => a.injective (Subtype.ext h)
+  let K := Ioc (-s) 1
+  let e (i : Fin N) (z : ℂ) := Complex.exp (((p i : ℂ) - z)/(t:ℂ))
+  let l (i : Fin N) (z : ℂ) := z + (t : ℂ) * e i z
+  let g i := Φ.f i ∘ l i
+  have hIK : I ⊆ K := fun x hx => ⟨by grind, hx.2⟩
+  have hpK i : p i ∈ K := ⟨(hp i).1, by grind⟩
+  have heReal i (x : ℝ) : e i x = (Real.exp ((p i - x)/t) : ℂ) := by aesop
+  have hL i (x : ℝ) : l i x = ((x + t * Real.exp ((p i - x)/t) : ℝ) : ℂ) := by
+    aesop
+  have hmove i {z : ℂ} (hz : z ∈ nbhd s) : ‖l i z - z‖ ≤ t*E := by
+    rw [show l i z - z = (t : ℂ) * e i z by ring, norm_mul, Complex.norm_real,
+      Real.norm_of_nonneg ht.le]
+    simp only [e, Complex.norm_exp, Complex.div_ofReal_re, Complex.sub_re, Complex.ofReal_re]
+    refine mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ((div_le_one ht).2 ?_)) ht.le
+    obtain ⟨x, hx, hzx⟩ := hz
+    have h := abs_lt.1 ((Complex.abs_re_le_norm _).trans_lt hzx)
+    simp only [Complex.sub_re, Complex.ofReal_re] at h
+    grind
+  have hstep i {z : ℂ} (hz : z ∈ nbhd s) : l i z ∈ nbhd (2*s) := by
+    have h := hmove i hz
+    obtain ⟨x, hx, hzx⟩ := hz
+    exact ⟨x, hx, (norm_sub_le_norm_sub_add_norm_sub (l i z) z (x:ℂ)).trans_lt (by linarith)⟩
+  have hK {x : ℝ} (hx : x ∈ K) : (x : ℂ) ∈ nbhd s := by
+    refine ⟨max 0 x, by grind, ?_⟩
+    rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
+    grind
+  have hal (i : Fin N) (z : ℂ) : AnalyticAt ℂ (l i) z := by fun_prop
+  have hag i {z : ℂ} (hz : z ∈ nbhd s) : AnalyticAt ℂ (g i) z :=
+    (Φ.analyticAt_f i (subset_closure (hsub (hstep i hz)))).comp (hal i z)
+  have him i {x : ℝ} (hx : (x : ℂ) ∈ nbhd s) : (g i x).im = 0 := by
+    have hh := nbhd_subset_two Φ.ε_pos (hsub (hstep i hx))
+    rw [hL] at hh
+    simpa only [g, Function.comp_apply, hL] using Φ.im_f_ofReal i hh
+  have hd i : DifferentiableOn ℂ (g i) (nbhd s) := fun _ hz => (hag i hz).differentiableAt.differentiableWithinAt
+  have hsr : nbhd s ⊆ nbhd ε := nbhd_mono (by linarith)
+  have hρs : nbhd (2*ρ) ⊆ nbhd s := nbhd_mono (by grind)
+  have hjet i (j : Fin 3) {z : ℂ} (hz : z ∈ closedNbhd ρ) :
+      ‖iteratedDeriv j (Φ.f i) z - iteratedDeriv j (g i) z‖ ≤ t*E*C j := by
+    have hc : closedBall z ρ ⊆ nbhd s := by
+      obtain ⟨x, hx, hzx⟩ := exists_mem_I_norm_sub_le hρ.le hz
+      intro w hw
+      exact ⟨x, hx, (norm_sub_le_norm_sub_add_norm_sub w z (x:ℂ)).trans_lt
+        (by have := mem_closedBall_iff_norm.1 hw; dsimp [ρ] at *; linarith)⟩
+    have H (w) (hw : w ∈ nbhd s) : ‖Φ.f i w - g i w‖ ≤ t*E := by
+      rw [norm_sub_rev]
+      exact (flip i (hsub (hstep i hw)) (hsr hw)).trans (hmove i hw)
+    have hz' := hc (mem_closedBall_self hρ.le)
+    simpa only [iteratedDeriv_sub (Φ.analyticAt_f i (subset_closure (hsr hz'))).contDiffAt
+      (hag i hz').contDiffAt, mul_comm (j.val.factorial : ℝ), mul_div_assoc, C] using (cauchy_bound hρ (((Φ.differentiableOn_f i).mono (hsr.trans (nbhd_subset_two Φ.ε_pos))).sub (hd i)) H hc j)
+  have hCR : t*E*C 1 < R :=
+    (mul_le_mul_of_nonneg_left (Finset.single_le_sum (f := C) (fun j _ => by positivity) (Finset.mem_univ 1))
+      (by positivity)).trans_lt hMR
+  have hcl i : InClass ρ (g i) := by
+    have H {z : ℂ} (hz : z ∈ closedNbhd ρ) : 0 < ‖deriv (g i) z‖ ∧ ‖deriv (g i) z‖ < 1 := by
+      have h := (abs_norm_sub_norm_le ..).trans (hjet i 1 hz)
+      simp only [Fin.val_one, iteratedDeriv_one, abs_le] at h
+      have hz' := closure_mono (nbhd_mono (show ρ ≤ ε by grind)) hz
+      have hl := Φ.cmin_le_norm_deriv i hz'
+      have hu := Φ.norm_deriv_le_cmax i hz'
+      grind
+    exact Challenge.InClass.of_deriv hρ ((hd i).mono hρs) (fun _ hx => him i (hρs hx))
+      (fun _ hx => himage i (hstep i (hK (hIK hx)))) (fun _ hz => norm_pos_iff.1 (H hz).1) (fun _ hz => (H hz).2)
+  let Ψ : IFS N ρ := ⟨g, hρ, hcl⟩
+  refine ⟨ρ, Ψ, ?_, ?_⟩
+  · rw [d2, d2Sys_eq]
+    refine Finite.ciSup_lt_iff.2 fun i => ?_
+    exact (Finset.sum_le_sum fun j _ => Real.iSup_le
+      (fun x : I => hjet i j (ofReal_mem_closure hρ x.2)) (by positivity)).trans_lt
+        (by rw [← Finset.mul_sum]; grind)
+  have he i (z : ℂ) : HasDerivAt (e i) (e i z * ((-1:ℂ)/t)) z := by
+    simpa [e] using (((hasDerivAt_const z (p i : ℂ)).sub (hasDerivAt_id z)).div_const (t : ℂ)).cexp
+  have hl i : deriv (l i) = fun z => 1 - e i z := funext fun z => by
+    rw [((hasDerivAt_id' z).fun_add ((he i z).const_mul (t : ℂ))).deriv]
+    grind
+  have hcrit i : deriv (l i) (p i) = 0 := by simp_all
+  have hf i j := Φ.analyticAt_f i (subset_closure (hsub (hstep i (hK (hpK j)))))
+  have hfne i j := (Φ.inClass i).deriv_ne_zero _ (subset_closure (hsub (hstep i (hK (hpK j)))))
+  have hdg i j : deriv (g i) (p j) = deriv (Φ.f i) (l i (p j)) * deriv (l i) (p j) :=
+    deriv_comp _ (hf i j).differentiableAt (hal i _).differentiableAt
+  have h₁ i : deriv (g i) (p i) = 0 := by simp_all
+  have h₂ i : deriv (deriv (g i)) (p i) ≠ 0 := by
+    rw [← show iteratedDeriv 2 (g i) (p i) = deriv (deriv (g i)) (p i) by simp [iteratedDeriv_succ], show g i = Φ.f i ∘ l i from rfl,
+      iteratedDeriv_comp_two (hf i i).contDiffAt (hal i _).contDiffAt, hcrit]
+    simp only [iteratedDeriv_succ, iteratedDeriv_zero, hl]
+    rw [((hasDerivAt_const _ (1 : ℂ)).fun_sub (he i _)).deriv]
+    simp [e, hfne, ht0]
+  have hne i j (hij : i ≠ j) : deriv (g j) (p i) ≠ 0 := by
+    rw [hdg, hl]
+    dsimp only
+    rw [heReal, ← Complex.ofReal_one, ← Complex.ofReal_sub]
+    apply mul_ne_zero (hfne j i)
+    rw [ne_eq, Complex.ofReal_eq_zero, sub_eq_zero, eq_comm, Real.exp_eq_one_iff, div_eq_zero_iff, sub_eq_zero]
+    tauto
+  -- After clearing the first denominators, continuation detects the simple poles.
+  intro u v huv
+  by_contra! heq
+  let S := Complex.ofReal '' K
+  have ha i : AnalyticOnNhd ℂ (g i) S := by
+    rintro _ ⟨x, hx, rfl⟩
+    tauto
+  have hmaps i : MapsTo (g i) S (nbhd ρ) := by
+    rintro _ ⟨x, hx, rfl⟩
+    have he : g i x = ((g i x).re : ℂ) := Complex.ext rfl (him i (hK hx))
+    exact he ▸ ofReal_mem_nbhd hρ (himage i (hstep i (hK hx)))
+  let B (w : ℕ → Fin N) (z : ℂ) := deriv (deriv (g (w 0))) z +
+    deriv (g (w 0)) z ^ 2 * Ψ.dualProj (.inf fun k => w (k + 1)) (g (w 0) z)
+  have hB w : AnalyticOnNhd ℂ (B w) S :=
+    (ha _).deriv.deriv.add (((ha _).deriv.pow 2).mul
+      (((Ψ.differentiableOn_dualProj _).analyticOnNhd (isOpen_nbhd _)).fun_comp (ha _) (hmaps _)))
+  have hEq w (x : ℝ) (hx : x ∈ I) : B w x = deriv (g (w 0)) x * Ψ.dualProj (.inf w) x := by
+    rw [Ψ.dualProj_inf_head w (ofReal_mem_closure hρ hx), nonlin]
+    dsimp [B, Ψ]
+    field_simp [(hcl _).deriv_ne_zero _ (ofReal_mem_closure hρ hx)]
+  have H := eqOn_of_eqOn_Icc ((hB u).mul (ha (v 0)).deriv) ((hB v).mul (ha (u 0)).deriv)
+    ((convex_Ioc ..).isPreconnected.image _ Complex.continuous_ofReal.continuousOn) (zero_lt_one (α := ℝ))
+    (fun x hx => ⟨x, hIK hx, rfl⟩) (fun x hx => by grind)
+    (mem_image_of_mem Complex.ofReal (hpK (u 0)))
+  simp [B, h₁, h₂, hne _ _ huv] at H
 
-end IFS
-
-end AnalyticESC
+end AnalyticESC.IFS

@@ -1,6 +1,7 @@
 module
 
 public import AnalyticESC.Main.Criterion
+public import AnalyticESC.Generic.Class
 
 @[expose] public section
 
@@ -16,330 +17,107 @@ namespace AnalyticESC
 
 open Set Metric Filter Topology
 
-/-- The maps of the polynomial example in Section 1.2.2. -/
-noncomputable def exampleMaps : Fin 3 → ℂ → ℂ :=
-  ![fun z => z / 8, fun z => z / 8 + z ^ 2 / 32, fun z => z / 16 + z ^ 2 / 32 + 29 / 32]
+export Challenge (exampleMaps)
 
-/-! ### Points of `cl B_{1/100}` -/
+noncomputable abbrev exampleLinear (i : Fin 3) : ℝ := ![4, 4, 2] i
+noncomputable abbrev exampleQuadratic (i : Fin 3) : ℝ := ![0, 1, 1] i
+noncomputable abbrev exampleTranslation (i : Fin 3) : ℝ := ![0, 0, 29] i
 
-/-- A point of `cl B_{1/100}` lies within `1/100` of a point of `I`. -/
-private lemma example_exists_near {z : ℂ} (hz : z ∈ closure (nbhd (1 / 100))) :
-    ∃ x ∈ I, ‖z - x‖ ≤ 1 / 100 := by
-  have h := closure_thickening_subset_cthickening (1 / 100 : ℝ) (((↑) : ℝ → ℂ) '' I) hz
-  rw [isCompact_image_I.cthickening_eq_biUnion_closedBall (by norm_num)] at h
-  simp only [mem_iUnion, mem_closedBall, exists_prop] at h
-  obtain ⟨_, ⟨x, hx, rfl⟩, hzx⟩ := h
-  exact ⟨x, hx, by rwa [← dist_eq_norm]⟩
+private theorem exampleMaps_eq (i : Fin 3) (z : ℂ) :
+    exampleMaps i z = (exampleLinear i * z + exampleQuadratic i * z ^ 2 + exampleTranslation i) / 32 := by
+  fin_cases i <;> norm_num [exampleMaps, exampleLinear, exampleQuadratic, exampleTranslation] <;> ring
 
-/-- A point within `1/100` of `I` has norm at most `101/100` and real part at least `-1/100`. -/
-private lemma example_bounds_of_near {z : ℂ} {x : ℝ} (hx : x ∈ I) (hzx : ‖z - x‖ ≤ 1 / 100) :
-    ‖z‖ ≤ 101 / 100 ∧ -(1 / 100) ≤ z.re := by
-  have h1 := norm_sub_norm_le z x
-  have h2 := Complex.abs_re_le_norm (z - x)
-  rw [Complex.norm_real, Real.norm_of_nonneg hx.1] at h1
-  rw [Complex.sub_re, Complex.ofReal_re] at h2
+theorem exampleMaps_ofReal (i : Fin 3) (x : ℝ) :
+    exampleMaps i x = ↑((exampleLinear i * x + exampleQuadratic i * x ^ 2 + exampleTranslation i) / 32 : ℝ) := by
+  push_cast
+  exact exampleMaps_eq ..
+
+private theorem exampleMaps_deriv (i : Fin 3) :
+    deriv (exampleMaps i) = fun z => ((exampleLinear i : ℂ) + 2 * exampleQuadratic i * z) / 32 := by
+  funext z
+  rw [funext (exampleMaps_eq i)]
+  have h := (((hasDerivAt_id' z).const_mul (exampleLinear i : ℂ)).add
+    ((hasDerivAt_pow 2 z).const_mul (exampleQuadratic i : ℂ))).add_const (exampleTranslation i : ℂ) |>.div_const 32
+  refine h.deriv.trans ?_
+  ring
+
+private theorem exampleMaps_deriv_deriv (i : Fin 3) (z : ℂ) :
+    deriv (deriv (exampleMaps i)) z = 2 * (exampleQuadratic i : ℂ) / 32 := by
+  simp [exampleMaps_deriv]
+
+theorem exampleMaps_zero_jet {i : Fin 3} (hi : i ≠ 2) :
+    exampleMaps i 0 = 0 ∧ deriv (exampleMaps i) 0 = 1 / 8 := by
+  rcases (show i = 0 ∨ i = 1 by omega) with rfl | rfl <;>
+    norm_num [exampleMaps_eq, exampleMaps_deriv, exampleLinear, exampleQuadratic, exampleTranslation]
+
+private theorem norm_deriv_bounds (i : Fin 3) {z : ℂ} (hz : z ∈ closedNbhd (1 / 100)) :
+    deriv (exampleMaps i) z ≠ 0 ∧ ‖deriv (exampleMaps i) z‖ ≤ 19 / 100 := by
+  obtain ⟨x, hx, hd⟩ := exists_mem_I_norm_sub_le (by norm_num) hz
+  have hre := abs_le.1 ((Complex.abs_re_le_norm _).trans hd)
+  simp only [Complex.sub_re, Complex.ofReal_re] at hre
+  have hnorm := norm_le_norm_sub_add z (x : ℂ)
+  rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg hx.1] at hnorm
+  rw [exampleMaps_deriv]
   constructor
-  · linarith [hx.2]
-  · linarith [neg_abs_le (z.re - x), hx.1]
-
-private lemma example_bounds {z : ℂ} (hz : z ∈ closure (nbhd (1 / 100))) :
-    ‖z‖ ≤ 101 / 100 ∧ -(1 / 100) ≤ z.re := by
-  obtain ⟨x, hx, hzx⟩ := example_exists_near hz
-  exact example_bounds_of_near hx hzx
-
-/-- A map that is `1/5`-Lipschitz near `I` and sends `I` into `I` maps `cl B_{1/100}` into
-`B_{1/100}`. -/
-private lemma example_mapsTo {f : ℂ → ℂ} (hI : ∀ x ∈ I, ∃ y ∈ I, f x = y)
-    (hf : ∀ z : ℂ, ∀ x ∈ I, ‖z - x‖ ≤ 1 / 100 → ‖f z - f x‖ ≤ 1 / 5 * ‖z - x‖) :
-    MapsTo f (closure (nbhd (1 / 100))) (nbhd (1 / 100)) := by
-  intro z hz
-  obtain ⟨x, hx, hzx⟩ := example_exists_near hz
-  obtain ⟨y, hy, hfy⟩ := hI x hx
-  rw [nbhd, mem_thickening_iff]
-  refine ⟨y, mem_image_of_mem _ hy, ?_⟩
-  rw [dist_eq_norm, ← hfy]
-  calc ‖f z - f x‖ ≤ 1 / 5 * ‖z - x‖ := hf z x hx hzx
-    _ ≤ 1 / 5 * (1 / 100) := by gcongr
-    _ < 1 / 100 := by norm_num
-
-/-! ### The maps and their derivatives -/
-
-private lemma exampleMaps_zero : exampleMaps 0 = fun z => z / 8 := rfl
-
-private lemma exampleMaps_one : exampleMaps 1 = fun z => z / 8 + z ^ 2 / 32 := rfl
-
-private lemma exampleMaps_two : exampleMaps 2 = fun z => z / 16 + z ^ 2 / 32 + 29 / 32 := rfl
-
-private lemma hasDerivAt_exampleMaps_zero (z : ℂ) : HasDerivAt (exampleMaps 0) (1 / 8) z := by
-  rw [exampleMaps_zero]
-  exact hasDerivAt_id' z |>.div_const 8
-
-private lemma hasDerivAt_exampleMaps_one (z : ℂ) :
-    HasDerivAt (exampleMaps 1) (1 / 8 + z / 16) z := by
-  rw [exampleMaps_one]
-  have h := (hasDerivAt_id' z |>.div_const 8).add ((hasDerivAt_pow 2 z).div_const 32)
-  convert h using 1
-  push_cast
-  ring
-
-private lemma hasDerivAt_exampleMaps_two (z : ℂ) :
-    HasDerivAt (exampleMaps 2) (1 / 16 + z / 16) z := by
-  rw [exampleMaps_two]
-  have h := ((hasDerivAt_id' z |>.div_const 16).add ((hasDerivAt_pow 2 z).div_const 32)).add_const
-    (29 / 32 : ℂ)
-  convert h using 1
-  push_cast
-  ring
-
-private lemma deriv_exampleMaps_zero : deriv (exampleMaps 0) = fun _ => 1 / 8 :=
-  funext fun z => (hasDerivAt_exampleMaps_zero z).deriv
-
-private lemma deriv_exampleMaps_one : deriv (exampleMaps 1) = fun z => 1 / 8 + z / 16 :=
-  funext fun z => (hasDerivAt_exampleMaps_one z).deriv
-
-private lemma deriv_exampleMaps_two : deriv (exampleMaps 2) = fun z => 1 / 16 + z / 16 :=
-  funext fun z => (hasDerivAt_exampleMaps_two z).deriv
-
-private lemma deriv_deriv_exampleMaps_zero : deriv (deriv (exampleMaps 0)) = fun _ => 0 := by
-  rw [deriv_exampleMaps_zero]
-  funext z
-  exact deriv_const z _
-
-private lemma deriv_deriv_exampleMaps_one : deriv (deriv (exampleMaps 1)) = fun _ => 1 / 16 := by
-  rw [deriv_exampleMaps_one]
-  funext z
-  exact ((hasDerivAt_id' z).div_const 16 |>.const_add (1 / 8)).deriv
-
-private lemma deriv_deriv_exampleMaps_two : deriv (deriv (exampleMaps 2)) = fun _ => 1 / 16 := by
-  rw [deriv_exampleMaps_two]
-  funext z
-  exact ((hasDerivAt_id' z).div_const 16 |>.const_add (1 / 16)).deriv
-
-/-! ### Values at real points -/
-
-private lemma exampleMaps_zero_ofReal (x : ℝ) : exampleMaps 0 x = ((x / 8 : ℝ) : ℂ) := by
-  rw [exampleMaps_zero]
-  push_cast
-  rfl
-
-private lemma exampleMaps_one_ofReal (x : ℝ) :
-    exampleMaps 1 x = ((x / 8 + x ^ 2 / 32 : ℝ) : ℂ) := by
-  rw [exampleMaps_one]
-  push_cast
-  rfl
-
-private lemma exampleMaps_two_ofReal (x : ℝ) :
-    exampleMaps 2 x = ((x / 16 + x ^ 2 / 32 + 29 / 32 : ℝ) : ℂ) := by
-  rw [exampleMaps_two]
-  push_cast
-  rfl
-
-/-! ### Norm estimates -/
-
-private lemma example_norm_factor_le (c : ℂ) {z : ℂ} {x : ℝ} (hx : x ∈ I)
-    (hzx : ‖z - x‖ ≤ 1 / 100) : ‖c + (z + x) / 32‖ ≤ ‖c‖ + 201 / 100 / 32 := by
-  have hz := (example_bounds_of_near hx hzx).1
-  have hx' : ‖(x : ℂ)‖ ≤ 1 := by rw [Complex.norm_real, Real.norm_of_nonneg hx.1]; exact hx.2
-  calc ‖c + (z + x) / 32‖ ≤ ‖c‖ + ‖(z + x) / 32‖ := norm_add_le _ _
-    _ = ‖c‖ + ‖z + x‖ / 32 := by rw [norm_div]; norm_num
-    _ ≤ ‖c‖ + (‖z‖ + ‖(x : ℂ)‖) / 32 := by gcongr; exact norm_add_le _ _
-    _ ≤ ‖c‖ + 201 / 100 / 32 := by linarith
-
-private lemma example_norm_deriv_le (c : ℂ) {z : ℂ} (hz : z ∈ closure (nbhd (1 / 100))) :
-    ‖c + z / 16‖ ≤ ‖c‖ + 101 / 100 / 16 := by
-  have hz' := (example_bounds hz).1
-  calc ‖c + z / 16‖ ≤ ‖c‖ + ‖z / 16‖ := norm_add_le _ _
-    _ = ‖c‖ + ‖z‖ / 16 := by rw [norm_div]; norm_num
-    _ ≤ ‖c‖ + 101 / 100 / 16 := by linarith
-
-private lemma example_re_deriv_pos (c : ℝ) (hc : 1 / 1600 < c) {z : ℂ}
-    (hz : z ∈ closure (nbhd (1 / 100))) : (c : ℂ) + z / 16 ≠ 0 := by
-  have hz' := (example_bounds hz).2
-  intro h
-  have h' := congrArg Complex.re h
-  rw [Complex.add_re, Complex.ofReal_re, Complex.div_ofNat_re, Complex.zero_re] at h'
-  linarith
-
-/-! ### The three maps lie in the class -/
-
-private lemma example_inClass_zero : InClass (1 / 100) (exampleMaps 0) where
-  differentiableOn z _ := (hasDerivAt_exampleMaps_zero z).differentiableAt.differentiableWithinAt
-  im_eq_zero x _ := by rw [exampleMaps_zero_ofReal, Complex.ofReal_im]
-  re_mem_I x hx := by
-    rw [exampleMaps_zero_ofReal, Complex.ofReal_re]
-    obtain ⟨h0, h1⟩ := hx
-    constructor <;> linarith
-  mapsTo := by
-    refine example_mapsTo (fun x hx => ⟨x / 8, ?_, exampleMaps_zero_ofReal x⟩) fun z x _ _ => ?_
-    · obtain ⟨h0, h1⟩ := hx
-      constructor <;> linarith
-    · rw [exampleMaps_zero]
-      simp only
-      rw [show z / 8 - (x : ℂ) / 8 = (z - x) * (1 / 8) by ring, norm_mul]
-      norm_num
-      linarith [norm_nonneg (z - x)]
-  deriv_ne_zero z _ := by rw [deriv_exampleMaps_zero]; norm_num
-  norm_deriv_lt_one z _ := by rw [deriv_exampleMaps_zero]; norm_num
-
-private lemma example_inClass_one : InClass (1 / 100) (exampleMaps 1) where
-  differentiableOn z _ := (hasDerivAt_exampleMaps_one z).differentiableAt.differentiableWithinAt
-  im_eq_zero x _ := by rw [exampleMaps_one_ofReal, Complex.ofReal_im]
-  re_mem_I x hx := by
-    rw [exampleMaps_one_ofReal, Complex.ofReal_re]
-    obtain ⟨h0, h1⟩ := hx
-    constructor <;> nlinarith
-  mapsTo := by
-    refine example_mapsTo (fun x hx => ⟨x / 8 + x ^ 2 / 32, ?_, exampleMaps_one_ofReal x⟩)
-      fun z x hx hzx => ?_
-    · obtain ⟨h0, h1⟩ := hx
-      constructor <;> nlinarith
-    · rw [exampleMaps_one]
-      simp only
-      rw [show z / 8 + z ^ 2 / 32 - ((x : ℂ) / 8 + (x : ℂ) ^ 2 / 32) =
-          (z - x) * (1 / 8 + (z + x) / 32) by ring, norm_mul, mul_comm]
-      gcongr
-      refine (example_norm_factor_le _ hx hzx).trans ?_
-      norm_num
-  deriv_ne_zero z hz := by
-    rw [deriv_exampleMaps_one]
-    have h := example_re_deriv_pos (1 / 8) (by norm_num) hz
-    push_cast at h
-    exact h
-  norm_deriv_lt_one z hz := by
-    rw [deriv_exampleMaps_one]
-    refine (example_norm_deriv_le _ hz).trans_lt ?_
+  · intro he
+    have := congrArg Complex.re he
+    fin_cases i <;> norm_num [exampleLinear, exampleQuadratic, Complex.add_re, Complex.mul_re,
+      Complex.div_ofNat_re] at this <;> linarith [hre.1, hx.1]
+  · rw [norm_div]
     norm_num
-
-private lemma example_inClass_two : InClass (1 / 100) (exampleMaps 2) where
-  differentiableOn z _ := (hasDerivAt_exampleMaps_two z).differentiableAt.differentiableWithinAt
-  im_eq_zero x _ := by rw [exampleMaps_two_ofReal, Complex.ofReal_im]
-  re_mem_I x hx := by
-    rw [exampleMaps_two_ofReal, Complex.ofReal_re]
-    obtain ⟨h0, h1⟩ := hx
-    constructor <;> nlinarith
-  mapsTo := by
-    refine example_mapsTo
-      (fun x hx => ⟨x / 16 + x ^ 2 / 32 + 29 / 32, ?_, exampleMaps_two_ofReal x⟩)
-      fun z x hx hzx => ?_
-    · obtain ⟨h0, h1⟩ := hx
-      constructor <;> nlinarith
-    · rw [exampleMaps_two]
-      simp only
-      rw [show z / 16 + z ^ 2 / 32 + 29 / 32 - ((x : ℂ) / 16 + (x : ℂ) ^ 2 / 32 + 29 / 32) =
-          (z - x) * (1 / 16 + (z + x) / 32) by ring, norm_mul, mul_comm]
-      gcongr
-      refine (example_norm_factor_le _ hx hzx).trans ?_
-      norm_num
-  deriv_ne_zero z hz := by
-    rw [deriv_exampleMaps_two]
-    have h := example_re_deriv_pos (1 / 16) (by norm_num) hz
-    push_cast at h
-    exact h
-  norm_deriv_lt_one z hz := by
-    rw [deriv_exampleMaps_two]
-    refine (example_norm_deriv_le _ hz).trans_lt ?_
-    norm_num
+    apply div_le_iff₀ (by norm_num) |>.2
+    refine (norm_add_le ..).trans ?_
+    rw [norm_mul _ z, norm_mul]
+    fin_cases i <;> norm_num <;> grind
 
 theorem exampleMaps_inClass (i : Fin 3) : InClass (1 / 100) (exampleMaps i) := by
-  fin_cases i
-  · exact example_inClass_zero
-  · exact example_inClass_one
-  · exact example_inClass_two
+  refine Challenge.InClass.of_deriv (by norm_num) ?_ (fun x _ => by rw [exampleMaps_ofReal, Complex.ofReal_im])
+    (fun x hx => ?_) (fun _ hz => (norm_deriv_bounds i hz).1)
+    (fun _ hz => (norm_deriv_bounds i hz).2.trans_lt (by norm_num))
+  · rw [funext (exampleMaps_eq i)]
+    fun_prop
+  · rw [exampleMaps_ofReal, Complex.ofReal_re]
+    fin_cases i <;> norm_num [exampleLinear, exampleQuadratic, exampleTranslation, I] <;>
+      constructor <;> nlinarith [hx.1, hx.2, mul_nonneg hx.1 (sub_nonneg.2 hx.2)]
 
-/-- The example as an IFS in `𝔖_3`, with `ε = 1/100`. -/
-noncomputable def exampleIFS : IFS 3 (1 / 100) where
-  f := exampleMaps
-  ε_pos := by norm_num
-  inClass := exampleMaps_inClass
-
-/-! ### The constants `c_max` and `β` -/
-
-private lemma example_fin_three (i : Fin 3) : i = 0 ∨ i = 1 ∨ i = 2 := by
-  revert i
-  decide
-
-private lemma example_norm_deriv_le_all (i : Fin 3) {z : ℂ} (hz : z ∈ closure (nbhd (1 / 100))) :
-    ‖deriv (exampleMaps i) z‖ ≤ 19 / 100 := by
-  obtain rfl | rfl | rfl := example_fin_three i
-  · rw [deriv_exampleMaps_zero]
-    norm_num
-  · rw [deriv_exampleMaps_one]
-    refine (example_norm_deriv_le _ hz).trans ?_
-    norm_num
-  · rw [deriv_exampleMaps_two]
-    refine (example_norm_deriv_le _ hz).trans ?_
-    norm_num
+/-- The example as an analytic IFS. -/
+noncomputable def exampleIFS : IFS 3 (1 / 100) := ⟨exampleMaps, by norm_num, exampleMaps_inClass⟩
 
 theorem exampleIFS_cmax_lt : exampleIFS.cmax < 1 / 5 := by
-  have : Nonempty (closure (nbhd (1 / 100 : ℝ))) := ⟨⟨0, zero_mem_closure_nbhd (by norm_num)⟩⟩
-  have h : exampleIFS.cmax ≤ 19 / 100 :=
-    ciSup_le fun i => ciSup_le fun z => example_norm_deriv_le_all i z.2
+  have h : exampleIFS.cmax ≤ 19 / 100 := Real.iSup_le
+    (fun i => Real.iSup_le (fun z => (norm_deriv_bounds i z.2).2) (by norm_num)) (by norm_num)
   linarith
 
-private lemma example_nonlin_zero (z : ℂ) : exampleIFS.nonlin 0 z = 0 := by
-  change deriv (deriv (exampleMaps 0)) z / deriv (exampleMaps 0) z = 0
-  rw [deriv_deriv_exampleMaps_zero, deriv_exampleMaps_zero, zero_div]
-
-private lemma example_nonlin_one (z : ℂ) :
-    exampleIFS.nonlin 1 z = 1 / 16 / (1 / 8 + z / 16) := by
-  change deriv (deriv (exampleMaps 1)) z / deriv (exampleMaps 1) z = _
-  rw [deriv_deriv_exampleMaps_one, deriv_exampleMaps_one]
-
-private lemma example_nonlin_two (z : ℂ) :
-    exampleIFS.nonlin 2 z = 1 / 16 / (1 / 16 + z / 16) := by
-  change deriv (deriv (exampleMaps 2)) z / deriv (exampleMaps 2) z = _
-  rw [deriv_deriv_exampleMaps_two, deriv_exampleMaps_two]
-
-private lemma example_norm_nonlin_le (i : Fin 3) {x : ℝ} (hx : x ∈ I) :
-    ‖exampleIFS.nonlin i x‖ ≤ 1 := by
-  have h0 := hx.1
-  obtain rfl | rfl | rfl := example_fin_three i
-  · rw [example_nonlin_zero, norm_zero]
-    exact zero_le_one
-  · rw [example_nonlin_one, show (1 / 16 : ℂ) / (1 / 8 + (x : ℂ) / 16) =
-        ((1 / 16 / (1 / 8 + x / 16) : ℝ) : ℂ) by push_cast; rfl, Complex.norm_real,
-      Real.norm_of_nonneg (by positivity), div_le_one (by positivity)]
-    linarith
-  · rw [example_nonlin_two, show (1 / 16 : ℂ) / (1 / 16 + (x : ℂ) / 16) =
-        ((1 / 16 / (1 / 16 + x / 16) : ℝ) : ℂ) by push_cast; rfl, Complex.norm_real,
-      Real.norm_of_nonneg (by positivity), div_le_one (by positivity)]
-    linarith
+private theorem exampleNonlin_ofReal (i : Fin 3) (x : ℝ) : exampleIFS.nonlin i x =
+    ((2 * exampleQuadratic i / (exampleLinear i + 2 * exampleQuadratic i * x) : ℝ) : ℂ) := by
+  change deriv (deriv (exampleMaps i)) x / deriv (exampleMaps i) x = _
+  rw [exampleMaps_deriv_deriv, exampleMaps_deriv, div_div_div_cancel_right₀ (by norm_num)]
+  push_cast
+  rfl
 
 theorem exampleIFS_beta_le : exampleIFS.beta ≤ 1 := by
-  have : Nonempty I := ⟨⟨0, le_rfl, zero_le_one⟩⟩
-  exact ciSup_le fun x => ciSup_le fun i => example_norm_nonlin_le i x.2
+  refine Real.iSup_le (fun x => Real.iSup_le (fun i => ?_) zero_le_one) zero_le_one
+  rw [exampleNonlin_ofReal, Complex.norm_real, Real.norm_eq_abs]
+  have hx := x.2.1
+  fin_cases i <;> norm_num [abs_div] <;> rw [abs_of_nonneg (by linarith), div_le_one (by linarith)] <;> linarith
 
-/-! ### Separation of the distortions and the SESC -/
+private lemma nonlin_zero_table (i : Fin 3) : exampleIFS.nonlin i 0 = ![(0 : ℂ), 1 / 2, 1] i := by
+  rw [← Complex.ofReal_zero, exampleNonlin_ofReal]
+  fin_cases i <;> norm_num
 
 theorem exampleIFS_nonlin_sep (i j : Fin 3) (hij : i ≠ j) :
     (1 / 2 : ℝ) ≤ ‖exampleIFS.nonlin i 0 - exampleIFS.nonlin j 0‖ := by
-  have h0 := example_nonlin_zero 0
-  have h1 : exampleIFS.nonlin 1 0 = 1 / 2 := by rw [example_nonlin_one]; norm_num
-  have h2 : exampleIFS.nonlin 2 0 = 1 := by rw [example_nonlin_two]; norm_num
-  obtain rfl | rfl | rfl := example_fin_three i <;>
-    obtain rfl | rfl | rfl := example_fin_three j <;>
-    first
-    | exact absurd rfl hij
-    | (simp only [h0, h1, h2]; norm_num)
+  simp_rw [nonlin_zero_table]
+  fin_cases i <;> fin_cases j <;> first | exact (hij rfl).elim | norm_num
 
-/-- The example satisfies the SESC. -/
+/-- The example satisfies the criterion for strong exponential separation. -/
 theorem exampleIFS_sesc : exampleIFS.SESC := by
-  have hsep : ∀ i j : Fin 3, i ≠ j →
-      ∃ x ∈ I, (1 / 2 : ℝ) ≤ ‖exampleIFS.nonlin i x - exampleIFS.nonlin j x‖ :=
-    fun i j hij => ⟨0, ⟨le_rfl, zero_le_one⟩, by
-      rw [Complex.ofReal_zero]
-      exact exampleIFS_nonlin_sep i j hij⟩
-  obtain ⟨hβ, h⟩ := exampleIFS.proposition_1_8 (by norm_num) (by norm_num) hsep
-  have hc := exampleIFS_cmax_lt
-  have hc0 := exampleIFS.cmax_nonneg
-  have hb := exampleIFS_beta_le
-  refine (h ?_).2
-  rw [div_lt_iff₀ (by linarith)]
-  nlinarith
-
-/-- The example lies in `𝔖_3` for some `ε > 0` and satisfies the SESC. -/
-theorem example_sesc :
-    ∃ ε > 0, ∃ Φ : IFS 3 ε, Φ.f = exampleMaps ∧ Φ.SESC :=
-  ⟨1 / 100, by norm_num, exampleIFS, rfl, exampleIFS_sesc⟩
+  apply exampleIFS.theorem_2_2
+  intro i j hij
+  apply exampleIFS.exists_dualProj_ne_of_get?_zero (α := 1/2)
+    (fun a b hab => ⟨⟨0, by simp⟩, by simpa using exampleIFS_nonlin_sep a b hab⟩) _ (i := .inf i) (j := .inf j) rfl rfl hij
+  rw [div_lt_iff₀ (by linarith [exampleIFS_cmax_lt])]
+  nlinarith [exampleIFS_beta_le, exampleIFS.cmax_nonneg, exampleIFS_cmax_lt,
+    mul_nonneg (sub_nonneg.2 exampleIFS_beta_le) exampleIFS.cmax_nonneg]
 
 end AnalyticESC

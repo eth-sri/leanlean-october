@@ -1,20 +1,21 @@
 module
 
 public import AnalyticESC.Basic
+public import AnalyticESC.Words
 
 @[expose] public section
 
 /-!
 # Separation conditions
 
-The natural projection and the attractor, the equivalence in Definition 1.2 between the failure
-of the SESC and weak super-exponential condensation, the implication SESC ⇒ ESC, and the
-consequence of having no exact overlaps used in Lemma 4.1.
+The natural projection, its modulus of continuity, and the relation between
+constant projections and common fixed points. Basic estimates for separation of compositions.
 -/
 
 namespace AnalyticESC
 
 open Set Metric Filter Topology
+open Word (pref shift)
 
 namespace IFS
 
@@ -22,99 +23,101 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 
 private theorem zero_mem_I : (0 : ℝ) ∈ I := ⟨le_rfl, zero_le_one⟩
 
-/-- Compositions map real points of `I` into the closed unit disc. -/
-private theorem norm_comp_ofReal_le_one (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
-    ‖Φ.comp w x‖ ≤ 1 := by
-  rw [Φ.comp_ofReal w hx, Complex.norm_real, Real.norm_eq_abs, abs_le]
-  have := Φ.re_comp_mem_I w hx
-  constructor <;> linarith [this.1, this.2]
+theorem abs_re_comp_sub_le_mul (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I) (hy : y ∈ I) :
+    |Φ.reComp w x - Φ.reComp w y| ≤ Φ.cmax ^ w.length * |x - y| := by
+  simpa [Φ.comp_ofReal w hx, Φ.comp_ofReal w hy, ← Complex.ofReal_sub, Real.norm_eq_abs] using
+    Φ.norm_comp_sub_le w (Φ.real_mem_closed hx) (Φ.real_mem_closed hy)
+
+theorem abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I) (hy : y ∈ I) :
+    |Φ.reComp w x - Φ.reComp w y| ≤ Φ.cmax ^ w.length :=
+  (Φ.abs_re_comp_sub_le_mul w hx hy).trans (mul_le_of_le_one_right (pow_nonneg Φ.cmax_nonneg _) (by grind))
 
 theorem tendsto_natProj (w : ℕ → Fin N) :
-    Tendsto (fun n => (Φ.comp (List.ofFn fun k : Fin n => w k) 0).re) atTop (𝓝 (Φ.natProj w)) := by
-  have hz0 : ((0 : ℝ) : ℂ) ∈ nbhd ε := ofReal_mem_nbhd Φ.ε_pos zero_mem_I
-  have hu : ∀ n, dist (Φ.comp (List.ofFn fun k : Fin n => w k) 0).re
-      (Φ.comp (List.ofFn fun k : Fin (n + 1) => w k) 0).re ≤ 1 * Φ.cmax ^ n := by
-    intro n
-    have hsplit : (List.ofFn fun k : Fin (n + 1) => w k) =
-        (List.ofFn fun k : Fin n => w k) ++ [w n] := by
-      rw [List.ofFn_succ', List.concat_eq_append]
-      simp
-    rw [hsplit, Φ.comp_append, Function.comp_apply, Real.dist_eq, one_mul]
-    set v := List.ofFn fun k : Fin n => w k
-    have hv : v.length = n := List.length_ofFn
-    have hz0' : (0 : ℂ) ∈ nbhd ε := by simpa using hz0
-    have hz1 : Φ.comp [w n] 0 ∈ nbhd ε := Φ.mapsTo_comp [w n] hz0'
-    have h1 : ‖Φ.comp [w n] 0‖ ≤ 1 := by
-      simpa using Φ.norm_comp_ofReal_le_one [w n] zero_mem_I
-    calc |(Φ.comp v 0).re - (Φ.comp v (Φ.comp [w n] 0)).re|
-        = |(Φ.comp v 0 - Φ.comp v (Φ.comp [w n] 0)).re| := by rw [Complex.sub_re]
-      _ ≤ ‖Φ.comp v 0 - Φ.comp v (Φ.comp [w n] 0)‖ := Complex.abs_re_le_norm _
-      _ ≤ Φ.cmax ^ v.length * ‖0 - Φ.comp [w n] 0‖ := Φ.norm_comp_sub_le v hz0' hz1
-      _ ≤ Φ.cmax ^ n * 1 := by
-          rw [hv, zero_sub, norm_neg]
-          exact mul_le_mul_of_nonneg_left h1 (pow_nonneg Φ.cmax_nonneg n)
-      _ = Φ.cmax ^ n := mul_one _
-  obtain ⟨a, ha⟩ := cauchySeq_tendsto_of_complete (cauchySeq_of_le_geometric Φ.cmax 1
-    Φ.cmax_lt_one hu)
-  exact tendsto_nhds_limUnder ⟨a, ha⟩
+    Tendsto (fun n => Φ.reComp (pref w n) 0) atTop (𝓝 (Φ.natProj w)) := by
+  unfold natProj Challenge.natProj
+  apply tendsto_nhds_limUnder
+  refine cauchySeq_tendsto_of_complete (cauchySeq_of_le_geometric Φ.cmax 1 Φ.cmax_lt_one ?_)
+  intro n
+  rw [Nat.add_comm, Word.pref_add, Φ.reComp_append _ _ zero_mem_I, Real.dist_eq, one_mul]
+  simpa [pref, shift] using
+    Φ.abs_re_comp_sub_le (pref w n) zero_mem_I (Φ.re_comp_mem_I [w n] zero_mem_I)
 
 theorem attractor_subset_I : Φ.attractor ⊆ I := by
   rintro _ ⟨w, rfl⟩
   exact isClosed_Icc.mem_of_tendsto (Φ.tendsto_natProj w)
     (Eventually.of_forall fun n => by simpa using Φ.re_comp_mem_I _ zero_mem_I)
 
-private theorem bddAbove_supDist (i j : List (Fin N)) :
-    BddAbove (range fun x : I => ‖Φ.comp i ((x : ℝ) : ℂ) - Φ.comp j ((x : ℝ) : ℂ)‖) := by
-  refine ⟨2, ?_⟩
-  rintro _ ⟨x, rfl⟩
-  calc _ ≤ ‖Φ.comp i ((x : ℝ) : ℂ)‖ + ‖Φ.comp j ((x : ℝ) : ℂ)‖ := norm_sub_le _ _
-    _ ≤ 1 + 1 := add_le_add (Φ.norm_comp_ofReal_le_one i x.2) (Φ.norm_comp_ofReal_le_one j x.2)
-    _ = 2 := by norm_num
+theorem natProj_mem_I (ω : ℕ → Fin N) : Φ.natProj ω ∈ I :=
+  Φ.attractor_subset_I ⟨ω, rfl⟩
 
-private theorem norm_le_supDist (i j : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
-    ‖Φ.comp i x - Φ.comp j x‖ ≤ Φ.supDist i j :=
-  le_ciSup (f := fun x : I => ‖Φ.comp i ((x : ℝ) : ℂ) - Φ.comp j ((x : ℝ) : ℂ)‖)
-    (Φ.bddAbove_supDist i j) ⟨x, hx⟩
+/-- `π(ω) = f_{ω₁ ⋯ ω_k}(π(σ^k ω))`, where `σ` is the left shift. -/
+theorem natProj_eq_comp_prefix (ω : ℕ → Fin N) (k : ℕ) :
+    Φ.natProj ω = Φ.reComp (pref ω k) (Φ.natProj (shift ω k)) := by
+  refine tendsto_nhds_unique ((tendsto_add_atTop_iff_nat k).2 (Φ.tendsto_natProj ω)) ?_
+  refine (((Φ.hasDerivAt_re_comp (pref ω k) (Φ.natProj_mem_I (shift ω k))).continuousAt).tendsto.comp (Φ.tendsto_natProj (shift ω k))).congr fun n => ?_
+  rw [Function.comp_apply, Word.pref_add, Φ.reComp_append _ _ zero_mem_I]
 
-/-- Appending a common suffix does not increase the distance. -/
-private theorem supDist_append_le (i j u : List (Fin N)) :
-    Φ.supDist (i ++ u) (j ++ u) ≤ Φ.supDist i j := by
-  have : Nonempty I := ⟨⟨0, zero_mem_I⟩⟩
-  refine ciSup_le fun x => ?_
-  have hx := x.2
-  rw [Φ.comp_append, Φ.comp_append, Function.comp_apply, Function.comp_apply,
-    Φ.comp_ofReal u hx]
-  exact Φ.norm_le_supDist i j (Φ.re_comp_mem_I u hx)
+/-- The projection intertwines the first letter and the left shift. -/
+theorem natProj_eq_realMap (ω : ℕ → Fin N) :
+    Φ.natProj ω = Φ.realMaps (ω 0) (Φ.natProj (shift ω 1)) :=
+  Φ.natProj_eq_comp_prefix ω 1
 
-/-- Without the SESC, close pairs occur at arbitrarily high levels. -/
-theorem exists_close_pair_ge (h : ¬ Φ.SESC) {c : ℝ} (hc : 0 < c) (B : ℕ) :
-    ∃ n, B ≤ n ∧ ∃ i j : Fin n → Fin N, i ≠ j ∧
-      Φ.supDist (List.ofFn i) (List.ofFn j) < c ^ n := by
-  by_contra hcon
-  push Not at hcon
-  apply h
-  set c₀ := min c 1
-  have hc₀ : 0 < c₀ := lt_min hc one_pos
-  have hc₀1 : c₀ ≤ 1 := min_le_right _ _
-  refine ⟨c₀ ^ (B + 1), pow_pos hc₀ _, fun n i j hij => ?_⟩
-  have hn : 0 < n := by
-    rcases Nat.eq_zero_or_pos n with rfl | hn
-    · exact absurd (Subsingleton.elim i j) hij
-    · exact hn
-  let u : Fin B → Fin N := fun _ => i ⟨0, hn⟩
-  have hne : Fin.append i u ≠ Fin.append j u := by
-    intro he
-    apply hij
-    have := congrArg List.ofFn he
-    rw [List.ofFn_fin_append, List.ofFn_fin_append] at this
-    exact List.ofFn_injective (List.append_cancel_right this)
-  have h1 := hcon (n + B) (Nat.le_add_left B n) _ _ hne
-  rw [List.ofFn_fin_append, List.ofFn_fin_append] at h1
-  calc (c₀ ^ (B + 1)) ^ n = c₀ ^ ((B + 1) * n) := (pow_mul _ _ _).symm
-    _ ≤ c₀ ^ (n + B) := pow_le_pow_of_le_one hc₀.le hc₀1 (by nlinarith)
-    _ ≤ c ^ (n + B) := pow_le_pow_left₀ hc₀.le (min_le_left _ _) _
-    _ ≤ _ := h1
-    _ ≤ _ := Φ.supDist_append_le _ _ _
+theorem abs_natProj_sub_le_of_prefix {n : ℕ} {x y : ℕ → Fin N} (h : ∀ k < n, x k = y k) :
+    |Φ.natProj x - Φ.natProj y| ≤ Φ.cmax ^ n := by
+  have he : (pref x n) = pref y n := by simp_all
+  rw [Φ.natProj_eq_comp_prefix x n, Φ.natProj_eq_comp_prefix y n, he]
+  simpa using Φ.abs_re_comp_sub_le (List.ofFn fun j => y j) (Φ.natProj_mem_I _) (Φ.natProj_mem_I _)
+
+/-- The natural projection is continuous by its modulus on cylinders. -/
+theorem continuous_natProj : Continuous Φ.natProj := continuous_iff_continuousAt.2 fun w => by
+  refine Metric.tendsto_nhds.2 fun r hr => ?_
+  obtain ⟨n, hn⟩ := ((tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg
+    Φ.cmax_lt_one).eventually (gt_mem_nhds hr)).exists
+  filter_upwards [eventually_all.2 fun k : Fin n => Word.eventually_eq_letter tendsto_id k] with v hv
+  exact ((Φ.abs_natProj_sub_le_of_prefix (fun k hk => hv ⟨k, hk⟩)).trans_lt hn : |Φ.natProj v - Φ.natProj w| < r)
+
+/-- The attractor is compact. -/
+theorem isCompact_attractor : IsCompact Φ.attractor := isCompact_range Φ.continuous_natProj
+
+/-- The attractor is nonempty. -/
+theorem attractor_nonempty (hN : 0 < N) : Φ.attractor.Nonempty :=
+  ⟨_, mem_range_self (fun _ => (⟨0, hN⟩ : Fin N))⟩
+
+theorem natProj_const_fixed (i : Fin N) :
+    Φ.realMaps i (Φ.natProj fun _ => i) = Φ.natProj fun _ => i :=
+  (Φ.natProj_eq_realMap fun _ => i).symm
+
+/-- A singleton attractor is equivalent to a common fixed point of the interval maps. -/
+theorem attractor_eq_singleton_iff (hN : 0 < N) {x : ℝ} :
+    Φ.attractor = {x} ↔ x ∈ I ∧ ∀ i, Φ.realMaps i x = x := by
+  constructor
+  · intro h
+    refine ⟨Φ.attractor_subset_I (h ▸ mem_singleton x), fun i => ?_⟩
+    simpa only [Function.apply_eq_of_range_eq_singleton h (fun _ => i)] using Φ.natProj_const_fixed i
+  · rintro ⟨hx, hf⟩
+    have : Nonempty (ℕ → Fin N) := ⟨fun _ => ⟨0, hN⟩⟩
+    apply range_eq_singleton
+    have hc (w : List (Fin N)) : Φ.reComp w x = x := by
+      induction w with
+      | nil => rfl
+      | cons i w ih => rw [show i :: w = [i] ++ w from rfl, Φ.reComp_append _ _ hx, ih, reComp_singleton, hf]
+    intro w
+    exact dist_eq_zero.1 ((ge_of_tendsto' (tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one)
+      (fun n => by
+        simpa only [← Φ.natProj_eq_comp_prefix, hc, List.length_ofFn, Real.dist_eq] using
+          Φ.abs_re_comp_sub_le (pref w n) (Φ.natProj_mem_I (shift w n)) hx)).antisymm dist_nonneg)
+
+theorem exists_attractor_eq_singleton_iff (hN : 0 < N) :
+    (∃ x, Φ.attractor = {x}) ↔ ∃ x ∈ I, ∀ i, Φ.realMaps i x = x :=
+  exists_congr fun _ => Φ.attractor_eq_singleton_iff hN
+
+theorem norm_le_supDist (i j : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
+    ‖Φ.comp i x - Φ.comp j x‖ ≤ Φ.supDist i j := by
+  obtain ⟨M, -, hM⟩ := Φ.exists_comp_bound
+  refine le_ciSup (f := fun t : I => ‖Φ.comp i (t : ℝ) - Φ.comp j (t : ℝ)‖)
+    ⟨2 * M, forall_mem_range.2 fun t => ?_⟩ ⟨x, hx⟩
+  have ht := Φ.real_mem_closed t.2
+  simp_all [sub_le_twice]
 
 theorem esc_of_sesc (h : Φ.SESC) : Φ.ESC := by
   obtain ⟨c, hc, h⟩ := h
