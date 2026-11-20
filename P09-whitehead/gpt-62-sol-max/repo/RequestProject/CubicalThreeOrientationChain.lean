@@ -1,0 +1,26 @@
+module
+
+public import RequestProject.CubicalThreeBoundaryMatrix
+
+@[expose] public section
+
+/-! The genuine finite oriented six-face boundary chain. -/
+set_option backward.defeqAttrib.useBackward true
+set_option backward.isDefEq.respectTransparency false
+set_option backward.isDefEq.respectTransparency.types false
+
+namespace FiniteChains.Davis
+
+noncomputable def threeOrientedFaces : (Fin 3 × ZMod 2) →₀ ℤ :=
+  Finsupp.single (0, 0) 1 - Finsupp.single (0, 1) 1 -
+  Finsupp.single (1, 0) 1 + Finsupp.single (1, 1) 1 +
+  Finsupp.single (2, 0) 1 - Finsupp.single (2, 1) 1
+
+theorem threeOrientedFaces_apply (i : Fin 3 × ZMod 2) :
+    threeOrientedFaces i = threeFacetOrientation i := by
+  obtain ⟨e, s⟩ := i
+  fin_cases e <;> fin_cases s <;>
+    norm_num [threeOrientedFaces, threeFacetOrientation, fixedCoordinateSign, Fin.ext_iff,
+      Finsupp.single_apply, Prod.mk.injEq]
+
+end FiniteChains.Davis
