@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondDiagonal
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem full_zero_off_diagonal (u v : O)
@@ -126,10 +125,11 @@ def secondZeroEnergy {α : Type*} (S : Finset α) (a : α → O)
       ((Real.sqrt (Ideal.absNorm (Ideal.span {a i}) : ℝ) : ℂ)*
        (Real.sqrt (Ideal.absNorm (Ideal.span {a j}) : ℝ) : ℂ)))
 
-theorem secondZeroEnergy_bound {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i}))
-    (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
-    (hinj : Set.InjOn a S) (c : α → ℂ) :
+section
+variable {α : Type*} (S : Finset α) (a : α → O) (ha : ∀ i, Supported (Ideal.span {a i})) (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1) (hinj : Set.InjOn a S)
+include α S a ha hp hinj
+
+theorem secondZeroEnergy_bound (c : α → ℂ) :
     ‖secondZeroEnergy S a ha c‖ ≤ ∑ i ∈ S, ‖c i‖^2 := by
   have hroot (i : α) :
       ((Real.sqrt (Ideal.absNorm (Ideal.span {a i}) : ℝ) : ℂ)*
@@ -157,10 +157,7 @@ theorem secondZeroEnergy_bound {α : Type*} (S : Finset α) (a : α → O)
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (ha i).1)
   exact mul_le_of_le_one_right (sq_nonneg _) ((div_le_one hN).mpr (actual_same_zero_norm_le _ (ha i)))
 
-theorem primary_column_card {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i}))
-    (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
-    (hinj : Set.InjOn a S) (s : Ideal O) (hs : s ≠ 0)
+theorem primary_column_card (s : Ideal O) (hs : s ≠ 0)
     (hdiv : ∀ i ∈ S, s ∣ Ideal.span {a i}) (Y : ℝ) (hY : 0 ≤ Y)
     (hN : ∀ i ∈ S, (Ideal.absNorm (Ideal.span {a i}) : ℝ) ≤ Y) :
     (S.card : ℝ) ≤ 128*Y/(Ideal.absNorm s : ℝ) := by
@@ -176,10 +173,7 @@ theorem primary_column_card {α : Type*} (S : Finset α) (a : α → O)
     Y hY (by intro I hI; obtain ⟨i,hi,rfl⟩ := Finset.mem_image.mp hI; exact hN i hi)
   rwa [Finset.card_image_of_injOn hspan] at hb
 
-theorem secondZeroEnergy_divisor_bound {α : Type*} (S : Finset α) (a : α → O)
-    (ha : ∀ i, Supported (Ideal.span {a i}))
-    (hp : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1)
-    (hinj : Set.InjOn a S) (c : α → ℂ) (B : ℝ) (_hB : 0 ≤ B)
+theorem secondZeroEnergy_divisor_bound (c : α → ℂ) (B : ℝ) (_hB : 0 ≤ B)
     (hc : ∀ i ∈ S, ‖c i‖ ≤ B) (s : Ideal O) (hs : s ≠ 0)
     (hdiv : ∀ i ∈ S, s ∣ Ideal.span {a i}) (Y : ℝ) (hY : 0 ≤ Y)
     (hN : ∀ i ∈ S, (Ideal.absNorm (Ideal.span {a i}) : ℝ) ≤ Y) :
@@ -192,6 +186,8 @@ theorem secondZeroEnergy_divisor_bound {α : Type*} (S : Finset α) (a : α → 
     _ ≤ B^2*(128*Y/(Ideal.absNorm s : ℝ)) :=
       mul_le_mul_of_nonneg_left (primary_column_card S a ha hp hinj s hs hdiv Y hY hN) (sq_nonneg _)
     _ = _ := by ring
+
+end
 
 end SevenEighths.CenteredMomentSecondDiagonal
 

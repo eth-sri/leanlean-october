@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedPhysicalEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondBalancedSource
@@ -9,20 +10,19 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff
-open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
+open InverseSecondFibers ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic JointLogSeparation MeasureTheory SchwartzMap InverseInitialClippedColumns
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local instance inverseSecondDeletedPhysicalRecursiveUnits : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem actual_second_deleted_physical_recursive
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source) :
     ∀ (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)

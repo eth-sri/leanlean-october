@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentReflectionMass
-open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid
-open IdealMobiusDivisorSum
+open CenteredMomentReflectionDeletion HeckeFamily UniqueFactorizationMonoid IdealMobiusDivisorSum
 local notation "O" => HeckeFamily.O
 
 def weight (I : Ideal O) : ℝ := (Real.sqrt (I.absNorm : ℝ))⁻¹
@@ -18,7 +17,7 @@ lemma weight_mul (I J : Ideal O) : weight (I*J) = weight I * weight J := by
   simp only [weight, map_mul, Nat.cast_mul, Real.sqrt_mul (Nat.cast_nonneg _), mul_inv_rev]
   ring
 lemma weight_one : weight (1 : Ideal O) = 1 := by simp [weight]
-lemma weight_pow (I : Ideal O) (n : ℕ) : weight (I^n) = weight I ^ n := by
+lemma weight_pow (I : Ideal O) (n : ℕ) : weight (I ^n) = weight I ^ n := by
   induction n with
   | zero => simpa only [pow_zero] using weight_one
   | succ n ih => rw [pow_succ,weight_mul,ih,pow_succ]
@@ -188,15 +187,17 @@ lemma coefficient_norm_le (η ηi : Character) (S : Finset (Ideal O))
   simp only [CenteredMomentReflectionDeletion.norm,weight,Real.sqrt_mul (Nat.cast_nonneg _),one_div,mul_inv_rev]
   ring
 
-lemma coefficient_summable_norm (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S,Prime P) (D : Finset (Ideal O)) (hD : D ⊆ S) :
+section
+variable (η ηi : Character) (S : Finset (Ideal O)) (hS : ∀ P ∈ S,Prime P)
+include η ηi S hS
+
+lemma coefficient_summable_norm (D : Finset (Ideal O)) (hD : D ⊆ S) :
     Summable (fun H : SmoothIdeal S => ‖coefficient η ηi S D H‖) := by
   apply ((smooth_summable S hS).mul_left (weight (∏ P ∈ D,P))).of_nonneg_of_le
     (fun _ => norm_nonneg _)
   exact fun H => coefficient_norm_le η ηi S D (fun P hP => hS P (hD hP)) H
 
-lemma coefficient_mass_le_euler (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S,Prime P) :
+lemma coefficient_mass_le_euler :
     (∑ D ∈ S.powerset, ∑' H : SmoothIdeal S, ‖coefficient η ηi S D H‖) ≤
       ∏ P ∈ S,localMass P := by
   have hD (D : Finset (Ideal O)) (hD : D ∈ S.powerset) :
@@ -214,10 +215,11 @@ lemma coefficient_mass_le_euler (η ηi : Character) (S : Finset (Ideal O))
   intro P _
   exact (div_eq_mul_inv _ _).symm
 
-lemma coefficient_mass_summable (η ηi : Character) (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S,Prime P) :
+lemma coefficient_mass_summable :
     Summable (fun H : SmoothIdeal S => ∑ D ∈ S.powerset,‖coefficient η ηi S D H‖) := by
   exact summable_sum (fun D hD => coefficient_summable_norm η ηi S hS D (Finset.mem_powerset.mp hD))
+
+end
 
 theorem reflection_mass_subpower (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (S : Finset (Ideal O)) (_hS : ∀ P ∈ S,Prime P)

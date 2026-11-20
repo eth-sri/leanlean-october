@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -288,13 +232,16 @@ open scoped BigOperators Classical
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma primeCubicGauss_add_three (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
+section
+variable (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
+include p hp hprimary
+
+lemma primeCubicGauss_add_three
     (e:ℕ) (h:Eis):primeCubicGauss p hp hprimary (e+3) h=primeCubicGauss p hp hprimary e h:=by
   unfold primeCubicGauss
   rw [pow_add,primeCubicMulChar_cube,mul_one]
 
-lemma cubicUnitGaussSum_prime_cube_shift_pos (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (n:ℕ) (h:Eis):
+lemma cubicUnitGaussSum_prime_cube_shift_pos (n:ℕ) (h:Eis):
     cubicUnitGaussSum (h*p^3) (p^(n+4))=
       (Ideal.absNorm (Ideal.span {p}):ℂ)^3*cubicUnitGaussSum h (p^(n+1)):=by
   by_cases hd:p^n∣h
@@ -316,8 +263,7 @@ lemma cubicUnitGaussSum_prime_cube_shift_pos (p:Eis) (hp:Prime p)
       exact hd ((mul_dvd_mul_iff_left (pow_ne_zero 3 hp.ne_zero)).mp hd'')
     rw [hhigh,hlow,mul_zero]
 
-lemma cubicUnitGaussSum_prime_cube_shift (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (k:ℕ) (h:Eis):
+lemma cubicUnitGaussSum_prime_cube_shift (k:ℕ) (h:Eis):
     cubicUnitGaussSum (h*p^3) (p^(k+3))=
       (Ideal.absNorm (Ideal.span {p}):ℂ)^3*cubicUnitGaussSum h (p^k)-
         if k=0 then (Ideal.absNorm (Ideal.span {p}):ℂ)^2 else 0:=by
@@ -332,6 +278,8 @@ lemma cubicUnitGaussSum_prime_cube_shift (p:Eis) (hp:Prime p)
   | succ n=>
     simpa only [show n+1+3=n+4 by omega,Nat.succ_ne_zero,ite_false,sub_zero] using
       cubicUnitGaussSum_prime_cube_shift_pos p hp hprimary n h
+
+end
 
 private def primeExpansionTerm (p:Eis) (s:ℂ) (h:Eis) (k:ℕ):ℂ:=
   ((Ideal.absNorm (Ideal.span {p}):ℂ)^(-s))^k*cubicUnitGaussSum h (p^k)*
@@ -403,8 +351,7 @@ end
 section
 
 open scoped BigOperators Classical Topology
-open Filter Set
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
+open Filter Set ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem unramifiedGaussResidue_of_initial_relation (h0 h1 h2:Eis) (A B:ℂ→ℂ)
@@ -513,14 +460,6 @@ theorem unramifiedGaussResidue_prime_recurrence (p:Eis) (hp:Prime p)
 
 end
 
-section
-
-open scoped BigOperators Classical Topology
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
-
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ComplexConjugate
 
@@ -528,16 +467,18 @@ def inverseCuspPath (c d : ℂ) (v : ℝ) (direction : ℂ) (t : ℝ) : ℂ×ℝ
   (-d/c-(t:ℂ)*star direction/(c^2*((v^2+t^2*‖direction‖^2:ℝ):ℂ)),
     v/(‖c‖^2*(v^2+t^2*‖direction‖^2)))
 
-lemma inverseCuspPath_zero (c d : ℂ) (v : ℝ) (direction : ℂ)
-    (hc : c≠0) (hv : 0<v) :
+section
+variable (c d : ℂ) (v : ℝ) (direction : ℂ) (hc : c≠0) (hv : 0<v)
+include c d v direction hc hv
+
+lemma inverseCuspPath_zero :
     inverseCuspPath c d v direction 0=(-d/c,1/(‖c‖^2*v)) := by
   unfold inverseCuspPath
   simp only [Complex.ofReal_zero,zero_pow (by decide : 2≠0),zero_mul,add_zero,zero_div,sub_zero]
   congr 1
   field_simp [norm_ne_zero_iff.mpr hc,hv.ne']
 
-theorem inverseCuspPath_hasDerivAt (c d : ℂ) (v : ℝ) (direction : ℂ)
-    (hc : c≠0) (hv : 0<v) :
+theorem inverseCuspPath_hasDerivAt :
     HasDerivAt (inverseCuspPath c d v direction)
       (-(star direction)/(c^2*(v:ℂ)^2),0) 0 := by
   have hn : ‖c‖≠0 := norm_ne_zero_iff.mpr hc
@@ -563,14 +504,15 @@ theorem inverseCuspPath_hasDerivAt (c d : ℂ) (v : ℝ) (direction : ℂ)
     convert (hasDerivAt_const (0:ℝ) v).div hdenR hrz using 1 ; simp
   exact hz.prodMk hvd
 
-theorem inverseCuspPath_comp_hasDerivAt (c d : ℂ) (v : ℝ) (direction : ℂ)
-    (hc : c≠0) (hv : 0<v) (F : ℂ×ℝ→ℂ) (A : (ℂ×ℝ)→L[ℝ]ℂ)
+theorem inverseCuspPath_comp_hasDerivAt (F : ℂ×ℝ→ℂ) (A : (ℂ×ℝ)→L[ℝ]ℂ)
     (hF : HasFDerivAt F A (-d/c,1/(‖c‖^2*v))) :
     HasDerivAt (fun t=>F (inverseCuspPath c d v direction t))
       (A (-(star direction)/(c^2*(v:ℂ)^2),0)) 0 := by
   have hf : HasFDerivAt F A (inverseCuspPath c d v direction 0) := by
     rwa [inverseCuspPath_zero c d v direction hc hv]
   exact hf.comp_hasDerivAt 0 (inverseCuspPath_hasDerivAt c d v direction hc hv)
+
+end
 
 end CubicEisenstein
 

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerRanges
 public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
 
@@ -11,10 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerWindows
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask
-open InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask InverseInitialProfile InverseInitialClippedColumns InverseInitialKernelBridge
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
 
@@ -53,9 +51,9 @@ theorem windowSource_four_nonzero
   · exact h'.2
   · exact h.2
 
-variable (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem physicalBlock_windowSource
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))(ψ:Fin 4→ℝ→ℂ)

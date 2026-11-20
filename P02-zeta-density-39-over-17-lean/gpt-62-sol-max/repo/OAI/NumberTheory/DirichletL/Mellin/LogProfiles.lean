@@ -6,14 +6,8 @@ public import OAI.NumberTheory.DirichletL.Mellin.ExponentialSmoothing
 namespace OAI
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-
-namespace ShortDraftMellin
-
-end ShortDraftMellin
 
 namespace FiniteRingSieve
 
@@ -75,40 +69,9 @@ theorem primitive_gauss_norm_sq (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
 
 end FiniteFieldSieve
 
-namespace ProductResidueSieve
-
-variable {R S : Type*} [CommRing R] [CommRing S]
-
-def mulCharProd (χ : MulChar R ℂ) (η : MulChar S ℂ) : MulChar (R × S) ℂ where
-  toFun x := χ x.1 * η x.2
-  map_one' := by simp
-  map_mul' x y := by simp [mul_mul_mul_comm]
-  map_nonunit' x hx := by
-    rw [Prod.isUnit_iff] at hx
-    by_cases h₁ : IsUnit x.1
-    · have h₂ : ¬IsUnit x.2 := by tauto
-      simp [MulChar.map_nonunit η h₂]
-    · simp [MulChar.map_nonunit χ h₁]
-
-def addCharProd (ψ : AddChar R ℂ) (φ : AddChar S ℂ) : AddChar (R × S) ℂ where
-  toFun x := ψ x.1 * φ x.2
-  map_zero_eq_one' := by simp
-  map_add_eq_mul' x y := by
-    simp only [Prod.fst_add, Prod.snd_add, AddChar.map_add_eq_mul]
-    ring
-
-@[simp] theorem mulCharProd_apply (χ : MulChar R ℂ) (η : MulChar S ℂ) (x : R × S) :
-    mulCharProd χ η x = χ x.1 * η x.2 := rfl
-
-@[simp] theorem addCharProd_apply (ψ : AddChar R ℂ) (φ : AddChar S ℂ) (x : R × S) :
-    addCharProd ψ φ x = ψ x.1 * φ x.2 := rfl
-
-end ProductResidueSieve
-
 open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
+open scoped FourierTransform SchwartzMap ContDiff
 
-open scoped ContDiff
 
 namespace FourierBridge
 

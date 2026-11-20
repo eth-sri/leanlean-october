@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondCanonicalChild
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceProfile
 
@@ -8,14 +9,13 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def actualMarkedSecondProfileData {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex) (A₁ A₂ : Finset ι) : SecondProfileData ι :=
@@ -26,12 +26,11 @@ def actualMarkedSecondProfileData {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn
     (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit*d)
     c d z A₁ A₂ x.second
 
-theorem actual_second_split_child_uniform
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
-    (hCB : Disjoint x.firstCommon x.cube.support)
-    (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
-    (hE : x.second.divisor ⊆ x.second.sourceCommon) :
+section
+variable (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda) {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (hCB : Disjoint x.firstCommon x.cube.support) (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support) (hE : x.second.divisor ⊆ x.second.sourceCommon)
+include hpr Jo Jn x hCB hD hE
+
+theorem actual_second_split_child_uniform :
     ∃ u v : Eisˣ, ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (m k : Eis)
       (A : Finset ι), A ⊆ (x.cube.support∪x.firstCommon)∪x.second.sourceCommon →
       ∀ (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ) (W : ℝ → ℂ) (X : ℝ),
@@ -63,12 +62,7 @@ theorem actual_second_split_child_uniform
   simpa only [actualSecondRawLabel,secondExpansionQuotient_of_subset p x.second hE] using
     hchild F Ψ m k (slots\J) lists a W X
 
-theorem actual_second_separated_pair_canonical
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
-    (hCB : Disjoint x.firstCommon x.cube.support)
-    (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
-    (hE : x.second.divisor ⊆ x.second.sourceCommon) :
+theorem actual_second_separated_pair_canonical :
     ∃ u v : Eisˣ, ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)
       (A₁ A₂ : Finset ι), A₁ ⊆ x.cube.support∪x.firstCommon → A₂ ⊆ x.cube.support∪x.firstCommon →
       ∀ (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
@@ -104,6 +98,8 @@ theorem actual_second_separated_pair_canonical
   apply Finset.sum_congr rfl
   intro J₂ hJ₂
   ring
+
+end
 
 end
 end SevenEighths.InverseMoment

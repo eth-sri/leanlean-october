@@ -23,8 +23,6 @@ def lowPrimeListEquiv (T : Finset PrimeIdeal) : T≃lowPrimeIdealList T :=
       obtain ⟨P,hP,h⟩ := Finset.mem_image.mp I.property
       exact ⟨⟨P,hP⟩,Subtype.ext h⟩)
 
-@[simp] lemma lowPrimeListEquiv_val (T : Finset PrimeIdeal) (p : T) :
-    (lowPrimeListEquiv T p).val=p.val.val := rfl
 
 lemma lowPrimeIdealList_prime (T : Finset PrimeIdeal) (I : Id) (hI : I∈lowPrimeIdealList T) : Prime I := by
   obtain ⟨P,hP,rfl⟩ := Finset.mem_image.mp hI

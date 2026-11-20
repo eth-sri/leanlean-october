@@ -11,8 +11,7 @@ open scoped Classical BigOperators
 open Filter
 
 namespace SevenEighths.CenteredMomentSecondHarmonicBudget
-open CenteredMomentSecondWindowBudget CenteredMomentMobiusHarmonicMass
-open CenteredMomentMobiusRegroup UniqueFactorizationMonoid
+open CenteredMomentSecondWindowBudget CenteredMomentMobiusHarmonicMass CenteredMomentMobiusRegroup UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 
 lemma paired_divisor (J₁ J₂:ℕ) (t E₁ E₂ n:ℝ) (hn:0≤n) :

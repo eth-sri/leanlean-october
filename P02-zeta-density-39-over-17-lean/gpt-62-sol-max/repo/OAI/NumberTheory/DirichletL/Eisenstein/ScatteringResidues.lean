@@ -11,73 +11,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -245,59 +189,21 @@ open Finset AddChar MulChar EisensteinEmbedding
 local notation "O" => ActualEisensteinCubic.O
 
 def cubicResidualFunction (w : HyperbolicSpace) : ℂ :=
-  (3*Real.pi:ℂ)*constantArithmeticResidue*(hyperbolicHeight w:ℂ)^(2/3:ℂ)+
-    cubicResidualNonzeroFunction w
+  residualBesselCoefficients.fullFunction ((3*Real.pi:ℂ)*constantArithmeticResidue) w
 
-lemma cubicResidualFunction_continuous : Continuous cubicResidualFunction := by
-  have hp : Continuous (fun w : HyperbolicSpace => (hyperbolicHeight w:ℂ)^(2/3:ℂ)) := by
-    apply continuous_iff_continuousAt.mpr
-    intro w
-    exact (Complex.continuousAt_ofReal_cpow_const (hyperbolicHeight w) (2/3:ℂ)
-      (Or.inr (hyperbolicHeight_pos w).ne')).comp (f := hyperbolicHeight) hyperbolicHeight_continuous.continuousAt
-  exact (continuous_const.mul hp).add cubicResidualNonzeroFunction_continuous
-
-lemma cubicResidualNonzeroSeries_height_continuous (v : ℝ) (hv : 0<v) :
-    Continuous (fun z : ℂ => cubicResidualNonzeroSeries (v,z)) := by
-  apply continuous_iff_continuousAt.mpr
-  intro z
-  have hopen : IsOpen {p : ℝ × ℂ | 0<p.1} := isOpen_lt continuous_const continuous_fst
-  exact (cubicResidualNonzeroSeries_continuousOn.continuousAt (hopen.mem_nhds hv)).comp
-    (f := fun z : ℂ => (v,z)) (by fun_prop)
-
-lemma periodDomain_integrable_of_continuous (f : ℂ→ℂ) (hf : Continuous f) :
-    IntegrableOn f periodDomain volume := by
-  apply (hf.continuousOn.integrableOn_compact
-    (isCompact_closedBall (0:ℂ) (∑i,‖periodBasis i‖))).mono_set
-  intro z hz
-  simpa only [Metric.mem_closedBall,dist_zero_right] using norm_mem_periodDomain z hz
+lemma cubicResidualFunction_continuous : Continuous cubicResidualFunction :=
+  residualBesselCoefficients.fullFunction_continuous _
 
 lemma cubicResidualFunction_fourier (v : ℝ) (hv : 0<v) (k : ActualEisensteinCubic.O) :
     (∫z in periodDomain,cubicResidualFunction (upperPoint z v hv)*ShortDraftTrace.breveE (-cuspFrequency k*z))=
       ((9*Real.sqrt 3/2:ℝ):ℂ)*(if k=0 then
-        (3*Real.pi:ℂ)*constantArithmeticResidue*(v:ℂ)^(2/3:ℂ) else cubicResidualModeAmplitude v k) := by
-  have hphase : Continuous (fun z : ℂ => ShortDraftTrace.breveE (-cuspFrequency k*z)) := by
-    change Continuous (fun z : ℂ => Complex.exp (2*Real.pi*Complex.I*
-      ((-cuspFrequency k*z)+starRingEnd ℂ (-cuspFrequency k*z))))
-    fun_prop
-  have hc0 := periodDomain_integrable_of_continuous
-    (fun z => ((3*Real.pi:ℂ)*constantArithmeticResidue*(v:ℂ)^(2/3:ℂ))*
-      ShortDraftTrace.breveE (-cuspFrequency k*z)) (continuous_const.mul hphase)
-  have hcn := periodDomain_integrable_of_continuous
-    (fun z => cubicResidualNonzeroSeries (v,z)*ShortDraftTrace.breveE (-cuspFrequency k*z))
-    ((cubicResidualNonzeroSeries_height_continuous v hv).mul hphase)
-  simp_rw [cubicResidualFunction,cubicResidualNonzeroFunction,
-    hyperbolicHeight_upperPoint,hyperbolicHorizontal_upperPoint,add_mul]
-  rw [integral_add hc0 hcn,integral_const_mul,integral_cusp_character,cubicResidualNonzeroSeries_fourier v hv k]
-  by_cases hk : k=0
-  · simp only [ite_eq_left hk,cubicResidualModeAmplitude,mul_zero]
-    ring
-  · simp only [ite_eq_right hk,mul_zero,zero_add]
+        (3*Real.pi:ℂ)*constantArithmeticResidue*(v:ℂ)^(2/3:ℂ) else cubicResidualModeAmplitude v k) :=
+  residualBesselCoefficients.fullFunction_fourier _ v hv k
 
 lemma cubicResidualFunction_period (v : ℝ) (hv : 0<v) (z : ℂ) (n : ActualEisensteinCubic.O) :
     cubicResidualFunction (upperPoint (z+3*ConcreteTraceCRT.eisEmbedding n) v hv)=
-      cubicResidualFunction (upperPoint z v hv) := by
-  simp only [cubicResidualFunction,cubicResidualNonzeroFunction,
-    hyperbolicHeight_upperPoint,hyperbolicHorizontal_upperPoint,cubicResidualNonzeroSeries_period]
+      cubicResidualFunction (upperPoint z v hv) :=
+  residualBesselCoefficients.fullFunction_period _ v hv z n
 
 end
 
@@ -510,8 +416,11 @@ open EisensteinEmbedding (omega3)
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss CubicRamified
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma ramified_symbol_primaryCoord (u:Eisˣ) (n j:ℕ)
-    (hu:(u:Eis)=omega^j ∨ (u:Eis)=-(omega^j)) (A B:ℤ) :
+section
+variable (u:Eisˣ) (n j:ℕ) (hu:(u:Eis)=omega^j ∨ (u:Eis)=-(omega^j))
+include u n j hu
+
+lemma ramified_symbol_primaryCoord (A B:ℤ) :
     symbol (u.val*lambda^n) (primaryCoord A B)=
       (cubicExp (2*A-B))^j*(cubicExp A)^n := by
   have hp:=primaryCoord_primary A B
@@ -527,21 +436,21 @@ lemma ramified_symbol_primaryCoord (u:Eisˣ) (n j:ℕ)
       symbol_omega_eq_linearRay _ hp,linearRay_primaryCoord]
     ring_nf
 
-lemma ramified_symbol_at_one (u:Eisˣ) (n j:ℕ)
-    (hu:(u:Eis)=omega^j ∨ (u:Eis)=-(omega^j)) :
+lemma ramified_symbol_at_one :
     symbol (u.val*lambda^n) (1+3*(1:Eis))=omega^(2*j+n) := by
   have he:(1+3*(1:Eis))=primaryCoord 1 0:=by rw [primaryCoord_eq];norm_num
   rw [he,ramified_symbol_primaryCoord u n j hu]
   norm_num [cubicExp]
   rw [←pow_mul,←pow_add]
 
-lemma ramified_symbol_at_omega (u:Eisˣ) (n j:ℕ)
-    (hu:(u:Eis)=omega^j ∨ (u:Eis)=-(omega^j)) :
+lemma ramified_symbol_at_omega :
     symbol (u.val*lambda^n) (1+3*omega)=omega^(2*j) := by
   have he:(1+3*omega)=primaryCoord 0 1:=by rw [primaryCoord_eq];norm_num
   rw [he,ramified_symbol_primaryCoord u n j hu]
   norm_num [cubicExp]
   rw [←pow_mul]
+
+end
 
 lemma ramifiedFrequencyChar_mk (k:Eis) (u:Eisˣ) (n:ℕ) (x:Eis) :
     ramifiedFrequencyChar k u n (Ideal.Quotient.mk _ x)=

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Reflection.SectorData
 public import OAI.NumberTheory.DirichletL.Reflection.CanonicalEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.MemberGeometryUniformDegree
 
@@ -54,22 +55,9 @@ theorem canonical_member_geometry_uniform_uniform_degree
       let S := tuplePrimeFamily tuples hne hmax hgood
       let Pset := tuples.image slotTupleProduct
       ∀ (hrows : ∀ K∈rows,Admissible K),
-      (∀ f,IsCoprime (Ideal.span {Nlevel}) (G.ideal f)) →
-      (∀ f,ringChar (Eis⧸G.ideal f)≠2) →
-      (∀ K∈rows,(∀ f,IsCoprime (G.ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
-      (∀ P∈Pset,(∏ b,(S P).ideal b)=P) →
-      (∀ P∈Pset,Pairwise (Function.onFun IsCoprime (G.sum (S P)).ideal)) →
-      (∀ P∈Pset,∀ b,IsCoprime (Ideal.span {Nlevel}) ((G.sum (S P)).ideal b)) →
-      (∀ P∈Pset,∀ b,ringChar (Eis⧸(G.sum (S P)).ideal b)≠2) →
-    ∃ D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
-      ControlledStratumArithmetic (G.reflected K.val (hrows K.val K.property) (S P.val)).generator Nlevel a c₀ mode,
-    ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ),
-      1≤QK → 2≤QP →
-      (∀ K∈rows,QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK) →
-      (∀ P∈Pset,CubicSieve.Admissible P ∧ QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤QP) →
-      (∀ K∈rows,‖r K‖≤1) → (∀ p∈tuples,‖aw p‖≤1) →
-      (∑ K : rows,‖memberTupleRow tuples hmax hgood G K.val (hrows K.val K.property) hne hinj (D K) s hc₀ j W θ (Z^(N-3*hhat)) r aw‖^2)≤
-        C*(1+‖θ‖)^degree*Z^(N+V-3*cstar/16-O₀/2) := by
+      WithSectorPrimes Nlevel G rows Pset S <|
+      MemberCellEnergy (N:=Nlevel) tuples hmax hgood G rows hne hinj hrows s hc₀ j W (Z^(N-3*hhat)) QK QP
+        (fun θ => C*(1+‖θ‖)^degree*Z^(N+V-3*cstar/16-O₀/2)) := by
   let Lcap := 4*L+2
   have hLc : 0≤Lcap := by dsimp [Lcap];positivity
   obtain ⟨ε,ρ,κ,δ,π,hε,hρ,hκ,hδ,hδL,hηsmall,hδη,hπ,hbudget,hsmall⟩ :=

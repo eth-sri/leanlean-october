@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.UniformTailBounds
 
 @[expose] public section
@@ -8,113 +9,42 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 namespace SecondPassArithmetic
 
-section
 
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-open RayFourExpansion (RayCharacter)
 
-end
 section
 
 open scoped BigOperators Classical SchwartzMap
-open MeasureTheory
-open ActualEisensteinCubic
+open MeasureTheory ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm columnLog)
 open RayFourExpansion (RayCharacter crossCoeff)
 
-@[ext] structure GlobalCubeBlock (ι : Type*) where
-  cube : CubeCoordinates ι
-  common : Finset ι
-  firstDivisor : Finset ι
 
 namespace GlobalCubeBlock
 variable {ι : Type*}
-def withCommon (b : GlobalCubeBlock ι) (A : Finset ι) : GlobalFirstData ι :=
-  ⟨b.cube,A,b.common,b.firstDivisor⟩
 end GlobalCubeBlock
 
 namespace GlobalFirstData
 variable {ι : Type*}
-def block (b : GlobalFirstData ι) : GlobalCubeBlock ι := ⟨b.cube,b.common,b.firstDivisor⟩
-@[simp] theorem block_withCommon (b : GlobalCubeBlock ι) (A : Finset ι) : (b.withCommon A).block=b := rfl
-@[simp] theorem withCommon_block (b : GlobalFirstData ι) : b.block.withCommon b.firstCommon=b := by cases b; rfl
 end GlobalFirstData
 
 variable {ι : Type*} [DecidableEq ι]
 
-variable (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
+variable (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end
 
@@ -136,11 +66,11 @@ def conjugateMonoid (Ψ : O→*ℂ) : O→*ℂ where
   map_mul' x y := by simp [map_mul]
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀i,lambda∉Ideal.span {p i})
+  (p : ι→O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
-variable (hp : ∀i,p i≠0) (hinj : Function.Injective (fun i => Ideal.span {p i}))
-  (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+variable (hp : ∀i,p i≠0) (hinj : OAI.PrincipalIdealFamily.Distinct p)
+  (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
 include hc
 
 end InitialMeanSquare
@@ -174,7 +104,7 @@ theorem powerful_squarefree_dvd_squarePart (I : Ideal O) (hI : PowerfulIdeal I) 
     omega
 
 theorem powerful_exists_square_cube (I : Ideal O) (hI : PowerfulIdeal I) :
-    ∃A : Ideal O, A≠0 ∧ A^2*squarefreePart I^3=I := by
+    ∃A : Ideal O, A≠0 ∧ A^2*squarefreePart I ^3=I := by
   obtain ⟨A,hA⟩ := powerful_squarefree_dvd_squarePart I hI
   have ha : A≠0 := by
     intro hz
@@ -184,14 +114,14 @@ theorem powerful_exists_square_cube (I : Ideal O) (hI : PowerfulIdeal I) :
   refine ⟨A,ha,?_⟩
   calc
     _ = (squarefreePart I*A)^2*squarefreePart I := by ring
-    _ = squarePart I^2*squarefreePart I := by rw [←hA]
+    _ = squarePart I ^2*squarefreePart I := by rw [←hA]
     _ = I := squarePart_sq_mul_squarefreePart I
 
 def powerfulBase (I : Ideal O) : Ideal O :=
   if hI : PowerfulIdeal I then (powerful_exists_square_cube I hI).choose else 0
 
 theorem powerfulBase_spec (I : Ideal O) (hI : PowerfulIdeal I) :
-    powerfulBase I≠0 ∧ powerfulBase I^2*squarefreePart I^3=I := by
+    powerfulBase I≠0 ∧ powerfulBase I ^2*squarefreePart I ^3=I := by
   rw [powerfulBase,dite_eq_left hI]
   exact (powerful_exists_square_cube I hI).choose_spec
 

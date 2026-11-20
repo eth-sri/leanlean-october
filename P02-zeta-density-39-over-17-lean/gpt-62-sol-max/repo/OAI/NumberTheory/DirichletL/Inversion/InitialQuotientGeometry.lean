@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialArithmetic
 public import OAI.NumberTheory.DirichletL.Descent.TripleMass
 public import OAI.NumberTheory.DirichletL.Descent.Basic
@@ -9,8 +10,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalQuadraticSieve
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
+open ActualEisensteinCubic IdealMobiusDivisorSum CompletedGauss CanonicalQuadraticSieve SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialQuotientGeometry
 
 local notation "Eis" => ActualEisensteinCubic.O
@@ -29,10 +29,10 @@ def retained {J : ℕ} (S : Finset (Source (ι:=ι) J))
 def quotientSet {J : ℕ} (S : Finset (Source (ι:=ι) J)) : Finset (Ideal Eis) :=
   S.image (fun x => sourceIdeal p (x.common\x.divisor))
 
-variable (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+variable (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
 
 include hp in
-omit [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 theorem quotientSet_nonzero {J : ℕ} (S : Finset (Source (ι:=ι) J)) :
     ∀ t ∈ quotientSet p S, t ≠ 0 := by
   intro t ht
@@ -51,7 +51,7 @@ theorem quotientSet_eq_initial {J : ℕ} (S : Finset (Source (ι:=ι) J))
   exact source_quotient p hp x.common x.divisor (hdiv x hx)
 
 include hp in
-omit [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 theorem quotient_norm_eq {J : ℕ} (x : Source (ι:=ι) J) (hdiv : x.divisor ⊆ x.common) :
     (Ideal.absNorm (sourceIdeal p (x.common\x.divisor)) : ℝ) =
       (Ideal.absNorm (sourceIdeal p x.common) : ℝ)/Ideal.absNorm (sourceIdeal p x.divisor) := by
@@ -65,7 +65,7 @@ theorem quotient_norm_eq {J : ℕ} (x : Source (ι:=ι) J) (hdiv : x.divisor ⊆
   apply (eq_div_iff hd).mpr
   simpa only [mul_comm] using hn
 
-omit [DecidableEq ι] [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalIdealFamily.Maximal p] in
 
 theorem retained_norm_windows {J : ℕ} (S : Finset (Source (ι:=ι) J))
     (A : Source (ι:=ι) J → ℂ) (ψC ψd : ℝ → ℂ)
@@ -84,7 +84,7 @@ theorem retained_norm_windows {J : ℕ} (S : Finset (Source (ι:=ι) J))
     (le_div_iff₀ (Real.rpow_pos_of_pos hZ _)).mp (hd hnd).1⟩
 
 include hp in
-omit [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 theorem retained_quotient_bound {J : ℕ} (S : Finset (Source (ι:=ι) J))
     (A : Source (ι:=ι) J → ℂ) (ψC ψd : ℝ → ℂ)
     (aC bC ad bd Z B θ η : ℝ) (hZ : 0 < Z)
@@ -113,7 +113,7 @@ theorem retained_quotient_bound {J : ℕ} (S : Finset (Source (ι:=ι) J))
     _ = _ := by rw [←Real.rpow_sub hZ]; congr 1; ring
 
 include hp in
-omit [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 theorem nonempty_radius {J : ℕ} (S : Finset (Source (ι:=ι) J)) (Z P η : ℝ)
     (hZ : 1 < Z) (hne : (quotientSet p S).Nonempty)
     (hnorm : ∀ t ∈ quotientSet p S, (Ideal.absNorm t : ℝ) ≤ Z^(P+2*η)) :
@@ -198,9 +198,9 @@ theorem assigned_norm_power {σ : Type*} (slots : Finset σ) (q : σ → Eis)
     _ = _ := by rw [←Real.rpow_add hZ]; congr 1; ring
 
 include hp in
-omit [∀ i, (Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 theorem span_source_puncture {J : ℕ} (S : Finset (Source (ι:=ι) J))
-    (hpr : ∀ i, λ₀^2 ∣ p i-1) (j : Eis)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p λ₀) (j : Eis)
     {t : Ideal Eis} (ht : t ∈ quotientSet p S) :
     Ideal.span {j*primaryGenerator t} = t*Ideal.span {j} := by
   obtain ⟨x,hx,rfl⟩ := Finset.mem_image.mp ht

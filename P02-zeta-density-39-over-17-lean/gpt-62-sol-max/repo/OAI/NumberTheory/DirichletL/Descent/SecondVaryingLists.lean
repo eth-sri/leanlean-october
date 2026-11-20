@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
 
 @[expose] public section
@@ -42,11 +43,11 @@ theorem varyingAssignedSource_mono {Jo : ℕ}
       varyingAssignedSource T J₁ J₂ base₁ base₂ L₁ L₂ := by
   exact Finset.filter_subset_filter _ (assignedSecondSource_mono hST J₁ J₂ base₁ base₂)
 
-theorem varyingAssignedSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)
-    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι)
-    (hL₁ : ∀ x∈source,∀ i∈J₁,L₁ x i⊆base₁ i)
-    (hL₂ : ∀ x∈source,∀ i∈J₂,L₂ x i⊆base₂ i)
+section
+variable {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0)) (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι) (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι) (hL₁ : ∀ x∈source,∀ i∈J₁,L₁ x i⊆base₁ i) (hL₂ : ∀ x∈source,∀ i∈J₂,L₂ x i⊆base₂ i)
+include Jo source J₁ J₂ base₁ base₂ L₁ L₂ hL₁ hL₂
+
+theorem varyingAssignedSource_sum
     (F : MarkedSecondSource ι Jo (J₁.card+J₂.card)→ℂ) :
     ∑ x∈varyingAssignedSource source J₁ J₂ base₁ base₂ L₁ L₂,F x =
       ∑ y∈source,∑ q∈(J₁.pi (fun i=>L₁ y i∩(y.second.sourceCommon∪y.second.overlap)))×ˢ
@@ -66,11 +67,7 @@ theorem varyingAssignedSource_sum {Jo : ℕ} (source : Finset (MarkedSecondSourc
       fun i hi=>⟨hL₂ y hy i hi (h₂ i hi).1,(h₂ i hi).2⟩⟩,
       fun i hi=>(h₁ i hi).1,fun i hi=>(h₂ i hi).1⟩
 
-theorem varyingAssignedSource_sum_marks {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
-    (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)
-    (L₁ L₂ : MarkedSecondSource ι Jo 0→σ→Finset ι)
-    (hL₁ : ∀ x∈source,∀ i∈J₁,L₁ x i⊆base₁ i)
-    (hL₂ : ∀ x∈source,∀ i∈J₂,L₂ x i⊆base₂ i)
+theorem varyingAssignedSource_sum_marks
     (a₁ a₂ : σ→ι→ℂ) (w P : MarkedSecondSource ι Jo 0→ℂ) :
     (∑ y∈source,w y*(star (primeMark J₁ (L₁ y) a₁ (y.second.sourceCommon∪y.second.overlap))*
       primeMark J₂ (L₂ y) a₂ (y.second.sourceCommon∪y.second.overlap))*P y) =
@@ -86,13 +83,15 @@ theorem varyingAssignedSource_sum_marks {Jo : ℕ} (source : Finset (MarkedSecon
   rw [assignedSecondCoefficient_attach]
   simp only [attachPairedSlots,erase_attachSecondSlots]
 
-variable (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+end
+
+variable (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
 
 include hp in
 theorem actual_second_varying_lists_weighted_count
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     {Jo : ℕ} (u v : Oˣ) (source : Finset (MarkedSecondSource ι Jo 0))
     (hs : ActualSecondSourceConditions p source)
     (J₁ J₂ : Finset σ) (base₁ base₂ : σ→Finset ι)

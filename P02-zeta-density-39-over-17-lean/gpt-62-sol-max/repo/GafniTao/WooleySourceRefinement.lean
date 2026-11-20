@@ -112,7 +112,7 @@ theorem wooleySourcePolynomialResidueSum_eq_zero_of_massSq_eq_zero
   unfold wooleySourcePolynomialResidueSum
   apply Finset.sum_eq_zero
   intro n hn
-  have hnzero : ‖gamma n‖ = 0 := (sq_eq_zero_iff).mp (hterm n hn)
+  have hnzero := (sq_eq_zero_iff).mp (hterm n hn)
   rw [norm_eq_zero] at hnzero
   simp [hnzero]
 
@@ -127,7 +127,7 @@ theorem wooleySource_sqrt_mass_mul_normalizedResidueSum
   · simp [wooleySourceNormalizedPolynomialResidueSum, hmass,
       wooleySourcePolynomialResidueSum_eq_zero_of_massSq_eq_zero
         phi gamma alpha xi hmass]
-  · have hmassPos : 0 < wooleySourceResidueMassSq gamma qH xi :=
+  · have hmassPos :=
       lt_of_le_of_ne (wooleySourceResidueMassSq_nonneg gamma qH xi)
         (Ne.symm hmass)
     simp [wooleySourceNormalizedPolynomialResidueSum, hmass,

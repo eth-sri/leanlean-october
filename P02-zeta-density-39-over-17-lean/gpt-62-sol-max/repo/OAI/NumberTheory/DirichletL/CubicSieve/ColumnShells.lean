@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FiniteSieveRestriction
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CanonicalQuadraticSieve FiniteSieveRestriction
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -18,9 +17,11 @@ def cubicColumnLabel {n : Type*} (cols : n → Ideal O) (N : ℝ) (j : n) :
 abbrev CubicColumnShell {n : Type*} (cols : n → Ideal O) (N : ℝ)
     (l : Fin (columnDyadicLength N + 1)) := {j : n // cubicColumnLabel cols N j = l}
 
-lemma cubicColumnShell_bounds {n : Type*} (cols : n → Ideal O) (N : ℝ)
-    (hc : ∀ j, Admissible (cols j)) (hn : ∀ j, (Ideal.absNorm (cols j) : ℝ) ≤ N)
-    (l : Fin (columnDyadicLength N + 1)) (j : CubicColumnShell cols N l) :
+section
+variable {n : Type*} (cols : n → Ideal O) (N : ℝ) (hc : ∀ j, Admissible (cols j)) (hn : ∀ j, (Ideal.absNorm (cols j) : ℝ) ≤ N) (l : Fin (columnDyadicLength N + 1)) (j : CubicColumnShell cols N l)
+include n cols N hc hn l j
+
+lemma cubicColumnShell_bounds :
     (2 : ℝ)^l.val/2 ≤ (Ideal.absNorm (cols j.val) : ℝ) ∧
       (Ideal.absNorm (cols j.val) : ℝ) ≤ (2 : ℝ)^l.val := by
   have hp : 1 ≤ (Ideal.absNorm (cols j.val) : ℝ) := by
@@ -32,12 +33,12 @@ lemma cubicColumnShell_bounds {n : Type*} (cols : n → Ideal O) (N : ℝ)
   rw [hj] at hb
   exact ⟨hb.1.le,hb.2⟩
 
-lemma cubicColumnShell_scale_le {n : Type*} (cols : n → Ideal O) (N : ℝ)
-    (hc : ∀ j, Admissible (cols j)) (hn : ∀ j, (Ideal.absNorm (cols j) : ℝ) ≤ N)
-    (l : Fin (columnDyadicLength N + 1)) (j : CubicColumnShell cols N l) :
+lemma cubicColumnShell_scale_le :
     (2 : ℝ)^l.val ≤ 2*N := by
   have hh := (cubicColumnShell_bounds cols N hc hn l j).1
   linarith [hn j.val]
+
+end
 
 lemma cubicColumnShell_energy {n : Type*} [Fintype n]
     (cols : n → Ideal O) (N : ℝ) (a : n → ℂ) :

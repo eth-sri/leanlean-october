@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailWeights
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailKernel
 
@@ -10,8 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialPhysicalMeasure
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialPhysicalMeasure
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
@@ -60,8 +60,8 @@ theorem source_sum_fibers (S : Finset (Point ι)) (f : Point ι→ℂ) :
     rw [←sourcePoint_key x,←sourcePoint_key y,hk,hxy]
 
 theorem sourceKeys_card
-    (p : ι→O) (_hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    (p : ι→O) (_hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (pool : Finset ι) (S : Finset (Point ι)) (L : ℝ) (hL : 1≤L)
     (hpool : ∀x∈S,∀i,sourceKey x i⊆pool)
     (hnorm : ∀x∈S,∀i,primeProductNorm p (sourceKey x i)≤L) :

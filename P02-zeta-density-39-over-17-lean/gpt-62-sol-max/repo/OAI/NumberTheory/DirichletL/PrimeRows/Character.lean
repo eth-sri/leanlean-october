@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion
-open CanonicalQuadraticSieve ProbePhysical
+open HeckeFamily HeckeInverseAmplification HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve ProbePhysical
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 

@@ -7,24 +7,3 @@ set_option linter.privateModule false
 
 @[expose] public section
 
-namespace OAI
-
-noncomputable section
-open scoped Classical BigOperators SchwartzMap
-
-namespace SevenEighths.CenteredMomentSecondLiveFamily
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondHeightFamily CenteredMomentSecondRadicalBudget CenteredMomentSecondRetainedWidth
-open CenteredMomentSecondSixthReduction CenteredMomentSecondSixthSource CenteredMomentSecondRadicalColumns
-open CenteredMomentSecondReducedPredicate CenteredMomentSecondLiveBlock CenteredMomentSecondBlockSupport
-open CenteredMomentSecondPhysicalBlock CenteredMomentHeckeColumnWindow CenteredMomentChildRows
-open CenteredMomentRestrictedEnergy CenteredMomentSectorLocalization RayFourExpansion
-local notation "O" => HeckeFamily.O
-
-end SevenEighths.CenteredMomentSecondLiveFamily
-
-end
-
-end OAI

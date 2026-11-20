@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerBranch
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerMass
 
@@ -11,19 +12,15 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerAllSlots
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile InverseInitialEnergyCallerAllocation InverseInitialEnergyCallerAssigned InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerBranch
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→Eis)(hp:∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem rowMode_sum_allocations
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)(u:Eisˣ)
     (hu:∀x∈S,unitSector p hp hpr (sourcePoint x ∅ ∅)=u)
     (pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)(slots:Finset σ)
@@ -49,12 +46,12 @@ theorem rowMode_sum_allocations
 
 theorem all_slots_bound (N:ℕ)(U π:ℝ)(hU:0≤U)(hπ:0<π) :
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (_hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+      (p:ι→Eis)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hinj:OAI.PrincipalIdealFamily.Distinct p)
+      (hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
+      (_hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (S:Finset (Source (ι:=ι) 0))(u:Eisˣ)(_hdiv:∀x∈S,x.divisor⊆x.common)
       (_hu:∀x∈S,unitSector p hp hpr (sourcePoint x ∅ ∅)=u)
       (pool:Finset ι)(Ψ:Eis→*ℂ)(_hΨ:∀n,‖Ψ n‖≤1)(j:Eis)

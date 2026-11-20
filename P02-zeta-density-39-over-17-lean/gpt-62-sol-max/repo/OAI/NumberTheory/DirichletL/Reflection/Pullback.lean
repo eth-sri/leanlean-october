@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalTransport
 
 @[expose] public section
@@ -31,12 +32,12 @@ lemma reindexMarks_symm (e : κ≃ι) (S : Finset ι) :
   simp only [mem_reindexMarks,Equiv.apply_symm_apply]
 
 theorem mixedReflectedValue_pullback
-    [∀ i, (Ideal.span {p i}).IsMaximal] [∀ k, (Ideal.span {q k}).IsMaximal]
+    [OAI.PrincipalIdealFamily.Maximal p] [OAI.PrincipalIdealFamily.Maximal q]
     (e : κ≃ι) (h : (fun k => p (e k))=q)
     (D : ControlledStratumArithmetic q N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hp : ∀ i, p i≠0) (hq : ∀ k, q k≠0) (hc : c≠0)
-    (hgp : ∀ i, λ₀∉Ideal.span {p i}) (hgq : ∀ k, λ₀∉Ideal.span {q k})
+    (hgp : OAI.PrincipalIdealFamily.Avoids p λ₀) (hgq : OAI.PrincipalIdealFamily.Avoids q λ₀)
     (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) :
     mixedReflectedValue (pullbackControlled e h D) s hp hc hgp j S W X=
       mixedReflectedValue D s hq hc hgq (fun k => j (e k)) (reindexMarks e S) W X := by

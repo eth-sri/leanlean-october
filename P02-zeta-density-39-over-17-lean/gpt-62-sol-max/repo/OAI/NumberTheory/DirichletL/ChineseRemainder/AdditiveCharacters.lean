@@ -6,11 +6,9 @@ public import OAI.NumberTheory.DirichletL.Mellin.LogProfiles
 namespace OAI
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 
 namespace ShortDraftCRT
@@ -49,13 +47,7 @@ theorem normalized_crt_pair {R : Type*} [CommRing R]
     simp only [map_mul, map_pow, map_neg]
     field_simp
 
-variable {R : Type*} [CommRing R]
-
 end ShortDraftCRT
-
-namespace ShortDraftDescent
-
-end ShortDraftDescent
 
 namespace ShortDraftTrace
 

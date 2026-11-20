@@ -10,14 +10,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceLiveBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyReferenceRobustOriginal CenteredMomentEnergyReferenceScalarReserve
-open CenteredMomentEnergyReferenceProfileBudget
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceRobustOriginal CenteredMomentEnergyReferenceScalarReserve CenteredMomentEnergyReferenceProfileBudget CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
@@ -60,8 +53,8 @@ theorem original_reference_power_live
       C*(K+1)*diagonalControl s.radial.profile*(sourceControl U (p.profile 0)*sourceControl U (p.profile 1))^2*
         (1+|t|+height)^J*Z^(s.width+e+ε) :=by
   obtain ⟨d,xi,L,hd,hxi,hxirho,hL,hLupper,hstage⟩:=
-    CenteredMomentEnergyReferenceRobustBounded.original_reference_power_robust
-      (α:=α) M H hH Wslot aslot bslot lo hi haslot hsSlot hcSlot
+    CenteredMomentEnergyReferenceRobustBounded.original_reference_power
+      (α:=α) M H hH .balanced Wslot aslot bslot lo hi haslot hsSlot hcSlot
       a b bΦ rho ε Mcap Bmask ha hlo hhi hbΦ hrho hε hM hBmask
   obtain ⟨Z₀,hZ₀,hendpoint⟩:=CenteredMomentEnergyLiveClippingDefect.endpoint_threshold b (rho/100)
     (by positivity)
@@ -85,7 +78,7 @@ theorem original_reference_power_live
       (hdft.2.trans (hendpoint Z hZZ)) hlarge hcap
     exact hZ.2 e Lslot κ η₀ Q K he hK hlow θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
       s hQ hslo hs (p.profile 0) (p.profile 1) (p.support 0) (p.support 1)
-      X₁ X₂ hX₁ hX₂ hg.1 hg.2
+      X₁ X₂ hX₁ hX₂ hg
 
 end SevenEighths.CenteredMomentEnergyReferenceLiveBounded
 

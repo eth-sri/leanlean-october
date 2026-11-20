@@ -212,12 +212,7 @@ theorem verticalIntegral'_mellin_mul_mellin_one_sub
       rw [← hScalar]
       exact hInv
     rw [← mul_assoc, hInv']
-  unfold PointMean.VerticalIntegral' PointMean.VerticalIntegral
-  simp only [smul_eq_mul]
-  have hNorm : (1 / (2 * Real.pi * I) : ℂ) * I =
-      (1 / (2 * Real.pi) : ℂ) := by
-    field_simp [Real.pi_ne_zero]
-  rw [← mul_assoc, hNorm]
+  rw [PointMean.verticalIntegral'_eq_realIntegral]
   rw [show (∫ u : ℝ,
       mellin g ((σ : ℂ) + (u : ℂ) * I) *
         mellin h (1 - ((σ : ℂ) + (u : ℂ) * I))) =

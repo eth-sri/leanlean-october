@@ -34,9 +34,11 @@ theorem primitive_coefficients_of_modulus_dvd {a b c m : ℤ}
   rw [← hprim]
   exact Int.gcd_dvd_gcd_of_dvd_right _ hm
 
-theorem primitive_linear_triple_normalized {a b c u v w : ℤ}
-    (hv : 0 < v) (hprim : Int.gcd (Int.gcd u v : ℤ) w = 1)
-    (hline : a*u+b*v+c*w = 0) :
+section
+variable {a b c u v w : ℤ} (hv : 0 < v) (hprim : Int.gcd (Int.gcd u v : ℤ) w = 1) (hline : a*u+b*v+c*w = 0)
+include a b c u v w hv hprim hline
+
+theorem primitive_linear_triple_normalized :
     a*(u/(Int.gcd u v : ℤ))+b*(v/(Int.gcd u v : ℤ))+
       (c/(Int.gcd u v : ℤ))*w = 0 := by
   have hg : (Int.gcd u v : ℤ) ≠ 0 := by
@@ -54,14 +56,14 @@ theorem primitive_linear_triple_normalized {a b c u v w : ℤ}
         Int.ediv_mul_cancel (Int.gcd_dvd_right u v),Int.ediv_mul_cancel hc]
       exact hline
 
-theorem primitive_linear_triple_normalized_congruence {a b c u v w : ℤ}
-    (hv : 0 < v) (hprim : Int.gcd (Int.gcd u v : ℤ) w = 1)
-    (hline : a*u+b*v+c*w = 0) :
+theorem primitive_linear_triple_normalized_congruence :
     (c/(Int.gcd u v : ℤ)) ∣
       a*(u/(Int.gcd u v : ℤ))+b*(v/(Int.gcd u v : ℤ)) := by
   refine ⟨-w, ?_⟩
   have he := primitive_linear_triple_normalized hv hprim hline
   nlinarith only [he]
+
+end
 
 end TaoTrudgianYang2025
 

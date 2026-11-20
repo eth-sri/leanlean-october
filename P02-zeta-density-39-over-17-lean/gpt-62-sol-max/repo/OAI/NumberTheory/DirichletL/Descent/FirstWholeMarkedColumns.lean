@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstMarkedZero
 
 @[expose] public section
@@ -12,7 +13,7 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 local notation "O" => ActualEisensteinCubic.O
 
 theorem primeProductNorm_union_le_mul {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal] (A U : Finset ι) :
+    (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p] (A U : Finset ι) :
     primeProductNorm p (A∪U)≤primeProductNorm p A*primeProductNorm p U := by
   have he : A∪U=A∪(U\A) := by ext i;simp only [Finset.mem_union,Finset.mem_sdiff];tauto
   rw [he,primeProductNorm_union p A (U\A) Finset.disjoint_sdiff]
@@ -21,8 +22,8 @@ theorem primeProductNorm_union_le_mul {ι : Type*} [DecidableEq ι]
 
 theorem whole_cube_marked_test_uniform (ε : ℝ) (hε : 0<ε) :
     ∃ Cm : ℝ,0<Cm ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (_hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+      (p : ι→O) (_hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
       (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ),
       (slots : Set σ).PairwiseDisjoint lists → (∀ i∈slots,∀ k∈lists i,‖a i k‖≤1) →
       ∀ (extra : Finset ι) (test : Finset ι→ℂ) (E G L : ℝ),0≤E → 0≤G → 0≤L →

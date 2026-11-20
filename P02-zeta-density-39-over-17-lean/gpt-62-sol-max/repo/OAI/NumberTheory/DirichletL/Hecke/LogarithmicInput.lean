@@ -22,7 +22,7 @@ theorem regular_differentiableAt (η : Character) {s : ℂ} (hs : 0 < s.re) :
   have hplus : s+1 ≠ 0 := by
     intro h
     have he := congrArg Complex.re h
-    simp only [Complex.add_re, Complex.one_re, Complex.zero_re] at he
+    simp at he
     linarith
   by_cases hη : η.residue = 1
   · have he : regular η = HeckePrincipalStrip.sourceNormalized η := by

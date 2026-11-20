@@ -112,8 +112,8 @@ lemma memLp_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) : MemLp f 2 μ 
 
 lemma memLp_grad_of_mem_C1c {f : E → ℝ} (hf : f ∈ C1c (E := E)) :
     MemLp (grad (E := E) f) 2 μ := by
-  have hcont : Continuous (grad (E := E) f) := continuous_grad (E := E) (f := f) hf.1
-  have hcs : HasCompactSupport (grad (E := E) f) := hasCompactSupport_grad (E := E) (f := f) hf.2
+  have hcont := continuous_grad (E := E) (f := f) hf.1
+  have hcs := hasCompactSupport_grad (E := E) (f := f) hf.2
   exact hcont.memLp_of_hasCompactSupport (μ := μ) (p := (2 : ℝ≥0∞)) hcs
 
 /-- The `L²` class of a `C¹` compactly supported function. -/
@@ -235,15 +235,7 @@ noncomputable def graph : ↥(C1c (E := E)) →ₗ[ℝ] H1Target (μ := μ) :=
 noncomputable def h1 : Submodule ℝ (H1Target (μ := μ)) :=
   (LinearMap.range (graph (μ := μ) (E := E))).topologicalClosure
 
-/-- The Euclidean `H¹` submodule is closed by construction. -/
-theorem isClosed_h1 : IsClosed (h1 (μ := μ) (E := E) : Set (H1Target (μ := μ))) := by
-  delta h1
-  exact Submodule.isClosed_topologicalClosure (LinearMap.range (graph (μ := μ) (E := E)))
 
-/-- `H¹` is complete (a Hilbert space once the ambient `L²` spaces are). -/
-instance instCompleteSpaceh1 : CompleteSpace (↥(h1 (μ := μ) (E := E))) := by
-  classical
-  exact (isClosed_h1 (μ := μ) (E := E)).isComplete.completeSpace_coe
 
 /-- The continuous embedding `H¹ → L²`. -/
 noncomputable def h1ToL2 : (↥(h1 (μ := μ) (E := E))) →L[ℝ] L2ℝ (μ := μ) :=

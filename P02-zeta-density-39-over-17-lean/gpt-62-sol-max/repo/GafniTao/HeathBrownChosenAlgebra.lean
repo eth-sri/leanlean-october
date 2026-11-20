@@ -74,9 +74,11 @@ theorem heathBrownChosenFirstFactor_eq
     _ = heathBrownChosenFirstConstant k A *
         lambda ^ (-(2 / (k : ℝ))) := by rw [heq]
 
-theorem heathBrownChosenSecondFactor_eq
-    {k N : ℕ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
+section
+variable {k N : ℕ} {A lambda : ℝ} (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
+include k N A lambda hk hA hlambda
+
+theorem heathBrownChosenSecondFactor_eq :
     4 * A * (k - 1 : ℕ) * N *
         ((2 : ℝ) ^ (k - 1) *
           (A * lambda) ^ (((k - 1 : ℕ) : ℝ) / k)) =
@@ -92,9 +94,7 @@ theorem heathBrownChosenSecondFactor_eq
   rw [Real.mul_rpow hA.le hlambda.le, heq]
   ring
 
-theorem heathBrownChosenShiftFactor_eq_source
-    {k N : ℕ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
+theorem heathBrownChosenShiftFactor_eq_source :
     heathBrownChosenShiftFactor N k A lambda =
       (heathBrownChosenFirstConstant k A *
         lambda ^ (-(2 / (k : ℝ)))) *
@@ -105,8 +105,6 @@ theorem heathBrownChosenShiftFactor_eq_source
     heathBrownChosenSecondFactor_eq hk hA hlambda]
 
 theorem heathBrownChosenShiftFactor_le_source_sum
-    {k N : ℕ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hlambdaOne : lambda ≤ 1) :
     heathBrownChosenShiftFactor N k A lambda ≤
       heathBrownChosenTotalConstant k A *
@@ -165,6 +163,8 @@ theorem heathBrownChosenShiftFactor_le_source_sum
           heathBrownChosenTotalConstant k A * N :=
       add_le_add hterm₁ (hterm₂a.trans hterm₂b)
     _ = heathBrownChosenTotalConstant k A * (L + N) := by ring
+
+end
 
 
 end

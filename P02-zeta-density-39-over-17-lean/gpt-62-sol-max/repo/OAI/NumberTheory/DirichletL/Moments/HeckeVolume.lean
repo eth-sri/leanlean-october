@@ -12,9 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentHeckeVolume
-open HeckeFamily CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentPrimary CanonicalQuadraticSieve QuadraticInitialBound
-open IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
+open HeckeFamily CompletedGauss ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentPrimary CanonicalQuadraticSieve QuadraticInitialBound IdealMobiusDivisorSum UniqueFactorizationMonoid CenteredMomentMask
 open PrimaryIdealUnitReindex (GoodIdeal)
 open CubicEisenstein (PrimaryLower primaryLowerIdealEquiv)
 local notation "O" => ActualEisensteinCubic.O
@@ -26,7 +24,7 @@ def primaryCoefficient (ψ : Character) : Ideal O →* ℂ where
     intro I J
     simp only [primaryGenerator_mul,map_mul]
     by_cases hI : primaryGenerator I=0 <;> by_cases hJ : primaryGenerator J=0 <;>
-      simp only [hI,hJ,mul_eq_zero,or_false,ite_true,ite_false,zero_mul,mul_zero]
+      simp [hI, hJ]
 
 theorem primaryCoefficient_good (ψ : Character) (I : Ideal O) (hI : primaryGenerator I ≠ 0) :
     primaryCoefficient ψ I = elementCoeff ψ (primaryGenerator I) := by
@@ -37,7 +35,7 @@ theorem primaryCoefficient_good (ψ : Character) (I : Ideal O) (hI : primaryGene
 theorem primaryCoefficient_norm (ψ : Character) (I : Ideal O) : ‖primaryCoefficient ψ I‖ ≤ 1 := by
   change ‖if primaryGenerator I=0 then 0 else idealCoeff ψ I‖ ≤ 1
   split_ifs
-  · simp only [norm_zero,zero_le_one]
+  · simp
   · exact idealCoeff_norm_le_one ψ I
 
 def periodicValue (c : O) (ψ : Character) (r : O ⧸ Ideal.span {c}) : ℂ :=
@@ -66,7 +64,7 @@ theorem periodicValue_norm (c : O) (ψ : Character) (r : O ⧸ Ideal.span {c}) :
   unfold periodicValue
   split_ifs
   · exact norm_finite_character_le_one ψ.residue _
-  · simp only [norm_zero,zero_le_one]
+  · simp
 
 theorem lattice_eq_ideal_sum (c : O) (h3 : (3:O) ∣ c) (ψ : Character)
     (hmod : (Ideal.span {c} : Ideal O) ≤ ψ.modulus) (W : ℝ → ℂ) (X : ℝ) :
@@ -91,7 +89,7 @@ theorem lattice_eq_ideal_sum (c : O) (h3 : (3:O) ∣ c) (ψ : Character)
     change primaryGenerator I ≠ 0
     intro hz
     apply hI
-    simp only [primaryCoefficient,MonoidHom.coe_mk,OneHom.coe_mk,hz,ite_true,zero_mul]
+    simp [primaryCoefficient, hz]
   rw [hleft,← hideal,← primaryLowerIdealEquiv.symm.tsum_eq]
   apply tsum_congr
   intro I
@@ -177,7 +175,7 @@ theorem masked_hecke_volume
       intro D hD
       rw [norm_mul]
       exact (mul_le_mul (hcoef D) (hsingle D hD) (norm_nonneg _) zero_le_one).trans_eq (one_mul B)
-    _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul]
+    _ = _ := by simp
 
 def fixedPeriod (Q : Ideal O) : O := 3*ConcretePrimeRowBridge.idealGenerator Q
 
@@ -237,7 +235,7 @@ theorem induced_primaryCoefficient (χ ψ : Character)
   change (if primaryGenerator I=0 then 0 else idealCoeff χ I)=
     (if IsCoprime I χ.modulus then (1:ℂ) else 0)*(if primaryGenerator I=0 then 0 else idealCoeff ψ I)
   rw [hind I]
-  split_ifs <;> simp only [one_mul,zero_mul]
+  split_ifs <;> simp
 
 theorem primaryCoefficient_actual_row (η χ : Character) (m A₀ z : O)
     (hmLam : ConcretePrimeRowBridge.goodLambda ∣ m) (hm2 : (2:O) ∣ m)

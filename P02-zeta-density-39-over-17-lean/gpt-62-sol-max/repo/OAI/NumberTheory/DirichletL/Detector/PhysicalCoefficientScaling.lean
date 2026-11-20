@@ -9,8 +9,7 @@ namespace OAI
 
 noncomputable section
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ProbeCompleted ProbeRow CubicEisenstein
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ProbeCompleted ProbeRow CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 theorem physical_spectral_coefficient_scale (S : Finset (Ideal O)) (D I J : Ideal O)

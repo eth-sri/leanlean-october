@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.CubicSieve
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open EisensteinSchwartzPoisson
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
@@ -40,9 +39,11 @@ lemma pair_modulus_norm_sq (I J : Ideal O) (hI : Admissible I) (hJ : Admissible 
       (Ideal.absNorm I : ℝ) * (Ideal.absNorm J : ℝ) := by
   rw [map_mul, norm_mul, mul_pow, primaryGenerator_norm_sq I hI.2, primaryGenerator_norm_sq J hJ.2]
 
-lemma cubicDualRow_summable {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+section
+variable {n : Type*} [instShared1 : Fintype n] (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j)) (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M)
+include n instShared1 cols hc a W M hM
+
+lemma cubicDualRow_summable :
     Summable (cubicDualRow cols hc a W M) := by
   apply summable_sum
   intro j hj
@@ -70,9 +71,7 @@ lemma cubicDualRow_summable {n : Type*} [Fintype n]
   · simp only [ite_eq_right hcop]
     exact summable_zero
 
-lemma cubicDualRow_tsum {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+lemma cubicDualRow_tsum :
     (∑' h : O, cubicDualRow cols hc a W M h) =
       ∑ j, ∑ k, if IsCoprime (cols j) (cols k) then
         (star (a j) * a k * (star (gaussTwo (cols j) (hc j).2) * gaussTwo (cols k) (hc k).2) /
@@ -116,9 +115,7 @@ lemma cubicDualRow_tsum {n : Type*} [Fintype n]
   intro k hk
   split_ifs <;> simp only [tsum_zero, mul_assoc, tsum_mul_left]
 
-theorem cubicSmoothedCoprime_poisson {n : Type*} [Fintype n]
-    (cols : n → Ideal O) (hc : ∀ j, Admissible (cols j))
-    (a : n → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+theorem cubicSmoothedCoprime_poisson :
     cubicSmoothedCoprime cols a W M =
       (M : ℂ) * ∑' h : O, cubicDualRow cols hc a W M h := by
   rw [cubicDualRow_tsum cols hc a W M hM]
@@ -136,6 +133,8 @@ theorem cubicSmoothedCoprime_poisson {n : Type*} [Fintype n]
     rw [map_mul, norm_mul, Complex.ofReal_mul]
     ring
   · simp only [ite_eq_right hcop, mul_zero]
+
+end
 
 end
 end SevenEighths.CubicSieve

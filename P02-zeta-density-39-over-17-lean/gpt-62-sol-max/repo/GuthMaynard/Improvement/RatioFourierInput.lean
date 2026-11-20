@@ -34,9 +34,13 @@ theorem ratioFourierInput_on {μ : ℝ → ℝ} {a b v : ℝ} (hv : v ∈ Icc a 
 theorem ratioFourierInput_off {μ : ℝ → ℝ} {a b v : ℝ} (hv : v ∉ Icc a b) :
     ratioFourierInput μ a b v = 0 := indicator_of_notMem hv _
 
+section
+variable {μ : ℝ → ℝ} {a b : ℝ}
+include μ a b
+
 /-- Every positive ordinary Fourier moment transfers through the compact
 logarithmic coordinate with its measurable mask exactly retained. -/
-theorem ratioFourierInput_masked_moment {μ : ℝ → ℝ} {a b : ℝ} {A : Set ℝ}
+theorem ratioFourierInput_masked_moment {A : Set ℝ}
     {n : ℕ} (hn : n ≠ 0) (ha : 0 < a) (hab : a ≤ b)
     (hA : MeasurableSet A)
     (hF : Integrable (fun ξ => ‖𝓕 (fun t => (μ t : ℂ)) ξ‖^n)) :
@@ -65,14 +69,14 @@ theorem ratioFourierInput_masked_moment {μ : ℝ → ℝ} {a b : ℝ} {A : Set 
   ring
 
 /-- Actual L2 input, including a zero or degenerate ratio interval. -/
-theorem ratioFourierInput_square_integrable {μ : ℝ → ℝ} {a b : ℝ}
+theorem ratioFourierInput_square_integrable
     (ha : 0 < a) (hab : a ≤ b) (h1 : Integrable μ)
     (h2 : Integrable (fun t => μ t^2)) :
     Integrable (fun v => ratioFourierInput μ a b v^2) := by
   simpa using (ratioFourierInput_masked_moment (by norm_num : (2:ℕ) ≠ 0)
     ha hab MeasurableSet.univ (ordinary_real_fourier_square_integrable h1 h2)).1
 
-theorem ratioFourierInput_fourth_integrable {μ : ℝ → ℝ} {a b : ℝ}
+theorem ratioFourierInput_fourth_integrable
     (ha : 0 < a) (hab : a ≤ b) (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ)
     (h2 : Integrable (fun t => μ t^2)) :
     Integrable (fun v => ratioFourierInput μ a b v^4) := by
@@ -80,7 +84,7 @@ theorem ratioFourierInput_fourth_integrable {μ : ℝ → ℝ} {a b : ℝ}
     ha hab MeasurableSet.univ (ordinary_real_fourier_fourth_integrable h0 h1 h2)).1
 
 /-- Mask-sensitive second moment for ordinary input; A is not enlarged. -/
-theorem ratioFourierInput_masked_square {μ : ℝ → ℝ} {a b : ℝ} {A : Set ℝ}
+theorem ratioFourierInput_masked_square {A : Set ℝ}
     (ha : 0 < a) (hab : a ≤ b) (hA : MeasurableSet A)
     (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2)) :
     (∫ v in mellinFrequency ⁻¹' A, ratioFourierInput μ a b v^2) ≤
@@ -89,13 +93,15 @@ theorem ratioFourierInput_masked_square {μ : ℝ → ℝ} {a b : ℝ} {A : Set 
     (ordinary_real_fourier_square_integrable h1 h2)).2
 
 /-- The analogous fourth moment retains exactly the same Fourier mask. -/
-theorem ratioFourierInput_masked_fourth {μ : ℝ → ℝ} {a b : ℝ} {A : Set ℝ}
+theorem ratioFourierInput_masked_fourth {A : Set ℝ}
     (ha : 0 < a) (hab : a ≤ b) (hA : MeasurableSet A)
     (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2)) :
     (∫ v in mellinFrequency ⁻¹' A, ratioFourierInput μ a b v^4) ≤
       (2*Real.pi*b)*(∫ ξ in A, ‖𝓕 (fun t => (μ t : ℂ)) ξ‖^4) :=
   (ratioFourierInput_masked_moment (by norm_num) ha hab hA
     (ordinary_real_fourier_fourth_integrable h0 h1 h2)).2
+
+end
 
 /-- Pointwise mass control includes the cut-off region and zero input. -/
 theorem ratioFourierInput_le_mass {μ : ℝ → ℝ} (h0 : ∀ t, 0 ≤ μ t)

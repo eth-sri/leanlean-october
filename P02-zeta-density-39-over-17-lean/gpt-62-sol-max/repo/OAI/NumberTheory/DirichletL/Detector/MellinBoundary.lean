@@ -526,9 +526,11 @@ lemma weighted_tail_pointwise (f : HeightSpace → ℂ) (J N : ℕ) {T : ℝ} (h
     (mul_nonneg (pow_nonneg (jointHeight_pos p.1.1 p.1.2 p.2).le J) (norm_nonneg (f p)))
   convert hh using 1 ; rw [pow_add] ; ring
 
-theorem profile_uniform_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
+section
+variable (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+include W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+
+theorem profile_uniform_tails
     (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi, ∀T : ℝ, 0≤T →
       (∫p : HeightSpace in outsideBox T, jointHeight p.1.1 p.1.2 p.2^J*
@@ -558,9 +560,7 @@ theorem profile_uniform_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
         (pow_nonneg (jointHeight_pos _ _ _).le _) (norm_nonneg _))
     _ ≤ _ := div_le_div_of_nonneg_right hb (by positivity)
 
-theorem profile_arithmetic_integrable (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1) (σ ξ υ : ℝ) (hξ : 0<ξ)
+theorem profile_arithmetic_integrable (σ ξ υ : ℝ) (hξ : 0<ξ)
     (G : HeightSpace → ℂ) (hG : AEStronglyMeasurable G heightMeasure) (A : ℝ) (J : ℕ)
     (hbound : ∀p, ‖G p‖≤A*jointHeight p.1.1 p.1.2 p.2^J) :
     Integrable (fun p => G p*onLines W0 W1 σ ξ υ p) heightMeasure := by
@@ -573,6 +573,8 @@ theorem profile_arithmetic_integrable (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1
     intro p
     rw [norm_mul]
     simpa only [mul_assoc] using mul_le_mul_of_nonneg_right (hbound p) (norm_nonneg _)
+
+end
 
 inductive SliceAxis where
   | s | z | w
@@ -658,10 +660,11 @@ lemma weighted_slice_pointwise (f : HeightSpace → ℂ) (axis : SliceAxis) (J N
       (sliceMap axis T q).1.2 (sliceMap axis T q).2).le J) (norm_nonneg (f (sliceMap axis T q))))
   convert hh using 1 ; rw [pow_add] ; ring
 
-theorem profile_uniform_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
-    (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
+section
+variable (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ)
+include W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 slo shi zlo zhi wlo whi hzlo J N
+
+theorem profile_uniform_slices :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi,
       ∀axis : SliceAxis, ∀T : ℝ,
       Integrable (fun q : ℝ×ℝ =>
@@ -712,10 +715,7 @@ theorem profile_uniform_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
       linarith [le_abs_self (sliceMass (J+N))]
     _ = _ := by ring
 
-theorem profile_arithmetic_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
-    (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
+theorem profile_arithmetic_tails :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi,
       ∀A : ℝ, 0≤A → ∀G : HeightSpace → ℂ,
       AEStronglyMeasurable G heightMeasure →
@@ -748,10 +748,7 @@ theorem profile_arithmetic_tails (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : �
     _ ≤ A*(K/(1+T)^N) := mul_le_mul_of_nonneg_left (hT σ hσ ξ hξ υ hυ T hT0) hA
     _ = _ := by ring
 
-theorem profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ)
-    (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0)
-    (hW1 : Function.support W1⊆Icc a1 b1)
-    (slo shi zlo zhi wlo whi : ℝ) (hzlo : 0<zlo) (J N : ℕ) :
+theorem profile_arithmetic_slices :
     ∃ K : ℝ, 0<K ∧ ∀σ∈Icc slo shi, ∀ξ∈Icc zlo zhi, ∀υ∈Icc wlo whi,
       ∀axis : SliceAxis, ∀T A : ℝ, 0≤A → ∀G : ℝ×ℝ → ℂ,
       AEStronglyMeasurable G (volume.prod volume) →
@@ -788,6 +785,8 @@ theorem profile_arithmetic_slices (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : �
       integral_const_mul _ _
     _ ≤ A*(K/height T^N) := mul_le_mul_of_nonneg_left hmb hA
     _ = _ := by ring
+
+end
 
 end SevenEighths.ProbeMellinBoundary
 

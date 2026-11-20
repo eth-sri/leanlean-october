@@ -6,7 +6,7 @@ public import GuthMaynard.Improvement.OperatorKernel
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set InnerProductSpace
-open scoped InnerProductSpace ComplexOrder ENNReal
+open scoped ComplexOrder ENNReal
 namespace GuthMaynard.Improvement
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E] [CompleteSpace E]

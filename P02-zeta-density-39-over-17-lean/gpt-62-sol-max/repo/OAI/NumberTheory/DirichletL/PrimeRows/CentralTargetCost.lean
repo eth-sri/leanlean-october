@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth HeckeDeletionBounds
-open ProbeRowRadicalConductor
+open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeReciprocalGrowth HeckeDeletionBounds ProbeRowRadicalConductor
 local notation "O" => HeckeFamily.O
 
 lemma presentationComplexity_norm_bound (χ : Character) (H : ℝ) :
@@ -60,9 +59,11 @@ lemma target_complexity_power_bound (S : Finset (Ideal O)) (hS : ∀P∈S,Prime 
     ←Real.rpow_mul (rowNorm_ge_one u |>.trans' (by norm_num : (0:ℝ)≤1)),
     ←Real.rpow_mul (by linarith : 0≤3+H)]
 
-theorem centralRemainingScalar_arithmetic_bound (e eps : ℝ)
-    (he : 0<e) (he' : e<1/1000) (heps : 0<eps)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S) :
+section
+variable (e eps : ℝ) (he : 0<e) (he' : e<1/1000) (heps : 0<eps) (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
+include e eps he he' heps S hS hfirst
+
+theorem centralRemainingScalar_arithmetic_bound :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow) {ι : Type*} [Fintype ι] (ψ : ι→Character)
       (B a H : ℝ) (i : ℕ),2<B → 51/100≤a → a≤1 → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
@@ -85,9 +86,7 @@ theorem centralRemainingScalar_arithmetic_bound (e eps : ℝ)
       rw [show 3*eps=eps+2*eps by ring,Real.rpow_add hn]
       ring
 
-theorem central_remaining_rowCost_bound (e eps : ℝ)
-    (he : 0<e) (he' : e<1/1000) (heps : 0<eps)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S) :
+theorem central_remaining_rowCost_bound :
     ∃C : ℝ,0<C ∧ ∀(η : Character) (u : FreeRow) {ι : Type*} [Fintype ι] (ψ : ι→Character)
       (B a H : ℝ) (i : ℕ),2<B → 51/100≤a → a≤1 → H≤(3*i+2:ℕ)*B →
       detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e →
@@ -114,6 +113,8 @@ theorem central_remaining_rowCost_bound (e eps : ℝ)
         (rowNorm u^(3*eps)*rowNorm u^(a-1/2+12*e+4*eps))*
         ((3+H)^(2*eps)*(3+H)^(2+2*eps)) := by ring
     _ = _ := by rw [hnp,hlp]
+
+end
 
 end SevenEighths.ProbeHighRowFamily
 

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondAdmissible
 
 @[expose] public section
@@ -13,12 +14,12 @@ open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis) (hp : ∀ i, p i ≠ 0)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalIdealFamily.Maximal p]
 
 include hp in
 
 theorem actual_second_radical_puncture_q0_norm
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) (u v : Eisˣ) (m : Eis) (hm : m ≠ 0) :
     ‖ConcreteTraceCRT.eisEmbedding (actualSecondRadicalPuncture m (actualSecondChild p u v x).1)‖^2 ≤
@@ -44,7 +45,7 @@ theorem actual_second_radical_puncture_q0_norm
 include hp in
 
 theorem actual_second_inherited_puncture_q0_norm
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) (ht : x.quotient ≠ 0)
     (u v : Eisˣ) (m : Eis) (hm : m ≠ 0) :
@@ -80,7 +81,7 @@ theorem actual_second_q0_cube_bound
 
 include hp in
 theorem actual_second_puncture_power_from_cubes
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) (ht : x.quotient ≠ 0)
     (u v : Eisˣ) (m : Eis) (hm : m ≠ 0)
@@ -106,7 +107,7 @@ theorem actual_second_puncture_power_from_cubes
 
 include hp in
 theorem actual_second_puncture_width_from_cubes
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) (ht : x.quotient ≠ 0)
     (u v : Eisˣ) (m : Eis) (hm : m ≠ 0)
@@ -129,7 +130,7 @@ theorem actual_second_puncture_width_from_cubes
 include hp in
 
 theorem actual_second_child_margins_from_cubes
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) (ht0 : x.quotient ≠ 0)
     (u v : Eisˣ) (m : Eis) (hm : m ≠ 0)

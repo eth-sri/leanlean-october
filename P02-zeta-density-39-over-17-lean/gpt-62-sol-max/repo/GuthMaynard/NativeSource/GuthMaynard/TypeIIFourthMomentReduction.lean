@@ -6,8 +6,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.TypeIIContour
 
 @[expose] public section
 
-open Asymptotics Filter MeasureTheory Topology
-open Complex Finset
+open Asymptotics Filter MeasureTheory Topology Complex Finset
 open scoped BigOperators Interval
 open Classical
 

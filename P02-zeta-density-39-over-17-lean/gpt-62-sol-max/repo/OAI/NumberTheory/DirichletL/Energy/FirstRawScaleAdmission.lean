@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstRawScaleAdmission
-open HeckeFamily ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAnnularInput
-open CenteredMomentFirstChildLower CenteredMomentFirstAmplificationChoice
-open CenteredMomentSectorLocalization
+open HeckeFamily ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentFirstAnnularInput CenteredMomentFirstChildLower CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α]
 local instance {ι:Type*}:DecidableEq ι:=Classical.decEq _
@@ -44,10 +39,11 @@ theorem main_minimum_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
   have h:=parent_lower_scales s Z hZ
   exact child_lower s C R hC B τ t Z (parentLower s Z) hZ h.1 h.2.1 h.2.2.1 h.2.2.2
 
-theorem active_error_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
-    (B:actualAllocations s.pools C)(τ:Character)(t:ℝ)(p:O)(hp:p≠0)(k:ℕ)
-    (Bp:actualAllocations (activeInput (child s C R B τ t)).pools ((Ideal.span {p})^k))
-    (υ:Character)(v Z r:ℝ)(hZ:1<Z)
+section
+variable (s:Input α) (C R:Ideal O) (hC:C≠0) (B:actualAllocations s.pools C) (τ:Character) (t:ℝ) (p:O) (hp:p≠0) (k:ℕ) (Bp:actualAllocations (activeInput (child s C R B τ t)).pools ((Ideal.span {p})^k)) (υ:Character)
+include s C R hC B τ t p hp k Bp υ
+
+theorem active_error_lower(v Z r:ℝ)(hZ:1<Z)
     (hX₁:Z^r≤s.X₁)(hX₂:Z^r≤s.X₂)(hY₁:Z^r≤s.Y₁)(hY₂:Z^r≤s.Y₂):
     let d:=child (activeInput (child s C R B τ t)) ((Ideal.span {p})^k) (R*C) Bp υ v
     let r':=r-Real.logb Z (C.absNorm:ℝ)-errorRemoval p Z k
@@ -62,16 +58,15 @@ theorem active_error_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
     rfl
   simpa only [he] using hh
 
-theorem error_minimum_lower (s:Input α)(C R:Ideal O)(hC:C≠0)
-    (B:actualAllocations s.pools C)(τ:Character)(t:ℝ)(p:O)(hp:p≠0)(k:ℕ)
-    (Bp:actualAllocations (activeInput (child s C R B τ t)).pools ((Ideal.span {p})^k))
-    (υ:Character)(v Z:ℝ)(hZ:1<Z):
+theorem error_minimum_lower(v Z:ℝ)(hZ:1<Z):
     let d:=child (activeInput (child s C R B τ t)) ((Ideal.span {p})^k) (R*C) Bp υ v
     let r':=parentLower s Z-Real.logb Z (C.absNorm:ℝ)-errorRemoval p Z k
     Z^r'≤d.X₁ ∧ Z^r'≤d.X₂ ∧ Z^r'≤d.Y₁ ∧ Z^r'≤d.Y₂:=by
   have h:=parent_lower_scales s Z hZ
   exact active_error_lower s C R hC B τ t p hp k Bp υ v Z (parentLower s Z) hZ
     h.1 h.2.1 h.2.2.1 h.2.2.2
+
+end
 
 end SevenEighths.CenteredMomentEnergyFirstRawScaleAdmission
 

@@ -7,7 +7,7 @@ public import GuthMaynard.Improvement.SpectralMassAssembly
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Filter Set
-open scoped InnerProductSpace Topology
+open scoped Topology
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 

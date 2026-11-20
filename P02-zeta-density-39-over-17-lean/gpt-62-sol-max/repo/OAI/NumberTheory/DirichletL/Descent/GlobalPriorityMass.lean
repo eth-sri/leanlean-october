@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityBranches
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassPrefactor
 
@@ -10,16 +11,14 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource
-open InverseSecondPrincipalCaller InversePrincipalEnergy FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityRetainedSource InverseSecondPrincipalCaller InversePrincipalEnergy FirstCauchyArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem global_priority_weighted_branch (ε:ℝ)(hε:0<ε):
     ∃Cb:ℝ,0<Cb ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+      (p:ι→O)(_hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
       {Jo:ℕ}(original:Finset (Source ι Jo))(extra:CubeCoordinates ι→Finset ι)
       (negative:Bool)(Ψ:O→*ℂ)(m:O)(w:Source ι Jo→ℂ)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)(B:ℝ),

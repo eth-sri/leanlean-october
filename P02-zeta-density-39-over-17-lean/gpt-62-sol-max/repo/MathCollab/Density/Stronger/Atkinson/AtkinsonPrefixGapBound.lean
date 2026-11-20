@@ -21,8 +21,7 @@ holds. The diagonal is the literal prefix length.
 set_option autoImplicit false
 noncomputable section
 
-open Complex
-open RiemannZeta.GuthMaynard
+open Complex RiemannZeta.GuthMaynard
 
 namespace MathCollab.Density.Stronger.Atkinson
 

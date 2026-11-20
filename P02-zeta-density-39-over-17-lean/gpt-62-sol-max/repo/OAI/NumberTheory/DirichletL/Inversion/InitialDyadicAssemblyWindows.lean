@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators ContDiff
 namespace SevenEighths.InverseInitialDyadicAssembly
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
-open Filter
+open CenteredMomentSectorLocalization CenteredMomentDyadicCount Filter
 
 theorem cutoff_norm_le (i:Fin 4)(x:ℝ) : ‖cutoff i x‖≤1 := by
   simpa only [cutoff,Complex.norm_real,Real.norm_eq_abs,

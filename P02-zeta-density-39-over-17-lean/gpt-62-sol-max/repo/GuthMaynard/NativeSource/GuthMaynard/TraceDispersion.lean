@@ -17,8 +17,11 @@ Guth--Maynard Lemma 4.2.  It is a direct finite Jensen inequality, proved here
 over the reals before the spectral specialization.
 -/
 
-theorem sixthMoment_dispersion_nonneg {ι : Type*} [DecidableEq ι]
-    (s : Finset ι) (x : ι → ℝ) (hs : s.Nonempty) :
+section
+variable {ι : Type*} [instShared1 : DecidableEq ι] (s : Finset ι) (x : ι → ℝ)
+include ι instShared1 s x
+
+theorem sixthMoment_dispersion_nonneg (hs : s.Nonempty) :
     0 ≤ (∑ i ∈ s, x i ^ 6) -
       (∑ i ∈ s, x i ^ 2) ^ 3 / (s.card : ℝ) ^ 2 := by
   have hJensen := pow_sum_le_card_mul_sum_pow
@@ -36,8 +39,7 @@ theorem sixthMoment_dispersion_nonneg {ι : Type*} [DecidableEq ι]
 
 /-- Jensen on the complement of one selected coordinate, with the ambient
 cardinality in the denominator. -/
-theorem sixthMoment_tail_lower {ι : Type*} [DecidableEq ι]
-    (s : Finset ι) (x : ι → ℝ) (j : ι) :
+theorem sixthMoment_tail_lower (j : ι) :
     (∑ i ∈ s.erase j, x i ^ 2) ^ 3 ≤
       (s.card : ℝ) ^ 2 * ∑ i ∈ s.erase j, x i ^ 6 := by
   have hJensen := pow_sum_le_card_mul_sum_pow
@@ -63,8 +65,7 @@ theorem sixthMoment_tail_lower {ι : Type*} [DecidableEq ι]
 /-- The sixth-power form of Guth--Maynard equation (4.3).  Taking sixth and
 square roots of its two branches gives the scalar inequality used in Lemma
 4.2. -/
-theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
-    (s : Finset ι) (x : ι → ℝ) (j : ι) (hj : j ∈ s) :
+theorem coordinate_sixth_le_trace_dispersion_max (j : ι) (hj : j ∈ s) :
     x j ^ 6 ≤ max
       (4 * ((∑ i ∈ s, x i ^ 6) -
         (∑ i ∈ s, x i ^ 2) ^ 3 / (s.card : ℝ) ^ 2))
@@ -138,6 +139,8 @@ theorem coordinate_sixth_le_trace_dispersion_max {ι : Type*} [DecidableEq ι]
         _ = K ^ 2 * (4 * A) := by rw [← hAeq]; ring
     have hbranch : x j ^ 6 ≤ 4 * A := by simpa only [hyCube] using hbranchY
     exact hbranch.trans (le_max_left _ _)
+
+end
 
 /-- Sampling-matrix specialization of the sixth-power form of
 Guth--Maynard Lemma 4.2.  The two sums are respectively the first and cubic

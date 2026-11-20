@@ -1,6 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Reflection.UniformMeasure
-public import OAI.NumberTheory.DirichletL.Reflection.UniformTail
+public import OAI.NumberTheory.DirichletL.Reflection.PhysicalBranchMeasure
+public import OAI.NumberTheory.DirichletL.Reflection.HeightTail
 
 @[expose] public section
 
@@ -8,18 +8,16 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedArithmeticHeight
 open scoped Classical BigOperators ContDiff SchwartzMap
-open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic
-open ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment
-open InverseReflectedPhase
+open MeasureTheory FourierBridge InverseKernelSourceUniform CompletedDyadic ActualEisensteinCubic CubicEisenstein CompletedGauss CanonicalQuadraticSieve InverseMoment InverseReflectedPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 universe u v w
 
-theorem actual_reflected_finite_source_arithmetic_uniform
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+section
+variable (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ) (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i) (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀) (hW : ContDiff ℝ ∞ W) (J : ℕ)
+include a₀ b₀ ha₀ windows M hM hwindows W hWsupport hW J
+
+theorem actual_reflected_finite_source_arithmetic_uniform :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -64,11 +62,7 @@ theorem actual_reflected_finite_source_arithmetic_uniform
     (fun j => (Ideal.absNorm (n j):ℝ)) (fun j => (Ideal.absNorm (b j):ℝ)) hpos
   simpa only [actualKernelSourceTerm_numeric,mul_assoc] using hh
 
-theorem weighted_finite_physical_row_common_measure_arithmetic_uniform
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+theorem weighted_finite_physical_row_common_measure_arithmetic_uniform :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -118,11 +112,7 @@ theorem weighted_finite_physical_row_common_measure_arithmetic_uniform
   rw [hprod x.1.val.val x.1.val.property]
   ring
 
-theorem weighted_finite_physical_row_branch_measure_arithmetic_uniform
-    (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (windows : Fin 4→ℝ→ℂ) (M : Fin 4→ℝ)
-    (hM : ∀ i, 0≤M i) (hwindows : ∀ i y, windows i y≠0 → |y|≤M i)
-    (W : ℝ→ℂ) (hWsupport : Function.support W ⊆ Set.Icc a₀ b₀)
-    (hW : ContDiff ℝ ∞ W) (J : ℕ) :
+theorem weighted_finite_physical_row_branch_measure_arithmetic_uniform :
     ∃ (U : ℝ→ℂ) (degree : ℕ) (C₀ : ℝ), 0≤C₀ ∧ HasCompactSupport U ∧ ContDiff ℝ ∞ U ∧
       ∀ {N a c : Eis} {mode : Bool}, ∀ {φ : Type u} {σ : Type v} [Fintype φ] [Fintype σ], ∀ (F : PrimeFamily φ)
         (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
@@ -169,6 +159,8 @@ theorem weighted_finite_physical_row_branch_measure_arithmetic_uniform
   congr 1
   exact weightedPhysicalReflectedRow_eq_branches F K hK S jF Pset nset bset hprod D hcop
     G0 D0 s hc hκ hA hbgen _ _ _ unit m
+
+end
 
 theorem literal_reflected_raw_tail_arithmetic_uniform (a₀ b₀ : ℝ) (ha₀ : 0<a₀) (A : ℕ) :
     ∃ (orders : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧

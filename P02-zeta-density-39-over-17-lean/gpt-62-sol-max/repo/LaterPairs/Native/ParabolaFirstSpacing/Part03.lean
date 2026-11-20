@@ -1645,8 +1645,11 @@ open MeasureTheory GafniTao Set
 open scoped BigOperators
 namespace TaoTrudgianYang2025
 
-private theorem continuous_bourgainShift_weighted_period {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (α T K : ℝ) (hK : 0<K) :
+section
+variable {ι : Type*} (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ)
+include ι S z w
+
+private theorem continuous_bourgainShift_weighted_period (α T K : ℝ) (hK : 0<K) :
     Continuous (fun q : Fin 3 → ℝ => ∫ y : Fin 3 → ℝ,
       (∏ j : Fin 3,(1+(y j/K)^2)⁻¹)*bourgainShiftShiftedPeriod S z w α T y q) := by
   let W := fun y : Fin 3 → ℝ => ∏ j, (1+(y j/K)^2)⁻¹
@@ -1675,8 +1678,7 @@ private theorem continuous_bourgainShift_weighted_period {ι : Type*}
     have hcy := hc.comp hmap
     exact continuous_const.mul hcy
 
-private theorem bourgainShiftSixMoment_middle_modulation {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (α : ℝ) (p : Fin 2 → ℝ) (x : Fin 4 → ℝ) :
+private theorem bourgainShiftSixMoment_middle_modulation (α : ℝ) (p : Fin 2 → ℝ) (x : Fin 4 → ℝ) :
     bourgainShiftSixMoment S
       (fun i => z i*fordAdditiveCharacter (p 0*(w i)^2+p 1*bourgainShiftCubic α (w i))) w α x =
     bourgainShiftSixMoment S z w α ![x 0,x 1+p 0,x 2+p 1,x 3] := by
@@ -1691,8 +1693,7 @@ private theorem bourgainShiftSixMoment_middle_modulation {ι : Type*}
     x 0*w i+(x 1+p 0)*(w i)^2+(x 2+p 1)*bourgainShiftCubic α (w i)+x 3*bourgainShiftQuartic α (w i)
   ring
 
-private theorem bourgainShiftShiftedPeriod_middle_modulation {ι : Type*}
-    (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (α T : ℝ)
+private theorem bourgainShiftShiftedPeriod_middle_modulation (α T : ℝ)
     (p : Fin 2 → ℝ) (y : Fin 3 → ℝ) :
     bourgainShiftShiftedPeriod S
       (fun i => z i*fordAdditiveCharacter (p 0*(w i)^2+p 1*bourgainShiftCubic α (w i))) w α T y 0 =
@@ -1711,6 +1712,8 @@ private theorem bourgainShiftShiftedPeriod_middle_modulation {ι : Type*}
     (y 0*(w i)^2+y 1*bourgainShiftCubic α (w i)+y 2*bourgainShiftQuartic α (w i))+
       (T*u*w i+p 0*(w i)^2+p 1*bourgainShiftCubic α (w i)+0*bourgainShiftQuartic α (w i))
   ring
+
+end
 
 end TaoTrudgianYang2025
 
@@ -2924,7 +2927,7 @@ private theorem bourgain_twelfth_bilinear_reduction_pointwise (J : Finset ℤ) (
   have hA : 0 ≤ A := Finset.sum_nonneg fun _ _ => norm_nonneg _
   have hB : 0 ≤ B := Finset.sum_nonneg fun _ _ => norm_nonneg _
   have hn : 0 ≤ n := Nat.cast_nonneg _
-  have hK : (K.card:ℝ) ≤ 7 := parabola_near_card J i
+  have hK : (K.card:ℝ) ≤ 7 := near_grid_interval_card J i
   have hL : (L.card:ℝ) ≤ n := by
     dsimp only [L,n]
     exact_mod_cast Finset.card_le_card (Finset.filter_subset (fun j => 3 < |i-j|) J)

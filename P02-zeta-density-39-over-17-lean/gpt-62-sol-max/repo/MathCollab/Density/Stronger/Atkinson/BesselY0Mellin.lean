@@ -880,8 +880,11 @@ theorem probe_integrableOn_damped_tail_joint
   simpa only [F, Measure.prod_restrict] using! hF
 
 set_option maxHeartbeats 800000 in
-theorem probe_integral_cpow_mul_damped_y0Osc_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε : ℝ} (hε : 0 < ε) :
+section
+variable {s : ℂ} (hs : 0 < s.re) {ε : ℝ} (hε : 0 < ε)
+include s hs ε hε
+
+theorem probe_integral_cpow_mul_damped_y0Osc_Ioi :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) *
           (dfiBesselY0Osc x : ℂ)) =
@@ -934,8 +937,7 @@ theorem probe_integral_cpow_mul_damped_y0Osc_Ioi
         Gamma s := by
       rw [MeasureTheory.integral_mul_const]
 
-theorem probe_integral_cpow_mul_damped_y0Tail_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε : ℝ} (hε : 0 < ε) :
+theorem probe_integral_cpow_mul_damped_y0Tail_Ioi :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) *
           (dfiBesselY0Tail x : ℂ)) =
@@ -1036,7 +1038,7 @@ theorem probe_integral_cpow_mul_damped_y0Tail_Ioi
             rw [Complex.cpow_neg, one_div, Complex.inv_cpow]
             rw [Complex.arg_ofReal_of_nonneg hsumPos.le]
             exact Real.pi_ne_zero.symm
-          rw [integral_cpow_mul_exp_neg_mul_Ioi_eq hs hsumPos, hpow]
+          rw [RiemannZeta.GuthMaynard.integral_cpow_mul_exp_neg_mul_Ioi_eq hs hsumPos, hpow]
     _ = (∫ t : ℝ in Set.Ioi 0,
           ((ε + t : ℝ) : ℂ) ^ (-s) /
             Real.sqrt (1 + t ^ 2)) * Gamma s := by
@@ -1045,8 +1047,7 @@ theorem probe_integral_cpow_mul_damped_y0Tail_Ioi
       intro t _
       ring
 
-theorem probe_integrableOn_damped_y0Osc_mellin
-    {s : ℂ} (hs : 0 < s.re) {ε : ℝ} (hε : 0 < ε) :
+theorem probe_integrableOn_damped_y0Osc_mellin :
     IntegrableOn (fun x : ℝ =>
       (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) *
         (dfiBesselY0Osc x : ℂ)) (Set.Ioi 0) := by
@@ -1072,8 +1073,7 @@ theorem probe_integrableOn_damped_y0Osc_mellin
     intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ Real.pi / 2),
     ← MeasureTheory.integral_const_mul]
 
-theorem probe_integrableOn_damped_y0Tail_mellin
-    {s : ℂ} (hs : 0 < s.re) {ε : ℝ} (hε : 0 < ε) :
+theorem probe_integrableOn_damped_y0Tail_mellin :
     IntegrableOn (fun x : ℝ =>
       (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) *
         (dfiBesselY0Tail x : ℂ)) (Set.Ioi 0) := by
@@ -1108,8 +1108,7 @@ theorem probe_integrableOn_damped_y0Tail_mellin
   push_cast
   ring
 
-theorem probe_integral_cpow_mul_damped_y0_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε : ℝ} (hε : 0 < ε) :
+theorem probe_integral_cpow_mul_damped_y0_Ioi :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) *
           (dfiBesselY0 x : ℂ)) =
@@ -1163,6 +1162,8 @@ theorem probe_integral_cpow_mul_damped_y0_Ioi
         rw [MeasureTheory.integral_sub hOscInt hTailInt]
   rw [hdecomp, probe_integral_cpow_mul_damped_y0Osc_Ioi hs hε,
     probe_integral_cpow_mul_damped_y0Tail_Ioi hs hε]
+
+end
 
 theorem probe_integral_cpow_mul_dfiBesselY0_Ioi_eq_beta
     {s : ℂ} (hsLower : (1 / 4 : ℝ) < s.re)

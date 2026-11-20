@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstBlockEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstFreshEnergy
 
@@ -8,15 +9,14 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → Eis) [OAI.PrincipalIdealFamily.Maximal p]
 
 theorem firstBlockOuterWeight_norm_le
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (selector : Finset ι → ℂ) (r : RayCharacter × RayCharacter) (D : Finset ι) (h : Eis) :
     ‖firstBlockOuterWeight p selector r D h‖ ≤ ‖crossCoeff r.1 r.2‖*‖selector D‖ := by
   have hprime (i : ι) : Prime (Ideal.span {p i}) :=
@@ -32,8 +32,8 @@ theorem firstBlockOuterWeight_norm_le
   exact mul_le_of_le_one_right (mul_nonneg (norm_nonneg _) (norm_nonneg _)) hc
 
 def firstOldLabelCoefficient (hp : ∀ i,p i ≠ 0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (C : Finset ι → ℂ) (c d : Eis) (f : Ideal Eis) : Finset ι → ℂ :=
   firstBareCubeCoefficient p hp hg hcop B v ε₁ ε₂ negative
@@ -41,10 +41,10 @@ def firstOldLabelCoefficient (hp : ∀ i,p i ≠ 0)
 
 theorem first_block_old_label_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ K : ℝ,0 < K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-      (_hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-      (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+      (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (F B : Finset ι) (selector : Finset ι → ℂ) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool),
       (∀ j∈B,0 < v j) → ∀ (negative : Bool) (C : Finset ι → ℂ)
       (ω : ℝ → ℂ) (X t : ℝ),0 < X → ∀ (c d : Eis)

@@ -29,15 +29,6 @@ lemma fixedTupleCoefficient_norm (L : σ→Finset (Ideal Eis)) (w : ∀ i,L i→
   · exact slot_coefficient_norm L w hw _
   · simp
 
-variable {N a c : Eis} {mode : Bool}
-variable (G : PrimeFamily τ) (K : Ideal Eis) (hK : Admissible K)
-    (L : σ→Finset (Ideal Eis)) (F : φ→Ideal Eis)
-    (hne : (fixedSlotTupleSet L F).Nonempty)
-    (hmax : ∀ i,∀ P∈L i,P.IsMaximal)
-    (hgood : ∀ i,∀ P∈L i,ConcretePrimeRowBridge.goodLambda∉P)
-    (hL : Pairwise (fun i j => Disjoint (L i) (L j))) (hprime : ∀ i,∀ P∈L i,Prime P)
-    (p : supportedSlotChoices L F K)
-
 end
 end SevenEighths.InverseReflectedPhase
 

@@ -64,24 +64,26 @@ theorem integrable_zetaAtkinson_kernel_of_support_bound {T G L : ℝ}
       mul_le_mul_of_nonneg_left (hbound x hs) (norm_nonneg _)
     _ = _ := mul_comm _ _
 
-theorem integrable_zetaAtkinsonY0Integrand {T G L : ℝ}
-    (hT : 16 ≤ T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
-    {n : ℕ} (hn : 0 < n) : Integrable (zetaAtkinsonY0Integrand T G L n) := by
+section
+variable {T G L : ℝ} (hT : 16 ≤ T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G) {n : ℕ} (hn : 0 < n)
+include T G L hT hG hL hwidth n hn
+
+theorem integrable_zetaAtkinsonY0Integrand : Integrable (zetaAtkinsonY0Integrand T G L n) := by
   apply integrable_zetaAtkinson_kernel_of_support_bound (by linarith : 0 < T) hG hL n
     measurable_dfiBesselY0 (B := 7)
   intro x hx
   exact abs_dfiBesselY0_source_le_seven hT
     (support_zetaSmoothDivisorTest_physical (by linarith) hG hL hwidth hx).1 hn
 
-theorem integrable_zetaNeumannRemainderIntegrand {T G L : ℝ}
-    (hT : 16 ≤ T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
-    {n : ℕ} (hn : 0 < n) : Integrable (zetaNeumannRemainderIntegrand T G L n) := by
+theorem integrable_zetaNeumannRemainderIntegrand : Integrable (zetaNeumannRemainderIntegrand T G L n) := by
   apply integrable_zetaAtkinson_kernel_of_support_bound (by linarith : 0 < T) hG hL n
     (measurable_dfiBesselY0.sub measurable_neumannTwoTerm)
     (B := neumannTwoTermErrorConstant * T ^ (-(5 / 4 : ℝ)) * (n : ℝ) ^ (-(5 / 4 : ℝ)))
   intro x hx
   exact abs_neumann_source_remainder_le hT
     (support_zetaSmoothDivisorTest_physical (by linarith) hG hL hwidth hx).1 hn
+
+end
 
 theorem zetaAtkinsonTwoTermIntegrand_eq_sub (T G L : ℝ) (n : ℕ) (x : ℝ) :
     zetaAtkinsonTwoTermIntegrand T G L n x =

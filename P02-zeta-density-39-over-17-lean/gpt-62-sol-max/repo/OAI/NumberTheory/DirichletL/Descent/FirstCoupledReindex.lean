@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualEnergy
 
 @[expose] public section
@@ -7,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic CoprimeMobiusExtension
-open RayFourExpansion MixedCrossSeparation
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic CoprimeMobiusExtension RayFourExpansion MixedCrossSeparation
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
@@ -61,10 +61,10 @@ theorem first_coprime_coupled_reindex {ι : Type*} [DecidableEq ι]
     _ = _ := by rw [hm,hz]; ring
 
 theorem first_quadratic_coupled_reindex {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2) (B : Finset ι)
+    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2) (B : Finset ι)
     (C₁ C₂ : Finset ι → ℂ) (H : Finset ι → Finset ι → ℂ) (h : Eis) :
     (∑ S ∈ B.powerset, ∑ T ∈ B.powerset, if Disjoint S T then
       H S T * quadraticCrossPhase p hg S T *

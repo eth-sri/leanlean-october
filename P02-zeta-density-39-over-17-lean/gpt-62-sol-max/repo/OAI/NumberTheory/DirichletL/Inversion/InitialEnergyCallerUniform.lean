@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerClipping
 public import OAI.NumberTheory.DirichletL.Descent.ClippedUniform
 
@@ -32,10 +33,10 @@ theorem initial_raw_uniform
     ∃(wFresh:𝓢(ℝ,ℂ))(af bf:ℝ),0<af ∧ af≤bf ∧ HasCompactSupport (wFresh:ℝ→ℂ) ∧
       tsupport (wFresh:ℝ→ℂ)⊆Set.Icc af bf ∧
       ∀J:ℕ,∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+      (p:ι→Eis)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
       (pool:Finset ι)(Ψ:Eis→*ℂ)(m:Eis)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
       (labels:Finset (Ideal Eis))(rows:Finset Eis)(D:Ideal Eis→ℝ)(_hD:∀f∈labels,0≤D f)
       (Z N F E:ℝ)(z:JointLogSeparation.Frequency×(Fin 6→ℝ))(h:ℝ),1<Z→0≤E→

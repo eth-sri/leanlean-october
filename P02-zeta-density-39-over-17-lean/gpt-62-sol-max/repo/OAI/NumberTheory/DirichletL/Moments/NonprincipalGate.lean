@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentNonprincipalGate
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion
-open ConcretePrimeRowBridge CenteredMomentRestrictedEnergy CenteredMomentChildRows RayFourExpansion
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentRestrictedEnergy CenteredMomentChildRows RayFourExpansion
 local notation "O" => HeckeFamily.O
 
 def unitCharacter : Character := Character.ofResidue ⊤ top_ne_bot 1 (by

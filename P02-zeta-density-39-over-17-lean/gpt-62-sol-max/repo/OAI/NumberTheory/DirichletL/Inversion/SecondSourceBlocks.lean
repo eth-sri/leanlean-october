@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.WholeRetainedSource
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
 
@@ -9,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.InverseSecondSourceBlocks
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment
-open InverseSecondFibers InversePrioritySecondSource
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseSecondFibers InversePrioritySecondSource
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
@@ -23,7 +23,7 @@ def outerNorms (p : ι → O) {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : 
 
 omit [DecidableEq ι] in
 theorem outerNorms_ge_one (p : ι → O) (hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalIdealFamily.Maximal p]
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (hk : x.second.frequency ≠ 0) :
     ∀ i,1 ≤ outerNorms p x i := by
   intro i
@@ -74,7 +74,7 @@ omit [DecidableEq ι] in
 theorem cell_subset (p : ι → O) {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (d : BlockIndex) : cell p source d ⊆ source := Finset.filter_subset _ _
 
-theorem cell_conditions (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
+theorem cell_conditions (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p] {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (hs : ActualSecondSourceConditions p source) (d : BlockIndex) :
     ActualSecondSourceConditions p (cell p source d) := ActualSecondSourceConditions.mono p hs (cell_subset p source d)
 
@@ -91,7 +91,7 @@ theorem mem_keys_iff (p : ι → O) {Jo Jn : ℕ} (source : Finset (MarkedSecond
 
 omit [DecidableEq ι] in
 theorem cell_ratios (p : ι → O) (hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ}
+    [OAI.PrincipalIdealFamily.Maximal p] {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hk : ∀ x∈source,x.second.frequency ≠ 0)
     (d : BlockIndex) (x : MarkedSecondSource ι Jo Jn) (hx : x∈cell p source d) (i : Fin 4) :
     1 ≤ outerNorms p x i / dyadScale (d i) ∧ outerNorms p x i / dyadScale (d i) < 2 := by
@@ -111,9 +111,9 @@ theorem sum_cells (p : ι → O) {Jo Jn : ℕ} (source : Finset (MarkedSecondSou
 def scales (d : BlockIndex) : Fin 4 → ℝ := fun i => dyadScale (d i)
 
 theorem physical_source_partition
-    (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     {Jo : ℕ} (source : Finset (MarkedSecondSource ι Jo 0))
     (pool : Finset ι) (Ψ : O →* ℂ) (m : O) (ray : SecondRayIndex)
     (slots₁ slots₂ : Finset σ) (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
@@ -139,7 +139,7 @@ def capBox (A : Fin 4 → ℝ) (Z : ℝ) : Finset BlockIndex :=
 
 omit [DecidableEq ι] in
 theorem keys_subset_capBox (p : ι → O) (hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ}
+    [OAI.PrincipalIdealFamily.Maximal p] {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hk : ∀ x∈source,x.second.frequency ≠ 0)
     (A : Fin 4 → ℝ) (Z : ℝ) (hcaps : ∀ x∈source,∀ i,outerNorms p x i ≤ Z^(A i)) :
     keys p source ⊆ capBox A Z := by
@@ -154,7 +154,7 @@ theorem keys_subset_capBox (p : ι → O) (hp : ∀ i,p i ≠ 0)
 
 omit [DecidableEq ι] in
 theorem keys_card_le_product (p : ι → O) (hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal] {Jo Jn : ℕ}
+    [OAI.PrincipalIdealFamily.Maximal p] {Jo Jn : ℕ}
     (source : Finset (MarkedSecondSource ι Jo Jn)) (hk : ∀ x∈source,x.second.frequency ≠ 0)
     (A : Fin 4 → ℝ) (Z : ℝ) (hcaps : ∀ x∈source,∀ i,outerNorms p x i ≤ Z^(A i)) :
     (keys p source).card ≤ ∏ i : Fin 4,(dyadIndex (Z^(A i))+1) := by
@@ -183,14 +183,6 @@ theorem cap_bin_bound (A : Fin 4 → ℝ) (hA : ∀ i,0 ≤ A i) (Z : ℝ) (hZ :
       rw [Real.logb_rpow_eq_mul_logb_of_pos hZ0,Real.logb]
       ring
     _ ≤ _ := by linarith
-
-omit [DecidableEq ι] in
-@[simp] theorem keys_empty (p : ι → O) (Jo Jn : ℕ) :
-    keys p (∅ : Finset (MarkedSecondSource ι Jo Jn)) = ∅ := by simp [keys]
-
-omit [DecidableEq ι] in
-@[simp] theorem cell_empty (p : ι → O) (Jo Jn : ℕ) (d : BlockIndex) :
-    cell p (∅ : Finset (MarkedSecondSource ι Jo Jn)) d = ∅ := by simp [cell]
 
 end SevenEighths.InverseSecondSourceBlocks
 

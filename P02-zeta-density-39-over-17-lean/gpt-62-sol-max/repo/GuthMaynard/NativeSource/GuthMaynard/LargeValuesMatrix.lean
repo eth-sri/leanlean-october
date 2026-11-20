@@ -84,9 +84,12 @@ theorem gmCoefficient_energy_le (N : ℕ) (b : ℕ → ℂ)
       simp
       omega
 
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
+include cutoff N W
+
 /-- The Euclidean operator norm controls the complete sampled energy. -/
-theorem gmMatrix_energy_le_operatorNorm (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) (b : ℕ → ℂ) :
+theorem gmMatrix_energy_le_operatorNorm (b : ℕ → ℂ) :
     ∑ t : GMRow W,
         ‖(gmMatrix cutoff N W).mulVec (gmCoefficientVector N b) t‖ ^ 2 ≤
       gmMatrixOperatorNorm cutoff N W ^ 2 *
@@ -113,8 +116,7 @@ theorem gmMatrix_energy_le_operatorNorm (cutoff : GMSmoothCutoff) (N : ℕ)
 
 /-- Source-faithful quantitative conclusion of Guth--Maynard Lemma 4.1,
 stated with an arbitrary positive threshold `V`. -/
-theorem gm_largeValues_card_le_operatorNorm (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) (b : ℕ → ℂ) (V : ℝ) (hV : 0 < V)
+theorem gm_largeValues_card_le_operatorNorm (b : ℕ → ℂ) (V : ℝ) (hV : 0 < V)
     (hb : ∀ n ∈ dyadicInterval N, ‖b n‖ ≤ 1)
     (hLarge : ∀ t ∈ W, V ≤ ‖gmSmoothDirichletPoly cutoff N b t‖) :
     (W.card : ℝ) ≤
@@ -141,8 +143,7 @@ theorem gm_largeValues_card_le_operatorNorm (cutoff : GMSmoothCutoff) (N : ℕ)
     _ = (N : ℝ) * gmMatrixOperatorNorm cutoff N W ^ 2 := by ring
 
 /-- Entrywise expansion of the row Gram matrix `M M*`. -/
-theorem gmMatrix_mul_conjTranspose_apply (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) (t u : GMRow W) :
+theorem gmMatrix_mul_conjTranspose_apply (t u : GMRow W) :
     (gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose) t u =
       ∑ n : GMColumn N,
         gmMatrixEntry cutoff N t n * star (gmMatrixEntry cutoff N u n) := by
@@ -150,8 +151,7 @@ theorem gmMatrix_mul_conjTranspose_apply (cutoff : GMSmoothCutoff) (N : ℕ)
 
 /-- Source equation for the row Gram kernel: its entry depends only on the
 ordinate difference and uses the squared cutoff. -/
-theorem gmMatrix_gram_apply_eq_phase_sum (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) (t u : GMRow W) :
+theorem gmMatrix_gram_apply_eq_phase_sum (t u : GMRow W) :
     (gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose) t u =
       ∑ n : GMColumn N,
         (cutoff ((n : ℝ) / N) ^ 2 : ℂ) *
@@ -196,22 +196,21 @@ theorem gmMatrix_gram_apply_eq_phase_sum (cutoff : GMSmoothCutoff) (N : ℕ)
       ring_nf
 
 /-- The row Gram matrix is Hermitian. -/
-theorem gmMatrix_gram_isHermitian (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) :
+theorem gmMatrix_gram_isHermitian :
     (gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose).IsHermitian := by
   exact Matrix.isHermitian_mul_conjTranspose_self _
 
 /-- The row Gram matrix is positive semidefinite. -/
-theorem gmMatrix_gram_posSemidef (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) :
+theorem gmMatrix_gram_posSemidef :
     (gmMatrix cutoff N W * (gmMatrix cutoff N W).conjTranspose).PosSemidef := by
   exact Matrix.posSemidef_self_mul_conjTranspose _
 
 /-- Every eigenvalue of the row Gram matrix is nonnegative. -/
-theorem gmMatrix_gram_eigenvalue_nonneg (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) (i : GMRow W) :
+theorem gmMatrix_gram_eigenvalue_nonneg (i : GMRow W) :
     0 ≤ (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := by
   exact (gmMatrix_gram_posSemidef cutoff N W).eigenvalues_nonneg i
+
+end
 
 /-- Singular values of the sampling matrix, defined through the nonnegative
 eigenvalues of its row Gram matrix. -/
@@ -219,24 +218,27 @@ noncomputable def gmMatrixSingularValue (cutoff : GMSmoothCutoff) (N : ℕ)
     (W : Finset ℝ) (i : GMRow W) : ℝ :=
   Real.sqrt ((gmMatrix_gram_isHermitian cutoff N W).eigenvalues i)
 
-theorem gmMatrixSingularValue_nonneg (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) (i : GMRow W) :
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) (i : GMRow W)
+include cutoff N W i
+
+theorem gmMatrixSingularValue_nonneg :
     0 ≤ gmMatrixSingularValue cutoff N W i := by
   exact Real.sqrt_nonneg _
 
-theorem gmMatrixSingularValue_sq (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) (i : GMRow W) :
+theorem gmMatrixSingularValue_sq :
     gmMatrixSingularValue cutoff N W i ^ 2 =
       (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i := by
   exact Real.sq_sqrt (gmMatrix_gram_eigenvalue_nonneg cutoff N W i)
 
-theorem gmMatrixSingularValue_sixth (cutoff : GMSmoothCutoff) (N : ℕ)
-    (W : Finset ℝ) (i : GMRow W) :
+theorem gmMatrixSingularValue_sixth :
     gmMatrixSingularValue cutoff N W i ^ 6 =
       (gmMatrix_gram_isHermitian cutoff N W).eigenvalues i ^ 3 := by
   rw [show gmMatrixSingularValue cutoff N W i ^ 6 =
       (gmMatrixSingularValue cutoff N W i ^ 2) ^ 3 by ring]
   rw [gmMatrixSingularValue_sq]
+
+end
 
 /-- A positive Hermitian matrix is bounded in Euclidean operator norm by any
 eigenvalue which dominates its spectrum. -/

@@ -6,7 +6,6 @@ public import QuadraticSpectralComparison
 set_option autoImplicit false
 noncomputable section
 open Finset InnerProductSpace
-open scoped InnerProductSpace
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 

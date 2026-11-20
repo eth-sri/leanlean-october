@@ -1,5 +1,4 @@
 module
-public import GuthMaynard.Improvement.GlobalDensityConditional
 public import GuthMaynard.Improvement.NativeDensitySourceBridge
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointDensity
 
@@ -8,12 +7,15 @@ public import GuthMaynard.NativeSource.GuthMaynard.ClassicalEndpointDensity
 set_option autoImplicit false
 noncomputable section
 namespace GuthMaynard.Improvement
+open MathCollab.Density
 
 /-- Actual Ingham estimate on the complementary lower strip. The native
 positive-slab proof, dyadic transfer, and exact multiplicity-count bridge
 supply every analytic input. Constants may depend on sigma and epsilon. -/
-theorem ingham_lower_density : InghamLowerDensity := by
-  intro σ hσLower hσUpper ε hε
+theorem ingham_lower_density (σ : ℝ) (hσLower : 1/2 ≤ σ) (hσUpper : σ ≤ 9/13)
+    (ε : ℝ) (hε : 0 < ε) :
+    ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
+      (zetaDensityCount σ T:ℝ) ≤ C*T^(3*(1-σ)/(2-σ)+ε) := by
   have hσ : 0 < σ := by linarith
   have hp : 0 ≤ 3 * (1 - σ) / (2 - σ) :=
     div_nonneg (mul_nonneg (by norm_num) (by linarith)) (by linarith)

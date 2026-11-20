@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstUnequalPhysicalEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalPush
 
@@ -8,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 open InverseMomentFirstProfileUniform InverseAmbientProfileTower
@@ -21,8 +21,8 @@ theorem actual_first_moving_family_two_energies_uniform
     (hg₁ : Function.support g₁ ⊆ Set.Icc (-m₁) m₁)
     (hg₂ : Function.support g₂ ⊆ Set.Icc (-m₂) m₂) (Aker J : ℕ) :
     ∃ Cprofile : ℝ,0 ≤ Cprofile ∧ ∀ {ι κ : Type*} [DecidableEq ι] (p : ι → Eis) (_hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (source : Finset κ) (F : Finset ι) (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)
     (ω₁ ω₂ : ℝ → ℂ) (ρ : Fin 9 → ℝ) (c₁ c₂ θ₁ θ₂ : ℝ)
     (A₁ A₂ C R : κ → ℝ) (K L : ℝ) (_hK : 0 < K) (d h : κ → Eis) (s : Fin 9 → ℝ)
@@ -87,12 +87,12 @@ theorem actual_first_moving_family_two_energies_uniform
 
 theorem first_global_retained_push_uniform (ε:ℝ)(hε:0<ε):
     ∃ K:ℝ,0<K ∧ ∀ {ι κ:Type*} [DecidableEq ι] [DecidableEq κ] (p:ι→Eis)(hp:∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (_hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
-    (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hinj:OAI.PrincipalIdealFamily.Distinct p)
+    (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+    (_hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (_hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (F:Finset ι)(outer:Finset κ)(cube:κ→CubeCoordinates ι)(common:κ→Finset ι)
     (Ψ₁ Ψ₂:Eis→*ℂ)(m₁ m₂:Eis)(d:κ→Eis)
     (labels:κ→Finset (Ideal Eis))(a:κ→Ideal Eis×Eis→ℂ)(Γ Y:ℝ),

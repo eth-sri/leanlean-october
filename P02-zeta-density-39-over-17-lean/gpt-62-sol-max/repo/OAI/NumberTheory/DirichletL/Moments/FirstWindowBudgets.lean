@@ -49,15 +49,6 @@ theorem windowBudget_pair_sum {α β:Type*}(s:Finset α)(u:Finset β)
   intro i hi
   rw [Finset.mul_sum]
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentSourceRow CenteredMomentSecondHeightFamily CenteredMomentFirstAmplificationChoice
-open CenteredMomentCanonicalFirst CenteredMomentCommonSupport CenteredMomentGaussEnergy
-open CenteredMomentLogDyadic CenteredMomentSecondWindowBudget RayFourExpansion CompletedGauss
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSectorLocalization
-local notation "O" => HeckeFamily.O
-universe u
-
 end SevenEighths.CenteredMomentFirstWindowBudgets
 
 end

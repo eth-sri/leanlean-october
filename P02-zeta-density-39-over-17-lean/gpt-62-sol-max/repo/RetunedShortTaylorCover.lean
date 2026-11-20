@@ -9,8 +9,7 @@ open scoped BigOperators Topology ComplexConjugate
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /-- Original smooth scale, half choice, and Taylor index: all chosen from a
 finite set before the zero. -/
@@ -53,7 +52,7 @@ theorem shortTaylor_cutoff_error_eventually :
 
 /-- The detected short block produces a member of a fixed finite family;
 only the selected index depends on rho. -/
-theorem smooth_short_Taylor_cover {σ a δ : ℝ} (hw : QuadraticWindow σ a) :
+theorem smooth_short_Taylor_cover {σ a δ : ℝ} (hw : PhysicalDetectorWindow σ a) :
     ∀ᶠ T : ℝ in atTop, ∀ (ρ : ℂ) (j : ℤ),
       σ ≤ ρ.re → ρ.re ≤ 1 →
       j ∈ smoothScaleIndices (detectorY a T*(Real.log T)^2) →
@@ -70,7 +69,7 @@ theorem smooth_short_Taylor_cover {σ a δ : ℝ} (hw : QuadraticWindow σ a) :
   obtain ⟨hT, hlog, hsmall⟩ := hsc
   intro ρ j hβ hβ' hj hlo hhi hblock
   have hTpos : 0 < T := by linarith
-  have hc := smoothingExponent_lt_one hw
+  have hc := smoothingExponent_lt_one hw.a_high
   have hN : (2 : ℝ)^j ≤ T^2 := hhi.trans (by
     rw [← Real.rpow_natCast T 2]
     exact Real.rpow_le_rpow_of_exponent_le hT (by norm_num; linarith))
@@ -94,7 +93,7 @@ theorem smooth_short_Taylor_cover {σ a δ : ℝ} (hw : QuadraticWindow σ a) :
 /-- Every actual slab zero lies in the long smooth-block case or is detected
 by the fixed short Taylor family, with no moment premise. -/
 theorem smooth_long_or_short_Taylor_cover {σ a δ : ℝ}
-    (hw : QuadraticWindow σ a) (hsigma : 7/9 ≤ σ) (hδ : 0 ≤ δ) (hδ' : δ ≤ 1/8) :
+    (hw : PhysicalDetectorWindow σ a) (hδ : 0 ≤ δ) (hδ' : δ ≤ 1/8) :
     ∀ᶠ T : ℝ in atTop, ∀ ρ : ℂ,
       σ ≤ ρ.re → ρ.re < 1 → T ≤ |ρ.im| → |ρ.im| ≤ 2*T → riemannZeta ρ = 0 →
       (∃ j ∈ smoothScaleIndices (detectorY a T*(Real.log T)^2),
@@ -105,7 +104,7 @@ theorem smooth_long_or_short_Taylor_cover {σ a δ : ℝ}
         (smoothHalfScale p.1 p.2.1 : ℝ) ≤ T^(smoothingExponent a/2) ∧
         (smoothHalfScale p.1 p.2.1 : ℝ)^σ/(192*Real.log T) ≤
           ‖smoothTaylorMember a δ T p ρ.im‖) := by
-  filter_upwards [smoothDetector_eventually_large hw hsigma hδ hδ', smooth_short_Taylor_cover (δ := δ) hw]
+  filter_upwards [smoothDetector_eventually_large hw hδ hδ', smooth_short_Taylor_cover (δ := δ) hw]
     with T hdet hshort
   intro ρ hβ hβ' hγ hγ' hzero
   obtain ⟨j, hj, hlo, hh⟩ := hdet ρ hβ hβ' hγ hγ' hzero

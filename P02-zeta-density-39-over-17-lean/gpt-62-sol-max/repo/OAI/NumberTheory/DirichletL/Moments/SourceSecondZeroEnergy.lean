@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentSourceSecondZeroEnergy
-open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondDiagonal
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentAddedZeroUniform CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentSourceZeroEnergy CenteredMomentSupportedZeroEnergy CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondDiagonal
 local notation "O" => ActualEisensteinCubic.O
 
 def sourceSecondZero (S : Finset (Ideal O)) (β : Ideal O→ℂ) (η : Character) (t : ℝ) : ℂ :=

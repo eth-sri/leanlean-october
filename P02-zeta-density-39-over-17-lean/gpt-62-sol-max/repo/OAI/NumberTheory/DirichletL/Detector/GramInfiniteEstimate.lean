@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical SchwartzMap ContDiff Topology
 namespace SevenEighths.ProbeGramCommon
-open Filter ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentGaussEnergy
+open Filter ProbePhysical CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 

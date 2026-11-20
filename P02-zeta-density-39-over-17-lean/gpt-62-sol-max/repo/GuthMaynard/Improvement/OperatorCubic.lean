@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.OperatorKernel
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set InnerProductSpace
-open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
 
 /-- Actual frequency-presentation operator on the time Hilbert space. -/

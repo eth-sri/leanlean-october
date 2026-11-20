@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Eisenstein.UnitNormalization
 
 @[expose] public section
@@ -8,75 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace CanonicalRowCompletion
 open ActualEisensteinCubic
 open CompletedGauss hiding O
@@ -120,11 +64,7 @@ lemma embedding_lambda_ne_zero : eisEmbedding lambda≠0 :=
 
 end
 
-section
-open ActualEisensteinCubic CompletedDyadic LocalReflectionBrackets
-open ConcreteTraceCRT (eisEmbedding)
 
-end
 
 open ActualEisensteinCubic LocalReflectionBrackets
 open ConcreteTraceCRT (eisEmbedding)
@@ -153,32 +93,6 @@ lemma paperLambda_eq : paperLambda=paperLambdaUnit.val*lambda := by
 end CompletedGauss
 
 open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CanonicalCubeSeparation
-
-end CanonicalCubeSeparation
-
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open ConcreteTraceCRT (eisEmbedding)
-
-end CanonicalRowCompletion
-
-namespace CanonicalCubeSeparation
-
-def radiusIter (A : ℝ) : ℕ→ℝ
-  | 0=>A
-  | n+1=>radiusIter (2*A+11) n
-
-@[simp] theorem radiusIter_zero (A : ℝ) : radiusIter A 0=A:=rfl
-@[simp] theorem radiusIter_succ (A : ℝ) (n : ℕ) :
-    radiusIter A (n+1)=radiusIter (2*A+11) n:=rfl
-
-end CanonicalCubeSeparation
-
 open scoped BigOperators Classical
 namespace QuadraticAllOddCRT
 open ActualEisensteinCubic
@@ -205,10 +119,11 @@ theorem normalized_prime_eq_square_sum (p : ActualEisensteinCubic.O) (hp : p≠0
   congr 1
   exact ShortDraftQuadraticGauss.quadratic_gauss_as_square_phase ψ hc hψ
 
-theorem normalized_product_eq_square_sum {ι : Type*} [Fintype ι]
-    (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [instShared4 : OAI.PrincipalIdealFamily.Maximal p] (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2)
+include ι instShared1 p hp instShared4 hcop hc
+
+theorem normalized_product_eq_square_sum :
     normalizedProductTraceGauss p hp hcop (fun i=>character (Ideal.span {p i}))=
       quadraticGammaO (∏i,p i) (Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)) := by
   let c:=∏i,p i
@@ -225,10 +140,7 @@ theorem normalized_product_eq_square_sum {ι : Type*} [Fintype ι]
   exact IdealGaussCRT.quadratic_gauss_finite_crt_eq_square_sum
     (fun i=>ActualEisensteinCubic.O⧸Ideal.span {p i}) e ψ (GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive c hc0) hc
 
-theorem quadraticGamma_product {ι : Type*} [Fintype ι]
-    (p : ι→ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hc : ∀i,ringChar (ActualEisensteinCubic.O⧸Ideal.span {p i})≠2) :
+theorem quadraticGamma_product :
     quadraticGammaO (∏i,p i) (Finset.prod_ne_zero_iff.mpr (fun i _=>hp i))=
       ∏i,character (Ideal.span {p i}) (Ideal.Quotient.mk (Ideal.span {p i}) (cofactor p i))*
         quadraticGammaO (p i) (hp i) := by
@@ -236,6 +148,8 @@ theorem quadraticGamma_product {ι : Type*} [Fintype ι]
   apply Finset.prod_congr rfl
   intro i hi
   rw [normalized_prime_eq_square_sum _ _ (hc i)]
+
+end
 
 end QuadraticAllOddCRT
 

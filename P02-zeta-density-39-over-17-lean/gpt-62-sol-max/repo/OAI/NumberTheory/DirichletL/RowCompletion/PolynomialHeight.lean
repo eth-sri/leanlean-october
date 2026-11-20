@@ -8,82 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalCubeSeparation
-
-end CanonicalRowCompletion
+open scoped ContDiff
+open Set
 
 namespace CompletedHeight
 
@@ -118,10 +53,14 @@ def logCorrection (a b : ℝ) (ha : 0 < a) (x : ℝ) : ℝ :=
 
 def patchedLog (a b : ℝ) (ha : 0 < a) (x : ℝ) : ℝ := x+logCorrection a b ha x
 
-lemma logCorrection_compact (a b : ℝ) (ha : 0 < a) :
+section
+variable (a b : ℝ) (ha : 0 < a)
+include a b ha
+
+lemma logCorrection_compact :
     HasCompactSupport (logCorrection a b ha) := (positiveCutoff a b ha).hasCompactSupport.mul_right
 
-lemma logCorrection_smooth (a b : ℝ) (ha : 0 < a) :
+lemma logCorrection_smooth :
     ContDiff ℝ ∞ (logCorrection a b ha) := by
   rw [contDiff_iff_contDiffAt]
   intro x
@@ -134,12 +73,12 @@ lemma logCorrection_smooth (a b : ℝ) (ha : 0 < a) :
   · exact (positiveCutoff a b ha).contDiff.contDiffAt.mul
       ((Real.contDiffAt_log.mpr hx).sub contDiffAt_id)
 
-lemma patchedLog_temperate (a b : ℝ) (ha : 0 < a) :
+lemma patchedLog_temperate :
     Function.HasTemperateGrowth (patchedLog a b ha) :=
   Function.HasTemperateGrowth.id'.add
     ((logCorrection_compact a b ha).hasTemperateGrowth (logCorrection_smooth a b ha))
 
-lemma patchedLog_proper (a b : ℝ) (ha : 0 < a) :
+lemma patchedLog_proper :
     ∃k : ℕ, ∃C : ℝ, ∀x : ℝ, ‖x‖ ≤ C*(1+‖patchedLog a b ha x‖)^k := by
   obtain ⟨x₀,hx₀⟩ := (logCorrection_smooth a b ha).continuous.norm.exists_forall_ge_of_hasCompactSupport
     (logCorrection_compact a b ha).norm
@@ -152,10 +91,12 @@ lemma patchedLog_proper (a b : ℝ) (ha : 0 < a) :
   simp only [pow_one]
   nlinarith [norm_nonneg (patchedLog a b ha x),norm_nonneg (logCorrection a b ha x₀)]
 
-lemma patchedLog_eq_log (a b : ℝ) (ha : 0 < a) (x : ℝ) (hx : x∈Icc a b) :
+lemma patchedLog_eq_log (x : ℝ) (hx : x∈Icc a b) :
     patchedLog a b ha x=Real.log x := by
   simp only [patchedLog,logCorrection,positiveCutoff_one a b ha x hx,one_mul]
   ring
+
+end
 
 def sourceTwistCLM (W : 𝓢(ℝ,ℂ)) (a b : ℝ) (ha : 0 < a) :
     𝓢(ℝ,ℂ) →L[ℝ] 𝓢(ℝ,ℂ) :=
@@ -375,32 +316,6 @@ theorem coupled_positive_log_separation_linear_constant
     exact (div_le_div_of_nonneg_right hh (by positivity)).trans_eq (by ring)
 
 end LocalLogFourier
-
-namespace CompletedHeight
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open CompletedGauss
-
-end CompletedHeight
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CompletedHeight
-open CompletedGauss hiding O
-open ActualEisensteinCubic
-open CanonicalQuadraticSieve hiding O
-
-end CompletedHeight
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CompletedHeight
-open CompletedGauss hiding O
-open ActualEisensteinCubic CompletedDyadic
-open CanonicalQuadraticSieve hiding O
-
-end CompletedHeight
 
 end
 

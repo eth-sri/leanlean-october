@@ -12,16 +12,19 @@ public import Mathlib.Analysis.Complex.PhragmenLindelof
 @[expose] public section
 
 open Complex Finset Set Filter Topology MeasureTheory Asymptotics
-open scoped BigOperators Topology
+open scoped BigOperators
 open Classical
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include g hg
+
 /-- On each fixed vertical line, the Mellin transform of a DFI test
 function decays faster than every prescribed power. -/
-theorem DFIVoronoiTestFunction.mellin_polynomial_decay
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (σ : ℝ) (n : ℕ) :
+theorem DFIVoronoiTestFunction.mellin_polynomial_decay (σ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ u : ℝ,
       |u| ^ n * ‖mellin g ((σ : ℂ) + (u : ℂ) * I)‖ ≤ C := by
   let F : SchwartzMap ℝ ℂ :=
@@ -57,7 +60,6 @@ theorem DFIVoronoiTestFunction.mellin_polynomial_decay
 vertical strip.  This general form is needed when a Voronoi dual contour is
 moved farther left to obtain arbitrary decay in its discrete frequency. -/
 theorem DFIVoronoiTestFunction.exists_mellin_interval_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
     (c d : ℝ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (σ : ℝ), c ≤ σ → σ ≤ d → ∀ u : ℝ,
       ‖mellin g ((σ : ℂ) + (u : ℂ) * I)‖ ≤ C := by
@@ -108,15 +110,13 @@ theorem DFIVoronoiTestFunction.exists_mellin_interval_bound
 
 /-- The compact support gives a bound for the Mellin transform uniform on
 the complete DFI contour-shift strip. -/
-theorem DFIVoronoiTestFunction.exists_mellin_strip_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.exists_mellin_strip_bound :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (σ : ℝ),
       -(1 / 2 : ℝ) ≤ σ → σ ≤ 3 / 2 → ∀ u : ℝ,
       ‖mellin g ((σ : ℂ) + (u : ℂ) * I)‖ ≤ C :=
   hg.exists_mellin_interval_bound (-(1 / 2 : ℝ)) (3 / 2 : ℝ)
 
-theorem DFIVoronoiTestFunction.differentiable_mellin
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.differentiable_mellin :
     Differentiable ℂ (mellin g) := by
   intro s
   exact mellin_differentiableAt_of_isBigO_rpow
@@ -126,8 +126,7 @@ theorem DFIVoronoiTestFunction.differentiable_mellin
 
 /-- Arbitrary-order polynomial Mellin bound on either boundary of the
 standard DFI strip. -/
-theorem DFIVoronoiTestFunction.exists_mellin_pow_boundary_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (j : ℕ) (σ : ℝ)
+theorem DFIVoronoiTestFunction.exists_mellin_pow_boundary_bound (j : ℕ) (σ : ℝ)
     (hσLower : -(1 / 2 : ℝ) ≤ σ) (hσUpper : σ ≤ 3 / 2) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ u : ℝ,
       ‖(((σ : ℂ) + (u : ℂ) * I) - 3) ^ j *
@@ -170,8 +169,7 @@ theorem DFIVoronoiTestFunction.exists_mellin_pow_boundary_bound
 
 /-- Phragmén--Lindelöf makes the arbitrary-order boundary estimate uniform
 throughout the standard DFI strip. -/
-theorem DFIVoronoiTestFunction.exists_mellin_pow_strip_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (j : ℕ) :
+theorem DFIVoronoiTestFunction.exists_mellin_pow_strip_bound (j : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ (σ : ℝ),
       -(1 / 2 : ℝ) ≤ σ → σ ≤ 3 / 2 → ∀ u : ℝ,
       ‖(((σ : ℂ) + (u : ℂ) * I) - 3) ^ j *
@@ -285,8 +283,7 @@ theorem DFIVoronoiTestFunction.exists_mellin_pow_strip_bound
   simpa [f, z] using hPL
 
 /-- Arbitrary Mellin decay uniformly throughout the actual q=1 contour strip. -/
-theorem DFIVoronoiTestFunction.exists_mellin_weighted_strip_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) (j : ℕ) :
+theorem DFIVoronoiTestFunction.exists_mellin_weighted_strip_bound (j : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ : ℝ, -(1/2 : ℝ) ≤ σ → σ ≤ 3/2 → ∀ u : ℝ,
       (1 + |u|)^j * ‖mellin g ((σ : ℂ) + (u : ℂ)*I)‖ ≤ C := by
   obtain ⟨D,hD,hbound⟩ := hg.exists_mellin_pow_strip_bound j
@@ -309,5 +306,7 @@ theorem DFIVoronoiTestFunction.exists_mellin_weighted_strip_bound
       mul_le_mul_of_nonneg_right hpow (norm_nonneg _)
     _ = 2^j * (‖z-3‖^j * ‖mellin g z‖) := by ring
     _ ≤ 2^j * D := mul_le_mul_of_nonneg_left hb (by positivity)
+
+end
 
 end MathCollab.Density.Stronger.Atkinson

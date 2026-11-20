@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Filter
 namespace SevenEighths.ProbeFinalAssembly
-open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters
-open HeckeInverseAmplification
+open HeckeFamily ProbePhysical ProbeHighRowFamily Parameters HeckeInverseAmplification
 
 def SourceMomentBound {Δ : ℝ} {D : HighData Δ} (F : SourceData D)
     (counts : CountParameters F.modulus ⊤ D.t) (η : Character)

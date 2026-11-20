@@ -7,8 +7,9 @@ See ../../../../../third_party/twelfth/ATKINSON_PREFIX_MANIFEST.json
 and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonIndexScales
-public import GuthMaynard.SecondOrderMeanValue
-public import GuthMaynard.SecondDerivative
+public import GuthMaynard.NativeSource.GuthMaynard.SecondOrderMeanValue
+
+public import GuthMaynard.NativeSource.GuthMaynard.SecondDerivative
 
 @[expose] public section
 
@@ -24,8 +25,7 @@ second-derivative van der Corput theorem.  The lower and upper curvature
 parameters are explicit functions of the physical height gap and index box.
 -/
 
-open Set
-open RiemannZeta.GuthMaynard
+open Set RiemannZeta.GuthMaynard
 
 namespace MathCollab.Density.Stronger.Atkinson
 
@@ -37,8 +37,11 @@ positive when `u < t`. -/
 def atkinsonIndexPositiveDifference (t u x : ℝ) : ℝ :=
   atkinsonIndexRealPhase u x - atkinsonIndexRealPhase t x
 
-theorem hasDerivAt_atkinsonIndexPositiveDifference
-    {t u x : ℝ} (ht : 0 < t) (hu : 0 < u) (hx : 0 < x) :
+section
+variable {t u x : ℝ} (ht : 0 < t) (hu : 0 < u) (hx : 0 < x)
+include t u x ht hu hx
+
+theorem hasDerivAt_atkinsonIndexPositiveDifference :
     HasDerivAt (atkinsonIndexPositiveDifference t u)
       (atkinsonIndexRealSlope u x -
         atkinsonIndexRealSlope t x) x := by
@@ -46,8 +49,7 @@ theorem hasDerivAt_atkinsonIndexPositiveDifference
   exact (hasDerivAt_atkinsonIndexRealPhase hu hx).sub
     (hasDerivAt_atkinsonIndexRealPhase ht hx)
 
-theorem hasDerivAt_atkinsonIndexPositiveDifferenceSlope
-    {t u x : ℝ} (ht : 0 < t) (hu : 0 < u) (hx : 0 < x) :
+theorem hasDerivAt_atkinsonIndexPositiveDifferenceSlope :
     HasDerivAt
       (fun y => atkinsonIndexRealSlope u y -
         atkinsonIndexRealSlope t y)
@@ -58,8 +60,7 @@ theorem hasDerivAt_atkinsonIndexPositiveDifferenceSlope
 
 /-- Exact second-order mean-value identity for the positively oriented phase
 difference. -/
-theorem exists_atkinsonIndexPositiveDifference_secondDifference
-    {t u x : ℝ} (ht : 0 < t) (hu : 0 < u) (hx : 0 < x) :
+theorem exists_atkinsonIndexPositiveDifference_secondDifference :
     ∃ xi ∈ Set.Ioo x (x + 2),
       atkinsonIndexRealCurvature u xi -
           atkinsonIndexRealCurvature t xi =
@@ -89,6 +90,8 @@ theorem exists_atkinsonIndexPositiveDifference_secondDifference
     _ = F (x + 2) - 2 * F (x + 1) + F x := heq
     _ = (F (x + 2) - F (x + 1)) -
         (F (x + 1) - F x) := by ring
+
+end
 
 /-- The natural-index phase used by the finite B-process. -/
 def atkinsonIndexPositiveDifferenceNat

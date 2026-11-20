@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.PrimeRows.ProbeFrames
 public import OAI.NumberTheory.DirichletL.PrimeRows.NormalizedTransport
 
 @[expose] public section
@@ -9,17 +10,11 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-open ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
-
-omit [NeZero M] in
-theorem transportSavingPoolOutside (S : Finset (Ideal O)) (K : ℕ) (a b : ℝ) (Y : Fin K→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S a b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S a b (Y j) P).mp hP |>.2.2.2
 
 theorem actual_normalized_probe_transport_saving (K : ℕ) (e δ a b B ζ saving τ ellMin nu : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2) (hζ : 0<ζ) (hζ' : ζ≤1/48) (hτ : 0<τ)
@@ -41,7 +36,7 @@ theorem actual_normalized_probe_transport_saving (K : ℕ) (e δ a b B ζ saving
     ∃n : ℕ,0<n ∧ ∀η : Character,∃C : ℝ,0<C ∧ ∀ᶠ Z : ℝ in atTop,
       let Yp := fun j=>Z^(ell j)
       let T := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
-      let hT := transportSavingPoolOutside M H S K a b Yp
+      let hT := ProbeHighRowFamily.rayPoolOutside M H S K a b Yp
       let WC : Fin K→ℝ→ℂ := fun j y=>(W j y:ℂ)
       let normer := sourceResidueConstant W0 W1 (∏P∈S,P)*
         (Probe.principalScalar Finset.univ Z (1/6) (slotMass T (residueWeights W Yp)) : ℂ)

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondSourceAttachment
 
 @[expose] public section
@@ -13,9 +14,6 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
 
-omit [DecidableEq ι] in
-@[simp] theorem secondParentOf_attach {Jo : ℕ} (parent : SecondParentSource ι Jo)
-    (x : SecondExpansionData ι) : secondParentOf (attachSecondExpansion parent x) = parent := rfl
 
 def attachedSecondFamily {Jo : ℕ} (parents : Finset (SecondParentSource ι Jo))
     (source : SecondParentSource ι Jo → Finset (SecondExpansionData ι)) :
@@ -53,9 +51,9 @@ theorem sum_attachedSecondFamily {Jo : ℕ} (parents : Finset (SecondParentSourc
     obtain ⟨z,hz,he⟩ := Finset.mem_image.mp hy
     exact hab (congrArg secondParentOf he).symm
 
-variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem attached_family_conditions {Jo : ℕ} (parents : Finset (SecondParentSource ι Jo))

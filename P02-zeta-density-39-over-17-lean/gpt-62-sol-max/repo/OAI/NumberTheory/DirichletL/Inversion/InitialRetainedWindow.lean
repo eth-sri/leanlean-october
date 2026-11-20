@@ -13,12 +13,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialRetainedWindow
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialEnergyCallerSourceMask InverseInitialQuotientGeometry InverseInitialClippedColumns
-open InverseInitialCanonicalState InverseInitialEnergyCallerState FirstPassCubeLabels
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows InverseInitialEnergyCallerSourceMask InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialCanonicalState InverseInitialEnergyCallerState FirstPassCubeLabels
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem retained_window_bound
@@ -32,7 +27,7 @@ theorem retained_window_bound
     ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z^(cap+1)≤Dpool→
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) Dpool;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) Dpool (reflectionExcludedPrimes_bad q);
-    letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF;
     let p:=poolPrimary F;
     let hp:=poolPrimary_ne_zero F hF;
     let hcop:=poolPrimary_coprime F hF;
@@ -85,7 +80,7 @@ theorem retained_window_bound
   obtain ⟨C,Z₀,hC,hZ₀,hbound⟩:=hbound q hq
   refine ⟨C,Z₀,hC,hZ₀,?_⟩
   intro Z hZ Dpool hD F hFa
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hFa i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hFa
   intro p hp hcop hg σ dec all assigned hassigned hK lists Hslot coeff hdis hHs hPs hac
     qelem z al bl primeW hz hqe hprimeW hprimeLive Ψ hΨ hperiod S hdiv hf ψ hψ
     D B v θ H m r η τ hη hηsmall hτ hhiZ hloZ hlog hprodj hprod hDeq hmargin₁ hmargin₂ hparent hR hrad

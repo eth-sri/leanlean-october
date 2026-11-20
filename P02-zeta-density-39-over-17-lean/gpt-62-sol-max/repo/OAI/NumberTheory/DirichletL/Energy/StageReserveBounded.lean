@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyStageReserveBounded
-open CenteredMomentEnergyState CenteredMomentNaturalRowSource
-open CenteredMomentEnergyStageReserve
+open CenteredMomentEnergyState CenteredMomentNaturalRowSource CenteredMomentEnergyStageReserve
 
 theorem exists_bounded_separated_reference_reserve (rho ε Mcap Bmask bΦ:ℝ)
     (hrho:0<rho)(hε:0<ε)(hM:0≤Mcap)(hB:0≤Bmask):

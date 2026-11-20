@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.UnrestrictedCharacters
 
 @[expose] public section
@@ -8,72 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
 namespace SecondPassIntegration
 open JointLogSeparation FourierBridge
 
@@ -103,10 +50,10 @@ open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+  (hinj : OAI.PrincipalIdealFamily.Distinct p)
 include hinj
 
 theorem secondPreColumn_zero_of_common_overlap
@@ -119,7 +66,7 @@ theorem secondPreColumn_zero_of_common_overlap
   simp only [secondPreColumn, hm, mul_zero, zero_mul]
 
 theorem weighted_secondChildKernelPair_congr_off_common
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda)
     (G E : Finset ι) (hEG : E ⊆ G) (F V : Finset ι)
     (Ψ₁ Ψ₂ : O →* ℂ) (m c d k₁ k₂ : O)
     (K lengthScale : Finset ι → Finset ι → ℂ)
@@ -176,7 +123,7 @@ theorem weighted_secondChildKernelPair_congr_off_common
     ring
 
 theorem weighted_secondRayChild_congr_off_common
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda)
     (G E : Finset ι) (hEG : E ⊆ G) (F V : Finset ι)
     (Ψ₁ Ψ₂ : O →* ℂ) (m c d k : O) (z : SecondRayIndex)
     (K lengthScale : Finset ι → Finset ι → ℂ)
@@ -201,9 +148,9 @@ section
 open ActualEisensteinCubic
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end
 
@@ -213,10 +160,10 @@ open FirstPassCubeLabels (columnLog primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+  (hinj : OAI.PrincipalIdealFamily.Distinct p)
 include hinj
 
 end
@@ -228,7 +175,7 @@ open ConcreteTraceCRT (eisEmbedding)
 
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
 
 def secondExpansionQuotient (x : SecondExpansionData ι) : O :=
   if h : x.divisor ⊆ x.sourceCommon then
@@ -243,10 +190,10 @@ omit [∀ (i : ι), (span {p i}).IsMaximal] in
 end
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+  (hinj : OAI.PrincipalIdealFamily.Distinct p)
 
 def secondExpansionSource
     (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (z : SecondRayIndex)
@@ -269,10 +216,10 @@ open ConcreteTraceCRT (eisEmbedding)
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+  (hinj : OAI.PrincipalIdealFamily.Distinct p)
 
 omit [DecidableEq ι] in
 theorem secondInputCoefficient_norm_le (Ψ : O →* ℂ) (m c d : O) (G : Finset ι) :

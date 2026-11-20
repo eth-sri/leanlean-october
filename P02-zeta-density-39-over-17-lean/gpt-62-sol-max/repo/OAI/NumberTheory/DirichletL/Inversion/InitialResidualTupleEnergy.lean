@@ -11,19 +11,10 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialResidualTupleEnergy
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows
-open InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState
-open InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes InverseInitialEnergyCallerWindows InverseInitialQuotientGeometry InverseInitialClippedColumns InverseInitialEnergyCallerState InverseInitialDyadicAssembly InverseInitialProfileBounds Filter
 local notation "O"=>ActualEisensteinCubic.O
 
-open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment
-open MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier
-open InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
-open InverseInitialCommonProfile InverseInitialEnergyCallerWindow
+open InverseInitialPhysicalLimit InverseInitialPhysicalReassembly SecondPassArithmetic InverseInitialRayAttachment MeasureTheory FourierBridge JointLogSeparation InverseInitialOverlapFourier InverseInitialCommonLists InverseInitialCommonRatios InverseInitialCommonTuples InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool InverseInitialCommonProfile InverseInitialEnergyCallerWindow
 theorem original_residual_tuple_energy
     (Woriginal W:ℝ→ℂ)(ao bo:ℝ)(hao:0<ao)
     (hso:Function.support Woriginal⊆Set.Icc ao bo)(hWo:ContDiff ℝ ∞ Woriginal)(a₀ b₀ bcap:ℝ)(ha₀:0<a₀)(hbcap:1≤bcap)
@@ -38,7 +29,7 @@ theorem original_residual_tuple_energy
     ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z^(cap+1)≤Dpool→
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) Dpool;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) Dpool (reflectionExcludedPrimes_bad q);
-    letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF;
     let _p:=poolPrimary F;
     let _hp:=poolPrimary_ne_zero F hF;
     let _hcop:=poolPrimary_coprime F hF;
@@ -93,7 +84,7 @@ theorem original_residual_tuple_energy
   obtain ⟨C,Z₀,hC,hZ₀,henergy⟩:=henergy q hq
   refine ⟨C,Z₀,hC,hZ₀,?_⟩
   intro Z hZ Dpool hD F hFa
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hFa i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hFa
   intro p hp hcop hg σ dec all assigned hassigned hK L Hslot coeff hdis hHs hPs hac
     qelem z al bl primeW hz hqe hprimeW hprimeLive χ hχ hperiod hout
     D m r hm hmcap hDlo hprodj hprod hDeq hmargin₁ hmargin₂ hparent rows hrows

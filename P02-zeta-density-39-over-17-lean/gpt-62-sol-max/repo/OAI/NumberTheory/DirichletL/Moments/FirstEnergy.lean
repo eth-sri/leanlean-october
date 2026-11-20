@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstEnergy
-open CenteredMomentCanonicalFirst CenteredMomentSourceRow CenteredMomentRowNorm
-open CenteredMomentHeckeExpansion HeckeFamily ConcretePrimeRowBridge
+open CenteredMomentCanonicalFirst CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentHeckeExpansion HeckeFamily ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem finiteHeckeEnergy_reduced_poisson (η : Character) (m A : O) (t : ℝ)

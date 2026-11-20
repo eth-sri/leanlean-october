@@ -12,8 +12,7 @@ public import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
@@ -63,8 +62,11 @@ theorem DFIVoronoiTestFunction.exists_minusIntegrand_strip_decay (q : ℕ) [NeZe
     _ = (10368*(q:ℝ)^3)*((1+|u|)^4*‖mellin g z‖) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hm' (by positivity)
 
-theorem DFIVoronoiTestFunction.continuous_minusIntegrand_vertical (q : ℕ) [NeZero q]
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
+section
+variable (q : ℕ) [instShared1 : NeZero q] {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
+include q instShared1 g hg n hn
+
+theorem DFIVoronoiTestFunction.continuous_minusIntegrand_vertical
     {σ : ℝ} (hσ : σ < 1) :
     Continuous (fun u : ℝ => dfiVoronoiMinusIntegrand q g n ((σ:ℂ)+(u:ℂ)*I)) := by
   apply continuous_iff_continuousAt.mpr
@@ -73,8 +75,7 @@ theorem DFIVoronoiTestFunction.continuous_minusIntegrand_vertical (q : ℕ) [NeZ
     (z := (σ:ℂ)+(u:ℂ)*I) (by simpa using hσ)).continuousAt
   exact hc.comp (f := fun v : ℝ => (σ:ℂ)+(v:ℂ)*I) (by fun_prop)
 
-theorem DFIVoronoiTestFunction.integrable_minusIntegrand_vertical (q : ℕ) [NeZero q]
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n)
+theorem DFIVoronoiTestFunction.integrable_minusIntegrand_vertical
     {σ : ℝ} (hσ : -(1/2 : ℝ) ≤ σ) (hσ' : σ ≤ 13/16) :
     Integrable (fun u : ℝ => dfiVoronoiMinusIntegrand q g n ((σ:ℂ)+(u:ℂ)*I)) := by
   obtain ⟨C,hC,hb⟩ := hg.exists_minusIntegrand_strip_decay q
@@ -88,8 +89,7 @@ theorem DFIVoronoiTestFunction.integrable_minusIntegrand_vertical (q : ℕ) [NeZ
       (by nlinarith [sq_abs u, abs_nonneg u])
     _ = _ := by rw [div_eq_mul_inv]
 
-theorem DFIVoronoiTestFunction.minusIntegrand_horizontal_limits (q : ℕ) [NeZero q]
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {n : ℕ} (hn : 0<n) :
+theorem DFIVoronoiTestFunction.minusIntegrand_horizontal_limits :
     Tendsto (fun H : ℝ => HIntegral' (dfiVoronoiMinusIntegrand q g n) (-(1/2)) (13/16) H)
         atTop (𝓝 0) ∧
       Tendsto (fun H : ℝ => HIntegral' (dfiVoronoiMinusIntegrand q g n) (-(1/2)) (13/16) (-H))
@@ -126,5 +126,7 @@ theorem DFIVoronoiTestFunction.minusIntegrand_horizontal_limits (q : ℕ) [NeZer
   constructor
   · simpa [HIntegral'] using htop.const_smul (1/(2*Real.pi*I) : ℂ)
   · simpa [HIntegral'] using hbottom.const_smul (1/(2*Real.pi*I) : ℂ)
+
+end
 
 end MathCollab.Density.Stronger.Atkinson

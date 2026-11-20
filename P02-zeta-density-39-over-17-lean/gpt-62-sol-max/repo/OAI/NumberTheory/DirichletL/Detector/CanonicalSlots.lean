@@ -54,9 +54,6 @@ def canonicalTupleEquiv {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     (∀i,↥(T i)) ≃ (∀i,↥(canonicalSlotSupport (T i))) :=
   Equiv.piCongrRight (fun i=>canonicalSlotEquiv (T i) (hT i))
 
-@[simp] lemma canonicalTupleEquiv_val {K : ℕ} (T : Fin K→Finset PrimeIdeal)
-    (hT : ∀i P,P∈T i→Supported P.val) (P : ∀i,↥(T i)) (i : Fin K) :
-    (canonicalTupleEquiv T hT P i).val=primaryGenerator (P i).val.val := rfl
 
 theorem sum_canonical_element_tuples {K : ℕ} (T : Fin K→Finset PrimeIdeal)
     (hT : ∀i P,P∈T i→Supported P.val)

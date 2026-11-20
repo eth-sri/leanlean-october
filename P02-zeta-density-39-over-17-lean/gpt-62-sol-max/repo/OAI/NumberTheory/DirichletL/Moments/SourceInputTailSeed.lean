@@ -10,10 +10,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentSourceInputTailSeed
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform
-open CenteredMomentSupportedTailAggregate CenteredMomentSourceMass
-open CenteredMomentExceptionalAmplitudePair
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentOriginalCommonHarmonic CenteredMomentSourceInputTailUniform CenteredMomentSupportedTailAggregate CenteredMomentSourceMass CenteredMomentExceptionalAmplitudePair
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2) := Classical.decEq _

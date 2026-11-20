@@ -86,6 +86,19 @@ theorem calibrated_physicalRow_buffered_height_growth
       exact mul_le_mul hl hrec (norm_nonneg _) hL
     _ = _ := by ring
 
+theorem calibrated_physicalRow_buffered_joint_growth
+    (e a B H : ℝ) (i : ℕ) (he : 0<e) (he' : e<1/1000)
+    (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (hB : 2<B) (hH : H≤(3*i+2:ℕ)*B)
+    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
+    (hmax : ∀P∈S,P.IsMaximal) (T : Finset PrimeIdeal) (hT : ∀P∈T,P.val∉S)
+    (η : Character) (u : FreeRow) (hu : u.val≠1) (ψ : ι→Character)
+    (hbin : detectorMaximum (sourceDetectorFamily S hS.prime η u ψ) (3*(i+1:ℕ)*B)<a+2*e) :
+    ∃C : ℝ,0≤C ∧ ∀x w z : ℂ,a+16*e≤x.re → x.re≤2 → |x.im|≤H → w.re=1-a-6*e → (17/50:ℝ)≤z.re →
+      ‖star ((calibrationForSet S hmax).residueMonoid u.val)*
+        physicalCompensatedRow S hS T hT η u x w z‖≤C*(3+|w.im|)^2 := by
+  obtain ⟨C,hC,hbound⟩ := calibrated_physicalRow_buffered_height_growth e he he' S hS hfirst hmax T hT η u hu ψ
+  exact ⟨C*(3+|H|)^2,by positivity,hbound a B H i ha ha1 hB hH hbin⟩
+
 end SevenEighths.ProbeHighRowFamily
 
 end

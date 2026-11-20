@@ -14,10 +14,11 @@ local notation "Id" => Ideal O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι]
 
-lemma jointExtension_zero_off_primary_left (S : Finset Id) (hS : ∀p∈S,p.IsMaximal)
-    (hbad : fixedBadPrimes⊆S) (σ : RayRing) (C k d : O)
-    (hCd : λ₀^2∣C*d-1) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ)
+section
+variable (S : Finset Id) (hS : ∀p∈S,p.IsMaximal) (hbad : fixedBadPrimes⊆S) (σ : RayRing) (C k d : O) (hCd : λ₀^2∣C*d-1) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r})) (P : ι→Id) [instShared11 : ∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ)
+include S hS hbad σ C k d hCd u a b r hr P instShared11 hg c
+
+lemma jointExtension_zero_off_primary_left
     (n m : O) (hn : ¬(Supported (Ideal.span {n}) ∧ λ₀^2∣n-1)) :
     jointExtension S hS σ C k u a b r hr P hg c (d*n) (d*m)=0 := by
   have hz : primaryCoefficient S hS σ (C*(d*n))=0 := by
@@ -27,10 +28,7 @@ lemma jointExtension_zero_off_primary_left (S : Finset Id) (hS : ∀p∈S,p.IsMa
     simpa only [mul_assoc] using h
   simp only [jointExtension,jointFixed,hz,zero_mul]
 
-lemma jointExtension_zero_off_primary_right (S : Finset Id) (hS : ∀p∈S,p.IsMaximal)
-    (hbad : fixedBadPrimes⊆S) (σ : RayRing) (C k d : O)
-    (hCd : λ₀^2∣C*d-1) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ)
+lemma jointExtension_zero_off_primary_right
     (n m : O) (hm : ¬(Supported (Ideal.span {m}) ∧ λ₀^2∣m-1)) :
     jointExtension S hS σ C k u a b r hr P hg c (d*n) (d*m)=0 := by
   have hz : primaryCoefficient S hS σ (C*(d*m))=0 := by
@@ -40,10 +38,7 @@ lemma jointExtension_zero_off_primary_right (S : Finset Id) (hS : ∀p∈S,p.IsM
     simpa only [mul_assoc] using h
   simp only [jointExtension,jointFixed,hz,star_zero,mul_zero,zero_mul]
 
-theorem jointExtension_ideal_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaximal)
-    (hbad : fixedBadPrimes⊆S) (σ : RayRing) (C k d : O)
-    (hCd : λ₀^2∣C*d-1) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
-    (P : ι→Id) [∀i,(P i).IsMaximal] (hg : ∀i,λ₀∉P i) (c : ι→ℕ) (W : O→O→ℂ) :
+theorem jointExtension_ideal_lattice (W : O→O→ℂ) :
     (∑'I : SupportedIdeal,∑'J : SupportedIdeal,
       jointExtension S hS σ C k u a b r hr P hg c (d*primaryGenerator I.val) (d*primaryGenerator J.val)*
         W (primaryGenerator I.val) (primaryGenerator J.val))=
@@ -53,6 +48,8 @@ theorem jointExtension_ideal_lattice (S : Finset Id) (hS : ∀p∈S,p.IsMaximal)
     rw [jointExtension_zero_off_primary_left S hS hbad σ C k d hCd u a b r hr P hg c n m hn,zero_mul]
   · intro n m hm
     rw [jointExtension_zero_off_primary_right S hS hbad σ C k d hCd u a b r hr P hg c n m hm,zero_mul]
+
+end
 
 end SevenEighths.ProbeGramCommon
 end

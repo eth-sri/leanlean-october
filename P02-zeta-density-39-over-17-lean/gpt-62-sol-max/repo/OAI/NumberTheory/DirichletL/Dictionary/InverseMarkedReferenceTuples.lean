@@ -49,10 +49,11 @@ theorem tuple_injective (L:ι→Finset (Ideal O))
   exact Finset.disjoint_left.mp (hdis (Finset.mem_univ i) (Finset.mem_univ j) hij)
     (q i).property (by simpa only [he] using (q j).property)
 
-theorem original_selected_subset_sum (S:Finset (Ideal O))
-    (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)(coeff:ι→Ideal O→ℂ)
-    (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z:ℝ)(hZ:0<Z)(u:O) :
+section
+variable (S:Finset (Ideal O)) (L:ι→Finset (Ideal O)) (hprime:∀i,∀P∈L i,Prime P) (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L) (coeff:ι→Ideal O→ℂ) (η:Ideal O→*ℂ) (a:Ideal O→ℂ) (W:ℝ→ℂ) (Z r z:ℝ) (hZ:0<Z) (u:O)
+include S L hprime hdis coeff η a W Z r z hZ u
+
+theorem original_selected_subset_sum :
     (∑q:Tuple L,(∏i,coeff i (q i).val)*
       originalTotalPolynomial S (∏i,(q i).val) η a W Z r z u)=
     ∑J∈Finset.univ.powerset,∑q:Tuple L,(∏i,coeff i (q i).val)*
@@ -66,10 +67,7 @@ theorem original_selected_subset_sum (S:Finset (Ideal O))
         (tuple_injective L hdis q) η a W Z r z hZ u,Finset.mul_sum]
     _ = _ := Finset.sum_comm
 
-theorem original_selected_grouped (S:Finset (Ideal O))
-    (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)(coeff:ι→Ideal O→ℂ)
-    (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z:ℝ)(hZ:0<Z)(u:O) :
+theorem original_selected_grouped :
     (∑q:Tuple L,(∏i,coeff i (q i).val)*
       originalTotalPolynomial S (∏i,(q i).val) η a W Z r z u)=
     ∑J∈Finset.univ.powerset,∑x:Assigned L J,∑y:Remaining L J,
@@ -80,6 +78,8 @@ theorem original_selected_grouped (S:Finset (Ideal O))
   apply Finset.sum_congr rfl
   intro J hJ
   exact sum_tuple_split L J _
+
+end
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 

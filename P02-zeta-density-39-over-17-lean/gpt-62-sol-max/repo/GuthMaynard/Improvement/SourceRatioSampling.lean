@@ -28,10 +28,13 @@ theorem source_ratio_frequency_separated (S : Finset (ℕ × ℕ)) {Y : ℝ}
   simpa [mul_inv_rev,div_eq_mul_inv,mul_comm,mul_left_comm,mul_assoc] using
     div_le_div_of_nonneg_right hh (by positivity : 0 ≤ 2*Real.pi)
 
-/-- Actual square sampling on any finite primitive ratio family. -/
-theorem source_ratio_fourier_square (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 0 < Y)
-    (hS : ∀ q ∈ S, 0 < q.1 ∧ 0 < q.2 ∧ q.1.Coprime q.2 ∧
+section
+variable (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 0 < Y) (hS : ∀ q ∈ S, 0 < q.1 ∧ 0 < q.2 ∧ q.1.Coprime q.2 ∧
       (q.1:ℝ) ≤ Y ∧ (q.2:ℝ) ≤ Y)
+include S Y hY hS
+
+/-- Actual square sampling on any finite primitive ratio family. -/
+theorem source_ratio_fourier_square
     {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
     {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
     (∑ q ∈ S, ‖𝓕 f (sourceRatioFrequency q)‖^2) ≤
@@ -47,9 +50,7 @@ theorem source_ratio_fourier_square (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 0 
 
 /-- Squared multiplicity and genuine Fourier square sampling combine by
 finite Cauchy--Schwarz; the height and moment factors remain separate. -/
-theorem source_ratio_fourier_weighted_low (S : Finset (ℕ × ℕ)) {Y : ℝ} (hY : 0 < Y)
-    (hS : ∀ q ∈ S, 0 < q.1 ∧ 0 < q.2 ∧ q.1.Coprime q.2 ∧
-      (q.1:ℝ) ≤ Y ∧ (q.2:ℝ) ≤ Y) (w : ℕ × ℕ → ℝ) {W : ℝ}
+theorem source_ratio_fourier_weighted_low (w : ℕ × ℕ → ℝ) {W : ℝ}
     (hW : (∑ q ∈ S, (w q)^2) ≤ W)
     {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
     {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
@@ -59,6 +60,8 @@ theorem source_ratio_fourier_weighted_low (S : Finset (ℕ × ℕ)) {Y : ℝ} (h
     (mul_le_mul (Real.sqrt_le_sqrt hW)
       (Real.sqrt_le_sqrt (source_ratio_fourier_square S hY hS h1 h2 hR hs))
       (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+
+end
 
 /-- High-height sampling with literal normalized frequencies and the
 original restricted Fourier L1 integral. -/

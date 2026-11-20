@@ -11,8 +11,7 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
 open scoped Interval
 set_option autoImplicit false
 noncomputable section

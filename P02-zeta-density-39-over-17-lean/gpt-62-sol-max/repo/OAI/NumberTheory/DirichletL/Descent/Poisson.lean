@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Foundation
 public import OAI.NumberTheory.DirichletL.Descent.Marks
 public import OAI.NumberTheory.DirichletL.Descent.LocalReflection
@@ -12,9 +13,7 @@ namespace SevenEighths.InverseMoment
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic
-open FirstPassCubeLabels
-open SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 
 noncomputable local instance markedQuotientField (P : Ideal ActualEisensteinCubic.O)
     [P.IsMaximal] : Field (ActualEisensteinCubic.O ⧸ P) := Ideal.Quotient.field P
@@ -51,15 +50,15 @@ theorem actual_marked_active_formula
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
   (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 include hcop
 
 omit [DecidableEq ι] in
 theorem row_slot_cross_phase
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ p i - 1) (i k : ι) (hik : i ≠ k) :
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda) (i k : ι) (hik : i ≠ k) :
     MixedCrossSeparation.crossSymbol p hg i k ^ 4 *
       MixedCrossSeparation.crossSymbol p hg k i ^ 2 = 1 := by
   have hs : MixedCrossSeparation.crossSymbol p hg i k ^ 2 =
@@ -82,7 +81,7 @@ theorem row_slot_cross_phase
 
 omit [DecidableEq ι] in
 theorem row_slot_product_phase
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ p i - 1) (R P : Finset ι) (hRP : Disjoint R P) :
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda) (R P : Finset ι) (hRP : Disjoint R P) :
     (∏ i ∈ R, ∏ k ∈ P,
       MixedCrossSeparation.crossSymbol p hg i k ^ 4 *
         MixedCrossSeparation.crossSymbol p hg k i ^ 2) = 1 := by

@@ -46,37 +46,28 @@ theorem modelPhaseMorseWeight_support_subset {χ F : ℝ → ℝ} {v : ℝ} :
   apply hz
   rw [modelPhaseMorseWeight_eq hr,modelPhaseMorseAmplitude,hc,zero_mul]
 
-theorem isCompact_modelPhaseMorseCoordinate_image_tsupport
-    {χ F : ℝ → ℝ} {σ δ v : ℝ}
-    (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) :
+section
+variable {χ F : ℝ → ℝ} {σ δ v : ℝ} (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2) (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ) (hv : v ∈ modelPhaseSlopeRange F)
+include χ F σ δ v hs hσ hδ hF hv
+
+theorem isCompact_modelPhaseMorseCoordinate_image_tsupport :
     IsCompact (modelPhaseMorseCoordinate F v '' tsupport χ) := by
   have hc : IsCompact (tsupport χ) :=
     isCompact_Icc.of_isClosed_subset (isClosed_tsupport χ) (hs.trans Ioo_subset_Icc_self)
   exact hc.image_of_continuousOn
     ((modelPhaseMorseCoordinate_contDiffOn hσ hδ hF hv).continuousOn.mono hs)
 
-theorem modelPhaseMorseWeight_tsupport_subset
-    {χ F : ℝ → ℝ} {σ δ v : ℝ}
-    (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) :
+theorem modelPhaseMorseWeight_tsupport_subset :
     tsupport (modelPhaseMorseWeight χ F v) ⊆
       modelPhaseMorseCoordinate F v '' tsupport χ :=
   closure_minimal modelPhaseMorseWeight_support_subset
     (isCompact_modelPhaseMorseCoordinate_image_tsupport hs hσ hδ hF hv).isClosed
 
-theorem modelPhaseMorseWeight_tsupport_subset_range
-    {χ F : ℝ → ℝ} {σ δ v : ℝ}
-    (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) :
+theorem modelPhaseMorseWeight_tsupport_subset_range :
     tsupport (modelPhaseMorseWeight χ F v) ⊆ modelPhaseMorseRange F v :=
   (modelPhaseMorseWeight_tsupport_subset hs hσ hδ hF hv).trans (image_mono hs)
+
+end
 
 theorem modelPhaseMorseWeight_contDiff
     {χ F : ℝ → ℝ} {σ δ v : ℝ}

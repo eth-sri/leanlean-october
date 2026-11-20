@@ -10,12 +10,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
-open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair
-open CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource
-open CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction
-open CenteredMomentDivisorRectangle CenteredMomentExceptionalAsymmetricSource
-open CenteredMomentFiniteProfileExceptional
+open HeckeFamily CenteredMomentEligibleEnergy CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedDetectorAmplitude CenteredMomentExceptionalAmplitudePair CenteredMomentExceptionalAllocationShell CenteredMomentExceptionalWholeSource CenteredMomentExceptionalMaskedSource UniqueFactorizationMonoid CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentExceptionalAsymmetricSource CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
 universe u
 variable {ι:Type u} [Fintype ι] [DecidableEq ι]
@@ -108,8 +103,11 @@ theorem actual_paired_capped (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(ε B:ℝ) (
   rw [←raw_cap_weight s v hs.1 D a b Z r hZ]
   exact hbound α κ s v p q Z r rRight hZ z hs hv D a b
 
-theorem actual_whole_asymmetric (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι→ℝ)(ε δ B Lbound:ℝ)
-    (hε:0<ε)(hδ:0<δ)(hB:0≤B)(hL:0≤Lbound):
+section
+variable (wlo whi:ℝ) (hwlo:0<wlo) (hwhi:0≤whi) (lo hi:ι→ℝ) (ε δ B Lbound:ℝ) (hε:0<ε) (hδ:0<δ) (hB:0≤B) (hL:0≤Lbound)
+include wlo whi hwlo hwhi lo hi ε δ B Lbound hε hδ hB hL
+
+theorem actual_whole_asymmetric:
     ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∀Q:Ideal O,Q≠0 → ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(I L:Finset ι)(s:Data I)(v:Data L)(p q:Profiles wlo whi),
       (∀i:L,v.lo i=lo i) → (∀i:L,v.hi i=hi i) →
@@ -169,8 +167,7 @@ theorem actual_whole_asymmetric (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι
       dsimp [A]
       ring
 
-theorem actual_masked_asymmetric (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:ι→ℝ)(ε δ B Lbound:ℝ)
-    (hε:0<ε)(hδ:0<δ)(hB:0≤B)(hL:0≤Lbound):
+theorem actual_masked_asymmetric:
     ∃J:ℕ,∃Sprofile:Finset (ℕ×ℕ),(0,0)∈Sprofile ∧ ∀Q:Ideal O,Q≠0 → ∃C:ℝ,0<C ∧ ∀ᶠZ:ℝ in atTop,1<Z ∧
       ∀(I L:Finset ι)(s:Data I)(v:Data L)(p q:Profiles wlo whi),
       (∀i:L,v.lo i=lo i) → (∀i:L,v.hi i=hi i) →
@@ -189,6 +186,8 @@ theorem actual_masked_asymmetric (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)(lo hi:�
   refine ⟨hZ.1,?_⟩
   intro I L s v p q hlo hhi r rRight rows hs hv Ds hDs
   exact (whole_masked_le s v Ds rows).trans (hZ.2 I L s v p q hlo hhi r rRight rows hs hv Ds hDs)
+
+end
 
 end SevenEighths.CenteredMomentFiniteProfileExceptionalCommon
 

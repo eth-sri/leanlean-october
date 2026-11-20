@@ -52,7 +52,7 @@ theorem hasDerivAt_logarithmicDifferencePhase
     HasDerivAt (logarithmicDifferencePhase t A h k)
       (-t / (A + x + h) + t / (A + x + k)) x := by
   have harg (m : Nat) : HasDerivAt (fun y : Real => A + y + m) 1 x := by
-    simpa only [Pi.add_apply, id_eq, zero_add] using
+    simpa using
       HasDerivAt.add_const (m : Real)
         ((hasDerivAt_const x A).fun_add (hasDerivAt_id x))
   unfold logarithmicDifferencePhase
@@ -70,7 +70,7 @@ theorem hasDerivAt_logarithmicDifferencePhase_deriv
   have hleft : HasDerivAt (fun y : Real => -t / (A + y + h))
       (t / (A + x + h) ^ 2) x := by
     have hden : HasDerivAt (fun y : Real => A + y + h) 1 x := by
-      simpa only [Pi.add_apply, id_eq, zero_add] using
+      simpa using
         HasDerivAt.add_const (h : Real)
           ((hasDerivAt_const x A).fun_add (hasDerivAt_id x))
     convert (hasDerivAt_const x (-t)).div hden hh using 1
@@ -79,7 +79,7 @@ theorem hasDerivAt_logarithmicDifferencePhase_deriv
   have hright : HasDerivAt (fun y : Real => t / (A + y + k))
       (-t / (A + x + k) ^ 2) x := by
     have hden : HasDerivAt (fun y : Real => A + y + k) 1 x := by
-      simpa only [Pi.add_apply, id_eq, zero_add] using
+      simpa using
         HasDerivAt.add_const (k : Real)
           ((hasDerivAt_const x A).fun_add (hasDerivAt_id x))
     convert (hasDerivAt_const x t).div hden hk using 1
@@ -250,10 +250,10 @@ theorem logarithmicDifference_B_process
       (fun n : Nat => logarithmicDifferencePhase t A h k n)
       N lambda Lambda hlambda
         (fun n hn => by
-          simpa only [lambda, Nat.cast_add, Nat.cast_ofNat, Nat.cast_one] using
+          simpa [lambda] using
             (hbounds n hn).1)
         (fun n hn => by
-          simpa only [Lambda, Nat.cast_add, Nat.cast_ofNat, Nat.cast_one] using
+          simpa [Lambda] using
             (hbounds n hn).2)
 
 /-- Integer-indexed logarithmic phase term used by zero-padded shifts. -/
@@ -509,3 +509,8 @@ theorem integerLogarithmicSum_eq (t : Real) (A N : Nat) :
     rw [htoReal]
 
 end GuthMaynard.NativeMoment
+
+namespace RiemannZeta.GuthMaynard
+export _root_.GuthMaynard.NativeMoment
+  (shiftDistance)
+end RiemannZeta.GuthMaynard

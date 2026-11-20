@@ -28,8 +28,8 @@ theorem reciprocal_separated_sum (S : Finset ι) (f : ι → ℝ)
   have hinj : Set.InjOn g S := by
     intro i hi j hj he
     by_contra hne
-    have hfi : 0 ≤ f i / δ := div_nonneg (hδ.le.trans (hf i hi).1) hδ.le
-    have hfj : 0 ≤ f j / δ := div_nonneg (hδ.le.trans (hf j hj).1) hδ.le
+    have hfi := div_nonneg (hδ.le.trans (hf i hi).1) hδ.le
+    have hfj := div_nonneg (hδ.le.trans (hf j hj).1) hδ.le
     have hli : (g i : ℝ) ≤ f i / δ := Nat.floor_le hfi
     have hlj : (g j : ℝ) ≤ f j / δ := Nat.floor_le hfj
     have hui : f i / δ < (g i : ℝ) + 1 := Nat.lt_floor_add_one _
@@ -48,7 +48,7 @@ theorem reciprocal_separated_sum (S : Finset ι) (f : ι → ℝ)
       apply sum_le_sum
       intro i hi
       have hgpos : (0 : ℝ) < g i := by exact_mod_cast (hg i hi).1
-      have hfloor : (g i : ℝ) * δ ≤ f i :=
+      have hfloor :=
         (le_div_iff₀ hδ).mp (Nat.floor_le (div_nonneg (hδ.le.trans (hf i hi).1) hδ.le))
       have hh := inv_anti₀ (mul_pos hgpos hδ) hfloor
       simpa [mul_inv_rev] using hh
@@ -196,7 +196,7 @@ theorem separated_frequency_mean_value (S : Finset ι) (ω : ι → ℝ) (c : ι
       simp only [integral_const, Measure.real, Measure.restrict_apply_univ, Real.volume_Icc,
         ENNReal.toReal_ofReal (sub_nonneg.mpr hab), Complex.real_smul, mul_one]
       rw [Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (sub_nonneg.mpr hab)]
-    · have hne : ω n - ω m ≠ 0 := abs_pos.mp (hδ.trans_le (hsep n hn m hm he))
+    · have hne := abs_pos.mp (hδ.trans_le (hsep n hn m hm he))
       simp_rw [exponentialPhase_pair]
       rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hab]
       simpa only [k, ite_eq_right he, exponentialPhase] using

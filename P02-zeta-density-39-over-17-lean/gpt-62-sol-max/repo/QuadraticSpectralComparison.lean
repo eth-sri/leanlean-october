@@ -6,7 +6,6 @@ public import FiniteCutoffOperators
 set_option autoImplicit false
 noncomputable section
 open InnerProductSpace
-open scoped InnerProductSpace
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 

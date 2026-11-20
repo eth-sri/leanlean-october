@@ -13,26 +13,12 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedPaidAdmission
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic
-open CenteredMomentSourceLiveColumn
-open CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonRawScale
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization
-open CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
-open CenteredMomentAmplifiedRetainedRadius
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge ActualEisensteinCubic CenteredMomentSourceLiveColumn CenteredMomentFirstAmplifiedCapacityRadius CenteredMomentSecondCapacitySourceShift CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentCommonRawScale CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization CenteredMomentFirstPhysicalSource CenteredMomentSecondHeightFamily CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget CenteredMomentAmplifiedRetainedRadius
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
 
-open CenteredMomentFirstAmplifiedCapacityCommon CenteredMomentFirstAmplifiedCapacitySource
-open CenteredMomentFirstAmplifiedActiveAffine CenteredMomentFirstAmplifiedActiveCapacitySource
-open CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput
-open CenteredMomentCommonHeightEnvelope CenteredMomentAllocatedChildCapacity
+open CenteredMomentFirstAmplifiedCapacityCommon CenteredMomentFirstAmplifiedCapacitySource CenteredMomentFirstAmplifiedActiveAffine CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput CenteredMomentCommonHeightEnvelope CenteredMomentAllocatedChildCapacity
 
 def sourceReserve {α:Type*}[Fintype α] (s:Input ι)(childInput:Input α)
     (C D:Ideal O)(Z delta reserve cost a:ℝ):ℝ :=
@@ -54,11 +40,11 @@ lemma common_affine (s:Input ι)(C:Ideal O)(B:actualAllocations s.pools C)
   have hm:=mul_le_mul_of_nonneg_left hs (by linarith:0≤6*κ-1)
   linarith
 
-theorem actual_main_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(B:actualAllocations s.pools C)(t:ℝ)
-    (hB:frozenCoefficient B.val C R0 s.ν s.W s.P≠0)
-    (K Z sigma delta reserve cost a:ℝ)(hK:0<K)(hZ:1<Z)(hcost:0<cost)(ha:0<a)
+section
+variable (s:Input ι) (τ υ:Character) (C D R0:Ideal O) (hC:Supported C) (hD:Supported D) (hCD:primeSupport C=primeSupport D) (E:Finset (CommonIndex C D)) (B:actualAllocations s.pools C) (t:ℝ) (hB:frozenCoefficient B.val C R0 s.ν s.W s.P≠0) (K Z sigma delta reserve cost a:ℝ) (hK:0<K) (hZ:1<Z) (hcost:0<cost) (ha:0<a)
+include s τ υ C D R0 hC hD hCD E B t hB K Z sigma delta reserve cost a hK hZ hcost ha
+
+theorem actual_main_admission
     (hmod:τ.modulus=s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
     (S:Finset (Ideal O))(β:Ideal O→ℂ)(C₂ D₂:Ideal O)
@@ -129,11 +115,7 @@ theorem actual_main_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
   unfold sourceReserve
   linarith
 
-theorem actual_active_error_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(B:actualAllocations s.pools C)(t:ℝ)
-    (hB:frozenCoefficient B.val C R0 s.ν s.W s.P≠0)
-    (K Z sigma delta reserve cost a:ℝ)(hK:0<K)(hZ:1<Z)(hcost:0<cost)(ha:0<a)
+theorem actual_active_error_admission
     (p:O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7)(hs:0≤sigma)
     (hl:sigma/6≤Real.logb Z (normValue p))
     (hslot:∀i,∀I∈(activeInput (child s C R0 B τ t)).slots i,IsCoprime (Ideal.span {p}) I)
@@ -212,6 +194,8 @@ theorem actual_active_error_admission (s:Input ι)(τ υ:Character)(C D R0:Ideal
   refine ⟨add_nonneg (sub_nonneg.mpr hM) (sourceReserve_nonneg _ _ _ _ _ _ _ _ _),hparent,?_⟩
   unfold sourceReserve
   linarith
+
+end
 
 lemma common_preVolume_height (s:Input ι)(C R:Ideal O)(B:actualAllocations s.pools C)
     (τ υ:Character)(v t:ℝ):

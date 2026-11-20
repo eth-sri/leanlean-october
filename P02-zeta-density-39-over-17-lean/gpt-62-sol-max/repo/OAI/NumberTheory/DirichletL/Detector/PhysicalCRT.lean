@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition
-open CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CanonicalRowCompletion GaussianShiftedPartition CanonicalQuadraticSieve CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem coprime_function_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
@@ -112,9 +110,11 @@ lemma bareMoving_product (A B s r : O) (hs : Supported (Ideal.span {s}))
   rw [← Ideal.span_singleton_mul_span_singleton, map_mul]
   ring
 
-theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
-    (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
-    (hcop : IsCoprime (A*s) (B*r)) (H : O) :
+section
+variable (A B s r : O) (hA : A≠0) (hB : B≠0) (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r})) (hcop : IsCoprime (A*s) (B*r)) (H : O)
+include A B s r hA hB hs hr hcop H
+
+theorem barePhysicalFourier_product :
     barePhysicalFourier (A*B) (s*r) (mul_ne_zero hA hB)
       (mul_ne_zero (supportedElement_ne_zero s hs) (supportedElement_ne_zero r hr)) H =
     (idealRowHom r (Ideal.span {s}) * idealRowHom s (Ideal.span {r})) *
@@ -175,9 +175,7 @@ theorem barePhysicalFourier_product (A B s r : O) (hA : A≠0) (hB : B≠0)
   rw [elementFourier_const_mul, hexpand]
   ring
 
-theorem bareCongruenceCoefficient_product (A B s r : O) (hA : A≠0) (hB : B≠0)
-    (hs : Supported (Ideal.span {s})) (hr : Supported (Ideal.span {r}))
-    (hcop : IsCoprime (A*s) (B*r)) (H : O) :
+theorem bareCongruenceCoefficient_product :
     bareCongruenceCoefficient (A*B) (s*r) (mul_ne_zero hA hB) H =
     (idealRowHom r (Ideal.span {s}) * idealRowHom s (Ideal.span {r})) *
       (idealRowHom (B*r) (Ideal.span {A}) * (idealRowHom (B*r) (Ideal.span {s}))⁻¹) *
@@ -198,6 +196,8 @@ theorem bareCongruenceCoefficient_product (A B s r : O) (hA : A≠0) (hB : B≠0
   apply mul_left_cancel₀ (mul_ne_zero hns hnr)
   rw [he]
   ring
+
+end
 
 lemma idealRowHom_ne_zero_of_coprime (s a : O)
     (hs : Supported (Ideal.span {s})) (hc : IsCoprime s a) :

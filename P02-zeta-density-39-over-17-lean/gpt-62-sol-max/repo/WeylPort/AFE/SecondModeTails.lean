@@ -47,15 +47,19 @@ theorem secondModeEndpoint_eq (f p h : ℝ → ℝ) (x : ℝ) (n : ℕ) :
   simp only [div_eq_mul_inv, mul_inv_rev]
   ring_nf
 
+section
+variable (f p h : ℝ → ℝ) {x : ℝ} (hp : 0 < p x)
+include f p h x hp
+
 /-- The actual endpoint series is absolutely convergent. -/
-theorem summable_secondModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} (hp : 0 < p x) :
+theorem summable_secondModeEndpoint :
     Summable (secondModeEndpoint f p h x) := by
   change Summable (fun n => secondModeEndpoint f p h x n)
   simp_rw [secondModeEndpoint_eq]
   exact (summable_positive_tail_shift hp (-x)).mul_left _
 
 /-- The endpoint series sums to the existing oscillatory positive tail. -/
-theorem tsum_secondModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} (hp : 0 < p x) :
+theorem tsum_secondModeEndpoint :
     (∑' n : ℕ, secondModeEndpoint f p h x n) =
       ((h x : ℂ) * exp (2 * (Real.pi : ℂ) * I * (f x : ℂ)) / (4 * (Real.pi : ℂ) ^ 2 * I)) *
         positiveTail (-x) (p x) := by
@@ -67,7 +71,7 @@ theorem tsum_secondModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} (hp : 0 < p x) :
   simp [Complex.real_smul, div_eq_mul_inv, mul_comm]
 
 /-- Norm of the exact endpoint series retains its oscillatory cancellation. -/
-theorem norm_tsum_secondModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} (hp : 0 < p x) :
+theorem norm_tsum_secondModeEndpoint :
     ‖∑' n : ℕ, secondModeEndpoint f p h x n‖ =
       |h x| / (4 * Real.pi ^ 2) * ‖positiveTail (-x) (p x)‖ := by
   rw [tsum_secondModeEndpoint f p h hp, norm_mul, norm_div, norm_mul]
@@ -77,15 +81,14 @@ theorem norm_tsum_secondModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} (hp : 0 < p
   rw [he]
   simp [Real.norm_eq_abs]
 
+end
+
+section
+variable {a b : ℝ} (hab : a < b) {f p p' h h' : ℝ → ℝ} (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u) (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u) (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u) (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b)) (hhpc : ContinuousOn h' (Set.Icc a b)) (hpos : ∀ u ∈ Set.Icc a b, 0 < p u)
+include a b hab f p p' h h' hf hp hh hpc hppc hhpc hpos
+
 /-- An actual mode minus its exact endpoints satisfies the square/cube Fourier remainder bound. -/
-theorem secondModeTerm_remainder_bound {a b : ℝ} (hab : a < b)
-    {f p p' h h' : ℝ → ℝ}
-    (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
-    (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
-    (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u)
-    (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b))
-    (hhpc : ContinuousOn h' (Set.Icc a b))
-    (hpos : ∀ u ∈ Set.Icc a b, 0 < p u) (n : ℕ)
+theorem secondModeTerm_remainder_bound (n : ℕ)
     (hq1 : AntitoneOn (fun u => |h' u| / (((n : ℝ) + 1) + p u) ^ 2) (Set.Icc a b))
     (hq2 : AntitoneOn (fun u => |h u * p' u| / (((n : ℝ) + 1) + p u) ^ 3) (Set.Icc a b)) :
     ‖secondModeTerm f h a b n - (secondModeEndpoint f p h b n - secondModeEndpoint f p h a n)‖ ≤
@@ -130,14 +133,7 @@ theorem secondModeTerm_remainder_bound {a b : ℝ} (hab : a < b)
   ring
 
 /-- The actual positive-frequency integral series converges, and its bound retains both endpoint cancellations and both harmonic tails. -/
-theorem secondModeTail_bound {a b : ℝ} (hab : a < b)
-    {f p p' h h' : ℝ → ℝ}
-    (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
-    (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
-    (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u)
-    (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b))
-    (hhpc : ContinuousOn h' (Set.Icc a b))
-    (hpos : ∀ u ∈ Set.Icc a b, 0 < p u)
+theorem secondModeTail_bound
     (hq1 : ∀ n : ℕ, AntitoneOn (fun u => |h' u| / (((n : ℝ) + 1) + p u) ^ 2) (Set.Icc a b))
     (hq2 : ∀ n : ℕ, AntitoneOn (fun u => |h u * p' u| / (((n : ℝ) + 1) + p u) ^ 3) (Set.Icc a b)) :
     Summable (secondModeTerm f h a b) ∧
@@ -181,14 +177,7 @@ theorem secondModeTail_bound {a b : ℝ} (hab : a < b)
     linarith
 
 /-- Lemma 1 gives the full source logarithmic square/cube coefficients for the actual positive-frequency integral sum. -/
-theorem secondModeTail_source_bound {a b : ℝ} (hab : a < b)
-    {f p p' h h' : ℝ → ℝ}
-    (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
-    (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
-    (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u)
-    (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b))
-    (hhpc : ContinuousOn h' (Set.Icc a b))
-    (hpos : ∀ u ∈ Set.Icc a b, 0 < p u)
+theorem secondModeTail_source_bound
     (hq1 : ∀ n : ℕ, AntitoneOn (fun u => |h' u| / (((n : ℝ) + 1) + p u) ^ 2) (Set.Icc a b))
     (hq2 : ∀ n : ℕ, AntitoneOn (fun u => |h u * p' u| / (((n : ℝ) + 1) + p u) ^ 3) (Set.Icc a b)) :
     ‖∑' n : ℕ, secondModeTerm f h a b n‖ ≤
@@ -205,5 +194,7 @@ theorem secondModeTail_source_bound {a b : ℝ} (hab : a < b)
   exact add_le_add
     (add_le_add (le_refl _) (mul_le_mul_of_nonneg_left (harmonic_plus_square_bound ha) (by positivity)))
     (mul_le_mul_of_nonneg_left (harmonic_plus_cube_bound ha) (by positivity))
+
+end
 
 end DhimanKadiriQuesadaHerrera2026

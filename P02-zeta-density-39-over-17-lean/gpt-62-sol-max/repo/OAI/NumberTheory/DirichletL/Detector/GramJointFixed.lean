@@ -51,8 +51,11 @@ def jointFixed (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
     numeratorBadTwist u a b r hr n₁*star (numeratorBadTwist (-u) a b r hr n₂)*
       sexticReciprocityPhase n₁ n₂
 
-lemma jointFixed_norm (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
-    (C : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r})) (n₁ n₂ : O) :
+section
+variable (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing) (C : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r}))
+include S hS σ C u a b r hr
+
+lemma jointFixed_norm (n₁ n₂ : O) :
     ‖jointFixed S hS σ C u a b r hr n₁ n₂‖≤1 := by
   unfold jointFixed
   simp only [norm_mul,norm_star]
@@ -61,8 +64,7 @@ lemma jointFixed_norm (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
   refine (mul_le_of_le_one_left (norm_nonneg _) ?_).trans (numeratorBadTwist_norm _ _ _ _ _ _)
   exact (mul_le_of_le_one_left (norm_nonneg _) (primaryCoefficient_norm _ _ _ _)).trans (primaryCoefficient_norm _ _ _ _)
 
-lemma jointFixed_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing)
-    (C : O) (u : Oˣ) (a b : ℕ) (r : O) (hr : Supported (Ideal.span {r})) (n₁ n₂ m₁ m₂ : O)
+lemma jointFixed_periodic (n₁ n₂ m₁ m₂ : O)
     (h₁ : n₁-m₁∈jointFixedModulus S hS) (h₂ : n₂-m₂∈jointFixedModulus S hS) :
     jointFixed S hS σ C u a b r hr n₁ n₂=jointFixed S hS σ C u a b r hr m₁ m₂ := by
   have hc₁ := primaryCoefficient_periodic S hS σ (C*n₁) (C*m₁)
@@ -78,6 +80,8 @@ lemma jointFixed_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayR
     rw [QuadraticGaussRay.residue_eq_of_four_dvd_sub n₁ m₁ (hfour _ _ h₁),
       QuadraticGaussRay.residue_eq_of_four_dvd_sub n₂ m₂ (hfour _ _ h₂)]
   simp only [jointFixed,hc₁,hc₂,hb₁,hb₂,hp]
+
+end
 
 end SevenEighths.ProbeGramCommon
 end

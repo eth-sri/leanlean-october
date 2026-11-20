@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Reflection.IdealBridge
 public import OAI.NumberTheory.DirichletL.Reflection.Norms
 public import OAI.NumberTheory.DirichletL.Reflection.FrozenSplit
@@ -9,38 +10,37 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets
-open InverseMoment
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets InverseMoment
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
 noncomputable local instance coefficientFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
-def sourceRowPhase [∀ i, (Ideal.span {p i}).IsMaximal]
+def sourceRowPhase [OAI.PrincipalIdealFamily.Maximal p]
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (R F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (j : ι → ℕ) (R F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
   residualWithFrozen hp hg c R F * ramifiedBlock hg (fun _ => 1) R
     (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m) * frozenArgument hg j F (∏ i ∈ R, p i)
 
-def sourceSlotPhase [∀ i, (Ideal.span {p i}).IsMaximal]
+def sourceSlotPhase [OAI.PrincipalIdealFamily.Maximal p]
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (j : ι → ℕ) (S F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
   markedWithFrozen hp hg c S F * ramifiedBlock hg (fun _ => 0) S
     (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m) * frozenArgument hg j F (∏ i ∈ S, p i)
 
-def sourceFrozenPhase [∀ i, (Ideal.span {p i}).IsMaximal]
+def sourceFrozenPhase [OAI.PrincipalIdealFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀)
     (j : ι → ℕ) (F : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
   star D.fixedFactor * frozenCore hp hg c j F * ramifiedBlock hg j F
     (sourcePhaseUnit s.index s.phaseUpperUnit u) (sourcePhaseExponent s.index m)
 
-def sourceColumn [∀ i, (Ideal.span {p i}).IsMaximal]
+def sourceColumn [OAI.PrincipalIdealFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c ≠ 0)
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (F : Finset ι)
+    (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (j : ι → ℕ) (F : Finset ι)
     (u : Eisˣ) (m : ℕ) (n b : Ideal Eis) : ℂ :=
   fixedCuspArrayWithPhase s.index u
     (s.reflectionStaticPhase c hc (Ideal.Quotient.mk _ (-(D.matrix (fun _ => 1) 1 1)*D.U))
@@ -48,12 +48,12 @@ def sourceColumn [∀ i, (Ideal.span {p i}).IsMaximal]
   ∏ i ∈ F, bracket (actualSextic (Ideal.span {p i}) (hg i)) (j i)
     (Ideal.Quotient.mk _ (primaryGenerator n*(primaryGenerator b)^3))
 
-theorem mixed_coefficient_hybrid [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem mixed_coefficient_hybrid [OAI.PrincipalIdealFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hc : c ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hprimary : ∀ i, λ₀^2 ∣ p i-1) (R S F : Finset ι)
+    (hp : ∀ i, p i ≠ 0) (hc : c ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀)
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hprimary : OAI.PrincipalIdealFamily.PrimaryAt p λ₀) (R S F : Finset ι)
     (hRS : Disjoint R S) (hF : Disjoint (R ∪ S) F) (hu : (R ∪ S) ∪ F = Finset.univ)
     (j : ι → ℕ) (hRj : ∀ i ∈ R, j i = 1)
     (hR : CanonicalQuadraticSieve.Admissible (∏ i ∈ R, Ideal.span {p i}))

@@ -25,29 +25,9 @@ public import LaterPairs.Native.SargosQuarticKernelJets
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth GafniTao Set MeasureTheory FourierTransform SchwartzMap
 
-open GafniTao Set
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open MeasureTheory
-open MeasureTheory FourierTransform SchwartzMap Set GafniTao
-open MeasureTheory GafniTao
-open MeasureTheory GafniTao Set
-open MeasureTheory Set
-open Set
-open scoped BigOperators
-open scoped BigOperators ComplexConjugate
-open scoped BigOperators ContDiff
-open scoped BigOperators ContDiff FourierTransform
-open scoped BigOperators Matrix
-open scoped BigOperators Matrix ContDiff
-open scoped BigOperators NNReal ENNReal
-open scoped ComplexConjugate Convolution ContDiff
-open scoped ContDiff
-open scoped ContDiff BigOperators
-open scoped ContDiff FourierTransform
-open scoped ContDiff Topology
-open scoped Matrix
+open scoped BigOperators ComplexConjugate ContDiff Matrix NNReal ENNReal Convolution Topology
 noncomputable section
 
 open Set Filter MeasureTheory
@@ -283,7 +263,11 @@ private theorem bourgain_two_torsion_card (q : ℕ) [NeZero q] :
 
 open scoped ComplexConjugate
 
-private theorem bourgain_gauss_norm_sq (q : ℕ) [NeZero q] (a b : ZMod q) :
+section
+variable (q : ℕ) [instShared1 : NeZero q]
+include q instShared1
+
+private theorem bourgain_gauss_norm_sq (a b : ZMod q) :
     ((‖∑ x : ZMod q, ZMod.stdAddChar (a*x^2+b*x)‖^2 : ℝ) : ℂ) =
       ∑ t : ZMod q, ZMod.stdAddChar (a*t^2+b*t)*
         (if 2*a*t = 0 then (q : ℂ) else 0) := by
@@ -310,7 +294,7 @@ private theorem bourgain_gauss_norm_sq (q : ℕ) [NeZero q] (a b : ZMod q) :
   intro y hy
   exact AddChar.map_add_eq_mul _ _ _
 
-private theorem bourgain_gauss_norm_le (q : ℕ) [NeZero q] (a b : ZMod q)
+private theorem bourgain_gauss_norm_le (a b : ZMod q)
     (ha : IsUnit a) :
     ‖∑ x : ZMod q, ZMod.stdAddChar (a*x^2+b*x)‖ ≤ Real.sqrt (2*(q : ℝ)) := by
   classical
@@ -340,7 +324,7 @@ private theorem bourgain_gauss_norm_le (q : ℕ) [NeZero q] (a b : ZMod q)
   exact (Real.le_sqrt (norm_nonneg _) (by positivity)).mpr hbound
 
 
-private theorem bourgain_gauss_fin_sum (q : ℕ) [NeZero q] (a b : ℤ) :
+private theorem bourgain_gauss_fin_sum (a b : ℤ) :
     bourgainQuadraticGauss q a b =
       ∑ x : ZMod q, ZMod.stdAddChar ((a : ZMod q)*x^2+(b : ZMod q)*x) := by
   have he (d : Fin q) : (ZMod.finEquiv q) d = (d.val : ZMod q) := by
@@ -359,7 +343,7 @@ private theorem bourgain_gauss_fin_sum (q : ℕ) [NeZero q] (a b : ℤ) :
 
                                                                        
                                                                         
-theorem bourgainQuadraticGauss_norm_le (q : ℕ) [NeZero q] (a b : ℤ)
+theorem bourgainQuadraticGauss_norm_le (a b : ℤ)
     (ha : IsCoprime a (q : ℤ)) :
     ‖bourgainQuadraticGauss q a b‖ ≤ Real.sqrt (2*(q : ℝ)) := by
   rw [bourgain_gauss_fin_sum]
@@ -368,7 +352,7 @@ theorem bourgainQuadraticGauss_norm_le (q : ℕ) [NeZero q] (a b : ℤ)
   exact isCoprime_zero_right.mp (by simpa using h)
 
 
-private theorem bourgain_modular_gauss_shift (q : ℕ) [NeZero q] (a b t : ZMod q) :
+private theorem bourgain_modular_gauss_shift (a b t : ZMod q) :
     (∑ x : ZMod q, ZMod.stdAddChar (a*x^2+(b+2*a*t)*x)) =
       ZMod.stdAddChar (-(a*t^2+b*t))*
         ∑ x : ZMod q, ZMod.stdAddChar (a*x^2+b*x) := by
@@ -385,7 +369,7 @@ private theorem bourgain_modular_gauss_shift (q : ℕ) [NeZero q] (a b t : ZMod 
 
                                                                     
                                                                     
-theorem bourgainQuadraticGauss_inverse_shift (q : ℕ) [NeZero q]
+theorem bourgainQuadraticGauss_inverse_shift
     (a r b t : ℤ) (har : (q : ℤ) ∣ a*r-1) :
     bourgainQuadraticGauss q a (b+2*t) =
       (𝐞 (-((r : ℝ)*(t : ℝ)^2+(r : ℝ)*(b : ℝ)*(t : ℝ))/(q : ℝ)) : ℂ)*
@@ -413,6 +397,8 @@ theorem bourgainQuadraticGauss_inverse_shift (q : ℕ) [NeZero q]
   rw [hc,hp,bourgain_modular_character] at hs
   push_cast at hs
   simpa only [bourgain_gauss_fin_sum,Int.cast_add,Int.cast_mul,Int.cast_ofNat] using hs
+
+end
 
 
 
@@ -2770,59 +2756,6 @@ theorem exists_bourgain_cubic_real_linear_stationary :
                                                                  
                                                                    
                                                             
-theorem exists_bourgain_cubic_minor_arc_stationary :
-    ∃ C ≥ (1 : ℝ), ∀ N N₁ q : ℕ, 1 ≤ N → N ≤ N₁ → N₁ ≤ 2*N →
-      0 < q → q ≤ N → ∀ μ : ℝ, 0 < μ → μ*(N : ℝ)^2 ≤ 1 → 1 ≤ μ*(q : ℝ)^2*N →
-      ∀ a : ℤ, IsCoprime a (q : ℤ) → ∀ ℓ : ℝ,
-        ‖(∑ n ∈ Finset.Ioc (N : ℤ) (N₁ : ℤ),
-          (𝐞 (μ*(n : ℝ)^3+(a : ℝ)*(n : ℝ)^2/(q : ℝ)+ℓ*n) : ℂ))-
-          (q : ℂ)⁻¹*∑ k ∈ Finset.Icc
-            ⌈(q : ℝ)*(3*μ*(N : ℝ)^2+ℓ)⌉ ⌊(q : ℝ)*(3*μ*(N₁ : ℝ)^2+ℓ)⌋,
-            let r := Real.sqrt (((k : ℝ)/(q : ℝ)-ℓ)/(3*μ))
-            bourgainQuadraticGauss q a k*
-              ((𝐞 ((1 : ℝ)/8-2*μ*r^3) : ℂ)/(Real.sqrt (6*μ*r) : ℂ))‖ ≤
-          C*(Real.sqrt N*Real.log (2*(N : ℝ))+1/(μ*(N : ℝ)^2)) := by
-  obtain ⟨C,hC,hreal⟩ := exists_bourgain_cubic_real_linear_stationary
-  refine ⟨3*C,by linarith,?_⟩
-  intro N N₁ q hN hNN hN₁ hq hqN μ hμ hμN hscale a ha ℓ
-  have h := hreal N N₁ q hN hNN hN₁ hq hqN μ hμ hμN a ha ℓ
-  apply h.trans
-  have hNr : (1 : ℝ) ≤ N := by exact_mod_cast hN
-  have hNr0 : (0 : ℝ) < N := by linarith
-  have hqr : (0 : ℝ) < q := by exact_mod_cast hq
-  have hqNr : (q : ℝ) ≤ N := by exact_mod_cast hqN
-  have hroot : 1 ≤ Real.sqrt (μ*(N : ℝ))*(q : ℝ) := by
-    have hs := Real.sq_sqrt (show 0 ≤ μ*(N : ℝ) by positivity)
-    have hs' : (Real.sqrt (μ*(N : ℝ))*(q : ℝ))^2 = μ*(q : ℝ)^2*N := by
-      rw [mul_pow,hs]
-      ring
-    have hp : 0 ≤ Real.sqrt (μ*(N : ℝ))*(q : ℝ) := by positivity
-    nlinarith
-  have hcap : 1/(Real.sqrt (μ*(N : ℝ))*Real.sqrt q) ≤ Real.sqrt (q : ℝ) := by
-    apply (div_le_iff₀ (show 0 < Real.sqrt (μ*(N : ℝ))*Real.sqrt q by positivity)).mpr
-    calc
-      (1 : ℝ) ≤ Real.sqrt (μ*(N : ℝ))*(q : ℝ) := hroot
-      _ = Real.sqrt (q : ℝ)*(Real.sqrt (μ*(N : ℝ))*Real.sqrt q) := by
-        rw [show Real.sqrt (q : ℝ)*(Real.sqrt (μ*(N : ℝ))*Real.sqrt q) =
-          Real.sqrt (μ*(N : ℝ))*(Real.sqrt (q : ℝ))^2 by ring,
-          Real.sq_sqrt hqr.le]
-  have hlog2 : (1 : ℝ)/2 ≤ Real.log 2 := by
-    have hh := Real.one_sub_inv_le_log_of_pos (by norm_num : (0 : ℝ) < 2)
-    norm_num at hh
-    exact hh
-  have hlog := Real.log_le_log (by norm_num : (0 : ℝ) < 2)
-    (show 2 ≤ 2*(N : ℝ) by linarith)
-  have hunit : Real.sqrt (N : ℝ) ≤ 2*(Real.sqrt N*Real.log (2*(N : ℝ))) := by
-    have hh := mul_le_mul_of_nonneg_left
-      (show 1 ≤ 2*Real.log (2*(N : ℝ)) by linarith) (Real.sqrt_nonneg (N : ℝ))
-    nlinarith
-  have hcap' := hcap.trans ((Real.sqrt_le_sqrt hqNr).trans hunit)
-  have hC0 : 0 ≤ C := by linarith
-  have hc := mul_le_mul_of_nonneg_left hcap' hC0
-  have hi : 0 ≤ C*(1/(μ*(N : ℝ)^2)) := by positivity
-  nlinarith
-
-
 private theorem bourgain_common_weighted_prefix {ι : Type*}
     (S : Finset ι) (w z : ι → ℕ → ℂ) (H : ℕ) {K : ℝ}
     (hK : 0 ≤ K) (hw : ∀ m ∈ S, ‖w m (H-1)‖ ≤ 1)
@@ -3037,6 +2970,139 @@ public  theorem bourgain_source_Ioc_range (f : ℝ → ℝ) (m : ℝ) (N H : ℕ
                                                                          
                                                                        
                                                               
+private theorem bourgain_cubic_stationary_error_le
+    {N q : ℕ} {μ : ℝ} (hN : 1≤N) (hq : 0<q) (hqN : q≤N)
+    (hμ : 0<μ) (hscale : 1≤μ*(q:ℝ)^2*N) :
+    Real.sqrt N*Real.log (2*(N:ℝ))+1/(μ*(N:ℝ)^2)+
+      1/(Real.sqrt (μ*(N:ℝ))*Real.sqrt q) ≤
+      3*(Real.sqrt N*Real.log (2*(N:ℝ))+1/(μ*(N:ℝ)^2)) := by
+  have hNr : (1 : ℝ) ≤ N := by exact_mod_cast hN
+  have hNr0 : (0 : ℝ) < N := by linarith
+  have hqr : (0 : ℝ) < q := by exact_mod_cast hq
+  have hqNr : (q : ℝ) ≤ N := by exact_mod_cast hqN
+  have hroot : 1 ≤ Real.sqrt (μ*(N : ℝ))*(q : ℝ) := by
+    have hs := Real.sq_sqrt (show 0 ≤ μ*(N : ℝ) by positivity)
+    have hs' : (Real.sqrt (μ*(N : ℝ))*(q : ℝ))^2 = μ*(q : ℝ)^2*N := by
+      rw [mul_pow,hs]
+      ring
+    have hp : 0 ≤ Real.sqrt (μ*(N : ℝ))*(q : ℝ) := by positivity
+    nlinarith
+  have hcap : 1/(Real.sqrt (μ*(N : ℝ))*Real.sqrt q) ≤ Real.sqrt (q : ℝ) := by
+    apply (div_le_iff₀ (show 0 < Real.sqrt (μ*(N : ℝ))*Real.sqrt q by positivity)).mpr
+    calc
+      (1 : ℝ) ≤ Real.sqrt (μ*(N : ℝ))*(q : ℝ) := hroot
+      _ = Real.sqrt (q : ℝ)*(Real.sqrt (μ*(N : ℝ))*Real.sqrt q) := by
+        rw [show Real.sqrt (q : ℝ)*(Real.sqrt (μ*(N : ℝ))*Real.sqrt q) =
+          Real.sqrt (μ*(N : ℝ))*(Real.sqrt (q : ℝ))^2 by ring,
+          Real.sq_sqrt hqr.le]
+  have hlog2 : (1 : ℝ)/2 ≤ Real.log 2 := by
+    have hh := Real.one_sub_inv_le_log_of_pos (by norm_num : (0 : ℝ) < 2)
+    norm_num at hh
+    exact hh
+  have hlog := Real.log_le_log (by norm_num : (0 : ℝ) < 2)
+    (show 2 ≤ 2*(N : ℝ) by linarith)
+  have hunit : Real.sqrt (N : ℝ) ≤ 2*(Real.sqrt N*Real.log (2*(N : ℝ))) := by
+    have hh := mul_le_mul_of_nonneg_left
+      (show 1 ≤ 2*Real.log (2*(N : ℝ)) by linarith) (Real.sqrt_nonneg (N : ℝ))
+    nlinarith
+  have hcap' := hcap.trans ((Real.sqrt_le_sqrt hqNr).trans hunit)
+  have : 0 ≤ 1/(μ*(N:ℝ)^2) := by positivity
+  linarith only [hcap',this]
+
+theorem exists_bourgain_cubic_unrestricted_C4_source_entry :
+    ∃ C ≥ (1 : ℝ), ∀ (ι : Type*) (S : Finset ι) (f : ι → ℝ → ℝ)
+      (m : ι → ℝ) (a : ι → ℤ) (q : ι → ℕ) (N H : ℕ),
+      1 ≤ N → H ≤ N → ∀ B D : ℝ, 0 ≤ B → 0 ≤ D →
+      B*(2*(N : ℝ)+1)^4 ≤ 1 → D*(2*(N : ℝ)+1)^2 ≤ 1 →
+      (∀ i ∈ S, ∀ y ∈ Icc (m i-(2*(N : ℝ)+1)) (m i+(2*(N : ℝ)+1)),
+        ContDiffAt ℝ 4 (f i) y) →
+      (∀ i ∈ S, ∀ y ∈ Icc (m i-(2*(N : ℝ)+1)) (m i+(2*(N : ℝ)+1)),
+        |iteratedDeriv 4 (f i) y| ≤ B) →
+      (∀ i ∈ S, |iteratedDeriv 2 (f i) (m i)/2-(a i : ℝ)/(q i : ℝ)| ≤ D) →
+      let μ := fun i => iteratedDeriv 3 (f i) (m i)/6
+      let ℓ := fun i => deriv (f i) (m i)
+      (∀ i ∈ S, 0 < q i ∧ q i ≤ N ∧ IsCoprime (a i) (q i : ℤ) ∧
+        0 < μ i ∧ μ i*(N : ℝ)^2 ≤ 1) →
+      ∃ J ≤ H,
+        (∑ i ∈ S, ‖∑ n ∈ Finset.Ioc (N : ℤ) ((N : ℤ)+H),
+          (𝐞 (f i (m i+n)) : ℂ)‖) ≤
+        C*((∑ i ∈ S,
+          ‖(q i : ℂ)⁻¹*∑ k ∈ Finset.Icc
+            ⌈(q i : ℝ)*(3*μ i*(N : ℝ)^2+ℓ i)⌉
+            ⌊(q i : ℝ)*(3*μ i*((N : ℝ)+J)^2+ℓ i)⌋,
+            let r := Real.sqrt (((k : ℝ)/(q i : ℝ)-ℓ i)/(3*μ i))
+            bourgainQuadraticGauss (q i) (a i) k*
+              ((𝐞 ((1 : ℝ)/8-2*μ i*r^3) : ℂ)/(Real.sqrt (6*μ i*r) : ℂ))‖)+
+          ∑ i ∈ S, (Real.sqrt N*Real.log (2*(N : ℝ))+1/(μ i*(N : ℝ)^2)+
+            1/(Real.sqrt (μ i*(N:ℝ))*Real.sqrt (q i:ℝ)))) := by
+  classical
+  obtain ⟨C,hC,htransform⟩ := exists_bourgain_cubic_real_linear_stationary
+  let P := 1+6*Real.pi
+  have hP : 1 ≤ P := by dsimp only [P]; linarith [Real.pi_pos]
+  have hP0 : 0 ≤ P := by linarith
+  refine ⟨P*C,one_le_mul_of_one_le_of_one_le hP hC,?_⟩
+  intro ι S f m a q N H hN hH B D hB hD hfourSmall hquadSmall hf hfour hα μ ℓ hscale
+  let L := 2*(N : ℝ)+1
+  have hL : 0 ≤ L := by dsimp only [L]; positivity
+  have hRange : ∀ x ∈ Icc ((N : ℝ)+1) ((N : ℝ)+1+H), |x| ≤ L := by
+    intro x hx
+    have hn : (0 : ℝ) ≤ N := Nat.cast_nonneg N
+    have hh : (H : ℝ) ≤ N := by exact_mod_cast hH
+    rw [abs_of_nonneg (by linarith [hx.1] : 0 ≤ x)]
+    dsimp only [L]
+    linarith [hx.2]
+  obtain ⟨J,hJ,hprefix⟩ := bourgain_cubic_taylor_common_prefix S f m
+    (fun i => (a i : ℝ)/(q i : ℝ)) ((N : ℝ)+1) H hL hB hD hRange hf hfour hα
+  let Z : ι → ℂ := fun i => ∑ n ∈ Finset.Ioc (N : ℤ) ((N : ℤ)+J),
+    (𝐞 (μ i*(n : ℝ)^3+((a i : ℝ)/(q i : ℝ))*(n : ℝ)^2+ℓ i*n) : ℂ)
+  let M : ι → ℂ := fun i => (q i : ℂ)⁻¹*∑ k ∈ Finset.Icc
+    ⌈(q i : ℝ)*(3*μ i*(N : ℝ)^2+ℓ i)⌉ ⌊(q i : ℝ)*(3*μ i*((N : ℝ)+J)^2+ℓ i)⌋,
+    let r := Real.sqrt (((k : ℝ)/(q i : ℝ)-ℓ i)/(3*μ i))
+    bourgainQuadraticGauss (q i) (a i) k*
+      ((𝐞 ((1 : ℝ)/8-2*μ i*r^3) : ℂ)/(Real.sqrt (6*μ i*r) : ℂ))
+  let E : ι → ℝ := fun i => Real.sqrt N*Real.log (2*(N : ℝ))+1/(μ i*(N : ℝ)^2)+
+            1/(Real.sqrt (μ i*(N:ℝ))*Real.sqrt (q i:ℝ))
+  have hsource :
+      (∑ i ∈ S, ‖∑ n ∈ Finset.Ioc (N : ℤ) ((N : ℤ)+H),
+        (𝐞 (f i (m i+n)) : ℂ)‖) ≤ P*∑ i ∈ S, ‖Z i‖ := by
+    have hp := bourgain_cubic_taylor_short_cost hH hB hD hfourSmall hquadSmall
+    simp only [bourgain_source_Ioc_range]
+    apply hprefix.trans
+    have hn : 0 ≤ ∑ i ∈ S, ‖Z i‖ := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+    have hz : (∑ i ∈ S, ‖Z i‖) =
+        ∑ i ∈ S, ‖∑ j ∈ Finset.range J,
+          (𝐞 ((iteratedDeriv 3 (f i) (m i)/6)*((N : ℝ)+1+j)^3+
+            ((a i : ℝ)/(q i : ℝ))*((N : ℝ)+1+j)^2+
+            deriv (f i) (m i)*((N : ℝ)+1+j)) : ℂ)‖ := by
+      simp only [Z,bourgain_cubic_Ioc_range,μ,ℓ]
+    rw [← hz]
+    exact mul_le_mul_of_nonneg_right hp hn
+  have hZ (i : ι) (hi : i ∈ S) : ‖Z i‖ ≤ ‖M i‖+C*E i := by
+    obtain ⟨hqi,hqiN,hai,hμi,hμiN⟩ := hscale i hi
+    have ht := htransform N (N+J) (q i) hN (by omega) (by omega) hqi hqiN
+      (μ i) hμi hμiN (a i) hai (ℓ i)
+    have hc (n : ℤ) : ((a i : ℝ)/(q i : ℝ))*(n : ℝ)^2 =
+        (a i : ℝ)*(n : ℝ)^2/(q i : ℝ) := by ring
+    have ht' : ‖Z i-M i‖ ≤ C*E i := by
+      simpa only [Z,M,E,Nat.cast_add,hc] using ht
+    calc
+      _ = ‖(Z i-M i)+M i‖ := by congr 1; ring
+      _ ≤ ‖Z i-M i‖+‖M i‖ := norm_add_le _ _
+      _ ≤ _ := by linarith
+  refine ⟨J,hJ,?_⟩
+  apply hsource.trans
+  apply (mul_le_mul_of_nonneg_left (Finset.sum_le_sum hZ) hP0).trans
+  change P*(∑ i ∈ S, (‖M i‖+C*E i)) ≤ P*C*((∑ i ∈ S, ‖M i‖)+∑ i ∈ S, E i)
+  rw [Finset.sum_add_distrib,← Finset.mul_sum]
+  have hm : 0 ≤ ∑ i ∈ S, ‖M i‖ := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
+  have hb : (∑ i ∈ S, ‖M i‖)+C*(∑ i ∈ S, E i) ≤
+      C*((∑ i ∈ S, ‖M i‖)+(∑ i ∈ S, E i)) := by
+    nlinarith [mul_nonneg (sub_nonneg.mpr hC) hm]
+  exact (mul_le_mul_of_nonneg_left hb hP0).trans_eq (by ring)
+
+
+
+
 theorem exists_bourgain_cubic_C4_source_entry :
     ∃ C ≥ (1 : ℝ), ∀ (ι : Type*) (S : Finset ι) (f : ι → ℝ → ℝ)
       (m : ι → ℝ) (a : ι → ℤ) (q : ι → ℕ) (N H : ℕ),
@@ -3062,70 +3128,27 @@ theorem exists_bourgain_cubic_C4_source_entry :
             bourgainQuadraticGauss (q i) (a i) k*
               ((𝐞 ((1 : ℝ)/8-2*μ i*r^3) : ℂ)/(Real.sqrt (6*μ i*r) : ℂ))‖)+
           ∑ i ∈ S, (Real.sqrt N*Real.log (2*(N : ℝ))+1/(μ i*(N : ℝ)^2))) := by
-  classical
-  obtain ⟨C,hC,htransform⟩ := exists_bourgain_cubic_minor_arc_stationary
-  let P := 1+6*Real.pi
-  have hP : 1 ≤ P := by dsimp only [P]; linarith [Real.pi_pos]
-  have hP0 : 0 ≤ P := by linarith
-  refine ⟨P*C,one_le_mul_of_one_le_of_one_le hP hC,?_⟩
-  intro ι S f m a q N H hN hH B D hB hD hfourSmall hquadSmall hf hfour hα μ ℓ hscale
-  let L := 2*(N : ℝ)+1
-  have hL : 0 ≤ L := by dsimp only [L]; positivity
-  have hRange : ∀ x ∈ Icc ((N : ℝ)+1) ((N : ℝ)+1+H), |x| ≤ L := by
-    intro x hx
-    have hn : (0 : ℝ) ≤ N := Nat.cast_nonneg N
-    have hh : (H : ℝ) ≤ N := by exact_mod_cast hH
-    rw [abs_of_nonneg (by linarith [hx.1] : 0 ≤ x)]
-    dsimp only [L]
-    linarith [hx.2]
-  obtain ⟨J,hJ,hprefix⟩ := bourgain_cubic_taylor_common_prefix S f m
-    (fun i => (a i : ℝ)/(q i : ℝ)) ((N : ℝ)+1) H hL hB hD hRange hf hfour hα
-  let Z : ι → ℂ := fun i => ∑ n ∈ Finset.Ioc (N : ℤ) ((N : ℤ)+J),
-    (𝐞 (μ i*(n : ℝ)^3+((a i : ℝ)/(q i : ℝ))*(n : ℝ)^2+ℓ i*n) : ℂ)
-  let M : ι → ℂ := fun i => (q i : ℂ)⁻¹*∑ k ∈ Finset.Icc
-    ⌈(q i : ℝ)*(3*μ i*(N : ℝ)^2+ℓ i)⌉ ⌊(q i : ℝ)*(3*μ i*((N : ℝ)+J)^2+ℓ i)⌋,
-    let r := Real.sqrt (((k : ℝ)/(q i : ℝ)-ℓ i)/(3*μ i))
-    bourgainQuadraticGauss (q i) (a i) k*
-      ((𝐞 ((1 : ℝ)/8-2*μ i*r^3) : ℂ)/(Real.sqrt (6*μ i*r) : ℂ))
-  let E : ι → ℝ := fun i => Real.sqrt N*Real.log (2*(N : ℝ))+1/(μ i*(N : ℝ)^2)
-  have hsource :
-      (∑ i ∈ S, ‖∑ n ∈ Finset.Ioc (N : ℤ) ((N : ℤ)+H),
-        (𝐞 (f i (m i+n)) : ℂ)‖) ≤ P*∑ i ∈ S, ‖Z i‖ := by
-    have hp := bourgain_cubic_taylor_short_cost hH hB hD hfourSmall hquadSmall
-    simp only [bourgain_source_Ioc_range]
-    apply hprefix.trans
-    have hn : 0 ≤ ∑ i ∈ S, ‖Z i‖ := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
-    have hz : (∑ i ∈ S, ‖Z i‖) =
-        ∑ i ∈ S, ‖∑ j ∈ Finset.range J,
-          (𝐞 ((iteratedDeriv 3 (f i) (m i)/6)*((N : ℝ)+1+j)^3+
-            ((a i : ℝ)/(q i : ℝ))*((N : ℝ)+1+j)^2+
-            deriv (f i) (m i)*((N : ℝ)+1+j)) : ℂ)‖ := by
-      simp only [Z,bourgain_cubic_Ioc_range,μ,ℓ]
-    rw [← hz]
-    exact mul_le_mul_of_nonneg_right hp hn
-  have hZ (i : ι) (hi : i ∈ S) : ‖Z i‖ ≤ ‖M i‖+C*E i := by
-    obtain ⟨hqi,hqiN,hai,hμi,hμiN,hμiq⟩ := hscale i hi
-    have ht := htransform N (N+J) (q i) hN (by omega) (by omega) hqi hqiN
-      (μ i) hμi hμiN hμiq (a i) hai (ℓ i)
-    have hc (n : ℤ) : ((a i : ℝ)/(q i : ℝ))*(n : ℝ)^2 =
-        (a i : ℝ)*(n : ℝ)^2/(q i : ℝ) := by ring
-    have ht' : ‖Z i-M i‖ ≤ C*E i := by
-      simpa only [Z,M,E,Nat.cast_add,hc] using ht
-    calc
-      _ = ‖(Z i-M i)+M i‖ := by congr 1; ring
-      _ ≤ ‖Z i-M i‖+‖M i‖ := norm_add_le _ _
-      _ ≤ _ := by linarith
-  refine ⟨J,hJ,?_⟩
-  apply hsource.trans
-  apply (mul_le_mul_of_nonneg_left (Finset.sum_le_sum hZ) hP0).trans
-  change P*(∑ i ∈ S, (‖M i‖+C*E i)) ≤ P*C*((∑ i ∈ S, ‖M i‖)+∑ i ∈ S, E i)
-  rw [Finset.sum_add_distrib,← Finset.mul_sum]
-  have hm : 0 ≤ ∑ i ∈ S, ‖M i‖ := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
-  have hb : (∑ i ∈ S, ‖M i‖)+C*(∑ i ∈ S, E i) ≤
-      C*((∑ i ∈ S, ‖M i‖)+(∑ i ∈ S, E i)) := by
-    nlinarith [mul_nonneg (sub_nonneg.mpr hC) hm]
-  exact (mul_le_mul_of_nonneg_left hb hP0).trans_eq (by ring)
-
+  obtain ⟨C,hC,h⟩ := exists_bourgain_cubic_unrestricted_C4_source_entry
+  refine ⟨3*C,by linarith,?_⟩
+  intro ι S f m a q N H hN hH B D hB hD hsmall hquad hf hfour hcurv μ ℓ hscale
+  obtain ⟨J,hJ,hmain⟩ := h ι S f m a q N H hN hH B D hB hD
+    hsmall hquad hf hfour hcurv (fun i hi => by
+      obtain ⟨hqi,hqiN,hai,hμi,hμiN,_⟩ := hscale i hi
+      exact ⟨hqi,hqiN,hai,hμi,hμiN⟩)
+  let E : ι → ℝ := fun i => Real.sqrt N*Real.log (2*(N:ℝ))+1/(μ i*(N:ℝ)^2)
+  have hE : (∑ i∈S, (E i+1/(Real.sqrt (μ i*(N:ℝ))*Real.sqrt (q i:ℝ)))) ≤
+      3*∑ i∈S,E i := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_le_sum
+    intro i hi
+    obtain ⟨hqi,hqiN,_,hμi,_,hscalei⟩ := hscale i hi
+    exact bourgain_cubic_stationary_error_le hN hqi hqiN hμi hscalei
+  have hmain' (A : ℝ) (hA : 0≤A) :
+      C*(A+∑ i∈S, (E i+1/(Real.sqrt (μ i*(N:ℝ))*Real.sqrt (q i:ℝ)))) ≤
+      (3*C)*(A+∑ i∈S,E i) := by
+    have hC0 : 0≤C := zero_le_one.trans hC
+    nlinarith only [mul_le_mul_of_nonneg_left hE hC0, mul_nonneg hC0 hA]
+  exact ⟨J,hJ,hmain.trans (hmain' _ (Finset.sum_nonneg fun _ _ => norm_nonneg _))⟩
 
 open scoped ComplexConjugate
 
@@ -3159,8 +3182,11 @@ private theorem bourgainFourKernel_integral {a : Fin 4 → ℝ}
     (sargosSincKernel (a d) (t-c d):ℂ)*fordAdditiveCharacter (ξ d*t))]
   simp_rw [integral_sargosSincKernel_shift_character_positive (ha _)]
 
-private theorem bourgainFourSum_gram {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u : ι → Fin 4 → ℝ) (p : Fin 4 → ℝ) :
+section
+variable {ι : Type*} (S : Finset ι) (z : ι → ℂ) (u : ι → Fin 4 → ℝ)
+include ι S z u
+
+private theorem bourgainFourSum_gram (p : Fin 4 → ℝ) :
     ((‖bourgainFourSum S z u p‖^2:ℝ):ℂ) =
       ∑ ij ∈ S ×ˢ S, z ij.1*conj (z ij.2)*
         fordAdditiveCharacter (∑ d, (u ij.1 d-u ij.2 d)*p d) := by
@@ -3186,8 +3212,7 @@ private theorem bourgainFourSum_gram {ι : Type*} (S : Finset ι)
           simp only [sub_mul,Finset.sum_sub_distrib]
           ring
 
-private theorem bourgainFour_weighted_gram {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u : ι → Fin 4 → ℝ) (a c p : Fin 4 → ℝ) :
+private theorem bourgainFour_weighted_gram (a c p : Fin 4 → ℝ) :
     ((bourgainFourSinc a c p*‖bourgainFourSum S z u p‖^2:ℝ):ℂ) =
       ∑ ij ∈ S ×ˢ S, (z ij.1*conj (z ij.2))*
         bourgainFourKernel a c (fun d => u ij.1 d-u ij.2 d) p := by
@@ -3198,8 +3223,7 @@ private theorem bourgainFour_weighted_gram {ι : Type*} (S : Finset ι)
   rw [Complex.ofReal_prod,Finset.prod_mul_distrib,← fordAdditiveCharacter_sum Finset.univ]
   ring
 
-private theorem bourgainFour_weighted_integrable {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u : ι → Fin 4 → ℝ) {a : Fin 4 → ℝ}
+private theorem bourgainFour_weighted_integrable {a : Fin 4 → ℝ}
     (ha : ∀ d, 0 < a d) (c : Fin 4 → ℝ) :
     Integrable (fun p => bourgainFourSinc a c p*‖bourgainFourSum S z u p‖^2) := by
   have hi : Integrable (fun p => ∑ ij ∈ S ×ˢ S, (z ij.1*conj (z ij.2))*
@@ -3210,8 +3234,7 @@ private theorem bourgainFour_weighted_integrable {ι : Type*} (S : Finset ι)
   rw [← he] at hi
   exact hi.re
 
-private theorem bourgainFour_weighted_integral {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u : ι → Fin 4 → ℝ) {a : Fin 4 → ℝ}
+private theorem bourgainFour_weighted_integral {a : Fin 4 → ℝ}
     (ha : ∀ d, 0 < a d) (c : Fin 4 → ℝ) :
     ((∫ p, bourgainFourSinc a c p*‖bourgainFourSum S z u p‖^2:ℝ):ℂ) =
       ∑ ij ∈ S ×ˢ S, (z ij.1*conj (z ij.2))*
@@ -3223,8 +3246,7 @@ private theorem bourgainFour_weighted_integral {ι : Type*} (S : Finset ι)
     (bourgainFourKernel_integrable ha c _).const_mul _)]
   simp_rw [integral_const_mul,bourgainFourKernel_integral ha]
 
-private theorem bourgainFour_weighted_le_pairs {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u : ι → Fin 4 → ℝ) (hz : ∀ i ∈ S, ‖z i‖ ≤ 1)
+private theorem bourgainFour_weighted_le_pairs (hz : ∀ i ∈ S, ‖z i‖ ≤ 1)
     {a : Fin 4 → ℝ} (ha : ∀ d, 0 < a d) (c : Fin 4 → ℝ) :
     (∫ p, bourgainFourSinc a c p*‖bourgainFourSum S z u p‖^2) ≤
       ((bourgainFourPairs S u a).card:ℝ) := by
@@ -3276,14 +3298,12 @@ private theorem bourgainFour_weighted_le_pairs {ι : Type*} (S : Finset ι)
       intro ij _
       split_ifs <;> norm_num
 
-private theorem bourgainFourSum_continuous {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u : ι → Fin 4 → ℝ) :
+private theorem bourgainFourSum_continuous :
     Continuous (bourgainFourSum S z u) := by
   unfold bourgainFourSum fordAdditiveCharacter
   fun_prop
 
-private theorem bourgainFour_window_le_pairs {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u : ι → Fin 4 → ℝ) (hz : ∀ i ∈ S, ‖z i‖ ≤ 1)
+private theorem bourgainFour_window_le_pairs (hz : ∀ i ∈ S, ‖z i‖ ≤ 1)
     {δ : Fin 4 → ℝ} (hδ : ∀ d, 0 < δ d) (c : Fin 4 → ℝ) :
     (∫ p in Icc c (fun d => c d+δ d), ‖bourgainFourSum S z u p‖^2) ≤
       (256*∏ d, δ d)*((bourgainFourPairs S u (fun d => 1/δ d)).card:ℝ) := by
@@ -3327,6 +3347,8 @@ private theorem bourgainFour_window_le_pairs {ι : Type*} (S : Finset ι)
     _ = C*(∫ p, bourgainFourSinc a b p*‖bourgainFourSum S z u p‖^2) :=
       integral_const_mul _ _
     _ ≤ _ := mul_le_mul_of_nonneg_left (bourgainFour_weighted_le_pairs S z u hz ha b) hC
+
+end
 
 private def bourgainFourTent (a c p : Fin 4 → ℝ) : ℝ :=
   ∏ d, sargosRealTent (a d) (p d-c d)
@@ -3384,9 +3406,11 @@ private theorem bourgainFourCloud_continuous {ι : Type*} (S : Finset ι)
   unfold bourgainFourCloud bourgainFourTent
   fun_prop
 
-private theorem bourgainFourCloud_sq_pointwise {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (x : ι → Fin 4 → ℝ) {a : Fin 4 → ℝ}
-    (ha : ∀ d, 0 < a d) (hz : ∀ i ∈ S, ‖z i‖ ≤ 1) (p : Fin 4 → ℝ) :
+section
+variable {ι : Type*} (S : Finset ι) (z : ι → ℂ) (x : ι → Fin 4 → ℝ) {a : Fin 4 → ℝ} (ha : ∀ d, 0 < a d) (hz : ∀ i ∈ S, ‖z i‖ ≤ 1)
+include ι S z x a ha hz
+
+private theorem bourgainFourCloud_sq_pointwise (p : Fin 4 → ℝ) :
     ‖bourgainFourCloud S z x a p‖^2 ≤
       ∑ ij ∈ bourgainFourPairs S x (fun d => 2*a d), bourgainFourTent a (x ij.1) p := by
   classical
@@ -3412,9 +3436,7 @@ private theorem bourgainFourCloud_sq_pointwise {ι : Type*} (S : Finset ι)
       · exact le_of_eq (bourgainFourTent_mul_zero ha p h)
     _ = _ := by simp only [bourgainFourPairs,Finset.sum_filter,w]
 
-private theorem bourgainFourCloud_energy {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (x : ι → Fin 4 → ℝ) {a : Fin 4 → ℝ}
-    (ha : ∀ d, 0 < a d) (hz : ∀ i ∈ S, ‖z i‖ ≤ 1) :
+private theorem bourgainFourCloud_energy :
     Integrable (fun p => ‖bourgainFourCloud S z x a p‖^2) ∧
       (∫ p, ‖bourgainFourCloud S z x a p‖^2) ≤
         (∏ d, a d)*((bourgainFourPairs S x (fun d => 2*a d)).card:ℝ) := by
@@ -3435,6 +3457,8 @@ private theorem bourgainFourCloud_energy {ι : Type*} (S : Finset ι)
       exact hpt p)
   refine ⟨hi,?_⟩
   exact (integral_mono_ae hi hW (Eventually.of_forall hpt)).trans_eq he
+
+end
 
 private theorem bourgainFourTent_character {a : Fin 4 → ℝ}
     (ha : ∀ d, 0 < a d) (c u : Fin 4 → ℝ) :
@@ -3535,12 +3559,11 @@ private theorem bourgainFourCloud_zero_outside {ι : Type*} (S : Finset ι)
       have hl := (hx i hi d).2
       linarith
 
-private theorem bourgainFour_tent_bilinear {ι κ : Type*}
-    (S : Finset ι) (T : Finset κ) (z : ι → ℂ) (w : κ → ℂ)
-    (x : ι → Fin 4 → ℝ) (u : κ → Fin 4 → ℝ) {a c δ : Fin 4 → ℝ}
-    (ha : ∀ d, 0 < a d) (hδ : ∀ d, 0 < δ d)
-    (hz : ∀ i ∈ S, ‖z i‖ ≤ 1) (hw : ∀ j ∈ T, ‖w j‖ ≤ 1)
-    (hx : ∀ i ∈ S, ∀ d, x i d ∈ Icc (c d) (c d+δ d)) :
+section
+variable {ι κ : Type*} (S : Finset ι) (T : Finset κ) (z : ι → ℂ) (w : κ → ℂ) (x : ι → Fin 4 → ℝ) (u : κ → Fin 4 → ℝ) {a c δ : Fin 4 → ℝ} (ha : ∀ d, 0 < a d) (hδ : ∀ d, 0 < δ d) (hz : ∀ i ∈ S, ‖z i‖ ≤ 1) (hw : ∀ j ∈ T, ‖w j‖ ≤ 1) (hx : ∀ i ∈ S, ∀ d, x i d ∈ Icc (c d) (c d+δ d))
+include ι κ S T z w x u a c δ ha hδ hz hw hx
+
+private theorem bourgainFour_tent_bilinear :
     ‖∑ i ∈ S, ∑ j ∈ T, z i*w j*fordAdditiveCharacter (∑ d, u j d*x i d)*
         (∏ d, sargosSincKernel (a d) (u j d):ℝ)‖^2 ≤
       256*(∏ d, a d)*(∏ d, (δ d+2*a d))*
@@ -3591,12 +3614,7 @@ private theorem bourgainFour_tent_bilinear {ι κ : Type*}
 
                                                                          
                                                                             
-theorem bourgain_four_dimensional_double_large_sieve {ι κ : Type*}
-    (S : Finset ι) (T : Finset κ) (z : ι → ℂ) (w : κ → ℂ)
-    (x : ι → Fin 4 → ℝ) (u : κ → Fin 4 → ℝ) {a c δ : Fin 4 → ℝ}
-    (ha : ∀ d, 0 < a d) (hδ : ∀ d, 0 < δ d)
-    (hz : ∀ i ∈ S, ‖z i‖ ≤ 1) (hw : ∀ j ∈ T, ‖w j‖ ≤ 1)
-    (hx : ∀ i ∈ S, ∀ d, x i d ∈ Icc (c d) (c d+δ d))
+theorem bourgain_four_dimensional_double_large_sieve
     (hu : ∀ j ∈ T, ∀ d, a d*|u j d| ≤ 1/2) :
     ‖∑ i ∈ S, ∑ j ∈ T, z i*w j*fordAdditiveCharacter (∑ d, u j d*x i d)‖^2 ≤
       (16777216*(∏ d, (δ d+2*a d))/(∏ d, a d))*
@@ -3651,14 +3669,15 @@ theorem bourgain_four_dimensional_double_large_sieve {ι κ : Type*}
   field_simp
   ring
 
+end
+
                                                                      
                                                         
-theorem bourgain_four_dimensional_double_large_sieve_sum_norm {ι κ : Type*}
-    (S : Finset ι) (T : Finset κ) (w : κ → ℂ)
-    (x : ι → Fin 4 → ℝ) (u : κ → Fin 4 → ℝ) {a c δ : Fin 4 → ℝ}
-    (ha : ∀ d, 0 < a d) (hδ : ∀ d, 0 < δ d)
-    (hw : ∀ j ∈ T, ‖w j‖ ≤ 1)
-    (hx : ∀ i ∈ S, ∀ d, x i d ∈ Icc (c d) (c d+δ d))
+section
+variable {ι κ : Type*} (S : Finset ι) (T : Finset κ) (w : κ → ℂ) (x : ι → Fin 4 → ℝ) (u : κ → Fin 4 → ℝ) {a c δ : Fin 4 → ℝ} (ha : ∀ d, 0 < a d) (hδ : ∀ d, 0 < δ d) (hw : ∀ j ∈ T, ‖w j‖ ≤ 1) (hx : ∀ i ∈ S, ∀ d, x i d ∈ Icc (c d) (c d+δ d))
+include ι κ S T w x u a c δ ha hδ hw hx
+
+theorem bourgain_four_dimensional_double_large_sieve_sum_norm
     (hu : ∀ j ∈ T, ∀ d, a d*|u j d| ≤ 1/2) :
     (∑ i ∈ S, ‖∑ j ∈ T, w j*fordAdditiveCharacter (∑ d, u j d*x i d)‖)^2 ≤
       (16777216*(∏ d, (δ d+2*a d))/(∏ d, a d))*
@@ -3688,12 +3707,7 @@ theorem bourgain_four_dimensional_double_large_sieve_sum_norm {ι κ : Type*}
 
                                                                          
                                                                                 
-theorem bourgain_four_dimensional_sixth_power_sieve {ι κ : Type*}
-    (S : Finset ι) (T : Finset κ) (w : κ → ℂ)
-    (x : ι → Fin 4 → ℝ) (u : κ → Fin 4 → ℝ) {a c δ : Fin 4 → ℝ}
-    (ha : ∀ d, 0 < a d) (hδ : ∀ d, 0 < δ d)
-    (hw : ∀ j ∈ T, ‖w j‖ ≤ 1)
-    (hx : ∀ i ∈ S, ∀ d, x i d ∈ Icc (c d) (c d+δ d))
+theorem bourgain_four_dimensional_sixth_power_sieve
     (hu : ∀ j ∈ T, ∀ d, a d*|u j d| ≤ 1/12) :
     let V := Fintype.piFinset (fun _ : Fin 6 => T)
     let v := fun (j : Fin 6 → κ) d => ∑ k, u (j k) d
@@ -3747,9 +3761,14 @@ theorem bourgain_four_dimensional_sixth_power_sieve {ι κ : Type*}
     _ = (S.card:ℝ)^10*(∑ i ∈ S, ‖A i‖^6)^2 := by ring
     _ ≤ _ := hm.trans_eq (by ring)
 
+end
 
-private theorem bourgainFour_tent_moment_gram {ι : Type*}
-    (S : Finset ι) (u : ι → Fin 4 → ℝ) {a : Fin 4 → ℝ}
+
+section
+variable {ι : Type*} (S : Finset ι) (u : ι → Fin 4 → ℝ)
+include ι S u
+
+private theorem bourgainFour_tent_moment_gram {a : Fin 4 → ℝ}
     (ha : ∀ d, 0 < a d) :
     Integrable (fun p => bourgainFourTent a (fun _ => 0) p*
       ‖bourgainFourSum S (fun _ => 1) u p‖^2) ∧
@@ -3777,8 +3796,7 @@ private theorem bourgainFour_tent_moment_gram {ι : Type*}
   simp only [mul_zero,Finset.sum_const_zero,fordAdditiveCharacter,
     Complex.ofReal_zero,mul_zero,Complex.exp_zero,one_mul,Complex.ofReal_sum]
 
-private theorem bourgainFour_pairs_le_box_moment {ι : Type*}
-    (S : Finset ι) (u : ι → Fin 4 → ℝ) {a : Fin 4 → ℝ}
+private theorem bourgainFour_pairs_le_box_moment {a : Fin 4 → ℝ}
     (ha : ∀ d, 0 < a d) :
     ((bourgainFourPairs S u (fun d => 1/(2*a d))).card:ℝ) ≤
       (256/(∏ d, a d))*
@@ -3847,8 +3865,7 @@ private theorem bourgainFour_pairs_le_box_moment {ι : Type*}
   dsimp only [t,F]
   field_simp
 
-private theorem bourgainFour_half_box_shift {ι : Type*} (S : Finset ι)
-    (u : ι → Fin 4 → ℝ) :
+private theorem bourgainFour_half_box_shift :
     (∫ p : Fin 4 → ℝ in Icc (-![1/2,1/2,1,1]) ![1/2,1/2,1,1],
       ‖bourgainFourSum S (fun _ => 1) u p‖^12) =
     ∫ p : Fin 4 → ℝ in Icc ![0,0,-1,-1] (fun _ => 1),
@@ -3900,8 +3917,7 @@ private theorem bourgainFour_half_box_shift {ι : Type*} (S : Finset ι)
   simp_rw [he] at ht
   exact ht
 
-private theorem bourgainFour_six_tuple_count_to_moment {ι : Type*}
-    (S : Finset ι) (u : ι → Fin 4 → ℝ) :
+private theorem bourgainFour_six_tuple_count_to_moment :
     let V := Fintype.piFinset (fun _ : Fin 6 => S)
     let v := fun (j : Fin 6 → ι) d => ∑ k, u (j k) d
     ((bourgainFourPairs V v ![1,1,1/2,1/2]).card:ℝ) ≤
@@ -3945,6 +3961,8 @@ private theorem bourgainFour_six_tuple_count_to_moment {ι : Type*}
       ‖bourgainFourSum S (fun _ => 1) u p‖^12) at hb
   rw [bourgainFour_half_box_shift S u] at hb
   exact hb
+
+end
 
 universe v
 
@@ -3998,12 +4016,13 @@ theorem exists_bourgainSourceCurve_six_tuple_first_spacing {ε : ℝ} (hε : 0<�
 
 
 
-public  theorem bourgain_source_sieve_frequency_scale {N t η ζ : ℝ}
-    (hN : 1≤N) (ht : t∈Icc 1 N) (hη : 0<η) (hζ : 0<ζ) :
-    let a : Fin 4 → ℝ := ![1/(12*N),1/(12*N^2),η/12,ζ/12]
+private theorem bourgain_source_sieve_frequency_scale {N t η ζ Vscale : ℝ}
+    (hN : 1≤N) (ht : t∈Icc 1 N) (hη : 0<η) (hζ : 0<ζ) (hV : 1≤Vscale) :
+    let a : Fin 4 → ℝ := ![1/(12*N),1/(12*N^2*Vscale),η/12,ζ/12]
     let U : Fin 4 → ℝ := ![t,t^2,(1/η)*(t/N)^((3:ℝ)/2),(1/ζ)*Real.sqrt (t/N)]
     ∀ d, a d*|U d| ≤ 1/12 := by
   have hNp : 0<N := by linarith
+  have hVp : 0<Vscale := zero_lt_one.trans_le hV
   have ht0 : 0≤t := by linarith [ht.1]
   have hv0 : 0≤t/N := div_nonneg ht0 hNp.le
   have hv1 : t/N≤1 := (div_le_one hNp).mpr ht.2
@@ -4016,11 +4035,14 @@ public  theorem bourgain_source_sieve_frequency_scale {N t η ζ : ℝ}
     rw [abs_of_nonneg ht0]
     have hh := mul_le_mul_of_nonneg_left ht.2 (by positivity : 0≤1/(12*N))
     exact hh.trans_eq (by field_simp)
-  · change (1/(12*N^2))*|t^2|≤1/12
+  · change (1/(12*N^2*Vscale))*|t^2|≤1/12
     rw [abs_of_nonneg (sq_nonneg _)]
     have hsq : t^2≤N^2 := pow_le_pow_left₀ ht0 ht.2 2
-    have hh := mul_le_mul_of_nonneg_left hsq (by positivity : 0≤1/(12*N^2))
-    exact hh.trans_eq (by field_simp)
+    have hh := mul_le_mul_of_nonneg_left hsq (by positivity : 0≤1/(12*N^2*Vscale))
+    calc
+      _ ≤ (1/(12*N^2*Vscale))*N^2 := hh
+      _ = 1/(12*Vscale) := by field_simp
+      _ ≤ 1/12 := one_div_le_one_div_of_le (by norm_num) (by linarith)
   · change (η/12)*|(1/η)*(t/N)^((3:ℝ)/2)|≤1/12
     rw [abs_of_nonneg (by positivity)]
     calc
@@ -4032,95 +4054,107 @@ public  theorem bourgain_source_sieve_frequency_scale {N t η ζ : ℝ}
       _ = (1/12)*Real.sqrt (t/N) := by field_simp
       _ ≤ _ := by nlinarith
 
-private theorem bourgain_source_sieve_box_scale {N η ζ : ℝ}
-    (hN : 1≤N) (hη : η∈Ioc 0 1) (hζ : ζ∈Ioc 0 1) :
-    let a : Fin 4 → ℝ := ![1/(12*N),1/(12*N^2),η/12,ζ/12]
-    let δ : Fin 4 → ℝ := ![1,1,2,2]
+private theorem bourgain_source_sieve_box_scale {N η ζ W Vscale : ℝ}
+    (hN : 1≤N) (hη : η∈Ioc 0 1) (hζ : ζ∈Ioc 0 1) (hW : 1≤W) (hV : 1≤Vscale) :
+    let a : Fin 4 → ℝ := ![1/(12*N),1/(12*N^2*Vscale),η/12,ζ/12]
+    let δ : Fin 4 → ℝ := ![1,1,2*W,2*W]
     (∀ d, 0<a d) ∧
     (∀ d, 1/(δ d+2*a d) ≤ (![1,1,1/2,1/2] : Fin 4 → ℝ) d) ∧
     16777216*(∏ d, (δ d+2*a d))/(∏ d, a d) ≤
-      (16777216*36*12^4)*N^3/(η*ζ) := by
+      (16777216*36*12^4)*W^2*N^3*Vscale/(η*ζ) := by
   dsimp only
-  let a : Fin 4 → ℝ := ![1/(12*N),1/(12*N^2),η/12,ζ/12]
-  let δ : Fin 4 → ℝ := ![1,1,2,2]
+  let a : Fin 4 → ℝ := ![1/(12*N),1/(12*N^2*Vscale),η/12,ζ/12]
+  let δ : Fin 4 → ℝ := ![1,1,2*W,2*W]
   have hNp : 0<N := by linarith
+  have hVp := zero_lt_one.trans_le hV
   have hηp := hη.1
   have hζp := hζ.1
   have ha d : 0<a d := by
     fin_cases d <;> norm_num [a,Matrix.cons_val_succ] <;> positivity
   refine ⟨ha,?_,?_⟩
   · intro d
-    have hb : 0 < δ d := by fin_cases d <;> norm_num [δ,Matrix.cons_val_succ]
+    have hb : 0 < δ d := by fin_cases d <;> norm_num [δ,Matrix.cons_val_succ] <;> linarith only [hW]
     have hh : 1/(δ d+2*a d) ≤ 1/(δ d) :=
       one_div_le_one_div_of_le hb (by linarith [ha d])
-    convert hh using 1
-    fin_cases d <;> norm_num [δ,Matrix.cons_val_succ]
+    apply hh.trans
+    fin_cases d
+    · norm_num [δ]
+    · norm_num [δ]
+    · change 1/(2*W) ≤ 1/2
+      exact one_div_le_one_div_of_le (by norm_num) (by linarith only [hW])
+    · change 1/(2*W) ≤ 1/2
+      exact one_div_le_one_div_of_le (by norm_num) (by linarith only [hW])
   · have ha1 d : a d≤1/12 := by
       fin_cases d
       · change 1/(12*N)≤1/12
         exact one_div_le_one_div_of_le (by norm_num) (by linarith)
-      · change 1/(12*N^2)≤1/12
-        exact one_div_le_one_div_of_le (by norm_num) (by nlinarith)
+      · change 1/(12*N^2*Vscale)≤1/12
+        have hNV : (1:ℝ) ≤ N^2*Vscale := by
+          simpa only [one_mul] using mul_le_mul (show (1:ℝ) ≤ N^2 by nlinarith) hV
+            zero_le_one (sq_nonneg N)
+        exact one_div_le_one_div_of_le (by norm_num) (by linarith only [hNV])
       · change η/12≤1/12
         exact div_le_div_of_nonneg_right hη.2 (by norm_num)
       · change ζ/12≤1/12
         exact div_le_div_of_nonneg_right hζ.2 (by norm_num)
-    have hD : (∏ d, (δ d+2*a d)) ≤ 36 := by
+    have hD : (∏ d, (δ d+2*a d)) ≤ 36*W^2 := by
       have hb := Finset.prod_le_prod₀
         (fun d (_:d∈(Finset.univ:Finset (Fin 4))) => (by
-          have hd : 0≤δ d := by fin_cases d <;> norm_num [δ,Matrix.cons_val_succ]
+          have hd : 0≤δ d := by fin_cases d <;> norm_num [δ,Matrix.cons_val_succ] <;> linarith only [hW]
           linarith [ha d] : 0≤δ d+2*a d))
-        (g := (![2,2,3,3] : Fin 4 → ℝ))
+        (g := (![2,2,3*W,3*W] : Fin 4 → ℝ))
         (fun d _ => by
           have hh := ha1 d
           calc
             δ d+2*a d ≤ δ d+1 := by linarith
-            _ ≤ _ := by fin_cases d <;> norm_num [δ,Matrix.cons_val_succ])
+            _ ≤ _ := by fin_cases d <;> norm_num [δ,Matrix.cons_val_succ] <;> linarith only [hW])
       norm_num [Fin.prod_univ_succ] at hb ⊢
-      exact hb
-    have hprod : (∏ d, a d) = η*ζ/(12^4*N^3) := by
+      nlinarith only [hb]
+    have hprod : (∏ d, a d) = η*ζ/(12^4*N^3*Vscale) := by
       norm_num [a,Fin.prod_univ_succ]
       field_simp
       ring
     have hp : 0<∏ d, a d := Finset.prod_pos (fun d _ => ha d)
     calc
-      _ ≤ 16777216*36/(∏ d, a d) := div_le_div_of_nonneg_right
+      _ ≤ 16777216*(36*W^2)/(∏ d, a d) := div_le_div_of_nonneg_right
         (mul_le_mul_of_nonneg_left hD (by norm_num)) hp.le
       _ = _ := by rw [hprod]; field_simp
+
+
 
 
 set_option maxHeartbeats 400000 in
                                                                   
                                                                     
                                                                 
-theorem exists_bourgainSourceCurve_double_sieve {ε : ℝ} (hε : 0<ε) :
-    ∃ C>(0:ℝ), ∀ (N : ℕ), 1≤N → ∀ (η ζ : ℝ),
+private theorem exists_bourgainSourceCurve_double_sieve {ε : ℝ} (hε : 0<ε) :
+    ∃ C>(0:ℝ), ∀ (N : ℕ), 1≤N → ∀ (η ζ W Vscale : ℝ), 1≤W → 1≤Vscale →
       η∈Icc (1/(N:ℝ)^2) 1 → ζ∈Icc (1/(N:ℝ)) 1 →
       ∀ (ι κ : Type v) (S : Finset ι) (T : Finset κ) (w : κ → ℂ)
         (m : κ → ℤ) (x : ι → Fin 4 → ℝ) (B : ℝ),
         0≤B → (∀ j∈T,1 ≤ m j ∧ m j≤N) →
         (∀ j∈T,‖w j‖≤1) →
         (∀ q : ℤ,((T.filter (fun j => m j=q)).card:ℝ)≤B) →
-        (∀ i∈S,x i∈Icc ![0,0,-1,-1] (fun _ => 1)) →
+        (∀ i∈S,x i∈Icc ![0,0,-W,-W] ![1,1,W,W]) →
         let U := fun j => ![(m j:ℝ),(m j:ℝ)^2,
           (1/η)*((m j:ℝ)/N)^((3:ℝ)/2),(1/ζ)*Real.sqrt ((m j:ℝ)/N)]
-        let a : Fin 4 → ℝ := ![1/(12*(N:ℝ)),1/(12*(N:ℝ)^2),η/12,ζ/12]
+        let a : Fin 4 → ℝ := ![1/(12*(N:ℝ)),1/(12*(N:ℝ)^2*Vscale),η/12,ζ/12]
         (∑ i∈S,‖∑ j∈T,w j*fordAdditiveCharacter (∑ d,U j d*x i d)‖)^12 ≤
-          C*(N:ℝ)^((12:ℝ)+ε)*(S.card:ℝ)^10*B^12*
+          C*W^2*Vscale*(N:ℝ)^((12:ℝ)+ε)*(S.card:ℝ)^10*B^12*
             (((S ×ˢ S).filter (fun ij => ∀ d, |x ij.1 d-x ij.2 d|≤2*a d)).card:ℝ) := by
   classical
   obtain ⟨C,hC,hcount⟩ := exists_bourgainSourceCurve_six_tuple_first_spacing.{v} hε
   let L : ℝ := 16777216*36*12^4
   refine ⟨L*C,by dsimp [L]; positivity,?_⟩
-  intro N hN η ζ hη hζ ι κ S T w m x B hB hm hw hmass hx
+  intro N hN η ζ W Vscale hW hV hη hζ ι κ S T w m x B hB hm hw hmass hx
   dsimp only
   have hNr : (1:ℝ)≤N := by exact_mod_cast hN
   have hNp : (0:ℝ)<N := by linarith
   have hηp : 0<η := lt_of_lt_of_le (by positivity) hη.1
   have hζp : 0<ζ := lt_of_lt_of_le (by positivity) hζ.1
-  let a : Fin 4 → ℝ := ![1/(12*(N:ℝ)),1/(12*(N:ℝ)^2),η/12,ζ/12]
-  let D : Fin 4 → ℝ := ![1,1,2,2]
-  let c : Fin 4 → ℝ := ![0,0,-1,-1]
+  let a : Fin 4 → ℝ := ![1/(12*(N:ℝ)),1/(12*(N:ℝ)^2*Vscale),η/12,ζ/12]
+  let D : Fin 4 → ℝ := ![1,1,2*W,2*W]
+  let c : Fin 4 → ℝ := ![0,0,-W,-W]
   let U := fun j => ![(m j:ℝ),(m j:ℝ)^2,
     (1/η)*((m j:ℝ)/N)^((3:ℝ)/2),(1/ζ)*Real.sqrt ((m j:ℝ)/N)]
   let V := Fintype.piFinset (fun _ : Fin 6 => T)
@@ -4129,15 +4163,16 @@ theorem exists_bourgainSourceCurve_double_sieve {ε : ℝ} (hε : 0<ε) :
   let Q := (V ×ˢ V).filter (fun ij => ∀ d, |y ij.1 d-y ij.2 d|≤1/(D d+2*a d))
   let K := 16777216*(∏ d,(D d+2*a d))/(∏ d,a d)
   obtain ⟨ha,hthreshold,hscale⟩ :=
-    bourgain_source_sieve_box_scale hNr ⟨hηp,hη.2⟩ ⟨hζp,hζ.2⟩
-  have hD d : 0<D d := by fin_cases d <;> norm_num [D,Matrix.cons_val_succ]
+    bourgain_source_sieve_box_scale hNr ⟨hηp,hη.2⟩ ⟨hζp,hζ.2⟩ hW hV
+  have hD d : 0<D d := by fin_cases d <;> norm_num [D,Matrix.cons_val_succ] <;> linarith only [hW]
   have hU j (hj : j∈T) : ∀ d,a d*|U j d|≤1/12 :=
     bourgain_source_sieve_frequency_scale hNr
-      (by exact ⟨by exact_mod_cast (hm j hj).1,by exact_mod_cast (hm j hj).2⟩) hηp hζp
+      (by exact ⟨by exact_mod_cast (hm j hj).1,by exact_mod_cast (hm j hj).2⟩) hηp hζp hV
   have hx' i (hi : i∈S) d : x i d∈Icc (c d) (c d+D d) := by
     refine ⟨(hx i hi).1 d,?_⟩
     have hh := (hx i hi).2 d
-    fin_cases d <;> norm_num [c,D,Matrix.cons_val_succ] <;> exact hh
+    fin_cases d <;> norm_num [c,D,Matrix.cons_val_succ] at hh ⊢ <;>
+      linarith only [hh]
   have hs := bourgain_four_dimensional_sixth_power_sieve S T w x U ha hD hw hx' hU
   change (∑ i∈S,‖∑ j∈T,w j*fordAdditiveCharacter (∑ d,U j d*x i d)‖)^12 ≤
     (S.card:ℝ)^10*K*(P.card:ℝ)*(Q.card:ℝ) at hs
@@ -4170,11 +4205,13 @@ theorem exists_bourgainSourceCurve_double_sieve {ε : ℝ} (hε : 0<ε) :
       hs.trans (mul_le_mul_of_nonneg_left hQ (by positivity))
     _ = ((S.card:ℝ)^10*(P.card:ℝ))*(K*(C*η*ζ*(N:ℝ)^((9:ℝ)+ε)*B^12)) := by ring
     _ ≤ ((S.card:ℝ)^10*(P.card:ℝ))*
-        ((L*(N:ℝ)^3/(η*ζ))*(C*η*ζ*(N:ℝ)^((9:ℝ)+ε)*B^12)) := hbound
+        ((L*W^2*(N:ℝ)^3*Vscale/(η*ζ))*(C*η*ζ*(N:ℝ)^((9:ℝ)+ε)*B^12)) := hbound
     _ = _ := by
-      change _ = (L*C)*(N:ℝ)^((12:ℝ)+ε)*(S.card:ℝ)^10*B^12*(P.card:ℝ)
+      change _ = (L*C)*W^2*Vscale*(N:ℝ)^((12:ℝ)+ε)*(S.card:ℝ)^10*B^12*(P.card:ℝ)
       rw [←hpow]
       field_simp
+
+
 
 
 public  theorem bourgain_dual_three_halves_remainder_derivative
@@ -4473,18 +4510,19 @@ public  theorem bourgain_dual_amplitude_bound {μ q N y τ : ℝ}
   apply Real.sqrt_le_sqrt
   nlinarith
 
-private theorem bourgain_dual_stationary_weight_variation
-    {μ q N L τ : ℝ} (hμ : 0<μ) (hq : 0<q) (hN : 0<N)
+theorem bourgain_dual_frozen_weight_variation
+    {μ q N L τ H₀ V : ℝ} (hμ : 0<μ) (hq : 0<q) (hN : 0<N)
     (hA : 1≤μ*q*N^2) (hL : μ*q*N^2≤L) (hτ : |τ|≤1/2)
-    (H : ℕ) (hH : (H:ℝ)≤7*(μ*q*N^2)) (R : ℝ → ℝ)
+    (hH₀ : 0<H₀) (hV : 0≤V)
+    (H : ℕ) (hH : (H:ℝ)≤V*H₀) (R : ℝ → ℝ)
     (hR : ∀ y : ℝ, μ*q*N^2≤y →
-      HasDerivAt R (deriv R y) y ∧ |deriv R y|≤2/(μ*q*N^2)) :
+      HasDerivAt R (deriv R y) y ∧ |deriv R y|≤2/H₀) :
     let w := fun j : ℕ =>
       ((Real.sqrt (μ*N)/Real.sqrt
         (6*μ*Real.sqrt (2/(3*μ*q))*Real.sqrt (L+j+τ))):ℂ)*
         fordAdditiveCharacter (R (L+j))
     ‖w (H-1)‖≤1 ∧
-      (∑ j∈Finset.range (H-1), ‖w (j+1)-w j‖)≤2*(1+28*Real.pi) := by
+      (∑ j∈Finset.range (H-1), ‖w (j+1)-w j‖)≤2*(1+4*Real.pi*V) := by
   dsimp only
   let g := fun j : ℕ => Real.sqrt (μ*N)/Real.sqrt
     (6*μ*Real.sqrt (2/(3*μ*q))*Real.sqrt (L+j+τ))
@@ -4504,27 +4542,28 @@ private theorem bourgain_dual_stationary_weight_variation
   have hgv := finiteVariationBound_of_antitone (by norm_num : (0:ℝ)≤1)
     hmono (fun j _ => hg j)
   have hv := continuous_character_range_variation R (deriv R) L H
-    (by positivity : 0≤2/(μ*q*N^2))
+    (by positivity : 0≤2/H₀)
     (fun y hy => (hR y (hL.trans hy.1)).1)
     (fun y hy => (hR y (hL.trans hy.1)).2)
   have hvar :
       (∑ j∈Finset.range (H-1),
         ‖fordAdditiveCharacter (R (L+(j+1)))-fordAdditiveCharacter (R (L+j))‖)≤
-        1+28*Real.pi := by
+        1+4*Real.pi*V := by
     apply hv.trans
-    have hHp : (H:ℝ)/(μ*q*N^2)≤7 :=
+    have hHp : (H:ℝ)/H₀≤V :=
       (div_le_iff₀ (by positivity)).mpr (by nlinarith)
     have ht := mul_le_mul_of_nonneg_left hHp (by positivity : 0≤4*Real.pi)
     calc
-      _ = 4*Real.pi*((H:ℝ)/(μ*q*N^2)) := by ring
-      _ ≤ 4*Real.pi*7 := ht
+      _ = 4*Real.pi*((H:ℝ)/H₀) := by ring
+      _ ≤ 4*Real.pi*V := ht
       _ ≤ _ := by linarith
   have hev : FiniteVariationBound (fun j => fordAdditiveCharacter (R (L+j)))
-      (H-1) (1+28*Real.pi) := by
+      (H-1) (1+4*Real.pi*V) := by
     refine ⟨by positivity,?_,?_⟩
     · intro j hj
       rw [sargos_character_norm]
-      linarith [Real.pi_pos]
+      have hp := mul_nonneg Real.pi_pos.le hV
+      nlinarith only [hp]
     · simpa only [Nat.cast_add,Nat.cast_one] using hvar
   have hprod := hgv.mul hev
   constructor
@@ -4533,6 +4572,8 @@ private theorem bourgain_dual_stationary_weight_variation
     rw [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (hg (H-1)).1]
     exact (hg (H-1)).2
   · simpa only [g,Complex.ofReal_div,mul_one] using hprod.variation_le
+
+
 
 public  theorem bourgain_dual_branch_normalized
     (q : ℕ) [NeZero q] (a r : ℤ) (har : (q:ℤ)∣a*r-1)
@@ -4584,61 +4625,62 @@ set_option maxHeartbeats 400000 in
                                                                    
                                                                       
                                                        
-private theorem bourgain_cubic_dual_branch_common_fourier
+/-- Extract a common periodic Fourier mode after moving the same phase `g`
+from each dual remainder to its carrier. -/
+theorem bourgain_cubic_branch_common_fourier
     {M : ℕ} [NeZero M] {ι : Type*} (S : Finset ι)
     (q N L H : ι → ℕ) (a r : ι → ℤ) (μ ℓ : ι → ℝ) (p : ι → Fin 2)
-    (hq : ∀ i∈S, 0<q i) (hN : ∀ i∈S, 1≤N i) (hqN : ∀ i∈S, q i≤N i)
-    (hμ : ∀ i∈S, 0<μ i) (hscale : ∀ i∈S, 1≤μ i*(q i:ℝ)^2*N i)
+    (g : ℝ → ℝ) (B : ι → ℝ) (V : ℝ) (hV : 0≤V)
+    (hq : ∀ i∈S, 0<q i) (hN : ∀ i∈S, 1≤N i)
+    (hμ : ∀ i∈S, 0<μ i) (hscale : ∀ i∈S, 1≤μ i*(q i:ℝ)*(N i:ℝ)^2)
+    (hB : ∀ i∈S, 0<B i)
     (har : ∀ i∈S, (q i:ℤ)∣a i*r i-1)
     (hL : ∀ i∈S, μ i*(q i:ℝ)*(N i:ℝ)^2≤L i)
-    (hH : ∀ i∈S, (H i:ℝ)≤7*(μ i*(q i:ℝ)*(N i:ℝ)^2))
+    (hH : ∀ i∈S, (H i:ℝ)≤V*B i)
     (hwindow : ∀ i∈S, L i+H i≤M+1) :
     let b := fun i => (⌊(q i:ℝ)*ℓ i⌋+(p i:ℕ) : ℤ)
     let τ := fun i => ((b i:ℝ)-(q i:ℝ)*ℓ i)/2
     let s := fun i => Real.sqrt (2/(3*μ i*(q i:ℝ)))
     let K := fun i => -2*μ i*(s i)^3
     let x := fun i => (![-(r i:ℝ)*b i/q i,-(r i:ℝ)/q i,K i,3*K i*τ i/2] : Fin 4 → ℝ)
+    let R := fun i y => K i*((Real.sqrt (y+τ i))^3-(Real.sqrt y)^3-(3*τ i/2)*Real.sqrt y)-g y
+    (∀ i∈S, ∀ y, μ i*(q i:ℝ)*(N i:ℝ)^2≤y →
+      HasDerivAt (R i) (deriv (R i) y) y ∧ |deriv (R i) y|≤2/B i) →
     ∃ k : ZMod M,
       (∑ i∈S, ‖(q i:ℂ)⁻¹*∑ j∈Finset.range (H i),
         let h : ℤ := L i+j
         let u := Real.sqrt ((((b i+2*h:ℤ):ℝ)/(q i:ℝ)-ℓ i)/(3*μ i))
         bourgainQuadraticGauss (q i) (a i) (b i+2*h)*
           ((𝐞 ((1:ℝ)/8-2*μ i*u^3):ℂ)/(Real.sqrt (6*μ i*u):ℂ))‖) ≤
-        (6*(3+56*Real.pi)*(1+Real.log M))*
+        (6*(3+8*Real.pi*V)*(1+Real.log M))*
           ∑ i∈S, (Real.sqrt (2*(q i:ℝ))/((q i:ℝ)*Real.sqrt (μ i*N i)))*
             ‖∑ j : ZMod M,
             ZMod.stdAddChar (-(j*k))*
+              fordAdditiveCharacter (g (j.val+1:ℝ))*
               fordAdditiveCharacter (∑ d,x i d*
                 (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
                   Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖ := by
   classical
-  dsimp only
-  let b := fun i => (⌊(q i:ℝ)*ℓ i⌋+(p i:ℕ) : ℤ)
-  let τ := fun i => ((b i:ℝ)-(q i:ℝ)*ℓ i)/2
-  let s := fun i => Real.sqrt (2/(3*μ i*(q i:ℝ)))
-  let K := fun i => -2*μ i*(s i)^3
-  let x := fun i => (![-(r i:ℝ)*b i/q i,-(r i:ℝ)/q i,K i,3*K i*τ i/2] : Fin 4 → ℝ)
-  let R := fun i y => K i*((Real.sqrt (y+τ i))^3-(Real.sqrt y)^3-(3*τ i/2)*Real.sqrt y)
+  intro b τ s K x R hR
   let C := fun i => (q i:ℂ)⁻¹*bourgainQuadraticGauss (q i) (a i) (b i)*
     (𝐞 ((1:ℝ)/8):ℂ)/(Real.sqrt (μ i*N i):ℂ)
   let U := fun y : ℝ => (![y,y^2,y^((3:ℝ)/2),Real.sqrt y] : Fin 4 → ℝ)
-  let f := fun i (j : ZMod M) => C i*fordAdditiveCharacter (∑ d,x i d*U (j.val+1) d)
+  let f := fun i (j : ZMod M) => C i*fordAdditiveCharacter (g (j.val+1:ℝ))*fordAdditiveCharacter (∑ d,x i d*U (j.val+1) d)
   let w := fun i (j : ℕ) =>
     ((Real.sqrt (μ i*N i)/Real.sqrt
       (6*μ i*s i*Real.sqrt ((L i:ℝ)+j+τ i))):ℂ)*
       fordAdditiveCharacter (R i ((L i:ℝ)+j))
   have hdata i (hi : i∈S) :
       1≤L i ∧ ‖w i (H i-1)‖≤1 ∧
-      (∑ j∈Finset.range (H i-1),‖w i (j+1)-w i j‖)≤2*(1+28*Real.pi) := by
+      (∑ j∈Finset.range (H i-1),‖w i (j+1)-w i j‖)≤2*(1+4*Real.pi*V) := by
     let : NeZero (q i) := ⟨(hq i hi).ne'⟩
     have hp := bourgain_cubic_dual_phase_coordinates (q i) (a i) (r i) (har i hi)
       (hμ i hi) (ℓ i) (p i)
-    have hd := hp.2.2.2 (N i) (N i) (hN i hi) (by omega) (hqN i hi) (hscale i hi)
-    have hL' : (1:ℝ)≤L i := hd.1.trans (hL i hi)
+    have hL' : (1:ℝ)≤L i := (hscale i hi).trans (hL i hi)
     refine ⟨by exact_mod_cast hL',?_⟩
-    exact bourgain_dual_stationary_weight_variation (hμ i hi)
+    exact bourgain_dual_frozen_weight_variation (hμ i hi)
       (by exact_mod_cast hq i hi) (by exact_mod_cast (by have := hN i hi; omega : 0<N i))
-      hd.1 (hL i hi) hp.1 (H i) (hH i hi) (R i) hd.2.1
+      (hscale i hi) (hL i hi) hp.1 (hB i hi) hV (H i) (hH i hi) (R i) (hR i hi)
   have hf i (hi : i∈S) j (hj : j∈Finset.range (H i)) :
       w i j*f i (((L i-1)+j:ℕ):ZMod M) =
         (q i:ℂ)⁻¹*bourgainQuadraticGauss (q i) (a i) (b i+2*((L i+j:ℕ):ℤ))*
@@ -4661,9 +4703,28 @@ private theorem bourgain_cubic_dual_branch_common_fourier
     have hcast : ((L i-1+j:ℕ):ℝ)+1=(L i:ℝ)+j := by
       exact_mod_cast (show L i-1+j+1=L i+j by omega)
     rw [hcast]
-    simpa only [w,C,x,U,K,s,τ,b,R,Nat.cast_add,Int.cast_natCast,Int.cast_add] using he.symm
+    have hre : fordAdditiveCharacter (R i ((L i:ℝ)+j))*
+        fordAdditiveCharacter (g ((L i:ℝ)+j)) =
+        fordAdditiveCharacter (K i*((Real.sqrt (((L i:ℝ)+j)+τ i))^3-
+          (Real.sqrt ((L i:ℝ)+j))^3-(3*τ i/2)*Real.sqrt ((L i:ℝ)+j))) := by
+      rw [←fordAdditiveCharacter_add]
+      congr 1
+      dsimp only [R]
+      ring
+    calc
+      _ = (C i*fordAdditiveCharacter (∑ d,x i d*U ((L i:ℝ)+j) d))*
+          (((Real.sqrt (μ i*N i)/Real.sqrt
+            (6*μ i*s i*Real.sqrt ((L i:ℝ)+j+τ i))):ℂ)*
+          (fordAdditiveCharacter (R i ((L i:ℝ)+j))*
+            fordAdditiveCharacter (g ((L i:ℝ)+j)))) := by
+        dsimp only [w]
+        ring
+      _ = _ := by
+        rw [hre]
+        rw [mul_comm]
+        simpa only [C,x,U,K,s,τ,b,Nat.cast_add,Int.cast_natCast,Int.cast_add] using he.symm
   obtain ⟨k,hk⟩ := bourgain_weighted_interval_common_fourier S f w (fun i => L i-1) H
-    (by positivity : 0≤2*(1+28*Real.pi))
+    (by positivity : 0≤2*(1+4*Real.pi*V))
     (fun i hi => by
 
       have := (hdata i hi).1
@@ -4684,7 +4745,9 @@ private theorem bourgain_cubic_dual_branch_common_fourier
     simpa only [Nat.cast_add,mul_assoc] using hf i hi j hj
   have heDFT i :
       ZMod.dft (f i) k = C i*∑ j : ZMod M,
-        ZMod.stdAddChar (-(j*k))*fordAdditiveCharacter (∑ d,x i d*U (j.val+1) d) := by
+        ZMod.stdAddChar (-(j*k))*
+        fordAdditiveCharacter (g (j.val+1:ℝ))*
+        fordAdditiveCharacter (∑ d,x i d*U (j.val+1) d) := by
     rw [ZMod.dft_apply,Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro j hj
@@ -4693,7 +4756,7 @@ private theorem bourgain_cubic_dual_branch_common_fourier
   simp_rw [heDFT] at hk
   have heSum := Finset.sum_congr rfl (fun i hi => congrArg norm (he i hi))
   rw [heSum] at hk
-  rw [show 6*(1+2*(1+28*Real.pi))=6*(3+56*Real.pi) by ring] at hk
+  rw [show 6*(1+2*(1+4*Real.pi*V))=6*(3+8*Real.pi*V) by ring] at hk
   apply hk.trans
   apply mul_le_mul_of_nonneg_left
   · apply Finset.sum_le_sum
@@ -4706,6 +4769,7 @@ private theorem bourgain_cubic_dual_branch_common_fourier
   · have hM : (1:ℝ)≤M := by exact_mod_cast NeZero.pos M
     have hlog := Real.log_nonneg hM
     positivity
+
 
 public  theorem bourgain_integer_interval_parity_split
     (K₀ K₁ b : ℤ) (F : ℤ → ℂ) :
@@ -4759,9 +4823,9 @@ public  theorem bourgain_integer_interval_parity_split
   · intro t ht
     rfl
 
-private theorem bourgain_cubic_parity_interval_scales
-    {q N N₁ M : ℕ} (hq : 0<q) (hN : 1≤N) (hN₁ : N₁≤2*N) (hqN : q≤N)
-    {μ ℓ : ℝ} (hμ : 0<μ) (hscale : 1≤μ*(q:ℝ)^2*N)
+theorem bourgain_cubic_parity_interval_scales
+    {q N N₁ M : ℕ} (hq : 0<q) (hN₁ : N₁≤2*N)
+    {μ ℓ : ℝ} (hμ : 0<μ) (hA : 1≤μ*(q:ℝ)*(N:ℝ)^2)
     (hM : 7*(μ*(q:ℝ)*(N:ℝ)^2)≤M) (p : Fin 2) :
     let b : ℤ := ⌊(q:ℝ)*ℓ⌋+(p:ℕ)
     let l : ℤ := (⌈(q:ℝ)*(3*μ*(N:ℝ)^2+ℓ)⌉-b+1)/2
@@ -4775,9 +4839,7 @@ private theorem bourgain_cubic_parity_interval_scales
   let u : ℤ := (⌊(q:ℝ)*(3*μ*(N₁:ℝ)^2+ℓ)⌋-b)/2
   let A := μ*(q:ℝ)*(N:ℝ)^2
   have hqr : (0:ℝ)<q := by exact_mod_cast hq
-  have hNr : (0:ℝ)<N := by exact_mod_cast (by omega : 0<N)
-  have hqNr : (q:ℝ)≤N := by exact_mod_cast hqN
-  have hA : 1≤A := (bourgain_dual_physical_scale hμ hqr hNr hqNr hscale).1
+  change 1≤A at hA
   have hp0 : (0:ℝ)≤(p:ℕ) := Nat.cast_nonneg _
   have hp1 : ((p:ℕ):ℝ)≤1 := by exact_mod_cast (show (p:ℕ)≤1 by omega)
   have hbLo : (q:ℝ)*ℓ-1≤(b:ℝ) := by
@@ -4829,6 +4891,8 @@ private theorem bourgain_cubic_parity_interval_scales
       exact_mod_cast hh
     have huM : u≤M := by exact_mod_cast huA.trans hM
     omega
+
+
 
 public  theorem bourgain_sum_integer_Icc_range (l u : ℤ) (F : ℤ → ℂ) :
     (∑ h∈Finset.Icc l u,F h)=
@@ -4904,21 +4968,32 @@ theorem bourgain_cubic_gauss_main_common_fourier
   have hdata i (hi : i∈S) (p : Fin 2) :
       0≤l i p ∧ μ i*(q i:ℝ)*(N i:ℝ)^2≤(L (i,p):ℝ) ∧
         (H (i,p):ℝ)≤7*(μ i*(q i:ℝ)*(N i:ℝ)^2) ∧ L (i,p)+H (i,p)≤M+1 :=
-    bourgain_cubic_parity_interval_scales (hq i hi) (hN i hi) (hN₁ i hi) (hqN i hi)
-      (hμ i hi) (hscale i hi) (hM i hi) p
-  obtain ⟨k,hk⟩ := bourgain_cubic_dual_branch_common_fourier T
+    bourgain_cubic_parity_interval_scales (hq i hi) (hN₁ i hi) (hμ i hi)
+      (bourgain_dual_physical_scale (hμ i hi) (by exact_mod_cast hq i hi)
+        (by exact_mod_cast (show 0<N i by have := hN i hi; omega)) (by exact_mod_cast hqN i hi)
+        (hscale i hi)).1 (hM i hi) p
+  have hcoord' (ip : ι × Fin 2) (hi : ip∈T) := by
+    have hiS := (Finset.mem_product.mp hi).1
+    let : NeZero (q ip.1) := ⟨(hq ip.1 hiS).ne'⟩
+    exact (bourgain_cubic_dual_phase_coordinates (q ip.1) (a ip.1) (r ip.1) (har ip.1 hiS)
+      (hμ ip.1 hiS) (ℓ ip.1) ip.2).2.2.2 (N ip.1) (N ip.1)
+      (hN ip.1 hiS) (by omega) (hqN ip.1 hiS) (hscale ip.1 hiS)
+  obtain ⟨k,hk⟩ := bourgain_cubic_branch_common_fourier T
     (fun ip => q ip.1) (fun ip => N ip.1) L H
     (fun ip => a ip.1) (fun ip => r ip.1) (fun ip => μ ip.1) (fun ip => ℓ ip.1)
-    (fun ip => ip.2)
+    Prod.snd (fun _ => 0) (fun ip => μ ip.1*(q ip.1:ℝ)*(N ip.1:ℝ)^2) 7 (by norm_num)
     (fun ip hip => hq ip.1 (Finset.mem_product.mp hip).1)
     (fun ip hip => hN ip.1 (Finset.mem_product.mp hip).1)
-    (fun ip hip => hqN ip.1 (Finset.mem_product.mp hip).1)
     (fun ip hip => hμ ip.1 (Finset.mem_product.mp hip).1)
-    (fun ip hip => hscale ip.1 (Finset.mem_product.mp hip).1)
+    (fun ip hip => (hcoord' ip hip).1)
+    (fun ip hip => zero_lt_one.trans_le (hcoord' ip hip).1)
     (fun ip hip => har ip.1 (Finset.mem_product.mp hip).1)
     (fun ip hip => (hdata ip.1 (Finset.mem_product.mp hip).1 ip.2).2.1)
     (fun ip hip => (hdata ip.1 (Finset.mem_product.mp hip).1 ip.2).2.2.1)
     (fun ip hip => (hdata ip.1 (Finset.mem_product.mp hip).1 ip.2).2.2.2)
+    (fun ip hi y hy => by simpa only [sub_zero] using (hcoord' ip hi).2.1 y hy)
+  simp only [show fordAdditiveCharacter 0=1 by simp [fordAdditiveCharacter],
+    mul_one, show (8:ℝ)*Real.pi*7=56*Real.pi by ring] at hk
   have hsplit i (hi : i∈S) :
       (q i:ℂ)⁻¹*(∑ v∈Finset.Icc (K₀ i) (K₁ i),F i v) =
         ∑ p : Fin 2,(q i:ℂ)⁻¹*∑ j∈Finset.range (H (i,p)),
@@ -5025,32 +5100,32 @@ public  theorem bourgain_completed_phase_normalize
   rw [he1,he2]
 
 
-private theorem bourgain_completed_source_sieve {ε : ℝ} (hε : 0 < ε) :
+theorem bourgain_completed_source_sieve {ε : ℝ} (hε : 0 < ε) :
     ∃ C > (0:ℝ), ∀ (M : ℕ) [NeZero M] (ι : Type v) (S : Finset ι)
-      (x : ι → Fin 4 → ℝ),
-      (∀ i∈S, |x i 2| ≤ Real.sqrt M ∧ |x i 3| ≤ Real.sqrt M) →
+      (x : ι → Fin 4 → ℝ) (W Vscale : ℝ), 1≤W → 1≤Vscale →
+      (∀ i∈S, |x i 2| ≤ W*Real.sqrt M ∧ |x i 3| ≤ W*Real.sqrt M) →
       let y := fun i => (![Int.fract (x i 0),Int.fract (x i 1),
         x i 2/Real.sqrt M,x i 3/Real.sqrt M] : Fin 4 → ℝ)
       let a : Fin 4 → ℝ :=
-        ![1/(12*(M:ℝ)),1/(12*(M:ℝ)^2),(1/(M:ℝ)^2)/12,(1/(M:ℝ))/12]
-      ∀ k : ZMod M,
-      (∑ i∈S, ‖∑ j : ZMod M,ZMod.stdAddChar (-(j*k))*
+        ![1/(12*(M:ℝ)),1/(12*(M:ℝ)^2*Vscale),(1/(M:ℝ)^2)/12,(1/(M:ℝ))/12]
+      ∀ w₀ : ZMod M → ℂ, (∀ j, ‖w₀ j‖ ≤ 1) →
+      (∑ i∈S, ‖∑ j : ZMod M,w₀ j*
         fordAdditiveCharacter (∑ d,x i d*
           (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
             Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖)^12 ≤
-        C*(M:ℝ)^((12:ℝ)+ε)*(S.card:ℝ)^10*
+        C*W^2*Vscale*(M:ℝ)^((12:ℝ)+ε)*(S.card:ℝ)^10*
           (((S ×ˢ S).filter (fun ij => ∀ d,|y ij.1 d-y ij.2 d| ≤ 2*a d)).card:ℝ) := by
   classical
   obtain ⟨C,hC,hsource⟩ := exists_bourgainSourceCurve_double_sieve.{v} hε
   refine ⟨C,hC,?_⟩
-  intro M inst ι S x hx y a k
+  intro M inst ι S x W Vscale hW hV hx y a w₀ hw₀
   have hM : 0 < M := Nat.pos_of_ne_zero (NeZero.ne M)
   have hMr : (0:ℝ) < M := Nat.cast_pos.mpr hM
   have hM1 : (1:ℝ) ≤ M := by exact_mod_cast hM
   have hsqrt : 0 < Real.sqrt M := Real.sqrt_pos.mpr hMr
   let T : Finset (ULift.{v} (ZMod M)) := Finset.univ
   let m := fun j : ULift.{v} (ZMod M) => (j.down.val:ℤ)+1
-  let w := fun j : ULift.{v} (ZMod M) => ZMod.stdAddChar (-(j.down*k))
+  let w := fun j : ULift.{v} (ZMod M) => w₀ j.down
   have hm j (_hj : j∈T) : 1 ≤ m j ∧ m j ≤ M := by
     dsimp only [m]
     have hj := j.down.val_lt
@@ -5066,13 +5141,13 @@ private theorem bourgain_completed_source_sieve {ε : ℝ} (hε : 0 < ε) :
       dsimp only [m] at hjm hjm'
       omega
     exact_mod_cast hh
-  have hy i (hi : i∈S) : y i∈Icc ![0,0,-1,-1] (fun _ => 1) := by
-    have h2 : |x i 2/Real.sqrt M| ≤ 1 := by
+  have hy i (hi : i∈S) : y i∈Icc ![0,0,-W,-W] ![1,1,W,W] := by
+    have h2 : |x i 2/Real.sqrt M| ≤ W := by
       rw [abs_div,abs_of_pos hsqrt]
-      exact (div_le_one hsqrt).mpr (hx i hi).1
-    have h3 : |x i 3/Real.sqrt M| ≤ 1 := by
+      exact (div_le_iff₀ hsqrt).mpr (hx i hi).1
+    have h3 : |x i 3/Real.sqrt M| ≤ W := by
       rw [abs_div,abs_of_pos hsqrt]
-      exact (div_le_one hsqrt).mpr (hx i hi).2
+      exact (div_le_iff₀ hsqrt).mpr (hx i hi).2
     refine ⟨?_,?_⟩
     · intro d
       fin_cases d
@@ -5091,15 +5166,15 @@ private theorem bourgain_completed_source_sieve {ε : ℝ} (hε : 0 < ε) :
     exact (div_le_one (by positivity)).mpr (by nlinarith only [hM1])
   have hζ : 1/(M:ℝ)∈Icc (1/(M:ℝ)) 1 := by
     exact ⟨le_rfl,(div_le_one hMr).mpr hM1⟩
-  have hh := hsource M (by omega) (1/(M:ℝ)^2) (1/(M:ℝ))
+  have hh := hsource M (by omega) (1/(M:ℝ)^2) (1/(M:ℝ)) W Vscale hW hV
     hη hζ ι (ULift.{v} (ZMod M)) S T w m y 1 (by norm_num) hm
-    (fun j _ => (sargos_stdAddChar_norm _).le) hmass hy
+    (fun j _ => hw₀ j.down) hmass hy
   simp only [one_div_one_div,one_pow,mul_one] at hh
   let U := fun j : ULift.{v} (ZMod M) =>
     (![(m j:ℝ),(m j:ℝ)^2,(M:ℝ)^2*((m j:ℝ)/M)^((3:ℝ)/2),
       (M:ℝ)*Real.sqrt ((m j:ℝ)/M)] : Fin 4 → ℝ)
   have he :
-      (∑ i∈S, ‖∑ j : ZMod M,ZMod.stdAddChar (-(j*k))*
+      (∑ i∈S, ‖∑ j : ZMod M,w₀ j*
         fordAdditiveCharacter (∑ d,x i d*
           (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
             Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖)=
@@ -5124,7 +5199,9 @@ private theorem bourgain_completed_source_sieve {ε : ℝ} (hε : 0 < ε) :
   exact hh
 
 
-private theorem bourgain_actual_dual_source_box
+
+
+theorem bourgain_actual_dual_source_box
     {M q N : ℕ} [NeZero M] (hq : 0 < q) (hN : 1 ≤ N) (hqN : q ≤ N)
     {μ ℓ : ℝ} (hμ : 0 < μ) (hscale : 1 ≤ μ*(q:ℝ)^2*N)
     (hM : 7*(μ*(q:ℝ)*(N:ℝ)^2) ≤ M) (r : ℤ) (p : Fin 2) :
@@ -5170,7 +5247,7 @@ private theorem bourgain_actual_dual_source_box
                                                                          
                                                                           
 theorem exists_bourgain_cubic_dual_source_sieve {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (M : ℕ) [NeZero M] (ι : Type v) (S : Finset ι)
+    ∃ C > (0:ℝ), ∀ (M : ℕ) [NeZero M] (Vscale : ℝ), 1 ≤ Vscale → ∀ (ι : Type v) (S : Finset ι)
       (q N : ι → ℕ) (r : ι → ℤ) (μ ℓ : ι → ℝ),
       (∀ i∈S, 0 < q i ∧ 1 ≤ N i ∧ q i ≤ N i ∧ 0 < μ i ∧
         1 ≤ μ i*(q i:ℝ)^2*N i) →
@@ -5185,26 +5262,28 @@ theorem exists_bourgain_cubic_dual_source_sieve {ε : ℝ} (hε : 0 < ε) :
         (![Int.fract (x ip.1 ip.2 0),Int.fract (x ip.1 ip.2 1),
           x ip.1 ip.2 2/Real.sqrt M,x ip.1 ip.2 3/Real.sqrt M] : Fin 4 → ℝ)
       let a : Fin 4 → ℝ :=
-        ![1/(12*(M:ℝ)),1/(12*(M:ℝ)^2),(1/(M:ℝ)^2)/12,(1/(M:ℝ))/12]
+        ![1/(12*(M:ℝ)),1/(12*(M:ℝ)^2*Vscale),(1/(M:ℝ)^2)/12,(1/(M:ℝ))/12]
       ∀ k : ZMod M,
       (∑ i∈S, ∑ p : Fin 2, ‖∑ j : ZMod M,ZMod.stdAddChar (-(j*k))*
         fordAdditiveCharacter (∑ d,x i p d*
           (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
             Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖)^12 ≤
-        C*(M:ℝ)^((12:ℝ)+ε)*(V.card:ℝ)^10*
+        C*Vscale*(M:ℝ)^((12:ℝ)+ε)*(V.card:ℝ)^10*
           (((V ×ˢ V).filter (fun ij => ∀ d,|y ij.1 d-y ij.2 d| ≤ 2*a d)).card:ℝ) := by
   classical
   obtain ⟨C,hC,hsource⟩ := bourgain_completed_source_sieve.{v} hε
   refine ⟨C,hC,?_⟩
-  intro M inst ι S q N r μ ℓ hscale hM b τ K x V y a k
+  intro M inst Vscale hV ι S q N r μ ℓ hscale hM b τ K x V y a k
   have hbox ip (hip : ip∈V) :
       |x ip.1 ip.2 2| ≤ Real.sqrt M ∧ |x ip.1 ip.2 3| ≤ Real.sqrt M := by
     have hi := (Finset.mem_product.mp hip).1
     have hd := hscale ip.1 hi
     exact bourgain_actual_dual_source_box hd.1 hd.2.1 hd.2.2.1
       hd.2.2.2.1 hd.2.2.2.2 (hM ip.1 hi) (r ip.1) ip.2
-  have hh := hsource M (ι × Fin 2) V (fun ip => x ip.1 ip.2) hbox k
-  simpa only [V,Finset.sum_product] using hh
+  have hh := hsource M (ι × Fin 2) V (fun ip => x ip.1 ip.2) 1 Vscale le_rfl hV
+    (by simpa only [one_mul] using hbox) (fun j => ZMod.stdAddChar (-(j*k)))
+    (fun j => (sargos_stdAddChar_norm _).le)
+  simpa only [V,Finset.sum_product,one_pow,mul_one] using hh
 
 
 public  theorem bourgain_dual_amplitude_coefficient_le
@@ -5484,76 +5563,6 @@ private theorem bourgain_resonance_derivative_lower {u c t g v w : ℝ}
   have hcu : u ≤ |c| *u := by nlinarith only [mul_le_mul_of_nonneg_right hc hu.le]
   nlinarith only [hm,he,htri,hcu,hu]
 
-private theorem bourgain_resonance_hasDerivAt
-    (g gp : ℝ → ℝ) {a b c d x : ℝ}
-    (hdet : a*d-b*c=1) (ht : c*x+d ≠ 0)
-    (hg : HasDerivAt g (gp x) x)
-    (hgy : HasDerivAt g (gp ((a*x+b)/(c*x+d))) ((a*x+b)/(c*x+d))) :
-    HasDerivAt (fun z => g ((a*z+b)/(c*z+d))*(c*z+d)^3-g z)
-      (gp ((a*x+b)/(c*x+d))*(c*x+d)+
-        3*c*g ((a*x+b)/(c*x+d))*(c*x+d)^2-gp x) x := by
-  have htd := ((hasDerivAt_id x).const_mul c).add_const d
-  have hyd := (((hasDerivAt_id x).const_mul a).add_const b).div htd ht
-  have he : (a*(c*x+d)-(a*x+b)*c)/(c*x+d)^2=1/(c*x+d)^2 := by
-    congr 1
-    nlinarith only [hdet]
-  simp only [mul_one,id_eq] at hyd
-  rw [he] at hyd
-  have hh := ((hgy.comp x hyd).mul (htd.pow 3)).sub hg
-  dsimp at hh
-  simp only [mul_one] at hh
-  change HasDerivAt (fun z => g ((a*z+b)/(c*z+d))*(c*z+d)^3-g z)
-    (gp ((a*x+b)/(c*x+d))*(1/(c*x+d)^2)*(c*x+d)^3+
-      g ((a*x+b)/(c*x+d))*(3*(c*x+d)^2*c)-gp x) x at hh
-  convert hh using 1
-  field_simp
-
-                                                                       
-                                                                                  
-private theorem bourgain_nontriangular_profile_compression
-    (g gp : ℝ → ℝ) {a b c d l r u E : ℝ}
-    (hlr : l ≤ r) (hu : 0 < u) (hdet : a*d-b*c=1)
-    (hc : 1 ≤ |c|)
-    (hg : ∀ x∈Icc l r, HasDerivAt g (gp x) x)
-    (hgy : ∀ x∈Icc l r,
-      HasDerivAt g (gp ((a*x+b)/(c*x+d))) ((a*x+b)/(c*x+d)))
-    (ht : ∀ x∈Icc l r, (1:ℝ)/2 ≤ c*x+d ∧ c*x+d ≤ 2)
-    (hpos : ∀ x∈Icc l r, u ≤ g ((a*x+b)/(c*x+d)))
-    (hgp : ∀ x∈Icc l r, |gp x| ≤ u/8)
-    (hgpy : ∀ x∈Icc l r, |gp ((a*x+b)/(c*x+d))| ≤ u/8)
-    (hl : |g ((a*l+b)/(c*l+d))*(c*l+d)^3-g l| ≤ E)
-    (hr : |g ((a*r+b)/(c*r+d))*(c*r+d)^3-g r| ≤ E) :
-    r-l ≤ 8*E/(|c| *u) := by
-  have hd : 0 < |c| *u := mul_pos (by linarith only [hc]) hu
-  have hE : 0 ≤ E := (abs_nonneg _).trans hl
-  rcases hlr.eq_or_lt with he | hlt
-  · subst r
-    simp only [sub_self]
-    positivity
-  let F := fun x => g ((a*x+b)/(c*x+d))*(c*x+d)^3-g x
-  let F' := fun x => gp ((a*x+b)/(c*x+d))*(c*x+d)+
-      3*c*g ((a*x+b)/(c*x+d))*(c*x+d)^2-gp x
-  have hder x (hx : x∈Icc l r) : HasDerivAt F (F' x) x :=
-    bourgain_resonance_hasDerivAt g gp hdet (by linarith only [(ht x hx).1])
-      (hg x hx) (hgy x hx)
-  obtain ⟨x,hx,he⟩ := exists_hasDerivAt_eq_slope F F' hlt
-    (fun x hx => (hder x hx).continuousAt.continuousWithinAt)
-    (fun x hx => hder x ⟨hx.1.le,hx.2.le⟩)
-  have hxi : x∈Icc l r := ⟨hx.1.le,hx.2.le⟩
-  have hb := bourgain_resonance_derivative_lower hu hc (ht x hxi).1 (ht x hxi).2
-    (hpos x hxi) (hgpy x hxi) (hgp x hxi)
-  change |c| *u/4 ≤ |F' x| at hb
-  rw [he,abs_div,abs_of_pos (sub_pos.mpr hlt)] at hb
-  have hdiff : |F r-F l| ≤ 2*E := by
-    calc
-      _ ≤ |F r|+|F l| := abs_sub _ _
-      _ ≤ _ := by linarith only [hr,hl]
-  have hs := (le_div_iff₀ (sub_pos.mpr hlt)).mp hb
-  apply (le_div_iff₀ hd).mpr
-  nlinarith only [hs,hdiff]
-
-                                                                            
-                                                                                   
 private theorem bourgain_curvature_profile
     (f : ℝ → ℝ) {A B L : ℝ} (hL : 0 < L)
     (hf : ∀ x∈Ioo A B, ContDiffAt ℝ 4 f x)
@@ -5801,94 +5810,6 @@ theorem bourgain_paired_C4_nontriangular_resonance_compression
                                                                          
                                                                            
                                                      
-theorem bourgain_C4_nontriangular_resonance_compression
-    (f : ℝ → ℝ) {A B L E xl xr yl yr : ℝ}
-    (a b c d : ℤ) (hdet : a*d-b*c=1) (hc : c ≠ 0) (hL : 0 < L)
-    (hf : ∀ x∈Ioo A B, ContDiffAt ℝ 4 f x)
-    (hthree : ∀ x∈Ioo A B, L ≤ iteratedDeriv 3 f x)
-    (hfour : ∀ x∈Ioo A B, |iteratedDeriv 4 f x| ≤ L^2/16)
-    (hxl : xl∈Ioo A B) (hxr : xr∈Ioo A B)
-    (hyl : yl∈Ioo A B) (hyr : yr∈Ioo A B) :
-    let h := fun x => iteratedDeriv 2 f x/2
-    let t := fun v => (c:ℝ)*v+d
-    h xl ≤ h xr →
-    ((a:ℝ)*h xl+b)/t (h xl)=h yl →
-    ((a:ℝ)*h xr+b)/t (h xr)=h yr →
-    ((1:ℝ)/2 ≤ t (h xl) ∧ t (h xl) ≤ 2) →
-    ((1:ℝ)/2 ≤ t (h xr) ∧ t (h xr) ≤ 2) →
-    |(iteratedDeriv 3 f yl/6)*t (h xl)^3-iteratedDeriv 3 f xl/6| ≤ E →
-    |(iteratedDeriv 3 f yr/6)*t (h xr)^3-iteratedDeriv 3 f xr/6| ≤ E →
-    h xr-h xl ≤ 48*E/(|(c:ℝ)| *L) := by
-  intro h t hlr hmapl hmapr htl htr hel her
-  let I := Ioo A B
-  let inv := Function.invFunOn h I
-  let g := fun v => iteratedDeriv 3 f (inv v)/6
-  let gp := fun v => iteratedDeriv 4 f (inv v)/(3*iteratedDeriv 3 f (inv v))
-  have hp := bourgain_curvature_profile f hL hf hthree hfour
-  change (∀ x∈I, inv (h x)=x) ∧
-    ∀ v∈h '' I, h (inv v)=v ∧ inv v∈I ∧ HasDerivAt g (gp v) v ∧
-      L/6 ≤ g v ∧ |gp v| ≤ (L/6)/8 at hp
-  have hhcont : ContinuousOn h I := by
-    intro x hx
-    exact ((contDiffAt_iteratedDeriv_finite (n:=2) (j:=2)
-      (hf x hx)).continuousAt.div_const 2).continuousWithinAt
-  have himage : (h '' I).OrdConnected :=
-    (isPreconnected_Ioo.image h hhcont).ordConnected
-  have hxin : ∀ x∈Icc (h xl) (h xr), x∈h '' I :=
-    fun x hx => himage.out ⟨xl,hxl,rfl⟩ ⟨xr,hxr,rfl⟩ hx
-  have ht x (hx : x∈Icc (h xl) (h xr)) : (1:ℝ)/2 ≤ t x ∧ t x ≤ 2 := by
-    rcases le_total 0 (c:ℝ) with hcpos | hcneg
-    · have hlo := mul_le_mul_of_nonneg_left hx.1 hcpos
-      have hhi := mul_le_mul_of_nonneg_left hx.2 hcpos
-      dsimp only [t] at *
-      constructor <;> linarith only [htl.1,htr.2,hlo,hhi]
-    · have hlo := mul_le_mul_of_nonpos_left hx.1 hcneg
-      have hhi := mul_le_mul_of_nonpos_left hx.2 hcneg
-      dsimp only [t] at *
-      constructor <;> linarith only [htl.2,htr.1,hlo,hhi]
-  let y := fun x => ((a:ℝ)*x+b)/t x
-  have hdetR : (a:ℝ)*d-(b:ℝ)*c=1 := by exact_mod_cast hdet
-  have hyder x (hx : x∈Icc (h xl) (h xr)) : HasDerivAt y (1/(t x)^2) x := by
-    have hd := (((hasDerivAt_id x).const_mul (a:ℝ)).add_const (b:ℝ)).div
-      (((hasDerivAt_id x).const_mul (c:ℝ)).add_const (d:ℝ))
-      (by change t x ≠ 0; linarith only [(ht x hx).1])
-    simp only [mul_one,id_eq] at hd
-    convert hd using 1
-    congr 1
-    nlinarith only [hdetR]
-  have hymono : MonotoneOn y (Icc (h xl) (h xr)) := by
-    apply monotoneOn_of_deriv_nonneg (convex_Icc _ _)
-    · exact fun x hx => (hyder x hx).continuousAt.continuousWithinAt
-    · exact fun x hx => (hyder x (interior_subset hx)).differentiableAt.differentiableWithinAt
-    · intro x hx
-      rw [(hyder x (interior_subset hx)).deriv]
-      positivity
-  have hyin x (hx : x∈Icc (h xl) (h xr)) : y x∈h '' I := by
-    apply himage.out ⟨yl,hyl,rfl⟩ ⟨yr,hyr,rfl⟩
-    constructor
-    · rw [←hmapl]
-      exact hymono ⟨le_rfl,hlr⟩ hx hx.1
-    · rw [←hmapr]
-      exact hymono hx ⟨hlr,le_rfl⟩ hx.2
-  have hcabs : (1:ℝ) ≤ |(c:ℝ)| := by exact_mod_cast Int.one_le_abs hc
-  have hleft : |g (y (h xl))*t (h xl)^3-g (h xl)| ≤ E := by
-    dsimp only [g,y]
-    rw [hmapl,hp.1 yl hyl,hp.1 xl hxl]
-    exact hel
-  have hright : |g (y (h xr))*t (h xr)^3-g (h xr)| ≤ E := by
-    dsimp only [g,y]
-    rw [hmapr,hp.1 yr hyr,hp.1 xr hxr]
-    exact her
-  have hb := bourgain_nontriangular_profile_compression g gp hlr
-    (by positivity : 0 < L/6) hdetR hcabs
-    (fun x hx => (hp.2 x (hxin x hx)).2.2.1)
-    (fun x hx => (hp.2 _ (hyin x hx)).2.2.1) ht
-    (fun x hx => (hp.2 _ (hyin x hx)).2.2.2.1)
-    (fun x hx => (hp.2 x (hxin x hx)).2.2.2.2)
-    (fun x hx => (hp.2 _ (hyin x hx)).2.2.2.2) hleft hright
-  convert hb using 1
-  ring
-
 private theorem bourgain_bounded_denominator_separation
     {a b q r : ℤ} {Q : ℝ} (hq : 0 < q) (hr : 0 < r)
     (hqQ : (q:ℝ) ≤ Q) (hrQ : (r:ℝ) ≤ Q)
@@ -5957,8 +5878,8 @@ theorem bourgain_C4_fixed_matrix_resonance_count
     exact W.le_max' _ (Finset.mem_image_of_mem level hi)
   have hlr : h (x il) ≤ h (x ir) :=
     (mul_le_mul_iff_right₀ (sq_pos_of_pos hQ)).mp (hlo ir hir)
-  have hwidth := bourgain_C4_nontriangular_resonance_compression f a b c d
-    hdet hc hL hf hthree hfour (hx il hil) (hx ir hir) (hy il hil) (hy ir hir)
+  have hwidth := bourgain_paired_C4_nontriangular_resonance_compression f f a b c d
+    hdet hc hL hf hthree hfour hf hthree hfour (hx il hil) (hx ir hir) (hy il hil) (hy ir hir)
     hlr (hmap il hil) (hmap ir hir) (ht il hil) (ht ir hir)
     (hres il hil) (hres ir hir)
   change h (x ir)-h (x il) ≤ 48*E/(|(c:ℝ)| *L) at hwidth

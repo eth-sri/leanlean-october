@@ -216,8 +216,11 @@ theorem coeff_le_two_vonMangoldt (w : Ideal O → ℝ) (hw : ∀ I, w I ≤ 1) (
     exact (coeff_le_unweighted w hw _).trans (coeff_prime_pow_le p hk)
   · rw [coeff_eq_zero_of_not_primePow hn, vonMangoldt_eq_zero_iff.mpr hn, mul_zero]
 
-theorem coeff_chebyshev (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
-    (hw1 : ∀ I, w I ≤ 1) :
+section
+variable (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I) (hw1 : ∀ I, w I ≤ 1)
+include w hw0 hw1
+
+theorem coeff_chebyshev :
     ∃ C : ℝ, ∀ N : ℕ, cumsum (fun n => ‖(coeff w n : ℂ)‖) N ≤ C * N := by
   obtain ⟨C, hC⟩ := vonMangoldt_cheby
   refine ⟨2 * C, fun N => ?_⟩
@@ -233,8 +236,7 @@ theorem coeff_chebyshev (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
     _ ≤ 2 * (C * N) := mul_le_mul_of_nonneg_left (hC N) (by norm_num)
     _ = _ := by ring
 
-theorem coeff_summable_nterm (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
-    (hw1 : ∀ I, w I ≤ 1) {σ : ℝ} (hσ : 1 < σ) :
+theorem coeff_summable_nterm {σ : ℝ} (hσ : 1 < σ) :
     Summable (nterm (fun n => (coeff w n : ℂ)) σ) := by
   have hs : Summable (nterm (fun n => (vonMangoldt n : ℂ)) σ) := by
     simpa only [← nterm_eq_norm_term] using
@@ -251,11 +253,12 @@ theorem coeff_summable_nterm (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
       exact div_le_div_of_nonneg_right (coeff_le_two_vonMangoldt w hw1 n)
         (Real.rpow_nonneg (by positivity) _)
 
-theorem coeff_LSeriesSummable (w : Ideal O → ℝ) (hw0 : ∀ I, 0 ≤ w I)
-    (hw1 : ∀ I, w I ≤ 1) {s : ℂ} (hs : 1 < s.re) :
+theorem coeff_LSeriesSummable {s : ℂ} (hs : 1 < s.re) :
     LSeriesSummable (fun n => (coeff w n : ℂ)) s := by
   apply Summable.of_norm
   simpa only [norm_term_eq_nterm_re] using coeff_summable_nterm w hw0 hw1 hs
+
+end
 
 def classCoeff (C : Set (Ideal O)) (n : ℕ) : ℝ :=
   coeff (fun I => if I ∈ C then 1 else 0) n

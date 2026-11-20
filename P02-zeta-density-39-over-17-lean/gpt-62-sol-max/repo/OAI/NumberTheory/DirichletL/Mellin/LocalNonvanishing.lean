@@ -8,36 +8,14 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 
-open Filter Asymptotics
-
-namespace TargetLocalReduction
-
-end TargetLocalReduction
-
-namespace ActualEisensteinCubic
-
-open AddChar MulChar
-
-end ActualEisensteinCubic
 
 open scoped LSeries.notation ArithmeticFunction.Moebius
 open Filter
@@ -132,13 +110,14 @@ private theorem pairing_algebra
   exact ⟨by rw [hA], by rw [hB], by rw [hC], by rw [hD]⟩
 
 namespace ActualEisensteinCubic
-open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
+open EisensteinEmbedding ConcreteTraceCRT
 open scoped ComplexConjugate
 
-private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
-    (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0)
-    (hprimary : lambda ^ 2 ∣ p - 1) :
+section
+variable (P : Ideal O) [instShared1 : P.IsMaximal] (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2) (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0) (hprimary : lambda ^ 2 ∣ p - 1)
+include P instShared1 hgood hchar p hP hp hprimary
+
+private theorem breveGamma1_mul_star_one :
     breveGamma1 P hgood p hP hp * star (breveGamma1 P hgood p hP hp) = 1 := by
   subst P
   let χ := canonicalSextic (Ideal.span {p}) hgood
@@ -146,7 +125,7 @@ private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
     ConcreteBreveE.breveE_period_coordinates p hp
   let s : ℝ := ‖eisEmbedding p‖
   have hψ : ψ.IsPrimitive :=
-    eisTraceModChar_breveE_primitive (Ideal.span {p}) p rfl hp
+    GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp
   have hχ1 : χ ≠ 1 := by
     simpa only [pow_one] using
       (canonicalSextic_pow_ne_one (Ideal.span {p}) hgood hchar
@@ -176,11 +155,7 @@ private theorem breveGamma1_mul_star_one (P : Ideal O) [P.IsMaximal]
   rw [← starRingEnd_apply, Complex.mul_conj', hnorm]
   norm_num
 
-theorem first_poisson_prime_sign_pairing
-    (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
-    (p : O) (hP : P = Ideal.span {p}) (hp : p ≠ 0)
-    (hprimary : lambda ^ 2 ∣ p - 1) (h : O) :
+theorem first_poisson_prime_sign_pairing (h : O) :
     let alpha : ℂ := eisEmbedding p / (‖eisEmbedding p‖ : ℂ)
     let g1 := breveGamma1 P hgood p hP hp
     let g2 := breveGamma2 P hgood p hP hp
@@ -224,15 +199,9 @@ theorem first_poisson_prime_sign_pairing
     (canonicalSextic P hgood (Ideal.Quotient.mk P h))
     ha hg1 hprod' hpair
 
+end
+
 end ActualEisensteinCubic
-
-open MulChar AddChar
-
-namespace ShortDraftLocal
-
-variable {F : Type*} [Field F] [Fintype F] [DecidableEq F]
-
-end ShortDraftLocal
 
 end
 

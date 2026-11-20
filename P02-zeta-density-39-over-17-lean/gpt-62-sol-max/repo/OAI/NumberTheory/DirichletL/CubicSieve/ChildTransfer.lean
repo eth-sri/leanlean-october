@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Fourier.FrequencyTwists
 
 @[expose] public section
@@ -10,70 +11,17 @@ noncomputable section
 namespace SecondPassArithmetic
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 section
 
@@ -85,9 +33,9 @@ open SecondPassFiber (OldTuple newLabel newRow Valid)
 local instance : Fintype Oˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end
 
@@ -96,8 +44,8 @@ open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius supportConjugateSum)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 theorem secondInputCoefficient_union (Ψ : O →* ℂ) (m c d : O)
     (H : Finset ι → ℂ) (G U : Finset ι) (hd : Disjoint G U) :
@@ -115,7 +63,7 @@ def inputConjugateRow (F : Finset ι) (Ψ : O →* ℂ) (m c d : O)
     (secondInputCoefficient p hg Ψ m c d H) z
 
 theorem supportMobius_disjoint_mul
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (G U : Finset ι) (hd : Disjoint G U) :
     supportMobius (fun i => Ideal.span {p i}) (G ∪ U) =
       supportMobius (fun i => Ideal.span {p i}) G * supportMobius (fun i => Ideal.span {p i}) U := by
@@ -125,7 +73,7 @@ theorem supportMobius_disjoint_mul
     Finset.card_union_of_disjoint hd, pow_add]
 
 theorem inputConjugateRow_sq_overlap
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ) (z : O) :
     (↑(‖inputConjugateRow p hg F Ψ m c d H z‖ ^ 2) : ℂ) =
       ∑ G ∈ F.powerset, ∑ U ∈ (F \ G).powerset, ∑ V ∈ (F \ G).powerset,
@@ -195,12 +143,12 @@ section
 open ActualEisensteinCubic
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 include hg
 
 theorem commonProduct_mask
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) (U G : Finset ι) :
+    (hinj : OAI.PrincipalIdealFamily.Distinct p) (U G : Finset ι) :
     rowCoprimeMask (fun i => Ideal.span {p i}) U (∏ i ∈ G, p i) =
       if Disjoint U G then 1 else 0 := by
   by_cases hd : Disjoint U G
@@ -220,7 +168,7 @@ theorem commonProduct_mask
     simp [rowCoprimeMask, hh]
 
 theorem sum_remove_common_pool
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F G : Finset ι) (A : Finset ι → ℂ) :
     (∑ U ∈ (F \ G).powerset, A U) =
       ∑ U ∈ F.powerset, rowCoprimeMask (fun i => Ideal.span {p i}) U (∏ i ∈ G, p i) * A U := by
@@ -255,7 +203,7 @@ theorem secondInputCoefficient_fixed_mask (Ψ : O →* ℂ) (m g c d : O)
   ring
 
 theorem inputConjugateRow_fixed_pool
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F G : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ) (z : O) :
     inputConjugateRow p hg (F \ G) Ψ m c d H z =
       inputConjugateRow p hg F Ψ (m * ∏ i ∈ G, p i) c d H z := by
@@ -273,12 +221,12 @@ open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 include hg
 
 theorem sum_pair_remove_common_pool
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F G : Finset ι) (A : Finset ι → Finset ι → ℂ) :
     (∑ U ∈ (F \ G).powerset, ∑ V ∈ (F \ G).powerset, A U V) =
       ∑ U ∈ F.powerset, ∑ V ∈ F.powerset,
@@ -299,7 +247,7 @@ lemma star_mask (P : ι → Ideal O) (S : Finset ι) (a : O) :
   split_ifs <;> simp
 
 theorem input_pair_fixed_pool
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F G : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m c d : O)
     (H₁ H₂ : Finset ι → ℂ) (K : Finset ι → Finset ι → ℂ) :
     (∑ U ∈ (F \ G).powerset, ∑ V ∈ (F \ G).powerset,
@@ -353,7 +301,7 @@ end
 open ActualEisensteinCubic
 
 theorem secondMaskQuotient_span {ι : Type*} [DecidableEq ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
     (E G : Finset ι) (hEG : E ⊆ G) :
     Ideal.span {secondMaskQuotient p E G hEG} =
       ∏ i ∈ G \ E, Ideal.span {p i} := by
@@ -382,8 +330,8 @@ open FirstCauchyArithmetic (supportMobius)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 def maskedSecondSource (G U V : Finset ι) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) : ℂ :=
   ∑' z : O, rowCoprimeMask (fun i => Ideal.span {p i}) G z *
@@ -415,7 +363,7 @@ theorem maskedSecondSource_summable (G U V : Finset ι) (W : 𝓢(ℝ, ℂ)) (Y 
         finiteSquarefreeRow (fun i => Ideal.span {p i}) hg U z) * W (‖eisEmbedding z‖ ^ 2 / Y)))
 
 theorem inputConjugateRow_smoothed_overlap
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ)
     (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y) :
     (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / Y) *
@@ -466,7 +414,7 @@ theorem inputConjugateRow_smoothed_overlap
   · simp [f, hd]
 
 def maskedSecondDual (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (G U V : Finset ι) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) : ℂ :=
   let n := ∏ i : activeSupport V U, p i.val
   ((Y : ℂ) / (‖eisEmbedding n‖ : ℂ)) *
@@ -479,8 +427,8 @@ def maskedSecondDual (hp : ∀ i, p i ≠ 0)
           FirstCauchyArithmetic.activeGaussRowFactor p hp hinj hg V U e k
 
 theorem inputConjugateRow_smoothed_second_poisson (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ)
     (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y) :
     (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / Y) *
@@ -517,9 +465,9 @@ def sideRayMonoid (negative : Bool) (χ : RayCharacter) : O →* ℂ :=
   if negative then conjugateRayMonoid χ else rayMonoid χ
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 def multiplicativeCoreColumn (Ψ : O →* ℂ) (m : O) (H : Finset ι → ℂ) (S : Finset ι) : ℂ :=
   Ψ (∏ i ∈ S, p i) * rowCoprimeMask (fun i => Ideal.span {p i}) S m * H S
@@ -542,8 +490,8 @@ def firstCoreTwist (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ)
   sideRayMonoid negative χ * (Ψ * coreRayTwist negative r.1 r.2.2)
 
 theorem cubeCoreCoefficient_ray_family
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda)
     (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (negative : Bool)
     (C : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (t : ℝ) (S : Finset ι) :
     cubeCoreCoefficient p hp hcop hg B v ε₁ ε₂ negative C V y t S =
@@ -565,8 +513,8 @@ theorem cubeCoreCoefficient_ray_family
   simp only [Fintype.sum_prod_type, Finset.sum_mul]
 
 theorem dilatedCoreRow_eq_input_family
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda)
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ) (m : O)
     (H : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (c d : O) (t : ℝ) (z : O) :

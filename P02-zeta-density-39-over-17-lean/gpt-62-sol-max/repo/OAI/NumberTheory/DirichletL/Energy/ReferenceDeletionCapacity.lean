@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentEnergyReferenceDeletionCapacity
-open HeckeFamily CenteredMomentEnergyReferenceDeletionBudget
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyBands CenteredMomentLiveCapacity
+open HeckeFamily CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceState CenteredMomentEnergyBands CenteredMomentLiveCapacity
 
 local notation "O"=>HeckeFamily.O
 

@@ -102,8 +102,11 @@ theorem atkinsonPhysicalCutoff_le_natural {H G : ℝ}
   exact (atkinsonSourceCutoff_le_natural (by linarith : 1 ≤ 2*H) hG hupper hlog).trans_eq
     (by ring)
 
-theorem atkinsonPhysical_cutoff_scale_identity {H G ℓ : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ) (q : ℝ) :
+section
+variable {H G ℓ : ℝ} (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ)
+include H G ℓ hH hG hℓ
+
+theorem atkinsonPhysical_cutoff_scale_identity (q : ℝ) :
     G^2*H^(-(1/2:ℝ))*(74*H*ℓ^2/G^2)^q =
       (74:ℝ)^q*H^(q-1/2)*ℓ^(2*q)*G^(2-2*q) := by
   have hbase : (74*H*ℓ^2/G^2)^q =
@@ -117,8 +120,7 @@ theorem atkinsonPhysical_cutoff_scale_identity {H G ℓ : ℝ}
   rw [hbase,Real.rpow_sub hH,Real.rpow_sub hG,Real.rpow_neg hH.le,Real.rpow_two]
   ring
 
-theorem atkinsonPhysical_diagonal_scale {H G ℓ : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ) :
+theorem atkinsonPhysical_diagonal_scale :
     G^2*H^(-(1/2:ℝ))*(74*H*ℓ^2/G^2)^(3/2:ℝ) ≤
       5476*(H/G)*ℓ^3 := by
   rw [atkinsonPhysical_cutoff_scale_identity hH hG hℓ]
@@ -133,8 +135,7 @@ theorem atkinsonPhysical_diagonal_scale {H G ℓ : ℝ}
     _ ≤ 5476*H*ℓ^3*G⁻¹ := by gcongr
     _ = _ := by ring
 
-theorem atkinsonPhysical_near_scale {H G ℓ : ℝ}
-    (hH : 0 < H) (hG : 0 < G) (hℓ : 0 < ℓ) :
+theorem atkinsonPhysical_near_scale :
     (Real.sqrt H/G)*(G^2*H^(-(1/2:ℝ))*(74*H*ℓ^2/G^2)^(1:ℝ)) =
       74*(H/G)*ℓ^2 := by
   rw [atkinsonPhysical_cutoff_scale_identity hH hG hℓ]
@@ -145,6 +146,8 @@ theorem atkinsonPhysical_near_scale {H G ℓ : ℝ}
   calc
     _ = 74*(Real.sqrt H)^2/G*ℓ^2 := by ring
     _ = _ := by rw [Real.sq_sqrt hH.le]; ring
+
+end
 
 theorem atkinsonPhysical_far_scale {H G ℓ L : ℝ}
     (hH : 0 < H) (hG : 0 < G) (hℓ : 1 ≤ ℓ) :

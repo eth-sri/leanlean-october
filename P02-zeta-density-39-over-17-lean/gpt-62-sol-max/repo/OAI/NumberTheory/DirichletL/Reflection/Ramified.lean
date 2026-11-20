@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Reflection.ThreeBlocks
 
 @[expose] public section
@@ -14,13 +15,13 @@ local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
 noncomputable local instance ramifiedFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
-def ramifiedBlock [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
+def ramifiedBlock [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (j : ι → ℕ) (S : Finset ι) (u : Eisˣ) (m : ℕ) : ℂ :=
   ∏ i ∈ S, unitArgumentFactor (actualSextic (Ideal.span {p i}) (hg i)) (j i)
     (Ideal.Quotient.mk _ (u.val*λ₀^m))
 
-theorem ramifiedPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (R P F : Finset ι)
+theorem ramifiedPhase_three_blocks [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (R P F : Finset ι)
     (hRP : Disjoint R P) (hF : Disjoint (R ∪ P) F) (hu : (R ∪ P) ∪ F = Finset.univ)
     (j : ι → ℕ) (hRj : ∀ i ∈ R, j i = 1) (hPj : ∀ i ∈ P, j i = 0)
     (u : Eisˣ) (m : ℕ) :
@@ -41,12 +42,12 @@ theorem ramifiedPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
     intro i hi
     rw [hPj i hi]
 
-theorem modelRowPhase_three_blocks [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem modelRowPhase_three_blocks [OAI.PrincipalIdealFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hprimary : ∀ i, λ₀^2 ∣ p i-1) (R P F : Finset ι)
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀)
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hprimary : OAI.PrincipalIdealFamily.PrimaryAt p λ₀) (R P F : Finset ι)
     (hRP : Disjoint R P) (hF : Disjoint (R ∪ P) F) (hu : (R ∪ P) ∪ F = Finset.univ)
     (j : ι → ℕ) (hRj : ∀ i ∈ R, j i = 1) (hPj : ∀ i ∈ P, j i = 0)
     (u : Eisˣ) (m : ℕ) :

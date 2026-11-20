@@ -68,9 +68,11 @@ lemma lifted_scale_power (Z T D P κ loss : ℝ) (hZ : 0<Z) (hT : 0<T) (hD : D�
   rw [he,Real.mul_rpow hZ.le hT.le]
   ring
 
-theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
-    (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)
-    (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (_hLs : 0≤Lslot) (hloss : 0<loss)
+section
+variable (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A) (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W) (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod)
+include W A B hA hWs hW Lmod Lslot loss lo hi κ hLm
+
+theorem ray_prime_all_height_large (_hLs : 0≤Lslot) (hloss : 0<loss)
     (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
     ∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧ ∀ Z P : ℝ,Z₀≤Z → 1≤P → P≤Z^Lslot →
     ∀χ : Character,(χ.modulus.absNorm:ℝ)≤Z^Lmod →
@@ -152,9 +154,7 @@ theorem ray_prime_all_height_large (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
   rw [lifted_scale_power Z (3+|freq|) d P κ loss hz hT hd.ne' hU (zero_lt_one.trans_le hP)]
   ring
 
-theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
-    (hWs : Function.support W⊆Icc A B) (hW : ContDiff ℝ ∞ W)
-    (Lmod Lslot loss lo hi κ : ℝ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hloss : 0<loss)
+theorem ray_prime_all_height_squared (hLs : 0≤Lslot) (hloss : 0<loss)
     (hbeta : (51/100:ℝ)≤beta) (hκ : 2*beta-1≤κ) :
     ∃degree : ℕ,∃C Z₀ : ℝ,0<C ∧ 1<Z₀ ∧ ∀ Z P : ℝ,Z₀≤Z → 1≤P → P≤Z^Lslot →
     ∀χ : Character,(χ.modulus.absNorm:ℝ)≤Z^Lmod →
@@ -203,6 +203,8 @@ theorem ray_prime_all_height_squared (W : ℝ→ℂ) (A B : ℝ) (hA : 0<A)
     _ ≤ C0*P^κ*Z^loss*((3:ℝ)^degree*(1+|freq|)^degree) :=
       mul_le_mul_of_nonneg_left hheight (by positivity)
     _ = _ := by ring
+
+end
 
 end SevenEighths.CenteredMomentPrimeHeight
 end

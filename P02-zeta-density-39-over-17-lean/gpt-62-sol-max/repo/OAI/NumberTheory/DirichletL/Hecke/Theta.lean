@@ -73,10 +73,14 @@ def pair {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) : WeakFEPair ℂ :=
     parityPair p.1.1 p.1.2 N (Nat.cast_pos.mpr (NeZero.pos N)) p.2)
     (fun _ => ThetaProduct.rectangularPair_k ..) (fun p => w p.1)
 
-@[simp] theorem pair_k {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
+section
+variable {N : ℕ} [instShared1 : NeZero N] (w : Fin N × Fin N → ℂ)
+include N instShared1 w
+
+@[simp] theorem pair_k :
     (pair w).k = 1 := rfl
 
-theorem theta_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
+theorem theta_hasSum
     {t : ℝ} (ht : 0 < t) :
     HasSum (fun n : ℤ × ℤ => periodicCoeff w n *
       (Real.exp (-Real.pi * normForm n.1 n.2 * t) : ℂ)) ((pair w).f t) := by
@@ -112,11 +116,11 @@ theorem theta_hasSum {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
   simp only [pair, finitePair, Finset.sum_apply, Pi.smul_apply, smul_eq_mul,
     Fintype.sum_prod_type, Finset.mul_sum]
 
-theorem theta_eq_pair {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ)
+theorem theta_eq_pair
     {t : ℝ} (ht : 0 < t) : theta w t = (pair w).f t :=
   (theta_hasSum w ht).tsum_eq
 
-theorem pair_f₀ {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
+theorem pair_f₀ :
     (pair w).f₀ = w (0, 0) := by
   have hconst (a : Fin N × Fin N) :
       cosetConstant a.1 a.2 N (Nat.cast_pos.mpr (NeZero.pos N)) =
@@ -133,6 +137,8 @@ theorem pair_f₀ {N : ℕ} [NeZero N] (w : Fin N × Fin N → ℂ) :
   change (∑ a : Fin N × Fin N, w a * cosetConstant a.1 a.2 N _) = _
   simp_rw [hconst]
   simp
+
+end
 
 def dualScalar (N : ℕ) : ℂ :=
   ((((N : ℝ) ^ 2) ^ (-(1 / 2 : ℝ)) : ℝ) : ℂ) *

@@ -11,12 +11,14 @@ open MeasureTheory Set
 open scoped FourierTransform ContDiff
 namespace GuthMaynard.Improvement
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0) {ε : ℝ} (hε : 0 < ε)
+include a ha l u hl hlu hs ε hε
+
 /-- Actual centered kernel masked cubic for every height T>=2. The
 bounded-height argument is included; no retained-kernel approximation or
 masked-majorant premise remains. -/
-theorem centered_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0)
-    {ε : ℝ} (hε : 0 < ε) :
+theorem centered_masked_cubic_estimate :
     ∃ C : ℝ, 0 < C ∧ ∀ (T L t₀ t₁ : ℝ) (μ : ℝ → ℝ) (A : Set ℝ),
       2 ≤ T → T^((4:ℝ)/5) ≤ L → L ≤ T → t₀ ≤ t₁ → t₁-t₀ ≤ T →
       Measurable μ → (∀ t, 0 ≤ μ t) → Integrable μ → Integrable (fun t => μ t^2) →
@@ -92,9 +94,7 @@ theorem centered_masked_cubic_estimate {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ 
 /-- Restricted cubic bound for the actual centered kernel. Exact scales
 T^(4/5)<=L<=T and time support length<=T; cutoff fixed before epsilon and
 all varying data. This theorem has no open analytic estimate premise. -/
-theorem centered_restricted_cubic {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hlu : l ≤ u) (hs : ∀ x, x ∉ Icc l u → a x = 0)
-    {ε : ℝ} (hε : 0 < ε) :
+theorem centered_restricted_cubic :
     ∃ C : ℝ, 0 < C ∧ ∀ (T L t₀ t₁ Λ : ℝ) (μ : ℝ → ℝ),
       2 ≤ T → T^((4:ℝ)/5) ≤ L → L ≤ T → t₀ ≤ t₁ → t₁-t₀ ≤ T → 0 ≤ Λ →
       Measurable μ → (∀ t, 0 ≤ μ t) → Integrable μ → Integrable (fun t => μ t^2) →
@@ -119,5 +119,7 @@ theorem centered_restricted_cubic {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     (h T L t₀ t₁ μ A hT hLl hLu ht hlen hm h0 hi h2 hsup hA hsym)
   convert hh using 1
   ring
+
+end
 
 end GuthMaynard.Improvement

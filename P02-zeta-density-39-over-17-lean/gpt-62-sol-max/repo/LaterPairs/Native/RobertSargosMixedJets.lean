@@ -35,14 +35,14 @@ def robertSargosMixedJet (f : ℝ → ℝ) (m r : ℝ) (i j k : ℕ)
 theorem robertSargos_mixed_jet_zero (f : ℝ → ℝ) (m r q h n : ℝ) :
     robertSargosMixedJet f m r 0 0 0 q h n =
       robertSargosMixedRemainder f m r q h n := by
-  simp only [robertSargosMixedJet,robertSargosMixedRemainder,Nat.add_zero,
-    iteratedDeriv_zero,pow_zero,one_mul,ite_true]
+  simp [robertSargosMixedJet, robertSargosMixedRemainder]
   ring
 
-theorem hasDerivAt_robertSargos_mixed_jet_q
-    {f : ℝ → ℝ} {m r q h n : ℝ} {i j k : ℕ} (horder : i+j+k < 4)
-    (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
-    (hm : ContDiffAt ℝ 4 f (m+(n+q-h))) :
+section
+variable {f : ℝ → ℝ} {m r q h n : ℝ} {i j k : ℕ} (horder : i+j+k < 4) (hp : ContDiffAt ℝ 4 f (m+(n+q+h))) (hm : ContDiffAt ℝ 4 f (m+(n+q-h)))
+include f m r q h n i j k horder hp hm
+
+theorem hasDerivAt_robertSargos_mixed_jet_q :
     HasDerivAt (fun x => robertSargosMixedJet f m r i j k x h n)
       (robertSargosMixedJet f m r (i+1) j k q h n) q := by
   have hd (y : ℝ) (hy : ContDiffAt ℝ 4 f (m+y)) :=
@@ -56,14 +56,10 @@ theorem hasDerivAt_robertSargos_mixed_jet_q
      else 0)
   convert hh using 1
   · funext x
-    simp only [robertSargosMixedJet,Function.comp_apply,Pi.sub_apply,id_eq]
-  · simp only [robertSargosMixedJet,Nat.add_assoc,Nat.add_comm,Nat.add_left_comm,
-      Nat.add_eq_zero_iff,one_ne_zero,and_false,ite_false,add_zero,mul_one]
+    simp [robertSargosMixedJet]
+  · simp [robertSargosMixedJet, Nat.add_assoc, Nat.add_comm, Nat.add_left_comm]
 
 theorem hasDerivAt_robertSargos_mixed_jet_n
-    {f : ℝ → ℝ} {m r q h n : ℝ} {i j k : ℕ} (horder : i+j+k < 4)
-    (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
-    (hm : ContDiffAt ℝ 4 f (m+(n+q-h)))
     (hrp : ContDiffAt ℝ 4 f (m+(n+h+r)))
     (hrm : ContDiffAt ℝ 4 f (m+(n-h-r))) :
     HasDerivAt (fun x => robertSargosMixedJet f m r i j k q h x)
@@ -88,9 +84,6 @@ theorem hasDerivAt_robertSargos_mixed_jet_n
     · simp only [robertSargosMixedJet,ite_eq_right hi,Nat.add_assoc,mul_one,add_zero]
 
 theorem hasDerivAt_robertSargos_mixed_jet_h
-    {f : ℝ → ℝ} {m r q h n : ℝ} {i j k : ℕ} (horder : i+j+k < 4)
-    (hp : ContDiffAt ℝ 4 f (m+(n+q+h)))
-    (hm : ContDiffAt ℝ 4 f (m+(n+q-h)))
     (hrp : ContDiffAt ℝ 4 f (m+(n+h+r)))
     (hrm : ContDiffAt ℝ 4 f (m+(n-h-r))) :
     HasDerivAt (fun x => robertSargosMixedJet f m r i j k q x n)
@@ -117,6 +110,8 @@ theorem hasDerivAt_robertSargos_mixed_jet_h
     · simp only [robertSargosMixedJet,ite_eq_right hi,add_zero,pow_succ]
       rw [show i+(j+1)+k = i+j+k+1 by omega]
       ring
+
+end
 
 theorem abs_robertSargos_mixed_jet_le
     {f : ℝ → ℝ} {a b m r q h n B L : ℝ} {i j k : ℕ}
@@ -165,7 +160,7 @@ theorem robertSargos_mixed_shift_geometry
   have hqa := abs_le.mp hq
   refine ⟨⟨by linarith [hm.1],by linarith [hm.2]⟩,?_⟩
   intro y hy
-  simp only [Finset.mem_insert,Finset.mem_singleton] at hy
+  simp at hy
   rcases hy with rfl | rfl | rfl | rfl
   all_goals
     constructor

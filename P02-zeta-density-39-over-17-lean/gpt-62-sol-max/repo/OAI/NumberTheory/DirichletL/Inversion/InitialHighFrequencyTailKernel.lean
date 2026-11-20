@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open InverseInitialProfile
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson InverseInitialProfile
 local notation "O" => ActualEisensteinCubic.O
 
 private theorem finite_sum_le_tsum_subtype (F : Finset O) (P : O → Prop)

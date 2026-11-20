@@ -13,8 +13,6 @@ open HeckeFamily
 
 abbrev NonzeroIdeal := UnrestrictedIdealReindex.NonzeroIdeal
 
-private instance : Countable O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
-private instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_injective.countable
 
 def norm (I : NonzeroIdeal) : ℝ := I.val.absNorm
 

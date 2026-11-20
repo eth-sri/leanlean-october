@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseInitialPoissonBridge
-open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson
-open UniqueFactorizationMonoid InverseInitialOverlap
+open ActualEisensteinCubic CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson UniqueFactorizationMonoid InverseInitialOverlap
 local notation "Eis" => ActualEisensteinCubic.O
 
 def rowPolynomial (F : Finset (Ideal Eis)) (A : Ideal Eis → ℂ) (u : Eis) : ℂ :=
@@ -62,10 +60,11 @@ theorem supported_of_dvd {I J : Ideal Eis} (hI : Supported I) (hJI : J ∣ I) : 
   obtain ⟨K,rfl⟩ := hJI
   exact (supported_mul_iff J K).mp hI |>.1
 
-theorem columns_admissible (S : Finset (Ideal Eis)) {P j : Ideal Eis}
-    (hP : Admissible P) (hj : j ∣ P)
-    (hS : ∀ n ∈ S, Squarefree n → Supported n)
-    {c : Ideal Eis} (hc : c ∈ columns S P j) : Admissible c := by
+section
+variable (S : Finset (Ideal Eis)) {P j : Ideal Eis} (hP : Admissible P) (hj : j ∣ P) (hS : ∀ n ∈ S, Squarefree n → Supported n) {c : Ideal Eis} (hc : c ∈ columns S P j)
+include S P j hP hj hS c hc
+
+theorem columns_admissible : Admissible c := by
   obtain ⟨n,hn,rfl⟩ := Finset.mem_image.mp hc
   obtain ⟨hnS,hns,hg⟩ := mem_original.mp hn
   have hjn : j ∣ n := hg ▸ GCDMonoid.gcd_dvd_left n P
@@ -74,15 +73,14 @@ theorem columns_admissible (S : Finset (Ideal Eis)) {P j : Ideal Eis}
      supported_of_dvd (admissible_supported hP) (idealQuotient_dvd hj)⟩
   exact ⟨hs.1,(column_properties hP.2.1 hj hns hg).1,hs.2⟩
 
-theorem masked_columns_admissible (S : Finset (Ideal Eis)) {P j : Ideal Eis}
-    (hP : Admissible P) (hj : j ∣ P)
-    (hS : ∀ n ∈ S, Squarefree n → Supported n)
-    {c : Ideal Eis} (hc : c ∈ columns S P j) : Admissible (j*c) := by
+theorem masked_columns_admissible : Admissible (j*c) := by
   have hjA := admissible_of_dvd hP hj
   have hcA := columns_admissible S hP hj hS hc
   have hs := (supported_mul_iff j c).mpr ⟨admissible_supported hjA,admissible_supported hcA⟩
   exact ⟨hs.1,squarefree_mul_iff.mpr
     ⟨((mem_columns hP.2.1 hj).mp hc).2.1.symm.isRelPrime,hjA.2.1,hcA.2.1⟩,hs.2⟩
+
+end
 
 theorem norm_idealRowHom_four_eq_two (I : Ideal Eis) (hI : Admissible I) (u : Eis) :
     ‖idealRowHom u I‖^4 = ‖idealRowHom u I‖^2 := by

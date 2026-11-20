@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSourceLowerSupport
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform
-open CenteredMomentRectangle
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentRectangle
 local notation "O" => ActualEisensteinCubic.O
 
 lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
@@ -34,10 +33,10 @@ lemma tuple_norm_product {ι:Type*} [Fintype ι] (v:Tuple ι) :
       (Ideal.absNorm (finiteTupleProduct v):ℝ) := by
   have hslot:∀i,Wslot i ((Ideal.absNorm (v (Sum.inl i)):ℝ)/P i)≠0:=by
     intro i
-    have hp: (∏j,ν j (v (Sum.inl j))*Wslot j ((Ideal.absNorm (v (Sum.inl j)):ℝ)/P j))≠0 :=
+    have hp :=
       (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).1).1
     exact (mul_ne_zero_iff.mp (Finset.prod_ne_zero_iff.mp hp i (Finset.mem_univ _))).2
-  have hrect:idealRectangle W₁ W₂ X₁ X₂ Y₁ Y₂ (B₁*v (Sum.inr 0)) (B₂*v (Sum.inr 1))≠0:=
+  have hrect :=
     (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hv).1).2
   have hslots:(∏i,a i)*(∏i,P i)≤∏i,(Ideal.absNorm (v (Sum.inl i)):ℝ):=by
     rw [←Finset.prod_mul_distrib]

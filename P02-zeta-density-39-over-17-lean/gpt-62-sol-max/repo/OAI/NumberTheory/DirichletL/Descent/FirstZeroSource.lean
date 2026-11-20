@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
 
 @[expose] public section
@@ -14,11 +15,11 @@ open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-  (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-  (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+  (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+  (hinj : OAI.PrincipalIdealFamily.Distinct p)
+  (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
 include hinj hc in
 theorem first_variable_zero_common_bound
     (pool : Finset ι) (b : CubeCoordinates ι) (labels : Finset (Ideal O))
@@ -86,10 +87,10 @@ theorem first_variable_zero_common_bound
 end
 theorem full_variable_first_zero_bound (ε : ℝ) (hε : 0<ε) :
     ∃C:ℝ,0<C ∧ ∀{ι:Type*} [DecidableEq ι]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i}) (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda) (_hinj:OAI.PrincipalIdealFamily.Distinct p)
+      (_hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (pool:Finset ι) (bs:Finset (CubeCoordinates ι)) (labels:Finset (Ideal O))
       (a:CubeCoordinates ι→Finset ι→Ideal O→ℂ) (Ψ₁ Ψ₂:O→*ℂ)
       (m₁ m₂:O) (H₁ H₂:CubeCoordinates ι→Finset ι→ℂ) (W:𝓢(ℝ,ℂ)) (Γ G₁ G₂ L K B F:ℝ),

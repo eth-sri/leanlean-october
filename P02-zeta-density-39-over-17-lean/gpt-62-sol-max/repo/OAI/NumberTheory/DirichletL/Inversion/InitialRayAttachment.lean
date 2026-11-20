@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialKernelBridge
 
 @[expose] public section
@@ -9,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseInitialRayAttachment
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid
-open FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialArithmetic InverseInitialProfile
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss UniqueFactorizationMonoid FirstCauchyArithmetic SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialArithmetic InverseInitialProfile
 local notation "O" => ActualEisensteinCubic.O
 
 def elementCharacter (η : Ideal O →* ℂ) : O →* ℂ where
@@ -56,14 +53,12 @@ theorem selected_mask (F : Finset (Ideal O)) (j : Ideal O) (hj : Admissible j)
 theorem selected_conjugate_row (F : Finset (Ideal O))
     (hF : ∀ I ∈ F,Admissible I) (j : Ideal O) (hj : Admissible j)
     (hcop : ∀ I ∈ F,IsCoprime I j) (η : Ideal O →* ℂ) (H : Ideal O → ℂ) (u : O) :
-    let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i => by rw [poolPrimary_span F hF i]; infer_instance
+    let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     (∑ I ∈ F,(moebius I : ℂ)*η I*H I*star (idealRowHom u I)) =
       inputConjugateRow (poolPrimary F) (poolPrimary_good F hF) Finset.univ
         (elementCharacter η) (primaryGenerator j) 1 1
         (fun A => if (∏ i ∈ A,i.val)∈F then H (∏ i ∈ A,i.val) else 0) u := by
-  let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i => by rw [poolPrimary_span F hF i]; infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   have he : (fun i : primePool F => Ideal.span {poolPrimary F i}) =
       (fun i : primePool F => i.val) := funext (poolPrimary_span F hF)
   dsimp only
@@ -85,9 +80,9 @@ theorem selected_conjugate_row (F : Finset (Ideal O))
 
 section RayModes
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,goodLambda∉Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p goodLambda)
 open FirstPassCubeLabels (primeProductNorm primeProductNorm_union)
 
 def initialTest (σ : Finset ι → ℂ) (V : ℝ → ℂ) (Z D : ℝ) (A : Finset ι) : ℂ :=
@@ -113,9 +108,9 @@ theorem initial_overlap_weight (Ψ : O →* ℂ) (j : O)
   ring
 
 theorem initial_pair_rays
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O ⧸ Ideal.span {p i})≠2)
-    (hpr : ∀ i,goodLambda^2∣p i-1)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda)
     (Ψ : O →* ℂ) (j e h : O) (σ : Finset ι → ℂ)
     (G U T : Finset ι) (hGU : Disjoint G U) (hGT : Disjoint G T) (hUT : Disjoint U T) :
     star (supportMobius (fun i => Ideal.span {p i}) U *
@@ -139,7 +134,7 @@ theorem initial_pair_rays
   simpa only [Fintype.sum_prod_type,secondRayCoefficient,secondRayMinus,secondRayPlus,
     initialColumn_eq_secondPre] using he
 
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 
 theorem initial_product_kernel (V : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ)
     (G U T E : Finset ι) (hGU : Disjoint G U) (hGT : Disjoint G T)
@@ -183,10 +178,11 @@ def initialPhysicalMode (Ψ : O →* ℂ) (j : O) (σ : Finset ι → ℂ)
       (physicalCoordinates (sourceIdeal p G) (sourceIdeal p E) 1
         (sourceIdeal p U) (sourceIdeal p T) h)
 
+section
+variable (hinj : OAI.PrincipalIdealFamily.Distinct p) (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2) (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda)
+include hinj hc hpr
+
 theorem normalized_overlap_mode
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O ⧸ Ideal.span {p i})≠2)
-    (hpr : ∀ i,goodLambda^2∣p i-1)
     (Ψ : O →* ℂ) (j : O) (σ : Finset ι → ℂ)
     (V : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ) (G U T E : Finset ι)
     (hGU : Disjoint G U) (hGT : Disjoint G T) (hUT : Disjoint U T) (h : O) :
@@ -209,9 +205,6 @@ theorem normalized_overlap_mode
   ring
 
 theorem initial_input_physical
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O ⧸ Ideal.span {p i})≠2)
-    (hpr : ∀ i,goodLambda^2∣p i-1)
     (F : Finset ι) (Ψ : O →* ℂ) (j : O) (σ : Finset ι → ℂ)
     (V : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) {Z : ℝ} (hZ : 0<Z) (D m : ℝ) :
     (∑' u : O,Φ (‖eisEmbedding u‖^2/Z^m)*
@@ -258,9 +251,6 @@ theorem initial_input_physical
   · simp only [hUT,ite_false,mul_zero]
 
 theorem initialPhysicalMode_summable
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O ⧸ Ideal.span {p i})≠2)
-    (hpr : ∀ i,goodLambda^2∣p i-1)
     (Ψ : O →* ℂ) (j : O) (σ : Finset ι → ℂ)
     (V : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) {Z : ℝ} (hZ : 0<Z) (D m : ℝ)
     (G U T E : Finset ι) (hGU : Disjoint G U) (hGT : Disjoint G T)
@@ -278,6 +268,8 @@ theorem initialPhysicalMode_summable
     Z D m G U T E hGU hGT hUT h]
   unfold secondPairRadialMode
   ring
+
+end
 
 end RayModes
 

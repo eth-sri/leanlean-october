@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerSector
 
 @[expose] public section
@@ -10,15 +11,12 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerAllocation
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile
-open InverseInitialEnergyCallerSector
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerCanonical InverseInitialEnergyCallerOpposite InverseInitialProfile InverseInitialEnergyCallerSector
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→Eis)(hp:∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def modeCoefficient (Ψ:Eis→*ℂ)(j:Eis)(Z D B v θ H:ℝ)
     (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) : ℂ :=
@@ -41,7 +39,7 @@ def allocatedMode (u:Eisˣ)(pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)
       (negativeChild (initialChild (toTuple p (sectorSource u x)))))
 
 theorem rowMode_eq_allocations
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (x:Source (ι:=ι) 0)(hdiv:x.divisor⊆x.common)(u:Eisˣ)
     (hu:unitSector p hp hpr (sourcePoint x ∅ ∅)=u)
     (pool:Finset ι)(Ψ:Eis→*ℂ)(j:Eis)(slots:Finset σ)
@@ -65,7 +63,7 @@ theorem rowMode_eq_allocations
   ring
 
 theorem modeCoefficient_norm_le
-    (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+    (hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (Ψ:Eis→*ℂ)(hΨ:∀n,‖Ψ n‖≤1)(j:Eis)(Z D B v θ H:ℝ)
     (x:Source (ι:=ι) 0)(ρ:SecondRayIndex)(z:JointLogSeparation.Frequency×(Fin 6→ℝ)) :
     ‖modeCoefficient p hp hcop hg Ψ j Z D B v θ H x ρ z‖≤‖secondRayCoefficient ρ‖ := by

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondTripleBounds
 public import OAI.NumberTheory.DirichletL.Descent.Basic
 
@@ -14,11 +15,11 @@ open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
 
 include hp in
 theorem actual_second_inherited_puncture_ne_zero
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (ht : x.quotient ≠ 0)
     (u v : Eisˣ) (m : Eis) (hm : m ≠ 0) :
     actualSecondInheritedPuncture m (actualSecondChild p u v x).1 ≠ 0 := by

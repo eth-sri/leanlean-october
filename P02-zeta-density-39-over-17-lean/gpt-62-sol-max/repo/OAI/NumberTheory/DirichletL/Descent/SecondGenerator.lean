@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GeneratorTransport
 public import OAI.NumberTheory.DirichletL.Descent.SecondFreshAssembly
 
@@ -28,9 +29,9 @@ lemma secondUnitFrequency_neg (u v : Eisˣ) (k : Eis) :
   simp only [secondUnitFrequency,mul_neg]
 
 variable {ι σ : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem secondCanonical_generator_transport
     (F : Finset ι) (Ψ : Eis →* ℂ) (m label d e k : Eis)

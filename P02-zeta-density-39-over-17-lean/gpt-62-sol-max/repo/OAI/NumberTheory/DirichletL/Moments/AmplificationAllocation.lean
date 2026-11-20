@@ -9,12 +9,11 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationAllocation
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentSupportedCorrelation
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem primaryGenerator_power (I : Ideal O) (n : ℕ) :
-    primaryGenerator (I^n) = primaryGenerator I ^ n := map_pow primaryGeneratorHom I n
+    primaryGenerator (I ^n) = primaryGenerator I ^ n := map_pow primaryGeneratorHom I n
 
 theorem primeRemainder_primary (p : O) (hp : Prime p) (hpp : goodLambda^2 ∣ p-1)
     (a : O) (ha : Supported (Ideal.span {a})) (hpa : goodLambda^2 ∣ a-1) :

@@ -8,71 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CanonicalQuadraticSieve
 
@@ -82,8 +28,11 @@ open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGaus
 def unrestrictedPairCharacter (I J lengthScale : Ideal O) : ℂ :=
   quadraticRow I (idealGenerator lengthScale) * quadraticRow J (idealGenerator lengthScale)
 
-theorem unrestrictedPairCharacter_span (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hray : columnRay I = columnRay J) (z : O) :
+section
+variable (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J) (hray : columnRay I = columnRay J)
+include I J hI hJ hray
+
+theorem unrestrictedPairCharacter_span (z : O) :
     unrestrictedPairCharacter I J (Ideal.span {z}) = quadraticRow I z * quadraticRow J z := by
   have ha : Associated (idealGenerator (Ideal.span {z})) z :=
     Ideal.span_singleton_eq_span_singleton.mp (span_idealGenerator _)
@@ -93,8 +42,7 @@ theorem unrestrictedPairCharacter_span (I J : Ideal O) (hI : Admissible I) (hJ :
   rw [he] at hv
   exact hv.symm
 
-theorem unrestrictedPairCharacter_mul (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hray : columnRay I = columnRay J) (A B : Ideal O) :
+theorem unrestrictedPairCharacter_mul (A B : Ideal O) :
     unrestrictedPairCharacter I J (A * B) =
       unrestrictedPairCharacter I J A * unrestrictedPairCharacter I J B := by
   have hs : Ideal.span {idealGenerator A * idealGenerator B} = A * B := by
@@ -104,8 +52,7 @@ theorem unrestrictedPairCharacter_mul (I J : Ideal O) (hI : Admissible I) (hJ : 
   unfold unrestrictedPairCharacter
   ring
 
-theorem unrestrictedPairCharacter_eq_primary (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
-    (hray : columnRay I = columnRay J) (lengthScale : Ideal O) (hL : Supported lengthScale) :
+theorem unrestrictedPairCharacter_eq_primary (lengthScale : Ideal O) (hL : Supported lengthScale) :
     unrestrictedPairCharacter I J lengthScale =
       quadraticRow I (primaryGenerator lengthScale) * quadraticRow J (primaryGenerator lengthScale) := by
   have hz := PrimaryIdealUnitReindex.primaryGenerator_ne_zero_of_good_factors lengthScale hL.1
@@ -114,8 +61,9 @@ theorem unrestrictedPairCharacter_eq_primary (I J : Ideal O) (hI : Admissible I)
   rw [(primaryGenerator_spec lengthScale hz).1] at h
   exact h
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open EisensteinSchwartzPoisson UnrestrictedIdealReindex GaussGeneratorTransport
+end
+
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss EisensteinSchwartzPoisson UnrestrictedIdealReindex GaussGeneratorTransport
 
 theorem idealGenerator_norm_sq (lengthScale : Ideal O) :
     ‖eisEmbedding (idealGenerator lengthScale)‖ ^ 2 = (Ideal.absNorm lengthScale : ℝ) := by
@@ -159,8 +107,7 @@ theorem canonical_nonprincipal_dual_ideal_reindex
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss IdealMobiusDivisorSum
 
 def fixedBadPrimes : Finset (Ideal O) := {Ideal.span {lambda}, Ideal.span {(2 : O)}}
 
@@ -272,16 +219,11 @@ theorem goodSquarefreePart_mem_idealRange (I : Ideal O) (hI : Squarefree I) (M :
   exact ⟨goodSquarefreePart_admissible I, (Nat.cast_le.mpr (goodSquarefreePart_norm_le I hI)).trans hM⟩
 
 end
+
+
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open FiniteSieveOperator
-
-end
-section
-
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex
 
 def originalPairIdealDualKernel (D I J : Ideal O) (W : ℝ → ℂ) (M : ℝ) : ℂ :=
   let I' := idealQuotient D I
@@ -350,8 +292,7 @@ theorem originalPairDualKernel_eq_ideal
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open QuadraticSquarefreeKernel UnrestrictedIdealReindex
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss QuadraticSquarefreeKernel UnrestrictedIdealReindex
 
 theorem unrestrictedPairCharacter_square
     (I J : Ideal O) (hI : Admissible I) (hJ : Admissible J)
@@ -366,13 +307,6 @@ theorem unrestrictedPairCharacter_square
     _ = _ := by rw [canonical_quadraticRow_squared I hI, canonical_quadraticRow_squared J hJ]
 
 end CanonicalQuadraticSieve
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-namespace JointLogSeparation
-open FourierBridge FirstPassCubeLabels
-
-end JointLogSeparation
 
 end
 

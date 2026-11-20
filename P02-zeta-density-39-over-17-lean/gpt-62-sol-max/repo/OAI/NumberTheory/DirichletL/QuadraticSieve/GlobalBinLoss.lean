@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Eisenstein.HyperbolicVolume
 public import OAI.NumberTheory.DirichletL.CubicSieve.UniformTransfer
 
@@ -9,70 +10,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 namespace CanonicalQuadraticSieve
 
@@ -111,31 +59,31 @@ theorem poisson_nine_terms_box
     list_prod_budget xs budget U hU hbudget hx hn
   have hc1 : d*lk*vh*ln^2*f*e≤U^8 := by
     have hh := hp [d,lk,vh,ln,ln,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    simpa [pow_two, mul_assoc] using hh
   have hc2 : d*lk*vz*ln^2*f*e≤U^8 := by
     have hh := hp [d,lk,vz,ln,ln,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    simpa [pow_two, mul_assoc] using hh
   have hc3 : d*lk*ln^2*lat*dv*f*e≤U^8 := by
     have hh := hp [d,lk,ln,ln,lat,dv,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    simpa [pow_two, mul_assoc] using hh
   have hc4 : d*lk*cd≤U^8 := by
-    have hh := hp [d,lk,cd] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
+    have hh := hp [d,lk,cd] (by intro x hx; simp [budget] at hx ⊢; tauto) (by simp)
+    simpa [mul_assoc] using hh
   have hc5 : d*ct≤U^8 := by
-    have hh := hp [d,ct] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
+    have hh := hp [d,ct] (by intro x hx; simp [budget] at hx ⊢; tauto) (by simp)
+    simpa [mul_assoc] using hh
   have hc6 : lk*uh*d*ln^2*f*e≤U^8 := by
     have hh := hp [lk,uh,d,ln,ln,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    simpa [pow_two, mul_assoc] using hh
   have hc7 : lk*d*ln^2*lat*du*f*e≤U^8 := by
     have hh := hp [lk,d,ln,ln,lat,du,f,e] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    simpa [pow_two, mul_assoc] using hh
   have hc8 : lk*cs≤U^8 := by
-    have hh := hp [lk,cs] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,mul_assoc] using hh
+    have hh := hp [lk,cs] (by intro x hx; simp [budget] at hx ⊢; tauto) (by simp)
+    simpa [mul_assoc] using hh
   have hc9 : uh*d^2*cp≤U^8 := by
     have hh := hp [uh,d,d,cp] (by intro x hx; simp only [budget,List.mem_cons,List.not_mem_nil,or_false] at hx ⊢; tauto) (by simp)
-    simpa only [List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+    simpa [pow_two, mul_assoc] using hh
   have haS : a≤S := (by nlinarith only [ha, hT] : a≤T*a).trans hTa
   have hdiv : N/T≤N := div_le_self hN hT
   have h1 : M+a≤2*S := by linarith only [hMS, haS]
@@ -229,7 +177,7 @@ open FirstPassCubeLabels (primeProduct primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
 
 end
 
@@ -240,7 +188,7 @@ open FirstPassCubeLabels (primeProduct)
 open ConcreteTraceCRT (eisEmbedding)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
 
 end SecondPassArithmetic
 
@@ -290,7 +238,7 @@ lemma hyperbolicGram_injective : Function.Injective hyperbolicGram := by
         congrArg (fun x : SL(2,ℂ) => (x:Matrix (Fin 2) (Fin 2) ℂ)) (inv_mul_cancel g)
       have hgis : star (g:Matrix (Fin 2) (Fin 2) ℂ)*
           star ((g⁻¹:SL(2,ℂ)):Matrix (Fin 2) (Fin 2) ℂ)=1 := by
-        simpa only [star_mul,star_one] using congrArg star hgi
+        simpa using congrArg star hgi
       simp only [Matrix.SpecialLinearGroup.coe_mul,star_mul]
       calc
         _ = ((g⁻¹:SL(2,ℂ)):Matrix (Fin 2) (Fin 2) ℂ)*matrixGram h*
@@ -311,8 +259,7 @@ def complexMatrixRow (g : SL(2,ℂ)) (i : Fin 2) : Fin 2 → ℂ := fun j => g i
 lemma complexMatrixRow_mul (g h : SL(2,ℂ)) (i : Fin 2) :
     complexMatrixRow (g*h) i=rowOperator h (complexMatrixRow g i) := by
   funext j
-  simp only [complexMatrixRow,rowOperator_apply,Matrix.SpecialLinearGroup.coe_mul,
-    Matrix.mul_apply,Matrix.vecMul,dotProduct]
+  simp [complexMatrixRow, Matrix.mul_apply, Matrix.vecMul, dotProduct]
 
 def matrixFrobenius (g : SL(2,ℂ)) : ℝ :=
   rowEnergy (complexMatrixRow g 0)+rowEnergy (complexMatrixRow g 1)

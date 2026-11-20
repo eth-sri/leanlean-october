@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Arithmetic.SquarefreeDivisors
 
 @[expose] public section
@@ -8,69 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 section
 open scoped BigOperators Classical
@@ -78,10 +27,11 @@ namespace FirstPassCubeLabels
 open ActualEisensteinCubic
 open MixedCrossSeparation (crossSymbol quadraticCrossPhase)
 
-private theorem cross_sixth {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (i k : ι) (hik : i ≠ k) :
+section
+variable {ι : Type*} (p : ι → O) [instShared2 : OAI.PrincipalIdealFamily.Maximal p] (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+include ι p instShared2 hcop hg
+
+private theorem cross_sixth (i k : ι) (hik : i ≠ k) :
     crossSymbol p hg i k ^ 6 = 1 := by
   have hnot : p k ∉ Ideal.span {p i} := by
     intro hm
@@ -93,11 +43,8 @@ private theorem cross_sixth {ι : Type*}
   simpa only [crossSymbol, map_pow, ite_eq_right hnot] using
     canonicalSextic_sixth_power_mask (Ideal.span {p i}) (hg i) (p k)
 
-theorem reverse_cross_eq_quadratic {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (i k : ι) (hik : i ≠ k) :
+theorem reverse_cross_eq_quadratic
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (i k : ι) (hik : i ≠ k) :
     crossSymbol p hg k i = crossSymbol p hg i k *
       (crossSymbol p hg i k ^ 3 * crossSymbol p hg k i ^ 3) := by
   have hr : crossSymbol p hg i k ^ 2 = crossSymbol p hg k i ^ 2 :=
@@ -110,14 +57,13 @@ theorem reverse_cross_eq_quadratic {ι : Type*}
     _ = crossSymbol p hg i k ^ 6 * crossSymbol p hg k i := by rw [← hr]; ring
     _ = _ := by rw [cross_sixth p hcop hg i k hik, one_mul]
 
-private theorem local_quadratic_sq {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (i k : ι) (hik : i ≠ k) :
+private theorem local_quadratic_sq (i k : ι) (hik : i ≠ k) :
     (crossSymbol p hg i k ^ 3 * crossSymbol p hg k i ^ 3) ^ 2 = 1 := by
   rw [mul_pow, ← pow_mul, ← pow_mul]
   norm_num only [show 3 * 2 = 6 by decide, cross_sixth p hcop hg i k hik,
     cross_sixth p hcop hg k i hik.symm, one_mul]
+
+end
 
 private theorem crt_exponent_table (side parityBit ε₁ ε₂ : Bool)
     (he : conductorExponent parityBit ε₁ ε₂ ≠ 0) :
@@ -127,10 +73,10 @@ private theorem crt_exponent_table (side parityBit ε₁ ε₂ : Bool)
     first | exact False.elim (he (by decide)) | decide
 
 theorem active_cube_cross_local {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (i k : ι) (hik : i ≠ k)
+    (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (i k : ι) (hik : i ≠ k)
     (side parityBit ε₁ ε₂ : Bool) (he : conductorExponent parityBit ε₁ ε₂ ≠ 0) :
     crossSymbol p hg i k ^ (if side then 5 else 1) *
       crossSymbol p hg k i ^ (conductorExponent parityBit ε₁ ε₂).val =
@@ -169,18 +115,18 @@ def cubeOddSupport {ι : Type*} (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : 
   B.filter fun k => (conductorExponent (parity (v k)) (ε₁ k) (ε₂ k)).val % 2 = 1
 
 def mixedCubeCross {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (U B : Finset ι)
+    (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (U B : Finset ι)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (side : Bool) : ℂ :=
   ∏ i ∈ U, ∏ k ∈ B.filter (fun k => conductorExponent (parity (v k)) (ε₁ k) (ε₂ k) ≠ 0),
     crossSymbol p hg i k ^ (if side then 5 else 1) *
       crossSymbol p hg k i ^ (conductorExponent (parity (v k)) (ε₁ k) (ε₂ k)).val
 
 private theorem cube_cross_local_if {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (i k : ι) (hik : i ≠ k)
+    (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (i k : ι) (hik : i ≠ k)
     (side parityBit ε₁ ε₂ : Bool) :
     (if conductorExponent parityBit ε₁ ε₂ ≠ 0 then
       crossSymbol p hg i k ^ (if side then 5 else 1) *
@@ -200,10 +146,10 @@ private theorem cube_cross_local_if {ι : Type*}
       simp [ hz]
 
 theorem mixedCubeCross_eq_row_quadratic {ι : Type*} [DecidableEq ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (U B : Finset ι) (hd : Disjoint U B)
+    (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (U B : Finset ι) (hd : Disjoint U B)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (side : Bool) :
     mixedCubeCross p hg U B v ε₁ ε₂ side =
       (if side then star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg U

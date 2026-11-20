@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerSourceMask
 
 @[expose] public section
@@ -10,20 +11,21 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerRanges
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask
-open InverseInitialProfile ConcreteTraceCRT CanonicalQuadraticSieve
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerSourceMask InverseInitialProfile ConcreteTraceCRT CanonicalQuadraticSieve
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι]
-  (p:ι→Eis)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→Eis)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 include hp hcop hg
 
 omit [DecidableEq ι] in
-theorem sourceIdeal_admissible (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+section
+variable (hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+include hc
+
+theorem sourceIdeal_admissible
     (S:Finset ι) : Admissible (sourceIdeal p S) := by
   refine ⟨sourceIdeal_ne_zero p hp S,sourceIdeal_squarefree p hcop S,?_⟩
   intro P hP
@@ -35,7 +37,7 @@ theorem sourceIdeal_admissible (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
   rw [he]
   exact ⟨hg i,hc i⟩
 
-theorem retained_label_admissible (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
+theorem retained_label_admissible
     (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)
     {x:Source (ι:=ι) 0}(hx:x∈coprimeSource p S)(u:Eisˣ) :
     Admissible (initialChild (toTuple p (sectorSource u x))).2.1 := by
@@ -45,8 +47,7 @@ theorem retained_label_admissible (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2
   exact ⟨hs.1,retained_child_squarefree p hcop S hdiv hx u,hs.2⟩
 
 theorem childLabels_subset_range
-    (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
-    (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (_hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)
     (Z θ v η:ℝ)(hZ:0<Z)
     (hd:∀x∈coprimeSource p S,((sourceIdeal p x.divisor).absNorm:ℝ)≤Z^(θ+η))
@@ -64,8 +65,7 @@ theorem childLabels_subset_range
   ring
 
 theorem canonical_child_domains
-    (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)
     (hf:∀x∈S,x.frequency≠0)(Z θ v H η:ℝ)(hZ:0<Z)
     (hd:∀x∈coprimeSource p S,((sourceIdeal p x.divisor).absNorm:ℝ)≤Z^(θ+η))
@@ -86,6 +86,8 @@ theorem canonical_child_domains
   · have he := (initial_child_enclosures p hp hpr x u Z θ v H η hZ
       (hd x hx) (hv x hx) (hh x hx)).2
     rwa [initial_child_row_norm p hp hpr] at he
+
+end
 
 end SevenEighths.InverseInitialEnergyCallerRanges
 

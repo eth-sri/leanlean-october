@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.CubicSieve.IntegratedTransfer
 
 @[expose] public section
@@ -8,85 +9,25 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (actualFirstKernel originalLabelColumn cubeActiveSupport dilationLabel)
-open ConcreteTraceCRT (eisEmbedding)
 
-end
 section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
+open MeasureTheory ActualEisensteinCubic
 open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
 
@@ -179,13 +120,13 @@ theorem finite_row_energy_le_rowMajorant (P : O → ℂ) (T : Finset O)
       exact mul_nonneg (rowMajorant_nonneg _) (sq_nonneg _)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 theorem firstCoreInputRow_finite_le_second_poisson
     (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : O →* ℂ) (m : O)
     (H : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (c d : O)
@@ -210,9 +151,9 @@ open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 def secondPreKernelPair (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ)
     (m r c d e k₁ k₂ : O) (K : Finset ι → Finset ι → ℂ) : ℂ :=
@@ -229,8 +170,8 @@ def secondChildKernelPair (F V : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ)
       (d * e * k₂) (fun _ => 1) M * K (V ∪ N) (V ∪ M)
 
 theorem secondPreKernelPair_eq_children
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda)
     (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k₁ k₂ : O)
     (K : Finset ι → Finset ι → ℂ) :
     secondPreKernelPair p hp hcop hg F Ψ₁ Ψ₂ m r c d e k₁ k₂ K =
@@ -256,18 +197,17 @@ theorem secondPreKernelPair_eq_children
     secondPreColumn_union p hp hcop hg hpr Ψ₂ m r c d e k₂ (fun _ => 1) V M hdM, star_mul]
   ring
 
-def secondKernelPair (hinj : Function.Injective (fun i => Ideal.span {p i}))
+def secondKernelPair (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O)
     (K : Finset ι → Finset ι → ℂ) : ℂ :=
   ∑ S ∈ F.powerset, ∑ T ∈ F.powerset, if Disjoint S T then
     secondGaussTerm p hp hg hinj Ψ₁ Ψ₂ m r c d e k (fun _ => 1) (fun _ => 1) S T * K S T else 0
 
-theorem secondKernelPair_eq_pre
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
-    (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O)
-    (K : Finset ι → Finset ι → ℂ) :
+section
+variable (hinj : OAI.PrincipalIdealFamily.Distinct p) (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2) (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O) (K : Finset ι → Finset ι → ℂ)
+include hinj hc hpr F Ψ₁ Ψ₂ m r c d e k K
+
+theorem secondKernelPair_eq_pre :
     secondKernelPair p hp hg hinj F Ψ₁ Ψ₂ m r c d e k K =
       ∑ z : SecondRayIndex, secondRayCoefficient z *
         secondPreKernelPair p hp hcop hg F (secondRayMinus Ψ₁ z) (secondRayPlus Ψ₂ z)
@@ -300,12 +240,7 @@ theorem secondKernelPair_eq_pre
       rw [Finset.sum_comm]
       simp only [secondPreKernelPair, Finset.mul_sum]
 
-theorem secondKernelPair_eq_children
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
-    (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O)
-    (K : Finset ι → Finset ι → ℂ) :
+theorem secondKernelPair_eq_children :
     secondKernelPair p hp hg hinj F Ψ₁ Ψ₂ m r c d e k K =
       ∑ z : SecondRayIndex, ∑ V ∈ F.powerset,
         secondTotalWeight p hp hcop hg Ψ₁ Ψ₂ m r c d e k (z,V) *
@@ -314,6 +249,8 @@ theorem secondKernelPair_eq_children
   rw [secondKernelPair_eq_pre p hp hcop hg hinj hc hpr]
   simp only [secondPreKernelPair_eq_children p hp hcop hg hinj hpr,
     secondTotalWeight, Finset.mul_sum, mul_assoc]
+
+end
 
 end SecondPassArithmetic
 

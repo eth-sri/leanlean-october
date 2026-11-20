@@ -11,73 +11,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -151,16 +95,13 @@ lemma cubicResidualFunction_fourier_full (v : ℝ) (hv : 0<v) (h : ActualEisenst
         ((9*Real.sqrt 3/2:ℝ):ℂ)*cubicResidualFullModeAmplitude v h := by
   rw [cubicResidualFunction_fourier v hv h]
   congr 1
-  by_cases hh : h=0
-  · simp only [hh,cubicResidualFullModeAmplitude,ite_true]
-  · simp only [hh,cubicResidualFullModeAmplitude,cubicResidualModeAmplitude,ite_false]
+  simp only [cubicResidualFullModeAmplitude,cubicResidualModeAmplitude,
+    SubexponentialBesselCoefficients.amplitude,residualBesselCoefficients]
+  split_ifs <;> rfl
 
 lemma cubicResidualFunction_height_continuous (v : ℝ) (hv : 0<v) :
-    Continuous (fun z : ℂ => cubicResidualFunction (upperPoint z v hv)) := by
-  have hc := cubicResidualNonzeroSeries_height_continuous v hv
-  simp only [cubicResidualFunction,cubicResidualNonzeroFunction,
-    hyperbolicHeight_upperPoint,hyperbolicHorizontal_upperPoint]
-  fun_prop
+    Continuous (fun z : ℂ => cubicResidualFunction (upperPoint z v hv)) :=
+  residualBesselCoefficients.fullFunction_height_continuous _ v hv
 
 lemma cubicResidualFunction_height_memLp (v : ℝ) (hv : 0<v) :
     MemLp (fun z : ℂ => cubicResidualFunction (cuspCoordinateLift (v,z))) 2
@@ -197,9 +138,8 @@ end
 section
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ENNReal Pointwise MatrixGroups
-open Finset AddChar MulChar EisensteinEmbedding
+open Finset AddChar MulChar EisensteinEmbedding ActualEisensteinCubic ConcreteTraceCRT CubicKubota
 
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
 
 lemma periodDomain_memLp_of_continuous (f : ℂ→ℂ) (hf : Continuous f) :
     MemLp f 2 (volume.restrict periodDomain) := by

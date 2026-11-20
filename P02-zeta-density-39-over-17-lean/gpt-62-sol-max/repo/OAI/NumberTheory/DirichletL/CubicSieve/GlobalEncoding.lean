@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Eisenstein.SeedDefects
 
 @[expose] public section
@@ -8,72 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 
@@ -117,8 +64,8 @@ theorem primeIdealProduct_exponents_eq
 end
 
 theorem primeProduct_span_exponents_eq {ι : Type*} [DecidableEq ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (B C : Finset ι) (v w : ι → ℕ)
     (hv : ∀ i, i ∉ B → v i = 0) (hw : ∀ i, i ∉ C → w i = 0)
     (heq : Ideal.span {FirstPassCubeLabels.primeProduct p B v} =
@@ -133,8 +80,7 @@ open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem divisor_dyadic_sum_le (S T : Finset (Ideal O)) (N : ℝ)
     (f : Ideal O → Ideal O → ℝ) (C : ℝ) (hC : 0 ≤ C)
@@ -267,8 +213,7 @@ theorem HasSieveExponent.large_principal_pool {α : ℝ} (hexp : HasSieveExponen
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem finite_principal_triangle
     {m n p D : Type*} [Fintype m] [Fintype n] [Fintype p] [Fintype D]
@@ -487,15 +432,9 @@ theorem aLabel_right (p : ι → O) (x : CubeCoordinates ι) (hx : x.Admissible)
 
 end CubeCoordinates
 
-@[ext] structure GlobalSecondData (ι : Type*) where
-  cube : CubeCoordinates ι
-  firstCommon : Finset ι
-  common : Finset ι
-  firstDivisor : Finset ι
-  source : SecondExpansionData ι
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
 
 end
 
@@ -503,8 +442,8 @@ open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProduct aLabel)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hinj : OAI.PrincipalIdealFamily.Distinct p)
 include hinj
 
 end SecondPassArithmetic

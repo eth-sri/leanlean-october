@@ -749,16 +749,16 @@ theorem fareySector_determinant_bound
                                                                         
 theorem fareySector_small_error_bounds
     {N : ℕ} {l μ B α β δ : ℝ}
-    (hl : 0 < l) (hμ : 1 ≤ μ) (hB : 1 ≤ B) (hδ : 0 ≤ δ)
+    (hl : 0 < l) (hμ : 0 ≤ μ) (hB : 1 ≤ B) (hδ : 0 ≤ δ)
     (hR : max ((μ-l)*(N:ℝ)^2/B) 2 ≤ (fareySector N l μ).card)
-    (hsmall : (μ*(N:ℝ))*δ ≤ 1/(96*B))
+    (hsmall : (max 1 μ*(N:ℝ))*δ ≤ 1/(96*B))
     (hnear : ∀ p ∈ fareySector N l μ,
       ∃ b : ℤ, |(p.1:ℝ)*α+(p.2:ℝ)*β-b| ≤ δ) :
     |α-(round α:ℤ)| ≤ 8*(N:ℝ)*δ/(fareySector N l μ).card ∧
     |β-(round β:ℤ)| ≤ 8*(μ*(N:ℝ))*δ/(fareySector N l μ).card := by
   classical
   let S := fareySector N l μ
-  have hμ0 : 0 ≤ μ := by linarith
+  have hμ0 : 0 ≤ μ := hμ
   have hB0 : 0 < B := by linarith
   have hR2 : 2 ≤ S.card := by
     exact_mod_cast (le_trans (le_max_right ((μ-l)*(N:ℝ)^2/B) 2) hR)
@@ -790,14 +790,20 @@ theorem fareySector_small_error_bounds
       nlinarith only [hd]
     rw [hDcard,Nat.cast_natAbs,Int.cast_abs]
     exact hb.trans hw
-  have hNleM : (N:ℝ) ≤ μ*(N:ℝ) := by nlinarith only [mul_le_mul_of_nonneg_right hμ (Nat.cast_nonneg N)]
-  have hbase : 96*B*(μ*(N:ℝ))*δ ≤ 1 := by
+  have hNleH : (N:ℝ) ≤ max 1 μ*(N:ℝ) := by
+    have hh := mul_le_mul_of_nonneg_right (le_max_left (1:ℝ) μ) (Nat.cast_nonneg N)
+    simpa only [one_mul] using hh
+  have hMleH : μ*(N:ℝ) ≤ max 1 μ*(N:ℝ) :=
+    mul_le_mul_of_nonneg_right (le_max_right (1:ℝ) μ) (Nat.cast_nonneg N)
+  have hbase : 96*B*(max 1 μ*(N:ℝ))*δ ≤ 1 := by
     have h := (le_div_iff₀ (by positivity : 0 < 96*B)).mp hsmall
     nlinarith only [h]
   have hsmallα : 36*B*(2*(N:ℝ)*δ) < 1 := by
-    have h := mul_le_mul_of_nonneg_left hNleM (by positivity : 0 ≤ B*δ)
+    have h := mul_le_mul_of_nonneg_left hNleH (by positivity : 0 ≤ B*δ)
     nlinarith only [h,hbase]
-  have hsmallβ : 36*B*(2*(μ*(N:ℝ))*δ) < 1 := by nlinarith only [hbase]
+  have hsmallβ : 36*B*(2*(μ*(N:ℝ))*δ) < 1 := by
+    have h := mul_le_mul_of_nonneg_left hMleH (by positivity : 0 ≤ B*δ)
+    nlinarith only [h,hbase]
   obtain ⟨b₀,hb₀⟩ := hnear p₀ hp₀
   have hnearα : ∀ d ∈ D, ∃ b : ℤ, |(d:ℝ)*α-b| ≤ 2*(N:ℝ)*δ := by
     intro d hd
@@ -1009,6 +1015,106 @@ theorem sector_consecutive_numerators {N : ℕ} {l μ : ℝ}
                                                                       
                                                                         
                                          
+/-- On a fixed fiber of the second coordinate, subtract the two approximating
+integers to eliminate that coordinate. -/
+theorem near_linear_form_diff {x x' y y' : ℤ} {α β δ : ℝ}
+    (h : y = y') (hx : ∃ b : ℤ, |(x:ℝ)*α+(y:ℝ)*β-b|≤δ)
+    (hx' : ∃ b : ℤ, |(x':ℝ)*α+(y':ℝ)*β-b|≤δ) :
+    ∃ b : ℤ, |((x-x':ℤ):ℝ)*α-b|≤2*δ := by
+  obtain ⟨b,hb⟩ := hx
+  obtain ⟨b',hb'⟩ := hx'
+  refine ⟨b-b',?_⟩
+  rw [show ((x-x':ℤ):ℝ)*α-((b-b':ℤ):ℝ) =
+      ((x:ℝ)*α+(y:ℝ)*β-b)-((x':ℝ)*α+(y':ℝ)*β-b') by rw [h]; push_cast; ring]
+  exact (abs_sub _ _).trans (by linarith only [hb,hb'])
+
+/-- Pigeonhole in the chosen coordinate, then apply the linear-form dichotomy
+to the nonzero differences. A unit difference forces the rational denominator
+in the second alternative to be one. -/
+theorem dense_fiber_linear_form {ι κ : Type*} [DecidableEq κ]
+    (S : Finset ι) (label : ι → κ) (value : ι → ℤ) {K J α δ : ℝ}
+    (hK : 0<K) (hJ : 1≤J) (hδ : 0≤δ)
+    (hProj : ((S.image label).card:ℝ) ≤ K) (hR : 16*K≤S.card)
+    (hInj : ∀ p q, label p=label q → value p=value q → p=q)
+    (hRange : ∀ p∈S, 0≤(value p:ℝ) ∧ (value p:ℝ)≤J)
+    (hDiff : ∀ p q, p∈S → q∈S → label p=label q →
+      ∃ b : ℤ, |((value p-value q:ℤ):ℝ)*α-b|≤2*δ)
+    (hUnit : ∃ b : ℤ, |α-b|≤2*δ) :
+    (S.card:ℝ)≤96*δ*J*K ∨ |α-(round α:ℤ)|≤8*K*δ/S.card := by
+  classical
+  have hSR : (0:ℝ)<S.card := (show 0<16*K by positivity).trans_le hR
+  have hSne : S.Nonempty := Finset.card_pos.mp (Nat.cast_pos.mp hSR)
+  obtain ⟨n,_,hcount⟩ := Finset.exists_le_card_fiber_of_nsmul_le_card_of_maps_to
+    (fun p hp => Finset.mem_image_of_mem label hp) (hSne.image label) (b := (S.card:ℝ)/K) (by
+      rw [nsmul_eq_mul]
+      exact (mul_le_mul_of_nonneg_right hProj (by positivity)).trans_eq (mul_div_cancel₀ _ hK.ne'))
+  let T := S.filter (fun p => label p=n)
+  change (S.card:ℝ)/K ≤ (T.card:ℝ) at hcount
+  obtain ⟨p₀,hp₀⟩ := Finset.card_pos.mp (Nat.cast_pos.mp ((div_pos hSR hK).trans_le hcount))
+  let D := T.image (fun p => value p-value p₀)
+  let P := insert 1 ((D.erase 0).image Int.natAbs)
+  have hDcard : D.card=T.card := Finset.card_image_of_injOn (by
+    intro p hp q hq he
+    apply hInj _ _ ((Finset.mem_filter.mp hp).2.trans (Finset.mem_filter.mp hq).2.symm)
+    change value p-value p₀=value q-value p₀ at he
+    omega)
+  have hTP : (T.card:ℝ)≤2*(P.card:ℝ)+1 := by
+    have hc := card_le_two_mul_nonzero_abs_card_add_one D
+    have hsub : (D.erase 0).image Int.natAbs ⊆ P := Finset.subset_insert _ _
+    have hh := Finset.card_le_card hsub
+    rw [hDcard] at hc
+    exact_mod_cast (show T.card≤2*P.card+1 by omega)
+  have hcard : (S.card:ℝ)≤4*K*(P.card:ℝ) := by
+    nlinarith only [(div_le_iff₀ hK).mp hcount,mul_le_mul_of_nonneg_left hTP hK.le,hR]
+  have hPne : P.Nonempty := ⟨1,Finset.mem_insert_self _ _⟩
+  let L := P.max' hPne
+  have hL : L∈P := Finset.max'_mem _ _
+  have hLpos : 0<L := Nat.lt_of_lt_of_le Nat.zero_lt_one (Finset.le_max' P 1 (Finset.mem_insert_self _ _))
+  have hPsize : ∀ k∈P, 1≤k ∧ (k:ℝ)≤J := by
+    intro k hk
+    rcases Finset.mem_insert.mp hk with rfl | hk
+    · simpa using hJ
+    obtain ⟨d,hd,rfl⟩ := Finset.mem_image.mp hk
+    obtain ⟨hd0,hd⟩ := Finset.mem_erase.mp hd
+    obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hd
+    refine ⟨Nat.pos_of_ne_zero (by simpa using hd0),?_⟩
+    rw [Nat.cast_natAbs,Int.cast_abs,Int.cast_sub]
+    have ha := hRange p (Finset.mem_filter.mp hp).1
+    have hb := hRange p₀ (Finset.mem_filter.mp hp₀).1
+    exact abs_le.mpr ⟨by linarith only [ha.1,hb.2],by linarith only [ha.2,hb.1]⟩
+  have hPnear : ∀ k∈P, ∃ b : ℤ, |(k:ℝ)*α-b|≤2*δ := by
+    intro k hk
+    rcases Finset.mem_insert.mp hk with rfl | hk
+    · simpa using hUnit
+    obtain ⟨d,hd,rfl⟩ := Finset.mem_image.mp hk
+    obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp (Finset.mem_erase.mp hd).2
+    obtain ⟨b,hb⟩ := hDiff p p₀ (Finset.mem_filter.mp hp).1 (Finset.mem_filter.mp hp₀).1
+      ((Finset.mem_filter.mp hp).2.trans (Finset.mem_filter.mp hp₀).2.symm)
+    rcases Int.natAbs_eq (value p-value p₀) with he | he
+    · have heR : ((value p-value p₀:ℤ):ℝ) = ((value p-value p₀).natAbs:ℝ) := by
+        simpa only [Int.cast_natCast] using congrArg (fun z : ℤ => (z:ℝ)) he
+      exact ⟨b, by rwa [←heR]⟩
+    · refine ⟨-b,?_⟩
+      have heR : ((value p-value p₀:ℤ):ℝ) = -((value p-value p₀).natAbs:ℝ) := by
+        simpa only [Int.cast_natCast,Int.cast_neg] using congrArg (fun z : ℤ => (z:ℝ)) he
+      rw [show ((value p-value p₀).natAbs:ℝ)*α-((-b:ℤ):ℝ) =
+        -(((value p-value p₀:ℤ):ℝ)*α-b) by rw [heR,Int.cast_neg]; ring, abs_neg]
+      exact hb
+  rcases linear_form_dichotomy P hLpos (by positivity)
+    (fun k hk => ⟨(hPsize k hk).1,Finset.le_max' P k hk⟩) hPnear with hc | ⟨q,_,_,hdvd,a,ha⟩
+  · left
+    have hc' : (P.card:ℝ)≤24*δ*J := by
+      nlinarith only [hc,mul_le_mul_of_nonneg_left (hPsize L hL).2 (show 0≤24*δ by positivity)]
+    nlinarith only [hcard,mul_le_mul_of_nonneg_left hc' (show 0≤4*K by positivity)]
+  · right
+    rw [Nat.dvd_one.mp (hdvd 1 (Finset.mem_insert_self _ _))] at ha
+    simp only [Nat.cast_one,one_mul] at ha
+    apply (round_le α a).trans
+    apply (le_div_iff₀ hSR).mpr
+    have ht := mul_le_mul_of_nonneg_left hcard (abs_nonneg (α-(a:ℝ)))
+    have hh := mul_le_mul_of_nonneg_left ha (show 0≤4*K by positivity)
+    nlinarith only [ht,hh]
+
 theorem large_sector_alpha_bound {N : ℕ} {l μ α β δ : ℝ}
     (hl : 0 < l) (hμ : 1 ≤ μ) (hlμ : l ≤ μ) (hN : 0 < N)
     (hR : 16*(N:ℝ) ≤ (fareySector N l μ).card) (hδ : 0 ≤ δ)
@@ -1018,110 +1124,27 @@ theorem large_sector_alpha_bound {N : ℕ} {l μ α β δ : ℝ}
       |α-(round α:ℤ)| ≤ 8*(N:ℝ)*δ/(fareySector N l μ).card := by
   classical
   let S := fareySector N l μ
-  have hμ0 : 0 ≤ μ := by linarith
-  have hNR : (0:ℝ) < N := by exact_mod_cast (show 0 < N by omega)
-  have hSR : (0:ℝ) < S.card := by dsimp [S]; nlinarith only [hR,hNR]
-  have hmaps : ∀ p ∈ S, p.2 ∈ Finset.Icc (1:ℤ) N := by
-    intro p hp
-    have h := (mem_fareySector_iff hl hμ0).mp hp
-    exact Finset.mem_Icc.mpr ⟨h.1,h.2.1⟩
-  have hI : (Finset.Icc (1:ℤ) N).card=N := by simp
-  have hIne : (Finset.Icc (1:ℤ) N).Nonempty := by
-    exact ⟨1,Finset.mem_Icc.mpr ⟨le_rfl,by exact_mod_cast (show 1 ≤ N by omega)⟩⟩
-  obtain ⟨n,_hn,hcount⟩ := Finset.exists_le_card_fiber_of_nsmul_le_card_of_maps_to
-    hmaps hIne (b := (S.card:ℝ)/(N:ℝ)) (by rw [hI,nsmul_eq_mul]; exact le_of_eq (mul_div_cancel₀ _ hNR.ne'))
-  let T := S.filter (fun p => p.2=n)
-  change (S.card:ℝ)/(N:ℝ) ≤ (T.card:ℝ) at hcount
-  have hTne : T.Nonempty := Finset.card_pos.mp (Nat.cast_pos.mp ((div_pos hSR hNR).trans_le hcount))
-  obtain ⟨p₀,hp₀⟩ := hTne
-  let D := T.image (fun p => p.1-p₀.1)
-  let P := insert 1 ((D.erase 0).image Int.natAbs)
-  have hDcard : D.card=T.card := Finset.card_image_of_injOn (by
-    intro p hp q hq he
-    apply Prod.ext (by dsimp at he; omega)
-    exact (Finset.mem_filter.mp hp).2.trans (Finset.mem_filter.mp hq).2.symm)
-  have hTP : (T.card:ℝ) ≤ 2*(P.card:ℝ)+1 := by
-    have hc := card_le_two_mul_nonzero_abs_card_add_one D
-    have hsub : (D.erase 0).image Int.natAbs ⊆ P := Finset.subset_insert _ _
-    have hh := Finset.card_le_card hsub
-    rw [hDcard] at hc
-    exact_mod_cast (show T.card ≤ 2*P.card+1 by omega)
-  have hcard : (S.card:ℝ) ≤ 4*(N:ℝ)*(P.card:ℝ) := by
-    have hc := (div_le_iff₀ hNR).mp hcount
-    have ht := mul_le_mul_of_nonneg_left hTP hNR.le
-    change 16*(N:ℝ) ≤ (S.card:ℝ) at hR
-    nlinarith only [hc,ht,hR]
-  have hPne : P.Nonempty := ⟨1,Finset.mem_insert_self _ _⟩
-  let L := P.max' hPne
-  have hL : L ∈ P := Finset.max'_mem _ _
-  have hLpos : 0 < L := by have hh := Finset.le_max' P 1 (Finset.mem_insert_self _ _); omega
+  have hμ0 := zero_le_one.trans hμ
+  have hN1 : (1:ℝ)≤N := by exact_mod_cast hN
+  have hM1 : 1≤μ*(N:ℝ) := one_le_mul_of_one_le_of_one_le hμ hN1
+  have hproj : ((S.image Prod.snd).card:ℝ) ≤ N := by
+    have hsub : S.image Prod.snd ⊆ Finset.Icc (1:ℤ) N := by
+      intro y hy
+      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hy
+      obtain ⟨hp₁,hp₂,-⟩ := (mem_fareySector_iff hl hμ0).mp hp
+      exact Finset.mem_Icc.mpr ⟨hp₁,hp₂⟩
+    exact_mod_cast (Finset.card_le_card hsub).trans_eq (by simp)
   have hnum (p : ℤ × ℤ) (hp : p ∈ S) : 0 ≤ (p.1:ℝ) ∧ (p.1:ℝ) ≤ μ*(N:ℝ) := by
-    obtain ⟨hn,hnN,_hc,hlo,hu⟩ := (mem_fareySector_iff hl hμ0).mp hp
+    obtain ⟨hn,hnN,_,hlo,hu⟩ := (mem_fareySector_iff hl hμ0).mp hp
     have hnR : (0:ℝ) ≤ p.2 := by exact_mod_cast (show 0 ≤ p.2 by omega)
     exact ⟨(mul_nonneg hl.le hnR).trans hlo,
       hu.trans (mul_le_mul_of_nonneg_left (by exact_mod_cast hnN) hμ0)⟩
-  have hPsize : ∀ k ∈ P, 1 ≤ k ∧ (k:ℝ) ≤ μ*(N:ℝ) := by
-    intro k hk
-    rcases Finset.mem_insert.mp hk with rfl | hk
-    · refine ⟨le_rfl,?_⟩
-      have hN1 : (1:ℝ) ≤ N := by exact_mod_cast (show 1 ≤ N by omega)
-      simpa only [one_mul,Nat.cast_one] using mul_le_mul hμ hN1 (by norm_num : (0:ℝ) ≤ 1) hμ0
-    · obtain ⟨d,hd,rfl⟩ := Finset.mem_image.mp hk
-      obtain ⟨hd0,hd⟩ := Finset.mem_erase.mp hd
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hd
-      refine ⟨Nat.pos_of_ne_zero (by simpa using hd0),?_⟩
-      rw [Nat.cast_natAbs,Int.cast_abs,Int.cast_sub]
-      have hpnum := hnum p (Finset.mem_filter.mp hp).1
-      have hp₀num := hnum p₀ (Finset.mem_filter.mp hp₀).1
-      exact abs_le.mpr ⟨by linarith,by linarith⟩
-  have hdiff (p r : ℤ × ℤ) (hp : p ∈ S) (hr : r ∈ S) (he : p.2=r.2) :
-      ∃ b : ℤ, |((p.1-r.1:ℤ):ℝ)*α-b| ≤ 2*δ := by
-    obtain ⟨bp,hbp⟩ := hnear p hp
-    obtain ⟨br,hbr⟩ := hnear r hr
-    refine ⟨bp-br,?_⟩
-    have hid : ((p.1-r.1:ℤ):ℝ)*α-((bp-br:ℤ):ℝ) =
-        ((p.1:ℝ)*α+(p.2:ℝ)*β-bp)-((r.1:ℝ)*α+(r.2:ℝ)*β-br) := by
-      rw [he]; push_cast; ring
-    rw [hid]
-    exact (abs_sub _ _).trans (by linarith)
-  have hPnear : ∀ k ∈ P, ∃ b : ℤ, |(k:ℝ)*α-b| ≤ 2*δ := by
-    intro k hk
-    rcases Finset.mem_insert.mp hk with rfl | hk
-    · obtain ⟨m,n,hm,hm1⟩ := sector_consecutive_numerators hl hlμ hN hR
-      simpa only [Prod.fst,add_sub_cancel_left,Int.cast_one,Nat.cast_one,one_mul] using
-        hdiff (m+1,n) (m,n) hm1 hm rfl
-    · obtain ⟨d,hd,rfl⟩ := Finset.mem_image.mp hk
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp (Finset.mem_erase.mp hd).2
-      obtain ⟨b,hb⟩ := hdiff p p₀ (Finset.mem_filter.mp hp).1 (Finset.mem_filter.mp hp₀).1
-        ((Finset.mem_filter.mp hp).2.trans (Finset.mem_filter.mp hp₀).2.symm)
-      rcases Int.natAbs_eq (p.1-p₀.1) with he | he
-      · refine ⟨b,?_⟩
-        have heR : ((p.1-p₀.1:ℤ):ℝ) = ((p.1-p₀.1).natAbs:ℝ) := by
-          simpa only [Int.cast_natCast] using congrArg (fun z : ℤ => (z:ℝ)) he
-        rwa [← heR]
-      · refine ⟨-b,?_⟩
-        have heR : ((p.1-p₀.1:ℤ):ℝ) = -((p.1-p₀.1).natAbs:ℝ) := by
-          simpa only [Int.cast_natCast,Int.cast_neg] using congrArg (fun z : ℤ => (z:ℝ)) he
-        have hid : ((p.1-p₀.1).natAbs:ℝ)*α-((-b:ℤ):ℝ) = -(((p.1-p₀.1:ℤ):ℝ)*α-b) := by
-          rw [heR,Int.cast_neg]; ring
-        rwa [hid,abs_neg]
-  rcases linear_form_dichotomy P hLpos (by positivity)
-    (fun k hk => ⟨(hPsize k hk).1,Finset.le_max' P k hk⟩) hPnear with hc | ⟨q,_hq,_hqL,hdvd,a,ha⟩
-  · left
-    have hm := mul_le_mul_of_nonneg_left (hPsize L hL).2 (show 0 ≤ 24*δ by positivity)
-    have hc' : (P.card:ℝ) ≤ 24*δ*(μ*(N:ℝ)) := by nlinarith only [hc,hm]
-    have ht := mul_le_mul_of_nonneg_left hc' (show 0 ≤ 4*(N:ℝ) by positivity)
-    
-    nlinarith only [hcard,ht]
-  · right
-    have hq : q=1 := Nat.dvd_one.mp (hdvd 1 (Finset.mem_insert_self _ _))
-    rw [hq] at ha
-    simp only [Nat.cast_one,one_mul] at ha
-    have ht := mul_le_mul_of_nonneg_left hcard (abs_nonneg (α-(a:ℝ)))
-    have hh := mul_le_mul_of_nonneg_left ha (show 0 ≤ 4*(N:ℝ) by positivity)
-    apply (round_le α a).trans
-    apply (le_div_iff₀ hSR).mpr
-    nlinarith only [ht,hh]
+  have hd (p q : ℤ × ℤ) (hp : p∈S) (hq : q∈S) (he : p.2=q.2) :=
+    near_linear_form_diff he (hnear p hp) (hnear q hq)
+  refine dense_fiber_linear_form S Prod.snd Prod.fst (by positivity) hM1 hδ hproj hR
+    (fun _ _ h g => Prod.ext g h) hnum hd ?_
+  obtain ⟨m,n,hm,hm1⟩ := sector_consecutive_numerators hl hlμ hN hR
+  simpa using hd (m+1,n) (m,n) hm1 hm rfl
 
 
 theorem sector_denominator_card_lower {N : ℕ} {l μ B : ℝ}
@@ -1310,7 +1333,8 @@ theorem fareySector_bounded_density_dichotomy
     have hh := (div_le_iff₀ hB0).mp ((le_max_left _ _).trans hR)
     nlinarith only [hh]
   by_cases hsmall : (μ*(N:ℝ))*δ ≤ 1/(96*B)
-  · obtain ⟨ha,hb⟩ := fareySector_small_error_bounds hl hμ hB hδ hR hsmall hnear
+  · obtain ⟨ha,hb⟩ := fareySector_small_error_bounds hl hμ0 hB hδ hR
+      (by simpa only [max_eq_right hμ] using hsmall) hnear
     refine Or.inr ⟨ha,hb.trans ?_⟩
     apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
     have hh := mul_le_mul_of_nonneg_right hB (show 0 ≤ (μ*(N:ℝ))*δ by positivity)
@@ -4738,9 +4762,7 @@ theorem physicalModelPhase_quartic_curvature_source_scale
                                                                    
                                                                          
                                                                         
-open Set
-open Polynomial
-open Set
+open Set Polynomial
 open scoped Classical
 noncomputable def quarticCurvatureNumerator
     (μ ν r s μ₁ ν₁ r₁ s₁ : ℝ) : Polynomial ℝ :=
@@ -5223,7 +5245,6 @@ theorem quartic_phase_derivative_variation_on_boundary_cell
                                                                     
                                                                   
                                                                        
-open scoped Classical
 open scoped Classical
 theorem quarticPhase_four_point_curvature
     {μ ν r s μ₁ ν₁ r₁ s₁ a b c d h E A B : ℝ}

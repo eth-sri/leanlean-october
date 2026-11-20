@@ -111,8 +111,7 @@ theorem nativeMoment_ZetaSum_aux1φderiv {s : ℂ} (s_ne_zero : s ≠ 0) {x : �
   convert this using 2
   · ext y
     by_cases y_zero : (y : ℂ) = 0
-    · simp only [y_zero, ne_eq, s_ne_zero, not_false_eq_true, zero_cpow, div_zero,
-      r_add1_ne_zero, zero_div, mul_zero]
+    · simp [y_zero, s_ne_zero, r_add1_ne_zero]
     · have : (y : ℂ) ^ s ≠ 0 := fun hy ↦ y_zero ((cpow_eq_zero_iff _ _).mp hy).1
       simp only [one_div, sub_add_cancel, cpow_neg, neg_mul, r]
       field_simp
@@ -173,7 +172,7 @@ theorem Complex.nativeMoment_cpow_tendsto {s : ℂ} (s_re_gt : 1 < s.re) :
   have one_sub_s_re_ne : (1 - s).re ≠ 0 := by simp only [sub_re, one_re]; linarith
   rw [tendsto_zero_iff_norm_tendsto_zero]
   simp_rw [Complex.norm_natCast_cpow_of_re_ne_zero _ (one_sub_s_re_ne)]
-  rw [(by simp only [sub_re, one_re, neg_sub] : (1 - s).re = - (s - 1).re)]
+  rw [(by simp : (1 - s).re = - (s - 1).re)]
   apply (tendsto_rpow_neg_atTop _).comp tendsto_natCast_atTop_atTop; simp [s_re_gt]
 
 theorem Complex.nativeMoment_cpow_inv_tendsto {s : ℂ} (hs : 0 < s.re) :
@@ -195,7 +194,7 @@ theorem nativeMoment_ZetaSum_aux3 {N : ℕ} {s : ℂ} (s_re_gt : 1 < s.re) :
   convert nativeMoment_finsetSum_tendsto_tsum (f := fun n ↦ f (n + 1)) (N := N) ?_ using 1
   · ext k
     rw [Finset.sum_Ico_add']
-  · congr; ext n; simp only [one_div, Nat.cast_add, Nat.cast_one, f]
+  · congr; ext n; simp [f]
   · rwa [summable_nat_add_iff (k := 1)]
 
 theorem nativeMoment_integrableOn_of_Zeta0_fun {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 0 < s.re) :
@@ -208,6 +207,27 @@ theorem nativeMoment_integrableOn_of_Zeta0_fun {N : ℕ} (N_pos : 0 < N) {s : �
   · apply integrableOn_Ioi_cpow_iff (by positivity) |>.mpr (by simp [s_re_gt])
   · refine Measurable.add ?_ measurable_const |>.sub (by fun_prop) |>.aestronglyMeasurable
     exact Measurable.comp (by exact fun _ _ ↦ trivial) Int.measurable_floor
+
+open MeasureTheory in
+/-- The Euler--Maclaurin tail on the open right half-plane. -/
+theorem zetaEulerMaclaurin_tail_le {N : ℕ} (hN : 0 < N) {s : ℂ} (hs : 0 < s.re) :
+    ‖∫ x in Ioi (N : ℝ), (⌊x⌋ + 1/2 - x) / (x : ℂ) ^ (s+1)‖ ≤
+      (N : ℝ) ^ (-s.re) / s.re := by
+  have hn : (0 : ℝ) < N := by exact_mod_cast hN
+  have hp : -(s.re + 1) < -1 := by linarith
+  have hi : IntegrableOn (fun x : ℝ => ‖(⌊x⌋ + 1/2 - x) / (x : ℂ) ^ (s+1)‖) (Ioi N) := by
+    simpa only [IntegrableOn, nativeMoment_div_cpow_eq_cpow_neg] using
+      (nativeMoment_integrableOn_of_Zeta0_fun hN hs).norm
+  refine (norm_integral_le_integral_norm _).trans ((setIntegral_mono_on hi
+    (integrableOn_Ioi_rpow_of_lt hp hn) measurableSet_Ioi ?_).trans_eq ?_)
+  · intro x hx
+    have hx0 : 0 < x := hn.trans hx
+    rw [norm_div, Complex.norm_cpow_eq_rpow_re_of_pos hx0, add_re, one_re, Real.rpow_neg hx0.le, ← one_div]
+    refine div_le_div_of_nonneg_right ?_ (Real.rpow_nonneg hx0.le _)
+    rw [show ((⌊x⌋ : ℂ) + 1/2 - x) = ((⌊x⌋ + 1/2 - x : ℝ) : ℂ) by push_cast; rfl,
+      Complex.norm_real]
+    exact (nativeMoment_ZetaSum_aux1_3 x).trans (by norm_num)
+  · rw [integral_Ioi_rpow_of_lt hp hn, show -(s.re+1)+1 = -s.re by ring, neg_div_neg_eq]
 
 theorem nativeMoment_ZetaSum_aux2 {N : ℕ} (N_pos : 0 < N) {s : ℂ} (s_re_gt : 1 < s.re) :
     ∑' (n : ℕ), 1 / (n + N + 1 : ℂ) ^ s =
@@ -263,7 +283,7 @@ theorem nativeMoment_integrable_log_over_pow {r : ℝ} (rneg : r < 0) {N : ℕ} 
     intro x hx x_gt x_pos
     use C
     intro y hy
-    simp only [norm_mul, Real.norm_eq_abs, _root_.abs_abs]
+    simp
     simp only [Real.norm_eq_abs] at hx
     have y_pos : 0 < y := by linarith
     have : y ^ (r / 2 - 1) = y ^ (r - 1) * y ^ (-r / 2) := by
@@ -420,13 +440,13 @@ theorem nativeMoment_HasDerivAt_cpow_over_var (N : ℕ) {z : ℂ} (z_ne_zero : z
   convert HasDerivAt.mul (c := fun z ↦ - (N : ℂ) ^ z) (d := fun z ↦ z⁻¹)
     (c' := - (N : ℂ) ^ z * Real.log N)
     (d' := - (z ^ 2)⁻¹) ?_ ?_ using 1
-  · simp only [natCast_log, neg_mul, mul_neg, neg_neg]
+  · simp
     ring_nf
-  · simp only [natCast_log, neg_mul]
+  · simp
     apply HasDerivAt.neg
     convert HasDerivAt.const_cpow (c := (N : ℂ)) (f := id) (f' := 1) (x := z) (hasDerivAt_id z)
       (by simp [z_ne_zero]) using 1
-    all_goals simp only [id_eq, mul_one]
+    all_goals simp
   · exact hasDerivAt_inv z_ne_zero
 
 theorem nativeMoment_HasDerivAtZeta0 {N : ℕ} (Npos : 0 < N) {s : ℂ} (reS_pos : 0 < s.re) (s_ne_one : s ≠ 1) :
@@ -440,7 +460,7 @@ theorem nativeMoment_HasDerivAtZeta0 {N : ℕ} (Npos : 0 < N) {s : ℂ} (reS_pos
       ((hasDerivAt_const s (1:ℂ)).sub (hasDerivAt_id s))
     convert hh using 1 <;> simp [Function.comp_def, Pi.sub_def]
     ring
-  · convert nativeMoment_HasDerivAt_neg_cpow_over2 Npos s using 1; simp only [natCast_log, neg_mul, neg_neg]
+  · convert nativeMoment_HasDerivAt_neg_cpow_over2 Npos s using 1; simp
   · simp_rw [nativeMoment_div_cpow_eq_cpow_neg, neg_add, ← sub_eq_add_neg]
     simpa [Pi.mul_def] using (hasDerivAt_id s).mul (nativeMoment_hasDerivAt_Zeta0Integral Npos reS_pos)
 
@@ -459,7 +479,7 @@ theorem nativeMoment_isPathConnected_aux : IsPathConnected {z : ℂ | z ≠ 1 �
   use (2 : ℂ)
   constructor
   · simp
-  intro w hw; simp only [ne_eq, Set.mem_ofPred_eq] at hw
+  intro w hw; simp at hw
   by_cases w_im : w.im = 0
   · apply JoinedIn.trans (y := 1 + I)
     · let f : ℝ → ℂ := fun t ↦ (1 + I) * t + 2 * (1 - t)
@@ -568,6 +588,4 @@ Then we can bound $1/\log t$ by $C / \log (t + 3)$ for some constant $C>0$.
 
 -- **End collaboration**
 
-open ArithmeticFunction (vonMangoldt)
-local notation "Λ" => vonMangoldt
 --TODO generalize to any LSeries with nonnegative coefficients

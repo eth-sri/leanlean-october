@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstCanonicalChildren
 
 @[expose] public section
@@ -9,12 +10,11 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve
-open InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CanonicalQuadraticSieve InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers
 local notation "O"=>ActualEisensteinCubic.O
-variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-variable (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+variable (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+variable (hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
 
 include hp hg hc in
 omit [DecidableEq ι] in

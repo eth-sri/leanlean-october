@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFixedRayInducingTransport
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile
-open CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentExceptionalPair CenteredMomentFixedRowMask
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentExceptionalPair CenteredMomentFixedRowMask
 local notation "O" => HeckeFamily.O
 
 theorem modulus_generator_ne_zero (ν : Character) :
@@ -65,10 +63,11 @@ theorem fixedInducingRow_product_of (η ν : Character) (Q : Ideal O)
   fixedInducingRow_of_product η (η.product ν) ν Q m A z z hν
     (fun n=>rowTwist_product η ν m 1 (A*z) n) h
 
-theorem fixedInducingRow_product_iff (η ν : Character) (Q : Ideal O)
-    (m A z : O) (hν : Q ≤ ν.modulus)
-    (hm : m≠0) (hA : A≠0) (hz : z≠0)
-    (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m) :
+section
+variable (η ν : Character) (Q : Ideal O) (m A z : O) (hν : Q ≤ ν.modulus) (hm : m≠0) (hA : A≠0) (hz : z≠0) (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m)
+include η ν Q m A z hν hm hA hz hmLam hm2
+
+theorem fixedInducingRow_product_iff :
     FixedInducingRow (η.product ν) Q m A z ↔ FixedInducingRow η Q m A z := by
   constructor
   · intro h
@@ -80,12 +79,11 @@ theorem fixedInducingRow_product_iff (η ν : Character) (Q : Ideal O)
       (rowTwist_product_inverse_mask η ν m A z n hmLam hm2)⟩
   · exact fixedInducingRow_product_of η ν Q m A z hν
 
-theorem not_fixedInducingRow_product_iff (η ν : Character) (Q : Ideal O)
-    (m A z : O) (hν : Q ≤ ν.modulus)
-    (hm : m≠0) (hA : A≠0) (hz : z≠0)
-    (hmLam : goodLambda ∣ m) (hm2 : (2:O) ∣ m) :
+theorem not_fixedInducingRow_product_iff :
     (¬FixedInducingRow (η.product ν) Q m A z) ↔ ¬FixedInducingRow η Q m A z :=
   not_congr (fixedInducingRow_product_iff η ν Q m A z hν hm hA hz hmLam hm2)
+
+end
 
 end SevenEighths.CenteredMomentFixedRayInducingTransport
 

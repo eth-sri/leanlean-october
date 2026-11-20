@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialArithmetic
 public import OAI.NumberTheory.DirichletL.Descent.SecondGenerator
 
@@ -8,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers
+open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen sourceIdeal_ne_zero sourceIdeal_union sourceIdeal_injective sourcePrime source_prime_dvd)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -34,7 +34,7 @@ local notation "Eis" => ActualEisensteinCubic.O
   newAssigned : Fin Jn → ι
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalIdealFamily.Maximal p]
 
 def originalSecondTuple {Jo Jn : ℕ} (u v : Eisˣ) (x : SecondOriginalSource ι Jo Jn) : SecondTuple Jo Jn where
   outer := ⟨x.q0,x.quotient,sourceIdeal p (x.common \ x.divisor)⟩
@@ -59,7 +59,7 @@ structure SecondOriginalValid {Jo Jn : ℕ} (x : SecondOriginalSource ι Jo Jn) 
   new_support : ∀ i, x.newAssigned i ∈ x.common ∪ x.overlap
 
 theorem originalSecondTuple_valid (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (u v : Eisˣ) (x : SecondOriginalSource ι Jo Jn) (hx : SecondOriginalValid x) :
     Valid (originalSecondTuple p u v x)
       (secondChild (originalSecondTuple p u v x)).1
@@ -95,7 +95,7 @@ theorem originalSecondTuple_valid (hp : ∀ i, p i ≠ 0)
     ring
 
 theorem originalSecondTuple_injective
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     {Jo Jn : ℕ} (u v : Eisˣ) :
     Function.Injective (originalSecondTuple (Jo:=Jo) (Jn:=Jn) p u v) := by
   intro x y hxy

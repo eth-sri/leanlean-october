@@ -1,5 +1,8 @@
 module
-public import ThirdWindow
+public import GeneralAdditiveEnergy
+public import GeneralCubicLargeValues
+public import GeneralDetectorCover
+public import DensityDetectorWindows
 
 @[expose] public section
 

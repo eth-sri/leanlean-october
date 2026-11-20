@@ -52,8 +52,11 @@ theorem measurable_neumannTwoTerm : Measurable neumannTwoTerm := by
   unfold neumannTwoTerm
   fun_prop
 
-theorem neumann_source_argument_bounds {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
-    {n : ℕ} (hn : 0 < n) :
+section
+variable {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x) {n : ℕ} (hn : 0 < n)
+include T x hT hx n hn
+
+theorem neumann_source_argument_bounds :
     T * n ≤ (4 * Real.pi * Real.sqrt (x * n)) ^ 2 ∧
       1 ≤ 4 * Real.pi * Real.sqrt (x * n) := by
   have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hn
@@ -72,8 +75,7 @@ theorem neumann_source_argument_bounds {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 
   have hy0 : 0 ≤ 4 * Real.pi * Real.sqrt (x * n) := by positivity
   nlinarith [mul_le_mul_of_nonneg_left hn1 (show 0 ≤ T by linarith)]
 
-theorem abs_neumann_source_remainder_le {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
-    {n : ℕ} (hn : 0 < n) :
+theorem abs_neumann_source_remainder_le :
     |dfiBesselY0 (4 * Real.pi * Real.sqrt (x * n)) -
       neumannTwoTerm (4 * Real.pi * Real.sqrt (x * n))| ≤
         neumannTwoTermErrorConstant * T ^ (-(5 / 4 : ℝ)) * (n : ℝ) ^ (-(5 / 4 : ℝ)) := by
@@ -92,13 +94,14 @@ theorem abs_neumann_source_remainder_le {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16
   have h := mul_le_mul_of_nonneg_left hp neumannTwoTermErrorConstant_pos.le
   simpa only [mul_assoc] using h
 
-theorem abs_dfiBesselY0_source_le_seven {T x : ℝ} (hT : 16 ≤ T) (hx : T / 16 ≤ x)
-    {n : ℕ} (hn : 0 < n) :
+theorem abs_dfiBesselY0_source_le_seven :
     |dfiBesselY0 (4 * Real.pi * Real.sqrt (x * n))| ≤ 7 := by
   have hy := (neumann_source_argument_bounds hT hx hn).2
   have hy0 : 0 < 4 * Real.pi * Real.sqrt (x * n) := by linarith
   exact (abs_dfiBesselY0_le_seven_div_sqrt hy0).trans
     (div_le_self (by norm_num) (Real.one_le_sqrt.2 hy))
+
+end
 
 theorem neumann_source_height_absorb {T : ℝ} (hT : 1 ≤ T) :
     T * T ^ (-(5 / 4 : ℝ)) ≤ 1 := by

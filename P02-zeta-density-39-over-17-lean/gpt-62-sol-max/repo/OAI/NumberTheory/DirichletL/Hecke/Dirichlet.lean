@@ -158,9 +158,12 @@ theorem LFunction_eq_dirichlet_product (χ : DirichletCharacter ℂ q)
       (by norm_num : (1 : ℝ) < (2 : ℂ).re)] with z hz
     exact LFunction_eq_dirichlet_product_right χ hz
 
-theorem dirichlet_seven_eighths_of_hecke
-    (hH : ∀ (η : Character) (s : ℂ), (7/8 : ℝ) < s.re →
+section
+variable (hH : ∀ (η : Character) (s : ℂ), (7/8 : ℝ) < s.re →
       (s ≠ 1 ∨ η.residue ≠ 1) → LFunction η s ≠ 0)
+include hH
+
+theorem dirichlet_seven_eighths_of_hecke
     (χ : DirichletCharacter ℂ q) (s : ℂ) (hs : (7/8 : ℝ) < s.re)
     (hexc : ¬ (χ = 1 ∧ s = 1)) : χ.LFunction s ≠ 0 := by
   by_cases hge : 1 ≤ s.re
@@ -172,14 +175,14 @@ theorem dirichlet_seven_eighths_of_hecke
   exact (mul_ne_zero_iff.mp h).1
 
 theorem zeta_seven_eighths_of_hecke
-    (hH : ∀ (η : Character) (s : ℂ), (7/8 : ℝ) < s.re →
-      (s ≠ 1 ∨ η.residue ≠ 1) → LFunction η s ≠ 0)
     (s : ℂ) (hs : (7/8 : ℝ) < s.re) : riemannZeta s ≠ 0 := by
   by_cases h1 : s = 1
   · simpa [h1] using riemannZeta_one_ne_zero
   have h := dirichlet_seven_eighths_of_hecke hH (1 : DirichletCharacter ℂ 1) s hs
     (by simp [h1])
   simpa only [DirichletCharacter.LFunction_modOne_eq] using h
+
+end
 
 end SevenEighths.HeckeDirichlet
 

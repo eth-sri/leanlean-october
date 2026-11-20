@@ -93,18 +93,18 @@ theorem norm_atkinsonRootKernel_integral_left_window {T b a c H : ℝ}
     exact (atkinsonRootSlope_strictAnti hT.le b).antitoneOn
       (ha.trans_le hx.1) (ha.trans_le hy.1) hxy
 
-theorem IntervalC1Bound.atkinsonRoot_right_window {f : ℝ → ℂ} {a c M T H : ℝ}
-    (hf : IntervalC1Bound f a c M) (hT : 0 < T) (b : ℝ)
-    (ha : 0 < a) (hac : a ≤ c) (hH : 0 < H)
+section
+variable {f : ℝ → ℂ} {a c M T H : ℝ} (hf : IntervalC1Bound f a c M) (hT : 0 < T) (b : ℝ) (ha : 0 < a)
+include f a c M T H hf hT b ha
+
+theorem IntervalC1Bound.atkinsonRoot_right_window (hac : a ≤ c) (hH : 0 < H)
     (hr : atkinsonSaddleRoot (T / (2 * Real.pi)) b + H ≤ a) :
     ‖∫ y in a..c, f y * atkinsonRootKernel T b y‖ ≤ M / (H * Real.pi) := by
   apply (hf.atkinsonRoot_of_primitive_bound b ha hac
     (fun x hx => norm_atkinsonRootKernel_integral_right_window hT ha hx.1 hH hr)).trans_eq
   ring
 
-theorem IntervalC1Bound.atkinsonRoot_left_window {f : ℝ → ℂ} {a c M T H : ℝ}
-    (hf : IntervalC1Bound f a c M) (hT : 0 < T) (b : ℝ)
-    (ha : 0 < a) (hac : a ≤ c) (hH : 0 < H)
+theorem IntervalC1Bound.atkinsonRoot_left_window (hac : a ≤ c) (hH : 0 < H)
     (hr : c ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - H) :
     ‖∫ y in a..c, f y * atkinsonRootKernel T b y‖ ≤ M / (H * Real.pi) := by
   apply (hf.atkinsonRoot_of_primitive_bound b ha hac
@@ -112,9 +112,7 @@ theorem IntervalC1Bound.atkinsonRoot_left_window {f : ℝ → ℂ} {a c M T H : 
       (hx.2.trans hr))).trans_eq
   ring
 
-theorem IntervalC1Bound.atkinsonRoot_sub_local {f : ℝ → ℂ} {a c M T H : ℝ}
-    (hf : IntervalC1Bound f a c M) (hT : 0 < T) (b : ℝ)
-    (ha : 0 < a) (hH : 0 < H)
+theorem IntervalC1Bound.atkinsonRoot_sub_local (hH : 0 < H)
     (hleft : a ≤ atkinsonSaddleRoot (T / (2 * Real.pi)) b - H)
     (hright : atkinsonSaddleRoot (T / (2 * Real.pi)) b + H ≤ c) :
     ‖(∫ y in a..c, f y * atkinsonRootKernel T b y) -
@@ -147,5 +145,7 @@ theorem IntervalC1Bound.atkinsonRoot_sub_local {f : ℝ → ℂ} {a c M T H : �
   rw [he]
   apply (norm_add_le _ _).trans ((add_le_add hlow hhigh).trans_eq ?_)
   ring
+
+end
 
 end MathCollab.Density.Stronger.Atkinson

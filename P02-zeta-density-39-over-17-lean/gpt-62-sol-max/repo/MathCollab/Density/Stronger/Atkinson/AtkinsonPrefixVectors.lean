@@ -8,7 +8,7 @@ and ../../../../../third_party/twelfth/LICENSE-MIT-0.
 -/
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonIndexPhase
 public import MathCollab.Density.Stronger.Fourth.Coefficients
-public import GuthMaynard.VanDerCorput
+public import GuthMaynard.NativeSource.GuthMaynard.VanDerCorput
 
 @[expose] public section
 
@@ -22,8 +22,7 @@ of the two prefix lengths and the same zero-based source block.
 set_option autoImplicit false
 noncomputable section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
 open RiemannZeta.GuthMaynard
 

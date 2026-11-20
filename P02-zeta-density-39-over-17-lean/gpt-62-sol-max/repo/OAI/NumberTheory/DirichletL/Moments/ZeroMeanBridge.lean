@@ -10,12 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentZeroMeanBridge
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge
-open CenteredMomentCommonSupport
-open CenteredMomentFourier CenteredMomentCorrelation CenteredMomentSupportedCorrelation
-open CenteredMomentSectorLocalization CenteredMomentFirstReduced CenteredMomentCanonicalFirst
-open CenteredMomentActive CenteredMomentFirstDiscardedEnergy CenteredMomentFirstLocalization
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstReduced CenteredMomentCanonicalFirst CenteredMomentActive CenteredMomentFirstDiscardedEnergy CenteredMomentFirstLocalization
 local notation "O" => ActualEisensteinCubic.O
 
 def quotientMean (a : O) (F : Residue a → ℂ) : ℂ :=
@@ -165,7 +160,11 @@ theorem tripleResidue_mul (a b r : O) (χa : MulChar (Residue a) ℂ)
   rw [← map_mul, tripleResidue_mk, tripleResidue_mk, tripleResidue_mk]
   exact tripleRow_mul a b r χa χb G hG u v
 
-theorem original_pair_reduced_mask (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+section
+variable (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+include I J hI hJ
+
+theorem original_pair_reduced_mask
     (z : O) :
     idealRowHom z I * star (idealRowHom z J) =
       rowCoprimeMask (fun P : CommonIndex I J => P.val)
@@ -192,7 +191,7 @@ theorem original_pair_reduced_mask (I J : Ideal O) (hI : Supported I) (hJ : Supp
       (CenteredMomentCanonicalFirst.activeExponent I J) z) using 1
   congr 2
 
-theorem original_pair_mean (I J : Ideal O) (hI : Supported I) (hJ : Supported J) :
+theorem original_pair_mean :
     let hi : Supported (Ideal.span {CompletedGauss.primaryGenerator I}) :=
       (CenteredMomentSourceRow.primary_span_supported I hI).symm ▸ hI
     let hj : Supported (Ideal.span {CompletedGauss.primaryGenerator J}) :=
@@ -229,7 +228,7 @@ theorem original_pair_mean (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
       exact original_pair_reduced_mask I J hI hJ z)
   simpa only [inactiveSubsets, tripleResidue_mk] using h
 
-theorem canonicalZeroTerm_eq_mean (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+theorem canonicalZeroTerm_eq_mean
     (E : Finset (CommonIndex I J)) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     canonicalZeroTerm I J hI hJ E W K = (K : ℂ) *
       ((UniqueFactorizationMonoid.moebius (∏ P∈E,P.val) : ℂ) *
@@ -246,7 +245,7 @@ theorem canonicalZeroTerm_eq_mean (I J : Ideal O) (hI : Supported I) (hJ : Suppo
     Complex.ofReal_mul, Complex.ofReal_inv]
   ring
 
-theorem canonicalZeroPair_eq_original (I J : Ideal O) (hI : Supported I) (hJ : Supported J)
+theorem canonicalZeroPair_eq_original
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     let hi : Supported (Ideal.span {CompletedGauss.primaryGenerator I}) :=
       (CenteredMomentSourceRow.primary_span_supported I hI).symm ▸ hI
@@ -263,6 +262,8 @@ theorem canonicalZeroPair_eq_original (I J : Ideal O) (hI : Supported I) (hJ : S
   rw [CenteredMomentZeroMode.pairFourier_zero, quotientMean, ← normValue_eq_embedding,
     Complex.ofReal_div, div_eq_mul_inv]
   ring
+
+end
 
 theorem quotientMean_congr (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
     (F : Residue a → ℂ) (G : Residue b → ℂ)

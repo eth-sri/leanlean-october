@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Moments.SecondScaled
 public import OAI.NumberTheory.DirichletL.Moments.RestrictedEnergy
 
@@ -10,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondNonexceptional
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay
-open CenteredMomentRowNorm CenteredMomentSmooth RayFourExpansion
-open CenteredMomentSecondDescent CenteredMomentSecondScaled CenteredMomentRestrictedEnergy
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm CenteredMomentSmooth RayFourExpansion CenteredMomentSecondDescent CenteredMomentSecondScaled CenteredMomentRestrictedEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 theorem whole_kernel_nonexceptional_second_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
@@ -26,8 +24,8 @@ theorem whole_kernel_nonexceptional_second_bound (W : 𝓢(ℝ, ℂ)) (V : Fin 4
         (ha : ∀ i, Supported (Ideal.span {a i})) (hb : ∀ j, Supported (Ideal.span {b j})),
       (ConcretePrimeRowBridge.goodLambda^2 ∣ D-1) →
       (ConcretePrimeRowBridge.goodLambda^2 ∣ E-1) →
-      (∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ a i-1) →
-      (∀ j, ConcretePrimeRowBridge.goodLambda^2 ∣ b j-1) →
+      (OAI.PrincipalIdealFamily.PrimaryAt a ConcretePrimeRowBridge.goodLambda) →
+      (OAI.PrincipalIdealFamily.PrimaryAt b ConcretePrimeRowBridge.goodLambda) →
       (∀ i, IsCoprime (D*E) (a i)) → (∀ j, IsCoprime (D*E) (b j)) →
       ∀ (q : O → ℂ) (c : α → ℂ) (d : β → ℂ) (u : α → ℝ) (v : β → ℝ)
         (ρ x : O → ℝ) (η₀ : HeckeFamily.Character) (χ₀ : RayCharacter)

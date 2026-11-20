@@ -15,20 +15,24 @@ local instance : IsPrincipalIdealRing O := IsCyclotomicExtension.Rat.three_pid K
 def unitPart (u : FreeRow) (p : O) (hp : Prime p) : O :=
   Classical.choose ((FiniteMultiplicity.of_prime_left hp u.property.1).exists_eq_pow_mul_and_not_dvd)
 
-theorem unitPart_spec (u : FreeRow) (p : O) (hp : Prime p) :
+section
+variable (u : FreeRow) (p : O) (hp : Prime p)
+include u p hp
+
+theorem unitPart_spec :
     u.val=p^(multiplicity p u.val)*unitPart u p hp ∧ ¬p∣unitPart u p hp :=
   Classical.choose_spec ((FiniteMultiplicity.of_prime_left hp u.property.1).exists_eq_pow_mul_and_not_dvd)
 
-theorem unitPart_coprime (u : FreeRow) (p : O) (hp : Prime p) : IsCoprime (unitPart u p hp) p :=
+theorem unitPart_coprime : IsCoprime (unitPart u p hp) p :=
   (hp.irreducible.coprime_iff_not_dvd.mpr (unitPart_spec u p hp).2).symm
 
-theorem unitPart_ne_zero (u : FreeRow) (p : O) (hp : Prime p) : unitPart u p hp≠0 := by
+theorem unitPart_ne_zero : unitPart u p hp≠0 := by
   intro he
   have hu := (unitPart_spec u p hp).1
   rw [he,mul_zero] at hu
   exact u.property.1 hu
 
-theorem multiplicity_lt_six (u : FreeRow) (p : O) (hp : Prime p) : multiplicity p u.val<6 := by
+theorem multiplicity_lt_six : multiplicity p u.val<6 := by
   let P : Ideal O := Ideal.span {p}
   have hP0 : P≠0 := Ideal.span_singleton_eq_bot.not.mpr hp.ne_zero
   have hP : Prime P := Ideal.prime_of_isPrime hP0 (Ideal.isPrime_span_singleton_of_prime hp)
@@ -44,11 +48,13 @@ theorem multiplicity_lt_six (u : FreeRow) (p : O) (hp : Prime p) : multiplicity 
     Multiset.count_singleton_self,mul_one] at hf
   omega
 
-theorem canonical_decomposition (u : FreeRow) (p : O) (hp : Prime p) :
+theorem canonical_decomposition :
     u.val=unitPart u p hp*p^(multiplicity p u.val) ∧
       IsCoprime (unitPart u p hp) p ∧ multiplicity p u.val<6 := by
   exact ⟨(unitPart_spec u p hp).1.trans (mul_comm _ _),unitPart_coprime u p hp,
     multiplicity_lt_six u p hp⟩
+
+end
 
 theorem idealRowHighLocalFactor_canonical (η : Character) (u : FreeRow) (p : O) (hp : Prime p)
     [(Ideal.span {p}:Ideal O).IsMaximal]

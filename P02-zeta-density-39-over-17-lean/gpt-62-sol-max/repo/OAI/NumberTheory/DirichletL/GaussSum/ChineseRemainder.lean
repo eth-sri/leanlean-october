@@ -6,20 +6,14 @@ public import OAI.NumberTheory.DirichletL.Arithmetic.EisensteinCoordinates
 namespace OAI
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 noncomputable section
 open Finset Complex
 
 open scoped Classical
-
-namespace GaussCRT
-
-end GaussCRT
 
 open scoped Classical
 
@@ -267,11 +261,11 @@ noncomputable def traceProdChar {A : Type*} [CommRing A]
       (Ideal.Quotient.mk ((Ideal.span {a}) * (Ideal.span {b})) x) =
       ψ (ι x / (ι (a * b) * lam)) := rfl
 
-theorem leftAddChar_traceProd {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)
-    {a b u v : A} (hbez : u * a + v * b = 1)
-    (ha : ι a ≠ 0) (hb : ι b ≠ 0) (hlam : lam ≠ 0)
-    (hbase : ∀ x : A, ψ (ι x / lam) = 1) :
+section
+variable {A : Type*} [instShared1 : CommRing A] (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ) {a b u v : A} (hbez : u * a + v * b = 1) (ha : ι a ≠ 0) (hb : ι b ≠ 0) (hlam : lam ≠ 0) (hbase : ∀ x : A, ψ (ι x / lam) = 1)
+include A instShared1 ι ψ lam a b u v hbez ha hb hlam hbase
+
+theorem leftAddChar_traceProd :
     leftAddChar
       (Ideal.quotientMulEquivQuotientProd (Ideal.span {a}) (Ideal.span {b})
         (principal_coprime_of_bezout hbez))
@@ -295,11 +289,7 @@ theorem leftAddChar_traceProd {A : Type*} [CommRing A]
   simp only [map_mul]
   field_simp
 
-theorem rightAddChar_traceProd {A : Type*} [CommRing A]
-    (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)
-    {a b u v : A} (hbez : u * a + v * b = 1)
-    (ha : ι a ≠ 0) (hb : ι b ≠ 0) (hlam : lam ≠ 0)
-    (hbase : ∀ x : A, ψ (ι x / lam) = 1) :
+theorem rightAddChar_traceProd :
     rightAddChar
       (Ideal.quotientMulEquivQuotientProd (Ideal.span {a}) (Ideal.span {b})
         (principal_coprime_of_bezout hbez))
@@ -323,8 +313,13 @@ theorem rightAddChar_traceProd {A : Type*} [CommRing A]
   simp only [map_mul]
   field_simp
 
-theorem bezout_inverse_left {A : Type*} [CommRing A]
-    {a b u v : A} (hbez : u * a + v * b = 1) :
+end
+
+section
+variable {A : Type*} [instShared1 : CommRing A] {a b u v : A}
+include A instShared1 a b u v
+
+theorem bezout_inverse_left (hbez : u * a + v * b = 1) :
     (Ideal.Quotient.mk (Ideal.span {a}) b) *
       (Ideal.Quotient.mk (Ideal.span {a}) v) = 1 := by
   rw [← map_mul]
@@ -336,8 +331,7 @@ theorem bezout_inverse_left {A : Type*} [CommRing A]
     b * v - 1 = b * v - (u * a + v * b) := by rw [hbez]
     _ = a * -u := by ring
 
-theorem bezout_inverse_right {A : Type*} [CommRing A]
-    {a b u v : A} (hbez : u * a + v * b = 1) :
+theorem bezout_inverse_right (hbez : u * a + v * b = 1) :
     (Ideal.Quotient.mk (Ideal.span {b}) a) *
       (Ideal.Quotient.mk (Ideal.span {b}) u) = 1 := by
   rw [← map_mul]
@@ -349,8 +343,7 @@ theorem bezout_inverse_right {A : Type*} [CommRing A]
     a * u - 1 = a * u - (u * a + v * b) := by rw [hbez]
     _ = b * -v := by ring
 
-theorem gauss_shift_bezout_left {A : Type*} [CommRing A]
-    {a b u v : A} [Fintype (A ⧸ Ideal.span {a})]
+theorem gauss_shift_bezout_left [Fintype (A ⧸ Ideal.span {a})]
     (hbez : u * a + v * b = 1)
     (χ : MulChar (A ⧸ Ideal.span {a}) ℂ)
     (ψ : AddChar (A ⧸ Ideal.span {a}) ℂ) :
@@ -370,8 +363,7 @@ theorem gauss_shift_bezout_left {A : Type*} [CommRing A]
     _ = χ mb * (χ mv * gaussSum χ (ψ.mulShift mv)) := by ring
     _ = χ mb * gaussSum χ ψ := by rw [hshift']
 
-theorem gauss_shift_bezout_right {A : Type*} [CommRing A]
-    {a b u v : A} [Fintype (A ⧸ Ideal.span {b})]
+theorem gauss_shift_bezout_right [Fintype (A ⧸ Ideal.span {b})]
     (hbez : u * a + v * b = 1)
     (χ : MulChar (A ⧸ Ideal.span {b}) ℂ)
     (ψ : AddChar (A ⧸ Ideal.span {b}) ℂ) :
@@ -390,6 +382,8 @@ theorem gauss_shift_bezout_right {A : Type*} [CommRing A]
         (χ ma * χ mu) * gaussSum χ (ψ.mulShift mu) := by rw [hχ, one_mul]
     _ = χ ma * (χ mu * gaussSum χ (ψ.mulShift mu)) := by ring
     _ = χ ma * gaussSum χ ψ := by rw [hshift']
+
+end
 
 theorem gauss_sum_trace_crt {A : Type*} [CommRing A]
     (ι : A →+* ℂ) (ψ : AddChar ℂ ℂ) (lam : ℂ)

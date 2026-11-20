@@ -247,7 +247,7 @@ theorem wooleyCriticalExponent_eq_zero_of_lower
         (wooleyIterationLength (wooleyTriangular k) k Lambda) * max 1 (1 : ℝ) ≤
       (p : ℝ) ^ thetaNat := by
     have hcst := hHconstant H hHconstant'
-    simpa only [Ctotal, N, s, max_self, mul_one] using hcst
+    simpa [Ctotal, N, s] using hcst
   have hterminal : ∀ r a b : ℕ, 1 ≤ r → r ≤ k - 1 →
       max a b ≤ k ^ (2 * wooleyIterationLength
           (wooleyTriangular k) k Lambda + 1) * thetaNat →

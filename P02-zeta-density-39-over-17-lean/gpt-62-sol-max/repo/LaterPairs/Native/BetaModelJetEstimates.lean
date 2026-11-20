@@ -23,6 +23,3 @@ noncomputable section
 open Set Expdb
 open scoped ContDiff
 
-namespace TaoTrudgianYang2025
-
-end TaoTrudgianYang2025

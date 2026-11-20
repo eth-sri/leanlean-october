@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstBlockEnergy
 
 @[expose] public section
@@ -7,13 +8,12 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι κ : Type*} [DecidableEq ι]
-  (p : ι → Eis) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstFamilySeparatedRow (source : Finset κ) (F : Finset ι)
     (selector C₁ C₂ : κ → Finset ι → ℂ) (w : κ → ℂ)

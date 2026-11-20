@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
 
 @[expose] public section
@@ -8,18 +9,16 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialRayAttachment
-open SevenEighths.InverseInitialPhysicalMeasure
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialRayAttachment SevenEighths.InverseInitialPhysicalMeasure
 namespace SevenEighths.InverseInitialEnergyCallerWeights
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem initialColumn_norm_le
-    (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i})≠2)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (Ψ : Eis →* ℂ) (j C d h : Eis) (V : Finset ι) :
     ‖initialColumn p hp hcop hg Ψ j C d h (fun _=>1) V‖ ≤ ‖Ψ (∏ i∈V,p i)‖ := by
   rw [initialColumn_eq_secondPre]
@@ -39,7 +38,7 @@ theorem initialBeta_norm_le_one (Ψ : Eis →* ℂ) (hΨ : ∀ n, ‖Ψ n‖≤1
     (norm_nonneg (rowCoprimeMask (fun i=>Ideal.span {p i}) G j))]
 
 theorem outerCoefficient_norm_le
-    (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i})≠2)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (Ψ : Eis →* ℂ) (hΨ : ∀ n, ‖Ψ n‖≤1)
     (j : Eis) (x : Point ι) (ρ : SecondRayIndex) :
     ‖outerCoefficient p hp hcop hg Ψ j x ρ‖ ≤ ‖secondRayCoefficient ρ‖ := by

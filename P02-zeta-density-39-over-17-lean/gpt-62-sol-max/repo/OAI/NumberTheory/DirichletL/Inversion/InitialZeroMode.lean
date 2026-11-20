@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialRayAttachment
 public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
 
@@ -10,17 +11,15 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialZeroMode
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment
-open InverseInitialRayAttachment
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic ConcreteTraceCRT EisensteinSchwartzPoisson InverseMoment InverseInitialRayAttachment
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 
 theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,λ₀∉Ideal.span {p i})(_hinj:Function.Injective (fun i=>Ideal.span {p i}))
+      (p:ι→O)(_hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (_hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg:OAI.PrincipalIdealFamily.Avoids p λ₀)(_hinj:OAI.PrincipalIdealFamily.Distinct p)
       (pool:Finset ι)(Ψ:O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)(m c d:O)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀q∈lists i,‖a i q‖≤1)→
@@ -90,9 +89,9 @@ theorem marked_coefficient_mass (eps b B:ℝ)(heps:0<eps)(hb:0<b)(_hB:0≤B):
 theorem marked_normalized_zero (eps b B:ℝ)(heps:0<eps)(hb:0<b)(hB:0≤B)
     (Φ:𝓢(ℝ,ℂ)):
     ∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(_hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,λ₀∉Ideal.span {p i})(_hinj:Function.Injective (fun i=>Ideal.span {p i}))
+      (p:ι→O)(_hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (_hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg:OAI.PrincipalIdealFamily.Avoids p λ₀)(_hinj:OAI.PrincipalIdealFamily.Distinct p)
       (pool:Finset ι)(Ψ:O→*ℂ)(_hΨ:∀x,‖Ψ x‖≤1)(m c d:O)
       (slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists→(∀i∈slots,∀q∈lists i,‖a i q‖≤1)→

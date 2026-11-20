@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Eisenstein.FundamentalDomain
 
 @[expose] public section
@@ -8,70 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 namespace CompletedGauss
 open ActualEisensteinCubic
@@ -93,7 +41,7 @@ open FirstPassCubeLabels (primeProduct primeProductNorm)
 open ConcreteTraceCRT (eisEmbedding)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
 
 end
 
@@ -106,9 +54,9 @@ open SecondPassFiber (newLabel newRow)
 
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end
 
@@ -129,7 +77,7 @@ open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
 
 end SecondPassArithmetic
 
@@ -137,9 +85,9 @@ namespace SecondPassIntegration
 open ActualEisensteinCubic SecondPassArithmetic
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end SecondPassIntegration
 end
@@ -154,8 +102,7 @@ end SecondPassArithmetic
 
 open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum CompletedGauss
-open QuadraticSquarefreeKernel
+open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum CompletedGauss QuadraticSquarefreeKernel
 
 def liftingPrimeElement : O := ActualEisensteinCoordinates.eval 1 3
 def liftingPrime : Ideal O := Ideal.span {liftingPrimeElement}
@@ -202,7 +149,7 @@ theorem liftingPrime_supported : Supported liftingPrime := by
     rw [liftingPrimeElement_norm,ShortDraftLatticeCount.qNat_mul,htwo] at h
     omega
 
-theorem supported_pow {I : Ideal O} (hI : Supported I) (k : ℕ) : Supported (I^k) := by
+theorem supported_pow {I : Ideal O} (hI : Supported I) (k : ℕ) : Supported (I ^k) := by
   induction k with
   | zero =>
     simp only [pow_zero]
@@ -247,23 +194,26 @@ theorem liftedRow_bounds (M : ℝ) (I : Ideal O) (hI : I≠0) (hIM : (Ideal.absN
   rw [liftedRow_norm]
   exact (exists_lifting_exponent M I hI hIM).choose_spec
 
-theorem liftedRow_squarefreePart (M : ℝ) (I : Ideal O) (hI : Admissible I)
-    (hIM : (Ideal.absNorm I:ℝ)≤M) : squarefreePart (liftedRow M I hI.1 hIM)=I :=
+section
+variable (M : ℝ) (I : Ideal O) (hI : Admissible I) (hIM : (Ideal.absNorm I:ℝ)≤M)
+include M I hI hIM
+
+theorem liftedRow_squarefreePart : squarefreePart (liftedRow M I hI.1 hIM)=I :=
   (squarePart_mul_squarefree (pow_ne_zero _ liftingPrime_prime.ne_zero) hI.2.1).2
 
-theorem liftedRow_supported (M : ℝ) (I : Ideal O) (hI : Admissible I)
-    (hIM : (Ideal.absNorm I:ℝ)≤M) : Supported (liftedRow M I hI.1 hIM) := by
+theorem liftedRow_supported : Supported (liftedRow M I hI.1 hIM) := by
   exact (supported_mul_iff _ _).mpr
     ⟨supported_pow (supported_pow liftingPrime_supported _) _,admissible_supported hI⟩
 
-theorem liftedRow_character (M : ℝ) (I : Ideal O) (hI : Admissible I)
-    (hIM : (Ideal.absNorm I:ℝ)≤M) (J : Ideal O) (hJ : Admissible J)
+theorem liftedRow_character (J : Ideal O) (hJ : Admissible J)
     (hPJ : IsCoprime liftingPrime J) :
     quadraticRow J (primaryGenerator (liftedRow M I hI.1 hIM)) =
       quadraticRow J (primaryGenerator I) := by
   rw [liftedRow,canonical_quadraticRow_primary_squarefree J hJ,
     idealZeroMask_primary_eq_indicator J _ hJ.1 (supported_pow liftingPrime_supported _),
     ite_eq_left hPJ.pow_left,one_mul]
+
+end
 
 end CanonicalQuadraticSieve
 

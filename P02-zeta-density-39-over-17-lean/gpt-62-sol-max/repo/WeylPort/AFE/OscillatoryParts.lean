@@ -63,17 +63,13 @@ theorem oscillatory_integral_parts {a b : ℝ} {f p p' h h' : ℝ → ℝ}
   apply (eq_div_iff I_ne_zero).mpr
   linear_combination hparts
 
+section
+variable {a b : ℝ} (hab : a < b) {f p p' h h' : ℝ → ℝ} (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u) (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u) (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u) (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b)) (hhpc : ContinuousOn h' (Set.Icc a b)) (hn : ∀ u ∈ Set.Icc a b, p u ≠ 0) (hq1 : AntitoneOn (fun u => |h' u| / (p u) ^ 2) (Set.Icc a b)) (hq2 : AntitoneOn (fun u => |h u * p' u| / |p u| ^ 3) (Set.Icc a b))
+include a b hab f p p' h h' hf hp hh hpc hppc hhpc hn hq1 hq2
+
 /-- The explicit second-integration remainder follows from two actual quotient monotonicity conditions.
 The assumptions are analytic conditions on the amplitudes, not a supplied remainder estimate. -/
-theorem norm_oscillatory_integral_sub_boundary_le {a b : ℝ} (hab : a < b)
-    {f p p' h h' : ℝ → ℝ}
-    (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
-    (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
-    (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u)
-    (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b))
-    (hhpc : ContinuousOn h' (Set.Icc a b)) (hn : ∀ u ∈ Set.Icc a b, p u ≠ 0)
-    (hq1 : AntitoneOn (fun u => |h' u| / (p u) ^ 2) (Set.Icc a b))
-    (hq2 : AntitoneOn (fun u => |h u * p' u| / |p u| ^ 3) (Set.Icc a b)) :
+theorem norm_oscillatory_integral_sub_boundary_le :
     ‖(∫ u in a..b, (h u : ℂ) * exp (I * (f u : ℂ))) -
       ((h b / p b : ℝ) * exp (I * (f b : ℂ)) -
         (h a / p a : ℝ) * exp (I * (f a : ℂ))) / I‖ ≤
@@ -116,15 +112,7 @@ theorem norm_oscillatory_integral_sub_boundary_le {a b : ℝ} (hab : a < b)
   simpa only [mul_div_assoc] using add_le_add hb1 hb2
 
 /-- Source 2π normalization of the second-integration estimate, with its exact complex endpoint term. -/
-theorem norm_expMode_integral_sub_boundary_le {a b : ℝ} (hab : a < b)
-    {f p p' h h' : ℝ → ℝ}
-    (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
-    (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
-    (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u)
-    (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b))
-    (hhpc : ContinuousOn h' (Set.Icc a b)) (hn : ∀ u ∈ Set.Icc a b, p u ≠ 0)
-    (hq1 : AntitoneOn (fun u => |h' u| / (p u) ^ 2) (Set.Icc a b))
-    (hq2 : AntitoneOn (fun u => |h u * p' u| / |p u| ^ 3) (Set.Icc a b)) :
+theorem norm_expMode_integral_sub_boundary_le :
     ‖(∫ u in a..b, (h u : ℂ) * exp (2 * (Real.pi : ℂ) * I * (f u : ℂ))) -
       ((h b / p b : ℝ) * exp (2 * (Real.pi : ℂ) * I * (f b : ℂ)) -
         (h a / p a : ℝ) * exp (2 * (Real.pi : ℂ) * I * (f a : ℂ))) /
@@ -176,6 +164,8 @@ theorem norm_expMode_integral_sub_boundary_le {a b : ℝ} (hab : a < b)
     show 2 * |h a * (2 * Real.pi * p' a)| / |2 * Real.pi * p a| ^ 3 =
     2 * (|h a * (2 * Real.pi * p' a)| / |2 * Real.pi * p a| ^ 3) by ring, he2]
   ring
+
+end
 
 /-- Above the phase-derivative cutoff, the source's decreasing absolute amplitudes imply both quotient conditions. -/
 theorem negative_second_quotients_antitone {a b ν : ℝ} {p p' h h' : ℝ → ℝ}

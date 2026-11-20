@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 
@@ -317,7 +261,11 @@ open MeasureTheory Set Filter Module
 open scoped BigOperators Classical ENNReal MatrixGroups Matrix
 open ActualEisensteinCubic ConcreteTraceCRT
 
-lemma continuous_inverse_fixed_left_operator (a:SL(2,ℂ)) (v:ℝ) (hv:0<v):
+section
+variable (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
+include a v hv
+
+lemma continuous_inverse_fixed_left_operator:
     Continuous (fun z:ℂ=>rowOperator (a*upperSection z v hv)⁻¹):=by
   have he (z:ℂ):rowOperator (a*upperSection z v hv)⁻¹=
       (rowOperator a⁻¹).comp (rowOperator (upperSection z v hv)⁻¹):=by
@@ -326,7 +274,7 @@ lemma continuous_inverse_fixed_left_operator (a:SL(2,ℂ)) (v:ℝ) (hv:0<v):
   simp_rw [he]
   exact continuous_const.clm_comp (continuous_inverse_upper_operator v hv)
 
-lemma exists_fixed_left_rowBound (a:SL(2,ℂ)) (v:ℝ) (hv:0<v):
+lemma exists_fixed_left_rowBound:
     ∃C:ℝ,0<C ∧ ∀z∈periodDomain,rowBound (a*upperSection z v hv)≤C:=by
   have hc:Continuous (fun z:ℂ=>rowBound (a*upperSection z v hv)):=
     continuous_const.mul (continuous_const.add (continuous_inverse_fixed_left_operator a v hv).norm)
@@ -337,7 +285,7 @@ lemma exists_fixed_left_rowBound (a:SL(2,ℂ)) (v:ℝ) (hv:0<v):
   apply (hC ?_).trans (le_max_right _ _)
   exact ⟨z,by simpa only [Metric.mem_closedBall,dist_zero_right] using norm_mem_periodDomain z hz,rfl⟩
 
-lemma continuous_fixed_left_summand (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
+lemma continuous_fixed_left_summand
     (s:ℂ) (x:CuspCosets):
     Continuous (fun z:ℂ=>summand (a*upperSection z v hv) s x):=by
   simp_rw [summand,←rowOperator_mul,rowEnergy_upperSection]
@@ -352,7 +300,7 @@ lemma continuous_fixed_left_summand (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
     exact div_pos (heightDenominator_pos z v hv _
       (rowOperator_ne_zero a _ (embeddedRow_ne_zero x))) hv
 
-lemma fixed_left_summable_majorant (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
+lemma fixed_left_summable_majorant
     (s:ℂ) (hs:2<s.re):
     ∃M:CuspCosets→ℝ,Summable M ∧ (∀x,0≤M x) ∧
       ∀z∈periodDomain,∀x,‖summand (a*upperSection z v hv) s x‖≤M x:=by
@@ -369,7 +317,7 @@ lemma fixed_left_summable_majorant (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
     exact mul_le_mul_of_nonneg_right
       (Real.rpow_le_rpow (rowBound_pos _).le (hbound z hz) (by linarith)) (by positivity)
 
-theorem hasSum_integral_fixed_left_Eisenstein (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
+theorem hasSum_integral_fixed_left_Eisenstein
     (s freq:ℂ) (hs:2<s.re):
     HasSum (fun x:CuspCosets=>∫z in periodDomain,
       summand (a*upperSection z v hv) s x*ShortDraftTrace.breveE (-freq*z))
@@ -393,6 +341,8 @@ theorem hasSum_integral_fixed_left_Eisenstein (a:SL(2,ℂ)) (v:ℝ) (hv:0<v)
 
 end
 
+end
+
 section
 
 open MeasureTheory Set Filter
@@ -403,7 +353,11 @@ local notation "Eis" => ActualEisensteinCubic.O
 def oppositeIntegral (v:ℝ) (s freq:ℂ) (c x:Eis):ℂ:=
   ∫z in periodDomain,oppositeTerm z v s c x*ShortDraftTrace.breveE (-freq*z)
 
-theorem hasSum_oppositeIntegrals (v:ℝ) (hv:0<v) (s freq:ℂ) (hs:2<s.re):
+section
+variable (v:ℝ) (hv:0<v)
+include v hv
+
+theorem hasSum_oppositeIntegrals (s freq:ℂ) (hs:2<s.re):
     HasSum (fun p:OppositeData=>oppositeIntegral v s freq p.1.val p.2.val)
       (∫z in periodDomain,oppositeEisenstein z v hv s*ShortDraftTrace.breveE (-freq*z)):=by
   have hh:=(oppositeDataEquiv.trans primitiveRowEquiv.symm).hasSum_iff.mpr
@@ -415,12 +369,12 @@ theorem hasSum_oppositeIntegrals (v:ℝ) (hv:0<v) (s freq:ℂ) (hs:2<s.re):
     dsimp only [Equiv.trans_apply]
     rw [opposite_summand]
 
-lemma oppositeTerm_integrable (v:ℝ) (hv:0<v) (s:ℂ) (hs:1<s.re)
+lemma oppositeTerm_integrable (s:ℂ) (hs:1<s.re)
     (c x:Eis) (hc:c≠0):Integrable (fun z=>oppositeTerm z v s c x):=by
   simp_rw [oppositeTerm_eq_shifted _ v hv s c x hc]
   exact (shiftedHeightKernel_integrable v hv s _ hs).const_mul _
 
-lemma oppositeIntegral_sum_translate (v:ℝ) (hv:0<v) (s:ℂ) (hs:1<s.re)
+lemma oppositeIntegral_sum_translate (s:ℂ) (hs:1<s.re)
     (h c x:Eis) (hc:c≠0):
     (∑'n:Eis,oppositeIntegral v s (cuspFrequency h) c (x+c*n))=
       ∫z:ℂ,oppositeTerm z v s c x*ShortDraftTrace.breveE (-cuspFrequency h*z):=by
@@ -434,7 +388,7 @@ lemma oppositeIntegral_sum_translate (v:ℝ) (hv:0<v) (s:ℂ) (hs:1<s.re)
     dsimp only [oppositeIntegral]
     rw [oppositeTerm_shift,cuspFrequency_negative_period]
 
-lemma oppositeTerm_fourier_integral (v:ℝ) (hv:0<v) (s freq:ℂ)
+lemma oppositeTerm_fourier_integral (s freq:ℂ)
     (c x:Eis) (hc:c≠0):
     (∫z:ℂ,oppositeTerm z v s c x*ShortDraftTrace.breveE (-freq*z))=
       ((v:ℂ)^(2-s)*sourceFourierKernel s (freq*v))*
@@ -446,7 +400,7 @@ lemma oppositeTerm_fourier_integral (v:ℝ) (hv:0<v) (s freq:ℂ)
     traceIntegral_shiftedHeightKernel v hv s (eisEmbedding (3*x)/eisEmbedding c) freq]
   ring_nf
 
-lemma oppositeDenominator_integral_formula (v:ℝ) (hv:0<v) (s:ℂ) (hs:2<s.re)
+lemma oppositeDenominator_integral_formula (s:ℂ) (hs:2<s.re)
     (h:Eis) (c:PrimaryLower):
     (∑'x:CoprimeElement c.val,oppositeIntegral v s (cuspFrequency h) c.val x.val)=
       ((v:ℂ)^(2-s)*sourceFourierKernel s (cuspFrequency h*v))*
@@ -468,6 +422,8 @@ lemma oppositeDenominator_integral_formula (v:ℝ) (hv:0<v) (s:ℂ) (hs:2<s.re)
   simp_rw [oppositeIntegral_sum_translate v hv s (by linarith) h c.val _ (primaryLower_ne_zero c),
     oppositeTerm_fourier_integral v hv s (cuspFrequency h) c.val _ (primaryLower_ne_zero c)]
   exact tsum_mul_left
+
+end
 
 lemma unramifiedCubicGaussSeries_twentySeven (s:ℂ) (h:Eis):
     unramifiedCubicGaussSeries s (27*h)=unramifiedCubicGaussSeries s h:=by

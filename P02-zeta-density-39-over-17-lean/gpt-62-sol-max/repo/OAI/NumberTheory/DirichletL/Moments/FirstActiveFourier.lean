@@ -9,17 +9,14 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstActiveFourier
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstMixed CenteredMomentFirstReduced
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstMixed CenteredMomentFirstReduced
 local notation "O" => ActualEisensteinCubic.O
 
-theorem shifted_active_fourier {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
-    (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
-    (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6) (v h : O) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (P : ι → Ideal O) [instShared3 : ∀ i,(P i).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime P)) (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i) (hchar : ∀ i,ringChar (O ⧸ P i)≠2) (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
+include ι instShared1 P instShared3 hcop hg hchar j hj0 hj6
+
+theorem shifted_active_fourier (v h : O) :
     let r := finitePrimeModulus P
     let G := principalSexticRow P hcop hg j r (span_finitePrimeModulus P)
     (∑' x : Residue r,G (Ideal.Quotient.mk _ v*x)*
@@ -40,12 +37,7 @@ theorem shifted_active_fourier {ι : Type*} [Fintype ι]
   change finiteSexticRow P hg j v*(star (finiteSexticRow P hg j h)*canonicalGaussSum P hcop hg j)=_
   ring
 
-theorem tripleFourier_active {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i,(P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ P i)
-    (hchar : ∀ i,ringChar (O ⧸ P i)≠2)
-    (j : ι → ℕ) (hj0 : ∀ i,j i≠0) (hj6 : ∀ i,j i<6)
+theorem tripleFourier_active
     (a b : O) (ha : a≠0) (hb : b≠0)
     (har : IsCoprime a (b*finitePrimeModulus P)) (hbr : IsCoprime b (finitePrimeModulus P))
     (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) (h : O) :
@@ -74,6 +66,8 @@ theorem tripleFourier_active {ι : Type*} [Fintype ι]
   dsimp only at hs
   rw [tsum_fintype] at hs
   rw [hs]
+
+end
 
 end SevenEighths.CenteredMomentFirstActiveFourier
 

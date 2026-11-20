@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 
@@ -306,7 +250,11 @@ lemma integralCoverFiberPoint_continuous (H K : Subgroup (SL(2,ActualEisensteinC
   exact (continuous_integralOrbitProjection H).comp
     (continuous_hyperbolic_action (integralComplexMatrix ((integralCoverRep H K q)⁻¹:SL(2,ActualEisensteinCubic.O))))
 
-lemma integralCoverMap_fiber {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K)
+section
+variable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K)
+include H K hHK
+
+lemma integralCoverMap_fiber
     (w : HyperbolicSpace) :
     (integralCoverMap hHK) ⁻¹' {integralOrbitProjection K w}=
       Set.range (fun q : IntegralCoverCosets H K=>integralCoverFiberPoint H K q w) := by
@@ -326,8 +274,7 @@ lemma integralCoverMap_fiber {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (h
   · rintro ⟨q,rfl⟩
     exact integralCoverMap_fiberPoint hHK q w
 
-lemma integralCoverMap_preimage_image {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (S : Set (IntegralOrbitQuotient H)) :
+lemma integralCoverMap_preimage_image (S : Set (IntegralOrbitQuotient H)) :
     (integralOrbitProjection K) ⁻¹' (integralCoverMap hHK '' S)=
       ⋃q : IntegralCoverCosets H K,(integralCoverFiberPoint H K q) ⁻¹' S := by
   ext w
@@ -341,8 +288,7 @@ lemma integralCoverMap_preimage_image {H K : Subgroup (SL(2,ActualEisensteinCubi
     obtain ⟨q,hq⟩ := Set.mem_iUnion.mp hw
     exact ⟨integralCoverFiberPoint H K q w,hq,integralCoverMap_fiberPoint hHK q w⟩
 
-theorem integralCoverMap_isClosedMap {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) [H.IsFiniteRelIndex K] : IsClosedMap (integralCoverMap hHK) := by
+theorem integralCoverMap_isClosedMap [H.IsFiniteRelIndex K] : IsClosedMap (integralCoverMap hHK) := by
   let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
   intro S hS
   have hq : Topology.IsQuotientMap (integralOrbitProjection K) := isQuotientMap_quotient_mk'
@@ -350,8 +296,7 @@ theorem integralCoverMap_isClosedMap {H K : Subgroup (SL(2,ActualEisensteinCubic
   rw [integralCoverMap_preimage_image]
   exact isClosed_iUnion_of_finite (fun q=>hS.preimage (integralCoverFiberPoint_continuous H K q))
 
-theorem integralCoverMap_isProperMap {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) [H.IsFiniteRelIndex K] : IsProperMap (integralCoverMap hHK) := by
+theorem integralCoverMap_isProperMap [H.IsFiniteRelIndex K] : IsProperMap (integralCoverMap hHK) := by
   let : Fintype (IntegralCoverCosets H K) := Fintype.ofFinite _
   apply isProperMap_iff_isClosedMap_and_compact_fibers.mpr
   refine ⟨integralCoverMap_continuous hHK,integralCoverMap_isClosedMap hHK,?_⟩
@@ -362,11 +307,12 @@ theorem integralCoverMap_isProperMap {H K : Subgroup (SL(2,ActualEisensteinCubic
     rw [integralCoverMap_fiber hHK w]
     exact (Set.finite_range _).isCompact
 
-theorem integralCoverMap_compact_preimage {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) [H.IsFiniteRelIndex K]
+theorem integralCoverMap_compact_preimage [H.IsFiniteRelIndex K]
     (S : Set (IntegralOrbitQuotient K)) (hS : IsCompact S) :
     IsCompact ((integralCoverMap hHK) ⁻¹' S) :=
   (integralCoverMap_isProperMap hHK).isCompact_preimage hS
+
+end
 
 end
 

@@ -8,72 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
@@ -227,9 +172,11 @@ lemma euclideanToHyperbolic_image_positive (S : Set EuclideanSpatial)
   · intro hw
     exact ⟨hyperbolicEuclideanCoordinates w,hw,euclideanToHyperbolic_coordinates w⟩
 
-lemma kernelEuclideanProjection_measurePreserving_on (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf)
-    (hinj : Set.InjOn kernelEuclideanProjection S) :
+section
+variable (S : Set EuclideanSpatial) (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf) (hinj : Set.InjOn kernelEuclideanProjection S)
+include S hS hpos hinj
+
+lemma kernelEuclideanProjection_measurePreserving_on :
     MeasurePreserving kernelEuclideanProjection (hyperbolicEuclideanVolume.restrict S)
       ((integralQuotientVolume globalKubotaKernel).restrict (kernelEuclideanProjection '' S)) := by
   have hU : MeasurableSet (hyperbolicEuclideanCoordinates ⁻¹' S) :=
@@ -249,9 +196,7 @@ lemma kernelEuclideanProjection_measurePreserving_on (S : Set EuclideanSpatial)
     rfl
   rwa [himage] at hcomp
 
-lemma kernelEuclideanProjection_integral (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf)
-    (hinj : Set.InjOn kernelEuclideanProjection S) (g : KernelQuotient → ℝ)
+lemma kernelEuclideanProjection_integral (g : KernelQuotient → ℝ)
     (hg : AEStronglyMeasurable g (integralQuotientVolume globalKubotaKernel)) :
     (∫p in S,g (kernelEuclideanProjection p)∂hyperbolicEuclideanVolume)=
       ∫q in kernelEuclideanProjection '' S,g q∂integralQuotientVolume globalKubotaKernel := by
@@ -260,14 +205,14 @@ lemma kernelEuclideanProjection_integral (S : Set EuclideanSpatial)
   rw [←hm.map_eq] at hh ⊢
   exact (integral_map hm.measurable.aemeasurable hh).symm
 
-lemma kernelEuclideanProjection_integral_le (S : Set EuclideanSpatial)
-    (hS : MeasurableSet S) (hpos : S⊆euclideanUpperHalf)
-    (hinj : Set.InjOn kernelEuclideanProjection S) (g : KernelQuotient → ℝ)
+lemma kernelEuclideanProjection_integral_le (g : KernelQuotient → ℝ)
     (hg : Integrable g (integralQuotientVolume globalKubotaKernel)) (hgn : ∀q,0≤g q) :
     (∫p in S,g (kernelEuclideanProjection p)∂hyperbolicEuclideanVolume)≤
       ∫q,g q∂integralQuotientVolume globalKubotaKernel := by
   rw [kernelEuclideanProjection_integral S hS hpos hinj g hg.aestronglyMeasurable]
   exact setIntegral_le_integral hg (Eventually.of_forall hgn)
+
+end
 
 lemma kernelSmoothTestsToL2_norm_sq (f : kernelSmoothTests) :
     ‖kernelSmoothTestsToL2 f‖^2=
@@ -337,10 +282,7 @@ end CubicEisenstein
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace CompletedGauss
 
-section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
 
-end
 
 open ActualEisensteinCubic CanonicalQuadraticSieve
 

@@ -10,21 +10,16 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyActiveChildRestoration
-open ConcretePrimeRowBridge
-open HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonHeightEnvelope
-open CenteredMomentFirstAnnularInput CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
-open CenteredMomentRetainedEnergy CenteredMomentRetainedProfile
-open CenteredMomentRadialEligibleEnergy CenteredMomentCommonMaskEnergy
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
+open ConcretePrimeRowBridge HeckeFamily CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentCommonHeightEnvelope CenteredMomentFirstAnnularInput CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentDivisorAllocation CenteredMomentDivisorRetained CenteredMomentRetainedEnergy CenteredMomentRetainedProfile CenteredMomentRadialEligibleEnergy CenteredMomentCommonMaskEnergy CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α]
 local instance {β:Type*}:DecidableEq β:=Classical.decEq _
 
-theorem allocated_row_active (s:Input α)(C R:Ideal O)
-    (B:actualAllocations (activeInput s).pools C)(τ:Character)(v:ℝ)
-    (D:Ideal O)(a:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
+section
+variable (s:Input α) (C R:Ideal O) (B:actualAllocations (activeInput s).pools C) (τ:Character) (v:ℝ) (D:Ideal O) (a:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
+include s C R B τ v D a
+
+theorem allocated_row_active
     (z:O)(W₁ W₂:ℝ→ℂ)(X₁ X₂:ℝ):
     let d : CenteredMomentEligibleEnergy.Data (CenteredMomentCommonProfile.liveIndices B.val) :=
       commonData (withHeight (activeInput s) τ v) C R
@@ -59,9 +54,7 @@ theorem allocated_row_active (s:Input α)(C R:Ideal O)
   simpa only [hz] using rowSlot_active s i.val.val τ
     (CenteredMomentSecondHeightFamily.fixedBadMask * idealGenerator (R * C)) 1 z v 0
 
-theorem child_energy_active (s:Input α)(C R:Ideal O)
-    (B:actualAllocations (activeInput s).pools C)(τ:Character)(v:ℝ)
-    (D:Ideal O)(a:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
+theorem child_energy_active
     (rad:Radial):
     let d : CenteredMomentEligibleEnergy.Data (CenteredMomentCommonProfile.liveIndices B.val) :=
       commonData (withHeight (activeInput s) τ v) C R
@@ -82,6 +75,8 @@ theorem child_energy_active (s:Input α)(C R:Ideal O)
     (allocated_row_active s C R B τ v D a z s.W₁ s.W₂
       (s.Y₁ / Ideal.absNorm (B.val (Sum.inr 0)))
       (s.Y₂ / Ideal.absNorm (B.val (Sum.inr 1))))
+
+end
 
 end SevenEighths.CenteredMomentEnergyActiveChildRestoration
 

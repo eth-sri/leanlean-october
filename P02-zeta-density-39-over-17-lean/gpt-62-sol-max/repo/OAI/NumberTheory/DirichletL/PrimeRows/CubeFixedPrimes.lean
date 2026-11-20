@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.PrimeRows.ProbeFrames
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubePrimeBound
 public import OAI.NumberTheory.DirichletL.Detector.RayPoolDisjoint
 
@@ -10,31 +11,23 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary
-open ProbeRaySlots ProbeCentralAllSlots HeckePrimeAmplitudeBins
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary ProbeRaySlots ProbeCentralAllSlots HeckePrimeAmplitudeBins
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 
-omit [NeZero M] in
-theorem fixedPoolOutside (S : Finset (Ideal O)) (N : ℕ) (c b : ℝ) (Y : Fin N→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S c b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S c b (Y j) P).mp hP |>.2.2.2
-
 theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss : ℝ)
     (he : 0<e) (he1 : e<1/1000) (heps : 0<eps) (hc : 0<c) (hcb : c≤b) (hA : 0≤A)
     (hR : 0≤R) (hdmin : 0<dmin) (hdmax : 0≤dmax) (_hdRange : dmin≤dmax) (hrmin : 0<rmin)
-    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ)
-    (hbudget : 8*e*R+κ≤ε) (hgap : ε<rmin*mesh) (hmargin : 0<margin)
-    (hheight : 2*τ<dmin*cost) (hloss : τ*(2+4*eps)<loss)
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
+    (hτ : 0<τ) (hε : 0<ε) (hκ : 0<κ) (hcost : 0≤cost) (hmesh : 0<mesh) (hδ : 0<δ) :
+    WithProbeScaleMargins e R dmin rmin τ ε κ cost mesh margin eps loss (
+    ∀ (S : Finset (Ideal O)) (hS : SourceExclusions S) (hfirst : FirstTail (4*e) S)
     (hmax : ∀P∈S,P.IsMaximal)
     (ell : Fin N→ℝ) (hell : Function.Injective ell)
     (hello : ∀j,dmax*rmin≤ell j) (hellhi : ∀j,ell j≤dmin*R)
     (W : Fin N→ℝ→ℂ)
-    (hWs : ∀j,Function.support (W j)⊆Ioo c b) (hW : ∀j,ContDiff ℝ ∞ (W j)) (hWB : ∀j t,‖W j t‖≤A) :
-    ∃C : ℝ,0<C ∧ ∀η : Character,∀ᶠ Z : ℝ in atTop,
+    (hWs : ∀j,Function.support (W j)⊆Ioo c b) (hW : ∀j,ContDiff ℝ ∞ (W j)) (hWB : ∀j t,‖W j t‖≤A), ∃C : ℝ,0<C ∧ ∀η : Character,∀ᶠ Z : ℝ in atTop,
       ∀d : ℝ,dmin≤d → d≤dmax → ∀(u : FreeRow),u.val≠1 → Z^δ≤rowNorm u →
       (calibrationForSet S hmax).residueMonoid u.val≠0 → rowNorm u≤Z^(d-margin) →
       ∀(a : ℝ) (i : ℕ),i≤n → 51/100≤a → a≤1 →
@@ -51,9 +44,10 @@ theorem actual_fixed_cube_prime_bound (N n : ℕ) (e eps c b A R dmin dmax rmin 
       (∀j,0≤g j ∧ g j≤a-1/2 ∧ g j∈labels (a-1/2) mesh ∧
         ‖Q j‖≤(Y j)^(g j+mesh) ∧ (0<g j → (Z^d)^(2*(ell j/d)*g j)≤‖Q j‖^2)) ∧
       ‖∑P:(∀j,T j),calibratedTupleValue S hS hmax η u (fun j=>(P j).val)
-          (fun j=>fixedPoolOutside M H S N c b Y j (P j).val (P j).property) W Y x w z‖≤
+          (fun j=>ProbeHighRowFamily.rayPoolOutside M H S N c b Y j (P j).val (P j).property) W Y x w z‖≤
         C*(η.modulus.absNorm:ℝ)^(2*eps)*rowNorm u^(a-1/2+12*e+eps*(N+8))*Z^loss*
-          (∏j,(Y j)^(-(4/25:ℝ)+g j+mesh)) := by
+          (∏j,(Y j)^(-(4/25:ℝ)+g j+mesh))) := by
+  intro hbudget hgap hmargin hheight hloss S hS hfirst hmax ell hell hello hellhi W hWs hW hWB
   obtain ⟨C,hC,hbound⟩ := actual_cube_prime_bound M H hH N n e eps c b A R dmin dmax rmin τ ε κ cost mesh δ margin loss
     he he1 heps hc hcb hA hR hdmin hdmax hrmin hτ hε hκ hcost hmesh hδ hbudget hgap hmargin hheight hloss
     S hS hfirst hmax W hWs hW hWB

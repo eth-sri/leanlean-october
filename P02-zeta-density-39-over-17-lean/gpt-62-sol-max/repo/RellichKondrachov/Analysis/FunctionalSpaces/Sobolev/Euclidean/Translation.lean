@@ -38,12 +38,6 @@ namespace Euclidean
 open scoped ENNReal MeasureTheory Topology
 open MeasureTheory
 
-section Topology
-
-variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
-
-end Topology
-
 section Measure
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E] [CompleteSpace E]
@@ -75,8 +69,6 @@ lemma translateL2_ae_eq {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F] (
   exact
     (MeasureTheory.Lp.coeFn_compMeasurePreserving (g := (g : MeasureTheory.Lp F (2 : ENNReal) μ))
       (hf := MeasureTheory.measurePreserving_add_right μ a))
-
-variable [IsFiniteMeasureOnCompacts μ]
 
 end Measure
 

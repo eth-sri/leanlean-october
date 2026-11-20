@@ -130,51 +130,20 @@ theorem canonical_completed_fiber_energy_uniform_degree
   have hTw : ContDiff ℝ ∞ (CompletedHeight.normTwistedSource W θ) :=
     CanonicalRowCompletion.normTwistedSource_contDiff W lo hi hlo hWs hW θ
   have hTs := (CompletedHeight.normTwistedSource_support W θ).trans hWs
-  have hTc : HasCompactSupport (CompletedHeight.normTwistedSource W θ) :=
-    HasCompactSupport.intro isCompact_Icc (fun x hx => by
-      by_contra hn
-      exact hx (hTs hn))
+  have hTc := HasCompactSupport.of_support_subset_isCompact isCompact_Icc hTs
   have hmLam : ConcretePrimeRowBridge.goodLambda∣mfull :=
     ((reflectionExcludedGenerator_bad q).1).trans (dvd_mul_left _ m)
   have hm2 : (2:Eis)∣mfull := ((reflectionExcludedGenerator_bad q).2).trans (dvd_mul_left _ m)
   have hid (K : rows) := original_completed_residual_source parents J F hJ hF mfull hmfull hparents0 u hbad
     Q hQ c hc hcQ E hcop lists hmax hgood hdis hodd hLP D Ψ hΨnorm hΨperiod hmLam hm2
     (CompletedHeight.normTwistedSource W θ) hTc lo hi hlo hTs hTw (Z^(N-3*hhat)) (Real.rpow_pos_of_pos hzp _) w K
-  have hre := original_fiber_energy_reindex parents J (ActualFiber.maskIdeal q m F) hparents0
+  exact completed_fiber_energy_transfer parents J (ActualFiber.maskIdeal q m F) hparents0
     (fun I => ∑ p : ∀ i,lists i,(∏ i,w i (p i))*markedCompletedT
       (rowTwist Ψ mfull (ConcretePrimeRowBridge.idealGenerator F)
         (u.val*ConcretePrimeRowBridge.idealGenerator I))
       (CompletedHeight.normTwistedSource W θ) (Z^(N-3*hhat))
-      (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0))
-  rw [hre]
-  have heq : (∑ K : rows,‖∑ p : ∀ i,lists i,(∏ i,w i (p i))*markedCompletedT
-      (rowTwist Ψ mfull (ConcretePrimeRowBridge.idealGenerator F)
-        (u.val*ConcretePrimeRowBridge.idealGenerator (reconstructFiberRow J mask K.val)))
-      (CompletedHeight.normTwistedSource W θ) (Z^(N-3*hhat))
-      (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0)‖^2)=
-      ∑ K : rows,‖thetaDerivativeScalar⁻¹*∑ h,scalar h K*
-        ∑ A : Finset (FreeReflection.pool J mask Q₀),frozenInactiveWeight J F mask Q₀ A*
-          ∑ T : Finset σ,originalInactivePhysical ((poolPrimeFamily J mask Q₀).restrict A)
-            (poolPrimeFamily J mask Q₀).ideal rows hrows lists hmax hgood T (D h A T) (E h).shape (E h).denominator_ne_zero
-            (fun b : A => completedLocalExponent J F b.val.val)
-            (CompletedHeight.normTwistedSource W θ) (Z^(N-3*hhat)) w K‖^2 := by
-    apply Finset.sum_congr rfl
-    intro K hK
-    exact congrArg (fun z : ℂ => ‖z‖^2) (hid K)
-  have hbound := heq.trans_le henergy
-  have hp : Z^O=(Ideal.absNorm (rowPowerfulPart J):ℝ) := Real.rpow_logb hzp (ne_of_gt hz) hPowPos
-  have hR : C*(1+‖θ‖)^degree*Z^(N+V-cstar/16-O/2)=
-      C*(1+‖θ‖)^degree*Z^(N+V-cstar/16)*(Ideal.absNorm (rowPowerfulPart J):ℝ)^(-(1/2:ℝ)) := by
-    rw [show N+V-cstar/16-O/2=(N+V-cstar/16)+O*(-(1/2:ℝ)) by ring,
-      Real.rpow_add hzp,Real.rpow_mul hzp.le,hp]
-    ring
-  have hs := Finset.sum_coe_sort rows (fun K : Ideal Eis =>
-    ‖∑ p : ∀ i,lists i,(∏ i,w i (p i))*markedCompletedT
-      (rowTwist Ψ mfull (ConcretePrimeRowBridge.idealGenerator F)
-        (u.val*ConcretePrimeRowBridge.idealGenerator (reconstructFiberRow J mask K)))
-      (CompletedHeight.normTwistedSource W θ) (Z^(N-3*hhat))
-      (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0)‖^2)
-  exact hs.symm.trans_le (hbound.trans_eq hR)
+      (fun A => ∏ i,if (p i).val∣A then (1:ℂ) else 0)) _ hid hz henergy
+
 end
 end SevenEighths.InverseReflectedPhase
 

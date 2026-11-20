@@ -10,78 +10,24 @@ noncomputable section
 namespace CanonicalQuadraticSieve
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 section
 
 open scoped BigOperators Classical SchwartzMap
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open EisensteinSchwartzPoisson UnrestrictedIdealReindex IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss EisensteinSchwartzPoisson UnrestrictedIdealReindex IdealMobiusDivisorSum
 
 def maskedPairDualTail (G I J : Ideal O) (W : 𝓢(ℝ,ℂ)) (M K : ℝ) : ℂ :=
   ((M:ℂ)/(Real.sqrt ((Ideal.absNorm I:ℝ)*(Ideal.absNorm J:ℝ)):ℂ))*
@@ -166,7 +112,7 @@ theorem retainedDualPrincipalSum_pair_expansion {n : Type} [Fintype n] [Decidabl
     apply Finset.sum_congr rfl
     intro B _
     ring
-  · simp only [unrestrictedPairTerm,hc,ite_false,zero_mul,Finset.sum_const_zero]
+  · simp [unrestrictedPairTerm, hc]
 
 theorem retainedDualPrincipalSum_twist_expansion {n : Type} [Fintype n] [DecidableEq n]
     (W : 𝓢(ℝ,ℂ)) (cols : n → Ideal O) (a : n → ℂ) (M F K : ℝ) (q : Ideal O)
@@ -223,7 +169,7 @@ theorem maskedDualFamily_retained {n : Type} [Fintype n] [DecidableEq n]
       apply Finset.sum_congr rfl
       intro q hq
       ring
-    · simp only [hc,ite_false,mul_zero,Finset.sum_const_zero,add_zero]
+    · simp [hc]
   simp only [maskedDualFamily,hp,Finset.sum_add_distrib,maskedDualTailFamily]
   congr 1
   simp_rw [Finset.sum_comm (s := (Finset.univ : Finset n)) (t := idealDivisors G)]
@@ -235,8 +181,7 @@ theorem maskedDualFamily_retained {n : Type} [Fintype n] [DecidableEq n]
 end
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss
-open IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson CompletedGauss IdealMobiusDivisorSum
 
 theorem normalizedFactors_commonMaskIdeal (D : Ideal O) :
     UniqueFactorizationMonoid.normalizedFactors (commonMaskIdeal D) = (gcdMaskPrimes D).val := by
@@ -244,14 +189,13 @@ theorem normalizedFactors_commonMaskIdeal (D : Ideal O) :
     let : P.IsMaximal := gcdMaskPrimes_maximal D ⟨P,hP⟩
     exact Ideal.prime_of_isPrime (NeZero.ne P) inferInstance
   have h := UniqueFactorizationMonoid.normalizedFactors_prod_of_prime hp
-  simpa only [commonMaskIdeal,Finset.prod_val,id_eq] using h
+  simpa [commonMaskIdeal] using h
 
 theorem idealZeroMask_commonMaskIdeal (D : Ideal O) (z : O) :
     idealZeroMask (commonMaskIdeal D) z =
       rowCoprimeMask (fun P : gcdMaskPrimes D => P.val) Finset.univ z := by
   classical
-  simp only [idealZeroMask,normalizedFactors_commonMaskIdeal,rowCoprimeMask,
-    Finset.mem_univ,true_and,Subtype.exists,exists_prop,Finset.mem_val]
+  simp [idealZeroMask, normalizedFactors_commonMaskIdeal, rowCoprimeMask]
 
 lemma idealZeroMask_idempotent (D : Ideal O) (z : O) :
     idealZeroMask D z*idealZeroMask D z=idealZeroMask D z := by
@@ -378,7 +322,7 @@ theorem originalPairLow_residual_finite (D I J : Ideal O) (hI : Admissible I) (h
     by_cases hc : IsCoprime B.val (commonMaskIdeal D)
     · simp only [hc,ite_true,one_mul,pairMaskedSquareSource,sourcePrincipalScale]
       ring
-    · simp only [hc,ite_false,zero_mul,mul_zero]
+    · simp [hc]
   simp_rw [ht]
   rw [←Finset.mul_sum,sum_idealRange_coprime (commonMaskIdeal D) K
     (fun P hP => fixedBadPrimes_dvd_commonMaskIdeal D P hP)]
@@ -423,11 +367,11 @@ end
 
 open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
 
-theorem originalDual_gcd_aggregate {n : Type} [Fintype n] [DecidableEq n]
-    (D : Ideal O) (hD : D≠0) (cols : n → Ideal O) (hcols : ∀ j, Admissible (cols j))
-    (hdiv : ∀ j, D∣cols j) (hproper : ∀ j, cols j≠D)
-    (hray : ∀ j k, columnRay (cols j)=columnRay (cols k))
-    (a : n → ℂ) (W : 𝓢(ℝ,ℂ)) (M : ℝ) (hM : 0<M) :
+section
+variable {n : Type} [instShared1 : Fintype n] [instShared2 : DecidableEq n] (D : Ideal O) (hD : D≠0) (cols : n → Ideal O) (hcols : ∀ j, Admissible (cols j)) (hdiv : ∀ j, D∣cols j) (hproper : ∀ j, cols j≠D) (hray : ∀ j k, columnRay (cols j)=columnRay (cols k)) (a : n → ℂ) (W : 𝓢(ℝ,ℂ))
+include n instShared1 instShared2 D hD cols hcols hdiv hproper hray a W
+
+theorem originalDual_gcd_aggregate (M : ℝ) (hM : 0<M) :
     (∑ j, ∑ k, if gcd (cols j) (cols k)=D then
       star (a j)*a k*originalPairDualKernel D (cols j) (cols k) W M else 0) =
       maskedDualFamily (commonMaskIdeal D) (fun j => idealQuotient D (cols j)) a W M := by
@@ -447,11 +391,7 @@ theorem originalDual_gcd_aggregate {n : Type} [Fintype n] [DecidableEq n]
         (hdiv j) (hdiv k) hneq (hray j k) W M hM]
   · rw [ite_eq_right hg,ite_eq_right (fun hc => hg (heq.mpr hc))]
 
-theorem originalHigh_gcd_principal_assembly {n : Type} [Fintype n] [DecidableEq n]
-    (D : Ideal O) (hD : D≠0) (cols : n → Ideal O) (hcols : ∀ j, Admissible (cols j))
-    (hdiv : ∀ j, D∣cols j) (hproper : ∀ j, cols j≠D)
-    (hray : ∀ j k, columnRay (cols j)=columnRay (cols k))
-    (a : n → ℂ) (W : 𝓢(ℝ,ℂ)) (M K : ℝ) (hM : 0<M) :
+theorem originalHigh_gcd_principal_assembly (M K : ℝ) (hM : 0<M) :
     (∑ j, ∑ k, if gcd (cols j) (cols k)=D then
       star (a j)*a k*(∑' lengthScale : Ideal O, originalPairHigh (cols j) (cols k) W M K lengthScale) else 0) =
       (∑ q ∈ idealDivisors (commonMaskIdeal D), (UniqueFactorizationMonoid.moebius q:ℂ)*
@@ -487,6 +427,8 @@ theorem originalHigh_gcd_principal_assembly {n : Type} [Fintype n] [DecidableEq 
       (fun j => admissible_idealQuotient (hcols j) (hdiv j))
       (fun j k => columnRay_idealQuotient_eq D (cols j) (cols k) (hcols j) (hcols k)
         (hdiv j) (hdiv k) (hray j k))]
+
+end
 
 end
 
@@ -549,7 +491,7 @@ def gcdRaySupport {n : Type} [Fintype n] (cols : n → Ideal O) (a : n → ℂ)
 theorem mem_gcdRaySupport {n : Type} [Fintype n] (cols : n → Ideal O) (a : n → ℂ)
     (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord) (j : n) :
     j∈gcdRaySupport cols a D c ↔ D∣cols j ∧ columnRay (cols j)=c ∧ a j≠0 := by
-  simp only [gcdRaySupport,Finset.mem_filter,Finset.mem_univ,true_and]
+  simp [gcdRaySupport]
 
 theorem gcd_ray_pair_sum_restrict {n : Type} [Fintype n]
     (cols : n → Ideal O) (a : n → ℂ) (D : Ideal O)
@@ -570,7 +512,7 @@ theorem gcd_ray_pair_sum_restrict {n : Type} [Fintype n]
         apply hj
         exact (mem_gcdRaySupport cols a D c j).mpr
           ⟨h.1 ▸ GCDMonoid.gcd_dvd_left (cols j) (cols k),h.2.1,hn⟩
-      simp only [hz,star_zero,zero_mul]
+      simp [hz]
     · rfl
   have hkzero (k : n) (hk : k∉S) (j : n) : f j k=0 := by
     dsimp only [f]
@@ -580,7 +522,7 @@ theorem gcd_ray_pair_sum_restrict {n : Type} [Fintype n]
         apply hk
         exact (mem_gcdRaySupport cols a D c k).mpr
           ⟨h.1 ▸ GCDMonoid.gcd_dvd_right (cols j) (cols k),h.2.2,hn⟩
-      simp only [hz,mul_zero,zero_mul]
+      simp [hz]
     · rfl
   have hleft : (∑ j∈S, ∑ k, f j k) = ∑ j, ∑ k, f j k := by
     apply Finset.sum_subset (Finset.subset_univ S)

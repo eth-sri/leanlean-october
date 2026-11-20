@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassWeighted
 
 @[expose] public section
@@ -8,16 +9,14 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPriorityTail
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open InverseMomentGlobalPrincipalMass
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic InverseMomentGlobalPrincipalMass ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
 theorem original_tail_mass (Jmax : ℕ) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
-    (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (_hinj : OAI.PrincipalIdealFamily.Distinct p)
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(Z L : ℝ),
     1≤Z → 0≤L → (∀x∈S,SourceValid p x) →
     (∀x∈S,‖eisEmbedding (primeProduct p x.cube.support x.cube.leftExponent)‖^2≤Z^L) →

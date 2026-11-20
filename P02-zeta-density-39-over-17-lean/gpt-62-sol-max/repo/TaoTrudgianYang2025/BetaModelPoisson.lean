@@ -79,17 +79,15 @@ def modelPhaseWeightedSchwartz
   (modelPhaseWeightedKernel_hasCompactSupport hs hN T).toSchwartzMap
     (modelPhaseWeightedKernel_contDiff hχ hs hF T N)
 
-theorem modelPhaseWeightedSchwartz_apply
-    {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
-    (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T x : ℝ) :
+section
+variable {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ} (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2) (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N)
+include χ F σ δ N P hχ hs hF hN
+
+theorem modelPhaseWeightedSchwartz_apply (T x : ℝ) :
     modelPhaseWeightedSchwartz hχ hs hF hN T x =
       modelPhaseWeightedKernel χ F T N x := rfl
 
-theorem modelPhaseWeightedSchwartz_fourier
-    {χ F : ℝ → ℝ} {σ δ N : ℝ} {P : ℕ}
-    (hχ : ContDiff ℝ ∞ χ) (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hF : IsApproximateModelPhaseFunction F σ P δ) (hN : 0 < N) (T r : ℝ) :
+theorem modelPhaseWeightedSchwartz_fourier (T r : ℝ) :
     𝓕 (modelPhaseWeightedSchwartz hχ hs hF hN T) r =
       modelPhaseFourierMode χ F T N r := by
   rw [SchwartzMap.fourier_coe,Real.fourier_eq]
@@ -102,6 +100,8 @@ theorem modelPhaseWeightedSchwartz_fourier
   rw [show T*F (x/N)-r*x = -(r*x)+T*F (x/N) by ring,
     AddChar.map_add_eq_mul,Circle.coe_mul]
   ring
+
+end
 
 theorem modelPhaseWeightedKernel_tsum_eq_finite
     {χ F : ℝ → ℝ} {N : ℝ}

@@ -14,8 +14,7 @@ namespace SevenEighths.TraceCharacter
 
 abbrev O := ActualEisensteinCubic.O
 
-open ActualEisensteinCubic EisensteinEmbedding ConcreteTraceCRT
-open EisensteinSchwartzPoisson FiniteFourier
+open ActualEisensteinCubic EisensteinEmbedding ConcreteTraceCRT EisensteinSchwartzPoisson FiniteFourier
 
 def traceCharacter (c : O) (hc : c ≠ 0) : AddChar (O ⧸ Ideal.span {c}) ℂ :=
   eisTraceModChar ShortDraftTrace.breveE
@@ -37,29 +36,31 @@ theorem residue_card :
 def gaussScalar (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) : ℂ :=
   gaussSum χ (traceCharacter c (NeZero.ne c))
 
-theorem transform_eq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) (a : O ⧸ Ideal.span {c}) :
+section
+variable (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (hχ : IsPrimitiveOnIdeals χ)
+include χ hχ
+
+theorem transform_eq (a : O ⧸ Ideal.span {c}) :
     (∑ x : O ⧸ Ideal.span {c}, χ x * traceCharacter c (NeZero.ne c) (a * x)) =
       χ⁻¹ a * gaussScalar c χ :=
   transform_primitive_character χ hχ (traceCharacter c (NeZero.ne c)) a
 
-theorem gaussScalar_norm_sq (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) :
+theorem gaussScalar_norm_sq :
     ‖gaussScalar c χ‖ ^ 2 = (Ideal.absNorm (Ideal.span {c}) : ℝ) := by
   simpa only [gaussScalar, residue_card c] using
     primitive_gaussSum_norm_sq χ hχ (traceCharacter c (NeZero.ne c))
       (traceCharacter_isPrimitive c (NeZero.ne c))
 
-theorem gaussScalar_norm (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) :
+theorem gaussScalar_norm :
     ‖gaussScalar c χ‖ = Real.sqrt (Ideal.absNorm (Ideal.span {c}) : ℝ) := by
   rw [← gaussScalar_norm_sq c χ hχ, Real.sqrt_sq (norm_nonneg _)]
 
-theorem gaussScalar_norm_embedding (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hχ : IsPrimitiveOnIdeals χ) :
+theorem gaussScalar_norm_embedding :
     ‖gaussScalar c χ‖ = ‖eisEmbedding c‖ := by
   rw [gaussScalar_norm c χ hχ, ← eisEmbedding_norm_sq_eq_absNorm_span,
     Real.sqrt_sq (norm_nonneg _)]
+
+end
 
 def normalizedGauss (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) : ℂ :=
   gaussScalar c χ / (‖eisEmbedding c‖ : ℂ)

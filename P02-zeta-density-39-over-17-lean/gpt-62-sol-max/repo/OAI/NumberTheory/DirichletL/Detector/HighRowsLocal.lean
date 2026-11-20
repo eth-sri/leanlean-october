@@ -52,9 +52,11 @@ theorem rowHighPrimeTerm_tsum_eq_localFactor (η : HeckeFamily.Character) (u : O
     ←Fin.sum_univ_eq_sum_range]
   rfl
 
-theorem excludedRowHighLocalFactor (S : Finset Id) (hS : ∀P∈S,Prime P)
-    (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) (P : PrimeIdeal) :
+section
+variable (S : Finset Id) (hS : ∀P∈S,Prime P) (η : HeckeFamily.Character) (u : O) (x w z : ℂ) (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re)
+include S hS η u x w z hx hw hz
+
+theorem excludedRowHighLocalFactor (P : PrimeIdeal) :
     (∑' b : HighValuation,markedIdealHighSummand S 1 η u x w z
       (P.val^b.1.1) (P.val^b.1.2) (P.val^b.2.1) (P.val^b.2.2)) =
       if P.val∈S then 1 else idealRowHighLocalFactor η u P.val x w z := by
@@ -72,9 +74,7 @@ theorem excludedRowHighLocalFactor (S : Finset Id) (hS : ∀P∈S,Prime P)
     simp only [markedIdealHighSummand,highIdealMask_prime_outside S hS P hP,one_mul]
     exact rowHighPrimeTerm_tsum_eq_localFactor η u x w z hx hw hz P
 
-theorem excludedIdealHighSeries_row_hasProd_outside (S : Finset Id) (hS : ∀P∈S,Prime P)
-    (η : HeckeFamily.Character) (u : O) (x w z : ℂ)
-    (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
+theorem excludedIdealHighSeries_row_hasProd_outside :
     HasProd (fun P : {P : PrimeIdeal // P.val∉S}=>idealRowHighLocalFactor η u P.val.val x w z)
       (markedIdealHighSeries S 1 η u x w z) := by
   have h := excludedIdealHighSeries_row_hasProd S hS η u x w z hx hw hz
@@ -86,6 +86,8 @@ theorem excludedIdealHighSeries_row_hasProd_outside (S : Finset Id) (hS : ∀P�
   funext P
   simp only [Set.mulIndicator,Set.mem_ofPred_eq]
   split_ifs <;> simp_all
+
+end
 
 end SevenEighths.ProbePhysical
 end

@@ -35,11 +35,11 @@ theorem modelPhaseStationaryDeficit_at_inverse (F : ℝ → ℝ) (v : ℝ) :
     modelPhaseStationaryDeficit F v (modelPhaseInverseSlope F v) = 0 := by
   simp only [modelPhaseStationaryDeficit,sub_self,mul_zero,add_zero]
 
-theorem modelPhaseStationaryDeficit_bounds
-    {σ δ v u : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+section
+variable {σ δ v u : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ) (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
+include σ δ v u F hσ hδ hF hv hu
+
+theorem modelPhaseStationaryDeficit_bounds :
     modelPhaseCurvatureLower σ*(u-modelPhaseInverseSlope F v)^2/2 ≤
         modelPhaseStationaryDeficit F v u ∧
       modelPhaseStationaryDeficit F v u ≤
@@ -85,25 +85,19 @@ theorem modelPhaseStationaryDeficit_bounds
       (by norm_num),div_le_div_of_nonneg_right (mul_le_mul_of_nonneg_right hc.2 (sq_nonneg _))
       (by norm_num)⟩
 
-theorem modelPhaseStationaryDeficit_nonneg
-    {σ δ v u : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+theorem modelPhaseStationaryDeficit_nonneg :
     0 ≤ modelPhaseStationaryDeficit F v u := by
   have h : 0 ≤ modelPhaseCurvatureLower σ*(u-modelPhaseInverseSlope F v)^2/2 := by
     positivity [modelPhaseCurvatureLower_pos hσ]
   exact h.trans (modelPhaseStationaryDeficit_bounds hσ hδ hF hv hu).1
 
-theorem modelPhaseMorseCoordinate_sq
-    {σ δ v u : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+theorem modelPhaseMorseCoordinate_sq :
     (modelPhaseMorseCoordinate F v u)^2 = 2*modelPhaseStationaryDeficit F v u := by
   have hp := modelPhaseStationaryDeficit_nonneg hσ hδ hF hv hu
   unfold modelPhaseMorseCoordinate
   split_ifs <;> simp only [neg_sq,Real.sq_sqrt (by positivity : 0 ≤ 2*modelPhaseStationaryDeficit F v u)]
+
+end
 
 theorem modelPhaseMorseCoordinate_abs
     (F : ℝ → ℝ) (v u : ℝ) :
@@ -111,11 +105,11 @@ theorem modelPhaseMorseCoordinate_abs
   unfold modelPhaseMorseCoordinate
   split_ifs <;> simp only [abs_neg,abs_of_nonneg (Real.sqrt_nonneg _)]
 
-theorem modelPhaseMorseCoordinate_bounds
-    {σ δ v u : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+section
+variable {σ δ v u : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ) (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2)
+include σ δ v u F hσ hδ hF hv hu
+
+theorem modelPhaseMorseCoordinate_bounds :
     Real.sqrt (modelPhaseCurvatureLower σ)*|u-modelPhaseInverseSlope F v| ≤
         |modelPhaseMorseCoordinate F v u| ∧
       |modelPhaseMorseCoordinate F v u| ≤
@@ -132,14 +126,12 @@ theorem modelPhaseMorseCoordinate_bounds
   rw [modelPhaseMorseCoordinate_abs]
   exact ⟨hsl,hsr⟩
 
-theorem modelPhaseMorseCoordinate_normalForm
-    {σ δ v u : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hv : v ∈ modelPhaseSlopeRange F) (hu : u ∈ Ioo (1 : ℝ) 2) :
+theorem modelPhaseMorseCoordinate_normalForm :
     F u-v*u = -modelPhaseLegendreDual F v-(modelPhaseMorseCoordinate F v u)^2/2 := by
   rw [modelPhaseMorseCoordinate_sq hσ hδ hF hv hu]
   unfold modelPhaseLegendreDual modelPhaseStationaryDeficit
   ring
+
+end
 
 end TaoTrudgianYang2025

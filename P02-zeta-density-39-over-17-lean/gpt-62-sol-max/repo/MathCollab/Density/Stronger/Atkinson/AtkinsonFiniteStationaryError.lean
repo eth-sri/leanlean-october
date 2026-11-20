@@ -14,8 +14,7 @@ public import MathCollab.Density.Stronger.Atkinson.DivisorQuarterPrefix
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem exists_norm_atkinsonLeadingTerm_sub_stationary_le :

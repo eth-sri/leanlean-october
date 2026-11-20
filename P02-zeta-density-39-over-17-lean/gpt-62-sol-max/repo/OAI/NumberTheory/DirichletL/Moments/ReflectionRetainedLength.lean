@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical
 open Filter
 namespace SevenEighths.CenteredMomentReflectionRetainedLength
-open CenteredMomentComparisonReflection CenteredMomentReflectedTruncation
-open CenteredMomentSectorLocalization
+open CenteredMomentComparisonReflection CenteredMomentReflectedTruncation CenteredMomentSectorLocalization
 
 lemma retained_scale_lower (R Y : ℝ) (hY : 0<Y) (n : ℤ)
     (hn : n∈retainedAnnuli R Y hY) : 1≤dyadicScale n*Y := by

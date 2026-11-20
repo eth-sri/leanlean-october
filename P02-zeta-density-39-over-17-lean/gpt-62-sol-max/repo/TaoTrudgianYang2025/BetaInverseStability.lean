@@ -34,10 +34,11 @@ theorem approximateModelPhase_firstDeriv_error {σ δ : ℝ} {P : ℕ} {F : ℝ 
   simpa only [iteratedDeriv_one, modelPhase,
     Real.norm_eq_abs] using he
 
-theorem approximateModelPhase_slope_gap {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {u w : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (hw : w ∈ Ioo (1 : ℝ) 2)
+section
+variable {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ) {u w : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (hw : w ∈ Ioo (1 : ℝ) 2)
+include σ δ F hσ hδ hF u w hu hw
+
+theorem approximateModelPhase_slope_gap
     (huw : u ≤ w) :
     modelPhaseCurvatureLower σ * (w-u) ≤ deriv F u - deriv F w := by
   have hc : ContinuousOn (deriv F) (Ioo (1 : ℝ) 2) := fun x hx =>
@@ -55,10 +56,7 @@ theorem approximateModelPhase_slope_gap {σ δ : ℝ} {F : ℝ → ℝ}
     hc hd hb u hu w hw huw
   linarith
 
-theorem approximateModelPhase_slope_gap_abs {σ δ : ℝ} {F : ℝ → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    {u w : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) (hw : w ∈ Ioo (1 : ℝ) 2) :
+theorem approximateModelPhase_slope_gap_abs :
     modelPhaseCurvatureLower σ * |u-w| ≤ |deriv F u - deriv F w| := by
   have hm := (approximateModelPhase_deriv_strictAntiOn hσ hδ hF).antitoneOn
   rcases le_total u w with huw | hwu
@@ -70,6 +68,8 @@ theorem approximateModelPhase_slope_gap_abs {σ δ : ℝ} {F : ℝ → ℝ}
       abs_of_nonpos (sub_nonpos.mpr (hm hw hu hwu))]
     have hg := approximateModelPhase_slope_gap hσ hδ hF hw hu hwu
     nlinarith
+
+end
 
 theorem reciprocal_modelPhase_identity {σ v : ℝ} (hσ : 0 < σ) (hv : 0 ≤ v) :
     (v^(-σ⁻¹))^(-σ) = v := by

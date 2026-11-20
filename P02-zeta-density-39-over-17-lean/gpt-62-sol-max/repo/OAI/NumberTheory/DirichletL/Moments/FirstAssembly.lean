@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Moments.FirstColumns
 
 @[expose] public section
@@ -9,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstAssembly
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentFirstColumns CenteredMomentMobiusRegroup CenteredMomentChildAssembly
-open CenteredMomentGaussEnergy RayFourExpansion
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstColumns CenteredMomentMobiusRegroup CenteredMomentChildAssembly CenteredMomentGaussEnergy RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 def originalPhase (e r : O) (ρ : O → ℂ) (a b : O) : ℂ :=
@@ -56,8 +55,8 @@ theorem first_divisor_pair {α β : Type*} (L : Ideal O)
 theorem finite_first_children {α β : Type*} (S : Finset α) (T : Finset β)
     (a : α → O) (b : β → O) (ha : ∀ i,Supported (Ideal.span {a i}))
     (hb : ∀ j,Supported (Ideal.span {b j}))
-    (hpa : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣a i-1)
-    (hpb : ∀ j,ConcretePrimeRowBridge.goodLambda^2∣b j-1)
+    (hpa : OAI.PrincipalIdealFamily.PrimaryAt a ConcretePrimeRowBridge.goodLambda)
+    (hpb : OAI.PrincipalIdealFamily.PrimaryAt b ConcretePrimeRowBridge.goodLambda)
     (c : α → ℂ) (d : β → ℂ) (e r : O) (ρ : O → ℂ)
     (hρ : ∀ x y,ρ (x*y)=ρ x*ρ y) (h : O) (K : α → β → ℂ) :
     (∑ i∈S,∑ j∈T,(if IsCoprime (a i) (b j) then originalPhase e r ρ (a i) (b j) else 0)*

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAssignedPair
 
 @[expose] public section
@@ -10,18 +11,16 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 namespace SevenEighths.InverseInitialEnergyCallerAssignedCanonical
-open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry
-open InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite
-open InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
+open InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialEnergyCallerAssigned InverseInitialEnergyCallerOpposite InverseInitialEnergyCallerCanonical InverseInitialClippedColumns
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→Eis)(hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→Eis)(hp:∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem original_assigned_canonical_pair
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hinj:OAI.PrincipalIdealFamily.Distinct p)
+    (hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (S:Finset (Source (ι:=ι) 0))(u:Eisˣ)
     (J₁ J₂:Finset σ)(L₁ L₂:σ→Finset ι)(a₁ a₂:σ→ι→ℂ)
     (ha₁:∀i∈J₁,∀q∈L₁ i,‖a₁ i q‖≤1)

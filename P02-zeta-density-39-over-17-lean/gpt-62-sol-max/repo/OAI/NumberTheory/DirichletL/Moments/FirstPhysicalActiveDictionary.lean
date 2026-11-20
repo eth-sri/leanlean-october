@@ -10,16 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalActiveDictionary
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentHeckeExpansion
-open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
-open CenteredMomentFirstPhysicalSource CenteredMomentActiveSource
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentHeckeExpansion CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum CenteredMomentFirstPhysicalSource CenteredMomentActiveSource
 local notation "O" => HeckeFamily.O
 
 theorem columns_active (C D : Ideal O) (hD : D≠0) (S : Finset (Ideal O))
@@ -82,26 +73,27 @@ def physicalTerm (η : Character) (m A : O) (t : ℝ) (β : Ideal O→ℂ)
     else 0
   else 0 else 0
 
-theorem physicalTerm_zero_left (η : Character) (m A : O) (t : ℝ) (β : Ideal O→ℂ)
-    (C D : Ideal O) (hC : Supported C) (E : Finset (CommonIndex C D))
-    (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ)
-    (h : O) (I J : Ideal O) (hi : β (C*I)=0) :
+section
+variable (η : Character) (m A : O) (t : ℝ) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (E : Finset (CommonIndex C D)) (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ) (h : O) (I J : Ideal O)
+include η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J
+
+theorem physicalTerm_zero_left (hi : β (C*I)=0) :
     physicalTerm η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J=0 := by
   simp only [physicalTerm,coefficient,hi,zero_mul,mul_zero]
   split_ifs <;> rfl
 
-theorem physicalTerm_zero_right (η : Character) (m A : O) (t : ℝ) (β : Ideal O→ℂ)
-    (C D : Ideal O) (hC : Supported C) (E : Finset (CommonIndex C D))
-    (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ)
-    (h : O) (I J : Ideal O) (hj : β (D*J)=0) :
+theorem physicalTerm_zero_right (hj : β (D*J)=0) :
     physicalTerm η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J=0 := by
   simp only [physicalTerm,coefficient,hj,zero_mul,star_zero,mul_zero]
   split_ifs <;> rfl
 
-theorem block_eq_ideal_sums (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O)
-    (hC : Supported C) (hD : Supported D) (E : Finset (CommonIndex C D))
-    (rows : Finset O) (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ) :
+end
+
+section
+variable (η : Character) (m A : O) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D) (E : Finset (CommonIndex C D)) (rows : Finset O) (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ)
+include η m A t S β C D hC hD E rows W V K K₀ H₀ A₀ B₀
+
+theorem block_eq_ideal_sums :
     block η m A t S β C D hC hD E rows W V K K₀ H₀ A₀ B₀=
       inactiveWeight C D E * ∑h∈rows,
         ∑I∈columns C C hC.1 S,∑J∈columns C D hD.1 S,
@@ -127,10 +119,7 @@ theorem block_eq_ideal_sums (η : Character) (m A : O) (t : ℝ)
         (fun I=>∑J∈columns C D hD.1 S,
           physicalTerm η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J)
 
-theorem block_active (η : Character) (m A : O) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O)
-    (hC : Supported C) (hD : Supported D) (E : Finset (CommonIndex C D))
-    (rows : Finset O) (W : 𝓢(ℝ,ℂ)) (V : Fin 4→ℝ→ℂ) (K K₀ H₀ A₀ B₀ : ℝ) :
+theorem block_active :
     block η m A t (activeSource S β) β C D hC hD E rows W V K K₀ H₀ A₀ B₀=
       block η m A t S β C D hC hD E rows W V K K₀ H₀ A₀ B₀ := by
   rw [block_eq_ideal_sums,block_eq_ideal_sums]
@@ -142,11 +131,11 @@ theorem block_active (η : Character) (m A : O) (t : ℝ)
     (fun I J hi=>physicalTerm_zero_left η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J hi)
     (fun I J hj=>physicalTerm_zero_right η m A t β C D hC E W V K K₀ H₀ A₀ B₀ h I J hj)
 
+end
+
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
-open CenteredMomentCommonRadialData CenteredMomentFirstRetainedNorm
-open CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale
-open CenteredMomentSectorLocalization CenteredMomentLogDyadic
+open CenteredMomentCommonRadialData CenteredMomentFirstRetainedNorm CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentLogDyadic
 
 theorem original_sectorMass_active (s : Input ι) (R seed : Ideal O)
     (m A : O) (t : ℝ) (S : Finset (Ideal O)) (C D : Ideal O)

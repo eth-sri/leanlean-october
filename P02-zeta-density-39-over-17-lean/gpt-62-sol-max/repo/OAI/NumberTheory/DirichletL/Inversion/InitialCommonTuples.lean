@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCommonForcing
 
 @[expose] public section
@@ -8,17 +9,14 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open FirstCauchyArithmetic SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic
 namespace SevenEighths.InverseInitialCommonTuples
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialCommonForcing
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool InverseInitialEnergyCallerWindow InverseInitialCommonForcing
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {κ ι : Type*} [DecidableEq ι]
 
-theorem input_finset_sum (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hg:∀i,goodLambda∉Ideal.span {p i})(F:Finset ι)(Ψ:Eis→*ℂ)(j u:Eis)
+theorem input_finset_sum (p:ι→Eis) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg:OAI.PrincipalIdealFamily.Avoids p goodLambda)(F:Finset ι)(Ψ:Eis→*ℂ)(j u:Eis)
     (T:Finset κ)(a:κ→ℂ)(H:κ→Finset ι→ℂ) :
     inputConjugateRow p hg F Ψ j 1 1 (fun A=>∑k∈T,a k*H k A) u=
       ∑k∈T,a k*inputConjugateRow p hg F Ψ j 1 1 (H k) u := by

@@ -26,8 +26,11 @@ theorem integrable_heathBrownCriticalWeighted (t : ℝ) :
   simpa only [heathBrownCriticalWeighted, heathBrownFullCriticalMoment] using!
     integrable_heathBrownFullCriticalMoment t
 
-theorem integrable_heathBrown_reserve_sq_mul_critical_add
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+section
+variable {delta : ℝ} (hdelta : 0 < delta) (t : ℝ)
+include delta hdelta t
+
+theorem integrable_heathBrown_reserve_sq_mul_critical_add :
     Integrable (fun p : ℝ × ℝ =>
       heathBrownGammaReserveKernel delta p.1 ^ (2 : ℕ) *
         heathBrownCriticalWeighted t (p.1 + p.2)) := by
@@ -90,8 +93,7 @@ theorem integrable_heathBrown_reserve_sq_mul_critical_add
       _ = r w * I := by rw [hshiftIntegral]
       _ = I * r w := by ring_nf
 
-theorem integral_heathBrown_reserve_sq_mul_critical_add
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+theorem integral_heathBrown_reserve_sq_mul_critical_add :
     (∫ p : ℝ × ℝ,
       heathBrownGammaReserveKernel delta p.1 ^ (2 : ℕ) *
         heathBrownCriticalWeighted t (p.1 + p.2)) =
@@ -124,8 +126,7 @@ theorem integral_heathBrown_reserve_sq_mul_critical_add
   unfold r h heathBrownCriticalWeighted heathBrownFullCriticalMoment
   rfl
 
-theorem integrable_heathBrown_reserve_sq_snd_mul_critical_add
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+theorem integrable_heathBrown_reserve_sq_snd_mul_critical_add :
     Integrable (fun p : ℝ × ℝ =>
       heathBrownGammaReserveKernel delta p.2 ^ (2 : ℕ) *
         heathBrownCriticalWeighted t (p.1 + p.2)) := by
@@ -138,8 +139,7 @@ theorem integrable_heathBrown_reserve_sq_snd_mul_critical_add
       heathBrownCriticalWeighted t (p.2 + p.1)
   rw [add_comm p.2 p.1]
 
-theorem integral_heathBrown_reserve_sq_snd_mul_critical_add
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+theorem integral_heathBrown_reserve_sq_snd_mul_critical_add :
     (∫ p : ℝ × ℝ,
       heathBrownGammaReserveKernel delta p.2 ^ (2 : ℕ) *
         heathBrownCriticalWeighted t (p.1 + p.2)) =
@@ -164,6 +164,8 @@ theorem integral_heathBrown_reserve_sq_snd_mul_critical_add
     _ = _ := by
       rw [← MeasureTheory.Measure.volume_eq_prod ℝ ℝ]
       exact integral_heathBrown_reserve_sq_mul_critical_add hdelta t
+
+end
 
 noncomputable def heathBrownStrongDoubleIntegrand
     (delta t : ℝ) (p : ℝ × ℝ) : ℝ :=
@@ -220,8 +222,11 @@ theorem heathBrownStrongDoubleIntegrand_le
       rw [show t + (w + v) = t + w + v by ring]
       ring
 
-theorem integrable_heathBrownStrongDoubleMajorant
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+section
+variable {delta : ℝ} (hdelta : 0 < delta) (t : ℝ)
+include delta hdelta t
+
+theorem integrable_heathBrownStrongDoubleMajorant :
     Integrable (heathBrownStrongDoubleMajorant delta t) := by
   have hfst := integrable_heathBrown_reserve_sq_mul_critical_add hdelta t
   have hsnd := integrable_heathBrown_reserve_sq_snd_mul_critical_add hdelta t
@@ -233,8 +238,7 @@ theorem integrable_heathBrownStrongDoubleMajorant
   simp only [Pi.add_apply]
   ring
 
-theorem integrable_heathBrownStrongDoubleIntegrand
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+theorem integrable_heathBrownStrongDoubleIntegrand :
     Integrable (heathBrownStrongDoubleIntegrand delta t) := by
   apply (integrable_heathBrownStrongDoubleMajorant hdelta t).mono'
   · have hcont : Continuous (heathBrownStrongDoubleIntegrand delta t) := by
@@ -258,8 +262,7 @@ theorem integrable_heathBrownStrongDoubleIntegrand
       abs_of_nonneg (heathBrownStrongDoubleIntegrand_nonneg hdelta p)]
     exact heathBrownStrongDoubleIntegrand_le hdelta p
 
-theorem integral_heathBrownStrongDoubleIntegrand_le
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+theorem integral_heathBrownStrongDoubleIntegrand_le :
     (∫ p : ℝ × ℝ, heathBrownStrongDoubleIntegrand delta t p) ≤
       (Real.pi / delta) * heathBrownFullCriticalMoment t := by
   have hfst := integrable_heathBrown_reserve_sq_mul_critical_add hdelta t
@@ -306,8 +309,7 @@ theorem integral_heathBrownStrongDoubleIntegrand_le
       gcongr
       exact integral_heathBrownGammaReserveKernel_sq_le hdelta
 
-theorem integral_strongKernel_mul_strongMoment_eq_double
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+theorem integral_strongKernel_mul_strongMoment_eq_double :
     (∫ w : ℝ, heathBrownStrongSingularKernel delta w *
         heathBrownStrongMellinCriticalMoment delta (t + w)) =
       ∫ p : ℝ × ℝ, heathBrownStrongDoubleIntegrand delta t p := by
@@ -323,8 +325,7 @@ theorem integral_strongKernel_mul_strongMoment_eq_double
   unfold heathBrownStrongDoubleIntegrand heathBrownStrongSingularKernel
   ring
 
-theorem integrable_strongKernel_mul_strongMoment
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+theorem integrable_strongKernel_mul_strongMoment :
     Integrable (fun w : ℝ => heathBrownStrongSingularKernel delta w *
         heathBrownStrongMellinCriticalMoment delta (t + w)) := by
   have hdouble := integrable_heathBrownStrongDoubleIntegrand hdelta t
@@ -341,12 +342,13 @@ theorem integrable_strongKernel_mul_strongMoment
 
 /-- The nested equation-(40) moment on a long vertical side has exactly one
 factor `delta⁻¹`. -/
-theorem integral_strongKernel_mul_strongMoment_le
-    {delta : ℝ} (hdelta : 0 < delta) (t : ℝ) :
+theorem integral_strongKernel_mul_strongMoment_le :
     (∫ w : ℝ, heathBrownStrongSingularKernel delta w *
         heathBrownStrongMellinCriticalMoment delta (t + w)) ≤
       (Real.pi / delta) * heathBrownFullCriticalMoment t := by
   rw [integral_strongKernel_mul_strongMoment_eq_double hdelta t]
   exact integral_heathBrownStrongDoubleIntegrand_le hdelta t
+
+end
 
 end MathCollab.Density.Stronger.PointMean

@@ -10,8 +10,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff Topology
 open Set
 
 namespace SevenEighths.CenteredMomentDetectorDictionary
-open HeckeInverseAmplification HeckeDyadic HeckeDetectorCoefficientTransfer
-open HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
+open HeckeInverseAmplification HeckeDyadic HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial HeckeDetectorDyadicProfiles
 
 lemma twistProfile_zero (W : ℝ→ℂ) : twistProfile W 0 0=W := by
   funext x

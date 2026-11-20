@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileAssembly
 public import OAI.NumberTheory.DirichletL.Descent.CubeSupportNorm
 
@@ -56,9 +57,9 @@ theorem first_profile_live_factors (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(K L:ℝ)(q:Fi
   exact ⟨hb₁.1,hb₂.1,hb₁.2.1,hb₁.2.2.1⟩
 
 variable {ι:Type*}[DecidableEq ι]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+    (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem original_live_profile_caps
     (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))(Y:ℝ)

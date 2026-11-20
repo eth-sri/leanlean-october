@@ -4,8 +4,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.WeylExplicit
 
 @[expose] public section
 
-open Asymptotics Filter Topology
-open Complex Finset MeasureTheory Real Set
+open Asymptotics Filter Topology Complex Finset MeasureTheory Real Set
 open scoped BigOperators ContDiff FourierTransform SchwartzMap
 
 namespace GuthMaynard.NativeMoment
@@ -769,17 +768,16 @@ theorem exists_separated_bounded_shift_image_medium
   rw [← hTotal]
   simpa only [mul_assoc] using hWeight
 
+section
+variable {M : ℕ} {sigma T D H S : ℝ} (W : Finset ℝ) (hM : 1 < M) (hH : 0 ≤ H) (hT : 0 ≤ T) (hDH : D + H ≤ T / 2) (hSeparated : IsSeparated 1 W) (hRange : ∀ t ∈ W, T - D ≤ t ∧ t ≤ 2 * T + D)
+include M sigma T D H S W hM hH hT hDH hSeparated hRange
+
 /-- Family form of the reflected extraction.  Each source ordinate may
 choose its own bounded Mellin displacement, but the output is reseparated,
 translated to one positive base interval, and pigeonholed onto one common
 ordinary dyadic block.  The displayed cardinality loss keeps every fibre of
 the displacement map. -/
 theorem extract_common_reflected_mhh_block
-    {M : ℕ} {sigma T D H S : ℝ} (W : Finset ℝ)
-    (hM : 1 < M) (hH : 0 ≤ H) (hT : 0 ≤ T)
-    (hDH : D + H ≤ T / 2)
-    (hSeparated : IsSeparated 1 W)
-    (hRange : ∀ t ∈ W, T - D ≤ t ∧ t ≤ 2 * T + D)
     (hEach : ∀ t ∈ W, ∃ u ∈ Set.Icc (-H) H,
       S < ‖wideDirichletPoly 1 (Nat.clog 2 M)
         (normalizedTypeIReflectedCoeff sigma M) (-(t + u))‖) :
@@ -911,11 +909,6 @@ theorem extract_common_reflected_mhh_block
 The positive Poisson half already lands at the positive ordinate `t - u`,
 so no reflection about `3T/2` and no coefficient phase shift are needed. -/
 theorem extract_common_positive_reflected_mhh_block
-    {M : ℕ} {sigma T D H S : ℝ} (W : Finset ℝ)
-    (hM : 1 < M) (hH : 0 ≤ H) (hT : 0 ≤ T)
-    (hDH : D + H ≤ T / 2)
-    (hSeparated : IsSeparated 1 W)
-    (hRange : ∀ t ∈ W, T - D ≤ t ∧ t ≤ 2 * T + D)
     (hEach : ∀ t ∈ W, ∃ u ∈ Set.Icc (-H) H,
       S < ‖wideDirichletPoly 1 (Nat.clog 2 M)
         (normalizedTypeIReflectedCoeff sigma M) (t - u)‖) :
@@ -994,6 +987,8 @@ theorem extract_common_positive_reflected_mhh_block
       _ = (2 * (2 * ⌈H⌉₊ + 1)) * (Nat.clog 2 M) * U.card := by ring
   · intro v hv
     simpa only [mul_one] using hLargeDyadic v hv
+
+end
 
 /-- A cancellation-safe family pigeonhole for the two retained Poisson
 signs.  No point is discarded before the signed alternative is known; the
@@ -2465,6 +2460,32 @@ theorem source_weighted_cpow_eq_smul_phase
   push_cast
   ring
 
+/-- Abel summation with the same decreasing weight in all three oscillation ranges. -/
+private theorem norm_smoothStep_weighted_Ioc_le_of_prefix
+    (c σ t : ℝ) (Q L U : ℕ) {B : ℝ}
+    (hc : 0 ≤ c) (hσ : 0 ≤ σ) (hQ : 0 < Q) (hL : 0 < L) (hLU : L < U)
+    (hB : 0 ≤ B)
+    (hprefix : ∀ j, j ≤ U - L →
+      ‖∑ i ∈ Finset.range j, unitaryPhase (logarithmicPhase t (L + 1 + i))‖ ≤ B) :
+    ‖∑ n ∈ Finset.Ioc L U,
+        (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
+          unitaryPhase (logarithmicPhase t n)‖ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) * B := by
+  let f (n : ℕ) := typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)
+  have hf (n : ℕ) : 0 ≤ f n := mul_nonneg (typeISmoothStep_nonneg _) (by positivity)
+  have hanti (n : ℕ) (hn : L < n) (_ : n < U) : f (n + 1) ≤ f n := by
+    have hnPos : 0 < n := hL.trans hn
+    have hs : c * (n : ℝ) / Q ≤ c * ((n + 1 : ℕ) : ℝ) / Q := by
+      gcongr
+      exact_mod_cast Nat.le_succ n
+    exact mul_le_mul (antitone_typeISmoothStep hs)
+      (Real.rpow_le_rpow_of_nonpos (by exact_mod_cast hnPos)
+        (by exact_mod_cast Nat.le_succ n) (neg_nonpos.mpr hσ))
+      (by positivity) (typeISmoothStep_nonneg _)
+  exact (norm_weighted_Ioc_le_of_antitone f (fun n => unitaryPhase (logarithmicPhase t n))
+      L U B hLU (fun n _ => hf n) hanti (by simpa only [Nat.cast_add, Nat.cast_one] using hprefix)).trans
+    (mul_le_mul_of_nonneg_right (mul_le_of_le_one_left (by positivity)
+      (typeISmoothStep_le_one _)) hB)
+
 /-- A decreasing smooth cutoff can be inserted into the Abel-summed
 second-derivative estimate without changing its square-root majorant. -/
 theorem norm_smoothStep_weighted_Ioc_le_sqrt
@@ -2476,53 +2497,12 @@ theorem norm_smoothStep_weighted_Ioc_le_sqrt
         (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
           unitaryPhase (logarithmicPhase t n)‖ ≤
       (L + 1 : ℝ) ^ (-σ) * (100 * Real.sqrt t) := by
-  let f : ℕ → ℝ := fun n =>
-    typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)
-  let g : ℕ → ℂ := fun n => unitaryPhase (logarithmicPhase t n)
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
-  have hf : ∀ n ∈ Finset.Ioc L U, 0 ≤ f n := by
-    intro n _hn
-    dsimp only [f]
-    exact mul_nonneg (typeISmoothStep_nonneg _) (Real.rpow_nonneg (by positivity) _)
-  have hanti : ∀ n, L < n → n < U → f (n + 1) ≤ f n := by
-    intro n hnL _hnU
-    have hnPos : 0 < n := lt_trans hL hnL
-    have harg : c * (n : ℝ) / Q ≤ c * ((n + 1 : ℕ) : ℝ) / Q := by
-      apply div_le_div_of_nonneg_right _ hQReal.le
-      exact mul_le_mul_of_nonneg_left (by exact_mod_cast Nat.le_succ n) hc
-    have hstep := antitone_typeISmoothStep harg
-    have hpow : ((n + 1 : ℕ) : ℝ) ^ (-σ) ≤ (n : ℝ) ^ (-σ) := by
-      apply Real.rpow_le_rpow_of_nonpos
-      · positivity
-      · exact_mod_cast Nat.le_succ n
-      · linarith
-    dsimp only [f]
-    exact mul_le_mul hstep hpow (Real.rpow_nonneg (by positivity) _)
-      (typeISmoothStep_nonneg _)
-  have hpartial : ∀ j, j ≤ U - L →
-      ‖∑ i ∈ Finset.range j, g (L + 1 + i)‖ ≤ 100 * Real.sqrt t := by
-    intro j hj
-    dsimp only [g]
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using
-      norm_logarithmicPhase_prefix_le_sqrt L j t hL
-        (hj.trans hLength) hLt htL
-  have hBound := norm_weighted_Ioc_le_of_antitone f g L U
-    (100 * Real.sqrt t) hLU hf hanti hpartial
-  have hStepOne : typeISmoothStep
-      (c * (((L + 1 : ℕ) : ℝ)) / Q) ≤ 1 := typeISmoothStep_le_one _
-  have hPowNonneg : 0 ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) :=
-    Real.rpow_nonneg (by positivity) _
-  calc
-    ‖∑ n ∈ Finset.Ioc L U,
-        (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n)‖ =
-        ‖∑ n ∈ Finset.Ioc L U, f n • g n‖ := by rfl
-    _ ≤ f (L + 1) * (100 * Real.sqrt t) := hBound
-    _ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) * (100 * Real.sqrt t) := by
-      dsimp only [f]
-      gcongr
-      exact mul_le_of_le_one_left hPowNonneg hStepOne
-    _ = (L + 1 : ℝ) ^ (-σ) * (100 * Real.sqrt t) := by norm_num
+  simpa only [Nat.cast_add, Nat.cast_one] using
+    norm_smoothStep_weighted_Ioc_le_of_prefix (B:=100*Real.sqrt t)
+      c σ t Q L U hc hσ hQ hL hLU (by positivity) (fun j hj => by
+        simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using
+          norm_logarithmicPhase_prefix_le_sqrt L j t hL (hj.trans hLength) hLt htL)
+
 
 /-- Weyl A--B-process companion to the preceding smooth-weight Abel bound.
 It applies to the exact monotone cutoff occurring in a classified source
@@ -2539,9 +2519,6 @@ theorem norm_smoothStep_weighted_Ioc_le_weyl
           unitaryPhase (logarithmicPhase t n)‖ ≤
       ((L + 1 : ℕ) : ℝ) ^ (-σ) *
         (30 * Real.sqrt (X * ((L + 1 : ℕ) : ℝ) * t ^ (1 / 3 : ℝ))) := by
-  let f : ℕ → ℝ := fun n =>
-    typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)
-  let g : ℕ → ℂ := fun n => unitaryPhase (logarithmicPhase t n)
   let Y : ℝ := t ^ (1 / 3 : ℝ)
   have htPos : 0 < t := zero_lt_one.trans_le htOne
   have hYOne : 1 ≤ Y := Real.one_le_rpow htOne (by norm_num)
@@ -2559,32 +2536,10 @@ theorem norm_smoothStep_weighted_Ioc_le_weyl
       rw [← Real.rpow_natCast, ← Real.rpow_mul hBasePos.le]
       norm_num
     simpa only [Y, hRight] using hRoot
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
-  have hf : ∀ n ∈ Finset.Ioc L U, 0 ≤ f n := by
-    intro n _hn
-    dsimp only [f]
-    exact mul_nonneg (typeISmoothStep_nonneg _)
-      (Real.rpow_nonneg (by positivity) _)
-  have hanti : ∀ n, L < n → n < U → f (n + 1) ≤ f n := by
-    intro n hnL _hnU
-    have hnPos : 0 < n := lt_trans hL hnL
-    have harg : c * (n : ℝ) / Q ≤ c * ((n + 1 : ℕ) : ℝ) / Q := by
-      apply div_le_div_of_nonneg_right _ hQReal.le
-      exact mul_le_mul_of_nonneg_left (by exact_mod_cast Nat.le_succ n) hc
-    have hstep := antitone_typeISmoothStep harg
-    have hpow : ((n + 1 : ℕ) : ℝ) ^ (-σ) ≤ (n : ℝ) ^ (-σ) := by
-      apply Real.rpow_le_rpow_of_nonpos
-      · positivity
-      · exact_mod_cast Nat.le_succ n
-      · linarith
-    dsimp only [f]
-    exact mul_le_mul hstep hpow (Real.rpow_nonneg (by positivity) _)
-      (typeISmoothStep_nonneg _)
   have hpartial : ∀ j, j ≤ U - L →
-      ‖∑ i ∈ Finset.range j, g (L + 1 + i)‖ ≤
+      ‖∑ i ∈ Finset.range j, unitaryPhase (logarithmicPhase t (L + 1 + i))‖ ≤
         30 * Real.sqrt (X * ((L + 1 : ℕ) : ℝ) * Y) := by
     intro j hj
-    dsimp only [g]
     have hWeyl := logarithmic_weyl_exponent_pair_prefix_with_slack
       Y X (L + 1) j hYOne hX (by omega) hYUpper
       (by simpa only [hYcube] using hSquare)
@@ -2592,55 +2547,9 @@ theorem norm_smoothStep_weighted_Ioc_le_weyl
     rw [logarithmicSum_eq_sum_range] at hWeyl
     rw [hYcube] at hWeyl
     simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using hWeyl
-  have hBound := norm_weighted_Ioc_le_of_antitone f g L U
-    (30 * Real.sqrt (X * ((L + 1 : ℕ) : ℝ) * Y)) hLU hf hanti hpartial
-  have hStepOne : typeISmoothStep
-      (c * (((L + 1 : ℕ) : ℝ)) / Q) ≤ 1 := typeISmoothStep_le_one _
-  have hPowNonneg : 0 ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) :=
-    Real.rpow_nonneg (by positivity) _
-  calc
-    ‖∑ n ∈ Finset.Ioc L U,
-        (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n)‖ =
-        ‖∑ n ∈ Finset.Ioc L U, f n • g n‖ := by rfl
-    _ ≤ f (L + 1) *
-        (30 * Real.sqrt (X * ((L + 1 : ℕ) : ℝ) * Y)) := hBound
-    _ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) *
-        (30 * Real.sqrt (X * ((L + 1 : ℕ) : ℝ) * Y)) := by
-      dsimp only [f]
-      gcongr
-      exact mul_le_of_le_one_left hPowNonneg hStepOne
-    _ = ((L + 1 : ℕ) : ℝ) ^ (-σ) *
-        (30 * Real.sqrt (X * ((L + 1 : ℕ) : ℝ) * t ^ (1 / 3 : ℝ))) := by
-      rfl
+  exact norm_smoothStep_weighted_Ioc_le_of_prefix c σ t Q L U hc hσ hQ hL hLU
+    (by positivity) hpartial
 
-/-- Uncut specialization of the smooth Weyl estimate, used for the middle
-term in the exact three-sum source expansion. -/
-theorem norm_plain_weighted_Ioc_le_weyl
-    (X σ t : ℝ) (L U : ℕ)
-    (hσ : 0 ≤ σ) (hL : 0 < L) (hLU : L < U)
-    (hLength : U - L ≤ L) (htOne : 1 ≤ t) (hX : 1 ≤ X)
-    (hSquare : (((L + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤ X * t)
-    (hCube : t ≤ (((L + 1 : ℕ) : ℝ) ^ (3 : ℕ))) :
-    ‖∑ n ∈ Finset.Ioc L U,
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
-      ((L + 1 : ℕ) : ℝ) ^ (-σ) *
-        (30 * Real.sqrt (X * ((L + 1 : ℕ) : ℝ) * t ^ (1 / 3 : ℝ))) := by
-  have h := norm_smoothStep_weighted_Ioc_le_weyl
-    X 0 σ t 1 L U (by norm_num) hσ (by omega) hL hLU hLength
-      htOne hX hSquare hCube
-  have hEq :
-      (∑ n ∈ Finset.Ioc L U,
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)) =
-      ∑ n ∈ Finset.Ioc L U,
-        (typeISmoothStep (0 * (n : ℝ) / 1) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n) := by
-    apply Finset.sum_congr rfl
-    intro n hn
-    rw [show (0 : ℝ) * (n : ℝ) / 1 = 0 by ring,
-      typeISmoothStep_eq_one (by norm_num : (0 : ℝ) ≤ 1), one_mul]
-  rw [hEq]
-  simpa only [Nat.cast_one] using h
 
 /-- Exact three-sum form of a source block whose upper tail boundary meets
 the sharp cutoff.  The rising half of the annular cutoff is written as the
@@ -2764,37 +2673,6 @@ theorem typeISourceSmoothBlock_eq_terminal_three_sums
     rw [hMin]
     rw [hUpperEmpty, Finset.sum_empty, add_zero]
 
-/-- The coefficient-one member of the three-sum terminal decomposition obeys
-the same interval Abel bound as its smooth companions. -/
-theorem norm_plain_weighted_Ioc_le_sqrt
-    {L U : ℕ} {σ t : ℝ}
-    (hσ : 0 ≤ σ) (hLU : L < U) (hL : 0 < L)
-    (hLength : U - L ≤ L) (hLt : (L : ℝ) ≤ t)
-    (htL : t ≤ (L : ℝ) ^ 2) :
-    ‖∑ n ∈ Finset.Ioc L U,
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
-      (L + 1 : ℝ) ^ (-σ) * (100 * Real.sqrt t) := by
-  let f : ℕ → ℝ := fun n => (n : ℝ) ^ (-σ)
-  let g : ℕ → ℂ := fun n => unitaryPhase (logarithmicPhase t n)
-  have hf : ∀ n ∈ Finset.Ioc L U, 0 ≤ f n := by
-    intro n _hn
-    exact Real.rpow_nonneg (Nat.cast_nonneg n) _
-  have hanti : ∀ n, L < n → n < U → f (n + 1) ≤ f n := by
-    intro n hnL _hnU
-    dsimp only [f]
-    exact Real.rpow_le_rpow_of_nonpos (by exact_mod_cast (lt_trans hL hnL))
-      (by exact_mod_cast Nat.le_succ n) (neg_nonpos.mpr hσ)
-  have hpartial : ∀ j, j ≤ U - L →
-      ‖∑ i ∈ Finset.range j, g (L + 1 + i)‖ ≤ 100 * Real.sqrt t := by
-    intro j hj
-    dsimp only [g]
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using
-      norm_logarithmicPhase_prefix_le_sqrt L j t hL
-        (hj.trans hLength) hLt htL
-  simpa only [f, g, Nat.cast_add, Nat.cast_one] using
-    norm_weighted_Ioc_le_of_antitone f g L U
-      (100 * Real.sqrt t) hLU hf hanti hpartial
-
 /-- First-derivative companion to `norm_smoothStep_weighted_Ioc_le_sqrt`.
 It covers a terminal interval beginning to the right of the ordinate. -/
 theorem norm_smoothStep_weighted_Ioc_le_div
@@ -2806,117 +2684,14 @@ theorem norm_smoothStep_weighted_Ioc_le_div
         (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
           unitaryPhase (logarithmicPhase t n)‖ ≤
       (L + 1 : ℝ) ^ (-σ) * (6 * Real.pi * (L : ℝ) / t) := by
-  let f : ℕ → ℝ := fun n =>
-    typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)
-  let g : ℕ → ℂ := fun n => unitaryPhase (logarithmicPhase t n)
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
-  have hf : ∀ n ∈ Finset.Ioc L U, 0 ≤ f n := by
-    intro n _hn
-    dsimp only [f]
-    exact mul_nonneg (typeISmoothStep_nonneg _) (Real.rpow_nonneg (by positivity) _)
-  have hanti : ∀ n, L < n → n < U → f (n + 1) ≤ f n := by
-    intro n hnL _hnU
-    have hnPos : 0 < n := lt_trans hL hnL
-    have harg : c * (n : ℝ) / Q ≤ c * ((n + 1 : ℕ) : ℝ) / Q := by
-      apply div_le_div_of_nonneg_right _ hQReal.le
-      exact mul_le_mul_of_nonneg_left (by exact_mod_cast Nat.le_succ n) hc
-    have hstep := antitone_typeISmoothStep harg
-    have hpow : ((n + 1 : ℕ) : ℝ) ^ (-σ) ≤ (n : ℝ) ^ (-σ) := by
-      exact Real.rpow_le_rpow_of_nonpos (by exact_mod_cast hnPos)
-        (by exact_mod_cast Nat.le_succ n) (neg_nonpos.mpr hσ)
-    dsimp only [f]
-    exact mul_le_mul hstep hpow (Real.rpow_nonneg (by positivity) _)
-      (typeISmoothStep_nonneg _)
-  have hpartial : ∀ j, j ≤ U - L →
-      ‖∑ i ∈ Finset.range j, g (L + 1 + i)‖ ≤
-        6 * Real.pi * (L : ℝ) / t := by
-    intro j hj
-    dsimp only [g]
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using
-      norm_logarithmicPhase_prefix_le_div L j t hL
-        (hj.trans hLength) htOne htL
-  have hBound := norm_weighted_Ioc_le_of_antitone f g L U
-    (6 * Real.pi * (L : ℝ) / t) hLU hf hanti hpartial
-  have hStepOne : typeISmoothStep
-      (c * (((L + 1 : ℕ) : ℝ)) / Q) ≤ 1 := typeISmoothStep_le_one _
-  have hPowNonneg : 0 ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) :=
-    Real.rpow_nonneg (by positivity) _
-  calc
-    ‖∑ n ∈ Finset.Ioc L U,
-        (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n)‖ =
-        ‖∑ n ∈ Finset.Ioc L U, f n • g n‖ := by rfl
-    _ ≤ f (L + 1) * (6 * Real.pi * (L : ℝ) / t) := hBound
-    _ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) *
-        (6 * Real.pi * (L : ℝ) / t) := by
-      dsimp only [f]
-      gcongr
-      exact mul_le_of_le_one_left hPowNonneg hStepOne
-    _ = (L + 1 : ℝ) ^ (-σ) * (6 * Real.pi * (L : ℝ) / t) := by norm_num
+  simpa only [Nat.cast_add, Nat.cast_one] using
+    norm_smoothStep_weighted_Ioc_le_of_prefix (B:=6*Real.pi*(L:ℝ)/t)
+      c σ t Q L U hc hσ hQ hL hLU (by positivity) (fun j hj => by
+        simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using
+          norm_logarithmicPhase_prefix_le_div L j t hL (hj.trans hLength) htOne htL)
 
-/-- First-derivative terminal estimate for the coefficient-one member of the
-three-sum source decomposition. -/
-theorem norm_plain_weighted_Ioc_le_div
-    {L U : ℕ} {σ t : ℝ}
-    (hσ : 0 ≤ σ) (hLU : L < U) (hL : 0 < L)
-    (hLength : U - L ≤ L) (htOne : 1 ≤ t)
-    (htL : t ≤ (L : ℝ)) :
-    ‖∑ n ∈ Finset.Ioc L U,
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
-      (L + 1 : ℝ) ^ (-σ) * (6 * Real.pi * (L : ℝ) / t) := by
-  let f : ℕ → ℝ := fun n => (n : ℝ) ^ (-σ)
-  let g : ℕ → ℂ := fun n => unitaryPhase (logarithmicPhase t n)
-  have hf : ∀ n ∈ Finset.Ioc L U, 0 ≤ f n := by
-    intro n _hn
-    exact Real.rpow_nonneg (Nat.cast_nonneg n) _
-  have hanti : ∀ n, L < n → n < U → f (n + 1) ≤ f n := by
-    intro n hnL _hnU
-    dsimp only [f]
-    exact Real.rpow_le_rpow_of_nonpos (by exact_mod_cast (lt_trans hL hnL))
-      (by exact_mod_cast Nat.le_succ n) (neg_nonpos.mpr hσ)
-  have hpartial : ∀ j, j ≤ U - L →
-      ‖∑ i ∈ Finset.range j, g (L + 1 + i)‖ ≤
-        6 * Real.pi * (L : ℝ) / t := by
-    intro j hj
-    dsimp only [g]
-    simpa only [Nat.cast_add, Nat.cast_one, Nat.add_assoc, add_assoc] using
-      norm_logarithmicPhase_prefix_le_div L j t hL
-        (hj.trans hLength) htOne htL
-  simpa only [f, g, Nat.cast_add, Nat.cast_one] using
-    norm_weighted_Ioc_le_of_antitone f g L U
-      (6 * Real.pi * (L : ℝ) / t) hLU hf hanti hpartial
 
-/-- Uniform interval estimate obtained by routing at the physical comparison
-`t ≤ L`.  Keeping both nonnegative majorants makes the later terminal source
-assembly independent of that case split. -/
-theorem norm_plain_weighted_Ioc_le_sqrt_add_div
-    {L U : ℕ} {σ t : ℝ}
-    (hσ : 0 ≤ σ) (hL : 0 < L) (hLength : U - L ≤ L)
-    (htOne : 1 ≤ t) (htSq : t ≤ (L : ℝ) ^ 2) :
-    ‖∑ n ∈ Finset.Ioc L U,
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
-      (L + 1 : ℝ) ^ (-σ) *
-        (100 * Real.sqrt t + 6 * Real.pi * (L : ℝ) / t) := by
-  by_cases hLU : L < U
-  · by_cases htL : t ≤ (L : ℝ)
-    · exact (norm_plain_weighted_Ioc_le_div hσ hLU hL hLength htOne htL).trans
-        (by
-          apply mul_le_mul_of_nonneg_left _ (Real.rpow_nonneg (by positivity) _)
-          nlinarith [Real.sqrt_nonneg t])
-    · exact (norm_plain_weighted_Ioc_le_sqrt hσ hLU hL hLength
-          (le_of_not_ge htL) htSq).trans (by
-            apply mul_le_mul_of_nonneg_left _ (Real.rpow_nonneg (by positivity) _)
-            have hDiv : 0 ≤ 6 * Real.pi * (L : ℝ) / t := by positivity
-            linarith)
-  · have hEmpty : Finset.Ioc L U = ∅ := by
-      ext n
-      simp
-      omega
-    rw [hEmpty, Finset.sum_empty, norm_zero]
-    positivity
-
-/-- Smooth-cutoff counterpart of
-`norm_plain_weighted_Ioc_le_sqrt_add_div`. -/
+/-- Combine the two nonnegative derivative majorants across `t = L`. -/
 theorem norm_smoothStep_weighted_Ioc_le_sqrt_add_div
     (c σ t : ℝ) (Q L U : ℕ)
     (hc : 0 ≤ c) (hσ : 0 ≤ σ) (hQ : 0 < Q)
@@ -2946,126 +2721,6 @@ theorem norm_smoothStep_weighted_Ioc_le_sqrt_add_div
     rw [hEmpty, Finset.sum_empty, norm_zero]
     positivity
 
-/-- Quantitative elimination bound for a classified upper-edge source block.
-The proof uses the exact three-sum identity above and controls all three
-pieces without extending the sharp cutoff. -/
-theorem norm_typeISourceSmoothBlock_terminal_le
-    {Y A r : ℕ} {σ t : ℝ}
-    (hY : 0 < Y) (hr : 2 ≤ r)
-    (hTerminal : A < 2 * (2 ^ r * Y))
-    (hσ : 0 ≤ σ) (htOne : 1 ≤ t)
-    (htSq : t ≤ (((2 ^ r * Y) / 2 : ℕ) : ℝ) ^ 2) :
-    ‖typeISourceSmoothBlock Y A r σ t‖ ≤
-      3 * ((((2 ^ r * Y) / 2 + 1 : ℕ) : ℝ) ^ (-σ)) *
-        (100 * Real.sqrt t +
-          6 * Real.pi * ((2 ^ r * Y : ℕ) : ℝ) / t) := by
-  let Q : ℕ := 2 ^ r * Y
-  let L : ℕ := Q / 2
-  have hpowFour : 4 ≤ 2 ^ r := by
-    simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
-  have hQFour : 4 ≤ Q := by
-    dsimp only [Q]
-    have hYOne : 1 ≤ Y := hY
-    calc
-      4 = 4 * 1 := by omega
-      _ ≤ 4 * Y := Nat.mul_le_mul_left 4 hYOne
-      _ ≤ 2 ^ r * Y := Nat.mul_le_mul_right Y hpowFour
-  have hQ : 0 < Q := by omega
-  have hL : 0 < L := by dsimp only [L]; omega
-  have hEven : 2 ∣ Q := by
-    dsimp only [Q]
-    exact dvd_mul_of_dvd_left (by
-      exact dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) Y
-  have hTwiceL : 2 * L = Q := by
-    dsimp only [L]
-    exact Nat.mul_div_cancel' hEven
-  have hLower : 2 * (Y + 1) ≤ Q := by
-    calc
-      2 * (Y + 1) ≤ 4 * Y := by omega
-      _ ≤ Q := by
-        dsimp only [Q]
-        exact Nat.mul_le_mul_right Y hpowFour
-  have hLowerLength : min Q A - L ≤ L := by omega
-  have hUpperLength : A - Q ≤ Q := by omega
-  have htSqQ : t ≤ (Q : ℝ) ^ 2 := by
-    have hLQ : (L : ℝ) ≤ Q := by exact_mod_cast (Nat.div_le_self Q 2)
-    have hSq : (L : ℝ) ^ 2 ≤ (Q : ℝ) ^ 2 := by nlinarith
-    exact htSq.trans hSq
-  let B : ℝ := 100 * Real.sqrt t + 6 * Real.pi * (Q : ℝ) / t
-  have hB : 0 ≤ B := by dsimp only [B]; positivity
-  have hPlain := norm_plain_weighted_Ioc_le_sqrt_add_div
-    (L := L) (U := min Q A) hσ hL hLowerLength htOne htSq
-  have hRise := norm_smoothStep_weighted_Ioc_le_sqrt_add_div
-    2 σ t Q L (min Q A) (by norm_num) hσ hQ hL hLowerLength htOne htSq
-  have hFall := norm_smoothStep_weighted_Ioc_le_sqrt_add_div
-    1 σ t Q Q A (by norm_num) hσ hQ hQ hUpperLength htOne htSqQ
-  have hLowerB :
-      100 * Real.sqrt t + 6 * Real.pi * (L : ℝ) / t ≤ B := by
-    dsimp only [B]
-    have hLQ : (L : ℝ) ≤ Q := by exact_mod_cast (Nat.div_le_self Q 2)
-    have htPos : 0 < t := by linarith
-    gcongr
-  have hWeight : ((Q + 1 : ℕ) : ℝ) ^ (-σ) ≤
-      ((L + 1 : ℕ) : ℝ) ^ (-σ) := by
-    apply Real.rpow_le_rpow_of_nonpos
-    · positivity
-    · exact_mod_cast Nat.add_le_add_right (Nat.div_le_self Q 2) 1
-    · linarith
-  have hPlain' :
-      ‖∑ n ∈ Finset.Ioc L (min Q A),
-          ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
-        ((L + 1 : ℕ) : ℝ) ^ (-σ) * B :=
-    by
-      simpa only [Nat.cast_add, Nat.cast_one] using
-        hPlain.trans (mul_le_mul_of_nonneg_left hLowerB
-          (Real.rpow_nonneg (show 0 ≤ (L : ℝ) + 1 by positivity) (-σ)))
-  have hRise' :
-      ‖∑ n ∈ Finset.Ioc L (min Q A),
-          (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ ≤
-        ((L + 1 : ℕ) : ℝ) ^ (-σ) * B :=
-    by
-      simpa only [Nat.cast_add, Nat.cast_one] using
-        hRise.trans (mul_le_mul_of_nonneg_left hLowerB
-          (Real.rpow_nonneg (show 0 ≤ (L : ℝ) + 1 by positivity) (-σ)))
-  have hFall' :
-      ‖∑ n ∈ Finset.Ioc Q A,
-          (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ ≤
-        ((L + 1 : ℕ) : ℝ) ^ (-σ) * B := by
-    calc
-      _ ≤ ((Q + 1 : ℕ) : ℝ) ^ (-σ) * B := by
-        simpa only [B, Nat.cast_add, Nat.cast_one, one_mul] using hFall
-      _ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) * B :=
-        mul_le_mul_of_nonneg_right hWeight hB
-  rw [typeISourceSmoothBlock_eq_terminal_three_sums Y A r σ t hY
-    (by simpa only [Q] using hLower)]
-  change ‖(∑ n ∈ Finset.Ioc L (min Q A),
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)) -
-      (∑ n ∈ Finset.Ioc L (min Q A),
-        (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n)) +
-      (∑ n ∈ Finset.Ioc Q A,
-        (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n))‖ ≤ _
-  calc
-    _ ≤ ‖∑ n ∈ Finset.Ioc L (min Q A),
-          ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ +
-        ‖∑ n ∈ Finset.Ioc L (min Q A),
-          (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ +
-        ‖∑ n ∈ Finset.Ioc Q A,
-          (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ := by
-      exact (norm_add_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
-    _ ≤ (((L + 1 : ℕ) : ℝ) ^ (-σ) * B) +
-        (((L + 1 : ℕ) : ℝ) ^ (-σ) * B) +
-        (((L + 1 : ℕ) : ℝ) ^ (-σ) * B) := by linarith
-    _ = 3 * ((((2 ^ r * Y) / 2 + 1 : ℕ) : ℝ) ^ (-σ)) *
-        (100 * Real.sqrt t + 6 * Real.pi * ((2 ^ r * Y : ℕ) : ℝ) / t) := by
-      dsimp only [L, Q, B]
-      ring
-
 /-- The falling smooth half of a source block stops exactly at `2Q`, even
 when the ambient sharp cutoff is larger. -/
 theorem source_upper_smooth_sum_eq_min_two_mul
@@ -3093,6 +2748,47 @@ theorem source_upper_smooth_sum_eq_min_two_mul
     exact_mod_cast hnTwo
   rw [typeISmoothStep_eq_zero hRatio, zero_mul, zero_smul]
 
+/-- Assemble the two smooth edges and the unweighted middle. A prefix estimate
+proved anywhere between the initial scales `Q / 2` and `Q` suffices. -/
+private theorem norm_typeISourceSmoothBlock_of_prefix
+    {Y A r : ℕ} {σ t B : ℝ} (hY : 0 < Y) (hr : 2 ≤ r) (hσ : 0 ≤ σ) (hB : 0 ≤ B) :
+    let Q := 2 ^ r * Y
+    (∀ (c : ℝ) (L U : ℕ), 0 ≤ c → 0 < Q → 0 < L → L < U → U-L ≤ L →
+      Q / 2 ≤ L → L ≤ Q →
+      ‖∑ n ∈ Finset.Ioc L U,
+        (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
+          unitaryPhase (logarithmicPhase t n)‖ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) * B) →
+    ‖typeISourceSmoothBlock Y A r σ t‖ ≤ 3 * (((Q / 2 + 1 : ℕ) : ℝ) ^ (-σ) * B) := by
+  intro Q hprefix
+  have hPow : 4 ≤ 2 ^ r := by simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
+  have hLow : 2 * (Y + 1) ≤ Q :=
+    (show 2*(Y+1) ≤ 4*Y by omega).trans (Nat.mul_le_mul_right Y hPow)
+  have hQ : 0 < Q := by omega
+  have hEven : 2 ∣ Q := dvd_mul_of_dvd_left (dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) _
+  have hHalf := Nat.mul_div_cancel' hEven
+  have hP (c : ℝ) (L U : ℕ) (hc : 0 ≤ c) (hLen : U-L ≤ L)
+      (hlo : Q/2 ≤ L) (hhi : L ≤ Q) :
+      ‖∑ n ∈ Finset.Ioc L U,
+        (typeISmoothStep (c * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
+          unitaryPhase (logarithmicPhase t n)‖ ≤ (((Q / 2 + 1 : ℕ) : ℝ) ^ (-σ) * B) := by
+    by_cases hLU : L < U
+    · refine (hprefix c L U hc hQ (by omega) hLU hLen hlo hhi).trans ?_
+      apply mul_le_mul_of_nonneg_right _ hB
+      exact Real.rpow_le_rpow_of_nonpos (by positivity) (by exact_mod_cast Nat.succ_le_succ hlo)
+        (neg_nonpos.mpr hσ)
+    · simp only [Finset.Ioc_eq_empty hLU, Finset.sum_empty, norm_zero]
+      positivity
+  have hPlain := hP 0 (Q/2) (min Q A) (by norm_num) (by omega) le_rfl (by omega)
+  simp only [zero_mul, zero_div, typeISmoothStep_eq_one (by norm_num : (0:ℝ) ≤ 1),
+    one_mul] at hPlain
+  have hRise := hP 2 (Q/2) (min Q A) (by norm_num) (by omega) le_rfl (by omega)
+  have hFall := hP 1 Q (min (2*Q) A) (by norm_num) (by omega) (by omega) le_rfl
+  rw [typeISourceSmoothBlock_eq_terminal_three_sums Y A r σ t hY hLow,
+    source_upper_smooth_sum_eq_min_two_mul Q A hQ σ t]
+  simp only [one_mul] at hFall
+  exact (norm_add_le _ _).trans ((add_le_add (norm_sub_le _ _) le_rfl).trans
+    (by linarith only [hPlain,hRise,hFall]))
+
 /-- Uniform square-root cancellation bound for every classified source
 block, with no upper-edge assumption.  The proof uses the exact support at
 `2Q`; consequently the ambient sharp cutoff never appears in an interval
@@ -3106,113 +2802,16 @@ theorem norm_typeISourceSmoothBlock_le_sqrt
       3 * ((((2 ^ r * Y) / 2 + 1 : ℕ) : ℝ) ^ (-σ)) *
         (100 * Real.sqrt t +
           6 * Real.pi * ((2 ^ r * Y : ℕ) : ℝ) / t) := by
-  let Q : ℕ := 2 ^ r * Y
-  let L : ℕ := Q / 2
-  let U : ℕ := min (2 * Q) A
-  have hpowFour : 4 ≤ 2 ^ r := by
-    simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
-  have hQFour : 4 ≤ Q := by
-    dsimp only [Q]
-    calc
-      4 = 4 * 1 := by omega
-      _ ≤ 4 * Y := Nat.mul_le_mul_left 4 hY
-      _ ≤ 2 ^ r * Y := Nat.mul_le_mul_right Y hpowFour
-  have hQ : 0 < Q := by omega
-  have hL : 0 < L := by dsimp only [L]; omega
-  have hEven : 2 ∣ Q := by
-    dsimp only [Q]
-    exact dvd_mul_of_dvd_left
-      (dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) Y
-  have hTwiceL : 2 * L = Q := by
-    dsimp only [L]
-    exact Nat.mul_div_cancel' hEven
-  have hLower : 2 * (Y + 1) ≤ Q := by
-    calc
-      2 * (Y + 1) ≤ 4 * Y := by omega
-      _ ≤ Q := by
-        dsimp only [Q]
-        exact Nat.mul_le_mul_right Y hpowFour
-  have hLowerLength : min Q A - L ≤ L := by omega
-  have hUpperLength : U - Q ≤ Q := by
-    dsimp only [U]
-    omega
-  have htSqQ : t ≤ (Q : ℝ) ^ 2 := by
-    have hLQ : (L : ℝ) ≤ Q := by exact_mod_cast (Nat.div_le_self Q 2)
-    exact htSq.trans (by nlinarith)
-  let B : ℝ := 100 * Real.sqrt t + 6 * Real.pi * (Q : ℝ) / t
-  have hB : 0 ≤ B := by dsimp only [B]; positivity
-  have hPlain := norm_plain_weighted_Ioc_le_sqrt_add_div
-    (L := L) (U := min Q A) hσ hL hLowerLength htOne htSq
-  have hRise := norm_smoothStep_weighted_Ioc_le_sqrt_add_div
-    2 σ t Q L (min Q A) (by norm_num) hσ hQ hL hLowerLength htOne htSq
-  have hFall := norm_smoothStep_weighted_Ioc_le_sqrt_add_div
-    1 σ t Q Q U (by norm_num) hσ hQ hQ hUpperLength htOne htSqQ
-  have hLowerB :
-      100 * Real.sqrt t + 6 * Real.pi * (L : ℝ) / t ≤ B := by
-    dsimp only [B]
-    have hLQ : (L : ℝ) ≤ Q := by exact_mod_cast (Nat.div_le_self Q 2)
-    have htPos : 0 < t := by linarith
-    gcongr
-  have hWeight : ((Q + 1 : ℕ) : ℝ) ^ (-σ) ≤
-      ((L + 1 : ℕ) : ℝ) ^ (-σ) := by
-    apply Real.rpow_le_rpow_of_nonpos
-    · positivity
-    · exact_mod_cast Nat.add_le_add_right (Nat.div_le_self Q 2) 1
-    · linarith
-  have hPlain' :
-      ‖∑ n ∈ Finset.Ioc L (min Q A),
-          ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
-        ((L + 1 : ℕ) : ℝ) ^ (-σ) * B := by
-    simpa only [Nat.cast_add, Nat.cast_one] using
-      hPlain.trans (mul_le_mul_of_nonneg_left hLowerB
-        (Real.rpow_nonneg (by positivity) _))
-  have hRise' :
-      ‖∑ n ∈ Finset.Ioc L (min Q A),
-          (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ ≤
-        ((L + 1 : ℕ) : ℝ) ^ (-σ) * B := by
-    simpa only [Nat.cast_add, Nat.cast_one] using
-      hRise.trans (mul_le_mul_of_nonneg_left hLowerB
-        (Real.rpow_nonneg (by positivity) _))
-  have hFall' :
-      ‖∑ n ∈ Finset.Ioc Q A,
-          (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ ≤
-        ((L + 1 : ℕ) : ℝ) ^ (-σ) * B := by
-    rw [source_upper_smooth_sum_eq_min_two_mul Q A hQ σ t]
-    calc
-      _ ≤ ((Q + 1 : ℕ) : ℝ) ^ (-σ) *
-          (100 * Real.sqrt t + 6 * Real.pi * (Q : ℝ) / t) := by
-        simpa only [U, Nat.cast_add, Nat.cast_one, one_mul] using hFall
-      _ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) * B :=
-        mul_le_mul_of_nonneg_right hWeight hB
-  rw [typeISourceSmoothBlock_eq_terminal_three_sums Y A r σ t hY
-    (by simpa only [Q] using hLower)]
-  change ‖(∑ n ∈ Finset.Ioc L (min Q A),
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)) -
-      (∑ n ∈ Finset.Ioc L (min Q A),
-        (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n)) +
-      (∑ n ∈ Finset.Ioc Q A,
-        (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n))‖ ≤ _
-  calc
-    _ ≤ ‖∑ n ∈ Finset.Ioc L (min Q A),
-          ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ +
-        ‖∑ n ∈ Finset.Ioc L (min Q A),
-          (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ +
-        ‖∑ n ∈ Finset.Ioc Q A,
-          (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ := by
-      exact (norm_add_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
-    _ ≤ ((L + 1 : ℕ) : ℝ) ^ (-σ) * B +
-        ((L + 1 : ℕ) : ℝ) ^ (-σ) * B +
-        ((L + 1 : ℕ) : ℝ) ^ (-σ) * B := by linarith
-    _ = 3 * ((((2 ^ r * Y) / 2 + 1 : ℕ) : ℝ) ^ (-σ)) *
-        (100 * Real.sqrt t + 6 * Real.pi * ((2 ^ r * Y : ℕ) : ℝ) / t) := by
-      dsimp only [L, Q, B]
-      ring
+  rw [mul_assoc]
+  apply norm_typeISourceSmoothBlock_of_prefix hY hr hσ (by positivity)
+  intro c L U hc hQ hL _ hLen hlo hhi
+  have hlo' : ((2^r*Y/2 : ℕ):ℝ) ≤ L := by exact_mod_cast hlo
+  have hhi' : (L:ℝ) ≤ (2^r*Y:ℕ) := by exact_mod_cast hhi
+  have ht : 0 < t := by linarith
+  simpa only [Nat.cast_add, Nat.cast_one] using
+    (norm_smoothStep_weighted_Ioc_le_sqrt_add_div c σ t (2^r*Y) L U hc hσ hQ hL hLen htOne
+      (htSq.trans (by gcongr))).trans (by gcongr)
+
 
 /-- Uniform Weyl bound for a complete source-smooth block in the physical
 range `Q^2 \lesssim t \lesssim Q^3`.  This theorem consumes the exact
@@ -3221,7 +2820,7 @@ pieces, rather than replacing it by a coefficient-free model. -/
 theorem norm_typeISourceSmoothBlock_le_weyl
     {Y A r : ℕ} {σ t : ℝ}
     (hY : 0 < Y) (hr : 2 ≤ r)
-    (hInterior : 2 * (2 ^ r * Y) ≤ A) (hσ : 0 ≤ σ)
+    (hσ : 0 ≤ σ)
     (htOne : 1 ≤ t)
     (hSquare : ((((2 ^ r * Y) + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤ 8 * t)
     (hCube : t ≤ ((((2 ^ r * Y) / 2 + 1 : ℕ) : ℝ) ^ (3 : ℕ))) :
@@ -3229,123 +2828,19 @@ theorem norm_typeISourceSmoothBlock_le_weyl
       90 * ((((2 ^ r * Y) / 2 + 1 : ℕ) : ℝ) ^ (-σ)) *
         Real.sqrt (8 * (((2 ^ r * Y + 1 : ℕ) : ℝ)) * t ^ (1 / 3 : ℝ)) := by
   let Q : ℕ := 2 ^ r * Y
-  let L : ℕ := Q / 2
-  let U : ℕ := min (2 * Q) A
-  let R : ℝ := Real.sqrt (8 * ((Q + 1 : ℕ) : ℝ) * t ^ (1 / 3 : ℝ))
-  have hpowFour : 4 ≤ 2 ^ r := by
-    simpa using Nat.pow_le_pow_right (by omega : 0 < 2) hr
-  have hQFour : 4 ≤ Q := by
-    dsimp only [Q]
-    calc
-      4 = 4 * 1 := by omega
-      _ ≤ 4 * Y := Nat.mul_le_mul_left 4 hY
-      _ ≤ 2 ^ r * Y := Nat.mul_le_mul_right Y hpowFour
-  have hQ : 0 < Q := by omega
-  have hL : 0 < L := by dsimp only [L]; omega
-  have hEven : 2 ∣ Q := by
-    dsimp only [Q]
-    exact dvd_mul_of_dvd_left
-      (dvd_pow (dvd_refl 2) (by omega : r ≠ 0)) Y
-  have hTwiceL : 2 * L = Q := by
-    dsimp only [L]
-    exact Nat.mul_div_cancel' hEven
-  have hLower : 2 * (Y + 1) ≤ Q := by
-    calc
-      2 * (Y + 1) ≤ 4 * Y := by omega
-      _ ≤ Q := by
-        dsimp only [Q]
-        exact Nat.mul_le_mul_right Y hpowFour
-  have hLowerLength : min Q A - L ≤ L := by omega
-  have hUpperLength : U - Q ≤ Q := by
-    dsimp only [U]
-    omega
-  have hLQ : L + 1 ≤ Q + 1 := by omega
-  have hLQReal : (((L + 1 : ℕ) : ℝ)) ≤ (((Q + 1 : ℕ) : ℝ)) := by
-    exact_mod_cast hLQ
-  have hSquareL : (((L + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤ 8 * t := by
-    exact (pow_le_pow_left₀ (by positivity) hLQReal 2).trans
-      (by simpa only [Q] using hSquare)
-  have hSquareQ : (((Q + 1 : ℕ) : ℝ) ^ (2 : ℕ)) ≤ 8 * t := by
-    simpa only [Q] using hSquare
-  have hCubeQ : t ≤ (((Q + 1 : ℕ) : ℝ) ^ (3 : ℕ)) :=
-    hCube.trans (pow_le_pow_left₀ (by positivity) hLQReal 3)
-  have hPlain := norm_plain_weighted_Ioc_le_weyl
-    8 σ t L (min Q A) hσ hL (by omega) hLowerLength htOne
-      (by norm_num) hSquareL
-      (by simpa only [L, Q] using hCube)
-  have hRise := norm_smoothStep_weighted_Ioc_le_weyl
-    8 2 σ t Q L (min Q A) (by norm_num) hσ hQ hL (by omega)
-      hLowerLength htOne (by norm_num) hSquareL
-      (by simpa only [L, Q] using hCube)
-  have hFall := norm_smoothStep_weighted_Ioc_le_weyl
-    8 1 σ t Q Q U (by norm_num) hσ hQ hQ (by omega)
-      hUpperLength htOne (by norm_num) hSquareQ hCubeQ
-  have hRoot :
-      Real.sqrt (8 * ((L + 1 : ℕ) : ℝ) * t ^ (1 / 3 : ℝ)) ≤ R := by
-    dsimp only [R]
-    apply Real.sqrt_le_sqrt
-    exact mul_le_mul_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hLQReal (by norm_num))
-      (Real.rpow_nonneg (by positivity) _)
-  have hWeight : (((Q + 1 : ℕ) : ℝ)) ^ (-σ) ≤
-      (((L + 1 : ℕ) : ℝ)) ^ (-σ) := by
-    apply Real.rpow_le_rpow_of_nonpos
-    · positivity
-    · exact_mod_cast hLQ
-    · linarith
-  have hPlain' :
-      ‖∑ n ∈ Finset.Ioc L (min Q A),
-          ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ ≤
-        (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) := by
-    exact hPlain.trans (mul_le_mul_of_nonneg_left
-      (mul_le_mul_of_nonneg_left hRoot (by norm_num))
-      (Real.rpow_nonneg (by positivity) _))
-  have hRise' :
-      ‖∑ n ∈ Finset.Ioc L (min Q A),
-          (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ ≤
-        (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) := by
-    exact hRise.trans (mul_le_mul_of_nonneg_left
-      (mul_le_mul_of_nonneg_left hRoot (by norm_num))
-      (Real.rpow_nonneg (by positivity) _))
-  have hFall' :
-      ‖∑ n ∈ Finset.Ioc Q A,
-          (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ ≤
-        (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) := by
-    rw [source_upper_smooth_sum_eq_min_two_mul Q A hQ σ t]
-    calc
-      _ ≤ (((Q + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) := by
-        simpa only [U, R, one_mul] using hFall
-      _ ≤ (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) := by
-        exact mul_le_mul_of_nonneg_right hWeight (by positivity)
-  rw [typeISourceSmoothBlock_eq_terminal_three_sums Y A r σ t hY
-    (by simpa only [Q] using hLower)]
-  change ‖(∑ n ∈ Finset.Ioc L (min Q A),
-        ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)) -
-      (∑ n ∈ Finset.Ioc L (min Q A),
-        (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n)) +
-      (∑ n ∈ Finset.Ioc Q A,
-        (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-          unitaryPhase (logarithmicPhase t n))‖ ≤ _
-  calc
-    _ ≤ ‖∑ n ∈ Finset.Ioc L (min Q A),
-          ((n : ℝ) ^ (-σ)) • unitaryPhase (logarithmicPhase t n)‖ +
-        ‖∑ n ∈ Finset.Ioc L (min Q A),
-          (typeISmoothStep (2 * (n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ +
-        ‖∑ n ∈ Finset.Ioc Q A,
-          (typeISmoothStep ((n : ℝ) / Q) * (n : ℝ) ^ (-σ)) •
-            unitaryPhase (logarithmicPhase t n)‖ := by
-      exact (norm_add_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
-    _ ≤ (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) +
-        (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) +
-        (((L + 1 : ℕ) : ℝ)) ^ (-σ) * (30 * R) := by linarith
-    _ = 90 * ((((2 ^ r * Y) / 2 + 1 : ℕ) : ℝ) ^ (-σ)) *
-        Real.sqrt (8 * (((2 ^ r * Y + 1 : ℕ) : ℝ)) * t ^ (1 / 3 : ℝ)) := by
-      dsimp only [L, Q, R]
-      ring
+  let R := Real.sqrt (8 * ((Q + 1 : ℕ) : ℝ) * t ^ (1 / 3 : ℝ))
+  have h := norm_typeISourceSmoothBlock_of_prefix (A:=A) (t:=t) (B:=30*R)
+    hY hr hσ (by positivity) (by
+      intro c L U hc hQ hL hLU hLen hlo hhi
+      have hlow : ((Q/2+1 : ℕ):ℝ) ≤ ((L+1 : ℕ):ℝ) := by exact_mod_cast Nat.succ_le_succ hlo
+      have hhigh : ((L+1 : ℕ):ℝ) ≤ ((Q+1 : ℕ):ℝ) := by exact_mod_cast Nat.succ_le_succ hhi
+      exact (norm_smoothStep_weighted_Ioc_le_weyl 8 c σ t Q L U hc hσ hQ hL hLU hLen htOne
+        (by norm_num) ((by gcongr : ((L+1 : ℕ):ℝ)^2 ≤ ((Q+1 : ℕ):ℝ)^2).trans hSquare)
+        (hCube.trans (by gcongr))).trans (by dsimp [R]; gcongr))
+  convert h using 1
+  dsimp only [Q,R]
+  ring
+
 
 /-- Physical form of the preceding source-block Weyl estimate.  The source
 length is kept as the actual natural `Q = 2^r Y`, and the identity
@@ -3438,7 +2933,7 @@ theorem norm_typeISourceSmoothBlock_le_physical_weyl
     congr 1
     field_simp [htau.ne']
   have hRaw := norm_typeISourceSmoothBlock_le_weyl
-    hY hr hInterior hσ htOne hSquare hCube
+    (A:=A) hY hr hσ htOne hSquare hCube
   calc
     ‖typeISourceSmoothBlock Y A r σ t‖ ≤
         90 * (((Q / 2 + 1 : ℕ) : ℝ) ^ (-σ)) *
@@ -4329,9 +3824,8 @@ theorem eventually_no_terminal_classified_source
   have htSq : t ≤ (L : ℝ) ^ 2 := by
     have : 3 * T ≤ (L : ℝ) ^ 2 := by nlinarith [sq_nonneg ((L : ℝ) - T / 2)]
     exact htUpper.trans this
-  have hBound := norm_typeISourceSmoothBlock_terminal_le
-    (Y := Y) (A := A) (r := r) (σ := σ) (t := t) hY hr
-    (by simpa only [Q] using hTerminal) (by linarith) (by linarith) (by
+  have hBound := norm_typeISourceSmoothBlock_le_sqrt
+    (Y := Y) (A := A) (r := r) (σ := σ) (t := t) hY hr (by linarith) (by linarith) (by
       simpa only [L, Q] using htSq)
   have hSmall := hTerminalSmall T t Q L hTTerminal hTL hQUpper
     htLower htUpper

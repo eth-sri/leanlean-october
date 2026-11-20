@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstPhysicalTail
 public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
 
@@ -32,8 +33,8 @@ theorem cube_whole_column_norm (p : ι→O) (b : CubeCoordinates ι) (hb : b.Adm
   · rw [CubeCoordinates.aLabel_left p b hb]; rfl
   · rw [CubeCoordinates.aLabel_right p b hb]; rfl
 
-variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p : ι→O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem canonical_residual_norm (b : CubeCoordinates ι) (C : Finset ι) (negative : Bool)
     (Ψ : O→*ℂ) (hΨ : ∀ u,‖Ψ u‖≤1) (m f : O) (H : Finset ι→ℂ) (N : Finset ι) :

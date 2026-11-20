@@ -6,7 +6,6 @@ public import GuthMaynard.Improvement.CenteredKernelBridge
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set InnerProductSpace
-open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
 
 /-- Negative atoms encode the discrete part disjointly from the positive

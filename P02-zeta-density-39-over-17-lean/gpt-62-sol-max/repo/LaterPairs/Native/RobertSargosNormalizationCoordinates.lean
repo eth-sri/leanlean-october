@@ -64,18 +64,19 @@ theorem robertSargos_normalized_gcds (p : RobertSargosPoint) {j k : ℕ}
   subst k
   exact ⟨integerTripleGcd_quotient_primitive hr,integerTripleGcd_quotient_primitive hd⟩
 
-theorem RobertSargosReducedSystem.coefficient_gcd_pos {R H Q δ : ℝ}
-    {p : RobertSargosPoint} (h : RobertSargosReducedSystem R H Q δ p) :
+section
+variable {R H Q δ : ℝ} {p : RobertSargosPoint} (h : RobertSargosReducedSystem R H Q δ p)
+include R H Q δ p h
+
+theorem RobertSargosReducedSystem.coefficient_gcd_pos :
     0 < robertSargosCoefficientGcd p :=
   integerTripleGcd_pos h.r_ne_zero
 
-theorem RobertSargosReducedSystem.frequency_gcd_pos {R H Q δ : ℝ}
-    {p : RobertSargosPoint} (h : RobertSargosReducedSystem R H Q δ p) :
+theorem RobertSargosReducedSystem.frequency_gcd_pos :
     0 < robertSargosFrequencyGcd p :=
   integerTripleGcd_pos h.d_ne_zero
 
-theorem RobertSargosReducedSystem.coefficient_gcd_le {R H Q δ : ℝ}
-    {p : RobertSargosPoint} (h : RobertSargosReducedSystem R H Q δ p) :
+theorem RobertSargosReducedSystem.coefficient_gcd_le :
     (robertSargosCoefficientGcd p:ℝ) ≤ R := by
   have hc : (robertSargosCoefficientGcd p:ℝ) ≤ p.r.natAbs := by
     exact_mod_cast integerTripleGcd_le_natAbs h.r_ne_zero
@@ -83,5 +84,7 @@ theorem RobertSargosReducedSystem.coefficient_gcd_le {R H Q δ : ℝ}
     simpa only [Int.cast_natCast,Int.cast_abs] using
       congrArg (fun z : ℤ => (z:ℝ)) (Int.natCast_natAbs p.r)
   exact hc.trans (he.trans_le h.r_bound)
+
+end
 
 end TaoTrudgianYang2025

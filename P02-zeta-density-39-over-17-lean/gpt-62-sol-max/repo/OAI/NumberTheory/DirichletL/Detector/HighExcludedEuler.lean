@@ -43,13 +43,17 @@ def highExclusion (S : Finset Id) (hS : ∀P∈S,Prime P) : Id→*ℂ where
     simp only [outside_mul S hS A B]
     split_ifs <;> simp_all
 
-lemma highExclusion_cube (S : Finset Id) (hS : ∀P∈S,Prime P) (A : Id) :
+section
+variable (S : Finset Id) (hS : ∀P∈S,Prime P)
+include S hS
+
+lemma highExclusion_cube (A : Id) :
     highExclusion S hS (A^3)=highExclusion S hS A := by
   change (if ∀P∈S,¬P∣A^3 then (1:ℂ) else 0)=_
   simp only [outside_cube S hS]
   rfl
 
-theorem highIdealMask_unmarked (S : Finset Id) (hS : ∀P∈S,Prime P) (I J K L : Id) :
+theorem highIdealMask_unmarked (I J K L : Id) :
     highIdealMask S 1 I J K L =
       highExclusion S hS I*highExclusion S hS J*highExclusion S hS K*highExclusion S hS L := by
   have he : completedMask S 1 I J=highExclusion S hS (I*J^3) := by
@@ -59,19 +63,19 @@ theorem highIdealMask_unmarked (S : Finset Id) (hS : ∀P∈S,Prime P) (I J K L 
   rw [he,map_mul,highExclusion_cube]
   rfl
 
-lemma highIdealMask_unmarked_one (S : Finset Id) (hS : ∀P∈S,Prime P) :
+lemma highIdealMask_unmarked_one :
     highIdealMask S 1 1 1 1 1=1 := by
   rw [highIdealMask_unmarked S hS]
   simp only [map_one,one_mul]
 
-lemma highIdealMask_unmarked_mul (S : Finset Id) (hS : ∀P∈S,Prime P)
+lemma highIdealMask_unmarked_mul
     (a b : HighIdeal) :
     highIdealMask S 1 (a.1.1*b.1.1) (a.1.2*b.1.2) (a.2.1*b.2.1) (a.2.2*b.2.2)=
       highIdealMask S 1 a.1.1 a.1.2 a.2.1 a.2.2 * highIdealMask S 1 b.1.1 b.1.2 b.2.1 b.2.2 := by
   simp only [highIdealMask_unmarked S hS,map_mul]
   ring
 
-theorem excludedIdealHighSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
+theorem excludedIdealHighSeries_hasProd
     (η : HeckeFamily.Character) (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     HasProd (fun P : PrimeIdeal=>∑' b : HighValuation,
@@ -91,6 +95,8 @@ theorem excludedIdealHighSeries_hasProd (S : Finset Id) (hS : ∀P∈S,Prime P)
     have hs := bareIdealHighSummand_support η 1 x w z a.1.1 a.1.2 a.2.1 a.2.2 hh
     exact ⟨hs.2.1.1,hs.2.2.1.1,hs.2.2.2.1.1,hs.2.2.2.2.1⟩
   · exact (markedIdealHighSummand_summable S 1 η 1 x w z hx hw hz).norm
+
+end
 
 end SevenEighths.ProbePhysical
 end

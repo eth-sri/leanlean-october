@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredStep
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredAggregateUniform
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFilteredAggregate
@@ -12,12 +13,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform
-open FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation
-open InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic
-open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentGlobalPriorityTail
-open InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondPrincipalCaller InverseSecondProfileUniform FourierBridge CompletedHeight SecondPassIntegration JointLogSeparation InverseInitialClippedColumns InverseSecondFibers InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource InverseMomentGlobalPriorityTail InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
 local notation "Eis"=>ActualEisensteinCubic.O
 theorem global_priority_filtered_physical_step_uniform_types
     (om:𝓢(ℝ,ℂ)) (lo hi:ℝ) (hlo:0<lo)
@@ -29,12 +25,12 @@ theorem global_priority_filtered_physical_step_uniform_types
       0<loFresh ∧ loFresh≤hiFresh ∧ HasCompactSupport (ω₁:ℝ→ℂ) ∧ HasCompactSupport (ω₂:ℝ→ℂ) ∧
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
       ∀ J:ℕ, ∃ C Cbin Czero Ctail : ℝ,0 ≤ C ∧ 0≤Cbin ∧ 0≤Czero ∧ 0≤Ctail ∧ ∀ {ι σ : Type} [DecidableEq ι] [DecidableEq σ] (p : ι → Eis) (hp : ∀ i,p i ≠ 0)
-    [∀ i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-    (_hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (_hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+    (_hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     {Jo : ℕ} (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
     (original:Finset (InverseFirstPriorityParents.Source ι Jo))
     (_hvalid:∀x∈original,InverseFirstPriorityParents.SourceValid p x)

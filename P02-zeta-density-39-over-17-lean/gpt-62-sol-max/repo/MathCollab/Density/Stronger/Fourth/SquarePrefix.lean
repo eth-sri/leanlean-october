@@ -35,7 +35,7 @@ theorem integral_weighted_sq_le
       (fun x : ℝ => g x*(f x)^2 - (2*r)*(g x*f x) + r^2*g x) := by
     funext x
     ring
-  have hlin : Integrable (fun x : ℝ => (2*r)*(g x*f x)) := hgf.const_mul (2*r)
+  have hlin := hgf.const_mul (2*r)
   have hsub : Integrable (fun x : ℝ => g x*(f x)^2-(2*r)*(g x*f x)) :=
     hgf2.sub hlin
   rw [heq,integral_add hsub (hgi.const_mul (r^2)),
@@ -92,8 +92,7 @@ theorem exists_norm_sq_fourthPrefix_le_gaussian {c : ℝ} (hc : 0 < c) :
         mul_le_mul_of_nonneg_left (hkernel t u ht hct) (norm_nonneg _)
       _ = _ := by dsimp [g]; ring
   have hdom := hgp.const_mul (A*t^c)
-  have hprod : Integrable (fun u : ℝ =>
-      p u*zetaFourthKernel t ((c:ℂ)+(u:ℂ)*I)) :=
+  have hprod :=
     hdom.mono'
       (((continuous_dirichletPrefix_reflected N (zetaFourthCoeff c) t).mul
         (continuous_zetaFourthKernel_vertical t hc)).aestronglyMeasurable)

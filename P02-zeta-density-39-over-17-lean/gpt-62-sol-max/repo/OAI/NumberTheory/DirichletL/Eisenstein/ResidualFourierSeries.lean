@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -117,31 +61,72 @@ lemma schlafliBesselK_cubic_upper_away (deltaLoss x : ℝ) (hδ : 0<deltaLoss) (
       exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hp (by norm_num)) (by positivity)
     _ = _ := by unfold cubicBesselUpperAway;ring
 
-def cubicResidualNonzeroTerm (h : ActualEisensteinCubic.O) (p : ℝ × ℂ) : ℂ :=
-  if h=0 then 0 else nonzeroScatteringResidue h*(p.1:ℂ)^(2/3:ℂ)*
+
+open scoped ENNReal
+
+lemma integral_cusp_character_product (h k : ActualEisensteinCubic.O) :
+    (∫z in periodDomain,ShortDraftTrace.breveE (cuspFrequency h*z)*
+      ShortDraftTrace.breveE (-cuspFrequency k*z))=if h=k then ((9*Real.sqrt 3/2:ℝ):ℂ) else 0 := by
+  have hphase (z : ℂ) : ShortDraftTrace.breveE (cuspFrequency h*z)*
+      ShortDraftTrace.breveE (-cuspFrequency k*z)=ShortDraftTrace.breveE (-cuspFrequency (k-h)*z) := by
+    rw [←AddChar.map_add_eq_mul]
+    congr 1
+    unfold cuspFrequency
+    rw [map_sub]
+    ring
+  simp_rw [hphase]
+  simpa only [sub_eq_zero,eq_comm] using integral_cusp_character (k-h)
+
+lemma periodDomain_integrable_of_continuous (f : ℂ→ℂ) (hf : Continuous f) :
+    IntegrableOn f periodDomain volume := by
+  apply (hf.continuousOn.integrableOn_compact
+    (isCompact_closedBall (0:ℂ) (∑i,‖periodBasis i‖))).mono_set
+  intro z hz
+  simpa only [Metric.mem_closedBall,dist_zero_right] using norm_mem_periodDomain z hz
+
+structure SubexponentialBesselCoefficients where
+  value : ActualEisensteinCubic.O→ℂ
+  growth : ∀epsilon : ℝ,0<epsilon → ∃C : ℝ,0≤C ∧ ∀h : ActualEisensteinCubic.O,h≠0 →
+    ‖value h‖≤C*Real.exp (epsilon*‖cuspFrequency h‖)
+
+namespace SubexponentialBesselCoefficients
+variable (coeff : SubexponentialBesselCoefficients)
+
+def term (h : ActualEisensteinCubic.O) (p : ℝ × ℂ) : ℂ :=
+  if h=0 then 0 else (coeff.value h/cubicBesselNormalizer h)*(p.1:ℂ)^(2/3:ℂ)*
     sourceFourierKernel (4/3) (cuspFrequency h*p.1)*ShortDraftTrace.breveE (cuspFrequency h*p.2)
 
-lemma cubicResidualNonzeroTerm_bessel (h : ActualEisensteinCubic.O) (hh : h≠0) (v : ℝ) (hv : 0<v) (z : ℂ) :
-    cubicResidualNonzeroTerm h (v,z)=cubicResidualFourierCoefficient h*(v:ℂ)*
+def amplitude (v : ℝ) (h : ActualEisensteinCubic.O) : ℂ :=
+  if h=0 then 0 else coeff.value h*(v:ℂ)*
+    schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)
+
+lemma term_bessel (h : ActualEisensteinCubic.O) (hh : h≠0) (v : ℝ) (hv : 0<v) (z : ℂ) :
+    coeff.term h (v,z)=coeff.value h*(v:ℂ)*
       schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)*ShortDraftTrace.breveE (cuspFrequency h*z) := by
-  rw [cubicResidualNonzeroTerm,ite_eq_right hh]
+  rw [term,ite_eq_right hh]
   have hv0 : (v:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hv.ne'
+  have hn := cubicBesselNormalizer_ne_zero h hh
   have hp : (v:ℂ)^3*(v:ℂ)^(-(4/3:ℂ)-1)=(v:ℂ)^(2/3:ℂ) := by
     rw [←Complex.cpow_ofNat (v:ℂ) 3,←Complex.cpow_add _ _ hv0]
     congr 1
     ring
-  have hker := sourceFourierKernel_cubic_height h hh v hv
   calc
-    _ = nonzeroScatteringResidue h*(v:ℂ)^3*
+    _ = (coeff.value h/cubicBesselNormalizer h)*(v:ℂ)^3*
         ((v:ℂ)^(-(4/3:ℂ)-1)*sourceFourierKernel (4/3) (cuspFrequency h*v))*
           ShortDraftTrace.breveE (cuspFrequency h*z) := by rw [←hp];ring
     _ = _ := by
-      rw [hker,cubicResidualFourierCoefficient]
+      rw [sourceFourierKernel_cubic_height h hh v hv]
       field_simp
 
-lemma cubicResidualNonzeroTerm_continuousOn (h : ActualEisensteinCubic.O) :
-    ContinuousOn (cubicResidualNonzeroTerm h) {p : ℝ × ℂ | 0<p.1} := by
-  unfold cubicResidualNonzeroTerm
+lemma term_eq_amplitude (v : ℝ) (hv : 0<v) (h : ActualEisensteinCubic.O) (z : ℂ) :
+    coeff.term h (v,z)=coeff.amplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z) := by
+  by_cases hh : h=0
+  · simp only [term,amplitude,ite_eq_left hh,zero_mul]
+  · rw [coeff.term_bessel h hh v hv z,amplitude,ite_eq_right hh]
+
+lemma term_continuousOn (h : ActualEisensteinCubic.O) :
+    ContinuousOn (coeff.term h) {p : ℝ × ℂ | 0<p.1} := by
+  unfold term
   by_cases hh : h=0
   · simp only [ite_eq_left hh]
     exact continuousOn_const
@@ -158,139 +143,112 @@ lemma cubicResidualNonzeroTerm_continuousOn (h : ActualEisensteinCubic.O) :
     fun_prop
   exact (((continuousAt_const.mul hpow).mul hsource).mul hphase.continuousAt).continuousWithinAt
 
-lemma cubicResidualNonzeroTerm_slab_bound (a b : ℝ) (ha : 0<a) (hab : a≤b) :
+lemma slab_bound (a b : ℝ) (ha : 0<a) (hab : a≤b) :
     ∃C : ℝ,0≤C ∧ ∀(h : ActualEisensteinCubic.O)(p : ℝ × ℂ),p.1∈Set.Icc a b →
-      ‖cubicResidualNonzeroTerm h p‖≤C*Real.exp (-(Real.pi*a)*‖cuspFrequency h‖) := by
+      ‖coeff.term h p‖≤C*Real.exp (-(Real.pi*a)*‖cuspFrequency h‖) := by
   have hb : 0<b := ha.trans_le hab
   have hd : 0<‖(3:ℂ)*ConcreteTraceCRT.eisLam‖ := norm_pos_iff.mpr
     (mul_ne_zero (by norm_num) ConcreteTraceCRT.eisLam_ne_zero)
-  let deltaLoss : ℝ := 4*Real.pi*a*‖(3:ℂ)*ConcreteTraceCRT.eisLam‖⁻¹
-  have hδ : 0<deltaLoss := by dsimp [deltaLoss];positivity
-  have hCu : 0<cubicBesselUpperAway deltaLoss := cubicBesselUpperAway_pos deltaLoss hδ
-  obtain ⟨C,hC,hcoeff⟩ := cubicResidualFourierCoefficient_subexponential (Real.pi*a) (mul_pos Real.pi_pos ha)
-  refine ⟨C*b*cubicBesselUpperAway deltaLoss,mul_nonneg (mul_nonneg hC hb.le) (cubicBesselUpperAway_pos deltaLoss hδ).le,?_⟩
+  let delta : ℝ := 4*Real.pi*a*‖(3:ℂ)*ConcreteTraceCRT.eisLam‖⁻¹
+  have hdelta : 0<delta := by dsimp [delta];positivity
+  have hCu := cubicBesselUpperAway_pos delta hdelta
+  obtain ⟨C,hC,hcoeff⟩ := coeff.growth (Real.pi*a) (mul_pos Real.pi_pos ha)
+  refine ⟨C*b*cubicBesselUpperAway delta,by positivity,?_⟩
   intro h p hp
   have hv : 0<p.1 := ha.trans_le hp.1
   by_cases hh : h=0
-  · simp only [cubicResidualNonzeroTerm,ite_eq_left hh,norm_zero]
+  · simp only [term,ite_eq_left hh,norm_zero]
     positivity
   have hr : 0<‖cuspFrequency h‖ := norm_pos_iff.mpr (cuspFrequency_ne_zero h hh)
-  have hx : deltaLoss≤4*Real.pi*‖cuspFrequency h‖*p.1 := by
-    have hmul := mul_le_mul (cuspFrequency_norm_lower h hh) hp.1
-      ha.le (norm_nonneg (cuspFrequency h))
-    dsimp [deltaLoss]
+  have hx : delta≤4*Real.pi*‖cuspFrequency h‖*p.1 := by
+    have hmul := mul_le_mul (cuspFrequency_norm_lower h hh) hp.1 ha.le (norm_nonneg _)
+    dsimp [delta]
     nlinarith [mul_le_mul_of_nonneg_left hmul (by positivity : 0≤4*Real.pi)]
-  rw [show p=(p.1,p.2) from rfl,cubicResidualNonzeroTerm_bessel h hh _ hv,
+  rw [show p=(p.1,p.2) from rfl,coeff.term_bessel h hh _ hv,
     norm_mul,norm_mul,norm_mul,breveE_norm,mul_one,Complex.norm_of_nonneg hv.le]
-  have hkb := schlafliBesselK_cubic_upper_away deltaLoss (4*Real.pi*‖cuspFrequency h‖*p.1) hδ hx
   calc
     _ ≤ (C*Real.exp ((Real.pi*a)*‖cuspFrequency h‖))*b*
-        (cubicBesselUpperAway deltaLoss*Real.exp (-(4*Real.pi*‖cuspFrequency h‖*p.1)/2)) :=
-      mul_le_mul (mul_le_mul (hcoeff h hh) hp.2 hv.le (mul_nonneg hC (Real.exp_pos _).le))
-        hkb (norm_nonneg _) (by positivity)
-    _ = (C*b*cubicBesselUpperAway deltaLoss)*Real.exp
+        (cubicBesselUpperAway delta*Real.exp (-(4*Real.pi*‖cuspFrequency h‖*p.1)/2)) :=
+      mul_le_mul (mul_le_mul (hcoeff h hh) hp.2 hv.le (by positivity))
+        (schlafliBesselK_cubic_upper_away delta _ hdelta hx) (norm_nonneg _) (by positivity)
+    _ = (C*b*cubicBesselUpperAway delta)*Real.exp
         ((Real.pi*a)*‖cuspFrequency h‖-(4*Real.pi*‖cuspFrequency h‖*p.1)/2) := by
-      rw [Real.exp_sub,show -(4*Real.pi*‖cuspFrequency h‖*p.1)/2 =
+      rw [Real.exp_sub,show -(4*Real.pi*‖cuspFrequency h‖*p.1)/2=
         -(4*Real.pi*‖cuspFrequency h‖*p.1/2) by ring,Real.exp_neg]
       ring
     _ ≤ _ := by
       apply mul_le_mul_of_nonneg_left _ (by positivity)
       apply Real.exp_le_exp.mpr
-      have hmul := mul_le_mul_of_nonneg_left hp.1 (mul_pos Real.pi_pos hr).le
-      nlinarith
+      nlinarith [mul_le_mul_of_nonneg_left hp.1 (mul_pos Real.pi_pos hr).le]
 
-def cubicResidualNonzeroSeries (p : ℝ × ℂ) : ℂ := ∑'h : ActualEisensteinCubic.O,cubicResidualNonzeroTerm h p
+lemma summable (p : ℝ × ℂ) (hp : 0<p.1) : Summable (fun h : ActualEisensteinCubic.O => coeff.term h p) := by
+  obtain ⟨C,hC,hbound⟩ := coeff.slab_bound p.1 p.1 hp le_rfl
+  apply Summable.of_norm
+  exact Summable.of_nonneg_of_le (fun h => norm_nonneg _) (fun h => hbound h p ⟨le_rfl,le_rfl⟩)
+    ((summable_exp_neg_cuspFrequency_norm (Real.pi*p.1) (mul_pos Real.pi_pos hp)).mul_left C)
 
-lemma cubicResidualNonzeroSeries_continuousOn_slab (a b : ℝ) (ha : 0<a) (hab : a≤b) :
-    ContinuousOn cubicResidualNonzeroSeries {p : ℝ × ℂ | p.1∈Set.Icc a b} := by
-  obtain ⟨C,hC,hbound⟩ := cubicResidualNonzeroTerm_slab_bound a b ha hab
+def series (p : ℝ × ℂ) : ℂ := ∑'h : ActualEisensteinCubic.O,coeff.term h p
+
+lemma series_continuousOn_slab (a b : ℝ) (ha : 0<a) (hab : a≤b) :
+    ContinuousOn coeff.series {p : ℝ × ℂ | p.1∈Set.Icc a b} := by
+  obtain ⟨C,hC,hbound⟩ := coeff.slab_bound a b ha hab
   apply continuousOn_tsum (u := fun h : ActualEisensteinCubic.O => C*Real.exp (-(Real.pi*a)*‖cuspFrequency h‖))
   · intro h
-    exact (cubicResidualNonzeroTerm_continuousOn h).mono (fun p hp => ha.trans_le hp.1)
+    exact (coeff.term_continuousOn h).mono (fun p hp => ha.trans_le hp.1)
   · exact (summable_exp_neg_cuspFrequency_norm (Real.pi*a) (mul_pos Real.pi_pos ha)).mul_left C
   · exact hbound
 
-lemma cubicResidualNonzeroSeries_continuousOn :
-    ContinuousOn cubicResidualNonzeroSeries {p : ℝ × ℂ | 0<p.1} := by
+lemma series_continuousOn : ContinuousOn coeff.series {p : ℝ × ℂ | 0<p.1} := by
   intro p hp
   change 0<p.1 at hp
-  have hclosed := cubicResidualNonzeroSeries_continuousOn_slab (p.1/2) (2*p.1) (by linarith) (by linarith)
+  have hclosed := coeff.series_continuousOn_slab (p.1/2) (2*p.1) (by linarith) (by linarith)
   have hnb : {q : ℝ × ℂ | q.1∈Set.Icc (p.1/2) (2*p.1)}∈𝓝 p :=
     continuousAt_fst.tendsto.eventually (Icc_mem_nhds (by linarith) (by linarith))
   exact (hclosed.continuousAt hnb).continuousWithinAt
 
-def cubicResidualNonzeroFunction (w : HyperbolicSpace) : ℂ :=
-  cubicResidualNonzeroSeries (hyperbolicHeight w,hyperbolicHorizontal w)
+lemma series_bessel (v : ℝ) (hv : 0<v) (z : ℂ) :
+    coeff.series (v,z)=∑'h : ActualEisensteinCubic.O,coeff.amplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z) := by
+  exact tsum_congr (fun h => coeff.term_eq_amplitude v hv h z)
 
-lemma cubicResidualNonzeroFunction_continuous : Continuous cubicResidualNonzeroFunction := by
+lemma series_period (v : ℝ) (z : ℂ) (n : ActualEisensteinCubic.O) :
+    coeff.series (v,z+3*ConcreteTraceCRT.eisEmbedding n)=coeff.series (v,z) := by
+  apply tsum_congr
+  intro h
+  by_cases hh : h=0
+  · simp only [term,ite_eq_left hh]
+  simp only [term,ite_eq_right hh]
+  rw [mul_add,AddChar.map_add_eq_mul,cuspFrequency_period,mul_one]
+
+def function (w : HyperbolicSpace) : ℂ := coeff.series (hyperbolicHeight w,hyperbolicHorizontal w)
+
+lemma function_continuous : Continuous coeff.function := by
   apply continuous_iff_continuousAt.mpr
   intro w
   have hopen : IsOpen {p : ℝ × ℂ | 0<p.1} := isOpen_lt continuous_const continuous_fst
   have hp : (hyperbolicHeight w,hyperbolicHorizontal w)∈{p : ℝ × ℂ | 0<p.1} := hyperbolicHeight_pos w
-  exact (cubicResidualNonzeroSeries_continuousOn.continuousAt (hopen.mem_nhds hp)).comp
+  exact (coeff.series_continuousOn.continuousAt (hopen.mem_nhds hp)).comp
     (f := fun u : HyperbolicSpace => (hyperbolicHeight u,hyperbolicHorizontal u))
     (hyperbolicHeight_continuous.prodMk hyperbolicHorizontal_continuous).continuousAt
 
-lemma cubicResidualNonzeroSeries_period (v : ℝ) (z : ℂ) (n : ActualEisensteinCubic.O) :
-    cubicResidualNonzeroSeries (v,z+3*ConcreteTraceCRT.eisEmbedding n)=cubicResidualNonzeroSeries (v,z) := by
-  apply tsum_congr
-  intro h
-  by_cases hh : h=0
-  · simp only [cubicResidualNonzeroTerm,ite_eq_left hh]
-  simp only [cubicResidualNonzeroTerm,ite_eq_right hh]
-  rw [mul_add,AddChar.map_add_eq_mul,cuspFrequency_period,mul_one]
-
-end
-
-section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology ENNReal
-open Finset AddChar MulChar EisensteinEmbedding
-
-local notation "O" => ActualEisensteinCubic.O
-
-def cubicResidualModeAmplitude (v : ℝ) (h : ActualEisensteinCubic.O) : ℂ :=
-  if h=0 then 0 else cubicResidualFourierCoefficient h*(v:ℂ)*
-    schlafliBesselK (1/3) (4*Real.pi*‖cuspFrequency h‖*v)
-
-lemma cubicResidualNonzeroTerm_eq_amplitude (v : ℝ) (hv : 0<v) (h : ActualEisensteinCubic.O) (z : ℂ) :
-    cubicResidualNonzeroTerm h (v,z)=cubicResidualModeAmplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z) := by
-  by_cases hh : h=0
-  · simp only [cubicResidualNonzeroTerm,cubicResidualModeAmplitude,ite_eq_left hh,zero_mul]
-  · rw [cubicResidualNonzeroTerm_bessel h hh v hv z,cubicResidualModeAmplitude,ite_eq_right hh]
-
-lemma integral_cusp_character_product (h k : ActualEisensteinCubic.O) :
-    (∫z in periodDomain,ShortDraftTrace.breveE (cuspFrequency h*z)*
-      ShortDraftTrace.breveE (-cuspFrequency k*z))=if h=k then ((9*Real.sqrt 3/2:ℝ):ℂ) else 0 := by
-  have hphase (z : ℂ) : ShortDraftTrace.breveE (cuspFrequency h*z)*
-      ShortDraftTrace.breveE (-cuspFrequency k*z)=ShortDraftTrace.breveE (-cuspFrequency (k-h)*z) := by
-    rw [←AddChar.map_add_eq_mul]
-    congr 1
-    unfold cuspFrequency
-    rw [map_sub]
-    ring
-  simp_rw [hphase]
-  simpa only [sub_eq_zero,eq_comm] using integral_cusp_character (k-h)
-
-lemma cubicResidualNonzeroSeries_fourier (v : ℝ) (hv : 0<v) (k : ActualEisensteinCubic.O) :
-    (∫z in periodDomain,cubicResidualNonzeroSeries (v,z)*ShortDraftTrace.breveE (-cuspFrequency k*z))=
-      ((9*Real.sqrt 3/2:ℝ):ℂ)*cubicResidualModeAmplitude v k := by
+lemma series_fourier (v : ℝ) (hv : 0<v) (k : ActualEisensteinCubic.O) :
+    (∫z in periodDomain,coeff.series (v,z)*ShortDraftTrace.breveE (-cuspFrequency k*z))=
+      ((9*Real.sqrt 3/2:ℝ):ℂ)*coeff.amplitude v k := by
   let : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
   let : IsFiniteMeasure (volume.restrict periodDomain) := isFiniteMeasure_restrict.mpr (by
     rw [periodDomain_volume]
     exact ENNReal.ofReal_ne_top)
-  let f : ActualEisensteinCubic.O→ℂ→ℂ := fun h z => cubicResidualModeAmplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z)*
+  let f : ActualEisensteinCubic.O→ℂ→ℂ := fun h z => coeff.amplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z)*
     ShortDraftTrace.breveE (-cuspFrequency k*z)
   have hc (h : ActualEisensteinCubic.O) : Continuous (f h) := by
-    change Continuous (fun z : ℂ => cubicResidualModeAmplitude v h*
+    change Continuous (fun z : ℂ => coeff.amplitude v h*
       Complex.exp (2*Real.pi*Complex.I*((cuspFrequency h*z)+starRingEnd ℂ (cuspFrequency h*z)))*
       Complex.exp (2*Real.pi*Complex.I*((-cuspFrequency k*z)+starRingEnd ℂ (-cuspFrequency k*z))))
     fun_prop
-  obtain ⟨C,hC,hbound⟩ := cubicResidualNonzeroTerm_slab_bound v v hv le_rfl
+  obtain ⟨C,hC,hbound⟩ := coeff.slab_bound v v hv le_rfl
   have hfbound (h : ActualEisensteinCubic.O) (z : ℂ) : ‖f h z‖≤C*Real.exp (-(Real.pi*v)*‖cuspFrequency h‖) := by
-    change ‖(cubicResidualModeAmplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z))*
+    change ‖(coeff.amplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z))*
       ShortDraftTrace.breveE (-cuspFrequency k*z)‖≤_
-    rw [←cubicResidualNonzeroTerm_eq_amplitude v hv h z,norm_mul,breveE_norm,mul_one]
+    rw [←coeff.term_eq_amplitude v hv h z,norm_mul,breveE_norm,mul_one]
     exact hbound h (v,z) ⟨le_rfl,le_rfl⟩
   have hi (h : ActualEisensteinCubic.O) : IntegrableOn (f h) periodDomain volume :=
     (integrable_const (C*Real.exp (-(Real.pi*v)*‖cuspFrequency h‖))).mono'
@@ -305,8 +263,8 @@ lemma cubicResidualNonzeroSeries_fourier (v : ℝ) (hv : 0<v) (k : ActualEisenst
     exact ((summable_exp_neg_cuspFrequency_norm (Real.pi*v) (mul_pos Real.pi_pos hv)).mul_left C).mul_left
       (volume.real periodDomain)
   have hterm (h : ActualEisensteinCubic.O) : (∫z in periodDomain,f h z)=
-      if h=k then ((9*Real.sqrt 3/2:ℝ):ℂ)*cubicResidualModeAmplitude v h else 0 := by
-    change (∫z in periodDomain,cubicResidualModeAmplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z)*
+      if h=k then ((9*Real.sqrt 3/2:ℝ):ℂ)*coeff.amplitude v h else 0 := by
+    change (∫z in periodDomain,coeff.amplitude v h*ShortDraftTrace.breveE (cuspFrequency h*z)*
       ShortDraftTrace.breveE (-cuspFrequency k*z))=_
     simp_rw [mul_assoc]
     rw [integral_const_mul,integral_cusp_character_product]
@@ -315,23 +273,81 @@ lemma cubicResidualNonzeroSeries_fourier (v : ℝ) (hv : 0<v) (k : ActualEisenst
     _ = ∫z in periodDomain,∑'h : ActualEisensteinCubic.O,f h z := by
       apply integral_congr_ae
       exact Eventually.of_forall (fun z => by
-        change (∑'h : ActualEisensteinCubic.O,cubicResidualNonzeroTerm h (v,z))*ShortDraftTrace.breveE (-cuspFrequency k*z)=_
+        change (∑'h : ActualEisensteinCubic.O,coeff.term h (v,z))*ShortDraftTrace.breveE (-cuspFrequency k*z)=_
         rw [←tsum_mul_right]
         apply tsum_congr
         intro h
-        rw [cubicResidualNonzeroTerm_eq_amplitude v hv h z])
+        rw [coeff.term_eq_amplitude v hv h z])
     _ = ∑'h : ActualEisensteinCubic.O,∫z in periodDomain,f h z := (integral_tsum_of_summable_integral_norm hi hs).symm
-    _ = ∑'h : ActualEisensteinCubic.O,if h=k then ((9*Real.sqrt 3/2:ℝ):ℂ)*cubicResidualModeAmplitude v h else 0 := tsum_congr hterm
+    _ = ∑'h : ActualEisensteinCubic.O,if h=k then ((9*Real.sqrt 3/2:ℝ):ℂ)*coeff.amplitude v h else 0 := tsum_congr hterm
     _ = _ := by simp
+
+lemma series_height_continuous (v : ℝ) (hv : 0<v) :
+    Continuous (fun z : ℂ => coeff.series (v,z)) := by
+  apply continuous_iff_continuousAt.mpr
+  intro z
+  have hopen : IsOpen {p : ℝ × ℂ | 0<p.1} := isOpen_lt continuous_const continuous_fst
+  exact (coeff.series_continuousOn.continuousAt (hopen.mem_nhds hv)).comp
+    (f := fun z : ℂ => (v,z)) (by fun_prop)
+
+def fullFunction (constant : ℂ) (w : HyperbolicSpace) : ℂ :=
+  constant*(hyperbolicHeight w:ℂ)^(2/3:ℂ)+coeff.function w
+
+lemma fullFunction_continuous (constant : ℂ) : Continuous (coeff.fullFunction constant) := by
+  have hp : Continuous (fun w : HyperbolicSpace => (hyperbolicHeight w:ℂ)^(2/3:ℂ)) := by
+    apply continuous_iff_continuousAt.mpr
+    intro w
+    exact (Complex.continuousAt_ofReal_cpow_const (hyperbolicHeight w) (2/3:ℂ)
+      (Or.inr (hyperbolicHeight_pos w).ne')).comp (f := hyperbolicHeight) hyperbolicHeight_continuous.continuousAt
+  exact (continuous_const.mul hp).add coeff.function_continuous
+
+section
+variable (constant : ℂ) (v : ℝ) (hv : 0<v)
+include constant v hv
+
+lemma fullFunction_fourier (k : ActualEisensteinCubic.O) :
+    (∫z in periodDomain,coeff.fullFunction constant (upperPoint z v hv)*
+      ShortDraftTrace.breveE (-cuspFrequency k*z))=
+      ((9*Real.sqrt 3/2:ℝ):ℂ)*(if k=0 then constant*(v:ℂ)^(2/3:ℂ) else coeff.amplitude v k) := by
+  have hphase : Continuous (fun z : ℂ => ShortDraftTrace.breveE (-cuspFrequency k*z)) := by
+    change Continuous (fun z : ℂ => Complex.exp (2*Real.pi*Complex.I*
+      ((-cuspFrequency k*z)+starRingEnd ℂ (-cuspFrequency k*z))))
+    fun_prop
+  have hc0 := periodDomain_integrable_of_continuous
+    (fun z => (constant*(v:ℂ)^(2/3:ℂ))*ShortDraftTrace.breveE (-cuspFrequency k*z))
+    (continuous_const.mul hphase)
+  have hcn := periodDomain_integrable_of_continuous
+    (fun z => coeff.series (v,z)*ShortDraftTrace.breveE (-cuspFrequency k*z))
+    ((coeff.series_height_continuous v hv).mul hphase)
+  simp_rw [fullFunction,function,hyperbolicHeight_upperPoint,hyperbolicHorizontal_upperPoint,add_mul]
+  rw [integral_add hc0 hcn,integral_const_mul,integral_cusp_character,coeff.series_fourier v hv k]
+  by_cases hk : k=0
+  · simp only [ite_eq_left hk,amplitude,mul_zero]
+    ring
+  · simp only [ite_eq_right hk,mul_zero,zero_add]
+
+lemma fullFunction_period (z : ℂ) (n : ActualEisensteinCubic.O) :
+    coeff.fullFunction constant (upperPoint (z+3*ConcreteTraceCRT.eisEmbedding n) v hv)=
+      coeff.fullFunction constant (upperPoint z v hv) := by
+  simp only [fullFunction,function,hyperbolicHeight_upperPoint,hyperbolicHorizontal_upperPoint,
+    coeff.series_period]
+
+lemma fullFunction_height_continuous :
+    Continuous (fun z : ℂ => coeff.fullFunction constant (upperPoint z v hv)) := by
+  have hc := coeff.series_height_continuous v hv
+  simp only [fullFunction,function,hyperbolicHeight_upperPoint,hyperbolicHorizontal_upperPoint]
+  fun_prop
 
 end
 
-section
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
-open Finset AddChar MulChar EisensteinEmbedding
+end SubexponentialBesselCoefficients
 
-local notation "O" => ActualEisensteinCubic.O
+/-- Coefficients of the residue, with the growth bound needed for the common
+Fourier-Bessel reconstruction. -/
+def residualBesselCoefficients : SubexponentialBesselCoefficients :=
+  ⟨cubicResidualFourierCoefficient, cubicResidualFourierCoefficient_subexponential⟩
+
+abbrev cubicResidualModeAmplitude := residualBesselCoefficients.amplitude
 
 end
 

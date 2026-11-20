@@ -41,13 +41,11 @@ theorem modelPhaseMorseLeadingTerm_scale
   simp only [Complex.ofReal_div,Complex.ofReal_mul,neg_div]
   ring
 
-theorem modelPhaseFourierMode_sub_main_eq_morseRemainder
-    {χ F : ℝ → ℝ} {σ δ T N r : ℝ}
-    (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N)
-    (hv : r*N/T ∈ modelPhaseSlopeRange F) :
+section
+variable {χ F : ℝ → ℝ} {σ δ T N r : ℝ} (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2) (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ) (hT : 0 < T) (hN : 0 < N) (hv : r*N/T ∈ modelPhaseSlopeRange F)
+include χ F σ δ T N r hs hσ hδ hF hT hN hv
+
+theorem modelPhaseFourierMode_sub_main_eq_morseRemainder :
     modelPhaseFourierMode χ F T N r -
         (χ (modelPhaseInverseSlope F (r*N/T)) : ℂ)*modelPhaseStationaryMainTerm F T N r =
       (N : ℂ)*(𝐞 (modelPhaseFrequencyPhase F T N r (modelPhaseStationaryPoint F T N r)) : ℂ)*
@@ -57,18 +55,14 @@ theorem modelPhaseFourierMode_sub_main_eq_morseRemainder
   unfold modelPhaseMorseRemainder
   ring
 
-theorem norm_modelPhaseFourierMode_sub_main
-    {χ F : ℝ → ℝ} {σ δ T N r : ℝ}
-    (hs : tsupport χ ⊆ Ioo (1 : ℝ) 2)
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N)
-    (hv : r*N/T ∈ modelPhaseSlopeRange F) :
+theorem norm_modelPhaseFourierMode_sub_main :
     ‖modelPhaseFourierMode χ F T N r -
         (χ (modelPhaseInverseSlope F (r*N/T)) : ℂ)*modelPhaseStationaryMainTerm F T N r‖ =
       N*‖modelPhaseMorseRemainder χ F T (r*N/T)‖ := by
   rw [modelPhaseFourierMode_sub_main_eq_morseRemainder hs hσ hδ hF hT hN hv,
     norm_mul,norm_mul,Complex.norm_real,Real.norm_eq_abs,abs_of_pos hN,Circle.norm_coe,mul_one]
+
+end
 
 end TaoTrudgianYang2025
 

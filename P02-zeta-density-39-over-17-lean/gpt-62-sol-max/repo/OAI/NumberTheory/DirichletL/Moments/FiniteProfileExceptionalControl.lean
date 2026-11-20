@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentFiniteProfileExceptional
-open FourierBridge JointLogSeparation CompletedHeight CenteredMomentLattice
-open EisensteinSchwartzPoisson
+open FourierBridge JointLogSeparation CompletedHeight CenteredMomentLattice EisensteinSchwartzPoisson
 
 theorem frequencyTwist_source_control (S : Finset (ℕ × ℕ)) :
     ∃ n : ℕ, ∃ T : Finset (ℕ × ℕ), ∃ C : ℝ, 0 < C ∧

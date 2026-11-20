@@ -9,13 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentEnergyFirstNormalizedGaussianPowers
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
-open CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst
-open CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentCompleteCommon
-open CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance
-open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT CenteredMomentPrimeElements CenteredMomentPrimePool CenteredMomentFirstAmplificationChoice CenteredMomentFirstPhysicalSource CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentSecondHeightFamily CenteredMomentCompleteCommon CenteredMomentSectorLocalization CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstMixedAllowance CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentFirstCommonReferencePower
 local notation "O"=>HeckeFamily.O
 local notation "Ray"=>RayFourExpansion.RayCharacter
 
@@ -24,16 +18,18 @@ theorem actual_normalized_four_powers
     (hbad:fixedBadPrimes⊆Sbad)
     (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
     (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
-    (K V Z sigma delta reserve paid eps saving Mdecl Mcap Mamp primeLoss:ℝ)
-    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0<sigma)(heps:0≤eps)(hM:0≤Mdecl)
-    (hcap:Mdecl≤Mcap)(hactual:Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)≤Mdecl)
-    (hlow:Real.logb Z V≤5*Mdecl/6)(hloss:0≤primeLoss)(hMamp:0≤Mamp)
+    (K V Z sigma delta reserve paid eps saving Mdecl Mcap Mamp primeLoss credit:ℝ)
+    (hK:0<K)(hV:0<V)(hZ:1<Z)(hs:0<sigma)(heps:0≤eps)(hcap:Mdecl≤Mcap)
+    (hwidth:ColumnWidthBudget (Real.logb Z V) (Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ)) Mdecl credit)
+    (hloss:0≤primeLoss)(hMamp:0≤Mamp)
     (hcard:Z^(sigma/3-primeLoss)≤(primePool M Hray Sbad (1/2) 1 (Z^(sigma/3))).card)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
     (upper:ℝ)(N:ℕ)(hupper:0≤upper)
     (H:Fin 4→ℝ)(hH:∀j,0≤H j)(rmain:ℝ)
-    (rerror:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3)))→Fin 3→Ray→ℝ):
+    (rerror:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3)))→Fin 3→Ray→ℝ)
+    (hclip:credit≤Real.logb Z (C.absNorm:ℝ)+max rmain 0)
+    (hclipError:∀ (p:elementPool (primePool M Hray Sbad (1/2) 1 (Z^(sigma/3)))) i χ,credit≤Real.logb Z (C.absNorm:ℝ)+errorRemoval p Z (errorIndex i+1)+max (rerror p i χ) 0):
     let P:=primePool M Hray Sbad (1/2) 1 (Z^(sigma/3));
     let M0:=Real.logb Z K+Real.logb Z (η.modulus.absNorm:ℝ);
     let K0:=nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z;
@@ -69,9 +65,9 @@ theorem actual_normalized_four_powers
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve p (errorIndex i+1))
     rerror hV hc hq hz
-  have hav:=actual_low_four_coefficients M Hray Sbad hbad η τ C D hC hD hCD E
-    K V Z sigma delta reserve paid eps saving Mdecl Mcap Mamp primeLoss
-    hK hV hZ hs heps hM hcap hactual hlow hloss hMamp hcard hmod H hH rmain rerror
+  have hav:=actual_four_coefficients M Hray Sbad hbad η τ C D hC hD hCD E
+    K V Z sigma delta reserve paid eps saving Mdecl Mcap Mamp primeLoss credit
+    hK hV hZ hs heps hcap hwidth hloss hMamp hcard hmod H hH rmain rerror hclip hclipError
   dsimp only at hn hav
   rw [Finset.mul_sum]
   apply Finset.sum_le_sum

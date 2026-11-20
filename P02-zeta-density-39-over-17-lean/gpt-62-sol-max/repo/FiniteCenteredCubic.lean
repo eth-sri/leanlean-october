@@ -92,8 +92,8 @@ theorem finite_centered_cubic_bound (w : MathCollab.Density.ReflectionCutoff)
   · let J := kernelCubic (finiteTimeMeasure W)
       (retainedPoissonKernel (volume.restrict (Icc (1/2:ℝ) 5)) (fun x => (w x:ℂ)) L
         (poissonModes (T^(1+η)/L)))
-    have hj : ‖J‖ ≤ C*(T^ε*X+T^(-100:ℝ)*R^3) := hret T L hbig hLl hLu W hsep
-    have hd : ‖finiteCubic W (MathCollab.Density.hKernel w L)-J‖ ≤ A*T^(-190:ℝ)*R^3 :=
+    have hj := hret T L hbig hLl hLu W hsep
+    have hd :=
       happrox T L t₀ hT1 hL1 hLT2 W hW
     calc
       _ = ‖J+(finiteCubic W (MathCollab.Density.hKernel w L)-J)‖ := by congr 1; ring

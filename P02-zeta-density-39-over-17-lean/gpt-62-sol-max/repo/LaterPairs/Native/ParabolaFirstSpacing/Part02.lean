@@ -708,7 +708,7 @@ private theorem exists_bourgainSourceCurve_coarse_pair_bound {ε ν : ℝ}
         ((r:ℕ)/(k:ℝ)+σ*(((t:ℕ)+1)/((2^d:ℕ):ℝ))) := by
     intro t s hts
     have hh' := hh (e (r,t)) s hts
-    have hc := finGrid_cell hk (by positivity : 0 < 2^d) r t
+    have hc := LogarithmicSixth.logCurve_finGrid_cell hk (by positivity : 0 < 2^d) r t
     simp only [e,Nat.cast_mul] at hh'
     rw [hc.1,hc.2] at hh'
     exact hh'
@@ -816,10 +816,10 @@ private theorem exists_bourgainSourceGridBound_step {ε ν : ℝ}
     exact hpair k d R hk hR hKR hσν hrem hfine hδR hwidth
       ι τ S V z c w v hw hv hs ht hsep i j
   have hsumS : (∑ i, AS i)=JS :=
-    (finGrid_sum (k:=k) (l:=2^d) (fun r => ∫ x : Fin 4 → ℝ,
+    (LogarithmicSixth.logCurve_finGrid_sum (k:=k) (l:=2^d) (fun r => ∫ x : Fin 4 → ℝ,
       bourgainRadialWeight (20*R) x*bourgainSourceSixMoment (S r) (z r) (w r) x)).symm
   have hsumV : (∑ j, AV j)=JV :=
-    (finGrid_sum (k:=k) (l:=2^d) (fun r => ∫ x : Fin 4 → ℝ,
+    (LogarithmicSixth.logCurve_finGrid_sum (k:=k) (l:=2^d) (fun r => ∫ x : Fin 4 → ℝ,
       bourgainRadialWeight (20*R) x*bourgainSourceSixMoment (V r) (c r) (v r) x)).symm
   have hfactor : (∑ i, ∑ j, L*AS i*AV j)=L*(∑ i, AS i)*(∑ j, AV j) := by
     calc
@@ -4571,58 +4571,11 @@ open MeasureTheory GafniTao Set
 open scoped BigOperators ContDiff FourierTransform
 namespace TaoTrudgianYang2025
 
-private theorem bourgainShiftRemainderCutoff_derivative_integrable (p : Fin 5 → ℝ)
-    (hp : p ∈ Icc (![0,0,0,-32,-32] : Fin 5 → ℝ) ![1/2,1,1/100,32,32]) (j : ℕ) :
-    Integrable (fun s : ℝ => ‖iteratedFDeriv ℝ j (bourgainShiftRemainderCutoff p) s‖) := by
-  have hc : HasCompactSupport (bourgainShiftRemainderCutoff p) :=
-    isCompact_Icc.of_isClosed_subset isClosed_closure (bourgainShiftRemainderCutoff_support p)
-  exact ((bourgainShiftRemainderCutoff_smooth p ⟨hp.1 0,hp.2 0⟩ ⟨hp.1 1,hp.2 1⟩ ⟨hp.1 2,hp.2 2⟩).continuous_iteratedFDeriv
-    (m:=j) (by exact_mod_cast (le_top : (j:ℕ∞)≤⊤))).norm.integrable_of_hasCompactSupport
-      (hc.iteratedFDeriv j).norm
 
-private theorem bourgainShiftRemainderCutoff_derivative_integrals (Q : ℕ) :
-    ∃ C : ℝ, 0 < C ∧ ∀ p ∈ Icc (![0,0,0,-32,-32] : Fin 5 → ℝ) ![1/2,1,1/100,32,32],
-      ∀ j ≤ Q, (∫ s : ℝ, ‖iteratedFDeriv ℝ j (bourgainShiftRemainderCutoff p) s‖) ≤ C := by
-  obtain ⟨C,hC,h⟩ := bourgainShiftRemainderCutoff_derivative_bound Q
-  refine ⟨4*C,by positivity,?_⟩
-  intro p hp j hj
-  have hz (s : ℝ) (hs : s ∉ Icc (-2:ℝ) 2) :
-      ‖iteratedFDeriv ℝ j (bourgainShiftRemainderCutoff p) s‖ = 0 := by
-    have hd : iteratedFDeriv ℝ j (bourgainShiftRemainderCutoff p) s = 0 :=
-      Function.notMem_support.mp (fun hh => hs
-        (bourgainShiftRemainderCutoff_support p ((support_iteratedFDeriv_subset j) hh)))
-    rw [hd,norm_zero]
-  rw [←setIntegral_eq_integral_of_forall_compl_eq_zero hz]
-  have hmain := norm_setIntegral_le_of_norm_le_const
-    (μ:=volume) (s:=Icc (-2:ℝ) 2)
-    (f:=fun s : ℝ => ‖iteratedFDeriv ℝ j (bourgainShiftRemainderCutoff p) s‖)
-    (by simp)
-    (fun s _ => by simpa only [norm_norm] using h p hp s j hj)
-  have hnorm := le_abs_self
-    (∫ s : ℝ in Icc (-2:ℝ) 2, ‖iteratedFDeriv ℝ j (bourgainShiftRemainderCutoff p) s‖)
-  have hmeasure : volume.real (Icc (-2:ℝ) 2) = 4 := by
-    norm_num [Measure.real,Real.volume_Icc]
-  rw [hmeasure] at hmain
-  simpa only [mul_comm] using hnorm.trans hmain
 
-private theorem bourgainShiftRemainderCutoff_fourier_moment (p : Fin 5 → ℝ)
-    (hp : p ∈ Icc (![0,0,0,-32,-32] : Fin 5 → ℝ) ![1/2,1,1/100,32,32]) (ξ : ℝ) (m : ℕ) :
-    |ξ|^m*‖𝓕 (bourgainShiftRemainderCutoff p) ξ‖ ≤
-      (2:ℝ)^m*∑ j ∈ Finset.range (m+1),
-        ∫ s : ℝ, ‖iteratedFDeriv ℝ j (bourgainShiftRemainderCutoff p) s‖ := by
-  have hI (k n : ℕ) (hk : (k:ℕ∞) ≤ 0) (_hn : (n:ℕ∞) ≤ ⊤) :
-      Integrable (fun s : ℝ => ‖s‖^k*
-        ‖iteratedFDeriv ℝ n (bourgainShiftRemainderCutoff p) s‖) := by
-    have hk0 : k=0 := by
-      have hk' : k ≤ 0 := by exact_mod_cast hk
-      omega
-    subst k
-    simpa using bourgainShiftRemainderCutoff_derivative_integrable p hp n
-  have h := Real.pow_mul_norm_iteratedFDeriv_fourier_le
-    (K:=0) (N:=(⊤:ℕ∞)) (bourgainShiftRemainderCutoff_smooth p ⟨hp.1 0,hp.2 0⟩ ⟨hp.1 1,hp.2 1⟩ ⟨hp.1 2,hp.2 2⟩) hI
-    (k:=0) (n:=m) (by simp) (by simp) ξ
-  simpa only [norm_iteratedFDeriv_zero, Real.norm_eq_abs, Nat.cast_zero, mul_zero, zero_add,
-    pow_zero, one_mul, Finset.range_one, Finset.sum_product, Finset.sum_singleton] using h
+
+
+
 
 end TaoTrudgianYang2025
 
@@ -4632,41 +4585,7 @@ open MeasureTheory GafniTao Set
 open scoped BigOperators ContDiff FourierTransform
 namespace TaoTrudgianYang2025
 
-private theorem bourgainShiftRemainderCutoff_fourier_decay (Q : ℕ) :
-    ∃ C : ℝ, 0 < C ∧ ∀ p ∈ Icc (![0,0,0,-32,-32] : Fin 5 → ℝ) ![1/2,1,1/100,32,32],
-      ∀ ξ : ℝ, (1+|ξ|)^Q*‖𝓕 (bourgainShiftRemainderCutoff p) ξ‖ ≤ C := by
-  obtain ⟨D,hD,hjet⟩ := bourgainShiftRemainderCutoff_derivative_integrals Q
-  let E := (2:ℝ)^Q*((Q+1:ℕ):ℝ)*D
-  refine ⟨(2:ℝ)^Q*(D+E),by dsimp [E]; positivity,?_⟩
-  intro p hp ξ
-  have hz : ‖𝓕 (bourgainShiftRemainderCutoff p) ξ‖ ≤ D := by
-    have h := bourgainShiftRemainderCutoff_fourier_moment p hp ξ 0
-    simpa using h.trans (by simpa using hjet p hp 0 (Nat.zero_le Q))
-  have hp : |ξ|^Q*‖𝓕 (bourgainShiftRemainderCutoff p) ξ‖ ≤ E := by
-    apply (bourgainShiftRemainderCutoff_fourier_moment p hp ξ Q).trans
-    calc
-      _ ≤ (2:ℝ)^Q*∑ _j ∈ Finset.range (Q+1), D := by
-        apply mul_le_mul_of_nonneg_left _ (by positivity)
-        exact Finset.sum_le_sum (fun j hj => hjet p hp j
-          (Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)))
-      _ = E := by simp [E,mul_assoc]
-  have hscale : (1+|ξ|)^Q ≤ (2:ℝ)^Q*(1+|ξ|^Q) := by
-    by_cases hξ : |ξ| ≤ 1
-    · have h := pow_le_pow_left₀ (by positivity : (0:ℝ)≤1+|ξ|)
-        (by linarith : 1+|ξ| ≤ 2) Q
-      have hnonneg : 0 ≤ (2:ℝ)^Q*|ξ|^Q := by positivity
-      nlinarith
-    · have hξ' : 1 ≤ |ξ| := le_of_lt (lt_of_not_ge hξ)
-      calc
-        _ ≤ (2*|ξ|)^Q := pow_le_pow_left₀ (by positivity) (by linarith) Q
-        _ = (2:ℝ)^Q*|ξ|^Q := mul_pow _ _ _
-        _ ≤ _ := by nlinarith [show (0:ℝ)≤(2:ℝ)^Q by positivity]
-  calc
-    _ ≤ (2:ℝ)^Q*(1+|ξ|^Q)*‖𝓕 (bourgainShiftRemainderCutoff p) ξ‖ :=
-      mul_le_mul_of_nonneg_right hscale (norm_nonneg _)
-    _ = (2:ℝ)^Q*(‖𝓕 (bourgainShiftRemainderCutoff p) ξ‖+
-        |ξ|^Q*‖𝓕 (bourgainShiftRemainderCutoff p) ξ‖) := by ring
-    _ ≤ _ := mul_le_mul_of_nonneg_left (add_le_add hz hp) (by positivity)
+
 
 end TaoTrudgianYang2025
 
@@ -4676,46 +4595,7 @@ open MeasureTheory GafniTao Set
 open scoped BigOperators ContDiff FourierTransform
 namespace TaoTrudgianYang2025
 
-private theorem bourgainShiftRemainderCutoff_uniform_fourierL1 :
-    ∃ C : ℝ, 0 < C ∧ ∀ p ∈ Icc (![0,0,0,-32,-32] : Fin 5 → ℝ) ![1/2,1,1/100,32,32],
-      Integrable (fun ξ : ℝ => (1+|ξ|)^100*‖𝓕 (bourgainShiftRemainderCutoff p) ξ‖) ∧
-      (∫ ξ : ℝ, (1+|ξ|)^100*‖𝓕 (bourgainShiftRemainderCutoff p) ξ‖) ≤ C := by
-  obtain ⟨C,hC,hdec⟩ := bourgainShiftRemainderCutoff_fourier_decay 102
-  refine ⟨C*Real.pi,by positivity,?_⟩
-  intro p hp
-  let f := bourgainShiftRemainderCutoff p
-  have hdom (ξ : ℝ) :
-      (1+|ξ|)^100*‖𝓕 f ξ‖ ≤ C*(1+ξ^2)⁻¹ := by
-    have hs : 1+ξ^2 ≤ (1+|ξ|)^2 := by
-      nlinarith [sq_abs ξ,abs_nonneg ξ]
-    have hp : (1+ξ^2)*((1+|ξ|)^100*‖𝓕 f ξ‖) ≤ C := by
-      calc
-        _ ≤ (1+|ξ|)^2*((1+|ξ|)^100*‖𝓕 f ξ‖) :=
-          mul_le_mul_of_nonneg_right hs (by positivity)
-        _ = (1+|ξ|)^102*‖𝓕 f ξ‖ := by
-          rw [show (102:ℕ)=2+100 by omega,pow_add]
-          exact (mul_assoc _ _ _).symm
-        _ ≤ C := hdec p hp ξ
-    rw [←div_eq_mul_inv,le_div_iff₀ (by positivity)]
-    simpa only [mul_comm] using hp
-  have hc : HasCompactSupport f :=
-    isCompact_Icc.of_isClosed_subset isClosed_closure (bourgainShiftRemainderCutoff_support p)
-  have hi : Integrable f :=
-    (bourgainShiftRemainderCutoff_smooth p ⟨hp.1 0,hp.2 0⟩ ⟨hp.1 1,hp.2 1⟩ ⟨hp.1 2,hp.2 2⟩).continuous.integrable_of_hasCompactSupport hc
-  have hhat : Continuous (𝓕 f) :=
-    VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
-      (innerSL ℝ).continuous₂ hi
-  have hcont : Continuous (fun ξ : ℝ => (1+|ξ|)^100*‖𝓕 f ξ‖) :=
-    ((continuous_const.add continuous_abs).pow 100).mul hhat.norm
-  have hint : Integrable (fun ξ : ℝ => (1+|ξ|)^100*‖𝓕 f ξ‖) :=
-    (integrable_inv_one_add_sq.const_mul C).mono' hcont.aestronglyMeasurable
-      (Filter.Eventually.of_forall (fun ξ => by
-        simpa only [Real.norm_eq_abs,abs_of_nonneg (show 0 ≤
-          (1+|ξ|)^100*‖𝓕 f ξ‖ by positivity)] using hdom ξ))
-  refine ⟨hint,?_⟩
-  have hmain := integral_mono hint (integrable_inv_one_add_sq.const_mul C) hdom
-  rw [integral_const_mul,integral_univ_inv_one_add_sq] at hmain
-  exact hmain
+
 
 end TaoTrudgianYang2025
 
@@ -4736,48 +4616,20 @@ private theorem exists_bourgainShiftRemainder_multiplier_kernel :
         ∀ s ∈ Icc (-1:ℝ) 1,
           fordAdditiveCharacter (bourgainShiftRemainderPhase p s) =
             ∫ ξ : ℝ, K ξ*fordAdditiveCharacter (ξ*s) := by
-  obtain ⟨C,hC,h⟩ := bourgainShiftRemainderCutoff_uniform_fourierL1
-  obtain ⟨D,hD,hdec⟩ := bourgainShiftRemainderCutoff_fourier_decay 102
-  refine ⟨max C D,hC.trans_le (le_max_left _ _),?_⟩
-  intro p hp
-  let f := bourgainShiftRemainderCutoff p
-  let K : ℝ → ℂ := 𝓕 f
-  have hkernel := h p hp
-  have hc : HasCompactSupport f :=
-    isCompact_Icc.of_isClosed_subset isClosed_closure (bourgainShiftRemainderCutoff_support p)
-  have hi : Integrable f :=
-    (bourgainShiftRemainderCutoff_smooth p ⟨hp.1 0,hp.2 0⟩ ⟨hp.1 1,hp.2 1⟩ ⟨hp.1 2,hp.2 2⟩).continuous.integrable_of_hasCompactSupport hc
-  have hhat : Continuous K :=
-    VectorFourier.fourierIntegral_continuous Real.continuous_fourierChar
-      (innerSL ℝ).continuous₂ hi
-  have hKi : Integrable K :=
-    hkernel.1.mono' hhat.aestronglyMeasurable (Filter.Eventually.of_forall (fun ξ => by
-      have hp : (1:ℝ) ≤ (1+|ξ|)^100 := one_le_pow₀ (by linarith [abs_nonneg ξ])
-      simpa only [one_mul] using mul_le_mul_of_nonneg_right hp (norm_nonneg (K ξ))))
-  refine ⟨K,hhat,hkernel.1,hkernel.2.trans (le_max_left _ _),?_,?_⟩
-  · intro ξ
-    apply (le_div_iff₀ (by positivity)).mpr
-    simpa only [mul_comm] using (hdec p hp ξ).trans (le_max_right C D)
-  intro s hs
-  have hcut : f s = fordAdditiveCharacter (bourgainShiftRemainderPhase p s) := by
-    dsimp only [f,bourgainShiftRemainderCutoff]
-    rw [modelPhaseBufferedCutoff_one (by norm_num)
-      (by linarith [hs.1]) (by linarith [hs.2]),Complex.ofReal_one,one_mul]
-  have hinv := congrFun
-    ((bourgainShiftRemainderCutoff_smooth p ⟨hp.1 0,hp.2 0⟩ ⟨hp.1 1,hp.2 1⟩ ⟨hp.1 2,hp.2 2⟩).continuous.fourierInv_fourier_eq hi hKi) s
-  rw [Real.fourierInv_eq_fourier_neg,Real.fourier_real_eq_integral_exp_smul] at hinv
-  calc
-    _ = f s := hcut.symm
-    _ = _ := hinv.symm
-    _ = ∫ ξ : ℝ, K ξ*fordAdditiveCharacter (ξ*s) := by
-      apply integral_congr_ae
-      filter_upwards with ξ
-      simp only [smul_eq_mul,fordAdditiveCharacter]
-      have he : (↑(-2*Real.pi*ξ*(-s)) : ℂ)*Complex.I =
-          2*(Real.pi:ℂ)*Complex.I*↑(ξ*s) := by push_cast; ring
-      rw [he]
-      exact mul_comm _ _
+  let P := Icc (![0,0,0,-32,-32] : Fin 5 → ℝ) ![1/2,1,1/100,32,32]
+  have hsm (p : Fin 5 → ℝ) (hp : p ∈ P) : ContDiff ℝ ∞ (bourgainShiftRemainderCutoff p) :=
+    bourgainShiftRemainderCutoff_smooth p ⟨hp.1 0,hp.2 0⟩ ⟨hp.1 1,hp.2 1⟩ ⟨hp.1 2,hp.2 2⟩
+  have hd := cutoff_family_fourier_decay_of_deriv_bounds bourgainShiftRemainderCutoff 102 hsm
+    (fun p _ => bourgainShiftRemainderCutoff_support p) (bourgainShiftRemainderCutoff_derivative_bound 102)
+  apply exists_cutoff_multiplier_kernel bourgainShiftRemainderCutoff bourgainShiftRemainderPhase
+    (fun p hp => (hsm p hp).continuous)
+    (fun p _ => isCompact_Icc.of_isClosed_subset isClosed_closure (bourgainShiftRemainderCutoff_support p)) hd
+  intro p hp s hs
+  rw [bourgainShiftRemainderCutoff,modelPhaseBufferedCutoff_one (by norm_num)
+    (by linarith [hs.1]) (by linarith [hs.2]),Complex.ofReal_one,one_mul]
+
 end TaoTrudgianYang2025
+
 noncomputable section
 open MeasureTheory GafniTao Set
 open scoped BigOperators
@@ -4795,35 +4647,7 @@ private theorem exists_bourgainShiftRemainder_finite_moment :
   refine ⟨C^6,by positivity,?_⟩
   intro p hp ι S z s hs
   obtain ⟨K,hKc,hKi,hmass,henv,hrep⟩ := hkern p hp
-  have hK : Integrable K :=
-    hKi.mono' hKc.aestronglyMeasurable (Filter.Eventually.of_forall (fun ξ => by
-      have hp : (1:ℝ) ≤ (1+|ξ|)^100 := one_le_pow₀ (by linarith [abs_nonneg ξ])
-      simpa only [one_mul] using mul_le_mul_of_nonneg_right hp (norm_nonneg (K ξ))))
-  have hterm (i : ι) :
-      Integrable (fun ξ : ℝ => z i*(K ξ*fordAdditiveCharacter (ξ*s i))) := by
-    have hc : Continuous (fun ξ : ℝ => fordAdditiveCharacter (ξ*s i)) := by
-      unfold fordAdditiveCharacter
-      fun_prop
-    exact (hK.mul_bdd hc.aestronglyMeasurable
-      (Filter.Eventually.of_forall (fun ξ => (sargos_character_norm (ξ*s i)).le))).const_mul _
-  have he : (∑ i ∈ S, z i*fordAdditiveCharacter (bourgainShiftRemainderPhase p (s i))) =
-      ∫ ξ : ℝ, K ξ*(∑ i ∈ S, z i*fordAdditiveCharacter (ξ*s i)) := by
-    calc
-      _ = ∑ i ∈ S, z i*(∫ ξ : ℝ, K ξ*fordAdditiveCharacter (ξ*s i)) :=
-        Finset.sum_congr rfl (fun i hi => congrArg (fun v => z i*v) (hrep (s i) (hs i hi)))
-      _ = ∑ i ∈ S, ∫ ξ : ℝ, z i*(K ξ*fordAdditiveCharacter (ξ*s i)) := by
-        simp only [integral_const_mul]
-      _ = ∫ ξ : ℝ, ∑ i ∈ S, z i*(K ξ*fordAdditiveCharacter (ξ*s i)) :=
-        (integral_finsetSum S (fun i _ => hterm i)).symm
-      _ = _ := by
-        apply integral_congr_ae
-        filter_upwards with ξ
-        rw [Finset.mul_sum]
-        apply Finset.sum_congr rfl
-        intro i hi
-        ring
-  rw [he]
-  exact bourgain_finite_multiplier_moment S z s hKc hKi hC hmass henv
+  exact finite_moment_of_multiplier S z s hs (bourgainShiftRemainderPhase p) hC hKc hKi hmass henv hrep
 
 
 

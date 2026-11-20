@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical Topology
 open Filter
 namespace SevenEighths.HeckeDetectorTail
-open HeckeFamily HeckeDetectorWitnessArithmetic CompletedGauss
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
+open HeckeFamily HeckeDetectorWitnessArithmetic CompletedGauss IdealMobiusDivisorSum UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 lemma exponential_cubic_bound (x Y : ℝ) (hx : 0 < x) (hY : 0 < Y) :
@@ -87,9 +86,11 @@ lemma weighted_norm_le_one (χ : Character) (s : ℂ) (hs : 0 ≤ s.re) (I : Ide
     _ ≤ 1 := by
       simpa using Real.rpow_le_one_of_one_le_of_nonpos hN (neg_nonpos.mpr hs)
 
-theorem exponentialTerm_bound (χ : Character) (V : ℝ → ℂ) (B : ℝ) (hB : 0 ≤ B)
-    (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (D Y : ℝ) (hY : 0 < Y)
-    (s : ℂ) (hs : 0 ≤ s.re) (I : Ideal O) :
+section
+variable (χ : Character) (V : ℝ → ℂ) (B : ℝ) (hB : 0 ≤ B) (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (D Y : ℝ) (hY : 0 < Y) (s : ℂ) (hs : 0 ≤ s.re)
+include χ V B hB hV D Y hY s hs
+
+theorem exponentialTerm_bound (I : Ideal O) :
     ‖exponentialTerm χ V D s Y I‖ ≤
       (768*B*Y^3)*‖CubicEisenstein.fullIdealWeight 2 I‖ := by
   by_cases hI : I = 0
@@ -112,11 +113,11 @@ theorem exponentialTerm_bound (χ : Character) (V : ℝ → ℂ) (B : ℝ) (hB :
       exact mul_le_mul_of_nonneg_left (exponential_cubic_bound _ Y hN hY) (by positivity)
     _ = _ := by ring
 
-theorem exponentialTerm_summable (χ : Character) (V : ℝ → ℂ) (B : ℝ) (hB : 0 ≤ B)
-    (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (D Y : ℝ) (hY : 0 < Y)
-    (s : ℂ) (hs : 0 ≤ s.re) : Summable (exponentialTerm χ V D s Y) :=
+theorem exponentialTerm_summable : Summable (exponentialTerm χ V D s Y) :=
   ((CubicEisenstein.fullIdealWeight_summable_norm 2 (by norm_num)).mul_left
     (768*B*Y^3)).of_norm_bounded (exponentialTerm_bound χ V B hB hV D Y hY s hs)
+
+end
 
 lemma cutoff_defect_bound (V : ℝ → ℂ) (B : ℝ)
     (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (x : ℝ) : ‖1-V x‖ ≤ 1+B :=
@@ -137,11 +138,11 @@ lemma exponentialTerm_half (χ : Character) (V : ℝ → ℂ) (D Y : ℝ)
   push_cast
   ring
 
-theorem terminalRemainder_bound (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ)
-    (hB : 0 ≤ B) (hBT : 0 ≤ BT)
-    (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (hT : ∀ x : ℝ, ‖T x‖ ≤ BT)
-    (hTone : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → T x = 1)
-    (D Y U : ℝ) (hY : 0 < Y) (hU : 0 < U) (s : ℂ) (hs : 0 ≤ s.re)
+section
+variable (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ) (hB : 0 ≤ B) (hBT : 0 ≤ BT) (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (hT : ∀ x : ℝ, ‖T x‖ ≤ BT) (hTone : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → T x = 1) (D Y U : ℝ) (hY : 0 < Y) (hU : 0 < U) (s : ℂ) (hs : 0 ≤ s.re)
+include χ V T B BT hB hBT hV hT hTone D Y U hY hU s hs
+
+theorem terminalRemainder_bound
     (I : Ideal O) :
     ‖terminalRemainder χ V T D Y U s I‖ ≤
       (6144*B*Y^3*(1+B)*(1+BT)*Real.exp (-U/(2*Y)))*
@@ -172,21 +173,13 @@ theorem terminalRemainder_bound (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ
   apply h3.trans_eq
   ring
 
-theorem terminalRemainder_summable (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ)
-    (hB : 0 ≤ B) (hBT : 0 ≤ BT)
-    (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (hT : ∀ x : ℝ, ‖T x‖ ≤ BT)
-    (hTone : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → T x = 1)
-    (D Y U : ℝ) (hY : 0 < Y) (hU : 0 < U) (s : ℂ) (hs : 0 ≤ s.re) :
+theorem terminalRemainder_summable :
     Summable (terminalRemainder χ V T D Y U s) :=
   ((CubicEisenstein.fullIdealWeight_summable_norm 2 (by norm_num)).mul_left
     (6144*B*Y^3*(1+B)*(1+BT)*Real.exp (-U/(2*Y)))).of_norm_bounded
     (terminalRemainder_bound χ V T B BT hB hBT hV hT hTone D Y U hY hU s hs)
 
-theorem terminalRemainder_tsum_bound (χ : Character) (V T : ℝ → ℂ) (B BT : ℝ)
-    (hB : 0 ≤ B) (hBT : 0 ≤ BT)
-    (hV : ∀ x : ℝ, ‖V x‖ ≤ B) (hT : ∀ x : ℝ, ‖T x‖ ≤ BT)
-    (hTone : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → T x = 1)
-    (D Y U : ℝ) (hY : 0 < Y) (hU : 0 < U) (s : ℂ) (hs : 0 ≤ s.re) :
+theorem terminalRemainder_tsum_bound :
     ‖∑' I, terminalRemainder χ V T D Y U s I‖ ≤
       (6144*B*Y^3*(1+B)*(1+BT)*Real.exp (-U/(2*Y)))*
         ∑' I : Ideal O, ‖CubicEisenstein.fullIdealWeight 2 I‖ := by
@@ -196,6 +189,8 @@ theorem terminalRemainder_tsum_bound (χ : Character) (V T : ℝ → ℂ) (B BT 
   exact hsum.norm.tsum_le_tsum
     (terminalRemainder_bound χ V T B BT hB hBT hV hT hTone D Y U hY hU s hs)
     ((CubicEisenstein.fullIdealWeight_summable_norm 2 (by norm_num)).mul_left _)
+
+end
 
 theorem terminalRemainder_uniform_small (B BT ε : ℝ)
     (hB : 0 ≤ B) (hBT : 0 ≤ BT) (hε : 0 < ε) :

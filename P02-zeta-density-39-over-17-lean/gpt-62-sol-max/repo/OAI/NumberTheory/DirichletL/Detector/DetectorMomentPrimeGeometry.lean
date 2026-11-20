@@ -12,9 +12,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialPhysicalSlots
-open HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialPhysicalSlots HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
 local notation "O" => HeckeFamily.O
 
 theorem sourceMoment_physical_scale (Z d ell : ℝ) (hZ : 0≤Z) (hd : d≠0) :
@@ -75,8 +73,11 @@ theorem sourceMoment_primeProfile_norm {Δ : ℝ} {D : Parameters.HighData Δ}
 section Live
 variable (M : Ideal O) (H : Subgroup (O ⧸ M)ˣ)
 
-theorem sourceMoment_live_disjoint {Δ : ℝ} {D : Parameters.HighData Δ}
-    (F : ProbeFinalAssembly.SourceData D) {ι : Type*} (ell : ι→ℝ)
+section
+variable {Δ : ℝ} {D : Parameters.HighData Δ} (F : ProbeFinalAssembly.SourceData D) {ι : Type*}
+include Δ D F ι
+
+theorem sourceMoment_live_disjoint (ell : ι→ℝ)
     (U : ℝ) (hU : 0<U) (s t : ι)
     (hsep : 2*U^(ell s)<1*U^(ell t) ∨ 2*U^(ell t)<1*U^(ell s)) :
     Disjoint (livePrimes M H F.W 2 (U^(ell s))) (livePrimes M H F.W 2 (U^(ell t))) := by
@@ -88,8 +89,7 @@ theorem sourceMoment_live_disjoint {Δ : ℝ} {D : Parameters.HighData Δ}
     (Real.rpow_pos_of_pos hU _) F.complex_support P ht
   rcases hsep with hsep|hsep <;> linarith [hs'.2.2.1,hs'.2.2.2,ht'.2.2.1,ht'.2.2.2]
 
-theorem sourceMoment_live_denominator {Δ : ℝ} {D : Parameters.HighData Δ}
-    (F : ProbeFinalAssembly.SourceData D) {ι : Type*} [Fintype ι]
+theorem sourceMoment_live_denominator [Fintype ι]
     (data : RowData) (U : ℝ) (ell : ι→ℝ) (hU : 0<U)
     (hlarge : ∀s,((baseCharacter data).modulus.absNorm:ℝ)<1*U^(ell s))
     (p : ι→Ideal O) (hp : p∈Fintype.piFinset (fun s=>livePrimes M H F.W 2 (U^(ell s)))) :
@@ -101,8 +101,7 @@ theorem sourceMoment_live_denominator {Δ : ℝ} {D : Parameters.HighData Δ}
     (Real.rpow_pos_of_pos hU _) F.complex_support (p s) (Fintype.mem_piFinset.mp hp s)
   exact sourceMoment_fixedBase_norm_one data (p s) hs.1 ((hlarge s).trans_le hs.2.2.1)
 
-theorem sourceMoment_live_quotient_norm {Δ : ℝ} {D : Parameters.HighData Δ}
-    (F : ProbeFinalAssembly.SourceData D) {ι : Type*} [Fintype ι]
+theorem sourceMoment_live_quotient_norm [Fintype ι]
     (data : RowData) (U : ℝ) (ell : ι→ℝ) (ζ : ι→ℂ) (hU : 0<U)
     (hz : ∀s,(ζ s).re=17/50)
     (hlarge : ∀s,((baseCharacter data).modulus.absNorm:ℝ)<1*U^(ell s))
@@ -113,6 +112,8 @@ theorem sourceMoment_live_quotient_norm {Δ : ℝ} {D : Parameters.HighData Δ}
     div_one,norm_prod]
   exact Finset.prod_le_one₀ (fun s _=>norm_nonneg _)
     (fun s _=>sourceMoment_primeProfile_norm F _ _ (by rw [hz s];norm_num) _)
+
+end
 end Live
 
 theorem sourceMoment_capacity_eventually {Slot : Type*} [Fintype Slot]

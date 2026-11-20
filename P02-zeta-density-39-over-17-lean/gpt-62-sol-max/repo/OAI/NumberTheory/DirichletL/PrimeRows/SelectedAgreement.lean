@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical ComplexConjugate
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler ProbeRow CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def finiteLocalCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
@@ -19,8 +18,11 @@ def finiteLocalCorrection (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : 
     (coordD P.val.absNorm (idealCoeff η P.val) (idealRowHom u.val P.val) x)
     (continuedMarkedLocal η u P hs x w z)
 
-theorem continuedCompensatedLocal_eq_difference (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z B q : ℂ) :
+section
+variable (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
+include η u P hs
+
+theorem continuedCompensatedLocal_eq_difference (x w z B q : ℂ) :
     continuedCompensatedLocal η u P hs x w z B q=
       B*continuedMarkedLocal η u P hs x w z*localNormalization η u P x w z-
         q*finiteLocalCorrection η u P hs x w z := by
@@ -28,8 +30,7 @@ theorem continuedCompensatedLocal_eq_difference (η : Character) (u : FreeRow) (
   unfold continuedCompensatedLocal finiteLocalCorrection ProbeLocal.compensatedReplacement ProbeLocal.continuedCorrection
   ring
 
-theorem ramifiedCorrection_eq_marked (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (x w z : ℂ) :
+theorem ramifiedCorrection_eq_marked (x w z : ℂ) :
     ramifiedCorrection η u P hs x w z=
       1+(1-coordV P.val.absNorm z)*continuedMarkedLocal η u P hs x w z := by
   let p := primaryGenerator P.val
@@ -47,8 +48,7 @@ theorem ramifiedCorrection_eq_marked (η : Character) (u : FreeRow) (P : PrimeId
   unfold ramifiedClosed
   rw [hnorm]
 
-theorem finiteLocalCorrection_ramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hP : P.val∣Ideal.span {u.val}) (x w z : ℂ) :
+theorem finiteLocalCorrection_ramified (hP : P.val∣Ideal.span {u.val}) (x w z : ℂ) :
     finiteLocalCorrection η u P hs x w z=ramifiedCorrection η u P hs x w z := by
   rw [ramifiedCorrection_eq_marked]
   unfold finiteLocalCorrection
@@ -56,13 +56,14 @@ theorem finiteLocalCorrection_ramified (η : Character) (u : FreeRow) (P : Prime
   simp only [coordW,coordD,star_zero,mul_zero,zero_mul,ProbeLocal.continuedCorrection,
     sub_zero,mul_one,div_one]
 
-theorem finiteLocalCorrection_unramified (η : Character) (u : FreeRow) (P : PrimeIdeal)
-    (hs : Supported P.val) (hn : ¬P.val∣Ideal.span {u.val}) (x w z : ℂ)
+theorem finiteLocalCorrection_unramified (hn : ¬P.val∣Ideal.span {u.val}) (x w z : ℂ)
     (hV : ‖coordV P.val.absNorm z‖<1)
     (hR : ‖coordR P.val.absNorm (actualAPhase η (primaryGenerator P.val)) x z‖<1) :
     finiteLocalCorrection η u P hs x w z=idealUnramifiedCorrection η u P x w z := by
   rw [finiteLocalCorrection,continuedMarkedLocal_unramified η u P hs hn x w z hV hR]
   rfl
+
+end
 
 theorem initial_marked_geometry (η : Character) (P : PrimeIdeal) (x z : ℂ)
     (hx : 3/2<x.re) (hz : 1/6<z.re) :

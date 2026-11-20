@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedMovingMass
 public import OAI.NumberTheory.DirichletL.Descent.FreshWindows
 
@@ -10,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace SevenEighths.InverseSecondChildWindows
-open InverseMoment InverseSecondProfileUniform
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
+open InverseMoment InverseSecondProfileUniform ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers
 local notation "O" => ActualEisensteinCubic.O
 
 theorem positive_cutoff (a b : ℝ) (ha : 0<a) (_hab : a≤b) :
@@ -149,7 +149,7 @@ def actualOuterRatios {ι : Type*} [DecidableEq ι] (p : ι→O)
     primeProductNorm p x.second.overlap/V,‖ConcreteTraceCRT.eisEmbedding x.second.frequency‖^2/B]
 
 lemma actualRelativeNorm_outer {ι : Type*} [DecidableEq ι] (p : ι→O)
-    [∀ i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalIdealFamily.Maximal p]
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (Ψ : O→*ℂ) (m : O) (z : SecondRayIndex)
     (Q₁ Q₂ : Finset ι) (G E V B X : ℝ) (i : Fin 4) :
     secondRelativeNorm (secondActualNorms p (secondInheritedProfile p x Ψ m z) Q₁ Q₂)
@@ -168,7 +168,7 @@ theorem actual_second_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap 
       (∀ i,0≤M₀ i) ∧ (∀ i,HasCompactSupport (U₀ i : ℝ→ℂ)) ∧
       (∀ i,Function.support (U₀ i)⊆Set.Icc (-M₀ i) (M₀ i)) ∧
       ∀ {ι : Type*} [DecidableEq ι] (p : ι→O) (_hp : ∀ i,p i≠0)
-      [∀ i,(Ideal.span {p i}).IsMaximal]
+      [OAI.PrincipalIdealFamily.Maximal p]
       {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn)) (pool : Finset ι)
       (Ψ : O→*ℂ) (m : O) (z : SecondRayIndex) (G E V B X : ℝ)
       (ρ : Fin 6→ℝ) (c₁ c₂ θ₁ θ₂ : ℝ),

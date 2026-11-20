@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Reflection.Ramified
 
 @[expose] public section
@@ -16,9 +17,9 @@ noncomputable local instance phaseNormField (P : Ideal Eis) [P.IsMaximal] : Fiel
 noncomputable local instance phaseNormFinite (P : Ideal Eis) [P.IsMaximal] : Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 omit [Fintype ι] in
-theorem crossSymbol_norm [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+theorem crossSymbol_norm [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p λ₀)
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
     (i k : ι) (hik : i ≠ k) : ‖MixedCrossSeparation.crossSymbol p hg i k‖ = 1 := by
   have hnot : p k ∉ Ideal.span {p i} := by
     intro hm
@@ -33,10 +34,11 @@ theorem crossSymbol_norm [∀ i, (Ideal.span {p i}).IsMaximal]
   apply (pow_eq_one_iff_of_nonneg (norm_nonneg _) (by decide : (6:ℕ) ≠ 0)).mp
   simpa only [norm_pow,norm_one] using congrArg norm h6
 
-theorem local_phase_norm [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+section
+variable [instShared0 : OAI.PrincipalIdealFamily.Maximal p] (D : ControlledStratumArithmetic p N a c mode) (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+include instShared0 D hp hg hchar
+
+theorem local_phase_norm
     (i : ι) (j : ℕ) (hj : j < 6) :
     ‖(((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2) (D.sigma i)*
       phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) j (D.epsilon i)‖ = 1 := by
@@ -44,11 +46,8 @@ theorem local_phase_norm [∀ i, (Ideal.span {p i}).IsMaximal]
   exact canonical_phase_norm (Ideal.span {p i}) (hg i) (hchar i) (quotientTrace (p i) (hp i))
     (GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive (p i) (hp i)) j hj (D.epsilon i)
 
-theorem markedPrimeScalar_norm [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (i : ι) :
+theorem markedPrimeScalar_norm
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (i : ι) :
     ‖markedPrimeScalar (p i) c (hp i) (hg i)‖ = 1 := by
   have h := local_phase_norm D hp hg hchar i 0 (by decide)
   rw [controlled_marked_phase,norm_mul,norm_prod] at h
@@ -58,11 +57,8 @@ theorem markedPrimeScalar_norm [∀ i, (Ideal.span {p i}).IsMaximal]
     rw [norm_pow,crossSymbol_norm hg hcop i k (Finset.mem_erase.mp hk).1.symm,one_pow]
   simpa only [he,mul_one] using h
 
-theorem residualPrimeScalar_norm [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (i : ι) :
+theorem residualPrimeScalar_norm
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (i : ι) :
     ‖residualPrimeScalar (p i) c (hp i) (hg i)‖ = 1 := by
   have h := local_phase_norm D hp hg hchar i 1 (by decide)
   rw [controlled_residual_phase,norm_mul,norm_prod] at h
@@ -72,11 +68,8 @@ theorem residualPrimeScalar_norm [∀ i, (Ideal.span {p i}).IsMaximal]
     rw [norm_pow,crossSymbol_norm hg hcop i k (Finset.mem_erase.mp hk).1.symm,one_pow]
   simpa only [he,mul_one] using h
 
-theorem residualWithFrozen_norm [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+theorem residualWithFrozen_norm
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
     (R F : Finset ι) (hd : Disjoint R F) : ‖residualWithFrozen hp hg c R F‖ = 1 := by
   unfold residualWithFrozen
   rw [norm_prod]
@@ -93,11 +86,8 @@ theorem residualWithFrozen_norm [∀ i, (Ideal.span {p i}).IsMaximal]
     rw [crossSymbol_norm hg hcop i k (fun h => Finset.disjoint_left.mp hd hi (h ▸ hk)),one_pow]
   rw [hR,hF,one_mul]
 
-theorem markedWithFrozen_norm [∀ i, (Ideal.span {p i}).IsMaximal]
-    (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+theorem markedWithFrozen_norm
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
     (P F : Finset ι) (hd : Disjoint P F) : ‖markedWithFrozen hp hg c P F‖ = 1 := by
   unfold markedWithFrozen
   rw [norm_prod]
@@ -113,6 +103,8 @@ theorem markedWithFrozen_norm [∀ i, (Ideal.span {p i}).IsMaximal]
     intro k hk
     rw [crossSymbol_norm hg hcop i k (fun h => Finset.disjoint_left.mp hd hi (h ▸ hk)),one_pow]
   rw [hP,hF,one_mul]
+
+end
 
 end
 end SevenEighths.InverseReflectedPhase

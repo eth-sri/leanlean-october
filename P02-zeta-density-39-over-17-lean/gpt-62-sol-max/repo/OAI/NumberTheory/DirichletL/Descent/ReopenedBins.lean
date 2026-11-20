@@ -8,8 +8,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_column_zero_of_subunit (Ψ : O→*ℂ) (W : ℝ→ℂ) (b Y : ℝ)
@@ -66,8 +65,11 @@ def markedShortCompletedSum (Ψrow : O→*ℂ) (W : ℝ→ℂ) (X H₀ : ℝ) (m
     (UniqueFactorizationMonoid.moebius H:ℂ)*cubeWeight Ψrow H*
       markedCompletedT Ψrow W (X/(Ideal.absNorm H:ℝ)^3) (fun I=>mark (H^3*I)) else 0
 
-theorem original_marked_reopened_binned (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
-    (hWc : HasCompactSupport W) (hX : 0<X) (hW : ∀ t,W t≠0→t≤b) (hD : b*X≤D) :
+section
+variable (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P) (hWc : HasCompactSupport W) (hX : 0<X) (hW : ∀ t,W t≠0→t≤b) (hD : b*X≤D)
+include hbad hSp hWc hX hW hD
+
+theorem original_marked_reopened_binned :
     (Real.sqrt X:ℂ)⁻¹*outsideCanonicalMarkedRow S D hbad Ψ m f z slots lists a W X =
     markedShortCompletedSum (rowTwist Ψ (m*excludedGenerator S) f z) W X H₀
       (indexedIdealMark (fun i:primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)=>i.val) slots lists a) +
@@ -78,8 +80,7 @@ theorem original_marked_reopened_binned (hbad : fixedBadPrimes⊆S) (hSp : ∀ P
     markedReopenedCubeBin_log_bins]
   rfl
 
-theorem original_marked_binned_energy (hbad : fixedBadPrimes⊆S) (hSp : ∀ P∈S,Prime P)
-    (hWc : HasCompactSupport W) (hX : 0<X) (hW : ∀ t,W t≠0→t≤b) (hD : b*X≤D) :
+theorem original_marked_binned_energy :
     ‖outsideCanonicalMarkedRow S D hbad Ψ m f z slots lists a W X‖^2 ≤
     2*X*(‖markedShortCompletedSum (rowTwist Ψ (m*excludedGenerator S) f z) W X H₀
       (indexedIdealMark (fun i:primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)=>i.val) slots lists a)‖^2 +
@@ -97,6 +98,8 @@ theorem original_marked_binned_energy (hbad : fixedBadPrimes⊆S) (hSp : ∀ P�
     field_simp
   rw [hn]
   convert mul_le_mul_of_nonneg_left hs hX.le using 1 ; ring
+
+end
 
 end
 end SevenEighths.InverseMoment

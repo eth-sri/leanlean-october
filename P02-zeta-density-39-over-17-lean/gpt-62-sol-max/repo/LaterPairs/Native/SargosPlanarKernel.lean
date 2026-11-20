@@ -49,15 +49,17 @@ theorem integral_sargosPlanarKernelTerm_inner {b : ℝ} (hb : 0 < b)
       rw [integral_const_mul,integral_sargosSincKernel_shift_character_positive hb d η]
       ring
 
-theorem integrable_sargosPlanarKernelTerm_outer {a b : ℝ}
-    (ha : 0 < a) (hb : 0 < b) (c d ξ η : ℝ) :
+section
+variable {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (c d ξ η : ℝ)
+include a b ha hb c d ξ η
+
+theorem integrable_sargosPlanarKernelTerm_outer :
     Integrable (fun α : ℝ => ∫ γ : ℝ, sargosPlanarKernelTerm a b c d ξ η α γ) := by
   simp_rw [integral_sargosPlanarKernelTerm_inner hb]
   exact ((integrable_sargosSincKernel_shift_character_positive ha c ξ).mul_const
     (fordAdditiveCharacter (η*d))).mul_const (sargosRealTent b η : ℂ)
 
-theorem integral_sargosPlanarKernelTerm {a b : ℝ}
-    (ha : 0 < a) (hb : 0 < b) (c d ξ η : ℝ) :
+theorem integral_sargosPlanarKernelTerm :
     (∫ α : ℝ, ∫ γ : ℝ, sargosPlanarKernelTerm a b c d ξ η α γ) =
       fordAdditiveCharacter (ξ*c+η*d)*(sargosRealTent a ξ : ℂ)*(sargosRealTent b η : ℂ) := by
   simp_rw [integral_sargosPlanarKernelTerm_inner hb]
@@ -65,8 +67,7 @@ theorem integral_sargosPlanarKernelTerm {a b : ℝ}
     integral_sargosSincKernel_shift_character_positive ha c ξ,fordAdditiveCharacter_add]
   ring
 
-theorem norm_integral_sargosPlanarKernelTerm_le_one {a b : ℝ}
-    (ha : 0 < a) (hb : 0 < b) (c d ξ η : ℝ) :
+theorem norm_integral_sargosPlanarKernelTerm_le_one :
     ‖∫ α : ℝ, ∫ γ : ℝ, sargosPlanarKernelTerm a b c d ξ η α γ‖ ≤ 1 := by
   rw [integral_sargosPlanarKernelTerm ha hb c d ξ η]
   simp only [norm_mul,sargos_character_norm,Complex.norm_real,Real.norm_eq_abs,
@@ -74,6 +75,8 @@ theorem norm_integral_sargosPlanarKernelTerm_le_one {a b : ℝ}
     one_mul]
   exact (mul_le_mul (sargosRealTent_le_one ha ξ) (sargosRealTent_le_one hb η)
     (sargosRealTent_nonneg b η) (by norm_num)).trans_eq (by norm_num)
+
+end
 
 theorem integral_sargosPlanarKernelTerm_eq_zero {a b ξ η : ℝ}
     (ha : 0 < a) (hb : 0 < b) (hcut : a ≤ |ξ| ∨ b ≤ |η|) (c d : ℝ) :

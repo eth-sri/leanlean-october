@@ -70,9 +70,11 @@ theorem LFunction_norm_le (η : Character) {σ : ℝ} (hσ : 1 < σ)
   exact (mul_le_of_le_one_left (norm_nonneg _) (idealCoeff_norm_le_one η I)).trans
     (HeckeReciprocalBound.normWeight_le_of_re_ge hs I)
 
-theorem pair_strong (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (hχ : χ ≠ 1) :
+section
+variable (χ : MulChar (O ⧸ Ideal.span {c}) ℂ) (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1) (hp : FiniteFourier.IsPrimitiveOnIdeals χ)
+include χ hu hp
+
+theorem pair_strong (hχ : χ ≠ 1) :
     IsStrongFEPair (pair c χ hu hp) := by
   constructor
   · exact HeckeCharacterAnalytic.coefficients_zero_of_nonprincipal (character c χ hu) hχ
@@ -81,9 +83,7 @@ theorem pair_strong (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     change χ⁻¹ ≠ 1
     simpa only [ne_eq, inv_eq_one] using hχ
 
-theorem LFunction_eq_uncompleted (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (hχ : χ ≠ 1) (s : ℂ) :
+theorem LFunction_eq_uncompleted (hχ : χ ≠ 1) (s : ℂ) :
     LFunction (character c χ hu) s =
       (HeckeStrip.completionScale (conductor c) : ℂ)^(-s) * (Complex.Gamma s)⁻¹ *
         completedL c χ hu hp s := by
@@ -112,9 +112,7 @@ theorem LFunction_eq_uncompleted (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     field_simp
   exact congr_fun he s
 
-theorem functional_equation_left (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) {s : ℂ} (hs : s.re = -(1/10)) :
+theorem functional_equation_left {s : ℂ} (hs : s.re = -(1/10)) :
     LFunction (character c χ hu) s = TraceCharacter.normalizedGauss c χ *
       (HeckeStrip.completionScale (conductor c) : ℂ)^(1-2*s) *
       (Complex.Gamma (1-s) / Complex.Gamma s) *
@@ -151,9 +149,7 @@ theorem functional_equation_left (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
       rw [hpow]
       field_simp
 
-theorem LFunction_exp_growth (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (hχ : χ ≠ 1) :
+theorem LFunction_exp_growth (hχ : χ ≠ 1) :
     ∃ A B : ℝ, 0 ≤ A ∧ 0 ≤ B ∧ ∀ z ∈ HeckeStrip.strip,
       ‖LFunction (character c χ hu) z‖ ≤ A * Real.exp (B * |z.im|) := by
   let f : ℝ → ℂ := fun t => (pair c χ hu hp).f t / 6
@@ -172,9 +168,7 @@ theorem LFunction_exp_growth (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     rw [mellin_div_const, (hP.hasMellin z).2]
   simpa only [heq] using h
 
-theorem uniform_strip_bound (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
-    (hu : ∀ u : Oˣ, χ (Ideal.Quotient.mk (Ideal.span {c}) (u : O)) = 1)
-    (hp : FiniteFourier.IsPrimitiveOnIdeals χ) (hχ : χ ≠ 1)
+theorem uniform_strip_bound (hχ : χ ≠ 1)
     (z : ℂ) (hz : z ∈ HeckeStrip.closedStrip) :
     ‖LFunction (character c χ hu) z‖ ≤
       36 * ((1 + HeckeStrip.leftConstant) * HeckeReciprocalBound.bound (11/10)) *
@@ -192,6 +186,8 @@ theorem uniform_strip_bound (χ : MulChar (O ⧸ Ideal.span {c}) ℂ)
     exact LFunction_norm_le _ (by norm_num : (1 : ℝ) < 11/10) hs.ge
   · intro s hs
     exact LFunction_norm_le _ (by norm_num : (1 : ℝ) < 11/10) hs.ge
+
+end
 
 end SevenEighths.HeckeStripActual
 

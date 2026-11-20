@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.AmplifierSynthesis
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Finset
-open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
 
 /-- The actual quantitative amplifier witness, derived from the literal

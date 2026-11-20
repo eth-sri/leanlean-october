@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstToSecond
 public import OAI.NumberTheory.DirichletL.Descent.FirstPass
 
@@ -13,12 +14,12 @@ open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→Eis) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem first_fresh_real_energy
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i})≠2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (F D B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis→*ℂ) (m : Eis)
     (H : Finset ι→ℂ) (ω : ℝ→ℂ) (X : ℝ) (c d : Eis)
@@ -44,8 +45,8 @@ lemma priority_norm_sum_sq {α : Type*} (s : Finset α) (f : α→ℂ) :
   simpa using Finset.sum_mul_sq_le_sq_mul_sq s (fun _=>(1:ℝ)) (fun i=>‖f i‖)
 
 theorem first_fresh_priority_energy
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i})≠2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (F D B A : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis→*ℂ) (m : Eis)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)

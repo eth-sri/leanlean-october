@@ -13,8 +13,11 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {φ : Type*} [Fintype φ]
 
-lemma frozenBranchColumn_divisibility (F : PrimeFamily φ)
-    (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ → ℕ) (e : φ → Fin 3)
+section
+variable (F : PrimeFamily φ) (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ → ℕ) (e : φ → Fin 3)
+include F hF jF e
+
+lemma frozenBranchColumn_divisibility
     (A : Ideal Eis → Ideal Eis → ℂ) (n b : Ideal Eis)
     (hn : primaryGenerator n ≠ 0) (hb : primaryGenerator b ≠ 0)
     (hz : frozenBranchColumn F jF e A n b ≠ 0) :
@@ -27,8 +30,7 @@ lemma frozenBranchColumn_divisibility (F : PrimeFamily φ)
   simpa only [frozenExtracted,(primaryGenerator_spec n hn).1,(primaryGenerator_spec b hb).1,
     PrimeFamily.generator_span] using hh
 
-lemma frozenBranchColumn_zero_of_not_dvd (F : PrimeFamily φ)
-    (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ → ℕ) (e : φ → Fin 3)
+lemma frozenBranchColumn_zero_of_not_dvd
     (A : Ideal Eis → Ideal Eis → ℂ) (n b : Ideal Eis)
     (hn : primaryGenerator n ≠ 0) (hb : primaryGenerator b ≠ 0)
     (hz : ¬ frozenExtracted F jF e 1 ∣ n ∨ ¬ frozenExtracted F jF e 2 ∣ b) :
@@ -37,8 +39,7 @@ lemma frozenBranchColumn_zero_of_not_dvd (F : PrimeFamily φ)
   obtain ⟨hd1,hd2,_⟩ := frozenBranchColumn_divisibility F hF jF e A n b hn hb hh
   exact hz.elim (fun h => h hd1) (fun h => h hd2)
 
-theorem frozenBranchColumn_dual_reindex (F : PrimeFamily φ)
-    (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ → ℕ) (e : φ → Fin 3)
+theorem frozenBranchColumn_dual_reindex
     (A W : Ideal Eis → Ideal Eis → ℂ) (nset bset : Finset (Ideal Eis))
     (hn : ∀ n ∈ nset, primaryGenerator n ≠ 0) (hb : ∀ b ∈ bset, primaryGenerator b ≠ 0) :
     (∑ n ∈ nset, ∑ b ∈ bset, frozenBranchColumn F jF e A n b*W n b) =
@@ -69,6 +70,8 @@ theorem frozenBranchColumn_dual_reindex (F : PrimeFamily φ)
   apply Finset.sum_congr rfl
   intro n hn'
   exact sum_quotientSupport _ _ _
+
+end
 
 end
 end SevenEighths.InverseReflectedPhase

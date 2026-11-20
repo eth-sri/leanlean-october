@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialPhysicalMeasure
 
 @[expose] public section
@@ -9,17 +10,18 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialRetainedSupport
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CompletedGauss
-open InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile
-open InverseInitialKernelBridge SecondPassArithmetic
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT CompletedGauss InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialProfile InverseInitialKernelBridge SecondPassArithmetic
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,goodLambda∉Ideal.span {p i})
+  [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p goodLambda)
 
-theorem live_cutoffs (hpr:∀i,goodLambda^2∣p i-1)
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
+section
+variable (hpr:OAI.PrincipalIdealFamily.PrimaryAt p goodLambda) (Ψ:O→*ℂ) (j:O) (σ:Finset ι→ℂ) (W₁ W₂:ℝ→ℂ) (Φ:𝓢(ℝ,ℂ))
+include hpr Ψ j σ W₁ W₂ Φ
+
+theorem live_cutoffs
     (Z D m:ℝ)(x:Point ι)(hx:Valid x)(ρ:SecondRayIndex)
     (hne:physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ≠0):
     W₁ (coordinates p x 0*coordinates p x 2*coordinates p x 4/Z^D)≠0 ∧
@@ -30,8 +32,7 @@ theorem live_cutoffs (hpr:∀i,goodLambda^2∣p i-1)
   exact ⟨(mul_ne_zero_iff.mp (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hk).1).1).2,
     (mul_ne_zero_iff.mp (mul_ne_zero_iff.mp hk).1).2⟩
 
-theorem live_whole_columns (hpr:∀i,goodLambda^2∣p i-1)
-    (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
+theorem live_whole_columns
     (Z D m b:ℝ)(hZ:0<Z)(hs₁:Function.support W₁⊆Set.Iic b)
     (hs₂:Function.support W₂⊆Set.Iic b)(x:Point ι)(hx:Valid x)(ρ:SecondRayIndex)
     (hne:physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ≠0):
@@ -41,8 +42,10 @@ theorem live_whole_columns (hpr:∀i,goodLambda^2∣p i-1)
   exact ⟨(div_le_iff₀ (Real.rpow_pos_of_pos hZ D)).mp (hs₁ h₁),
     (div_le_iff₀ (Real.rpow_pos_of_pos hZ D)).mp (hs₂ h₂)⟩
 
+end
+
 include hp in
-omit [DecidableEq ι] [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalIdealFamily.Maximal p] in
 theorem ideal_coordinates_one (x:Point ι):
     1≤coordinates p x 0 ∧ 1≤coordinates p x 1 ∧ 1≤coordinates p x 2 ∧
     1≤coordinates p x 4 ∧ 1≤coordinates p x 5 := by
@@ -51,7 +54,7 @@ theorem ideal_coordinates_one (x:Point ι):
       (Ideal.absNorm_eq_zero_iff.not.mpr (sourceIdeal_ne_zero p hp S))
   exact ⟨hi _,hi _,hi _,hi _,hi _⟩
 
-theorem live_ideal_caps (hpr:∀i,goodLambda^2∣p i-1)
+theorem live_ideal_caps (hpr:OAI.PrincipalIdealFamily.PrimaryAt p goodLambda)
     (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)(W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))
     (Z D m b:ℝ)(hZ:0<Z)(hs₁:Function.support W₁⊆Set.Iic b)
     (hs₂:Function.support W₂⊆Set.Iic b)(x:Point ι)(hx:Valid x)(ρ:SecondRayIndex)

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Arithmetic.SquarefreeDivisors
 
 @[expose] public section
@@ -8,71 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators
 namespace FiniteSieveOperator
 
 variable {m n : Type*} [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
@@ -193,26 +141,23 @@ namespace QuadraticInitialBound
 open ActualEisensteinCubic ConcreteTraceCRT RayFourExpansion
 
 def quadraticMatrix {ι m n : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
     (rows : m → Finset ι) (cols : n → Finset ι) : Matrix m n ℂ :=
   fun i j => quadraticSymbol p hg (cols j) (rows i)
 
 def quadraticSieveNorm {ι m n : Type*} [Fintype m] [Fintype n]
     [DecidableEq m] [DecidableEq n]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
     (rows : m → Finset ι) (cols : n → Finset ι) : ℝ :=
   ‖FiniteSieveOperator.operator (quadraticMatrix p hg rows cols)‖ ^ 2
 
-theorem quadratic_matrix_norm_reverse_le
-    {ι m n : Type*} [Fintype ι] [DecidableEq ι]
-    [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (rows : m → Finset ι) (cols : n → Finset ι) :
+section
+variable {ι m n : Type*} [instShared1 : Fintype ι] [instShared2 : DecidableEq ι] [instShared3 : Fintype m] [instShared4 : Fintype n] [instShared5 : DecidableEq m] [instShared6 : DecidableEq n] (p : ι → O) (hp : ∀ i, p i ≠ 0) [instShared9 : OAI.PrincipalIdealFamily.Maximal p] (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2) (rows : m → Finset ι) (cols : n → Finset ι)
+include ι m n instShared1 instShared2 instShared3 instShared4 instShared5 instShared6 p hp instShared9 hcop hg hc rows cols
+
+theorem quadratic_matrix_norm_reverse_le :
     ‖FiniteSieveOperator.operator (quadraticMatrix p hg rows cols)‖ ≤
       512 * ‖FiniteSieveOperator.operator (quadraticMatrix p hg cols rows)‖ := by
   let A := quadraticMatrix p hg rows cols
@@ -251,18 +196,13 @@ theorem quadratic_matrix_norm_reverse_le
         (quadraticMatrix p hg cols rows).conjTranspose‖ = _
       rw [FiniteSieveOperator.operator_conjTranspose_norm]
 
-theorem quadraticSieveNorm_reverse_le
-    {ι m n : Type*} [Fintype ι] [DecidableEq ι]
-    [Fintype m] [Fintype n] [DecidableEq m] [DecidableEq n]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (rows : m → Finset ι) (cols : n → Finset ι) :
+theorem quadraticSieveNorm_reverse_le :
     quadraticSieveNorm p hg rows cols ≤ 262144 * quadraticSieveNorm p hg cols rows := by
   have h := pow_le_pow_left₀ (norm_nonneg _)
     (quadratic_matrix_norm_reverse_le p hp hcop hg hc rows cols) 2
   simpa only [quadraticSieveNorm, mul_pow, show (512 : ℝ) ^ 2 = 262144 by norm_num] using h
+
+end
 
 end QuadraticInitialBound
 
@@ -509,8 +449,11 @@ def cubePairRow {κ : Type*} (P : κ → Ideal O) [∀ j, (P j).IsMaximal]
     star (finiteSquarefreeRow P hg (B.filter fun j => ε₂ j) z) *
     multiplicityRow P hg B v₁ z ^ 3 * star (multiplicityRow P hg B v₂ z ^ 3)
 
-private theorem row_filter_eq_power_product {κ : Type*}
-    (P : κ → Ideal O) [∀ j, (P j).IsMaximal] (hg : ∀ j, lambda ∉ P j)
+section
+variable {κ : Type*} (P : κ → Ideal O) [instShared2 : ∀ j, (P j).IsMaximal]
+include κ P instShared2
+
+private theorem row_filter_eq_power_product (hg : ∀ j, lambda ∉ P j)
     (B : Finset κ) (ε : κ → Bool) (z : O) :
     finiteSquarefreeRow P hg (B.filter fun j => ε j) z =
       ∏ j ∈ B, canonicalSextic (P j) (hg j) (Ideal.Quotient.mk (P j) z) ^ bit (ε j) := by
@@ -519,8 +462,7 @@ private theorem row_filter_eq_power_product {κ : Type*}
   intro j hj
   cases ε j <;> simp [bit]
 
-theorem cubePairRow_eq_product {κ : Type*}
-    (P : κ → Ideal O) [∀ j, (P j).IsMaximal] (hg : ∀ j, lambda ∉ P j)
+theorem cubePairRow_eq_product (hg : ∀ j, lambda ∉ P j)
     (B : Finset κ) (v₁ v₂ : κ → ℕ) (ε₁ ε₂ : κ → Bool) (z : O) :
     cubePairRow P hg B v₁ v₂ ε₁ ε₂ z =
       ∏ j ∈ B, cubePairLocal (P j) (hg j) (v₁ j) (v₂ j) (ε₁ j) (ε₂ j) z := by
@@ -530,8 +472,7 @@ theorem cubePairRow_eq_product {κ : Type*}
   intro j hj
   simp only [cubePairLocal, Nat.mul_comm]
 
-private theorem principal_product_eq_mask {κ : Type*}
-    (P : κ → Ideal O) [∀ j, (P j).IsMaximal] (B : Finset κ) (z : O) :
+private theorem principal_product_eq_mask (B : Finset κ) (z : O) :
     (∏ j ∈ B, (1 : MulChar (O ⧸ P j) ℂ) (Ideal.Quotient.mk (P j) z)) =
       rowCoprimeMask P B z := by
   by_cases h : ∃ j ∈ B, z ∈ P j
@@ -547,8 +488,7 @@ private theorem principal_product_eq_mask {κ : Type*}
     apply isUnit_iff_ne_zero.mpr
     exact fun hz => h ⟨j, hj, Ideal.Quotient.eq_zero_iff_mem.mp hz⟩
 
-theorem cubePairRow_conductor_selection {κ : Type*}
-    (P : κ → Ideal O) [∀ j, (P j).IsMaximal] (hg : ∀ j, lambda ∉ P j)
+theorem cubePairRow_conductor_selection (hg : ∀ j, lambda ∉ P j)
     (B : Finset κ) (v₁ v₂ : κ → ℕ) (ε₁ ε₂ : κ → Bool)
     (hcover : ∀ j ∈ B, 0 < v₁ j + v₂ j + bit (ε₁ j) + bit (ε₂ j)) (z : O) :
     cubePairRow P hg B v₁ v₂ ε₁ ε₂ z =
@@ -576,9 +516,7 @@ theorem cubePairRow_conductor_selection {κ : Type*}
   congr 1
   exact (Finset.prod_coe_sort (s := cubeConductorSupport B v₁ v₂ ε₁ ε₂) (f := f)).symm
 
-open scoped SchwartzMap ContDiff
-open ConcreteTraceCRT
-open EisensteinSchwartzPoisson (paperRadialFourier)
+end
 
 end FirstPassCubeLabels
 

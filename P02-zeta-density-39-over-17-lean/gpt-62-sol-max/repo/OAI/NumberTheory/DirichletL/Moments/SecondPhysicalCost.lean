@@ -9,11 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentSecondPhysicalCost
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondCanonicalFrequency
-open CenteredMomentCanonicalFirst CenteredMomentLogDyadic CenteredMomentSupport
-open CenteredMomentSecondCanonical CenteredMomentSectorLocalization
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar CenteredMomentSecondCanonicalLedger CenteredMomentSecondCanonicalFrequency CenteredMomentCanonicalFirst CenteredMomentLogDyadic CenteredMomentSupport CenteredMomentSecondCanonical CenteredMomentSectorLocalization
 local notation "O" => ActualEisensteinCubic.O
 
 lemma logb_sqrt (Z x:ℝ) (hx:0<x) : Real.logb Z (Real.sqrt x)=Real.logb Z x/2 := by

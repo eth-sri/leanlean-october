@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open CenteredMomentCorrelation CenteredMomentSupportedCorrelation
-open CenteredMomentCommonSupport CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
+open CenteredMomentCorrelation CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
 def actualCommon (C : O) (hC : Supported (Ideal.span {C})) (n₁ n₂ k : O) : ℂ := by

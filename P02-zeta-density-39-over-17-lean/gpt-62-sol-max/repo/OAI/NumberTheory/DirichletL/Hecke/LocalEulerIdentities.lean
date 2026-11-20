@@ -8,32 +8,14 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 
 namespace ShortDraftHeckeBridge
 
@@ -96,8 +78,11 @@ private theorem base_ring_rank_two : Module.finrank ℤ O = 2 := by
     IsCyclotomicExtension.Rat.finrank 3 ActualEisensteinSieve.K]
   decide
 
-theorem baseChangeWeight_zero_of_norm_prime_pow_ge_three {q p k : ℕ}
-    (χ : DirichletCharacter ℂ q) (hp : p.Prime) (hk : 3 ≤ k)
+section
+variable {q p k : ℕ} (χ : DirichletCharacter ℂ q) (hp : p.Prime) (hk : 3 ≤ k)
+include q p k χ hp hk
+
+theorem baseChangeWeight_zero_of_norm_prime_pow_ge_three
     (I : Ideal O) (hI : Ideal.absNorm I = p ^ k) :
     baseChangeWeight χ I = 0 := by
   by_cases hμ : UniqueFactorizationMonoid.moebius I = 0
@@ -119,8 +104,7 @@ theorem baseChangeWeight_zero_of_norm_prime_pow_ge_three {q p k : ℕ}
   have hk2 : k ≤ 2 := (Nat.pow_dvd_pow_iff_le_right hp.one_lt).mp hnormdiv
   omega
 
-theorem normFiberCoeff_baseChangeWeight_prime_pow_ge_three {q p k : ℕ}
-    (χ : DirichletCharacter ℂ q) (hp : p.Prime) (hk : 3 ≤ k) :
+theorem normFiberCoeff_baseChangeWeight_prime_pow_ge_three :
     normFiberCoeff (baseChangeWeight χ) (p ^ k) = 0 := by
   classical
   unfold normFiberCoeff
@@ -129,12 +113,13 @@ theorem normFiberCoeff_baseChangeWeight_prime_pow_ge_three {q p k : ℕ}
   have hnorm : Ideal.absNorm I = p ^ k := by simpa using hI
   exact baseChangeWeight_zero_of_norm_prime_pow_ge_three χ hp hk I hnorm
 
-theorem normFiberCoeff_eq_pairAF_prime_pow_ge_three {q p k : ℕ}
-    (χ : DirichletCharacter ℂ q) (hp : p.Prime) (hk : 3 ≤ k) :
+theorem normFiberCoeff_eq_pairAF_prime_pow_ge_three :
     normFiberCoeff (baseChangeWeight χ) (p ^ k) =
       pairAF χ (baseChangeChar χ) (p ^ k) := by
   rw [normFiberCoeff_baseChangeWeight_prime_pow_ge_three χ hp hk,
     pairAF_prime_pow_ge_three χ (baseChangeChar χ) hp hk]
+
+end
 
 theorem char_prime_zero_of_dvd_level {q p : ℕ}
     (χ : DirichletCharacter ℂ q) (hp : p.Prime) (hd : p ∣ q) :
@@ -491,12 +476,6 @@ theorem normFiberCoeff_baseChange_eq_pairInverseCoeff
     (fun p hp => normFiberCoeff_eq_pairAF_prime_sq χ hp) n hn
 
 end ShortDraftHeckeBridge
-open Filter Asymptotics
-
-namespace ShortDraftHeckeBridge
-
-end ShortDraftHeckeBridge
-
 end
 
 end OAI

@@ -33,19 +33,23 @@ def atkinsonRootPhase (T b y : ℝ) : ℝ :=
 def atkinsonRootSlope (T b y : ℝ) : ℝ :=
   T / (Real.pi * y) - 2 * y + 2 * b
 
-theorem zetaAtkinsonPhase_sq (T b : ℝ) {y : ℝ} (hy : 0 < y) :
+section
+variable (T b : ℝ) {y : ℝ} (hy : 0 < y)
+include T b y hy
+
+theorem zetaAtkinsonPhase_sq :
     zetaAtkinsonPhase T b (y ^ 2) = 2 * Real.pi * atkinsonRootPhase T b y := by
   rw [zetaAtkinsonPhase, Real.log_pow, Real.sqrt_sq hy.le]
   unfold atkinsonRootPhase
   field_simp
   ring
 
-theorem contDiffAt_atkinsonRootPhase (T b : ℝ) {y : ℝ} (hy : 0 < y) :
+theorem contDiffAt_atkinsonRootPhase :
     ContDiffAt ℝ 2 (atkinsonRootPhase T b) y := by
   unfold atkinsonRootPhase
   fun_prop (disch := exact hy.ne')
 
-theorem hasDerivAt_atkinsonRootPhase (T b : ℝ) {y : ℝ} (hy : 0 < y) :
+theorem hasDerivAt_atkinsonRootPhase :
     HasDerivAt (atkinsonRootPhase T b) (atkinsonRootSlope T b y) y := by
   have h := (((Real.hasDerivAt_log hy.ne').const_mul (T / Real.pi)).sub
     ((hasDerivAt_id y).pow 2)).add ((hasDerivAt_id y).const_mul (2 * b))
@@ -55,7 +59,7 @@ theorem hasDerivAt_atkinsonRootPhase (T b : ℝ) {y : ℝ} (hy : 0 < y) :
     norm_num only [id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one, mul_one]
     ring
 
-theorem hasDerivAt_atkinsonRootSlope (T b : ℝ) {y : ℝ} (hy : 0 < y) :
+theorem hasDerivAt_atkinsonRootSlope :
     HasDerivAt (atkinsonRootSlope T b) (-T / (Real.pi * y ^ 2) - 2) y := by
   have h := ((((hasDerivAt_const y (T / Real.pi)).div (hasDerivAt_id y) hy.ne').sub
     ((hasDerivAt_id y).const_mul 2)).add_const (2 * b))
@@ -66,6 +70,8 @@ theorem hasDerivAt_atkinsonRootSlope (T b : ℝ) {y : ℝ} (hy : 0 < y) :
     ring
   · simp only [id_eq, zero_mul, mul_one, zero_sub]
     ring
+
+end
 
 theorem atkinsonRootSlope_strictAnti {T : ℝ} (hT : 0 ≤ T) (b : ℝ) :
     StrictAntiOn (atkinsonRootSlope T b) (Ioi 0) := by

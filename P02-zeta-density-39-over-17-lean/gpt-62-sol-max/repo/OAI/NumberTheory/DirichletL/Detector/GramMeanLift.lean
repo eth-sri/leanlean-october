@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbeGramCommon
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCorrelation CanonicalCoefficientClass
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation CanonicalCoefficientClass
 local notation "O" => ActualEisensteinCubic.O
 
 theorem joint_mean_of_local_factor (Q P : Ideal O) [P.IsMaximal]

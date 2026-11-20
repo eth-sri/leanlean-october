@@ -80,9 +80,11 @@ theorem finiteBlock_LSeries_pow {f : ArithmeticFunction ℂ} {N : ℕ}
       (finiteBlock_pow_LSeriesSummable hs k s)
       (by simpa using finiteBlock_pow_LSeriesSummable hs 1 s), ih, pow_succ]
 
-theorem finiteBlock_pow_LSeries_sum {f : ArithmeticFunction ℂ} {N k : ℕ}
-    (hN : 0 < N) (hk : 0 < k)
-    (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N)) (s : ℂ) :
+section
+variable {f : ArithmeticFunction ℂ} {N k : ℕ} (hN : 0 < N) (hk : 0 < k) (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N))
+include f N k hN hk hs
+
+theorem finiteBlock_pow_LSeries_sum (s : ℂ) :
     LSeries (fun n => (f^k) n) s =
       ∑ n ∈ Finset.Ioc (N^k) ((2*N)^k), (f^k) n*(n : ℂ)^(-s) := by
   rw [LSeries, tsum_eq_sum (s := Finset.Ioc (N^k) ((2*N)^k))]
@@ -102,9 +104,7 @@ theorem finiteBlock_pow_LSeries_sum {f : ArithmeticFunction ℂ} {N k : ℕ}
 
 /-- One of k fixed pieces detects the powered block at the same ordinate,
 with exactly the factor k. Coefficients are conjugated for the positive phase. -/
-theorem exists_finiteBlock_powered_piece {f : ArithmeticFunction ℂ} {N k : ℕ}
-    (hN : 0 < N) (hk : 0 < k)
-    (hs : ∀ n, f n ≠ 0 → n ∈ Finset.Ioc N (2*N)) (t : ℝ) :
+theorem exists_finiteBlock_powered_piece (t : ℝ) :
     ∃ ℓ ∈ Finset.range k, ‖LSeries f (Complex.I*(t : ℂ))‖^k/(k : ℝ) ≤
       ‖detectingPolynomial (2^ℓ*N^k) (fun n => conj ((f^k) n)) t‖ := by
   let g := fun n : ℕ => (f^k) n*(n : ℂ)^(-(Complex.I*(t : ℂ)))
@@ -133,5 +133,7 @@ theorem exists_finiteBlock_powered_piece {f : ArithmeticFunction ℂ} {N k : ℕ
     (fun ℓ => ∑ n ∈ Finset.Ioc (2^ℓ*N^k) (2*(2^ℓ*N^k)), g n)
   rw [← he] at hb
   linarith
+
+end
 
 end MathCollab.Density.Stronger

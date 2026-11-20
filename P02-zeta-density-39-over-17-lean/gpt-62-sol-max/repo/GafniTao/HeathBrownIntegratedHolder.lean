@@ -112,17 +112,9 @@ theorem heathBrown_integratedWeyl_le_source_moments
       ∂(heathBrownCoefficientMeasure k)) =
       (fordVinogradovMomentNat s (k - 1) Q : ENNReal) := by
     exact ford_vinogradov_lintegral_mean_eq s (k - 1) Q
-  have hBI : (∫⁻ α, B α ∂(heathBrownCoefficientMeasure k)) =
-      ENNReal.ofReal
-        (((N - H : ℕ) : ℝ) *
-          ((2 : ℝ) ^ (k - 1) *
-            (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹))) :=
+  have hBI :=
     lintegral_heathBrownNu_eq N k H hH f
-  have hBII : (∫⁻ α, B α ^ 2 ∂(heathBrownCoefficientMeasure k)) ≤
-      ENNReal.ofReal
-        (((heathBrownPairCount N k H f).card : ℝ) *
-          ((2 : ℝ) ^ (k - 1) *
-            (((H : ℝ) ^ heathBrownCriticalMoment k)⁻¹))) :=
+  have hBII :=
     lintegral_heathBrownNu_sq_le N k H hH f
   change (∫⁻ α, A α * B α ∂(heathBrownCoefficientMeasure k)) ≤ _
   rw [hAI, hBI] at hholder

@@ -5,8 +5,7 @@ public import LaterPairs.Native.HuxleyCore
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open Filter Polynomial Set
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open Filter Polynomial Set MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
 open scoped BigOperators FourierTransform ContDiff Classical NNReal Topology
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
@@ -123,8 +122,8 @@ private theorem source_correlation_of_local_beta
     linarith only [hCC,hC₀]
   have hTp := zero_lt_one.trans hTgt
   by_cases hrL : r≤L
-  · have hηpos : 0<(r:ℝ)/N := div_pos (Nat.cast_pos.mpr hr) hNpos
-    have hηcap : (r:ℝ)/N≤η₀ := (div_le_iff₀ hNpos).mpr hrN
+  · have hηpos := div_pos (Nat.cast_pos.mpr hr) hNpos
+    have hηcap := (div_le_iff₀ hNpos).mpr hrN
     have hphase := hmodel F ((r:ℝ)/N) hF hηpos hηcap
     have hend := sourceShiftCorrelation_compressed_endpoints ha hb hrlt hrL
     have hsum := hbound (σ*T*r/N) (N-r) (aProcessShiftPhase F σ ((r:ℝ)/N))
@@ -322,7 +321,7 @@ private theorem eventually_local_A_physical_window
   have hMp : 0<M := by linarith only [hM]
   have hCM : C≤M := (le_max_right 2 C).trans (hBaseX.trans hMl)
   have hH2 : 2≤H := Nat.le_floor (by linarith only [hHBaseX] : (2:ℝ)≤X^h)
-  have hHup : (H:ℝ)≤X^h := Nat.floor_le (Real.rpow_nonneg hXp.le h)
+  have hHup := Nat.floor_le (Real.rpow_nonneg hXp.le h)
   have hHlo : X^h/2≤(H:ℝ) := by
     have hz := Nat.lt_floor_add_one (X^h)
     change X^h<(H:ℝ)+1 at hz
@@ -402,7 +401,7 @@ private theorem local_beta_correlation_harmonic_majorant
     C*(σ*X*r/M)^(-1+ε)*(M-r)^c ≤
       (C/σ)*X^(2*ε-1)*M^(c+1)*(r:ℝ)⁻¹ := by
   have hrp : 0<(r:ℝ) := Nat.cast_pos.mpr hr
-  have hYp : 0<σ*X*r/M := div_pos (mul_pos (mul_pos hσ hX) hrp) hM
+  have hYp := div_pos (mul_pos (mul_pos hσ hX) hrp) hM
   have hscale : (X^2)^ε=X^(2*ε) := by
     simpa only [Nat.cast_ofNat] using (Real.rpow_natCast_mul hX.le 2 ε).symm
   calc
@@ -543,7 +542,7 @@ private theorem third_pair_local_A_nonAsymptotic
     source_correlation_of_local_beta hρp.le hρone hc hc₁
       (third_pair_parent_beta hα hα₁) hσ hεs
   let D := 24+24*(Csrc/σ)
-  have hK : 0≤Csrc/σ := div_nonneg (zero_le_one.trans hCsrc) hσ.le
+  have hK := div_nonneg (zero_le_one.trans hCsrc) hσ.le
   have hD : 0≤D := by dsimp only [D]; positivity
   have hPhys := eventually_local_A_physical_window
     (C:=Csrc) hℓv hh hhℓ hv hw hρp.le hη hηhalf hσ hq hρq
@@ -565,7 +564,7 @@ private theorem third_pair_local_A_nonAsymptotic
   have hMl : X^ℓ≤M :=
     (Real.rpow_le_rpow_of_exponent_le hX
       (sub_le_sub_left (min_le_right δsrc w) _)).trans setup.rpow_sub_le_scale
-  have hMu : M≤X^v := setup.scale_le_rpow_add.trans
+  have hMu := setup.scale_le_rpow_add.trans
     (Real.rpow_le_rpow_of_exponent_le hX (add_le_add le_rfl (min_le_right δsrc w)))
   have hF := approximateModelPhase_mono setup.isApproximateModelPhase
     le_rfl (min_le_left δsrc w)

@@ -12,9 +12,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalContours
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary
 local notation "Id" => Ideal ActualEisensteinCubic.O
 local instance : Countable ActualEisensteinCubic.O := ActualEisensteinCubic.latticeCoordEquiv.injective.countable
 local instance : Countable Id := ConcretePrimeRowBridge.idealGenerator_injective.countable
@@ -170,18 +168,18 @@ def arithmeticMultiplier {ι : Type*} (η : Character) (S : Finset Id)
     (globalClosedCorrection η S s w z*slotMultiplier η J T b s w z)*
     LFunction (fixedSourcePrincipal S hS) (6*z)*LFunction (fixedSourcePrincipal S hS) w
 
-lemma arithmetic_profile_eq_source {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : ∀P∈S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (s w z : ℂ) :
+section
+variable {ι : Type*} (η : Character) (S : Finset Id) (hS : ∀P∈S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
+include ι η S hS J T b
+
+lemma arithmetic_profile_eq_source (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (s w z : ℂ) :
     arithmeticMultiplier η S hS J T b X Y Z s w z*profile W0 W1 s w z =
       continuedSourceMultiplier η S hS J T b W0 W1 X Y Z s w z *
         LFunction (fixedSourcePrincipal S hS) (6*z)*LFunction (fixedSourcePrincipal S hS) w := by
   unfold arithmeticMultiplier profile continuedSourceMultiplier
   ring
 
-lemma arithmetic_onLines_measurable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : ∀P∈S, Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (X Y Z a ξ υ : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
+lemma arithmetic_onLines_measurable (X Y Z a ξ υ : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : HeckeZeroSupremum.beta<a) (hξ0 : ξ≠0) (hξ1 : 6*ξ≠1) (hυ0 : υ≠0) (hυ1 : υ≠1) :
     Measurable (fun p : HeightSpace => arithmeticMultiplier η S hS J T b X Y Z
       ((a:ℂ)+p.1.1*I) ((υ:ℂ)+p.2*I) ((ξ:ℂ)+p.1.2*I)) := by
@@ -208,6 +206,8 @@ lemma arithmetic_onLines_measurable {ι : Type*} (η : Character) (S : Finset Id
   unfold arithmeticMultiplier
   fun_prop (disch := aesop)
 
+end
+
 def boxScale (X Y Z a Bs Bz cw : ℝ) : ℝ :=
   scaleBound X (1/2-Bz) (1/2-33/200) * scaleBound Z (a+33/200-1) (Bs+Bz-1) *
     scaleBound Y (19/20-1) (cw-1)
@@ -229,12 +229,11 @@ lemma height_le_joint_z (t v u : ℝ) : height v≤jointHeight t v u := by
 lemma height_le_joint_w (t v u : ℝ) : height u≤jointHeight t v u := by
   unfold height jointHeight; linarith [abs_nonneg t,abs_nonneg v]
 
-lemma arithmetic_onLines_bound_of_gaps {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (X Y Z a Bs Bz cw σ ξ υ C : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hσ : σ∈Icc a Bs) (hξ : ξ∈Icc (33/200 : ℝ) Bz)
-    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (δw δz : ℝ) (hdw : 0<δw) (hdz : 0<δz)
+section
+variable {ι : Type*} (η : Character) (S : Finset Id) (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S) (X Y Z a Bs Bz cw σ ξ υ C : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (ha : 7/8≤a) (hσ : σ∈Icc a Bs) (hξ : ξ∈Icc (33/200 : ℝ) Bz) (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw)
+include ι η S hS J T b hT X Y Z a Bs Bz cw σ ξ υ C hX hY hZ ha hσ hξ hcw hυ
+
+lemma arithmetic_onLines_bound_of_gaps (δw δz : ℝ) (hdw : 0<δw) (hdz : 0<δz)
     (hC : 0≤C) (hR : ∀s : ℂ, a≤s.re → ‖HeckeReciprocal.reciprocal (η.excludePrimes S hS.prime) s‖≤C*(1+|s.im|^2))
     (p : HeightSpace)
     (hwgap : δw≤‖((υ:ℂ)+p.2*I)-1‖) (hzgap : δz≤‖6*((ξ:ℂ)+p.1.2*I)-1‖) :
@@ -311,12 +310,7 @@ lemma arithmetic_onLines_bound_of_gaps {ι : Type*} (η : Character) (S : Finset
       gcongr <;> first | positivity | exact height_le_joint_s _ _ _ | exact height_le_joint_z _ _ _ | exact height_le_joint_w _ _ _
     _ = _ := by unfold arithmeticAmplitude boxScale; ring
 
-lemma arithmetic_onLines_bound {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (X Y Z a Bs Bz cw σ ξ υ C : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hσ : σ∈Icc a Bs) (hξ : ξ∈Icc (33/200 : ℝ) Bz)
-    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1)
+lemma arithmetic_onLines_bound (hξ1 : 6*ξ≠1) (hυ1 : υ≠1)
     (hC : 0≤C) (hR : ∀s : ℂ, a≤s.re → ‖HeckeReciprocal.reciprocal (η.excludePrimes S hS.prime) s‖≤C*(1+|s.im|^2))
     (p : HeightSpace) :
     ‖arithmeticMultiplier η S hS.prime J T b X Y Z ((σ:ℂ)+p.1.1*I)
@@ -328,6 +322,8 @@ lemma arithmetic_onLines_bound {ι : Type*} (η : Character) (S : Finset Id)
     (abs_pos.mpr (sub_ne_zero.mpr hξ1)) hC hR p
   · exact pole_distance_vertical 1 υ p.2
   · simpa using Complex.abs_re_le_norm (6*((ξ:ℂ)+p.1.2*I)-1)
+
+end
 
 theorem continued_source_joint_integrable {ι : Type*} (η : Character) (S : Finset Id)
     (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
@@ -372,14 +368,11 @@ lemma continued_joint_ae_raw {ι : Type*} (η : Character) (S : Finset Id)
   · intro h; exact hp (by simpa using congrArg Complex.im h)
   · intro h; exact hp (by simpa using congrArg Complex.im h)
 
-theorem source_joint_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
-    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) :
+section
+variable {ι : Type*} (η : Character) (S : Finset Id) (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S) (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1) (X Y Z a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ) (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1)
+include ι η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1 X Y Z a ξ υ cw hX hY hZ ha hβ hξ hcw hυ hξ1 hυ1
+
+theorem source_joint_integrable :
     Integrable (fun p : HeightSpace =>
       sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) ((a:ℂ)+p.1.1*I)
         (globalClosedCorrection η S ((a:ℂ)+p.1.1*I)) (slotMultiplier η J T b ((a:ℂ)+p.1.1*I))
@@ -391,14 +384,7 @@ theorem source_joint_integrable {ι : Type*} (η : Character) (S : Finset Id)
   filter_upwards [continued_joint_ae_raw η S hS.prime J T b W0 W1 X Y Z a ξ υ] with p hp
   rw [hp]
 
-theorem source_joint_fubini {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
-    (X Y Z a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
-    (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
-    (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) :
+theorem source_joint_fubini :
     let F := fun p : HeightSpace =>
       sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) ((a:ℂ)+p.1.1*I)
         (globalClosedCorrection η S ((a:ℂ)+p.1.1*I)) (slotMultiplier η J T b ((a:ℂ)+p.1.1*I))
@@ -418,6 +404,8 @@ theorem source_joint_fubini {ι : Type*} (η : Character) (S : Finset Id)
     filter_upwards [hi.prod_left_ae] with u hu
     exact integral_prod_symm _ hu
 
+end
+
 lemma arithmeticAmplitude_nonneg {ι : Type*} (S : Finset Id) (hS : ∀P∈S,Prime P)
     (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
     (X Y Z a Bs Bz cw C δw δz : ℝ) (hcw : 1<cw) (hC : 0≤C) (hw : 0≤δw) (hz : 0≤δz) :
@@ -430,10 +418,11 @@ lemma arithmeticAmplitude_nonneg {ι : Type*} (S : Finset Id) (hS : ∀P∈S,Pri
   unfold arithmeticAmplitude
   positivity
 
-theorem continued_source_slices {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+section
+variable {ι : Type*} (η : Character) (S : Finset Id) (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S) (W0 W1 : SchwartzMap ℝ ℂ)
+include ι η S hS J T b hT W0 W1
+
+theorem continued_source_slices (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
     (X Y Z a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
@@ -465,10 +454,7 @@ theorem continued_source_slices {ι : Type*} (η : Character) (S : Finset Id)
     (fun q => hbound (sliceMap axis R q))
   simpa only [G,onLines,arithmetic_profile_eq_source] using hh
 
-theorem source_w_leftover_outer_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+theorem source_w_leftover_outer_integrable (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
     (X Y Z a e t : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (he : 0<e)
@@ -494,10 +480,7 @@ theorem source_w_leftover_outer_integrable {ι : Type*} (η : Character) (S : Fi
     simpa only [sliceMap,continued_source_eq_raw η S hS.prime J T b W0 W1 X Y Z _ _ _ hs0 hs1] using hi
   simpa only [verticalIntegral] using hpair.integral_prod_left.const_mul (((1/(2*Real.pi):ℝ):ℂ))
 
-theorem source_z_boundary_any {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 : ℝ) (ha0 : 0<a0)
+theorem source_z_boundary_any (a0 b0 : ℝ) (ha0 : 0<a0)
     (hW0 : Function.support W0⊆Icc a0 b0) (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z)
     (s : ℂ) (hs : 7/8≤s.re) (hη : LFunction (η.excludePrimes S hS.prime) s≠0)
     {e : ℝ} (he : 0<e) :
@@ -519,10 +502,7 @@ theorem source_z_boundary_any {ι : Type*} (η : Character) (S : Finset Id)
   · intro x hx t _
     exact fixed_principal_z_box_growth (∏P∈S,P) (1/6+e) x t hx
 
-theorem source_ordered_at_height {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+theorem source_ordered_at_height (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
     (X Y Z a e t cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hcw : 1<cw) (he : 0<e)
@@ -567,10 +547,7 @@ theorem source_ordered_at_height {ι : Type*} (η : Character) (S : Finset Id)
   · exact source_w_leftover_outer_integrable η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
       X Y Z a e t hX hY hZ ha hβ he hs1
 
-theorem source_ordered_ae {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
+theorem source_ordered_ae (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
     (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
     (X Y Z a e cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hcw : 1<cw) (he : 0<e) :
@@ -590,6 +567,8 @@ theorem source_ordered_ae {ι : Type*} (η : Character) (S : Finset Id)
   intro h
   exact ht (by simpa using congrArg Complex.im h)
 
+end
+
 def residueArithmetic {ι : Type*} (η : Character) (S : Finset Id)
     (hS : ∀P∈S,Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
     (b : ι → PrimeIdeal → ℂ) (X Z : ℝ) (s z : ℂ) : ℂ :=
@@ -597,9 +576,11 @@ def residueArithmetic {ι : Type*} (η : Character) (S : Finset Id)
     (globalClosedCorrection η S s 1 z*slotMultiplier η J T b s 1 z)*
     LFunction (fixedSourcePrincipal S hS) (6*z)
 
-lemma residue_profile_eq_source {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : ∀P∈S,Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (s z : ℂ) :
+section
+variable {ι : Type*} (η : Character) (S : Finset Id) (hS : ∀P∈S,Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
+include ι η S hS J T b
+
+lemma residue_profile_eq_source (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (s z : ℂ) :
     residueArithmetic η S hS J T b X Z s z*profile W0 W1 s 1 z =
       continuedSourceMultiplier η S hS J T b W0 W1 X Y Z s 1 z *
         LFunction (fixedSourcePrincipal S hS) (6*z) := by
@@ -607,9 +588,7 @@ lemma residue_profile_eq_source {ι : Type*} (η : Character) (S : Finset Id)
   simp only [sub_self,Complex.cpow_zero,mul_one]
   ring
 
-lemma residue_arithmetic_measurable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : ∀P∈S,Prime P) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (X Z a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
+lemma residue_arithmetic_measurable (X Z a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
     (hβ : HeckeZeroSupremum.beta<a) (hξ0 : ξ≠0) (hξ1 : 6*ξ≠1) :
     Measurable (fun q : ℝ×ℝ => residueArithmetic η S hS J T b X Z
       ((a:ℂ)+q.1*I) ((ξ:ℂ)+q.2*I)) := by
@@ -631,6 +610,8 @@ lemma residue_arithmetic_measurable {ι : Type*} (η : Character) (S : Finset Id
     ring
   unfold residueArithmetic
   fun_prop (disch := aesop)
+
+end
 
 def residueAmplitude {ι : Type*} (S : Finset Id) (J : Finset ι)
     (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ) (X Z a ξ C : ℝ) : ℝ :=
@@ -689,11 +670,11 @@ lemma residueAmplitude_nonneg {ι : Type*} (S : Finset Id) (hS : ∀P∈S,Prime 
   unfold residueAmplitude
   positivity
 
-theorem continued_residue_pair_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+section
+variable {ι : Type*} (η : Character) (S : Finset Id) (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S) (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1) (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+include ι η S hS J T b hT W0 W1 a0 b0 a1 b1 ha0 ha1 hW0 hW1
+
+theorem continued_residue_pair_integrable
     (X Y Z a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ) (hξ1 : 6*ξ≠1) :
     Integrable (fun q : ℝ×ℝ => continuedSourceMultiplier η S hS.prime J T b W0 W1 X Y Z
@@ -715,11 +696,7 @@ theorem continued_residue_pair_integrable {ι : Type*} (η : Character) (S : Fin
   simpa only [sliceMap,onLines,ofReal_one,ofReal_zero,zero_mul,add_zero] using
     residue_profile_eq_source η S hS.prime J T b W0 W1 X Y Z ((a:ℂ)+q.1*I) ((ξ:ℂ)+q.2*I)
 
-theorem residue_pair_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+theorem residue_pair_integrable
     (X Y Z a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ) (hξ1 : 6*ξ≠1) :
     Integrable (fun q : ℝ×ℝ => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime)
@@ -734,11 +711,7 @@ theorem residue_pair_integrable {ι : Type*} (η : Character) (S : Finset Id)
   have h1 : (a:ℂ)+q.1*I≠1 := by intro h; exact hq (by simpa using congrArg Complex.im h)
   rw [continued_source_eq_raw η S hS.prime J T b W0 W1 X Y Z _ _ _ h0 h1]
 
-theorem source_iterated_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+theorem source_iterated_integrable
     (X Y Z a ξ υ cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ)
     (hcw : 1<cw) (hυ : υ∈Icc (19/20 : ℝ) cw) (hξ1 : 6*ξ≠1) (hυ1 : υ≠1) :
@@ -751,11 +724,7 @@ theorem source_iterated_integrable {ι : Type*} (η : Character) (S : Finset Id)
   simpa only [verticalIntegral,integral_const_mul,mul_assoc] using
     (hi.integral_prod_left.integral_prod_left.const_mul (((1/(2*Real.pi):ℝ):ℂ))).const_mul (((1/(2*Real.pi):ℝ):ℂ))
 
-theorem residue_iterated_integrable {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+theorem residue_iterated_integrable
     (X Y Z a ξ : ℝ) (hX : 0<X) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hξ : 33/200≤ξ) (hξ1 : 6*ξ≠1) :
     Integrable (fun t : ℝ => verticalIntegral ξ (fun z =>
@@ -766,11 +735,7 @@ theorem residue_iterated_integrable {ι : Type*} (η : Character) (S : Finset Id
     X Y Z a ξ hX hZ ha hβ hξ hξ1
   simpa only [verticalIntegral] using hi.integral_prod_left.const_mul (((1/(2*Real.pi):ℝ):ℂ))
 
-theorem source_ordered_outer {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (hT : ∀j∈J,∀P∈T j,P.val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a0 b0 a1 b1 : ℝ) (ha0 : 0<a0) (ha1 : 0<a1)
-    (hW0 : Function.support W0⊆Icc a0 b0) (hW1 : Function.support W1⊆Icc a1 b1)
+theorem source_ordered_outer
     (X Y Z a e cw : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z)
     (ha : 7/8≤a) (hβ : HeckeZeroSupremum.beta<a) (hcw : 1<cw) (he : 0<e) :
     let K := fun s => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
@@ -822,6 +787,8 @@ theorem source_ordered_outer {ι : Type*} (η : Character) (S : Finset Id)
   rw [heq]
   simp only [D,E,verticalIntegral,integral_const_mul]
   ring
+
+end
 
 end SevenEighths.ProbePrincipalContours
 end

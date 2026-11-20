@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerWindowGeometry
 
 @[expose] public section
@@ -9,16 +10,12 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalDomains
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry
-open InverseInitialEnergyCallerSourceMask InverseInitialEnergyCallerRanges
-open InverseInitialEnergyCallerSource CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerSourceMask InverseInitialEnergyCallerRanges InverseInitialEnergyCallerSource CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem window_power_bounds
@@ -37,8 +34,8 @@ theorem window_power_bounds
 
 include hp hcop hg in
 theorem actual_window_domains
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (S:Finset (Source (ι:=ι) 0))(hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
     (ψ:Fin 4→ℝ→ℂ)(lo hi:Fin 4→ℝ)
     (hψ:∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.GaussSum.CubicTrace
 public import OAI.NumberTheory.DirichletL.Fourier.PositiveLogProfiles
 
@@ -9,66 +10,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 namespace ActualEisensteinCubic
 
@@ -274,11 +226,11 @@ theorem cubic_reciprocity_equal_residue_char
     ← neg_one_mul (Ideal.Quotient.mk Q p), map_mul, A3_cubicChar_neg_one, one_mul] at htval
   exact htval
 
-theorem cubic_reciprocity_primary
-    (P Q : Ideal O) [P.IsMaximal] [Q.IsMaximal]
-    (hPgood : lambda ∉ P) (hQgood : lambda ∉ Q)
-    (p q : O) (hP : P = Ideal.span {p}) (hQ : Q = Ideal.span {q})
-    (hpprimary : lambda ^ 2 ∣ p - 1) (hqprimary : lambda ^ 2 ∣ q - 1) :
+section
+variable (P Q : Ideal O) [instShared1 : P.IsMaximal] [instShared2 : Q.IsMaximal] (hPgood : lambda ∉ P) (hQgood : lambda ∉ Q) (p q : O) (hP : P = Ideal.span {p}) (hQ : Q = Ideal.span {q}) (hpprimary : lambda ^ 2 ∣ p - 1) (hqprimary : lambda ^ 2 ∣ q - 1)
+include P Q instShared1 instShared2 hPgood hQgood p q hP hQ hpprimary hqprimary
+
+theorem cubic_reciprocity_primary :
     cubicChar P hPgood (Ideal.Quotient.mk P q) =
       cubicChar Q hQgood (Ideal.Quotient.mk Q p) := by
   by_cases hPQ : P = Q
@@ -292,11 +244,7 @@ theorem cubic_reciprocity_primary
     · exact cubic_reciprocity_distinct_residue_char P Q hPgood hQgood hchar
         p q hP hQ hpprimary hqprimary
 
-theorem canonicalSextic_sq_reciprocity_primary
-    (P Q : Ideal O) [P.IsMaximal] [Q.IsMaximal]
-    (hPgood : lambda ∉ P) (hQgood : lambda ∉ Q)
-    (p q : O) (hP : P = Ideal.span {p}) (hQ : Q = Ideal.span {q})
-    (hpprimary : lambda ^ 2 ∣ p - 1) (hqprimary : lambda ^ 2 ∣ q - 1) :
+theorem canonicalSextic_sq_reciprocity_primary :
     (canonicalSextic P hPgood (Ideal.Quotient.mk P q)) ^ 2 =
       (canonicalSextic Q hQgood (Ideal.Quotient.mk Q p)) ^ 2 := by
   have hP2 : (canonicalSextic P hPgood (Ideal.Quotient.mk P q)) ^ 2 =
@@ -308,6 +256,8 @@ theorem canonicalSextic_sq_reciprocity_primary
     rw [← MulChar.pow_apply' _ (by decide : (2 : ℕ) ≠ 0), canonicalSextic_pow_two]
     rfl
   rw [hP2, hQ2, cubic_reciprocity_primary P Q hPgood hQgood p q hP hQ hpprimary hqprimary]
+
+end
 
 def cubicTwoIdeal : Ideal O := Ideal.span {(-2 : O)}
 
@@ -414,10 +364,10 @@ open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoo
 
 theorem canonicalProductGauss_three_eq_quadraticGamma
     {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) :
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hgood : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2) :
     canonicalProductGauss p hp hcop hgood (fun _ => 3) =
       quadraticGammaO (∏ i, p i) (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)) := by
   let c := ∏ i, p i
@@ -469,10 +419,10 @@ theorem quadraticGammaO_eq_rayValue (c : O) (hc : c ≠ 0) :
 
 theorem canonicalProductGauss_three_eq_rayValue
     {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) :
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hgood : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2) :
     canonicalProductGauss p hp hcop hgood (fun _ => 3) =
       quadraticRayValue (residue (∏ i, p i)) := by
   rw [canonicalProductGauss_three_eq_quadraticGamma p hp hcop hgood hchar,
@@ -523,13 +473,11 @@ def residueQuotientFour : (O ⧸ Ideal.span {(4 : O)}) → EisensteinEPrimaryPha
 def fixedGQuotientValue (r : O ⧸ Ideal.span {(4 : O)}) : ℂ :=
   fixedGValue (residueQuotientFour r)
 
-theorem canonicalProductG_eq_fixedGValue
-    {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) [instShared4 : OAI.PrincipalIdealFamily.Maximal p] (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (hgood : OAI.PrincipalIdealFamily.Avoids p lambda) (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2) (hprimary : OAI.PrincipalIdealFamily.PrimaryAt p lambda)
+include ι instShared1 p hp instShared4 hcop hgood hchar hprimary
+
+theorem canonicalProductG_eq_fixedGValue :
     canonicalProductG p hp hcop hgood = fixedGValue (residue (∏ i, p i)) := by
   rw [canonicalProductG,
     canonicalSextic_four_prod_eq_fixed_two Finset.univ (fun i => Ideal.span {p i}) hgood p
@@ -538,16 +486,12 @@ theorem canonicalProductG_eq_fixedGValue
     fixed_two_mk_eq_residue_lift]
   rfl
 
-theorem canonicalProductG_eq_fixed_quotient
-    {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) :
+theorem canonicalProductG_eq_fixed_quotient :
     canonicalProductG p hp hcop hgood =
       fixedGQuotientValue (Ideal.Quotient.mk (Ideal.span {(4 : O)}) (∏ i, p i)) :=
   canonicalProductG_eq_fixedGValue p hp hcop hgood hchar hprimary
+
+end
 
 end QuadraticGaussRay
 

@@ -33,11 +33,6 @@ theorem nontrivialZetaZero_ne_one {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) : �
   have := hρ.2.2
   simp [he] at this
 
-theorem zetaMultiplicity_local_factorization {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) :
-    ∃ g : ℂ → ℂ, AnalyticAt ℂ g ρ ∧ g ρ ≠ 0 ∧
-      ∀ᶠ z in 𝓝 ρ, riemannZeta z = (z-ρ)^(zetaMultiplicity ρ)*g z := by
-  exact (analyticOn_riemannZeta ρ (nontrivialZetaZero_ne_one hρ)).analyticOrderAt_ne_top.mp
-    (zeta_analyticOrder_ne_top (nontrivialZetaZero_ne_one hρ))
 
 /-- Closed height and real-part cutoffs, inside the open critical strip. -/
 def zetaZeroRegion (σ a b : ℝ) : Set ℂ :=

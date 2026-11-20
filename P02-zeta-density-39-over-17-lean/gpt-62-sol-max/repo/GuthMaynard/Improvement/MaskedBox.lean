@@ -19,11 +19,13 @@ theorem sqrt_product_memLp {α : Type*} [MeasurableSpace α] {μ : Measure α}
   simp_rw [mul_pow,Real.sq_sqrt (hf0 _),Real.sq_sqrt (hg0 _)]
   exact hf.integrable_mul hg
 
+section
+variable {α ι : Type*} [instShared1 : MeasurableSpace α] {μ : Measure α} (s : Finset ι) {A : Set α} (hA : MeasurableSet A) {r : α → ℝ} {f g : ι → α → ℝ}
+include α ι instShared1 μ s A hA r f g
+
 /-- Actual Lebesgue integral of the finite sum, with the designated first
 mask unchanged. All integrability follows from L2 premises. -/
-theorem masked_box_cauchy_schwarz {α ι : Type*} [MeasurableSpace α]
-    {μ : Measure α} (s : Finset ι) {A : Set α} (hA : MeasurableSet A)
-    {r : α → ℝ} {f g : ι → α → ℝ}
+theorem masked_box_cauchy_schwarz
     (hr : MemLp r 2 μ) (hf : ∀ i ∈ s, MemLp (f i) 2 μ)
     (hg : ∀ i ∈ s, MemLp (g i) 2 μ)
     (hr0 : ∀ x, 0 ≤ r x) (hf0 : ∀ i x, 0 ≤ f i x) (hg0 : ∀ i x, 0 ≤ g i x) :
@@ -51,9 +53,7 @@ theorem masked_box_cauchy_schwarz {α ι : Type*} [MeasurableSpace α]
 
 /-- Equal affine energy majorants collapse the two fourth roots without
 altering the restricted first-factor mass. -/
-theorem masked_box_of_energy_bounds {α ι : Type*} [MeasurableSpace α]
-    {μ : Measure α} (s : Finset ι) {A : Set α} (hA : MeasurableSet A)
-    {r : α → ℝ} {f g : ι → α → ℝ} {B : ℝ}
+theorem masked_box_of_energy_bounds {B : ℝ}
     (hr : MemLp r 2 μ) (hf : ∀ i ∈ s, MemLp (f i) 2 μ)
     (hg : ∀ i ∈ s, MemLp (g i) 2 μ)
     (hr0 : ∀ x, 0 ≤ r x) (hf0 : ∀ i x, 0 ≤ f i x) (hg0 : ∀ i x, 0 ≤ g i x)
@@ -68,5 +68,7 @@ theorem masked_box_of_energy_bounds {α ι : Type*} [MeasurableSpace α]
     _ ≤ Real.sqrt B*Real.sqrt B := mul_le_mul (Real.sqrt_le_sqrt hX)
       (Real.sqrt_le_sqrt hY) (Real.sqrt_nonneg _) (Real.sqrt_nonneg _)
     _ = B := Real.mul_self_sqrt hB
+
+end
 
 end GuthMaynard.Improvement

@@ -1818,11 +1818,6 @@ noncomputable def gmCubicFrequencyOscillation (N : ℕ)
     gmTraceOscillation ((N : ℝ) * (m.2.1 : ℝ)) p.1.2 *
     gmTraceOscillation ((N : ℝ) * (m.2.2 : ℝ)) p.2
 
-@[simp]
-theorem norm_gmCubicFrequencyOscillation (N : ℕ)
-    (m : ℤ × (ℤ × ℤ)) (p : (ℝ × ℝ) × ℝ) :
-    ‖gmCubicFrequencyOscillation N m p‖ = 1 := by
-  simp [gmCubicFrequencyOscillation]
 
 /-- Before changing variables, the finite sum inside a triple mode is the
 common Fourier phase times the cyclic trace-kernel sum. -/
@@ -2031,9 +2026,11 @@ private theorem continuous_fintype_sum
   classical
   fun_prop
 
-theorem continuous_gmCubicS3ModeSummedIntegrand
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) :
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) (m : ℤ × (ℤ × ℤ))
+include cutoff N W m
+
+theorem continuous_gmCubicS3ModeSummedIntegrand :
     Continuous (gmCubicS3ModeSummedIntegrand cutoff N W m) := by
   unfold gmCubicS3ModeSummedIntegrand
   apply continuous_fintype_sum
@@ -2046,9 +2043,7 @@ theorem continuous_gmCubicS3ModeSummedIntegrand
 
 /-- The two positive rescalings convert the source slice exactly into the
 ratio-coordinate slice. -/
-theorem integral_integral_gmCubicS3ModeSummedIntegrand_eq_ratio
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) {z : ℝ} (hz : 0 < z) :
+theorem integral_integral_gmCubicS3ModeSummedIntegrand_eq_ratio {z : ℝ} (hz : 0 < z) :
     (∫ x : ℝ, ∫ y : ℝ,
         gmCubicS3ModeSummedIntegrand cutoff N W m ((x, y), z)) =
       ∫ v₁ : ℝ, ∫ v₂ : ℝ,
@@ -2082,9 +2077,7 @@ theorem integral_integral_gmCubicS3ModeSummedIntegrand_eq_ratio
         cutoff N W m v₁ v₂ hz using 1
       all_goals simp [gmCubicRatioMap, mul_comm]
 
-theorem integral_integral_gmCubicS3ModeSummedIntegrand_eq_ratio_all
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) (z : ℝ) :
+theorem integral_integral_gmCubicS3ModeSummedIntegrand_eq_ratio_all (z : ℝ) :
     (∫ x : ℝ, ∫ y : ℝ,
         gmCubicS3ModeSummedIntegrand cutoff N W m ((x, y), z)) =
       ∫ v₁ : ℝ, ∫ v₂ : ℝ,
@@ -2103,6 +2096,8 @@ theorem integral_integral_gmCubicS3ModeSummedIntegrand_eq_ratio_all
         gmCubicRatioIntegrand cutoff N W m ((v₁, v₂), z) = 0 := by
       simp [gmCubicRatioIntegrand, hcut]
     simp_rw [hs, hr]
+
+end
 
 /-- The exact ratio-coordinate integral representing one nonzero frequency
 triple after equation (7.3). -/
@@ -2226,9 +2221,6 @@ noncomputable def gmCubicCutoffSqSchwartz (cutoff : GMSmoothCutoff) :
   (hasCompactSupport_gmCubicCutoffSq cutoff).toSchwartzMap
     (contDiff_gmCubicCutoffSq cutoff)
 
-@[simp]
-theorem gmCubicCutoffSqSchwartz_apply (cutoff : GMSmoothCutoff) (z : ℝ) :
-    gmCubicCutoffSqSchwartz cutoff z = gmCubicCutoffSq cutoff z := rfl
 
 /-- The unscaled compact factor `z² w(z)²`. -/
 noncomputable def gmCubicBaseWeight (cutoff : GMSmoothCutoff) (z : ℝ) : ℂ :=
@@ -2252,9 +2244,6 @@ noncomputable def gmCubicBaseWeightSchwartz (cutoff : GMSmoothCutoff) :
   (hasCompactSupport_gmCubicBaseWeight cutoff).toSchwartzMap
     (contDiff_gmCubicBaseWeight cutoff)
 
-@[simp]
-theorem gmCubicBaseWeightSchwartz_apply (cutoff : GMSmoothCutoff) (z : ℝ) :
-    gmCubicBaseWeightSchwartz cutoff z = gmCubicBaseWeight cutoff z := rfl
 
 theorem norm_iteratedDeriv_gmCubicBaseWeight_le
     (cutoff : GMSmoothCutoff) (n : ℕ) (z : ℝ) :
@@ -2706,9 +2695,11 @@ def gmCubicRatioBox : Set ((ℝ × ℝ) × ℝ) :=
 theorem isCompact_gmCubicRatioBox : IsCompact gmCubicRatioBox :=
   (isCompact_Icc.prod isCompact_Icc).prod isCompact_Icc
 
-theorem gmCubicRatioRawIntegrand_eq_zero_of_not_mem_box
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) {q : (ℝ × ℝ) × ℝ}
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) (m : ℤ × (ℤ × ℤ))
+include cutoff N W m
+
+theorem gmCubicRatioRawIntegrand_eq_zero_of_not_mem_box {q : (ℝ × ℝ) × ℝ}
     (hq : q ∉ gmCubicRatioBox) :
     gmCubicRatioRawIntegrand cutoff N W m q = 0 := by
   by_cases hz : q.2 ∈ Set.Icc (1 : ℝ) 2
@@ -2768,17 +2759,13 @@ theorem gmCubicRatioRawIntegrand_eq_zero_of_not_mem_box
     rw [gmCubicS3ModeSummedIntegrand_eq_RPhase]
     simp [hcut]
 
-theorem hasCompactSupport_gmCubicRatioRawIntegrand
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) :
+theorem hasCompactSupport_gmCubicRatioRawIntegrand :
     HasCompactSupport (gmCubicRatioRawIntegrand cutoff N W m) := by
   apply HasCompactSupport.intro isCompact_gmCubicRatioBox
   intro q hq
   exact gmCubicRatioRawIntegrand_eq_zero_of_not_mem_box cutoff N W m hq
 
-theorem integrable_gmCubicRatioRawIntegrand
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) :
+theorem integrable_gmCubicRatioRawIntegrand :
     Integrable (gmCubicRatioRawIntegrand cutoff N W m)
       ((volume.prod volume).prod volume) :=
   (continuous_gmCubicRatioRawIntegrand cutoff N W m).integrable_of_hasCompactSupport
@@ -2786,9 +2773,7 @@ theorem integrable_gmCubicRatioRawIntegrand
 
 /-- The globally continuous source form and the explicit ratio form agree
 everywhere.  At nonpositive outer scale both vanish by cutoff support. -/
-theorem gmCubicRatioRawIntegrand_eq_ratioIntegrand
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) (q : (ℝ × ℝ) × ℝ) :
+theorem gmCubicRatioRawIntegrand_eq_ratioIntegrand (q : (ℝ × ℝ) × ℝ) :
     gmCubicRatioRawIntegrand cutoff N W m q =
       gmCubicRatioIntegrand cutoff N W m q := by
   by_cases hz : 0 < q.2
@@ -2802,9 +2787,7 @@ theorem gmCubicRatioRawIntegrand_eq_ratioIntegrand
     rw [gmCubicS3ModeSummedIntegrand_eq_RPhase]
     simp [hcut]
 
-theorem integrable_gmCubicRatioIntegrand
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) :
+theorem integrable_gmCubicRatioIntegrand :
     Integrable (gmCubicRatioIntegrand cutoff N W m)
       ((volume.prod volume).prod volume) := by
   refine (integrable_gmCubicRatioRawIntegrand cutoff N W m).congr ?_
@@ -2813,9 +2796,7 @@ theorem integrable_gmCubicRatioIntegrand
 
 /-- Exact Fubini interchange from the source order `(z,v₁,v₂)` to the
 Fourier-analysis order `(v₁,v₂,z)`. -/
-theorem integral_z_v₁_v₂_gmCubicRatioIntegrand_eq_v₁_v₂_z
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) :
+theorem integral_z_v₁_v₂_gmCubicRatioIntegrand_eq_v₁_v₂_z :
     (∫ z : ℝ, ∫ v₁ : ℝ, ∫ v₂ : ℝ,
         gmCubicRatioIntegrand cutoff N W m ((v₁, v₂), z)) =
       ∫ v₁ : ℝ, ∫ v₂ : ℝ, ∫ z : ℝ,
@@ -2838,6 +2819,8 @@ theorem integral_z_v₁_v₂_gmCubicRatioIntegrand_eq_v₁_v₂_z
         gmCubicRatioIntegrand cutoff N W m ((v₁, v₂), z) := by
       simpa only [f, MeasureTheory.Measure.volume_eq_prod] using MeasureTheory.integral_prod
         (fun q : ℝ × ℝ => ∫ z : ℝ, f (q, z)) hf.integral_prod_left
+
+end
 
 /-- The exact Fourier-side expression for one nonzero cubic frequency. -/
 noncomputable def gmCubicS3FourierIntegral (cutoff : GMSmoothCutoff)
@@ -2895,9 +2878,11 @@ noncomputable def gmCubicFourierIntegrand (cutoff : GMSmoothCutoff)
         (m.2.2 : ℝ))) *
     gmR W q.1 * gmR W (q.2 / q.1) * gmR W (1 / q.2)
 
-theorem integrable_gmCubicFourierIntegrand
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) :
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) (m : ℤ × (ℤ × ℤ))
+include cutoff N W m
+
+theorem integrable_gmCubicFourierIntegrand :
     Integrable (gmCubicFourierIntegrand cutoff N W m) (volume.prod volume) := by
   have hall := integrable_gmCubicRatioIntegrand cutoff N W m
   have hinner : Integrable (fun q : ℝ × ℝ =>
@@ -2908,9 +2893,7 @@ theorem integrable_gmCubicFourierIntegrand
   simpa [gmCubicFourierIntegrand] using
     integral_gmCubicRatioIntegrand_eq_fourier cutoff N W m q.1 q.2
 
-theorem gmCubicS3FourierIntegral_eq_integral
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) :
+theorem gmCubicS3FourierIntegral_eq_integral :
     gmCubicS3FourierIntegral cutoff N W m =
       (N : ℂ) ^ 3 * ∫ q : ℝ × ℝ,
         gmCubicFourierIntegrand cutoff N W m q := by
@@ -2920,9 +2903,7 @@ theorem gmCubicS3FourierIntegral_eq_integral
     (gmCubicFourierIntegrand cutoff N W m)
       (integrable_gmCubicFourierIntegrand cutoff N W m)).symm
 
-theorem gmCubicFourierIntegrand_eq_zero_of_not_mem_ratioSquare
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ)) {q : ℝ × ℝ} (hq : q ∉ gmCubicRatioSquare) :
+theorem gmCubicFourierIntegrand_eq_zero_of_not_mem_ratioSquare {q : ℝ × ℝ} (hq : q ∉ gmCubicRatioSquare) :
     gmCubicFourierIntegrand cutoff N W m q = 0 := by
   unfold gmCubicFourierIntegrand
   rw [← integral_gmCubicRatioIntegrand_eq_fourier cutoff N W m q.1 q.2]
@@ -2934,14 +2915,14 @@ theorem gmCubicFourierIntegrand_eq_zero_of_not_mem_ratioSquare
     exact hq hbox.1)
 
 theorem gmCubicS3Mode_eq_fourierIntegral
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m : ℤ × (ℤ × ℤ))
     (hm1 : m.1 ≠ 0) (hm2 : m.2.1 ≠ 0) (hm3 : m.2.2 ≠ 0) :
     gmCubicS3Mode cutoff N W m =
       gmCubicS3FourierIntegral cutoff N W m := by
   rw [gmCubicS3Mode_eq_integral cutoff N W m hm1 hm2 hm3,
     gmCubicS3ModeIntegral_eq_ratioIntegral,
     gmCubicS3RatioIntegral_eq_fourierIntegral]
+
+end
 
 theorem continuousAt_gmR (W : Finset ℝ) {v : ℝ} (hv : v ≠ 0) :
     ContinuousAt (gmR W) v := by
@@ -3436,11 +3417,13 @@ theorem gmNonzeroScaledTraceMode_neg_neg_eq_star
     rw [hfreq, gmTraceFourier_neg_eq_conj cutoff (-t), neg_neg]
     simp
 
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) (m₁ m₂ m₃ : ℤ)
+include cutoff N W m₁ m₂ m₃
+
 /-- Cyclically rotating the three frequencies leaves the exact cubic mode
 unchanged. -/
-theorem gmCubicS3Mode_cyclic
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m₁ m₂ m₃ : ℤ) :
+theorem gmCubicS3Mode_cyclic :
     gmCubicS3Mode cutoff N W (m₁, (m₂, m₃)) =
       gmCubicS3Mode cutoff N W (m₂, (m₃, m₁)) := by
   unfold gmCubicS3Mode
@@ -3477,9 +3460,7 @@ theorem gmCubicS3Mode_cyclic
 /-- Swapping the first two absolute frequencies (and simultaneously
 reversing all three signs) conjugates the exact mode.  Together with cyclic
 rotation this supplies the full sixfold sorting symmetry used in (7.6). -/
-theorem gmCubicS3Mode_swap12_neg_eq_star
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m₁ m₂ m₃ : ℤ) :
+theorem gmCubicS3Mode_swap12_neg_eq_star :
   gmCubicS3Mode cutoff N W (-m₂, (-m₁, -m₃)) =
       star (gmCubicS3Mode cutoff N W (m₁, (m₂, m₃))) := by
   unfold gmCubicS3Mode
@@ -3534,23 +3515,17 @@ theorem gmCubicS3Mode_swap12_neg_eq_star
       intro v hv
       ring
 
-theorem norm_gmCubicS3Mode_swap12_neg
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m₁ m₂ m₃ : ℤ) :
+theorem norm_gmCubicS3Mode_swap12_neg :
     ‖gmCubicS3Mode cutoff N W (-m₂, (-m₁, -m₃))‖ =
       ‖gmCubicS3Mode cutoff N W (m₁, (m₂, m₃))‖ := by
   rw [gmCubicS3Mode_swap12_neg_eq_star, norm_star]
 
-theorem norm_gmCubicS3Mode_cyclic
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m₁ m₂ m₃ : ℤ) :
+theorem norm_gmCubicS3Mode_cyclic :
     ‖gmCubicS3Mode cutoff N W (m₁, (m₂, m₃))‖ =
       ‖gmCubicS3Mode cutoff N W (m₂, (m₃, m₁))‖ := by
   rw [gmCubicS3Mode_cyclic]
 
-theorem norm_gmCubicS3Mode_cyclic_two
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    (m₁ m₂ m₃ : ℤ) :
+theorem norm_gmCubicS3Mode_cyclic_two :
     ‖gmCubicS3Mode cutoff N W (m₁, (m₂, m₃))‖ =
       ‖gmCubicS3Mode cutoff N W (m₃, (m₁, m₂))‖ := by
   calc
@@ -3559,6 +3534,8 @@ theorem norm_gmCubicS3Mode_cyclic_two
       norm_gmCubicS3Mode_cyclic cutoff N W m₁ m₂ m₃
     _ = ‖gmCubicS3Mode cutoff N W (m₃, (m₁, m₂))‖ :=
       norm_gmCubicS3Mode_cyclic cutoff N W m₂ m₃ m₁
+
+end
 
 /-- The six signed permutations generated by cyclic rotation and the
 conjugating transposition.  Their absolute-coordinate triples are exactly
@@ -3829,26 +3806,26 @@ theorem sum_norm_gmCubicNonzeroFrequencyBox_le_ordered
           ‖gmCubicS3Mode cutoff N W n‖ := by
       rw [Finset.mul_sum]
 
-theorem gmCubicS3Mode_eq_zero_of_first_frequency_eq_zero
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    {m : ℤ × (ℤ × ℤ)} (hm : m.1 = 0) :
+section
+variable (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ) {m : ℤ × (ℤ × ℤ)}
+include cutoff N W m
+
+theorem gmCubicS3Mode_eq_zero_of_first_frequency_eq_zero (hm : m.1 = 0) :
     gmCubicS3Mode cutoff N W m = 0 := by
   unfold gmCubicS3Mode gmNonzeroScaledTraceMode
   simp [hm]
 
-theorem gmCubicS3Mode_eq_zero_of_second_frequency_eq_zero
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    {m : ℤ × (ℤ × ℤ)} (hm : m.2.1 = 0) :
+theorem gmCubicS3Mode_eq_zero_of_second_frequency_eq_zero (hm : m.2.1 = 0) :
     gmCubicS3Mode cutoff N W m = 0 := by
   unfold gmCubicS3Mode gmNonzeroScaledTraceMode
   simp [hm]
 
-theorem gmCubicS3Mode_eq_zero_of_third_frequency_eq_zero
-    (cutoff : GMSmoothCutoff) (N : ℕ) (W : Finset ℝ)
-    {m : ℤ × (ℤ × ℤ)} (hm : m.2.2 = 0) :
+theorem gmCubicS3Mode_eq_zero_of_third_frequency_eq_zero (hm : m.2.2 = 0) :
     gmCubicS3Mode cutoff N W m = 0 := by
   unfold gmCubicS3Mode gmNonzeroScaledTraceMode
   simp [hm]
+
+end
 
 theorem gmCubicS3Truncated_eq_sum_nonzero
     (cutoff : GMSmoothCutoff) (N H : ℕ) (W : Finset ℝ) :
@@ -4504,16 +4481,18 @@ theorem measurable_gmCubicSmoothedRIntegrand
     (measurable_gmR W).norm.pow_const 2
   exact ((measurable_const.mul hlocal).mul hratio).mul hR
 
-theorem gmCubicSmoothedRIntegrand_nonneg
-    {η T : ℝ} {N M : ℕ} (W : Finset ℝ) (v u : ℝ)
+section
+variable {η T : ℝ} {N M : ℕ} (W : Finset ℝ)
+include η T N M W
+
+theorem gmCubicSmoothedRIntegrand_nonneg (v u : ℝ)
     (hscale : 0 ≤ gmCubicSmoothingScale η T N M) :
     0 ≤ gmCubicSmoothedRIntegrand η T N M W v u := by
   unfold gmCubicSmoothedRIntegrand
   exact mul_nonneg (mul_nonneg (mul_nonneg hscale
     (gmCubicLocalBump_nonneg _)) (gmCubicRatioBump_nonneg _)) (sq_nonneg _)
 
-theorem gmCubicSmoothedRIntegrand_le
-    {η T : ℝ} {N M : ℕ} (W : Finset ℝ) (v u : ℝ)
+theorem gmCubicSmoothedRIntegrand_le (v u : ℝ)
     (hscale : 0 ≤ gmCubicSmoothingScale η T N M) :
     gmCubicSmoothedRIntegrand η T N M W v u ≤
       gmCubicSmoothingScale η T N M * (W.card : ℝ) ^ 2 := by
@@ -4530,16 +4509,14 @@ theorem gmCubicSmoothedRIntegrand_le
         · exact gmCubicRatioBump_le_one _
     _ = gmCubicSmoothingScale η T N M * (W.card : ℝ) ^ 2 := by ring
 
-theorem gmCubicSmoothedRIntegrand_eq_zero_of_not_mem_Icc
-    {η T : ℝ} {N M : ℕ} (W : Finset ℝ) (v : ℝ) {u : ℝ}
+theorem gmCubicSmoothedRIntegrand_eq_zero_of_not_mem_Icc (v : ℝ) {u : ℝ}
     (hu : u ∉ Set.Icc (1 / 8 : ℝ) (33 / 8)) :
     gmCubicSmoothedRIntegrand η T N M W v u = 0 := by
   unfold gmCubicSmoothedRIntegrand
   rw [gmCubicRatioBump_eq_zero_of_not_mem_Icc hu]
   ring
 
-theorem integrable_gmCubicSmoothedRIntegrand
-    {η T : ℝ} {N M : ℕ} (W : Finset ℝ) (v : ℝ)
+theorem integrable_gmCubicSmoothedRIntegrand (v : ℝ)
     (hscale : 0 ≤ gmCubicSmoothingScale η T N M) :
     Integrable (gmCubicSmoothedRIntegrand η T N M W v) := by
   let c : ℝ := gmCubicSmoothingScale η T N M * (W.card : ℝ) ^ 2
@@ -4565,6 +4542,8 @@ theorem integrable_gmCubicSmoothedRIntegrand
       exact Set.indicator_of_notMem hu _
     rw [hgu]
     simp
+
+end
 
 /-- The width-`1/B` interval on which the fixed local bump is identically
 one, intersected with the ratio support used in Proposition 7.2. -/
@@ -5659,17 +5638,6 @@ theorem gmCubicS3_prop7_2_explicit
 
 /-! ## Lemma 8.3 for the source smoother -/
 
-theorem gmCubicLocalBump_eq_zero_of_two_le_abs
-    {x : ℝ} (hx : 2 ≤ |x|) : gmCubicLocalBump x = 0 := by
-  by_contra hne
-  have hsupp : x / 2 ∈ Function.support dfiUnitRedundantBump := by
-    simpa only [Function.mem_support, gmCubicLocalBump] using hne
-  rw [dfiUnitRedundantBump.support_eq, Metric.mem_ball, Real.dist_eq] at hsupp
-  simp only [sub_zero, show dfiUnitRedundantBump.rOut = (1 : ℝ) by rfl] at hsupp
-  have habs : |x / 2| = |x| / 2 := by
-    rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-  rw [habs] at hsupp
-  linarith
 
 theorem gmR_exp_eq_gmRPhase (W : Finset ℝ) (x : ℝ) :
     gmR W (Real.exp x) = gmRPhase W x := by

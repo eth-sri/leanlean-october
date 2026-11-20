@@ -23,10 +23,6 @@ theorem inverse_twist_elementCoeff (η χ θ : Character) (m f z : O)
     (elementCoeff η n * idealRowHom (m^6*f^4*z) (Ideal.span {n})) = _
   ring
 
-variable (M : Ideal O) [NeZero M]
-local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
-
 end SevenEighths.HeckePrimeNonprincipal
 
 end

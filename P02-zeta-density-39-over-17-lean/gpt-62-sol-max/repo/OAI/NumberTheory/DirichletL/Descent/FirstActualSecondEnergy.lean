@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstRetainedFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstPriorityEnergy
 
@@ -13,10 +14,10 @@ noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
-def firstCanonicalSecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+def firstCanonicalSecondEnergy (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F : Finset ι) (b : CubeCoordinates ι) (C : Finset ι) (negative : Bool)
     (Ψ : O→*ℂ) (m d : O) (H selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ) : ℝ :=
   (32*512)*∑ r : RayCharacter×RayCharacter,∑ D∈F.powerset,
@@ -28,12 +29,12 @@ def firstCanonicalSecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p 
 
 theorem first_retained_actual_second_energy (ε : ℝ) (hε : 0<ε) :
     ∃ K : ℝ,0<K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-      (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
-      (_hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+      (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+      (_hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
       (F : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
       (Ψ₁ Ψ₂ : O→*ℂ),(∀ u,‖Ψ₁ u‖≤1) → (∀ u,‖Ψ₂ u‖≤1) →
       ∀ (m₁ m₂ d : O) (labels : Finset (Ideal O)) (a : Ideal O×O→ℂ) (Γ Y : ℝ),0≤Γ → 0<Y →

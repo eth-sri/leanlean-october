@@ -77,9 +77,11 @@ theorem weighted_markedCompletedT_reopen (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (
       ∑' I : Ideal Eis, ∑' J : Ideal Eis, markedExpandedTerm Ψ W X d I H J := by
   simp only [markedCompletedT, ← tsum_mul_left, markedExpandedTerm_scale]
 
-theorem marked_cube_inner_inverse (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X)
-    (d : Ideal Eis → ℂ) (I : Ideal Eis) :
+section
+variable (Ψ : Eis →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal Eis → ℂ)
+include Ψ W hW X hX d
+
+theorem marked_cube_inner_inverse (I : Ideal Eis) :
     (∑' H : Ideal Eis, ∑' J : Ideal Eis, markedExpandedTerm Ψ W X d I H J) =
       (columnWeight Ψ I / (Real.sqrt (Ideal.absNorm I : ℝ) : ℂ) *
         Vstar W ((Ideal.absNorm I : ℝ) / X)) * d I := by
@@ -102,8 +104,7 @@ theorem marked_cube_inner_inverse (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
     (by simpa only [heq] using hp)
   simpa only [heq, f, map_one, Nat.cast_one, one_pow, mul_one] using hgeneric
 
-theorem marked_cube_inverse_vstar (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal Eis → ℂ) :
+theorem marked_cube_inverse_vstar :
     (∑' H : Ideal Eis, (UniqueFactorizationMonoid.moebius H : ℂ) * cubeWeight Ψ H *
       markedCompletedT Ψ W (X / (Ideal.absNorm H : ℝ) ^ 3) (fun A => d (H ^ 3 * A))) =
     ∑' I : Ideal Eis, (columnWeight Ψ I / (Real.sqrt (Ideal.absNorm I : ℝ) : ℂ) *
@@ -136,8 +137,7 @@ theorem marked_cube_inverse_vstar (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
       exact (hF.prod_factor I).tsum_prod
     _ = _ := tsum_congr (marked_cube_inner_inverse Ψ W hW X hX d)
 
-theorem marked_cube_inverse (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) (d : Ideal Eis → ℂ) :
+theorem marked_cube_inverse :
     (Real.sqrt X : ℂ)⁻¹ *
       (∑' I : Ideal Eis, columnWeight Ψ I * d I * W ((Ideal.absNorm I : ℝ) / X)) =
     ∑' H : Ideal Eis, (UniqueFactorizationMonoid.moebius H : ℂ) * cubeWeight Ψ H *
@@ -147,6 +147,8 @@ theorem marked_cube_inverse (Ψ : Eis →* ℂ) (W : ℝ → ℂ)
   intro I
   rw [vstar_source_normalization Ψ W X hX I]
   ring
+
+end
 
 end
 

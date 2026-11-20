@@ -155,33 +155,39 @@ def calibrationForSet (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) : C
   exact calibrationFromPrimes (fun P : S => P.val)
     (fun P Q hPQ => Ideal.isCoprime_of_isMaximal (fun h => hPQ (Subtype.ext h)))
 
-theorem calibrationForSet_excluded (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
+section
+variable (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal)
+include S hS
+
+theorem calibrationForSet_excluded :
     (calibrationForSet S hS).excluded = S := by
   change Finset.univ.image (fun P : S => P.val) = S
   ext P
   simp
 
-theorem calibrationForSet_span (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
+theorem calibrationForSet_span :
     Ideal.span {(calibrationForSet S hS).generator} = ∏ P ∈ S, P := by
   change Ideal.span {finitePrimeModulus (fun P : S => P.val)} = _
   rw [span_finitePrimeModulus]
   exact Finset.prod_coe_sort S (fun P : Ideal O => P)
 
-theorem calibrationForSet_pow_six (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
+theorem calibrationForSet_pow_six :
     (calibrationForSet S hS).residue ^ 6 = 1 := by
   let (P : S) : P.val.IsMaximal := hS P.val P.property
   unfold calibrationForSet
   apply calibrationFromPrimes_pow_six
 
-theorem calibrationForSet_tau_norm (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
+theorem calibrationForSet_tau_norm :
     ‖(calibrationForSet S hS).tau‖ = 1 := by
   let (P : S) : P.val.IsMaximal := hS P.val P.property
   unfold calibrationForSet
   apply calibrationFromPrimes_tau_norm
 
-theorem calibrationForSet_tau_ne_zero (S : Finset (Ideal O)) (hS : ∀ P ∈ S, P.IsMaximal) :
+theorem calibrationForSet_tau_ne_zero :
     (calibrationForSet S hS).tau ≠ 0 := by
   exact norm_ne_zero_iff.mp (by rw [calibrationForSet_tau_norm]; norm_num)
+
+end
 
 end SevenEighths.ProbePhysical
 end

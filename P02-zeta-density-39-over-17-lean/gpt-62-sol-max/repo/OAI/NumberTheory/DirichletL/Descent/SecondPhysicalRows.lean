@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondSupportedEnergy
 public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
 
@@ -14,7 +15,7 @@ open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
 
 def actualSecondMultiplier {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : Eis :=
   primeSubsetGenerator (fun i => Ideal.span {p i}) x.firstDivisor *
@@ -30,7 +31,7 @@ theorem actualSecondMultiplier_ne_zero {Jo Jn : ℕ} (x : MarkedSecondSource ι 
 include hp in
 
 theorem actual_second_row_norm_sq
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : Eisˣ) :
     ‖eisEmbedding (actualSecondChild p u v x).2.2‖^2 =
       ‖eisEmbedding (actualSecondMultiplier p x*x.second.frequency)‖^2 := by
@@ -43,7 +44,7 @@ theorem actual_second_row_norm_sq
 include hp in
 
 theorem actual_second_row_ball
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) (u v : Eisˣ) (R : ℝ) :
     x.second.frequency ∈ nonzeroChildFrequencyBall (actualSecondMultiplier p x) R ↔
       (actualSecondChild p u v x).2.2 ∈ nonzeroChildFrequencyBall 1 R := by

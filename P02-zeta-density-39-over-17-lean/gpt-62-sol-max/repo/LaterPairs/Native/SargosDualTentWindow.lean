@@ -19,8 +19,11 @@ open scoped BigOperators
 
 namespace TaoTrudgianYang2025
 
-theorem sargosTentPlanarIntegrand_zero_outside {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
+section
+variable {ι : Type*} (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
+include ι S u v a b ha hb
+
+theorem sargosTentPlanarIntegrand_zero_outside
     (p : ℝ × ℝ) (hp : p ∉ (Icc (-a) a) ×ˢ (Icc (-b) b)) :
     sargosTentPlanarIntegrand S u v a b p = 0 := by
   have hzero {w x : ℝ} (hw : 0 < w) (hx : x ∉ Icc (-w) w) :
@@ -33,8 +36,7 @@ theorem sargosTentPlanarIntegrand_zero_outside {ι : Type*}
     simp only [sargosTentPlanarIntegrand,hzero hb hpb,mul_zero,zero_mul]
   · simp only [sargosTentPlanarIntegrand,hzero ha hpa,zero_mul]
 
-theorem sargosTentPlanarIntegrand_le_norm_sq {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
+theorem sargosTentPlanarIntegrand_le_norm_sq
     (p : ℝ × ℝ) :
     sargosTentPlanarIntegrand S u v a b p ≤
       ‖sargosPlanarSum S (fun _ => 1) u v p.1 p.2‖^2 := by
@@ -46,8 +48,7 @@ theorem sargosTentPlanarIntegrand_le_norm_sq {ι : Type*}
   simpa only [sargosTentPlanarIntegrand,one_mul] using
     mul_le_mul_of_nonneg_right ht (sq_nonneg ‖sargosPlanarSum S (fun _ => 1) u v p.1 p.2‖)
 
-theorem sargosTentPlanarIntegral_le_central {ι : Type*}
-    (S : Finset ι) (u v : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b) :
+theorem sargosTentPlanarIntegral_le_central :
     (∫ p : ℝ × ℝ, sargosTentPlanarIntegrand S u v a b p ∂(volume.prod volume)) ≤
       ∫ α in Icc (-a) a, ∫ γ in Icc (-b) b,
         ‖sargosPlanarSum S (fun _ => 1) u v α γ‖^2 := by
@@ -74,6 +75,8 @@ theorem sargosTentPlanarIntegral_le_central {ι : Type*}
     _ = _ := by
       rw [← Measure.prod_restrict]
       exact integral_prod _ hi
+
+end
 
 theorem sargosNearPairs_card_le_central {ι : Type*}
     (S : Finset ι) (u v : ι → ℝ) {Δ μ : ℝ} (hΔ : 0 < Δ) (hμ : 0 < μ) :

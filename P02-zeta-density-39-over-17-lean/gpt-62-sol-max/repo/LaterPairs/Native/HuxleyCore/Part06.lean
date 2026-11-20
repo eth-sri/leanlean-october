@@ -6,30 +6,13 @@ public import LaterPairs.Native.HuxleyCore.Part05
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth Filter Polynomial Set
+open scoped Classical ContDiff FourierTransform BigOperators Topology
 universe huxleyNarrowV
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
 open scoped BigOperators FourierTransform Classical ContDiff NNReal
-open Filter
-open Set Expdb TaoTrudgianYang2025
-open scoped BigOperators FourierTransform ContDiff Classical NNReal
+open Filter Set Expdb TaoTrudgianYang2025
 
 
 public  theorem capped_short_nonAsymptotic_of_window_margins
@@ -78,37 +61,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
   let ξ := 288*β-μ
   have hεs : 0<εs := by dsimp only [εs]; positivity
   have hζ : 0<ζ := by dsimp only [ζ]; positivity
-  have hMargins (u : ℝ) (hu : u∈Icc (0:ℝ) 1) :
-      μ≤ℓ ∧
-        v+μ≤1 ∧
-        μ≤h ∧
-        μ≤(ν u) ∧
-        μ≤g₀ ∧
-        5*h+μ≤ℓ ∧
-        g₀+μ≤3*h ∧
-        (ν u)+μ≤ℓ ∧
-        5*v-1-(g u)+μ≤3*(ν u) ∧
-        1+(g u)+2*(ν u)+μ≤5*ℓ ∧
-        4*(ν u)+1+(g u)+μ≤6*ℓ ∧
-        (ν u)+3*v+μ≤1+(g u) ∧
-        1+(g u)+μ≤4*ℓ ∧
-        3*v+μ≤1+(g u) ∧
-        7*v+μ≤2+2*(g u)+(ν u) ∧
-        7+7*(g u)+27*(ν u)+μ≤41*ℓ ∧
-        2*h+μ≤β ∧
-        4*v+g₀-3*h+μ≤4*β ∧
-        288*v-144*h+μ≤288*β ∧
-        288*v-36*(ν u)+72*(g u)-216*h+μ≤288*β ∧
-        648*v-72-216*h-216*(ν u)+μ≤288*β ∧
-        24+96*(g u)-216*h+96*v+144*(ν u)+μ≤288*β ∧
-        21+87*(g u)-216*h+177*v+33*(ν u)+μ≤288*β ∧
-        15+87*(g u)-216*h+207*v+15*(ν u)+μ≤288*β ∧
-        12+78*(g u)-216*h+216*v+24*(ν u)+μ≤288*β ∧
-        6+78*(g u)-216*h+246*v+6*(ν u)+μ≤288*β ∧
-        72*(g u)-216*h+284*v-24*(ν u)+μ≤288*β ∧
-        504*v-72-216*h+72*(ν u)+μ≤288*β := by
-    exact hWindows u hu
-  have hzero := hMargins 0 (by norm_num)
+  have hzero := hWindows 0 (by norm_num)
   simp only [g,ν,sub_zero,zero_mul,one_mul,add_zero] at hzero
   obtain ⟨hμℓ,hv,hμh,hμν₀,hμg₀,hWidth,hg₀h,hν₀M,hRN₀,hNR₀,hCubic₀,hCap₀,
     hHeight₀,hMT₀,hRT₀,hTen₀,hShort,hSmall,hDiag,hSqrt₀,hSecond₀,hFourth₀,
@@ -148,7 +101,7 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
       (add_nonneg (pow_nonneg (by norm_num : (0:ℝ)≤6) 288) (zero_le_one.trans hD))
   have hPhys := eventually_double_difference_capped_physical_window
     hB hCsrc hw₀ hμ hμℓ hℓv hμh hWidth
-  have hLog := middleOriginal_eventually_uniform_clog_power_loss_72 hCtotal hζ
+  have hLog := eventually_uniform_clog_power_loss 72 hCtotal hζ
   obtain ⟨X₀,hX₀⟩ := Filter.eventually_atTop.mp (hPhys.and hLog)
   let δ := min δsrc δw
   let C := max 1 X₀
@@ -311,8 +264,9 @@ public  theorem capped_short_nonAsymptotic_of_window_margins
         dsimp only [g,u]
         field_simp
         ring
-      have hm := hMargins u hu
-      rw [hgu] at hm
+      have hm := hWindows u hu
+      dsimp only at hm
+      rw [show (1-u)*g₀+u*(3*h)=γ from hgu] at hm
       obtain ⟨_,_,_,hμν,_,_,_,hνM,hRN,hNR,hCubic,hCap,hHeight,hMT,hRT,hTen,
         _,_,hDiag',hSqrt,hSecond,hFourth,hSecondMain,hFourthMain,hFirstMain,hThirdMain,hFifthMain,hThird⟩ := hm
       let n := ⌊X^(ν u)/8⌋₊
@@ -464,7 +418,7 @@ private theorem fourth_pair_capped_short_nonAsymptotic
   let μ := (1:ℝ)/1000000
   have hμ : 0<μ := by norm_num [μ]
   have hδw : 0<δw := by norm_num [δw]
-  have hMargins (u : ℝ) (hu : u∈Icc (0:ℝ) 1) :
+  have hWindows (u : ℝ) (hu : u∈Icc (0:ℝ) 1) :
       μ≤ℓ ∧
         v+μ≤1 ∧
         μ≤h ∧
@@ -497,7 +451,7 @@ private theorem fourth_pair_capped_short_nonAsymptotic
     dsimp only at hh
     rw [←hα] at hh
     exact hh
-  exact capped_short_nonAsymptotic_of_window_margins hδw hμ hMargins
+  exact capped_short_nonAsymptotic_of_window_margins hδw hμ hWindows
 
                                                                   
                                                                       

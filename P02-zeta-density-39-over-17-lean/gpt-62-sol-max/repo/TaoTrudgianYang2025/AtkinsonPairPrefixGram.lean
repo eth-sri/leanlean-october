@@ -3,7 +3,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonNativeLocalMean
 public import TaoTrudgianYang2025.AtkinsonGapPhysicalScale
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonPrefixMax
 public import MathCollab.Density.Stronger.Atkinson.AtkinsonWeightedGram
-public import GuthMaynard.SecondDerivative
+public import GuthMaynard.NativeSource.GuthMaynard.SecondDerivative
 
 @[expose] public section
 

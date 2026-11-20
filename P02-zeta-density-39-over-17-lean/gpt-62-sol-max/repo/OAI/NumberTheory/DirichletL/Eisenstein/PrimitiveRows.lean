@@ -8,69 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 open scoped BigOperators Classical MatrixGroups Matrix
@@ -90,7 +38,7 @@ lemma levelThree_of_entries (M : SL(2,O))
       Ideal.Quotient.mk (Ideal.span {(3 : O)}) (if i=j then 1 else 0) :=
     (Ideal.Quotient.mk_eq_mk_iff_sub_mem _ _).mpr
       (Ideal.mem_span_singleton.mpr (h i j))
-  simpa only [Matrix.one_apply, apply_ite, map_one, map_zero] using hh
+  simpa [Matrix.one_apply, apply_ite] using hh
 
 lemma row_coprime (M : levelThree) : IsCoprime (row M 0) (row M 1) := by
   have h : (M : SL(2,O)) 0 0*(M : SL(2,O)) 1 1 -
@@ -176,7 +124,7 @@ lemma inverse_character_eq_row_symbol (M : levelThree) :
   have hs := symbol_denominator_congr c (a*d) 1 (primary_mul a d ha hd) (by simp) h9 hcd
   rw [symbol_mul_denominator, symbol_one] at hs
   have hm : eisEmbedding (symbol c a)*eisEmbedding (symbol c d)=1 := by
-    simpa only [map_mul, map_one] using congrArg eisEmbedding hs
+    simpa using congrArg eisEmbedding hs
   change (eisEmbedding (symbol c a))⁻¹ = eisEmbedding (symbol c d)
   exact inv_eq_of_mul_eq_one_right hm
 
@@ -258,9 +206,11 @@ theorem sum_small_add_large {ι : Type*} [DecidableEq ι] (P : ι → Ideal O)
   simpa only [smallDivisors, largeDivisors, not_le] using
     Finset.sum_filter_add_sum_filter_not S.powerset (fun E => subsetNorm P E ≤ Z) f
 
-theorem masked_radialSource_dilations {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X : ℝ) (hX : 0 < X) :
+section
+variable {ι : Type*} [instShared1 : DecidableEq ι] (P : ι → Ideal O) [instShared3 : ∀ i, (P i).IsMaximal] (hinj : Function.Injective P) (S : Finset ι) (W : 𝓢(ℝ, ℂ))
+include ι instShared1 P instShared3 hinj S W
+
+theorem masked_radialSource_dilations (X : ℝ) (hX : 0 < X) :
     (∑' z : O, rowCoprimeMask P S z *
       (if z = 0 then 0 else W (‖eisEmbedding z‖ ^ 2 / X))) =
       ∑ E ∈ S.powerset, subsetMobius P E * radialSource W (X / subsetNorm P E) := by
@@ -279,9 +229,7 @@ theorem masked_radialSource_dilations {ι : Type*} [DecidableEq ι]
     simp only [subsetNorm, div_div_eq_mul_div]
     ring
 
-theorem masked_radialSource_truncated {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X Z : ℝ) (hX : 0 < X) :
+theorem masked_radialSource_truncated (X Z : ℝ) (hX : 0 < X) :
     (∑' z : O, rowCoprimeMask P S z *
       (if z = 0 then 0 else W (‖eisEmbedding z‖ ^ 2 / X))) =
       (X : ℂ) * paperRadialFourier W 0 *
@@ -300,9 +248,7 @@ theorem masked_radialSource_truncated {ι : Type*} [DecidableEq ι]
   push_cast
   ring
 
-theorem masked_radialSource_truncated_euler {ι : Type*} [DecidableEq ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (S : Finset ι) (W : 𝓢(ℝ, ℂ)) (X Z : ℝ) (hX : 0 < X) :
+theorem masked_radialSource_truncated_euler (X Z : ℝ) (hX : 0 < X) :
     (∑' z : O, rowCoprimeMask P S z *
       (if z = 0 then 0 else W (‖eisEmbedding z‖ ^ 2 / X))) =
       (X : ℂ) * paperRadialFourier W 0 *
@@ -320,6 +266,8 @@ theorem masked_radialSource_truncated_euler {ι : Type*} [DecidableEq ι]
   change (∑ E ∈ S.powerset, subsetMobius P E / (subsetNorm P E : ℂ)) = _ at he
   rw [he] at hs
   linear_combination (X : ℂ) * paperRadialFourier W 0 * hs
+
+end
 
 end
 
@@ -490,7 +438,7 @@ theorem radialSource_inverse_decay (A : ℕ) :
   intro W K hK
   have hK0 : 0 < K := lt_of_lt_of_le zero_lt_one hK
   have hs : Summable (fun h : O => W (K * ‖eisEmbedding h‖ ^ 2)) := by
-    simpa only [scaledRadialTest_apply, div_inv_eq_mul, mul_comm] using
+    simpa [mul_comm] using
       (actual_eisenstein_summable_norm (scaledRadialTest W K⁻¹ (inv_pos.mpr hK0))).of_norm
   unfold radialSource
   rw [zero_removed_tsum]

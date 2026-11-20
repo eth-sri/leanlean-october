@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileCells
 
 @[expose] public section
@@ -8,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
 local notation "O" => ActualEisensteinCubic.O
 theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
     (Bρ : Fin 9→ℝ)
@@ -23,8 +23,8 @@ theorem original_cell_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap : ℝ)
       (∀i,0≤M₀ i) ∧ (∀i,HasCompactSupport (U₀ i : ℝ→ℂ)) ∧
       (∀i,Function.support (U₀ i)⊆Set.Icc (-M₀ i) (M₀ i)) ∧
       ∀{ι : Type*}[DecidableEq ι]
-      (p : ι→O)(_hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p : ι→O)(_hp : ∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O)) (Y : ℝ)
       (C₁ C₂ : OriginalIndex ι→Finset ι→ℂ) (k : SourceIndex) (l : ℕ) (T₁ T₂ : ℝ)
       (ρ : Fin 9→ℝ)(c₁ c₂ θ₁ θ₂ : ℝ),

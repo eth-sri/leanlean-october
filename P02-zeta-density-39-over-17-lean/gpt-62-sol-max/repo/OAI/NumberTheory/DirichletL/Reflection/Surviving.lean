@@ -67,12 +67,11 @@ lemma sum_branches_eq_surviving (F : PrimeFamily φ) (jF : φ→ℕ)
   intro e _ he
   exact weighted_branch_zero_of_not_surviving F jF e S s κ A r aw w u m Pset nset bset K he
 
-theorem surviving_forced_norms (F : PrimeFamily φ)
-    (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ→ℕ)
-    (A : Ideal Eis→Ideal Eis→ℂ) (nset bset : Finset (Ideal Eis)) (Y B : ℝ)
-    (hn : ∀ n∈nset, primaryGenerator n≠0 ∧ (Ideal.absNorm n:ℝ)≤Y)
-    (hb : ∀ b∈bset, primaryGenerator b≠0 ∧ (Ideal.absNorm b:ℝ)≤B)
-    (e : φ→Fin 3) (he : e∈survivingFrozenBranches F jF A nset bset) :
+section
+variable (F : PrimeFamily φ) (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ→ℕ) (A : Ideal Eis→Ideal Eis→ℂ) (nset bset : Finset (Ideal Eis)) (Y B : ℝ) (hn : ∀ n∈nset, primaryGenerator n≠0 ∧ (Ideal.absNorm n:ℝ)≤Y) (hb : ∀ b∈bset, primaryGenerator b≠0 ∧ (Ideal.absNorm b:ℝ)≤B) (e : φ→Fin 3) (he : e∈survivingFrozenBranches F jF A nset bset)
+include F hF jF A nset bset Y B hn hb e he
+
+theorem surviving_forced_norms :
     (Ideal.absNorm (frozenExtracted F jF e 1):ℝ)≤Y ∧
     (Ideal.absNorm (frozenExtracted F jF e 2):ℝ)≤B := by
   obtain ⟨n,hn',b,hb',hz⟩ := (mem_survivingFrozenBranches F jF A nset bset e).mp he
@@ -85,12 +84,7 @@ theorem surviving_forced_norms (F : PrimeFamily φ)
   · exact le_trans (by exact_mod_cast Nat.le_of_dvd hnpos (map_dvd Ideal.absNorm hd1)) (hn n hn').2
   · exact le_trans (by exact_mod_cast Nat.le_of_dvd hbpos (map_dvd Ideal.absNorm hd2)) (hb b hb').2
 
-theorem surviving_extracted_scales (F : PrimeFamily φ)
-    (hF : Pairwise (Function.onFun IsCoprime F.ideal)) (jF : φ→ℕ)
-    (A : Ideal Eis→Ideal Eis→ℂ) (nset bset : Finset (Ideal Eis)) (Y B : ℝ)
-    (hn : ∀ n∈nset, primaryGenerator n≠0 ∧ (Ideal.absNorm n:ℝ)≤Y)
-    (hb : ∀ b∈bset, primaryGenerator b≠0 ∧ (Ideal.absNorm b:ℝ)≤B)
-    (e : φ→Fin 3) (he : e∈survivingFrozenBranches F jF A nset bset) :
+theorem surviving_extracted_scales :
     extractedDualScale (frozenExtracted F jF e 1) Y = Y/Ideal.absNorm (frozenExtracted F jF e 1) ∧
     extractedDualScale (frozenExtracted F jF e 2) B = B/Ideal.absNorm (frozenExtracted F jF e 2) := by
   have h := surviving_forced_norms F hF jF A nset bset Y B hn hb e he
@@ -98,6 +92,8 @@ theorem surviving_extracted_scales (F : PrimeFamily φ)
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (frozenExtracted_ne_zero F jF e v))
   exact ⟨max_eq_right ((one_le_div (hp 1)).mpr h.1),
     max_eq_right ((one_le_div (hp 2)).mpr h.2)⟩
+
+end
 
 end
 end SevenEighths.InverseReflectedPhase

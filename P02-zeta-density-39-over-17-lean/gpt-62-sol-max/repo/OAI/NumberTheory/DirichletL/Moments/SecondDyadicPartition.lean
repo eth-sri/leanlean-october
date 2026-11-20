@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDyadicPartition
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson
-open CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow
-open CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSmooth CenteredMomentLogDyadic CenteredMomentDyadicCount
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT EisensteinSchwartzPoisson CenteredMomentSecondSectorRetained CenteredMomentSecondPhysicalWindow CenteredMomentSecondWholeKernel CenteredMomentFirstWholeKernel CenteredMomentSectorLocalization CenteredMomentSmooth CenteredMomentLogDyadic CenteredMomentDyadicCount
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev Blocks (a b : Fin 4→ℝ) := ∀ i : Fin 4,↥(indices (a i) (b i))

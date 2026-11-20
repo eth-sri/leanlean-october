@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.OperatorFiniteCompression
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace
-open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
 variable {E ι κ : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
 

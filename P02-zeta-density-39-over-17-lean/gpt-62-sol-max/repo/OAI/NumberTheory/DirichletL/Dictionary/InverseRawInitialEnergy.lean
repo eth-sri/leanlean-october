@@ -10,10 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.DetectorDictionaryInverseRawInitialEnergy
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialConjugateEnergy
-open InverseInitialRawDictionary InverseInitialExcludedPolynomial InverseInitialExcludedEnergy
-open DetectorDictionaryInverseRawInitialGates CanonicalQuadraticSieve ConcreteTraceCRT
-open ActualEisensteinCubic IdealMobiusDivisorSum CanonicalRowCompletion CanonicalCoefficientClass
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialConjugateEnergy InverseInitialRawDictionary InverseInitialExcludedPolynomial InverseInitialExcludedEnergy DetectorDictionaryInverseRawInitialGates CanonicalQuadraticSieve ConcreteTraceCRT ActualEisensteinCubic IdealMobiusDivisorSum CanonicalRowCompletion CanonicalCoefficientClass
 local notation "O"=>HeckeFamily.O
 
 private theorem admissible_one : Admissible (1:Ideal O) := by
@@ -26,11 +23,11 @@ def initialFunction (data:RowData)(W:ℝ→ℂ)(H b Btree cap D sigma freq:ℝ)(
     1 (idealCoeff (deletedBase data)).toMonoidHom (fun _=>1)
     (twistedProfile W sigma freq) H (Real.logb H (D/(j.absNorm:ℝ))) 0
 
+section
+variable (Φ:𝓢(ℝ,ℂ)) (hΦ:∀x,0≤(Φ x).re) (hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1) (data:RowData) (W:ℝ→ℂ) (H D c b Btree cap sigma freq:ℝ) (hH:1<H) (hD:1≤D) (hc:0<c) (hcapacity:D^(1+c)≤H) (hb:0≤b) (hW:∀x,W x≠0→x≤b)
+include Φ hΦ hone data W H D c b Btree cap sigma freq hH hD hc hcapacity hb hW
+
 theorem deleted_rows_le_initial
-    (Φ:𝓢(ℝ,ℂ))(hΦ:∀x,0≤(Φ x).re)(hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
-    (data:RowData)(W:ℝ→ℂ)(H D c b Btree cap sigma freq:ℝ)
-    (hH:1<H)(hD:1≤D)(hc:0<c)(hcapacity:D^(1+c)≤H)(hb:0≤b)
-    (hW:∀x,W x≠0→x≤b)
     (j:Ideal O)(hj:j∈idealDivisors (∏P∈excluded data,P))
     (rows:Finset NonzeroElement)(hrows:∀u∈rows,((Ideal.span {u.val}).absNorm:ℝ)≤H):
     (∑u∈rows,‖polynomial ((data.character u).excludePrimes (excluded data)
@@ -67,10 +64,6 @@ theorem deleted_rows_le_initial
     _=_:=rfl
 
 theorem raw_rows_le_initial
-    (Φ:𝓢(ℝ,ℂ))(hΦ:∀x,0≤(Φ x).re)(hone:∀x∈Set.Icc (0:ℝ) 1,Φ x=1)
-    (data:RowData)(W:ℝ→ℂ)(H D c b Btree cap sigma freq:ℝ)
-    (hH:1<H)(hD:1≤D)(hc:0<c)(hcapacity:D^(1+c)≤H)(hb:0≤b)
-    (hW:∀x,W x≠0→x≤b)
     (rows:Finset NonzeroElement)(hrows:∀u∈rows,((Ideal.span {u.val}).absNorm:ℝ)≤H):
     (∑u∈rows,‖polynomial (data.character u) true W D sigma freq‖^2)≤
       ((idealDivisors (∏P∈excluded data,P)).card:ℝ)*
@@ -86,6 +79,8 @@ theorem raw_rows_le_initial
   intro j hj
   exact deleted_rows_le_initial Φ hΦ hone data W H D c b Btree cap sigma freq
     hH hD hc hcapacity hb hW j hj rows hrows
+
+end
 
 end SevenEighths.DetectorDictionaryInverseRawInitialEnergy
 

@@ -8,70 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
@@ -332,7 +279,11 @@ lemma integralSubgroup_smul (H : Subgroup (SL(2,O))) (M : H) (w : HyperbolicSpac
 def hyperbolicFundamentalSet (H : Subgroup (SL(2,O))) : Set HyperbolicSpace :=
   {w | ∀M : H,hyperbolicOrderKey w≤hyperbolicOrderKey (M • w)}
 
-lemma hyperbolicFundamentalSet_measurable (H : Subgroup (SL(2,O))) :
+section
+variable (H : Subgroup (SL(2,O)))
+include H
+
+lemma hyperbolicFundamentalSet_measurable :
     MeasurableSet (hyperbolicFundamentalSet H) := by
   unfold hyperbolicFundamentalSet
   simp only [Set.ofPred_forall]
@@ -341,7 +292,7 @@ lemma hyperbolicFundamentalSet_measurable (H : Subgroup (SL(2,O))) :
   exact hyperbolicOrderKey_le_measurable _ _ continuous_id
     (continuous_hyperbolic_action (integralComplexMatrix (M:SL(2,O))))
 
-lemma exists_key_orbit_minimum (H : Subgroup (SL(2,O))) (w : HyperbolicSpace) :
+lemma exists_key_orbit_minimum (w : HyperbolicSpace) :
     ∃M : H,∀N : H,hyperbolicOrderKey (M • w)≤hyperbolicOrderKey (N • w) := by
   let S : Set H := {M | hyperbolicFrobenius (M • w)≤hyperbolicFrobenius w}
   have hs : Set.Finite S := subgroup_hyperbolic_sublevel_finite H w _
@@ -354,13 +305,13 @@ lemma exists_key_orbit_minimum (H : Subgroup (SL(2,O))) (w : HyperbolicSpace) :
     apply hyperbolicOrderKey_lt_of_frobenius
     exact hM.trans_lt (lt_of_not_ge hN)
 
-lemma hyperbolicFundamentalSet_covers (H : Subgroup (SL(2,O))) (w : HyperbolicSpace) :
+lemma hyperbolicFundamentalSet_covers (w : HyperbolicSpace) :
     ∃M : H,M • w∈hyperbolicFundamentalSet H := by
   obtain ⟨M,hM⟩ := exists_key_orbit_minimum H w
   refine ⟨M,fun N => ?_⟩
   simpa only [mul_smul] using hM (N*M)
 
-lemma hyperbolicFundamentalSet_orbit_unique (H : Subgroup (SL(2,O))) (w : HyperbolicSpace)
+lemma hyperbolicFundamentalSet_orbit_unique (w : HyperbolicSpace)
     (hw : w∈hyperbolicFundamentalSet H) (M : H)
     (hMw : M • w∈hyperbolicFundamentalSet H) : M • w=w := by
   apply hyperbolicOrderKey_injective
@@ -368,13 +319,13 @@ lemma hyperbolicFundamentalSet_orbit_unique (H : Subgroup (SL(2,O))) (w : Hyperb
   · simpa only [inv_smul_smul] using hMw M⁻¹
   · exact hw M
 
-lemma subgroup_action_free (H : Subgroup (SL(2,O))) (hH : H≤levelThree) (M : H)
+lemma subgroup_action_free (hH : H≤levelThree) (M : H)
     (w : HyperbolicSpace) (hM : M • w=w) : M=1 := by
   have he := levelThree_action_free (⟨(M:SL(2,O)),hH M.property⟩ : levelThree) w hM
   apply Subtype.ext
   exact congrArg (fun N : levelThree => (N:SL(2,O))) he
 
-theorem hyperbolicFundamentalSet_isFundamentalDomain (H : Subgroup (SL(2,O))) (hH : H≤levelThree) :
+theorem hyperbolicFundamentalSet_isFundamentalDomain (hH : H≤levelThree) :
     IsFundamentalDomain H (hyperbolicFundamentalSet H) hyperbolicVolume := by
   apply IsFundamentalDomain.mk' (hyperbolicFundamentalSet_measurable H).nullMeasurableSet
   intro w
@@ -385,6 +336,8 @@ theorem hyperbolicFundamentalSet_isFundamentalDomain (H : Subgroup (SL(2,O))) (h
       simpa only [mul_smul,inv_smul_smul] using hN)
   have hNM : N*M⁻¹=1 := subgroup_action_free H hH _ _ he
   exact mul_inv_eq_one.mp hNM
+
+end
 
 lemma globalKubotaKernel_le_levelThree : globalKubotaKernel≤levelThree := by
   intro M hM

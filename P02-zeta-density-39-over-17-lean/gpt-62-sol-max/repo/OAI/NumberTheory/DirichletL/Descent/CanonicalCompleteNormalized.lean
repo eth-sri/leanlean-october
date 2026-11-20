@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongNormalization
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalPunctureMaskEnergy
 public import OAI.NumberTheory.DirichletL.Descent.CompletedReopening
@@ -11,14 +12,13 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseInitialClippedColumns
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseInitialClippedColumns
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem normalizedColumnEnergy_eq_generator_sum {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,goodLambda∉Ideal.span {p i})
+    (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+    (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg:OAI.PrincipalIdealFamily.Avoids p goodLambda)
     (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (labels:Finset (Ideal O))(hlabels:∀I∈labels,primaryGenerator I≠0)
     (weight:Ideal O→ℝ)(W:ℝ→ℂ)(X Z F R:ℝ)(hZ:0<Z) :
@@ -48,8 +48,7 @@ theorem outside_complete_normalized_energy {σ:Type*}[DecidableEq σ]
     (weight:Ideal O→ℝ)(W:ℝ→ℂ)(X Z Fexp R:ℝ)(hZ:0<Z) :
     let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
-    letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     Z^(-Fexp)*(∑I∈labels,weight I*∑k∈nonzeroChildFrequencyBall 1 R,
       ‖outsideCanonicalMarkedRow S D hbad Ψ m (idealGenerator I) k slots lists a W X‖^2)=
     normalizedColumnEnergy (poolPrimary F) (poolPrimary_ne_zero F hF)
@@ -57,8 +56,7 @@ theorem outside_complete_normalized_energy {σ:Type*}[DecidableEq σ]
       (nonzeroChildFrequencyBall 1 R) weight W X Z Fexp := by
   let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   dsimp only
   exact (normalizedColumnEnergy_eq_generator_sum (poolPrimary F) (poolPrimary_ne_zero F hF)
     (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Ψ m slots lists a labels

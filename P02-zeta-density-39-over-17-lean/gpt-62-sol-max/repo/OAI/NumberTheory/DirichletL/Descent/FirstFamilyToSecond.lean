@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstFamilyEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstOldEnergy
 public import OAI.NumberTheory.DirichletL.Descent.FirstToSecond
@@ -15,12 +16,12 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 theorem first_family_original_to_second (ε : ℝ) (hε : 0 < ε) :
     ∃ K : ℝ,0 < K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-      (hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-      (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i}),
-      (∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2) →
-      (∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1) →
+      (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda),
+      (OAI.PrincipalIdealFamily.CharacteristicNe p 2) →
+      (OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda) →
       ∀ (F B : Finset ι) (selector : Finset ι → ℂ) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool),
       (∀ i∈B,0 < v i) → ∀ (negative : Bool) (Ψ : Eis →* ℂ) (m : Eis),
       (∀ a,‖Ψ a‖ ≤ 1) → ∀ (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X t : ℝ),0 < X →

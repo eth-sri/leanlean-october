@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveSource
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfilePhysical
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileAssembly
@@ -11,15 +12,13 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform
-open InverseAmbientProfileTower JointLogSeparation FourierBridge
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseMomentFirstProfileUniform InverseAmbientProfileTower JointLogSeparation FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
-def refinedChildEnergy (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+def refinedChildEnergy (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l : ℕ)
     (gate : FirstOriginalOuter ι→Prop) (negative : Bool) (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
     (omega : ℝ→ℂ) (T t Y : ℝ) : ℝ :=
@@ -28,9 +27,9 @@ def refinedChildEnergy (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i})
       (mark (if negative then x.1.rightExponent else x.1.leftExponent))
       (commonSelector p (fun _=>1) l) omega T t Y
 
-def refinedCellRows (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+def refinedCellRows (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
     (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
     (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ)
@@ -51,12 +50,12 @@ theorem original_refined_cell_physical_budget (g₁ g₂ Φ : 𝓢(ℝ,ℂ)) (m�
       HasCompactSupport (omega₁ : ℝ→ℂ) ∧ HasCompactSupport (omega₂ : ℝ→ℂ) ∧
       tsupport (omega₁ : ℝ→ℂ)⊆Set.Icc lo hi ∧ tsupport (omega₂ : ℝ→ℂ)⊆Set.Icc lo hi ∧
     ∀(ε : ℝ),0<ε→∀(Aker J : ℕ),∃ Cprofile Kpush : ℝ,0≤Cprofile ∧ 0<Kpush ∧
-    ∀{ι : Type*}[DecidableEq ι](p : ι→O)(hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (_hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    ∀{ι : Type*}[DecidableEq ι](p : ι→O)(hp : ∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+      (_hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
       (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
       (β : Ideal O→(ι→₀ℕ)→ℂ) (cutoff : CubeCoordinates ι→Finset ι→Ideal O→Finset ι→ℝ)
       (Ψ : O→*ℂ) (m : O) (mark : (ι→₀ℕ)→Finset ι→ℂ) (Γ Ysource Y : ℝ)

@@ -34,12 +34,11 @@ def modelPhaseBufferedPlateauLower (F : ℝ → ℝ) (r η T N : ℝ) : ℤ :=
 def modelPhaseBufferedPlateauUpper (F : ℝ → ℝ) (l η T N : ℝ) : ℤ :=
   ⌊(T/N)*deriv F (l+2*η)⌋
 
-theorem modelPhaseBufferedBand_endpoints
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
-    (hl : 1 ≤ l) (hr : r ≤ 2) (hflat : l+4*η < r) :
+section
+variable {F : ℝ → ℝ} {σ δ T N l r η : ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 1 δ) (hT : 0 < T) (hN : 0 < N) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2) (hflat : l+4*η < r)
+include F σ δ T N l r η hσ hδ hF hT hN hη hl hr hflat
+
+theorem modelPhaseBufferedBand_endpoints :
     modelPhaseBufferedSupportLower F r η T N ≤ modelPhaseBufferedPlateauLower F r η T N ∧
       modelPhaseBufferedPlateauLower F r η T N ≤ modelPhaseBufferedSupportUpper F l η T N ∧
       modelPhaseBufferedSupportLower F r η T N ≤ modelPhaseBufferedPlateauUpper F l η T N ∧
@@ -59,12 +58,7 @@ theorem modelPhaseBufferedBand_endpoints
   exact ⟨(Int.floor_mono h₁).trans (Int.floor_le_ceil _),Int.ceil_mono h₂,
     Int.floor_mono h₃,(Int.floor_mono h₄).trans (Int.floor_le_ceil _)⟩
 
-theorem modelPhaseBufferedBand_card_bounds
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
-    (hl : 1 ≤ l) (hr : r ≤ 2) (hflat : l+4*η < r) :
+theorem modelPhaseBufferedBand_card_bounds :
     ((Finset.Icc (modelPhaseBufferedSupportLower F r η T N)
       (modelPhaseBufferedPlateauLower F r η T N)).card : ℝ) ≤ (T/N)*(σ+1)*η+3 ∧
     ((Finset.Icc (modelPhaseBufferedPlateauUpper F l η T N)
@@ -105,12 +99,7 @@ theorem modelPhaseBufferedBand_card_bounds
     have hceil := Int.ceil_lt_add_one ((T/N)*deriv F (l+η))
     nlinarith
 
-theorem modelPhaseBufferedTransition_card_le
-    {F : ℝ → ℝ} {σ δ T N l r η : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 1 δ)
-    (hT : 0 < T) (hN : 0 < N) (hη : 0 < η)
-    (hl : 1 ≤ l) (hr : r ≤ 2) (hflat : l+4*η < r) :
+theorem modelPhaseBufferedTransition_card_le :
     (((Finset.Icc (modelPhaseBufferedSupportLower F r η T N)
         (modelPhaseBufferedSupportUpper F l η T N)) \
       (Finset.Ioo (modelPhaseBufferedPlateauLower F r η T N)
@@ -138,5 +127,7 @@ theorem modelPhaseBufferedTransition_card_le
   have hb := modelPhaseBufferedBand_card_bounds hσ hδ hF hT hN hη hl hr hflat
   change (S.card : ℝ) ≤ _
   linarith [hb.1,hb.2]
+
+end
 
 end TaoTrudgianYang2025

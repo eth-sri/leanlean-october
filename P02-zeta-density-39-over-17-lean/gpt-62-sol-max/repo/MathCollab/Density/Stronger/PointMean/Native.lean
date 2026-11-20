@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.PointMean.Statement
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.ZetaGrowth
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.ZetaGrowth
 open scoped Interval
 set_option autoImplicit false
 noncomputable section

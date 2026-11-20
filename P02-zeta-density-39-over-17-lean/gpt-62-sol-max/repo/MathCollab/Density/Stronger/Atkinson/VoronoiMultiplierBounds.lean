@@ -53,8 +53,11 @@ theorem norm_Gamma_voronoi_extended_strip {a t : ℝ}
     change ‖Gamma z‖ ≤ 72*E
     nlinarith [norm_nonneg (Gamma z)]
 
-theorem norm_dfiPeriodicArchimedeanFactor_strip_le (q : ℕ) [NeZero q]
-    {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
+section
+variable (q : ℕ) [instShared1 : NeZero q] {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16)
+include q instShared1 z hlo hhi
+
+theorem norm_dfiPeriodicArchimedeanFactor_strip_le :
     ‖dfiPeriodicArchimedeanFactor q (1-z)‖ ≤
       72*(q:ℝ)*(1+|z.im|)*Real.exp (-(Real.pi*|z.im|)/2) := by
   have hq : 1 ≤ (q:ℝ) := by exact_mod_cast Nat.one_le_iff_ne_zero.mpr (NeZero.ne q)
@@ -82,8 +85,7 @@ theorem norm_dfiPeriodicArchimedeanFactor_strip_le (q : ℕ) [NeZero q]
         (norm_nonneg _) (by positivity)
     _ = _ := by ring
 
-theorem norm_dfiVoronoiMinusMultiplier_strip_le (q : ℕ) [NeZero q]
-    {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
+theorem norm_dfiVoronoiMinusMultiplier_strip_le :
     ‖dfiVoronoiMinusMultiplier q z‖ ≤
       10368*(q:ℝ)^3*(1+|z.im|)^2 := by
   have hbranch : ‖cexp (Real.pi*I*(1-z)) + cexp (-Real.pi*I*(1-z))‖ ≤
@@ -116,8 +118,7 @@ theorem norm_dfiVoronoiMinusMultiplier_strip_le (q : ℕ) [NeZero q]
       rw [show (2:ℝ)*(-(Real.pi*|z.im|)/2)+Real.pi*|z.im| = 0 by ring,
         Real.exp_zero, mul_one]
 
-theorem norm_dfiVoronoiPlusMultiplier_strip_le (q : ℕ) [NeZero q]
-    {z : ℂ} (hlo : -(1/2 : ℝ) ≤ z.re) (hhi : z.re ≤ 13/16) :
+theorem norm_dfiVoronoiPlusMultiplier_strip_le :
     ‖dfiVoronoiPlusMultiplier q z‖ ≤
       10368*(q:ℝ)^3*(1+|z.im|)^2 := by
   have hF := norm_dfiPeriodicArchimedeanFactor_strip_le q hlo hhi
@@ -132,5 +133,7 @@ theorem norm_dfiVoronoiPlusMultiplier_strip_le (q : ℕ) [NeZero q]
   calc
     _ ≤ 2*(q:ℝ)*(72*(q:ℝ)*(1+|z.im|))^2 := by gcongr
     _ = _ := by ring
+
+end
 
 end MathCollab.Density.Stronger.Atkinson

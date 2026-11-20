@@ -123,7 +123,7 @@ theorem partialFourier_continuous (W : 𝓢(Joint, ℂ)) (η : ℂ) :
         simp only [point_eq_add]; fun_prop))).aestronglyMeasurable
   · intro x
     exact Eventually.of_forall fun y => by
-      simpa only [Circle.smul_def, smul_eq_mul, norm_mul, Circle.norm_coe, one_mul] using
+      simpa [Circle.smul_def] using
         norm_le_planeMajorant W x y
   · exact planeMajorant_integrable.const_mul _
   · exact Eventually.of_forall fun y =>
@@ -288,8 +288,7 @@ theorem norm_inverse_leftSlice_le (F : 𝓢(Joint, ℂ)) (η x : ℂ) :
   have h := norm_integral_le_of_norm_le
     (f := fun y : ℂ => Real.fourierChar (inner ℝ y x) • leftSlice F η y) hb
     (Eventually.of_forall fun y => by
-      simpa only [Circle.smul_def, smul_eq_mul, norm_mul, Circle.norm_coe, one_mul,
-        leftSlice_apply, mul_left_comm, mul_assoc, mul_comm] using norm_le_product_majorant F y η)
+      simpa [Circle.smul_def, mul_left_comm, mul_assoc, mul_comm] using norm_le_product_majorant F y η)
   rw [congrFun (SchwartzMap.fourierInv_coe (leftSlice F η)) x, Real.fourierInv_eq]
   simpa only [integral_const_mul] using h
 
@@ -465,8 +464,6 @@ def blockMap (A : ℂ ≃L[ℝ] ℂ) : Joint ≃L[ℝ] Joint :=
 @[simp] theorem blockMap_apply (A : ℂ ≃L[ℝ] ℂ) (z : Joint) :
     blockMap A z = point (A z.fst) (A z.snd) := rfl
 
-@[simp] theorem blockMap_symm_apply (A : ℂ ≃L[ℝ] ℂ) (z : Joint) :
-    (blockMap A).symm z = point (A.symm z.fst) (A.symm z.snd) := rfl
 
 theorem blockMap_det (A : ℂ ≃L[ℝ] ℂ) :
     LinearMap.det (blockMap A : Joint →ₗ[ℝ] Joint) =
@@ -535,10 +532,14 @@ def jointTranslate (W : 𝓢(Joint, ℂ)) (b : Joint) : 𝓢(Joint, ℂ) :=
 def jointAffine (W : 𝓢(Joint, ℂ)) (A : Joint ≃L[ℝ] Joint) (b : Joint) : 𝓢(Joint, ℂ) :=
   SchwartzMap.compCLMOfContinuousLinearEquiv ℂ A (jointTranslate W b)
 
-@[simp] theorem jointAffine_apply (W : 𝓢(Joint, ℂ)) (A : Joint ≃L[ℝ] Joint) (b z : Joint) :
+section
+variable (W : 𝓢(Joint, ℂ)) (A : Joint ≃L[ℝ] Joint)
+include W A
+
+@[simp] theorem jointAffine_apply (b z : Joint) :
     jointAffine W A b z = W (A z+b) := rfl
 
-theorem joint_fourier_affine (W : 𝓢(Joint, ℂ)) (A : Joint ≃L[ℝ] Joint) (b w : Joint) :
+theorem joint_fourier_affine (b w : Joint) :
     (𝓕 (jointAffine W A b)) w =
       jointInverseJacobian A •
         (Real.fourierChar (inner ℝ b (jointDual A w)) • (𝓕 W) (jointDual A w)) := by
@@ -552,7 +553,7 @@ theorem joint_fourier_affine (W : 𝓢(Joint, ℂ)) (A : Joint ≃L[ℝ] Joint) 
   rw [ht]
   rw [congrFun (SchwartzMap.fourier_coe W) (jointDual A w)]
 
-theorem joint_affine_poisson (W : 𝓢(Joint, ℂ)) (A : Joint ≃L[ℝ] Joint) (b : Joint) :
+theorem joint_affine_poisson (b : Joint) :
     (∑' p : (ℤ × ℤ) × (ℤ × ℤ),
       W (A (point (cartesianPoint p.1) (cartesianPoint p.2))+b)) =
       jointInverseJacobian A • ∑' p : (ℤ × ℤ) × (ℤ × ℤ),
@@ -563,6 +564,8 @@ theorem joint_affine_poisson (W : 𝓢(Joint, ℂ)) (A : Joint ≃L[ℝ] Joint) 
   simp only [jointAffine_apply, joint_fourier_affine] at h
   rw [tsum_const_smul''] at h
   exact h
+
+end
 
 def jointFrequency (c : ℂ) (hc : c ≠ 0) (p : (ℤ × ℤ) × (ℤ × ℤ)) : Joint :=
   point (eisensteinDualFrequency c hc p.1) (eisensteinDualFrequency c hc p.2)
@@ -707,8 +710,7 @@ theorem actual_joint_periodic_fourier (W : 𝓢(Joint, ℂ)) (c : O) (hc : c ≠
   congr 1
   apply tsum_congr
   intro p
-  simp only [residueFourier, tsum_fintype, Circle.smul_def, smul_eq_mul,
-    Finset.sum_mul, mul_assoc]
+  simp [residueFourier, Circle.smul_def, Finset.sum_mul, mul_assoc]
 
 @[simp] theorem jointFrequency_zero (c : ℂ) (hc : c ≠ 0) :
     jointFrequency c hc 0 = 0 := by
@@ -736,11 +738,9 @@ theorem residueFourier_norm_le (c : O) (hc : c ≠ 0)
     _ ≤ ∑ r : Residue c × Residue c, B := by
       apply Finset.sum_le_sum
       intro r hr
-      simpa only [norm_mul, Circle.norm_coe, mul_one] using hB r
+      simpa using hB r
     _ = _ := by
-      simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, Fintype.card_prod,
-        Nat.cast_mul, Ideal.absNorm_apply, Submodule.cardQuot_apply,
-        Nat.card_eq_fintype_card, Residue, pow_two]
+      simp [Ideal.absNorm_apply, Submodule.cardQuot_apply, Residue, pow_two]
 
 theorem principal_joint_inverse_covolume (c : O) (hc : c ≠ 0) :
     (2 / (Real.sqrt 3 * ‖eisEmbedding c‖^2))^2 *

@@ -12,8 +12,7 @@ public import MathCollab.Density.RectangleResidue
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology
 set_option autoImplicit false
 noncomputable section
@@ -163,8 +162,8 @@ theorem differentiableOn_detectorContourNumerator {ρ : ℂ} {X Y : ℝ}
 set_option maxHeartbeats 800000 in
 /-- Finite-height rectangle shift.  The apparent pole at zero has already
 been removed, so the rectangle crosses exactly the zeta pole `1 - ρ`. -/
-theorem detector_finite_rectangle_residue {ρ : ℂ} {X Y R : ℝ}
-    (hY : 0 < Y) (hβLower : 3/4 ≤ ρ.re) (hβUpper : ρ.re < 1)
+theorem detector_finite_rectangle_residue_of_half_lt {ρ : ℂ} {X Y R : ℝ}
+    (hY : 0 < Y) (hβLower : 1/2 < ρ.re) (hβUpper : ρ.re < 1)
     (hR : |ρ.im| < R) (hZero : riemannZeta ρ = 0) :
     let a : ℝ := 1/2 - ρ.re
     RectangleIntegral'
@@ -227,10 +226,11 @@ theorem detector_finite_rectangle_residue {ρ : ℂ} {X Y R : ℝ}
   simpa [a, z, w, p, N, f, g] using hResidue
 
 
+
 /-- Exact finite shift for the literal kernel; both exceptional points are
 strictly interior for every independently chosen R>|Im(rho)|. -/
-theorem detector_finite_rectangle_kernel {ρ : ℂ} {X Y R : ℝ}
-    (hY : 0 < Y) (hβLower : 3/4 ≤ ρ.re) (hβUpper : ρ.re < 1)
+theorem detector_finite_rectangle_kernel_of_half_lt {ρ : ℂ} {X Y R : ℝ}
+    (hY : 0 < Y) (hβLower : 1/2 < ρ.re) (hβUpper : ρ.re < 1)
     (hR : |ρ.im| < R) (hZero : riemannZeta ρ = 0) :
     let a : ℝ := 1/2 - ρ.re
     RectangleIntegral' (detectorKernel ρ X Y)
@@ -247,7 +247,7 @@ theorem detector_finite_rectangle_kernel {ρ : ℂ} {X Y R : ℝ}
   have hRpos : 0 < R := lt_of_le_of_lt (abs_nonneg _) hR
   have hγLower := (abs_lt.mp hR).1
   have hγUpper := (abs_lt.mp hR).2
-  have hFinite := detector_finite_rectangle_residue (X := X) hY hβLower hβUpper hR hZero
+  have hFinite := detector_finite_rectangle_residue_of_half_lt (X := X) hY hβLower hβUpper hR hZero
   change RectangleIntegral' (detectorKernel ρ X Y) z w =
     detectorResidue ρ X Y
   rw [← hFinite]
@@ -284,6 +284,7 @@ theorem detector_finite_rectangle_kernel {ρ : ℂ} {X Y R : ℝ}
     · have : 1 - ρ.re = 1 / 2 := by simpa [z, w] using hRight.1
       linarith
   exact (detectorContourNumerator_div_eq_integrand hρOne hZero hsZero hsPole).symm
+
 
 
 end MathCollab.Density

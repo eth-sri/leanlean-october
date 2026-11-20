@@ -8,8 +8,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CanonicalQuadraticSieve IdealMobiusDivisorSum
-open UniqueFactorizationMonoid
+open ActualEisensteinCubic CanonicalQuadraticSieve IdealMobiusDivisorSum UniqueFactorizationMonoid
 
 namespace SevenEighths.InverseInitialOverlap
 

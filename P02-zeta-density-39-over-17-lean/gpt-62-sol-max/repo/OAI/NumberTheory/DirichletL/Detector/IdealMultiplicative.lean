@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcretePrimeRowBridge CubicEisenstein
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
@@ -35,7 +34,7 @@ lemma primaryGenerator_coprime (I J : Id) (hI : Supported I) (hJ : Supported J)
   rwa [span_primaryGenerator_of_supported I hI,span_primaryGenerator_of_supported J hJ]
 
 lemma completed_block_dvd_cube (I J K L : Id) : I*J^3*K ∣ (I*J*K*L)^3 := by
-  refine ⟨I^2*K^2*L^3,?_⟩
+  refine ⟨I ^2*K^2*L^3,?_⟩
   ring
 
 lemma first_block_dvd (I J K L : Id) : I ∣ I*J*K*L := by

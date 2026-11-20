@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter
 namespace SevenEighths.ProbeRaySlots
-open HeckeFamily ProbePhysical PNT.AnnularPrimeMass
-open PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily ProbePhysical PNT.AnnularPrimeMass PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "Id" => Ideal HeckeFamily.O
 
 def pool (C : Set Id) (S : Finset Id) (a b x : ℝ) : Finset PrimeIdeal :=
@@ -57,10 +56,11 @@ variable (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (hH : RayOrthogonality.globalUni
 
 include hH
 
-theorem ray_pool_mass_eventually_positive (S : Finset Id) (W : ℝ→ℝ)
-    (a b : ℝ) (ha : 0<a) (hab : a≤b) (hsupp : Function.support W⊆Set.Ioo a b)
-    (hW : ContDiff ℝ ∞ W) (hc : HasCompactSupport W) (hp : tsupport W⊆Set.Ioi 0)
-    (hW0 : ∀y,0≤W y) (hWne : W≠0) :
+section
+variable (S : Finset Id) (W : ℝ→ℝ) (a b : ℝ) (ha : 0<a) (hab : a≤b) (hsupp : Function.support W⊆Set.Ioo a b) (hW : ContDiff ℝ ∞ W) (hc : HasCompactSupport W) (hp : tsupport W⊆Set.Ioi 0) (hW0 : ∀y,0≤W y) (hWne : W≠0)
+include S W a b ha hab hsupp hW hc hp hW0 hWne
+
+theorem ray_pool_mass_eventually_positive :
     ∀ᶠx : ℝ in atTop,0<∑P∈pool (RayQuotient.identityClass M H) S a b x,
       W ((Ideal.absNorm P.val:ℝ)/x)*(Ideal.absNorm P.val:ℝ)^(-(5/6:ℝ)) := by
   filter_upwards [RayPrimeNormalizer.eventually_pos M H hH S W hW hc hp hW0 hWne,
@@ -68,10 +68,7 @@ theorem ray_pool_mass_eventually_positive (S : Finset Id) (W : ℝ→ℝ)
   rw [pool_mass_eq_deleted _ _ _ ha hab hsupp hx0]
   exact hx
 
-theorem ray_pool_mass_eventually_lower_bound (S : Finset Id) (W : ℝ→ℝ)
-    (a b : ℝ) (ha : 0<a) (hab : a≤b) (hsupp : Function.support W⊆Set.Ioo a b)
-    (hW : ContDiff ℝ ∞ W) (hc : HasCompactSupport W) (hp : tsupport W⊆Set.Ioi 0)
-    (hW0 : ∀y,0≤W y) (hWne : W≠0) :
+theorem ray_pool_mass_eventually_lower_bound :
     ∃c : ℝ,0<c ∧ ∀ᶠx : ℝ in atTop,c*x^(1/6:ℝ)/Real.log x≤
       ∑P∈pool (RayQuotient.identityClass M H) S a b x,
         W ((Ideal.absNorm P.val:ℝ)/x)*(Ideal.absNorm P.val:ℝ)^(-(5/6:ℝ)) := by
@@ -80,6 +77,8 @@ theorem ray_pool_mass_eventually_lower_bound (S : Finset Id) (W : ℝ→ℝ)
   filter_upwards [hbound,eventually_gt_atTop (0:ℝ)] with x hx hx0
   rw [pool_mass_eq_deleted _ _ _ ha hab hsupp hx0]
   exact hx
+
+end
 
 end SevenEighths.ProbeRaySlots
 end

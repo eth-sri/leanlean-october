@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Eisenstein.CompactProfiles
 
 @[expose] public section
@@ -8,81 +9,27 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassArithmetic
 open ActualEisensteinCubic
 open JointLogSeparation (frequencyTwist)
 
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end
 
@@ -192,11 +139,15 @@ instance integralOrbitQuotientT2 (H : Subgroup (SL(2,O))) : T2Space (IntegralOrb
   rw [integralOrbitRel_eq]
   infer_instance
 
-lemma integralSubgroupFree (H : Subgroup (SL(2,O))) (hH : H≤CubicKubota.levelThree) :
+section
+variable (H : Subgroup (SL(2,O)))
+include H
+
+lemma integralSubgroupFree (hH : H≤CubicKubota.levelThree) :
     IsCancelSMul H HyperbolicSpace :=
   isCancelSMul_iff_eq_one_of_smul_eq.mpr (subgroup_action_free H hH)
 
-lemma integralOrbitProjection_eq_iff (H : Subgroup (SL(2,O))) (u v : HyperbolicSpace) :
+lemma integralOrbitProjection_eq_iff (u v : HyperbolicSpace) :
     integralOrbitProjection H u=integralOrbitProjection H v ↔ u∈MulAction.orbit H v := by
   constructor
   · intro he
@@ -207,20 +158,22 @@ lemma integralOrbitProjection_eq_iff (H : Subgroup (SL(2,O))) (u v : HyperbolicS
     apply Quotient.sound
     exact ⟨M,hM⟩
 
-theorem integralOrbitProjection_quotientCovering (H : Subgroup (SL(2,O)))
+theorem integralOrbitProjection_quotientCovering
     (hH : H≤CubicKubota.levelThree) : IsQuotientCoveringMap (integralOrbitProjection H) H := by
   let : IsCancelSMul H HyperbolicSpace := integralSubgroupFree H hH
   have hq : Topology.IsQuotientMap (integralOrbitProjection H) := isQuotientMap_quotient_mk'
   exact hq.isQuotientCoveringMap_of_properlyDiscontinuousSMul (integralOrbitProjection_eq_iff H _ _)
 
-lemma integralOrbitProjection_covering (H : Subgroup (SL(2,O))) (hH : H≤CubicKubota.levelThree) :
+lemma integralOrbitProjection_covering (hH : H≤CubicKubota.levelThree) :
     IsCoveringMap (integralOrbitProjection H) :=
   (integralOrbitProjection_quotientCovering H hH).isCoveringMap
 
-lemma integralOrbitProjection_openQuotient (H : Subgroup (SL(2,O))) (hH : H≤CubicKubota.levelThree) :
+lemma integralOrbitProjection_openQuotient (hH : H≤CubicKubota.levelThree) :
     IsOpenQuotientMap (integralOrbitProjection H) :=
   ⟨Quotient.mk_surjective,continuous_integralOrbitProjection H,
     (integralOrbitProjection_covering H hH).isOpenMap⟩
+
+end
 
 instance kernelQuotientLocallyCompact : LocallyCompactSpace (IntegralOrbitQuotient globalKubotaKernel) :=
   (integralOrbitProjection_openQuotient globalKubotaKernel globalKubotaKernel_le_levelThree).locallyCompactSpace
@@ -320,25 +273,13 @@ section
 open ActualEisensteinCubic
 open FirstPassCubeLabels (primeProductNorm columnLog b0Label)
 
-@[ext] structure GlobalFirstData (ι : Type*) where
-  cube : CubeCoordinates ι
-  firstCommon : Finset ι
-  common : Finset ι
-  firstDivisor : Finset ι
 
 namespace GlobalFirstData
 variable {ι : Type*}
-def append (b : GlobalFirstData ι) (x : SecondExpansionData ι) : GlobalSecondData ι :=
-  ⟨b.cube,b.firstCommon,b.common,b.firstDivisor,x⟩
 end GlobalFirstData
 
 namespace GlobalSecondData
 variable {ι : Type*}
-def first (x : GlobalSecondData ι) : GlobalFirstData ι :=
-  ⟨x.cube,x.firstCommon,x.common,x.firstDivisor⟩
-@[simp] theorem append_first (x : GlobalSecondData ι) : x.first.append x.source=x := by cases x; rfl
-@[simp] theorem first_append (b : GlobalFirstData ι) (x : SecondExpansionData ι) : (b.append x).first=b := rfl
-@[simp] theorem source_append (b : GlobalFirstData ι) (x : SecondExpansionData ι) : (b.append x).source=x := rfl
 end GlobalSecondData
 
 section
@@ -347,9 +288,9 @@ variable {ι : Type*} [DecidableEq ι]
 end
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end
 
@@ -359,8 +300,8 @@ open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end SecondPassArithmetic
 

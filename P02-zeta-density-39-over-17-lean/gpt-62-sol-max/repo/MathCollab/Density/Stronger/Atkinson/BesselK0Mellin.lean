@@ -51,7 +51,7 @@ theorem integral_cpow_mul_dfiBesselK0_Ioi_eq_beta
           apply setIntegral_congr_fun measurableSet_Ioi
           intro t _
           dsimp [F]
-          convert integral_cpow_mul_exp_neg_mul_Ioi_eq hs (Real.cosh_pos t) using 1
+          convert RiemannZeta.GuthMaynard.integral_cpow_mul_exp_neg_mul_Ioi_eq hs (Real.cosh_pos t) using 1
           · apply setIntegral_congr_fun measurableSet_Ioi
             intro x _
             push_cast

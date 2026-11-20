@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open MeasureTheory ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase InverseTerminalWidths
-open CanonicalCubeSeparation CompletedHeight InverseMomentFirstSecondHeightCost
+open MeasureTheory ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalQuadraticSieve CanonicalRowCompletion InverseInitialClippedColumns InverseReflectedPhase InverseTerminalWidths CanonicalCubeSeparation CompletedHeight InverseMomentFirstSecondHeightCost
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem rank_energy_exists_succ_of_reference
@@ -96,7 +94,7 @@ theorem rank_energy_exists_succ_of_reference
   have m22:=ih22 Z hZ22' D hD22 slots hslots lists H a hdis hH hP ha z hz hprod base hbase hperiod
   let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) D
   have hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) D (reflectionExcludedPrimes_bad q)
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   dsimp only [CompletePoolRankMoments] at m11 m12 m21 m22 ⊢
   intro Ψ hΨ m hm N V M Qwidth hN hV hM hQ hMc hFc hmargin hnorm ss hss labels hlabels theta
   have hcap:N+V≤L:=by

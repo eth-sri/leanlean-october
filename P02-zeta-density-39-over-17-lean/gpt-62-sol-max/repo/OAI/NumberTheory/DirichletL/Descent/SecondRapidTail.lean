@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondTailAbsorption
 
 @[expose] public section
@@ -15,10 +16,10 @@ theorem full_second_rapid_correlated_tail (Lcap tau saving : ℝ)
     (hLcap : 0≤Lcap) (htau : 0<tau) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ),0<C ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (F : Finset ι) (Ψ : O→*ℂ), (∀ a,‖Ψ a‖≤1) →
       ∀ (m c d : O),d≠0 → ∀ (Hcol : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ))
       (Z B Y L : ℝ) (R : Finset ι→Finset ι→ℝ),

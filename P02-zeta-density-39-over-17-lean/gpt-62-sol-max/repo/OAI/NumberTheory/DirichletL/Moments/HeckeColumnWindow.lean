@@ -11,8 +11,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff FourierTransform
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentHeckeColumnWindow
-open FourierBridge HeckeFamily CenteredMomentSmooth CenteredMomentGaussEnergy
-open CenteredMomentTwist
+open FourierBridge HeckeFamily CenteredMomentSmooth CenteredMomentGaussEnergy CenteredMomentTwist
 local notation "O" => ActualEisensteinCubic.O
 
 def heightCoeff (τ : Character) (t : ℝ) (I : Ideal O) : ℂ :=
@@ -73,9 +72,11 @@ theorem phase_combine (w θ u : ℝ) :
   push_cast
   ring
 
-theorem height_column_integral (V : ℝ → ℂ) (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V) (τ : Character) (I : Ideal O) (hI : I≠0)
-    (t θ X : ℝ) (hX : 0<X) :
+section
+variable (V : ℝ → ℂ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (τ : Character) (I : Ideal O) (hI : I≠0) (t θ X : ℝ) (hX : 0<X)
+include V hVc hVs τ I hI t θ X hX
+
+theorem height_column_integral :
     heightCoeff τ t I*columnPhase V (Real.log ((Ideal.absNorm I:ℝ)/X)) θ=
       ∫ w : ℝ,columnDensity V hVc hVs w*logPhase (θ-w) (Real.log X)*
         heightCoeff τ (t+2*Real.pi*(w-θ)) I := by
@@ -91,9 +92,7 @@ theorem height_column_integral (V : ℝ → ℂ) (hVc : HasCompactSupport V)
         show t-2*Real.pi*(θ-w)=t+2*Real.pi*(w-θ) by ring]
       ring
 
-theorem height_column_integrable (V : ℝ → ℂ) (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V) (τ : Character) (I : Ideal O) (hI : I≠0)
-    (t θ X : ℝ) (hX : 0<X) :
+theorem height_column_integrable :
     Integrable (fun w : ℝ => columnDensity V hVc hVs w*logPhase (θ-w) (Real.log X)*
       heightCoeff τ (t+2*Real.pi*(w-θ)) I) := by
   have he (w : ℝ) : logPhase (θ-w) (Real.log X)*heightCoeff τ (t+2*Real.pi*(w-θ)) I=
@@ -115,6 +114,8 @@ theorem height_column_integrable (V : ℝ → ℂ) (hVc : HasCompactSupport V)
   · filter_upwards [] with w
     simp only [norm_mul,logPhase_norm,mul_one]
     exact le_of_eq (mul_comm _ _)
+
+end
 
 theorem gauss_column_integral {α : Type*} (S : Finset α) (a : α → O)
     (ha : ∀ i,CanonicalQuadraticSieve.Supported (Ideal.span {a i}))

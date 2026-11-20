@@ -8,10 +8,13 @@ noncomputable section
 open Finset
 namespace Montgomery.RationalMoment
 
+section
+variable {K : ℕ} (hK : 1 ≤ K) {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B)
+include K hK η B hη hB
+
 /-- Fixed dilations of an actual dyadic interval do not change the
 undilated short-range hypothesis. All constants precede the lengths. -/
-theorem coprime_dilated_dyadic_short_range {K : ℕ} (hK : 1 ≤ K)
-    {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B) :
+theorem coprime_dilated_dyadic_short_range :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ M U : ℝ), 1 < T → 0 ≤ M → 0 ≤ U → M ≤ B*U →
       ∀ (Q : Finset (ℕ × ℕ)),
       (∀ q ∈ Q, 0 < q.1 ∧ 0 < q.2 ∧ Nat.Coprime q.1 q.2 ∧
@@ -35,8 +38,7 @@ theorem coprime_dilated_dyadic_short_range {K : ℕ} (hK : 1 ≤ K)
   rw [coprime_pair_den h2 hc]
   linarith
 
-theorem dilated_dyadic_pair_energy_log {K : ℕ} (hK : 1 ≤ K)
-    {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B) :
+theorem dilated_dyadic_pair_energy_log :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ M U : ℝ), 1 < T → 0 ≤ M → 0 ≤ U → M ≤ B*U →
       ∀ (N : ℕ) (P : Finset (ℕ × ℕ)),
       (∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧ p.1 ≤ N ∧
@@ -82,8 +84,7 @@ theorem dilated_dyadic_pair_energy_log {K : ℕ} (hK : 1 ≤ K)
   ring
 
 /-- Full all-pair estimate for a fixed dilation; the power condition uses U. -/
-theorem dilated_dyadic_pair_energy {K : ℕ} (hK : 1 ≤ K)
-    {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B) :
+theorem dilated_dyadic_pair_energy :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ M U : ℝ), 1 < T → 0 ≤ M → 0 ≤ U → M ≤ B*U →
       ∀ (P : Finset (ℕ × ℕ)),
       (∀ p ∈ P, 0 < p.1 ∧ 0 < p.2 ∧
@@ -131,8 +132,7 @@ theorem dilated_dyadic_pair_energy {K : ℕ} (hK : 1 ≤ K)
     _ = _ := by rw [hp]
 
 /-- Arbitrary bounded coefficients on the actual dilated dyadic support. -/
-theorem dilated_dyadic_dirichlet_difference {K : ℕ} (hK : 1 ≤ K)
-    {η B : ℝ} (hη : 0 < η) (hB : 1 ≤ B) :
+theorem dilated_dyadic_dirichlet_difference :
     ∃ C : ℝ, 0 < C ∧ ∀ (T t₀ M U : ℝ), 1 < T → 0 ≤ M → 0 ≤ U → M ≤ B*U →
       ∀ (A : Finset ℕ), (∀ n ∈ A, 0 < n ∧ M < n ∧ (n:ℝ) ≤ 2*M) →
       ∀ (W : Finset ℝ), T^(((K:ℝ)+1)/(2*K+1)) ≤ W.card → U^K ≤ W.card →
@@ -153,5 +153,7 @@ theorem dilated_dyadic_dirichlet_difference {K : ℕ} (hK : 1 ≤ K)
   have hh := hbound T t₀ M U hT hM hU hMU (A ×ˢ A) hP W hR hUR hW hsep
   simp only [sum_product,pairRatio,Rat.cast_div,Rat.cast_natCast] at hh
   exact (dirichlet_difference_energy_le A (fun n hn => (hA n hn).1) W a ha).trans hh
+
+end
 
 end Montgomery.RationalMoment

@@ -31,13 +31,14 @@ theorem smooth_mass {κ g : ℝ → ℝ} (hκ : Integrable κ) (hg : Integrable 
 theorem smooth_nonneg {κ g : ℝ → ℝ} (hκ : ∀ x, 0 ≤ κ x) (hg : ∀ x, 0 ≤ g x)
     (x : ℝ) : 0 ≤ smooth κ g x := integral_nonneg (fun y => mul_nonneg (hκ _) (hg y))
 
+section
+variable {κ g : ℝ → ℝ} {B : ℝ} (hκm : Measurable κ) (hκi : Integrable κ) (hκ0 : ∀ x, 0 ≤ κ x) (hκB : ∀ x, ‖κ x‖ ≤ B) (hmass : ∫ x, κ x = 1) (hgm : Measurable g)
+include κ g B hκm hκi hκ0 hκB hmass hgm
+
 /-- Jensen/Cauchy–Schwarz for the actual positive mass-one convolution.
 Both product integrals are proved to exist from the bounded kernel and
 the L1 and L2 hypotheses on g. -/
-theorem smooth_square_le {κ g : ℝ → ℝ} {B : ℝ}
-    (hκm : Measurable κ) (hκi : Integrable κ) (hκ0 : ∀ x, 0 ≤ κ x)
-    (hκB : ∀ x, ‖κ x‖ ≤ B) (hmass : ∫ x, κ x = 1)
-    (hgm : Measurable g) (hg2 : Integrable (fun x => g x ^ 2))
+theorem smooth_square_le (hg2 : Integrable (fun x => g x ^ 2))
     (hg0 : ∀ x, 0 ≤ g x) (x : ℝ) :
     smooth κ g x ^ 2 ≤ smooth κ (fun y => g y ^ 2) x := by
   have hkxm : Measurable (fun y : ℝ => κ (x - y)) :=
@@ -66,10 +67,7 @@ theorem smooth_square_le {κ g : ℝ → ℝ} {B : ℝ}
   have hsq := Real.sq_sqrt h02
   nlinarith [Real.sqrt_nonneg (smooth κ (fun y => g y ^ 2) x)]
 
-theorem smooth_square_integrable {κ g : ℝ → ℝ} {B : ℝ}
-    (hκm : Measurable κ) (hκi : Integrable κ) (hκ0 : ∀ x, 0 ≤ κ x)
-    (hκB : ∀ x, ‖κ x‖ ≤ B) (hmass : ∫ x, κ x = 1)
-    (hgm : Measurable g) (hgi : Integrable g) (hg2 : Integrable (fun x => g x ^ 2))
+theorem smooth_square_integrable (hgi : Integrable g) (hg2 : Integrable (fun x => g x ^ 2))
     (hg0 : ∀ x, 0 ≤ g x) : Integrable (fun x => smooth κ g x ^ 2) := by
   apply (smooth_integrable hκi hg2).mono'
     ((smooth_integrable hκi hgi).aestronglyMeasurable.pow 2)
@@ -79,10 +77,7 @@ theorem smooth_square_integrable {κ g : ℝ → ℝ} {B : ℝ}
 
 /-- L2 squared contraction with constant exactly one. The constant is uniform
 in all kernel scales and measurable masks satisfying the stated hypotheses. -/
-theorem smooth_l2_contraction {κ g : ℝ → ℝ} {B : ℝ}
-    (hκm : Measurable κ) (hκi : Integrable κ) (hκ0 : ∀ x, 0 ≤ κ x)
-    (hκB : ∀ x, ‖κ x‖ ≤ B) (hmass : ∫ x, κ x = 1)
-    (hgm : Measurable g) (hgi : Integrable g) (hg2 : Integrable (fun x => g x ^ 2))
+theorem smooth_l2_contraction (hgi : Integrable g) (hg2 : Integrable (fun x => g x ^ 2))
     (hg0 : ∀ x, 0 ≤ g x) : (∫ x, smooth κ g x ^ 2) ≤ ∫ x, g x ^ 2 := by
   calc
     (∫ x, smooth κ g x ^ 2) ≤ ∫ x, smooth κ (fun y => g y ^ 2) x :=
@@ -90,5 +85,7 @@ theorem smooth_l2_contraction {κ g : ℝ → ℝ} {B : ℝ}
         (smooth_integrable hκi hg2)
         (smooth_square_le hκm hκi hκ0 hκB hmass hgm hg2 hg0)
     _ = ∫ x, g x ^ 2 := smooth_mass hκi hg2 hmass
+
+end
 
 end GuthMaynard.Improvement

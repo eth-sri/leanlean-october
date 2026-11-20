@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.Stronger.ShortZeroCount
+public import RetunedLongMultiplicity
 public import MathCollab.Density.Stronger.LongMeanCounting
 
 @[expose] public section
@@ -11,45 +12,21 @@ set_option maxHeartbeats 1000000
 noncomputable section
 namespace MathCollab.Density.Stronger
 
-/-- Actual slab zeros outside the already counted short family. -/
-def smoothLongZeroFinset (η σ δ T : ℝ) : Finset ℂ :=
-  zetaZeroFinset σ T (2*T) \ smoothShortZeroFinset η σ δ T
+open Montgomery.RationalMoment
 
-/-- The complementary part keeps the original analytic multiplicity. -/
-def smoothLongZeroCount (η σ δ T : ℝ) : ℕ :=
-  ∑ ρ ∈ smoothLongZeroFinset η σ δ T, zetaMultiplicity ρ
+abbrev smoothLongZeroFinset (η σ δ T : ℝ) :=
+  RightDetector.smoothLongZeroFinset η σ (lowerExponent σ) δ T
+abbrev smoothLongZeroCount (η σ δ T : ℝ) :=
+  RightDetector.smoothLongZeroCount η σ (lowerExponent σ) δ T
 
 theorem smoothLongZeroFinset_subset (η σ δ T : ℝ) :
-    smoothLongZeroFinset η σ δ T ⊆ zetaZeroFinset σ T (2*T) := Finset.sdiff_subset
+    smoothLongZeroFinset η σ δ T ⊆ zetaZeroFinset σ T (2*T) :=
+  RightDetector.smoothLongZeroFinset_subset η σ (lowerExponent σ) δ T
 
-/-- Exact partition of every actual slab zero and all its analytic multiplicity. -/
 theorem smooth_zeroCount_partition (η σ δ T : ℝ) :
-    zetaSlabCount σ T (2*T) = smoothShortZeroCount η σ δ T + smoothLongZeroCount η σ δ T := by
-  unfold zetaSlabCount smoothShortZeroCount smoothLongZeroCount smoothLongZeroFinset
-  have hs := Finset.sum_sdiff (smoothShortZeroFinset_subset η σ δ T)
-    (f := zetaMultiplicity)
-  omega
+    zetaSlabCount σ T (2*T) = smoothShortZeroCount η σ δ T + smoothLongZeroCount η σ δ T :=
+  RightDetector.smooth_zeroCount_partition η σ (lowerExponent σ) δ T
 
-/-- One critical-mean constant precedes the height and every complementary zero. -/
-theorem smoothLongZeroFinset_eventually_detects_mean {σ δ η : ℝ}
-    (hσ : 3/4 < σ) (hσ' : σ < 1) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η) :
-    ∃ C : ℝ, 0 < C ∧ ∀ᶠ T : ℝ in atTop, ∀ ρ ∈ smoothLongZeroFinset η σ δ T,
-      (detectorY σ T)^((σ-1/2)/2) ≤
-        48*C*Real.sqrt (detectorX δ T)*Real.log T*weightedCriticalMean 128 ρ.im := by
-  obtain ⟨C, hC, hcover⟩ := smooth_long_mean_or_short_powered_cover hσ hσ' hδ hδ' hη 128 (by norm_num)
-  refine ⟨C, hC, ?_⟩
-  filter_upwards [eventually_ge_atTop (0 : ℝ), hcover] with T hT hc
-  intro ρ hρ
-  obtain ⟨hzmem, hnot⟩ := Finset.mem_sdiff.mp hρ
-  obtain ⟨hz, hβ, hγ, hγ'⟩ := mem_zetaZeroFinset.mp hzmem
-  have habs : |ρ.im| = ρ.im := abs_of_nonneg (hT.trans hγ)
-  rcases hc ρ hβ hz.2.2 (by rwa [habs]) (by rwa [habs]) hz.1 with hmean | hshort
-  · exact hmean
-  · exact False.elim (hnot (Finset.mem_filter.mpr ⟨hzmem, hshort⟩))
-
-/-- Unconditional restoration of the complementary analytic-multiplicity count
-from separated long detectors. The right side is the literal physical twelfth
-moment, not a supplied moment bound. -/
 theorem smoothLongZeroCount_physical_moment_reduction {σ δ η : ℝ}
     (hσ : 3/4 < σ) (hσ' : σ < 1) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η) :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ T : ℝ in atTop,
@@ -57,7 +34,9 @@ theorem smoothLongZeroCount_physical_moment_reduction {σ δ η : ℝ}
         C*(detectorX δ T)^6*(Real.log T)^13*
           ((∫ t in Set.Icc 0 (3*T), zetaMomentCriticalNorm t^12)+T^(-113 : ℝ)) := by
   classical
-  obtain ⟨Cm, hCm, hmean⟩ := smoothLongZeroFinset_eventually_detects_mean hσ hσ' hδ hδ' hη
+  obtain ⟨Cm, hCm, hmean⟩ := RightDetector.smoothLongZeroFinset_eventually_detects_mean
+    (stronger_window hσ hσ') hδ hδ' hη
+  simp only [window_detectorY] at hmean
   obtain ⟨Cb, hCb, hlocal⟩ := zeta_local_multiplicity_bound
   let A : ℝ := Real.pi^11*separationMass
   let B : ℝ := 2*(12 : ℝ)^12*Real.pi^12
@@ -107,7 +86,7 @@ theorem smoothLongZeroCount_physical_moment_reduction {σ δ η : ℝ}
     nlinarith [mul_nonneg hA htail, mul_nonneg hB hI]
   have hcount' : (smoothLongZeroCount η σ δ T : ℝ) ≤ 2*(Cb*Real.log (2*T))*(U.card : ℝ) := by
     rw [← hcard] at hcount
-    simpa only [smoothLongZeroCount, Nat.cast_sum] using hcount
+    simpa only [smoothLongZeroCount, RightDetector.smoothLongZeroCount, Nat.cast_sum] using hcount
   have hscale : 0 ≤ (detectorY σ T)^(6*σ-3) := Real.rpow_nonneg hY.le _
   have hh := mul_le_mul_of_nonneg_right hcount' hscale
   have hphysical' := mul_le_mul_of_nonneg_left hphysical

@@ -6,15 +6,8 @@ public import LaterPairs.Native.HuxleyReferenceSieve.Part01
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth Filter Polynomial Set
+open scoped Classical ContDiff FourierTransform BigOperators Topology
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
 
@@ -30,216 +23,24 @@ theorem fareySector_large_beta_bound {N : ℕ} {l w α β δ : ℝ}
       |β-(round β:ℤ)| ≤ 8*(w*(N:ℝ))*δ/(HuxleyLinearForm.fareySector N l w).card := by
   classical
   let S := HuxleyLinearForm.fareySector N l w
-  let E := S.image Prod.fst
-  let M := w*(N:ℝ)
   have hw : 0 < w := hl.trans_le hlw
-  have hNR : (0:ℝ) < N := by exact_mod_cast hN
-  have hM : 0 < M := mul_pos hw hNR
-  have hSR : (0:ℝ) < S.card := by
-    have hh : 40*M ≤ (S.card:ℝ) := by simpa only [M,mul_assoc] using hR
-    exact (by positivity : 0 < 40*M).trans_le hh
-  have hmaps : ∀ p∈S, p.1 ∈ E := fun p hp => Finset.mem_image_of_mem Prod.fst hp
-  have hEne : E.Nonempty := by
-    obtain ⟨p,hp⟩ := Finset.card_pos.mp (by exact_mod_cast hSR : 0 < S.card)
-    exact ⟨p.1,hmaps p hp⟩
-  have hE : (E.card:ℝ) ≤ M := fareySector_numerator_projection_card_le hw.le
-  obtain ⟨n,_hn,hcount⟩ := Finset.exists_le_card_fiber_of_nsmul_le_card_of_maps_to
-    hmaps hEne (b := (S.card:ℝ)/M) (by
-      rw [nsmul_eq_mul]
-      calc
-        (E.card:ℝ)*((S.card:ℝ)/M) ≤ M*((S.card:ℝ)/M) :=
-          mul_le_mul_of_nonneg_right hE (div_nonneg hSR.le hM.le)
-        _ = (S.card:ℝ) := mul_div_cancel₀ _ hM.ne')
-  let T := S.filter (fun p => p.1=n)
-  change (S.card:ℝ)/M ≤ (T.card:ℝ) at hcount
-  have hTne : T.Nonempty := Finset.card_pos.mp (Nat.cast_pos.mp ((div_pos hSR hM).trans_le hcount))
-  obtain ⟨p₀,hp₀⟩ := hTne
-  let D := T.image (fun p => p.2-p₀.2)
-  let P := insert 1 ((D.erase 0).image Int.natAbs)
-  have hDcard : D.card=T.card := Finset.card_image_of_injOn (by
-    intro p hp q hq he
-    apply Prod.ext ((Finset.mem_filter.mp hp).2.trans (Finset.mem_filter.mp hq).2.symm)
-    dsimp at he
-    omega)
-  have hTP : (T.card:ℝ) ≤ 2*(P.card:ℝ)+1 := by
-    have hc := HuxleyLinearForm.card_le_two_mul_nonzero_abs_card_add_one D
-    have hsub : (D.erase 0).image Int.natAbs ⊆ P := Finset.subset_insert _ _
-    have hh := Finset.card_le_card hsub
-    rw [hDcard] at hc
-    exact_mod_cast (show T.card ≤ 2*P.card+1 by omega)
-  have hcard : (S.card:ℝ) ≤ 4*M*(P.card:ℝ) := by
-    have hc := (div_le_iff₀ hM).mp hcount
-    have ht := mul_le_mul_of_nonneg_left hTP hM.le
-    have hlarge : 40*M ≤ (S.card:ℝ) := by simpa only [M,mul_assoc] using hR
-    nlinarith only [hc,ht,hlarge]
-  have hPne : P.Nonempty := ⟨1,Finset.mem_insert_self _ _⟩
-  let L := P.max' hPne
-  have hL : L ∈ P := Finset.max'_mem _ _
-  have hLpos : 0 < L := by have hh := Finset.le_max' P 1 (Finset.mem_insert_self _ _); omega
+  have hN1 : (1:ℝ)≤N := by exact_mod_cast hN
+  have hlarge : 16*(w*(N:ℝ)) ≤ (S.card:ℝ) := by nlinarith only [hR, mul_nonneg hw.le (Nat.cast_nonneg N)]
   have hden (p : ℤ × ℤ) (hp : p ∈ S) : 0 ≤ (p.2:ℝ) ∧ (p.2:ℝ) ≤ N := by
     have hh := (HuxleyLinearForm.mem_fareySector_iff hl hw.le).mp hp
     exact ⟨by exact_mod_cast (show 0 ≤ p.2 by omega),by exact_mod_cast hh.2.1⟩
-  have hPsize : ∀ k ∈ P, 1 ≤ k ∧ (k:ℝ) ≤ N := by
-    intro k hk
-    rcases Finset.mem_insert.mp hk with rfl | hk
-    · exact ⟨le_rfl,by exact_mod_cast hN⟩
-    · obtain ⟨d,hd,rfl⟩ := Finset.mem_image.mp hk
-      obtain ⟨hd0,hd⟩ := Finset.mem_erase.mp hd
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hd
-      refine ⟨Nat.pos_of_ne_zero (by simpa using hd0),?_⟩
-      rw [Nat.cast_natAbs,Int.cast_abs,Int.cast_sub]
-      have hpnum := hden p (Finset.mem_filter.mp hp).1
-      have hp₀num := hden p₀ (Finset.mem_filter.mp hp₀).1
-      exact abs_le.mpr ⟨by linarith,by linarith⟩
-  have hdiff (p r : ℤ × ℤ) (hp : p ∈ S) (hr : r ∈ S) (he : p.1=r.1) :
-      ∃ b : ℤ, |((p.2-r.2:ℤ):ℝ)*β-b| ≤ 2*δ := by
-    obtain ⟨bp,hbp⟩ := hnear p hp
-    obtain ⟨br,hbr⟩ := hnear r hr
-    refine ⟨bp-br,?_⟩
-    have hid : ((p.2-r.2:ℤ):ℝ)*β-((bp-br:ℤ):ℝ) =
-        ((p.1:ℝ)*α+(p.2:ℝ)*β-bp)-((r.1:ℝ)*α+(r.2:ℝ)*β-br) := by
-      rw [he]; push_cast; ring
-    rw [hid]
-    exact (abs_sub _ _).trans (by linarith)
-  have hPnear : ∀ k ∈ P, ∃ b : ℤ, |(k:ℝ)*β-b| ≤ 2*δ := by
-    intro k hk
-    rcases Finset.mem_insert.mp hk with rfl | hk
-    · obtain ⟨m,n,hm,hm1⟩ := fareySector_consecutive_denominators hl hlw hN hR
-      simpa only [Prod.snd,add_sub_cancel_left,Int.cast_one,Nat.cast_one,one_mul] using
-        hdiff (m,n+1) (m,n) hm1 hm rfl
-    · obtain ⟨d,hd,rfl⟩ := Finset.mem_image.mp hk
-      obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp (Finset.mem_erase.mp hd).2
-      obtain ⟨b,hb⟩ := hdiff p p₀ (Finset.mem_filter.mp hp).1 (Finset.mem_filter.mp hp₀).1
-        ((Finset.mem_filter.mp hp).2.trans (Finset.mem_filter.mp hp₀).2.symm)
-      rcases Int.natAbs_eq (p.2-p₀.2) with he | he
-      · refine ⟨b,?_⟩
-        have heR : ((p.2-p₀.2:ℤ):ℝ) = ((p.2-p₀.2).natAbs:ℝ) := by
-          simpa only [Int.cast_natCast] using congrArg (fun z : ℤ => (z:ℝ)) he
-        rwa [← heR]
-      · refine ⟨-b,?_⟩
-        have heR : ((p.2-p₀.2:ℤ):ℝ) = -((p.2-p₀.2).natAbs:ℝ) := by
-          simpa only [Int.cast_natCast,Int.cast_neg] using congrArg (fun z : ℤ => (z:ℝ)) he
-        have hid : ((p.2-p₀.2).natAbs:ℝ)*β-((-b:ℤ):ℝ) = -(((p.2-p₀.2:ℤ):ℝ)*β-b) := by
-          rw [heR,Int.cast_neg]; ring
-        rwa [hid,abs_neg]
-  rcases HuxleyLinearForm.linear_form_dichotomy P hLpos (by positivity)
-    (fun k hk => ⟨(hPsize k hk).1,Finset.le_max' P k hk⟩) hPnear with hc | ⟨q,_hq,_hqL,hdvd,a,ha⟩
-  · left
-    have hm := mul_le_mul_of_nonneg_left (hPsize L hL).2 (show 0 ≤ 24*δ by positivity)
-    have hc' : (P.card:ℝ) ≤ 24*δ*(N:ℝ) := by nlinarith only [hc,hm]
-    have ht := mul_le_mul_of_nonneg_left hc' (show 0 ≤ 4*M by positivity)
-    
-    dsimp only [M] at hcard ht
-    nlinarith only [hcard,ht]
-  · right
-    have hq : q=1 := Nat.dvd_one.mp (hdvd 1 (Finset.mem_insert_self _ _))
-    rw [hq] at ha
-    simp only [Nat.cast_one,one_mul] at ha
-    have ht := mul_le_mul_of_nonneg_left hcard (abs_nonneg (β-(a:ℝ)))
-    have hh := mul_le_mul_of_nonneg_left ha (show 0 ≤ 4*M by positivity)
-    apply (round_le β a).trans
-    apply (le_div_iff₀ hSR).mpr
-    dsimp only [M] at ht hh
-    nlinarith only [ht,hh]
+  have hd (p q : ℤ × ℤ) (hp : p∈S) (hq : q∈S) (he : p.1=q.1) :
+      ∃ b : ℤ, |((p.2-q.2:ℤ):ℝ)*β-b|≤2*δ :=
+    HuxleyLinearForm.near_linear_form_diff he (by simpa only [add_comm] using hnear p hp)
+      (by simpa only [add_comm] using hnear q hq)
+  have hUnit : ∃ b : ℤ, |β-b|≤2*δ := by
+    obtain ⟨m,n,hm,hm1⟩ := fareySector_consecutive_denominators hl hlw hN hR
+    simpa using hd (m,n+1) (m,n) hm1 hm rfl
+  simpa only [mul_assoc,mul_left_comm,mul_comm] using
+    HuxleyLinearForm.dense_fiber_linear_form S Prod.fst Prod.snd (by positivity)
+      hN1 hδ (fareySector_numerator_projection_card_le hw.le) hlarge
+      (fun _ _ h g => Prod.ext h g) hden hd hUnit
 
-                                                                   
-                                                                  
-theorem fareySector_small_error_bounds_all_slopes
-    {N : ℕ} {l μ B α β δ : ℝ}
-    (hl : 0 < l) (hμ : 0 ≤ μ) (hB : 1 ≤ B) (hδ : 0 ≤ δ)
-    (hR : max ((μ-l)*(N:ℝ)^2/B) 2 ≤ (HuxleyLinearForm.fareySector N l μ).card)
-    (hsmall : (max 1 μ*(N:ℝ))*δ ≤ 1/(96*B))
-    (hnear : ∀ p ∈ HuxleyLinearForm.fareySector N l μ,
-      ∃ b : ℤ, |(p.1:ℝ)*α+(p.2:ℝ)*β-b| ≤ δ) :
-    |α-(round α:ℤ)| ≤ 8*(N:ℝ)*δ/(HuxleyLinearForm.fareySector N l μ).card ∧
-    |β-(round β:ℤ)| ≤ 8*(μ*(N:ℝ))*δ/(HuxleyLinearForm.fareySector N l μ).card := by
-  classical
-  let S := HuxleyLinearForm.fareySector N l μ
-  have hμ0 : 0 ≤ μ := hμ
-  have hB0 : 0 < B := by linarith
-  have hR2 : 2 ≤ S.card := by
-    exact_mod_cast (le_trans (le_max_right ((μ-l)*(N:ℝ)^2/B) 2) hR)
-  have hSne : S.Nonempty := Finset.card_pos.mp (by omega)
-  obtain ⟨p₀,hp₀,hmax⟩ := S.exists_max_image Prod.snd hSne
-  obtain ⟨p,hp,hne⟩ := Finset.exists_mem_ne (by omega : 1 < S.card) p₀
-  obtain ⟨r,hr,hrunit⟩ := HuxleyLinearForm.fareySector_exists_unit_determinant hl hμ0 hp₀ hp hne (hmax p hp)
-  obtain ⟨hn₀,hn₀N,hcop₀,_hl₀,hu₀⟩ := (HuxleyLinearForm.mem_fareySector_iff hl hμ0).mp hp₀
-  have hn₀pos : 0 < p₀.2 := by omega
-  let f : ℤ × ℤ → ℤ := fun t => p₀.1*t.2-p₀.2*t.1
-  let D := S.image f
-  have hinj : Set.InjOn f S := by
-    intro t ht u hu he
-    exact HuxleyLinearForm.maximal_denominator_determinant_injective hn₀pos hcop₀
-      ⟨((HuxleyLinearForm.mem_fareySector_iff hl hμ0).mp ht).1,hmax t ht⟩
-      ⟨((HuxleyLinearForm.mem_fareySector_iff hl hμ0).mp hu).1,hmax u hu⟩ he
-  have hDcard : D.card=S.card := Finset.card_image_of_injOn hinj
-  have hunit : ∃ d ∈ D, d.natAbs=1 := by
-    refine ⟨f r,Finset.mem_image.mpr ⟨r,hr,rfl⟩,?_⟩
-    have h : |f r|=1 := hrunit
-    exact Int.ofNat_inj.mp ((Int.natCast_natAbs (f r)).trans h)
-  have hsize : ∀ d ∈ D, (d.natAbs:ℝ) ≤ B*(D.card:ℝ) := by
-    intro d hd
-    obtain ⟨t,ht,rfl⟩ := Finset.mem_image.mp hd
-    have hb := HuxleyLinearForm.fareySector_determinant_bound hl hμ0 hp₀ ht
-    have hw : (μ-l)*(N:ℝ)^2 ≤ B*(S.card:ℝ) := by
-      have h := le_trans (le_max_left ((μ-l)*(N:ℝ)^2/B) 2) hR
-      have hd := (div_le_iff₀ hB0).mp h
-      nlinarith only [hd]
-    rw [hDcard,Nat.cast_natAbs,Int.cast_abs]
-    exact hb.trans hw
-  have hNleH : (N:ℝ) ≤ max 1 μ*(N:ℝ) := by
-    have hh := mul_le_mul_of_nonneg_right (le_max_left (1:ℝ) μ) (Nat.cast_nonneg N)
-    simpa only [one_mul] using hh
-  have hMleH : μ*(N:ℝ) ≤ max 1 μ*(N:ℝ) :=
-    mul_le_mul_of_nonneg_right (le_max_right (1:ℝ) μ) (Nat.cast_nonneg N)
-  have hbase : 96*B*(max 1 μ*(N:ℝ))*δ ≤ 1 := by
-    have h := (le_div_iff₀ (by positivity : 0 < 96*B)).mp hsmall
-    nlinarith only [h]
-  have hsmallα : 36*B*(2*(N:ℝ)*δ) < 1 := by
-    have h := mul_le_mul_of_nonneg_left hNleH (by positivity : 0 ≤ B*δ)
-    nlinarith only [h,hbase]
-  have hsmallβ : 36*B*(2*(μ*(N:ℝ))*δ) < 1 := by
-    have h := mul_le_mul_of_nonneg_left hMleH (by positivity : 0 ≤ B*δ)
-    nlinarith only [h,hbase]
-  obtain ⟨b₀,hb₀⟩ := hnear p₀ hp₀
-  have hnearα : ∀ d ∈ D, ∃ b : ℤ, |(d:ℝ)*α-b| ≤ 2*(N:ℝ)*δ := by
-    intro d hd
-    obtain ⟨t,ht,rfl⟩ := Finset.mem_image.mp hd
-    obtain ⟨b,hb⟩ := hnear t ht
-    obtain ⟨hn,hnN,_hc,_hl,_hu⟩ := (HuxleyLinearForm.mem_fareySector_iff hl hμ0).mp ht
-    have htn : |(t.2:ℝ)| ≤ N := by
-      rw [abs_of_nonneg (by exact_mod_cast (show 0 ≤ t.2 by omega))]
-      exact_mod_cast hnN
-    have htn₀ : |(p₀.2:ℝ)| ≤ N := by
-      rw [abs_of_nonneg (by exact_mod_cast hn₀pos.le)]
-      exact_mod_cast hn₀N
-    exact ⟨t.2*b₀-p₀.2*b,HuxleyLinearForm.determinant_alpha_near p₀.1 p₀.2 t.1 t.2 b₀ b htn htn₀ hb₀ hb⟩
-  have hnum : ∀ t ∈ S, |(t.1:ℝ)| ≤ μ*(N:ℝ) := by
-    intro t ht
-    obtain ⟨hn,hnN,_hc,hlower,hupper⟩ := (HuxleyLinearForm.mem_fareySector_iff hl hμ0).mp ht
-    have hnR : (0:ℝ) ≤ t.2 := by exact_mod_cast (show 0 ≤ t.2 by omega)
-    have htpos : (0:ℝ) ≤ t.1 := (mul_nonneg hl.le hnR).trans hlower
-    rw [abs_of_nonneg htpos]
-    exact hupper.trans (mul_le_mul_of_nonneg_left (by exact_mod_cast hnN) hμ0)
-  have hnearβ : ∀ d ∈ D, ∃ b : ℤ, |(d:ℝ)*β-b| ≤ 2*(μ*(N:ℝ))*δ := by
-    intro d hd
-    obtain ⟨t,ht,rfl⟩ := Finset.mem_image.mp hd
-    obtain ⟨b,hb⟩ := hnear t ht
-    exact ⟨p₀.1*b-t.1*b₀,HuxleyLinearForm.determinant_beta_near p₀.1 p₀.2 t.1 t.2 b₀ b
-      (hnum t ht) (hnum p₀ hp₀) hb₀ hb⟩
-  have ha := HuxleyLinearForm.small_error_integer_of_unit_determinant D (by positivity) hunit hsize hsmallα hnearα
-  have hb := HuxleyLinearForm.small_error_integer_of_unit_determinant D (by positivity) hunit hsize hsmallβ hnearβ
-  rw [hDcard] at ha hb
-  constructor
-  · apply ha.trans
-    apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
-    nlinarith only [mul_nonneg (Nat.cast_nonneg N) hδ]
-  · apply hb.trans
-    apply div_le_div_of_nonneg_right _ (Nat.cast_nonneg _)
-    nlinarith only [mul_nonneg (mul_nonneg hμ0 (Nat.cast_nonneg N)) hδ]
-
-                                                                        
-                                                                    
 theorem fareySector_alpha_of_beta_bound {N : ℕ} {l w B α β δ : ℝ}
     (hl : 0 < l) (hlw : l ≤ w) (hN : 0 < N) (hB : 1 ≤ B)
     (hR : w*(N:ℝ) ≤ (HuxleyLinearForm.fareySector N l w).card)
@@ -404,7 +205,7 @@ theorem fareySector_bounded_density_dichotomy_all_slopes
   by_cases hsmall : (N:ℝ)*δ ≤ 1/(96*B)
   · have hs : (max 1 w*(N:ℝ))*δ ≤ 1/(96*B) := by
       simpa only [max_eq_left hwle,one_mul] using hsmall
-    obtain ⟨ha,hb⟩ := fareySector_small_error_bounds_all_slopes hl hw hB hδ hR hs hnear
+    obtain ⟨ha,hb⟩ := HuxleyLinearForm.fareySector_small_error_bounds hl hw hB hδ hR hs hnear
     exact Or.inr ⟨ha.trans (div_le_div_of_nonneg_right halpha (Nat.cast_nonneg _)),
       hb.trans (div_le_div_of_nonneg_right hbeta (Nat.cast_nonneg _))⟩
   by_cases hsize : ((HuxleyLinearForm.fareySector N l w).card:ℝ) ≤
@@ -476,19 +277,93 @@ theorem fareySector_integer_labels_enlarged_rectangle_all_slopes
   dsimp [z] at hz0
   exact sub_eq_zero.mp hz0
 
-theorem sector_seed_label_of_taylor_remainders_all_slopes
+theorem negative_fareySector_integer_labels_enlarged_rectangle_all_slopes
+    {N : ℕ} {l w B α β δ : ℝ}
+    (hw : w < 0) (hlw : l ≤ w) (hB : 1 ≤ B) (hδ : 0 ≤ δ) :
+    let P := HuxleyLinearForm.fareySector N (-w) (-l)
+    let S := P.image (fun p : ℤ × ℤ => (-p.1,p.2))
+    max ((w-l)*(N:ℝ)^2/B) 2 ≤ (S.card:ℝ) →
+    3840*B*δ*((-l)*(N:ℝ))*(N:ℝ) < (S.card:ℝ) →
+    (∀ p∈S, ∃ b : ℤ, |(p.1:ℝ)*α+(p.2:ℝ)*β-b| ≤ δ) →
+    ∀ p : ℤ × ℤ, 0 ≤ -(p.1:ℝ) → -(p.1:ℝ) ≤ 12*((-l)*(N:ℝ)) →
+      0 ≤ (p.2:ℝ) → (p.2:ℝ) ≤ 12*(N:ℝ) → ∀ b : ℤ,
+      |(p.1:ℝ)*α+(p.2:ℝ)*β-b| ≤ δ →
+      b=p.1*round α+p.2*round β := by
+  classical
+  intro P S hR hlarge hnear
+  have hinj : Function.Injective (fun p : ℤ × ℤ => (-p.1,p.2)) := by
+    intro p q hpq
+    have h₁ := congrArg Prod.fst hpq
+    have h₂ := congrArg Prod.snd hpq
+    exact Prod.ext (neg_injective h₁) h₂
+  have hcard : S.card=P.card := Finset.card_image_of_injective P hinj
+  rw [hcard] at hR hlarge
+  have hw' : 0 < -w := neg_pos.mpr hw
+  have hl' : 0 ≤ -l := by linarith only [hlw,hw]
+  have hR' : max (((-l)-(-w))*(N:ℝ)^2/B) 2 ≤ (P.card:ℝ) := by
+    have heq : (-l)-(-w)=w-l := by ring
+    rw [heq]
+    exact hR
+  have hnear' : ∀ p∈P, ∃ b : ℤ, |(p.1:ℝ)*(-α)+(p.2:ℝ)*β-b| ≤ δ := by
+    intro p hp
+    obtain ⟨b,hb⟩ := hnear (-p.1,p.2) (Finset.mem_image_of_mem _ hp)
+    refine ⟨b,?_⟩
+    simpa only [Int.cast_neg,neg_mul,mul_neg] using hb
+  obtain ⟨ha,_hb⟩ :=
+    (fareySector_bounded_density_dichotomy_all_slopes
+      hw' hB hδ hR' hnear').resolve_left (not_le.mpr hlarge)
+  have hPtwo : (2:ℝ) ≤ P.card := (le_max_right _ _).trans hR'
+  have hPpos : (0:ℝ) < P.card := lt_of_lt_of_le (by norm_num) hPtwo
+  obtain ⟨p₀,hp₀⟩ := Finset.card_pos.mp
+    (show 0 < P.card by exact_mod_cast hPpos)
+  have hpdata := (HuxleyLinearForm.mem_fareySector_iff hw' hl').mp hp₀
+  have ht : (0:ℝ) < p₀.2 := by exact_mod_cast (show 0 < p₀.2 by omega)
+  have htN : (p₀.2:ℝ) ≤ N := by exact_mod_cast hpdata.2.1
+  have hnum : (0:ℝ) < p₀.1 :=
+    (mul_pos hw' ht).trans_le hpdata.2.2.2.1
+  have hnumOne : (1:ℝ) ≤ p₀.1 := by
+    have hh : (0:ℤ) < p₀.1 := by exact_mod_cast hnum
+    exact_mod_cast (show 1 ≤ p₀.1 by omega)
+  have hμN : 1 ≤ (-l)*(N:ℝ) :=
+    hnumOne.trans (hpdata.2.2.2.2.trans (mul_le_mul_of_nonneg_left htN hl'))
+  have hfactor : 54*B ≤ 3840*B*(-l)*(N:ℝ) := by
+    have hh := mul_le_mul_of_nonneg_left hμN (show 0 ≤ 3840*B by positivity)
+    nlinarith only [hh,hB]
+  have hscaled := mul_le_mul_of_nonneg_right hfactor
+    (mul_nonneg (Nat.cast_nonneg N : (0:ℝ) ≤ N) hδ)
+  have hsmall : 27*B*(N:ℝ)*δ/(P.card:ℝ) < 1/2 := by
+    apply (div_lt_iff₀ hPpos).mpr
+    nlinarith only [hlarge,hscaled]
+  have hhalf := abs_lt.mp (ha.trans_lt hsmall)
+  have hround : round α= -round (-α) := by
+    apply round_eq_iff.mpr
+    simp only [Int.cast_neg,Set.mem_Ico]
+    constructor <;> linarith only [hhalf.1,hhalf.2]
+  have hlabels := fareySector_integer_labels_enlarged_rectangle_all_slopes
+    hw' hl' hB hδ hR' hlarge hnear'
+  intro p hp0 hpM hpt0 hptN b hb
+  have hh := hlabels (-p.1,p.2)
+    (by simpa only [Int.cast_neg] using hp0)
+    (by simpa only [Int.cast_neg] using hpM) hpt0 hptN b
+    (by simpa only [Int.cast_neg,neg_mul,mul_neg,neg_neg] using hb)
+  change b=(-p.1)*round (-α)+p.2*round β at hh
+  rw [hround]
+  nlinarith only [hh]
+
+
+private theorem signed_sector_seed_label_of_taylor_remainders (negative : Bool)
     {K : ℕ} {l w B y₀ α β δ C : ℝ} {g : ℝ → ℝ} {H : ℤ × ℤ → ℤ} {p₀ : ℤ × ℤ} {H₀ : ℤ}
-    (hl : 0 < l) (hw : 0 ≤ w) (hlw : l ≤ w) (hB : 1 ≤ B)
+    (hs : SectorSign negative l w) (hlw : l ≤ w) (hB : 1 ≤ B)
     (hy₀ : y₀ ∈ Set.Icc l w) (hδ : 0 ≤ δ) (hC : 0 ≤ C)
-    (hcard : max ((w-l)*(K:ℝ)^2/B) 2 ≤ (HuxleyLinearForm.fareySector K l w).card)
-    (htaylor : ∀ p ∈ HuxleyLinearForm.fareySector K l w,
+    (hcard : max ((w-l)*(K:ℝ)^2/B) 2 ≤ (signedFareySector negative K l w).card)
+    (htaylor : ∀ p ∈ signedFareySector negative K l w,
       |g ((p.1:ℝ)/p.2)-g y₀-deriv g y₀*((p.1:ℝ)/p.2-y₀)| ≤
         C*|((p.1:ℝ)/p.2)-y₀|^2)
-    (hnear : ∀ p ∈ HuxleyLinearForm.fareySector K l w,
+    (hnear : ∀ p ∈ signedFareySector negative K l w,
       |(p.1:ℝ)*α+(p.2:ℝ)*β-(p.2:ℝ)*g ((p.1:ℝ)/p.2)-H p| ≤ δ) :
     let η := δ+(K:ℝ)*C*(w-l)^2
-    3840*B*η*(w*(K:ℝ))*(K:ℝ) < (HuxleyLinearForm.fareySector K l w).card →
-    0 ≤ (p₀.1:ℝ) → (p₀.1:ℝ) ≤ 12*(w*(K:ℝ)) →
+    3840*B*η*(sectorRadius negative l w*(K:ℝ))*(K:ℝ) < (signedFareySector negative K l w).card →
+    0 ≤ sectorNumerator negative p₀.1 → sectorNumerator negative p₀.1 ≤ 12*(sectorRadius negative l w*(K:ℝ)) →
     0 < (p₀.2:ℝ) → (p₀.2:ℝ) ≤ 12*(K:ℝ) →
     (p₀.1:ℝ)/p₀.2=y₀ →
     |(p₀.1:ℝ)*α+(p₀.2:ℝ)*β-(p₀.2:ℝ)*g y₀-H₀| ≤ δ →
@@ -497,15 +372,10 @@ theorem sector_seed_label_of_taylor_remainders_all_slopes
   change _ → _
   intro hlarge
   have hη : 0 ≤ η := by dsimp [η]; positivity
-  have hlin (p : ℤ × ℤ) (hp : p ∈ HuxleyLinearForm.fareySector K l w) :
+  have hlin (p : ℤ × ℤ) (hp : p ∈ signedFareySector negative K l w) :
       |(p.1:ℝ)*(α-deriv g y₀)+(p.2:ℝ)*(β-g y₀+y₀*deriv g y₀)-H p| ≤ η := by
-    obtain ⟨ht,htK,_hc,hlo,hhi⟩ :=
-      (HuxleyLinearForm.mem_fareySector_iff hl (hl.le.trans hlw)).mp hp
-    have ht0 : (0:ℝ) < p.2 := by exact_mod_cast (show 0 < p.2 by omega)
-    have htK' : (p.2:ℝ) ≤ K := by exact_mod_cast htK
+    have ⟨ht0,htK',hx⟩ := signedFareySector_geometry hs hlw hp
     let x : ℝ := (p.1:ℝ)/p.2
-    have hx : x ∈ Set.Icc l w :=
-      ⟨(le_div_iff₀ ht0).mpr hlo,(div_le_iff₀ ht0).mpr hhi⟩
     have hdist : |x-y₀| ≤ w-l := abs_le.mpr
       ⟨by linarith [hx.1,hy₀.2],by linarith [hx.2,hy₀.1]⟩
     have htay := htaylor p hp
@@ -534,10 +404,15 @@ theorem sector_seed_label_of_taylor_remainders_all_slopes
       (p₀.2:ℝ)*(β-g y₀+y₀*deriv g y₀)-H₀| ≤ η := by
     rw [hid]
     exact hpnear.trans (le_add_of_nonneg_right (by positivity))
-  exact fareySector_integer_labels_enlarged_rectangle_all_slopes hl hw hB hη hcard hlarge
-    (fun q hq => ⟨H q,hlin q hq⟩) p₀ hp0 hpu hpt.le hptK H₀ hpnear'
+  cases negative
+  · exact fareySector_integer_labels_enlarged_rectangle_all_slopes hs (hs.le.trans hlw) hB hη hcard hlarge
+      (fun q hq => ⟨H q,hlin q hq⟩) p₀ hp0 hpu hpt.le hptK H₀ hpnear'
+  · exact negative_fareySector_integer_labels_enlarged_rectangle_all_slopes hs hlw hB hη hcard hlarge
+      (fun q hq => ⟨H q,hlin q hq⟩) p₀ hp0 hpu hpt.le hptK H₀ hpnear'
 
-theorem physicalModelPhase_quartic_original_seed_linearization_all_slopes
+
+
+private theorem physicalModelPhase_quartic_signed_seed_linearization (negative : Bool)
     {K : ℕ} {σ δ T M N R B dmin l w Bd Δ Q : ℝ}
     {p₀ : ℤ × ℤ} {k : Fin 17}
     {F : Fin 2 → ℝ → ℝ} {A W x₀ xseed : Fin 2 → ℝ}
@@ -550,14 +425,14 @@ theorem physicalModelPhase_quartic_original_seed_linearization_all_slopes
     (hB : 0 ≤ B) (hdmin : 0 < dmin) (hΔ : 0 ≤ Δ) (hQ : 0 ≤ Q)
     (hA : ∀ i, M ≤ A i) (hW : ∀ i, A i+W i ≤ 2*M)
     (hx₀ : ∀ i, x₀ i ∈ Set.Ioo (1/2:ℝ) (W i-1/2))
-    (hx₁ : ∀ p ∈ HuxleyLinearForm.fareySector K l w, ∀ i,
+    (hx₁ : ∀ p ∈ signedFareySector negative K l w, ∀ i,
       x₁ ((p.1:ℝ)/p.2) i ∈ Set.Ioo (1/2:ℝ) (W i-1/2))
     (hxseed : ∀ i, xseed i∈Set.Ioo (1/2:ℝ) (W i-1/2))
     (hr : ∀ i, r i ≠ 0) (hdet : ∀ i, v i*r i-e i*s i=1)
-    (hl : 0 < l) (hw : 0 ≤ w) (hlw : l ≤ w) (hBd : 1 ≤ Bd) (htseed : 0 < p₀.2)
+    (hs : SectorSign negative l w) (hlw : l ≤ w) (hBd : 1 ≤ Bd) (htseed : 0 < p₀.2)
     (hyseed : (p₀.1:ℝ)/p₀.2∈Set.Icc l w)
     (hden : ∀ y ∈ Set.Icc l w, ∀ i, dmin ≤ (r i:ℝ)*y+s i) :
-    let S := HuxleyLinearForm.fareySector K l w
+    let S := signedFareySector negative K l w
     let y₀ := (p₀.1:ℝ)/p₀.2
     let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
     let a := fun i => round (x₀ i)
@@ -599,15 +474,15 @@ theorem physicalModelPhase_quartic_original_seed_linearization_all_slopes
     (∀ p ∈ S, |(z p 0-cnew p 0)-(z p 1-cnew p 1)| ≤ Δ) →
     (∀ p ∈ S, |q p 0|+|q p 1| ≤ Q) →
     max ((w-l)*(K:ℝ)^2/Bd) 2 ≤ S.card →
-    3840*Bd*η*(w*(K:ℝ))*(K:ℝ) < S.card →
-    (p₀.1:ℝ) ≤ 12*(w*(K:ℝ)) →
+    3840*Bd*η*(sectorRadius negative l w*(K:ℝ))*(K:ℝ) < S.card →
+    sectorNumerator negative p₀.1 ≤ 12*(sectorRadius negative l w*(K:ℝ)) →
     (p₀.2:ℝ) ≤ 12*(K:ℝ) →
     |(zseed 0-cseed 0)-(zseed 1-cseed 1)| ≤ Δ →
     |q p₀ 0|+|q p₀ 1| ≤ Q →
     Hseed=p₀.1*round (α-deriv φ y₀)+p₀.2*round (β-φ y₀+y₀*deriv φ y₀) ∧
     |(α-round (α-deriv φ y₀))*y₀+
       (β-round (β-φ y₀+y₀*deriv φ y₀))-φ y₀| ≤ D/(p₀.2:ℝ) := by
-  let S := HuxleyLinearForm.fareySector K l w
+  let S := signedFareySector negative K l w
   let y₀ := (p₀.1:ℝ)/p₀.2
   let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
   let a := fun i => round (x₀ i)
@@ -663,10 +538,8 @@ theorem physicalModelPhase_quartic_original_seed_linearization_all_slopes
   have hD : 0 ≤ D := by dsimp [D]; positivity
   have hgeom (p : ℤ × ℤ) (hp : p ∈ S) :
       (0:ℝ) < p.2 ∧ (p.1:ℝ)/p.2 ∈ Set.Icc l w := by
-    obtain ⟨ht,_htK,_hc,hlo,hhi⟩ :=
-      (HuxleyLinearForm.mem_fareySector_iff hl (hl.le.trans hlw)).mp hp
-    have ht0 : (0:ℝ) < p.2 := by exact_mod_cast (show 0 < p.2 by omega)
-    exact ⟨ht0,⟨(le_div_iff₀ ht0).mpr hlo,(div_le_iff₀ ht0).mpr hhi⟩⟩
+    have hh := signedFareySector_geometry hs hlw hp
+    exact ⟨hh.1,hh.2.2⟩
   have hy₀ : y₀ ∈ Set.Icc l w := hyseed
   have ht₀ : (0:ℝ) < p₀.2 := by exact_mod_cast htseed
   have hcell {z : ℝ} (hz : z ∈ Set.Icc l w) :
@@ -728,11 +601,9 @@ theorem physicalModelPhase_quartic_original_seed_linearization_all_slopes
     apply he.trans
     dsimp only [D]
     gcongr
-  have hp0 : 0 ≤ (p₀.1:ℝ) :=
-    (mul_nonneg hl.le ht₀.le).trans ((le_div_iff₀ ht₀).mp hy₀.1)
-  have hlabel := sector_seed_label_of_taylor_remainders_all_slopes
-    hl hw hlw hBd hy₀ hD hC hcard htaylor hnear hlarge
-    hp0 hpu ht₀ hptK rfl hseednear
+  have hlabel := signed_sector_seed_label_of_taylor_remainders negative
+    hs hlw hBd hy₀ hD hC hcard htaylor hnear hlarge
+    (sectorNumerator_nonneg hs ht₀ hy₀) hpu ht₀ hptK rfl hseednear
   refine ⟨hlabel,?_⟩
   have hid : (p₀.2:ℝ)*((α-round (α-deriv φ y₀))*y₀+
       (β-round (β-φ y₀+y₀*deriv φ y₀))-φ y₀) =
@@ -748,291 +619,6 @@ theorem physicalModelPhase_quartic_original_seed_linearization_all_slopes
   rw [mul_comm]
   exact hmulabs.trans_le hseednear
 
-theorem physicalModelPhase_actual_fourier_original_seed_residual_all_positive_slopes
-    {σ δ T M N R dmin : ℝ} {k : Fin 17} (Q K₀ : ℕ) [NeZero K₀]
-    (rat : Fin 2 → ℚ) (vinv : Fin 2 → ℤ) (parity : Fin 2 → Fin 2) (Mat : Fin 4 → ℤ) (anchor : ℚ) (e r v s : ℤ)
-    {F : Fin 2 → ℝ → ℝ} {A W x₀ xref : Fin 2 → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : ∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ)
-    (hT : 0 < T) (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
-    (hQ : 0 < Q) (hscale : T*N*R^2=M^3)
-    (hmesh : (Q:ℝ)*N ≤ (K₀:ℝ)*R^2)
-    (hA : ∀ i, M ≤ A i) (hW : ∀ i, A i+W i ≤ 2*M)
-    (hx₀ : ∀ i, x₀ i∈Ioo (1/2:ℝ) (W i-1/2))
-    (hden : ∀ i, (rat i).den ≤ Q ∧ Q ≤ 2*(rat i).den)
-    (hinv : ∀ i, ((rat i).den:ℤ) ∣ (rat i).num*vinv i-1) :
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ i, iteratedDeriv 2 (f i) (x₀ i)/2=(rat i:ℝ)) →
-    let q := fun i => (rat i).den
-    let mu := fun i => iteratedDeriv 3 (f i) (round (x₀ i))/6
-    let ell := fun i => deriv (f i) (round (x₀ i))
-    let b := fun i => (⌊(q i:ℝ)*ell i⌋+(parity i:ℕ) : ℤ)
-    let cround := fun i => round ((q i:ℝ)*ell i)
-    let tau := fun i => ((b i:ℝ)-(q i:ℝ)*ell i)/2
-    let dual := fun i => -2*mu i*(Real.sqrt (2/(3*mu i*(q i:ℝ))))^3
-    let w := fun i => (![Int.fract (-(vinv i:ℝ)*b i/q i),
-      Int.fract (-(vinv i:ℝ)/q i),dual i/Real.sqrt K₀,
-      (3*dual i*tau i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    b 0-cround 0=b 1-cround 1 →
-    (∀ d, |w 0 d-w 1 d| ≤ 2*radius d) →
-    let c := modelPhaseThirdLower σ/6
-    let J := (σ*(σ+1)+1)/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 → N ≤ R^2 → R ≤ N → N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
-    Mat 0*Mat 3-Mat 1*Mat 2=1 →
-    (Mat 2:ℝ)*(rat 0:ℝ)+Mat 3=(q 1:ℝ)/q 0 →
-    ((Mat 0:ℝ)*(rat 0:ℝ)+Mat 1)/((Mat 2:ℝ)*(rat 0:ℝ)+Mat 3)=(rat 1:ℝ) →
-    |(Mat 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) →
-    let C := σ*(σ+1)+1
-    let H := N/(C+2)
-    let ε := modelPhaseThirdLower σ/(16*(C+2)*R^2)
-    2 ≤ N →
-    (∀ i, x₀ i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ i, x₀ i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    v*r-e*s=1 →
-    0 < (r:ℝ)*((rat 0:ℝ)-ε)-e →
-    0 < (r:ℝ)*((rat 0:ℝ)+ε)-e →
-    0 < (v:ℝ)-s*((rat 0:ℝ)+ε) →
-    max ((r:ℝ)*((rat 0:ℝ)-ε)-e) ((r:ℝ)*((rat 0:ℝ)+ε)-e) ≤
-      2*min ((r:ℝ)*((rat 0:ℝ)-ε)-e) ((r:ℝ)*((rat 0:ℝ)+ε)-e) →
-    |(anchor:ℝ)-(rat 0:ℝ)| ≤ ε →
-    256*(anchor.den:ℝ) ≤ (Q:ℝ)/3 →
-    256 ≤ (2*ε)*((Q:ℝ)/3)*anchor.den →
-    let l := (rat 0:ℝ)-ε
-    let w' := (rat 0:ℝ)+ε
-    let α := ((v:ℝ)-s*w')/((r:ℝ)*w'-e)
-    let β := ((v:ℝ)-s*l)/((r:ℝ)*l-e)
-    let K := ⌊((Q:ℝ)/3)*min ((r:ℝ)*l-e) ((r:ℝ)*w'-e)⌋₊
-    let S := HuxleyLinearForm.fareySector K α β
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let κ := modelPhaseThirdLower σ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
-    let ep : Fin 2 → ℤ := ![e,Mat 0*e+Mat 1*r]
-    let rp : Fin 2 → ℤ := ![r,Mat 2*e+Mat 3*r]
-    let sp : Fin 2 → ℤ := ![s,Mat 2*v+Mat 3*s]
-    let pseed : ℤ × ℤ := (v*(q 0:ℤ)-s*(rat 0).num,r*(rat 0).num-e*(q 0:ℤ))
-    let yseed := (pseed.1:ℝ)/pseed.2
-    let ar := fun i => round (xref i)
-    let μr := fun i => iteratedDeriv 3 (f i) (ar i)/6
-    let νr := fun i => iteratedDeriv 4 (f i) (ar i)/24
-    let dr := fun i => deriv (f i) (ar i)
-    let δr := fun i => iteratedDeriv 2 (f i) (ar i)/2-(ep i:ℝ)/rp i
-    let θr := fun i => (rp i:ℝ)*dr i-round ((rp i:ℝ)*dr i)
-    let βr := fun i => dr i*sp i+2*δr i/(3*μr i*rp i)
-    let ac := θr 0-θr 1
-    let bc := βr 0-βr 1
-    let g := rationalPhase (μr 0) (rp 0) (sp 0) (μr 1) (rp 1) (sp 1)
-    let hq := quarticPhase (μr 0) (νr 0) (rp 0) (sp 0) (μr 1) (νr 1) (rp 1) (sp 1)
-    let φ := fun y => g y-hq y
-    let Ctay := (2/κ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*dmin^3)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let η := D+(K:ℝ)*Ctay*(β-α)^2
-    let U := (4/κ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*dmin^3)
-    let Z := quarticCurvatureBoundaryRoots (μr 0) (νr 0) (rp 0) (sp 0)
-      (μr 1) (νr 1) (rp 1) (sp 1) U
-    1 ≤ M → 1 ≤ R → R ≤ M → N^2 ≤ M*R → 0 < dmin →
-    Δ < 1/2 →
-    (∀ i, rp i ≠ 0) →
-    (∀ i, xref i∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ i, iteratedDeriv 2 (f i) (xref i)/2=(ep i:ℝ)/rp i) →
-    (∀ i, (H+|x₀ i-xref i|+1)^2 ≤ M*R) →
-    (∀ y∈Icc α β, ∀ i, dmin ≤ (rp i:ℝ)*y+sp i) →
-    α ∈ finiteBoundaryCell Z α β k → β ∈ finiteBoundaryCell Z α β k →
-    3840*128*η*(β*(K:ℝ))*(K:ℝ) < S.card →
-    |(ac-round (ac-deriv φ yseed))*yseed+
-      (bc-round (bc-φ yseed+yseed*deriv φ yseed))-g yseed+hq yseed| ≤ D/(pseed.2:ℝ) := by
-  classical
-  intro f hlevel q mu ell b cround tau dual w radius hcolor hnear c J B
-    hsmall hNR hRN hcube hminscale hMatdet hMatt hMatmap hMatgamma
-    C H ε hNtwo hL hU hchart hdl hdw hnum hdyad hanchor hcut hcount
-    l w' α β K S C₂ C₃ κ Ct Cc Δ ep rp sp pseed yseed ar μr νr dr δr θr βr ac bc g hq φ
-    Ctay D η U Z hMone hRone hRM hNscale hdmin hΔ hrp hxref href hbudget
-    hd hleft hright hlarge
-  let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
-  have hF₃ i := approximateModelPhase_mono (hF i) (by norm_num : 3 ≤ 4) le_rfl
-  obtain ⟨hcard,ξ,hξ⟩ := physicalModelPhase_actual_fourier_complete_sector_fourth_signed
-    Q K₀ rat vinv parity Mat anchor e r v s hσ hδ hF₃ hT hM hN hR hQ hscale hmesh
-    hA hW hx₀ hden hinv hlevel hcolor hnear hsmall hNR hRN hcube hminscale
-    hMatdet hMatt hMatmap hMatgamma hNtwo hL hU hchart hdl hdw hnum hdyad hanchor hcut hcount
-  let qp := fun (p : ℤ × ℤ) i => (rp i:ℝ)*p.1+sp i*p.2
-  let ap := fun (p : ℤ × ℤ) i => (ep i:ℝ)*p.1+vp i*p.2
-  let xp := fun p : ℤ × ℤ => ξ ((p.1:ℝ)/p.2)
-  let zp := fun p i => qp p i*deriv (f i) (round (xp p i))
-  have hqe (p : ℤ × ℤ) (i : Fin 2) :
-      ((![r*p.1+s*p.2,Mat 2*(e*p.1+v*p.2)+Mat 3*(r*p.1+s*p.2)] i:ℤ):ℝ)=qp p i := by
-    fin_cases i <;> dsimp only [qp,rp,sp] <;> push_cast <;> ring
-  have hae (p : ℤ × ℤ) (i : Fin 2) :
-      ((![e*p.1+v*p.2,Mat 0*(e*p.1+v*p.2)+Mat 1*(r*p.1+s*p.2)] i:ℤ):ℝ)=ap p i := by
-    fin_cases i <;> dsimp only [ap,ep,vp] <;> push_cast <;> ring
-  have hpoints (p) (hp : p∈S) (i) :
-      xp p i∈Ioo (1/2:ℝ) (W i-1/2) ∧
-      iteratedDeriv 2 (f i) (xp p i)/2=ap p i/qp p i ∧
-      |xp p i-x₀ i| ≤ H ∧ 0 < qp p i ∧ qp p i ≤ Q := by
-    have hh := (hξ p hp).1 i
-    simpa only [hqe,hae] using hh
-  have hlabels (p : ℤ × ℤ) : ∃ ci : Fin 2 → ℤ, p∈S →
-      (∀ i, ci i∈minorArcCenterLabels (zp p i) Δ) ∧
-      |(zp p 0-ci 0)-(zp p 1-ci 1)| ≤ Δ := by
-    by_cases hp : p∈S
-    · have hh := (hξ p hp).2.2 hΔ
-      simp only [hqe] at hh
-      obtain ⟨c₀,hc₀,c₁,hc₁,_hrnd,hfour,_⟩ := hh
-      refine ⟨![c₀,c₁],fun _ => ⟨?_,hfour⟩⟩
-      intro i
-      fin_cases i
-      · exact hc₀
-      · exact hc₁
-    · exact ⟨fun _ => 0,fun h => False.elim (hp h)⟩
-  choose cnew hcnew using hlabels
-  have hδ0 : 0 ≤ δ := (abs_nonneg _).trans
-    (approximateModelPhase_iteratedDeriv_error (hF 0)
-      (by norm_num : (3/2:ℝ)∈Ioo 1 2) 4 le_rfl)
-  have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hC₂ : 0 ≤ C₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
-  have hC₃ : 0 ≤ C₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
-  have hΔpos : 0 ≤ Δ := by dsimp only [Δ,Ct,Cc]; positivity
-  have hH : 0 < H := by dsimp only [H,C]; positivity
-  have hε : 0 < ε := by dsimp only [ε,C]; positivity
-  have hlw : l < w' := by dsimp only [l,w']; linarith only [hε]
-  have hchartR : (v:ℝ)*r-e*s=1 := by exact_mod_cast hchart
-  have hα : 0 < α := div_pos hnum hdw
-  have hαβ : α ≤ β := by
-    have hh := inverseFarey_difference hchartR hdl.ne' hdw.ne'
-    change β-α=(w'-l)/(((r:ℝ)*l-e)*((r:ℝ)*w'-e)) at hh
-    have hp' : 0 ≤ (w'-l)/(((r:ℝ)*l-e)*((r:ℝ)*w'-e)) := by positivity
-    linarith only [hh,hp']
-  have hqpos i : (0:ℝ) < q i := by exact_mod_cast (rat i).pos
-  have hrat i : (rat i:ℝ)=((rat i).num:ℝ)/(q i:ℝ) := Rat.cast_def _
-  have hdenR : (Mat 2:ℝ)*(rat 0).num+Mat 3*q 0=q 1 := by
-    calc
-      _ = ((Mat 2:ℝ)*(rat 0:ℝ)+Mat 3)*q 0 := by
-        rw [hrat]; field_simp [(hqpos 0).ne']
-      _ = q 1 := by rw [hMatt]; field_simp [(hqpos 0).ne']
-  have hnumR : (Mat 0:ℝ)*(rat 0).num+Mat 1*q 0=(rat 1).num := by
-    have hm := hMatmap
-    rw [hMatt,hrat 0,hrat 1] at hm
-    have hh := (div_eq_iff (div_ne_zero (hqpos 1).ne' (hqpos 0).ne')).mp hm
-    field_simp [(hqpos 0).ne',(hqpos 1).ne'] at hh
-    nlinarith only [hh]
-  have hseedq (i) : qp pseed i=(q i:ℝ) := by
-    fin_cases i
-    · dsimp only [qp,pseed,rp,sp]; push_cast
-      linear_combination (q 0:ℝ)*hchartR
-    · dsimp only [qp,pseed,rp,sp]; push_cast
-      linear_combination ((Mat 2:ℝ)*(rat 0).num+Mat 3*q 0)*hchartR+hdenR
-  have hseeda (i) : ap pseed i=((rat i).num:ℝ) := by
-    fin_cases i
-    · dsimp only [ap,pseed,ep,vp]; push_cast
-      linear_combination ((rat 0).num:ℝ)*hchartR
-    · dsimp only [ap,pseed,ep,vp]; push_cast
-      linear_combination ((Mat 0:ℝ)*(rat 0).num+Mat 1*q 0)*hchartR+hnumR
-  have hseedroot (i) : iteratedDeriv 2 (f i) (x₀ i)/2=ap pseed i/qp pseed i := by
-    rw [hseedq,hseeda,hlevel,hrat]
-  have hseedtd : (pseed.2:ℝ)=((r:ℝ)*(rat 0:ℝ)-e)*q 0 := by
-    dsimp only [pseed]; push_cast; rw [hrat]; field_simp [(hqpos 0).ne']
-  have hseedd : 0 < (r:ℝ)*(rat 0:ℝ)-e := by
-    nlinarith only [hdl,hdw]
-  have htseed : 0 < pseed.2 := by
-    have hh : (0:ℝ) < pseed.2 := by rw [hseedtd]; exact mul_pos hseedd (hqpos 0)
-    exact_mod_cast hh
-  have hys : yseed=((v:ℝ)-s*(rat 0:ℝ))/((r:ℝ)*(rat 0:ℝ)-e) := by
-    dsimp only [yseed,pseed]
-    push_cast
-    rw [hrat 0]
-    field_simp [(hqpos 0).ne']
-  have hyseed : yseed∈Icc α β := by
-    rw [hys]
-    apply inverseFarey_mem_interval_signed hchartR hdl hdw
-    exact ⟨by linarith only [hε],by linarith only [hε]⟩
-  have hdetp (i) : vp i*rp i-ep i*sp i=1 := by
-    fin_cases i
-    · exact hchart
-    · change (Mat 0*v+Mat 1*s)*(Mat 2*e+Mat 3*r)-
-        (Mat 0*e+Mat 1*r)*(Mat 2*v+Mat 3*s)=1
-      linear_combination (v*r-e*s)*hMatdet+hchart
-  have hsq (p) (hp : p∈S) (i) :
-      |((round (xp p i)-ar i:ℤ):ℝ)|^2 ≤ M*R := by
-    have hh := rounded_displacement_bound (xp p i) (xref i)
-    have htri := abs_sub_le (xp p i) (x₀ i) (xref i)
-    have hdist := (hpoints p hp i).2.2.1
-    have hb : |(round (xp p i):ℝ)-(ar i:ℝ)| ≤ H+|x₀ i-xref i|+1 := by
-      dsimp only [ar]
-      linarith only [hh,htri,hdist]
-    rw [Int.cast_sub]
-    exact (pow_le_pow_left₀ (abs_nonneg _) hb 2).trans (hbudget i)
-  have hseedSq i : |(round (x₀ i):ℝ)-(ar i:ℝ)|^2 ≤ M*R := by
-    have hh := rounded_displacement_bound (x₀ i) (xref i)
-    have hb : |(round (x₀ i):ℝ)-(ar i:ℝ)| ≤ H+|x₀ i-xref i|+1 := by
-      dsimp only [ar]
-      linarith only [hh,hH]
-    exact (pow_le_pow_left₀ (abs_nonneg _) hb 2).trans (hbudget i)
-  obtain ⟨_v,_hv,hthird,_hsecond,_hfirst,hfourth⟩ := physicalModelPhase_actual_fourier_conditions
-    Q K₀ rat vinv parity hσ hδ hF₃ hT hM hN hR hQ hscale hmesh
-    hA hW hx₀ hden hinv hlevel hcolor hnear
-  have hthird' : |mu 1*(qp pseed 1)^3/(mu 0*(qp pseed 0)^3)-1| ≤ B*R^2/N^2 := by
-    simpa only [hseedq] using hthird
-  have hqsum p (hp : p∈S) : |qp p 0|+|qp p 1| ≤ 2*(Q:ℝ) := by
-    rw [abs_of_pos (hpoints p hp 0).2.2.2.1,abs_of_pos (hpoints p hp 1).2.2.2.1]
-    linarith only [(hpoints p hp 0).2.2.2.2,(hpoints p hp 1).2.2.2.2]
-  have ha : (anchor:ℝ)∈Icc l w' := by
-    have hh := abs_le.mp hanchor
-    exact ⟨by dsimp only [l]; linarith only [hh.1],
-      by dsimp only [w']; linarith only [hh.2]⟩
-  have hseedI : (rat 0:ℝ)∈Icc l w' :=
-    ⟨by dsimp only [l]; linarith only [hε],
-      by dsimp only [w']; linarith only [hε]⟩
-  have hrect := inverseFarey_original_seed_enlarged_rectangle_signed
-    hchart hdl hdw hnum ha hseedI hdyad hcut
-    (show ((rat 0).den:ℝ) ≤ (Q:ℝ) by exact_mod_cast (hden 0).1)
-  have hpu : (pseed.1:ℝ) ≤ 12*(β*(K:ℝ)) := hrect.2.2.2.1
-  have hptK : (pseed.2:ℝ) ≤ 12*(K:ℝ) := hrect.2.2.2.2
-  have hseedfourth :
-      |(qp pseed 0*iteratedDeriv 1 (f 0) (round (x₀ 0))-cround 0)-
-       (qp pseed 1*iteratedDeriv 1 (f 1) (round (x₀ 1))-cround 1)| ≤ Δ := by
-    simp only [hseedq,iteratedDeriv_one]
-    apply hfourth.trans
-    have hqQ : (q 0:ℝ) ≤ Q := by exact_mod_cast (hden 0).1
-    have hCt : 0 ≤ Ct := by dsimp only [Ct]; positivity
-    have hCc : 0 ≤ Cc := by dsimp only [Cc]; positivity
-    have hcoeff : B ≤ 37*B/2+16*B*Cc+2*Ct+2*Cc := by
-      nlinarith only [hB,hCt,hCc,mul_nonneg hB hCc]
-    exact (div_le_div_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hqQ hB) hN.le).trans
-      (div_le_div_of_nonneg_right
-        (mul_le_mul_of_nonneg_right hcoeff (by positivity : (0:ℝ) ≤ Q)) hN.le)
-  have hseedQ : |qp pseed 0|+|qp pseed 1| ≤ 2*(Q:ℝ) := by
-    rw [hseedq,hseedq,abs_of_pos (hqpos 0),abs_of_pos (hqpos 1)]
-    have hq0 : (q 0:ℝ) ≤ Q := by exact_mod_cast (hden 0).1
-    have hq1 : (q 1:ℝ) ≤ Q := by exact_mod_cast (hden 1).1
-    linarith only [hq0,hq1]
-  have hcommon := physicalModelPhase_quartic_original_seed_linearization_all_slopes
-    (p₀:=pseed) (x₀:=xref) (xseed:=x₀) (x₁:=ξ) (e:=ep) (r:=rp) (v:=vp) (s:=sp)
-    (cnew:=cnew) (cseed:=cround) hσ hδ hF hT hMone hN hRone hRM hNscale hscale
-    hB hdmin hΔpos (by positivity : (0:ℝ) ≤ 2*(Q:ℝ))
-    hA hW hxref (fun p hp i => (hpoints p hp i).1) hx₀ hrp hdetp
-    hα (hα.le.trans hαβ) hαβ (by norm_num : (1:ℝ) ≤ 128) htseed hyseed hd
-    hleft hright href hseedroot hseedSq
-    (fun p hp i => (hpoints p hp i).2.1) hsq hthird'
-    (fun p hp => by simpa only [iteratedDeriv_one] using (hcnew p hp).2) hqsum hcard hlarge
-    hpu hptK hseedfourth hseedQ
-  have hres := hcommon.2
-  simp only [iteratedDeriv_one] at hres
-  change |(ac-round (ac-deriv φ yseed))*yseed+
-    (bc-round (bc-φ yseed+yseed*deriv φ yseed))-φ yseed| ≤ D/(pseed.2:ℝ) at hres
-  convert hres using 1
-  congr 1
-  dsimp only [φ]
-  ring
-
-                                                                    
-                                                                    
 theorem quartic_weighted_coefficient_budget_of_bounded_source_chart
     {C J μ N R r s d l w Bcut Kcoord : ℝ}
     (hC : 0 ≤ C) (hJ : 0 < J) (hμ : 0 < μ)
@@ -1325,7 +911,7 @@ theorem quartic_integer_seed_residual_source_normalization
                                                                    
                                                                   
                                                                         
-theorem physicalModelPhase_actual_fourier_original_seed_bounds_all_positive_slopes
+private theorem physicalModelPhase_actual_fourier_signed_seed_bounds (negative : Bool)
     {σ δ T M N R dmin : ℝ} {k : Fin 17} (Q K₀ : ℕ) [NeZero K₀]
     (rat : Fin 2 → ℚ) (vinv : Fin 2 → ℤ) (parity : Fin 2 → Fin 2) (Mat : Fin 4 → ℤ) (anchor : ℚ) (e r v s : ℤ)
     {F : Fin 2 → ℝ → ℝ} {A W x₀ xref : Fin 2 → ℝ}
@@ -1346,17 +932,15 @@ theorem physicalModelPhase_actual_fourier_original_seed_bounds_all_positive_slop
     let b := fun i => (⌊(q i:ℝ)*ell i⌋+(parity i:ℕ) : ℤ)
     let cround := fun i => round ((q i:ℝ)*ell i)
     let tau := fun i => ((b i:ℝ)-(q i:ℝ)*ell i)/2
-    let dual := fun i => -2*mu i*(Real.sqrt (2/(3*mu i*(q i:ℝ))))^3
-    let w := fun i => (![Int.fract (-(vinv i:ℝ)*b i/q i),
-      Int.fract (-(vinv i:ℝ)/q i),dual i/Real.sqrt K₀,
-      (3*dual i*tau i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
+    let dual := fun i => cubicDualPhase (mu i) (q i)
+    let w := fun i => cubicCompletion (vinv i) (b i) (q i) (dual i) (tau i) K₀
     let radius : Fin 4 → ℝ :=
       ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
     b 0-cround 0=b 1-cround 1 →
     (∀ d, |w 0 d-w 1 d| ≤ 2*radius d) →
     let c := modelPhaseThirdLower σ/6
     let J := (σ*(σ+1)+1)/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
+    let B := cubicScaleMajorant J c
     B*R^2/N^2 ≤ 1/2 → N ≤ R^2 → R ≤ N → N^3 ≤ M*R^2 →
     2*R^2 ≤ (Q:ℝ)*N →
     Mat 0*Mat 3-Mat 1*Mat 2=1 →
@@ -1372,7 +956,7 @@ theorem physicalModelPhase_actual_fourier_original_seed_bounds_all_positive_slop
     v*r-e*s=1 →
     0 < (r:ℝ)*((rat 0:ℝ)-ε)-e →
     0 < (r:ℝ)*((rat 0:ℝ)+ε)-e →
-    0 < (v:ℝ)-s*((rat 0:ℝ)+ε) →
+    InverseSectorSign negative v s ((rat 0:ℝ)-ε) ((rat 0:ℝ)+ε) →
     max ((r:ℝ)*((rat 0:ℝ)-ε)-e) ((r:ℝ)*((rat 0:ℝ)+ε)-e) ≤
       2*min ((r:ℝ)*((rat 0:ℝ)-ε)-e) ((r:ℝ)*((rat 0:ℝ)+ε)-e) →
     |(anchor:ℝ)-(rat 0:ℝ)| ≤ ε →
@@ -1383,13 +967,13 @@ theorem physicalModelPhase_actual_fourier_original_seed_bounds_all_positive_slop
     let α := ((v:ℝ)-s*w')/((r:ℝ)*w'-e)
     let β := ((v:ℝ)-s*l)/((r:ℝ)*l-e)
     let K := ⌊((Q:ℝ)/3)*min ((r:ℝ)*l-e) ((r:ℝ)*w'-e)⌋₊
-    let S := HuxleyLinearForm.fareySector K α β
+    let S := signedFareySector negative K α β
     let C₂ := modelPhaseJetCoefficient σ 2+δ
     let C₃ := modelPhaseJetCoefficient σ 3+δ
     let κ := modelPhaseThirdLower σ
     let Ct := C₂/2+5*C₃/12
     let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
+    let Δ := quarticTaylorSlack B Cc Ct*(Q:ℝ)/N
     let ep : Fin 2 → ℤ := ![e,Mat 0*e+Mat 1*r]
     let rp : Fin 2 → ℤ := ![r,Mat 2*e+Mat 3*r]
     let sp : Fin 2 → ℤ := ![s,Mat 2*v+Mat 3*s]
@@ -1421,7 +1005,7 @@ theorem physicalModelPhase_actual_fourier_original_seed_bounds_all_positive_slop
     (∀ i, (H+|x₀ i-xref i|+1)^2 ≤ M*R) →
     (∀ y∈Icc α β, ∀ i, dmin ≤ (rp i:ℝ)*y+sp i) →
     α ∈ finiteBoundaryCell Z α β k → β ∈ finiteBoundaryCell Z α β k →
-    3840*128*η*(β*(K:ℝ))*(K:ℝ) < S.card →
+    3840*128*η*(sectorRadius negative α β*(K:ℝ))*(K:ℝ) < S.card →
     |iteratedDeriv 2 g yseed-iteratedDeriv 2 hq yseed| ≤ U ∧
     |(ac-round (ac-deriv φ yseed))*yseed+
       (bc-round (bc-φ yseed+yseed*deriv φ yseed))-g yseed+hq yseed| ≤
@@ -1433,12 +1017,184 @@ theorem physicalModelPhase_actual_fourier_original_seed_bounds_all_positive_slop
     l w' α β K S C₂ C₃ κ Ct Cc Δ ep rp sp pseed yseed ar μr νr dr δr θr βr ac bc g hq φ
     Ctay D η U Z hMone hRone hRM hNscale hdmin hΔ hrp hxref href hbudget
     hd hleft hright hlarge
-  have hresult := physicalModelPhase_actual_fourier_original_seed_residual_all_positive_slopes
-    Q K₀ rat vinv parity Mat anchor e r v s
-    hσ hδ hF hT hM hN hR hQ hscale hmesh hA hW hx₀ hden hinv
-    hlevel hcolor hnear hsmall hNR hRN hcube hminscale hMatdet hMatt hMatmap hMatgamma
-    hNtwo hL hU hchart hdl hdw hnum hdyad hanchor hcut hcount
-    hMone hRone hRM hNscale hdmin hΔ hrp hxref href hbudget hd hleft hright hlarge
+  have hresult : |(ac-round (ac-deriv φ yseed))*yseed+
+      (bc-round (bc-φ yseed+yseed*deriv φ yseed))-g yseed+hq yseed| ≤ D/(pseed.2:ℝ) := by
+    let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
+    have hF₃ i := approximateModelPhase_mono (hF i) (by norm_num : 3 ≤ 4) le_rfl
+    obtain ⟨hcard,ξ,hξ⟩ := physicalModelPhase_actual_fourier_complete_signed_sector_fourth negative
+      Q K₀ rat vinv parity Mat anchor e r v s hσ hδ hF₃ hT hM hN hR hQ hscale hmesh
+      hA hW hx₀ hden hinv hlevel hcolor hnear hsmall hNR hRN hcube hminscale
+      hMatdet hMatt hMatmap hMatgamma hNtwo hL hU hchart hdl hdw hnum hdyad hanchor hcut hcount
+    let qp := fun (p : ℤ × ℤ) i => (rp i:ℝ)*p.1+sp i*p.2
+    let ap := fun (p : ℤ × ℤ) i => (ep i:ℝ)*p.1+vp i*p.2
+    let xp := fun p : ℤ × ℤ => ξ ((p.1:ℝ)/p.2)
+    let zp := fun p i => qp p i*deriv (f i) (round (xp p i))
+    have hqe (p : ℤ × ℤ) (i : Fin 2) :
+        ((![r*p.1+s*p.2,Mat 2*(e*p.1+v*p.2)+Mat 3*(r*p.1+s*p.2)] i:ℤ):ℝ)=qp p i := by
+      fin_cases i <;> dsimp only [qp,rp,sp] <;> push_cast <;> ring
+    have hae (p : ℤ × ℤ) (i : Fin 2) :
+        ((![e*p.1+v*p.2,Mat 0*(e*p.1+v*p.2)+Mat 1*(r*p.1+s*p.2)] i:ℤ):ℝ)=ap p i := by
+      fin_cases i <;> dsimp only [ap,ep,vp] <;> push_cast <;> ring
+    have hpoints (p) (hp : p∈S) (i) :
+        xp p i∈Ioo (1/2:ℝ) (W i-1/2) ∧
+        iteratedDeriv 2 (f i) (xp p i)/2=ap p i/qp p i ∧
+        |xp p i-x₀ i| ≤ H ∧ 0 < qp p i ∧ qp p i ≤ Q := by
+      have hh := (hξ p hp).1 i
+      simpa only [hqe,hae] using hh
+    have hlabels (p : ℤ × ℤ) : ∃ ci : Fin 2 → ℤ, p∈S →
+        (∀ i, ci i∈minorArcCenterLabels (zp p i) Δ) ∧
+        |(zp p 0-ci 0)-(zp p 1-ci 1)| ≤ Δ := by
+      by_cases hp : p∈S
+      · have hh := (hξ p hp).2.2 hΔ
+        simp only [hqe] at hh
+        obtain ⟨c₀,hc₀,c₁,hc₁,_hrnd,hfour,_⟩ := hh
+        refine ⟨![c₀,c₁],fun _ => ⟨?_,hfour⟩⟩
+        intro i
+        fin_cases i
+        · exact hc₀
+        · exact hc₁
+      · exact ⟨fun _ => 0,fun h => False.elim (hp h)⟩
+    choose cnew hcnew using hlabels
+    have hδ0 : 0 ≤ δ := (abs_nonneg _).trans
+      (approximateModelPhase_iteratedDeriv_error (hF 0)
+        (by norm_num : (3/2:ℝ)∈Ioo 1 2) 4 le_rfl)
+    have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
+    have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
+    have hC₂ : 0 ≤ C₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
+    have hC₃ : 0 ≤ C₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
+    have hΔpos : 0 ≤ Δ := by dsimp only [Δ,Ct,Cc, quarticTaylorSlack]; positivity
+    have hH : 0 < H := by dsimp only [H,C]; positivity
+    have hε : 0 < ε := by dsimp only [ε,C]; positivity
+    have hlw : l < w' := by dsimp only [l,w']; linarith only [hε]
+    have hchartR : (v:ℝ)*r-e*s=1 := by exact_mod_cast hchart
+    have hsign : SectorSign negative α β := inverseSectorSign hnum hdl hdw
+    have hαβ : α ≤ β := by
+      have hh := inverseFarey_difference hchartR hdl.ne' hdw.ne'
+      change β-α=(w'-l)/(((r:ℝ)*l-e)*((r:ℝ)*w'-e)) at hh
+      have hp' : 0 ≤ (w'-l)/(((r:ℝ)*l-e)*((r:ℝ)*w'-e)) := by positivity
+      linarith only [hh,hp']
+    have hqpos i : (0:ℝ) < q i := by exact_mod_cast (rat i).pos
+    have hrat i : (rat i:ℝ)=((rat i).num:ℝ)/(q i:ℝ) := Rat.cast_def _
+    have hdenR : (Mat 2:ℝ)*(rat 0).num+Mat 3*q 0=q 1 := by
+      calc
+        _ = ((Mat 2:ℝ)*(rat 0:ℝ)+Mat 3)*q 0 := by
+          rw [hrat]; field_simp [(hqpos 0).ne']
+        _ = q 1 := by rw [hMatt]; field_simp [(hqpos 0).ne']
+    have hnumR : (Mat 0:ℝ)*(rat 0).num+Mat 1*q 0=(rat 1).num := by
+      have hm := hMatmap
+      rw [hMatt,hrat 0,hrat 1] at hm
+      have hh := (div_eq_iff (div_ne_zero (hqpos 1).ne' (hqpos 0).ne')).mp hm
+      field_simp [(hqpos 0).ne',(hqpos 1).ne'] at hh
+      nlinarith only [hh]
+    have hseedq (i) : qp pseed i=(q i:ℝ) := by
+      fin_cases i
+      · dsimp only [qp,pseed,rp,sp]; push_cast
+        linear_combination (q 0:ℝ)*hchartR
+      · dsimp only [qp,pseed,rp,sp]; push_cast
+        linear_combination ((Mat 2:ℝ)*(rat 0).num+Mat 3*q 0)*hchartR+hdenR
+    have hseeda (i) : ap pseed i=((rat i).num:ℝ) := by
+      fin_cases i
+      · dsimp only [ap,pseed,ep,vp]; push_cast
+        linear_combination ((rat 0).num:ℝ)*hchartR
+      · dsimp only [ap,pseed,ep,vp]; push_cast
+        linear_combination ((Mat 0:ℝ)*(rat 0).num+Mat 1*q 0)*hchartR+hnumR
+    have hseedroot (i) : iteratedDeriv 2 (f i) (x₀ i)/2=ap pseed i/qp pseed i := by
+      rw [hseedq,hseeda,hlevel,hrat]
+    have hseedtd : (pseed.2:ℝ)=((r:ℝ)*(rat 0:ℝ)-e)*q 0 := by
+      dsimp only [pseed]; push_cast; rw [hrat]; field_simp [(hqpos 0).ne']
+    have hseedd : 0 < (r:ℝ)*(rat 0:ℝ)-e := by
+      nlinarith only [hdl,hdw]
+    have htseed : 0 < pseed.2 := by
+      have hh : (0:ℝ) < pseed.2 := by rw [hseedtd]; exact mul_pos hseedd (hqpos 0)
+      exact_mod_cast hh
+    have hys : yseed=((v:ℝ)-s*(rat 0:ℝ))/((r:ℝ)*(rat 0:ℝ)-e) := by
+      dsimp only [yseed,pseed]
+      push_cast
+      rw [hrat 0]
+      field_simp [(hqpos 0).ne']
+    have hyseed : yseed∈Icc α β := by
+      rw [hys]
+      apply inverseFarey_mem_interval_signed hchartR hdl hdw
+      exact ⟨by linarith only [hε],by linarith only [hε]⟩
+    have hdetp (i) : vp i*rp i-ep i*sp i=1 := by
+      fin_cases i
+      · exact hchart
+      · change (Mat 0*v+Mat 1*s)*(Mat 2*e+Mat 3*r)-
+          (Mat 0*e+Mat 1*r)*(Mat 2*v+Mat 3*s)=1
+        linear_combination (v*r-e*s)*hMatdet+hchart
+    have hsq (p) (hp : p∈S) (i) :
+        |((round (xp p i)-ar i:ℤ):ℝ)|^2 ≤ M*R := by
+      have hh := rounded_displacement_bound (xp p i) (xref i)
+      have htri := abs_sub_le (xp p i) (x₀ i) (xref i)
+      have hdist := (hpoints p hp i).2.2.1
+      have hb : |(round (xp p i):ℝ)-(ar i:ℝ)| ≤ H+|x₀ i-xref i|+1 := by
+        dsimp only [ar]
+        linarith only [hh,htri,hdist]
+      rw [Int.cast_sub]
+      exact (pow_le_pow_left₀ (abs_nonneg _) hb 2).trans (hbudget i)
+    have hseedSq i : |(round (x₀ i):ℝ)-(ar i:ℝ)|^2 ≤ M*R := by
+      have hh := rounded_displacement_bound (x₀ i) (xref i)
+      have hb : |(round (x₀ i):ℝ)-(ar i:ℝ)| ≤ H+|x₀ i-xref i|+1 := by
+        dsimp only [ar]
+        linarith only [hh,hH]
+      exact (pow_le_pow_left₀ (abs_nonneg _) hb 2).trans (hbudget i)
+    obtain ⟨_v,_hv,hthird,_hsecond,_hfirst,hfourth⟩ := physicalModelPhase_actual_fourier_conditions
+      Q K₀ rat vinv parity hσ hδ hF₃ hT hM hN hR hQ hscale hmesh
+      hA hW hx₀ hden hinv hlevel hcolor hnear
+    have hthird' : |mu 1*(qp pseed 1)^3/(mu 0*(qp pseed 0)^3)-1| ≤ B*R^2/N^2 := by
+      simpa only [hseedq] using hthird
+    have hqsum p (hp : p∈S) : |qp p 0|+|qp p 1| ≤ 2*(Q:ℝ) := by
+      rw [abs_of_pos (hpoints p hp 0).2.2.2.1,abs_of_pos (hpoints p hp 1).2.2.2.1]
+      linarith only [(hpoints p hp 0).2.2.2.2,(hpoints p hp 1).2.2.2.2]
+    have ha : (anchor:ℝ)∈Icc l w' := by
+      have hh := abs_le.mp hanchor
+      exact ⟨by dsimp only [l]; linarith only [hh.1],
+        by dsimp only [w']; linarith only [hh.2]⟩
+    have hseedI : (rat 0:ℝ)∈Icc l w' :=
+      ⟨by dsimp only [l]; linarith only [hε],
+        by dsimp only [w']; linarith only [hε]⟩
+    have hrect := inverseFarey_signed_seed_rectangle negative
+      hchart hdl hdw hnum ha hseedI hdyad hcut
+      (show ((rat 0).den:ℝ) ≤ (Q:ℝ) by exact_mod_cast (hden 0).1)
+    have hpu : sectorNumerator negative pseed.1 ≤ 12*(sectorRadius negative α β*(K:ℝ)) := hrect.2.2.2.1
+    have hptK : (pseed.2:ℝ) ≤ 12*(K:ℝ) := hrect.2.2.2.2
+    have hseedfourth :
+        |(qp pseed 0*iteratedDeriv 1 (f 0) (round (x₀ 0))-cround 0)-
+         (qp pseed 1*iteratedDeriv 1 (f 1) (round (x₀ 1))-cround 1)| ≤ Δ := by
+      simp only [hseedq,iteratedDeriv_one]
+      apply hfourth.trans
+      have hqQ : (q 0:ℝ) ≤ Q := by exact_mod_cast (hden 0).1
+      have hCt : 0 ≤ Ct := by dsimp only [Ct]; positivity
+      have hCc : 0 ≤ Cc := by dsimp only [Cc]; positivity
+      have hcoeff : B ≤ 37*B/2+16*B*Cc+2*Ct+2*Cc := by
+        nlinarith only [hB,hCt,hCc,mul_nonneg hB hCc]
+      exact (div_le_div_of_nonneg_right
+        (mul_le_mul_of_nonneg_left hqQ hB) hN.le).trans
+        (div_le_div_of_nonneg_right
+          (mul_le_mul_of_nonneg_right hcoeff (by positivity : (0:ℝ) ≤ Q)) hN.le)
+    have hseedQ : |qp pseed 0|+|qp pseed 1| ≤ 2*(Q:ℝ) := by
+      rw [hseedq,hseedq,abs_of_pos (hqpos 0),abs_of_pos (hqpos 1)]
+      have hq0 : (q 0:ℝ) ≤ Q := by exact_mod_cast (hden 0).1
+      have hq1 : (q 1:ℝ) ≤ Q := by exact_mod_cast (hden 1).1
+      linarith only [hq0,hq1]
+    have hcommon := physicalModelPhase_quartic_signed_seed_linearization negative
+      (p₀:=pseed) (x₀:=xref) (xseed:=x₀) (x₁:=ξ) (e:=ep) (r:=rp) (v:=vp) (s:=sp)
+      (cnew:=cnew) (cseed:=cround) hσ hδ hF hT hMone hN hRone hRM hNscale hscale
+      hB hdmin hΔpos (by positivity : (0:ℝ) ≤ 2*(Q:ℝ))
+      hA hW hxref (fun p hp i => (hpoints p hp i).1) hx₀ hrp hdetp
+      hsign hαβ (by norm_num : (1:ℝ) ≤ 128) htseed hyseed hd
+      hleft hright href hseedroot hseedSq
+      (fun p hp i => (hpoints p hp i).2.1) hsq hthird'
+      (fun p hp => by simpa only [iteratedDeriv_one] using (hcnew p hp).2) hqsum hcard hlarge
+      hpu hptK hseedfourth hseedQ
+    have hres := hcommon.2
+    simp only [iteratedDeriv_one] at hres
+    change |(ac-round (ac-deriv φ yseed))*yseed+
+      (bc-round (bc-φ yseed+yseed*deriv φ yseed))-φ yseed| ≤ D/(pseed.2:ℝ) at hres
+    convert hres using 1
+    congr 1
+    dsimp only [φ]
+    ring
   have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
   have hε : 0 < ε := by dsimp only [ε,C]; positivity
   have ha : (anchor:ℝ)∈Icc l w' := by
@@ -1448,7 +1204,7 @@ theorem physicalModelPhase_actual_fourier_original_seed_bounds_all_positive_slop
   have hseedI : (rat 0:ℝ)∈Icc l w' :=
     ⟨by dsimp only [l]; linarith only [hε],
       by dsimp only [w']; linarith only [hε]⟩
-  have hrect := inverseFarey_original_seed_enlarged_rectangle_signed
+  have hrect := inverseFarey_signed_seed_rectangle negative
     hchart hdl hdw hnum ha hseedI hdyad hcut
     (show ((rat 0).den:ℝ) ≤ (Q:ℝ) by exact_mod_cast (hden 0).1)
   have ht : (0:ℝ) < pseed.2 := hrect.1
@@ -2669,23 +2425,12 @@ theorem physicalModelPhase_paired_large_entry_curvature_diameter
                                                                        
                                                                     
                                                                     
-theorem physicalModelPhase_large_entry_quartic_long_block_constraint
-    {σ δ T M N R L d K α β : ℝ} (x : Fin 8 → ℝ) (Mat : Fin 4 → ℤ)
-    {F : Fin 2 → ℝ → ℝ} {A W x₀ e r v s : Fin 2 → ℝ}
-    {x₁ : ℝ → Fin 2 → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : ∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ)
-    (hT : 0 < T) (hM : 0 < M) (hN : 0 < N) (hR : 1 ≤ R) (hL : 0 < L)
-    (hNL : (L*N)^2 ≤ M*R) (hd : 0 < d) (hK : 0 ≤ K)
-    (hA : ∀ i, M ≤ A i) (hW : ∀ i, A i+W i ≤ 2*M)
-    (hx₀ : ∀ i, x₀ i ∈ Set.Ioo (1/2:ℝ) (W i-1/2))
-    (hx₁ : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i,
-      x₁ y i ∈ Set.Ioo (1/2:ℝ) (W i-1/2))
-    (hr : ∀ i, r i ≠ 0) (hdet : ∀ i, v i*r i-e i*s i=1)
-    (hden : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i, d ≤ r i*y+s i)
-    (hdenUpper : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i, r i*y+s i ≤ 2*d)
-    (hmono : StrictMono x) (hscale : T*N*R^2=M^3)
-    (hMat : Mat 0*Mat 3-Mat 1*Mat 2=1) (hc : Mat 2 ≠ 0)
+section
+variable {σ δ T M N R L d K α β : ℝ} (x : Fin 8 → ℝ) (Mat : Fin 4 → ℤ) {F : Fin 2 → ℝ → ℝ} {A W x₀ e r v s : Fin 2 → ℝ} {x₁ : ℝ → Fin 2 → ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseThirdLower σ) 1) (hF : ∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ) (hT : 0 < T) (hM : 0 < M) (hN : 0 < N) (hR : 1 ≤ R) (hL : 0 < L) (hNL : (L*N)^2 ≤ M*R) (hd : 0 < d) (hK : 0 ≤ K) (hA : ∀ i, M ≤ A i) (hW : ∀ i, A i+W i ≤ 2*M) (hx₀ : ∀ i, x₀ i ∈ Set.Ioo (1/2:ℝ) (W i-1/2)) (hx₁ : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i,
+      x₁ y i ∈ Set.Ioo (1/2:ℝ) (W i-1/2)) (hr : ∀ i, r i ≠ 0) (hdet : ∀ i, v i*r i-e i*s i=1) (hden : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i, d ≤ r i*y+s i) (hdenUpper : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i, r i*y+s i ≤ 2*d) (hmono : StrictMono x) (hscale : T*N*R^2=M^3) (hMat : Mat 0*Mat 3-Mat 1*Mat 2=1)
+include σ δ T M N R L d K α β x Mat F A W x₀ e r v s x₁ hσ hδ hF hT hM hN hR hL hNL hd hK hA hW hx₀ hx₁ hr hdet hden hdenUpper hmono hscale hMat
+
+theorem physicalModelPhase_large_entry_quartic_long_block_constraint (hc : Mat 2 ≠ 0)
     (htransport : e 1=(Mat 0:ℝ)*e 0+Mat 1*r 0 ∧
       v 1=(Mat 0:ℝ)*v 0+Mat 1*s 0 ∧
       r 1=(Mat 2:ℝ)*e 0+Mat 3*r 0 ∧
@@ -2854,7 +2599,7 @@ theorem physicalModelPhase_large_entry_quartic_long_block_constraint
         apply div_le_div_of_nonneg_right _ (mul_pos hκ hcpos).le
         exact mul_le_mul_of_nonneg_left (add_le_add le_rfl hη)
           (mul_pos (by norm_num) hCp).le
-      _ = _ := by dsimp only [Δ,B]; ring_nf
+      _ = _ := by dsimp only [Δ,B, cubicScaleMajorant, quarticTaylorSlack]; ring_nf
   have hcross := (div_le_div_iff₀ (by positivity : 0 < 8*R^2)
     (by positivity : 0 < (κ*|(Mat 2:ℝ)|)*(L^2*N^2))).mp (hlo.trans hupper)
   change κ^2*|(Mat 2:ℝ)| *L^3*N^2 ≤ 128*(σ*(σ+1)+1)*B*R^4
@@ -2865,22 +2610,6 @@ theorem physicalModelPhase_large_entry_quartic_long_block_constraint
                                                                         
                                                                          
 theorem physicalModelPhase_quartic_matrix_long_block_first_condition
-    {σ δ T M N R L d K α β : ℝ} (x : Fin 8 → ℝ) (Mat : Fin 4 → ℤ)
-    {F : Fin 2 → ℝ → ℝ} {A W x₀ e r v s : Fin 2 → ℝ}
-    {x₁ : ℝ → Fin 2 → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : ∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ)
-    (hT : 0 < T) (hM : 0 < M) (hN : 0 < N) (hR : 1 ≤ R) (hL : 0 < L)
-    (hNL : (L*N)^2 ≤ M*R) (hd : 0 < d) (hK : 0 ≤ K)
-    (hA : ∀ i, M ≤ A i) (hW : ∀ i, A i+W i ≤ 2*M)
-    (hx₀ : ∀ i, x₀ i ∈ Set.Ioo (1/2:ℝ) (W i-1/2))
-    (hx₁ : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i,
-      x₁ y i ∈ Set.Ioo (1/2:ℝ) (W i-1/2))
-    (hr : ∀ i, r i ≠ 0) (hdet : ∀ i, v i*r i-e i*s i=1)
-    (hden : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i, d ≤ r i*y+s i)
-    (hdenUpper : ∀ y ∈ Set.Icc (x 0) (x 7), ∀ i, r i*y+s i ≤ 2*d)
-    (hmono : StrictMono x) (hscale : T*N*R^2=M^3)
-    (hMat : Mat 0*Mat 3-Mat 1*Mat 2=1)
     (htransport : e 1=(Mat 0:ℝ)*e 0+Mat 1*r 0 ∧
       v 1=(Mat 0:ℝ)*v 0+Mat 1*s 0 ∧
       r 1=(Mat 2:ℝ)*e 0+Mat 3*r 0 ∧
@@ -2955,6 +2684,8 @@ theorem physicalModelPhase_quartic_matrix_long_block_first_condition
       dsimp only [Csecond]
       field_simp
     exact (hs.trans_eq he).trans (le_add_of_nonneg_left hfirst)
+
+end
 
 
                                                                       
@@ -3379,854 +3110,30 @@ theorem physicalModelPhase_actual_matrix_gap_displacement
                                                                         
                                                                        
                                                                         
-theorem negative_fareySector_integer_labels_enlarged_rectangle_all_slopes
-    {N : ℕ} {l w B α β δ : ℝ}
-    (hw : w < 0) (hlw : l ≤ w) (hB : 1 ≤ B) (hδ : 0 ≤ δ) :
-    let P := HuxleyLinearForm.fareySector N (-w) (-l)
-    let S := P.image (fun p : ℤ × ℤ => (-p.1,p.2))
-    max ((w-l)*(N:ℝ)^2/B) 2 ≤ (S.card:ℝ) →
-    3840*B*δ*((-l)*(N:ℝ))*(N:ℝ) < (S.card:ℝ) →
-    (∀ p∈S, ∃ b : ℤ, |(p.1:ℝ)*α+(p.2:ℝ)*β-b| ≤ δ) →
-    ∀ p : ℤ × ℤ, 0 ≤ -(p.1:ℝ) → -(p.1:ℝ) ≤ 12*((-l)*(N:ℝ)) →
-      0 ≤ (p.2:ℝ) → (p.2:ℝ) ≤ 12*(N:ℝ) → ∀ b : ℤ,
-      |(p.1:ℝ)*α+(p.2:ℝ)*β-b| ≤ δ →
-      b=p.1*round α+p.2*round β := by
-  classical
-  intro P S hR hlarge hnear
-  have hinj : Function.Injective (fun p : ℤ × ℤ => (-p.1,p.2)) := by
-    intro p q hpq
-    have h₁ := congrArg Prod.fst hpq
-    have h₂ := congrArg Prod.snd hpq
-    exact Prod.ext (neg_injective h₁) h₂
-  have hcard : S.card=P.card := Finset.card_image_of_injective P hinj
-  rw [hcard] at hR hlarge
-  have hw' : 0 < -w := neg_pos.mpr hw
-  have hl' : 0 ≤ -l := by linarith only [hlw,hw]
-  have hR' : max (((-l)-(-w))*(N:ℝ)^2/B) 2 ≤ (P.card:ℝ) := by
-    have heq : (-l)-(-w)=w-l := by ring
-    rw [heq]
-    exact hR
-  have hnear' : ∀ p∈P, ∃ b : ℤ, |(p.1:ℝ)*(-α)+(p.2:ℝ)*β-b| ≤ δ := by
-    intro p hp
-    obtain ⟨b,hb⟩ := hnear (-p.1,p.2) (Finset.mem_image_of_mem _ hp)
-    refine ⟨b,?_⟩
-    simpa only [Int.cast_neg,neg_mul,mul_neg] using hb
-  obtain ⟨ha,_hb⟩ :=
-    (fareySector_bounded_density_dichotomy_all_slopes
-      hw' hB hδ hR' hnear').resolve_left (not_le.mpr hlarge)
-  have hPtwo : (2:ℝ) ≤ P.card := (le_max_right _ _).trans hR'
-  have hPpos : (0:ℝ) < P.card := lt_of_lt_of_le (by norm_num) hPtwo
-  obtain ⟨p₀,hp₀⟩ := Finset.card_pos.mp
-    (show 0 < P.card by exact_mod_cast hPpos)
-  have hpdata := (HuxleyLinearForm.mem_fareySector_iff hw' hl').mp hp₀
-  have ht : (0:ℝ) < p₀.2 := by exact_mod_cast (show 0 < p₀.2 by omega)
-  have htN : (p₀.2:ℝ) ≤ N := by exact_mod_cast hpdata.2.1
-  have hnum : (0:ℝ) < p₀.1 :=
-    (mul_pos hw' ht).trans_le hpdata.2.2.2.1
-  have hnumOne : (1:ℝ) ≤ p₀.1 := by
-    have hh : (0:ℤ) < p₀.1 := by exact_mod_cast hnum
-    exact_mod_cast (show 1 ≤ p₀.1 by omega)
-  have hμN : 1 ≤ (-l)*(N:ℝ) :=
-    hnumOne.trans (hpdata.2.2.2.2.trans (mul_le_mul_of_nonneg_left htN hl'))
-  have hfactor : 54*B ≤ 3840*B*(-l)*(N:ℝ) := by
-    have hh := mul_le_mul_of_nonneg_left hμN (show 0 ≤ 3840*B by positivity)
-    nlinarith only [hh,hB]
-  have hscaled := mul_le_mul_of_nonneg_right hfactor
-    (mul_nonneg (Nat.cast_nonneg N : (0:ℝ) ≤ N) hδ)
-  have hsmall : 27*B*(N:ℝ)*δ/(P.card:ℝ) < 1/2 := by
-    apply (div_lt_iff₀ hPpos).mpr
-    nlinarith only [hlarge,hscaled]
-  have hhalf := abs_lt.mp (ha.trans_lt hsmall)
-  have hround : round α= -round (-α) := by
-    apply round_eq_iff.mpr
-    simp only [Int.cast_neg,Set.mem_Ico]
-    constructor <;> linarith only [hhalf.1,hhalf.2]
-  have hlabels := fareySector_integer_labels_enlarged_rectangle_all_slopes
-    hw' hl' hB hδ hR' hlarge hnear'
-  intro p hp0 hpM hpt0 hptN b hb
-  have hh := hlabels (-p.1,p.2)
-    (by simpa only [Int.cast_neg] using hp0)
-    (by simpa only [Int.cast_neg] using hpM) hpt0 hptN b
-    (by simpa only [Int.cast_neg,neg_mul,mul_neg,neg_neg] using hb)
-  change b=(-p.1)*round (-α)+p.2*round β at hh
-  rw [hround]
-  nlinarith only [hh]
+/-- Eight separated points of a chart, with the quartic phase residual controlled
+at each point and the interpolation curve staying in the valid denominator band. -/
+abbrev QuarticCurveWitnesses (S : Finset ℕ) (rat : ℕ → Fin 2 → ℚ)
+    (f : Fin 2 → ℝ → ℝ) (W xref : Fin 2 → ℝ) (ep rp sp : Fin 2 → ℤ)
+    (Mat : Fin 4 → ℤ) (v s : ℤ) (μr νr : Fin 2 → ℝ) (G : ℝ → ℝ)
+    (κ Cphys P₁ P₂ l w d N M R Kres : ℝ) : Prop :=
+    let Blabels := 6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)
+    let L := κ/(16*(Blabels:ℝ)*Cphys)*(S.card:ℝ)
+    let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
+    ∃ j : Fin 8 → ℕ, ∃ z : Fin 8 → ℝ, ∃ curve : ℝ → Fin 2 → ℝ, ∃ alpha beta : ℝ,
+      (∀ a, j a∈S ∧ ∀ i,
+        (rat (j a) i:ℝ)=((ep i:ℝ)*z a+vp i)/((rp i:ℝ)*z a+sp i)) ∧
+      StrictMono z ∧ 0 < L ∧ (L*N)^2 ≤ M*R ∧ 0 ≤ Kres ∧
+      (∀ t∈Icc (z 0) (z 7), t∈Icc l w ∧ ∀ i,
+        curve t i∈Ioo (1/2:ℝ) (W i-1/2) ∧
+        d ≤ (rp i:ℝ)*t+sp i ∧ (rp i:ℝ)*t+sp i ≤ 2*d ∧
+        iteratedDeriv 2 (f i) (curve t i)/2=((ep i:ℝ)*t+vp i)/((rp i:ℝ)*t+sp i) ∧
+        |(round (curve t i):ℝ)-(round (xref i):ℝ)|^2 ≤ M*R) ∧
+      (∀ i : Fin 7, L*N ≤ |G (z i.succ)-G (z i.castSucc)|) ∧
+      (∀ i : Fin 8,
+        |alpha*z i+beta-rationalPhase (μr 0) (rp 0) (sp 0) (μr 1) (rp 1) (sp 1) (z i)+
+          quarticPhase (μr 0) (νr 0) (rp 0) (sp 0) (μr 1) (νr 1) (rp 1) (sp 1) (z i)| ≤
+          Kres*R^2/|(rp 0:ℝ)*G (z i)|)
 
-
-private theorem negative_sector_seed_label_of_taylor_remainders_all_slopes
-    {K : ℕ} {l w B y₀ α β δ C : ℝ} {g : ℝ → ℝ} {H : ℤ × ℤ → ℤ} {p₀ : ℤ × ℤ} {H₀ : ℤ}
-    (hw : w < 0) (hlw : l ≤ w) (hB : 1 ≤ B)
-    (hy₀ : y₀ ∈ Set.Icc l w) (hδ : 0 ≤ δ) (hC : 0 ≤ C)
-    (hcard : max ((w-l)*(K:ℝ)^2/B) 2 ≤ (((HuxleyLinearForm.fareySector K (-w) (-l)).image
-      (fun p : ℤ × ℤ => (-p.1,p.2)))).card)
-    (htaylor : ∀ p ∈ ((HuxleyLinearForm.fareySector K (-w) (-l)).image
-      (fun p : ℤ × ℤ => (-p.1,p.2))),
-      |g ((p.1:ℝ)/p.2)-g y₀-deriv g y₀*((p.1:ℝ)/p.2-y₀)| ≤
-        C*|((p.1:ℝ)/p.2)-y₀|^2)
-    (hnear : ∀ p ∈ ((HuxleyLinearForm.fareySector K (-w) (-l)).image
-      (fun p : ℤ × ℤ => (-p.1,p.2))),
-      |(p.1:ℝ)*α+(p.2:ℝ)*β-(p.2:ℝ)*g ((p.1:ℝ)/p.2)-H p| ≤ δ) :
-    let η := δ+(K:ℝ)*C*(w-l)^2
-    3840*B*η*((-l)*(K:ℝ))*(K:ℝ) < (((HuxleyLinearForm.fareySector K (-w) (-l)).image
-      (fun p : ℤ × ℤ => (-p.1,p.2)))).card →
-    0 ≤ -(p₀.1:ℝ) → -(p₀.1:ℝ) ≤ 12*((-l)*(K:ℝ)) →
-    0 < (p₀.2:ℝ) → (p₀.2:ℝ) ≤ 12*(K:ℝ) →
-    (p₀.1:ℝ)/p₀.2=y₀ →
-    |(p₀.1:ℝ)*α+(p₀.2:ℝ)*β-(p₀.2:ℝ)*g y₀-H₀| ≤ δ →
-    H₀=p₀.1*round (α-deriv g y₀)+p₀.2*round (β-g y₀+y₀*deriv g y₀) := by
-  let η := δ+(K:ℝ)*C*(w-l)^2
-  change _ → _
-  intro hlarge
-  have hη : 0 ≤ η := by dsimp [η]; positivity
-  have hlin (p : ℤ × ℤ) (hp : p ∈ ((HuxleyLinearForm.fareySector K (-w) (-l)).image
-      (fun p : ℤ × ℤ => (-p.1,p.2)))) :
-      |(p.1:ℝ)*(α-deriv g y₀)+(p.2:ℝ)*(β-g y₀+y₀*deriv g y₀)-H p| ≤ η := by
-    obtain ⟨ht,htK,_hc,hlo,hhi⟩ :=
-      (mem_negative_fareySector_iff hw hlw).mp hp
-    have ht0 : (0:ℝ) < p.2 := by exact_mod_cast (show 0 < p.2 by omega)
-    have htK' : (p.2:ℝ) ≤ K := by exact_mod_cast htK
-    let x : ℝ := (p.1:ℝ)/p.2
-    have hx : x ∈ Set.Icc l w :=
-      ⟨(le_div_iff₀ ht0).mpr hlo,(div_le_iff₀ ht0).mpr hhi⟩
-    have hdist : |x-y₀| ≤ w-l := abs_le.mpr
-      ⟨by linarith [hx.1,hy₀.2],by linarith [hx.2,hy₀.1]⟩
-    have htay := htaylor p hp
-    have hbudget : (p.2:ℝ)*|g x-g y₀-deriv g y₀*(x-y₀)| ≤ (K:ℝ)*C*(w-l)^2 := by
-      calc
-        _ ≤ (p.2:ℝ)*(C*|x-y₀|^2) := mul_le_mul_of_nonneg_left htay ht0.le
-        _ ≤ (K:ℝ)*(C*(w-l)^2) := by gcongr
-        _ = _ := by ring
-    have hid : (p.1:ℝ)*(α-deriv g y₀)+(p.2:ℝ)*(β-g y₀+y₀*deriv g y₀)-H p =
-        (p.2:ℝ)*(g x-g y₀-deriv g y₀*(x-y₀))+
-        ((p.1:ℝ)*α+(p.2:ℝ)*β-(p.2:ℝ)*g x-H p) := by
-      dsimp [x]
-      field_simp
-      ring
-    rw [hid]
-    apply (abs_add_le _ _).trans
-    rw [abs_mul,abs_of_pos ht0]
-    exact (add_le_add hbudget (hnear p hp)).trans_eq (by dsimp [η]; ring)
-  intro hp0 hpu hpt hptK hy hpnear
-  have hmul : (p₀.1:ℝ)=y₀*(p₀.2:ℝ) := (div_eq_iff hpt.ne').mp hy
-  have hid : (p₀.1:ℝ)*(α-deriv g y₀)+(p₀.2:ℝ)*(β-g y₀+y₀*deriv g y₀)-H₀ =
-      (p₀.1:ℝ)*α+(p₀.2:ℝ)*β-(p₀.2:ℝ)*g y₀-H₀ := by
-    rw [hmul]
-    ring
-  have hpnear' : |(p₀.1:ℝ)*(α-deriv g y₀)+
-      (p₀.2:ℝ)*(β-g y₀+y₀*deriv g y₀)-H₀| ≤ η := by
-    rw [hid]
-    exact hpnear.trans (le_add_of_nonneg_right (by positivity))
-  exact negative_fareySector_integer_labels_enlarged_rectangle_all_slopes hw hlw hB hη hcard hlarge
-    (fun q hq => ⟨H q,hlin q hq⟩) p₀ hp0 hpu hpt.le hptK H₀ hpnear'
-
-
-                                                                                
-                                                                      
-                                                                        
-                                                      
-private theorem physicalModelPhase_quartic_negative_original_seed_linearization_all_slopes
-    {K : ℕ} {σ δ T M N R B dmin l w Bd Δ Q : ℝ}
-    {p₀ : ℤ × ℤ} {k : Fin 17}
-    {F : Fin 2 → ℝ → ℝ} {A W x₀ xseed : Fin 2 → ℝ}
-    {x₁ : ℝ → Fin 2 → ℝ} {e r v s : Fin 2 → ℤ}
-    {cnew : ℤ × ℤ → Fin 2 → ℤ} {cseed : Fin 2 → ℤ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : ∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ)
-    (hT : 0 < T) (hM : 1 ≤ M) (hN : 0 < N) (hR : 1 ≤ R) (hRM : R ≤ M)
-    (hNscale : N^2 ≤ M*R) (hscale : T*N*R^2=M^3)
-    (hB : 0 ≤ B) (hdmin : 0 < dmin) (hΔ : 0 ≤ Δ) (hQ : 0 ≤ Q)
-    (hA : ∀ i, M ≤ A i) (hW : ∀ i, A i+W i ≤ 2*M)
-    (hx₀ : ∀ i, x₀ i ∈ Set.Ioo (1/2:ℝ) (W i-1/2))
-    (hx₁ : ∀ p ∈ ((HuxleyLinearForm.fareySector K (-w) (-l)).image
-      (fun p : ℤ × ℤ => (-p.1,p.2))), ∀ i,
-      x₁ ((p.1:ℝ)/p.2) i ∈ Set.Ioo (1/2:ℝ) (W i-1/2))
-    (hxseed : ∀ i, xseed i∈Set.Ioo (1/2:ℝ) (W i-1/2))
-    (hr : ∀ i, r i ≠ 0) (hdet : ∀ i, v i*r i-e i*s i=1)
-    (hw : w < 0) (hlw : l ≤ w) (hBd : 1 ≤ Bd) (htseed : 0 < p₀.2)
-    (hyseed : (p₀.1:ℝ)/p₀.2∈Set.Icc l w)
-    (hden : ∀ y ∈ Set.Icc l w, ∀ i, dmin ≤ (r i:ℝ)*y+s i) :
-    let S := ((HuxleyLinearForm.fareySector K (-w) (-l)).image
-      (fun p : ℤ × ℤ => (-p.1,p.2)))
-    let y₀ := (p₀.1:ℝ)/p₀.2
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    let a := fun i => round (x₀ i)
-    let b := fun y i => round (x₁ y i)
-    let n := fun y i => b y i-a i
-    let μ := fun i => iteratedDeriv 3 (f i) (a i)/6
-    let μseed := fun i => iteratedDeriv 3 (f i) (round (xseed i))/6
-    let ν := fun i => iteratedDeriv 4 (f i) (a i)/24
-    let q := fun (p : ℤ × ℤ) i => (r i:ℝ)*p.1+s i*p.2
-    let d₀ := fun i => iteratedDeriv 1 (f i) (a i)
-    let δ₀ := fun i => iteratedDeriv 2 (f i) (a i)/2-(e i:ℝ)/r i
-    let θ := fun i => (r i:ℝ)*d₀ i-round ((r i:ℝ)*d₀ i)
-    let β₀ := fun i => d₀ i*s i+2*δ₀ i/(3*μ i*r i)
-    let α := θ 0-θ 1
-    let β := β₀ 0-β₀ 1
-    let g := rationalPhase (μ 0) (r 0) (s 0) (μ 1) (r 1) (s 1)
-    let h := quarticPhase (μ 0) (ν 0) (r 0) (s 0) (μ 1) (ν 1) (r 1) (s 1)
-    let φ := fun y => g y-h y
-    let z := fun (p : ℤ × ℤ) i => q p i*iteratedDeriv 1 (f i) (b ((p.1:ℝ)/p.2) i)
-    let zseed := fun i => q p₀ i*iteratedDeriv 1 (f i) (round (xseed i))
-    let jseed := fun i => round ((r i:ℝ)*d₀ i)*p₀.1+
-      2*(round (xseed i)-a i)*(e i*p₀.1+v i*p₀.2)
-    let Hseed := (cseed 0-jseed 0)-(cseed 1-jseed 1)
-    let C := (2/modelPhaseThirdLower σ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*dmin^3)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*Q/N
-    let η := D+(K:ℝ)*C*(w-l)^2
-    let U := (4/modelPhaseThirdLower σ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*dmin^3)
-    let Z := quarticCurvatureBoundaryRoots (μ 0) (ν 0) (r 0) (s 0)
-      (μ 1) (ν 1) (r 1) (s 1) U
-    l ∈ finiteBoundaryCell Z l w k →
-    w ∈ finiteBoundaryCell Z l w k →
-    (∀ i, iteratedDeriv 2 (f i) (x₀ i)/2=(e i:ℝ)/r i) →
-    (∀ i, iteratedDeriv 2 (f i) (xseed i)/2=((e i:ℝ)*p₀.1+v i*p₀.2)/q p₀ i) →
-    (∀ i, |(round (xseed i):ℝ)-(a i:ℝ)|^2 ≤ M*R) →
-    (∀ p ∈ S, ∀ i,
-      iteratedDeriv 2 (f i) (x₁ ((p.1:ℝ)/p.2) i)/2=((e i:ℝ)*p.1+v i*p.2)/q p i) →
-    (∀ p ∈ S, ∀ i, |(n ((p.1:ℝ)/p.2) i:ℝ)|^2 ≤ M*R) →
-    |μseed 1*(q p₀ 1)^3/(μseed 0*(q p₀ 0)^3)-1| ≤ B*R^2/N^2 →
-    (∀ p ∈ S, |(z p 0-cnew p 0)-(z p 1-cnew p 1)| ≤ Δ) →
-    (∀ p ∈ S, |q p 0|+|q p 1| ≤ Q) →
-    max ((w-l)*(K:ℝ)^2/Bd) 2 ≤ S.card →
-    3840*Bd*η*((-l)*(K:ℝ))*(K:ℝ) < S.card →
-    -(p₀.1:ℝ) ≤ 12*((-l)*(K:ℝ)) →
-    (p₀.2:ℝ) ≤ 12*(K:ℝ) →
-    |(zseed 0-cseed 0)-(zseed 1-cseed 1)| ≤ Δ →
-    |q p₀ 0|+|q p₀ 1| ≤ Q →
-    Hseed=p₀.1*round (α-deriv φ y₀)+p₀.2*round (β-φ y₀+y₀*deriv φ y₀) ∧
-    |(α-round (α-deriv φ y₀))*y₀+
-      (β-round (β-φ y₀+y₀*deriv φ y₀))-φ y₀| ≤ D/(p₀.2:ℝ) := by
-  let S := ((HuxleyLinearForm.fareySector K (-w) (-l)).image
-      (fun p : ℤ × ℤ => (-p.1,p.2)))
-  let y₀ := (p₀.1:ℝ)/p₀.2
-  let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-  let a := fun i => round (x₀ i)
-  let b := fun y i => round (x₁ y i)
-  let n := fun y i => b y i-a i
-  let μ := fun i => iteratedDeriv 3 (f i) (a i)/6
-  let ν := fun i => iteratedDeriv 4 (f i) (a i)/24
-  let d := fun y i => (r i:ℝ)*y+s i
-  let q := fun (p : ℤ × ℤ) i => (r i:ℝ)*p.1+s i*p.2
-  let d₀ := fun i => iteratedDeriv 1 (f i) (a i)
-  let δ₀ := fun i => iteratedDeriv 2 (f i) (a i)/2-(e i:ℝ)/r i
-  let θ := fun i => (r i:ℝ)*d₀ i-round ((r i:ℝ)*d₀ i)
-  let β₀ := fun i => d₀ i*s i+2*δ₀ i/(3*μ i*r i)
-  let α := θ 0-θ 1
-  let β := β₀ 0-β₀ 1
-  let g := rationalPhase (μ 0) (r 0) (s 0) (μ 1) (r 1) (s 1)
-  let h := quarticPhase (μ 0) (ν 0) (r 0) (s 0) (μ 1) (ν 1) (r 1) (s 1)
-  let φ := fun y => g y-h y
-  let j := fun (p : ℤ × ℤ) i => round ((r i:ℝ)*d₀ i)*p.1+
-    2*n ((p.1:ℝ)/p.2) i*(e i*p.1+v i*p.2)
-  let H := fun p => (cnew p 0-j p 0)-(cnew p 1-j p 1)
-  let zseed := fun i => q p₀ i*iteratedDeriv 1 (f i) (round (xseed i))
-  let jseed := fun i => round ((r i:ℝ)*d₀ i)*p₀.1+
-    2*(round (xseed i)-a i)*(e i*p₀.1+v i*p₀.2)
-  let Hseed := (cseed 0-jseed 0)-(cseed 1-jseed 1)
-  let C := (2/modelPhaseThirdLower σ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*dmin^3)
-  let D := Δ+quarticNonlinearResidualConstant σ δ*Q/N
-  let U := (4/modelPhaseThirdLower σ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*dmin^3)
-  let Z := quarticCurvatureBoundaryRoots (μ 0) (ν 0) (r 0) (s 0)
-    (μ 1) (ν 1) (r 1) (s 1) U
-  change _ → _ → _ → _ → _ → _ → _ → _ → _ → _ → _ → _ → _ → _ → _ → _ → _
-  intro hleft hright hbase hseed hseedsquare hpoint hsquare hthird hfourth hqbound hcard hlarge
-    hpu hptK hseedfourth hseedQ
-  have hM0 : 0 < M := lt_of_lt_of_le (by norm_num) hM
-  have hr' (i) : (r i:ℝ) ≠ 0 := by exact_mod_cast hr i
-  have hdet' (i) : (v i:ℝ)*r i-e i*s i=1 := by exact_mod_cast hdet i
-  have hκ := modelPhaseThirdLower_pos hσ
-  have hδ0 : 0 ≤ δ := (abs_nonneg _).trans
-    (approximateModelPhase_iteratedDeriv_error (hF 0)
-      (heathBrownPhysicalPoint_mem_interior hM0 (hA 0) (hW 0)
-        (show x₀ 0 ∈ Set.Ioo 0 (W 0) from
-          ⟨by linarith [(hx₀ 0).1],by linarith [(hx₀ 0).2]⟩)) 4 le_rfl)
-  have hC₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
-  have hC₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
-  have hC₄ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 4) hδ0
-  have hCN : 0 ≤ quarticNonlinearResidualConstant σ δ := by
-    dsimp [quarticNonlinearResidualConstant]
-    positivity
-  have hCR : 0 ≤ quarticReciprocalConstant σ δ := by
-    dsimp [quarticReciprocalConstant]
-    positivity
-  have hC : 0 ≤ C := by dsimp [C]; positivity
-  have hD : 0 ≤ D := by dsimp [D]; positivity
-  have hgeom (p : ℤ × ℤ) (hp : p ∈ S) :
-      (0:ℝ) < p.2 ∧ (p.1:ℝ)/p.2 ∈ Set.Icc l w := by
-    obtain ⟨ht,_htK,_hc,hlo,hhi⟩ :=
-      (mem_negative_fareySector_iff hw hlw).mp hp
-    have ht0 : (0:ℝ) < p.2 := by exact_mod_cast (show 0 < p.2 by omega)
-    exact ⟨ht0,⟨(le_div_iff₀ ht0).mpr hlo,(div_le_iff₀ ht0).mpr hhi⟩⟩
-  have hy₀ : y₀ ∈ Set.Icc l w := hyseed
-  have ht₀ : (0:ℝ) < p₀.2 := by exact_mod_cast htseed
-  have hcell {z : ℝ} (hz : z ∈ Set.Icc l w) :
-      z ∈ finiteBoundaryCell Z l w k :=
-    (finiteBoundaryCell_ordConnected Z l w k).uIcc_subset hleft hright
-      (by simpa only [Set.uIcc_of_le hlw] using hz)
-  have htaylor (p : ℤ × ℤ) (hp : p ∈ S) :
-      |φ ((p.1:ℝ)/p.2)-φ y₀-deriv φ y₀*((p.1:ℝ)/p.2-y₀)| ≤ C*|((p.1:ℝ)/p.2)-y₀|^2 := by
-    have he := physicalModelPhase_quartic_taylor_on_boundary_cell
-      (u := (p₀.1:ℝ)) (t := (p₀.2:ℝ)) (y := (p.1:ℝ)/p.2)
-      hσ hδ hF hT hM0 hN hR hNscale hscale hB hdmin hA hW hx₀
-      hxseed hr' ht₀ hdet' hden
-      (hcell hy₀) (hcell (hgeom p hp).2) hbase hseed hseedsquare hthird
-    exact he.trans_eq (by dsimp [C,U]; ring)
-  have hnear (p : ℤ × ℤ) (hp : p ∈ S) :
-      |(p.1:ℝ)*α+(p.2:ℝ)*β-(p.2:ℝ)*φ ((p.1:ℝ)/p.2)-H p| ≤ D := by
-    let x : ℝ := (p.1:ℝ)/p.2
-    have ht0 := (hgeom p hp).1
-    have hx := (hgeom p hp).2
-    have hpt : p.2 ≠ 0 := by exact_mod_cast ht0.ne'
-    have hd (i) : 0 < d x i := hdmin.trans_le (hden x hx i)
-    have hqd (i) : q p i=d x i*(p.2:ℝ) := by dsimp [q,d,x]; field_simp
-    have hqpos (i) : 0 < q p i := by rw [hqd i]; exact mul_pos (hd i) ht0
-    have hqint (i) : r i*p.1+s i*p.2 ≠ 0 := by
-      have hh : (0:ℝ) < ((r i*p.1+s i*p.2:ℤ):ℝ) := by
-        simpa only [Int.cast_add,Int.cast_mul] using hqpos i
-      exact_mod_cast hh.ne'
-    have he := physicalModelPhase_quartic_fourth_condition_nonlinear_with_labels
-      (cnew := cnew p) hσ hδ hF hT hM hN hR hRM hscale hA hW hx₀
-      (hx₁ p hp) hr hpt hqint hdet hbase (hpoint p hp) (hsquare p hp) (hfourth p hp)
-    have hid : (p.1:ℝ)*α+(p.2:ℝ)*β-(p.2:ℝ)*φ x-H p =
-        (θ 0-θ 1)*p.1+(β₀ 0-β₀ 1)*p.2-(p.2:ℝ)*g x+(p.2:ℝ)*h x-H p := by
-      dsimp [α,β,φ]
-      ring
-    rw [hid]
-    apply he.trans
-    dsimp only [D]
-    gcongr
-    exact hqbound p hp
-  have hqseedpos (i) : 0 < q p₀ i := by
-    have hh : q p₀ i=d y₀ i*(p₀.2:ℝ) := by dsimp only [q,d,y₀]; field_simp
-    rw [hh]
-    exact mul_pos (hdmin.trans_le (hden y₀ hy₀ i)) ht₀
-  have hqseedint (i) : r i*p₀.1+s i*p₀.2 ≠ 0 := by
-    have hh : (0:ℝ) < ((r i*p₀.1+s i*p₀.2:ℤ):ℝ) := by
-      simpa only [Int.cast_add,Int.cast_mul] using hqseedpos i
-    exact_mod_cast hh.ne'
-  have hseednear :
-      |(p₀.1:ℝ)*α+(p₀.2:ℝ)*β-(p₀.2:ℝ)*φ y₀-Hseed| ≤ D := by
-    have he := physicalModelPhase_quartic_fourth_condition_nonlinear_with_labels
-      (cnew := cseed) hσ hδ hF hT hM hN hR hRM hscale hA hW hx₀
-      hxseed hr htseed.ne' hqseedint hdet hbase hseed
-      (fun i => by simpa only [Int.cast_sub] using hseedsquare i) hseedfourth
-    have hid : (p₀.1:ℝ)*α+(p₀.2:ℝ)*β-(p₀.2:ℝ)*φ y₀-Hseed =
-        (θ 0-θ 1)*p₀.1+(β₀ 0-β₀ 1)*p₀.2-
-        (p₀.2:ℝ)*g y₀+(p₀.2:ℝ)*h y₀-Hseed := by
-      dsimp only [α,β,φ]; ring
-    rw [hid]
-    apply he.trans
-    dsimp only [D]
-    gcongr
-  have hp0 : 0 ≤ -(p₀.1:ℝ) := by
-    have hh := (div_le_iff₀ ht₀).mp hy₀.2
-    have hw0 : w*(p₀.2:ℝ) ≤ 0 := mul_nonpos_of_nonpos_of_nonneg hw.le ht₀.le
-    linarith only [hh,hw0]
-  have hlabel := negative_sector_seed_label_of_taylor_remainders_all_slopes
-    hw hlw hBd hy₀ hD hC hcard htaylor hnear hlarge
-    hp0 hpu ht₀ hptK rfl hseednear
-  refine ⟨hlabel,?_⟩
-  have hid : (p₀.2:ℝ)*((α-round (α-deriv φ y₀))*y₀+
-      (β-round (β-φ y₀+y₀*deriv φ y₀))-φ y₀) =
-      (p₀.1:ℝ)*α+(p₀.2:ℝ)*β-(p₀.2:ℝ)*φ y₀-Hseed := by
-    rw [hlabel]
-    push_cast
-    dsimp only [y₀]
-    field_simp
-    ring
-  have hmulabs := congrArg abs hid
-  rw [abs_mul,abs_of_pos ht₀] at hmulabs
-  apply (le_div_iff₀ ht₀).mpr
-  rw [mul_comm]
-  exact hmulabs.trans_le hseednear
-
-
-                                                                    
-                                                                     
-private theorem physicalModelPhase_actual_fourier_negative_original_seed_residual_all_slopes
-    {σ δ T M N R dmin : ℝ} {k : Fin 17} (Q K₀ : ℕ) [NeZero K₀]
-    (rat : Fin 2 → ℚ) (vinv : Fin 2 → ℤ) (parity : Fin 2 → Fin 2) (Mat : Fin 4 → ℤ) (anchor : ℚ) (e r v s : ℤ)
-    {F : Fin 2 → ℝ → ℝ} {A W x₀ xref : Fin 2 → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : ∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ)
-    (hT : 0 < T) (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
-    (hQ : 0 < Q) (hscale : T*N*R^2=M^3)
-    (hmesh : (Q:ℝ)*N ≤ (K₀:ℝ)*R^2)
-    (hA : ∀ i, M ≤ A i) (hW : ∀ i, A i+W i ≤ 2*M)
-    (hx₀ : ∀ i, x₀ i∈Ioo (1/2:ℝ) (W i-1/2))
-    (hden : ∀ i, (rat i).den ≤ Q ∧ Q ≤ 2*(rat i).den)
-    (hinv : ∀ i, ((rat i).den:ℤ) ∣ (rat i).num*vinv i-1) :
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ i, iteratedDeriv 2 (f i) (x₀ i)/2=(rat i:ℝ)) →
-    let q := fun i => (rat i).den
-    let mu := fun i => iteratedDeriv 3 (f i) (round (x₀ i))/6
-    let ell := fun i => deriv (f i) (round (x₀ i))
-    let b := fun i => (⌊(q i:ℝ)*ell i⌋+(parity i:ℕ) : ℤ)
-    let cround := fun i => round ((q i:ℝ)*ell i)
-    let tau := fun i => ((b i:ℝ)-(q i:ℝ)*ell i)/2
-    let dual := fun i => -2*mu i*(Real.sqrt (2/(3*mu i*(q i:ℝ))))^3
-    let w := fun i => (![Int.fract (-(vinv i:ℝ)*b i/q i),
-      Int.fract (-(vinv i:ℝ)/q i),dual i/Real.sqrt K₀,
-      (3*dual i*tau i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    b 0-cround 0=b 1-cround 1 →
-    (∀ d, |w 0 d-w 1 d| ≤ 2*radius d) →
-    let c := modelPhaseThirdLower σ/6
-    let J := (σ*(σ+1)+1)/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 → N ≤ R^2 → R ≤ N → N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
-    Mat 0*Mat 3-Mat 1*Mat 2=1 →
-    (Mat 2:ℝ)*(rat 0:ℝ)+Mat 3=(q 1:ℝ)/q 0 →
-    ((Mat 0:ℝ)*(rat 0:ℝ)+Mat 1)/((Mat 2:ℝ)*(rat 0:ℝ)+Mat 3)=(rat 1:ℝ) →
-    |(Mat 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) →
-    let C := σ*(σ+1)+1
-    let H := N/(C+2)
-    let ε := modelPhaseThirdLower σ/(16*(C+2)*R^2)
-    2 ≤ N →
-    (∀ i, x₀ i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ i, x₀ i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    v*r-e*s=1 →
-    0 < (r:ℝ)*((rat 0:ℝ)-ε)-e →
-    0 < (r:ℝ)*((rat 0:ℝ)+ε)-e →
-    (v:ℝ)-s*((rat 0:ℝ)-ε) < 0 →
-    max ((r:ℝ)*((rat 0:ℝ)-ε)-e) ((r:ℝ)*((rat 0:ℝ)+ε)-e) ≤
-      2*min ((r:ℝ)*((rat 0:ℝ)-ε)-e) ((r:ℝ)*((rat 0:ℝ)+ε)-e) →
-    |(anchor:ℝ)-(rat 0:ℝ)| ≤ ε →
-    256*(anchor.den:ℝ) ≤ (Q:ℝ)/3 →
-    256 ≤ (2*ε)*((Q:ℝ)/3)*anchor.den →
-    let l := (rat 0:ℝ)-ε
-    let w' := (rat 0:ℝ)+ε
-    let α := ((v:ℝ)-s*w')/((r:ℝ)*w'-e)
-    let β := ((v:ℝ)-s*l)/((r:ℝ)*l-e)
-    let K := ⌊((Q:ℝ)/3)*min ((r:ℝ)*l-e) ((r:ℝ)*w'-e)⌋₊
-    let S := (HuxleyLinearForm.fareySector K (-β) (-α)).image
-      (fun p : ℤ × ℤ => (-p.1,p.2))
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let κ := modelPhaseThirdLower σ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
-    let ep : Fin 2 → ℤ := ![e,Mat 0*e+Mat 1*r]
-    let rp : Fin 2 → ℤ := ![r,Mat 2*e+Mat 3*r]
-    let sp : Fin 2 → ℤ := ![s,Mat 2*v+Mat 3*s]
-    let pseed : ℤ × ℤ := (v*(q 0:ℤ)-s*(rat 0).num,r*(rat 0).num-e*(q 0:ℤ))
-    let yseed := (pseed.1:ℝ)/pseed.2
-    let ar := fun i => round (xref i)
-    let μr := fun i => iteratedDeriv 3 (f i) (ar i)/6
-    let νr := fun i => iteratedDeriv 4 (f i) (ar i)/24
-    let dr := fun i => deriv (f i) (ar i)
-    let δr := fun i => iteratedDeriv 2 (f i) (ar i)/2-(ep i:ℝ)/rp i
-    let θr := fun i => (rp i:ℝ)*dr i-round ((rp i:ℝ)*dr i)
-    let βr := fun i => dr i*sp i+2*δr i/(3*μr i*rp i)
-    let ac := θr 0-θr 1
-    let bc := βr 0-βr 1
-    let g := rationalPhase (μr 0) (rp 0) (sp 0) (μr 1) (rp 1) (sp 1)
-    let hq := quarticPhase (μr 0) (νr 0) (rp 0) (sp 0) (μr 1) (νr 1) (rp 1) (sp 1)
-    let φ := fun y => g y-hq y
-    let Ctay := (2/κ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*dmin^3)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let η := D+(K:ℝ)*Ctay*(β-α)^2
-    let U := (4/κ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*dmin^3)
-    let Z := quarticCurvatureBoundaryRoots (μr 0) (νr 0) (rp 0) (sp 0)
-      (μr 1) (νr 1) (rp 1) (sp 1) U
-    1 ≤ M → 1 ≤ R → R ≤ M → N^2 ≤ M*R → 0 < dmin →
-    Δ < 1/2 →
-    (∀ i, rp i ≠ 0) →
-    (∀ i, xref i∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ i, iteratedDeriv 2 (f i) (xref i)/2=(ep i:ℝ)/rp i) →
-    (∀ i, (H+|x₀ i-xref i|+1)^2 ≤ M*R) →
-    (∀ y∈Icc α β, ∀ i, dmin ≤ (rp i:ℝ)*y+sp i) →
-    α ∈ finiteBoundaryCell Z α β k → β ∈ finiteBoundaryCell Z α β k →
-    3840*128*η*((-α)*(K:ℝ))*(K:ℝ) < S.card →
-    |(ac-round (ac-deriv φ yseed))*yseed+
-      (bc-round (bc-φ yseed+yseed*deriv φ yseed))-g yseed+hq yseed| ≤ D/(pseed.2:ℝ) := by
-  classical
-  intro f hlevel q mu ell b cround tau dual w radius hcolor hnear c J B
-    hsmall hNR hRN hcube hminscale hMatdet hMatt hMatmap hMatgamma
-    C H ε hNtwo hL hU hchart hdl hdw hnum hdyad hanchor hcut hcount
-    l w' α β K S C₂ C₃ κ Ct Cc Δ ep rp sp pseed yseed ar μr νr dr δr θr βr ac bc g hq φ
-    Ctay D η U Z hMone hRone hRM hNscale hdmin hΔ hrp hxref href hbudget
-    hd hleft hright hlarge
-  let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
-  have hF₃ i := approximateModelPhase_mono (hF i) (by norm_num : 3 ≤ 4) le_rfl
-  obtain ⟨hcard,ξ,hξ⟩ := physicalModelPhase_actual_fourier_complete_negative_sector_fourth
-    Q K₀ rat vinv parity Mat anchor e r v s hσ hδ hF₃ hT hM hN hR hQ hscale hmesh
-    hA hW hx₀ hden hinv hlevel hcolor hnear hsmall hNR hRN hcube hminscale
-    hMatdet hMatt hMatmap hMatgamma hNtwo hL hU hchart hdl hdw hnum hdyad hanchor hcut hcount
-  let qp := fun (p : ℤ × ℤ) i => (rp i:ℝ)*p.1+sp i*p.2
-  let ap := fun (p : ℤ × ℤ) i => (ep i:ℝ)*p.1+vp i*p.2
-  let xp := fun p : ℤ × ℤ => ξ ((p.1:ℝ)/p.2)
-  let zp := fun p i => qp p i*deriv (f i) (round (xp p i))
-  have hqe (p : ℤ × ℤ) (i : Fin 2) :
-      ((![r*p.1+s*p.2,Mat 2*(e*p.1+v*p.2)+Mat 3*(r*p.1+s*p.2)] i:ℤ):ℝ)=qp p i := by
-    fin_cases i <;> dsimp only [qp,rp,sp] <;> push_cast <;> ring
-  have hae (p : ℤ × ℤ) (i : Fin 2) :
-      ((![e*p.1+v*p.2,Mat 0*(e*p.1+v*p.2)+Mat 1*(r*p.1+s*p.2)] i:ℤ):ℝ)=ap p i := by
-    fin_cases i <;> dsimp only [ap,ep,vp] <;> push_cast <;> ring
-  have hpoints (p) (hp : p∈S) (i) :
-      xp p i∈Ioo (1/2:ℝ) (W i-1/2) ∧
-      iteratedDeriv 2 (f i) (xp p i)/2=ap p i/qp p i ∧
-      |xp p i-x₀ i| ≤ H ∧ 0 < qp p i ∧ qp p i ≤ Q := by
-    have hh := (hξ p hp).1 i
-    simpa only [hqe,hae] using hh
-  have hlabels (p : ℤ × ℤ) : ∃ ci : Fin 2 → ℤ, p∈S →
-      (∀ i, ci i∈minorArcCenterLabels (zp p i) Δ) ∧
-      |(zp p 0-ci 0)-(zp p 1-ci 1)| ≤ Δ := by
-    by_cases hp : p∈S
-    · have hh := (hξ p hp).2.2 hΔ
-      simp only [hqe] at hh
-      obtain ⟨c₀,hc₀,c₁,hc₁,_hrnd,hfour,_⟩ := hh
-      refine ⟨![c₀,c₁],fun _ => ⟨?_,hfour⟩⟩
-      intro i
-      fin_cases i
-      · exact hc₀
-      · exact hc₁
-    · exact ⟨fun _ => 0,fun h => False.elim (hp h)⟩
-  choose cnew hcnew using hlabels
-  have hδ0 : 0 ≤ δ := (abs_nonneg _).trans
-    (approximateModelPhase_iteratedDeriv_error (hF 0)
-      (by norm_num : (3/2:ℝ)∈Ioo 1 2) 4 le_rfl)
-  have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hC₂ : 0 ≤ C₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
-  have hC₃ : 0 ≤ C₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
-  have hΔpos : 0 ≤ Δ := by dsimp only [Δ,Ct,Cc]; positivity
-  have hH : 0 < H := by dsimp only [H,C]; positivity
-  have hε : 0 < ε := by dsimp only [ε,C]; positivity
-  have hlw : l < w' := by dsimp only [l,w']; linarith only [hε]
-  have hchartR : (v:ℝ)*r-e*s=1 := by exact_mod_cast hchart
-  have hnegβ : β < 0 := div_neg_of_neg_of_pos hnum hdl
-  have hαβ : α ≤ β := by
-    have hh := inverseFarey_difference hchartR hdl.ne' hdw.ne'
-    change β-α=(w'-l)/(((r:ℝ)*l-e)*((r:ℝ)*w'-e)) at hh
-    have hp' : 0 ≤ (w'-l)/(((r:ℝ)*l-e)*((r:ℝ)*w'-e)) := by positivity
-    linarith only [hh,hp']
-  have hqpos i : (0:ℝ) < q i := by exact_mod_cast (rat i).pos
-  have hrat i : (rat i:ℝ)=((rat i).num:ℝ)/(q i:ℝ) := Rat.cast_def _
-  have hdenR : (Mat 2:ℝ)*(rat 0).num+Mat 3*q 0=q 1 := by
-    calc
-      _ = ((Mat 2:ℝ)*(rat 0:ℝ)+Mat 3)*q 0 := by
-        rw [hrat]; field_simp [(hqpos 0).ne']
-      _ = q 1 := by rw [hMatt]; field_simp [(hqpos 0).ne']
-  have hnumR : (Mat 0:ℝ)*(rat 0).num+Mat 1*q 0=(rat 1).num := by
-    have hm := hMatmap
-    rw [hMatt,hrat 0,hrat 1] at hm
-    have hh := (div_eq_iff (div_ne_zero (hqpos 1).ne' (hqpos 0).ne')).mp hm
-    field_simp [(hqpos 0).ne',(hqpos 1).ne'] at hh
-    nlinarith only [hh]
-  have hseedq (i) : qp pseed i=(q i:ℝ) := by
-    fin_cases i
-    · dsimp only [qp,pseed,rp,sp]; push_cast
-      linear_combination (q 0:ℝ)*hchartR
-    · dsimp only [qp,pseed,rp,sp]; push_cast
-      linear_combination ((Mat 2:ℝ)*(rat 0).num+Mat 3*q 0)*hchartR+hdenR
-  have hseeda (i) : ap pseed i=((rat i).num:ℝ) := by
-    fin_cases i
-    · dsimp only [ap,pseed,ep,vp]; push_cast
-      linear_combination ((rat 0).num:ℝ)*hchartR
-    · dsimp only [ap,pseed,ep,vp]; push_cast
-      linear_combination ((Mat 0:ℝ)*(rat 0).num+Mat 1*q 0)*hchartR+hnumR
-  have hseedroot (i) : iteratedDeriv 2 (f i) (x₀ i)/2=ap pseed i/qp pseed i := by
-    rw [hseedq,hseeda,hlevel,hrat]
-  have hseedtd : (pseed.2:ℝ)=((r:ℝ)*(rat 0:ℝ)-e)*q 0 := by
-    dsimp only [pseed]; push_cast; rw [hrat]; field_simp [(hqpos 0).ne']
-  have hseedd : 0 < (r:ℝ)*(rat 0:ℝ)-e := by
-    nlinarith only [hdl,hdw]
-  have htseed : 0 < pseed.2 := by
-    have hh : (0:ℝ) < pseed.2 := by rw [hseedtd]; exact mul_pos hseedd (hqpos 0)
-    exact_mod_cast hh
-  have hys : yseed=((v:ℝ)-s*(rat 0:ℝ))/((r:ℝ)*(rat 0:ℝ)-e) := by
-    dsimp only [yseed,pseed]
-    push_cast
-    rw [hrat 0]
-    field_simp [(hqpos 0).ne']
-  have hyseed : yseed∈Icc α β := by
-    rw [hys]
-    apply inverseFarey_mem_interval_signed hchartR hdl hdw
-    exact ⟨by linarith only [hε],by linarith only [hε]⟩
-  have hdetp (i) : vp i*rp i-ep i*sp i=1 := by
-    fin_cases i
-    · exact hchart
-    · change (Mat 0*v+Mat 1*s)*(Mat 2*e+Mat 3*r)-
-        (Mat 0*e+Mat 1*r)*(Mat 2*v+Mat 3*s)=1
-      linear_combination (v*r-e*s)*hMatdet+hchart
-  have hsq (p) (hp : p∈S) (i) :
-      |((round (xp p i)-ar i:ℤ):ℝ)|^2 ≤ M*R := by
-    have hh := rounded_displacement_bound (xp p i) (xref i)
-    have htri := abs_sub_le (xp p i) (x₀ i) (xref i)
-    have hdist := (hpoints p hp i).2.2.1
-    have hb : |(round (xp p i):ℝ)-(ar i:ℝ)| ≤ H+|x₀ i-xref i|+1 := by
-      dsimp only [ar]
-      linarith only [hh,htri,hdist]
-    rw [Int.cast_sub]
-    exact (pow_le_pow_left₀ (abs_nonneg _) hb 2).trans (hbudget i)
-  have hseedSq i : |(round (x₀ i):ℝ)-(ar i:ℝ)|^2 ≤ M*R := by
-    have hh := rounded_displacement_bound (x₀ i) (xref i)
-    have hb : |(round (x₀ i):ℝ)-(ar i:ℝ)| ≤ H+|x₀ i-xref i|+1 := by
-      dsimp only [ar]
-      linarith only [hh,hH]
-    exact (pow_le_pow_left₀ (abs_nonneg _) hb 2).trans (hbudget i)
-  obtain ⟨_v,_hv,hthird,_hsecond,_hfirst,hfourth⟩ := physicalModelPhase_actual_fourier_conditions
-    Q K₀ rat vinv parity hσ hδ hF₃ hT hM hN hR hQ hscale hmesh
-    hA hW hx₀ hden hinv hlevel hcolor hnear
-  have hthird' : |mu 1*(qp pseed 1)^3/(mu 0*(qp pseed 0)^3)-1| ≤ B*R^2/N^2 := by
-    simpa only [hseedq] using hthird
-  have hqsum p (hp : p∈S) : |qp p 0|+|qp p 1| ≤ 2*(Q:ℝ) := by
-    rw [abs_of_pos (hpoints p hp 0).2.2.2.1,abs_of_pos (hpoints p hp 1).2.2.2.1]
-    linarith only [(hpoints p hp 0).2.2.2.2,(hpoints p hp 1).2.2.2.2]
-  have ha : (anchor:ℝ)∈Icc l w' := by
-    have hh := abs_le.mp hanchor
-    exact ⟨by dsimp only [l]; linarith only [hh.1],
-      by dsimp only [w']; linarith only [hh.2]⟩
-  have hseedI : (rat 0:ℝ)∈Icc l w' :=
-    ⟨by dsimp only [l]; linarith only [hε],
-      by dsimp only [w']; linarith only [hε]⟩
-  have hrect := inverseFarey_negative_original_seed_enlarged_rectangle
-    hchart hdl hdw hnum ha hseedI hdyad hcut
-    (show ((rat 0).den:ℝ) ≤ (Q:ℝ) by exact_mod_cast (hden 0).1)
-  have hpu : -(pseed.1:ℝ) ≤ 12*((-α)*(K:ℝ)) := hrect.2.2.2.1
-  have hptK : (pseed.2:ℝ) ≤ 12*(K:ℝ) := hrect.2.2.2.2
-  have hseedfourth :
-      |(qp pseed 0*iteratedDeriv 1 (f 0) (round (x₀ 0))-cround 0)-
-       (qp pseed 1*iteratedDeriv 1 (f 1) (round (x₀ 1))-cround 1)| ≤ Δ := by
-    simp only [hseedq,iteratedDeriv_one]
-    apply hfourth.trans
-    have hqQ : (q 0:ℝ) ≤ Q := by exact_mod_cast (hden 0).1
-    have hCt : 0 ≤ Ct := by dsimp only [Ct]; positivity
-    have hCc : 0 ≤ Cc := by dsimp only [Cc]; positivity
-    have hcoeff : B ≤ 37*B/2+16*B*Cc+2*Ct+2*Cc := by
-      nlinarith only [hB,hCt,hCc,mul_nonneg hB hCc]
-    exact (div_le_div_of_nonneg_right
-      (mul_le_mul_of_nonneg_left hqQ hB) hN.le).trans
-      (div_le_div_of_nonneg_right
-        (mul_le_mul_of_nonneg_right hcoeff (by positivity : (0:ℝ) ≤ Q)) hN.le)
-  have hseedQ : |qp pseed 0|+|qp pseed 1| ≤ 2*(Q:ℝ) := by
-    rw [hseedq,hseedq,abs_of_pos (hqpos 0),abs_of_pos (hqpos 1)]
-    have hq0 : (q 0:ℝ) ≤ Q := by exact_mod_cast (hden 0).1
-    have hq1 : (q 1:ℝ) ≤ Q := by exact_mod_cast (hden 1).1
-    linarith only [hq0,hq1]
-  have hcommon := physicalModelPhase_quartic_negative_original_seed_linearization_all_slopes
-    (p₀:=pseed) (x₀:=xref) (xseed:=x₀) (x₁:=ξ) (e:=ep) (r:=rp) (v:=vp) (s:=sp)
-    (cnew:=cnew) (cseed:=cround) hσ hδ hF hT hMone hN hRone hRM hNscale hscale
-    hB hdmin hΔpos (by positivity : (0:ℝ) ≤ 2*(Q:ℝ))
-    hA hW hxref (fun p hp i => (hpoints p hp i).1) hx₀ hrp hdetp
-    hnegβ hαβ (by norm_num : (1:ℝ) ≤ 128) htseed hyseed hd
-    hleft hright href hseedroot hseedSq
-    (fun p hp i => (hpoints p hp i).2.1) hsq hthird'
-    (fun p hp => by simpa only [iteratedDeriv_one] using (hcnew p hp).2) hqsum hcard hlarge
-    hpu hptK hseedfourth hseedQ
-  have hres := hcommon.2
-  simp only [iteratedDeriv_one] at hres
-  change |(ac-round (ac-deriv φ yseed))*yseed+
-    (bc-round (bc-φ yseed+yseed*deriv φ yseed))-φ yseed| ≤ D/(pseed.2:ℝ) at hres
-  convert hres using 1
-  congr 1
-  dsimp only [φ]
-  ring
-
-
-                                                                 
-                                                                        
-                                                                     
-                                        
-theorem physicalModelPhase_actual_fourier_original_seed_bounds_all_negative_slopes
-    {σ δ T M N R dmin : ℝ} {k : Fin 17} (Q K₀ : ℕ) [NeZero K₀]
-    (rat : Fin 2 → ℚ) (vinv : Fin 2 → ℤ) (parity : Fin 2 → Fin 2) (Mat : Fin 4 → ℤ) (anchor : ℚ) (e r v s : ℤ)
-    {F : Fin 2 → ℝ → ℝ} {A W x₀ xref : Fin 2 → ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : ∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ)
-    (hT : 0 < T) (hM : 0 < M) (hN : 0 < N) (hR : 0 < R)
-    (hQ : 0 < Q) (hscale : T*N*R^2=M^3)
-    (hmesh : (Q:ℝ)*N ≤ (K₀:ℝ)*R^2)
-    (hA : ∀ i, M ≤ A i) (hW : ∀ i, A i+W i ≤ 2*M)
-    (hx₀ : ∀ i, x₀ i∈Ioo (1/2:ℝ) (W i-1/2))
-    (hden : ∀ i, (rat i).den ≤ Q ∧ Q ≤ 2*(rat i).den)
-    (hinv : ∀ i, ((rat i).den:ℤ) ∣ (rat i).num*vinv i-1) :
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ i, iteratedDeriv 2 (f i) (x₀ i)/2=(rat i:ℝ)) →
-    let q := fun i => (rat i).den
-    let mu := fun i => iteratedDeriv 3 (f i) (round (x₀ i))/6
-    let ell := fun i => deriv (f i) (round (x₀ i))
-    let b := fun i => (⌊(q i:ℝ)*ell i⌋+(parity i:ℕ) : ℤ)
-    let cround := fun i => round ((q i:ℝ)*ell i)
-    let tau := fun i => ((b i:ℝ)-(q i:ℝ)*ell i)/2
-    let dual := fun i => -2*mu i*(Real.sqrt (2/(3*mu i*(q i:ℝ))))^3
-    let w := fun i => (![Int.fract (-(vinv i:ℝ)*b i/q i),
-      Int.fract (-(vinv i:ℝ)/q i),dual i/Real.sqrt K₀,
-      (3*dual i*tau i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    b 0-cround 0=b 1-cround 1 →
-    (∀ d, |w 0 d-w 1 d| ≤ 2*radius d) →
-    let c := modelPhaseThirdLower σ/6
-    let J := (σ*(σ+1)+1)/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 → N ≤ R^2 → R ≤ N → N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
-    Mat 0*Mat 3-Mat 1*Mat 2=1 →
-    (Mat 2:ℝ)*(rat 0:ℝ)+Mat 3=(q 1:ℝ)/q 0 →
-    ((Mat 0:ℝ)*(rat 0:ℝ)+Mat 1)/((Mat 2:ℝ)*(rat 0:ℝ)+Mat 3)=(rat 1:ℝ) →
-    |(Mat 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) →
-    let C := σ*(σ+1)+1
-    let H := N/(C+2)
-    let ε := modelPhaseThirdLower σ/(16*(C+2)*R^2)
-    2 ≤ N →
-    (∀ i, x₀ i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ i, x₀ i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    v*r-e*s=1 →
-    0 < (r:ℝ)*((rat 0:ℝ)-ε)-e →
-    0 < (r:ℝ)*((rat 0:ℝ)+ε)-e →
-    (v:ℝ)-s*((rat 0:ℝ)-ε) < 0 →
-    max ((r:ℝ)*((rat 0:ℝ)-ε)-e) ((r:ℝ)*((rat 0:ℝ)+ε)-e) ≤
-      2*min ((r:ℝ)*((rat 0:ℝ)-ε)-e) ((r:ℝ)*((rat 0:ℝ)+ε)-e) →
-    |(anchor:ℝ)-(rat 0:ℝ)| ≤ ε →
-    256*(anchor.den:ℝ) ≤ (Q:ℝ)/3 →
-    256 ≤ (2*ε)*((Q:ℝ)/3)*anchor.den →
-    let l := (rat 0:ℝ)-ε
-    let w' := (rat 0:ℝ)+ε
-    let α := ((v:ℝ)-s*w')/((r:ℝ)*w'-e)
-    let β := ((v:ℝ)-s*l)/((r:ℝ)*l-e)
-    let K := ⌊((Q:ℝ)/3)*min ((r:ℝ)*l-e) ((r:ℝ)*w'-e)⌋₊
-    let S := (HuxleyLinearForm.fareySector K (-β) (-α)).image
-      (fun p : ℤ × ℤ => (-p.1,p.2))
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let κ := modelPhaseThirdLower σ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
-    let ep : Fin 2 → ℤ := ![e,Mat 0*e+Mat 1*r]
-    let rp : Fin 2 → ℤ := ![r,Mat 2*e+Mat 3*r]
-    let sp : Fin 2 → ℤ := ![s,Mat 2*v+Mat 3*s]
-    let pseed : ℤ × ℤ := (v*(q 0:ℤ)-s*(rat 0).num,r*(rat 0).num-e*(q 0:ℤ))
-    let yseed := (pseed.1:ℝ)/pseed.2
-    let ar := fun i => round (xref i)
-    let μr := fun i => iteratedDeriv 3 (f i) (ar i)/6
-    let νr := fun i => iteratedDeriv 4 (f i) (ar i)/24
-    let dr := fun i => deriv (f i) (ar i)
-    let δr := fun i => iteratedDeriv 2 (f i) (ar i)/2-(ep i:ℝ)/rp i
-    let θr := fun i => (rp i:ℝ)*dr i-round ((rp i:ℝ)*dr i)
-    let βr := fun i => dr i*sp i+2*δr i/(3*μr i*rp i)
-    let ac := θr 0-θr 1
-    let bc := βr 0-βr 1
-    let g := rationalPhase (μr 0) (rp 0) (sp 0) (μr 1) (rp 1) (sp 1)
-    let hq := quarticPhase (μr 0) (νr 0) (rp 0) (sp 0) (μr 1) (νr 1) (rp 1) (sp 1)
-    let φ := fun y => g y-hq y
-    let Ctay := (2/κ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*dmin^3)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let η := D+(K:ℝ)*Ctay*(β-α)^2
-    let U := (4/κ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*dmin^3)
-    let Z := quarticCurvatureBoundaryRoots (μr 0) (νr 0) (rp 0) (sp 0)
-      (μr 1) (νr 1) (rp 1) (sp 1) U
-    1 ≤ M → 1 ≤ R → R ≤ M → N^2 ≤ M*R → 0 < dmin →
-    Δ < 1/2 →
-    (∀ i, rp i ≠ 0) →
-    (∀ i, xref i∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ i, iteratedDeriv 2 (f i) (xref i)/2=(ep i:ℝ)/rp i) →
-    (∀ i, (H+|x₀ i-xref i|+1)^2 ≤ M*R) →
-    (∀ y∈Icc α β, ∀ i, dmin ≤ (rp i:ℝ)*y+sp i) →
-    α ∈ finiteBoundaryCell Z α β k → β ∈ finiteBoundaryCell Z α β k →
-    3840*128*η*((-α)*(K:ℝ))*(K:ℝ) < S.card →
-    |iteratedDeriv 2 g yseed-iteratedDeriv 2 hq yseed| ≤ U ∧
-    |(ac-round (ac-deriv φ yseed))*yseed+
-      (bc-round (bc-φ yseed+yseed*deriv φ yseed))-g yseed+hq yseed| ≤
-      D/(pseed.2:ℝ) := by
-  classical
-  intro f hlevel q mu ell b cround tau dual w radius hcolor hnear c J B
-    hsmall hNR hRN hcube hminscale hMatdet hMatt hMatmap hMatgamma
-    C H ε hNtwo hL hU hchart hdl hdw hnum hdyad hanchor hcut hcount
-    l w' α β K S C₂ C₃ κ Ct Cc Δ ep rp sp pseed yseed ar μr νr dr δr θr βr ac bc g hq φ
-    Ctay D η U Z hMone hRone hRM hNscale hdmin hΔ hrp hxref href hbudget
-    hd hleft hright hlarge
-  have hresult := physicalModelPhase_actual_fourier_negative_original_seed_residual_all_slopes
-    Q K₀ rat vinv parity Mat anchor e r v s
-    hσ hδ hF hT hM hN hR hQ hscale hmesh hA hW hx₀ hden hinv
-    hlevel hcolor hnear hsmall hNR hRN hcube hminscale hMatdet hMatt hMatmap hMatgamma
-    hNtwo hL hU hchart hdl hdw hnum hdyad hanchor hcut hcount
-    hMone hRone hRM hNscale hdmin hΔ hrp hxref href hbudget hd hleft hright hlarge
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hε : 0 < ε := by dsimp only [ε,C]; positivity
-  have ha : (anchor:ℝ)∈Icc l w' := by
-    have hh := abs_le.mp hanchor
-    exact ⟨by dsimp only [l]; linarith only [hh.1],
-      by dsimp only [w']; linarith only [hh.2]⟩
-  have hseedI : (rat 0:ℝ)∈Icc l w' :=
-    ⟨by dsimp only [l]; linarith only [hε],
-      by dsimp only [w']; linarith only [hε]⟩
-  have hrect := inverseFarey_negative_original_seed_enlarged_rectangle
-    hchart hdl hdw hnum ha hseedI hdyad hcut
-    (show ((rat 0).den:ℝ) ≤ (Q:ℝ) by exact_mod_cast (hden 0).1)
-  have ht : (0:ℝ) < pseed.2 := hrect.1
-  have hyseed : yseed∈Icc α β := hrect.2.1
-  have hchartR : (v:ℝ)*r-e*s=1 := by exact_mod_cast hchart
-  have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
-  refine ⟨?_,hresult⟩
-  let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
-  let qp := fun (p : ℤ × ℤ) i => (rp i:ℝ)*p.1+sp i*p.2
-  let ap := fun (p : ℤ × ℤ) i => (ep i:ℝ)*p.1+vp i*p.2
-  have hH : 0 < H := by dsimp only [H,C]; positivity
-  have hF₃ i := approximateModelPhase_mono (hF i) (by norm_num : 3 ≤ 4) le_rfl
-  have hqpos i : (0:ℝ) < q i := by exact_mod_cast (rat i).pos
-  have hrat i : (rat i:ℝ)=((rat i).num:ℝ)/(q i:ℝ) := Rat.cast_def _
-  have hdenR : (Mat 2:ℝ)*(rat 0).num+Mat 3*q 0=q 1 := by
-    calc
-      _ = ((Mat 2:ℝ)*(rat 0:ℝ)+Mat 3)*q 0 := by
-        rw [hrat]; field_simp [(hqpos 0).ne']
-      _ = q 1 := by rw [hMatt]; field_simp [(hqpos 0).ne']
-  have hnumR : (Mat 0:ℝ)*(rat 0).num+Mat 1*q 0=(rat 1).num := by
-    have hm := hMatmap
-    rw [hMatt,hrat 0,hrat 1] at hm
-    have hh := (div_eq_iff (div_ne_zero (hqpos 1).ne' (hqpos 0).ne')).mp hm
-    field_simp [(hqpos 0).ne',(hqpos 1).ne'] at hh
-    nlinarith only [hh]
-  have hseedq (i) : qp pseed i=(q i:ℝ) := by
-    fin_cases i
-    · dsimp only [qp,pseed,rp,sp]; push_cast
-      linear_combination (q 0:ℝ)*hchartR
-    · dsimp only [qp,pseed,rp,sp]; push_cast
-      linear_combination ((Mat 2:ℝ)*(rat 0).num+Mat 3*q 0)*hchartR+hdenR
-  have hseeda (i) : ap pseed i=((rat i).num:ℝ) := by
-    fin_cases i
-    · dsimp only [ap,pseed,ep,vp]; push_cast
-      linear_combination ((rat 0).num:ℝ)*hchartR
-    · dsimp only [ap,pseed,ep,vp]; push_cast
-      linear_combination ((Mat 0:ℝ)*(rat 0).num+Mat 1*q 0)*hchartR+hnumR
-  have hseedroot (i) : iteratedDeriv 2 (f i) (x₀ i)/2=ap pseed i/qp pseed i := by
-    rw [hseedq,hseeda,hlevel,hrat]
-  have hdetp (i) : vp i*rp i-ep i*sp i=1 := by
-    fin_cases i
-    · exact hchart
-    · change (Mat 0*v+Mat 1*s)*(Mat 2*e+Mat 3*r)-
-        (Mat 0*e+Mat 1*r)*(Mat 2*v+Mat 3*s)=1
-      linear_combination (v*r-e*s)*hMatdet+hchart
-  have hseedSq i : |(round (x₀ i):ℝ)-(ar i:ℝ)|^2 ≤ M*R := by
-    have hh := rounded_displacement_bound (x₀ i) (xref i)
-    have hb : |(round (x₀ i):ℝ)-(ar i:ℝ)| ≤ H+|x₀ i-xref i|+1 := by
-      dsimp only [ar]
-      linarith only [hh,hH]
-    exact (pow_le_pow_left₀ (abs_nonneg _) hb 2).trans (hbudget i)
-  obtain ⟨_v,_hv,hthird,_hsecond,_hfirst,_hfourth⟩ := physicalModelPhase_actual_fourier_conditions
-    Q K₀ rat vinv parity hσ hδ hF₃ hT hM hN hR hQ hscale hmesh
-    hA hW hx₀ hden hinv hlevel hcolor hnear
-  have hthird' : |mu 1*(qp pseed 1)^3/(mu 0*(qp pseed 0)^3)-1| ≤ B*R^2/N^2 := by
-    simpa only [hseedq] using hthird
-  exact physicalModelPhase_quartic_curvature_source_scale
-    (u:=(pseed.1:ℝ)) (t:=(pseed.2:ℝ)) (x₀:=xref) (x₁:=x₀)
-    (e:=fun i => (ep i:ℝ)) (r:=fun i => (rp i:ℝ))
-    (v:=fun i => (vp i:ℝ)) (s:=fun i => (sp i:ℝ))
-    hσ hδ hF hT hM hN hRone hNscale hscale hB hdmin hA hW hxref hx₀
-    (fun i => by exact_mod_cast hrp i) ht
-    (fun i => by change 0 < qp pseed i; rw [hseedq]; exact hqpos i)
-    (fun i => by
-      exact_mod_cast hdetp i) href hseedroot hseedSq
-    (hd yseed hyseed) hthird'
-
-
-
-                                                                           
 private theorem physicalModelPhase_actual_fourier_signed_height_square_span_fixed_reference_quartic_witnesses
     {Kcoord : ℕ}
     (S : Finset ℕ)
@@ -4254,29 +3161,9 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_fixe
     let P₁ := 1+(|(v:ℝ)|+|(s:ℝ)| *Vheight)*(Q:ℝ)
     let P₂ := 1+(|(r:ℝ)| *Vheight+|(e:ℝ)|)*(Q:ℝ)
     32*(6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)) ≤ S.card →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ j∈S, ∀ i, iteratedDeriv 2 (f i) (x j i)/2=(rat j i:ℝ)) →
-    let q := fun j i => (rat j i).den
-    let mu := fun j i => iteratedDeriv 3 (f i) (round (x j i))/6
-    let ell := fun j i => deriv (f i) (round (x j i))
-    let b := fun j i => (⌊(q j i:ℝ)*ell j i⌋+(parity j i:ℕ) : ℤ)
-    let cround := fun j i => round ((q j i:ℝ)*ell j i)
-    let tau := fun j i => ((b j i:ℝ)-(q j i:ℝ)*ell j i)/2
-    let dual := fun j i => -2*mu j i*(Real.sqrt (2/(3*mu j i*(q j i:ℝ))))^3
-    let cloud := fun j i => (![Int.fract (-(vinv j i:ℝ)*b j i/q j i),
-      Int.fract (-(vinv j i:ℝ)/q j i),dual j i/Real.sqrt K₀,
-      (3*dual j i*tau j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ j∈S, b j 0-cround j 0=b j 1-cround j 1) →
-    (∀ j∈S, ∀ a, |cloud j 0 a-cloud j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 → N ≤ R^2 → R ≤ N → N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
+    WithRoundedSourceJets S F (fun i => (A i:ℝ)) T M x rat (fun f q mu ell =>
+    WithCompletionCloud S q mu ell parity vinv K₀ (fun b cround tau dual cloud radius =>
+    WithCubicScales σ M N R Q (fun κ Cphys c J B =>
     Mat 0*Mat 3-Mat 1*Mat 2=1 →
     (∀ j∈S, (Mat 2:ℝ)*(rat j 0:ℝ)+Mat 3=(q j 1:ℝ)/q j 0) →
     (∀ j∈S, ((Mat 0:ℝ)*(rat j 0:ℝ)+Mat 1)/
@@ -4292,9 +3179,7 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_fixe
     (∀ j∈S, 0 < (v:ℝ)-s*((rat j 0:ℝ)+ε) ∨ (v:ℝ)-s*((rat j 0:ℝ)-ε) < 0) →
     (∀ j∈S, max ((r:ℝ)*((rat j 0:ℝ)-ε)-e) ((r:ℝ)*((rat j 0:ℝ)+ε)-e) ≤
       2*min ((r:ℝ)*((rat j 0:ℝ)-ε)-e) ((r:ℝ)*((rat j 0:ℝ)+ε)-e)) →
-    (∀ j∈S, |(anchor j:ℝ)-(rat j 0:ℝ)| ≤ ε) →
-    (∀ j∈S, 256*((anchor j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ j∈S, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor j).den) →
+    WithRationalAnchors S rat anchor ε Q (
     let lo := fun j => (rat j 0:ℝ)-ε
     let hi := fun j => (rat j 0:ℝ)+ε
     let α := fun j => ((v:ℝ)-s*hi j)/((r:ℝ)*hi j-e)
@@ -4307,7 +3192,7 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_fixe
     let C₃ := modelPhaseJetCoefficient σ 3+δ
     let Ct := C₂/2+5*C₃/12
     let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
+    let Δ := quarticTaylorSlack B Cc Ct*(Q:ℝ)/N
     let ep : Fin 2 → ℤ := ![e,Mat 0*e+Mat 1*r]
     let rp : Fin 2 → ℤ := ![r,Mat 2*e+Mat 3*r]
     let sp : Fin 2 → ℤ := ![s,Mat 2*v+Mat 3*s]
@@ -4328,8 +3213,7 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_fixe
     let U := Ccurv*R^4/(N*d^3)
     let Z := quarticCurvatureBoundaryRoots (μr 0) (νr 0) (rp 0) (sp 0)
       (μr 1) (νr 1) (rp 1) (sp 1) U
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
+    let Kres := 4*quarticResidualBudget σ δ B Cc Ct/κ
     (∀ j∈S, ∀ i, (H+|x j i-xref i|+1)^2 ≤ M*R) →
     D ≤ 1/2 → Δ < 1/2 →
     (∀ z∈Icc l w, ∀ i, d ≤ (rp i:ℝ)*z+sp i ∧ (rp i:ℝ)*z+sp i ≤ 2*d) →
@@ -4338,24 +3222,10 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_fixe
     (∀ j∈S, 3840*128*η j*((max |α j| |β j|)*(Kaux j:ℝ))*(Kaux j:ℝ) < (Saux j).card) →
     ((2*Kcoord+1:ℕ):ℝ)*Ccurv*Cphys ≤ Bcut →
     |G l| ≤ |(rp 0:ℝ)| *N^2/(Bcut*R^2) →
-    let Blabels := 6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)
-    let L := κ/(16*(Blabels:ℝ)*Cphys)*(S.card:ℝ)
-    let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
-    ∃ j : Fin 8 → ℕ, ∃ z : Fin 8 → ℝ, ∃ curve : ℝ → Fin 2 → ℝ, ∃ alpha beta : ℝ,
-      (∀ a, j a∈S ∧ ∀ i,
-        (rat (j a) i:ℝ)=((ep i:ℝ)*z a+vp i)/((rp i:ℝ)*z a+sp i)) ∧
-      StrictMono z ∧ 0 < L ∧ (L*N)^2 ≤ M*R ∧ 0 ≤ Kres ∧
-      (∀ t∈Icc (z 0) (z 7), t∈Icc l w ∧ ∀ i,
-        curve t i∈Ioo (1/2:ℝ) (W i-1/2) ∧
-        d ≤ (rp i:ℝ)*t+sp i ∧ (rp i:ℝ)*t+sp i ≤ 2*d ∧
-        iteratedDeriv 2 (f i) (curve t i)/2=((ep i:ℝ)*t+vp i)/((rp i:ℝ)*t+sp i) ∧
-        |(round (curve t i):ℝ)-(round (xref i):ℝ)|^2 ≤ M*R) ∧
-      (∀ i : Fin 7, L*N ≤ |G (z i.succ)-G (z i.castSucc)|) ∧
-      (∀ i : Fin 8,
-        |alpha*z i+beta-rationalPhase (μr 0) (rp 0) (sp 0) (μr 1) (rp 1) (sp 1) (z i)+
-          quarticPhase (μr 0) (νr 0) (rp 0) (sp 0) (μr 1) (νr 1) (rp 1) (sp 1) (z i)| ≤
-          Kres*R^2/|(rp 0:ℝ)*G (z i)|) := by
+    QuarticCurveWitnesses S rat f W xref ep rp sp Mat v s μr νr G κ Cphys P₁ P₂ l w d N M R Kres)))) := by
+  unfold QuarticCurveWitnesses
   classical
+  unfold WithRoundedSourceJets WithCompletionCloud WithCubicScales
   intro Vheight P₁ P₂ hS f hlevel q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
     H ε hNtwo hL hU hdl hdw hnum hdyad hanchor hcut hcount
@@ -4426,7 +3296,7 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_fixe
       have hlarge' := hlarge j hj
       dsimp only [Saux] at hlarge'
       rw [ite_eq_left hαpos,hmax] at hlarge'
-      exact physicalModelPhase_actual_fourier_original_seed_bounds_all_positive_slopes
+      exact physicalModelPhase_actual_fourier_signed_seed_bounds false
         Q K₀ (rat j) (vinv j) (parity j) Mat (anchor j) e r v s
         hσ hδ hF hT hM hN hRpos hQ hscale hmesh hA hW (hx j hj)
         (hden j hj) (hinv j hj) (hlevel j hj) (hcolor j hj) (hnear j hj)
@@ -4443,7 +3313,7 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_fixe
       have hlarge' := hlarge j hj
       dsimp only [Saux] at hlarge'
       rw [ite_eq_right (not_lt.mpr hαneg.le),hmax] at hlarge'
-      exact physicalModelPhase_actual_fourier_original_seed_bounds_all_negative_slopes
+      exact physicalModelPhase_actual_fourier_signed_seed_bounds true
         Q K₀ (rat j) (vinv j) (parity j) Mat (anchor j) e r v s
         hσ hδ hF hT hM hN hRpos hQ hscale hmesh hA hW (hx j hj)
         (hden j hj) (hinv j hj) (hlevel j hj) (hcolor j hj) (hnear j hj)
@@ -4481,11 +3351,11 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_fixe
   have hCR : 0 ≤ quarticReciprocalConstant σ δ := by
     dsimp only [quarticReciprocalConstant]; positivity
   have hCcurv : 0 ≤ Ccurv := by dsimp only [Ccurv]; positivity
-  let Cres := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
+  let Cres := quarticResidualBudget σ δ B Cc Ct
   have hCres : 0 ≤ Cres := by
-    dsimp only [Cres,Cc,Ct,C₂,C₃,quarticNonlinearResidualConstant]
+    dsimp only [Cres,Cc,Ct,C₂,C₃,quarticNonlinearResidualConstant, quarticResidualBudget, quarticTaylorSlack]
     positivity
-  have hDeq : D=Cres*(Q:ℝ)/N := by dsimp only [D,Δ,Cres]; ring
+  have hDeq : D=Cres*(Q:ℝ)/N := by dsimp only [D,Δ,Cres, quarticResidualBudget, quarticTaylorSlack]; ring
   have hD₀ : 0 ≤ D := by
     rw [hDeq]
     exact div_nonneg (mul_nonneg hCres (Nat.cast_nonneg Q)) hN.le
@@ -4611,29 +3481,9 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_sele
     let P₁ := 1+(|(v:ℝ)|+|(s:ℝ)| *Vheight)*(Q:ℝ)
     let P₂ := 1+(|(r:ℝ)| *Vheight+|(e:ℝ)|)*(Q:ℝ)
     99+544*(6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)) ≤ S.card →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ j∈S, ∀ i, iteratedDeriv 2 (f i) (x j i)/2=(rat j i:ℝ)) →
-    let q := fun j i => (rat j i).den
-    let mu := fun j i => iteratedDeriv 3 (f i) (round (x j i))/6
-    let ell := fun j i => deriv (f i) (round (x j i))
-    let b := fun j i => (⌊(q j i:ℝ)*ell j i⌋+(parity j i:ℕ) : ℤ)
-    let cround := fun j i => round ((q j i:ℝ)*ell j i)
-    let tau := fun j i => ((b j i:ℝ)-(q j i:ℝ)*ell j i)/2
-    let dual := fun j i => -2*mu j i*(Real.sqrt (2/(3*mu j i*(q j i:ℝ))))^3
-    let cloud := fun j i => (![Int.fract (-(vinv j i:ℝ)*b j i/q j i),
-      Int.fract (-(vinv j i:ℝ)/q j i),dual j i/Real.sqrt K₀,
-      (3*dual j i*tau j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ j∈S, b j 0-cround j 0=b j 1-cround j 1) →
-    (∀ j∈S, ∀ a, |cloud j 0 a-cloud j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 → N ≤ R^2 → R ≤ N → N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
+    WithRoundedSourceJets S F (fun i => (A i:ℝ)) T M x rat (fun f q mu ell =>
+    WithCompletionCloud S q mu ell parity vinv K₀ (fun b cround tau dual cloud radius =>
+    WithCubicScales σ M N R Q (fun κ Cphys c J B =>
     Mat 0*Mat 3-Mat 1*Mat 2=1 →
     (∀ j∈S, (Mat 2:ℝ)*(rat j 0:ℝ)+Mat 3=(q j 1:ℝ)/q j 0) →
     (∀ j∈S, ((Mat 0:ℝ)*(rat j 0:ℝ)+Mat 1)/
@@ -4648,9 +3498,7 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_sele
     (∀ j∈S, 0 < (r:ℝ)*((rat j 0:ℝ)+ε)-e) →
     (∀ j∈S, max ((r:ℝ)*((rat j 0:ℝ)-ε)-e) ((r:ℝ)*((rat j 0:ℝ)+ε)-e) ≤
       2*min ((r:ℝ)*((rat j 0:ℝ)-ε)-e) ((r:ℝ)*((rat j 0:ℝ)+ε)-e)) →
-    (∀ j∈S, |(anchor j:ℝ)-(rat j 0:ℝ)| ≤ ε) →
-    (∀ j∈S, 256*((anchor j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ j∈S, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor j).den) →
+    WithRationalAnchors S rat anchor ε Q (
     let lo := fun j => (rat j 0:ℝ)-ε
     let hi := fun j => (rat j 0:ℝ)+ε
     let α := fun j => ((v:ℝ)-s*hi j)/((r:ℝ)*hi j-e)
@@ -4663,7 +3511,7 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_sele
     let C₃ := modelPhaseJetCoefficient σ 3+δ
     let Ct := C₂/2+5*C₃/12
     let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
+    let Δ := quarticTaylorSlack B Cc Ct*(Q:ℝ)/N
     let ep : Fin 2 → ℤ := ![e,Mat 0*e+Mat 1*r]
     let rp : Fin 2 → ℤ := ![r,Mat 2*e+Mat 3*r]
     let sp : Fin 2 → ℤ := ![s,Mat 2*v+Mat 3*s]
@@ -4683,8 +3531,7 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_sele
     let Ctay := (2/κ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*d^3)
     let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
     let η := fun j => D+(Kaux j:ℝ)*Ctay*(β j-α j)^2
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
+    let Kres := 4*quarticResidualBudget σ δ B Cc Ct/κ
     (∀ j∈S, ∀ i, (H+|x j i-xref i|+1)^2 ≤ M*R) →
     D ≤ 1/2 → Δ < 1/2 →
     (∀ z∈Icc l w, ∀ i, d ≤ (rp i:ℝ)*z+sp i ∧ (rp i:ℝ)*z+sp i ≤ 2*d) →
@@ -4693,24 +3540,10 @@ private theorem physicalModelPhase_actual_fourier_signed_height_square_span_sele
     ((2*Kcoord+1:ℕ):ℝ)*Ccurv*Cphys ≤ Bcut →
     |G l| ≤ |(rp 0:ℝ)| *N^2/(Bcut*R^2) →
     ∃ S₀ : Finset ℕ, S₀⊆S ∧ S.card ≤ 99+17*S₀.card ∧
-    let Blabels := 6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)
-    let L := κ/(16*(Blabels:ℝ)*Cphys)*(S₀.card:ℝ)
-    let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
-    ∃ j : Fin 8 → ℕ, ∃ z : Fin 8 → ℝ, ∃ curve : ℝ → Fin 2 → ℝ, ∃ alpha beta : ℝ,
-      (∀ a, j a∈S₀ ∧ ∀ i,
-        (rat (j a) i:ℝ)=((ep i:ℝ)*z a+vp i)/((rp i:ℝ)*z a+sp i)) ∧
-      StrictMono z ∧ 0 < L ∧ (L*N)^2 ≤ M*R ∧ 0 ≤ Kres ∧
-      (∀ t∈Icc (z 0) (z 7), t∈Icc l w ∧ ∀ i,
-        curve t i∈Ioo (1/2:ℝ) (W i-1/2) ∧
-        d ≤ (rp i:ℝ)*t+sp i ∧ (rp i:ℝ)*t+sp i ≤ 2*d ∧
-        iteratedDeriv 2 (f i) (curve t i)/2=((ep i:ℝ)*t+vp i)/((rp i:ℝ)*t+sp i) ∧
-        |(round (curve t i):ℝ)-(round (xref i):ℝ)|^2 ≤ M*R) ∧
-      (∀ i : Fin 7, L*N ≤ |G (z i.succ)-G (z i.castSucc)|) ∧
-      (∀ i : Fin 8,
-        |alpha*z i+beta-rationalPhase (μr 0) (rp 0) (sp 0) (μr 1) (rp 1) (sp 1) (z i)+
-          quarticPhase (μr 0) (νr 0) (rp 0) (sp 0) (μr 1) (νr 1) (rp 1) (sp 1) (z i)| ≤
-          Kres*R^2/|(rp 0:ℝ)*G (z i)|) := by
- classical
+    QuarticCurveWitnesses S₀ rat f W xref ep rp sp Mat v s μr νr G κ Cphys P₁ P₂ l w d N M R Kres)))) := by
+  unfold QuarticCurveWitnesses
+  classical
+  unfold WithRoundedSourceJets WithCompletionCloud WithCubicScales
   intro Vheight P₁ P₂ hS f hlevel q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
     H ε hNtwo hL hU hdl hdw hdyad hanchor hcut hcount
@@ -4913,29 +3746,9 @@ theorem physicalModelPhase_actual_fourier_signed_selected_reference_gap_quartic_
     let P₁ := 1+(|(v:ℝ)|+|(s:ℝ)| *Vheight)*(Q:ℝ)
     let P₂ := 1+(|(r:ℝ)| *Vheight+|(e:ℝ)|)*(Q:ℝ)
     99+544*(6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)) ≤ S.card →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ j∈S, ∀ i, iteratedDeriv 2 (f i) (x j i)/2=(rat j i:ℝ)) →
-    let q := fun j i => (rat j i).den
-    let mu := fun j i => iteratedDeriv 3 (f i) (round (x j i))/6
-    let ell := fun j i => deriv (f i) (round (x j i))
-    let b := fun j i => (⌊(q j i:ℝ)*ell j i⌋+(parity j i:ℕ) : ℤ)
-    let cround := fun j i => round ((q j i:ℝ)*ell j i)
-    let tau := fun j i => ((b j i:ℝ)-(q j i:ℝ)*ell j i)/2
-    let dual := fun j i => -2*mu j i*(Real.sqrt (2/(3*mu j i*(q j i:ℝ))))^3
-    let cloud := fun j i => (![Int.fract (-(vinv j i:ℝ)*b j i/q j i),
-      Int.fract (-(vinv j i:ℝ)/q j i),dual j i/Real.sqrt K₀,
-      (3*dual j i*tau j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ j∈S, b j 0-cround j 0=b j 1-cround j 1) →
-    (∀ j∈S, ∀ a, |cloud j 0 a-cloud j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 → N ≤ R^2 → R ≤ N → N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
+    WithRoundedSourceJets S F (fun i => (A i:ℝ)) T M x rat (fun f q mu ell =>
+    WithCompletionCloud S q mu ell parity vinv K₀ (fun b cround tau dual cloud radius =>
+    WithCubicScales σ M N R Q (fun κ Cphys c J B =>
     Mat 0*Mat 3-Mat 1*Mat 2=1 →
     (∀ j∈S, (Mat 2:ℝ)*(rat j 0:ℝ)+Mat 3=(q j 1:ℝ)/q j 0) →
     (∀ j∈S, ((Mat 0:ℝ)*(rat j 0:ℝ)+Mat 1)/
@@ -4950,9 +3763,7 @@ theorem physicalModelPhase_actual_fourier_signed_selected_reference_gap_quartic_
     (∀ j∈S, 0 < (r:ℝ)*((rat j 0:ℝ)+ε)-e) →
     (∀ j∈S, max ((r:ℝ)*((rat j 0:ℝ)-ε)-e) ((r:ℝ)*((rat j 0:ℝ)+ε)-e) ≤
       2*min ((r:ℝ)*((rat j 0:ℝ)-ε)-e) ((r:ℝ)*((rat j 0:ℝ)+ε)-e)) →
-    (∀ j∈S, |(anchor j:ℝ)-(rat j 0:ℝ)| ≤ ε) →
-    (∀ j∈S, 256*((anchor j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ j∈S, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor j).den) →
+    WithRationalAnchors S rat anchor ε Q (
     let lo := fun j => (rat j 0:ℝ)-ε
     let hi := fun j => (rat j 0:ℝ)+ε
     let α := fun j => ((v:ℝ)-s*hi j)/((r:ℝ)*hi j-e)
@@ -4965,7 +3776,7 @@ theorem physicalModelPhase_actual_fourier_signed_selected_reference_gap_quartic_
     let C₃ := modelPhaseJetCoefficient σ 3+δ
     let Ct := C₂/2+5*C₃/12
     let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
+    let Δ := quarticTaylorSlack B Cc Ct*(Q:ℝ)/N
     let ep : Fin 2 → ℤ := ![e,Mat 0*e+Mat 1*r]
     let rp : Fin 2 → ℤ := ![r,Mat 2*e+Mat 3*r]
     let sp : Fin 2 → ℤ := ![s,Mat 2*v+Mat 3*s]
@@ -4978,8 +3789,7 @@ theorem physicalModelPhase_actual_fourier_signed_selected_reference_gap_quartic_
     let Ctay := (2/κ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*d^3)
     let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
     let η := fun j => D+(Kaux j:ℝ)*Ctay*(β j-α j)^2
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
+    let Kres := 4*quarticResidualBudget σ δ B Cc Ct/κ
     D ≤ 1/2 → Δ < 1/2 →
     (∀ z∈Icc l w, ∀ i, d ≤ (rp i:ℝ)*z+sp i ∧ (rp i:ℝ)*z+sp i ≤ 2*d) →
     (∀ j∈S, α j∈Icc l w ∧ β j∈Icc l w) →
@@ -4990,24 +3800,9 @@ theorem physicalModelPhase_actual_fourier_signed_selected_reference_gap_quartic_
     let μr := fun i => iteratedDeriv 3 (f i) (ar i)/6
     let νr := fun i => iteratedDeriv 4 (f i) (ar i)/24
     let G := minorArcCoordinate (μr 0) (rp 0) (sp 0)
-    let Blabels := 6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)
-    let L := κ/(16*(Blabels:ℝ)*Cphys)*(S₀.card:ℝ)
-    let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
-    ∃ j : Fin 8 → ℕ, ∃ z : Fin 8 → ℝ, ∃ curve : ℝ → Fin 2 → ℝ, ∃ alpha beta : ℝ,
-      (∀ a, j a∈S₀ ∧ ∀ i,
-        (rat (j a) i:ℝ)=((ep i:ℝ)*z a+vp i)/((rp i:ℝ)*z a+sp i)) ∧
-      StrictMono z ∧ 0 < L ∧ (L*N)^2 ≤ M*R ∧ 0 ≤ Kres ∧
-      (∀ t∈Icc (z 0) (z 7), t∈Icc l w ∧ ∀ i,
-        curve t i∈Ioo (1/2:ℝ) (W i-1/2) ∧
-        d ≤ (rp i:ℝ)*t+sp i ∧ (rp i:ℝ)*t+sp i ≤ 2*d ∧
-        iteratedDeriv 2 (f i) (curve t i)/2=((ep i:ℝ)*t+vp i)/((rp i:ℝ)*t+sp i) ∧
-        |(round (curve t i):ℝ)-(round (xref i):ℝ)|^2 ≤ M*R) ∧
-      (∀ i : Fin 7, L*N ≤ |G (z i.succ)-G (z i.castSucc)|) ∧
-      (∀ i : Fin 8,
-        |alpha*z i+beta-rationalPhase (μr 0) (rp 0) (sp 0) (μr 1) (rp 1) (sp 1) (z i)+
-          quarticPhase (μr 0) (νr 0) (rp 0) (sp 0) (μr 1) (νr 1) (rp 1) (sp 1) (z i)| ≤
-          Kres*R^2/|(rp 0:ℝ)*G (z i)|) := by
- classical
+    QuarticCurveWitnesses S₀ rat f W xref ep rp sp Mat v s μr νr G κ Cphys P₁ P₂ l w d N M R Kres)))) := by
+  unfold QuarticCurveWitnesses
+  classical
   intro Lref
   have hκearly : 0 < modelPhaseThirdLower σ := modelPhaseThirdLower_pos hσ
   have hUone : (1:ℝ) ≤ Uref := by exact_mod_cast hUref
@@ -5063,6 +3858,7 @@ theorem physicalModelPhase_actual_fourier_signed_selected_reference_gap_quartic_
       hRQ hBselect hselectedUpper hscaleTen
   intro Vheight P₁ P₂ hS
   have hlong := physicalModelPhase_actual_fourier_signed_height_square_span_selected_cell_quartic_witnesses S jref hjref Q K₀ rat vinv parity anchor Mat e r v s (σ:=σ) (δ:=δ) (T:=T) (M:=M) (N:=N) (R:=R) (d:=d) (nSpan:=nSpan) (base:=base) (l:=l) (w:=w) (Bcut:=Bcut) (Lref:=Lref) (F:=F) (A:=A) (W:=W) (x:=x) hσ hδ hF hT hM hN hR hRM hQ hscale hmesh hA hW hx hwindow hsourcesquare hden hinv hchart hr hd hcoord hBcut hLref hrefWindow hwideL hwideU hrefNear
+  unfold WithRoundedSourceJets WithCompletionCloud WithCubicScales
   intro f hlevel q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
     H ε hNtwo hL hU hdl hdw hdyad hanchor hcut hcount
@@ -5263,29 +4059,9 @@ private theorem physicalModelPhase_actual_fourier_separated_reference_gap_quarti
     let P₁ := 1+(|(v:ℝ)|+|(s:ℝ)| *Vheight)*(Q:ℝ)
     let P₂ := 1+(|(r:ℝ)| *Vheight+|(e:ℝ)|)*(Q:ℝ)
     99+544*(6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)) ≤ S.card →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ j∈S, ∀ i, iteratedDeriv 2 (f i) (x j i)/2=(rat j i:ℝ)) →
-    let q := fun j i => (rat j i).den
-    let mu := fun j i => iteratedDeriv 3 (f i) (round (x j i))/6
-    let ell := fun j i => deriv (f i) (round (x j i))
-    let b := fun j i => (⌊(q j i:ℝ)*ell j i⌋+(parity j i:ℕ) : ℤ)
-    let cround := fun j i => round ((q j i:ℝ)*ell j i)
-    let tau := fun j i => ((b j i:ℝ)-(q j i:ℝ)*ell j i)/2
-    let dual := fun j i => -2*mu j i*(Real.sqrt (2/(3*mu j i*(q j i:ℝ))))^3
-    let cloud := fun j i => (![Int.fract (-(vinv j i:ℝ)*b j i/q j i),
-      Int.fract (-(vinv j i:ℝ)/q j i),dual j i/Real.sqrt K₀,
-      (3*dual j i*tau j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ j∈S, b j 0-cround j 0=b j 1-cround j 1) →
-    (∀ j∈S, ∀ a, |cloud j 0 a-cloud j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 → N ≤ R^2 → R ≤ N → N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
+    WithRoundedSourceJets S F (fun i => (A i:ℝ)) T M x rat (fun f q mu ell =>
+    WithCompletionCloud S q mu ell parity vinv K₀ (fun b cround tau dual cloud radius =>
+    WithCubicScales σ M N R Q (fun κ Cphys c J B =>
     Mat 0*Mat 3-Mat 1*Mat 2=1 →
     (∀ j∈S, (Mat 2:ℝ)*(rat j 0:ℝ)+Mat 3=(q j 1:ℝ)/q j 0) →
     (∀ j∈S, ((Mat 0:ℝ)*(rat j 0:ℝ)+Mat 1)/
@@ -5300,9 +4076,7 @@ private theorem physicalModelPhase_actual_fourier_separated_reference_gap_quarti
     (∀ j∈S, 0 < (r:ℝ)*((rat j 0:ℝ)+ε)-e) →
     (∀ j∈S, max ((r:ℝ)*((rat j 0:ℝ)-ε)-e) ((r:ℝ)*((rat j 0:ℝ)+ε)-e) ≤
       2*min ((r:ℝ)*((rat j 0:ℝ)-ε)-e) ((r:ℝ)*((rat j 0:ℝ)+ε)-e)) →
-    (∀ j∈S, |(anchor j:ℝ)-(rat j 0:ℝ)| ≤ ε) →
-    (∀ j∈S, 256*((anchor j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ j∈S, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor j).den) →
+    WithRationalAnchors S rat anchor ε Q (
     let lo := fun j => (rat j 0:ℝ)-ε
     let hi := fun j => (rat j 0:ℝ)+ε
     let α := fun j => ((v:ℝ)-s*hi j)/((r:ℝ)*hi j-e)
@@ -5315,7 +4089,7 @@ private theorem physicalModelPhase_actual_fourier_separated_reference_gap_quarti
     let C₃ := modelPhaseJetCoefficient σ 3+δ
     let Ct := C₂/2+5*C₃/12
     let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
+    let Δ := quarticTaylorSlack B Cc Ct*(Q:ℝ)/N
     let ep : Fin 2 → ℤ := ![e,Mat 0*e+Mat 1*r]
     let rp : Fin 2 → ℤ := ![r,Mat 2*e+Mat 3*r]
     let sp : Fin 2 → ℤ := ![s,Mat 2*v+Mat 3*s]
@@ -5328,8 +4102,7 @@ private theorem physicalModelPhase_actual_fourier_separated_reference_gap_quarti
     let Ctay := (2/κ)*(B+2*quarticReciprocalConstant σ δ)*R^4/(N*d^3)
     let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
     let η := fun j => D+(Kaux j:ℝ)*Ctay*(β j-α j)^2
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
+    let Kres := 4*quarticResidualBudget σ δ B Cc Ct/κ
     D ≤ 1/2 → Δ < 1/2 →
     (∀ z∈Icc l w, ∀ i, d ≤ (rp i:ℝ)*z+sp i ∧ (rp i:ℝ)*z+sp i ≤ 2*d) →
     (∀ j∈S, α j∈Icc l w ∧ β j∈Icc l w) →
@@ -5340,23 +4113,8 @@ private theorem physicalModelPhase_actual_fourier_separated_reference_gap_quarti
     let μr := fun i => iteratedDeriv 3 (f i) (ar i)/6
     let νr := fun i => iteratedDeriv 4 (f i) (ar i)/24
     let G := minorArcCoordinate (μr 0) (rp 0) (sp 0)
-    let Blabels := 6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)
-    let L := κ/(16*(Blabels:ℝ)*Cphys)*(S₀.card:ℝ)
-    let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
-    ∃ j : Fin 8 → ℕ, ∃ z : Fin 8 → ℝ, ∃ curve : ℝ → Fin 2 → ℝ, ∃ alpha beta : ℝ,
-      (∀ a, j a∈S₀ ∧ ∀ i,
-        (rat (j a) i:ℝ)=((ep i:ℝ)*z a+vp i)/((rp i:ℝ)*z a+sp i)) ∧
-      StrictMono z ∧ 0 < L ∧ (L*N)^2 ≤ M*R ∧ 0 ≤ Kres ∧
-      (∀ t∈Icc (z 0) (z 7), t∈Icc l w ∧ ∀ i,
-        curve t i∈Ioo (1/2:ℝ) (W i-1/2) ∧
-        d ≤ (rp i:ℝ)*t+sp i ∧ (rp i:ℝ)*t+sp i ≤ 2*d ∧
-        iteratedDeriv 2 (f i) (curve t i)/2=((ep i:ℝ)*t+vp i)/((rp i:ℝ)*t+sp i) ∧
-        |(round (curve t i):ℝ)-(round (xref i):ℝ)|^2 ≤ M*R) ∧
-      (∀ i : Fin 7, L*N ≤ |G (z i.succ)-G (z i.castSucc)|) ∧
-      (∀ i : Fin 8,
-        |alpha*z i+beta-rationalPhase (μr 0) (rp 0) (sp 0) (μr 1) (rp 1) (sp 1) (z i)+
-          quarticPhase (μr 0) (νr 0) (rp 0) (sp 0) (μr 1) (νr 1) (rp 1) (sp 1) (z i)| ≤
-          Kres*R^2/|(rp 0:ℝ)*G (z i)|) := by
+    QuarticCurveWitnesses S₀ rat f W xref ep rp sp Mat v s μr νr G κ Cphys P₁ P₂ l w d N M R Kres)))) := by
+  unfold QuarticCurveWitnesses
   have hcoord : |(r:ℝ)| * max |l| |w| ≤ 30*d :=
     separated_farey_reference_interval_coordinate_bound Refs
       (δ:=(Uref:ℝ)/R^2) (by exact_mod_cast hr) (by exact_mod_cast hs)
@@ -5782,29 +4540,9 @@ private theorem physicalModelPhase_actual_fourier_certified_reference_gap_quarti
     let P₁ := 1+(|(v:ℝ)|+|(s:ℝ)| *Vheight)*(Q:ℝ)
     let P₂ := 1+(|(r:ℝ)| *Vheight+|(e:ℝ)|)*(Q:ℝ)
     105+544*(6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)) ≤ S.card →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ j∈S, ∀ i, iteratedDeriv 2 (f i) (x j i)/2=(rat j i:ℝ)) →
-    let q := fun j i => (rat j i).den
-    let mu := fun j i => iteratedDeriv 3 (f i) (round (x j i))/6
-    let ell := fun j i => deriv (f i) (round (x j i))
-    let b := fun j i => (⌊(q j i:ℝ)*ell j i⌋+(parity j i:ℕ) : ℤ)
-    let cround := fun j i => round ((q j i:ℝ)*ell j i)
-    let tau := fun j i => ((b j i:ℝ)-(q j i:ℝ)*ell j i)/2
-    let dual := fun j i => -2*mu j i*(Real.sqrt (2/(3*mu j i*(q j i:ℝ))))^3
-    let cloud := fun j i => (![Int.fract (-(vinv j i:ℝ)*b j i/q j i),
-      Int.fract (-(vinv j i:ℝ)/q j i),dual j i/Real.sqrt K₀,
-      (3*dual j i*tau j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ j∈S, b j 0-cround j 0=b j 1-cround j 1) →
-    (∀ j∈S, ∀ a, |cloud j 0 a-cloud j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 → N ≤ R^2 → R ≤ N → N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
+    WithRoundedSourceJets S F (fun i => (A i:ℝ)) T M x rat (fun f q mu ell =>
+    WithCompletionCloud S q mu ell parity vinv K₀ (fun b cround tau dual cloud radius =>
+    WithCubicScales σ M N R Q (fun κ Cphys c J B =>
     Mat 0*Mat 3-Mat 1*Mat 2=1 →
     (∀ j∈S, (Mat 2:ℝ)*(rat j 0:ℝ)+Mat 3=(q j 1:ℝ)/q j 0) →
     (∀ j∈S, ((Mat 0:ℝ)*(rat j 0:ℝ)+Mat 1)/
@@ -5815,18 +4553,13 @@ private theorem physicalModelPhase_actual_fourier_certified_reference_gap_quarti
     2 ≤ N →
     (∀ j∈S, ∀ i, x j i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
     (∀ j∈S, ∀ i, x j i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ j∈S, |(anchor j:ℝ)-(rat j 0:ℝ)| ≤ ε) →
-    (∀ j∈S, 256*((anchor j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ j∈S, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor j).den) →
+    WithRationalAnchors S rat anchor ε Q (
     let lo := fun j => (rat j 0:ℝ)-ε
     let hi := fun j => (rat j 0:ℝ)+ε
     let α := fun j => ((v:ℝ)-s*hi j)/((r:ℝ)*hi j-e)
     let β := fun j => ((v:ℝ)-s*lo j)/((r:ℝ)*lo j-e)
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
+    let budget := QuarticChartBudget.make σ δ κ Cphys B
+    let Δ := budget.delta Q N
     let ep : Fin 2 → ℤ := ![e,Mat 0*e+Mat 1*r]
     let rp : Fin 2 → ℤ := ![r,Mat 2*e+Mat 3*r]
     let sp : Fin 2 → ℤ := ![s,Mat 2*v+Mat 3*s]
@@ -5837,13 +4570,12 @@ private theorem physicalModelPhase_actual_fourier_certified_reference_gap_quarti
         iteratedDeriv 2 (f i) (xref i)/2=(ep i:ℝ)/rp i ∧
         |xref i-x jref i| ≤ Lref*N ∧
         |(round (xref i):ℝ)-(round (x jref i):ℝ)| ≤ Lref*N+1) ∧
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+    let Ccurv := budget.Ccurv
+    let D := budget.error Q N
+    let Kres := budget.Kres
+    let Esize := budget.Esize
+    let Dbase := budget.Dbase
+    let Tbase := budget.Tbase
     2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
     D ≤ 1/2 → Δ < 1/2 →
     (∀ z∈Icc l w, ∀ i, d ≤ (rp i:ℝ)*z+sp i ∧ (rp i:ℝ)*z+sp i ≤ 2*d) →
@@ -5855,28 +4587,18 @@ private theorem physicalModelPhase_actual_fourier_certified_reference_gap_quarti
     let μr := fun i => iteratedDeriv 3 (f i) (ar i)/6
     let νr := fun i => iteratedDeriv 4 (f i) (ar i)/24
     let G := minorArcCoordinate (μr 0) (rp 0) (sp 0)
-    let Blabels := 6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)
-    let L := κ/(16*(Blabels:ℝ)*Cphys)*(S₀.card:ℝ)
-    let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
-    ∃ j : Fin 8 → ℕ, ∃ z : Fin 8 → ℝ, ∃ curve : ℝ → Fin 2 → ℝ, ∃ alpha beta : ℝ,
-      (∀ a, j a∈S₀ ∧ ∀ i,
-        (rat (j a) i:ℝ)=((ep i:ℝ)*z a+vp i)/((rp i:ℝ)*z a+sp i)) ∧
-      StrictMono z ∧ 0 < L ∧ (L*N)^2 ≤ M*R ∧ 0 ≤ Kres ∧
-      (∀ t∈Icc (z 0) (z 7), t∈Icc l w ∧ ∀ i,
-        curve t i∈Ioo (1/2:ℝ) (W i-1/2) ∧
-        d ≤ (rp i:ℝ)*t+sp i ∧ (rp i:ℝ)*t+sp i ≤ 2*d ∧
-        iteratedDeriv 2 (f i) (curve t i)/2=((ep i:ℝ)*t+vp i)/((rp i:ℝ)*t+sp i) ∧
-        |(round (curve t i):ℝ)-(round (xref i):ℝ)|^2 ≤ M*R) ∧
-      (∀ i : Fin 7, L*N ≤ |G (z i.succ)-G (z i.castSucc)|) ∧
-      (∀ i : Fin 8,
-        |alpha*z i+beta-rationalPhase (μr 0) (rp 0) (sp 0) (μr 1) (rp 1) (sp 1) (z i)+
-          quarticPhase (μr 0) (νr 0) (rp 0) (sp 0) (μr 1) (νr 1) (rp 1) (sp 1) (z i)| ≤
-          Kres*R^2/|(rp 0:ℝ)*G (z i)|) := by
+    QuarticCurveWitnesses S₀ rat f W xref ep rp sp Mat v s μr νr G κ Cphys P₁ P₂ l w d N M R Kres)))) := by
+  unfold QuarticCurveWitnesses
   classical
+  unfold WithRoundedSourceJets WithCompletionCloud WithCubicScales
   intro Lref Vheight P₁ P₂ hS f hlevel q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
     H ε hNtwo hL hU hanchor hcut hcount
-    lo hi α β C₂ C₃ Ct Cc Δ ep rp sp
+    lo hi α β budget Δ ep rp sp
+  let C₂ := budget.C₂
+  let C₃ := budget.C₃
+  let Ct := budget.Ct
+  let Cc := budget.Cc
   let Kaux := fun j => ⌊((Q:ℝ)/3)*min ((r:ℝ)*lo j-e) ((r:ℝ)*hi j-e)⌋₊
   let Saux := fun j => if 0 < α j then HuxleyLinearForm.fareySector (Kaux j) (α j) (β j)
     else (HuxleyLinearForm.fareySector (Kaux j) (-β j) (-α j)).image
@@ -5956,14 +4678,14 @@ private theorem physicalModelPhase_actual_fourier_certified_reference_gap_quarti
   have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
   have hCt : 0 ≤ Ct := by dsimp only [Ct,C₂,C₃]; positivity
   have hCc : 0 ≤ Cc := by dsimp only [Cc,C₂,C₃]; positivity
-  have hDbase : 0 ≤ Dbase := by dsimp only [Dbase]; positivity
+  have hDbase : 0 ≤ Dbase := by dsimp only [Dbase, quarticResidualBudget, quarticTaylorSlack]; positivity
   have hTbase : 0 ≤ Tbase := by dsimp only [Tbase]; positivity
   have hDupper : D ≤ Dbase*(Q:ℝ)/N := by
     apply le_of_eq
-    dsimp only [D,Dbase,Δ]
+    dsimp only [D,Dbase,Δ, quarticResidualBudget, quarticTaylorSlack]
     ring
   have heps : ε=Esize/R^2 := by
-    dsimp only [ε,Esize]
+    dsimp only [ε,Esize,budget,QuarticChartBudget.make]
     field_simp
   have hcoord : |(r:ℝ)| * max |l| |w| ≤ 30*d :=
     separated_farey_reference_interval_coordinate_bound Refs
@@ -6323,8 +5045,7 @@ theorem physicalModelPhase_same_color_reference_gap_paired_chart_cover
       ((rat j 1).den:ℝ)/(rat j 0).den) :
     let f := heathBrownPhysicalPhase F T M A 1
     (∀ j∈S, iteratedDeriv 2 f (x j)/2=(rat j 0:ℝ)) →
-    let color := fun j i => (⌊((rat j i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊((rat j i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
+    let color := fun j i => rationalSourceBin Q lambda θ (rat j i)
     (∀ j∈S, color j 0=color j 1) →
     (((S ×ˢ (Finset.univ : Finset (Fin 2))).image
       (fun ji => color ji.1 ji.2)).card:ℝ) ≤ (4/θ+3)*(4*U/(lambda*θ)+3) ∧
@@ -6470,50 +5191,21 @@ theorem physicalModelPhase_actual_fourier_charted_reference_gap_quartic_witnesse
     let P₂ := 1+(|(r:ℝ)| *Vheight+|(e:ℝ)|)*(Q:ℝ)
     let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
     let Ccharts := ⌊Real.logb (5/4) ((gapHi-gapLo)/(12*ε))⌋₊+1
-    let sourceColor := fun j i => (⌊((rat j i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊((rat j i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
+    let sourceColor := fun j i => rationalSourceBin Q lambda θ (rat j i)
     (∀ j∈S, sourceColor j 0=sourceColor j 1) →
     6+Ccharts*(105+544*(6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1))) ≤ S.card →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ j∈S, ∀ i, iteratedDeriv 2 (f i) (x j i)/2=(rat j i:ℝ)) →
-    let q := fun j i => (rat j i).den
-    let mu := fun j i => iteratedDeriv 3 (f i) (round (x j i))/6
-    let ell := fun j i => deriv (f i) (round (x j i))
-    let b := fun j i => (⌊(q j i:ℝ)*ell j i⌋+(parity j i:ℕ) : ℤ)
-    let cround := fun j i => round ((q j i:ℝ)*ell j i)
-    let tau := fun j i => ((b j i:ℝ)-(q j i:ℝ)*ell j i)/2
-    let dual := fun j i => -2*mu j i*(Real.sqrt (2/(3*mu j i*(q j i:ℝ))))^3
-    let cloud := fun j i => (![Int.fract (-(vinv j i:ℝ)*b j i/q j i),
-      Int.fract (-(vinv j i:ℝ)/q j i),dual j i/Real.sqrt K₀,
-      (3*dual j i*tau j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ j∈S, b j 0-cround j 0=b j 1-cround j 1) →
-    (∀ j∈S, ∀ a, |cloud j 0 a-cloud j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 → N ≤ R^2 → R ≤ N → N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
+    WithRoundedSourceJets S F (fun i => (A i:ℝ)) T M x rat (fun f q mu ell =>
+    WithCompletionCloud S q mu ell parity vinv K₀ (fun b cround tau dual cloud radius =>
+    WithCubicScales σ M N R Q (fun κ Cphys c J B =>
     Mat 0*Mat 3-Mat 1*Mat 2=1 →
     (∀ j∈S, (Mat 2:ℝ)*(rat j 0:ℝ)+Mat 3=(q j 1:ℝ)/q j 0) →
     (∀ j∈S, ((Mat 0:ℝ)*(rat j 0:ℝ)+Mat 1)/
       ((Mat 2:ℝ)*(rat j 0:ℝ)+Mat 3)=(rat j 1:ℝ)) →
     |(Mat 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) →
-    let H := N/(Cphys+2)
-    2 ≤ N →
-    (∀ j∈S, ∀ i, x j i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ j∈S, ∀ i, x j i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ j∈S, |(anchor j:ℝ)-(rat j 0:ℝ)| ≤ ε) →
-    (∀ j∈S, 256*((anchor j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ j∈S, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor j).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
+    WithCompletionMargins S x (fun i => (W i:ℝ)) N Cphys (fun H =>
+    WithRationalAnchors S rat anchor ε Q (
+    let budget := QuarticChartBudget.make σ δ κ Cphys B
+    let Δ := budget.delta Q N
     let ep : Fin 2 → ℤ := ![e,Mat 0*e+Mat 1*r]
     let rp : Fin 2 → ℤ := ![r,Mat 2*e+Mat 3*r]
     let sp : Fin 2 → ℤ := ![s,Mat 2*v+Mat 3*s]
@@ -6525,13 +5217,12 @@ theorem physicalModelPhase_actual_fourier_charted_reference_gap_quartic_witnesse
         iteratedDeriv 2 (f i) (xref i)/2=(ep i:ℝ)/rp i ∧
         |xref i-x jref i| ≤ Lref*N ∧
         |(round (xref i):ℝ)-(round (x jref i):ℝ)| ≤ Lref*N+1) ∧
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+    let Ccurv := budget.Ccurv
+    let D := budget.error Q N
+    let Kres := budget.Kres
+    let Esize := budget.Esize
+    let Dbase := budget.Dbase
+    let Tbase := budget.Tbase
     2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
     D ≤ 1/2 → Δ < 1/2 →
     61*Ccurv*Cphys ≤ Bcut →
@@ -6542,28 +5233,14 @@ theorem physicalModelPhase_actual_fourier_charted_reference_gap_quartic_witnesse
     let μr := fun i => iteratedDeriv 3 (f i) (ar i)/6
     let νr := fun i => iteratedDeriv 4 (f i) (ar i)/24
     let G := minorArcCoordinate (μr 0) (rp 0) (sp 0)
-    let Blabels := 6+216*(⌊Real.logb 2 (P₁*P₂)⌋₊+1)
-    let L := κ/(16*(Blabels:ℝ)*Cphys)*(S₀.card:ℝ)
-    let vp : Fin 2 → ℤ := ![v,Mat 0*v+Mat 1*s]
-    ∃ j : Fin 8 → ℕ, ∃ z : Fin 8 → ℝ, ∃ curve : ℝ → Fin 2 → ℝ, ∃ alpha beta : ℝ,
-      (∀ a, j a∈S₀ ∧ ∀ i,
-        (rat (j a) i:ℝ)=((ep i:ℝ)*z a+vp i)/((rp i:ℝ)*z a+sp i)) ∧
-      StrictMono z ∧ 0 < L ∧ (L*N)^2 ≤ M*R ∧ 0 ≤ Kres ∧
-      (∀ t∈Icc (z 0) (z 7), t∈Icc l w ∧ ∀ i,
-        curve t i∈Ioo (1/2:ℝ) (W i-1/2) ∧
-        d ≤ (rp i:ℝ)*t+sp i ∧ (rp i:ℝ)*t+sp i ≤ 2*d ∧
-        iteratedDeriv 2 (f i) (curve t i)/2=((ep i:ℝ)*t+vp i)/((rp i:ℝ)*t+sp i) ∧
-        |(round (curve t i):ℝ)-(round (xref i):ℝ)|^2 ≤ M*R) ∧
-      (∀ i : Fin 7, L*N ≤ |G (z i.succ)-G (z i.castSucc)|) ∧
-      (∀ i : Fin 8,
-        |alpha*z i+beta-rationalPhase (μr 0) (rp 0) (sp 0) (μr 1) (rp 1) (sp 1) (z i)+
-          quarticPhase (μr 0) (νr 0) (rp 0) (sp 0) (μr 1) (νr 1) (rp 1) (sp 1) (z i)| ≤
-          Kres*R^2/|(rp 0:ℝ)*G (z i)|) := by
+    QuarticCurveWitnesses S₀ rat f W xref ep rp sp Mat v s μr νr G κ Cphys P₁ P₂ l w d N M R Kres))))) := by
+  unfold QuarticCurveWitnesses
   classical
+  unfold WithRoundedSourceJets WithCompletionCloud WithCubicScales WithCompletionMargins
   intro Lref Vheight P₁ P₂ ε Ccharts sourceColor hsourceColor hS
     f hlevel q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
-    H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ ep rp sp
+    H hNtwo hL hU hanchor hcut hcount budget Δ ep rp sp
   have hcover := physicalModelPhase_same_color_reference_gap_paired_chart_cover
     S (fun j => x j 0) rat Q K₀ Mat e r v s
     hσ hδ (approximateModelPhase_mono (hF 0) (by norm_num : 2 ≤ 4) le_rfl)

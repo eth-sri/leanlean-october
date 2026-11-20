@@ -135,7 +135,7 @@ theorem tendsto_abelSawtooth {r : ℕ → ℝ} (hr : Tendsto r atTop (𝓝 1))
   have hl := ((Complex.continuous_im.tendsto _).comp
     (ht.clog (one_sub_positivePhase_mem_slitPlane hx))).div_const Real.pi
   rw [← abelSawtooth_one hx]
-  simpa only [abelSawtooth, Complex.ofReal_one, one_mul, Function.comp_def] using hl
+  simpa [abelSawtooth, Function.comp_def] using hl
 
 /-- The actual phase is continuous on the whole real line. -/
 theorem continuous_positivePhase : Continuous positivePhase := by
@@ -170,7 +170,7 @@ theorem hasSum_abelSawtooth {r : ℝ} (hr0 : 0 ≤ r) (hr1 : r < 1) (x : ℝ) :
       abs_of_nonneg hr0]
     exact hr1
   have h := (Complex.hasSum_im (Complex.hasSum_taylorSeries_neg_log hz)).neg.div_const Real.pi
-  simpa only [Complex.neg_im, neg_neg, abelSawtooth] using h
+  simpa [abelSawtooth] using h
 
 /-- Integer points form a null set for every atomless measure on the real line. -/
 theorem ae_noninteger (μ : Measure ℝ) [NullSingletonClass μ] :
@@ -215,8 +215,7 @@ theorem abelSawtooth_term_eq (r x : ℝ) (n : ℕ) :
     ((-(((r : ℂ) * positivePhase x) ^ n / (n : ℂ)).im / Real.pi : ℝ) : ℂ) =
       (r : ℂ) ^ n * sawtoothMode n x := by
   rw [Complex.ofReal_div, Complex.ofReal_neg, Complex.im_eq_sub_conj]
-  simp only [map_div₀, map_pow, map_mul, Complex.conj_ofReal, map_natCast,
-    positivePhase_eq_expMode, conj_expMode, neg_neg, mul_pow]
+  simp [positivePhase_eq_expMode, conj_expMode, mul_pow]
   rw [← expMode_eq_pow, ← expMode_eq_pow]
   unfold sawtoothMode
   ring
@@ -300,7 +299,7 @@ theorem tendsto_tsum_abel {c : ℕ → ℂ} (hc : Summable c) {r : ℕ → ℝ}
     Tendsto (fun k => ∑' n, (r k : ℂ) ^ n * c n) atTop (𝓝 (∑' n, c n)) := by
   apply tendsto_tsum_of_dominated_convergence hc.norm
   · intro n
-    simpa only [Complex.ofReal_one, one_pow, one_mul] using (hr.ofReal.pow n).mul_const (c n)
+    simpa using (hr.ofReal.pow n).mul_const (c n)
   · filter_upwards with k n
     rw [norm_mul, norm_pow, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hr0 k)]
     exact mul_le_of_le_one_left (norm_nonneg _) (pow_le_one₀ (hr0 k) (hr1 k))

@@ -90,6 +90,28 @@ theorem literalWholeRow_eq_member_tuples
   · simp only [dite_eq_left hk]
     rw [memberTupleControlled_value]
   · simp only [dite_eq_right hk]
+section
+
+/-- Energy with the chosen completion in a single row/slot cell of a tuple family. -/
+abbrev MemberCellEnergy {N a c : Eis} {mode : Bool}
+    (G : PrimeFamily φ) (rows : Finset (Ideal Eis))
+    (hne : tuples.Nonempty) (hinj : Set.InjOn slotTupleProduct (↑tuples : Set (σ→Ideal Eis)))
+    (hrows : ∀ K∈rows,Admissible K)
+    (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode)) (hc : c≠0)
+    (j : φ→ℕ) (W : ℝ→ℂ) (X QK QP : ℝ) (E : ℝ→ℝ) : Prop :=
+  let S := tuplePrimeFamily tuples hne hmax hgood
+  let Pset := tuples.image slotTupleProduct
+  ∃ D : ∀ K : rows, ∀ P : Pset, IsCoprime K.val P.val →
+    ControlledStratumArithmetic (G.reflected K.val (hrows K.val K.property) (S P.val)).generator N a c mode,
+  ∀ (θ : ℝ) (r : Ideal Eis→ℂ) (aw : (σ→Ideal Eis)→ℂ),
+    1≤QK → 2≤QP →
+    (∀ K∈rows,QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK) →
+    (∀ P∈Pset,CubicSieve.Admissible P ∧ QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤QP) →
+    (∀ K∈rows,‖r K‖≤1) → (∀ p∈tuples,‖aw p‖≤1) →
+    (∑ K : rows,‖memberTupleRow tuples hmax hgood G K.val (hrows K.val K.property) hne hinj (D K) s hc j W θ X r aw‖^2)≤E θ
+
+end
+
 end
 end SevenEighths.InverseReflectedPhase
 

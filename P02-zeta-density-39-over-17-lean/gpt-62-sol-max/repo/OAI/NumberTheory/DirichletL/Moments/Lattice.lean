@@ -8,12 +8,10 @@ public import Mathlib.Analysis.Normed.Ring.Finite
 namespace OAI
 
 noncomputable section
-open scoped BigOperators Classical SchwartzMap
-open scoped ContDiff
+open scoped BigOperators Classical SchwartzMap ContDiff
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentLattice
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open QuadraticInitialBound
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson QuadraticInitialBound
 
 theorem radial_zero_mode_error (W : 𝓢(ℝ, ℂ)) (t : ℝ) (ht : 0 < t)
     (A : O → ℂ) (B : ℝ) (hB : 0 ≤ B) (hA : ∀ h, ‖A h‖ ≤ B) :

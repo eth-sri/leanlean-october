@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondParentRadial
 public import OAI.NumberTheory.DirichletL.Descent.SecondCenterSector
 
@@ -14,14 +15,14 @@ open InversePrincipalEnergy InverseSecondPrincipalCaller
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ] [Fintype κ]
-  (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem first_parent_full_second_source
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo : ℕ} (parent : SecondParentSource ι Jo) (F D : Finset ι)
     (hq : parent.quotient = sourceIdeal p D)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)

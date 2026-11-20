@@ -102,9 +102,12 @@ def atkinsonRootCubicCorrection (T b y : ℝ) : ℝ :=
   (2 * T / 3) * ((y - atkinsonSaddleRoot (T / (2 * Real.pi)) b) /
     atkinsonSaddleRoot (T / (2 * Real.pi)) b) ^ 3
 
-theorem abs_atkinsonRootPhase_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
-    (hy : |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ≤
-      atkinsonSaddleRoot (T / (2 * Real.pi)) b / 2) :
+section
+variable {T y : ℝ} (hT : 0 < T) (b : ℝ) (hy : |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ≤
+      atkinsonSaddleRoot (T / (2 * Real.pi)) b / 2)
+include T y hT b hy
+
+theorem abs_atkinsonRootPhase_sub_cubic_le :
     |2 * Real.pi * (atkinsonRootPhase T b y - atkinsonRootQuadratic T b y) -
       atkinsonRootCubicCorrection T b y| ≤
       4 * T * |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ^ 4 /
@@ -131,9 +134,7 @@ theorem abs_atkinsonRootPhase_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
   rw [abs_div, abs_of_pos hr]
   ring
 
-theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
-    (hy : |y - atkinsonSaddleRoot (T / (2 * Real.pi)) b| ≤
-      atkinsonSaddleRoot (T / (2 * Real.pi)) b / 2) :
+theorem norm_atkinsonRootKernel_sub_cubic_le :
     ‖atkinsonRootKernel T b y - atkinsonRootQuadraticKernel T b y *
       (1 + (atkinsonRootCubicCorrection T b y : ℂ) * I)‖ ≤
       4*T*|y-atkinsonSaddleRoot (T/(2*Real.pi)) b|^4 /
@@ -188,5 +189,7 @@ theorem norm_atkinsonRootKernel_sub_cubic_le {T y : ℝ} (hT : 0 < T) (b : ℝ)
       _ ≤ 4 * (T^2*|y-r|^6/r^6) := mul_le_mul_of_nonneg_right (by norm_num) hp
       _ = _ := by ring
   exact (norm_sub_le_norm_sub_add_norm_sub _ _ _).trans (add_le_add hfirst hsecond)
+
+end
 
 end MathCollab.Density.Stronger.Atkinson

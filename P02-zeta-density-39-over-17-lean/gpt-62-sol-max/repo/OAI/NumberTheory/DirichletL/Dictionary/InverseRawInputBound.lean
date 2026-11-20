@@ -9,9 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawInputBound
-open ConcretePrimeRowBridge ActualEisensteinCubic ConcreteTraceCRT CompletedGauss SecondPassArithmetic CanonicalQuadraticSieve CanonicalRowCompletion
-open CanonicalCoefficientClass InverseMoment InverseInitialProfile InverseInitialRayAttachment
-open InverseInitialQuotientGeometry InverseInitialProfileBounds
+open ConcretePrimeRowBridge ActualEisensteinCubic ConcreteTraceCRT CompletedGauss SecondPassArithmetic CanonicalQuadraticSieve CanonicalRowCompletion CanonicalCoefficientClass InverseMoment InverseInitialProfile InverseInitialRayAttachment InverseInitialQuotientGeometry InverseInitialProfileBounds
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem raw_input_bound
@@ -23,7 +21,7 @@ theorem raw_input_bound
     ∀Z:ℝ,Z₀≤Z→∀Dpool:ℕ,Btree*Z^3≤Dpool→
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes q) Dpool;
     let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes q) Dpool (reflectionExcludedPrimes_bad q);
-    letI:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance;
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF;
     let p:=poolPrimary F;
     let hg:=poolPrimary_good F hF;
     ∀Ψ:O→*ℂ,(∀u,‖Ψ u‖≤1)→FactorsModulo (fixedBaseConductor q) Ψ→
@@ -43,7 +41,7 @@ theorem raw_input_bound
   obtain ⟨C,Z₀,hC,hZ₀,hbound⟩:=hbound q hq
   refine ⟨C,Z₀,hC,hZ₀,?_⟩
   intro Z hZ Dpool hpool F hF
-  let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   intro p hg Ψ hΨ hperiod r t hrlo hr₁ hr₂ hrcap
   have hZp:1<Z:=hZ₀.trans_le hZ
   have hpool':Btree*Z^((2:ℝ)+1)≤Dpool:=by norm_num;exact hpool

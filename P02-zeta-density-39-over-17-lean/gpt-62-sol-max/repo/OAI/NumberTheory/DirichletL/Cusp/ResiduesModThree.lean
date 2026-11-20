@@ -9,75 +9,19 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
+open scoped MatrixGroups
 
-open scoped Classical MatrixGroups
 
 namespace EisensteinCuspModThree
 
@@ -223,7 +167,11 @@ def unitDiagonal (u : ActualEisensteinCubic.Oˣ) : SL(2,ActualEisensteinCubic.O)
 def columnRepresentative (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3) : SL(2,ActualEisensteinCubic.O) :=
   rationalEmbedding r*cuspRepresentative j*unitDiagonal (unitRepresentative u)
 
-lemma columnRepresentative_entry (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3) (i : Fin 2) :
+section
+variable (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3)
+include r j u
+
+lemma columnRepresentative_entry (i : Fin 2) :
     columnRepresentative r j u i 0=
       ((r i 0:ActualEisensteinCubic.O)+(r i 1:ActualEisensteinCubic.O)*cuspParameter j)*(unitRepresentative u:ActualEisensteinCubic.O) := by
   change (((r : Matrix (Fin 2) (Fin 2) ℤ).map (Int.castRingHom O) *
@@ -231,17 +179,19 @@ lemma columnRepresentative_entry (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3
     !![(unitRepresentative u : O), 0; 0, (↑(unitRepresentative u)⁻¹ : O)]) i 0 = _
   simp [Matrix.mul_apply, Fin.sum_univ_two]
 
-lemma columnRepresentative_top_residue (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3) :
+lemma columnRepresentative_top_residue :
     residue (columnRepresentative r j u 0 0)=columnTop (rationalReductionThree r) j u := by
   rw [columnRepresentative_entry,residue_mul,residue_add,residue_intCast,
     residue_mul_intCast,cuspParameter_residue,unitRepresentative_residue]
   rfl
 
-lemma columnRepresentative_bottom_residue (r : SL(2,ℤ)) (j : Fin 3) (u : Fin 2 × Fin 3) :
+lemma columnRepresentative_bottom_residue :
     residue (columnRepresentative r j u 1 0)=columnBottom (rationalReductionThree r) j u := by
   rw [columnRepresentative_entry,residue_mul,residue_add,residue_intCast,
     residue_mul_intCast,cuspParameter_residue,unitRepresentative_residue]
   rfl
+
+end
 
 lemma same_column_quotient_lower_zero (M N : SL(2,ActualEisensteinCubic.O))
     (h0 : N 0 0=M 0 0) (h1 : N 1 0=M 1 0) : (N⁻¹*M) 1 0=0 := by
@@ -335,22 +285,6 @@ end CubicEisenstein
 
 open Filter MeasureTheory
 open scoped BigOperators Classical
-
-namespace CubicEisenstein
-
-section
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
-
-open Filter MeasureTheory
-open scoped BigOperators Classical MatrixGroups
-
-open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CubicRamified
-local notation "Eis" => ActualEisensteinCubic.O
-
-end CubicEisenstein
 
 open scoped Classical MatrixGroups
 namespace CubicKubota

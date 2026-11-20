@@ -19,10 +19,11 @@ lemma gaussValuationTable_step_six (Q G : ℂ) (r n j : ℕ) :
   simp only [gaussValuationTable,hd,hle,hle',he]
   split_ifs <;> simp [pow_add] <;> ring
 
-theorem positiveScalar_step_six (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (n k j : ℕ) :
+section
+variable (p : O) (hp : Prime p) [instShared2 : (Ideal.span {p} : Ideal O).IsMaximal] (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n k j : ℕ)
+include p hp instShared2 hg hc n k j
+
+theorem positiveScalar_step_six :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) (n+6) k (j+6)=
       (Ideal.absNorm (Ideal.span {p}):ℂ)^6*
         positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) n k j := by
@@ -48,10 +49,7 @@ theorem positiveScalar_step_six (p : O) (hp : Prime p)
         split_ifs <;> simp_all ; omega
     · rw [ite_eq_right (by omega),ite_eq_right (by omega),mul_zero]
 
-theorem positiveScalar_zero_below (p : O) (hp : Prime p)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    (n k j : ℕ) (hj : j<n) :
+theorem positiveScalar_zero_below (hj : j<n) :
     positiveScalar p hp.ne_zero (actualSextic (Ideal.span {p}) hg) n k j=0 := by
   rw [positiveScalar_actual_table p hp hg hc]
   split_ifs with hk hk1
@@ -64,6 +62,8 @@ theorem positiveScalar_zero_below (p : O) (hp : Prime p)
       split_ifs <;> simp_all <;> omega
     rw [hz,mul_zero]
   · rfl
+
+end
 
 end SevenEighths.ProbePrimePower
 end

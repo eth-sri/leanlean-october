@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialRawDictionary
-open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge HeckeRowClosure
-open InverseInitialPoissonBridge InverseInitialConjugateEnergy
-open ConcretePrimeRowBridge CompletedGauss UniqueFactorizationMonoid
+open HeckeFamily HeckeDyadic HeckeDetectorDyadicBridge HeckeRowClosure InverseInitialPoissonBridge InverseInitialConjugateEnergy ConcretePrimeRowBridge CompletedGauss UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 
 def twistedProfile (W : ℝ → ℂ) (σ freq : ℝ) (x : ℝ) : ℂ :=

@@ -1,5 +1,5 @@
 module
-public import MathCollab.Density.Stronger.ShortTaylorCover
+public import MathCollab.Density.Stronger.ShortFixedFamily
 
 @[expose] public section
 

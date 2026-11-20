@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.ControlledMultiplier
 
 @[expose] public section
@@ -7,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical ContDiff MatrixGroups
-open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CompletedDyadic
-open CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
+open CompletedGauss CubicEisenstein ConcreteTraceCRT CubicKubota CompletedDyadic CubicJacobiGlobal ShortDraftCusp FiniteGaussPhase LocalReflectionBrackets
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -17,20 +17,20 @@ noncomputable local instance dualQuotientFintype (P : Ideal Eis) [P.IsMaximal] :
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool}
 
 def mixedSmoothedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalIdealFamily.Maximal p]
     (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
     (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
-    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀)
     (j : ι → ℕ) (S : Finset ι) (W : ℝ → ℂ) (X : ℝ) : ℂ :=
   ∑ v : ∀ i, (Eis ⧸ Ideal.span {p i})ˣ,
     fullLocalFourierWeight hp (mixedPrimeFunction p hg j S) v *
       (D.datum hN hr hbase s hp hc0 v).smoothedKernel W X
 
 def mixedReflectedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalIdealFamily.Maximal p]
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
-    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀)
     (j : ι → ℕ) (S : Finset ι) (W : ℝ → ℂ) (X : ℝ) : ℂ :=
   fixedRadialCoefficientScalar * s.stratumShapeFactor (c0 * ∏ i, p i) *
     ∑' t : ThetaFullIndex,
@@ -47,13 +47,13 @@ def mixedReflectedValue (D : ControlledStratumArithmetic p N a0 c0 mode)
           (sourceCuspPhaseNumerator s.index (s.upper 0 0) (thetaFullFrequency t)))
 
 theorem mixed_smoothed_eq_reflected (D : ControlledStratumArithmetic p N a0 c0 mode)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalIdealFamily.Maximal p]
     (hN : (9 : Eis) * c0 ∣ N) (hr : λ₀ ^ 2 ∣ (∏ i, p i) - 1)
     (hbase : if mode then λ₀ ^ 2 ∣ a0 - 1 else λ₀ ^ 2 ∣ c0 - 1)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
     (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (j : ι → ℕ) (hj : ∀ i, j i < 6) (S : Finset ι)
     (W : ℝ → ℂ) (lo hi : ℝ) (hlo : 0 < lo) (hsupp : Function.support W ⊆ Set.Icc lo hi)
     (hW : ContDiff ℝ ∞ W) (X : ℝ) (hX : 0 < X) :

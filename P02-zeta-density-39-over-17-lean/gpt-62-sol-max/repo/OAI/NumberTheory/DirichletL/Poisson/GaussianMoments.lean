@@ -8,16 +8,12 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
 
 namespace GaussianMoment
 
@@ -347,10 +343,11 @@ theorem dualGaussian_inverseForm {a b d : ℂ} {R : ℝ}
   rw [← hdet]
   field_simp [ha, hdet0] ; ring
 
-private theorem dualGaussian_summable {a b d : ℂ} {R : ℝ}
-    (ha : 0 < a.re) (hR : 0 < R)
-    (hdet : a * d - b ^ 2 = (R : ℂ))
-    (hpd : 0 < a.re * d.re - b.re ^ 2) :
+section
+variable {a b d : ℂ} {R : ℝ} (ha : 0 < a.re) (hR : 0 < R) (hdet : a * d - b ^ 2 = (R : ℂ)) (hpd : 0 < a.re * d.re - b.re ^ 2)
+include a b d R ha hR hdet hpd
+
+private theorem dualGaussian_summable :
     Summable (RankTwoComplex.dualGaussian a b d) := by
   have hd : 0 < d.re := by
     by_contra h
@@ -372,10 +369,7 @@ private theorem dualGaussian_summable {a b d : ℂ} {R : ℝ}
     (inverseForm a b d R) heps hbound).congr
       (fun z => (dualGaussian_inverseForm ha0 hR.ne' hdet z).symm)
 
-theorem binary_gaussian_poisson_real_det {a b d : ℂ} {R : ℝ}
-    (ha : 0 < a.re) (hR : 0 < R)
-    (hdet : a * d - b ^ 2 = (R : ℂ))
-    (hpd : 0 < a.re * d.re - b.re ^ 2) :
+theorem binary_gaussian_poisson_real_det :
     (∑' z : ℤ × ℤ, RankTwoComplex.binaryGaussian a b d z) =
       (1 / ((R : ℂ) ^ (1 / 2 : ℂ))) *
         ∑' z : ℤ × ℤ, RankTwoComplex.dualGaussian a b d z := by
@@ -397,6 +391,8 @@ theorem binary_gaussian_poisson_real_det {a b d : ℂ} {R : ℝ}
           ∑' z : ℤ × ℤ, RankTwoComplex.dualGaussian a b d z := by
       rw [schur_eq_real_det_div ha0 hdet,
         SqrtBranch.prefactor_product ha hR]
+
+end
 
 noncomputable def q (a b : ℝ) : ℝ := a ^ 2 - a * b + b ^ 2
 noncomputable def A (η a b : ℝ) : ℂ :=

@@ -1,6 +1,6 @@
 module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
-public import WeylPort.Analytic.ZetaContinuation
+public import GuthMaynard.NativeSource.GuthMaynardExternal.PNT.ZetaBoundsUpstream
 public import WeylPort.AFE.PoissonApplications
 public import WeylPort.AFE.Objects
 
@@ -13,7 +13,7 @@ set_option backward.isDefEq.respectTransparency.types false
 /-! # Sharp zeta truncation and the actual AFE power integrals
 
 The continuation identity is consumed from the existing node-71 foundation:
-`Zeta0EqZeta` and `ZetaBnd_aux1b`, without duplicating their analytic continuation proofs.
+`nativeMoment_Zeta0EqZeta` and `zetaEulerMaclaurin_tail_le`, without duplicating their analytic continuation proofs.
 -/
 
 namespace DhimanKadiriQuesadaHerrera2026
@@ -27,11 +27,10 @@ theorem norm_zeta_sub_regularized_sum_le {N : ℕ} (hN : 0 < N) {s : ℂ}
     ‖riemannZeta s - ((∑ n ∈ Finset.range (N + 1), 1 / (n : ℂ) ^ s) +
       (N : ℂ) ^ (1 - s) / (s - 1))‖ ≤
       (N : ℝ) ^ (-s.re) * (1 / 2 + ‖s‖ / s.re) := by
-  have he := Zeta0EqZeta hN hs hs1
-  unfold riemannZeta0 at he
+  have he := nativeMoment_Zeta0EqZeta hN hs hs1
+  unfold nativeMoment_riemannZeta0 at he
   have hn : 0 < (N : ℝ) := by exact_mod_cast hN
-  have hi := ZetaBnd_aux1b N hN (t := s.im) hs
-  rw [Complex.re_add_im] at hi
+  have hi := zetaEulerMaclaurin_tail_le hN hs
   have hid : riemannZeta s - ((∑ n ∈ Finset.range (N + 1), 1 / (n : ℂ) ^ s) +
       (N : ℂ) ^ (1 - s) / (s - 1)) = -(N : ℂ) ^ (-s) / 2 +
       s * ∫ x in Set.Ioi (N : ℝ), (⌊x⌋ + 1 / 2 - x) / (x : ℂ) ^ (s + 1) := by

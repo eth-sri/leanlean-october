@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.MarkedTails
 
 @[expose] public section
@@ -12,9 +13,9 @@ open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+  (hinj : OAI.PrincipalIdealFamily.Distinct p)
 
 include hinj in
 theorem residualPairWeight_bounded_test

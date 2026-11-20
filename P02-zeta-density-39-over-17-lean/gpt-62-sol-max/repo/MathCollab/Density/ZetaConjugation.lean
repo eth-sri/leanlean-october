@@ -25,19 +25,24 @@ theorem isNontrivialZetaZero_conj {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) :
   refine ⟨?_, by simpa using hρ.2.1, by simpa using hρ.2.2⟩
   rw [riemannZeta_conj, hρ.1, map_zero]
 
-/-- Actual analytic multiplicity, not just the set of zeros, is preserved. -/
-theorem zetaMultiplicity_conj {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) :
+/-- Analytic multiplicity on the complement of the pole is preserved. -/
+theorem zetaMultiplicity_conj_of_ne_one {ρ : ℂ} (hρ : ρ ≠ 1) :
     zetaMultiplicity (conj ρ) = zetaMultiplicity ρ := by
-  have hc := isNontrivialZetaZero_conj hρ
-  obtain ⟨g, hg, hg0, he⟩ := zetaMultiplicity_local_factorization hρ
-  apply (analyticOn_riemannZeta (conj ρ) (nontrivialZetaZero_ne_one hc)).analyticOrderNatAt_eq_iff
-    (zeta_analyticOrder_ne_top (nontrivialZetaZero_ne_one hc)) |>.mpr
+  have hc : conj ρ ≠ 1 := fun h => hρ (by simpa using congrArg (starRingEnd ℂ) h)
+  obtain ⟨g, hg, hg0, he⟩ := (analyticOn_riemannZeta ρ hρ).analyticOrderAt_ne_top.mp
+    (zeta_analyticOrder_ne_top hρ)
+  apply (analyticOn_riemannZeta (conj ρ) hc).analyticOrderNatAt_eq_iff
+    (zeta_analyticOrder_ne_top hc) |>.mpr
   refine ⟨fun z => conj (g (conj z)), analyticAt_conj_conj_local hg, by simpa using hg0, ?_⟩
   have ht : Tendsto (fun z : ℂ => conj z) (𝓝 (conj ρ)) (𝓝 ρ) := by
     simpa only [ContinuousAt, conj_conj] using Complex.continuous_conj.continuousAt (x := conj ρ)
   filter_upwards [ht.eventually he] with z hz
-  have hh := congrArg (starRingEnd ℂ) hz
-  simpa only [riemannZeta_conj, conj_conj, map_mul, map_pow, map_sub, smul_eq_mul] using hh
+  simpa only [riemannZeta_conj, conj_conj, map_mul, map_pow, map_sub, smul_eq_mul, zetaMultiplicity] using
+    congrArg (starRingEnd ℂ) hz
+
+theorem zetaMultiplicity_conj {ρ : ℂ} (hρ : IsNontrivialZetaZero ρ) :
+    zetaMultiplicity (conj ρ) = zetaMultiplicity ρ :=
+  zetaMultiplicity_conj_of_ne_one (nontrivialZetaZero_ne_one hρ)
 
 /-- Conjugation bijects the literal closed slabs, with both endpoints retained. -/
 theorem zetaSlabCount_conj (σ a b : ℝ) :

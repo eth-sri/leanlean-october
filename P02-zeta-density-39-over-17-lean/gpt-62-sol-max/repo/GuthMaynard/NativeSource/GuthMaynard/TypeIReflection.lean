@@ -137,33 +137,8 @@ polynomial decay, uniformly in its vertical ordinate. -/
 theorem typeIDyadicCutoffMellin_polynomial_decay (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ r : ℝ,
       |r| ^ n * ‖typeIDyadicCutoffMellin r‖ ≤ C := by
-  let F : 𝓢(ℝ, ℂ) := 𝓕 typeIDyadicMellinSchwartz
-  let C : ℝ := (2 * Real.pi) ^ n * SchwartzMap.seminorm ℝ n 0 F
-  have hC : 0 ≤ C := by
-    dsimp only [C]
-    positivity
-  refine ⟨C, hC, ?_⟩
-  intro r
-  have hSem := SchwartzMap.le_seminorm' (𝕜 := ℝ) n 0 F
-    (r / (2 * Real.pi))
-  rw [iteratedDeriv_zero] at hSem
-  have hSem' : ‖r / (2 * Real.pi)‖ ^ n *
-      ‖F (r / (2 * Real.pi))‖ ≤ SchwartzMap.seminorm ℝ n 0 F := hSem
-  rw [typeIDyadicCutoffMellin_eq_fourier]
-  change |r| ^ n * ‖F (r / (2 * Real.pi))‖ ≤ C
-  have hpi : 0 < 2 * Real.pi := by positivity
-  have hAbs : |r| = (2 * Real.pi) * ‖r / (2 * Real.pi)‖ := by
-    rw [Real.norm_eq_abs, abs_div, abs_of_pos hpi]
-    field_simp [hpi.ne']
-  rw [hAbs, mul_pow]
-  dsimp only [C]
-  calc
-    (2 * Real.pi) ^ n * ‖r / (2 * Real.pi)‖ ^ n *
-          ‖F (r / (2 * Real.pi))‖ =
-        (2 * Real.pi) ^ n *
-          (‖r / (2 * Real.pi)‖ ^ n * ‖F (r / (2 * Real.pi))‖) := by ring
-    _ ≤ (2 * Real.pi) ^ n * SchwartzMap.seminorm ℝ n 0 F :=
-      mul_le_mul_of_nonneg_left hSem' (pow_nonneg hpi.le n)
+  simpa only [typeIDyadicCutoffMellin_eq_fourier] using
+    schwartz_rescale_polynomial_decay (𝓕 typeIDyadicMellinSchwartz) (by positivity) n
 
 theorem verticalIntegrable_typeIDyadicCutoffMellin :
     VerticalIntegrable (mellin typeIDyadicCutoffComplex) 1 := by
@@ -804,71 +779,9 @@ noncomputable def typeIReflectionKernel
     Complex.exp ((((-σ * Real.log x : ℝ) : ℂ))) *
     Complex.exp ((((-t * Real.log x : ℝ) : ℂ) * I))
 
-theorem contDiff_typeIReflectionKernel
-    (Y A r : ℕ) (σ t : ℝ) (hY : 0 < Y) :
-    ContDiff ℝ ∞ (typeIReflectionKernel Y A r σ t) := by
-  rw [contDiff_iff_contDiffAt]
-  intro x
-  by_cases hx : x = 0
-  · subst x
-    have hYreal : (0 : ℝ) < Y := by exact_mod_cast hY
-    have hEventually : typeIReflectionKernel Y A r σ t =ᶠ[𝓝 0] 0 := by
-      filter_upwards [Iio_mem_nhds hYreal] with y hy
-      have hy' : y < (Y : ℝ) := hy
-      have hleft : Real.smoothTransition (y - (Y : ℝ)) = 0 :=
-        Real.smoothTransition.zero_of_nonpos (by linarith)
-      simp [typeIReflectionKernel, typeISourceSmoothWeight,
-        typeITailBoundary, hleft]
-    exact contDiffAt_const.congr_of_eventuallyEq hEventually
-  · have hweight : ContDiffAt ℝ ∞
-        (fun y : ℝ => (typeISourceSmoothWeight Y A r y : ℂ)) x :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp x
-        (contDiff_typeISourceSmoothWeight Y A r).contDiffAt
-    have hlog : ContDiffAt ℝ ∞ Real.log x := Real.contDiffAt_log.2 hx
-    have hsigma : ContDiffAt ℝ ∞
-        (fun y : ℝ => (((-σ * Real.log y : ℝ) : ℂ))) x :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp x
-        (contDiffAt_const.mul hlog)
-    have ht : ContDiffAt ℝ ∞
-        (fun y : ℝ => (((-t * Real.log y : ℝ) : ℂ) * I)) x :=
-      (Complex.ofRealCLM.contDiff.contDiffAt.comp x
-        (contDiffAt_const.mul hlog)).mul contDiffAt_const
-    exact (hweight.mul hsigma.cexp).mul ht.cexp
 
-theorem hasCompactSupport_typeIReflectionKernel
-    (Y A r : ℕ) (σ t : ℝ) :
-    HasCompactSupport (typeIReflectionKernel Y A r σ t) := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (0 : ℝ) (A + 1)))
-  intro x hx
-  have hboundary : typeITailBoundary Y A x = 0 := by
-    rw [Set.mem_Icc, not_and_or] at hx
-    rcases hx with hx | hx
-    · have hleft : Real.smoothTransition (x - (Y : ℝ)) = 0 :=
-        Real.smoothTransition.zero_of_nonpos (by
-          have hYnonneg : (0 : ℝ) ≤ Y := by positivity
-          linarith)
-      rw [typeITailBoundary, hleft, zero_mul]
-    · have hx' : (((A + 1 : ℕ) : ℝ)) ≤ x := by
-        push_cast
-        exact le_of_not_ge hx
-      have hright : Real.smoothTransition
-          (((A + 1 : ℕ) : ℝ) - x) = 0 :=
-        Real.smoothTransition.zero_of_nonpos (by linarith)
-      rw [typeITailBoundary, hright, mul_zero]
-  simp [typeIReflectionKernel, typeISourceSmoothWeight, hboundary]
 
-/-- Schwartz realization of the smooth Type-I kernel. -/
-noncomputable def typeIReflectionSchwartz
-    (Y A r : ℕ) (σ t : ℝ) (hY : 0 < Y) : 𝓢(ℝ, ℂ) :=
-  (hasCompactSupport_typeIReflectionKernel Y A r σ t).toSchwartzMap
-    (contDiff_typeIReflectionKernel Y A r σ t hY)
 
-@[simp]
-theorem typeIReflectionSchwartz_apply
-    (Y A r : ℕ) (σ t x : ℝ) (hY : 0 < Y) :
-    typeIReflectionSchwartz Y A r σ t hY x =
-      typeIReflectionKernel Y A r σ t x := rfl
 
 /-- At positive integers the continuous kernel is exactly the source block
 summand. -/
@@ -1055,10 +968,6 @@ noncomputable def typeINormalizedKernelSchwartz (σ t : ℝ) : 𝓢(ℝ, ℂ) :=
 theorem typeINormalizedKernelSchwartz_apply (σ t x : ℝ) :
     typeINormalizedKernelSchwartz σ t x = typeINormalizedKernel σ t x := rfl
 
-private theorem normalizedSchwartz_coe (σ t : ℝ) :
-    (typeINormalizedKernelSchwartz σ t : ℝ → ℂ) = typeINormalizedKernel σ t :=
-  funext (typeINormalizedKernelSchwartz_apply σ t)
-
 /-- The `typeINormalizedFourier` definition used by the source-facing construction in `TypeIReflection`. -/
 noncomputable def typeINormalizedFourier (σ t ξ : ℝ) : ℂ :=
   𝓕 (typeINormalizedKernelSchwartz σ t) ξ
@@ -1074,76 +983,16 @@ private theorem typeINormalizedKernel_eq_amplitude_mul_cpow
   push_cast
   ring
 
-private theorem contDiffAt_ofReal_cpow_neg_mul_I
-    (t : ℝ) (n : ℕ) {x : ℝ} (hx : 0 < x) :
-    ContDiffAt ℝ n (fun y : ℝ => (y : ℂ) ^ ((-t : ℂ) * I)) x := by
-  have hEq :
-      (fun y : ℝ => (y : ℂ) ^ ((-t : ℂ) * I)) =ᶠ[nhds x]
-        fun y : ℝ => Complex.exp ((((-t * Real.log y : ℝ) : ℂ) * I)) := by
-    filter_upwards [Ioi_mem_nhds hx] with y hy
-    rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hy.ne')]
-    rw [← Complex.ofReal_log hy.le]
-    congr 1
-    push_cast
-    ring
-  have hExp : ContDiffAt ℝ n
-      (fun y : ℝ => Complex.exp ((((-t * Real.log y : ℝ) : ℂ) * I))) x := by
-    have hReal : ContDiffAt ℝ n (fun y : ℝ => -t * Real.log y) x :=
-      contDiffAt_const.mul (Real.contDiffAt_log.mpr hx.ne')
-    have hComplex : ContDiffAt ℝ n
-        (fun y : ℝ => ((-t * Real.log y : ℝ) : ℂ)) x :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp x hReal
-    exact (hComplex.mul contDiffAt_const).cexp
-  exact hExp.congr_of_eventuallyEq hEq
-
-private theorem norm_iteratedDeriv_ofReal_cpow_neg_mul_I_le
-    (t : ℝ) (n : ℕ) {x : ℝ} (hx : 1 / 2 ≤ x) :
-    ‖iteratedDeriv n (fun y : ℝ => (y : ℂ) ^ ((-t : ℂ) * I)) x‖ ≤
-      2 ^ n * (|t| + n) ^ n := by
-  have hxPos : 0 < x := (by norm_num : (0 : ℝ) < 1 / 2).trans_le hx
-  rw [iteratedDeriv_ofReal_cpow ((-t : ℂ) * I) n hxPos, norm_mul]
-  have hcoeff := norm_gmCpowDerivativeCoeff_le ((-t : ℂ) * I) n
-  have hpow : ‖(x : ℂ) ^ ((-t : ℂ) * I - n)‖ ≤ 2 ^ n := by
-    rw [Complex.norm_cpow_eq_rpow_re_of_pos hxPos]
-    have hre : (((-t : ℂ) * I - n).re) = -(n : ℝ) := by simp
-    rw [hre]
-    have hmono : x ^ (-(n : ℝ)) ≤ (1 / 2 : ℝ) ^ (-(n : ℝ)) :=
-      Real.rpow_le_rpow_of_nonpos (by norm_num) hx
-        (neg_nonpos.mpr (Nat.cast_nonneg n))
-    calc
-      x ^ (-(n : ℝ)) ≤ (1 / 2 : ℝ) ^ (-(n : ℝ)) := hmono
-      _ = 2 ^ n := by
-        rw [Real.rpow_neg_eq_inv_rpow, Real.rpow_natCast]
-        norm_num
-  calc
-    ‖gmCpowDerivativeCoeff ((-t : ℂ) * I) n‖ *
-          ‖(x : ℂ) ^ ((-t : ℂ) * I - n)‖ ≤
-        (‖((-t : ℂ) * I)‖ + n) ^ n * 2 ^ n :=
-      mul_le_mul hcoeff hpow (norm_nonneg _) (by positivity)
-    _ = 2 ^ n * (|t| + n) ^ n := by
-      simp [Real.norm_eq_abs]
-      ring
-
-private theorem typeIMellinDerivativePower_le
-    (t : ℝ) {k n : ℕ} (hkn : k ≤ n) :
-    (|t| + k) ^ k ≤
-      (n + 1 : ℝ) ^ n * (1 + |t|) ^ n := by
-  let B : ℝ := (n + 1) * (1 + |t|)
-  have hnNonneg : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  have hBOne : 1 ≤ B := by
-    dsimp only [B]
-    nlinarith [abs_nonneg t]
-  have hbase : |t| + k ≤ B := by
-    dsimp only [B]
-    have hkReal : (k : ℝ) ≤ n := by exact_mod_cast hkn
-    nlinarith [abs_nonneg t]
-  calc
-    (|t| + k) ^ k ≤ B ^ k :=
-      pow_le_pow_left₀ (by positivity) hbase k
-    _ ≤ B ^ n := pow_le_pow_right₀ hBOne hkn
-    _ = (n + 1 : ℝ) ^ n * (1 + |t|) ^ n := by
-      dsimp only [B]
-      rw [mul_pow]
+private theorem typeINormalizedKernel_support (σ t : ℝ) :
+    Function.support (typeINormalizedKernel σ t) ⊆ Icc (1 / 2 : ℝ) 2 := by
+  intro x hx
+  by_contra hn
+  have hz : typeIDyadicCutoff x = 0 := by
+    simp only [mem_Icc, not_and_or, not_le] at hn
+    rcases hn with h | h
+    · exact typeIDyadicCutoff_eq_zero_of_le_half h.le
+    · exact typeIDyadicCutoff_eq_zero_of_two_le h.le
+  exact hx (by simp [typeINormalizedKernel, typeINormalizedAmplitude, hz])
 
 /-- Uniform derivative bound for the boundary-free normalized Type-I
 kernel.  The constant may depend on the fixed density line `σ`, but is
@@ -1152,236 +1001,21 @@ theorem typeINormalizedKernel_uniform_iteratedFDeriv (σ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t x : ℝ,
       ‖iteratedFDeriv ℝ n (typeINormalizedKernel σ t) x‖ ≤
         C * (1 + |t|) ^ n := by
-  let C : ℝ := ∑ i ∈ Finset.range (n + 1),
-    (n.choose i : ℝ) *
-      SchwartzMap.seminorm ℝ 0 i (typeINormalizedAmplitudeSchwartz σ) *
-        2 ^ n * (n + 1 : ℝ) ^ n
-  have hC : 0 ≤ C := by
-    dsimp only [C]
-    positivity
-  refine ⟨C, hC, ?_⟩
-  intro t x
-  rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv]
-  by_cases hxLow : x < 1 / 2
-  · have hzero : typeINormalizedKernel σ t =ᶠ[nhds x] 0 := by
-      filter_upwards [Iio_mem_nhds hxLow] with y hy
-      simp [typeINormalizedKernel, typeINormalizedAmplitude,
-        typeIDyadicCutoff_eq_zero_of_le_half (le_of_lt hy)]
-    rw [hzero.iteratedDeriv_eq]
-    simp
-    positivity
-  by_cases hxHigh : 2 < x
-  · have hzero : typeINormalizedKernel σ t =ᶠ[nhds x] 0 := by
-      filter_upwards [Ioi_mem_nhds hxHigh] with y hy
-      simp [typeINormalizedKernel, typeINormalizedAmplitude,
-        typeIDyadicCutoff_eq_zero_of_two_le (le_of_lt hy)]
-    rw [hzero.iteratedDeriv_eq]
-    simp
-    positivity
-  have hxIcc : x ∈ Set.Icc (1 / 2 : ℝ) 2 :=
-    ⟨le_of_not_gt hxLow, le_of_not_gt hxHigh⟩
-  have hxPos : 0 < x := (by norm_num : (0 : ℝ) < 1 / 2).trans_le hxIcc.1
-  have hlocal : typeINormalizedKernel σ t =ᶠ[nhds x]
-      fun y : ℝ => typeINormalizedAmplitude σ y *
-        (y : ℂ) ^ ((-t : ℂ) * I) := by
-    filter_upwards [Ioi_mem_nhds hxPos] with y hy
-    exact typeINormalizedKernel_eq_amplitude_mul_cpow σ t hy
-  rw [hlocal.iteratedDeriv_eq]
-  have hampSmooth : ContDiffAt ℝ n (typeINormalizedAmplitude σ) x :=
-    (contDiff_typeINormalizedAmplitude σ).contDiffAt.of_le
-      (by exact_mod_cast le_top)
-  have hphaseSmooth := contDiffAt_ofReal_cpow_neg_mul_I t n hxPos
-  change ‖iteratedDeriv n
-      (typeINormalizedAmplitude σ *
-        fun y : ℝ => (y : ℂ) ^ ((-t : ℂ) * I)) x‖ ≤
-    C * (1 + |t|) ^ n
-  rw [iteratedDeriv_mul hampSmooth hphaseSmooth]
-  calc
-    ‖∑ i ∈ Finset.range (n + 1),
-        (n.choose i : ℂ) * iteratedDeriv i (typeINormalizedAmplitude σ) x *
-          iteratedDeriv (n - i)
-            (fun y : ℝ => (y : ℂ) ^ ((-t : ℂ) * I)) x‖ ≤
-      ∑ i ∈ Finset.range (n + 1),
-        ‖(n.choose i : ℂ) * iteratedDeriv i (typeINormalizedAmplitude σ) x *
-          iteratedDeriv (n - i)
-            (fun y : ℝ => (y : ℂ) ^ ((-t : ℂ) * I)) x‖ :=
-      norm_sum_le _ _
-    _ ≤ ∑ i ∈ Finset.range (n + 1),
-        ((n.choose i : ℝ) *
-          SchwartzMap.seminorm ℝ 0 i (typeINormalizedAmplitudeSchwartz σ) *
-            2 ^ n * (n + 1 : ℝ) ^ n) * (1 + |t|) ^ n := by
-      apply Finset.sum_le_sum
-      intro i hi
-      have hin : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
-      have hamp := SchwartzMap.le_seminorm' (𝕜 := ℝ) 0 i
-        (typeINormalizedAmplitudeSchwartz σ) x
-      simp only [pow_zero, one_mul] at hamp
-      change ‖iteratedDeriv i (typeINormalizedAmplitude σ) x‖ ≤
-        SchwartzMap.seminorm ℝ 0 i (typeINormalizedAmplitudeSchwartz σ) at hamp
-      have hphase := norm_iteratedDeriv_ofReal_cpow_neg_mul_I_le
-        t (n - i) hxIcc.1
-      have hpower := typeIMellinDerivativePower_le t (Nat.sub_le n i)
-      have htwo : (2 : ℝ) ^ (n - i) ≤ 2 ^ n := by
-        exact pow_le_pow_right₀ (by norm_num) (Nat.sub_le n i)
-      rw [norm_mul, norm_mul, Complex.norm_natCast]
-      have hchoose : 0 ≤ (n.choose i : ℝ) := Nat.cast_nonneg _
-      have hseminorm :
-          0 ≤ SchwartzMap.seminorm ℝ 0 i (typeINormalizedAmplitudeSchwartz σ) :=
-        by positivity
-      have hcoefficient :
-          0 ≤ (n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i (typeINormalizedAmplitudeSchwartz σ) :=
-        mul_nonneg hchoose hseminorm
-      have hphaseNonneg :
-          0 ≤ ‖iteratedDeriv (n - i)
-            (fun y : ℝ => (y : ℂ) ^ ((-t : ℂ) * I)) x‖ := norm_nonneg _
-      have hinner :
-          (2 : ℝ) ^ (n - i) * (|t| + ((n - i : ℕ) : ℝ)) ^ (n - i) ≤
-            2 ^ n * ((n + 1 : ℝ) ^ n * (1 + |t|) ^ n) := by
-        exact mul_le_mul htwo hpower (by positivity) (by positivity)
-      calc
-        (n.choose i : ℝ) * ‖iteratedDeriv i (typeINormalizedAmplitude σ) x‖ *
-            ‖iteratedDeriv (n - i)
-              (fun y : ℝ => (y : ℂ) ^ ((-t : ℂ) * I)) x‖ ≤
-          (n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i (typeINormalizedAmplitudeSchwartz σ) *
-              ‖iteratedDeriv (n - i)
-                (fun y : ℝ => (y : ℂ) ^ ((-t : ℂ) * I)) x‖ := by
-            exact mul_le_mul_of_nonneg_right
-              (mul_le_mul_of_nonneg_left hamp hchoose) hphaseNonneg
-        _ ≤ (n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i (typeINormalizedAmplitudeSchwartz σ) *
-              (2 ^ (n - i) * (|t| + ((n - i : ℕ) : ℝ)) ^ (n - i)) := by
-            exact mul_le_mul_of_nonneg_left hphase hcoefficient
-        _ ≤ (n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i (typeINormalizedAmplitudeSchwartz σ) *
-              (2 ^ n * ((n + 1 : ℝ) ^ n * (1 + |t|) ^ n)) := by
-            exact mul_le_mul_of_nonneg_left hinner hcoefficient
-        _ = ((n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i (typeINormalizedAmplitudeSchwartz σ) *
-              2 ^ n * (n + 1 : ℝ) ^ n) * (1 + |t|) ^ n := by ring
-    _ = C * (1 + |t|) ^ n := by
-      dsimp only [C]
-      rw [Finset.sum_mul]
-
-private theorem integral_norm_iteratedFDeriv_typeINormalizedKernel_le
-    (σ : ℝ) (p : ℕ) {D : ℝ}
-    (hbound : ∀ t x : ℝ,
-      ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖ ≤
-        D * (1 + |t|) ^ p) (t : ℝ) :
-    (∫ x : ℝ, ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖) ≤
-      (3 / 2 : ℝ) * D * (1 + |t|) ^ p := by
-  let f : ℝ → ℝ := fun x =>
-    ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖
-  have hfInt : Integrable f := by
-    simpa only [f, pow_zero, one_mul, normalizedSchwartz_coe] using
-      (SchwartzMap.integrable_pow_mul_iteratedFDeriv volume
-        (typeINormalizedKernelSchwartz σ t) 0 p)
-  have hsupport : Function.support f ⊆ Set.Icc (1 / 2 : ℝ) 2 := by
-    intro x hx
-    by_contra hnot
-    have hxOutside : x < 1 / 2 ∨ 2 < x := by
-      by_cases hxLow : x < 1 / 2
-      · exact Or.inl hxLow
-      · exact Or.inr (lt_of_not_ge fun hxUpper =>
-          hnot ⟨le_of_not_gt hxLow, hxUpper⟩)
-    have hzero : typeINormalizedKernel σ t =ᶠ[nhds x] 0 := by
-      rcases hxOutside with hxLow | hxHigh
-      · filter_upwards [Iio_mem_nhds hxLow] with y hy
-        simp [typeINormalizedKernel, typeINormalizedAmplitude,
-          typeIDyadicCutoff_eq_zero_of_le_half (le_of_lt hy)]
-      · filter_upwards [Ioi_mem_nhds hxHigh] with y hy
-        simp [typeINormalizedKernel, typeINormalizedAmplitude,
-          typeIDyadicCutoff_eq_zero_of_two_le (le_of_lt hy)]
-    apply hx
-    dsimp only [f]
-    rw [(hzero.iteratedFDeriv ℝ p).eq_of_nhds]
-    simp
-  have hEq : f = Set.indicator (Set.Icc (1 / 2 : ℝ) 2) f := by
-    funext x
-    by_cases hx : x ∈ Set.Icc (1 / 2 : ℝ) 2
-    · exact (Set.indicator_of_mem hx _).symm
-    · have : f x = 0 := not_ne_iff.mp fun hne => hx (hsupport hne)
-      simp only [Set.indicator, hx, ite_false]
-      exact this
-  rw [show (∫ x : ℝ, ‖iteratedFDeriv ℝ p
-      (typeINormalizedKernel σ t) x‖) = ∫ x : ℝ, f x by rfl]
-  rw [hEq, MeasureTheory.integral_indicator measurableSet_Icc]
-  calc
-    (∫ x : ℝ in Set.Icc (1 / 2) 2, f x) ≤
-        ∫ _x : ℝ in Set.Icc (1 / 2) 2, D * (1 + |t|) ^ p := by
-      apply MeasureTheory.setIntegral_mono_on
-      · exact hfInt.integrableOn
-      · exact MeasureTheory.integrableOn_const
-          (hs := ne_of_lt
-            (measure_Icc_lt_top : volume (Set.Icc (1 / 2 : ℝ) 2) < (⊤ : ENNReal)))
-      · exact measurableSet_Icc
-      · intro x hx
-        exact hbound t x
-    _ = (3 / 2 : ℝ) * D * (1 + |t|) ^ p := by
-      norm_num [max_eq_left]
-      ring
+  refine ⟨mellinDerivativeConstant (typeINormalizedAmplitudeSchwartz σ) (1/2) n,
+    mellinDerivativeConstant_nonneg _ (by norm_num) _, fun t x => ?_⟩
+  rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv, ← abs_neg t]
+  exact norm_iteratedDeriv_mellinKernel_le _ (by norm_num) (typeINormalizedKernel_support σ t) (-t)
+    (fun y hy => by simpa only [Complex.ofReal_neg, typeINormalizedAmplitudeSchwartz_apply] using
+      typeINormalizedKernel_eq_amplitude_mul_cpow σ t hy) n x
 
 /-- Uniform Fourier decay for the source-faithful normalized Type-I kernel.
 The constant is independent of both the ordinate and Fourier frequency. -/
 theorem typeINormalizedFourier_uniform_decay (σ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t ξ : ℝ,
       |ξ| ^ n * ‖typeINormalizedFourier σ t ξ‖ ≤
-        C * (1 + |t|) ^ n := by
-  choose D hD hDbound using fun p : ℕ =>
-    typeINormalizedKernel_uniform_iteratedFDeriv σ p
-  let C : ℝ := 2 ^ n * (3 / 2) * ∑ p ∈ Finset.range (n + 1), D p
-  have hC : 0 ≤ C := by
-    dsimp only [C]
-    exact mul_nonneg
-      (mul_nonneg (by positivity) (by norm_num))
-      (Finset.sum_nonneg fun p _ => hD p)
-  refine ⟨C, hC, ?_⟩
-  intro t ξ
-  have hIntegrable : ∀ (k p : ℕ), k ≤ (0 : ℕ∞) → p ≤ (⊤ : ℕ∞) →
-      Integrable (fun x : ℝ =>
-        ‖x‖ ^ k * ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖) := by
-    intro k p _hk _hp
-    simpa only [normalizedSchwartz_coe] using
-      (SchwartzMap.integrable_pow_mul_iteratedFDeriv volume
-        (typeINormalizedKernelSchwartz σ t) k p)
-  have hFourier := pow_mul_norm_iteratedFDeriv_fourier_le
-    (f := typeINormalizedKernel σ t)
-    (K := (0 : ℕ∞)) (N := (⊤ : ℕ∞))
-    (contDiff_typeINormalizedKernel σ t) hIntegrable
-    (k := 0) (n := n) (by norm_num) (by simp) ξ
-  simp only [pow_zero, one_mul, zero_add, Finset.range_one,
-    norm_iteratedFDeriv_zero, Finset.singleton_product, Finset.sum_map,
-    Function.Embedding.sectR_apply] at hFourier
-  have hFourier' : |ξ| ^ n * ‖typeINormalizedFourier σ t ξ‖ ≤
-      2 ^ n * ∑ p ∈ Finset.range (n + 1),
-        ∫ x : ℝ, ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖ := by
-    convert hFourier using 1
-    · simp [typeINormalizedFourier, Real.norm_eq_abs, SchwartzMap.fourier_coe, normalizedSchwartz_coe]
-    · congr 1
-      norm_num
-  calc
-    |ξ| ^ n * ‖typeINormalizedFourier σ t ξ‖ ≤
-        2 ^ n * ∑ p ∈ Finset.range (n + 1),
-          ∫ x : ℝ, ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖ := hFourier'
-    _ ≤ 2 ^ n * ∑ p ∈ Finset.range (n + 1),
-        ((3 / 2 : ℝ) * D p) * (1 + |t|) ^ n := by
-      gcongr with p hp
-      have hpn : p ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hp)
-      have hint := integral_norm_iteratedFDeriv_typeINormalizedKernel_le
-        σ p (hDbound p) t
-      calc
-        (∫ x : ℝ, ‖iteratedFDeriv ℝ p (typeINormalizedKernel σ t) x‖) ≤
-            (3 / 2 : ℝ) * D p * (1 + |t|) ^ p := hint
-        _ ≤ (3 / 2 : ℝ) * D p * (1 + |t|) ^ n := by
-          exact mul_le_mul_of_nonneg_left
-            (pow_le_pow_right₀ (by nlinarith [abs_nonneg t]) hpn)
-            (mul_nonneg (by norm_num) (hD p))
-    _ = C * (1 + |t|) ^ n := by
-      dsimp only [C]
-      rw [← Finset.sum_mul]
-      rw [← Finset.mul_sum]
-      ring
+        C * (1 + |t|) ^ n :=
+  schwartz_family_fourier_decay (typeINormalizedKernelSchwartz σ) (by norm_num)
+    (typeINormalizedKernel_support σ) (typeINormalizedKernel_uniform_iteratedFDeriv σ) n
 
 /-- The complete scaled Poisson tail outside the symmetric mode window
 `|m| ≤ M`.  The physical dilation contributes the factor `Q`. -/
@@ -1400,114 +1034,15 @@ theorem typeINormalizedFarTail_bound_order (σ : ℝ) (n : ℕ) :
       ‖typeINormalizedFarTail σ t Q M‖ ≤
         K * (1 + |t|) ^ (n + 2) /
           ((Q : ℝ) ^ (n + 1) * (M : ℝ) ^ n) := by
-  obtain ⟨C₀, hC₀, hDecay⟩ :=
-    typeINormalizedFourier_uniform_decay σ (n + 2)
-  let C : ℝ := C₀ + 1
-  have hC : 0 < C := by dsimp only [C]; linarith
-  have hPSeries : Summable (fun m : ℤ => ‖1 / (m : ℂ) ^ 2‖) := by
-    have hNorm : (fun m : ℤ => ‖1 / (m : ℂ) ^ 2‖) =
-        fun m : ℤ => |1 / (m : ℝ) ^ 2| := by
-      funext m
-      simp only [norm_div, norm_one, norm_pow, Complex.norm_intCast,
-        abs_div, abs_one, pow_abs]
-    rw [hNorm, summable_abs_iff]
-    exact Real.summable_one_div_int_pow.mpr (by norm_num)
-  let B : ℝ := ∑' m : ℤ, ‖1 / (m : ℂ) ^ 2‖
-  have hB : 0 ≤ B := tsum_nonneg fun m => norm_nonneg _
-  refine ⟨C * B + 1, by positivity, ?_⟩
-  intro t Q M hQ hM
-  have hQr : 0 < (Q : ℝ) := by exact_mod_cast hQ
-  have hMr : 0 < (M : ℝ) := by exact_mod_cast hM
-  let scale : ℝ := C * (1 + |t|) ^ (n + 2) /
-    ((Q : ℝ) ^ (n + 1) * (M : ℝ) ^ n)
-  have hPointwise : ∀ m : ℤ, M < m.natAbs →
-      ‖(Q : ℂ) * typeINormalizedFourier σ t
-          ((Q : ℝ) * (m : ℝ))‖ ≤
-        scale * ‖1 / (m : ℂ) ^ 2‖ := by
-    intro m hm
-    have hmNatPos : 0 < m.natAbs := hM.trans hm
-    have hmNe : m ≠ 0 := Int.natAbs_ne_zero.mp hmNatPos.ne'
-    have hmReal : (m : ℝ) ≠ 0 := by exact_mod_cast hmNe
-    have hmAbsPos : 0 < |(m : ℝ)| := abs_pos.mpr hmReal
-    have hmAbs : (M : ℝ) ≤ |(m : ℝ)| := by
-      have hcast : (M : ℝ) ≤ (m.natAbs : ℝ) := by
-        exact_mod_cast (Nat.le_of_lt hm)
-      simpa using hcast
-    have hFreqAbs : |(Q : ℝ) * (m : ℝ)| =
-        (Q : ℝ) * |(m : ℝ)| := by
-      rw [abs_mul, abs_of_pos hQr]
-    have hFreqPos : 0 < |(Q : ℝ) * (m : ℝ)| := by
-      rw [hFreqAbs]
-      positivity
-    have hFourier :
-        ‖typeINormalizedFourier σ t ((Q : ℝ) * (m : ℝ))‖ ≤
-          C₀ * (1 + |t|) ^ (n + 2) /
-            |(Q : ℝ) * (m : ℝ)| ^ (n + 2) := by
-      rw [le_div_iff₀ (pow_pos hFreqPos (n + 2))]
-      simpa [mul_comm] using hDecay t ((Q : ℝ) * (m : ℝ))
-    have hpow : (M : ℝ) ^ n * |(m : ℝ)| ^ 2 ≤
-        |(m : ℝ)| ^ (n + 2) := by
-      calc
-        (M : ℝ) ^ n * |(m : ℝ)| ^ 2 ≤
-            |(m : ℝ)| ^ n * |(m : ℝ)| ^ 2 := by gcongr
-        _ = |(m : ℝ)| ^ (n + 2) := by rw [pow_add]
-    have hDenSmall : 0 < (Q : ℝ) ^ (n + 1) *
-        ((M : ℝ) ^ n * |(m : ℝ)| ^ 2) := by positivity
-    have hDenLarge : 0 < (Q : ℝ) ^ (n + 1) *
-        |(m : ℝ)| ^ (n + 2) := by positivity
-    rw [norm_mul, Complex.norm_natCast, norm_div, norm_one, norm_pow,
-      Complex.norm_intCast]
-    calc
-      (Q : ℝ) *
-          ‖typeINormalizedFourier σ t ((Q : ℝ) * (m : ℝ))‖ ≤
-        (Q : ℝ) * (C₀ * (1 + |t|) ^ (n + 2) /
-          |(Q : ℝ) * (m : ℝ)| ^ (n + 2)) := by gcongr
-      _ = C₀ * (1 + |t|) ^ (n + 2) /
-          ((Q : ℝ) ^ (n + 1) * |(m : ℝ)| ^ (n + 2)) := by
-        rw [hFreqAbs, mul_pow]
-        field_simp [hQr.ne']
-        rw [show n + 2 = (n + 1) + 1 by omega, pow_succ]
-        ring
-      _ ≤ C * (1 + |t|) ^ (n + 2) /
-          ((Q : ℝ) ^ (n + 1) * |(m : ℝ)| ^ (n + 2)) := by
-        exact div_le_div_of_nonneg_right
-          (mul_le_mul_of_nonneg_right (by dsimp only [C]; linarith)
-            (by positivity)) hDenLarge.le
-      _ ≤ C * (1 + |t|) ^ (n + 2) /
-          ((Q : ℝ) ^ (n + 1) *
-            ((M : ℝ) ^ n * |(m : ℝ)| ^ 2)) := by
-        exact div_le_div_of_nonneg_left (by positivity) hDenSmall
-          (mul_le_mul_of_nonneg_left hpow (by positivity))
-      _ = scale * (1 / |(m : ℝ)| ^ 2) := by
-        dsimp only [scale]
-        field_simp [hQr.ne', hMr.ne', hmAbsPos.ne']
-  have hComparison : ∀ m : ℤ,
-      ‖if M < m.natAbs then
-          (Q : ℂ) * typeINormalizedFourier σ t
-            ((Q : ℝ) * (m : ℝ)) else 0‖ ≤
-        scale * ‖1 / (m : ℂ) ^ 2‖ := by
-    intro m
-    by_cases hm : M < m.natAbs
-    · simpa only [ite_eq_left hm] using hPointwise m hm
-    · have hscale : 0 ≤ scale := by dsimp only [scale]; positivity
-      rw [ite_eq_right hm, norm_zero]
-      exact mul_nonneg hscale (norm_nonneg _)
-  have hScaledSummable : Summable
-      (fun m : ℤ => scale * ‖1 / (m : ℂ) ^ 2‖) :=
-    hPSeries.mul_left scale
-  have hBound := tsum_of_norm_bounded hScaledSummable.hasSum hComparison
-  rw [tsum_mul_left] at hBound
-  change ‖typeINormalizedFarTail σ t Q M‖ ≤ scale * B at hBound
-  have hDen : 0 < (Q : ℝ) ^ (n + 1) * (M : ℝ) ^ n := by positivity
-  calc
-    ‖typeINormalizedFarTail σ t Q M‖ ≤ scale * B := hBound
-    _ ≤ (C * B + 1) * (1 + |t|) ^ (n + 2) /
-          ((Q : ℝ) ^ (n + 1) * (M : ℝ) ^ n) := by
-      dsimp only [scale]
-      rw [div_mul_eq_mul_div]
-      apply (div_le_div_iff_of_pos_right hDen).2
-      have hpowNonneg : 0 ≤ (1 + |t|) ^ (n + 2) := by positivity
-      nlinarith
+  obtain ⟨C, hC, h⟩ := fourier_tail_bound_order _ n (typeINormalizedFourier_uniform_decay σ (n + 2))
+  refine ⟨C, hC, fun t Q M hQ hM => ?_⟩
+  have hQ' : 0 < (Q : ℝ) := by exact_mod_cast hQ
+  unfold typeINormalizedFarTail
+  simp only [← mul_ite_zero, tsum_mul_left, norm_mul, Complex.norm_natCast]
+  refine (mul_le_mul_of_nonneg_left (h Q M hQ hM t) hQ'.le).trans_eq ?_
+  rw [show n + 2 = (n + 1) + 1 by omega, pow_succ (Q : ℝ) (n + 1)]
+  field_simp
+  <;> ring
 
 /-! ## Exact scaled Poisson assembly -/
 

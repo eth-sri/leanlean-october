@@ -87,15 +87,13 @@ theorem cubicStripMass_le_square {r : ℝ → ℝ} (hr : Measurable r)
   rw [heq] at hcs
   exact (setIntegral_le_integral hint (Filter.Eventually.of_forall (fun y => mul_nonneg (hr0 y) (hr0 _)))).trans hcs
 
+section
+variable {μ : ℝ → ℝ} (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2)) {a b : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hb1 : 1 ≤ b) {A B C D : Set ℝ} (hA : MeasurableSet A) (hB : MeasurableSet B) (hC : MeasurableSet C) (hD : MeasurableSet D) (hAsym : ∀ ξ, -ξ ∈ A ↔ ξ ∈ A) (hDsym : ∀ ξ, -ξ ∈ D ↔ ξ ∈ D) (hBD : B ⊆ D) (hCD : C ⊆ D) (L H : ℝ)
+include μ hm h0 h1 h2 a b ha ha1 hb1 A B C D hA hB hC hD hAsym hDsym hBD hCD L H
+
 /-- Actual near-strip Fourier mass is bounded by the actual transverse
 strip integral, with all existence facts derived from the ordinary density. -/
-theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
-    (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2))
-    {a b : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hb1 : 1 ≤ b)
-    {A B C D : Set ℝ} (hA : MeasurableSet A) (hB : MeasurableSet B)
-    (hC : MeasurableSet C) (hD : MeasurableSet D)
-    (hAsym : ∀ ξ, -ξ ∈ A ↔ ξ ∈ A) (hDsym : ∀ ξ, -ξ ∈ D ↔ ξ ∈ D)
-    (hBD : B ⊆ D) (hCD : C ⊆ D) (L H : ℝ) (m : ℤ × (ℤ × ℤ)) :
+theorem fourier_near_strip_integral (m : ℤ × (ℤ × ℤ)) :
     let r₀ := ratioFourierInput μ (a/b) (b/a)
     let r := (mellinFrequency ⁻¹' D).indicator r₀
     let first := (mellinFrequency ⁻¹' A).indicator r₀
@@ -207,13 +205,7 @@ theorem fourier_near_strip_integral {μ : ℝ → ℝ} (hm : Measurable μ)
 
 /-- Finite actual near-mode mass transfers to the outer first-mask strip
 sum. No shell, sign, nonzero-mode, or width restriction is needed here. -/
-theorem fourier_near_strip_sum {μ : ℝ → ℝ} (hm : Measurable μ)
-    (h0 : ∀ t, 0 ≤ μ t) (h1 : Integrable μ) (h2 : Integrable (fun t => μ t^2))
-    {a b : ℝ} (ha : 0 < a) (ha1 : a ≤ 1) (hb1 : 1 ≤ b)
-    {A B C D : Set ℝ} (hA : MeasurableSet A) (hB : MeasurableSet B)
-    (hC : MeasurableSet C) (hD : MeasurableSet D)
-    (hAsym : ∀ ξ, -ξ ∈ A ↔ ξ ∈ A) (hDsym : ∀ ξ, -ξ ∈ D ↔ ξ ∈ D)
-    (hBD : B ⊆ D) (hCD : C ⊆ D) (L H : ℝ) (S : Finset (ℤ × (ℤ × ℤ))) :
+theorem fourier_near_strip_sum (S : Finset (ℤ × (ℤ × ℤ))) :
     let r₀ := ratioFourierInput μ (a/b) (b/a)
     let r := (mellinFrequency ⁻¹' D).indicator r₀
     let first := (mellinFrequency ⁻¹' A).indicator r₀
@@ -233,5 +225,7 @@ theorem fourier_near_strip_sum {μ : ℝ → ℝ} (hm : Measurable μ)
       _ ≤ ∑ m ∈ S, ∫ v in Icc a b, first v*cubicStripMass r L H m v :=
         Finset.sum_le_sum (fun m _ => (hmode m).2.2)
       _ = _ := by rw [← integral_finsetSum S hi]; simp only [Finset.mul_sum, first, r, r₀]
+
+end
 
 end GuthMaynard.Improvement

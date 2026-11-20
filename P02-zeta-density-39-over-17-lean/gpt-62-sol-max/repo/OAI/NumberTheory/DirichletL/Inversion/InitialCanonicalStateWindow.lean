@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCanonicalStateSource
 
 @[expose] public section
@@ -9,18 +10,16 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalState
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalIdealFamily.Maximal p]
 
 include hp in
 
 theorem actual_window_state
-    (hpr:∀i,λ₀^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
+    (hpr:OAI.PrincipalIdealFamily.PrimaryAt p λ₀)(S:Finset (Source (ι:=ι) 0))
     (ψ:Fin 4→ℝ→ℂ)(lo hi:Fin 4→ℝ)
     (hψ:∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))
     (Z D B v θ H η:ℝ)(hZ:1<Z)(hη:0≤η)

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstPhysicalCommon
 public import OAI.NumberTheory.DirichletL.Descent.FirstFreshMeasure
 
@@ -8,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation MeasureTheory
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation MeasureTheory
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -26,8 +26,8 @@ def firstCommonNorms {ι : Type*} (p : ι → Eis) (A₁ A₂ C R : ℝ) (d h : 
     ‖eisEmbedding h‖^2,primeProductNorm p j.2.2.1,primeProductNorm p j.2.2.2]
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstCommonWeight (C₁ C₂ : Finset ι → ℂ) (h : Eis) (j : FirstCommonIndex ι) : ℂ :=
   crossCoeff j.1.1 j.1.2 * supportMobius (fun i => Ideal.span {p i}) j.2.1 *

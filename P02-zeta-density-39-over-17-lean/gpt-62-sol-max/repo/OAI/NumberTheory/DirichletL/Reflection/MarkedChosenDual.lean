@@ -90,6 +90,7 @@ theorem marked_reflected_source_of_controlled
     rw [P.generator_span,P.generator_span]
     exact hP (fun he => hik (Subtype.ext he))
   · intro i
+    change ringChar (Eis ⧸ Ideal.span {P.generator i.val}) ≠ 2
     rw [P.generator_span]
     exact hodd i.val
   · exact fun i => hj i.val

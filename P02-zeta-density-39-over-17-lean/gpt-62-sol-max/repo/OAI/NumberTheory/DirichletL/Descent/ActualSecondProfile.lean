@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondWholeKernel
 public import OAI.NumberTheory.DirichletL.Descent.SecondFiniteMeasure
 
@@ -46,9 +47,9 @@ lemma secondActualNorms_pos {ι : Type*} (p : ι → Eis) (hp : ∀ i, p i ≠ 0
   · exact primeProductNorm_pos p hp M
 
 def secondActualCoefficient {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (x : SecondProfileData ι) (slots₁ slots₂ : Finset σ)
     (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ) (N M : Finset ι) : ℂ :=
   star (secondChildColumn p hp hcop hg x.rayLeft (x.puncture*x.quotient)
@@ -59,9 +60,9 @@ def secondActualCoefficient {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
     primeMark slots₂ lists₂ a₂ (x.extractedRight ∪ (x.overlap ∪ M)))
 
 def actualSecondProfileRow {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (F : Finset ι) (x : SecondProfileData ι) (slots₁ slots₂ : Finset σ)
     (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Y X : ℝ) : ℂ :=
@@ -75,9 +76,9 @@ def actualSecondProfileRow {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
         W₂ (primeProductNorm p x.common*primeProductNorm p U/X)) Φ Y)
 
 theorem actualSecondProfileRow_eq_whole {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (F : Finset ι) (x : SecondProfileData ι) (slots₁ slots₂ : Finset σ)
     (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (W₁ W₂ : ℝ → ℂ) (Φ : 𝓢(ℝ,ℂ)) (Y X : ℝ) :

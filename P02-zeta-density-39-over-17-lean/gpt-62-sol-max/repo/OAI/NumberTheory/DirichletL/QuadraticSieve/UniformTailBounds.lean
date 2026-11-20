@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.ProductColumns
 
 @[expose] public section
@@ -8,72 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
 
@@ -90,10 +37,10 @@ open JointLogSeparation (frequencyTwist frequencyTwist_apply)
 theorem full_uniform_secondPairRadialMode_tail (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (hg : ∀ i, lambda ∉ Ideal.span {p i})
-      (hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (_hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2),
+      (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2),
     ∀ (S T : Finset ι) (e : O), e ≠ 0 → ∀ (W : 𝓢(ℝ, ℂ)) (Y H : ℝ),
       0 < Y → 0 ≤ H →
       let n := ∏ i : activeSupport T S, p i.val
@@ -142,10 +89,10 @@ theorem full_uniform_secondPairRadialMode_tail (A : ℕ) :
 theorem full_uniform_secondPairRadialMode_remainder (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (hg : ∀ i, lambda ∉ Ideal.span {p i})
-      (hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (_hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2),
+      (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2),
     ∀ (S T : Finset ι) (e : O), e ≠ 0 → ∀ (W : 𝓢(ℝ, ℂ)) (Y H : ℝ),
       0 < Y → 0 ≤ H → ∀ K : Finset O,
       let n := ∏ i : activeSupport T S, p i.val
@@ -181,10 +128,10 @@ theorem full_uniform_secondPairRadialMode_remainder (A : ℕ) :
 theorem full_uniform_residualSecondMode_tail_bound (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (hg : ∀ i, lambda ∉ Ideal.span {p i})
-      (hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (_hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2),
+      (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2),
     ∀ (F G : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m c d : O) (H₁ H₂ : Finset ι → ℂ)
       (e : O), e ≠ 0 → ∀ (W : 𝓢(ℝ, ℂ)) (Y H : ℝ), 0 < Y → 0 ≤ H → ∀ K : Finset O,
       (∀ S ∈ (F\G).powerset, ∀ T ∈ (F\G).powerset, Disjoint S T →
@@ -217,10 +164,10 @@ theorem full_uniform_residualSecondMode_tail_bound (A : ℕ) :
 theorem full_uniform_secondSourceTail_bound (A : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (hg : ∀ i, lambda ∉ Ideal.span {p i})
-      (hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (_hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2),
+      (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2),
     ∀ (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (Hcol : Finset ι → ℂ)
       (W : 𝓢(ℝ, ℂ)) (Y H : ℝ), 0 < Y → 0 ≤ H →
       ∀ K : Finset ι → Finset ι → Finset O,
@@ -272,8 +219,8 @@ open FirstPassCubeLabels (primeProductNorm)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end
 
@@ -282,7 +229,7 @@ open FirstPassCubeLabels (primeProductNorm)
 
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
 
 end
 

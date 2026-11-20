@@ -36,10 +36,11 @@ theorem modelPhaseAmplitudeTolerance_pos {σ : ℝ} (hσ : 0 < σ) :
   lt_min (lt_min (modelPhaseCurvatureLower_pos hσ) zero_lt_one)
     (lt_min (modelPhaseThirdLower_pos hσ) zero_lt_one)
 
+section
+variable {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseThirdLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ 2 δ)
+include σ δ F hσ hδ hF
+
 theorem approximateModelPhase_thirdWithin_bounds
-    {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ)
-    (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 2 δ)
     {u : ℝ} (hu : u ∈ phaseInterval) :
     modelPhaseThirdLower σ ≤ iteratedDerivWithin 3 F phaseInterval u ∧
       iteratedDerivWithin 3 F phaseInterval u ≤ σ*(σ+1)+1 := by
@@ -66,9 +67,6 @@ theorem approximateModelPhase_thirdWithin_bounds
   constructor <;> nlinarith
 
 theorem approximateModelPhase_thirdDeriv_bounds
-    {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ)
-    (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 2 δ)
     {u : ℝ} (hu : u ∈ Ioo (1 : ℝ) 2) :
     modelPhaseThirdLower σ ≤ deriv (deriv (deriv F)) u ∧
       deriv (deriv (deriv F)) u ≤ σ*(σ+1)+1 := by
@@ -80,10 +78,7 @@ theorem approximateModelPhase_thirdDeriv_bounds
     ⟨hu.1.le,hu.2.le⟩] at h
   simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using h
 
-theorem approximateModelPhase_secondDeriv_strictMonoOn
-    {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ)
-    (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ 2 δ) :
+theorem approximateModelPhase_secondDeriv_strictMonoOn :
     StrictMonoOn (deriv (deriv F)) (Ioo (1 : ℝ) 2) := by
   apply strictMonoOn_of_deriv_pos (convex_Ioo 1 2)
   · intro u hu
@@ -93,6 +88,8 @@ theorem approximateModelPhase_secondDeriv_strictMonoOn
     have hui : u ∈ Ioo (1 : ℝ) 2 := by simpa using hu
     exact (modelPhaseThirdLower_pos hσ).trans_le
       (approximateModelPhase_thirdDeriv_bounds hσ hδ hF hui).1
+
+end
 
 theorem modelPhaseInverseSlope_antitoneOn
     {σ δ : ℝ} {F : ℝ → ℝ} (hσ : 0 < σ)

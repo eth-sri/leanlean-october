@@ -10,70 +10,17 @@ noncomputable section
 namespace CanonicalQuadraticSieve
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 section
 
@@ -203,8 +150,7 @@ theorem squarefreeHigh_energy_le_annuli (M N K : ℝ) (hM : 0<M)
 end
 
 section
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
-open FiniteSieveRestriction
+open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum FiniteSieveRestriction
 
 def liftingDivisibleColumns (N : ℝ) : Finset (idealRange N) :=
   Finset.univ.filter (fun J => liftingPrime∣J.val)
@@ -232,14 +178,18 @@ def liftingFreeCoefficient (N : ℝ) (a : idealRange N → ℂ) : idealRange N �
 def liftingDividedCoefficient (N : ℝ) (a : idealRange N → ℂ) : idealRange N → ℂ :=
   extendByZero Finset.univ (liftingQuotientColumn N) (fun J : liftingDivisibleColumns N => a J.val)
 
-theorem liftingFreeCoefficient_coprime (N : ℝ) (a : idealRange N → ℂ)
+section
+variable (N : ℝ) (a : idealRange N → ℂ)
+include N a
+
+theorem liftingFreeCoefficient_coprime
     (J : idealRange N) (hJ : liftingFreeCoefficient N a J≠0) : IsCoprime liftingPrime J.val := by
   apply ideals_coprime_of_relprime
   apply liftingPrime_prime.irreducible.isRelPrime_iff_not_dvd.mpr
   intro hd
   exact hJ (by simp only [liftingFreeCoefficient,hd,ite_true])
 
-theorem liftingDividedCoefficient_coprime (N : ℝ) (a : idealRange N → ℂ)
+theorem liftingDividedCoefficient_coprime
     (J : idealRange N) (hJ : liftingDividedCoefficient N a J≠0) : IsCoprime liftingPrime J.val := by
   classical
   have hmem : J∈(Finset.univ : Finset (liftingDivisibleColumns N)).image (liftingQuotientColumn N) := by
@@ -252,14 +202,14 @@ theorem liftingDividedCoefficient_coprime (N : ℝ) (a : idealRange N → ℂ)
     exact (mem_idealRange.mp I.val.property).1.2.1
   exact ideals_coprime_of_relprime _ _ (squarefree_mul_iff.mp hsf).1
 
-theorem liftingDividedCoefficient_row_sum (N : ℝ) (a : idealRange N → ℂ) (z : O) :
+theorem liftingDividedCoefficient_row_sum (z : O) :
     (∑J : idealRange N, quadraticRow J.val z*liftingDividedCoefficient N a J) =
       ∑J : liftingDivisibleColumns N, quadraticRow (idealQuotient liftingPrime J.val.val) z*a J.val := by
   simpa only [liftingDividedCoefficient,liftingQuotientColumn] using
     extendByZero_matrix Finset.univ (liftingQuotientColumn N)
       (fun J : liftingDivisibleColumns N => a J.val) (fun (_ : Unit) J => quadraticRow J.val z) ()
 
-theorem liftingCoefficient_row_split (N : ℝ) (a : idealRange N → ℂ) (z : O) :
+theorem liftingCoefficient_row_split (z : O) :
     (∑J : idealRange N, quadraticRow J.val z*a J) =
       (∑J : idealRange N, quadraticRow J.val z*liftingFreeCoefficient N a J) +
       quadraticRow liftingPrime z*(∑J : idealRange N, quadraticRow J.val z*liftingDividedCoefficient N a J) := by
@@ -275,7 +225,7 @@ theorem liftingCoefficient_row_split (N : ℝ) (a : idealRange N → ℂ) (z : O
     ring
   · simp only [hd,ite_false,liftingFreeCoefficient,add_zero]
 
-theorem liftingCoefficient_energy (N : ℝ) (a : idealRange N → ℂ) :
+theorem liftingCoefficient_energy :
     (∑J : idealRange N, ‖liftingFreeCoefficient N a J‖^2) +
       (∑J : idealRange N, ‖liftingDividedCoefficient N a J‖^2) = ∑J, ‖a J‖^2 := by
   have he := extendByZero_energy Finset.univ (liftingQuotientColumn N)
@@ -289,7 +239,7 @@ theorem liftingCoefficient_energy (N : ℝ) (a : idealRange N → ℂ) :
   by_cases hd : liftingPrime∣J.val <;>
     simp only [liftingFreeCoefficient,hd,ite_true,ite_false,norm_zero,zero_pow (by decide : 2≠0),zero_add,add_zero]
 
-theorem liftingCoefficient_row_energy (N : ℝ) (a : idealRange N → ℂ) (z : O) :
+theorem liftingCoefficient_row_energy (z : O) :
     ‖∑J : idealRange N, quadraticRow J.val z*a J‖^2 ≤
       2*(‖∑J : idealRange N, quadraticRow J.val z*liftingFreeCoefficient N a J‖^2 +
         ‖∑J : idealRange N, quadraticRow J.val z*liftingDividedCoefficient N a J‖^2) := by
@@ -304,6 +254,8 @@ theorem liftingCoefficient_row_energy (N : ℝ) (a : idealRange N → ℂ) (z : 
     linarith [norm_add_le u (quadraticRow liftingPrime z*v)]
   have hs := pow_le_pow_left₀ (norm_nonneg _) hn 2
   nlinarith [sq_nonneg (‖u‖-‖v‖)]
+
+end
 
 theorem liftingFreeCoefficient_shell (N X : ℝ) (a : idealRange N → ℂ)
     (ha : CoefficientOnShell N X a) : CoefficientOnShell N X (liftingFreeCoefficient N a) := by
@@ -450,8 +402,7 @@ end
 section
 
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss
-open IdealCoprimeSieveOperator DivisorBlockCauchy
+open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss IdealCoprimeSieveOperator DivisorBlockCauchy
 
 theorem gcdPool_admissible {n : Type*} [Fintype n] (cols : n → Ideal O)
     (hcols : ∀j, Admissible (cols j)) (D : Ideal O) (hD : D∈gcdPool cols) : Admissible D := by

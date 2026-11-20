@@ -60,9 +60,12 @@ theorem fourier_logCutoff (w : ℝ → ℂ)
   push_cast
   ring
 
+section
+variable {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w) (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
+include w hw hws
+
 /-- Scaled Poisson specialized to the manuscript's logarithmic phase. -/
-theorem scaled_log_poisson {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) {L : ℝ} (hL : 0 < L) (v : ℝ) :
+theorem scaled_log_poisson {L : ℝ} (hL : 0 < L) (v : ℝ) :
     (∑' n : ℤ, w ((n : ℝ) / L) * dirichletPhase ((n : ℝ) / L) v) =
       (L : ℂ) * ∑' m : ℤ, modeIntegral w v ((m : ℝ) * L) := by
   have hh := Transforms.scaled_modulated_poisson (logCutoff w v)
@@ -72,8 +75,7 @@ theorem scaled_log_poisson {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     logCutoff, div_eq_mul_inv, mul_comm (L⁻¹), fourier_logCutoff w hws] using hh
 
 /-- Absolute integrability of the full Mellin line, without a Mellin-frequency cutoff. -/
-theorem integrable_mellin_line_one {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) :
+theorem integrable_mellin_line_one :
     Integrable (fun r : ℝ => mellin w ((1 : ℂ) + r * Complex.I)) := by
   have hs : ∀ x, x ∉ Icc (1 / 2 : ℝ) 5 → w x = 0 :=
     fun x hx => image_eq_zero_of_notMem_tsupport (fun hh => hx (hws hh))
@@ -86,8 +88,7 @@ theorem integrable_mellin_line_one {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   exact Transforms.mellin_line_one_eq_fourier_logLift w r
 
 /-- Mellin inversion with convergence and vertical integrability discharged. -/
-theorem cutoff_mellin_inversion {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) {x : ℝ} (hx : 0 < x) :
+theorem cutoff_mellin_inversion {x : ℝ} (hx : 0 < x) :
     w x = ((1 / (2 * Real.pi) : ℝ) : ℂ) * ∫ r : ℝ,
       (x : ℂ) ^ (-((1 : ℂ) + r * Complex.I)) * mellin w ((1 : ℂ) + r * Complex.I) := by
   apply Transforms.mellin_inversion_line_one w hx
@@ -96,8 +97,7 @@ theorem cutoff_mellin_inversion {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   · exact integrable_mellin_line_one hw hws
   · exact hw.continuous.continuousAt
 
-theorem summable_modeIntegral {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) {L : ℝ} (hL : 0 < L) (v : ℝ) :
+theorem summable_modeIntegral {L : ℝ} (hL : 0 < L) (v : ℝ) :
     Summable (fun m : ℤ => modeIntegral w v ((m : ℝ) * L)) := by
   let psi : 𝓢(ℝ, ℂ) := (logCutoff_hasCompactSupport hws v).toSchwartzMap
     (logCutoff_contDiff hw hws v)
@@ -109,6 +109,8 @@ theorem summable_modeIntegral {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   convert hh using 1
   funext m
   exact (fourier_logCutoff w hws v ((m : ℝ) * L)).symm
+
+end
 
 theorem summable_nat_logCutoff {w : ℝ → ℂ}
     (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) {L : ℝ} (hL : 0 < L) (v : ℝ) :
@@ -152,7 +154,7 @@ theorem poisson_nonzero_modes {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   change (∑' n : ℤ, w ((n : ℝ) / L) * dirichletPhase ((n : ℝ) / L) v) = _ at hn
   rw [← hn, hp]
   have hh := (summable_modeIntegral hw hws hL v).tsum_eq_add_tsum_ite 0
-  simp only [Int.cast_zero, zero_mul] at hh
+  simp at hh
   rw [hh]
   simp only [nonzeroMode, mul_add, add_sub_cancel_left]
 

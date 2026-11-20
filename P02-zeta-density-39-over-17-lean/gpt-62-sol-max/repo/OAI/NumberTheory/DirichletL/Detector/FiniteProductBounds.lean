@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory
 namespace SevenEighths.ProbeFiniteProductBounds
-open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal
-open HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
+open ActualEisensteinCubic CompletedGauss ProbePhysical ProbeEuler ProbeLocal HeckeFamily PrincipalMellinResidues ProbeMellinBoundary
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 def localMultiplier (η : Character) (P : PrimeIdeal) (x w z : ℂ) : ℂ :=
@@ -27,9 +26,11 @@ def slotMultiplier {ι : Type*} (η : Character) (J : Finset ι)
     (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ) (x w z : ℂ) : ℂ :=
   ∏ j ∈ J, ∑ P ∈ T j, b j P * localMultiplier η P x w z
 
-theorem correction_lower_bound (η : Character) (S : Finset Id) (hS : CorrectionTail S)
-    (P : PrimeIdeal) (hP : P.val ∉ S) (x w z : ℂ)
-    (hx : 7/8 ≤ x.re) (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
+section
+variable (η : Character) (S : Finset Id) (hS : CorrectionTail S) (P : PrimeIdeal) (hP : P.val ∉ S) (x w z : ℂ) (hx : 7/8 ≤ x.re) (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re)
+include η S hS P hP x w z hx hw hz
+
+theorem correction_lower_bound :
     1/2 ≤ ‖idealClosedCorrection η P x w z‖ := by
   have hb := (idealClosedCorrection_bound η P (hS.norm_four P hP) x w z hx hw hz).trans
     (hS.half ⟨P,hP⟩)
@@ -37,23 +38,24 @@ theorem correction_lower_bound (η : Character) (S : Finset Id) (hS : Correction
   rw [norm_one, norm_sub_rev] at hn
   linarith
 
-theorem correction_ne_zero (η : Character) (S : Finset Id) (hS : CorrectionTail S)
-    (P : PrimeIdeal) (hP : P.val ∉ S) (x w z : ℂ)
-    (hx : 7/8 ≤ x.re) (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
+theorem correction_ne_zero :
     idealClosedCorrection η P x w z ≠ 0 :=
   norm_pos_iff.mp ((by norm_num : (0 : ℝ)<1/2).trans_le
     (correction_lower_bound η S hS P hP x w z hx hw hz))
 
-theorem correction_inverse_bound (η : Character) (S : Finset Id) (hS : CorrectionTail S)
-    (P : PrimeIdeal) (hP : P.val ∉ S) (x w z : ℂ)
-    (hx : 7/8 ≤ x.re) (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
+theorem correction_inverse_bound :
     ‖(idealClosedCorrection η P x w z)⁻¹‖ ≤ 2 := by
   have hh := correction_lower_bound η S hS P hP x w z hx hw hz
   rw [norm_inv, inv_eq_one_div]
   exact (div_le_iff₀ (by linarith : 0 < ‖idealClosedCorrection η P x w z‖)).mpr (by linarith)
 
-lemma marked_differentiableAt_w (η : Character) (P : PrimeIdeal) (x w z : ℂ)
-    (hQ : 4 ≤ (Ideal.absNorm P.val : ℝ)) (hx : 7/8 ≤ x.re) (hz : 4/25 ≤ z.re) :
+end
+
+section
+variable (η : Character) (P : PrimeIdeal) (x w z : ℂ) (hQ : 4 ≤ (Ideal.absNorm P.val : ℝ)) (hx : 7/8 ≤ x.re) (hz : 4/25 ≤ z.re)
+include η P x w z hQ hx hz
+
+lemma marked_differentiableAt_w :
     DifferentiableAt ℂ (fun w => idealMarkedClosed η P x w z) w := by
   have hQ0 : 0 < (Ideal.absNorm P.val : ℝ) := by linarith
   have hd := open_region_denominators (Ideal.absNorm P.val)
@@ -65,8 +67,7 @@ lemma marked_differentiableAt_w (η : Character) (P : PrimeIdeal) (x w z : ℂ)
   dsimp only
   fun_prop (disch := aesop)
 
-lemma marked_differentiableAt_z (η : Character) (P : PrimeIdeal) (x w z : ℂ)
-    (hQ : 4 ≤ (Ideal.absNorm P.val : ℝ)) (hx : 7/8 ≤ x.re) (hz : 4/25 ≤ z.re) :
+lemma marked_differentiableAt_z :
     DifferentiableAt ℂ (fun z => idealMarkedClosed η P x w z) z := by
   have hQ0 : 0 < (Ideal.absNorm P.val : ℝ) := by linarith
   have hd := open_region_denominators (Ideal.absNorm P.val)
@@ -78,6 +79,8 @@ lemma marked_differentiableAt_z (η : Character) (P : PrimeIdeal) (x w z : ℂ)
   unfold idealMarkedClosed markedFactor
   dsimp only
   fun_prop (disch := aesop)
+
+end
 
 theorem local_analytic_w (η : Character) (S : Finset Id) (hS : CorrectionTail S)
     (P : PrimeIdeal) (hP : P.val ∉ S) (x z : ℂ)
@@ -253,9 +256,11 @@ lemma slotBound_nonneg {ι : Type*} (J : Finset ι) (T : ι → Finset PrimeIdea
   intro j hj
   exact Finset.sum_nonneg (fun P _ => mul_nonneg (norm_nonneg _) (localBound_nonneg Bx Bz P))
 
-theorem slot_analytic_w {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
-    (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
-    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S) (x z : ℂ)
+section
+variable {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ) (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
+include ι η S hS J T b hT
+
+theorem slot_analytic_w (x z : ℂ)
     (hx : 7/8 ≤ x.re) (hz : 4/25 ≤ z.re) :
     AnalyticOnNhd ℂ (fun w => slotMultiplier η J T b x w z) {w : ℂ | 9/10 < w.re} := by
   apply J.analyticOnNhd_fun_prod
@@ -264,9 +269,7 @@ theorem slot_analytic_w {ι : Type*} (η : Character) (S : Finset Id) (hS : Corr
   intro P hp
   exact analyticOnNhd_const.mul (local_analytic_w η S hS P (hT j hj P hp) x z hx hz)
 
-theorem slot_analytic_z {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
-    (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
-    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S) (x w : ℂ)
+theorem slot_analytic_z (x w : ℂ)
     (hx : 7/8 ≤ x.re) (hw : 9/10 ≤ w.re) :
     AnalyticOnNhd ℂ (fun z => slotMultiplier η J T b x w z) {z : ℂ | 4/25 < z.re} := by
   apply J.analyticOnNhd_fun_prod
@@ -275,9 +278,7 @@ theorem slot_analytic_z {ι : Type*} (η : Character) (S : Finset Id) (hS : Corr
   intro P hp
   exact analyticOnNhd_const.mul (local_analytic_z η S hS P (hT j hj P hp) x w hx hw)
 
-theorem slot_norm_bound {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
-    (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
-    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S) (x w z : ℂ) (Bx Bz : ℝ)
+theorem slot_norm_bound (x w z : ℂ) (Bx Bz : ℝ)
     (hx : x.re ∈ Icc (7/8) Bx) (hw : 19/20 ≤ w.re) (hz : z.re ∈ Icc (33/200) Bz) :
     ‖slotMultiplier η J T b x w z‖ ≤ slotBound J T b Bx Bz := by
   simp only [slotMultiplier,slotBound,norm_prod]
@@ -290,6 +291,8 @@ theorem slot_norm_bound {ι : Type*} (η : Character) (S : Finset Id) (hS : Corr
   exact mul_le_mul_of_nonneg_left
     (local_norm_bound η S hS P (hT j hj P hp) x w z Bx Bz hx hw hz) (norm_nonneg _)
 
+end
+
 lemma global_norm_bound (η : Character) (S : Finset Id) (hS : CorrectionTail S)
     (x w z : ℂ) (hx : 7/8 ≤ x.re) (hw : 9/10 ≤ w.re) (hz : 4/25 ≤ z.re) :
     ‖globalClosedCorrection η S x w z‖ ≤ 3/2 := by
@@ -298,25 +301,23 @@ lemma global_norm_bound (η : Character) (S : Finset Id) (hS : CorrectionTail S)
   rw [sub_add_cancel,norm_one] at hn
   linarith
 
-theorem combined_slot_analytic_w {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
-    (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
-    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S) (x z : ℂ)
+section
+variable {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ) (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
+include ι η S hS J T b hT
+
+theorem combined_slot_analytic_w (x z : ℂ)
     (hx : 7/8 ≤ x.re) (hz : 4/25 ≤ z.re) :
     AnalyticOnNhd ℂ (fun w => globalClosedCorrection η S x w z * slotMultiplier η J T b x w z)
       {w : ℂ | 9/10 < w.re} :=
   (globalClosedCorrection_analytic_w η S hS x z hx hz).mul (slot_analytic_w η S hS J T b hT x z hx hz)
 
-theorem combined_slot_analytic_z {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
-    (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
-    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S) (x w : ℂ)
+theorem combined_slot_analytic_z (x w : ℂ)
     (hx : 7/8 ≤ x.re) (hw : 9/10 ≤ w.re) :
     AnalyticOnNhd ℂ (fun z => globalClosedCorrection η S x w z * slotMultiplier η J T b x w z)
       {z : ℂ | 4/25 < z.re} :=
   (globalClosedCorrection_analytic_z η S hS x w hx hw).mul (slot_analytic_z η S hS J T b hT x w hx hw)
 
-theorem combined_slot_bound {ι : Type*} (η : Character) (S : Finset Id) (hS : CorrectionTail S)
-    (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
-    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S) (x w z : ℂ) (Bx Bz : ℝ)
+theorem combined_slot_bound (x w z : ℂ) (Bx Bz : ℝ)
     (hx : x.re ∈ Icc (7/8) Bx) (hw : 19/20 ≤ w.re) (hz : z.re ∈ Icc (33/200) Bz) :
     ‖globalClosedCorrection η S x w z * slotMultiplier η J T b x w z‖ ≤
       (3/2)*slotBound J T b Bx Bz := by
@@ -324,10 +325,13 @@ theorem combined_slot_bound {ι : Type*} (η : Character) (S : Finset Id) (hS : 
   exact mul_le_mul (global_norm_bound η S hS x w z hx.1 (by linarith) (by linarith [hz.1]))
     (slot_norm_bound η S hS J T b hT x w z Bx Bz hx hw hz) (norm_nonneg _) (by norm_num)
 
-theorem source_w_boundary {ι : Type*} (η : Character) (S : Finset Id) (hS : SourceExclusions S)
-    (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
-    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ) (ha1 : 0<a1)
+end
+
+section
+variable {ι : Type*} (η : Character) (S : Finset Id) (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ) (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S) (W0 W1 : SchwartzMap ℝ ℂ)
+include ι η S hS J T b hT W0 W1
+
+theorem source_w_boundary (a1 b1 : ℝ) (ha1 : 0<a1)
     (hW1 : Function.support W1 ⊆ Icc a1 b1)
     (M : Ideal HeckeFamily.O) [NeZero M] (X Y Z : ℝ) (hY : 0<Y)
     (s z : ℂ) (hs : 7/8 ≤ s.re) (hz : 33/200 ≤ z.re)
@@ -346,10 +350,7 @@ theorem source_w_boundary {ι : Type*} (η : Character) (S : Finset Id) (hS : So
     simpa only [pow_zero,mul_one] using combined_slot_bound η S hS.tail J T b hT s
       ((x : ℂ)+t*I) z s.re z.re ⟨hs,le_rfl⟩ (by simpa using hx.1) ⟨hz,le_rfl⟩
 
-theorem source_multiplier_differentiable_w {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
-    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (a1 b1 : ℝ) (ha1 : 0<a1)
+theorem source_multiplier_differentiable_w (a1 b1 : ℝ) (ha1 : 0<a1)
     (hW1 : Function.support W1 ⊆ Icc a1 b1) (X Y Z : ℝ) (hY : 0<Y)
     (s z : ℂ) (hs : 7/8 ≤ s.re) (hz : 4/25 ≤ z.re) :
     DifferentiableOn ℂ (fun w => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
@@ -367,10 +368,7 @@ theorem source_multiplier_differentiable_w {ι : Type*} (η : Character) (S : Fi
   rw [he]
   fun_prop (disch := first | assumption | exact Or.inl hYn)
 
-theorem source_multiplier_differentiable_z {ι : Type*} (η : Character) (S : Finset Id)
-    (hS : SourceExclusions S) (J : Finset ι) (T : ι → Finset PrimeIdeal) (b : ι → PrimeIdeal → ℂ)
-    (hT : ∀ j ∈ J, ∀ P ∈ T j, P.val ∉ S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z)
+theorem source_multiplier_differentiable_z (X Y Z : ℝ) (hX : 0<X) (hZ : 0<Z)
     (s w : ℂ) (hs : 7/8 ≤ s.re) (hw : 9/10 ≤ w.re) :
     DifferentiableOn ℂ (fun z => sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) s
       (globalClosedCorrection η S s) (slotMultiplier η J T b s) w z) {z : ℂ | 4/25 < z.re} := by
@@ -389,6 +387,8 @@ theorem source_multiplier_differentiable_z {ι : Type*} (η : Character) (S : Fi
     funext z; unfold sourceMultiplier; ring
   rw [he]
   fun_prop (disch := first | assumption | exact Or.inl hXn | exact Or.inl hZn)
+
+end
 
 theorem local_eq_regionSlot (η : Character) (P : PrimeIdeal) (s w z : ℂ) :
     localMultiplier η P s w z = (Ideal.absNorm P.val : ℂ)^(z-1) *
@@ -452,9 +452,6 @@ theorem combined_slot_bound_sharp {ι : Type*} (η : Character) (S : Finset Id) 
   exact mul_le_mul (global_norm_bound η S hS s w z hs (by linarith) (by linarith))
     (slot_norm_bound_sharp η J T b Pmin hPmin hb hQ hη s w z hs hw hz) (norm_nonneg _) (by norm_num)
 
-@[simp] theorem slotMultiplier_empty {ι : Type*} (η : Character) (T : ι → Finset PrimeIdeal)
-    (b : ι → PrimeIdeal → ℂ) (s w z : ℂ) : slotMultiplier η ∅ T b s w z = 1 := by
-  simp [slotMultiplier]
 
 lemma boundary_mul_const (F : ℂ → ℂ) (a b : ℝ) (h : BoundaryControl F a b) (c : ℂ) :
     BoundaryControl (fun z => F z*c) a b := by

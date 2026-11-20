@@ -81,10 +81,6 @@ theorem primitiveOnIdeals_iff_no_descent (χ : MulChar R ℂ) :
   push Not
   rfl
 
-theorem FactorsThroughIdeal.mono {χ : MulChar R ℂ} {I J : Ideal R}
-    (h : FactorsThroughIdeal χ I) (hJI : J ≤ I) : FactorsThroughIdeal χ J := by
-  rw [factorsThroughIdeal_iff] at h ⊢
-  exact fun u hu => h u (hJI hu)
 
 omit [Finite R] in
 

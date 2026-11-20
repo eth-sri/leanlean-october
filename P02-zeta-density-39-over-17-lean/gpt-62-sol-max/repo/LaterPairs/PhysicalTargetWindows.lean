@@ -1,5 +1,5 @@
 module
-public import LaterPairs.PhysicalDetectorParameters
+public import RetunedDetectorParameters
 
 @[expose] public section
 set_option autoImplicit false

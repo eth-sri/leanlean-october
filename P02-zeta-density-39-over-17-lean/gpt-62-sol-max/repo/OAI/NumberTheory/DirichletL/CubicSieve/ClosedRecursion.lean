@@ -9,92 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace SecondPassArithmetic
-
-section
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-open JointLogSeparation (frequencyTwist)
-
-end
-
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-
-open ActualEisensteinCubic FirstPassCubeLabels
-open ConcreteTraceCRT (eisEmbedding)
-open JointLogSeparation (frequencyTwist)
-
-end SecondPassArithmetic
+open scoped ContDiff
+open Set
 
 open scoped BigOperators Classical
 namespace CompletedGauss
@@ -188,9 +113,11 @@ lemma compact_estimate_prod_antilipschitz (T : E→L[ℂ]F) (K : E→L[ℂ]G) (A
   apply (sq_le_sq₀ (norm_nonneg _) (mul_nonneg (Real.sqrt_nonneg _) (norm_nonneg _))).mp
   simpa only [mul_pow,Real.sq_sqrt hR] using hh
 
-lemma finiteDimensional_ker_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ]G)
-    (hK : IsCompactOperator K) (A B : ℝ)
-    (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) :
+section
+variable (T : E→L[ℂ]F) (K : E→L[ℂ]G) (hK : IsCompactOperator K) (A B : ℝ) (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2)
+include T K hK A B hest
+
+lemma finiteDimensional_ker_of_compact_estimate :
     FiniteDimensional ℂ T.ker := by
   let : CompleteSpace T.ker := T.isClosed_ker.completeSpace_coe
   have hc : IsCompactOperator (K.comp T.ker.subtypeL) := hK.comp_clm T.ker.subtypeL
@@ -207,9 +134,7 @@ lemma finiteDimensional_ker_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ
     simpa only [mul_pow,Real.sq_sqrt (le_max_right B 0)] using hh'
   exact FiniteDimensional.of_isCompactOperator_id hid
 
-lemma antilipschitz_of_injective_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ]G)
-    (hK : IsCompactOperator K) (A B : ℝ)
-    (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) (hT : Function.Injective T) :
+lemma antilipschitz_of_injective_compact_estimate (hT : Function.Injective T) :
     ∃D : NNReal,AntilipschitzWith D T := by
   by_contra hanti
   have hex (ε : ℝ) (hε : 0<ε) : ∃u : E,‖u‖=1 ∧ ‖T u‖<ε := by
@@ -225,7 +150,7 @@ lemma antilipschitz_of_injective_compact_estimate (T : E→L[ℂ]F) (K : E→L[�
     squeeze_zero_norm (fun n => (huT n).le) heps
   obtain ⟨S,hS,hsub⟩ := hK.image_closedBall_subset_compact 1
   obtain ⟨k,hk,seq,hseq,hklim⟩ := hS.tendsto_subseq
-    (fun n => hsub ⟨u n,by simp only [Metric.mem_closedBall,dist_zero_right,hunorm,le_refl],rfl⟩)
+    (fun n => hsub ⟨u n,by simp [hunorm, le_refl],rfl⟩)
   let P := T.prod K
   obtain ⟨D,hD⟩ := compact_estimate_prod_antilipschitz T K A B hest
   have hlim : Tendsto (fun n => P (u (seq n))) atTop (𝓝 (0,k)) :=
@@ -246,6 +171,8 @@ lemma antilipschitz_of_injective_compact_estimate (T : E→L[ℂ]F) (K : E→L[�
   have hnorm : ‖v‖=1 := tendsto_nhds_unique hvlim.norm (by simpa only [hunorm] using tendsto_const_nhds)
   rw [hvzero,norm_zero] at hnorm
   norm_num at hnorm
+
+end
 
 end CubicEisenstein
 

@@ -43,17 +43,19 @@ theorem upperModeEndpoint_eq (f p h : ℝ → ℝ) (x : ℝ) (M n : ℕ) :
   simp only [div_eq_mul_inv, mul_inv_rev, inv_neg]
   ring_nf
 
+section
+variable (f p h : ℝ → ℝ) {x : ℝ} {M : ℕ} (hp : 0 < p x) (hM : p x < (M : ℝ) + 1)
+include f p h x M hp hM
+
 /-- Absolute convergence of the actual upper-frequency endpoint series. -/
-theorem summable_upperModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} {M : ℕ}
-    (hp : 0 < p x) (hM : p x < (M : ℝ) + 1) :
+theorem summable_upperModeEndpoint :
     Summable (upperModeEndpoint f p h x M) := by
   change Summable (fun n => upperModeEndpoint f p h x M n)
   simp_rw [upperModeEndpoint_eq]
   exact (summable_negative_tail_shift hp hM x).mul_left _
 
 /-- The upper endpoint series is exactly the existing negative-shift oscillatory tail. -/
-theorem tsum_upperModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} {M : ℕ}
-    (hp : 0 < p x) (hM : p x < (M : ℝ) + 1) :
+theorem tsum_upperModeEndpoint :
     (∑' n : ℕ, upperModeEndpoint f p h x M n) =
       (-((h x : ℂ) * exp (2 * (Real.pi : ℂ) * I * (f x : ℂ)) / (4 * (Real.pi : ℂ) ^ 2 * I))) *
         negativeTail M x (p x) := by
@@ -65,8 +67,7 @@ theorem tsum_upperModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} {M : ℕ}
   simp [Complex.real_smul, div_eq_mul_inv, mul_comm]
 
 /-- Norm of the exact upper endpoint series preserves oscillatory cancellation. -/
-theorem norm_tsum_upperModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} {M : ℕ}
-    (hp : 0 < p x) (hM : p x < (M : ℝ) + 1) :
+theorem norm_tsum_upperModeEndpoint :
     ‖∑' n : ℕ, upperModeEndpoint f p h x M n‖ =
       |h x| / (4 * Real.pi ^ 2) * ‖negativeTail M x (p x)‖ := by
   rw [tsum_upperModeEndpoint f p h hp hM, norm_mul, norm_neg, norm_div, norm_mul]
@@ -76,18 +77,14 @@ theorem norm_tsum_upperModeEndpoint (f p h : ℝ → ℝ) {x : ℝ} {M : ℕ}
   rw [he]
   simp [Real.norm_eq_abs]
 
+end
+
+section
+variable {a b : ℝ} (hab : a < b) {f p p' h h' : ℝ → ℝ} (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u) (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u) (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u) (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b)) (hhpc : ContinuousOn h' (Set.Icc a b)) (hpa : AntitoneOn p (Set.Icc a b)) (hha : AntitoneOn (fun u => |h u|) (Set.Icc a b)) (hhpa : AntitoneOn (fun u => |h' u|) (Set.Icc a b)) (hppa : AntitoneOn (fun u => |p' u|) (Set.Icc a b))
+include a b hab f p p' h h' hf hp hh hpc hppc hhpc hpa hha hhpa hppa
+
 /-- Each upper-frequency remainder has the exact square/cube bound after Fourier normalization. -/
-theorem upperModeTerm_remainder_bound {a b : ℝ} (hab : a < b)
-    {f p p' h h' : ℝ → ℝ}
-    (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
-    (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
-    (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u)
-    (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b))
-    (hhpc : ContinuousOn h' (Set.Icc a b))
-    (hpa : AntitoneOn p (Set.Icc a b))
-    (hha : AntitoneOn (fun u => |h u|) (Set.Icc a b))
-    (hhpa : AntitoneOn (fun u => |h' u|) (Set.Icc a b))
-    (hppa : AntitoneOn (fun u => |p' u|) (Set.Icc a b))
+theorem upperModeTerm_remainder_bound
     {M : ℕ} (hM : p a < (M : ℝ) + 1) (n : ℕ) :
     ‖upperModeTerm f h a b M n - (upperModeEndpoint f p h b M n - upperModeEndpoint f p h a M n)‖ ≤
       (|h' a| / (4 * Real.pi ^ 3)) * (1 / (((n : ℝ) + M + 1) * ((n : ℝ) + M + 1 - p a) ^ 2)) +
@@ -118,17 +115,7 @@ theorem upperModeTerm_remainder_bound {a b : ℝ} (hab : a < b)
   ring
 
 /-- The complete upper-frequency integral series converges and satisfies the actual negative-tail bound. -/
-theorem upperModeTail_bound {a b : ℝ} (hab : a < b)
-    {f p p' h h' : ℝ → ℝ}
-    (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
-    (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
-    (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u)
-    (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b))
-    (hhpc : ContinuousOn h' (Set.Icc a b))
-    (hpa : AntitoneOn p (Set.Icc a b))
-    (hha : AntitoneOn (fun u => |h u|) (Set.Icc a b))
-    (hhpa : AntitoneOn (fun u => |h' u|) (Set.Icc a b))
-    (hppa : AntitoneOn (fun u => |p' u|) (Set.Icc a b))
+theorem upperModeTail_bound
     (hpos : ∀ u ∈ Set.Icc a b, 0 < p u) {M : ℕ} (hM : p a < (M : ℝ) + 1) :
     Summable (upperModeTerm f h a b M) ∧
     ‖∑' n : ℕ, upperModeTerm f h a b M n‖ ≤
@@ -173,17 +160,7 @@ theorem upperModeTail_bound {a b : ℝ} (hab : a < b)
     linarith
 
 /-- The complete source square/cube coefficients bound the upper-frequency integral series. -/
-theorem upperModeTail_source_bound {a b : ℝ} (hab : a < b)
-    {f p p' h h' : ℝ → ℝ}
-    (hf : ∀ u ∈ Set.Icc a b, HasDerivAt f (p u) u)
-    (hp : ∀ u ∈ Set.Icc a b, HasDerivAt p (p' u) u)
-    (hh : ∀ u ∈ Set.Icc a b, HasDerivAt h (h' u) u)
-    (hpc : ContinuousOn p (Set.Icc a b)) (hppc : ContinuousOn p' (Set.Icc a b))
-    (hhpc : ContinuousOn h' (Set.Icc a b))
-    (hpa : AntitoneOn p (Set.Icc a b))
-    (hha : AntitoneOn (fun u => |h u|) (Set.Icc a b))
-    (hhpa : AntitoneOn (fun u => |h' u|) (Set.Icc a b))
-    (hppa : AntitoneOn (fun u => |p' u|) (Set.Icc a b))
+theorem upperModeTail_source_bound
     (hpos : ∀ u ∈ Set.Icc a b, 0 < p u) {M : ℕ} (hM : p a < (M : ℝ) + 1) :
     let δ : ℝ := (M : ℝ) + 1 - p a
     ‖∑' n : ℕ, upperModeTerm f h a b M n‖ ≤
@@ -203,5 +180,7 @@ theorem upperModeTail_source_bound {a b : ℝ} (hab : a < b)
   exact add_le_add
     (add_le_add (le_refl _) (mul_le_mul_of_nonneg_left (harmonic_tail_square_bound ha hM) (by positivity)))
     (mul_le_mul_of_nonneg_left (harmonic_tail_cube_bound ha hM) (by positivity))
+
+end
 
 end DhimanKadiriQuesadaHerrera2026

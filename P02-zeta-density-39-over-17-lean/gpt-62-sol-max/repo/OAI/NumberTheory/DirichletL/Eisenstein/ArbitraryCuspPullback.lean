@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open scoped BigOperators Classical MatrixGroups Matrix
@@ -452,8 +396,11 @@ def arbitraryCuspHeightFamily (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a)
     (kernelLocalCorrectedSeed (arbitraryCuspQuotientCompact M a b)
       (arbitraryCuspQuotientCompact_isCompact M a b ha) 2 3 (by norm_num) (by norm_num) s)
 
-lemma arbitraryCuspHeightFamily_analyticAt (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a)
-    (ρ : BoundedContinuousFunction ℝ ℂ) (freq s : ℂ) (hs : s.re≠1) (hi : s.im≠0) :
+section
+variable (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a) (ρ : BoundedContinuousFunction ℝ ℂ)
+include M a b ha ρ
+
+lemma arbitraryCuspHeightFamily_analyticAt (freq s : ℂ) (hs : s.re≠1) (hi : s.im≠0) :
     AnalyticAt ℂ (arbitraryCuspHeightFamily M a b ha ρ freq) s :=
   (ContinuousLinearMap.analyticAt (𝕜:=ℂ) (E:=KernelQuotientL2) (F:=ℂ)
     (arbitraryCuspHeightFourier M a b ha ρ freq) _).comp_of_eq
@@ -461,8 +408,7 @@ lemma arbitraryCuspHeightFamily_analyticAt (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a
         (arbitraryCuspQuotientCompact_isCompact M a b ha)
         2 3 (by norm_num) (by norm_num) s hs hi) rfl
 
-lemma arbitraryCuspHeightFamily_residue_limit (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a)
-    (ρ : BoundedContinuousFunction ℝ ℂ) (freq : ℂ) :
+lemma arbitraryCuspHeightFamily_residue_limit (freq : ℂ) :
     Tendsto (fun s : ℂ => (s-4/3)*arbitraryCuspHeightFamily M a b ha ρ freq s)
       (𝓝[≠] (4/3:ℂ)) (𝓝 (arbitraryCuspHeightFourier M a b ha ρ freq cubicEisensteinResidue)) := by
   have hh := (arbitraryCuspHeightFourier M a b ha ρ freq).continuous.continuousAt.tendsto.comp
@@ -470,8 +416,7 @@ lemma arbitraryCuspHeightFamily_residue_limit (M : SL(2,ℂ)) (a b : ℝ) (ha : 
   simpa only [Function.comp_def,map_smul,smul_eq_mul,arbitraryCuspHeightFourier_restrict,
     arbitraryCuspHeightFamily] using hh
 
-lemma arbitraryCuspHeightFamily_initial (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a)
-    (ρ : BoundedContinuousFunction ℝ ℂ) (freq s : ℂ) (hs : 4<s.re) (hi : 0<s.im) :
+lemma arbitraryCuspHeightFamily_initial (freq s : ℂ) (hs : 4<s.re) (hi : 0<s.im) :
     arbitraryCuspHeightFamily M a b ha ρ freq s=
       ∫w in cuspPeriodStrip a b,hyperbolicEisenstein s (M • w)*
         arbitraryCuspWeightedPhase ρ freq w∂hyperbolicVolume := by
@@ -483,6 +428,8 @@ lemma arbitraryCuspHeightFamily_initial (M : SL(2,ℂ)) (a b : ℝ) (ha : 0<a)
   filter_upwards [he,ae_restrict_mem (cuspPeriodStrip_measurable a b)] with w hw hwm
   dsimp only [Function.comp_def] at hw
   rw [hw,Set.indicator_of_mem (arbitraryCusp_mem_compact M a b ha w hwm),kernelQuotientEisenstein_mk]
+
+end
 
 end
 
@@ -537,9 +484,11 @@ theorem kernelEisensteinResidueVector_pairing (a b : ℝ) (ha : 0<a) (hab : a<b)
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology InnerProductSpace
 
+section
+variable (S : Set KernelQuotient) (hS : IsCompact S) (a b c d : ℝ) (ha : 1<a) (hab : a<b) (hc : 1<c) (hcd : c<d)
+include S hS a b c d ha hab hc hcd
+
 lemma kernelLocalCorrectedSeed_initial_eq
-    (S : Set KernelQuotient) (hS : IsCompact S)
-    (a b c d : ℝ) (ha : 1<a) (hab : a<b) (hc : 1<c) (hcd : c<d)
     (s : ℂ) (hs : 4<s.re) (hi : 0<s.im) :
     kernelLocalCorrectedSeed S hS a b (by linarith) hab s=
       kernelLocalCorrectedSeed S hS c d (by linarith) hcd s := by
@@ -555,9 +504,7 @@ lemma kernelLocalCorrectedSeed_initial_eq
     ring
   · simp only [Set.indicator_of_notMem hq]
 
-lemma kernelLocalCorrectedSeed_cutoff_eq
-    (S : Set KernelQuotient) (hS : IsCompact S)
-    (a b c d : ℝ) (ha : 1<a) (hab : a<b) (hc : 1<c) (hcd : c<d) :
+lemma kernelLocalCorrectedSeed_cutoff_eq :
     ∀s∈cuspUpperParameterRegion,
       kernelLocalCorrectedSeed S hS a b (by linarith) hab s=
         kernelLocalCorrectedSeed S hS c d (by linarith) hcd s := by
@@ -581,9 +528,7 @@ lemma kernelLocalCorrectedSeed_cutoff_eq
   exact h1.eqOn_of_preconnected_of_eventuallyEq h2 cuspUpperParameterRegion_convex.isPreconnected
     (by norm_num [cuspUpperParameterRegion]) he
 
-lemma kernelEisensteinResidueVector_restrict_cutoff_eq
-    (S : Set KernelQuotient) (hS : IsCompact S)
-    (a b c d : ℝ) (ha : 1<a) (hab : a<b) (hc : 1<c) (hcd : c<d) :
+lemma kernelEisensteinResidueVector_restrict_cutoff_eq :
     kernelMassRestrictionCLM S hS.measurableSet
         (kernelEisensteinResidueVector a b (by linarith) hab)=
       kernelMassRestrictionCLM S hS.measurableSet
@@ -605,6 +550,8 @@ lemma kernelEisensteinResidueVector_restrict_cutoff_eq
     rw [kernelLocalCorrectedSeed_cutoff_eq S hS a b c d ha hab hc hcd _
       (by constructor <;> simp [] <;> linarith)]
   exact tendsto_nhds_unique h1 (h2.congr' he.symm)
+
+end
 
 lemma kernelL2_eq_of_compact_restrictions (F G : KernelQuotientL2)
     (h : ∀S : Set KernelQuotient, ∀hS : IsCompact S,

@@ -48,7 +48,7 @@ theorem fordTentFourierCoefficient_of_ne_zero
       (((Real.sin (Real.pi * (n : ℝ) * w)) ^ 2 /
         (Real.pi ^ 2 * w * (n : ℝ) ^ 2) : ℝ) : ℂ) := by
   have hnR : (n : ℝ) ≠ 0 := by exact_mod_cast hn
-  have harg : Real.pi * (n : ℝ) * w ≠ 0 :=
+  have harg :=
     mul_ne_zero (mul_ne_zero Real.pi_ne_zero hnR) hw
   simp only [fordTentFourierCoefficient, Real.sinc_of_ne_zero harg]
   norm_cast
@@ -264,7 +264,7 @@ private theorem support_fordTentCharacterIntegrand_subset
     apply htent
     exact max_eq_left hle
   have habsdiv : |x| / w < 1 := by linarith
-  have habs : |x| < w := (div_lt_one hw).mp habsdiv
+  have habs := (div_lt_one hw).mp habsdiv
   exact ⟨(abs_lt.mp habs).1, (abs_lt.mp habs).2.le⟩
 
 private theorem ford_fourier_coe_eq_character (n : ℤ) (x : ℝ) :

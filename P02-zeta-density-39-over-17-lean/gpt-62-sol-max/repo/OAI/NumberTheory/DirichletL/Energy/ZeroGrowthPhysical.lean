@@ -1,6 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthPhysicalReindex
-public import OAI.NumberTheory.DirichletL.Energy.CanonicalHighPhysical
+public import OAI.NumberTheory.DirichletL.Energy.CanonicalPhysical
 public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
 public import OAI.NumberTheory.DirichletL.Energy.ZeroGrowthSource
 
@@ -13,18 +13,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyZeroGrowthPhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentSecondHeightFamily
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentEnergyZeroGrowthPhysicalReindex CenteredMomentSourceInputReindex
-open CenteredMomentEnergyZeroBalancedAdmission CenteredMomentEnergyZeroBalancedDictionary
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyFirstSourceParameters CenteredMomentEnergyFirstLiveAdmission
-open CenteredMomentEnergyCanonicalHighPhysical CenteredMomentEnergyZeroGrowthSource
-open CenteredMomentEnergyStageMargins CenteredMomentNaturalFixedRaySource
-open CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients
-open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceReduction
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentSecondHeightFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentEnergyZeroGrowthPhysicalReindex CenteredMomentSourceInputReindex CenteredMomentEnergyZeroBalancedAdmission CenteredMomentEnergyZeroBalancedDictionary CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyFirstSourceParameters CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyCanonicalPhysical CenteredMomentEnergyZeroGrowthSource CenteredMomentEnergyStageMargins CenteredMomentNaturalFixedRaySource CenteredMomentEnergyFirstGaussianProfileWeights CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceReduction
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
@@ -62,12 +51,13 @@ theorem actual_growth_physical
     parameter_gates Mschedule A Bschedule κ ε hMschedule hA hBschedule hκ hε
   have hκsmall:(1/6:ℝ)≤κ:=by linarith
   have ha2:0<a^2:=sq_pos_of_pos ha
-  obtain ⟨U,J,hphysical⟩:=actual_high_physical (α:=α) M H hH
-    Wslot aslot bslot Mchild Lslot (r/4) lo hi κ a b 1
-    (maskEpsilon Mschedule Bschedule ε) (by norm_num) hem ha hb
-    Lchild hLchild degree S haslot hWs hW hMchild hLs hr hκsmall hbeta hκbeta
-    0 1 1 (a^2) (r/4) (by norm_num) (by norm_num) ha2 hr
-    (fun _=>1) (fun _=>1) (fun _=>by norm_num)
+  obtain ⟨U,J,hphysical⟩:=actual_physical (high:=true) (α:=α) M H hH
+    ⟨Wslot, aslot, bslot, Mchild, Lslot, r/4, lo, hi,
+      κ, a, b, 1, maskEpsilon Mschedule Bschedule ε, by norm_num, hem, ha,
+      hb, Lchild, hLchild, degree, S, haslot, hWs, hW,
+      hMchild, hLs, hr, hκsmall, hbeta, hκbeta, 0, 1,
+      1, a^2, r/4, by norm_num, by norm_num, ha2, hr, fun _=>1,
+      fun _=>1, fun _=>by norm_num⟩
     (sourceEpsilon Mschedule A Bschedule ε) (r/4) (r/4) (A+1) (r/4)
     (2*amplification ε+1) hes hr hr hr
     (amplification ε) hsigma hxiSigma A Bmask (amplification ε/12) (r/4) (r/4)
@@ -127,8 +117,7 @@ theorem actual_growth_physical
       simpa only [Finset.sum_const_zero,mul_zero,add_zero] using
         le_max_right s.width (length Z X₁+length Z X₂))
     (hgate.2.1.trans (le_max_left _ _)) hgate.2.1 (by linarith)
-    hn.2.2 (by simp [lowerFactor]) (le_max_left _ _)
-    hfour.1 hfour.2.1 hfour.2.2.1 hfour.2.2.2 (hn.1.2 k εchild hchild)
+    hn.2.2 (by simp [lowerFactor]) ⟨le_max_left _ _, hfour.1, hfour.2.1, hfour.2.2.1, hfour.2.2.2⟩ (hn.1.2 k εchild hchild)
   rw [show physicalMass src s.puncture 1 fixedBadMask 1 Ψ s.radial.scale Z (r/4)=
       physicalMass (CenteredMomentEnergyZeroReferencePhysical.balancedInput s p ha t X₁ X₂ hX₁ hX₂)
         s.puncture 1 fixedBadMask 1 Ψ s.radial.scale Z (r/4) from

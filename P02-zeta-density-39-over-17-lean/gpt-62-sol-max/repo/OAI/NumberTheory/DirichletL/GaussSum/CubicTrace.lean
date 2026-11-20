@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.PrimeRows.ActiveGaussFactorization
 
 @[expose] public section
@@ -8,63 +9,16 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
+open scoped ContDiff
 
 namespace ActualEisensteinCubic
 
@@ -345,12 +299,11 @@ theorem canonicalNormalizedGauss_eq_principal {ι : Type*} [Fintype ι]
       principalNormalizedGauss P hcop hgood j (finitePrimeModulus P)
         (span_finitePrimeModulus P) (finitePrimeModulus_ne_zero P) := rfl
 
-theorem principal_gauss_sum_unit_change {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hgood : ∀ i, lambda ∉ P i) (j : ι → ℕ)
-    (c n : O) (hc : Ideal.span {c} = ∏ i, P i) (hn : Ideal.span {n} = ∏ i, P i)
-    (hc0 : c ≠ 0) (hn0 : n ≠ 0) (u : Oˣ) (hcn : c = (u : O) * n)
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (P : ι → Ideal O) [instShared3 : ∀ i, (P i).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime P)) (hgood : ∀ i, lambda ∉ P i) (j : ι → ℕ) (c n : O) (hc : Ideal.span {c} = ∏ i, P i) (hn : Ideal.span {n} = ∏ i, P i) (hc0 : c ≠ 0) (hn0 : n ≠ 0) (u : Oˣ) (hcn : c = (u : O) * n)
+include ι instShared1 P instShared3 hcop hgood j c n hc hn hc0 hn0 u hcn
+
+theorem principal_gauss_sum_unit_change
     [Fintype (O ⧸ Ideal.span {c})] [Fintype (O ⧸ Ideal.span {n})] :
     (∑ r : O ⧸ Ideal.span {c}, principalSexticRow P hcop hgood j c hc r *
       eisTraceModChar ShortDraftTrace.breveE ConcreteBreveE.breveE_period_coordinates c hc0 r) =
@@ -381,12 +334,7 @@ theorem principal_gauss_sum_unit_change {ι : Type*} [Fintype ι]
   rw [hphase]
   ring
 
-theorem principalNormalizedGauss_unit_change {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hgood : ∀ i, lambda ∉ P i) (j : ι → ℕ)
-    (c n : O) (hc : Ideal.span {c} = ∏ i, P i) (hn : Ideal.span {n} = ∏ i, P i)
-    (hc0 : c ≠ 0) (hn0 : n ≠ 0) (u : Oˣ) (hcn : c = (u : O) * n) :
+theorem principalNormalizedGauss_unit_change :
     principalNormalizedGauss P hcop hgood j c hc hc0 =
       finiteSexticRow P hgood j (u : O) *
         principalNormalizedGauss P hcop hgood j n hn hn0 := by
@@ -399,11 +347,13 @@ theorem principalNormalizedGauss_unit_change {ι : Type*} [Fintype ι]
   rw [hcn, norm_eisEmbedding_unit_mul]
   ring
 
+end
+
 theorem principalNormalizedGauss_eq_product {ι : Type*} [Fintype ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (j : ι → ℕ) :
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hgood : OAI.PrincipalIdealFamily.Avoids p lambda) (j : ι → ℕ) :
     principalNormalizedGauss (fun i => Ideal.span {p i}) hcop hgood j (∏ i, p i)
       (span_finset_prod Finset.univ p) (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)) =
       canonicalProductGauss p hp hcop hgood j := rfl
@@ -423,11 +373,11 @@ theorem modulusUnit_spec {ι : Type*} [Fintype ι] (p : ι → O) :
     finitePrimeModulus (fun i => Ideal.span {p i}) = (modulusUnit p : O) * ∏ i, p i :=
   Classical.choose_spec (exists_modulus_unit p)
 
-theorem canonicalNormalizedGauss_eq_product {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (j : ι → ℕ) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) [instShared4 : OAI.PrincipalIdealFamily.Maximal p] (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (hgood : OAI.PrincipalIdealFamily.Avoids p lambda) (j : ι → ℕ)
+include ι instShared1 p hp instShared4 hcop hgood j
+
+theorem canonicalNormalizedGauss_eq_product :
     canonicalNormalizedGauss (fun i => Ideal.span {p i}) hcop hgood j =
       finiteSexticRow (fun i => Ideal.span {p i}) hgood j (modulusUnit p : O) *
         canonicalProductGauss p hp hcop hgood j := by
@@ -438,11 +388,7 @@ theorem canonicalNormalizedGauss_eq_product {ι : Type*} [Fintype ι]
       (finitePrimeModulus_ne_zero _) (Finset.prod_ne_zero_iff.mpr (fun i _ => hp i))
       (modulusUnit p) (modulusUnit_spec p), principalNormalizedGauss_eq_product]
 
-theorem canonicalNormalizedGauss_frequency_transport {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (j : ι → ℕ) (h : O) :
+theorem canonicalNormalizedGauss_frequency_transport (h : O) :
     canonicalNormalizedGauss (fun i => Ideal.span {p i}) hcop hgood j *
       star (finiteSexticRow (fun i => Ideal.span {p i}) hgood j ((modulusUnit p : O) * h)) =
       canonicalProductGauss p hp hcop hgood j *
@@ -456,11 +402,7 @@ theorem canonicalNormalizedGauss_frequency_transport {ι : Type*} [Fintype ι]
           star (finiteSexticRow (fun i => Ideal.span {p i}) hgood j h)) := by ring
     _ = _ := by rw [finiteSexticRow_unit_mul_star, one_mul]
 
-theorem gauss_weighted_radial_sum_transport {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (j : ι → ℕ) (F : ℝ → ℂ) :
+theorem gauss_weighted_radial_sum_transport (F : ℝ → ℂ) :
     canonicalNormalizedGauss (fun i => Ideal.span {p i}) hcop hgood j *
       (∑' h : O, star (finiteSexticRow (fun i => Ideal.span {p i}) hgood j h) *
         F (‖eisEmbedding h‖ ^ 2)) =
@@ -479,11 +421,13 @@ theorem gauss_weighted_radial_sum_transport {ι : Type*} [Fintype ι]
       rw [norm_eisEmbedding_unit_mul, ← mul_assoc,
         canonicalNormalizedGauss_frequency_transport p hp hcop hgood j, mul_assoc]
 
+end
+
 theorem gauss_weighted_finite_radial_sum_transport {ι κ : Type*} [Fintype ι]
     (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (j : ι → ℕ)
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hgood : OAI.PrincipalIdealFamily.Avoids p lambda) (j : ι → ℕ)
     (D : Finset κ) (a : κ → ℂ) (F : κ → ℝ → ℂ) :
     canonicalNormalizedGauss (fun i => Ideal.span {p i}) hcop hgood j *
       (∑ k ∈ D, a k * ∑' h : O,
@@ -506,8 +450,6 @@ theorem finitePrimeModulus_norm_eq_product {ι : Type*} [Fintype ι] (p : ι →
     ‖eisEmbedding (finitePrimeModulus (fun i => Ideal.span {p i}))‖ =
       ‖eisEmbedding (∏ i, p i)‖ := by
   rw [modulusUnit_spec p, norm_eisEmbedding_unit_mul]
-
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaussPhase
 
 end GaussGeneratorTransport
 

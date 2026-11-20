@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -132,10 +76,11 @@ lemma affineCuspGaussTerm_factor (h h1 q r a k x:Eis) (j n:ℕ)
         ShortDraftTrace.breveE (ninthCuspFrequency h*eisEmbedding (a+3*x)/eisEmbedding (q*a))) := by ring
     _ = _ := by rw [hp];ring
 
-lemma affineCuspTwistedCoefficient_add (h h1 q r a k x m:Eis) (j n:ℕ)
-    (ha:a≠0) (hprimary:lambda^2∣a-1) (hq:q≠0)
-    (hr:r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
-    (hh:h=q*h1) (hk:3*k=h1+ramifiedAffineParameter j n*a) :
+section
+variable (h h1 q r a k x m:Eis) (j n:ℕ) (ha:a≠0) (hprimary:lambda^2∣a-1) (hq:q≠0) (hr:r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n)) (hh:h=q*h1) (hk:3*k=h1+ramifiedAffineParameter j n*a)
+include h h1 q r a k x m j n ha hprimary hq hr hh hk
+
+lemma affineCuspTwistedCoefficient_add :
     (eisEmbedding (symbol r (a+3*(x+a*m)))*eisEmbedding (symbol (a+3*(x+a*m)) a))*
       ShortDraftTrace.breveE (ninthCuspFrequency h*eisEmbedding (a+3*(x+a*m))/eisEmbedding (q*a))=
     (eisEmbedding (symbol r (a+3*x))*eisEmbedding (symbol (a+3*x) a))*
@@ -145,10 +90,7 @@ lemma affineCuspTwistedCoefficient_add (h h1 q r a k x m:Eis) (j n:ℕ)
   rw [symbol_congr (show a∣x+a*m-x from ⟨m,by ring⟩),
     residueAdditive_three_congr k a (x+a*m) x ha ⟨m,by ring⟩]
 
-lemma affineLowerTerm_weighted_translate (h h1 q r a k x m:Eis) (j n:ℕ)
-    (ha:a≠0) (hprimary:lambda^2∣a-1) (hq:q≠0)
-    (hr:r=omega^j*ramifiedTraceLambda^n ∨ r=-(omega^j*ramifiedTraceLambda^n))
-    (hh:h=q*h1) (hk:3*k=h1+ramifiedAffineParameter j n*a)
+lemma affineLowerTerm_weighted_translate
     (z:ℂ) (v:ℝ) (s:ℂ) :
     affineLowerTerm q r z v s a (a+3*(x+a*m))*ShortDraftTrace.breveE (-ninthCuspFrequency h*z)=
       affineLowerTerm q r (z+3*eisEmbedding m/eisEmbedding q) v s a (a+3*x)*
@@ -193,6 +135,8 @@ lemma affineLowerTerm_weighted_translate (h h1 q r a k x m:Eis) (j n:ℕ)
   rw [hphase,AddChar.map_add_eq_mul]
   dsimp only [c0]
   ring
+
+end
 
 lemma affineLowerIntegral_sum_translate (h h1 q r a k x:Eis) (j n:ℕ)
     (ha:a≠0) (hprimary:lambda^2∣a-1) (hq:q≠0)

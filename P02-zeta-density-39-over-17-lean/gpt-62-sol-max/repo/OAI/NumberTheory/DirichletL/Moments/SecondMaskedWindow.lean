@@ -10,19 +10,15 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondMaskedWindow
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondScaled
-open CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMomentSecondHeightFamily
-open CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedSource
-open CenteredMomentChildAssembly CenteredMomentSmooth CenteredMomentFirstSectors RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentSourceRow
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondSectorEnergy CenteredMomentSecondSectorColumns CenteredMomentSecondScaled CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMomentSecondHeightFamily CenteredMomentRestrictedEnergy CenteredMomentRestrictedWindow CenteredMomentRestrictedSource CenteredMomentChildAssembly CenteredMomentSmooth CenteredMomentFirstSectors RayFourExpansion CenteredMomentLogDyadic CenteredMomentRowNorm CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
-theorem masked_divisor_coefficient (η τ : Character) (χ : RayCharacter) (A : O)
-    (C : Ideal O) (hC : Supported C)
-    (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ,
-      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I))
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O) (t : ℝ)
+section
+variable (η τ : Character) (χ : RayCharacter) (A : O) (C : Ideal O) (hC : Supported C) (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ,
+      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I)) (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O)
+include η τ χ A C hC hτ S β L
+
+theorem masked_divisor_coefficient (t : ℝ)
     (I : sectorPool C hC.1 S) :
     divisorCoefficient L (sectorElement C hC.1 S)
       (movingCoefficient A (sectorElement C hC.1 S)
@@ -34,11 +30,7 @@ theorem masked_divisor_coefficient (η τ : Character) (χ : RayCharacter) (A : 
   dsimp only [sectorElement]
   split_ifs <;> ring
 
-theorem masked_child_energy (η τ : Character) (χ : RayCharacter) (A : O)
-    (C : Ideal O) (hC : Supported C)
-    (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ,
-      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I))
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O) (t : ℝ)
+theorem masked_child_energy (t : ℝ)
     (keep : O→Prop) (Φ : 𝓢(ℝ,ℂ)) (H : ℝ) :
     restrictedEnergy keep Finset.univ (sectorElement C hC.1 S)
       (divisorCoefficient L (sectorElement C hC.1 S)
@@ -60,11 +52,7 @@ theorem masked_child_energy (η τ : Character) (χ : RayCharacter) (A : O)
     split_ifs <;> simp_all
   rw [hc]
 
-theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacter) (A : O)
-    (C : Ideal O) (hC : Supported C)
-    (hτ : ∀I:Ideal O,Supported I → IsCoprime C I → ∀t:ℝ,
-      heightCoeff τ t I=heightCoeff η t I*idealRowHom A I*rayCharacter χ (primaryGenerator I))
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (L : Ideal O) (keep : O→Prop)
+theorem original_window_from_masked_source (keep : O→Prop)
     (t θ X : ℝ) (hX : 0<X) (J : ℕ)
     (Φ : 𝓢(ℝ,ℂ)) (H : ℝ) (hH : 0<H)
     (hΦ : ∀z:O,0≤(Φ (‖ConcreteTraceCRT.eisEmbedding z‖^2/H)).re)
@@ -93,6 +81,8 @@ theorem original_window_from_masked_source (η τ : Character) (χ : RayCharacte
   rw [←masked_child_energy η τ χ A C hC hτ S β L v keep Φ H] at hs
   rw [funext (masked_divisor_coefficient η τ χ A C hC hτ S β L v)] at hs
   simpa only [sectorElement_span] using hs
+
+end
 
 end SevenEighths.CenteredMomentSecondMaskedWindow
 

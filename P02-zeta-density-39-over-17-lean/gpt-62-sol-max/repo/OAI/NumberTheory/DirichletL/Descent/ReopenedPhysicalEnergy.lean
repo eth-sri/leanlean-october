@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedPhysicalSplit
 
 @[expose] public section
@@ -13,9 +14,9 @@ open ConcreteTraceCRT (eisEmbedding)
 open ConcretePrimeRowBridge (idealGenerator)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem rowFamilyEnergy_le_of_full_split (labels : Finset (Ideal O))
     (P : Ideal O→O→ℂ) (K : ℝ) (hK : 0<K) (A B C : ℂ)
@@ -31,9 +32,9 @@ theorem rowFamilyEnergy_le_of_full_split (labels : Finset (Ideal O))
   linarith [Complex.re_le_norm A,Complex.re_le_norm B,Complex.re_le_norm C]
 
 theorem original_reopened_physical_energy
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (hQ : ∀ v∈Q,v.support⊆pool)
     (labels : Finset (Ideal O)) (hlabels : ∀ I∈labels,I≠0)
     (β : Ideal O→(ι→₀ℕ)→ℂ) (Ψ : O→*ℂ) (m : O)

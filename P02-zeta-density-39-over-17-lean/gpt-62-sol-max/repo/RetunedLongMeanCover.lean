@@ -9,13 +9,12 @@ open scoped BigOperators Topology
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /-- The actual-zero dichotomy with the long alternative expressed as a
 critical-line mean. Both alternatives keep the original ordinate. -/
 theorem smooth_long_mean_or_short_powered_cover {σ a δ η : ℝ}
-    (hw : QuadraticWindow σ a) (hsigma : 7/9 ≤ σ) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η)
+    (hw : PhysicalDetectorWindow σ a) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η)
     (A : ℕ) (hA : 3 ≤ A) :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ T : ℝ in atTop, ∀ ρ : ℂ,
       σ ≤ ρ.re → ρ.re < 1 → T ≤ |ρ.im| → |ρ.im| ≤ 2*T → riemannZeta ρ = 0 →
@@ -30,7 +29,7 @@ theorem smooth_long_mean_or_short_powered_cover {σ a δ η : ℝ}
     (by norm_num : (0:ℝ)<5/8) (by norm_num : (0:ℝ)<3/2) smoothDyadicWeight_tsupport A hA
   refine ⟨C,hC,?_⟩
   filter_upwards [eventually_ge_atTop (2 : ℝ), hm, log_sq_eventually_le_height,
-    smooth_long_or_short_powered_cover hw hsigma hδ hδ' hη] with T hT hmean hlogSq hcover
+    smooth_long_or_short_powered_cover hw hδ hδ' hη] with T hT hmean hlogSq hcover
   intro ρ hβ hβ' hγ hγ' hzero
   rcases hcover ρ hβ hβ' hγ hγ' hzero with ⟨j,hj,hlong,hlarge⟩ | hshort
   · apply Or.inl
@@ -53,7 +52,7 @@ theorem smooth_long_mean_or_short_powered_cover {σ a δ η : ℝ}
     have hYp : 0 < detectorY a T := Real.rpow_pos_of_pos hTp _
     have hYT : detectorY a T ≤ T := by
       simpa only [detectorY,Real.rpow_one] using
-        Real.rpow_le_rpow_of_exponent_le hT1 (smoothingExponent_lt_one hw).le
+        Real.rpow_le_rpow_of_exponent_le hT1 (smoothingExponent_lt_one hw.a_high).le
     have hNT : (2 : ℝ)^j ≤ T^2 := by
       apply (mem_smoothScaleIndices.mp hj).2.trans
       calc

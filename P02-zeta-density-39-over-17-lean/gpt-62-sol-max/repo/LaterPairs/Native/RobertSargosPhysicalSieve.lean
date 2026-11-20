@@ -298,8 +298,11 @@ theorem robertSargos_sieve_radicand_budget {T lam M C R H Q K J L W ε : ℝ}
       simp only [mul_pow,Real.sq_sqrt (show 0 ≤ 1568*K by positivity)]
       ring
 
-theorem exists_robertSargos_large_block_log_bound (ε : ℝ) (hε : 0 < ε)
-    (C : ℝ) (hC : 1 ≤ C) :
+section
+variable (ε : ℝ) (hε : 0 < ε) (C : ℝ) (hC : 1 ≤ C)
+include ε hε C hC
+
+theorem exists_robertSargos_large_block_log_bound :
     ∃ D : ℝ, 0 < D ∧ ∀ (f : ℝ → ℝ) (M H : ℕ) (lam : ℝ),
     0 < lam → lam ≤ 1/8192 → lam^(-(8:ℝ)/13) ≤ M →
     lam^(-(1:ℝ)/7) ≤ H → (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2 →
@@ -414,8 +417,7 @@ theorem exists_robertSargos_large_block_log_bound (ε : ℝ) (hε : 0 < ε)
   change _ ≤ (D₀+D₁)*(M:ℝ)^2*L^2*(M:ℝ)^ε
   convert htotal using 1; ring
 
-theorem exists_robertSargos_large_block_bound (ε : ℝ) (hε : 0 < ε)
-    (C : ℝ) (hC : 1 ≤ C) :
+theorem exists_robertSargos_large_block_bound :
     ∃ D : ℝ, 0 < D ∧ ∀ (f : ℝ → ℝ) (M H : ℕ) (lam : ℝ),
     0 < lam → lam ≤ 1/8192 → lam^(-(8:ℝ)/13) ≤ M →
     lam^(-(1:ℝ)/7) ≤ H → (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2 →
@@ -455,8 +457,7 @@ theorem exists_robertSargos_large_block_bound (ε : ℝ) (hε : 0 < ε)
   have ht : 0 ≤ Real.sqrt D*(1+2/ε)*(M:ℝ)^(1+ε) := by positivity
   nlinarith only [hs,hn,ht]
 
-theorem exists_robertSargos_fourth_derivative_long_range_small (ε : ℝ) (hε : 0 < ε)
-    (C : ℝ) (hC : 1 ≤ C) :
+theorem exists_robertSargos_fourth_derivative_long_range_small :
     ∃ K : ℝ, 0 < K ∧ ∀ (f : ℝ → ℝ) (M : ℕ) (lam : ℝ),
     0 < lam → lam ≤ 1/8192 → lam^(-(8:ℝ)/13) ≤ M →
     (∀ t ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f t) →
@@ -547,8 +548,7 @@ theorem exists_robertSargos_fourth_derivative_long_range_small (ε : ℝ) (hε :
   nlinarith only [hsq,hn,ht]
 
                                                                            
-theorem exists_robertSargos_fourth_derivative_long_range (ε : ℝ) (hε : 0 < ε)
-    (C : ℝ) (hC : 1 ≤ C) :
+theorem exists_robertSargos_fourth_derivative_long_range :
     ∃ K : ℝ, 0 < K ∧ ∀ (f : ℝ → ℝ) (M : ℕ) (lam : ℝ),
     0 < lam → lam^(-(8:ℝ)/13) ≤ M →
     (∀ t ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f t) →
@@ -589,5 +589,7 @@ theorem exists_robertSargos_fourth_derivative_long_range (ε : ℝ) (hε : 0 < �
     _ ≤ (M:ℝ)^(1+ε) := hpower
     _ ≤ 2*(M:ℝ)^(1+ε)*lam^((1:ℝ)/13) := by nlinarith only [hprod]
     _ ≤ _ := by gcongr; linarith
+
+end
 
 end TaoTrudgianYang2025

@@ -8,7 +8,7 @@ public import GuthMaynard.Improvement.SourceDirichletPairing
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Set
-open scoped InnerProductSpace ContDiff
+open scoped ContDiff
 namespace GuthMaynard.Improvement
 
 /-- The original polynomial is globally bounded, so ordinary L1 of mu

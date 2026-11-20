@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -208,9 +152,11 @@ end
 open CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem ramifiedSource_height_residue (side:Bool) (h:Eis)
-    (hf:(3:Eis)∣h-onceCuspScale (ramifiedCuspScaleUnit side))
-    (a b:ℝ) (ha:0<a) (ρ:BoundedContinuousFunction ℝ ℂ) :
+section
+variable (side:Bool) (h:Eis) (hf:(3:Eis)∣h-onceCuspScale (ramifiedCuspScaleUnit side)) (a b:ℝ) (ha:0<a) (ρ:BoundedContinuousFunction ℝ ℂ)
+include side h hf a b ha ρ
+
+theorem ramifiedSource_height_residue :
     sourceArbitraryHeightFourier
       (integralComplexMatrix (lowerCuspMatrix (ramifiedCuspRoot side:Eis)))
       a b ha ρ (ninthCuspFrequency h) cubicEisensteinResidue=
@@ -242,9 +188,7 @@ theorem ramifiedSource_height_residue (side:Bool) (h:Eis)
   dsimp only [coeff]
   ring
 
-theorem ramifiedSource_height_residue_integral (side:Bool) (h:Eis)
-    (hf:(3:Eis)∣h-onceCuspScale (ramifiedCuspScaleUnit side))
-    (a b:ℝ) (ha:0<a) (ρ:BoundedContinuousFunction ℝ ℂ) :
+theorem ramifiedSource_height_residue_integral :
     (∫w in cuspPeriodStrip a b,
       ramifiedSourceFunction (ramifiedCuspRoot side:Eis) w*
         arbitraryCuspWeightedPhase ρ (ninthCuspFrequency h) w∂hyperbolicVolume)=
@@ -254,6 +198,8 @@ theorem ramifiedSource_height_residue_integral (side:Bool) (h:Eis)
   rw [←sourceArbitraryHeightFourier_residue_integral
     (integralComplexMatrix (lowerCuspMatrix (ramifiedCuspRoot side:Eis))) a b ha ρ (ninthCuspFrequency h)]
   exact ramifiedSource_height_residue side h hf a b ha ρ
+
+end
 
 end
 
@@ -390,7 +336,7 @@ def kernelCorrespondenceTestLinear : kernelSmoothTests→ₗ[ℂ]kernelSmoothTes
         (integralOrbitProjection globalKubotaKernel w)=
           kernelCorrespondenceFunction hJK e g he f.1 (integralOrbitProjection globalKubotaKernel w)+
           kernelCorrespondenceFunction hJK e g he h.1 (integralOrbitProjection globalKubotaKernel w)
-      simp only [kernelCorrespondenceFunction_lift,Submodule.coe_add,Pi.add_apply,Finset.sum_add_distrib]
+      simp [kernelCorrespondenceFunction_lift, Finset.sum_add_distrib]
   map_smul' c f := by
     apply Subtype.ext
     funext q
@@ -581,7 +527,7 @@ lemma ramifiedScaledMode_periodic (b : Bool) (h : Eis) (v : ℝ) (hv : 0<v) :
   intro x z
   have hx : Ideal.Quotient.mk (Ideal.span {(3:Eis)}) (3*x)=0 :=
     Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr (dvd_mul_right 3 x))
-  simpa only [map_mul,map_ofNat,hx,AddChar.map_zero_eq_one,one_mul] using
+  simpa [map_ofNat, hx] using
     ramifiedScaledMode_shift b h (3*x) v hv z
 
 theorem ramifiedSource_scaled_fourier_off_support (b : Bool) (h : Eis)

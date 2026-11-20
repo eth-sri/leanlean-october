@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerModes
 
 @[expose] public section
@@ -8,11 +9,7 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap
-open MeasureTheory JointLogSeparation
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open SevenEighths.InverseMoment SevenEighths.InverseInitialProfile
-open SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure
-open SevenEighths.InverseInitialEnergyCallerModes
+open MeasureTheory JointLogSeparation ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic SevenEighths.InverseMoment SevenEighths.InverseInitialProfile SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialPhysicalMeasure SevenEighths.InverseInitialEnergyCallerModes
 namespace SevenEighths.InverseInitialEnergyCallerSource
 variable {ι : Type*} [DecidableEq ι]
 
@@ -78,11 +75,11 @@ theorem pointSource_valid (F : Finset ι) (S : Finset (Source (ι:=ι) 0))
 
 variable {σ : Type*} [DecidableEq σ]
   (p : ι→ActualEisensteinCubic.O) (hp : ∀ i,p i≠0)
-  [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
-def rowMode (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+def rowMode (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (F : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ)
@@ -97,7 +94,7 @@ def rowMode (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
       slots lists a (childLogTest ω₂ (height 5)) Z D B v)
 
 theorem canonicalBlock_rows
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (F : Finset ι) (S : Finset (Source (ι:=ι) 0))
     (hE : ∀ x∈S,x.divisor⊆x.common) (w : Source (ι:=ι) 0→ℂ)
     (Ψ : ActualEisensteinCubic.O →* ℂ) (j : ActualEisensteinCubic.O)
@@ -132,7 +129,7 @@ theorem canonicalBlock_rows
       rfl
 
 theorem physicalBlock_rectangular_common_measure
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (V : Fin 6→ℝ→ℂ)
     (g : Fin 6→𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ))
     (Z D B v m θ H η c₁ c₂ θ₁ θ₂ : ℝ)

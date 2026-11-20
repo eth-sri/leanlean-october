@@ -35,7 +35,11 @@ theorem momentDecay_continuous (A : ℕ) : Continuous (momentDecay A) := by
   · fun_prop
   · intro t; positivity
 
-theorem momentDecay_le_inv_one_add_sq {A : ℕ} (hA : 2 ≤ A) (t : ℝ) :
+section
+variable {A : ℕ} (hA : 2 ≤ A)
+include A hA
+
+theorem momentDecay_le_inv_one_add_sq (t : ℝ) :
     momentDecay A t ≤ (1+t^2)⁻¹ := by
   apply (momentDecay_antitone hA t).trans
   unfold momentDecay
@@ -43,14 +47,14 @@ theorem momentDecay_le_inv_one_add_sq {A : ℕ} (hA : 2 ≤ A) (t : ℝ) :
   apply div_le_div_of_nonneg_left (by norm_num) (by positivity)
   nlinarith [sq_abs t, abs_nonneg t]
 
-theorem integrable_momentDecay {A : ℕ} (hA : 2 ≤ A) : Integrable (momentDecay A) := by
+theorem integrable_momentDecay : Integrable (momentDecay A) := by
   refine integrable_inv_one_add_sq.mono' (momentDecay_continuous A).aestronglyMeasurable ?_
   apply Eventually.of_forall
   intro t
   rw [Real.norm_of_nonneg (momentDecay_pos A t).le]
   exact momentDecay_le_inv_one_add_sq hA t
 
-theorem momentDecay_mass_bounds {A : ℕ} (hA : 2 ≤ A) :
+theorem momentDecay_mass_bounds :
     0 < ∫ t : ℝ, momentDecay A t ∧ (∫ t : ℝ, momentDecay A t) ≤ Real.pi := by
   constructor
   · apply (integral_pos_iff_support_of_nonneg (fun t => (momentDecay_pos A t).le)
@@ -68,7 +72,7 @@ theorem momentDecay_mass_bounds {A : ℕ} (hA : 2 ≤ A) :
 
 /-- Weighted Holder with a fixed absolute mass bound; analytic inputs are the
 explicit integrability hypotheses, not a zeta moment estimate. -/
-theorem momentDecay_holder_twelfth {A : ℕ} (hA : 2 ≤ A) {f : ℝ → ℝ}
+theorem momentDecay_holder_twelfth {f : ℝ → ℝ}
     (hf : ∀ t, 0 ≤ f t)
     (hi : Integrable (fun t => momentDecay A t*f t))
     (hi12 : Integrable (fun t => momentDecay A t*f t^12)) :
@@ -81,13 +85,15 @@ theorem momentDecay_holder_twelfth {A : ℕ} (hA : 2 ≤ A) {f : ℝ → ℝ}
     (integral_nonneg (fun t => mul_nonneg (momentDecay_pos A t).le (pow_nonneg (hf t) 12)))
 
 /-- One common sampling constant for every separated set and every translate. -/
-theorem separated_momentDecay_row {A : ℕ} (hA : 2 ≤ A) {U : Finset ℝ}
+theorem separated_momentDecay_row {U : Finset ℝ}
     (hU : oneSeparated U) (t : ℝ) :
     (∑ u ∈ U, momentDecay A (t-u)) ≤ separationMass := by
   calc
     _ ≤ ∑ u ∈ U, momentDecay 2 (t-u) :=
       Finset.sum_le_sum (fun u _ => momentDecay_antitone hA (t-u))
     _ ≤ _ := separated_decay_row hU t
+
+end
 
 theorem integrable_momentDecay_mul {μ : Measure ℝ} {f : ℝ → ℝ}
     (hf : Integrable f μ) (A : ℕ) (u : ℝ) :

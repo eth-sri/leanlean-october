@@ -128,19 +128,7 @@ theorem IsEqUpToInfinitesimal.refl (X : VariableObject E) :
   simpa only [Pi.sub_apply, sub_self] using
     (tendsto_const_nhds : Tendsto (fun _ : ℕ ↦ (0 : E)) atTop (nhds 0))
 
-/-- The relation `=o` is symmetric. -/
-theorem IsEqUpToInfinitesimal.symm
-    {X Y : VariableObject E} (h : X =o Y) :
-    Y =o X := by
-  rw [isEqUpToInfinitesimal_iff_tendsto_sub] at h ⊢
-  simpa only [Pi.sub_apply, neg_sub, neg_zero] using h.neg
 
-/-- The relation `=o` is transitive. -/
-theorem IsEqUpToInfinitesimal.trans
-    {X Y Z : VariableObject E} (hXY : X =o Y) (hYZ : Y =o Z) :
-    X =o Z := by
-  rw [isEqUpToInfinitesimal_iff_tendsto_sub] at hXY hYZ ⊢
-  simpa only [sub_add_sub_cancel, zero_add] using hXY.add hYZ
 
 /-- The relation `=o` is preserved by negation. -/
 theorem IsEqUpToInfinitesimal.neg

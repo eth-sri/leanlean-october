@@ -9,73 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CompletedGauss
 open Filter MeasureTheory
@@ -107,12 +51,12 @@ theorem besselSmoothingIntegrand_reflected_integrable {α : Type*} [Countable α
   have hK : Integrable K := by
     have hh := CubicReflectionKernel.mellinEulerData_vertical_integrable V v0 v1 hv0 hVs hV
       2 0 (3/2) (by norm_num)
-    simpa only [K,Complex.ofReal_div,Complex.ofReal_ofNat,Complex.ofReal_neg] using hh.comp_neg
+    simpa [K] using hh.comp_neg
   have hD : Continuous D := by
     have hh := (weighted_vertical_series_continuous r hr a (3/2) has).comp continuous_neg
-    simpa only [D,Function.comp_def,Complex.ofReal_div,Complex.ofReal_ofNat,Complex.ofReal_neg] using hh
+    simpa [D, Function.comp_def] using hh
   have hDb (t : ℝ) : ‖D t‖≤∑'i,‖a i‖*(r i)^(-(3/2:ℝ)) := by
-    simpa only [D,Complex.ofReal_div,Complex.ofReal_ofNat,Complex.ofReal_neg] using
+    simpa [D] using
       weighted_vertical_series_norm r hr a (3/2) has (-t)
   have hP : Continuous P := by
     have h1 := positive_cpow_comp_continuous Q hQ
@@ -128,7 +72,7 @@ theorem besselSmoothingIntegrand_reflected_integrable {α : Type*} [Countable α
     have hn (t : ℝ) : (((4*Real.pi*d:ℝ):ℂ)^(3-2*((-1:ℂ)+t*Complex.I)))≠0 :=
       Complex.cpow_ne_zero_iff.mpr (Or.inl (Complex.ofReal_ne_zero.mpr (by positivity)))
     convert (((continuous_const (y:=A)).mul h1).mul ((h2.mul h3).div h4 hn)).mul h5 using 1 ;
-      (ext t; simp only [P,besselReflectionFactor,Pi.mul_apply,Pi.div_apply,Complex.ofReal_ofNat])
+      (ext t; simp [P, besselReflectionFactor])
   have hPn (t : ℝ) : ‖P t‖=‖P 0‖ := by
     simp only [P,norm_mul,besselReflectionFactor_norm q d hq hd,
       Complex.norm_cpow_eq_rpow_re_of_pos hQ,Complex.norm_cpow_eq_rpow_re_of_pos hX]
@@ -159,8 +103,7 @@ namespace CubicEisenstein
 
 section
 open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
+open MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -202,8 +145,11 @@ lemma term_horizontal_translate (coeff : SubexponentialBesselCoefficients)
   · simp only [term,ite_eq_right hh,mul_add,AddChar.map_add_eq_mul]
     ring
 
-lemma finiteTranslate_term {ι : Type*} [Fintype ι]
-    (coeff : SubexponentialBesselCoefficients) (shift weight : ι→ℂ)
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (coeff : SubexponentialBesselCoefficients) (shift weight : ι→ℂ)
+include ι instShared1 coeff shift weight
+
+lemma finiteTranslate_term
     (h : Eis) (v : ℝ) (z : ℂ) :
     (coeff.finiteTranslate shift weight).term h (v,z)=
       ∑i,weight i*coeff.term h (v,z+shift i) := by
@@ -219,8 +165,7 @@ lemma finiteTranslate_term {ι : Type*} [Fintype ι]
   · simp only [term,ite_eq_right hh,finiteTranslate]
     ring
 
-theorem finiteTranslate_series {ι : Type*} [Fintype ι]
-    (coeff : SubexponentialBesselCoefficients) (shift weight : ι→ℂ)
+theorem finiteTranslate_series
     (v : ℝ) (hv : 0<v) (z : ℂ) :
     (coeff.finiteTranslate shift weight).series (v,z)=
       ∑i,weight i*coeff.series (v,z+shift i) := by
@@ -230,8 +175,7 @@ theorem finiteTranslate_series {ι : Type*} [Fintype ι]
   intro i hi
   exact tsum_mul_left
 
-theorem finiteTranslate_fullFunction {ι : Type*} [Fintype ι]
-    (coeff : SubexponentialBesselCoefficients) (shift weight : ι→ℂ) (constant : ℂ)
+theorem finiteTranslate_fullFunction (constant : ℂ)
     (v : ℝ) (hv : 0<v) (z : ℂ) :
     (coeff.finiteTranslate shift weight).fullFunction ((∑i,weight i)*constant) (upperPoint z v hv)=
       ∑i,weight i*coeff.fullFunction constant (upperPoint (z+shift i) v hv) := by
@@ -245,6 +189,8 @@ theorem finiteTranslate_fullFunction {ι : Type*} [Fintype ι]
     ring
   rw [hconst]
   ring_nf
+
+end
 
 end SubexponentialBesselCoefficients
 
@@ -294,7 +240,7 @@ lemma finiteAdditiveFourierCoeff_norm {R : Type*} [CommRing R] [Fintype R]
     _ ≤ ∑_x : R,(1:ℝ) := by
       apply Finset.sum_le_sum
       intro x hx
-      simpa only [norm_mul,AddChar.norm_apply,mul_one] using hφ x
+      simpa using hφ x
     _ = _ := by simp
 
 def thetaFourierTranslation (c : Eis) (h : Eis⧸Ideal.span {c}) : ℂ :=
@@ -405,9 +351,11 @@ def traceTwistedConjugateSource (c : Eis) (hc : c≠0)
   finiteConjugateSource (thetaFourierTranslation c)
     (finiteAdditiveFourierCoeff (quotientTrace c hc) φ) v hv z
 
-theorem traceTwistedConjugateSource_wirtingerBar (c : Eis) (hc : c≠0)
-    [Fintype (Eis⧸Ideal.span {c})] (φ : (Eis⧸Ideal.span {c})→ℂ)
-    (v : ℝ) (hv : 0<v) (z : ℂ) :
+section
+variable (c : Eis) (hc : c≠0) [instShared2 : Fintype (Eis⧸Ideal.span {c})] (φ : (Eis⧸Ideal.span {c})→ℂ) (v : ℝ) (hv : 0<v)
+include c hc instShared2 φ v hv
+
+theorem traceTwistedConjugateSource_wirtingerBar (z : ℂ) :
     horizontalWirtingerBar (traceTwistedConjugateSource c hc φ v hv) z=
       ∑'h : Eis,(-2*Real.pi*Complex.I*star (cuspFrequency h))*
         φ (Ideal.Quotient.mk _ h)*star (sourceBesselCoefficients.term h (v,z)) := by
@@ -416,9 +364,7 @@ theorem traceTwistedConjugateSource_wirtingerBar (c : Eis) (hc : c≠0)
   rw [finiteConjugateSource_wirtingerBar]
   simp only [thetaFourierTranslation_inversion c hc]
 
-theorem traceTwistedConjugateSource_wirtingerBar_zero (c : Eis) (hc : c≠0)
-    [Fintype (Eis⧸Ideal.span {c})] (φ : (Eis⧸Ideal.span {c})→ℂ)
-    (v : ℝ) (hv : 0<v) :
+theorem traceTwistedConjugateSource_wirtingerBar_zero :
     horizontalWirtingerBar (traceTwistedConjugateSource c hc φ v hv) 0=
       ∑'h : Eis,(-2*Real.pi*Complex.I*star (cuspFrequency h))*
         φ (Ideal.Quotient.mk _ h)*star (sourceResidualFourierCoefficient h)*
@@ -439,6 +385,8 @@ theorem traceTwistedConjugateSource_wirtingerBar_zero (c : Eis) (hc : c≠0)
     simp only [mul_zero,he0,mul_one,star_mul,
       Complex.star_def,Complex.conj_ofReal,sourceBesselCoefficients]
     ring
+
+end
 
 end
 
@@ -464,7 +412,7 @@ lemma paperLambda_symbol_cube (x : Eis) (hx : lambda^2∣x-1) :
 lemma paperLambda_symbol_norm (x : Eis) (hx : lambda^2∣x-1) :
     ‖eisEmbedding (symbol ramifiedTraceLambda x)‖=1 := by
   apply (pow_left_inj₀ (norm_nonneg _) zero_le_one (by decide : (3:ℕ)≠0)).mp
-  simpa only [norm_pow,norm_one,one_pow] using congrArg norm (paperLambda_symbol_cube x hx)
+  simpa using congrArg norm (paperLambda_symbol_cube x hx)
 
 lemma fixedThetaTwist_norm_le_one (Ψ : Eis→*ℂ) (hΨ : ∀x,‖Ψ x‖≤1) (x : Eis) :
     ‖fixedThetaTwist Ψ x‖≤1 := by
@@ -580,7 +528,7 @@ theorem sourceFourier_tsum_primary_pairs (w:Eis→ℂ)
       exact hx (by simp only [f,hz,zero_mul])
     have hTx:sourceResidualFourierCoefficient x≠0:=by
       intro hz
-      exact hx (by simp only [f,hz,star_zero,mul_zero])
+      exact hx (by simp [f, hz])
     obtain ⟨p,hp⟩:=sourceFourier_primary_squarefree_cube_preimage x (hw x hwx) hTx
     have hphi:phi p=x:=hp
     have hfp:f (phi p)≠0:=by rwa [hphi]

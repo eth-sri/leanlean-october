@@ -10,8 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators Topology
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily HeckeInverseAmplification Filter IdealMobiusDivisorSum
-open DetectorDictionaryInverseRawInitialGates
+open HeckeFamily HeckeInverseAmplification Filter IdealMobiusDivisorSum DetectorDictionaryInverseRawInitialGates
 local notation "O"=>HeckeFamily.O
 
 def shiftedExponent (_data:RowData)(U r:ℝ)(j:Ideal O) : ℝ :=

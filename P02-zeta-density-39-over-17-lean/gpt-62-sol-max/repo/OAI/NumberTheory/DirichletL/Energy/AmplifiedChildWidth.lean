@@ -12,22 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyAmplifiedChildWidth
-open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentCommonRawScale CenteredMomentSourceLiveColumn
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstAnnularInput CenteredMomentEnergyAmplifiedRayDictionary
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth
-open CenteredMomentSecondDyadicRowSupport CenteredMomentSecondRadicalBudget
-open CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily
-open CenteredMomentFirstScale CenteredMomentAmplifiedChildWidth
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows
+open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentCommonRawScale CenteredMomentSourceLiveColumn CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplifiedActiveCapacitySource CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstAnnularInput CenteredMomentEnergyAmplifiedRayDictionary CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth CenteredMomentSecondDyadicRowSupport CenteredMomentSecondRadicalBudget CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentAmplifiedChildWidth CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentChildRows
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι]
 local instance {α:Type*}:DecidableEq α:=Classical.decEq _
@@ -65,12 +50,11 @@ lemma main_nominal_cap (N:ℕ)(b:ℝ)(hb:1≤b)(s:Input ι)
     nlinarith [volume_pos (child s C R B τ t),mul_nonneg (pow_nonneg (zero_le_one.trans hb) N) hh]
   exact (div_le_div_of_nonneg_right hp hK.le).trans_eq (by unfold geometry;ring)
 
-lemma error_volume_cap (N:ℕ)(b:ℝ)(hb:1≤b)(s:Input ι)
-    (hc:Fintype.card ι≤N)(hs:s.upper≤b)(C R:Ideal O)(B:actualAllocations s.pools C)
-    (τ:Character)(t:ℝ)(hne:frozenCoefficient B.val C R s.ν s.W s.P≠0)
-    (Q:Ideal O)(hQ:Q≠0)(k:ℕ)
-    (hslot:∀i,∀I∈(activeInput (child s C R B τ t)).slots i,IsCoprime Q I)
-    (Bp:actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))(υ:Character)(v:ℝ) :
+section
+variable (N:ℕ) (b:ℝ) (hb:1≤b) (s:Input ι) (hc:Fintype.card ι≤N) (hs:s.upper≤b) (C R:Ideal O) (B:actualAllocations s.pools C) (τ:Character) (t:ℝ) (hne:frozenCoefficient B.val C R s.ν s.W s.P≠0) (Q:Ideal O) (hQ:Q≠0) (k:ℕ) (hslot:∀i,∀I∈(activeInput (child s C R B τ t)).slots i,IsCoprime Q I) (Bp:actualAllocations (activeInput (child s C R B τ t)).pools (Q^k)) (υ:Character)
+include N b hb s hc hs C R B τ t hne Q hQ k hslot Bp υ
+
+lemma error_volume_cap(v:ℝ) :
     volume (errorInput s C R B τ t Q k Bp υ v)≤
       b^N*(volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k)) := by
   have hv:=common_volume_le N b hb s hc hs C R B τ t hne
@@ -80,13 +64,7 @@ lemma error_volume_cap (N:ℕ)(b:ℝ)(hb:1≤b)(s:Input ι)
   rw [active_error_volume s C R B τ t Q hQ k hslot Bp υ v]
   convert hh using 1 <;> ring
 
-lemma error_nominal_cap (N:ℕ)(b:ℝ)(hb:1≤b)(s:Input ι)
-    (hc:Fintype.card ι≤N)(hs:s.upper≤b)(C R:Ideal O)(B:actualAllocations s.pools C)
-    (τ:Character)(t:ℝ)(hne:frozenCoefficient B.val C R s.ν s.W s.P≠0)
-    (Q:Ideal O)(hQ:Q≠0)(k:ℕ)
-    (hslot:∀i,∀I∈(activeInput (child s C R B τ t)).slots i,IsCoprime Q I)
-    (Bp:actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
-    (υ:Character)(v K:ℝ)(hK:0<K) :
+lemma error_nominal_cap(v K:ℝ)(hK:0<K) :
     nominal (errorInput s C R B τ t Q k Bp υ v) K≤
       geometry N b*((volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k))^2/K) := by
   have hv:=error_volume_cap N b hb s hc hs C R B τ t hne Q hQ k hslot Bp υ v
@@ -97,6 +75,8 @@ lemma error_nominal_cap (N:ℕ)(b:ℝ)(hb:1≤b)(s:Input ι)
     nlinarith [volume_pos (errorInput s C R B τ t Q k Bp υ v),
       mul_nonneg (pow_nonneg (zero_le_one.trans hb) N) hh]
   exact (div_le_div_of_nonneg_right hp hK.le).trans_eq (by unfold geometry;ring)
+
+end
 
 def mainRadius (C D:Ideal O)(E:Finset (CommonIndex C D))(K V Z σ δ reserve:ℝ):ℝ :=
   mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
@@ -134,14 +114,12 @@ def threshold (N:ℕ)(b σ:ℝ)(hb:1≤b)(hσ:0<σ):ℝ :=
 lemma threshold_gt_one (N:ℕ)(b σ:ℝ)(hb:1≤b)(hσ:0<σ):1<threshold N b σ hb hσ :=
   (fixedWidthThreshold_spec 2 (geometry N b) σ (by norm_num) (geometry_pos N b hb) hσ).1
 
-theorem main_child_width (N:ℕ)(b σ:ℝ)(hb:1≤b)(hσ:0<σ)
-    (Z:ℝ)(hlarge:threshold N b σ hb hσ≤Z)(s:Input ι)
-    (hc:Fintype.card ι≤N)(hs:s.upper≤b)(C D R:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(B:actualAllocations s.pools C)(τ:Character)(t:ℝ)
-    (hB:frozenCoefficient B.val C R s.ν s.W s.P≠0)
-    (hmod:τ.modulus=s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+section
+variable (N:ℕ) (b σ:ℝ) (hb:1≤b) (hσ:0<σ) (Z:ℝ) (hlarge:threshold N b σ hb hσ≤Z) (s:Input ι) (hc:Fintype.card ι≤N) (hs:s.upper≤b) (C D R:Ideal O) (hC:Supported C) (hD:Supported D) (hCD:primeSupport C=primeSupport D) (E:Finset (CommonIndex C D)) (B:actualAllocations s.pools C) (τ:Character) (t:ℝ) (hB:frozenCoefficient B.val C R s.ν s.W s.P≠0) (hmod:τ.modulus=s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
+include N b σ hb hσ Z hlarge s hc hs C D R hC hD hCD E B τ t hB hmod
+
+theorem main_child_width
     (K δ reserve ξ q Mparent:ℝ)(hK:0<K)(hδ:0≤δ)(hr:0≤reserve)(hξ:ξ≤σ/4)
     (hη:(s.η.modulus.absNorm:ℝ)≤Z^q)(hparent:Real.logb Z K+q≤Mparent)
     (S:Finset (Ideal O))(β:Ideal O→ℂ)(C₂ D₂:Ideal O)(hC₂:Supported C₂)(hD₂:Supported D₂)
@@ -171,14 +149,7 @@ theorem main_child_width (N:ℕ)(b σ:ℝ)(hb:1≤b)(hσ:0<σ)
     exact (by linarith [dyadicScale_pos (n 1)]:dyadicScale (n 1)≤2*dyadicScale (n 1)).trans (le_max_right _ _)
   linarith
 
-theorem error_child_width (N:ℕ)(b σ:ℝ)(hb:1≤b)(hσ:0<σ)
-    (Z:ℝ)(hlarge:threshold N b σ hb hσ≤Z)(s:Input ι)
-    (hc:Fintype.card ι≤N)(hs:s.upper≤b)(C D R:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(B:actualAllocations s.pools C)(τ:Character)(t:ℝ)
-    (hB:frozenCoefficient B.val C R s.ν s.W s.P≠0)
-    (hmod:τ.modulus=s.η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
+theorem error_child_width
     (p:O)(hp:p≠0)(k:ℕ)(hk:k=0∨k=5∨k=6)
     (hslot:∀i,∀I∈(activeInput (child s C R B τ t)).slots i,IsCoprime (Ideal.span {p}) I)
     (Bp:actualAllocations (activeInput (child s C R B τ t)).pools ((Ideal.span {p})^(k+1)))
@@ -215,6 +186,8 @@ theorem error_child_width (N:ℕ)(b σ:ℝ)(hb:1≤b)(hσ:0<σ)
     apply Real.logb_le_logb_of_le hZ (dyadicScale_pos _)
     exact (by linarith [dyadicScale_pos (n 1)]:dyadicScale (n 1)≤2*dyadicScale (n 1)).trans (le_max_right _ _)
   linarith
+
+end
 
 end SevenEighths.CenteredMomentEnergyAmplifiedChildWidth
 

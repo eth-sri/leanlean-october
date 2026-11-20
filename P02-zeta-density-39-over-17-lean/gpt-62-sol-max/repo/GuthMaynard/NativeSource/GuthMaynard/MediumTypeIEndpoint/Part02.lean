@@ -3,8 +3,7 @@ public import GuthMaynard.NativeSource.GuthMaynard.MediumTypeIEndpoint.Part01
 
 @[expose] public section
 
-open Asymptotics Filter Topology
-open Complex Finset MeasureTheory Real Set
+open Asymptotics Filter Topology Complex Finset MeasureTheory Real Set
 open scoped BigOperators ContDiff FourierTransform SchwartzMap
 namespace GuthMaynard.NativeMoment
 set_option maxHeartbeats 1200000

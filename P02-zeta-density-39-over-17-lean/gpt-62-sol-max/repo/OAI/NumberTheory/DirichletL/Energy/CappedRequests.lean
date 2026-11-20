@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 
 namespace SevenEighths.CenteredMomentEnergyCappedRequests
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
-open CenteredMomentEnergyWidthInduction CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergySourceCapSchedule
+open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges CenteredMomentEnergyWidthInduction CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergySourceCapSchedule
 
 def requestLength (M B L:ℝ):ℝ:=max L (2*M+B+2)+1
 

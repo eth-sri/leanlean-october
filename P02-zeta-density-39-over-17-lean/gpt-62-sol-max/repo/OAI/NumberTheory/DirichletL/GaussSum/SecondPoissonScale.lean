@@ -8,51 +8,16 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
+open scoped ContDiff
 
 namespace ActualEisensteinCubic
 
@@ -89,17 +54,17 @@ theorem canonicalSextic_conj_as_row_label
     change (χ x)⁻¹ = χ x * (χ x) ^ 4
     simp [hzero]
 
-theorem finiteSquarefreeRow_mul
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i) (S : Finset ι) (a b : O) :
+section
+variable {ι : Type*} (P : ι → Ideal O) [instShared2 : ∀ i, (P i).IsMaximal] (hgood : ∀ i, lambda ∉ P i) (S : Finset ι)
+include ι P instShared2 hgood S
+
+theorem finiteSquarefreeRow_mul (a b : O) :
     finiteSquarefreeRow P hgood S (a * b) =
       finiteSquarefreeRow P hgood S a * finiteSquarefreeRow P hgood S b := by
   classical
   simp only [finiteSquarefreeRow, map_mul, Finset.prod_mul_distrib]
 
-theorem finiteSquarefreeRow_conj_as_row_label
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i) (S : Finset ι) (e : O) :
+theorem finiteSquarefreeRow_conj_as_row_label (e : O) :
     star (finiteSquarefreeRow P hgood S e) =
       finiteSquarefreeRow P hgood S e *
         (finiteSquarefreeRow P hgood S e) ^ 4 := by
@@ -111,8 +76,6 @@ theorem finiteSquarefreeRow_conj_as_row_label
   exact canonicalSextic_conj_as_row_label (P i) (hgood i) e
 
 theorem finiteSquarefreeRow_second_child
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i) (S : Finset ι)
     (d e k J C v : O) :
     star (finiteSquarefreeRow P hgood S e) *
       finiteSquarefreeRow P hgood S d *
@@ -124,6 +87,8 @@ theorem finiteSquarefreeRow_second_child
   rw [finiteSquarefreeRow_conj_as_row_label P hgood S e]
   simp only [finiteSquarefreeRow_mul]
   ring
+
+end
 
 end
 
@@ -250,19 +215,6 @@ theorem mem_prime_product_iff
 
 end ActualEisensteinCubic
 
-namespace ConcretePrimeRowBridge
-
-section
-
-open ActualEisensteinCubic ShortDraftHeckeBridge
-open scoped BigOperators Classical
-
-end
-
-open ActualEisensteinCubic
-
-end ConcretePrimeRowBridge
-
 namespace EisensteinSchwartzPoisson
 open MeasureTheory Filter LineDeriv
 open scoped FourierTransform SchwartzMap Real RealInnerProductSpace
@@ -375,7 +327,7 @@ theorem partialFourier_continuous (f : SchwartzMap ℂ ℂ) (η : ℝ) :
       (f.continuous.comp hline)).aestronglyMeasurable
   · intro x
     exact Eventually.of_forall fun y => by
-      simpa only [Circle.smul_def, smul_eq_mul, norm_mul, Circle.norm_coe, one_mul] using
+      simpa [Circle.smul_def] using
         norm_le_verticalMajorant f x y
   · exact verticalMajorant_integrable f
   · exact Eventually.of_forall fun y => by
@@ -406,7 +358,7 @@ theorem fourier_partialFourier (f : SchwartzMap ℂ ℂ) (ξ η : ℝ) :
   have hcoe : (fp : LogPlane → ℂ) = (f : ℂ → ℂ) ∘ planeComplexIso := rfl
   rw [hcoe, Real.fourier_comp_linearIsometry] at hprod
   change 𝓕 (fun x : ℝ => 𝓕 (fun y : ℝ => f (complexPoint x y)) η) ξ = _
-  simpa only [Function.comp_apply, planeComplexIso_apply] using hprod.symm
+  simpa using hprod.symm
 
 def partialFourierSchwartz (f : SchwartzMap ℂ ℂ) (η : ℝ) : SchwartzMap ℝ ℂ :=
   𝓕⁻ (horizontalSlice (𝓕 f) η)
@@ -449,7 +401,7 @@ theorem horizontalSlice_lineDerivOp (F : SchwartzMap ℂ ℂ) (η : ℝ) :
   change fderiv ℝ (fun y : ℝ => F (complexPoint y η)) x (1 : ℝ) = _
   change fderiv ℝ ((F : ℂ → ℂ) ∘ (fun y => complexPoint y η)) x (1 : ℝ) = _
   rw [hcomp.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, Complex.ofRealCLM_apply, Complex.ofReal_one]
+  simp
 
 theorem horizontalSlice_lineDerivOp_twice (F : SchwartzMap ℂ ℂ) (η : ℝ) :
     ∂_{(1 : ℝ)} (∂_{(1 : ℝ)} (horizontalSlice F η)) =
@@ -530,7 +482,7 @@ theorem norm_inverse_horizontalSlice_le (F : SchwartzMap ℂ ℂ) (η x : ℝ) :
     integrable_inv_one_add_sq.const_mul _
   have h := norm_integral_le_of_norm_le
     (f := fun ξ : ℝ => Real.fourierChar (inner ℝ ξ x) • horizontalSlice F η ξ) hb (Eventually.of_forall fun ξ => by
-    simpa only [Circle.smul_def, smul_eq_mul, norm_mul, Circle.norm_coe, one_mul] using
+    simpa [Circle.smul_def] using
       norm_horizontalSlice_le F η ξ)
   simpa only [integral_const_mul, integral_univ_inv_one_add_sq] using h
 
@@ -639,8 +591,6 @@ def verticalSlice (f : 𝓢(ℂ, ℂ)) (x : ℝ) : 𝓢(ℝ, ℂ) :=
   SchwartzMap.compCLMOfAntilipschitz ℂ (vertical_temperate x)
     (vertical_isometry x).antilipschitzWith f
 
-@[simp] theorem verticalSlice_apply (f : 𝓢(ℂ, ℂ)) (x y : ℝ) :
-    verticalSlice f x y = f (complexPoint x y) := rfl
 
 theorem schwartz_poisson_zero (g : 𝓢(ℝ, ℂ)) :
     (∑' n : ℤ, g (n : ℝ)) = ∑' n : ℤ, 𝓕 (g : ℝ → ℂ) (n : ℝ) := by

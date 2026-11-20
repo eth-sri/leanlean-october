@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Moments.FrozenChildBounds
 public import OAI.NumberTheory.DirichletL.Moments.SecondSourceRemainder
 public import OAI.NumberTheory.DirichletL.Moments.SecondFrozenLiveSource
 
@@ -8,34 +9,15 @@ namespace OAI
 
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
-open Filter
-open SevenEighths.CenteredMomentSecondNonexceptionalScalar
+open Filter SevenEighths.CenteredMomentSecondNonexceptionalScalar
 
 namespace SevenEighths.CenteredMomentSecondFrozenLiveDescent
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSecondFrozenRatioCost
-open CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass
-open CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization
-open CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise
-open CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy
-open CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily
-open ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair
-open CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget
-open CenteredMomentSecondActivePhysicalDictionary
-open CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCommonRadialData CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentOriginalCommonHarmonic CenteredMomentSecondFrozenRatioCost CenteredMomentSecondNonexceptionalChosenBlock CenteredMomentSecondNonexceptionalAggregate CenteredMomentSecondExceptionalFamily CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockAggregate CenteredMomentSecondBlockHarmonicMass CenteredMomentSecondLiveBlock CenteredMomentSecondEnergySplit CenteredMomentActiveSource CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentFirstSectors CenteredMomentSourceRow CenteredMomentSectorLocalization CenteredMomentSecondSectorColumns CenteredMomentSecondWindowSource CenteredMomentCommonHeightEnvelope CenteredMomentCommonRadialPointwise CenteredMomentCommonAllocationSum CenteredMomentEligibleEnergy CenteredMomentHeckeColumnWindow CenteredMomentSecondHeightFamily ConcretePrimeRowBridge CenteredMomentExceptionalAmplitudePair CenteredMomentMobiusRegroup CenteredMomentRadialEligibleEnergy CenteredMomentSecondWindowBudget CenteredMomentSecondActivePhysicalDictionary CenteredMomentSourceLiveColumn CenteredMomentSecondRetainedRatioScalar
 local notation "O" => HeckeFamily.O
 variable {ι:Type*} [Fintype ι] [DecidableEq ι]
 local instance : DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
-open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical
-open CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate
-open CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
+open CenteredMomentFiniteProfileExceptional CenteredMomentFiniteProfileExceptionalPhysical CenteredMomentOriginalChildEnergy CenteredMomentSupportedTailAggregate CenteredMomentSourceInputTailUniform EisensteinSchwartzPoisson
 
 theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
     (lo hi:ι→ℝ)(hhi:∀i,0≤hi i)(W:𝓢(ℝ,ℂ))(J₁ J₂:ℕ)
@@ -51,49 +33,17 @@ theorem original_source_descent (wlo whi:ℝ)(hwlo:0<wlo)(hwhi:0≤whi)
       (s.η.modulus.absNorm:ℝ)≤Z^B → (R0.absNorm:ℝ)≤Z^B →
       let S:=finiteColumns (Fintype.piFinset s.pools)
       let β:=coefficient s R0 seed
-    ∃τ:(q:ActiveLabel S β)→Finset (CommonIndex q.val.1 q.val.2)→RayCharacter→Character,
-    (∀q U,Family s.η q.val.1 q.val.2
-      (commonLabels_supported (activeSource S β) _ _ q.property).1
-      (commonLabels_supported (activeSource S β) _ _ q.property).2 U (τ q U)) ∧
+    ∃τ:FrozenSource.ChildCharacters S β,
+    FrozenSource.ChildFamilies s.η τ ∧
     ∀χ₀:RayCharacter,∀m:O,m≠0 → goodLambda∣m → (2:O)∣m →
     ∀Kphys Tsec:ℝ,0<Kphys → volume s.toData≤Z^B → Tsec≤Z^B →
       (volume s.toData)^2/Kphys≤Tsec →
       0<frequencyRadius Tsec Z ξ → frequencyRadius Tsec Z ξ≤Z^B →
     ∀E₁ E₂:ℝ,0≤E₁ → 0≤E₂ →
-    (∀q∈liveLabels s.η S β,∀U:Finset (CommonIndex q.val.1 q.val.2),
-      ∀n:SourceBlocks q.val.1 q.val.2 U Kphys (frequencyRadius Tsec Z ξ) (sourceRadius s),
-      physicalBlock s.η s.t (activeSource S β) β q.val.1 q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).1
-        (commonLabels_supported (activeSource S β) _ _ q.property).2 U (frequencyRadius Tsec Z ξ)
-        (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
-        (fun i=>(n i:ℤ))≠0→
-      ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
-      (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
-      ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.1,
-      frozenCoefficient b.val q.val.1 R0 s.ν s.W s.P≠0 →
-      ∀a∈(commonData (withHeight s (τ q U χ) v) q.val.1 R0 b).toSource.active D0,
-      childEnergy (commonData (withHeight s (τ q U χ) v) q.val.1 R0 b)
-        (canonicalRadial (τ q U χ) Q (fun i=>(n i:ℤ))) D0 a≤
-          E₁*childEnvelope s.η q.val.1 q.val.2 U (fun i=>(n i:ℤ))*
-          (max 1 (1/retainedRatio (fun i=>(n i:ℤ))))^((1:ℝ)/6)*(1+‖v‖)^(2*J₁))→
-    (∀q∈liveLabels s.η S β,∀U:Finset (CommonIndex q.val.1 q.val.2),
-      ∀n:SourceBlocks q.val.1 q.val.2 U Kphys (frequencyRadius Tsec Z ξ) (sourceRadius s),
-      physicalBlock s.η s.t (activeSource S β) β q.val.1 q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).1
-        (commonLabels_supported (activeSource S β) _ _ q.property).2 U (frequencyRadius Tsec Z ξ)
-        (partRows false s.η χ₀ Q m q.val.1 q.val.2 U (frequencyRadius Tsec Z ξ)) W Kphys
-        (fun i=>(n i:ℤ))≠0→
-      ∀D0∈divisorPool Finset.univ (fun J:sectorPool q.val.2
-        (commonLabels_supported (activeSource S β) _ _ q.property).2.1 S=>(J:Ideal O)),
-      (D0.absNorm:ℝ)≤sourceRadius s/(q.val.2.absNorm:ℝ)→Squarefree D0→
-      ∀χ:RayCharacter,∀v:ℝ,∀b:actualAllocations s.pools q.val.2,
-      frozenCoefficient b.val q.val.2 R0 s.ν s.W s.P≠0 →
-      ∀a∈(commonData (withHeight s (τ q U χ) v) q.val.2 R0 b).toSource.active D0,
-      childEnergy (commonData (withHeight s (τ q U χ) v) q.val.2 R0 b)
-        (canonicalRadial (τ q U χ) Q (fun i=>(n i:ℤ))) D0 a≤
-          E₂*childEnvelope s.η q.val.1 q.val.2 U (fun i=>(n i:ℤ))*
-          (max 1 (1/retainedRatio (fun i=>(n i:ℤ))))^((1:ℝ)/6)*(1+‖v‖)^(2*J₂))→
+    FrozenSource.ChildBound s R0 τ χ₀ Q m W Kphys (frequencyRadius Tsec Z ξ)
+      Prod.fst (childEnvelope s.η) E₁ J₁→
+    FrozenSource.ChildBound s R0 τ χ₀ Q m W Kphys (frequencyRadius Tsec Z ξ)
+      Prod.snd (childEnvelope s.η) E₂ J₂→
     ∀r:ℝ,Z^r≤s.X₁ → Z^r≤s.X₂ → Z^r≤s.Y₁ → Z^r≤s.Y₂ →
     ‖sourceGaussEnergy S β (heightCoeff s.η s.t) W Kphys‖/volume s.toData≤
       Cmain*Z^(2*δ+ε)*profileCost s*(s.η.modulus.absNorm:ℝ)*sourceRadius s*

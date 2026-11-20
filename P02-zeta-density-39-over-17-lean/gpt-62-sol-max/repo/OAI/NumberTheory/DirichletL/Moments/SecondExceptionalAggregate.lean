@@ -1,6 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Moments.SecondEnergySplit
-public import OAI.NumberTheory.DirichletL.Moments.SecondBlockRadicalHarmonicMass
+public import OAI.NumberTheory.DirichletL.Moments.SecondBlockHarmonicMass
 public import OAI.NumberTheory.DirichletL.Moments.ExceptionalAmplitudePair
 
 @[expose] public section
@@ -11,14 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalAggregate
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock
-open CenteredMomentSecondBlockAggregate CenteredMomentSecondRetainedAggregate
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical
-open CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSectorLocalization CenteredMomentActiveSource
-open CenteredMomentSecondBlockHarmonicMass CenteredMomentSecondBlockRadicalHarmonicMass
-open CenteredMomentFirstSectors CenteredMomentSourceRow RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock CenteredMomentSecondBlockAggregate CenteredMomentSecondRetainedAggregate CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit CenteredMomentSectorLocalization CenteredMomentActiveSource CenteredMomentSecondBlockHarmonicMass CenteredMomentFirstSectors CenteredMomentSourceRow RayFourExpansion
 local notation "O"=>HeckeFamily.O
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
 
@@ -26,7 +19,7 @@ lemma live_radical_sum_le (η:Character)(S:Finset (Ideal O))(β:Ideal O→ℂ)(K
     (∑p∈liveLabels η S β,∑U:Finset (CommonIndex p.val.1 p.val.2),
       ∑_n:SourceBlocks p.val.1 p.val.2 U K R H,radicalWeight p.val.1 p.val.2)≤
     ∑q:ActiveBlocks S β K R H,radicalWeight q.1.1.val.1 q.1.1.val.2:=by
-  rw [CenteredMomentSecondBlockRadicalHarmonicMass.active_blocks_sum_eq]
+  rw [active_blocks_sum_eq S β K R H radicalWeight]
   simp only [Finset.sum_const,Finset.card_univ,nsmul_eq_mul]
   exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
     (fun p _ _=>Finset.sum_nonneg (fun U _=>mul_nonneg (Nat.cast_nonneg _) (radicalWeight_nonneg _ _)))

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondCellParameters
 public import OAI.NumberTheory.DirichletL.Descent.SecondSharpPuncture
 public import OAI.NumberTheory.DirichletL.Descent.PrioritySourceBudget
@@ -42,7 +43,7 @@ lemma actual_cell_label_nonneg (Z B j eta : ℝ) (d : BlockIndex)
   positivity
 
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalIdealFamily.Maximal p]
 include hp
 
 omit [DecidableEq ι] in
@@ -65,7 +66,7 @@ theorem actual_cell_norm_centers {Jo Jn : ℕ}
       _ = _ := by rw [←second_cell_scale_rpow Z d i hZ,←Real.rpow_add hz];congr 1;ring
 
 theorem actual_cell_child_margins
-    (hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (hs : ActualSecondSourceConditions p source) (hk : ∀x∈source,x.second.frequency≠0)
     (d : BlockIndex) (x : MarkedSecondSource ι Jo Jn) (hx : x∈cell p source d)

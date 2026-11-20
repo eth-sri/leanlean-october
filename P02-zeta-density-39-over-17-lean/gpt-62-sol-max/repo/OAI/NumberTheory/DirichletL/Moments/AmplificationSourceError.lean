@@ -12,12 +12,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplificationSourceError
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening
-open CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain
-open CenteredMomentAmplificationSourcePolynomial CenteredMomentAmplificationSourcePool
-open CenteredMomentAmplificationRectangle CenteredMomentGaussNormalization
-open CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationGlobal CenteredMomentAmplificationShortening CenteredMomentAmplificationSource CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePolynomial CenteredMomentAmplificationSourcePool CenteredMomentAmplificationRectangle CenteredMomentGaussNormalization CenteredMomentGaussEnergy CenteredMomentSupportedCorrelation CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
  theorem source_error_residual (S : Finset (Ideal O)) (c : Ideal O → ℂ)
@@ -34,9 +29,11 @@ local notation "O" => ActualEisensteinCubic.O
   rw [source_error_shortening S c p hp hs hpp n h,
     remainder_polynomial S c p hp hpp (n+1) h]
 
-theorem normalized_source_error (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
-    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : O) (T : ℝ) (hT : 0<T) :
+section
+variable (S : Finset (Ideal O)) (c : Ideal O → ℂ) (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p})) (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : O) (T : ℝ) (hT : 0<T)
+include S c p hp hs hpp n h T hT
+
+theorem normalized_source_error :
     amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => (Real.sqrt T:ℂ)⁻¹*c I)
       (fun I => multiplicity p (sourceGenerator S I)) p (n+1) h =
@@ -52,9 +49,7 @@ theorem normalized_source_error (S : Finset (Ideal O)) (c : Ideal O → ℂ)
   have hr := primeRoot_ne_zero p hp.ne_zero (n+1)
   field_simp
 
-theorem normalized_source_error_sq (S : Finset (Ideal O)) (c : Ideal O → ℂ)
-    (p : O) (hp : Prime p) (hs : Supported (Ideal.span {p}))
-    (hpp : goodLambda^2 ∣ p-1) (n : ℕ) (h : O) (T : ℝ) (hT : 0<T) :
+theorem normalized_source_error_sq :
     ‖amplificationError Finset.univ (sourceGenerator S) (sourceGenerator_supported S)
       (fun I : supportedColumns S => (Real.sqrt T:ℂ)⁻¹*c I)
       (fun I => multiplicity p (sourceGenerator S I)) p (n+1) h‖^2 =
@@ -65,6 +60,8 @@ theorem normalized_source_error_sq (S : Finset (Ideal O)) (c : Ideal O → ℂ)
             (Real.sqrt (T/(Ideal.absNorm (Ideal.span {p}):ℝ)^(n+1)):ℂ)⁻¹*
             (c ((Ideal.span {p})^(n+1)*I)*residualCharacter p (n+1) (primaryGenerator I))) h‖^2 := by
   rw [normalized_source_error S c p hp hs hpp n h T hT,norm_mul,mul_pow]
+
+end
 
 end SevenEighths.CenteredMomentAmplificationSourceError
 

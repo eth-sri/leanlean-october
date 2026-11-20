@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceRow
-open CenteredMomentHeckeExpansion CenteredMomentRowNorm HeckeFamily CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
+open CenteredMomentHeckeExpansion CenteredMomentRowNorm HeckeFamily CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem rowWeight_split (η : Character) (m A z : O) (t : ℝ) (I : Ideal O) :

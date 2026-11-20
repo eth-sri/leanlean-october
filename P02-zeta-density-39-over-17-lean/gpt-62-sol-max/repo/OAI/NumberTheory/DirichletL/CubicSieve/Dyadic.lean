@@ -50,10 +50,12 @@ lemma sum_extractionBins {A : Type*} [AddCommMonoid A] (R : Finset O) (M : ℝ) 
   intro z hz
   simp
 
-lemma extractionBin_bounds (R : Finset O) (M : ℝ)
-    (hR : ∀ z ∈ R, z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M)
-    (j : Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1) ×
+section
+variable (R : Finset O) (M : ℝ) (hR : ∀ z ∈ R, z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M) (j : Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1) ×
       Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1))
+include R M hR j
+
+lemma extractionBin_bounds
     (z : O) (hz : z ∈ extractionBin R M j) :
     (CanonicalQuadraticSieve.divisorDyadicScale j.1.val ≤
         (Ideal.absNorm (firstPart (Ideal.span {z})) : ℝ) ∧
@@ -84,10 +86,7 @@ lemma extractionBin_bounds (R : Finset O) (M : ℝ)
     change _ ≤ 2 * max 1 _
     linarith [hy.2]
 
-lemma extractionBin_scale_product (R : Finset O) (M : ℝ)
-    (hR : ∀ z ∈ R, z ≠ 0 ∧ (Ideal.absNorm (Ideal.span {z}) : ℝ) ≤ M)
-    (j : Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1) ×
-      Fin (CanonicalQuadraticSieve.columnDyadicLength M + 1))
+lemma extractionBin_scale_product
     (hj : (extractionBin R M j).Nonempty) :
     CanonicalQuadraticSieve.divisorDyadicScale j.1.val *
       CanonicalQuadraticSieve.divisorDyadicScale j.2.val ^ 2 ≤ M := by
@@ -111,6 +110,8 @@ lemma extractionBin_scale_product (R : Finset O) (M : ℝ)
       le_mul_of_one_le_right (by positivity) (one_le_pow₀ hcube)
     _ = Ideal.absNorm (Ideal.span {z}) := (extracted_norm_product _ hI).symm
     _ ≤ M := (hR z hzR).2
+
+end
 
 theorem full_element_dyadic_extraction {n : Type*} [Fintype n] [DecidableEq n]
     (R : Finset O) (hRne : R.Nonempty) (M N : ℝ)

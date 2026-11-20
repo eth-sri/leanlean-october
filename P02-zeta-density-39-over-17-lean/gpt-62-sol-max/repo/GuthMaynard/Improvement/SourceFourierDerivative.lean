@@ -10,9 +10,12 @@ open MeasureTheory Set
 open scoped FourierTransform
 namespace GuthMaynard.Improvement
 
+section
+variable {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2) {R : ℝ}
+include f h1 h2 R
+
 /-- Compact time support makes the actual time-weighted signal L1 and L2. -/
-theorem source_time_weight_bounds {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
-    {R : ℝ} (_hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
+theorem source_time_weight_bounds (_hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
     Integrable (fun t => t • f t) ∧ MemLp (fun t => t • f t) 2 ∧
       (∫ t, ‖t • f t‖^2) ≤ R^2*(∫ t, ‖f t‖^2) := by
   have hm : AEStronglyMeasurable (fun t : ℝ => t • f t) :=
@@ -40,16 +43,14 @@ theorem source_time_weight_bounds {f : ℝ → ℂ} (h1 : Integrable f) (h2 : Me
     _ = _ := integral_const_mul _ _
 
 /-- Actual literal Fourier derivative, with exact 2π normalization. -/
-theorem source_fourier_hasDerivAt {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
-    {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) (ξ : ℝ) :
+theorem source_fourier_hasDerivAt (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) (ξ : ℝ) :
     HasDerivAt (𝓕 f) (𝓕 (fun t : ℝ => (-2*Real.pi*Complex.I*t)*f t) ξ) ξ := by
   simpa only [smul_eq_mul] using
     Real.hasDerivAt_fourier h1 (source_time_weight_bounds h1 h2 hR hs).1 ξ
 
 /-- Ordinary compactly supported L1/L2 data have a differentiable literal
 Fourier transform and an L2 derivative, with exact support-radius loss. -/
-theorem source_fourier_derivative_l2 {f : ℝ → ℂ} (h1 : Integrable f) (h2 : MemLp f 2)
-    {R : ℝ} (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
+theorem source_fourier_derivative_l2 (hR : 0 ≤ R) (hs : Function.support f ⊆ Icc (-R) R) :
     Differentiable ℝ (𝓕 f) ∧ MemLp (deriv (𝓕 f)) 2 ∧
       (∫ ξ, ‖deriv (𝓕 f) ξ‖^2) ≤ (2*Real.pi*R)^2*(∫ t, ‖f t‖^2) := by
   obtain ⟨hwi,hw2,hwb⟩ := source_time_weight_bounds h1 h2 hR hs
@@ -76,6 +77,8 @@ theorem source_fourier_derivative_l2 {f : ℝ → ℂ} (h1 : Integrable f) (h2 :
       _ ≤ (2*Real.pi)^2*(R^2*(∫ t, ‖f t‖^2)) :=
         mul_le_mul_of_nonneg_left hwb (sq_nonneg _)
       _ = _ := by ring
+
+end
 
 /-- Exact Cauchy--Schwarz constant on the fixed frequency interval [-2,2]. -/
 theorem source_l2_interval_l1 {f : ℝ → ℂ} (h2 : MemLp f 2) :

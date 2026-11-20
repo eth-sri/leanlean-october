@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindowsActual
 public import OAI.NumberTheory.DirichletL.Inversion.SecondSourceBlocks
 
@@ -58,8 +59,8 @@ lemma sourceCell_ratios {κ : Type*} [DecidableEq κ] (q : κ→Fin 6→ℝ) (S 
     (div_le_iff₀ (dyadScale_pos _)).mpr hh.2.le⟩
 
 theorem actual_original_cell_ratios {ι κ : Type*} [DecidableEq ι] [DecidableEq κ]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (S : Finset κ) (selector C₁ C₂ : κ→Finset ι→ℂ)
     (A₁ A₂ C R : κ→ℝ) (d h : κ→O)
     (hq : ∀x∈S,∀i,1≤sourceNorms A₁ A₂ C R d h x i)

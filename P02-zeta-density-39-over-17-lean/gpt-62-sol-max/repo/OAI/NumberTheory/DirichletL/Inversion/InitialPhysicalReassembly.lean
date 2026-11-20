@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerSource
 
 @[expose] public section
@@ -9,14 +10,12 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialPhysicalReassembly
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseInitialRayAttachment InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic InverseInitialRayAttachment InverseInitialPhysicalMeasure InverseInitialEnergyCallerSource InverseInitialEnergyCallerModes
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem initialColumn_zero_common (Ψ:O→*ℂ)(j d h:O)(H:Finset ι→ℂ)
     (G U:Finset ι)(hd:¬Disjoint G U):
@@ -28,19 +27,23 @@ theorem initialColumn_zero_common (Ψ:O→*ℂ)(j d h:O)(H:Finset ι→ℂ)
     simp only [rowCoprimeMask,ite_eq_left hh]
   simp only [initialColumn,hm,mul_zero,zero_mul]
 
-theorem physicalTerm_zero_left_common (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)
-    (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(G E V N M:Finset ι)(h:O)(ρ:SecondRayIndex)
+section
+variable (Ψ:O→*ℂ) (j:O) (σ:Finset ι→ℂ) (W₁ W₂:ℝ→ℂ) (Φ:𝓢(ℝ,ℂ)) (Z D m:ℝ) (G E V N M:Finset ι) (h:O) (ρ:SecondRayIndex)
+include Ψ j σ W₁ W₂ Φ Z D m G E V N M h ρ
+
+theorem physicalTerm_zero_left_common
     (hd:¬Disjoint G (V∪N)):
     physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m ⟨G,E,V,N,M,h⟩ ρ=0:=by
   simp only [physicalTerm,initialColumn_zero_common p hp hcop hg _ _ _ _ _ _ _ hd,
     star_zero,mul_zero,zero_mul]
 
-theorem physicalTerm_zero_right_common (Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)
-    (W₁ W₂:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ)(G E V N M:Finset ι)(h:O)(ρ:SecondRayIndex)
+theorem physicalTerm_zero_right_common
     (hd:¬Disjoint G (V∪M)):
     physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m ⟨G,E,V,N,M,h⟩ ρ=0:=by
   simp only [physicalTerm,initialColumn_zero_common p hp hcop hg _ _ _ _ _ _ _ hd,
     mul_zero,zero_mul]
+
+end
 
 private theorem missing_residual_common (pool G V N:Finset ι)
     (hN:N∈(pool\V).powerset)(hn:N∉((pool\G)\V).powerset):¬Disjoint G (V∪N):=by
@@ -142,7 +145,7 @@ theorem finiteSource_nonzero (pool:Finset ι)(T:Finset O)(hT:(0:O)∉T):
   exact hT (he ▸ ((mem_finiteSource pool T x).mp hx).2.2.2)
 
 theorem finite_physical_reassembly
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
+    (hinj:OAI.PrincipalIdealFamily.Distinct p)
     (pool:Finset ι)(freqT:Finset O)(Ψ:O→*ℂ)(j:O)(σ:Finset ι→ℂ)
     (W:ℝ→ℂ)(Φ:𝓢(ℝ,ℂ))(Z D m:ℝ):
     (∑G∈pool.powerset,∑U∈(pool\G).powerset,∑T∈(pool\G).powerset,

@@ -1,5 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.CompactProfileFamily
+public import OAI.NumberTheory.DirichletL.Foundation
 
 @[expose] public section
 

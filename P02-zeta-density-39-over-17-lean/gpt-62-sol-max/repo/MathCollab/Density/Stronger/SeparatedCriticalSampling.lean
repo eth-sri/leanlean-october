@@ -19,10 +19,13 @@ theorem weightedCriticalTwelfth_le_physical_interval {T u : ℝ} (hT : 1 ≤ T)
     (integrable_translated_critical_twelfth (by norm_num : 14 ≤ 128) u)]
   exact add_le_add le_rfl (weightedCriticalTwelfth_physical_tail hT hu)
 
+section
+variable {U : Finset ℝ} {T : ℝ} (hT : 1 ≤ T) (hU : oneSeparated U) (hslab : ∀ u ∈ U, u ∈ Icc T (2*T))
+include U T hT hU hslab
+
 /-- Separated sampling of the actual weighted zeta means, with every tail
 and integrability premise discharged. The physical moment remains literal. -/
-theorem separated_weightedCriticalMean_twelfth_le_with_card {U : Finset ℝ} {T : ℝ}
-    (hT : 1 ≤ T) (hU : oneSeparated U) (hslab : ∀ u ∈ U, u ∈ Icc T (2*T)) :
+theorem separated_weightedCriticalMean_twelfth_le_with_card :
     (∑ u ∈ U, (weightedCriticalMean 128 u)^12) ≤
       Real.pi^11 * (separationMass * ∫ t in Icc 0 (3*T), zetaMomentCriticalNorm t^12) +
         Real.pi^11 * ((U.card : ℝ)*(12:ℝ)^12*T^(-114 : ℝ)*Real.pi) := by
@@ -45,8 +48,7 @@ theorem separated_weightedCriticalMean_twelfth_le_with_card {U : Finset ℝ} {T 
       exact add_le_add (separated_critical_twelfth_on_interval (by norm_num : 2 ≤ 128) hU 0 (3*T)) le_rfl
     _ = _ := by ring
 
-theorem separated_card_in_height_slab {U : Finset ℝ} {T : ℝ}
-    (hT : 1 ≤ T) (hU : oneSeparated U) (hslab : ∀ u ∈ U, u ∈ Icc T (2*T)) :
+theorem separated_card_in_height_slab :
     (U.card : ℝ) ≤ 2*T := by
   have hspan : intervalSpan U ≤ T := by
     apply intervalSpan_le_of_forall (by linarith : 0 ≤ T)
@@ -60,8 +62,7 @@ theorem separated_card_in_height_slab {U : Finset ℝ} {T : ℝ}
   linarith
 
 /-- The tail cardinality is removed by actual one-separated packing. -/
-theorem separated_weightedCriticalMean_twelfth_le {U : Finset ℝ} {T : ℝ}
-    (hT : 1 ≤ T) (hU : oneSeparated U) (hslab : ∀ u ∈ U, u ∈ Icc T (2*T)) :
+theorem separated_weightedCriticalMean_twelfth_le :
     (∑ u ∈ U, (weightedCriticalMean 128 u)^12) ≤
       Real.pi^11 * separationMass * (∫ t in Icc 0 (3*T), zetaMomentCriticalNorm t^12) +
         (2*(12:ℝ)^12*Real.pi^12)*T^(-113 : ℝ) := by
@@ -78,5 +79,7 @@ theorem separated_weightedCriticalMean_twelfth_le {U : Finset ℝ} {T : ℝ}
       _ = (2*(12:ℝ)^12*Real.pi^12)*(T*T^(-114 : ℝ)) := by ring
       _ = _ := by rw [hp]
   exact hbase.trans (by simpa only [mul_assoc] using add_le_add le_rfl htail)
+
+end
 
 end MathCollab.Density.Stronger

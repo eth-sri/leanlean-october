@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Set
 namespace SevenEighths.HeckeDetectorDyadicBridge
-open HeckeFamily HeckeDetectorFinite HeckeDetectorPartition
-open CompletedGauss ConcretePrimeRowBridge
+open HeckeFamily HeckeDetectorFinite HeckeDetectorPartition CompletedGauss ConcretePrimeRowBridge
 local notation "O" => HeckeFamily.O
 
 def fourierSet (U : ℝ) : Finset (Ideal O) := idealsUpTo ⌈16*U⌉₊

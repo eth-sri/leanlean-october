@@ -11,73 +11,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -465,14 +409,18 @@ def kernelCuspFourierFamily (h : ActualEisensteinCubic.O) (a b : ℝ) (ha : 0<a)
   kernelCuspFourier h
     (kernelLocalCorrectedSeed kernelCuspAverageCompact kernelCuspAverageCompact_isCompact a b ha hab s)
 
-lemma kernelCuspFourierFamily_residue_limit (h : ActualEisensteinCubic.O) (a b : ℝ) (ha : 0<a) (hab : a<b) :
+section
+variable (h : ActualEisensteinCubic.O) (a b : ℝ) (ha : 0<a) (hab : a<b)
+include h a b ha hab
+
+lemma kernelCuspFourierFamily_residue_limit :
     Tendsto (fun s : ℂ => (s-4/3)*kernelCuspFourierFamily h a b ha hab s)
       (𝓝[≠] (4/3:ℂ)) (𝓝 (kernelCuspFourier h (kernelEisensteinResidueVector a b ha hab))) := by
   have hh := (kernelCuspFourier h).continuous.continuousAt.tendsto.comp
     (kernelLocalCorrectedSeed_residue_limit kernelCuspAverageCompact kernelCuspAverageCompact_isCompact a b ha hab)
   simpa only [Function.comp_def,map_smul,smul_eq_mul,kernelCuspFourier_restrict,kernelCuspFourierFamily] using hh
 
-lemma kernelCuspFourierFamily_actual_integral (h : ActualEisensteinCubic.O) (a b : ℝ) (ha : 0<a) (hab : a<b) (s : ℂ) :
+lemma kernelCuspFourierFamily_actual_integral (s : ℂ) :
     kernelCuspFourierFamily h a b ha hab s=∫w in cuspPeriodStrip 5 6,
       kernelCorrectedSeed a b ha hab s (integralOrbitProjection globalKubotaKernel w)*
         cuspFourierPhase h w∂hyperbolicVolume := by
@@ -486,7 +434,7 @@ lemma kernelCuspFourierFamily_actual_integral (h : ActualEisensteinCubic.O) (a b
   exact congrArg (fun z : ℂ => z*cuspFourierPhase h w)
     (hw.trans (Set.indicator_of_mem (kernelCuspStripSet_subset_compact ⟨w,hwm,rfl⟩) _))
 
-lemma kernelCuspFourierFamily_of_initial_overlap (h : ActualEisensteinCubic.O) (a b : ℝ) (ha : 0<a) (hab : a<b)
+lemma kernelCuspFourierFamily_of_initial_overlap
     (s : ℂ) (hs : 2<s.re)
     (hoverlap : kernelEisensteinL2Correction a b ha hab s=ᵐ[integralQuotientVolume globalKubotaKernel]
       fun q => kernelQuotientEisenstein s hs q-kernelQuotientSeed a b s q) :
@@ -505,6 +453,8 @@ lemma kernelCuspFourierFamily_of_initial_overlap (h : ActualEisensteinCubic.O) (
   filter_upwards [hp] with w hw
   exact congrArg (fun z : ℂ => z*cuspFourierPhase h w)
     (hw.trans (kernelQuotientEisenstein_mk s hs w))
+
+end
 
 end
 

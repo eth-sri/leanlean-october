@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.Poisson
 public import OAI.NumberTheory.DirichletL.Descent.Completion
 
@@ -12,9 +13,9 @@ open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmet
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def finiteCanonicalMarkedRow (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
@@ -24,7 +25,7 @@ def finiteCanonicalMarkedRow (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis
 
 omit [DecidableEq σ] in
 theorem finiteCanonicalMarkedRow_actual_columns
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ p i - 1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (m f k : Eis)
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
     (W : ℝ → ℂ) (X : ℝ) :

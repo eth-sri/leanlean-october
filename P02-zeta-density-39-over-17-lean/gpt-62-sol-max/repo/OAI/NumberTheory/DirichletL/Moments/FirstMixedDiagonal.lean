@@ -9,14 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedDiagonal
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale
-open CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedExceptionalCap
-open CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentDescentLedger
-open CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentCanonicalFirst CenteredMomentSecondHeightFamily
-open CenteredMomentAmplificationErrorEnergy
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic ConcreteTraceCRT CenteredMomentFirstPhysicalSource CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentFirstMixedAllowance CenteredMomentFirstMixedExceptionalCap CenteredMomentFirstMixedNormalization CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstExceptionalPrefactor CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentCanonicalFirst CenteredMomentSecondHeightFamily CenteredMomentAmplificationErrorEnergy
 local notation "O"=>HeckeFamily.O
 
 theorem actual_common_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
@@ -67,11 +60,12 @@ theorem actual_common_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD
   norm_num only [Nat.cast_ofNat]
   nlinarith only [hq,hm,he,hfix,hallow]
 
-theorem actual_main_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
-    (K V Z sigma delta reserve eps:ℝ)(hK:0<K)(hV:0<V)(hZ:1<Z)(heps:0≤eps)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
+section
+variable (η τ:Character) (C D:Ideal O) (hC:Supported C) (hD:Supported D) (hCD:primeSupport C=primeSupport D) (E:Finset (CommonIndex C D)) (K V Z sigma delta reserve eps:ℝ) (hK:0<K) (hV:0<V) (hZ:1<Z) (heps:0≤eps) (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
+      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
+include η τ C D hC hD hCD E K V Z sigma delta reserve eps hK hV hZ heps hmod
+
+theorem actual_main_diagonal:
     (V/(C.absNorm:ℝ))*mainCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
       (Real.logb Z (C.absNorm:ℝ)) sigma delta reserve*(V/(C.absNorm:ℝ))^eps/
@@ -83,11 +77,7 @@ theorem actual_main_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:S
     actual_common_diagonal η τ C D hC hD hCD E K V Z 0 0 2 sigma delta reserve eps
       hK hV hZ (le_refl _) (le_refl _) heps hmod
 
-theorem actual_error_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:Supported D)
-    (hCD:primeSupport C=primeSupport D)(E:Finset (CommonIndex C D))
-    (K V Z sigma delta reserve eps:ℝ)(hK:0<K)(hV:0<V)(hZ:1<Z)(heps:0≤eps)
-    (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
-      Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
+theorem actual_error_diagonal
     (p:O)(hp:p≠0)(k:ℕ)(hk:k=1 ∨ k=6 ∨ k=7):
     (V/(C.absNorm:ℝ))*localErrorCost p (k-1)*errorCommonRadius Z (Real.logb Z (D.absNorm:ℝ))
       (nominalLog C D (Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E}) K V Z)
@@ -110,6 +100,8 @@ theorem actual_error_diagonal (η τ:Character)(C D:Ideal O)(hC:Supported C)(hD:
   unfold errorCommonRadius
   gcongr
   exact actual_error_weight p hp Z hZ k hk
+
+end
 
 end SevenEighths.CenteredMomentFirstMixedDiagonal
 

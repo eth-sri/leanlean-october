@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.ActualChildState
 public import OAI.NumberTheory.DirichletL.Descent.SecondCutoffScale
 public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRows
@@ -10,12 +11,11 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers CompletedGauss
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseSecondFibers CompletedGauss
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalIdealFamily.Maximal p]
 include hp
 
 theorem actual_cell_row_decrease {Jo Jn : ℕ}
@@ -38,7 +38,7 @@ theorem actual_cell_row_decrease {Jo Jn : ℕ}
   linarith
 
 theorem actual_cell_triple_puncture_nonzero
-    (hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo Jn : ℕ} (source : Finset (MarkedSecondSource ι Jo Jn))
     (hs : ActualSecondSourceConditions p source) (d : BlockIndex) (m : O) (hm : m≠0)
     (γ : OuterTriple) (hγ : γ∈actualSecondTriples p 1 1 (cell p source d)) :

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityPhysical
 public import OAI.NumberTheory.DirichletL.Descent.SecondDeletedModeEnergy
 
@@ -10,11 +11,10 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMomentWholeRetainedSource
-open ActualEisensteinCubic SecondPassArithmetic InverseMoment InverseInitialArithmetic
-open InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents
+open ActualEisensteinCubic SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
-variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable {Jo : ℕ} (p : ι→O) [OAI.PrincipalIdealFamily.Maximal p]
 
 def deleted (extra : CubeCoordinates ι→Finset ι) (negative : Bool)
     (x : MarkedSecondSource ι Jo 0) : Finset ι :=
@@ -22,7 +22,7 @@ def deleted (extra : CubeCoordinates ι→Finset ι) (negative : Bool)
     quotientSupport p (secondParentOf x))
 
 theorem retained_deleted_support
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (extra : CubeCoordinates ι→Finset ι)
     (source : Finset (Source ι Jo)) (hs : ∀ x∈source,SourceValid p x)
     (hextra : ∀ x∈source,extra x.cube⊆x.cube.support)
@@ -60,7 +60,7 @@ theorem retained_deleted_support
       exact source_prime_dvd p _ i hi
 
 theorem whole_coefficient_norm
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (extra : Source ι Jo→Finset ι) (source : Finset (Source ι Jo))
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι)
     (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) (B : ℝ)

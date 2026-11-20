@@ -80,8 +80,12 @@ def normalizedGenericBlock (ρ : ℂ) (a : ℕ → ℂ) (N : ℕ) : ℂ :=
   ∑ n ∈ Finset.Ioc N (2*N), a n *
     ((((n : ℝ)/N)^(-ρ.re) : ℝ) : ℂ)*dirichletPhase ((n : ℝ)/N) (-ρ.im)
 
+section
+variable {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ → ℂ)
+include N hN ρ a
+
 /-- Exact rescaling, including the unit phase of N; no ordinate is shifted. -/
-theorem genericBlock_eq_normalized {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ → ℂ) :
+theorem genericBlock_eq_normalized :
     genericBlock ρ a N = (N : ℂ)^(-ρ)*normalizedGenericBlock ρ a N := by
   have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
   rw [genericBlock, normalizedGenericBlock, Finset.mul_sum]
@@ -98,14 +102,14 @@ theorem genericBlock_eq_normalized {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ �
   rw [hsplit, cpow_neg_eq_real_phase (div_pos hnpos hNpos)]
   ring
 
-theorem norm_normalizedGenericBlock {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ → ℂ) :
+theorem norm_normalizedGenericBlock :
     ‖normalizedGenericBlock ρ a N‖ = (N : ℝ)^ρ.re*‖genericBlock ρ a N‖ := by
   rw [genericBlock_eq_normalized hN, norm_mul, Complex.norm_natCast_cpow_of_pos hN, Complex.neg_re]
   rw [← mul_assoc, ← Real.rpow_add (by exact_mod_cast hN : (0 : ℝ) < N)]
   simp
 
 /-- Genuine summation and finite-sum interchange for the fixed Taylor family. -/
-theorem hasSum_genericTaylorPolynomial {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : ℕ → ℂ) :
+theorem hasSum_genericTaylorPolynomial :
     HasSum (fun j : ℕ => (detectorTaylorWeight ρ.re j : ℂ)*genericTaylorPolynomial a N j ρ.im)
       ((((3/2 : ℝ)^ρ.re : ℝ) : ℂ)*normalizedGenericBlock ρ a N) := by
   have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
@@ -139,6 +143,8 @@ theorem hasSum_genericTaylorPolynomial {N : ℕ} (hN : 0 < N) (ρ : ℂ) (a : �
     simp [genericTaylorPolynomial, detectingPolynomial, genericTaylorCoefficient, Finset.mul_sum]
   · rw [normalizedGenericBlock, Finset.mul_sum]
 
+end
+
 /-- The full Taylor combination is at least the beta-rescaled original block. -/
 theorem norm_genericTaylor_tsum_ge {N : ℕ} (hN : 0 < N) {ρ : ℂ} (hβ : 0 ≤ ρ.re) (a : ℕ → ℂ) :
     (N : ℝ)^ρ.re*‖genericBlock ρ a N‖ ≤
@@ -149,11 +155,12 @@ theorem norm_genericTaylor_tsum_ge {N : ℕ} (hN : 0 < N) {ρ : ℂ} (hβ : 0 �
   nlinarith [show 0 ≤ (N : ℝ)^ρ.re*‖genericBlock ρ a N‖ by positivity]
 
 
+section
+variable {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {ρ : ℂ} (ha : ∀ n ∈ Finset.Ioc N (2*N), ‖a n‖ ≤ (n.divisors.card : ℝ)) (hT : 1 ≤ T) (hN : 0 < N) (hN' : (N : ℝ) ≤ T^2) (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
+include a T N ρ ha hT hN hN' hβ hβ'
+
 /-- Quantitative tail control at the actual family cutoff. -/
-theorem norm_fixedGenericTaylor_tail_le {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {ρ : ℂ}
-    (ha : ∀ n ∈ Finset.Ioc N (2*N), ‖a n‖ ≤ (n.divisors.card : ℝ))
-    (hT : 1 ≤ T) (hN : 0 < N) (hN' : (N : ℝ) ≤ T^2)
-    (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
+theorem norm_fixedGenericTaylor_tail_le :
     ‖∑' j : ℕ, (detectorTaylorWeight ρ.re (j+(detectorTaylorCutoff T+1)) : ℂ)*
       genericTaylorPolynomial a N (j+(detectorTaylorCutoff T+1)) ρ.im‖ ≤ 3*T^(-1 : ℝ) := by
   have hTpos : 0 < T := by linarith
@@ -171,10 +178,7 @@ theorem norm_fixedGenericTaylor_tail_le {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {�
       norm_num
 
 /-- The fixed family has the full block height, up to an absolute constant. -/
-theorem exists_genericTaylor_component {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {ρ : ℂ}
-    (ha : ∀ n ∈ Finset.Ioc N (2*N), ‖a n‖ ≤ (n.divisors.card : ℝ))
-    (hT : 1 ≤ T) (hN : 0 < N) (hN' : (N : ℝ) ≤ T^2)
-    (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
+theorem exists_genericTaylor_component
     {D : ℝ} (hD : 0 < D)
     (hsmall : 3*T^(-1 : ℝ) ≤ 1/(4*D))
     (hblock : 1/(2*D) ≤ ‖genericBlock ρ a N‖) :
@@ -204,6 +208,8 @@ theorem exists_genericTaylor_component {a : ℕ → ℂ} {T : ℝ} {N : ℕ} {ρ
   have hh := div_le_div_of_nonneg_right hpartial (by norm_num : (0 : ℝ) ≤ 2)
   change ‖∑ j ∈ Finset.range (J+1), W j‖/2 ≤ _ at hlarge
   exact (show (N : ℝ)^ρ.re/(8*D) = ((N : ℝ)^ρ.re/(4*D))/2 by ring).trans_le (hh.trans hlarge)
+
+end
 
 
 end MathCollab.Density.Stronger

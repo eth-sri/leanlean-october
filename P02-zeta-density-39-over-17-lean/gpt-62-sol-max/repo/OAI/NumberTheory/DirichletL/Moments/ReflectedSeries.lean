@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.CenteredMomentReflectedSeries
-open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli
-open CenteredMomentComparisonReflection CenteredMomentReflectionDeletion
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentSectorLocalization CenteredMomentReflectedAnnuli CenteredMomentComparisonReflection CenteredMomentReflectionDeletion EisensteinSchwartzPoisson
 local notation "NI" => UnrestrictedIdealReindex.NonzeroIdeal
 
 def dyadicIdealTerm (η : Character) (F : ℝ→ℂ) (Y : ℝ) (I : NI) (n : ℤ) : ℂ :=

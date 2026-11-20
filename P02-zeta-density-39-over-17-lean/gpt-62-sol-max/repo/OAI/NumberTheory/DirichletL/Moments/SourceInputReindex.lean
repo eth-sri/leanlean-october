@@ -10,11 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputReindex
-open HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy
-open CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentFirstAmplificationChoice CenteredMomentOriginalChildEnergy CenteredMomentSourceMass CenteredMomentSourceProfileMass CenteredMomentAddedZeroUniform CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
 local notation "O" => HeckeFamily.O
 variable {α β : Type*} [Fintype α] [Fintype β]
 local instance {κ : Type*} : DecidableEq κ := Classical.decEq _
@@ -82,7 +78,11 @@ lemma tupleMap_product (e : α≃β) (v : Tuple α) :
     finiteTupleProduct (tupleMap e v)=finiteTupleProduct v :=
   (e.sumCongr (Equiv.refl (Fin 2))).symm.prod_comp v
 
-lemma pools_map (e : α≃β) (s : Input α) :
+section
+variable (e : α≃β) (s : Input α)
+include e s
+
+lemma pools_map :
     (Fintype.piFinset s.pools).image (tupleMap e) = Fintype.piFinset (reindex e s).pools := by
   ext v
   simp only [Finset.mem_image,Fintype.mem_piFinset]
@@ -98,7 +98,7 @@ lemma pools_map (e : α≃β) (s : Input α) :
     | inl i => simpa [tupleMap,Input.pools,reindex] using hv (Sum.inl (e i))
     | inr i => exact hv (Sum.inr i)
 
-lemma profile_map (e : α≃β) (s : Input α) (R seed : Ideal O) (v : Tuple α) :
+lemma profile_map (R seed : Ideal O) (v : Tuple α) :
     (original (reindex e s) R seed).profile (tupleMap e v) =
       (original s R seed).profile v := by
   simp only [OriginalData.profile,original,reindex,profileCoefficient,tupleMap_product,
@@ -108,7 +108,7 @@ lemma profile_map (e : α≃β) (s : Input α) (R seed : Ideal O) (v : Tuple α)
   exact e.symm.prod_comp (fun i=>s.ν i (v (Sum.inl i))*
     s.W i ((Ideal.absNorm (v (Sum.inl i)):ℝ)/s.P i))
 
-lemma coefficient_map (e : α≃β) (s : Input α) (R seed : Ideal O) :
+lemma coefficient_map (R seed : Ideal O) :
     (original (reindex e s) R seed).beta=(original s R seed).beta := by
   funext I
   unfold OriginalData.beta finiteColumnCoefficient
@@ -119,13 +119,15 @@ lemma coefficient_map (e : α≃β) (s : Input α) (R seed : Ideal O) :
   simp only [tupleMap_product,profile_map]
   rfl
 
-lemma volume_map (e : α≃β) (s : Input α) : volume (reindex e s)=volume s := by
+lemma volume_map : volume (reindex e s)=volume s := by
   simp only [volume,reindex,e.symm.prod_comp]
 
-lemma sourceRadius_map (e : α≃β) (s : Input α) :
+lemma sourceRadius_map :
     CenteredMomentOriginalCommonHarmonic.sourceRadius (reindex e s)=
       CenteredMomentOriginalCommonHarmonic.sourceRadius s := by
   simp only [CenteredMomentOriginalCommonHarmonic.sourceRadius,reindex,e.symm.prod_comp]
+
+end
 
 end SevenEighths.CenteredMomentSourceInputReindex
 

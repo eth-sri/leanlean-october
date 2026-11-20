@@ -9,22 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentAmplificationRadicalFamily
-open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion
-open ConcretePrimeRowBridge CompletedGauss RayFourExpansion
-open CenteredMomentRadicalFamily CenteredMomentFirstFamily
-open CenteredMomentAmplificationFamily CenteredMomentAmplificationFamilyEnergy
-open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentAmplificationShortening CenteredMomentAmplificationSourceDomain
-open CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows
-open CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy
-open CenteredMomentSecondChildProfile
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationChildEnergy CenteredMomentAmplificationErrorPool
-open CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask
-open CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentCommonAllocationSum
-open CenteredMomentFirstAmplificationChoice
-open CenteredMomentSectorLocalization CenteredMomentAmplificationEligibility
+open HeckeFamily HeckeRowClosure CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss RayFourExpansion CenteredMomentRadicalFamily CenteredMomentFirstFamily CenteredMomentAmplificationFamily CenteredMomentAmplificationFamilyEnergy CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor CenteredMomentAmplificationShortening CenteredMomentAmplificationSourceDomain CenteredMomentHeckeExpansion CenteredMomentHeckeColumnWindow CenteredMomentChildRows CenteredMomentSourceRow CenteredMomentOriginalChildEnergy CenteredMomentGaussEnergy CenteredMomentSecondChildProfile CenteredMomentAmplificationGlobal CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationChildEnergy CenteredMomentAmplificationErrorPool CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask CenteredMomentAddedZeroUniform CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentCommonAllocationSum CenteredMomentFirstAmplificationChoice CenteredMomentSectorLocalization CenteredMomentAmplificationEligibility
 local notation "O"=>ActualEisensteinCubic.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -124,12 +109,11 @@ theorem exists_actual_error_family (η:Character)(m p:O)
   exact amplification_family_energy η m p (errorMovingExponent n) τ hτ
     (residualColumns S p hp (n+1)) C hC β t W K hK hW
 
-theorem original_errors_to_children {ι : Type*} [Fintype ι] (η : Character) (m p : O)
-    (hm : m≠0) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hPid : Prime (Ideal.span {p})) (hs : Supported (Ideal.span {p}))
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2)
-    (hpp : goodLambda^2 ∣ p-1) (hmLam : goodLambda∣m) (hm2 : (2:O)∣m)
-    (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (η : Character) (m p : O) (hm : m≠0) (hp : Prime p) [instShared6 : (Ideal.span {p}).IsMaximal] (hPid : Prime (Ideal.span {p})) (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hpp : goodLambda^2 ∣ p-1) (hmLam : goodLambda∣m) (hm2 : (2:O)∣m) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6)
+include ι instShared1 η m p hm hp instShared6 hPid hs hg hc hpp hmLam hm2 n hn
+
+theorem original_errors_to_children :
     ∃ τ : RayCharacter → Character,
       (∀ χ,(τ χ).modulus.absNorm≤radicalBound (childCharacter η χ) m p (errorMovingExponent n)) ∧
       ∀ (S : (ι ⊕ Fin 2) → Finset (Ideal O)),
@@ -200,12 +184,7 @@ theorem original_errors_to_children {ι : Type*} [Fintype ι] (η : Character) (
   rw [←Finset.mul_sum]
   ring
 
-theorem exists_original_error_ball_family {ι : Type*} [Fintype ι]
-    (η : Character) (m p : O) (hm : m≠0) (hp : Prime p)
-    [(Ideal.span {p}).IsMaximal] (hPid : Prime (Ideal.span {p}))
-    (hs : Supported (Ideal.span {p})) (hg : goodLambda∉Ideal.span {p})
-    (hc : ringChar (O ⧸ Ideal.span {p})≠2) (hpp : goodLambda^2∣p-1)
-    (hmLam : goodLambda∣m) (hm2 : (2:O)∣m) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) :
+theorem exists_original_error_ball_family :
     ∃ τ : RayCharacter → Character,
       (∀ χ,(τ χ).modulus.absNorm≤radicalBound (childCharacter η χ) m p (errorMovingExponent n)) ∧
       ∀ (D : OriginalData ι),
@@ -241,6 +220,8 @@ theorem exists_original_error_ball_family {ι : Type*} [Fintype ι]
     exact hfull
   · rw [Finset.not_nonempty_iff_eq_empty.mp he,Finset.sum_empty]
     exact D.childEnergy_nonneg τ p n t T _ hT.le hK
+
+end
 
 end SevenEighths.CenteredMomentAmplificationRadicalFamily
 

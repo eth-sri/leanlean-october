@@ -26,7 +26,7 @@ lemma canonical_slot_inverse_square : ∃C : ℝ,0<C ∧
     apply Subtype.ext
     exact congrArg (fun I : SupportedIdeal=>I.val) h
   have he : (∑a : canonicalSlotSupport T,elementNorm a.val^(-2:ℝ))=
-      ∑I∈Finset.univ.image f,ProbeGramCommon.gramIdealNorm I^(-2:ℝ) := by
+      ∑I∈Finset.univ.image f,ProbeGramCommon.gramIdealNorm I ^(-2:ℝ) := by
     rw [Finset.sum_image (fun P _ Q _ h=>hf h)]
     have hh := (canonicalSlotEquiv T hT).sum_comp (fun a=>elementNorm a.val^(-2:ℝ))
     rw [←hh]

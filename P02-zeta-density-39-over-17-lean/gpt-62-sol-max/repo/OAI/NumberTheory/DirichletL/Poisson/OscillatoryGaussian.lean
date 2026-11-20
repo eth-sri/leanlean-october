@@ -8,16 +8,12 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
 open ActualEisensteinCubic
 
 namespace OscSpecial
@@ -41,12 +37,16 @@ theorem oscillatory_gaussian_poisson {η a b : ℝ}
 
 noncomputable def r (η a b : ℝ) : ℝ := 1 + 3 * q a b * η ^ 2 / 16
 
-theorem r_pos {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
+section
+variable {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b)
+include η a b hη hq
+
+theorem r_pos :
     0 < r η a b := by
   unfold r
   positivity
 
-private theorem inverseForm_explicit {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b)
+private theorem inverseForm_explicit
     (z : ℤ × ℤ) :
     inverseForm (A η a b) (B η a b) (D η a b) (R η a b) z =
       ((η : ℂ) * (q a b : ℂ) / (4 * (r η a b : ℂ))) *
@@ -75,7 +75,7 @@ private theorem inverseForm_explicit {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a
   push_cast
   ring
 
-theorem dualGaussian_explicit {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b)
+theorem dualGaussian_explicit
     (z : ℤ × ℤ) :
     RankTwoComplex.dualGaussian (A η a b) (B η a b) (D η a b) z =
       Complex.exp (-(Real.pi : ℂ) *
@@ -95,6 +95,8 @@ theorem dualGaussian_explicit {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b)
   rw [dualGaussian_inverseForm hA0 hR.ne'
     (oscillatory_determinant η a b hq0) z,
     inverseForm_explicit hη hq z]
+
+end
 
 end OscSpecial
 

@@ -9,29 +9,33 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbeEuler
 
-lemma coordV_differentiable (Q : ℝ) (hQ : 0<Q) : Differentiable ℂ (coordV Q) := by
+section
+variable (Q : ℝ) (hQ : 0<Q)
+include Q hQ
+
+lemma coordV_differentiable : Differentiable ℂ (coordV Q) := by
   unfold coordV
   have hn : (Q:ℂ)≠0 := by exact_mod_cast hQ.ne'
   exact (differentiable_id.const_mul (-6)).const_cpow (Or.inl hn)
 
-lemma coordW_differentiable (Q : ℝ) (hQ : 0<Q) (v : ℂ) : Differentiable ℂ (coordW Q v) := by
+lemma coordW_differentiable (v : ℂ) : Differentiable ℂ (coordW Q v) := by
   unfold coordW
   have hn : (Q:ℂ)≠0 := by exact_mod_cast hQ.ne'
   exact (differentiable_id.neg.const_cpow (Or.inl hn)).const_mul v
 
-lemma coordR_z_differentiable (Q : ℝ) (hQ : 0<Q) (A x : ℂ) :
+lemma coordR_z_differentiable (A x : ℂ) :
     Differentiable ℂ (fun z=>coordR Q A x z) := by
   unfold coordR
   have hn : (Q:ℂ)≠0 := by exact_mod_cast hQ.ne'
   exact (((differentiable_id.const_mul 6).const_sub (4-6*x)).const_cpow (Or.inl hn)).const_mul A
 
-lemma coordK_w_differentiable (Q : ℝ) (hQ : 0<Q) (eta x : ℂ) :
+lemma coordK_w_differentiable (eta x : ℂ) :
     Differentiable ℂ (fun w=>coordK Q eta x w) := by
   unfold coordK
   have hn : (Q:ℂ)≠0 := by exact_mod_cast hQ.ne'
   exact ((differentiable_id.const_sub (-x)).const_cpow (Or.inl hn)).const_mul (eta*(Q-1))
 
-lemma unramifiedClosed_differentiableAt_w (Q : ℝ) (hQ : 0<Q) (A eta v x w z : ℂ)
+lemma unramifiedClosed_differentiableAt_w (A eta v x w z : ℂ)
     (_hR : 1-coordR Q A x z≠0) (_hV : 1-coordV Q z≠0) (_hD : 1-coordD Q eta v x≠0) :
     DifferentiableAt ℂ (fun t=>unramifiedClosed Q A eta v x t z) w := by
   have hw := coordW_differentiable Q hQ v
@@ -45,7 +49,7 @@ lemma unramifiedClosed_differentiableAt_w (Q : ℝ) (hQ : 0<Q) (A eta v x w z : 
   dsimp only
   fun_prop (disch := assumption)
 
-lemma unramifiedClosed_differentiableAt_z (Q : ℝ) (hQ : 0<Q) (A eta v x w z : ℂ)
+lemma unramifiedClosed_differentiableAt_z (A eta v x w z : ℂ)
     (hR : 1-coordR Q A x z≠0) (hV : 1-coordV Q z≠0) (_hD : 1-coordD Q eta v x≠0) :
     DifferentiableAt ℂ (fun t=>unramifiedClosed Q A eta v x w t) z := by
   have hv := coordV_differentiable Q hQ
@@ -58,6 +62,8 @@ lemma unramifiedClosed_differentiableAt_z (Q : ℝ) (hQ : 0<Q) (A eta v x w z : 
   unfold unramifiedClosed ProbeLocal.continuedCorrection
   dsimp only
   fun_prop (disch := assumption)
+
+end
 
 lemma open_region_denominators (Q : ℝ) (A eta v x z : ℂ)
     (hQ : 4≤Q) (hA : ‖A‖≤1) (he : ‖eta‖≤1) (hv : ‖v‖≤1)

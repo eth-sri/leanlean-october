@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentHeckeExpansion
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots
-open CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist CenteredMomentMask
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentHeckeSlots CenteredMomentRectangle CenteredMomentPrimary CenteredMomentTwist CenteredMomentMask
 local notation "O" => ActualEisensteinCubic.O
 
 def rowWeight (η : Character) (m A z : O) (t : ℝ) : Ideal O →*₀ ℂ where
@@ -76,8 +75,11 @@ theorem actual_hecke_rectangle_sum
 
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-theorem live_slot_product (η : Character) (m A z : O) (S : ι → Finset (Ideal O))
-    (β : ι → Ideal O → ℂ) (t : ℝ) :
+section
+variable (η : Character) (m A z : O) (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (t : ℝ)
+include η m A z S β t
+
+theorem live_slot_product :
     (∏ i,rowSlot η m A z (S i) (β i) t) =
       ∑ v : (i : ι) → S i, (∏ i,β i (v i))*rowWeight η m A z t (∏ i,(v i:Ideal O)) := by
   have hs (i : ι) : rowSlot η m A z (S i) (β i) t =
@@ -90,8 +92,7 @@ theorem live_slot_product (η : Character) (m A z : O) (S : ι → Finset (Ideal
   intro v hv
   rw [map_prod,← Finset.prod_mul_distrib]
 
-theorem actual_slot_rectangle_sum (η : Character) (m A z : O)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (t : ℝ)
+theorem actual_slot_rectangle_sum
     (W₁ W₂ : ℝ → ℂ) (b₁ b₂ X₁ X₂ Y₁ Y₂ : ℝ)
     (hs₁ : Function.support W₁ ⊆ Set.Iic b₁)
     (hs₂ : Function.support W₂ ⊆ Set.Iic b₂)
@@ -117,8 +118,7 @@ theorem actual_slot_rectangle_sum (η : Character) (m A z : O)
   intro v hv
   ring
 
-theorem common_extracted_slot_rectangle (η : Character) (m A z : O)
-    (S : ι → Finset (Ideal O)) (β : ι → Ideal O → ℂ) (t : ℝ)
+theorem common_extracted_slot_rectangle
     (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) :
     (∑ v : (i : ι) → S i, (∏ i,β i (v i))*
       ∑' I : Ideal O, ∑' J : Ideal O,
@@ -145,6 +145,8 @@ theorem common_extracted_slot_rectangle (η : Character) (m A z : O)
   apply Finset.sum_congr rfl
   intro v hv
   ring
+
+end
 
 end SevenEighths.CenteredMomentHeckeExpansion
 

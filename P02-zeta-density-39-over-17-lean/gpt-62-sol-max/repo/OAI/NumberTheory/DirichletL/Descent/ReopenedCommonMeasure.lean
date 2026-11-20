@@ -8,9 +8,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-open CanonicalCubeSeparation JointLogSeparation
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels CanonicalCubeSeparation JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
@@ -29,8 +27,7 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
     (weights : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-    letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     let β := fun v=>reopenedCubeCoefficient H₀ (rowTwist Ψ (m*excludedGenerator S) f 1) (cubeIdeal F v)
     let n := fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)
     markedReopenedCubeBin S D Q Ψ m f z W X H₀ slots lists weights =
@@ -41,8 +38,7 @@ theorem markedReopenedCubeBin_separated {σ : Type*} [DecidableEq σ]
           (fun v T=>primeMark slots lists weights (T∪v.support)*frequencyTwist V ξ (columnLog (poolPrimary F) ell T)) z := by
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   let β := fun v=>reopenedCubeCoefficient H₀ (rowTwist Ψ (m*excludedGenerator S) f 1) (cubeIdeal F v)
   let n := fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)
   have hXp : 0<X := hX ▸ mul_pos (pow_pos hB _) hell

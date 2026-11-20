@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondRapidTail
 public import OAI.NumberTheory.DirichletL.Descent.SecondCanonicalTail
 public import OAI.NumberTheory.DirichletL.Descent.PrincipalSelectorMass
@@ -11,18 +12,17 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseWholePriorityRapidTail
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InverseMoment InversePrincipalEnergy InverseSecondPrincipalCaller
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InverseMoment InversePrincipalEnergy InverseSecondPrincipalCaller
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_rapid_tail (Lcap tau saving : ℝ) (hLcap : 0≤Lcap) (htau : 0<tau) :
     ∃ (s : Finset (ℕ×ℕ)) (Ct : ℝ),0<Ct ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (F : Finset ι) (Ψ : O→*ℂ), (∀u,‖Ψ u‖≤1) →
       ∀ (m c d : O),d≠0 → ∀ (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists → (∀i∈slots,∀k∈lists i,‖a i k‖≤1) →
@@ -67,8 +67,8 @@ theorem marked_rapid_tail (Lcap tau saving : ℝ) (hLcap : 0≤Lcap) (htau : 0<t
       exact mul_le_mul_of_nonneg_left habsorb (by positivity)
 
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 end SevenEighths.InverseWholePriorityRapidTail
 

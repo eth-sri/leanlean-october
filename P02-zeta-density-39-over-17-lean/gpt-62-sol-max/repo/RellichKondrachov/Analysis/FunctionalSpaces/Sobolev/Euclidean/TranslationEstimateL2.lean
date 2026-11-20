@@ -118,7 +118,7 @@ private lemma lintegral_enorm_sub_sq_le (a : E) (f : ↥(C1c (E := E))) :
       refine lintegral_rpow_two_le_lintegral_rpow_two (g := fun t : ℝ =>
         ‖grad (E := E) f.1 (x + t • a)‖ₑ) ?_
       -- measurability from continuity of `grad`.
-      have hgrad : Continuous (grad (E := E) f.1) := continuous_grad (E := E) (f := f.1) f.2.1
+      have hgrad := continuous_grad (E := E) (f := f.1) f.2.1
       have hline : Continuous fun t : ℝ => x + t • a := by
         fun_prop
       exact (hgrad.comp hline).measurable.enorm.aemeasurable
@@ -147,25 +147,21 @@ private lemma lintegral_enorm_sub_sq_le (a : E) (f : ↥(C1c (E := E))) :
   have hmeas :
       AEMeasurable
         F (μ.prod (μI : Measure ℝ)) := by
-    have hgrad : Continuous (grad (E := E) f.1) := continuous_grad (E := E) (f := f.1) f.2.1
+    have hgrad := continuous_grad (E := E) (f := f.1) f.2.1
     have hcont : Continuous fun z : E × ℝ => z.1 + z.2 • a := by
       fun_prop
     have hbase : Measurable fun z : E × ℝ => ‖grad (E := E) f.1 (z.1 + z.2 • a)‖ₑ := by
       exact (hgrad.comp hcont).measurable.enorm
-    have hpow : Measurable fun r : ℝ≥0∞ => r ^ (2 : ℝ) :=
+    have hpow :=
       (ENNReal.continuous_rpow_const (y := (2 : ℝ))).measurable
     exact (hpow.comp hbase).aemeasurable
   have hTonelli :
       (∫⁻ x, ∫⁻ t, ‖grad (E := E) f.1 (x + t • a)‖ₑ ^ (2 : ℝ) ∂(μI : Measure ℝ) ∂μ) =
         ∫⁻ t, ∫⁻ x, ‖grad (E := E) f.1 (x + t • a)‖ₑ ^ (2 : ℝ) ∂μ ∂(μI : Measure ℝ) := by
     -- Tonelli in both orders, via the product measure.
-    have hprod :
-        (∫⁻ z, F z ∂μ.prod (μI : Measure ℝ)) =
-          ∫⁻ x, ∫⁻ t, F (x, t) ∂(μI : Measure ℝ) ∂μ :=
+    have hprod :=
       MeasureTheory.lintegral_prod (μ := μ) (ν := (μI : Measure ℝ)) F hmeas
-    have hprod_symm :
-        (∫⁻ z, F z ∂μ.prod (μI : Measure ℝ)) =
-          ∫⁻ t, ∫⁻ x, F (x, t) ∂μ ∂(μI : Measure ℝ) :=
+    have hprod_symm :=
       MeasureTheory.lintegral_prod_symm (μ := μ) (ν := (μI : Measure ℝ)) F hmeas
     calc
       (∫⁻ x, ∫⁻ t, ‖grad (E := E) f.1 (x + t • a)‖ₑ ^ (2 : ℝ) ∂(μI : Measure ℝ) ∂μ)
@@ -181,9 +177,9 @@ private lemma lintegral_enorm_sub_sq_le (a : E) (f : ↥(C1c (E := E))) :
     refine MeasureTheory.lintegral_congr fun t => ?_
     -- Change of variables `x ↦ x + t•a`.
     have hmeas' : Measurable fun x : E => ‖grad (E := E) f.1 x‖ₑ ^ (2 : ℝ) := by
-      have hgrad : Continuous (grad (E := E) f.1) := continuous_grad (E := E) (f := f.1) f.2.1
+      have hgrad := continuous_grad (E := E) (f := f.1) f.2.1
       have hbase : Measurable fun x : E => ‖grad (E := E) f.1 x‖ₑ := hgrad.measurable.enorm
-      have hpow : Measurable fun r : ℝ≥0∞ => r ^ (2 : ℝ) :=
+      have hpow :=
         (ENNReal.continuous_rpow_const (y := (2 : ℝ))).measurable
       exact hpow.comp hbase
     simpa [Function.comp, add_assoc] using

@@ -8,75 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open scoped Classical BigOperators
 
 namespace ShortDraftCRT
 open ActualEisensteinCubic FiniteGaussPhase ConcreteTraceCRT CubicEisenstein
@@ -131,17 +74,6 @@ end ShortDraftCRT
 
 open scoped BigOperators Classical
 
-namespace IdealGaussCRT
-open CubicEisenstein
-
-end IdealGaussCRT
-
-namespace FiniteGaussPhase
-open ActualEisensteinCubic CubicEisenstein IdealGaussCRT
-local notation "Eis" => ActualEisensteinCubic.O
-
-end FiniteGaussPhase
-
 namespace FixedRayActiveSet
 
 lemma sum_nonzero_ite {F : Type*} [Field F] [Fintype F] (f:F→ℂ) :
@@ -177,7 +109,7 @@ theorem sum_active_stratum {ι : Type*} [Fintype ι]
       _ = _ := (Fintype.prod_sum g).symm
   have hg (i:ι) : (∑x:F i,g i x)=if i∈A then ∑u:(F i)ˣ,f i (u:F i) else f i 0 := by
     by_cases hi:i∈A
-    · simpa only [g,hi,iff_true,ite_true] using sum_nonzero_ite (f i)
+    · simpa [g, hi] using sum_nonzero_ite (f i)
     · simp [g,hi]
   rw [hs]
   simp only [hg,Finset.prod_ite]
@@ -199,13 +131,13 @@ theorem sum_by_active_strata {ι : Type*} [Fintype ι]
   let A:Finset ι:=Finset.univ.filter (fun i=>h i≠0)
   have he : ∀i,h i≠0↔i∈A := by intro i;simp [A]
   rw [Finset.sum_eq_single A]
-  · simp only [he,implies_true,ite_true]
+  · simp [he]
   · intro B hB hBA
     have hbad : ¬(∀i,h i≠0↔i∈B) := by
       intro hgood
       apply hBA
       ext i
-      simpa only [A,Finset.mem_filter,Finset.mem_univ,true_and] using (hgood i).symm
+      simpa [A] using (hgood i).symm
     simp only [hbad,ite_false]
   · intro hnot
     exact (hnot (Finset.mem_powerset.mpr (Finset.filter_subset _ _))).elim
@@ -233,7 +165,7 @@ lemma ramifiedTraceLambda_dvd_of_lambda_dvd (h:Eis) (hh:lambda∣h) :
   change h=paperLambda*((paperLambdaUnit⁻¹:Eisˣ)*q)
   rw [paperLambda_eq,hq]
   have hu : (paperLambdaUnit:Eis)*(paperLambdaUnit⁻¹:Eisˣ)=1 := by
-    simpa only [Units.val_mul,Units.val_one] using
+    simpa using
       congrArg (fun v:Eisˣ=>(v:Eis)) (mul_inv_cancel paperLambdaUnit)
   calc
     _=(paperLambdaUnit:Eis)*(paperLambdaUnit⁻¹:Eisˣ)*(lambda*q) := by rw [hu,one_mul]
@@ -299,8 +231,7 @@ end CubicEisenstein
 namespace CanonicalRowCompletion
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve QuadraticAllOddCRT
-open ConcreteTraceCRT UniqueFactorizationMonoid
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve QuadraticAllOddCRT ConcreteTraceCRT UniqueFactorizationMonoid
 local notation "Eis" => ActualEisensteinCubic.O
 
 def cubicTwoSupplement : Eis→*ℂ where
@@ -412,8 +343,7 @@ theorem idealRowHom_two_formula (n:Eis) (hn:lambda^2∣n-1)
 end
 
 section
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-open UniqueFactorizationMonoid
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
 local notation "Eis" => ActualEisensteinCubic.O
 
 def supportedIdealRow (a:Eis) : Eis→*ℂ where
@@ -423,7 +353,7 @@ def supportedIdealRow (a:Eis) : Eis→*ℂ where
       intro P hP
       rw [normalizedFactors_one] at hP
       exact False.elim (Multiset.notMem_zero P hP)⟩
-    rw [show Ideal.span {(1:Eis)}=(1:Ideal Eis) by simp only [Ideal.span_singleton_one,Ideal.one_eq_top],
+    rw [show Ideal.span {(1:Eis)}=(1:Ideal Eis) by simp,
       ite_eq_left hs,map_one]
   map_mul' x y := by
     rw [←Ideal.span_singleton_mul_span_singleton,supported_mul_iff,map_mul]
@@ -541,7 +471,7 @@ lemma numeratorBadTwist_norm (u:Eisˣ) (a b:ℕ) (r:Eis)
     (hr:Supported (Ideal.span {r})) (n:Eis) : ‖numeratorBadTwist u a b r hr n‖≤1 := by
   change ‖((unitSupplement u n * (supportedIdealRow lambda n)^a) * (twoSupplement n)^b) *
     sexticReciprocityPhase r n‖≤1
-  simp only [norm_mul,norm_pow]
+  simp
   have hu:=unitSupplement_norm u n
   have ha:‖supportedIdealRow lambda n‖^a≤1:=
     pow_le_one₀ (norm_nonneg _) (supportedIdealRow_norm lambda n)

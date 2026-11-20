@@ -12,13 +12,14 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentAmplification
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical
-open CenteredMomentUnequal
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalRowCompletion CanonicalQuadraticSieve ConcretePrimeRowBridge ProbePrimePower ProbePhysical CenteredMomentUnequal
 local notation "O" => ActualEisensteinCubic.O
 
-theorem gauss_prime_power_one (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ) :
+section
+variable (p : O) (hp : Prime p) [instShared2 : (Ideal.span {p}).IsMaximal] (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ)
+include p hp instShared2 hg hc n
+
+theorem gauss_prime_power_one :
     sexticGauss (p^(n+1)) (pow_ne_zero _ hp.ne_zero) 1 =
       if n = 0 then primeGauss p hp.ne_zero (actualSextic (Ideal.span {p}) hg) 1 else 0 := by
   rw [sexticGauss_prime_power p hp hg]
@@ -33,8 +34,7 @@ theorem gauss_prime_power_one (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal
     simp only [ite_eq_right hn,ite_eq_right hn0,ite_eq_right hpos,show ¬n+1 ≤ 0 by omega,ite_false,sub_self]
     split_ifs <;> rfl
 
-theorem gauss_prime_power_six (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) (n : ℕ) :
+theorem gauss_prime_power_six :
     sexticGauss (p^(n+1)) (pow_ne_zero _ hp.ne_zero) (p^6) =
       if n = 5 then (Ideal.absNorm (Ideal.span {p}) : ℂ)^5 *
         ((Ideal.absNorm (Ideal.span {p}) : ℂ)-1)
@@ -57,6 +57,8 @@ theorem gauss_prime_power_six (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal
         simp only [hd,ite_true,show ¬n+1 ≤ 6 by omega,ite_false,
           show ¬n ≤ 6 by omega,sub_self]
       · simp only [hd,ite_false,show ¬6=n from Ne.symm hn6]
+
+end
 
 theorem gauss_prime_power_unchanged (p : O) (hp : Prime p) [(Ideal.span {p}).IsMaximal]
     (hs : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})

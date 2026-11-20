@@ -10,8 +10,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentSecondWindowBudget
-open CenteredMomentLogDyadic CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy
-open CenteredMomentSecondWindowSource
+open CenteredMomentLogDyadic CenteredMomentHeckeColumnWindow CenteredMomentHeckeWindowEnergy CenteredMomentSecondWindowSource
 
 def profileMoment (J : ℕ) : ℝ :=
   ∫ w : ℝ,(1+‖w‖)^J*‖columnDensity logAnnulus logAnnulus_compact logAnnulus_smooth w‖

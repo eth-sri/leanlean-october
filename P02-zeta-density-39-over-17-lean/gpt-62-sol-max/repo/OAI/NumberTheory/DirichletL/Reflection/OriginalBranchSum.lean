@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Reflection.ScaleBudgets
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalExponent
 public import OAI.NumberTheory.DirichletL.Reflection.RetainedCaps
 public import OAI.NumberTheory.DirichletL.Reflection.BranchCount
@@ -24,19 +25,7 @@ theorem original_surviving_energy_sum
       (column : Ideal Eis→Ideal Eis→ℂ)
       (Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d δ π Ck CO CH Cf X QK QP ε Lscale Lrow Lslot : ℝ)
       (i : ℕ×ℕ×ℕ),
-      Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<Cf → 0<X → 0<QK → 0<QP →
-      (Ideal.absNorm I:ℝ)≤Ck*Z^M →
-      Z^O₀/CO≤(Ideal.absNorm (rowPowerfulPart I):ℝ) →
-      Z^H/CH≤(Ideal.absNorm (rowResidualPart I (B*F*R)):ℝ) →
-      (Ideal.absNorm F:ℝ)≤Cf*Z^V →
-      Real.log (CH*Ck*CO)/Real.log Z≤η →
-      Real.log (widthConstant B Ck CO CH Cf)/Real.log Z≤η →
-      CanonicalMargins F₀ M (normWidth Z R) z₀ margin → F₀=N+V →
-      Nstar=N-3*hhat → V≤d → hhat≤d+η →
-      H=Real.logb Z (kK*QK) → za=Real.logb Z (kP*QP) → Nstar=Real.logb Z X →
-      0≤M → 0≤O₀ → 0≤za → za≤z₀ →
-      0<cstar → cstar/2≤margin → d≤cstar/200 →
-      η≤cstar/1000 → δ+η≤cstar/1000 → π≤cstar/1000 →
+      WithOriginalWidths I F B R Z₀ Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d δ η π Ck CO CH Cf X QK QP (kK*QK) (kP*QP) (
       0≤ε → (kK*QK)≤Z^Lrow → (kP*QP)≤Z^Lslot →
       Real.logb Z 16≤η → ε*(Lrow+Lslot+2*(δ+Lscale+η))+η/2≤π →
       let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
@@ -52,7 +41,7 @@ theorem original_surviving_energy_sum
           (ramifiedWidth Z i.1) (terminalDualWidth Z H za Nstar G.ideal j e)+
           ε*(H+Real.logb Z (((2:ℝ)^i.2.2)/Ideal.absNorm (frozenExtracted G j e 1))+
             Real.logb Z (((2:ℝ)^i.2.1)/Ideal.absNorm (frozenExtracted G j e 2))+za)+η/2))≤
-        C*(Ideal.absNorm (∏ b,G.ideal b):ℝ)^ρ*Z^(F₀-cstar/4-O₀/2) := by
+        C*(Ideal.absNorm (∏ b,G.ideal b):ℝ)^ρ*Z^(F₀-cstar/4-O₀/2)) := by
   obtain ⟨Z₀,hZ₀,hsave⟩ := original_surviving_energy_exponent s hc₀ kK kP η hkK hkP hηpos
   obtain ⟨C,hC,hcount⟩ := surviving_branch_count_small_power ρ hρ
   refine ⟨Z₀,C,hZ₀,hC,?_⟩

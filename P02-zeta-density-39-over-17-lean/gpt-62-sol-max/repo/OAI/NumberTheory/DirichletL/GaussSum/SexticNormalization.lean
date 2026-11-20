@@ -8,21 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ActualEisensteinCubic
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
+open EisensteinEmbedding ConcreteTraceCRT
 
 noncomputable def breveGamma1 (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
@@ -66,7 +63,7 @@ theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
     ConcreteBreveE.breveE_period_coordinates p hp
   let s : ℂ := ‖eisEmbedding p‖
   have hψ : ψ.IsPrimitive :=
-    eisTraceModChar_breveE_primitive (Ideal.span {p}) p rfl hp
+    GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp
   have hχ1 : χ ≠ 1 := by
     simpa only [pow_one] using
       (canonicalSextic_pow_ne_one (Ideal.span {p}) hgood hchar
@@ -114,15 +111,12 @@ theorem breveGamma1_gamma2_relation (P : Ideal O) [P.IsMaximal]
 
 end
 
-section
 
-open EisensteinEmbedding ConcreteTraceCRT IdealGaussCRT
 
-end
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
+open EisensteinEmbedding ConcreteTraceCRT
 
 noncomputable def breveLocalG (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
@@ -144,8 +138,6 @@ theorem breveGamma1_gamma2_eq_neg_alpha_G (P : Ideal O) [P.IsMaximal]
 
 end
 
-open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE
-
 end ActualEisensteinCubic
 
 namespace ConcreteBreveE
@@ -161,19 +153,9 @@ noncomputable def normalizedTraceGauss
 
 end ConcreteBreveE
 
-namespace FixedRayActiveSet
-
-open scoped BigOperators
-
-end FixedRayActiveSet
-
-namespace CubeInversion
-
-end CubeInversion
-
 namespace ActualEisensteinCubic
 
-open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
+open EisensteinEmbedding ConcreteTraceCRT
 
 noncomputable def breveGammaMinus1 (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
@@ -209,7 +191,7 @@ theorem breveGamma1_gammaMinus1 (P : Ideal O) [P.IsMaximal]
     ConcreteBreveE.breveE_period_coordinates p hp
   let s : ℂ := ‖eisEmbedding p‖
   have hψ : ψ.IsPrimitive :=
-    eisTraceModChar_breveE_primitive (Ideal.span {p}) p rfl hp
+    GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp
   have hχ1 : χ ≠ 1 := by
     simpa only [pow_one] using
       (canonicalSextic_pow_ne_one (Ideal.span {p}) hgood hchar
@@ -240,10 +222,6 @@ theorem breveGamma1_gammaMinus1 (P : Ideal O) [P.IsMaximal]
   simpa only [mul_comm] using hprod
 
 end ActualEisensteinCubic
-
-namespace PowerExtraction
-
-end PowerExtraction
 
 end
 

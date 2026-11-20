@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.RowCompletion.FixedCuspBranches
 
 @[expose] public section
@@ -8,73 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open scoped BigOperators Classical MatrixGroups
@@ -114,21 +59,21 @@ def reflectionStaticPhase (c0:Eis) (hc0:c0≠0)
       eisEmbedding (s.upper 0 0*s.upper 0 1)/(sourceCuspScale s.index:ℂ))*
     A4PhaseFromResidue c0 hc0 v (dualNumerator m I J)
 
-lemma reflectionStaticPhase_norm_le_one (c0:Eis) (hc0:c0≠0)
-    (v:Eis⧸Ideal.span {ramifiedTraceLambda^3*c0})
-    (dualNumerator:ℕ→Ideal Eis→Ideal Eis→Eis) (u:Eisˣ)
-    (m:ℕ) (I J:Ideal Eis) : ‖s.reflectionStaticPhase c0 hc0 v dualNumerator u m I J‖≤1 := by
+section
+variable (c0:Eis) (hc0:c0≠0) (v:Eis⧸Ideal.span {ramifiedTraceLambda^3*c0}) (dualNumerator:ℕ→Ideal Eis→Ideal Eis→Eis) (u:Eisˣ) (m:ℕ) (I J:Ideal Eis)
+include c0 hc0 v dualNumerator u m I J
+
+lemma reflectionStaticPhase_norm_le_one : ‖s.reflectionStaticPhase c0 hc0 v dualNumerator u m I J‖≤1 := by
   simp only [reflectionStaticPhase,norm_mul,breveE_norm,A4PhaseFromResidue_norm,mul_one]
   exact sourceFrequencyAngle_norm_le_one _
 
-lemma fixedCuspArrayWithPhase_reflectionStaticPhase (c0:Eis) (hc0:c0≠0)
-    (v:Eis⧸Ideal.span {ramifiedTraceLambda^3*c0})
-    (dualNumerator:ℕ→Ideal Eis→Ideal Eis→Eis) (u:Eisˣ)
-    (m:ℕ) (I J:Ideal Eis) :
+lemma fixedCuspArrayWithPhase_reflectionStaticPhase :
     fixedCuspArrayWithPhase s.index u (s.reflectionStaticPhase c0 hc0 v dualNumerator u) m I J=
       s.amplitude u m I J*A4PhaseFromResidue c0 hc0 v (dualNumerator m I J) := by
   unfold fixedCuspArrayWithPhase reflectionStaticPhase amplitude
   ring
+
+end
 
 end FixedCuspShape
 end CubicEisenstein
@@ -220,12 +165,6 @@ lemma prime_dvd_rowResidualPart_iff (I Q P:Ideal Eis) (hP:Prime P) :
 
 end CompletedGauss
 
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve
-local notation "Eis" => ActualEisensteinCubic.O
-
-end CanonicalRowCompletion
-
 open scoped BigOperators Classical MatrixGroups Matrix
 
 namespace ShortDraftCusp
@@ -266,8 +205,7 @@ theorem A3_unramified_character_of_relative_level (M:SL(2,Eis)) (u c0 r:Eis)
 end
 
 section
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
-open CompletedGauss CubicKubota CubicJacobiGlobal LocalReflectionBrackets
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase CompletedGauss CubicKubota CubicJacobiGlobal LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 noncomputable local instance stratumMultiplierField (P:Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
@@ -316,8 +254,7 @@ end ShortDraftCusp
 namespace CubicEisenstein
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota
-open CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase
 local notation "Eis" => ActualEisensteinCubic.O
 
 structure ControlledStratumArithmetic {ι:Type*} [Fintype ι]
@@ -343,9 +280,9 @@ structure ControlledStratumArithmetic {ι:Type*} [Fintype ι]
     else (3:Eis)∣matrix v 0 1+1 ∧ (9:Eis)∣matrix v 1 1
 
 theorem exists_controlledStratumArithmetic {ι:Type*} [Fintype ι]
-    (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal] (hp:∀i,p i≠0)
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hprimary:∀i,lambda^2∣p i-1)
+    (p:ι→Eis) [OAI.PrincipalIdealFamily.Maximal p] (hp:∀i,p i≠0)
+    (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hprimary:OAI.PrincipalIdealFamily.PrimaryAt p lambda)
     (N a0 c0:Eis) (hc0:c0≠0) (hN:(9:Eis)*c0∣N)
     (mode:Bool) (hbase:if mode then lambda^2∣a0-1 else lambda^2∣c0-1)
     (hac:IsCoprime a0 c0) (hNp:∀i,IsCoprime N (p i)) :
@@ -436,42 +373,47 @@ theorem exists_controlledStratumArithmetic {ι:Type*} [Fintype ι]
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota
-open CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase
+open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal ShortDraftCusp ShortDraftCRT FiniteGaussPhase
 local notation "Eis" => ActualEisensteinCubic.O
 namespace ControlledStratumArithmetic
 variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N a0 c0:Eis} {mode:Bool}
 
-lemma frequency_congruence (D:ControlledStratumArithmetic p N a0 c0 mode)
+section
+variable (D:ControlledStratumArithmetic p N a0 c0 mode)
+include D
+
+lemma frequency_congruence
     (v:∀i,(Eis⧸Ideal.span {p i})ˣ) (i:ι) :
     Ideal.Quotient.mk (Ideal.span {p i}) (D.matrix v 0 0)=
       (D.sigma i:Eis⧸Ideal.span {p i})*(v i:Eis⧸Ideal.span {p i}) := by
   rw [D.numerator,finiteCrossNumerator_local,D.sigma_value,D.lift_residue]
 
-lemma numerator_congruence (D:ControlledStratumArithmetic p N a0 c0 mode)
+lemma numerator_congruence
     (v:∀i,(Eis⧸Ideal.span {p i})ˣ) :
     N∣D.matrix v 0 0-a0*∏i,p i := by
   rw [D.numerator]
   exact finiteCrossNumerator_fixed N a0 c0 ramifiedTraceLambda p (D.lift v)
     (fun i=>(dvd_pow_self N (by decide : (2:ℕ)≠0)).trans (D.lift_period v i))
 
-lemma numerator_mod_three (D:ControlledStratumArithmetic p N a0 c0 mode)
+lemma numerator_mod_three
     (h3N:(3:Eis)∣N) (hr:lambda^2∣(∏i,p i)-1)
     (v:∀i,(Eis⧸Ideal.span {p i})ˣ) : (3:Eis)∣D.matrix v 0 0-a0 := by
   have hprod:=three_dvd_primary_sub_one (∏i,p i) hr
   convert dvd_add (h3N.trans (D.numerator_congruence v))
     (dvd_mul_of_dvd_right hprod a0) using 1 ; ring
 
-lemma numerator_primary (D:ControlledStratumArithmetic p N a0 c0 mode)
+lemma numerator_primary
     (h3N:(3:Eis)∣N) (hr:lambda^2∣(∏i,p i)-1) (ha:lambda^2∣a0-1)
     (v:∀i,(Eis⧸Ideal.span {p i})ˣ) : lambda^2∣D.matrix v 0 0-1 := by
   convert dvd_add (lambda_sq_dvd_three.trans (D.numerator_mod_three h3N hr v)) ha using 1 ; ring
 
-lemma denominator_primary (D:ControlledStratumArithmetic p N a0 c0 mode)
+lemma denominator_primary
     (hr:lambda^2∣(∏i,p i)-1) (hc:lambda^2∣c0-1)
     (v:∀i,(Eis⧸Ideal.span {p i})ˣ) : lambda^2∣D.matrix v 1 0-1 := by
   rw [D.denominator]
   exact primary_mul c0 (∏i,p i) hc hr
+
+end
 
 lemma ramified_relative (D:ControlledStratumArithmetic p N a0 c0 true)
     (h3N:(3:Eis)∣N) (hr:lambda^2∣(∏i,p i)-1) (ha:lambda^2∣a0-1)

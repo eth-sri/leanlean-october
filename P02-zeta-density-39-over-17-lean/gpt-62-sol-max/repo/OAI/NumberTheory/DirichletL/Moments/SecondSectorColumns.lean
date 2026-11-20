@@ -11,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondSectorColumns
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy
-open CenteredMomentFirstSectors CenteredMomentFirstSectorTransform CenteredMomentCommonSectors
-open CenteredMomentSecondScaled CenteredMomentSupportedCorrelation CenteredMomentChildAssembly
-open CenteredMomentFixedRay CenteredMomentMobiusRegroup RayFourExpansion
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSourceRow CenteredMomentHeckeColumnWindow CenteredMomentSecondSourceEnergy CenteredMomentFirstSectors CenteredMomentFirstSectorTransform CenteredMomentCommonSectors CenteredMomentSecondScaled CenteredMomentSupportedCorrelation CenteredMomentChildAssembly CenteredMomentFixedRay CenteredMomentMobiusRegroup RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 def sectorPool (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O)) : Finset (Ideal O) :=
@@ -28,18 +24,21 @@ theorem sectorPool_supported (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
 def sectorElement (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
     (a : sectorPool C hC S) : O := primaryGenerator a
 
-theorem sectorElement_span (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : Ideal.span {sectorElement C hC S a}=a :=
+section
+variable (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O)) (a : sectorPool C hC S)
+include C hC S a
+
+theorem sectorElement_span : Ideal.span {sectorElement C hC S a}=a :=
   primary_span_supported a (sectorPool_supported C hC S a)
 
-theorem sectorElement_supported (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : Supported (Ideal.span {sectorElement C hC S a}) := by
+theorem sectorElement_supported : Supported (Ideal.span {sectorElement C hC S a}) := by
   rw [sectorElement_span]
   exact sectorPool_supported C hC S a
 
-theorem sectorElement_primary (C : Ideal O) (hC : C≠0) (S : Finset (Ideal O))
-    (a : sectorPool C hC S) : ConcretePrimeRowBridge.goodLambda^2∣sectorElement C hC S a-1 :=
+theorem sectorElement_primary : ConcretePrimeRowBridge.goodLambda^2∣sectorElement C hC S a-1 :=
   (primaryGenerator_spec a (supported_primaryGenerator_ne_zero a (sectorPool_supported C hC S a))).2
+
+end
 
 theorem coprime_of_same_support (C D a : Ideal O) (hC : C≠0) (hD : D≠0) (ha : a≠0)
     (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) :

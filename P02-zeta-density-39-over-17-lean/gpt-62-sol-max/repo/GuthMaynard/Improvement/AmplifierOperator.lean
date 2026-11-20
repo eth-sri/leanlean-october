@@ -6,7 +6,6 @@ public import GuthMaynard.Improvement.OperatorKernel
 set_option autoImplicit false
 noncomputable section
 open Finset InnerProductSpace
-open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
 
 /-- The actual divisor matrix as a bounded operator between finite Hilbert

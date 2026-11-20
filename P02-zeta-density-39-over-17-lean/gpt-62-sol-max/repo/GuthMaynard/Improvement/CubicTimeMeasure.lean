@@ -15,14 +15,18 @@ def timeMeasure (μ : ℝ → ℝ) : Measure ℝ := volume.withDensity (fun t =>
 theorem timeMeasure_finite {μ : ℝ → ℝ} (hi : Integrable μ) : IsFiniteMeasure (timeMeasure μ) :=
   isFiniteMeasure_withDensity_ofReal hi.hasFiniteIntegral
 
-theorem timeMeasure_mass {μ : ℝ → ℝ} (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) :
+section
+variable {μ : ℝ → ℝ} (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t)
+include μ hm h0
+
+theorem timeMeasure_mass :
     (timeMeasure μ).real univ = ∫ t, μ t := by
   have hh := integral_withDensity_eq_integral_toReal_smul (μ := volume) hm.ennreal_ofReal
     (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top)) (fun _ : ℝ => (1:ℝ))
   simpa only [ENNReal.toReal_ofReal (h0 _),smul_eq_mul,mul_one,integral_const,
     smul_eq_mul,mul_one,timeMeasure] using hh
 
-theorem measureFourier_timeMeasure {μ : ℝ → ℝ} (hm : Measurable μ) (h0 : ∀ t, 0 ≤ μ t) (u : ℝ) :
+theorem measureFourier_timeMeasure (u : ℝ) :
     measureFourier (timeMeasure μ) u = 𝓕 (fun t => (μ t:ℂ)) u := by
   unfold measureFourier timeMeasure
   rw [integral_withDensity_eq_integral_toReal_smul hm.ennreal_ofReal
@@ -34,8 +38,7 @@ theorem measureFourier_timeMeasure {μ : ℝ → ℝ} (hm : Measurable μ) (h0 :
 
 /-- Uniform Fourier bound with the exact original L1 mass, for use in
 spatial discarded-region estimates. -/
-theorem time_fourier_norm_le_mass {μ : ℝ → ℝ} (hm : Measurable μ)
-    (h0 : ∀ t, 0 ≤ μ t) (hi : Integrable μ) (u : ℝ) :
+theorem time_fourier_norm_le_mass (hi : Integrable μ) (u : ℝ) :
     ‖𝓕 (fun t => (μ t:ℂ)) u‖ ≤ ∫ t, μ t := by
   let := timeMeasure_finite hi
   rw [← measureFourier_timeMeasure hm h0]
@@ -43,6 +46,8 @@ theorem time_fourier_norm_le_mass {μ : ℝ → ℝ} (hm : Measurable μ)
     (f := fun t => phase (-u*t)) (C := 1)
     (Filter.Eventually.of_forall (fun t => (phase_norm (-u*t)).le))
   simpa only [measureFourier,one_mul,timeMeasure_mass hm h0] using hh
+
+end
 
 /-- Actual retained cubic identity for an ordinary nonnegative integrable
 time density and the project's literal Fourier transform. -/

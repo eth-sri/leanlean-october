@@ -114,8 +114,11 @@ private lemma exists_norm_ψ_bound_on_diffSet (hK : IsCompact K) (hψc : Continu
       exact ⟨hx, ht⟩
     exact hne ⟨(x : E) - t, this⟩
 
-private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
-    (hKm : MeasurableSet K) (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) {R : ℝ}
+section
+variable (hK : IsCompact K) (hKm : MeasurableSet K) (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) {R : ℝ}
+include hK hKm hψc hψcs R
+
+private lemma smoothFun_image_mem_closedBall
     (hRpos : 0 < R) (Cψ : ℝ) (hCψ_nonneg : 0 ≤ Cψ)
     (hψ_bound : ∀ x : ↥(Kψ (K := K) (ψ := ψ)), ∀ t : E, t ∈ K → ‖ψ ((x : E) - t)‖ ≤ Cψ) :
     let mK : ℝ :=
@@ -206,8 +209,7 @@ private lemma smoothFun_image_mem_closedBall (hK : IsCompact K)
 
 /-- Arzelà--Ascoli: smoothing maps `L²(K)` bounded sets into a precompact set
 in `BCF(K + tsupport ψ)`. -/
-private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
-    (hKm : MeasurableSet K) (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) {R : ℝ}
+private lemma uniformEquicontinuous_smoothBCF_closedBall
     (hRpos : 0 < R) (Cψ : ℝ) (hCψ_nonneg : 0 ≤ Cψ)
     (hψ_bound : ∀ x : ↥(Kψ (K := K) (ψ := ψ)), ∀ t : E, t ∈ K → ‖ψ ((x : E) - t)‖ ≤ Cψ) :
     let A : Set (BoundedContinuousFunction (↥(Kψ (K := K) (ψ := ψ))) ℝ) :=
@@ -417,8 +419,7 @@ private lemma uniformEquicontinuous_smoothBCF_closedBall (hK : IsCompact K)
       lt_of_le_of_lt hle' hε2lt
     simpa [hu_eq'] using this
 
-theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : MeasurableSet K)
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) {R : ℝ} (hR : 0 ≤ R) :
+theorem smoothBCF_image_closedBall_isCompact (hR : 0 ≤ R) :
     IsCompact
         (closure
           (smoothBCF (E := E) (K := K) (ψ := ψ) hK hKm hψc hψcs '' Metric.closedBall (0 : _)
@@ -541,6 +542,8 @@ theorem smoothBCF_image_closedBall_isCompact (hK : IsCompact K) (hKm : Measurabl
     simpa [A, s] using
       (BoundedContinuousFunction.arzela_ascoli (α := ↥(Kψ (K := K) (ψ := ψ))) (β := ℝ)
         (s := s) hs A (fun f x hf => in_s f x hf) H)
+
+end
 
 end Volume
 

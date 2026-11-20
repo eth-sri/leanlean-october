@@ -87,9 +87,11 @@ lemma physicalRowWeight_mul_summable (C : CalibrationData) (W0 W1 : ℝ→ℂ)
   intro r hr hz
   exact hr (by dsimp only; rw [hz,zero_mul])
 
-theorem markedPhysicalProbe_eq_rows (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Id) (W0 W1 : ℝ→ℂ) (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) :
+section
+variable (η : HeckeFamily.Character) (C : CalibrationData) (D : Id) (W0 W1 : ℝ→ℂ) (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1) (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y)
+include η C D W0 W1 hW0 hW1 X Y Z hX hY
+
+theorem markedPhysicalProbe_eq_rows :
     markedPhysicalProbe η C D W0 W1 X Y Z=
       ∑'r : PhysicalRowIndex,physicalRowWeight C W0 W1 X Y r*
         verticalIntegral 4 (fun t=>(Z:ℂ)^t*Complex.exp (t^2)*spectralRow C.excluded D (physicalRowMonoid η C r) t) := by
@@ -112,9 +114,7 @@ theorem markedPhysicalProbe_eq_rows (η : HeckeFamily.Character) (C : Calibratio
     try dsimp only
     simp only [ite_eq_right hc,zero_mul,mul_zero,tsum_zero]
 
-theorem markedPhysicalProbe_eq_gaussian_rows (η : HeckeFamily.Character) (C : CalibrationData)
-    (D : Id) (W0 W1 : ℝ→ℂ) (hW0 : HasCompactSupport W0) (hW1 : HasCompactSupport W1)
-    (X Y Z : ℝ) (hX : 0<X) (hY : 0<Y) (hZ : 0<Z) :
+theorem markedPhysicalProbe_eq_gaussian_rows (hZ : 0<Z) :
     markedPhysicalProbe η C D W0 W1 X Y Z=
       ∑'r : PhysicalRowIndex,physicalRowWeight C W0 W1 X Y r*
         correctedCompletedT C.excluded D (physicalRowMonoid η C r) gaussianCompletedProfile Z := by
@@ -122,6 +122,8 @@ theorem markedPhysicalProbe_eq_gaussian_rows (η : HeckeFamily.Character) (C : C
   apply tsum_congr
   intro r
   rw [spectralRow_eq_gaussianCompleted _ _ _ (physicalRowMonoid_norm η C r) 4 (by norm_num) Z hZ]
+
+end
 
 end SevenEighths.ProbePhysical
 end

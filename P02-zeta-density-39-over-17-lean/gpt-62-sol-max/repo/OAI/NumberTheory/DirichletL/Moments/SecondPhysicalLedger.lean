@@ -9,16 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondPhysicalLedger
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization
-open CenteredMomentSourceBlockWindows CenteredMomentSecondPhysicalCost
-open CenteredMomentSupport CenteredMomentHeckeColumnWindow
-open CenteredMomentSecondCanonicalLedger CenteredMomentForcing
-open CenteredMomentSecondSectorFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentSmooth
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonicalScalar CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondWholeKernel CenteredMomentSectorLocalization CenteredMomentSourceBlockWindows CenteredMomentSecondPhysicalCost CenteredMomentSupport CenteredMomentHeckeColumnWindow CenteredMomentSecondCanonicalLedger CenteredMomentForcing CenteredMomentSecondSectorFrequency CenteredMomentFirstWholeKernel CenteredMomentSmooth
 local notation "O" => ActualEisensteinCubic.O
 
 theorem physicalBlock_effective_window (η:Character) (t:ℝ)
@@ -168,8 +159,11 @@ lemma centralPhysicalCost_pos (C D:Ideal O) (hC:Supported C) (hD:Supported D)
   unfold centralPhysicalCost outerScalar
   positivity
 
-theorem actual_physical_cost_bound (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+section
+variable (η:Character) (t:ℝ) (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+include η t S β C D hC hD
+
+theorem actual_physical_cost_bound
     (U:Finset (CommonIndex C D)) (R:ℝ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
     (hK:0<K) (H a Z:ℝ) (hH:0<H) (ha:0<a) (hZ:1<Z)
     (hlower:∀I:Ideal O,β I≠0→a*H≤(Ideal.absNorm I:ℝ))
@@ -184,8 +178,7 @@ theorem actual_physical_cost_bound (η:Character) (t:ℝ)
     Real.logb_rpow_eq_mul_logb_of_pos ha,Real.logb_rpow (by linarith : 0<Z) hZ.ne']
   linarith
 
-theorem actual_canonical_physical_cost (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+theorem actual_canonical_physical_cost
     (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
     (w:O) (hpart:canonicalPartition C D U w)
     (hcorr:idealCorrelation C D hC hD (commonFrequencyGenerator C D*w)≠0)
@@ -201,8 +194,7 @@ theorem actual_canonical_physical_cost (η:Character) (t:ℝ)
   exact (actual_physical_cost_bound η t S β C D hC hD U R rows W K n hK H a Z hH ha hZ hlower hne).trans
     (mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)) (by positivity))
 
-theorem physicalBlock_canonical_witness (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+theorem physicalBlock_canonical_witness
     (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
     (R:ℝ) (rows:Finset O) (hrows:∀z∈rows,z≠0) (W:𝓢(ℝ,ℂ))
     (K:ℝ) (hK:0<K) (n:Fin 4→ℤ)
@@ -233,8 +225,7 @@ theorem physicalBlock_canonical_witness (η:Character) (t:ℝ)
     (by simpa only [mul_assoc] using hc)
   exact (right_ne_zero_of_mul hz) (by simpa only [sectorFrequency,F] using he)
 
-theorem original_block_physical_cost (η:Character) (t:ℝ)
-    (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D:Ideal O) (hC:Supported C) (hD:Supported D)
+theorem original_block_physical_cost
     (hCD:primeSupport C=primeSupport D) (U:Finset (CommonIndex C D))
     (R:ℝ) (rows:Finset O) (hrows:∀z∈rows,z≠0) (W:𝓢(ℝ,ℂ)) (K:ℝ) (n:Fin 4→ℤ)
     (hK:0<K) (H a Z:ℝ) (hH:0<H) (ha:0<a) (hZ:1<Z)
@@ -246,6 +237,8 @@ theorem original_block_physical_cost (η:Character) (t:ℝ)
   obtain ⟨z,hz,hpart,hcorr⟩:=physicalBlock_canonical_witness η t S β C D hC hD hCD U R rows hrows W K hK n hne
   exact actual_canonical_physical_cost η t S β C D hC hD hCD U _ hpart hcorr R rows W K n
     hK H a Z hH ha hZ hlower hne
+
+end
 
 end SevenEighths.CenteredMomentSecondPhysicalLedger
 

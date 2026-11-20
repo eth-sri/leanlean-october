@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalSourceEnergy
 public import OAI.NumberTheory.DirichletL.Descent.GlobalParentEnergy
 
@@ -10,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseFirstGlobalParents
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open FirstCauchyArithmetic RayFourExpansion InverseMoment
-open InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityValidSource InversePrioritySecondSource
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource InversePrioritySecondSource
 open InverseInitialArithmetic (sourceIdeal)
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -85,9 +83,9 @@ theorem original_fill_valid (p : ι→O) (pool : Finset ι) (Q : Finset (ι→�
       (Finset.union_subset_union_right (Finset.filter_subset _ _))
   · exact fun i=>Fin.elim0 i
 
-variable (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) [OAI.PrincipalIdealFamily.Maximal p]
 
-variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 end SevenEighths.InverseFirstGlobalParents
 

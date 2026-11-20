@@ -8,71 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace TruncatedPrincipalPoisson
 
 section
@@ -375,10 +322,10 @@ def join (GUV : Triple ι) : Finset ι × Finset ι :=
 lemma join_split (ST : Finset ι × Finset ι) : join (split ST) = ST := by
   apply Prod.ext
   · ext i
-    simp only [join, split, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
+    simp [join, split]
     tauto
   · ext i
-    simp only [join, split, Finset.mem_union, Finset.mem_inter, Finset.mem_sdiff]
+    simp [join, split]
     tauto
 
 lemma split_mem {F : Finset ι} {ST : Finset ι × Finset ι}
@@ -400,8 +347,7 @@ lemma split_mem {F : Finset ι} {ST : Finset ι × Finset ι}
 
 lemma join_mem {F : Finset ι} {GUV : Triple ι} (h : GUV ∈ triples F) :
     join GUV ∈ F.powerset ×ˢ F.powerset := by
-  rcases (by simpa only [triples, Finset.mem_sigma, Finset.mem_filter,
-    Finset.mem_product, Finset.mem_powerset] using h) with ⟨hG, ⟨hU, hV⟩, _⟩
+  rcases (by simpa [triples] using h) with ⟨hG, ⟨hU, hV⟩, _⟩
   apply Finset.mem_product.mpr
   constructor <;> apply Finset.mem_powerset.mpr
   · exact Finset.union_subset hG (hU.trans Finset.sdiff_subset)
@@ -411,8 +357,7 @@ lemma split_join {F : Finset ι} {GUV : Triple ι} (h : GUV ∈ triples F) :
     split (join GUV) = GUV := by
   rcases GUV with ⟨G, U, V⟩
   have hh : G ⊆ F ∧ (U ⊆ F \ G ∧ V ⊆ F \ G) ∧ Disjoint U V := by
-    simpa only [triples, Finset.mem_sigma, Finset.mem_filter,
-      Finset.mem_product, Finset.mem_powerset] using h
+    simpa [triples] using h
   rcases hh with ⟨_, ⟨hU, hV⟩, hd⟩
   have hUG : Disjoint U G := Finset.disjoint_left.mpr (fun i hi hg => (Finset.mem_sdiff.mp (hU hi)).2 hg)
   have hVG : Disjoint V G := Finset.disjoint_left.mpr (fun i hi hg => (Finset.mem_sdiff.mp (hV hi)).2 hg)

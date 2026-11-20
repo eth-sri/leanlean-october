@@ -38,8 +38,11 @@ lemma source_compensated_scale_admissible (q Z L : ℝ) (hq : 1≤q) (hZ : 1≤Z
       _=(Z^(17/48:ℝ))^2 := source_scale_square Z hz
       _≤_ := le_mul_of_one_le_left (by positivity) (one_le_pow₀ hq)
 
-lemma source_compensated_gram_scale (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
-    (hL : 1≤L) (hql : q≤Z^(1/8:ℝ)) (hLl : L≤Z^(11/48:ℝ)) (hδ : 0≤δ) :
+section
+variable (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z) (hL : 1≤L) (hql : q≤Z^(1/8:ℝ)) (hLl : L≤Z^(11/48:ℝ)) (hδ : 0≤δ)
+include q Z L δ hq hZ hL hql hLl hδ
+
+lemma source_compensated_gram_scale :
     (q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)/(Z^(23/48:ℝ)/L))*
       (1+((Z^(23/48:ℝ)/L)^2/(q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)))^(1/6:ℝ)+
         ((Z^(23/48:ℝ)/L)^2/(q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)))^2/(Z^(23/48:ℝ)/L))*
@@ -62,8 +65,7 @@ lemma source_compensated_gram_scale (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
     _=(3*q/L)*(Z^(17/48:ℝ)*(Z^(1/8:ℝ))^(1/6:ℝ)*(Z^(23/48:ℝ))^δ) := by ring
     _=_ := by rw [source_gram_power Z δ hz]
 
-lemma source_compensated_gram_sqrt (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
-    (hL : 1≤L) (hql : q≤Z^(1/8:ℝ)) (hLl : L≤Z^(11/48:ℝ)) (hδ : 0≤δ) :
+lemma source_compensated_gram_sqrt :
     Real.sqrt ((q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)/(Z^(23/48:ℝ)/L))*
       (1+((Z^(23/48:ℝ)/L)^2/(q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)))^(1/6:ℝ)+
         ((Z^(23/48:ℝ)/L)^2/(q*(Z^(17/48:ℝ)/L)*(Z^(23/48:ℝ)/L)))^2/(Z^(23/48:ℝ)/L))*
@@ -71,6 +73,8 @@ lemma source_compensated_gram_sqrt (q Z L δ : ℝ) (hq : 1≤q) (hZ : 1≤Z)
         Real.sqrt (3*q/L)*Z^(3/16+(23/96)*δ:ℝ) := by
   apply (Real.sqrt_le_sqrt (source_compensated_gram_scale q Z L δ hq hZ hL hql hLl hδ)).trans_eq
   rw [Real.sqrt_mul (by positivity),source_gram_sqrt_power Z δ (lt_of_lt_of_le zero_lt_one hZ)]
+
+end
 
 lemma lowGramFactor_source_bound (C : CalibrationData) (Z L δ : ℝ) (hZ : 1≤Z)
     (hL : 1≤L) (hql : elementNorm C.generator≤Z^(1/8:ℝ))

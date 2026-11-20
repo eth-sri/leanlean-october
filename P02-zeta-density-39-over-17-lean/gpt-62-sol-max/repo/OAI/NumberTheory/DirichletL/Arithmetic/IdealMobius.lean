@@ -8,70 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
 
 namespace IdealMobiusDivisorSum
 abbrev O := ActualEisensteinCubic.O
@@ -95,20 +43,23 @@ def primeSupport (I : Ideal O) : Finset (Ideal O) := (normalizedFactors I).toFin
 theorem support_prime {I : Ideal O} {P : Ideal O} (hP : P ∈ primeSupport I) : Prime P :=
   prime_of_normalized_factor P (Multiset.mem_toFinset.mp hP)
 
-theorem support_product_ne_zero {I : Ideal O} {S : Finset (Ideal O)}
-    (hS : S ⊆ primeSupport I) : (∏ P ∈ S, P) ≠ 0 :=
+section
+variable {I : Ideal O} {S : Finset (Ideal O)} (hS : S ⊆ primeSupport I)
+include I S hS
+
+theorem support_product_ne_zero : (∏ P ∈ S, P) ≠ 0 :=
   Finset.prod_ne_zero_iff.mpr (fun _P hP => (support_prime (hS hP)).ne_zero)
 
-theorem factors_support_product {I : Ideal O} {S : Finset (Ideal O)}
-    (hS : S ⊆ primeSupport I) : normalizedFactors (∏ P ∈ S, P) = S.val := by
+theorem factors_support_product : normalizedFactors (∏ P ∈ S, P) = S.val := by
   have hp : ∀ P ∈ S.val, Prime P := fun P hP => support_prime (hS hP)
   simpa using normalizedFactors_prod_of_prime hp
 
-theorem squarefree_support_product {I : Ideal O} {S : Finset (Ideal O)}
-    (hS : S ⊆ primeSupport I) : Squarefree (∏ P ∈ S, P) := by
+theorem squarefree_support_product : Squarefree (∏ P ∈ S, P) := by
   apply (squarefree_iff_nodup_normalizedFactors (support_product_ne_zero hS)).mpr
   rw [factors_support_product hS]
   exact S.nodup
+
+end
 
 theorem support_product_dvd {I : Ideal O} (hI : I ≠ ⊥) {S : Finset (Ideal O)}
     (hS : S ⊆ primeSupport I) : (∏ P ∈ S, P) ∣ I := by
@@ -439,7 +390,7 @@ theorem squarefreeGaussCoefficient_eq (I : Ideal O) (hs : Squarefree I)
 theorem angularFactor_mul (a b : O) :
     FiniteGaussPhase.angularFactor (a * b) =
       FiniteGaussPhase.angularFactor a * FiniteGaussPhase.angularFactor b := by
-  simp only [FiniteGaussPhase.angularFactor, map_mul, norm_mul, Complex.ofReal_mul]
+  simp [FiniteGaussPhase.angularFactor]
   ring
 
 def cubeWeight (Ψ : O →* ℂ) : Ideal O →* ℂ where
@@ -565,7 +516,7 @@ theorem ideal_cube_convolution (c : Ideal O →* ℂ) (hc0 : c 0 = 0)
         intro p
         dsimp [F]
         rw [p.property, hc0, mul_zero, zero_mul]
-      simp only [heach, tsum_zero, zero_ne_one, ite_false]
+      simp [heach]
     · calc
         _ = ∑' p : MulFiber B, (UniqueFactorizationMonoid.moebius p.val.1 : ℂ) * (c B * f B) := by
           apply tsum_congr
@@ -584,7 +535,7 @@ theorem ideal_cube_convolution (c : Ideal O →* ℂ) (hc0 : c 0 = 0)
   simp_rw [hfiber] at hs
   have hsum : (∑' p, F p) = f 1 := by
     have he := hs.tsum_eq.symm
-    simpa only [tsum_ite_eq, one_ne_zero] using he
+    simpa using he
   rw [← hF.tsum_prod]
   exact hsum
 

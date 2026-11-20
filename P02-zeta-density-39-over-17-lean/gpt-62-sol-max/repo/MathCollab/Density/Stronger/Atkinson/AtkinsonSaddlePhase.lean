@@ -29,7 +29,11 @@ noncomputable section
 
 namespace MathCollab.Density.Stronger.Atkinson
 
-theorem atkinson_sqrt_frequency_normalized {T : ℝ} (hT : 0 < T) (n : ℕ) :
+section
+variable {T : ℝ} (hT : 0 < T) (n : ℕ)
+include T hT n
+
+theorem atkinson_sqrt_frequency_normalized :
     Real.sqrt (n : ℝ) / (2 * Real.sqrt (T / (2 * Real.pi))) =
       Real.sqrt (Real.pi * (n : ℝ) / (2 * T)) := by
   have hA : 0 < T / (2 * Real.pi) := by positivity
@@ -39,7 +43,7 @@ theorem atkinson_sqrt_frequency_normalized {T : ℝ} (hT : 0 < T) (n : ℕ) :
     field_simp
   exact (Real.sqrt_eq_iff_eq_sq (by positivity) (by positivity)).2 he.symm |>.symm
 
-theorem atkinson_sqrt_frequency_radical {T : ℝ} (hT : 0 < T) (n : ℕ) :
+theorem atkinson_sqrt_frequency_radical :
     Real.pi * Real.sqrt (n : ℝ) * Real.sqrt ((Real.sqrt (n : ℝ)) ^ 2 +
       4 * (T / (2 * Real.pi))) =
       Real.sqrt (2 * Real.pi * (n : ℝ) * T + Real.pi ^ 2 * (n : ℝ) ^ 2) := by
@@ -52,25 +56,27 @@ theorem atkinson_sqrt_frequency_radical {T : ℝ} (hT : 0 < T) (n : ℕ) :
     ring
   exact (Real.sqrt_eq_iff_eq_sq (by positivity) (by positivity)).2 he.symm |>.symm
 
-theorem atkinsonDualPhase_sqrt {T : ℝ} (hT : 0 < T) (n : ℕ) :
+theorem atkinsonDualPhase_sqrt :
     atkinsonDualPhase T (Real.sqrt n) = atkinsonSourcePhase T n + Real.pi / 4 := by
   unfold atkinsonDualPhase atkinsonSourcePhase
   rw [atkinson_sqrt_frequency_normalized hT n, atkinson_sqrt_frequency_radical hT n]
   ring
 
-theorem zetaAtkinsonPhase_saddle_sqrt {T : ℝ} (hT : 0 < T) (n : ℕ) :
+theorem zetaAtkinsonPhase_saddle_sqrt :
     zetaAtkinsonPhase T (Real.sqrt n) (zetaAtkinsonSaddle T (Real.sqrt n)) =
       atkinsonCentralPhase T + Real.pi * n + atkinsonSourcePhase T n + Real.pi / 4 := by
   rw [zetaAtkinsonPhase_at_saddle hT, atkinsonDualPhase_sqrt hT n,
     Real.sq_sqrt (Nat.cast_nonneg n)]
   ring
 
-theorem zetaAtkinsonPhase_saddle_neg_sqrt {T : ℝ} (hT : 0 < T) (n : ℕ) :
+theorem zetaAtkinsonPhase_saddle_neg_sqrt :
     zetaAtkinsonPhase T (-Real.sqrt n) (zetaAtkinsonSaddle T (-Real.sqrt n)) =
       atkinsonCentralPhase T + Real.pi * n - atkinsonSourcePhase T n - Real.pi / 4 := by
   rw [zetaAtkinsonPhase_at_saddle hT, atkinsonDualPhase_neg, atkinsonDualPhase_sqrt hT n,
     neg_sq, Real.sq_sqrt (Nat.cast_nonneg n)]
   ring
+
+end
 
 theorem exp_atkinson_natural_pi (n : ℕ) :
     Complex.exp (((Real.pi * (n : ℝ) : ℝ) : ℂ) * Complex.I) = (-1 : ℂ) ^ n := by

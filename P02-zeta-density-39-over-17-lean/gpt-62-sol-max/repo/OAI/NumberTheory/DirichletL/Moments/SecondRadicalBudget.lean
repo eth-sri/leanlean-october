@@ -8,12 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical Topology
 namespace SevenEighths.CenteredMomentSecondRadicalBudget
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentSecondRadicalFamily CenteredMomentSecondMovingSupport
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalLedger CenteredMomentSecondHeightFamily
-open CenteredMomentCanonicalFirst CenteredMomentChildRows CenteredMomentPartitionNorm
-open CenteredMomentHeckeColumnWindow RayFourExpansion CenteredMomentCommonSupport CenteredMomentSupport
+open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentSecondRadicalFamily CenteredMomentSecondMovingSupport CenteredMomentSecondCanonical CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalLedger CenteredMomentSecondHeightFamily CenteredMomentCanonicalFirst CenteredMomentChildRows CenteredMomentPartitionNorm CenteredMomentHeckeColumnWindow RayFourExpansion CenteredMomentCommonSupport CenteredMomentSupport
 local notation "O" => ActualEisensteinCubic.O
 
 def fixedFactor : ℕ := (Ideal.span {(12:O)}).absNorm*
@@ -40,11 +35,12 @@ theorem child_modulus_bound (η : Character) (χ : RayCharacter) :
   simpa only [map_mul] using Nat.le_of_dvd
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr hn)) (map_dvd Ideal.absNorm hd)
 
-theorem active_radical_dvd (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (U : Finset (CommonIndex C D)) (w : O)
-    (hne : idealCorrelation C D hC hD
-      (commonFrequencyGenerator C D*w)≠0) :
+section
+variable (C D : Ideal O) (hC : Supported C) (hD : Supported D) (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) (U : Finset (CommonIndex C D)) (w : O) (hne : idealCorrelation C D hC hD
+      (commonFrequencyGenerator C D*w)≠0)
+include C D hC hD hCD U w hne
+
+theorem active_radical_dvd :
     (∏P∈fixedActiveSet C D U,P.val)∣
       (∏P∈U,P.val)*Ideal.span {nonunitFrequencyGenerator C D U} := by
   have hd := Finset.prod_dvd_prod_of_subset (fixedActiveSet C D U)
@@ -58,11 +54,7 @@ theorem active_radical_dvd (C D : Ideal O) (hC : Supported C) (hD : Supported D)
   rw [nonunitFrequencyGenerator_span]
   simpa only [unitIdeal,commonPrime_span C D hC] using hd
 
-theorem active_radical_norm_bound (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (U : Finset (CommonIndex C D)) (w : O)
-    (hne : idealCorrelation C D hC hD
-      (commonFrequencyGenerator C D*w)≠0) :
+theorem active_radical_norm_bound :
     (∏P∈fixedActiveSet C D U,P.val).absNorm≤
       (∏P∈U,P.val).absNorm*(Ideal.span {nonunitFrequencyGenerator C D U}).absNorm := by
   have hp (S : Finset (CommonIndex C D)) : (∏P∈S,P.val)≠0 :=
@@ -73,6 +65,8 @@ theorem active_radical_norm_bound (C D : Ideal O) (hC : Supported C) (hD : Suppo
   simpa only [map_mul] using Nat.le_of_dvd
     (Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr (mul_ne_zero (hp U) hv)))
     (map_dvd Ideal.absNorm (active_radical_dvd C D hC hD hCD U w hne))
+
+end
 
 theorem exists_second_budgeted_family (η : Character) (χ : RayCharacter)
     (C D : Ideal O) (hC : Supported C) (U : Finset (CommonIndex C D)) :

@@ -59,13 +59,13 @@ theorem norm_riemannZeta_critical_le_linear (t : ℝ) :
     _ ≤ _ := by linarith
 
 /-- The right contour is absolutely integrable for independent X and Y. -/
-theorem integrable_detectorKernel_right {ρ : ℂ} {X Y : ℝ}
-    (hY : 0 < Y) (hρ : 3/4 ≤ ρ.re) :
+theorem integrable_detectorKernel_right_of_half_lt {ρ : ℂ} {X Y : ℝ}
+    (hY : 0 < Y) (hρ : 1/2 < ρ.re) :
     Integrable (fun t : ℝ => detectorKernel ρ X Y (((1/2 : ℝ) : ℂ)+(t : ℂ)*I)) := by
   let line := fun t : ℝ => ((1/2 : ℝ) : ℂ)+(t : ℂ)*I
   have hg : Integrable (fun t : ℝ => Complex.Gamma (line t) *
       LSeries (mollifierDirichletCoeff X) (ρ+line t)) := by
-    have h := verticalIntegrable_mellin_smoothedDetector (X := X) hρ
+    have h := verticalIntegrable_mellin_smoothedDetector_of_half_lt (X := X) hρ
     apply h.congr
     filter_upwards with t
     exact mellin_smoothedDetector_eq (by linarith : 0 ≤ ρ.re)
@@ -86,16 +86,17 @@ theorem integrable_detectorKernel_right {ρ : ℂ} {X Y : ℝ}
   dsimp [line]
   ring
 
+
 /-- The shifted contour is absolutely integrable using only linear zeta growth. -/
-theorem integrable_detectorKernel_left {ρ : ℂ} {X Y : ℝ}
-    (hY : 0 < Y) (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
+theorem integrable_detectorKernel_left_of_half_lt {ρ : ℂ} {X Y : ℝ}
+    (hY : 0 < Y) (hβ : 1/2 < ρ.re) (hβ' : ρ.re ≤ 1) :
     Integrable (fun t : ℝ => detectorKernel ρ X Y (((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
   let a : ℝ := 1/2-ρ.re
   let line := fun t : ℝ => (a : ℂ)+(t : ℂ)*I
   have he : ∀ t : ℝ, ρ+line t = (1/2 : ℂ)+((ρ.im+t : ℝ) : ℂ)*I := by
     intro t
     apply Complex.ext <;> simp [line, a]
-  have hg := (uniform_detector_gamma_mass.choose_spec.2 ρ.re hβ hβ').2.1
+  have hg := ((uniform_detector_gamma_mass_of_half_lt hβ).choose_spec.2 ρ.re le_rfl hβ').2.1
   have hc : Continuous (fun t : ℝ => detectorKernel ρ X Y (line t)) := by
     unfold detectorKernel
     apply Continuous.mul
@@ -104,7 +105,7 @@ theorem integrable_detectorKernel_left {ρ : ℂ} {X Y : ℝ}
         · apply Continuous.cpow continuous_const (by dsimp [line]; fun_prop)
           intro t
           left; simpa using hY
-        · exact continuous_Gamma_detector_strip (by dsimp [a]; linarith) (by dsimp [a]; linarith)
+        · exact continuous_Gamma_detector_strip_of_lt_zero (by dsimp [a]; linarith) (by dsimp [a]; linarith)
       · apply continuous_iff_continuousAt.mpr
         intro t
         exact ContinuousAt.comp' (differentiableAt_zetaMollifier X (ρ+line t)).continuousAt
@@ -136,6 +137,11 @@ theorem integrable_detectorKernel_left {ρ : ℂ} {X Y : ℝ}
         mul_le_mul (mul_le_mul_of_nonneg_left hm (by positivity)) hzt (norm_nonneg _) (by positivity)
       _ = _ := by dsimp [C]; ring
   exact (hg.const_mul C).mono' hc.aestronglyMeasurable (Filter.Eventually.of_forall hbound)
+
+theorem integrable_detectorKernel_left {ρ : ℂ} {X Y : ℝ}
+    (hY : 0 < Y) (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
+    Integrable (fun t : ℝ => detectorKernel ρ X Y (((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) :=
+  integrable_detectorKernel_left_of_half_lt hY (by linarith) hβ'
 
 /-- One ordinate-independent horizontal majorant for arbitrary fixed X,Y,rho. -/
 theorem norm_detectorKernel_horizontal {ρ : ℂ} {X Y u t : ℝ}
@@ -191,8 +197,8 @@ theorem tendsto_detector_horizontal_majorant (C : ℝ) :
   · simp
 
 /-- Both horizontal integrals vanish as the independent rectangle height grows. -/
-theorem tendsto_detector_horizontal_integral {ρ : ℂ} {X Y ε : ℝ}
-    (hY : 1 ≤ Y) (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1) (hε : |ε| = 1) :
+theorem tendsto_detector_horizontal_integral_of_half_lt {ρ : ℂ} {X Y ε : ℝ}
+    (hY : 1 ≤ Y) (hβ : 1/2 < ρ.re) (hβ' : ρ.re ≤ 1) (hε : |ε| = 1) :
     Tendsto (fun R : ℝ => ∫ u in (1/2-ρ.re)..(1/2 : ℝ),
       detectorKernel ρ X Y ((u : ℂ)+((ε*R : ℝ) : ℂ)*I)) atTop (𝓝 0) := by
   let C : ℝ := 60*Y^(1/2 : ℝ)*(⌊X⌋₊ : ℝ)*(2+|ρ.im|)
@@ -216,5 +222,6 @@ theorem tendsto_detector_horizontal_integral {ρ : ℂ} {X Y ε : ℝ}
   have hnonneg : 0 ≤ C*(1+R)^3*Real.exp (-R) := by dsimp [C]; positivity
   have hmul := mul_le_mul_of_nonneg_left hlength hnonneg
   exact (intervalIntegral.norm_integral_le_of_norm_le_const hpoint).trans (by simpa using hmul)
+
 
 end MathCollab.Density

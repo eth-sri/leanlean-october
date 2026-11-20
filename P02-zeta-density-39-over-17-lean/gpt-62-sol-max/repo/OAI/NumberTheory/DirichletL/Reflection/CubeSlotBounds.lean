@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment
-open IdealMobiusDivisorSum
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve InverseMoment IdealMobiusDivisorSum
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {σ : Type*} [Fintype σ] [DecidableEq σ]
@@ -23,9 +22,11 @@ lemma cube_divisor_card_one (H : Ideal Eis) (hH : H≠0) :
     (1:ℝ)≤(idealDivisors H).card := by
   exact_mod_cast Finset.card_pos.mpr ⟨1,(mem_idealDivisors hH).mpr (one_dvd H)⟩
 
-lemma cubeAbsorbedCoefficient_norm (H : Ideal Eis) (hH : H≠0)
-    (L : σ→Finset (Ideal Eis)) (w : ∀ i,L i→ℂ)
-    (hw : ∀ i P,‖w i P‖≤1) (T : Finset σ) (rmax : ℕ)
+section
+variable (H : Ideal Eis) (hH : H≠0) (L : σ→Finset (Ideal Eis)) (w : ∀ i,L i→ℂ) (hw : ∀ i P,‖w i P‖≤1)
+include H hH L w hw
+
+lemma cubeAbsorbedCoefficient_norm (T : Finset σ) (rmax : ℕ)
     (hr : Fintype.card σ≤rmax) :
     ‖cubeAbsorbedCoefficient H L w T‖≤((idealDivisors H).card:ℝ)^rmax := by
   rw [cubeAbsorbedCoefficient_product,norm_prod]
@@ -42,9 +43,7 @@ lemma cubeAbsorbedCoefficient_norm (H : Ideal Eis) (hH : H≠0)
     _ ≤ _ := pow_le_pow_right₀ (cube_divisor_card_one H hH)
       ((Fintype.card_subtype_le _).trans hr)
 
-lemma cubeAbsorbedCoefficient_mass (H : Ideal Eis) (hH : H≠0)
-    (L : σ→Finset (Ideal Eis)) (w : ∀ i,L i→ℂ)
-    (hw : ∀ i P,‖w i P‖≤1) (rmax : ℕ) (hr : Fintype.card σ≤rmax) :
+lemma cubeAbsorbedCoefficient_mass (rmax : ℕ) (hr : Fintype.card σ≤rmax) :
     (∑ T : Finset σ,‖cubeAbsorbedCoefficient H L w T‖)≤
       (2:ℝ)^rmax*((idealDivisors H).card:ℝ)^rmax := by
   calc
@@ -53,6 +52,8 @@ lemma cubeAbsorbedCoefficient_mass (H : Ideal Eis) (hH : H≠0)
     _ = (2:ℝ)^(Fintype.card σ)*((idealDivisors H).card:ℝ)^rmax := by
       simp [Fintype.card_finset]
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hr) (by positivity)
+
+end
 
 theorem cubeAbsorbedCoefficient_small_power (rmax : ℕ) (ε : ℝ) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀ {σ : Type*} [Fintype σ] [DecidableEq σ]

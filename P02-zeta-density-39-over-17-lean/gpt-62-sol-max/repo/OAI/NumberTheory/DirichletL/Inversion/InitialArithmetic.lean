@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GeneratorTransport
 public import OAI.NumberTheory.DirichletL.Descent.InitializationEnergy
 
@@ -11,14 +12,13 @@ open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialArithmetic
 open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open MixedCrossSeparation (columnCoefficient)
-open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers
-open CompletedGauss
+open SevenEighths.InverseMoment SevenEighths.InverseInitialFibers CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → O) (hp : ∀ i, p i≠0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, λ₀∉Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p λ₀)
 
 def initialColumn (Ψ : O →* ℂ) (j C d h : O)
     (H : Finset ι→ℂ) (S : Finset ι) : ℂ :=
@@ -34,7 +34,7 @@ theorem initialColumn_eq_secondPre (Ψ : O →* ℂ) (j C d h : O)
   have hone := ActualEisensteinCubic.finiteSquarefreeRow_one (fun i=>Ideal.span {p i}) hg S
   simp only [initialColumn,secondPreColumn,hone,one_pow,mul_one]
 
-theorem initial_common_extraction (hpr : ∀ i,λ₀^2∣p i-1)
+theorem initial_common_extraction (hpr : OAI.PrincipalIdealFamily.PrimaryAt p λ₀)
     (Ψ : O →* ℂ) (j t d h : O) (H : Finset ι→ℂ)
     (V N : Finset ι) (hVN : Disjoint V N) :
     initialColumn p hp hcop hg Ψ j (d*t) d h H (V∪N) =
@@ -82,7 +82,7 @@ theorem sourceIdeal_union (S T : Finset ι) (hst : Disjoint S T) :
 
 include hp in
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
-theorem sourceIdeal_gen (hpr : ∀ i,λ₀^2∣p i-1) (S : Finset ι) :
+theorem sourceIdeal_gen (hpr : OAI.PrincipalIdealFamily.PrimaryAt p λ₀) (S : Finset ι) :
     primaryGenerator (sourceIdeal p S)=∏ i∈S,p i := by
   apply primaryGenerator_span _ (Finset.prod_ne_zero_iff.mpr (fun i _=>hp i))
   induction S using Finset.induction_on with
@@ -114,7 +114,7 @@ theorem source_prime_dvd (S : Finset ι) (i : ι) (hi : i∈S) :
 
 include hp in
 
-theorem sourceTuple_valid (hpr : ∀ i,λ₀^2∣p i-1) {J : ℕ}
+theorem sourceTuple_valid (hpr : OAI.PrincipalIdealFamily.PrimaryAt p λ₀) {J : ℕ}
     (G E V : Finset ι) (h : O) (assigned : Fin J→ι)
     (hEG : E⊆G) (ha : ∀ i,assigned i∈G∪V) :
     InitialSourceValid (sourceTuple p G E V h assigned) := by
@@ -140,7 +140,7 @@ theorem source_quotient (G E : Finset ι) (hEG : E⊆G) :
   rw [←sourceIdeal_union p E (G\E) (by exact Finset.disjoint_left.mpr (fun i hi hj=>(Finset.mem_sdiff.mp hj).2 hi)),
     Finset.union_sdiff_of_subset hEG]
 
-theorem sourceIdeal_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) :
+theorem sourceIdeal_injective (hinj : OAI.PrincipalIdealFamily.Distinct p) :
     Function.Injective (sourceIdeal p) := by
   intro S T he
   simp only [sourceIdeal,FiniteGaussPhase.span_finset_prod] at he
@@ -156,7 +156,7 @@ theorem sourceIdeal_injective (hinj : Function.Injective (fun i=>Ideal.span {p i
 def toTuple {J : ℕ} (x : Source (ι:=ι) J) : InitialTuple J :=
   sourceTuple p x.common x.divisor x.overlap x.frequency x.assigned
 
-theorem toTuple_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) {J : ℕ} :
+theorem toTuple_injective (hinj : OAI.PrincipalIdealFamily.Distinct p) {J : ℕ} :
     Function.Injective (toTuple p (J:=J)) := by
   intro x y he
   have hC := congrArg InitialTuple.common he
@@ -189,7 +189,7 @@ theorem sectorSource_injective {J : ℕ} (u : Oˣ) :
   · simpa only [sectorSource] using congrArg (fun z : Source (ι:=ι) J=>z.assigned) he
 
 theorem initial_poisson_child_normalized
-    (hpr : ∀ i,λ₀^2∣p i-1) (G E V : Finset ι) (Ψ : O →* ℂ)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p λ₀) (G E V : Finset ι) (Ψ : O →* ℂ)
     (j e t h : O) (he : Ideal.span {e}=sourceIdeal p E)
     (ht : Ideal.span {t}=sourceIdeal p (G\E)) :
     ∃ u : Oˣ, e=(u:O)*primaryGenerator (sourceIdeal p E) ∧

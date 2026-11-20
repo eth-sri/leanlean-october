@@ -10,8 +10,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 
 namespace SevenEighths.CenteredMomentHeckeWindowEnergy
-open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow
-open HeckeFamily FourierBridge
+open CanonicalQuadraticSieve CenteredMomentGaussEnergy CenteredMomentHeckeColumnWindow HeckeFamily FourierBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem finite_weighted_integral_energy {κ : Type*} [Fintype κ]

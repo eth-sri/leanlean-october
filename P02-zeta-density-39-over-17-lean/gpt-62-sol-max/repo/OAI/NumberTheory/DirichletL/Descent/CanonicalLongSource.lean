@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedBins
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicFullEnergy
 
@@ -10,9 +11,7 @@ noncomputable section
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalCubeSeparation CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open JointLogSeparation FourierBridge CompletedHeight
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalCubeSeparation CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic JointLogSeparation FourierBridge CompletedHeight
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem long_frequency_profile
@@ -27,9 +26,9 @@ theorem long_frequency_profile
 
 theorem long_marked_source_eq
     {ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg:∀i,goodLambda∉Ideal.span {p i})
+    (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+    (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg:OAI.PrincipalIdealFamily.Avoids p goodLambda)
     (pool:Finset ι)(Q:Finset (ι→₀ℕ))(β:(ι→₀ℕ)→ℂ)(Ψ:O→*ℂ)(m f z:O)
     (slots:Finset σ)(lists:σ→Finset ι)(weights:σ→ι→ℂ)
     (V:𝓢(ℝ,ℂ))(A:ℝ)(hV:∀s,V s≠0→|s|≤A)(Z r ξ:ℝ)(hZ:0<Z) :

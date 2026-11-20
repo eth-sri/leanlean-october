@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Reflection.Static
 
 @[expose] public section
@@ -7,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped Classical BigOperators
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss
-open LocalReflectionBrackets FiniteGaussPhase
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT CompletedGauss LocalReflectionBrackets FiniteGaussPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
@@ -72,9 +72,9 @@ def frozenCofactorCharacter (P : Ideal Eis) [P.IsMaximal]
 
 variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a c : Eis} {mode : Bool}
 
-theorem controlled_frozen_phase [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem controlled_frozen_phase [OAI.PrincipalIdealFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a c mode)
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (i : ι) (j : ℕ) :
+    (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (i : ι) (j : ℕ) :
     (((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2) (D.sigma i)*
       phase (actualSextic (Ideal.span {p i}) (hg i)) (quotientTrace (p i) (hp i)) j (D.epsilon i) =
     frozenPrimeScalar (p i) c (hp i) (hg i) j *

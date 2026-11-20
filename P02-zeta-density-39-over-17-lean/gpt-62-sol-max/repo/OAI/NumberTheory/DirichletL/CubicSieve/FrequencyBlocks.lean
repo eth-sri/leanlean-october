@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.PrimePools
 
 @[expose] public section
@@ -10,70 +11,17 @@ noncomputable section
 namespace SecondPassArithmetic
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 section
 
@@ -85,12 +33,12 @@ open ConcreteTraceCRT (eisEmbedding)
 open RayFourExpansion (RayCharacter)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+  (hinj : OAI.PrincipalIdealFamily.Distinct p)
 
 theorem inputConjugateRow_smoothed_frequency_blocks
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (F : Finset ι) (Ψ : O →* ℂ) (m c d : O) (H : Finset ι → ℂ)
     (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y) :
     (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / Y) *
@@ -130,8 +78,8 @@ open RayFourExpansion (RayCharacter)
 
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end
 
@@ -186,20 +134,13 @@ theorem finite_nonzero_row_energy_le_majorant (P : O → ℂ) (T : Finset O)
         exact mul_nonneg (rowMajorant_nonneg _) (sq_nonneg _)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end
 
-section
 
-open scoped BigOperators Classical
-open MeasureTheory
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding)
-open RayFourExpansion (RayCharacter)
 
-end
 
 section
 
@@ -216,7 +157,7 @@ lemma span_dvd_of_element_dvd {a b : O} (h : a ∣ b) :
   exact ⟨Ideal.span {c}, (Ideal.span_singleton_mul_span_singleton a c).symm⟩
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
 
 omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
 lemma primeProduct_add (B : Finset ι) (u v : ι → ℕ) :
@@ -251,21 +192,7 @@ theorem cubeRadical_dvd_jLabel_b0 (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ 
   simpa only [cubeRadical, jLabel, b0Label, primeProduct, pow_one, pow_add,
     Finset.prod_mul_distrib] using hd
 
-def actualSecondTuple (B C D E V : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (k : O) : SecondPassFiber.OldTuple where
-  core := ![Ideal.span {jLabel p B (fun i => v₁ i + v₂ i) ε₁ ε₂},
-    ∏ i ∈ C, Ideal.span {p i}, ∏ i ∈ E, Ideal.span {p i},
-    Ideal.span {squarefreeLabel p B (fun i => v₁ i + v₂ i)},
-    Ideal.span {primeProduct p B v₁}, Ideal.span {aLabel p B ε₁},
-    Ideal.span {aLabel p B ε₂}, ∏ i ∈ D, Ideal.span {p i}]
-  v := ∏ i ∈ V, Ideal.span {p i}
-  j2 := Ideal.span {j2Label p B (fun i => v₁ i + v₂ i) ε₁ ε₂}
-  b2 := Ideal.span {primeProduct p B v₂}
-  row := k
 
-def actualSecondLabel (B C E V : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) : Ideal O :=
-  Ideal.span {jLabel p B (fun i => v₁ i + v₂ i) ε₁ ε₂} *
-    (∏ i ∈ C, Ideal.span {p i}) * (∏ i ∈ E, Ideal.span {p i}) * (∏ i ∈ V, Ideal.span {p i})
 
 def actualSecondRow (D E : Finset ι) (k : O) : O :=
   primeSubsetGenerator (fun i => Ideal.span {p i}) D *
@@ -284,45 +211,26 @@ open FirstPassCubeLabels (jLabel b0Label primeProductNorm)
   frequency : O
   deriving DecidableEq
 
-instance {ι : Type*} : Inhabited (SecondSupportData ι) := ⟨⟨∅, ∅, ∅, ∅, 0⟩⟩
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
 
-def secondSupportTuple (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (x : SecondSupportData ι) : SecondPassFiber.OldTuple :=
-  actualSecondTuple p B x.common x.firstDivisor x.secondDivisor x.overlap v₁ v₂ ε₁ ε₂ x.frequency
 
-def secondSupportNewLabel (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (x : SecondSupportData ι) : Ideal O :=
-  actualSecondLabel p B x.common x.secondDivisor x.overlap v₁ v₂ ε₁ ε₂
 
-def secondSupportRow (x : SecondSupportData ι) : O :=
-  actualSecondRow p x.firstDivisor x.secondDivisor x.frequency
 
-omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-@[simp] theorem secondSupportTuple_newLabel
-    (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (x : SecondSupportData ι) :
-    SecondPassFiber.newLabel (secondSupportTuple p B v₁ v₂ ε₁ ε₂ x) =
-      secondSupportNewLabel p B v₁ v₂ ε₁ ε₂ x := rfl
 
-omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-@[simp] theorem secondSupportTuple_newRow
-    (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (x : SecondSupportData ι) :
-    SecondPassFiber.newRow (secondSupportTuple p B v₁ v₂ ε₁ ε₂ x) = secondSupportRow p x := rfl
 
 end
 
 open MeasureTheory
 open scoped BigOperators Classical SchwartzMap FourierTransform
-open ActualEisensteinCubic
-open JointLogSeparation
+open ActualEisensteinCubic JointLogSeparation
 open FirstPassCubeLabels (b0Label)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end SecondPassArithmetic
 

@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.InverseReflectedPhase
 open scoped BigOperators Classical
-open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT
-open LocalReflectionBrackets FiniteGaussPhase
+open ActualEisensteinCubic CubicEisenstein CompletedGauss ConcreteTraceCRT LocalReflectionBrackets FiniteGaussPhase
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda

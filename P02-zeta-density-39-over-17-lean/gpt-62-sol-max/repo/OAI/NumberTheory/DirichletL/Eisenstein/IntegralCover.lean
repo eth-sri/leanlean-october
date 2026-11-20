@@ -8,73 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
@@ -89,12 +33,16 @@ def ramifiedOmegaUnit : Eisˣ := (omega_primitive.isUnit (by decide)).unit
 lemma ramifiedOmegaUnit_val : (ramifiedOmegaUnit:Eis)=omega :=
   (omega_primitive.isUnit (by decide)).unit_spec
 
-lemma onceCusp_q_as_scale (t:Eisˣ) (l:Fin 3) :
+section
+variable (t:Eisˣ) (l:Fin 3)
+include t l
+
+lemma onceCusp_q_as_scale :
     onceCuspScale (t*ramifiedOmegaUnit^l.val)=onceCuspScale t*omega^l.val := by
   simp only [onceCuspScale,Units.val_mul,Units.val_pow_eq_pow_val,ramifiedOmegaUnit_val]
   ring
 
-lemma onceCusp_q_congr_scale (t:Eisˣ) (l:Fin 3) :
+lemma onceCusp_q_congr_scale :
     (3:Eis)∣onceCuspScale t*omega^l.val-onceCuspScale t := by
   obtain ⟨b,hb⟩:=halfPrimary_omega_pow l.val
   have he:onceCuspScale t*omega^l.val-onceCuspScale t=
@@ -103,18 +51,18 @@ lemma onceCusp_q_congr_scale (t:Eisˣ) (l:Fin 3) :
   rw [he]
   exact (onceCusp_scale_lambda t).mul_right b
 
-lemma onceCusp_q_dvd_three (t:Eisˣ) (l:Fin 3) :
+lemma onceCusp_q_dvd_three :
     onceCuspScale t*omega^l.val∣(3:Eis) := by
   rw [←onceCusp_q_as_scale]
   exact ⟨onceCuspComplement _,(onceCusp_scale_complement _).symm⟩
 
-lemma onceCusp_q_trace_dvd (t:Eisˣ) (l:Fin 3) :
+lemma onceCusp_q_trace_dvd :
     (3:Eis)∣ramifiedTraceLambda*(onceCuspScale t*omega^l.val) := by
   refine ⟨-(t:Eis)*omega^l.val,?_⟩
   unfold onceCuspScale
   linear_combination (t:Eis)*omega^l.val*ramifiedTraceLambda_square
 
-lemma onceCusp_q_dvd_frequency (t:Eisˣ) (l:Fin 3) (h:Eis)
+lemma onceCusp_q_dvd_frequency (h:Eis)
     (hfreq:(3:Eis)∣h-onceCuspScale t) : onceCuspScale t*omega^l.val∣h := by
   have hd:(3:Eis)∣h-onceCuspScale t*omega^l.val:=by
     convert dvd_sub hfreq (onceCusp_q_congr_scale t l) using 1 ;ring
@@ -122,13 +70,15 @@ lemma onceCusp_q_dvd_frequency (t:Eisˣ) (l:Fin 3) (h:Eis)
     (onceCusp_q_dvd_three t l).trans hd
   simpa only [sub_add_cancel] using dvd_add hh (dvd_refl (onceCuspScale t*omega^l.val))
 
-lemma onceCusp_period_congruence (t:Eisˣ) (l:Fin 3) (h:Eis) (j:ℕ)
+lemma onceCusp_period_congruence (h:Eis) (j:ℕ)
     (hfreq:(3:Eis)∣h-onceCuspScale t) :
     (3:Eis)∣h+ramifiedAffineParameter j 1*(onceCuspScale t*omega^l.val) := by
   have hd:(3:Eis)∣h-onceCuspScale t*omega^l.val:=by
     convert dvd_sub hfreq (onceCusp_q_congr_scale t l) using 1 ;ring
   have ht:=(onceCusp_q_trace_dvd t l).mul_left (j:Eis)
   convert dvd_add hd ht using 1 ; simp only [ramifiedAffineParameter,Nat.cast_one] ;ring
+
+end
 
 def onceCuspFrequencyQuotient (t:Eisˣ) (h:Eis)
     (hfreq:(3:Eis)∣h-onceCuspScale t) (l:Fin 3) : Eis :=
@@ -257,7 +207,11 @@ def kernelSourceTestLinear (M : CubicKubota.levelTwo) : kernelSmoothTests→ₗ[
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 
-lemma kernelSourceTest_field (M : CubicKubota.levelTwo) (f : kernelSmoothTests) :
+section
+variable (M : CubicKubota.levelTwo) (f : kernelSmoothTests)
+include M f
+
+lemma kernelSourceTest_field :
     kernelTestField (kernelSourceTest M f)=kernelTestField f ∘ euclideanAction (sourceComplexMatrix M) := by
   funext p
   change f.1 (integralOrbitProjection globalKubotaKernel
@@ -266,7 +220,7 @@ lemma kernelSourceTest_field (M : CubicKubota.levelTwo) (f : kernelSmoothTests) 
       (euclideanToHyperbolic (euclideanAction (sourceComplexMatrix M) p)))
   rw [euclideanAction,euclideanToHyperbolic_coordinates]
 
-lemma kernelSourceTest_energyDensity (M : CubicKubota.levelTwo) (f : kernelSmoothTests)
+lemma kernelSourceTest_energyDensity
     (w : HyperbolicSpace) :
     kernelTestEnergyDensity (kernelSourceTest M f) w=
       kernelTestEnergyDensity f (sourceComplexMatrix M•w) := by
@@ -284,21 +238,21 @@ lemma kernelSourceTest_energyDensity (M : CubicKubota.levelTwo) (f : kernelSmoot
   rw [kernelSourceTest_field,he]
   exact congrArg₂ (fun a b : ℝ=>a+b) hR hI
 
-lemma kernelSourceTest_quotientDensity (M : CubicKubota.levelTwo) (f : kernelSmoothTests)
+lemma kernelSourceTest_quotientDensity
     (q : KernelQuotient) :
     kernelQuotientEnergyDensity (kernelSourceTest M f) q=
       kernelQuotientEnergyDensity f (kernelSourceAction M q) := by
   induction q using Quotient.inductionOn with
   | _ w => exact kernelSourceTest_energyDensity M f w
 
-lemma kernelSourceTest_energy (M : CubicKubota.levelTwo) (f : kernelSmoothTests) :
+lemma kernelSourceTest_energy :
     kernelDirichletEnergy (kernelSourceTest M f)=kernelDirichletEnergy f := by
   unfold kernelDirichletEnergy
   simp_rw [kernelSourceTest_quotientDensity]
   exact (kernelSourceAction_measurePreserving M).integral_comp
     (kernelSourceHomeomorph M).measurableEmbedding _
 
-lemma kernelSourceTest_mass (M : CubicKubota.levelTwo) (f : kernelSmoothTests) :
+lemma kernelSourceTest_mass :
     kernelSmoothTestsToL2 (kernelSourceTest M f)=kernelSourcePullback M (kernelSmoothTestsToL2 f) := by
   apply Lp.ext
   have hbase := (kernelSourceAction_measurePreserving M).quasiMeasurePreserving.ae_eq_comp
@@ -307,11 +261,13 @@ lemma kernelSourceTest_mass (M : CubicKubota.levelTwo) (f : kernelSmoothTests) :
     kernelSourcePullback_ae_eq M (kernelSmoothTestsToL2 f),hbase] with q hnew hpull hbase
   exact hnew.trans (hpull.trans hbase).symm
 
-lemma kernelSourceTest_graph_norm (M : CubicKubota.levelTwo) (f : kernelSmoothTests) :
+lemma kernelSourceTest_graph_norm :
     ‖kernelEnergyGraphCore (kernelSourceTest M f)‖=‖kernelEnergyGraphCore f‖ := by
   apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
   rw [kernelEnergyGraphCore_norm_sq,kernelEnergyGraphCore_norm_sq,
     kernelSourceTest_energy,kernelSourceTest_mass,LinearIsometry.norm_map]
+
+end
 
 def kernelSourceEnergyPullback (M : CubicKubota.levelTwo) : KernelEnergyGraph→ₗᵢ[ℂ]KernelEnergyGraph :=
   (kernelEnergyGraphCore.comp (kernelSourceTestLinear M)).extendOfIsometry
@@ -400,8 +356,11 @@ lemma cubeCuspHeightWeight_three (p:Eis) :
   generalize Ideal.absNorm (Ideal.span {p}) = n
   norm_num
 
-theorem actualCubeCuspPhaseSum_height (A:levelTwo) (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (hA:lambda^2∣((A:SL(2,Eis)) 0 0)-1) :
+section
+variable (A:levelTwo) (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (hA:lambda^2∣((A:SL(2,Eis)) 0 0)-1)
+include A p hp hprimary hA
+
+theorem actualCubeCuspPhaseSum_height :
     actualCubeCuspPhaseSum A p hp hprimary (cubeCuspHeightWeight p)=
       (Ideal.absNorm (Ideal.span {p}):ℂ)^2 := by
   have hqN:Ideal.absNorm (Ideal.span {p})≠0:=
@@ -417,8 +376,7 @@ theorem actualCubeCuspPhaseSum_height (A:levelTwo) (p:Eis) (hp:Prime p)
     field_simp
     ; ring
 
-theorem actualCubeCuspPhaseSum_normalized (A:levelTwo) (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (hA:lambda^2∣((A:SL(2,Eis)) 0 0)-1) :
+theorem actualCubeCuspPhaseSum_normalized :
     (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹^3 *
       actualCubeCuspPhaseSum A p hp hprimary (cubeCuspHeightWeight p)=
       (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹ := by
@@ -427,6 +385,8 @@ theorem actualCubeCuspPhaseSum_normalized (A:levelTwo) (p:Eis) (hp:Prime p)
   have hq:(Ideal.absNorm (Ideal.span {p}):ℂ)≠0:=by exact_mod_cast hqN
   rw [actualCubeCuspPhaseSum_height A p hp hprimary hA]
   field_simp
+
+end
 
 end CubicKubota
 
@@ -575,16 +535,22 @@ def integralCoverMap {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H�
     rintro w u ⟨M,hM⟩
     exact ⟨Subgroup.inclusion hHK M,hM⟩)
 
-lemma integralCoverMap_projection {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K) (w : HyperbolicSpace) :
+section
+variable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K)
+include H K hHK
+
+lemma integralCoverMap_projection (w : HyperbolicSpace) :
     integralCoverMap hHK (integralOrbitProjection H w)=integralOrbitProjection K w := rfl
 
-lemma integralCoverMap_measurable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K) :
+lemma integralCoverMap_measurable :
     Measurable (integralCoverMap hHK) := by
   apply measurable_from_quotient.mpr
   exact measurable_integralOrbitProjection K
 
-lemma integralCoverMap_continuous {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K) :
+lemma integralCoverMap_continuous :
     Continuous (integralCoverMap hHK) := continuous_id.quotient_map' _
+
+end
 
 abbrev IntegralCoverCosets (H K : Subgroup (SL(2,ActualEisensteinCubic.O))) := K ⧸ H.subgroupOf K
 
@@ -645,16 +611,18 @@ private lemma mem_integralCoverSheet (H K : Subgroup (SL(2,ActualEisensteinCubic
     w ∈ integralCoverSheet H K q ↔
       integralCoverRep H K q • w ∈ hyperbolicFundamentalSet K := Iff.rfl
 
-lemma integralCoverSheet_membership {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (q : IntegralCoverCosets H K) (h : H) (w : HyperbolicSpace) :
+section
+variable {H K : Subgroup (SL(2,ActualEisensteinCubic.O))} (hHK : H≤K)
+include H K hHK
+
+lemma integralCoverSheet_membership (q : IntegralCoverCosets H K) (h : H) (w : HyperbolicSpace) :
     h•w∈integralCoverSheet H K q ↔
       (integralCoverRep H K q*Subgroup.inclusion hHK h)•w∈hyperbolicFundamentalSet K := by
   exact (mem_integralCoverSheet H K q (h • w)).trans
     (mul_smul_mem_set_iff (integralCoverRep H K q) (Subgroup.inclusion hHK h)
       w (h • w) (integralCover_inclusion_smul hHK h w).symm (hyperbolicFundamentalSet K))
 
-lemma integralCoverDomain_covers {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (w : HyperbolicSpace) :
+lemma integralCoverDomain_covers (w : HyperbolicSpace) :
     ∃h : H,h•w∈integralCoverDomain H K := by
   obtain ⟨k,hk⟩ := hyperbolicFundamentalSet_covers K w
   let q : IntegralCoverCosets H K := k
@@ -669,8 +637,7 @@ lemma integralCoverDomain_covers {H K : Subgroup (SL(2,ActualEisensteinCubic.O))
   rw [hin,mul_inv_cancel_left]
   exact hk
 
-lemma integralCoverDomain_unique {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) (w : HyperbolicSpace)
+lemma integralCoverDomain_unique (hK : K≤CubicKubota.levelThree) (w : HyperbolicSpace)
     (h1 h2 : H) (hh1 : h1•w∈integralCoverDomain H K)
     (hh2 : h2•w∈integralCoverDomain H K) : h1=h2 := by
   obtain ⟨q1,hq1⟩ := Set.mem_iUnion.mp hh1
@@ -688,13 +655,14 @@ lemma integralCoverDomain_unique {H K : Subgroup (SL(2,ActualEisensteinCubic.O))
   subst q2
   exact (Subgroup.inclusion_injective hHK) (mul_left_cancel he)
 
-theorem integralCoverDomain_isFundamentalDomain {H K : Subgroup (SL(2,ActualEisensteinCubic.O))}
-    (hHK : H≤K) (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K] :
+theorem integralCoverDomain_isFundamentalDomain (hK : K≤CubicKubota.levelThree) [H.IsFiniteRelIndex K] :
     IsFundamentalDomain H (integralCoverDomain H K) hyperbolicVolume := by
   apply IsFundamentalDomain.mk' (integralCoverDomain_measurable H K).nullMeasurableSet
   intro w
   obtain ⟨h,hh⟩ := integralCoverDomain_covers hHK w
   exact ⟨h,hh,fun g hg=>integralCoverDomain_unique hHK hK w g h hg hh⟩
+
+end
 
 end CubicEisenstein
 

@@ -11,10 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentLiveDomain
-open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum
-open CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve
-open CenteredMomentGaussEnergy
+open CenteredMomentSourceLiveColumn CenteredMomentLiveSupport CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentCommonProfile CenteredMomentCommonAllocationSum CenteredMomentFirstSectors CenteredMomentSourceRow CanonicalQuadraticSieve CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 
  theorem finite_column_mem {ι : Type*} [Fintype ι] (S : Finset (Tuple ι))
@@ -68,12 +65,11 @@ theorem source_gaussPolynomial (S : Finset (Ideal O)) (c : Ideal O → ℂ) (z :
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
-theorem live_column_sum (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C)
-    (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ) :
+section
+variable (S : (ι ⊕ Fin 2) → Finset (Ideal O)) (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I) (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C) (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C) (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ) (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ)
+include S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ f
+
+theorem live_column_sum :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     (∑ I∈supportedColumns (residualPool C hC.1 (finiteColumns (Fintype.piFinset S))),c I*f I)=
@@ -87,12 +83,7 @@ theorem live_column_sum (S : (ι ⊕ Fin 2) → Finset (Ideal O))
       ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂ hn
     exact Finset.mem_filter.mpr ⟨(mem_residualPool C hC.1 _ I).mpr hh.1,(Finset.mem_filter.mp hI).2⟩
 
-theorem live_gaussPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C)
-    (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ) (z : O) :
+theorem live_gaussPolynomial (z : O) :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
@@ -112,12 +103,7 @@ theorem live_gaussPolynomial (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   simpa only [mul_assoc] using live_column_sum S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
     X₁ X₂ Y₁ Y₂ B₁ B₂ (fun I => f I*primaryGaussRow I z)
 
-theorem live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
-    (hS : ∀ i,∀ I∈S i,I≠0) (hp : ∀ i,∀ I∈S (Sum.inl i),Prime I)
-    (B : Tuple ι) (hB : ∀ i,B i≠0) (C R : Ideal O) (hC : Supported C)
-    (hlabel : B∈allocationLabels S C) (hprod : finiteTupleProduct B=C)
-    (ν : ι → Ideal O → ℂ) (Wslot : ι → ℝ → ℂ) (P : ι → ℝ)
-    (W₁ W₂ : ℝ → ℂ) (X₁ X₂ Y₁ Y₂ : ℝ) (B₁ B₂ : Ideal O) (f : Ideal O → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
+theorem live_gaussEnergy (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     let c := finiteColumnCoefficient (liveBox S B hB)
       (liveProfile B C R ν Wslot P W₁ W₂ X₁ X₂ Y₁ Y₂ B₁ B₂)
     let Q := residualPool C hC.1 (finiteColumns (Fintype.piFinset S))
@@ -133,6 +119,8 @@ theorem live_gaussEnergy (S : (ι ⊕ Fin 2) → Finset (Ideal O))
   exact congrArg (fun x : ℂ => ((‖x‖^2:ℝ):ℂ)*W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K))
     (live_gaussPolynomial S hS hp B hB C R hC hlabel hprod ν Wslot P W₁ W₂
       X₁ X₂ Y₁ Y₂ B₁ B₂ f z)
+
+end
 
 end SevenEighths.CenteredMomentLiveDomain
 

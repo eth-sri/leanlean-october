@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonDampedDyadic
 
 @[expose] public section
 
-open Complex Set Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Set Filter MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson

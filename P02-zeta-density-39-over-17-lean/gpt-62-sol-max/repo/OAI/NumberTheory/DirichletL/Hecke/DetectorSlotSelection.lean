@@ -9,9 +9,11 @@ noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorSlotSelection
 
-theorem whole_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G mesh : ℝ)
-    (hG : 0≤G) (hmesh : 0≤mesh)
-    (hw : ∀ i∈s, 0≤w i) (hwm : ∀ i∈s, w i≤mesh)
+section
+variable {α : Type*} (s : Finset α) (w g : α→ℝ) (G mesh : ℝ) (hG : 0≤G) (hmesh : 0≤mesh) (hw : ∀ i∈s, 0≤w i) (hwm : ∀ i∈s, w i≤mesh)
+include α s w g G mesh hG hmesh hw hwm
+
+theorem whole_slots
     (hg : ∀ i∈s, 0≤g i) (hgG : ∀ i∈s, g i≤G)
     (q z : ℝ) (hq : 0≤q) (hqG : q≤G) (hz : 0≤z)
     (hzs : z≤∑ i∈s, w i) (hmean : q*(∑ i∈s, w i)≤∑ i∈s, w i*g i) :
@@ -80,9 +82,7 @@ theorem whole_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G mesh : ℝ)
       simp only [Finset.sum_empty,hz0,mul_zero,zero_sub]
       exact neg_nonpos.mpr (mul_nonneg hG hmesh)
 
-theorem whole_positive_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G mesh : ℝ)
-    (hG : 0≤G) (hmesh : 0≤mesh)
-    (hw : ∀ i∈s, 0≤w i) (hwm : ∀ i∈s, w i≤mesh)
+theorem whole_positive_slots
     (hgG : ∀ i∈s, g i≤G)
     (q z : ℝ) (hq : 0≤q) (hqG : q≤G) (hz : 0≤z)
     (hzs : z≤∑ i∈s, w i) (hmean : q*(∑ i∈s, w i)≤∑ i∈s, w i*max (g i) 0) :
@@ -107,6 +107,8 @@ theorem whole_positive_slots {α : Type*} (s : Finset α) (w g : α→ℝ) (G me
         _ = _ := Finset.sum_congr rfl (fun i hi => by
           rw [max_eq_left (Finset.mem_filter.mp hi).2.le])
     rwa [he] at hTgain
+
+end
 
 theorem selected_product_spike {α : Type*} (s : Finset α) (w g : α→ℝ)
     (U δ mesh q z : ℝ) (hU : 1≤U) (hδ : 0≤δ) (hmesh : 0≤mesh)

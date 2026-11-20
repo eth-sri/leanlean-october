@@ -218,13 +218,13 @@ theorem exists_atkinsonIndexIncreasingDifferenceNat_increment
     ← atkinsonIndexRealPhase_natCast]
   simpa only [Nat.cast_add, Nat.cast_one, add_assoc] using heq
 
+section
+variable {t u : ℝ} {K N : ℕ} (hu : 0 < u) (htu : u < t) (hK : 0 < K) (hblock : (((K + N + 2 : ℕ) : ℝ)) ≤ u) (htUpper : t ≤ 2 * u)
+include t u K N hu htu hK hblock htUpper
+
 /-- Uniform unit-increment bounds obtained from the pointwise derivative
 estimate. -/
-theorem atkinsonIndexIncreasingDifferenceNat_increment_bounds
-    {t u : ℝ} {K N : ℕ}
-    (hu : 0 < u) (htu : u < t) (hK : 0 < K)
-    (hblock : (((K + N + 2 : ℕ) : ℝ)) ≤ u)
-    (htUpper : t ≤ 2 * u) :
+theorem atkinsonIndexIncreasingDifferenceNat_increment_bounds :
     ∀ n ≤ N,
       atkinsonIndexFirstDerivativeLower u t K (K + N + 1) ≤
           atkinsonIndexIncreasingDifferenceNat t u K (n + 1) -
@@ -255,11 +255,7 @@ theorem atkinsonIndexIncreasingDifferenceNat_increment_bounds
 
 /-- The unit increments of the positively sloped phase orientation decrease
 with the summation index. -/
-theorem atkinsonIndexIncreasingDifferenceNat_increment_anti
-    {t u : ℝ} {K N : ℕ}
-    (hu : 0 < u) (htu : u < t) (hK : 0 < K)
-    (hblock : (((K + N + 2 : ℕ) : ℝ)) ≤ u)
-    (htUpper : t ≤ 2 * u) :
+theorem atkinsonIndexIncreasingDifferenceNat_increment_anti :
     ∀ n < N,
       atkinsonIndexIncreasingDifferenceNat t u K (n + 2) -
           atkinsonIndexIncreasingDifferenceNat t u K (n + 1) ≤
@@ -274,6 +270,8 @@ theorem atkinsonIndexIncreasingDifferenceNat_increment_anti
   unfold atkinsonIndexPositiveDifferenceNat at hsecond
   unfold atkinsonIndexIncreasingDifferenceNat
   linarith
+
+end
 
 end
 

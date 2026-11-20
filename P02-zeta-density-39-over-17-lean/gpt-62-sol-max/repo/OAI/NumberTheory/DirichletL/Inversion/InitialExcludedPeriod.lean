@@ -10,9 +10,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialExcludedPeriod
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CanonicalCoefficientClass ConcretePrimeRowBridge IdealMobiusDivisorSum
-open UniqueFactorizationMonoid HeckeFamily
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CanonicalCoefficientClass ConcretePrimeRowBridge IdealMobiusDivisorSum UniqueFactorizationMonoid HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 
 def deletedPeriod (q:ℕ):ℕ := 2592*q^2
@@ -91,16 +89,18 @@ theorem deleted_period_ideal (q:ℕ):
   push_cast
   ring_nf
 
-theorem deleted_period_le_modulus (χ:Character)(q:ℕ)(hq:q≠0)
-    (hperiod:Ideal.span {(q:O)}≤χ.modulus):
+section
+variable (χ:Character) (q:ℕ) (hq:q≠0) (hperiod:Ideal.span {(q:O)}≤χ.modulus)
+include χ q hq hperiod
+
+theorem deleted_period_le_modulus:
     Ideal.span {(deletedPeriod q:O)}≤
       (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q)).modulus := by
   change Ideal.span {(deletedPeriod q:O)}≤χ.modulus*(∏P∈reflectionExcludedPrimes q,P)
   rw [deleted_period_ideal]
   exact Ideal.mul_mono hperiod (Ideal.dvd_iff_le.mp (excluded_product_divides_reflection q hq))
 
-theorem deleted_element_period (χ:Character)(q:ℕ)(hq:q≠0)
-    (hperiod:Ideal.span {(q:O)}≤χ.modulus):
+theorem deleted_element_period:
     FactorsModulo (fixedBaseConductor (deletedPeriod q))
       (HeckeRowClosure.elementHom
         (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q))) := by
@@ -108,8 +108,7 @@ theorem deleted_element_period (χ:Character)(q:ℕ)(hq:q≠0)
   apply HeckeRowClosure.elementHom_periodic
   exact deleted_period_le_modulus χ q hq hperiod (Ideal.mul_le_left hxy)
 
-theorem deleted_base_gates (χ:Character)(q:ℕ)(hq:q≠0)
-    (hperiod:Ideal.span {(q:O)}≤χ.modulus):
+theorem deleted_base_gates:
     deletedPeriod q≠0 ∧ reflectionExcludedPrimes (deletedPeriod q)=reflectionExcludedPrimes q ∧
     (∀x,‖HeckeRowClosure.elementHom
       (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q)) x‖≤1) ∧
@@ -118,6 +117,8 @@ theorem deleted_base_gates (χ:Character)(q:ℕ)(hq:q≠0)
         (χ.excludePrimes (reflectionExcludedPrimes q) (reflectionExcludedPrimes_prime q))) := by
   exact ⟨deletedPeriod_ne_zero q hq,deleted_excluded_eq q hq,
     HeckeRowClosure.elementHom_norm _,deleted_element_period χ q hq hperiod⟩
+
+end
 
 end SevenEighths.InverseInitialExcludedPeriod
 

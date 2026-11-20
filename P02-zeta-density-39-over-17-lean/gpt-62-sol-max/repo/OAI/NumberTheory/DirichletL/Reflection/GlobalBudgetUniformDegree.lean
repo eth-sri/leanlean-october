@@ -1,4 +1,6 @@
 module
+public import OAI.NumberTheory.DirichletL.Reflection.ScaleBudgets
+public import OAI.NumberTheory.DirichletL.Reflection.SectorData
 public import OAI.NumberTheory.DirichletL.Reflection.GlobalBudget
 public import OAI.NumberTheory.DirichletL.Reflection.FullBudgetUniformDegree
 
@@ -29,21 +31,8 @@ theorem original_global_full_budget_uniform_degree
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J (B*F*R)=rowMaskPart I (B*F*R) →
     ∀ (A : Finset (FreeReflection.pool J (B*F*R) Q₀))
       (Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d π Ck CO CH Cf X QK QP Lrow Lslot : ℝ),
-      Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<Cf → 0<X → 0<QK → 0<QP →
-      (Ideal.absNorm I:ℝ)≤Ck*Z^M →
-      Z^O₀/CO≤(Ideal.absNorm (rowPowerfulPart I):ℝ) →
-      Z^H/CH≤(Ideal.absNorm (rowResidualPart I (B*F*R)):ℝ) →
-      (Ideal.absNorm F:ℝ)≤Cf*Z^V →
-      Real.log (CH*Ck*CO)/Real.log Z≤η →
-      Real.log (widthConstant B Ck CO CH Cf)/Real.log Z≤η →
-      CanonicalMargins F₀ M (normWidth Z R) z₀ margin → F₀=N+V →
-      Nstar=N-3*hhat → V≤d → hhat≤d+η →
-      H=Real.logb Z QK → za=Real.logb Z (QP/2) → Nstar=Real.logb Z X →
-      0≤M → 0≤O₀ → 0≤za → za≤z₀ →
-      0<cstar → cstar/2≤margin → d≤cstar/200 →
-      η≤cstar/1000 → δ+η≤cstar/1000 → π≤cstar/1000 →
-      QK≤Z^Lrow → (QP/2)≤Z^Lslot →
-      Real.logb Z 16≤η → ε*(Lrow+Lslot+2*(δ+Lscale+η))+η/2≤π →
+      WithOriginalWidths I F B R Z₀ Z F₀ N V M z₀ margin cstar O₀ H za Nstar hhat d δ η π Ck CO CH Cf X QK QP QK (QP/2) (
+      WithRetainedSlotBudget Z QK (QP/2) Lrow Lslot δ Lscale η ε π (
       X⁻¹≤Z^Lcap → QK≤Z^Lcap → QP≤Z^Lcap → -saving≤F₀-3*cstar/16-O₀/2 →
       let G := (poolPrimeFamily J (B*F*R) Q₀).restrict A
       let j := fun b : A => completedLocalExponent J F b.val.val
@@ -52,23 +41,14 @@ theorem original_global_full_budget_uniform_degree
       (Ideal.absNorm (∏ b,G.ideal b):ℝ)≤Z^Lpool → κ+ρ*Lpool≤cstar/16 →
     ∀ (rows Pset : Finset (Ideal Eis)) (S : Ideal Eis→PrimeFamily σ)
       (hrows : ∀ K∈rows,Admissible K),
-      (∀ f,IsCoprime (Ideal.span {Nlevel}) (G.ideal f)) →
-      (∀ f,ringChar (Eis⧸G.ideal f)≠2) →
-      (∀ K∈rows,(∀ f,IsCoprime (G.ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
-      (∀ P∈Pset,(∏ b,(S P).ideal b)=P) →
-      (∀ P∈Pset,Pairwise (Function.onFun IsCoprime (G.sum (S P)).ideal)) →
-      (∀ P∈Pset,∀ b,IsCoprime (Ideal.span {Nlevel}) ((G.sum (S P)).ideal b)) →
-      (∀ P∈Pset,∀ b,ringChar (Eis⧸(G.sum (S P)).ideal b)≠2) →
+      WithSectorPrimes Nlevel G rows Pset S <|
     ∃ D : ∀ K : rows,∀ P : Pset,IsCoprime K.val P.val→
       ControlledStratumArithmetic (G.reflected K.val (hrows K.val K.property) (S P.val)).generator Nlevel a c₀ mode,
     ∀ (θ : ℝ) (r aw : Ideal Eis→ℂ),
-      1≤QK → 2≤QP →
-      (∀ K∈rows,QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK) →
-      (∀ P∈Pset,CubicSieve.Admissible P ∧ QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤QP) →
-      (∀ K∈rows,‖r K‖≤1) → (∀ P∈Pset,‖aw P‖≤1) →
+      WithSectorWeights rows Pset QK QP r aw (
       (∑ K : rows,‖literalWholeRow G K.val (hrows K.val K.property) S j Pset
         (D K) s hc₀ W θ X r aw‖^2)≤
-        C*(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2) := by
+        C*(1+‖θ‖)^degree*Z^(F₀-3*cstar/16-O₀/2)))) := by
   obtain ⟨degree,hu⟩ := original_sector_full_budget_uniform_degree
     ε hε lo hi hlo W hWs hW ρ hρ η hηpos κ δ Lscale Lpool hκ hδL hLpool Lcap saving hδ
   refine ⟨degree,?_⟩

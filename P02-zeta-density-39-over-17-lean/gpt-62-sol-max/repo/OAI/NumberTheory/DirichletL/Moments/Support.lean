@@ -17,19 +17,25 @@ def supportExtract (I : Ideal O) (S : Finset (Ideal O)) : Ideal O :=
 def supportResidual (I : Ideal O) (S : Finset (Ideal O)) : Ideal O :=
   ((normalizedFactors I).filter (fun P => P ∉ S)).prod
 
-theorem supportExtract_factors (I : Ideal O) (S : Finset (Ideal O)) :
+section
+variable (I : Ideal O) (S : Finset (Ideal O))
+include I S
+
+theorem supportExtract_factors :
     normalizedFactors (supportExtract I S) = (normalizedFactors I).filter (fun P => P ∈ S) :=
   normalizedFactors_prod_eq_self_of_subset (fun _ h => (Multiset.mem_filter.mp h).1)
 
-theorem supportResidual_factors (I : Ideal O) (S : Finset (Ideal O)) :
+theorem supportResidual_factors :
     normalizedFactors (supportResidual I S) = (normalizedFactors I).filter (fun P => P ∉ S) :=
   normalizedFactors_prod_eq_self_of_subset (fun _ h => (Multiset.mem_filter.mp h).1)
 
-theorem supportExtract_ne_zero (I : Ideal O) (S : Finset (Ideal O)) : supportExtract I S ≠ 0 :=
+theorem supportExtract_ne_zero : supportExtract I S ≠ 0 :=
   prod_ne_zero_of_subset_normalizedFactors (fun _ h => (Multiset.mem_filter.mp h).1)
 
-theorem supportResidual_ne_zero (I : Ideal O) (S : Finset (Ideal O)) : supportResidual I S ≠ 0 :=
+theorem supportResidual_ne_zero : supportResidual I S ≠ 0 :=
   prod_ne_zero_of_subset_normalizedFactors (fun _ h => (Multiset.mem_filter.mp h).1)
+
+end
 
 theorem support_reconstruct (I : Ideal O) (hI : I ≠ 0) (S : Finset (Ideal O)) :
     supportExtract I S * supportResidual I S = I := by

@@ -11,27 +11,22 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondExceptionalSourceFamily
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalKernel
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst
-open CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondHeightFamily
-open CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion
-open CenteredExceptionalProfile
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondEnergySplit CenteredMomentSecondLiveBlock CenteredMomentSecondExceptionalFamily CenteredMomentSecondExceptionalKernel CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentSecondHeightFamily CenteredMomentChildRows CenteredMomentHeckeColumnWindow RayFourExpansion CenteredExceptionalProfile
 local notation "O"=>HeckeFamily.O
 
-lemma exceptional_part_nonzero (η:Character)(χ₀:RayCharacter)(Q:Ideal O)(m:O)
-    (C D:Ideal O)(U:Finset (CommonIndex C D))(R:ℝ)(z:O)
-    (hz:z∈partRows true η χ₀ Q m C D U R):z≠0:=
+section
+variable (η:Character) (χ₀:RayCharacter) (Q:Ideal O) (m:O) (C D:Ideal O) (U:Finset (CommonIndex C D)) (R:ℝ) (z:O) (hz:z∈partRows true η χ₀ Q m C D U R)
+include η χ₀ Q m C D U R z hz
+
+lemma exceptional_part_nonzero:z≠0:=
   sourceRows_nonzero C D U R z (Finset.mem_filter.mp hz).1
 
-lemma exceptional_part_inducing (η:Character)(χ₀:RayCharacter)(Q:Ideal O)(m:O)
-    (C D:Ideal O)(U:Finset (CommonIndex C D))(R:ℝ)(z:O)
-    (hz:z∈partRows true η χ₀ Q m C D U R):
+lemma exceptional_part_inducing:
     FixedInducingRow (childCharacter η χ₀) Q m
       (commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U) z:=
   (Finset.mem_filter.mp hz).2
+
+end
 
 lemma actual_family_both_rows (η:Character)(χ₀:RayCharacter)(Q:Ideal O)
     (hQ:Q≤Ideal.span {(72:O)})(m:O)(hm:m≠0)

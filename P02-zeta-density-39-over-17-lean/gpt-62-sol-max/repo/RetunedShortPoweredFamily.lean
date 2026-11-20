@@ -9,8 +9,7 @@ open scoped BigOperators Topology ComplexConjugate
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.RationalMoment.RightDetector
-open MathCollab.Density.Stronger
-open MathCollab.Density
+open MathCollab.Density.Stronger MathCollab.Density
 
 /-- This bound is fixed by sigma and delta, before T and any zero. -/
 def smoothPowerBound (a δ : ℝ) : ℕ := ⌈2*a/δ⌉₊
@@ -31,6 +30,11 @@ def smoothPoweredFamilyCoefficient (η a δ T : ℝ) (q : (ℤ × ℕ × ℕ) ×
   normalizedSmoothPoweredCoefficient η T (detectorX δ T) (detectorY a T)
     q.1.1 q.1.2.1 q.1.2.2 q.2.1 n
 
+theorem smoothPoweredFamilyScale_pos (q : (ℤ × ℕ × ℕ) × ℕ × ℕ) :
+    0 < smoothPoweredFamilyScale q := by
+  unfold smoothPoweredFamilyScale
+  exact mul_pos (by positivity) (pow_pos (smoothHalfScale_pos _ _) _)
+
 theorem mem_smoothPoweredIndices {a δ T : ℝ} {q : (ℤ × ℕ × ℕ) × ℕ × ℕ} :
     q ∈ smoothPoweredIndices a δ T ↔
       q.1 ∈ smoothTaylorIndices a T ∧
@@ -49,24 +53,24 @@ theorem mem_smoothPoweredIndices {a δ T : ℝ} {q : (ℤ × ℕ × ℕ) × ℕ 
     refine ⟨Finset.mem_product.mpr ⟨hp, Finset.mem_product.mpr ?_⟩, hl, hlo, hhi⟩
     exact ⟨Finset.mem_Icc.mpr ⟨hk0, hkK⟩, Finset.mem_range.mpr (lt_of_lt_of_le hl hkK)⟩
 
-theorem smoothTaylorIndices_card_eventually {σ a : ℝ} (hw : QuadraticWindow σ a) :
+theorem smoothTaylorIndices_card_eventually {a : ℝ} (ha : 0 < a) (ha' : a < 2/3) :
     ∀ᶠ T : ℝ in atTop, ((smoothTaylorIndices a T).card : ℝ) ≤ 144*(Real.log T)^2 := by
   filter_upwards [eventually_ge_atTop (1 : ℝ), Real.tendsto_log_atTop.eventually_ge_atTop 1,
     log_sq_eventually_le_height] with T hT hlog hsq
-  have hYlo : 1 ≤ detectorY a T := Real.one_le_rpow hT (smoothingExponent_pos hw).le
+  have hYlo : 1 ≤ detectorY a T := Real.one_le_rpow hT (smoothingExponent_pos ha).le
   have hYhi : detectorY a T ≤ T := by
     simpa only [detectorY, Real.rpow_one] using
-      Real.rpow_le_rpow_of_exponent_le hT (smoothingExponent_lt_one hw).le
+      Real.rpow_le_rpow_of_exponent_le hT (smoothingExponent_lt_one ha').le
   have hR : 1 ≤ detectorY a T*(Real.log T)^2 := by nlinarith
   have hRhi : detectorY a T*(Real.log T)^2 ≤ T^2 := by nlinarith
   exact smoothTaylorIndices_card_le_log (smoothScaleIndices_card_le_log hT hlog hR hRhi) hlog
 
 /-- At most a fixed multiple of log(T)^2 members, before zeros are selected. -/
-theorem smoothPoweredIndices_card_eventually {σ a : ℝ} (hw : QuadraticWindow σ a) (δ : ℝ) :
+theorem smoothPoweredIndices_card_eventually {a : ℝ} (ha : 0 < a) (ha' : a < 2/3) (δ : ℝ) :
     ∀ᶠ T : ℝ in atTop,
       ((smoothPoweredIndices a δ T).card : ℝ) ≤
         144*(smoothPowerBound a δ : ℝ)^2*(Real.log T)^2 := by
-  filter_upwards [smoothTaylorIndices_card_eventually hw] with T hcard
+  filter_upwards [smoothTaylorIndices_card_eventually ha ha'] with T hcard
   have hh := Finset.card_le_card (Finset.filter_subset
     (fun q : (ℤ × ℕ × ℕ) × ℕ × ℕ => q.2.2 < q.2.1 ∧
       T^(a) ≤ (smoothHalfScale q.1.1 q.1.2.1 : ℝ)^q.2.1 ∧
@@ -84,15 +88,15 @@ theorem smoothPoweredIndices_card_eventually {σ a : ℝ} (hw : QuadraticWindow 
 
 /-- Every member of the fixed family has the required powered scales and
 globally bounded normalized coefficients. Threshold precedes every index. -/
-theorem smoothPoweredFamily_admissible {σ a η : ℝ}
-    (hw : QuadraticWindow σ a) (hη : 0 < η) (δ : ℝ) :
+theorem smoothPoweredFamily_admissible {a η : ℝ}
+    (ha' : a < 2/3) (hη : 0 < η) (δ : ℝ) :
     ∀ᶠ T : ℝ in atTop, ∀ q ∈ smoothPoweredIndices a δ T,
       T^(a) ≤ (smoothPoweredFamilyScale q : ℝ) ∧
       (smoothPoweredFamilyScale q : ℝ) ≤ (2 : ℝ)^(smoothPowerBound a δ)*T^(smoothingExponent a) ∧
       (smoothPoweredFamilyScale q : ℝ) ≤ T ∧
       ∀ n : ℕ, ‖smoothPoweredFamilyCoefficient η a δ T q n‖ ≤ 1 := by
   filter_upwards [eventually_ge_atTop (1 : ℝ),
-    fixed_scale_factor_eventually_below_height (C := (2 : ℝ)^(smoothPowerBound a δ)) (smoothingExponent_lt_one hw),
+    fixed_scale_factor_eventually_below_height (C := (2 : ℝ)^(smoothPowerBound a δ)) (smoothingExponent_lt_one ha'),
     normalizedSmoothPoweredCoefficient_eventually hη (smoothPowerBound a δ)] with T hT hupper hnorm
   intro q hq
   obtain ⟨_, _, hkK, hl, hlo, hhi⟩ := mem_smoothPoweredIndices.mp hq
@@ -110,10 +114,8 @@ theorem smoothPoweredFamily_admissible {σ a η : ℝ}
     exact hnorm (detectorX δ T) (detectorY a T) q.1.1 q.1.2.1 q.1.2.2 q.2.1 hY hkK
       (hsupp.trans (hupper.trans (by nlinarith)))
 
-/-- Complete actual-zero dichotomy: a long smooth detector, or a member of
-the finite normalized powered short family at the original ordinate. -/
 theorem smooth_long_or_short_powered_cover {σ a δ η : ℝ}
-    (hw : QuadraticWindow σ a) (hsigma : 7/9 ≤ σ) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η) :
+    (hw : PhysicalDetectorWindow σ a) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η) :
     ∀ᶠ T : ℝ in atTop, ∀ ρ : ℂ,
       σ ≤ ρ.re → ρ.re < 1 → T ≤ |ρ.im| → |ρ.im| ≤ 2*T → riemannZeta ρ = 0 →
       (∃ j ∈ smoothScaleIndices (detectorY a T*(Real.log T)^2),
@@ -123,7 +125,7 @@ theorem smooth_long_or_short_powered_cover {σ a δ η : ℝ}
         (smoothPoweredFamilyScale q : ℝ)^σ*T^(-2*η) ≤
           ‖detectingPolynomial (smoothPoweredFamilyScale q) (smoothPoweredFamilyCoefficient η a δ T q) ρ.im‖) := by
   have ha : 0 < a := by linarith [hw.a_low]
-  filter_upwards [smooth_long_or_short_Taylor_cover hw hsigma hδ.le hδ',
+  filter_upwards [smooth_long_or_short_Taylor_cover hw hδ.le hδ',
     short_scale_bounded_power ha hδ,
     exists_normalizedSmoothPowered_height hη (smoothPowerBound a δ)] with T hcover hpower hheight
   intro ρ hβ hβ' hγ hγ' hzero

@@ -1,13 +1,24 @@
 module
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Bounds
-public import DensityEnergyGM.LargeValuesAffineHeight
+public import DensityEnergyGM.LargeValuesS3
+public import GuthMaynard.AffineSource.LargeValuesAffineHeight
 
 @[expose] public section
 
 open Complex Finset Filter FourierTransform MeasureTheory Real Set
-open scoped ContDiff FourierTransform Topology
+open scoped ContDiff Topology
 
 namespace GuthMaynard.NativeMoment
+open RiemannZeta.GuthMaynard
+
+private theorem affine_bump_eq :
+    RiemannZeta.GuthMaynard.gmCubicLocalBump = gmCubicLocalBump := rfl
+
+private theorem gmAffineJ_nonneg (f : ℝ → ℝ) {M : ℕ} (hM : 0 < M) :
+    0 ≤ gmAffineJ f M := by
+  obtain ⟨_, _, _, _, h⟩ := exists_gmAffineTransformIntegral_eq_J f hM
+  rw [← h]
+  exact integral_nonneg fun _ => sq_nonneg _
 
 /-!
 # Guth--Maynard Section 10: the refined three-frequency estimate
@@ -99,6 +110,7 @@ theorem gmCubicSmoothedRSqSchwartz_apply
     gmCubicSmoothedRSqSchwartz η T N M W hB v =
       gmCubicSmoothedRSq η T N M W v := by
   rw [gmCubicSmoothedRSqSchwartz, gmAffineTildeSchwartz_apply_sub]
+  simp only [affine_bump_eq]
   unfold gmCubicSmoothedRSq gmCubicSmoothedRIntegrand
   apply integral_congr_ae
   filter_upwards with u
@@ -119,58 +131,11 @@ would silently discard endpoint neighbourhoods. -/
 noncomputable def gmCubicAffineWindow : ContDiffBump (5 / 4 : ℝ) :=
   ⟨3 / 4, 1, by norm_num, by norm_num⟩
 
-theorem gmCubicAffineWindow_eq_zero_of_not_mem_Icc
-    {u : ℝ} (hu : u ∉ Set.Icc (1 / 4 : ℝ) (9 / 4)) :
-    gmCubicAffineWindow u = 0 := by
-  by_contra hne
-  have hsupp : u ∈ Function.support gmCubicAffineWindow := hne
-  rw [gmCubicAffineWindow.support_eq, Metric.mem_ball, Real.dist_eq] at hsupp
-  change |u - 5 / 4| < 1 at hsupp
-  apply hu
-  rw [Set.mem_Icc]
-  rcases abs_lt.mp hsupp with ⟨hleft, hright⟩
-  constructor <;> linarith
 
-/-- The actual Proposition 10.1 affine input
-`ψ₁(v) |R_tilde(v)|²`, constructed from the literal equation-(7.5)
-smoother. -/
-noncomputable def gmCubicAffineSourceFunction
-    (η T : ℝ) (N M : ℕ) (W : Finset ℝ)
-    (hB : 0 < gmCubicSmoothingScale η T N M) (u : ℝ) : ℝ :=
-  gmCubicAffineWindow u * gmCubicSmoothedRSqSchwartz η T N M W hB u
 
-theorem contDiff_gmCubicAffineSourceFunction
-    (η T : ℝ) (N M : ℕ) (W : Finset ℝ)
-    (hB : 0 < gmCubicSmoothingScale η T N M) :
-    ContDiff ℝ ∞ (gmCubicAffineSourceFunction η T N M W hB) := by
-  exact gmCubicAffineWindow.contDiff.mul
-    ((gmCubicSmoothedRSqSchwartz η T N M W hB).smooth ⊤)
 
-theorem hasCompactSupport_gmCubicAffineSourceFunction
-    (η T : ℝ) (N M : ℕ) (W : Finset ℝ)
-    (hB : 0 < gmCubicSmoothingScale η T N M) :
-    HasCompactSupport (gmCubicAffineSourceFunction η T N M W hB) := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (1 / 4 : ℝ) (9 / 4)))
-  intro u hu
-  simp only [gmCubicAffineSourceFunction,
-    gmCubicAffineWindow_eq_zero_of_not_mem_Icc hu, zero_mul]
 
-/-- Schwartz realization of the exact Section 10 affine input. -/
-noncomputable def gmCubicAffineSourceSchwartz
-    (η T : ℝ) (N M : ℕ) (W : Finset ℝ)
-    (hB : 0 < gmCubicSmoothingScale η T N M) : SchwartzMap ℝ ℝ :=
-  (hasCompactSupport_gmCubicAffineSourceFunction η T N M W hB).toSchwartzMap
-    (contDiff_gmCubicAffineSourceFunction η T N M W hB)
 
-@[simp]
-theorem gmCubicAffineSourceSchwartz_apply
-    (η T : ℝ) (N M : ℕ) (W : Finset ℝ)
-    (hB : 0 < gmCubicSmoothingScale η T N M) (u : ℝ) :
-    gmCubicAffineSourceSchwartz η T N M W hB u =
-      gmCubicAffineWindow u * gmCubicSmoothedRSq η T N M W u := by
-  change gmCubicAffineSourceFunction η T N M W hB u = _
-  rw [gmCubicAffineSourceFunction, gmCubicSmoothedRSqSchwartz_apply]
 
 /-! ## The height-uniform Lemma 8.4 profile -/
 
@@ -382,35 +347,10 @@ noncomputable def gmCubicRatioBumpComplexSchwartz : SchwartzMap ℝ ℂ :=
   hasCompactSupport_gmCubicRatioBumpComplexFunction.toSchwartzMap
     contDiff_gmCubicRatioBumpComplexFunction
 
-@[simp]
-theorem gmCubicRatioBumpComplexSchwartz_apply (u : ℝ) :
-    gmCubicRatioBumpComplexSchwartz u = gmCubicRatioBump u := rfl
 
 /-- The `gmCubicPairMellinAtom` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
 noncomputable def gmCubicPairMellinAtom (d u : ℝ) : ℂ :=
   gmCubicRatioBumpComplexFunction u * (u : ℂ) ^ ((d : ℂ) * I)
-
-theorem contDiffAt_ofReal_cpow_mul_I_public
-    (d : ℝ) (n : ℕ) {u : ℝ} (hu : 0 < u) :
-    ContDiffAt ℝ n (fun y : ℝ => (y : ℂ) ^ ((d : ℂ) * I)) u := by
-  have hEq :
-      (fun y : ℝ => (y : ℂ) ^ ((d : ℂ) * I)) =ᶠ[nhds u]
-        fun y : ℝ => Complex.exp ((((d * Real.log y : ℝ) : ℂ) * I)) := by
-    filter_upwards [Ioi_mem_nhds hu] with y hy
-    rw [Complex.cpow_def_of_ne_zero (Complex.ofReal_ne_zero.mpr hy.ne')]
-    rw [← Complex.ofReal_log hy.le]
-    congr 1
-    push_cast
-    ring
-  have hExp : ContDiffAt ℝ n
-      (fun y : ℝ => Complex.exp ((((d * Real.log y : ℝ) : ℂ) * I))) u := by
-    have hReal : ContDiffAt ℝ n (fun y : ℝ => d * Real.log y) u :=
-      contDiffAt_const.mul (Real.contDiffAt_log.mpr hu.ne')
-    have hComplex : ContDiffAt ℝ n
-        (fun y : ℝ => ((d * Real.log y : ℝ) : ℂ)) u :=
-      Complex.ofRealCLM.contDiff.contDiffAt.comp u hReal
-    exact (hComplex.mul contDiffAt_const).cexp
-  exact hExp.congr_of_eventuallyEq hEq
 
 theorem contDiff_gmCubicPairMellinAtom (d : ℝ) :
     ContDiff ℝ ∞ (gmCubicPairMellinAtom d) := by
@@ -422,7 +362,7 @@ theorem contDiff_gmCubicPairMellinAtom (d : ℝ) :
   · exact
       (contDiff_gmCubicRatioBumpComplexFunction.of_le
         (by exact_mod_cast le_top)).contDiffAt.mul
-        (contDiffAt_ofReal_cpow_mul_I_public d n hu)
+        (contDiffAt_ofReal_cpow_mul_I d n hu)
   · have hzero : gmCubicPairMellinAtom d =ᶠ[nhds u] 0 := by
       have hu' : u < 1 / 8 := (le_of_not_gt hu).trans_lt (by norm_num)
       filter_upwards [Iio_mem_nhds hu'] with y hy
@@ -432,53 +372,6 @@ theorem contDiff_gmCubicPairMellinAtom (d : ℝ) :
       simp [gmCubicPairMellinAtom, gmCubicRatioBumpComplexFunction,
         gmCubicRatioBump_eq_zero_of_not_mem_Icc hnot]
     exact contDiffAt_const.congr_of_eventuallyEq hzero
-
-theorem norm_iteratedDeriv_ofReal_cpow_mul_I_le_eight
-    (d : ℝ) (n : ℕ) {u : ℝ} (hu : 1 / 8 ≤ u) :
-    ‖iteratedDeriv n (fun y : ℝ => (y : ℂ) ^ ((d : ℂ) * I)) u‖ ≤
-      8 ^ n * (|d| + n) ^ n := by
-  have huPos : 0 < u := (by norm_num : (0 : ℝ) < 1 / 8).trans_le hu
-  rw [iteratedDeriv_ofReal_cpow ((d : ℂ) * I) n huPos, norm_mul]
-  have hcoeff := norm_gmCpowDerivativeCoeff_le ((d : ℂ) * I) n
-  have hpow : ‖(u : ℂ) ^ ((d : ℂ) * I - n)‖ ≤ 8 ^ n := by
-    rw [Complex.norm_cpow_eq_rpow_re_of_pos huPos]
-    have hre : (((d : ℂ) * I - n).re) = -(n : ℝ) := by simp
-    rw [hre]
-    have hmono : u ^ (-(n : ℝ)) ≤ (1 / 8 : ℝ) ^ (-(n : ℝ)) :=
-      Real.rpow_le_rpow_of_nonpos (by norm_num) hu
-        (neg_nonpos.mpr (Nat.cast_nonneg n))
-    calc
-      u ^ (-(n : ℝ)) ≤ (1 / 8 : ℝ) ^ (-(n : ℝ)) := hmono
-      _ = 8 ^ n := by
-        rw [Real.rpow_neg_eq_inv_rpow, Real.rpow_natCast]
-        norm_num
-  calc
-    ‖gmCpowDerivativeCoeff ((d : ℂ) * I) n‖ *
-          ‖(u : ℂ) ^ ((d : ℂ) * I - n)‖ ≤
-        (‖((d : ℂ) * I)‖ + n) ^ n * 8 ^ n :=
-      mul_le_mul hcoeff hpow (norm_nonneg _) (by positivity)
-    _ = 8 ^ n * (|d| + n) ^ n := by
-      simp [Real.norm_eq_abs]
-      ring
-
-theorem gmCubicMellinDerivativePower_le
-    (d : ℝ) {k n : ℕ} (hkn : k ≤ n) :
-    (|d| + k) ^ k ≤
-      (n + 1 : ℝ) ^ n * (1 + |d|) ^ n := by
-  let B : ℝ := (n + 1) * (1 + |d|)
-  have hBOne : 1 ≤ B := by
-    dsimp only [B]
-    nlinarith [abs_nonneg d, (show (0 : ℝ) ≤ n by positivity)]
-  have hbase : |d| + k ≤ B := by
-    dsimp only [B]
-    have hkReal : (k : ℝ) ≤ n := by exact_mod_cast hkn
-    nlinarith [abs_nonneg d, (show (0 : ℝ) ≤ n by positivity)]
-  calc
-    (|d| + k) ^ k ≤ B ^ k := pow_le_pow_left₀ (by positivity) hbase k
-    _ ≤ B ^ n := pow_le_pow_right₀ hBOne hkn
-    _ = (n + 1 : ℝ) ^ n * (1 + |d|) ^ n := by
-      dsimp only [B]
-      rw [mul_pow]
 
 /-- The `gmCubicPairMellinDerivativeConstant` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
 noncomputable def gmCubicPairMellinDerivativeConstant (n : ℕ) : ℝ :=
@@ -496,87 +389,14 @@ theorem norm_iteratedDeriv_gmCubicPairMellinAtom_le
     (n : ℕ) (d u : ℝ) :
     ‖iteratedDeriv n (gmCubicPairMellinAtom d) u‖ ≤
       gmCubicPairMellinDerivativeConstant n * (1 + |d|) ^ n := by
-  by_cases huLow : u < 1 / 8
-  · have hzero : gmCubicPairMellinAtom d =ᶠ[nhds u] 0 := by
-      filter_upwards [Iio_mem_nhds huLow] with y hy
-      have hnot : y ∉ Set.Icc (1 / 8 : ℝ) (33 / 8) := by
-        intro hmem
-        exact (not_lt_of_ge hmem.1) hy
-      simp [gmCubicPairMellinAtom, gmCubicRatioBumpComplexFunction,
-        gmCubicRatioBump_eq_zero_of_not_mem_Icc hnot]
-    rw [hzero.iteratedDeriv_eq]
-    simpa using mul_nonneg (gmCubicPairMellinDerivativeConstant_nonneg n)
-      (by positivity : 0 ≤ (1 + |d|) ^ n)
-  by_cases huHigh : 33 / 8 < u
-  · have hzero : gmCubicPairMellinAtom d =ᶠ[nhds u] 0 := by
-      filter_upwards [Ioi_mem_nhds huHigh] with y hy
-      have hnot : y ∉ Set.Icc (1 / 8 : ℝ) (33 / 8) := by
-        intro hmem
-        exact (not_lt_of_ge hmem.2) hy
-      simp [gmCubicPairMellinAtom, gmCubicRatioBumpComplexFunction,
-        gmCubicRatioBump_eq_zero_of_not_mem_Icc hnot]
-    rw [hzero.iteratedDeriv_eq]
-    simpa using mul_nonneg (gmCubicPairMellinDerivativeConstant_nonneg n)
-      (by positivity : 0 ≤ (1 + |d|) ^ n)
-  have huIcc : u ∈ Set.Icc (1 / 8 : ℝ) (33 / 8) :=
-    ⟨le_of_not_gt huLow, le_of_not_gt huHigh⟩
-  have huPos : 0 < u := (by norm_num : (0 : ℝ) < 1 / 8).trans_le huIcc.1
-  have hbumpSmooth : ContDiffAt ℝ n gmCubicRatioBumpComplexFunction u :=
-    contDiff_gmCubicRatioBumpComplexFunction.contDiffAt.of_le
-      (by exact_mod_cast le_top)
-  have hphaseSmooth := contDiffAt_ofReal_cpow_mul_I_public d n huPos
-  unfold gmCubicPairMellinAtom
-  change ‖iteratedDeriv n
-      (gmCubicRatioBumpComplexFunction *
-        fun y : ℝ => (y : ℂ) ^ ((d : ℂ) * I)) u‖ ≤ _
-  rw [iteratedDeriv_mul hbumpSmooth hphaseSmooth]
-  calc
-    ‖∑ i ∈ Finset.range (n + 1),
-        (n.choose i : ℂ) *
-          iteratedDeriv i gmCubicRatioBumpComplexFunction u *
-          iteratedDeriv (n - i)
-            (fun y : ℝ => (y : ℂ) ^ ((d : ℂ) * I)) u‖ ≤
-      ∑ i ∈ Finset.range (n + 1),
-        ‖(n.choose i : ℂ) *
-          iteratedDeriv i gmCubicRatioBumpComplexFunction u *
-          iteratedDeriv (n - i)
-            (fun y : ℝ => (y : ℂ) ^ ((d : ℂ) * I)) u‖ := norm_sum_le _ _
-    _ ≤ ∑ i ∈ Finset.range (n + 1),
-        ((n.choose i : ℝ) *
-          SchwartzMap.seminorm ℝ 0 i gmCubicRatioBumpComplexSchwartz *
-          8 ^ (n - i) * (n + 1 : ℝ) ^ n) *
-          (1 + |d|) ^ n := by
-      apply Finset.sum_le_sum
-      intro i hi
-      have hin : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
-      have hbump := SchwartzMap.le_seminorm' ℝ 0 i
-        gmCubicRatioBumpComplexSchwartz u
-      simp only [pow_zero, one_mul] at hbump
-      change ‖iteratedDeriv i gmCubicRatioBumpComplexFunction u‖ ≤ _ at hbump
-      have hphase := norm_iteratedDeriv_ofReal_cpow_mul_I_le_eight
-        d (n - i) huIcc.1
-      have hpower := gmCubicMellinDerivativePower_le d (Nat.sub_le n i)
-      rw [norm_mul, norm_mul, Complex.norm_natCast]
-      calc
-        (n.choose i : ℝ) * ‖iteratedDeriv i gmCubicRatioBumpComplexFunction u‖ *
-            ‖iteratedDeriv (n - i)
-              (fun y : ℝ => (y : ℂ) ^ ((d : ℂ) * I)) u‖ ≤
-          (n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i gmCubicRatioBumpComplexSchwartz *
-              (8 ^ (n - i) * (|d| + (n - i : ℕ)) ^ (n - i)) := by
-            gcongr
-        _ ≤ (n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i gmCubicRatioBumpComplexSchwartz *
-              (8 ^ (n - i) *
-                ((n + 1 : ℝ) ^ n * (1 + |d|) ^ n)) := by
-            gcongr
-        _ = ((n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i gmCubicRatioBumpComplexSchwartz *
-            8 ^ (n - i) * (n + 1 : ℝ) ^ n) *
-              (1 + |d|) ^ n := by ring
-    _ = gmCubicPairMellinDerivativeConstant n * (1 + |d|) ^ n := by
-      unfold gmCubicPairMellinDerivativeConstant
-      rw [Finset.sum_mul]
+  have hs : Function.support (gmCubicPairMellinAtom d) ⊆ Icc (1 / 8 : ℝ) (33 / 8) := by
+    intro x hx
+    by_contra hn
+    exact hx (by simp [gmCubicPairMellinAtom, gmCubicRatioBumpComplexFunction,
+      gmCubicRatioBump_eq_zero_of_not_mem_Icc hn])
+  simpa [mellinDerivativeConstant, gmCubicPairMellinDerivativeConstant] using
+    norm_iteratedDeriv_mellinKernel_le gmCubicRatioBumpComplexSchwartz (by norm_num) hs d
+      (fun _ _ => rfl) n u
 
 theorem gmCubicPairMellinAtom_eq_exp
     (d : ℝ) {u : ℝ} (hu : 0 < u) :
@@ -869,105 +689,21 @@ theorem card_sq_le_sixteen_mul_T_mul_integral_gmCubicRWeightSchwartz
 
 /-! ### The source-faithful pre-smoothing support truncation -/
 
-/-- Fixed Section 10 truncation.  It equals one on `[13/32,67/32]`
-and is supported on `[3/8,17/8]`, leaving a `1/16` convolution margin
-inside Proposition 9.1's admissible interval `[1/4,9/4]`. -/
-noncomputable def gmCubicPreSmoothingWindow : ContDiffBump (5 / 4 : ℝ) :=
-  ⟨27 / 32, 7 / 8, by norm_num, by norm_num⟩
 
-theorem gmCubicPreSmoothingWindow_eq_zero_of_not_mem_Icc
-    {u : ℝ} (hu : u ∉ Set.Icc (3 / 8 : ℝ) (17 / 8)) :
-    gmCubicPreSmoothingWindow u = 0 := by
-  by_contra hne
-  have hsupp : u ∈ Function.support gmCubicPreSmoothingWindow := hne
-  rw [gmCubicPreSmoothingWindow.support_eq, Metric.mem_ball,
-    Real.dist_eq] at hsupp
-  change |u - 5 / 4| < 7 / 8 at hsupp
-  apply hu
-  rw [Set.mem_Icc]
-  rcases abs_lt.mp hsupp with ⟨hleft, hright⟩
-  constructor <;> linarith
 
-/-- The `gmCubicPreSmoothingWindowComplexFunction` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicPreSmoothingWindowComplexFunction (u : ℝ) : ℂ :=
-  gmCubicPreSmoothingWindow u
 
-theorem contDiff_gmCubicPreSmoothingWindowComplexFunction :
-    ContDiff ℝ ∞ gmCubicPreSmoothingWindowComplexFunction := by
-  exact Complex.ofRealCLM.contDiff.comp gmCubicPreSmoothingWindow.contDiff
 
-theorem hasCompactSupport_gmCubicPreSmoothingWindowComplexFunction :
-    HasCompactSupport gmCubicPreSmoothingWindowComplexFunction := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (3 / 8 : ℝ) (17 / 8)))
-  intro u hu
-  simp [gmCubicPreSmoothingWindowComplexFunction,
-    gmCubicPreSmoothingWindow_eq_zero_of_not_mem_Icc hu]
 
-/-- The `gmCubicPreSmoothingWindowComplexSchwartz` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicPreSmoothingWindowComplexSchwartz : SchwartzMap ℝ ℂ :=
-  hasCompactSupport_gmCubicPreSmoothingWindowComplexFunction.toSchwartzMap
-    contDiff_gmCubicPreSmoothingWindowComplexFunction
 
-@[simp]
-theorem gmCubicPreSmoothingWindowComplexSchwartz_apply (u : ℝ) :
-    gmCubicPreSmoothingWindowComplexSchwartz u =
-      gmCubicPreSmoothingWindow u := rfl
 
-/-- The `gmCubicTruncatedRWeightFunction` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicTruncatedRWeightFunction
-    (W : Finset ℝ) (u : ℝ) : ℝ :=
-  gmCubicPreSmoothingWindow u * gmCubicRWeightSchwartz W u
 
-theorem contDiff_gmCubicTruncatedRWeightFunction (W : Finset ℝ) :
-    ContDiff ℝ ∞ (gmCubicTruncatedRWeightFunction W) := by
-  exact gmCubicPreSmoothingWindow.contDiff.mul
-    ((gmCubicRWeightSchwartz W).smooth ⊤)
 
-theorem hasCompactSupport_gmCubicTruncatedRWeightFunction (W : Finset ℝ) :
-    HasCompactSupport (gmCubicTruncatedRWeightFunction W) := by
-  apply HasCompactSupport.intro
-    (isCompact_Icc : IsCompact (Set.Icc (3 / 8 : ℝ) (17 / 8)))
-  intro u hu
-  simp [gmCubicTruncatedRWeightFunction,
-    gmCubicPreSmoothingWindow_eq_zero_of_not_mem_Icc hu]
 
-/-- The `gmCubicTruncatedRWeightSchwartz` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicTruncatedRWeightSchwartz
-    (W : Finset ℝ) : SchwartzMap ℝ ℝ :=
-  (hasCompactSupport_gmCubicTruncatedRWeightFunction W).toSchwartzMap
-    (contDiff_gmCubicTruncatedRWeightFunction W)
 
-@[simp]
-theorem gmCubicTruncatedRWeightSchwartz_apply (W : Finset ℝ) (u : ℝ) :
-    gmCubicTruncatedRWeightSchwartz W u =
-      gmCubicPreSmoothingWindow u * gmCubicRWeightSchwartz W u := rfl
 
-/-- The `gmCubicTruncatedRWeightDerivativeConstant` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicTruncatedRWeightDerivativeConstant (n : ℕ) : ℝ :=
-  ∑ i ∈ Finset.range (n + 1),
-    (n.choose i : ℝ) *
-      SchwartzMap.seminorm ℝ 0 i gmCubicPreSmoothingWindowComplexSchwartz *
-      gmCubicPairMellinDerivativeConstant (n - i)
 
-/-- The `gmCubicTruncatedRWeightFourierConstant` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
-noncomputable def gmCubicTruncatedRWeightFourierConstant (n : ℕ) : ℝ :=
-  2 ^ n * ∑ p ∈ Finset.range (n + 1),
-    2 * gmCubicTruncatedRWeightDerivativeConstant p * 2 ^ p
 
-/-- The `gmCubicTruncatedHeightProfileConstant` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
--- The parameter records the source-domain or uniformity contract even though the body is independent of it.
-@[nolint unusedArguments]
-noncomputable def gmCubicTruncatedHeightProfileConstant
-    (_epsilon : ℝ) (n : ℕ) : ℝ :=
-  16 * gmCubicTruncatedRWeightFourierConstant n
 
-/-- The `gmCubicNativeHeightProfileConstant` definition used by the source-facing construction in `LargeValuesS3Refined`. -/
--- The parameter records the source-domain or uniformity contract even though the body is independent of it.
-@[nolint unusedArguments]
-noncomputable def gmCubicNativeHeightProfileConstant
-    (_epsilon : ℝ) (n : ℕ) : ℝ :=
-  32 * gmCubicTruncatedRWeightFourierConstant n
 
 /-! ### A source normalization covering the complete ratio range -/
 
@@ -1557,7 +1293,7 @@ theorem gmCubicNormalizedAffineSource_eq_original
   rw [gmCubicNormalizedAffineSourceSchwartz,
     gmAffineTildeSchwartz_apply_sub,
     gmAffineTildeSchwartz_apply_sub]
-  simp only [gmCubicNormalizedRWeightSchwartz_apply]
+  simp only [gmCubicNormalizedRWeightSchwartz_apply, affine_bump_eq]
   let q : ℝ → ℝ := fun x =>
     B * gmCubicLocalBump (B * ((3 * u - 11 / 16) - x)) *
       gmCubicRWeightSchwartz W x

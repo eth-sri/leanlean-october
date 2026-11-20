@@ -8,8 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.InverseInitialExcludedEnergy
-open HeckeFamily HeckeDyadic InverseInitialExcludedPolynomial
-open IdealMobiusDivisorSum UniqueFactorizationMonoid
+open HeckeFamily HeckeDyadic InverseInitialExcludedPolynomial IdealMobiusDivisorSum UniqueFactorizationMonoid
 local notation "O"=>HeckeFamily.O
 
 def deletionWeight (χ:Character)(j:Ideal O):ℂ:=

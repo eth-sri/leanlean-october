@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.HeckeDetectorAmplitudeFirst
-open HeckeFamily HeckeDetectorSupportedWitness HeckeDetectorFiberPartition
-open HeckeDetectorPhysicalSelection HeckeDetectorAdaptiveCutoff
+open HeckeFamily HeckeDetectorSupportedWitness HeckeDetectorFiberPartition HeckeDetectorPhysicalSelection HeckeDetectorAdaptiveCutoff
 
 def amplitudeRows {Row Slot : Type*} (rows : Finset Row) (slots : Finset Slot)
     (U cap mesh : ℝ) (hm : 0<mesh) (widths : Slot→ℝ) (physical : Row→Slot→ℂ)

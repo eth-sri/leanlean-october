@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.GaussSum.ActiveConductor
 public import OAI.NumberTheory.DirichletL.GaussSum.CubicTrace
 
@@ -9,65 +10,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
+open scoped ContDiff
 
-open scoped BigOperators Classical
 
 namespace MixedGaussConversion
 abbrev O := ActualEisensteinCubic.O
@@ -89,7 +42,7 @@ theorem norm_localGauss (p : O) (hp : p ≠ 0) [ (Ideal.span {p}).IsMaximal]
     (hg : lambda ∉ Ideal.span {p}) (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (j : ℕ) (hj0 : j ≠ 0) (hj6 : j < 6) : ‖localGauss p hp hg j‖ = 1 := by
   let q : Unit → O := fun _ => p
-  have hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {q i})) := by
+  have hcop : OAI.PrincipalIdealFamily.PairwiseCoprime q := by
     intro i k hik
     exact (hik (Subsingleton.elim i k)).elim
   have h := norm_canonicalProductGauss q (fun _ => hp) hcop (fun _ => hg)
@@ -108,14 +61,16 @@ theorem canonicalSextic_fifth_eq_inverse (p : O) [(Ideal.span {p}).IsMaximal]
     canonicalSextic_conj_as_row_label]
   ring
 
-theorem localGauss_five_eq (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
-    (hg : lambda ∉ Ideal.span {p}) :
+section
+variable (p : O) (hp : p ≠ 0) [instShared2 : (Ideal.span {p}).IsMaximal] (hg : lambda ∉ Ideal.span {p})
+include p hp instShared2 hg
+
+theorem localGauss_five_eq :
     localGauss p hp hg 5 = breveGammaMinus1 (Ideal.span {p}) hg p rfl hp := by
   rw [localGauss, canonicalSextic_fifth_eq_inverse]
   rfl
 
-theorem local_sign_conversion (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
-    (hg : lambda ∉ Ideal.span {p}) (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+theorem local_sign_conversion (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (hprimary : lambda ^ 2 ∣ p - 1) :
     (-localGauss p hp hg 1) * star (localG p hp hg) = star (localCoefficient p hp hg) ∧
     (-localGauss p hp hg 5) * localG p hp hg =
@@ -131,8 +86,7 @@ theorem local_sign_conversion (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal
   · rw [localGauss_five_eq]
     exact h.2.1
 
-theorem norm_localG (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
-    (hg : lambda ∉ Ideal.span {p}) (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+theorem norm_localG (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
     (hprimary : lambda ^ 2 ∣ p - 1) : ‖localG p hp hg‖ = 1 := by
   have h := congrArg norm (local_sign_conversion p hp hg hchar hprimary).1
   simp only [norm_mul, norm_neg, norm_star, localCoefficient] at h
@@ -140,6 +94,8 @@ theorem norm_localG (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
     norm_angularFactor p hp,
     norm_localGauss p hp hg hchar 2 (by decide) (by decide), one_mul] at h
   exact h
+
+end
 
 def convertedLocal (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsMaximal]
     (hg : lambda ∉ Ideal.span {p}) (inverse : Bool) : ℂ :=
@@ -163,11 +119,11 @@ theorem neg_localGauss_eq_converted (p : O) (hp : p ≠ 0) [(Ideal.span {p}).IsM
   · exact (eq_div_iff hG).mpr (local_sign_conversion p hp hg hchar hprimary).2
 
 theorem moebius_mixed_gauss_conversion {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) (inverse : ι → Bool) :
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hgood : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hprimary : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (inverse : ι → Bool) :
     (UniqueFactorizationMonoid.moebius (Ideal.span {∏ i, p i}) : ℂ) *
       canonicalProductGauss p hp hcop hgood (fun i => if inverse i then 5 else 1) =
       (∏ i, ∏ k ∈ Finset.univ.erase i,
@@ -197,12 +153,11 @@ end MixedGaussConversion
 open scoped BigOperators Classical SchwartzMap ContDiff
 
 namespace GaussGeneratorTransport
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaussPhase
-open MixedGaussConversion
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaussPhase MixedGaussConversion
 
 theorem pair_moebius_eq_active
-    {ι : Type*} [DecidableEq ι] (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) (S T : Finset ι) :
+    {ι : Type*} [DecidableEq ι] (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hinj : OAI.PrincipalIdealFamily.Distinct p) (S T : Finset ι) :
     (UniqueFactorizationMonoid.moebius (∏ i ∈ S, Ideal.span {p i}) : ℂ) *
       (UniqueFactorizationMonoid.moebius (∏ i ∈ T, Ideal.span {p i}) : ℂ) =
       (UniqueFactorizationMonoid.moebius
@@ -228,8 +183,8 @@ theorem pair_moebius_eq_active
 
 def activeConvertedGauss
     {ι : Type*} [DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (S T : Finset ι) : ℂ :=
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hgood : OAI.PrincipalIdealFamily.Avoids p lambda) (S T : Finset ι) : ℂ :=
   (∏ i : activeSupport S T,
     ∏ k ∈ @Finset.erase (activeSupport S T)
       (fun a b => Classical.propDecidable (a = b)) Finset.univ i,

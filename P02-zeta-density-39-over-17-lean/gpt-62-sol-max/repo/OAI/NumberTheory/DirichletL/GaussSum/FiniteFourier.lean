@@ -9,11 +9,9 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 
 namespace ShortDraftFiniteGaussFourier
@@ -54,18 +52,6 @@ theorem product_gauss_transform
       exact gauss_transform (χ i) (ψ i) (hχ i) (h i)
 
 end ShortDraftFiniteGaussFourier
-
-namespace PoissonChildCRT
-open scoped Classical
-
-variable (n : ℕ) (χ : MulChar (ZMod n) ℂ)
-
-end PoissonChildCRT
-
-namespace PoissonFirstLocal
-open scoped Classical
-
-end PoissonFirstLocal
 
 open Finset Complex
 
@@ -146,9 +132,11 @@ noncomputable def cubicResidueChar (ρ : R →+* F) (ζ : R)
       (cubic_roots_equiv ρ ζ hζ hζF).symm.toMonoidHom.comp
         (euler_to_roots m hq)
 
-theorem cubicResidueChar_reduce_unit (ρ : R →+* F) (ζ : R)
-    (hζ : IsPrimitiveRoot ζ 3) (hζF : IsPrimitiveRoot (ρ ζ) 3)
-    (m : ℕ) (hq : Fintype.card F - 1 = m * 3) (u : Fˣ) :
+section
+variable (ρ : R →+* F) (ζ : R) (hζ : IsPrimitiveRoot ζ 3) (hζF : IsPrimitiveRoot (ρ ζ) 3) (m : ℕ) (hq : Fintype.card F - 1 = m * 3)
+include ρ ζ hζ hζF m hq
+
+theorem cubicResidueChar_reduce_unit (u : Fˣ) :
     ρ (cubicResidueChar ρ ζ hζ hζF m hq (u : F)) = (u : F) ^ m := by
   let e := cubic_roots_equiv ρ ζ hζ hζF
   simp only [cubicResidueChar, MulChar.ofUnitHom_coe, MonoidHom.comp_apply]
@@ -162,9 +150,7 @@ theorem cubicResidueChar_reduce_unit (ρ : R →+* F) (ζ : R)
     (u : F) ^ m at he'
   exact he'
 
-theorem cubicResidueChar_pow_three (ρ : R →+* F) (ζ : R)
-    (hζ : IsPrimitiveRoot ζ 3) (hζF : IsPrimitiveRoot (ρ ζ) 3)
-    (m : ℕ) (hq : Fintype.card F - 1 = m * 3) :
+theorem cubicResidueChar_pow_three :
     cubicResidueChar ρ ζ hζ hζF m hq ^ 3 = 1 := by
   apply MulChar.ext
   intro u
@@ -175,6 +161,8 @@ theorem cubicResidueChar_pow_three (ρ : R →+* F) (ζ : R)
     (cubic_roots_equiv ρ ζ hζ hζF).symm (euler_to_roots m hq u)
   change (((v : Rˣ) : R) ^ 3) = 1
   exact (mem_rootsOfUnity' 3 (v : Rˣ)).mp v.property
+
+end
 
 end ActualCubicChar
 
@@ -255,8 +243,11 @@ noncomputable def cubicChar (P : Ideal O) [P.IsMaximal]
   exact ActualCubicChar.cubicResidueChar (Ideal.Quotient.mk P) omega
     omega_primitive (omega_reduced_primitive P hgood) m hq
 
-theorem cubicChar_reduce (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (x : O ⧸ P) :
+section
+variable (P : Ideal O) [instShared1 : P.IsMaximal] (hgood : lambda ∉ P)
+include P instShared1 hgood
+
+theorem cubicChar_reduce (x : O ⧸ P) :
     (Ideal.Quotient.mk P) (cubicChar P hgood x) =
       x ^ ((Nat.card (O ⧸ P) - 1) / 3) := by
   classical
@@ -285,8 +276,7 @@ theorem cubicChar_reduce (P : Ideal O) [P.IsMaximal]
       (Ideal.Quotient.mk P) omega omega_primitive
       (omega_reduced_primitive P hgood) m hq u
 
-theorem cubicChar_pow_three (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) : cubicChar P hgood ^ 3 = 1 := by
+theorem cubicChar_pow_three : cubicChar P hgood ^ 3 = 1 := by
   classical
   let : Field (O ⧸ P) := Ideal.Quotient.field P
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
@@ -300,8 +290,7 @@ theorem cubicChar_pow_three (P : Ideal O) [P.IsMaximal]
     (Ideal.Quotient.mk P) omega omega_primitive
     (omega_reduced_primitive P hgood) m hq
 
-theorem cubicChar_ne_one (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) : cubicChar P hgood ≠ 1 := by
+theorem cubicChar_ne_one : cubicChar P hgood ≠ 1 := by
   classical
   let : Field (O ⧸ P) := Ideal.Quotient.field P
   let : Fintype (O ⧸ P) := Fintype.ofFinite _
@@ -325,16 +314,14 @@ theorem cubicChar_ne_one (P : Ideal O) [P.IsMaximal]
   have hle := Nat.le_of_dvd hm hdvd
   omega
 
-theorem cubicChar_order (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) : orderOf (cubicChar P hgood) = 3 := by
+theorem cubicChar_order : orderOf (cubicChar P hgood) = 3 := by
   have hdvd : orderOf (cubicChar P hgood) ∣ 3 :=
     orderOf_dvd_of_pow_eq_one (cubicChar_pow_three P hgood)
   rcases (Nat.dvd_prime Nat.prime_three).mp hdvd with h1 | h3
   · exact False.elim ((cubicChar_ne_one P hgood) (orderOf_eq_one_iff.mp h1))
   · exact h3
 
-theorem cubicJacobi_primary (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) :
+theorem cubicJacobi_primary :
     ∃ z ∈ Algebra.adjoin ℤ {omega},
       jacobiSum (cubicChar P hgood) (cubicChar P hgood) =
         -1 + z * lambda ^ 2 := by
@@ -347,8 +334,7 @@ theorem cubicJacobi_primary (P : Ideal O) [P.IsMaximal]
       (by simpa only [Nat.card_eq_fintype_card] using card_sub_one_div_three P hgood)
       omega_primitive)
 
-theorem cubicJacobi_mem_prime (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) :
+theorem cubicJacobi_mem_prime :
     jacobiSum (cubicChar P hgood) (cubicChar P hgood) ∈ P := by
   classical
   let : Field (O ⧸ P) := Ideal.Quotient.field P
@@ -366,8 +352,7 @@ theorem cubicJacobi_mem_prime (P : Ideal O) [P.IsMaximal]
   simp only [Nat.card_eq_fintype_card]
   exact ActualCubicChar.euler_jacobi_sum_zero m hm
 
-theorem cubicJacobi_product (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) :
+theorem cubicJacobi_product :
     jacobiSum (cubicChar P hgood) (cubicChar P hgood) *
       jacobiSum (cubicChar P hgood)⁻¹ (cubicChar P hgood)⁻¹ =
         (Nat.card (O ⧸ P) : O) := by
@@ -402,6 +387,8 @@ theorem cubicJacobi_product (P : Ideal O) [P.IsMaximal]
   rw [map_mul, ← jacobiSum_ringHomComp, ← jacobiSum_ringHomComp,
     ← MulChar.ringHomComp_inv]
   simpa only [ψ, Nat.card_eq_fintype_card, map_natCast] using hprod
+
+end
 
 noncomputable def conjK : K ≃ₐ[ℚ] K :=
   IsCyclotomicExtension.fromZetaAut
@@ -611,8 +598,11 @@ private theorem generator_mul_conj_eq_sign_card (P : Ideal O) [P.IsMaximal]
     have heq : Algebra.norm ℤ p = -(Nat.card (O ⧸ P) : ℤ) := add_eq_zero_iff_eq_neg.mp hneg
     simp [← norm_int_eq_mul_conjO p, heq]
 
-theorem cubicJacobi_unit_multiple_of_principal (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p}) :
+section
+variable (P : Ideal O) [instShared1 : P.IsMaximal] (hgood : lambda ∉ P)
+include P instShared1 hgood
+
+theorem cubicJacobi_unit_multiple_of_principal (p : O) (hP : P = Ideal.span {p}) :
     ∃ u : Oˣ, jacobiSum (cubicChar P hgood) (cubicChar P hgood) = p * u := by
   classical
   let J := jacobiSum (cubicChar P hgood) (cubicChar P hgood)
@@ -652,8 +642,7 @@ theorem cubicJacobi_unit_multiple_of_principal (P : Ideal O) [P.IsMaximal]
   refine ⟨hvunit.unit, ?_⟩
   simpa only [hvunit.unit_spec] using hv
 
-theorem cubicJacobi_eq_neg_primary_generator_of_principal (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (p : O) (hP : P = Ideal.span {p})
+theorem cubicJacobi_eq_neg_primary_generator_of_principal (p : O) (hP : P = Ideal.span {p})
     (hprimary : lambda ^ 2 ∣ p - 1) :
     jacobiSum (cubicChar P hgood) (cubicChar P hgood) = -p := by
   let J := jacobiSum (cubicChar P hgood) (cubicChar P hgood)
@@ -683,8 +672,7 @@ theorem cubicJacobi_eq_neg_primary_generator_of_principal (P : Ideal O) [P.IsMax
   · rw [hneg] at hJu
     simpa only [Units.val_neg, Units.val_one, mul_neg, mul_one] using hJu
 
-theorem cubicJacobi_generates_prime (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) :
+theorem cubicJacobi_generates_prime :
     P = Ideal.span {jacobiSum (cubicChar P hgood) (cubicChar P hgood)} := by
   classical
   let J := jacobiSum (cubicChar P hgood) (cubicChar P hgood)
@@ -714,8 +702,7 @@ theorem cubicJacobi_generates_prime (P : Ideal O) [P.IsMaximal]
   change P = Ideal.span {J}
   rw [hQ, hQtop, ← Ideal.one_eq_top, mul_one]
 
-theorem cubicJacobi_exists_primary_generator (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) :
+theorem cubicJacobi_exists_primary_generator :
     ∃ p : O, P = Ideal.span {p} ∧ lambda ^ 2 ∣ p - 1 ∧
       jacobiSum (cubicChar P hgood) (cubicChar P hgood) = -p := by
   let J := jacobiSum (cubicChar P hgood) (cubicChar P hgood)
@@ -727,6 +714,8 @@ theorem cubicJacobi_exists_primary_generator (P : Ideal O) [P.IsMaximal]
     dsimp [J]
     rw [hJ]
     ring
+
+end
 
 theorem cubicGauss_cube {E : Type*} [Field E] (ι : O →+* E)
     (hι : Function.Injective ι) (P : Ideal O) [P.IsMaximal]

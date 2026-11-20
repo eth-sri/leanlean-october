@@ -41,8 +41,7 @@ theorem norm_deriv_zetaQuadraticLogGaussian_le {T G x : ℝ}
     ‖deriv (fun y => zetaGaussianQuadraticIntegral T G (Real.log y - Real.log A)) x‖ ≤
       (2 * Real.sqrt Real.pi * G) *
         ‖deriv (fun y : ℝ => (zetaLogGaussianEnvelope A G y : ℂ)) x‖ := by
-  have he : deriv (fun y : ℝ => (zetaLogGaussianEnvelope A G y : ℂ)) x =
-      ((-(G ^ 2 / 4) * ((Real.log x - Real.log A) / x) * zetaLogGaussianEnvelope A G x : ℝ) : ℂ) :=
+  have he :=
     (hasDerivAt_zetaLogGaussianEnvelope A G hx).ofReal_comp.deriv
   have habs : |-(G ^ 2 / 4) * ((Real.log x - Real.log A) / x) * zetaLogGaussianEnvelope A G x| =
       (G ^ 2 / 4) * (|Real.log x - Real.log A| / x) * zetaLogGaussianEnvelope A G x := by

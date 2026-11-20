@@ -4,8 +4,7 @@ public import PeakWidthPowers
 public import MathCollab.Density.Stronger.Peaks.WidthRanges
 
 @[expose] public section
-open Filter Finset
-open MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
+open Filter Finset MathCollab.Density MathCollab.Density.Stronger MathCollab.Density.Stronger.Peaks
 set_option autoImplicit false
 noncomputable section
 namespace Montgomery.CriticalPeak

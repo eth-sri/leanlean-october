@@ -10,11 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentCanonicalFirst
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredExceptionalCount
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
-open CenteredMomentFirstReduced CenteredMomentFirstActiveFourier CenteredMomentActive
-open CenteredMomentCompleteCommon UniqueFactorizationMonoid
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CanonicalRowCompletion CanonicalQuadraticSieve CenteredExceptionalCount CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation CenteredMomentFirstReduced CenteredMomentFirstActiveFourier CenteredMomentActive CenteredMomentCompleteCommon UniqueFactorizationMonoid
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev CommonIndex (I J : Ideal O) := {P : Ideal O // P∈commonSupport I J}

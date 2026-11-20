@@ -5,7 +5,7 @@ commit 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1.
 See ../../../../../third_party/twelfth/SOURCE_IMPORTS.json and LICENSE-MIT-0.
 No upstream project or Architect module is imported.
 -/
-public import MathCollab.Density.Stronger.Fourth.MeanValueCore
+public import GuthMaynard.NativeSource.GuthMaynard.MeanValueProof
 public import MathCollab.Density.Stronger.Fourth.Coefficients
 public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
@@ -16,6 +16,11 @@ open scoped BigOperators Interval ComplexConjugate
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Fourth
+open GuthMaynard.NativeMoment (dirichletTime endpointTwist norm_endpointTwist integral_norm_sq_dirichletTime_le)
+
+private lemma continuous_dirichletTime (N : ℕ) (a : ℕ → ℂ) : Continuous (dirichletTime N a) := by
+  unfold dirichletTime
+  fun_prop
 
 /-- Coordinate Cauchy--Schwarz for a finite complex sum. -/
 theorem norm_sum_mul_sq_le {ι : Type*} [DecidableEq ι]
@@ -74,7 +79,11 @@ theorem dirichletPrefix_double (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
     (fun n : ℕ => a n*Complex.exp (-(I*(t:ℂ)*(Real.log n:ℂ))))
     (Nat.zero_le N) (by omega : N ≤ 2*N)).symm
 
-theorem dirichletPrefix_pow_two (M : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+section
+variable (M : ℕ) (a : ℕ → ℂ)
+include M a
+
+theorem dirichletPrefix_pow_two (t : ℝ) :
     dirichletPrefix (2^M) a t =
       a 1+∑ j ∈ Finset.range M, dirichletTime (2^j) a t := by
   induction M with
@@ -83,7 +92,7 @@ theorem dirichletPrefix_pow_two (M : ℕ) (a : ℕ → ℂ) (t : ℝ) :
     rw [pow_succ, Nat.mul_comm (2^M) 2,dirichletPrefix_double,ih,
       Finset.sum_range_succ,add_assoc]
 
-theorem norm_dirichletPrefix_pow_two_sq_le (M : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+theorem norm_dirichletPrefix_pow_two_sq_le (t : ℝ) :
     ‖dirichletPrefix (2^M) a t‖^2 ≤
       2*((M:ℝ)+1)*(‖a 1‖^2+∑ j ∈ Finset.range M, ‖dirichletTime (2^j) a t‖^2) := by
   let S : ℂ := ∑ j ∈ Finset.range M, dirichletTime (2^j) a t
@@ -98,8 +107,7 @@ theorem norm_dirichletPrefix_pow_two_sq_le (M : ℕ) (a : ℕ → ℂ) (t : ℝ)
   have hM : 0 ≤ (M:ℝ) := Nat.cast_nonneg M
   nlinarith [sq_nonneg (‖a 1‖-‖S‖),mul_nonneg hM (sq_nonneg ‖a 1‖)]
 
-theorem integral_norm_sq_dirichletPrefix_le_blocks
-    (M : ℕ) (a : ℕ → ℂ) {A B : ℝ} (hAB : A ≤ B) :
+theorem integral_norm_sq_dirichletPrefix_le_blocks {A B : ℝ} (hAB : A ≤ B) :
     (∫ t : ℝ in A..B, ‖dirichletPrefix (2^M) a t‖^2) ≤
       2*((M:ℝ)+1)*((B-A)*‖a 1‖^2+
         ∑ j ∈ Finset.range M, ∫ t : ℝ in A..B, ‖dirichletTime (2^j) a t‖^2) := by
@@ -128,8 +136,7 @@ theorem integral_norm_sq_dirichletPrefix_le_blocks
         intervalIntegral.integral_finsetSum (fun j _ => hi j)]
       rfl
 
-theorem integral_norm_sq_dirichletPrefix_le
-    (M : ℕ) (a : ℕ → ℂ) {A B L : ℝ} (hAB : A ≤ B)
+theorem integral_norm_sq_dirichletPrefix_le {A B L : ℝ} (hAB : A ≤ B)
     (hone : ‖a 1‖^2 ≤ L)
     (hcoeff : ∀ j ∈ Finset.range M,
       (∑ n ∈ Finset.Ioc (2^j) (2*(2^j)), ‖a n‖^2) ≤ L) :
@@ -169,8 +176,7 @@ theorem integral_norm_sq_dirichletPrefix_le
       nlinarith
     _ = _ := by dsimp [E]; ring
 
-theorem integral_norm_sq_dirichletPrefix_reflected_le
-    (M : ℕ) (a : ℕ → ℂ) (u : ℝ) {H L : ℝ} (hH : 0 ≤ H)
+theorem integral_norm_sq_dirichletPrefix_reflected_le (u : ℝ) {H L : ℝ} (hH : 0 ≤ H)
     (hone : ‖a 1‖^2 ≤ L)
     (hcoeff : ∀ j ∈ Finset.range M,
       (∑ n ∈ Finset.Ioc (2^j) (2*(2^j)), ‖a n‖^2) ≤ L) :
@@ -182,6 +188,8 @@ theorem integral_norm_sq_dirichletPrefix_reflected_le
     (show u-2*H ≤ u-H by linarith) hone hcoeff
   have heq : u-H-(u-2*H) = H := by ring
   simpa only [heq] using h
+
+end
 
 theorem fourth_divisorTerm_eq_coeff_phase (t c u : ℝ) (n : ℕ) :
     divisorDirichletTerm (afeCriticalPoint (-t)+((c:ℂ)+(u:ℂ)*I)) n =

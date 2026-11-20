@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicTail
 public import OAI.NumberTheory.DirichletL.Descent.OriginalZeroPhysical
 
@@ -20,11 +21,11 @@ theorem original_dyadic_zero_tail
     (hs:∀y,om y≠0→y≤b)(hMm:0≤Mmax)(hFm:0≤Fmax)(heta:0≤eta)(htau:0<tau)(heps:0<eps):
     ∃Czero Ctail:ℝ,0≤Czero ∧ 0≤Ctail ∧
     ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hinj:OAI.PrincipalIdealFamily.Distinct p)
+      (_hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
       (β:Ideal O→(ι→₀ℕ)→ℂ)(Ψ:O→*ℂ)(m:O)
       (slots:Finset σ)(lists:σ→Finset ι)(weights:σ→ι→ℂ)

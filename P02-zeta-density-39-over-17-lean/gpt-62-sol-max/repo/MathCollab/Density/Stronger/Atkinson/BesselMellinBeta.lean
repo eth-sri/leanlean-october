@@ -6,6 +6,7 @@ See third_party/twelfth/BESSEL_MELLIN_MANIFEST.json and third_party/twelfth/LICE
 Apache-2.0 attribution. No Estermann or general-modulus source closure is imported.
 -/
 public import MathCollab.Density.Stronger.Atkinson.BesselK0
+public import WeylPort.Analytic.RealLaplace
 public import Mathlib.Analysis.SpecialFunctions.Gamma.Beta
 public import Mathlib.Analysis.SpecialFunctions.Artanh
 public import Mathlib.Analysis.SpecialFunctions.Trigonometric.DerivHyp
@@ -44,16 +45,6 @@ theorem dfiBesselY0MellinSymbol_two_mul (w : ℂ) :
   · ring_nf
   · congr 1
     ring_nf
-
-/-- The elementary Gamma integral after a positive real dilation. -/
-theorem integral_cpow_mul_exp_neg_mul_Ioi_eq
-    {s : ℂ} (hs : 0 < s.re) {a : ℝ} (ha : 0 < a) :
-    (∫ x : ℝ in Set.Ioi 0,
-        (x : ℂ) ^ (s - 1) * Complex.exp (-(a * x))) =
-      (1 / a : ℂ) ^ s * Gamma s := by
-  simpa only [Complex.ofReal_neg, Complex.ofReal_mul,
-    Complex.ofReal_exp] using
-    Complex.integral_cpow_mul_exp_neg_mul_Ioi hs ha
 
 /-- Squaring is a bijection from the positive unit interval to itself. -/
 theorem image_sq_Ioo_zero_one :
@@ -192,7 +183,7 @@ theorem inv_sq_mul_inv_sq_cpow_sub_one
     push_cast
     field_simp
   rw [hbase]
-  have hB : (C ^ (2 : ℕ))⁻¹ ≠ 0 := inv_ne_zero (pow_ne_zero 2 hC)
+  have hB := inv_ne_zero (pow_ne_zero 2 hC)
   calc
     (C ^ (2 : ℕ))⁻¹ * ((C ^ (2 : ℕ))⁻¹ ^ (w - 1)) =
         ((C ^ (2 : ℕ))⁻¹ ^ (w - 1)) *

@@ -292,9 +292,9 @@ theorem W21_approximation (f : W21) (g : trunc) :
         have df' v : HasDerivAt f' (f'' v) v := f'.hasDerivAt v
         have l3 v : HasDerivAt (fun v => h R v * f v) (h' R v * f v + h R v * f' v) v :=
           (dh R v).ofReal_comp.mul (df v)
-        have l5 : HasDerivAt (fun v => h' R v * f v) (h'' R v * f v + h' R v * f' v) v :=
+        have l5 :=
           (dh' R v).ofReal_comp.mul (df v)
-        have l7 : HasDerivAt (fun v => h R v * f' v) (h' R v * f' v + h R v * f'' v) v :=
+        have l7 :=
           (dh R v).ofReal_comp.mul (df' v)
         have d1 : deriv (fun v => h R v * f v) = fun v => h' R v * f v + h R v * f' v :=
           funext (fun v => (l3 v).deriv)

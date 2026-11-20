@@ -659,11 +659,11 @@ private theorem robertSargos_physical_mixed_points
   intro u hu
   exact hf _ (hg.2 u hu).1
 
+section
+variable (f : ℝ → ℝ) (M H Q X Y N : ℕ) (r A B s : ℝ) {C lam : ℝ} (hQeq : Q = ⌊lam^(-(3:ℝ)/13)⌋₊) (hC : 1 ≤ C) (hlam : 0 < lam) (hsmall : lam ≤ 1/8192) (hH : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2)
+include f M H Q X Y N r A B s C lam hQeq hC hlam hsmall hH
+
 theorem robertSargos_physical_rectangle_variation
-    (f : ℝ → ℝ) (M H Q X Y N : ℕ) (r A B s : ℝ) {C lam : ℝ}
-    (hQeq : Q = ⌊lam^(-(3:ℝ)/13)⌋₊)
-    (hC : 1 ≤ C) (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
-    (hH : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2)
     (hX : X ≤ Q) (hY : Y ≤ Q) (hN : N ≤ Q) (hs : |s| = 1)
     (hq : ∀ x ∈ Icc A (A+X-1), s*x ∈ Icc 0 (Q:ℝ))
     (hBlo : (H:ℝ) ≤ B) (hBhi : B+Y-1 ≤ 2*H)
@@ -740,10 +740,6 @@ theorem robertSargos_physical_rectangle_variation
 
 
 theorem robertSargos_physical_rectangle_common_prefix
-    (f : ℝ → ℝ) (M H Q X Y N : ℕ) (r A B s : ℝ) {C lam : ℝ}
-    (hQeq : Q = ⌊lam^(-(3:ℝ)/13)⌋₊)
-    (hC : 1 ≤ C) (hlam : 0 < lam) (hsmall : lam ≤ 1/8192)
-    (hH : (H:ℝ) ≤ lam^(-(2:ℝ)/13)/2)
     (hXp : 0 < X) (hYp : 0 < Y) (hNp : 0 < N)
     (hX : X ≤ Q) (hY : Y ≤ Q) (hN : N ≤ Q) (hs : |s| = 1)
     (hq : ∀ x ∈ Icc A (A+X-1), s*x ∈ Icc 0 (Q:ℝ))
@@ -797,6 +793,8 @@ theorem robertSargos_physical_rectangle_common_prefix
     rw [robertSargos_amplitude_jet_zero f m r Q s (A+x) (B+y) (1+z) habs]
   simp only [he]
   exact hbound.trans (mul_le_mul_of_nonneg_right hvar (Finset.sum_nonneg (fun _ _ => norm_nonneg _)))
+
+end
 
 
 end TaoTrudgianYang2025

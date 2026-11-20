@@ -10,17 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedCapacityCommon
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentFirstAmplifiedCapacitySource CenteredMomentSourceLiveColumn
-open CenteredMomentSecondCapacitySourceShift CenteredMomentSecondPhysicalBlock
-open CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit
-open CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondNonexceptionalScalar
-open CenteredMomentCommonHeightEnvelope
-open CenteredMomentSecondPhysicalCost CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization
-open CenteredMomentAllocatedChildCapacity CenteredMomentFirstScale
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentFirstAmplifiedCapacitySource CenteredMomentSourceLiveColumn CenteredMomentSecondCapacitySourceShift CenteredMomentSecondPhysicalBlock CenteredMomentSecondCanonical CenteredMomentCanonicalFirst CenteredMomentSecondCanonicalNonunit CenteredMomentSecondCanonicalScalar CenteredMomentSecondRadicalBudget CenteredMomentSecondExceptionalFamily CenteredMomentSecondNonexceptionalScalar CenteredMomentCommonHeightEnvelope CenteredMomentSecondPhysicalCost CenteredMomentSecondHeightFamily CenteredMomentSectorLocalization CenteredMomentAllocatedChildCapacity CenteredMomentFirstScale
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι]
 local instance {κ:Type*}:DecidableEq κ:=Classical.decEq _
@@ -49,9 +39,11 @@ lemma adjusted_log (Z qref:ℝ)(hq:0<qref)(C D:Ideal O)(hC:Supported C)
   exact Real.logb_mul (envelope_pos qref hq C D hC U n).ne'
     (lt_of_lt_of_le zero_lt_one (le_max_left _ _)).ne'
 
-theorem common_raw_reference_shift (s:Input ι)(υ:Character)(t:ℝ)
-    (S:Finset (Ideal O))(β:Ideal O→ℂ)(C D R0:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
+section
+variable (s:Input ι) (υ:Character) (t:ℝ) (S:Finset (Ideal O)) (β:Ideal O→ℂ) (C D R0:Ideal O) (hC:Supported C) (hD:Supported D) (hCD:primeSupport C=primeSupport D)
+include s υ t S β C D R0 hC hD hCD
+
+theorem common_raw_reference_shift
     (B:actualAllocations s.pools C)(hB:frozenCoefficient B.val C R0 s.ν s.W s.P≠0)
     (U:Finset (CommonIndex C D))(R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))
     (K a Z qref:ℝ)(n:Fin 4→ℤ)(hq:0<qref)(hK:0<K)(ha:0<a)(hZ:1<Z)
@@ -76,9 +68,7 @@ theorem common_raw_reference_shift (s:Input ι)(υ:Character)(t:ℝ)
   rw [he]
   linarith
 
-theorem common_raw_reference_shift_right (s:Input ι)(υ:Character)(t:ℝ)
-    (S:Finset (Ideal O))(β:Ideal O→ℂ)(C D R0:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
+theorem common_raw_reference_shift_right
     (B:actualAllocations s.pools D)(hB:frozenCoefficient B.val D R0 s.ν s.W s.P≠0)
     (U:Finset (CommonIndex C D))(R:ℝ)(rows:Finset O)(W:𝓢(ℝ,ℂ))
     (K a Z qref:ℝ)(n:Fin 4→ℤ)(hq:0<qref)(hK:0<K)(ha:0<a)(hZ:1<Z)
@@ -102,6 +92,8 @@ theorem common_raw_reference_shift_right (s:Input ι)(υ:Character)(t:ℝ)
   have he:preVolume (commonData (withHeight s υ t) D R0 B)=volume (child s D R0 B υ t):=rfl
   rw [he]
   linarith
+
+end
 
 theorem actual_width_le_reference {η:Character}{C D:Ideal O}{hC:Supported C}{hD:Supported D}
     {U:Finset (CommonIndex C D)}{τ:RayFourExpansion.RayCharacter→Character}

@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstGaussianProfileWeights
-open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl
-open CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondWindowBudget
-open QuadraticInitialBound
+open HeckeFamily CenteredMomentFiniteProfileExceptional CenteredMomentSecondChildPowerBudget CenteredMomentFirstChildProfileControl CenteredMomentEnergyFirstGaussianCoefficients CenteredMomentSecondWindowBudget QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 def losses (epsilon delta theta B:ℝ):Fin 4→ℝ:=
@@ -24,6 +21,32 @@ private lemma control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(h:S�
   exact mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 0))
     (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 1))
     (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
+
+/-- The profile loss multiplying each of the four common-column powers. -/
+abbrev profileWeight {a b : ℝ} (p : Profiles a b) (U : Finset (ℕ × ℕ)) (J : ℕ)
+    (C C₀ C₁ t height Z seed loss : ℝ) : ℝ :=
+  C*(C₀+C₁+1)*(p.control U)^2*(1+|t|+height)^J*Z^loss/seed
+
+theorem profileWeight_mono {a b : ℝ} (p : Profiles a b) {U U' : Finset (ℕ × ℕ)}
+    {J J' : ℕ} {C C' C₀ C₁ t height Z seed loss : ℝ}
+    (hU : U ⊆ U') (hJ : J ≤ J') (hC : 0 ≤ C) (hCC : C ≤ C')
+    (hC₀ : 0 ≤ C₀) (hC₁ : 0 ≤ C₁) (hh : 0 ≤ height) (hZ : 0 ≤ Z) (hs : 0 ≤ seed) :
+    profileWeight p U J C C₀ C₁ t height Z seed loss ≤
+      profileWeight p U' J' C' C₀ C₁ t height Z seed loss := by
+  have h := control_mono p hU
+  have hp := p.control_nonneg U
+  have hp' := p.control_nonneg U'
+  have hC' := hC.trans hCC
+  have hj := pow_le_pow_right₀ (show 1 ≤ 1+|t|+height by linarith only [abs_nonneg t,hh]) hJ
+  unfold profileWeight
+  gcongr <;> positivity
+
+theorem weighted_energy_sum_mono {a b Q e : Fin 4 → ℝ} {V m : ℝ} (hV : 0 ≤ V)
+    (hQ : ∀ j, 0 ≤ Q j) (hab : ∀ j, a j ≤ b j) :
+    (∑ j, a j*Q j*V^(e j))*m^2 ≤ (∑ j, b j*Q j*V^(e j))*m^2 :=
+  mul_le_mul_of_nonneg_right (Finset.sum_le_sum fun j _ =>
+    mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right (hab j) (hQ j))
+      (Real.rpow_nonneg hV _)) (sq_nonneg m)
 
 private lemma zero_control_le {a b:ℝ}(p:Profiles a b)(U:Finset (ℕ×ℕ))(h:(0,0)∈U):
     SchwartzMap.seminorm ℝ 0 0 (p.profile 0)*

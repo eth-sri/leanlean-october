@@ -8,85 +8,23 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-namespace SecondPassIntegration
-
-open scoped BigOperators Classical
-open MeasureTheory
-open ActualEisensteinCubic SecondPassArithmetic
-
-end SecondPassIntegration
+open scoped ContDiff
+open Set
 
 open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 def sourcePrincipalScale (M : ℝ) (I : Ideal O) : ℝ := Real.sqrt (M/(Ideal.absNorm I:ℝ))
 
@@ -180,8 +118,7 @@ theorem maskedPrincipalSourceSum_eq (G : Ideal O) (hG : Squarefree G)
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 theorem maskedSource_error_uniform (l : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C : ℝ), 0<C ∧
@@ -224,8 +161,7 @@ theorem maskedSource_error_uniform (l : ℕ) :
   exact actual_pair_error_ideal_bound rows cols hr hc B N hB hN hrows hcols a E hE error herr
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator IdealMobiusDivisorSum
 
 def sourcePrincipalMajorant {n : Type} [Fintype n]
     (s : Finset (ℕ×ℕ)) (C : ℝ) (l : ℕ)
@@ -295,7 +231,7 @@ lemma sourcePrincipalMajorant_nonneg {n : Type} [Fintype n]
     {α : ℝ} (hexp : HasSieveExponent α) (deltaLoss : ℝ) (hδ : 0<deltaLoss)
     (ε : ℝ) (hε : 0<ε) (G : Ideal O) (B N M T : ℝ) (a : n → ℂ) (W : 𝓢(ℝ,ℂ))
     (hB : 0≤B) (hN : 0≤N) (_hM : 0≤M) (hT : 0≤T) :
-    0≤sourcePrincipalMajorant s C l hexp deltaLoss hδ ε hε G B N M T a W := by
+    0 ≤ sourcePrincipalMajorant s C l hexp deltaLoss hδ ε hε G B N M T a W := by
   have he := divisorEnergyFactor_nonneg ε hε N a a
   have hc := (divisorExponentConstant_pos hexp deltaLoss hδ).le
   have hs := (supportConstant_pos ε hε).le
@@ -323,8 +259,7 @@ lemma sourcePrincipalMajorant_mono {n : Type} [Fintype n]
 
 end
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 lemma maskedPrincipalSourceDifference_dyadic {n : Type} [Fintype n] [DecidableEq n]
     (G : Ideal O) (W : 𝓢(ℝ,ℂ)) (S : Finset (Ideal O)) (K : ℝ)
@@ -390,13 +325,12 @@ theorem masked_source_principal_global (l : ℕ) :
         refine ⟨fun I => ?_⟩
         have hi := I.property
         simp only [he,Finset.notMem_empty] at hi
-      simpa only [maskedPrincipalSourceSum,maskedSourceDensity,Finset.univ_eq_empty,
-        Finset.sum_empty,mul_zero,sub_zero,norm_zero] using hR
+      simpa [maskedPrincipalSourceSum, maskedSourceDensity] using hR
   rw [maskedPrincipalSourceDifference_dyadic G W S K cols a M]
   apply (norm_sum_le _ _).trans
   calc
     _ ≤ ∑ _j : Fin (columnDyadicLength K+1), R := Finset.sum_le_sum (fun j _ => hb j)
-    _ = _ := by simp only [Finset.sum_const,Finset.card_univ,Fintype.card_fin,nsmul_eq_mul,R]
+    _ = _ := by simp [R]
 
 end
 
@@ -411,9 +345,7 @@ theorem primePoolDensity_eq_support (G : Ideal O) :
 
 theorem primePoolDensity_eq_real (G : Ideal O) :
     primePoolDensity G = (idealPrimeDensity {G} G : ℂ) := by
-  simp only [primePoolDensity,idealPrimeDensity,idealSupport_singleton_univ,
-    Complex.ofReal_prod,Complex.ofReal_sub,Complex.ofReal_one,
-    Complex.ofReal_div,Complex.ofReal_natCast]
+  simp [primePoolDensity, idealPrimeDensity, idealSupport_singleton_univ]
 
 theorem primePoolDensity_norm_le_one (G : Ideal O) (hG : G ≠ 0) :
     ‖primePoolDensity G‖ ≤ 1 := by
@@ -502,7 +434,7 @@ theorem actualPrincipalDifference_densityColumn {n : Type*} [Fintype n]
       primePoolDensity_mul _ _ (hcols j) (hcols k) hjk,
       normalizedPairDensity_eq_primePoolDensity _ _ _ (hcop j) (hcop k)]
     ring
-  · simp only [hjk,ite_false,mul_zero,sub_self]
+  · simp [hjk]
 
 open ActualEisensteinCubic ConcretePrimeRowBridge CompletedGauss IdealMobiusDivisorSum
 
@@ -532,7 +464,7 @@ theorem unrestrictedPrincipalDensity_eq {m n : Type} [Fintype m] [Fintype n]
     rw [Real.sqrt_div hR]
     simp only [Complex.ofReal_div,normalizedIdealPair]
     ring
-  · simp only [unrestrictedPairTerm,hc,ite_false,zero_mul,mul_zero,Finset.sum_const_zero]
+  · simp [unrestrictedPairTerm, hc]
 
 theorem unrestrictedPrincipalDensity_squarefree {n : Type} [Fintype n] [DecidableEq n]
     (cols : n → Ideal O) (a : n → ℂ) (R K : ℝ) (hR : 0 ≤ R) :
@@ -573,7 +505,7 @@ theorem maskedSourceDensity_eq {m n : Type} [Fintype m] [Fintype n]
   · rw [primePoolDensity_mul G (cols j*cols k) hG (mul_ne_zero (hcols j).1 (hcols k).1)
       ((hGc j).mul_right (hGc k))]
     ring
-  · simp only [unrestrictedPairTerm,hc,ite_false,zero_mul,mul_zero]
+  · simp [unrestrictedPairTerm, hc]
 
 theorem maskedSourceDensity_coprime_squarefree {n : Type} [Fintype n] [DecidableEq n]
     (G : Ideal O) (hG : G ≠ 0) (K M : ℝ) (hM : 0 ≤ M) (cols : n → Ideal O) (a : n → ℂ)

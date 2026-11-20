@@ -141,8 +141,11 @@ theorem cutoffTerm_weighted (χ : Character) (V : ℝ → ℂ) (D : ℝ) (J : Id
     IdealEuler.weighted, IdealEuler.normWeight, MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk]
   ring
 
-theorem cutoffTerm_outside (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (J : Ideal O)
+section
+variable (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D) (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ)
+include χ V D hD hV s
+
+theorem cutoffTerm_outside (J : Ideal O)
     (hJ : J ∉ cutoffSet D) : cutoffTerm χ V D J s = 0 := by
   by_cases hzero : J = 0
   · subst J; exact cutoffTerm_zero χ V D s
@@ -152,10 +155,11 @@ theorem cutoffTerm_outside (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 
     have hv := hV ((J.absNorm : ℝ)/D) ((le_div_iff₀ hD).mpr hn.le)
     simp [cutoffTerm, hv]
 
-theorem cutoffTerm_hasSum (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) :
+theorem cutoffTerm_hasSum :
     HasSum (fun J : Ideal O => cutoffTerm χ V D J s) (cutoff χ V D s) :=
   hasSum_sum_of_ne_finset_zero (cutoffTerm_outside χ V hD hV s)
+
+end
 
 def pairCoefficient (χ : Character) (V : ℝ → ℂ) (D : ℝ) (p : Ideal O × Ideal O) : ℂ :=
   (UniqueFactorizationMonoid.moebius p.1 : ℂ) * V ((p.1.absNorm : ℝ)/D) *
@@ -185,16 +189,18 @@ theorem pairTerm_eq (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ)
       CubicEisenstein.fullIdealWeight, ite_eq_right hp]
     ring
 
-theorem pairTerm_summable_norm (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (hs : 1 < s.re) :
+section
+variable (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D) (hV : ∀ x : ℝ, 2 ≤ x → V x = 0)
+include χ V D hD hV
+
+theorem pairTerm_summable_norm (s : ℂ) (hs : 1 < s.re) :
     Summable (fun p : Ideal O × Ideal O =>
       ‖pairCoefficient χ V D p * (pairNorm p : ℂ)^(-s)‖) := by
   simpa only [pairTerm_eq] using
     (cutoffTerm_hasSum χ V hD hV s).summable.norm.mul_norm
       (IdealEuler.weighted_summable_norm _ (idealCoeff_norm_le_one χ) s hs)
 
-theorem pairSeries_eq (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (hs : 1 < s.re) :
+theorem pairSeries_eq (s : ℂ) (hs : 1 < s.re) :
     (∑' p : Ideal O × Ideal O, pairCoefficient χ V D p * (pairNorm p : ℂ)^(-s)) =
       cutoff χ V D s * LFunction χ s := by
   simp_rw [pairTerm_eq]
@@ -203,8 +209,7 @@ theorem pairSeries_eq (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
   rw [(cutoffTerm_hasSum χ V hD hV s).tsum_eq, LFunction_eq_series χ hs]
   rfl
 
-theorem pairMajorant_summable (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) {ρ : ℂ} (hρ : -1 < ρ.re) :
+theorem pairMajorant_summable {ρ : ℂ} (hρ : -1 < ρ.re) :
     Summable (fun p : Ideal O × Ideal O =>
       ‖pairCoefficient χ V D p‖*(pairNorm p)^(-(ρ.re+2))) := by
   have h := pairTerm_summable_norm χ V hD hV (ρ+2) (by norm_num; linarith)
@@ -217,8 +222,7 @@ theorem pairMajorant_summable (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD :
     simp only [neg_re, add_re]
     norm_num
 
-theorem pairGamma_tsum (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
-    (hV : ∀ x : ℝ, 2 ≤ x → V x = 0) {ρ : ℂ} (hρ : -1 < ρ.re)
+theorem pairGamma_tsum {ρ : ℂ} (hρ : -1 < ρ.re)
     (Y t : ℝ) :
     (∑' p : Ideal O × Ideal O, gammaTerm (pairCoefficient χ V D p) (pairNorm p) ρ Y t) =
       detectorIntegrand χ V D Y ρ (line t) := by
@@ -232,6 +236,8 @@ theorem pairGamma_tsum (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 0 < D)
       unfold gammaTerm
       ring
     _ = _ := by rw [pairSeries_eq χ V hD hV _ hs]; unfold detectorIntegrand; ring
+
+end
 
 def pairExponential (χ : Character) (V : ℝ → ℂ) (D : ℝ) (ρ : ℂ) (Y : ℝ)
     (p : Ideal O × Ideal O) : ℂ :=

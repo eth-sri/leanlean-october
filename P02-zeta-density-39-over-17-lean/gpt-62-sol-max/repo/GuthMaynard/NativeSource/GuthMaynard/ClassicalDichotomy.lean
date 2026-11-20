@@ -293,7 +293,7 @@ theorem finiteDirichlet_beta_removal_power_threshold :
     simpa only [mul_comm] using hk
   have hPowTendsto : Tendsto (fun T : ℝ => T ^ (δ / 2)) atTop atTop :=
     tendsto_rpow_atTop (by positivity)
-  have hEventually : ∀ᶠ T : ℝ in atTop, 4 * (k : ℝ) < T ^ (δ / 2) :=
+  have hEventually :=
     hPowTendsto.eventually (eventually_gt_atTop (4 * (k : ℝ)))
   rw [eventually_atTop] at hEventually
   obtain ⟨Tfactor, hTfactor⟩ := hEventually
@@ -321,9 +321,7 @@ theorem finiteDirichlet_beta_removal_power_threshold :
     apply Complex.ext
     · simp [z, displacement]
     · simp [z, displacement]
-  have hFactor : 3 / 4 <
-      ‖(((T ^ (δ / 2) : ℝ) : ℂ) /
-        (((T ^ (δ / 2) : ℝ) : ℂ) + (displacement : ℂ))) ^ k‖ :=
+  have hFactor :=
     localizer_factor_gt_three_fourths k (T ^ (δ / 2)) displacement
       hHpos hDisplacement hDisplacementOne (hTfactor T hTFactor)
   have hExterior :

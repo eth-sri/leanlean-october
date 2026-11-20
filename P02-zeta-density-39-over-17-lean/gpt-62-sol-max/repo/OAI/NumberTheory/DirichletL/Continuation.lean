@@ -46,10 +46,11 @@ theorem common_signal_bound_with_margin (J f : ℝ → ℂ) (β ω σ c : ℝ)
   simpa only [Supremum.max_signal_exponents] using
     common_signal_bound J f (7 / 8 + c + ω) (β + c - σ) hJ herror
 
-theorem signalMellin_convergent (f : ℝ → ℂ) (a c : ℝ)
-    (hlocal : LocallyIntegrableOn f (Set.Ioi 0))
-    (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c)))
-    (hzero : RapidDecayAtZero f) {s : ℂ} (hs : a < s.re) :
+section
+variable (f : ℝ → ℂ) (a c : ℝ) (hlocal : LocallyIntegrableOn f (Set.Ioi 0)) (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c))) (hzero : RapidDecayAtZero f)
+include f a c hlocal htop hzero
+
+theorem signalMellin_convergent {s : ℂ} (hs : a < s.re) :
     MellinConvergent f (-(s + (c : ℂ))) := by
   apply mellinConvergent_of_isBigO_rpow (a := -(a+c))
     (b := (-(s + (c : ℂ))).re - 1) hlocal
@@ -59,10 +60,7 @@ theorem signalMellin_convergent (f : ℝ → ℂ) (a c : ℝ)
   · exact hzero _
   · linarith
 
-theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
-    (hlocal : LocallyIntegrableOn f (Set.Ioi 0))
-    (htop : f =O[atTop] (fun x : ℝ => x ^ (a + c)))
-    (hzero : RapidDecayAtZero f) :
+theorem signalMellin_analytic :
     AnalyticOnNhd ℂ (signalMellin f c) {s : ℂ | a < s.re} := by
   apply (Complex.analyticOnNhd_iff_differentiableOn (Complex.isOpen_re_gt a)).2
   intro s hs
@@ -76,6 +74,8 @@ theorem signalMellin_analytic (f : ℝ → ℂ) (a c : ℝ)
     · exact hzero _
     · linarith
   exact (hd.comp s ((differentiableAt_id.add_const (c : ℂ)).neg)).differentiableWithinAt
+
+end
 
 theorem product_identity_on_halfPlane (a b : ℝ) (L M W : ℂ → ℂ)
     (hL : AnalyticOnNhd ℂ L {s : ℂ | a < s.re})

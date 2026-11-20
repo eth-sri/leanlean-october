@@ -1,6 +1,8 @@
 module
+public import OAI.NumberTheory.DirichletL.Reflection.ScaleBudgets
+public import OAI.NumberTheory.DirichletL.Reflection.SectorData
 public import OAI.NumberTheory.DirichletL.Reflection.LowBranchSum
-public import OAI.NumberTheory.DirichletL.Reflection.LiteralNormalized
+public import OAI.NumberTheory.DirichletL.Reflection.LiteralNormalizedUniformDegree
 
 @[expose] public section
 
@@ -27,14 +29,7 @@ theorem original_low_sector_literal_energy
     ∀ (A : Finset (FreeReflection.pool J Q Q₀))
       (Z O₀ H za Nstar d ell0 shift δ π Ck CO CH X QK QP Lscale Lrow Lslot : ℝ)
       (i : ℕ×ℕ×ℕ),
-      Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<X → 0<QK → 0<QP →
-      (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d) →
-      Z^O₀/CO≤(Ideal.absNorm (rowPowerfulPart I):ℝ) →
-      Z^H/CH≤(Ideal.absNorm (rowResidualPart I Q):ℝ) →
-      Real.log (CH*Ck*CO)/Real.log Z≤η →
-      normWidth Z (rowPowerfulPart I)≤O₀+η → normWidth Z Q≤η →
-      0≤d → d≤1/6 → ell0≤1/6-d+η → 0≤O₀ → za≤ell0+η → |shift|≤η →
-      Nstar=1+ell0+shift → H=Real.logb Z QK → za=Real.logb Z (QP/2) → Nstar=Real.logb Z X →
+      WithLowWidths I Q Z₀ Z O₀ H za Nstar d ell0 shift Ck CO CH X QK QP η QK (QP/2) (
       0≤δ → δ≤η → QK≤Z^Lrow → (QP/2)≤Z^Lslot →
       Real.logb Z 16≤η → ε*(Lrow+Lslot+2*(δ+Lscale+η))+η/2≤π →
       let G := (poolPrimeFamily J Q Q₀).restrict A
@@ -44,23 +39,14 @@ theorem original_low_sector_literal_energy
     ∀ (rows Pset : Finset (Ideal Eis)) (S : Ideal Eis→PrimeFamily σ)
       (hrows : ∀ K∈rows,Admissible K)
       (E : SectorArithmetic (N:=Nlevel) G rows Pset S hrows s hc₀),
-      (∀ f,IsCoprime (Ideal.span {Nlevel}) (G.ideal f)) →
-      (∀ f,ringChar (Eis⧸G.ideal f)≠2) →
-      (∀ K∈rows,(∀ f,IsCoprime (G.ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
-      (∀ P∈Pset,(∏ b,(S P).ideal b)=P) →
-      (∀ P∈Pset,Pairwise (Function.onFun IsCoprime (G.sum (S P)).ideal)) →
-      (∀ P∈Pset,∀ b,IsCoprime (Ideal.span {Nlevel}) ((G.sum (S P)).ideal b)) →
-      (∀ P∈Pset,∀ b,ringChar (Eis⧸(G.sum (S P)).ideal b)≠2) →
+      WithSectorPrimes Nlevel G rows Pset S <|
     ∀ (u : Eisˣ) (θ : ℝ) (r aw : Ideal Eis→ℂ),
-      1≤QK → 2≤QP →
-      (∀ K∈rows,QK/2≤(Ideal.absNorm K:ℝ) ∧ (Ideal.absNorm K:ℝ)≤QK) →
-      (∀ P∈Pset,CubicSieve.Admissible P ∧ QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤QP) →
-      (∀ K∈rows,‖r K‖≤1) → (∀ P∈Pset,‖aw P‖≤1) →
+      WithSectorWeights rows Pset QK QP r aw (
       (∑ K : rows,‖literalDyadicRow G K.val (hrows K.val K.property) S j Pset
         (E.completion K) s hc₀ u i W θ X r aw‖^2)≤
-        C*(1+‖θ‖)^degree*(Ideal.absNorm (∏ b,G.ideal b):ℝ)^ρ*Z^((5/6-2*d)+200*η+π-O₀/2) := by
-  obtain ⟨degree,C₀,Cs,Zs,hC₀,hCs,hZs,henergy⟩ := sector_normalized_literal_energy
-    (N:=Nlevel) ε hε lo hi hlo W hWs hW s hc₀ η hηpos
+        C*(1+‖θ‖)^degree*(Ideal.absNorm (∏ b,G.ideal b):ℝ)^ρ*Z^((5/6-2*d)+200*η+π-O₀/2))) := by
+  obtain ⟨degree, hUniform⟩ := sector_normalized_literal_energy_uniform_degree ε hε lo hi hlo W hWs hW η hηpos
+  obtain ⟨C₀,Cs,Zs,hC₀,hCs,hZs,henergy⟩ := hUniform (N:=Nlevel) s hc₀
   obtain ⟨Zb,Cb,hZb,hCb,hbranch⟩ := original_surviving_low_energy_sum s hc₀ ρ hρ 1 (1/2) η
     (by norm_num) (by norm_num) hηpos
   let Kc := (Real.exp (Real.log 2/2+Real.log 2))^2*(6*Cs)

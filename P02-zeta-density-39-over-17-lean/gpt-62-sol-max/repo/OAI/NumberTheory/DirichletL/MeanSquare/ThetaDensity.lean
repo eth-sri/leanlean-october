@@ -8,99 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-namespace InitialMeanSquare
-
-section
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open SecondPassArithmetic SecondPassIntegration JointLogSeparation
-open FirstPassCubeLabels (primeProductNorm columnLog)
-
-end
-
-section
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic SecondPassIntegration
-open FirstPassCubeLabels (columnLog)
-
-end
-
-open ActualEisensteinCubic
-open ConcretePrimeRowBridge hiding O
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open CanonicalRowCompletion
-
-end InitialMeanSquare
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 open Filter MeasureTheory
@@ -209,7 +127,7 @@ lemma kernelBarrier_scaled_fderiv_bound :
   obtain ⟨D,hD,hbound⟩ := cuspBarrierField_scaled_deriv_bound
   refine ⟨D,hD,fun p hp j => ?_⟩
   let f : EuclideanSpatial→ℂ := fun q => (kernelQuotientBarrier 2 3 (kernelEuclideanProjection q):ℂ)
-  have hf : ∀q,0<q 2→ContDiffAt ℝ ∞ f q := fun q hq =>
+  have hf : ∀q,0<q 2→ ContDiffAt ℝ ∞ f q := fun q hq =>
     Complex.ofRealCLM.contDiff.contDiffAt.comp q
       (cuspBarrier_euclidean_contDiffAt 2 3 (by norm_num) (by norm_num) q hq)
   have he : ∀q : SpatialCoordinates,0<q 2→ f (WithLp.toLp 2 q)=(cuspBarrierField 2 3 q:ℂ) := by
@@ -281,20 +199,6 @@ lemma kernelExhaustionCutoff_scaled_fderiv_bound :
     _ ≤ D*B := mul_le_mul_of_nonneg_left (hprofile n (phi p)) hD
 
 end CubicEisenstein
-
-open scoped BigOperators Classical SchwartzMap
-namespace SixthPowerAverage
-open ActualEisensteinCubic
-open ConcretePrimeRowBridge hiding O
-open EisensteinSchwartzPoisson hiding O
-open IdealMobiusDivisorSum hiding O
-open ConcreteTraceCRT ShortDraftHeckeBridge
-open QuadraticInitialBound hiding O
-
-def totientDensity (I : Ideal ActualEisensteinCubic.O) : ℂ :=
-  ∏ P ∈ primeSupport I, (1-(1:ℂ)/(Ideal.absNorm P:ℂ))
-
-end SixthPowerAverage
 
 end
 

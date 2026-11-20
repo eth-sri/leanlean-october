@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassCount
 
 @[expose] public section
@@ -8,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -18,7 +18,7 @@ def principalSupport {ι : Type*} [DecidableEq ι] {Jo : ℕ}
   (extra x.cube∪((if negative then x.cube.rightDivisor else x.cube.leftDivisor)∪x.firstCommon))∪x.quotientSupport
 
 lemma principalSupport_norm {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal] {Jo : ℕ}
+    [OAI.PrincipalIdealFamily.Maximal p] {Jo : ℕ}
     (extra : CubeCoordinates ι→Finset ι) (negative : Bool) (x : Source ι Jo)
     (hx : SourceValid p x) (hextra : extra x.cube⊆x.cube.support)
     (B V T : ℝ) (hB : 0≤B) (hV : 0≤V)
@@ -35,8 +35,8 @@ lemma principalSupport_norm {ι : Type*} [DecidableEq ι] (p : ι→O) (hp : ∀
 
 theorem original_weighted_mass (Jmax : ℕ) (eps : ℝ) (heps : 0<eps) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
-    (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (_hinj : OAI.PrincipalIdealFamily.Distinct p)
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(B H V T a : ℝ),
     1≤B → 0≤H → 0<V → 0<T → 0≤a → (∀x∈S,SourceValid p x) →
     (∀x∈S,‖eisEmbedding (primeProduct p x.cube.support x.cube.leftExponent)‖^2≤B) →

@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource
-open HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
+open HeckeFamily HeckeInverseAmplification InverseInitialDetectorSource HeckeDetectorBatch HeckeDetectorRawFiber HeckeDetectorFiberPartition
 local notation "O"=>HeckeFamily.O
 variable (M:Ideal O)[NeZero M]
 local instance:Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

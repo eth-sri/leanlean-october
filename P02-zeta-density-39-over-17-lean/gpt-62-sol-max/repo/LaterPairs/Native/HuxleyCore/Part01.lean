@@ -42,7 +42,7 @@ public import TaoTrudgianYang2025.ModelEndpointEntry
 set_option autoImplicit false
 set_option maxHeartbeats 0
 set_option maxErrors 1000
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
+open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth Filter Polynomial Set
 
  
                                                                     
@@ -188,23 +188,8 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 
 
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
+open scoped Classical ContDiff FourierTransform BigOperators Topology
 
-open Filter
-open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean MathCollab.Density.Stronger.Fourth
-open Polynomial
-open Set
-open scoped Classical
-open scoped ContDiff
-open scoped FourierTransform BigOperators
-open scoped Topology
 universe huxleyNarrowV
 noncomputable section
 namespace TaoTrudgianYang2025.HuxleyRationalPhase
@@ -274,79 +259,6 @@ private theorem positive_difference_physical_lower_pair_compression
   · have hh := hpair 1 0 hgt
     rwa [abs_sub_comm] at hh
 
-private theorem positive_difference_physical_lower_reference_gap_packing
-    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
-    ∃ η₀ a C : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧ 0 < C ∧
-    ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb γ Δ T M R Uref : ℝ)
-    (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ)) (xa xb : ℝ × ℝ → ℝ),
-    0 < η → η ≤ η₀ → x₀∈Icc (1:ℝ) 2 → y₀∈Icc (1:ℝ) 2 →
-    ya∈Icc (1:ℝ) 2 → yb∈Icc (1:ℝ) 2 →
-    (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
-      c ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
-    0 < T → 2 ≤ M → 0 < R → 0 < Uref → γ ≠ 0 → 0 ≤ Δ →
-    (∀ ab∈Gaps, xa ab∈Icc M (2*M) ∧ xb ab∈Icc M (2*M)) →
-    (∀ a∈Refs, ∀ b∈Refs, a≠b → Uref/(4*R^2) ≤ |a-b|) →
-    (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1<ab.2 ∧
-      ∀ t∈Refs, ¬(ab.1<t ∧ t<ab.2)) →
-    let f := fun y z => T*(F (z/M)-F (z/M+η*y))/(σ*η)
-    let h := fun y z => iteratedDeriv 2 (f y) z/2
-    let μ := fun y z => iteratedDeriv 3 (f y) (round z)/6
-    let t := fun ab => (T/(2*M^2))*(h ya (xa ab))⁻¹
-    let bnorm := T*γ/(2*M^2)
-    let H := fun z : ℝ × ℝ =>
-      (iteratedDeriv 2 F z.2-iteratedDeriv 2 F (z.2+η*z.1))/(σ*η)
-    let z₀ := (y₀,(H (y₀,x₀))⁻¹)
-    (∀ ab∈Gaps, h ya (xa ab)∈Icc ab.1 ab.2) →
-    (∀ ab∈Gaps, h yb (xb ab)=h ya (xa ab)/(γ*h ya (xa ab)+1)) →
-    (∀ ab∈Gaps, |μ yb (xb ab)/μ ya (xa ab)*(γ*h ya (xa ab)+1)^3-1| ≤ Δ) →
-    (∀ ab∈Gaps, ‖((ya,t ab):ℝ × ℝ)-z₀‖ < a ∧
-      ‖((yb,t ab+bnorm):ℝ × ℝ)-z₀‖ < a) →
-    (Gaps.card:ℝ) ≤ 4*C*(Δ+1/M)*R^2/(|γ| *Uref)+2 := by
-  obtain ⟨η₀,a,C,hη₀,hηcap,ha,_hac,hC,hcompression⟩ :=
-    positive_difference_physical_lower_pair_compression hσ hc hU
-  refine ⟨η₀,a,C,hη₀,hηcap,ha,hC,?_⟩
-  intro F η x₀ y₀ ya yb γ Δ T M R Uref Refs Gaps xa xb
-    hη hηsmall hx₀ hy₀ hya hyb hf hbound htests hT hM hR hUref hγ hΔ
-    hpoints hsep hgap f h μ t bnorm H z₀ hinside hmap hthird hends
-  have hMpos : 0 < M := by linarith only [hM]
-  have hγpos : 0 < |γ| := abs_pos.mpr hγ
-  have hdiam ab (hab : ab∈Gaps) cd (hcd : cd∈Gaps) :
-      |h ya (xa ab)-h ya (xa cd)| ≤ C*(Δ+1/M)/|γ| := by
-    have hh := hcompression F η x₀ y₀ ya yb γ Δ T M ![xa ab,xa cd] ![xb ab,xb cd]
-      hη hηsmall hx₀ hy₀ hya hyb hf hbound htests hT hM hΔ
-      (by
-        intro i
-        fin_cases i
-        · exact hpoints ab hab
-        · exact hpoints cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hmap ab hab
-        · exact hmap cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hthird ab hab
-        · exact hthird cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hends ab hab
-        · exact hends cd hcd)
-    change |γ| *|h ya (xa cd)-h ya (xa ab)| ≤ C*(Δ+1/M) at hh
-    apply (le_div_iff₀ hγpos).mpr
-    rw [mul_comm,abs_sub_comm]
-    exact hh
-  have hh := nativeHuxleyReference_reference_gap_count_of_closed_profile_width Refs Gaps (fun ab => h ya (xa ab))
-    (by positivity : 0 < Uref/(4*R^2))
-    (by positivity : 0 ≤ C*(Δ+1/M)/|γ|) hsep hgap hinside (fun ab hab cd hcd => hdiam cd hcd ab hab)
-  convert hh using 1
-  ring_nf
-  simp only [inv_inv]
-  ring
 
                                                                   
                                                                             
@@ -415,12 +327,86 @@ private theorem positive_difference_physical_upper_pair_compression
   · have hh := hpair 1 0 hgt
     rwa [abs_sub_comm] at hh
 
-private theorem positive_difference_physical_upper_reference_gap_packing
+/-- The two triangular chart actions have different coordinates, but use the same gap packing. -/
+private inductive GapChart | lower | upper
+
+private abbrev GapChart.inverse (k : GapChart) (x : ℝ) : ℝ :=
+  match k with | .lower => x⁻¹ | .upper => x
+
+private abbrev GapChart.coord (k : GapChart) (T M x : ℝ) : ℝ :=
+  match k with | .lower => (T/(2*M^2))*x⁻¹ | .upper => (2*M^2/T)*x
+
+private abbrev GapChart.offset (k : GapChart) (T M b : ℝ) : ℝ :=
+  match k with | .lower => T*b/(2*M^2) | .upper => 2*M^2*b/T
+
+private abbrev GapChart.shift (k : GapChart) (b x : ℝ) : ℝ :=
+  match k with | .lower => x/(b*x+1) | .upper => x+b
+
+private abbrev GapChart.denRatio (k : GapChart) (b x : ℝ) : ℝ :=
+  match k with | .lower => b*x+1 | .upper => 1
+
+private abbrev GapChart.thirdError (k : GapChart) (b x u : ℝ) : ℝ :=
+  match k with | .lower => |u*(b*x+1)^3-1| | .upper => |u-1|
+
+private theorem GapChart.coord_shift (k : GapChart) (T M b x : ℝ) (hx : x ≠ 0) :
+    k.coord T M x + k.offset T M b = k.coord T M (k.shift b x) := by
+  cases k
+  · dsimp only [GapChart.coord,GapChart.offset,GapChart.shift]
+    rw [inv_div,add_div,mul_div_cancel_right₀ _ hx,one_div]
+    ring
+  · dsimp only [GapChart.coord,GapChart.offset,GapChart.shift]
+    ring
+
+private abbrev GapChart.widthDen (k : GapChart) (M b : ℝ) : ℝ :=
+  match k with | .lower => |b| | .upper => 4*M^4*|b|
+
+private abbrev GapChart.widthNum (k : GapChart) (C Δ T M : ℝ) : ℝ :=
+  match k with | .lower => C*(Δ+1/M) | .upper => C*(Δ+1/M)*T^2
+
+private abbrev GapChart.packingBound (k : GapChart) (C Δ T M R b Uref : ℝ) : ℝ :=
+  match k with
+  | .lower => 4*C*(Δ+1/M)*R^2/(|b| *Uref)+2
+  | .upper => C*(Δ+1/M)*T^2*R^2/(M^4*|b| *Uref)+2
+
+private theorem positive_difference_physical_pair_compression (k : GapChart)
     {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
-    ∃ a C : ℝ, 0 < a ∧ 0 < C ∧
+    ∃ η₀ a C : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧ 0 < C ∧
+    ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb b Δ T M : ℝ) (xa xb : Fin 2 → ℝ),
+    0 < η → η ≤ η₀ → x₀∈Icc (1:ℝ) 2 → y₀∈Icc (1:ℝ) 2 →
+    ya∈Icc (1:ℝ) 2 → yb∈Icc (1:ℝ) 2 →
+    (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
+    (∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
+    (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
+      c ≤ |TaoTrudgianYang2025.HuxleyModel.tests
+        (fun i : Fin 4 => iteratedDeriv (i.val+3) F w) j|) →
+    0 < T → 2 ≤ M → 0 ≤ Δ →
+    (∀ i, xa i∈Icc M (2*M) ∧ xb i∈Icc M (2*M)) →
+    let f := fun y z => T*(F (z/M)-F (z/M+η*y))/(σ*η)
+    let h := fun y z => iteratedDeriv 2 (f y) z/2
+    let μ := fun y z => iteratedDeriv 3 (f y) (round z)/6
+    let t := fun i => k.coord T M (h ya (xa i))
+    let bnorm := k.offset T M b
+    let H := fun z : ℝ × ℝ =>
+      (iteratedDeriv 2 F z.2-iteratedDeriv 2 F (z.2+η*z.1))/(σ*η)
+    let z₀ := (y₀,k.inverse (H (y₀,x₀)))
+    (∀ i, h yb (xb i)=k.shift b (h ya (xa i))) →
+    (∀ i, k.thirdError b (h ya (xa i)) (μ yb (xb i)/μ ya (xa i)) ≤ Δ) →
+    (∀ i, ‖((ya,t i):ℝ × ℝ)-z₀‖ < a ∧
+      ‖((yb,t i+bnorm):ℝ × ℝ)-z₀‖ < a) →
+    k.widthDen M b *|h ya (xa 1)-h ya (xa 0)| ≤ k.widthNum C Δ T M := by
+  cases k
+  · obtain ⟨η₀,a,C,hη₀,hηcap,ha,_,hC,h⟩ :=
+      positive_difference_physical_lower_pair_compression hσ hc hU
+    exact ⟨η₀,a,C,hη₀,hηcap,ha,hC,h⟩
+  · obtain ⟨a,C,ha,_,hC,h⟩ := positive_difference_physical_upper_pair_compression hσ hc hU
+    exact ⟨1/8,a,C,by norm_num,le_rfl,ha,hC,h⟩
+
+private theorem positive_difference_physical_reference_gap_packing (k : GapChart)
+    {σ c U : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) :
+    ∃ η₀ a C : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧ 0 < C ∧
     ∀ (F : ℝ → ℝ) (η x₀ y₀ ya yb b Δ T M R Uref : ℝ)
     (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ)) (xa xb : ℝ × ℝ → ℝ),
-    0 < η → η ≤ 1/8 → x₀∈Icc (1:ℝ) 2 → y₀∈Icc (1:ℝ) 2 →
+    0 < η → η ≤ η₀ → x₀∈Icc (1:ℝ) 2 → y₀∈Icc (1:ℝ) 2 →
     ya∈Icc (1:ℝ) 2 → yb∈Icc (1:ℝ) 2 →
     (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
     (∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) F w| ≤ U) →
@@ -434,60 +420,43 @@ private theorem positive_difference_physical_upper_reference_gap_packing
     let f := fun y z => T*(F (z/M)-F (z/M+η*y))/(σ*η)
     let h := fun y z => iteratedDeriv 2 (f y) z/2
     let μ := fun y z => iteratedDeriv 3 (f y) (round z)/6
-    let t := fun ab => (2*M^2/T)*h ya (xa ab)
-    let bnorm := 2*M^2*b/T
+    let t := fun ab => k.coord T M (h ya (xa ab))
+    let bnorm := k.offset T M b
     let H := fun z : ℝ × ℝ =>
       (iteratedDeriv 2 F z.2-iteratedDeriv 2 F (z.2+η*z.1))/(σ*η)
-    let z₀ := (y₀,H (y₀,x₀))
+    let z₀ := (y₀,k.inverse (H (y₀,x₀)))
     (∀ ab∈Gaps, h ya (xa ab)∈Icc ab.1 ab.2) →
-    (∀ ab∈Gaps, h yb (xb ab)=h ya (xa ab)+b) →
-    (∀ ab∈Gaps, |μ yb (xb ab)/μ ya (xa ab)-1| ≤ Δ) →
+    (∀ ab∈Gaps, h yb (xb ab)=k.shift b (h ya (xa ab))) →
+    (∀ ab∈Gaps, k.thirdError b (h ya (xa ab)) (μ yb (xb ab)/μ ya (xa ab)) ≤ Δ) →
     (∀ ab∈Gaps, ‖((ya,t ab):ℝ × ℝ)-z₀‖ < a ∧
       ‖((yb,t ab+bnorm):ℝ × ℝ)-z₀‖ < a) →
-    (Gaps.card:ℝ) ≤ C*(Δ+1/M)*T^2*R^2/(M^4*|b| *Uref)+2 := by
-  obtain ⟨a,C,ha,_hac,hC,hcompression⟩ :=
-    positive_difference_physical_upper_pair_compression hσ hc hU
-  refine ⟨a,C,ha,hC,?_⟩
+    (Gaps.card:ℝ) ≤ k.packingBound C Δ T M R b Uref := by
+  obtain ⟨η₀,a,C,hη₀,hηcap,ha,hC,hcompression⟩ := positive_difference_physical_pair_compression k hσ hc hU
+  refine ⟨η₀,a,C,hη₀,hηcap,ha,hC,?_⟩
   intro F η x₀ y₀ ya yb b Δ T M R Uref Refs Gaps xa xb
     hη hηsmall hx₀ hy₀ hya hyb hf hbound htests hT hM hR hUref hb hΔ
     hpoints hsep hgap f h μ t bnorm H z₀ hinside hmap hthird hends
   have hMpos : 0 < M := by linarith only [hM]
-  have hbpos : 0 < |b| := abs_pos.mpr hb
+  have hbpos := abs_pos.mpr hb
+  have hden : 0 < k.widthDen M b := by cases k <;> dsimp [GapChart.widthDen] <;> positivity
+  have hnum : 0 ≤ k.widthNum C Δ T M := by cases k <;> dsimp [GapChart.widthNum] <;> positivity
   have hdiam ab (hab : ab∈Gaps) cd (hcd : cd∈Gaps) :
-      |h ya (xa ab)-h ya (xa cd)| ≤ C*(Δ+1/M)*T^2/(4*M^4*|b|) := by
-    have hh := hcompression F η x₀ y₀ ya yb b Δ T M ![xa ab,xa cd] ![xb ab,xb cd]
+      |h ya (xa ab)-h ya (xa cd)| ≤ k.widthNum C Δ T M / k.widthDen M b := by
+    apply (le_div_iff₀ hden).mpr
+    rw [mul_comm]
+    exact hcompression F η x₀ y₀ ya yb b Δ T M ![xa cd,xa ab] ![xb cd,xb ab]
       hη hηsmall hx₀ hy₀ hya hyb hf hbound htests hT hM hΔ
-      (by
-        intro i
-        fin_cases i
-        · exact hpoints ab hab
-        · exact hpoints cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hmap ab hab
-        · exact hmap cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hthird ab hab
-        · exact hthird cd hcd)
-      (by
-        intro i
-        fin_cases i
-        · exact hends ab hab
-        · exact hends cd hcd)
-    change 4*M^4*|b| *|h ya (xa cd)-h ya (xa ab)| ≤ C*(Δ+1/M)*T^2 at hh
-    apply (le_div_iff₀ (by positivity : 0 < 4*M^4*|b|)).mpr
-    rw [mul_comm,abs_sub_comm]
-    exact hh
+      (by intro i; fin_cases i; exacts [hpoints cd hcd,hpoints ab hab])
+      (by intro i; fin_cases i; exacts [hmap cd hcd,hmap ab hab])
+      (by intro i; fin_cases i; exacts [hthird cd hcd,hthird ab hab])
+      (by intro i; fin_cases i; exacts [hends cd hcd,hends ab hab])
   have hh := nativeHuxleyReference_reference_gap_count_of_closed_profile_width Refs Gaps (fun ab => h ya (xa ab))
-    (by positivity : 0 < Uref/(4*R^2))
-    (by positivity : 0 ≤ C*(Δ+1/M)*T^2/(4*M^4*|b|)) hsep hgap hinside (fun ab hab cd hcd => hdiam cd hcd ab hab)
+    (by positivity : 0 < Uref/(4*R^2)) (div_nonneg hnum hden.le) hsep hgap hinside
+    (fun ab hab cd hcd => hdiam cd hcd ab hab)
   convert hh using 1
-  ring_nf
-  simp only [inv_inv]
-  ring
+  cases k <;> dsimp only [GapChart.packingBound,GapChart.widthDen,GapChart.widthNum] <;>
+    ring_nf <;> simp only [inv_inv] <;> ring
+
 
 private theorem upper_reference_gap_source_scale
     {C K Tsrc E T M N R L b Uref : ℝ}
@@ -521,10 +490,55 @@ private theorem upper_reference_gap_source_scale
 
                                                               
                                                                         
-private theorem positive_difference_normalized_quartic_lower_reference_gap_packing
+private abbrev GapChart.transport (k : GapChart) (b : ℝ) (e r v s : Fin 2 → ℝ) : Prop :=
+  match k with
+  | .lower => e 1=e 0 ∧ v 1=v 0 ∧ r 1=r 0+b*e 0 ∧ s 1=s 0+b*v 0
+  | .upper => e 1=e 0+b*r 0 ∧ v 1=v 0+b*s 0 ∧ r 1=r 0 ∧ s 1=s 0
+
+private abbrev GapChart.scale (k : GapChart) (Tsrc E T M N R : ℝ) : Prop :=
+  match k with | .lower => True | .upper => Tsrc ≤ E*T ∧ T*N*R^2=M^3
+
+private abbrev GapChart.quarticBound (k : GapChart) (C K E M N R L b Uref : ℝ) : ℝ :=
+  match k with
+  | .lower => 4*C*(K+1)*R^4/(L^2*N^2*|b| *Uref)+2
+  | .upper => C*(K+1)*E^2*M^2/(L^2*N^4*|b| *Uref)+2
+
+private theorem gap_ball_between {y lo x hi a : ℝ} {center : ℝ × ℝ}
+    (hlo : lo ≤ x) (hhi : x ≤ hi)
+    (hl : ‖((y,lo):ℝ × ℝ)-center‖ < a) (hu : ‖((y,hi):ℝ × ℝ)-center‖ < a) :
+    ‖((y,x):ℝ × ℝ)-center‖ < a := by
+  change max |y-center.1| |lo-center.2| < a at hl
+  change max |y-center.1| |hi-center.2| < a at hu
+  change max |y-center.1| |x-center.2| < a
+  refine max_lt_iff.mpr ⟨(max_lt_iff.mp hl).1,abs_lt.mpr ⟨?_,?_⟩⟩
+  · linarith only [(abs_lt.mp (max_lt_iff.mp hl).2).1,hlo]
+  · linarith only [(abs_lt.mp (max_lt_iff.mp hu).2).2,hhi]
+
+private theorem GapChart.quartic_scale_bound (k : GapChart)
+    {C K E Tsrc T M N R L b Uref : ℝ}
+    (hC : 0 ≤ C) (hK : 0 ≤ K) (hTsrc : 0 < Tsrc) (hM : 0 < M)
+    (hN : 0 < N) (hR : 1 ≤ R) (hL : 0 < L) (hUref : 0 < Uref) (hb : b ≠ 0)
+    (hNL : (L*N)^2 ≤ M*R) (hscale : k.scale Tsrc E T M N R) :
+    k.packingBound C (K*R^2/(L^2*N^2)) Tsrc M R b Uref ≤ k.quarticBound C K E M N R L b Uref := by
+  cases k
+  · dsimp only [GapChart.packingBound,GapChart.quarticBound]
+    have hInv : 1/M ≤ R^2/(L^2*N^2) := by
+      apply (div_le_div_iff₀ hM (by positivity)).mpr
+      have hRR : R ≤ R^2 := by nlinarith only [hR]
+      nlinarith only [hNL,mul_le_mul_of_nonneg_left hRR hM.le]
+    have herror : K*R^2/(L^2*N^2)+1/M ≤ (K+1)*R^2/(L^2*N^2) :=
+      (add_le_add le_rfl hInv).trans_eq (by ring)
+    calc
+      _ ≤ 4*C*((K+1)*R^2/(L^2*N^2))*R^2/(|b| *Uref)+2 := by
+        gcongr
+      _ = _ := by ring_nf
+  · exact add_le_add
+      (upper_reference_gap_source_scale hC hK hTsrc hM hN hR hL hUref hb hNL hscale.2 hscale.1) le_rfl
+
+private theorem positive_difference_normalized_quartic_reference_gap_packing (chart : GapChart)
     {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
     ∃ η₀ a Csrc : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧ 0 < Csrc ∧
-    ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb γ Tsrc : ℝ)
+    ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb b Tsrc E : ℝ)
     (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ))
     (x : ℝ × ℝ → Fin 4 → ℝ)
     (xref e r v s : ℝ × ℝ → Fin 2 → ℝ)
@@ -536,13 +550,12 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
     (∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) Fsrc w| ≤ Usrc) →
     (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
       csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-    0 < Tsrc → 2 ≤ M → γ ≠ 0 →
+    0 < Tsrc → 2 ≤ M → b ≠ 0 → chart.scale Tsrc E T M N R →
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
     let Hsrc := fun z : ℝ × ℝ =>
       (iteratedDeriv 2 Fsrc z.2-iteratedDeriv 2 Fsrc (z.2+η*z.1))/(σsrc*η)
-    let center := (ycenter,(Hsrc (ycenter,xcenter))⁻¹)
+    let center := (ycenter,chart.inverse (Hsrc (ycenter,xcenter)))
     (0 < σ) →
     (δ ≤ min (modelPhaseThirdLower σ) 1) →
     (∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ) →
@@ -568,9 +581,7 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
     (∀ ab∈Gaps, ∀ t∈Icc (x ab 0) (x ab 3), ∀ i,
       d ab ≤ r ab i*t+s ab i ∧ r ab i*t+s ab i ≤ 2*d ab) →
     (∀ ab∈Gaps, StrictMono (x ab)) →
-    (∀ ab∈Gaps,
-      e ab 1=e ab 0 ∧ v ab 1=v ab 0 ∧
-      r ab 1=r ab 0+γ*e ab 0 ∧ s ab 1=s ab 0+γ*v ab 0) →
+    (∀ ab∈Gaps, chart.transport b (e ab) (r ab) (v ab) (s ab)) →
     let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
     let n := fun ab t i => (round (curve ab t i):ℝ)-(round (xref ab i):ℝ)
     let mu := fun ab i => iteratedDeriv 3 (f i) (round (xref ab i))/6
@@ -591,19 +602,19 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
     (∀ ab∈Gaps, ∀ j : Fin 4, |alpha ab*x ab j+beta ab-g ab (x ab j)+H ab (x ab j)| ≤
       K*R^2/|r ab 0*Gcoord ab (x ab j)|) →
     (∀ ab∈Gaps, ∀ t∈({x ab 0,x ab 3} : Finset ℝ), ∀ i,
-      ‖((yp i,(Tsrc/(2*M^2))*(iteratedDeriv 2 (f i) (curve ab t i)/2)⁻¹):ℝ × ℝ)-center‖ < a) →
+      ‖((yp i,chart.coord Tsrc M (iteratedDeriv 2 (f i) (curve ab t i)/2)):ℝ × ℝ)-center‖ < a) →
     let κ := modelPhaseThirdLower σ
     let Cphys := σ*(σ+1)+1
     let Gamma := Cphys/κ
     let Cthird := Gamma*(32*K+9*quarticReciprocalConstant σ δ)
-    (Gaps.card:ℝ) ≤ 4*Csrc*(Cthird+1)*R^4/(L^2*N^2*|γ| *Uref)+2 := by
+    (Gaps.card:ℝ) ≤ chart.quarticBound Csrc Cthird E M N R L b Uref := by
   classical
   obtain ⟨η₀,a,Csrc,hη₀,hηcap,ha,hCsrc,hcompression⟩ :=
-    positive_difference_physical_lower_reference_gap_packing hσsrc hcsrc hUsrc
+    positive_difference_physical_reference_gap_packing chart hσsrc hcsrc hUsrc
   refine ⟨η₀,a,Csrc,hη₀,hηcap,ha,hCsrc,?_⟩
-  intro Fsrc η xcenter ycenter ya yb γ Tsrc Refs Gaps x xref e r v s curve d alpha beta
+  intro Fsrc η xcenter ycenter ya yb b Tsrc E Refs Gaps x xref e r v s curve d alpha beta
     σ δ T M N R Uref L K A W
-    hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hγ
+    hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hb hscale
     yp F Hsrc center hσ hδ hF hT hM hN hR hU hL hNL hK hA hW hsep hgap hd href hcurve hr hdet hden hmono htransport
     f n mu nu Den g H Gcoord profile hbase hpoint hends hsquare hspacing hres hlocalEnds
     κ Cphys Gamma Cthird
@@ -655,7 +666,7 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
   let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
   have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
     funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
+    dsimp only [f,heathBrownPhysicalPhase,F,Src, firstDifferenceModel, physicalFirstDifference]
     field_simp
   have hjet i k t : iteratedDeriv k (f i) t=
       iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
@@ -675,328 +686,94 @@ private theorem positive_difference_normalized_quartic_lower_reference_gap_packi
       hσsrc hcsrc hUsrc hη hηmax hTsrc hM (hyp i)
       (hphysical ab hab t ht i) hreg hjets htests).1
     exact abs_pos.mp (lt_of_lt_of_le (by positivity) hh)
-  have hinvMono ab (hab : ab∈Gaps) i : StrictMonoOn
-      (fun t => (iteratedDeriv 2 (f i) (curve ab t i)/2)⁻¹) (Icc (x ab 0) (x ab 3)) := by
-    have hnum t (ht : t∈Icc (x ab 0) (x ab 3)) : e ab i*t+v ab i ≠ 0 := by
-      intro he
-      have hh := hcurvNe ab hab t ht i
-      rw [hpoint ab hab t ht i,he,zero_div] at hh
-      exact hh rfl
-    intro u hu w hw huw
-    change (iteratedDeriv 2 (f i) (curve ab u i)/2)⁻¹ <
-      (iteratedDeriv 2 (f i) (curve ab w i)/2)⁻¹
-    rw [hpoint ab hab u hu i,hpoint ab hab w hw i,inv_div,inv_div]
-    exact nativeHuxleyReference_reciprocal_fraction_strictMonoOn (hdet ab hab i) hnum hu hw huw
+  have hmonoCoord ab (hab : ab∈Gaps) i :
+      let I := Icc (x ab 0) (x ab 3)
+      let q := fun t => chart.coord Tsrc M (iteratedDeriv 2 (f i) (curve ab t i)/2)
+      MonotoneOn q I ∨ AntitoneOn q I := by
+    cases chart
+    · left
+      have hinvMono ab (hab : ab∈Gaps) i : StrictMonoOn
+          (fun t => (iteratedDeriv 2 (f i) (curve ab t i)/2)⁻¹) (Icc (x ab 0) (x ab 3)) := by
+        have hnum t (ht : t∈Icc (x ab 0) (x ab 3)) : e ab i*t+v ab i ≠ 0 := by
+          intro he
+          have hh := hcurvNe ab hab t ht i
+          rw [hpoint ab hab t ht i,he,zero_div] at hh
+          exact hh rfl
+        intro u hu w hw huw
+        change (iteratedDeriv 2 (f i) (curve ab u i)/2)⁻¹ <
+          (iteratedDeriv 2 (f i) (curve ab w i)/2)⁻¹
+        rw [hpoint ab hab u hu i,hpoint ab hab w hw i,inv_div,inv_div]
+        exact nativeHuxleyReference_reciprocal_fraction_strictMonoOn (hdet ab hab i) hnum hu hw huw
+      intro u hu w hw huw
+      exact mul_le_mul_of_nonneg_left ((hinvMono ab hab i).monotoneOn hu hw huw) (by positivity)
+    · right
+      have horder ab (hab : ab∈Gaps) u (hu : u∈Icc (x ab 0) (x ab 3))
+          w (hw : w∈Icc (x ab 0) (x ab 3)) (huw : u ≤ w) i :
+          iteratedDeriv 2 (f i) (curve ab w i)/2 ≤ iteratedDeriv 2 (f i) (curve ab u i)/2 := by
+        rw [hpoint ab hab w hw i,hpoint ab hab u hu i]
+        exact nativeHuxleyReference_reference_chart_fraction_antitone (hdet ab hab i)
+          (hdenpos ab hab u hu i) (hdenpos ab hab w hw i) huw
+      intro u hu w hw huw
+      exact mul_le_mul_of_nonneg_left (horder ab hab u hu w hw huw i) (by positivity)
   have hlocal ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
-      ‖((yp i,(Tsrc/(2*M^2))*(iteratedDeriv 2 (f i) (curve ab t i)/2)⁻¹):ℝ × ℝ)-center‖ < a := by
+      ‖((yp i,chart.coord Tsrc M (iteratedDeriv 2 (f i) (curve ab t i)/2)):ℝ × ℝ)-center‖ < a := by
     have hxorder := (hmono ab hab).monotone (by decide : (0:Fin 4) ≤ 3)
+    have h0 : x ab 0 ∈ Icc (x ab 0) (x ab 3) := ⟨le_rfl,hxorder⟩
+    have h3 : x ab 3 ∈ Icc (x ab 0) (x ab 3) := ⟨hxorder,le_rfl⟩
     have hl := hlocalEnds ab hab (x ab 0) (by simp) i
     have hu := hlocalEnds ab hab (x ab 3) (by simp) i
-    have hlo := mul_le_mul_of_nonneg_left
-      ((hinvMono ab hab i).monotoneOn ⟨le_rfl,hxorder⟩ ht ht.1)
-      (by positivity : 0 ≤ Tsrc/(2*M^2))
-    have hhi := mul_le_mul_of_nonneg_left
-      ((hinvMono ab hab i).monotoneOn ht ⟨hxorder,le_rfl⟩ ht.2)
-      (by positivity : 0 ≤ Tsrc/(2*M^2))
-    change max |yp i-center.1|
-      |(Tsrc/(2*M^2))*(iteratedDeriv 2 (f i) (curve ab (x ab 0) i)/2)⁻¹-center.2| < a at hl
-    change max |yp i-center.1|
-      |(Tsrc/(2*M^2))*(iteratedDeriv 2 (f i) (curve ab (x ab 3) i)/2)⁻¹-center.2| < a at hu
-    change max |yp i-center.1|
-      |(Tsrc/(2*M^2))*(iteratedDeriv 2 (f i) (curve ab t i)/2)⁻¹-center.2| < a
-    refine max_lt_iff.mpr ⟨(max_lt_iff.mp hl).1,abs_lt.mpr ⟨?_,?_⟩⟩
-    · linarith only [(abs_lt.mp (max_lt_iff.mp hl).2).1,hlo]
-    · linarith only [(abs_lt.mp (max_lt_iff.mp hu).2).2,hhi]
-  have hDmap ab (hab : ab∈Gaps) t :
-      Den ab t 1=Den ab t 0+γ*(e ab 0*t+v ab 0) := by
-    dsimp only [Den]
-    rw [(htransport ab hab).2.2.1,(htransport ab hab).2.2.2]
-    ring
-  have hratio ab (hab : ab∈Gaps) :
-      γ*profile ab (z ab)+1=Den ab (z ab) 1/Den ab (z ab) 0 := by
-    change γ*(iteratedDeriv 2 (f 0) (curve ab (z ab) 0)/2)+1=_
-    rw [hpoint ab hab _ (hzcc ab hab) 0,hDmap ab hab]
-    field_simp [(hdenpos ab hab _ (hzcc ab hab) 0).ne']
-    ring_nf
+    rcases hmonoCoord ab hab i with hm|hm
+    · exact gap_ball_between (hm h0 ht ht.1) (hm ht h3 ht.2) hl hu
+    · exact gap_ball_between (hm ht h3 ht.2) (hm h0 ht ht.1) hu hl
   have hmap ab (hab : ab∈Gaps) :
-      iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2=
-        profile ab (z ab)/(γ*profile ab (z ab)+1) := by
-    rw [hratio ab hab]
-    change _=(iteratedDeriv 2 (f 0) (curve ab (z ab) 0)/2)/
-      (Den ab (z ab) 1/Den ab (z ab) 0)
-    rw [hpoint ab hab _ (hzcc ab hab) 1,hpoint ab hab _ (hzcc ab hab) 0,
-      (htransport ab hab).1,(htransport ab hab).2.1]
-    field_simp [(hdenpos ab hab _ (hzcc ab hab) 0).ne',
-      (hdenpos ab hab _ (hzcc ab hab) 1).ne']
-  have hinvMap ab (hab : ab∈Gaps) :
-      (iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2)⁻¹=(profile ab (z ab))⁻¹+γ := by
-    rw [hmap ab hab,inv_div]
-    have hp : profile ab (z ab) ≠ 0 := hcurvNe ab hab _ (hzcc ab hab) 0
-    rw [add_div,mul_div_cancel_right₀ γ hp,one_div,add_comm]
+      iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2=chart.shift b (profile ab (z ab)) ∧
+        chart.denRatio b (profile ab (z ab)) = Den ab (z ab) 1/Den ab (z ab) 0 := by
+    cases chart
+    · have hDmap ab (hab : ab∈Gaps) t :
+          Den ab t 1=Den ab t 0+b*(e ab 0*t+v ab 0) := by
+        dsimp only [Den]
+        rw [(htransport ab hab).2.2.1,(htransport ab hab).2.2.2]
+        ring
+      have hratio ab (hab : ab∈Gaps) :
+          b*profile ab (z ab)+1=Den ab (z ab) 1/Den ab (z ab) 0 := by
+        change b*(iteratedDeriv 2 (f 0) (curve ab (z ab) 0)/2)+1=_
+        rw [hpoint ab hab _ (hzcc ab hab) 0,hDmap ab hab]
+        field_simp [(hdenpos ab hab _ (hzcc ab hab) 0).ne']
+        ring_nf
+      have hmap ab (hab : ab∈Gaps) :
+          iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2=
+            profile ab (z ab)/(b*profile ab (z ab)+1) := by
+        rw [hratio ab hab]
+        change _=(iteratedDeriv 2 (f 0) (curve ab (z ab) 0)/2)/
+          (Den ab (z ab) 1/Den ab (z ab) 0)
+        rw [hpoint ab hab _ (hzcc ab hab) 1,hpoint ab hab _ (hzcc ab hab) 0,
+          (htransport ab hab).1,(htransport ab hab).2.1]
+        field_simp [(hdenpos ab hab _ (hzcc ab hab) 0).ne',
+          (hdenpos ab hab _ (hzcc ab hab) 1).ne']
+      exact ⟨hmap ab hab,hratio ab hab⟩
+    · have hDsame ab (hab : ab∈Gaps) t : Den ab t 1=Den ab t 0 := by
+        dsimp only [Den]
+        rw [(htransport ab hab).2.2.1,(htransport ab hab).2.2.2]
+      have hmap ab (hab : ab∈Gaps) :
+          iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2=profile ab (z ab)+b := by
+        change _=iteratedDeriv 2 (f 0) (curve ab (z ab) 0)/2+b
+        rw [hpoint ab hab _ (hzcc ab hab) 1,hpoint ab hab _ (hzcc ab hab) 0,hDsame ab hab]
+        rw [(htransport ab hab).1,(htransport ab hab).2.1]
+        have hdz : r ab 0*z ab+s ab 0 ≠ 0 := (hdenpos ab hab _ (hzcc ab hab) 0).ne'
+        dsimp only [Den]
+        field_simp [hdz]
+        ring
+      exact ⟨hmap ab hab,by rw [hDsame ab hab,div_self (hdenpos ab hab _ (hzcc ab hab) 0).ne']⟩
   have hweighted ab (hab : ab∈Gaps) :
-      |munew ab (z ab) 1/munew ab (z ab) 0*(γ*profile ab (z ab)+1)^3-1| ≤
+      chart.thirdError b (profile ab (z ab)) (munew ab (z ab) 1/munew ab (z ab) 0) ≤
         Cthird*R^2/(L^2*N^2) := by
-    have he : munew ab (z ab) 1/munew ab (z ab) 0*
-        (Den ab (z ab) 1/Den ab (z ab) 0)^3=
-        munew ab (z ab) 1*(Den ab (z ab) 1)^3/
-          (munew ab (z ab) 0*(Den ab (z ab) 0)^3) := by
-      simp only [div_eq_mul_inv,mul_inv_rev]
-      ring_nf
-    rw [hratio ab hab,he]
-    exact hthird ab hab
-  let xa := fun ab => (A 0:ℝ)+curve ab (z ab) 0
-  let xb := fun ab => (A 1:ℝ)+curve ab (z ab) 1
-  have hua ab : iteratedDeriv 2 (Src ya) (xa ab)/2=profile ab (z ab) :=
-    (congrArg (fun u : ℝ => u/2) (hjet 0 2 (curve ab (z ab) 0))).symm
-  have hub ab : iteratedDeriv 2 (Src yb) (xb ab)/2=
-      iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2 :=
-    (congrArg (fun u : ℝ => u/2) (hjet 1 2 (curve ab (z ab) 1))).symm
-  have hcount := hcompression Fsrc η xcenter ycenter ya yb γ
-    (Cthird*R^2/(L^2*N^2)) Tsrc M R Uref Refs Gaps xa xb
-    hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hRpos hU hγ
-    (by positivity) (fun ab hab => ⟨hphysical ab hab _ (hzcc ab hab) 0,
-      hphysical ab hab _ (hzcc ab hab) 1⟩) hsep hgap
-    (by intro ab hab; change iteratedDeriv 2 (Src ya) (xa ab)/2∈Icc ab.1 ab.2
-        rw [hua]; exact ⟨(hinside ab hab).1.le,(hinside ab hab).2.le⟩)
-    (by
-      intro ab hab
-      change iteratedDeriv 2 (Src yb) (xb ab)/2=
-        (iteratedDeriv 2 (Src ya) (xa ab)/2)/(γ*(iteratedDeriv 2 (Src ya) (xa ab)/2)+1)
-      rw [hua,hub]
-      exact hmap ab hab)
-    (by
-      intro ab hab
-      have hh := hweighted ab hab
-      change |(iteratedDeriv 3 (f 1) (round (curve ab (z ab) 1))/6)/
-        (iteratedDeriv 3 (f 0) (round (curve ab (z ab) 0))/6)*
-        (γ*profile ab (z ab)+1)^3-1| ≤ _ at hh
-      rw [hrounded,hrounded] at hh
-      change |(iteratedDeriv 3 (Src yb) (round (xb ab))/6)/
-        (iteratedDeriv 3 (Src ya) (round (xa ab))/6)*
-        (γ*(iteratedDeriv 2 (Src ya) (xa ab)/2)+1)^3-1| ≤ _
-      rw [hua]
-      exact hh)
-    (by
-      intro ab hab
-      change ‖((ya,(Tsrc/(2*M^2))*(iteratedDeriv 2 (Src ya) (xa ab)/2)⁻¹):ℝ × ℝ)-center‖ < a ∧
-        ‖((yb,(Tsrc/(2*M^2))*(iteratedDeriv 2 (Src ya) (xa ab)/2)⁻¹+
-          Tsrc*γ/(2*M^2)):ℝ × ℝ)-center‖ < a
-      rw [hua]
-      constructor
-      · exact hlocal ab hab _ (hzcc ab hab) 0
-      · have he : (Tsrc/(2*M^2))*(profile ab (z ab))⁻¹+Tsrc*γ/(2*M^2)=
-            (Tsrc/(2*M^2))*(iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2)⁻¹ := by
-          rw [hinvMap ab hab]
-          ring
-        rw [he]
-        exact hlocal ab hab _ (hzcc ab hab) 1)
-  have hInv : 1/M ≤ R^2/(L^2*N^2) := by
-    apply (div_le_div_iff₀ hM (by positivity)).mpr
-    have hRR : R ≤ R^2 := by nlinarith only [hR]
-    nlinarith only [hNL,mul_le_mul_of_nonneg_left hRR hM.le]
-  have herror : Cthird*R^2/(L^2*N^2)+1/M ≤ (Cthird+1)*R^2/(L^2*N^2) :=
-    (add_le_add le_rfl hInv).trans_eq (by ring)
-  apply hcount.trans
-  calc
-    _ ≤ 4*Csrc*((Cthird+1)*R^2/(L^2*N^2))*R^2/(|γ| *Uref)+2 := by
-      apply add_le_add _ le_rfl
-      apply div_le_div_of_nonneg_right _ (by positivity)
-      exact mul_le_mul_of_nonneg_right
-        (mul_le_mul_of_nonneg_left herror (by positivity)) (sq_nonneg R)
-    _ = _ := by ring_nf
-
-                                                              
-                                                                        
-private theorem positive_difference_normalized_quartic_upper_reference_gap_packing
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
-    ∃ a Csrc : ℝ, 0 < a ∧ 0 < Csrc ∧
-    ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb b Tsrc E : ℝ)
-    (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ))
-    (x : ℝ × ℝ → Fin 4 → ℝ)
-    (xref e r v s : ℝ × ℝ → Fin 2 → ℝ)
-    (curve : ℝ × ℝ → ℝ → Fin 2 → ℝ) (d alpha beta : ℝ × ℝ → ℝ)
-    {σ δ T M N R Uref L K : ℝ} (A : Fin 2 → ℤ) {W : Fin 2 → ℝ},
-    0 < η → η ≤ 1/8 → xcenter∈Icc (1:ℝ) 2 → ycenter∈Icc (1:ℝ) 2 →
-    ya∈Icc (1:ℝ) 2 → yb∈Icc (1:ℝ) 2 →
-    (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) Fsrc w| ≤ Usrc) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
-      csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-    0 < Tsrc → 2 ≤ M → b ≠ 0 → Tsrc ≤ E*T → T*N*R^2=M^3 →
-    let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
-    let Hsrc := fun z : ℝ × ℝ =>
-      (iteratedDeriv 2 Fsrc z.2-iteratedDeriv 2 Fsrc (z.2+η*z.1))/(σsrc*η)
-    let center := (ycenter,Hsrc (ycenter,xcenter))
-    (0 < σ) →
-    (δ ≤ min (modelPhaseThirdLower σ) 1) →
-    (∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ) →
-    (0 < T) →
-    (0 < M) →
-    (0 < N) →
-    (1 ≤ R) →
-    (0 < Uref) →
-    (0 < L) →
-    ((L*N)^2 ≤ M*R) →
-    (0 ≤ K) →
-    (∀ i, M ≤ A i) →
-    (∀ i, A i+W i ≤ 2*M) →
-    (∀ a∈Refs, ∀ b∈Refs, a≠b → Uref/(4*R^2) ≤ |a-b|) →
-    (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
-      ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
-    (∀ ab∈Gaps, 0 < d ab) →
-    (∀ ab∈Gaps, ∀ i, xref ab i∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ t∈Icc (x ab 0) (x ab 3), ∀ i,
-      curve ab t i∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ i, r ab i≠0) →
-    (∀ ab∈Gaps, ∀ i, v ab i*r ab i-e ab i*s ab i=1) →
-    (∀ ab∈Gaps, ∀ t∈Icc (x ab 0) (x ab 3), ∀ i,
-      d ab ≤ r ab i*t+s ab i ∧ r ab i*t+s ab i ≤ 2*d ab) →
-    (∀ ab∈Gaps, StrictMono (x ab)) →
-    (∀ ab∈Gaps,
-      e ab 1=e ab 0+b*r ab 0 ∧ v ab 1=v ab 0+b*s ab 0 ∧
-      r ab 1=r ab 0 ∧ s ab 1=s ab 0) →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    let n := fun ab t i => (round (curve ab t i):ℝ)-(round (xref ab i):ℝ)
-    let mu := fun ab i => iteratedDeriv 3 (f i) (round (xref ab i))/6
-    let nu := fun ab i => iteratedDeriv 4 (f i) (round (xref ab i))/24
-    let Den := fun ab t i => r ab i*t+s ab i
-    let g := fun ab => rationalPhase (mu ab 0) (r ab 0) (s ab 0) (mu ab 1) (r ab 1) (s ab 1)
-    let H := fun ab => quarticPhase (mu ab 0) (nu ab 0) (r ab 0) (s ab 0)
-      (mu ab 1) (nu ab 1) (r ab 1) (s ab 1)
-    let Gcoord := fun ab => minorArcCoordinate (mu ab 0) (r ab 0) (s ab 0)
-    let profile := fun ab t => iteratedDeriv 2 (f 0) (curve ab t 0)/2
-    (∀ ab∈Gaps, ∀ i, iteratedDeriv 2 (f i) (xref ab i)/2=e ab i/r ab i) →
-    (∀ ab∈Gaps, ∀ t∈Icc (x ab 0) (x ab 3), ∀ i,
-      iteratedDeriv 2 (f i) (curve ab t i)/2=(e ab i*t+v ab i)/Den ab t i) →
-    (∀ ab∈Gaps, profile ab (x ab 0)∈Ioo ab.1 ab.2 ∧
-      profile ab (x ab 3)∈Ioo ab.1 ab.2) →
-    (∀ ab∈Gaps, ∀ t∈Icc (x ab 0) (x ab 3), ∀ i, |n ab t i|^2 ≤ M*R) →
-    (∀ ab∈Gaps, ∀ j : Fin 3, L*N ≤ |Gcoord ab (x ab j.succ)-Gcoord ab (x ab j.castSucc)|) →
-    (∀ ab∈Gaps, ∀ j : Fin 4, |alpha ab*x ab j+beta ab-g ab (x ab j)+H ab (x ab j)| ≤
-      K*R^2/|r ab 0*Gcoord ab (x ab j)|) →
-    (∀ ab∈Gaps, ∀ t∈({x ab 0,x ab 3} : Finset ℝ), ∀ i,
-      ‖((yp i,(2*M^2/Tsrc)*(iteratedDeriv 2 (f i) (curve ab t i)/2)):ℝ × ℝ)-center‖ < a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*K+9*quarticReciprocalConstant σ δ)
-    (Gaps.card:ℝ) ≤ Csrc*(Cthird+1)*E^2*M^2/(L^2*N^4*|b| *Uref)+2 := by
-  classical
-  obtain ⟨a,Csrc,ha,hCsrc,hcompression⟩ :=
-    positive_difference_physical_upper_reference_gap_packing hσsrc hcsrc hUsrc
-  refine ⟨a,Csrc,ha,hCsrc,?_⟩
-  intro Fsrc η xcenter ycenter ya yb b Tsrc E Refs Gaps x xref e r v s curve d alpha beta
-    σ δ T M N R Uref L K A W
-    hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hb hsourceScale hscale
-    yp F Hsrc center hσ hδ hF hT hM hN hR hU hL hNL hK hA hW hsep hgap hd href hcurve hr hdet hden hmono htransport
-    f n mu nu Den g H Gcoord profile hbase hpoint hends hsquare hspacing hres hlocalEnds
-    κ Cphys Gamma Cthird
-  let munew := fun ab t i => iteratedDeriv 3 (f i) (round (curve ab t i))/6
-  have hηmax : η ≤ 1/8 := hηsmall
-  have hRpos : 0 < R := zero_lt_one.trans_le hR
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hCp : 0 < Cphys := by dsimp only [Cphys]; positivity
-  have hδ0 : 0 ≤ δ := approximateModelPhase_tolerance_nonneg (hF 0)
-  have hC₂ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 2) hδ0
-  have hC₃ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 3) hδ0
-  have hC₄ := add_nonneg (modelPhaseJetCoefficient_nonneg σ 4) hδ0
-  have hCR : 0 ≤ quarticReciprocalConstant σ δ := by
-    dsimp only [quarticReciprocalConstant]
-    positivity
-  have hCt : 0 ≤ Cthird := by dsimp only [Cthird,Gamma]; positivity
-  have hdenpos ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
-      0 < Den ab t i := (hd ab hab).trans_le (hden ab hab t ht i).1
-  have hex : ∀ ab∈Gaps, ∃ z∈Ioo (x ab 0) (x ab 3),
-      |munew ab z 1*(Den ab z 1)^3/(munew ab z 0*(Den ab z 0)^3)-1| ≤ Cthird*R^2/(L^2*N^2) := by
-    intro ab hab
-    exact physicalModelPhase_quartic_long_block_third_condition
-      (σ := σ) (δ := δ) (T := T) (M := M) (N := N) (R := R)
-      (L := L) (d := d ab) (K := K) (α := alpha ab) (β := beta ab)
-      (F := F) (A := fun i => (A i : ℝ)) (W := W) (x₀ := xref ab)
-      (e := e ab) (r := r ab) (v := v ab) (s := s ab) (x₁ := curve ab) (x ab)
-      hσ hδ hF hT hM hN hR hL hNL (hd ab hab) hK hA hW
-      (href ab hab) (hcurve ab hab) (hr ab hab) (hdet ab hab)
-      (fun t ht i => (hden ab hab t ht i).1)
-      (fun t ht i => (hden ab hab t ht i).2) (hmono ab hab)
-      (hbase ab hab) (hpoint ab hab) (hsquare ab hab) (hspacing ab hab) (hres ab hab)
-  choose! z hz hthird using hex
-  have hzcc ab (hab : ab∈Gaps) : z ab∈Icc (x ab 0) (x ab 3) := ⟨(hz ab hab).1.le,(hz ab hab).2.le⟩
-  have hinside ab (hab : ab∈Gaps) : profile ab (z ab)∈Ioo ab.1 ab.2 := by
-    have hx03 : x ab 0 ≤ x ab 3 := (hmono ab hab).monotone (by decide)
-    have hx0 : x ab 0∈Icc (x ab 0) (x ab 3) := ⟨le_rfl,hx03⟩
-    have hx3 : x ab 3∈Icc (x ab 0) (x ab 3) := ⟨hx03,le_rfl⟩
-    have hlow : profile ab (x ab 3) ≤ profile ab (z ab) := by
-      dsimp only [profile]
-      rw [hpoint ab hab _ hx3 0,hpoint ab hab _ (hzcc ab hab) 0]
-      exact nativeHuxleyReference_reference_chart_fraction_antitone (hdet ab hab 0)
-        (hdenpos ab hab _ (hzcc ab hab) 0) (hdenpos ab hab _ hx3 0) (hzcc ab hab).2
-    have hhigh : profile ab (z ab) ≤ profile ab (x ab 0) := by
-      dsimp only [profile]
-      rw [hpoint ab hab _ (hzcc ab hab) 0,hpoint ab hab _ hx0 0]
-      exact nativeHuxleyReference_reference_chart_fraction_antitone (hdet ab hab 0)
-        (hdenpos ab hab _ hx0 0) (hdenpos ab hab _ (hzcc ab hab) 0) (hzcc ab hab).1
-    exact ⟨(hends ab hab).2.1.trans_le hlow,hhigh.trans_lt (hends ab hab).1.2⟩
-  let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
-  have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
-    funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
-    field_simp
-  have hjet i k t : iteratedDeriv k (f i) t=
-      iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-  have hrounded i t : iteratedDeriv 3 (f i) (round t)=
-      iteratedDeriv 3 (Src (yp i)) (round ((A i:ℝ)+t)) := by
-    rw [hjet,round_intCast_add,Int.cast_add]
-  have hyp i : yp i∈Icc (1:ℝ) 2 := by fin_cases i <;> assumption
-  have hphysical ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
-      (A i:ℝ)+curve ab t i∈Icc M (2*M) :=
-    ⟨by linarith only [hA i,(hcurve ab hab t ht i).1],
-     by linarith only [hW i,(hcurve ab hab t ht i).2]⟩
-  have horder ab (hab : ab∈Gaps) u (hu : u∈Icc (x ab 0) (x ab 3))
-      w (hw : w∈Icc (x ab 0) (x ab 3)) (huw : u ≤ w) i :
-      iteratedDeriv 2 (f i) (curve ab w i)/2 ≤ iteratedDeriv 2 (f i) (curve ab u i)/2 := by
-    rw [hpoint ab hab w hw i,hpoint ab hab u hu i]
-    exact nativeHuxleyReference_reference_chart_fraction_antitone (hdet ab hab i)
-      (hdenpos ab hab u hu i) (hdenpos ab hab w hw i) huw
-  have hlocal ab (hab : ab∈Gaps) t (ht : t∈Icc (x ab 0) (x ab 3)) i :
-      ‖((yp i,(2*M^2/Tsrc)*(iteratedDeriv 2 (f i) (curve ab t i)/2)):ℝ × ℝ)-center‖ < a := by
-    have hxorder := (hmono ab hab).monotone (by decide : (0:Fin 4) ≤ 3)
-    have hl := hlocalEnds ab hab (x ab 3) (by simp) i
-    have hu := hlocalEnds ab hab (x ab 0) (by simp) i
-    have hlo := mul_le_mul_of_nonneg_left
-      (horder ab hab t ht (x ab 3) ⟨hxorder,le_rfl⟩ ht.2 i)
-      (by positivity : 0 ≤ 2*M^2/Tsrc)
-    have hhi := mul_le_mul_of_nonneg_left
-      (horder ab hab (x ab 0) ⟨le_rfl,hxorder⟩ t ht ht.1 i)
-      (by positivity : 0 ≤ 2*M^2/Tsrc)
-    change max |yp i-center.1|
-      |(2*M^2/Tsrc)*(iteratedDeriv 2 (f i) (curve ab (x ab 3) i)/2)-center.2| < a at hl
-    change max |yp i-center.1|
-      |(2*M^2/Tsrc)*(iteratedDeriv 2 (f i) (curve ab (x ab 0) i)/2)-center.2| < a at hu
-    change max |yp i-center.1|
-      |(2*M^2/Tsrc)*(iteratedDeriv 2 (f i) (curve ab t i)/2)-center.2| < a
-    refine max_lt_iff.mpr ⟨(max_lt_iff.mp hl).1,abs_lt.mpr ⟨?_,?_⟩⟩
-    · linarith only [(abs_lt.mp (max_lt_iff.mp hl).2).1,hlo]
-    · linarith only [(abs_lt.mp (max_lt_iff.mp hu).2).2,hhi]
-  have hDsame ab (hab : ab∈Gaps) t : Den ab t 1=Den ab t 0 := by
-    dsimp only [Den]
-    rw [(htransport ab hab).2.2.1,(htransport ab hab).2.2.2]
-  have hmap ab (hab : ab∈Gaps) :
-      iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2=profile ab (z ab)+b := by
-    change _=iteratedDeriv 2 (f 0) (curve ab (z ab) 0)/2+b
-    rw [hpoint ab hab _ (hzcc ab hab) 1,hpoint ab hab _ (hzcc ab hab) 0,hDsame ab hab]
-    rw [(htransport ab hab).1,(htransport ab hab).2.1]
-    have hdz : r ab 0*z ab+s ab 0 ≠ 0 := (hdenpos ab hab _ (hzcc ab hab) 0).ne'
-    dsimp only [Den]
-    field_simp [hdz]
-    ring
-  have hweighted ab (hab : ab∈Gaps) :
-      |munew ab (z ab) 1/munew ab (z ab) 0-1| ≤ Cthird*R^2/(L^2*N^2) := by
-    have hh := hthird ab hab
-    rw [hDsame ab hab] at hh
-    rwa [mul_div_mul_right _ _ (pow_ne_zero 3 (hdenpos ab hab _ (hzcc ab hab) 0).ne')] at hh
+    have he : chart.thirdError b (profile ab (z ab)) (munew ab (z ab) 1/munew ab (z ab) 0) =
+        |munew ab (z ab) 1/munew ab (z ab) 0 * (chart.denRatio b (profile ab (z ab)))^3-1| := by
+      cases chart <;> simp [GapChart.thirdError,GapChart.denRatio]
+    rw [he,(hmap ab hab).2]
+    convert hthird ab hab using 2
+    simp only [div_eq_mul_inv,mul_inv_rev]
+    ring_nf
   let xa := fun ab => (A 0:ℝ)+curve ab (z ab) 0
   let xb := fun ab => (A 1:ℝ)+curve ab (z ab) 1
   have hua ab : iteratedDeriv 2 (Src ya) (xa ab)/2=profile ab (z ab) :=
@@ -1013,71 +790,45 @@ private theorem positive_difference_normalized_quartic_upper_reference_gap_packi
         rw [hua]; exact ⟨(hinside ab hab).1.le,(hinside ab hab).2.le⟩)
     (by
       intro ab hab
-      change iteratedDeriv 2 (Src yb) (xb ab)/2=
-        (iteratedDeriv 2 (Src ya) (xa ab)/2)+b
+      change iteratedDeriv 2 (Src yb) (xb ab)/2=chart.shift b (iteratedDeriv 2 (Src ya) (xa ab)/2)
       rw [hua,hub]
-      exact hmap ab hab)
+      exact (hmap ab hab).1)
     (by
       intro ab hab
       have hh := hweighted ab hab
-      change |(iteratedDeriv 3 (f 1) (round (curve ab (z ab) 1))/6)/
-        (iteratedDeriv 3 (f 0) (round (curve ab (z ab) 0))/6)-1| ≤ _ at hh
+      dsimp only [munew] at hh
       rw [hrounded,hrounded] at hh
-      change |(iteratedDeriv 3 (Src yb) (round (xb ab))/6)/
-        (iteratedDeriv 3 (Src ya) (round (xa ab))/6)-1| ≤ _
+      change chart.thirdError b (iteratedDeriv 2 (Src ya) (xa ab)/2)
+        ((iteratedDeriv 3 (Src yb) (round (xb ab))/6)/(iteratedDeriv 3 (Src ya) (round (xa ab))/6)) ≤ _
+      rw [hua]
       exact hh)
     (by
       intro ab hab
-      change ‖((ya,(2*M^2/Tsrc)*(iteratedDeriv 2 (Src ya) (xa ab)/2)):ℝ × ℝ)-center‖ < a ∧
-        ‖((yb,(2*M^2/Tsrc)*(iteratedDeriv 2 (Src ya) (xa ab)/2)+
-          2*M^2*b/Tsrc):ℝ × ℝ)-center‖ < a
-      rw [hua]
-      constructor
-      · exact hlocal ab hab _ (hzcc ab hab) 0
-      · have he : (2*M^2/Tsrc)*profile ab (z ab)+2*M^2*b/Tsrc=
-            (2*M^2/Tsrc)*(iteratedDeriv 2 (f 1) (curve ab (z ab) 1)/2) := by
-          rw [hmap ab hab]
-          ring
-        rw [he]
-        exact hlocal ab hab _ (hzcc ab hab) 1)
-  exact hcount.trans (add_le_add (upper_reference_gap_source_scale hCsrc.le hCt
-    hTsrc hM hN hR hL hU hb hNL hscale hsourceScale) le_rfl)
+      change ‖((ya,chart.coord Tsrc M (iteratedDeriv 2 (Src ya) (xa ab)/2)):ℝ × ℝ)-center‖ < a ∧
+        ‖((yb,chart.coord Tsrc M (iteratedDeriv 2 (Src ya) (xa ab)/2)+
+          chart.offset Tsrc M b):ℝ × ℝ)-center‖ < a
+      rw [hua,chart.coord_shift _ _ _ _ (hcurvNe ab hab _ (hzcc ab hab) 0),← (hmap ab hab).1]
+      exact ⟨hlocal ab hab _ (hzcc ab hab) 0,hlocal ab hab _ (hzcc ab hab) 1⟩)
+  exact hcount.trans (chart.quartic_scale_bound hCsrc.le hCt hTsrc hM hN hR hL hU hb hNL hscale)
+
+                                                              
+                                                                        
 
                                                                       
                                                                   
                                                           
-theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
-    ∃ η₀ a Cupper Clower : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
-      0 < Cupper ∧ 0 < Clower ∧
-    ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb Tsrc E : ℝ)
-    (Uref : ℕ) (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ)) {Bselect : ℝ}
-    (Bmajor Cmajor n : ℕ)
-    (S : ℝ × ℝ → Finset ℕ) (Q K₀ : ℕ) [NeZero K₀]
+/-- Common scale, rational chart, and Fourier-completion hypotheses for the
+triangular count and mass estimates. The continuation specifies which occupied
+gaps are counted and which mass bound is required. -/
+abbrev WithTriangularChartData
+    (Uref : ℕ) (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ)) (Bselect : ℝ)
+    (Bmajor Cmajor : ℕ) (S : ℝ × ℝ → Finset ℕ) (Q K₀ : ℕ)
     (rat : ℝ × ℝ → ℕ → Fin 2 → ℚ) (vinv : ℝ × ℝ → ℕ → Fin 2 → ℤ)
     (parity : ℝ × ℝ → ℕ → Fin 2 → Fin 2) (anchor : ℝ × ℝ → ℕ → ℚ)
     (Mat : Fin 4 → ℤ) (e r v s : ℝ × ℝ → ℤ)
-    {σ δ T M N R base Bcut lambda Uband θ : ℝ}
-    (A : Fin 2 → ℤ) {W : Fin 2 → ℝ}
-    {x : ℝ × ℝ → ℕ → Fin 2 → ℝ},
-    0 < η → η ≤ η₀ → xcenter∈Icc (1:ℝ) 2 → ycenter∈Icc (1:ℝ) 2 →
-    ya∈Icc (1:ℝ) 2 → yb∈Icc (1:ℝ) 2 →
-    (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) Fsrc w| ≤ Usrc) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
-      csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-    0 < Tsrc → 2 ≤ M → Tsrc ≤ E*T →
-    let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
-    let Hsrc := fun z : ℝ × ℝ =>
-      (iteratedDeriv 2 Fsrc z.2-iteratedDeriv 2 Fsrc (z.2+η*z.1))/(σsrc*η)
-    let center := (ycenter,Hsrc (ycenter,xcenter))
-    let centerInv := (ycenter,(Hsrc (ycenter,xcenter))⁻¹)
-    (∀ ab∈Gaps, ∀ j∈S ab, ∀ i,
-      ‖((yp i,(2*M^2/Tsrc)*(rat ab j i:ℝ)):ℝ × ℝ)-center‖ < a ∧
-      ‖((yp i,(Tsrc/(2*M^2))*(rat ab j i:ℝ)⁻¹):ℝ × ℝ)-centerInv‖ < a) →
-    (0 < n) →
+    (σ δ T M N R base Bcut lambda Uband θ : ℝ)
+    (A : Fin 2 → ℤ) (W : Fin 2 → ℝ) (x : ℝ × ℝ → ℕ → Fin 2 → ℝ)
+    (F : Fin 2 → ℝ → ℝ) (P : ℝ → ℝ → ℝ → ℕ → QuarticChartBudget → Prop) : Prop :=
     (0 < σ) →
     (δ ≤ min (modelPhaseThirdLower σ) 1) →
     (∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ) →
@@ -1100,105 +851,65 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
     (θ ≤ 1/24) →
     (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, lambda ≤ |((rat ab) j i:ℝ)| ∧ |((rat ab) j i:ℝ)| ≤ Uband) →
     (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (((rat ab) j i).den:ℤ) ∣ ((rat ab) j i).num*(vinv ab) j i-1) →
-    (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
-      (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ ab∈Gaps, (s ab) ≠ 0) →
-    (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
-    (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
+    WithReferenceBasis Gaps Refs e r v s Uref R Bcut (
     (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*N∈Ioo (1/2:ℝ) (W i-1/2)) →
     (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*N∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ N^2) →
-    (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ (N/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    (N^10 ≤ M^3*R^7) →
+    WithReferenceScale Gaps r Uref Q (modelPhaseThirdLower σ) Bcut Bselect M N R (
     (∀ ab∈Gaps, ∀ j∈(S ab), ((rat ab) j 0:ℝ)∈Icc ab.1 ab.2) →
     (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
       ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
-    let Vheight := T*(modelPhaseJetCoefficient σ 1+δ)/(2*M^2)
-    let P₁ := fun (ab : ℝ × ℝ) => 1+(|((v ab):ℝ)|+|((s ab):ℝ)| *Vheight)*(Q:ℝ)
-    let P₂ := fun (ab : ℝ × ℝ) => 1+(|((r ab):ℝ)| *Vheight+|((e ab):ℝ)|)*(Q:ℝ)
-    let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
-    let Ccharts := fun (ab : ℝ × ℝ) => ⌊Real.logb (5/4) ((ab.2-ab.1)/(12*ε))⌋₊+1
-    let sourceColor := fun (ab : ℝ × ℝ) => fun j i => (⌊(((rat ab) j i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊(((rat ab) j i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
-    (∀ ab∈Gaps, ∀ j∈(S ab), (sourceColor ab) j 0=(sourceColor ab) j 1) →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, iteratedDeriv 2 (f i) ((x ab) j i)/2=((rat ab) j i:ℝ)) →
-    let q := fun (ab : ℝ × ℝ) => fun j i => ((rat ab) j i).den
-    let mu := fun (ab : ℝ × ℝ) => fun j i => iteratedDeriv 3 (f i) (round ((x ab) j i))/6
-    let ell := fun (ab : ℝ × ℝ) => fun j i => deriv (f i) (round ((x ab) j i))
-    let b := fun (ab : ℝ × ℝ) => fun j i => (⌊((q ab) j i:ℝ)*(ell ab) j i⌋+((parity ab) j i:ℕ) : ℤ)
-    let cround := fun (ab : ℝ × ℝ) => fun j i => round (((q ab) j i:ℝ)*(ell ab) j i)
-    let tau := fun (ab : ℝ × ℝ) => fun j i => (((b ab) j i:ℝ)-((q ab) j i:ℝ)*(ell ab) j i)/2
-    let dual := fun (ab : ℝ × ℝ) => fun j i => -2*(mu ab) j i*(Real.sqrt (2/(3*(mu ab) j i*((q ab) j i:ℝ))))^3
-    let cloud := fun (ab : ℝ × ℝ) => fun j i => (![Int.fract (-((vinv ab) j i:ℝ)*(b ab) j i/(q ab) j i),
-      Int.fract (-((vinv ab) j i:ℝ)/(q ab) j i),(dual ab) j i/Real.sqrt K₀,
-      (3*(dual ab) j i*(tau ab) j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ ab∈Gaps, ∀ j∈(S ab), (b ab) j 0-(cround ab) j 0=(b ab) j 1-(cround ab) j 1) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ a, |(cloud ab) j 0 a-(cloud ab) j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 →
-    N ≤ R^2 →
-    R ≤ N →
-    N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
-    Mat 0*Mat 3-Mat 1*Mat 2=1 →
-    (∀ ab∈Gaps, ∀ j∈(S ab), (Mat 2:ℝ)*((rat ab) j 0:ℝ)+Mat 3=((q ab) j 1:ℝ)/(q ab) j 0) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ((Mat 0:ℝ)*((rat ab) j 0:ℝ)+Mat 1)/
-      ((Mat 2:ℝ)*((rat ab) j 0:ℝ)+Mat 3)=((rat ab) j 1:ℝ)) →
-    |(Mat 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) →
-    let H := N/(Cphys+2)
-    2 ≤ N →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), |((anchor ab) j:ℝ)-((rat ab) j 0:ℝ)| ≤ ε) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), 256*(((anchor ab) j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), 256 ≤ (2*ε)*((Q:ℝ)/3)*((anchor ab) j).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
-    2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
-    D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
-    let Blabels := fun ab => 6+216*(⌊Real.logb 2 (P₁ ab*P₂ ab)⌋₊+1)
-    let m0 := 6+Cmajor*(105+544*Bmajor)
-    (∀ ab∈Gaps, Blabels ab ≤ Bmajor) →
-    (∀ ab∈Gaps, Ccharts ab ≤ Cmajor) →
+    WithTriangularCompletion Gaps S Bmajor Cmajor Q K₀ rat vinv parity anchor Mat e r v s
+      σ δ T M N R Bcut lambda θ Bselect (fun i => (A i : ℝ)) W x F P))
+
+theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
+    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
+    ∃ η₀ a Cupper Clower : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
+      0 < Cupper ∧ 0 < Clower ∧
+    ∀ (Fsrc : ℝ → ℝ) (η xcenter ycenter ya yb Tsrc E : ℝ)
+    (Uref : ℕ) (Refs : Finset ℝ) (Gaps : Finset (ℝ × ℝ)) {Bselect : ℝ}
+    (Bmajor Cmajor n : ℕ)
+    (S : ℝ × ℝ → Finset ℕ) (Q K₀ : ℕ) [NeZero K₀]
+    (rat : ℝ × ℝ → ℕ → Fin 2 → ℚ) (vinv : ℝ × ℝ → ℕ → Fin 2 → ℤ)
+    (parity : ℝ × ℝ → ℕ → Fin 2 → Fin 2) (anchor : ℝ × ℝ → ℕ → ℚ)
+    (Mat : Fin 4 → ℤ) (e r v s : ℝ × ℝ → ℤ)
+    {σ δ T M N R base Bcut lambda Uband θ : ℝ}
+    (A : Fin 2 → ℤ) {W : Fin 2 → ℝ}
+    {x : ℝ × ℝ → ℕ → Fin 2 → ℝ},
+    0 < η → η ≤ η₀ → xcenter∈Icc (1:ℝ) 2 → ycenter∈Icc (1:ℝ) 2 →
+    ya∈Icc (1:ℝ) 2 → yb∈Icc (1:ℝ) 2 →
+    (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
+    (∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) Fsrc w| ≤ Usrc) →
+    (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
+      csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
+    0 < Tsrc → 2 ≤ M → Tsrc ≤ E*T →
+    let yp : Fin 2 → ℝ := ![ya,yb]
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
+    let Hsrc := fun z : ℝ × ℝ =>
+      (iteratedDeriv 2 Fsrc z.2-iteratedDeriv 2 Fsrc (z.2+η*z.1))/(σsrc*η)
+    let center := (ycenter,Hsrc (ycenter,xcenter))
+    let centerInv := (ycenter,(Hsrc (ycenter,xcenter))⁻¹)
+    (∀ ab∈Gaps, ∀ j∈S ab, ∀ i,
+      ‖((yp i,(2*M^2/Tsrc)*(rat ab j i:ℝ)):ℝ × ℝ)-center‖ < a ∧
+      ‖((yp i,(Tsrc/(2*M^2))*(rat ab j i:ℝ)⁻¹):ℝ × ℝ)-centerInv‖ < a) →
+    (0 < n) →
+    WithTriangularChartData Uref Refs Gaps Bselect Bmajor Cmajor S Q K₀ rat vinv parity
+      anchor Mat e r v s σ δ T M N R base Bcut lambda Uband θ A W x F
+      fun κ Cphys B m0 budget =>
     (∀ ab∈Gaps, m0*n ≤ (S ab).card) →
     let L := (2*κ/Cphys)*(n:ℝ)
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
+    let Cthird := budget.Cthird
     ((Mat 0=1 ∧ Mat 2=0 ∧ Mat 3=1) → Mat 1≠0 →
       (Gaps.card:ℝ) ≤ Cupper*(Cthird+1)*E^2*M^2/(L^2*N^4*|(Mat 1:ℝ)| *(Uref:ℝ))+2) ∧
     ((Mat 0=1 ∧ Mat 1=0 ∧ Mat 3=1) → Mat 2≠0 →
       (Gaps.card:ℝ) ≤ 4*Clower*(Cthird+1)*R^4/(L^2*N^2*|(Mat 2:ℝ)| *(Uref:ℝ))+2) := by
   classical
-  obtain ⟨aU,CU,haU,hCU,hupper⟩ :=
-    positive_difference_normalized_quartic_upper_reference_gap_packing hσsrc hcsrc hUsrc
+  obtain ⟨ηU,aU,CU,hηU,hηUcap,haU,hCU,hupper⟩ :=
+    positive_difference_normalized_quartic_reference_gap_packing .upper hσsrc hcsrc hUsrc
   obtain ⟨η₀,aL,CL,hη₀,hηcap,haL,hCL,hlower⟩ :=
-    positive_difference_normalized_quartic_lower_reference_gap_packing hσsrc hcsrc hUsrc
-  refine ⟨η₀,min aU aL,CU,CL,hη₀,hηcap,lt_min haU haL,hCU,hCL,?_⟩
+    positive_difference_normalized_quartic_reference_gap_packing .lower hσsrc hcsrc hUsrc
+  refine ⟨min η₀ ηU,min aU aL,CU,CL,lt_min hη₀ hηU,(min_le_left _ _).trans hηcap,lt_min haU haL,hCU,hCL,?_⟩
+  dsimp (config := {zeta := false, zetaUnused := false}) only
+    [WithTriangularChartData, WithTriangularCompletion, WithCubicScales]
   intro Fsrc η xcenter ycenter ya yb Tsrc E Uref Refs Gaps Bselect
     Bmajor Cmajor n S Q K₀ inst rat vinv parity anchor Mat e r v s
     σ δ T M N R base Bcut lambda Uband θ A W x
@@ -1208,10 +919,16 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
     Vheight P₁ P₂ ε Ccharts sourceColor hsourceColor f hlevel
     q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
-    H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
-    Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Blabels m0 hBmajor hCmajor hblocks L Gamma Cthird
-  have hηmax : η ≤ 1/8 := hηsmall.trans hηcap
+    H hNtwo hL hU hanchor hcut hcount budget Δ
+    Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Blabels m0 hBmajor hCmajor hblocks L Cthird
+  let C₂ := budget.C₂
+  let C₃ := budget.C₃
+  let Ct := budget.Ct
+  let Cc := budget.Cc
+  let Kres := budget.Kres
+  let Gamma := budget.Gamma
+  have hηmax : η ≤ 1/8 := (hηsmall.trans (min_le_left _ _)).trans hηcap
   have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
   have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
   have hLp : 0 < L := by dsimp only [L]; positivity
@@ -1284,8 +1001,8 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
         (fun ab i => (vp ab i:ℝ)) (fun ab i => (sp ab i:ℝ))
         curve d alpha beta (σ:=σ) (δ:=δ) (T:=T) (M:=M) (N:=N) (R:=R)
         (Uref:=(Uref:ℝ)) (L:=L) (K:=Kres) A
-        hη hηmax hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo
-        (by exact_mod_cast hentry) hsourceScale hscale
+        hη (hηsmall.trans (min_le_right _ _)) hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo
+        (by exact_mod_cast hentry) ⟨hsourceScale,hscale⟩
         hσ hδ hF hT hM hN hR hUp hLp hNLL (hKp ab₀ hab₀) hA hW
         (by
           intro a ha b hb hne'
@@ -1304,7 +1021,7 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
         (fun ab hab => (hmono ab hab).comp htake)
         (by
           intro ab _
-          simp [ep,rp,vp,sp,htri.1,htri.2.1,htri.2.2])
+          simp [GapChart.transport,ep,rp,vp,sp,htri.1,htri.2.1,htri.2.2])
         (fun ab hab i => (hxr ab hab i).2.2.1)
         (fun ab hab t ht i => ((hcurve ab hab t (hsub ab hab ht)).2 i).2.2.2.1)
         (fun ab hab => ⟨hends ab hab 0,hends ab hab 3⟩)
@@ -1325,14 +1042,14 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
         subst t
         exact hsample (take 3)
     · intro htri hentry
-      apply hlower Fsrc η xcenter ycenter ya yb (Mat 2) Tsrc
+      apply hlower Fsrc η xcenter ycenter ya yb (Mat 2) Tsrc 0
         Refs Gaps z4 xref
         (fun ab i => (ep ab i:ℝ)) (fun ab i => (rp ab i:ℝ))
         (fun ab i => (vp ab i:ℝ)) (fun ab i => (sp ab i:ℝ))
         curve d alpha beta (σ:=σ) (δ:=δ) (T:=T) (M:=M) (N:=N) (R:=R)
         (Uref:=(Uref:ℝ)) (L:=L) (K:=Kres) A
-        hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo
-        (by exact_mod_cast hentry)
+        hη (hηsmall.trans (min_le_left _ _)) hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo
+        (by exact_mod_cast hentry) trivial
         hσ hδ hF hT hM hN hR hUp hLp hNLL (hKp ab₀ hab₀) hA hW
         (by
           intro a ha b hb hne'
@@ -1351,7 +1068,7 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
         (fun ab hab => (hmono ab hab).comp htake)
         (by
           intro ab _
-          simp [ep,rp,vp,sp,htri.1,htri.2.1,htri.2.2,add_comm])
+          simp [GapChart.transport,ep,rp,vp,sp,htri.1,htri.2.1,htri.2.2,add_comm])
         (fun ab hab i => (hxr ab hab i).2.2.1)
         (fun ab hab t ht i => ((hcurve ab hab t (hsub ab hab ht)).2 i).2.2.2.1)
         (fun ab hab => ⟨hends ab hab 0,hends ab hab 3⟩)
@@ -1378,7 +1095,7 @@ theorem positive_difference_actual_fourier_charted_triangular_long_gap_packing
     obtain ⟨hCR,hCN⟩ := nativeHuxleyReference_physical_source_quartic_constants_nonneg hσ hδ0
     have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
     constructor <;> intro _ _ <;>
-      dsimp only [Cthird,Kres,Gamma,Cc,Ct,C₂,C₃] <;> positivity
+      dsimp only [Cthird,Kres,Gamma,Cc,Ct,C₂,C₃, quarticResidualBudget, quarticTaylorSlack] <;> positivity
 
 private theorem original_block_mass_of_cubic_and_gap_bounds
     {ι : Type*} (Gaps : Finset ι) (S : ι → Finset ℕ) (m0 : ℕ)
@@ -1463,8 +1180,7 @@ theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
       csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
     0 < Tsrc → 2 ≤ M → Tsrc ≤ E*T →
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
     let Hsrc := fun z : ℝ × ℝ =>
       (iteratedDeriv 2 Fsrc z.2-iteratedDeriv 2 Fsrc (z.2+η*z.1))/(σsrc*η)
     let center := (ycenter,Hsrc (ycenter,xcenter))
@@ -1472,117 +1188,12 @@ theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
     (∀ ab∈Gaps, ∀ j∈S ab, ∀ i,
       ‖((yp i,(2*M^2/Tsrc)*(rat ab j i:ℝ)):ℝ × ℝ)-center‖ < a ∧
       ‖((yp i,(Tsrc/(2*M^2))*(rat ab j i:ℝ)⁻¹):ℝ × ℝ)-centerInv‖ < a) →
-    (0 < σ) →
-    (δ ≤ min (modelPhaseThirdLower σ) 1) →
-    (∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ) →
-    (0 < T) →
-    (0 < M) →
-    (0 < N) →
-    (1 ≤ R) →
-    (R ≤ M) →
-    (0 < Q) →
-    (T*N*R^2=M^3) →
-    ((Q:ℝ)*N ≤ (K₀:ℝ)*R^2) →
-    (∀ i, M ≤ A i) →
-    (∀ i, A i+W i ≤ 2*M) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), (x ab) j 0∈Icc (base+N*(j:ℝ)) (base+N*((j:ℝ)+1))) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, ((rat ab) j i).den ≤ Q ∧ Q ≤ 2*((rat ab) j i).den) →
-    (0 < lambda) →
-    (0 ≤ Uband) →
-    (0 < θ) →
-    (θ ≤ 1/24) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, lambda ≤ |((rat ab) j i:ℝ)| ∧ |((rat ab) j i:ℝ)| ≤ Uband) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (((rat ab) j i).den:ℤ) ∣ ((rat ab) j i).num*(vinv ab) j i-1) →
-    (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
-      (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ ab∈Gaps, (s ab) ≠ 0) →
-    (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
-    (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*N∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*N∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ N^2) →
-    (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ (N/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    (N^10 ≤ M^3*R^7) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ((rat ab) j 0:ℝ)∈Icc ab.1 ab.2) →
-    (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
-      ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
-    let Vheight := T*(modelPhaseJetCoefficient σ 1+δ)/(2*M^2)
-    let P₁ := fun (ab : ℝ × ℝ) => 1+(|((v ab):ℝ)|+|((s ab):ℝ)| *Vheight)*(Q:ℝ)
-    let P₂ := fun (ab : ℝ × ℝ) => 1+(|((r ab):ℝ)| *Vheight+|((e ab):ℝ)|)*(Q:ℝ)
-    let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
-    let Ccharts := fun (ab : ℝ × ℝ) => ⌊Real.logb (5/4) ((ab.2-ab.1)/(12*ε))⌋₊+1
-    let sourceColor := fun (ab : ℝ × ℝ) => fun j i => (⌊(((rat ab) j i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊(((rat ab) j i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
-    (∀ ab∈Gaps, ∀ j∈(S ab), (sourceColor ab) j 0=(sourceColor ab) j 1) →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, iteratedDeriv 2 (f i) ((x ab) j i)/2=((rat ab) j i:ℝ)) →
-    let q := fun (ab : ℝ × ℝ) => fun j i => ((rat ab) j i).den
-    let mu := fun (ab : ℝ × ℝ) => fun j i => iteratedDeriv 3 (f i) (round ((x ab) j i))/6
-    let ell := fun (ab : ℝ × ℝ) => fun j i => deriv (f i) (round ((x ab) j i))
-    let b := fun (ab : ℝ × ℝ) => fun j i => (⌊((q ab) j i:ℝ)*(ell ab) j i⌋+((parity ab) j i:ℕ) : ℤ)
-    let cround := fun (ab : ℝ × ℝ) => fun j i => round (((q ab) j i:ℝ)*(ell ab) j i)
-    let tau := fun (ab : ℝ × ℝ) => fun j i => (((b ab) j i:ℝ)-((q ab) j i:ℝ)*(ell ab) j i)/2
-    let dual := fun (ab : ℝ × ℝ) => fun j i => -2*(mu ab) j i*(Real.sqrt (2/(3*(mu ab) j i*((q ab) j i:ℝ))))^3
-    let cloud := fun (ab : ℝ × ℝ) => fun j i => (![Int.fract (-((vinv ab) j i:ℝ)*(b ab) j i/(q ab) j i),
-      Int.fract (-((vinv ab) j i:ℝ)/(q ab) j i),(dual ab) j i/Real.sqrt K₀,
-      (3*(dual ab) j i*(tau ab) j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ ab∈Gaps, ∀ j∈(S ab), (b ab) j 0-(cround ab) j 0=(b ab) j 1-(cround ab) j 1) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ a, |(cloud ab) j 0 a-(cloud ab) j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 →
-    N ≤ R^2 →
-    R ≤ N →
-    N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
-    Mat 0*Mat 3-Mat 1*Mat 2=1 →
-    (∀ ab∈Gaps, ∀ j∈(S ab), (Mat 2:ℝ)*((rat ab) j 0:ℝ)+Mat 3=((q ab) j 1:ℝ)/(q ab) j 0) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ((Mat 0:ℝ)*((rat ab) j 0:ℝ)+Mat 1)/
-      ((Mat 2:ℝ)*((rat ab) j 0:ℝ)+Mat 3)=((rat ab) j 1:ℝ)) →
-    |(Mat 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) →
-    let H := N/(Cphys+2)
-    2 ≤ N →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), |((anchor ab) j:ℝ)-((rat ab) j 0:ℝ)| ≤ ε) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), 256*(((anchor ab) j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), 256 ≤ (2*ε)*((Q:ℝ)/3)*((anchor ab) j).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
-    2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
-    D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
-    let Blabels := fun ab => 6+216*(⌊Real.logb 2 (P₁ ab*P₂ ab)⌋₊+1)
-    let m0 := 6+Cmajor*(105+544*Bmajor)
-    (∀ ab∈Gaps, Blabels ab ≤ Bmajor) →
-    (∀ ab∈Gaps, Ccharts ab ≤ Cmajor) →
+    WithTriangularChartData Uref Refs Gaps Bselect Bmajor Cmajor S Q K₀ rat vinv parity
+      anchor Mat e r v s σ δ T M N R base Bcut lambda Uband θ A W x F
+      fun κ Cphys B m0 budget =>
     (∀ ab∈Gaps, m0 ≤ (S ab).card) →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
+    let Lunit := budget.Lunit
+    let Cthird := budget.Cthird
     ((Mat 0=1 ∧ Mat 2=0 ∧ Mat 3=1) → Mat 1≠0 →
       (∑ ab∈Gaps, ((S ab).card:ℝ)) ≤ 4*(m0:ℝ)*
         ((2*Cupper*(Cthird+1)*E^2*M^2/(κ*Lunit^3*N^4*|(Mat 1:ℝ)|))^((3:ℝ)⁻¹)+
@@ -1602,6 +1213,8 @@ theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
   have hCL : 0 < CL := hCLb.trans_le (le_max_left _ _)
   refine ⟨min ηb ηg,min ab ag,CU,CL,lt_min hηb hηg,
     (min_le_left _ _).trans hηbcap,lt_min hab hag,hCU,hCL,?_⟩
+  dsimp (config := {zeta := false, zetaUnused := false}) only
+    [WithTriangularChartData, WithTriangularCompletion, WithCubicScales]
   intro Fsrc η xcenter ycenter ya yb Tsrc E Uref Refs Gaps Bselect
     Bmajor Cmajor S Q K₀ inst rat vinv parity anchor Mat e r v s
     σ δ T M N R base Bcut lambda Uband θ A W x
@@ -1611,9 +1224,13 @@ theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
     Vheight P₁ P₂ ε Ccharts sourceColor hsourceColor f hlevel
     q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
-    H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
-    Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Blabels m0 hBmajor hCmajor hS Lunit Gamma Cthird
+    H hNtwo hL hU hanchor hcut hcount budget Δ
+    Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Blabels m0 hBmajor hCmajor hS Lunit Cthird
+  let Ct := budget.Ct
+  let Cc := budget.Cc
+  let Kres := budget.Kres
+  let Gamma := budget.Gamma
   have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
   have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
   have hunit : 0 < Lunit := div_pos (mul_pos (by norm_num) hκ) hCphys
@@ -1626,7 +1243,7 @@ theorem positive_difference_actual_fourier_charted_triangular_long_sample_mass
   have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
   have hCt : 0 ≤ Ct := by dsimp only [Ct]; positivity
   have hCc : 0 ≤ Cc := by dsimp only [Cc]; positivity
-  have hK : 0 ≤ Kres := by dsimp only [Kres]; positivity
+  have hK : 0 ≤ Kres := by dsimp only [Kres, quarticResidualBudget, quarticTaylorSlack]; positivity
   have hΓ : 0 ≤ Gamma := div_nonneg hCphys.le hκ.le
   have hCthird : 0 ≤ Cthird :=
     mul_nonneg hΓ (add_nonneg (mul_nonneg (by norm_num) hK)
@@ -1726,8 +1343,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
       csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
     0 < Tsrc → 2 ≤ M → Tsrc ≤ E*T →
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
     let Hsrc := fun z : ℝ × ℝ =>
       (iteratedDeriv 2 Fsrc z.2-iteratedDeriv 2 Fsrc (z.2+η*z.1))/(σsrc*η)
     let center := (ycenter,Hsrc (ycenter,xcenter))
@@ -1763,7 +1379,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
     let b := fun ab i => (⌊(q ab i:ℝ)*ell ab i⌋+(parity ab i:ℕ) : ℤ)
     let cround := fun ab i => round ((q ab i:ℝ)*ell ab i)
     let tau := fun ab i => ((b ab i:ℝ)-(q ab i:ℝ)*ell ab i)/2
-    let dual := fun ab i => -2*mu ab i*(Real.sqrt (2/(3*mu ab i*(q ab i:ℝ))))^3
+    let dual := fun ab i => cubicDualPhase (mu ab i) (q ab i)
     let cloud := fun ab i => (![Int.fract (-(vinv ab i:ℝ)*b ab i/q ab i),
       Int.fract (-(vinv ab i:ℝ)/q ab i),dual ab i/Real.sqrt K₀,
       (3*dual ab i*tau ab i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
@@ -1779,17 +1395,17 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
     let Cphys := σ*(σ+1)+1
     let c := κ/6
     let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
+    let B := cubicScaleMajorant J c
     ((Mat 0=1 ∧ Mat 2=0 ∧ Mat 3=1) → Mat 1≠0 →
       (Gaps.card:ℝ) ≤ Cupper*(B+1)*E^2*M^2/(N^4*|(Mat 1:ℝ)| *U)+2) ∧
     ((Mat 0=1 ∧ Mat 1=0 ∧ Mat 3=1) → Mat 2≠0 →
       (Gaps.card:ℝ) ≤ 4*Clower*(B+1)*R^4/(N^2*|(Mat 2:ℝ)| *U)+2) := by
   classical
-  obtain ⟨aU,CU,haU,hCU,hupper⟩ :=
-    positive_difference_physical_upper_reference_gap_packing hσsrc hcsrc hUsrc
+  obtain ⟨ηU,aU,CU,hηU,hηUcap,haU,hCU,hupper⟩ :=
+    positive_difference_physical_reference_gap_packing .upper hσsrc hcsrc hUsrc
   obtain ⟨η₀,aL,CL,hη₀,hηcap,haL,hCL,hlower⟩ :=
-    positive_difference_physical_lower_reference_gap_packing hσsrc hcsrc hUsrc
-  refine ⟨η₀,min aU aL,CU,CL,hη₀,hηcap,lt_min haU haL,hCU,hCL,?_⟩
+    positive_difference_physical_reference_gap_packing .lower hσsrc hcsrc hUsrc
+  refine ⟨min η₀ ηU,min aU aL,CU,CL,lt_min hη₀ hηU,(min_le_left _ _).trans hηcap,lt_min haU haL,hCU,hCL,?_⟩
   intro Fsrc η xcenter ycenter ya yb Tsrc E Refs Gaps Mat Q K₀ inst rat vinv parity x
     σ δ T M N R U A W
     hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hsourceScale
@@ -1797,7 +1413,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
     hσ hδ hF hT hM hN hR hU hQ hscale hmesh hNscale hA hW hsep hgap hx hden hinv
     f hlevel q mu ell b cround tau dual cloud radius hcolor hnear hMatt hMatmap
     hsourceGap κ Cphys c J B
-  have hηmax : η ≤ 1/8 := hηsmall.trans hηcap
+  have hηmax : η ≤ 1/8 := (hηsmall.trans (min_le_left _ _)).trans hηcap
   have hRp : 0 < R := zero_lt_one.trans_le hR
   have hB : 0 ≤ B := zero_le_one.trans (le_max_left _ _)
   have hthird ab (hab : ab∈Gaps) :
@@ -1817,7 +1433,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
   let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
   have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
     funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
+    dsimp only [f,heathBrownPhysicalPhase,F,Src, firstDifferenceModel, physicalFirstDifference]
     field_simp
   have hjet i k t : iteratedDeriv k (f i) t=
       iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
@@ -1856,7 +1472,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
         zero_mul,one_mul,zero_add,div_one] using (hMatmap ab hab).symm
     have hp := hupper Fsrc η xcenter ycenter ya yb (Mat 1) (B*R^2/N^2)
       Tsrc M R U Refs Gaps xa xb
-      hη hηmax hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hRp hU hb
+      hη (hηsmall.trans (min_le_right _ _)) hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hRp hU hb
       (by positivity)
       (fun ab hab => ⟨hphysical ab hab 0,hphysical ab hab 1⟩) hsep hgap
       (by
@@ -1908,7 +1524,7 @@ theorem positive_difference_actual_fourier_triangular_closed_gap_count
       rw [hmap ab hab,inv_div,add_div,mul_div_cancel_right₀ _ hn,one_div,add_comm]
     have hp := hlower Fsrc η xcenter ycenter ya yb (Mat 2) (B*R^2/N^2)
       Tsrc M R U Refs Gaps xa xb
-      hη hηsmall hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hRp hU hc
+      hη (hηsmall.trans (min_le_left _ _)) hcenterx hcentery hya hyb hreg hjets htests hTsrc hMtwo hRp hU hc
       (by positivity)
       (fun ab hab => ⟨hphysical ab hab 0,hphysical ab hab 1⟩) hsep hgap
       (by
@@ -1981,8 +1597,7 @@ theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
       csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
     0 < Tsrc → 2 ≤ M → Tsrc ≤ E*T →
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
     let Hsrc := fun z : ℝ × ℝ =>
       (iteratedDeriv 2 Fsrc z.2-iteratedDeriv 2 Fsrc (z.2+η*z.1))/(σsrc*η)
     let center := (ycenter,Hsrc (ycenter,xcenter))
@@ -1990,116 +1605,11 @@ theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
     (∀ ab∈Gaps, ∀ j∈S ab, ∀ i,
       ‖((yp i,(2*M^2/Tsrc)*(rat ab j i:ℝ)):ℝ × ℝ)-center‖ < a ∧
       ‖((yp i,(Tsrc/(2*M^2))*(rat ab j i:ℝ)⁻¹):ℝ × ℝ)-centerInv‖ < a) →
-    (0 < σ) →
-    (δ ≤ min (modelPhaseThirdLower σ) 1) →
-    (∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ) →
-    (0 < T) →
-    (0 < M) →
-    (0 < N) →
-    (1 ≤ R) →
-    (R ≤ M) →
-    (0 < Q) →
-    (T*N*R^2=M^3) →
-    ((Q:ℝ)*N ≤ (K₀:ℝ)*R^2) →
-    (∀ i, M ≤ A i) →
-    (∀ i, A i+W i ≤ 2*M) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), (x ab) j 0∈Icc (base+N*(j:ℝ)) (base+N*((j:ℝ)+1))) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, ((rat ab) j i).den ≤ Q ∧ Q ≤ 2*((rat ab) j i).den) →
-    (0 < lambda) →
-    (0 ≤ Uband) →
-    (0 < θ) →
-    (θ ≤ 1/24) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, lambda ≤ |((rat ab) j i:ℝ)| ∧ |((rat ab) j i:ℝ)| ≤ Uband) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (((rat ab) j i).den:ℤ) ∣ ((rat ab) j i).num*(vinv ab) j i-1) →
-    (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
-      (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ ab∈Gaps, (s ab) ≠ 0) →
-    (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
-    (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*N∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*N∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ N^2) →
-    (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ (N/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    (N^10 ≤ M^3*R^7) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ((rat ab) j 0:ℝ)∈Icc ab.1 ab.2) →
-    (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
-      ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
-    let Vheight := T*(modelPhaseJetCoefficient σ 1+δ)/(2*M^2)
-    let P₁ := fun (ab : ℝ × ℝ) => 1+(|((v ab):ℝ)|+|((s ab):ℝ)| *Vheight)*(Q:ℝ)
-    let P₂ := fun (ab : ℝ × ℝ) => 1+(|((r ab):ℝ)| *Vheight+|((e ab):ℝ)|)*(Q:ℝ)
-    let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
-    let Ccharts := fun (ab : ℝ × ℝ) => ⌊Real.logb (5/4) ((ab.2-ab.1)/(12*ε))⌋₊+1
-    let sourceColor := fun (ab : ℝ × ℝ) => fun j i => (⌊(((rat ab) j i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊(((rat ab) j i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
-    (∀ ab∈Gaps, ∀ j∈(S ab), (sourceColor ab) j 0=(sourceColor ab) j 1) →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, iteratedDeriv 2 (f i) ((x ab) j i)/2=((rat ab) j i:ℝ)) →
-    let q := fun (ab : ℝ × ℝ) => fun j i => ((rat ab) j i).den
-    let mu := fun (ab : ℝ × ℝ) => fun j i => iteratedDeriv 3 (f i) (round ((x ab) j i))/6
-    let ell := fun (ab : ℝ × ℝ) => fun j i => deriv (f i) (round ((x ab) j i))
-    let b := fun (ab : ℝ × ℝ) => fun j i => (⌊((q ab) j i:ℝ)*(ell ab) j i⌋+((parity ab) j i:ℕ) : ℤ)
-    let cround := fun (ab : ℝ × ℝ) => fun j i => round (((q ab) j i:ℝ)*(ell ab) j i)
-    let tau := fun (ab : ℝ × ℝ) => fun j i => (((b ab) j i:ℝ)-((q ab) j i:ℝ)*(ell ab) j i)/2
-    let dual := fun (ab : ℝ × ℝ) => fun j i => -2*(mu ab) j i*(Real.sqrt (2/(3*(mu ab) j i*((q ab) j i:ℝ))))^3
-    let cloud := fun (ab : ℝ × ℝ) => fun j i => (![Int.fract (-((vinv ab) j i:ℝ)*(b ab) j i/(q ab) j i),
-      Int.fract (-((vinv ab) j i:ℝ)/(q ab) j i),(dual ab) j i/Real.sqrt K₀,
-      (3*(dual ab) j i*(tau ab) j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ ab∈Gaps, ∀ j∈(S ab), (b ab) j 0-(cround ab) j 0=(b ab) j 1-(cround ab) j 1) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ a, |(cloud ab) j 0 a-(cloud ab) j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 →
-    N ≤ R^2 →
-    R ≤ N →
-    N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
-    Mat 0*Mat 3-Mat 1*Mat 2=1 →
-    (∀ ab∈Gaps, ∀ j∈(S ab), (Mat 2:ℝ)*((rat ab) j 0:ℝ)+Mat 3=((q ab) j 1:ℝ)/(q ab) j 0) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ((Mat 0:ℝ)*((rat ab) j 0:ℝ)+Mat 1)/
-      ((Mat 2:ℝ)*((rat ab) j 0:ℝ)+Mat 3)=((rat ab) j 1:ℝ)) →
-    |(Mat 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) →
-    let H := N/(Cphys+2)
-    2 ≤ N →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), |((anchor ab) j:ℝ)-((rat ab) j 0:ℝ)| ≤ ε) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), 256*(((anchor ab) j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), 256 ≤ (2*ε)*((Q:ℝ)/3)*((anchor ab) j).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
-    2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
-    D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
-    let Blabels := fun ab => 6+216*(⌊Real.logb 2 (P₁ ab*P₂ ab)⌋₊+1)
-    let m0 := 6+Cmajor*(105+544*Bmajor)
-    (∀ ab∈Gaps, Blabels ab ≤ Bmajor) →
-    (∀ ab∈Gaps, Ccharts ab ≤ Cmajor) →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
+    WithTriangularChartData Uref Refs Gaps Bselect Bmajor Cmajor S Q K₀ rat vinv parity
+      anchor Mat e r v s σ δ T M N R base Bcut lambda Uband θ A W x F
+      fun κ Cphys B m0 budget =>
+    let Lunit := budget.Lunit
+    let Cthird := budget.Cthird
     ((Mat 0=1 ∧ Mat 2=0 ∧ Mat 3=1) → Mat 1≠0 →
       (∑ ab∈Gaps, ((S ab).card:ℝ)) ≤ 4*(m0:ℝ)*
         ((2*Cupper*(Cthird+1)*E^2*M^2/(κ*Lunit^3*N^4*|(Mat 1:ℝ)|))^((3:ℝ)⁻¹)+
@@ -2117,6 +1627,8 @@ theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
     positive_difference_actual_fourier_triangular_closed_gap_count hσsrc hcsrc hUsrc
   refine ⟨min ηl ηs,min al asrc,CU,CL,DU,DL,lt_min hηl hηs,
     (min_le_left _ _).trans hηlcap,lt_min hal hasrc,hCU,hCL,hDU,hDL,?_⟩
+  dsimp (config := {zeta := false, zetaUnused := false}) only
+    [WithTriangularChartData, WithTriangularCompletion, WithCubicScales]
   intro Fsrc η xcenter ycenter ya yb Tsrc E Uref Refs Gaps Bselect
     Bmajor Cmajor S Q K₀ inst rat vinv parity anchor Mat e r v s
     σ δ T M N R base Bcut lambda Uband θ A W x
@@ -2126,9 +1638,9 @@ theorem positive_difference_actual_fourier_charted_triangular_all_sample_mass
     Vheight P₁ P₂ ε Ccharts sourceColor hsourceColor f hlevel
     q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
-    H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
-    Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Blabels m0 hBmajor hCmajor Lunit Gamma Cthird
+    H hNtwo hL hU hanchor hcut hcount budget Δ
+    Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Blabels m0 hBmajor hCmajor Lunit Cthird
   let Long := Gaps.filter (fun ab => m0 ≤ (S ab).card)
   let Short := Gaps.filter (fun ab => (S ab).Nonempty ∧ (S ab).card < m0)
   have hinLong : Long ⊆ Gaps := Finset.filter_subset _ _
@@ -2391,122 +1903,14 @@ theorem positive_difference_actual_fourier_charted_triangular_colored_sample_mas
       csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
     0 < Tsrc → 2 ≤ M → Tsrc ≤ E*T →
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
-    let chartColor := fun ab j i =>
-      (⌊yp i/a⌋,⌊((2*M^2/Tsrc)*(rat ab j i:ℝ))/a⌋,
-        ⌊((Tsrc/(2*M^2))*(rat ab j i:ℝ)⁻¹)/a⌋)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
+    let chartColor := fun ab j i => phaseChartBin a Tsrc M (yp i) (rat ab j i)
     (∀ ab∈Gaps, ∀ j∈S ab, ∀ i, chartColor ab j i=chartKey) →
-    (0 < σ) →
-    (δ ≤ min (modelPhaseThirdLower σ) 1) →
-    (∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ) →
-    (0 < T) →
-    (0 < M) →
-    (0 < N) →
-    (1 ≤ R) →
-    (R ≤ M) →
-    (0 < Q) →
-    (T*N*R^2=M^3) →
-    ((Q:ℝ)*N ≤ (K₀:ℝ)*R^2) →
-    (∀ i, M ≤ A i) →
-    (∀ i, A i+W i ≤ 2*M) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), (x ab) j 0∈Icc (base+N*(j:ℝ)) (base+N*((j:ℝ)+1))) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, ((rat ab) j i).den ≤ Q ∧ Q ≤ 2*((rat ab) j i).den) →
-    (0 < lambda) →
-    (0 ≤ Uband) →
-    (0 < θ) →
-    (θ ≤ 1/24) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, lambda ≤ |((rat ab) j i:ℝ)| ∧ |((rat ab) j i:ℝ)| ≤ Uband) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (((rat ab) j i).den:ℤ) ∣ ((rat ab) j i).num*(vinv ab) j i-1) →
-    (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
-      (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ ab∈Gaps, (s ab) ≠ 0) →
-    (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
-    (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*N∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*N∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ N^2) →
-    (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ (N/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    (N^10 ≤ M^3*R^7) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ((rat ab) j 0:ℝ)∈Icc ab.1 ab.2) →
-    (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
-      ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
-    let Vheight := T*(modelPhaseJetCoefficient σ 1+δ)/(2*M^2)
-    let P₁ := fun (ab : ℝ × ℝ) => 1+(|((v ab):ℝ)|+|((s ab):ℝ)| *Vheight)*(Q:ℝ)
-    let P₂ := fun (ab : ℝ × ℝ) => 1+(|((r ab):ℝ)| *Vheight+|((e ab):ℝ)|)*(Q:ℝ)
-    let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
-    let Ccharts := fun (ab : ℝ × ℝ) => ⌊Real.logb (5/4) ((ab.2-ab.1)/(12*ε))⌋₊+1
-    let sourceColor := fun (ab : ℝ × ℝ) => fun j i => (⌊(((rat ab) j i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊(((rat ab) j i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
-    (∀ ab∈Gaps, ∀ j∈(S ab), (sourceColor ab) j 0=(sourceColor ab) j 1) →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, iteratedDeriv 2 (f i) ((x ab) j i)/2=((rat ab) j i:ℝ)) →
-    let q := fun (ab : ℝ × ℝ) => fun j i => ((rat ab) j i).den
-    let mu := fun (ab : ℝ × ℝ) => fun j i => iteratedDeriv 3 (f i) (round ((x ab) j i))/6
-    let ell := fun (ab : ℝ × ℝ) => fun j i => deriv (f i) (round ((x ab) j i))
-    let b := fun (ab : ℝ × ℝ) => fun j i => (⌊((q ab) j i:ℝ)*(ell ab) j i⌋+((parity ab) j i:ℕ) : ℤ)
-    let cround := fun (ab : ℝ × ℝ) => fun j i => round (((q ab) j i:ℝ)*(ell ab) j i)
-    let tau := fun (ab : ℝ × ℝ) => fun j i => (((b ab) j i:ℝ)-((q ab) j i:ℝ)*(ell ab) j i)/2
-    let dual := fun (ab : ℝ × ℝ) => fun j i => -2*(mu ab) j i*(Real.sqrt (2/(3*(mu ab) j i*((q ab) j i:ℝ))))^3
-    let cloud := fun (ab : ℝ × ℝ) => fun j i => (![Int.fract (-((vinv ab) j i:ℝ)*(b ab) j i/(q ab) j i),
-      Int.fract (-((vinv ab) j i:ℝ)/(q ab) j i),(dual ab) j i/Real.sqrt K₀,
-      (3*(dual ab) j i*(tau ab) j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ ab∈Gaps, ∀ j∈(S ab), (b ab) j 0-(cround ab) j 0=(b ab) j 1-(cround ab) j 1) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ a, |(cloud ab) j 0 a-(cloud ab) j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 →
-    N ≤ R^2 →
-    R ≤ N →
-    N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
-    Mat 0*Mat 3-Mat 1*Mat 2=1 →
-    (∀ ab∈Gaps, ∀ j∈(S ab), (Mat 2:ℝ)*((rat ab) j 0:ℝ)+Mat 3=((q ab) j 1:ℝ)/(q ab) j 0) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ((Mat 0:ℝ)*((rat ab) j 0:ℝ)+Mat 1)/
-      ((Mat 2:ℝ)*((rat ab) j 0:ℝ)+Mat 3)=((rat ab) j 1:ℝ)) →
-    |(Mat 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) →
-    let H := N/(Cphys+2)
-    2 ≤ N →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), ∀ i, (x ab) j i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), |((anchor ab) j:ℝ)-((rat ab) j 0:ℝ)| ≤ ε) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), 256*(((anchor ab) j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ ab∈Gaps, ∀ j∈(S ab), 256 ≤ (2*ε)*((Q:ℝ)/3)*((anchor ab) j).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
-    2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
-    D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
-    let Blabels := fun ab => 6+216*(⌊Real.logb 2 (P₁ ab*P₂ ab)⌋₊+1)
-    let m0 := 6+Cmajor*(105+544*Bmajor)
-    (∀ ab∈Gaps, Blabels ab ≤ Bmajor) →
-    (∀ ab∈Gaps, Ccharts ab ≤ Cmajor) →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
+    WithTriangularChartData Uref Refs Gaps Bselect Bmajor Cmajor S Q K₀ rat vinv parity
+      anchor Mat e r v s σ δ T M N R base Bcut lambda Uband θ A W x F
+      fun κ Cphys B m0 budget =>
+    let Lunit := budget.Lunit
+    let Cthird := budget.Cthird
     ((Mat 0=1 ∧ Mat 2=0 ∧ Mat 3=1) → Mat 1≠0 →
       (∑ ab∈Gaps, ((S ab).card:ℝ)) ≤ 4*(m0:ℝ)*
         ((2*Cupper*(Cthird+1)*E^2*M^2/(κ*Lunit^3*N^4*|(Mat 1:ℝ)|))^((3:ℝ)⁻¹)+
@@ -2521,6 +1925,8 @@ theorem positive_difference_actual_fourier_charted_triangular_colored_sample_mas
   obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
     positive_difference_actual_fourier_charted_triangular_all_sample_mass hσsrc hcsrc hUsrc
   refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  dsimp (config := {zeta := false, zetaUnused := false}) only
+    [WithTriangularChartData, WithTriangularCompletion, WithCubicScales]
   intro Fsrc η ya yb Tsrc E chartKey Uref Refs Gaps Bselect
     Bmajor Cmajor S Q K₀ inst rat vinv parity anchor Mat e r v s
     σ δ T M N R base Bcut lambda Uband θ A W x
@@ -2530,13 +1936,13 @@ theorem positive_difference_actual_fourier_charted_triangular_colored_sample_mas
     Vheight P₁ P₂ ε Ccharts sourceColor hsourceColor f hlevel
     q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
-    H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
-    Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Blabels m0 hBmajor hCmajor Lunit Gamma Cthird
+    H hNtwo hL hU hanchor hcut hcount budget Δ
+    Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Blabels m0 hBmajor hCmajor Lunit Cthird
   let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
   have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
     funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
+    dsimp only [f,heathBrownPhysicalPhase,F,Src, firstDifferenceModel, physicalFirstDifference]
     field_simp
   have hjet i k t : iteratedDeriv k (f i) t=
       iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
@@ -2637,10 +2043,10 @@ private theorem integer_inverse_cuberoot_sum
     constructor
     · exact_mod_cast hh.1
     · exact_mod_cast hh.2
-  have heven : f.Even := by intro b; simp only [f,Int.cast_neg,abs_neg]
+  have heven : f.Even := by intro b; simp only [f,Int.cast_neg,abs_neg, physicalFirstDifference]
   calc
     _ ≤ ∑ b∈Finset.Icc (-(H:ℤ)) (H:ℤ),f b :=
-      Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => by dsimp only [f]; positivity)
+      Finset.sum_le_sum_of_subset_of_nonneg hsub (fun _ _ _ => by dsimp only [f, physicalFirstDifference]; positivity)
     _ = 2*(∑ n∈Finset.range H, ((n:ℝ)+1)^(-(1:ℝ)/3)) := by
       rw [Finset.sum_Icc_of_even_eq_range heven,Finset.sum_range_succ']
       norm_num [f]
@@ -2720,13 +2126,12 @@ private theorem physical_source_triangular_constants_nonneg
     let Cphys := σ*(σ+1)+1
     let c := κ/6
     let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
+    let B := cubicScaleMajorant J c
     let C₂ := modelPhaseJetCoefficient σ 2+δ
     let C₃ := modelPhaseJetCoefficient σ 3+δ
     let Ct := C₂/2+5*C₃/12
     let Cc := C₂/κ+C₃/(2*κ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
+    let Kres := 4*quarticResidualBudget σ δ B Cc Ct/κ
     let Gamma := Cphys/κ
     let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
     0 ≤ B ∧ 0 ≤ Cthird := by
@@ -2759,259 +2164,6 @@ private theorem physical_source_triangular_constants_nonneg
                                                                  
                                                                     
                                                              
-theorem positive_difference_actual_fourier_charted_triangular_translation_sample_mass
-    {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
-    ∃ η₀ a Cupper Clower Dupper Dlower : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
-      0 < Cupper ∧ 0 < Clower ∧ 0 < Dupper ∧ 0 < Dlower ∧
-    ∀ (Fsrc : ℝ → ℝ) (η ya yb Tsrc E Dtranslation : ℝ)
-    (Translations : Finset ℤ) (chartKey : ℤ → ℤ × ℤ × ℤ)
-    (Uref : ℕ) (Refs : Finset ℝ) (Gaps : ℤ → Finset (ℝ × ℝ)) {Bselect : ℝ}
-    (Bmajor Cmajor : ℕ)
-    (S : ℤ → ℝ × ℝ → Finset ℕ) (Q K₀ : ℕ) [NeZero K₀]
-    (rat : ℤ → ℝ × ℝ → ℕ → Fin 2 → ℚ) (vinv : ℤ → ℝ × ℝ → ℕ → Fin 2 → ℤ)
-    (parity : ℤ → ℝ × ℝ → ℕ → Fin 2 → Fin 2) (anchor : ℤ → ℝ × ℝ → ℕ → ℚ)
-    (Mat : ℤ → Fin 4 → ℤ) (e r v s : ℤ → ℝ × ℝ → ℤ)
-    {σ δ T M N R base Bcut lambda Uband θ : ℝ}
-    (A : Fin 2 → ℤ) {W : Fin 2 → ℝ}
-    {x : ℤ → ℝ × ℝ → ℕ → Fin 2 → ℝ},
-    0 < η → η ≤ η₀ →
-    ya∈Icc (1:ℝ) 2 → yb∈Icc (1:ℝ) 2 →
-    (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) Fsrc w| ≤ Usrc) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
-      csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-    0 < Tsrc → 2 ≤ M → Tsrc ≤ E*T →
-    0 ≤ Dtranslation →
-    (∀ t∈Translations, t≠0 ∧ |(t:ℝ)| ≤ Dtranslation) →
-    let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
-    let chartColor := fun (t : ℤ) ab j i =>
-      (⌊yp i/a⌋,⌊((2*M^2/Tsrc)*(rat t ab j i:ℝ))/a⌋,
-        ⌊((Tsrc/(2*M^2))*(rat t ab j i:ℝ)⁻¹)/a⌋)
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈S t ab, ∀ i, chartColor t ab j i=chartKey t) →
-    (0 < σ) →
-    (δ ≤ min (modelPhaseThirdLower σ) 1) →
-    (∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ) →
-    (0 < T) →
-    (0 < M) →
-    (0 < N) →
-    (1 ≤ R) →
-    (R ≤ M) →
-    (0 < Q) →
-    (T*N*R^2=M^3) →
-    ((Q:ℝ)*N ≤ (K₀:ℝ)*R^2) →
-    (∀ i, M ≤ A i) →
-    (∀ i, A i+W i ≤ 2*M) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ i, (x t ab) j i∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), (x t ab) j 0∈Icc (base+N*(j:ℝ)) (base+N*((j:ℝ)+1))) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ i, ((rat t ab) j i).den ≤ Q ∧ Q ≤ 2*((rat t ab) j i).den) →
-    (0 < lambda) →
-    (0 ≤ Uband) →
-    (0 < θ) →
-    (θ ≤ 1/24) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ i, lambda ≤ |((rat t ab) j i:ℝ)| ∧ |((rat t ab) j i:ℝ)| ≤ Uband) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ i, (((rat t ab) j i).den:ℤ) ∣ ((rat t ab) j i).num*(vinv t ab) j i-1) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, (v t ab)*(r t ab)-(e t ab)*(s t ab)=1) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ((0:ℝ) < (r t ab) ∧ ((e t ab):ℝ)/(r t ab)=ab.1) ∨
-      (((r t ab):ℝ) < 0 ∧ ((e t ab):ℝ)/(r t ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, (s t ab) ≠ 0) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ((e t ab):ℝ)/(r t ab)∈Refs) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ((v t ab):ℝ)/(s t ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ i, (x t ab) j i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*N∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ i, (x t ab) j i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*N∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ N^2) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, R^2 ≤ ((r t ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ (N/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    (N^10 ≤ M^3*R^7) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ((rat t ab) j 0:ℝ)∈Icc ab.1 ab.2) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
-      ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
-    let Vheight := T*(modelPhaseJetCoefficient σ 1+δ)/(2*M^2)
-    let P₁ := fun (t : ℤ) (ab : ℝ × ℝ) => 1+(|((v t ab):ℝ)|+|((s t ab):ℝ)| *Vheight)*(Q:ℝ)
-    let P₂ := fun (t : ℤ) (ab : ℝ × ℝ) => 1+(|((r t ab):ℝ)| *Vheight+|((e t ab):ℝ)|)*(Q:ℝ)
-    let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
-    let Ccharts := fun (ab : ℝ × ℝ) => ⌊Real.logb (5/4) ((ab.2-ab.1)/(12*ε))⌋₊+1
-    let sourceColor := fun (t : ℤ) (ab : ℝ × ℝ) => fun j i => (⌊(((rat t ab) j i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊(((rat t ab) j i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), (sourceColor t ab) j 0=(sourceColor t ab) j 1) →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ i, iteratedDeriv 2 (f i) ((x t ab) j i)/2=((rat t ab) j i:ℝ)) →
-    let q := fun (t : ℤ) (ab : ℝ × ℝ) => fun j i => ((rat t ab) j i).den
-    let mu := fun (t : ℤ) (ab : ℝ × ℝ) => fun j i => iteratedDeriv 3 (f i) (round ((x t ab) j i))/6
-    let ell := fun (t : ℤ) (ab : ℝ × ℝ) => fun j i => deriv (f i) (round ((x t ab) j i))
-    let b := fun (t : ℤ) (ab : ℝ × ℝ) => fun j i => (⌊((q t ab) j i:ℝ)*(ell t ab) j i⌋+((parity t ab) j i:ℕ) : ℤ)
-    let cround := fun (t : ℤ) (ab : ℝ × ℝ) => fun j i => round (((q t ab) j i:ℝ)*(ell t ab) j i)
-    let tau := fun (t : ℤ) (ab : ℝ × ℝ) => fun j i => (((b t ab) j i:ℝ)-((q t ab) j i:ℝ)*(ell t ab) j i)/2
-    let dual := fun (t : ℤ) (ab : ℝ × ℝ) => fun j i => -2*(mu t ab) j i*(Real.sqrt (2/(3*(mu t ab) j i*((q t ab) j i:ℝ))))^3
-    let cloud := fun (t : ℤ) (ab : ℝ × ℝ) => fun j i => (![Int.fract (-((vinv t ab) j i:ℝ)*(b t ab) j i/(q t ab) j i),
-      Int.fract (-((vinv t ab) j i:ℝ)/(q t ab) j i),(dual t ab) j i/Real.sqrt K₀,
-      (3*(dual t ab) j i*(tau t ab) j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), (b t ab) j 0-(cround t ab) j 0=(b t ab) j 1-(cround t ab) j 1) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ a, |(cloud t ab) j 0 a-(cloud t ab) j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 →
-    N ≤ R^2 →
-    R ≤ N →
-    N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
-    (∀ t∈Translations, Mat t 0*Mat t 3-Mat t 1*Mat t 2=1) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), (Mat t 2:ℝ)*((rat t ab) j 0:ℝ)+Mat t 3=((q t ab) j 1:ℝ)/(q t ab) j 0) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ((Mat t 0:ℝ)*((rat t ab) j 0:ℝ)+Mat t 1)/
-      ((Mat t 2:ℝ)*((rat t ab) j 0:ℝ)+Mat t 3)=((rat t ab) j 1:ℝ)) →
-    (∀ t∈Translations, |(Mat t 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2)) →
-    let H := N/(Cphys+2)
-    2 ≤ N →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ i, (x t ab) j i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ i, (x t ab) j i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), |((anchor t ab) j:ℝ)-((rat t ab) j 0:ℝ)| ≤ ε) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), 256*(((anchor t ab) j).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), 256 ≤ (2*ε)*((Q:ℝ)/3)*((anchor t ab) j).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
-    2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
-    D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
-    let Blabels := fun (t : ℤ) ab => 6+216*(⌊Real.logb 2 (P₁ t ab*P₂ t ab)⌋₊+1)
-    let m0 := 6+Cmajor*(105+544*Bmajor)
-    (∀ t∈Translations, ∀ ab∈Gaps t, Blabels t ab ≤ Bmajor) →
-    (∀ t∈Translations, ∀ ab∈Gaps t, Ccharts ab ≤ Cmajor) →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
-    let Aupper := 2*Cupper*(Cthird+1)*E^2*M^2/(κ*Lunit^3*N^4)
-    let Bupper := Cupper*(Cthird+1)*E^2*M^2/(Lunit^2*N^4*(Uref:ℝ))+
-      Dupper*(B+1)*E^2*M^2/(4*N^4*(Uref:ℝ))
-    let Alower := 8*Clower*(Cthird+1)*R^4/(κ*Lunit^3*N^2)
-    let Blower := 4*Clower*(Cthird+1)*R^4/(Lunit^2*N^2*(Uref:ℝ))+
-      (4*Dlower*(B+1)*R^4)/(4*N^2*(Uref:ℝ))
-    ((∀ t∈Translations, Mat t 0=1 ∧ Mat t 2=0 ∧ Mat t 3=1 ∧ Mat t 1=t) →
-      (∑ t∈Translations, ∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*(3*Aupper^((3:ℝ)⁻¹)*(Dtranslation+2)^((2:ℝ)/3)+
-        2*Bupper*(3+2*Real.log (Dtranslation+2))+(1/2:ℝ)*(2*Dtranslation+1))) ∧
-    ((∀ t∈Translations, Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1 ∧ Mat t 2=t) →
-      (∑ t∈Translations, ∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*(3*Alower^((3:ℝ)⁻¹)*(Dtranslation+2)^((2:ℝ)/3)+
-        2*Blower*(3+2*Real.log (Dtranslation+2))+(1/2:ℝ)*(2*Dtranslation+1))) := by
-  classical
-  obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
-    positive_difference_actual_fourier_charted_triangular_colored_sample_mass hσsrc hcsrc hUsrc
-  refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
-  intro Fsrc η ya yb Tsrc E Dtranslation Translations chartKey Uref Refs Gaps Bselect
-    Bmajor Cmajor S Q K₀ inst rat vinv parity anchor Mat e r v s
-    σ δ T M N R base Bcut lambda Uband θ A W x
-    hη hηsmall hya hyb hreg hjets htests hTsrc hMtwo hsourceScale hDtranslation hTranslations
-    yp F chartColor hchartColor
-    hσ hδ hF hT hM hN hR hRM hQ hscale hmesh hA hW hx hwindow hden hlambda hUband hθ hθmax hcurv hinv hchart horientation hBcut hs hrefSet hparentSet hsep hwideL hwideU hUref hBselectSize hcutMargin hselectedWrap hreferenceDen hgapWidth hRQ hselectedUpper hscaleTen hfamilyGap hgap
-    Vheight P₁ P₂ ε Ccharts sourceColor hsourceColor f hlevel
-    q mu ell b cround tau dual cloud radius hcolor hnear
-    κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
-    H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
-    Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Blabels m0 hBmajor hCmajor Lunit Gamma Cthird Aupper Bupper Alower Blower
-  have hper t (ht : t∈Translations) :
-    ((Mat t 0=1 ∧ Mat t 2=0 ∧ Mat t 3=1) → Mat t 1≠0 →
-      (∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*
-        ((2*CU*(Cthird+1)*E^2*M^2/(κ*Lunit^3*N^4*|(Mat t 1:ℝ)|))^((3:ℝ)⁻¹)+
-          CU*(Cthird+1)*E^2*M^2/(Lunit^2*N^4*|(Mat t 1:ℝ)| *(Uref:ℝ)))+
-        (m0:ℝ)*(DU*(B+1)*E^2*M^2/(N^4*|(Mat t 1:ℝ)| *(Uref:ℝ))+2)) ∧
-    ((Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1) → Mat t 2≠0 →
-      (∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*
-        ((8*CL*(Cthird+1)*R^4/(κ*Lunit^3*N^2*|(Mat t 2:ℝ)|))^((3:ℝ)⁻¹)+
-          4*CL*(Cthird+1)*R^4/(Lunit^2*N^2*|(Mat t 2:ℝ)| *(Uref:ℝ)))+
-        (m0:ℝ)*(4*DL*(B+1)*R^4/(N^2*|(Mat t 2:ℝ)| *(Uref:ℝ))+2)) := by
-    exact hmassFn Fsrc η ya yb Tsrc E (chartKey t) Uref Refs (Gaps t)
-      (Bselect:=Bselect) Bmajor Cmajor (S t) Q K₀ (rat t) (vinv t) (parity t) (anchor t)
-      (Mat t) (e t) (r t) (v t) (s t)
-      (σ:=σ) (δ:=δ) (T:=T) (M:=M) (N:=N) (R:=R) (base:=base) (Bcut:=Bcut)
-      (lambda:=lambda) (Uband:=Uband) (θ:=θ) A (W:=W) (x:=x t)
-      hη hηsmall hya hyb hreg hjets htests hTsrc hMtwo hsourceScale (hchartColor t ht)
-      hσ hδ hF hT hM hN hR hRM hQ hscale hmesh hA hW (hx t ht) (hwindow t ht) (hden t ht) hlambda hUband hθ hθmax (hcurv t ht) (hinv t ht) (hchart t ht) (horientation t ht) hBcut (hs t ht) (hrefSet t ht) (hparentSet t ht) hsep (hwideL t ht) (hwideU t ht) hUref hBselectSize hcutMargin hselectedWrap (hreferenceDen t ht) (hgapWidth t ht) hRQ hselectedUpper hscaleTen (hfamilyGap t ht) (hgap t ht)
-      (hsourceColor t ht) (hlevel t ht) (hcolor t ht) (hnear t ht) hsmall hNR hRN hNcube hminscale (hMatdet t ht) (hMatt t ht) (hMatmap t ht) (hMatgamma t ht) hNtwo (hL t ht) (hU t ht) (hanchor t ht) (hcut t ht) (hcount t ht) hsize hD hΔ hBsize (hBmajor t ht) (hCmajor t ht)
-  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
-  have hLunit : 0 < Lunit := by dsimp only [Lunit]; positivity
-  have hUp : (0:ℝ) < Uref := by exact_mod_cast (show 0 < Uref by omega)
-  have hδ0 := approximateModelPhase_tolerance_nonneg (hF 0)
-  obtain ⟨hB,hCthird⟩ := physical_source_triangular_constants_nonneg hσ hδ0
-  have hthird1 : 0 ≤ Cthird+1 := add_nonneg hCthird zero_le_one
-  have hB1 : 0 ≤ B+1 := add_nonneg hB zero_le_one
-  have hnumU : 0 ≤ CU*(Cthird+1)*E^2*M^2 :=
-    mul_nonneg (mul_nonneg (mul_nonneg hCU.le hthird1) (sq_nonneg E)) (sq_nonneg M)
-  have hnumDU : 0 ≤ DU*(B+1)*E^2*M^2 :=
-    mul_nonneg (mul_nonneg (mul_nonneg hDU.le hB1) (sq_nonneg E)) (sq_nonneg M)
-  have hnumL : 0 ≤ 4*CL*(Cthird+1)*R^4 :=
-    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hCL.le) hthird1) (by positivity)
-  have hnumDL : 0 ≤ 4*DL*(B+1)*R^4 :=
-    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hDL.le) hB1) (by positivity)
-  have hAU : 0 ≤ Aupper := div_nonneg
-    (by nlinarith only [hnumU]) (by positivity)
-  have hBU : 0 ≤ Bupper := add_nonneg
-    (div_nonneg hnumU (by positivity)) (div_nonneg hnumDU (by positivity))
-  have hAL : 0 ≤ Alower := div_nonneg
-    (by nlinarith only [hnumL]) (by positivity)
-  have hBL : 0 ≤ Blower := add_nonneg
-    (div_nonneg hnumL (by positivity)) (div_nonneg hnumDL (by positivity))
-  constructor
-  · intro htri
-    have hweight t (ht : t∈Translations) :
-        (∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤
-          4*(m0:ℝ)*((Aupper/|(t:ℝ)|)^((3:ℝ)⁻¹)+Bupper/|(t:ℝ)|+1/2) := by
-      have hsides := htri t ht
-      have hentry : Mat t 1≠0 := by rw [hsides.2.2.2]; exact (hTranslations t ht).1
-      have hh := (hper t ht).1 ⟨hsides.1,hsides.2.1,hsides.2.2.1⟩ hentry
-      rw [hsides.2.2.2] at hh
-      exact hh.trans_eq (triangular_weight_normalize (m0:ℝ)
-        (2*CU*(Cthird+1)*E^2*M^2) (CU*(Cthird+1)*E^2*M^2) (DU*(B+1)*E^2*M^2) (κ*Lunit^3*N^4)
-        (Lunit^2*N^4) (N^4) (Uref:ℝ) |(t:ℝ)|)
-    calc
-      _ ≤ ∑ t∈Translations, 4*(m0:ℝ)*((Aupper/|(t:ℝ)|)^((3:ℝ)⁻¹)+Bupper/|(t:ℝ)|+1/2) :=
-        Finset.sum_le_sum hweight
-      _ = 4*(m0:ℝ)*(∑ t∈Translations, ((Aupper/|(t:ℝ)|)^((3:ℝ)⁻¹)+Bupper/|(t:ℝ)|+1/2)) :=
-        (Finset.mul_sum _ _ _).symm
-      _ ≤ _ := mul_le_mul_of_nonneg_left
-        (integer_cubic_reciprocal_weight_sum Translations hDtranslation
-          hAU hBU (by norm_num : (0:ℝ) ≤ 1/2) hTranslations) (by positivity)
-  · intro htri
-    have hweight t (ht : t∈Translations) :
-        (∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤
-          4*(m0:ℝ)*((Alower/|(t:ℝ)|)^((3:ℝ)⁻¹)+Blower/|(t:ℝ)|+1/2) := by
-      have hsides := htri t ht
-      have hentry : Mat t 2≠0 := by rw [hsides.2.2.2]; exact (hTranslations t ht).1
-      have hh := (hper t ht).2 ⟨hsides.1,hsides.2.1,hsides.2.2.1⟩ hentry
-      rw [hsides.2.2.2] at hh
-      exact hh.trans_eq (triangular_weight_normalize (m0:ℝ)
-        (8*CL*(Cthird+1)*R^4) (4*CL*(Cthird+1)*R^4) (4*DL*(B+1)*R^4) (κ*Lunit^3*N^2)
-        (Lunit^2*N^2) (N^2) (Uref:ℝ) |(t:ℝ)|)
-    calc
-      _ ≤ ∑ t∈Translations, 4*(m0:ℝ)*((Alower/|(t:ℝ)|)^((3:ℝ)⁻¹)+Blower/|(t:ℝ)|+1/2) :=
-        Finset.sum_le_sum hweight
-      _ = 4*(m0:ℝ)*(∑ t∈Translations, ((Alower/|(t:ℝ)|)^((3:ℝ)⁻¹)+Blower/|(t:ℝ)|+1/2)) :=
-        (Finset.mul_sum _ _ _).symm
-      _ ≤ _ := mul_le_mul_of_nonneg_left
-        (integer_cubic_reciprocal_weight_sum Translations hDtranslation
-          hAL hBL (by norm_num : (0:ℝ) ≤ 1/2) hTranslations) (by positivity)
-
-
 private theorem rational_narrow_triangular_translation_bounds
     (p : Fin 2 → ℚ) (Mat : Fin 4 → ℤ) (Q : ℕ)
     {lambda U θ : ℝ} (hQ : 0 < Q) (hlambda : 0 < lambda)
@@ -3082,11 +2234,8 @@ theorem positive_difference_actual_fourier_charted_triangular_source_cutoff_samp
     0 < Tsrc → 2 ≤ M → Tsrc ≤ E*T →
     (∀ t∈Translations, t≠0) →
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
-    let chartColor := fun (t : ℤ) ab j i =>
-      (⌊yp i/a⌋,⌊((2*M^2/Tsrc)*(rat t ab j i:ℝ))/a⌋,
-        ⌊((Tsrc/(2*M^2))*(rat t ab j i:ℝ)⁻¹)/a⌋)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
+    let chartColor := fun (t : ℤ) ab j i => phaseChartBin a Tsrc M (yp i) (rat t ab j i)
     (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈S t ab, ∀ i, chartColor t ab j i=chartKey t) →
     (0 < σ) →
     (δ ≤ min (modelPhaseThirdLower σ) 1) →
@@ -3152,19 +2301,10 @@ theorem positive_difference_actual_fourier_charted_triangular_source_cutoff_samp
     let cloud := fun (t : ℤ) (ab : ℝ × ℝ) => fun j i => (![Int.fract (-((vinv t ab) j i:ℝ)*(b t ab) j i/(q t ab) j i),
       Int.fract (-((vinv t ab) j i:ℝ)/(q t ab) j i),(dual t ab) j i/Real.sqrt K₀,
       (3*(dual t ab) j i*(tau t ab) j i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
+    let radius : Fin 4 → ℝ := cubicCompletionRadius K₀
     (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), (b t ab) j 0-(cround t ab) j 0=(b t ab) j 1-(cround t ab) j 1) →
     (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ∀ a, |(cloud t ab) j 0 a-(cloud t ab) j 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/N^2 ≤ 1/2 →
-    N ≤ R^2 →
-    R ≤ N →
-    N^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*N →
+    WithCubicScales σ M N R Q (fun κ Cphys c J B =>
     (∀ t∈Translations, Mat t 0*Mat t 3-Mat t 1*Mat t 2=1) →
     (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), (Mat t 2:ℝ)*((rat t ab) j 0:ℝ)+Mat t 3=((q t ab) j 1:ℝ)/(q t ab) j 0) →
     (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), ((Mat t 0:ℝ)*((rat t ab) j 0:ℝ)+Mat t 1)/
@@ -3177,27 +2317,21 @@ theorem positive_difference_actual_fourier_charted_triangular_source_cutoff_samp
     (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), |((anchor t ab) j:ℝ)-((rat t ab) j 0:ℝ)| ≤ ε) →
     (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), 256*(((anchor t ab) j).den:ℝ) ≤ (Q:ℝ)/3) →
     (∀ t∈Translations, ∀ ab∈Gaps t, ∀ j∈(S t ab), 256 ≤ (2*ε)*((Q:ℝ)/3)*((anchor t ab) j).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/N
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/N
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+    let budget := QuarticChartBudget.make σ δ κ Cphys B
+    let Δ := budget.delta Q N
+    let Ccurv := budget.Ccurv
+    let D := budget.error Q N
+    let Esize := budget.Esize
+    let Dbase := budget.Dbase
+    let Tbase := budget.Tbase
     2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
     D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
     let Blabels := fun (t : ℤ) ab => 6+216*(⌊Real.logb 2 (P₁ t ab*P₂ t ab)⌋₊+1)
     let m0 := 6+Cmajor*(105+544*Bmajor)
     (∀ t∈Translations, ∀ ab∈Gaps t, Blabels t ab ≤ Bmajor) →
     (∀ t∈Translations, ∀ ab∈Gaps t, Ccharts ab ≤ Cmajor) →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
+    let Lunit := budget.Lunit
+    let Cthird := budget.Cthird
     let Aupper := 2*Cupper*(Cthird+1)*E^2*M^2/(κ*Lunit^3*N^4)
     let Bupper := Cupper*(Cthird+1)*E^2*M^2/(Lunit^2*N^4*(Uref:ℝ))+
       Dupper*(B+1)*E^2*M^2/(4*N^4*(Uref:ℝ))
@@ -3211,11 +2345,12 @@ theorem positive_difference_actual_fourier_charted_triangular_source_cutoff_samp
         2*Bupper*(3+2*Real.log (DupperCut+2))+(1/2:ℝ)*(2*DupperCut+1))) ∧
     ((∀ t∈Translations, Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1 ∧ Mat t 2=t) →
       (∑ t∈Translations, ∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*(3*Alower^((3:ℝ)⁻¹)*(DlowerCut+2)^((2:ℝ)/3)+
-        2*Blower*(3+2*Real.log (DlowerCut+2))+(1/2:ℝ)*(2*DlowerCut+1))) := by
+        2*Blower*(3+2*Real.log (DlowerCut+2))+(1/2:ℝ)*(2*DlowerCut+1)))) := by
   classical
   obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
-    positive_difference_actual_fourier_charted_triangular_translation_sample_mass hσsrc hcsrc hUsrc
+    positive_difference_actual_fourier_charted_triangular_colored_sample_mass hσsrc hcsrc hUsrc
   refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  dsimp (config := {zeta := false, zetaUnused := false}) only [WithCubicScales]
   intro Fsrc η ya yb Tsrc E Translations chartKey Uref Refs Gaps Bselect
     Bmajor Cmajor S Q K₀ inst rat vinv parity anchor Mat e r v s
     σ δ T M N R base Bcut lambda Uband θ A W x
@@ -3225,9 +2360,9 @@ theorem positive_difference_actual_fourier_charted_triangular_source_cutoff_samp
     Vheight P₁ P₂ ε Ccharts sourceColor hsourceColor f hlevel
     q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
-    H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
-    Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Blabels m0 hBmajor hCmajor Lunit Gamma Cthird Aupper Bupper Alower Blower DupperCut DlowerCut
+    H hNtwo hL hU hanchor hcut hcount budget Δ
+    Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Blabels m0 hBmajor hCmajor Lunit Cthird Aupper Bupper Alower Blower DupperCut DlowerCut
   let Occupied := Translations.filter (fun t => ∃ ab∈Gaps t, (S t ab).Nonempty)
   have hinOcc : Occupied ⊆ Translations := Finset.filter_subset _ _
   have hsum : (∑ t∈Translations, ∑ ab∈Gaps t, ((S t ab).card:ℝ)) =
@@ -3249,41 +2384,88 @@ theorem positive_difference_actual_fourier_charted_triangular_source_cutoff_samp
       hQ hlambda hUband hθ (hcurv t (hinOcc ht) ab hab j hj)
       (hden t (hinOcc ht) ab hab j hj) (hsourceColor t (hinOcc ht) ab hab j hj)
       (hMatt t (hinOcc ht) ab hab j hj) (hMatmap t (hinOcc ht) ab hab j hj)
-  have hbound (Dlim : ℝ) (hDlim : 0 ≤ Dlim)
-      (hcutoff : ∀ t∈Occupied, |(t:ℝ)| ≤ Dlim) :
-    ((∀ t∈Occupied, Mat t 0=1 ∧ Mat t 2=0 ∧ Mat t 3=1 ∧ Mat t 1=t) →
-      (∑ t∈Occupied, ∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*(3*Aupper^((3:ℝ)⁻¹)*(Dlim+2)^((2:ℝ)/3)+
-        2*Bupper*(3+2*Real.log (Dlim+2))+(1/2:ℝ)*(2*Dlim+1))) ∧
-    ((∀ t∈Occupied, Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1 ∧ Mat t 2=t) →
-      (∑ t∈Occupied, ∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*(3*Alower^((3:ℝ)⁻¹)*(Dlim+2)^((2:ℝ)/3)+
-        2*Blower*(3+2*Real.log (Dlim+2))+(1/2:ℝ)*(2*Dlim+1))) := by
-    exact hmassFn Fsrc η ya yb Tsrc E Dlim Occupied chartKey Uref Refs Gaps
-      (Bselect:=Bselect) Bmajor Cmajor S Q K₀ rat vinv parity anchor Mat e r v s
+  have hper t (ht : t∈Translations) :
+    ((Mat t 0=1 ∧ Mat t 2=0 ∧ Mat t 3=1) → Mat t 1≠0 →
+      (∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*
+        ((2*CU*(Cthird+1)*E^2*M^2/(κ*Lunit^3*N^4*|(Mat t 1:ℝ)|))^((3:ℝ)⁻¹)+
+          CU*(Cthird+1)*E^2*M^2/(Lunit^2*N^4*|(Mat t 1:ℝ)| *(Uref:ℝ)))+
+        (m0:ℝ)*(DU*(B+1)*E^2*M^2/(N^4*|(Mat t 1:ℝ)| *(Uref:ℝ))+2)) ∧
+    ((Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1) → Mat t 2≠0 →
+      (∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤ 4*(m0:ℝ)*
+        ((8*CL*(Cthird+1)*R^4/(κ*Lunit^3*N^2*|(Mat t 2:ℝ)|))^((3:ℝ)⁻¹)+
+          4*CL*(Cthird+1)*R^4/(Lunit^2*N^2*|(Mat t 2:ℝ)| *(Uref:ℝ)))+
+        (m0:ℝ)*(4*DL*(B+1)*R^4/(N^2*|(Mat t 2:ℝ)| *(Uref:ℝ))+2)) := by
+    exact hmassFn Fsrc η ya yb Tsrc E (chartKey t) Uref Refs (Gaps t)
+      (Bselect:=Bselect) Bmajor Cmajor (S t) Q K₀ (rat t) (vinv t) (parity t) (anchor t)
+      (Mat t) (e t) (r t) (v t) (s t)
       (σ:=σ) (δ:=δ) (T:=T) (M:=M) (N:=N) (R:=R) (base:=base) (Bcut:=Bcut)
-      (lambda:=lambda) (Uband:=Uband) (θ:=θ) A (W:=W) (x:=x)
-      hη hηsmall hya hyb hreg hjets htests hTsrc hMtwo hsourceScale hDlim
-      (fun t ht => ⟨hTranslations t (hinOcc ht),hcutoff t ht⟩) (fun t ht => hchartColor t (hinOcc ht))
-      hσ hδ hF hT hM hN hR hRM hQ hscale hmesh hA hW (fun t ht => hx t (hinOcc ht)) (fun t ht => hwindow t (hinOcc ht)) (fun t ht => hden t (hinOcc ht)) hlambda hUband hθ hθmax (fun t ht => hcurv t (hinOcc ht)) (fun t ht => hinv t (hinOcc ht)) (fun t ht => hchart t (hinOcc ht)) (fun t ht => horientation t (hinOcc ht)) hBcut (fun t ht => hs t (hinOcc ht)) (fun t ht => hrefSet t (hinOcc ht)) (fun t ht => hparentSet t (hinOcc ht)) hsep (fun t ht => hwideL t (hinOcc ht)) (fun t ht => hwideU t (hinOcc ht)) hUref hBselectSize hcutMargin hselectedWrap (fun t ht => hreferenceDen t (hinOcc ht)) (fun t ht => hgapWidth t (hinOcc ht)) hRQ hselectedUpper hscaleTen (fun t ht => hfamilyGap t (hinOcc ht)) (fun t ht => hgap t (hinOcc ht))
-      (fun t ht => hsourceColor t (hinOcc ht)) (fun t ht => hlevel t (hinOcc ht)) (fun t ht => hcolor t (hinOcc ht)) (fun t ht => hnear t (hinOcc ht)) hsmall hNR hRN hNcube hminscale (fun t ht => hMatdet t (hinOcc ht)) (fun t ht => hMatt t (hinOcc ht)) (fun t ht => hMatmap t (hinOcc ht)) (fun t ht => hMatgamma t (hinOcc ht)) hNtwo (fun t ht => hL t (hinOcc ht)) (fun t ht => hU t (hinOcc ht)) (fun t ht => hanchor t (hinOcc ht)) (fun t ht => hcut t (hinOcc ht)) (fun t ht => hcount t (hinOcc ht)) hsize hD hΔ hBsize (fun t ht => hBmajor t (hinOcc ht)) (fun t ht => hCmajor t (hinOcc ht))
+      (lambda:=lambda) (Uband:=Uband) (θ:=θ) A (W:=W) (x:=x t)
+      hη hηsmall hya hyb hreg hjets htests hTsrc hMtwo hsourceScale (hchartColor t ht)
+      hσ hδ hF hT hM hN hR hRM hQ hscale hmesh hA hW (hx t ht) (hwindow t ht) (hden t ht) hlambda hUband hθ hθmax (hcurv t ht) (hinv t ht) (hchart t ht) (horientation t ht) hBcut (hs t ht) (hrefSet t ht) (hparentSet t ht) hsep (hwideL t ht) (hwideU t ht) hUref hBselectSize hcutMargin hselectedWrap (hreferenceDen t ht) (hgapWidth t ht) hRQ hselectedUpper hscaleTen (hfamilyGap t ht) (hgap t ht)
+      (hsourceColor t ht) (hlevel t ht) (hcolor t ht) (hnear t ht) hsmall hNR hRN hNcube hminscale (hMatdet t ht) (hMatt t ht) (hMatmap t ht) (hMatgamma t ht) hNtwo (hL t ht) (hU t ht) (hanchor t ht) (hcut t ht) (hcount t ht) hsize hD hΔ hBsize (hBmajor t ht) (hCmajor t ht)
+  have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
+  have hCphys : 0 < Cphys := by dsimp only [Cphys]; positivity
+  have hLunit : 0 < Lunit := by dsimp only [Lunit]; positivity
+  have hUp : (0:ℝ) < Uref := by exact_mod_cast (show 0 < Uref by omega)
+  have hδ0 := approximateModelPhase_tolerance_nonneg (hF 0)
+  obtain ⟨hB,hCthird⟩ := physical_source_triangular_constants_nonneg hσ hδ0
+  have hthird1 : 0 ≤ Cthird+1 := add_nonneg hCthird zero_le_one
+  have hB1 : 0 ≤ B+1 := add_nonneg hB zero_le_one
+  have hnumU : 0 ≤ CU*(Cthird+1)*E^2*M^2 :=
+    mul_nonneg (mul_nonneg (mul_nonneg hCU.le hthird1) (sq_nonneg E)) (sq_nonneg M)
+  have hnumDU : 0 ≤ DU*(B+1)*E^2*M^2 :=
+    mul_nonneg (mul_nonneg (mul_nonneg hDU.le hB1) (sq_nonneg E)) (sq_nonneg M)
+  have hnumL : 0 ≤ 4*CL*(Cthird+1)*R^4 :=
+    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hCL.le) hthird1) (by positivity)
+  have hnumDL : 0 ≤ 4*DL*(B+1)*R^4 :=
+    mul_nonneg (mul_nonneg (mul_nonneg (by norm_num) hDL.le) hB1) (by positivity)
+  have hAU : 0 ≤ Aupper := div_nonneg
+    (by nlinarith only [hnumU]) (by positivity)
+  have hBU : 0 ≤ Bupper := add_nonneg
+    (div_nonneg hnumU (by positivity)) (div_nonneg hnumDU (by positivity))
+  have hAL : 0 ≤ Alower := div_nonneg
+    (by nlinarith only [hnumL]) (by positivity)
+  have hBL : 0 ≤ Blower := add_nonneg
+    (div_nonneg hnumL (by positivity)) (div_nonneg hnumDL (by positivity))
+  have sum_bound {A B lim : ℝ} (hA : 0≤A) (hB : 0≤B) (hlim : 0≤lim)
+      (hrange : ∀ t∈Occupied, |(t:ℝ)|≤lim)
+      (hweight : ∀ t∈Occupied, (∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤
+        4*(m0:ℝ)*((A/|(t:ℝ)|)^((3:ℝ)⁻¹)+B/|(t:ℝ)|+1/2)) :
+      (∑ t∈Translations, ∑ ab∈Gaps t, ((S t ab).card:ℝ)) ≤
+      4*(m0:ℝ)*(3*A^((3:ℝ)⁻¹)*(lim+2)^((2:ℝ)/3)+
+        2*B*(3+2*Real.log (lim+2))+(1/2:ℝ)*(2*lim+1)) := by
+    rw [hsum]
+    calc
+      _ ≤ _ := Finset.sum_le_sum hweight
+      _ = _ := (Finset.mul_sum _ _ _).symm
+      _ ≤ _ := mul_le_mul_of_nonneg_left
+        (integer_cubic_reciprocal_weight_sum Occupied hlim hA hB (by norm_num)
+          (fun t ht => ⟨hTranslations t (hinOcc ht), hrange t ht⟩)) (by positivity)
   constructor
   · intro htri
-    have hrange : ∀ t∈Occupied, |(t:ℝ)| ≤ DupperCut := by
-      intro t ht
-      have hsides := htri t (hinOcc ht)
-      have hh := (hcuts t ht).1 ⟨hsides.1,hsides.2.1,hsides.2.2.1⟩
-      simpa only [hsides.2.2.2] using hh
-    rw [hsum]
-    exact (hbound DupperCut (mul_nonneg hθ.le hUband) hrange).1
-      (fun t ht => htri t (hinOcc ht))
+    apply sum_bound hAU hBU (mul_nonneg hθ.le hUband)
+    · intro t ht
+      have ⟨h₁,h₂,h₃,h₄⟩ := htri t (hinOcc ht)
+      simpa only [h₄] using (hcuts t ht).1 ⟨h₁,h₂,h₃⟩
+    · intro t ht
+      have ⟨h₁,h₂,h₃,h₄⟩ := htri t (hinOcc ht)
+      have hh := (hper t (hinOcc ht)).1 ⟨h₁,h₂,h₃⟩ (by rw [h₄]; exact hTranslations t (hinOcc ht))
+      rw [h₄] at hh
+      exact hh.trans_eq (triangular_weight_normalize (m0:ℝ)
+        (2*CU*(Cthird+1)*E^2*M^2) (CU*(Cthird+1)*E^2*M^2) (DU*(B+1)*E^2*M^2)
+        (κ*Lunit^3*N^4) (Lunit^2*N^4) (N^4) (Uref:ℝ) |(t:ℝ)|)
   · intro htri
-    have hrange : ∀ t∈Occupied, |(t:ℝ)| ≤ DlowerCut := by
-      intro t ht
-      have hsides := htri t (hinOcc ht)
-      have hh := (hcuts t ht).2 ⟨hsides.1,hsides.2.1,hsides.2.2.1⟩
-      simpa only [hsides.2.2.2] using hh
-    rw [hsum]
-    exact (hbound DlowerCut (div_nonneg hθ.le hlambda.le) hrange).2
-      (fun t ht => htri t (hinOcc ht))
+    apply sum_bound hAL hBL (div_nonneg hθ.le hlambda.le)
+    · intro t ht
+      have ⟨h₁,h₂,h₃,h₄⟩ := htri t (hinOcc ht)
+      simpa only [h₄] using (hcuts t ht).2 ⟨h₁,h₂,h₃⟩
+    · intro t ht
+      have ⟨h₁,h₂,h₃,h₄⟩ := htri t (hinOcc ht)
+      have hh := (hper t (hinOcc ht)).2 ⟨h₁,h₂,h₃⟩ (by rw [h₄]; exact hTranslations t (hinOcc ht))
+      rw [h₄] at hh
+      exact hh.trans_eq (triangular_weight_normalize (m0:ℝ)
+        (8*CL*(Cthird+1)*R^4) (4*CL*(Cthird+1)*R^4) (4*DL*(B+1)*R^4)
+        (κ*Lunit^3*N^2) (Lunit^2*N^2) (N^2) (Uref:ℝ) |(t:ℝ)|)
 
 theorem physicalModelPhase_reference_translation_window_selection
     (P : Finset ((ℤ × Fin 2) × (ℤ × Fin 2)))
@@ -3378,11 +2560,8 @@ theorem positive_difference_actual_fourier_triangular_original_pair_mass
     (∀ ij∈P, N ≤ AlenB ij.2.1 ∧ AlenB ij.2.1 ≤ 3*N ∧
       round (zb ij.2.1)+(AlenB ij.2.1:ℤ)=Zb+(N:ℤ)*ij.2.1+2*(N:ℤ)) →
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
-    let chartColor := fun ij i =>
-      (⌊yp i/a⌋,⌊((2*M^2/Tsrc)*(rat ij i:ℝ))/a⌋,
-        ⌊((Tsrc/(2*M^2))*(rat ij i:ℝ)⁻¹)/a⌋)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
+    let chartColor := fun ij i => phaseChartBin a Tsrc M (yp i) (rat ij i)
     (∀ ij∈P, ∀ i, chartColor ij i=chartKey (entry ij)) →
     (0 < σ) →
     (δ ≤ min (modelPhaseThirdLower σ) 1) →
@@ -3405,25 +2584,10 @@ theorem positive_difference_actual_fourier_triangular_original_pair_mass
     (θ ≤ 1/24) →
     (∀ ij∈P, ∀ i, lambda ≤ |(rat ij i:ℝ)| ∧ |(rat ij i:ℝ)| ≤ Uband) →
     (∀ ij∈P, ∀ i, ((rat ij i).den:ℤ) ∣ (rat ij i).num*vinv ij i-1) →
-    (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
-      (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ ab∈Gaps, (s ab) ≠ 0) →
-    (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
-    (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
+    WithReferenceBasis Gaps Refs e r v s Uref R Bcut (
     (∀ ij∈P, ∀ i, x ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
     (∀ ij∈P, ∀ i, x ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ (N:ℝ)^2) →
-    (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    ((N:ℝ)^10 ≤ M^3*R^7) →
+    WithReferenceScale Gaps r Uref Q (modelPhaseThirdLower σ) Bcut Bselect M (N:ℝ) R (
     (∀ ij∈P, (rat ij 0:ℝ)∈Icc (gap ij).1 (gap ij).2) →
     (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
       ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
@@ -3432,67 +2596,29 @@ theorem positive_difference_actual_fourier_triangular_original_pair_mass
     let P₂ := fun (ab : ℝ × ℝ) => 1+(|((r ab):ℝ)| *Vheight+|((e ab):ℝ)|)*(Q:ℝ)
     let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
     let Ccharts := fun (ab : ℝ × ℝ) => ⌊Real.logb (5/4) ((ab.2-ab.1)/(12*ε))⌋₊+1
-    let sourceColor := fun ij i => (⌊((rat ij i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊((rat ij i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
+    let sourceColor := fun ij i => rationalSourceBin Q lambda θ (rat ij i)
     (∀ ij∈P, sourceColor ij 0=sourceColor ij 1) →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ ij∈P, ∀ i, iteratedDeriv 2 (f i) (x ij i)/2=(rat ij i:ℝ)) →
-    let q := fun ij i => (rat ij i).den
-    let mu := fun ij i => iteratedDeriv 3 (f i) (round (x ij i))/6
-    let ell := fun ij i => deriv (f i) (round (x ij i))
-    let b := fun ij i => (⌊(q ij i:ℝ)*ell ij i⌋+(parity ij i:ℕ) : ℤ)
-    let cround := fun ij i => round ((q ij i:ℝ)*ell ij i)
-    let tau := fun ij i => ((b ij i:ℝ)-(q ij i:ℝ)*ell ij i)/2
-    let dual := fun ij i => -2*mu ij i*(Real.sqrt (2/(3*mu ij i*(q ij i:ℝ))))^3
-    let cloud := fun ij i => (![Int.fract (-(vinv ij i:ℝ)*b ij i/q ij i),
-      Int.fract (-(vinv ij i:ℝ)/q ij i),dual ij i/Real.sqrt K₀,
-      (3*dual ij i*tau ij i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ ij∈P, b ij 0-cround ij 0=b ij 1-cround ij 1) →
-    (∀ ij∈P, ∀ a, |cloud ij 0 a-cloud ij 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/(N:ℝ)^2 ≤ 1/2 →
-    (N:ℝ) ≤ R^2 →
-    R ≤ (N:ℝ) →
-    (N:ℝ)^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*(N:ℝ) →
-    (∀ t∈P.image entry, Mat t 0*Mat t 3-Mat t 1*Mat t 2=1) →
-    (∀ ij∈P, (Mat (entry ij) 2:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 3=(q ij 1:ℝ)/q ij 0) →
-    (∀ ij∈P, ((Mat (entry ij) 0:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 1)/
-      ((Mat (entry ij) 2:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 3)=(rat ij 1:ℝ)) →
-    (∀ t∈P.image entry, |(Mat t 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2)) →
-    let H := (N:ℝ)/(Cphys+2)
-    2 ≤ (N:ℝ) →
-    (∀ ij∈P, ∀ i, x ij i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, x ij i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, |(anchor ij:ℝ)-(rat ij 0:ℝ)| ≤ ε) →
-    (∀ ij∈P, 256*((anchor ij).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ ij∈P, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor ij).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+    WithRoundedSourceJets P F (fun i => (A i:ℝ)) T M x rat (fun f q mu ell =>
+    WithCompletionCloud P q mu ell parity vinv K₀ (fun b cround tau dual cloud radius =>
+    WithCubicScales σ M (N:ℝ) R Q (fun κ Cphys c J B =>
+    WithCompletionMatrices P entry Mat rat q Q K₀ (
+    WithCompletionMargins P x (fun i => (W i:ℝ)) (N:ℝ) Cphys (fun H =>
+    WithRationalAnchors P rat anchor ε Q (
+    let budget := QuarticChartBudget.make σ δ κ Cphys B
+    let Δ := budget.delta Q N
+    let Ccurv := budget.Ccurv
+    let D := budget.error Q N
+    let Esize := budget.Esize
+    let Dbase := budget.Dbase
+    let Tbase := budget.Tbase
     2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
     D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
     let Blabels := fun ab => 6+216*(⌊Real.logb 2 (P₁ ab*P₂ ab)⌋₊+1)
     let m0 := 6+Cmajor*(105+544*Bmajor)
     (∀ ab∈Gaps, Blabels ab ≤ Bmajor) →
     (∀ ab∈Gaps, Ccharts ab ≤ Cmajor) →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
+    let Lunit := budget.Lunit
+    let Cthird := budget.Cthird
     let Aupper := 2*Cupper*(Cthird+1)*E^2*M^2/(κ*Lunit^3*(N:ℝ)^4)
     let Bupper := Cupper*(Cthird+1)*E^2*M^2/(Lunit^2*(N:ℝ)^4*(Uref:ℝ))+
       Dupper*(B+1)*E^2*M^2/(4*(N:ℝ)^4*(Uref:ℝ))
@@ -3506,11 +2632,12 @@ theorem positive_difference_actual_fourier_triangular_original_pair_mass
         2*Bupper*(3+2*Real.log (DupperCut+2))+(1/2:ℝ)*(2*DupperCut+1)))) ∧
     ((∀ t∈P.image entry, Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1 ∧ Mat t 2=t) →
       (P.card:ℝ) ≤ 60*(4*(m0:ℝ)*(3*Alower^((3:ℝ)⁻¹)*(DlowerCut+2)^((2:ℝ)/3)+
-        2*Blower*(3+2*Real.log (DlowerCut+2))+(1/2:ℝ)*(2*DlowerCut+1)))) := by
+        2*Blower*(3+2*Real.log (DlowerCut+2))+(1/2:ℝ)*(2*DlowerCut+1)))))))))))) := by
   classical
   obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
     positive_difference_actual_fourier_charted_triangular_source_cutoff_sample_mass hσsrc hcsrc hUsrc
   refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  unfold WithRoundedSourceJets WithCompletionCloud WithCubicScales WithCompletionMargins
   intro Fsrc η ya yb Tsrc E chartKey Uref Refs Gaps Bselect P entry Mat gap
     Bmajor Cmajor N za zb AlenA AlenB Za Zb Q K₀ inst rat vinv parity anchor e r v s
     σ δ T M R base Bcut lambda Uband θ A W x
@@ -3520,9 +2647,9 @@ theorem positive_difference_actual_fourier_triangular_original_pair_mass
     Vheight P₁ P₂ ε Ccharts sourceColor hsourceColor f hlevel
     q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
-    H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
-    Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Blabels m0 hBmajor hCmajor Lunit Gamma Cthird Aupper Bupper Alower Blower DupperCut DlowerCut
+    H hNtwo hL hU hanchor hcut hcount budget Δ
+    Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Blabels m0 hBmajor hCmajor Lunit Cthird Aupper Bupper Alower Blower DupperCut DlowerCut
   have hNnat : 0 < N := by exact_mod_cast hN
   have hF₂ i := approximateModelPhase_mono (hF i) (by norm_num : 2 ≤ 4) le_rfl
   have hz ij (hij : ij∈P) : zb ij.2.1∈Ioo 0 (W 1) := by
@@ -3634,14 +2761,14 @@ private theorem positive_difference_approximate_model_source_amplitude
     (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
     (hreg : ∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w)
     (hjets : ∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) Fsrc w| ≤ Usrc) :
-    let F := fun u => (Tsrc/T)*(Fsrc u-Fsrc (u+η*y))/(σsrc*η)
+    let F := fun u => firstDifferenceModel Fsrc Tsrc T σsrc η (y) u
     Expdb.IsApproximateModelPhaseFunction F σ 2 δ →
       modelPhaseThirdLower σ*σsrc*T/(3*Usrc) ≤ Tsrc := by
   intro F hF
   let G := fun u => (Fsrc u-Fsrc (u+η*y))/(σsrc*η)
   have hFu : F=fun u => (Tsrc/T)*G u := by
     funext u
-    dsimp only [F,G]
+    dsimp only [F,G, firstDifferenceModel]
     ring
   have hd : iteratedDeriv 3 F (3/2)=
       (Tsrc/T)*iteratedDeriv 3 G (3/2) := by
@@ -3744,11 +2871,8 @@ theorem positive_difference_actual_fourier_triangular_original_source_mass
     let lambda := csrc*modelPhaseThirdLower σ*T/(12*Usrc*M^2)
     let Uband := (3*Usrc/σsrc)*E*T/(2*M^2)
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
-    let chartColor := fun ij i =>
-      (⌊yp i/a⌋,⌊((2*M^2/Tsrc)*(rat ij i:ℝ))/a⌋,
-        ⌊((Tsrc/(2*M^2))*(rat ij i:ℝ)⁻¹)/a⌋)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
+    let chartColor := fun ij i => phaseChartBin a Tsrc M (yp i) (rat ij i)
     (∀ ij∈P, ∀ i, chartColor ij i=chartKey (entry ij)) →
     (0 < σ) →
     (δ ≤ min (modelPhaseThirdLower σ) 1) →
@@ -3768,25 +2892,10 @@ theorem positive_difference_actual_fourier_triangular_original_source_mass
     (0 < θ) →
     (θ ≤ 1/24) →
     (∀ ij∈P, ∀ i, ((rat ij i).den:ℤ) ∣ (rat ij i).num*vinv ij i-1) →
-    (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
-      (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ ab∈Gaps, (s ab) ≠ 0) →
-    (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
-    (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
+    WithReferenceBasis Gaps Refs e r v s Uref R Bcut (
     (∀ ij∈P, ∀ i, x ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
     (∀ ij∈P, ∀ i, x ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ (N:ℝ)^2) →
-    (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    ((N:ℝ)^10 ≤ M^3*R^7) →
+    WithReferenceScale Gaps r Uref Q (modelPhaseThirdLower σ) Bcut Bselect M (N:ℝ) R (
     (∀ ij∈P, (rat ij 0:ℝ)∈Icc (gap ij).1 (gap ij).2) →
     (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
       ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
@@ -3795,67 +2904,29 @@ theorem positive_difference_actual_fourier_triangular_original_source_mass
     let P₂ := fun (ab : ℝ × ℝ) => 1+(|((r ab):ℝ)| *Vheight+|((e ab):ℝ)|)*(Q:ℝ)
     let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
     let Ccharts := fun (ab : ℝ × ℝ) => ⌊Real.logb (5/4) ((ab.2-ab.1)/(12*ε))⌋₊+1
-    let sourceColor := fun ij i => (⌊((rat ij i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊((rat ij i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
+    let sourceColor := fun ij i => rationalSourceBin Q lambda θ (rat ij i)
     (∀ ij∈P, sourceColor ij 0=sourceColor ij 1) →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ ij∈P, ∀ i, iteratedDeriv 2 (f i) (x ij i)/2=(rat ij i:ℝ)) →
-    let q := fun ij i => (rat ij i).den
-    let mu := fun ij i => iteratedDeriv 3 (f i) (round (x ij i))/6
-    let ell := fun ij i => deriv (f i) (round (x ij i))
-    let b := fun ij i => (⌊(q ij i:ℝ)*ell ij i⌋+(parity ij i:ℕ) : ℤ)
-    let cround := fun ij i => round ((q ij i:ℝ)*ell ij i)
-    let tau := fun ij i => ((b ij i:ℝ)-(q ij i:ℝ)*ell ij i)/2
-    let dual := fun ij i => -2*mu ij i*(Real.sqrt (2/(3*mu ij i*(q ij i:ℝ))))^3
-    let cloud := fun ij i => (![Int.fract (-(vinv ij i:ℝ)*b ij i/q ij i),
-      Int.fract (-(vinv ij i:ℝ)/q ij i),dual ij i/Real.sqrt K₀,
-      (3*dual ij i*tau ij i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ ij∈P, b ij 0-cround ij 0=b ij 1-cround ij 1) →
-    (∀ ij∈P, ∀ a, |cloud ij 0 a-cloud ij 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/(N:ℝ)^2 ≤ 1/2 →
-    (N:ℝ) ≤ R^2 →
-    R ≤ (N:ℝ) →
-    (N:ℝ)^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*(N:ℝ) →
-    (∀ t∈P.image entry, Mat t 0*Mat t 3-Mat t 1*Mat t 2=1) →
-    (∀ ij∈P, (Mat (entry ij) 2:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 3=(q ij 1:ℝ)/q ij 0) →
-    (∀ ij∈P, ((Mat (entry ij) 0:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 1)/
-      ((Mat (entry ij) 2:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 3)=(rat ij 1:ℝ)) →
-    (∀ t∈P.image entry, |(Mat t 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2)) →
-    let H := (N:ℝ)/(Cphys+2)
-    2 ≤ (N:ℝ) →
-    (∀ ij∈P, ∀ i, x ij i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, x ij i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, |(anchor ij:ℝ)-(rat ij 0:ℝ)| ≤ ε) →
-    (∀ ij∈P, 256*((anchor ij).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ ij∈P, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor ij).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+    WithRoundedSourceJets P F (fun i => (A i:ℝ)) T M x rat (fun f q mu ell =>
+    WithCompletionCloud P q mu ell parity vinv K₀ (fun b cround tau dual cloud radius =>
+    WithCubicScales σ M (N:ℝ) R Q (fun κ Cphys c J B =>
+    WithCompletionMatrices P entry Mat rat q Q K₀ (
+    WithCompletionMargins P x (fun i => (W i:ℝ)) (N:ℝ) Cphys (fun H =>
+    WithRationalAnchors P rat anchor ε Q (
+    let budget := QuarticChartBudget.make σ δ κ Cphys B
+    let Δ := budget.delta Q N
+    let Ccurv := budget.Ccurv
+    let D := budget.error Q N
+    let Esize := budget.Esize
+    let Dbase := budget.Dbase
+    let Tbase := budget.Tbase
     2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
     D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
     let Blabels := fun ab => 6+216*(⌊Real.logb 2 (P₁ ab*P₂ ab)⌋₊+1)
     let m0 := 6+Cmajor*(105+544*Bmajor)
     (∀ ab∈Gaps, Blabels ab ≤ Bmajor) →
     (∀ ab∈Gaps, Ccharts ab ≤ Cmajor) →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
+    let Lunit := budget.Lunit
+    let Cthird := budget.Cthird
     let Aupper := 2*Cupper*(Cthird+1)*E^2*M^2/(κ*Lunit^3*(N:ℝ)^4)
     let Bupper := Cupper*(Cthird+1)*E^2*M^2/(Lunit^2*(N:ℝ)^4*(Uref:ℝ))+
       Dupper*(B+1)*E^2*M^2/(4*(N:ℝ)^4*(Uref:ℝ))
@@ -3869,12 +2940,13 @@ theorem positive_difference_actual_fourier_triangular_original_source_mass
         2*Bupper*(3+2*Real.log (DupperCut+2))+(1/2:ℝ)*(2*DupperCut+1)))) ∧
     ((∀ t∈P.image entry, Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1 ∧ Mat t 2=t) →
       (P.card:ℝ) ≤ 60*(4*(m0:ℝ)*(3*Alower^((3:ℝ)⁻¹)*(DlowerCut+2)^((2:ℝ)/3)+
-        2*Blower*(3+2*Real.log (DlowerCut+2))+(1/2:ℝ)*(2*DlowerCut+1)))) := by
+        2*Blower*(3+2*Real.log (DlowerCut+2))+(1/2:ℝ)*(2*DlowerCut+1)))))))))))) := by
 
   classical
   obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
     positive_difference_actual_fourier_triangular_original_pair_mass hσsrc hcsrc hUsrc
   refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  unfold WithRoundedSourceJets WithCompletionCloud WithCubicScales WithCompletionMargins
   intro Fsrc η ya yb Tsrc E chartKey Uref Refs Gaps Bselect P entry Mat gap
     Bmajor Cmajor N za zb AlenA AlenB Za Zb Q K₀ inst rat vinv parity anchor e r v s
     σ δ T M R base Bcut θ A W x
@@ -3884,9 +2956,9 @@ theorem positive_difference_actual_fourier_triangular_original_source_mass
     Vheight P₁ P₂ ε Ccharts sourceColor hsourceColor f hlevel
     q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
-    H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
-    Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Blabels m0 hBmajor hCmajor Lunit Gamma Cthird Aupper Bupper Alower Blower DupperCut DlowerCut
+    H hNtwo hL hU hanchor hcut hcount budget Δ
+    Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Blabels m0 hBmajor hCmajor Lunit Cthird Aupper Bupper Alower Blower DupperCut DlowerCut
   have hκ : 0 < modelPhaseThirdLower σ := modelPhaseThirdLower_pos hσ
   have hE : 0 < E := (mul_pos_iff_of_pos_right hT).mp (hTsrc.trans_le hsourceScale)
   have hlambda : 0 < lambda := by dsimp only [lambda]; positivity
@@ -3894,7 +2966,7 @@ theorem positive_difference_actual_fourier_triangular_original_source_mass
   let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
   have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
     funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
+    dsimp only [f,heathBrownPhysicalPhase,F,Src, firstDifferenceModel, physicalFirstDifference]
     field_simp
   have hjet i k t : iteratedDeriv k (f i) t=
       iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
@@ -4270,11 +3342,8 @@ theorem positive_difference_actual_fourier_triangular_original_source_regime_mas
     let lambda := csrc*modelPhaseThirdLower σ*T/(12*Usrc*M^2)
     let Uband := (3*Usrc/σsrc)*E*T/(2*M^2)
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
-    let chartColor := fun ij i =>
-      (⌊yp i/a⌋,⌊((2*M^2/Tsrc)*(rat ij i:ℝ))/a⌋,
-        ⌊((Tsrc/(2*M^2))*(rat ij i:ℝ)⁻¹)/a⌋)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
+    let chartColor := fun ij i => phaseChartBin a Tsrc M (yp i) (rat ij i)
     (∀ ij∈P, ∀ i, chartColor ij i=chartKey (entry ij)) →
     (0 < σ) →
     (δ ≤ min (modelPhaseThirdLower σ) 1) →
@@ -4294,25 +3363,10 @@ theorem positive_difference_actual_fourier_triangular_original_source_regime_mas
     (0 < θ) →
     (θ ≤ 1/24) →
     (∀ ij∈P, ∀ i, ((rat ij i).den:ℤ) ∣ (rat ij i).num*vinv ij i-1) →
-    (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
-      (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ ab∈Gaps, (s ab) ≠ 0) →
-    (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
-    (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
+    WithReferenceBasis Gaps Refs e r v s Uref R Bcut (
     (∀ ij∈P, ∀ i, x ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
     (∀ ij∈P, ∀ i, x ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ (N:ℝ)^2) →
-    (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    ((N:ℝ)^10 ≤ M^3*R^7) →
+    WithReferenceScale Gaps r Uref Q (modelPhaseThirdLower σ) Bcut Bselect M (N:ℝ) R (
     (∀ ij∈P, (rat ij 0:ℝ)∈Icc (gap ij).1 (gap ij).2) →
     (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
       ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
@@ -4321,67 +3375,29 @@ theorem positive_difference_actual_fourier_triangular_original_source_regime_mas
     let P₂ := fun (ab : ℝ × ℝ) => 1+(|((r ab):ℝ)| *Vheight+|((e ab):ℝ)|)*(Q:ℝ)
     let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
     let Ccharts := fun (ab : ℝ × ℝ) => ⌊Real.logb (5/4) ((ab.2-ab.1)/(12*ε))⌋₊+1
-    let sourceColor := fun ij i => (⌊((rat ij i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊((rat ij i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
+    let sourceColor := fun ij i => rationalSourceBin Q lambda θ (rat ij i)
     (∀ ij∈P, sourceColor ij 0=sourceColor ij 1) →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ ij∈P, ∀ i, iteratedDeriv 2 (f i) (x ij i)/2=(rat ij i:ℝ)) →
-    let q := fun ij i => (rat ij i).den
-    let mu := fun ij i => iteratedDeriv 3 (f i) (round (x ij i))/6
-    let ell := fun ij i => deriv (f i) (round (x ij i))
-    let b := fun ij i => (⌊(q ij i:ℝ)*ell ij i⌋+(parity ij i:ℕ) : ℤ)
-    let cround := fun ij i => round ((q ij i:ℝ)*ell ij i)
-    let tau := fun ij i => ((b ij i:ℝ)-(q ij i:ℝ)*ell ij i)/2
-    let dual := fun ij i => -2*mu ij i*(Real.sqrt (2/(3*mu ij i*(q ij i:ℝ))))^3
-    let cloud := fun ij i => (![Int.fract (-(vinv ij i:ℝ)*b ij i/q ij i),
-      Int.fract (-(vinv ij i:ℝ)/q ij i),dual ij i/Real.sqrt K₀,
-      (3*dual ij i*tau ij i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ ij∈P, b ij 0-cround ij 0=b ij 1-cround ij 1) →
-    (∀ ij∈P, ∀ a, |cloud ij 0 a-cloud ij 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/(N:ℝ)^2 ≤ 1/2 →
-    (N:ℝ) ≤ R^2 →
-    R ≤ (N:ℝ) →
-    (N:ℝ)^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*(N:ℝ) →
-    (∀ t∈P.image entry, Mat t 0*Mat t 3-Mat t 1*Mat t 2=1) →
-    (∀ ij∈P, (Mat (entry ij) 2:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 3=(q ij 1:ℝ)/q ij 0) →
-    (∀ ij∈P, ((Mat (entry ij) 0:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 1)/
-      ((Mat (entry ij) 2:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 3)=(rat ij 1:ℝ)) →
-    (∀ t∈P.image entry, |(Mat t 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2)) →
-    let H := (N:ℝ)/(Cphys+2)
-    2 ≤ (N:ℝ) →
-    (∀ ij∈P, ∀ i, x ij i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, x ij i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, |(anchor ij:ℝ)-(rat ij 0:ℝ)| ≤ ε) →
-    (∀ ij∈P, 256*((anchor ij).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ ij∈P, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor ij).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+    WithRoundedSourceJets P F (fun i => (A i:ℝ)) T M x rat (fun f q mu ell =>
+    WithCompletionCloud P q mu ell parity vinv K₀ (fun b cround tau dual cloud radius =>
+    WithCubicScales σ M (N:ℝ) R Q (fun κ Cphys c J B =>
+    WithCompletionMatrices P entry Mat rat q Q K₀ (
+    WithCompletionMargins P x (fun i => (W i:ℝ)) (N:ℝ) Cphys (fun H =>
+    WithRationalAnchors P rat anchor ε Q (
+    let budget := QuarticChartBudget.make σ δ κ Cphys B
+    let Δ := budget.delta Q N
+    let Ccurv := budget.Ccurv
+    let D := budget.error Q N
+    let Esize := budget.Esize
+    let Dbase := budget.Dbase
+    let Tbase := budget.Tbase
     2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
     D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
     let Blabels := fun ab => 6+216*(⌊Real.logb 2 (P₁ ab*P₂ ab)⌋₊+1)
     let m0 := 6+Cmajor*(105+544*Bmajor)
     (∀ ab∈Gaps, Blabels ab ≤ Bmajor) →
     (∀ ab∈Gaps, Ccharts ab ≤ Cmajor) →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
+    let Lunit := budget.Lunit
+    let Cthird := budget.Cthird
     let AupperConst := 2*Cupper*(Cthird+1)*E^2/(κ*Lunit^3)
     let BupperConst := Cupper*(Cthird+1)*E^2/Lunit^2+Dupper*(B+1)*E^2/4
     let AlowerConst := 8*Clower*(Cthird+1)/(κ*Lunit^3)
@@ -4401,11 +3417,12 @@ theorem positive_difference_actual_fourier_triangular_original_source_regime_mas
       (P.card:ℝ) ≤ 240*(m0:ℝ)*CostLower*
         (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)*Lregime+
           2*BlowerConst*(3+2*Real.log (DlowerCut+2))+
-          (3/2:ℝ)*DlowerConst*Lregime^((3:ℝ)/2))) := by
+          (3/2:ℝ)*DlowerConst*Lregime^((3:ℝ)/2))))))))))) := by
   classical
   obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
     positive_difference_actual_fourier_triangular_original_source_mass hσsrc hcsrc hUsrc
   refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
+  unfold WithRoundedSourceJets WithCompletionCloud WithCubicScales WithCompletionMargins
   intro Fsrc η ya yb Tsrc E Lregime chartKey Uref Refs Gaps Bselect P entry Mat gap
     Bmajor Cmajor N za zb AlenA AlenB Za Zb Q K₀ inst rat vinv parity anchor e r v s
     σ δ T M R base Bcut θ A W x
@@ -4415,9 +3432,9 @@ theorem positive_difference_actual_fourier_triangular_original_source_regime_mas
     Vheight P₁ P₂ ε Ccharts sourceColor hsourceColor f hlevel
     q mu ell b cround tau dual cloud radius hcolor hnear
     κ Cphys c J B hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
-    H hNtwo hL hU hanchor hcut hcount C₂ C₃ Ct Cc Δ
-    Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Blabels m0 hBmajor hCmajor Lunit Gamma Cthird AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst CostUpper CostLower DupperCut DlowerCut
+    H hNtwo hL hU hanchor hcut hcount budget Δ
+    Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Blabels m0 hBmajor hCmajor Lunit Cthird AupperConst BupperConst AlowerConst BlowerConst DupperConst DlowerConst CostUpper CostLower DupperCut DlowerCut
   let Aupper := 2*CU*(Cthird+1)*E^2*M^2/(κ*Lunit^3*(N:ℝ)^4)
   let Bupper := CU*(Cthird+1)*E^2*M^2/(Lunit^2*(N:ℝ)^4*(Uref:ℝ))+
     DU*(B+1)*E^2*M^2/(4*(N:ℝ)^4*(Uref:ℝ))
@@ -4431,7 +3448,7 @@ theorem positive_difference_actual_fourier_triangular_original_source_regime_mas
   let Src := fun y z => Tsrc*(Fsrc (z/M)-Fsrc (z/M+η*y))/(σsrc*η)
   have hsource i : f i=fun z => Src (yp i) ((A i:ℝ)+z) := by
     funext z
-    dsimp only [f,heathBrownPhysicalPhase,F,Src]
+    dsimp only [f,heathBrownPhysicalPhase,F,Src, firstDifferenceModel, physicalFirstDifference]
     field_simp
   have hjet i k t : iteratedDeriv k (f i) t=
       iteratedDeriv k (Src (yp i)) ((A i:ℝ)+t) := by
@@ -4651,11 +3668,8 @@ theorem eventually_positive_difference_actual_fourier_triangular_original_source
     (N:ℝ)^4 ≤ M*R^3*(Real.log T)^((3:ℝ)/2) →
     let lambda := csrc*modelPhaseThirdLower σ*T/(12*Usrc*M^2)
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
-    let chartColor := fun ij i =>
-      (⌊yp i/a⌋,⌊((2*M^2/Tsrc)*(rat ij i:ℝ))/a⌋,
-        ⌊((Tsrc/(2*M^2))*(rat ij i:ℝ)⁻¹)/a⌋)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
+    let chartColor := fun ij i => phaseChartBin a Tsrc M (yp i) (rat ij i)
     (∀ ij∈P, ∀ i, chartColor ij i=chartKey (entry ij)) →
     (δ ≤ min (modelPhaseThirdLower σ) 1) →
     (∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ) →
@@ -4674,93 +3688,35 @@ theorem eventually_positive_difference_actual_fourier_triangular_original_source
     (0 < θ) →
     (θ ≤ 1/24) →
     (∀ ij∈P, ∀ i, ((rat ij i).den:ℤ) ∣ (rat ij i).num*vinv ij i-1) →
-    (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
-      (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ ab∈Gaps, (s ab) ≠ 0) →
-    (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
-    (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
+    WithReferenceBasis Gaps Refs e r v s Uref R Bcut (
     (∀ ij∈P, ∀ i, x ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
     (∀ ij∈P, ∀ i, x ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ (N:ℝ)^2) →
-    (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    ((N:ℝ)^10 ≤ M^3*R^7) →
+    WithReferenceScale Gaps r Uref Q (modelPhaseThirdLower σ) Bcut Bselect M (N:ℝ) R (
     (∀ ij∈P, (rat ij 0:ℝ)∈Icc (gap ij).1 (gap ij).2) →
     (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
       ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
     (Q:ℝ) ≤ (N:ℝ) → (N:ℝ)^2 ≤ M → (Uref:ℝ) ≤ R^2 →
-    (∀ ab∈Gaps, |((r ab):ℝ)| ≤ 4*R^2/(Uref:ℝ)) →
-    (∀ ab∈Gaps, |((s ab):ℝ)| ≤ 4*R^2/(Uref:ℝ)) →
-    (∀ ab∈Gaps, |((e ab):ℝ)| ≤
-      (3*Jref*T/(2*σ*M^2)+1)*(4*R^2/(Uref:ℝ))) →
-    (∀ ab∈Gaps, |((v ab):ℝ)| ≤
-      (3*Jref*T/(2*σ*M^2)+1)*(4*R^2/(Uref:ℝ))) →
+    WithReferenceCoefficientBounds Gaps e r v s Uref Jref T σ M R (
     let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
-    let sourceColor := fun ij i => (⌊((rat ij i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊((rat ij i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
+    let sourceColor := fun ij i => rationalSourceBin Q lambda θ (rat ij i)
     (∀ ij∈P, sourceColor ij 0=sourceColor ij 1) →
-    let f := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
-    (∀ ij∈P, ∀ i, iteratedDeriv 2 (f i) (x ij i)/2=(rat ij i:ℝ)) →
-    let q := fun ij i => (rat ij i).den
-    let mu := fun ij i => iteratedDeriv 3 (f i) (round (x ij i))/6
-    let ell := fun ij i => deriv (f i) (round (x ij i))
-    let b := fun ij i => (⌊(q ij i:ℝ)*ell ij i⌋+(parity ij i:ℕ) : ℤ)
-    let cround := fun ij i => round ((q ij i:ℝ)*ell ij i)
-    let tau := fun ij i => ((b ij i:ℝ)-(q ij i:ℝ)*ell ij i)/2
-    let dual := fun ij i => -2*mu ij i*(Real.sqrt (2/(3*mu ij i*(q ij i:ℝ))))^3
-    let cloud := fun ij i => (![Int.fract (-(vinv ij i:ℝ)*b ij i/q ij i),
-      Int.fract (-(vinv ij i:ℝ)/q ij i),dual ij i/Real.sqrt K₀,
-      (3*dual ij i*tau ij i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ ij∈P, b ij 0-cround ij 0=b ij 1-cround ij 1) →
-    (∀ ij∈P, ∀ a, |cloud ij 0 a-cloud ij 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/(N:ℝ)^2 ≤ 1/2 →
-    (N:ℝ) ≤ R^2 →
-    R ≤ (N:ℝ) →
-    (N:ℝ)^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*(N:ℝ) →
-    (∀ t∈P.image entry, Mat t 0*Mat t 3-Mat t 1*Mat t 2=1) →
-    (∀ ij∈P, (Mat (entry ij) 2:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 3=(q ij 1:ℝ)/q ij 0) →
-    (∀ ij∈P, ((Mat (entry ij) 0:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 1)/
-      ((Mat (entry ij) 2:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 3)=(rat ij 1:ℝ)) →
-    (∀ t∈P.image entry, |(Mat t 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2)) →
-    let H := (N:ℝ)/(Cphys+2)
-    2 ≤ (N:ℝ) →
-    (∀ ij∈P, ∀ i, x ij i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, x ij i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, |(anchor ij:ℝ)-(rat ij 0:ℝ)| ≤ ε) →
-    (∀ ij∈P, 256*((anchor ij).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ ij∈P, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor ij).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+    WithRoundedSourceJets P F (fun i => (A i:ℝ)) T M x rat (fun f q mu ell =>
+    WithCompletionCloud P q mu ell parity vinv K₀ (fun b cround tau dual cloud radius =>
+    WithCubicScales σ M (N:ℝ) R Q (fun κ Cphys c J B =>
+    WithCompletionMatrices P entry Mat rat q Q K₀ (
+    WithCompletionMargins P x (fun i => (W i:ℝ)) (N:ℝ) Cphys (fun H =>
+    WithRationalAnchors P rat anchor ε Q (
+    let budget := QuarticChartBudget.make σ δ κ Cphys B
+    let Δ := budget.delta Q N
+    let Ccurv := budget.Ccurv
+    let D := budget.error Q N
+    let Esize := budget.Esize
+    let Dbase := budget.Dbase
+    let Tbase := budget.Tbase
     2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
     D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
+    let Lunit := budget.Lunit
+    let Cthird := budget.Cthird
     let AupperConst := 2*Cupper*(Cthird+1)*E^2/(κ*Lunit^3)
     let BupperConst := Cupper*(Cthird+1)*E^2/Lunit^2+Dupper*(B+1)*E^2/4
     let AlowerConst := 8*Clower*(Cthird+1)/(κ*Lunit^3)
@@ -4776,7 +3732,7 @@ theorem eventually_positive_difference_actual_fourier_triangular_original_source
     ((∀ t∈P.image entry, Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1 ∧ Mat t 2=t) →
       (P.card:ℝ) ≤ (240*CostLower*
         (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+
-          2*BlowerConst+(3/2:ℝ)*DlowerConst))*T^εloss) := by
+          2*BlowerConst+(3/2:ℝ)*DlowerConst))*T^εloss)))))))))) := by
   classical
   obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
     positive_difference_actual_fourier_triangular_original_source_regime_mass hσsrc hcsrc hUsrc
@@ -4788,6 +3744,7 @@ theorem eventually_positive_difference_actual_fourier_triangular_original_source
   filter_upwards [nativeHuxleyReference_eventually_physical_reference_chart_budgets hσ hJref hhalf,
     eventually_triangular_source_log_losses (Du:=Du) (Dl:=Dl) hhalf]
     with T hbudgets hlogs
+  unfold WithRoundedSourceJets WithCompletionCloud WithCubicScales WithCompletionMargins
   intro Fsrc η ya yb Tsrc chartKey Uref Refs Gaps Bselect P entry Mat gap
     N za zb AlenA AlenB Za Zb Q K₀ inst rat vinv parity anchor e r v s
     δ M R base Bcut A W x
@@ -4802,8 +3759,8 @@ theorem eventually_positive_difference_actual_fourier_triangular_original_source
     ε sourceColor hsourceColor f hlevel q mu ell b cround tau dual cloud radius
     hcolor hnear κ Cphys c J B hsmall hNR hRN hNcube hminscale
     hMatdet hMatt hMatmap hMatgamma H hNtwo hL hU hanchor hcut hcount
-    C₂ C₃ Ct Cc Δ Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Lunit Gamma Cthird AupperConst BupperConst AlowerConst BlowerConst
+    budget Δ Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Lunit Cthird AupperConst BupperConst AlowerConst BlowerConst
     DupperConst DlowerConst CostUpper CostLower
   have hδ₀ := approximateModelPhase_tolerance_nonneg (hF 0)
   obtain ⟨Bmajor,Cmajor,hBmajor,hCmajor,hcost⟩ := hbudgets
@@ -4909,9 +3866,7 @@ theorem positive_difference_actual_source_joint_twelfth_partition
     let u := fun i => (2*M^2/Tsrc)*(rat i:ℝ)
     let w := fun i => (Tsrc/(2*M^2))*(rat i:ℝ)⁻¹
     let chart := fun i => (⌊y i/a⌋,⌊u i/a⌋,⌊w i/a⌋)
-    let narrow := fun i =>
-      (⌊((rat i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-       ⌊((rat i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
+    let narrow := fun i => rationalSourceBin Q lambda θ (rat i)
     let qell := fun i => ((rat i).den:ℝ)*deriv (f (y i)) (round (z i))
     let V := S ×ˢ (Finset.univ : Finset (Fin 2))
     let offset := fun ip : ι × Fin 2 => ⌊qell ip.1⌋+(ip.2:ℕ)-round (qell ip.1)
@@ -5080,212 +4035,6 @@ public  theorem huxley_completed_colored_source_sieve {ε : ℝ} (hε : 0 < ε) 
                                                                               
                                                                           
                                                               
-theorem exists_positive_difference_actual_joint_source_sieve
-    {εloss : ℝ} (hεloss : 0 < εloss) :
-    ∃ C > (0:ℝ),
-    ∀ {ι : Type huxleyNarrowV} [DecidableEq ι], ∀ (S : Finset ι) (Fsrc : ℝ → ℝ)
-    (y z : ι → ℝ) (rat : ι → ℚ) (v : ι → ℤ) (Nlen : ι → ℕ)
-    (Q K₀ : ℕ) [NeZero K₀] (Vscale Nphys Rphys : ℝ)
-    {σsrc csrc Usrc η Tsrc T M E σ δ θ a : ℝ},
-    (0 < σsrc) →
-    (0 < csrc) →
-    (0 < Usrc) →
-    (0 < η) →
-    (η ≤ 1/8) →
-    (0 < Tsrc) →
-    (0 < T) →
-    (0 < M) →
-    (0 < σ) →
-    (δ ≤ min (modelPhaseThirdLower σ) 1) →
-    (Tsrc ≤ E*T) →
-    (0 < Q) →
-    (0 < θ) →
-    (0 < a) →
-    (θ < 1) →
-    (∀ i∈S, y i∈Icc (1:ℝ) 2) →
-    (∀ i∈S, z i∈Icc M (2*M)) →
-    (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) Fsrc w| ≤ Usrc) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
-      csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-    (∀ i∈S, (rat i).den ≤ Q ∧ Q ≤ 2*(rat i).den) →
-    (∀ i∈S, ((rat i).den:ℤ) ∣ (rat i).num*v i-1) →
-    (∀ w∈Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
-    (2 ≤ M) →
-    (1 ≤ Vscale) →
-    (0 < Nphys) →
-    ((Q:ℝ)*Nphys ≤ (K₀:ℝ)*Rphys^2) →
-    let Fmodel := fun i u => (Tsrc/T)*(Fsrc u-Fsrc (u+η*y i))/(σsrc*η)
-    (∀ i∈S, Expdb.IsApproximateModelPhaseFunction (Fmodel i) σ 2 δ) →
-    let f := fun p w => Tsrc*(Fsrc (w/M)-Fsrc (w/M+η*p))/(σsrc*η)
-    (∀ i∈S, iteratedDeriv 2 (f (y i)) (z i)/2=(rat i:ℝ)) →
-    (∀ i∈S, 1 ≤ Nlen i ∧ (rat i).den ≤ Nlen i ∧
-      1 ≤ (iteratedDeriv 3 (f (y i)) (round (z i))/6)*((rat i).den:ℝ)^2*Nlen i) →
-    (∀ i∈S, 7*((iteratedDeriv 3 (f (y i)) (round (z i))/6)*
-      ((rat i).den:ℝ)*(Nlen i:ℝ)^2) ≤ K₀) →
-    let Hsrc := fun p : ℝ × ℝ =>
-      (iteratedDeriv 2 Fsrc p.2-iteratedDeriv 2 Fsrc (p.2+η*p.1))/(σsrc*η)
-    let lambda := csrc*modelPhaseThirdLower σ*T/(12*Usrc*M^2)
-    let Uband := (3*Usrc/σsrc)*E*T/(2*M^2)
-    let u := fun i => (2*M^2/Tsrc)*(rat i:ℝ)
-    let w := fun i => (Tsrc/(2*M^2))*(rat i:ℝ)⁻¹
-    let chart := fun i => (⌊y i/a⌋,⌊u i/a⌋,⌊w i/a⌋)
-    let narrow := fun i =>
-      (⌊((rat i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-       ⌊((rat i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
-    let qell := fun i => ((rat i).den:ℝ)*deriv (f (y i)) (round (z i))
-    let V := S ×ˢ (Finset.univ : Finset (Fin 2))
-    let offset := fun ip : ι × Fin 2 => ⌊qell ip.1⌋+(ip.2:ℕ)-round (qell ip.1)
-    let color := fun ip : ι × Fin 2 => (chart ip.1,narrow ip.1,offset ip)
-    let ChartCap := (4/a+3)*((6*Usrc/σsrc)/a+3)*((4*σsrc/csrc)/a+3)
-    let NarrowCap := (4/θ+3)*(72*Usrc^2*E/(σsrc*csrc*modelPhaseThirdLower σ*θ)+3)
-    let Cap := 3*ChartCap*NarrowCap
-
-    let q := fun i => (rat i).den
-    let μ := fun i => iteratedDeriv 3 (f (y i)) (round (z i))/6
-    let ell := fun i => deriv (f (y i)) (round (z i))
-    let b := fun ip : ι × Fin 2 => (⌊qell ip.1⌋+(ip.2:ℕ) : ℤ)
-    let tau := fun ip : ι × Fin 2 => ((b ip:ℝ)-qell ip.1)/2
-    let dual := fun i => -2*μ i*(Real.sqrt (2/(3*μ i*(q i:ℝ))))^3
-    let x := fun ip : ι × Fin 2 =>
-      (![-(v ip.1:ℝ)*b ip/q ip.1,-(v ip.1:ℝ)/q ip.1,
-        dual ip.1,3*dual ip.1*tau ip/2] : Fin 4 → ℝ)
-    let cloud := fun ip => (![Int.fract (x ip 0),Int.fract (x ip 1),
-      x ip 2/Real.sqrt K₀,x ip 3/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2*Vscale),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    let Pall := (V ×ˢ V).filter (fun ij => ∀ d, |cloud ij.1 d-cloud ij.2 d| ≤ 2*radius d)
-    let Fiber := fun key => V.filter (fun ip => color ip=key)
-    let Pairs := fun key => ((Fiber key) ×ˢ (Fiber key)).filter
-      (fun ij => ∀ d, |cloud ij.1 d-cloud ij.2 d| ≤ 2*radius d)
-    let μ₀ := csrc*Tsrc/(12*σsrc*M^3)
-    let U₀ := Usrc*Tsrc/(2*σsrc*M^3)
-    let h := fun i => iteratedDeriv 2 (f (y i)) (z i)/2
-    let D := (Real.sqrt K₀/(9*(K₀:ℝ))+Real.sqrt K₀/(12*(K₀:ℝ)^2))*
-      Real.sqrt (U₀*(Q:ℝ)^3)
-    ((V.image color).card:ℝ) ≤ Cap ∧
-    (∀ key∈V.image color, ∃ iref∈S, chart iref=key.1 ∧
-      let xcenter := z iref/M
-      let ycenter := y iref
-      xcenter∈Icc (1:ℝ) 2 ∧ ycenter∈Icc (1:ℝ) 2 ∧
-      ∀ ip∈V, color ip=key →
-        ‖((y ip.1,u ip.1):ℝ × ℝ)-(ycenter,Hsrc (ycenter,xcenter))‖ < a ∧
-        ‖((y ip.1,w ip.1):ℝ × ℝ)-(ycenter,(Hsrc (ycenter,xcenter))⁻¹)‖ < a) ∧
-    (∀ ip∈V, ∀ jp∈V, color ip=color jp →
-      |((rat jp.1).den:ℝ)/(rat ip.1).den-1| ≤ θ ∧
-      |((rat jp.1).num:ℝ)/(rat ip.1).num-1| ≤ θ ∧ offset ip=offset jp) ∧
-    ∃ Mat : ((ι × Fin 2) × (ι × Fin 2)) → Fin 4 → ℤ,
-      (∀ k : ZMod K₀,
-        (∑ ip∈V, ‖∑ j : ZMod K₀,ZMod.stdAddChar (-(j*k))*
-          GafniTao.fordAdditiveCharacter (∑ d,x ip d*
-            (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
-              Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖)^12 ≤
-          C*Vscale*(K₀:ℝ)^((12:ℝ)+εloss)*Cap^11*
-            ∑ key∈V.image color,((Fiber key).card:ℝ)^10*((Pairs key).card:ℝ)) ∧
-      (∀ ij∈Pall,
-        Mat ij 0*Mat ij 3-Mat ij 1*Mat ij 2=1 ∧
-        let t := (Mat ij 2:ℝ)*h ij.1.1+Mat ij 3
-        t=(q ij.2.1:ℝ)/q ij.1.1 ∧ (1:ℝ)/2 ≤ t ∧ t ≤ 2 ∧
-        ((Mat ij 0:ℝ)*h ij.1.1+Mat ij 1)/t=h ij.2.1 ∧
-        |(Mat ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) ∧
-        |μ ij.2.1/μ ij.1.1*t^3-1| ≤
-          (16*U₀/μ₀)*Real.sqrt (U₀*(Q:ℝ)^3)*Real.sqrt K₀/(6*(K₀:ℝ)^2) ∧
-        |tau ij.1-tau ij.2| ≤ D ∧
-        (∃ e₁ e₂ : ℤ,
-          let F₁ := 2*(round (z ij.2.1):ℝ)-2*(Mat ij 3:ℝ)*(round (z ij.1.1):ℝ)-
-            (Mat ij 2:ℝ)*ell ij.1.1
-          let F₂ := ell ij.2.1-2*(Mat ij 1:ℝ)*(round (z ij.1.1):ℝ)-
-            (Mat ij 0:ℝ)*ell ij.1.1
-          |F₁-e₁| ≤ (q ij.2.1:ℝ)/(6*(K₀:ℝ))+|(Mat ij 2:ℝ)|/q ij.1.1 ∧
-          |(F₂-e₂)-h ij.2.1*(F₁-e₁)| ≤ 2*D/q ij.2.1) ∧
-        ((Q:ℝ)^2/(6*(K₀:ℝ)^2) < 1 →
-          Mat ij 2=0 ∧ q ij.1.1=q ij.2.1 ∧
-            (q ij.1.1:ℤ) ∣ (rat ij.2.1).num-(rat ij.1.1).num)) ∧
-      (∀ ij∈Pall, |(Mat ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2*Vscale) ∧
-        |(Mat ij 2:ℝ)| ≤ Rphys^4/(6*Nphys^2*Vscale)) ∧
-      (∀ key, ∀ ij∈Pairs key,
-        (Mat ij 0=1 ∧ Mat ij 1=0 ∧ Mat ij 2=0 ∧ Mat ij 3=1) ∨
-        (Mat ij 0=1 ∧ Mat ij 3=1 ∧ Mat ij 2=0 ∧ Mat ij 1≠0 ∧
-          |(Mat ij 1:ℝ)| ≤ θ*Uband) ∨
-        (Mat ij 0=1 ∧ Mat ij 3=1 ∧ Mat ij 1=0 ∧ Mat ij 2≠0 ∧
-          |(Mat ij 2:ℝ)| ≤ θ/lambda) ∨
-        (Mat ij 1≠0 ∧ Mat ij 2≠0)) := by
-  classical
-  obtain ⟨C,hC,hcolored⟩ := huxley_completed_colored_source_sieve.{huxleyNarrowV} hεloss
-  obtain ⟨_,_,hmatrices⟩ := exists_source_arc_fourier_narrowed_sieve_matrices.{huxleyNarrowV} hεloss
-  refine ⟨C,hC,?_⟩
-  intro ι inst S Fsrc y z rat v Nlen Q K₀ instK Vscale Nphys Rphys
-    σsrc csrc Usrc η Tsrc T M E σ δ θ a
-    hσsrc hcsrc hUsrc hη hηmax hTsrc hT hM hσ hδ hscale hQ hθ ha hθmax
-    hy hz hreg hjets htests hden hinv hnegative hMtwo hVscale hNphys hmesh
-    Fmodel hmodel f hlevel hminor hcomplete Hsrc lambda Uband u w chart narrow
-    qell V offset color ChartCap NarrowCap Cap
-    q μ ell b tau dual x cloud radius Pall Fiber Pairs μ₀ U₀ h D
-  have hjoint := positive_difference_actual_source_joint_twelfth_partition S Fsrc y z rat Q
-    hσsrc hcsrc hUsrc hη hηmax hTsrc hT hM hσ hδ hscale hQ hθ ha
-    hy hz hreg hjets htests hden hmodel hlevel
-  have hμ₀ : 0 < μ₀ := by dsimp only [μ₀]; positivity
-  have hμbounds i (hi : i∈S) : μ₀ ≤ μ i ∧ μ i ≤ U₀ := by
-    have hb := positive_difference_rounded_cubic_scales Fsrc (T:=Tsrc) (N:=M^3/Tsrc) (R:=1)
-      hσsrc hcsrc hUsrc hη hηmax (hy i hi) hreg hjets hnegative hMtwo
-      (by positivity) (by norm_num) (hz i hi) (by field_simp)
-    have hlo : csrc/(12*σsrc*(M^3/Tsrc)*(1:ℝ)^2)=μ₀ := by
-      dsimp only [μ₀]
-      field_simp
-    have hhi : Usrc/(2*σsrc*(M^3/Tsrc)*(1:ℝ)^2)=U₀ := by
-      dsimp only [U₀]
-      field_simp
-    rw [hlo,hhi] at hb
-    exact hb
-  obtain ⟨Mat,_hglobalSum,hglobal,hnarrow⟩ := hmatrices ι S (fun i => f (y i)) z rat v
-    Q K₀ μ₀ U₀ hμ₀ hμbounds hlevel hden hinv Nlen Vscale Nphys Rphys
-    hVscale hNphys hmesh hminor hcomplete
-  have hbox ip (hip : ip∈V) :
-      |x ip 2| ≤ Real.sqrt K₀ ∧ |x ip 3| ≤ Real.sqrt K₀ := by
-    have hi := (Finset.mem_product.mp hip).1
-    exact nativeHuxleyReference_huxley_actual_dual_source_box (rat ip.1).pos
-      (hminor ip.1 hi).1 (hminor ip.1 hi).2.1
-      (hμ₀.trans_le (hμbounds ip.1 hi).1) (hminor ip.1 hi).2.2
-      (hcomplete ip.1 hi) (v ip.1) ip.2
-  refine ⟨hjoint.1,hjoint.2.1,hjoint.2.2.1,Mat,?_,hglobal,hnarrow,?_⟩
-  · intro k
-    exact hcolored K₀ Vscale hVscale (ι × Fin 2) V x color Cap hbox hjoint.1 k
-  · intro key ij hij
-    have hp := Finset.mem_filter.mp hij
-    have hi := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).1
-    have hj := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).2
-    have hiall := (Finset.mem_product.mp hi.1).1
-    have hjall := (Finset.mem_product.mp hj.1).1
-    have hijall : ij∈Pall := Finset.mem_filter.mpr
-      ⟨Finset.mem_product.mpr ⟨hi.1,hj.1⟩,hp.2⟩
-    have hsides := hjoint.2.2.1 ij.1 hi.1 ij.2 hj.1 (hi.2.trans hj.2.symm)
-    obtain ⟨hdet,ht,_htlo,_hthi,hmap,_hrest⟩ := hglobal ij hijall
-    simp only [hlevel ij.1.1 hiall,hlevel ij.2.1 hjall] at ht hmap
-    have hlambda : 0 < lambda := by
-      have hκ := modelPhaseThirdLower_pos hσ
-      dsimp only [lambda]
-      positivity
-    have hband := positive_difference_model_normalized_curvature_band Fsrc
-      hσsrc hcsrc hUsrc hη hηmax (hy ij.1.1 hiall) hTsrc hT hM hσ hδ hscale
-      hreg hjets htests (hmodel ij.1.1 hiall)
-    have hcurv : lambda ≤ |(rat ij.1.1:ℝ)| ∧ |(rat ij.1.1:ℝ)| ≤ Uband := by
-      rw [←hlevel ij.1.1 hiall]
-      exact hband _ (hy ij.1.1 hiall) _ (hz ij.1.1 hiall)
-    have hx : (rat ij.1.1:ℝ)≠0 := abs_pos.mp (hlambda.trans_le hcurv.1)
-    have htpos : 0 < (Mat ij 2:ℝ)*(rat ij.1.1:ℝ)+Mat ij 3 := by
-      rw [ht]
-      exact div_pos (by exact_mod_cast (rat ij.2.1).pos)
-        (by exact_mod_cast (rat ij.1.1).pos)
-    have hnumeq : ((Mat ij 0:ℝ)*(rat ij.1.1:ℝ)+Mat ij 1)/(rat ij.1.1:ℝ)=
-        ((rat ij.2.1).num:ℝ)/(rat ij.1.1).num := by
-      rw [(div_eq_iff htpos.ne').mp hmap,ht]
-      simp only [Rat.cast_def]
-      field_simp
-    exact narrow_band_matrix_translation_cases (Mat ij 0) (Mat ij 1) (Mat ij 2) (Mat ij 3)
-      hlambda hcurv.1 hcurv.2 hθ.le hθmax hdet
-      (by rw [ht]; exact hsides.1) (by rw [hnumeq]; exact hsides.2.1)
-
-
 private theorem positive_difference_family_bounded_action_source_scale_at_action
     {σ c U L : ℝ} (hσ : 0 < σ) (hc : 0 < c) (hU : 0 < U) (hL : 0 ≤ L) :
     ∃ D : ℝ, 0 < D ∧
@@ -5544,276 +4293,6 @@ private theorem source_model_large_action_threshold
                                                                                
                                                                             
                                                                           
-theorem exists_positive_difference_joint_type_one_source_sieve
-    {σsrc csrc Usrc E σ εloss : ℝ}
-    (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc)
-    (hE : 0 < E) (hσ : 0 < σ) (hεloss : 0 < εloss) :
-    let κ := modelPhaseThirdLower σ
-    let Ratio := 18*Usrc^2*E/(σsrc*csrc*κ)
-    let L := max (8*Ratio^2)
-      (32*(modelPhaseJetCoefficient σ 3+1)*(3*Usrc/σsrc)*E/κ^2)
-    ∃ C Dtype : ℝ, 0 < C ∧ 0 < Dtype ∧ ∀ (S : Finset (ℝ × ℤ)) (Fsrc : ℝ → ℝ)
-    (z : (ℝ × ℤ) → ℝ) (rat : (ℝ × ℤ) → ℚ) (v : (ℝ × ℤ) → ℤ) (Nlen : (ℝ × ℤ) → ℕ)
-    (Q K₀ N : ℕ) [NeZero K₀] (Vscale Rphys Jsep : ℝ) (Z : ℝ → ℤ)
-    {η Tsrc T M δ θ a : ℝ},
-    (0 < η) →
-    (η ≤ 1/8) →
-    (0 < Tsrc) →
-    (0 < T) →
-    (0 < M) →
-    (δ ≤ min (modelPhaseThirdLower σ) 1) →
-    (Tsrc ≤ E*T) →
-    (0 < Q) →
-    (0 < θ) →
-    (0 < a) →
-    (θ < 1) →
-    (θ ≤ 1/(8*(L+3))) →
-    (∀ i∈S, i.1∈Icc (1:ℝ) 2) →
-    (∀ i∈S, z i∈Icc M (2*M)) →
-    (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ n ≤ 6, |iteratedDeriv (n+1) Fsrc w| ≤ Usrc) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
-      csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-    (∀ i∈S, (rat i).den ≤ Q ∧ Q ≤ 2*(rat i).den) →
-    (∀ i∈S, ((rat i).den:ℤ) ∣ (rat i).num*v i-1) →
-    (∀ w∈Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
-    (2 ≤ M) →
-    (1 ≤ Vscale) →
-    (0 < N) →
-    (0 < Jsep) → (Jsep ≤ M) → ((N:ℝ) ≤ M) →
-    ((Q:ℝ)*(N:ℝ) ≤ (K₀:ℝ)*Rphys^2) →
-    (∀ i∈S, N ≤ Nlen i ∧ Nlen i ≤ 3*N ∧
-      round (z i)+(Nlen i:ℤ)=Z i.1+(N:ℤ)*i.2+2*(N:ℤ)) →
-    (∀ i∈S, ∀ j∈S, i.1≠j.1 → 1 ≤ Jsep*|i.1-j.1|) →
-    let Fmodel := fun (i : ℝ × ℤ) u => (Tsrc/T)*(Fsrc u-Fsrc (u+η*i.1))/(σsrc*η)
-    (∀ i∈S, Expdb.IsApproximateModelPhaseFunction (Fmodel i) σ 2 δ) →
-    let f := fun p w => Tsrc*(Fsrc (w/M)-Fsrc (w/M+η*p))/(σsrc*η)
-    (∀ i∈S, iteratedDeriv 2 (f (i.1)) (z i)/2=(rat i:ℝ)) →
-    (∀ i∈S, 1 ≤ Nlen i ∧ (rat i).den ≤ Nlen i ∧
-      1 ≤ (iteratedDeriv 3 (f (i.1)) (round (z i))/6)*((rat i).den:ℝ)^2*Nlen i) →
-    (∀ i∈S, 7*((iteratedDeriv 3 (f (i.1)) (round (z i))/6)*
-      ((rat i).den:ℝ)*(Nlen i:ℝ)^2) ≤ K₀) →
-    let Hsrc := fun p : ℝ × ℝ =>
-      (iteratedDeriv 2 Fsrc p.2-iteratedDeriv 2 Fsrc (p.2+η*p.1))/(σsrc*η)
-    let lambda := csrc*modelPhaseThirdLower σ*T/(12*Usrc*M^2)
-    let Uband := (3*Usrc/σsrc)*E*T/(2*M^2)
-    let u := fun (i : ℝ × ℤ) => (2*M^2/Tsrc)*(rat i:ℝ)
-    let w := fun (i : ℝ × ℤ) => (Tsrc/(2*M^2))*(rat i:ℝ)⁻¹
-    let chart := fun (i : ℝ × ℤ) => (⌊i.1/a⌋,⌊u i/a⌋,⌊w i/a⌋)
-    let narrow := fun (i : ℝ × ℤ) =>
-      (⌊((rat i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-       ⌊((rat i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
-    let qell := fun (i : ℝ × ℤ) => ((rat i).den:ℝ)*deriv (f (i.1)) (round (z i))
-    let V := S ×ˢ (Finset.univ : Finset (Fin 2))
-    let offset := fun ip : (ℝ × ℤ) × Fin 2 => ⌊qell ip.1⌋+(ip.2:ℕ)-round (qell ip.1)
-    let color := fun ip : (ℝ × ℤ) × Fin 2 => (chart ip.1,narrow ip.1,offset ip)
-    let ChartCap := (4/a+3)*((6*Usrc/σsrc)/a+3)*((4*σsrc/csrc)/a+3)
-    let NarrowCap := (4/θ+3)*(72*Usrc^2*E/(σsrc*csrc*modelPhaseThirdLower σ*θ)+3)
-    let Cap := 3*ChartCap*NarrowCap
-
-    let q := fun (i : ℝ × ℤ) => (rat i).den
-    let μ := fun (i : ℝ × ℤ) => iteratedDeriv 3 (f (i.1)) (round (z i))/6
-    let ell := fun (i : ℝ × ℤ) => deriv (f (i.1)) (round (z i))
-    let b := fun ip : (ℝ × ℤ) × Fin 2 => (⌊qell ip.1⌋+(ip.2:ℕ) : ℤ)
-    let tau := fun ip : (ℝ × ℤ) × Fin 2 => ((b ip:ℝ)-qell ip.1)/2
-    let dual := fun (i : ℝ × ℤ) => -2*μ i*(Real.sqrt (2/(3*μ i*(q i:ℝ))))^3
-    let x := fun ip : (ℝ × ℤ) × Fin 2 =>
-      (![-(v ip.1:ℝ)*b ip/q ip.1,-(v ip.1:ℝ)/q ip.1,
-        dual ip.1,3*dual ip.1*tau ip/2] : Fin 4 → ℝ)
-    let cloud := fun ip => (![Int.fract (x ip 0),Int.fract (x ip 1),
-      x ip 2/Real.sqrt K₀,x ip 3/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ :=
-      ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2*Vscale),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    let Pall := (V ×ˢ V).filter (fun ij => ∀ d, |cloud ij.1 d-cloud ij.2 d| ≤ 2*radius d)
-    let Fiber := fun key => V.filter (fun ip => color ip=key)
-    let Pairs := fun key => ((Fiber key) ×ˢ (Fiber key)).filter
-      (fun ij => ∀ d, |cloud ij.1 d-cloud ij.2 d| ≤ 2*radius d)
-    let μ₀ := csrc*Tsrc/(12*σsrc*M^3)
-    let U₀ := Usrc*Tsrc/(2*σsrc*M^3)
-    let h := fun (i : ℝ × ℤ) => iteratedDeriv 2 (f (i.1)) (z i)/2
-    let D := (Real.sqrt K₀/(9*(K₀:ℝ))+Real.sqrt K₀/(12*(K₀:ℝ)^2))*
-      Real.sqrt (U₀*(Q:ℝ)^3)
-    let Δ := (16*U₀/μ₀)*Real.sqrt (U₀*(Q:ℝ)^3)*Real.sqrt K₀/(6*(K₀:ℝ)^2)
-    ((V.image color).card:ℝ) ≤ Cap ∧
-    (∀ key∈V.image color, ∃ iref∈S, chart iref=key.1 ∧
-      let xcenter := z iref/M
-      let ycenter := iref.1
-      xcenter∈Icc (1:ℝ) 2 ∧ ycenter∈Icc (1:ℝ) 2 ∧
-      ∀ ip∈V, color ip=key →
-        ‖((ip.1.1,u ip.1):ℝ × ℝ)-(ycenter,Hsrc (ycenter,xcenter))‖ < a ∧
-        ‖((ip.1.1,w ip.1):ℝ × ℝ)-(ycenter,(Hsrc (ycenter,xcenter))⁻¹)‖ < a) ∧
-    (∀ ip∈V, ∀ jp∈V, color ip=color jp →
-      |((rat jp.1).den:ℝ)/(rat ip.1).den-1| ≤ θ ∧
-      |((rat jp.1).num:ℝ)/(rat ip.1).num-1| ≤ θ ∧ offset ip = offset jp) ∧
-    ∃ Mat : (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2)) → Fin 4 → ℤ,
-      (∀ k : ZMod K₀,
-        (∑ ip∈V, ‖∑ j : ZMod K₀,ZMod.stdAddChar (-(j*k))*
-          GafniTao.fordAdditiveCharacter (∑ d,x ip d*
-            (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
-              Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖)^12 ≤
-          C*Vscale*(K₀:ℝ)^((12:ℝ)+εloss)*Cap^11*
-            ∑ key∈V.image color,((Fiber key).card:ℝ)^10*((Pairs key).card:ℝ)) ∧
-      (∀ ij∈Pall,
-        Mat ij 0*Mat ij 3-Mat ij 1*Mat ij 2=1 ∧
-        let t := (Mat ij 2:ℝ)*h ij.1.1+Mat ij 3
-        t=(q ij.2.1:ℝ)/q ij.1.1 ∧ (1:ℝ)/2 ≤ t ∧ t ≤ 2 ∧
-        ((Mat ij 0:ℝ)*h ij.1.1+Mat ij 1)/t=h ij.2.1 ∧
-        |(Mat ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) ∧
-        |μ ij.2.1/μ ij.1.1*t^3-1| ≤
-          (16*U₀/μ₀)*Real.sqrt (U₀*(Q:ℝ)^3)*Real.sqrt K₀/(6*(K₀:ℝ)^2) ∧
-        |tau ij.1-tau ij.2| ≤ D ∧
-        (∃ e₁ e₂ : ℤ,
-          let F₁ := 2*(round (z ij.2.1):ℝ)-2*(Mat ij 3:ℝ)*(round (z ij.1.1):ℝ)-
-            (Mat ij 2:ℝ)*ell ij.1.1
-          let F₂ := ell ij.2.1-2*(Mat ij 1:ℝ)*(round (z ij.1.1):ℝ)-
-            (Mat ij 0:ℝ)*ell ij.1.1
-          |F₁-e₁| ≤ (q ij.2.1:ℝ)/(6*(K₀:ℝ))+|(Mat ij 2:ℝ)|/q ij.1.1 ∧
-          |(F₂-e₂)-h ij.2.1*(F₁-e₁)| ≤ 2*D/q ij.2.1) ∧
-        ((Q:ℝ)^2/(6*(K₀:ℝ)^2) < 1 →
-          Mat ij 2=0 ∧ q ij.1.1=q ij.2.1 ∧
-            (q ij.1.1:ℤ) ∣ (rat ij.2.1).num-(rat ij.1.1).num)) ∧
-      (∀ ij∈Pall, |(Mat ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2*Vscale) ∧
-        |(Mat ij 2:ℝ)| ≤ Rphys^4/(6*(N:ℝ)^2*Vscale)) ∧
-      (∀ key, ∀ ij∈Pairs key,
-        (Mat ij 0=1 ∧ Mat ij 1=0 ∧ Mat ij 2=0 ∧ Mat ij 3=1) ∨
-        (Mat ij 0=1 ∧ Mat ij 3=1 ∧ Mat ij 2=0 ∧ Mat ij 1≠0 ∧
-          |(Mat ij 1:ℝ)| ≤ θ*Uband) ∨
-        (Mat ij 0=1 ∧ Mat ij 3=1 ∧ Mat ij 1=0 ∧ Mat ij 2≠0 ∧
-          |(Mat ij 2:ℝ)| ≤ θ/lambda) ∨
-        (Mat ij 1≠0 ∧ Mat ij 2≠0)) ∧
-      let TypeOne := fun key => (Pairs key).filter (fun ij =>
-        (Mat ij 0=1 ∧ Mat ij 1=0 ∧ Mat ij 2=0 ∧ Mat ij 3=1) ∨
-        (Mat ij 1≠0 ∧ Mat ij 2≠0 ∧ |(Mat ij 2:ℝ)| * Uband ≤ L))
-      ∀ key, (((TypeOne key).card:ℝ) ≤
-        Dtype*((S.image Prod.fst).card:ℝ)*(M/(N:ℝ))*(1+Δ*Jsep)) ∧
-        (∀ ij∈Pairs key, ij∉TypeOne key →
-          (Mat ij 0=1 ∧ Mat ij 3=1 ∧ Mat ij 2=0 ∧ Mat ij 1≠0 ∧
-            |(Mat ij 1:ℝ)| ≤ θ*Uband) ∨
-          (Mat ij 0=1 ∧ Mat ij 3=1 ∧ Mat ij 1=0 ∧ Mat ij 2≠0 ∧
-            |(Mat ij 2:ℝ)| ≤ θ/lambda) ∨
-          (Mat ij 1≠0 ∧ Mat ij 2≠0 ∧
-            8*Uband ≤ |(Mat ij 2:ℝ)| * lambda^2 ∧
-            64*(modelPhaseJetCoefficient σ 3+δ)*M^2 ≤ |(Mat ij 2:ℝ)| * κ^2*T)) := by
-  classical
-  intro κ Ratio L
-  have hL : 0 ≤ L := by
-    change 0 ≤ max (8*Ratio^2) _
-    exact (by positivity : (0:ℝ) ≤ 8*Ratio^2).trans (le_max_left _ _)
-  obtain ⟨C,hC,hsource⟩ := exists_positive_difference_actual_joint_source_sieve hεloss
-  obtain ⟨Dtype,hDtype,hcount⟩ :=
-    positive_difference_family_type_one_source_scale_at_action hσsrc hcsrc hUsrc hL
-  refine ⟨C,Dtype,hC,hDtype,?_⟩
-  intro S Fsrc z rat v Nlen Q K₀ N instK Vscale Rphys Jsep Z
-    η Tsrc T M δ θ a hη hηmax hTsrc hT hM hδ hscale hQ hθ ha
-    hθmax hθaction hy hz hreg hjets htests hden hinv hnegative hMtwo
-    hVscale hN hJsep hJM hNM hmesh hgeometry hseparation
-    Fmodel hmodel f hlevel hminor hcomplete Hsrc lambda Uband u w chart narrow
-    qell V offset color ChartCap NarrowCap Cap
-    q μ ell b tau dual x cloud radius Pall Fiber Pairs μ₀ U₀ h D Δ
-  have hNp : (0:ℝ) < N := by exact_mod_cast hN
-  obtain ⟨hcard,hcharts,hratios,Mat,hfourier,hglobal,hnarrow,hclass⟩ :=
-    hsource S Fsrc Prod.fst z rat v Nlen Q K₀ Vscale (N:ℝ) Rphys
-      (σsrc:=σsrc) (csrc:=csrc) (Usrc:=Usrc) (η:=η) (Tsrc:=Tsrc) (T:=T)
-      (M:=M) (E:=E) (σ:=σ) (δ:=δ) (θ:=θ) (a:=a)
-      hσsrc hcsrc hUsrc hη hηmax hTsrc hT hM hσ hδ hscale hQ hθ ha hθmax
-      hy hz hreg hjets htests hden hinv hnegative hMtwo hVscale hNp hmesh
-      hmodel hlevel hminor hcomplete
-  refine ⟨hcard,hcharts,hratios,Mat,hfourier,hglobal,hnarrow,hclass,?_⟩
-  intro TypeOne key
-  constructor
-  · let P₁ := TypeOne key
-    have hmem ij (hij : ij∈P₁) :
-        ij∈Pairs key ∧
-        ((Mat ij 0=1 ∧ Mat ij 1=0 ∧ Mat ij 2=0 ∧ Mat ij 3=1) ∨
-          (Mat ij 1≠0 ∧ Mat ij 2≠0 ∧ |(Mat ij 2:ℝ)| * Uband ≤ L)) :=
-      Finset.mem_filter.mp hij
-    have hboth ij (hij : ij∈P₁) :
-        ij.1.1∈S ∧ ij.2.1∈S := by
-      have hp := Finset.mem_product.mp (Finset.mem_filter.mp (hmem ij hij).1).1
-      exact ⟨(Finset.mem_product.mp (Finset.mem_filter.mp hp.1).1).1,
-        (Finset.mem_product.mp (Finset.mem_filter.mp hp.2).1).1⟩
-    have hall ij (hij : ij∈P₁) : ij∈Pall := by
-      have hp := Finset.mem_filter.mp (hmem ij hij).1
-      have hi := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).1
-      have hj := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).2
-      exact Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨hi.1,hj.1⟩,hp.2⟩
-    have hsame ij (hij : ij∈P₁) :
-        |((rat ij.2.1).den:ℝ)/(rat ij.1.1).den-1| ≤ θ ∧
-        |((rat ij.2.1).num:ℝ)/(rat ij.1.1).num-1| ≤ θ := by
-      have hp := Finset.mem_product.mp (Finset.mem_filter.mp (hmem ij hij).1).1
-      have hi := Finset.mem_filter.mp hp.1
-      have hj := Finset.mem_filter.mp hp.2
-      have hh := hratios ij.1 hi.1 ij.2 hj.1 (hi.2.trans hj.2.symm)
-      exact ⟨hh.1,hh.2.1⟩
-    have hheight : (3*Usrc/σsrc)*Tsrc/(2*M^2) ≤ Uband := by
-      have hh := div_le_div_of_nonneg_right
-        (mul_le_mul_of_nonneg_left hscale (by positivity : (0:ℝ) ≤ 3*Usrc/σsrc))
-        (by positivity : (0:ℝ) ≤ 2*M^2)
-      simpa only [Uband,mul_assoc] using hh
-    have hnum ij (hij : ij∈P₁) :
-        |((Mat ij 0:ℝ)*h ij.1.1+Mat ij 1)/h ij.1.1-1| ≤ θ := by
-      obtain ⟨_hdet,ht,htlo,_hthi,hmap,_hrest⟩ := hglobal ij (hall ij hij)
-      have ht' : (Mat ij 2:ℝ)*h ij.1.1+Mat ij 3 =
-          (q ij.2.1:ℝ)/q ij.1.1 := ht
-      have htlo' : (1/2:ℝ) ≤ (Mat ij 2:ℝ)*h ij.1.1+Mat ij 3 := htlo
-      have hmap' : ((Mat ij 0:ℝ)*h ij.1.1+Mat ij 1)/
-          ((Mat ij 2:ℝ)*h ij.1.1+Mat ij 3) = h ij.2.1 := hmap
-      have htpos : 0 < (Mat ij 2:ℝ)*h ij.1.1+Mat ij 3 :=
-        (by norm_num : (0:ℝ) < 1/2).trans_le htlo'
-      have hnumeq : ((Mat ij 0:ℝ)*h ij.1.1+Mat ij 1)/h ij.1.1=
-          ((rat ij.2.1).num:ℝ)/(rat ij.1.1).num := by
-        rw [(div_eq_iff htpos.ne').mp hmap',ht']
-        simp only [h,hlevel ij.1.1 (hboth ij hij).1,hlevel ij.2.1 (hboth ij hij).2,
-          q,Rat.cast_def]
-        field_simp
-      rw [hnumeq]
-      exact (hsame ij hij).2
-    have hΔ : 0 ≤ Δ := by dsimp only [Δ,U₀,μ₀]; positivity
-    have hh := hcount P₁ Mat Fsrc (fun a n => z (a,n)) (fun a n => Nlen (a,n))
-      N Z η Δ Jsep Tsrc M hη hηmax hreg hjets htests hnegative
-      hTsrc hMtwo hN hΔ hJsep hNM hJM
-      (fun ij hij => ⟨⟨hy _ (hboth ij hij).1,hz _ (hboth ij hij).1⟩,
-        ⟨hy _ (hboth ij hij).2,hz _ (hboth ij hij).2⟩⟩)
-      (fun ij hij => hgeometry _ (hboth ij hij).1)
-      (fun ij hij => hgeometry _ (hboth ij hij).2)
-      (fun ij hij kl hkl hne => hseparation _ (hboth ij hij).2 _ (hboth kl hkl).2 hne)
-      (fun ij hij => (hglobal ij (hall ij hij)).1)
-      (by
-        intro ij hij
-        rcases (hmem ij hij).2 with hid | hact
-        · exact Or.inl hid
-        · exact Or.inr ⟨hact.1,hact.2.1,
-            (mul_le_mul_of_nonneg_left hheight (abs_nonneg _)).trans hact.2.2⟩)
-      (fun ij hij => (hglobal ij (hall ij hij)).2.2.2.2.1)
-      (by
-        intro ij hij
-        change |(Mat ij 2:ℝ)*h ij.1.1+Mat ij 3-1| ≤ 1/(8*(L+3))
-        have ht : (Mat ij 2:ℝ)*h ij.1.1+Mat ij 3 =
-            (q ij.2.1:ℝ)/q ij.1.1 := (hglobal ij (hall ij hij)).2.1
-        rw [ht]
-        exact (hsame ij hij).1.trans hθaction)
-      (fun ij hij => (hnum ij hij).trans hθaction)
-      (fun ij hij => (hglobal ij (hall ij hij)).2.2.2.2.2.2.1)
-    have hsub : P₁.image (fun ij => ij.1.1.1) ⊆ S.image Prod.fst := by
-      intro y hy
-      obtain ⟨ij,hij,rfl⟩ := Finset.mem_image.mp hy
-      exact Finset.mem_image_of_mem Prod.fst (hboth ij hij).1
-    have hI : ((P₁.image (fun ij => ij.1.1.1)).card:ℝ) ≤ ((S.image Prod.fst).card:ℝ) := by
-      exact_mod_cast Finset.card_le_card hsub
-    exact hh.trans (by gcongr)
-  · intro ij hij hnot
-    rcases hclass key ij hij with hid | hu | hl | hn
-    · exact False.elim (hnot (Finset.mem_filter.mpr ⟨hij,Or.inl hid⟩))
-    · exact Or.inl hu
-    · exact Or.inr (Or.inl hl)
-    · have hlarge : L < |(Mat ij 2:ℝ)| * Uband := by
-        by_contra hle
-        exact hnot (Finset.mem_filter.mpr ⟨hij,Or.inr ⟨hn.1,hn.2,le_of_not_gt hle⟩⟩)
-      have hbounds := (source_model_large_action_threshold (gamma:=(Mat ij 2:ℝ))
-        hσsrc hcsrc hUsrc hE hσ hT hM (hδ.trans (min_le_right _ _))).2 hlarge
-      exact Or.inr (Or.inr ⟨hn.1,hn.2,hbounds.1,hbounds.2⟩)
-
-
 public  theorem actual_phase_pair_forget_card
     (P : Finset (((ℝ × ℤ) × Fin 2) × ((ℝ × ℤ) × Fin 2))) (ya yb : ℝ) :
     let Fiber := P.filter (fun ij => ij.1.1.1=ya ∧ ij.2.1.1=yb)
@@ -5976,9 +4455,7 @@ theorem exists_positive_difference_joint_type_decomposed_source_sieve
     let u := fun (i : ℝ × ℤ) => (2*M^2/Tsrc)*(rat i:ℝ)
     let w := fun (i : ℝ × ℤ) => (Tsrc/(2*M^2))*(rat i:ℝ)⁻¹
     let chart := fun (i : ℝ × ℤ) => (⌊i.1/a⌋,⌊u i/a⌋,⌊w i/a⌋)
-    let narrow := fun (i : ℝ × ℤ) =>
-      (⌊((rat i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-       ⌊((rat i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
+    let narrow := fun (i : ℝ × ℤ) => rationalSourceBin Q lambda θ (rat i)
     let qell := fun (i : ℝ × ℤ) => ((rat i).den:ℝ)*deriv (f (i.1)) (round (z i))
     let V := S ×ˢ (Finset.univ : Finset (Fin 2))
     let offset := fun ip : (ℝ × ℤ) × Fin 2 => ⌊qell ip.1⌋+(ip.2:ℕ)-round (qell ip.1)
@@ -5992,10 +4469,8 @@ theorem exists_positive_difference_joint_type_decomposed_source_sieve
     let ell := fun (i : ℝ × ℤ) => deriv (f (i.1)) (round (z i))
     let b := fun ip : (ℝ × ℤ) × Fin 2 => (⌊qell ip.1⌋+(ip.2:ℕ) : ℤ)
     let tau := fun ip : (ℝ × ℤ) × Fin 2 => ((b ip:ℝ)-qell ip.1)/2
-    let dual := fun (i : ℝ × ℤ) => -2*μ i*(Real.sqrt (2/(3*μ i*(q i:ℝ))))^3
-    let x := fun ip : (ℝ × ℤ) × Fin 2 =>
-      (![-(v ip.1:ℝ)*b ip/q ip.1,-(v ip.1:ℝ)/q ip.1,
-        dual ip.1,3*dual ip.1*tau ip/2] : Fin 4 → ℝ)
+    let dual := fun (i : ℝ × ℤ) => cubicDualPhase (μ i) (q i)
+    let x := fun ip : (ℝ × ℤ) × Fin 2 => cubicCoordinates (v ip.1) (b ip) (q ip.1) (dual ip.1) (tau ip)
     let cloud := fun ip => (![Int.fract (x ip 0),Int.fract (x ip 1),
       x ip 2/Real.sqrt K₀,x ip 3/Real.sqrt K₀] : Fin 4 → ℝ)
     let radius : Fin 4 → ℝ :=
@@ -6095,8 +4570,13 @@ theorem exists_positive_difference_joint_type_decomposed_source_sieve
                   ((phaseFiber (Large key) ab).card:ℝ)))) := by
   classical
   intro κ Ratio L
-  obtain ⟨C,Dtype,hC,hDtype,hsource⟩ :=
-    exists_positive_difference_joint_type_one_source_sieve hσsrc hcsrc hUsrc hE hσ hεloss
+  have hL : 0 ≤ L := by
+    change 0 ≤ max (8*Ratio^2) _
+    exact (by positivity : (0:ℝ) ≤ 8*Ratio^2).trans (le_max_left _ _)
+  obtain ⟨C,hC,hcolored⟩ := huxley_completed_colored_source_sieve.{0} hεloss
+  obtain ⟨_,_,hmatrices⟩ := exists_source_arc_fourier_narrowed_sieve_matrices.{0} hεloss
+  obtain ⟨Dtype,hDtype,hcount⟩ :=
+    positive_difference_family_type_one_source_scale_at_action hσsrc hcsrc hUsrc hL
   refine ⟨C,Dtype,hC,hDtype,?_⟩
   intro S Fsrc z rat v Nlen Q K₀ N instK Vscale Rphys Jsep Z
     η Tsrc T M δ θ a hη hηmax hTsrc hT hM hδ hscale hQ hθ ha
@@ -6105,14 +4585,181 @@ theorem exists_positive_difference_joint_type_decomposed_source_sieve
     Fmodel hmodel f hlevel hminor hcomplete Hsrc lambda Uband u w chart narrow
     qell V offset color ChartCap NarrowCap Cap
     q μ ell b tau dual x cloud radius Pall Fiber Pairs μ₀ U₀ h D Δ
-  obtain ⟨hcard,hcharts,hratios,Mat,hfourier,hglobal,hnarrow,hclass,htype⟩ :=
-    hsource S Fsrc z rat v Nlen Q K₀ N Vscale Rphys Jsep Z
-      (η:=η) (Tsrc:=Tsrc) (T:=T) (M:=M) (δ:=δ) (θ:=θ) (a:=a)
-      hη hηmax hTsrc hT hM hδ hscale hQ hθ ha hθmax hθaction
-      hy hz hreg hjets htests hden hinv hnegative hMtwo hVscale
-      hN hJsep hJM hNM hmesh hgeometry hseparation hmodel hlevel hminor hcomplete
-  refine ⟨hcard,hcharts,hratios,Mat,hfourier,hglobal,hnarrow,hclass,?_⟩
+  have hNp : (0:ℝ) < N := by exact_mod_cast hN
+  have hjoint := positive_difference_actual_source_joint_twelfth_partition S Fsrc Prod.fst z rat Q
+    hσsrc hcsrc hUsrc hη hηmax hTsrc hT hM hσ hδ hscale hQ hθ ha
+    hy hz hreg hjets htests hden hmodel hlevel
+  have hμ₀ : 0 < μ₀ := by dsimp only [μ₀]; positivity
+  have hμbounds i (hi : i∈S) : μ₀ ≤ μ i ∧ μ i ≤ U₀ := by
+    have hb := positive_difference_rounded_cubic_scales Fsrc (T:=Tsrc) (N:=M^3/Tsrc) (R:=1)
+      hσsrc hcsrc hUsrc hη hηmax (hy i hi) hreg hjets hnegative hMtwo
+      (by positivity) (by norm_num) (hz i hi) (by field_simp)
+    have hlo : csrc/(12*σsrc*(M^3/Tsrc)*(1:ℝ)^2)=μ₀ := by
+      dsimp only [μ₀]
+      field_simp
+    have hhi : Usrc/(2*σsrc*(M^3/Tsrc)*(1:ℝ)^2)=U₀ := by
+      dsimp only [U₀]
+      field_simp
+    rw [hlo,hhi] at hb
+    exact hb
+  obtain ⟨Mat,_hglobalSum,hglobal,hnarrow⟩ := hmatrices (ℝ × ℤ) S (fun i => f i.1) z rat v
+    Q K₀ μ₀ U₀ hμ₀ hμbounds hlevel hden hinv Nlen Vscale (N:ℝ) Rphys
+    hVscale hNp hmesh hminor hcomplete
+  have hbox ip (hip : ip∈V) :
+      |x ip 2| ≤ Real.sqrt K₀ ∧ |x ip 3| ≤ Real.sqrt K₀ := by
+    have hi := (Finset.mem_product.mp hip).1
+    exact bourgain_actual_dual_source_box (rat ip.1).pos
+      (hminor ip.1 hi).1 (hminor ip.1 hi).2.1
+      (hμ₀.trans_le (hμbounds ip.1 hi).1) (hminor ip.1 hi).2.2
+      (hcomplete ip.1 hi) (v ip.1) ip.2
+  have hfourier k := hcolored K₀ Vscale hVscale ((ℝ × ℤ) × Fin 2) V x color Cap hbox hjoint.1 k
+  have hratios := hjoint.2.2.1
+  have hclass : ∀ key, ∀ ij∈Pairs key,
+        (Mat ij 0=1 ∧ Mat ij 1=0 ∧ Mat ij 2=0 ∧ Mat ij 3=1) ∨
+        (Mat ij 0=1 ∧ Mat ij 3=1 ∧ Mat ij 2=0 ∧ Mat ij 1≠0 ∧
+          |(Mat ij 1:ℝ)| ≤ θ*Uband) ∨
+        (Mat ij 0=1 ∧ Mat ij 3=1 ∧ Mat ij 1=0 ∧ Mat ij 2≠0 ∧
+          |(Mat ij 2:ℝ)| ≤ θ/lambda) ∨
+        (Mat ij 1≠0 ∧ Mat ij 2≠0) := by
+    intro key ij hij
+    have hp := Finset.mem_filter.mp hij
+    have hi := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).1
+    have hj := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).2
+    have hiall := (Finset.mem_product.mp hi.1).1
+    have hjall := (Finset.mem_product.mp hj.1).1
+    have hijall : ij∈Pall := Finset.mem_filter.mpr
+      ⟨Finset.mem_product.mpr ⟨hi.1,hj.1⟩,hp.2⟩
+    have hsides := hjoint.2.2.1 ij.1 hi.1 ij.2 hj.1 (hi.2.trans hj.2.symm)
+    obtain ⟨hdet,ht,_htlo,_hthi,hmap,_hrest⟩ := hglobal ij hijall
+    simp only [hlevel ij.1.1 hiall,hlevel ij.2.1 hjall] at ht hmap
+    have hlambda : 0 < lambda := by
+      have hκ := modelPhaseThirdLower_pos hσ
+      dsimp only [lambda]
+      positivity
+    have hband := positive_difference_model_normalized_curvature_band Fsrc
+      hσsrc hcsrc hUsrc hη hηmax (hy ij.1.1 hiall) hTsrc hT hM hσ hδ hscale
+      hreg hjets htests (hmodel ij.1.1 hiall)
+    have hcurv : lambda ≤ |(rat ij.1.1:ℝ)| ∧ |(rat ij.1.1:ℝ)| ≤ Uband := by
+      rw [←hlevel ij.1.1 hiall]
+      exact hband _ (hy ij.1.1 hiall) _ (hz ij.1.1 hiall)
+    have hx : (rat ij.1.1:ℝ)≠0 := abs_pos.mp (hlambda.trans_le hcurv.1)
+    have htpos : 0 < (Mat ij 2:ℝ)*(rat ij.1.1:ℝ)+Mat ij 3 := by
+      rw [ht]
+      exact div_pos (by exact_mod_cast (rat ij.2.1).pos)
+        (by exact_mod_cast (rat ij.1.1).pos)
+    have hnumeq : ((Mat ij 0:ℝ)*(rat ij.1.1:ℝ)+Mat ij 1)/(rat ij.1.1:ℝ)=
+        ((rat ij.2.1).num:ℝ)/(rat ij.1.1).num := by
+      rw [(div_eq_iff htpos.ne').mp hmap,ht]
+      simp only [Rat.cast_def]
+      field_simp
+    exact narrow_band_matrix_translation_cases (Mat ij 0) (Mat ij 1) (Mat ij 2) (Mat ij 3)
+      hlambda hcurv.1 hcurv.2 hθ.le hθmax hdet
+      (by rw [ht]; exact hsides.1) (by rw [hnumeq]; exact hsides.2.1)
+  refine ⟨hjoint.1,hjoint.2.1,hratios,Mat,hfourier,hglobal,hnarrow,hclass,?_⟩
   intro TypeOne Rest Upper NonUpper Lower Large Y forget phaseFiber
+  have htype : ∀ key, (((TypeOne key).card:ℝ) ≤
+        Dtype*((S.image Prod.fst).card:ℝ)*(M/(N:ℝ))*(1+Δ*Jsep)) ∧
+        (∀ ij∈Pairs key, ij∉TypeOne key →
+          (Mat ij 0=1 ∧ Mat ij 3=1 ∧ Mat ij 2=0 ∧ Mat ij 1≠0 ∧
+            |(Mat ij 1:ℝ)| ≤ θ*Uband) ∨
+          (Mat ij 0=1 ∧ Mat ij 3=1 ∧ Mat ij 1=0 ∧ Mat ij 2≠0 ∧
+            |(Mat ij 2:ℝ)| ≤ θ/lambda) ∨
+          (Mat ij 1≠0 ∧ Mat ij 2≠0 ∧
+            8*Uband ≤ |(Mat ij 2:ℝ)| * lambda^2 ∧
+            64*(modelPhaseJetCoefficient σ 3+δ)*M^2 ≤ |(Mat ij 2:ℝ)| * κ^2*T)) := by
+    intro key
+    constructor
+    · let P₁ := TypeOne key
+      have hmem ij (hij : ij∈P₁) :
+          ij∈Pairs key ∧
+          ((Mat ij 0=1 ∧ Mat ij 1=0 ∧ Mat ij 2=0 ∧ Mat ij 3=1) ∨
+            (Mat ij 1≠0 ∧ Mat ij 2≠0 ∧ |(Mat ij 2:ℝ)| * Uband ≤ L)) :=
+        Finset.mem_filter.mp hij
+      have hboth ij (hij : ij∈P₁) :
+          ij.1.1∈S ∧ ij.2.1∈S := by
+        have hp := Finset.mem_product.mp (Finset.mem_filter.mp (hmem ij hij).1).1
+        exact ⟨(Finset.mem_product.mp (Finset.mem_filter.mp hp.1).1).1,
+          (Finset.mem_product.mp (Finset.mem_filter.mp hp.2).1).1⟩
+      have hall ij (hij : ij∈P₁) : ij∈Pall := by
+        have hp := Finset.mem_filter.mp (hmem ij hij).1
+        have hi := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).1
+        have hj := Finset.mem_filter.mp (Finset.mem_product.mp hp.1).2
+        exact Finset.mem_filter.mpr ⟨Finset.mem_product.mpr ⟨hi.1,hj.1⟩,hp.2⟩
+      have hsame ij (hij : ij∈P₁) :
+          |((rat ij.2.1).den:ℝ)/(rat ij.1.1).den-1| ≤ θ ∧
+          |((rat ij.2.1).num:ℝ)/(rat ij.1.1).num-1| ≤ θ := by
+        have hp := Finset.mem_product.mp (Finset.mem_filter.mp (hmem ij hij).1).1
+        have hi := Finset.mem_filter.mp hp.1
+        have hj := Finset.mem_filter.mp hp.2
+        have hh := hratios ij.1 hi.1 ij.2 hj.1 (hi.2.trans hj.2.symm)
+        exact ⟨hh.1,hh.2.1⟩
+      have hheight : (3*Usrc/σsrc)*Tsrc/(2*M^2) ≤ Uband := by
+        have hh := div_le_div_of_nonneg_right
+          (mul_le_mul_of_nonneg_left hscale (by positivity : (0:ℝ) ≤ 3*Usrc/σsrc))
+          (by positivity : (0:ℝ) ≤ 2*M^2)
+        simpa only [Uband,mul_assoc] using hh
+      have hnum ij (hij : ij∈P₁) :
+          |((Mat ij 0:ℝ)*h ij.1.1+Mat ij 1)/h ij.1.1-1| ≤ θ := by
+        obtain ⟨_hdet,ht,htlo,_hthi,hmap,_hrest⟩ := hglobal ij (hall ij hij)
+        have ht' : (Mat ij 2:ℝ)*h ij.1.1+Mat ij 3 =
+            (q ij.2.1:ℝ)/q ij.1.1 := ht
+        have htlo' : (1/2:ℝ) ≤ (Mat ij 2:ℝ)*h ij.1.1+Mat ij 3 := htlo
+        have hmap' : ((Mat ij 0:ℝ)*h ij.1.1+Mat ij 1)/
+            ((Mat ij 2:ℝ)*h ij.1.1+Mat ij 3) = h ij.2.1 := hmap
+        have htpos : 0 < (Mat ij 2:ℝ)*h ij.1.1+Mat ij 3 :=
+          (by norm_num : (0:ℝ) < 1/2).trans_le htlo'
+        have hnumeq : ((Mat ij 0:ℝ)*h ij.1.1+Mat ij 1)/h ij.1.1=
+            ((rat ij.2.1).num:ℝ)/(rat ij.1.1).num := by
+          rw [(div_eq_iff htpos.ne').mp hmap',ht']
+          simp only [h,hlevel ij.1.1 (hboth ij hij).1,hlevel ij.2.1 (hboth ij hij).2,
+            q,Rat.cast_def]
+          field_simp
+        rw [hnumeq]
+        exact (hsame ij hij).2
+      have hΔ : 0 ≤ Δ := by dsimp only [Δ,U₀,μ₀, quarticTaylorSlack]; positivity
+      have hh := hcount P₁ Mat Fsrc (fun a n => z (a,n)) (fun a n => Nlen (a,n))
+        N Z η Δ Jsep Tsrc M hη hηmax hreg hjets htests hnegative
+        hTsrc hMtwo hN hΔ hJsep hNM hJM
+        (fun ij hij => ⟨⟨hy _ (hboth ij hij).1,hz _ (hboth ij hij).1⟩,
+          ⟨hy _ (hboth ij hij).2,hz _ (hboth ij hij).2⟩⟩)
+        (fun ij hij => hgeometry _ (hboth ij hij).1)
+        (fun ij hij => hgeometry _ (hboth ij hij).2)
+        (fun ij hij kl hkl hne => hseparation _ (hboth ij hij).2 _ (hboth kl hkl).2 hne)
+        (fun ij hij => (hglobal ij (hall ij hij)).1)
+        (by
+          intro ij hij
+          rcases (hmem ij hij).2 with hid | hact
+          · exact Or.inl hid
+          · exact Or.inr ⟨hact.1,hact.2.1,
+              (mul_le_mul_of_nonneg_left hheight (abs_nonneg _)).trans hact.2.2⟩)
+        (fun ij hij => (hglobal ij (hall ij hij)).2.2.2.2.1)
+        (by
+          intro ij hij
+          change |(Mat ij 2:ℝ)*h ij.1.1+Mat ij 3-1| ≤ 1/(8*(L+3))
+          have ht : (Mat ij 2:ℝ)*h ij.1.1+Mat ij 3 =
+              (q ij.2.1:ℝ)/q ij.1.1 := (hglobal ij (hall ij hij)).2.1
+          rw [ht]
+          exact (hsame ij hij).1.trans hθaction)
+        (fun ij hij => (hnum ij hij).trans hθaction)
+        (fun ij hij => (hglobal ij (hall ij hij)).2.2.2.2.2.2.1)
+      have hsub : P₁.image (fun ij => ij.1.1.1) ⊆ S.image Prod.fst := by
+        intro y hy
+        obtain ⟨ij,hij,rfl⟩ := Finset.mem_image.mp hy
+        exact Finset.mem_image_of_mem Prod.fst (hboth ij hij).1
+      have hI : ((P₁.image (fun ij => ij.1.1.1)).card:ℝ) ≤ ((S.image Prod.fst).card:ℝ) := by
+        exact_mod_cast Finset.card_le_card hsub
+      exact hh.trans (by gcongr)
+    · intro ij hij hnot
+      rcases hclass key ij hij with hid | hu | hl | hn
+      · exact False.elim (hnot (Finset.mem_filter.mpr ⟨hij,Or.inl hid⟩))
+      · exact Or.inl hu
+      · exact Or.inr (Or.inl hl)
+      · have hlarge : L < |(Mat ij 2:ℝ)| * Uband := by
+          by_contra hle
+          exact hnot (Finset.mem_filter.mpr ⟨hij,Or.inr ⟨hn.1,hn.2,le_of_not_gt hle⟩⟩)
+        have hbounds := (source_model_large_action_threshold (gamma:=(Mat ij 2:ℝ))
+          hσsrc hcsrc hUsrc hE hσ hT hM (hδ.trans (min_le_right _ _))).2 hlarge
+        exact Or.inr (Or.inr ⟨hn.1,hn.2,hbounds.1,hbounds.2⟩)
   have hsplit key : ((Pairs key).card:ℝ)=((TypeOne key).card:ℝ)+∑ ab∈Y ×ˢ Y,
       (((phaseFiber (Upper key) ab).card:ℝ)+((phaseFiber (Lower key) ab).card:ℝ)+
         ((phaseFiber (Large key) ab).card:ℝ)) := by
@@ -6132,7 +4779,7 @@ theorem exists_positive_difference_joint_type_decomposed_source_sieve
     exact hh
   refine ⟨htype,hsplit,?_⟩
   intro k
-  have hCap : 0 ≤ Cap := (Nat.cast_nonneg _).trans hcard
+  have hCap : 0 ≤ Cap := (Nat.cast_nonneg _).trans hjoint.1
   have hVs : 0 ≤ Vscale := zero_le_one.trans hVscale
   apply (hfourier k).trans
   apply mul_le_mul_of_nonneg_left _
@@ -6144,10 +4791,51 @@ theorem exists_positive_difference_joint_type_decomposed_source_sieve
   rw [hsplit]
   exact add_le_add (htype key).1 le_rfl
 
+/-- Translating a physical phase and its probe preserves its derivatives. -/
+theorem translated_phase_iteratedDeriv {f g : ℝ → ℝ} {a : ℝ}
+    (hg : g = fun w => f (a+w)) (x : ℝ) (k : ℕ) :
+    iteratedDeriv k g (x-a)=iteratedDeriv k f x := by
+  rw [hg,iteratedDeriv_comp_const_add]
+  simp only [add_sub_cancel]
 
-                                                                         
-                                                                                   
-                                                      
+private theorem translated_phase_roundedDeriv {f g : ℝ → ℝ} {a : ℤ}
+    (hg : g = fun w => f ((a:ℝ)+w)) (x : ℝ) (k : ℕ) :
+    iteratedDeriv k g (round (x-(a:ℝ)))=iteratedDeriv k f (round x) := by
+  rw [round_sub_intCast,Int.cast_sub,translated_phase_iteratedDeriv hg]
+
+/-- The integer colour is the offset from the rounded linear coefficient. -/
+abbrev cubicProbeColor (f : ℝ → ℝ) (x : ℝ) (q : ℕ) (p : Fin 2) : ℤ :=
+  let l := (q:ℝ)*deriv f (round x)
+  ⌊l⌋+(p:ℕ)-round l
+
+/-- The completion coordinates at an integer-rounded probe. -/
+abbrev cubicProbeCloud (f : ℝ → ℝ) (x : ℝ) (q K : ℕ) (v : ℤ) (p : Fin 2) : Fin 4 → ℝ :=
+  let l := (q:ℝ)*deriv f (round x)
+  let b : ℤ := ⌊l⌋+(p:ℕ)
+  cubicCompletion v b q (cubicDualPhase (iteratedDeriv 3 f (round x)/6) q) ((b-l)/2) K
+
+theorem cubicProbeColor_translate {f g : ℝ → ℝ} {a : ℤ}
+    (hg : g = fun w => f ((a:ℝ)+w)) (x : ℝ) (q : ℕ) (p : Fin 2) :
+    cubicProbeColor g (x-(a:ℝ)) q p=cubicProbeColor f x q p := by
+  have h := translated_phase_roundedDeriv hg x 1
+  simp only [iteratedDeriv_one] at h
+  simp only [cubicProbeColor,h]
+
+theorem cubicProbeCloud_translate {f g : ℝ → ℝ} {a : ℤ}
+    (hg : g = fun w => f ((a:ℝ)+w)) (x : ℝ) (q K : ℕ) (v : ℤ) (p : Fin 2) :
+    cubicProbeCloud g (x-(a:ℝ)) q K v p=cubicProbeCloud f x q K v p := by
+  have h := translated_phase_roundedDeriv hg x 1
+  simp only [iteratedDeriv_one] at h
+  simp only [cubicProbeCloud,h,translated_phase_roundedDeriv hg]
+
+theorem translated_grid_geometry {a Z j : ℤ} {N L : ℕ} {z : ℝ}
+    (h : N≤L ∧ L≤3*N ∧ round z+(L:ℤ)=Z+(N:ℤ)*j+2*(N:ℤ)) :
+    N≤L ∧ L≤3*N ∧ round (z-(a:ℝ))+(L:ℤ)=(Z-a)+(N:ℤ)*j+2*(N:ℤ) := by
+  refine ⟨h.1,h.2.1,?_⟩
+  rw [round_sub_intCast]
+  have := h.2.2
+  omega
+
 theorem eventually_positive_difference_global_triangular_source_mass
     {σsrc csrc Usrc : ℝ} (hσsrc : 0 < σsrc) (hcsrc : 0 < csrc) (hUsrc : 0 < Usrc) :
     ∃ η₀ a Cupper Clower Dupper Dlower : ℝ, 0 < η₀ ∧ η₀ ≤ 1/8 ∧ 0 < a ∧
@@ -6185,11 +4873,8 @@ theorem eventually_positive_difference_global_triangular_source_mass
     (N:ℝ)^4 ≤ M*R^3*(Real.log T)^((3:ℝ)/2) →
     let lambda := csrc*modelPhaseThirdLower σ*T/(12*Usrc*M^2)
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u =>
-      (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
-    let chartColor := fun ij i =>
-      (⌊yp i/a⌋,⌊((2*M^2/Tsrc)*(rat ij i:ℝ))/a⌋,
-        ⌊((Tsrc/(2*M^2))*(rat ij i:ℝ)⁻¹)/a⌋)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
+    let chartColor := fun ij i => phaseChartBin a Tsrc M (yp i) (rat ij i)
     (∀ ij∈P, ∀ i, chartColor ij i=chartKey (entry ij)) →
     (δ ≤ min (modelPhaseThirdLower σ) 1) →
     (∀ i, Expdb.IsApproximateModelPhaseFunction (F i) σ 4 δ) →
@@ -6208,93 +4893,44 @@ theorem eventually_positive_difference_global_triangular_source_mass
     (0 < θ) →
     (θ ≤ 1/24) →
     (∀ ij∈P, ∀ i, ((rat ij i).den:ℤ) ∣ (rat ij i).num*vinv ij i-1) →
-    (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
-      (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ ab∈Gaps, (s ab) ≠ 0) →
-    (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
-    (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
+    WithReferenceBasis Gaps Refs e r v s Uref R Bcut (
     (∀ ij∈P, ∀ i, xlocal ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
     (∀ ij∈P, ∀ i, xlocal ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ (N:ℝ)^2) →
-    (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    ((N:ℝ)^10 ≤ M^3*R^7) →
+    WithReferenceScale Gaps r Uref Q (modelPhaseThirdLower σ) Bcut Bselect M (N:ℝ) R (
     (∀ ij∈P, (rat ij 0:ℝ)∈Icc (gap ij).1 (gap ij).2) →
     (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
       ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
     (Q:ℝ) ≤ (N:ℝ) → (N:ℝ)^2 ≤ M → (Uref:ℝ) ≤ R^2 →
-    (∀ ab∈Gaps, |((r ab):ℝ)| ≤ 4*R^2/(Uref:ℝ)) →
-    (∀ ab∈Gaps, |((s ab):ℝ)| ≤ 4*R^2/(Uref:ℝ)) →
-    (∀ ab∈Gaps, |((e ab):ℝ)| ≤
-      (3*Jref*T/(2*σ*M^2)+1)*(4*R^2/(Uref:ℝ))) →
-    (∀ ab∈Gaps, |((v ab):ℝ)| ≤
-      (3*Jref*T/(2*σ*M^2)+1)*(4*R^2/(Uref:ℝ))) →
+    WithReferenceCoefficientBounds Gaps e r v s Uref Jref T σ M R (
     let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
-    let sourceColor := fun ij i => (⌊((rat ij i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊((rat ij i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
+    let sourceColor := fun ij i => rationalSourceBin Q lambda θ (rat ij i)
     (∀ ij∈P, sourceColor ij 0=sourceColor ij 1) →
-    let f := fun (i : Fin 2) w => Tsrc*(Fsrc (w/M)-Fsrc (w/M+η*yp i))/(σsrc*η)
+    let f := fun (i : Fin 2) w => physicalFirstDifference Fsrc Tsrc M σsrc η (yp i) w
     (∀ ij∈P, ∀ i, iteratedDeriv 2 (f i) (x ij i)/2=(rat ij i:ℝ)) →
     let q := fun ij i => (rat ij i).den
-    let mu := fun ij i => iteratedDeriv 3 (f i) (round (x ij i))/6
-    let ell := fun ij i => deriv (f i) (round (x ij i))
-    let b := fun ij i => (⌊(q ij i:ℝ)*ell ij i⌋+(parity ij i:ℕ) : ℤ)
-    let cround := fun ij i => round ((q ij i:ℝ)*ell ij i)
-    let tau := fun ij i => ((b ij i:ℝ)-(q ij i:ℝ)*ell ij i)/2
-    let dual := fun ij i => -2*mu ij i*(Real.sqrt (2/(3*mu ij i*(q ij i:ℝ))))^3
-    let cloud := fun ij i => (![Int.fract (-(vinv ij i:ℝ)*b ij i/q ij i),
-      Int.fract (-(vinv ij i:ℝ)/q ij i),dual ij i/Real.sqrt K₀,
-      (3*dual ij i*tau ij i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ ij∈P, b ij 0-cround ij 0=b ij 1-cround ij 1) →
+    let cloud := fun ij i => cubicProbeCloud (f i) (x ij i) (q ij i) K₀ (vinv ij i) (parity ij i)
+    let radius : Fin 4 → ℝ := cubicCompletionRadius K₀
+    (∀ ij∈P, cubicProbeColor (f 0) (x ij 0) (q ij 0) (parity ij 0)=
+      cubicProbeColor (f 1) (x ij 1) (q ij 1) (parity ij 1)) →
     (∀ ij∈P, ∀ a, |cloud ij 0 a-cloud ij 1 a| ≤ 2*radius a) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/(N:ℝ)^2 ≤ 1/2 →
-    (N:ℝ) ≤ R^2 →
-    R ≤ (N:ℝ) →
-    (N:ℝ)^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*(N:ℝ) →
-    (∀ t∈P.image entry, Mat t 0*Mat t 3-Mat t 1*Mat t 2=1) →
-    (∀ ij∈P, (Mat (entry ij) 2:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 3=(q ij 1:ℝ)/q ij 0) →
-    (∀ ij∈P, ((Mat (entry ij) 0:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 1)/
-      ((Mat (entry ij) 2:ℝ)*(rat ij 0:ℝ)+Mat (entry ij) 3)=(rat ij 1:ℝ)) →
-    (∀ t∈P.image entry, |(Mat t 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2)) →
+    WithCubicScales σ M (N:ℝ) R Q (fun κ Cphys c J B =>
+    WithCompletionMatrices P entry Mat rat q Q K₀ (
     let H := (N:ℝ)/(Cphys+2)
     2 ≤ (N:ℝ) →
     (∀ ij∈P, ∀ i, xlocal ij i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
     (∀ ij∈P, ∀ i, xlocal ij i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, |(anchor ij:ℝ)-(rat ij 0:ℝ)| ≤ ε) →
-    (∀ ij∈P, 256*((anchor ij).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ ij∈P, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor ij).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+    WithRationalAnchors P rat anchor ε Q (
+    let budget := QuarticChartBudget.make σ δ κ Cphys B
+    let Δ := budget.delta Q N
+    let Ccurv := budget.Ccurv
+    let D := budget.error Q N
+    let Esize := budget.Esize
+    let Dbase := budget.Dbase
+    let Tbase := budget.Tbase
     2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
     D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
+    let Lunit := budget.Lunit
+    let Cthird := budget.Cthird
     let AupperConst := 2*Cupper*(Cthird+1)*E^2/(κ*Lunit^3)
     let BupperConst := Cupper*(Cthird+1)*E^2/Lunit^2+Dupper*(B+1)*E^2/4
     let AlowerConst := 8*Clower*(Cthird+1)/(κ*Lunit^3)
@@ -6310,13 +4946,14 @@ theorem eventually_positive_difference_global_triangular_source_mass
     ((∀ t∈P.image entry, Mat t 0=1 ∧ Mat t 1=0 ∧ Mat t 3=1 ∧ Mat t 2=t) →
       (P.card:ℝ) ≤ (240*CostLower*
         (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+
-          2*BlowerConst+(3/2:ℝ)*DlowerConst))*T^εloss) := by
+          2*BlowerConst+(3/2:ℝ)*DlowerConst))*T^εloss))))))) := by
   classical
   obtain ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,hmassFn⟩ :=
     eventually_positive_difference_actual_fourier_triangular_original_source_mass hσsrc hcsrc hUsrc
   refine ⟨η₀,a,CU,CL,DU,DL,hη₀,hηcap,ha,hCU,hCL,hDU,hDL,?_⟩
   intro σ Jref εloss E θ hσ hJref hεloss
   filter_upwards [hmassFn (E:=E) (θ:=θ) hσ hJref hεloss] with T hmass
+  dsimp (config := {zeta := false, zetaUnused := false}) only [WithCubicScales]
   intro Fsrc η ya yb Tsrc chartKey Uref Refs Gaps Bselect P entry Mat gap
     N za zb AlenA AlenB Za Zb Q K₀ inst rat vinv parity anchor e r v s
     δ M R base Bcut A W x xlocal
@@ -6328,57 +4965,26 @@ theorem eventually_positive_difference_global_triangular_source_mass
     hBselectSize hcutMargin hselectedWrap hreferenceDen hgapWidth hRQ
     hselectedUpper hscaleTen hfamilyGap hgap
     hQN hNM hUR hrHeight hsHeight heHeight hvHeight
-    ε sourceColor hsourceColor f hlevel q mu ell b cround tau dual cloud radius
+    ε sourceColor hsourceColor f hlevel q cloud radius
     hcolor hnear κ Cphys c J B hsmall hNR hRN hNcube hminscale
     hMatdet hMatt hMatmap hMatgamma H hNtwo hL hU hanchor hcut hcount
-    C₂ C₃ Ct Cc Δ Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Lunit Gamma Cthird AupperConst BupperConst AlowerConst BlowerConst
+    budget Δ Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Lunit Cthird AupperConst BupperConst AlowerConst BlowerConst
     DupperConst DlowerConst CostUpper CostLower
 
   let flocal := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
   have hsource i : flocal i = fun w => f i ((A i:ℝ)+w) := by
     funext w
-    dsimp only [flocal,heathBrownPhysicalPhase,F,f]
+    dsimp only [flocal,heathBrownPhysicalPhase,F,f, firstDifferenceModel, physicalFirstDifference]
     field_simp
-  have hjet ij i k : iteratedDeriv k (flocal i) (xlocal ij i) =
-      iteratedDeriv k (f i) (x ij i) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-    simp only [xlocal,add_sub_cancel]
-  have hrjet ij i k : iteratedDeriv k (flocal i) (round (xlocal ij i)) =
-      iteratedDeriv k (f i) (round (x ij i)) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-    simp only [xlocal,round_sub_intCast,Int.cast_sub,add_sub_cancel]
-  have hrderiv ij i : deriv (flocal i) (round (xlocal ij i)) =
-      deriv (f i) (round (x ij i)) := by
-    simpa only [iteratedDeriv_one] using hrjet ij i 1
-  let mulocal := fun ij i => iteratedDeriv 3 (flocal i) (round (xlocal ij i))/6
-  let elllocal := fun ij i => deriv (flocal i) (round (xlocal ij i))
-  let blocal := fun ij i => (⌊(q ij i:ℝ)*elllocal ij i⌋+(parity ij i:ℕ) : ℤ)
-  let taulocal := fun ij i => ((blocal ij i:ℝ)-(q ij i:ℝ)*elllocal ij i)/2
-  let duallocal := fun ij i => -2*mulocal ij i*(Real.sqrt (2/(3*mulocal ij i*(q ij i:ℝ))))^3
-  let cloudlocal := fun ij i => (![Int.fract (-(vinv ij i:ℝ)*blocal ij i/q ij i),
-    Int.fract (-(vinv ij i:ℝ)/q ij i),duallocal ij i/Real.sqrt K₀,
-    (3*duallocal ij i*taulocal ij i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-  have hcloud ij i : cloudlocal ij i=cloud ij i := by
-    dsimp only [cloudlocal,duallocal,mulocal,taulocal,blocal,elllocal]
-    simp only [hrjet,hrderiv]
-    rfl
-  have hgeomA ij (hij : ij∈P) :
-      N ≤ AlenA ij.1.1 ∧ AlenA ij.1.1 ≤ 3*N ∧
-        round (za ij.1.1-(A 0:ℝ))+(AlenA ij.1.1:ℤ)=
-          (Za-A 0)+(N:ℤ)*ij.1.1+2*(N:ℤ) := by
-    obtain ⟨hlo,hhi,he⟩ := hgeometryA ij hij
-    refine ⟨hlo,hhi,?_⟩
-    rw [round_sub_intCast]
-    omega
-  have hgeomB ij (hij : ij∈P) :
-      N ≤ AlenB ij.2.1 ∧ AlenB ij.2.1 ≤ 3*N ∧
-        round (zb ij.2.1-(A 1:ℝ))+(AlenB ij.2.1:ℤ)=
-          (Zb-A 1)+(N:ℤ)*ij.2.1+2*(N:ℤ) := by
-    obtain ⟨hlo,hhi,he⟩ := hgeometryB ij hij
-    refine ⟨hlo,hhi,?_⟩
-    rw [round_sub_intCast]
-    omega
+  let paint := fun ij i => cubicProbeColor (flocal i) (xlocal ij i) (q ij i) (parity ij i)
+  let packed := fun ij i => cubicProbeCloud (flocal i) (xlocal ij i) (q ij i) K₀ (vinv ij i) (parity ij i)
+  have hpaint ij i : paint ij i=cubicProbeColor (f i) (x ij i) (q ij i) (parity ij i) :=
+    cubicProbeColor_translate (hsource i) _ _ _
+  have hpacked ij i : packed ij i=cloud ij i :=
+    cubicProbeCloud_translate (hsource i) _ _ _ _ _
+  have hgeomA ij hij := translated_grid_geometry (a:=A 0) (hgeometryA ij hij)
+  have hgeomB ij hij := translated_grid_geometry (a:=A 1) (hgeometryB ij hij)
   apply hmass Fsrc η ya yb Tsrc chartKey Uref Refs Gaps (Bselect:=Bselect)
     P entry Mat gap N (fun n => za n-(A 0:ℝ)) (fun n => zb n-(A 1:ℝ))
     AlenA AlenB (Za-A 0) (Zb-A 1) Q K₀ rat vinv parity anchor e r v s
@@ -6391,21 +4997,15 @@ theorem eventually_positive_difference_global_triangular_source_mass
     hBselectSize hcutMargin hselectedWrap hreferenceDen hgapWidth hRQ
     hselectedUpper hscaleTen hfamilyGap hgap hQN hNM hUR hrHeight hsHeight heHeight hvHeight
     hsourceColor
-    (by intro ij hij i; rw [show iteratedDeriv 2 (heathBrownPhysicalPhase (F i) T M (A i) 1)
-      (xlocal ij i)=iteratedDeriv 2 (f i) (x ij i) from hjet ij i 2]; exact hlevel ij hij i)
+    (fun ij hij i => (congrArg (· / (2:ℝ)) (translated_phase_iteratedDeriv (hsource i) (x ij i) 2)).trans (hlevel ij hij i))
     (by
       intro ij hij
-      change (⌊(q ij 0:ℝ)*deriv (flocal 0) (round (xlocal ij 0))⌋+(parity ij 0:ℕ):ℤ)-
-          round ((q ij 0:ℝ)*deriv (flocal 0) (round (xlocal ij 0))) =
-        (⌊(q ij 1:ℝ)*deriv (flocal 1) (round (xlocal ij 1))⌋+(parity ij 1:ℕ):ℤ)-
-          round ((q ij 1:ℝ)*deriv (flocal 1) (round (xlocal ij 1)))
-      rw [hrderiv,hrderiv]
-      exact hcolor ij hij)
+      change paint ij 0=paint ij 1
+      simpa only [hpaint] using hcolor ij hij)
     (by
       intro ij hij d
-      change |cloudlocal ij 0 d-cloudlocal ij 1 d| ≤ 2*radius d
-      rw [hcloud,hcloud]
-      exact hnear ij hij d)
+      change |packed ij 0 d-packed ij 1 d| ≤ 2*radius d
+      simpa only [hpacked] using hnear ij hij d)
     hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
     hNtwo hL hU hanchor hcut hcount hsize hD hΔ hBsize
 
@@ -6428,7 +5028,7 @@ public  theorem eventually_positive_difference_global_large_entry_source_mass
     let x := fun ij : (ℤ × Fin 2) × (ℤ × Fin 2) => (![za ij.1.1,zb ij.2.1] : Fin 2 → ℝ)
     let xlocal := fun ij i => x ij i-(A i:ℝ)
     let yp : Fin 2 → ℝ := ![ya,yb]
-    let F := fun (i : Fin 2) u => (Tsrc/T)*(Fsrc u-Fsrc (u+η*yp i))/(σsrc*η)
+    let F := fun (i : Fin 2) u => firstDifferenceModel Fsrc Tsrc T σsrc η (yp i) u
     (∀ ij∈P, base ≤ za ij.1.1-(A 0:ℝ)) →
     (∀ ij∈P, gap ij∈Gaps) →
     (∀ ij∈P, N ≤ AlenA ij.1.1 ∧ AlenA ij.1.1 ≤ 3*N ∧
@@ -6455,25 +5055,10 @@ public  theorem eventually_positive_difference_global_large_entry_source_mass
     (θ ≤ 1/24) →
     (∀ ij∈P, ∀ i, lambda ≤ |(rat ij i:ℝ)| ∧ |(rat ij i:ℝ)| ≤ Uband) →
     (∀ ij∈P, ∀ i, ((rat ij i).den:ℤ) ∣ (rat ij i).num*vinv ij i-1) →
-    (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
-      (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
-    (0 < Bcut) →
-    (∀ ab∈Gaps, (s ab) ≠ 0) →
-    (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
-    (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
-    (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
+    WithReferenceBasis Gaps Refs e r v s Uref R Bcut (
     (∀ ij∈P, ∀ i, xlocal ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
     (∀ ij∈P, ∀ i, xlocal ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (1 ≤ Uref) →
-    (2+168/modelPhaseThirdLower σ ≤ Bselect) →
-    (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
-    (Bselect^2*(Uref:ℝ)^3*R^2 ≤ (N:ℝ)^2) →
-    (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
-    (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
-    (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
-    ((N:ℝ)^10 ≤ M^3*R^7) →
+    WithReferenceScale Gaps r Uref Q (modelPhaseThirdLower σ) Bcut Bselect M (N:ℝ) R (
     (∀ ij∈P, (rat ij 0:ℝ)∈Icc (gap ij).1 (gap ij).2) →
     (∀ ij∈P, Mat ij 2 ≠ 0) →
     (∀ ij∈P, 64*(modelPhaseJetCoefficient σ 3+δ)*M^2 ≤
@@ -6483,43 +5068,21 @@ public  theorem eventually_positive_difference_global_large_entry_source_mass
     (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
       ∀ t∈Refs, ¬(ab.1 < t ∧ t < ab.2)) →
     (Q:ℝ) ≤ (N:ℝ) → (N:ℝ)^2 ≤ M → (Uref:ℝ) ≤ R^2 →
-    (∀ ab∈Gaps, |((r ab):ℝ)| ≤ 4*R^2/(Uref:ℝ)) →
-    (∀ ab∈Gaps, |((s ab):ℝ)| ≤ 4*R^2/(Uref:ℝ)) →
-    (∀ ab∈Gaps, |((e ab):ℝ)| ≤
-      (3*Jref*T/(2*σ*M^2)+1)*(4*R^2/(Uref:ℝ))) →
-    (∀ ab∈Gaps, |((v ab):ℝ)| ≤
-      (3*Jref*T/(2*σ*M^2)+1)*(4*R^2/(Uref:ℝ))) →
+    WithReferenceCoefficientBounds Gaps e r v s Uref Jref T σ M R (
     let ε := modelPhaseThirdLower σ/(16*(σ*(σ+1)+1+2)*R^2)
-    let sourceColor := fun ij i => (⌊((rat ij i).den:ℝ)/(θ*((Q:ℝ)/2))⌋,
-      ⌊((rat ij i).num:ℝ)/(θ*(lambda*(Q:ℝ)/2))⌋)
+    let sourceColor := fun ij i => rationalSourceBin Q lambda θ (rat ij i)
     (∀ ij∈P, sourceColor ij 0=sourceColor ij 1) →
-    let f := fun (i : Fin 2) w => Tsrc*(Fsrc (w/M)-Fsrc (w/M+η*yp i))/(σsrc*η)
+    let f := fun (i : Fin 2) w => physicalFirstDifference Fsrc Tsrc M σsrc η (yp i) w
     (∀ ij∈P, ∀ i, iteratedDeriv 2 (f i) (x ij i)/2=(rat ij i:ℝ)) →
     let q := fun ij i => (rat ij i).den
-    let mu := fun ij i => iteratedDeriv 3 (f i) (round (x ij i))/6
-    let ell := fun ij i => deriv (f i) (round (x ij i))
-    let b := fun ij i => (⌊(q ij i:ℝ)*ell ij i⌋+(parity ij i:ℕ) : ℤ)
-    let cround := fun ij i => round ((q ij i:ℝ)*ell ij i)
-    let tau := fun ij i => ((b ij i:ℝ)-(q ij i:ℝ)*ell ij i)/2
-    let dual := fun ij i => -2*mu ij i*(Real.sqrt (2/(3*mu ij i*(q ij i:ℝ))))^3
-    let cloud := fun ij i => (![Int.fract (-(vinv ij i:ℝ)*b ij i/q ij i),
-      Int.fract (-(vinv ij i:ℝ)/q ij i),dual ij i/Real.sqrt K₀,
-      (3*dual ij i*tau ij i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-    let radius : Fin 4 → ℝ := ![1/(12*(K₀:ℝ)),1/(12*(K₀:ℝ)^2),(1/(K₀:ℝ)^2)/12,(1/(K₀:ℝ))/12]
-    (∀ ij∈P, b ij 0-cround ij 0=b ij 1-cround ij 1) →
+    let cloud := fun ij i => cubicProbeCloud (f i) (x ij i) (q ij i) K₀ (vinv ij i) (parity ij i)
+    let radius : Fin 4 → ℝ := cubicCompletionRadius K₀
+    (∀ ij∈P, cubicProbeColor (f 0) (x ij 0) (q ij 0) (parity ij 0)=
+      cubicProbeColor (f 1) (x ij 1) (q ij 1) (parity ij 1)) →
     (∀ ij∈P, ∀ a, |cloud ij 0 a-cloud ij 1 a| ≤ 2*radius a) →
     (∀ ij∈P,
       |cloud ij 0 1-cloud ij 1 1| ≤ 1/(6*(K₀:ℝ)^2*V)) →
-    let κ := modelPhaseThirdLower σ
-    let Cphys := σ*(σ+1)+1
-    let c := κ/6
-    let J := Cphys/6
-    let B := max 1 (max (2*Real.sqrt J) (8*J*Real.sqrt J/(3*c)))
-    B*R^2/(N:ℝ)^2 ≤ 1/2 →
-    (N:ℝ) ≤ R^2 →
-    R ≤ (N:ℝ) →
-    (N:ℝ)^3 ≤ M*R^2 →
-    2*R^2 ≤ (Q:ℝ)*(N:ℝ) →
+    WithCubicScales σ M (N:ℝ) R Q (fun κ Cphys c J B =>
     (∀ ij∈P, Mat ij 0*Mat ij 3-Mat ij 1*Mat ij 2=1) →
     (∀ ij∈P, (Mat ij 2:ℝ)*(rat ij 0:ℝ)+Mat ij 3=(q ij 1:ℝ)/q ij 0) →
     (∀ ij∈P, ((Mat ij 0:ℝ)*(rat ij 0:ℝ)+Mat ij 1)/
@@ -6529,91 +5092,48 @@ public  theorem eventually_positive_difference_global_large_entry_source_mass
     2 ≤ (N:ℝ) →
     (∀ ij∈P, ∀ i, xlocal ij i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
     (∀ ij∈P, ∀ i, xlocal ij i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, |(anchor ij:ℝ)-(rat ij 0:ℝ)| ≤ ε) →
-    (∀ ij∈P, 256*((anchor ij).den:ℝ) ≤ (Q:ℝ)/3) →
-    (∀ ij∈P, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor ij).den) →
-    let C₂ := modelPhaseJetCoefficient σ 2+δ
-    let C₃ := modelPhaseJetCoefficient σ 3+δ
-    let Ct := C₂/2+5*C₃/12
-    let Cc := C₂/κ+C₃/(2*κ)
-    let Δ := (37*B/2+16*B*Cc+2*Ct+2*Cc)*(Q:ℝ)/(N:ℝ)
-    let Ccurv := (4/κ)*(B+2*quarticReciprocalConstant σ δ)
-    let D := Δ+quarticNonlinearResidualConstant σ δ*(2*(Q:ℝ))/(N:ℝ)
-    let Kres := 4*(37*B/2+16*B*Cc+2*Ct+2*Cc+
-      2*quarticNonlinearResidualConstant σ δ)/κ
-    let Esize := κ/(16*(Cphys+2))
-    let Dbase := 37*B/2+16*B*Cc+2*Ct+2*Cc+2*quarticNonlinearResidualConstant σ δ
-    let Tbase := (2/κ)*(B+2*quarticReciprocalConstant σ δ)
+    WithRationalAnchors P rat anchor ε Q (
+    let budget := QuarticChartBudget.make σ δ κ Cphys B
+    let Δ := budget.delta Q N
+    let Ccurv := budget.Ccurv
+    let D := budget.error Q N
+    let Esize := budget.Esize
+    let Dbase := budget.Dbase
+    let Tbase := budget.Tbase
     2*3840*128^2*105*(Dbase+64*Tbase*Esize^2) ≤ Bselect*Esize →
     D ≤ 1/2 → Δ < 1/2 → 61*Ccurv*Cphys ≤ Bcut →
-    let Lunit := 2*κ/Cphys
-    let Gamma := Cphys/κ
-    let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
-    let Cpack := 64*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2
-    let Cgap := 64*Cphys*(Gamma^2*B+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
-    let Ctail := 4*Cpack/Lunit^2+Cgap
+    let Cmain := budget.Cmain
+    let Ctail := budget.Ctail
     V=(Uref:ℝ)^((3:ℝ)/2) →
     ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/(2*Bselect) ≤ (Uref:ℝ) →
     V*(P.card:ℝ) ≤
       (2*Bselect*60*588*(Uband/lambda)^2*Uband^2*(R^8/(N:ℝ)^4)*
-        (Cmain+Ctail)*((Q:ℝ)/(N:ℝ))^((2:ℝ)/3))*T^εloss := by
+        (Cmain+Ctail)*((Q:ℝ)/(N:ℝ))^((2:ℝ)/3))*T^εloss))))) := by
   filter_upwards [eventually_physicalModelPhase_actual_fourier_original_pair_mass hσ hJref hεloss]
     with T hmass
+  dsimp (config := {zeta := false, zetaUnused := false}) only [WithCubicScales]
   intro Fsrc σsrc η Tsrc ya yb Uref Refs Gaps Bselect P Mat gap Q K₀ _ N za zb AlenA AlenB Za Zb
     rat vinv parity anchor e r v s δ M R base Bcut lambda Uband θ V A W x xlocal yp F
     hbase hgapMem hgeometryA hgeometryB hδ hF hT hM hN hR hRM hQ hscale hmesh hA hW hx hden hlambda hUband hθ hθmax hcurv hinv hchart horientation hBcut hs hrefSet hparentSet hsep hwideL hwideU hUref hBselectSize hcutMargin hselectedWrap hreferenceDen hgapWidth hRQ hselectedUpper hscaleTen hfamilyGap hc hlarge haction hV hgap
     hQN hNM hUR hrHeight hsHeight heHeight hvHeight
-    ε sourceColor hsourceColor f hlevel q mu ell b cround tau dual cloud radius
+    ε sourceColor hsourceColor f hlevel q cloud radius
     hcolor hnear hnearNarrow κ Cphys c J B hsmall hNR hRN hNcube hminscale
     hMatdet hMatt hMatmap hMatgamma H hNtwo hL hU hanchor hcut hcount
-    C₂ C₃ Ct Cc Δ Ccurv D Kres Esize Dbase Tbase hsize hD hΔ hBsize
-    Lunit Gamma Cthird Cpack Cfirst Cgap Cmain Ctail hvchoice hUlo
+    budget Δ Ccurv D Esize Dbase Tbase hsize hD hΔ hBsize
+    Cmain Ctail hvchoice hUlo
   let flocal := fun i => heathBrownPhysicalPhase (F i) T M (A i) 1
   have hsource i : flocal i = fun w => f i ((A i:ℝ)+w) := by
     funext w
-    dsimp only [flocal,heathBrownPhysicalPhase,F,f]
+    dsimp only [flocal,heathBrownPhysicalPhase,F,f, firstDifferenceModel, physicalFirstDifference]
     field_simp
-  have hjet ij i k : iteratedDeriv k (flocal i) (xlocal ij i) =
-      iteratedDeriv k (f i) (x ij i) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-    simp only [xlocal,add_sub_cancel]
-  have hrjet ij i k : iteratedDeriv k (flocal i) (round (xlocal ij i)) =
-      iteratedDeriv k (f i) (round (x ij i)) := by
-    rw [hsource,iteratedDeriv_comp_const_add]
-    simp only [xlocal,round_sub_intCast,Int.cast_sub,add_sub_cancel]
-  have hrderiv ij i : deriv (flocal i) (round (xlocal ij i)) =
-      deriv (f i) (round (x ij i)) := by
-    simpa only [iteratedDeriv_one] using hrjet ij i 1
-  let mulocal := fun ij i => iteratedDeriv 3 (flocal i) (round (xlocal ij i))/6
-  let elllocal := fun ij i => deriv (flocal i) (round (xlocal ij i))
-  let blocal := fun ij i => (⌊(q ij i:ℝ)*elllocal ij i⌋+(parity ij i:ℕ) : ℤ)
-  let taulocal := fun ij i => ((blocal ij i:ℝ)-(q ij i:ℝ)*elllocal ij i)/2
-  let duallocal := fun ij i => -2*mulocal ij i*(Real.sqrt (2/(3*mulocal ij i*(q ij i:ℝ))))^3
-  let cloudlocal := fun ij i => (![Int.fract (-(vinv ij i:ℝ)*blocal ij i/q ij i),
-    Int.fract (-(vinv ij i:ℝ)/q ij i),duallocal ij i/Real.sqrt K₀,
-    (3*duallocal ij i*taulocal ij i/2)/Real.sqrt K₀] : Fin 4 → ℝ)
-  have hcloud ij i : cloudlocal ij i=cloud ij i := by
-    dsimp only [cloudlocal,duallocal,mulocal,taulocal,blocal,elllocal]
-    simp only [hrjet,hrderiv]
-    rfl
-  have hgeomA ij (hij : ij∈P) :
-      N ≤ AlenA ij.1.1 ∧ AlenA ij.1.1 ≤ 3*N ∧
-        round (za ij.1.1-(A 0:ℝ))+(AlenA ij.1.1:ℤ)=
-          (Za-A 0)+(N:ℤ)*ij.1.1+2*(N:ℤ) := by
-    obtain ⟨hlo,hhi,he⟩ := hgeometryA ij hij
-    refine ⟨hlo,hhi,?_⟩
-    rw [round_sub_intCast]
-    omega
-  have hgeomB ij (hij : ij∈P) :
-      N ≤ AlenB ij.2.1 ∧ AlenB ij.2.1 ≤ 3*N ∧
-        round (zb ij.2.1-(A 1:ℝ))+(AlenB ij.2.1:ℤ)=
-          (Zb-A 1)+(N:ℤ)*ij.2.1+2*(N:ℤ) := by
-    obtain ⟨hlo,hhi,he⟩ := hgeometryB ij hij
-    refine ⟨hlo,hhi,?_⟩
-    rw [round_sub_intCast]
-    omega
+  let paint := fun ij i => cubicProbeColor (flocal i) (xlocal ij i) (q ij i) (parity ij i)
+  let packed := fun ij i => cubicProbeCloud (flocal i) (xlocal ij i) (q ij i) K₀ (vinv ij i) (parity ij i)
+  have hpaint ij i : paint ij i=cubicProbeColor (f i) (x ij i) (q ij i) (parity ij i) :=
+    cubicProbeColor_translate (hsource i) _ _ _
+  have hpacked ij i : packed ij i=cloud ij i :=
+    cubicProbeCloud_translate (hsource i) _ _ _ _ _
+  have hgeomA ij hij := translated_grid_geometry (a:=A 0) (hgeometryA ij hij)
+  have hgeomB ij hij := translated_grid_geometry (a:=A 1) (hgeometryB ij hij)
   apply hmass Uref Refs Gaps (Bselect:=Bselect) P Mat gap Q K₀ N
     (fun n => za n-(A 0:ℝ)) (fun n => zb n-(A 1:ℝ))
     AlenA AlenB (Za-A 0) (Zb-A 1) rat vinv parity anchor e r v s
@@ -6626,26 +5146,19 @@ public  theorem eventually_positive_difference_global_large_entry_source_mass
     hBselectSize hcutMargin hselectedWrap hreferenceDen hgapWidth hRQ
     hselectedUpper hscaleTen hfamilyGap hc hlarge haction hV hgap
     hQN hNM hUR hrHeight hsHeight heHeight hvHeight hsourceColor
-    (by intro ij hij i; rw [show iteratedDeriv 2 (heathBrownPhysicalPhase (F i) T M (A i) 1)
-      (xlocal ij i)=iteratedDeriv 2 (f i) (x ij i) from hjet ij i 2]; exact hlevel ij hij i)
+    (fun ij hij i => (congrArg (· / (2:ℝ)) (translated_phase_iteratedDeriv (hsource i) (x ij i) 2)).trans (hlevel ij hij i))
     (by
       intro ij hij
-      change (⌊(q ij 0:ℝ)*deriv (flocal 0) (round (xlocal ij 0))⌋+(parity ij 0:ℕ):ℤ)-
-          round ((q ij 0:ℝ)*deriv (flocal 0) (round (xlocal ij 0))) =
-        (⌊(q ij 1:ℝ)*deriv (flocal 1) (round (xlocal ij 1))⌋+(parity ij 1:ℕ):ℤ)-
-          round ((q ij 1:ℝ)*deriv (flocal 1) (round (xlocal ij 1)))
-      rw [hrderiv,hrderiv]
-      exact hcolor ij hij)
+      change paint ij 0=paint ij 1
+      simpa only [hpaint] using hcolor ij hij)
     (by
       intro ij hij d
-      change |cloudlocal ij 0 d-cloudlocal ij 1 d| ≤ 2*radius d
-      rw [hcloud,hcloud]
-      exact hnear ij hij d)
+      change |packed ij 0 d-packed ij 1 d| ≤ 2*radius d
+      simpa only [hpacked] using hnear ij hij d)
     (by
       intro ij hij
-      change |cloudlocal ij 0 1-cloudlocal ij 1 1| ≤ 1/(6*(K₀:ℝ)^2*V)
-      rw [hcloud,hcloud]
-      exact hnearNarrow ij hij)
+      change |packed ij 0 1-packed ij 1 1| ≤ 1/(6*(K₀:ℝ)^2*V)
+      simpa only [hpacked] using hnearNarrow ij hij)
     hsmall hNR hRN hNcube hminscale hMatdet hMatt hMatmap hMatgamma
     hNtwo hL hU hanchor hcut hcount hsize hD hΔ hBsize hvchoice hUlo
 

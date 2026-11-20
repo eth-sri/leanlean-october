@@ -7,7 +7,7 @@ See ../../../../../third_party/twelfth/LICENSE-MIT-0 and
 ../../../../../third_party/twelfth/DIGAMMA_PORT_MANIFEST.json.
 The imported DigammaSeries preserves its separate Apache-2.0 attribution.
 -/
-public import MathCollab.Density.Stronger.Fourth.DigammaSeries
+public import WeylPort.Analytic.DigammaSeries
 public import Mathlib.Analysis.SpecialFunctions.Complex.LogDeriv
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.FundThmCalculus
 

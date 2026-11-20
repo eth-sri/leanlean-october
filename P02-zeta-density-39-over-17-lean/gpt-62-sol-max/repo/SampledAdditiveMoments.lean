@@ -110,10 +110,12 @@ theorem pair_smoothing_energy (W : Finset ℝ) (t₀ : ℝ) :
   rw [show (2:ℝ)*(1/32)*32^2=64 by norm_num] at hh
   exact hh.trans (mul_le_mul_of_nonneg_left hc (by norm_num))
 
+section
+variable {ι : Type*} [instShared1 : Fintype ι] {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ) (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+include ι instShared1 T t₀ δ hT hδ W hW
+
 /-- Sampled second moment from the existing Fourier-square sampling theorem. -/
-theorem sampled_character_second {ι : Type*} [Fintype ι]
-    {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ)
-    (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+theorem sampled_character_second
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|)
     (x : ι → ℝ) (hx : ∀ i, |x i| ≤ 1)
     (hxs : Pairwise (fun i j => δ ≤ |x i-x j|)) :
@@ -147,9 +149,7 @@ theorem sampled_character_second {ι : Type*} [Fintype ι]
     _ = _ := by ring
 
 /-- Sampled fourth moment has the actual additive energy on the right. -/
-theorem sampled_character_fourth {ι : Type*} [Fintype ι]
-    {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ)
-    (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+theorem sampled_character_fourth
     (x : ι → ℝ) (hx : ∀ i, |x i| ≤ 1)
     (hxs : Pairwise (fun i j => δ ≤ |x i-x j|)) :
     (∑ i, ‖centeredCharacter W t₀ (x i)‖^4) ≤
@@ -188,9 +188,7 @@ theorem sampled_character_fourth {ι : Type*} [Fintype ι]
 
 /-- The separated cubic estimate needed for the small-gcd argument follows
 from the two proved sampled moments. No general L3 sampling theorem is assumed. -/
-theorem sampled_character_cubic {ι : Type*} [Fintype ι]
-    {T t₀ δ : ℝ} (hT : 1 < T) (hδ : 0 < δ)
-    (W : Finset ℝ) (hW : ∀ t ∈ W, t ∈ Icc t₀ (t₀+T))
+theorem sampled_character_cubic
     (hsep : ∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|)
     (x : ι → ℝ) (hx : ∀ i, |x i| ≤ 1)
     (hxs : Pairwise (fun i j => δ ≤ |x i-x j|)) :
@@ -235,5 +233,7 @@ theorem sampled_character_cubic {ι : Type*} [Fintype ι]
   convert hr using 1
   dsimp [D]
   ring
+
+end
 
 end Montgomery.RationalMoment

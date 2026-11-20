@@ -57,7 +57,7 @@ theorem no_slot_endpoint
   let N := U*V^6
   have hUp : 0<U := zero_lt_one.trans_le hU
   have hp : 0≤p := amplificationPower_nonneg c r
-  have hpR : p≤R/3 := amplificationPower_upper c r R hc1 hr hrR
+  have hpR := amplificationPower_upper c r R hc1 hr hrR
   have hxA : A≤x := fixed_multiplier_lower U A p hU hAp.le hp
   have hV : 1≤V := by
     change 1≤b*(A*U^p)
@@ -66,14 +66,14 @@ theorem no_slot_endpoint
   have hD : 1≤D := Real.one_le_rpow hU hr
   have hDp : 0<D := zero_lt_one.trans_le hD
   have hN : 1≤N := one_le_mul_of_one_le_of_one_le hU (one_le_pow₀ hV)
-  have hDN : D^(1+c)≤N := amplified_norm_dominates U A b c r hU hbA
+  have hDN := amplified_norm_dominates U A b c r hU hbA
   have hxb : x*b=V := mul_comm x b
   have hav := hx0 x (hAx0.trans hxA) data rows W wa wb D U
     (C*N*(N*D)^κ) hwa hwb hWs hW hDp hrows
     (by rw [hxb]; exact hraw0.scaleEnergy hc.le hκ.le hC U D V hD hN hDN)
     (by rw [hxb]; exact hraw1.scaleEnergy hc.le hκ.le hC U D V hD hN hDN)
   have hlog' := hlog p hp hpR
-  have hnorm : N*(N*D)^κ/x=F*U^(1+5*p+κ*(1+6*p+r)) :=
+  have hnorm :=
     amplified_energy_power U A b p r κ hUp
   have hexp := hbudget r hr hrR
   have hpow : U^(1+5*p+κ*(1+6*p+r)+ε/2)≤U^(sourceExponent r+ε) :=

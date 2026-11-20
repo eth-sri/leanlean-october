@@ -10,15 +10,18 @@ noncomputable section
 open scoped Classical BigOperators
 open MeasureTheory Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeEuler CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
 local notation "O" => HeckeFamily.O
 
-@[fun_prop] lemma measurable_const_cpow {α : Type*} [MeasurableSpace α]
+section
+variable {α : Type*} [instShared1 : MeasurableSpace α]
+include α instShared1
+
+@[fun_prop] lemma measurable_const_cpow
     (Q : ℂ) (hQ : Q≠0) (f : α→ℂ) (hf : Measurable f) : Measurable (fun t=>Q^(f t)) :=
   ((continuous_id.const_cpow (Or.inl hQ)).measurable).comp hf
 
-lemma rowClosedMarked_measurable {α : Type*} [MeasurableSpace α]
+lemma rowClosedMarked_measurable
     (p : O) (hp : Prime p) [(Ideal.span {p}:Ideal O).IsMaximal]
     (hg : ConcretePrimeRowBridge.goodLambda∉Ideal.span {p}) (η a ρ : ℂ) (j : ℕ)
     (X W V : α→ℂ) (hX : Measurable X) (hW : Measurable W) (hV : Measurable V) :
@@ -27,7 +30,7 @@ lemma rowClosedMarked_measurable {α : Type*} [MeasurableSpace α]
   simp only [Nat.reduceAdd,Nat.reduceMul,OfNat.ofNat_ne_zero,Nat.one_ne_zero,ite_false]
   fun_prop
 
-lemma continuedMarkedLocal_measurable {α : Type*} [MeasurableSpace α]
+lemma continuedMarkedLocal_measurable
     (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
     (x w z : α→ℂ) (hx : Measurable x) (hw : Measurable w) (hz : Measurable z) :
     Measurable (fun t=>continuedMarkedLocal η u P hs (x t) (w t) (z t)) := by
@@ -43,7 +46,7 @@ lemma continuedMarkedLocal_measurable {α : Type*} [MeasurableSpace α]
     apply measurable_const_cpow _ (by exact_mod_cast hQ)
     fun_prop
 
-lemma ramifiedCorrection_measurable {α : Type*} [MeasurableSpace α]
+lemma ramifiedCorrection_measurable
     (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
     (x w z : α→ℂ) (hx : Measurable x) (hw : Measurable w) (hz : Measurable z) :
     Measurable (fun t=>ramifiedCorrection η u P hs (x t) (w t) (z t)) := by
@@ -54,7 +57,7 @@ lemma ramifiedCorrection_measurable {α : Type*} [MeasurableSpace α]
   unfold coordV
   fun_prop (disch := exact hQ)
 
-lemma idealUnramifiedCorrection_measurable {α : Type*} [MeasurableSpace α]
+lemma idealUnramifiedCorrection_measurable
     (η : Character) (u : FreeRow) (P : PrimeIdeal)
     (x w z : α→ℂ) (hx : Measurable x) (hw : Measurable w) (hz : Measurable z) :
     Measurable (fun t=>idealUnramifiedCorrection η u P (x t) (w t) (z t)) := by
@@ -64,7 +67,7 @@ lemma idealUnramifiedCorrection_measurable {α : Type*} [MeasurableSpace α]
     coordV coordR coordW coordD coordK
   fun_prop (disch := exact hQ)
 
-lemma continuedCorrection_measurable {α : Type*} [MeasurableSpace α]
+lemma continuedCorrection_measurable
     (S : Finset (Ideal O)) (hS : SourceExclusions S) (η : Character) (u : FreeRow)
     (x w z : α→ℂ) (hx : Measurable x) (hw : Measurable w) (hz : Measurable z) :
     Measurable (fun t=>continuedCorrection S hS η u (x t) (w t) (z t)) := by
@@ -82,7 +85,7 @@ lemma continuedCorrection_measurable {α : Type*} [MeasurableSpace α]
     · exact measurable_const
     · exact idealUnramifiedCorrection_measurable η u P.val x w z hx hw hz
 
-lemma continuedCompensatedLocal_measurable {α : Type*} [MeasurableSpace α]
+lemma continuedCompensatedLocal_measurable
     (η : Character) (u : FreeRow) (P : PrimeIdeal) (hs : Supported P.val)
     (x w z B q : α→ℂ) (hx : Measurable x) (hw : Measurable w) (hz : Measurable z)
     (hB : Measurable B) (hq : Measurable q) :
@@ -92,6 +95,8 @@ lemma continuedCompensatedLocal_measurable {α : Type*} [MeasurableSpace α]
     exact_mod_cast (Ideal.absNorm_eq_zero_iff.not.mpr P.property.ne_zero)
   unfold continuedCompensatedLocal ProbeLocal.compensatedReplacement coordV coordW coordD
   fun_prop (disch := exact hQ)
+
+end
 
 lemma LFunction_measurable (χ : Character) : Measurable (LFunction χ) := by
   apply measurable_of_countable_not_continuousAt

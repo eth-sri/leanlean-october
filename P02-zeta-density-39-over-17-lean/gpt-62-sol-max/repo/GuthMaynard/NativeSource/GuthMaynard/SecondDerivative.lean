@@ -413,3 +413,8 @@ theorem vanDerCorput_B_process
     hlambda (Real.sqrt_pos.2 hlambda) hlower hupper
 
 end GuthMaynard.NativeMoment
+
+namespace RiemannZeta.GuthMaynard
+export _root_.GuthMaynard.NativeMoment
+  (vanDerCorput_second_derivative vanDerCorput_B_process sum_Icc_eq_shifted_range)
+end RiemannZeta.GuthMaynard

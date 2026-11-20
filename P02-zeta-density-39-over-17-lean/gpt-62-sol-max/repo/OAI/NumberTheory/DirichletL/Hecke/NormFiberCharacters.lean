@@ -8,32 +8,14 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
 
 namespace ShortDraftHeckeBridge
 
@@ -52,12 +34,6 @@ theorem baseChangeChar_ne_one_of_one {q : ℕ} [NeZero q]
   · exact h
 
 end ShortDraftHeckeBridge
-namespace ActualEisensteinCubic
-
-open MulChar AddChar
-
-end ActualEisensteinCubic
-
 namespace ShortDraftHeckeBridge
 
 theorem ideals_isRelPrime_of_norms_coprime (I J : Ideal O)
@@ -371,14 +347,18 @@ theorem norm_nine_fiber_ramified :
     rw [map_pow, absNorm_ramified P]
     norm_num
 
-theorem local_inert_p {q : ℕ} (χ : DirichletCharacter ℂ q)
+section
+variable {q : ℕ} (χ : DirichletCharacter ℂ q)
+include q χ
+
+theorem local_inert_p
     {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 2) :
     normFiberCoeff (baseChangeWeight χ) p = 0 := by
   have hf := norm_p_fiber_inert hp hmod
   unfold normFiberCoeff
   simp [hf]
 
-theorem local_split_p {q : ℕ} (χ : DirichletCharacter ℂ q)
+theorem local_split_p
     {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1) :
     normFiberCoeff (baseChangeWeight χ) p = -(2 : ℂ) * χ p := by
   classical
@@ -402,7 +382,7 @@ theorem local_split_p {q : ℕ} (χ : DirichletCharacter ℂ q)
   rw [hsum]
   simp [hcard]
 
-theorem local_ramified_three {q : ℕ} (χ : DirichletCharacter ℂ q) :
+theorem local_ramified_three :
     normFiberCoeff (baseChangeWeight χ) 3 = -χ 3 := by
   classical
   let hf := Ideal.finite_setOfPred_absNorm_eq (S := O) 3
@@ -425,7 +405,7 @@ theorem local_ramified_three {q : ℕ} (χ : DirichletCharacter ℂ q) :
   rw [hsum]
   simp [hcard]
 
-theorem local_inert_p_sq {q : ℕ} (χ : DirichletCharacter ℂ q)
+theorem local_inert_p_sq
     {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 2) :
     normFiberCoeff (baseChangeWeight χ) (p ^ 2) = -χ (p ^ 2) := by
   classical
@@ -453,7 +433,7 @@ theorem local_inert_p_sq {q : ℕ} (χ : DirichletCharacter ℂ q)
   rw [hsum]
   simp [hcard]
 
-theorem local_ramified_nine {q : ℕ} (χ : DirichletCharacter ℂ q) :
+theorem local_ramified_nine :
     normFiberCoeff (baseChangeWeight χ) 9 = 0 := by
   classical
   let hf := Ideal.finite_setOfPred_absNorm_eq (S := O) 9
@@ -481,7 +461,7 @@ theorem local_ramified_nine {q : ℕ} (χ : DirichletCharacter ℂ q) :
   rw [baseChangeWeight, UniqueFactorizationMonoid.moebius_of_not_squarefree hnot]
   simp
 
-private theorem baseChangeWeight_prime_sq_zero {q : ℕ} (χ : DirichletCharacter ℂ q)
+private theorem baseChangeWeight_prime_sq_zero
     (P : Ideal O) (hP : Prime P) :
     baseChangeWeight χ (P ^ 2) = 0 := by
   have hnot : ¬ Squarefree (P ^ 2) := by
@@ -491,7 +471,7 @@ private theorem baseChangeWeight_prime_sq_zero {q : ℕ} (χ : DirichletCharacte
   rw [baseChangeWeight, UniqueFactorizationMonoid.moebius_of_not_squarefree hnot]
   simp
 
-theorem local_split_p_sq {q : ℕ} (χ : DirichletCharacter ℂ q)
+theorem local_split_p_sq
     {p : ℕ} (hp : p.Prime) (hmod : p % 3 = 1) :
     normFiberCoeff (baseChangeWeight χ) (p ^ 2) = χ (p ^ 2) := by
   classical
@@ -557,6 +537,8 @@ theorem local_split_p_sq {q : ℕ} (χ : DirichletCharacter ℂ q)
       have hnorm : Ideal.absNorm (P * Q) = p ^ 2 := by
         rw [map_mul, hPN, hQN, pow_two]
       simp [hnorm, Nat.cast_pow]
+
+end
 
 end ShortDraftHeckeBridge
 

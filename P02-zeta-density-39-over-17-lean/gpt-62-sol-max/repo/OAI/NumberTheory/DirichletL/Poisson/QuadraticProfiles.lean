@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Reciprocity.RamifiedSymbol
 public import OAI.NumberTheory.DirichletL.CubicSieve.KernelEnergy
 
@@ -9,117 +10,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-
-open scoped BigOperators Classical SchwartzMap FourierTransform
-namespace EisensteinSchwartzPoisson
-
-open ActualEisensteinCubic ConcreteTraceCRT
-
-def quadraticSquareProfileCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
-  SchwartzMap.compCLM ℝ
-    (show (fun x : ℝ => x ^ 2).HasTemperateGrowth by fun_prop)
-    ⟨1, 1, fun x => by
-      simp only [pow_one, one_mul, norm_pow]
-      nlinarith [sq_nonneg (‖x‖ - 1)]⟩
-
-@[simp] theorem quadraticSquareProfileCLM_apply (W : 𝓢(ℝ, ℂ)) :
-    quadraticSquareProfileCLM W = quadraticSquareProfile W := by
-  ext x
-  rw [quadraticSquareProfile_apply]
-  rfl
-
-def realAxisProfileCLM : 𝓢(ℂ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
-  SchwartzMap.compCLM ℝ
-    (show (fun x : ℝ => (x : ℂ)).HasTemperateGrowth by fun_prop)
-    ⟨1, 1, fun x => by simp only [pow_one, one_mul, Complex.norm_real]; linarith⟩
-
-@[simp] theorem realAxisProfileCLM_apply (f : 𝓢(ℂ, ℂ)) :
-    realAxisProfileCLM f = horizontalSlice f 0 := by
-  ext x
-  simp only [realAxisProfileCLM, SchwartzMap.compCLM_apply, Function.comp_apply,
-    horizontalSlice_apply, complexPoint_eq, Complex.ofReal_zero, mul_zero, add_zero]
-
-def squareFrequencyScaleCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
-  (SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
-    (ContinuousLinearEquiv.unitsEquivAut ℝ (Units.mk0 (2 / Real.sqrt 3) (by positivity)))).restrictScalars ℝ
-
-def quadraticTransformedSquareProfileCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
-  (2 / Real.sqrt 3 : ℝ) •
-    squareFrequencyScaleCLM.comp (realAxisProfileCLM.comp radialFourierCLM)
-
-@[simp] theorem quadraticTransformedSquareProfileCLM_apply (W : 𝓢(ℝ, ℂ)) :
-    quadraticTransformedSquareProfileCLM W = quadraticTransformedSquareProfile W := by
-  simp only [quadraticTransformedSquareProfileCLM, _root_.smul_apply,
-    ContinuousLinearMap.comp_apply, radialFourierCLM_apply, realAxisProfileCLM_apply,
-    squareFrequencyScaleCLM, quadraticTransformedSquareProfile]
-  rfl
-
-open ActualEisensteinCubic ConcreteTraceCRT QuadraticInitialBound
-
-end EisensteinSchwartzPoisson
+open scoped ContDiff
+open Set
 
 open scoped BigOperators Classical
 namespace FirstPassCubeLabels
@@ -134,11 +35,11 @@ theorem supportRay_mul {ι : Type*} (p : ι → ActualEisensteinCubic.O) (χ η 
   simp only [supportRay, rayCharacter, MulChar.mul_apply]
 
 theorem columnG_ray_expansion {ι : Type*} [DecidableEq ι]
-    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
     (hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S : Finset ι) :
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (S : Finset ι) :
     columnG p hp hcop hg S = ∑ χ : RayCharacter, gCoeff χ * supportRay p χ S := by
   have h := canonicalProductG_character_expansion (fun i : S => p i.val)
     (fun i => hp i.val) (columnPrimeCoprime p hcop S) (fun i => hg i.val)
@@ -154,11 +55,11 @@ def coreRayCoefficient {ι : Type*} (p : ι → ActualEisensteinCubic.O) (F : Fi
     else crossCoeff χ η * supportRay p η F) * gCoeff ξ
 
 theorem core_phase_ray_expansion {ι : Type*} [DecidableEq ι]
-    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
     (hc : ∀ i, ringChar (ActualEisensteinCubic.O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (F S : Finset ι) (negative : Bool) :
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (F S : Finset ι) (negative : Bool) :
     (if negative then star (fixedRayExpansion p F S) else fixedRayExpansion p F S) *
         columnG p hp hcop hg S =
       ∑ χ : RayCharacter, ∑ η : RayCharacter, ∑ ξ : RayCharacter,
@@ -220,21 +121,11 @@ def coreRayTwist (negative : Bool) (χ ξ : RayCharacter) : ActualEisensteinCubi
     coreRayTwist negative χ ξ (∏ i ∈ S, p i) =
       supportRay p (coreRayCharacter negative χ ξ) S := rfl
 
-@[simp] theorem twisted_core_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
-    (S : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (negative : Bool) (χ ξ : RayCharacter) :
-    (Ψ * coreRayTwist negative χ ξ) (∏ i ∈ S, p i) =
-      Ψ (∏ i ∈ S, p i) * supportRay p (coreRayCharacter negative χ ξ) S := rfl
 
 end FirstPassCubeLabels
 
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
-namespace FirstPassCubeLabels
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
-
-end FirstPassCubeLabels
-
 open scoped BigOperators Classical SchwartzMap ContDiff
 open MeasureTheory
 namespace FirstPassCubeLabels
@@ -244,9 +135,9 @@ open RayFourExpansion (RayCharacter crossCoeff)
 
 section FixedColumn
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
   (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
   (negative : Bool) (χ : RayCharacter) (C : Finset ι → ℂ)
   (V : ℝ → ℂ) (y : Finset ι → ℝ) (c d : O)

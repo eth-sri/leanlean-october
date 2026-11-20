@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionPower
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceRobustBounded
 
 @[expose] public section
 
@@ -10,14 +10,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetric
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyOriginalHighReflectionPower
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-open CenteredMomentRetainedEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceRobustBounded CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot CenteredMomentRetainedEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
@@ -66,10 +59,6 @@ theorem balanced_four_scale_gates (Z width X₁ X₂:ℝ)(hZ:1<Z)(hwidth:0<width
       Real.logb_mul hX₁.ne' hX₂.ne']
     exact Real.rpow_le_rpow_of_exponent_le hZ.le (by linarith)
   · rw [he₁,he₂,Real.logb_mul hX₁.ne' hX₂.ne']
-
-variable (M:Ideal O)[NeZero M]
-local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
-variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
 end SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetric
 

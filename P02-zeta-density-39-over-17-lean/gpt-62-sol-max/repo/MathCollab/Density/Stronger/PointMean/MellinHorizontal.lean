@@ -15,8 +15,7 @@ public import Mathlib.Analysis.Real.Pi.Bounds
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean
@@ -161,9 +160,11 @@ theorem norm_heathBrownMellin_HIntegral'_le
       nlinarith [mul_le_mul_of_nonneg_left hwidth (by positivity : 0 ≤ M)]
     _ = _ := by rfl
 
-theorem tendsto_heathBrownMellin_HIntegral'_zero
-    {s : ℂ} (hsLower : 1 / 2 ≤ s.re)
-    {a b : ℝ} (ha : -(1 / 4 : ℝ) ≤ a) (hb : b ≤ 2) (hab : a ≤ b) :
+section
+variable {s : ℂ} (hsLower : 1 / 2 ≤ s.re) {a b : ℝ} (ha : -(1 / 4 : ℝ) ≤ a) (hb : b ≤ 2) (hab : a ≤ b)
+include s hsLower a b ha hb hab
+
+theorem tendsto_heathBrownMellin_HIntegral'_zero :
     Tendsto (fun R : ℝ =>
       HIntegral' (heathBrownZetaSquareMellinIntegrand s) a b R)
       atTop (nhds 0) := by
@@ -205,9 +206,7 @@ theorem tendsto_heathBrownMellin_HIntegral'_zero
   · simpa using (tendsto_const_nhds.mul tendsto_inv_atTop_zero :
       Tendsto (fun R : ℝ => C * R⁻¹) atTop (nhds (C * 0)))
 
-theorem tendsto_heathBrownMellin_HIntegral'_neg_zero
-    {s : ℂ} (hsLower : 1 / 2 ≤ s.re)
-    {a b : ℝ} (ha : -(1 / 4 : ℝ) ≤ a) (hb : b ≤ 2) (hab : a ≤ b) :
+theorem tendsto_heathBrownMellin_HIntegral'_neg_zero :
     Tendsto (fun R : ℝ =>
       HIntegral' (heathBrownZetaSquareMellinIntegrand s) a b (-R))
       atTop (nhds 0) := by
@@ -254,5 +253,7 @@ theorem tendsto_heathBrownMellin_HIntegral'_neg_zero
         field_simp
   · simpa using (tendsto_const_nhds.mul tendsto_inv_atTop_zero :
       Tendsto (fun R : ℝ => C * R⁻¹) atTop (nhds (C * 0)))
+
+end
 
 end MathCollab.Density.Stronger.PointMean

@@ -1,5 +1,5 @@
 module
-public import GuthMaynard.NativeSource.GuthMaynard.ZetaBounds
+public import MathCollab.Density.AbelZetaGrowth
 public import GuthMaynard.NativeSource.GuthMaynard.ZeroCount
 public import GuthMaynard.NativeSource.GuthMaynardExternal.PNT.ZetaAppendix
 
@@ -278,11 +278,12 @@ theorem riemannZeta_sharp_halfInteger_truncation {s : ℂ}
   simpa [sharpZetaTheta, sharpZetaBoundaryCoeff, sharpZetaErrorCoeff] using
     ZetaAppendix.proposition_dadaro hs1 hsigma ha haHalf haIm
 
+section
+variable {ρ : ℂ} (hρre : 0 < ρ.re) (hρim : ρ.im ≠ 0) (hρzero : riemannZeta ρ = 0) {a : ℝ} (ha : 0 < a) (haHalf : a.IsHalfInteger) (haIm : a > |ρ.im| / (2 * Real.pi))
+include ρ hρre hρim hρzero a ha haHalf haIm
+
 /-- Sharp truncation specialized at a genuine zeta zero. -/
-theorem zeta_zero_sharp_halfInteger_truncation {ρ : ℂ}
-    (hρre : 0 < ρ.re) (hρim : ρ.im ≠ 0) (hρzero : riemannZeta ρ = 0)
-    {a : ℝ} (ha : 0 < a) (haHalf : a.IsHalfInteger)
-    (haIm : a > |ρ.im| / (2 * Real.pi)) :
+theorem zeta_zero_sharp_halfInteger_truncation :
     ∃ E : ℂ,
       (∑ n ∈ Finset.Icc 1 ⌊a⌋₊, (n : ℂ) ^ (-ρ)) =
           (a ^ (1 - ρ) : ℂ) / (1 - ρ) +
@@ -298,10 +299,7 @@ theorem zeta_zero_sharp_halfInteger_truncation {ρ : ℂ}
 /-- Norm form of the sharp zero truncation.  The three terms are respectively
 the pole boundary, the bounded Poisson boundary correction, and the
 order-`a ^ (-Re(ρ)-1)` remainder. -/
-theorem norm_zeta_zero_sharp_sum_le {ρ : ℂ}
-    (hρre : 0 < ρ.re) (hρim : ρ.im ≠ 0) (hρzero : riemannZeta ρ = 0)
-    {a : ℝ} (ha : 0 < a) (haHalf : a.IsHalfInteger)
-    (haIm : a > |ρ.im| / (2 * Real.pi)) :
+theorem norm_zeta_zero_sharp_sum_le :
     ‖∑ n ∈ Finset.Icc 1 ⌊a⌋₊, (n : ℂ) ^ (-ρ)‖ ≤
       ‖(a ^ (1 - ρ) : ℂ) / (1 - ρ)‖ +
         ‖sharpZetaBoundaryCoeff ρ a * (a ^ (-ρ) : ℂ)‖ +
@@ -322,6 +320,8 @@ theorem norm_zeta_zero_sharp_sum_le {ρ : ℂ}
         ‖sharpZetaBoundaryCoeff ρ a * (a ^ (-ρ) : ℂ)‖ +
           sharpZetaErrorCoeff ρ a / a ^ (ρ.re + 1) := by
       gcongr
+
+end
 
 set_option maxHeartbeats 800000 in
 /-- Detector-strength sharp truncation on a positive dyadic zero slab. The

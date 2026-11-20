@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.PrimeRows.ProbeFrames
 public import OAI.NumberTheory.DirichletL.PrimeRows.NormalizedTransportSaving
 public import OAI.NumberTheory.DirichletL.PrimeRows.CentralSupportedSplit
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeFloorCollected
@@ -11,17 +12,11 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-open ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
-
-omit [NeZero M] in
-theorem nonfloorTransportPoolOutside (S : Finset (Ideal O)) (K : ℕ) (a b : ℝ) (Y : Fin K→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S a b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S a b (Y j) P).mp hP |>.2.2.2
 
 theorem actual_nonfloor_probe_transport (K : ℕ) (e δ a b B ζ saving τ ellMin nu : ℝ)
     (he : 0<e) (he' : e<1/1000) (hδ : 0<δ) (hδ' : δ≤1/2) (hζ : 0<ζ) (hζ' : ζ≤1/48) (hτ : 0<τ)
@@ -51,7 +46,7 @@ theorem actual_nonfloor_probe_transport (K : ℕ) (e δ a b B ζ saving τ ellMi
     ∃n : ℕ,0<n ∧ ∀η : Character,∃C : ℝ,0<C ∧ ∀ᶠ Z : ℝ in atTop,
       let Yp := fun j=>Z^(ell j)
       let T := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
-      let hT := nonfloorTransportPoolOutside M H S K a b Yp
+      let hT := ProbeHighRowFamily.rayPoolOutside M H S K a b Yp
       let WC : Fin K→ℝ→ℂ := fun j y=>(W j y:ℂ)
       let normer := sourceResidueConstant W0 W1 (∏P∈S,P)*
         (Probe.principalScalar Finset.univ Z (1/6) (slotMass T (residueWeights W Yp)) : ℂ)
@@ -105,7 +100,7 @@ theorem actual_nonfloor_probe_transport (K : ℕ) (e δ a b B ζ saving τ ellMi
   refine ⟨hnorm,idx,grid,hlabels,hbins,hray,?_⟩
   let Yp : Fin K→ℝ := fun j=>Z^(ell j)
   let T : Fin K→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
-  let hT := nonfloorTransportPoolOutside M H S K a b Yp
+  let hT := ProbeHighRowFamily.rayPoolOutside M H S K a b Yp
   let WC : Fin K→ℝ→ℂ := fun j y=>(W j y:ℂ)
   let rows := rowBand (Z^(1/100:ℝ)) (Z^((13/16:ℝ)+ζ))
   let floors := supportedFloorRows S hmax rows grid

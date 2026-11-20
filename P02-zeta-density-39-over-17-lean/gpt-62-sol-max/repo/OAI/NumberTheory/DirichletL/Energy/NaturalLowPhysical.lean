@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Energy.CanonicalLowPhysical
+public import OAI.NumberTheory.DirichletL.Energy.CanonicalPhysical
 public import OAI.NumberTheory.DirichletL.Energy.PositiveBalancedAdmission
 public import OAI.NumberTheory.DirichletL.Energy.PositiveLowBandSource
 public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
@@ -13,17 +13,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyNaturalLowPhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyPositiveLowBandSource
-open CenteredMomentEnergyNaturalSourceAdmission
-open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot CenteredMomentEnergyNaturalLowSourceBound CenteredMomentEnergyPositiveLowBandSource CenteredMomentEnergyNaturalSourceAdmission CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -70,11 +60,13 @@ theorem actual_natural_low_physical
   have hκsmall:(1/6:ℝ)≤κ:=by linarith
   have hLbase:0≤max Lgoal Mparent:=hL.trans (le_max_left _ _)
   have hLphys:0≤2*max Lgoal Mparent+r/4:=by positivity
-  obtain ⟨U,J,hphysical⟩:=CenteredMomentEnergyCanonicalLowPhysical.actual_low_physical (α:=α)
-    M H hH W aslot bslot Mchild Lslot (r/4) lo hi κ a b Mslot (maskEpsilon Mglobal B ε)
-    (zero_le_one.trans hMslot) hem ha hb (2*max Lgoal Mparent+r/4) hLphys degree S haslot hWs hW hMc hLs hr
-    hκsmall hbeta hκbeta N aslot (max 1 bslot) a0 (r/4) haslot (le_max_left _ _) ha0 hr
-    (fun _=>aslot) (fun _=>bslot) (fun _=>hbslot)
+  obtain ⟨U,J,hphysical⟩:=CenteredMomentEnergyCanonicalPhysical.actual_physical (high:=false) (α:=α)
+    M H hH ⟨W, aslot, bslot, Mchild, Lslot, r/4, lo, hi,
+      κ, a, b, Mslot, maskEpsilon Mglobal B ε, zero_le_one.trans hMslot, hem, ha,
+      hb, 2*max Lgoal Mparent+r/4, hLphys, degree, S, haslot, hWs, hW,
+      hMc, hLs, hr, hκsmall, hbeta, hκbeta, N, aslot,
+      max 1 bslot, a0, r/4, haslot, le_max_left _ _, ha0, hr, fun _=>aslot,
+      fun _=>bslot, fun _=>hbslot⟩
     (sourceEpsilon Mglobal A B ε) (r/4) (r/4) (A+1) (r/4) (2*amplification ε+1)
     hes hr hr hr (amplification ε) hsigma hxi A Bmask (amplification ε/12) (r/4) (r/4)
     hA hBm hetastrict hr hsigma1 hxi1 hr hes1 le_rfl Ψ (r/4) lp hr hlp

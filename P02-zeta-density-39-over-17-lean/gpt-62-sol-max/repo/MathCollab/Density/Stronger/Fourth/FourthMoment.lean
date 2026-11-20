@@ -58,7 +58,7 @@ theorem zeta_fourth_dyadic :
       8*Kg*(2*H)^(2*q)*F t+8*Kt^2 := by
     intro t ht
     let P : ℂ := zetaFourthPrefix t q (Finset.range (2^M+1))
-    have hE : ‖zetaFourthRightPiece t-P‖ ≤ Kt :=
+    have hE :=
       herror H hHHt t ht.1 ht.2 (2^M) hNlowerNat q hq
     have htri : ‖zetaFourthRightPiece t‖ ≤ ‖P‖+‖zetaFourthRightPiece t-P‖ := by
       calc
@@ -69,16 +69,15 @@ theorem zeta_fourth_dyadic :
     have hz := zeta_fourth_le_four_mul_rightPiece_sq t
     have hsplit : zetaMomentCriticalNorm t^4 ≤ 8*‖P‖^2+8*Kt^2 := by
       nlinarith [sq_nonneg (‖P‖-‖zetaFourthRightPiece t-P‖)]
-    have hPg : ‖P‖^2 ≤ Kg*t^(2*q)*F t :=
+    have hPg :=
       hgaussian t (hH4.trans ht.1) (hHq.trans ht.1) (2^M)
     have ht0 : 0 ≤ t := hH0.le.trans ht.1
     have hpower := Real.rpow_le_rpow ht0 ht.2 (by positivity : 0 ≤ 2*q)
-    have hP : ‖P‖^2 ≤ Kg*(2*H)^(2*q)*F t :=
+    have hP :=
       hPg.trans (mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left hpower hKg.le) (hFnonneg t))
     nlinarith
-  have hFmean : (∫ t in H..2*H, F t) ≤
-      Dp*((M:ℝ)+1)^2*(H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^q :=
+  have hFmean :=
     hmean q hq.le M H hH0.le
   have hmain : (2*H)^(2*q)*((M:ℝ)+1)^2*
       (H+2*(5*Real.pi+1)*(2:ℝ)^M)*((2:ℝ)^M)^q ≤ Db*H^(1+7*q) :=

@@ -10,10 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyFirstGaussianCoefficients
-open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentSecondChildPowerBudget CenteredMomentSecondSourceSeededPowerDescent
-open CenteredMomentSecondSourcePowerDescent CenteredMomentSecondWindowBudget
-open CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSourceInputTailUniform
+open HeckeFamily CenteredMomentFiniteProfileExceptional CenteredMomentSecondChildPowerBudget CenteredMomentSecondSourceSeededPowerDescent CenteredMomentSecondSourcePowerDescent CenteredMomentSecondWindowBudget CenteredMomentFirstAmplifiedFourCoefficients CenteredMomentSourceInputTailUniform
 local notation "O"=>HeckeFamily.O
 
 def fixedFactors (Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed:ℝ)
@@ -23,15 +20,17 @@ def fixedFactors (Cm Ce Cd Ct Z epsilon delta theta B cost Ebase t loFloor seed:
     Cd*‖EisensteinSchwartzPoisson.paperRadialFourier W 0‖,
     Ct*Sf.sup (schwartzSeminormFamily ℝ ℝ ℂ) W/seed]
 
-lemma coefficients_mul {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
-    (p:Profiles a b)(J:ℕ)(Q:Ideal O)(K t epsilon seed:ℝ)(f g:Fin 4→ℝ):
+section
+variable {a b:ℝ} (N:ℕ) (upper b1 b2 A:ℝ) (Sp:Finset (ℕ×ℕ)) (p:Profiles a b) (J:ℕ) (Q:Ideal O) (K t epsilon seed:ℝ) (f g:Fin 4→ℝ)
+include a b N upper b1 b2 A Sp p J Q K t epsilon seed f g
+
+lemma coefficients_mul:
     ∀j,CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed (fun j=>f j*g j) j=
       CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed f j*g j:=by
   intro j
   fin_cases j <;> simp [CenteredMomentSecondChildPowerBudget.coefficients] <;> ring
 
-lemma coefficients_mono {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ))
-    (p:Profiles a b)(J:ℕ)(Q:Ideal O)(K t epsilon seed:ℝ)(f g:Fin 4→ℝ)
+lemma coefficients_mono
     (hu:0≤upper)(hb1:0≤b1)(hb2:0≤b2)(hK:0≤K)(hseed:0≤seed)
     (hfg:∀j,f j≤g j):
     ∀j,CenteredMomentSecondChildPowerBudget.coefficients N upper b1 b2 A Sp p J Q K t epsilon seed f j≤
@@ -49,6 +48,8 @@ lemma coefficients_mono {a b:ℝ}(N:ℕ)(upper b1 b2 A:ℝ)(Sp:Finset (ℕ×ℕ)
     gcongr
   · gcongr
   · gcongr
+
+end
 
 theorem seeded_factors_main (Cm Ce Cd Ct Z epsilon delta theta B saving radius t q cost Ebase
     ell deficit paid r loProduct wlo loFloor seed:ℝ)(J:ℕ)

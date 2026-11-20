@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 
@@ -217,7 +161,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 lemma ramified_primary_coprime (u : Eisˣ) (n : ℕ) (b : Eis)
     (hb : lambda^2∣b-1) : IsCoprime (3*(u.val*lambda^n)) b := by
-  have h3:IsCoprime (3:Eis) b:=(primary_coprime_three b hb).symm
+  have h3 :=(primary_coprime_three b hb).symm
   have hl:IsCoprime lambda b:=coprime_of_dvd_sub_one lambda b
     ((dvd_pow_self lambda (by decide : (2:ℕ)≠0)).trans hb)
   have hu:IsCoprime u.val b:=⟨u.inv,0,by simp⟩
@@ -373,7 +317,7 @@ theorem arithmeticDirichletSeries_ramified_reindex (s : ℂ) (hs : 2<s.re) (h : 
     arithmeticDirichletSeries s h=
       ∑'u:Eisˣ,∑'n:ℕ,∑'I:GoodIdeal,
         arithmeticDirichletTerm s h (ramifiedLowerMap (u,n,I)).1 := by
-  have hsum:Summable (arithmeticDirichletTerm s h):=(arithmeticDirichletTerm_summable_norm s hs h).of_norm
+  have hsum :=(arithmeticDirichletTerm_summable_norm s hs h).of_norm
   have hsub:Summable (fun c:NonzeroLevelLower=>arithmeticDirichletTerm s h c.1):=hsum.subtype _
   have hp:=ramifiedLowerEquiv.summable_iff.mpr hsub
   change Summable (fun p:Eisˣ×ℕ×GoodIdeal=>arithmeticDirichletTerm s h (ramifiedLowerMap p).1) at hp
@@ -481,7 +425,7 @@ theorem arithmeticDirichletSeries_unramified_gauss (s : ℂ) (hs : 2<s.re)
   intro I
   rw [eisEmbedding_norm_sq_eq_absNorm_span,Complex.ofReal_natCast,ramifiedLower_span,
     map_mul,map_pow,ramifiedIdeal_absNorm,Nat.cast_mul,Complex.natCast_mul_natCast_cpow]
-  have hp:lambda^2∣primaryGenerator I.1-1:=(primaryGenerator_spec I.1 I.2).2
+  have hp :=(primaryGenerator_spec I.1 I.2).2
   rw [←cubicUnitGaussSum_phase_shift h (u.val*lambda^(n+2)) (primaryGenerator I.1)
     I.2 hp (ramified_primary_coprime u (n+2) _ hp)]
   ring
@@ -526,7 +470,7 @@ theorem unramifiedCubicGaussSeries_lambda_pow (s : ℂ) (h : Eis) (n : ℕ) :
   apply tsum_congr
   intro I
   congr 1
-  have hp:lambda^2∣primaryGenerator I.1-1:=(primaryGenerator_spec I.1 I.2).2
+  have hp :=(primaryGenerator_spec I.1 I.2).2
   have hl:IsCoprime lambda (primaryGenerator I.1):=
     coprime_of_dvd_sub_one lambda _ ((show lambda∣lambda^2 from ⟨lambda,by ring⟩).trans hp)
   have he:lambda^n=lambda^(n%3)*(lambda^(n/3))^3:=by
@@ -561,7 +505,7 @@ theorem unramifiedCubicGaussSeries_nine_family (h : Eis) (u : Eisˣ) (n : ℕ) :
       have h3:omega^3=1:=omega_primitive.pow_eq_one
       have h1:omega≠1:=omega_primitive.ne_one (by decide)
       have hp:(omega-1)*(omega^2+omega+1)=0:=by linear_combination h3
-      have hz:omega^2+omega+1=0:=(mul_eq_zero.mp hp).resolve_left (sub_ne_zero.mpr h1)
+      have hz :=(mul_eq_zero.mp hp).resolve_left (sub_ne_zero.mpr h1)
       linear_combination hz
     change (omega-1)^2=-3*omega
     linear_combination hw

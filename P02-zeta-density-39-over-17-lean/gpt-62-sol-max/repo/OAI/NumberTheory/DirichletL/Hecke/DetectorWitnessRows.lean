@@ -40,8 +40,11 @@ structure Witness {ι : Type*} (χ : ι→Character) (U a ε tstar T allowance :
 def Witness.frequency {ι : Type*} {χ : ι→Character} {U a ε tstar T allowance : ℝ} {i : ℕ}
     (w : Witness χ U a ε tstar T allowance i) : ℝ := 2*Real.pi*w.nu-w.zero.im
 
-theorem Witness.frequency_bound {ι : Type*} {χ : ι→Character} {U a ε tstar T allowance : ℝ} {i : ℕ}
-    (w : Witness χ U a ε tstar T allowance i) :
+section
+variable {ι : Type*} {χ : ι→Character} {U a ε tstar T allowance : ℝ} {i : ℕ} (w : Witness χ U a ε tstar T allowance i)
+include ι χ U a ε tstar T allowance i w
+
+theorem Witness.frequency_bound :
     |w.frequency|≤2*Real.pi*allowance+(3*i : ℕ)*T := by
   have hnu : |w.nu|≤allowance := by simpa only [Real.norm_eq_abs] using w.nu_bound
   have hh := abs_sub_le (2*Real.pi*w.nu) 0 w.zero.im
@@ -49,20 +52,19 @@ theorem Witness.frequency_bound {ι : Type*} {χ : ι→Character} {U a ε tstar
     abs_of_pos (show 0<2*Real.pi by positivity)] at hh
   exact hh.trans (add_le_add (mul_le_mul_of_nonneg_left hnu (by positivity)) w.zero_height)
 
-theorem Witness.real_part_upper {ι : Type*} {χ : ι→Character} {U a ε tstar T allowance : ℝ} {i : ℕ}
-    (w : Witness χ U a ε tstar T allowance i) : w.zero.re≤1 := by
+theorem Witness.real_part_upper : w.zero.re≤1 := by
   by_contra hn
   exact LFunction_ne_zero_of_one_lt_re (χ w.label) (lt_of_not_ge hn) w.zero_eq
 
-theorem Witness.left_exponent {ι : Type*} {χ : ι→Character} {U a ε tstar T allowance : ℝ} {i : ℕ}
-    (w : Witness χ U a ε tstar T allowance i) (hU : 1<U) :
+theorem Witness.left_exponent (hU : 1<U) :
     w.r=Real.logb U ((2 : ℝ)^w.left.val) := by
   rw [←w.left_scale,Real.logb_rpow (zero_lt_one.trans hU) hU.ne']
 
-theorem Witness.right_exponent {ι : Type*} {χ : ι→Character} {U a ε tstar T allowance : ℝ} {i : ℕ}
-    (w : Witness χ U a ε tstar T allowance i) (hU : 1<U) :
+theorem Witness.right_exponent (hU : 1<U) :
     w.m=Real.logb U ((2 : ℝ)^w.right.val) := by
   rw [←w.right_scale,Real.logb_rpow (zero_lt_one.trans hU) hU.ne']
+
+end
 
 end SevenEighths.HeckeDetectorWitnessRows
 

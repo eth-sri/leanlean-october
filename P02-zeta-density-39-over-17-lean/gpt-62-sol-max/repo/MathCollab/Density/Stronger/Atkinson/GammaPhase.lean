@@ -15,8 +15,7 @@ public import Mathlib.Analysis.Calculus.Deriv.Star
 
 open Complex MeasureTheory
 open scoped ComplexConjugate
-open MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Stronger.Fourth.Digamma
+open MathCollab.Density.Stronger.Fourth MathCollab.Density.Stronger.Fourth.Digamma
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson

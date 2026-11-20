@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualPriorityEnergy
 
 @[expose] public section
@@ -11,10 +12,10 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyA
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
-def firstWholePrioritySecondEnergy (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+def firstWholePrioritySecondEnergy (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F : Finset ι) (b : CubeCoordinates ι) (C extra : Finset ι) (negative : Bool)
     (Ψ : O→*ℂ) (m d : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ) : ℝ :=
@@ -29,8 +30,8 @@ def firstWholePrioritySecondEnergy (hinj : Function.Injective (fun i=>Ideal.span
           ω X (∏i∈C,p i) d core t Y).re
 
 theorem first_actual_second_whole_cube_priority
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (F : Finset ι) (b : CubeCoordinates ι) (C extra : Finset ι) (negative : Bool)
     (Ψ : O→*ℂ) (m d : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (selector : Finset ι→ℂ) (ω : ℝ→ℂ) (X t Y : ℝ) (hY : 0<Y) :

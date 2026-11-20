@@ -10,8 +10,7 @@ open scoped Classical
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedRadialTransport
-open HeckeFamily CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyBandMonotonicity
+open HeckeFamily CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyBandMonotonicity
 local notation "O" => HeckeFamily.O
 variable {α : Type*}
 variable (M : Ideal O) [NeZero M]

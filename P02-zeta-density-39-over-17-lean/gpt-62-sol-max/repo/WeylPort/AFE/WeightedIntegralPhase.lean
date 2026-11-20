@@ -67,9 +67,12 @@ theorem abs_weightedIntegralPhase_deriv_antitone {t m a b : ℝ}
     simp only [neg_div] at hq
     linarith
 
+section
+variable {r t m a b : ℝ} (hr : 0 ≤ r) (hm : 0 ≤ m) (ha : 0 < a)
+include r t m a b hr hm ha
+
 /-- The actual nonnegative power amplitude satisfies the increasing quotient condition. -/
-theorem weightedIntegralPhase_quotient_monotone {r t m a b : ℝ}
-    (hr : 0 ≤ r) (hm : 0 ≤ m) (ha : 0 < a) (hcut : 2 * Real.pi * m * b < |t|) :
+theorem weightedIntegralPhase_quotient_monotone (hcut : 2 * Real.pi * m * b < |t|) :
     MonotoneOn (fun u => |u ^ r / (2 * Real.pi * m - t / u)|) (Set.Icc a b) := by
   intro x hx y hy hxy
   have hxpos : 0 < x := ha.trans_le hx.1
@@ -85,8 +88,7 @@ theorem weightedIntegralPhase_quotient_monotone {r t m a b : ℝ}
       (abs_weightedIntegralPhase_deriv_antitone hm ha hcut hx hy hxy)
 
 /-- The exact first-derivative bound for the source phase on every truncated lower interval. -/
-theorem norm_integral_power_log_phase_le {r t m a b : ℝ}
-    (hr : 0 ≤ r) (hm : 0 ≤ m) (ha : 0 < a) (hab : a < b)
+theorem norm_integral_power_log_phase_le (hab : a < b)
     (hcut : 2 * Real.pi * m * b < |t|) :
     ‖∫ u in a..b, ((u ^ r : ℝ) : ℂ) *
       Complex.exp (Complex.I * (weightedIntegralPhase t m u : ℂ))‖ ≤
@@ -103,8 +105,7 @@ theorem norm_integral_power_log_phase_le {r t m a b : ℝ}
   simpa only [mul_div_assoc] using h
 
 /-- The physical distance from the cutoff gives the source's uniform endpoint bound. -/
-theorem norm_integral_power_log_phase_distance_le {r t m a b : ℝ}
-    (hr : 0 ≤ r) (hm : 0 ≤ m) (ha : 0 < a) (hab : a < b)
+theorem norm_integral_power_log_phase_distance_le (hab : a < b)
     (hcut : 2 * Real.pi * m * b < |t|) :
     ‖∫ u in a..b, ((u ^ r : ℝ) : ℂ) *
       Complex.exp (Complex.I * (weightedIntegralPhase t m u : ℂ))‖ ≤
@@ -125,6 +126,8 @@ theorem norm_integral_power_log_phase_distance_le {r t m a b : ℝ}
     _ ≤ 2 * b ^ r / ((|t| - 2 * Real.pi * m * b) / b) :=
       div_le_div_of_nonneg_left (by positivity) (div_pos hd hb) hl
     _ = _ := by rw [div_div_eq_mul_div, Real.rpow_add_one hb.ne']; ring
+
+end
 
 /-- The phase/amplitude representation agrees with the actual principal complex-power integrand. -/
 theorem cpow_linear_wave_eq_power_log_phase (r t m : ℝ) {u : ℝ} (hu : 0 < u) :

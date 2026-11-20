@@ -19,8 +19,11 @@ noncomputable def heathBrownHChoice
     (k : ℕ) (A lambda : ℝ) : ℕ :=
   ⌊(A * lambda) ^ (-(1 / (k : ℝ)))⌋₊
 
+section
+variable {k : ℕ} {A lambda : ℝ}
+include k A lambda
+
 theorem heathBrownHChoice_rpow_one_le
-    {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     1 ≤ (A * lambda) ^ (-(1 / (k : ℝ))) := by
@@ -31,7 +34,6 @@ theorem heathBrownHChoice_rpow_one_le
     exact neg_nonpos.mpr (by positivity)
 
 theorem heathBrownHChoice_pos
-    {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     0 < heathBrownHChoice k A lambda := by
@@ -40,15 +42,13 @@ theorem heathBrownHChoice_pos
     (heathBrownHChoice_rpow_one_le hk hA hlambda hsmall)
 
 theorem heathBrownHChoice_cast_le_rpow
-    {k : ℕ} {A lambda : ℝ}
     (hA : 0 < A) (hlambda : 0 < lambda) :
     (heathBrownHChoice k A lambda : ℝ) ≤
       (A * lambda) ^ (-(1 / (k : ℝ))) := by
   unfold heathBrownHChoice
   exact Nat.floor_le (Real.rpow_nonneg (mul_pos hA hlambda).le _)
 
-theorem heathBrownHChoice_rpow_lt_cast_add_one
-    {k : ℕ} {A lambda : ℝ} :
+theorem heathBrownHChoice_rpow_lt_cast_add_one :
     (A * lambda) ^ (-(1 / (k : ℝ))) <
       (heathBrownHChoice k A lambda : ℝ) + 1 := by
   unfold heathBrownHChoice
@@ -56,7 +56,6 @@ theorem heathBrownHChoice_rpow_lt_cast_add_one
     Nat.lt_floor_add_one ((A * lambda) ^ (-(1 / (k : ℝ))))
 
 theorem heathBrownHChoice_rpow_le_two_mul
-    {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     (A * lambda) ^ (-(1 / (k : ℝ))) ≤
@@ -69,7 +68,6 @@ theorem heathBrownHChoice_rpow_le_two_mul
   linarith
 
 theorem heathBrownHChoice_rpow_pow_k
-    {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
     ((A * lambda) ^ (-(1 / (k : ℝ)))) ^ k =
       (A * lambda)⁻¹ := by
@@ -80,7 +78,6 @@ theorem heathBrownHChoice_rpow_pow_k
     Real.rpow_neg_one]
 
 theorem heathBrownHChoice_scale_pow_le_one
-    {k : ℕ} {A lambda : ℝ}
     (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
     A * lambda * (heathBrownHChoice k A lambda : ℝ) ^ k ≤ 1 := by
   have hp : 0 < A * lambda := mul_pos hA hlambda
@@ -94,12 +91,16 @@ theorem heathBrownHChoice_scale_pow_le_one
       mul_le_mul_of_nonneg_left hpow hp.le
     _ = 1 := mul_inv_cancel₀ hp.ne'
 
+end
+
+section
+variable {k r : ℕ} {A lambda : ℝ} (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
+include k r A lambda hk hA hlambda
+
 /-- The floor costs at most a factor two in every inverse integral power.
 This is the exact device used to replace powers of the natural `H` by powers
 of the real source scale before absorbing constants depending on `k`. -/
 theorem heathBrownHChoice_inv_pow_le
-    {k r : ℕ} {A lambda : ℝ}
-    (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     (((heathBrownHChoice k A lambda : ℝ) ^ r)⁻¹) ≤
       (((A * lambda) ^ (-(1 / (k : ℝ))) / 2) ^ (-(r : ℝ))) := by
@@ -120,9 +121,7 @@ theorem heathBrownHChoice_inv_pow_le
   rw [Real.rpow_neg hHpos.le, Real.rpow_natCast] at hmono
   simpa only [q, H] using hmono
 
-theorem heathBrownHChoice_half_rpow_neg_eq
-    {k r : ℕ} {A lambda : ℝ}
-    (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda) :
+theorem heathBrownHChoice_half_rpow_neg_eq :
     (((A * lambda) ^ (-(1 / (k : ℝ))) / 2) ^ (-(r : ℝ))) =
       (2 : ℝ) ^ r *
         (A * lambda) ^ ((r : ℝ) / k) := by
@@ -139,8 +138,6 @@ theorem heathBrownHChoice_half_rpow_neg_eq
   ring
 
 theorem heathBrownHChoice_inv_pow_le_source
-    {k r : ℕ} {A lambda : ℝ}
-    (hk : 1 ≤ k) (hA : 0 < A) (hlambda : 0 < lambda)
     (hsmall : A * lambda ≤ 1 / 4) :
     (((heathBrownHChoice k A lambda : ℝ) ^ r)⁻¹) ≤
       (2 : ℝ) ^ r * (A * lambda) ^ ((r : ℝ) / k) := by
@@ -150,6 +147,8 @@ theorem heathBrownHChoice_inv_pow_le_source
       heathBrownHChoice_inv_pow_le hk hA hlambda hsmall
     _ = (2 : ℝ) ^ r * (A * lambda) ^ ((r : ℝ) / k) :=
       heathBrownHChoice_half_rpow_neg_eq hk hA hlambda
+
+end
 
 theorem heathBrown_width_le_half_of_eight_le
     {k H : ℕ} (hk : 3 ≤ k) (hH : 8 ≤ H) :

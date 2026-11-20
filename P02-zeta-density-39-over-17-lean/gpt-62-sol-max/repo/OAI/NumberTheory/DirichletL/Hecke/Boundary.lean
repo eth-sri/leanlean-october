@@ -8,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.HeckeBoundary
 
-open ActualEisensteinCubic Complex
-open SevenEighths.IdealEuler SevenEighths.IdealCharacter
+open ActualEisensteinCubic Complex SevenEighths.IdealEuler SevenEighths.IdealCharacter
 open SmoothMobiusCorrection (PrimeIdeal)
 open Asymptotics Filter
 open scoped BigOperators Classical Topology
@@ -90,8 +89,7 @@ theorem re_log_weighted_comb_nonneg (a₀ a₁ a₂ : Ideal O →*₀ ℂ)
       4 * (-log (1 - a₁ P.val * normWeight (x + I * y) P.val)).re +
       (-log (1 - a₂ P.val * normWeight (x + 2 * I * y) P.val)).re
   rcases h P with ⟨h₀, h₁, h₂⟩ | ⟨h₀, h₁, h₂⟩
-  · simp only [h₀, h₁, h₂, zero_mul, sub_zero, log_one, neg_zero, zero_re,
-      mul_zero, add_zero, le_refl]
+  · simp [h₀, h₁, h₂, le_refl]
   · simp only [h₀, h₂, one_mul]
     change 0 ≤ 3 * (-log (1 - CubicEisenstein.fullIdealWeight (x : ℂ) P.val)).re +
       4 * (-log (1 - a₁ P.val * CubicEisenstein.fullIdealWeight (x + I * y) P.val)).re +
@@ -155,7 +153,7 @@ theorem horizontal_isBigO_of_zero (F : ℂ → ℂ) (t : ℝ)
   simp_rw [add_comm (1 : ℂ), add_assoc]
   have h := hF.hasDerivAt
   rw [← zero_add (1 + _)] at h
-  simpa only [zero_add, hz, sub_zero]
+  simpa [hz]
     using (Complex.isBigO_comp_ofReal_nhds
       (h.comp_add_const 0 _).differentiableAt.isBigO_sub) |>.mono nhdsWithin_le_nhds
 
@@ -185,7 +183,7 @@ theorem boundary_ne_zero_of_series_eq (a₀ a₁ a₂ : Ideal O →*₀ ℂ)
     have hs₁ : 1 < (1 + x + I * t : ℂ).re := by simpa using hs₀
     have hs₂ : 1 < (1 + x + 2 * I * t : ℂ).re := by simpa using hs₀
     rw [hEq₀ _ hs₀, hEq₁ _ hs₁, hEq₂ _ hs₂]
-    simpa only [ofReal_add, ofReal_one] using
+    simpa using
       norm_series_product_ge_one a₀ a₁ a₂ ha₀ ha₁ ha₂ h (by linarith : 1 < 1 + x) t
   have hReg₂' : ContinuousAt F₂ (1 + I * ((2 * t : ℝ) : ℂ)) := by
     convert hReg₂ using 1
@@ -294,7 +292,11 @@ theorem quadratic_normFiber_nonneg (M : Ideal O) (χ : MulChar (O ⧸ M) ℂ)
   simp only [value, hP0, ite_false]
   exact MulChar.isQuadratic_iff_sq_eq_one.mpr hquad _
 
-theorem mulFiber_character_sum (a : Ideal O →*₀ ℂ) (B : Ideal O) (hB : B ≠ 0) :
+section
+variable (a : Ideal O →*₀ ℂ)
+include a
+
+theorem mulFiber_character_sum (B : Ideal O) (hB : B ≠ 0) :
     (∑' p : CompletedGauss.MulFiber B, a p.val.1) = zetaConvolutionCoeff a B := by
   let e := CompletedGauss.mulFiberDivisorEquiv B hB
   rw [zetaConvolutionCoeff, ite_eq_right hB]
@@ -305,7 +307,7 @@ theorem mulFiber_character_sum (a : Ideal O →*₀ ℂ) (B : Ideal O) (hB : B �
       rw [tsum_fintype]
       exact (Finset.sum_subtype (idealDivisors B) (fun _ => Iff.rfl) a).symm
 
-theorem zetaConvolution_hasSum (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
+theorem zetaConvolution_hasSum (ha : ∀ I, ‖a I‖ ≤ 1)
     (s : ℂ) (hs : 1 < s.re) :
     HasSum (fun B : Ideal O => zetaConvolutionCoeff a B * normWeight s B)
       (series a s * CubicEisenstein.fullIdealZeta s) := by
@@ -340,7 +342,7 @@ theorem zetaConvolution_hasSum (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ 
         (CubicEisenstein.fullIdealWeight_summable_norm s hs)
     _ = _ := tsum_congr heq
 
-theorem zetaConvolution_normFiber_one (a : Ideal O →*₀ ℂ) :
+theorem zetaConvolution_normFiber_one :
     ShortDraftHeckeBridge.normFiberCoeff (zetaConvolutionCoeff a) 1 = 1 := by
   have hsingle : (Ideal.finite_setOfPred_absNorm_eq (S := O) 1).toFinset = {1} := by
     ext I
@@ -349,7 +351,7 @@ theorem zetaConvolution_normFiber_one (a : Ideal O →*₀ ℂ) :
   unfold ShortDraftHeckeBridge.normFiberCoeff
   rw [hsingle, Finset.sum_singleton, zetaConvolutionCoeff_one]
 
-theorem zetaConvolution_LSeries_hasSum (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
+theorem zetaConvolution_LSeries_hasSum (ha : ∀ I, ‖a I‖ ≤ 1)
     (s : ℂ) (hs : 1 < s.re) :
     HasSum (LSeries.term (ShortDraftHeckeBridge.normFiberCoeff (zetaConvolutionCoeff a)) s)
       (series a s * CubicEisenstein.fullIdealZeta s) := by
@@ -358,11 +360,13 @@ theorem zetaConvolution_LSeries_hasSum (a : Ideal O →*₀ ℂ) (ha : ∀ I, �
     zetaConvolutionCoeff a I.val * CubicEisenstein.fullIdealWeight s I.val) _ at h
   simpa only [SmoothMobiusCorrection.idealDirichlet_fiber] using h
 
-theorem zetaConvolution_LSeries_eq (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
+theorem zetaConvolution_LSeries_eq (ha : ∀ I, ‖a I‖ ≤ 1)
     (s : ℂ) (hs : 1 < s.re) :
     LSeries (ShortDraftHeckeBridge.normFiberCoeff (zetaConvolutionCoeff a)) s =
       series a s * CubicEisenstein.fullIdealZeta s :=
   (zetaConvolution_LSeries_hasSum a ha s hs).tsum_eq
+
+end
 
 theorem quadratic_product_positive (M : Ideal O) [Finite (O ⧸ M)]
     (χ : MulChar (O ⧸ M) ℂ) (hχ : UnitInvariant M χ) (hquad : χ ^ 2 = 1)
@@ -433,7 +437,7 @@ theorem regularizedIdealZeta_differentiable : Differentiable ℂ regularizedIdea
 
 theorem regularizedIdealZeta_eq (s : ℂ) (hs : 1 < s.re) :
     regularizedIdealZeta s = (s - 1) * CubicEisenstein.fullIdealZeta s := by
-  have hs1 : s ≠ 1 := by intro he; simp only [he, one_re, lt_self_iff_false] at hs
+  have hs1 : s ≠ 1 := by intro he; simp [he] at hs
   rw [regularizedIdealZeta, DirichletCharacter.LFunctionTrivChar₁,
     Function.update_of_ne hs1, DirichletCharacter.LFunctionTrivChar,
     DirichletCharacter.LFunction_modOne_eq, fullIdealZeta_eq_dirichlet_product s hs,
@@ -445,7 +449,7 @@ theorem regularizedIdealZeta_neg_two : regularizedIdealZeta (-2 : ℝ) = 0 := by
   rw [regularizedIdealZeta, DirichletCharacter.LFunctionTrivChar₁,
     Function.update_of_ne (by norm_num : (-2 : ℝ) ≠ (1 : ℂ)),
     DirichletCharacter.LFunctionTrivChar, DirichletCharacter.LFunction_modOne_eq]
-  simp only [ofReal_neg, ofReal_ofNat, hz, mul_zero, zero_mul]
+  simp [hz]
 
 theorem differentiable_dslope_of_entire (F : ℂ → ℂ) (hF : Differentiable ℂ F) (c : ℂ) :
     Differentiable ℂ (dslope F c) := by
@@ -464,7 +468,7 @@ theorem quadratic_one_ne_zero_of_regularized_zeta (M : Ideal O) [Finite (O ⧸ M
   have hF : Differentiable ℂ F := hR.mul (differentiable_dslope_of_entire L hL 1)
   have hEq (s : ℂ) (hs : 1 < s.re) :
       F s = series (ofResidue M χ hχ) s * CubicEisenstein.fullIdealZeta s := by
-    have hs1 : s ≠ 1 := by intro he; simp only [he, one_re, lt_self_iff_false] at hs
+    have hs1 : s ≠ 1 := by intro he; simp [he] at hs
     dsimp only [F]
     rw [hReq s hs, dslope_of_ne L hs1, slope, smul_eq_mul, vsub_eq_sub, hz, sub_zero,
       hLeq s hs]
@@ -514,7 +518,7 @@ theorem fullIdealZeta_isBigO_near_one_horizontal :
       fun x => (1 : ℂ) / x := by
   have hR : (fun x : ℝ => regularizedIdealZeta (1 + x)) =O[𝓝[>] 0]
       fun _ => (1 : ℂ) := by
-    simpa only [ofReal_zero, mul_zero, add_zero] using horizontal_isBigO_one
+    simpa using horizontal_isBigO_one
       regularizedIdealZeta 0 (by simpa using (regularizedIdealZeta_differentiable 1).continuousAt)
   have hB : (fun x : ℝ => (x : ℂ) * CubicEisenstein.fullIdealZeta (1 + x)) =O[𝓝[>] 0]
       fun _ => (1 : ℂ) := hR.congr'
@@ -533,7 +537,7 @@ theorem series_isBigO_near_one_horizontal (a : Ideal O →*₀ ℂ) (ha : ∀ I,
     apply eventually_nhdsWithin_of_forall
     intro x hx
     change 0 < x at hx
-    simpa only [ofReal_add, ofReal_one] using
+    simpa using
       norm_series_le_norm_fullIdealZeta a ha (1 + x) (by linarith)
   exact h.trans fullIdealZeta_isBigO_near_one_horizontal
 

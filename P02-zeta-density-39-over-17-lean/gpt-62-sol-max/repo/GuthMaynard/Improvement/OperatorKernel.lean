@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.OperatorPhase
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory Set InnerProductSpace
-open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
 
 /-- Actual finite integer cutoff operator. The phase orientation gives
@@ -30,15 +29,17 @@ theorem operator_mellin_phase_measurable (ν : Measure ℝ) [IsFiniteMeasure ν]
   have hm : Measurable mellinFrequency := by unfold mellinFrequency; fun_prop
   exact hm.aestronglyMeasurable
 
-theorem operator_weighted_phase_measurable (ν : Measure ℝ) [IsFiniteMeasure ν]
-    {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ) :
+section
+variable (ν : Measure ℝ) [instShared1 : IsFiniteMeasure ν] {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ)
+include ν instShared1 a hi L
+
+theorem operator_weighted_phase_measurable :
     AEStronglyMeasurable (fun x => ((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x)) volume := by
   exact ((Complex.continuous_ofReal.comp_aestronglyMeasurable
     (hi.aestronglyMeasurable.const_mul L))).smul (operator_mellin_phase_measurable ν)
 
 /-- The nuclear norm-product condition is derived, not assumed. -/
-theorem operator_continuous_norm_product (ν : Measure ℝ) [IsFiniteMeasure ν]
-    {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ) :
+theorem operator_continuous_norm_product :
     Integrable (fun x => ‖((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x)‖ *
       ‖operatorPhase ν (mellinFrequency x)‖) := by
   have he (x : ℝ) : ‖((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x)‖ *
@@ -48,8 +49,7 @@ theorem operator_continuous_norm_product (ν : Measure ℝ) [IsFiniteMeasure ν]
   simp_rw [he]
   exact (hi.const_mul L).norm.mul_const _
 
-theorem operator_continuous_integrable (ν : Measure ℝ) [IsFiniteMeasure ν]
-    {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ) :
+theorem operator_continuous_integrable :
     Integrable (fun x => rankOne ℂ
       (((L*a x:ℝ):ℂ) • operatorPhase ν (mellinFrequency x))
       (operatorPhase ν (mellinFrequency x))) :=
@@ -57,8 +57,7 @@ theorem operator_continuous_integrable (ν : Measure ℝ) [IsFiniteMeasure ν]
     (operator_mellin_phase_measurable ν) (operator_continuous_norm_product ν hi L)
 
 /-- Matrix coefficients of the constructed continuous operator. -/
-theorem operator_continuous_pairing (ν : Measure ℝ) [IsFiniteMeasure ν]
-    {a : ℝ → ℝ} (hi : Integrable a) (L : ℝ) (z w : Lp ℂ 2 ν) :
+theorem operator_continuous_pairing (z w : Lp ℂ 2 ν) :
     inner ℂ z (operatorContinuous ν a L w) =
       ∫ x, ((L*a x:ℝ):ℂ)*inner ℂ z (operatorPhase ν (mellinFrequency x))*
         inner ℂ (operatorPhase ν (mellinFrequency x)) w := by
@@ -68,5 +67,7 @@ theorem operator_continuous_pairing (ν : Measure ℝ) [IsFiniteMeasure ν]
   apply integral_congr_ae
   filter_upwards with x
   rw [inner_smul_right]
+
+end
 
 end GuthMaynard.Improvement

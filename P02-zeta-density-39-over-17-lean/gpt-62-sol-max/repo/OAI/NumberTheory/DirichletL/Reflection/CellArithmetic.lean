@@ -24,8 +24,6 @@ lemma residual_level_coprime (K Q₀ : Ideal Eis) (hK : Admissible K)
   exact (PrimeFamily.residual K hK).level_coprime Q₀ c hc
     (fun i => hcop.of_isCoprime_of_dvd_right (PrimeFamily.residual_dvd K hK i)) i
 
-variable {φ σ : Type*} [Fintype σ] [DecidableEq σ]
-
 end
 end SevenEighths.InverseReflectedPhase
 

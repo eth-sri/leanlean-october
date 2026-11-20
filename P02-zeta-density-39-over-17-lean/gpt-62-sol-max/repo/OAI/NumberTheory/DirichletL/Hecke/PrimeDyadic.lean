@@ -18,9 +18,6 @@ private instance : Countable (Ideal O) := ConcretePrimeRowBridge.idealGenerator_
 def coefficient (χ : Character) (I : Ideal O) : ℂ :=
   (IdealMangoldt.value I : ℂ) * idealCoeff χ I
 
-@[simp] theorem coefficient_zero (χ : Character) : coefficient χ 0 = 0 := by
-  unfold coefficient
-  rw [IdealMangoldt.value_zero, Complex.ofReal_zero, zero_mul]
 
 def series (χ : Character) (s : ℂ) : ℂ := -deriv (LFunction χ) s / LFunction χ s
 

@@ -599,11 +599,11 @@ private theorem sargos_periodic_pair_swap {ι : Type*} (S : Finset ι) (x y : ι
     rwa [he,abs_neg]
   · simpa only [Prod.swap,abs_sub_comm] using hy
 
-theorem robertSargos_sample_positive_pair (f : ℝ → ℝ) (M : ℕ)
-    {C lam theta delta : ℝ} (hlam : 0 < lam)
-    (hf : ∀ t ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f t)
-    (hlo : ∀ t ∈ Icc (1:ℝ) M, lam ≤ iteratedDeriv 4 f t)
-    (hhi : ∀ t ∈ Icc (1:ℝ) M, iteratedDeriv 4 f t ≤ C*lam)
+section
+variable (f : ℝ → ℝ) (M : ℕ) {C lam theta delta : ℝ} (hlam : 0 < lam) (hf : ∀ t ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f t) (hlo : ∀ t ∈ Icc (1:ℝ) M, lam ≤ iteratedDeriv 4 f t) (hhi : ∀ t ∈ Icc (1:ℝ) M, iteratedDeriv 4 f t ≤ C*lam)
+include f M C lam theta delta hlam hf hlo hhi
+
+theorem robertSargos_sample_positive_pair
     (a b : ℤ) (hab : a < b)
     (hp : (a,b) ∈ sargosPeriodicNearPairs (Finset.Icc (1:ℤ) M)
       (fun m => 2*iteratedDeriv 2 f m) (fun m => iteratedDeriv 3 f m) theta delta) :
@@ -643,11 +643,7 @@ theorem robertSargos_sample_positive_pair (f : ℝ → ℝ) (M : ℕ)
       -(2*iteratedDeriv 2 f a-2*iteratedDeriv 2 f b-z) := by push_cast; ring
   rwa [heq,abs_neg]
 
-theorem robertSargos_sample_pairs_shift_count (f : ℝ → ℝ) (M : ℕ)
-    {C lam theta delta : ℝ} (hlam : 0 < lam)
-    (hf : ∀ t ∈ Icc (1:ℝ) M, ContDiffAt ℝ 4 f t)
-    (hlo : ∀ t ∈ Icc (1:ℝ) M, lam ≤ iteratedDeriv 4 f t)
-    (hhi : ∀ t ∈ Icc (1:ℝ) M, iteratedDeriv 4 f t ≤ C*lam) :
+theorem robertSargos_sample_pairs_shift_count :
     ((sargosPeriodicNearPairs (Finset.Icc (1:ℤ) M)
       (fun m => 2*iteratedDeriv 2 f m) (fun m => iteratedDeriv 3 f m) theta delta).card:ℝ) ≤
       (M:ℝ)+2*∑ k ∈ Finset.Icc 1 ⌊delta/lam⌋₊,
@@ -688,6 +684,8 @@ theorem robertSargos_sample_pairs_shift_count (f : ℝ → ℝ) (M : ℕ)
     have h₄ : (P.image Prod.swap).card ≤ P.card := Finset.card_image_le
     omega
   exact_mod_cast hcard
+
+end
 
                                                                            
                                                                           

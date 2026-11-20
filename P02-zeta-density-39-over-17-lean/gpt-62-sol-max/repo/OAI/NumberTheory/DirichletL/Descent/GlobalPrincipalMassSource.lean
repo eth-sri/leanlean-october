@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassWeighted
 
 @[expose] public section
@@ -8,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -27,8 +27,8 @@ lemma active_norm_of_square {ι : Type*} [DecidableEq ι] (p : ι→O)
 
 theorem original_weighted_source (Jmax : ℕ) (delta : ℝ) (hdelta : 0<delta) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
-    (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (_hinj : OAI.PrincipalIdealFamily.Distinct p)
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))(Z ell R Bfirst t eta a loss : ℝ),
     1≤Z → 0≤ell+eta → 0≤a →
     7*eta/2+delta*(3*ell+Bfirst+t+5*eta)+a*(2*ell+Bfirst+t+4*eta)≤loss →

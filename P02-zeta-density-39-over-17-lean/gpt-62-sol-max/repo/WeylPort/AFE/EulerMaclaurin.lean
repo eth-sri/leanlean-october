@@ -1,7 +1,7 @@
 module
 /- McColm source pin 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1, MIT-0. -/
 public import WeylPort.AFE.PoissonFourier
-public import WeylPort.Analytic.EulerMaclaurin
+public import GuthMaynard.NativeSource.PrimeNumberTheoremAnd.EulerMaclaurin
 public import Mathlib.Analysis.Calculus.Deriv.Shift
 
 @[expose] public section
@@ -19,6 +19,7 @@ the integer translation and endpoint bridges needed for arbitrary real a ≤ b.
 namespace DhimanKadiriQuesadaHerrera2026
 
 open MeasureTheory
+open GuthMaynard.NativePNT (B1 sum_eq_integral_add_integral_deriv)
 
 /-- The pinned upstream Bernoulli function agrees with the periodic sawtooth on its domain. -/
 theorem B1_eq_fract {x : ℝ} (hx : 0 ≤ x) : B1 x = Int.fract x - 1 / 2 := by

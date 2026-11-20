@@ -8,73 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
@@ -294,9 +238,9 @@ private lemma cube_strata_exponents (p:Eis) (hp:Prime p) (j k:Fin 4)
   intro hjk
   have hj3:j.val+1≤3:=by omega
   have hjk':j.val+1≤k.val:=by omega
-  have h1:p^(j.val+1)∣p^j.val*b-p^k.val*d:=
+  have h1 :=
     (pow_dvd_pow p hj3).trans he
-  have h2:p^(j.val+1)∣p^k.val*d:=
+  have h2 :=
     dvd_mul_of_dvd_left (pow_dvd_pow p hjk') d
   have h3:p^(j.val+1)∣p^j.val*b:=by
     simpa only [sub_add_cancel] using dvd_add h1 h2
@@ -319,8 +263,7 @@ lemma cubeResidueStratumMap_injective (p:Eis) (hp:Prime p) :
   subst k
   have hpow:p^3=p^j.val*p^(3-j.val):=by rw [←pow_add,Nat.add_sub_of_le (by omega:j.val≤3)]
   rw [hpow,←mul_sub] at hd
-  have hrep:p^(3-j.val)∣GaussianShiftedPartition.representative (p^(3-j.val)) b.1-
-      GaussianShiftedPartition.representative (p^(3-j.val)) d.1:=
+  have hrep :=
     (mul_dvd_mul_iff_left (pow_ne_zero j.val hp.ne_zero)).mp hd
   have hbd:b=d:=by
     apply Subtype.ext

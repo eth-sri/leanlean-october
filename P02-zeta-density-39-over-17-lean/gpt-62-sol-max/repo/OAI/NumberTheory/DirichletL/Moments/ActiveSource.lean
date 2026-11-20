@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap
 namespace SevenEighths.CenteredMomentActiveSource
-open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentGaussEnergy
-open CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentSecondLocalization
-open CenteredMomentFirstSectors CenteredMomentCompleteCommon
+open CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentGaussEnergy CenteredMomentLiveDomain CenteredMomentOriginalChildEnergy CenteredMomentSecondLocalization CenteredMomentFirstSectors CenteredMomentCompleteCommon
 local notation "O" => ActualEisensteinCubic.O
 
 def activeSource (S : Finset (Ideal O)) (β : Ideal O → ℂ) : Finset (Ideal O) :=
@@ -74,8 +72,11 @@ theorem commonLabel_witnesses (S : Finset (Ideal O)) (β : Ideal O → ℂ) (C D
   obtain ⟨hj,hβj⟩ := mem_activeSource S β J |>.mp hj
   exact ⟨I,hi,J,hj,hIs,hJs,hβi,hβj,(Prod.mk.inj he).1,(Prod.mk.inj he).2⟩
 
-theorem commonLabel_norm_bounds (S : Finset (Ideal O)) (β : Ideal O → ℂ)
-    (H : ℝ) (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
+section
+variable (S : Finset (Ideal O)) (β : Ideal O → ℂ) (H : ℝ) (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
+include S β H hH
+
+theorem commonLabel_norm_bounds
     (C D : Ideal O) (h : (C,D)∈commonLabels (supportedColumns (activeSource S β))
       (supportedColumns (activeSource S β))) :
     (Ideal.absNorm C:ℝ)≤H ∧ (Ideal.absNorm D:ℝ)≤H := by
@@ -86,8 +87,7 @@ theorem commonLabel_norm_bounds (S : Finset (Ideal O)) (β : Ideal O → ℂ)
   · rw [←hD]
     exact (Nat.cast_le.mpr (absNorm_commonPart_le J I hJs.1)).trans (hH J hj hβj)
 
-theorem residualPool_data (S : Finset (Ideal O)) (β : Ideal O → ℂ)
-    (H : ℝ) (hH : ∀I∈S,β I≠0 → (Ideal.absNorm I:ℝ)≤H)
+theorem residualPool_data
     (C : Ideal O) (hC : C≠0) (a : Ideal O)
     (ha : a∈residualPool C hC (supportedColumns (activeSource S β))) :
     C*a∈S ∧ β (C*a)≠0 ∧ Supported (C*a) ∧ a≠0 ∧
@@ -102,6 +102,8 @@ theorem residualPool_data (S : Finset (Ideal O)) (β : Ideal O → ℂ)
   refine ⟨hm,hβ,hsa,ha0,?_,?_⟩
   · exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr ha0)
   · exact (le_div_iff₀ hpos).mpr (by simpa only [mul_comm] using hab)
+
+end
 
 end SevenEighths.CenteredMomentActiveSource
 

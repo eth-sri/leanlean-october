@@ -19,13 +19,11 @@ def lowActualIdealPolynomial {ι : Type*} [Fintype ι]
   ∑p : ∀i,L i,(∏i,w i (p i).val)*InverseMoment.markedCompletedT Ψ W X
     (fun A=>∏i,if (p i).val∣A then (1:ℂ) else 0)
 
-theorem lowSelectedInverseRow_actual_ideal {K : ℕ} (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
-    (hout : ∀i P,P∈T i→P.val∉S)
-    (hdis : Pairwise (fun i j=>Disjoint (T i) (T j)))
-    (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
-    (X t : ℝ) (σ : RayRing) (z : O) :
+section
+variable {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S) (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val) (hout : ∀i P,P∈T i→P.val∉S) (hdis : Pairwise (fun i j=>Disjoint (T i) (T j))) (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ) (X t : ℝ) (σ : RayRing)
+include K η S hS hbad T hT hout hdis J W Y X t σ
+
+theorem lowSelectedInverseRow_actual_ideal (z : O) :
     lowSelectedInverseRow Finset.univ
       (lowSelectedWeight η (fun i=>canonicalSlotSupport (T i)) J W Y t)
       η S hS (lowSelectedIdeal (fun i=>canonicalSlotSupport (T i)) J) X t σ z=
@@ -57,13 +55,7 @@ theorem lowSelectedInverseRow_actual_ideal {K : ℕ} (η : HeckeFamily.Character
     simp
   · rfl
 
-theorem lowSelectedInverseRow_actual_reflected_energy {K : ℕ} (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (hbad : fixedBadPrimes⊆S)
-    (T : Fin K→Finset PrimeIdeal) (hT : ∀i P,P∈T i→Supported P.val)
-    (hout : ∀i P,P∈T i→P.val∉S)
-    (hdis : Pairwise (fun i j=>Disjoint (T i) (T j)))
-    (J : Finset (Fin K)) (W : Fin K→ℝ→ℂ) (Y : Fin K→ℝ)
-    (X t : ℝ) (σ : RayRing) (R : Finset O) (hR : ∀z∈R,z≠0) :
+theorem lowSelectedInverseRow_actual_reflected_energy (R : Finset O) (hR : ∀z∈R,z≠0) :
     (∑z∈R,‖lowSelectedInverseRow Finset.univ
       (lowSelectedWeight η (fun i=>canonicalSlotSupport (T i)) J W Y t)
       η S hS (lowSelectedIdeal (fun i=>canonicalSlotSupport (T i)) J) X t σ z‖^2)≤
@@ -84,6 +76,8 @@ theorem lowSelectedInverseRow_actual_reflected_energy {K : ℕ} (η : HeckeFamil
       (fun i : SelectedSlot J=>lowPrimeIdealList (lowPeriodPrimeList η S hS (T i.val)))
       (fun i I=>lowSingleSlotWeight η (W i.val) (Y i.val) t (primaryGenerator I)) Ψ
       (CompletedHeight.normTwistedSource gaussianFixedWindow t) X)
+
+end
 
 end SevenEighths.ProbePhysical
 end

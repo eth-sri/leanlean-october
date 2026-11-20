@@ -10,70 +10,17 @@ noncomputable section
 namespace CanonicalQuadraticSieve
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 section
 
@@ -109,10 +56,11 @@ def poissonPrimitiveConstants
    sS.sup (schwartzSeminormFamily ℝ ℝ ℂ) (quadraticSquareProfile W),
    sT.sup (schwartzSeminormFamily ℝ ℝ ℂ) W, D^η]
 
+section
+variable (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ) (hCD : 0≤CD) (hCS : 0≤CS) (hCT : 0≤CT) (hCP : 0≤CP) {α : ℝ} (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η)
+include sD sS sT CD CS CT CP hCD hCS hCT hCP α hexp η hη
+
 theorem poissonPrimitiveConstants_nonneg
-    (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
-    (hCD : 0≤CD) (hCS : 0≤CS) (hCT : 0≤CT) (hCP : 0≤CP)
-    {α : ℝ} (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η)
     (D : ℝ) (hD : 0≤D) (W : 𝓢(ℝ,ℂ)) :
     ∀x∈poissonPrimitiveConstants sD sS sT CD CS CT CP hexp η hη D W, 0≤x := by
   intro x hx
@@ -139,9 +87,6 @@ theorem poissonPrimitiveConstants_nonneg
   · exact Real.rpow_nonneg hD _
 
 theorem poissonUnitBudget_power_envelope
-    (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ)
-    (hCD : 0≤CD) (hCS : 0≤CS) (hCT : 0≤CT) (hCP : 0≤CP)
-    {α : ℝ} (hexp : HasSieveExponent α) (η : ℝ) (hη : 0<η)
     (G : Ideal O) (hG : G≠0) (K N P D H : ℝ) (W : 𝓢(ℝ,ℂ))
     (hK : 1≤K) (hN : 1≤N) (hP : 1≤P) (hD : 1≤D) (hH : 1≤H)
     (hconst : ∀x∈poissonPrimitiveConstants sD sS sT CD CS CT CP hexp η hη D W, x≤H)
@@ -195,31 +140,28 @@ theorem poissonUnitBudget_power_envelope
     apply ((IdealDivisorBound.ideal_divisor_small_power η hη).choose_spec.2 G hG).trans
     have hh := hp [divisorConstant η hη,(Ideal.absNorm G:ℝ)^η] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl | rfl <;>
-        simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+        simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · refine ⟨by positivity, ?_⟩
     apply (show (columnDyadicLength K+1:ℕ) ≤ (2+1/(η*Real.log 2))*K^η by
-      simpa only [Nat.cast_add,Nat.cast_one] using columnDyadicLength_small_power η hη K hK).trans
+      simpa using columnDyadicLength_small_power η hη K hK).trans
     have hh := hp [2+1/(η*Real.log 2),K^η] (by
       intro y hy
       simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
       rcases hy with rfl | rfl <;>
-        simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+        simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · refine ⟨by positivity, ?_⟩
     apply (show (columnDyadicLength N+1:ℕ) ≤ (2+1/(η*Real.log 2))*N^η by
-      simpa only [Nat.cast_add,Nat.cast_one] using columnDyadicLength_small_power η hη N hN).trans
+      simpa using columnDyadicLength_small_power η hη N hN).trans
     have hh := hp [2+1/(η*Real.log 2),N^η] (by
       intro y hy
       simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
       rcases hy with rfl | rfl <;>
-        simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+        simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · have hs := (supportConstant_pos η hη).le
     have hd := (divisorConstant_pos η hη).le
     have he := (divisorExponentConstant_pos hexp η hη).le
@@ -228,31 +170,28 @@ theorem poissonUnitBudget_power_envelope
       intro y hy
       simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
       rcases hy with rfl | rfl | rfl | rfl | rfl <;>
-        simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+        simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · have hs := (supportConstant_pos η hη).le
     have hd := (divisorConstant_pos η hη).le
     have he := (divisorExponentConstant_pos hexp η hη).le
     refine ⟨by positivity, ?_⟩
     have hh := hp [divisorExponentConstant hexp η hη,((2*K)*N)^η] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl | rfl <;>
-        simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+        simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · have hs := (supportConstant_pos η hη).le
     have hd := (divisorConstant_pos η hη).le
     have he := (divisorExponentConstant_pos hexp η hη).le
     refine ⟨by positivity, ?_⟩
     have hh := hp [‖paperRadialFourier (quadraticTransformedSquareProfile W) 0‖] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl
-      simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+      simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · have hs := (supportConstant_pos η hη).le
     have hd := (divisorConstant_pos η hη).le
     have he := (divisorExponentConstant_pos hexp η hη).le
@@ -261,88 +200,81 @@ theorem poissonUnitBudget_power_envelope
       intro y hy
       simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
       rcases hy with rfl
-      simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+      simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · refine ⟨dualMiddleDecayConstant_nonneg _, ?_⟩
     have hh := hp [dualMiddleDecayConstant (quadraticTransformedSquareProfile W)] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl
-      simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+      simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · have hs := (supportConstant_pos η hη).le
     have hd := (divisorConstant_pos η hη).le
     have he := (divisorExponentConstant_pos hexp η hη).le
     refine ⟨by positivity, ?_⟩
     have hh := hp [‖paperRadialFourier (quadraticSquareProfile W) 0‖] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl
-      simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+      simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · refine ⟨originalMiddleDecayConstant_nonneg _, ?_⟩
     have hh := hp [originalMiddleDecayConstant (quadraticSquareProfile W)] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl
-      simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+      simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · refine ⟨nonzeroLatticeEnvelopeConstant_nonneg, ?_⟩
     have hh := hp [nonzeroLatticeEnvelopeConstant] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl
-      simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+      simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · have hs := (supportConstant_pos η hη).le
     have hd := (divisorConstant_pos η hη).le
     have he := (divisorExponentConstant_pos hexp η hη).le
     refine ⟨by positivity, ?_⟩
     have hh := hp [supportConstant η hη,(N*N)^η,CD,sD.sup (schwartzSeminormFamily ℝ ℝ ℂ) (quadraticTransformedSquareProfile W)] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl | rfl | rfl | rfl <;>
-        simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+        simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · have hs := (supportConstant_pos η hη).le
     have hd := (divisorConstant_pos η hη).le
     have he := (divisorExponentConstant_pos hexp η hη).le
     refine ⟨by positivity, ?_⟩
     have hh := hp [supportConstant η hη,((Ideal.absNorm G:ℝ)*(N*N))^η,CS,sS.sup (schwartzSeminormFamily ℝ ℝ ℂ) (quadraticSquareProfile W)] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl | rfl | rfl | rfl <;>
-        simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+        simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · have hs := (supportConstant_pos η hη).le
     have hd := (divisorConstant_pos η hη).le
     have he := (divisorExponentConstant_pos hexp η hη).le
     refine ⟨by positivity, ?_⟩
     have hh := hp [CT,sT.sup (schwartzSeminormFamily ℝ ℝ ℂ) W] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl | rfl <;>
-        simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+        simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
   · have hs := (supportConstant_pos η hη).le
     have hd := (divisorConstant_pos η hη).le
     have he := (divisorExponentConstant_pos hexp η hη).le
     refine ⟨by positivity, ?_⟩
     have hh := hp [supportConstant η hη,N^η,CP,(K*N)^η] (by
       intro y hy
-      simp only [List.mem_cons,List.not_mem_nil,or_false] at hy
+      simp at hy
       rcases hy with rfl | rfl | rfl | rfl <;>
-        simp only [prims,poissonPrimitiveConstants,List.mem_append,List.mem_cons,
-          List.not_mem_nil,or_false,true_or,or_true]) (by simp)
-    simpa only [divisorConstant,V,List.prod_cons,List.prod_nil,mul_one,pow_two,mul_assoc] using hh
+        simp [prims, poissonPrimitiveConstants]) (by simp)
+    simpa [divisorConstant, V, pow_two, mul_assoc] using hh
+
+end
 
 end
 

@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstReduced
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstMixed CenteredMomentActive
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein EisensteinSchwartzPoisson CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstMixed CenteredMomentActive
 local notation "O" => ActualEisensteinCubic.O
 
 def tripleRow (a b r : O) (χa : MulChar (Residue a) ℂ)
@@ -43,9 +41,11 @@ def tripleFourier (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
   ∑' x : Residue (a*(b*r)),tripleResidue a b r χa χb G x*
     quotientTrace (a*(b*r)) (mul_ne_zero ha (mul_ne_zero hb hr)) (Ideal.Quotient.mk _ h*x)
 
-theorem tripleRow_radial_summable (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
-    (G : Residue r → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+section
+variable (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0) (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ) (G : Residue r → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+include a b r ha hb hr χa χb G W K hK
+
+theorem tripleRow_radial_summable :
     Summable (fun z : O => tripleRow a b r χa χb G z*W (‖eisEmbedding z‖^2/K)) := by
   let := finite_quotient_span (mul_ne_zero ha (mul_ne_zero hb hr))
   let : Fintype (Residue (a*(b*r))) := Fintype.ofFinite _
@@ -53,9 +53,7 @@ theorem tripleRow_radial_summable (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r�
     (Ideal.Quotient.mk (Ideal.span {a*(b*r)})) (tripleResidue a b r χa χb G)
   simpa only [tripleResidue_mk,scaledRadialTest_apply] using hh
 
-theorem tripleRow_poisson (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
-    (χa : MulChar (Residue a) ℂ) (χb : MulChar (Residue b) ℂ)
-    (G : Residue r → ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+theorem tripleRow_poisson :
     (∑' z : O,tripleRow a b r χa χb G z*W (‖eisEmbedding z‖^2/K)) =
       ((K/‖eisEmbedding (a*(b*r))‖^2:ℝ):ℂ)*∑' h : O,
         tripleFourier a b r ha hb hr χa χb G h*
@@ -65,6 +63,8 @@ theorem tripleRow_poisson (a b r : O) (ha : a≠0) (hb : b≠0) (hr : r≠0)
   have hh := actual_radial_paper_poisson_trace W K hK (a*(b*r))
     (mul_ne_zero ha (mul_ne_zero hb hr)) (tripleResidue a b r χa χb G)
   simpa only [tripleResidue_mk,tripleFourier,quotientTrace,tsum_fintype,Complex.real_smul] using hh
+
+end
 
 theorem masked_triple_poisson {α : Type*} (P : α → Ideal O)
     [∀ i,(P i).IsMaximal] (hinj : Function.Injective P) (S : Finset α)

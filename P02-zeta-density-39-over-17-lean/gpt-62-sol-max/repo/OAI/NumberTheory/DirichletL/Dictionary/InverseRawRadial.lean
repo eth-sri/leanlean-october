@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.DetectorDictionaryInverseRawRadial
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource
-open InverseInitialRawDictionary InverseInitialConjugateEnergy CanonicalQuadraticSieve
-open ConcreteTraceCRT ActualEisensteinCubic
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseInitialDetectorSource InverseInitialRawDictionary InverseInitialConjugateEnergy CanonicalQuadraticSieve ConcreteTraceCRT ActualEisensteinCubic
 local notation "O"=>HeckeFamily.O
 
 theorem exists_raw_radial_majorant :

@@ -10,8 +10,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareNormalized
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.Stronger.Fourth
+open Complex MathCollab.Density.Stronger.Fourth
 open scoped ComplexConjugate
 set_option autoImplicit false
 noncomputable section

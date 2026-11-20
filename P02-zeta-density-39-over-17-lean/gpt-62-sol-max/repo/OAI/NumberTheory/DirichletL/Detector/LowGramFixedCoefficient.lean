@@ -29,7 +29,11 @@ def gramCoefficientExtension (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : R
     gramPeriodicMonoid (calibrationForSet S hS) (calibrationForSet S hS).generator (calibrationLowData S hS) n
   else 0
 
-lemma gramCoefficientExtension_norm (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing) (n : O) :
+section
+variable (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+include S hS
+
+lemma gramCoefficientExtension_norm (σ : RayRing) (n : O) :
     ‖gramCoefficientExtension S hS σ n‖≤1 := by
   unfold gramCoefficientExtension
   split_ifs
@@ -37,14 +41,14 @@ lemma gramCoefficientExtension_norm (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) 
     exact gramPeriodicMonoid_norm _ _ _ _
   · simp
 
-lemma gramCoefficientExtension_zero (S : Finset Id) (hS : ∀P∈S,P.IsMaximal) (σ : RayRing) (n : O)
+lemma gramCoefficientExtension_zero (σ : RayRing) (n : O)
     (hn : ¬IsCoprime (calibrationForSet S hS).generator n) : gramCoefficientExtension S hS σ n=0 := by
   unfold gramCoefficientExtension
   split_ifs
   · rw [gramPeriodicMonoid_zero _ _ _ _ hn,mul_zero]
   · rfl
 
-theorem lowGramCoefficient_eq_extension (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+theorem lowGramCoefficient_eq_extension
     (hbad : fixedBadPrimes⊆S) (σ : RayRing) (s : {I : Id // Supported I}) :
     lowGramCoefficient (calibrationForSet S hS) σ s=
       gramCoefficientExtension S hS σ (primaryGenerator s.val) := by
@@ -52,13 +56,15 @@ theorem lowGramCoefficient_eq_extension (S : Finset Id) (hS : ∀P∈S,P.IsMaxim
   change (if physicalRay (primaryGenerator s.val)=σ then _ else 0)=_
   rw [lowArithmeticCoefficient_periodic S hS hbad s]
 
-theorem gramCoefficientExtension_periodic (S : Finset Id) (hS : ∀P∈S,P.IsMaximal)
+theorem gramCoefficientExtension_periodic
     (σ : RayRing) (x y : O) (hxy : x-y∈gramFixedModulus S hS) :
     gramCoefficientExtension S hS σ x=gramCoefficientExtension S hS σ y := by
   have hr : physicalRay x=physicalRay y := Ideal.Quotient.eq.mpr (Ideal.mul_le_right hxy)
   have hm := gramPeriodicMonoid_periodic (calibrationForSet S hS) (calibrationForSet S hS).generator
     (calibrationLowData S hS) x y (Ideal.mul_le_left hxy)
   simp only [gramCoefficientExtension,hr,hm]
+
+end
 
 end SevenEighths.ProbePhysical
 end

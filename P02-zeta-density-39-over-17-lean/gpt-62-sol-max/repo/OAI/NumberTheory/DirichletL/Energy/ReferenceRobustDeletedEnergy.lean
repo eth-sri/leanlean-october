@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Energy.DeletedRobustGeometry
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceWindowGeometry
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowReflectionError
 public import OAI.NumberTheory.DirichletL.Energy.ReferenceLowDirect
 
@@ -12,22 +12,14 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyReferenceRobustDeletedEnergy
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyDeletedRobustGeometry CenteredMomentEnergyReferenceLowReflectionError
-open CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
+open CenteredMomentEnergyReferenceWindowGeometry HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyDeletedRobustGeometry CenteredMomentEnergyReferenceLowReflectionError CenteredMomentEnergyReferenceLowDirect CenteredMomentEnergyReferenceChild CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion CenteredMomentOriginalRadialComparison CenteredMomentAllocatedNaturalRadial CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M):=Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-theorem deleted_energy_from_low_robust
+theorem deleted_energy_from_low (m : ReferenceWindow)
     (Wslot:ℝ→ℂ)(aslot bslot lo hi:ℝ)
     (haslot:0<aslot)(hsSlot:Function.support Wslot⊆Set.Icc aslot bslot)(hcSlot:Continuous Wslot)
     (a b bΦ epsilon xi defect saving Mcap Bmask L:ℝ)
@@ -43,22 +35,21 @@ theorem deleted_energy_from_low_robust
       ∀(θ:α→RayQuotient.Characters M H)(w σ freq:α→ℝ)(t height:ℝ),
       (∀i,0≤w i) → (∀i,w i≤Lslot) → (∀i,lo≤σ i) → (∀i,σ i≤hi) →
       0≤height → (∀i,|freq i|≤height) → 3/4≤κ →
-      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → s.width≤Mcap → xi+11*defect/7≤s.width/14 →
+      ∀(s:NaturalState Z Bmask bΦ),s.fixedModulus=internalQ Q η₀ → s.width≤Mcap → m.reserve s.width xi defect →
       ∀(W₁ W₂:𝓢(ℝ,ℂ)),
       ∀hs₁:Function.support (W₁:ℝ→ℂ)⊆Set.Icc a b,
       ∀hs₂:Function.support (W₂:ℝ→ℂ)⊆Set.Icc a b,
       ∀X₁ X₂:ℝ,0<X₁ → 0<X₂ →
-      5*s.width/6-defect≤Real.logb Z (X₁*X₂)+(∑i,w i) →
-      Real.logb Z (X₁*X₂)+(∑i,w i)+(6*κ-1)*(∑i,w i)≤s.width →
+      m.admitted Z s.width X₁ X₂ (∑i,w i) κ defect →
       ∀D₁∈(CompletedGauss.primeSupport s.puncture).powerset,
       ∀D₂∈(CompletedGauss.primeSupport s.puncture).powerset,
       ∀F:Finset α,
       let β:=fun i I=>heightCoefficient (fun I=>idealCoeff (relativeCharacter M H hH η₀ (θ i)) I*
         HeckePrimeAnnular.annularWeight Wslot (Z^(w i)) (σ i) (freq i) I) t I;
       radialEnergy (fun z=>polynomial (naturalCharacter s.character z) false W₁
-          (comparisonFirst Z s.width/((∏I∈D₁,I).absNorm:ℝ)) 0 t *
+          (m.left Z s.width X₁/((∏I∈D₁,I).absNorm:ℝ)) 0 t *
         polynomial (naturalCharacter s.character z) false W₂
-          (comparisonSecond Z s.width X₁ X₂/((∏I∈D₂,I).absNorm:ℝ)) 0 t *
+          (m.right Z s.width X₁ X₂/((∏I∈D₂,I).absNorm:ℝ)) 0 t *
         ∏i∈F,naturalSlot (naturalCharacter s.character z) (primePool M H bslot (Z^(w i))) (β i) (Z^(w i)))
         (effectiveState s).radial.keep s.radial.profile s.radial.scale ≤
         K*diagonalControl s.radial.profile*
@@ -80,15 +71,15 @@ theorem deleted_energy_from_low_robust
   filter_upwards [href] with Z hZ
   refine ⟨hZ.1,?_⟩
   intro Lslot ε κ η₀ Q K hK hlow θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
-    s hQ hs hxiM W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ hlarge hcap D₁ hD₁ D₂ hD₂ F
+    s hQ hs hxiM W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ hgate D₁ hD₁ D₂ hD₂ F
   dsimp only
-  let short:=s.width/4-Real.logb Z ((∏I∈D₁,I).absNorm:ℝ)
-  let along:=Real.logb Z (X₁*X₂)-s.width/4-Real.logb Z ((∏I∈D₂,I).absNorm:ℝ)
+  let short:=Real.logb Z (m.left Z s.width X₁/((∏I∈D₁,I).absNorm:ℝ))
+  let along:=Real.logb Z (m.right Z s.width X₁ X₂/((∏I∈D₂,I).absNorm:ℝ))
   have hsum:0≤∑i∈F,w i:=Finset.sum_nonneg (fun i _=>hw i)
   have hsumle:(∑i∈F,w i)≤∑i,w i:=Finset.sum_le_sum_of_subset_of_nonneg
     (Finset.subset_univ F) (fun i _ _=>hw i)
-  have hg:=actual_deleted_gates s hZ.1 hBmask Mcap L X₁ X₂ (∑i,w i) (∑i∈F,w i) κ xi defect hs hL
-    hX₁ hX₂ (Finset.sum_nonneg (fun i _=>hw i)) hsum hsumle hκ hxi.le hdefect hxiM hlarge hcap D₁ D₂ hD₁ hD₂
+  have hg:=m.deleted_gates s hZ.1 hBmask Mcap L X₁ X₂ (∑i,w i) (∑i∈F,w i) κ xi defect hs hL
+    hX₁ hX₂ (Finset.sum_nonneg (fun i _=>hw i)) hsum hsumle hκ hxi hdefect hxiM hgate D₁ D₂ hD₁ hD₂
   dsimp only at hg
   rw [←hg.1,←hg.2.1]
   have hZpos:0<Z:=zero_lt_one.trans hZ.1

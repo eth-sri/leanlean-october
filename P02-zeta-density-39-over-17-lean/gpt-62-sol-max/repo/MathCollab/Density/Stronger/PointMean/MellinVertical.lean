@@ -15,8 +15,7 @@ public import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour MathCollab.Density.ZetaGrowth
 open scoped ComplexOrder
 set_option autoImplicit false
 noncomputable section

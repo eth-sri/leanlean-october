@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Detector.PhaseCancellation
 public import OAI.NumberTheory.DirichletL.Detector.Sextic
 
@@ -9,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbePhase
-open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss
-open ConcreteTraceCRT ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
+open ActualEisensteinCubic ActualEisensteinCoordinates CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge QuadraticGaussRay FiniteGaussPhase CubicEisenstein
 local notation "O" => ActualEisensteinCubic.O
 
 theorem normalizedTraceGauss_eq_normalizedGauss (p : O) (hp : p ≠ 0)
@@ -28,32 +28,30 @@ theorem normalizedTraceGauss_eq_normalizedGauss (p : O) (hp : p ≠ 0)
   simp only [ConcreteBreveE.normalizedTraceGauss, ProbeGauss.normalizedGauss,
     quotientTrace, ← Nat.card_eq_fintype_card, hn]
 
-theorem quadraticRayValue_eq_normalizedTraceGauss (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
+section
+variable (p : O) (hp : p ≠ 0) [instShared2 : (Ideal.span {p} : Ideal O).IsMaximal] (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+include p hp instShared2 hg hc
+
+theorem quadraticRayValue_eq_normalizedTraceGauss :
     quadraticRayValue (residue p) =
       ConcreteBreveE.normalizedTraceGauss p hp (actualSextic (Ideal.span {p}) hg ^ 3) := by
   let pp : Unit → O := fun _ => p
   have hpp : ∀ i, pp i ≠ 0 := fun _ => hp
-  have hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {pp i})) := by
+  have hcop : OAI.PrincipalIdealFamily.PairwiseCoprime pp := by
     intro i j hij
     exact (hij (Subsingleton.elim i j)).elim
   have he := canonicalProductGauss_three_eq_rayValue pp hpp hcop (fun _ => hg) (fun _ => hc)
   rw [canonicalProductGauss_cross_factors pp hpp hcop (fun _ => hg) (fun _ => 3)] at he
   simpa [pp] using he.symm
 
-theorem G_cube_eq_normalizedTraceGauss (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+theorem G_cube_eq_normalizedTraceGauss
     (ho : EisensteinEPrimaryPhase.odd (residue p)) :
     G (p ^ 3) =
       ConcreteBreveE.normalizedTraceGauss p hp (actualSextic (Ideal.span {p}) hg ^ 3) := by
   rw [G_cube p ho (cubicTwo_isUnit_of_odd p ho)]
   exact quadraticRayValue_eq_normalizedTraceGauss p hp hg hc
 
-theorem normalizedTraceGauss_three_sq (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2) :
+theorem normalizedTraceGauss_three_sq :
     ConcreteBreveE.normalizedTraceGauss p hp (actualSextic (Ideal.span {p}) hg ^ 3) ^ 2 =
       actualSextic (Ideal.span {p}) hg (-1) := by
   let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
@@ -76,9 +74,7 @@ theorem normalizedTraceGauss_three_sq (p : O) (hp : p ≠ 0)
   norm_num
   rfl
 
-theorem reciprocitySign_self_eq_sextic_neg_one (p : O) (hp : p ≠ 0)
-    [(Ideal.span {p} : Ideal O).IsMaximal]
-    (hg : goodLambda ∉ Ideal.span {p}) (hc : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
+theorem reciprocitySign_self_eq_sextic_neg_one
     (ho : EisensteinEPrimaryPhase.odd (residue p)) :
     reciprocitySign p p = actualSextic (Ideal.span {p}) hg (-1) := by
   have hq := QuadraticAllOddCRT.quadraticRayValue_mul (residue p) (residue p) ho ho
@@ -93,6 +89,8 @@ theorem reciprocitySign_self_eq_sextic_neg_one (p : O) (hp : p ≠ 0)
     _ = reciprocitySign p p * (reciprocitySign p p * actualSextic (Ideal.span {p}) hg (-1)) := by rw [hprod]
     _ = reciprocitySign p p ^ 2 * actualSextic (Ideal.span {p}) hg (-1) := by ring
     _ = _ := by rw [reciprocitySign_sq p p ho ho, one_mul]
+
+end
 
 end SevenEighths.ProbePhase
 end

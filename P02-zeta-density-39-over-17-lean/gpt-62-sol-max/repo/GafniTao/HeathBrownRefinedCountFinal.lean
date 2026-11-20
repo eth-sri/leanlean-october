@@ -39,31 +39,23 @@ theorem heathBrownBlockParameter_cast_le
   gcongr
   exact Nat.floor_le (by positivity)
 
-theorem heathBrownPairCount_card_cast_le_source_scale
-    {N k : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
-    (hlambdaOne : lambda ≤ 1)
-    (hsmall : A * lambda ≤ 1 / 4)
-    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
-    (hcoordLow : ContinuousOn
+section
+variable {N k : ℕ} {f : ℝ → ℝ} {A lambda : ℝ} (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda) (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4) (hlargeH : 8 ≤ heathBrownHChoice k A lambda) (hcoordLow : ContinuousOn
       (heathBrownDerivativeCoordinate f (k - 2))
-      (Set.Icc 0 (N : ℝ)))
-    (hcoordLowD : DifferentiableOn ℝ
+      (Set.Icc 0 (N : ℝ))) (hcoordLowD : DifferentiableOn ℝ
       (heathBrownDerivativeCoordinate f (k - 2))
-      (Set.Ioo 0 (N : ℝ)))
-    (hcoordLast : ContinuousOn
+      (Set.Ioo 0 (N : ℝ))) (hcoordLast : ContinuousOn
       (heathBrownDerivativeCoordinate f (k - 1))
-      (Set.Icc 0 (N : ℝ)))
-    (hcoordLastD : DifferentiableOn ℝ
+      (Set.Icc 0 (N : ℝ))) (hcoordLastD : DifferentiableOn ℝ
       (heathBrownDerivativeCoordinate f (k - 1))
-      (Set.Ioo 0 (N : ℝ)))
-    (hraw : ContinuousOn (iteratedDeriv (k - 1) f)
-      (Set.Icc 0 (N : ℝ)))
-    (hrawd : DifferentiableOn ℝ (iteratedDeriv (k - 1) f)
-      (Set.Ioo 0 (N : ℝ)))
-    (hkBounds : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ),
+      (Set.Ioo 0 (N : ℝ))) (hraw : ContinuousOn (iteratedDeriv (k - 1) f)
+      (Set.Icc 0 (N : ℝ))) (hrawd : DifferentiableOn ℝ (iteratedDeriv (k - 1) f)
+      (Set.Ioo 0 (N : ℝ))) (hkBounds : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ),
       lambda ≤ iteratedDeriv k f x ∧
-        iteratedDeriv k f x ≤ A * lambda) :
+        iteratedDeriv k f x ≤ A * lambda)
+include N k f A lambda hk hN hA hlambda hlambdaOne hsmall hlargeH hcoordLow hcoordLowD hcoordLast hcoordLastD hraw hrawd hkBounds
+
+theorem heathBrownPairCount_card_cast_le_source_scale :
     let H := heathBrownHChoice k A lambda
     ((heathBrownPairCount N k H f).card : ℝ) ≤
       heathBrownRefinedCountConstant k A *
@@ -143,31 +135,7 @@ theorem heathBrownPairCount_card_cast_le_source_scale
         (N + lambda ^ (-(2 / (k : ℝ)))) *
         (1 + Real.log N) := by rfl
 
-theorem heathBrownPairCount_card_cast_le_lemma_two
-    {N k : ℕ} {f : ℝ → ℝ} {A lambda : ℝ}
-    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
-    (hlambdaOne : lambda ≤ 1)
-    (hsmall : A * lambda ≤ 1 / 4)
-    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
-    (hcoordLow : ContinuousOn
-      (heathBrownDerivativeCoordinate f (k - 2))
-      (Set.Icc 0 (N : ℝ)))
-    (hcoordLowD : DifferentiableOn ℝ
-      (heathBrownDerivativeCoordinate f (k - 2))
-      (Set.Ioo 0 (N : ℝ)))
-    (hcoordLast : ContinuousOn
-      (heathBrownDerivativeCoordinate f (k - 1))
-      (Set.Icc 0 (N : ℝ)))
-    (hcoordLastD : DifferentiableOn ℝ
-      (heathBrownDerivativeCoordinate f (k - 1))
-      (Set.Ioo 0 (N : ℝ)))
-    (hraw : ContinuousOn (iteratedDeriv (k - 1) f)
-      (Set.Icc 0 (N : ℝ)))
-    (hrawd : DifferentiableOn ℝ (iteratedDeriv (k - 1) f)
-      (Set.Ioo 0 (N : ℝ)))
-    (hkBounds : ∀ x ∈ Set.Ioo (0 : ℝ) (N : ℝ),
-      lambda ≤ iteratedDeriv k f x ∧
-        iteratedDeriv k f x ≤ A * lambda) :
+theorem heathBrownPairCount_card_cast_le_lemma_two :
     let H := heathBrownHChoice k A lambda
     ((heathBrownPairCount N k H f).card : ℝ) ≤
       heathBrownLemmaTwoConstant k A *
@@ -240,6 +208,8 @@ theorem heathBrownPairCount_card_cast_le_lemma_two
       unfold heathBrownLemmaTwoConstant
       dsimp only [B, P]
       ring
+
+end
 
 
 end

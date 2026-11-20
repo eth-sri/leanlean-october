@@ -64,11 +64,11 @@ theorem weighted_pool_eq_annular (C : Set Id) (S : Finset Id)
       linarith
   simp only [hw,zero_mul]
 
-theorem central_phase_eq_amplitude (M : Id) [NeZero M]
-    [Finite (HeckeFamily.O ⧸ M)] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ)
-    (S : Finset Id) (u : HeckeFamily.O) (W : ℝ→ℂ) (a b D : ℝ)
-    (ha : 0<a) (hab : a≤b) (hD : 0<D) (hW : Function.support W⊆Set.Ioo a b)
-    (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (z : ℂ) :
+section
+variable (M : Id) [instShared1 : NeZero M] [instShared2 : Finite (HeckeFamily.O ⧸ M)] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ) (S : Finset Id) (u : HeckeFamily.O) (W : ℝ→ℂ) (a b D : ℝ) (ha : 0<a) (hab : a≤b) (hD : 0<D) (hW : Function.support W⊆Set.Ioo a b) (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (z : ℂ)
+include M instShared1 instShared2 H S u W a b D ha hab hD hW hS z
+
+theorem central_phase_eq_amplitude :
     (∑P∈pool (RayQuotient.identityClass M H) S a b D,
       W ((P.val.absNorm:ℝ)/D)*(P.val.absNorm:ℂ)^(z-1)*
         (-star (CanonicalRowCompletion.idealRowHom u P.val)))=
@@ -91,11 +91,7 @@ theorem central_phase_eq_amplitude (M : Id) [NeZero M]
   simp only [starRingEnd_apply,Complex.ofReal_natCast]
   ring
 
-theorem central_phase_norm (M : Id) [NeZero M]
-    [Finite (HeckeFamily.O ⧸ M)] (H : Subgroup (HeckeFamily.O ⧸ M)ˣ)
-    (S : Finset Id) (u : HeckeFamily.O) (W : ℝ→ℂ) (a b D : ℝ)
-    (ha : 0<a) (hab : a≤b) (hD : 0<D) (hW : Function.support W⊆Set.Ioo a b)
-    (hS : ∀P∈S,(P.absNorm:ℝ)≤a*D) (z : ℂ) :
+theorem central_phase_norm :
     ‖∑P∈pool (RayQuotient.identityClass M H) S a b D,
       W ((P.val.absNorm:ℝ)/D)*(P.val.absNorm:ℂ)^(z-1)*
         (-star (CanonicalRowCompletion.idealRowHom u P.val))‖=
@@ -103,6 +99,8 @@ theorem central_phase_norm (M : Id) [NeZero M]
   rw [central_phase_eq_amplitude M H S u W a b D ha hab hD hW hS z,
     norm_mul,norm_neg,Complex.norm_cpow_eq_rpow_re_of_pos hD]
   norm_num
+
+end
 
 theorem power_fixed_exclusions (S : Finset Id) (a ellMin : ℝ) (ha : 0<a) (hmin : 0<ellMin)
     {ι : Type*} (ell : ι→ℝ) (hell : ∀j,ellMin≤ell j) :

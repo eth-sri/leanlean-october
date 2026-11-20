@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open CompletedGauss ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition
-open CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier CenteredMomentFirstPoisson
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CompletedGauss ConcreteTraceCRT CubicEisenstein GaussianShiftedPartition CenteredMomentCommonSupport CenteredMomentCorrelation CenteredMomentFourier CenteredMomentFirstPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 lemma gaussTwo_eq_elementFourier (I : Ideal O) (hI : CubicSieve.Admissible I) :

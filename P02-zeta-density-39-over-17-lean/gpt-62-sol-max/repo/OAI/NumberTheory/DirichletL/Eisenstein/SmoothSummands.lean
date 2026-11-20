@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.SpatialDerivatives
 public import OAI.NumberTheory.DirichletL.CubicSieve.FirstCoreCutoff
 
@@ -9,70 +10,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 open Filter
@@ -118,24 +66,30 @@ def axisLaplacian (f : SpatialCoordinates → ℂ) (p : SpatialCoordinates) : �
   (p 2:ℂ)^2 * (∑ j : Fin 3, deriv (deriv (axisSlice f p j)) (p j)) -
     (p 2:ℂ)*deriv (axisSlice f p 2) (p 2)
 
-lemma axisSlice_zero (f : ℝ → ℝ → ℝ → ℂ) (p : SpatialCoordinates) :
+section
+variable (f : ℝ → ℝ → ℝ → ℂ) (p : SpatialCoordinates)
+include f p
+
+lemma axisSlice_zero :
     axisSlice (fun q => f (q 0) (q 1) (q 2)) p 0 = fun t => f t (p 1) (p 2) := by
   funext t
   simp [axisSlice,Function.update]
-lemma axisSlice_one (f : ℝ → ℝ → ℝ → ℂ) (p : SpatialCoordinates) :
+lemma axisSlice_one :
     axisSlice (fun q => f (q 0) (q 1) (q 2)) p 1 = fun t => f (p 0) t (p 2) := by
   funext t
   simp [axisSlice,Function.update]
-lemma axisSlice_two (f : ℝ → ℝ → ℝ → ℂ) (p : SpatialCoordinates) :
+lemma axisSlice_two :
     axisSlice (fun q => f (q 0) (q 1) (q 2)) p 2 = fun t => f (p 0) (p 1) t := by
   funext t
   simp [axisSlice,Function.update]
 
-lemma axisLaplacian_eq_hyperbolicLaplacian (f : ℝ → ℝ → ℝ → ℂ) (p : SpatialCoordinates) :
+lemma axisLaplacian_eq_hyperbolicLaplacian :
     axisLaplacian (fun q => f (q 0) (q 1) (q 2)) p =
       hyperbolicLaplacian f (p 0) (p 1) (p 2) := by
   simp only [axisLaplacian,Fin.sum_univ_three,axisSlice_zero,axisSlice_one,axisSlice_two,
     hyperbolicLaplacian]
+
+end
 
 lemma smoothSummand_axisLaplacian (s : ℂ) (r : CuspCosets) (p : SpatialCoordinates) (hv : 0<p 2) :
     axisLaplacian (smoothSummand s r) p = s*(s-2)*smoothSummand s r p := by
@@ -201,14 +155,7 @@ end CubicEisenstein
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassArithmetic
 
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (columnLog primeProductNorm b0Label jLabel)
-open ConcreteTraceCRT (eisEmbedding)
-open EisensteinSchwartzPoisson (paperRadialFourier)
-open RayFourExpansion (RayCharacter)
 
-end
 
 open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm)
@@ -217,8 +164,8 @@ open JointLogSeparation (frequencyTwist frequencyTwist_apply)
 
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 omit [DecidableEq ι] in
 lemma residualPairWeight_test_ne_zero
@@ -430,9 +377,11 @@ lemma divisorDyadicLabel_bounds (N : ℝ) (D : Ideal O)
 
 lemma divisorDyadicScale_ge_one (j : ℕ) : 1 ≤ divisorDyadicScale j := le_max_left _ _
 
-theorem divisorDyadicBin_bounds (S : Finset (Ideal O)) (N : ℝ)
-    (hS : ∀ D ∈ S, 1 ≤ (Ideal.absNorm D : ℝ) ∧ (Ideal.absNorm D : ℝ) ≤ N)
-    (j : Fin (columnDyadicLength N+1)) (D : Ideal O) (hD : D ∈ divisorDyadicBin S N j) :
+section
+variable (S : Finset (Ideal O)) (N : ℝ) (hS : ∀ D ∈ S, 1 ≤ (Ideal.absNorm D : ℝ) ∧ (Ideal.absNorm D : ℝ) ≤ N) (j : Fin (columnDyadicLength N+1))
+include S N hS j
+
+theorem divisorDyadicBin_bounds (D : Ideal O) (hD : D ∈ divisorDyadicBin S N j) :
     divisorDyadicScale j.val ≤ (Ideal.absNorm D : ℝ) ∧
       (Ideal.absNorm D : ℝ) ≤ 2 * divisorDyadicScale j.val := by
   obtain ⟨hDS,hj⟩ := Finset.mem_filter.mp hD
@@ -443,12 +392,12 @@ theorem divisorDyadicBin_bounds (S : Finset (Ideal O)) (N : ℝ)
   have hm : (2 : ℝ)^j.val/2 ≤ divisorDyadicScale j.val := le_max_right _ _
   linarith [hb.2]
 
-theorem divisorDyadicBin_scale_le (S : Finset (Ideal O)) (N : ℝ)
-    (hS : ∀ D ∈ S, 1 ≤ (Ideal.absNorm D : ℝ) ∧ (Ideal.absNorm D : ℝ) ≤ N)
-    (j : Fin (columnDyadicLength N+1)) (hj : (divisorDyadicBin S N j).Nonempty) :
+theorem divisorDyadicBin_scale_le (hj : (divisorDyadicBin S N j).Nonempty) :
     divisorDyadicScale j.val ≤ N := by
   obtain ⟨D,hD⟩ := hj
   exact (divisorDyadicBin_bounds S N hS j D hD).1.trans (hS D (Finset.mem_filter.mp hD).1).2
+
+end
 
 theorem sum_divisorDyadicBins {A : Type*} [AddCommMonoid A]
     (S : Finset (Ideal O)) (N : ℝ) (f : Ideal O → A) :

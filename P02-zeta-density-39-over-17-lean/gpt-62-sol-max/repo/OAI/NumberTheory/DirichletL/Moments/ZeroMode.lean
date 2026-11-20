@@ -9,15 +9,14 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentZeroMode
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve
-open ConcreteTraceCRT CubicEisenstein
-open CenteredMomentRowNorm CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentFourier
-open UniqueFactorizationMonoid CenteredExceptionalCount CenteredExceptionalProfile
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve ConcreteTraceCRT CubicEisenstein CenteredMomentRowNorm CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentFourier UniqueFactorizationMonoid CenteredExceptionalCount CenteredExceptionalProfile
 local notation "O" => ActualEisensteinCubic.O
 
-@[simp] theorem pairResidue_mul (a b : O) (ha : Supported (Ideal.span {a}))
-    (hb : Supported (Ideal.span {b})) (x y : Residue (a * b)) :
+section
+variable (a b : O) (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+include a b ha hb
+
+@[simp] theorem pairResidue_mul (x y : Residue (a * b)) :
     pairResidue a b ha hb (x * y) =
       pairResidue a b ha hb x * pairResidue a b ha hb y := by
   obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective x
@@ -26,13 +25,11 @@ local notation "O" => ActualEisensteinCubic.O
     idealRowHom_argument_mul, idealRowHom_argument_mul, star_mul]
   ring
 
-@[simp] theorem pairFourier_zero (a b : O) (ha : Supported (Ideal.span {a}))
-    (hb : Supported (Ideal.span {b})) :
+@[simp] theorem pairFourier_zero :
     pairFourier a b ha hb 0 = ∑' x : Residue (a * b), pairResidue a b ha hb x := by
   simp [pairFourier, quotientTrace]
 
-theorem pairResidue_unit_eq_one_of_mean_ne_zero (a b : O)
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+theorem pairResidue_unit_eq_one_of_mean_ne_zero
     (hm : pairFourier a b ha hb 0 ≠ 0) (u : (Residue (a * b))ˣ) :
     pairResidue a b ha hb u = 1 := by
   let := finite_quotient_span (mul_ne_zero (supported_element_ne_zero a ha)
@@ -45,8 +42,7 @@ theorem pairResidue_unit_eq_one_of_mean_ne_zero (a b : O)
       u.mulLeft_bijective.sum_comp (pairResidue a b ha hb)
   exact (mul_right_cancel₀ hm (he.trans (one_mul _).symm))
 
-theorem rows_agree_of_mean_ne_zero (a b : O)
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+theorem rows_agree_of_mean_ne_zero
     (hm : pairFourier a b ha hb 0 ≠ 0) (n : O)
     (hn : IsCoprime (Ideal.span {n}) (Ideal.span {a} * Ideal.span {b})) :
     idealRowHom n (Ideal.span {a}) = idealRowHom n (Ideal.span {b}) := by
@@ -65,8 +61,7 @@ theorem rows_agree_of_mean_ne_zero (a b : O)
     exact MulChar.one_apply hu
   exact mul_right_cancel₀ (by intro hz; simp [hz] at hj) (he.trans hj.symm)
 
-theorem valuation_profile_of_mean_ne_zero (a b : O)
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+theorem valuation_profile_of_mean_ne_zero
     (hm : pairFourier a b ha hb 0 ≠ 0) (P : Ideal O) [P.IsMaximal]
     (hg : ConcretePrimeRowBridge.goodLambda ∉ P)
     (hodd : ringChar (O ⧸ P) ≠ 2) :
@@ -77,8 +72,7 @@ theorem valuation_profile_of_mean_ne_zero (a b : O)
   intro n _ hn
   exact rows_agree_of_mean_ne_zero a b ha hb hm n hn
 
-theorem powerful_product_of_mean_ne_zero (a b : O)
-    (ha : Supported (Ideal.span {a})) (hb : Supported (Ideal.span {b}))
+theorem powerful_product_of_mean_ne_zero
     (hm : pairFourier a b ha hb 0 ≠ 0) :
     CompletedGauss.PowerfulIdeal (Ideal.span {a} * Ideal.span {b}) := by
   have hs := (supported_mul_iff _ _).mpr ⟨ha, hb⟩
@@ -91,6 +85,8 @@ theorem powerful_product_of_mean_ne_zero (a b : O)
   rw [normalizedFactors_mul ha.1 hb.1, Multiset.count_add] at hp ⊢
   unfold valuation at he
   omega
+
+end
 
 theorem powerful_pair_count (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ (S : Finset (Ideal O × Ideal O)) (Y : ℝ), 1 ≤ Y →

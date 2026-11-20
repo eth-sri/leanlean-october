@@ -11,8 +11,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentAmplificationEligibility
-open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEnergy
-open CanonicalQuadraticSieve
+open CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEnergy CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 def exclusionIdeal (R s : Ideal O) (h : O) : Ideal O := R*s*Ideal.span {h}

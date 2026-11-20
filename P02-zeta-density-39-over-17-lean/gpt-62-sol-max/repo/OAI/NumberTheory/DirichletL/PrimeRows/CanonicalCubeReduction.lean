@@ -55,11 +55,7 @@ theorem canonical_probe_minus_cube (K : ℕ) (e δ a b B ζ saving τ : ℝ)
   let E := Z^(HeckeZeroSupremum.beta-11/16-63/800+8*e)+Z^(-saving)
   have hE : 0≤E := by dsimp [E];positivity
   have hsave : Z^(-saving)≤E := by dsimp [E];have : 0≤Z^(HeckeZeroSupremum.beta-11/16-63/800+8*e) := Real.rpow_nonneg (by linarith) _;linarith
-  have h0'' : ‖compensatedPhysicalProbe η (calibrationForSet S hmax) W0 W1
-          (fun i=>canonicalSlotSupport (T i)) W (fun i=>Z^(length i)) (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z-
-        principalPhysicalPool η S T W (fun i=>Z^(length i)) W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z-
-        finitePhysicalRows S hmax η R T W (fun i=>Z^(length i)) W0 W1 (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z‖≤
-      C0*(η.modulus.absNorm:ℝ)^2*E :=
+  have h0'' :=
     h0'.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hQδ hC0.le) hE)
   have h1'' := h1'.trans (mul_le_mul_of_nonneg_left hsave (mul_nonneg hC1 (sq_nonneg (η.modulus.absNorm:ℝ))))
   apply (norm_sub_le_norm_sub_add_norm_sub _

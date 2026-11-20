@@ -91,39 +91,10 @@ theorem canonical_original_frozen_energy_uniform_degree
   refine ⟨D,?_⟩
   intro θ w scalar hw hscalar
   let energy := C*(1+‖θ‖)^degree*Z^(N+V-cstar/8-O₀/2)
-  let harm := (∏ i,256*(columnDyadicLength (H i)+1:ℝ))^2
   let source := fun (g : γ) (A : Finset (FreeReflection.pool J (B*F*R) Q₀)) (T : Finset σ) (K : rows) =>
     originalInactivePhysical ((poolPrimeFamily J (B*F*R) Q₀).restrict A) FF rows hrows lists hmax hgood T
       (D g A T) (s g) (hc₀ g) (fun b : A => completedLocalExponent J F b.val.val)
       (CompletedHeight.normTwistedSource W θ) (Z^(N-3*hhat)) w K
-  have hs (g : γ) (A : Finset (FreeReflection.pool J (B*F*R) Q₀)) (T : Finset σ) :
-      (∑ K : rows,‖source g A T K‖^2)≤harm*energy := by
-    apply (hD g A T θ w hw).trans
-    apply mul_le_mul_of_nonneg_right _ (by dsimp [energy];positivity)
-    apply pow_le_pow_left₀ (by positivity)
-    exact subtype_product_le_full (fun i => i∉T) (fun i => 256*(columnDyadicLength (H i)+1:ℝ)) (fun i => by have hn : (0:ℝ)≤columnDyadicLength (H i) := Nat.cast_nonneg _; linarith)
-  let Labels := γ×(Finset (FreeReflection.pool J (B*F*R) Q₀)×Finset σ)
-  let f := fun (b : Labels) (K : rows) => (scalar b.1 K*frozenInactiveWeight J F (B*F*R) Q₀ b.2.1)*source b.1 b.2.1 b.2.2 K
-  have hf (b : Labels) : (∑ K : rows,‖f b K‖^2)≤harm*energy := by
-    apply (bounded_row_multiplier_energy Finset.univ _ _ (fun K hK => ?_)).trans (hs b.1 b.2.1 b.2.2)
-    rw [norm_mul]
-    exact (mul_le_mul (hscalar b.1 K) (frozenInactiveWeight_norm J F (B*F*R) Q₀ b.2.1)
-      (norm_nonneg _) zero_le_one).trans_eq (one_mul 1)
-  have hfam := weighted_finite_row_energy_uniform (Finset.univ : Finset Labels) (Finset.univ : Finset rows)
-    (fun _ => (1:ℂ)) f (harm*energy) (fun b _ => hf b)
-  simp only [one_mul,norm_one,Finset.sum_const,Finset.card_univ,nsmul_eq_mul] at hfam
-  have hid (K : rows) : (∑ b : Labels,f b K)=∑ g : γ,scalar g K*
-      ∑ A : Finset (FreeReflection.pool J (B*F*R) Q₀),frozenInactiveWeight J F (B*F*R) Q₀ A*
-        ∑ T : Finset σ,source g A T K := by
-    simp only [Labels,f,Fintype.sum_prod_type,Finset.mul_sum,mul_assoc]
-  have hsource : (∑ K : rows,‖thetaDerivativeScalar⁻¹*∑ g : γ,scalar g K*
-      ∑ A : Finset (FreeReflection.pool J (B*F*R) Q₀),frozenInactiveWeight J F (B*F*R) Q₀ A*
-        ∑ T : Finset σ,source g A T K‖^2)≤
-      ‖thetaDerivativeScalar⁻¹‖^2*(Fintype.card Labels:ℝ)^2*harm*energy := by
-    simp_rw [←hid]
-    simp only [norm_mul,mul_pow,←Finset.mul_sum]
-    exact (mul_le_mul_of_nonneg_left hfam (sq_nonneg _)).trans_eq (by ring)
-  apply hsource.trans
   have hBn : (Ideal.absNorm B:ℝ)≤Z := (le_max_right _ _).trans hZ
   have hmaskn := canonical_mask_norm_cap B F R Z V L L hz.le hBn hFn hRn hVc (le_refl _)
   have hJn' : (Ideal.absNorm J:ℝ)≤Z^L := hJn.trans (Real.rpow_le_rpow_of_exponent_le hz.le hMc)
@@ -140,10 +111,10 @@ theorem canonical_original_frozen_energy_uniform_degree
     Z (3*L+1) L (cstar/32) hz hpool
     (hprod.trans (Real.rpow_le_rpow_of_exponent_le hz.le hzc)) hbudget
   calc
-    _ = ‖thetaDerivativeScalar⁻¹‖^2*((Fintype.card Labels:ℝ)^2*harm)*energy := by ring
-    _ ≤ (‖thetaDerivativeScalar⁻¹‖^2+1)*(Cb*Z^(cstar/32))*energy := by
-      apply mul_le_mul_of_nonneg_right _ (by dsimp [energy];positivity)
-      exact mul_le_mul (by linarith) hcst (by dsimp [harm];positivity) (by positivity)
+    _ ≤ (‖thetaDerivativeScalar⁻¹‖^2+1)*(Cb*Z^(cstar/32))*energy :=
+      frozen_source_energy _ scalar (frozenInactiveWeight J F (B*F*R) Q₀) source H
+        (by dsimp [energy]; positivity) hscalar (frozenInactiveWeight_norm J F (B*F*R) Q₀)
+        (fun g A T => hD g A T θ w hw) hcst
     _ = ((‖thetaDerivativeScalar⁻¹‖^2+1)*Cb*C)*(1+‖θ‖)^degree*
         Z^(cstar/32+(N+V-cstar/8-O₀/2)) := by
       dsimp only [energy]

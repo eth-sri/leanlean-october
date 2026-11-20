@@ -50,9 +50,11 @@ structure SlotBounds (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι →
 
 def slotErrorConstant (S : Finset κ) : ℝ := S.card * 2 ^ S.card * 1440
 
-theorem slotRatio_error (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ)
-    (A η : κ → ι → ℂ) {P : ℝ} (h : SlotBounds S T w Q A η P)
-    {s : ℂ} (hs : 7/8 ≤ s.re) :
+section
+variable (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ) {P : ℝ} (h : SlotBounds S T w Q A η P) {s : ℂ} (hs : 7/8 ≤ s.re)
+include S T w Q A η P h s hs
+
+theorem slotRatio_error :
     ‖slotRatio S T w Q A η s - 1‖ ≤ slotErrorConstant S * P ^ (-(7/8 : ℝ)) := by
   change ‖(∏ j ∈ S, ∑ p ∈ T j, (w j p : ℂ) * principalSlot (Q j p) (A j p) (η j p) s) /
     PrincipalSlotEstimate.principalScalar S (fun j => ∑ p ∈ T j, w j p) - 1‖ ≤ _
@@ -60,13 +62,13 @@ theorem slotRatio_error (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι 
     weighted_principal_product_error_linear S T w Q A η s P h.lower hs h.small
       h.weight_nonneg h.norm_lower h.phase_bound h.target_unit h.mass_pos
 
-theorem slotRatio_bound (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ)
-    (A η : κ → ι → ℂ) {P : ℝ} (h : SlotBounds S T w Q A η P)
-    {s : ℂ} (hs : 7/8 ≤ s.re) :
+theorem slotRatio_bound :
     ‖slotRatio S T w Q A η s‖ ≤ 1 + slotErrorConstant S * P ^ (-(7/8 : ℝ)) := by
   have hn := norm_add_le (slotRatio S T w Q A η s - 1) (1 : ℂ)
   rw [sub_add_cancel, norm_one] at hn
   linarith [slotRatio_error S T w Q A η h hs]
+
+end
 
 theorem principalSlot_differentiableAt {Q : ℝ} {A η s : ℂ}
     (hQ : 480 ≤ Q) (hA : ‖A‖ ≤ 1) (hη : ‖η‖ ≤ 1) (hs : 7/8 ≤ s.re) :
@@ -169,9 +171,11 @@ theorem kernel_norm_bound (χ : Character) (H : ℂ → ℂ)
         (((3/2)*C)*(1+|t|^2))*Real.exp (-(t^2)) := by gcongr
     _ = _ := by unfold kernelEnvelope polynomialGaussian; ring_nf
 
-theorem kernel_integrable (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
+section
+variable (χ : Character) (H : ℂ → ℂ) (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re}) (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
+include χ H hH hb
+
+theorem kernel_integrable
     {a C Z : ℝ} (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)
     (hC : 0 ≤ C) (hZ : 0 < Z)
     (hR : ∀ s : ℂ, a ≤ s.re → ‖HeckeReciprocal.reciprocal χ s‖ ≤ C*(1+|s.im|^2)) :
@@ -180,9 +184,7 @@ theorem kernel_integrable (χ : Character) (H : ℂ → ℂ)
     (kernel_continuous χ H hH ha ha2 hβ hZ).aestronglyMeasurable
     (ae_of_all _ (kernel_norm_bound χ H hb ha ha2 hC hZ hR))
 
-theorem slotResidue_bound_of_reciprocal_bound (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
+theorem slotResidue_bound_of_reciprocal_bound
     {a C : ℝ} (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)
     (hC : 0 ≤ C)
     (hR : ∀ s : ℂ, a ≤ s.re → ‖HeckeReciprocal.reciprocal χ s‖ ≤ C*(1+|s.im|^2))
@@ -244,9 +246,7 @@ theorem slotResidue_bound_of_reciprocal_bound (χ : Character) (H : ℂ → ℂ)
   unfold kernelEnvelope HeckeSignalShift.infinityConstant
   ring_nf
 
-theorem exists_slotResidue_bound (χ : Character) (H : ℂ → ℂ)
-    (hH : DifferentiableOn ℂ H {s : ℂ | 7/8 < s.re})
-    (hb : ∀ s : ℂ, 7/8 < s.re → ‖H s-1‖ ≤ 1/2)
+theorem exists_slotResidue_bound
     {a : ℝ} (ha : 7/8 < a) (ha2 : a ≤ 2) (hβ : HeckeZeroSupremum.beta < a)
     (S : Finset κ) :
     ∃ D : ℝ, 0 ≤ D ∧ ∀ (T : κ → Finset ι) (w Q : κ → ι → ℝ)
@@ -262,6 +262,8 @@ theorem exists_slotResidue_bound (χ : Character) (H : ℂ → ℂ)
     positivity
   · intro T w Q A η P Z h hZ
     exact slotResidue_bound_of_reciprocal_bound χ H hH hb ha ha2 hβ hC hR S T w Q A η h hZ
+
+end
 
 theorem raw_slot_integrable (χ : Character) (H : ℂ → ℂ) (a Z : ℝ)
     (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ)
@@ -375,14 +377,12 @@ def sourceResidueIntegral (W0 W1 : SchwartzMap ℝ ℂ) (M : Ideal HeckeFamily.O
   verticalIntegral a (fun s => fixedPrincipalResidue M ^ 2 / 6 *
     sourceMultiplier W0 W1 X Y Z χ s (H s) (B s) 1 (1/6))
 
-theorem sourceResidueIntegral_normalized (W0 W1 : SchwartzMap ℝ ℂ)
-    (M : Ideal HeckeFamily.O) [NeZero M] (χ : Character) (a Y Z : ℝ) (hZ : 0 < Z)
-    (H B : ℂ → ℂ → ℂ → ℂ) (S : Finset κ) (T : κ → Finset ι)
-    (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ)
-    (hc : sourceResidueConstant W0 W1 M ≠ 0)
-    (hm : ∀ j ∈ S, 0 < slotMass T w j)
-    (hB : ∀ t : ℝ, B ((a : ℂ)+t*I) 1 (1/6) =
-      slotProduct S T w Q A η ((a : ℂ)+t*I)) :
+section
+variable (W0 W1 : SchwartzMap ℝ ℂ) (M : Ideal HeckeFamily.O) [instShared2 : NeZero M] (χ : Character) (a Y Z : ℝ) (hZ : 0 < Z) (H B : ℂ → ℂ → ℂ → ℂ) (S : Finset κ) (T : κ → Finset ι) (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ) (hc : sourceResidueConstant W0 W1 M ≠ 0) (hm : ∀ j ∈ S, 0 < slotMass T w j) (hB : ∀ t : ℝ, B ((a : ℂ)+t*I) 1 (1/6) =
+      slotProduct S T w Q A η ((a : ℂ)+t*I))
+include W0 W1 M instShared2 χ a Y Z hZ H B S T w Q A η hc hm hB
+
+theorem sourceResidueIntegral_normalized :
     sourceResidueConstant W0 W1 M * (Probe.principalScalar S Z (1/6) (slotMass T w) : ℂ) ≠ 0 ∧
     sourceResidueIntegral W0 W1 M χ a (Z^(17/48 : ℝ)) Y Z H B /
       (sourceResidueConstant W0 W1 M * (Probe.principalScalar S Z (1/6) (slotMass T w) : ℂ)) =
@@ -396,14 +396,7 @@ theorem sourceResidueIntegral_normalized (W0 W1 : SchwartzMap ℝ ℂ)
   filter_upwards [] with t
   exact normalized_source_double_residue W0 W1 M χ Y Z hZ _ (H _) (B _) S T w Q A η hc (hB _)
 
-theorem source_double_residue_integrable (W0 W1 : SchwartzMap ℝ ℂ)
-    (M : Ideal HeckeFamily.O) [NeZero M] (χ : Character) (a Y Z : ℝ) (hZ : 0 < Z)
-    (H B : ℂ → ℂ → ℂ → ℂ) (S : Finset κ) (T : κ → Finset ι)
-    (w Q : κ → ι → ℝ) (A η : κ → ι → ℂ)
-    (hc : sourceResidueConstant W0 W1 M ≠ 0)
-    (hm : ∀ j ∈ S, 0 < slotMass T w j)
-    (hB : ∀ t : ℝ, B ((a : ℂ)+t*I) 1 (1/6) =
-      slotProduct S T w Q A η ((a : ℂ)+t*I))
+theorem source_double_residue_integrable
     (hi : Integrable (fun t : ℝ => kernel χ (fun s => H s 1 (1/6)) a Z t *
       slotRatio S T w Q A η ((a : ℂ)+t*I))) :
     Integrable (fun t : ℝ => fixedPrincipalResidue M ^ 2 / 6 *
@@ -416,6 +409,8 @@ theorem source_double_residue_integrable (W0 W1 : SchwartzMap ℝ ℂ)
   filter_upwards [] with t
   exact ((div_eq_iff hn).mp (normalized_source_double_residue W0 W1 M χ Y Z hZ _
     (H _) (B _) S T w Q A η hc (hB _))).symm
+
+end
 
 theorem exists_normalized_actual_source_bound (E : Finset (Ideal HeckeFamily.O))
     (hE : SourceExclusions E) (η : Character) {a : ℝ}

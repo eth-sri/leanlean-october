@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentExceptionalPair
-open HeckeFamily CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay
-open CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion
+open HeckeFamily CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay CanonicalRowCompletion CanonicalQuadraticSieve RayFourExpansion
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 

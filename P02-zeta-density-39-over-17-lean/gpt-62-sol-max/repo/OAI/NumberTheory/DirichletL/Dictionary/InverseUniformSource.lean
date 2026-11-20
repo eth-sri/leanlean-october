@@ -11,8 +11,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff Topology
 open Set
 
 namespace SevenEighths.DetectorDictionaryInverseUniform
-open HeckeInverseAmplification HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles
-open HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial
+open HeckeInverseAmplification HeckeDyadic HeckeDetectorProfiles HeckeDetectorDyadicProfiles HeckeDetectorCoefficientTransfer HeckeDetectorRowwisePolynomial
 
 lemma positiveAnnular_support_sharp : Function.support positiveAnnular⊆Ioo (1/2) 2 := by
   intro x hx

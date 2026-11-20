@@ -8,9 +8,11 @@ namespace OAI
 noncomputable section
 namespace SevenEighths.ProbeEuler
 
-lemma unramifiedClosed_central_lower (Q a e : ℝ) (A eta v x w z : ℂ)
-    (hQ : 480≤Q) (ha : (51/100:ℝ)≤a) (ha1 : a≤1)
-    (he : 0<e) (he1 : e≤1/1000) (hA : ‖A‖≤1) (heta : ‖eta‖≤1) (hv : ‖v‖≤1)
+section
+variable (Q a e : ℝ) (A eta v x w z : ℂ) (hQ : 480≤Q) (ha : (51/100:ℝ)≤a) (ha1 : a≤1) (he : 0<e) (he1 : e≤1/1000) (hA : ‖A‖≤1)
+include Q a e A eta v x w z hQ ha ha1 he he1 hA
+
+lemma unramifiedClosed_central_lower (heta : ‖eta‖≤1) (hv : ‖v‖≤1)
     (hx : x.re=a+16*e) (hw : w.re=1-a-6*e) (hz : z.re=17/50) :
     1/2≤‖unramifiedClosed Q A eta v x w z‖ := by
   have hQ0 : 0<Q := by linarith
@@ -30,9 +32,7 @@ lemma unramifiedClosed_central_lower (Q a e : ℝ) (A eta v x w z : ℂ)
   rw [sub_add_cancel,norm_one,norm_sub_rev] at ht'
   nlinarith
 
-lemma unramifiedSelected_central_quotient (Q a e : ℝ) (A eta v x w z : ℂ)
-    (hQ : 480≤Q) (ha : (51/100:ℝ)≤a) (ha1 : a≤1)
-    (he : 0<e) (he1 : e≤1/1000) (hA : ‖A‖≤1) (heta : ‖eta‖=1) (hv : ‖v‖=1)
+lemma unramifiedSelected_central_quotient (heta : ‖eta‖=1) (hv : ‖v‖=1)
     (hx : x.re=a+16*e) (hw : w.re=1-a-6*e) (hz : z.re=17/50) :
     ‖unramifiedSelected Q A eta v x w z/unramifiedClosed Q A eta v x w z+star v‖≤
       1440*Q^(-(51/100:ℝ)) := by
@@ -49,6 +49,8 @@ lemma unramifiedSelected_central_quotient (Q a e : ℝ) (A eta v x w z : ℂ)
   apply (div_le_iff₀ hp).mpr
   have ht : 0≤Q^(-(51/100:ℝ)) := Real.rpow_nonneg (by linarith) _
   nlinarith
+
+end
 end SevenEighths.ProbeEuler
 end
 

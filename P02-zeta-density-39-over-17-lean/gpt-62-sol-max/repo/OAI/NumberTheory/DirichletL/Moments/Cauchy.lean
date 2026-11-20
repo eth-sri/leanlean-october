@@ -11,17 +11,20 @@ open MeasureTheory
 namespace SevenEighths.CenteredMomentCauchy
 open CenteredMomentSmooth FourierBridge
 
+private theorem paired_row_triangle {κ : Type*} (rows : Finset κ)
+    (w A B : κ → ℂ) (hw : ∀k∈rows,‖w k‖≤1) :
+    ‖∑k∈rows,w k*A k*B k‖≤∑k∈rows,‖A k‖*‖B k‖ := by
+  refine (norm_sum_le _ _).trans (Finset.sum_le_sum ?_)
+  intro k hk
+  rw [norm_mul,norm_mul]
+  exact mul_le_mul_of_nonneg_right
+    (mul_le_of_le_one_left (norm_nonneg _) (hw k hk)) (norm_nonneg _)
+
 theorem bounded_row_cauchy {κ : Type*} (rows : Finset κ)
     (w A B : κ → ℂ) (hw : ∀ k ∈ rows, ‖w k‖ ≤ 1) :
     ‖∑ k ∈ rows, w k * A k * B k‖ ≤
-      Real.sqrt (∑ k ∈ rows, ‖A k‖ ^ 2) * Real.sqrt (∑ k ∈ rows, ‖B k‖ ^ 2) := by
-  calc
-    _ ≤ ∑ k ∈ rows, ‖w k * A k * B k‖ := norm_sum_le _ _
-    _ ≤ ∑ k ∈ rows, ‖A k‖ * ‖B k‖ := Finset.sum_le_sum fun k hk => by
-      rw [norm_mul, norm_mul]
-      exact mul_le_mul_of_nonneg_right
-        (mul_le_of_le_one_left (norm_nonneg _) (hw k hk)) (norm_nonneg _)
-    _ ≤ _ := Real.sum_mul_le_sqrt_mul_sqrt rows _ _
+      Real.sqrt (∑ k ∈ rows, ‖A k‖ ^ 2) * Real.sqrt (∑ k ∈ rows, ‖B k‖ ^ 2) :=
+  (paired_row_triangle rows w A B hw).trans (Real.sum_mul_le_sqrt_mul_sqrt rows _ _)
 
 def leftColumn {α : Type*} (S : Finset α) (c : α → ℂ)
     (V : ℝ → ℂ) (u : α → ℝ) (t : ℝ) : ℂ :=
@@ -49,7 +52,7 @@ lemma paired_columns_integrable {α β : Type*}
   intro j hj
   ring
 
-theorem common_density_cauchy {κ α β : Type*}
+private theorem common_density_pair {κ α β : Type*}
     (b : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
     (rows : Finset κ) (S : Finset α) (T : Finset β)
     (c : κ → α → ℂ) (d : κ → β → ℂ) (u : α → ℝ) (v : β → ℝ)
@@ -58,8 +61,8 @@ theorem common_density_cauchy {κ α β : Type*}
     (hV₀ : ∀ k ∈ rows, ‖V 0 (ρ k)‖ ≤ 1) (hV₁ : ∀ k ∈ rows, ‖V 1 (x k)‖ ≤ 1)
     (E : ℝ) (_hE : 0 ≤ E) (J : ℕ)
     (henergy : ∀ t : ℝ,
-      Real.sqrt (∑ k ∈ rows, ‖leftColumn S (c k) (V 2) u t‖ ^ 2) *
-        Real.sqrt (∑ k ∈ rows, ‖rightColumn T (d k) (V 3) v t‖ ^ 2) ≤ E * (1 + ‖t‖) ^ J) :
+      (∑ k ∈ rows, ‖leftColumn S (c k) (V 2) u t‖ *
+        ‖rightColumn T (d k) (V 3) v t‖) ≤ E * (1 + ‖t‖) ^ J) :
     ‖∑ k ∈ rows, η k * ∫ t : ℝ, rowPhase V (ρ k) (x k) t *
       leftColumn S (c k) (V 2) u t * rightColumn T (d k) (V 3) v t * b t‖ ≤
       E * ∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖ := by
@@ -71,7 +74,7 @@ theorem common_density_cauchy {κ α β : Type*}
       ‖∑ k ∈ rows, η k * (rowPhase V (ρ k) (x k) t *
         leftColumn S (c k) (V 2) u t * rightColumn T (d k) (V 3) v t * b t)‖ ≤
         E * ((1 + ‖t‖) ^ J * ‖b t‖) := by
-    have hs := bounded_row_cauchy rows (fun k => η k * rowPhase V (ρ k) (x k) t)
+    have hs := paired_row_triangle rows (fun k => η k * rowPhase V (ρ k) (x k) t)
       (fun k => leftColumn S (c k) (V 2) u t) (fun k => rightColumn T (d k) (V 3) v t)
       (fun k hk => hrow k hk t)
     have he : (∑ k ∈ rows, η k * (rowPhase V (ρ k) (x k) t *
@@ -99,6 +102,38 @@ theorem common_density_cauchy {κ α β : Type*}
       norm_integral_le_of_norm_le (hi.const_mul E) (Filter.Eventually.of_forall hpoint)
     _ = _ := integral_const_mul _ _
 
+theorem whole_kernel_paired_row_estimate (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
+    (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
+    (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i) (A J : ℕ) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ R : ℝ, 0 < R →
+      ∀ {κ α β : Type*} (rows : Finset κ) (S : Finset α) (T : Finset β)
+        (c : κ → α → ℂ) (d : κ → β → ℂ) (u : α → ℝ) (v : β → ℝ)
+        (ρ x : κ → ℝ) (η : κ → ℂ),
+      (∀ k ∈ rows, ‖η k‖ ≤ 1) →
+      (∀ k ∈ rows, ‖V 0 (ρ k)‖ ≤ 1) → (∀ k ∈ rows, ‖V 1 (x k)‖ ≤ 1) →
+      ∀ E : ℝ, 0 ≤ E →
+      (∀ t : ℝ, (∑ k ∈ rows, ‖leftColumn S (c k) (V 2) u t‖ *
+        ‖rightColumn T (d k) (V 3) v t‖) ≤ E * (1 + ‖t‖) ^ J) →
+      (1 + R) ^ A * ‖∑ k ∈ rows, η k *
+        (∑ i ∈ S, ∑ j ∈ T, (c k i * star (d k j)) *
+          wholeKernel W V R (ρ k) (x k) (u i) (v j))‖ ≤ C * E := by
+  obtain ⟨C, hC, hs⟩ := whole_product_pair_separation W V M hM hV A J
+  refine ⟨C, hC, ?_⟩
+  intro R hR κ α β rows S T c d u v ρ x η hη hV₀ hV₁ E hE he
+  obtain ⟨b, hb, hi, hm, hp⟩ := hs R hR
+  have hid (k : κ) := hb S T (c k) (d k) u v (ρ k) (x k)
+  simp_rw [hid]
+  have hcs := common_density_pair b V rows S T c d u v ρ x η hη hV₀ hV₁ E hE J he
+  change (1 + R) ^ A * ‖∑ k ∈ rows, η k * ∫ t : ℝ,
+    rowPhase V (ρ k) (x k) t * leftColumn S (c k) (V 2) u t *
+      rightColumn T (d k) (V 3) v t * b t‖ ≤ _
+  calc
+    _ ≤ (1 + R) ^ A * (E * ∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖) :=
+      mul_le_mul_of_nonneg_left hcs (by positivity)
+    _ = E * ((1 + R) ^ A * ∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖) := by ring
+    _ ≤ E * C := mul_le_mul_of_nonneg_left hm hE
+    _ = _ := mul_comm _ _
+
 theorem whole_kernel_row_estimate (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → ℂ)
     (M : Fin 4 → ℝ) (hM : ∀ i, 0 ≤ M i)
     (hV : ∀ i y, V i y ≠ 0 → |y| ≤ M i) (A J : ℕ) :
@@ -114,22 +149,11 @@ theorem whole_kernel_row_estimate (W : 𝓢(ℝ, ℂ)) (V : Fin 4 → ℝ → �
       (1 + R) ^ A * ‖∑ k ∈ rows, η k *
         (∑ i ∈ S, ∑ j ∈ T, (c k i * star (d k j)) *
           wholeKernel W V R (ρ k) (x k) (u i) (v j))‖ ≤ C * E := by
-  obtain ⟨C, hC, hs⟩ := whole_product_pair_separation W V M hM hV A J
+  obtain ⟨C, hC, h⟩ := whole_kernel_paired_row_estimate W V M hM hV A J
   refine ⟨C, hC, ?_⟩
   intro R hR κ α β rows S T c d u v ρ x η hη hV₀ hV₁ E hE he
-  obtain ⟨b, hb, hi, hm, hp⟩ := hs R hR
-  have hid (k : κ) := hb S T (c k) (d k) u v (ρ k) (x k)
-  simp_rw [hid]
-  have hcs := common_density_cauchy b V rows S T c d u v ρ x η hη hV₀ hV₁ E hE J he
-  change (1 + R) ^ A * ‖∑ k ∈ rows, η k * ∫ t : ℝ,
-    rowPhase V (ρ k) (x k) t * leftColumn S (c k) (V 2) u t *
-      rightColumn T (d k) (V 3) v t * b t‖ ≤ _
-  calc
-    _ ≤ (1 + R) ^ A * (E * ∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖) :=
-      mul_le_mul_of_nonneg_left hcs (by positivity)
-    _ = E * ((1 + R) ^ A * ∫ t : ℝ, (1 + ‖t‖) ^ J * ‖b t‖) := by ring
-    _ ≤ E * C := mul_le_mul_of_nonneg_left hm hE
-    _ = _ := mul_comm _ _
+  exact h R hR rows S T c d u v ρ x η hη hV₀ hV₁ E hE
+    (fun t => (Real.sum_mul_le_sqrt_mul_sqrt rows _ _).trans (he t))
 
 end SevenEighths.CenteredMomentCauchy
 end

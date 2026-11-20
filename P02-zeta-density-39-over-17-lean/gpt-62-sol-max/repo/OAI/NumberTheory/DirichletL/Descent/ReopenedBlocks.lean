@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.ReopenedSource
 
 @[expose] public section
@@ -14,9 +15,9 @@ noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
 def varyingCanonicalSourceTotal {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (labels : Finset (Ideal O))
     (β : Ideal O→(ι→₀ℕ)→ℂ) (Ψ : O→*ℂ) (m : O)
     (H : Ideal O→(ι→₀ℕ)→Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) : ℂ :=
@@ -26,11 +27,11 @@ def varyingCanonicalSourceTotal {ι : Type*} [DecidableEq ι]
         (H I b.rightExponent) (H I b.leftExponent) W K
 
 theorem varying_reopened_smoothed_source {ι : Type*} [DecidableEq ι]
-    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (p : ι → ActualEisensteinCubic.O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (pool : Finset ι) (Q : Finset (ι →₀ ℕ)) (hQ : ∀ v ∈ Q,v.support ⊆ pool)
     (labels : Finset (Ideal ActualEisensteinCubic.O)) (β : Ideal ActualEisensteinCubic.O → (ι →₀ ℕ) → ℂ)
     (Ψ : ActualEisensteinCubic.O →* ℂ) (m : ActualEisensteinCubic.O) (H : Ideal O→(ι→₀ℕ)→Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0 < K) :

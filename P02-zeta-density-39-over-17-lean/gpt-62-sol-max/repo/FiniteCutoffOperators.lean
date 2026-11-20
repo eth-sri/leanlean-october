@@ -7,7 +7,7 @@ public import CenteredMixedTrace
 set_option autoImplicit false
 noncomputable section
 open Finset MeasureTheory InnerProductSpace Set
-open scoped InnerProductSpace ComplexOrder
+open scoped ComplexOrder
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
 

@@ -12,8 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 namespace SevenEighths.InverseInitialCommonProfile
-open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios
-open InverseInitialOverlapFourier InverseInitialOverlapIdealFourier
+open InverseMoment InverseInitialCommonLists InverseInitialCommonRatios InverseInitialOverlapFourier InverseInitialOverlapIdealFourier
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {σ:Type*} [DecidableEq σ]
 

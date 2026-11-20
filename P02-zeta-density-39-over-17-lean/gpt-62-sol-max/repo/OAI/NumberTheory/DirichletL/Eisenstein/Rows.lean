@@ -10,69 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 section
 open scoped BigOperators Classical MatrixGroups
@@ -190,8 +138,6 @@ lemma cosetRow_ne_zero (x : CuspCosets) : cosetRow x ≠ 0 := by
 def cosetCharacter : CuspCosets → ℂ :=
   Quotient.lift complexCharacter (fun M N h => character_eq_of_row_eq M N h)
 
-@[simp] lemma cosetCharacter_cosetOf (M : levelThree) :
-    cosetCharacter (cosetOf M) = complexCharacter M := rfl
 
 lemma norm_cosetCharacter (x : CuspCosets) : ‖cosetCharacter x‖ = 1 := by
   induction x using Quotient.inductionOn with | _ M => exact norm_complexCharacter M
@@ -202,8 +148,6 @@ def rightTranslate (M : levelThree) : CuspCosets → CuspCosets :=
     change row (A*M) = row (B*M)
     rw [row_mul, row_mul, show row A = row B from h])
 
-@[simp] lemma rightTranslate_cosetOf (M N : levelThree) :
-    rightTranslate M (cosetOf N) = cosetOf (N*M) := rfl
 
 lemma rightTranslate_mul (M N : levelThree) (x : CuspCosets) :
     rightTranslate N (rightTranslate M x) = rightTranslate (M*N) x := by
@@ -409,14 +353,18 @@ def summand (g : SL(2,ℂ)) (s : ℂ) (x : CuspCosets) : ℂ :=
   (cosetCharacter x)⁻¹ *
     (rowEnergy (rowOperator g (embeddedRow x)) : ℂ) ^ (-s)
 
-lemma norm_summand (g : SL(2,ℂ)) (s : ℂ) (x : CuspCosets) :
+section
+variable (g : SL(2,ℂ)) (s : ℂ)
+include g s
+
+lemma norm_summand (x : CuspCosets) :
     ‖summand g s x‖ = rowEnergy (rowOperator g (embeddedRow x)) ^ (-s.re) := by
   rw [summand, norm_mul, norm_inv, norm_cosetCharacter, inv_one, one_mul,
     Complex.norm_cpow_eq_rpow_re_of_pos
       (rowEnergy_pos _ (rowOperator_ne_zero g _ (embeddedRow_ne_zero x)))]
   rfl
 
-lemma norm_summand_bound (g : SL(2,ℂ)) (s : ℂ) (hs : 0 < s.re) (x : CuspCosets) :
+lemma norm_summand_bound (hs : 0 < s.re) (x : CuspCosets) :
     ‖summand g s x‖ ≤ (rowBound g) ^ (2*s.re) *
       ‖rowCoordinates (cosetRow x)‖ ^ (-(2*s.re)) := by
   rw [norm_summand]
@@ -440,7 +388,7 @@ lemma norm_summand_bound (g : SL(2,ℂ)) (s : ℂ) (hs : 0 < s.re) (x : CuspCose
   simp only [Nat.cast_ofNat, mul_neg, Real.rpow_neg hb.le, div_eq_mul_inv, inv_inv]
   exact mul_comm _ _
 
-theorem summable_norm_summand (g : SL(2,ℂ)) (s : ℂ) (hs : 2 < s.re) :
+theorem summable_norm_summand (hs : 2 < s.re) :
     Summable (fun x : CuspCosets => ‖summand g s x‖) := by
   have hsum := summable_integer_four_rpow (2*s.re) (by linarith)
   have hinj : Function.Injective (fun x : CuspCosets => rowCoordinates (cosetRow x)) :=
@@ -452,8 +400,10 @@ theorem summable_norm_summand (g : SL(2,ℂ)) (s : ℂ) (hs : 2 < s.re) :
   exact (hcomp.mul_left ((rowBound g) ^ (2*s.re))).of_nonneg_of_le
     (fun _ => norm_nonneg _) (fun x => norm_summand_bound g s (by linarith) x)
 
-theorem summable_summand (g : SL(2,ℂ)) (s : ℂ) (hs : 2 < s.re) :
+theorem summable_summand (hs : 2 < s.re) :
     Summable (summand g s) := (summable_norm_summand g s hs).of_norm
+
+end
 
 def eisenstein (g : SL(2,ℂ)) (s : ℂ) : ℂ := ∑' x : CuspCosets, summand g s x
 

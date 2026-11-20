@@ -12,8 +12,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonLocalizedGapBudget
 
 open Complex Finset Set Filter
 open scoped ComplexConjugate
-open RiemannZeta.GuthMaynard
-open MathCollab.Density.Stronger.Fourth
+open RiemannZeta.GuthMaynard MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson

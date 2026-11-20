@@ -9,13 +9,13 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentPoisson
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CubicEisenstein
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson CubicEisenstein CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentFourier
 
-theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
-    (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
+section
+variable (u v : O) (hu : u ≠ 0) (hv : v ≠ 0) (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ) (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K)
+include u v hu hv χu χv W K hK
+
+theorem full_gauss_pair_poisson :
     letI := finite_quotient_span hu
     letI := finite_quotient_span hv
     letI : Fintype (Residue u) := Fintype.ofFinite _
@@ -67,9 +67,7 @@ theorem full_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
       (eisEmbedding_ne_zero (mul_ne_zero hu hv))))
   rw [Complex.ofReal_pow, div_mul_cancel₀ _ hn]
 
-theorem normalized_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
-    (χu : MulChar (Residue u) ℂ) (χv : MulChar (Residue v) ℂ)
-    (W : 𝓢(ℝ, ℂ)) (K : ℝ) (hK : 0 < K) :
+theorem normalized_gauss_pair_poisson :
     letI := finite_quotient_span hu
     letI := finite_quotient_span hv
     letI : Fintype (Residue u) := Fintype.ofFinite _
@@ -98,6 +96,8 @@ theorem normalized_gauss_pair_poisson (u v : O) (hu : u ≠ 0) (hv : v ≠ 0)
   rw [tsum_mul_left, full_gauss_pair_poisson u v hu hv χu χv W K hK]
   dsimp only [ru, rv]
   ring
+
+end
 
 theorem sextic_gauss_pair_poisson (u v : O)
     (hu : CanonicalQuadraticSieve.Supported (Ideal.span {u}))

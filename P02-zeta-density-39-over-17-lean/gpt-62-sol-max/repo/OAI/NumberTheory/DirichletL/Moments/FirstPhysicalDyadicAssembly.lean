@@ -12,13 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalDyadicAssembly
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst
-open CenteredMomentFirstReduced CenteredMomentFirstColumns CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation CenteredMomentRowNorm
-open CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization
-open CenteredMomentDyadicCount CenteredMomentPrimitive
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentFirstPhysicalSource CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentFirstColumns CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentRowNorm CenteredMomentFirstWholeKernel CenteredMomentLogDyadic CenteredMomentSectorLocalization CenteredMomentDyadicCount CenteredMomentPrimitive
 local notation "O"=>ActualEisensteinCubic.O
 
 def retainedBlock (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)
@@ -68,8 +62,11 @@ def bands (K R A B:ℝ):Fin 4→Finset ℤ :=
 
 abbrev Blocks (K R A B:ℝ):=∀i:Fin 4,↥(bands K R A B i)
 
-lemma product_partition (K R A B h a b:ℝ)(hK:0<K)(hh:1≤h)
-    (ha:a∈Set.Icc (1:ℝ) A)(hb:b∈Set.Icc (1:ℝ) B):
+section
+variable (K R A B h a b:ℝ) (hK:0<K) (hh:1≤h) (ha:a∈Set.Icc (1:ℝ) A) (hb:b∈Set.Icc (1:ℝ) B)
+include K R A B h a b hK hh ha hb
+
+lemma product_partition:
     (∑n:Blocks K R A B,∏i:Fin 4,dyadicWeight (n i) (![K,h,a,b] i))=
       retainedWeight R h :=by
   have he (i:Fin 4):
@@ -93,8 +90,7 @@ lemma product_partition (K R A B h a b:ℝ)(hK:0<K)(hh:1≤h)
   simp_rw [he]
   norm_num [Fin.prod_univ_four]
 
-lemma windows_partition (K R A B h a b:ℝ)(hK:0<K)(hh:1≤h)
-    (ha:a∈Set.Icc (1:ℝ) A)(hb:b∈Set.Icc (1:ℝ) B):
+lemma windows_partition:
     (∑n:Blocks K R A B, windows (fun _=>logAnnulus) K h a b
       (dyadicScale (n 0)) (dyadicScale (n 1)) (dyadicScale (n 2)) (dyadicScale (n 3)))=
       (retainedWeight R h:ℂ):=by
@@ -108,6 +104,8 @@ lemma windows_partition (K R A B h a b:ℝ)(hK:0<K)(hh:1≤h)
     _ = _ :=by
       rw [←Complex.ofReal_sum,product_partition K R A B h a b hK hh ha hb]
 
+end
+
 def effectiveScale (C D:Ideal O)(E:Finset (CommonIndex C D))(K:ℝ):ℝ:=
   (K/‖eisEmbedding (primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E)‖^2)/
     ‖eisEmbedding (activeConductor C D)‖^2
@@ -119,17 +117,21 @@ lemma effectiveScale_pos (C D:Ideal O)(E:Finset (CommonIndex C D))(K:ℝ)(hK:0<K
   · exact sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (primeSubsetGenerator_ne_zero _ _)))
   · exact sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero (finitePrimeModulus_ne_zero _)))
 
-lemma element_norm (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+section
+variable (C D:Ideal O) (hD:D≠0) (S:Finset (Ideal O)) (a:columns C D hD S)
+include C D hD S a
+
+lemma element_norm:
     ‖eisEmbedding (element C D hD S a)‖^2=((a:Ideal O).absNorm:ℝ):=by
   rw [eisEmbedding_norm_sq_eq_absNorm_span,element_span]
 
-lemma element_norm_ge_one (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_norm_ge_one:
     1≤‖eisEmbedding (element C D hD S a)‖^2:=by
   rw [element_norm]
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr
     (Ideal.absNorm_eq_zero_iff.not.mpr (column_supported C D hD S a).1)
 
-lemma element_norm_le (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S)
+lemma element_norm_le
     (c:Ideal O→ℂ)(H:ℝ)(hcap:∀I,c I≠0→(I.absNorm:ℝ)≤H)(ha:c (D*a)≠0):
     ‖eisEmbedding (element C D hD S a)‖^2≤H/(D.absNorm:ℝ):=by
   have hDpos:(0:ℝ)<D.absNorm:=by
@@ -137,6 +139,8 @@ lemma element_norm_le (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D 
   rw [element_norm]
   apply (le_div_iff₀ hDpos).mpr
   simpa only [map_mul,Nat.cast_mul,mul_comm] using hcap (D*a) ha
+
+end
 
 theorem retainedBlock_eq_blocks
     (η:Character)(m A:O)(t:ℝ)(S:Finset (Ideal O))(c:Ideal O→ℂ)

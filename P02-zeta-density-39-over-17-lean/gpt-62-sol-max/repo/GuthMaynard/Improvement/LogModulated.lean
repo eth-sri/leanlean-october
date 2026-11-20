@@ -82,9 +82,12 @@ theorem logModulated_uniform_deriv (n : ℕ) {l u : ℝ} (hl : 0 < l)
         nlinarith [mul_nonneg (mul_nonneg hC.le (abs_nonneg s)) (pow_nonneg (by positivity : 0 ≤ 1+|s|) n),
           mul_nonneg hD.le (pow_nonneg (by positivity : 0 ≤ 1+|s|) n)]
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hl : 0 < l) (hs : ∀ x, x ∉ Icc l u → a x = 0)
+include a ha l u hl hs
+
 /-- A cutoff supported away from zero removes the logarithm's singularity. -/
-theorem logModulated_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hs : ∀ x, x ∉ Icc l u → a x = 0) (s : ℝ) :
+theorem logModulated_smooth (s : ℝ) :
     ContDiff ℝ ∞ (logModulated a s) := by
   rw [contDiff_iff_contDiffAt]
   intro x
@@ -97,8 +100,7 @@ theorem logModulated_smooth {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
     simp [logModulated,haz]
 
 /-- A global uniform derivative bound for the genuine compact cutoff. -/
-theorem logModulated_global_deriv {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
-    {l u : ℝ} (hl : 0 < l) (hs : ∀ x, x ∉ Icc l u → a x = 0) (n : ℕ) :
+theorem logModulated_global_deriv (n : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ s x : ℝ,
       ‖iteratedDeriv n (logModulated a s) x‖ ≤ C*(1+|s|)^n := by
   obtain ⟨C,hC,hb⟩ := logModulated_uniform_deriv n (u := u) hl a ha.contDiffOn
@@ -110,5 +112,7 @@ theorem logModulated_global_deriv {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a)
       intro z hz; simp [logModulated,hs z hz]
     rw [iteratedDeriv_zero_off_interval hz n hx,norm_zero]
     positivity
+
+end
 
 end GuthMaynard.Improvement

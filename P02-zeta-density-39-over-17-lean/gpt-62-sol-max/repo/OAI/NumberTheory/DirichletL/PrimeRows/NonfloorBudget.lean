@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch
-open HeckeDetectorWitnessRows HeckeDetectorClassBudget
+open HeckeFamily HeckeInverseAmplification HeckeDetectorRawFiber HeckeDetectorBatch HeckeDetectorWitnessRows HeckeDetectorClassBudget
 
 lemma eventually_all_rpow_ge {P : ℝ→Prop} (hP : ∀ᶠU in atTop,P U)
     (dmin : ℝ) (hdmin : 0<dmin) :

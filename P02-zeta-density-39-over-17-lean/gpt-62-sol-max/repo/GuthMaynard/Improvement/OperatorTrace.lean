@@ -5,7 +5,6 @@ public import Mathlib
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace
-open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
 
 variable {E ι α : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
@@ -54,11 +53,13 @@ theorem operatorIntegral_integrable {x y : α → E}
   apply hxy.mono' (hc.comp_aestronglyMeasurable (hx.prodMk hy))
   exact Filter.Eventually.of_forall (fun a => (norm_rankOne (x a) (y a)).le)
 
+section
+variable [instShared0 : Countable ι] (b : HilbertBasis ι ℂ E) {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν) (hxy : Integrable (fun a => ‖x a‖ * ‖y a‖) ν)
+include instShared0 b x y hx hy hxy
+
 /-- Trace identification for a continuous nuclear presentation, including
 absolute convergence. Its right side is independent of the Hilbert basis. -/
-theorem operatorIntegral_hasSum [Countable ι] (b : HilbertBasis ι ℂ E)
-    {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
-    (hxy : Integrable (fun a => ‖x a‖ * ‖y a‖) ν) :
+theorem operatorIntegral_hasSum :
     HasSum (fun i => ⟪b i, operatorIntegral ν x y (b i)⟫_ℂ)
       (∫ a, ⟪y a, x a⟫_ℂ ∂ν) := by
   let F : ι → α → ℂ := fun i a => ⟪b i, rankOne ℂ (x a) (y a) (b i)⟫_ℂ
@@ -84,11 +85,11 @@ theorem operatorIntegral_hasSum [Countable ι] (b : HilbertBasis ι ℂ E)
   exact (ev.integral_comp_comm (operatorIntegral_integrable ν hx hy hxy)).symm
 
 /-- The diagonal trace is therefore the nuclear integral, not its definition. -/
-theorem operatorIntegral_trace [Countable ι] (b : HilbertBasis ι ℂ E)
-    {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
-    (hxy : Integrable (fun a => ‖x a‖ * ‖y a‖) ν) :
+theorem operatorIntegral_trace :
     operatorDiagonalTrace b (operatorIntegral ν x y) = ∫ a, ⟪y a, x a⟫_ℂ ∂ν :=
   (operatorIntegral_hasSum ν b hx hy hxy).tsum_eq
+
+end
 
 /-- Integral nuclear presentations form a left ideal under bounded operators. -/
 theorem operatorIntegral_comp_left (S : E →L[ℂ] E)

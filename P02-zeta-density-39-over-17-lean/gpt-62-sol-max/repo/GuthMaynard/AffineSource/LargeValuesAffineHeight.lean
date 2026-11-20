@@ -5,7 +5,7 @@ public import GuthMaynard.AffineSource.LargeValuesAffineIteration
 @[expose] public section
 
 open Complex Finset Filter FourierTransform MeasureTheory Real Set
-open scoped ContDiff FourierTransform Topology
+open scoped ContDiff Topology
 
 namespace RiemannZeta.GuthMaynard
 

@@ -78,9 +78,11 @@ def exponentialTerm (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ) (Y : 
   cutoffCoefficient V D I * IdealEuler.weighted (idealCoeff χ) s I *
     Complex.exp (-((Ideal.absNorm I : ℝ) : ℂ) / (Y : ℂ))
 
-theorem exponentialTerm_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D)
-    (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
-    (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (Y : ℝ) (I : Ideal O) :
+section
+variable (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D) (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1) (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (Y : ℝ)
+include χ V D hD hV hVzero s Y
+
+theorem exponentialTerm_tail (I : Ideal O) :
     exponentialTerm χ V D s Y I * (1 - V (2 * (Ideal.absNorm I : ℝ) / D)) =
       exponentialTerm χ V D s Y I - if I = 1 then Complex.exp (-1 / (Y : ℂ)) else 0 := by
   have h := cutoffCoefficient_tail V D hD hV hVzero I
@@ -96,15 +98,15 @@ theorem exponentialTerm_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 
         ring
       · simp only [hI, ite_false, sub_zero]
 
-theorem exponential_sum_tail (χ : Character) (V : ℝ → ℂ) (D : ℝ) (hD : 2 ≤ D)
-    (hV : ∀ x : ℝ, 0 ≤ x → x ≤ 1 → V x = 1)
-    (hVzero : ∀ x : ℝ, 2 ≤ x → V x = 0) (s : ℂ) (Y : ℝ)
+theorem exponential_sum_tail
     (hsum : Summable (exponentialTerm χ V D s Y)) :
     (∑' I : Ideal O, exponentialTerm χ V D s Y I * (1 - V (2 * (Ideal.absNorm I : ℝ) / D))) =
       (∑' I : Ideal O, exponentialTerm χ V D s Y I) - Complex.exp (-1 / (Y : ℂ)) := by
   simp_rw [exponentialTerm_tail χ V D hD hV hVzero s Y]
   rw [hsum.tsum_sub ((hasSum_ite_eq (1 : Ideal O) (Complex.exp (-1 / (Y : ℂ)))).summable)]
   simp only [tsum_ite_eq]
+
+end
 
 end SevenEighths.HeckeDetectorWitnessArithmetic
 

@@ -18,10 +18,12 @@ set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger
 
-theorem exists_unitSeparated_closedBall_cover_of_card_bound
-    {S : Set ℝ} {B : ℝ}
-    (hcount : ∀ W : Finset ℝ, (∀ t ∈ W, t ∈ S) →
-      oneSeparated W → (W.card:ℝ) ≤ B) :
+section
+variable {S : Set ℝ} {B : ℝ} (hcount : ∀ W : Finset ℝ, (∀ t ∈ W, t ∈ S) →
+      oneSeparated W → (W.card:ℝ) ≤ B)
+include S B hcount
+
+theorem exists_unitSeparated_closedBall_cover_of_card_bound :
     ∃ W : Finset ℝ, (∀ t ∈ W, t ∈ S) ∧ oneSeparated W ∧
       ∀ t ∈ S, ∃ u ∈ W, dist t u ≤ 1 := by
   classical
@@ -68,10 +70,7 @@ theorem exists_unitSeparated_closedBall_cover_of_card_bound
   rw [Finset.card_insert_of_notMem htW,← hcard] at hmax
   omega
 
-theorem volume_le_two_mul_of_separated_card_bound
-    {S : Set ℝ} {B : ℝ}
-    (hcount : ∀ W : Finset ℝ, (∀ t ∈ W, t ∈ S) →
-      oneSeparated W → (W.card:ℝ) ≤ B) :
+theorem volume_le_two_mul_of_separated_card_bound :
     volume S ≤ ENNReal.ofReal (2*B) := by
   classical
   obtain ⟨W,hWS,hsep,hcover⟩ :=
@@ -89,6 +88,8 @@ theorem volume_le_two_mul_of_separated_card_bound
       simp [mul_comm]
     _ ≤ ENNReal.ofReal (2*B) :=
       ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left (hcount W hWS hsep) (by norm_num))
+
+end
 
 
 end MathCollab.Density.Stronger

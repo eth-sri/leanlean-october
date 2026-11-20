@@ -171,9 +171,11 @@ theorem continuous_sargosTentCloud {ι : Type*} (S : Finset ι)
   exact continuous_const.mul (Complex.continuous_ofReal.comp
     (continuous_sargosTentPacket a b (x i) (y i)))
 
-theorem sargosTentCloud_sq_pointwise {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (x y : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
-    (hz : ∀ i ∈ S, ‖z i‖ ≤ 1) (p : ℝ × ℝ) :
+section
+variable {ι : Type*} (S : Finset ι) (z : ι → ℂ) (x y : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hz : ∀ i ∈ S, ‖z i‖ ≤ 1)
+include ι S z x y a b ha hb hz
+
+theorem sargosTentCloud_sq_pointwise (p : ℝ × ℝ) :
     ‖sargosTentCloud S z x y a b p‖^2 ≤
       ∑ ij ∈ sargosNearPairs S x y (2*a) (2*b),
         sargosTentPacket a b (x ij.1) (y ij.1) p := by
@@ -205,9 +207,7 @@ theorem sargosTentCloud_sq_pointwise {ι : Type*} (S : Finset ι)
     _ = _ := by
       simp only [sargosNearPairs,Finset.sum_filter,w]
 
-theorem sargosTentCloud_energy_le_nearPairs {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (x y : ι → ℝ) {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
-    (hz : ∀ i ∈ S, ‖z i‖ ≤ 1) :
+theorem sargosTentCloud_energy_le_nearPairs :
     Integrable (fun p : ℝ × ℝ => ‖sargosTentCloud S z x y a b p‖^2)
       (volume.prod volume) ∧
     (∫ p : ℝ × ℝ, ‖sargosTentCloud S z x y a b p‖^2 ∂(volume.prod volume)) ≤
@@ -233,6 +233,8 @@ theorem sargosTentCloud_energy_le_nearPairs {ι : Type*} (S : Finset ι)
     _ ≤ ∫ p : ℝ × ℝ, W p ∂(volume.prod volume) :=
       integral_mono_ae hi hW (Filter.Eventually.of_forall hpt)
     _ = _ := he
+
+end
 
 theorem sargosTentCloud_fourier_pairing {ι κ : Type*}
     (S : Finset ι) (T : Finset κ) (z : ι → ℂ) (w : κ → ℂ)
@@ -317,13 +319,11 @@ theorem sargosTentCloud_zero_outside {ι : Type*} (S : Finset ι)
   exact ⟨⟨by linarith [hxi.1,hxi.2],by linarith [hxi.1,hxi.2]⟩,
     ⟨by linarith [hyi.1,hyi.2],by linarith [hyi.1,hyi.2]⟩⟩
 
-theorem sargos_tent_weighted_bilinear_bound {ι κ : Type*}
-    (S : Finset ι) (T : Finset κ) (z : ι → ℂ) (w : κ → ℂ)
-    (x y : ι → ℝ) (u v : κ → ℝ) {a b c d δ lambda : ℝ}
-    (ha : 0 < a) (hb : 0 < b) (hδ : 0 < δ) (hlambda : 0 < lambda)
-    (hz : ∀ i ∈ S, ‖z i‖ ≤ 1) (hw : ∀ j ∈ T, ‖w j‖ ≤ 1)
-    (hx : ∀ i ∈ S, x i ∈ Icc c (c+δ))
-    (hy : ∀ i ∈ S, y i ∈ Icc d (d+lambda)) :
+section
+variable {ι κ : Type*} (S : Finset ι) (T : Finset κ) (z : ι → ℂ) (w : κ → ℂ) (x y : ι → ℝ) (u v : κ → ℝ) {a b c d δ lambda : ℝ} (ha : 0 < a) (hb : 0 < b) (hδ : 0 < δ) (hlambda : 0 < lambda) (hz : ∀ i ∈ S, ‖z i‖ ≤ 1) (hw : ∀ j ∈ T, ‖w j‖ ≤ 1) (hx : ∀ i ∈ S, x i ∈ Icc c (c+δ)) (hy : ∀ i ∈ S, y i ∈ Icc d (d+lambda))
+include ι κ S T z w x y u v a b c d δ lambda ha hb hδ hlambda hz hw hx hy
+
+theorem sargos_tent_weighted_bilinear_bound :
     ‖∑ i ∈ S, ∑ j ∈ T, z i*w j*fordAdditiveCharacter (u j*x i+v j*y i)*
         ((sargosSincKernel a (u j)*sargosSincKernel b (v j):ℝ):ℂ)‖^2 ≤
       16*a*b*(δ+2*a)*(lambda+2*b)*
@@ -380,13 +380,7 @@ theorem sargos_tent_weighted_bilinear_bound {ι κ : Type*}
 
 
                                                                              
-theorem sargos_double_large_sieve_rectangle {ι κ : Type*}
-    (S : Finset ι) (T : Finset κ) (z : ι → ℂ) (w : κ → ℂ)
-    (x y : ι → ℝ) (u v : κ → ℝ) {a b c d δ lambda : ℝ}
-    (ha : 0 < a) (hb : 0 < b) (hδ : 0 < δ) (hlambda : 0 < lambda)
-    (hz : ∀ i ∈ S, ‖z i‖ ≤ 1) (hw : ∀ j ∈ T, ‖w j‖ ≤ 1)
-    (hx : ∀ i ∈ S, x i ∈ Icc c (c+δ))
-    (hy : ∀ i ∈ S, y i ∈ Icc d (d+lambda))
+theorem sargos_double_large_sieve_rectangle
     (hu : ∀ j ∈ T, a*|u j| ≤ 1/2)
     (hv : ∀ j ∈ T, b*|v j| ≤ 1/2) :
     ‖∑ i ∈ S, ∑ j ∈ T, z i*w j*fordAdditiveCharacter (u j*x i+v j*y i)‖^2 ≤
@@ -430,6 +424,8 @@ theorem sargos_double_large_sieve_rectangle {ι κ : Type*}
   dsimp only [t]
   field_simp
   ring
+
+end
 
 
                                                                                

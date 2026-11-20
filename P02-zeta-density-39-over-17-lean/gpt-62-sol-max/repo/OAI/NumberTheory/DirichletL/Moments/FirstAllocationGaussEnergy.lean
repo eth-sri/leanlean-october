@@ -10,12 +10,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstAllocationGaussEnergy
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplificationChoice
-open CenteredMomentFirstPhysicalSource CenteredMomentSourceRow
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform
-open CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy
-open CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstAmplificationChoice CenteredMomentFirstPhysicalSource CenteredMomentSourceRow CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentCommonRawScale CenteredMomentAddedZeroUniform CenteredMomentGaussEnergy CenteredMomentSmoothedWindowEnergy CenteredMomentOriginalChildEnergy CenteredMomentHeckeColumnWindow
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [Fintype ι]
 local instance : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
@@ -31,9 +26,11 @@ def allocatedEnergy (D : OriginalData ι) (C L : Ideal O)
   (sourceGaussEnergy (allocatedData D C L B).columns
     (allocatedData D C L B).beta (heightCoeff τ t) W K).re
 
-lemma allocated_hasSum (D : OriginalData ι) (C L : Ideal O)
-    (B : actualAllocations D.S C) (τ : Character) (t : ℝ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K) :
+section
+variable (D : OriginalData ι) (C L : Ideal O) (B : actualAllocations D.S C) (τ : Character) (t : ℝ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+include D C L B τ t W K hK
+
+lemma allocated_hasSum :
     HasSum (fun z : O =>
       ‖gaussPolynomial Finset.univ (sourceGenerator (allocatedData D C L B).columns)
         (sourceGenerator_supported _) (fun I => (allocatedData D C L B).beta I * heightCoeff τ t I) z‖^2 *
@@ -41,13 +38,13 @@ lemma allocated_hasSum (D : OriginalData ι) (C L : Ideal O)
       (allocatedEnergy D C L B τ t W K) :=
   gaussEnergy_hasSum_re _ _ _ _ W K hK
 
-lemma allocated_nonneg (D : OriginalData ι) (C L : Ideal O)
-    (B : actualAllocations D.S C) (τ : Character) (t : ℝ)
-    (W : 𝓢(ℝ,ℂ)) (K : ℝ) (hK : 0<K)
+lemma allocated_nonneg
     (hW : ∀ z : O, 0≤(W (‖ConcreteTraceCRT.eisEmbedding z‖^2/K)).re) :
     0≤allocatedEnergy D C L B τ t W K := by
   rw [← (allocated_hasSum D C L B τ t W K hK).tsum_eq]
   exact tsum_nonneg (fun z => mul_nonneg (sq_nonneg _) (hW z))
+
+end
 
 theorem common_energy_allocation (D : OriginalData ι)
     (hS : ∀ i, ∀ I∈D.S i, I≠0) (hp : ∀ i, ∀ I∈D.S (Sum.inl i), Prime I)

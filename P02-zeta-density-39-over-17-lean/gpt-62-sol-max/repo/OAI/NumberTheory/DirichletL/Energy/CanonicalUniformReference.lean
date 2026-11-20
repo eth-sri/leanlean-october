@@ -10,51 +10,49 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalUniformReference
-open HeckeFamily ConcreteTraceCRT
-open CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource
-open CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile
-open CenteredMomentRadialEligibleEnergy
+open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyAllocatedChildren CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentOriginalRadialComparison CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentRetainedProfile CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
-variable {α:Type*}[Fintype α][DecidableEq α]
 
-open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity
-open CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid
-open CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
+open CenteredMomentEnergyCanonicalLiveBound CenteredMomentEnergyCanonicalLiveCapacity CenteredMomentEnergyCanonicalPaidSource CenteredMomentEnergyCanonicalCommonPaid CenteredMomentEnergyCanonicalReferencePaid CenteredMomentEnergyBandSubtypeTransport
 open CenteredMomentFirstAmplifiedCapacityCommon (ratioPenalty)
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous
-open CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles
-open CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero
-open CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional
-open CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData
-open CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentAllocatedRayDictionary QuadraticInitialBound
+open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyAllocatedHomogeneous CenteredMomentEnergyChildState CenteredMomentSecondNonexceptionalChosenBlock HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyAllocatedPaid CenteredMomentEnergyAllocatedProfiles CenteredMomentEnergyAllocatedChildren CenteredMomentEnergyAllocatedZero CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentNaturalFixedRaySource CenteredMomentCommonRadialData CenteredMomentCommonHeightEnvelope CenteredMomentCommonAllocationSum CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentAllocatedRayDictionary QuadraticInitialBound CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
 
-open CenteredMomentEnergyCanonicalChildBound CenteredMomentSectorLocalization
 variable (M:Ideal O)[NeZero M]
 local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H:Subgroup (O⧸M)ˣ)(hH:RayOrthogonality.globalUnits M≤H)
 
-theorem original_subsets_reference_paid (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
+/-- A finite collection has a common upper bound above any prescribed floor. -/
+theorem exists_uniform_above {ι : Type*} [Finite ι] (floor : ℝ) (f : ι → ℝ) :
+    ∃ C, floor < C ∧ ∀ i, f i ≤ C := by
+  obtain ⟨x, hx⟩ := (Set.finite_range f).bddAbove
+  refine ⟨max (floor + 1) x, lt_of_lt_of_le (by linarith) (le_max_left _ _), ?_⟩
+  exact fun i => (hx (Set.mem_range_self i)).trans (le_max_right _ _)
+
+theorem control_mono {a b : ℝ} (p : Profiles a b) {S T : Finset (ℕ × ℕ)}
+    (h : S ⊆ T) : p.control S ≤ p.control T :=
+  mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 0))
+    (Seminorm.le_def.mp (Finset.sup_mono h) (p.profile 1))
+    (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
+
+/-- Uniform reference estimates for a finite family of embedded index types. -/
+theorem family_reference_paid {α ι : Type*} [Fintype ι] {I : ι → Type*}
+    [∀ J, Fintype (I J)] [∀ J, DecidableEq (I J)] (e : ∀ J, I J ↪ α)
+    (W:ℝ→ℂ)(aslot bslot Mcap Lslot εremove lo hi κ:ℝ)
     (a b Mslot εmask:ℝ)(hMslot:0≤Mslot)(hεmask:0<εmask)(haPlain:0<a)(L:ℝ)(hL:0≤L)(degree:ℕ)(S:Finset (ℕ×ℕ))
     (ha:0<aslot)(hWs:Function.support W⊆Set.Icc aslot bslot)(hW:ContDiff ℝ ∞ W)
     (hMcap:0≤Mcap)(hLs:0≤Lslot)(hε:0<εremove)
     (hbeta:(51/100:ℝ)≤HeckeZeroSupremum.beta)(hκ:2*HeckeZeroSupremum.beta-1≤κ):
     ∃n:ℕ,∃T:Finset (ℕ×ℕ),∃dc:ℕ,∃Cc:ℝ,0<Cc ∧ ∀η₀:Character,∃Z₀:ℝ,1<Z₀ ∧
-    ∀Jorig:Finset α,∀θ:Jorig→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
+    ∀Jorig:ι,∀θ:I Jorig→RayQuotient.Characters M H,∀Z:ℝ,Z₀≤Z →
     ∀εchild:ℝ,∀(Q:Ideal O),Q≤M →
     ∀C₀ C₁:ℝ,0≤C₀ → 0≤C₁ →
     ZeroAt (internalQ Q η₀) (a/max 1 b) b 2 0 L Mcap εchild Z degree S C₀ →
     PositiveAt (α:=α) M H hH W bslot (a/max 1 b) b 2 0 L Lslot lo hi
       Mcap εchild κ Z η₀ Q degree S C₁ →
-    ∀(w σ freq:Jorig→ℝ)(v height mesh:ℝ),
+    ∀(w σ freq:I Jorig→ℝ)(v height mesh:ℝ),
     0≤mesh → (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
     (∀i,lo≤σ i) → (∀i,σ i≤hi) → 0≤height → (∀i,|freq i|≤height) →
-    ∀src:Input Jorig,Matches M H hH src η₀ θ w σ freq W bslot Z →
+    ∀src:Input (I Jorig),Matches M H hH src η₀ θ w σ freq W bslot Z →
     (∀i,src.hi i≤bslot) → (∀i,src.M i≤Mslot) →
     ∀(C R:Ideal O)(B:actualAllocations src.pools C)(D:Ideal O)
       (alloc:Allocation D (Finset.univ:Finset (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2))),R≠0 →
@@ -77,31 +75,21 @@ theorem original_subsets_reference_paid (W:ℝ→ℂ)(aslot bslot Mcap Lslot εr
         (1+(|v|+height))^(dc+degree+4*n)*
         reference*(ratioPenalty dyad)^((1:ℝ)/6)*
         Z^(εchild+εremove+(δ₂+u+ell+δ₁/6+θclip/3)+κ*mesh) := by
-  have hex (J:Finset α):=actual_reference_paid_source (α:=J) M H hH W aslot bslot
+  have hex (J:ι):=actual_reference_paid_source (α:=I J) M H hH W aslot bslot
     Mcap Lslot εremove lo hi κ a b Mslot εmask hMslot hεmask haPlain L hL degree S
     ha hWs hW hMcap hLs hε hbeta hκ
   choose n T dc Cc hCc hbound using hex
-  let n₀:=∑J:Finset α,n J
-  let dc₀:=∑J:Finset α,dc J
+  let n₀:=∑J:ι,n J
+  let dc₀:=∑J:ι,dc J
   let T₀:Finset (ℕ×ℕ):=Finset.univ.biUnion T
-  let Ctot:ℝ:=1+∑J:Finset α,Cc J
-  have hCt:0<Ctot:=by
-    have hh:=Finset.sum_nonneg (fun J (_:J∈(Finset.univ:Finset (Finset α)))=>(hCc J).le)
-    dsimp [Ctot];linarith
+  obtain ⟨Ctot,hCt,hc⟩ := exists_uniform_above 0 Cc
   refine ⟨n₀,T₀,dc₀,Ctot,hCt,?_⟩
   intro η₀
-  let Choices:=ΣJ:Finset α,J→RayQuotient.Characters M H
-  let:Fintype (RayQuotient.Characters M H):=Fintype.ofFinite _
-  let:Fintype Choices:=inferInstance
-  have hchoices (c:Choices):∃Z₀:ℝ,1<Z₀ ∧ _:=hbound c.1 η₀ c.2
+  let Choices := Σ J : ι, I J → RayQuotient.Characters M H
+  let : Fintype (RayQuotient.Characters M H) := Fintype.ofFinite _
+  have hchoices (c : Choices) : ∃ Z₀ : ℝ, 1 < Z₀ ∧ _ := hbound c.1 η₀ c.2
   choose Zchoice hZchoice hb using hchoices
-  let Z₀:ℝ:=1+∑c:Choices,Zchoice c
-  have hZ₀:1<Z₀:=by
-    have hn:Nonempty Choices:=⟨⟨∅,fun i=>False.elim (Finset.notMem_empty _ i.property)⟩⟩
-    let:Nonempty Choices:=hn
-    have hh:=Finset.sum_pos (s:=Finset.univ) (fun c _=>(zero_lt_one.trans (hZchoice c)))
-      Finset.univ_nonempty
-    dsimp [Z₀];linarith
+  obtain ⟨Z₀,hZ₀,hZZ⟩ := exists_uniform_above 1 Zchoice
   refine ⟨Z₀,hZ₀,?_⟩
   intro Jorig θ Z hZ εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hpos
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq
@@ -109,29 +97,16 @@ theorem original_subsets_reference_paid (W:ℝ→ℂ)(aslot bslot Mcap Lslot εr
   dsimp only
   intro hX₁ hX₂ hY₁ hY₂ A Mparent reference u ell δ₁ δ₂ θclip href
     hu hell hδ₁ hδ₂ hθclip hparent hshift hdefect hclip
-  have hZi:Zchoice ⟨Jorig,θ⟩≤Z:=by
-    have hh:=Finset.single_le_sum (s:=Finset.univ)
-      (fun c _=>(zero_lt_one.trans (hZchoice c)).le) (Finset.mem_univ (⟨Jorig,θ⟩:Choices))
-    dsimp [Z₀] at hZ
-    linarith
-  have hp:=positiveAt_subtype M H hH Jorig W bslot (a/max 1 b) b 2 0 L Lslot lo hi
+  have hZi := (hZZ ⟨Jorig,θ⟩).trans hZ
+  have hp := positiveAt_embedding M H hH (e Jorig) W bslot (a/max 1 b) b 2 0 L Lslot lo hi
     Mcap εchild κ Z η₀ Q degree S C₁ hpos
   have hh:=hb ⟨Jorig,θ⟩ Z hZi εchild Q hQM C₀ C₁ hC₀ hC₁ hzero hp
     w σ freq v height mesh hmesh hw hwm hwL hσlo hσhi hheight hfreq
     src hmatch hhi hMs C R B D alloc hR τ dyad hn hwidth p hp₁ hp₂
     hX₁ hX₂ hY₁ hY₂ A Mparent reference u ell δ₁ δ₂ θclip href
     hu hell hδ₁ hδ₂ hθclip hparent hshift hdefect hclip
-  have hc:Cc Jorig≤Ctot:=by
-    have hh:=Finset.single_le_sum (s:=Finset.univ) (fun J _=>(hCc J).le) (Finset.mem_univ Jorig)
-    dsimp [Ctot];linarith
-  have ht:T Jorig⊆T₀:=by
-    intro x hx
-    exact Finset.mem_biUnion.mpr ⟨Jorig,Finset.mem_univ _,hx⟩
-  have hctrl:p.control (T Jorig)≤p.control T₀:=by
-    unfold Profiles.control
-    exact mul_le_mul (Seminorm.le_def.mp (Finset.sup_mono ht) (p.profile 0))
-      (Seminorm.le_def.mp (Finset.sup_mono ht) (p.profile 1))
-      (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
+  have hc := hc Jorig
+  have hctrl := control_mono p (T := T₀) (fun x hx => Finset.mem_biUnion.mpr ⟨Jorig,Finset.mem_univ _,hx⟩)
   have hn₀:n Jorig≤n₀:=Finset.single_le_sum (fun _ _=>Nat.zero_le _) (Finset.mem_univ Jorig)
   have hdc₀:dc Jorig≤dc₀:=Finset.single_le_sum (fun _ _=>Nat.zero_le _) (Finset.mem_univ Jorig)
   have hdeg:dc Jorig+degree+4*n Jorig≤dc₀+degree+4*n₀:=by omega

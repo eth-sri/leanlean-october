@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Reciprocity.CubicJacobi
 public import OAI.NumberTheory.DirichletL.GaussSum.ReflectionBrackets
 
@@ -9,71 +10,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 
 namespace CubicRamified
 open ActualEisensteinCubic CubicJacobiGlobal CompletedGauss
@@ -149,7 +97,7 @@ theorem symbol_eq_linearRay_of_prime (x : O) (u v : ℤ)
   rw [← hsprod]
   clear hsprod hyAB hy hy0 A B y
   induction s using Multiset.induction_on with
-  | empty => simp only [Multiset.prod_zero, symbol_one, linearRay_one]
+  | empty => simp [linearRay_one]
   | @cons p s ih =>
     have hp := hs p (Multiset.mem_cons_self _ _)
     have hss : ∀ r ∈ s, Prime r ∧ lambda ^ 2 ∣ r-1 :=
@@ -432,9 +380,7 @@ end PrimaryIdealUnitReindex
 
 open scoped BigOperators Classical SchwartzMap
 namespace QuadraticUnitInvariance
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
-open GaussGeneratorTransport QuadraticGaussRay EisensteinSchwartzPoisson
-open PrimaryIdealUnitReindex CompletedGauss
+open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates GaussGeneratorTransport QuadraticGaussRay EisensteinSchwartzPoisson PrimaryIdealUnitReindex CompletedGauss
 
 theorem rowCoprimeMask_unit_mul {α : Type*} (R : α → Ideal O)
     (S : Finset α) (u : Oˣ) (z : O) :
@@ -454,10 +400,10 @@ open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaus
 theorem canonical_masked_radial_poisson_product
     {α ι : Type*} [DecidableEq α] [Fintype ι]
     (R : α → Ideal O) [∀ i, (R i).IsMaximal] (hinj : Function.Injective R) (S : Finset α)
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (j : ι → ℕ) (hj0 : ∀ i, j i ≠ 0) (hj6 : ∀ i, j i < 6)
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     (∑' z : O, rowCoprimeMask R S z * finiteSexticRow (fun i => Ideal.span {p i}) hg j z *
@@ -495,9 +441,7 @@ theorem canonical_masked_radial_poisson_product
 end GaussGeneratorTransport
 
 namespace QuadraticUnitInvariance
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
-open QuadraticGaussRay MixedCrossSeparation QuadraticInitialBound
-open GaussGeneratorTransport EisensteinSchwartzPoisson
+open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates QuadraticGaussRay MixedCrossSeparation QuadraticInitialBound GaussGeneratorTransport EisensteinSchwartzPoisson
 
 theorem odd_of_quadraticRayValue_norm_eq_one (r : EisensteinEPrimaryPhase.Coord)
     (hr : ‖quadraticRayValue r‖ = 1) : EisensteinEPrimaryPhase.odd r := by
@@ -508,10 +452,10 @@ theorem odd_of_quadraticRayValue_norm_eq_one (r : EisensteinEPrimaryPhase.Coord)
 
 theorem quadraticBlock_union_eq_one_of_same_ray
     {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (A B : Finset ι) (hd : Disjoint A B)
     (hray : residue (∏ i ∈ A, p i) = residue (∏ i ∈ B, p i)) :
     quadraticBlock p hp hg (A ∪ B) = 1 := by
@@ -524,10 +468,10 @@ theorem quadraticBlock_union_eq_one_of_same_ray
 theorem same_ray_quadratic_pair_poisson
     {α ι : Type*} [DecidableEq α] [DecidableEq ι]
     (R : α → Ideal O) [∀ i, (R i).IsMaximal] (hinj : Function.Injective R) (S : Finset α)
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (A B : Finset ι) (hd : Disjoint A B)
     (hray : residue (∏ i ∈ A, p i) = residue (∏ i ∈ B, p i))
     (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
@@ -563,12 +507,6 @@ theorem same_ray_quadratic_pair_poisson
   simpa only [mul_comm] using ht
 
 end QuadraticUnitInvariance
-
-open scoped BigOperators Classical SchwartzMap
-namespace EisensteinSchwartzPoisson
-open ActualEisensteinCubic ConcreteTraceCRT
-
-end EisensteinSchwartzPoisson
 
 end
 

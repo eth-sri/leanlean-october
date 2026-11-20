@@ -193,7 +193,7 @@ theorem norm_heathBrownExponentialSum_le_factor_of_critical_vmvt
       have hbound := norm_heathBrownExponentialSum_le_of_lambda_lower
         hN hk f hlambda hepsilon (by norm_num : (0 : ℝ) < 1) hlower
       have hbound' : ‖heathBrownExponentialSum N f‖ ≤ target := by
-        simpa only [Real.one_rpow, inv_one, one_mul, target] using hbound
+        simpa [target] using hbound
       have hfinal := hbound'.trans (by
         change target ≤ heathBrownGlobalConstant k A C epsilon * target
         have hglobalOne : (1 : ℝ) ≤ heathBrownGlobalConstant k A C epsilon :=

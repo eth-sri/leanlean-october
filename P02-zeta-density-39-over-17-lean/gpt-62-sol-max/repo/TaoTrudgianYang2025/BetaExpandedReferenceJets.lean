@@ -34,8 +34,7 @@ theorem reciprocalModel_hasDerivAt_inverse_curvature
     rw [(referenceModelPrimitive_hasDerivAt σ (Real.rpow_pos_of_pos hw _)).deriv,
       reciprocal_modelPhase_identity hσ hw.le]
     rfl
-  have hprod : deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹))*
-      ((-σ⁻¹)*v^(-σ⁻¹-1)) = 1 :=
+  have hprod :=
     hc.unique ((hasDerivAt_id v).congr_of_eventuallyEq he)
   have hne : deriv (deriv (referenceModelPrimitive σ)) (v^(-σ⁻¹)) ≠ 0 := by
     intro h

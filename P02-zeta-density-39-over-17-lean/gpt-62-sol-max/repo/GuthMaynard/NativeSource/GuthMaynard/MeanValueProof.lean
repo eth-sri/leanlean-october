@@ -571,7 +571,11 @@ lemma logKernelErrorQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
 noncomputable def natScaledCoeff (N : ℕ) (a : ℕ → ℂ) (n : ℕ) : ℂ :=
   (n : ℂ) / (N : ℂ) * a n
 
-lemma natMainQuad_eq_scaled_hilbert (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
+section
+variable (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N)
+include N a hN
+
+lemma natMainQuad_eq_scaled_hilbert :
     natMainQuad N a = (N : ℂ) *
       (∑ m ∈ Finset.Ioc N (2 * N), ∑ n ∈ Finset.Ioc N (2 * N),
         if n = m then 0 else conj (natScaledCoeff N a n) * a m /
@@ -587,7 +591,7 @@ lemma natMainQuad_eq_scaled_hilbert (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
     have hNC : (N : ℂ) ≠ 0 := by exact_mod_cast hN.ne'
     field_simp
 
-lemma natScaledCoeff_l2_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
+lemma natScaledCoeff_l2_le :
     (∑ n ∈ Finset.Ioc N (2 * N), ‖natScaledCoeff N a n‖ ^ 2) ≤
       4 * ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
   rw [Finset.mul_sum]
@@ -609,7 +613,7 @@ lemma natScaledCoeff_l2_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
     _ ≤ 4 * ‖a n‖ ^ 2 :=
       mul_le_mul_of_nonneg_right hrsq (sq_nonneg ‖a n‖)
 
-lemma natMainQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
+lemma natMainQuad_norm_le :
     ‖natMainQuad N a‖ ≤
       (5 * Real.pi) * (N : ℝ) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
@@ -640,7 +644,7 @@ lemma natMainQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
     _ = (5 * Real.pi) * (N : ℝ) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by simp [s]; ring
 
-theorem logHilbertQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
+theorem logHilbertQuad_norm_le :
     ‖logHilbertQuad N a‖ ≤
       (5 * Real.pi + 1) * (N : ℝ) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by
@@ -654,6 +658,8 @@ theorem logHilbertQuad_norm_le (N : ℕ) (a : ℕ → ℂ) (hN : 0 < N) :
       add_le_add (natMainQuad_norm_le N a hN) (logKernelErrorQuad_norm_le N a hN)
     _ = (5 * Real.pi + 1) * (N : ℝ) *
         ∑ n ∈ Finset.Ioc N (2 * N), ‖a n‖ ^ 2 := by ring
+
+end
 
 /-- The `dirichletTime` definition used by the source-facing construction in `MeanValueProof`. -/
 noncomputable def dirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) : ℂ :=
@@ -1066,7 +1072,11 @@ noncomputable def centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) : 
 noncomputable def centeredDerivCoeff (N : ℕ) (a : ℕ → ℂ) (n : ℕ) : ℂ :=
   a n * (Complex.I * ((Real.log N - Real.log n : ℝ) : ℂ))
 
-lemma centeredDirichletTime_eq (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+section
+variable (N : ℕ) (a : ℕ → ℂ)
+include N a
+
+lemma centeredDirichletTime_eq (t : ℝ) :
     centeredDirichletTime N a t =
       Complex.exp (Complex.I * (t : ℂ) * (Real.log N : ℂ)) * dirichletTime N a t := by
   simp only [centeredDirichletTime, dirichletTime, Finset.mul_sum]
@@ -1081,7 +1091,7 @@ lemma centeredDirichletTime_eq (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
   push_cast
   ring_nf
 
-lemma norm_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+lemma norm_centeredDirichletTime (t : ℝ) :
     ‖centeredDirichletTime N a t‖ = ‖dirichletTime N a t‖ := by
   rw [centeredDirichletTime_eq, norm_mul, Complex.norm_exp]
   have hre : (Complex.I * (t : ℂ) * (Real.log N : ℂ)).re = 0 := by
@@ -1090,7 +1100,7 @@ lemma norm_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
     ring_nf
   rw [hre, Real.exp_zero, one_mul]
 
-lemma hasDerivAt_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+lemma hasDerivAt_centeredDirichletTime (t : ℝ) :
     HasDerivAt (centeredDirichletTime N a)
       (centeredDirichletTime N (centeredDerivCoeff N a) t) t := by
   unfold centeredDirichletTime
@@ -1110,23 +1120,25 @@ lemma hasDerivAt_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
   · dsimp [centeredDerivCoeff, c]
     ring_nf
 
-lemma differentiable_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) :
+lemma differentiable_centeredDirichletTime :
     Differentiable ℝ (centeredDirichletTime N a) := by
   intro t
   exact (hasDerivAt_centeredDirichletTime N a t).differentiableAt
 
-lemma deriv_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) (t : ℝ) :
+lemma deriv_centeredDirichletTime (t : ℝ) :
     deriv (centeredDirichletTime N a) t =
       centeredDirichletTime N (centeredDerivCoeff N a) t :=
   (hasDerivAt_centeredDirichletTime N a t).deriv
 
-lemma continuous_deriv_centeredDirichletTime (N : ℕ) (a : ℕ → ℂ) :
+lemma continuous_deriv_centeredDirichletTime :
     Continuous (deriv (centeredDirichletTime N a)) := by
   rw [show deriv (centeredDirichletTime N a) =
       centeredDirichletTime N (centeredDerivCoeff N a) by
     funext t
     exact deriv_centeredDirichletTime N a t]
   exact differentiable_centeredDirichletTime N (centeredDerivCoeff N a) |>.continuous
+
+end
 
 lemma abs_log_ratio_le_one (N n : ℕ) (hN : 0 < N) (hn : n ∈ Finset.Ioc N (2 * N)) :
     |Real.log N - Real.log n| ≤ 1 := by

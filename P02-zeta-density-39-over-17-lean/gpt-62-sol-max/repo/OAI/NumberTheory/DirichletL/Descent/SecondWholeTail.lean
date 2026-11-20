@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondTailCost
 public import OAI.NumberTheory.DirichletL.Descent.ChildCutoff
 
@@ -16,10 +17,10 @@ local notation "O" => ActualEisensteinCubic.O
 theorem full_second_supported_tail (order : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (Ct : ℝ), 0 < Ct ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-      (hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (_hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+      (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (F : Finset ι) (Ψ : O →* ℂ) (_hΨ : ∀ a, ‖Ψ a‖ ≤ 1)
       (m c d : O) (Hcol : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ))
       (B Y H lengthScale : ℝ), 0 ≤ B → 0 < Y → 0 ≤ H → 1 ≤ lengthScale →

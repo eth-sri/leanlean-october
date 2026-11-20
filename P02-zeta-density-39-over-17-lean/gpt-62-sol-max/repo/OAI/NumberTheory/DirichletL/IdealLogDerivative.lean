@@ -169,12 +169,15 @@ theorem weighted_hasDerivAt (a : Ideal O →*₀ ℂ) (s : ℂ) (B : Ideal O) :
   simp_rw [weighted_eq_term]
   convert LSeries.hasDerivAt_term (fun _ => a B) (Ideal.absNorm B) s using 1
   by_cases hn : Ideal.absNorm B = 0
-  · simp only [hn, LSeries.term_zero, mul_zero]
+  · simp [hn]
   · simp only [LSeries.term_of_ne_zero hn, LSeries.logMul, Complex.natCast_log,
       mul_div_assoc]
 
-theorem log_weighted_hasSum (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) :
+section
+variable (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1) (s : ℂ) (hs : 1 < s.re)
+include a ha s hs
+
+theorem log_weighted_hasSum :
     HasSum (fun B : Ideal O => (Real.log (Ideal.absNorm B) : ℂ) * weighted a s B)
       (-deriv (series a) s) := by
   obtain ⟨x, hx, hxs⟩ := exists_between hs
@@ -191,8 +194,7 @@ theorem log_weighted_hasSum (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤
   unfold IdealEuler.series
   simpa only [neg_neg] using H.neg
 
-theorem mangoldt_weighted_summable_norm (a : Ideal O →*₀ ℂ)
-    (ha : ∀ I, ‖a I‖ ≤ 1) (s : ℂ) (hs : 1 < s.re) :
+theorem mangoldt_weighted_summable_norm :
     Summable (fun B : Ideal O => ‖(IdealMangoldt.value B : ℂ) * weighted a s B‖) := by
   apply (log_weighted_hasSum a ha s hs).summable.norm.of_nonneg_of_le (fun _ => norm_nonneg _)
   intro B
@@ -200,8 +202,7 @@ theorem mangoldt_weighted_summable_norm (a : Ideal O →*₀ ℂ)
     abs_of_nonneg (IdealMangoldt.value_nonneg B), abs_of_nonneg (Real.log_natCast_nonneg _)]
   exact mul_le_mul_of_nonneg_right (value_le_log_norm B) (norm_nonneg _)
 
-theorem mangoldt_series_eq_LSeries (a : Ideal O →*₀ ℂ)
-    (ha : ∀ I, ‖a I‖ ≤ 1) (s : ℂ) (hs : 1 < s.re) :
+theorem mangoldt_series_eq_LSeries :
     (∑' B : Ideal O, (IdealMangoldt.value B : ℂ) * weighted a s B) = LSeries (coeff a) s := by
   have H := (mangoldt_weighted_summable_norm a ha s hs).of_norm.hasSum.tsum_fiberwise Ideal.absNorm
   change HasSum (fun n : ℕ => ∑' B : {B : Ideal O // Ideal.absNorm B = n},
@@ -209,12 +210,13 @@ theorem mangoldt_series_eq_LSeries (a : Ideal O →*₀ ℂ)
   have hf (n : ℕ) : (∑' B : {B : Ideal O // Ideal.absNorm B = n},
       (IdealMangoldt.value B.val : ℂ) * weighted a s B.val) = LSeries.term (coeff a) s n := by
     unfold coeff
-    simpa only [weighted, normWeight,
-      MonoidWithZeroHom.coe_mk, ZeroHom.coe_mk, mul_assoc]
+    simpa [weighted, normWeight, mul_assoc]
       using SmoothMobiusCorrection.idealDirichlet_fiber
         (fun B => (IdealMangoldt.value B : ℂ) * a B) s n
   simp_rw [hf] at H
   exact H.tsum_eq.symm
+
+end
 
 theorem mulFiber_value_sum (B : Ideal O) (hB : B ≠ 0) :
     (∑' p : CompletedGauss.MulFiber B, (IdealMangoldt.value p.val.1 : ℂ)) =
@@ -229,7 +231,11 @@ theorem mulFiber_value_sum (B : Ideal O) (hB : B ≠ 0) :
         (fun D => (IdealMangoldt.value D : ℂ))).symm
     _ = _ := sum_value_divisors B hB
 
-theorem coeff_LSeries_mul_series (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
+section
+variable (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
+include a ha
+
+theorem coeff_LSeries_mul_series
     (s : ℂ) (hs : 1 < s.re) :
     LSeries (coeff a) s * series a s = -deriv (series a) s := by
   let f := weighted a s
@@ -248,7 +254,7 @@ theorem coeff_LSeries_mul_series (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I�
     · subst B
       have hz (p : CompletedGauss.MulFiber 0) : F p.val = 0 := by
         simp only [F, p.property, map_zero, mul_zero]
-      simp only [hz, tsum_zero, map_zero, mul_zero]
+      simp [hz]
     · calc
         _ = (∑' p : CompletedGauss.MulFiber B, (IdealMangoldt.value p.val.1 : ℂ)) * f B := by
           rw [← tsum_mul_right]
@@ -271,14 +277,12 @@ theorem coeff_LSeries_mul_series (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I�
       ring
     _ = -deriv (series a) s := hsum.unique (log_weighted_hasSum a ha s hs)
 
-theorem coeff_LSeries_eq_neg_logDeriv (a : Ideal O →*₀ ℂ)
-    (ha : ∀ I, ‖a I‖ ≤ 1) (s : ℂ) (hs : 1 < s.re) :
+theorem coeff_LSeries_eq_neg_logDeriv (s : ℂ) (hs : 1 < s.re) :
     LSeries (coeff a) s = -deriv (series a) s / series a s := by
   apply (eq_div_iff (series_ne_zero a ha s hs)).mpr
   exact coeff_LSeries_mul_series a ha s hs
 
-theorem coeff_LSeries_eq_neg_logDeriv_of_eq (a : Ideal O →*₀ ℂ)
-    (ha : ∀ I, ‖a I‖ ≤ 1) (F : ℂ → ℂ)
+theorem coeff_LSeries_eq_neg_logDeriv_of_eq (F : ℂ → ℂ)
     (hF : ∀ z : ℂ, 1 < z.re → F z = series a z)
     (s : ℂ) (hs : 1 < s.re) :
     LSeries (coeff a) s = -deriv F s / F s := by
@@ -290,6 +294,8 @@ theorem coeff_LSeries_eq_neg_logDeriv_of_eq (a : Ideal O →*₀ ℂ)
     exact hF z hz
   rw [hd, hF s hs]
   exact coeff_LSeries_eq_neg_logDeriv a ha s hs
+
+end
 
 end
 end SevenEighths.IdealLogDerivative

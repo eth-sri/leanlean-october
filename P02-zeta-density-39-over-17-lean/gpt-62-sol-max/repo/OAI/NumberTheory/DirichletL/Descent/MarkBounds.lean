@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.IdealMasks
 
 @[expose] public section
@@ -12,8 +13,8 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
  theorem finite_primeSupport_card {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (U : Finset ι) :
+    (p : ι → Eis) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (U : Finset ι) :
     (IdealMobiusDivisorSum.primeSupport (Ideal.span {∏ i ∈ U, p i})).card = U.card := by
   have hc : Pairwise (Function.onFun IsCoprime (fun i : U => Ideal.span {p i.val})) := by
     intro i j hij
@@ -23,8 +24,8 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) → ∀ U : Finset ι,
@@ -43,8 +44,8 @@ theorem finite_primeMark_small_power (ε : ℝ) (hε : 0 < ε) :
 
 theorem finite_primeMark_extracted_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) → ∀ A U : Finset ι,

@@ -83,9 +83,12 @@ theorem one_sub_exp_neg_abs_le_norm (s : ℂ) :
 noncomputable def gammaChiError (s : ℂ) : ℂ :=
   exp ((Real.pi : ℂ) * s * I) / (1 - exp ((Real.pi : ℂ) * s * I))
 
+section
+variable {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀) (ht : t₀ ≤ |s.im|)
+include s t₀ ht₀ ht
+
 /-- The denominator lower bound uses the positive threshold, independently of the height sign. -/
-theorem gammaChi_denominator_bound {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
-    (ht : t₀ ≤ |s.im|) :
+theorem gammaChi_denominator_bound :
     0 < 1 - Real.exp (-Real.pi * t₀) ∧
       1 - Real.exp (-Real.pi * t₀) ≤ ‖1 - exp ((Real.pi : ℂ) * s * I)‖ := by
   have he : Real.exp (-Real.pi * t₀) < 1 := by
@@ -98,8 +101,7 @@ theorem gammaChi_denominator_bound {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
   linarith [one_sub_exp_neg_abs_le_norm s]
 
 /-- Lemma 7's printed signed-height error bound is valid for both signs of the height. -/
-theorem norm_gammaChiError_le {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
-    (ht : t₀ ≤ |s.im|) :
+theorem norm_gammaChiError_le :
     ‖gammaChiError s‖ ≤ Real.exp (-Real.pi * s.im) /
       (1 - Real.exp (-Real.pi * t₀)) := by
   obtain ⟨hp, hle⟩ := gammaChi_denominator_bound ht₀ ht
@@ -107,8 +109,7 @@ theorem norm_gammaChiError_le {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
   exact div_le_div_of_nonneg_left (Real.exp_pos _).le hp hle
 
 /-- Lemma 7 is an exact identity plus a separately proved relative-error estimate. -/
-theorem gamma_factor_eq_chi_mul_one_add {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀)
-    (ht : t₀ ≤ |s.im|) :
+theorem gamma_factor_eq_chi_mul_one_add :
     Gamma (1 - s) * (2 * (Real.pi : ℂ) / I) ^ (s - 1) =
       chi s * (1 + gammaChiError s) := by
   have hd : 1 - exp ((Real.pi : ℂ) * s * I) ≠ 0 := by
@@ -125,5 +126,7 @@ theorem gamma_factor_eq_chi_mul_one_add {s : ℂ} {t₀ : ℝ} (ht₀ : 0 < t₀
       _ = _ := by rw [sub_add_cancel, one_div]
   rw [he, ← div_eq_mul_inv]
   exact (eq_div_iff hd).mpr (gamma_factor_mul_one_sub_exp s)
+
+end
 
 end DhimanKadiriQuesadaHerrera2026

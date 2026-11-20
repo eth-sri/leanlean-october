@@ -16,28 +16,16 @@ open HeckeFamily HeckeDyadic
     (hm:∀t:ℝ,(1+|t|)^4*‖mellin W (((1/2:ℝ):ℂ)+t*I)‖≤C)
     (hs:∀t∈Icc (-T) T,‖series χ false (((1/2:ℝ):ℂ)+t*I+shift 0 freq)‖≤K*(1+|t|)^2):
     ‖∫t:ℝ in -T..T,integrand χ false W D 0 freq (((1/2:ℝ):ℂ)+t*I)‖≤C*K*Real.pi:=by
-  rw [intervalIntegral.integral_of_le (by linarith : -T≤T)]
-  have hint:=integrable_inv_one_add_sq.const_mul (C*K)
+  apply cauchy_segment_bound _ _ _ (by positivity) hT
+  intro t ht
+  rw [integrand_norm χ false W D 0 freq hD, mellin_vertical_re]
+  norm_num only [add_zero,sub_self,Real.rpow_zero,mul_one]
   calc
-    _≤∫t:ℝ in Ioc (-T) T,(C*K)*(1+t^2)⁻¹:=by
-      apply norm_integral_le_of_norm_le hint.integrableOn
-      filter_upwards [ae_restrict_mem measurableSet_Ioc] with t ht
-      rw [integrand_norm χ false W D 0 freq hD]
-      have hm':(1+|t|)^2*(‖mellin W (((1/2:ℝ):ℂ)+t*I)‖*(1+|t|)^2)≤C:=by
-        nlinarith only [hm t]
-      have hb:=CubicReflectionKernel.weighted_two_to_cauchy
-        (mul_nonneg (norm_nonneg _) (sq_nonneg _)) t hm'
-      have hh:=mul_le_mul_of_nonneg_left (hs t ⟨ht.1.le,ht.2⟩)
-        (norm_nonneg (mellin W (((1/2:ℝ):ℂ)+t*I)))
-      have hbK:=mul_le_mul_of_nonneg_right hb hK
-      simp only [add_re,ofReal_re,mul_re,ofReal_im,I_re,mul_zero,I_im,zero_mul,
-        sub_self,add_zero]
-      norm_num only [add_zero,sub_self,Real.rpow_zero,mul_one]
-      apply hh.trans
-      convert hbK using 1 <;> ring
-    _≤∫t:ℝ,(C*K)*(1+t^2)⁻¹:=
-      integral_mono_measure Measure.restrict_le_self (by filter_upwards [] with t; positivity) hint
-    _=_:=by rw [integral_const_mul,integral_univ_inv_one_add_sq]
+    _ ≤ (1+|t|)^2 * (‖mellin W (((1/2:ℝ):ℂ)+t*I)‖ * (K*(1+|t|)^2)) :=
+      mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left (hs t ht) (norm_nonneg _)) (by positivity)
+    _ = ((1+|t|)^4*‖mellin W (((1/2:ℝ):ℂ)+t*I)‖)*K := by ring
+    _ ≤ _ := mul_le_mul_of_nonneg_right (hm t) hK
+
 
  theorem finite_strip_bound (χ:Character)(hχ:χ.residue≠1)(W:ℝ→ℂ)(a b:ℝ)(ha:0<a)
     (hWs:Function.support W⊆Icc a b)(hW:ContDiff ℝ ∞ W)

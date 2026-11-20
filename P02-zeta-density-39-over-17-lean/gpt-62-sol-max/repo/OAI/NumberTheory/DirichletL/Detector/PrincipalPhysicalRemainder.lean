@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 open Complex MeasureTheory
 namespace SevenEighths.ProbePrincipalPhysical
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
-open PrincipalMellinResidues PrincipalSignalComparison ProbeMellinBoundary ProbePrincipalContours
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds PrincipalMellinResidues PrincipalSignalComparison ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal HeckeFamily.O
 
 theorem physical_principal_residue_remainder {K : ℕ}

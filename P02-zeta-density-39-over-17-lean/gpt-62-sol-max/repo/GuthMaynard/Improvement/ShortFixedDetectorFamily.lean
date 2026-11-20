@@ -25,10 +25,12 @@ theorem fixedShortDetectorIndices_card_le {T : ℝ}
     _ ≤ (5*Real.log T)*(12*Real.log T) := h
     _ = _ := by ring
 
+section
+variable {T : ℝ} {N : ℕ} {ρ : ℂ} (hT : 1 ≤ T) (hN : 0 < N) (hN' : (N : ℝ) ≤ T^2) (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
+include T N ρ hT hN hN' hβ hβ'
+
 /-- Quantitative tail control at the actual family cutoff. -/
-theorem norm_fixedShortDetector_tail_le {T : ℝ} {N : ℕ} {ρ : ℂ}
-    (hT : 1 ≤ T) (hN : 0 < N) (hN' : (N : ℝ) ≤ T^2)
-    (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1) :
+theorem norm_fixedShortDetector_tail_le :
     ‖∑' j : ℕ, (detectorTaylorWeight ρ.re (j+(detectorTaylorCutoff T+1)) : ℂ)*
       shortDetectorTaylorPolynomial T N (j+(detectorTaylorCutoff T+1)) ρ.im‖ ≤ 3*T^(-1 : ℝ) := by
   have hTpos : 0 < T := by linarith
@@ -46,9 +48,7 @@ theorem norm_fixedShortDetector_tail_le {T : ℝ} {N : ℕ} {ρ : ℂ}
       norm_num
 
 /-- The fixed family has the full block height, up to an absolute constant. -/
-theorem exists_fixedShortDetector_component {T : ℝ} {N : ℕ} {ρ : ℂ}
-    (hT : 1 ≤ T) (hN : 0 < N) (hN' : (N : ℝ) ≤ T^2)
-    (hβ : 0 ≤ ρ.re) (hβ' : ρ.re ≤ 1)
+theorem exists_fixedShortDetector_component
     (hsmall : 3*T^(-1 : ℝ) ≤ 1/(6*(shortDetectorDyadicCount T : ℝ)))
     (hblock : 1/(3*(shortDetectorDyadicCount T : ℝ)) ≤ ‖shortDetectorBlock ρ T N‖) :
     ∃ j ∈ Finset.range (detectorTaylorCutoff T+1),
@@ -79,6 +79,8 @@ theorem exists_fixedShortDetector_component {T : ℝ} {N : ℕ} {ρ : ℂ}
   have hh := div_le_div_of_nonneg_right hpartial (by norm_num : (0 : ℝ) ≤ 2)
   change ‖∑ j ∈ Finset.range (J+1), W j‖/2 ≤ _ at hlarge
   exact (show (N : ℝ)^ρ.re/(12*D) = ((N : ℝ)^ρ.re/(6*D))/2 by ring).trans_le (hh.trans hlarge)
+
+end
 
 /-- Actual short finite detection gives a member of a fixed coefficient family.
 The family and its logarithmic size are chosen before beta or gamma. -/

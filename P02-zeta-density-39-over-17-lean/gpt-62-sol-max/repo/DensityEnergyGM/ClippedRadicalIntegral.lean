@@ -79,7 +79,7 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
       R ^ 2 * x + Real.sqrt K *
         (A * Real.log (Y / x) + Real.sqrt B / x) := by
   have hY : 0 < Y := hx.trans_le hxY
-  have hWhole : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 Y :=
+  have hWhole :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le hY.le).mpr
       (clippedRadicalTail_integrable R K A B Y)
   have hLow : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 x := by
@@ -98,8 +98,7 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
     hInvCont.intervalIntegrable_of_Icc hxY
   have hInvSq : IntervalIntegrable (fun s : ℝ => (s⁻¹) ^ 2) volume x Y :=
     (hInvCont.pow 2).intervalIntegrable_of_Icc hxY
-  have hMajor : IntervalIntegrable (fun s : ℝ =>
-      Real.sqrt K * (A * s⁻¹ + Real.sqrt B * (s⁻¹) ^ 2)) volume x Y :=
+  have hMajor :=
     ((hInv.const_mul A).add (hInvSq.const_mul (Real.sqrt B))).const_mul (Real.sqrt K)
   have hLowBound : (∫ s in 0..x, clippedRadicalTail R K A B s) ≤ R ^ 2 * x := by
     have h := intervalIntegral.integral_mono_on hx.le hLow intervalIntegrable_const
@@ -122,7 +121,7 @@ theorem clipped_radical_integral_cutoff {R K A B x Y : ℝ}
 
 theorem clipped_radical_integral_cap {R K A B Y : ℝ} (hY : 0 ≤ Y) :
     (∫ s in Ioc 0 Y, clippedRadicalTail R K A B s) ≤ R ^ 2 * Y := by
-  have hInt : IntervalIntegrable (clippedRadicalTail R K A B) volume 0 Y :=
+  have hInt :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le hY).mpr
       (clippedRadicalTail_integrable R K A B Y)
   rw [← intervalIntegral.integral_of_le hY]
@@ -185,7 +184,7 @@ theorem clipped_radical_integral_log_bound {R K A B Y T : ℝ}
     have hprod : 1 ≤ Real.sqrt K * Real.sqrt B := by nlinarith
     simpa only [Real.sqrt_one] using Real.sqrt_le_sqrt hprod
   have hQpos : 0 < Q := by linarith
-  have hArgPos : 0 < Y * R / Q := div_pos (mul_pos hY hR) hQpos
+  have hArgPos := div_pos (mul_pos hY hR) hQpos
   have hArg : Y * R / Q ≤ T ^ 3 := by
     apply (div_le_iff₀ hQpos).mpr
     have hprod : Y * R ≤ T * (2 * T) :=

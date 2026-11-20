@@ -48,7 +48,7 @@ lemma primeValuations_mul (I J : Id) (hI : I≠0) (hJ : J≠0) :
     simp [Ne.symm h,hv]
 
 lemma primeValuations_pow (I : Id) (n : ℕ) :
-    primeValuations (I^n)=n • primeValuations I := by
+    primeValuations (I ^n)=n • primeValuations I := by
   ext P
   simp only [primeValuations_apply,normalizedFactors_pow,Multiset.count_nsmul,
     Finsupp.coe_smul,Pi.smul_apply,smul_eq_mul]
@@ -129,11 +129,6 @@ def highValuationEquiv : ((NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroId
     (Equiv.prodCongr nonzeroIdealValuationEquiv nonzeroIdealValuationEquiv)).trans
       ((Equiv.prodCongr finsuppPairEquiv finsuppPairEquiv).trans finsuppPairEquiv)
 
-@[simp] lemma highValuationEquiv_apply
-    (a : (NonzeroIdeal×NonzeroIdeal)×(NonzeroIdeal×NonzeroIdeal)) (P : PrimeIdeal) :
-    highValuationEquiv a P =
-      ((primeValuations a.1.1.val P,primeValuations a.1.2.val P),
-        (primeValuations a.2.1.val P,primeValuations a.2.2.val P)) := rfl
 
 end SevenEighths.ProbePhysical
 end

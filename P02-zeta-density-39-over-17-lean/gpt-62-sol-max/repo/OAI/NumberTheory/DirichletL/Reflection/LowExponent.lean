@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Reflection.ScaleBudgets
 public import OAI.NumberTheory.DirichletL.Reflection.LowWidth
 public import OAI.NumberTheory.DirichletL.Reflection.SurvivingGate
 public import OAI.NumberTheory.DirichletL.Reflection.RetainedCaps
@@ -23,14 +24,7 @@ theorem original_surviving_low_exponent
       rowPowerfulPart J=rowPowerfulPart I → rowMaskPart J Q=rowMaskPart I Q →
     ∀ (A : Finset (FreeReflection.pool J Q Q₀)) (e : A→Fin 3) (column : Ideal Eis→Ideal Eis→ℂ)
       (Z O₀ H za Nstar d ell0 shift δ π Ck CO CH X QK QP ε Lscale Lrow Lslot : ℝ) (i : ℕ×ℕ×ℕ),
-      Z₀≤Z → 0<Ck → 0<CO → 0<CH → 0<X → 0<QK → 0<QP →
-      (Ideal.absNorm I:ℝ)≤Ck*Z^(5/6-2*d) →
-      Z^O₀/CO≤(Ideal.absNorm (rowPowerfulPart I):ℝ) →
-      Z^H/CH≤(Ideal.absNorm (rowResidualPart I Q):ℝ) →
-      Real.log (CH*Ck*CO)/Real.log Z≤η →
-      normWidth Z (rowPowerfulPart I)≤O₀+η → normWidth Z Q≤η →
-      0≤d → d≤1/6 → ell0≤1/6-d+η → 0≤O₀ → za≤ell0+η → |shift|≤η →
-      Nstar=1+ell0+shift → H=Real.logb Z (kK*QK) → za=Real.logb Z (kP*QP) → Nstar=Real.logb Z X →
+      WithLowWidths I Q Z₀ Z O₀ H za Nstar d ell0 shift Ck CO CH X QK QP η (kK*QK) (kP*QP) (
       0≤δ → δ≤η → 0≤ε → (kK*QK)≤Z^Lrow → (kP*QP)≤Z^Lslot →
       Real.logb Z 16≤η → ε*(Lrow+Lslot+2*(δ+Lscale+η))+η/2≤π →
       let G := (poolPrimeFamily J Q Q₀).restrict A
@@ -43,7 +37,7 @@ theorem original_surviving_low_exponent
       InverseTerminalWidths.reflectedExponent 0 H (normWidth Z (frozenExtracted G j e 0))
         (normWidth Z (frozenExtracted G j e 2)) za v ell (ramifiedWidth Z i.1)
         (terminalDualWidth Z H za Nstar G.ideal j e)+ε*(H+v+ell+za)+η/2+O₀/2≤
-      (5/6-2*d)+200*η+π := by
+      (5/6-2*d)+200*η+π) := by
   obtain ⟨Z₀,hZ₀,hgates⟩ := actual_surviving_retained_gates s hc₀ kK kP η hkK hkP hη
   refine ⟨Z₀,hZ₀,?_⟩
   intro J I F Q Q₀ hJ hI hQ hpower hmask A e column

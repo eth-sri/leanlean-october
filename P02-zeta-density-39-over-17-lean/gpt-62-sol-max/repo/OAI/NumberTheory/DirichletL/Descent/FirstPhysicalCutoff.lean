@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstCutoffScale
 
 @[expose] public section
@@ -17,7 +18,7 @@ def firstPhysicalMultiplier {ι : Type*} (p : ι→O) (S : Finset ι)
   (ConcretePrimeRowBridge.idealGenerator f)^2 * dilationLabel p S (fun i=>v₁ i+v₂ i) ε₁ ε₂
 
 lemma firstPhysicalMultiplier_ne_zero {ι : Type*} (p : ι→O) (hp : ∀ i,p i≠0)
-    [∀ i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalIdealFamily.Maximal p]
     (S : Finset ι) (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool) (f : Ideal O) (hf : f≠0) :
     firstPhysicalMultiplier p S v₁ v₂ ε₁ ε₂ f≠0 :=
   mul_ne_zero (pow_ne_zero _ (ConcretePrimeRowBridge.idealGenerator_ne_zero f hf))
@@ -31,7 +32,7 @@ lemma firstPhysicalMultiplier_row {ι : Type*} (p : ι→O) (S : Finset ι)
   ring
 
 theorem first_physical_cutoff_raw_tail {ι : Type*} [DecidableEq ι]
-    (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
+    (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
     (S N Q : Finset ι) (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (hv : ∀ i∈S,0<v₁ i+v₂ i)
     (hNQ : Disjoint N Q) (hNS : Disjoint N S) (hQS : Disjoint Q S)

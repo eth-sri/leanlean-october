@@ -29,8 +29,11 @@ theorem marked_cube_inverse_finite_support (Ψ : O →* ℂ) (W : ℝ → ℂ)
   rw [weighted_markedCompletedT_reopen]
   simp only [hzero, tsum_zero]
 
-theorem marked_large_cube_inner_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X H₀ : ℝ) (hX : 0 < X) (d : Ideal O → ℂ) (I : Ideal O) :
+section
+variable (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X H₀ : ℝ) (hX : 0 < X) (d : Ideal O → ℂ)
+include Ψ W hW X H₀ hX d
+
+theorem marked_large_cube_inner_reopen (I : Ideal O) :
     (∑' H : Ideal O,∑' J : Ideal O,
       if H₀ ≤ (Ideal.absNorm H : ℝ) then markedExpandedTerm Ψ W X d I H J else 0) =
     ∑' B : Ideal O,largeCubeCoefficient H₀ B*summand Ψ W X I B*d (I*B^3) := by
@@ -54,8 +57,7 @@ theorem marked_large_cube_inner_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
   dsimp [f,summand]
   ring
 
-theorem marked_large_cube_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X H₀ : ℝ) (hX : 0 < X) (d : Ideal O → ℂ) :
+theorem marked_large_cube_reopen :
     (∑' H : Ideal O, if H₀ ≤ (Ideal.absNorm H : ℝ) then
       (UniqueFactorizationMonoid.moebius H : ℂ)*cubeWeight Ψ H*
         markedCompletedT Ψ W (X/(Ideal.absNorm H : ℝ)^3) (fun A => d (H^3*A)) else 0) =
@@ -96,8 +98,7 @@ theorem marked_large_cube_reopen (Ψ : O →* ℂ) (W : ℝ → ℂ)
       exact (hF.prod_factor I).tsum_prod
     _ = _ := tsum_congr (marked_large_cube_inner_reopen Ψ W hW X H₀ hX d)
 
-theorem marked_completed_cube_inverse_split (Ψ : O →* ℂ) (W : ℝ → ℂ)
-    (hW : HasCompactSupport W) (X H₀ : ℝ) (hX : 0 < X) (d : Ideal O → ℂ) :
+theorem marked_completed_cube_inverse_split :
     (Real.sqrt X : ℂ)⁻¹*(∑' I : Ideal O,columnWeight Ψ I*d I*W ((Ideal.absNorm I : ℝ)/X)) =
     (∑' H : Ideal O, if (Ideal.absNorm H : ℝ)<H₀ then
       (UniqueFactorizationMonoid.moebius H : ℂ)*cubeWeight Ψ H*
@@ -127,6 +128,8 @@ theorem marked_completed_cube_inverse_split (Ψ : O →* ℂ) (W : ℝ → ℂ)
   by_cases h : (Ideal.absNorm H : ℝ)<H₀
   · simp [h,not_le.mpr h]
   · simp [h,le_of_not_gt h]
+
+end
 
 end
 end SevenEighths.InverseMoment

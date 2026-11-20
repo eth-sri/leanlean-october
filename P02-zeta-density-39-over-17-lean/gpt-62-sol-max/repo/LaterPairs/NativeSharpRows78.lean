@@ -7,73 +7,42 @@ set_option autoImplicit false
 noncomputable section
 namespace TaoTrudgianYang2025
 open Expdb
+open scoped NNReal
 
-theorem exponentPair_taoTrudgianYang_firstNew : ExponentPair (89/1282) (997/1282) := by
-  apply exponentPair_of_beta_bound_half
-    (by norm_num [InExponentPairTriangle]) (by norm_num)
-  intro α hhalf
+/-- A single partition of the beta envelope certifies both supporting lines. -/
+private theorem newPairBeta {α : ℝ≥0} (hhalf : (α : ℝ) ≤ 1/2) :
+    exponentSumGrowthExponent α ≤ exponentPairLine (89/1282) (997/1282) α ∧
+    exponentSumGrowthExponent α ≤ exponentPairLine (652397/9713986) (7599781/9713986) α := by
   have hα : (α:ℝ) ≤ 1 := by linarith only [hhalf]
   by_cases h0 : (α:ℝ) ≤ 861996/2811205
   · have h := CubicJointCount.exponentSumGrowthExponent_le_trudgianYang_sixthRow hα
-    unfold exponentPairLine
-    linarith only [h,h0]
+    constructor <;> unfold exponentPairLine <;> linarith only [h,h0]
   by_cases hr0 : (α:ℝ) ≤ 87/275
-  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_seventhRow (α:=α) (by linarith only [lt_of_not_ge h0]) hr0
-    unfold exponentPairLine
-    linarith only [h,lt_of_not_ge h0,hr0]
+  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_seventhRow (α:=α) (le_of_lt (lt_of_not_ge h0)) hr0
+    constructor <;> unfold exponentPairLine <;> linarith only [h,lt_of_not_ge h0,hr0]
   by_cases hr1 : (α:ℝ) ≤ 423/1295
-  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_eighthRow (α:=α) (by linarith only [lt_of_not_ge hr0]) hr1
-    unfold exponentPairLine
-    linarith only [h,lt_of_not_ge hr0,hr1]
+  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_eighthRow (α:=α) (le_of_lt (lt_of_not_ge hr0)) hr1
+    constructor <;> unfold exponentPairLine <;> linarith only [h,lt_of_not_ge hr0,hr1]
   by_cases hr2 : (α:ℝ) ≤ 227/601
-  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_ninthRow (α:=α) (by linarith only [lt_of_not_ge hr1]) hr2
-    unfold exponentPairLine
-    linarith only [h,lt_of_not_ge hr1,hr2]
+  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_ninthRow (α:=α) (le_of_lt (lt_of_not_ge hr1)) hr2
+    constructor <;> unfold exponentPairLine <;> linarith only [h,lt_of_not_ge hr1,hr2]
   by_cases hr3 : (α:ℝ) ≤ 12/31
-  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_tenthRow (α:=α) (by linarith only [lt_of_not_ge hr2]) hr3
-    unfold exponentPairLine
-    linarith only [h,lt_of_not_ge hr2,hr3]
+  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_tenthRow (α:=α) (le_of_lt (lt_of_not_ge hr2)) hr3
+    constructor <;> unfold exponentPairLine <;> linarith only [h,lt_of_not_ge hr2,hr3]
   by_cases hr4 : (α:ℝ) ≤ 1508/3825
-  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_eleventhRow (α:=α) (by linarith only [lt_of_not_ge hr3]) hr4
-    unfold exponentPairLine
-    linarith only [h,lt_of_not_ge hr3,hr4]
+  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_eleventhRow (α:=α) (le_of_lt (lt_of_not_ge hr3)) hr4
+    constructor <;> unfold exponentPairLine <;> linarith only [h,lt_of_not_ge hr3,hr4]
   have h := CubicJointCount.exponentSumGrowthExponent_le_sargosD_bourgain (α:=α) hα
-  unfold exponentPairLine at h ⊢
-  linarith only [h,lt_of_not_ge hr4]
+  constructor <;> unfold exponentPairLine <;> linarith only [h,lt_of_not_ge hr4]
+
+theorem exponentPair_taoTrudgianYang_firstNew : ExponentPair (89/1282) (997/1282) :=
+  exponentPair_of_beta_bound_half (by norm_num [InExponentPairTriangle]) (by norm_num)
+    (fun _ hα => (newPairBeta hα).1)
 
 /-- The second new pair in the published theorem, with every beta input discharged. -/
-theorem exponentPair_taoTrudgianYang_secondNew : ExponentPair (652397/9713986) (7599781/9713986) := by
-  apply exponentPair_of_beta_bound_half
-    (by norm_num [InExponentPairTriangle]) (by norm_num)
-  intro α hhalf
-  have hα : (α:ℝ) ≤ 1 := by linarith only [hhalf]
-  by_cases h0 : (α:ℝ) ≤ 861996/2811205
-  · have h := CubicJointCount.exponentSumGrowthExponent_le_trudgianYang_sixthRow hα
-    unfold exponentPairLine
-    linarith only [h,h0]
-  by_cases hr0 : (α:ℝ) ≤ 87/275
-  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_seventhRow (α:=α) (by linarith only [lt_of_not_ge h0]) hr0
-    unfold exponentPairLine
-    linarith only [h,lt_of_not_ge h0,hr0]
-  by_cases hr1 : (α:ℝ) ≤ 423/1295
-  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_eighthRow (α:=α) (by linarith only [lt_of_not_ge hr0]) hr1
-    unfold exponentPairLine
-    linarith only [h,lt_of_not_ge hr0,hr1]
-  by_cases hr2 : (α:ℝ) ≤ 227/601
-  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_ninthRow (α:=α) (by linarith only [lt_of_not_ge hr1]) hr2
-    unfold exponentPairLine
-    linarith only [h,lt_of_not_ge hr1,hr2]
-  by_cases hr3 : (α:ℝ) ≤ 12/31
-  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_tenthRow (α:=α) (by linarith only [lt_of_not_ge hr2]) hr3
-    unfold exponentPairLine
-    linarith only [h,lt_of_not_ge hr2,hr3]
-  by_cases hr4 : (α:ℝ) ≤ 1508/3825
-  · have h := HuxleyRationalPhase.exponentSumGrowthExponent_le_huxley_eleventhRow (α:=α) (by linarith only [lt_of_not_ge hr3]) hr4
-    unfold exponentPairLine
-    linarith only [h,lt_of_not_ge hr3,hr4]
-  have h := CubicJointCount.exponentSumGrowthExponent_le_sargosD_bourgain (α:=α) hα
-  unfold exponentPairLine at h ⊢
-  linarith only [h,lt_of_not_ge hr4]
+theorem exponentPair_taoTrudgianYang_secondNew : ExponentPair (652397/9713986) (7599781/9713986) :=
+  exponentPair_of_beta_bound_half (by norm_num [InExponentPairTriangle]) (by norm_num)
+    (fun _ hα => (newPairBeta hα).2)
 
 /-- Exact B image of the second native new TTY pair. -/
 theorem exponentPair_BTTY2 : ExponentPair (1371394/4856993) (2754695/4856993) := by

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailSource
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailGeometry
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
@@ -11,14 +12,12 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerWeights InverseInitialProfile InverseInitialKernelBridge InverseInitialRayAttachment
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerWeights InverseInitialProfile InverseInitialKernelBridge InverseInitialRayAttachment
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def originalCoefficient (Ψ : O→*ℂ) (j : O) (mark : Finset ι→ℂ)
     (x : Point ι) (ρ : SecondRayIndex) : ℂ :=
@@ -44,8 +43,8 @@ theorem physicalTerm_original_coefficient
 
 include hp hcop hg in
 theorem originalCoefficient_marked_bound
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (Ψ : O→*ℂ) (hΨ : ∀n,‖Ψ n‖≤1) (j : O)
     (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (hdis : (slots:Set σ).PairwiseDisjoint lists)

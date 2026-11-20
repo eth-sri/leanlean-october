@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.LogarithmicLoss
 public import OAI.NumberTheory.DirichletL.CubicSieve.PooledRows
 
@@ -9,81 +10,27 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace InitialMeanSquare
 open ActualEisensteinCubic SecondPassArithmetic
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 open MixedCrossSeparation (columnCoefficient)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
+  (p : ι → O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end InitialMeanSquare
 
@@ -113,34 +60,6 @@ instance hyperbolicVolume_fullSupport : Measure.IsOpenPosMeasure hyperbolicVolum
     have htotal : hyperbolicVolume Set.univ=0 := measure_mono_null hseq hz
     exact hyperbolicVolume_ne_zero (Measure.measure_univ_eq_zero.mp htotal)
 
-instance kernelQuotientVolume_fullSupport :
-    Measure.IsOpenPosMeasure (integralQuotientVolume globalKubotaKernel) where
-  open_pos U hU hne := by
-    let quotientProjection := integralOrbitProjection globalKubotaKernel
-    have hp : Measurable quotientProjection := measurable_integralOrbitProjection _
-    have hpre : IsOpen (quotientProjection ⁻¹' U) := hU.preimage (continuous_integralOrbitProjection _)
-    have hpren : (quotientProjection ⁻¹' U).Nonempty := by
-      obtain ⟨q,hq⟩ := hne
-      obtain ⟨w,rfl⟩ := Quotient.mk_surjective q
-      exact ⟨w,hq⟩
-    intro hzero
-    have hd : hyperbolicVolume ((quotientProjection ⁻¹' U)∩hyperbolicFundamentalSet globalKubotaKernel)=0 := by
-      simpa only [integralQuotientVolume,quotientProjection,Measure.map_apply (measurable_integralOrbitProjection _) hU.measurableSet,
-        Measure.restrict_apply ((measurable_integralOrbitProjection _) hU.measurableSet)] using hzero
-    have hinv : ∀M:globalKubotaKernel,M • (quotientProjection ⁻¹' U)=quotientProjection ⁻¹' U := by
-      intro M
-      ext w
-      constructor
-      · rintro ⟨u,hu,rfl⟩
-        change quotientProjection (M • u)∈U
-        change quotientProjection u∈U at hu
-        rwa [show quotientProjection (M • u)=quotientProjection u from integralOrbitProjection_eq _ M u]
-      · intro hw
-        refine ⟨M⁻¹ • w,?_,smul_inv_smul M w⟩
-        change quotientProjection (M⁻¹ • w)∈U
-        rwa [show quotientProjection (M⁻¹ • w)=quotientProjection w from integralOrbitProjection_eq _ M⁻¹ w]
-    have hz := globalKubotaKernel_isFundamentalDomain.measure_zero_of_invariant (quotientProjection ⁻¹' U) hinv hd
-    exact hpre.measure_ne_zero _ hpren hz
 
 end
 
@@ -190,13 +109,12 @@ end CubicEisenstein
 namespace SecondPassArithmetic
 
 open scoped BigOperators Classical SchwartzMap
-open MeasureTheory
-open ActualEisensteinCubic
+open MeasureTheory ActualEisensteinCubic
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end SecondPassArithmetic
 
@@ -253,7 +171,6 @@ theorem ideal_reciprocal_cauchy (S : Finset (Ideal O)) (hS : ∀I∈S,I≠0)
 
 open ActualEisensteinCubic CompletedGauss QuadraticSquarefreeKernel
 
-open ActualEisensteinCubic CompletedGauss QuadraticSquarefreeKernel
 
 end CanonicalQuadraticSieve
 

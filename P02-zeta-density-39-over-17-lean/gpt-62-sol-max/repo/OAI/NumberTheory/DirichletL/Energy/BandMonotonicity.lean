@@ -9,8 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyBandMonotonicity
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound
 local notation "O"=>HeckeFamily.O
 
 def widenState {Z B b B' b':ℝ}(s:NaturalState Z B b)(hB:B≤B')(hb:b≤b'):
@@ -30,6 +29,20 @@ lemma profile_control_mono {a b:ℝ}(p:Profiles a b){S T:Finset (ℕ×ℕ)}(hst:
     (Seminorm.le_def.mp (Finset.sup_mono hst) (p.profile 1))
     (sourceControl_nonneg _ _) (sourceControl_nonneg _ _)
 
+/-- Increase the coefficient, seminorms, and exponents of a transported energy bound. -/
+theorem energy_coefficient_mono {a b C C' D t Z w eps eps' : ℝ} {S T : Finset (ℕ × ℕ)}
+    {J J' : ℕ} (p : Profiles a b) (hC : 0 ≤ C) (hCC : C ≤ C') (hD : 0 ≤ D)
+    (ht : 1 ≤ t) (hZ : 1 ≤ Z) (hS : S ⊆ T) (hJ : J ≤ J') (he : eps ≤ eps') :
+    C*D*(p.control S)^2*t^J*Z^(w+eps) ≤ C'*D*(p.control T)^2*t^J'*Z^(w+eps') := by
+  have := p.control_nonneg S
+  have := p.control_nonneg T
+  have := hC.trans hCC
+  have := zero_le_one.trans ht
+  have := profile_control_mono p hS
+  have := pow_le_pow_right₀ ht hJ
+  have := Real.rpow_le_rpow_of_exponent_le hZ (add_le_add_left he w)
+  gcongr
+
 theorem zeroAt_transport (Q:Ideal O)(a b radial mask L Mcap eps Z:ℝ)
     (a' b' radial' mask' L' Mcap' eps':ℝ)
     (J J':ℕ)(S T:Finset (ℕ×ℕ))(C C':ℝ)
@@ -42,16 +55,8 @@ theorem zeroAt_transport (Q:Ideal O)(a b radial mask L Mcap eps Z:ℝ)
   have hcap:Z^L'≤Z^L:=Real.rpow_le_rpow_of_exponent_le hZ hL
   have hh:=h (widenState s hm hr) hQ (hwidth.trans hM) (widenProfiles p ha hb)
     t X₁ X₂ hX₁ hX₂ (hcap₁.trans hcap) (hcap₂.trans hcap)
-  change s.plainEnergy p t X₁ X₂≤C*diagonalControl s.radial.profile*(p.control S)^2*
-    (1+‖t‖)^J*Z^(s.width+eps) at hh
-  have hp:=profile_control_mono p hS
-  have hp0:=p.control_nonneg S
-  have hd:=diagonalControl_nonneg s.radial.profile
-  have ht:(1+‖t‖)^J≤(1+‖t‖)^J':=pow_le_pow_right₀ (by linarith [norm_nonneg t]) hJ
-  have hz:Z^(s.width+eps)≤Z^(s.width+eps'):=Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
-  have hCnew:0≤C':=hC.trans hCC
-  apply hh.trans
-  gcongr
+  exact hh.trans (energy_coefficient_mono p hC hCC (diagonalControl_nonneg _) 
+    (by linarith [norm_nonneg t]) hZ hS hJ he)
 
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
@@ -73,17 +78,8 @@ theorem positiveAt_transport (W:ℝ→ℂ)(bslot a b radial mask L Lslot lo hi M
   have hh:=h A θ w σ freq t height hw hwL hσlo hσhi hheight hfreq
     (widenState s hm hr) hQ (hwidth.trans hM) (widenProfiles p ha hb)
     X₁ X₂ hX₁ hX₂ (hcap₁.trans hcap) (hcap₂.trans hcap) hcapacity
-  change _≤C*diagonalControl s.radial.profile*(p.control S)^2*
-    (1+|t|+height)^J*Z^(s.width+eps) at hh
-  have hp:=profile_control_mono p hS
-  have hp0:=p.control_nonneg S
-  have hd:=diagonalControl_nonneg s.radial.profile
-  have ht:(1+|t|+height)^J≤(1+|t|+height)^J':=
-    pow_le_pow_right₀ (by linarith [abs_nonneg t]) hJ
-  have hz:Z^(s.width+eps)≤Z^(s.width+eps'):=Real.rpow_le_rpow_of_exponent_le hZ (by linarith)
-  have hCnew:0≤C':=hC.trans hCC
-  apply hh.trans
-  gcongr
+  exact hh.trans (energy_coefficient_mono p hC hCC (diagonalControl_nonneg _) 
+    (by linarith [abs_nonneg t]) hZ hS hJ he)
 
 end SevenEighths.CenteredMomentEnergyBandMonotonicity
 

@@ -8,73 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 open Filter MeasureTheory
@@ -486,7 +430,11 @@ end
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma primeCubicMulChar_cube (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
+section
+variable (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
+include p hp hprimary
+
+lemma primeCubicMulChar_cube:
     primeCubicMulChar p hp hprimary^3=1:=by
   apply DFunLike.ext
   intro x
@@ -497,7 +445,7 @@ lemma primeCubicMulChar_cube (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
     exact (MulChar.one_apply_coe hx.unit).symm
   · rw [MulChar.map_nonunit _ hx,MulChar.map_nonunit _ hx]
 
-lemma primeCubicMulChar_ne_one (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
+lemma primeCubicMulChar_ne_one:
     primeCubicMulChar p hp hprimary≠1:=by
   let:(Ideal.span {p}:Ideal Eis).IsMaximal:=
     PrincipalIdealRing.isMaximal_of_irreducible hp.irreducible
@@ -520,32 +468,32 @@ lemma primeCubicMulChar_ne_one (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
     simpa only [hoc,map_one] using he
   · rw [MulChar.map_nonunit _ hx,MulChar.map_nonunit _ hx]
 
-lemma primeCubicMulChar_order (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1):
+lemma primeCubicMulChar_order:
     orderOf (primeCubicMulChar p hp hprimary)=3:=by
   have hd:=orderOf_dvd_of_pow_eq_one (primeCubicMulChar_cube p hp hprimary)
   rcases (Nat.dvd_prime Nat.prime_three).mp hd with h1|h3
   · exact False.elim (primeCubicMulChar_ne_one p hp hprimary (orderOf_eq_one_iff.mp h1))
   · exact h3
 
-lemma primeCubicMulChar_pow_eq_one (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (e:ℕ):
+lemma primeCubicMulChar_pow_eq_one (e:ℕ):
     primeCubicMulChar p hp hprimary^e=1↔3∣e:=by
   rw [←orderOf_dvd_iff_pow_eq_one,primeCubicMulChar_order]
 
-lemma primeCubicGauss_mod_three (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (e:ℕ) (h:Eis):
+lemma primeCubicGauss_mod_three (e:ℕ) (h:Eis):
     primeCubicGauss p hp hprimary e h=primeCubicGauss p hp hprimary (e%3) h:=by
   unfold primeCubicGauss
   have he:=pow_mod_orderOf (primeCubicMulChar p hp hprimary) e
   rw [primeCubicMulChar_order] at he
   rw [he]
 
-lemma primeCubicGauss_eq_gaussSum (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
+lemma primeCubicGauss_eq_gaussSum
     (e:ℕ) (h:Eis) [Fintype (Eis⧸Ideal.span {p})]:
     primeCubicGauss p hp hprimary e h=
       gaussSum (primeCubicMulChar p hp hprimary^e)
         ((quotientTrace p hp.ne_zero).mulShift (Ideal.Quotient.mk _ h)):=by
   simp only [primeCubicGauss,tsum_fintype,gaussSum,AddChar.mulShift_apply]
 
-theorem primeCubicGauss_of_dvd (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
+theorem primeCubicGauss_of_dvd
     (e:ℕ) (h:Eis) (hph:p∣h):
     primeCubicGauss p hp hprimary e h=
       if 3∣e then (Ideal.absNorm (Ideal.span {p}):ℂ)-1 else 0:=by
@@ -562,7 +510,7 @@ theorem primeCubicGauss_of_dvd (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
     rfl
   · exact gaussSum_one_right (fun hχ=>he ((primeCubicMulChar_pow_eq_one p hp hprimary e).mp hχ))
 
-theorem primeCubicGauss_trivial_nonzero (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
+theorem primeCubicGauss_trivial_nonzero
     (e:ℕ) (he:3∣e) (h:Eis) (hph:¬p∣h):
     primeCubicGauss p hp hprimary e h=-1:=by
   let:(Ideal.span {p}:Ideal Eis).IsMaximal:=
@@ -575,7 +523,7 @@ theorem primeCubicGauss_trivial_nonzero (p:Eis) (hp:Prime p) (hprimary:lambda^2�
   rw [primeCubicGauss_eq_gaussSum,(primeCubicMulChar_pow_eq_one p hp hprimary e).mpr he]
   exact gaussSum_one_left (GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp.ne_zero hh)
 
-theorem primeCubicGauss_one_mul_two (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1)
+theorem primeCubicGauss_one_mul_two
     (h:Eis) (hph:¬p∣h):
     primeCubicGauss p hp hprimary 1 h*primeCubicGauss p hp hprimary 2 h=
       (Ideal.absNorm (Ideal.span {p}):ℂ):=by
@@ -598,10 +546,12 @@ theorem primeCubicGauss_one_mul_two (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-
   simpa only [primeCubicGauss_eq_gaussSum,pow_one,Nat.reduceSub,
     Nat.card_eq_fintype_card] using he
 
-lemma primeCubicGauss_one_eq (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (h:Eis):
+lemma primeCubicGauss_one_eq (h:Eis):
     primeCubicGauss p hp hprimary 1 h=cubicUnitGaussSum h p:=by
   have he:=cubicUnitGaussSum_prime_power_lift p hp hprimary 0 h
   simpa only [pow_zero,one_mul,pow_one,Nat.zero_add] using he.symm
+
+end
 
 end CubicEisenstein
 

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.MixedRow
 
 @[expose] public section
@@ -15,10 +16,10 @@ noncomputable local instance activeReflectionQuotientFintype (P : Ideal Eis) [P.
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 
 theorem markedCompletedT_fixed_active_strata {ι : Type*} [Fintype ι]
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
+    (p : ι → Eis) [OAI.PrincipalIdealFamily.Maximal p]
     (hp : ∀ i, p i ≠ 0) (hprime : ∀ i, Prime (p i))
-    (hprimary : ∀ i, λ₀ ^ 2 ∣ p i - 1)
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι)
+    (hprimary : OAI.PrincipalIdealFamily.PrimaryAt p λ₀)
+    (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (j : ι → ℕ) (S : Finset ι)
     (φ : Eis →* ℂ) (hφnorm : ∀ n, ‖φ n‖ ≤ 1)
     (Q : Ideal Eis) (hφperiod : CanonicalCoefficientClass.FactorsModulo Q φ)
     (c : Eis) (hc : c ≠ 0) [Fintype (Eis ⧸ Ideal.span {c})]

@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAddedZeroUniform
-open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss
-open CenteredMomentGaussEnergy CenteredMomentAddedZero CenteredMomentRectangle
+open CanonicalQuadraticSieve CanonicalRowCompletion CompletedGauss CenteredMomentGaussEnergy CenteredMomentAddedZero CenteredMomentRectangle
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev Tuple (ι : Type*) := (ι ⊕ Fin 2) → Ideal O

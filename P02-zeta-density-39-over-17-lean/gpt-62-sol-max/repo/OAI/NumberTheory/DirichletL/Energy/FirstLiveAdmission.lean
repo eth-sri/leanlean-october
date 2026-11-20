@@ -17,24 +17,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyFirstLiveAdmission
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge
-open ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonProfile CenteredMomentAmplificationChildInput
-open CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic
-open CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows
-open CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization
-open CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps
-open CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands
-open CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily
-open CenteredMomentSourceLiveColumn CenteredMomentActiveSource
-open CenteredMomentPrimePool CenteredMomentPrimeElements
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CompletedGauss RayFourExpansion
-open CenteredMomentLogDyadic CenteredMomentRowNorm
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT ConcretePrimeRowBridge ActualEisensteinCubic CenteredMomentCanonicalFirst CenteredMomentSourceMass CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentOriginalCommonHarmonic CenteredMomentFirstSecondInputGates CenteredMomentFirstSecondActiveErrorGates CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicRows CenteredMomentFirstAmplifiedRadiusLower CenteredMomentFirstScale CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAnnularInput CenteredMomentSectorLocalization CenteredMomentSecondInputCapacitySource CenteredMomentFirstSourceConductorCaps CenteredMomentEnergyInputParentCapacity CenteredMomentEnergyBands CenteredMomentEnergyAmplifiedChildWidth CenteredMomentSecondHeightFamily CenteredMomentSourceLiveColumn CenteredMomentActiveSource CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentChildRows CompletedGauss RayFourExpansion CenteredMomentLogDyadic CenteredMomentRowNorm
 local notation "O" => HeckeFamily.O
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -100,22 +83,18 @@ lemma lower_profile_zero (W : ℝ → ℂ) (a : ℝ) (ha : 0 < a)
   by_contra hn
   exact (not_le_of_gt ha) (h 0 hn)
 
-theorem main_lower_support {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (N : ℕ) (l a : ℝ) (hl : 0 < l) (ha : 0 < a)
-    (s : Input ι) (hc : Fintype.card ι ≤ N) (hs : l ≤ s.lower)
-    (hW₁ : ∀ x, s.W₁ x ≠ 0 → a ≤ x) (hW₂ : ∀ x, s.W₂ x ≠ 0 → a ≤ x)
-    (C R seed : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] [instShared2 : DecidableEq ι] (N : ℕ) (l a : ℝ) (hl : 0 < l) (ha : 0 < a) (s : Input ι) (hc : Fintype.card ι ≤ N) (hs : l ≤ s.lower) (hW₁ : ∀ x, s.W₁ x ≠ 0 → a ≤ x) (hW₂ : ∀ x, s.W₂ x ≠ 0 → a ≤ x) (C R seed : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
+include ι instShared1 instShared2 N l a hl ha s hc hs hW₁ hW₂ C R seed B τ t
+
+theorem main_lower_support :
     ∀ I : Ideal O, coefficient (child s C R B τ t) (R*C) seed I ≠ 0 →
       lowerFactor N l a * volume (child s C R B τ t) ≤ (I.absNorm : ℝ) := by
   intro I hI
   exact actual_lower_support N l a hl ha (child s C R B τ t)
     ((live_card_le B.val).trans hc) hs hW₁ hW₂ (R*C) seed I hI
 
-theorem error_lower_support {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (N : ℕ) (l a : ℝ) (hl : 0 < l) (ha : 0 < a)
-    (s : Input ι) (hc : Fintype.card ι ≤ N) (hs : l ≤ s.lower)
-    (hW₁ : ∀ x, s.W₁ x ≠ 0 → a ≤ x) (hW₂ : ∀ x, s.W₂ x ≠ 0 → a ≤ x)
-    (C R seed : Ideal O) (B : actualAllocations s.pools C) (τ : Character) (t : ℝ)
+theorem error_lower_support
     (Q : Ideal O) (k : ℕ)
     (Bp : actualAllocations (activeInput (child s C R B τ t)).pools (Q^k))
     (υ : Character) (v : ℝ) :
@@ -125,6 +104,8 @@ theorem error_lower_support {ι : Type*} [Fintype ι] [DecidableEq ι]
   exact actual_lower_support N l a hl ha (errorInput s C R B τ t Q k Bp υ v)
     ((live_card_le Bp.val).trans ((live_card_le B.val).trans hc))
     hs hW₁ hW₂ ((R*C)*(Q^k)) seed I hI
+
+end
 
 theorem eventual_parent_radius (N : ℕ) (b b₁ b₂ : ℝ)
     (hb : 1 ≤ b) (hb₁ : 1 ≤ b₁) (hb₂ : 1 ≤ b₂) :

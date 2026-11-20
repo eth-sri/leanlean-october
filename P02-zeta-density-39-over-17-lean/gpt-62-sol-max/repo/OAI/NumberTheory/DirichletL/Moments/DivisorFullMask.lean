@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentDivisorFullMask
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows
-open CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
+open CenteredMomentDivisorAllocation CenteredMomentDivisorRectangle CenteredMomentDivisorRows CenteredMomentHeckeExpansion CenteredMomentRectangle HeckeFamily
 local notation "O" => ActualEisensteinCubic.O
 
  theorem annular_hasFiniteSupport (W : ℝ → ℂ) (b X : ℝ) (hX : 0 < X)

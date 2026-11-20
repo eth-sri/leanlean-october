@@ -8,73 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 open Filter MeasureTheory
@@ -109,22 +53,24 @@ lemma ker_orthogonal_restriction_range (T : E→L[ℂ]F) :
     have hz : T (T.ker.starProjection u)=0 := T.ker.starProjection_apply_mem u
     rw [hz,sub_zero]
 
-lemma ker_orthogonal_restriction_antilipschitz (T : E→L[ℂ]F) (K : E→L[ℂ]G)
-    (hK : IsCompactOperator K) (A B : ℝ)
-    (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) :
+section
+variable (T : E→L[ℂ]F) (K : E→L[ℂ]G) (hK : IsCompactOperator K) (A B : ℝ) (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2)
+include T K hK A B hest
+
+lemma ker_orthogonal_restriction_antilipschitz :
     ∃D : NNReal,AntilipschitzWith D (T.domRestrict T.kerᗮ) := by
   let : CompleteSpace T.kerᗮ := T.ker.isClosed_orthogonal.completeSpace_coe
   apply antilipschitz_of_injective_compact_estimate (T.domRestrict T.kerᗮ)
     (K.domRestrict T.kerᗮ) (hK.comp_clm T.kerᗮ.subtypeL) A B
       (fun u => hest u) (ker_orthogonal_restriction_injective T)
 
-lemma closed_range_of_compact_estimate (T : E→L[ℂ]F) (K : E→L[ℂ]G)
-    (hK : IsCompactOperator K) (A B : ℝ)
-    (hest : ∀u,‖u‖^2≤A*‖T u‖^2+B*‖K u‖^2) : IsClosed (Set.range T) := by
+lemma closed_range_of_compact_estimate : IsClosed (Set.range T) := by
   let : CompleteSpace T.kerᗮ := T.ker.isClosed_orthogonal.completeSpace_coe
   obtain ⟨D,hD⟩ := ker_orthogonal_restriction_antilipschitz T K hK A B hest
   rw [←ker_orthogonal_restriction_range T]
   exact hD.isClosed_range (T.domRestrict T.kerᗮ).uniformContinuous
+
+end
 
 lemma selfAdjoint_range_eq_ker_orthogonal (T : E→L[ℂ]E) (hT : IsSelfAdjoint T)
     (hrange : IsClosed (Set.range T)) : T.range=T.kerᗮ := by
@@ -313,54 +259,6 @@ theorem cubeLogRange_sq_small_power (b ε : ℝ) (_hb : 0≤b) (hε : 0<ε) :
       dsimp [deltaLoss]
       congr 1
       ring
-
-end CanonicalRowCompletion
-
-namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding)
-
-end SecondPassArithmetic
-
-namespace CanonicalRowCompletion
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open CanonicalCubeSeparation JointLogSeparation
-open FirstPassCubeLabels (columnLog)
-
-end CanonicalRowCompletion
-
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CompletedGauss
-open ActualEisensteinCubic
-
-end CompletedGauss
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open ConcreteTraceCRT (eisEmbedding)
-
-end CanonicalRowCompletion
-
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open CanonicalCubeSeparation JointLogSeparation
-open FirstPassCubeLabels (columnLog)
 
 end CanonicalRowCompletion
 

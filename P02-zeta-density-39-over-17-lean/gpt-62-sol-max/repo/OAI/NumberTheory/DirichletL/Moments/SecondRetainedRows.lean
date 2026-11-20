@@ -9,10 +9,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondRetainedRows
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge
-open CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSectorLocalization
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ConcretePrimeRowBridge CenteredMomentSecondSectorFrequency CenteredMomentSecondSectorRetained CenteredMomentSectorLocalization CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst
 local notation "O" => ActualEisensteinCubic.O
 
 def retainedRows (R : ℝ) (A : O) : Finset O := rowNormDisk (Nat.ceil (4*R/normValue A))
@@ -37,15 +34,17 @@ theorem retained_mem_rows (R : ℝ) (A h : O) (hA : A≠0)
     unfold normValue at hb
     exact_mod_cast hb
 
-theorem physical_sector_zero_of_weight (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+section
+variable (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+include η t S β C D hC hD
+
+theorem physical_sector_zero_of_weight
     (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (j : O)
     (hj : retainedWeight R (normValue j)=0) :
     sectorFrequency η t S β C D hC hD (physicalKernel C D W K R) j=0 := by
   simp only [sectorFrequency,physicalKernel,hj,Complex.ofReal_zero,mul_zero,zero_mul,Finset.sum_const_zero]
 
-theorem physical_partition_finite_rows (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem physical_partition_finite_rows
     (W : 𝓢(ℝ,ℂ)) (K R : ℝ) (A : O) (hA : A≠0) (part : O→Prop) :
     (∑' h : O,if part h then
       sectorFrequency η t S β C D hC hD (physicalKernel C D W K R) (A*h) else 0)=
@@ -60,8 +59,7 @@ theorem physical_partition_finite_rows (η : Character) (t : ℝ)
     exact hh (retained_mem_rows R A h hA hn)
   · rw [ite_eq_right hp]
 
-theorem actual_GV_finite_rows (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
+theorem actual_GV_finite_rows
     (U : Finset (CommonIndex C D)) (W : 𝓢(ℝ,ℂ)) (K R : ℝ) :
     let A := commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U
     (∑' h : O,if canonicalPartition C D U (nonunitFrequencyGenerator C D U*h) then
@@ -72,6 +70,8 @@ theorem actual_GV_finite_rows (η : Character) (t : ℝ)
   exact physical_partition_finite_rows η t S β C D hC hD W K R _
     (mul_ne_zero (commonFrequencyGenerator_ne_zero C D hC)
       (nonunitFrequencyGenerator_ne_zero C D hC U)) _
+
+end
 
 end SevenEighths.CenteredMomentSecondRetainedRows
 

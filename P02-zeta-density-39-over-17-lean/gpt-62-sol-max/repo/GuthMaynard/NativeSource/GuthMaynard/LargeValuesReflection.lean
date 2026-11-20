@@ -1,5 +1,6 @@
 module
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+public import MathCollab.Density.Oscillatory
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.IntegrationByParts
 public import GuthMaynard.NativeSource.GuthMaynard.LargeValuesPoisson
 
@@ -9,10 +10,7 @@ open Complex MeasureTheory Real Set
 open scoped ContDiff FourierTransform SchwartzMap
 
 namespace GuthMaynard.NativeMoment
-
-private theorem traceSchwartz_coe (cutoff : GMSmoothCutoff) (t : ℝ) :
-    (gmTraceKernelSchwartz cutoff t : ℝ → ℂ) = gmTraceKernel cutoff t :=
-  funext (gmTraceKernelSchwartz_apply cutoff t)
+open MathCollab.Density (gmReflectionIntegral gmReflectionPrimitive gmReflectionRatio gmReflectionRatioReal hasDerivAt_gmReflectionPrimitive hasDerivAt_gmReflectionRatio hasDerivAt_gmReflectionRatioReal gmReflectionRatio_mul_primitiveDeriv gmReflectionIntegral_eq_parts norm_gmReflectionPrimitive norm_gmReflectionRatio norm_gmReflectionIntegrand norm_gmReflectionIntegral_le_endpoint_variation norm_gmReflectionIntegral_le_left norm_gmReflectionIntegral_le_right norm_gmReflectionIntegral_le_length_div intervalIntegrable_gmReflectionIntegrand)
 
 /-!
 # Smooth reflection for the Guth--Maynard trace kernel
@@ -114,9 +112,6 @@ private noncomputable def gmCutoffSqSchwartz
   (hasCompactSupport_gmCutoffSqComplex cutoff).toSchwartzMap
     (contDiff_gmCutoffSqComplex cutoff)
 
-@[simp]
-private theorem gmCutoffSqSchwartz_apply (cutoff : GMSmoothCutoff) (x : ℝ) :
-    gmCutoffSqSchwartz cutoff x = gmCutoffSqComplex cutoff x := rfl
 
 private theorem gmTraceKernel_eq_cutoffSq_mul_cpow
     (cutoff : GMSmoothCutoff) (t : ℝ) {x : ℝ} (hx : 0 < x) :
@@ -129,50 +124,7 @@ private theorem gmTraceKernel_eq_cutoffSq_mul_cpow
   push_cast
   ring
 
-/-- Uniform derivative bound for the Mellin oscillation on the cutoff
-support. -/
-theorem norm_iteratedDeriv_ofReal_cpow_mul_I_le
-    (t : ℝ) (n : ℕ) {x : ℝ} (hx : 1 ≤ x) :
-    ‖iteratedDeriv n (fun y : ℝ => (y : ℂ) ^ ((t : ℂ) * I)) x‖ ≤
-      (|t| + n) ^ n := by
-  have hxPos : 0 < x := zero_lt_one.trans_le hx
-  rw [iteratedDeriv_ofReal_cpow ((t : ℂ) * I) n hxPos, norm_mul]
-  have hcoeff := norm_gmCpowDerivativeCoeff_le ((t : ℂ) * I) n
-  have hpow : ‖(x : ℂ) ^ ((t : ℂ) * I - n)‖ ≤ 1 := by
-    rw [Complex.norm_cpow_eq_rpow_re_of_pos hxPos]
-    have hre : (((t : ℂ) * I - n).re) = -(n : ℝ) := by simp
-    rw [hre]
-    exact Real.rpow_le_one_of_one_le_of_nonpos hx
-      (neg_nonpos.mpr (Nat.cast_nonneg n))
-  calc
-    ‖gmCpowDerivativeCoeff ((t : ℂ) * I) n‖ *
-          ‖(x : ℂ) ^ ((t : ℂ) * I - n)‖ ≤
-        (‖((t : ℂ) * I)‖ + n) ^ n * 1 :=
-      mul_le_mul hcoeff hpow (norm_nonneg _) (by positivity)
-    _ = (|t| + n) ^ n := by
-      simp [Real.norm_eq_abs]
-
-private theorem mellinDerivativePower_le (t : ℝ) {k n : ℕ} (hkn : k ≤ n) :
-    (|t| + k) ^ k ≤
-      (n + 1 : ℝ) ^ n * (1 + |t|) ^ n := by
-  let B : ℝ := (n + 1) * (1 + |t|)
-  have hn0 : (0 : ℝ) ≤ n := Nat.cast_nonneg n
-  have hBOne : 1 ≤ B := by
-    dsimp only [B]
-    nlinarith [abs_nonneg t]
-  have hbase : |t| + k ≤ B := by
-    dsimp only [B]
-    have hkReal : (k : ℝ) ≤ n := by exact_mod_cast hkn
-    nlinarith [abs_nonneg t]
-  calc
-    (|t| + k) ^ k ≤ B ^ k :=
-      pow_le_pow_left₀ (by positivity) hbase k
-    _ ≤ B ^ n := pow_le_pow_right₀ hBOne hkn
-    _ = (n + 1 : ℝ) ^ n * (1 + |t|) ^ n := by
-      dsimp only [B]
-      rw [mul_pow]
-
-private theorem contDiffAt_ofReal_cpow_mul_I
+theorem contDiffAt_ofReal_cpow_mul_I
     (t : ℝ) (n : ℕ) {x : ℝ} (hx : 0 < x) :
     ContDiffAt ℝ n (fun y : ℝ => (y : ℂ) ^ ((t : ℂ) * I)) x := by
   have hEq :
@@ -194,6 +146,134 @@ private theorem contDiffAt_ofReal_cpow_mul_I
     exact (hComplex.mul contDiffAt_const).cexp
   exact hExp.congr_of_eventuallyEq hEq
 
+/-- Derivatives of the Mellin phase on a half-line bounded away from zero. -/
+theorem norm_iteratedDeriv_mellinPhase_le (t : ℝ) (n : ℕ)
+    {a x : ℝ} (ha : 0 < a) (hx : a ≤ x) :
+    ‖iteratedDeriv n (fun y : ℝ => (y : ℂ) ^ ((t : ℂ) * I)) x‖ ≤
+      a⁻¹ ^ n * (|t| + n) ^ n := by
+  have hx₀ := ha.trans_le hx
+  rw [iteratedDeriv_ofReal_cpow _ _ hx₀, norm_mul,
+    Complex.norm_cpow_eq_rpow_re_of_pos hx₀, mul_comm (a⁻¹ ^ n)]
+  have hp : x ^ (-(n : ℝ)) ≤ a⁻¹ ^ n := by
+    rw [← Real.rpow_natCast, ← Real.rpow_neg_eq_inv_rpow]
+    exact Real.rpow_le_rpow_of_nonpos ha hx (neg_nonpos.mpr (Nat.cast_nonneg n))
+  exact mul_le_mul (by simpa [Real.norm_eq_abs] using norm_gmCpowDerivativeCoeff_le ((t : ℂ) * I) n)
+    (by simpa using hp) (by positivity) (by positivity)
+
+theorem mellinDerivativePower_le (t : ℝ) {k n : ℕ} (hkn : k ≤ n) :
+    (|t| + k) ^ k ≤ (n + 1 : ℝ) ^ n * (1 + |t|) ^ n := by
+  have hkn' : (k : ℝ) ≤ n := by exact_mod_cast hkn
+  have hn : (0 : ℝ) ≤ n := by positivity
+  rw [← mul_pow]
+  exact (pow_le_pow_left₀ (by positivity) (show |t| + k ≤ (n + 1) * (1 + |t|) by
+    nlinarith [abs_nonneg t]) k).trans (pow_le_pow_right₀ (by nlinarith [abs_nonneg t]) hkn)
+
+/-- The Leibniz bound for the product of an amplitude and a Mellin phase. -/
+noncomputable def mellinDerivativeConstant (w : 𝓢(ℝ, ℂ)) (a : ℝ) (n : ℕ) : ℝ :=
+  ∑ i ∈ Finset.range (n + 1), (n.choose i : ℝ) * SchwartzMap.seminorm ℝ 0 i w *
+    a⁻¹ ^ (n - i) * (n + 1 : ℝ) ^ n
+
+theorem mellinDerivativeConstant_nonneg (w : 𝓢(ℝ, ℂ)) {a : ℝ} (ha : 0 < a) (n : ℕ) :
+    0 ≤ mellinDerivativeConstant w a n := by unfold mellinDerivativeConstant; positivity
+
+private theorem eventuallyEq_zero_off_Icc {f : ℝ → ℂ} {a b x : ℝ}
+    (h : Function.support f ⊆ Icc a b) (hx : x ∉ Icc a b) : f =ᶠ[nhds x] 0 := by
+  filter_upwards [isClosed_Icc.isOpen_compl.mem_nhds hx] with y hy
+  exact not_ne_iff.mp (fun hne => hy (h hne))
+
+theorem norm_iteratedDeriv_mellinKernel_le (w : 𝓢(ℝ, ℂ)) {a b : ℝ} (ha : 0 < a)
+    {f : ℝ → ℂ} (hs : Function.support f ⊆ Icc a b) (t : ℝ)
+    (hf : ∀ x, 0 < x → f x = w x * (x : ℂ) ^ ((t : ℂ) * I)) (n : ℕ) (x : ℝ) :
+    ‖iteratedDeriv n f x‖ ≤ mellinDerivativeConstant w a n * (1 + |t|) ^ n := by
+  by_cases hx : x ∈ Icc a b
+  · have hx₀ := ha.trans_le hx.1
+    have hl : f =ᶠ[nhds x] ((w : ℝ → ℂ) * fun y : ℝ => (y : ℂ) ^ ((t : ℂ) * I)) := by
+      filter_upwards [Ioi_mem_nhds hx₀] with y hy using hf y hy
+    rw [hl.iteratedDeriv_eq, iteratedDeriv_mul (w.smooth n).contDiffAt
+      (contDiffAt_ofReal_cpow_mul_I t n hx₀), mellinDerivativeConstant, Finset.sum_mul]
+    refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun i hi => ?_)
+    have hw := SchwartzMap.le_seminorm' (𝕜 := ℝ) 0 i w x
+    simp only [pow_zero, one_mul] at hw
+    rw [norm_mul, norm_mul, Complex.norm_natCast]
+    calc
+      _ ≤ (n.choose i : ℝ) * SchwartzMap.seminorm ℝ 0 i w *
+          (a⁻¹ ^ (n - i) * (|t| + (n - i : ℕ)) ^ (n - i)) := by
+        gcongr
+        exact norm_iteratedDeriv_mellinPhase_le t _ ha hx.1
+      _ ≤ _ := by
+        rw [mul_assoc ((n.choose i : ℝ) * _ * _) _ _, ← mul_assoc ((n.choose i : ℝ) * _)]
+        gcongr
+        exact mellinDerivativePower_le t (Nat.sub_le n i)
+  · rw [(eventuallyEq_zero_off_Icc hs hx).iteratedDeriv_eq, iteratedDeriv_const_zero, norm_zero]
+    exact mul_nonneg (mellinDerivativeConstant_nonneg w ha n) (by positivity)
+
+private theorem integral_norm_iteratedFDeriv_of_support (f : 𝓢(ℝ, ℂ)) (p : ℕ)
+    {a b D : ℝ} (hab : a ≤ b) (h : Function.support (f : ℝ → ℂ) ⊆ Icc a b)
+    (hD : ∀ x, ‖iteratedFDeriv ℝ p (f : ℝ → ℂ) x‖ ≤ D) :
+    (∫ x : ℝ, ‖iteratedFDeriv ℝ p (f : ℝ → ℂ) x‖) ≤ (b - a) * D := by
+  let g (x : ℝ) := ‖iteratedFDeriv ℝ p (f : ℝ → ℂ) x‖
+  have hg : Integrable g := by
+    simpa only [g, pow_zero, one_mul] using f.integrable_pow_mul_iteratedFDeriv volume 0 p
+  have hEq : (Icc a b).indicator g = g := by
+    funext x
+    by_cases hx : x ∈ Icc a b
+    · simp [hx]
+    · simp [g, hx, (eventuallyEq_zero_off_Icc h hx).iteratedFDeriv ℝ p |>.eq_of_nhds]
+  change (∫ x, g x) ≤ _
+  calc
+    (∫ x, g x) = ∫ x in Icc a b, g x := by rw [← integral_indicator measurableSet_Icc, hEq]
+    _ ≤ ∫ _x in Icc a b, D := setIntegral_mono_on hg.integrableOn
+      (integrableOn_const (hs := measure_Icc_lt_top.ne)) measurableSet_Icc (fun x _ => hD x)
+    _ = (b - a) * D := by simp [max_eq_left (sub_nonneg.mpr hab)]
+
+/-- Fourier decay is uniform in a parameter when all derivative bounds are uniform. -/
+theorem schwartz_family_fourier_decay (f : ℝ → 𝓢(ℝ, ℂ)) {a b : ℝ} (hab : a ≤ b)
+    (hs : ∀ t, Function.support (f t : ℝ → ℂ) ⊆ Icc a b)
+    (hD : ∀ p : ℕ, ∃ D : ℝ, 0 ≤ D ∧ ∀ t x : ℝ,
+      ‖iteratedFDeriv ℝ p (f t : ℝ → ℂ) x‖ ≤ D * (1 + |t|) ^ p) (n : ℕ) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ t ξ : ℝ, |ξ| ^ n * ‖𝓕 (f t) ξ‖ ≤ C * (1 + |t|) ^ n := by
+  choose D hD₀ hDb using hD
+  refine ⟨2 ^ n * ∑ p ∈ Finset.range (n + 1), (b - a) * D p, mul_nonneg (by positivity) (Finset.sum_nonneg fun p _ => mul_nonneg (sub_nonneg.mpr hab) (hD₀ p)), ?_⟩
+  intro t ξ
+  have hF := pow_mul_norm_iteratedFDeriv_fourier_le
+    (K := (0 : ℕ∞)) (N := (⊤ : ℕ∞)) ((f t).smooth ⊤)
+    (fun k p _ _ => (f t).integrable_pow_mul_iteratedFDeriv volume k p)
+    (k := 0) (n := n) (by norm_num) (by simp) ξ
+  simp only [pow_zero, one_mul, zero_add, Finset.range_one, norm_iteratedFDeriv_zero,
+    Finset.singleton_product, Finset.sum_map, Function.Embedding.sectR_apply] at hF
+  have hF' : |ξ| ^ n * ‖𝓕 (f t) ξ‖ ≤
+      2 ^ n * ∑ p ∈ Finset.range (n + 1), ∫ x : ℝ, ‖iteratedFDeriv ℝ p (f t : ℝ → ℂ) x‖ := by
+    convert hF using 1
+    · simp [Real.norm_eq_abs, SchwartzMap.fourier_coe]
+    · congr 1
+      norm_num
+  refine hF'.trans ?_
+  rw [mul_assoc, Finset.sum_mul]
+  gcongr with p hp
+  exact (integral_norm_iteratedFDeriv_of_support (f t) p hab (hs t) (hDb p t)).trans (by
+    rw [mul_assoc]
+    exact mul_le_mul_of_nonneg_left
+      (mul_le_mul_of_nonneg_left (pow_le_pow_right₀ (by linarith [abs_nonneg t])
+        (Nat.lt_succ_iff.mp (Finset.mem_range.mp hp))) (hD₀ p)) (sub_nonneg.mpr hab))
+
+/-- Polynomial decay of a fixed Schwartz function after rescaling. -/
+theorem schwartz_rescale_polynomial_decay (F : 𝓢(ℝ, ℂ)) {c : ℝ} (hc : 0 < c) (n : ℕ) :
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ r : ℝ, |r| ^ n * ‖F (r / c)‖ ≤ C := by
+  refine ⟨c ^ n * SchwartzMap.seminorm ℝ n 0 F, by positivity, fun r => ?_⟩
+  have hSem := SchwartzMap.le_seminorm' (𝕜 := ℝ) n 0 F (r / c)
+  rw [iteratedDeriv_zero] at hSem
+  have h : |r| = c * ‖r / c‖ := by rw [Real.norm_eq_abs, abs_div, abs_of_pos hc]; field_simp
+  conv_lhs => rw [h, mul_pow, mul_assoc]
+  gcongr
+  simpa only [Real.norm_eq_abs] using hSem
+
+private theorem gmTraceKernel_support (cutoff : GMSmoothCutoff) (t : ℝ) :
+    Function.support (gmTraceKernel cutoff t) ⊆ Icc 1 2 := by
+  intro x hx
+  by_contra hn
+  have hz : cutoff x = 0 := not_ne_iff.mp (fun h => hn (cutoff.support h))
+  exact hx (by simp [gmTraceKernel, hz])
+
 /-- Guth--Maynard Lemma 4.3 in the exact two-parameter form needed to make
 the smooth-reflection frequency truncation uniform. -/
 theorem gmTraceKernel_uniform_iteratedFDeriv (cutoff : GMSmoothCutoff)
@@ -201,143 +281,11 @@ theorem gmTraceKernel_uniform_iteratedFDeriv (cutoff : GMSmoothCutoff)
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t x : ℝ,
       ‖iteratedFDeriv ℝ n (gmTraceKernel cutoff t) x‖ ≤
         C * (1 + |t|) ^ n := by
-  let C : ℝ := ∑ i ∈ Finset.range (n + 1),
-    (n.choose i : ℝ) *
-      SchwartzMap.seminorm ℝ 0 i (gmCutoffSqSchwartz cutoff) *
-        (n + 1 : ℝ) ^ n
-  have hC : 0 ≤ C := by
-    dsimp only [C]
-    positivity
-  refine ⟨C, hC, ?_⟩
-  intro t x
+  refine ⟨mellinDerivativeConstant (gmCutoffSqSchwartz cutoff) 1 n,
+    mellinDerivativeConstant_nonneg _ (by norm_num) _, fun t x => ?_⟩
   rw [norm_iteratedFDeriv_eq_norm_iteratedDeriv]
-  by_cases hxLow : x < 1
-  · have hzero : gmTraceKernel cutoff t =ᶠ[nhds x] 0 := by
-      filter_upwards [Iio_mem_nhds hxLow] with y hy
-      simp [gmTraceKernel, gmSmoothCutoff_eq_zero_of_lt_one cutoff hy]
-    rw [hzero.iteratedDeriv_eq]
-    simp
-    positivity
-  by_cases hxHigh : 2 < x
-  · have hzero : gmTraceKernel cutoff t =ᶠ[nhds x] 0 := by
-      filter_upwards [Ioi_mem_nhds hxHigh] with y hy
-      simp [gmTraceKernel,
-        gmSmoothCutoff_eq_zero_of_two_le cutoff (le_of_lt hy)]
-    rw [hzero.iteratedDeriv_eq]
-    simp
-    positivity
-  have hxIcc : x ∈ Set.Icc (1 : ℝ) 2 := ⟨le_of_not_gt hxLow, le_of_not_gt hxHigh⟩
-  have hxPos : 0 < x := zero_lt_one.trans_le hxIcc.1
-  have hlocal : gmTraceKernel cutoff t =ᶠ[nhds x]
-      fun y : ℝ => gmCutoffSqComplex cutoff y *
-        (y : ℂ) ^ ((t : ℂ) * I) := by
-    filter_upwards [Ioi_mem_nhds hxPos] with y hy
-    exact gmTraceKernel_eq_cutoffSq_mul_cpow cutoff t hy
-  rw [hlocal.iteratedDeriv_eq]
-  have hcutSmooth : ContDiffAt ℝ n (gmCutoffSqComplex cutoff) x :=
-    (contDiff_gmCutoffSqComplex cutoff).contDiffAt.of_le (by exact_mod_cast le_top)
-  have hphaseSmooth := contDiffAt_ofReal_cpow_mul_I t n hxPos
-  change ‖iteratedDeriv n
-      (gmCutoffSqComplex cutoff * fun y : ℝ => (y : ℂ) ^ ((t : ℂ) * I)) x‖ ≤
-    C * (1 + |t|) ^ n
-  rw [iteratedDeriv_mul hcutSmooth hphaseSmooth]
-  calc
-    ‖∑ i ∈ Finset.range (n + 1),
-        (n.choose i : ℂ) * iteratedDeriv i (gmCutoffSqComplex cutoff) x *
-          iteratedDeriv (n - i) (fun y : ℝ => (y : ℂ) ^ ((t : ℂ) * I)) x‖ ≤
-      ∑ i ∈ Finset.range (n + 1),
-        ‖(n.choose i : ℂ) * iteratedDeriv i (gmCutoffSqComplex cutoff) x *
-          iteratedDeriv (n - i) (fun y : ℝ => (y : ℂ) ^ ((t : ℂ) * I)) x‖ :=
-      norm_sum_le _ _
-    _ ≤ ∑ i ∈ Finset.range (n + 1),
-        ((n.choose i : ℝ) *
-          SchwartzMap.seminorm ℝ 0 i (gmCutoffSqSchwartz cutoff) *
-            (n + 1 : ℝ) ^ n) * (1 + |t|) ^ n := by
-      apply Finset.sum_le_sum
-      intro i hi
-      have hin : i ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hi)
-      have hcut := SchwartzMap.le_seminorm' (𝕜 := ℝ) 0 i
-        (gmCutoffSqSchwartz cutoff) x
-      simp only [pow_zero, one_mul] at hcut
-      change ‖iteratedDeriv i (gmCutoffSqComplex cutoff) x‖ ≤
-        SchwartzMap.seminorm ℝ 0 i (gmCutoffSqSchwartz cutoff) at hcut
-      have hphase := norm_iteratedDeriv_ofReal_cpow_mul_I_le
-        t (n - i) hxIcc.1
-      have hpower := mellinDerivativePower_le t (Nat.sub_le n i)
-      rw [norm_mul, norm_mul, Complex.norm_natCast]
-      calc
-        (n.choose i : ℝ) * ‖iteratedDeriv i (gmCutoffSqComplex cutoff) x‖ *
-            ‖iteratedDeriv (n - i)
-              (fun y : ℝ => (y : ℂ) ^ ((t : ℂ) * I)) x‖ ≤
-          (n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i (gmCutoffSqSchwartz cutoff) *
-              (|t| + ((n - i : ℕ) : ℝ)) ^ (n - i) := by
-            gcongr
-        _ ≤ (n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i (gmCutoffSqSchwartz cutoff) *
-              ((n + 1 : ℝ) ^ n * (1 + |t|) ^ n) := by
-            gcongr
-        _ = ((n.choose i : ℝ) *
-            SchwartzMap.seminorm ℝ 0 i (gmCutoffSqSchwartz cutoff) *
-              (n + 1 : ℝ) ^ n) * (1 + |t|) ^ n := by ring
-    _ = C * (1 + |t|) ^ n := by
-      dsimp only [C]
-      rw [Finset.sum_mul]
-
-private theorem integral_norm_iteratedFDeriv_gmTraceKernel_le
-    (cutoff : GMSmoothCutoff) (p : ℕ) {D : ℝ}
-    (hbound : ∀ t x : ℝ,
-      ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖ ≤
-        D * (1 + |t|) ^ p) (t : ℝ) :
-    (∫ x : ℝ, ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖) ≤
-      D * (1 + |t|) ^ p := by
-  let f : ℝ → ℝ := fun x =>
-    ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖
-  have hfInt : Integrable f := by
-    simpa only [f, pow_zero, one_mul, traceSchwartz_coe] using
-      (SchwartzMap.integrable_pow_mul_iteratedFDeriv volume
-        (gmTraceKernelSchwartz cutoff t) 0 p)
-  have hsupport : Function.support f ⊆ Set.Icc (1 : ℝ) 2 := by
-    intro x hx
-    by_contra hnot
-    have hxOutside : x < 1 ∨ 2 < x := by
-      by_cases hxLow : x < 1
-      · exact Or.inl hxLow
-      · exact Or.inr (lt_of_not_ge fun hxUpper => hnot ⟨le_of_not_gt hxLow, hxUpper⟩)
-    have hzero : gmTraceKernel cutoff t =ᶠ[nhds x] 0 := by
-      rcases hxOutside with hxLow | hxHigh
-      · filter_upwards [Iio_mem_nhds hxLow] with y hy
-        simp [gmTraceKernel, gmSmoothCutoff_eq_zero_of_lt_one cutoff hy]
-      · filter_upwards [Ioi_mem_nhds hxHigh] with y hy
-        simp [gmTraceKernel,
-          gmSmoothCutoff_eq_zero_of_two_le cutoff (le_of_lt hy)]
-    apply hx
-    dsimp only [f]
-    rw [(hzero.iteratedFDeriv ℝ p).eq_of_nhds]
-    simp
-  have hEq : f = Set.indicator (Set.Icc (1 : ℝ) 2) f := by
-    funext x
-    by_cases hx : x ∈ Set.Icc (1 : ℝ) 2
-    · simp [hx]
-    · have : f x = 0 := not_ne_iff.mp fun hne => hx (hsupport hne)
-      simp [Set.indicator, hx, this]
-  rw [show (∫ x : ℝ, ‖iteratedFDeriv ℝ p
-      (gmTraceKernel cutoff t) x‖) = ∫ x : ℝ, f x by rfl]
-  rw [hEq, MeasureTheory.integral_indicator measurableSet_Icc]
-  calc
-    (∫ x : ℝ in Set.Icc 1 2, f x) ≤
-        ∫ _x : ℝ in Set.Icc 1 2, D * (1 + |t|) ^ p := by
-      apply MeasureTheory.setIntegral_mono_on
-      · exact hfInt.integrableOn
-      · exact MeasureTheory.integrableOn_const
-          (hs := ne_of_lt
-            (measure_Icc_lt_top : volume (Set.Icc (1 : ℝ) 2) < (⊤ : ENNReal)))
-      · exact measurableSet_Icc
-      · intro x hx
-        exact hbound t x
-    _ = D * (1 + |t|) ^ p := by
-      simp
-      ring
+  exact norm_iteratedDeriv_mellinKernel_le _ (by norm_num) (gmTraceKernel_support cutoff t) t
+    (fun y hy => gmTraceKernel_eq_cutoffSq_mul_cpow cutoff t hy) n x
 
 /-- Uniform two-parameter Fourier decay.  The constant depends only on the
 fixed cutoff and derivative order, while the complete `t` dependence is the
@@ -345,59 +293,112 @@ source polynomial `(1+|t|)^n`. -/
 theorem gmTraceFourier_uniform_decay (cutoff : GMSmoothCutoff) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ t ξ : ℝ,
       |ξ| ^ n * ‖gmTraceFourier cutoff t ξ‖ ≤
-        C * (1 + |t|) ^ n := by
-  choose D hD hDbound using fun p : ℕ =>
-    gmTraceKernel_uniform_iteratedFDeriv cutoff p
-  let C : ℝ := 2 ^ n * ∑ p ∈ Finset.range (n + 1), D p
-  have hC : 0 ≤ C := by
-    dsimp only [C]
-    exact mul_nonneg (by positivity)
-      (Finset.sum_nonneg fun p _ => hD p)
-  refine ⟨C, hC, ?_⟩
-  intro t ξ
-  have hIntegrable : ∀ (k p : ℕ), k ≤ (0 : ℕ∞) → p ≤ (⊤ : ℕ∞) →
-      Integrable (fun x : ℝ =>
-        ‖x‖ ^ k * ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖) := by
-    intro k p _hk _hp
-    simpa only [traceSchwartz_coe] using
-      (SchwartzMap.integrable_pow_mul_iteratedFDeriv volume
-        (gmTraceKernelSchwartz cutoff t) k p)
-  have hFourier := pow_mul_norm_iteratedFDeriv_fourier_le
-    (f := gmTraceKernel cutoff t)
-    (K := (0 : ℕ∞)) (N := (⊤ : ℕ∞))
-    (contDiff_gmTraceKernel cutoff t) hIntegrable
-    (k := 0) (n := n) (by norm_num) (by simp) ξ
-  simp only [pow_zero, one_mul, zero_add, Finset.range_one,
-    norm_iteratedFDeriv_zero, Finset.singleton_product, Finset.sum_map,
-    Function.Embedding.sectR_apply] at hFourier
-  have hFourier' : |ξ| ^ n * ‖gmTraceFourier cutoff t ξ‖ ≤
-      2 ^ n * ∑ p ∈ Finset.range (n + 1),
-        ∫ x : ℝ, ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖ := by
-    convert hFourier using 1
-    · simp [gmTraceFourier, Real.norm_eq_abs, SchwartzMap.fourier_coe, traceSchwartz_coe]
-    · congr 1
-      norm_num
+        C * (1 + |t|) ^ n :=
+  schwartz_family_fourier_decay (gmTraceKernelSchwartz cutoff) (by norm_num)
+    (gmTraceKernel_support cutoff) (gmTraceKernel_uniform_iteratedFDeriv cutoff) n
 
-  calc
-    |ξ| ^ n * ‖gmTraceFourier cutoff t ξ‖ ≤
-        2 ^ n * ∑ p ∈ Finset.range (n + 1),
-          ∫ x : ℝ, ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖ := hFourier'
-    _ ≤ 2 ^ n * ∑ p ∈ Finset.range (n + 1),
-        D p * (1 + |t|) ^ n := by
-      gcongr with p hp
-      have hpn : p ≤ n := Nat.lt_succ_iff.mp (Finset.mem_range.mp hp)
-      have hint := integral_norm_iteratedFDeriv_gmTraceKernel_le
-        cutoff p (hDbound p) t
+/-- A polynomial Fourier decay bound sums over omitted integer frequencies. -/
+theorem fourier_tail_bound_order
+    (F : ℝ → ℝ → ℂ) (n : ℕ)
+    (decay : ∃ C : ℝ, 0 ≤ C ∧ ∀ t ξ : ℝ,
+      |ξ| ^ (n + 2) * ‖F t ξ‖ ≤ C * (1 + |t|) ^ (n + 2)) :
+    ∃ K : ℝ, 0 < K ∧ ∀ (N M : ℕ), 0 < N → 0 < M → ∀ t : ℝ,
+      ‖(∑' m : ℤ, if M < m.natAbs then F t ((N : ℝ) * (m : ℝ)) else 0)‖ ≤
+        K * (1 + |t|) ^ (n + 2) /
+          ((N : ℝ) ^ (n + 2) * (M : ℝ) ^ n) := by
+  obtain ⟨C₀, hC₀, hDecay⟩ := decay
+  let C : ℝ := C₀ + 1
+  have hC : 0 < C := by dsimp only [C]; linarith
+  have hPSeries : Summable (fun m : ℤ => ‖1 / (m : ℂ) ^ 2‖) := by
+    have hNorm : (fun m : ℤ => ‖1 / (m : ℂ) ^ 2‖) =
+        fun m : ℤ => |1 / (m : ℝ) ^ 2| := by
+      funext m
+      simp only [norm_div, norm_one, norm_pow, Complex.norm_intCast,
+        abs_div, abs_one, pow_abs]
+    rw [hNorm, summable_abs_iff]
+    exact Real.summable_one_div_int_pow.mpr (by norm_num)
+  let B : ℝ := ∑' m : ℤ, ‖1 / (m : ℂ) ^ 2‖
+  have hB : 0 ≤ B := tsum_nonneg fun m => norm_nonneg _
+  refine ⟨C * B + 1, by positivity, ?_⟩
+  intro N M hN hM t
+  have hNr : 0 < (N : ℝ) := by exact_mod_cast hN
+  have hMr : 0 < (M : ℝ) := by exact_mod_cast hM
+  let scale : ℝ := C * (1 + |t|) ^ (n + 2) /
+    ((N : ℝ) ^ (n + 2) * (M : ℝ) ^ n)
+  have hPointwise : ∀ m : ℤ, M < m.natAbs →
+      ‖F t ((N : ℝ) * (m : ℝ))‖ ≤
+        scale * ‖1 / (m : ℂ) ^ 2‖ := by
+    intro m hm
+    have hmNatPos : 0 < m.natAbs := hM.trans hm
+    have hmNe : m ≠ 0 := Int.natAbs_ne_zero.mp hmNatPos.ne'
+    have hmReal : (m : ℝ) ≠ 0 := by exact_mod_cast hmNe
+    have hmAbsPos : 0 < |(m : ℝ)| := abs_pos.mpr hmReal
+    have hmAbs : (M : ℝ) ≤ |(m : ℝ)| := by
+      have hcast : (M : ℝ) ≤ (m.natAbs : ℝ) := by
+        exact_mod_cast (Nat.le_of_lt hm)
+      simpa using hcast
+    have hFreqAbs : |(N : ℝ) * (m : ℝ)| =
+        (N : ℝ) * |(m : ℝ)| := by
+      rw [abs_mul, abs_of_pos hNr]
+    have hFreqPos : 0 < |(N : ℝ) * (m : ℝ)| := by
+      rw [hFreqAbs]
+      positivity
+    have hFourier :
+        ‖F t ((N : ℝ) * (m : ℝ))‖ ≤
+          C₀ * (1 + |t|) ^ (n + 2) /
+            |(N : ℝ) * (m : ℝ)| ^ (n + 2) := by
+      rw [le_div_iff₀ (pow_pos hFreqPos (n + 2))]
+      simpa [mul_comm] using hDecay t ((N : ℝ) * (m : ℝ))
+    have hpow : (M : ℝ) ^ n * |(m : ℝ)| ^ 2 ≤
+        |(m : ℝ)| ^ (n + 2) := by
       calc
-        (∫ x : ℝ, ‖iteratedFDeriv ℝ p (gmTraceKernel cutoff t) x‖) ≤
-            D p * (1 + |t|) ^ p := hint
-        _ ≤ D p * (1 + |t|) ^ n := by
-          exact mul_le_mul_of_nonneg_left
-            (pow_le_pow_right₀ (by nlinarith [abs_nonneg t]) hpn) (hD p)
-    _ = C * (1 + |t|) ^ n := by
-      dsimp only [C]
-      rw [← Finset.sum_mul]
-      ring
+        (M : ℝ) ^ n * |(m : ℝ)| ^ 2 ≤
+            |(m : ℝ)| ^ n * |(m : ℝ)| ^ 2 := by gcongr
+        _ = |(m : ℝ)| ^ (n + 2) := by rw [pow_add]
+    rw [norm_div, norm_one, norm_pow, Complex.norm_intCast]
+    calc
+      ‖F t ((N : ℝ) * (m : ℝ))‖ ≤
+          C₀ * (1 + |t|) ^ (n + 2) /
+            |(N : ℝ) * (m : ℝ)| ^ (n + 2) := hFourier
+      _ ≤ C * (1 + |t|) ^ (n + 2) /
+          ((N : ℝ) ^ (n + 2) * |(m : ℝ)| ^ (n + 2)) := by
+        rw [hFreqAbs, mul_pow]
+        exact div_le_div_of_nonneg_right
+          (mul_le_mul_of_nonneg_right (by dsimp only [C]; linarith)
+            (by positivity)) (by positivity)
+      _ ≤ C * (1 + |t|) ^ (n + 2) /
+          ((N : ℝ) ^ (n + 2) *
+            ((M : ℝ) ^ n * |(m : ℝ)| ^ 2)) := by
+        exact div_le_div_of_nonneg_left (by positivity) (by positivity)
+          (mul_le_mul_of_nonneg_left hpow (by positivity))
+      _ = scale * (1 / |(m : ℝ)| ^ 2) := by
+        dsimp only [scale]
+        field_simp [hNr.ne', hMr.ne', hmAbsPos.ne']
+  have hComparison : ∀ m : ℤ,
+      ‖if M < m.natAbs then
+          F t ((N : ℝ) * (m : ℝ)) else 0‖ ≤
+        scale * ‖1 / (m : ℂ) ^ 2‖ := by
+    intro m
+    by_cases hm : M < m.natAbs
+    · simpa only [ite_eq_left hm] using hPointwise m hm
+    · have hscale : 0 ≤ scale := by dsimp only [scale]; positivity
+      rw [ite_eq_right hm, norm_zero]
+      exact mul_nonneg hscale (norm_nonneg _)
+  have hScaled : Summable (fun m : ℤ => scale * ‖1 / (m : ℂ) ^ 2‖) :=
+    hPSeries.mul_left scale
+  have hBound := tsum_of_norm_bounded hScaled.hasSum hComparison
+  rw [tsum_mul_left] at hBound
+  change ‖(∑' m : ℤ, if M < m.natAbs then F t ((N : ℝ) * (m : ℝ)) else 0)‖ ≤ scale * B at hBound
+  have hDen : 0 < (N : ℝ) ^ (n + 2) * (M : ℝ) ^ n := by positivity
+  calc
+    ‖(∑' m : ℤ, if M < m.natAbs then F t ((N : ℝ) * (m : ℝ)) else 0)‖ ≤ scale * B := hBound
+    _ ≤ (C * B + 1) * (1 + |t|) ^ (n + 2) /
+          ((N : ℝ) ^ (n + 2) * (M : ℝ) ^ n) := by
+      dsimp only [scale]
+      rw [div_mul_eq_mul_div]
+      apply (div_le_div_iff_of_pos_right hDen).2
+      have hpowNonneg : 0 ≤ (1 + |t|) ^ (n + 2) := by positivity
+      nlinarith
 
 /-- Reversing the Fourier frequency is complex conjugation together with
 reversal of the Mellin ordinate.  This supplies the negative-frequency half
@@ -461,34 +462,8 @@ theorem gmCutoffMellin_polynomial_decay
     (cutoff : GMSmoothCutoff) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ r : ℝ,
       |r| ^ n * ‖gmCutoffMellin cutoff r‖ ≤ C := by
-  let F : 𝓢(ℝ, ℂ) := 𝓕 (gmMellinKernelSchwartz cutoff)
-  let C : ℝ := (2 * Real.pi) ^ n * SchwartzMap.seminorm ℝ n 0 F
-  have hC : 0 ≤ C := by
-    dsimp [C]
-    positivity
-  refine ⟨C, hC, ?_⟩
-  intro r
-  have hSem := SchwartzMap.le_seminorm' (𝕜 := ℝ) n 0 F
-    (r / (2 * Real.pi))
-  rw [iteratedDeriv_zero] at hSem
-  have hSem' : ‖r / (2 * Real.pi)‖ ^ n *
-      ‖F (r / (2 * Real.pi))‖ ≤ SchwartzMap.seminorm ℝ n 0 F := by
-    exact hSem
-  rw [gmCutoffMellin_eq_fourier]
-  change |r| ^ n * ‖F (r / (2 * Real.pi))‖ ≤ C
-  have hpi : 0 < 2 * Real.pi := by positivity
-  have hAbs : |r| = (2 * Real.pi) * ‖r / (2 * Real.pi)‖ := by
-    rw [Real.norm_eq_abs, abs_div, abs_of_pos hpi]
-    field_simp [hpi.ne']
-  rw [hAbs, mul_pow]
-  dsimp only [C]
-  calc
-    (2 * Real.pi) ^ n * ‖r / (2 * Real.pi)‖ ^ n *
-          ‖F (r / (2 * Real.pi))‖ =
-        (2 * Real.pi) ^ n *
-          (‖r / (2 * Real.pi)‖ ^ n * ‖F (r / (2 * Real.pi))‖) := by ring
-    _ ≤ (2 * Real.pi) ^ n * SchwartzMap.seminorm ℝ n 0 F :=
-      mul_le_mul_of_nonneg_left hSem' (pow_nonneg hpi.le n)
+  simpa only [gmCutoffMellin_eq_fourier] using
+    schwartz_rescale_polynomial_decay (𝓕 (gmMellinKernelSchwartz cutoff)) (by positivity) n
 
 private noncomputable def gmMellinReflectionIntegrand
     (cutoff : GMSmoothCutoff) (t q : ℝ) (v r : ℝ) : ℂ :=
@@ -575,13 +550,6 @@ theorem gmCutoffSq_eq_verticalMellinIntegral (cutoff : GMSmoothCutoff)
   unfold mellinInv
   simp only [smul_eq_mul]
   norm_num
-
-/-- The common logarithmic oscillatory integral after the source change of
-variables `v = m N u`. -/
-noncomputable def gmReflectionIntegral (tau A B : ℝ) : ℂ :=
-  ∫ v in A..B,
-    (v : ℂ)⁻¹ * Complex.exp
-      ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))
 
 private theorem gmCutoffPhase_eq_mellinIntegral
     (cutoff : GMSmoothCutoff) (t q : ℝ) {v : ℝ}
@@ -728,348 +696,6 @@ theorem gmRescaledCutoffIntegral_eq_mellinReflection
                 ((v : ℂ)⁻¹ * Complex.exp
                   (((((t - r) * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) := by ring
 
-/-- The unit-modulus primitive used for integration by parts away from the
-stationary point. -/
-noncomputable def gmReflectionPrimitive (tau v : ℝ) : ℂ :=
-  I⁻¹ * Complex.exp
-    ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))
-
-/-- The quotient of the reflection amplitude by the derivative of its phase.
-The only pole is the stationary point `tau/(2π)`. -/
-noncomputable def gmReflectionRatio (tau v : ℝ) : ℂ :=
-  ((tau - 2 * Real.pi * v : ℝ) : ℂ)⁻¹
-
-/-- Real form of the integration-by-parts quotient. -/
-noncomputable def gmReflectionRatioReal (tau v : ℝ) : ℝ :=
-  (tau - 2 * Real.pi * v)⁻¹
-
-theorem hasDerivAt_gmReflectionPrimitive {tau v : ℝ} (hv : v ≠ 0) :
-    HasDerivAt (gmReflectionPrimitive tau)
-      (((tau / v - 2 * Real.pi : ℝ) : ℂ) *
-        Complex.exp
-          ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) v := by
-  have hReal : HasDerivAt
-      (fun x : ℝ => tau * Real.log x - 2 * Real.pi * x)
-      (tau / v - 2 * Real.pi) v := by
-    convert (Real.hasDerivAt_log hv).const_mul tau |>.fun_sub
-      ((hasDerivAt_id v).const_mul (2 * Real.pi)) using 1
-    all_goals simp only [div_eq_mul_inv, mul_one, id_eq]
-  have hExp := (hReal.ofReal_comp.mul_const I).cexp.const_mul I⁻¹
-  change HasDerivAt (gmReflectionPrimitive tau) _ v
-  convert hExp using 1
-  · funext y
-    rfl
-  · field_simp [Complex.I_ne_zero]
-
-theorem hasDerivAt_gmReflectionRatio {tau v : ℝ}
-    (hv : tau - 2 * Real.pi * v ≠ 0) :
-    HasDerivAt (gmReflectionRatio tau)
-      (((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ)) v := by
-  have hLinear : HasDerivAt
-      (fun x : ℝ => tau - 2 * Real.pi * x) (-2 * Real.pi) v := by
-    convert (hasDerivAt_id v).const_mul (2 * Real.pi) |>.const_sub tau using 1
-    all_goals simp only [id_eq, mul_one, neg_mul]
-  have hInv := (hLinear.inv hv).ofReal_comp
-  change HasDerivAt (gmReflectionRatio tau) _ v
-  convert hInv using 1
-  · funext x
-    simp [gmReflectionRatio]
-  · push_cast
-    field_simp
-
-theorem hasDerivAt_gmReflectionRatioReal {tau v : ℝ}
-    (hv : tau - 2 * Real.pi * v ≠ 0) :
-    HasDerivAt (gmReflectionRatioReal tau)
-      (2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2) v := by
-  have hLinear : HasDerivAt
-      (fun x : ℝ => tau - 2 * Real.pi * x) (-2 * Real.pi) v := by
-    convert (hasDerivAt_id v).const_mul (2 * Real.pi) |>.const_sub tau using 1
-    all_goals simp only [id_eq, mul_one, neg_mul]
-  change HasDerivAt (fun x : ℝ => (tau - 2 * Real.pi * x)⁻¹) _ v
-  convert hLinear.inv hv using 1
-  field_simp
-
-/-- Pointwise factorization of the reflection integrand as a smooth quotient
-times the derivative of a unit-modulus primitive. -/
-theorem gmReflectionRatio_mul_primitiveDeriv {tau v : ℝ}
-    (hv : v ≠ 0) (hstat : tau - 2 * Real.pi * v ≠ 0) :
-    gmReflectionRatio tau v *
-        (((tau / v - 2 * Real.pi : ℝ) : ℂ) *
-          Complex.exp
-            ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) =
-      (v : ℂ)⁻¹ * Complex.exp
-        ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)) := by
-  unfold gmReflectionRatio
-  have hvC : (v : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hv
-  have hstatC : ((tau - 2 * Real.pi * v : ℝ) : ℂ) ≠ 0 :=
-    Complex.ofReal_ne_zero.mpr hstat
-  have hDerivative : ((tau / v - 2 * Real.pi : ℝ) : ℂ) =
-      ((tau - 2 * Real.pi * v : ℝ) : ℂ) * (v : ℂ)⁻¹ := by
-    push_cast
-    field_simp [hvC]
-  rw [hDerivative]
-  field_simp [hstatC]
-
-/-- Exact integration-by-parts identity on an interval which does not meet
-the stationary point. -/
-theorem gmReflectionIntegral_eq_parts {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a)
-    (hstat : ∀ v ∈ Set.Icc a b, tau - 2 * Real.pi * v ≠ 0) :
-    gmReflectionIntegral tau a b =
-      gmReflectionRatio tau b * gmReflectionPrimitive tau b -
-        gmReflectionRatio tau a * gmReflectionPrimitive tau a -
-          ∫ v in a..b,
-            ((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-              gmReflectionPrimitive tau v := by
-  have hpos : ∀ v ∈ Set.Icc a b, 0 < v := fun v hv => ha.trans_le hv.1
-  have hRatioDeriv : ∀ v ∈ Set.Icc a b,
-      HasDerivAt (gmReflectionRatio tau)
-        (((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ)) v :=
-    fun v hv => hasDerivAt_gmReflectionRatio (hstat v hv)
-  have hPrimitiveDeriv : ∀ v ∈ Set.Icc a b,
-      HasDerivAt (gmReflectionPrimitive tau)
-        (((tau / v - 2 * Real.pi : ℝ) : ℂ) *
-          Complex.exp
-            ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) v :=
-    fun v hv => hasDerivAt_gmReflectionPrimitive (hpos v hv).ne'
-  have hRatioDerivU : ∀ v ∈ Set.uIcc a b,
-      HasDerivAt (gmReflectionRatio tau)
-        (((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ)) v := by
-    simpa only [uIcc_of_le hab] using hRatioDeriv
-  have hPrimitiveDerivU : ∀ v ∈ Set.uIcc a b,
-      HasDerivAt (gmReflectionPrimitive tau)
-        (((tau / v - 2 * Real.pi : ℝ) : ℂ) *
-          Complex.exp
-            ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) v := by
-    simpa only [uIcc_of_le hab] using hPrimitiveDeriv
-  have hRatioInt : IntervalIntegrable
-      (fun v : ℝ => ((2 * Real.pi /
-        (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ)) volume a b :=
-    (continuousOn_of_forall_continuousAt fun v hv => by
-      have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
-      have hden : tau - 2 * Real.pi * v ≠ 0 := hstat v hvIcc
-      exact Complex.continuous_ofReal.continuousAt.comp
-        (continuousAt_const.div
-          ((continuousAt_const.sub (continuousAt_const.mul continuousAt_id)).pow 2)
-          (pow_ne_zero 2 hden))).intervalIntegrable
-  have hPrimitiveInt : IntervalIntegrable
-      (fun v : ℝ => ((tau / v - 2 * Real.pi : ℝ) : ℂ) *
-        Complex.exp
-          ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))) volume a b :=
-    (continuousOn_of_forall_continuousAt fun v hv => by
-      have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
-      have hvNe : v ≠ 0 := (hpos v hvIcc).ne'
-      have hFirst : ContinuousAt (fun x : ℝ => tau / x - 2 * Real.pi) v :=
-        continuousAt_const.div continuousAt_id hvNe |>.sub continuousAt_const
-      have hPhase : ContinuousAt
-          (fun x : ℝ => tau * Real.log x - 2 * Real.pi * x) v :=
-        (continuousAt_const.mul (Real.continuousAt_log hvNe)).sub
-          (continuousAt_const.mul continuousAt_id)
-      exact (Complex.continuous_ofReal.continuousAt.comp hFirst).mul
-        ((Complex.continuous_ofReal.continuousAt.comp hPhase).mul
-          continuousAt_const).cexp).intervalIntegrable
-  have hParts := intervalIntegral.integral_mul_deriv_eq_deriv_mul
-    hRatioDerivU hPrimitiveDerivU hRatioInt hPrimitiveInt
-  unfold gmReflectionIntegral
-  rw [← hParts]
-  apply intervalIntegral.integral_congr
-  intro v hv
-  have hvIcc : v ∈ Set.Icc a b := by simpa [uIcc_of_le hab] using hv
-  exact (gmReflectionRatio_mul_primitiveDeriv (hpos v hvIcc).ne'
-    (hstat v hvIcc)).symm
-
-theorem norm_gmReflectionPrimitive (tau v : ℝ) :
-    ‖gmReflectionPrimitive tau v‖ = 1 := by
-  simp [gmReflectionPrimitive, Complex.norm_exp]
-
-theorem norm_gmReflectionRatio (tau v : ℝ) :
-    ‖gmReflectionRatio tau v‖ = |tau - 2 * Real.pi * v|⁻¹ := by
-  rw [gmReflectionRatio, norm_inv, Complex.norm_real]
-  rw [Real.norm_eq_abs]
-
-/-- On the positive axis, the rescaled reflection integrand has norm `1/v`.
-This is the amplitude estimate used both near and away from its stationary
-point. -/
-theorem norm_gmReflectionIntegrand {tau v : ℝ} (hv : 0 < v) :
-    ‖(v : ℂ)⁻¹ * Complex.exp
-        ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))‖ = v⁻¹ := by
-  rw [norm_mul, norm_inv]
-  simp [Real.norm_eq_abs, abs_of_pos hv, Complex.norm_exp]
-
-/-- Quantitative integration-by-parts bound on an interval avoiding the
-stationary point.  The last term is the exact total variation of the phase
-quotient. -/
-theorem norm_gmReflectionIntegral_le_endpoint_variation {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a)
-    (hstat : ∀ v ∈ Set.Icc a b, tau - 2 * Real.pi * v ≠ 0) :
-    ‖gmReflectionIntegral tau a b‖ ≤
-      |tau - 2 * Real.pi * b|⁻¹ + |tau - 2 * Real.pi * a|⁻¹ +
-        |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := by
-  rw [gmReflectionIntegral_eq_parts hab ha hstat]
-  have hDerivU : ∀ v ∈ Set.uIcc a b,
-      HasDerivAt (gmReflectionRatioReal tau)
-        (2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2) v := by
-    intro v hv
-    apply hasDerivAt_gmReflectionRatioReal
-    apply hstat v
-    simpa only [uIcc_of_le hab] using hv
-  have hDerivContinuous : ContinuousOn
-      (fun v : ℝ => 2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2)
-      (Set.uIcc a b) := by
-    apply continuousOn_of_forall_continuousAt
-    intro v hv
-    have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
-    exact continuousAt_const.div
-      ((continuousAt_const.sub (continuousAt_const.mul continuousAt_id)).pow 2)
-      (pow_ne_zero 2 (hstat v hvIcc))
-  have hDerivativeIntegral :
-      (∫ v in a..b, 2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2) =
-        gmReflectionRatioReal tau b - gmReflectionRatioReal tau a :=
-    intervalIntegral.integral_eq_sub_of_hasDerivAt hDerivU
-      hDerivContinuous.intervalIntegrable
-  have hVariation :
-      ‖∫ v in a..b,
-          ((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-            gmReflectionPrimitive tau v‖ ≤
-        |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := by
-    have hNormIntegralEq :
-        (∫ v in a..b,
-            ‖((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-              gmReflectionPrimitive tau v‖) =
-          ∫ v in a..b, 2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 := by
-      apply intervalIntegral.integral_congr
-      intro v hv
-      change ‖((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-          gmReflectionPrimitive tau v‖ =
-        2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2
-      rw [norm_mul, norm_gmReflectionPrimitive, mul_one, Complex.norm_real]
-      rw [Real.norm_eq_abs, abs_of_nonneg]
-      exact div_nonneg (by positivity) (sq_nonneg _)
-    calc
-      ‖∫ v in a..b,
-          ((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-            gmReflectionPrimitive tau v‖ ≤
-          |∫ v in a..b,
-            ‖((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-              gmReflectionPrimitive tau v‖| :=
-        intervalIntegral.norm_integral_le_abs_integral_norm
-      _ = |∫ v in a..b,
-          2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2| := by
-        rw [hNormIntegralEq]
-      _ = |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := by
-        rw [hDerivativeIntegral]
-  calc
-    ‖gmReflectionRatio tau b * gmReflectionPrimitive tau b -
-        gmReflectionRatio tau a * gmReflectionPrimitive tau a -
-          ∫ v in a..b,
-            ((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-              gmReflectionPrimitive tau v‖ ≤
-        ‖gmReflectionRatio tau b * gmReflectionPrimitive tau b -
-          gmReflectionRatio tau a * gmReflectionPrimitive tau a‖ +
-            ‖∫ v in a..b,
-              ((2 * Real.pi / (tau - 2 * Real.pi * v) ^ 2 : ℝ) : ℂ) *
-                gmReflectionPrimitive tau v‖ := norm_sub_le _ _
-    _ ≤ (‖gmReflectionRatio tau b * gmReflectionPrimitive tau b‖ +
-          ‖gmReflectionRatio tau a * gmReflectionPrimitive tau a‖) +
-            |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| :=
-      add_le_add (norm_sub_le _ _) hVariation
-    _ = |tau - 2 * Real.pi * b|⁻¹ + |tau - 2 * Real.pi * a|⁻¹ +
-          |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := by
-      rw [norm_mul, norm_mul, norm_gmReflectionRatio, norm_gmReflectionRatio,
-        norm_gmReflectionPrimitive, norm_gmReflectionPrimitive, mul_one, mul_one]
-
-/-- First-derivative bound on an interval strictly to the left of the
-stationary point. -/
-theorem norm_gmReflectionIntegral_le_left {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a) (hleft : 2 * Real.pi * b < tau) :
-    ‖gmReflectionIntegral tau a b‖ ≤ 2 / (tau - 2 * Real.pi * b) := by
-  have hdb : 0 < tau - 2 * Real.pi * b := by linarith
-  have hda : 0 < tau - 2 * Real.pi * a := by
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hstat : ∀ v ∈ Set.Icc a b, tau - 2 * Real.pi * v ≠ 0 := by
-    intro v hv
-    have := mul_le_mul_of_nonneg_left hv.2 (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hBase := norm_gmReflectionIntegral_le_endpoint_variation hab ha hstat
-  have hInvOrder : (tau - 2 * Real.pi * a)⁻¹ ≤
-      (tau - 2 * Real.pi * b)⁻¹ := by
-    apply (inv_le_inv₀ hda hdb).2
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hDiff : 0 ≤ gmReflectionRatioReal tau b - gmReflectionRatioReal tau a := by
-    simpa only [gmReflectionRatioReal] using sub_nonneg.mpr hInvOrder
-  calc
-    ‖gmReflectionIntegral tau a b‖ ≤
-        |tau - 2 * Real.pi * b|⁻¹ + |tau - 2 * Real.pi * a|⁻¹ +
-          |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := hBase
-    _ = 2 / (tau - 2 * Real.pi * b) := by
-      rw [abs_of_pos hdb, abs_of_pos hda, abs_of_nonneg hDiff]
-      unfold gmReflectionRatioReal
-      ring
-
-/-- First-derivative bound on an interval strictly to the right of the
-stationary point. -/
-theorem norm_gmReflectionIntegral_le_right {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a) (hright : tau < 2 * Real.pi * a) :
-    ‖gmReflectionIntegral tau a b‖ ≤ 2 / (2 * Real.pi * a - tau) := by
-  have hda : tau - 2 * Real.pi * a < 0 := by linarith
-  have hdb : tau - 2 * Real.pi * b < 0 := by
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hstat : ∀ v ∈ Set.Icc a b, tau - 2 * Real.pi * v ≠ 0 := by
-    intro v hv
-    have := mul_le_mul_of_nonneg_left hv.1 (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hBase := norm_gmReflectionIntegral_le_endpoint_variation hab ha hstat
-  have hInvOrder : (tau - 2 * Real.pi * a)⁻¹ ≤
-      (tau - 2 * Real.pi * b)⁻¹ := by
-    apply (inv_le_inv_of_neg hda hdb).2
-    have := mul_le_mul_of_nonneg_left hab (by positivity : 0 ≤ 2 * Real.pi)
-    linarith
-  have hDiff : 0 ≤ gmReflectionRatioReal tau b - gmReflectionRatioReal tau a := by
-    simpa only [gmReflectionRatioReal] using sub_nonneg.mpr hInvOrder
-  calc
-    ‖gmReflectionIntegral tau a b‖ ≤
-        |tau - 2 * Real.pi * b|⁻¹ + |tau - 2 * Real.pi * a|⁻¹ +
-          |gmReflectionRatioReal tau b - gmReflectionRatioReal tau a| := hBase
-    _ = 2 / (2 * Real.pi * a - tau) := by
-      rw [abs_of_neg hdb, abs_of_neg hda, abs_of_nonneg hDiff]
-      unfold gmReflectionRatioReal
-      have hNegInv : (tau - 2 * Real.pi * a)⁻¹ =
-          -(2 * Real.pi * a - tau)⁻¹ := by
-        rw [show tau - 2 * Real.pi * a = -(2 * Real.pi * a - tau) by ring,
-          inv_neg]
-      have hNegInvB : (tau - 2 * Real.pi * b)⁻¹ =
-          -(2 * Real.pi * b - tau)⁻¹ := by
-        rw [show tau - 2 * Real.pi * b = -(2 * Real.pi * b - tau) by ring,
-          inv_neg]
-      rw [hNegInv, hNegInvB]
-      ring
-
-/-- Trivial amplitude bound on a positive interval. -/
-theorem norm_gmReflectionIntegral_le_length_div {tau a b L : ℝ}
-    (hab : a ≤ b) (hL : 0 < L) (hLa : L ≤ a) :
-    ‖gmReflectionIntegral tau a b‖ ≤ (b - a) / L := by
-  unfold gmReflectionIntegral
-  have hBound := intervalIntegral.norm_integral_le_of_norm_le_const
-    (a := a) (b := b) (C := L⁻¹)
-    (f := fun v : ℝ => (v : ℂ)⁻¹ * Complex.exp
-      ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)))
-    (fun v hv => by
-      rw [uIoc_of_le hab] at hv
-      have hLv : L ≤ v := hLa.trans (le_of_lt hv.1)
-      have hvPos : 0 < v := hL.trans_le hLv
-      rw [norm_gmReflectionIntegrand hvPos]
-      exact (inv_le_inv₀ hvPos hL).2 hLv)
-  rw [abs_of_nonneg (sub_nonneg.mpr hab)] at hBound
-  calc
-    ‖∫ v in a..b,
-        (v : ℂ)⁻¹ * Complex.exp
-          ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I))‖ ≤
-        L⁻¹ * (b - a) := hBound
-    _ = (b - a) / L := by ring
-
 /-- Global logarithmic majorant for the reflection integral.  This is the
 nonoscillatory estimate used only on the omitted Mellin range in Lemma 6.2. -/
 theorem norm_gmReflectionIntegral_le_log {tau a b : ℝ}
@@ -1094,28 +720,6 @@ theorem norm_gmReflectionIntegral_le_log {tau a b : ℝ}
       rw [norm_gmReflectionIntegrand hvPos]
     _ = Real.log (b / a) := integral_inv_of_pos ha hb
 
-theorem intervalIntegrable_gmReflectionIntegrand {tau a b : ℝ}
-    (hab : a ≤ b) (ha : 0 < a) :
-    IntervalIntegrable
-      (fun v : ℝ => (v : ℂ)⁻¹ * Complex.exp
-        ((((tau * Real.log v - 2 * Real.pi * v : ℝ) : ℂ) * I)))
-      volume a b := by
-  apply ContinuousOn.intervalIntegrable
-  apply continuousOn_of_forall_continuousAt
-  intro v hv
-  have hvIcc : v ∈ Set.Icc a b := by simpa only [uIcc_of_le hab] using hv
-  have hvPos : 0 < v := ha.trans_le hvIcc.1
-  have hPhase : ContinuousAt
-      (fun x : ℝ => tau * Real.log x - 2 * Real.pi * x) v :=
-    (continuousAt_const.mul (Real.continuousAt_log hvPos.ne')).sub
-      (continuousAt_const.mul continuousAt_id)
-  exact (Complex.continuous_ofReal.continuousAt.comp continuousAt_id).inv₀
-      (Complex.ofReal_ne_zero.mpr hvPos.ne') |>.mul
-    ((Complex.continuous_ofReal.continuousAt.comp hPhase).mul continuousAt_const).cexp
-
-/-- Pointwise identification of the inner Fubini integral used in the Mellin
-reflection formula.  Naming this equality is essential for retaining the
-finite Dirichlet polynomial inside the outer Mellin integral. -/
 private theorem intervalIntegral_gmMellinReflectionIntegrand_eq
     (cutoff : GMSmoothCutoff) (t r : ℝ) {N m M : ℕ}
     (hN : 0 < N) (hm : 1 ≤ m) (hmM : m ≤ M) :
@@ -2125,4 +1729,25 @@ theorem norm_gmTraceFourier_signed_sum_le_dualPoly
     (norm_gmTraceFourier_pos_sum_le_dualPoly cutoff t hN)
     (norm_gmTraceFourier_neg_sum_le_dualPoly cutoff t hN))
 
+end GuthMaynard.NativeMoment
+
+namespace GuthMaynard.NativeMoment
+export MathCollab.Density (
+  gmReflectionIntegral
+  gmReflectionPrimitive
+  gmReflectionRatio
+  gmReflectionRatioReal
+  hasDerivAt_gmReflectionPrimitive
+  hasDerivAt_gmReflectionRatio
+  hasDerivAt_gmReflectionRatioReal
+  gmReflectionRatio_mul_primitiveDeriv
+  gmReflectionIntegral_eq_parts
+  norm_gmReflectionPrimitive
+  norm_gmReflectionRatio
+  norm_gmReflectionIntegrand
+  norm_gmReflectionIntegral_le_endpoint_variation
+  norm_gmReflectionIntegral_le_left
+  norm_gmReflectionIntegral_le_right
+  norm_gmReflectionIntegral_le_length_div
+  intervalIntegrable_gmReflectionIntegrand)
 end GuthMaynard.NativeMoment

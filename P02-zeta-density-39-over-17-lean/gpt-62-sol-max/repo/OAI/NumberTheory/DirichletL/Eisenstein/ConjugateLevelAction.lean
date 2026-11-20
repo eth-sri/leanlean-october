@@ -9,73 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 
@@ -331,7 +275,7 @@ def quadraticRayExponent (r : Coord) : ZMod 4 :=
   if r∈({(0,1),(0,3),(1,0),(1,1),(3,0),(3,3)} : Finset Coord) then 0
   else if r∈({(1,2),(1,3),(2,3)} : Finset Coord) then 1 else 3
 
-def fourthRoot (a : ZMod 4) : ℂ := Complex.I^(a.val:ℤ)
+def fourthRoot (a : ZMod 4) : ℂ := Complex.I ^(a.val:ℤ)
 
 lemma fourthRoot_add (a b : ZMod 4) : fourthRoot (a+b)=fourthRoot a*fourthRoot b := by
   unfold fourthRoot
@@ -381,13 +325,17 @@ lemma quadraticRaySign_symm (r s : Coord) : quadraticRaySign r s=quadraticRaySig
   have h : ∀r s : Coord,quadraticRaySign r s=quadraticRaySign s r := by decide
   exact h r s
 
-lemma quadraticRaySign_sq (r s : Coord) (hr : odd r) (hs : odd s) :
+section
+variable (r s : Coord) (hr : odd r) (hs : odd s)
+include r s hr hs
+
+lemma quadraticRaySign_sq :
     quadraticRaySign r s^2=1 := by
   unfold quadraticRaySign
   rw [ite_eq_left ⟨hr,hs⟩]
   split_ifs <;> norm_num
 
-lemma quadraticRaySign_exponent (r s : Coord) (hr : odd r) (hs : odd s) :
+lemma quadraticRaySign_exponent :
     quadraticRayExponent (EisensteinEPrimaryPhase.mul r s)=
       (if quadraticRaySign r s=1 then 0 else 2)+quadraticRayExponent r+quadraticRayExponent s := by
   have h : ∀r s : Coord,odd r → odd s →
@@ -395,23 +343,25 @@ lemma quadraticRaySign_exponent (r s : Coord) (hr : odd r) (hs : odd s) :
         (if quadraticRaySign r s=1 then 0 else 2)+quadraticRayExponent r+quadraticRayExponent s := by decide
   exact h r s hr hs
 
-lemma quadraticRaySign_root (r s : Coord) (hr : odd r) (hs : odd s) :
+lemma quadraticRaySign_root :
     fourthRoot (if quadraticRaySign r s=1 then 0 else 2)=(quadraticRaySign r s:ℂ) := by
   by_cases he : quadraticRayExponent (EisensteinEPrimaryPhase.mul r s)=
       quadraticRayExponent r+quadraticRayExponent s
   · norm_num [quadraticRaySign,hr,hs,he,fourthRoot,ZMod.val_zero,ZMod.val_ofNat,Complex.I_sq]
   · norm_num [quadraticRaySign,hr,hs,he,fourthRoot,ZMod.val_zero,ZMod.val_ofNat,Complex.I_sq]
 
-lemma odd_mul (r s : Coord) (hr : odd r) (hs : odd s) : odd (EisensteinEPrimaryPhase.mul r s) := by
+lemma odd_mul : odd (EisensteinEPrimaryPhase.mul r s) := by
   have h : ∀r s : Coord,odd r → odd s → odd (EisensteinEPrimaryPhase.mul r s) := by decide
   exact h r s hr hs
 
-theorem quadraticRayValue_mul (r s : Coord) (hr : odd r) (hs : odd s) :
+theorem quadraticRayValue_mul :
     quadraticRayValue (EisensteinEPrimaryPhase.mul r s)=
       (quadraticRaySign r s:ℂ)*quadraticRayValue r*quadraticRayValue s := by
   rw [quadraticRayValue_eq_fourthRoot _ (odd_mul r s hr hs),quadraticRaySign_exponent r s hr hs,
     fourthRoot_add,fourthRoot_add,quadraticRaySign_root r s hr hs,
     quadraticRayValue_eq_fourthRoot r hr,quadraticRayValue_eq_fourthRoot s hs]
+
+end
 
 end QuadraticAllOddCRT
 

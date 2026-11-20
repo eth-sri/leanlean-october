@@ -302,11 +302,11 @@ theorem outerConstant_ge_one {e A M : ℝ} (he : 0 < e) (he' : e < 1 / 1000)
   apply (le_div_iff₀ he).mpr
   nlinarith
 
-theorem outer_log_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
-    (ha : 1 / 2 ≤ a) (ha' : a ≤ 1) (he : 0 < e) (he' : e < 1 / 1000)
-    (hA : 1 ≤ A) (hM : 1 ≤ M) (hT : 1 ≤ T)
-    (hg : DifferentiableOn ℂ g (ball c (2 - a - 2 * e)))
-    (hRe : ∀ z ∈ ball c (2 - a - 3 * e), (g z).re ≤ M * T)
+section
+variable {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ} (ha : 1 / 2 ≤ a) (ha' : a ≤ 1) (he : 0 < e) (he' : e < 1 / 1000) (hA : 1 ≤ A) (hM : 1 ≤ M) (hT : 1 ≤ T) (hg : DifferentiableOn ℂ g (ball c (2 - a - 2 * e))) (hRe : ∀ z ∈ ball c (2 - a - 3 * e), (g z).re ≤ M * T)
+include g c a e A M T ha ha' he he' hA hM hT hg hRe
+
+theorem outer_log_bound
     (hc : ‖g c‖ ≤ A) {z : ℂ} (hz : z ∈ closedBall c (2 - a - 4 * e)) :
     ‖g z‖ ≤ outerConstant e A M * T := by
   have hAp : 0 ≤ A := zero_le_one.trans hA
@@ -330,11 +330,7 @@ theorem outer_log_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
   rw [div_mul_eq_mul_div]
   exact (div_le_div_iff_of_pos_right he).mpr (by nlinarith)
 
-theorem inner_log_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
-    (ha : 1 / 2 ≤ a) (ha' : a ≤ 1) (he : 0 < e) (he' : e < 1 / 1000)
-    (hA : 1 ≤ A) (hM : 1 ≤ M) (hT : 1 ≤ T)
-    (hg : DifferentiableOn ℂ g (ball c (2 - a - 2 * e)))
-    (hRe : ∀ z ∈ ball c (2 - a - 3 * e), (g z).re ≤ M * T)
+theorem inner_log_bound
     (hin : ∀ z ∈ closedBall c (49 / 100), ‖g z‖ ≤ A)
     {z : ℂ} (hz : z ∈ closedBall c (2 - a - 6 * e)) :
     ‖g z‖ ≤ A * outerConstant e A M * T ^ uniformTheta e := by
@@ -351,11 +347,7 @@ theorem inner_log_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
     (Real.rpow_le_rpow_of_exponent_le hT (three_circles_exponent_uniform ha ha' he he'))
     (by positivity))
 
-theorem logarithm_derivative_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
-    (ha : 1 / 2 ≤ a) (ha' : a ≤ 1) (he : 0 < e) (he' : e < 1 / 1000)
-    (hA : 1 ≤ A) (hM : 1 ≤ M) (hT : 1 ≤ T)
-    (hg : DifferentiableOn ℂ g (ball c (2 - a - 2 * e)))
-    (hRe : ∀ z ∈ ball c (2 - a - 3 * e), (g z).re ≤ M * T)
+theorem logarithm_derivative_bound
     (hc : ‖g c‖ ≤ A) {z : ℂ} (hz : z ∈ closedBall c (2 - a - 8 * e)) :
     ‖deriv g z‖ ≤ (outerConstant e A M / (2 * e)) * T := by
   have hzn : dist z c ≤ 2 - a - 8 * e := hz
@@ -374,6 +366,8 @@ theorem logarithm_derivative_bound {g : ℂ → ℂ} {c : ℂ} {a e A M T : ℝ}
     have hdist := dist_triangle w z c
     change dist w c ≤ _
     linarith
+
+end
 
 theorem zero_free_disk_logarithm {L E : ℂ → ℂ} {c : ℂ} {a e A M C : ℝ}
     (ha' : a ≤ 1) (he : 0 < e) (he' : e < 1 / 1000) (hC : 0 < C)

@@ -8,71 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 
@@ -84,7 +31,11 @@ def expandedTerm (Ψ : O →* ℂ) (W : ℝ → ℂ) (X : ℝ) (I H J : Ideal O)
       Vstar W ((Ideal.absNorm I : ℝ) * (Ideal.absNorm H : ℝ) ^ 3 *
         (Ideal.absNorm J : ℝ) ^ 3 / X))
 
-theorem finite_support_expandedTerm (Ψ : O →* ℂ) (W : ℝ → ℂ)
+section
+variable (Ψ : O →* ℂ) (W : ℝ → ℂ)
+include Ψ W
+
+theorem finite_support_expandedTerm
     (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
     (Function.support (fun p : Ideal O × Ideal O × Ideal O =>
       expandedTerm Ψ W X p.1 p.2.1 p.2.2)).Finite := by
@@ -94,7 +45,7 @@ theorem finite_support_expandedTerm (Ψ : O →* ℂ) (W : ℝ → ℂ)
   · intro I H J hw
     simp [expandedTerm, Vstar, hw]
 
-theorem expandedTerm_scale (Ψ : O →* ℂ) (W : ℝ → ℂ) (X : ℝ) (I H J : Ideal O) :
+theorem expandedTerm_scale (X : ℝ) (I H J : Ideal O) :
     (UniqueFactorizationMonoid.moebius H : ℂ) * cubeWeight Ψ H *
       summand Ψ W (X / (Ideal.absNorm H : ℝ) ^ 3) I J = expandedTerm Ψ W X I H J := by
   have harg : (Ideal.absNorm I : ℝ) * (Ideal.absNorm J : ℝ) ^ 3 /
@@ -106,13 +57,13 @@ theorem expandedTerm_scale (Ψ : O →* ℂ) (W : ℝ → ℂ) (X : ℝ) (I H J 
   simp only [summand, expandedTerm, harg, map_mul]
   ring
 
-theorem expandedTerm_one (Ψ : O →* ℂ) (W : ℝ → ℂ) (X : ℝ) (I J : Ideal O) :
+theorem expandedTerm_one (X : ℝ) (I J : Ideal O) :
     expandedTerm Ψ W X I 1 J = summand Ψ W X I J := by
   simp only [expandedTerm, summand, UniqueFactorizationMonoid.moebius_one, Int.cast_one,
     one_mul, map_one, Nat.cast_one, one_pow, mul_one]
   ring
 
-theorem completedT_finite_support (Ψ : O →* ℂ) (W : ℝ → ℂ)
+theorem completedT_finite_support
     (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
     (Function.support (fun p : Ideal O × Ideal O => summand Ψ W X p.1 p.2)).Finite := by
   have hf := finite_support_expandedTerm Ψ W hW X hX
@@ -123,12 +74,12 @@ theorem completedT_finite_support (Ψ : O →* ℂ) (W : ℝ → ℂ)
   change (Function.support (fun p : Ideal O × Ideal O => expandedTerm Ψ W X p.1 1 p.2)).Finite at hp
   simpa only [expandedTerm_one] using hp
 
-theorem completedT_summable (Ψ : O →* ℂ) (W : ℝ → ℂ)
+theorem completedT_summable
     (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
     Summable (fun p : Ideal O × Ideal O => summand Ψ W X p.1 p.2) :=
   summable_of_hasFiniteSupport (completedT_finite_support Ψ W hW X hX)
 
-theorem vstar_source_normalization (Ψ : O →* ℂ) (W : ℝ → ℂ)
+theorem vstar_source_normalization
     (X : ℝ) (hX : 0 < X) (I : Ideal O) :
     columnWeight Ψ I / (Real.sqrt (Ideal.absNorm I : ℝ) : ℂ) *
       Vstar W ((Ideal.absNorm I : ℝ) / X) =
@@ -141,6 +92,8 @@ theorem vstar_source_normalization (Ψ : O →* ℂ) (W : ℝ → ℂ)
   have hsX : (Real.sqrt X : ℂ) ≠ 0 := by exact_mod_cast (Real.sqrt_pos.2 hX).ne'
   rw [Vstar, Real.sqrt_div hN.le, Complex.ofReal_div]
   field_simp
+
+end
 
 open ActualEisensteinCubic ConcreteTraceCRT
 
@@ -202,11 +155,11 @@ theorem cubicRow_product_mk {ι : Type*} [Fintype ι]
   exact (productPrimeIndexEquiv p hcop).prod_comp (fun P =>
     (canonicalSextic P.val (primeIndex_good _ hI P) ^ 2) (Ideal.Quotient.mk P.val a))
 
-theorem gaussTwo_eq_canonicalProductGauss {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
-    (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1)
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) [instShared4 : ∀ i, (Ideal.span {p i}).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i}))) (hgood : ∀ i, lambda ∉ Ideal.span {p i}) (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1)
+include ι instShared1 p hp instShared4 hcop hgood hprimary
+
+theorem gaussTwo_eq_canonicalProductGauss
     (hI : primaryGenerator (Ideal.span {∏ i, p i}) ≠ 0) :
     gaussTwo (Ideal.span {∏ i, p i}) hI =
       FiniteGaussPhase.canonicalProductGauss p hp hcop hgood (fun _ => 2) := by
@@ -242,11 +195,7 @@ theorem gaussTwo_eq_canonicalProductGauss {ι : Type*} [Fintype ι]
   change _ / _ = _ / _
   rw [hsum, hgen]
 
-theorem squarefreeGaussCoefficient_eq_canonicalProductCoefficient {ι : Type*} [Fintype ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hgood : ∀ i, lambda ∉ Ideal.span {p i})
-    (hprimary : ∀ i, lambda ^ 2 ∣ p i - 1) :
+theorem squarefreeGaussCoefficient_eq_canonicalProductCoefficient :
     squarefreeGaussCoefficient (Ideal.span {∏ i, p i}) =
       FiniteGaussPhase.canonicalProductCoefficient p hp hcop hgood := by
   have hpall : (∏ i, p i) ≠ 0 := Finset.prod_ne_zero_iff.mpr (fun i _ => hp i)
@@ -266,6 +215,8 @@ theorem squarefreeGaussCoefficient_eq_canonicalProductCoefficient {ι : Type*} [
   rw [squarefreeGaussCoefficient_eq _ hsq hI,
     gaussTwo_eq_canonicalProductGauss p hp hcop hgood hprimary hI, hgen]
   rfl
+
+end
 
 end CompletedGauss
 
@@ -303,7 +254,7 @@ theorem unitFourierCoeff_norm_le_average (f : Rˣ → ℂ) (χ : MulChar R ℂ) 
   apply div_le_div_of_nonneg_right _ (by positivity)
   calc
     _ ≤ ∑ u : Rˣ, ‖f u * star (χ (u : R))‖ := norm_sum_le _ _
-    _ = _ := by simp only [norm_mul, norm_star, norm_char_unit, mul_one]
+    _ = _ := by simp [norm_char_unit]
 
 theorem unitFourierCoeff_norm_le (f : Rˣ → ℂ) (B : ℝ)
     (hf : ∀ u, ‖f u‖ ≤ B) (χ : MulChar R ℂ) : ‖unitFourierCoeff f χ‖ ≤ B := by
@@ -324,7 +275,7 @@ theorem unitFourierCoeff_sum_norm_le (f : Rˣ → ℂ) (B : ℝ)
   calc
     _ ≤ ∑ _χ : MulChar R ℂ, B :=
       Finset.sum_le_sum (fun χ _ => unitFourierCoeff_norm_le f B hf χ)
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, character_card_eq_units]
+    _ = _ := by simp [character_card_eq_units]
 
 def zeroExtendUnits (f : Rˣ → ℂ) (r : R) : ℂ :=
   if hr : IsUnit r then f hr.unit else 0
@@ -351,7 +302,7 @@ theorem zeroExtendUnits_restrict (f : R → ℂ) (r : R) :
     zeroExtendUnits (fun u : Rˣ => f (u : R)) r = (if IsUnit r then 1 else 0) * f r := by
   by_cases hr : IsUnit r
   · obtain ⟨u, rfl⟩ := hr
-    simp only [zeroExtendUnits_unit, u.isUnit, ite_true, one_mul]
+    simp [u.isUnit]
   · simp only [zeroExtendUnits_nonunit _ _ hr, hr, ite_false, zero_mul]
 
 def unitTensorCoeff (f : Rˣ → Rˣ → ℂ) (χ η : MulChar R ℂ) : ℂ :=
@@ -386,7 +337,7 @@ theorem unitTensorCoeff_sum_norm_le (f : Rˣ → Rˣ → ℂ) (B : ℝ)
     _ ≤ ∑ _χ : MulChar R ℂ, ∑ _η : MulChar R ℂ, B :=
       Finset.sum_le_sum (fun χ _ => Finset.sum_le_sum (fun η _ => unitTensorCoeff_norm_le f B hf χ η))
     _ = _ := by
-      simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul, character_card_eq_units]
+      simp [character_card_eq_units]
       ring
 
 def zeroExtendUnitPair (f : Rˣ → Rˣ → ℂ) (r s : R) : ℂ :=
@@ -411,8 +362,7 @@ theorem zeroExtendUnitPair_restrict (f : R → R → ℂ) (r s : R) :
       (if IsUnit r then 1 else 0) * (if IsUnit s then 1 else 0) * f r s := by
   by_cases hr : IsUnit r
   · obtain ⟨u, rfl⟩ := hr
-    simp only [zeroExtendUnitPair, zeroExtendUnits_unit, zeroExtendUnits_restrict,
-      u.isUnit, ite_true, one_mul]
+    simp [zeroExtendUnitPair, zeroExtendUnits_restrict, u.isUnit]
   · simp only [zeroExtendUnitPair, zeroExtendUnits_nonunit _ _ hr, hr, ite_false, zero_mul]
 
 end FiniteRayExpansion
@@ -421,8 +371,7 @@ open scoped BigOperators Classical
 
 namespace RayFourExpansion
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT ActualEisensteinCoordinates QuadraticGaussRay
-open FiniteRayExpansion
+open ActualEisensteinCubic ConcreteTraceCRT ActualEisensteinCoordinates QuadraticGaussRay FiniteRayExpansion
 
 abbrev RayRing := O ⧸ Ideal.span {(4 : O)}
 

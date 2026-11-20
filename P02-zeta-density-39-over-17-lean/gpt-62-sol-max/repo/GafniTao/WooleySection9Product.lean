@@ -205,10 +205,7 @@ theorem wooley_multigrade_to_monograde
           have hrPos : (0 : ℝ) < r := by positivity
           rw [sub_nonneg, div_le_one hrPos]
           linarith
-        have hpow :
-            (K (r - 1) (wooleyNextB k r b)) ^ v ≤
-              (A ^ ((r - 1 + 1 : ℕ) : ℝ) *
-                  q ^ (-c / ((r - 1 : ℕ) : ℝ)) * P) ^ v :=
+        have hpow :=
           Real.rpow_le_rpow
             (hK (r - 1) (wooleyNextB k r b)) hih hv
         have hXr : 0 ≤ X r := hX r hr hrk

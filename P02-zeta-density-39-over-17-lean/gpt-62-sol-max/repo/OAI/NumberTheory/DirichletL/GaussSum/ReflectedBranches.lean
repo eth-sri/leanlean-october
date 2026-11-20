@@ -8,72 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace CompletedGauss
 
 section
@@ -128,8 +74,11 @@ theorem reflectedLocalPiece_norm_le (P : Ideal O) [P.IsMaximal] (hg : lambda∉P
     · simp only [reflectedLocalPiece,ite_eq_right hj4,ite_eq_right he,norm_zero,reflectedLocalSize]
       split_ifs <;> positivity
 
-theorem sqrt_norm_reflectionExtractedDivisor {ι : Type*} [Fintype ι]
-    (P : ι→Ideal O) [∀i,(P i).IsMaximal] (j : ι→ℕ) (e : ι→Fin 3) (v : Fin 3) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (P : ι→Ideal O)
+include ι instShared1 P
+
+theorem sqrt_norm_reflectionExtractedDivisor [∀i,(P i).IsMaximal] (j : ι→ℕ) (e : ι→Fin 3) (v : Fin 3) :
     Real.sqrt (Ideal.absNorm (reflectionExtractedDivisor P j e v):ℝ)=
       ∏i,if (j i=4 ∧ e i=v) ∨ (j i=0 ∧ v=0) then rootCard (O ⧸ P i) else 1 := by
   rw [reflectionExtractedDivisor,map_prod,Nat.cast_prod,Real.sqrt_prod]
@@ -142,8 +91,7 @@ theorem sqrt_norm_reflectionExtractedDivisor {ι : Type*} [Fintype ι]
   · intro i _
     exact Nat.cast_nonneg _
 
-theorem reflectedBranch_norm_bound {ι : Type*} [Fintype ι]
-    (P : ι→Ideal O) [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
+theorem reflectedBranch_norm_bound [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
     (j : ι→ℕ) (e : ι→Fin 3) (n b : O) :
     ‖reflectedBranch P hg j e n b‖≤
       Real.sqrt (Ideal.absNorm (reflectionExtractedDivisor P j e 1):ℝ)*
@@ -166,8 +114,7 @@ theorem reflectedBranch_norm_bound {ι : Type*} [Fintype ι]
     · simp [reflectedLocalSize,hj0]
     · simp [reflectedLocalSize,hj4,hj0]
 
-theorem reflectionExtractedDivisor_ne_zero {ι : Type*} [Fintype ι]
-    (P : ι→Ideal O) (hP : ∀i,P i≠0) (j : ι→ℕ) (e : ι→Fin 3) (v : Fin 3) :
+theorem reflectionExtractedDivisor_ne_zero (hP : ∀i,P i≠0) (j : ι→ℕ) (e : ι→Fin 3) (v : Fin 3) :
     reflectionExtractedDivisor P j e v≠0 := by
   unfold reflectionExtractedDivisor
   apply Finset.prod_ne_zero_iff.mpr
@@ -177,8 +124,7 @@ theorem reflectionExtractedDivisor_ne_zero {ι : Type*} [Fintype ι]
   · exact hP i
   · exact one_ne_zero
 
-theorem reflectedBranch_divisibility {ι : Type*} [Fintype ι]
-    (P : ι→Ideal O) [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
+theorem reflectedBranch_divisibility [∀i,(P i).IsMaximal] (hg : ∀i,lambda∉P i)
     (hcop : Pairwise (fun i k => IsCoprime (P i) (P k)))
     (j : ι→ℕ) (e : ι→Fin 3) (n b : O) (hne : reflectedBranch P hg j e n b≠0) :
     reflectionExtractedDivisor P j e 1∣Ideal.span {n} ∧
@@ -226,6 +172,8 @@ theorem reflectedBranch_divisibility {ι : Type*} [Fintype ι]
 
 end
 
+end
+
 open scoped BigOperators Classical SchwartzMap ContDiff Topology
 open MeasureTheory Filter
 
@@ -259,16 +207,8 @@ def vstarSchwartz (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
   (HasCompactSupport.of_support_subset_isCompact isCompact_Icc (Vstar_support W a b hsupp)).toSchwartzMap
     (Vstar_contDiff W a b ha hsupp hW)
 
-@[simp] theorem vstarSchwartz_apply (W : ℝ→ℂ) (a b : ℝ) (ha : 0<a)
-    (hsupp : Function.support W⊆Set.Icc a b) (hW : ContDiff ℝ ∞ W) (x : ℝ) :
-    vstarSchwartz W a b ha hsupp hW x=Vstar W x := rfl
 
 end CompletedGauss
-
-namespace InitialMeanSquare
-open SecondPassArithmetic
-
-end InitialMeanSquare
 
 namespace CubicEisenstein
 open Filter MeasureTheory

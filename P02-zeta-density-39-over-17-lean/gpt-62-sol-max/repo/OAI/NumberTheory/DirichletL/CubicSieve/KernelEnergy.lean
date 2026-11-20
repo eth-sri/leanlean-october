@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.IdealQuotients
 
 @[expose] public section
@@ -10,69 +11,17 @@ noncomputable section
 namespace FirstPassCubeLabels
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 section
 
@@ -85,9 +34,9 @@ open ConcreteTraceCRT (eisEmbedding)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
 def actualFirstKernel {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (F B : Finset ι)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (F B : Finset ι)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (C₁ C₂ : Finset ι → ℂ)
     (W : 𝓢(ℝ, ℂ)) (V₁ V₂ : ℝ → ℂ) (X₁ X₂ lengthScale : ℝ) (d h : O) : ℂ :=
   ∑ N ∈ F.powerset, ∑ P ∈ F.powerset, if Disjoint N P then
@@ -189,9 +138,9 @@ theorem beforeDilationLabel_star_row {κ : Type*} (p : κ → O) (B : Finset κ)
 end Local
 
 theorem rayIdealRow_eq_supportRow {ι : Type*} [DecidableEq ι] (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (F D : Finset ι)
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (F D : Finset ι)
     (C : Finset ι → ℂ) (negative : Bool) (χ : RayCharacter) (h : O) :
     rayIdealRow p hg F C negative χ D h =
     supportConjugateSum (fun i => Ideal.span {p i}) hg (F \ D)
@@ -201,7 +150,7 @@ theorem rayIdealRow_eq_supportRow {ι : Type*} [DecidableEq ι] (p : ι → O)
     (fun i => Ideal.span {p i}) hinj hg (F \ D) _ h
 
 def dilatedRayColumn {ι κ : Type*} [DecidableEq ι] (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal] (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalIdealFamily.Maximal p] (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
     (F D : Finset ι) (C : Finset ι → ℂ) (negative : Bool) (χ : RayCharacter)
     (q : κ → O) (B : Finset κ) (v : κ → ℕ) (ε₁ ε₂ : κ → Bool) (c d y : O) : ℂ :=
   supportConjugateSum (fun i => Ideal.span {p i}) hg (F \ D)
@@ -209,9 +158,9 @@ def dilatedRayColumn {ι κ : Type*} [DecidableEq ι] (p : ι → O)
       C (D ∪ U) * afterDilationLabel (fun i => Ideal.span {p i}) hg q B v ε₁ ε₂ c d U) y
 
 theorem rayIdealRow_beforeDilation {ι κ : Type*} [DecidableEq ι] (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (F D : Finset ι)
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (F D : Finset ι)
     (C : Finset ι → ℂ) (negative : Bool) (χ : RayCharacter)
     (q : κ → O) (B : Finset κ) (v : κ → ℕ) (ε₁ ε₂ : κ → Bool)
     (hv : ∀ j ∈ B, 0 < v j) (side : Bool) (c d f h : O) :
@@ -242,7 +191,7 @@ theorem rayIdealRow_beforeDilation {ι κ : Type*} [DecidableEq ι] (p : ι → 
       ring
 
 def originalLabelColumn {ι : Type*} (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal] (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalIdealFamily.Maximal p] (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
     (B : Finset ι) (ε₁ ε₂ : ι → Bool) (negative : Bool)
     (C : Finset ι → ℂ) (c f : O) (S : Finset ι) : ℂ :=
   C S * rowCoprimeMask (fun i => Ideal.span {p i}) S (cubeRadical p B) *
@@ -251,9 +200,9 @@ def originalLabelColumn {ι : Type*} (p : ι → O)
     finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S f ^ 4
 
 def cubeCoreCoefficient {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (B : Finset ι)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (B : Finset ι)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (negative : Bool)
     (C : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (t : ℝ) (S : Finset ι) : ℂ :=
   if negative then
@@ -267,9 +216,9 @@ def cubeCoreCoefficient {ι : Type*} [DecidableEq ι]
       (V (y S) * FourierBridge.logPhase t (-(y S)))
 
 theorem cubeLogCoefficient_originalLabel {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (B : Finset ι)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (B : Finset ι)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (negative : Bool)
     (C : Finset ι → ℂ) (V : ℝ → ℂ) (y : Finset ι → ℝ) (t : ℝ) (c d f : O) (S : Finset ι) :
     cubeLogCoefficient p hp hcop hg B v ε₁ ε₂ negative
@@ -284,10 +233,10 @@ theorem cubeLogCoefficient_originalLabel {ι : Type*} [DecidableEq ι]
       finiteSquarefreeRow_mul, mul_pow] <;> ring
 
 theorem rayIdealRow_cube_labels {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (F D B : Finset ι)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (F D B : Finset ι)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ j ∈ B, 0 < v j)
     (negative : Bool) (χ : RayCharacter) (C : Finset ι → ℂ) (V : ℝ → ℂ)
     (y : Finset ι → ℝ) (t : ℝ) (c d f h : O) :
@@ -308,9 +257,6 @@ theorem rayIdealRow_cube_labels {ι : Type*} [DecidableEq ι]
 
 end
 
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding)
-
 end
 
 section
@@ -319,7 +265,7 @@ open ActualEisensteinCubic
 open RayFourExpansion (RayCharacter crossCoeff)
 
 theorem blockRow_norm_le_one {ι : Type*} (p : ι → O)
-    [∀ i, (Ideal.span {p i}).IsMaximal] (hg : ∀ i, lambda ∉ Ideal.span {p i})
+    [OAI.PrincipalIdealFamily.Maximal p] (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
     (S : Finset ι) (e : ι → ℕ) (a : O) : ‖blockRow p hg S e a‖ ≤ 1 := by
   rw [blockRow_eq_product, norm_prod]
   calc
@@ -331,10 +277,10 @@ theorem blockRow_norm_le_one {ι : Type*} (p : ι → O)
     _ = 1 := by simp
 
 theorem cubeBaseFactor_norm_le_one {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (d h : O) :
     ‖cubeBaseFactor p hp hg B v ε₁ ε₂ d h‖ ≤ 1 := by
   have he : ∀ i ∈ cubeActiveSupport B v ε₁ ε₂,
@@ -347,13 +293,6 @@ theorem cubeBaseFactor_norm_le_one {ι : Type*} [DecidableEq ι]
     (blockRow_norm_le_one p hg _ _ _)).trans (blockRow_norm_le_one p hg _ _ _)
 
 end
-
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
-open ConcreteTraceCRT (eisEmbedding eisEmbedding_ne_zero)
-open EisensteinSchwartzPoisson (paperRadialFourier)
-open FourierBridge (logPhase)
 
 end FirstPassCubeLabels
 

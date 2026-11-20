@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerAssigned
 
 @[expose] public section
@@ -8,19 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
-open SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
+open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic SevenEighths.InverseInitialQuotientGeometry SevenEighths.InverseInitialClippedColumns
 namespace SevenEighths.InverseInitialEnergyCallerSupport
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
+  (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
 
 include hp in
 
 theorem actual_sector_energy {J : ℕ}
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (S : Finset (Source (ι:=ι) J)) (u : Eisˣ)
     (hdiv : ∀ x ∈ S, x.divisor ⊆ x.common)
     (hsupport : ∀ x ∈ S, ∀i,x.assigned i∈x.common∪x.overlap)
@@ -58,8 +57,8 @@ theorem actual_sector_energy {J : ℕ}
 include hp in
 
 theorem actual_sector_signed_pair {J : ℕ}
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (S : Finset (Source (ι:=ι) J)) (u : Eisˣ)
     (hdiv : ∀ x ∈ S, x.divisor ⊆ x.common)
     (hsupport : ∀ x ∈ S, ∀i,x.assigned i∈x.common∪x.overlap)

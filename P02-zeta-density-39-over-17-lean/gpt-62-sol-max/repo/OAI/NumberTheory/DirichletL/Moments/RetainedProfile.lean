@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentRetainedProfile
-open CenteredMomentLattice CenteredMomentTwist CenteredMomentHeckeTwist
-open CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeCancellation HeckeFamily
-open EisensteinSchwartzPoisson QuadraticInitialBound
+open CenteredMomentLattice CenteredMomentTwist CenteredMomentHeckeTwist CenteredMomentHeckeHeight CenteredMomentHeckeVolume CenteredMomentHeckeCancellation HeckeFamily EisensteinSchwartzPoisson QuadraticInitialBound
 local notation "O" => ActualEisensteinCubic.O
 
 def dilated (W : ℝ → ℂ) (c : ℝ) : ℝ → ℂ := fun x => W (c * x)
@@ -62,9 +60,11 @@ theorem seminorm_dilation_le (f g : 𝓢(ℝ, ℂ)) (ζ : ℂ) (c B : ℝ)
     _ ≤ B ^ n * SchwartzMap.seminorm ℝ k n f :=
       mul_le_mul_of_nonneg_right (pow_le_pow_left₀ hc0 hcB _) (apply_nonneg _ _)
 
-theorem normPowerProfile_dilated (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
-    (hB : 1 ≤ B) (hc : 1 ≤ c) (hcB : c ≤ B)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W) (t x : ℝ) :
+section
+variable (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a) (hB : 1 ≤ B) (hc : 1 ≤ c) (hcB : c ≤ B) (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
+include W a b B c ha hB hc hcB hs hW
+
+theorem normPowerProfile_dilated (t x : ℝ) :
     normPowerProfile (dilated W c) (a / B) b
       (div_pos ha (lt_of_lt_of_le zero_lt_one hB))
       (dilated_support W a b B c ha hB hc hcB hs) (dilated_contDiff W hW c) t x =
@@ -84,9 +84,7 @@ theorem normPowerProfile_dilated (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
   dsimp only [dilated]
   simp only [← mul_assoc, inv_mul_cancel₀ hn, one_mul]
 
-theorem normPowerProfile_dilated_seminorm (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
-    (hB : 1 ≤ B) (hc : 1 ≤ c) (hcB : c ≤ B)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
+theorem normPowerProfile_dilated_seminorm
     (t : ℝ) (k n : ℕ) :
     SchwartzMap.seminorm ℝ k n
       (normPowerProfile (dilated W c) (a / B) b
@@ -99,9 +97,7 @@ theorem normPowerProfile_dilated_seminorm (W : ℝ → ℂ) (a b B c : ℝ) (ha 
   intro x
   exact normPowerProfile_dilated W a b B c ha hB hc hcB hs hW t x
 
-theorem normPowerProfile_dilated_finite (W : ℝ → ℂ) (a b B c : ℝ) (ha : 0 < a)
-    (hB : 1 ≤ B) (hc : 1 ≤ c) (hcB : c ≤ B)
-    (hs : Function.support W ⊆ Set.Icc a b) (hW : ContDiff ℝ ∞ W)
+theorem normPowerProfile_dilated_finite
     (t : ℝ) (F : Finset (ℕ × ℕ)) :
     F.sup (schwartzSeminormFamily ℝ ℝ ℂ)
       (normPowerProfile (dilated W c) (a / B) b
@@ -114,6 +110,8 @@ theorem normPowerProfile_dilated_finite (W : ℝ → ℂ) (a b B c : ℝ) (ha : 
   apply (normPowerProfile_dilated_seminorm W a b B c ha hB hc hcB hs hW t z.1 z.2).trans
   exact mul_le_mul (pow_le_pow_right₀ hB (Finset.le_sup hz))
     (Seminorm.le_finset_sup_apply (p := schwartzSeminormFamily ℝ ℝ ℂ) hz) (apply_nonneg _ _) (by positivity)
+
+end
 
 def clippedScale (S : ℝ) : ℝ := max 1 S
 

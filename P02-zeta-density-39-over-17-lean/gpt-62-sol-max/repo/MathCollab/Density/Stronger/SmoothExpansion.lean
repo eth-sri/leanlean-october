@@ -38,22 +38,23 @@ theorem hasSum_smoothDyadicTerm (a : ℕ → ℂ) (n : ℕ) :
   simpa only [Function.comp_def, Complex.ofRealCLM_apply, Complex.ofReal_one,
     mul_one, smoothDyadicTerm] using hs.mul_left (a (n+2))
 
+section
+variable {a : ℕ → ℂ} (ha : Summable (fun n : ℕ => ‖a (n+2)‖))
+include a ha
+
 /-- Absolute double summability follows from the partition's exact mass one,
 with no extra factor counting the number of dyadic scales. -/
-theorem summable_norm_smoothDyadicTerm {a : ℕ → ℂ}
-    (ha : Summable (fun n : ℕ => ‖a (n+2)‖)) :
+theorem summable_norm_smoothDyadicTerm :
     Summable (fun p : ℕ × ℤ => ‖smoothDyadicTerm a p.1 p.2‖) := by
   apply (summable_prod_of_nonneg (fun p : ℕ × ℤ => norm_nonneg (smoothDyadicTerm a p.1 p.2))).mpr
   refine ⟨fun n => (hasSum_norm_smoothDyadicTerm a n).summable, ?_⟩
   simpa only [(hasSum_norm_smoothDyadicTerm a _).tsum_eq] using ha
 
-theorem summable_smoothDyadicTerm {a : ℕ → ℂ}
-    (ha : Summable (fun n : ℕ => ‖a (n+2)‖)) :
+theorem summable_smoothDyadicTerm :
     Summable (fun p : ℕ × ℤ => smoothDyadicTerm a p.1 p.2) :=
   (summable_norm_smoothDyadicTerm ha).of_norm
 
-theorem summable_norm_smoothDyadicBlock {a : ℕ → ℂ}
-    (ha : Summable (fun n : ℕ => ‖a (n+2)‖)) :
+theorem summable_norm_smoothDyadicBlock :
     Summable (fun j : ℤ => ‖smoothDyadicBlock a j‖) := by
   have hs := summable_norm_smoothDyadicTerm ha
   apply hs.prod_symm.prod.of_nonneg_of_le (fun j => norm_nonneg _) (fun j => ?_)
@@ -61,12 +62,13 @@ theorem summable_norm_smoothDyadicBlock {a : ℕ → ℂ}
 
 /-- Exact dyadic reconstruction of the series after removing n=1. The norm
 summability theorem above justifies this use of Fubini for complex series. -/
-theorem tsum_smoothDyadicBlock {a : ℕ → ℂ}
-    (ha : Summable (fun n : ℕ => ‖a (n+2)‖)) :
+theorem tsum_smoothDyadicBlock :
     (∑' j : ℤ, smoothDyadicBlock a j) = ∑' n : ℕ, a (n+2) := by
   unfold smoothDyadicBlock
   rw [(summable_smoothDyadicTerm ha).tsum_comm]
   exact tsum_congr (fun n => (hasSum_smoothDyadicTerm a n).tsum_eq)
+
+end
 
 /-- Nonpositive integer dyadic scales vanish after the n=1 term is removed. -/
 theorem smoothDyadicTerm_zero_of_nonpos (a : ℕ → ℂ) (n : ℕ) {j : ℤ} (hj : j ≤ 0) :

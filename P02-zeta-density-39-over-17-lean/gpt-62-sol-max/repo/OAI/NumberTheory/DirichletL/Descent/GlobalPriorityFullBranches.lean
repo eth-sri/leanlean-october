@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityZeroPhysical
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityAggregate
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTailPhysical
@@ -11,20 +12,17 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityValidSource InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-open InverseMomentWholePriorityPhysical InversePrioritySecondSource InverseSecondPrincipalCaller
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic InverseMomentWholePriorityPhysical InversePrioritySecondSource InverseSecondPrincipalCaller
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] {Jo:ℕ}
-variable (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p:ι→Eis) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem global_priority_slice_full_tail
-    (hp:∀i,p i≠0) (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (hc:∀i,ringChar (Eis⧸Ideal.span {p i})≠2)
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hp:∀i,p i≠0) (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hinj:OAI.PrincipalIdealFamily.Distinct p)
+    (hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
     (original:Finset (Source ι Jo)) (w:Source ι Jo→ℂ) (negative:Bool) (Ψ:Eis→*ℂ) (m:Eis)
     (ray:RayCharacter×RayCharacter) (core:FirstCoreIndex)

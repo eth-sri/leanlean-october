@@ -11,10 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyDeletedChildCapacity
-open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedChildCapacity
-open CenteredMomentRetainedProfile CenteredMomentDivisorAllocation CenteredMomentDivisorRetained
-open CenteredMomentDivisorRaw CenteredMomentEnergyBands CenteredMomentEnergyInputParentCapacity
-open CenteredMomentFirstSecondCapacityLedger CenteredMomentLiveCapacity
+open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedChildCapacity CenteredMomentRetainedProfile CenteredMomentDivisorAllocation CenteredMomentDivisorRetained CenteredMomentDivisorRaw CenteredMomentEnergyBands CenteredMomentEnergyInputParentCapacity CenteredMomentFirstSecondCapacityLedger CenteredMomentLiveCapacity
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -67,9 +64,11 @@ lemma deletedExcess_le (D : Ideal O)
   unfold deletedExcess excess plainLogs
   exact max_le_max (by linarith) le_rfl
 
-theorem child_excess_from_parent (χ : Character) (D : Ideal O)
-    (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
-    (V₁ V₂ : Plain) (pool : ι→Finset (Ideal O)) (β : ι→Ideal O→ℂ) (P : ι→ℝ)
+section
+variable (χ : Character) (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2))) (V₁ V₂ : Plain) (pool : ι→Finset (Ideal O)) (β : ι→Ideal O→ℂ) (P : ι→ℝ)
+include χ D a V₁ V₂ pool β P
+
+theorem child_excess_from_parent
     (t Z X₁ X₂ κ A M Mnom Mactual w ell δ θ : ℝ)
     (h₁ : 0<X₁) (h₂ : 0<X₂) (F₁ F₂ : Finset (Ideal O)) (J : Finset ι)
     (hZ : 1<Z) (hκ : 0≤κ) (hP : ∀i,1≤P i)
@@ -88,9 +87,7 @@ theorem child_excess_from_parent (χ : Character) (D : Ideal O)
   have hr:=affine_reduction_le_parent D a Z κ hZ hκ P hP
   linarith
 
-theorem child_paid_width (χ : Character) (D : Ideal O)
-    (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
-    (V₁ V₂ : Plain) (pool : ι→Finset (Ideal O)) (β : ι→Ideal O→ℂ) (P : ι→ℝ)
+theorem child_paid_width
     (t Z X₁ X₂ κ A M Mnom Mactual w ell δ₁ δ₂ θ : ℝ)
     (h₁ : 0<X₁) (h₂ : 0<X₂) (F₁ F₂ : Finset (Ideal O)) (J : Finset ι)
     (hZ : 1<Z) (hκ : 0≤κ) (hP : ∀i,1≤P i)
@@ -109,6 +106,8 @@ theorem child_paid_width (χ : Character) (D : Ideal O)
     (by positivity) hδ₂ hwidth
   rw [show 6*(w+ell)+δ₁+2*θ-(Mactual-Mnom)=6*(w+ell)+δ₁+2*θ+Mnom-Mactual by ring] at hh
   linarith
+
+end
 
 end SevenEighths.CenteredMomentEnergyDeletedChildCapacity
 

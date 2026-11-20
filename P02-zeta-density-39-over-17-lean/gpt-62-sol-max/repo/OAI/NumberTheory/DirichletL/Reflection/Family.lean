@@ -12,15 +12,11 @@ noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → Type*} [∀ x, Fintype (ι x)]
-    (p : ∀ x, ι x → Eis) (N a c : Eis) (mode : Bool)
-    (D : ∀ x, ControlledStratumArithmetic (p x) N a c mode)
-    (hc : c ≠ 0) (h9N : (9:Eis) ∣ N) (hcN : c ∣ N)
-    (hprimary : ∀ x, λ₀^2 ∣ (∏ i, p x i)-1)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1)
-    (hcop : ∀ x, IsCoprime (∏ i, p x i) (N*c))
-    (sector : α → Q)
-    (hsector : ∀ x y, sector x = sector y → N^2 ∣ (∏ i, p x i)-(∏ i, p y i)) :
+section
+variable {α Q : Type*} {ι : α → Type*} [instShared2 : ∀ x, Fintype (ι x)] (p : ∀ x, ι x → Eis) (N a c : Eis) (mode : Bool) (D : ∀ x, ControlledStratumArithmetic (p x) N a c mode) (hc : c ≠ 0) (h9N : (9:Eis) ∣ N) (hcN : c ∣ N) (hprimary : ∀ x, λ₀^2 ∣ (∏ i, p x i)-1) (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1) (hcop : ∀ x, IsCoprime (∏ i, p x i) (N*c)) (sector : α → Q) (hsector : ∀ x y, sector x = sector y → N^2 ∣ (∏ i, p x i)-(∏ i, p y i))
+include α Q ι instShared2 p N a c mode D hc h9N hcN hprimary hbase hcop sector hsector
+
+theorem simultaneous_controlled_matrices_dependent :
     ∃ mat : ∀ x, (∀ i, (Eis ⧸ Ideal.span {p x i})ˣ) → SL(2,Eis),
       (∀ x v, mat x v 0 0 = (D x).matrix v 0 0) ∧
       (∀ x v, mat x v 1 0 = c*∏ i, p x i) ∧
@@ -75,15 +71,7 @@ theorem simultaneous_controlled_matrices_dependent {α Q : Type*} {ι : α → T
   have he' := congrArg (fun T : Matrix (Fin 2) (Fin 2) (Eis ⧸ Ideal.span {N}) => T i j) he
   exact Ideal.mem_span_singleton.mp (Ideal.Quotient.eq.mp he')
 
-theorem exists_sector_controlled_arithmetic_dependent {α Q : Type*} {ι : α → Type*} [∀ x, Fintype (ι x)]
-    (p : ∀ x, ι x → Eis) (N a c : Eis) (mode : Bool)
-    (D : ∀ x, ControlledStratumArithmetic (p x) N a c mode)
-    (hc : c ≠ 0) (h9N : (9:Eis) ∣ N) (hcN : c ∣ N)
-    (hprimary : ∀ x, λ₀^2 ∣ (∏ i, p x i)-1)
-    (hbase : if mode then λ₀^2 ∣ a-1 else λ₀^2 ∣ c-1)
-    (hcop : ∀ x, IsCoprime (∏ i, p x i) (N*c))
-    (sector : α → Q)
-    (hsector : ∀ x y, sector x = sector y → N^2 ∣ (∏ i, p x i)-(∏ i, p y i)) :
+theorem exists_sector_controlled_arithmetic_dependent :
     ∃ E : ∀ x, ControlledStratumArithmetic (p x) N a c mode,
       (∀ x, (E x).lift = (D x).lift) ∧
       (∀ x, (E x).U = (D x).U) ∧
@@ -101,6 +89,8 @@ theorem exists_sector_controlled_arithmetic_dependent {α Q : Type*} {ι : α �
       matrix_fixed := fun v i j => hfixed x x v (fun _ => 1) rfl i j
       conditions := hcond x }
   exact ⟨E,fun _ => rfl,fun _ => rfl,fun _ => rfl,fun _ => rfl,hfixed⟩
+
+end
 
 theorem exists_sector_templates {α Q : Type*} {ι : α → Type*} [∀ x, Fintype (ι x)]
     (p : ∀ x, ι x → Eis) (N a c : Eis) (mode : Bool)

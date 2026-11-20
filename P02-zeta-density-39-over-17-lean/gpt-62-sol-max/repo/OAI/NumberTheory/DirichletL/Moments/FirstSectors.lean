@@ -26,9 +26,11 @@ def residualPairDomain (C D : Ideal O) (hC : C≠0) (hD : D≠0) (S T : Finset (
   ((residualPool C hC S).product (residualPool D hD T)).filter
     (fun p => IsCoprime C p.1 ∧ IsCoprime C p.2 ∧ IsCoprime p.1 p.2)
 
-theorem residualPair_image (C D : Ideal O) (hC : C≠0) (hD : D≠0)
-    (hCD : primeSupport C=primeSupport D) (S T : Finset (Ideal O))
-    (hS : ∀ I∈S,I≠0) (hT : ∀ J∈T,J≠0) :
+section
+variable (C D : Ideal O) (hC : C≠0) (hD : D≠0) (hCD : primeSupport C=primeSupport D) (S T : Finset (Ideal O)) (hS : ∀ I∈S,I≠0) (hT : ∀ J∈T,J≠0)
+include C D hC hD hCD S T hS hT
+
+theorem residualPair_image :
     (residualPairDomain C D hC hD S T).image (fun p => (C*p.1,D*p.2))=pairSector C D S T := by
   ext p
   rcases p with ⟨I,J⟩
@@ -60,9 +62,7 @@ theorem residualPair_image (C D : Ideal O) (hC : C≠0) (hD : D≠0)
     · rw [← hCI]
       exact commonPart_residualPart_coprime I J
 
-theorem pairSector_sum (C D : Ideal O) (hC : C≠0) (hD : D≠0)
-    (hCD : primeSupport C=primeSupport D) (S T : Finset (Ideal O))
-    (hS : ∀ I∈S,I≠0) (hT : ∀ J∈T,J≠0) (F : Ideal O → Ideal O → ℂ) :
+theorem pairSector_sum (F : Ideal O → Ideal O → ℂ) :
     (∑ p∈pairSector C D S T,F p.1 p.2)=
       ∑ p∈residualPairDomain C D hC hD S T,F (C*p.1) (D*p.2) := by
   rw [← residualPair_image C D hC hD hCD S T hS hT,Finset.sum_image]
@@ -70,14 +70,14 @@ theorem pairSector_sum (C D : Ideal O) (hC : C≠0) (hD : D≠0)
   exact Prod.ext (mul_left_cancel₀ hC (congrArg Prod.fst he))
     (mul_left_cancel₀ hD (congrArg Prod.snd he))
 
-theorem pairSector_double_sum (C D : Ideal O) (hC : C≠0) (hD : D≠0)
-    (hCD : primeSupport C=primeSupport D) (S T : Finset (Ideal O))
-    (hS : ∀ I∈S,I≠0) (hT : ∀ J∈T,J≠0) (F : Ideal O → Ideal O → ℂ) :
+theorem pairSector_double_sum (F : Ideal O → Ideal O → ℂ) :
     (∑ p∈pairSector C D S T,F p.1 p.2)=
       ∑ a∈residualPool C hC S,∑ b∈residualPool D hD T,
         if IsCoprime C a ∧ IsCoprime C b ∧ IsCoprime a b then F (C*a) (D*b) else 0 := by
   rw [pairSector_sum C D hC hD hCD S T hS hT,residualPairDomain,Finset.sum_filter]
   exact Finset.sum_product _ _ _
+
+end
 
 def commonLabels (S T : Finset (Ideal O)) : Finset (Ideal O × Ideal O) :=
   (S.product T).image (fun p => (commonPart p.1 p.2,commonPart p.2 p.1))

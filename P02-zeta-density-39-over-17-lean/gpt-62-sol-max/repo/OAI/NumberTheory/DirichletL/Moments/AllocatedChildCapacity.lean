@@ -12,10 +12,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentAllocatedChildCapacity
-open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile
-open CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle
-open CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentEligibleEnergy
-open CenteredMomentCommonRadialData
+open HeckeFamily CenteredMomentAllocatedNaturalSource CenteredMomentRetainedProfile CenteredMomentDivisorAllocation CenteredMomentDivisorExtraction CenteredMomentDivisorRectangle CenteredMomentDivisorRaw CenteredMomentDivisorRetained CenteredMomentEligibleEnergy CenteredMomentCommonRadialData
 local notation "O" => HeckeFamily.O
 
 def clippingLoss (Z U₁ U₂ : ℝ) : ℝ :=
@@ -77,20 +74,24 @@ def remainingLogs (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fi
 
 def preVolume (s : Data ι) : ℝ := s.X₁*s.X₂*∏i,s.P i
 
-lemma selectedNorm_ge_one (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2))) :
+section
+variable (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
+include D a
+
+lemma selectedNorm_ge_one :
     1≤selectedNorm D a := by
   have hn (j : Fin 2) : (1:ℝ)≤Ideal.absNorm (selectedPlain D a j) := by
     exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr
       (selectedDivisor_ne_zero D Finset.univ a (Sum.inr j)))
   exact one_le_mul_of_one_le_of_one_le (hn 0) (hn 1)
 
-lemma remainingLogs_le (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
+lemma remainingLogs_le
     (Z : ℝ) (hZ : 1<Z) (P : ι→ℝ) (hP : ∀i,1≤P i) :
     remainingLogs D a Z P≤∑i,Real.logb Z (P i) :=
   Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ _)
     (fun i _ _=>Real.logb_nonneg hZ (hP i))
 
-lemma raw_volume (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
+lemma raw_volume
     (X₁ X₂ : ℝ) (P : ι→ℝ) (hP : ∀i,0<P i) :
     rawScale D a X₁ 0*rawScale D a X₂ 1*(∏i∈liveIndices D a,P i)=
       (X₁*X₂*∏i,P i)/formalReductionFactor D a P := by
@@ -100,7 +101,7 @@ lemma raw_volume (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fin
   simpa only [rawScale,div_mul_div_comm,rawRemaining,selectedNorm] using
     CenteredMomentDivisorRaw.raw_scale_identity D a (X₁*X₂) P
 
-lemma raw_log_volume (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
+lemma raw_log_volume
     (Z X₁ X₂ : ℝ) (h₁ : 0<X₁) (h₂ : 0<X₂) (P : ι→ℝ) (hP : ∀i,0<P i) :
     Real.logb Z (rawScale D a X₁ 0)+Real.logb Z (rawScale D a X₂ 1)+remainingLogs D a Z P=
       Real.logb Z (X₁*X₂*∏i,P i)-Real.logb Z (formalReductionFactor D a P) := by
@@ -114,7 +115,7 @@ lemma raw_log_volume (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι�
     Real.logb_prod _ _ (fun i _=>(hP i).ne')] at hh
   exact hh
 
-theorem affine_exact (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι⊕Fin 2)))
+theorem affine_exact
     (Z X₁ X₂ κ M : ℝ) (hZ : 1<Z) (h₁ : 0<X₁) (h₂ : 0<X₂)
     (P : ι→ℝ) (hP : ∀i,0<P i) :
     plainLogs D a Z X₁ X₂+6*κ*remainingLogs D a Z P-M=
@@ -124,6 +125,8 @@ theorem affine_exact (D : Ideal O) (a : Allocation D (Finset.univ : Finset (ι�
   have hv := raw_log_volume D a Z X₁ X₂ h₁ h₂ P hP
   rw [plainLogs,clipped_pair_log Z _ _ hZ (rawScale_pos D a X₁ h₁ 0) (rawScale_pos D a X₂ h₂ 1)]
   nlinarith
+
+end
 
 omit [DecidableEq ι] in
 lemma common_slot_logs_le (s : Input ι) (C : Ideal O)

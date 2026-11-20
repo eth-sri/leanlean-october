@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentCompleteCommon
-open UniqueFactorizationMonoid IdealMobiusDivisorSum CenteredMomentSupport
-open CenteredExceptionalCount CenteredMomentRankinRadical CanonicalQuadraticSieve
+open UniqueFactorizationMonoid IdealMobiusDivisorSum CenteredMomentSupport CenteredExceptionalCount CenteredMomentRankinRadical CanonicalQuadraticSieve
 local notation "O" => ActualEisensteinCubic.O
 
 def commonSupport (I J : Ideal O) : Finset (Ideal O) := primeSupport I ∩ primeSupport J
@@ -51,12 +50,16 @@ theorem supportResidual_eq_power_product (I : Ideal O) (S : Finset (Ideal O)) :
   simp only [Multiset.count_filter, (Finset.mem_sdiff.mp hP).2]
   rfl
 
-theorem commonPart_eq_supportExtract (I J : Ideal O) :
+section
+variable (I J : Ideal O)
+include I J
+
+theorem commonPart_eq_supportExtract :
     commonPart I J = supportExtract I (commonSupport I J) := by
   rw [supportExtract_eq_power_product]
   simp only [commonPart, commonSupport, ← Finset.inter_assoc, Finset.inter_self]
 
-theorem residualPart_eq_supportResidual (I J : Ideal O) :
+theorem residualPart_eq_supportResidual :
     residualPart I J = supportResidual I (commonSupport I J) := by
   rw [supportResidual_eq_power_product]
   have he : primeSupport I \ commonSupport I J = primeSupport I \ primeSupport J := by
@@ -66,63 +69,71 @@ theorem residualPart_eq_supportResidual (I J : Ideal O) :
   rw [he]
   rfl
 
-theorem commonPart_ne_zero (I J : Ideal O) : commonPart I J ≠ 0 := by
+theorem commonPart_ne_zero : commonPart I J ≠ 0 := by
   rw [commonPart_eq_supportExtract]
   exact supportExtract_ne_zero _ _
 
-theorem residualPart_ne_zero (I J : Ideal O) : residualPart I J ≠ 0 := by
+theorem residualPart_ne_zero : residualPart I J ≠ 0 := by
   rw [residualPart_eq_supportResidual]
   exact supportResidual_ne_zero _ _
 
-theorem reconstruct (I J : Ideal O) (hI : I ≠ 0) :
+theorem reconstruct (hI : I ≠ 0) :
     I = commonPart I J * residualPart I J := by
   rw [commonPart_eq_supportExtract, residualPart_eq_supportResidual]
   exact (support_reconstruct I hI _).symm
 
-theorem commonPart_support (I J : Ideal O) :
+theorem commonPart_support :
     primeSupport (commonPart I J) = commonSupport I J := by
   rw [commonPart_eq_supportExtract, supportExtract_support]
   simp only [commonSupport, ← Finset.inter_assoc, Finset.inter_self]
 
-theorem commonParts_equal_support (I J : Ideal O) :
+theorem commonParts_equal_support :
     primeSupport (commonPart I J) = primeSupport (commonPart J I) := by
   rw [commonPart_support, commonPart_support, commonSupport_comm I J]
+
+end
 
 theorem commonPart_valuation (I J P : Ideal O) :
     valuation (commonPart I J) P = if P ∈ commonSupport I J then valuation I P else 0 := by
   rw [commonPart_eq_supportExtract]
   exact supportExtract_count I P _
 
-theorem commonPart_residualPart_coprime (I J : Ideal O) :
+section
+variable (I J : Ideal O)
+include I J
+
+theorem commonPart_residualPart_coprime :
     IsCoprime (commonPart I J) (residualPart J I) := by
   rw [commonPart_eq_supportExtract, residualPart_eq_supportResidual, ← commonSupport_comm I J]
   exact extracted_residual_coprime I J _
 
-theorem commonPart_own_residual_coprime (I J : Ideal O) :
+theorem commonPart_own_residual_coprime :
     IsCoprime (commonPart I J) (residualPart I J) := by
   rw [commonPart_eq_supportExtract, residualPart_eq_supportResidual]
   exact extracted_residual_coprime I I _
 
-theorem residualParts_coprime (I J : Ideal O) :
+theorem residualParts_coprime :
     IsCoprime (residualPart I J) (residualPart J I) := by
   rw [residualPart_eq_supportResidual, residualPart_eq_supportResidual, ← commonSupport_comm I J]
   exact common_support_residual_coprime I J
 
-theorem commonPart_dvd (I J : Ideal O) (hI : I ≠ 0) : commonPart I J ∣ I :=
+theorem commonPart_dvd (hI : I ≠ 0) : commonPart I J ∣ I :=
   ⟨residualPart I J, reconstruct I J hI⟩
 
-theorem commonRadical_dvd_commonPart (I J : Ideal O) : commonRadical I J ∣ commonPart I J := by
+theorem commonRadical_dvd_commonPart : commonRadical I J ∣ commonPart I J := by
   apply support_product_dvd (commonPart_ne_zero I J)
   rw [commonPart_support]
   exact Finset.Subset.refl _
 
-theorem commonPart_supported (I J : Ideal O) (hI : Supported I) : Supported (commonPart I J) := by
+theorem commonPart_supported (hI : Supported I) : Supported (commonPart I J) := by
   rw [commonPart_eq_supportExtract]
   exact supportExtract_supported I hI _
 
-theorem residualPart_supported (I J : Ideal O) (hI : Supported I) : Supported (residualPart I J) := by
+theorem residualPart_supported (hI : Supported I) : Supported (residualPart I J) := by
   rw [residualPart_eq_supportResidual]
   exact supportResidual_supported I hI _
+
+end
 
 theorem common_valuations_pos (I J P : Ideal O) (hP : P ∈ commonSupport I J) :
     0 < valuation I P ∧ 0 < valuation J P := by

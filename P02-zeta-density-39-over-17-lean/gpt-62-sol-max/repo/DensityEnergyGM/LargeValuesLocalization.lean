@@ -186,10 +186,12 @@ theorem gmSourceRightPiece_mem_core {N n : ℕ} (hN : 30 ≤ N)
       exact_mod_cast hUpperNat
     nlinarith
 
+section
+variable (cutoff : GMSmoothCutoff) {N : ℕ} (hN : 30 ≤ N) (b : ℕ → ℂ)
+include cutoff N hN b
+
 /-- Exact source-to-smooth three-piece identity from Section 3. -/
-theorem sourceDirichletPoly_eq_three_gmSmooth
-    (cutoff : GMSmoothCutoff) {N : ℕ} (hN : 30 ≤ N)
-    (b : ℕ → ℂ) (t : ℝ) :
+theorem sourceDirichletPoly_eq_three_gmSmooth (t : ℝ) :
     sourceDirichletPoly N b t =
       gmSmoothDirichletPoly cutoff (gmSourceLeftScale N)
         (gmRestrictedCoeffs (gmSourceLeftPiece N) b) t +
@@ -213,9 +215,7 @@ theorem sourceDirichletPoly_eq_three_gmSmooth
 
 /-- A sharp large value selects one of the three smoothed Section 3 pieces,
 with exactly the triangle-inequality loss `V/3`. -/
-theorem exists_large_gmSmooth_of_source_large
-    (cutoff : GMSmoothCutoff) {N : ℕ} (hN : 30 ≤ N)
-    (b : ℕ → ℂ) (t V : ℝ) (hLarge : V ≤ ‖sourceDirichletPoly N b t‖) :
+theorem exists_large_gmSmooth_of_source_large (t V : ℝ) (hLarge : V ≤ ‖sourceDirichletPoly N b t‖) :
     V / 3 ≤ ‖gmSmoothDirichletPoly cutoff (gmSourceLeftScale N)
         (gmRestrictedCoeffs (gmSourceLeftPiece N) b) t‖ ∨
     V / 3 ≤ ‖gmSmoothDirichletPoly cutoff N
@@ -244,9 +244,7 @@ theorem exists_large_gmSmooth_of_source_large
 subfamily containing at least one third of the original ordinates uses one
 fixed rescaling and one fixed coefficient sequence, and therefore satisfies
 the proved sampling-matrix bound. -/
-theorem source_large_values_localize_to_matrix
-    (cutoff : GMSmoothCutoff) {N : ℕ} (hN : 30 ≤ N)
-    (b : ℕ → ℂ) (W : Finset ℝ) (V : ℝ) (hV : 0 < V)
+theorem source_large_values_localize_to_matrix (W : Finset ℝ) (V : ℝ) (hV : 0 < V)
     (hb : ∀ n ∈ dyadicInterval N, ‖b n‖ ≤ 1)
     (hLarge : ∀ t ∈ W, V ≤ ‖sourceDirichletPoly N b t‖) :
     ∃ (W' : Finset ℝ) (Q : ℕ) (c : ℕ → ℂ),
@@ -352,5 +350,7 @@ theorem source_large_values_localize_to_matrix
               hb n (Finset.mem_filter.mp hnS).1
           · simp [gmRestrictedCoeffs, hnS])
         (by intro t ht; exact (Finset.mem_filter.mp ht).2)
+
+end
 
 end GuthMaynard.NativeMoment

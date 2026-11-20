@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalParentSource
 
 @[expose] public section
@@ -9,13 +10,11 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion
-open InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource
-open InversePrioritySecondSource
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic RayFourExpansion InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource InversePrioritySecondSource
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type*}[DecidableEq ι][DecidableEq σ]{Jo:ℕ}
-variable (p:ι→O)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p:ι→O)[OAI.PrincipalIdealFamily.Maximal p]
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem global_original_priority_slice
     (outer:Finset (Source ι Jo))(pool:Finset ι)(selector:Source ι Jo→Finset ι→ℂ)
@@ -43,7 +42,7 @@ theorem global_original_priority_slice
     simp
 
 theorem global_second_energy_source
-    (hp:∀i,p i≠0)(hinj:Function.Injective (fun i=>Ideal.span {p i}))
+    (hp:∀i,p i≠0)(hinj:OAI.PrincipalIdealFamily.Distinct p)
     (outer:Finset (Source ι Jo))(pool:Finset ι)(selector:Source ι Jo→Finset ι→ℂ)
     (houter:∀x∈outer,x.quotientSupport=∅)(extra:CubeCoordinates ι→Finset ι)
     (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)

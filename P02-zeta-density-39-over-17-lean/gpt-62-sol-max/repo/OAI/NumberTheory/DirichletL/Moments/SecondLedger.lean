@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Moments.PartitionNorm
 public import OAI.NumberTheory.DirichletL.Moments.Forcing
 
@@ -10,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondLedger
-open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal
-open CenteredMomentPartition CenteredMomentProductCRT ConcretePrimeRowBridge
+open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentUnequal CenteredMomentPartition CenteredMomentProductCRT ConcretePrimeRowBridge
 local notation "O" => ActualEisensteinCubic.O
 
 theorem nonzero_unequal_min_six (p : O) [(Ideal.span {p}).IsMaximal]
@@ -87,7 +87,7 @@ theorem actual_localSaving_lower (p : O) [(Ideal.span {p}).IsMaximal]
 section Global
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
-theorem local_nonzero_of_global (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
+theorem local_nonzero_of_global (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
     (hp : ∀ i, Supported (Ideal.span {p i}))
     (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ) (w : O)
     (hne : actualCorrelation (∏ i, p i^c i) (∏ i, p i^d i)
@@ -192,9 +192,9 @@ theorem secondSaving_eq_norm_ledger (p : ι → O)
   simp only [localSaving,Nat.cast_min]
   split_ifs <;> ring
 
-theorem actual_secondSaving_lower (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, Supported (Ideal.span {p i})) (hg : ∀ i, goodLambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
+theorem actual_secondSaving_lower (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hp : ∀ i, Supported (Ideal.span {p i})) (hg : OAI.PrincipalIdealFamily.Avoids p goodLambda)
+    (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (hcop : Pairwise (Function.onFun IsCoprime p)) (c d : ι → ℕ)
     (hc : ∀ i, 1 ≤ c i) (hd : ∀ i, 1 ≤ d i) (w : O) (Z : ℝ) (hZ : 1 < Z)
     (hne : actualCorrelation (∏ i, p i^c i) (∏ i, p i^d i)

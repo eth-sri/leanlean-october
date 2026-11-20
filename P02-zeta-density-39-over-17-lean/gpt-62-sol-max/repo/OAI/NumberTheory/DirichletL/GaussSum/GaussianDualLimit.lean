@@ -8,38 +8,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
 
-namespace ActualEisensteinCubic
-
-theorem principal_absNorm_pow (p : O) (k : ℕ) :
-    Ideal.absNorm (Ideal.span {p ^ k}) =
-      (Ideal.absNorm (Ideal.span {p})) ^ k := by
-  rw [← Ideal.span_singleton_pow]
-  exact map_pow Ideal.absNorm (Ideal.span {p}) k
-
-end ActualEisensteinCubic
-namespace OscillatoryDeterminant
-
-open Complex
-
-def q (a b : ℂ) : ℂ := a*a-a*b+b*b
-
-end OscillatoryDeterminant
-
-namespace ActualEisensteinCubic
-
-open EisensteinEmbedding ConcreteTraceCRT Complex
-
-end ActualEisensteinCubic
 namespace EisensteinFiberShift
 
 def Q (x y : ℝ) : ℝ := x*x-x*y+y*y
@@ -198,16 +173,6 @@ theorem complex_eta_times_prefactor (η q : ℝ) (hη : 0 < η) (hq : 0 < q) :
 
 end EisensteinGaussianPrefactor
 
-namespace ActualEisensteinCubic
-
-end ActualEisensteinCubic
-namespace OscillatoryDeterminant
-
-open Complex
-
-noncomputable def r (t a b : ℂ) : ℂ := 1 + 3 * q a b * t^2 / 16
-
-end OscillatoryDeterminant
 open Filter Real Asymptotics
 
 namespace RankTwoLimit

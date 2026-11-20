@@ -11,15 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstPhysicalSource
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSourceRow CenteredMomentRowNorm
-open CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform
-open CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive
-open CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel
-open CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy
-open CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSourceRow CenteredMomentRowNorm CenteredMomentFirstSectors CenteredMomentFirstSectorEnergy CenteredMomentFirstSectorTransform CenteredMomentCanonicalFirst CenteredMomentFirstCanonicalFamily CenteredMomentCompleteCommon CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentActive CenteredMomentFirstReduced CenteredMomentFirstFrequency CenteredMomentFirstWholeKernel CenteredMomentFirstColumns CenteredMomentFirstAssembly CenteredMomentGaussEnergy CenteredMomentSmooth CenteredMomentScale CenteredMomentPrimitive IdealMobiusDivisorSum
 local notation "O"=>ActualEisensteinCubic.O
 
 def columns (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O)):Finset (Ideal O):=
@@ -32,17 +24,23 @@ lemma column_supported (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))
 def element (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):O:=
   CompletedGauss.primaryGenerator a
 
-lemma element_span (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+section
+variable (C D:Ideal O) (hD:D≠0) (S:Finset (Ideal O)) (a:columns C D hD S)
+include C D hD S a
+
+lemma element_span:
     Ideal.span {element C D hD S a}=a:=primary_span_supported a (column_supported C D hD S a)
 
-lemma element_supported (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_supported:
     Supported (Ideal.span {element C D hD S a}):=by
   rw [element_span];exact column_supported C D hD S a
 
-lemma element_primary (C D:Ideal O)(hD:D≠0)(S:Finset (Ideal O))(a:columns C D hD S):
+lemma element_primary:
     goodLambda^2∣element C D hD S a-1:=
   (CompletedGauss.primaryGenerator_spec a (supported_primaryGenerator_ne_zero a
     (column_supported C D hD S a))).2
+
+end
 
 lemma active_span_dvd (C D:Ideal O)(hC:C≠0)(hD:D≠0)
     (hCD:primeSupport C=primeSupport D):Ideal.span {activeConductor C D}∣C:=by

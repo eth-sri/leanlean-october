@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeRowRadicalConductor
-open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve
-open UniqueFactorizationMonoid
+open HeckeFamily HeckeRowClosure CanonicalRowCompletion CanonicalQuadraticSieve UniqueFactorizationMonoid
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -50,8 +49,8 @@ theorem actualPeriodicRow_radical_periodic (Ψ : O →* ℂ) (Q : Ideal O)
       (Q * Ideal.span {m} * Ideal.span {(72 : O)} * (Ideal.span {r}).radical)
       (actualPeriodicRow Ψ m u a b r hr) := by
   intro x y hxy
-  have hQ : x-y ∈ Q := Ideal.mul_le_left (Ideal.mul_le_left (Ideal.mul_le_left hxy))
-  have hm : x-y ∈ Ideal.span {m} := Ideal.mul_le_right (Ideal.mul_le_left (Ideal.mul_le_left hxy))
+  have hQ := Ideal.mul_le_left (Ideal.mul_le_left (Ideal.mul_le_left hxy))
+  have hm := Ideal.mul_le_right (Ideal.mul_le_left (Ideal.mul_le_left hxy))
   have h72 : x-y ∈ Ideal.span {(72 : O)} := Ideal.mul_le_right (Ideal.mul_le_left hxy)
   have hrxy : x-y ∈ (Ideal.span {r}).radical := Ideal.mul_le_right hxy
   change ((Ψ x * coprimalityMask m x) * numeratorBadTwist u a b r hr x) *
@@ -254,7 +253,7 @@ theorem prod_le_radical_prod_pow {ι : Type*} (T : Finset ι)
   | empty => simp
   | @insert i T hi ih =>
     have hei : e i ≠ 0 := by have := he i (Finset.mem_insert_self i T); omega
-    have hpow : (P i ^ e i).radical = (P i).radical := Ideal.radical_pow (P i) hei
+    have hpow := Ideal.radical_pow (P i) hei
     rw [Finset.prod_insert hi, Finset.prod_insert hi, Ideal.radical_mul, hpow]
     exact Ideal.mul_le_inf.trans (inf_le_inf (P i).le_radical
       (ih (fun j hj => he j (Finset.mem_insert_of_mem hj))))

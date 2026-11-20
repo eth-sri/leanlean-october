@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.ActualSecondEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondFixedFamily
 
@@ -8,21 +9,20 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_gen)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 include hp
 
 omit [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem primaryGenerator_primeProduct
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1) (S : Finset ι) (v : ι → ℕ) :
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda) (S : Finset ι) (v : ι → ℕ) :
     primaryGenerator (Ideal.span {primeProduct p S v}) = primeProduct p S v := by
   apply primaryGenerator_span _ (primeProduct_ne_zero p hp S v)
   unfold primeProduct
@@ -53,9 +53,11 @@ theorem finiteCanonicalMarkedRow_mask_span (F : Finset ι) (Ψ : Eis →* ℂ)
       finiteCanonicalMarkedRow p hp hcop hg F Ψ m₂ f k slots lists a W X :=
   fixedChildRow_congr_mask_span p hp hcop hg F Ψ he _ f k
 
+section
+variable (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda) {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
+include hpr Jo Jn x
+
 theorem actual_second_puncture_span
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) (u v : Eisˣ) (m : Eis) :
     Ideal.span {((m*b0Label p x.cube.support
       (fun i => x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)*
@@ -72,9 +74,7 @@ theorem actual_second_puncture_span
   simp only [←Ideal.span_singleton_mul_span_singleton,secondMaskQuotient_span,
     FiniteGaussPhase.span_finset_prod]
 
-theorem actual_second_generator_sectors
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) :
+theorem actual_second_generator_sectors :
     ∃ u v : Eisˣ,
       actualSecondRawLabel p x = (u:Eis)*primaryGenerator (actualSecondChild p u v x).2.1 ∧
       primeSubsetGenerator (fun i => Ideal.span {p i}) x.firstDivisor *
@@ -110,8 +110,6 @@ theorem actual_second_generator_sectors
   exact ⟨u,v,hu,hv⟩
 
 theorem actual_second_canonical_child
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
-    {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hE : x.second.divisor ⊆ x.second.sourceCommon) :
     ∃ u v : Eisˣ, ∀ (F : Finset ι) (Ψ : Eis →* ℂ) (m k : Eis)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ) (W : ℝ → ℂ) (X : ℝ),
@@ -131,6 +129,8 @@ theorem actual_second_canonical_child
   rw [secondCanonical_generator_transport p hp hcop hg F Ψ _ _ _ _ _ _ _ _ u v hu hv]
   exact finiteCanonicalMarkedRow_mask_span p hp hcop hg F Ψ _ _ _ _
     (actual_second_puncture_span p hp hpr x hE u v m) slots lists a W X
+
+end
 
 end
 end SevenEighths.InverseMoment

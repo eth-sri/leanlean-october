@@ -8,72 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 
 namespace CubicEisenstein
 
@@ -123,25 +69,25 @@ lemma card_units_mul_card_target {R S : Type*} [CommRing R] [CommRing S]
   ring
 
 theorem idealTotient_pow_succ (I : Ideal O) (hI : I ≠ 0) (n : ℕ) :
-    idealTotient (I^(n+1))=Ideal.absNorm I^n*idealTotient I := by
-  let f : (O ⧸ I^(n+1)) →+* (O ⧸ I) :=
+    idealTotient (I ^(n+1))=Ideal.absNorm I ^n*idealTotient I := by
+  let f : (O ⧸ I ^(n+1)) →+* (O ⧸ I) :=
     Ideal.Quotient.factor (Ideal.pow_le_self (Nat.succ_ne_zero n))
   have hf : Function.Surjective f := Ideal.Quotient.factor_surjective _
-  have hu (x : O ⧸ I^(n+1)) : IsUnit (f x) ↔ IsUnit x := by
+  have hu (x : O ⧸ I ^(n+1)) : IsUnit (f x) ↔ IsUnit x := by
     obtain ⟨x,rfl⟩ := Ideal.Quotient.mk_surjective x
     exact (Ideal.Quotient.isUnit_mk_pow_iff_isUnit_mk I (Nat.succ_ne_zero n)).symm
   have h := card_units_mul_card_target f hf hu
-  change Ideal.absNorm I*idealTotient (I^(n+1))=
-    Ideal.absNorm (I^(n+1))*idealTotient I at h
+  change Ideal.absNorm I*idealTotient (I ^(n+1))=
+    Ideal.absNorm (I ^(n+1))*idealTotient I at h
   rw [map_pow] at h
   have hpos : 0<Ideal.absNorm I := Nat.pos_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hI)
   apply Nat.eq_of_mul_eq_mul_left hpos
   calc
-    _ = Ideal.absNorm I^(n+1)*idealTotient I := h
+    _ = Ideal.absNorm I ^(n+1)*idealTotient I := h
     _ = _ := by ring
 
 theorem idealTotient_cube (I : Ideal O) (hI : I ≠ 0) :
-    idealTotient (I^3)=Ideal.absNorm I^2*idealTotient I :=
+    idealTotient (I ^3)=Ideal.absNorm I ^2*idealTotient I :=
   idealTotient_pow_succ I hI 2
 
 theorem card_admissible_cube_product (n : ℕ) (a : O) (ha : a ≠ 0)
@@ -164,7 +110,7 @@ lemma isUnit_quotient_iff_sup (I : Ideal O) (x : O) :
     obtain ⟨b,rfl⟩ := Ideal.Quotient.mk_surjective b
     have hI : x*b-1 ∈ I := by
       apply Ideal.Quotient.eq_zero_iff_mem.mp
-      simpa only [map_sub,map_mul,map_one,sub_eq_zero] using hb
+      simpa [sub_eq_zero] using hb
     apply (Ideal.eq_top_iff_one _).mpr
     have hx' : x*b ∈ I ⊔ Ideal.span {x} :=
       (le_sup_right : Ideal.span {x} ≤ I ⊔ Ideal.span {x})
@@ -178,7 +124,7 @@ lemma isUnit_quotient_iff_sup (I : Ideal O) (x : O) :
     refine ⟨Ideal.Quotient.mk I k, ?_⟩
     have ha0 := Ideal.Quotient.eq_zero_iff_mem.mpr ha
     have hh := congrArg (Ideal.Quotient.mk I) hab
-    simpa only [map_add,map_mul,map_one,ha0,zero_add] using hh
+    simpa [ha0] using hh
 
 lemma residue_unit_mobius (I : Ideal O) (hI : I ≠ 0) (r : O ⧸ I) :
     (if IsUnit r then (1:ℂ) else 0) =
@@ -204,7 +150,7 @@ lemma residue_unit_mobius (I : Ideal O) (hI : I ≠ 0) (r : O ⧸ I) :
 lemma sum_indicator_const {R : Type*} [Fintype R] (P : R → Prop) (z : ℂ) :
     (∑ r : R, if P r then z else 0)=(Nat.card {r : R // P r}:ℂ)*z := by
   rw [← Finset.sum_filter]
-  simp only [Finset.sum_const,nsmul_eq_mul,Nat.card_eq_fintype_card,Fintype.card_subtype]
+  simp [Fintype.card_subtype]
 
 lemma card_quotient_multiples (I J : Ideal O) (hI : I ≠ 0) (hIJ : I ≤ J) :
     (Nat.card {r : O ⧸ I // Quotient.out r ∈ J}:ℂ)=
@@ -276,7 +222,7 @@ def unramifiedNormWeight (s : ℂ) : Ideal O →*₀ ℂ where
     · simp [primaryGenerator_mul,hI]
     by_cases hJ : primaryGenerator J=0
     · simp [primaryGenerator_mul,hJ]
-    simp only [primaryGenerator_mul,mul_eq_zero,hI,hJ,false_or,ite_false,map_mul,Nat.cast_mul]
+    simp [primaryGenerator_mul, hI, hJ]
     exact Complex.natCast_mul_natCast_cpow _ _ _
 
 lemma unramifiedNormWeight_of_good (s : ℂ) (I : Ideal O) (hI : primaryGenerator I ≠ 0) :
@@ -359,7 +305,7 @@ theorem unramifiedMobiusSeries_mul_zeta (s : ℂ) (hs : 1<s.re) :
     by_cases hB : B=0
     · subst B
       have hz (p : MulFiber 0) : F p.1=0 := by simp only [F,p.2,map_zero,mul_zero]
-      simp only [hz,tsum_zero,zero_ne_one,ite_false]
+      simp [hz]
     · calc
         _ = (∑' p : MulFiber B,(moebius p.1.1:ℂ))*unramifiedNormWeight s B := by
           rw [← tsum_mul_right]
@@ -499,7 +445,7 @@ lemma idealTotient_le_absNorm (I : Ideal O) (hI : I ≠ 0) :
 
 theorem unramifiedTotientSeries_summable_norm (s : ℂ) (hs : 2<s.re) :
     Summable (fun I : Ideal O => ‖(idealTotient I:ℂ)*unramifiedNormWeight s I‖) := by
-  have hs1 : 1<(s-1).re := by simp only [Complex.sub_re,Complex.one_re]; linarith
+  have hs1 : 1<(s-1).re := by simp; linarith
   apply (unramifiedNormWeight_summable_norm (s-1) hs1).of_nonneg_of_le
     (fun _ => norm_nonneg _)
   intro I

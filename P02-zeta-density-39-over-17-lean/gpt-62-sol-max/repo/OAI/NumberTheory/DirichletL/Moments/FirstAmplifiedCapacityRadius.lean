@@ -10,14 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstAmplifiedCapacityRadius
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic
-open CenteredMomentSecondHeightFamily
-open CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstPhysicalSource
-open CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor
-open CenteredMomentFirstCanonicalFamily CenteredMomentSectorLocalization
-open CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT
-open CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice
-open CenteredMomentCommonRadiusSaving
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss ActualEisensteinCubic CenteredMomentSecondHeightFamily CenteredMomentFirstMixedNormalizationActual CenteredMomentFirstPhysicalSource CenteredMomentFirstExceptionalPrefactor CenteredMomentFirstNonexceptionalPrefactor CenteredMomentFirstCanonicalFamily CenteredMomentSectorLocalization CenteredMomentCanonicalFirst CenteredMomentFirstScale ConcreteTraceCRT CenteredMomentAmplifiedRetainedRadius CenteredMomentFirstAmplificationChoice CenteredMomentCommonRadiusSaving
 local notation "O"=>HeckeFamily.O
 
 lemma enlarged_gain_extraction (c d w wo sigma branch delta reserve:ℝ)
@@ -28,9 +21,11 @@ lemma enlarged_gain_extraction (c d w wo sigma branch delta reserve:ℝ)
     apply max_le <;> linarith [min_le_left c d,min_le_right c d]
   linarith
 
-theorem actual_reference_shift (η τ:Character)(C D:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(K V Z red w wo cost gain:ℝ)
+section
+variable (η τ:Character) (C D:Ideal O) (hC:Supported C) (hD:Supported D) (hCD:primeSupport C=primeSupport D) (E:Finset (CommonIndex C D))
+include η τ C D hC hD hCD E
+
+theorem actual_reference_shift(K V Z red w wo cost gain:ℝ)
     (hK:0<K)(hV:0<V)(hZ:1<Z)(hred:0<red)(hcost:0<cost)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
@@ -57,9 +52,7 @@ theorem actual_reference_shift (η τ:Character)(C D:Ideal O)
   norm_num at hh ⊢
   linarith
 
-theorem actual_main_reference_shift (η τ:Character)(C D:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(K V Z red sigma delta reserve:ℝ)
+theorem actual_main_reference_shift(K V Z red sigma delta reserve:ℝ)
     (hK:0<K)(hV:0<V)(hZ:1<Z)(hred:0<red)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D}):
@@ -85,9 +78,7 @@ theorem actual_main_reference_shift (η τ:Character)(C D:Ideal O)
   norm_num at hg
   linarith
 
-theorem actual_error_reference_shift (η τ:Character)(C D:Ideal O)
-    (hC:Supported C)(hD:Supported D)(hCD:primeSupport C=primeSupport D)
-    (E:Finset (CommonIndex C D))(K V Z red sigma delta reserve cost:ℝ)
+theorem actual_error_reference_shift(K V Z red sigma delta reserve cost:ℝ)
     (hK:0<K)(hV:0<V)(hZ:1<Z)(hred:0<red)(hcost:0<cost)
     (hmod:τ.modulus=η.modulus*Ideal.span {fixedBadMask}*Ideal.span {(72:O)}*
       Ideal.span {primeSubsetGenerator (fun P:CommonIndex C D=>P.val) E*activeConductor C D})
@@ -122,6 +113,8 @@ theorem actual_error_reference_shift (η τ:Character)(C D:Ideal O)
   rw [errorCommonRadius]
   simp only [Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne'] at hh ⊢
   linarith
+
+end
 
 end SevenEighths.CenteredMomentFirstAmplifiedCapacityRadius
 

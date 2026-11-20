@@ -26,47 +26,22 @@ theorem finset_analyticOrderNatAt_le_finsum_divisor {f : ℂ → ℂ} {U : Set �
     (S : Finset ℂ) (hSU : ∀ u ∈ S, u ∈ U) :
     ((∑ u ∈ S, analyticOrderNatAt f u : ℕ) : ℝ) ≤
       ((∑ᶠ u, divisor f U u : ℤ) : ℝ) := by
-  let g : ℂ → ℝ := fun u => if u ∈ S then (analyticOrderNatAt f u : ℝ) else 0
-  let d : ℂ → ℝ := fun u => (divisor f U u : ℝ)
-  have hgFin : Function.HasFiniteSupport g := by
-    apply Set.Finite.subset S.finite_toSet
+  classical
+  let d := divisor f U
+  have hfin := d.finiteSupport hU
+  rw [finsum_eq_sum_of_support_subset d (s := S ∪ hfin.toFinset) (by
     intro u hu
-    simp only [Function.mem_support, ne_eq] at hu
-    by_contra huS
-    have huS' : u ∉ S := by simpa using huS
-    exact hu (by simp [g, huS'])
-  have hdFin : Function.HasFiniteSupport d := by
-    have hfin := (divisor f U).finiteSupport hU
-    exact hfin.subset (by
+    exact Finset.mem_union_right _ (hfin.mem_toFinset.mpr hu))]
+  exact_mod_cast calc
+    (∑ u ∈ S, (analyticOrderNatAt f u : ℤ)) = ∑ u ∈ S, d u := by
+      apply Finset.sum_congr rfl
       intro u hu
-      simpa only [Function.mem_support, d, Int.cast_eq_zero, ne_eq] using hu)
-  have hgd : g ≤ d := by
-    intro u
-    by_cases huS : u ∈ S
-    · have huU := hSU u huS
-      have huOrder := hf.analyticOrderAt_ne_top_of_isPreconnected hpre hc huU hcOrder
-      simp only [g, d, ite_eq_left huS]
-      rw [hf.divisor_apply huU, ← Nat.cast_analyticOrderNatAt huOrder]
+      change _ = divisor f U u
+      rw [hf.divisor_apply (hSU u hu), ← Nat.cast_analyticOrderNatAt
+        (hf.analyticOrderAt_ne_top_of_isPreconnected hpre hc (hSU u hu) hcOrder)]
       simp
-    · simp only [g, ite_eq_right huS]
-      change 0 ≤ (divisor f U u : ℝ)
-      exact_mod_cast hf.divisor_nonneg u
-  have hle := finsum_le_finsum hgFin hdFin hgd
-  have hgSum : ∑ᶠ u, g u = ∑ u ∈ S, g u :=
-    finsum_eq_sum_of_support_subset g (by
-      intro u hu
-      simp only [Function.mem_support, ne_eq] at hu
-      by_contra huS
-      have huS' : u ∉ S := by simpa using huS
-      exact hu (by simp [g, huS']))
-  have hdSum : ((∑ᶠ u, divisor f U u : ℤ) : ℝ) = ∑ᶠ u, d u := by
-    simpa [d] using map_finsum (Int.castRingHom ℝ) ((divisor f U).finiteSupport hU)
-  change ((∑ u ∈ S, analyticOrderNatAt f u : ℕ) : ℝ) ≤ _
-  calc
-    ((∑ u ∈ S, analyticOrderNatAt f u : ℕ) : ℝ) = ∑ u ∈ S, g u := by simp [g]
-    _ = ∑ᶠ u, g u := hgSum.symm
-    _ ≤ ∑ᶠ u, d u := hle
-    _ = ((∑ᶠ u, divisor f U u : ℤ) : ℝ) := hdSum.symm
+    _ ≤ ∑ u ∈ S ∪ hfin.toFinset, d u :=
+      Finset.sum_le_sum_of_subset_of_nonneg Finset.subset_union_left (fun u _ _ => hf.divisor_nonneg u)
 
 theorem zeta_jensen_sphere_bound (T t : ℝ) (hT : T ≥ 8)
     (ht : t ∈ Set.Icc (T - 1) (2 * T)) :
@@ -192,5 +167,76 @@ theorem euler_product_lower_bound_2 (t : ℝ) :
   change (0.6 : ℝ) ≤ ‖riemannZeta s‖
   nlinarith [norm_nonneg (riemannZeta s)]
 
+
+private theorem jensen_height_majorant {T : ℝ} (hT : 8 ≤ T) : 1 ≤ 100 * T ^ (3 : ℝ) := by
+  have h := Real.one_le_rpow (by linarith : 1 ≤ T) (by norm_num : (0 : ℝ) ≤ 3)
+  linarith
+
+/-- The logarithmic numerator in the unit-bin Jensen bound is independent of the disk. -/
+theorem jensen_log_height_bound {T : ℝ} (hT : 0 < T) (hlog : 2 ≤ Real.log T) :
+    Real.log ((100*T^(3 : ℝ))/(0.6 : ℝ)) ≤ 100*Real.log T := by
+  rw [show 100*T^(3 : ℝ)/(0.6 : ℝ) = (500/3)*T^(3 : ℝ) by ring,
+    Real.log_mul (by norm_num) (by positivity), Real.log_rpow hT]
+  linarith [Real.log_le_sub_one_of_pos (by norm_num : (0 : ℝ) < 500/3)]
+
+theorem jensen_unit_bound_nonneg {T r : ℝ} (hT : 8 ≤ T) (hr : 0 < r) (hrR : r < 7/4) :
+    0 ≤ Real.log ((100*T^(3 : ℝ))/(0.6 : ℝ)) / Real.log ((7/4)/r) :=
+  div_nonneg (Real.log_nonneg ((le_div_iff₀ (by norm_num)).2 (by
+    linarith [jensen_height_majorant hT])))
+    (Real.log_nonneg ((le_div_iff₀ hr).2 (by linarith)))
+
+/-- Jensen's inequality for any finite sample inside one height bin. The radius
+is chosen from the left edge of the strip and the bin's half-height. -/
+theorem finset_unit_bin_le_jensen (S : Finset ℂ) {T a z r : ℝ}
+    (hT : 8 ≤ T) (hr : 0 < r) (hrR : r < 7/4)
+    (hrad : (2-a)^2+(1/2)^2 ≤ r^2)
+    (hS : ∀ ρ ∈ S, a ≤ ρ.re ∧ ρ.re ≤ 1 ∧ T ≤ ρ.im ∧ ρ.im ≤ 2*T ∧ z ≤ ρ.im ∧ ρ.im < z+1) :
+    ((∑ ρ ∈ S, analyticOrderNatAt riemannZeta ρ : ℕ) : ℝ) ≤
+      Real.log ((100*T^(3 : ℝ))/(0.6 : ℝ)) / Real.log ((7/4)/r) := by
+  obtain rfl | ⟨ρ, hρ⟩ := S.eq_empty_or_nonempty
+  · simpa using jensen_unit_bound_nonneg hT hr hrR
+  · obtain ⟨_, _, h₁, h₂, h₃, h₄⟩ := hS ρ hρ
+    have hz : z ∈ Set.Icc (T-1) (2*T) := ⟨by linarith, by linarith⟩
+    let c : ℂ := 2 + I * ((z : ℂ) + 1/2)
+    have hA : AnalyticOnNhd ℂ riemannZeta (Metric.closedBall c (7/4)) := by
+      apply analyticOn_riemannZeta.mono
+      intro w hw
+      have hd := (abs_im_le_norm (w-c)).trans (by simpa [Metric.mem_closedBall, dist_eq_norm] using hw)
+      have hi := (abs_le.mp hd).1
+      simp [c] at hi
+      intro he
+      change w = 1 at he
+      subst w
+      norm_num at hi
+      linarith [hz.1]
+    have hc := euler_product_lower_bound_2 z
+    have hcn : riemannZeta c ≠ 0 := norm_pos_iff.mp (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 0.6) hc)
+    have hsub : ∀ w ∈ S, w ∈ Metric.closedBall c r := by
+      intro w hw
+      obtain ⟨ha, hb, _, _, hd, he⟩ := hS w hw
+      have hx : |(w-c).re| ≤ 2-a := by
+        rw [abs_le]; simp [c]; constructor <;> linarith
+      have hy : |(w-c).im| ≤ 1/2 := by
+        rw [abs_le]; simp [c]; constructor <;> linarith
+      rw [Metric.mem_closedBall, dist_eq_norm, ← sq_le_sq₀ (norm_nonneg _) hr.le,
+        sq, Complex.norm_mul_self_eq_normSq, normSq_apply]
+      linarith [sq_le_sq.mpr (hx.trans (le_abs_self _)), sq_le_sq.mpr (hy.trans (le_abs_self _))]
+    have hb := finset_analyticOrderNatAt_le_finsum_divisor
+      (hA.mono (Metric.closedBall_subset_closedBall hrR.le)) (isCompact_closedBall c r)
+      (convex_closedBall c r).isPreconnected (Metric.mem_closedBall_self hr.le)
+      ((analyticOrderAt_eq_zero.mpr (Or.inr hcn)).trans_ne (by simp)) S hsub
+    have hJ : ((∑ᶠ u, divisor riemannZeta (Metric.closedBall c r) u : ℤ) : ℝ) ≤
+        Real.log ((100*T^(3 : ℝ))/‖riemannZeta c‖) / Real.log ((7/4)/r) := by
+      have h :=
+        (show AnalyticOnNhd ℂ riemannZeta (Metric.closedBall c |(7/4 : ℝ)|) by
+          simpa only [abs_of_pos (by norm_num : (0 : ℝ) < 7/4)] using hA).sum_divisor_le (r := r) (R := 7/4)
+          (by rwa [abs_of_pos hr]) (by simpa [abs_of_pos hr, abs_of_pos (by norm_num : (0 : ℝ) < 7/4)])
+          (jensen_height_majorant hT) hcn (by
+            simpa only [abs_of_pos (by norm_num : (0 : ℝ) < 7/4)] using zeta_jensen_sphere_bound T z hT hz)
+      rwa [abs_of_pos hr] at h
+    refine hb.trans (hJ.trans (div_le_div_of_nonneg_right ?_ (Real.log_pos ((one_lt_div hr).2 hrR)).le))
+    have hTp : 0 < T := by linarith
+    exact Real.log_le_log (div_pos (by positivity) (norm_pos_iff.mpr hcn))
+      (div_le_div_of_nonneg_left (by positivity) (by norm_num) hc)
 
 end MathCollab.Density.ZetaGrowth

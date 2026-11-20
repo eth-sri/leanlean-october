@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerCanonical
 
 @[expose] public section
@@ -8,14 +9,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
+open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic SevenEighths.InverseMoment SevenEighths.InverseInitialArithmetic
 namespace SevenEighths.InverseInitialEnergyCallerFamily
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι → Eis) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem common_killed (G E V : Finset ι) (_hE : E⊆G) (j d t : Eis)
     (hd : Ideal.span {d}=sourceIdeal p E) (ht : Ideal.span {t}=sourceIdeal p (G\E)) :
@@ -56,7 +56,7 @@ theorem marked_child_original_lists (F G E V : Finset ι) (hE : E⊆G)
 
 omit [DecidableEq σ] in
 theorem normalized_child_uniform
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (G E V : Finset ι) (d t : Eis)
     (hd : Ideal.span {d}=sourceIdeal p E) (ht : Ideal.span {t}=sourceIdeal p (G\E)) :
     ∃ u : Eisˣ, d=(u:Eis)*primaryGenerator (sourceIdeal p E) ∧
@@ -84,7 +84,7 @@ theorem normalized_child_uniform
   exact hcol _ N
 
 theorem fresh_initial_split_fixed_family
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (G E V : Finset ι) (hE : E⊆G) (d t : Eis)
     (hd : Ideal.span {d}=sourceIdeal p E) (ht : Ideal.span {t}=sourceIdeal p (G\E)) :
     ∃ u : Eisˣ, d=(u:Eis)*primaryGenerator (sourceIdeal p E) ∧

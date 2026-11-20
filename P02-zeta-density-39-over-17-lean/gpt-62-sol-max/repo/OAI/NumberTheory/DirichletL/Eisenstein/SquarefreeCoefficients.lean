@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -198,7 +142,7 @@ lemma thetaSquarefreePart_squarefree (I:Ideal Eis) : Squarefree (thetaSquarefree
 
 lemma thetaParts_mul_cube (I:Ideal Eis) (hI:I≠0)
     (he:∀P∈normalizedFactors I,(normalizedFactors I).count P%3≠2) :
-    thetaSquarefreePart I*thetaCubePart I^3=I := by
+    thetaSquarefreePart I*thetaCubePart I ^3=I := by
   rw [thetaSquarefreePart,Finset.prod_filter,thetaCubePart,←Finset.prod_pow,←Finset.prod_mul_distrib]
   calc
     _=∏P∈primeSupport I,P^((normalizedFactors I).count P):=by
@@ -221,13 +165,13 @@ theorem sourceArithmeticResidue_squarefree_cube_support (I:Ideal Eis)
     Squarefree (thetaSquarefreePart I) ∧
     primaryGenerator (thetaSquarefreePart I)≠0 ∧
     primaryGenerator (thetaCubePart I)≠0 ∧
-    thetaSquarefreePart I*thetaCubePart I^3=I := by
+    thetaSquarefreePart I*thetaCubePart I ^3=I := by
   have he:=thetaParts_mul_cube I (primaryGenerator_ne_zero_ideal I hI)
     (fun P hP=>sourceArithmeticResidue_valuation_ne_two I P hI hP hS)
   have hgen:primaryGenerator I=
       primaryGenerator (thetaSquarefreePart I)*(primaryGenerator (thetaCubePart I))^3:=by
     calc
-      _=primaryGenerator (thetaSquarefreePart I*thetaCubePart I^3):=congrArg primaryGenerator he.symm
+      _=primaryGenerator (thetaSquarefreePart I*thetaCubePart I ^3):=congrArg primaryGenerator he.symm
       _=_:=by rw [primaryGenerator_mul,primaryGenerator_pow]
   have hA:primaryGenerator (thetaSquarefreePart I)≠0:=by
     intro hz

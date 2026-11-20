@@ -91,10 +91,14 @@ lemma detectorRealParts_nonempty (χ : ι→Character) (T : ℝ) : (detectorReal
 def detectorMaximum (χ : ι→Character) (T : ℝ) : ℝ :=
   (detectorRealParts χ T).max' (detectorRealParts_nonempty χ T)
 
-lemma detectorMaximum_mem (χ : ι→Character) (T : ℝ) : detectorMaximum χ T∈detectorRealParts χ T :=
+section
+variable (χ : ι→Character) (T : ℝ)
+include χ T
+
+lemma detectorMaximum_mem : detectorMaximum χ T∈detectorRealParts χ T :=
   Finset.max'_mem _ _
 
-lemma detectorMaximum_bounds (χ : ι→Character) (T : ℝ) :
+lemma detectorMaximum_bounds :
     (51/100:ℝ)≤detectorMaximum χ T ∧ detectorMaximum χ T≤1 := by
   constructor
   · exact Finset.le_max' _ _ (Finset.mem_insert_self _ _)
@@ -105,7 +109,7 @@ lemma detectorMaximum_bounds (χ : ι→Character) (T : ℝ) :
     · obtain ⟨⟨i,s⟩,hs,rfl⟩ := Finset.mem_image.mp hx
       exact (mem_detectorFamilyZeros χ T i s |>.mp hs).2.1
 
-lemma detector_zero_re_le_maximum (χ : ι→Character) (T : ℝ) (i : ι) {s : ℂ}
+lemma detector_zero_re_le_maximum (i : ι) {s : ℂ}
     (hs : (51/100:ℝ)≤s.re) (ht : |s.im|≤T) (hz : LFunction (χ i) s=0)
     (hpole : ¬((χ i).residue=1 ∧ s=1)) : s.re≤detectorMaximum χ T := by
   have hle : s.re≤1 := by
@@ -115,7 +119,7 @@ lemma detector_zero_re_le_maximum (χ : ι→Character) (T : ℝ) (i : ι) {s : 
   exact Finset.mem_insert_of_mem (Finset.mem_image.mpr
     ⟨(i,s),(mem_detectorFamilyZeros χ T i s).mpr ⟨hs,hle,ht,hz,hpole⟩,rfl⟩)
 
-lemma detectorMaximum_attained (χ : ι→Character) (T : ℝ)
+lemma detectorMaximum_attained
     (hmax : (51/100:ℝ)<detectorMaximum χ T) :
     ∃i s,LFunction (χ i) s=0 ∧ ¬((χ i).residue=1 ∧ s=1) ∧
       |s.im|≤T ∧ s.re=detectorMaximum χ T := by
@@ -126,12 +130,14 @@ lemma detectorMaximum_attained (χ : ι→Character) (T : ℝ)
     have hz := (mem_detectorFamilyZeros χ T i s).mp hs
     exact ⟨i,s,hz.2.2.2.1,hz.2.2.2.2,hz.2.2.1,heq⟩
 
-lemma detector_nonzero_above_maximum (χ : ι→Character) (T : ℝ) (i : ι) {s : ℂ}
+lemma detector_nonzero_above_maximum (i : ι) {s : ℂ}
     (hs : detectorMaximum χ T<s.re) (ht : |s.im|≤T)
     (hpole : ¬((χ i).residue=1 ∧ s=1)) : LFunction (χ i) s≠0 := by
   intro hz
   exact (not_lt_of_ge (detector_zero_re_le_maximum χ T i
     ((detectorMaximum_bounds χ T).1.trans hs.le) ht hz hpole)) hs
+
+end
 
 end SevenEighths.ProbeHighRowFamily
 

@@ -220,7 +220,7 @@ theorem gmCubicDiagonalMain_sub_spectralAverage_bounded
     rw [show b ^ 3 - a ^ 3 = (b - a) * (b ^ 2 + b * a + a ^ 2) by ring,
       abs_mul]
     apply mul_le_mul_of_nonneg_left _ (abs_nonneg _)
-    have hM0 : 0 ≤ (N : ℝ) * L := mul_nonneg hn.le (zero_le_one.trans hL)
+    have hM0 := mul_nonneg hn.le (zero_le_one.trans hL)
     have hb2 : |b ^ 2| ≤ ((N : ℝ) * L) ^ 2 := by
       simpa only [abs_pow] using pow_le_pow_left₀ (abs_nonneg b) hbabs 2
     have hbaMul : |b * a| ≤ ((N : ℝ) * L) ^ 2 := by
@@ -405,8 +405,7 @@ theorem gm_largeValues_raw_dispersion
     exact norm_nonneg (gmMatrix cutoff N W)
   have hSing0 : 0 ≤ gmMatrixSingularValue cutoff N W j :=
     gmMatrixSingularValue_nonneg cutoff N W j
-  have hCardCube : (W.card : ℝ) ^ 3 ≤
-      ((N : ℝ) * gmMatrixOperatorNorm cutoff N W ^ 2 / V ^ 2) ^ 3 :=
+  have hCardCube :=
     pow_le_pow_left₀ (Nat.cast_nonneg W.card) hCard 3
   have hToOp : (W.card : ℝ) ^ 3 * V ^ 6 / (N : ℝ) ^ 3 ≤
       gmMatrixOperatorNorm cutoff N W ^ 6 := by
@@ -672,7 +671,7 @@ theorem gm_solve_monomial
     (h : x ^ p * D ≤ A * (x ^ q * E)) :
     x ≤ (A * E / D) ^ (1 / (p - q)) := by
   have hxq : 0 < x ^ q := Real.rpow_pos_of_pos hx q
-  have hp : x ^ p ≤ A * (x ^ q * E) / D := (le_div_iff₀ hD).2 h
+  have hp := (le_div_iff₀ hD).2 h
   have hquot : x ^ p / x ^ q ≤ (A * E / D) := by
     calc
       x ^ p / x ^ q ≤ (A * (x ^ q * E) / D) / x ^ q :=
@@ -1085,8 +1084,8 @@ theorem gmEquation12PhysicalRootShape_specialize
     rw [← Real.rpow_natCast x 3, ← Real.rpow_sub hx]
     congr 1
     ring
-  have hp3 : x ^ 3 = x ^ (3 : ℝ) := (Real.rpow_natCast x 3).symm
-  have hp2 : x ^ 2 = x ^ (2 : ℝ) := (Real.rpow_natCast x 2).symm
+  have hp3 := (Real.rpow_natCast x 3).symm
+  have hp2 := (Real.rpow_natCast x 2).symm
   have hn3 : x ^ (6 / 5 : ℝ) * x = x ^ (11 / 5 : ℝ) := by
     calc
       x ^ (6 / 5 : ℝ) * x = x ^ (6 / 5 : ℝ) * x ^ (1 : ℝ) := by rw [Real.rpow_one]
@@ -1560,7 +1559,7 @@ theorem gmProposition3_1_smooth_fullHeight
   have hmaps : ∀ t ∈ W, bin t ∈ Finset.range K := by
     intro t ht
     have htBase := hBase t ht
-    have hquot : t / L ≤ T / L := (div_le_div_iff_of_pos_right hLpos).2 htBase.2
+    have hquot := (div_le_div_iff_of_pos_right hLpos).2 htBase.2
     have hfloor := Nat.floor_mono hquot
     dsimp only [bin, K]
     rw [Finset.mem_range]
@@ -2184,7 +2183,7 @@ theorem guthMaynardLargeValues_native : GuthMaynardLargeValues := by
         dsimp only [S]
         have hfirst : 0 ≤ (N : ℝ) ^ 2 * V ^ (-2 : ℝ) := by positivity
         linarith
-      have hbound' : (W.card : ℝ) ≤ Ccrit * T ^ ε * S :=
+      have hbound' :=
         hbound.trans (mul_le_mul_of_nonneg_left hcriticalShape
           (mul_nonneg hCcrit.le hTpow))
       have hcoef : Ccrit * T ^ ε ≤ C * T ^ ε :=

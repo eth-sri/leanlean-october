@@ -9,10 +9,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentCommonPairedSource
-open HeckeFamily UniqueFactorizationMonoid CanonicalQuadraticSieve
-open CenteredMomentCommonLinearSource CenteredMomentCommonLinearNormalization
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
+open HeckeFamily UniqueFactorizationMonoid CanonicalQuadraticSieve CenteredMomentCommonLinearSource CenteredMomentCommonLinearNormalization CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentExceptionalMaskedSource CenteredMomentExceptionalAmplitudePair
 local notation "O" => HeckeFamily.O
 variable {ι κ:Type*} [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
 

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff FourierTransform SchwartzMap
 namespace SevenEighths.HeckeDetectorFrequency
-open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier HeckeDetectorLower
-open HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorPartition
+open HeckeFamily HeckeDetectorProfiles HeckeDetectorFourier HeckeDetectorLower HeckeDetectorCoefficientBounds HeckeDetectorFinite HeckeDetectorPartition
 local notation "O" => HeckeFamily.O
 
 def phaseProduct (χ : Character) (D U : ℝ) (s : ℂ) (j k : ℕ) (t : ℝ) : ℂ :=

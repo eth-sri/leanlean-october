@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondPhysicalRecursive
 
 @[expose] public section
@@ -50,9 +51,9 @@ theorem attachSecondExpansion_recover {Jo : ℕ} (x : MarkedSecondSource ι Jo 0
   funext i
   exact Fin.elim0 i
 
-variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+variable (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def secondParentLabel {Jo : ℕ} (parent : SecondParentSource ι Jo) : Eis :=
   (∏ i∈parent.firstCommon,p i)*jLabel p parent.cube.support
@@ -83,8 +84,8 @@ theorem attached_signed_weight {Jo : ℕ} (parent : SecondParentSource ι Jo)
       (secondParentLabel p parent) (secondParentDivisor p parent) z x := rfl
 
 theorem secondExpansionSource_attached
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     {Jo : ℕ} (parent : SecondParentSource ι Jo)
     (source : Finset (SecondExpansionData ι)) (hE : ∀ x∈source,x.divisor ⊆ x.sourceCommon)
     (pool : Finset ι) (Ψ : Eis →* ℂ) (m : Eis) (z : SecondRayIndex)

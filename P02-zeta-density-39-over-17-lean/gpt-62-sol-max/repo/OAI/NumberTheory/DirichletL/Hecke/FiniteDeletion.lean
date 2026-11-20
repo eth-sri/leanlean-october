@@ -97,17 +97,18 @@ theorem regularizedL_one_ne_zero_iff (χ : Character) :
     exact h rfl
   · exact regularizedL_ne_zero_at_one χ
 
-theorem principal_iff_of_mask (χ ψ : Character)
-    (hmask : ∀ I : Ideal O, idealCoeff χ I =
-      if IsCoprime I χ.modulus then idealCoeff ψ I else 0) :
+section
+variable (χ ψ : Character) (hmask : ∀ I : Ideal O, idealCoeff χ I =
+      if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
+include χ ψ hmask
+
+theorem principal_iff_of_mask :
     χ.residue = 1 ↔ ψ.residue = 1 := by
   rw [← regularizedL_one_ne_zero_iff χ, ← regularizedL_one_ne_zero_iff ψ,
     regularizedL_eq_of_mask χ ψ hmask (by norm_num : 0 < (1 : ℂ).re),
     mul_ne_zero_iff, and_iff_left (factors_ne_zero χ.modulus ψ (by norm_num))]
 
-theorem LFunction_eq_of_mask_nonprincipal (χ ψ : Character)
-    (hmask : ∀ I : Ideal O, idealCoeff χ I =
-      if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
+theorem LFunction_eq_of_mask_nonprincipal
     (hχ : χ.residue ≠ 1) {s : ℂ} (hs : 0 < s.re) :
     LFunction χ s = LFunction ψ s * factors χ.modulus ψ s := by
   have hψ : ψ.residue ≠ 1 := fun h => hχ ((principal_iff_of_mask χ ψ hmask).mpr h)
@@ -126,14 +127,14 @@ theorem LFunction_eq_of_mask_nonprincipal (χ ψ : Character)
   intro z hz
   exact (LFunction_eq_of_mask_right χ ψ hmask (by simpa using hz)).symm
 
-theorem LFunction_eq_of_mask_nonpole (χ ψ : Character)
-    (hmask : ∀ I : Ideal O, idealCoeff χ I =
-      if IsCoprime I χ.modulus then idealCoeff ψ I else 0)
+theorem LFunction_eq_of_mask_nonpole
     {s : ℂ} (hs : 0 < s.re) (hpole : s ≠ 1 ∨ χ.residue ≠ 1) :
     LFunction χ s = LFunction ψ s * factors χ.modulus ψ s := by
   rcases hpole with h1 | hχ
   · exact LFunction_eq_of_mask χ ψ hmask hs h1
   · exact LFunction_eq_of_mask_nonprincipal χ ψ hmask hχ hs
+
+end
 
 theorem exists_primitive_zero (χ : Character) {s : ℂ}
     (hs : 0 < s.re) (hpole : s ≠ 1 ∨ χ.residue ≠ 1) (hz : LFunction χ s = 0) :

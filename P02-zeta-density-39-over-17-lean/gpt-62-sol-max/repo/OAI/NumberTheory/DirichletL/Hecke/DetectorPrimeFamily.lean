@@ -13,14 +13,6 @@ namespace SevenEighths.HeckeDetectorPrimeFamily
 open HeckeFamily HeckeRowClosure CanonicalRowCompletion
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
-structure RowData (M : Ideal O) where
-  m : O
-  u : O
-  m_ne_zero : m≠0
-  u_ne_zero : u≠0
-  lambda_dvd : λ₀∣m
-  two_dvd : (2 : O)∣m
-  modulus_le : M≤Ideal.span {m}
 
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

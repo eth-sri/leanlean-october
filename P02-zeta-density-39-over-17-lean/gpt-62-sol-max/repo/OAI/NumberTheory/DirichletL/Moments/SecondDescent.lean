@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondDescent
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay
-open CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentFixedRay CenteredMomentRowNorm CenteredMomentSmooth CenteredMomentPlainChildEnergy RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ)

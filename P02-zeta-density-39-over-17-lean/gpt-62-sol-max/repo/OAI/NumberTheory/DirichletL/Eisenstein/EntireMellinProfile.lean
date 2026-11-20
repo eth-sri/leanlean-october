@@ -8,80 +8,22 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace CubicEisenstein
 open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
+open MeasureTheory Finset AddChar MulChar EisensteinEmbedding ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma finite_mellin_entire {ι : Type*} [Fintype ι] (f : ι→ℝ→ℂ) (weight : ι→ℂ)
@@ -181,10 +123,11 @@ lemma continuedBesselDirichlet_finite_sum {ι : Type*} [Fintype ι]
   unfold continuedBesselDirichlet
   ring
 
-lemma besselSmoothingIntegrand_finite_sum {ι : Type*} [Fintype ι]
-    (F : ℝ→ℂ) (G : ι→ℝ→ℂ) (w : ι→ℂ)
-    (hFG : ∀v : ℝ,0<v→F v=∑i,w i*G i v)
-    (q : ℝ) (V : ℝ→ℂ) (X : ℝ) (s : ℂ)
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (F : ℝ→ℂ) (G : ι→ℝ→ℂ) (w : ι→ℂ) (hFG : ∀v : ℝ,0<v→F v=∑i,w i*G i v) (q : ℝ) (V : ℝ→ℂ)
+include ι instShared1 F G w hFG q V
+
+lemma besselSmoothingIntegrand_finite_sum (X : ℝ) (s : ℂ)
     (hG : ∀i,MellinConvergent (G i) (2*s)) :
     besselSmoothingIntegrand F q V X s=
       ∑i,w i*besselSmoothingIntegrand (G i) q V X s := by
@@ -199,10 +142,7 @@ lemma besselSmoothingIntegrand_finite_sum {ι : Type*} [Fintype ι]
   unfold besselSmoothingIntegrand
   ring
 
-theorem besselSmoothingIntegrand_finite_integrable {ι : Type*} [Fintype ι]
-    (F : ℝ→ℂ) (G : ι→ℝ→ℂ) (w : ι→ℂ)
-    (hFG : ∀v : ℝ,0<v→F v=∑i,w i*G i v)
-    (q : ℝ) (V : ℝ→ℂ) (X σ : ℝ)
+theorem besselSmoothingIntegrand_finite_integrable (X σ : ℝ)
     (hG : ∀i,∀t : ℝ,MellinConvergent (G i) (2*((σ:ℂ)+t*Complex.I)))
     (hi : ∀i,Integrable (fun t : ℝ=>besselSmoothingIntegrand (G i) q V X ((σ:ℂ)+t*Complex.I))) :
     Integrable (fun t : ℝ=>besselSmoothingIntegrand F q V X ((σ:ℂ)+t*Complex.I)) := by
@@ -210,6 +150,8 @@ theorem besselSmoothingIntegrand_finite_integrable {ι : Type*} [Fintype ι]
   apply hsum.congr
   filter_upwards with t
   exact (besselSmoothingIntegrand_finite_sum F G w hFG q V X _ (fun i=>hG i t)).symm
+
+end
 
 end CompletedGauss
 
@@ -224,8 +166,11 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 def unramifiedResidualCoefficient (h:Eis) :ℂ:=cubicBesselNormalizer h*unramifiedGaussResidue h
 
-lemma primeCubicGauss_two_norm (p:Eis) (hp:Prime p) (hpp:lambda^2∣p-1)
-    (h:Eis) (hph:¬p∣h) : ‖primeCubicGauss p hp hpp 2 h‖=‖eisEmbedding p‖ := by
+section
+variable (p:Eis) (hp:Prime p) (hpp:lambda^2∣p-1) (h:Eis) (hph:¬p∣h)
+include p hp hpp h hph
+
+lemma primeCubicGauss_two_norm : ‖primeCubicGauss p hp hpp 2 h‖=‖eisEmbedding p‖ := by
   have he:=congrArg norm (primeCubicGauss_one_mul_two p hp hpp h hph)
   rw [norm_mul,primeCubicGauss_two_eq_star,norm_star,Complex.norm_natCast] at he
   have hn:=eisEmbedding_norm_sq_eq_absNorm_span p
@@ -234,8 +179,7 @@ lemma primeCubicGauss_two_norm (p:Eis) (hp:Prime p) (hpp:lambda^2∣p-1)
   rw [primeCubicGauss_two_eq_star,norm_star]
   nlinarith
 
-lemma unramifiedResidualCoefficient_prime_factor (p:Eis) (hp:Prime p)
-    (hpp:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) :
+lemma unramifiedResidualCoefficient_prime_factor :
     unramifiedResidualCoefficient (h*p)=
       (primeCubicGauss p hp hpp 2 h/(‖eisEmbedding p‖:ℂ))*unramifiedResidualCoefficient h := by
   rw [unramifiedResidualCoefficient,cubicBesselNormalizer_mul,
@@ -245,13 +189,14 @@ lemma unramifiedResidualCoefficient_prime_factor (p:Eis) (hp:Prime p)
       primeCubicGauss p hp hpp 2 h*(cubicBesselNormalizer h*unramifiedGaussResidue h):=by ring
     _=_:=by rw [prime_normalizer_powers p hp.ne_zero]; ring
 
-lemma unramifiedResidualCoefficient_prime_norm (p:Eis) (hp:Prime p)
-    (hpp:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) :
+lemma unramifiedResidualCoefficient_prime_norm :
     ‖unramifiedResidualCoefficient (h*p)‖=‖unramifiedResidualCoefficient h‖ := by
   rw [unramifiedResidualCoefficient_prime_factor p hp hpp h hph,norm_mul,norm_div,
     primeCubicGauss_two_norm p hp hpp h hph,Complex.norm_real,
     Real.norm_eq_abs,abs_of_nonneg (norm_nonneg _),
     div_self (norm_ne_zero_iff.mpr (eisEmbedding_ne_zero hp.ne_zero)),one_mul]
+
+end
 
 theorem unramifiedGaussResidue_primary_cube (b:Eis) (hb:b≠0)
     (hbp:lambda^2∣b-1) (h:Eis) :

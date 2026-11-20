@@ -15,15 +15,9 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCappedAnalyticSuccessor
-open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands
-open CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyPositiveHighBound
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
+open HeckeFamily CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyPositiveHighBound CenteredMomentEnergyWidthSchedule CenteredMomentEnergyWidthRanges
 open CenteredMomentEnergyWidthInduction (remaining lowerAt lengthAt lowerAt_pos child_support child_length)
-open CenteredMomentEnergyCappedWidthInduction
-open CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins
-open CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyStageMonotonicity
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyCappedRequests
-open CenteredMomentEnergySourceCapSchedule CenteredMomentNaturalFixedRaySource
+open CenteredMomentEnergyCappedWidthInduction CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins CenteredMomentEnergyBandMonotonicity CenteredMomentEnergyStageMonotonicity CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyCappedRequests CenteredMomentEnergySourceCapSchedule CenteredMomentNaturalFixedRaySource
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 variable (M:Ideal O)[NeZero M]
@@ -66,21 +60,21 @@ theorem actual_successor
   have hLc:0≤Lc:=range_nonneg Mcap Bmask L hMcap.le hmask _
   have hLp:0≤Lp:=range_nonneg Mcap Bmask L hMcap.le hmask _
   have hreq:=request_bounds Mcap Bmask Lc hMcap.le hmask hLc
-  have hreqFinal:Lreq≤range Mcap Bmask L (count Mcap ε):=
+  have hreqFinal :=
     request_le_final Mcap Bmask L ε hMcap.le hmask k hk
   have hRange:=range_nonneg Mcap Bmask L hMcap.le hmask (count Mcap ε)
   have hA:0≤A:=by dsimp [A];positivity
   have hMA:Mp≤A:=by dsimp [A];linarith [range_nonneg Mcap Bmask L hMcap.le hmask (count Mcap ε)]
-  have hready:readyBudget A Bmask≤Bs:=
+  have hready :=
     readyBudget_le_schedule Mcap Bmask L ε A Bmask hMcap.le hmask le_rfl le_rfl
-  have hdrop:Mp-amplification ε/2≤Mc:=parent_drop Mcap Bs ε hε k
-  have hmesh:0≤fineMesh Mcap Bmask L κ ε:=
+  have hdrop :=parent_drop Mcap Bs ε hε k
+  have hmesh :=
     (fineMesh_pos Mcap Bmask L κ ε hMcap.le hmask hκ0 hε).le
-  have hsupport:lowerAt a b Mcap ε k=ac/max 1 b:=child_support a b Mcap ε k hk
-  have hrequest:2*max Lreq Mp+r/4≤Lp:=previous_admits Mcap Bmask L ε Mp (r/4)
+  have hsupport :=child_support a b Mcap ε k hk
+  have hrequest :=previous_admits Mcap Bmask L ε Mp (r/4)
     hMcap.le hmask hMpM hr1 k hk
   have hhighL:max Lc Mp≤Lp:=by
-    have hh:max Lc Mp≤Lreq:=max_le hreq.2.1 (hMpM.trans hreq.2.2)
+    have hh :=max_le hreq.2.1 (hMpM.trans hreq.2.2)
     have hg:0≤max Lreq Mp:=hreq.1.trans (le_max_left _ _)
     have hx:=le_max_left Lreq Mp
     linarith

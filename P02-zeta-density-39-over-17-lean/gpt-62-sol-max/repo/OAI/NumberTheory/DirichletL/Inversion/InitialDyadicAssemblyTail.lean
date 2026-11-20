@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialDyadicAssemblyRetained
 
 @[expose] public section
@@ -11,10 +12,7 @@ open scoped Classical BigOperators SchwartzMap
 open ActualEisensteinCubic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
 namespace SevenEighths.InverseInitialDyadicAssembly
 local notation "Eis"=>ActualEisensteinCubic.O
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource
-open InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns
-open CenteredMomentSectorLocalization CenteredMomentDyadicCount
+open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialEnergyCallerModes InverseInitialEnergyCallerSource InverseInitialEnergyCallerWindows InverseInitialProfile InverseInitialClippedColumns CenteredMomentSectorLocalization CenteredMomentDyadicCount
 
 def windowMass {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fin 4→ℝ) : ℝ :=
   ∑k∈F,∏i:Fin 4,dyadicWeight (k i).val (q i)
@@ -36,16 +34,20 @@ theorem windowMass_univ (a b q:Fin 4→ℝ)(ha:∀i,0<a i)
   rw [windowMass_cast,Complex.ofReal_one]
   exact weight_partition a b q ha hq
 
-theorem windowMass_le_one {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fin 4→ℝ)
-    (ha:∀i,0<a i)(hq:∀i,q i∈Set.Icc (a i) (b i)) : windowMass F q≤1 := by
+section
+variable {a b:Fin 4→ℝ} (F:Finset (Windows a b)) (q:Fin 4→ℝ) (ha:∀i,0<a i) (hq:∀i,q i∈Set.Icc (a i) (b i))
+include a b F q ha hq
+
+theorem windowMass_le_one : windowMass F q≤1 := by
   rw [←windowMass_univ a b q ha hq]
   exact Finset.sum_le_sum_of_subset_of_nonneg (Finset.subset_univ F)
     (fun k hk hnot=>Finset.prod_nonneg (fun i hi=>(dyadicWeight_bounds (k i).val (q i)).1))
 
-theorem windowMass_norm_le_one {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fin 4→ℝ)
-    (ha:∀i,0<a i)(hq:∀i,q i∈Set.Icc (a i) (b i)) : ‖(windowMass F q:ℂ)‖≤1 := by
+theorem windowMass_norm_le_one : ‖(windowMass F q:ℂ)‖≤1 := by
   simpa only [Complex.norm_real,Real.norm_eq_abs,abs_of_nonneg (windowMass_nonneg F q)]
     using windowMass_le_one F q ha hq
+
+end
 
 theorem windowMass_ne_zero_exists {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fin 4→ℝ)
     (h:windowMass F q≠0) : ∃k∈F,weight (fun i=>(k i).val) q≠0 := by
@@ -54,9 +56,9 @@ theorem windowMass_ne_zero_exists {a b:Fin 4→ℝ}(F:Finset (Windows a b))(q:Fi
   exact Finset.exists_ne_zero_of_sum_ne_zero hc
 
 variable {ι:Type*}[DecidableEq ι](p:ι→Eis)
-  (hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem windowBlock_eq_full
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
@@ -148,7 +150,7 @@ theorem exists_source_frequency_cap (S:Finset (Source (ι:=ι) 0)) :
   linarith
 
 theorem actual_physical_retained_tail
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    (hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (pool:Finset ι)(S:Finset (Source (ι:=ι) 0))
     (hdiv:∀x∈S,x.divisor⊆x.common)(hf:∀x∈S,x.frequency≠0)
     (w:Source (ι:=ι) 0→ℂ)(Ψ:Eis→*ℂ)(j:Eis)(marks:Finset ι→ℂ)

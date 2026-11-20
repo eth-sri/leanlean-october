@@ -15,17 +15,18 @@ namespace Montgomery.RationalMoment
 def finiteSmooth {ι : Type*} (S : Finset ι) (c : ι → ℝ) (f : ℝ → ℂ) (t : ℝ) : ℂ :=
   ∑ i ∈ S, f (t-c i)
 
-theorem finite_smooth_integrable {ι : Type*} (S : Finset ι) (c : ι → ℝ)
-    {f : ℝ → ℂ} (hi : Integrable f) : Integrable (finiteSmooth S c f) :=
+section
+variable {ι : Type*} (S : Finset ι) (c : ι → ℝ) {f : ℝ → ℂ}
+include ι S c f
+
+theorem finite_smooth_integrable (hi : Integrable f) : Integrable (finiteSmooth S c f) :=
   integrable_finsetSum _ (fun i _ => hi.comp_sub_right (c i))
 
-theorem finite_smooth_bound {ι : Type*} (S : Finset ι) (c : ι → ℝ)
-    {f : ℝ → ℂ} {B : ℝ} (hb : ∀ t, ‖f t‖ ≤ B) (t : ℝ) :
+theorem finite_smooth_bound {B : ℝ} (hb : ∀ t, ‖f t‖ ≤ B) (t : ℝ) :
     ‖finiteSmooth S c f t‖ ≤ S.card*B :=
   (norm_sum_le _ _).trans ((sum_le_sum (fun i _ => hb (t-c i))).trans_eq (by simp))
 
-theorem finite_smooth_memLp_two {ι : Type*} (S : Finset ι) (c : ι → ℝ)
-    {f : ℝ → ℂ} (hi : Integrable f) {B : ℝ} (hb : ∀ t, ‖f t‖ ≤ B) :
+theorem finite_smooth_memLp_two (hi : Integrable f) {B : ℝ} (hb : ∀ t, ‖f t‖ ≤ B) :
     MemLp (finiteSmooth S c f) 2 := by
   have hs := finite_smooth_integrable S c hi
   apply (memLp_two_iff_integrable_sq_norm hs.aestronglyMeasurable).mpr
@@ -33,6 +34,8 @@ theorem finite_smooth_memLp_two {ι : Type*} (S : Finset ι) (c : ι → ℝ)
     (c := (S.card:ℝ)*B) (Filter.Eventually.of_forall (fun t => by
       simpa only [Real.norm_eq_abs,abs_norm] using finite_smooth_bound S c hb t))
   simpa only [pow_two] using hh
+
+end
 
 /-- A compact kernel can overlap only when its two centers are close.
 This works for arbitrary complex kernels, including the nonsmooth box kernel. -/

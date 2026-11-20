@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.WholePriorityValidSource
 
 @[expose] public section
@@ -9,13 +10,10 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseWholePriorityRetainedSource
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource
-open InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical
-open InverseWholePriorityValidSource RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical InverseWholePriorityValidSource RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
-variable {Jo : ℕ} (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable {Jo : ℕ} (p : ι→O) [OAI.PrincipalIdealFamily.Maximal p]
 
 def unifiedSource (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
     (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ) :
@@ -23,7 +21,7 @@ def unifiedSource (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo
   attachedSecondFamily parents (fun y=>secondExpansionPool pool
     (fun G E=>(secondVariableCutoff p y (R y) G E).erase 0))
 
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 theorem mem_unifiedSource (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
     (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ) (x : MarkedSecondSource ι Jo 0) :
     x∈unifiedSource p pool parents R ↔ secondParentOf x∈parents ∧
@@ -33,13 +31,13 @@ theorem mem_unifiedSource (pool : Finset ι) (parents : Finset (SecondParentSour
   rw [unifiedSource,mem_attachedSecondFamily,mem_secondExpansionPool]
   rfl
 
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 theorem unified_frequency_ne_zero (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
     (R : SecondParentSource ι Jo→Finset ι→Finset ι→ℝ) (x : MarkedSecondSource ι Jo 0)
     (hx : x∈unifiedSource p pool parents R) : x.second.frequency≠0 :=
   (Finset.mem_erase.mp ((mem_unifiedSource p pool parents R x).mp hx).2.2.2.2).1
 
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 
 theorem unified_mem_sector
     (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
@@ -52,7 +50,7 @@ theorem unified_mem_sector
   apply (mem_retainedPool p _ _ _ _ _ _ x).mpr
   exact ⟨hy,Finset.mem_filter.mpr ⟨Finset.mem_filter.mpr ⟨hz,rfl⟩,rfl⟩⟩
 
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 
 theorem sectors_sum [Fintype κ]
     (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
@@ -71,7 +69,7 @@ theorem sectors_sum [Fintype κ]
   simp_rw [sum_secondDyadicSector]
   exact sum_secondExpansionSector pool _ _
 
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 
 theorem parent_retained_sum [Fintype κ]
     (pool : Finset ι) (parents : Finset (SecondParentSource ι Jo))
@@ -100,7 +98,7 @@ theorem unified_conditions (hp : ∀ i,p i≠0)
   exact ((mem_secondExpansionPool _ _ x).mp hx).2.1
 
 theorem unified_deleted_support
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (extra : CubeCoordinates ι→Finset ι) (source : Finset (Source ι Jo))
     (hs : ∀ x∈source,SourceValid p x) (he : ∀ x∈source,extra x.cube⊆x.cube.support)
     (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (pool : Finset ι)
@@ -114,7 +112,7 @@ theorem unified_deleted_support
     negative J lists pool R (fun _ _ _=>()) _ () x
     (unified_mem_sector p pool _ R (fun _ _ _=>()) x hx)
 
-omit [DecidableEq σ] [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq σ] [OAI.PrincipalIdealFamily.Maximal p] in
 
 theorem deleted_lists (extra : CubeCoordinates ι→Finset ι) (negative : Bool)
     (lists : σ→Finset ι) (x : MarkedSecondSource ι Jo 0) :
@@ -126,16 +124,16 @@ theorem deleted_lists (extra : CubeCoordinates ι→Finset ι) (negative : Bool)
   tauto
 
 def wholeRow (hp : ∀ i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (negative : Bool)
     (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0) : ℂ :=
   retainedRow p hp hcop hg pool negative Ψ m slots J (fun i=>lists i\extra x.cube) a V X Y ray x
 
 theorem wholeRow_eq (hp : ∀ i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι) (negative : Bool)
     (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (V : ℝ→ℂ) (X Y : ℝ) (ray : SecondRayIndex) (x : MarkedSecondSource ι Jo 0) :
@@ -151,8 +149,8 @@ theorem wholeRow_eq (hp : ∀ i,p i≠0)
   rw [deleted_lists]
 
 theorem whole_retained_sum [Fintype κ] (hp : ∀ i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
     (parents : Finset (SecondParentSource ι Jo)) (w : SecondParentSource ι Jo→ℂ)
     (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots J : Finset σ)
@@ -193,7 +191,7 @@ def coefficientBound : ℝ := 512*(32*512)
 
 theorem coefficientBound_pos : 0<coefficientBound := by norm_num [coefficientBound]
 
-variable (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem priorityOuter_norm (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
     (selector : Finset ι→ℂ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex) (D : Finset ι)
@@ -215,8 +213,8 @@ theorem priorityOuter_norm (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→
     (norm_nonneg _) (by norm_num)
 
 theorem fullPhysical_unified [Fintype κ] (hp : ∀ i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (extra : CubeCoordinates ι→Finset ι) (pool : Finset ι)
     (parents : Finset (SecondParentSource ι Jo)) (w : SecondParentSource ι Jo→ℂ)
     (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots J : Finset σ)

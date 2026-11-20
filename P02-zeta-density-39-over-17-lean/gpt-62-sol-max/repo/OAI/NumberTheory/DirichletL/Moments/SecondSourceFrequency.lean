@@ -9,18 +9,14 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSecondSourceFrequency
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSourceRow CenteredMomentSecondSourceRetained CenteredMomentFirstSectors
-open CenteredMomentSecondSectorColumns CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorRetained
-open CenteredMomentSecondRetainedPair CenteredMomentSecondSectorFrequency CenteredMomentSupport CenteredMomentSectorLocalization
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst
+open HeckeFamily CanonicalQuadraticSieve CompletedGauss CenteredMomentSourceRow CenteredMomentSecondSourceRetained CenteredMomentFirstSectors CenteredMomentSecondSectorColumns CenteredMomentHeckeColumnWindow CenteredMomentSecondSectorRetained CenteredMomentSecondRetainedPair CenteredMomentSecondSectorFrequency CenteredMomentSupport CenteredMomentSectorLocalization CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst
 local notation "O" => ActualEisensteinCubic.O
 
-theorem retained_sector_eq_physical (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) (hK : 0<K) :
+section
+variable (η : Character) (t : ℝ) (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D) (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D) (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) (hK : 0<K)
+include η t S β C D hC hD hCD W K Tsec Z ξ hK
+
+theorem retained_sector_eq_physical :
     (∑ q∈pairSector C D (supportedColumns S) (supportedColumns S),
       ((β q.1*heightCoeff η t q.1)*star (β q.2*heightCoeff η t q.2))*
         retainedKernel q.1 q.2 W K Tsec Z ξ)=
@@ -65,10 +61,7 @@ theorem retained_sector_eq_physical (η : Character) (t : ℝ)
   rw [tsum_congr hf, Summable.tsum_finsetSum (fun I _=>summable_sum (fun J _=>hs I J))]
   exact Finset.sum_congr rfl (fun I _=>(Summable.tsum_finsetSum (fun J _=>hs I J)).symm)
 
-theorem original_retained_sector_GV (η : Character) (t : ℝ)
-    (S : Finset (Ideal O)) (β : Ideal O→ℂ) (C D : Ideal O) (hC : Supported C) (hD : Supported D)
-    (hCD : CompletedGauss.primeSupport C=CompletedGauss.primeSupport D)
-    (W : 𝓢(ℝ,ℂ)) (K Tsec Z ξ : ℝ) (hK : 0<K) :
+theorem original_retained_sector_GV :
     (∑ q∈pairSector C D (supportedColumns S) (supportedColumns S),
       ((β q.1*heightCoeff η t q.1)*star (β q.2*heightCoeff η t q.2))*
         retainedKernel q.1 q.2 W K Tsec Z ξ)=
@@ -80,6 +73,8 @@ theorem original_retained_sector_GV (η : Character) (t : ℝ)
               ((commonFrequencyGenerator C D*nonunitFrequencyGenerator C D U)*h) else 0 := by
   rw [retained_sector_eq_physical η t S β C D hC hD hCD W K Tsec Z ξ hK,
     actual_retained_sector_GV η t S β C D hC hD hCD W K (frequencyRadius Tsec Z ξ) hK]
+
+end
 
 end SevenEighths.CenteredMomentSecondSourceFrequency
 

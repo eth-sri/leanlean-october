@@ -10,9 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstCommonTransport
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive
-open CenteredMomentFirstSectorEnergy CompletedGauss
+open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentActive CenteredMomentFirstSectorEnergy CompletedGauss
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem extracted_support (I J:Ideal O):
@@ -86,17 +84,21 @@ theorem activeFunction_mk_extracted (I J:Ideal O)(hI:Supported I)(z:O):
 def mappedSubset (I J:Ideal O)(E:Finset (CommonIndex I J)):
     Finset (CommonIndex (commonPart I J) (commonPart J I)):=E.map (commonEquiv I J).toEmbedding
 
-theorem mappedSubset_product (I J:Ideal O)(E:Finset (CommonIndex I J)):
+section
+variable (I J:Ideal O) (E:Finset (CommonIndex I J))
+include I J E
+
+theorem mappedSubset_product:
     (∏P∈mappedSubset I J E,P.val)=∏P∈E,P.val:=by
   simp only [mappedSubset,Finset.prod_map,Equiv.toEmbedding_apply,commonEquiv_val]
 
-theorem mappedSubset_generator (I J:Ideal O)(E:Finset (CommonIndex I J)):
+theorem mappedSubset_generator:
     primeSubsetGenerator (fun P:CommonIndex (commonPart I J) (commonPart J I)=>P.val)
       (mappedSubset I J E)=primeSubsetGenerator (fun P:CommonIndex I J=>P.val) E:=by
   unfold primeSubsetGenerator
   rw [mappedSubset_product]
 
-theorem mappedSubset_inactive (I J:Ideal O)(E:Finset (CommonIndex I J)):
+theorem mappedSubset_inactive:
     mappedSubset I J E∈CenteredMomentFirstDiscardedEnergy.inactiveSubsets (commonPart I J) (commonPart J I) ↔
       E∈CenteredMomentFirstDiscardedEnergy.inactiveSubsets I J:=by
   simp only [CenteredMomentFirstDiscardedEnergy.inactiveSubsets,Finset.mem_powerset]
@@ -111,7 +113,7 @@ theorem mappedSubset_inactive (I J:Ideal O)(E:Finset (CommonIndex I J)):
     simpa only [Equiv.toEmbedding_apply,principalSupport,Finset.mem_filter,Finset.mem_univ,true_and,extracted_left,extracted_right]
       using hr
 
-theorem nominal_extracted (I J:Ideal O)(E:Finset (CommonIndex I J))(K X:ℝ):
+theorem nominal_extracted(K X:ℝ):
     CenteredMomentFirstScale.firstNominalScale (commonPart I J) (commonPart J I)
       (∏P∈mappedSubset I J E,P.val) K X=
     CenteredMomentFirstScale.firstNominalScale I J (∏P∈E,P.val) K X:=by
@@ -119,6 +121,8 @@ theorem nominal_extracted (I J:Ideal O)(E:Finset (CommonIndex I J))(K X:ℝ):
     (commonPart_ne_zero I J) (commonPart_ne_zero J I) (commonParts_equal_support I J)
   unfold CenteredMomentFirstScale.firstNominalScale
   rw [mappedSubset_product,activeConductor_extracted,hc,hd]
+
+end
 
 end SevenEighths.CenteredMomentFirstCommonTransport
 

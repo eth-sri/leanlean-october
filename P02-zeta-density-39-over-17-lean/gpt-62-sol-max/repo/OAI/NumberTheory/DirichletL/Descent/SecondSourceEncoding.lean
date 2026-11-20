@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.CubeSource
 
 @[expose] public section
@@ -7,8 +8,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss
-open InverseSecondFibers
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic CompletedGauss InverseSecondFibers
 open InverseInitialArithmetic (sourceIdeal sourceIdeal_injective)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
@@ -23,7 +23,7 @@ local notation "Eis" => ActualEisensteinCubic.O
   newAssigned : Fin Jn → ι
 
 variable {ι : Type*} [DecidableEq ι] (p : ι → Eis)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalIdealFamily.Maximal p]
 
 def markedSecondOriginal {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : SecondOriginalSource ι Jo Jn :=
   cubeSecondSource p x.cube.support x.firstCommon x.firstDivisor
@@ -32,7 +32,7 @@ def markedSecondOriginal {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn) : Secon
     x.quotient x.second.frequency x.oldAssigned x.newAssigned
 
 theorem markedSecondOriginal_injOn (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} :
+    (hinj : OAI.PrincipalIdealFamily.Distinct p) {Jo Jn : ℕ} :
     Set.InjOn (markedSecondOriginal (Jo:=Jo) (Jn:=Jn) p) {x | x.cube.Admissible} := by
   intro x hx y hy hxy
   have hc : x.cube = y.cube := by
@@ -60,16 +60,18 @@ theorem markedSecondOriginal_injOn (hp : ∀ i, p i ≠ 0)
   · exact congrArg SecondOriginalSource.newAssigned hxy
 
 theorem markedSecondTuple_injOn (hp : ∀ i, p i ≠ 0)
-    (hinj : Function.Injective (fun i => Ideal.span {p i})) {Jo Jn : ℕ} (u v : Eisˣ) :
+    (hinj : OAI.PrincipalIdealFamily.Distinct p) {Jo Jn : ℕ} (u v : Eisˣ) :
     Set.InjOn (fun x : MarkedSecondSource ι Jo Jn => originalSecondTuple p u v (markedSecondOriginal p x))
       {x | x.cube.Admissible} := by
   intro x hx y hy he
   exact markedSecondOriginal_injOn p hp hinj hx hy
     (originalSecondTuple_injective p hinj u v he)
 
-theorem markedSecondOriginal_valid (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+section
+variable (hp : ∀ i, p i ≠ 0) (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda) (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+include hp hpr hcop
+
+theorem markedSecondOriginal_valid
     {Jo Jn : ℕ} (x : MarkedSecondSource ι Jo Jn)
     (hCB : Disjoint x.firstCommon x.cube.support)
     (hD : x.firstDivisor ⊆ x.firstCommon∪x.cube.support)
@@ -83,10 +85,8 @@ theorem markedSecondOriginal_valid (hp : ∀ i, p i ≠ 0)
     x.cube.leftExponent x.cube.rightExponent x.cube.leftBit x.cube.rightBit x.cube.support_pos
     x.quotient x.second.frequency x.oldAssigned x.newAssigned hold hnew
 
-theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i - 1)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+theorem actual_marked_second_source_fiber
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     {Jo Jn : ℕ} (u v : Eisˣ) (source : Finset (MarkedSecondSource ι Jo Jn))
     (ha : ∀ x ∈ source, x.cube.Admissible)
     (hCB : ∀ x ∈ source, Disjoint x.firstCommon x.cube.support)
@@ -123,6 +123,8 @@ theorem actual_marked_second_source_fiber (hp : ∀ i, p i ≠ 0)
   have hb := valid_tuple_card_le_slot_cap (S.image encode) γ f k hf hq ht hr hv K ho hn
   rw [Finset.card_image_iff.mpr hi] at hb
   exact hb
+
+end
 
 end
 end SevenEighths.InverseMoment

@@ -31,8 +31,11 @@ def sargosWeightedPlanarIntegrand {ι : Type*} (S : Finset ι)
     (z : ι → ℂ) (u v : ι → ℝ) (a b c d α γ : ℝ) : ℝ :=
   sargosSincKernel a (α-c)*sargosSincKernel b (γ-d)*‖sargosPlanarSum S z u v α γ‖^2
 
-theorem sargosPlanarSum_norm_sq {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) (α γ : ℝ) :
+section
+variable {ι : Type*} (S : Finset ι) (z : ι → ℂ) (u v : ι → ℝ)
+include ι S z u v
+
+theorem sargosPlanarSum_norm_sq (α γ : ℝ) :
     ((‖sargosPlanarSum S z u v α γ‖^2 : ℝ) : ℂ) =
       ∑ p ∈ S ×ˢ S, z p.1*conj (z p.2)*
         fordAdditiveCharacter ((u p.1-u p.2)*α+(v p.1-v p.2)*γ) := by
@@ -57,8 +60,7 @@ theorem sargosPlanarSum_norm_sq {ι : Type*} (S : Finset ι)
           congr 2
           ring
 
-theorem sargosWeightedPlanarIntegrand_eq_gram {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) (a b c d α γ : ℝ) :
+theorem sargosWeightedPlanarIntegrand_eq_gram (a b c d α γ : ℝ) :
     (sargosWeightedPlanarIntegrand S z u v a b c d α γ : ℂ) =
       ∑ p ∈ S ×ˢ S, (z p.1*conj (z p.2))*
         sargosPlanarKernelTerm a b c d (u p.1-u p.2) (v p.1-v p.2) α γ := by
@@ -69,11 +71,12 @@ theorem sargosWeightedPlanarIntegrand_eq_gram {ι : Type*} (S : Finset ι)
   unfold sargosPlanarKernelTerm
   ring
 
-theorem sargosWeightedPlanarIntegrand_nonneg {ι : Type*} (S : Finset ι)
-    (z : ι → ℂ) (u v : ι → ℝ) {a b : ℝ}
+theorem sargosWeightedPlanarIntegrand_nonneg {a b : ℝ}
     (ha : 0 ≤ a) (hb : 0 ≤ b) (c d α γ : ℝ) :
     0 ≤ sargosWeightedPlanarIntegrand S z u v a b c d α γ :=
   mul_nonneg (mul_nonneg (sargosSincKernel_nonneg ha _) (sargosSincKernel_nonneg hb _))
     (sq_nonneg _)
+
+end
 
 end TaoTrudgianYang2025

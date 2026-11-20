@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveEnergy
 public import OAI.NumberTheory.DirichletL.Descent.OriginalCellPriority
 
@@ -9,12 +10,11 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
 
-lemma refined_parent_source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+lemma refined_parent_source (p : ι→O) [OAI.PrincipalIdealFamily.Maximal p]
     (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (selector : FirstOriginalOuter ι→Finset ι→ℂ) (k : SourceIndex) (l j : ℕ) :
     globalParentSource (originalSubsetSource (refinedOuter p pool Q k (labelGate p j)))
@@ -36,10 +36,10 @@ lemma refined_parent_source (p : ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
     · simpa only [originalOuterCell_eq_caps] using ho
     · simpa [labelGate,fillFirstQuotient,toOriginal,ofOriginal] using hj
 
-theorem refined_child_priority (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+theorem refined_child_priority (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ)
     (negative : Bool) (Ψ : O→*ℂ) (m : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (om : ℝ→ℂ) (X t Y : ℝ) (hY : 0<Y) :

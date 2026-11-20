@@ -10,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeRow
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open CanonicalQuadraticSieve InitialMeanSquare ProbeCompleted
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion CanonicalQuadraticSieve InitialMeanSquare ProbeCompleted
 
 local notation "O" => ActualEisensteinCubic.O
 

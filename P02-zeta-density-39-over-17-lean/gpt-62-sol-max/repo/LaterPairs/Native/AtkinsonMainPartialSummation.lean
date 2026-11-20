@@ -21,8 +21,7 @@ open MathCollab.Density.Stronger.Atkinson MathCollab.Density.Stronger.PointMean 
 
 noncomputable section
 
-open Complex
-open RiemannZeta.GuthMaynard
+open Complex RiemannZeta.GuthMaynard
 
 namespace TaoTrudgianYang2025
 

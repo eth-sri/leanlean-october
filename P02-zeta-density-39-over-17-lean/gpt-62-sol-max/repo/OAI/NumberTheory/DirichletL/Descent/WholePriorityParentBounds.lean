@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityMass
 
 @[expose] public section
@@ -9,12 +10,11 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InverseSecondPrincipalCaller InversePrincipalEnergy InversePrioritySecondSource
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InverseSecondPrincipalCaller InversePrincipalEnergy InversePrioritySecondSource
 local notation "O"=>ActualEisensteinCubic.O
 
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-  (p:ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+  (p:ι→O) [OAI.PrincipalIdealFamily.Maximal p]
 
 omit [DecidableEq σ] [∀ (i : ι), (Ideal.span {p i}).IsMaximal] in
 theorem parent_residual_lists_subset {Jo:ℕ} (extra:CubeCoordinates ι→Finset ι)
@@ -37,10 +37,10 @@ theorem parent_residual_lists_pairwise {Jo:ℕ} (extra:CubeCoordinates ι→Fins
 theorem priority_zero_parent_uniform (ε:ℝ) (hε:0<ε):
     ∃(s:Finset (ℕ×ℕ))(C:ℝ),0<C ∧
     ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-      (p:ι→O) (_hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+      (p:ι→O) (_hp:∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hinj:OAI.PrincipalIdealFamily.Distinct p)
+      (_hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
       (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι) (negative:Bool)
       (Ψ:O→*ℂ) (m:O) (slots assigned:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists → (∀i∈slots,∀k∈lists i,‖a i k‖≤1) → (∀u,‖Ψ u‖≤1) →
@@ -78,11 +78,11 @@ theorem priority_zero_parent_uniform (ε:ℝ) (hε:0<ε):
 theorem priority_tail_parent_uniform (Lcap tau saving:ℝ)(hLcap:0≤Lcap)(htau:0<tau):
     ∃(s:Finset (ℕ×ℕ))(C:ℝ),0<C ∧
     ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (_hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (hinj:OAI.PrincipalIdealFamily.Distinct p)
+      (_hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (_hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι) (negative:Bool)
       (Ψ:O→*ℂ) (m:O) (slots assigned:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ),
       (slots:Set σ).PairwiseDisjoint lists → (∀i∈slots,∀k∈lists i,‖a i k‖≤1) → (∀u,‖Ψ u‖≤1) →

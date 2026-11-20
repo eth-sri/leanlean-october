@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.ClippedUniform
 public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
 public import OAI.NumberTheory.DirichletL.Inversion.AmbientProfileTower
@@ -12,8 +13,7 @@ open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
-open InverseInitialClippedColumns JointLogSeparation InverseAmbientProfileTower
-open InverseSecondSourceBlocks
+open InverseInitialClippedColumns JointLogSeparation InverseAmbientProfileTower InverseSecondSourceBlocks
 local notation "O"=>ActualEisensteinCubic.O
 
 def secondChildHeight (right:Bool)(t:Ambient (Fin 6)):ℝ :=
@@ -38,10 +38,10 @@ theorem canonical_actual_child_uniform
     ∃(wFresh:𝓢(ℝ,ℂ))(af bf:ℝ),0<af ∧ af≤bf ∧ HasCompactSupport (wFresh:ℝ→ℂ) ∧
       tsupport (wFresh:ℝ→ℂ)⊆Set.Icc af bf ∧
       ∀J:ℕ,∃C:ℝ,0<C ∧ ∀{ι σ:Type*}[DecidableEq ι][DecidableEq σ]
-      (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+      (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
       (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
       (labels:Finset (Ideal O))(rows:Finset O)(D:Ideal O→ℝ)(_hD:∀f∈labels,0≤D f)
       (Z X F E:ℝ)(d:BlockIndex)(right:Bool)(t:Ambient (Fin 6)),

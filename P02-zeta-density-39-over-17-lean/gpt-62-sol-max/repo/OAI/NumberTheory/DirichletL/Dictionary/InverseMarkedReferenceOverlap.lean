@@ -9,8 +9,7 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.DetectorDictionaryInverseMarkedReference
-open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge
-open InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic CanonicalRowCompletion
+open HeckeFamily InverseInitialConjugateEnergy InverseInitialPoissonBridge InverseInitialOverlap UniqueFactorizationMonoid ActualEisensteinCubic CanonicalRowCompletion
 local notation "O"=>HeckeFamily.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
 
@@ -31,9 +30,11 @@ theorem assigned_remaining_squarefree (L:ι→Finset (Ideal O))
   exact tuple_product_squarefree _ (fun i=>hprime i _ (joinTuple L J x y i).property)
     (tuple_injective L hdis _)
 
-theorem assigned_source_eq_remainingResidual (S:Finset (Ideal O))
-    (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
+section
+variable (S:Finset (Ideal O)) (L:ι→Finset (Ideal O)) (hprime:∀i,∀P∈L i,Prime P) (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)
+include S L hprime hdis
+
+theorem assigned_source_eq_remainingResidual
     (J:Finset ι)(x:Assigned L J)(coeff:ι→Ideal O→ℂ)
     (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z G:ℝ)(hZ:0<Z)(u:O) :
     (∑y:Remaining L J,(∏i:{i:ι // i∉J},coeff i.val (y i).val)*
@@ -51,9 +52,7 @@ theorem assigned_source_eq_remainingResidual (S:Finset (Ideal O))
     InverseInitialOverlap.residual,quotient_mul_cancel (assignedIdeal_ne_zero L hprime J x)]
   ring
 
-theorem original_selected_overlap (S:Finset (Ideal O))
-    (L:ι→Finset (Ideal O))(hprime:∀i,∀P∈L i,Prime P)
-    (hdis:((Finset.univ:Finset ι):Set ι).PairwiseDisjoint L)(coeff:ι→Ideal O→ℂ)
+theorem original_selected_overlap(coeff:ι→Ideal O→ℂ)
     (η:Ideal O→*ℂ)(a:Ideal O→ℂ)(W:ℝ→ℂ)(Z r z:ℝ)(G:Finset ι→ℝ)
     (hZ:0<Z)(u:O) :
     (∑q:Tuple L,(∏i,coeff i (q i).val)*
@@ -69,6 +68,8 @@ theorem original_selected_overlap (S:Finset (Ideal O))
   intro x hx
   rw [assigned_source_eq_remainingResidual S L hprime hdis J x coeff η a W Z r z (G J) hZ u]
   ring
+
+end
 
 end SevenEighths.DetectorDictionaryInverseMarkedReference
 

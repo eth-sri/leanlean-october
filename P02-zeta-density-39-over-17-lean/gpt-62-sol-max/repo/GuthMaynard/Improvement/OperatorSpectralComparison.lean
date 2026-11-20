@@ -6,7 +6,7 @@ public import GuthMaynard.Improvement.FiniteOperatorWitness
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Filter Set
-open scoped InnerProductSpace Topology
+open scoped Topology
 namespace GuthMaynard.Improvement
 variable {E ι κ : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
 

@@ -11,9 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology
 open Complex Set MeasureTheory Filter
 namespace SevenEighths.ProbePrincipalRemainderBounds
-open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss
-open ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues
-open PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
+open HeckeFamily ProbePhysical ProbeEuler ProbeLocal CompletedGauss ProbeFiniteProductBounds ProbeFiniteProductX PrincipalMellinResidues PrincipalMellinGrowth ProbeMellinBoundary ProbePrincipalContours
 local notation "Id" => Ideal ActualEisensteinCubic.O
 
 lemma active_prime_sum_bound (T : Finset PrimeIdeal) (W : ℝ→ℝ)
@@ -518,8 +516,11 @@ theorem ordered_remainders_scale_bound {ι : Type*}
     norm_num
     linarith
 
-lemma source_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
-    (hell : ∑j∈J,ell j=1/6) (Z a ξ υ : ℝ) (hZ : 0<Z) :
+section
+variable {ι : Type*} (J : Finset ι) (ell : ι→ℝ) (hell : ∑j∈J,ell j=1/6)
+include ι J ell hell
+
+lemma source_scale_identity (Z a ξ υ : ℝ) (hZ : 0<Z) :
     scalePower (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a ξ υ *
       (∏j∈J,(Z^(ell j))^ξ) =
     Z^(a-11/16+(13/16)*(ξ-1/6)+(23/48)*(υ-1)) := by
@@ -531,19 +532,19 @@ lemma source_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
   congr 1
   ring
 
-lemma source_w_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
-    (hell : ∑j∈J,ell j=1/6) (Z a e : ℝ) (hZ : 0<Z) :
+lemma source_w_scale_identity (Z a e : ℝ) (hZ : 0<Z) :
     scalePower (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a (1/6+e) (19/20) *
       (∏j∈J,(Z^(ell j))^(1/6+e)) = Z^(a-11/16+(13/16)*e-23/960) := by
   rw [source_scale_identity J ell hell Z a (1/6+e) (19/20) hZ]
   congr 1;ring
 
-lemma source_z_scale_identity {ι : Type*} (J : Finset ι) (ell : ι→ℝ)
-    (hell : ∑j∈J,ell j=1/6) (Z a : ℝ) (hZ : 0<Z) :
+lemma source_z_scale_identity (Z a : ℝ) (hZ : 0<Z) :
     scalePower (Z^(17/48:ℝ)) (Z^(23/48:ℝ)) Z a (33/200) 1 *
       (∏j∈J,(Z^(ell j))^(33/200:ℝ)) = Z^(a-11/16-13/9600) := by
   rw [source_scale_identity J ell hell Z a (33/200) 1 hZ]
   congr 1;ring
+
+end
 
 theorem source_remainders_power_bound {ι : Type*}
     (η : Character) (S : Finset Id) (hS : SourceExclusions S)

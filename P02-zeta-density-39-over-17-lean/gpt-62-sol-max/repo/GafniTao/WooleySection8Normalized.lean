@@ -14,22 +14,18 @@ namespace GafniTao
 
 noncomputable section
 
-/-- Direct equation-(3.24) normalization of the `r >= 2` branch of Lemma
-8.1. -/
-theorem wooleySourcePolynomial_equation_8_4_quotient
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (p B H r a b bPrime nu : ℕ) [NeZero p] [NeZero (p ^ B)]
-    (Delta D : ℝ) (hr : 2 ≤ r) (hrk : r < k)
-    (hnub : nu ≤ b) (hnuPrime : nu ≤ bPrime)
-    (gamma : WooleySourceSequence)
-    (hscale : 0 < wooleySourceNormalizationScale
-      phi p B H (wooleyTriangular k) Delta gamma)
-    (hD : 0 ≤ D)
-    (hsection7 :
+section
+variable {k : ℕ} (phi : WooleyPolynomialSystem k) (p B H r a b bPrime nu : ℕ) [instShared3 : NeZero p] [instShared4 : NeZero (p ^ B)] (Delta D : ℝ) (hr : 2 ≤ r) (hrk : r < k) (hnub : nu ≤ b) (hnuPrime : nu ≤ bPrime) (gamma : WooleySourceSequence) (hscale : 0 < wooleySourceNormalizationScale
+      phi p B H (wooleyTriangular k) Delta gamma) (hD : 0 ≤ D) (hsection7 :
       wooleySourcePolynomialMixedMean
           phi (wooleyTriangular k) r p B a b nu gamma ≤
         D * wooleySourcePolynomialMixedMean
-          phi (wooleyTriangular k) r p B bPrime b nu gamma) :
+          phi (wooleyTriangular k) r p B bPrime b nu gamma)
+include k phi p B H r a b bPrime nu instShared3 instShared4 Delta D hr hrk hnub hnuPrime gamma hscale hD hsection7
+
+/-- Direct equation-(3.24) normalization of the `r >= 2` branch of Lemma
+8.1. -/
+theorem wooleySourcePolynomial_equation_8_4_quotient :
     (wooleySourcePolynomialMixedMean
         phi (wooleyTriangular k) r p B a b nu gamma /
       wooleySourceNormalizationScale
@@ -65,20 +61,7 @@ theorem wooleySourcePolynomial_equation_8_4_quotient
 
 /-- Wooley equation (8.4) in the literal bracket normalization (3.24),
 with the exact Lemma-7.1 multiplier `D` still visible. -/
-theorem wooleySourcePolynomial_equation_8_4
-    {k : ℕ} (phi : WooleyPolynomialSystem k)
-    (p B H r a b bPrime nu : ℕ) [NeZero p] [NeZero (p ^ B)]
-    (Delta D : ℝ) (hr : 2 ≤ r) (hrk : r < k)
-    (hnub : nu ≤ b) (hnuPrime : nu ≤ bPrime)
-    (gamma : WooleySourceSequence)
-    (hscale : 0 < wooleySourceNormalizationScale
-      phi p B H (wooleyTriangular k) Delta gamma)
-    (hD : 0 ≤ D)
-    (hsection7 :
-      wooleySourcePolynomialMixedMean
-          phi (wooleyTriangular k) r p B a b nu gamma ≤
-        D * wooleySourcePolynomialMixedMean
-          phi (wooleyTriangular k) r p B bPrime b nu gamma) :
+theorem wooleySourcePolynomial_equation_8_4 :
     wooleySourceNormalizedMixedMean
         phi p B H (wooleyTriangular k) r a b nu Delta gamma ≤
       D ^ wooleyNormalizationExponent k r *
@@ -138,6 +121,8 @@ theorem wooleySourcePolynomial_equation_8_4
       (1 - 1 / (r : ℝ))
   change _ ≤ D ^ e * (X / Z) ^ (u * e) * (Y / Z) ^ (v * e) at hq
   simpa only [hx, hy] using hq
+
+end
 
 /-- The normalized `r=1` conclusion before the Section-6 estimate for the
 conditioned mean is inserted. -/

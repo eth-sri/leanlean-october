@@ -132,13 +132,13 @@ theorem positive_height_shell_card (S : Finset (ℕ × ℕ))
       exact mem_union_right _ (mem_product.mpr ⟨mem_Icc.mpr ⟨hp1,hp1q⟩,mem_singleton.mpr he'⟩)
   exact (card_le_card hsub).trans ((card_union_le _ _).trans_eq (by simp; omega))
 
+section
+variable (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : ℝ} (hX : 0 ≤ X) (hpos : ∀ p ∈ S, 0 < p.1 ∧ 0 < p.2) (hY : ∀ p ∈ S, max p.1 p.2 ≤ Y) (w : ℕ × ℕ → ℝ) (hw0 : ∀ p ∈ S, 0 ≤ w p) (hw : ∀ p ∈ S, w p ≤ X/(max p.1 p.2:ℕ))
+include S Y X hX hpos hY w hw0 hw
+
 /-- The actual squared ratio-weight budget follows just from the integral
 ray multiplicity upper bound; no coprime counting asymptotic is needed. -/
-theorem positive_ratio_square_weight (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : ℝ}
-    (hX : 0 ≤ X) (hpos : ∀ p ∈ S, 0 < p.1 ∧ 0 < p.2)
-    (hY : ∀ p ∈ S, max p.1 p.2 ≤ Y) (w : ℕ × ℕ → ℝ)
-    (hw0 : ∀ p ∈ S, 0 ≤ w p)
-    (hw : ∀ p ∈ S, w p ≤ X/(max p.1 p.2:ℕ)) :
+theorem positive_ratio_square_weight :
     (∑ p ∈ S, (w p)^2) ≤ 2*X^2*(harmonic Y:ℝ) := by
   have hmap : ∀ p ∈ S, max p.1 p.2 ∈ Icc 1 Y := by
     intro p hp
@@ -169,13 +169,11 @@ theorem positive_ratio_square_weight (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : �
       simp only [div_eq_mul_inv]
 
 /-- Explicit logarithmic form of the square multiplicity budget. -/
-theorem positive_ratio_square_weight_log (S : Finset (ℕ × ℕ)) {Y : ℕ} {X : ℝ}
-    (hX : 0 ≤ X) (hpos : ∀ p ∈ S, 0 < p.1 ∧ 0 < p.2)
-    (hY : ∀ p ∈ S, max p.1 p.2 ≤ Y) (w : ℕ × ℕ → ℝ)
-    (hw0 : ∀ p ∈ S, 0 ≤ w p)
-    (hw : ∀ p ∈ S, w p ≤ X/(max p.1 p.2:ℕ)) :
+theorem positive_ratio_square_weight_log :
     (∑ p ∈ S, (w p)^2) ≤ 2*X^2*(1+Real.log Y) :=
   (positive_ratio_square_weight S hX hpos hY w hw0 hw).trans
     (mul_le_mul_of_nonneg_left (harmonic_le_one_add_log Y) (by positivity))
+
+end
 
 end GuthMaynard.Improvement

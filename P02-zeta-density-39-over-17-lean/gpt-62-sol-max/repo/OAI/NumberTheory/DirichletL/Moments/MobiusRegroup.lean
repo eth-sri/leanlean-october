@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Moments.SupportedCorrelation
 
 @[expose] public section
@@ -66,8 +67,8 @@ theorem finite_correlation_mobius {α β : Type*} (S : Finset α) (T : Finset β
     (ha : ∀ i, Supported (Ideal.span {a i})) (hb : ∀ j, Supported (Ideal.span {b j}))
     (hpD : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ D - 1)
     (hpE : ConcretePrimeRowBridge.goodLambda ^ 2 ∣ E - 1)
-    (hpa : ∀ i, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ a i - 1)
-    (hpb : ∀ j, ConcretePrimeRowBridge.goodLambda ^ 2 ∣ b j - 1)
+    (hpa : OAI.PrincipalIdealFamily.PrimaryAt a ConcretePrimeRowBridge.goodLambda)
+    (hpb : OAI.PrincipalIdealFamily.PrimaryAt b ConcretePrimeRowBridge.goodLambda)
     (hcopA : ∀ i, IsCoprime (D * E) (a i)) (hcopB : ∀ j, IsCoprime (D * E) (b j))
     (h : O) (c : α → ℂ) (d : β → ℂ) (K : α → β → ℂ) :
     (∑ i ∈ S, ∑ j ∈ T,

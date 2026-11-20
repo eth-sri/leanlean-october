@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.ActualSecondUniform
 public import OAI.NumberTheory.DirichletL.Descent.FreshWindows
 
@@ -40,9 +41,9 @@ lemma second_fresh_scale {ι : Type*} [DecidableEq ι] (p : ι → Eis)
   field_simp [(primeProductNorm_pos p hp V).ne']
 
 theorem actual_second_columns_separated {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+    (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (F : Finset ι) (x : SecondProfileData ι) (slots₁ slots₂ : Finset σ)
     (lists₁ lists₂ : σ → Finset ι) (a₁ a₂ : σ → ι → ℂ)
     (ω₁ ω₂ : ℝ → ℂ) (X : ℝ) (h₁ h₂ : ℝ) :

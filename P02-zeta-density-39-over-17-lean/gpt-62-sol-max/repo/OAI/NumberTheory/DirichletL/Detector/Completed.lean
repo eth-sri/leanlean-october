@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.ProbeCompleted
-open ActualEisensteinCubic CompletedGauss
-open RayFourExpansion QuadraticGaussRay SecondPassArithmetic
+open ActualEisensteinCubic CompletedGauss RayFourExpansion QuadraticGaussRay SecondPassArithmetic
 
 local notation "O" => ActualEisensteinCubic.O
 
@@ -85,24 +84,25 @@ theorem correctedSummand_ray_expansion (S : Finset (Ideal O)) (D I J : Ideal O)
   simp only [rayMonoid_apply, completedIndex]
   ring
 
-theorem markedSummand_summable (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
+section
+variable (S : Finset (Ideal O)) (D : Ideal O) (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X)
+include S D Ψ W hW X hX
+
+theorem markedSummand_summable :
     Summable (fun p : Ideal O × Ideal O => markedSummand S D Ψ W X p.1 p.2) := by
   apply summable_of_hasFiniteSupport
   apply (completedT_finite_support Ψ W hW X hX).subset
   intro p hp
   exact fun hz => hp (by simp only [markedSummand, hz, mul_zero])
 
-theorem correctedSummand_summable (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
+theorem correctedSummand_summable :
     Summable (fun p : Ideal O × Ideal O => correctedSummand S D Ψ W X p.1 p.2) := by
   apply summable_of_hasFiniteSupport
   apply (completedT_finite_support Ψ W hW X hX).subset
   intro p hp
   exact fun hz => hp (by simp only [correctedSummand, markedSummand, hz, mul_zero])
 
-theorem correctedCompletedT_ray_expansion (S : Finset (Ideal O)) (D : Ideal O)
-    (Ψ : O →* ℂ) (W : ℝ → ℂ) (hW : HasCompactSupport W) (X : ℝ) (hX : 0 < X) :
+theorem correctedCompletedT_ray_expansion :
     correctedCompletedT S D Ψ W X =
       ∑ χ : RayCharacter, correctionCoeff χ *
         markedCompletedT S D (rayMonoid χ * Ψ) W X := by
@@ -111,6 +111,8 @@ theorem correctedCompletedT_ray_expansion (S : Finset (Ideal O)) (D : Ideal O)
   rw [Summable.tsum_finsetSum (fun χ _ =>
     (markedSummand_summable S D (rayMonoid χ * Ψ) W hW X hX).mul_left (correctionCoeff χ))]
   simp only [tsum_mul_left, markedCompletedT]
+
+end
 
 end SevenEighths.ProbeCompleted
 end

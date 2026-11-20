@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.TruncatedSecondTransfer
 
 @[expose] public section
@@ -8,95 +9,33 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace SecondPassArithmetic
 
 section
-open ActualEisensteinCubic
-open JointLogSeparation
+open ActualEisensteinCubic JointLogSeparation
 open FirstPassCubeLabels (jLabel)
 open SecondPassIntegration (elementNorm)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end
-section
 
-open MeasureTheory
-open scoped BigOperators Classical SchwartzMap FourierTransform
-open ActualEisensteinCubic
-open FirstPassCubeLabels (b0Label)
-open JointLogSeparation
 
-end
 
 open ActualEisensteinCubic
 open FirstPassCubeLabels (columnLog primeProductNorm b0Label jLabel)
@@ -107,8 +46,8 @@ open FourierBridge (logPhase)
 open SecondPassIntegration (conjugateProfile)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 include hp
 
 end SecondPassArithmetic
@@ -323,15 +262,17 @@ def heightLogDvv (A B C D x y v : ℝ) : ℝ :=
   -(1/v^2) - ((2*A*quadraticHeightDenominator A B C D x y v -
     (2*A*v)*(2*A*v))/(quadraticHeightDenominator A B C D x y v)^2)
 
-lemma deriv_spatialHeightPower_v (s : ℂ) (A B C D x y v : ℝ)
-    (hv : v≠0) (hq : quadraticHeightDenominator A B C D x y v≠0) :
+section
+variable (s : ℂ) (A B C D x y v : ℝ) (hv : v≠0) (hq : quadraticHeightDenominator A B C D x y v≠0)
+include s A B C D x y v hv hq
+
+lemma deriv_spatialHeightPower_v :
     deriv (spatialHeightPower s A B C D x y) v =
       spatialHeightPower s A B C D x y v * s * (heightLogDv A B C D x y v : ℂ) := by
   exact (hasDerivAt_logRatioPower s (hasDerivAt_id v)
     (quadraticHeightDenominator_hasDerivAt_v A B C D x y v) hv hq).deriv
 
-lemma deriv2_spatialHeightPower_x (s : ℂ) (A B C D x y v : ℝ)
-    (hv : v≠0) (hq : quadraticHeightDenominator A B C D x y v≠0) :
+lemma deriv2_spatialHeightPower_x :
     deriv (deriv (fun t => spatialHeightPower s A B C D t y v)) x =
       spatialHeightPower s A B C D x y v *
         (s^2*(heightLogDx A B C D x y v : ℂ)^2 +
@@ -345,8 +286,7 @@ lemma deriv2_spatialHeightPower_x (s : ℂ) (A B C D x y v : ℝ)
     hv hq
   simpa only [spatialHeightPower,heightLogDx,heightLogDxx,zero_div,zero_sub,zero_mul,sub_zero] using h.deriv
 
-lemma deriv2_spatialHeightPower_y (s : ℂ) (A B C D x y v : ℝ)
-    (hv : v≠0) (hq : quadraticHeightDenominator A B C D x y v≠0) :
+lemma deriv2_spatialHeightPower_y :
     deriv (deriv (fun t => spatialHeightPower s A B C D x t v)) y =
       spatialHeightPower s A B C D x y v *
         (s^2*(heightLogDy A B C D x y v : ℂ)^2 +
@@ -360,8 +300,7 @@ lemma deriv2_spatialHeightPower_y (s : ℂ) (A B C D x y v : ℝ)
     hv hq
   simpa only [spatialHeightPower,heightLogDy,heightLogDyy,zero_div,zero_sub,zero_mul,sub_zero] using h.deriv
 
-lemma deriv2_spatialHeightPower_v (s : ℂ) (A B C D x y v : ℝ)
-    (hv : v≠0) (hq : quadraticHeightDenominator A B C D x y v≠0) :
+lemma deriv2_spatialHeightPower_v :
     deriv (deriv (spatialHeightPower s A B C D x y)) v =
       spatialHeightPower s A B C D x y v *
         (s^2*(heightLogDv A B C D x y v : ℂ)^2 +
@@ -377,15 +316,19 @@ lemma deriv2_spatialHeightPower_v (s : ℂ) (A B C D x y v : ℝ)
     hv hq
   simpa only [spatialHeightPower,heightLogDv,heightLogDvv,zero_mul,zero_sub,one_mul,neg_div] using h.deriv
 
-lemma quadraticHeight_gradient_square (A B C D x y v : ℝ)
-    (hrel : A*D=B^2+C^2) :
+end
+
+section
+variable (A B C D x y v : ℝ) (hrel : A*D=B^2+C^2)
+include A B C D x y v hrel
+
+lemma quadraticHeight_gradient_square :
     (A*x+B)^2 + (A*y+C)^2 + (A*v)^2 =
       A*quadraticHeightDenominator A B C D x y v := by
   unfold quadraticHeightDenominator
   nlinarith [hrel]
 
-lemma heightLog_eikonal (A B C D x y v : ℝ)
-    (hrel : A*D=B^2+C^2) (hv : v≠0)
+lemma heightLog_eikonal (hv : v≠0)
     (hq : quadraticHeightDenominator A B C D x y v≠0) :
     v^2 * ((heightLogDx A B C D x y v)^2 +
       (heightLogDy A B C D x y v)^2 + (heightLogDv A B C D x y v)^2) = 1 := by
@@ -397,8 +340,7 @@ lemma heightLog_eikonal (A B C D x y v : ℝ)
       ; ring
     _ = 1 := by rw [quadraticHeight_gradient_square A B C D x y v hrel]; ring
 
-lemma heightLog_laplacian (A B C D x y v : ℝ)
-    (hrel : A*D=B^2+C^2) (hv : v≠0)
+lemma heightLog_laplacian (hv : v≠0)
     (hq : quadraticHeightDenominator A B C D x y v≠0) :
     v^2 * (heightLogDxx A B C D x y v +
       heightLogDyy A B C D x y v + heightLogDvv A B C D x y v) -
@@ -410,6 +352,8 @@ lemma heightLog_laplacian (A B C D x y v : ℝ)
       field_simp [hv,hq]
       ; ring
     _ = -2 := by rw [quadraticHeight_gradient_square A B C D x y v hrel]; ring
+
+end
 
 def hyperbolicLaplacian (f : ℝ → ℝ → ℝ → ℂ) (x y v : ℝ) : ℂ :=
   (v:ℂ)^2 * (deriv (deriv (fun t => f t y v)) x +

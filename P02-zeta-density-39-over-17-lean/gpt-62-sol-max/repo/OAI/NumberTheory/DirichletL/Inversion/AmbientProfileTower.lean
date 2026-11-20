@@ -10,8 +10,7 @@ namespace OAI
 
 namespace SevenEighths.InverseAmbientProfileTower
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge JointLogSeparation
-open SevenEighths.InverseMoment
+open MeasureTheory FourierBridge JointLogSeparation SevenEighths.InverseMoment
 noncomputable section
 
 abbrev Ambient (ι : Type*) := Frequency × (ι → ℝ)

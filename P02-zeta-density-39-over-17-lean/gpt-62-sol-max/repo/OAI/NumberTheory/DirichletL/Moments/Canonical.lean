@@ -11,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentCanonical
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge
-open CenteredMomentCorrelation
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT ConcretePrimeRowBridge CenteredMomentCorrelation
 
 theorem actualSextic_order_six (P : Ideal O) [P.IsMaximal]
     (hg : goodLambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2) :
@@ -59,19 +58,17 @@ def canonicalCRTCharacter {ι : Type*} [Fintype ι]
     (pairwise_isCoprime_pow P c hcop))
     (fun i => canonicalPrimePowerCharacter (P i) (hg i) (hc i))
 
-theorem canonicalCRTCharacter_mk {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (c : ι → ℕ) (hc : ∀ i, 1 ≤ c i)
-    (hcop : Pairwise (Function.onFun IsCoprime P)) (x : O) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (P : ι → Ideal O) [instShared3 : ∀ i, (P i).IsMaximal] (hg : ∀ i, goodLambda ∉ P i) (c : ι → ℕ) (hc : ∀ i, 1 ≤ c i) (hcop : Pairwise (Function.onFun IsCoprime P))
+include ι instShared1 P instShared3 hg c hc hcop
+
+theorem canonicalCRTCharacter_mk (x : O) :
     canonicalCRTCharacter P hg c hc hcop (Ideal.Quotient.mk (∏ i, P i ^ c i) x) =
       CanonicalRowCompletion.idealRowHom x (∏ i, P i ^ c i) := by
   simp only [canonicalCRTCharacter, crtCharacter_apply,
     IdealGaussCRT.quotientProdEquivPi_mk, canonicalPrimePowerCharacter_mk, map_prod]
 
-theorem canonicalCRTCorrelation {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, goodLambda ∉ P i) (c : ι → ℕ) (hc : ∀ i, 1 ≤ c i)
-    (hcop : Pairwise (Function.onFun IsCoprime P))
+theorem canonicalCRTCorrelation
     [Fintype (O ⧸ ∏ i, P i ^ c i)] [∀ i, Fintype (O ⧸ P i ^ c i)]
     (u v k : O ⧸ ∏ i, P i ^ c i) :
     let e := IdealGaussCRT.quotientProdEquivPi (fun i => P i ^ c i)
@@ -90,6 +87,8 @@ theorem canonicalCRTCorrelation {ι : Type*} [Fintype ι]
   rw [fullCorrelation_ringEquiv (IdealGaussCRT.quotientProdEquivPi _ _) u v k
     (fun x => ∏ i, primePowerRow (P i) (hg i) (hc i) (x i))
     (fun x => ∏ i, primePowerRow (P i) (hg i) (hc i) (x i)), fullCorrelation_pi]
+
+end
 
 end SevenEighths.CenteredMomentCanonical
 end

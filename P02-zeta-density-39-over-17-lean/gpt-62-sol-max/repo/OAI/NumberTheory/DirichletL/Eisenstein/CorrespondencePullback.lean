@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -602,8 +546,11 @@ lemma sourceProjection_integral (f:HyperbolicSpace→ℂ) (hf:Continuous f)
         ring)
     _ = _ := by rw [integral_const_mul,integral_finsetSum _ (fun i hi'=>hi i)]
 
-lemma sourceArbitraryHeightFamily_initial (M:SL(2,ℂ)) (a b:ℝ) (ha:0<a)
-    (ρ:BoundedContinuousFunction ℝ ℂ) (freq s:ℂ) (hs:4<s.re) (hi:0<s.im) :
+section
+variable (M:SL(2,ℂ)) (a b:ℝ) (ha:0<a) (ρ:BoundedContinuousFunction ℝ ℂ)
+include M a b ha ρ
+
+lemma sourceArbitraryHeightFamily_initial (freq s:ℂ) (hs:4<s.re) (hi:0<s.im) :
     sourceArbitraryHeightFamily M a b ha ρ freq s=
       ∫w in cuspPeriodStrip a b,sourceEisenstein s (M•w)*arbitraryCuspWeightedPhase ρ freq w∂hyperbolicVolume := by
   rw [sourceEisenstein,sourceProjection_integral _ (hyperbolicEisenstein_continuous s (by linarith)) M a b ha ρ freq]
@@ -613,8 +560,7 @@ lemma sourceArbitraryHeightFamily_initial (M:SL(2,ℂ)) (a b:ℝ) (ha:0<a)
   intro i hi'
   exact arbitraryCuspHeightFamily_initial _ a b ha ρ freq s hs hi
 
-lemma arbitraryCuspHeightFourier_residue_integral (M:SL(2,ℂ)) (a b:ℝ) (ha:0<a)
-    (ρ:BoundedContinuousFunction ℝ ℂ) (freq:ℂ) :
+lemma arbitraryCuspHeightFourier_residue_integral (freq:ℂ) :
     arbitraryCuspHeightFourier M a b ha ρ freq cubicEisensteinResidue=
       ∫w in cuspPeriodStrip a b,cubicResidualFunction (M•w)*arbitraryCuspWeightedPhase ρ freq w∂hyperbolicVolume := by
   rw [arbitraryCuspHeightFourier_integral]
@@ -624,13 +570,14 @@ lemma arbitraryCuspHeightFourier_residue_integral (M:SL(2,ℂ)) (a b:ℝ) (ha:0<
   filter_upwards [ae_restrict_of_ae he] with w hw
   exact congrArg (fun c:ℂ=>c*arbitraryCuspWeightedPhase ρ freq w) hw
 
-lemma sourceArbitraryHeightFourier_residue_integral (M:SL(2,ℂ)) (a b:ℝ) (ha:0<a)
-    (ρ:BoundedContinuousFunction ℝ ℂ) (freq:ℂ) :
+lemma sourceArbitraryHeightFourier_residue_integral (freq:ℂ) :
     sourceArbitraryHeightFourier M a b ha ρ freq cubicEisensteinResidue=
       ∫w in cuspPeriodStrip a b,cubicSourceResidualFunction (M•w)*arbitraryCuspWeightedPhase ρ freq w∂hyperbolicVolume := by
   rw [cubicSourceResidualFunction,sourceProjection_integral _ cubicResidualFunction_continuous M a b ha ρ freq]
   simp only [sourceArbitraryHeightFourier,_root_.smul_apply,
     _root_.sum_apply,smul_eq_mul,arbitraryCuspHeightFourier_residue_integral]
+
+end
 
 end CubicEisenstein
 

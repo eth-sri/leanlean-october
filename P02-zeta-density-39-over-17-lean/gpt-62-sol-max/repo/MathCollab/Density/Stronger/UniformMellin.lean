@@ -197,8 +197,11 @@ theorem dampedCutoff_mellin_eq_fourier (ψ : ℝ → ℝ) (σ q r : ℝ) :
   rw [hfun]
   simp
 
-theorem dampedCutoff_uniform_mellin_power_bound {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
+section
+variable {ψ : ℝ → ℝ} {a b : ℝ} (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a)
+include ψ a b hψ ha
+
+theorem dampedCutoff_uniform_mellin_power_bound (hb : 0 < b)
     (hs : tsupport ψ ⊆ Icc a b) (s₀ s₁ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Icc s₀ s₁, ∀ q : ℝ, 0 ≤ q → ∀ r : ℝ,
       |r|^n * ‖mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ) + r*Complex.I)‖ ≤ C := by
@@ -227,8 +230,7 @@ theorem dampedCutoff_uniform_mellin_power_bound {ψ : ℝ → ℝ} {a b : ℝ}
   exact (div_le_iff₀ (pow_pos (by positivity) n)).mp hp'
 
 /-- Literal arbitrary-order decay with a constant uniform in q≥0 and the strip. -/
-theorem dampedCutoff_uniform_mellin_decay {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
+theorem dampedCutoff_uniform_mellin_decay (hb : 0 < b)
     (hs : tsupport ψ ⊆ Icc a b) (s₀ s₁ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Icc s₀ s₁, ∀ q : ℝ, 0 ≤ q → ∀ r : ℝ,
       ‖mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ) + r*Complex.I)‖ ≤
@@ -257,8 +259,7 @@ theorem dampedCutoff_uniform_mellin_decay {ψ : ℝ → ℝ} {a b : ℝ}
       _ ≤ 2^n*(B₀+Bₙ) := mul_le_mul_of_nonneg_left (by linarith) (by positivity)
 
 /-- Absolute convergence on every Mellin source line, including negative real parts. -/
-theorem dampedCutoff_mellinConvergent {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a)
+theorem dampedCutoff_mellinConvergent
     (hs : tsupport ψ ⊆ Icc a b) (q : ℝ) (s : ℂ) :
     MellinConvergent (fun y => (dampedCutoff ψ q y : ℂ)) s := by
   let f : ℝ → ℂ := fun y => (y : ℂ)^(s-1) * (dampedCutoff ψ q y : ℂ)
@@ -282,8 +283,7 @@ theorem dampedCutoff_mellinConvergent {ψ : ℝ → ℝ} {a b : ℝ}
   exact (hc.integrable_of_hasCompactSupport hf).integrableOn
 
 /-- Absolute integrability of the full vertical transform, with no frequency truncation. -/
-theorem dampedCutoff_integrable_mellin_line {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
+theorem dampedCutoff_integrable_mellin_line (hb : 0 < b)
     (hs : tsupport ψ ⊆ Icc a b) (σ q : ℝ) :
     Integrable (fun r : ℝ => mellin (fun y => (dampedCutoff ψ q y : ℂ))
       ((σ : ℂ) + r*Complex.I)) := by
@@ -299,8 +299,7 @@ theorem dampedCutoff_integrable_mellin_line {ψ : ℝ → ℝ} {a b : ℝ}
 
 /-- Mellin inversion on every real source line. Both convergence hypotheses
 are proved for the actual damped cutoff. -/
-theorem dampedCutoff_mellin_inversion {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
+theorem dampedCutoff_mellin_inversion (hb : 0 < b)
     (hs : tsupport ψ ⊆ Icc a b) (σ q : ℝ) {x : ℝ} (hx : 0 < x) :
     (dampedCutoff ψ q x : ℂ) = ((1/(2*Real.pi) : ℝ) : ℂ) * ∫ r : ℝ,
       (x : ℂ)^(-((σ : ℂ)+r*Complex.I)) *
@@ -314,8 +313,7 @@ theorem dampedCutoff_mellin_inversion {ψ : ℝ → ℝ} {a b : ℝ}
   simpa only [Complex.real_smul, smul_eq_mul] using h.symm
 
 /-- Every fixed polynomial weight has a uniformly bounded vertical L¹ mass. -/
-theorem dampedCutoff_uniform_mellin_weighted_L1 {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
+theorem dampedCutoff_uniform_mellin_weighted_L1 (hb : 0 < b)
     (hs : tsupport ψ ⊆ Icc a b) (s₀ s₁ : ℝ) (n : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ σ ∈ Icc s₀ s₁, ∀ q : ℝ, 0 ≤ q →
       Integrable (fun r : ℝ => (1+|r|)^n *
@@ -348,5 +346,7 @@ theorem dampedCutoff_uniform_mellin_weighted_L1 {ψ : ℝ → ℝ} {a b : ℝ}
   calc
     (∫ r : ℝ, F r) ≤ ∫ r : ℝ, B*(1+r^2)⁻¹ := integral_mono hFi hmajor hbound
     _ = B*Real.pi := by rw [integral_const_mul, integral_univ_inv_one_add_sq]
+
+end
 
 end MathCollab.Density.Stronger

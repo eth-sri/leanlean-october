@@ -10,10 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentSecondCanonicalScalar
-open CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit
-open CenteredMomentCanonicalFirst CenteredMomentPartition CenteredMomentPartitionNorm
-open CenteredMomentSectorLocalization CenteredMomentSupport
+open CanonicalQuadraticSieve CompletedGauss CenteredMomentSecondCanonical CenteredMomentSecondCanonicalFrequency CenteredMomentSecondCanonicalNonunit CenteredMomentCanonicalFirst CenteredMomentPartition CenteredMomentPartitionNorm CenteredMomentSectorLocalization CenteredMomentSupport
 local notation "O" => ActualEisensteinCubic.O
 
 def normalizer (C D : Ideal O) (U : Finset (CommonIndex C D)) : ℝ :=

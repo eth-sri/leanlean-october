@@ -10,21 +10,16 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyCanonicalLiveCapacity
-open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyCanonicalLiveBound
-open CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum
-open CenteredMomentCommonHeightEnvelope CenteredMomentAllocatedRayDictionary
-open CenteredMomentDivisorAllocation CenteredMomentDivisorRaw
-open CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentRetainedProfile
-open CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyBands
-open CenteredMomentEnergyDeletedChildCapacity CenteredMomentRadialEligibleEnergy
+open HeckeFamily ConcreteTraceCRT CenteredMomentEnergyCanonicalLiveBound CenteredMomentCommonRadialData CenteredMomentCommonAllocationSum CenteredMomentCommonHeightEnvelope CenteredMomentAllocatedRayDictionary CenteredMomentDivisorAllocation CenteredMomentDivisorRaw CenteredMomentAllocatedNaturalSource CenteredMomentAllocatedNaturalRadial CenteredMomentRetainedProfile CenteredMomentEnergyAllocatedClipped CenteredMomentEnergyBands CenteredMomentEnergyDeletedChildCapacity CenteredMomentRadialEligibleEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
-lemma original_deleted_excess (src:Input α)(C R:Ideal O)(B:actualAllocations src.pools C)
-    (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset
-      (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (J:Finset (CenteredMomentCommonProfile.liveIndices B.val))
-    (τ:Character)(v Z X₁ X₂ κ Mactual:ℝ)(w:α→ℝ)
+section
+variable (src:Input α) (C R:Ideal O) (B:actualAllocations src.pools C) (D:Ideal O) (alloc:Allocation D (Finset.univ:Finset
+      (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2))) (J:Finset (CenteredMomentCommonProfile.liveIndices B.val)) (τ:Character)
+include src C R B D alloc J τ
+
+lemma original_deleted_excess(v Z X₁ X₂ κ Mactual:ℝ)(w:α→ℝ)
     (hZ:1<Z)(hscale:∀i,src.P i=Z^(w i))(F₁ F₂:Finset (Ideal O)):
     deletedExcess D alloc Z X₁ X₂ κ Mactual
       (commonData (withHeight src τ v) C R B).P F₁ F₂ J =
@@ -39,11 +34,7 @@ lemma original_deleted_excess (src:Input α)(C R:Ideal O)(B:actualAllocations sr
   change Real.logb Z (src.P i.val)=w i.val
   rw [hscale,Real.logb_rpow (zero_lt_one.trans hZ) hZ.ne']
 
-theorem live_source_paid_cost (src:Input α)(C R:Ideal O)(B:actualAllocations src.pools C)
-    (D:Ideal O)(alloc:Allocation D (Finset.univ:Finset
-      (CenteredMomentCommonProfile.liveIndices B.val⊕Fin 2)))
-    (J:Finset (CenteredMomentCommonProfile.liveIndices B.val))
-    (τ:Character)(rad:Radial)(V₁ V₂:Plain)(v Z X₁ X₂ κ A M Mnom Mactual u ell δ₁ δ₂ θ:ℝ)
+theorem live_source_paid_cost(rad:Radial)(V₁ V₂:Plain)(v Z X₁ X₂ κ A M Mnom Mactual u ell δ₁ δ₂ θ:ℝ)
     (w:α→ℝ)(h₁:0<X₁)(h₂:0<X₂)(F₁ F₂:Finset (Ideal O))
     (hZ:1<Z)(hκ:0≤κ)(hw:∀i,0≤w i)(hscale:∀i,src.P i=Z^(w i))
     (hF₁:∀I∈F₁,I≠0)(hF₂:∀I∈F₂,I≠0)
@@ -73,6 +64,8 @@ theorem live_source_paid_cost (src:Input α)(C R:Ideal O)(B:actualAllocations sr
     hZ hκ hP hF₁ hF₂ hchild hp hshift hwidth hu hell hδ₁ hδ₂ hθ hclip
   rw [original_deleted_excess src C R B D alloc J τ v Z X₁ X₂ κ Mactual w hZ hscale F₁ F₂] at hb
   linarith
+
+end
 
 end SevenEighths.CenteredMomentEnergyCanonicalLiveCapacity
 

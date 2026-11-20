@@ -1,5 +1,5 @@
 module
-public import RetunedShortZeroCount
+public import RetunedShortZeroFamily
 public import MathCollab.Density.Stronger.LongMeanCounting
 
 @[expose] public section
@@ -33,11 +33,11 @@ theorem smooth_zeroCount_partition (η σ a δ T : ℝ) :
 
 /-- One critical-mean constant precedes the height and every complementary zero. -/
 theorem smoothLongZeroFinset_eventually_detects_mean {σ a δ η : ℝ}
-    (hw : QuadraticWindow σ a) (hsigma : 7/9 ≤ σ) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η) :
+    (hw : PhysicalDetectorWindow σ a) (hδ : 0 < δ) (hδ' : δ ≤ 1/8) (hη : 0 < η) :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ T : ℝ in atTop, ∀ ρ ∈ smoothLongZeroFinset η σ a δ T,
       (detectorY a T)^((σ-1/2)/2) ≤
         48*C*Real.sqrt (detectorX δ T)*Real.log T*weightedCriticalMean 128 ρ.im := by
-  obtain ⟨C, hC, hcover⟩ := smooth_long_mean_or_short_powered_cover hw hsigma hδ hδ' hη 128 (by norm_num)
+  obtain ⟨C, hC, hcover⟩ := smooth_long_mean_or_short_powered_cover hw hδ hδ' hη 128 (by norm_num)
   refine ⟨C, hC, ?_⟩
   filter_upwards [eventually_ge_atTop (0 : ℝ), hcover] with T hT hc
   intro ρ hρ

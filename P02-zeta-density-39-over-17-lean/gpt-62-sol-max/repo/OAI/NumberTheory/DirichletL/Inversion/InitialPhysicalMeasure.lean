@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialConjugateEnergy
 public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
 
@@ -10,11 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 
 namespace SevenEighths.InverseInitialPhysicalMeasure
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialRayAttachment
-open InverseInitialKernelBridge InverseInitialProfile InverseInitialClippedColumns
-open MeasureTheory FourierBridge JointLogSeparation
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT FirstPassCubeLabels FirstCauchyArithmetic SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialRayAttachment InverseInitialKernelBridge InverseInitialProfile InverseInitialClippedColumns MeasureTheory FourierBridge JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 
 @[ext] structure Point (ι : Type*) where
@@ -26,9 +23,9 @@ local notation "O" => ActualEisensteinCubic.O
   frequency : O
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,goodLambda∉Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p goodLambda)
 
 def divisor (x : Point ι) : O := primeSubsetGenerator (fun i=>Ideal.span {p i}) x.divisor
 
@@ -45,44 +42,44 @@ structure Valid (x : Point ι) : Prop where
   frequency_nonzero : x.frequency≠0
 
 include hp in
-omit [DecidableEq ι] [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalIdealFamily.Maximal p] in
 theorem coordinates_pos (x : Point ι) (hx : Valid x) : ∀ i,0<coordinates p x i :=
   physicalCoordinates_pos _ _ _ _ _ _ (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _)
     (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _) (sourceIdeal_ne_zero p hp _) hx.frequency_nonzero
 
-omit [DecidableEq ι] [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalIdealFamily.Maximal p] in
 theorem divisor_span (x : Point ι) : Ideal.span {divisor p x}=sourceIdeal p x.divisor := by
   simpa only [divisor,sourceIdeal,FiniteGaussPhase.span_finset_prod] using
     pairDivisor_span (fun i=>Ideal.span {p i}) x.divisor
 
 include hp in
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
-theorem quotient_span (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι) :
+omit [OAI.PrincipalIdealFamily.Maximal p] in
+theorem quotient_span (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda) (x : Point ι) :
     Ideal.span {quotient p x}=sourceIdeal p (x.common\x.divisor) := by
   rw [quotient,sourceIdeal_gen p hp hpr]
   rfl
 
 include hp in
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
-theorem common_span (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι) (hx : Valid x) :
+omit [OAI.PrincipalIdealFamily.Maximal p] in
+theorem common_span (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda) (x : Point ι) (hx : Valid x) :
     Ideal.span {divisor p x*quotient p x}=sourceIdeal p x.common := by
   rw [←Ideal.span_singleton_mul_span_singleton,divisor_span p,quotient_span p hp hpr,
     ←sourceIdeal_union p _ _ (Finset.disjoint_left.mpr (fun i hi hj => (Finset.mem_sdiff.mp hj).2 hi)),
     Finset.union_sdiff_of_subset hx.divisor_subset]
 
 include hp in
-def unitSector (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι) : Oˣ :=
+def unitSector (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda) (x : Point ι) : Oˣ :=
   Classical.choose (generator_eq_unit_primary (sourceIdeal p x.divisor) (divisor p x)
     (divisor_span p x) (by rw [sourceIdeal_gen p hp hpr]; exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)))
 
 include hp in
-omit [∀ i,(Ideal.span {p i}).IsMaximal] in
-theorem unitSector_spec (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι) :
+omit [OAI.PrincipalIdealFamily.Maximal p] in
+theorem unitSector_spec (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda) (x : Point ι) :
     divisor p x=(unitSector p hp hpr x:O)*primaryGenerator (sourceIdeal p x.divisor) :=
   Classical.choose_spec (generator_eq_unit_primary (sourceIdeal p x.divisor) (divisor p x)
     (divisor_span p x) (by rw [sourceIdeal_gen p hp hpr]; exact Finset.prod_ne_zero_iff.mpr (fun i _=>hp i)))
 
-theorem child_normalized (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι)
+theorem child_normalized (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda) (x : Point ι)
     (Ψ : O →* ℂ) (j h : O) (H : Finset ι→ℂ) (N : Finset ι) :
     secondChildColumn p hp hcop hg Ψ (j*quotient p x)
       (divisor p x*∏ i∈x.overlap,p i) (divisor p x*h) H N =
@@ -99,7 +96,7 @@ theorem child_normalized (hpr : ∀ i,goodLambda^2∣p i-1) (x : Point ι)
   simpa only [hu',quotient] using he H N
 
 include hp hcop hg in
-theorem column_extraction (hpr : ∀ i,goodLambda^2∣p i-1)
+theorem column_extraction (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda)
     (x : Point ι) (hx : Valid x) (Ψ : O →* ℂ) (j h : O)
     (σ : Finset ι→ℂ) (N : Finset ι) (hN : Disjoint x.overlap N) :
     initialColumn p hp hcop hg Ψ j (∏ i∈x.common,p i) (divisor p x) h
@@ -128,7 +125,7 @@ def outerCoefficient (Ψ : O →* ℂ) (j : O) (x : Point ι) (ρ : SecondRayInd
     initialColumn p hp hcop hg (secondRayPlus Ψ ρ) j (∏ i∈x.common,p i)
       (divisor p x) (-x.frequency) (fun _=>1) x.overlap
 
-def canonicalColumn (hpr : ∀ i,goodLambda^2∣p i-1)
+def canonicalColumn (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda)
     (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ) (x : Point ι) (h : O)
     (H : Finset ι→ℂ) (N : Finset ι) : ℂ :=
   secondChildColumn p hp hcop hg Ψ (j*quotient p x)
@@ -150,7 +147,7 @@ def physicalTerm (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
       (sourceIdeal p (x.overlap∪x.left)) (sourceIdeal p (x.overlap∪x.right)) x.frequency)
 
 include hp hcop hg in
-theorem physicalTerm_extracted (hpr : ∀ i,goodLambda^2∣p i-1)
+theorem physicalTerm_extracted (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda)
     (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ)
     (x : Point ι) (hx : Valid x) (ρ : SecondRayIndex) :
@@ -167,7 +164,7 @@ theorem physicalTerm_extracted (hpr : ∀ i,goodLambda^2∣p i-1)
   simp only [canonicalColumn,mul_one,star_mul,outerCoefficient,coordinates]
   ring
 
-def barePair (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
+def barePair (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda) (Ψ : O →* ℂ) (j : O)
     (σ : Finset ι→ℂ) (x : Point ι) (ρ : SecondRayIndex) : ℂ :=
   outerCoefficient p hp hcop hg Ψ j x ρ *
     star (canonicalColumn p hp hcop hg hpr (secondRayMinus Ψ ρ) j σ x x.frequency (fun _=>1) x.left) *
@@ -176,21 +173,21 @@ def barePair (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
 def columnRatio (N : Finset ι) (Z D B v : ℝ) : ℝ :=
   (Ideal.absNorm (sourceIdeal p N):ℝ)/Z^(columnCenter D B v)
 
-omit [DecidableEq ι] [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalIdealFamily.Maximal p] in
 theorem relative_column_left (x : Point ι) (Z D B v θ H : ℝ) :
     relativeNorm (coordinates p x) Z D B v θ H 4=columnRatio p x.left Z D B v := rfl
 
-omit [DecidableEq ι] [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalIdealFamily.Maximal p] in
 theorem relative_column_right (x : Point ι) (Z D B v θ H : ℝ) :
     relativeNorm (coordinates p x) Z D B v θ H 5=columnRatio p x.right Z D B v := rfl
 
-omit [DecidableEq ι] [∀ i,(Ideal.span {p i}).IsMaximal] in
+omit [DecidableEq ι] [OAI.PrincipalIdealFamily.Maximal p] in
 theorem columnRatio_actual (N : Finset ι) (Z D B v : ℝ) :
     columnRatio p N Z D B v=primeProductNorm p N/Z^(columnCenter D B v) := by
   unfold columnRatio sourceIdeal primeProductNorm
   rw [←eisEmbedding_norm_sq_eq_absNorm_span]
 
-def canonicalPairMode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
+def canonicalPairMode (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda) (Ψ : O →* ℂ) (j : O)
     (σ : Finset ι→ℂ) (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ)
     (x : Point ι) (ρ : SecondRayIndex) (z : Frequency × (Fin 6→ℝ)) : ℂ :=
   let height :=  profileHeight secondLeftSlope secondRightSlope secondKernelSlope z.1 z.2
@@ -201,7 +198,7 @@ def canonicalPairMode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : 
     canonicalColumn p hp hcop hg hpr (secondRayPlus Ψ ρ) j σ x (-x.frequency)
       (fun A=>childLogTest ω₂ (height 5) (columnRatio p A Z D B v)) x.right
 
-theorem canonical_pair_mode (hpr : ∀ i,goodLambda^2∣p i-1) (Ψ : O →* ℂ) (j : O)
+theorem canonical_pair_mode (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda) (Ψ : O →* ℂ) (j : O)
     (σ : Finset ι→ℂ) (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ)
     (x : Point ι) (ρ : SecondRayIndex) (z : Frequency × (Fin 6→ℝ)) :
     barePair p hp hcop hg hpr Ψ j σ x ρ *
@@ -238,13 +235,13 @@ def physicalBlock (source : Finset (Point ι)) (w : Point ι→ℂ)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ) : ℂ :=
   ∑ x∈source,∑ ρ : SecondRayIndex,w x*physicalTerm p hp hcop hg Ψ j σ W₁ W₂ Φ Z D m x ρ
 
-def canonicalBlock (hpr : ∀ i,goodLambda^2∣p i-1)
+def canonicalBlock (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda)
     (source : Finset (Point ι)) (w : Point ι→ℂ) (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
     (ω₁ ω₂ : ℝ→ℂ) (Z D B v θ H : ℝ) (z : Frequency × (Fin 6→ℝ)) : ℂ :=
   ∑ x∈source,∑ ρ : SecondRayIndex,w x*canonicalPairMode p hp hcop hg hpr Ψ j σ ω₁ ω₂ Z D B v θ H x ρ z
 
 theorem physicalBlock_integral
-    (hpr : ∀ i,goodLambda^2∣p i-1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p goodLambda)
     (W₁ W₂ : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (V : Fin 6→ℝ→ℂ)
     (g : Fin 6→𝓢(ℝ,ℂ)) (g₁ g₂ b₃ : 𝓢(ℝ,ℂ))
     (Z D B v m θ H η c₁ c₂ θ₁ θ₂ : ℝ)
@@ -305,7 +302,7 @@ theorem physicalBlock_integral
   rw [mul_assoc (w x),mul_assoc (w x),canonical_pair_mode]
 
 theorem original_ray_common_insertion
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F G E : Finset ι) (h : O) (Ψ : O →* ℂ) (j : O) (σ : Finset ι→ℂ)
     (W : ℝ→ℂ) (Φ : 𝓢(ℝ,ℂ)) (Z D m : ℝ) :
     (∑ U∈F.powerset,∑ T∈F.powerset,if Disjoint U T then
@@ -338,8 +335,6 @@ def BlockSupport (source : Finset (Point ι)) (W₁ W₂ ω₁ ω₂ : ℝ→ℂ
       relativeNorm (coordinates p x) Z D B v θ H 5)≠0 → ω₂ (columnRatio p x.right Z D B v)=1) ∧
   (∀ x∈source,star (ω₁ (columnRatio p x.left Z D B v))≠0 →
     ω₂ (columnRatio p x.right Z D B v)≠0 → ∀ i,V i (relativeLog (coordinates p x) Z D B v θ H i)=1)
-
-open InverseInitialOverlap InverseInitialPoissonBridge CanonicalQuadraticSieve
 
 end SevenEighths.InverseInitialPhysicalMeasure
 

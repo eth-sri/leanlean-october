@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyLiveClippingDefect
-open HeckeFamily CenteredMomentHeckeHeight CenteredMomentRetainedEnergy
-open CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional
+open HeckeFamily CenteredMomentHeckeHeight CenteredMomentRetainedEnergy CenteredMomentEnergyBands CenteredMomentFiniteProfileExceptional
 local notation "O" => HeckeFamily.O
 
 theorem rowTwistedSum_support_witness (η : Character) (m A z : O)
@@ -228,8 +227,7 @@ theorem robust_reflected_low_admissible (M xi defect short reflected z kappa : �
     reflected+short+z ≤ 5*M/6 ∧ reflected+short+6*kappa*z ≤ M := by
   constructor <;> linarith
 
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDeletionBudget
-open CenteredMomentEnergyReferenceDeletionCapacity
+open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceDeletionBudget CenteredMomentEnergyReferenceDeletionCapacity
 
 theorem robust_deleted_reference_cases (Z M X₁ X₂ ell z κ ξ e reflected : ℝ)
     (hZ : 1 < Z) (hM : 0 ≤ M) (hX₁ : 0 < X₁) (hX₂ : 0 < X₂)

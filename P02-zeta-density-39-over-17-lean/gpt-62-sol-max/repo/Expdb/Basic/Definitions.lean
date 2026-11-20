@@ -20,10 +20,3 @@ prefer using that representation directly, for example:
 
 @[expose] public section
 
-namespace Expdb
-
-/-- A family in a normed type is `C`-bounded when every value has norm at most `C`. -/
-def IsBoundedFamily {ι β : Type*} [Norm β] (C : ℝ) (a : ι → β) : Prop :=
-  ∀ i, ‖a i‖ ≤ C
-
-end Expdb

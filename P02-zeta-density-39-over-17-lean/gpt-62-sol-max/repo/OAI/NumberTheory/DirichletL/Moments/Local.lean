@@ -31,9 +31,7 @@ theorem fullCorrelation_equal_divided (q k : A) (hq : q ≠ 0)
 
 end Domain
 
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss
-open CenteredMomentFourier
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSupportedCorrelation CenteredMomentCanonical CompletedGauss CenteredMomentFourier
 open ConcretePrimeRowBridge hiding O
 local notation "O" => ActualEisensteinCubic.O
 
@@ -51,10 +49,11 @@ theorem powerReduction_multiplicity (p : O) (_hp : p ≠ 0) {i : ℕ} (hi : 1 �
   · rw [hcard, ← Ideal.span_singleton_pow, map_pow]
   · exact hcard p
 
-theorem equal_prime_power_formula (p : O) [(Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    {i : ℕ} (hi : 1 ≤ i) (k : O) :
+section
+variable (p : O) [instShared1 : (Ideal.span {p}).IsMaximal] (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p}) (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2) {i : ℕ} (hi : 1 ≤ i)
+include p instShared1 hp hg hchar i hi
+
+theorem equal_prime_power_formula (k : O) :
     actualCorrelation (p ^ i) (p ^ i) (supported_power p hp i) (supported_power p hp i)
       (p ^ i * k) =
       (Ideal.absNorm (Ideal.span {p}) : ℂ) ^ (i - 1) *
@@ -99,19 +98,13 @@ theorem equal_prime_power_formula (p : O) [(Ideal.span {p}).IsMaximal]
   rw [hm]
   split_ifs <;> rfl
 
-theorem equal_prime_power_unit_norm (p : O) [(Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    {i : ℕ} (hi : 1 ≤ i) (hi6 : ¬ 6 ∣ i) (k : O) (hk : ¬ p ∣ k) :
+theorem equal_prime_power_unit_norm (hi6 : ¬ 6 ∣ i) (k : O) (hk : ¬ p ∣ k) :
     ‖actualCorrelation (p ^ i) (p ^ i) (supported_power p hp i) (supported_power p hp i)
       (p ^ i * k)‖ = (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ (i - 1) := by
   rw [equal_prime_power_formula p hp hg hchar hi k, ite_eq_right hk, ite_eq_right hi6]
   simp
 
-theorem equal_prime_power_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
-    (hp : Supported (Ideal.span {p})) (hg : goodLambda ∉ Ideal.span {p})
-    (hchar : ringChar (O ⧸ Ideal.span {p}) ≠ 2)
-    {i : ℕ} (hi : 1 ≤ i) (k : O) :
+theorem equal_prime_power_norm_le (k : O) :
     ‖actualCorrelation (p ^ i) (p ^ i) (supported_power p hp i) (supported_power p hp i)
       (p ^ i * k)‖ ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ i := by
   have hp0 := supported_element_ne_zero p hp
@@ -143,6 +136,8 @@ theorem equal_prime_power_norm_le (p : O) [(Ideal.span {p}).IsMaximal]
     _ ≤ (Ideal.absNorm (Ideal.span {p}) : ℝ) ^ (i - 1) * Ideal.absNorm (Ideal.span {p}) :=
       mul_le_mul_of_nonneg_left hb (by positivity)
     _ = _ := by rw [← pow_succ, Nat.sub_add_cancel hi]
+
+end
 
 end SevenEighths.CenteredMomentLocal
 

@@ -8,16 +8,12 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
 
 namespace ActualEisensteinCubic
 
@@ -86,10 +82,6 @@ theorem prefactor_product {a : ℂ} {r : ℝ} (ha : 0 < a.re) (hr : 0 < r) :
     congrArg (fun z : ℂ => z⁻¹) (cpow_half_product ha hr)
 
 end SqrtBranch
-
-namespace PowerExtraction
-
-end PowerExtraction
 
 namespace ActualEisensteinCubic
 

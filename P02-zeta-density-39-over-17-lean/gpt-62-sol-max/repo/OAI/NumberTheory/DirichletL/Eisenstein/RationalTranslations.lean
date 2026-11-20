@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open scoped BigOperators Classical MatrixGroups
@@ -202,16 +146,18 @@ def translatedCuspFamily (h:Eis) (M:levelTwo) (a b:ℝ) (ha:0<a) (hab:a<b) (s:�
   translatedCuspFourier h M
     (kernelLocalCorrectedSeed (translatedCuspCompact M) (translatedCuspCompact_isCompact M) a b ha hab s)
 
-lemma translatedCuspFamily_analyticAt_nonreal (h:Eis) (M:levelTwo)
-    (a b:ℝ) (ha:0<a) (hab:a<b) (s:ℂ) (hs:s.re≠1) (hi:s.im≠0):
+section
+variable (h:Eis) (M:levelTwo) (a b:ℝ) (ha:0<a) (hab:a<b)
+include h M a b ha hab
+
+lemma translatedCuspFamily_analyticAt_nonreal (s:ℂ) (hs:s.re≠1) (hi:s.im≠0):
     AnalyticAt ℂ (translatedCuspFamily h M a b ha hab) s:=by
   exact (ContinuousLinearMap.analyticAt (𝕜:=ℂ) (E:=KernelQuotientL2) (F:=ℂ)
     (translatedCuspFourier h M) _).comp_of_eq
       (kernelLocalCorrectedSeed_analyticAt_nonreal _ (translatedCuspCompact_isCompact M)
         a b ha hab s hs hi) rfl
 
-lemma translatedCuspFamily_residue_limit (h:Eis) (M:levelTwo)
-    (a b:ℝ) (ha:0<a) (hab:a<b):
+lemma translatedCuspFamily_residue_limit:
     Tendsto (fun s:ℂ=>(s-4/3)*translatedCuspFamily h M a b ha hab s)
       (𝓝[≠] (4/3:ℂ))
       (𝓝 (translatedCuspFourier h M (kernelEisensteinResidueVector a b ha hab))):=by
@@ -220,8 +166,7 @@ lemma translatedCuspFamily_residue_limit (h:Eis) (M:levelTwo)
   simpa only [Function.comp_def,map_smul,smul_eq_mul,translatedCuspFourier_restrict,
     translatedCuspFamily] using hh
 
-lemma translatedCuspFamily_actual_integral (h:Eis) (M:levelTwo)
-    (a b:ℝ) (ha:0<a) (hab:a<b) (s:ℂ):
+lemma translatedCuspFamily_actual_integral (s:ℂ):
     translatedCuspFamily h M a b ha hab s=∫w in cuspPeriodStrip 5 6,
       kernelCorrectedSeed a b ha hab s
         (kernelSourceAction M (integralOrbitProjection globalKubotaKernel w))*
@@ -238,8 +183,7 @@ lemma translatedCuspFamily_actual_integral (h:Eis) (M:levelTwo)
   exact congrArg (fun z:ℂ=>z*cuspFourierPhase h w)
     (hw.trans (Set.indicator_of_mem hmem _))
 
-theorem translatedCuspFamily_initial (h:Eis) (M:levelTwo)
-    (a b:ℝ) (ha:0<a) (hab:a<b) (ha1:1<a) (s:ℂ) (hs:4<s.re) (hi:0<s.im):
+theorem translatedCuspFamily_initial (ha1:1<a) (s:ℂ) (hs:4<s.re) (hi:0<s.im):
     translatedCuspFamily h M a b ha hab s=∫w in cuspPeriodStrip 5 6,
       hyperbolicEisenstein s (sourceComplexMatrix M • w)*cuspFourierPhase h w∂hyperbolicVolume:=by
   have hcorrected:kernelCorrectedSeed a b ha hab s=ᵐ[integralQuotientVolume globalKubotaKernel]
@@ -256,6 +200,8 @@ theorem translatedCuspFamily_initial (h:Eis) (M:levelTwo)
   filter_upwards [he] with w hw
   exact congrArg (fun z:ℂ=>z*cuspFourierPhase h w)
     (hw.trans (by dsimp only [Function.comp_def];rw [kernelSourceAction_mk,kernelQuotientEisenstein_mk]))
+
+end
 
 end
 

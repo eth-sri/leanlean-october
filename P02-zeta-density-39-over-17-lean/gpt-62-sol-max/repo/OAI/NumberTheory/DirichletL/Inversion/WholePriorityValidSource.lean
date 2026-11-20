@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.WholeRetainedSource
 
 @[expose] public section
@@ -9,24 +10,21 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseWholePriorityValidSource
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource
-open InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical
-open RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment InverseInitialArithmetic InverseFirstPriorityParents InversePrioritySecondSource InverseMomentWholePriorityParents InverseMomentWholePriorityPhysical RayFourExpansion InversePrincipalEnergy InverseSecondPrincipalCaller
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ κ : Type*} [DecidableEq ι] [DecidableEq σ] [DecidableEq κ]
 variable {Jo : ℕ}
 
-variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) [OAI.PrincipalIdealFamily.Maximal p]
 
-variable (hp : ∀ i,p i≠0) (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (hp : ∀ i,p i≠0) (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem priorityOuter_zero (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
     (selector : Finset ι→ℂ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex)
     (D : Finset ι) (hD : selector D=0) : priorityOuter p hg b negative Ψ m selector r core D=0 := by
   simp only [priorityOuter,hD,norm_zero,mul_zero,zero_mul]
 
-def wholePriorityPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+def wholePriorityPoisson (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (pool : Finset ι) (b : CubeCoordinates ι) (C E extra : Finset ι) (negative : Bool)
     (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (om : ℝ→ℂ) (X t Y : ℝ) (r : RayCharacter×RayCharacter) (core : FirstCoreIndex) (D : Finset ι) : ℂ :=
@@ -37,7 +35,7 @@ def wholePriorityPoisson (hinj : Function.Injective (fun i=>Ideal.span {p i}))
       (fun i=>lists i\((extra∪((if negative then b.rightDivisor else b.leftDivisor)∪C))∪D)) a U)
     om X (∏ i∈C,p i) (primeSubsetGenerator (fun i=>Ideal.span {p i}) E) core t Y
 
-theorem parentPoisson_fixed_whole (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+theorem parentPoisson_fixed_whole (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (pool : Finset ι) (b : CubeCoordinates ι) (C E extra D : Finset ι)
     (old : Fin Jo→SmoothMobiusCorrection.PrimeIdeal) (negative : Bool)
     (Ψ : O→*ℂ) (m : O) (slots J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
@@ -59,7 +57,7 @@ theorem parentPoisson_fixed_whole (hinj : Function.Injective (fun i=>Ideal.span 
   rw [quotientSupport_parent p hinj,hl]
   rfl
 
-variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+variable (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
 
 end SevenEighths.InverseWholePriorityValidSource
 

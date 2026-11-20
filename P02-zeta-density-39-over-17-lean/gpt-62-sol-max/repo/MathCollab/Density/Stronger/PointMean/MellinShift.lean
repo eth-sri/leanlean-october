@@ -15,8 +15,7 @@ public import MathCollab.Density.Stronger.PointMean.MellinVertical
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Contour
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Contour
 open scoped Interval
 set_option autoImplicit false
 noncomputable section
@@ -28,14 +27,22 @@ def VerticalIntegral (f : ℂ → ℂ) (a : ℝ) : ℂ :=
 def VerticalIntegral' (f : ℂ → ℂ) (a : ℝ) : ℂ :=
   (1 / (2 * Real.pi * I) : ℂ) • VerticalIntegral f a
 
+/-- Exact real-parameter normalization of the existing vertical contour. -/
+theorem verticalIntegral'_eq_realIntegral (f : ℂ → ℂ) (a : ℝ) :
+    VerticalIntegral' f a = (1 / (2 * Real.pi) : ℂ) *
+      ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I) := by
+  unfold VerticalIntegral' VerticalIntegral
+  simp only [smul_eq_mul]
+  field_simp [Real.pi_ne_zero]
+
 theorem pintz2023_RectangleIntegral'_eq_edges
     (f : ℂ → ℂ) (a b R : ℝ) :
     RectangleIntegral' f
         ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I) =
       HIntegral' f a b (-R) - HIntegral' f a b R +
-        (((1 / (2 * Real.pi) : ℝ) : ℂ) *
+        ((1 / (2 * Real.pi) : ℂ) *
           ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) -
-        (((1 / (2 * Real.pi) : ℝ) : ℂ) *
+        ((1 / (2 * Real.pi) : ℂ) *
           ∫ u in (-R)..R, f ((a : ℂ) + (u : ℂ) * I)) := by
   unfold RectangleIntegral' RectangleIntegral HIntegral' HIntegral VIntegral
   simp [sub_re, sub_im, add_re, add_im, mul_re, mul_im, smul_eq_mul]
@@ -43,7 +50,7 @@ theorem pintz2023_RectangleIntegral'_eq_edges
   ring_nf
   rw [Complex.I_sq]
   ring
-private theorem tendsto_rectangleIntegral'_vertical_sub
+theorem tendsto_rectangleIntegral'_vertical_sub
     {f : ℂ → ℂ} {a b : ℝ}
     (hBottom : Tendsto (fun R : ℝ => HIntegral' f a b (-R)) atTop (nhds 0))
     (hTop : Tendsto (fun R : ℝ => HIntegral' f a b R) atTop (nhds 0))
@@ -53,54 +60,15 @@ private theorem tendsto_rectangleIntegral'_vertical_sub
       RectangleIntegral' f
         ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
       (nhds (VerticalIntegral' f b - VerticalIntegral' f a)) := by
-  let c : ℂ := (((1 / (2 * Real.pi) : ℝ) : ℂ))
-  have hRight : Tendsto (fun R : ℝ =>
-      c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) atTop
-      (nhds (c * ∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I))) :=
-    (intervalIntegral_tendsto_integral hIntB
-      tendsto_neg_atTop_atBot tendsto_id).const_mul c
-  have hLeft : Tendsto (fun R : ℝ =>
-      c * ∫ u in (-R)..R, f ((a : ℂ) + (u : ℂ) * I)) atTop
-      (nhds (c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I))) :=
-    (intervalIntegral_tendsto_integral hIntA
-      tendsto_neg_atTop_atBot tendsto_id).const_mul c
-  have hEdges := (hBottom.sub hTop).add (hRight.sub hLeft)
-  have hExpanded : Tendsto (fun R : ℝ =>
-      HIntegral' f a b (-R) - HIntegral' f a b R +
-        ((c * ∫ u in (-R)..R, f ((b : ℂ) + (u : ℂ) * I)) -
-          c * ∫ u in (-R)..R, f ((a : ℂ) + (u : ℂ) * I))) atTop
-      (nhds (c * (∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I)) -
-        c * (∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I)))) := by
-    simpa only [zero_sub, neg_zero, zero_add] using hEdges
-  have hRectangle : Tendsto (fun R : ℝ =>
-      RectangleIntegral' f
-        ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I)) atTop
-      (nhds (c * (∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I)) -
-        c * (∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I)))) := by
-    refine hExpanded.congr' ?_
-    filter_upwards with R
-    rw [pintz2023_RectangleIntegral'_eq_edges]
-    dsimp only [c]
-    ring
-  have hVerticalB : VerticalIntegral' f b =
-      c * ∫ u : ℝ, f ((b : ℂ) + (u : ℂ) * I) := by
-    unfold VerticalIntegral' VerticalIntegral
-    dsimp only [c]
-    simp [smul_eq_mul]
-    ring_nf
-    rw [Complex.I_sq]
-    ring
-  have hVerticalA : VerticalIntegral' f a =
-      c * ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I) := by
-    unfold VerticalIntegral' VerticalIntegral
-    dsimp only [c]
-    simp [smul_eq_mul]
-    ring_nf
-    rw [Complex.I_sq]
-    ring
-  simpa only [hVerticalB, hVerticalA] using hRectangle
+  have hLine (x : ℝ) (h : Integrable (fun u : ℝ => f ((x : ℂ) + (u : ℂ) * I))) :
+      Tendsto (fun R : ℝ => (1 / (2 * Real.pi) : ℂ) *
+        ∫ u in (-R)..R, f ((x : ℂ) + (u : ℂ) * I)) atTop (nhds (VerticalIntegral' f x)) := by
+    rw [verticalIntegral'_eq_realIntegral]
+    exact (intervalIntegral_tendsto_integral h tendsto_neg_atTop_atBot tendsto_id).const_mul _
+  simpa only [pintz2023_RectangleIntegral'_eq_edges, sub_self, zero_add] using
+    ((hBottom.sub hTop).add (hLine b hIntB)).sub (hLine a hIntA)
 
-private theorem verticalIntegral'_sub_eq_of_eventual_rectangle
+theorem verticalIntegral'_sub_eq_of_eventual_rectangle
     {f : ℂ → ℂ} {a b : ℝ} {A : ℂ}
     (hBottom : Tendsto (fun R : ℝ => HIntegral' f a b (-R)) atTop (nhds 0))
     (hTop : Tendsto (fun R : ℝ => HIntegral' f a b R) atTop (nhds 0))
@@ -110,11 +78,8 @@ private theorem verticalIntegral'_sub_eq_of_eventual_rectangle
       RectangleIntegral' f
         ((a : ℂ) - (R : ℂ) * I) ((b : ℂ) + (R : ℂ) * I) = A) :
     VerticalIntegral' f b - VerticalIntegral' f a = A := by
-  have hLimit := tendsto_rectangleIntegral'_vertical_sub
-    hBottom hTop hIntA hIntB
-  have hConst : Tendsto (fun _R : ℝ => A) atTop (nhds A) := tendsto_const_nhds
-  have hLimitA := hConst.congr' (hFinite.mono fun _ h => h.symm)
-  exact tendsto_nhds_unique hLimit hLimitA
+  exact tendsto_nhds_unique (tendsto_rectangleIntegral'_vertical_sub hBottom hTop hIntA hIntB)
+    (tendsto_const_nhds.congr' (hFinite.mono fun _ h => h.symm))
 
 noncomputable def heathBrownIntermediateLine (delta : ℝ) : ℝ :=
   (1 / 2 - delta) / 2
@@ -131,10 +96,11 @@ theorem heathBrown_intermediateLine_le_quarter
   unfold heathBrownIntermediateLine
   linarith
 
-theorem heathBrown_movingPole_vertical_shift
-    {s : ℂ} {delta : ℝ} (hdelta : 0 < delta)
-    (hdeltaUpper : delta ≤ 1 / 4)
-    (hsRe : s.re = 1 / 2 + delta) :
+section
+variable {s : ℂ} {delta : ℝ} (hdelta : 0 < delta) (hdeltaUpper : delta ≤ 1 / 4) (hsRe : s.re = 1 / 2 + delta)
+include s delta hdelta hdeltaUpper hsRe
+
+theorem heathBrown_movingPole_vertical_shift :
     VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s) 2 -
         VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s)
           (heathBrownIntermediateLine delta) =
@@ -188,10 +154,7 @@ theorem heathBrown_movingPole_vertical_shift
   simpa only [f, d] using verticalIntegral'_sub_eq_of_eventual_rectangle
     hBottom hTop hIntD hIntTwo hFinite
 
-theorem heathBrown_gammaPole_vertical_shift
-    {s : ℂ} {delta : ℝ} (hdelta : 0 < delta)
-    (hdeltaUpper : delta ≤ 1 / 4)
-    (hsRe : s.re = 1 / 2 + delta) :
+theorem heathBrown_gammaPole_vertical_shift :
     VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s)
         (heathBrownIntermediateLine delta) -
       VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s) (-delta) =
@@ -249,10 +212,7 @@ theorem heathBrown_gammaPole_vertical_shift
     hBottom hTop hIntMinus hIntD hFinite
 
 /-- Exact completed form of the two residue shifts. -/
-theorem heathBrown_twoPole_vertical_shift
-    {s : ℂ} {delta : ℝ} (hdelta : 0 < delta)
-    (hdeltaUpper : delta ≤ 1 / 4)
-    (hsRe : s.re = 1 / 2 + delta) :
+theorem heathBrown_twoPole_vertical_shift :
     VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s) 2 -
       VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s) (-delta) =
         heathBrownMovingPoleResidue s + riemannZeta s ^ 2 := by
@@ -262,17 +222,15 @@ theorem heathBrown_twoPole_vertical_shift
     hdelta hdeltaUpper hsRe
   linear_combination hMoving + hGamma
 
+end
+
 theorem heathBrownSmoothedDivisorSeries_eq_rightVertical
     {s : ℂ} (hs : 0 < s.re) :
     heathBrownSmoothedDivisorSeries s =
       VerticalIntegral' (heathBrownZetaSquareMellinIntegrand s) 2 := by
   rw [heathBrown_smoothed_divisor_eq_right_mellin hs]
-  unfold VerticalIntegral' VerticalIntegral heathBrownDivisorMellinIntegrand
-  simp [heathBrownZetaSquareMellinIntegrand, smul_eq_mul]
-  ring_nf
-  rw [Complex.I_sq]
-  simp only [mul_comm I]
-  ring
+  rw [verticalIntegral'_eq_realIntegral]
+  simp [heathBrownDivisorMellinIntegrand, heathBrownZetaSquareMellinIntegrand]
 
 /-- Heath--Brown's exact zeta-square identity before estimating the retained
 critical-line contour and the two harmless terms. -/

@@ -7,8 +7,7 @@ namespace OAI
 
 namespace SevenEighths.ResidueCharacter
 
-open SevenEighths.FiniteFourier SevenEighths.FiniteConductor
-open SevenEighths.ConductorPresentation
+open SevenEighths.FiniteFourier SevenEighths.FiniteConductor SevenEighths.ConductorPresentation
 open scoped Classical
 
 noncomputable section
@@ -20,12 +19,16 @@ def inflate {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ) :
   MulChar.ofUnitHom (χ.toUnitHom.comp
     (Units.map (Ideal.Quotient.factor hML).toMonoidHom))
 
-theorem inflate_apply_unit {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ)
+section
+variable {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ)
+include M L hML χ
+
+theorem inflate_apply_unit
     (u : (A ⧸ M)ˣ) :
     inflate hML χ u = χ (Ideal.Quotient.factor hML (u : A ⧸ M)) :=
   MulChar.ofUnitHom_coe _ u
 
-theorem inflate_apply {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ)
+theorem inflate_apply
     (x : A ⧸ M) :
     inflate hML χ x = if IsUnit x then χ (Ideal.Quotient.factor hML x) else 0 := by
   by_cases hx : IsUnit x
@@ -33,17 +36,19 @@ theorem inflate_apply {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) �
     simpa only [u.isUnit, ite_true] using inflate_apply_unit hML χ u
   · simp only [hx, ite_false, MulChar.map_nonunit _ hx]
 
-theorem inflate_mk {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ) (a : A) :
+theorem inflate_mk (a : A) :
     inflate hML χ (Ideal.Quotient.mk M a) =
       if IsUnit (Ideal.Quotient.mk M a) then χ (Ideal.Quotient.mk L a) else 0 := by
   simpa only [Ideal.Quotient.factor_mk] using inflate_apply hML χ (Ideal.Quotient.mk M a)
 
-theorem inflate_global_units {M L : Ideal A} (hML : M ≤ L) (χ : MulChar (A ⧸ L) ℂ)
+theorem inflate_global_units
     (hχ : ∀ u : Aˣ, χ (Ideal.Quotient.mk L u) = 1) :
     ∀ u : Aˣ, inflate hML χ (Ideal.Quotient.mk M u) = 1 := by
   intro u
   rw [inflate_mk]
   simp only [u.isUnit.map (Ideal.Quotient.mk M), ite_true, hχ]
+
+end
 
 theorem isUnit_mk_inf_iff (I J : Ideal A) (a : A) :
     IsUnit (Ideal.Quotient.mk (I ⊓ J) a) ↔
@@ -109,12 +114,6 @@ theorem product_global_units (I J : Ideal A) (χ : MulChar (A ⧸ I) ℂ)
     ∀ u : Aˣ, product I J χ ψ (Ideal.Quotient.mk (I ⊓ J) u) = 1 := by
   intro u
   rw [product_mk, hχ, hψ, one_mul]
-
-section PrimitiveProduct
-
-variable [IsDedekindDomain A] [Infinite A]
-
-end PrimitiveProduct
 
 end
 

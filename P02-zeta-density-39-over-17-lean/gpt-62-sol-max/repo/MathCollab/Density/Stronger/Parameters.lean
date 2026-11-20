@@ -23,11 +23,6 @@ def detectorX (δ T : ℝ) : ℝ := T ^ δ
 
 def detectorY (σ T : ℝ) : ℝ := T ^ smoothingExponent σ
 
-theorem smoothingExponent_pos {σ : ℝ} (hσ : 3/4 < σ) :
-    0 < smoothingExponent σ := by
-  have : 0 < σ := by linarith
-  unfold smoothingExponent
-  positivity
 
 theorem smoothingExponent_lt_one {σ : ℝ} (hσ : 3/4 < σ) :
     smoothingExponent σ < 1 := by
@@ -78,24 +73,5 @@ theorem long_exponent_saving {σ δ : ℝ}
   have hid := long_exponent_identity (show 0 < σ by linarith)
   linarith
 
-/-- This is the actual scale factor occurring in the proved contour error. -/
-theorem detector_error_scale {σ δ T β η : ℝ}
-    (hσ : 3/4 < σ) (hδ : δ ≤ 1/8) (hT : 1 ≤ T) (hβ : σ ≤ β) :
-    Real.sqrt (detectorX δ T) * (detectorY σ T) ^ (1/2 - β) * T ^ (1/6 + η) ≤
-      T ^ (-1/48 + η) := by
-  have hTpos : 0 < T := by linarith
-  have hproduct : (1/4 : ℝ) ≤ smoothingExponent σ * (β - 1/2) := by
-    unfold smoothingExponent
-    rw [div_mul_eq_mul_div]
-    apply (le_div_iff₀ (by linarith : 0 < 4 * σ)).2
-    nlinarith
-  have hsqrt : Real.sqrt (detectorX δ T) = T ^ (δ/2) := by
-    rw [detectorX, Real.sqrt_eq_rpow, ← Real.rpow_mul hTpos.le]
-    congr 1
-    ring
-  rw [hsqrt, detectorY, ← Real.rpow_mul hTpos.le,
-    ← Real.rpow_add hTpos, ← Real.rpow_add hTpos]
-  apply Real.rpow_le_rpow_of_exponent_le hT
-  nlinarith
 
 end MathCollab.Density.Stronger

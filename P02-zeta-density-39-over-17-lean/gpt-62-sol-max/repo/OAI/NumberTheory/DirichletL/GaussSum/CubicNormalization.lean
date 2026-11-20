@@ -8,21 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace ActualEisensteinCubic
 
 section
 
-open EisensteinEmbedding ConcreteTraceCRT PrimitiveTrace
+open EisensteinEmbedding ConcreteTraceCRT
 
 theorem cubicGauss_normalized_cube_breveE
     (P : Ideal O) [P.IsMaximal]
@@ -37,7 +34,7 @@ theorem cubicGauss_normalized_cube_breveE
   exact cubicGauss_normalized_cube_eis (Ideal.span {p}) hgood p rfl hprimary
     (eisTraceModChar ShortDraftTrace.breveE
       ConcreteBreveE.breveE_period_coordinates p hp)
-    (eisTraceModChar_breveE_primitive (Ideal.span {p}) p rfl hp)
+    (GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive p hp)
 
 end
 
@@ -186,8 +183,6 @@ theorem canonical_A5_nonexceptional (P : Ideal O) [P.IsMaximal]
 
 end
 
-open ConcreteTraceCRT PrimitiveTrace
-
 end ActualEisensteinCubic
 
 namespace AnalyticBridge
@@ -313,11 +308,11 @@ theorem jacobi_quadratic (χ : MulChar F ℂ)
       simp only [ map_mul]
       ring
 
-theorem gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
-    (hchar : ringChar F ≠ 2) (hψ : ψ.IsPrimitive)
-    (hχ1 : χ ≠ 1) (hχ2 : χ ^ 2 ≠ 1) (hχ4 : χ ^ 4 ≠ 1)
-    (hχ3 : χ ^ 3 = (quadraticChar F).ringHomComp (Int.castRingHom ℂ))
-    (hχ6 : χ ^ 6 = 1) :
+section
+variable (χ : MulChar F ℂ) (ψ : AddChar F ℂ) (hchar : ringChar F ≠ 2) (hψ : ψ.IsPrimitive) (hχ1 : χ ≠ 1) (hχ2 : χ ^ 2 ≠ 1) (hχ4 : χ ^ 4 ≠ 1) (hχ3 : χ ^ 3 = (quadraticChar F).ringHomComp (Int.castRingHom ℂ)) (hχ6 : χ ^ 6 = 1)
+include χ ψ hchar hψ hχ1 hχ2 hχ4 hχ3 hχ6
+
+theorem gauss_sextic_relation :
     χ (4 : F) * gaussSum χ ψ * (Fintype.card F : ℂ) =
       gaussSum (χ ^ 3) ψ * gaussSum (χ ^ 2) ψ ^ 2 := by
 
@@ -379,11 +374,7 @@ theorem gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
     _ = (χ (4 : F) * g4 * g1) * g2 := by ring
     _ = g3 * g2 ^ 2 := by rw [← hbasic']; ring
 
-theorem normalized_gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F ℂ)
-    (hchar : ringChar F ≠ 2) (hψ : ψ.IsPrimitive)
-    (hχ1 : χ ≠ 1) (hχ2 : χ ^ 2 ≠ 1) (hχ4 : χ ^ 4 ≠ 1)
-    (hχ3 : χ ^ 3 = (quadraticChar F).ringHomComp (Int.castRingHom ℂ))
-    (hχ6 : χ ^ 6 = 1)
+theorem normalized_gauss_sextic_relation
     (s : ℂ) (hs : s ^ 2 = (Fintype.card F : ℂ)) (hs0 : s ≠ 0) :
     χ (4 : F) * (gaussSum χ ψ / s) * (gaussSum (χ ^ 2) ψ / s) =
       (gaussSum (χ ^ 3) ψ / s) * (gaussSum (χ ^ 2) ψ / s) ^ 3 := by
@@ -391,6 +382,8 @@ theorem normalized_gauss_sextic_relation (χ : MulChar F ℂ) (ψ : AddChar F �
   rw [← hs] at hraw
   field_simp
   linear_combination (gaussSum (χ ^ 2) ψ) * hraw
+
+end
 
 end JacobiQuadratic
 

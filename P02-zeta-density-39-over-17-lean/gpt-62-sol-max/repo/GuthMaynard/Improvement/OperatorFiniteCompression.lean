@@ -5,7 +5,7 @@ public import GuthMaynard.Improvement.OperatorTraceConvergence
 set_option autoImplicit false
 noncomputable section
 open MeasureTheory InnerProductSpace Filter Set
-open scoped InnerProductSpace Topology
+open scoped Topology
 namespace GuthMaynard.Improvement
 variable {E ι : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
 variable (b : HilbertBasis ι ℂ E)
@@ -55,10 +55,13 @@ theorem operator_finite_projection_tendsto (w : Finset E) (v : E) :
 
 variable [CompleteSpace E]
 
+section
+variable [instShared0 : Countable ι] {α : Type*} [instShared2 : MeasurableSpace α] (ν : Measure α) (w : Finset E)
+include instShared0 α instShared2 ν w
+
 /-- Genuine nuclear trace limit on the constructed finite spaces; the fixed finite witness
 is arbitrary and no spectral conclusion or limit is assumed. -/
-theorem operator_finite_compressed_trace_tendsto [Countable ι]
-    {α : Type*} [MeasurableSpace α] (ν : Measure α) (w : Finset E) (H : E →L[ℂ] E)
+theorem operator_finite_compressed_trace_tendsto (H : E →L[ℂ] E)
     {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
     (hxy : Integrable (fun a => ‖x a‖*‖y a‖) ν) :
     Tendsto (fun s : Finset ι => operatorDiagonalTrace b
@@ -70,8 +73,7 @@ theorem operator_finite_compressed_trace_tendsto [Countable ι]
     (operator_finite_projection_tendsto b w) hx hy hxy
 
 /-- Actual cubic trace convergence, with the witness included at every finite stage. -/
-theorem operator_finite_cubic_trace_tendsto [Countable ι]
-    {α : Type*} [MeasurableSpace α] (ν : Measure α) (w : Finset E)
+theorem operator_finite_cubic_trace_tendsto
     {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
     (hxy : Integrable (fun a => ‖x a‖*‖y a‖) ν) :
     Tendsto (fun s : Finset ι => operatorDiagonalTrace b
@@ -81,8 +83,7 @@ theorem operator_finite_cubic_trace_tendsto [Countable ι]
     operator_finite_compressed_trace_tendsto b ν w (operatorIntegral ν x y) hx hy hxy
 
 /-- The mixed trace converges as well; no monotonicity of compressed mixed traces is asserted. -/
-theorem operator_finite_mixed_trace_tendsto [Countable ι]
-    {α : Type*} [MeasurableSpace α] (ν : Measure α) (w : Finset E) (H : E →L[ℂ] E)
+theorem operator_finite_mixed_trace_tendsto (H : E →L[ℂ] E)
     {x y : α → E} (hx : AEStronglyMeasurable x ν) (hy : AEStronglyMeasurable y ν)
     (hxy : Integrable (fun a => ‖x a‖*‖y a‖) ν) :
     Tendsto (fun s : Finset ι => operatorDiagonalTrace b
@@ -97,5 +98,7 @@ theorem operator_finite_mixed_trace_tendsto [Countable ι]
         (operatorIntegral_comp_integrable ν (H^2) hx hy hxy)]
   rw [← he]
   exact operator_finite_compressed_trace_tendsto b ν w H hx hy hxy
+
+end
 
 end GuthMaynard.Improvement

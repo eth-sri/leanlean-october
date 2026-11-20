@@ -9,12 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap ContDiff
 namespace SevenEighths.CenteredMomentOriginalReflectionApproximation
-open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass
-open CenteredMomentComparisonReflection CenteredMomentReflectionTailMass
-open CenteredMomentSectorLocalization CenteredMomentReflectedTruncation
-open CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive
-open CenteredMomentRetainedReflection CenteredMomentTwistedReflection
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentComparisonReflection CenteredMomentReflectionTailMass CenteredMomentSectorLocalization CenteredMomentReflectedTruncation CenteredMomentReflectedAnnuli CenteredMomentNaturalPrimitive CenteredMomentRetainedReflection CenteredMomentTwistedReflection EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 def finiteAnnularColumn (η : Character) (F : ℝ→ℂ) (R Y : ℝ) : ℂ :=

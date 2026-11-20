@@ -8,8 +8,7 @@ set_option autoImplicit false
 set_option maxHeartbeats 1600000
 set_option maxRecDepth 4096
 noncomputable section
-open Finset
-open GuthMaynard.NativeMoment
+open Finset GuthMaynard.NativeMoment
 
 namespace Montgomery.RationalMoment
 

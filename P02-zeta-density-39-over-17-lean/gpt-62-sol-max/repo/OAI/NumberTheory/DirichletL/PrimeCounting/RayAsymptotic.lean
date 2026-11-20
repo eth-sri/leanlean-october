@@ -71,8 +71,11 @@ structure AnalyticFamily (F : rayCharacters M → ℂ → ℂ) (residue : ℂ) :
   pole_analytic : AnalyticAt ℂ (principalRegularization (F 1) residue) 1
   residue_ne_zero : residue ≠ 0
 
-theorem regularizedFamily_analyticAt {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 ≤ s.re) :
+section
+variable {F : rayCharacters M → ℂ → ℂ} {residue : ℂ} (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ)
+include F residue hF χ s
+
+theorem regularizedFamily_analyticAt (hs : 1 ≤ s.re) :
     AnalyticAt ℂ (regularizedFamily M F residue χ) s := by
   by_cases hχ : χ = 1
   · subst χ
@@ -84,8 +87,7 @@ theorem regularizedFamily_analyticAt {F : rayCharacters M → ℂ → ℂ} {resi
   · rw [regularizedFamily, ite_eq_right hχ]
     exact hF.analytic χ s hs (Or.inl hχ)
 
-theorem regularizedFamily_ne_zero {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 ≤ s.re) :
+theorem regularizedFamily_ne_zero (hs : 1 ≤ s.re) :
     regularizedFamily M F residue χ s ≠ 0 := by
   by_cases hχ : χ = 1
   · subst χ
@@ -98,8 +100,7 @@ theorem regularizedFamily_ne_zero {F : rayCharacters M → ℂ → ℂ} {residue
   · rw [regularizedFamily, ite_eq_right hχ]
     exact hF.nonzero χ s hs (Or.inl hχ)
 
-theorem regularizedFamily_logDeriv {F : rayCharacters M → ℂ → ℂ} {residue : ℂ}
-    (hF : AnalyticFamily M F residue) (χ : rayCharacters M) (s : ℂ) (hs : 1 < s.re) :
+theorem regularizedFamily_logDeriv (hs : 1 < s.re) :
     -deriv (regularizedFamily M F residue χ) s / regularizedFamily M F residue χ s =
       -deriv (F χ) s / F χ s - (if χ = 1 then 1 / (s - 1) else 0) := by
   by_cases hχ : χ = 1
@@ -108,6 +109,8 @@ theorem regularizedFamily_logDeriv {F : rayCharacters M → ℂ → ℂ} {residu
     exact principalRegularization_logDeriv _ _ hs1
       (hF.analytic χ s hs.le (Or.inr hs1)) (hF.nonzero χ s hs.le (Or.inr hs1))
   · simp only [regularizedFamily, hχ, ite_false, sub_zero]
+
+end
 
 section Quotient
 

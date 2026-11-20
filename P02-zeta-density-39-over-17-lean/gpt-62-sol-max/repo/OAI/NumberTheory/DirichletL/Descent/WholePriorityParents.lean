@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.FirstPriorityParents
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeCubePriority
 
@@ -10,15 +11,14 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMomentWholePriorityParents
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment InverseInitialArithmetic InverseFirstPriorityParents
 local notation "O" => ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 
 def wholeExtractedSupport (extra : Source ι Jo→Finset ι)
     (negative : Bool) (x : Source ι Jo) : Finset ι := extra x∪extractedSupport negative x
 
-variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) [OAI.PrincipalIdealFamily.Maximal p]
 
 def wholeAssignmentSource (extra : Source ι Jo→Finset ι) (source : Finset (Source ι Jo)) (negative : Bool)
     (J : Finset σ) (lists : σ→Finset ι) :
@@ -43,7 +43,7 @@ theorem sum_wholeAssignmentSource (extra : Source ι Jo→Finset ι) {A : Type*}
   dsimp only
   rw [paired_assignment_filter]
 
-theorem sum_wholeAssignedParents (extra : Source ι Jo→Finset ι) (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+theorem sum_wholeAssignedParents (extra : Source ι Jo→Finset ι) (hinj : OAI.PrincipalIdealFamily.Distinct p)
     {A : Type*} [AddCommMonoid A] (source : Finset (Source ι Jo)) (negative : Bool)
     (J : Finset σ) (lists : σ→Finset ι) (H : SecondParentSource ι (Jo+(J.card+J.card))→A) :
     ∑ y∈wholeAssignedParents p extra source negative J lists,H y =
@@ -52,9 +52,11 @@ theorem sum_wholeAssignedParents (extra : Source ι Jo→Finset ι) (hinj : Func
   rw [wholeAssignedParents,Finset.sum_image (fun _ _ _ _ h=>attach_injective p hinj J h)]
   exact sum_wholeAssignmentSource extra source negative J lists _
 
-theorem wholePaired_parent_sum (extra : Source ι Jo→Finset ι) (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (source : Finset (Source ι Jo)) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι)
-    (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) (H : SecondParentSource ι Jo→ℂ) :
+section
+variable (extra : Source ι Jo→Finset ι) (hinj : OAI.PrincipalIdealFamily.Distinct p) (source : Finset (Source ι Jo)) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) (H : SecondParentSource ι Jo→ℂ)
+include extra hinj source negative J lists a w H
+
+theorem wholePaired_parent_sum :
     (∑ x∈source,w x*(star (primeMark J lists a (wholeExtractedSupport extra negative x))*
       primeMark J lists a (wholeExtractedSupport extra negative x))*H (parent p x)) =
     ∑ y∈wholeAssignedParents p extra source negative J lists,
@@ -65,14 +67,14 @@ theorem wholePaired_parent_sum (extra : Source ι Jo→Finset ι) (hinj : Functi
   rw [paired_primeMark_assignments]
   simp only [Finset.mul_sum,Finset.sum_mul,coefficient_attach p hinj,forget_attach]
 
-theorem wholePaired_parent_sq_sum (extra : Source ι Jo→Finset ι) (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (source : Finset (Source ι Jo)) (negative : Bool) (J : Finset σ) (lists : σ→Finset ι)
-    (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) (H : SecondParentSource ι Jo→ℂ) :
+theorem wholePaired_parent_sq_sum :
     (∑ x∈source,w x*(‖primeMark J lists a (wholeExtractedSupport extra negative x)‖^2 : ℝ)*H (parent p x)) =
     ∑ y∈wholeAssignedParents p extra source negative J lists,
       coefficient p J a w y*H (forgetAppended y) := by
   simpa only [Complex.sq_norm,Complex.normSq_eq_conj_mul_self,starRingEnd_apply] using
     wholePaired_parent_sum p extra hinj source negative J lists a w H
+
+end
 
 lemma mem_wholeAssignmentSource (extra : Source ι Jo→Finset ι) (source : Finset (Source ι Jo)) (negative : Bool)
     (J : Finset σ) (lists : σ→Finset ι)

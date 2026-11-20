@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstWholeKernel
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve EisensteinSchwartzPoisson
-open CenteredMomentFirstFrequency CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentFirstAssembly
-open CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentPrimitive CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstReduced
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve EisensteinSchwartzPoisson CenteredMomentFirstFrequency CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentFirstAssembly CenteredMomentSupportedCorrelation CenteredMomentCommonSupport CenteredMomentPrimitive CenteredMomentScale CenteredMomentSmooth CenteredMomentFirstReduced
 local notation "O" => ActualEisensteinCubic.O
 
 def windows (V : Fin 4 → ℝ → ℂ) (K H A B K₀ H₀ A₀ B₀ : ℝ) : ℂ :=
@@ -44,12 +42,12 @@ theorem dilated_frequency_whole_kernel {ι : Type*} [Fintype ι]
           (Real.log (kr/K₀)) (Real.log (‖eisEmbedding h‖^2/H₀))
           (Real.log (‖eisEmbedding a‖^2/A₀)) (Real.log (‖eisEmbedding b‖^2/B₀)) := by
   dsimp only
-  have haN : 0<‖eisEmbedding a‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero a ha))
-  have hbN : 0<‖eisEmbedding b‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero b hb))
-  have hrN : 0<‖eisEmbedding (finitePrimeModulus P)‖ :=
+  have haN := norm_pos_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero a ha))
+  have hbN := norm_pos_iff.mpr (eisEmbedding_ne_zero (supported_element_ne_zero b hb))
+  have hrN :=
     norm_pos_iff.mpr (eisEmbedding_ne_zero (finitePrimeModulus_ne_zero P))
   have hhN : 0<‖eisEmbedding h‖ := norm_pos_iff.mpr (eisEmbedding_ne_zero hh)
-  have hk' : 0<k/‖eisEmbedding (finitePrimeModulus P)‖^2 := div_pos hk (sq_pos_of_pos hrN)
+  have hk' := div_pos hk (sq_pos_of_pos hrN)
   rw [show dilatedFrequency P hcop hg j e a b ha hb k h=_ from
     normalized_dilated_frequency P hcop hg hchar j hj0 hj6 e a b ha hb har hbr k h]
   rw [wholeKernel_actual W V _ _ _ _ K₀ H₀ A₀ B₀ hk' (sq_pos_of_pos hhN)
@@ -62,8 +60,8 @@ theorem dilated_frequency_whole_kernel {ι : Type*} [Fintype ι]
   rw [harg]
   simp only [windows,Real.sqrt_sq haN.le,Real.sqrt_sq hbN.le,
     Complex.star_def,map_div₀,Complex.conj_ofReal]
-  have hA : (Real.sqrt A₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
-  have hB : (Real.sqrt B₀:ℂ)≠0 := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
+  have hA := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hA₀).ne'
+  have hB := Complex.ofReal_ne_zero.mpr (Real.sqrt_pos.mpr hB₀).ne'
   have hr : (‖eisEmbedding (finitePrimeModulus P)‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hrN.ne'
   have ha' : (‖eisEmbedding a‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr haN.ne'
   have hb' : (‖eisEmbedding b‖:ℂ)≠0 := Complex.ofReal_ne_zero.mpr hbN.ne'

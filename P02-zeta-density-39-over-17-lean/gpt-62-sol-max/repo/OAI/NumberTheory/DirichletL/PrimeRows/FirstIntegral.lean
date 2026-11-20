@@ -22,8 +22,11 @@ def rowAmplitudeOnLines {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions 
       physicalCompensatedRow S hS (Finset.univ.image P) (contourTupleOutside S P hPS) η u
         ((σ:ℂ)+t.1.1*I) ((υ:ℂ)+t.2*I) ((r:ℂ)+t.1.2*I))
 
-lemma continuedRowOnLines_eq_amplitude {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+section
+variable {K : ℕ} (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+include K S hS hmax
+
+lemma continuedRowOnLines_eq_amplitude
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z σ υ r : ℝ) (t : HeightSpace) :
     continuedRowOnLines S hS hmax P hPS η u W0 W1 X Y Z σ υ r t=
@@ -32,8 +35,7 @@ lemma continuedRowOnLines_eq_amplitude {K : ℕ}
   unfold continuedRowOnLines continuedPhysicalRowKernel rowAmplitudeOnLines
   ring
 
-lemma rowAmplitudeOnLines_measurable {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+lemma rowAmplitudeOnLines_measurable
     (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S) (η : Character) (u : FreeRow)
     (σ υ r : ℝ) : Measurable (rowAmplitudeOnLines S hS hmax P hPS η u σ υ r) := by
   have hp (i : Fin K) : 0<elementNorm (CompletedGauss.primaryGenerator (P i).val) :=
@@ -52,8 +54,7 @@ lemma rowAmplitudeOnLines_measurable {K : ℕ}
       exact measurable_const_cpow _ hN _ (by fun_prop)
   · exact hphys.const_mul _
 
-lemma rowAmplitudeOnLines_first_bound {K : ℕ}
-    (S : Finset (Ideal O)) (hS : SourceExclusions S) (hmax : ∀P∈S,P.IsMaximal)
+lemma rowAmplitudeOnLines_first_bound
     (hfirst : FirstTail (1/4) S) (P : Fin K→PrimeIdeal) (hPS : ∀i,(P i).val∉S)
     (η : Character) (u : FreeRow) (hu : u.val≠1) (υ r : ℝ)
     (hυ : -(1/100:ℝ)≤υ) (hr : (17/50:ℝ)≤r) :
@@ -84,6 +85,8 @@ lemma rowAmplitudeOnLines_first_bound {K : ℕ}
   rw [norm_mul,norm_mul,norm_prod]
   simp_rw [hn,hf]
   exact (mul_le_mul_of_nonneg_left hh hB).trans_eq (by ring)
+
+end
 
 theorem continuedPhysicalRowKernel_first_integrable {K : ℕ}
     (υ r : ℝ) (hυ : -(1/100:ℝ)≤υ) (hr : (17/50:ℝ)≤r)

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstLabelCellStepPhysicalGates
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityFixedChildStepUniform
 
@@ -9,18 +10,14 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstLabelCell
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents
-open InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks
-open InverseSecondFibers InverseInitialClippedColumns RayFourExpansion FirstCauchyArithmetic
-open InverseWholePriorityRetainedSource
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseFirstPriorityParents InverseFirstGlobalParents InverseMomentGlobalRetainedGates InverseInitialArithmetic InverseSecondSourceBlocks InverseSecondFibers InverseInitialClippedColumns RayFourExpansion FirstCauchyArithmetic InverseWholePriorityRetainedSource
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
 def ChildBounds {ι σ : Type} [DecidableEq ι] [DecidableEq σ]
-    (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+    (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
     (pool : Finset ι) (Q : Finset (ι→₀ℕ)) (k : SourceIndex) (l j : ℕ) (negative : Bool)
     (Ψ : O→*ℂ) (m : O) (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ)
     (ω₁ ω₂ : 𝓢(ℝ,ℂ)) (Z M r ell V eta tau window b epschild A : ℝ) (K degree : ℕ) : Prop :=
@@ -59,11 +56,11 @@ theorem actual_label_cell_step (om : 𝓢(ℝ,ℂ)) (lo hi : ℝ) (hlo : 0<lo)
       tsupport (ω₁:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧ tsupport (ω₂:ℝ→ℂ)⊆Set.Icc loFresh hiFresh ∧
     ∀degree : ℕ,∃C Cbin Czero Ctail : ℝ,0≤C ∧ 0≤Cbin ∧ 0≤Czero ∧ 0≤Ctail ∧
     ∀{ι σ : Type}[DecidableEq ι][DecidableEq σ](p : ι→O)(hp : ∀i,p i≠0)
-      [∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hpr : ∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-      (hinj : Function.Injective (fun i=>Ideal.span {p i})) (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      [OAI.PrincipalIdealFamily.Maximal p]
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p) (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (pool : Finset ι)(Q : Finset (ι→₀ℕ))(k : SourceIndex)(l j : ℕ)
       (Ψ : O→*ℂ)(m : O)(slots : Finset σ)(lists : σ→Finset ι)(a : σ→ι→ℂ)
       (Z M r ell V eta pi b Lcol LY epschild A t : ℝ)(ρ : Fin 6→ℝ),

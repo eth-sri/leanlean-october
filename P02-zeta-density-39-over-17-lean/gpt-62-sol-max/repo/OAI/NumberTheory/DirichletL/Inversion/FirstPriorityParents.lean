@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstActualPriorityEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondAssignedSum
 public import OAI.NumberTheory.DirichletL.Descent.SecondParentAssembly
@@ -11,8 +12,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseFirstPriorityParents
-open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic
-open InverseMoment InverseInitialArithmetic
+open ActualEisensteinCubic SecondPassArithmetic FirstPassCubeLabels FirstCauchyArithmetic InverseMoment InverseInitialArithmetic
 local notation "O" => ActualEisensteinCubic.O
 
 @[ext] structure Source (ι : Type*) (Jo : ℕ) where
@@ -27,7 +27,7 @@ variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ] {Jo : ℕ}
 def extractedSupport (negative : Bool) (x : Source ι Jo) : Finset ι :=
   ((if negative then x.cube.rightDivisor else x.cube.leftDivisor)∪x.firstCommon)∪x.quotientSupport
 
-variable (p : ι→O) [∀ i,(Ideal.span {p i}).IsMaximal]
+variable (p : ι→O) [OAI.PrincipalIdealFamily.Maximal p]
 
 def parent (x : Source ι Jo) : SecondParentSource ι Jo where
   cube := x.cube
@@ -36,7 +36,7 @@ def parent (x : Source ι Jo) : SecondParentSource ι Jo where
   quotient := sourceIdeal p x.quotientSupport
   oldAssigned := x.oldAssigned
 
-theorem parent_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) :
+theorem parent_injective (hinj : OAI.PrincipalIdealFamily.Distinct p) :
     Function.Injective (parent p (Jo:=Jo)) := by
   intro x y h
   apply Source.ext
@@ -84,7 +84,7 @@ def attach (J : Finset σ)
   appendParent (parent p q.1) (fun i=>sourcePrime p (pairedSlotAssignment J J q.2 i))
 
 omit [DecidableEq σ] in
-theorem attach_injective (hinj : Function.Injective (fun i=>Ideal.span {p i})) (J : Finset σ) :
+theorem attach_injective (hinj : OAI.PrincipalIdealFamily.Distinct p) (J : Finset σ) :
     Function.Injective (attach p (Jo:=Jo) J) := by
   intro q r h
   have he := @appendParent_injective ι Jo (J.card+J.card)
@@ -107,7 +107,7 @@ def coefficient (J : Finset σ) (a : σ→ι→ℂ) (w : Source ι Jo→ℂ) :
   Function.extend (attach p J) (fun q=>w q.1*pairedSlotWeight J J a a q.2) (fun _=>0)
 
 omit [DecidableEq σ] in
-theorem coefficient_attach (hinj : Function.Injective (fun i=>Ideal.span {p i}))
+theorem coefficient_attach (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (J : Finset σ) (a : σ→ι→ℂ) (w : Source ι Jo→ℂ)
     (q : Source ι Jo × ((∀ i∈J,ι)×(∀ i∈J,ι))) :
     coefficient p J a w (attach p J q)=w q.1*pairedSlotWeight J J a a q.2 :=
@@ -138,7 +138,7 @@ def fixedPoint (b : CubeCoordinates ι) (C E : Finset ι)
     (old : Fin Jo→SmoothMobiusCorrection.PrimeIdeal) (D : Finset ι) : Source ι Jo :=
   ⟨b,C,E,D,old⟩
 
-variable (hp : ∀ i,p i≠0) (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (hp : ∀ i,p i≠0) (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def priorityOuter (b : CubeCoordinates ι) (negative : Bool) (Ψ : O→*ℂ) (m : O)
     (selector : Finset ι→ℂ) (r : RayFourExpansion.RayCharacter×RayFourExpansion.RayCharacter)

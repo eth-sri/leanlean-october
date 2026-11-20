@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Mellin.ReflectedKernel
 
 @[expose] public section
@@ -8,69 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace SquarefreeDivisorBound
 open scoped BigOperators Classical
@@ -464,8 +413,11 @@ def b0Label (p : κ → O) (B : Finset κ) (v : κ → ℕ)
     (ε₁ ε₂ : κ → Bool) : O :=
   primeProduct p B (fun j => b0Exponent (v j) (ε₁ j) (ε₂ j))
 
-theorem first_pass_label_identity (p : κ → O) (B : Finset κ) (v : κ → ℕ)
-    (ε₁ ε₂ : κ → Bool) (hv : ∀ j ∈ B, 0 < v j) (side : Bool) :
+section
+variable (p : κ → O) (B : Finset κ) (v : κ → ℕ) (ε₁ ε₂ : κ → Bool)
+include p B v ε₁ ε₂
+
+theorem first_pass_label_identity (hv : ∀ j ∈ B, 0 < v j) (side : Bool) :
     rowCoprimeMask P S (cubeRadical p B) *
       finiteSquarefreeRow P hg S (aLabel p B (if side then ε₂ else ε₁)) ^ 4 *
       finiteSquarefreeRow P hg S (crtLabel p B v ε₁ ε₂ side) *
@@ -482,8 +434,7 @@ theorem first_pass_label_identity (p : κ → O) (B : Finset κ) (v : κ → ℕ
   cases side <;> simp only [localFactor, Bool.false_eq_true, ↓reduceIte,
     ← _root_.pow_mul, _root_.Nat.mul_comm]
 
-theorem cube_product_decomposition (p : κ → O) (B : Finset κ) (v : κ → ℕ)
-    (ε₁ ε₂ : κ → Bool) (hv : ∀ j ∈ B, 0 < v j) :
+theorem cube_product_decomposition (hv : ∀ j ∈ B, 0 < v j) :
     primeProduct p B v = b0Label p B v ε₁ ε₂ ^ 2 * j2Label p B v ε₁ ε₂ ^ 2 *
       squarefreeLabel p B v := by
   simp only [b0Label, j2Label, squarefreeLabel, primeProduct, ← Finset.prod_pow,
@@ -494,8 +445,7 @@ theorem cube_product_decomposition (p : κ → O) (B : Finset κ) (v : κ → �
   have h := multiplicity_decomposition (v j) (ε₁ j) (ε₂ j) (hv j hj)
   omega
 
-theorem jLabel_eq_squarefree_mul_j2 (p : κ → O) (B : Finset κ) (v : κ → ℕ)
-    (ε₁ ε₂ : κ → Bool) :
+theorem jLabel_eq_squarefree_mul_j2 :
     jLabel p B v ε₁ ε₂ = squarefreeLabel p B v * j2Label p B v ε₁ ε₂ := by
   simp only [jLabel, squarefreeLabel, j2Label, primeProduct, ← Finset.prod_mul_distrib,
     ← pow_add]
@@ -504,6 +454,8 @@ theorem jLabel_eq_squarefree_mul_j2 (p : κ → O) (B : Finset κ) (v : κ → �
   congr 1
   cases hp : parity (v j) <;> cases ε₁ j <;> cases ε₂ j <;>
     simp [bit, retained, evenDouble, hp]
+
+end
 
 include hg in
 
@@ -564,32 +516,32 @@ end FirstPassCubeLabels
 
 open scoped BigOperators Classical SchwartzMap
 namespace QuadraticInitialBound
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open FiniteGaussPhase MixedCrossSeparation ActualEisensteinCoordinates QuadraticGaussRay
-open RayFourExpansion
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson FiniteGaussPhase MixedCrossSeparation ActualEisensteinCoordinates QuadraticGaussRay RayFourExpansion
 
-def quadraticSymbol {ι : Type*} (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) : ℂ :=
+def quadraticSymbol {ι : Type*} (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (A B : Finset ι) : ℂ :=
   quadraticRow (fun i => Ideal.span {p i}) hg A (∏ i ∈ B, p i)
 
-theorem quadraticSymbol_eq_cross_product {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) :
+section
+variable {ι : Type*} (p : ι → O) [instShared2 : OAI.PrincipalIdealFamily.Maximal p] (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (A B : Finset ι)
+include ι p instShared2 hg A B
+
+theorem quadraticSymbol_eq_cross_product :
     quadraticSymbol p hg A B = ∏ i ∈ A, ∏ k ∈ B, crossSymbol p hg i k ^ 3 := by
   simp only [quadraticSymbol, quadraticRow, finiteSquarefreeRow, map_prod,
     ← Finset.prod_pow, crossSymbol]
 
-theorem quadraticSymbol_mul_reverse {ι : Type*}
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) :
+theorem quadraticSymbol_mul_reverse :
     quadraticSymbol p hg A B * quadraticSymbol p hg B A = quadraticCrossPhase p hg A B := by
   rw [quadraticSymbol_eq_cross_product, quadraticSymbol_eq_cross_product]
   rw [Finset.prod_comm (s := B) (t := A)]
   simp only [quadraticCrossPhase, Finset.prod_mul_distrib]
 
+end
+
 theorem quadraticSymbol_eq_zero_of_not_disjoint {ι : Type*} [DecidableEq ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) (h : ¬ Disjoint A B) :
+    (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (A B : Finset ι) (h : ¬ Disjoint A B) :
     quadraticSymbol p hg A B = 0 := by
   obtain ⟨i, hiA, hiB⟩ := Finset.not_disjoint_iff.mp h
   rw [quadraticSymbol_eq_cross_product]
@@ -600,9 +552,9 @@ theorem quadraticSymbol_eq_zero_of_not_disjoint {ι : Type*} [DecidableEq ι]
   simp only [crossSymbol, hz, MulChar.map_zero, zero_pow (by decide : 3 ≠ 0)]
 
 theorem quadraticSymbol_sq_eq_one {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (A B : Finset ι) (hd : Disjoint A B) :
+    (p : ι → O) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (A B : Finset ι) (hd : Disjoint A B) :
     quadraticSymbol p hg A B ^ 2 = 1 := by
   rw [quadraticSymbol_eq_cross_product, ← Finset.prod_pow]
   apply Finset.prod_eq_one
@@ -619,11 +571,11 @@ theorem quadraticSymbol_sq_eq_one {ι : Type*} [Fintype ι] [DecidableEq ι]
     ite_eq_right (prime_generator_not_mem_other p hcop i k hik)] using
       canonicalSextic_sixth_power_mask (Ideal.span {p i}) (hg i) (p k)
 
-theorem quadraticSymbol_reciprocity {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (A B : Finset ι) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] [instShared2 : DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) [instShared5 : OAI.PrincipalIdealFamily.Maximal p] (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2) (A B : Finset ι)
+include ι instShared1 instShared2 p hp instShared5 hcop hg hc A B
+
+theorem quadraticSymbol_reciprocity :
     quadraticSymbol p hg A B =
       quadraticRayPair (residue (∏ i ∈ A, p i)) (residue (∏ i ∈ B, p i)) *
         quadraticSymbol p hg B A := by
@@ -637,11 +589,7 @@ theorem quadraticSymbol_reciprocity {ι : Type*} [Fintype ι] [DecidableEq ι]
   · rw [quadraticSymbol_eq_zero_of_not_disjoint p hg A B hd,
       quadraticSymbol_eq_zero_of_not_disjoint p hg B A (fun h => hd h.symm), mul_zero]
 
-theorem quadraticSymbol_reciprocity_characters {ι : Type*} [Fintype ι] [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (A B : Finset ι) :
+theorem quadraticSymbol_reciprocity_characters :
     quadraticSymbol p hg A B =
       ∑ χ : RayCharacter, ∑ η : RayCharacter,
         crossCoeff χ η * rayCharacter χ (∏ i ∈ A, p i) *
@@ -651,6 +599,8 @@ theorem quadraticSymbol_reciprocity_characters {ι : Type*} [Fintype ι] [Decida
   rw [rayMask_prime_product p hc A, rayMask_prime_product p hc B, one_mul, one_mul] at hr
   rw [hr]
   simp only [Finset.sum_mul]
+
+end
 
 end QuadraticInitialBound
 

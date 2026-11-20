@@ -43,7 +43,7 @@ theorem logarithmicKernel_eq_shifted_phaseSum (N : ℕ) (t : ℝ) (hN : 0 < N) :
   rw [sum_Ico_eq_sum_range]
   have hlength : 2 * N + 1 - (N + 1) = N := by omega
   rw [hlength]
-  simp only [Nat.cast_add, Nat.cast_one]
+  simp
 
 @[simp] theorem logarithmicKernel_zero (N : ℕ) :
     logarithmicKernel N 0 = (N : ℂ) := by
@@ -201,18 +201,16 @@ theorem norm_logarithmicKernel_le_div
       ring_nf
     have hfinal := mul_le_mul_of_nonpos_left hlogLe (by linarith : -q ≤ 0)
     rw [← hphaseOne, ← hphaseTwo] at hfinal
-    simpa only [m, Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hfinal
+    simpa [m, add_assoc] using hfinal
   have hKL := kusminLandau_interval (fun n : ℕ => logarithmicPhase q n)
     (N + 1) (N - 1)
     (-1) δ hδ
     (fun n hn => by
-      simpa only [Int.cast_neg, Int.cast_one, neg_mul, one_mul, sub_neg_eq_add,
-        Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using (hinc n hn).1)
+      simpa [add_assoc] using (hinc n hn).1)
     (fun n hn => by
-      simpa only [Int.cast_neg, Int.cast_one, neg_mul, one_mul, sub_neg_eq_add,
-        Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using (hinc n hn).2)
+      simpa [add_assoc] using (hinc n hn).2)
     (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hmono n hn)
+      simpa [add_assoc] using hmono n hn)
   have hpred : N - 1 + 1 = N := by omega
   rw [hpred] at hKL
   norm_num only [Nat.cast_add, Nat.cast_one] at hKL
@@ -260,11 +258,11 @@ theorem logarithmicPhase_secondDifference_bounds
         linarith
       _ ≤ xi := by
         have hxilt : (N : ℝ) + 1 + (n : ℝ) < xi := by
-          simpa only [x, Nat.cast_add, Nat.cast_one] using hxi.1
+          simpa [x] using hxi.1
         exact hxilt.le
   have hxiUpper : xi ≤ 3 * (N : ℝ) := by
     have hxi' : xi < (N : ℝ) + 1 + (n : ℝ) + 2 := by
-      simpa only [x, Nat.cast_add, Nat.cast_one] using hxi.2
+      simpa [x] using hxi.2
     have hnUpper : n + 3 ≤ 2 * N := by omega
     have hnUpperReal : ((n + 3 : ℕ) : ℝ) ≤ 2 * (N : ℝ) := by exact_mod_cast hnUpper
     push_cast at hnUpperReal
@@ -401,10 +399,10 @@ theorem norm_logarithmicKernel_le_sqrt
     (fun n => logarithmicPhase q (N + 1 + n)) (N - 1)
     (q / (9 * (N : ℝ) ^ 2)) (q / (N : ℝ) ^ 2) hlambda
     (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, Nat.cast_ofNat, Nat.add_assoc] using
+      simpa [Nat.add_assoc] using
         hcurvLower n hn)
     (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, Nat.cast_ofNat, Nat.add_assoc] using
+      simpa [Nat.add_assoc] using
         hcurvUpper n hn)
   have hpred : N - 1 + 1 = N := by omega
   rw [hpred] at hB

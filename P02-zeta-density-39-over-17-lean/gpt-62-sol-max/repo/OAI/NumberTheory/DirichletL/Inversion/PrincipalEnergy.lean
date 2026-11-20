@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.MarkBounds
 
 @[expose] public section
@@ -8,16 +9,14 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InversePrincipalEnergy
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum
-open InverseMoment
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson SecondPassArithmetic FirstPassCubeLabels IdealMobiusDivisorSum InverseMoment
 local notation "Eis" => ActualEisensteinCubic.O
 
 section
 variable {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (p : ι → Eis) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
 
 include hinj in
 
@@ -98,10 +97,11 @@ theorem restorationTerm_eq (hp : ∀ i, p i ≠ 0) (Ψ : Eis →* ℂ) (m c d : 
   rw [harg]
   ring
 
-theorem restorationTerm_mask_norm_le (hp : ∀ i, p i ≠ 0)
-    (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y)
-    (G : Finset ι) (E : G.powerset) (k : Eis) (θ : ℂ) (hθ : ‖θ‖ ≤ 1) :
+section
+variable (hp : ∀ i, p i ≠ 0) (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis) (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y) (G : Finset ι) (E : G.powerset)
+include hp Ψ hΨ m c d H W Y hY G E
+
+theorem restorationTerm_mask_norm_le (k : Eis) (θ : ℂ) (hθ : ‖θ‖ ≤ 1) :
     ‖θ * restorationTerm p hg hinj hp Ψ m c d H W Y G E k‖ ≤
       ‖H G‖ ^ 2 * (Y / (Ideal.absNorm (supportIdeal p E.val) : ℝ)) *
         ‖paperRadialFourier W ((Y / (Ideal.absNorm (supportIdeal p E.val) : ℝ)) * ‖eisEmbedding k‖ ^ 2)‖ := by
@@ -117,10 +117,7 @@ theorem restorationTerm_mask_norm_le (hp : ∀ i, p i ≠ 0)
         ‖paperRadialFourier W ((Y / (Ideal.absNorm (supportIdeal p E.val) : ℝ)) * ‖eisEmbedding k‖ ^ 2)‖) := by gcongr
     _ = _ := by ring
 
-theorem restorationTerm_mask_summable_norm (hp : ∀ i, p i ≠ 0)
-    (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y)
-    (G : Finset ι) (E : G.powerset) (θ : Eis → ℂ)
+theorem restorationTerm_mask_summable_norm (θ : Eis → ℂ)
     (hθ : ∀ k : {k : Eis // k ≠ 0}, ‖θ k.val‖ ≤ 1) :
     Summable (fun k : {k : Eis // k ≠ 0} =>
       ‖θ k.val * restorationTerm p hg hinj hp Ψ m c d H W Y G E k.val‖) := by
@@ -130,10 +127,7 @@ theorem restorationTerm_mask_summable_norm (hp : ∀ i, p i ≠ 0)
     (fun k => restorationTerm_mask_norm_le p hg hinj hp Ψ hΨ m c d H W Y hY G E k.val (θ k.val) (hθ k))
     (hs.mul_left (‖H G‖ ^ 2 * (Y / (Ideal.absNorm (supportIdeal p E.val) : ℝ))))
 
-theorem restoration_divisor_abs_le (hp : ∀ i, p i ≠ 0)
-    (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y)
-    (G : Finset ι) (E : G.powerset) (θ : Eis → ℂ)
+theorem restoration_divisor_abs_le (θ : Eis → ℂ)
     (hθ : ∀ k : {k : Eis // k ≠ 0}, ‖θ k.val‖ ≤ 1) :
     (∑' k : {k : Eis // k ≠ 0},
       ‖θ k.val * restorationTerm p hg hinj hp Ψ m c d H W Y G E k.val‖) ≤
@@ -161,6 +155,8 @@ theorem restoration_divisor_abs_le (hp : ∀ i, p i ≠ 0)
       mul_le_mul_of_nonneg_left (QuadraticInitialBound.pv_lattice_bound W _ ht) (sq_nonneg ‖H G‖)
     _ = _ := mul_comm _ _
 
+end
+
 def principalRestoration (hp : ∀ i, p i ≠ 0)
     (F : Finset ι) (Ψ : Eis →* ℂ) (m c d : Eis)
     (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ)
@@ -168,11 +164,11 @@ def principalRestoration (hp : ∀ i, p i ≠ 0)
   ∑ G ∈ F.powerset, ∑ E : G.powerset, ∑' k : {k : Eis // k ≠ 0},
     θ G E.val k.val * restorationTerm p hg hinj hp Ψ m c d H W Y G E k.val
 
-theorem principalRestoration_abs_le (hp : ∀ i, p i ≠ 0)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y)
-    (θ : Finset ι → Finset ι → Eis → ℂ)
-    (hθ : ∀ G ∈ F.powerset, ∀ E : G.powerset, ∀ k : {k : Eis // k ≠ 0}, ‖θ G E.val k.val‖ ≤ 1) :
+section
+variable (hp : ∀ i, p i ≠ 0) (F : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis) (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y) (θ : Finset ι → Finset ι → Eis → ℂ) (hθ : ∀ G ∈ F.powerset, ∀ E : G.powerset, ∀ k : {k : Eis // k ≠ 0}, ‖θ G E.val k.val‖ ≤ 1)
+include hp F Ψ hΨ m c d H W Y hY θ hθ
+
+theorem principalRestoration_abs_le :
     (∑ G ∈ F.powerset, ∑ E : G.powerset, ∑' k : {k : Eis // k ≠ 0},
       ‖θ G E.val k.val * restorationTerm p hg hinj hp Ψ m c d H W Y G E k.val‖) ≤
       QuadraticInitialBound.pvControl W *
@@ -191,11 +187,7 @@ theorem principalRestoration_abs_le (hp : ∀ i, p i ≠ 0)
         (mul_nonneg (QuadraticInitialBound.pvControl_nonneg W) (sq_nonneg _))
     _ = _ := by ring
 
-theorem principalRestoration_norm_le (hp : ∀ i, p i ≠ 0)
-    (F : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
-    (H : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) (hY : 0 < Y)
-    (θ : Finset ι → Finset ι → Eis → ℂ)
-    (hθ : ∀ G ∈ F.powerset, ∀ E : G.powerset, ∀ k : {k : Eis // k ≠ 0}, ‖θ G E.val k.val‖ ≤ 1) :
+theorem principalRestoration_norm_le :
     ‖principalRestoration p hg hinj hp F Ψ m c d H W Y θ‖ ≤
       QuadraticInitialBound.pvControl W *
         ∑ G ∈ F.powerset, ((idealDivisors (supportIdeal p G)).card : ℝ) * ‖H G‖ ^ 2 := by
@@ -208,6 +200,8 @@ theorem principalRestoration_norm_le (hp : ∀ i, p i ≠ 0)
   intro E _
   exact norm_tsum_le_tsum_norm (restorationTerm_mask_summable_norm p hg hinj hp Ψ hΨ m c d H W Y hY G E
     (θ G E.val) (hθ G hG E))
+
+end
 
 def markedRadial {σ : Type*} [DecidableEq σ]
     (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ)
@@ -274,9 +268,9 @@ end
 
 theorem marked_radial_divisor_mass (ε : ℝ) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (_hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+      (p : ι → Eis) (_hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) →
@@ -348,9 +342,9 @@ theorem uniform_row_control :
 
 section
 variable {ι : Type*} [DecidableEq ι]
-    (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (p : ι → Eis) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
 
 theorem principal_energy_le (hp : ∀ i, p i ≠ 0)
     (F : Finset ι) (Ψ : Eis →* ℂ) (hΨ : ∀ z, ‖Ψ z‖ ≤ 1) (m c d : Eis)
@@ -387,10 +381,10 @@ end
 theorem marked_principal_energy (ε : ℝ) (hε : 0 < ε) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
       ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
-      (hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+      (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) →

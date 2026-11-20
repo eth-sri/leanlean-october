@@ -20,9 +20,7 @@ public import Mathlib.MeasureTheory.Group.Circle
 open Real BigOperators ArithmeticFunction MeasureTheory Filter Set FourierTransform LSeries
   Asymptotics SchwartzMap
 open Complex hiding log
-open scoped Topology
-open scoped ContDiff
-open scoped ComplexConjugate
+open scoped Topology ContDiff ComplexConjugate
 
 variable {n : ℕ} {A a b c d u x y t σ' : ℝ} {ψ Ψ : ℝ → ℂ} {F G : ℂ → ℂ} {f : ℕ → ℂ} {𝕜 : Type}
   [RCLike 𝕜]
@@ -120,8 +118,6 @@ theorem first_fourier (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))
         rw [norm_term_eq_nterm_re]
         simp
 
-@[continuity]
-theorem continuous_multiplicative_ofAdd : Continuous (⇑Multiplicative.ofAdd : ℝ → ℝ) := ⟨fun _ ↦ id⟩
 
 attribute [fun_prop] measurable_coe_nnreal_ennreal
 
@@ -328,10 +324,6 @@ theorem cumsum_nonneg {u : ℕ → ℝ} (hu : 0 ≤ u) : 0 ≤ cumsum u :=
 omit [Sub α] in
 theorem neg_nabla [Ring E] {u : α → E} : -(nabla u) = nnabla u := by ext n ; simp [nabla, nnabla]
 
-omit [Sub α] in
-@[simp] theorem nabla_mul [Ring E] {u : α → E} {c : E} :
-    nabla (fun n => c * u n) = c • nabla u := by
-  ext n ; simp [nabla, mul_sub]
 
 omit [Sub α] in
 @[simp] theorem nnabla_mul [Ring E] {u : α → E} {c : E} :
@@ -1437,7 +1429,6 @@ noncomputable def toSchwartz (f : ℝ → ℂ) (h1 : ContDiff ℝ ∞ f)
     (h2 : HasCompactSupport f) : 𝓢(ℝ, ℂ) :=
   h2.toSchwartzMap h1
 
-@[simp] theorem toSchwartz_apply (f : ℝ → ℂ) {h1 h2 x} : SchwartzMap.mk f h1 h2 x = f x := rfl
 
 theorem comp_exp_support0 {Ψ : ℝ → ℂ} (hplus : closure (Function.support Ψ) ⊆ Ioi 0) :
     ∀ᶠ x in 𝓝 0, Ψ x = 0 :=
@@ -1581,9 +1572,6 @@ theorem wiener_ikehara_smooth' (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nter
 
 local instance {E : Type*} : Coe (E → ℝ) (E → ℂ) := ⟨fun f n => f n⟩
 
-@[norm_cast]
-theorem set_integral_ofReal {f : ℝ → ℝ} {s : Set ℝ} : ∫ x in s, (f x : ℂ) = ∫ x in s, f x :=
-  integral_ofReal
 
 theorem wiener_ikehara_smooth_real {f : ℕ → ℝ} {Ψ : ℝ → ℝ}
     (hf : ∀ (σ' : ℝ), 1 < σ' → Summable (nterm f σ'))

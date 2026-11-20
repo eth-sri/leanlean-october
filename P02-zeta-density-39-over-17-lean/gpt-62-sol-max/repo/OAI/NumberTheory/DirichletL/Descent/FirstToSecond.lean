@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstFreshEnergy
 
 @[expose] public section
@@ -11,12 +12,12 @@ open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpan
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstFreshSecondPoisson
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
     (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis)
@@ -29,8 +30,8 @@ def firstFreshSecondPoisson
       maskedSecondDual p hg hp hinj G U V rowMajorant Y else 0
 
 theorem firstFreshSecondPoisson_fixed_pool
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
     (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis)
@@ -55,9 +56,9 @@ theorem firstFreshSecondPoisson_fixed_pool
       (columnLog p (primeProductNorm p D*X)) negative (-t) D) rowMajorant Y hY
 
 theorem first_fresh_core_energy_to_second
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i,ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (χ : RayCharacter) (Ψ : Eis →* ℂ) (m : Eis)
     (H : Finset ι → ℂ) (ω : ℝ → ℂ) (X : ℝ) (c d : Eis) (t : ℝ)

@@ -8,9 +8,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
-open CanonicalCubeSeparation JointLogSeparation
+open MeasureTheory ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels CanonicalCubeSeparation JointLogSeparation
 local notation "O" => ActualEisensteinCubic.O
 
 theorem actual_long_bin_normalized_energy
@@ -30,8 +28,7 @@ theorem actual_long_bin_normalized_energy
     (weights : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-    letI : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i => by rw [poolPrimary_span F hF i]; infer_instance
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     let β := fun I v => reopenedCubeCoefficient H₀
       (rowTwist Ψ (m*excludedGenerator S) (idealGenerator I) 1) (cubeIdeal F v)
     let n := fun v => (Ideal.absNorm (cubeIdeal F v) : ℝ)
@@ -48,8 +45,7 @@ theorem actual_long_bin_normalized_energy
   dsimp only
   let F:=InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF:=InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   let β:=fun I v=>reopenedCubeCoefficient H₀ (rowTwist Ψ (m*excludedGenerator S) (idealGenerator I) 1) (cubeIdeal F v)
   let n:=fun v=>(Ideal.absNorm (cubeIdeal F v):ℝ)
   intro hsource

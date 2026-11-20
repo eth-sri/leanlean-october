@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion
-open CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic CubicEisenstein GaussianShiftedPartition CanonicalRowCompletion CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 lemma sexticGauss_unit_scale (s : O) (hs : Supported (Ideal.span {s}))

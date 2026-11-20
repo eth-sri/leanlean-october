@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.PrimeRows.CentralRectangle
+public import OAI.NumberTheory.DirichletL.PrimeRows.UniformError
 
 @[expose] public section
 

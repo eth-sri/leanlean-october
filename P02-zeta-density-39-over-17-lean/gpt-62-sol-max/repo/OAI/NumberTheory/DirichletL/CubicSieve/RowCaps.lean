@@ -9,89 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-
-open scoped BigOperators Classical
-namespace SecondPassArithmetic
-
-section
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProductNorm primeProduct)
-open ConcreteTraceCRT (eisEmbedding)
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-
-end
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (primeProduct dilationLabel)
-open ConcreteTraceCRT (eisEmbedding)
-
-end SecondPassArithmetic
+open scoped ContDiff
+open Set
 
 open scoped BigOperators Classical
 namespace CompletedGauss
@@ -128,11 +56,6 @@ theorem exceptionalPiece_norm_le (P : Ideal O) [P.IsMaximal]
 
 end CompletedGauss
 
-namespace CanonicalQuadraticSieve
-open ActualEisensteinCubic CompletedGauss
-
-end CanonicalQuadraticSieve
-
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology MatrixGroups Matrix ContDiff
 
@@ -151,19 +74,25 @@ def mobiusSpatial (g : SL(2,ℂ)) (p : SpatialCoordinates) : SpatialCoordinates 
   ![(mobiusSpatialHorizontal g p).re,(mobiusSpatialHorizontal g p).im,
     p 2/mobiusSpatialDenominator g p]
 
-lemma mobiusSpatialDenominator_pos (g : SL(2,ℂ)) (p : SpatialCoordinates) (hp : 0<p 2) :
+section
+variable (g : SL(2,ℂ)) (p : SpatialCoordinates) (hp : 0<p 2)
+include g p hp
+
+lemma mobiusSpatialDenominator_pos :
     0<mobiusSpatialDenominator g p := by
   simpa only [mobiusSpatialDenominator,Complex.normSq_eq_norm_sq] using
     mobius_denominator_pos g (spatialHorizontal p) (p 2) hp
 
-lemma mobiusSpatial_positive (g : SL(2,ℂ)) (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma mobiusSpatial_positive :
     0<mobiusSpatial g p 2 := div_pos hp (mobiusSpatialDenominator_pos g p hp)
 
-lemma mobiusSpatial_coordinates (g : SL(2,ℂ)) (p : SpatialCoordinates) (hp : 0<p 2) :
+lemma mobiusSpatial_coordinates :
     hyperbolicSpatialCoordinates (g • upperPoint (spatialHorizontal p) (p 2) hp)=mobiusSpatial g p := by
   rw [mobius_upperPoint]
   simp only [hyperbolicSpatialCoordinates,hyperbolicHorizontal_upperPoint,hyperbolicHeight_upperPoint,
     mobiusSpatial,mobiusSpatialHorizontal,mobiusSpatialDenominator,Complex.normSq_eq_norm_sq]
+
+end
 
 lemma spatialHorizontal_contDiff : ContDiff ℝ ∞ spatialHorizontal := by
   unfold spatialHorizontal

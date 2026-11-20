@@ -13,9 +13,7 @@ public import Mathlib.Analysis.SpecialFunctions.Gamma.BohrMollerup
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger.Fourth MathCollab.Density.ZetaGrowth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger.Fourth MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped Interval
 set_option autoImplicit false
 noncomputable section

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondMarkedEnergy
 public import OAI.NumberTheory.DirichletL.Descent.SecondWeights
 
@@ -13,9 +14,9 @@ open InverseInitialArithmetic (sourceIdeal sourcePrime sourceIdeal_dvd)
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 include hcop in
 omit [DecidableEq ι] in
@@ -128,8 +129,8 @@ def actualSecondSignedWeight {Jo Jn : ℕ} (Ψ : Eis →* ℂ) (m : Eis) (z : Se
       x.cube.leftBit x.cube.rightBit*d) c d z x.second
 
 theorem actualSecondSignedWeight_norm_le_one
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     {Jo Jn : ℕ} (Ψ : Eis →* ℂ) (hΨ : ∀ a, ‖Ψ a‖ ≤ 1) (m : Eis) (z : SecondRayIndex)
     (x : MarkedSecondSource ι Jo Jn) : ‖actualSecondSignedWeight p hp hcop hg Ψ m z x‖ ≤ 1 :=
   secondSignedSourceWeight_norm_le_one p hp hcop hg hinj hc Ψ hΨ _ _ _ z x.second

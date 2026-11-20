@@ -28,24 +28,27 @@ theorem norm_smoothShortCoefficient_le (X N : ℝ) {Y : ℝ} (hY : 0 < Y) (n : �
         (by positivity) (by positivity)) hw.2 hw.1 (by positivity)
     _ = _ := by ring
 
-theorem smoothShortCoefficient_zero_of_le_half (X Y : ℝ) {N : ℝ} (hN : 0 < N)
-    {n : ℕ} (hn : (n : ℝ) ≤ N/2) : smoothShortCoefficient X Y N n = 0 := by
+section
+variable (X Y : ℝ) {N : ℝ} (hN : 0 < N) {n : ℕ}
+include X Y N hN n
+
+theorem smoothShortCoefficient_zero_of_le_half (hn : (n : ℝ) ≤ N/2) : smoothShortCoefficient X Y N n = 0 := by
   have hr : (n : ℝ)/N ≤ 5/8 := (div_le_iff₀ hN).mpr (by linarith)
   simp [smoothShortCoefficient, smoothDyadicWeight_zero_of_le hr]
 
-theorem smoothShortCoefficient_zero_of_two_le (X Y : ℝ) {N : ℝ} (hN : 0 < N)
-    {n : ℕ} (hn : 2*N ≤ (n : ℝ)) : smoothShortCoefficient X Y N n = 0 := by
+theorem smoothShortCoefficient_zero_of_two_le (hn : 2*N ≤ (n : ℝ)) : smoothShortCoefficient X Y N n = 0 := by
   have hr : (3/2 : ℝ) ≤ (n : ℝ)/N := (le_div_iff₀ hN).mpr (by linarith)
   simp [smoothShortCoefficient, smoothDyadicWeight_zero_of_ge hr]
 
-theorem smoothShortCoefficient_support (X Y : ℝ) {N : ℝ} (hN : 0 < N)
-    {n : ℕ} (hn : smoothShortCoefficient X Y N n ≠ 0) :
+theorem smoothShortCoefficient_support (hn : smoothShortCoefficient X Y N n ≠ 0) :
     N/2 < (n : ℝ) ∧ (n : ℝ) < 2*N := by
   constructor
   · by_contra hh
     exact hn (smoothShortCoefficient_zero_of_le_half X Y hN (le_of_not_gt hh))
   · by_contra hh
     exact hn (smoothShortCoefficient_zero_of_two_le X Y hN (le_of_not_gt hh))
+
+end
 
 /-- A natural even scale splits exactly into (M,2M] and (2M,4M].
 The original smooth weights are retained in both pieces. -/

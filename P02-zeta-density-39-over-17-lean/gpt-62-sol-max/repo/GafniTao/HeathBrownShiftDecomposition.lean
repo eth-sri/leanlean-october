@@ -51,8 +51,11 @@ theorem heathBrownDistanceToInteger_neg (x : ℝ) :
     heathBrownDistanceToInteger_eq_unitAddCircle_norm]
   simp
 
-theorem heathBrownPairCountTwo_subset_three_parts
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+section
+variable {N k H K : ℕ} {f : ℝ → ℝ}
+include N k H K f
+
+theorem heathBrownPairCountTwo_subset_three_parts :
     heathBrownPairCountTwo N k H K f ⊆
       heathBrownPairCountTwoDiagonal N k H K f ∪
         (heathBrownPairCountTwoPositive N k H K f ∪
@@ -63,8 +66,7 @@ theorem heathBrownPairCountTwo_subset_three_parts
   · simp [heathBrownPairCountTwoDiagonal, hp, heq]
   · simp [heathBrownPairCountTwoPositive, hp, hgt]
 
-theorem heathBrownPairCountTwoDiagonal_card_le
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+theorem heathBrownPairCountTwoDiagonal_card_le :
     (heathBrownPairCountTwoDiagonal N k H K f).card ≤ N := by
   classical
   let s := heathBrownPairCountTwoDiagonal N k H K f
@@ -89,8 +91,7 @@ theorem heathBrownPairCountTwoDiagonal_card_le
     _ ≤ (Finset.Icc 1 N).card := Finset.card_le_card himage
     _ ≤ N := by simp [Nat.card_Icc]
 
-theorem heathBrownPairCountTwoPositive_subset_shiftImage
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+theorem heathBrownPairCountTwoPositive_subset_shiftImage :
     heathBrownPairCountTwoPositive N k H K f ⊆
       (heathBrownAllPositiveShiftFibers N k H K f).image
         heathBrownPairOfPositiveShift := by
@@ -116,8 +117,7 @@ theorem heathBrownPairCountTwoPositive_subset_shiftImage
     · simp [heathBrownPairOfPositiveShift, d, Nat.add_sub_of_le hlt.le]
     · rfl
 
-theorem heathBrownPairCountTwoNegative_subset_shiftImage
-    {N k H K : ℕ} {f : ℝ → ℝ} :
+theorem heathBrownPairCountTwoNegative_subset_shiftImage :
     heathBrownPairCountTwoNegative N k H K f ⊆
       (heathBrownAllPositiveShiftFibers N k H K f).image
         heathBrownPairOfNegativeShift := by
@@ -161,6 +161,8 @@ theorem heathBrownPairCountTwoNegative_subset_shiftImage
   · apply Prod.ext
     · rfl
     · simp [heathBrownPairOfNegativeShift, d, Nat.add_sub_of_le hlt.le]
+
+end
 
 theorem heathBrownAllPositiveShiftFibers_card
     (N k H K : ℕ) (f : ℝ → ℝ) :

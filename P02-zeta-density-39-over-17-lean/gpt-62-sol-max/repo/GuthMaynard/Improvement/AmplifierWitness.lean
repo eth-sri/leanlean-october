@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.AmplifierOperator
 set_option autoImplicit false
 noncomputable section
 open InnerProductSpace
-open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
 variable {E ι κ : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
   [CompleteSpace E] [Fintype ι] [Fintype κ]

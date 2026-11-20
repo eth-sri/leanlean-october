@@ -1,6 +1,6 @@
 module
 public import TaoTrudgianYang2025.BetaBProcessMajorant
-public import GuthMaynard.SecondDerivative
+public import GuthMaynard.NativeSource.GuthMaynard.SecondDerivative
 
 @[expose] public section
 

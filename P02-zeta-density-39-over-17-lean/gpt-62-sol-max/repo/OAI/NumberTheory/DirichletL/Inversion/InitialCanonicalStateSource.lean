@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialCanonicalState
 
 @[expose] public section
@@ -9,20 +10,16 @@ noncomputable section
 
 open scoped Classical BigOperators
 namespace SevenEighths.InverseInitialCanonicalState
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment
-open InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile
-open InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows
-open InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry
-open InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT InverseMoment InverseInitialArithmetic InverseInitialQuotientGeometry InverseInitialProfile InverseInitialEnergyCallerState InverseInitialEnergyCallerWindows InverseInitialEnergyCallerWindowGeometry InverseInitialEnergyCallerGeometry InverseInitialEnergyCallerRanges CanonicalQuadraticSieve
 local notation "O"=>ActualEisensteinCubic.O
 local notation "λ₀"=>ConcretePrimeRowBridge.goodLambda
 variable {ι:Type*}[DecidableEq ι](p:ι→O)(hp:∀i,p i≠0)
-  [∀i,(Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalIdealFamily.Maximal p]
 
 include hp in
 
 theorem live_widths_nonnegative
-    (hpr:∀i,λ₀^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
+    (hpr:OAI.PrincipalIdealFamily.PrimaryAt p λ₀)(S:Finset (Source (ι:=ι) 0))
     (ψ:Fin 4→ℝ→ℂ)(lo hi:Fin 4→ℝ)
     (hψ:∀i,Function.support (ψ i)⊆Set.Icc (lo i) (hi i))
     (Z D B v θ H η:ℝ)(hZ:1<Z)(hhi:∀i,hi i≤Z^η)
@@ -59,9 +56,9 @@ theorem live_widths_nonnegative
       (by simpa only [Real.rpow_zero] using hr.trans hrow)
 
 include hp in
-omit [∀i,(Ideal.span {p i}).IsMaximal] in
+omit [OAI.PrincipalIdealFamily.Maximal p] in
 theorem retained_full_puncture
-    (hpr:∀i,λ₀^2∣p i-1)(S:Finset (Source (ι:=ι) 0))
+    (hpr:OAI.PrincipalIdealFamily.PrimaryAt p λ₀)(S:Finset (Source (ι:=ι) 0))
     (ψ:Fin 4→ℝ→ℂ)(D v H aC bC ad bd Z B θ η G:ℝ)(hZ:1<Z)
     (hC:Function.support (ψ 0)⊆Set.Icc aC bC)
     (hd:Function.support (ψ 1)⊆Set.Icc ad bd)

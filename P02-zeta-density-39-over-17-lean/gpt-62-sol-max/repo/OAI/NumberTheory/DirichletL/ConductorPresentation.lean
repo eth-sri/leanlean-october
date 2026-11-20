@@ -18,11 +18,6 @@ theorem FactorsThroughIdeal.bot (χ : MulChar R ℂ) : FactorsThroughIdeal χ �
   have hu1 : (u : R) = 1 := sub_eq_zero.mp hu
   rw [hu1, map_one]
 
-theorem FactorsThroughIdeal.pow {χ : MulChar R ℂ} {I : Ideal R}
-    (hχ : FactorsThroughIdeal χ I) (n : ℕ) : FactorsThroughIdeal (χ ^ n) I := by
-  rw [factorsThroughIdeal_iff] at hχ ⊢
-  intro u hu
-  rw [MulChar.pow_apply_coe, hχ u hu, one_pow]
 
 end FiniteConductor
 

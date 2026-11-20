@@ -70,9 +70,11 @@ lemma divisor_card_mul_le (I J : Ideal O) (hI : I ≠ 0) (hJ : J ≠ 0) :
   rw [divisors_mul_image I J hI hJ, ← Finset.card_product]
   exact Finset.card_image_le
 
-theorem valid_tuple_card_le {J : ℕ} (T : Finset (InitialTuple J))
-    (t f : Ideal O) (k : O) (ht : t ≠ 0) (hf : f ≠ 0)
-    (hT : ∀ x ∈ T, Valid x t f k) :
+section
+variable {J : ℕ} (T : Finset (InitialTuple J)) (t f : Ideal O) (k : O) (ht : t ≠ 0) (hf : f ≠ 0) (hT : ∀ x ∈ T, Valid x t f k)
+include J T t f k ht hf hT
+
+theorem valid_tuple_card_le :
     T.card ≤ (idealDivisors f).card * (idealDivisors (t*f)).card^J := by
   let D := idealDivisors f
   let E := idealDivisors (t*f)
@@ -91,9 +93,7 @@ theorem valid_tuple_card_le {J : ℕ} (T : Finset (InitialTuple J))
   simpa only [Fintype.card_coe, Fintype.card_prod, Fintype.card_fun,
     Fintype.card_fin, D, E] using Fintype.card_le_of_injective encode hi
 
-theorem valid_tuple_card_le_separated {J : ℕ} (T : Finset (InitialTuple J))
-    (t f : Ideal O) (k : O) (ht : t ≠ 0) (hf : f ≠ 0)
-    (hT : ∀ x ∈ T, Valid x t f k) :
+theorem valid_tuple_card_le_separated :
     T.card ≤ (idealDivisors f).card^(J+1) * (idealDivisors t).card^J := by
   apply (valid_tuple_card_le T t f k ht hf hT).trans
   calc
@@ -101,6 +101,8 @@ theorem valid_tuple_card_le_separated {J : ℕ} (T : Finset (InitialTuple J))
         ((idealDivisors t).card * (idealDivisors f).card)^J :=
       Nat.mul_le_mul_left _ (Nat.pow_le_pow_left (divisor_card_mul_le t f ht hf) J)
     _ = _ := by rw [mul_pow, pow_succ]; ring
+
+end
 
 lemma divisor_card_pos (I : Ideal O) (hI : I ≠ 0) : 1 ≤ (idealDivisors I).card := by
   apply Finset.one_le_card.mpr

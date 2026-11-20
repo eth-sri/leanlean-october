@@ -8,72 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 
 namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal UniqueFactorizationMonoid CompletedGauss
@@ -120,7 +66,7 @@ theorem constantDirichlet_summable_norm (s : ℂ) (hs : (4:ℝ)/3<s.re) :
   have hqn : Summable (fun n : ℕ => ‖ramifiedRatio s^(n+1)‖) := by
     have hh := (summable_geometric_of_lt_one (norm_nonneg (ramifiedRatio s)) hq).mul_right
       ‖ramifiedRatio s‖
-    simpa only [pow_succ,norm_mul,norm_pow] using hh
+    simpa [pow_succ] using hh
   have hi := (unramifiedTotientSeries_summable_norm (3*s-2) hw).subtype
     (fun I : Ideal O => primaryGenerator I ≠ 0)
   have hni := hqn.mul_norm hi
@@ -219,8 +165,7 @@ open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge
 theorem matrix_eq_primePool (M N : ℝ) (F : Finset (Ideal O))
     (hF : ∀ I ∈ F, Admissible I)
     (hM : idealRange M ⊆ F) (hN : idealRange N ⊆ F) :
-    letI : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i => by rw [poolPrimary_span F hF i]; infer_instance
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     matrix M N = QuadraticInitialBound.quadraticMatrix (poolPrimary F)
       (poolPrimary_good F hF)
       (fun I : idealRange M => idealSupport F I.val)
@@ -241,8 +186,7 @@ theorem sieveNorm_reverse_le (M N : ℝ) :
     · exact (mem_idealRange.mp hI).1
   have hM : idealRange M ⊆ F := Finset.subset_union_left
   have hN : idealRange N ⊆ F := Finset.subset_union_right
-  let : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i => by rw [poolPrimary_span F hF i]; infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   have h := QuadraticInitialBound.quadraticSieveNorm_reverse_le
     (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
     (poolPrimary_good F hF) (poolPrimary_odd F hF)
@@ -255,9 +199,7 @@ theorem sieveNorm_reverse_le (M N : ℝ) :
 end
 section
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss
-open EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex
-open TruncatedPrincipalPoisson QuadraticSquarefreeKernel
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CompletedGauss EisensteinSchwartzPoisson GaussGeneratorTransport UnrestrictedIdealReindex TruncatedPrincipalPoisson QuadraticSquarefreeKernel
 
 def dualPrincipalIdeal (I J : Ideal O) (V : ℝ → ℂ) (X : ℝ) : ℂ :=
   ∑' A : NonzeroIdeal,
@@ -277,12 +219,8 @@ theorem canonical_pair_ideal_fourier_summable (I J : Ideal O) (W : 𝓢(ℝ, ℂ
   simpa only [Function.comp_def, idealGenerator_norm_sq, unrestrictedPairCharacter] using h
 
 end
-section
 
-open ActualEisensteinCubic CompletedGauss IdealMobiusDivisorSum
-open QuadraticMainOperatorBound IdealCoprimeSieveOperator DivisorBlockCauchy
 
-end
 
 open ActualEisensteinCubic CompletedGauss FiniteSieveRestriction
 
@@ -328,7 +266,7 @@ theorem weighted_energy_column_shells {m : Type*} [Fintype m]
     (∑ i, v i * ‖∑ J, A i J * a J‖ ^ 2) ≤
       (lengthScale + 1 : ℝ) * ∑ j : Fin (lengthScale + 1), ∑ i,
         v i * ‖∑ J, A i J * dyadicColumnCoefficient N lengthScale hNL j a J‖ ^ 2 := by
-  simpa only [Fintype.card_fin, Nat.cast_add, Nat.cast_one, dyadicColumnCoefficient] using
+  simpa [dyadicColumnCoefficient] using
     sector_weighted_energy_bound A (columnDyadicSector N lengthScale hNL) a v hv
 
 def coefficientAtScale (N X : ℝ) (a : idealRange N → ℂ) (J : idealRange X) : ℂ :=

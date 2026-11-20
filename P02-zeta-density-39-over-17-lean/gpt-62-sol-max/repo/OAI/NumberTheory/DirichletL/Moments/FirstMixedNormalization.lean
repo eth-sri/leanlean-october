@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstMixedNormalization
-open CenteredMomentDescentLedger CenteredMomentSectorLocalization
-open CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
+open CenteredMomentDescentLedger CenteredMomentSectorLocalization CenteredMomentAmplificationErrorEnergy CenteredMomentFirstAmplificationChoice
 local notation "O" => ActualEisensteinCubic.O
 
 theorem exceptional_reference_identity (Z V C D NE NR K Q w wo B j g ell:ℝ)

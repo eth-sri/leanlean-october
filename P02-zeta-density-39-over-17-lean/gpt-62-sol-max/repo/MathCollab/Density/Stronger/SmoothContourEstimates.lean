@@ -5,8 +5,7 @@ public import MathCollab.Density.DetectorEstimates
 
 @[expose] public section
 
-open Complex MeasureTheory Set Filter
-open MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
+open Complex MeasureTheory Set Filter MathCollab.Density.ZetaGrowth MathCollab.Density.Contour
 open scoped BigOperators Topology ContDiff
 set_option autoImplicit false
 noncomputable section
@@ -62,10 +61,13 @@ theorem continuous_smoothDetectorKernel_line {ψ : ℝ → ℝ} {a b : ℝ}
     have hh := congrArg Complex.re he
     simpa [line] using hh
 
+section
+variable {ψ : ℝ → ℝ} {a b : ℝ} (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+include ψ a b hψ ha hb hs
+
 /-- Absolute convergence on a fixed vertical line away from the zeta pole.
 No moment or pointwise subconvexity hypothesis is used. -/
-theorem integrable_smoothDetectorKernel_line {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem integrable_smoothDetectorKernel_line
     (ρ : ℂ) (X u : ℝ) {N q : ℝ} (hN : 0 < N) (hq : 0 ≤ q)
     (hre : 1/4 ≤ ρ.re+u) (hgap : 1/4 ≤ |ρ.re+u-1|) :
     Integrable (fun t : ℝ => smoothDetectorKernel ψ ρ X N q ((u : ℂ)+(t : ℂ)*I)) := by
@@ -104,8 +106,7 @@ theorem integrable_smoothDetectorKernel_line {ψ : ℝ → ℝ} {a b : ℝ}
         (norm_nonneg _) (by positivity)
     _ = _ := by dsimp [C,line]; ring
 
-theorem integrable_smoothDetectorKernel_left {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem integrable_smoothDetectorKernel_left
     (ρ : ℂ) (X : ℝ) {N q : ℝ} (hN : 0 < N) (hq : 0 ≤ q) :
     Integrable (fun t : ℝ => smoothDetectorKernel ψ ρ X N q
       (((1/2-ρ.re : ℝ) : ℂ)+(t : ℂ)*I)) := by
@@ -114,8 +115,7 @@ theorem integrable_smoothDetectorKernel_left {ψ : ℝ → ℝ} {a b : ℝ}
   · rw [show ρ.re+(1/2-ρ.re)-1 = -(1/2 : ℝ) by ring]
     norm_num
 
-theorem integrable_smoothDetectorKernel_right {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem integrable_smoothDetectorKernel_right
     {ρ : ℂ} (X : ℝ) {N q : ℝ} (hN : 0 < N) (hq : 0 ≤ q) (hβ : 3/4 ≤ ρ.re) :
     Integrable (fun t : ℝ => smoothDetectorKernel ψ ρ X N q
       (((1/2 : ℝ) : ℂ)+(t : ℂ)*I)) := by
@@ -125,8 +125,7 @@ theorem integrable_smoothDetectorKernel_right {ψ : ℝ → ℝ} {a b : ℝ}
     linarith
 
 /-- A stripwise horizontal majorant uniform in q≥0. -/
-theorem smoothDetectorKernel_horizontal_bound {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem smoothDetectorKernel_horizontal_bound
     {ρ : ℂ} (X : ℝ) {N : ℝ} (hN : 0 < N) (hβ : ρ.re ≤ 1) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ q : ℝ, 0 ≤ q → ∀ u ∈ Icc (1/2-ρ.re) (1/2 : ℝ),
       ∀ t : ℝ, |ρ.im|+1 ≤ |t| →
@@ -174,8 +173,7 @@ theorem smoothDetectorKernel_horizontal_bound {ψ : ℝ → ℝ} {a b : ℝ}
       field_simp [ht0]
 
 /-- Both horizontal edges tend to zero at infinite rectangle height. -/
-theorem tendsto_smoothDetector_horizontal_integral {ψ : ℝ → ℝ} {a b : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b)
+theorem tendsto_smoothDetector_horizontal_integral
     {ρ : ℂ} (X : ℝ) {N q ε : ℝ} (hN : 0 < N) (hq : 0 ≤ q)
     (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re ≤ 1) (hε : |ε| = 1) :
     Tendsto (fun R : ℝ => ∫ u in (1/2-ρ.re)..(1/2 : ℝ),
@@ -201,5 +199,7 @@ theorem tendsto_smoothDetector_horizontal_integral {ψ : ℝ → ℝ} {a b : ℝ
     simpa only [he] using h
   have hmul := mul_le_mul_of_nonneg_left hlength (by positivity : 0 ≤ C/(1+R)^2)
   exact (intervalIntegral.norm_integral_le_of_norm_le_const hpoint).trans (by simpa using hmul)
+
+end
 
 end MathCollab.Density.Stronger

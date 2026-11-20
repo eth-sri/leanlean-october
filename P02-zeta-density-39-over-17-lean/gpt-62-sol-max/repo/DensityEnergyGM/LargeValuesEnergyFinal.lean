@@ -877,10 +877,11 @@ theorem gmCutoff_reciprocal_term_le
   rw [div_le_iff₀ hDcast]
   nlinarith
 
-theorem gmLargeSecondAggregateShape_le_paper
-    {η T : ℝ} {N : ℕ} {W : Finset ℝ}
-    (hη : 0 < η) (hT : 1 ≤ T) (hNT : (N : ℝ) ≤ T)
-    (hTwo : 2 ≤ (N : ℝ) ^ 2 / T) :
+section
+variable {η T : ℝ} {N : ℕ} {W : Finset ℝ} (hη : 0 < η) (hT : 1 ≤ T) (hNT : (N : ℝ) ≤ T) (hTwo : 2 ≤ (N : ℝ) ^ 2 / T)
+include η T N W hη hT hNT hTwo
+
+theorem gmLargeSecondAggregateShape_le_paper :
     gmLargeSecondAggregateShape N (gmGcdCutoff N T) T W ≤
       4 * (1 + η⁻¹) * T ^ η * gmLargeSecondPaperShape N T W := by
   have hH := harmonic_le_scale_rpow hη hT hNT
@@ -934,10 +935,7 @@ theorem gmLargeSecondAggregateShape_le_paper
           (W.card : ℝ) ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * N) := by
       nlinarith
 
-theorem gmLargeFourthAggregateShape_le_paper
-    {η T : ℝ} {N : ℕ} {W : Finset ℝ}
-    (hη : 0 < η) (hT : 1 ≤ T) (hNT : (N : ℝ) ≤ T)
-    (hTwo : 2 ≤ (N : ℝ) ^ 2 / T) :
+theorem gmLargeFourthAggregateShape_le_paper :
     gmLargeFourthAggregateShape N (gmGcdCutoff N T) T W ≤
       4 * (1 + η⁻¹) * T ^ η * gmLargeFourthPaperShape N T W := by
   have hH := harmonic_le_scale_rpow hη hT hNT
@@ -999,6 +997,8 @@ theorem gmLargeFourthAggregateShape_le_paper
             (W.card : ℝ) * T ^ (1 / 2 : ℝ) * N) := by
       nlinarith
 
+end
+
 theorem approxAddEnergy_le_three_card_cubed
     (W : Finset ℝ) (hSep : IsSeparated 1 W) :
     ApproxAddEnergy 1 W ≤ 3 * W.card ^ 3 := by
@@ -1018,10 +1018,11 @@ theorem sqrt_mul_sqrt_le_of_mul_le_sq
   rw [← Real.sqrt_mul hA]
   exact Real.sqrt_le_iff.mpr ⟨hR, h⟩
 
+section
+variable {N : ℕ} {T : ℝ} {W : Finset ℝ} (hT : 4 ≤ T) (hN : T ^ (3 / 4 : ℝ) ≤ (N : ℝ)) (hSep : IsSeparated 1 W)
+include N T W hT hN hSep
+
 theorem gmLargePaperShapes_large_card
-    {N : ℕ} {T : ℝ} {W : Finset ℝ}
-    (hT : 4 ≤ T) (hN : T ^ (3 / 4 : ℝ) ≤ (N : ℝ))
-    (hSep : IsSeparated 1 W)
     (hW : T ^ (2 / 3 : ℝ) ≤ (W.card : ℝ)) :
     Real.sqrt (gmLargeSecondPaperShape N T W) *
         Real.sqrt (gmLargeFourthPaperShape N T W) ≤
@@ -1136,9 +1137,6 @@ theorem gmLargePaperShapes_large_card
 two square-rooted moment shapes are controlled by the two nontrivial terms
 in Lemma 11.9. -/
 theorem gmLargePaperShapes_small_card
-    {N : ℕ} {T : ℝ} {W : Finset ℝ}
-    (hT : 4 ≤ T) (hN : T ^ (3 / 4 : ℝ) ≤ (N : ℝ))
-    (hSep : IsSeparated 1 W)
     (hW : (W.card : ℝ) ≤ T ^ (2 / 3 : ℝ)) :
     Real.sqrt (gmLargeSecondPaperShape N T W) *
         Real.sqrt (gmLargeFourthPaperShape N T W) ≤
@@ -1386,10 +1384,7 @@ theorem gmLargePaperShapes_small_card
 
 /-- The two case computations (11.5)--(11.6), combined in the exact
 three-term shape used by Lemma 11.9. -/
-theorem gmLargePaperShapes_native
-    {N : ℕ} {T : ℝ} {W : Finset ℝ}
-    (hT : 4 ≤ T) (hN : T ^ (3 / 4 : ℝ) ≤ (N : ℝ))
-    (hSep : IsSeparated 1 W) :
+theorem gmLargePaperShapes_native :
     Real.sqrt (gmLargeSecondPaperShape N T W) *
         Real.sqrt (gmLargeFourthPaperShape N T W) ≤
       8 * ((N : ℝ) * (W.card : ℝ) ^ 3 +
@@ -1416,6 +1411,8 @@ theorem gmLargePaperShapes_native
         have hz : 0 ≤ Real.sqrt (ApproxAddEnergy 1 W : ℝ) *
             Real.sqrt (W.card : ℝ) * (N : ℝ) ^ 2 := by positivity
         nlinarith
+
+end
 
 theorem sqrt_product_le_common_mul
     {F A B X Y : ℝ} (hF : 0 ≤ F)
@@ -1922,10 +1919,11 @@ theorem sqrt_rpow_mul_rpow_mul_rpow
     Real.sqrt_mul (mul_nonneg (Real.rpow_nonneg hx a) (Real.rpow_nonneg hy b)),
     sqrt_rpow_mul_rpow hx hy, sqrt_rpow_eq_rpow_half hz]
 
-theorem gmCubicSelectedScale_first_le
-    {η T : ℝ} {N : ℕ} {p : ℕ × ℕ}
-    (hT : 1 ≤ T) (hη : 0 ≤ η) (hN : 0 < N) (hNT : (N : ℝ) ≤ T)
-    (hp : p ∈ gmCubicDyadicIndexPairs (gmCubicFrequencyRadius η T N)) :
+section
+variable {η T : ℝ} {N : ℕ} {p : ℕ × ℕ} (hT : 1 ≤ T) (hη : 0 ≤ η) (hN : 0 < N) (hNT : (N : ℝ) ≤ T) (hp : p ∈ gmCubicDyadicIndexPairs (gmCubicFrequencyRadius η T N))
+include η T N p hT hη hN hNT hp
+
+theorem gmCubicSelectedScale_first_le :
     (N : ℝ) ^ 2 / ((2 ^ p.2 : ℕ) : ℝ) *
         (gmCubicAffineTerminalScale p.2 : ℝ) ^ 3 ≤
       4 * 128 ^ 3 * T ^ (2 * (1 + η)) := by
@@ -1953,10 +1951,7 @@ theorem gmCubicSelectedScale_first_le
       rw [hpow]
       ring
 
-theorem gmCubicSelectedScale_second_le
-    {η T : ℝ} {N : ℕ} {p : ℕ × ℕ}
-    (hT : 1 ≤ T) (hη : 0 ≤ η) (hN : 0 < N) (hNT : (N : ℝ) ≤ T)
-    (hp : p ∈ gmCubicDyadicIndexPairs (gmCubicFrequencyRadius η T N)) :
+theorem gmCubicSelectedScale_second_le :
     (N : ℝ) ^ 2 / ((2 ^ p.2 : ℕ) : ℝ) *
         (gmCubicAffineTerminalScale p.2 : ℝ) ^ 2 ≤
       2 * 128 ^ 2 * T ^ (1 + η) * (N : ℝ) := by
@@ -1975,6 +1970,8 @@ theorem gmCubicSelectedScale_second_le
       field_simp [hMpos.ne']
     _ ≤ 128 ^ 2 * (2 * T ^ (1 + η)) * (N : ℝ) := by gcongr
     _ = 2 * 128 ^ 2 * T ^ (1 + η) * (N : ℝ) := by ring
+
+end
 
 set_option maxHeartbeats 1000000 in
 /-- Proposition 10.1 with the selected dyadic and affine scales eliminated.

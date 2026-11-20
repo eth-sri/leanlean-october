@@ -9,10 +9,7 @@ namespace OAI
 
 noncomputable section
 open scoped BigOperators Classical SchwartzMap ContDiff
-open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT
-open EisensteinSchwartzPoisson UniqueFactorizationMonoid CanonicalQuadraticSieve
-open SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialOverlap
-open SevenEighths.InverseInitialProfile
+open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson UniqueFactorizationMonoid CanonicalQuadraticSieve SevenEighths.InverseInitialPoissonBridge SevenEighths.InverseInitialOverlap SevenEighths.InverseInitialProfile
 namespace SevenEighths.InverseInitialKernelBridge
 
 local notation "Eis" => ActualEisensteinCubic.O

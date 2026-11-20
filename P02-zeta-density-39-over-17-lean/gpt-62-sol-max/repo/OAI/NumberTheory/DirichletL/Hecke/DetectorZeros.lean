@@ -69,11 +69,14 @@ theorem realParts_nonempty (χ : ι → Character) (hχ : ∀ i, (χ i).residue 
 def zeroMaximum (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ) : ℝ :=
   (realParts χ hχ T).max' (realParts_nonempty χ hχ T)
 
-theorem zeroMaximum_mem (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ) :
+section
+variable (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ)
+include χ hχ T
+
+theorem zeroMaximum_mem :
     zeroMaximum χ hχ T ∈ realParts χ hχ T := Finset.max'_mem _ _
 
-theorem zero_re_le_maximum (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1)
-    (T : ℝ) (i : ι) {s : ℂ} (hs : (51/100 : ℝ) ≤ s.re)
+theorem zero_re_le_maximum (i : ι) {s : ℂ} (hs : (51/100 : ℝ) ≤ s.re)
     (ht : |s.im| ≤ T) (hz : LFunction (χ i) s = 0) : s.re ≤ zeroMaximum χ hχ T := by
   have hle : s.re ≤ 1 := by
     by_contra hn
@@ -82,7 +85,7 @@ theorem zero_re_le_maximum (χ : ι → Character) (hχ : ∀ i, (χ i).residue 
   exact Finset.mem_insert_of_mem (Finset.mem_image.mpr
     ⟨(i,s), (mem_familyZeros χ hχ T i s).mpr ⟨hs, hle, ht, hz⟩, rfl⟩)
 
-theorem maximum_attained (χ : ι → Character) (hχ : ∀ i, (χ i).residue ≠ 1) (T : ℝ)
+theorem maximum_attained
     (hmax : (51/100 : ℝ) < zeroMaximum χ hχ T) :
     ∃ i s, LFunction (χ i) s = 0 ∧ |s.im| ≤ T ∧ s.re = zeroMaximum χ hχ T := by
   have hm := zeroMaximum_mem χ hχ T
@@ -91,6 +94,8 @@ theorem maximum_attained (χ : ι → Character) (hχ : ∀ i, (χ i).residue �
   · obtain ⟨⟨i,s⟩, hs, heq⟩ := Finset.mem_image.mp hm
     have hz := (mem_familyZeros χ hχ T i s).mp hs
     exact ⟨i,s,hz.2.2.2,hz.2.2.1,heq⟩
+
+end
 
 theorem nonzero_on_buffered_disk (χ : ι → Character) (hχ : ∀ j, (χ j).residue ≠ 1)
     (T a e : ℝ) (i : ℕ) (hT : 2 < T) (ha : (51/100 : ℝ) ≤ a) (he : 0 < e)

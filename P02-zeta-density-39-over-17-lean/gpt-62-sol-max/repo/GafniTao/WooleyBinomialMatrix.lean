@@ -162,14 +162,15 @@ theorem wooleySection7_sourceMatrix_det_mod_prime_ne_zero
   apply wooleySection7_binomialMatrix_det_ne_zero hp hrk hkp
   rw [← hmatrix, Matrix.det_transpose, ← wooleyIntMatrixMod_det, hzero]
 
+section
+variable {k r p L : ℕ} (hp : p.Prime) (hrk : r ≤ k) (hkp : k < p) (Omega : Matrix (Fin r) (Fin r) ℤ) (hOmega : ∀ i l,
+      (Omega i l : ZMod p) =
+        (Nat.choose (wooleySection7Node k r l + 1) ((i : ℕ) + 1) : ZMod p))
+include k r p L hp hrk hkp Omega hOmega
+
 /-- Nonsingularity modulo `p` lifts to a unit determinant modulo every
 `p^L`; this is the exact prime-power inverse assertion used after (7.10). -/
-theorem wooleySection7_sourceMatrix_isUnit_primePower
-    {k r p L : ℕ} (hp : p.Prime) (hrk : r ≤ k) (hkp : k < p)
-    (Omega : Matrix (Fin r) (Fin r) ℤ)
-    (hOmega : ∀ i l,
-      (Omega i l : ZMod p) =
-        (Nat.choose (wooleySection7Node k r l + 1) ((i : ℕ) + 1) : ZMod p)) :
+theorem wooleySection7_sourceMatrix_isUnit_primePower :
     IsUnit (wooleyIntMatrixMod Omega (p ^ L)) := by
   have hdetp : (Omega.det : ZMod p) ≠ 0 :=
     wooleySection7_sourceMatrix_det_mod_prime_ne_zero hp hrk hkp Omega hOmega
@@ -187,12 +188,7 @@ theorem wooleySection7_sourceMatrix_isUnit_primePower
 /-- The source equations occur as columns of `Omega`, so the actual change of
 equations uses its transpose.  This exposes the inverse used in Section 7 as
 a matrix rather than merely recording injectivity of its action on vectors. -/
-theorem wooleySection7_sourceMatrix_transpose_exists_leftInverse_primePower
-    {k r p L : ℕ} (hp : p.Prime) (hrk : r ≤ k) (hkp : k < p)
-    (Omega : Matrix (Fin r) (Fin r) ℤ)
-    (hOmega : ∀ i l,
-      (Omega i l : ZMod p) =
-        (Nat.choose (wooleySection7Node k r l + 1) ((i : ℕ) + 1) : ZMod p)) :
+theorem wooleySection7_sourceMatrix_transpose_exists_leftInverse_primePower :
     ∃ G : Matrix (Fin r) (Fin r) (ZMod (p ^ L)),
       G * Matrix.transpose (wooleyIntMatrixMod Omega (p ^ L)) = 1 := by
   have hunit : IsUnit (wooleyIntMatrixMod Omega (p ^ L)) :=
@@ -207,6 +203,8 @@ theorem wooleySection7_sourceMatrix_transpose_exists_leftInverse_primePower
   refine ⟨(↑u⁻¹ : Matrix (Fin r) (Fin r) (ZMod (p ^ L))), ?_⟩
   rw [← hu]
   exact Units.inv_mul u
+
+end
 
 end
 

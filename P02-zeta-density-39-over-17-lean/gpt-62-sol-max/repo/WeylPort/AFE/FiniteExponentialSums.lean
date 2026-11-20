@@ -54,8 +54,12 @@ theorem norm_expMode_sub_one (x : ℝ) (n : ℕ) :
     Real.sin_neg]
   simp [norm_mul, Real.norm_eq_abs]
 
+section
+variable {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0)
+include x hx
+
 /-- The denominator is nonzero whenever the source sine denominator is nonzero. -/
-theorem expMode_one_ne_one {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) :
+theorem expMode_one_ne_one :
     expMode x 1 ≠ 1 := by
   intro h
   have he := norm_expMode_sub_one x 1
@@ -64,7 +68,7 @@ theorem expMode_one_ne_one {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) :
   exact hx he
 
 /-- The exact sine quotient for every integer cutoff, including the empty sum. -/
-theorem norm_finite_mode_sum {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (N : ℕ) :
+theorem norm_finite_mode_sum (N : ℕ) :
     ‖∑ n ∈ Finset.Icc 1 N, expMode x n‖ =
       |Real.sin (Real.pi * x * N)| / |Real.sin (Real.pi * x)| := by
   rw [sum_Icc_one_eq_sum_range]
@@ -82,15 +86,17 @@ theorem norm_finite_mode_sum {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (N : 
   rw [mul_div_mul_left _ _ (by norm_num : (2 : ℝ) ≠ 0)]
 
 /-- Lemma 2's exact geometric expression at a real cutoff. -/
-theorem norm_finiteS0 {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (y : ℝ) :
+theorem norm_finiteS0 (y : ℝ) :
     ‖finiteS0 x y‖ = |Real.sin (Real.pi * x * ⌊y⌋₊)| / |Real.sin (Real.pi * x)| :=
   norm_finite_mode_sum hx _
 
 /-- The uniform geometric bound used by the summation-by-parts step. -/
-theorem norm_finiteS0_le {x : ℝ} (hx : Real.sin (Real.pi * x) ≠ 0) (y : ℝ) :
+theorem norm_finiteS0_le (y : ℝ) :
     ‖finiteS0 x y‖ ≤ 1 / |Real.sin (Real.pi * x)| := by
   rw [norm_finiteS0 hx]
   exact div_le_div_of_nonneg_right (Real.abs_sin_le_one _) (abs_nonneg _)
+
+end
 
 /-- Below the first positive integer, both source sums are empty. -/
 theorem finite_sums_eq_zero {x y : ℝ} (hy : y < 1) : finiteS0 x y = 0 ∧ finiteS1 x y = 0 := by

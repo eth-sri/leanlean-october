@@ -29,7 +29,7 @@ theorem norm_logarithmicPhase_prefix_le_div
       6 * Real.pi * (A : ℝ) / t := by
   by_cases hL0 : L = 0
   · subst L
-    simp only [Finset.range_zero, Finset.sum_empty, norm_zero]
+    simp
     positivity
   have hLpos : 0 < L := Nat.pos_of_ne_zero hL0
   have hAReal : 0 < (A : ℝ) := by exact_mod_cast hA
@@ -144,24 +144,22 @@ theorem norm_logarithmicPhase_prefix_le_div
       ring_nf
     have hfinal := mul_le_mul_of_nonpos_left hlogLe (by linarith : -t ≤ 0)
     rw [← hphaseOne, ← hphaseTwo] at hfinal
-    simpa only [m, Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hfinal
+    simpa [m, add_assoc] using hfinal
   have hKL := kusminLandau_interval (fun n : ℕ => logarithmicPhase t n)
     (A + 1) (L - 1) (-1) δ hδ
     (fun n hn => by
-      simpa only [Int.cast_neg, Int.cast_one, neg_mul, one_mul, sub_neg_eq_add,
-        Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using (hinc n hn).1)
+      simpa [add_assoc] using (hinc n hn).1)
     (fun n hn => by
-      simpa only [Int.cast_neg, Int.cast_one, neg_mul, one_mul, sub_neg_eq_add,
-        Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using (hinc n hn).2)
+      simpa [add_assoc] using (hinc n hn).2)
     (fun n hn => by
-      simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hmono n hn)
+      simpa [add_assoc] using hmono n hn)
   have hpred : L - 1 + 1 = L := by omega
   rw [hpred] at hKL
   calc
     ‖∑ n ∈ Finset.range L,
         unitaryPhase (logarithmicPhase t (A + 1 + n))‖ ≤
         2 * Real.pi / δ := by
-          simpa only [Nat.cast_add, Nat.cast_one, Nat.cast_ofNat, add_assoc] using hKL
+          simpa [add_assoc] using hKL
     _ = 6 * Real.pi * (A : ℝ) / t := by
       dsimp only [δ]
       field_simp [show t ≠ 0 by linarith, hAReal.ne']

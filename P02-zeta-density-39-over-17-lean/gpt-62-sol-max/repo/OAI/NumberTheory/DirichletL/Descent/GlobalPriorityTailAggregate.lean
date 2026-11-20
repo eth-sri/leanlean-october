@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPriorityTail
 
 @[expose] public section
@@ -8,11 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentGlobalPriorityTail
-open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseMomentGlobalPrincipalMass InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy
-open InverseWholePriorityRetainedSource FirstCauchyArithmetic
+open InverseMoment InverseFirstPriorityParents InverseMomentWholePriorityParents InverseMomentGlobalPrincipalMass InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion InversePrioritySecondSource InverseSecondPrincipalCaller InversePrincipalEnergy InverseWholePriorityRetainedSource FirstCauchyArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -20,11 +17,11 @@ theorem global_parent_tail_aggregate_rapid (Jmax : ℕ) (Lcap tau saving : ℝ)
     (hLcap : 0≤Lcap) (htau : 0<tau) :
     ∃(s : Finset (ℕ×ℕ))(C : ℝ),0<C ∧
     ∀{ι σ : Type*}[DecidableEq ι][DecidableEq σ]
-      (p : ι→O)(hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (p : ι→O)(hp : ∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (Jo : ℕ),Jo≤Jmax → ∀(extra : CubeCoordinates ι→Finset ι)(pool : Finset ι)
       (source : Finset (Source ι Jo))(negative : Bool)(Ψ : O→*ℂ)(m : O)
       (w : Source ι Jo→ℂ)(slots : Finset σ)(lists : σ→Finset ι)(a : σ→ι→ℂ),

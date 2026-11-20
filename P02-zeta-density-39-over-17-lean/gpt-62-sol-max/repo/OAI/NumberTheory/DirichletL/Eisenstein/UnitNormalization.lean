@@ -8,78 +8,20 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace CanonicalUnitEuler
-open ActualEisensteinCubic
-open CanonicalRowCompletion
+open ActualEisensteinCubic CanonicalRowCompletion
 open ConcreteTraceCRT (eisEmbedding)
 open UniqueFactorizationMonoid
 
@@ -168,22 +110,7 @@ theorem idealRowHom_unit_eq_of_norm_mod_thirty_six (u : ActualEisensteinCubic.O�
 
 end CanonicalUnitEuler
 
-namespace CompletedGauss
-open ActualEisensteinCubic CompletedDyadic
-
-end CompletedGauss
-
 open scoped BigOperators Classical SchwartzMap ContDiff
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic
-open CompletedGauss hiding O
-open ConcretePrimeRowBridge hiding O columnWeight
-open CanonicalQuadraticSieve hiding O
-open SecondPassArithmetic hiding O
-open ConcreteTraceCRT (eisEmbedding)
-
-end CanonicalRowCompletion
-
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology ContDiff MatrixGroups
 
@@ -408,8 +335,11 @@ namespace CubicEisenstein
 open ActualEisensteinCubic ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
-lemma cuspCutoffTerm_eq_seedProfile (a b : ℝ) (ha : 1≤a) (hab : a<b)
-    (s : ℂ) (r : CuspCosets) (w : HyperbolicSpace) :
+section
+variable (a b : ℝ) (ha : 1≤a) (hab : a<b) (s : ℂ)
+include a b ha hab s
+
+lemma cuspCutoffTerm_eq_seedProfile (r : CuspCosets) (w : HyperbolicSpace) :
     cuspCutoffTerm 1 (cuspSeedProfile a b s) r w=
       (cosetCharacter r)⁻¹*cuspSeedProfile a b s (cosetHeight r w) := by
   unfold cuspCutoffTerm
@@ -417,15 +347,13 @@ lemma cuspCutoffTerm_eq_seedProfile (a b : ℝ) (ha : 1≤a) (hab : a<b)
   · rfl
   · rw [cuspSeedProfile_zero a b s _ hab ((le_of_not_gt h).trans ha),mul_zero]
 
-lemma cusp_seed_profile_summable (a b : ℝ) (ha : 1≤a) (hab : a<b)
-    (s : ℂ) (w : HyperbolicSpace) :
+lemma cusp_seed_profile_summable (w : HyperbolicSpace) :
     Summable (fun r : CuspCosets => (cosetCharacter r)⁻¹*
       cuspSeedProfile a b s (cosetHeight r w)) :=
   (cuspCutoffTerm_summable 1 le_rfl _ w).congr
     (fun r => cuspCutoffTerm_eq_seedProfile a b ha hab s r w)
 
-theorem eisenstein_sub_seed_eq_series (a b : ℝ) (ha : 1≤a) (hab : a<b)
-    (s : ℂ) (hs : 2<s.re) (w : HyperbolicSpace) :
+theorem eisenstein_sub_seed_eq_series (hs : 2<s.re) (w : HyperbolicSpace) :
     hyperbolicEisenstein s w-smoothCuspSeed a b s w=
       ∑'r : CuspCosets,(cosetCharacter r)⁻¹*
         cuspRemainderProfile a b s (cosetHeight r w) := by
@@ -440,6 +368,8 @@ theorem eisenstein_sub_seed_eq_series (a b : ℝ) (ha : 1≤a) (hab : a<b)
   intro r
   rw [cuspRemainderProfile,positiveHeightPower_eq_cpow s _ (cosetHeight_pos r w)]
   ring
+
+end
 
 def eisensteinRemainderBound (b : ℝ) (s : ℂ) : ℝ :=
   (max 5 (2*b))^s.re * ∑'n : (Fin 2×Fin 2)→ℤ,‖n‖^(-s.re)

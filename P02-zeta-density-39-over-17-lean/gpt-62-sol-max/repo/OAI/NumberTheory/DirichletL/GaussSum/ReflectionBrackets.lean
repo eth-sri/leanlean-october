@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.CubicSieve.LocalBrackets
 
 @[expose] public section
@@ -8,69 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
 namespace LocalReflectionBrackets
 open scoped Classical BigOperators
@@ -417,14 +366,13 @@ end PrimaryIdealUnitReindex
 open scoped BigOperators Classical
 namespace QuadraticUnitInvariance
 abbrev O := ActualEisensteinCubic.O
-open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates
-open GaussGeneratorTransport QuadraticGaussRay
+open ActualEisensteinCubic ConcreteTraceCRT FiniteGaussPhase ActualEisensteinCoordinates GaussGeneratorTransport QuadraticGaussRay
 
-theorem principalNormalizedGauss_three_eq_quadraticGamma
-    {ι : Type*} [Fintype ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i, lambda ∉ P i) (hchar : ∀ i, ringChar (O ⧸ P i) ≠ 2)
-    (c : O) (hc : Ideal.span {c} = ∏ i, P i) (hc0 : c ≠ 0) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (P : ι → Ideal O) [instShared3 : ∀ i, (P i).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime P)) (hg : ∀ i, lambda ∉ P i) (hchar : ∀ i, ringChar (O ⧸ P i) ≠ 2) (c : O) (hc : Ideal.span {c} = ∏ i, P i) (hc0 : c ≠ 0)
+include ι instShared1 P instShared3 hcop hg hchar c hc hc0
+
+theorem principalNormalizedGauss_three_eq_quadraticGamma :
     principalNormalizedGauss P hcop hg (fun _ => 3) c hc hc0 = quadraticGammaO c hc0 := by
   let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc0
   let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
@@ -442,21 +390,19 @@ theorem principalNormalizedGauss_three_eq_quadraticGamma
     (fun i => O ⧸ P i) e ψ
     (GeneralPrimitiveTrace.eisTraceModChar_breveE_primitive c hc0) hchar
 
-theorem principalNormalizedGauss_three_eq_rayValue
-    {ι : Type*} [Fintype ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i, lambda ∉ P i) (hchar : ∀ i, ringChar (O ⧸ P i) ≠ 2)
-    (c : O) (hc : Ideal.span {c} = ∏ i, P i) (hc0 : c ≠ 0) :
+theorem principalNormalizedGauss_three_eq_rayValue :
     principalNormalizedGauss P hcop hg (fun _ => 3) c hc hc0 = quadraticRayValue (residue c) := by
   rw [principalNormalizedGauss_three_eq_quadraticGamma P hcop hg hchar c hc hc0,
     quadraticGammaO_eq_rayValue]
 
+end
+
 theorem quadratic_unit_phase
     {ι : Type*} [Fintype ι] (p : ι → O) (hp : ∀ i, p i ≠ 0)
-    [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (u : Oˣ) :
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2) (u : Oˣ) :
     finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) u.val *
       quadraticRayValue (residue (∏ i, p i)) =
         quadraticRayValue (residue (u.val * ∏ i, p i)) := by
@@ -480,17 +426,11 @@ theorem finiteSexticRow_three_star
   rw [canonicalSextic_pow_three_quadratic]
   simp only [MulChar.ringHomComp_apply, Int.coe_castRingHom, star_intCast]
 
-theorem quadratic_unit_value_eq_of_same_ray
-    {ι κ : Type*} [Fintype ι] [Fintype κ]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (q : κ → O) (hq : ∀ i, q i ≠ 0) [∀ i, (Ideal.span {q i}).IsMaximal]
-    (hcopq : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {q i})))
-    (hgq : ∀ i, lambda ∉ Ideal.span {q i})
-    (hcharq : ∀ i, ringChar (O ⧸ Ideal.span {q i}) ≠ 2)
-    (hray : residue (∏ i, p i) = residue (∏ i, q i)) (u : Oˣ) :
+section
+variable {ι κ : Type*} [instShared1 : Fintype ι] [instShared2 : Fintype κ] (p : ι → O) (hp : ∀ i, p i ≠ 0) [instShared5 : OAI.PrincipalIdealFamily.Maximal p] (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2) (q : κ → O) (hq : ∀ i, q i ≠ 0) [instShared11 : OAI.PrincipalIdealFamily.Maximal q] (hcopq : OAI.PrincipalIdealFamily.PairwiseCoprime q) (hgq : OAI.PrincipalIdealFamily.Avoids q lambda) (hcharq : OAI.PrincipalIdealFamily.CharacteristicNe q 2) (hray : residue (∏ i, p i) = residue (∏ i, q i)) (u : Oˣ)
+include ι κ instShared1 instShared2 p hp instShared5 hcop hg hchar q hq instShared11 hcopq hgq hcharq hray u
+
+theorem quadratic_unit_value_eq_of_same_ray :
     finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) u.val =
       finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) u.val := by
   have hne : quadraticRayValue (residue (∏ i, p i)) ≠ 0 := by
@@ -501,17 +441,7 @@ theorem quadratic_unit_value_eq_of_same_ray
   rw [quadratic_unit_phase p hp hcop hg hchar, hray,
     quadratic_unit_phase q hq hcopq hgq hcharq, residue_mul, residue_mul, hray]
 
-theorem quadratic_pair_unit_invariant
-    {ι κ : Type*} [Fintype ι] [Fintype κ]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hchar : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (q : κ → O) (hq : ∀ i, q i ≠ 0) [∀ i, (Ideal.span {q i}).IsMaximal]
-    (hcopq : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {q i})))
-    (hgq : ∀ i, lambda ∉ Ideal.span {q i})
-    (hcharq : ∀ i, ringChar (O ⧸ Ideal.span {q i}) ≠ 2)
-    (hray : residue (∏ i, p i) = residue (∏ i, q i)) (u : Oˣ) (z : O) :
+theorem quadratic_pair_unit_invariant (z : O) :
     finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) (u.val * z) *
       finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) (u.val * z) =
     finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) z *
@@ -526,6 +456,8 @@ theorem quadratic_pair_unit_invariant
       (finiteSexticRow (fun i => Ideal.span {p i}) hg (fun _ => 3) z *
         finiteSexticRow (fun i => Ideal.span {q i}) hgq (fun _ => 3) z) := by ring
     _ = _ := by rw [hs, one_mul]
+
+end
 
 end QuadraticUnitInvariance
 

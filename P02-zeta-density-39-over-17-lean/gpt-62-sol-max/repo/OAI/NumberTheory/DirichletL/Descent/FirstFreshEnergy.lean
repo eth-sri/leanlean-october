@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstCommonChild
 
 @[expose] public section
@@ -7,17 +8,16 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 
 theorem first_fresh_energy_small_power (ε : ℝ) (hε : 0 < ε) :
     ∃ K : ℝ,0 < K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-      (_hinj : Function.Injective (fun i => Ideal.span {p i}))
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-      (hg : ∀ i,ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+      (p : ι → Eis) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (_hv : ∀ j ∈ B,0 < v j)
       (negative : Bool) (χ : RayCharacter) (C : Finset ι → ℂ)
       (ω : ℝ → ℂ) (X t : ℝ),0 < X → ∀ (c d : Eis)

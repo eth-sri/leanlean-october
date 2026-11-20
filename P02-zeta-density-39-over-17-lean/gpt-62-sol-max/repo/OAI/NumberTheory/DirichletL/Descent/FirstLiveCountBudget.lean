@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveSupport
 
 @[expose] public section
@@ -8,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseSecondSourceBlocks
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseSecondSourceBlocks
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -119,9 +119,9 @@ theorem live_joint_scalar_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0
 
 theorem original_live_joint_small_power (b Lcap ε : ℝ) (hb : 0 ≤ b) (hcap : 0 ≤ Lcap) (hε : 0<ε) :
     ∃ C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι → O)(hp : ∀i,p i≠0)
-      [∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      [OAI.PrincipalIdealFamily.Maximal p]
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (pool : Finset ι)(Q : Finset (ι→₀ℕ))(labels : Finset (Ideal O))
       (β : Ideal O → (ι→₀ℕ) → ℂ)(cutoff : CubeCoordinates ι → Finset ι → Ideal O → Finset ι → ℝ)
       (Ψ : O→*ℂ)(m : O)(mark : (ι→₀ℕ) → Finset ι → ℂ)(W : ℝ → ℂ)(Φ : 𝓢(ℝ,ℂ))

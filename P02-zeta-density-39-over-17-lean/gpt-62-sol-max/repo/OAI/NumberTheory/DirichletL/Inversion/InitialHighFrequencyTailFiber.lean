@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailCoefficient
 public import OAI.NumberTheory.DirichletL.Inversion.InitialHighFrequencyTailScale
 
@@ -10,9 +11,7 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialHighFrequencyTail
-open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic
-open InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure
-open InverseInitialKernelBridge InverseInitialProfile
+open ActualEisensteinCubic ConcreteTraceCRT FirstPassCubeLabels SecondPassArithmetic InverseMoment InverseInitialArithmetic InverseInitialPhysicalMeasure InverseInitialKernelBridge InverseInitialProfile
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
 
@@ -33,11 +32,11 @@ theorem coordinates_sourcePoint (p : ι→O) (k : Fin 5→Finset ι) (h : O) :
 theorem original_frequency_fiber_tail (A : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (C₀ : ℝ), 0<C₀ ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (_hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (Ψ : O→*ℂ), (∀n,‖Ψ n‖≤1) → ∀ (j : O)
       (slots : Finset σ) (lists : σ→Finset ι) (a : σ→ι→ℂ),
     (slots:Set σ).PairwiseDisjoint lists → (∀i∈slots,∀k∈lists i,‖a i k‖≤1) →

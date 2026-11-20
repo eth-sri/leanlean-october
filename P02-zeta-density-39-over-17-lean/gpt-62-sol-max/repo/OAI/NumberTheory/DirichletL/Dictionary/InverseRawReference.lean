@@ -14,19 +14,14 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap Topology
 open Filter
 namespace SevenEighths.DetectorDictionaryInverseRawReference
-open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge
-open CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve
-open InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialExcludedPeriod
-open InverseInitialRayAttachment InverseInitialProfileBounds
-open DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawInitialEnergy
-open DetectorDictionaryInverseRawInput DetectorDictionaryInverseRawInputBound
-open DetectorDictionaryInverseRawConjugateGates DetectorDictionaryInverseRawRealRadial
-open DetectorDictionaryInverseRawGeometry IdealMobiusDivisorSum
+open HeckeFamily HeckeDyadic HeckeInverseAmplification InverseMoment ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge CanonicalRowCompletion CanonicalCoefficientClass CanonicalQuadraticSieve InverseInitialRawDictionary InverseInitialConjugateEnergy InverseInitialExcludedPeriod InverseInitialRayAttachment InverseInitialProfileBounds DetectorDictionaryInverseRawInitialGates DetectorDictionaryInverseRawInitialEnergy DetectorDictionaryInverseRawInput DetectorDictionaryInverseRawInputBound DetectorDictionaryInverseRawConjugateGates DetectorDictionaryInverseRawRealRadial DetectorDictionaryInverseRawGeometry IdealMobiusDivisorSum
 local notation "O"=>HeckeFamily.O
 
-theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
-    (hs:Function.support W⊆Set.Icc a b)(hc:0<c)(hκ:0<κ):
+section
+variable (W:𝓢(ℝ,ℂ)) (a b c κ:ℝ) (ha:0<a) (hb:0<b) (hs:Function.support W⊆Set.Icc a b) (hc:0<c) (hκ:0<κ)
+include W a b c κ ha hb hs hc hκ
+
+theorem raw_reference_large:
     ∃J:ℕ,∀data:RowData,∃C H₀:ℝ,0<C ∧ 1<H₀ ∧
       ∀(t H D:ℝ),H₀≤H→1≤D→D^(1+c)≤H→∀rows:Finset NonzeroElement,
       (∀u∈rows,((Ideal.span {u.val}).absNorm:ℝ)≤H)→
@@ -83,8 +78,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     let F:=InitialMeanSquare.outsideSquarefreeIdeals (reflectionExcludedPrimes (deletedPeriod (basePeriod data))) Dpool
     let hF:=InitialMeanSquare.outsideSquarefree_admissible (reflectionExcludedPrimes (deletedPeriod (basePeriod data))) Dpool
       (reflectionExcludedPrimes_bad (deletedPeriod (basePeriod data)))
-    let:∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal:=fun i=>by
-      rw [poolPrimary_span F hF i];infer_instance
+    let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     have hf:initialFunction data (childLogTest W t) H b Btree 2 D 0 0 j=
         originalTotalPolynomial F 1 (idealCoeff (deletedBase data)).toMonoidHom
           (fun _=>1) (childLogTest W t) H r 0:=by
@@ -132,8 +126,7 @@ theorem raw_reference_large (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
       nlinarith [mul_le_mul_of_nonneg_left hh
         (show 0≤Ctotal*(1+‖t‖)^(2*J) by dsimp [Ctotal];positivity)]
 
-theorem raw_reference_moment (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
-    (hs:Function.support W⊆Set.Icc a b)(hc:0<c)(hκ:0<κ):
+theorem raw_reference_moment:
     ∃J:ℕ,∀data:RowData,∃C:ℝ,0<C ∧ ∀t:ℝ,
       RawMoment data (childLogTest W t) c κ (C*(1+‖t‖)^(2*J)) := by
   obtain ⟨J,hlarge⟩:=raw_reference_large W a b c κ ha hb hs hc hκ
@@ -144,6 +137,8 @@ theorem raw_reference_moment (W:𝓢(ℝ,ℂ))(a b c κ:ℝ)(ha:0<a)(hb:0<b)
     W a b ha hs H₀ hH₀.le
   refine ⟨C+C₀,add_pos hC hC₀,?_⟩
   exact hcomplete data c κ C J hc.le hκ.le hC.le hlarge
+
+end
 
 end SevenEighths.DetectorDictionaryInverseRawReference
 

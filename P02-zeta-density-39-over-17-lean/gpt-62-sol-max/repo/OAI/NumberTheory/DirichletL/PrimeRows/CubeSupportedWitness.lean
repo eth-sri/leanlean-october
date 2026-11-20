@@ -10,8 +10,7 @@ noncomputable section
 open scoped Classical Topology
 open Filter
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
-open HeckeDetectorSupportedWitness
+open HeckeFamily HeckeInverseAmplification ProbePhysical HeckeDetectorSupportedWitness
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstNominal
 public import OAI.NumberTheory.DirichletL.Descent.FirstCoupledReindex
 
@@ -54,9 +55,9 @@ theorem firstNormProfile_actual_common {ι : Type*} [DecidableEq ι]
     (primeProductNorm_pos p hp D).le
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def firstCoupledRayColumns (F : Finset ι) (C₁ C₂ : Finset ι → ℂ)
     (H : Finset ι → Finset ι → ℂ) (h : Eis) : ℂ :=
@@ -70,9 +71,9 @@ def firstCoupledRayColumns (F : Finset ι) (C₁ C₂ : Finset ι → ℂ)
           (supportRay p r.2 (D ∪ V)*C₂ (D ∪ V)) * star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg V h))
 
 theorem actual_first_gauss_coupled_reindex
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀ i, ringChar (Eis ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, ConcretePrimeRowBridge.goodLambda^2 ∣ p i-1)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
     (F B : Finset ι) (hFB : Disjoint F B)
     (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (C₁ C₂ : Finset ι → ℂ)
     (H : Finset ι → Finset ι → ℂ) (d h : Eis) :

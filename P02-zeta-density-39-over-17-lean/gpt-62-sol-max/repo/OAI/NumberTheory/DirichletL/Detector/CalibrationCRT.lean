@@ -10,9 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
-open CenteredMomentFirstPoisson
+open ActualEisensteinCubic ConcreteTraceCRT CubicEisenstein CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentFirstPoisson
 local notation "O" => ActualEisensteinCubic.O
 
 theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
@@ -71,9 +69,11 @@ theorem coprime_mixed_fourier (a b : O) (ha : a ≠ 0) (hb : b ≠ 0)
   intro x _
   ring
 
-theorem calibration_mixed_fourier (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMaximal)
-    (b : O) (hb : b≠0) (hcop : IsCoprime (calibrationForSet S hS).generator b)
-    (F : Residue b → ℂ) (H : O) :
+section
+variable (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMaximal) (b : O) (hb : b≠0) (hcop : IsCoprime (calibrationForSet S hS).generator b) (F : Residue b → ℂ) (H : O)
+include S hS b hb hcop F H
+
+theorem calibration_mixed_fourier :
     let C := calibrationForSet S hS
     (∑' x : Residue (C.generator*b),
       C.residue (frequencyReduction C.generator (C.generator*b) (dvd_mul_right _ _) x) *
@@ -98,9 +98,7 @@ theorem calibration_mixed_fourier (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMa
   simp only [frequencyReduction_mk]
   ring
 
-theorem calibration_mixed_fourier_zero (S : Finset (Ideal O)) (hS : ∀ P∈S, P.IsMaximal)
-    (b : O) (hb : b≠0) (hcop : IsCoprime (calibrationForSet S hS).generator b)
-    (F : Residue b → ℂ) (H : O) (hH : ¬IsCoprime (calibrationForSet S hS).generator H) :
+theorem calibration_mixed_fourier_zero (hH : ¬IsCoprime (calibrationForSet S hS).generator H) :
     let C := calibrationForSet S hS
     (∑' x : Residue (C.generator*b),
       C.residue (frequencyReduction C.generator (C.generator*b) (dvd_mul_right _ _) x) *
@@ -114,6 +112,8 @@ theorem calibration_mixed_fourier_zero (S : Finset (Ideal O)) (hS : ∀ P∈S, P
     exact fun h => hH ((isUnit_quotient_span_iff _ _).mp h)
   rw [hz, star_zero]
   ring
+
+end
 
 end SevenEighths.ProbePhysical
 end

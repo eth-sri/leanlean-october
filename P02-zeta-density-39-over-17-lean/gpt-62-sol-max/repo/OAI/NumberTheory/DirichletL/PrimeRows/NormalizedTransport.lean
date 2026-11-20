@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.PrimeRows.ProbeFrames
 public import OAI.NumberTheory.DirichletL.PrimeRows.CanonicalRayCube
 public import OAI.NumberTheory.DirichletL.PrimeRows.CubeNormalizer
 
@@ -10,17 +11,11 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Filter Set
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss
-open ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
+open HeckeFamily HeckeInverseAmplification ProbePhysical ProbeMellinBoundary CompletedGauss ProbeRaySlots PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual
 local notation "O" => HeckeFamily.O
 variable (M : Ideal O) [NeZero M]
 local instance : Finite (O ⧸ M) := Ring.HasFiniteQuotients.finiteQuotient (NeZero.ne M)
 variable (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
-
-omit [NeZero M] in
-theorem transportPoolOutside (S : Finset (Ideal O)) (K : ℕ) (a b : ℝ) (Y : Fin K→ℝ) :
-    ∀j P,P∈pool (RayQuotient.identityClass M H) S a b (Y j) → P.val∉S :=
-  fun j P hP=>(mem_pool _ S a b (Y j) P).mp hP |>.2.2.2
 
 lemma normalized_central_transport (A P C F N : ℂ) (a b v : ℝ)
     (ha : ‖A-P-C‖≤a) (hb : ‖P/N-F‖≤b) (hv : ‖N⁻¹‖≤v) (ha0 : 0≤a) :
@@ -47,7 +42,7 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
     ∃n : ℕ,0<n ∧ ∀η : Character,∃C : ℝ,0<C ∧ ∀ᶠ Z : ℝ in atTop,
       let Yp := fun j=>Z^(ell j)
       let T := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
-      let hT := transportPoolOutside M H S K a b Yp
+      let hT := ProbeHighRowFamily.rayPoolOutside M H S K a b Yp
       let WC : Fin K→ℝ→ℂ := fun j y=>(W j y:ℂ)
       let normer := sourceResidueConstant W0 W1 (∏P∈S,P)*
         (Probe.principalScalar Finset.univ Z (1/6) (slotMass T (residueWeights W Yp)) : ℂ)
@@ -103,7 +98,7 @@ theorem actual_normalized_probe_transport (K : ℕ) (e δ a b B ζ saving τ ell
   dsimp only at hnorm hprincipal ⊢
   let Yp : Fin K→ℝ := fun j=>Z^(ell j)
   let T : Fin K→Finset PrimeIdeal := fun j=>pool (RayQuotient.identityClass M H) S a b (Yp j)
-  let hT := transportPoolOutside M H S K a b Yp
+  let hT := ProbeHighRowFamily.rayPoolOutside M H S K a b Yp
   let WC : Fin K→ℝ→ℂ := fun j y=>(W j y:ℂ)
   have hWS (j : Fin K) : Function.support (WC j)⊆Icc a b := by
     intro y hy

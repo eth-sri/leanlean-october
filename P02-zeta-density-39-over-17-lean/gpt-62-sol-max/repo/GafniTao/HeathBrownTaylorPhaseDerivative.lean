@@ -59,9 +59,11 @@ theorem hasDerivAt_heathBrownTaylorPolynomial
   rw [hfun, hvalue, mul_one] at hcomp
   exact hcomp
 
-theorem hasDerivAt_heathBrownTaylorError
-    {k : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ} {n x : ℝ}
-    (hf : HasDerivAt f (deriv f (n + x)) (n + x)) :
+section
+variable {k : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ} {n x : ℝ} (hf : HasDerivAt f (deriv f (n + x)) (n + x))
+include k hk f n x hf
+
+theorem hasDerivAt_heathBrownTaylorError :
     HasDerivAt (fun y => heathBrownTaylorError k f n y)
       (deriv f (n + x) - heathBrownTaylorDerivativePolynomial k f n x) x := by
   unfold heathBrownTaylorError
@@ -71,12 +73,12 @@ theorem hasDerivAt_heathBrownTaylorError
   change HasDerivAt (fun y : ℝ => f (n + y)) _ x at hcomp
   simpa only [Pi.sub_def, mul_one] using hcomp.sub (hasDerivAt_heathBrownTaylorPolynomial hk f n x)
 
-theorem deriv_heathBrownTaylorError
-    {k : ℕ} (hk : 2 ≤ k) {f : ℝ → ℝ} {n x : ℝ}
-    (hf : HasDerivAt f (deriv f (n + x)) (n + x)) :
+theorem deriv_heathBrownTaylorError :
     deriv (fun y => heathBrownTaylorError k f n y) x =
       deriv f (n + x) - heathBrownTaylorDerivativePolynomial k f n x :=
   (hasDerivAt_heathBrownTaylorError hk hf).deriv
+
+end
 
 /-- The derivative of `g_n` has the uniform source bound on `0 < x ≤ H`. -/
 theorem norm_deriv_heathBrownTaylorError_le_scale

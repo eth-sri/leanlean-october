@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.ChineseRemainder.PrimaryCompletions
 
 @[expose] public section
@@ -8,73 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace ShortDraftCusp
 open scoped BigOperators Classical MatrixGroups Matrix
@@ -110,8 +55,8 @@ noncomputable local instance A4phaseFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis⧸P) := Fintype.ofFinite _
 
 theorem A4_phase_product {ι : Type*} [Fintype ι] (p : ι→Eis)
-    [∀i,(Ideal.span {p i}).IsMaximal] (hp : ∀i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
+    [OAI.PrincipalIdealFamily.Maximal p] (hp : ∀i,p i≠0)
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
     (a b c0 d U w x:Eis) (hc0:c0≠0)
     (hdet:a*d-b*(c0*∏i,p i)=1)
     (hbez:U*(∏i,p i)+(ramifiedTraceLambda^3*w)*c0=1)
@@ -160,8 +105,7 @@ theorem A4_phase_product {ι : Type*} [Fintype ι] (p : ι→Eis)
 
 end
 
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase
-open CompletedGauss LocalReflectionBrackets
+open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT FiniteGaussPhase CompletedGauss LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 noncomputable local instance A4frequencyField (P : Ideal Eis) [P.IsMaximal] :
     Field (Eis⧸P) := Ideal.Quotient.field P
@@ -169,9 +113,9 @@ noncomputable local instance A4frequencyFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis⧸P) := Fintype.ofFinite _
 
 theorem A3_A4_frequency_product {ι : Type*} [Fintype ι] (p : ι→Eis)
-    [∀i,(Ideal.span {p i}).IsMaximal] (hp : ∀i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-    (hg : ∀i,lambda∉Ideal.span {p i})
+    [OAI.PrincipalIdealFamily.Maximal p] (hp : ∀i,p i≠0)
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
     (a b c0 d U w x:Eis) (hc0:c0≠0)
     (hdet:a*d-b*(c0*∏i,p i)=1)
     (hbez:U*(∏i,p i)+(ramifiedTraceLambda^3*w)*c0=1)
@@ -220,11 +164,6 @@ end ShortDraftCusp
 
 open scoped BigOperators Classical
 
-namespace IdealGaussCRT
-open CubicEisenstein
-
-end IdealGaussCRT
-
 namespace LocalReflectionBrackets
 open ActualEisensteinCubic CubicEisenstein IdealGaussCRT CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
@@ -243,7 +182,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 
 theorem exists_product_trace_shifts {ι : Type*} [Fintype ι]
     (p : ι→Eis) (hp : ∀i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i}))) :
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) :
     ∃k : ∀i,(Eis⧸Ideal.span {p i})ˣ,
       (∀i,Ideal.Quotient.mk (Ideal.span {p i}) (cofactor p i)*(k i:Eis⧸Ideal.span {p i})=1) ∧
       ∀i,coordinateAddChar (fun i=>Eis⧸Ideal.span {p i}) (productElementCRT p hcop)
@@ -266,21 +205,18 @@ theorem exists_product_trace_shifts {ι : Type*} [Fintype ι]
 
 noncomputable def productTraceShift {ι : Type*} [Fintype ι]
     (p : ι→Eis) (hp : ∀i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i}))) :
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) :
     ∀i,(Eis⧸Ideal.span {p i})ˣ :=
   (exists_product_trace_shifts p hp hcop).choose
 
 lemma productTraceShift_inverse {ι : Type*} [Fintype ι]
     (p : ι→Eis) (hp : ∀i,p i≠0)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i}))) (i:ι) :
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (i:ι) :
     Ideal.Quotient.mk (Ideal.span {p i}) (cofactor p i)*
       (productTraceShift p hp hcop i:Eis⧸Ideal.span {p i})=1 :=
   (exists_product_trace_shifts p hp hcop).choose_spec.1 i
 
 end
-
-open ActualEisensteinCubic CubicEisenstein ConcreteTraceCRT IdealGaussCRT
-local notation "Eis" => ActualEisensteinCubic.O
 
 end FiniteGaussPhase
 
@@ -336,11 +272,6 @@ lemma cubeWeight_congr_primary (I:Ideal Eis) : cubeWeight Ψ I=cubeWeight Φ I :
   · rw [h _ (primaryGenerator_spec I hi).2]
 
 end CompletedGauss
-
-namespace CubicEisenstein
-open ActualEisensteinCubic
-local notation "Eis" => ActualEisensteinCubic.O
-end CubicEisenstein
 
 open scoped Classical BigOperators
 

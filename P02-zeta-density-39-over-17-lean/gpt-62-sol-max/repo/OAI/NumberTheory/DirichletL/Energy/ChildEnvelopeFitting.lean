@@ -9,9 +9,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentEnergyChildEnvelopeFitting
-open HeckeFamily CenteredMomentFiniteProfileExceptional
-open CenteredMomentInductionEnergy QuadraticInitialBound
-open CenteredMomentSecondNonexceptionalChosenBlock
+open HeckeFamily CenteredMomentFiniteProfileExceptional CenteredMomentInductionEnergy QuadraticInitialBound CenteredMomentSecondNonexceptionalChosenBlock
 local notation "O" => HeckeFamily.O
 
 lemma radical_product_power (R C:Ideal O)(hR:R≠0)(hC:C≠0)

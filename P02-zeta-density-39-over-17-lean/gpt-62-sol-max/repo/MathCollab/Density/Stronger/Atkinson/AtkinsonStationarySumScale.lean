@@ -11,8 +11,7 @@ public import MathCollab.Density.Stronger.Atkinson.AtkinsonFiniteStationaryError
 set_option backward.isDefEq.respectTransparency false
 set_option backward.isDefEq.respectTransparency.types false
 noncomputable section
-open Complex Filter
-open MathCollab.Density.Stronger.Fourth
+open Complex Filter MathCollab.Density.Stronger.Fourth
 namespace MathCollab.Density.Stronger.Atkinson
 
 theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}

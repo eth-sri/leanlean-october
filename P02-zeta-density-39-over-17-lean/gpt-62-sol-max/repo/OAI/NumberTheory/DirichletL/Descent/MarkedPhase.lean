@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.ReflectedDual
 
 @[expose] public section
@@ -17,9 +18,11 @@ variable {ι : Type*} [Fintype ι] {p : ι → Eis} {N a0 c0 : Eis} {mode : Bool
 
 def markedActiveExponent (S : Finset ι) (j : ι → ℕ) (i : ι) : ℕ := if i ∈ S then 0 else j i
 
-theorem mixedActiveBracket_eq_signed [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode)
+section
+variable [instShared0 : OAI.PrincipalIdealFamily.Maximal p] (hp : ∀ i, p i ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode)
+include instShared0 hp hg j S D
+
+theorem mixedActiveBracket_eq_signed
     (i : ι) (x : Eis) :
     mixedActiveBracket hp hg j S D i x = (if i ∈ S then (-1 : ℂ) else 1) *
       ((((actualSextic (Ideal.span {p i}) (hg i))⁻¹) ^ 2) (D.sigma i) *
@@ -33,9 +36,7 @@ theorem mixedActiveBracket_eq_signed [∀ i, (Ideal.span {p i}).IsMaximal]
     ring
   · simp only [mixedActiveBracket, markedActiveExponent, hi, ite_false, one_mul]
 
-theorem mixedActiveBracket_product [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hp : ∀ i, p i ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
-    (j : ι → ℕ) (S : Finset ι) (D : ControlledStratumArithmetic p N a0 c0 mode) (x : Eis) :
+theorem mixedActiveBracket_product (x : Eis) :
     (∏ i, mixedActiveBracket hp hg j S D i x) =
       (-1 : ℂ) ^ S.card * D.bracketProduct hp hg (markedActiveExponent S j) x := by
   simp_rw [mixedActiveBracket_eq_signed]
@@ -46,10 +47,12 @@ theorem mixedActiveBracket_product [∀ i, (Ideal.span {p i}).IsMaximal]
   rw [hsign]
   rfl
 
-theorem mixed_model_coefficient [∀ i, (Ideal.span {p i}).IsMaximal]
+end
+
+theorem mixed_model_coefficient [OAI.PrincipalIdealFamily.Maximal p]
     (D : ControlledStratumArithmetic p N a0 c0 mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a0 c0 mode))
-    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : ∀ i, λ₀ ∉ Ideal.span {p i})
+    (hp : ∀ i, p i ≠ 0) (hc0 : c0 ≠ 0) (hg : OAI.PrincipalIdealFamily.Avoids p λ₀)
     (j : ι → ℕ) (S : Finset ι) (u : Eisˣ) (m : ℕ) (I J : Ideal Eis) :
     s.amplitude u m I J *
       (star D.fixedFactor * ShortDraftCusp.A4BadPhase c0 hc0

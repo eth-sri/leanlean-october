@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion
-open CubicEisenstein GaussianShiftedPartition ProbePrimePower ProbeEuler ProbeLocal
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge CanonicalRowCompletion CubicEisenstein GaussianShiftedPartition ProbePrimePower ProbeEuler ProbeLocal
 local notation "O" => ActualEisensteinCubic.O
 
 lemma outerQuotient_mk (s H : O) :

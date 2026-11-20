@@ -11,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.CenteredMomentFirstColumns
-open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation
-open CenteredMomentFixedRay RayFourExpansion CenteredMomentGaussEnergy
+open CanonicalRowCompletion CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFixedRay RayFourExpansion CenteredMomentGaussEnergy
 local notation "O" => ActualEisensteinCubic.O
 
 def leftCoefficient (e r : O) (ρ : O → ℂ) (a : O) : ℂ :=

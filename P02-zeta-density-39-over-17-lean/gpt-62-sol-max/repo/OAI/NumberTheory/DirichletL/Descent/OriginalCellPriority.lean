@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalCanonicalEnergy
 public import OAI.NumberTheory.DirichletL.Inversion.FirstGlobalCaps
 
@@ -10,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic
-open InverseFirstPriorityParents InverseFirstGlobalParents
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic FirstCauchyArithmetic InverseFirstPriorityParents InverseFirstGlobalParents
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
 
@@ -19,10 +19,10 @@ def originalSubsetSource (outer:Finset (FirstOriginalOuter ι)):Finset (Source �
   outer.image ofOriginal
 
 theorem original_subset_canonical_priority
-    (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-    (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-    (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+    (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+    (hinj:OAI.PrincipalIdealFamily.Distinct p)
+    (hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (outer:Finset (FirstOriginalOuter ι))(pool:Finset ι)
     (selector:FirstOriginalOuter ι→Finset ι→ℂ)(extra:CubeCoordinates ι→Finset ι)
     (negative:Bool)(Ψ:O→*ℂ)(m:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)

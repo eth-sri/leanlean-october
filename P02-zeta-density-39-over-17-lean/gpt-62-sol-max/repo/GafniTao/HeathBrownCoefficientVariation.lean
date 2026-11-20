@@ -39,11 +39,11 @@ theorem abs_natCast_succ_pow_sub_pow_le
     _ ≤ (d : ℝ) * (H : ℝ) ^ (d - 1) := by
       gcongr
 
-theorem cell_displacement_mul_powerDifference_le
-    {k H : ℕ} (hH : 2 ≤ H) {f : ℝ → ℝ} {n : ℝ}
-    {α : HeathBrownCoefficientTorus k}
-    (hα : α ∈ heathBrownCoefficientCell k H f n)
-    {q : ℕ} (hqH : q + 1 ≤ H) (j : Fin (k - 1)) :
+section
+variable {k H : ℕ} (hH : 2 ≤ H) {f : ℝ → ℝ} {n : ℝ} {α : HeathBrownCoefficientTorus k} (hα : α ∈ heathBrownCoefficientCell k H f n) {q : ℕ} (hqH : q + 1 ≤ H)
+include k H hH f n α hα q hqH
+
+theorem cell_displacement_mul_powerDifference_le (j : Fin (k - 1)) :
     |heathBrownCoefficientDisplacement
         (heathBrownCoefficientCenter k f n) α j| *
         |((q : ℝ) + 1) ^ ((j : ℕ) + 1) -
@@ -75,11 +75,7 @@ theorem cell_displacement_mul_powerDifference_le
     _ ≤ (k : ℝ) / H := by
       exact div_le_div_of_nonneg_right (by exact_mod_cast hdk) hHpos.le
 
-theorem abs_heathBrownDisplacementPolynomial_succ_sub_le
-    {k H : ℕ} (hH : 2 ≤ H) {f : ℝ → ℝ} {n : ℝ}
-    {α : HeathBrownCoefficientTorus k}
-    (hα : α ∈ heathBrownCoefficientCell k H f n)
-    {q : ℕ} (hqH : q + 1 ≤ H) :
+theorem abs_heathBrownDisplacementPolynomial_succ_sub_le :
     |heathBrownDisplacementPolynomial
           (heathBrownCoefficientCenter k f n) α (q + 1) -
         heathBrownDisplacementPolynomial
@@ -132,11 +128,7 @@ theorem abs_heathBrownDisplacementPolynomial_succ_sub_le
           mul_le_mul_of_nonneg_right hcard hdiv
         _ = (k : ℝ) ^ 2 / H := by ring
 
-theorem norm_heathBrownCoefficientWeight_succ_sub_le
-    {k H : ℕ} (hH : 2 ≤ H) {f : ℝ → ℝ} {n : ℝ}
-    {α : HeathBrownCoefficientTorus k}
-    (hα : α ∈ heathBrownCoefficientCell k H f n)
-    {q : ℕ} (hqH : q + 1 ≤ H) :
+theorem norm_heathBrownCoefficientWeight_succ_sub_le :
     ‖heathBrownCoefficientWeight (heathBrownCoefficientCenter k f n) α (q + 1) -
         heathBrownCoefficientWeight (heathBrownCoefficientCenter k f n) α q‖ ≤
       2 * Real.pi * ((k : ℝ) ^ 2 / H) := by
@@ -170,6 +162,8 @@ theorem norm_heathBrownCoefficientWeight_succ_sub_le
     _ ≤ 2 * Real.pi * ((k : ℝ) ^ 2 / H) := by
       gcongr
       exact abs_heathBrownDisplacementPolynomial_succ_sub_le hH hα hqH
+
+end
 
 
 end

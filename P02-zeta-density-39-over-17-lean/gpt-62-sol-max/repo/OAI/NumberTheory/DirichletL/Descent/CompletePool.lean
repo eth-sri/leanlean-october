@@ -9,8 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_selected_column_sum (F : Finset (Ideal O))
@@ -69,8 +68,7 @@ theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
     (hW : ∀ t,W t≠0 → t≤b) (hD : b*X≤D) (d : Ideal O → ℂ) :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-    letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     fixedChildRow (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
       (poolPrimary_good F hF) Finset.univ Ψ m
       (fun T=>W (primeProductNorm (poolPrimary F) T/X)*d (∏i∈T,i.val)) f z =
@@ -78,8 +76,7 @@ theorem marked_complete_pool_eq_global (S : Finset (Ideal O)) (D : ℕ)
       W ((Ideal.absNorm I:ℝ)/X)*d I := by
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   dsimp only
   symm
   rw [marked_weighted_column_tsum_eq S D hSp Ψ (m*excludedGenerator S) f z

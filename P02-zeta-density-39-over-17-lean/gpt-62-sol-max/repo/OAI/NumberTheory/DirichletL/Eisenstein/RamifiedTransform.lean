@@ -11,73 +11,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -180,8 +124,11 @@ open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 local instance : Fintype Eisˣ := @Fintype.ofFinite _ PrimaryIdealUnitReindex.finite_units
 
-lemma ramifiedFunction_reduce (F:Eis→ℂ) (hneg:∀x,F (-x)=F x)
-    (hpow:∀x m,F (x*lambda^m)=F (x*lambda^(m%3))) (n:Eis) (u:Eisˣ) (m:ℕ) :
+section
+variable (F:Eis→ℂ) (hneg:∀x,F (-x)=F x) (hpow:∀x m,F (x*lambda^m)=F (x*lambda^(m%3))) (n:Eis)
+include F hneg hpow n
+
+lemma ramifiedFunction_reduce (u:Eisˣ) (m:ℕ) :
     ∃j k:Fin 3,F (n*((u:Eis)*lambda^m))=F (n*omega^j.val*lambda^k.val) := by
   obtain ⟨j,hj|hj⟩:=unit_eq_sign_omega u
   · refine ⟨j,⟨m%3,Nat.mod_lt _ (by decide)⟩,?_⟩
@@ -189,13 +136,14 @@ lemma ramifiedFunction_reduce (F:Eis→ℂ) (hneg:∀x,F (-x)=F x)
   · refine ⟨j,⟨m%3,Nat.mod_lt _ (by decide)⟩,?_⟩
     rw [hj,neg_mul,mul_neg,hneg,←mul_assoc,hpow]
 
-lemma ramifiedFunction_family_bound (F:Eis→ℂ) (hneg:∀x,F (-x)=F x)
-    (hpow:∀x m,F (x*lambda^m)=F (x*lambda^(m%3))) (n:Eis) (M:ℝ)
+lemma ramifiedFunction_family_bound (M:ℝ)
     (hM:∀j k:Fin 3,‖F (n*omega^j.val*lambda^k.val)‖≤M) (u:Eisˣ) (m:ℕ) :
     ‖F (n*((u:Eis)*lambda^m))‖≤M := by
   obtain ⟨j,k,hjk⟩:=ramifiedFunction_reduce F hneg hpow n u m
   rw [hjk]
   exact hM j k
+
+end
 
 lemma ramifiedNine_eq : (9:Eis)=omega*lambda^4 := by
   have hw:omega^2=-omega-1:=by linear_combination ramified_omega_relation
@@ -230,8 +178,11 @@ lemma lowRamifiedLeading (F:Eis→ℂ)
     ring
   rw [he,hpow,show (k.val+6)%3=k.val by omega]
 
-lemma lowRamified_remainder_bound (F:Eis→ℂ) (hneg:∀x,F (-x)=F x)
-    (hpow:∀x m,F (x*lambda^m)=F (x*lambda^(m%3))) (n:Eis) (hn:lambda^2∣n-1)
+section
+variable (F:Eis→ℂ) (hneg:∀x,F (-x)=F x) (hpow:∀x m,F (x*lambda^m)=F (x*lambda^(m%3))) (n:Eis) (hn:lambda^2∣n-1)
+include F hneg hpow n hn
+
+lemma lowRamified_remainder_bound
     (M:ℝ) (hM0:0≤M) (hM:∀j k:Fin 3,‖F (n*omega^j.val*lambda^k.val)‖≤M)
     (a r:Fin 3) :
     ‖∑u:Eisˣ,∑k:Fin 5,ramifiedRawWeight (lowRamifiedFrequency a r*n) u k.val*
@@ -251,8 +202,7 @@ lemma lowRamified_remainder_bound (F:Eis→ℂ) (hneg:∀x,F (-x)=F x)
       simp only [Finset.sum_mul]
     _≤(5/3)*M:=mul_le_mul_of_nonneg_right (lowRamifiedRawWeight_sum a r n hn) hM0
 
-theorem lowRamifiedTransform_injective (F:Eis→ℂ) (hneg:∀x,F (-x)=F x)
-    (hpow:∀x m,F (x*lambda^m)=F (x*lambda^(m%3))) (n:Eis) (hn:lambda^2∣n-1)
+theorem lowRamifiedTransform_injective
     (hz:∀a r:Fin 3,lowRamifiedTransform F (lowRamifiedFrequency a r*n)=0) :
     ∀j k:Fin 3,F (n*omega^j.val*lambda^k.val)=0 := by
   obtain ⟨i,hi,himax⟩:=Finset.exists_max_image (Finset.univ:Finset (Fin 3×Fin 3))
@@ -279,6 +229,8 @@ theorem lowRamifiedTransform_injective (F:Eis→ℂ) (hneg:∀x,F (-x)=F x)
   have hmzero:M=0:=by have hm0:0≤M:=norm_nonneg _; nlinarith
   intro j k
   exact norm_eq_zero.mp (le_antisymm (hmzero ▸ hM j k) (norm_nonneg _))
+
+end
 
 end
 
@@ -329,8 +281,11 @@ end
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
-lemma unramifiedGaussResidue_prime_pow_mod (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (h:Eis) (_hh:h≠0) (n:ℕ) :
+section
+variable (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (h:Eis)
+include p hp hprimary h
+
+lemma unramifiedGaussResidue_prime_pow_mod (_hh:h≠0) (n:ℕ) :
     unramifiedGaussResidue (h*p^n)=unramifiedGaussResidue (h*p^(n%3)) := by
   induction n using Nat.strong_induction_on with
   | h n ih=>
@@ -343,8 +298,7 @@ lemma unramifiedGaussResidue_prime_pow_mod (p:Eis) (hp:Prime p)
       have hm:(n-3)%3=n%3:=by omega
       rw [hm]
 
-theorem unramifiedGaussResidue_prime_square (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) :
+theorem unramifiedGaussResidue_prime_square (hph:¬p∣h) :
     unramifiedGaussResidue (h*p^2)=0 := by
   have hh:h≠0:=fun he=>hph (he▸dvd_zero p)
   have he:=unramifiedGaussResidue_square_cube p hp hprimary h hph
@@ -356,8 +310,7 @@ theorem unramifiedGaussResidue_prime_square (p:Eis) (hp:Prime p)
     linear_combination -he
   exact (mul_eq_zero.mp hz).resolve_left (inv_ne_zero hq)
 
-theorem unramifiedGaussResidue_prime_factor (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) :
+theorem unramifiedGaussResidue_prime_factor (hph:¬p∣h) :
     unramifiedGaussResidue (h*p)=
       (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(2/3:ℂ))*
         primeCubicGauss p hp hprimary 2 h*unramifiedGaussResidue h := by
@@ -392,8 +345,7 @@ theorem unramifiedGaussResidue_prime_factor (p:Eis) (hp:Prime p)
         q^(-(2/3:ℂ))*primeCubicGauss p hp hprimary 2 h*unramifiedGaussResidue h
       field_simp [hq]
 
-theorem unramifiedGaussResidue_prime_power_table (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) (n:ℕ) :
+theorem unramifiedGaussResidue_prime_power_table (hph:¬p∣h) (n:ℕ) :
     unramifiedGaussResidue (h*p^n)=
       if n%3=0 then unramifiedGaussResidue h
       else if n%3=1 then
@@ -411,10 +363,11 @@ theorem unramifiedGaussResidue_prime_power_table (p:Eis) (hp:Prime p)
 
 end
 
+end
+
 section
 open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
+open MeasureTheory Finset AddChar MulChar EisensteinEmbedding
 
 section
 open ActualEisensteinCubic ConcreteTraceCRT CubicJacobiGlobal CompletedGauss
@@ -567,10 +520,8 @@ theorem thetaTwistedSource_wirtingerBar_eq_completedBesselProfile
 end
 
 open scoped BigOperators Classical
-open MeasureTheory
-open Finset AddChar MulChar EisensteinEmbedding
+open MeasureTheory Finset AddChar MulChar EisensteinEmbedding ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
 
-open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
 
 lemma horizontalWirtingerBar_finite_sum {ι : Type*} [Fintype ι]

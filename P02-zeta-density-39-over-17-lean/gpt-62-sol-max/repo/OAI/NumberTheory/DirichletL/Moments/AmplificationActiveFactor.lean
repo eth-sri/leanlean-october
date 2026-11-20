@@ -10,17 +10,16 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentAmplificationActiveFactor
-open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss
-open CenteredMomentAmplificationShortening CenteredMomentSupportedCorrelation
-open CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePool
-open CenteredMomentSourceRow
+open CanonicalQuadraticSieve CanonicalRowCompletion ConcretePrimeRowBridge CompletedGauss CenteredMomentAmplificationShortening CenteredMomentSupportedCorrelation CenteredMomentAmplificationSourceDomain CenteredMomentAmplificationSourcePool CenteredMomentSourceRow
 local notation "O" => ActualEisensteinCubic.O
 
 def errorMovingExponent (n : ℕ) : ℕ := if n=5 then 0 else 1
 
-theorem residual_six_unit (p u : O)
-    (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u}))
-    (hcop : IsCoprime p u) : residualCharacter p 6 u=residualCharacter p 0 u := by
+section
+variable (p u : O) (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u})) (hcop : IsCoprime p u)
+include p u hp hu hcop
+
+theorem residual_six_unit : residualCharacter p 6 u=residualCharacter p 0 u := by
   have hx := idealRowHom_sixth_mask u (Ideal.span {p}) hp
   rw [idealRowHom_argument_pow u 6 _ hp,Ideal.isCoprime_span_singleton_iff,ite_eq_left hcop] at hx
   have hphase := supported_phase_sq p u hp hu
@@ -31,9 +30,7 @@ theorem residual_six_unit (p u : O)
     _ = 1 := by rw [hphase,hx];norm_num
     _ = _ := by simp
 
-theorem residual_seven_unit (p u : O)
-    (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u}))
-    (hcop : IsCoprime p u) : residualCharacter p 7 u=residualCharacter p 1 u := by
+theorem residual_seven_unit : residualCharacter p 7 u=residualCharacter p 1 u := by
   have hx := idealRowHom_sixth_mask u (Ideal.span {p}) hp
   rw [idealRowHom_argument_pow u 6 _ hp,Ideal.isCoprime_span_singleton_iff,ite_eq_left hcop] at hx
   have hphase := supported_phase_sq p u hp hu
@@ -44,14 +41,14 @@ theorem residual_seven_unit (p u : O)
         (idealRowHom u (Ideal.span {p})^6)^2*idealRowHom u (Ideal.span {p})^2 := by ring
     _ = _ := by rw [hphase,hx];ring
 
-theorem error_residual_factor (p u : O)
-    (hp : Supported (Ideal.span {p})) (hu : Supported (Ideal.span {u}))
-    (hcop : IsCoprime p u) (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) :
+theorem error_residual_factor (n : ℕ) (hn : n=0 ∨ n=5 ∨ n=6) :
     residualCharacter p (n+1) u=residualCharacter p (errorMovingExponent n) u := by
   rcases hn with rfl|rfl|rfl
   · rfl
   · exact residual_six_unit p u hp hu hcop
   · exact residual_seven_unit p u hp hu hcop
+
+end
 
 theorem residualColumns_coprime (S : Finset (Ideal O)) (p : O) (hp : Prime p)
     (k : ℕ) (I : Ideal O) (hI : I∈residualColumns S p hp k) :

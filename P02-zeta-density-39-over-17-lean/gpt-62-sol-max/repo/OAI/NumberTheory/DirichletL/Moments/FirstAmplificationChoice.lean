@@ -16,13 +16,7 @@ open scoped BigOperators Classical SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstAmplificationChoice
-open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT
-open CenteredMomentSectorLocalization CenteredMomentPrimePool
-open CenteredMomentPrimeElements CenteredMomentAmplificationEligibility
-open CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy
-open CenteredMomentSourceRow CenteredMomentGaussNormalization
-open CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationErrorEnergy
-open CenteredMomentAmplificationGlobal CenteredMomentAmplificationSlotGap
+open HeckeFamily CanonicalQuadraticSieve ConcreteTraceCRT CenteredMomentSectorLocalization CenteredMomentPrimePool CenteredMomentPrimeElements CenteredMomentAmplificationEligibility CenteredMomentAmplificationEnergy CenteredMomentGaussEnergy CenteredMomentSourceRow CenteredMomentGaussNormalization CenteredMomentAmplificationOriginalErrors CenteredMomentAmplificationErrorEnergy CenteredMomentAmplificationGlobal CenteredMomentAmplificationSlotGap
 local notation "O" => ActualEisensteinCubic.O
 
 abbrev ballProfile : 𝓢(ℝ,ℂ) := QuadraticInitialBound.sieveCutoff
@@ -264,21 +258,22 @@ theorem amplified_ball_majorant (Z sigma D0 c : ℝ) (hZ : 1<Z) (hs : 0≤sigma)
   exact hb.trans (Real.rpow_le_rpow_of_exponent_le hZ.le
     (by linarith [(mainGain_bounds D0 c sigma hs).1]))
 
-theorem gaussEnergy_ball_nonneg {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ) (Y : ℝ) (hY : 0<Y) :
+section
+variable {α : Type*} (S : Finset α) (a : α→O) (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ)
+include α S a ha c
+
+theorem gaussEnergy_ball_nonneg (Y : ℝ) (hY : 0<Y) :
     0≤(gaussEnergy S a ha c ballProfile Y).re := by
   have hs := CenteredMomentSmoothedWindowEnergy.gaussEnergy_hasSum_re S a ha c ballProfile Y hY
   rw [←hs.tsum_eq]
   exact tsum_nonneg (fun h => mul_nonneg (sq_nonneg _) (ballProfile_nonneg _))
 
-theorem errorEnergy_nonneg {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ) (h p : O) :
+theorem errorEnergy_nonneg (h p : O) :
     0≤errorEnergy S a ha c h p := by
   unfold errorEnergy
   positivity
 
-theorem eligible_error_sum {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ)
+theorem eligible_error_sum
     (rows P : Finset O) (allow : O→O→Prop) :
     (∑x∈eligiblePairs rows P allow,errorEnergy S a ha c x.1 x.2)=
       ∑p∈P,∑h∈rows.filter (fun h => allow h p),errorEnergy S a ha c h p := by
@@ -286,8 +281,7 @@ theorem eligible_error_sum {α : Type*} (S : Finset α) (a : α→O)
   simp only [Finset.sum_filter]
   exact Finset.sum_comm
 
-theorem dyadic_amplification_to_ball {α : Type*} (S : Finset α) (a : α→O)
-    (ha : ∀i,Supported (Ideal.span {a i})) (c : α→ℂ)
+theorem dyadic_amplification_to_ball
     (P : Finset (Ideal O)) (hp : ∀Q∈P,Prime Q) (hbad : ∀Q∈P,Q∉fixedBadPrimes)
     (hP : P.Nonempty) (R s : Ideal O) (hR0 : R≠0) (hs0 : s≠0)
     (Z sigma BR Bs Mmax D0 cLog : ℝ) (hZ : 1<Z) (hsigma : 0<sigma) (hM : 0≤Mmax)
@@ -344,6 +338,8 @@ theorem dyadic_amplification_to_ball {α : Type*} (S : Finset α) (a : α→O)
     · exact Finset.sum_nonneg (fun p _ => Finset.sum_nonneg
         (fun h _ => errorEnergy_nonneg S a ha c h p))
 
+end
+
 theorem eventually_dyadic_amplification (M : Ideal O) [NeZero M]
     (H : Subgroup (O ⧸ M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
     (Sbad : Finset (Ideal O)) (hbad : fixedBadPrimes⊆Sbad)
@@ -377,13 +373,7 @@ theorem eventually_dyadic_amplification (M : Ideal O) [NeZero M]
     hZ hsigma hM (fun Q hQ => (hdata Q hQ).2.2.1)
     (fun Q hQ => (hdata Q hQ).2.2.2) hR hs hsize n hK
 
-open CenteredMomentSourceProfileMass CenteredMomentSourceMass
-open CenteredMomentAddedZeroUniform CenteredMomentOriginalChildEnergy
-open CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn
-open CenteredMomentAmplificationLiveMask CenteredMomentHeckeExpansion
-open ConcretePrimeRowBridge CanonicalRowCompletion RayFourExpansion
-open HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeColumnWindow
-open CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
+open CenteredMomentSourceProfileMass CenteredMomentSourceMass CenteredMomentAddedZeroUniform CenteredMomentOriginalChildEnergy CenteredMomentCommonAllocationSum CenteredMomentSourceLiveColumn CenteredMomentAmplificationLiveMask CenteredMomentHeckeExpansion ConcretePrimeRowBridge CanonicalRowCompletion RayFourExpansion HeckeRowClosure CenteredMomentChildRows CenteredMomentHeckeColumnWindow CenteredMomentAmplificationActiveFamily CenteredMomentAmplificationActiveFactor
 
 local instance {ι : Type*} : DecidableEq (ι ⊕ Fin 2) := Classical.decEq _
 
@@ -477,18 +467,22 @@ def active (D : OriginalData ι) : OriginalData ι :=
     | Sum.inl j => (D.S i).filter (fun I => D.slot j ((Ideal.absNorm I:ℝ)/D.lengths j)≠0)
     | Sum.inr _ => D.S i }
 
-theorem active_subset (D : OriginalData ι) (i : ι ⊕ Fin 2) : D.active.S i⊆D.S i := by
+section
+variable (D : OriginalData ι)
+include D
+
+theorem active_subset (i : ι ⊕ Fin 2) : D.active.S i⊆D.S i := by
   cases i <;> simp only [active]
   · exact Finset.filter_subset _ _
   · exact fun _ h => h
 
-theorem active_profile (D : OriginalData ι) : D.active.profile=D.profile := rfl
+theorem active_profile : D.active.profile=D.profile := rfl
 
-theorem active_slot (D : OriginalData ι) (i : ι) (I : Ideal O) (hI : I∈D.active.S (Sum.inl i)) :
+theorem active_slot (i : ι) (I : Ideal O) (hI : I∈D.active.S (Sum.inl i)) :
     D.active.slot i ((Ideal.absNorm I:ℝ)/D.active.lengths i)≠0 :=
   (Finset.mem_filter.mp hI).2
 
-theorem active_profile_zero (D : OriginalData ι) (v : Tuple ι)
+theorem active_profile_zero (v : Tuple ι)
     (hv : v∈Fintype.piFinset D.S) (hn : v∉Fintype.piFinset D.active.S) : D.profile v=0 := by
   have hn' : ¬∀i,v i∈D.active.S i := by simpa only [Fintype.mem_piFinset] using hn
   obtain ⟨i,hi⟩ := not_forall.mp hn'
@@ -505,7 +499,7 @@ theorem active_profile_zero (D : OriginalData ι) (v : Tuple ι)
       rw [hz,mul_zero]
     simp only [profile,profileCoefficient,hp,zero_mul]
 
-theorem active_beta (D : OriginalData ι) : D.active.beta=D.beta := by
+theorem active_beta : D.active.beta=D.beta := by
   funext I
   unfold beta finiteColumnCoefficient
   rw [active_profile]
@@ -517,10 +511,10 @@ theorem active_beta (D : OriginalData ι) : D.active.beta=D.beta := by
   intro hm
   exact hn (Finset.mem_filter.mpr ⟨hm,hv'.2⟩)
 
-theorem active_columns_subset (D : OriginalData ι) : D.active.columns⊆D.columns :=
+theorem active_columns_subset : D.active.columns⊆D.columns :=
   Finset.image_subset_image (Fintype.piFinset_subset _ _ D.active_subset)
 
-theorem active_gaussPolynomial (D : OriginalData ι) (η : Character) (m : O)
+theorem active_gaussPolynomial (η : Character) (m : O)
     (t T : ℝ) (h : O) :
     gaussPolynomial Finset.univ (sourceGenerator D.active.columns)
       (sourceGenerator_supported D.active.columns) (D.active.coefficient η m t T) h=
@@ -542,7 +536,7 @@ theorem active_gaussPolynomial (D : OriginalData ι) (η : Character) (m : O)
     exact hn (Finset.mem_filter.mpr ⟨hm,(Finset.mem_filter.mp hI).2⟩)
   rw [hz,zero_mul,mul_zero,zero_mul]
 
-theorem active_gaussEnergy (D : OriginalData ι) (η : Character) (m : O)
+theorem active_gaussEnergy (η : Character) (m : O)
     (t T : ℝ) (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
     gaussEnergy Finset.univ (sourceGenerator D.active.columns)
       (sourceGenerator_supported D.active.columns) (D.active.coefficient η m t T) W K=
@@ -551,12 +545,11 @@ theorem active_gaussEnergy (D : OriginalData ι) (η : Character) (m : O)
   unfold gaussEnergy
   simp_rw [D.active_gaussPolynomial]
 
+end
+
 end OriginalData
 
-open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstExtractedLedger
-open CenteredMomentDescentLedger CenteredMomentCommonSupport
-open CenteredMomentFirstColumns CenteredMomentRankinRadical ActualEisensteinCubic
+open CenteredMomentFirstScale CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentFirstExtractedLedger CenteredMomentDescentLedger CenteredMomentCommonSupport CenteredMomentFirstColumns CenteredMomentRankinRadical ActualEisensteinCubic
 
 def nominalLog (I J E : Ideal O) (K X Z : ℝ) : ℝ :=
   Real.logb Z (firstNominalScale I J E K X)

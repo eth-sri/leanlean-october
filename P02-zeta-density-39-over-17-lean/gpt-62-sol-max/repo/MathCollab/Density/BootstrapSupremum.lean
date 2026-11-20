@@ -56,12 +56,16 @@ def bootstrapValues (w : ReflectionCutoff) {κ : ℝ} (d : LargeValueData κ) : 
 def bootstrapBound (w : ReflectionCutoff) {κ : ℝ} (d : LargeValueData κ) : ℝ :=
   sSup (bootstrapValues w d)
 
-theorem bootstrapValues_nonempty (w : ReflectionCutoff) {κ : ℝ} (d : LargeValueData κ)
+section
+variable (w : ReflectionCutoff) {κ : ℝ} (d : LargeValueData κ)
+include w κ d
+
+theorem bootstrapValues_nonempty
     (hW : d.W.Nonempty) : (bootstrapValues w d).Nonempty := by
   refine ⟨_, d.W, mem_bootstrapFamily.mpr ⟨Finset.Subset.refl _, hW⟩, (d.N : ℝ), ?_, rfl⟩
   exact ⟨le_rfl, by linarith [d.scale_upper, d.T_ge_two]⟩
 
-theorem bootstrapValues_bddAbove (w : ReflectionCutoff) {κ : ℝ} (d : LargeValueData κ) :
+theorem bootstrapValues_bddAbove :
     BddAbove (bootstrapValues w d) := by
   obtain ⟨K, hK, hk⟩ := crude_kernel_bound w (show 0 < 8*(d.T+1) by linarith [d.T_ge_two])
   refine ⟨(d.W.card : ℝ)^2*K^2, ?_⟩
@@ -86,7 +90,7 @@ theorem bootstrapValues_bddAbove (w : ReflectionCutoff) {κ : ℝ} (d : LargeVal
         _ = _ := by simp; ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (Nat.cast_nonneg _) hc 2) (sq_nonneg _)
 
-theorem bootstrapBound_nonneg (w : ReflectionCutoff) {κ : ℝ} (d : LargeValueData κ)
+theorem bootstrapBound_nonneg
     (hW : d.W.Nonempty) : 0 ≤ bootstrapBound w d := by
   obtain ⟨x, hx⟩ := bootstrapValues_nonempty w d hW
   have hle := le_csSup (bootstrapValues_bddAbove w d) hx
@@ -96,7 +100,7 @@ theorem bootstrapBound_nonneg (w : ReflectionCutoff) {κ : ℝ} (d : LargeValueD
     ((by exact_mod_cast d.N_pos.le : (0 : ℝ) ≤ d.N).trans hn)).trans hle
 
 /-- The finite supremum bounds each descendant without assuming a kernel estimate. -/
-theorem kernelEnergy_le_bootstrapBound (w : ReflectionCutoff) {κ : ℝ} (d : LargeValueData κ)
+theorem kernelEnergy_le_bootstrapBound
     {U : Finset ℝ} (hU : U ∈ bootstrapFamily d.W) {L : ℝ}
     (hL : L ∈ Icc (d.N : ℝ) (8*(d.T+1))) :
     kernelEnergy w L U ≤ bootstrapBound w d * bootstrapScalar d.T d.N d.V * U.card *
@@ -109,5 +113,7 @@ theorem kernelEnergy_le_bootstrapBound (w : ReflectionCutoff) {κ : ℝ} (d : La
       from ⟨U, hU, L, hL, rfl⟩)
   have hi := (div_le_iff₀ hpos).1 hh
   simpa only [bootstrapBound, mul_assoc] using hi
+
+end
 
 end MathCollab.Density

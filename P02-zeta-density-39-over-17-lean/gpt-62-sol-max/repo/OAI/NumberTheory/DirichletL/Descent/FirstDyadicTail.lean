@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicRadius
 
 @[expose] public section
@@ -17,11 +18,11 @@ theorem full_first_dyadic_marked_rapid_tail (Mmax Fmax eta tau saving:ℝ)
     (hMm:0≤Mmax) (hFm:0≤Fmax) (heta:0≤eta) (htau:0<tau) :
     ∃(s:Finset (ℕ×ℕ)) (Ctail:ℝ),0<Ctail ∧
     ∀{ι σ:Type*} [DecidableEq ι] [DecidableEq σ]
-      (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-      (_hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+      (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hinj:OAI.PrincipalIdealFamily.Distinct p)
+      (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (pool:Finset ι) (bs:Finset (CubeCoordinates ι)) (labels:Finset (Ideal O))
       (a:CubeCoordinates ι→Finset ι→Ideal O→ℂ) (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂:O)
       (slots:Finset σ) (lists:σ→Finset ι) (weights:σ→ι→ℂ)

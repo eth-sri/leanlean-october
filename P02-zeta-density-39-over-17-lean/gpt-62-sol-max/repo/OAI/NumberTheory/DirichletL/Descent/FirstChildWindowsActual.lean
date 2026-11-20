@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstChildWindows
 
 @[expose] public section
@@ -8,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstChildWindows
-open InverseMoment InverseMomentFirstProfileUniform ActualEisensteinCubic
-open FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
+open InverseMoment InverseMomentFirstProfileUniform ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 def actualOuterRatios {ι : Type*} (p : ι→O) (A₁ A₂ C R : ℝ) (d h : O)
@@ -28,8 +28,8 @@ theorem actual_first_child_windows (g₁ g₂ : 𝓢(ℝ,ℂ)) (m₁ m₂ bcap :
       (∀i,0≤M₀ i) ∧ (∀i,HasCompactSupport (U₀ i : ℝ→ℂ)) ∧
       (∀i,Function.support (U₀ i)⊆Set.Icc (-M₀ i) (M₀ i)) ∧
       ∀{ι κ : Type*}[DecidableEq ι][DecidableEq κ]
-      (p : ι→O)(_hp : ∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+      (p : ι→O)(_hp : ∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
       (source : Finset κ)(F : Finset ι)(selector C₁ C₂ : κ→Finset ι→ℂ)
       (A₁ A₂ C R : κ→ℝ)(d h : κ→O)(s : Fin 9→ℝ)
       (ρ : Fin 9→ℝ)(c₁ c₂ θ₁ θ₂ : ℝ),

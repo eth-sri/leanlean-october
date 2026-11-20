@@ -88,15 +88,15 @@ theorem heathBrownCriticalMoment_bound
   rw [heathBrownCriticalMoment_lambda (by omega) epsilon] at h
   exact h
 
+section
+variable {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ} (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda) (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4) (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
+include N k f A lambda epsilon C hk hN hA hlambda hlambdaOne hsmall hlargeH
+
 /-- Fully source-linked insertion at Heath-Brown's critical moment.  The
 right side still displays the exact VMVT coefficient, Lemma 2 coefficient,
 cell volume, and endpoint count; subsequent algebra may absorb only these
 visible factors. -/
 theorem heathBrownIntegratedMajorant_le_critical
-    {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ}
-    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
-    (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4)
-    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
     (hVMVT : FordVinogradovMomentBound
       (heathBrownCriticalMoment k) (k - 1) C epsilon)
     (hcoordLow : ContinuousOn
@@ -146,10 +146,6 @@ coefficient-cell volume, and the common-range endpoint error separate.  Thus
 the subsequent source-scale algebra cannot accidentally absorb a term that
 has not first been bounded. -/
 theorem heathBrown_lemma_one_assembled_critical
-    {N k : ℕ} {f : ℝ → ℝ} {A lambda epsilon C : ℝ}
-    (hk : 3 ≤ k) (hN : 1 ≤ N) (hA : 0 < A) (hlambda : 0 < lambda)
-    (hlambdaOne : lambda ≤ 1) (hsmall : A * lambda ≤ 1 / 4)
-    (hlargeH : 8 ≤ heathBrownHChoice k A lambda)
     (hHN : heathBrownHChoice k A lambda ≤ N)
     (hVMVT : FordVinogradovMomentBound
       (heathBrownCriticalMoment k) (k - 1) C epsilon)
@@ -235,6 +231,8 @@ theorem heathBrown_lemma_one_assembled_critical
                 heathBrownCriticalMoment k)⁻¹)) *
           ENNReal.ofReal ((heathBrownHChoice k A lambda : ℝ) ^ 2) := hpre
     _ ≤ _ := by gcongr
+
+end
 
 
 end

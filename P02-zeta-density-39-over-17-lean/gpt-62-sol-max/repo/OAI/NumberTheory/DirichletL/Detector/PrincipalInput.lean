@@ -10,15 +10,15 @@ noncomputable section
 open scoped Classical
 open MeasureTheory
 namespace SevenEighths.ProbePhysical
-open CompletedGauss CanonicalQuadraticSieve ProbeMellinBoundary
-open PrincipalMellinResidues ProbeFiniteProductBounds
+open CompletedGauss CanonicalQuadraticSieve ProbeMellinBoundary PrincipalMellinResidues ProbeFiniteProductBounds
 local notation "O" => ActualEisensteinCubic.O
 local notation "Id" => Ideal O
 
-lemma principalTuple_source_integrand {K : ℕ} (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : SourceExclusions S) (P : Fin K→PrimeIdeal)
-    (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) (x w z : ℂ)
+section
+variable {K : ℕ} (η : HeckeFamily.Character) (S : Finset Id) (hS : SourceExclusions S) (P : Fin K→PrimeIdeal) (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S) (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ)
+include K η S hS P hP hPS W0 W1 X Y Z
+
+lemma principalTuple_source_integrand (x w z : ℂ)
     (hx : 3/2<x.re) (hw : 2<w.re) (hz : 1/6<z.re) :
     sourceMellinWeight W0 W1 X Y Z x w z*
       (∏i,(elementNorm (primaryGenerator (P i).val):ℂ)^(z-1))*
@@ -36,10 +36,7 @@ lemma principalTuple_source_integrand {K : ℕ} (η : HeckeFamily.Character)
     Complex.ofReal_natCast,Finset.prod_mul_distrib]
   ring
 
-theorem principalRowIntegral_eq_sourceMultiplier {K : ℕ} (η : HeckeFamily.Character)
-    (S : Finset Id) (hS : SourceExclusions S) (P : Fin K→PrimeIdeal)
-    (hP : Function.Injective P) (hPS : ∀i,(P i).val∉S)
-    (W0 W1 : SchwartzMap ℝ ℂ) (X Y Z : ℝ) :
+theorem principalRowIntegral_eq_sourceMultiplier :
     principalRowIntegral η S (fun i=>primaryGenerator (P i).val) W0 W1 X Y Z=
       ((1/(2*Real.pi):ℝ):ℂ)^3*∫t : HeightSpace,
         sourceMultiplier W0 W1 X Y Z (η.excludePrimes S hS.prime) ((3:ℂ)+t.1.1*Complex.I)
@@ -58,6 +55,8 @@ theorem principalRowIntegral_eq_sourceMultiplier {K : ℕ} (η : HeckeFamily.Cha
     (by norm_num [Complex.add_re,Complex.mul_re])
     (by norm_num [Complex.add_re,Complex.mul_re])
     (by norm_num [Complex.add_re,Complex.mul_re])
+
+end
 
 end SevenEighths.ProbePhysical
 end

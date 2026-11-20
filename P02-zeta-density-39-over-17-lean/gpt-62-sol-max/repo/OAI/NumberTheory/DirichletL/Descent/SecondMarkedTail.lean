@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondWholeCutoff
 public import OAI.NumberTheory.DirichletL.Inversion.SecondPrincipalCaller
 
@@ -8,16 +9,15 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic
-open InversePrincipalEnergy InverseSecondPrincipalCaller
+open ActualEisensteinCubic FirstCauchyArithmetic CompletedGauss FirstPassCubeLabels SecondPassArithmetic InversePrincipalEnergy InverseSecondPrincipalCaller
 open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 
 theorem marked_radial_uniform_bound (ε : ℝ) (hε : 0 < ε) :
     ∃ Cm : ℝ, 0 < Cm ∧ ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι → O) (_hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-      (_hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+      (p : ι → O) (_hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
       (slots : Finset σ) (lists : σ → Finset ι) (a : σ → ι → ℂ),
       (slots : Set σ).PairwiseDisjoint lists →
       (∀ i ∈ slots, ∀ k ∈ lists i, ‖a i k‖ ≤ 1) →

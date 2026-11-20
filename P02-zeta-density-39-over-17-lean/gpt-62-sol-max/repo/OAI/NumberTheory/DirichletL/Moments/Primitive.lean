@@ -9,8 +9,7 @@ noncomputable section
 open scoped BigOperators Classical
 local notation "O" => ActualEisensteinCubic.O
 namespace SevenEighths.CenteredMomentPrimitive
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT
-open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ConcreteTraceCRT CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentFourier
 
 def primitiveCharacter {ι : Type*} [Fintype ι]
     (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
@@ -20,21 +19,21 @@ def primitiveCharacter {ι : Type*} [Fintype ι]
   crtCharacter ((Ideal.quotEquivOfEq (span_finitePrimeModulus P)).trans
     (IdealGaussCRT.quotientProdEquivPi P hcop)) (fun i => actualSextic (P i) (hg i) ^ j i)
 
-theorem primitiveCharacter_apply {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i, goodLambda ∉ P i) (j : ι → ℕ) (x : Residue (finitePrimeModulus P)) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (P : ι → Ideal O) [instShared3 : ∀ i, (P i).IsMaximal] (hcop : Pairwise (Function.onFun IsCoprime P)) (hg : ∀ i, goodLambda ∉ P i) (j : ι → ℕ)
+include ι instShared1 P instShared3 hcop hg j
+
+theorem primitiveCharacter_apply (x : Residue (finitePrimeModulus P)) :
     primitiveCharacter P hcop hg j x =
       principalSexticRow P hcop hg j (finitePrimeModulus P) (span_finitePrimeModulus P) x := rfl
 
-@[simp] theorem primitiveCharacter_mk {ι : Type*} [Fintype ι]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime P))
-    (hg : ∀ i, goodLambda ∉ P i) (j : ι → ℕ) (x : O) :
+@[simp] theorem primitiveCharacter_mk (x : O) :
     primitiveCharacter P hcop hg j (Ideal.Quotient.mk _ x) =
       finiteSexticRow P hg j x := by
   exact (primitiveCharacter_apply P hcop hg j _).trans
     (principalSexticRow_mk P hcop hg j (finitePrimeModulus P) (span_finitePrimeModulus P) x)
+
+end
 
 lemma sqrt_absNorm (r : O) :
     Real.sqrt (Ideal.absNorm (Ideal.span {r}) : ℝ) = ‖eisEmbedding r‖ := by

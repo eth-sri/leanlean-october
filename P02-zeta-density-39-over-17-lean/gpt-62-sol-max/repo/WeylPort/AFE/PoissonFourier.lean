@@ -70,19 +70,20 @@ theorem waveDerivative_eq_deriv {f g : ℝ → ℝ} {x : ℝ}
   rw [(weighted_wave_hasDerivAt hf hg).deriv]
   simp only [waveDerivative, Complex.ofReal_mul, mul_assoc]
 
+section
+variable {f g : ℝ → ℝ} {a b : ℝ} (h : PartIRegularity f g a b)
+include f g a b h
+
 /-- The weight is continuous under the source's differentiability hypothesis. -/
-theorem PartIRegularity.g_continuous {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) : ContinuousOn g (Set.Icc a b) :=
+theorem PartIRegularity.g_continuous : ContinuousOn g (Set.Icc a b) :=
   fun x hx => (h.g_differentiable x hx).continuousAt.continuousWithinAt
 
 /-- The phase is continuous under the source's differentiability hypothesis. -/
-theorem PartIRegularity.f_continuous {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) : ContinuousOn f (Set.Icc a b) :=
+theorem PartIRegularity.f_continuous : ContinuousOn f (Set.Icc a b) :=
   fun x hx => (h.f_differentiable x hx).continuousAt.continuousWithinAt
 
 /-- The upper-frequency integral coefficient has the exact mixed harmonic majorant. -/
-theorem negativeCoefficient_bound {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) {n : ℕ} (hn : deriv f a < n) :
+theorem negativeCoefficient_bound {n : ℕ} (hn : deriv f a < n) :
     ‖negativeCoefficient f g a b n‖ ≤
       partICoefficient f g a * (1 / ((n : ℝ) * ((n : ℝ) - deriv f a))) := by
   have hi := negative_derivative_amplitude_integral_bound h.lt f g h.f_differentiable
@@ -97,8 +98,7 @@ theorem negativeCoefficient_bound {f g : ℝ → ℝ} {a b : ℝ}
   all_goals simp only [partICoefficient, derivativeMode, div_eq_mul_inv, mul_inv_rev] <;> ring
 
 /-- The lower-frequency integral coefficient has the exact positive harmonic majorant. -/
-theorem positiveCoefficient_bound {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) {n : ℕ} (hn : 1 ≤ n) :
+theorem positiveCoefficient_bound {n : ℕ} (hn : 1 ≤ n) :
     ‖positiveCoefficient f g a b n‖ ≤
       partICoefficient f g a * (1 / ((n : ℝ) * ((n : ℝ) + deriv f a))) := by
   have hi := positive_derivative_amplitude_integral_bound h.lt f g h.f_differentiable
@@ -121,8 +121,7 @@ theorem positiveCoefficient_bound {f g : ℝ → ℝ} {a b : ℝ}
   ring
 
 /-- Every nonstationary upper-frequency tail is absolutely summable. -/
-theorem summable_negativeCoefficient_tail {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) {N : ℕ} (hN : deriv f a < (N : ℝ) + 1) :
+theorem summable_negativeCoefficient_tail {N : ℕ} (hN : deriv f a < (N : ℝ) + 1) :
     Summable (fun n : ℕ => negativeCoefficient f g a b (n + N + 1)) := by
   have hy := h.f_deriv_pos a (Set.left_mem_Icc.mpr h.lt.le)
   apply ((hasSum_harmonic_tail hy hN).summable.mul_left (partICoefficient f g a)).of_norm_bounded
@@ -133,15 +132,13 @@ theorem summable_negativeCoefficient_tail {f g : ℝ → ℝ} {a b : ℝ}
   simpa only [Nat.cast_add, Nat.cast_one] using negativeCoefficient_bound h hn
 
 /-- The stationary frequencies form only a finite head, so S₁ converges absolutely. -/
-theorem summable_negativeCoefficient {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) : Summable (negativeCoefficient f g a b) := by
+theorem summable_negativeCoefficient : Summable (negativeCoefficient f g a b) := by
   have ht := summable_negativeCoefficient_tail h (Nat.lt_floor_add_one (deriv f a))
   apply (summable_nat_add_iff (⌊deriv f a⌋₊ + 1)).mp
   simpa only [Nat.add_assoc] using ht
 
 /-- Every positive frequency belongs to the absolutely convergent S₂ tail. -/
-theorem summable_positiveCoefficient {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) : Summable (positiveCoefficient f g a b) := by
+theorem summable_positiveCoefficient : Summable (positiveCoefficient f g a b) := by
   have hy := h.f_deriv_pos a (Set.left_mem_Icc.mpr h.lt.le)
   apply (summable_nat_add_iff 1).mp
   apply ((hasSum_harmonic_plus hy).summable.mul_left (partICoefficient f g a)).of_norm_bounded
@@ -149,13 +146,14 @@ theorem summable_positiveCoefficient {f g : ℝ → ℝ} {a b : ℝ}
   simpa only [Nat.cast_add, Nat.cast_one] using positiveCoefficient_bound h (Nat.le_add_left 1 n)
 
 /-- The explicit source derivative amplitude is continuous on the closed interval. -/
-theorem PartIRegularity.waveDerivative_continuous {f g : ℝ → ℝ} {a b : ℝ}
-    (h : PartIRegularity f g a b) : ContinuousOn (waveDerivative f g) (Set.Icc a b) := by
+theorem PartIRegularity.waveDerivative_continuous : ContinuousOn (waveDerivative f g) (Set.Icc a b) := by
   unfold waveDerivative
   exact ((Complex.continuous_ofReal.comp_continuousOn h.g_deriv_continuous).add
     (continuousOn_const.mul (Complex.continuous_ofReal.comp_continuousOn
       (h.g_continuous.mul h.f_deriv_continuous)))).mul
     ((continuousOn_const.mul (Complex.continuous_ofReal.comp_continuousOn h.f_continuous)).cexp)
+
+end
 
 /-- The Fourier shift acts on the actual derivative amplitude by subtracting νx from the phase. -/
 theorem waveDerivative_mul_phase (f g : ℝ → ℝ) (x ν : ℝ) :

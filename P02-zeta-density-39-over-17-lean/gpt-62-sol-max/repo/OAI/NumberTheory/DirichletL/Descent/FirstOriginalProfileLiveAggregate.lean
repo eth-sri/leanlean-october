@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveIdentity
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveCount
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileScales
@@ -10,13 +11,12 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseMomentFirstOriginalProfile
-open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseMomentFirstChildWindows InverseMomentFirstProfileUniform CompletedHeight
+open InverseMoment ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseMomentFirstChildWindows InverseMomentFirstProfileUniform CompletedHeight
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-variable (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-variable (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-variable (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+variable (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+variable (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem original_retained_joint_profile_bound (pool : Finset ι) (Q : Finset (ι→₀ℕ))
     (labels : Finset (Ideal O)) (β : Ideal O→(ι→₀ℕ)→ℂ)

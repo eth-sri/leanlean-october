@@ -9,11 +9,9 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open UniqueFactorizationMonoid
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialCompletePool
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialLargePool
-open InverseInitialCommonTuples InverseInitialEnergyCallerWindow
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialLargePool InverseInitialCommonTuples InverseInitialEnergyCallerWindow
 local notation "Eis"=>ActualEisensteinCubic.O
 
 theorem original_column_norm_bound (S:Finset (Ideal Eis)){P j c:Ideal Eis}

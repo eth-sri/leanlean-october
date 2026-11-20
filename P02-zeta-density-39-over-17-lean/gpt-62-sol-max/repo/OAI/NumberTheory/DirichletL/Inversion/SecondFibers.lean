@@ -195,7 +195,7 @@ theorem valid_tuple_card_le {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn))
     Fintype.card_fun, Fintype.card_fin, Nat.mul_assoc] using Fintype.card_le_of_injective encode hi
 
 lemma divisor_card_sq_le (I : Ideal O) (hI : I ≠ 0) :
-    (idealDivisors (I^2)).card ≤ (idealDivisors I).card^2 := by
+    (idealDivisors (I ^2)).card ≤ (idealDivisors I).card^2 := by
   simpa only [pow_two] using divisor_card_mul_le I I hI hI
 
 theorem valid_tuple_card_le_separated {Jo Jn : ℕ} (T : Finset (SecondTuple Jo Jn))
@@ -236,12 +236,6 @@ theorem valid_tuple_card_le_slot_cap {Jo Jn : ℕ} (T : Finset (SecondTuple Jo J
     (pow_le_pow_right₀ (divisor_card_pos γ.quotient ht) ho))
     (pow_le_pow_right₀ (divisor_card_pos γ.residual hr) hn)
 
-def originalSource {Jo Jn : ℕ} (source : Finset (SecondTuple Jo Jn))
-    (oldLists : Fin Jo → Finset SmoothMobiusCorrection.PrimeIdeal)
-    (newLists : Fin Jn → Finset SmoothMobiusCorrection.PrimeIdeal)
-    (keep : SecondTuple Jo Jn → Prop) : Finset (SecondTuple Jo Jn) :=
-  source.filter fun x => (∀ i, x.oldAssigned i ∈ oldLists i) ∧
-    (∀ i, x.newAssigned i ∈ newLists i) ∧ keep x
 
 end
 end SevenEighths.InverseSecondFibers

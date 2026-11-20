@@ -1,6 +1,6 @@
 module
 public import LaterPairs.NativeSharpRow6
-public import LaterPairs.SharpPreservedCurveComparisons
+
 
 @[expose] public section
 set_option autoImplicit false
@@ -27,7 +27,3 @@ theorem sharp_row5_density_exponent {σ : ℝ} :
 
 end Montgomery.RationalMoment
 
-namespace Montgomery.RationalMoment.RightDetector.Physical
-open MathCollab.Density.Stronger MathCollab.Density
-
-end Montgomery.RationalMoment.RightDetector.Physical

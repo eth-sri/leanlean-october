@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalLongSource
 public import OAI.NumberTheory.DirichletL.Descent.GeneratorTransport
 public import OAI.NumberTheory.DirichletL.Descent.SecondNormalizedEnergy
@@ -11,9 +12,7 @@ noncomputable section
 
 open scoped BigOperators Classical
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondFibers IdealMobiusDivisorSum InverseInitialClippedColumns
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve FirstPassCubeLabels SecondPassArithmetic InverseSecondFibers IdealMobiusDivisorSum InverseInitialClippedColumns
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem child_ball_unit_mem (u:Oˣ)(R:ℝ)(k:O) :
@@ -36,9 +35,9 @@ theorem child_ball_unit_sum {A:Type*}[AddCommMonoid A](u:Oˣ)(R:ℝ)(f:O→A) :
     rfl
 
 variable {ι σ:Type*}[DecidableEq ι]
-  (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,goodLambda∉Ideal.span {p i})
+  (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p goodLambda)
 
 theorem canonical_ball_generator_energy
     (pool:Finset ι)(Ψ:O→*ℂ)(m:O)(I:Ideal O)(hI:primaryGenerator I≠0)

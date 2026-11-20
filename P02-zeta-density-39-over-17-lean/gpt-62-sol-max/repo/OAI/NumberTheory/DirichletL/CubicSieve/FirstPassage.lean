@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Poisson.QuadraticProfiles
 
 @[expose] public section
@@ -8,94 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-
-namespace FirstPassCubeLabels
-
-section
-
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory
-open ActualEisensteinCubic
-open RayFourExpansion (RayCharacter crossCoeff)
-
-open ActualEisensteinCubic
-open RayFourExpansion (RayCharacter crossCoeff)
-open ConcreteTraceCRT (eisEmbedding)
-
-end
-
-open ActualEisensteinCubic
-open ConcretePrimeRowBridge (conjugateIdealRowSum mobiusIdealColumn
-  primePool mem_primePool_iff)
-open FirstCauchyArithmetic (supportIdealFamily supportIdealFamily_pos supportIdealFamily_good
-  recoveredSupport supportRay)
-open RayFourExpansion (RayCharacter)
-open ConcreteTraceCRT (eisEmbedding)
-
-end FirstPassCubeLabels
+open scoped ContDiff
+open Set
 
 namespace SecondPassArithmetic
 
@@ -106,11 +30,11 @@ open MixedCrossSeparation (columnCoefficient columnG convertedColumnBlock quadra
   columnPrimeCoprime columnCoefficient_cancel_false columnCoefficient_cancel_true)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 
-theorem columnCoefficient_norm_one {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (S : Finset ι) :
+section
+variable {ι : Type*} [instShared1 : DecidableEq ι] (p : ι → O) (hp : ∀ i, p i ≠ 0) [instShared4 : OAI.PrincipalIdealFamily.Maximal p] (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p) (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+include ι instShared1 p hp instShared4 hcop hg hc
+
+theorem columnCoefficient_norm_one (S : Finset ι) :
     ‖columnCoefficient p hp hcop hg S‖ = 1 := by
   rw [FirstPassCubeLabels.columnCoefficient_eq_gaussBlock, norm_mul, norm_star,
     FiniteGaussPhase.norm_angularFactor _
@@ -118,21 +42,13 @@ theorem columnCoefficient_norm_one {ι : Type*} [DecidableEq ι]
     FirstPassCubeLabels.gaussBlock_norm_one p hp hcop hg hc S (fun _ => 2)
       (fun _ _ => by decide) (fun _ _ => by decide), one_mul]
 
-theorem columnCoefficient_mul_star {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2) (S : Finset ι) :
+theorem columnCoefficient_mul_star (S : Finset ι) :
     columnCoefficient p hp hcop hg S * star (columnCoefficient p hp hcop hg S) = 1 := by
   rw [← starRingEnd_apply, Complex.mul_conj', columnCoefficient_norm_one p hp hcop hg hc S]
   norm_num
 
-theorem convertedColumnBlock_restore {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S : Finset ι) :
+theorem convertedColumnBlock_restore
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (S : Finset ι) :
     convertedColumnBlock p hp hg S false =
       star (columnCoefficient p hp hcop hg S) * columnG p hp hcop hg S ∧
     convertedColumnBlock p hp hg S true =
@@ -153,30 +69,32 @@ theorem convertedColumnBlock_restore {ι : Type*} [DecidableEq ι]
           convertedColumnBlock p hp hg S true := by rw [ha, one_mul]
       _ = _ := by convert h using 1 <;> ring
 
+end
+
 def secondColumnMinus {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (C : Finset ι → ℂ) (e k : O) (S : Finset ι) : ℂ :=
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (C : Finset ι → ℂ) (e k : O) (S : Finset ι) : ℂ :=
   columnCoefficient p hp hcop hg S * star (columnG p hp hcop hg S) * C S *
     star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S e) *
     finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S k
 
 def secondColumnPlus {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i}) (C : Finset ι → ℂ) (e k : O) (S : Finset ι) : ℂ :=
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (C : Finset ι → ℂ) (e k : O) (S : Finset ι) : ℂ :=
   columnCoefficient p hp hcop hg S * finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S (-1) *
     star (columnG p hp hcop hg S) * C S *
     star (finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S e) *
     finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S k
 
 theorem mobius_second_gauss_restore {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (hc : ∀ i, ringChar (O ⧸ Ideal.span {p i}) ≠ 2)
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1) (S T : Finset ι) (hd : Disjoint S T)
+    (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+    (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (S T : Finset ι) (hd : Disjoint S T)
     (C₁ C₂ : Finset ι → ℂ) (e k : O) :
     star (supportMobius (fun i => Ideal.span {p i}) S * C₁ S) *
       (supportMobius (fun i => Ideal.span {p i}) T * C₂ T) *
@@ -259,9 +177,9 @@ theorem second_child_masked (m r c d e k v : O) :
 end Masks
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 def secondPreColumn (Ψ : O →* ℂ) (m c d e k : O)
     (H : Finset ι → ℂ) (S : Finset ι) : ℂ :=
@@ -280,7 +198,7 @@ def secondChildColumn (Ψ : O →* ℂ) (m f y : O)
     finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S y * H S
 
 theorem secondPreColumn_union
-    (hpr : ∀ i, lambda ^ 2 ∣ p i - 1)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda)
     (Ψ : O →* ℂ) (m r c d e k : O) (H : Finset ι → ℂ)
     (V N : Finset ι) (hd : Disjoint V N) :
     secondPreColumn p hp hcop hg Ψ (m * (e * r)) c d e k H (V ∪ N) =
@@ -317,9 +235,9 @@ open ActualEisensteinCubic
 open FirstCauchyArithmetic (supportMobius)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 def secondCommonWeight (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k₁ k₂ : O) (V : Finset ι) : ℂ :=
   supportMobius (fun i => Ideal.span {p i}) V *

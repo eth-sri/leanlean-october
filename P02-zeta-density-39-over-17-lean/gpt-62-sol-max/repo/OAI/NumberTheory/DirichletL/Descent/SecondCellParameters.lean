@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.SecondCellPhysical
 public import OAI.NumberTheory.DirichletL.Descent.PhysicalBlockBudget
 
@@ -10,8 +11,7 @@ noncomputable section
 open scoped BigOperators Classical
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseSecondSourceBlocks InverseInitialArithmetic
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseSecondSourceBlocks InverseInitialArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -39,7 +39,7 @@ theorem second_cell_formal_column (Z r A B t:ℝ) (d:BlockIndex) (hZ:1<Z):
   ring
 
 theorem actual_second_child_label_norm {ι:Type*} [DecidableEq ι]
-    (p:ι→O) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→O) [OAI.PrincipalIdealFamily.Maximal p]
     {Jo Jn:ℕ} (x:MarkedSecondSource ι Jo Jn) (u v:Oˣ):
     (Ideal.absNorm (actualSecondChild p u v x).2.1:ℝ)=
       ‖eisEmbedding (jLabel p x.cube.support
@@ -54,11 +54,11 @@ theorem actual_second_child_label_norm {ι:Type*} [DecidableEq ι]
       sourceIdeal p x.firstCommon * sourceIdeal p x.second.divisor * sourceIdeal p x.second.overlap):ℝ)=_
   simp only [map_mul,Nat.cast_mul,hn,←eisEmbedding_norm_sq_eq_absNorm_span]
 
-theorem actual_cell_child_label_bound {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn))
-    (hk:∀x∈source,x.second.frequency≠0) (d:BlockIndex)
-    (x:MarkedSecondSource ι Jo Jn) (hx:x∈cell p source d) (u v:Oˣ):
+section
+variable {ι:Type*} [instShared1 : DecidableEq ι] (p:ι→O) (hp:∀i,p i≠0) [instShared4 : OAI.PrincipalIdealFamily.Maximal p] {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn)) (hk:∀x∈source,x.second.frequency≠0) (d:BlockIndex) (x:MarkedSecondSource ι Jo Jn) (hx:x∈cell p source d) (u v:Oˣ)
+include ι instShared1 p hp instShared4 Jo Jn source hk d x hx u v
+
+theorem actual_cell_child_label_bound:
     (Ideal.absNorm (actualSecondChild p u v x).2.1:ℝ)≤
       4*‖eisEmbedding (jLabel p x.cube.support
         (fun i=>x.cube.leftExponent i+x.cube.rightExponent i) x.cube.leftBit x.cube.rightBit)‖^2*
@@ -80,11 +80,7 @@ theorem actual_cell_child_label_bound {ι:Type*} [DecidableEq ι]
       gcongr
     _ = _ := by ring
 
-theorem actual_cell_child_label_power {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-    {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn))
-    (hk:∀x∈source,x.second.frequency≠0) (d:BlockIndex)
-    (x:MarkedSecondSource ι Jo Jn) (hx:x∈cell p source d) (u v:Oˣ)
+theorem actual_cell_child_label_power
     (Z B j eta:ℝ) (hZ:1<Z) (hbin:2≤Z^eta)
     (hC:primeProductNorm p x.firstCommon≤Z^(B+eta))
     (hJ:‖eisEmbedding (jLabel p x.cube.support
@@ -109,6 +105,8 @@ theorem actual_cell_child_label_power {ι:Type*} [DecidableEq ι]
       congr 1
       unfold secondFormalLabel
       ring
+
+end
 
 theorem second_cell_clipping_width (Z X b eta:ℝ) (d:BlockIndex)
     (hZ:1<Z) (hX:0<X) (hb:1≤b)

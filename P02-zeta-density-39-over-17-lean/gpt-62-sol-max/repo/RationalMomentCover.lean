@@ -25,7 +25,7 @@ theorem finite_moment_cover {K : ℕ} (hK : 1 ≤ K)
   have hKpos : (0 : ℝ) < K := by linarith
   have hmpos : 0 < m := hδ.trans_le hδm
   have hden : (0 : ℝ) < 2 * K + 1 := by positivity
-  have hrbudget : (K : ℝ) + 1 ≤ r * (2 * K + 1) := (div_le_iff₀ hden).mp hr
+  have hrbudget := (div_le_iff₀ hden).mp hr
   have hrhalf : (1 : ℝ) / 2 < r := by
     by_contra hn
     have hh : r ≤ 1 / 2 := le_of_not_gt hn
@@ -39,7 +39,7 @@ theorem finite_moment_cover {K : ℕ} (hK : 1 ≤ K)
   have hkpos : (0 : ℝ) < k := hKpos.trans_le hkR
   have hfloor : (k : ℝ) * m ≤ r := (le_div_iff₀ hmpos).mp
     (Nat.floor_le (by positivity : 0 ≤ r / m))
-  have hnext : r < ((k : ℝ) + 1) * m := (div_lt_iff₀ hmpos).mp
+  have hnext := (div_lt_iff₀ hmpos).mp
     (Nat.lt_floor_add_one (r / m))
   have hbudget : (k : ℝ) + 1 ≤ r * (2 * k + 1) := by
     nlinarith [mul_nonneg (show 0 ≤ 2 * r - 1 by linarith) (sub_nonneg.mpr hkR)]
@@ -50,7 +50,7 @@ theorem finite_moment_cover {K : ℕ} (hK : 1 ≤ K)
   have hkδ : (k : ℝ) * δ ≤ 1 := by
     nlinarith [mul_le_mul_of_nonneg_left hδm hkpos.le]
   have hbound : k ≤ ⌈1 / δ⌉₊ := by
-    have hh : (k : ℝ) ≤ (⌈1 / δ⌉₊ : ℝ) :=
+    have hh :=
       ((le_div_iff₀ hδ).mpr hkδ).trans (Nat.le_ceil (1 / δ))
     exact_mod_cast hh
   exact ⟨k, hKk, hbound, hlower, hfloor⟩

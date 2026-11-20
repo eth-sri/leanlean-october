@@ -69,10 +69,11 @@ theorem heathBrown_source_scale_separated
       rw [show 1 / (k : ℝ) + -(1 / (k : ℝ)) = 0 by ring,
         Real.rpow_zero, one_mul]
 
-theorem heathBrown_lambda_scale_lower_of_H_gt_N_sub_two
-    {N k : ℕ} (hN : 3 ≤ N) (hk : 3 ≤ k)
-    {A lambda : ℝ} (hA : 0 < A) (hlambda : 0 < lambda)
-    (hHN : N - 2 < heathBrownHChoice k A lambda) :
+section
+variable {N k : ℕ} (hN : 3 ≤ N) (hk : 3 ≤ k) {A lambda : ℝ} (hA : 0 < A) (hlambda : 0 < lambda) (hHN : N - 2 < heathBrownHChoice k A lambda)
+include N k hN hk A lambda hA hlambda hHN
+
+theorem heathBrown_lambda_scale_lower_of_H_gt_N_sub_two :
     A ^ (1 / (k : ℝ)) / 2 * (N : ℝ) ≤
       lambda ^ (-(1 / (k : ℝ))) := by
   let H := heathBrownHChoice k A lambda
@@ -96,10 +97,7 @@ theorem heathBrown_lambda_scale_lower_of_H_gt_N_sub_two
         A ^ (1 / (k : ℝ)) * ((N : ℝ) / 2) := by ring
     _ ≤ lambda ^ (-(1 / (k : ℝ))) := hscaled
 
-theorem heathBrown_third_lower_of_H_gt_N_sub_two
-    {N k : ℕ} (hN : 3 ≤ N) (hk : 3 ≤ k)
-    {A lambda : ℝ} (hA : 0 < A) (hlambda : 0 < lambda)
-    (hHN : N - 2 < heathBrownHChoice k A lambda) :
+theorem heathBrown_third_lower_of_H_gt_N_sub_two :
     (A ^ (1 / (k : ℝ)) / 2) ^
         (2 * heathBrownCriticalReciprocal k) * (N : ℝ) ≤
       heathBrownThirdTerm N k lambda := by
@@ -141,6 +139,8 @@ theorem heathBrown_third_lower_of_H_gt_N_sub_two
     _ ≤ (N : ℝ) ^ (1 - 2 * r) * L ^ (2 * r) := by gcongr
     _ = (N : ℝ) ^ (1 - 2 * r) *
         lambda ^ (-2 * r / (k : ℝ)) := by rw [hlambdaPower]
+
+end
 
 
 end

@@ -10,9 +10,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentSourceInputFirstSectorTail
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow
-open CenteredMomentFirstTailAggregate CenteredMomentFirstDiscardedEnergy
-open CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentHeckeExpansion
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentSourceRow CenteredMomentFirstTailAggregate CenteredMomentFirstDiscardedEnergy CenteredMomentFirstScale CenteredMomentSectorLocalization CenteredMomentHeckeExpansion
 local notation "O"=>ActualEisensteinCubic.O
 
 private theorem pair_mass {α : Type*} [Fintype α] (c w : α → ℂ) (F : α → α → ℂ)

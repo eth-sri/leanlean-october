@@ -5,7 +5,8 @@ from DFIY0Abel.lean, exact revision 6e2d10c6c2252ee1575bb7ef12dea12e2f1a3af1,
 MIT-0. See third_party/twelfth/Y0_MELLIN_MANIFEST.json and third_party/twelfth/LICENSE-MIT-0. Mathlib dependencies
 retain Apache-2.0 attribution. No Estermann/Voronoi identity is assumed.
 -/
-public import MathCollab.Density.Stronger.Atkinson.BesselComplexLaplace
+public import MathCollab.Density.Stronger.Atkinson.BesselK0Mellin
+public import WeylPort.Analytic.ComplexLaplace
 
 @[expose] public section
 
@@ -24,9 +25,14 @@ open scoped Topology Interval
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
+open RiemannZeta.GuthMaynard (dfiComplexLaplace dfiComplexLaplace_eq
+  integrableOn_cpow_mul_cexp_neg_complex_mul_Ioi)
 
-theorem integral_cpow_mul_damped_cexp_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε) :
+section
+variable {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε)
+include s hs ε a hε
+
+theorem integral_cpow_mul_damped_cexp_Ioi :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) *
           cexp (-((ε : ℂ) * x)) * cexp (I * (a * x))) =
@@ -48,8 +54,7 @@ theorem integral_cpow_mul_damped_cexp_Ioi
   congr 2
   ring
 
-theorem integral_cpow_mul_damped_cexp_neg_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε) :
+theorem integral_cpow_mul_damped_cexp_neg_Ioi :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) *
           cexp (-((ε : ℂ) * x)) * cexp (-(I * (a * x)))) =
@@ -71,8 +76,7 @@ theorem integral_cpow_mul_damped_cexp_neg_Ioi
   congr 2
   ring
 
-theorem integral_cpow_mul_damped_sin_Ioi
-    {s : ℂ} (hs : 0 < s.re) {ε a : ℝ} (hε : 0 < ε) :
+theorem integral_cpow_mul_damped_sin_Ioi :
     (∫ x : ℝ in Set.Ioi 0,
         (x : ℂ) ^ (s - 1) * Real.exp (-ε * x) * Real.sin (a * x)) =
       (((ε : ℂ) - I * a) ^ (-s) - ((ε : ℂ) + I * a) ^ (-s)) /
@@ -141,6 +145,8 @@ theorem integral_cpow_mul_damped_sin_Ioi
         show (∫ x : ℝ in Set.Ioi 0, M x) =
           ((ε : ℂ) + I * a) ^ (-s) * Gamma s by exact hm]
       field_simp
+
+end
 
 /-- The two damped complex powers have their expected nontangential Abel
 limit at the imaginary axis. -/

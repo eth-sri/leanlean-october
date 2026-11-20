@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.CubicSieve.ScaleCaps
 
 @[expose] public section
@@ -8,70 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
 namespace CanonicalQuadraticSieve
 
@@ -184,11 +132,11 @@ lemma finite_centering_identity {ι : Type*} (S : Finset ι) (w R D : ι → ℂ
   intro q hq
   ring
 
-theorem maskedPoissonDifference_centered {n : Type} [Fintype n] [DecidableEq n]
-    (G : Ideal O) (hG : G≠0) (W : 𝓢(ℝ,ℂ)) (cols : n → Ideal O) (a : n → ℂ)
-    (M K : ℝ) (hM : 0<M) (hcols : ∀ j, Admissible (cols j))
-    (hray : ∀ j k, columnRay (cols j)=columnRay (cols k))
-    (hGc : ∀ j, IsCoprime G (cols j)) (hbad : ∀ P∈fixedBadPrimes, P∣G) :
+section
+variable {n : Type} [instShared1 : Fintype n] [instShared2 : DecidableEq n] (G : Ideal O) (hG : G≠0) (W : 𝓢(ℝ,ℂ)) (cols : n → Ideal O) (a : n → ℂ) (M K : ℝ) (hM : 0<M) (hcols : ∀ j, Admissible (cols j)) (hray : ∀ j k, columnRay (cols j)=columnRay (cols k)) (hGc : ∀ j, IsCoprime G (cols j)) (hbad : ∀ P∈fixedBadPrimes, P∣G)
+include n instShared1 instShared2 G hG W cols a M K hM hcols hray hGc hbad
+
+theorem maskedPoissonDifference_centered :
     (6:ℂ)*maskedPoissonDifference G W cols a M K =
       (∑ q∈idealDivisors G, (UniqueFactorizationMonoid.moebius q:ℂ)*centeredRetainedDual W cols a M K q) +
       (6:ℂ)*maskedDualTailFamily G cols a W M K - centeredMaskedSource G W cols a M K +
@@ -201,11 +149,7 @@ theorem maskedPoissonDifference_centered {n : Type} [Fintype n] [DecidableEq n]
   rw [finite_centering_identity]
   ring
 
-theorem maskedPoissonDifference_norm_le {n : Type} [Fintype n] [DecidableEq n]
-    (G : Ideal O) (hG : G≠0) (W : 𝓢(ℝ,ℂ)) (cols : n → Ideal O) (a : n → ℂ)
-    (M K : ℝ) (hM : 0<M) (hcols : ∀ j, Admissible (cols j))
-    (hray : ∀ j k, columnRay (cols j)=columnRay (cols k))
-    (hGc : ∀ j, IsCoprime G (cols j)) (hbad : ∀ P∈fixedBadPrimes, P∣G) :
+theorem maskedPoissonDifference_norm_le :
     ‖(6:ℂ)*maskedPoissonDifference G W cols a M K‖ ≤
       (∑ q∈idealDivisors G, ‖centeredRetainedDual W cols a M K q‖) +
       6*‖maskedDualTailFamily G cols a W M K‖ + ‖centeredMaskedSource G W cols a M K‖ +
@@ -241,8 +185,9 @@ theorem maskedPoissonDifference_norm_le {n : Type} [Fintype n] [DecidableEq n]
       norm_num
       gcongr
 
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
-open IdealCoprimeSieveOperator
+end
+
+open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson IdealCoprimeSieveOperator
 
 theorem divisorTwist_norm_le {n : Type} (cols : n → Ideal O) (a : n → ℂ)
     (q : Ideal O) (j : n) : ‖divisorTwist cols a q j‖≤‖a j‖ := by
@@ -314,8 +259,7 @@ theorem centeredRetainedDual_sum_bound (l : ℕ) :
 
 end
 
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson
-open IdealCoprimeSieveOperator
+open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum EisensteinSchwartzPoisson IdealCoprimeSieveOperator
 
 def poissonComparisonMajorant {n : Type} [Fintype n]
     (sD sS sT : Finset (ℕ×ℕ)) (CD CS CT CP : ℝ) (l A : ℕ)
@@ -386,8 +330,7 @@ theorem HasSieveExponent.masked_poisson_complete {α : ℝ} (hexp : HasSieveExpo
 end
 section
 
-open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum
-open DivisorBlockCauchy
+open ActualEisensteinCubic ConcretePrimeRowBridge IdealMobiusDivisorSum DivisorBlockCauchy
 
 theorem gcdRaySupport_energy_eq {n : Type} [Fintype n]
     (cols : n → Ideal O) (a : n → ℂ) (D : Ideal O) (c : EisensteinEPrimaryPhase.Coord) :
@@ -420,9 +363,11 @@ theorem gcdRaySupport_energy_ray_sum {n : Type} [Fintype n]
     · simp
   · simp only [hd,false_and,ite_false,Finset.sum_const_zero,norm_zero,zero_pow (by decide : 2≠0)]
 
-theorem gcdRaySupport_energy_divisor_sum {n : Type} [Fintype n]
-    (ε : ℝ) (hε : 0<ε) (S : Finset (Ideal O)) (cols : n → Ideal O)
-    (hcols : ∀j, cols j≠0) (a : n → ℂ) (X : ℝ)
+section
+variable {n : Type} [instShared1 : Fintype n] (ε : ℝ) (hε : 0<ε) (S : Finset (Ideal O)) (cols : n → Ideal O) (hcols : ∀j, cols j≠0) (a : n → ℂ)
+include n instShared1 ε hε S cols hcols a
+
+theorem gcdRaySupport_energy_divisor_sum (X : ℝ)
     (hX : ∀j, a j≠0 → (Ideal.absNorm (cols j):ℝ)≤X) :
     (∑c : EisensteinEPrimaryPhase.Coord, ∑D∈S,
       ∑j : gcdRaySupport cols a D c, ‖a j.val‖^2) ≤
@@ -441,9 +386,7 @@ theorem gcdRaySupport_energy_divisor_sum {n : Type} [Fintype n]
     exact mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow (Nat.cast_nonneg _) (hX j hz) hε.le) (divisorConstant_pos ε hε).le
 
-theorem gcdRaySupport_weighted_sum_bound {n : Type} [Fintype n]
-    (ε : ℝ) (hε : 0<ε) (S : Finset (Ideal O)) (cols : n → Ideal O)
-    (hcols : ∀j, cols j≠0) (a : n → ℂ) (X C : ℝ) (hC : 0≤C)
+theorem gcdRaySupport_weighted_sum_bound (X C : ℝ) (hC : 0≤C)
     (hX : ∀j, a j≠0 → (Ideal.absNorm (cols j):ℝ)≤X)
     (F : Ideal O → EisensteinEPrimaryPhase.Coord → ℝ)
     (hF : ∀D∈S, ∀c, F D c≤C*∑j : gcdRaySupport cols a D c, ‖a j.val‖^2) :
@@ -458,6 +401,8 @@ theorem gcdRaySupport_weighted_sum_bound {n : Type} [Fintype n]
     _ ≤ C*((divisorConstant ε hε*X^ε)*∑j, ‖a j‖^2) :=
       mul_le_mul_of_nonneg_left (gcdRaySupport_energy_divisor_sum ε hε S cols hcols a X hX) hC
     _ = _ := by ring
+
+end
 
 end
 
@@ -492,9 +437,9 @@ open FirstPassCubeLabels (primeProductNorm b0Label jLabel)
 open ConcreteTraceCRT (eisEmbedding)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i ≠ 0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end SecondPassArithmetic
 

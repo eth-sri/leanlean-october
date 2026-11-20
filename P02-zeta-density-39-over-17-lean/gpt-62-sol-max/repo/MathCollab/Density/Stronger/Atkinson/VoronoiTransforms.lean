@@ -89,12 +89,4 @@ noncomputable def dfiVoronoiPlusTransform (q : ℕ) [NeZero q]
     (-(1 / 2 : ℝ))
 
 
-/-- Exact real-parameter normalization of the existing vertical contour. -/
-theorem verticalIntegral'_eq_realIntegral (f : ℂ → ℂ) (a : ℝ) :
-    PointMean.VerticalIntegral' f a = (1 / (2 * Real.pi) : ℂ) *
-      ∫ u : ℝ, f ((a : ℂ) + (u : ℂ) * I) := by
-  unfold PointMean.VerticalIntegral' PointMean.VerticalIntegral
-  simp only [smul_eq_mul]
-  field_simp [Real.pi_ne_zero]
-
 end MathCollab.Density.Stronger.Atkinson

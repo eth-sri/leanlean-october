@@ -10,12 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentRetainedWeightedSource
-open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentReflectionDeletion
-open CenteredMomentReflectionMass CenteredMomentReflectionWeightedEnergy
-open CenteredMomentOriginalReflectionApproximation CenteredMomentReflectedNormalization
-open CenteredMomentReflectedAnnuli CenteredMomentReflectedTruncation
-open CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization
-open EisensteinSchwartzPoisson
+open HeckeFamily CenteredMomentNaturalPrimitive CenteredMomentReflectionDeletion CenteredMomentReflectionMass CenteredMomentReflectionWeightedEnergy CenteredMomentOriginalReflectionApproximation CenteredMomentReflectedNormalization CenteredMomentReflectedAnnuli CenteredMomentReflectedTruncation CenteredMomentReflectedUniformPair CenteredMomentSectorLocalization EisensteinSchwartzPoisson
 local notation "O" => HeckeFamily.O
 
 abbrev sourcePrimes (χ ψ : Character) := redundantSet χ.modulus ψ.modulus
@@ -60,11 +55,13 @@ theorem finiteAnnularColumn_normalized (χ ψ : Character) (W : ℝ→ℂ)
   rw [retainedColumn,ite_eq_left hk,actual_annular_normalization]
   ring
 
-theorem retainedOriginal_eq_weighted (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
-    (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
+section
+variable (χ ψ : Character) (W : ℝ→ℂ) (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ) (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
       ‖signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
-        retainedColumn χ ψ W X R t hX B n P a‖)) :
+        retainedColumn χ ψ W X R t hX B n P a‖))
+include χ ψ W X R t hX B n P hs
+
+theorem retainedOriginal_eq_weighted :
     retainedOriginal χ ψ W X R t*P =
       (((1+‖t‖)^n:ℝ):ℂ)*∑'a : Index (sourcePrimes χ ψ),
         signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
@@ -88,11 +85,7 @@ theorem retainedOriginal_eq_weighted (χ ψ : Character) (W : ℝ→ℂ)
   simp only [mul_assoc,tsum_mul_left]
   ring
 
-theorem retainedOriginal_fiber_summable (χ ψ : Character) (W : ℝ→ℂ)
-    (X R t : ℝ) (hX : 0<X) (B n : ℕ) (P : ℂ)
-    (hs : Summable (fun a : Index (sourcePrimes χ ψ)=>
-      ‖signedWeight ψ ψ.inverse (sourcePrimes χ ψ) B a*
-        retainedColumn χ ψ W X R t hX B n P a‖))
+theorem retainedOriginal_fiber_summable
     (D : (sourcePrimes χ ψ).powerset) :
     Summable (fun H : SmoothIdeal (sourcePrimes χ ψ)=>
       ‖(coefficient ψ ψ.inverse (sourcePrimes χ ψ) D.val H*
@@ -105,6 +98,8 @@ theorem retainedOriginal_fiber_summable (χ ψ : Character) (W : ℝ→ℂ)
   rw [mul_assoc,finiteAnnularColumn_normalized χ ψ W X R t hX B n P D H]
   simp only [signedWeight,mul_assoc,tsum_mul_left]
   ring
+
+end
 
 theorem actual_retained_weighted_energy (ε : ℝ) (hε : 0<ε) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*} [Fintype ι],

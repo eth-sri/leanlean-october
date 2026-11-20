@@ -19,11 +19,11 @@ namespace GafniTao
 
 noncomputable section
 
-theorem wooleyPolynomial_sum_refined_residue_grid
-    {Q p a b qB k : ℕ} [NeZero p] [NeZero qB]
-    (phi : WooleyPolynomialSystem k) (hab : a ≤ b)
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB)
-    (xi : ZMod (p ^ a)) :
+section
+variable {Q p a b qB k : ℕ} [instShared1 : NeZero p] [instShared2 : NeZero qB] (phi : WooleyPolynomialSystem k) (hab : a ≤ b) (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB) (xi : ZMod (p ^ a))
+include Q p a b qB k instShared1 instShared2 phi hab gamma alpha xi
+
+theorem wooleyPolynomial_sum_refined_residue_grid :
     ∑ z ∈ wooleyResidueRefinementFiber p a b hab xi,
         wooleyPolynomialWeightedResidueGridSum phi qB gamma alpha z =
       wooleyPolynomialWeightedResidueGridSum phi qB gamma alpha xi := by
@@ -63,11 +63,7 @@ theorem wooleyPolynomial_sum_refined_residue_grid
     · rw [ite_eq_left hzxi, ite_eq_right (Ne.symm hzne)]
     · rw [ite_eq_right hzxi]
 
-theorem wooleyPolynomial_refined_normalized_residue_decomposition
-    {Q p a b qB k : ℕ} [NeZero p] [NeZero qB]
-    (phi : WooleyPolynomialSystem k) (hab : a ≤ b)
-    (gamma : Fin Q → ℂ) (alpha : Fin k → ZMod qB)
-    (xi : ZMod (p ^ a)) :
+theorem wooleyPolynomial_refined_normalized_residue_decomposition :
     (Real.sqrt (wooleyWeightedResidueMassSq gamma xi) : ℂ) *
         wooleyPolynomialNormalizedResidueGridSum phi qB gamma alpha xi =
       ∑ z ∈ wooleyResidueRefinementFiber p a b hab xi,
@@ -79,6 +75,8 @@ theorem wooleyPolynomial_refined_normalized_residue_decomposition
     phi gamma alpha]
   exact (wooleyPolynomial_sum_refined_residue_grid
     phi hab gamma alpha xi).symm
+
+end
 
 /-- Polynomial-system form of Wooley Lemma 6.2. -/
 theorem wooleyPolynomial_lemma_6_2

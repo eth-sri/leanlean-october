@@ -10,73 +10,17 @@ noncomputable section
 namespace CubicEisenstein
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -253,8 +197,11 @@ open scoped Classical MatrixGroups BigOperators
 open CubicKubota ConcreteTraceCRT
 local notation "O" => ActualEisensteinCubic.O
 
-theorem cubeDifferenceL2_eq_zero (p : ActualEisensteinCubic.O) (hp : Prime p)
-    (hprimary : ActualEisensteinCubic.lambda^2∣p-1) :
+section
+variable (p : ActualEisensteinCubic.O) (hp : Prime p) (hprimary : ActualEisensteinCubic.lambda^2∣p-1)
+include p hp hprimary
+
+theorem cubeDifferenceL2_eq_zero :
     cubeDifferenceL2 p hp.ne_zero=0 := by
   let : Finite (CubeResidues p) := finite_quotient_span (pow_ne_zero 3 hp.ne_zero)
   let : Fintype (CubeResidues p) := Fintype.ofFinite _
@@ -286,8 +233,7 @@ theorem cubeDifferenceL2_eq_zero (p : ActualEisensteinCubic.O) (hp : Prime p)
     | some r =>
       exact h1 (GaussianShiftedPartition.representative (p^3) r) M z v hv hlarge.le
 
-theorem cubeSourceDifference_eq_zero (p : ActualEisensteinCubic.O) (hp : Prime p)
-    (hprimary : ActualEisensteinCubic.lambda^2∣p-1) (w : HyperbolicSpace) :
+theorem cubeSourceDifference_eq_zero (w : HyperbolicSpace) :
     cubeSourceDifference p hp.ne_zero w=0 := by
   have hz : cubeDifferenceQuotientFunction p hp.ne_zero
       =ᵐ[integralQuotientVolume (cubeCommonCover p hp.ne_zero)]0 := by
@@ -300,29 +246,23 @@ theorem cubeSourceDifference_eq_zero (p : ActualEisensteinCubic.O) (hp : Prime p
     (cubeSourceDifference_continuous p hp.ne_zero)
     (cubeDifferenceQuotientFunction_projection p hp.ne_zero) hz w
 
-theorem cubicSource_cubeAverage (p : ActualEisensteinCubic.O) (hp : Prime p)
-    (hprimary : ActualEisensteinCubic.lambda^2∣p-1) (w : HyperbolicSpace) :
+theorem cubicSource_cubeAverage (w : HyperbolicSpace) :
     cubeAverage p hp.ne_zero cubicSourceResidualFunction w=
       (Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹*cubicSourceResidualFunction w :=
   sub_eq_zero.mp (cubeSourceDifference_eq_zero p hp hprimary w)
 
-theorem sourceArithmeticResidue_prime_cube (p : ActualEisensteinCubic.O) (hp : Prime p)
-    (hprimary : ActualEisensteinCubic.lambda^2∣p-1) (h : ActualEisensteinCubic.O) (hh : h≠0) :
+theorem sourceArithmeticResidue_prime_cube (h : ActualEisensteinCubic.O) (hh : h≠0) :
     sourceArithmeticResidue (h*p^3)=sourceArithmeticResidue h :=
   sourceArithmeticResidue_cube_of_eigenrelation p hp.ne_zero
     (cubicSource_cubeAverage p hp hprimary) h hh
 
 end
 
+end
+
 section
 open Filter MeasureTheory
 open scoped BigOperators Classical Topology MatrixGroups
-
-section
-open ActualEisensteinCubic ConcreteTraceCRT CubicKubota
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
 
 section
 open ActualEisensteinCubic
@@ -523,8 +463,11 @@ lemma principalArithmeticResidue_eq_sum (h:Eis) (hh:h≠0) (N:ℕ)
   intro n hn hn'
   exact principalResidueTerm_vanish h hh u n (by simp only [Finset.mem_range] at hn';omega)
 
-lemma principalResidueTerm_prime_recurrence (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) (u:Eisˣ) (n:ℕ) :
+section
+variable (p:Eis) (hp:Prime p) (hprimary:lambda^2∣p-1) (h:Eis) (hph:¬p∣h)
+include p hp hprimary h hph
+
+lemma principalResidueTerm_prime_recurrence (u:Eisˣ) (n:ℕ) :
     principalResidueTerm (h*p^3) u n=
       (1+(Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹)*principalResidueTerm h u n-
       (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(4/3:ℂ))*primeCubicGauss p hp hprimary 1 (9*h)*
@@ -547,8 +490,7 @@ lemma principalResidueTerm_prime_recurrence (p:Eis) (hp:Prime p)
   linear_combination -(((3^(n+2):ℕ):ℂ)^(-(4/3:ℂ)))*
     (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(4/3:ℂ))*unramifiedGaussResidue ((h*(9*c))*p)*hG
 
-theorem principalArithmeticResidue_prime_recurrence (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) :
+theorem principalArithmeticResidue_prime_recurrence :
     principalArithmeticResidue (h*p^3)=
       (1+(Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹)*principalArithmeticResidue h-
       (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(4/3:ℂ))*primeCubicGauss p hp hprimary 1 (9*h)*
@@ -564,8 +506,7 @@ theorem principalArithmeticResidue_prime_recurrence (p:Eis) (hp:Prime p)
     Finset.sum_sub_distrib,←Finset.mul_sum]
   ring
 
-theorem sourceArithmeticResidue_prime_recurrence (p:Eis) (hp:Prime p)
-    (hprimary:lambda^2∣p-1) (h:Eis) (hph:¬p∣h) :
+theorem sourceArithmeticResidue_prime_recurrence :
     sourceArithmeticResidue (h*p^3)=
       (1+(Ideal.absNorm (Ideal.span {p}):ℂ)⁻¹)*sourceArithmeticResidue h-
       (Ideal.absNorm (Ideal.span {p}):ℂ)^(-(4/3:ℂ))*primeCubicGauss p hp hprimary 1 (9*h)*
@@ -586,6 +527,8 @@ theorem sourceArithmeticResidue_prime_recurrence (p:Eis) (hp:Prime p)
       show 9*(h*p)=(9*h)*p by ring]
     ring
   · ring
+
+end
 
 end CubicEisenstein
 

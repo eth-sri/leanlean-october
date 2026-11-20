@@ -89,10 +89,11 @@ lemma norm_smoothL2_sub_extendByZeroL2_le_of_integral_translateL2_sub_extendByZe
         (E := E) (K := K) (ψ := ψ) (hK := hK) (hKm := hKm) hψc hψcs hψ0 hψint u
   exact (sq_le_sq₀ (norm_nonneg _) hη).1 hsq
 
+section
+variable (hK : IsCompact K) (hKm : MeasurableSet K) {R : ℝ} (hR : 0 ≤ R) {A : Set (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))} (hA : A ⊆ Metric.closedBall (0 : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) R)
+include hK hKm R hR A hA
+
 theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small
-    (hK : IsCompact K) (hKm : MeasurableSet K) {R : ℝ} (hR : 0 ≤ R)
-    {A : Set (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))}
-    (hA : A ⊆ Metric.closedBall (0 : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) R)
     (hApprox :
       ∀ ε : ℝ, 0 < ε →
         ∃ ψ : E → ℝ, Continuous ψ ∧ HasCompactSupport ψ ∧ (∀ x, 0 ≤ ψ x) ∧
@@ -164,9 +165,6 @@ theorem totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral
   exact Set.mem_iUnion.2 ⟨y, Set.mem_iUnion.2 ⟨hyT, hxBall⟩⟩
 
 theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationIntegral_small
-    (hK : IsCompact K) (hKm : MeasurableSet K) {R : ℝ} (hR : 0 ≤ R)
-    {A : Set (MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))}
-    (hA : A ⊆ Metric.closedBall (0 : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) R)
     (hApprox :
       ∀ ε : ℝ, 0 < ε →
         ∃ ψ : E → ℝ, Continuous ψ ∧ HasCompactSupport ψ ∧ (∀ x, 0 ≤ ψ x) ∧
@@ -183,6 +181,8 @@ theorem isCompact_closure_extendByZeroL2_image_of_forall_exists_translationInteg
     totallyBounded_extendByZeroL2_image_of_forall_exists_translationIntegral_small
       (E := E) (K := K) hK hKm hR hA hApprox
   exact (ht.closure).isCompact_of_isClosed isClosed_closure
+
+end
 
 end Volume
 

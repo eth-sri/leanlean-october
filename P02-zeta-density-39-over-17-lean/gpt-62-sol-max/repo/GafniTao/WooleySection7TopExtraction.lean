@@ -57,10 +57,9 @@ theorem wooleySection7NormalSystem_eval_progression_dvd
     exact dvd_mul_right _ _
   have htailPow : (p : ℤ) ^ (b * d) ∣
       ((p : ℤ) ^ b * t) ^ (k + 1) := by
-    have hle : b * d ≤ b * (k + 1) :=
+    have hle :=
       Nat.mul_le_mul_left b (hjk.trans (Nat.le_succ k))
-    have hpowers : (p : ℤ) ^ (b * d) ∣
-        (p : ℤ) ^ (b * (k + 1)) := pow_dvd_pow (p : ℤ) hle
+    have hpowers := pow_dvd_pow (p : ℤ) hle
     have hproduct : (p : ℤ) ^ (b * d) ∣
         (p : ℤ) ^ (b * (k + 1)) * t ^ (k + 1) :=
       dvd_mul_of_dvd_left hpowers _
@@ -133,7 +132,7 @@ theorem wooleySection7_original_implies_top_congruences
   let rightDisp : ℤ := wooleyIntegerTupleDisplacement S
     (fun x => (wooleySection7NormalSystem k p c psi j).eval
       ((p : ℤ) ^ b * rightPoint x)) rightXY
-  have hcombined : (p : ℤ) ^ M ∣ leftDisp - rightDisp :=
+  have hcombined :=
     dvd_trans (pow_dvd_pow (p : ℤ) hMB) (horiginal j)
   have hnode : k - r + 1 ≤ (j : ℕ) + 1 := by
     dsimp only [j, wooleySection7Node]

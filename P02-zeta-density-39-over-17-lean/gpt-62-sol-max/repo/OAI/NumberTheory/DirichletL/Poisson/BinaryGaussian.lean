@@ -8,14 +8,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace RankTwoComplex
@@ -47,211 +44,7 @@ theorem lattice_gaussian_summable_of_re_bound (F : ℤ × ℤ → ℂ)
 
 noncomputable def schur (a b d : ℂ) : ℂ := d - b ^ 2 / a
 
-noncomputable def binaryGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
-  Complex.exp (-(Real.pi : ℂ) *
-    (a * (z.1 : ℂ) ^ 2 + 2 * b * (z.1 : ℂ) * (z.2 : ℂ) + d * (z.2 : ℂ) ^ 2))
-
-noncomputable def firstGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
-  Complex.exp (-(Real.pi : ℂ) / a * (z.1 : ℂ) ^ 2) *
-    Complex.exp (-(Real.pi : ℂ) * schur a b d * (z.2 : ℂ) ^ 2 +
-      2 * (Real.pi : ℂ) * (Complex.I * b / a * (z.1 : ℂ)) * (z.2 : ℂ))
-
-noncomputable def dualGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
-  Complex.exp (-(Real.pi : ℂ) / a * (z.1 : ℂ) ^ 2) *
-    Complex.exp (-(Real.pi : ℂ) / (schur a b d) *
-      ((z.2 : ℂ) - b / a * (z.1 : ℂ)) ^ 2)
-
-private theorem binary_split (a b d : ℂ) (m n : ℤ) :
-    binaryGaussian a b d (m,n) =
-      Complex.exp (-(Real.pi : ℂ) * d * (n : ℂ) ^ 2) *
-        Complex.exp (-(Real.pi : ℂ) * a * (m : ℂ) ^ 2 +
-          2 * (Real.pi : ℂ) * (-(b * (n : ℂ))) * (m : ℂ)) := by
-  dsimp [binaryGaussian]
-  rw [← Complex.exp_add]
-  congr 1
-  ring
-
-private theorem first_exponent_identity {a b d : ℂ} (ha : a ≠ 0) (k n : ℤ) :
-    (-(Real.pi : ℂ) * d * (n : ℂ) ^ 2) +
-      (-(Real.pi : ℂ) / a * ((k : ℂ) + Complex.I * (-(b * (n : ℂ)))) ^ 2) =
-      (-(Real.pi : ℂ) / a * (k : ℂ) ^ 2) +
-        (-(Real.pi : ℂ) * schur a b d * (n : ℂ) ^ 2 +
-          2 * (Real.pi : ℂ) * (Complex.I * b / a * (k : ℂ)) * (n : ℂ)) := by
-  dsimp [schur]
-  field_simp [ha]
-  ring_nf
-  simp [Complex.I_sq]
-
-private theorem first_transform_term {a b d : ℂ} (ha : a ≠ 0) (k n : ℤ) :
-    Complex.exp (-(Real.pi : ℂ) * d * (n : ℂ) ^ 2) *
-      Complex.exp (-(Real.pi : ℂ) / a *
-        ((k : ℂ) + Complex.I * (-(b * (n : ℂ)))) ^ 2) =
-      firstGaussian a b d (k,n) := by
-  rw [← Complex.exp_add, first_exponent_identity ha k n, Complex.exp_add]
-  rfl
-
-private theorem first_poisson_slice {a b d : ℂ} (ha : 0 < a.re) (n : ℤ) :
-    (∑' m : ℤ, binaryGaussian a b d (m,n)) =
-      (1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, firstGaussian a b d (k,n) := by
-  have ha0 : a ≠ 0 := by
-    intro h
-    simp [h] at ha
-  let C : ℂ := Complex.exp (-(Real.pi : ℂ) * d * (n : ℂ) ^ 2)
-  let B : ℂ := -(b * (n : ℂ))
-  let F : ℤ → ℂ := fun m => Complex.exp
-    (-(Real.pi : ℂ) * a * (m : ℂ) ^ 2 + 2 * (Real.pi : ℂ) * B * (m : ℂ))
-  let H : ℤ → ℂ := fun k => Complex.exp
-    (-(Real.pi : ℂ) / a * ((k : ℂ) + Complex.I * B) ^ 2)
-  have hsplit : (∑' m : ℤ, binaryGaussian a b d (m,n)) = C * ∑' m : ℤ, F m := by
-    rw [← tsum_mul_left]
-    apply tsum_congr
-    intro m
-    exact binary_split a b d m n
-  have hpoisson : (∑' m : ℤ, F m) =
-      (1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, H k :=
-    Complex.tsum_exp_neg_quadratic ha B
-  calc
-    (∑' m : ℤ, binaryGaussian a b d (m,n)) = C * ∑' m : ℤ, F m := hsplit
-    _ = C * ((1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, H k) := by rw [hpoisson]
-    _ = (1 / a ^ (1 / 2 : ℂ)) * (C * ∑' k : ℤ, H k) := by ring
-    _ = (1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, firstGaussian a b d (k,n) := by
-      congr 1
-      rw [← tsum_mul_left]
-      apply tsum_congr
-      intro k
-      exact first_transform_term ha0 k n
-
-private theorem second_poisson_slice {a b d : ℂ}
-    (hδ : 0 < (schur a b d).re) (k : ℤ) :
-    (∑' n : ℤ, firstGaussian a b d (k,n)) =
-      (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
-        ∑' l : ℤ, dualGaussian a b d (k,l) := by
-  have hδ0 : schur a b d ≠ 0 := by
-    intro h
-    simp [h] at hδ
-  let A : ℂ := schur a b d
-  let B : ℂ := Complex.I * b / a * (k : ℂ)
-  let C : ℂ := Complex.exp (-(Real.pi : ℂ) / a * (k : ℂ) ^ 2)
-  let F : ℤ → ℂ := fun n => Complex.exp
-    (-(Real.pi : ℂ) * A * (n : ℂ) ^ 2 + 2 * (Real.pi : ℂ) * B * (n : ℂ))
-  let H : ℤ → ℂ := fun l => Complex.exp
-    (-(Real.pi : ℂ) / A * ((l : ℂ) + Complex.I * B) ^ 2)
-  have hsplit : (∑' n : ℤ, firstGaussian a b d (k,n)) = C * ∑' n : ℤ, F n := by
-    rw [← tsum_mul_left]
-    apply tsum_congr
-    intro n
-    rfl
-  have hpoisson : (∑' n : ℤ, F n) =
-      (1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, H l :=
-    Complex.tsum_exp_neg_quadratic hδ B
-  have hterm (l : ℤ) : C * H l = dualGaussian a b d (k,l) := by
-    have hb : Complex.I * B = -(b / a * (k : ℂ)) := by
-      dsimp [B]
-      field_simp
-      ring_nf
-      simp [Complex.I_sq]
-    dsimp [H, dualGaussian, C, A]
-    rw [hb]
-    ring_nf
-  calc
-    (∑' n : ℤ, firstGaussian a b d (k,n)) = C * ∑' n : ℤ, F n := hsplit
-    _ = C * ((1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, H l) := by rw [hpoisson]
-    _ = (1 / A ^ (1 / 2 : ℂ)) * (C * ∑' l : ℤ, H l) := by ring
-    _ = (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
-          ∑' l : ℤ, dualGaussian a b d (k,l) := by
-      change (1 / A ^ (1 / 2 : ℂ)) * (C * ∑' l : ℤ, H l) =
-        (1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, dualGaussian a b d (k,l)
-      congr 1
-      rw [← tsum_mul_left]
-      exact tsum_congr hterm
-
-theorem binary_gaussian_poisson {a b d : ℂ}
-    (ha : 0 < a.re) (hδ : 0 < (schur a b d).re)
-    (hO : Summable (binaryGaussian a b d))
-    (hM : Summable (firstGaussian a b d))
-    (hD : Summable (dualGaussian a b d)) :
-    (∑' z : ℤ × ℤ, binaryGaussian a b d z) =
-      (1 / a ^ (1 / 2 : ℂ)) *
-        (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
-        ∑' z : ℤ × ℤ, dualGaussian a b d z := by
-  have hOcomm :
-      (∑' n : ℤ, ∑' m : ℤ, binaryGaussian a b d (m,n)) =
-        ∑' m : ℤ, ∑' n : ℤ, binaryGaussian a b d (m,n) :=
-    (show Summable (Function.uncurry (fun m n : ℤ => binaryGaussian a b d (m,n)))
-      from hO).tsum_comm
-  have hMcomm :
-      (∑' n : ℤ, ∑' k : ℤ, firstGaussian a b d (k,n)) =
-        ∑' k : ℤ, ∑' n : ℤ, firstGaussian a b d (k,n) :=
-    (show Summable (Function.uncurry (fun k n : ℤ => firstGaussian a b d (k,n)))
-      from hM).tsum_comm
-  calc
-    (∑' z : ℤ × ℤ, binaryGaussian a b d z) =
-        ∑' m : ℤ, ∑' n : ℤ, binaryGaussian a b d (m,n) := hO.tsum_prod
-    _ = ∑' n : ℤ, ∑' m : ℤ, binaryGaussian a b d (m,n) := hOcomm.symm
-    _ = ∑' n : ℤ, (1 / a ^ (1 / 2 : ℂ)) *
-          ∑' k : ℤ, firstGaussian a b d (k,n) := by
-      apply tsum_congr
-      intro n
-      exact first_poisson_slice ha n
-    _ = (1 / a ^ (1 / 2 : ℂ)) *
-          (∑' n : ℤ, ∑' k : ℤ, firstGaussian a b d (k,n)) := tsum_mul_left
-    _ = (1 / a ^ (1 / 2 : ℂ)) *
-          (∑' k : ℤ, ∑' n : ℤ, firstGaussian a b d (k,n)) := by
-      rw [hMcomm]
-    _ = (1 / a ^ (1 / 2 : ℂ)) *
-          (∑' k : ℤ, (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
-            ∑' l : ℤ, dualGaussian a b d (k,l)) := by
-      congr 1
-      apply tsum_congr
-      intro k
-      exact second_poisson_slice hδ k
-    _ = (1 / a ^ (1 / 2 : ℂ)) *
-          (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
-          (∑' k : ℤ, ∑' l : ℤ, dualGaussian a b d (k,l)) := by
-      rw [tsum_mul_left]
-      ring
-    _ = (1 / a ^ (1 / 2 : ℂ)) *
-          (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
-          ∑' z : ℤ × ℤ, dualGaussian a b d z := by
-      rw [hD.tsum_prod]
-
 end RankTwoComplex
-
-namespace GaussianShiftedPartition
-
-open ActualEisensteinCubic ConcreteTraceCRT ConcreteBreveE
-
-noncomputable def representative (c : O) (r : O ⧸ Ideal.span {c}) : O :=
-  Classical.choose (Ideal.Quotient.mk_surjective r)
-
-theorem representative_spec (c : O) (r : O ⧸ Ideal.span {c}) :
-    Ideal.Quotient.mk (Ideal.span {c}) (representative c r) = r :=
-  Classical.choose_spec (Ideal.Quotient.mk_surjective r)
-
-theorem actual_quadratic_shifted_partition (c : O) (hc : c ≠ 0)
-    (W : O → ℂ)
-    (hsum : Summable (fun z : O =>
-      (eisTraceModChar ShortDraftTrace.breveE breveE_period_coordinates c hc)
-        ((Ideal.Quotient.mk (Ideal.span {c}) z) ^ 2) * W z)) :
-    letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
-    letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
-    (∑' z : O,
-      (eisTraceModChar ShortDraftTrace.breveE breveE_period_coordinates c hc)
-        ((Ideal.Quotient.mk (Ideal.span {c}) z) ^ 2) * W z) =
-      ∑ r : O ⧸ Ideal.span {c},
-        (eisTraceModChar ShortDraftTrace.breveE breveE_period_coordinates c hc)
-          (r ^ 2) *
-          ∑' w : O, W (representative c r + c*w) := by
-  let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
-  let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
-  rw [GaussianAbelPartition.actual_quadratic_gaussian_partition c hc W hsum]
-  apply Finset.sum_congr rfl
-  intro r hr
-  congr 1
-  exact GaussianFiberEquiv.fiber_tsum c hc r
-    (representative c r) (representative_spec c r) W
-
-end GaussianShiftedPartition
 
 namespace RankTwoAffine
 
@@ -308,69 +101,31 @@ private theorem first_transform_term {a b d u v : ℂ} (ha : a ≠ 0) (k n : ℤ
   rw [← Complex.exp_add, first_exponent_identity ha k n, Complex.exp_add]
   rfl
 
+/-- Poisson on a single lattice slice commutes with the scalar weight on that slice. -/
+private theorem scaled_poisson_slice {a : ℂ} (ha : 0 < a.re) (B C : ℂ)
+    {F G : ℤ → ℂ}
+    (hF : ∀ n, F n = C * Complex.exp
+      (-(Real.pi : ℂ)*a*(n:ℂ)^2+2*(Real.pi:ℂ)*B*(n:ℂ)))
+    (hG : ∀ n, G n = C * Complex.exp (-(Real.pi:ℂ)/a*((n:ℂ)+Complex.I*B)^2)) :
+    (∑' n, F n) = (1/a^(1/2:ℂ)) * ∑' k, G k := by
+  simp only [hF,hG,tsum_mul_left,Complex.tsum_exp_neg_quadratic ha B]
+  ac_rfl
+
 private theorem first_poisson_slice {a b d u v : ℂ} (ha : 0 < a.re) (n : ℤ) :
     (∑' m : ℤ, binaryGaussian a b d u v (m,n)) =
       (1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, firstGaussian a b d u v (k,n) := by
-  have ha0 : a ≠ 0 := by
-    intro h
-    simp [h] at ha
-  let C : ℂ := Complex.exp (-(Real.pi : ℂ) * d * (n : ℂ) ^ 2 +
-    2 * (Real.pi : ℂ) * v * (n : ℂ))
-  let B : ℂ := u - b * (n : ℂ)
-  let F : ℤ → ℂ := fun m => Complex.exp
-    (-(Real.pi : ℂ) * a * (m : ℂ) ^ 2 + 2 * (Real.pi : ℂ) * B * (m : ℂ))
-  let H : ℤ → ℂ := fun k => Complex.exp
-    (-(Real.pi : ℂ) / a * ((k : ℂ) + Complex.I * B) ^ 2)
-  have hsplit : (∑' m : ℤ, binaryGaussian a b d u v (m,n)) = C * ∑' m : ℤ, F m := by
-    rw [← tsum_mul_left]
-    apply tsum_congr
-    intro m
-    exact binary_split a b d u v m n
-  have hpoisson : (∑' m : ℤ, F m) =
-      (1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, H k :=
-    Complex.tsum_exp_neg_quadratic ha B
-  calc
-    (∑' m : ℤ, binaryGaussian a b d u v (m,n)) = C * ∑' m : ℤ, F m := hsplit
-    _ = C * ((1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, H k) := by rw [hpoisson]
-    _ = (1 / a ^ (1 / 2 : ℂ)) * (C * ∑' k : ℤ, H k) := by ring
-    _ = (1 / a ^ (1 / 2 : ℂ)) * ∑' k : ℤ, firstGaussian a b d u v (k,n) := by
-      congr 1
-      rw [← tsum_mul_left]
-      apply tsum_congr
-      intro k
-      exact first_transform_term ha0 k n
+  have ha0 : a ≠ 0 := by rintro rfl; simpa using ha
+  exact scaled_poisson_slice ha (u-b*(n:ℂ))
+    (Complex.exp (-(Real.pi : ℂ)*d*(n:ℂ)^2+2*(Real.pi:ℂ)*v*(n:ℂ)))
+    (fun m => binary_split a b d u v m n) (fun k => (first_transform_term ha0 k n).symm)
 
 private theorem second_poisson_slice {a b d u v : ℂ}
     (hδ : 0 < (schur a b d).re) (k : ℤ) :
     (∑' n : ℤ, firstGaussian a b d u v (k,n)) =
       (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
         ∑' l : ℤ, dualGaussian a b d u v (k,l) := by
-  let A : ℂ := schur a b d
-  let B : ℂ := v + Complex.I * b / a * ((k : ℂ) + Complex.I * u)
-  let C : ℂ := Complex.exp (-(Real.pi : ℂ) / a * ((k : ℂ) + Complex.I * u) ^ 2)
-  let F : ℤ → ℂ := fun n => Complex.exp
-    (-(Real.pi : ℂ) * A * (n : ℂ) ^ 2 + 2 * (Real.pi : ℂ) * B * (n : ℂ))
-  let H : ℤ → ℂ := fun l => Complex.exp
-    (-(Real.pi : ℂ) / A * ((l : ℂ) + Complex.I * B) ^ 2)
-  have hsplit : (∑' n : ℤ, firstGaussian a b d u v (k,n)) = C * ∑' n : ℤ, F n := by
-    rw [← tsum_mul_left]
-    apply tsum_congr
-    intro n
-    rfl
-  have hpoisson : (∑' n : ℤ, F n) =
-      (1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, H l :=
-    Complex.tsum_exp_neg_quadratic hδ B
-  calc
-    (∑' n : ℤ, firstGaussian a b d u v (k,n)) = C * ∑' n : ℤ, F n := hsplit
-    _ = C * ((1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, H l) := by rw [hpoisson]
-    _ = (1 / A ^ (1 / 2 : ℂ)) * (C * ∑' l : ℤ, H l) := by ring
-    _ = (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
-          ∑' l : ℤ, dualGaussian a b d u v (k,l) := by
-      change (1 / A ^ (1 / 2 : ℂ)) * (C * ∑' l : ℤ, H l) =
-        (1 / A ^ (1 / 2 : ℂ)) * ∑' l : ℤ, dualGaussian a b d u v (k,l)
-      congr 1
-      rw [← tsum_mul_left]
-      rfl
+  exact scaled_poisson_slice hδ (v+Complex.I*b/a*((k:ℂ)+Complex.I*u))
+    (Complex.exp (-(Real.pi:ℂ)/a*((k:ℂ)+Complex.I*u)^2)) (fun _ => rfl) (fun _ => rfl)
 
 theorem affine_gaussian_poisson {a b d u v : ℂ}
     (ha : 0 < a.re) (hδ : 0 < (schur a b d).re)
@@ -391,38 +146,90 @@ theorem affine_gaussian_poisson {a b d u v : ℂ}
         ∑' k : ℤ, ∑' n : ℤ, firstGaussian a b d u v (k,n) :=
     (show Summable (Function.uncurry (fun k n : ℤ => firstGaussian a b d u v (k,n)))
       from hM).tsum_comm
-  calc
-    (∑' z : ℤ × ℤ, binaryGaussian a b d u v z) =
-        ∑' m : ℤ, ∑' n : ℤ, binaryGaussian a b d u v (m,n) := hO.tsum_prod
-    _ = ∑' n : ℤ, ∑' m : ℤ, binaryGaussian a b d u v (m,n) := hOcomm.symm
-    _ = ∑' n : ℤ, (1 / a ^ (1 / 2 : ℂ)) *
-          ∑' k : ℤ, firstGaussian a b d u v (k,n) := by
-      apply tsum_congr
-      intro n
-      exact first_poisson_slice ha n
-    _ = (1 / a ^ (1 / 2 : ℂ)) *
-          (∑' n : ℤ, ∑' k : ℤ, firstGaussian a b d u v (k,n)) := tsum_mul_left
-    _ = (1 / a ^ (1 / 2 : ℂ)) *
-          (∑' k : ℤ, ∑' n : ℤ, firstGaussian a b d u v (k,n)) := by
-      rw [hMcomm]
-    _ = (1 / a ^ (1 / 2 : ℂ)) *
-          (∑' k : ℤ, (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
-            ∑' l : ℤ, dualGaussian a b d u v (k,l)) := by
-      congr 1
-      apply tsum_congr
-      intro k
-      exact second_poisson_slice hδ k
-    _ = (1 / a ^ (1 / 2 : ℂ)) *
-          (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
-          (∑' k : ℤ, ∑' l : ℤ, dualGaussian a b d u v (k,l)) := by
-      rw [tsum_mul_left]
-      ring
-    _ = (1 / a ^ (1 / 2 : ℂ)) *
-          (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
-          ∑' z : ℤ × ℤ, dualGaussian a b d u v z := by
-      rw [hD.tsum_prod]
+  rw [hO.tsum_prod, ← hOcomm]
+  simp_rw [first_poisson_slice ha, tsum_mul_left, hMcomm, second_poisson_slice hδ,
+    tsum_mul_left]
+  rw [← hD.tsum_prod, mul_assoc]
 
 end RankTwoAffine
+
+namespace RankTwoComplex
+
+noncomputable def binaryGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
+  Complex.exp (-(Real.pi : ℂ) *
+    (a * (z.1 : ℂ) ^ 2 + 2 * b * (z.1 : ℂ) * (z.2 : ℂ) + d * (z.2 : ℂ) ^ 2))
+
+noncomputable def firstGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
+  Complex.exp (-(Real.pi : ℂ) / a * (z.1 : ℂ) ^ 2) *
+    Complex.exp (-(Real.pi : ℂ) * schur a b d * (z.2 : ℂ) ^ 2 +
+      2 * (Real.pi : ℂ) * (Complex.I * b / a * (z.1 : ℂ)) * (z.2 : ℂ))
+
+noncomputable def dualGaussian (a b d : ℂ) (z : ℤ × ℤ) : ℂ :=
+  Complex.exp (-(Real.pi : ℂ) / a * (z.1 : ℂ) ^ 2) *
+    Complex.exp (-(Real.pi : ℂ) / (schur a b d) *
+      ((z.2 : ℂ) - b / a * (z.1 : ℂ)) ^ 2)
+
+theorem binary_gaussian_poisson {a b d : ℂ}
+    (ha : 0 < a.re) (hδ : 0 < (schur a b d).re)
+    (hO : Summable (binaryGaussian a b d))
+    (hM : Summable (firstGaussian a b d))
+    (hD : Summable (dualGaussian a b d)) :
+    (∑' z : ℤ × ℤ, binaryGaussian a b d z) =
+      (1 / a ^ (1 / 2 : ℂ)) *
+        (1 / (schur a b d) ^ (1 / 2 : ℂ)) *
+        ∑' z : ℤ × ℤ, dualGaussian a b d z := by
+  have hO' : Summable (RankTwoAffine.binaryGaussian a b d 0 0) := by
+    refine hO.congr (fun z => ?_)
+    simp [RankTwoAffine.binaryGaussian, binaryGaussian]
+  have hM' : Summable (RankTwoAffine.firstGaussian a b d 0 0) := by
+    refine hM.congr (fun z => ?_)
+    simp [RankTwoAffine.firstGaussian, firstGaussian]
+  have hd (z : ℤ × ℤ) : RankTwoAffine.dualGaussian a b d 0 0 z = dualGaussian a b d z := by
+    simp only [RankTwoAffine.dualGaussian, dualGaussian, mul_zero, add_zero, zero_add, sub_eq_add_neg]
+    rw [show Complex.I * (Complex.I*b/a*(z.1:ℂ)) = -(b/a*(z.1:ℂ)) by
+      rw [mul_div_assoc, mul_assoc Complex.I (b/a), ← mul_assoc Complex.I Complex.I]
+      simp [← pow_two, Complex.I_sq]]
+  have hD' : Summable (RankTwoAffine.dualGaussian a b d 0 0) := hD.congr fun z => (hd z).symm
+  simpa only [RankTwoAffine.binaryGaussian, mul_zero, zero_mul, zero_add, add_zero,
+    binaryGaussian, hd] using RankTwoAffine.affine_gaussian_poisson ha hδ hO' hM' hD'
+
+end RankTwoComplex
+
+namespace GaussianShiftedPartition
+
+open ActualEisensteinCubic ConcreteTraceCRT ConcreteBreveE
+
+noncomputable def representative (c : O) (r : O ⧸ Ideal.span {c}) : O :=
+  Classical.choose (Ideal.Quotient.mk_surjective r)
+
+theorem representative_spec (c : O) (r : O ⧸ Ideal.span {c}) :
+    Ideal.Quotient.mk (Ideal.span {c}) (representative c r) = r :=
+  Classical.choose_spec (Ideal.Quotient.mk_surjective r)
+
+theorem actual_quadratic_shifted_partition (c : O) (hc : c ≠ 0)
+    (W : O → ℂ)
+    (hsum : Summable (fun z : O =>
+      (eisTraceModChar ShortDraftTrace.breveE breveE_period_coordinates c hc)
+        ((Ideal.Quotient.mk (Ideal.span {c}) z) ^ 2) * W z)) :
+    letI : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
+    letI : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
+    (∑' z : O,
+      (eisTraceModChar ShortDraftTrace.breveE breveE_period_coordinates c hc)
+        ((Ideal.Quotient.mk (Ideal.span {c}) z) ^ 2) * W z) =
+      ∑ r : O ⧸ Ideal.span {c},
+        (eisTraceModChar ShortDraftTrace.breveE breveE_period_coordinates c hc)
+          (r ^ 2) *
+          ∑' w : O, W (representative c r + c*w) := by
+  let : Finite (O ⧸ Ideal.span {c}) := finite_quotient_span hc
+  let : Fintype (O ⧸ Ideal.span {c}) := Fintype.ofFinite _
+  rw [GaussianAbelPartition.actual_quadratic_gaussian_partition c hc W hsum]
+  apply Finset.sum_congr rfl
+  intro r hr
+  congr 1
+  exact GaussianFiberEquiv.fiber_tsum c hc r
+    (representative c r) (representative_spec c r) W
+
+end GaussianShiftedPartition
 
 namespace ActualEisensteinCubic
 
@@ -631,7 +438,11 @@ theorem dualPhase_norm (k l : ℤ) (x y : ℝ) :
     ‖dualPhase k l x y‖ = 1 := by
   simp [dualPhase, Complex.norm_exp, Complex.mul_re]
 
-private theorem affine_dual_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
+section
+variable {t : ℝ} (ht : 0 < t) (x y : ℝ)
+include t ht x y
+
+private theorem affine_dual_summable :
     Summable (RankTwoAffine.dualGaussian (A t) (B t) (D t) (U t x y) (V t x y)) := by
   have htd : 0 < 4 / (3 * t) := by positivity
   let e : ℤ × ℤ ≃ ℤ × ℤ :=
@@ -651,7 +462,7 @@ private theorem affine_dual_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
   ext z
   simp [hC]
 
-private theorem shifted_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
+private theorem shifted_summable :
     Summable (shifted t x y) := by
   have ht4 : 0 < t / 4 := by positivity
   have h1 := RankTwoPoisson.real_gauss_summable ht4
@@ -687,7 +498,7 @@ private theorem shifted_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
   simpa [shifted, Complex.norm_exp, Real.exp_add, mul_assoc] using
     (Real.exp_le_exp.mpr he)
 
-private theorem affine_original_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
+private theorem affine_original_summable :
     Summable (RankTwoAffine.binaryGaussian (A t) (B t) (D t) (U t x y) (V t x y)) := by
   have hS := shifted_summable ht x y
   have hC : C t x y ≠ 0 := Complex.exp_ne_zero _
@@ -699,7 +510,7 @@ private theorem affine_original_summable {t : ℝ} (ht : 0 < t) (x y : ℝ) :
   ext z
   simp [hC]
 
-theorem shifted_eisenstein_gaussian_poisson {t : ℝ} (ht : 0 < t) (x y : ℝ) :
+theorem shifted_eisenstein_gaussian_poisson :
     (∑' z : ℤ × ℤ, shifted t x y z) =
       (1 / (t : ℂ) ^ (1 / 2 : ℂ)) *
         (1 / ((((3 * t) / 4 : ℝ) : ℂ)) ^ (1 / 2 : ℂ)) *
@@ -745,6 +556,8 @@ theorem shifted_eisenstein_gaussian_poisson {t : ℝ} (ht : 0 < t) (x y : ℝ) :
       apply tsum_congr
       intro z
       exact shifted_dual_term ht x y z.1 z.2
+
+end
 
 end RankTwoEisShift
 

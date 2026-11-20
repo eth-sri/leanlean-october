@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.MeanSquare.OutsideIdeals
 
 @[expose] public section
@@ -8,79 +9,21 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap ContDiff
 namespace InitialMeanSquare
 
-section
-open ActualEisensteinCubic ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic
-open FirstPassCubeLabels (columnLog)
 
-end
 
 open MeasureTheory
 open scoped BigOperators Classical SchwartzMap ContDiff
@@ -90,7 +33,7 @@ open ConcreteTraceCRT (eisEmbedding)
 
 section
 variable {ι : Type*} [DecidableEq ι] (p : ι → O)
-  [∀ i, (Ideal.span {p i}).IsMaximal]
+  [OAI.PrincipalIdealFamily.Maximal p]
 
 end
 
@@ -161,9 +104,9 @@ open MixedCrossSeparation (columnCoefficient)
 open FirstPassCubeLabels
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i,lambda∉Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 def canonicalSourceCoefficient (Ψ : O→*ℂ) (m f : O)
     (H : Finset ι→ℂ) (S : Finset ι) : ℂ :=
@@ -172,7 +115,7 @@ def canonicalSourceCoefficient (Ψ : O→*ℂ) (m f : O)
     finiteSquarefreeRow (fun i => Ideal.span {p i}) hg S f^4 * H S
 
 theorem canonicalSourceCoefficient_union
-    (hpr : ∀ i,lambda^2∣p i-1) (Ψ : O→*ℂ) (m f : O)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (Ψ : O→*ℂ) (m f : O)
     (H : Finset ι→ℂ) (D S : Finset ι) (hd : Disjoint D S) :
     canonicalSourceCoefficient p hp hcop hg Ψ m f H (D∪S) =
       canonicalSourceCoefficient p hp hcop hg Ψ m f (fun _ => 1) D *
@@ -233,8 +176,8 @@ theorem canonicalCube_pair_row
       ring
 
 theorem canonicalSourceCoefficient_cube_split
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hpr : ∀ i,lambda^2∣p i-1) (Ψ : O→*ℂ) (m f : O)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (Ψ : O→*ℂ) (m f : O)
     (H : Finset ι→ℂ) (B C S : Finset ι) (ε₁ ε₂ : ι→Bool) (negative : Bool)
     (hCB : Disjoint C B) (hSC : Disjoint S C) (hSB : Disjoint S B) :
     let A := B.filter (fun i => if negative then ε₂ i else ε₁ i)
@@ -273,9 +216,9 @@ open EisensteinSchwartzPoisson (paperRadialFourier)
 open MixedCrossSeparation (columnCoefficient columnPrimeCoprime)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 def canonicalPairMode (N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (V₁ V₂ : ℝ→ℂ)
@@ -333,8 +276,8 @@ lemma actualFirstKernel_summable (F B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ :
     exact summable_zero
 
 theorem canonicalPair_first_poisson
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
-    (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (M N P B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (V₁ V₂ : ℝ→ℂ)
     (X₁ X₂ K : ℝ) (hK : 0<K) :
@@ -405,8 +348,8 @@ def disjointCanonicalSource (F M B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι
           (threeBlockExponent N P v ε₁ ε₂) z*W (‖eisEmbedding z‖^2/K)) else 0
 
 theorem disjointCanonicalSource_poisson
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (F M B : Finset ι) (v : ι→ℕ) (ε₁ ε₂ : ι→Bool)
     (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (V₁ V₂ : ℝ→ℂ)
     (X₁ X₂ K : ℝ) (hK : 0<K) :
@@ -427,21 +370,20 @@ theorem disjointCanonicalSource_poisson
   by_cases hNP : Disjoint N P
   · simp only [hNP,ite_true]
     exact canonicalPair_first_poisson p hp hcop hg hinj hc M N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK
-  · simp only [hNP,ite_false,mul_zero,Finset.sum_const_zero]
+  · simp [hNP]
 
 end FirstPassCubeLabels
 
 open scoped BigOperators Classical SchwartzMap
 namespace SecondPassArithmetic
-open ActualEisensteinCubic
-open FirstPassCubeLabels
+open ActualEisensteinCubic FirstPassCubeLabels
 open MixedCrossSeparation (columnCoefficient)
 open ConcreteTraceCRT (eisEmbedding)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 def canonicalCubeSourcePair (B S T : Finset ι) (v₁ v₂ : ι→ℕ)
     (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ f : O) (H₁ H₂ : Finset ι→ℂ)
@@ -488,8 +430,8 @@ lemma cube_filter_right (b : CubeCoordinates ι) (hb : b.Admissible) :
   exact and_iff_right_of_imp (fun hi=>hb.2 hi)
 
 theorem canonicalCubeSourcePair_factor
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hpr : ∀i,lambda^2∣p i-1)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda)
     (b : CubeCoordinates ι) (hb : b.Admissible) (C N P : Finset ι)
     (hCB : Disjoint C b.support) (hNC : Disjoint N C) (hPC : Disjoint P C)
     (hNB : Disjoint N b.support) (hPB : Disjoint P b.support) (hNP : Disjoint N P)
@@ -525,8 +467,8 @@ def canonicalCubeCorrelation (pool B : Finset ι) (v₁ v₂ : ι→ℕ)
     canonicalCubeSourcePair p hp hcop hg B S T v₁ v₂ Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K
 
 theorem canonicalCubeCorrelation_eq_blocks
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hpr : ∀i,lambda^2∣p i-1) (pool : Finset ι) (v₁ v₂ : ι→₀ℕ)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (pool : Finset ι) (v₁ v₂ : ι→₀ℕ)
     (hB : v₁.support∪v₂.support⊆pool)
     (Ψ₁ Ψ₂ : O→*ℂ) (m₁ m₂ f : O) (H₁ H₂ : Finset ι→ℂ)
     (W : 𝓢(ℝ,ℂ)) (K : ℝ) :
@@ -569,11 +511,11 @@ theorem canonicalCubeCorrelation_eq_blocks
       (Finset.mem_sdiff.mp ((Finset.mem_powerset.mp hP) hiP)).2 (Finset.mem_union_left _ hiB))
     simpa only [mul_assoc,b,CubeCoordinates.support] using canonicalCubeSourcePair_factor p hp hcop hg hinj hpr b hb C N P
       hCB hNC hPC hNB hPB hNP Ψ₁ Ψ₂ m₁ m₂ f H₁ H₂ W K
-  · simp only [hNP,ite_false,mul_zero]
+  · simp [hNP]
 
 theorem canonicalCubeBeforePoisson_eq_all_modes
-    (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-    (hc : ∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (pool:Finset ι) (b:CubeCoordinates ι) (C:Finset ι)
     (Ψ₁ Ψ₂:O→*ℂ) (m₁ m₂ f:O) (H₁ H₂:Finset ι→ℂ)
     (W:𝓢(ℝ,ℂ)) (K:ℝ) (hK:0<K) :
@@ -591,7 +533,7 @@ theorem canonicalCubeBeforePoisson_eq_all_modes
   rw [disjointCanonicalSource_poisson p hp hcop hg hinj hc _ _ _ _ _ _ _ _ _ _ _ _ _ _ hK]
 
 lemma canonicalSourceCoefficient_norm_le_one
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (Ψ:O→*ℂ) (hΨ:∀u,‖Ψ u‖≤1) (m f:O) (S:Finset ι) :
     ‖canonicalSourceCoefficient p hp hcop hg Ψ m f (fun _=>1) S‖≤1 := by
   have hm : ‖rowCoprimeMask (fun i=>Ideal.span {p i}) S m‖≤1 := by
@@ -609,7 +551,7 @@ lemma canonicalSourceCoefficient_norm_le_one
     _ = 1 := by norm_num
 
 lemma canonicalCubeOuter_norm_le_one
-    (hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (b:CubeCoordinates ι) (C:Finset ι) (Ψ₁ Ψ₂:O→*ℂ)
     (hΨ₁:∀u,‖Ψ₁ u‖≤1) (hΨ₂:∀u,‖Ψ₂ u‖≤1) (m₁ m₂ f:O) :
     ‖canonicalCubeOuter p hp hcop hg b C Ψ₁ Ψ₂ m₁ m₂ f‖≤1 := by

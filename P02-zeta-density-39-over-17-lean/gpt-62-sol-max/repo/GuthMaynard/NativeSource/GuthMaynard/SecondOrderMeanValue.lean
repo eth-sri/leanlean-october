@@ -67,3 +67,8 @@ theorem second_order_mean_value
   linarith
 
 end GuthMaynard.NativeMoment
+
+namespace RiemannZeta.GuthMaynard
+export _root_.GuthMaynard.NativeMoment
+  (second_order_mean_value)
+end RiemannZeta.GuthMaynard

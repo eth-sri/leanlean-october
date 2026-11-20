@@ -11,13 +11,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstRetainedNorm
-open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve
-open CenteredMomentFirstRetainedAssembly CenteredMomentFirstRetainedActive
-open CenteredMomentFirstSectorTransform CenteredMomentFirstSectors CenteredMomentHeckeExpansion
-open CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly
-open CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm
-open CenteredMomentCommonSupport CenteredMomentSupportedCorrelation
-open CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentLogDyadic
+open ActualEisensteinCubic ConcretePrimeRowBridge HeckeFamily CanonicalQuadraticSieve CenteredMomentFirstRetainedAssembly CenteredMomentFirstRetainedActive CenteredMomentFirstSectorTransform CenteredMomentFirstSectors CenteredMomentHeckeExpansion CenteredMomentFirstPhysicalSource CenteredMomentFirstPhysicalDyadicAssembly CenteredMomentSourceRow CenteredMomentCanonicalFirst CenteredMomentFirstReduced CenteredMomentRowNorm CenteredMomentCommonSupport CenteredMomentSupportedCorrelation CenteredMomentSectorLocalization CenteredMomentFirstScale CenteredMomentLogDyadic
 open CenteredMomentActiveSource (activeSource)
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι:Type*}[Fintype ι][DecidableEq ι]
@@ -60,9 +54,11 @@ theorem sector_norm (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal 
   intro E hE
   exact norm_sum_le _ _
 
-theorem original_active_sectors (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
-    (hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)(m A:O)(t:ℝ)(S:Finset (Ideal O))
-    (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ)(hK:0<K):
+section
+variable (s:CenteredMomentCommonRadialData.Input ι) (Rbad seed:Ideal O) (hz₁:s.W₁ 0=0) (hz₂:s.W₂ 0=0) (m A:O) (t:ℝ) (S:Finset (Ideal O)) (W:𝓢(ℝ,ℂ)) (K X Z ξ:ℝ) (hK:0<K)
+include s Rbad seed hz₁ hz₂ m A t S W K X Z ξ hK
+
+theorem original_active_sectors:
     let β:=CenteredMomentOriginalCommonHarmonic.coefficient s Rbad seed
     let T:=activeSource S β
     CenteredMomentFirstSectorLocalization.retainedEnergy s.η m A t S β W K X Z ξ=
@@ -74,9 +70,7 @@ theorem original_active_sectors (s:CenteredMomentCommonRadialData.Input ι)(Rbad
   rw [←retained_energy_active s.η m A t S _ W K X Z ξ]
   exact original_retained_physical s Rbad seed hz₁ hz₂ m A t _ W K X Z ξ hK
 
-theorem original_retained_norm (s:CenteredMomentCommonRadialData.Input ι)(Rbad seed:Ideal O)
-    (hz₁:s.W₁ 0=0)(hz₂:s.W₂ 0=0)(m A:O)(t:ℝ)(S:Finset (Ideal O))
-    (W:𝓢(ℝ,ℂ))(K X Z ξ:ℝ)(hK:0<K):
+theorem original_retained_norm:
     let β:=CenteredMomentOriginalCommonHarmonic.coefficient s Rbad seed
     let T:=activeSource S β
     ‖CenteredMomentFirstSectorLocalization.retainedEnergy s.η m A t S β W K X Z ξ‖≤
@@ -97,6 +91,8 @@ theorem original_retained_norm (s:CenteredMomentCommonRadialData.Input ι)(Rbad 
       (CenteredMomentFirstTailAggregate.rowWeight_norm_le_one _ _ _ _ _ _
         (commonLabels_supported _ p).2.1)
   exact (mul_le_of_le_one_left (norm_nonneg _) hw).trans (sector_norm s Rbad seed m A t _ _ _ _ _ W K X Z ξ)
+
+end
 
 end SevenEighths.CenteredMomentFirstRetainedNorm
 

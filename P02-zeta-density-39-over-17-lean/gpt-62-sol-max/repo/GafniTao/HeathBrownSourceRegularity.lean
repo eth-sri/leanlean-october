@@ -18,16 +18,18 @@ namespace GafniTao
 
 noncomputable section
 
-theorem continuousOn_iteratedDeriv_of_contDiffOn_isOpen
-    {U : Set ℝ} (hU : IsOpen U) {f : ℝ → ℝ} {k j : ℕ}
+section
+variable {U : Set ℝ} (hU : IsOpen U) {f : ℝ → ℝ}
+include U hU f
+
+theorem continuousOn_iteratedDeriv_of_contDiffOn_isOpen {k j : ℕ}
     (hf : ContDiffOn ℝ k f U) (hj : j ≤ k) :
     ContinuousOn (iteratedDeriv j f) U := by
   have h := hf.continuousOn_iteratedDerivWithin
     (by exact_mod_cast hj) hU.uniqueDiffOn
   exact h.congr (iteratedDerivWithin_of_isOpen hU).symm
 
-theorem differentiableOn_iteratedDeriv_of_contDiffOn_isOpen
-    {U : Set ℝ} (hU : IsOpen U) {f : ℝ → ℝ} {k j : ℕ}
+theorem differentiableOn_iteratedDeriv_of_contDiffOn_isOpen {k j : ℕ}
     (hf : ContDiffOn ℝ k f U) (hj : j < k) :
     DifferentiableOn ℝ (iteratedDeriv j f) U := by
   have h := hf.differentiableOn_iteratedDerivWithin
@@ -37,8 +39,7 @@ theorem differentiableOn_iteratedDeriv_of_contDiffOn_isOpen
 /-- The two derivative-coordinate regularity packages needed by the literal
 pair-count argument, restricted to any compact interval lying inside the
 published open differentiability interval. -/
-theorem heathBrown_coordinate_data_of_source
-    {U : Set ℝ} (hU : IsOpen U) {f : ℝ → ℝ} {k N : ℕ}
+theorem heathBrown_coordinate_data_of_source {k N : ℕ}
     (hk : 3 ≤ k) (hf : ContDiffOn ℝ k f U)
     (hsub : Set.Icc (0 : ℝ) (N : ℝ) ⊆ U) :
     ContinuousOn (heathBrownDerivativeCoordinate f (k - 2))
@@ -76,8 +77,7 @@ theorem heathBrown_coordinate_data_of_source
 /-- The detailed Taylor hypotheses in the finite Lemma 1 follow from the
 single source assumption of `C^k` regularity on an open interval containing
 the compact working range. -/
-theorem heathBrown_local_data_of_source
-    {U : Set ℝ} (hU : IsOpen U) {f : ℝ → ℝ} {k N H : ℕ}
+theorem heathBrown_local_data_of_source {k N H : ℕ}
     (hk : 2 ≤ k) (hf : ContDiffOn ℝ k f U)
     (hsub : Set.Icc (0 : ℝ) (N : ℝ) ⊆ U)
     {A lambda : ℝ}
@@ -146,6 +146,8 @@ theorem heathBrown_local_data_of_source
       hξ.2.le.trans hnxN⟩
     rw [Real.norm_eq_abs, abs_of_nonneg (hkBounds ξ hξU).1]
     exact (hkBounds ξ hξU).2
+
+end
 
 /-- Source-facing compact-interior form of the fully assembled Lemma 1.
 All auxiliary differentiability hypotheses are discharged here from a

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.ActiveCusp
 
 @[expose] public section
@@ -15,20 +16,23 @@ noncomputable local instance mixedQuotientFintype (P : Ideal Eis) [P.IsMaximal] 
     Fintype (Eis ⧸ P) := Fintype.ofFinite _
 variable {ι : Type*} [Fintype ι]
 
-def unmarkedSexticTwist (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) : Eis →* ℂ where
+def unmarkedSexticTwist (p : ι → Eis) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (j : ι → ℕ) (S : Finset ι) : Eis →* ℂ where
   toFun n := ∏ i ∈ (Finset.univ : Finset ι) \ S,
     (actualSextic (Ideal.span {p i}) (hg i) ^ j i) (Ideal.Quotient.mk _ n)
   map_one' := by simp
   map_mul' x y := by simp only [map_mul, Finset.prod_mul_distrib]
 
-def mixedPrimeFunction (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι)
+def mixedPrimeFunction (p : ι → Eis) [OAI.PrincipalIdealFamily.Maximal p]
+    (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (j : ι → ℕ) (S : Finset ι)
     (i : ι) (x : Eis ⧸ Ideal.span {p i}) : ℂ :=
   if i ∈ S then zeroMark x else (actualSextic (Ideal.span {p i}) (hg i) ^ j i) x
 
-theorem unmarkedSexticTwist_norm (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) (n : Eis) :
+section
+variable (p : ι → Eis) [instShared1 : OAI.PrincipalIdealFamily.Maximal p] (hg : OAI.PrincipalIdealFamily.Avoids p λ₀) (j : ι → ℕ) (S : Finset ι)
+include p instShared1 hg j S
+
+theorem unmarkedSexticTwist_norm (n : Eis) :
     ‖unmarkedSexticTwist p hg j S n‖ ≤ 1 := by
   change ‖∏ i ∈ (Finset.univ : Finset ι) \ S,
     (actualSextic (Ideal.span {p i}) (hg i) ^ j i) (Ideal.Quotient.mk _ n)‖ ≤ 1
@@ -36,8 +40,7 @@ theorem unmarkedSexticTwist_norm (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsM
   exact Finset.prod_le_one₀ (fun i hi => norm_nonneg _)
     (fun i hi => FiniteRayExpansion.norm_char_le_one _ _)
 
-theorem unmarkedSexticTwist_periodic (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) :
+theorem unmarkedSexticTwist_periodic :
     CanonicalCoefficientClass.FactorsModulo (Ideal.span {∏ i, p i}) (unmarkedSexticTwist p hg j S) := by
   intro x y hxy
   change (∏ i ∈ (Finset.univ : Finset ι) \ S, _) = ∏ i ∈ (Finset.univ : Finset ι) \ S, _
@@ -49,8 +52,7 @@ theorem unmarkedSexticTwist_periodic (p : ι → Eis) [∀ i, (Ideal.span {p i})
     exact (Finset.dvd_prod_of_mem p (Finset.mem_univ i)).trans (Ideal.mem_span_singleton.mp hxy)
   rw [he]
 
-theorem mixedPrimeFunction_product (p : ι → Eis) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hg : ∀ i, λ₀ ∉ Ideal.span {p i}) (j : ι → ℕ) (S : Finset ι) (n : Eis) :
+theorem mixedPrimeFunction_product (n : Eis) :
     (∏ i, mixedPrimeFunction p hg j S i (Ideal.Quotient.mk _ n)) =
       unmarkedSexticTwist p hg j S n * ∏ i ∈ S, if p i ∣ n then 1 else 0 := by
   rw [← Finset.prod_sdiff (Finset.subset_univ S)]
@@ -65,6 +67,8 @@ theorem mixedPrimeFunction_product (p : ι → Eis) [∀ i, (Ideal.span {p i}).I
   apply Finset.prod_congr rfl
   intro i hi
   simp only [mixedPrimeFunction, (Finset.mem_sdiff.mp hi).2, ite_false]
+
+end
 
 omit [Fintype ι] in
 theorem markedThetaQuotient_mk (p : ι → Eis) (S : Finset ι)

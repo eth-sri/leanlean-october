@@ -10,8 +10,7 @@ noncomputable section
 open scoped BigOperators Classical
 open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 namespace SevenEighths.InverseInitialExcludedOverlap
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool
-open HeckeFamily InverseInitialExcludedPolynomial
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialExcludedPool HeckeFamily InverseInitialExcludedPolynomial
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem reconstruct_outside (E:Finset (Ideal O)){P j c:Ideal O}

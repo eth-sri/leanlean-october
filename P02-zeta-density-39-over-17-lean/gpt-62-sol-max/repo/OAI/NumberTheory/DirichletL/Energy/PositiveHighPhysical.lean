@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Energy.CanonicalHighPhysical
+public import OAI.NumberTheory.DirichletL.Energy.CanonicalPhysical
 public import OAI.NumberTheory.DirichletL.Energy.PositiveBalancedAdmission
 public import OAI.NumberTheory.DirichletL.Energy.PositiveHighSourceBound
 public import OAI.NumberTheory.DirichletL.Energy.FirstSourceParameters
@@ -13,16 +13,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyPositiveHighPhysical
-open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily
-open CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput
-open CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot
-open CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyPositiveHighSourceBound
-open CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission
-open CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule
-open CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters
-open CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
+open HeckeFamily ConcretePrimeRowBridge QuadraticInitialBound CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentFiniteProfileExceptional CenteredMomentSecondHeightFamily CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentNaturalFixedRaySource CenteredMomentPrimeSlot CenteredMomentEnergyPositiveHighSource CenteredMomentEnergyPositiveHighSourceBound CenteredMomentEnergyPositiveHighParameters CenteredMomentEnergyPositiveBalancedAdmission CenteredMomentEnergyWidthSchedule CenteredMomentEnergyStageReserveSchedule CenteredMomentEnergyStageMargins CenteredMomentEnergyFirstSourceParameters CenteredMomentEnergyFirstLiveAdmission CenteredMomentEnergyNaturalInputMatches
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 local instance {ι:Type*}:DecidableEq (ι⊕Fin 2):=Classical.decEq _
@@ -68,11 +59,13 @@ theorem actual_positive_high_physical
   have hrpos:0<r/4:=hr
   have hκsmall:(1/6:ℝ)≤κ:=by linarith
   have hLphys:0≤max Lgoal Mparent:=hL.trans (le_max_left _ _)
-  obtain ⟨U,J,hphysical⟩:=CenteredMomentEnergyCanonicalHighPhysical.actual_high_physical (α:=α)
-    M H hH W aslot bslot Mchild Lslot (r/4) lo hi κ a b Mslot (maskEpsilon Mglobal B ε)
-    (zero_le_one.trans hMslot) hem ha hb (max Lgoal Mparent) hLphys degree S haslot hWs hW hMc hLs hr
-    hκsmall hbeta hκbeta N aslot (max 1 bslot) a0 (r/4) haslot (le_max_left _ _) ha0 hr
-    (fun _=>aslot) (fun _=>bslot) (fun _=>hbslot)
+  obtain ⟨U,J,hphysical⟩:=CenteredMomentEnergyCanonicalPhysical.actual_physical (high:=true) (α:=α)
+    M H hH ⟨W, aslot, bslot, Mchild, Lslot, r/4, lo, hi,
+      κ, a, b, Mslot, maskEpsilon Mglobal B ε, zero_le_one.trans hMslot, hem, ha,
+      hb, max Lgoal Mparent, hLphys, degree, S, haslot, hWs, hW,
+      hMc, hLs, hr, hκsmall, hbeta, hκbeta, N, aslot,
+      max 1 bslot, a0, r/4, haslot, le_max_left _ _, ha0, hr, fun _=>aslot,
+      fun _=>bslot, fun _=>hbslot⟩
     (sourceEpsilon Mglobal A B ε) (r/4) (r/4) (A+1) (r/4) (2*amplification ε+1)
     hes hr hr hr (amplification ε) hsigma hxi A Bmask (amplification ε/12) (r/4) (r/4)
     hA hBm hetastrict hr hsigma1 hxi1 hr hes1 le_rfl Ψ (r/4) lp hr hlp
@@ -114,7 +107,7 @@ theorem actual_positive_high_physical
     state.puncture_bound (by simp) (by simp) state.radial.scale hr.1 p rfl rfl
     hu.1 hu.2.1 hu.2.2.1 hu.2.2.2 state.width state.width (r/4) (columnLoss Mglobal B ε k)
     hrpos.le (hstate.trans hMA) hcapacity hwidth hwidth (by linarith only [hstate,hdrop])
-    hclip le_rfl le_rfl hfour.1 hfour.2.1 hfour.2.2.1 hfour.2.2.2 (hfit.2 k εchild hell)
+    hclip le_rfl ⟨le_rfl, hfour.1, hfour.2.1, hfour.2.2.1, hfour.2.2.2⟩ (hfit.2 k εchild hell)
   have hcost:state.width+columnLoss Mglobal B ε k+r/4=state.width+physicalLoss Mglobal B ε k:=by
     rw [add_assoc]
     exact congrArg (state.width+·) (columnLoss_physical Mglobal B ε k)

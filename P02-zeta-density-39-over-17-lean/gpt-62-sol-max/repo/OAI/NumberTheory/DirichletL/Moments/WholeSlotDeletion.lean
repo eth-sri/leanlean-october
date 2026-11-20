@@ -36,9 +36,11 @@ def selectedProduct {α:Type*} (J:Finset α) (η:Character) (m A z:O)
     (rowTwistedSum η m A z W₁ t X₁*rowTwistedSum η m A z W₂ t X₂))*
     ∏i∈J,normalizedSlot η m A z (S i) (β i) t (P i)
 
-theorem selectedProduct_remove {α:Type*} (J R:Finset α) (hR:R⊆J)
-    (η:Character) (m A z:O) (W₁ W₂:ℝ→ℂ)
-    (S:α→Finset (Ideal O)) (β:α→Ideal O→ℂ) (P:α→ℝ) (t X₁ X₂:ℝ) :
+section
+variable {α:Type*} (J R:Finset α) (hR:R⊆J) (η:Character) (m A z:O) (W₁ W₂:ℝ→ℂ) (S:α→Finset (Ideal O)) (β:α→Ideal O→ℂ) (P:α→ℝ)
+include α J R hR η m A z W₁ W₂ S β P
+
+theorem selectedProduct_remove (t X₁ X₂:ℝ) :
     selectedProduct J η m A z W₁ W₂ S β P t X₁ X₂=
       (∏i∈R,normalizedSlot η m A z (S i) (β i) t (P i))*
         selectedProduct (J\R) η m A z W₁ W₂ S β P t X₁ X₂ := by
@@ -46,9 +48,7 @@ theorem selectedProduct_remove {α:Type*} (J R:Finset α) (hR:R⊆J)
   rw [←Finset.prod_sdiff hR]
   ring
 
-theorem selectedProduct_energy_remove {α:Type*} (J R:Finset α) (hR:R⊆J)
-    (η:Character) (m A z:O) (W₁ W₂:ℝ→ℂ)
-    (S:α→Finset (Ideal O)) (β:α→Ideal O→ℂ) (P:α→ℝ) (t X₁ X₂ Z κ:ℝ)
+theorem selectedProduct_energy_remove (t X₁ X₂ Z κ:ℝ)
     (hZ:0<Z) (w B:α→ℝ) (_hB:∀i∈R,0≤B i)
     (hslot:∀i∈R,‖normalizedSlot η m A z (S i) (β i) t (P i)‖^2≤B i*Z^(κ*w i)) :
     ‖selectedProduct J η m A z W₁ W₂ S β P t X₁ X₂‖^2≤
@@ -59,6 +59,8 @@ theorem selectedProduct_energy_remove {α:Type*} (J R:Finset α) (hR:R⊆J)
   calc
     _≤∏i∈R,B i*Z^(κ*w i):=Finset.prod_le_prod₀ (fun i _=>sq_nonneg _) hslot
     _=_:=by rw [Finset.prod_mul_distrib,←Real.rpow_sum_of_pos hZ,Finset.mul_sum]
+
+end
 
 end SevenEighths.CenteredMomentWholeSlotDeletion
 

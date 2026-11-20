@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.WholePriorityCollapse
 
 @[expose] public section
@@ -9,14 +10,11 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents
-open InverseWholePriorityValidSource InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic
-open InverseMomentWholePriorityPhysical InversePrioritySecondSource InverseSecondPrincipalCaller
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseInitialArithmetic InverseFirstPriorityParents InverseMomentWholePriorityParents InverseWholePriorityValidSource InverseWholePriorityRetainedSource RayFourExpansion FirstCauchyArithmetic InverseMomentWholePriorityPhysical InversePrioritySecondSource InverseSecondPrincipalCaller
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ:Type*} [DecidableEq ι] [DecidableEq σ] {Jo:ℕ}
-variable (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p:ι→Eis) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def priorityZeroParent (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
     (negative:Bool) (Ψ:Eis→*ℂ) (m:Eis) (slots assigned:Finset σ)
@@ -28,7 +26,7 @@ def priorityZeroParent (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
       (residualLists p negative (fun i=>lists i\extra y.cube) y) a ∅ V X)
     rowMajorant Y (secondVariableCutoff p y R)
 
-def priorityTailParent (hp:∀i,p i≠0) (hinj:Function.Injective (fun i=>Ideal.span {p i}))
+def priorityTailParent (hp:∀i,p i≠0) (hinj:OAI.PrincipalIdealFamily.Distinct p)
     (extra:CubeCoordinates ι→Finset ι) (pool:Finset ι)
     (negative:Bool) (Ψ:Eis→*ℂ) (m:Eis) (slots assigned:Finset σ)
     (lists:σ→Finset ι) (a:σ→ι→ℂ) (V:𝓢(ℝ,ℂ)) (X Y:ℝ)

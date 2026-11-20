@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Eisenstein.VariationalLaplacian
 public import OAI.NumberTheory.DirichletL.CubicSieve.ReopenedFibers
 
@@ -9,76 +10,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open Filter MeasureTheory
-open scoped BigOperators Classical Topology
 
 namespace CubicEisenstein
 
@@ -498,9 +441,11 @@ theorem rowTwist_norm (Ψ : ActualEisensteinCubic.O →* ℂ) (hΨ : ∀n,‖Ψ 
   rw [norm_mul]
   exact (mul_le_of_le_one_left (norm_nonneg _) (hΨ n)).trans (idealRowHom_norm _ _)
 
-theorem idealRowHom_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
-    [∀i,(Ideal.span {p i}).IsMaximal] (hg : ∀i,lambda∉Ideal.span {p i})
-    (S : Finset ι) (x : ActualEisensteinCubic.O) :
+section
+variable {ι : Type*} (p : ι → ActualEisensteinCubic.O) [instShared2 : OAI.PrincipalIdealFamily.Maximal p] (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (S : Finset ι)
+include ι p instShared2 hg S
+
+theorem idealRowHom_product (x : ActualEisensteinCubic.O) :
     idealRowHom x (Ideal.span {∏i∈S,p i}) =
       finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S x := by
   rw [FiniteGaussPhase.span_finset_prod,map_prod]
@@ -509,9 +454,7 @@ theorem idealRowHom_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
   intro i hi
   exact idealRowHom_prime x _ (hg i)
 
-theorem rowTwist_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
-    [∀i,(Ideal.span {p i}).IsMaximal] (hg : ∀i,lambda∉Ideal.span {p i})
-    (S : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) :
+theorem rowTwist_product (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) :
     rowTwist Ψ m f z (∏i∈S,p i) =
       Ψ (∏i∈S,p i)*rowCoprimeMask (fun i=>Ideal.span {p i}) S m*
         finiteSquarefreeRow (fun i=>Ideal.span {p i}) hg S f^4*
@@ -523,17 +466,19 @@ theorem rowTwist_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
 
 end
 
+end
+
 open ActualEisensteinCubic
 open CompletedGauss hiding O
 open SecondPassArithmetic hiding O
 
 section
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,lambda∉Ideal.span {p i})
+  (p : ι → ActualEisensteinCubic.O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
-theorem squarefreeGaussCoefficient_finset (hpr : ∀i,lambda^2∣p i-1) (S : Finset ι) :
+theorem squarefreeGaussCoefficient_finset (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda) (S : Finset ι) :
     squarefreeGaussCoefficient (Ideal.span {∏i∈S,p i}) =
       MixedCrossSeparation.columnCoefficient p hp hcop hg S := by
   have h := squarefreeGaussCoefficient_eq_canonicalProductCoefficient
@@ -542,7 +487,7 @@ theorem squarefreeGaussCoefficient_finset (hpr : ∀i,lambda^2∣p i-1) (S : Fin
     (fun i=>hpr i.val)
   simpa only [Finset.prod_coe_sort,MixedCrossSeparation.columnCoefficient] using h
 
-theorem columnWeight_finset (hpr : ∀i,lambda^2∣p i-1)
+theorem columnWeight_finset (hpr : OAI.PrincipalIdealFamily.PrimaryAt p lambda)
     (S : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (H : Finset ι → ℂ) :
     columnWeight (rowTwist Ψ m f z) (Ideal.span {∏i∈S,p i}) * H S =
       canonicalSourceCoefficient p hp hcop hg Ψ m f H S *

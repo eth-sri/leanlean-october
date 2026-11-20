@@ -9,75 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace CubicEisenstein
 
 section
@@ -311,8 +254,7 @@ namespace CubicKubota
 open scoped Classical MatrixGroups
 
 section
-open ActualEisensteinCubic
-open CubicEisenstein
+open ActualEisensteinCubic CubicEisenstein
 
 def levelThreeInTwo : Subgroup levelTwo := levelThree.comap levelTwo.subtype
 
@@ -348,22 +290,12 @@ theorem rationalQuotient_surjective : Function.Surjective rationalQuotient := by
 
 def rationalCongruenceThree : Subgroup (SL(2,ℤ)) := rationalQuotient.ker
 
-instance rationalCongruenceThree_normal : rationalCongruenceThree.Normal := by
-  unfold rationalCongruenceThree
-  infer_instance
 
 theorem mem_rationalCongruenceThree (r : SL(2,ℤ)) :
     r∈rationalCongruenceThree ↔ rationalEmbedding r∈levelThree := by
   change QuotientGroup.mk' levelThreeInTwo (rationalLift r)=1 ↔ _
   exact QuotientGroup.eq_one_iff _
 
-instance rationalCongruenceThree_finiteIndex : rationalCongruenceThree.FiniteIndex := by
-  have he : rationalCongruenceThree=levelThree.comap rationalEmbedding := by
-    ext r
-    exact mem_rationalCongruenceThree r
-  rw [he]
-  let : levelThree.FiniteIndex := levelThree_finiteIndex
-  infer_instance
 
 end
 
@@ -457,8 +389,7 @@ end CubicKubota
 
 open scoped BigOperators Classical MatrixGroups
 namespace CubicKubota
-open ActualEisensteinCubic
-open CubicEisenstein
+open ActualEisensteinCubic CubicEisenstein
 
 lemma rationalQuotient_eq_iff_reduction (r s : SL(2,ℤ)) :
     rationalQuotient r=rationalQuotient s ↔

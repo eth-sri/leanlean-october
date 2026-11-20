@@ -50,8 +50,11 @@ theorem exists_integral_sq_fourthPolynomial_le {ε : ℝ} (hε : 0 < ε) :
       integral_norm_sq_dirichletPrefix_reflected_le M (zetaFourthCoeff c) u hH hone hmass
     _ = _ := by dsimp [L]; ring
 
-theorem integrable_gaussian_dirichletPrefix_prod
-    {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ) :
+section
+variable {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ)
+include b hb N a A B
+
+theorem integrable_gaussian_dirichletPrefix_prod :
     Integrable (fun z : ℝ × ℝ =>
       Real.exp (-b*z.2^2)*‖dirichletPrefix N a (z.2-z.1)‖^2)
       ((volume.restrict (uIoc A B)).prod volume) := by
@@ -77,15 +80,13 @@ theorem integrable_gaussian_dirichletPrefix_prod
         (Real.exp_pos _).le
     _ = _ := mul_comm _ _
 
-theorem intervalIntegrable_gaussianPrefixMean
-    {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ) :
+theorem intervalIntegrable_gaussianPrefixMean :
     IntervalIntegrable (fun t : ℝ =>
       ∫ u : ℝ, Real.exp (-b*u^2)*‖dirichletPrefix N a (u-t)‖^2) volume A B := by
   rw [intervalIntegrable_iff]
   exact (integrable_gaussian_dirichletPrefix_prod hb N a A B).integral_prod_left
 
-theorem integral_gaussianPrefixMean_swap
-    {b : ℝ} (hb : 0 < b) (N : ℕ) (a : ℕ → ℂ) (A B : ℝ) :
+theorem integral_gaussianPrefixMean_swap :
     (∫ t : ℝ in A..B, ∫ u : ℝ,
       Real.exp (-b*u^2)*‖dirichletPrefix N a (u-t)‖^2) =
         ∫ u : ℝ, Real.exp (-b*u^2)*
@@ -93,6 +94,8 @@ theorem integral_gaussianPrefixMean_swap
   rw [intervalIntegral_integral_swap
     (integrable_gaussian_dirichletPrefix_prod hb N a A B)]
   simp_rw [intervalIntegral.integral_const_mul]
+
+end
 
 theorem exists_integral_gaussian_fourthPolynomial_le {ε : ℝ} (hε : 0 < ε) :
     ∃ D : ℝ, 0 < D ∧ ∀ c : ℝ, 0 ≤ c → ∀ M : ℕ, ∀ H : ℝ, 0 ≤ H →

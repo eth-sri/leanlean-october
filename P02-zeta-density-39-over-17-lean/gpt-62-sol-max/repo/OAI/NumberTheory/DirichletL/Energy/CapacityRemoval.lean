@@ -12,13 +12,7 @@ open scoped Classical BigOperators SchwartzMap ContDiff
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyCapacityRemoval
-open HeckeFamily ConcreteTraceCRT CenteredMomentRetainedEnergy
-open CenteredMomentInductionEnergy CenteredMomentWholeSlotDeletion
-open CenteredMomentPrimeSlot
-open CenteredMomentSlotNormalization CenteredMomentRelativeCapacityRemoval
-open CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource
-open CenteredMomentSecondHeightFamily CenteredMomentEnergyState
-open CenteredExceptionalProfile CenteredMomentFixedRowMask
+open HeckeFamily ConcreteTraceCRT CenteredMomentRetainedEnergy CenteredMomentInductionEnergy CenteredMomentWholeSlotDeletion CenteredMomentPrimeSlot CenteredMomentSlotNormalization CenteredMomentRelativeCapacityRemoval CenteredMomentNaturalRowSource CenteredMomentNaturalFixedRaySource CenteredMomentSecondHeightFamily CenteredMomentEnergyState CenteredExceptionalProfile CenteredMomentFixedRowMask
 local notation "O" => HeckeFamily.O
 variable {ι : Type*} [Fintype ι] [DecidableEq ι]
 
@@ -106,13 +100,11 @@ local instance : Finite (O⧸M) := Ring.HasFiniteQuotients.finiteQuotient (NeZer
 variable (H : Subgroup (O⧸M)ˣ) (hH : RayOrthogonality.globalUnits M≤H)
 include hH
 
-theorem actual_state_capacity_removal
-    (W : ι→ℝ→ℂ) (a b : ι→ℝ) (ha : ∀i,0<a i)
-    (hWs : ∀i,Function.support (W i)⊆Set.Icc (a i) (b i))
-    (hW : ∀i,ContDiff ℝ ∞ (W i))
-    (Mrow bΦ Lmod Lslot ε lo hi κ : ℝ) (hbΦ : 0≤bΦ)
-    (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hε : 0<ε)
-    (hbeta : (51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ : 2*HeckeZeroSupremum.beta-1≤κ) :
+section
+variable (W : ι→ℝ→ℂ) (a b : ι→ℝ) (ha : ∀i,0<a i) (hWs : ∀i,Function.support (W i)⊆Set.Icc (a i) (b i)) (hW : ∀i,ContDiff ℝ ∞ (W i)) (Mrow bΦ Lmod Lslot ε lo hi κ : ℝ) (hbΦ : 0≤bΦ) (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hε : 0<ε) (hbeta : (51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ : 2*HeckeZeroSupremum.beta-1≤κ)
+include W a b ha hWs hW Mrow bΦ Lmod Lslot ε lo hi κ hbΦ hLm hLs hε hbeta hκ
+
+theorem actual_state_capacity_removal :
     ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀ν:ι→Character,∃Z₀:ℝ,1<Z₀ ∧
     ∀(J:Finset ι)(w:ι→ℝ)(n₁ n₂ width mesh:ℝ),0≤mesh →
       (∀i,0≤w i) → (∀i,w i≤mesh) → (∀i,w i≤Lslot) →
@@ -184,13 +176,7 @@ theorem actual_state_capacity_removal
       exact (mul_le_mul_of_nonneg_right hh (s.radial.nonneg z)).trans_eq (by dsimp only [cost];ring)
   · simp only [ite_eq_right hk,mul_zero,le_refl]
 
-theorem actual_relative_state_capacity_removal
-    (W : ι→ℝ→ℂ) (a b : ι→ℝ) (ha : ∀i,0<a i)
-    (hWs : ∀i,Function.support (W i)⊆Set.Icc (a i) (b i))
-    (hW : ∀i,ContDiff ℝ ∞ (W i))
-    (Mrow bΦ Lmod Lslot ε lo hi κ : ℝ) (hbΦ : 0≤bΦ)
-    (hLm : 0≤Lmod) (hLs : 0≤Lslot) (hε : 0<ε)
-    (hbeta : (51/100:ℝ)≤HeckeZeroSupremum.beta) (hκ : 2*HeckeZeroSupremum.beta-1≤κ) :
+theorem actual_relative_state_capacity_removal :
     ∃degree:ℕ,∃C:ℝ,0<C ∧ ∀η₀:Character,∀θ:ι→RayQuotient.Characters M H,
     let ν:=fun i=>relativeCharacter M H hH η₀ (θ i);
     ∃Z₀:ℝ,1<Z₀ ∧
@@ -227,6 +213,8 @@ theorem actual_relative_state_capacity_removal
     (inf_le_left.trans hQM)
     (fun i=>relativeCharacter_fixedQ M H hH η₀ (θ i) (internalQ Q η₀)
       (inf_le_left.trans hQM) inf_le_right)
+
+end
 
 end SevenEighths.CenteredMomentEnergyCapacityRemoval
 

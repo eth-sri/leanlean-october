@@ -8,26 +8,21 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge
-open FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid CanonicalRowCompletion
+open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve ConcretePrimeRowBridge FirstCauchyArithmetic SecondPassArithmetic UniqueFactorizationMonoid CanonicalRowCompletion
 namespace SevenEighths.InverseInitialLargePool
-open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge
-open InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool
-open InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialCommonTuples
+open InverseInitialOverlap InverseInitialPoissonBridge InverseInitialKernelBridge InverseInitialRayAttachment InverseInitialArithmetic InverseInitialCommonPool InverseInitialEnergyCallerWindow InverseInitialCommonForcing InverseInitialCommonTuples
 local notation "Eis"=>ActualEisensteinCubic.O
 local notation "O"=>ActualEisensteinCubic.O
 theorem selected_conjugate_row_supported (F : Finset (Ideal O))
     (hF : ∀ I ∈ F,Admissible I) (j : Ideal O) (hj : Admissible j)
     (η : Ideal O →* ℂ) (H : Ideal O → ℂ)
     (hcop : ∀ I ∈ F,H I≠0→IsCoprime I j) (u : O) :
-    let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i => by rw [poolPrimary_span F hF i]; infer_instance
+    let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     (∑ I ∈ F,(moebius I : ℂ)*η I*H I*star (idealRowHom u I)) =
       inputConjugateRow (poolPrimary F) (poolPrimary_good F hF) Finset.univ
         (elementCharacter η) (primaryGenerator j) 1 1
         (fun A => if (∏ i ∈ A,i.val)∈F then H (∏ i ∈ A,i.val) else 0) u := by
-  let : ∀ i : primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i => by rw [poolPrimary_span F hF i]; infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   have he : (fun i : primePool F => Ideal.span {poolPrimary F i}) =
       (fun i : primePool F => i.val) := funext (poolPrimary_span F hF)
   dsimp only
@@ -55,8 +50,7 @@ theorem residual_eq_large_input
     (hsub : columns S P j⊆F)
     (η : Ideal Eis→*ℂ) (a : Ideal Eis→ℂ) (W : ℝ→ℂ)
     (Z r z G : ℝ) (u : Eis) :
-    letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     residualNormalizedPolynomial S P j η a W Z r z G u =
       ((Z^(-(r+z-2*G)/2):ℝ):ℂ)*inputConjugateRow
         (poolPrimary F) (poolPrimary_good F hF) Finset.univ
@@ -64,8 +58,7 @@ theorem residual_eq_large_input
         (fun A=>if (∏i∈A,i.val)∈columns S P j then
           a (reconstruct P j (∏i∈A,i.val))*residualOverlapWindow P j W Z z G
             (((∏i∈A,i.val).absNorm:ℝ)/Z^(r+z-2*G)) else 0) u := by
-  let : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   let H : Ideal Eis→ℂ := fun c=>if c∈columns S P j then
     a (reconstruct P j c)*residualOverlapWindow P j W Z z G
       ((c.absNorm:ℝ)/Z^(r+z-2*G)) else 0

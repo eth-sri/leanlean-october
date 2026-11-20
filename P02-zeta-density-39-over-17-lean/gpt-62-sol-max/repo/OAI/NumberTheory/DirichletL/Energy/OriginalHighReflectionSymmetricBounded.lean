@@ -1,6 +1,6 @@
 module
 public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionSymmetric
-public import OAI.NumberTheory.DirichletL.Energy.OriginalHighReflectionBounded
+public import OAI.NumberTheory.DirichletL.Energy.ReferenceRobustBounded
 
 @[expose] public section
 
@@ -11,14 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetricBounded
-open HeckeFamily HeckeDyadic ConcreteTraceCRT
-open CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy
-open CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands
-open CenteredMomentEnergyOriginalHighReflectionBounded
-open CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource
-open CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion
-open CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot
-open CenteredMomentRetainedEnergy
+open HeckeFamily HeckeDyadic ConcreteTraceCRT CenteredMomentEnergyState CenteredMomentEnergyBands CenteredMomentInductionEnergy CenteredMomentEnergyReferenceState CenteredMomentEnergyReferenceLowBands CenteredMomentEnergyReferenceRobustBounded CenteredMomentNaturalFixedRaySource CenteredMomentNaturalRowSource CenteredMomentCommonMaskEnergy CenteredMomentCommonMaskExpansion CenteredMomentFiniteProfileExceptional QuadraticInitialBound CenteredMomentPrimeSlot CenteredMomentRetainedEnergy
 local notation "O"=>HeckeFamily.O
 variable {α:Type*}[Fintype α][DecidableEq α]
 
@@ -60,7 +53,7 @@ theorem original_unbalanced_from_low
         s.radial.keep s.radial.profile s.radial.scale ≤
       C*(K+1)*diagonalControl s.radial.profile*(sourceControl U W₁*sourceControl U W₂)^2*
         (1+|t|+height)^J*Z^(s.width+e+ε) :=by
-  obtain ⟨d,xi,L,hd,hxi,hxirho,hL,hLupper,hstage⟩:=original_high_power (α:=α) M H hH
+  obtain ⟨d,xi,L,hd,hxi,hxirho,hL,hLupper,hstage⟩:=original_reference_power (α:=α) M H hH .actual
     Wslot aslot bslot lo hi haslot hsSlot hcSlot
     a b bΦ rho ε Mcap Bmask ha hlo hhi hbΦ hrho hε hM hBmask
   refine ⟨d,xi,L,hd,hxi,hxirho,hL,hLupper,?_⟩
@@ -73,10 +66,10 @@ theorem original_unbalanced_from_low
     s hQ hslo hs W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ hshort hlarge hcap
   rcases min_le_iff.mp hshort with hshort|hshort
   · exact hZ.2 e Lslot κ η₀ Q K he hK hlow θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
-      s hQ hslo hs W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ hshort hlarge hcap
+      s hQ hslo hs W₁ W₂ hs₁ hs₂ X₁ X₂ hX₁ hX₂ ⟨hshort,hlarge,hcap⟩
   · rw [energy_swap]
     have hh:=hZ.2 e Lslot κ η₀ Q K he hK hlow θ w σ freq t height hw hwL hσlo hσhi hheight hfreq hκ
-      s hQ hslo hs W₂ W₁ hs₂ hs₁ X₂ X₁ hX₂ hX₁ hshort (by linarith) (by linarith)
+      s hQ hslo hs W₂ W₁ hs₂ hs₁ X₂ X₁ hX₂ hX₁ ⟨hshort,by linarith,by linarith⟩
     simpa only [mul_comm (sourceControl U W₂) (sourceControl U W₁)] using hh
 
 end SevenEighths.CenteredMomentEnergyOriginalHighReflectionSymmetricBounded

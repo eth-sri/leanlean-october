@@ -41,9 +41,11 @@ theorem continuous_LSeries_term_vertical (f : ℕ → ℂ) (ρ : ℂ) (σ : ℝ)
     (fun u : ℝ => ρ+((σ : ℂ)+u*I))).const_cpow (Or.inl hnC))
     (fun _ => Complex.cpow_ne_zero_iff.mpr (Or.inl hnC))
 
-theorem integrable_scaled_mellin_line {ψ : ℝ → ℝ} {a b N : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
-    (hs : tsupport ψ ⊆ Icc a b) (hN : 0 < N) (σ q : ℝ) :
+section
+variable {ψ : ℝ → ℝ} {a b N : ℝ} (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b) (hs : tsupport ψ ⊆ Icc a b) (hN : 0 < N)
+include ψ a b N hψ ha hb hs hN
+
+theorem integrable_scaled_mellin_line (σ q : ℝ) :
     Integrable (fun u : ℝ => (N : ℂ)^((σ : ℂ)+u*I) *
       mellin (fun y => (dampedCutoff ψ q y : ℂ)) ((σ : ℂ)+u*I)) := by
   have hm := dampedCutoff_integrable_mellin_line hψ ha hb hs σ q
@@ -58,9 +60,7 @@ theorem integrable_scaled_mellin_line {ψ : ℝ → ℝ} {a b N : ℝ}
 
 /-- Every summand on the full vertical line is integrable, and the sum of
 its L¹ norms is finite whenever the shifted Dirichlet series converges. -/
-theorem smoothMellin_absolute_exchange {ψ : ℝ → ℝ} {a b N : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
-    (hs : tsupport ψ ⊆ Icc a b) (hN : 0 < N) (q σ : ℝ)
+theorem smoothMellin_absolute_exchange (q σ : ℝ)
     (f : ℕ → ℂ) (ρ : ℂ) (hSum : LSeriesSummable f (ρ+(σ : ℂ))) :
     (∀ n : ℕ, Integrable (fun u : ℝ =>
       ((N : ℂ)^((σ : ℂ)+u*I) *
@@ -88,9 +88,7 @@ theorem smoothMellin_absolute_exchange {ψ : ℝ → ℝ} {a b N : ℝ}
 
 /-- Exact smooth cutoff identity on any line where the shifted Dirichlet
 series converges absolutely. The series–integral exchange is proved above. -/
-theorem smoothLSeries_eq_mellinContour {ψ : ℝ → ℝ} {a b N : ℝ}
-    (hψ : ContDiff ℝ ∞ ψ) (ha : 0 < a) (hb : 0 < b)
-    (hs : tsupport ψ ⊆ Icc a b) (hN : 0 < N) (q σ : ℝ)
+theorem smoothLSeries_eq_mellinContour (q σ : ℝ)
     (f : ℕ → ℂ) (ρ : ℂ) (hSum : LSeriesSummable f (ρ+(σ : ℂ))) :
     (∑' n : ℕ, LSeries.term f ρ n * (dampedCutoff ψ q ((n : ℝ)/N) : ℂ)) =
       ((1/(2*Real.pi) : ℝ) : ℂ) * ∫ u : ℝ,
@@ -132,6 +130,8 @@ theorem smoothLSeries_eq_mellinContour {ψ : ℝ → ℝ} {a b N : ℝ}
       apply integral_congr_ae
       filter_upwards with u
       simp only [F, tsum_mul_left, H, LSeries]
+
+end
 
 /-- Literal smooth mollifier block; damping q remains independent of N. -/
 def smoothMollifierBlock (ψ : ℝ → ℝ) (ρ : ℂ) (X N q : ℝ) : ℂ :=

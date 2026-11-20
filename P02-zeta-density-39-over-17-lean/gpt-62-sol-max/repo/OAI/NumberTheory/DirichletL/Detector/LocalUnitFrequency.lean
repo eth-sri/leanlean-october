@@ -9,9 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbePhysical
-open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein
-open CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport
-open CenteredMomentSupportedCorrelation ConcretePrimeRowBridge ProbePrimePower ProbeLocal ProbeEuler
+open ActualEisensteinCubic CanonicalRowCompletion CanonicalQuadraticSieve CubicEisenstein CompletedGauss ConcreteTraceCRT GaussianShiftedPartition CenteredMomentCommonSupport CenteredMomentSupportedCorrelation ConcretePrimeRowBridge ProbePrimePower ProbeLocal ProbeEuler
 local notation "O" => ActualEisensteinCubic.O
 
 lemma finite_fourier_unit_scale {R : Type*} [CommRing R] [Fintype R]

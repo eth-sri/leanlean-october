@@ -42,8 +42,11 @@ theorem contDiff_sargosQuarticPhase (α γ : ℝ) :
   unfold sargosQuarticPhase
   fun_prop
 
-theorem sargosQuartic_curvature_error {N α γ x : ℝ}
-    (hN : 0 < N) (hα : 0 < α) (hγ : |γ| ≤ α/(96*N^2)) (hx : x ∈ Icc N (2*N)) :
+section
+variable {N α γ x : ℝ} (hN : 0 < N) (hα : 0 < α) (hγ : |γ| ≤ α/(96*N^2)) (hx : x ∈ Icc N (2*N))
+include N α γ x hN hα hγ hx
+
+theorem sargosQuartic_curvature_error :
     |12*γ*x^2| ≤ α/2 := by
   have hx0 : 0 ≤ x := hN.le.trans hx.1
   have hxsq : x^2 ≤ (2*N)^2 := pow_le_pow_left₀ hx0 hx.2 2
@@ -55,10 +58,11 @@ theorem sargosQuartic_curvature_error {N α γ x : ℝ}
         (sq_nonneg x) (by positivity)
     _ = _ := by field_simp; ring
 
-theorem sargosQuarticPhase_curvature {N α γ x : ℝ}
-    (hN : 0 < N) (hα : 0 < α) (hγ : |γ| ≤ α/(96*N^2)) (hx : x ∈ Icc N (2*N)) :
+theorem sargosQuarticPhase_curvature :
     3*α/2 ≤ 2*α+12*γ*x^2 ∧ 2*α+12*γ*x^2 ≤ 5*α/2 := by
   have h := abs_le.mp (sargosQuartic_curvature_error hN hα hγ hx)
   constructor <;> linarith [h.1,h.2]
+
+end
 
 end TaoTrudgianYang2025

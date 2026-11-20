@@ -13,8 +13,7 @@ public import Mathlib.Tactic
 
 @[expose] public section
 
-open Complex
-open MathCollab.Density.GammaBounds
+open Complex MathCollab.Density.GammaBounds
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.PointMean

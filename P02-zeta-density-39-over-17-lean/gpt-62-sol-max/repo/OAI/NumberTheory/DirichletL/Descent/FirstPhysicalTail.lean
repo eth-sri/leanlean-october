@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstPhysicalCutoff
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeTail
 
@@ -16,11 +17,11 @@ local notation "O" => ActualEisensteinCubic.O
 theorem full_first_physical_tail (order : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (Ct : ℝ),0<Ct ∧
     ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-      (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hchar : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+      (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (pool S common divisor : Finset ι) (v₁ v₂ : ι→ℕ) (ε₁ ε₂ : ι→Bool),
       (∀ i∈S,0<v₁ i+v₂ i) → Disjoint pool S →
       ∀ (f : Ideal O),f≠0 → ∀ (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ))

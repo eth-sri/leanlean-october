@@ -15,19 +15,9 @@ local instance {E : Type*} : Coe (E → ℝ) (E → ℂ) := ⟨fun f n => f n⟩
 
 section lemmas
 
-@[simp]
-theorem nnnorm_eq_of_mem_circle (z : Circle) : ‖z.val‖₊ = 1 := NNReal.coe_eq_one.mp (by simp)
 
-@[simp]
-theorem nnnorm_circle_smul (z : Circle) (s : ℂ) : ‖z • s‖₊ = ‖s‖₊ := by
-  simp [show z • s = z.val * s from rfl]
 
-noncomputable def e (u : ℝ) : ℝ →ᵇ ℂ where
-  toFun v := 𝐞 (-v * u)
-  map_bounded' :=
-    ⟨2, fun x y => (dist_le_norm_add_norm _ _).trans (by simp [one_add_one_eq_two])⟩
 
-@[simp] lemma e_apply (u : ℝ) (v : ℝ) : e u v = 𝐞 (-v * u) := rfl
 
 @[simp] lemma F_neg {f : ℝ → ℂ} {u : ℝ} : 𝓕 (fun x => -f x) u = - 𝓕 f u := by
   simp [fourier_eq, integral_neg]
@@ -58,5 +48,3 @@ theorem fourierIntegral_self_add_deriv_deriv (f : W21) (u : ℝ) :
   simp [f.hf, l1, add_mul, Real.fourier_deriv f.hf' l5 f.hf'', Real.fourier_deriv f.hf l4 f.hf']
   field_simp [pi_ne_zero] ; ring_nf ; simp
 
-@[simp] lemma deriv_ofReal : deriv ofReal = fun _ => 1 := by
-  ext x ; exact ((hasDerivAt_id x).ofReal_comp).deriv

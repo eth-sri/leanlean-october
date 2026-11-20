@@ -14,9 +14,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ComplexConjugate
 open Set Complex
 namespace SevenEighths.ProbeRowReflectedAllocation
-open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily
-open HeckeFiniteDeletion HeckeReciprocalGrowth HeckeDeletionBounds
-open ProbeRowRadicalConductor
+open HeckeFamily HeckeInverseAmplification ProbeHighRowFamily HeckeFiniteDeletion HeckeReciprocalGrowth HeckeDeletionBounds ProbeRowRadicalConductor
 local notation "O" => HeckeFamily.O
 
 lemma prod_rpow_nonneg {ι : Type*} (T : Finset ι) (q : ι → ℝ)
@@ -68,15 +66,17 @@ theorem allocation_of_deficit {k : ℕ} (q : Fin k → ℝ)
 lemma prime_norm_ge_one (P : Ideal O) (hP : Prime P) : (1 : ℝ) ≤ P.absNorm := by
   exact_mod_cast Nat.one_le_iff_ne_zero.mpr (Ideal.absNorm_eq_zero_iff.not.mpr hP.ne_zero)
 
-lemma original_row_conductor_le (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (u : FreeRow) :
+section
+variable (S : Finset (Ideal O)) (hS : ∀ P ∈ S, Prime P) (u : FreeRow)
+include S hS u
+
+lemma original_row_conductor_le :
     ((rowCharacter S hS u).modulus.absNorm : ℝ) ≤
       (fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal O).absNorm := by
   exact_mod_cast (by simpa only [fixedConductorConstant, mul_assoc, mul_comm, mul_left_comm]
     using rowCharacter_conductor S hS u)
 
-lemma original_row_deletion_radical_le (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (u : FreeRow) :
+lemma original_row_deletion_radical_le :
     ((radical (rowCharacter S hS u).modulus).absNorm : ℝ) ≤
       (fixedConductorConstant S : ℝ) * (Ideal.span {u.val} : Ideal O).absNorm :=
   by
@@ -90,8 +90,7 @@ lemma original_row_deletion_radical_le (S : Finset (Ideal O))
         (Ideal.absNorm_eq_zero_iff.not.mpr χ.modulus_ne_bot)) (map_dvd Ideal.absNorm hd)
     exact hn.trans (original_row_conductor_le S hS u)
 
-theorem row_same_primitive_allocation (S : Finset (Ideal O))
-    (hS : ∀ P ∈ S, Prime P) (u : FreeRow) :
+theorem row_same_primitive_allocation :
     ∃ ψ : Character, (rowCharacter S hS u).modulus ≤ ψ.modulus ∧
       FiniteFourier.IsPrimitiveOnIdeals ψ.residue ∧
       (∀ I : Ideal O, idealCoeff (rowCharacter S hS u) I =
@@ -110,6 +109,8 @@ theorem row_same_primitive_allocation (S : Finset (Ideal O))
   apply allocation_of_deficit _ (fun i => prime_norm_ge_one _ (hP i)) j hj
     _ _ a e (by positivity) ha he
   exact_mod_cast hdef k P hP hdis j hj hdiv
+
+end
 
 lemma actual_multiplicity_divisor (u : FreeRow) (p : O) (hp : Prime p) :
     (Ideal.span {p} : Ideal O) ^ multiplicity p u.val ∣ Ideal.span {u.val} ∧

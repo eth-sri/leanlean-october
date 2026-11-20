@@ -7,9 +7,7 @@ public import MathCollab.Density.Stronger.Fourth.SquareContour
 
 @[expose] public section
 
-open Complex Filter MeasureTheory Set Topology
-open MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth
-open MathCollab.Density.Contour
+open Complex Filter MeasureTheory Set Topology MathCollab.Density.Stronger MathCollab.Density.Stronger.Fourth MathCollab.Density.Contour
 open scoped ComplexConjugate Interval
 set_option autoImplicit false
 noncomputable section
@@ -215,8 +213,11 @@ theorem poleShift_sub_one_identity (t : ℝ) (w : ℂ) :
   ring_nf
   simp
 
-theorem norm_poleShift_linear_sub_one_le {t : ℝ} (ht : 0 < t)
-    {w : ℂ} (hw : ‖w‖ ≤ t / 2) :
+section
+variable {t : ℝ} (ht : 0 < t) {w : ℂ} (hw : ‖w‖ ≤ t / 2)
+include t ht w hw
+
+theorem norm_poleShift_linear_sub_one_le :
     ‖(afeCriticalPoint (-t) + w) * (1 - (afeCriticalPoint (-t) + w)) /
         (afeCriticalPoint (-t) * (1 - afeCriticalPoint (-t))) - 1‖ ≤ 3 * ‖w‖ / t := by
   rw [poleShift_sub_one_identity, norm_div]
@@ -231,8 +232,7 @@ theorem norm_poleShift_linear_sub_one_le {t : ℝ} (ht : 0 < t)
   nlinarith [norm_nonneg w,
     mul_nonneg (norm_nonneg w) (show 0 ≤ t ^ 2 - ‖w‖ * t by nlinarith)]
 
-theorem norm_zetaSquarePoleShift_le {t : ℝ} (ht : 0 < t)
-    {w : ℂ} (hw : ‖w‖ ≤ t / 2) : ‖zetaSquarePoleShift t w‖ ≤ 9 := by
+theorem norm_zetaSquarePoleShift_le : ‖zetaSquarePoleShift t w‖ ≤ 9 := by
   have h := norm_poleShift_linear_sub_one_le ht hw
   have hfrac : 3 * ‖w‖ / t ≤ 3 / 2 := (div_le_iff₀ ht).mpr (by linarith)
   have hn := norm_le_norm_sub_add
@@ -244,8 +244,7 @@ theorem norm_zetaSquarePoleShift_le {t : ℝ} (ht : 0 < t)
     (1 - (afeCriticalPoint (-t) + w)) /
       (afeCriticalPoint (-t) * (1 - afeCriticalPoint (-t))))]
 
-theorem norm_zetaSquarePoleShift_sub_one_le {t : ℝ} (ht : 0 < t)
-    {w : ℂ} (hw : ‖w‖ ≤ t / 2) : ‖zetaSquarePoleShift t w - 1‖ ≤ 12 * ‖w‖ / t := by
+theorem norm_zetaSquarePoleShift_sub_one_le : ‖zetaSquarePoleShift t w - 1‖ ≤ 12 * ‖w‖ / t := by
   let p := (afeCriticalPoint (-t) + w) * (1 - (afeCriticalPoint (-t) + w)) /
     (afeCriticalPoint (-t) * (1 - afeCriticalPoint (-t)))
   have h : ‖p - 1‖ ≤ 3 * ‖w‖ / t := norm_poleShift_linear_sub_one_le ht hw
@@ -263,6 +262,8 @@ theorem norm_zetaSquarePoleShift_sub_one_le {t : ℝ} (ht : 0 < t)
   calc
     _ ≤ (3 * ‖w‖ / t) * 4 := mul_le_mul h hpadd (norm_nonneg _) (by positivity)
     _ = _ := by ring
+
+end
 
 def zetaFourthKernel (t : ℝ) (w : ℂ) : ℂ :=
   Complex.exp (100*w^2) * hughesYoungAuxiliaryZero w *

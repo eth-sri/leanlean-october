@@ -5419,12 +5419,15 @@ theorem two_mul_add_four_le_of_sixteen_mul_sq_le_pow
   rw [hIdentity] at hPow
   omega
 
+section
+variable (cutoff : GMSmoothCutoff) (η : ℝ) (hη : 0 < η) (hηOne : η ≤ 1)
+include cutoff η hη hηOne
+
 /-- Exact dyadic self-recurrence underlying the first part of
 Montgomery--Vaughan Lemma 29.10.  The exponent hypotheses say precisely
 that both reflected terminal pairs can be powered back to the displayed
 parent pair. -/
-theorem exists_heathBrownDyadicPairMoment_self_recurrence
-    (cutoff : GMSmoothCutoff) (η : ℝ) (hη : 0 < η) (hηOne : η ≤ 1) :
+theorem exists_heathBrownDyadicPairMoment_self_recurrence :
     ∃ K E T₀ : ℝ, 0 < K ∧ 0 < E ∧ 2 ≤ T₀ ∧
       ∀ (q : ℕ) (T : ℝ) (W : Finset ℝ),
         30 ≤ 2 ^ q → T₀ ≤ T → (4 * 2 ^ q : ℕ) ≤ T →
@@ -5617,8 +5620,7 @@ theorem exists_heathBrownDyadicPairMoment_self_recurrence
 adjacent dyadic pair.  The hypotheses are exactly the two terminal-exponent
 conditions needed to return every reflected child by the source-sharp
 `k = 2` powering lemma. -/
-theorem exists_heathBrownDyadicPairMoment_high_bound
-    (cutoff : GMSmoothCutoff) (η : ℝ) (hη : 0 < η) (hηOne : η ≤ 1) :
+theorem exists_heathBrownDyadicPairMoment_high_bound :
     ∃ C T₀ : ℝ, 0 < C ∧ 2 ≤ T₀ ∧
       ∀ (q : ℕ) (T : ℝ) (W : Finset ℝ),
         30 ≤ 2 ^ q → T₀ ≤ T → (4 * 2 ^ q : ℕ) ≤ T →
@@ -5745,8 +5747,7 @@ theorem exists_heathBrownDyadicPairMoment_high_bound
 /-- High-scale dyadic bound with the exponent hypotheses replaced by their
 physical terminal-scale inequalities.  This is the interface consumed by
 the three-range argument. -/
-theorem exists_heathBrownDyadicPairMoment_high_bound_of_terminal_sq
-    (cutoff : GMSmoothCutoff) (η : ℝ) (hη : 0 < η) (hηOne : η ≤ 1) :
+theorem exists_heathBrownDyadicPairMoment_high_bound_of_terminal_sq :
     ∃ C T₀ : ℝ, 0 < C ∧ 2 ≤ T₀ ∧
       ∀ (q : ℕ) (T : ℝ) (W : Finset ℝ),
         30 ≤ 2 ^ q → T₀ ≤ T → (4 * 2 ^ q : ℕ) ≤ T →
@@ -5770,6 +5771,8 @@ theorem exists_heathBrownDyadicPairMoment_high_bound_of_terminal_sq
     simpa only [heathBrownSourceTerminalScale] using hP₀
   · apply two_mul_add_four_le_of_sixteen_mul_sq_le_pow
     simpa only [heathBrownSourceTerminalScale] using hP₁
+
+end
 
 /-- The physical reflected-length inequality implies the exact natural
 terminal-square condition used by the dyadic high-scale theorem.  The target
@@ -5906,10 +5909,13 @@ theorem heathBrown_high_physical_of_cube
     _ = 16384 * X ^ 2 := by ring
     _ ≤ (Q : ℝ) := hQuotient
 
+section
+variable (cutoff : GMSmoothCutoff) (η : ℝ) (hη : 0 < η) (hηOne : η ≤ 1)
+include cutoff η hη hηOne
+
 /-- High-range dyadic estimate with the source's cubic scale condition as
 its only terminal-size hypothesis. -/
-theorem exists_heathBrownDyadicPairMoment_high_bound_cube
-    (cutoff : GMSmoothCutoff) (η : ℝ) (hη : 0 < η) (hηOne : η ≤ 1) :
+theorem exists_heathBrownDyadicPairMoment_high_bound_cube :
     ∃ C T₀ : ℝ, 0 < C ∧ 2 ≤ T₀ ∧
       ∀ (q : ℕ) (T : ℝ) (W : Finset ℝ),
         30 ≤ 2 ^ q → T₀ ≤ T → (4 * 2 ^ q : ℕ) ≤ T →
@@ -5936,8 +5942,7 @@ theorem exists_heathBrownDyadicPairMoment_high_bound_cube
 /-- Complete high-range pair estimate.  Below height the reflected
 recurrence and powered return are used; once `4Q > T`, the direct
 Montgomery mean value is already of the required `|W|Q` size. -/
-theorem exists_heathBrownDyadicPairMoment_high_bound_cube_total
-    (cutoff : GMSmoothCutoff) (η : ℝ) (hη : 0 < η) (hηOne : η ≤ 1) :
+theorem exists_heathBrownDyadicPairMoment_high_bound_cube_total :
     ∃ C T₀ : ℝ, 0 < C ∧ 2 ≤ T₀ ∧
       ∀ (q : ℕ) (T : ℝ) (W : Finset ℝ),
         30 ≤ 2 ^ q → T₀ ≤ T →
@@ -6050,8 +6055,7 @@ theorem exists_heathBrownDyadicPairMoment_high_bound_cube_total
 /-- The unclosed adjacent-pair form of (29.41).  Unlike the high-range
 self-recurrence, this theorem has no powered-return hypothesis and is the
 entry point for the medium and small ranges of Lemma 29.10. -/
-theorem exists_heathBrownDyadicPairMoment_recurrence
-    (cutoff : GMSmoothCutoff) (η : ℝ) (hη : 0 < η) (hηOne : η ≤ 1) :
+theorem exists_heathBrownDyadicPairMoment_recurrence :
     ∃ K T₀ : ℝ, 0 < K ∧ 2 ≤ T₀ ∧
       ∀ (q : ℕ) (T : ℝ) (W : Finset ℝ),
         30 ≤ 2 ^ q → T₀ ≤ T → (4 * 2 ^ q : ℕ) ≤ T →
@@ -6163,6 +6167,8 @@ theorem exists_heathBrownDyadicPairMoment_recurrence
       push_cast
       ring
     _ = _ := by rfl
+
+end
 
 private lemma nonneg_le_add_one_sq (x : ℝ) (hx : 0 ≤ x) : x ≤ (x + 1) ^ 2 := by
   nlinarith [sq_nonneg x]

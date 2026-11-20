@@ -8,75 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 
 namespace CompletedGauss
 local notation "Eis" => ActualEisensteinCubic.O
@@ -166,9 +109,11 @@ lemma cubicSourceConjugateFunction_levelTwo (G:levelTwo) (w:HyperbolicSpace) :
   simp only [cubicSourceConjugateFunction,cubicSourceResidualFunction_automorphy,star_mul]
   ring
 
-theorem cubicSourceConjugateFunction_cuspDerivative_levelTwo (G:levelTwo)
-    (g H:SL(2,ℂ)) (hfactor:g=integralComplexMatrix (G:SL(2,Eis))*H)
-    (hc:g 1 0≠0) (v:ℝ) (hv:0<v) :
+section
+variable (G:levelTwo) (g H:SL(2,ℂ)) (hfactor:g=integralComplexMatrix (G:SL(2,Eis))*H) (hc:g 1 0≠0) (v:ℝ) (hv:0<v)
+include G g H hfactor hc v hv
+
+theorem cubicSourceConjugateFunction_cuspDerivative_levelTwo :
     horizontalWirtingerBar (fun z=>cubicSourceConjugateFunction (upperPoint z v hv)) (g 0 0/g 1 0)=
       (star (levelTwoComplexCharacter G)*(-1/((g 1 0)^2*(v:ℂ)^2)))*
         horizontalWirtingerZ
@@ -180,9 +125,7 @@ theorem cubicSourceConjugateFunction_cuspDerivative_levelTwo (G:levelTwo)
     rw [hfactor,mul_smul,cubicSourceConjugateFunction_levelTwo]
   · exact cubicSourceConjugateFunction_translate_split_differentiableAt H _ (by positivity)
 
-lemma cuspBarProfile_conjugate_reflection_levelTwo (G:levelTwo)
-    (g H:SL(2,ℂ)) (hfactor:g=integralComplexMatrix (G:SL(2,Eis))*H)
-    (hc:g 1 0≠0) (v:ℝ) (hv:0<v) :
+lemma cuspBarProfile_conjugate_reflection_levelTwo :
     cuspBarProfile cubicSourceConjugateFunction (g 0 0/g 1 0) v=
       reflectedCuspProfile (-star (levelTwoComplexCharacter G)/(g 1 0)^2)
         (‖g 1 0‖^2)
@@ -196,6 +139,8 @@ lemma cuspBarProfile_conjugate_reflection_levelTwo (G:levelTwo)
   simp only [one_div] at he
   rw [he]
   ring
+
+end
 
 lemma conjugateSource_cuspRepresentative_zProfile_decay (j:Fin 3) (z:ℂ) :
     ∃deltaLoss:ℝ,0<deltaLoss ∧ cuspZProfile (fun w=>cubicSourceConjugateFunction
@@ -460,7 +405,11 @@ lemma ramifiedCoordPow_eval (x:ℤ×ℤ) (n:ℕ) :
   | zero => simp [ramifiedCoordPow,ActualEisensteinCoordinates.eval]
   | succ n ih => rw [ramifiedCoordPow,ramifiedCoordMul_eval,ih,pow_succ]
 
-lemma lowRamifiedQuotientCoord_eval (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5) :
+section
+variable (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
+include a r s j n
+
+lemma lowRamifiedQuotientCoord_eval :
     ActualEisensteinCoordinates.eval (lowRamifiedQuotientCoord a r s j n).1
       (lowRamifiedQuotientCoord a r s j n).2=
       if s then omega^(a.val+5-j.val)*lambda^(r.val+2-n.val)
@@ -481,7 +430,7 @@ lemma lowRamifiedQuotientCoord_eval (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5) :
   cases s <;> simp only [lowRamifiedQuotientCoord,Bool.false_eq_true,ite_false,ite_true,
     he,ramifiedCoordMul_eval,ramifiedCoordPow_eval,ho,hl]
 
-lemma lowRamifiedQuotientCoord_relation (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
+lemma lowRamifiedQuotientCoord_relation
     (hn:n.val≤r.val+2) :
     3*lowRamifiedFrequency a r=
       ((signedOmegaUnit s j:Eis)*lambda^(n.val+2))*
@@ -512,7 +461,7 @@ lemma lowRamifiedQuotientCoord_relation (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
   rw [lowRamifiedQuotientCoord_eval,signedOmegaUnit_val]
   cases s <;> simp only [Bool.false_eq_true,ite_false,ite_true] <;> linear_combination he
 
-lemma lowRamifiedSupport_of_ne_zero (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
+lemma lowRamifiedSupport_of_ne_zero
     (hA:arithmeticResidueSum (lowRamifiedFrequency a r)
       ((signedOmegaUnit s j:Eis)*lambda^(n.val+2))≠0) :
     lowRamifiedSupport a r (s,j,n) := by
@@ -538,6 +487,8 @@ lemma lowRamifiedSupport_of_ne_zero (a r:Fin 3) (s:Bool) (j:Fin 3) (n:Fin 5)
     rw [ite_eq_right hc] at he
     exact hA he
   exact ⟨hn,by simpa only [ramifiedCongruence,ShortDraftLatticeCount.coords_eval] using hz⟩
+
+end
 
 end CubicEisenstein
 

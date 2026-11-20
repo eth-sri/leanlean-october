@@ -67,7 +67,7 @@ theorem exists_controlled [Fintype ι] (N a c : Eis) (mode : Bool)
     Nonempty (ControlledStratumArithmetic G.generator N a c mode) := by
   apply exists_controlledStratumArithmetic G.generator G.generator_ne_zero
   · intro i k hik
-    simpa only [G.generator_span] using hcop hik
+    simpa only [Function.onFun, OAI.PrincipalIdealFamily.ideal, G.generator_span] using hcop hik
   · exact G.generator_primary
   · exact hc
   · exact hN

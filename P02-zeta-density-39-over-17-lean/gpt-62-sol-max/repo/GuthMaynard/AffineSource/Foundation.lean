@@ -5,7 +5,7 @@ public import MathCollab.Density.DivisorGrowth
 
 @[expose] public section
 open Complex Finset Filter FourierTransform MeasureTheory Real Set
-open scoped ContDiff FourierTransform Topology
+open scoped ContDiff Topology
 namespace RiemannZeta.GuthMaynard
 
 noncomputable def dfiUnitRedundantBump : ContDiffBump (0 : ℝ) :=

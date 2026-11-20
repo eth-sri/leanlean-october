@@ -58,9 +58,7 @@ theorem wooley_taylorCoefficient_exists_omega
         C ((p : ℤ) ^ c) * X ^ (k + 1) * psi =
           ((p : ℤ) ^ c) • (X ^ (k + 1) * psi) := by
       rw [mul_assoc, Polynomial.C_mul']
-    have hderivScalar :
-        hasseDeriv i (((p : ℤ) ^ c) • (X ^ (k + 1) * psi)) =
-          ((p : ℤ) ^ c) • hasseDeriv i (X ^ (k + 1) * psi) :=
+    have hderivScalar :=
       (hasseDeriv i).map_smul ((p : ℤ) ^ c) (X ^ (k + 1) * psi)
     rw [map_add, hmono, hscalar, hderivScalar, hq]
     simp [Polynomial.eval_mul, Polynomial.eval_pow]
@@ -90,9 +88,7 @@ theorem wooley_taylorCoefficient_eq_monomial_add_spacing
       C ((p : ℤ) ^ c) * X ^ (k + 1) * psi =
         ((p : ℤ) ^ c) • (X ^ (k + 1) * psi) := by
     rw [mul_assoc, Polynomial.C_mul']
-  have hderivScalar :
-      hasseDeriv i (((p : ℤ) ^ c) • (X ^ (k + 1) * psi)) =
-        ((p : ℤ) ^ c) • hasseDeriv i (X ^ (k + 1) * psi) :=
+  have hderivScalar :=
     (hasseDeriv i).map_smul ((p : ℤ) ^ c) (X ^ (k + 1) * psi)
   rw [map_add, hmono, hscalar, hderivScalar]
   simp [Polynomial.eval_mul, Polynomial.eval_pow]

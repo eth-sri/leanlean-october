@@ -13,8 +13,7 @@ public import MathCollab.Density.Stronger.Atkinson.IntervalAmplitudeRescaled
 
 @[expose] public section
 
-open Complex MeasureTheory Set
-open MathCollab.Density.Stronger.Fourth
+open Complex MeasureTheory Set MathCollab.Density.Stronger.Fourth
 open scoped ContDiff
 set_option autoImplicit false
 noncomputable section

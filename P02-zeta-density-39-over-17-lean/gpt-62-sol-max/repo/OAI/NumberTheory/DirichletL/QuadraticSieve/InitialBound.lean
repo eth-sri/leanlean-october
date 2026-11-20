@@ -9,71 +9,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace QuadraticInitialBound
 open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
 
@@ -99,16 +46,18 @@ theorem quadraticRow_star {α : Type*}
   apply Finset.prod_congr rfl
   intro i _
   rw [canonicalSextic_pow_three_quadratic]
-  simp only [MulChar.ringHomComp_apply, Int.coe_castRingHom, star_intCast]
+  simp
 
-theorem quadraticRow_disjoint_union {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
+section
+variable {α : Type*} [instShared1 : DecidableEq α] (P : α → Ideal O) [instShared3 : ∀ i, (P i).IsMaximal]
+include α instShared1 P instShared3
+
+theorem quadraticRow_disjoint_union
     (hg : ∀ i, lambda ∉ P i) (S T : Finset α) (hd : Disjoint S T) (z : O) :
     quadraticRow P hg (S ∪ T) z = quadraticRow P hg S z * quadraticRow P hg T z := by
   simp only [quadraticRow, finiteSquarefreeRow, Finset.prod_union hd, mul_pow]
 
-theorem quadraticRow_pair_kernel {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
+theorem quadraticRow_pair_kernel
     (hg : ∀ i, lambda ∉ P i) (S T : Finset α) (z : O) :
     star (quadraticRow P hg S z) * quadraticRow P hg T z =
       rowCoprimeMask P (S ∩ T) z *
@@ -131,8 +80,7 @@ theorem quadraticRow_pair_kernel {α : Type*} [DecidableEq α]
   rw [quadraticRow_disjoint_union P hg _ _ hd]
   simpa only [mul_assoc] using h
 
-theorem quadratic_gram_offdiagonal {α : Type*} [DecidableEq α]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
+theorem quadratic_gram_offdiagonal (hinj : Function.Injective P)
     (hg : ∀ i, lambda ∉ P i) (hc : ∀ i, ringChar (O ⧸ P i) ≠ 2)
     (S T : Finset α) (hne : S ≠ T) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
     ‖∑' z : O, (star (quadraticRow P hg S z) * quadraticRow P hg T z) *
@@ -144,6 +92,8 @@ theorem quadratic_gram_offdiagonal {α : Type*} [DecidableEq α]
   exact canonical_masked_polya_vinogradov P hinj (S ∩ T) (activePrimes P S T)
     (activePrimes_pairwise_isCoprime P hinj S T) (fun i => hg i.val)
     (fun i => hc i.val) (fun _ => 3) (fun _ => by decide) (fun _ => by decide) W M hM
+
+end
 
 def supportNorm {α : Type*} (P : α → Ideal O) (S : Finset α) : ℝ :=
   Ideal.absNorm (∏ i ∈ S, P i)
@@ -242,48 +192,40 @@ theorem radial_weight_lattice_bound (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 1 ≤ M
   have hh := mul_le_mul_of_nonneg_left hfinal hMp.le
   simpa only [t, ← mul_assoc, mul_inv_cancel₀ hMp.ne', one_mul, mul_comm] using hh
 
-theorem quadraticRow_norm_le_one {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S : Finset α) (z : O) :
-    ‖quadraticRow P hg S z‖ ≤ 1 := by
-  rw [quadraticRow_eq_canonical]
-  exact finiteSexticRow_norm_le_one _ _ _ _
 
-theorem quadratic_pair_summable {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S T : Finset α)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
-    Summable (fun z : O => (star (quadraticRow P hg S z) * quadraticRow P hg T z) *
-      W (‖eisEmbedding z‖ ^ 2 / M)) := by
-  have hW : Summable (fun z : O => ‖W (‖eisEmbedding z‖ ^ 2 / M)‖) := by
-    simpa only [scaledRadialTest_apply] using
-      actual_eisenstein_summable_norm (scaledRadialTest W M hM)
-  apply Summable.of_norm
-  apply Summable.of_nonneg_of_le (fun _ => norm_nonneg _) _ hW
-  intro z
+/-- The Gram coefficient of two rows with a radial Schwartz weight. -/
+def radialGram (W : 𝓢(ℝ, ℂ)) (M : ℝ) (f g : O → ℂ) : ℂ :=
+  ∑' z, (star (f z) * g z) * W (‖eisEmbedding z‖ ^ 2 / M)
+
+private theorem radial_summable (W : 𝓢(ℝ, ℂ)) {M : ℝ} (hM : 0 < M) :
+    Summable (fun z : O => ‖W (‖eisEmbedding z‖ ^ 2 / M)‖) := by
+  simpa only [scaledRadialTest_apply] using
+    actual_eisenstein_summable_norm (scaledRadialTest W M hM)
+
+private theorem pair_norm_le {f g : ℂ} (hf : ‖f‖ ≤ 1) (hg : ‖g‖ ≤ 1) (w : ℂ) :
+    ‖(star f * g) * w‖ ≤ ‖w‖ := by
   rw [norm_mul, norm_mul, norm_star]
   exact mul_le_of_le_one_left (norm_nonneg _)
-    ((mul_le_mul (quadraticRow_norm_le_one P hg S z) (quadraticRow_norm_le_one P hg T z)
-      (norm_nonneg _) zero_le_one).trans_eq (one_mul 1))
+    ((mul_le_mul hf hg (norm_nonneg _) zero_le_one).trans_eq (one_mul 1))
 
-theorem quadratic_gram_diagonal {α : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (S : Finset α)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 1 ≤ M) :
-    ‖∑' z : O, (star (quadraticRow P hg S z) * quadraticRow P hg S z) *
-        W (‖eisEmbedding z‖ ^ 2 / M)‖ ≤ diagonalControl W * M := by
-  have hMp : 0 < M := by linarith
-  have hs := (quadratic_pair_summable P hg S S W M hMp).norm
-  have hW : Summable (fun z : O => ‖W (‖eisEmbedding z‖ ^ 2 / M)‖) := by
-    simpa only [scaledRadialTest_apply] using
-      actual_eisenstein_summable_norm (scaledRadialTest W M hMp)
-  refine (norm_tsum_le_tsum_norm hs).trans ((hs.tsum_le_tsum ?_ hW).trans
-    (radial_weight_lattice_bound W M hM))
-  intro z
-  rw [norm_mul, norm_mul, norm_star]
-  exact mul_le_of_le_one_left (norm_nonneg _)
-    ((mul_le_mul (quadraticRow_norm_le_one P hg S z) (quadraticRow_norm_le_one P hg S z)
-      (norm_nonneg _) zero_le_one).trans_eq (one_mul 1))
+section
+variable {β : Type*} (row : β → O → ℂ) (hrow : ∀ n z, ‖row n z‖ ≤ 1)
+variable (W : 𝓢(ℝ, ℂ)) (M : ℝ)
+
+include hrow in
+private theorem pair_summable (hM : 0 < M) (n m : β) :
+    Summable (fun z : O => (star (row n z) * row m z) * W (‖eisEmbedding z‖ ^ 2 / M)) :=
+  Summable.of_norm <| Summable.of_nonneg_of_le (fun _ => norm_nonneg _)
+    (fun z => pair_norm_le (hrow n z) (hrow m z) _) (radial_summable W hM)
+
+include hrow in
+private theorem gram_diagonal (hM : 1 ≤ M) (n : β) :
+    ‖radialGram W M (row n) (row n)‖ ≤ diagonalControl W * M := by
+  have hMp := zero_lt_one.trans_le hM
+  have hs := (pair_summable row hrow W M hMp n n).norm
+  exact (norm_tsum_le_tsum_norm hs).trans <| (hs.tsum_le_tsum
+    (fun z => pair_norm_le (hrow n z) (hrow n z) _) (radial_summable W hMp)).trans
+    (radial_weight_lattice_bound W M hM)
 
 private theorem norm_sq_finite_sum {β : Type*} (C : Finset β) (a r : β → ℂ) :
     (↑(‖∑ n ∈ C, a n * r n‖ ^ 2) : ℂ) =
@@ -297,83 +239,52 @@ private theorem norm_sq_finite_sum {β : Type*} (C : Finset β) (a r : β → �
   intro m hm
   ring
 
-theorem quadratic_mean_summable {α β : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (C : Finset β) (support : β → Finset α) (a : β → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
-    Summable (fun z : O => W (‖eisEmbedding z‖ ^ 2 / M) *
-      (↑(‖∑ n ∈ C, a n * quadraticRow P hg (support n) z‖ ^ 2) : ℂ)) := by
-  have hs := summable_sum (s := C) (fun n hn => summable_sum (s := C) (fun m hm =>
-    (quadratic_pair_summable P hg (support n) (support m) W M hM).mul_left (star (a n) * a m)))
-  apply hs.congr
-  intro z
+private theorem weightedRowSq_expand (C : Finset β) (a : β → ℂ) (z : O) :
+    W (‖eisEmbedding z‖ ^ 2 / M) * (↑(‖∑ n ∈ C, a n * row n z‖ ^ 2) : ℂ) =
+      ∑ n ∈ C, ∑ m ∈ C, (star (a n) * a m) *
+        ((star (row n z) * row m z) * W (‖eisEmbedding z‖ ^ 2 / M)) := by
   rw [norm_sq_finite_sum]
   simp only [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro n hn
-  apply Finset.sum_congr rfl
-  intro m hm
-  ring
+  exact Finset.sum_congr rfl fun n _ => Finset.sum_congr rfl fun m _ => by ring
 
-theorem quadratic_mean_expand {α β : Type*}
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal]
-    (hg : ∀ i, lambda ∉ P i) (C : Finset β) (support : β → Finset α) (a : β → ℂ)
-    (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 0 < M) :
+include hrow in
+private theorem mean_summable (C : Finset β) (a : β → ℂ) (hM : 0 < M) :
+    Summable (fun z : O => W (‖eisEmbedding z‖ ^ 2 / M) *
+      (↑(‖∑ n ∈ C, a n * row n z‖ ^ 2) : ℂ)) :=
+  (summable_sum (s := C) (fun n _ => summable_sum (s := C) (fun m _ =>
+    (pair_summable row hrow W M hM n m).mul_left (star (a n) * a m)))).congr
+      (fun z => (weightedRowSq_expand row W M C a z).symm)
+
+include hrow in
+private theorem mean_expand (C : Finset β) (a : β → ℂ) (hM : 0 < M) :
     (∑' z : O, W (‖eisEmbedding z‖ ^ 2 / M) *
-      (↑(‖∑ n ∈ C, a n * quadraticRow P hg (support n) z‖ ^ 2) : ℂ)) =
-      ∑ n ∈ C, ∑ m ∈ C, (star (a n) * a m) *
-        ∑' z : O, (star (quadraticRow P hg (support n) z) * quadraticRow P hg (support m) z) *
-          W (‖eisEmbedding z‖ ^ 2 / M) := by
-  let f : β → β → O → ℂ := fun n m z => (star (a n) * a m) *
-    ((star (quadraticRow P hg (support n) z) * quadraticRow P hg (support m) z) *
-      W (‖eisEmbedding z‖ ^ 2 / M))
-  have hf (n m : β) : Summable (f n m) :=
-    (quadratic_pair_summable P hg (support n) (support m) W M hM).mul_left _
-  have heq (z : O) : W (‖eisEmbedding z‖ ^ 2 / M) *
-      (↑(‖∑ n ∈ C, a n * quadraticRow P hg (support n) z‖ ^ 2) : ℂ) =
-        ∑ n ∈ C, ∑ m ∈ C, f n m z := by
-    rw [norm_sq_finite_sum]
-    simp only [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro n hn
-    apply Finset.sum_congr rfl
-    intro m hm
-    dsimp [f]
-    ring
-  rw [tsum_congr heq, Summable.tsum_finsetSum (fun n hn => summable_sum (fun m hm => hf n m))]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [Summable.tsum_finsetSum (fun m hm => hf n m)]
-  apply Finset.sum_congr rfl
-  intro m hm
-  exact tsum_mul_left
+      (↑(‖∑ n ∈ C, a n * row n z‖ ^ 2) : ℂ)) =
+      ∑ n ∈ C, ∑ m ∈ C, (star (a n) * a m) * radialGram W M (row n) (row m) := by
+  let f (n m : β) (z : O) := (star (a n) * a m) *
+    ((star (row n z) * row m z) * W (‖eisEmbedding z‖ ^ 2 / M))
+  have hf (n m : β) : Summable (f n m) := (pair_summable row hrow W M hM n m).mul_left _
+  rw [tsum_congr (weightedRowSq_expand row W M C a),
+    Summable.tsum_finsetSum (fun n _ => summable_sum (fun m _ => hf n m))]
+  refine Finset.sum_congr rfl fun n _ => ?_
+  rw [Summable.tsum_finsetSum (fun m _ => hf n m)]
+  exact Finset.sum_congr rfl fun m _ => tsum_mul_left
 
-theorem quadratic_initial_mean_bound {α β : Type*} [DecidableEq α] [DecidableEq β]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (hg : ∀ i, lambda ∉ P i) (hc : ∀ i, ringChar (O ⧸ P i) ≠ 2)
-    (C : Finset β) (support : β → Finset α)
-    (hsupp : Set.InjOn support (↑C : Set β))
-    (N : ℝ) (hN : 0 ≤ N) (hNorm : ∀ n ∈ C, supportNorm P (support n) ≤ N)
-    (a : β → ℂ) (W : 𝓢(ℝ, ℂ)) (M : ℝ) (hM : 1 ≤ M) :
+include hrow in
+private theorem initial_mean_bound [DecidableEq β] (C : Finset β) (a : β → ℂ)
+    (hM : 1 ≤ M) (B : ℝ) (hB : 0 ≤ B)
+    (hOff : ∀ n ∈ C, ∀ m ∈ C, n ≠ m → ‖radialGram W M (row n) (row m)‖ ≤ B) :
     ‖∑' z : O, W (‖eisEmbedding z‖ ^ 2 / M) *
-      (↑(‖∑ n ∈ C, a n * quadraticRow P hg (support n) z‖ ^ 2) : ℂ)‖ ≤
-        (diagonalControl W * M + pvControl W * N * C.card) * ∑ n ∈ C, ‖a n‖ ^ 2 := by
-  have hMp : 0 < M := by linarith
+      (↑(‖∑ n ∈ C, a n * row n z‖ ^ 2) : ℂ)‖ ≤
+        (diagonalControl W * M + B * C.card) * ∑ n ∈ C, ‖a n‖ ^ 2 := by
   let D := diagonalControl W * M
-  let B := pvControl W * N
-  have hB : 0 ≤ B := mul_nonneg (pvControl_nonneg W) hN
-  let K : β → β → ℂ := fun n m => ∑' z : O,
-    (star (quadraticRow P hg (support n) z) * quadraticRow P hg (support m) z) *
-      W (‖eisEmbedding z‖ ^ 2 / M)
+  let K (n m : β) := radialGram W M (row n) (row m)
   have hK (n : β) (hn : n ∈ C) (m : β) (hm : m ∈ C) :
       ‖K n m‖ ≤ (if n = m then D else 0) + B := by
     by_cases hnm : n = m
     · subst m
       simp only [ite_true]
-      exact (quadratic_gram_diagonal P hg (support n) W M hM).trans (le_add_of_nonneg_right hB)
-    · simp only [hnm, ite_false, zero_add]
-      exact quadratic_gram_offdiagonal_of_norm_le P hinj hg hc _ _
-        (fun h => hnm (hsupp hn hm h)) N hN (hNorm n hn) (hNorm m hm) W M hMp
+      exact (gram_diagonal row hrow W M hM n).trans (le_add_of_nonneg_right hB)
+    · simpa [hnm] using hOff n hn m hm hnm
   have heq (n : β) (hn : n ∈ C) :
       (∑ m ∈ C, ‖a n‖ * ‖a m‖ * ((if n = m then D else 0) + B)) =
         D * ‖a n‖ ^ 2 + B * ‖a n‖ * ∑ m ∈ C, ‖a m‖ := by
@@ -387,7 +298,7 @@ theorem quadratic_initial_mean_bound {α β : Type*} [DecidableEq α] [Decidable
     rw [Finset.sum_congr rfl heq]
     simp only [Finset.sum_add_distrib, ← Finset.mul_sum, ← Finset.sum_mul]
     ring
-  rw [quadratic_mean_expand P hg C support a W M hMp]
+  rw [mean_expand row hrow W M C a (zero_lt_one.trans_le hM)]
   calc
     _ ≤ ∑ n ∈ C, ∑ m ∈ C, ‖(star (a n) * a m) * K n m‖ := by
       exact (norm_sum_le _ _).trans (Finset.sum_le_sum (fun _ _ => norm_sum_le _ _))
@@ -402,9 +313,11 @@ theorem quadratic_initial_mean_bound {α β : Type*} [DecidableEq α] [Decidable
     _ ≤ D * (∑ n ∈ C, ‖a n‖ ^ 2) + B * ((C.card : ℝ) * ∑ n ∈ C, ‖a n‖ ^ 2) := by
       apply add_le_add le_rfl
       apply mul_le_mul_of_nonneg_left _ hB
-      simpa only [mul_one, one_pow, Finset.sum_const, nsmul_eq_mul, mul_one, mul_comm] using
+      simpa [mul_comm] using
         Finset.sum_mul_sq_le_sq_mul_sq C (fun n => ‖a n‖) (fun _ => (1 : ℝ))
-    _ = _ := by dsimp [D, B]; ring
+    _ = _ := by dsimp [D]; ring
+
+end
 
 def sieveBump : ContDiffBump (0 : ℝ) where
   rIn := 1
@@ -426,24 +339,22 @@ theorem sieveBump_eq_one {t : ℝ} (ht0 : 0 ≤ t) (ht1 : t ≤ 1) : sieveBump t
   change dist t 0 ≤ 1
   simpa only [dist_zero_right, Real.norm_eq_abs, abs_of_nonneg ht0] using ht1
 
-theorem quadratic_initial_finite_bound {α β : Type*} [DecidableEq α] [DecidableEq β]
-    (P : α → Ideal O) [∀ i, (P i).IsMaximal] (hinj : Function.Injective P)
-    (hg : ∀ i, lambda ∉ P i) (hc : ∀ i, ringChar (O ⧸ P i) ≠ 2)
-    (C : Finset β) (support : β → Finset α) (hsupp : Set.InjOn support (↑C : Set β))
-    (N : ℝ) (hN : 0 ≤ N) (hNorm : ∀ n ∈ C, supportNorm P (support n) ≤ N)
-    (a : β → ℂ) (M : ℝ) (hM : 1 ≤ M) (R : Finset O)
-    (hR : ∀ z ∈ R, ‖eisEmbedding z‖ ^ 2 ≤ M) :
-    (∑ z ∈ R, ‖∑ n ∈ C, a n * quadraticRow P hg (support n) z‖ ^ 2) ≤
-      (diagonalControl sieveCutoff * M + pvControl sieveCutoff * N * C.card) *
-        ∑ n ∈ C, ‖a n‖ ^ 2 := by
+/-- A finite row estimate from diagonal control and one uniform off-diagonal bound. -/
+theorem initial_finite_bound {β : Type*} [DecidableEq β]
+    (row : β → O → ℂ) (hrow : ∀ n z, ‖row n z‖ ≤ 1) (C : Finset β) (a : β → ℂ)
+    (M : ℝ) (hM : 1 ≤ M) (R : Finset O) (hR : ∀ z ∈ R, ‖eisEmbedding z‖ ^ 2 ≤ M)
+    (B : ℝ) (hB : 0 ≤ B)
+    (hOff : ∀ n ∈ C, ∀ m ∈ C, n ≠ m → ‖radialGram sieveCutoff M (row n) (row m)‖ ≤ B) :
+    (∑ z ∈ R, ‖∑ n ∈ C, a n * row n z‖ ^ 2) ≤
+      (diagonalControl sieveCutoff * M + B * C.card) * ∑ n ∈ C, ‖a n‖ ^ 2 := by
   have hMp : 0 < M := by linarith
-  let E : O → ℝ := fun z => ‖∑ n ∈ C, a n * quadraticRow P hg (support n) z‖ ^ 2
+  let E : O → ℝ := fun z => ‖∑ n ∈ C, a n * row n z‖ ^ 2
   let F : O → ℝ := fun z => sieveBump (‖eisEmbedding z‖ ^ 2 / M) * E z
   let H : O → ℂ := fun z => sieveCutoff (‖eisEmbedding z‖ ^ 2 / M) * (E z : ℂ)
   have hF (z : O) : 0 ≤ F z := mul_nonneg sieveBump.nonneg (sq_nonneg _)
   have hH (z : O) : H z = (F z : ℂ) := by
-    simp only [H, F, sieveCutoff_apply, Complex.ofReal_mul]
-  have hHs : Summable H := quadratic_mean_summable P hg C support a sieveCutoff M hMp
+    simp [H, F]
+  have hHs : Summable H := mean_summable row hrow sieveCutoff M C a hMp
   have hFs : Summable F := hHs.norm.congr (fun z => by
     rw [hH, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg (hF z)])
   have hsum : ‖∑' z : O, H z‖ = ∑' z : O, F z := by
@@ -458,11 +369,9 @@ theorem quadratic_initial_finite_bound {α β : Type*} [DecidableEq α] [Decidab
       simp only [F, sieveBump_eq_one ht0 ht1, one_mul, E]
     _ ≤ ∑' z : O, F z := hFs.sum_le_tsum R (fun z _ => hF z)
     _ = ‖∑' z : O, H z‖ := hsum.symm
-    _ ≤ _ := quadratic_initial_mean_bound P hinj hg hc C support hsupp N hN hNorm
-      a sieveCutoff M hM
+    _ ≤ _ := initial_mean_bound row hrow sieveCutoff M C a hM B hB hOff
 
-open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson
-open ConcretePrimeRowBridge ShortDraftHeckeBridge
+open ActualEisensteinCubic ConcreteTraceCRT EisensteinSchwartzPoisson ConcretePrimeRowBridge ShortDraftHeckeBridge
 
 def initialSieveConstant : ℝ :=
   diagonalControl sieveCutoff + 128 * pvControl sieveCutoff + 1
@@ -473,15 +382,21 @@ theorem initialSieveConstant_pos : 0 < initialSieveConstant := by
   unfold initialSieveConstant
   positivity
 
-theorem ideal_initial_quadratic_sieve
+theorem ideal_initial_power_sieve (k : ℕ)
     (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥)
     (hFgood : ∀ I ∈ F, ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P)
     (hsq : ∀ I ∈ F, Squarefree I)
-    (hchar : ∀ i : primePool F, ringChar (O ⧸ i.val) ≠ 2)
     (N : ℕ) (hN : 1 ≤ N) (hnorm : ∀ I ∈ F, Ideal.absNorm I ≤ N)
     (a : Ideal O → ℂ) (M : ℝ) (hM : 1 ≤ M) (R : Finset O)
-    (hR : ∀ z ∈ R, ‖eisEmbedding z‖ ^ 2 ≤ M) :
-    (∑ z ∈ R, ‖∑ I ∈ F, a I * (idealSexticRow F hFpos hFgood I z) ^ 3‖ ^ 2) ≤
+    (hR : ∀ z ∈ R, ‖eisEmbedding z‖ ^ 2 ≤ M)
+    (hOff : letI := primePool_maximal F hFpos
+      ∀ (S T : Finset (primePool F)), S ≠ T → supportNorm Subtype.val S ≤ N →
+        supportNorm Subtype.val T ≤ N →
+        ‖radialGram sieveCutoff M
+          (fun z => (finiteSquarefreeRow Subtype.val (primePool_good F hFgood) S z) ^ k)
+          (fun z => (finiteSquarefreeRow Subtype.val (primePool_good F hFgood) T z) ^ k)‖ ≤
+        pvControl sieveCutoff * N) :
+    (∑ z ∈ R, ‖∑ I ∈ F, a I * (idealSexticRow F hFpos hFgood I z) ^ k‖ ^ 2) ≤
       initialSieveConstant * (M + (N : ℝ) ^ 2) * ∑ I ∈ F, ‖a I‖ ^ 2 := by
   let : ∀ i : primePool F, (i.val).IsMaximal := primePool_maximal F hFpos
   have hNr : (1 : ℝ) ≤ N := by exact_mod_cast hN
@@ -493,12 +408,15 @@ theorem ideal_initial_quadratic_sieve
     unfold supportNorm
     rw [idealSupport_product_eq F hI (hsq I hI)]
     exact_mod_cast hnorm I hI
-  have hb := quadratic_initial_finite_bound (fun i : primePool F => i.val)
-    Subtype.val_injective (primePool_good F hFgood) hchar F (idealSupport F) hsupp
-    (N : ℝ) (by positivity) hNorm a M hM R hR
-  change (∑ z ∈ R, ‖∑ I ∈ F, a I * (idealSexticRow F hFpos hFgood I z) ^ 3‖ ^ 2) ≤
-    (diagonalControl sieveCutoff * M + pvControl sieveCutoff * (N : ℝ) * F.card) *
-      ∑ I ∈ F, ‖a I‖ ^ 2 at hb
+  let row (I : Ideal O) (z : O) := (idealSexticRow F hFpos hFgood I z) ^ k
+  have hrow (I : Ideal O) (z : O) : ‖row I z‖ ≤ 1 := by
+    change ‖(idealSexticRow F hFpos hFgood I z) ^ k‖ ≤ 1
+    rw [norm_pow]
+    exact pow_le_one₀ (norm_nonneg _) (finiteSquarefreeRow_norm_le_one _ _ _ _) 
+  have hb := initial_finite_bound row hrow F a M hM R hR
+    (pvControl sieveCutoff * N) (mul_nonneg (pvControl_nonneg _) (Nat.cast_nonneg _))
+    (fun I hI J hJ hIJ => hOff (idealSupport F I) (idealSupport F J)
+      (fun h => hIJ (hsupp hI hJ h)) (hNorm I hI) (hNorm J hJ))
   have hsub : F ⊆ idealsUpTo N := by
     intro I hI
     apply mem_idealsUpTo.mpr
@@ -519,6 +437,24 @@ theorem ideal_initial_quadratic_sieve
   unfold initialSieveConstant
   nlinarith [mul_nonneg hdiag (sq_nonneg (N : ℝ)),
     mul_nonneg hpv (show 0 ≤ M by linarith)]
+
+theorem ideal_initial_quadratic_sieve
+    (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥)
+    (hFgood : ∀ I ∈ F, ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P)
+    (hsq : ∀ I ∈ F, Squarefree I)
+    (hchar : ∀ i : primePool F, ringChar (O ⧸ i.val) ≠ 2)
+    (N : ℕ) (hN : 1 ≤ N) (hnorm : ∀ I ∈ F, Ideal.absNorm I ≤ N)
+    (a : Ideal O → ℂ) (M : ℝ) (hM : 1 ≤ M) (R : Finset O)
+    (hR : ∀ z ∈ R, ‖eisEmbedding z‖ ^ 2 ≤ M) :
+    (∑ z ∈ R, ‖∑ I ∈ F, a I * (idealSexticRow F hFpos hFgood I z) ^ 3‖ ^ 2) ≤
+      initialSieveConstant * (M + (N : ℝ) ^ 2) * ∑ I ∈ F, ‖a I‖ ^ 2 :=
+  ideal_initial_power_sieve 3 F hFpos hFgood hsq N hN hnorm a M hM R hR
+    (by
+      letI := primePool_maximal F hFpos
+      intro S T hne hS hT
+      exact quadratic_gram_offdiagonal_of_norm_le Subtype.val
+        Subtype.val_injective (primePool_good F hFgood) hchar S T hne N (Nat.cast_nonneg _)
+        hS hT sieveCutoff M (zero_lt_one.trans_le hM))
 
 end QuadraticInitialBound
 
@@ -562,9 +498,7 @@ theorem Gamma_vertical_continuous (a : ℝ) (ha : 0 < a) :
   · fun_prop
   · intro n hn
     have heq := congrArg Complex.re hn
-    simp only [Complex.add_re, Complex.ofReal_re, Complex.mul_re, Complex.ofReal_im,
-      Complex.I_re, Complex.I_im, mul_zero, zero_mul, sub_zero, add_zero,
-      Complex.neg_re, Complex.natCast_re] at heq
+    simp at heq
     have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
     linarith
 

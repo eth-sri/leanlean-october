@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstWholeMarkedColumns
 
 @[expose] public section
@@ -15,11 +16,11 @@ local notation "O" => ActualEisensteinCubic.O
 theorem first_whole_cube_canonical_tail (ε : ℝ) (hε : 0<ε) (order : ℕ) :
     ∃ (s : Finset (ℕ×ℕ)) (Ct Cm : ℝ),0<Ct ∧ 0<Cm ∧
     ∀ {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-      (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-      (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hchar : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+      (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (_hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hchar : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
       (pool : Finset ι) (b : CubeCoordinates ι),b.Admissible →
       ∀ (common divisor : Finset ι),Disjoint common b.support →
       ∀ (f : Ideal O),f≠0 →

@@ -11,11 +11,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentFirstSecondActiveErrorGates
-open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData
-open CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps
-open CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn
-open CenteredMomentFirstSecondInputGates CenteredMomentFirstAnnularInput
-open CenteredMomentOriginalCommonHarmonic CenteredMomentSectorLocalization
+open HeckeFamily CanonicalQuadraticSieve CenteredMomentCommonRadialData CenteredMomentAmplificationChildInput CenteredMomentAmplificationChildSourceCaps CenteredMomentCommonAllocationSum CenteredMomentCommonProfile CenteredMomentSourceLiveColumn CenteredMomentFirstSecondInputGates CenteredMomentFirstAnnularInput CenteredMomentOriginalCommonHarmonic CenteredMomentSectorLocalization
 local notation "O" => HeckeFamily.O
 local instance {α : Type*} : DecidableEq α := Classical.decEq _
 variable {ι : Type*} [Fintype ι]
@@ -43,8 +39,8 @@ theorem error_caps (N : ℕ) (b b₁ b₂ : ℝ) (hb : 1≤b) (h₁ : 1≤b₁) 
       sourceRadius d≤geometry N b b₁ b₂*H := by
   dsimp only
   have hC := norm_ge_one C (allocation_ne s C B)
-  have hNp : 0<(Q.absNorm:ℝ)^k := pow_pos (zero_lt_one.trans_le (norm_ge_one Q hQ)) k
-  have hH : 0<volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k) :=
+  have hNp := pow_pos (zero_lt_one.trans_le (norm_ge_one Q hQ)) k
+  have hH :=
     div_pos (volume_pos s) (mul_pos (zero_lt_one.trans_le hC) hNp)
   have hv : volume (errorInput s C R B τ t Q k Bp υ v)≤
       b^N*(volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k)) := by
@@ -91,14 +87,14 @@ theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
   let G := geometry N b b₁ b₂
   have hg : 1≤G := geometry_ge_one N b b₁ b₂ hb h₁ h₂
   have hcap := error_caps N b b₁ b₂ hb h₁ h₂ s hc he C R B τ t hB Q hQ k hslot Bp υ v
-  have hd : 0<(C.absNorm:ℝ)*(Q.absNorm:ℝ)^k := mul_pos
+  have hd := mul_pos
     (zero_lt_one.trans_le (norm_ge_one C (allocation_ne s C B)))
     (pow_pos (zero_lt_one.trans_le (norm_ge_one Q hQ)) k)
   have hd1 : 1≤(C.absNorm:ℝ)*(Q.absNorm:ℝ)^k := by
     have hc := norm_ge_one C (allocation_ne s C B)
     have hq : 1 ≤ (Q.absNorm : ℝ)^k := one_le_pow₀ (norm_ge_one Q hQ)
     nlinarith
-  have hHV : volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k)≤volume s :=
+  have hHV :=
     div_le_self (volume_pos s).le hd1
   have hm := mul_le_mul_of_nonneg_left hHV (zero_le_one.trans hg)
   have hpoly := polynomial_caps G (volume s) (volume d) (sourceRadius d) K Z A D ε ξ
@@ -106,7 +102,7 @@ theorem eventually_active_error_ready (N : ℕ) (b b₁ b₂ ε : ℝ)
     (hcap.2.2.1.trans hm) (hcap.2.2.2.trans hm) hVp hKi
   obtain ⟨I,hI⟩ := hlive
   have hi := child_column_norm (activeInput (child s C R B τ t)) (Q^k) (R*C) seed Bp υ v hz₁ hz₂ I hI
-  have hone : 1≤G*(volume s/((C.absNorm:ℝ)*(Q.absNorm:ℝ)^k)) :=
+  have hone :=
     (norm_ge_one I hi.1).trans (hi.2.2.trans hcap.2.2.2)
   rw [←mul_div_assoc] at hone
   have hprod : (C.absNorm:ℝ)*(Q.absNorm:ℝ)^k≤G*volume s := by

@@ -108,15 +108,17 @@ noncomputable def extendByZeroL2 (hKm : MeasurableSet K)
           (s := K) (f := fun x : E => u x) hKm).2 hu
   exact hm.toLp (extendByZeroFun (K := K) u)
 
-lemma extendByZeroL2_ae_eq (hKm : MeasurableSet K)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
+section
+variable (hKm : MeasurableSet K) (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K))
+include hKm u
+
+lemma extendByZeroL2_ae_eq :
     (extendByZeroL2 (E := E) (K := K) hKm u : E → ℝ) =ᵐ[(volume : Measure E)]
       extendByZeroFun (E := E) (K := K) u := by
   classical
   simp [extendByZeroL2, MeasureTheory.MemLp.coeFn_toLp]
 
-lemma extendByZeroL2_eq_extendByZeroₗᵢ (hKm : MeasurableSet K)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
+lemma extendByZeroL2_eq_extendByZeroₗᵢ :
     extendByZeroL2 (E := E) (K := K) hKm u =
       (MeasureTheory.Lp.extendByZeroₗᵢ (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞))
         (s := K) hKm) u := by
@@ -136,8 +138,7 @@ lemma extendByZeroL2_eq_extendByZeroₗᵢ (hKm : MeasurableSet K)
         (p := (2 : ℝ≥0∞)) (s := K) hKm u)
   exact h1.trans h2.symm
 
-lemma norm_extendByZeroL2 (hKm : MeasurableSet K)
-    (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
+lemma norm_extendByZeroL2 :
     ‖extendByZeroL2 (E := E) (K := K) hKm u‖ = ‖u‖ := by
   classical
   let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
@@ -149,6 +150,8 @@ lemma norm_extendByZeroL2 (hKm : MeasurableSet K)
     _ = ‖u‖ :=
       (MeasureTheory.Lp.extendByZeroₗᵢ (μ := (volume : Measure E)) (E := ℝ) (p := (2 : ℝ≥0∞))
         (s := K) hKm).norm_map u
+
+end
 variable (ψ : E → ℝ)
 
 /-- Smoothing by convolution with a fixed kernel `ψ`, applied to the zero-extension from `K`. -/

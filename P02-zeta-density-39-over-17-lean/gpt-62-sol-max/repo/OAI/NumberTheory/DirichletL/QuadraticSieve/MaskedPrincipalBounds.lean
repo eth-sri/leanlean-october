@@ -8,77 +8,22 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical SchwartzMap
 namespace CanonicalQuadraticSieve
 
 section
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealMobiusDivisorSum
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealMobiusDivisorSum
 
 theorem middleTruncation_coprime_common_mask
     (G C : Ideal O) (hG : Squarefree G) (hC : Squarefree C) (hGC : IsCoprime G C)
@@ -131,7 +76,7 @@ theorem middleTruncation_coprime_common_mask
     rw [harg]
     push_cast
     ring
-  · simp only [hp, ite_false, mul_zero]
+  · simp [hp]
 
 theorem sqrt_norm_divisor_scale (M B q : ℝ) (hM : 0 ≤ M) (_hB : 0 ≤ B) (hq : 0 < q) :
     Real.sqrt (M / B) / q = Real.sqrt ((M / q ^ 2) / B) := by
@@ -250,7 +195,7 @@ theorem HasSieveExponent.original_masked_truncated_middle {α : ℝ} (hexp : Has
       rw [norm_mul]
       exact (mul_le_of_le_one_left (norm_nonneg _)
         (QuadraticInitialBound.norm_ideal_moebius_le_one q)).trans (hqbound q hq)
-    _ = _ := by simp only [Finset.sum_const, nsmul_eq_mul, V]
+    _ = _ := by simp [V]
 
 end
 
@@ -293,11 +238,6 @@ theorem HasSieveExponent.actual_principal_difference {α : ℝ} (hexp : HasSieve
       rw [mul_add, sqrt_div_mul_rpow M K α hM0 hK0]
 
 end CanonicalQuadraticSieve
-
-namespace ShortDraftDescent
-open MeasureTheory Filter
-
-end ShortDraftDescent
 
 open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
@@ -443,8 +383,7 @@ theorem HasSieveExponent.small_principal_correction {α : ℝ} (hexp : HasSieveE
       (dual_middle_scale_shape M F B N (D₁*D₂) U α hM hF (by linarith) (by linarith) hcut)
       (by positivity)
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 theorem truncationError_symmetric_bound (m : ℕ) :
     ∃ (s : Finset (ℕ × ℕ)) (C : ℝ), 0 < C ∧
@@ -486,8 +425,7 @@ theorem primePool_symmetric_error_bound (m : ℕ) :
   exact div_le_div_of_nonneg_right
     (mul_le_mul_of_nonneg_right (support_card_bound ε hε G hG) (by positivity)) (by positivity)
 
-open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson
-open TruncatedPrincipalPoisson IdealCoprimeSieveOperator
+open ActualEisensteinCubic ConcreteTraceCRT ConcretePrimeRowBridge EisensteinSchwartzPoisson TruncatedPrincipalPoisson IdealCoprimeSieveOperator
 
 theorem originalTerm_one_norm_le {m n p : Type*}
     (rows : m → Ideal O) (left : n → Ideal O) (right : p → Ideal O)
@@ -515,7 +453,7 @@ theorem actual_pair_error_energy {m n : Type*} [Fintype m] [Fintype n]
       Fintype.card m * Fintype.card n * E * ∑ j, ‖a j‖ ^ 2 := by
   classical
   have hcs := Finset.sum_mul_sq_le_sq_mul_sq Finset.univ (fun j : n => ‖a j‖) (fun _ => (1 : ℝ))
-  simp only [mul_one, one_pow, Finset.sum_const, Finset.card_univ, nsmul_eq_mul, mul_one] at hcs
+  simp at hcs
   have hs : (∑ j, ∑ k, ‖a j‖ * ‖a k‖ * E) = (∑ j, ‖a j‖) ^ 2 * E := by
     simp only [pow_two, Finset.sum_mul, Finset.mul_sum, mul_assoc]
     apply Finset.sum_congr rfl
@@ -541,7 +479,7 @@ theorem actual_pair_error_energy {m n : Type*} [Fintype m] [Fintype n]
       exact mul_le_mul (originalTerm_one_norm_le rows cols cols a a i j k) (herr i j k)
         (norm_nonneg _) (by positivity)
     _ = (Fintype.card m : ℝ) * ((∑ j, ‖a j‖) ^ 2 * E) := by
-      simp only [hs, Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+      simp [hs]
     _ ≤ (Fintype.card m : ℝ) * (((∑ j, ‖a j‖ ^ 2) * Fintype.card n) * E) := by gcongr
     _ = _ := by ring
 

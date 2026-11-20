@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Dictionary.InverseUniformSource
 public import OAI.NumberTheory.DirichletL.Descent.ClippedEnergy
 public import OAI.NumberTheory.DirichletL.Inversion.InitialEnergyCallerClipping
@@ -13,9 +14,7 @@ open scoped Classical BigOperators SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.DetectorDictionaryInverseClippedUniform
-open DetectorDictionaryInverseUniform HeckeInverseAmplification
-open InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier
-open ActualEisensteinCubic CompletedGauss
+open DetectorDictionaryInverseUniform HeckeInverseAmplification InverseMoment InverseInitialClippedColumns InverseInitialOverlapFourier ActualEisensteinCubic CompletedGauss
 local notation "O" => ActualEisensteinCubic.O
 
 theorem source_support (scaled reverse : Bool) (n : ℕ) (U tstar r σ t : ℝ) :
@@ -156,9 +155,9 @@ theorem familyDensity_moment (J : ℕ) :
 
 section Rows
 variable {ι ρ : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 end Rows
 

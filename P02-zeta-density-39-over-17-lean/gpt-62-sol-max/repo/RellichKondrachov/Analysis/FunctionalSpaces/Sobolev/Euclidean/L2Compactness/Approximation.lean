@@ -231,8 +231,11 @@ lemma norm_sq_translateL2_sub_extendByZeroL2_eq_integral_sq (t : E)
     exact h1.trans h2
   simpa [F, f] using hcalc
 
-private lemma kernelMeasure_le_smul_volume (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
-    (hψ0 : ∀ x, 0 ≤ ψ x) :
+section
+variable (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
+include hψc hψcs hψ0
+
+private lemma kernelMeasure_le_smul_volume :
     ∃ c : ℝ≥0∞, c ≠ ⊤ ∧ kernelMeasure (E := E) ψ ≤ c • (volume : Measure E) := by
   classical
   obtain ⟨C, hC⟩ := hψcs.exists_bound_of_continuous hψc
@@ -258,9 +261,7 @@ private lemma kernelMeasure_le_smul_volume (hψc : Continuous ψ) (hψcs : HasCo
   refine hle.trans ?_
   simp
 
-lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ)
-    (hψ0 : ∀ x, 0 ≤ ψ x) (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1) (hKm : MeasurableSet K)
+lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1) (hKm : MeasurableSet K)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) (x : E) :
     (smoothFun (E := E) (K := K) ψ u x - extendByZeroFun (E := E) (K := K) u x) ^ 2 ≤
       ∫ t,
@@ -334,7 +335,6 @@ lemma smoothFun_sub_extendByZeroFun_sq_le_integral_sq
   simpa [hdiff, μ, f] using hJ
 
 lemma norm_sq_smoothL2_sub_extendByZeroL2_le_integral_norm_sq_translateL2_sub_extendByZeroL2
-    (hψc : Continuous ψ) (hψcs : HasCompactSupport ψ) (hψ0 : ∀ x, 0 ≤ ψ x)
     (hψint : ∫ x, ψ x ∂(volume : Measure E) = 1)
     (u : MeasureTheory.Lp ℝ (2 : ℝ≥0∞) (volume.restrict K)) :
     ‖smoothL2 (E := E) (K := K) ψ hK hKm hψc hψcs u - extendByZeroL2 (E := E) (K := K) hKm u‖ ^ 2 ≤
@@ -516,6 +516,8 @@ lemma norm_sq_smoothL2_sub_extendByZeroL2_le_integral_norm_sq_translateL2_sub_ex
     exact this.trans_eq (hswap.trans hRHS_rewrite)
   -- Restore the original statement.
   simpa [S, F, μ] using hmain
+
+end
 
 end Volume
 

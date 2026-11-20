@@ -26,9 +26,11 @@ lemma selected_phase_identities (Q : ℝ) (eta v x w : ℂ)
   · unfold coordW
     rw [←mul_assoc,PrincipalSlotEstimate.unit_phase_inverse v hv,one_mul]
 
-lemma unramifiedSelected_error_bound (Q : ℝ) (A eta v x w z : ℂ)
-    (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖=1) (hv : ‖v‖=1)
-    (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
+section
+variable (Q : ℝ) (A eta v x w z : ℂ) (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖=1) (hv : ‖v‖=1) (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re)
+include Q A eta v x w z hQ hA heta hv hx hw hz
+
+lemma unramifiedSelected_error_bound :
     ‖unramifiedSelected Q A eta v x w z+unramifiedClosed Q A eta v x w z*star v‖≤720 := by
   have hQ0 : 0<Q := by linarith
   have hQ1 : 1≤Q := by linarith
@@ -50,9 +52,7 @@ lemma unramifiedSelected_error_bound (Q : ℝ) (A eta v x w z : ℂ)
     (by simpa using he.1) (by simpa using he.2) (by rw [norm_star,hv]) hi.1 hi.2
   simpa only [mul_one,unramifiedSelected,unramifiedClosed,unramifiedMarked] using hh
 
-lemma unramifiedSelected_bound (Q : ℝ) (A eta v x w z : ℂ)
-    (hQ : 4≤Q) (hA : ‖A‖≤1) (heta : ‖eta‖=1) (hv : ‖v‖=1)
-    (hx : (7/8:ℝ)≤x.re) (hw : (1/2:ℝ)≤w.re) (hz : (17/50:ℝ)≤z.re) :
+lemma unramifiedSelected_bound :
     ‖unramifiedSelected Q A eta v x w z‖≤961 := by
   have hd := unramifiedClosed_first_region_bound Q A eta v x w z (1/4) hQ hA heta.le hv.le
     (by norm_num) (by linarith) hz (by linarith) (by linarith)
@@ -68,6 +68,8 @@ lemma unramifiedSelected_bound (Q : ℝ) (A eta v x w z : ℂ)
     (unramifiedClosed Q A eta v x w z*star v)
   rw [add_sub_cancel_right,norm_mul,norm_star,hv,mul_one] at hh
   linarith
+
+end
 
 lemma unramifiedSelected_zero (Q : ℝ) (v x w z : ℂ) :
     unramifiedSelected Q 0 0 v x w z= -(Q:ℂ)^(-w)*(1-coordV Q z*coordW Q v w) := by

@@ -7,16 +7,3 @@ set_option linter.privateModule false
 
 @[expose] public section
 
-namespace OAI
-
-namespace SevenEighths.InverseMoment
-open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic RayFourExpansion
-open InversePrincipalEnergy InverseSecondPrincipalCaller
-noncomputable section
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
-end SevenEighths.InverseMoment
-
-end OAI

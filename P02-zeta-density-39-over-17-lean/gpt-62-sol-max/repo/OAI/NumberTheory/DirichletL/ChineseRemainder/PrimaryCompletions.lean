@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Cusp.WeylRepresentatives
 
 @[expose] public section
@@ -8,73 +9,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 namespace ShortDraftCRT
 open scoped BigOperators Classical Matrix MatrixGroups
@@ -201,7 +146,7 @@ local notation "Eis" => ActualEisensteinCubic.O
 theorem exists_primary_numerator_sector_completions {ι Q:Type*}
     (M c:Eis) (hc:c≠0) (h9M:(9:Eis)∣M)
     (sector:ι→Q) (a r:ι→Eis)
-    (haPrimary:∀i,lambda^2∣a i-1) (hrPrimary:∀i,lambda^2∣r i-1)
+    (haPrimary:OAI.PrincipalIdealFamily.PrimaryAt a lambda) (hrPrimary:OAI.PrincipalIdealFamily.PrimaryAt r lambda)
     (hcop:∀i,IsCoprime (a i) (c*r i)) (hr:∀i,IsCoprime (r i) (M*c))
     (ha:∀i j,sector i=sector j→M*c∣a i-a j)
     (hrr:∀i j,sector i=sector j→M∣r i-r j) :
@@ -239,7 +184,7 @@ theorem exists_primary_numerator_sector_completions {ι Q:Type*}
 
 theorem exists_primary_denominator_sector_completions {ι Q:Type*}
     (M c:Eis) (h9M:(9:Eis)∣M) (hcPrimary:lambda^2∣c-1)
-    (sector:ι→Q) (a r:ι→Eis) (hrPrimary:∀i,lambda^2∣r i-1)
+    (sector:ι→Q) (a r:ι→Eis) (hrPrimary:OAI.PrincipalIdealFamily.PrimaryAt r lambda)
     (hcop:∀i,IsCoprime (a i) (c*r i)) (hr:∀i,IsCoprime (r i) (M*c))
     (ha:∀i j,sector i=sector j→M*c∣a i-a j)
     (hrr:∀i j,sector i=sector j→M∣r i-r j) :
@@ -334,8 +279,7 @@ end CubicEisenstein
 open scoped Classical BigOperators
 
 namespace CanonicalRowCompletion
-open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge
-open UniqueFactorizationMonoid
+open ActualEisensteinCubic CanonicalQuadraticSieve ConcretePrimeRowBridge UniqueFactorizationMonoid
 local notation "Eis" => ActualEisensteinCubic.O
 
 def coprimalityMask (m:Eis) : Eis→*ℂ where
@@ -416,22 +360,21 @@ open scoped BigOperators Classical MatrixGroups Matrix
 namespace ShortDraftCusp
 
 section
-open ActualEisensteinCubic CubicKubota CubicEisenstein ConcreteTraceCRT CubicJacobiGlobal
-open CompletedGauss CanonicalRowCompletion
+open ActualEisensteinCubic CubicKubota CubicEisenstein ConcreteTraceCRT CubicJacobiGlobal CompletedGauss CanonicalRowCompletion
 local notation "Eis" => ActualEisensteinCubic.O
 
-theorem embedded_symbol_product {ι : Type*} [Fintype ι]
-    (p : ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hg : ∀i,lambda∉Ideal.span {p i}) (a : Eis) :
+section
+variable {ι : Type*} [instShared1 : Fintype ι] (p : ι→Eis) [instShared3 : OAI.PrincipalIdealFamily.Maximal p] (hg : OAI.PrincipalIdealFamily.Avoids p lambda) (a : Eis)
+include ι instShared1 p instShared3 hg a
+
+theorem embedded_symbol_product :
     eisEmbedding (symbol a (∏i,p i))=
       ∏i,(actualSextic (Ideal.span {p i}) (hg i) (Ideal.Quotient.mk _ a))^2 := by
   change eisEmbedding (idealSymbol (Ideal.span {∏i,p i}) a)=_
   rw [←idealRowHom_square,idealRowHom_product p hg Finset.univ a]
   simp only [ActualEisensteinCubic.finiteSquarefreeRow,actualSextic,Finset.prod_pow]
 
-theorem conjugate_symbol_product {ι : Type*} [Fintype ι]
-    (p : ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hg : ∀i,lambda∉Ideal.span {p i}) (a : Eis) :
+theorem conjugate_symbol_product :
     star (eisEmbedding (symbol a (∏i,p i)))=
       ∏i,(((actualSextic (Ideal.span {p i}) (hg i))⁻¹)^2)
         (Ideal.Quotient.mk _ a) := by
@@ -440,9 +383,7 @@ theorem conjugate_symbol_product {ι : Type*} [Fintype ι]
   intro i hi
   rw [star_pow,MulChar.star_apply',MulChar.pow_apply' _ (by decide : (2:ℕ)≠0)]
 
-theorem conjugate_symbol_product_frequency {ι : Type*} [Fintype ι]
-    (p : ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hg : ∀i,lambda∉Ideal.span {p i}) (a : Eis)
+theorem conjugate_symbol_product_frequency
     (σ : ∀i,(Eis⧸Ideal.span {p i})ˣ) (h : ∀i,Eis⧸Ideal.span {p i})
     (ha : ∀i,Ideal.Quotient.mk (Ideal.span {p i}) a=(σ i : Eis⧸Ideal.span {p i})*h i) :
     star (eisEmbedding (symbol a (∏i,p i)))=
@@ -450,6 +391,8 @@ theorem conjugate_symbol_product_frequency {ι : Type*} [Fintype ι]
         ((σ i : Eis⧸Ideal.span {p i})*h i) := by
   rw [conjugate_symbol_product p hg a]
   simp only [ha]
+
+end
 
 end
 
@@ -481,7 +424,7 @@ noncomputable local instance A4quotientFintype (P : Ideal Eis) [P.IsMaximal] :
     Fintype (Eis⧸P) := Fintype.ofFinite _
 
 lemma A4_active_local {ι : Type*} [Fintype ι] (p : ι→Eis)
-    [∀i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalIdealFamily.Maximal p]
     (a b c0 d : Eis) (hdet : a*d-b*(c0*∏i,p i)=1)
     (σ ε : ∀i,(Eis⧸Ideal.span {p i})ˣ) (h : ∀i,Eis⧸Ideal.span {p i})
     (ha : ∀i,Ideal.Quotient.mk (Ideal.span {p i}) a=(σ i:Eis⧸Ideal.span {p i})*h i)
@@ -503,7 +446,7 @@ lemma A4_active_local {ι : Type*} [Fintype ι] (p : ι→Eis)
   exact A4_field_inverse _ _ _ (σ i) (ε i) (h i) _ had (ha i) (hε i)
 
 lemma A4_complement_inverse {ι : Type*} [Fintype ι] (p : ι→Eis)
-    [∀i,(Ideal.span {p i}).IsMaximal]
+    [OAI.PrincipalIdealFamily.Maximal p]
     (c0 U w : Eis) (hbez : U*(∏i,p i)+(ramifiedTraceLambda^3*w)*c0=1)
     (i : ι) (v t : Eis) (hlocal : t*p i+v*cofactor p i=1) :
     (Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^3*c0*cofactor p i))⁻¹=

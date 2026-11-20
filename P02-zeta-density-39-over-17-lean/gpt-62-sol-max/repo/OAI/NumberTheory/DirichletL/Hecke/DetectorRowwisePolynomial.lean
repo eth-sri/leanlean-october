@@ -75,9 +75,11 @@ lemma power_freq_deriv (x σ freq : ℝ) (hx : 0<x) :
     simp only [id_eq]
     ring
 
-theorem polynomial_sigma_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (D σ freq : ℝ) (hD : 0<D) (S : Finset (Ideal O))
-    (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
+section
+variable (χ : Character) (inv : Bool) (W : ℝ→ℂ) (D σ freq : ℝ) (hD : 0<D) (S : Finset (Ideal O)) (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S)
+include χ inv W D σ freq hD S hc
+
+theorem polynomial_sigma_deriv :
     HasDerivAt (fun u => polynomial χ inv W D u freq)
       (-polynomial χ inv (logProfile W) D σ freq) σ := by
   simp_rw [polynomial_eq_finite χ inv W D _ _ S hc]
@@ -99,9 +101,7 @@ theorem polynomial_sigma_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   convert (HasDerivAt.sum (u:=S) hd).const_mul ((D : ℂ)^(-(1/2 : ℂ))) using 1
   all_goals simp only [Finset.sum_apply,neg_mul,Finset.sum_neg_distrib,mul_neg]
 
-theorem polynomial_freq_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
-    (D σ freq : ℝ) (hD : 0<D) (S : Finset (Ideal O))
-    (hc : ∀ J : Ideal O, J≠0 → W ((J.absNorm : ℝ)/D)≠0 → J∈S) :
+theorem polynomial_freq_deriv :
     HasDerivAt (fun u => polynomial χ inv W D σ u)
       (I*polynomial χ inv (logProfile W) D σ freq) freq := by
   simp_rw [polynomial_eq_finite χ inv W D _ _ S hc]
@@ -123,6 +123,8 @@ theorem polynomial_freq_deriv (χ : Character) (inv : Bool) (W : ℝ→ℂ)
   convert (HasDerivAt.sum (u:=S) hd).const_mul ((D : ℂ)^(-(1/2 : ℂ))) using 1
   all_goals simp only [Finset.sum_apply,←Finset.mul_sum]
   ring
+
+end
 
 theorem polynomial_continuous (χ : Character) (inv : Bool) (W : ℝ→ℂ)
     (D : ℝ) (hD : 0<D) (S : Finset (Ideal O))

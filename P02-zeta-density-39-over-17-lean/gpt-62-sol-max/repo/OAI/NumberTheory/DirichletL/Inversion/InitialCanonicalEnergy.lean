@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankMoments
 
 @[expose] public section
@@ -9,13 +10,12 @@ noncomputable section
 
 open scoped Classical BigOperators SchwartzMap
 namespace SevenEighths.InverseInitialCanonicalEnergy
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalQuadraticSieve
-open InverseMoment InverseInitialClippedColumns SecondPassArithmetic CanonicalCoefficientClass
+open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT CanonicalQuadraticSieve InverseMoment InverseInitialClippedColumns SecondPassArithmetic CanonicalCoefficientClass
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
-  (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 omit [DecidableEq σ] in
 theorem normalization_change (pool:Finset ι)(Ψ:O→*ℂ)(m:O)

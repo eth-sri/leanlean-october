@@ -29,7 +29,7 @@ theorem wooley_section10_first_loss_from_global
   rw [le_div_iff₀ hkR]
   have hnat : k * ((r + 1) * k ^ 2 * nu) ≤ k ^ 5 * nu := by
     have hrTop : r + 1 ≤ k := by omega
-    have hfirst : (r + 1) * (k ^ 2 * nu) ≤ k * (k ^ 2 * nu) :=
+    have hfirst :=
       Nat.mul_le_mul_right (k ^ 2 * nu) hrTop
     calc
       k * ((r + 1) * k ^ 2 * nu) ≤ k * (k * (k ^ 2 * nu)) :=
@@ -61,8 +61,7 @@ theorem wooley_section10_second_loss_from_global
   have hnat : k ^ 2 * (((k - rOne) + 1) * k ^ 2 * nu) ≤
       k ^ 5 * nu := by
     have hcoeff : k - rOne + 1 ≤ k := by omega
-    have hfirst : (k - rOne + 1) * (k ^ 2 * nu) ≤
-        k * (k ^ 2 * nu) := Nat.mul_le_mul_right (k ^ 2 * nu) hcoeff
+    have hfirst := Nat.mul_le_mul_right (k ^ 2 * nu) hcoeff
     calc
       k ^ 2 * ((k - rOne + 1) * k ^ 2 * nu) ≤
           k ^ 2 * (k * (k ^ 2 * nu)) :=
@@ -358,7 +357,7 @@ theorem wooleySection10NodeHierarchy_of_global
   have hmle : m ≤ N := hmN.le
   have hpow : k ^ (2 * m) ≤ k ^ (2 * N) :=
     Nat.pow_le_pow_right (by omega : 1 ≤ k) (by omega)
-  have hbCap : b ≤ k ^ (2 * N) * thetaNat :=
+  have hbCap :=
     hbUpper.trans (Nat.mul_le_mul_right thetaNat hpow)
   have hscaleNu : 4 * k ^ 3 * nu ≤ b := by
     exact_mod_cast hnuScale.trans hstateB
@@ -389,7 +388,7 @@ theorem wooleySection10NodeHierarchy_of_global
       (le_refl ((k * nu : ℕ) : ℝ))).trans hcurrentMargin
   have hsecond : tau * ((k ^ 2 * b : ℕ) : ℝ) +
       ((k * nu : ℕ) : ℝ) ≤ (b : ℝ) := by
-    have hnat : k ^ 2 * b ≤ k ^ 2 * (k ^ (2 * N) * thetaNat) :=
+    have hnat :=
       Nat.mul_le_mul_left (k ^ 2) hbCap
     have hnatR : ((k ^ 2 * b : ℕ) : ℝ) ≤
         ((k ^ 2 * (k ^ (2 * N) * thetaNat) : ℕ) : ℝ) := by
@@ -399,7 +398,7 @@ theorem wooleySection10NodeHierarchy_of_global
       (le_refl ((k * nu : ℕ) : ℝ))).trans
         (hsecondMargin.trans hstateB)
   have heps : ((k ^ 2 * b : ℕ) : ℝ) * epsilon ^ 2 < (nu : ℝ) := by
-    have hnat : k ^ 2 * b ≤ k ^ 2 * (k ^ (2 * N) * thetaNat) :=
+    have hnat :=
       Nat.mul_le_mul_left (k ^ 2) hbCap
     exact lt_of_le_of_lt
       (mul_le_mul_of_nonneg_right (by exact_mod_cast hnat) (sq_nonneg epsilon))
@@ -503,8 +502,7 @@ theorem wooleySourcePolynomial_iterationChain_of_hierarchy_ledger
       (show delta ≤ (k : ℝ) ^ 2 * delta by
         simpa only [one_mul] using mul_le_mul_of_nonneg_right hkSq hdelta).trans
           hdeltaOne
-    have hscaled : delta * (thetaNat : ℝ) ≤
-        1 * (thetaNat : ℝ) :=
+    have hscaled :=
       mul_le_mul_of_nonneg_right hdeltaLe (Nat.cast_nonneg thetaNat)
     simpa only [one_mul] using hscaled
   · simpa [mul_assoc] using

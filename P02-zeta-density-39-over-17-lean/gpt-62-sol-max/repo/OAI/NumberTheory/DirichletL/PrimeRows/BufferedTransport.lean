@@ -34,8 +34,6 @@ lemma height_slab_integral_wzx (f : HeightSpace→ℂ) (H : ℝ) (hH : 0≤H)
   rw [heq,integral_indicator measurableSet_Icc,integral_Icc_eq_integral_Ioc,
     intervalIntegral.integral_of_le (by linarith)]
 
-variable {ι : Type*} [Fintype ι]
-
 end SevenEighths.ProbeHighRowFamily
 
 end

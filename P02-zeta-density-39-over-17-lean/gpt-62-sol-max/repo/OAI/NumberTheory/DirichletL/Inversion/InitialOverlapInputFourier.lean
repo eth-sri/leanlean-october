@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapFourier
 public import OAI.NumberTheory.DirichletL.Inversion.InitialRayAttachment
 public import OAI.NumberTheory.DirichletL.Descent.SecondSeparatedColumns
@@ -10,14 +11,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
-open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic
-open FirstPassCubeLabels
+open MeasureTheory FourierBridge ActualEisensteinCubic FirstCauchyArithmetic SecondPassArithmetic FirstPassCubeLabels
 namespace SevenEighths.InverseInitialOverlapInputFourier
 open InverseMoment InverseInitialOverlapFourier InverseInitialArithmetic InverseInitialRayAttachment
 local notation "Eis"=>ActualEisensteinCubic.O
 variable {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
-  (p : ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-  (hg : ∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→Eis) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 theorem input_integral (F : Finset ι) (Ψ : Eis→*ℂ) (j u : Eis)
     (H : Finset ι→ℝ→ℂ) (hH : ∀A∈F.powerset,Integrable (H A)) :

@@ -63,8 +63,7 @@ theorem wooleyBoxSourceSequence_massSq {Q : ℕ} (gamma : Fin Q → ℂ) :
   apply Finset.sum_subset (by simp)
   intro n hn hnot
   have hnzero : gamma n = 0 := by
-    simpa only [Finset.mem_filter, Finset.mem_univ, true_and,
-      not_ne_iff] using hnot
+    simpa [not_ne_iff] using hnot
   simp [hnzero]
 
 /-- Residue `L²` masses agree under the box embedding. -/
@@ -139,8 +138,7 @@ theorem wooleySourcePolynomialSum_box
   apply Finset.sum_subset (by simp)
   intro n hn hnot
   have hnzero : gamma n = 0 := by
-    simpa only [Finset.mem_filter, Finset.mem_univ, true_and,
-      not_ne_iff] using hnot
+    simpa [not_ne_iff] using hnot
   simp [hnzero]
 
 /-- General polynomial-system version of the residue-sum bridge. -/
@@ -240,8 +238,7 @@ theorem wooleySourcePolynomialSum_box_monomial
   apply Finset.sum_subset (by simp)
   intro n hn hnot
   have hnzero : gamma n = 0 := by
-    simpa only [Finset.mem_filter, Finset.mem_univ, true_and,
-      not_ne_iff] using hnot
+    simpa [not_ne_iff] using hnot
   simp [hnzero]
 
 /-- Residue exponential sums agree under the box embedding. -/

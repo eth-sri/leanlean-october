@@ -13,13 +13,15 @@ namespace SevenEighths.ProbePhysical
 def gaussianWeightedMoment (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
     (J : ℕ) (k R : ℝ) : ℝ := R^k*gaussianJointMoment V hV J R
 
-lemma gaussianWeightedMoment_nonneg (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
-    (J : ℕ) (k R : ℝ) (hR : 0≤R) : 0≤gaussianWeightedMoment V hV J k R := by
+section
+variable (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ)) (J : ℕ)
+include V hV J
+
+lemma gaussianWeightedMoment_nonneg (k R : ℝ) (hR : 0≤R) : 0≤gaussianWeightedMoment V hV J k R := by
   unfold gaussianWeightedMoment
   exact mul_nonneg (Real.rpow_nonneg hR _) (gaussianJointMoment_nonneg V hV J R)
 
-lemma gaussianWeightedMoment_power_bound (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
-    (J : ℕ) (k A : ℝ) :
+lemma gaussianWeightedMoment_power_bound (k A : ℝ) :
     ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→gaussianWeightedMoment V hV J k R≤C*R^(-A) := by
   obtain ⟨C,hC,hb⟩ := gaussianJointMoment_power_bound V hV J (A+k)
   refine ⟨C,hC,?_⟩
@@ -33,8 +35,7 @@ lemma gaussianWeightedMoment_power_bound (V : SchwartzMap ℝ ℂ) (hV : HasComp
       congr 2
       ring
 
-lemma gaussianWeightedMoment_polynomial_decay (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (J : ℕ) (k : ℝ) (N : ℕ) :
+lemma gaussianWeightedMoment_polynomial_decay (k : ℝ) (N : ℕ) :
     ∃C : ℝ,0<C ∧ ∀R : ℝ,0<R→gaussianWeightedMoment V hV J k R≤C/(1+R)^N := by
   obtain ⟨B,hB,hzero⟩ := gaussianWeightedMoment_power_bound V hV J k 0
   obtain ⟨C,hC,hdecay⟩ := gaussianWeightedMoment_power_bound V hV J k (N:ℝ)
@@ -61,8 +62,7 @@ lemma gaussianWeightedMoment_polynomial_decay (V : SchwartzMap ℝ ℂ)
     rw [he] at hm
     exact hm.trans (by nlinarith [mul_nonneg hB.le (pow_nonneg (by norm_num : (0:ℝ)≤2) N)])
 
-theorem gaussianWeightedMoment_summed (V : SchwartzMap ℝ ℂ)
-    (hV : HasCompactSupport (V:ℝ→ℂ)) (J : ℕ) (k s : ℝ) (hs : 0<s) :
+theorem gaussianWeightedMoment_summed (k s : ℝ) (hs : 0<s) :
     ∃C : ℝ,0<C ∧ ∀Z : ℝ,0<Z→
       Summable (fun j : ℕ=>((2:ℝ)^j)^s*gaussianWeightedMoment V hV J k ((2:ℝ)^j/Z)) ∧
       (∑'j : ℕ,((2:ℝ)^j)^s*gaussianWeightedMoment V hV J k ((2:ℝ)^j/Z))≤C*Z^s := by
@@ -86,6 +86,8 @@ theorem gaussianWeightedMoment_summed (V : SchwartzMap ℝ ℂ)
     _ = B*∑'j : ℕ,CompletedDyadic.kernelTerm Z⁻¹ s (N:ℝ) j := tsum_mul_left
     _ ≤ B*(C*(Z⁻¹)^(-s)) := mul_le_mul_of_nonneg_left hkt hB.le
     _ = (B*C)*Z^s := by rw [Real.inv_rpow hZ.le,Real.rpow_neg hZ.le,inv_inv]; ring
+
+end
 
 def gaussianRemoteMoment (V : SchwartzMap ℝ ℂ) (hV : HasCompactSupport (V:ℝ→ℂ))
     (J : ℕ) (s Z A : ℝ) (j : ℕ) : ℝ :=

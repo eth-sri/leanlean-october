@@ -1,6 +1,7 @@
 module
-public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileFiltered
+public import OAI.NumberTheory.DirichletL.Descent.FirstGlobalPush
 public import OAI.NumberTheory.DirichletL.Descent.FirstHeightBudget
+public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileUniform
 
 @[expose] public section
 
@@ -8,8 +9,7 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open JointLogSeparation FourierBridge MeasureTheory
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion JointLogSeparation FourierBridge MeasureTheory
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 open InverseMomentFirstProfileUniform InverseAmbientProfileTower
@@ -76,8 +76,9 @@ theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
       ((Γ*Kpush*Y^ε*Benergy)*(Cprofile*((1+‖θ₁‖)^InverseClippingProfiles.momentOrder J *
           (1+‖θ₂‖)^InverseClippingProfiles.momentOrder J) /
           (1+K*s 6/(s 3*s 4*(s 5)^2*s 7*s 8))^Aker)) := by
-  obtain ⟨Cprofile,Kpush,hCprofile,hKpush,he⟩:=actual_first_original_subset_two_energies ε hε
+  obtain ⟨Cprofile,hCprofile,hprofile⟩ := actual_first_moving_family_two_energies_uniform
     U₀ g₁ g₂ Φ M₀ B₀ m₁ m₂ bcap hM hB₀ hU hg₁ hg₂ Aker J
+  obtain ⟨Kpush,hKpush,hpush⟩ := first_global_retained_push_uniform ε hε
   refine ⟨Cprofile,Kpush,hCprofile,hKpush,?_⟩
   intro ι κ _ _ p hp _ hg hinj hcop hc hpr F outer b common Ψ₁ Ψ₂ mleft mright dd H₁ H₂ selector labels a Γ Y
     hΨ₁ hΨ₂ hΓ hY hlabels hn ha ω₁ ω₂ ρ c₁ c₂ θ₁ θ₂ A₁ A₂ C R K L hK s hs selected hselected
@@ -87,16 +88,58 @@ theorem actual_first_original_subset_physical_budget (ε : ℝ) (hε : 0<ε)
   let P₂:=Z^(firstKappa M r ell V delta aa₂ bb rr)*Real.exp ((9/2:ℝ)*(eta*Real.log Z))
   have hp₁:0<P₁:=by dsimp [P₁];positivity
   have hp₂:0<P₂:=by dsimp [P₂];positivity
-  have hb:=he p hp hg hinj hcop hc hpr F outer b common Ψ₁ Ψ₂ mleft mright dd H₁ H₂ selector labels a Γ Y
-    hΨ₁ hΨ₂ hΓ hY hlabels hn ha ω₁ ω₂ ρ c₁ c₂ θ₁ θ₂ A₁ A₂ C R K L hK s hs selected hselected
-    hpos hρ hc₁ hc₂ hc₁b hc₂b hL hω₁ hω₂ hcut (Benergy/P₁) (Benergy/P₂) (by positivity) (by positivity)
-    (by intro z;rw [div_mul_eq_mul_div];apply (le_div_iff₀ hp₁).mpr;convert hleft z using 1 ; dsimp only [P₁] ; ring)
-    (by intro z;rw [div_mul_eq_mul_div];apply (le_div_iff₀ hp₂).mpr;convert hright z using 1 ; dsimp only [P₂] ; ring)
-  have hroot:Real.sqrt (Benergy/P₁)*Real.sqrt (Benergy/P₂)=Benergy*(Real.sqrt P₁⁻¹*Real.sqrt P₂⁻¹):=by
-    simp only [div_eq_mul_inv,Real.sqrt_mul hBenergy]
+  let G := Γ*Kpush*Y^ε
+  let B₁ := Benergy/P₁
+  let B₂ := Benergy/P₂
+  have hG : 0 ≤ G := by dsimp [G]; positivity
+  have hB₁ : 0 ≤ G*B₁ := by dsimp [B₁]; positivity
+  have hB₂ : 0 ≤ G*B₂ := by dsimp [B₂]; positivity
+  have hmono (coef : (Σ _ : κ,Ideal Eis×Eis)→Finset ι→ℂ) (sign : Bool) ω X t :
+      firstFamilyEnergy p hg source F (fun x=>selector x.1) coef w sign ω X t (fun x=>x.2.2) ≤
+      firstFamilyEnergy p hg (firstGlobalRetainedSource p outer labels b Y) F (fun x=>selector x.1)
+        coef w sign ω X t (fun x=>x.2.2) := by
+    unfold firstFamilyEnergy
+    exact Finset.sum_le_sum_of_subset_of_nonneg hselected (fun x hx hn=>
+      mul_nonneg (norm_nonneg _) (firstBlockEnergy_nonneg p hg _ _ _ _ _ _ _ _))
+  have hb := hprofile p hp hg source F (fun x=>selector x.1) C₁ C₂ w ω₁ ω₂ ρ c₁ c₂ θ₁ θ₂
+    A₁ A₂ C R K L hK (fun x=>dd x.1) (fun x=>x.2.2) s hpos hs hρ hc₁ hc₂ hc₁b hc₂b hL
+    hω₁ hω₂ hcut (G*B₁) (G*B₂) hB₁ hB₂
+    (by
+      intro z
+      have he := hpush p hp hinj hcop hg hc hpr F outer b common Ψ₁ Ψ₂ mleft mright dd
+        labels a Γ Y hΨ₁ hΨ₂ hΓ hY hlabels hn ha true H₁ selector ω₁ (s 7)
+        (profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2 7) (hs 7)
+      simp only [ite_true,] at he
+      apply ((hmono C₁ true ω₁ (s 7) _).trans he).trans
+      change G * _ ≤ (G*B₁) * _
+      rw [mul_assoc G B₁]
+      apply mul_le_mul_of_nonneg_left _ hG
+      dsimp only [B₁]
+      rw [div_mul_eq_mul_div]
+      apply (le_div_iff₀ hp₁).mpr
+      convert hleft z using 1 <;> dsimp only [P₁] <;> simp only [mul_comm, mul_left_comm, mul_assoc])
+    (by
+      intro z
+      have he := hpush p hp hinj hcop hg hc hpr F outer b common Ψ₁ Ψ₂ mleft mright dd
+        labels a Γ Y hΨ₁ hΨ₂ hΓ hY hlabels hn ha false H₂ selector ω₂ (s 8)
+        (profileHeight firstLeftSlope firstRightSlope firstKernelSlope z.1 z.2 8) (hs 8)
+      simp only [ite_false,Bool.false_eq_true] at he
+      apply ((hmono C₂ false ω₂ (s 8) _).trans he).trans
+      change G * _ ≤ (G*B₂) * _
+      rw [mul_assoc G B₂]
+      apply mul_le_mul_of_nonneg_left _ hG
+      dsimp only [B₂]
+      rw [div_mul_eq_mul_div]
+      apply (le_div_iff₀ hp₂).mpr
+      convert hright z using 1 <;> dsimp only [P₂] <;> simp only [mul_comm, mul_left_comm, mul_assoc])
+  have hsqrt (U : ℝ) : Real.sqrt (G*(Benergy/U)) = Real.sqrt (G*Benergy) * Real.sqrt U⁻¹ := by
+    rw [div_eq_mul_inv, ← mul_assoc, Real.sqrt_mul (mul_nonneg hG hBenergy)]
+  have hroot : Real.sqrt (G*B₁)*Real.sqrt (G*B₂) =
+      (Γ*Kpush*Y^ε*Benergy)*(Real.sqrt P₁⁻¹*Real.sqrt P₂⁻¹) := by
+    rw [show G*B₁ = G*(Benergy/P₁) from rfl, show G*B₂ = G*(Benergy/P₂) from rfl, hsqrt, hsqrt]
     calc
-      _=(Real.sqrt Benergy)^2*(Real.sqrt P₁⁻¹*Real.sqrt P₂⁻¹):=by ring
-      _= _:=by rw [Real.sq_sqrt hBenergy]
+      _ = (Real.sqrt (G*Benergy))^2*(Real.sqrt P₁⁻¹*Real.sqrt P₂⁻¹) := by ring
+      _ = _ := by rw [Real.sq_sqrt (mul_nonneg hG hBenergy)]
   rw [hroot] at hb
   have hcancel:(Z^(-r-2*ell-V)*Z^M/firstRootScale s)*Real.exp ((9/2:ℝ)*L)*
       (Real.sqrt P₁⁻¹*Real.sqrt P₂⁻¹)=1:=by

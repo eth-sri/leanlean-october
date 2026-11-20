@@ -9,12 +9,13 @@ open MeasureTheory Set
 open scoped ContDiff
 namespace GuthMaynard.Improvement
 
+section
+variable {a : ℝ → ℂ} (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hlu : l ≤ u) (hs : ∀ r, r ∉ Icc l u → a r = 0) (v₀ v₁ y₀ y₁ : ℝ) (hv : v₀ ≤ v₁) (hy : y₀ ≤ y₁)
+include a ha l u hlu hs v₀ v₁ y₀ y₁ hv hy
+
 /-- Actual complex masked far sum; all three measurable masks vary after
 the constant. The full L cubed and exact integer mode count are retained. -/
-theorem masked_radial_truncated_discard_bound {a : ℝ → ℂ}
-    (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hlu : l ≤ u)
-    (hs : ∀ r, r ∉ Icc l u → a r = 0)
-    (v₀ v₁ y₀ y₁ : ℝ) (hv : v₀ ≤ v₁) (hy : y₀ ≤ y₁) (n : ℕ) :
+theorem masked_radial_truncated_discard_bound (n : ℕ) :
     ∃ D : ℝ, 0 < D ∧ ∀ (L H U : ℝ) (S : Finset (ℤ × (ℤ × ℤ)))
       (μ : ℝ → ℝ) (A B C : Set ℝ),
       0 < H → 1 ≤ U → S ⊆ cubicModes U →
@@ -39,10 +40,7 @@ theorem masked_radial_truncated_discard_bound {a : ℝ → ℂ}
 /-- The actual masked discarded complex sum is uniformly negligible.
 The decay order is fixed from eta before the constant and before every
 scale, mode set, measurable mask, support interval, and time density. -/
-theorem masked_radial_discard_negligible {a : ℝ → ℂ}
-    (ha : ContDiff ℝ ∞ a) {l u : ℝ} (hlu : l ≤ u)
-    (hs : ∀ r, r ∉ Icc l u → a r = 0)
-    (v₀ v₁ y₀ y₁ : ℝ) (hv : v₀ ≤ v₁) (hy : y₀ ≤ y₁)
+theorem masked_radial_discard_negligible
     {η : ℝ} (hη : 0 < η) :
     ∃ D : ℝ, 0 < D ∧ ∀ (T L t₀ t₁ : ℝ) (S : Finset (ℤ × (ℤ × ℤ)))
       (μ : ℝ → ℝ) (A B C : Set ℝ),
@@ -82,5 +80,7 @@ theorem masked_radial_discard_negligible {a : ℝ → ℂ}
       rw [← he]
       ring
     _ ≤ _ := by gcongr; exact hn T hT
+
+end
 
 end GuthMaynard.Improvement

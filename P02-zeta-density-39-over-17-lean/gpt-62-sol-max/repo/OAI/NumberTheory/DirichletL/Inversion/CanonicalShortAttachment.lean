@@ -11,8 +11,7 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical ContDiff
 namespace SevenEighths.InverseCanonicalShortAttachment
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge
-open CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve InverseMoment InverseReflectedPhase InverseTerminalWidths CompletedHeight
 local notation "Eis" => ActualEisensteinCubic.O
 universe u v
 

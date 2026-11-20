@@ -8,20 +8,13 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
 open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
 
 namespace ActualEisensteinCubic
 
@@ -219,7 +212,11 @@ private theorem dualAmp_norm_fixed (η a b : ℝ) (z : ℤ × ℤ) :
   rw [norm_mul, Complex.norm_exp_I_mul_ofReal, mul_one, Complex.norm_real]
   exact abs_of_nonneg (Real.exp_pos _).le
 
-private theorem dualAmp_summable {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
+section
+variable {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b)
+include η a b hη hq
+
+private theorem dualAmp_summable :
     Summable (dualAmp η a b) := by
   have hr : 0 < r η a b := r_pos hη hq
   have ht : 0 < η * q a b / (4 * r η a b) := by positivity
@@ -227,18 +224,17 @@ private theorem dualAmp_summable {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) 
   funext z
   exact dualAmp_eq_realGauss η a b z
 
-private theorem dualVar_summable {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
+private theorem dualVar_summable :
     Summable (dualVarTerm η a b) :=
   (dualAmp_summable hη hq).of_norm_bounded
     (fun z => le_of_eq (dualAmp_norm_var η a b z))
 
-private theorem dualFixed_summable {η a b : ℝ} (hη : 0 < η) (hq : 0 < q a b) :
+private theorem dualFixed_summable :
     Summable (dualFixedTerm η a b) :=
   (dualAmp_summable hη hq).of_norm_bounded
     (fun z => le_of_eq (dualAmp_norm_fixed η a b z))
 
-private theorem dualAmp_le_small {η a b : ℝ}
-    (hη : 0 < η) (hq : 0 < q a b) (hrle : r η a b ≤ 2)
+private theorem dualAmp_le_small (hrle : r η a b ≤ 2)
     (z : ℤ × ℤ) :
     dualAmp η a b z ≤ dualRealGauss (η * q a b / 8) z := by
   have hr : 0 < r η a b := r_pos hη hq
@@ -252,6 +248,8 @@ private theorem dualAmp_le_small {η a b : ℝ}
   have hm := mul_le_mul_of_nonneg_right ht
     (mul_nonneg Real.pi_pos.le (dualQ_nonneg z))
   nlinarith [hm]
+
+end
 
 noncomputable def phaseErrorConstant (a b : ℝ) : ℝ :=
   (Real.pi / 2) * phaseBoundConstant a b * phaseA a b

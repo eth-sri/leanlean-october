@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Inversion.InitialOverlapFourier
 public import OAI.NumberTheory.DirichletL.Inversion.InitialClippedColumns
 public import OAI.NumberTheory.DirichletL.Inversion.SecondChildWindows
@@ -12,8 +13,7 @@ open scoped BigOperators Classical SchwartzMap FourierTransform ContDiff
 open MeasureTheory FourierBridge
 
 namespace SevenEighths.InverseMoment
-open InverseInitialClippedColumns InverseInitialOverlapFourier SecondPassIntegration JointLogSeparation
-open ActualEisensteinCubic FirstPassCubeLabels CompletedGauss
+open InverseInitialClippedColumns InverseInitialOverlapFourier SecondPassIntegration JointLogSeparation ActualEisensteinCubic FirstPassCubeLabels CompletedGauss
 local notation "O"=>ActualEisensteinCubic.O
 
 theorem clipped_fixed_window (W:ℝ→ℂ) (lo hi b:ℝ) (hlo:0<lo) (hb:1≤b)
@@ -70,13 +70,15 @@ theorem clipped_test_fourier (W:ℝ→ℂ) (lo hi:ℝ) (hlo:0<lo)
     _= _:=by ring
 
 variable {ι σ:Type*}[DecidableEq ι]
-  (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-  (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+  (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+
+section
+variable (hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda) (pool:Finset ι) (Ψ:O→*ℂ) (m f k:O) (slots:Finset σ) (lists:σ→Finset ι) (a:σ→ι→ℂ)
+include hpr pool Ψ m f k slots lists a
 
 theorem canonical_clipped_mode_integrable
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(m f k:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (g:𝓢(ℝ,ℂ))(wFresh:ℝ→ℂ)(c θ X:ℝ):
     Integrable (fun t:ℝ=>density g (Real.log c) t*
       finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a (childLogTest wFresh (θ+t)) X):=by
@@ -92,8 +94,6 @@ theorem canonical_clipped_mode_integrable
   ring
 
 theorem canonical_clipped_fourier
-    (hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
-    (pool:Finset ι)(Ψ:O→*ℂ)(m f k:O)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)
     (W:ℝ→ℂ)(lo hi:ℝ)(hlo:0<lo)(hs:Function.support W⊆Set.Icc lo hi)(hW:ContDiff ℝ ∞ W)
     (wFresh:ℝ→ℂ)(c θ X:ℝ)(hc:0<c)(hX:0<X)(hwFresh:∀y,0<y→wFresh y*W (c*y)=W (c*y)):
     finiteCanonicalMarkedRow p hp hcop hg pool Ψ m f k slots lists a (clippedTest W c θ) X=
@@ -121,6 +121,8 @@ theorem canonical_clipped_fourier
   apply integral_congr_ae
   filter_upwards with t
   ring
+
+end
 
 end SevenEighths.InverseMoment
 

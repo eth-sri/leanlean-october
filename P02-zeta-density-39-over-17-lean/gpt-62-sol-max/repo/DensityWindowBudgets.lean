@@ -3,7 +3,8 @@ public import FiniteCubicLargeValues
 public import DiscreteAdditiveEnergy
 public import GuthMaynard.Improvement.MomentScalarClosure
 public import GuthMaynard.Improvement.WeakShortDensity
-public import RefinedDensity
+
+public import DensityDetectorWindows
 
 @[expose] public section
 
@@ -12,29 +13,6 @@ noncomputable section
 open MeasureTheory Set Finset
 namespace Montgomery.RationalMoment
 open GuthMaynard.Improvement
-
-/-- Pure parameter conditions for the actual two-term-energy route. None
-of these fields is an assumed analytic estimate or a counting conclusion. -/
-structure TwoTermWindow (σ a p α : ℝ) : Prop where
-  sigma_low : 9/13 ≤ σ
-  sigma_high : σ ≤ 3/4
-  a_low : 7/10 ≤ a
-  a_high : a ≤ 4/5
-  p_low : 3/5 ≤ p
-  alpha_low : a ≤ α
-  alpha_high : α ≤ 1
-  p_identity : p=3*a*(1-σ)
-  mean_identity : 1+α*(1-2*σ)=p
-  energy_range : 2*(1-a) ≤ p
-  amplifier_lower : 0 ≤ p+α*(6*σ-5)
-  cubic_lower : 4/5 ≤ p+a*(6*σ-4)
-  amplifier_upper : p+α*(6*σ-4) ≤ 1
-  cubic_balance : 2 ≤ 5*p/2+a*(12*σ-8)
-  energy_first : 1+α*(6-8*σ) ≤ 2*p
-  energy_resonant : 1+a*(9/2-7*σ) ≤ p
-  typeII : 2-2*σ+1/25 ≤ p
-
-def twoTermA (σ : ℝ) : ℝ := if σ ≤ 5/7 then 2/(8*σ-3) else 4/(9*σ-1)
 
 /-- A direct multiplier choice works throughout the full lower detecting
 window; no logarithmic length parametrization or finite sampling is used. -/

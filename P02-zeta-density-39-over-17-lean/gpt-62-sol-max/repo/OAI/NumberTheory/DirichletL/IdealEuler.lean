@@ -39,8 +39,11 @@ def series (a : Ideal O →*₀ ℂ) (s : ℂ) : ℂ := ∑' I : Ideal O, weight
 def inverseSeries (a : Ideal O →*₀ ℂ) (s : ℂ) : ℂ :=
   ∑' I : Ideal O, (moebius I : ℂ) * weighted a s I
 
-theorem weighted_summable_norm (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) : Summable (fun I : Ideal O => ‖weighted a s I‖) := by
+section
+variable (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1) (s : ℂ) (hs : 1 < s.re)
+include a ha s hs
+
+theorem weighted_summable_norm : Summable (fun I : Ideal O => ‖weighted a s I‖) := by
   apply (CubicEisenstein.fullIdealWeight_summable_norm s hs).of_nonneg_of_le
     (fun _ => norm_nonneg _)
   intro I
@@ -48,16 +51,14 @@ theorem weighted_summable_norm (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ 
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (ha I)
 
-theorem inverse_summable_norm (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) :
+theorem inverse_summable_norm :
     Summable (fun I : Ideal O => ‖(moebius I : ℂ) * weighted a s I‖) := by
   apply (weighted_summable_norm a ha s hs).of_nonneg_of_le (fun _ => norm_nonneg _)
   intro I
   rw [norm_mul]
   exact mul_le_of_le_one_left (norm_nonneg _) (CubicEisenstein.norm_ideal_moebius_le_one I)
 
-theorem inverseSeries_mul_series (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) : inverseSeries a s * series a s = 1 := by
+theorem inverseSeries_mul_series : inverseSeries a s * series a s = 1 := by
   let f := weighted a s
   let F : Ideal O × Ideal O → ℂ := fun p => (moebius p.1 : ℂ) * f (p.1 * p.2)
   have hprod := (inverse_summable_norm a ha s hs).mul_norm (weighted_summable_norm a ha s hs)
@@ -71,7 +72,7 @@ theorem inverseSeries_mul_series (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I�
     by_cases hB : B = 0
     · subst B
       have hz (p : MulFiber 0) : F p.1 = 0 := by simp only [F, p.2, map_zero, mul_zero]
-      simp only [hz, tsum_zero, zero_ne_one, ite_false]
+      simp [hz]
     · calc
         _ = (∑' p : MulFiber B, (moebius p.1.1 : ℂ)) * f B := by
           rw [← tsum_mul_right]
@@ -97,19 +98,19 @@ theorem inverseSeries_mul_series (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I�
       ring
     _ = 1 := hFone
 
-theorem series_ne_zero (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) : series a s ≠ 0 := by
+theorem series_ne_zero : series a s ≠ 0 := by
   intro hz
   have h := inverseSeries_mul_series a ha s hs
   rw [hz, mul_zero] at h
   exact zero_ne_one h
 
-theorem inverseSeries_eq_inv (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) : inverseSeries a s = (series a s)⁻¹ := by
+theorem inverseSeries_eq_inv : inverseSeries a s = (series a s)⁻¹ := by
   calc
     _ = (inverseSeries a s * series a s) * (series a s)⁻¹ := by
       rw [mul_assoc, mul_inv_cancel₀ (series_ne_zero a ha s hs), mul_one]
     _ = _ := by rw [inverseSeries_mul_series a ha s hs, one_mul]
+
+end
 
 theorem primeValueHom_eq (f : Ideal O →*₀ ℂ) : CanonicalRowCompletion.primeValueHom f = f := by
   ext I
@@ -120,12 +121,14 @@ theorem primeValueHom_eq (f : Ideal O →*₀ ℂ) : CanonicalRowCompletion.prim
     simp only [hI, ite_false]
     rw [← map_multiset_prod, prod_normalizedFactors_eq hI, normalize_eq]
 
-theorem prime_summable_norm (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) : Summable (fun P : PrimeIdeal => ‖weighted a s P.val‖) :=
+section
+variable (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1) (s : ℂ)
+include a ha s
+
+theorem prime_summable_norm (hs : 1 < s.re) : Summable (fun P : PrimeIdeal => ‖weighted a s P.val‖) :=
   (weighted_summable_norm a ha s hs).comp_injective Subtype.val_injective
 
-theorem prime_norm_lt_one (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 0 < s.re) (P : PrimeIdeal) : ‖weighted a s P.val‖ < 1 := by
+theorem prime_norm_lt_one (hs : 0 < s.re) (P : PrimeIdeal) : ‖weighted a s P.val‖ < 1 := by
   change ‖a P.val * CubicEisenstein.fullIdealWeight s P.val‖ < 1
   simp only [CubicEisenstein.fullIdealWeight, P.property.ne_zero, ite_false, norm_mul]
   change ‖a P.val‖ * ‖SmoothMobiusCorrection.primeNormPower P s‖ < 1
@@ -135,19 +138,16 @@ theorem prime_norm_lt_one (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1
     (by have h := SmoothMobiusCorrection.prime_norm_two_le P
         exact_mod_cast (by omega : 1 < Ideal.absNorm P.val)) (by simpa using neg_neg_of_pos hs)
 
-theorem local_factor_ne_zero (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 0 < s.re) (P : PrimeIdeal) : 1 - weighted a s P.val ≠ 0 :=
+theorem local_factor_ne_zero (hs : 0 < s.re) (P : PrimeIdeal) : 1 - weighted a s P.val ≠ 0 :=
   SmoothMobiusCorrection.one_sub_ne_zero (prime_norm_lt_one a ha s hs P)
 
-theorem inverseSeries_euler (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) :
+theorem inverseSeries_euler (hs : 1 < s.re) :
     inverseSeries a s = ∏' P : PrimeIdeal, (1 - weighted a s P.val) := by
   have h := SmoothMobiusCorrection.mobiusPrimeCoeff_euler (weighted a s)
     (prime_summable_norm a ha s hs)
   simpa only [SmoothMobiusCorrection.mobiusPrimeCoeff, primeValueHom_eq, inverseSeries] using h
 
-theorem euler_hasProd (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) :
+theorem euler_hasProd (hs : 1 < s.re) :
     HasProd (fun P : PrimeIdeal => (1 - weighted a s P.val)⁻¹) (series a s) := by
   have hm : Multipliable (fun P : PrimeIdeal => 1 - weighted a s P.val) := by
     simpa only [sub_eq_add_neg] using multipliable_one_add_of_summable
@@ -160,10 +160,11 @@ theorem euler_hasProd (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
     exact inv_ne_zero (series_ne_zero a ha s hs)
   simpa only [heq, inv_inv] using hm.hasProd.inv₀ hne
 
-theorem series_euler (a : Ideal O →*₀ ℂ) (ha : ∀ I, ‖a I‖ ≤ 1)
-    (s : ℂ) (hs : 1 < s.re) :
+theorem series_euler (hs : 1 < s.re) :
     series a s = ∏' P : PrimeIdeal, (1 - weighted a s P.val)⁻¹ :=
   (euler_hasProd a ha s hs).tprod_eq.symm
+
+end
 
 def deletePrimes (S : Finset PrimeIdeal) (a : Ideal O →*₀ ℂ) : Ideal O →*₀ ℂ :=
   CanonicalRowCompletion.primeValueHom
@@ -187,7 +188,7 @@ theorem deletePrimes_norm_le_one (S : Finset PrimeIdeal) (a : Ideal O →*₀ �
   apply CanonicalRowCompletion.primeValueHom_norm_le_one
   intro I
   split_ifs
-  · simp only [norm_zero, zero_le_one]
+  · simp
   · exact ha I
 
 theorem deletePrimes_apply (S : Finset PrimeIdeal) (a : Ideal O →*₀ ℂ) (I : Ideal O) :
@@ -214,7 +215,7 @@ theorem deletePrimes_apply (S : Finset PrimeIdeal) (a : Ideal O →*₀ ℂ) (I 
     push Not at ho
     obtain ⟨P, hPS, J, hJ⟩ := ho
     rw [hJ, map_mul, deletePrimes_prime]
-    simp only [hPS, ite_true, zero_mul]
+    simp [hPS]
 
 theorem deletePrimes_primeSet_apply (M : Ideal O) (hM : M ≠ 0)
     (a : Ideal O →*₀ ℂ) (I : Ideal O) :
@@ -249,7 +250,7 @@ theorem series_deletePrimes (S : Finset PrimeIdeal) (a : Ideal O →*₀ ℂ)
     change (1 - deletePrimes S a P.val * normWeight s P.val)⁻¹ = _
     rw [deletePrimes_prime]
     by_cases hP : P ∈ S
-    · simp only [hP, ite_true, zero_mul, sub_zero, inv_one]
+    · simp [hP]
       exact (inv_mul_cancel₀ (local_factor_ne_zero a ha s (by linarith) P)).symm
     · simp only [hP, ite_false, mul_one]
       rfl

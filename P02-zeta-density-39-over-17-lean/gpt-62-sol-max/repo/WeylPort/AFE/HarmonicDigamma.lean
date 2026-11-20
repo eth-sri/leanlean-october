@@ -292,9 +292,12 @@ theorem reciprocal_cube_series_sharp {x : ℝ} (hx : 0 < x) :
   have h := (reciprocal_cube_series_bounds (by positivity : 0 < x + 1)).2
   constructor <;> linarith [h.1, h.2]
 
+section
+variable {N : ℕ} {y : ℝ} (hy : 0 < y) (hNy : y < (N : ℝ) + 1)
+include N y hy hNy
+
 /-- Convergent partial-fraction decomposition for the second negative-shift power. -/
-theorem hasSum_harmonic_tail_square {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem hasSum_harmonic_tail_square :
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 2))
       ((∑' n : ℕ, 1 / ((n : ℝ) + ((N : ℝ) + 1 - y)) ^ 2) / y -
         ((Complex.digamma ((N : ℝ) + 1 : ℝ)).re -
@@ -313,8 +316,7 @@ theorem hasSum_harmonic_tail_square {N : ℕ} {y : ℝ} (hy : 0 < y)
   · ring
 
 /-- Convergent partial-fraction decomposition for the third negative-shift power. -/
-theorem hasSum_harmonic_tail_cube {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem hasSum_harmonic_tail_cube :
     HasSum (fun n : ℕ => 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 3))
       ((∑' n : ℕ, 1 / ((n : ℝ) + ((N : ℝ) + 1 - y)) ^ 3) / y -
         (∑' n : ℕ, 1 / ((n : ℝ) + ((N : ℝ) + 1 - y)) ^ 2) / y ^ 2 +
@@ -335,8 +337,7 @@ theorem hasSum_harmonic_tail_cube {N : ℕ} {y : ℝ} (hy : 0 < y)
   · ring
 
 /-- The complete second negative-shift estimate of Lemma 1. -/
-theorem harmonic_tail_square_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem harmonic_tail_square_bound :
     let δ : ℝ := (N : ℝ) + 1 - y
     (∑' n : ℕ, 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 2)) ≤
       (1 / δ ^ 2 + 1 / (δ + 1) ^ 2 + 1 / (δ + 1)) / y -
@@ -352,8 +353,7 @@ theorem harmonic_tail_square_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
       (sq_nonneg y))
 
 /-- The complete third negative-shift estimate of Lemma 1. -/
-theorem harmonic_tail_cube_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
-    (hNy : y < (N : ℝ) + 1) :
+theorem harmonic_tail_cube_bound :
     let δ : ℝ := (N : ℝ) + 1 - y
     (∑' n : ℕ, 1 / (((n : ℝ) + N + 1) * ((n : ℝ) + N + 1 - y) ^ 3)) ≤
       (1 / δ ^ 3 + 1 / (δ + 1) ^ 3 + 1 / (2 * (δ + 1) ^ 2)) / y -
@@ -370,6 +370,8 @@ theorem harmonic_tail_cube_bound {N : ℕ} {y : ℝ} (hy : 0 < y)
     (div_le_div_of_nonneg_right
       (sub_le_sub_right (real_digamma_bounds (by positivity : 0 < (N : ℝ) + 1)).2 _)
       (by positivity))
+
+end
 
 /-- Convergent partial fractions for the second positive-shift power. -/
 theorem hasSum_harmonic_plus_square {y : ℝ} (hy : 0 < y) :

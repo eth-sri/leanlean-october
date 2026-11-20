@@ -152,8 +152,11 @@ theorem cancelledKernel_large_height_bound {f g : ℂ → ℂ} (hf0 : f 0 = 0)
       mul_le_mul_of_nonneg_left hgdiv (by positivity)
     _ = _ := by ring
 
-theorem cancelledKernel_strip_bound {f g : ℂ → ℂ} (hf : Differentiable ℂ f)
-    (hg : Differentiable ℂ g) (hf0 : f 0 = 0) {Y a b A B : ℝ}
+section
+variable {f g : ℂ → ℂ} (hf : Differentiable ℂ f) (hg : Differentiable ℂ g)
+include f g hf hg
+
+theorem cancelledKernel_strip_bound (hf0 : f 0 = 0) {Y a b A B : ℝ}
     (hY : 1 ≤ Y) (ha : -1 < a) (n : ℕ) (hA : 0 ≤ A) (hB : 0 ≤ B)
     (hfbound : ∀ z : ℂ, a ≤ z.re → z.re ≤ b → ‖f z‖ ≤ A * (1 + |z.im|) ^ n)
     (hgbound : ∀ z : ℂ, a ≤ z.re → z.re ≤ b → ‖g z‖ ≤ B) :
@@ -181,8 +184,7 @@ theorem cancelledKernel_strip_bound {f g : ℂ → ℂ} (hf : Differentiable ℂ
     have hnonneg : 0 ≤ Y ^ b * G * A * B := by positivity
     nlinarith [le_abs_self K]
 
-theorem cancelledKernel_vertical_integrable {f g : ℂ → ℂ}
-    (hf : Differentiable ℂ f) (hg : Differentiable ℂ g) {Y a b C x : ℝ}
+theorem cancelledKernel_vertical_integrable {Y a b C x : ℝ}
     (hY : 0 < Y) (ha : -1 < a) (hx : x ∈ Icc a b)
     (hbound : ∀ z : ℂ, a ≤ z.re → z.re ≤ b →
       ‖cancelledKernel f g Y z‖ ≤ C / (1 + z.im ^ 2)) :
@@ -197,8 +199,7 @@ theorem cancelledKernel_vertical_integrable {f g : ℂ → ℂ}
   intro t
   simpa [div_eq_mul_inv] using hbound ((x : ℂ) + t * I) (by simpa using hx.1) (by simpa using hx.2)
 
-theorem cancelledKernel_contour_shift {f g : ℂ → ℂ} (hf : Differentiable ℂ f)
-    (hg : Differentiable ℂ g) (hf0 : f 0 = 0) {Y a b A B : ℝ}
+theorem cancelledKernel_contour_shift (hf0 : f 0 = 0) {Y a b A B : ℝ}
     (hY : 1 ≤ Y) (ha : -1 < a) (hab : a ≤ b) (n : ℕ) (hA : 0 ≤ A) (hB : 0 ≤ B)
     (hfbound : ∀ z : ℂ, a ≤ z.re → z.re ≤ b → ‖f z‖ ≤ A * (1 + |z.im|) ^ n)
     (hgbound : ∀ z : ℂ, a ≤ z.re → z.re ≤ b → ‖g z‖ ≤ B) :
@@ -213,8 +214,7 @@ theorem cancelledKernel_contour_shift {f g : ℂ → ℂ} (hf : Differentiable �
   intro x hx t
   simpa using hbnd ((x : ℂ) + t * I) (by simpa using hx.1) (by simpa using hx.2)
 
-theorem literal_contour_shift {f g : ℂ → ℂ} (hf : Differentiable ℂ f)
-    (hg : Differentiable ℂ g) (hf0 : f 0 = 0) {Y A B : ℝ}
+theorem literal_contour_shift (hf0 : f 0 = 0) {Y A B : ℝ}
     (hY : 1 ≤ Y) (n : ℕ) (hA : 0 ≤ A) (hB : 0 ≤ B)
     (hfbound : ∀ z : ℂ, -(1/4 : ℝ) ≤ z.re → z.re ≤ 2 → ‖f z‖ ≤ A * (1 + |z.im|) ^ n)
     (hgbound : ∀ z : ℂ, -(1/4 : ℝ) ≤ z.re → z.re ≤ 2 → ‖g z‖ ≤ B) :
@@ -233,6 +233,8 @@ theorem literal_contour_shift {f g : ℂ → ℂ} (hf : Differentiable ℂ f)
   have hq (t : ℝ) := he (-(1/4)) (by norm_num) t
   norm_num only [Complex.ofReal_ofNat, Complex.ofReal_neg, Complex.ofReal_div, Complex.ofReal_one] at h2 hq
   simpa only [h2, hq] using h.symm
+
+end
 
 theorem gamma_negative_quarter_bound (n : ℕ) :
     ∃ G : ℝ, 0 < G ∧ ∀ t : ℝ,
@@ -328,11 +330,15 @@ def cutoffTerm (χ : Character) (V : ℝ → ℂ) (D : ℝ) (J : Ideal O) (s : �
 def cutoff (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ) : ℂ :=
   ∑ J ∈ cutoffSet D, cutoffTerm χ V D J s
 
-@[simp] theorem cutoffTerm_zero (χ : Character) (V : ℝ → ℂ) (D : ℝ) (s : ℂ) :
+section
+variable (χ : Character) (V : ℝ → ℂ) (D : ℝ)
+include χ V D
+
+@[simp] theorem cutoffTerm_zero (s : ℂ) :
     cutoffTerm χ V D 0 s = 0 := by
   simp [cutoffTerm, CubicEisenstein.fullIdealWeight]
 
-theorem cutoffTerm_entire (χ : Character) (V : ℝ → ℂ) (D : ℝ) (J : Ideal O) :
+theorem cutoffTerm_entire (J : Ideal O) :
     Differentiable ℂ (cutoffTerm χ V D J) := by
   by_cases hJ : J = 0
   · subst J
@@ -345,11 +351,11 @@ theorem cutoffTerm_entire (χ : Character) (V : ℝ → ℂ) (D : ℝ) (J : Idea
     simp only [CubicEisenstein.fullIdealWeight, ite_eq_right hJ]
     exact (differentiable_id.neg.const_cpow (Or.inl hn)).const_mul _
 
-theorem cutoff_entire (χ : Character) (V : ℝ → ℂ) (D : ℝ) :
+theorem cutoff_entire :
     Differentiable ℂ (cutoff χ V D) := by
   exact Differentiable.fun_sum fun J _ => cutoffTerm_entire χ V D J
 
-theorem cutoffTerm_norm_le (χ : Character) (V : ℝ → ℂ) (D : ℝ)
+theorem cutoffTerm_norm_le
     (hV : ∀ x : ℝ, ‖V x‖ ≤ 1) {s : ℂ} (hs : 0 ≤ s.re) (J : Ideal O) :
     ‖cutoffTerm χ V D J s‖ ≤ 1 := by
   by_cases hJ : J = 0
@@ -367,6 +373,8 @@ theorem cutoffTerm_norm_le (χ : Character) (V : ℝ → ℂ) (D : ℝ)
     calc
       _ ≤ (1 : ℝ)*1*1 := by gcongr; exact HeckeDyadic.coefficient_norm_le χ true J; exact hV _
       _ = 1 := by norm_num
+
+end
 
 theorem cutoff_norm_le (χ : Character) (V : ℝ → ℂ) {D : ℝ} (hD : 1 ≤ D)
     (hV : ∀ x : ℝ, ‖V x‖ ≤ 1) {s : ℂ} (hs : 0 ≤ s.re) :

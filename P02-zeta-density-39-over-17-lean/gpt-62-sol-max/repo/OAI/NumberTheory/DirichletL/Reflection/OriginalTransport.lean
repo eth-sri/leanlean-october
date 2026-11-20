@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Reflection.OriginalDictionary
 
 @[expose] public section
@@ -17,11 +18,11 @@ def castControlled {ι : Type*} [Fintype ι] {p q : ι→Eis} {N a c : Eis} {mod
     ControlledStratumArithmetic q N a c mode := h ▸ D
 
 lemma mixedReflectedValue_cast {ι : Type*} [Fintype ι] {p q : ι→Eis} {N a c : Eis} {mode : Bool}
-    [∀ i, (Ideal.span {p i}).IsMaximal] [∀ i, (Ideal.span {q i}).IsMaximal]
+    [OAI.PrincipalIdealFamily.Maximal p] [OAI.PrincipalIdealFamily.Maximal q]
     (h : p=q) (D : ControlledStratumArithmetic p N a c mode)
     (s : FixedCuspShape (ControlledStratumArithmetic.fixedCusp a c mode))
     (hp : ∀ i, p i≠0) (hq : ∀ i, q i≠0) (hc : c≠0)
-    (hgp : ∀ i, λ₀∉Ideal.span {p i}) (hgq : ∀ i, λ₀∉Ideal.span {q i})
+    (hgp : OAI.PrincipalIdealFamily.Avoids p λ₀) (hgq : OAI.PrincipalIdealFamily.Avoids q λ₀)
     (j : ι→ℕ) (S : Finset ι) (W : ℝ→ℂ) (X : ℝ) :
     mixedReflectedValue (castControlled h D) s hq hc hgq j S W X=
       mixedReflectedValue D s hp hc hgp j S W X := by

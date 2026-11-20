@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.CanonicalRankMoments
 
 @[expose] public section
@@ -12,9 +13,9 @@ namespace SevenEighths.InverseMoment
 open ActualEisensteinCubic CanonicalQuadraticSieve InverseInitialClippedColumns
 local notation "O"=>ActualEisensteinCubic.O
 variable {ι σ:Type}[DecidableEq ι][DecidableEq σ]
-variable (p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-variable (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-variable (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+variable (p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+variable (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+variable (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 omit [DecidableEq σ] in
 theorem canonical_rank_negative (pool:Finset ι)(base:O→*ℂ)(slots:Finset σ)(lists:σ→Finset ι)(a:σ→ι→ℂ)

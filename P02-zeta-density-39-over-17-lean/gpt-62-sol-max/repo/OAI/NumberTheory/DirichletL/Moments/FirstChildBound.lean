@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Moments.FirstWholeAssembly
 public import OAI.NumberTheory.DirichletL.Moments.ReflectedChild
 
@@ -10,9 +11,7 @@ noncomputable section
 open scoped BigOperators Classical SchwartzMap
 
 namespace SevenEighths.CenteredMomentFirstChildBound
-open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstAssembly
-open CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentReflectedChild
-open CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSmooth RayFourExpansion
+open CanonicalQuadraticSieve CenteredMomentSupportedCorrelation CenteredMomentFirstAssembly CenteredMomentFirstColumns CenteredMomentGaussEnergy CenteredMomentReflectedChild CenteredMomentChildAssembly CenteredMomentMobiusRegroup CenteredMomentSmooth RayFourExpansion
 local notation "O" => ActualEisensteinCubic.O
 
 private theorem weighted_norm_sum {α : Type*} (S : Finset α) (a f : α → ℂ)
@@ -61,8 +60,8 @@ theorem finite_first_ray_divisor_bound (L : Finset (Ideal O))
 theorem first_row_children {α β : Type*} (rows : Finset O) (S : Finset α) (T : Finset β)
     (a : α → O) (b : β → O)
     (ha : ∀ i,Supported (Ideal.span {a i})) (hb : ∀ j,Supported (Ideal.span {b j}))
-    (hpa : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣a i-1)
-    (hpb : ∀ j,ConcretePrimeRowBridge.goodLambda^2∣b j-1)
+    (hpa : OAI.PrincipalIdealFamily.PrimaryAt a ConcretePrimeRowBridge.goodLambda)
+    (hpb : OAI.PrincipalIdealFamily.PrimaryAt b ConcretePrimeRowBridge.goodLambda)
     (c : α → ℂ) (d : β → ℂ) (e r : O) (ρ : O → ℂ)
     (hρ : ∀ x y,ρ (x*y)=ρ x*ρ y) (q : O → ℂ) (K : O → α → β → ℂ) :
     (∑ z∈rows,q z*∑ i∈S,∑ j∈T,
@@ -101,8 +100,8 @@ theorem whole_kernel_first_child_bound (W : 𝓢(ℝ,ℂ)) (V : Fin 4 → ℝ �
       ∀ {α β : Type*} (rows : Finset O) (S : Finset α) (T : Finset β)
         (a : α → O) (b : β → O)
         (ha : ∀ i,Supported (Ideal.span {a i})) (hb : ∀ j,Supported (Ideal.span {b j})),
-      (∀ i,ConcretePrimeRowBridge.goodLambda^2∣a i-1) →
-      (∀ j,ConcretePrimeRowBridge.goodLambda^2∣b j-1) →
+      (OAI.PrincipalIdealFamily.PrimaryAt a ConcretePrimeRowBridge.goodLambda) →
+      (OAI.PrincipalIdealFamily.PrimaryAt b ConcretePrimeRowBridge.goodLambda) →
       ∀ (c : α → ℂ) (d : β → ℂ) (e r : O) (ρ : O → ℂ),
       (∀ x y,ρ (x*y)=ρ x*ρ y) → ‖ρ e‖≤1 →
       ∀ (q : O → ℂ) (u : α → ℝ) (v : β → ℝ) (ρ₀ x : O → ℝ),

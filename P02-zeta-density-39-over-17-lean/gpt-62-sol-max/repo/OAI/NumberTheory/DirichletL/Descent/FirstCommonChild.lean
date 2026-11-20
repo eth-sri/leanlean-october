@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstCommonColumns
 
 @[expose] public section
@@ -7,17 +8,16 @@ namespace OAI
 
 namespace SevenEighths.InverseMoment
 open scoped BigOperators Classical SchwartzMap
-open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion
-open SecondPassArithmetic FourierBridge
+open ActualEisensteinCubic FirstPassCubeLabels FirstCauchyArithmetic RayFourExpansion SecondPassArithmetic FourierBridge
 noncomputable section
 local notation "Eis" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, ConcretePrimeRowBridge.goodLambda ∉ Ideal.span {p i})
+  (p : ι → Eis) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 include hp in
 theorem firstCommonColumn_eq_rayIdealRow
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F D : Finset ι) (C : Finset ι → ℂ) (negative : Bool) (χ : RayCharacter)
     (ω : ℝ → ℂ) (X t : ℝ) (hX : 0 < X) (h : Eis) :
     firstCommonColumn p hg F D C negative χ ω X t h =
@@ -49,7 +49,7 @@ theorem firstCommonColumn_eq_rayIdealRow
   rw [hy,Real.exp_log (div_pos (primeProductNorm_pos p hp U) hX),hR]
   cases negative <;> simp only [Bool.false_eq_true,ite_false,ite_true,star_mul] <;> ring
 
-variable (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
+variable (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
 
 def firstBareCubeCoefficient (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool)
     (negative : Bool) (C : Finset ι → ℂ) (d : Eis) : Finset ι → ℂ :=
@@ -73,7 +73,7 @@ theorem firstBareCubeCoefficient_window (B : Finset ι) (v : ι → ℕ) (ε₁ 
       Bool.false_eq_true,ite_false,ite_true,ht] <;> ring
 
 theorem firstCommonColumn_original_labels
-    (hinj : Function.Injective (fun i => Ideal.span {p i}))
+    (hinj : OAI.PrincipalIdealFamily.Distinct p)
     (F D B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ : ι → Bool) (hv : ∀ j ∈ B,0 < v j)
     (negative : Bool) (χ : RayCharacter) (C : Finset ι → ℂ)
     (ω : ℝ → ℂ) (X t : ℝ) (hX : 0 < X) (c d f h : Eis) :

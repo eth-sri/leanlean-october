@@ -117,15 +117,11 @@ theorem bufferedLocalStationaryOrder_pos : 1 ≤ bufferedLocalStationaryOrder :=
   unfold bufferedLocalStationaryOrder
   omega
 
-theorem bufferedMorseWeight_local_window_remainder
-    {F : ℝ → ℝ} {σ δ v l r η d H T : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ bufferedLocalStationaryOrder δ)
-    (hv : v ∈ modelPhaseSlopeRange F)
-    (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2) (hd : 0 < d)
-    (hleft : l+2*η+d ≤ modelPhaseInverseSlope F v)
-    (hright : modelPhaseInverseSlope F v+d ≤ r-2*η)
-    (hH : 0 < H) (hsmall : H < Real.sqrt (modelPhaseCurvatureLower σ)*d)
+section
+variable {F : ℝ → ℝ} {σ δ v l r η d H T : ℝ} (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1) (hF : IsApproximateModelPhaseFunction F σ bufferedLocalStationaryOrder δ) (hv : v ∈ modelPhaseSlopeRange F) (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2) (hd : 0 < d) (hleft : l+2*η+d ≤ modelPhaseInverseSlope F v) (hright : modelPhaseInverseSlope F v+d ≤ r-2*η) (hH : 0 < H)
+include F σ δ v l r η d H T hσ hδ hF hv hη hl hr hd hleft hright hH
+
+theorem bufferedMorseWeight_local_window_remainder (hsmall : H < Real.sqrt (modelPhaseCurvatureLower σ)*d)
     (hT : 0 < T) :
     ‖(∫ z in (-H)..H,
       (modelPhaseMorseWeight (modelPhaseBufferedCutoff l r η) F v z : ℂ)*
@@ -156,15 +152,7 @@ theorem bufferedMorseWeight_local_window_remainder
   have h := norm_quadratic_window_remainder_le_local hW hT hH h₀ h₂ h₃
   simpa only [hzero] using h
 
-theorem bufferedMorseWeight_local_window_remainder_inverse
-    {F : ℝ → ℝ} {σ δ v l r η d H T : ℝ}
-    (hσ : 0 < σ) (hδ : δ ≤ min (modelPhaseCurvatureLower σ) 1)
-    (hF : IsApproximateModelPhaseFunction F σ bufferedLocalStationaryOrder δ)
-    (hv : v ∈ modelPhaseSlopeRange F)
-    (hη : 0 < η) (hl : 1 ≤ l) (hr : r ≤ 2) (hd : 0 < d)
-    (hleft : l+2*η+d ≤ modelPhaseInverseSlope F v)
-    (hright : modelPhaseInverseSlope F v+d ≤ r-2*η)
-    (hH : 0 < H) (hH₁ : H ≤ 1)
+theorem bufferedMorseWeight_local_window_remainder_inverse (hH₁ : H ≤ 1)
     (hsmall : H < Real.sqrt (modelPhaseCurvatureLower σ)*d)
     (hT : 0 < T) :
     ‖(∫ z in (-H)..H,
@@ -181,5 +169,7 @@ theorem bufferedMorseWeight_local_window_remainder_inverse
   apply h.trans
   convert div_le_div_of_nonneg_right hc hT.le using 1
   ring
+
+end
 
 end TaoTrudgianYang2025

@@ -5,7 +5,6 @@ public import GuthMaynard.Improvement.FiniteSpectralWitness
 set_option autoImplicit false
 noncomputable section
 open InnerProductSpace
-open scoped InnerProductSpace
 namespace GuthMaynard.Improvement
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℂ E]
 variable {ι κ : Type*} [Fintype ι] [Fintype κ]
@@ -29,9 +28,11 @@ theorem finiteWitnessWeight_sum (b : OrthonormalBasis ι ℂ E) {v : κ → E}
   simp_rw [b.sum_sq_norm_inner_right, hv.norm_eq_one]
   simp
 
-theorem finite_eigenbasis_quadratic (b : OrthonormalBasis ι ℂ E)
-    (H : E →L[ℂ] E) (hs : H.toLinearMap.IsSymmetric) (e : ι → ℝ)
-    (he : ∀ i, H (b i) = (e i:ℂ) • b i) (v : E) :
+section
+variable (b : OrthonormalBasis ι ℂ E) (H : E →L[ℂ] E) (hs : H.toLinearMap.IsSymmetric) (e : ι → ℝ) (he : ∀ i, H (b i) = (e i:ℂ) • b i)
+include b H hs e he
+
+theorem finite_eigenbasis_quadratic (v : E) :
     (inner ℂ v (H v)).re = ∑ i, e i*‖inner ℂ (b i) v‖^2 := by
   rw [← b.sum_inner_mul_inner v (H v), Complex.re_sum]
   apply Finset.sum_congr rfl
@@ -46,9 +47,7 @@ theorem finite_eigenbasis_quadratic (b : OrthonormalBasis ι ℂ E)
     _ = ((e i:ℂ)*(inner ℂ v (b i)*inner ℂ (b i) v)).re := by congr 1; ring
     _ = _ := by rw [Complex.mul_re, Complex.ofReal_re, Complex.ofReal_im, zero_mul, sub_zero, hn]
 
-theorem finite_eigenbasis_witness_sum (b : OrthonormalBasis ι ℂ E)
-    (H : E →L[ℂ] E) (hs : H.toLinearMap.IsSymmetric) (e : ι → ℝ)
-    (he : ∀ i, H (b i) = (e i:ℂ) • b i) (v : κ → E) :
+theorem finite_eigenbasis_witness_sum (v : κ → E) :
     (∑ j, (inner ℂ (v j) (H (v j))).re) = ∑ i, finiteWitnessWeight b v i*e i := by
   simp_rw [finite_eigenbasis_quadratic b H hs e he]
   rw [Finset.sum_comm]
@@ -58,6 +57,8 @@ theorem finite_eigenbasis_witness_sum (b : OrthonormalBasis ι ℂ E)
   apply Finset.sum_congr rfl
   intro j _
   ring
+
+end
 
 /-- An actual orthonormal witness for G=H+C forces the positive cubic
 spectral mass. C enters only through its operator norm at this stage. -/

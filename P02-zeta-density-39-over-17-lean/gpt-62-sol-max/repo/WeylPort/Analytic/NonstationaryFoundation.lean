@@ -383,7 +383,7 @@ private theorem lemma_IBP_bound_monotone {a b : ℝ} (hab : a < b) (g : ℝ → 
 
 /-- Integration by parts bound for continuous functions with antitone absolute value.
 If `|g|` is antitone, `‖∫ g F'‖ ≤ sup ‖F‖ · 2 |g(a)|`. -/
-private theorem lemma_IBP_bound_abs_antitone {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (F : ℝ → ℂ)
+theorem lemma_IBP_bound_abs_antitone {a b : ℝ} (hab : a < b) (g : ℝ → ℝ) (F : ℝ → ℂ)
     (hgcont : ContinuousOn g (Icc a b)) (hganti : AntitoneOn (|g ·|) (Icc a b))
     (hF : ContDiffOn ℝ 1 F (Icc a b)) :
     ‖∫ t in Icc a b, (g t : ℂ) * deriv F t‖ ≤ (⨆ t ∈ Icc a b, ‖F t‖) * (2 * |g a|) := by
@@ -462,9 +462,11 @@ private theorem lemma_IBP_bound_abs_antitone {a b : ℝ} (hab : a < b) (g : ℝ 
 
 set_option backward.isDefEq.respectTransparency false in
 
-private theorem lemma_aachmonophase {a b : ℝ} (ha : a < b) (φ : ℝ → ℝ) (hφ_C1 : ContDiffOn ℝ 1 φ (Set.Icc a b))
-    (hφ'_ne0 : ∀ t ∈ Set.Icc a b, deriv φ t ≠ 0) (h g : ℝ → ℝ) (hg : ∀ t, g t = h t / deriv φ t)
-    (hg_cont : ContinuousOn g (Set.Icc a b)) (hg_mon : AntitoneOn (fun t ↦ |g t|) (Set.Icc a b)) :
+section
+variable {a b : ℝ} (ha : a < b) (φ : ℝ → ℝ) (hφ_C1 : ContDiffOn ℝ 1 φ (Set.Icc a b)) (hφ'_ne0 : ∀ t ∈ Set.Icc a b, deriv φ t ≠ 0) (h g : ℝ → ℝ) (hg : ∀ t, g t = h t / deriv φ t) (hg_cont : ContinuousOn g (Set.Icc a b)) (hg_mon : AntitoneOn (fun t ↦ |g t|) (Set.Icc a b))
+include a b ha φ hφ_C1 hφ'_ne0 h g hg hg_cont hg_mon
+
+private theorem lemma_aachmonophase :
     ‖∫ t in Set.Icc a b, h t * e (φ t)‖ ≤ |g a| / π := by
   let F : ℝ → ℂ := fun t ↦ (1 / (2 * Real.pi * I)) * (exp (2 * Real.pi * I * φ t))
   have h_integral_bound : ‖∫ t in Set.Icc a b, (g t : ℂ) * (deriv F t)‖ ≤ (⨆ t ∈ Set.Icc a b, ‖F t‖) * (2 * |g a|) :=
@@ -500,16 +502,13 @@ private theorem lemma_aachmonophase {a b : ℝ} (ha : a < b) (φ : ℝ → ℝ) 
 /-- Public form of the non-stationary phase estimate used in the sharp-zeta
 Poisson argument.  This wrapper exposes the proved first-derivative test
 without exposing the appendix's private notation `e`. -/
-theorem nonstationary_phase_integral_bound {a b : ℝ} (ha : a < b)
-    (φ : ℝ → ℝ) (hφ_C1 : ContDiffOn ℝ 1 φ (Set.Icc a b))
-    (hφ'_ne0 : ∀ t ∈ Set.Icc a b, deriv φ t ≠ 0)
-    (h g : ℝ → ℝ) (hg : ∀ t, g t = h t / deriv φ t)
-    (hg_cont : ContinuousOn g (Set.Icc a b))
-    (hg_mon : AntitoneOn (fun t ↦ |g t|) (Set.Icc a b)) :
+theorem nonstationary_phase_integral_bound :
     ‖∫ t in Set.Icc a b,
         (h t : ℂ) * Complex.exp (2 * Real.pi * I * (φ t : ℂ))‖ ≤
       |g a| / Real.pi := by
   simpa only [e] using
     lemma_aachmonophase ha φ hφ_C1 hφ'_ne0 h g hg hg_cont hg_mon
+
+end
 
 end ZetaAppendix

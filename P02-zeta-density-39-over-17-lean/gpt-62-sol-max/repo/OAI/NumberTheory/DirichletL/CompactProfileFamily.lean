@@ -1,5 +1,9 @@
 module
-public import OAI.NumberTheory.DirichletL.Foundation
+public import Mathlib.Analysis.Fourier.FourierTransformDeriv
+public import Mathlib.Analysis.Calculus.Deriv.Support
+public import Mathlib.Analysis.Distribution.SchwartzSpace.Basic
+public import Mathlib.Tactic.Linarith
+public import Mathlib.Tactic.Positivity
 
 @[expose] public section
 
@@ -36,9 +40,11 @@ theorem tsupport_iteratedDeriv_subset (f : ℝ → ℂ) (j : ℕ) :
     rw [iteratedDeriv_succ]
     exact tsupport_deriv_subset.trans ih
 
-theorem compact_family_deriv_integrable (F : E → ℝ → ℂ)
-    (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
-    (hsupp : ∀ σ, Function.support (F σ) ⊆ K) (σ : E) (j : ℕ) :
+section
+variable (F : E → ℝ → ℂ) (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K) (hsupp : ∀ σ, Function.support (F σ) ⊆ K)
+include F hF K hK hsupp
+
+theorem compact_family_deriv_integrable (σ : E) (j : ℕ) :
     Integrable (iteratedDeriv j (F σ)) := by
   have hs : ContDiff ℝ ∞ (F σ) := hF.comp (contDiff_const.prodMk contDiff_id)
   have hc : HasCompactSupport (iteratedDeriv j (F σ)) := by
@@ -47,9 +53,7 @@ theorem compact_family_deriv_integrable (F : E → ℝ → ℂ)
       (closure_minimal (hsupp σ) hK.isClosed))
   exact (hs.continuous_iteratedDeriv j (by simp)).integrable_of_hasCompactSupport hc
 
-theorem compact_family_deriv_L1_bound (F : E → ℝ → ℂ)
-    (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
-    (hsupp : ∀ σ, Function.support (F σ) ⊆ K) (J : Set E) (hJ : IsCompact J)
+theorem compact_family_deriv_L1_bound (J : Set E) (hJ : IsCompact J)
     (j : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ J, (∫ u : ℝ, ‖iteratedDeriv j (F σ) u‖) ≤ C := by
   have hc := (section_iteratedDeriv_smooth F hF j).continuous.norm
@@ -75,9 +79,7 @@ theorem compact_family_deriv_L1_bound (F : E → ℝ → ℂ)
   rw [Real.norm_of_nonneg (integral_nonneg (fun u => norm_nonneg _))] at hi
   exact hi.trans (by dsimp [C]; nlinarith [abs_nonneg M])
 
-theorem compact_family_fourier_power_bound (F : E → ℝ → ℂ)
-    (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
-    (hsupp : ∀ σ, Function.support (F σ) ⊆ K) (J : Set E) (hJ : IsCompact J)
+theorem compact_family_fourier_power_bound (J : Set E) (hJ : IsCompact J)
     (j : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ J, ∀ w : ℝ,
       |w| ^ j * ‖𝓕 (F σ) w‖ ≤ C := by
@@ -105,30 +107,23 @@ theorem compact_family_fourier_power_bound (F : E → ℝ → ℂ)
     _ = (2 * Real.pi) ^ j * (|w| ^ j * ‖𝓕 (F σ) w‖) := mul_comm _ _
     _ ≤ C := hn
 
-theorem compact_family_fourier_weighted_bound (F : E → ℝ → ℂ)
-    (hF : ContDiff ℝ ∞ (Function.uncurry F)) (K : Set ℝ) (hK : IsCompact K)
-    (hsupp : ∀ σ, Function.support (F σ) ⊆ K) (J : Set E) (hJ : IsCompact J)
+theorem compact_family_fourier_weighted_bound (J : Set E) (hJ : IsCompact J)
     (j : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ σ ∈ J, ∀ w : ℝ,
       (1 + |w|) ^ j * ‖𝓕 (F σ) w‖ ≤ C := by
   obtain ⟨C₀, hC₀, h0⟩ := compact_family_fourier_power_bound F hF K hK hsupp J hJ 0
   obtain ⟨Cj, hCj, hj⟩ := compact_family_fourier_power_bound F hF K hK hsupp J hJ j
-  refine ⟨2 ^ j * (C₀ + Cj), by positivity, ?_⟩
-  intro σ hσ w
-  have hbase : ‖𝓕 (F σ) w‖ ≤ C₀ := by simpa using h0 σ hσ w
-  by_cases hw : |w| ≤ 1
-  · calc
-      _ ≤ 2 ^ j * ‖𝓕 (F σ) w‖ :=
-        mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) (by linarith) j) (norm_nonneg _)
-      _ ≤ 2 ^ j * C₀ := mul_le_mul_of_nonneg_left hbase (by positivity)
-      _ ≤ _ := mul_le_mul_of_nonneg_left (by linarith) (by positivity)
-  · have hw' : 1 ≤ |w| := le_of_lt (lt_of_not_ge hw)
-    calc
-      _ ≤ (2 * |w|) ^ j * ‖𝓕 (F σ) w‖ :=
-        mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (by positivity) (by linarith) j) (norm_nonneg _)
-      _ = 2 ^ j * (|w| ^ j * ‖𝓕 (F σ) w‖) := by rw [mul_pow, mul_assoc]
-      _ ≤ 2 ^ j * Cj := mul_le_mul_of_nonneg_left (hj σ hσ w) (by positivity)
-      _ ≤ _ := mul_le_mul_of_nonneg_left (by linarith) (by positivity)
+  refine ⟨2^(j-1)*(C₀+Cj), by positivity, fun σ hσ w => ?_⟩
+  have hx : ‖𝓕 (F σ) w‖ ≤ C₀ := by simpa using h0 σ hσ w
+  have hy := hj σ hσ w
+  calc
+    _ ≤ 2^(j-1)*(1^j+|w|^j)*‖𝓕 (F σ) w‖ := by
+      gcongr
+      exact add_pow_le zero_le_one (abs_nonneg _) j
+    _ = 2^(j-1)*(‖𝓕 (F σ) w‖+|w|^j*‖𝓕 (F σ) w‖) := by simp; ring
+    _ ≤ _ := by gcongr
+
+end
 
 end SevenEighths.CompactProfileFamily
 

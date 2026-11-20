@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstRetainedPhysical
 public import OAI.NumberTheory.DirichletL.Descent.FirstFamilyToSecond
 
@@ -13,9 +14,9 @@ open ConcreteTraceCRT (eisEmbedding)
 noncomputable section
 local notation "O" => ActualEisensteinCubic.O
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-  (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
+  (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
 
 def retainedCubeWeight (b : CubeCoordinates ι) (C : Finset ι) (Ψ₁ Ψ₂ : O→*ℂ)
     (m₁ m₂ d : O) (a : Ideal O×O→ℂ) (x : Ideal O×O) : ℂ :=
@@ -23,7 +24,7 @@ def retainedCubeWeight (b : CubeCoordinates ι) (C : Finset ι) (Ψ₁ Ψ₂ : O
     cubeBaseFactor p hp hg b.support (fun i=>b.leftExponent i+b.rightExponent i) b.leftBit b.rightBit d x.2
 
 theorem retainedCubeWeight_norm
-    (hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
+    (hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
     (b : CubeCoordinates ι) (C : Finset ι) (Ψ₁ Ψ₂ : O→*ℂ)
     (hΨ₁ : ∀ u,‖Ψ₁ u‖≤1) (hΨ₂ : ∀ u,‖Ψ₂ u‖≤1)
     (m₁ m₂ d : O) (a : Ideal O×O→ℂ) (x : Ideal O×O) :
@@ -52,12 +53,12 @@ theorem retained_physical_row_support (b : CubeCoordinates ι) (x : Ideal O×O) 
 
 theorem retained_cube_energy_to_second (ε : ℝ) (hε : 0<ε) :
     ∃ K : ℝ,0<K ∧ ∀ {ι : Type*} [DecidableEq ι]
-      (p : ι→O) (hp : ∀ i,p i≠0) [∀ i,(Ideal.span {p i}).IsMaximal]
-      (hinj : Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop : Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (hg : ∀ i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (_hc : ∀ i,ringChar (O⧸Ideal.span {p i})≠2)
-      (_hpr : ∀ i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+      (p : ι→O) (hp : ∀ i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
+      (hinj : OAI.PrincipalIdealFamily.Distinct p)
+      (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (hg : OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (_hc : OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+      (_hpr : OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
       (F : Finset ι) (b : CubeCoordinates ι) (C : Finset ι)
       (Ψ₁ Ψ₂ : O→*ℂ),(∀ u,‖Ψ₁ u‖≤1) → (∀ u,‖Ψ₂ u‖≤1) →
       ∀ (m₁ m₂ d : O) (a : Ideal O×O→ℂ) (source : Finset (Ideal O×O)) (Γ Y : ℝ),0≤Γ → 0<Y →

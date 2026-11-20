@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Moments.HeterogeneousCRT
 
 @[expose] public section
@@ -8,19 +9,18 @@ namespace OAI
 noncomputable section
 open scoped BigOperators Classical
 namespace SevenEighths.CenteredMomentProductCRT
-open CenteredMomentCorrelation CenteredMomentCommonSupport
-open CenteredMomentHeterogeneousCRT
+open CenteredMomentCorrelation CenteredMomentCommonSupport CenteredMomentHeterogeneousCRT
 variable {A ι : Type*} [CommRing A] [Fintype ι] [DecidableEq ι]
 
 def productCRT (a : ι → A)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i}))) :
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime a) :
     Residue (∏ i, a i) ≃+* ∀ i, Residue (a i) :=
   (Ideal.quotEquivOfEq (Ideal.prod_span_singleton Finset.univ a).symm).trans
     (IdealGaussCRT.quotientProdEquivPi (fun i => Ideal.span {a i}) hcop)
 
 omit [DecidableEq ι] in
 @[simp] theorem productCRT_mk (a : ι → A)
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime a)
     (x : A) (i : ι) :
     productCRT a hcop (Ideal.Quotient.mk _ x) i = Ideal.Quotient.mk _ x := by
   simp only [productCRT, RingEquiv.trans_apply, Ideal.quotEquivOfEq_mk,
@@ -46,7 +46,7 @@ theorem factor_mul_cofactor (a : ι → A) (i : ι) : a i * cofactor a i = ∏ j
   Finset.mul_prod_erase Finset.univ a (Finset.mem_univ i)
 
 theorem left_crt_component (a b : ι → A)
-    (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
+    (ha : OAI.PrincipalIdealFamily.PairwiseCoprime a)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     (x : Residue (∏ i, a i)) (i : ι) :
     jointCRT a b hab
@@ -60,7 +60,7 @@ theorem left_crt_component (a b : ι → A)
   ring
 
 theorem right_crt_component (a b : ι → A)
-    (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
+    (hb : OAI.PrincipalIdealFamily.PairwiseCoprime b)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     (y : Residue (∏ i, b i)) (i : ι) :
     jointCRT a b hab
@@ -74,8 +74,8 @@ theorem right_crt_component (a b : ι → A)
   ring
 
 theorem fullModulusCorrelation_product (a b : ι → A)
-    (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
-    (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
+    (ha : OAI.PrincipalIdealFamily.PairwiseCoprime a)
+    (hb : OAI.PrincipalIdealFamily.PairwiseCoprime b)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     [Fintype (Residue (∏ i, a i))] [Fintype (Residue (∏ i, b i))]
     [∀ i, Fintype (Residue (a i))] [∀ i, Fintype (Residue (b i))]
@@ -134,8 +134,8 @@ theorem local_cofactor_norm (a b : ι → A)
   rfl
 
 theorem fullModulusCorrelation_product_norm (a b : ι → A)
-    (ha : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
-    (hb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
+    (ha : OAI.PrincipalIdealFamily.PairwiseCoprime a)
+    (hb : OAI.PrincipalIdealFamily.PairwiseCoprime b)
     (hab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i})))
     [Fintype (Residue (∏ i, a i))] [Fintype (Residue (∏ i, b i))]
     [∀ i, Fintype (Residue (a i))] [∀ i, Fintype (Residue (b i))]
@@ -149,15 +149,14 @@ theorem fullModulusCorrelation_product_norm (a b : ι → A)
   exact local_cofactor_norm a b hab χ ψ h i
 
 section Eisenstein
-open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion
-open CenteredMomentSupportedCorrelation
+open ActualEisensteinCubic ConcreteTraceCRT CanonicalQuadraticSieve CanonicalRowCompletion CenteredMomentSupportedCorrelation
 local notation "O" => ActualEisensteinCubic.O
 
 omit [DecidableEq ι] in
 theorem supported_character_product (a : ι → O)
     (ha : ∀ i, Supported (Ideal.span {a i}))
     (hprod : Supported (Ideal.span {∏ i, a i}))
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i}))) :
+    (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime a) :
     supportedModulusCharacter (∏ i, a i) hprod =
       crtCharacter (productCRT a hcop) (fun i => supportedModulusCharacter (a i) (ha i)) := by
   apply DFunLike.ext
@@ -171,8 +170,8 @@ theorem actualCorrelation_product_norm (a b : ι → O)
     (hb : ∀ i, Supported (Ideal.span {b i}))
     (hA : Supported (Ideal.span {∏ i, a i}))
     (hB : Supported (Ideal.span {∏ i, b i}))
-    (hca : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i})))
-    (hcb : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {b i})))
+    (hca : OAI.PrincipalIdealFamily.PairwiseCoprime a)
+    (hcb : OAI.PrincipalIdealFamily.PairwiseCoprime b)
     (hcab : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {a i * b i}))) (h : O) :
     ‖actualCorrelation (∏ i, a i) (∏ i, b i) hA hB h‖ =
       ∏ i, ‖actualCorrelation (a i) (b i) (ha i) (hb i) h‖ := by

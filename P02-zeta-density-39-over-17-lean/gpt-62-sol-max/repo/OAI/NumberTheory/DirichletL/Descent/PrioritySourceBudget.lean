@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.PriorityCellBudget
 
 @[expose] public section
@@ -19,7 +20,7 @@ def priorityCellScalar (Z Y L X ell Ractive j t eta eps epsmass B:ℝ) (ray:ℂ)
       (secondFormalLabel B (secondCellExponent Z d 1) (secondCellExponent Z d 2) j+4*eta))+eps)
 
 theorem source_cell_joint_bound {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→O) (hp:∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
     {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn)) (hk:∀x∈source,x.second.frequency≠0)
     (b X:ℝ) (hgeom:∀x∈source,primeProductNorm p x.second.sourceCommon*
       primeProductNorm p x.second.overlap≤b*X) (d:BlockIndex) (hd:d∈keys p source):
@@ -34,7 +35,7 @@ theorem source_cell_joint_bound {ι:Type*} [DecidableEq ι]
 
 theorem priority_source_scalar_budget (caps:Fin 4→ℝ) (hcaps:∀i,0≤caps i) :
     ∃ Cbin:ℝ,0≤Cbin ∧ ∀ {ι:Type*} [DecidableEq ι]
-    (p:ι→O) (_hp:∀i,p i≠0) [∀i,(Ideal.span {p i}).IsMaximal]
+    (p:ι→O) (_hp:∀i,p i≠0) [OAI.PrincipalIdealFamily.Maximal p]
     {Jo Jn:ℕ} (source:Finset (MarkedSecondSource ι Jo Jn))
     (Z M r ell V delta A B Ractive j t eta tau pi eps epsmass b C:ℝ)
     (ray:ℂ), 2≤Z → 0≤C → 1≤b → b≤Z^(6*eta) →

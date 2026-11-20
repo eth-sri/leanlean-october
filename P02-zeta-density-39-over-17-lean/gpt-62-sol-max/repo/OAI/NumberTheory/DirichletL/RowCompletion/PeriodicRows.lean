@@ -8,75 +8,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 
 namespace CanonicalRowCompletion
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CanonicalUnitEuler
@@ -186,21 +129,27 @@ lemma mem_completedReflectionPool (I Q P:Ideal Eis) (hI:I≠0) (hQ:Q≠0) :
     UniqueFactorizationMonoid.mem_normalizedFactors_iff (mul_ne_zero hI hQ)]
   aesop
 
-lemma completedReflectionPool_maximal (I Q:Ideal Eis) (P:completedReflectionPool I Q) :
+section
+variable (I Q:Ideal Eis) (P:completedReflectionPool I Q)
+include I Q P
+
+lemma completedReflectionPool_maximal :
     P.val.IsMaximal := by
   have hm: P.val∈normalizedFactors (I*Q):=
     Multiset.mem_toFinset.mp (Finset.mem_filter.mp P.property).1
   have hp:=prime_of_normalized_factor P.val hm
   exact (Ideal.isPrime_of_prime hp).isMaximal hp.ne_zero
 
-lemma completedReflectionPool_good (I Q:Ideal Eis) (P:completedReflectionPool I Q) :
+lemma completedReflectionPool_good :
     lambda∉P.val := (Finset.mem_filter.mp P.property).2.1
 
-lemma completedReflectionPool_odd (I Q:Ideal Eis) (P:completedReflectionPool I Q) :
+lemma completedReflectionPool_odd :
     ringChar (Eis⧸P.val)≠2 := (Finset.mem_filter.mp P.property).2.2.1
 
-lemma completedReflectionPool_nonresidual (I Q:Ideal Eis) (P:completedReflectionPool I Q) :
+lemma completedReflectionPool_nonresidual :
     ¬P.val∣rowResidualPart I Q := (Finset.mem_filter.mp P.property).2.2.2
+
+end
 
 lemma completedReflectionPool_divides (I Q:Ideal Eis) (hI:I≠0) (hQ:Q≠0)
     (P:completedReflectionPool I Q) : P.val∣I*Q :=
@@ -235,11 +184,6 @@ end
 
 section
 
-variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-
-end
-section
-
 open ActualEisensteinCubic LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 noncomputable local instance reflectionWeightField (P:Ideal Eis) [P.IsMaximal] : Field (Eis⧸P) :=
@@ -247,16 +191,7 @@ noncomputable local instance reflectionWeightField (P:Ideal Eis) [P.IsMaximal] :
 noncomputable local instance reflectionWeightFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
   Fintype.ofFinite _
 
-variable {ι:Type*} [Fintype ι] [DecidableEq ι]
-
 end
-section
-
-open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
-
 open ActualEisensteinCubic CubicEisenstein CanonicalQuadraticSieve LocalReflectionBrackets
 local notation "Eis" => ActualEisensteinCubic.O
 local instance poolMaximal (I Q:Ideal Eis) (P:completedReflectionPool I Q) : P.val.IsMaximal :=

@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.GlobalPrincipalMassSource
 public import OAI.NumberTheory.DirichletL.Descent.PhysicalExponents
 
@@ -9,8 +10,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.InverseMomentGlobalPrincipalMass
-open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
+open InverseMoment InverseFirstPriorityParents InverseInitialArithmetic ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O" => ActualEisensteinCubic.O
 
@@ -46,8 +46,8 @@ lemma physical_principal_exact (Z M r ell V delta A B R j t eta tau eps window l
 
 theorem original_physical_weighted_source (Jmax : ℕ) (dsmall : ℝ) (hdsmall : 0<dsmall) :
     ∃C : ℝ,0<C ∧ ∀{ι : Type*}[DecidableEq ι](p : ι→O)(_hp : ∀i,p i≠0)
-    [∀i,(Ideal.span {p i}).IsMaximal]
-    (_hinj : Function.Injective (fun i=>Ideal.span {p i}))
+    [OAI.PrincipalIdealFamily.Maximal p]
+    (_hinj : OAI.PrincipalIdealFamily.Distinct p)
     (Jo : ℕ),Jo≤Jmax → ∀(S : Finset (Source ι Jo))
     (Z M r ell V delta A B R j t eta tau eps window pi : ℝ),
     1≤Z → 0≤ell+eta → 0≤eps → 0≤B → 0≤j →

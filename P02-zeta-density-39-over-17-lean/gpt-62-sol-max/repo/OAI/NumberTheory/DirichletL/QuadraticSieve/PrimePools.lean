@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.QuadraticSieve.GcdReduction
 public import OAI.NumberTheory.DirichletL.CubicSieve.RowMajorants
 
@@ -9,72 +10,18 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
+open scoped ContDiff
+open Set
 
-open scoped BigOperators Classical
 namespace CanonicalQuadraticSieve
 
 section
@@ -105,6 +52,12 @@ theorem poolPrimary_span (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
     (i : primePool F) : Ideal.span {poolPrimary F i} = i.val :=
   (primaryPrime_spec i.val (poolPrimary_ne_zero F hF i)).2.2.1
 
+/-- An admissible pool's primary generators span maximal ideals. -/
+theorem poolPrimary_maximal (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
+    (i : primePool F) : (Ideal.span {poolPrimary F i}).IsMaximal := by
+  rw [poolPrimary_span F hF i]
+  infer_instance
+
 theorem primaryPrime_eq_primaryGenerator (P : Ideal O) [P.IsMaximal] :
     primaryPrime P = primaryGenerator P := by
   have hp : Prime P := Ideal.prime_of_isPrime (NeZero.ne P) inferInstance
@@ -112,7 +65,11 @@ theorem primaryPrime_eq_primaryGenerator (P : Ideal O) [P.IsMaximal] :
     normalize_eq]
   simp only [Multiset.map_singleton, Multiset.prod_singleton]
 
-theorem primaryGenerator_eq_poolProduct (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
+section
+variable (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
+include F hF
+
+theorem primaryGenerator_eq_poolProduct
     (I : Ideal O) (hIF : I ∈ F) :
     primaryGenerator I = ∏ i ∈ idealSupport F I, poolPrimary F i := by
   calc
@@ -124,32 +81,33 @@ theorem primaryGenerator_eq_poolProduct (F : Finset (Ideal O)) (hF : ∀ I ∈ F
       rw [map_prod]
     _ = _ := Finset.prod_congr rfl (fun i hi => (primaryPrime_eq_primaryGenerator i.val).symm)
 
-theorem quadraticRow_eq_pool (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
+theorem quadraticRow_eq_pool
     (I : Ideal O) (hIF : I ∈ F) (z : O) :
     quadraticRow I z = QuadraticInitialBound.quadraticRow
       (fun i : primePool F => i.val) (poolGood F hF) (idealSupport F I) z := by
   rw [quadraticRow_eq F hF I hIF z]
   rfl
 
-theorem poolPrimary_coprime (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I) :
+theorem poolPrimary_coprime :
     Pairwise (Function.onFun IsCoprime (fun i : primePool F => Ideal.span {poolPrimary F i})) := by
   intro i j hij
   change IsCoprime (Ideal.span {poolPrimary F i}) (Ideal.span {poolPrimary F j})
   rw [poolPrimary_span F hF i, poolPrimary_span F hF j]
   exact Ideal.isCoprime_of_isMaximal (fun he => hij (Subtype.ext he))
 
-theorem poolPrimary_good (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I) (i : primePool F) :
+theorem poolPrimary_good (i : primePool F) :
     lambda ∉ Ideal.span {poolPrimary F i} := by rw [poolPrimary_span F hF i]; exact poolGood F hF i
 
-theorem poolPrimary_odd (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I) (i : primePool F) :
+theorem poolPrimary_odd (i : primePool F) :
     ringChar (O ⧸ Ideal.span {poolPrimary F i}) ≠ 2 := by rw [poolPrimary_span F hF i]; exact poolOdd F hF i
+
+end
 
 open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
 
 theorem quadraticRow_eq_primaryPool (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
     (I : Ideal O) (hIF : I ∈ F) (z : O) :
-    letI : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i => by rw [poolPrimary_span F hF i]; infer_instance
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     quadraticRow I z = QuadraticInitialBound.quadraticRow
       (fun i : primePool F => Ideal.span {poolPrimary F i}) (poolPrimary_good F hF) (idealSupport F I) z := by
   have he : (fun i : primePool F => Ideal.span {poolPrimary F i}) = (fun i : primePool F => i.val) :=
@@ -180,8 +138,7 @@ theorem primaryGenerator_unit_mod_four (I : Ideal O) (hI : Admissible I) :
     intro J hJ
     have hJI : J = I := Finset.mem_singleton.mp hJ
     simpa only [hJI] using hI
-  let : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i => by rw [poolPrimary_span F hF i]; infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   rw [primaryGenerator_eq_poolProduct F hF I (Finset.mem_singleton_self I)]
   exact RayFourExpansion.prime_product_unit_mod_four (poolPrimary F) (poolPrimary_odd F hF) _
 
@@ -209,13 +166,11 @@ theorem columnRay_idealQuotient_eq (D I J : Ideal O) (hI : Admissible I) (_hJ : 
 end
 section
 
-open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates
-open EisensteinSchwartzPoisson GaussGeneratorTransport
+open ActualEisensteinCubic CompletedGauss ConcretePrimeRowBridge ActualEisensteinCoordinates EisensteinSchwartzPoisson GaussGeneratorTransport
 
 theorem quadraticRow_eq_primarySubset (F : Finset (Ideal O)) (hF : ∀ I ∈ F, Admissible I)
     (I : Ideal O) (hIF : I ∈ F) (z : O) :
-    letI : ∀ i : primePool F, (Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i => by rw [poolPrimary_span F hF i]; infer_instance
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     quadraticRow I z = finiteSexticRow
       (fun i : idealSupport F I => Ideal.span {poolPrimary F i.val})
       (fun i => poolPrimary_good F hF i.val) (fun _ => 3) z := by
@@ -261,9 +216,9 @@ open FirstPassCubeLabels (columnLog primeProductNorm)
 open EisensteinSchwartzPoisson (paperRadialFourier)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hcop : OAI.PrincipalIdealFamily.PairwiseCoprime p)
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
 
 end SecondPassArithmetic
 
@@ -295,9 +250,9 @@ open EisensteinSchwartzPoisson (paperRadialFourier)
 open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+  (hinj : OAI.PrincipalIdealFamily.Distinct p)
 
 private theorem active_row_norm_le_one (S T : Finset ι) (a : O) :
     ‖finiteSexticRow (activePrimes (fun i => Ideal.span {p i}) S T)
@@ -388,9 +343,9 @@ open FirstCauchyArithmetic (supportMobius activeGaussRowFactor)
 open FirstPassCubeLabels (primeProductNorm)
 
 variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-  (hg : ∀ i, lambda ∉ Ideal.span {p i})
-  (hinj : Function.Injective (fun i => Ideal.span {p i}))
+  (p : ι → O) (hp : ∀ i, p i ≠ 0) [OAI.PrincipalIdealFamily.Maximal p]
+  (hg : OAI.PrincipalIdealFamily.Avoids p lambda)
+  (hinj : OAI.PrincipalIdealFamily.Distinct p)
 
 def secondFrequencyKernel (F : Finset ι) (Ψ₁ Ψ₂ : O →* ℂ) (m r c d e k : O)
     (H₁ H₂ : Finset ι → ℂ) (W : 𝓢(ℝ, ℂ)) (Y : ℝ) : ℂ :=

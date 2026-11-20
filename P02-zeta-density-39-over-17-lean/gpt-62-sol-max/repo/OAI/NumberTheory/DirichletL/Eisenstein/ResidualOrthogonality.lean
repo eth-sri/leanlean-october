@@ -8,73 +8,17 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
+open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount EisensteinEmbedding ConcreteTraceCRT
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
+open scoped ContDiff
+open Set
 
 section
 open Filter MeasureTheory
@@ -495,13 +439,13 @@ lemma kernelSourcePullback_integral_cusp_decay (M : CubicKubota.levelTwo)
   have hh := hdec ((M:SL(2,ActualEisensteinCubic.O))*N) z v hv hlarge
   simpa only [map_mul,mul_smul] using hh
 
-lemma cubicEisensteinResidue_source_translate_orthogonal
-    (F : KernelQuotientL2) (hF : (F,(8/9:ℂ)•F)∈kernelEnergyLaplacian.graph)
-    (f : KernelQuotient→ℂ) (hrep : F=ᵐ[integralQuotientVolume globalKubotaKernel]f)
-    (C : ℝ) (hC : 0≤C)
-    (hdec : ∀N : SL(2,ActualEisensteinCubic.O),∀z : ℂ,∀v : ℝ,∀hv : 0<v,1<v→
+section
+variable (F : KernelQuotientL2) (hF : (F,(8/9:ℂ)•F)∈kernelEnergyLaplacian.graph) (f : KernelQuotient→ℂ) (hrep : F=ᵐ[integralQuotientVolume globalKubotaKernel]f) (C : ℝ) (hC : 0≤C) (hdec : ∀N : SL(2,ActualEisensteinCubic.O),∀z : ℂ,∀v : ℝ,∀hv : 0<v,1<v→
       ‖f (integralOrbitProjection globalKubotaKernel
         (integralComplexMatrix N•upperPoint z v hv))‖≤C/v^3)
+include F hF f hrep C hC hdec
+
+lemma cubicEisensteinResidue_source_translate_orthogonal
     (M : CubicKubota.levelTwo) :
     inner ℂ F (kernelSourcePullback M cubicEisensteinResidue)=0 := by
   rw [kernelSourcePullback_pairing_inverse]
@@ -514,17 +458,13 @@ lemma cubicEisensteinResidue_source_translate_orthogonal
   intro N z v hv hlarge
   exact kernelSourcePullback_integral_cusp_decay M⁻¹ f C hdec (N:SL(2,ActualEisensteinCubic.O)) z v hv hlarge
 
-theorem cubicSourceResidue_orthogonal_of_integral_cusp_decay
-    (F : KernelQuotientL2) (hF : (F,(8/9:ℂ)•F)∈kernelEnergyLaplacian.graph)
-    (f : KernelQuotient→ℂ) (hrep : F=ᵐ[integralQuotientVolume globalKubotaKernel]f)
-    (C : ℝ) (hC : 0≤C)
-    (hdec : ∀N : SL(2,ActualEisensteinCubic.O),∀z : ℂ,∀v : ℝ,∀hv : 0<v,1<v→
-      ‖f (integralOrbitProjection globalKubotaKernel
-        (integralComplexMatrix N•upperPoint z v hv))‖≤C/v^3) :
+theorem cubicSourceResidue_orthogonal_of_integral_cusp_decay :
     inner ℂ F (kernelSourceProjection cubicEisensteinResidue)=0 := by
   rw [kernelSourceProjection_apply,inner_smul_right,inner_sum]
   simp only [cubicEisensteinResidue_source_translate_orthogonal F hF f hrep C hC hdec,
     Finset.sum_const_zero,mul_zero]
+
+end
 
 theorem commonCover_source_span_vanish {H : Subgroup (SL(2,ActualEisensteinCubic.O))} {ι : Type*} [Fintype ι]
     (leg : ι→KernelQuotientL2→L[ℂ]IntegralQuotientL2 H) (c : ι→ℂ)

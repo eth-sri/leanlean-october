@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Moments.SecondBlockRadicalHarmonicMass
+public import OAI.NumberTheory.DirichletL.Moments.SecondBlockHarmonicMass
 public import OAI.NumberTheory.DirichletL.Moments.FirstDiscardedEnergy
 
 @[expose] public section
@@ -10,13 +10,7 @@ noncomputable section
 open scoped Classical BigOperators
 
 namespace SevenEighths.CenteredMomentFirstInactiveRadicalMass
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedGauss
-open CenteredMomentCanonicalFirst CenteredMomentFirstDiscardedEnergy
-open CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockRadicalHarmonicMass
-open CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentOriginalCommonHarmonic
-open CenteredMomentCommonRadialData CenteredMomentRankinRadical
-open CenteredMomentSecondBlockAggregate CenteredMomentSupportedCorrelation
-open ConcretePrimeRowBridge
+open ActualEisensteinCubic CanonicalQuadraticSieve CompletedGauss CenteredMomentCanonicalFirst CenteredMomentFirstDiscardedEnergy CenteredMomentSecondRetainedAggregate CenteredMomentSecondBlockHarmonicMass CenteredMomentSourceMass CenteredMomentSourceRow CenteredMomentOriginalCommonHarmonic CenteredMomentCommonRadialData CenteredMomentRankinRadical CenteredMomentSecondBlockAggregate CenteredMomentSupportedCorrelation ConcretePrimeRowBridge
 local notation "O"=>ActualEisensteinCubic.O
 
 def inactiveWeight (C D:Ideal O)(E:Finset (CommonIndex C D))(a:ℝ):ℝ:=

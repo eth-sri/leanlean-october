@@ -1,5 +1,6 @@
 module
 public import MathCollab.Density.Stronger.ShortExponentAccounting
+public import RetunedShortZeroFamily
 public import MathCollab.Density.IndexedZeroLargeValues
 public import MathCollab.Density.LocalZeroCount
 
@@ -12,6 +13,7 @@ set_option autoImplicit false
 
 noncomputable section
 namespace MathCollab.Density.Stronger
+open Montgomery.RationalMoment
 
 /-- The actual-multiplicity large-values bridge for an explicit finite subset
 of slab zeros. Only the selected subset needs to be covered; it is never silently
@@ -78,23 +80,14 @@ theorem zetaSubset_large_values_cover_indexed {ι : Type*} {κ ε : ℝ} (hκ : 
     _ ≤ 2*B*(C*H^ε*∑ j ∈ J, F j) := mul_le_mul_of_nonneg_left hsum (by positivity)
     _ = _ := by dsimp [F]; ring
 
-/-- Actual slab zeros detected by the fixed normalized short family. -/
-def smoothShortZeroFinset (η σ δ T : ℝ) : Finset ℂ := by
-  classical
-  exact (zetaZeroFinset σ T (2*T)).filter (fun ρ =>
-    ∃ q ∈ smoothPoweredIndices σ δ T,
-      (smoothPoweredFamilyScale q : ℝ)^σ*T^(-2*η) ≤
-        ‖detectingPolynomial (smoothPoweredFamilyScale q)
-          (smoothPoweredFamilyCoefficient η σ δ T q) ρ.im‖)
-
-/-- Count this explicit subset with the original analytic multiplicities. -/
-def smoothShortZeroCount (η σ δ T : ℝ) : ℕ :=
-  ∑ ρ ∈ smoothShortZeroFinset η σ δ T, zetaMultiplicity ρ
+abbrev smoothShortZeroFinset (η σ δ T : ℝ) :=
+  RightDetector.smoothShortZeroFinset η σ (lowerExponent σ) δ T
+abbrev smoothShortZeroCount (η σ δ T : ℝ) :=
+  RightDetector.smoothShortZeroCount η σ (lowerExponent σ) δ T
 
 theorem smoothShortZeroFinset_subset (η σ δ T : ℝ) :
-    smoothShortZeroFinset η σ δ T ⊆ zetaZeroFinset σ T (2*T) := by
-  classical
-  exact Finset.filter_subset _ _
+    smoothShortZeroFinset η σ δ T ⊆ zetaZeroFinset σ T (2*T) :=
+  RightDetector.smoothShortZeroFinset_subset η σ (lowerExponent σ) δ T
 
 /-- The short part of the actual analytic-multiplicity count has the stronger
 exponent. No assertion about the number of long zeros is used. -/
@@ -127,7 +120,7 @@ theorem smoothShortZeroCount_bound {σ η : ℝ}
   have hh := mul_le_mul_of_nonneg_left hsum (show 0 ≤ Cv*Cb by positivity)
   calc
     _ = ∑ ρ ∈ smoothShortZeroFinset η σ δ T, (zetaMultiplicity ρ : ℝ) := by
-      rw [smoothShortZeroCount, Nat.cast_sum]
+      rw [smoothShortZeroCount, RightDetector.smoothShortZeroCount, Nat.cast_sum]
     _ ≤ _ := hcount
     _ = (Cv*Cb)*(Real.log (2*T)*(densityAmbient T)^η*
         (∑ q ∈ smoothPoweredIndices σ δ T,

@@ -51,7 +51,7 @@ lemma physicalRowWeight_crude_point (C : CalibrationData) (W0 W1 : ℝ→ℂ)
   have hq : (0:ℝ)<Ideal.absNorm r.1.val := by
     exact_mod_cast Nat.pos_of_ne_zero (Ideal.absNorm_eq_zero_iff.not.mpr r.1.property.1)
   have hb := calibration_elementNorm_ge_one C
-  have hscale : 0<elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X :=
+  have hscale :=
     physicalRowScale_pos C X (lt_of_lt_of_le zero_lt_one hX) r.1
   have hqscale : (Ideal.absNorm r.1.val:ℝ)≤elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X := by
     have hbx : 1≤elementNorm C.generator*X := one_le_mul_of_one_le_of_one_le hb hX
@@ -59,8 +59,7 @@ lemma physicalRowWeight_crude_point (C : CalibrationData) (W0 W1 : ℝ→ℂ)
   have hsqrt := Real.sqrt_le_sqrt hqscale
   have hrad : (Real.sqrt (elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X))⁻¹*
       (Real.sqrt (Ideal.absNorm r.1.val:ℝ))⁻¹*(Ideal.absNorm r.1.val:ℝ)≤1 := by
-    have hspos : 0<Real.sqrt (elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X)*
-      Real.sqrt (Ideal.absNorm r.1.val:ℝ) := mul_pos (Real.sqrt_pos.mpr hscale) (Real.sqrt_pos.mpr hq)
+    have hspos := mul_pos (Real.sqrt_pos.mpr hscale) (Real.sqrt_pos.mpr hq)
     calc
       _ = (Ideal.absNorm r.1.val:ℝ)/(Real.sqrt (elementNorm C.generator*(Ideal.absNorm r.1.val:ℝ)*X)*
         Real.sqrt (Ideal.absNorm r.1.val:ℝ)) := by simp only [div_eq_mul_inv,mul_inv_rev];ring
@@ -148,7 +147,7 @@ theorem physicalRowWeight_source_mass (a0 b0 a1 b1 B0 B1 : ℝ)
   have hpoint (r : PhysicalRowIndex) : ‖physicalRowWeight C W0 W1 X Y r‖≤B0*B1/Y := by
     have h := physicalRowWeight_crude_point C W0 W1 B0 B1 hB0 hB1 hWB0 hWB1 X Y hX hy r
     simpa only [C,calibrationForSet_tau_norm,inv_one,mul_one] using h
-  have hF : (F.card:ℝ)≤128*max 1 b1*Y := lowGaussColumns_card W1 hW1c Y hY a1 b1 hW1
+  have hF := lowGaussColumns_card W1 hW1c Y hY a1 b1 hW1
   have hR : (R.card:ℝ)≤256*max 1 (b0*b1)*Q := by
     simpa only [R,max_eq_right (le_max_left 1 (b0*b1))] using lowNumeratorRows_card (a0*a1) (max 1 (b0*b1)) (mul_pos ha0 ha1)
       (lt_of_lt_of_le zero_lt_one (le_max_left _ _)) Q hQ

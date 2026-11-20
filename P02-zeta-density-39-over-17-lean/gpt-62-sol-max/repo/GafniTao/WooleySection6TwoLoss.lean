@@ -37,13 +37,13 @@ theorem wooley_initial_conditioning_exponent_twoLoss
   have hnuNonneg : (0 : ℝ) ≤ nu := by positivity
   nlinarith
 
+section
+variable {Q k : ℕ} (phi : WooleyPolynomialSystem k) (p B nu H s : ℕ) [instShared3 : NeZero p] [instShared4 : NeZero (p ^ B)] [instShared5 : NeZero (p ^ nu)] (gamma : Fin Q → ℂ) {eta epsilon Lambda : ℝ} (hp : 2 ≤ p)
+include Q k phi p B nu H s instShared3 instShared4 instShared5 gamma eta epsilon Lambda hp
+
 /-- Polynomial-system conditioned mean decay with distinct lower and upper
 losses. -/
-theorem wooleyPolynomial_conditioned_mean_le_decay_twoLoss {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu H s : ℕ)
-    [NeZero p] [NeZero (p ^ B)] [NeZero (p ^ nu)]
-    (gamma : Fin Q → ℂ) {eta epsilon Lambda : ℝ}
-    (hp : 2 ≤ p) (hepsilon : 0 ≤ epsilon)
+theorem wooleyPolynomial_conditioned_mean_le_decay_twoLoss (hepsilon : 0 ≤ epsilon)
     (hLambda : 0 < Lambda) (hnuH : nu ≤ H)
     (hnu : 2 * (eta + epsilon) * (H : ℝ) / Lambda ≤ (nu : ℝ))
     (hlower :
@@ -104,11 +104,7 @@ theorem wooleyPolynomial_conditioned_mean_le_decay_twoLoss {Q k : ℕ}
 
 /-- Lemma 6.1 with the counterexample loss and the upper-bound loss kept
 separate. -/
-theorem wooleyPolynomial_lemma_6_1_twoLoss {Q k : ℕ}
-    (phi : WooleyPolynomialSystem k) (p B nu H s : ℕ)
-    [NeZero p] [NeZero (p ^ B)] [NeZero (p ^ nu)]
-    (gamma : Fin Q → ℂ) {eta epsilon Lambda : ℝ}
-    (hp : 2 ≤ p) (hs : 2 ≤ s)
+theorem wooleyPolynomial_lemma_6_1_twoLoss (hs : 2 ≤ s)
     (hepsilon : 0 ≤ epsilon)
     (hLambda : 0 < Lambda) (hnuH : nu ≤ H)
     (hnu : 2 * (eta + epsilon) * (H : ℝ) / Lambda ≤ (nu : ℝ))
@@ -159,6 +155,8 @@ theorem wooleyPolynomial_lemma_6_1_twoLoss {Q k : ℕ}
       wooleyPolynomialMixedGridMean phi s 1 p B nu nu nu gamma)
     hU hmain hlarge
   simpa [mul_assoc] using habs
+
+end
 
 /-- Lemma 6.3 with distinct lower and upper losses. -/
 theorem wooleyPolynomial_lemma_6_3_twoLoss {Q k : ℕ}

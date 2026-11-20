@@ -9,8 +9,7 @@ namespace OAI
 namespace SevenEighths.InverseMoment
 noncomputable section
 open scoped BigOperators Classical
-open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion
-open ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
+open ActualEisensteinCubic CompletedGauss CanonicalRowCompletion ConcretePrimeRowBridge CanonicalQuadraticSieve SecondPassArithmetic FirstPassCubeLabels
 local notation "O" => ActualEisensteinCubic.O
 
 def indexedIdealMark {ι σ : Type*} [DecidableEq ι] [DecidableEq σ]
@@ -24,8 +23,7 @@ theorem complete_pool_mark {σ : Type*} [DecidableEq σ]
     (T : Finset (primePool F)) :
     indexedIdealMark (fun i:primePool F=>i.val) slots lists a (∏i∈T,i.val) =
       primeMark slots lists a T := by
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   have hinj : Function.Injective (fun i:primePool F=>Ideal.span {poolPrimary F i}) := by
     intro i j h
     dsimp only at h
@@ -49,16 +47,14 @@ theorem finiteCanonicalMarkedRow_complete_global {σ : Type*} [DecidableEq σ]
     (a : σ→primePool (InitialMeanSquare.outsideSquarefreeIdeals S D)→ℂ) :
     let F := InitialMeanSquare.outsideSquarefreeIdeals S D
     let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-    letI : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-      fun i=>by rw [poolPrimary_span F hF i];infer_instance
+    letI := CanonicalQuadraticSieve.poolPrimary_maximal F hF
     finiteCanonicalMarkedRow (poolPrimary F) (poolPrimary_ne_zero F hF)
       (poolPrimary_coprime F hF) (poolPrimary_good F hF) Finset.univ Ψ m f z slots lists a W X =
     ∑' I:Ideal O,columnWeight (rowTwist Ψ (m*excludedGenerator S) f z) I*
       indexedIdealMark (fun i:primePool F=>i.val) slots lists a I*W ((Ideal.absNorm I:ℝ)/X) := by
   let F := InitialMeanSquare.outsideSquarefreeIdeals S D
   have hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  let : ∀ i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i];infer_instance
+  let := CanonicalQuadraticSieve.poolPrimary_maximal F hF
   dsimp only
   have he := marked_complete_pool_eq_global S D hbad hSp Ψ m f z W b X hX hW hD
     (indexedIdealMark (fun i:primePool F=>i.val) slots lists a)

@@ -8,9 +8,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.CenteredMomentExceptionalReflection
-open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CenteredMomentChildRows
-open CenteredMomentFixedRay CenteredMomentExceptionalPair RayFourExpansion
-open CanonicalRowCompletion CanonicalQuadraticSieve CanonicalUnitEuler
+open HeckeFamily HeckeRowClosure CenteredExceptionalProfile CenteredMomentChildRows CenteredMomentFixedRay CenteredMomentExceptionalPair RayFourExpansion CanonicalRowCompletion CanonicalQuadraticSieve CanonicalUnitEuler
 local notation "O" => HeckeFamily.O
 local notation "λ₀" => ConcretePrimeRowBridge.goodLambda
 
@@ -47,18 +45,18 @@ theorem child_row_reflection (η : Character) (χ ξ : RayCharacter)
   · obtain ⟨hleft, hright⟩ := child_rows_zero_off_support η χ ξ m A z n hmLam hm2 hn
     rw [hleft, hright, zero_mul]
 
-theorem fixedInducingRow_reflected (η : Character) (χ ξ : RayCharacter)
-    (Q : Ideal O) (hQ : Q ≤ Ideal.span {(72 : O)})
-    (m A z : O) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+section
+variable (η : Character) (χ ξ : RayCharacter) (Q : Ideal O) (hQ : Q ≤ Ideal.span {(72 : O)}) (m A z : O) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m)
+include η χ ξ Q hQ m A z hmLam hm2
+
+theorem fixedInducingRow_reflected
     (hex : FixedInducingRow (childCharacter η χ) Q m A z) :
     FixedInducingRow (childCharacter η ξ) Q m A (-z) := by
   exact fixedInducingRow_of_product (childCharacter η χ) (childCharacter η ξ)
     (reflectionRatio χ ξ) Q m A z (-z) (reflectionRatio_modulus χ ξ Q hQ)
     (child_row_reflection η χ ξ m A z hmLam hm2) hex
 
-theorem fixedInducingRow_reflection_iff (η : Character) (χ ξ : RayCharacter)
-    (Q : Ideal O) (hQ : Q ≤ Ideal.span {(72 : O)})
-    (m A z : O) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) :
+theorem fixedInducingRow_reflection_iff :
     FixedInducingRow (childCharacter η χ) Q m A z ↔
       FixedInducingRow (childCharacter η ξ) Q m A (-z) := by
   constructor
@@ -67,12 +65,12 @@ theorem fixedInducingRow_reflection_iff (η : Character) (χ ξ : RayCharacter)
     simpa only [neg_neg] using
       fixedInducingRow_reflected η ξ χ Q hQ m A (-z) hmLam hm2 hex
 
-theorem not_fixedInducingRow_reflection_iff (η : Character) (χ ξ : RayCharacter)
-    (Q : Ideal O) (hQ : Q ≤ Ideal.span {(72 : O)})
-    (m A z : O) (hmLam : λ₀ ∣ m) (hm2 : (2 : O) ∣ m) :
+theorem not_fixedInducingRow_reflection_iff :
     (¬FixedInducingRow (childCharacter η χ) Q m A z) ↔
       ¬FixedInducingRow (childCharacter η ξ) Q m A (-z) :=
   not_congr (fixedInducingRow_reflection_iff η χ ξ Q hQ m A z hmLam hm2)
+
+end
 
 end SevenEighths.CenteredMomentExceptionalReflection
 

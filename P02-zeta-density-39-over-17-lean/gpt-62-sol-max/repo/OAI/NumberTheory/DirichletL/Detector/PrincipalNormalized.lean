@@ -11,8 +11,7 @@ noncomputable section
 open scoped Classical BigOperators Topology ContDiff
 open Complex Filter
 namespace SevenEighths.ProbePrincipalNormalized
-open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds
-open PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual ProbeRaySlots
+open HeckeFamily ProbePhysical CompletedGauss ProbeFiniteProductBounds PrincipalMellinResidues PrincipalSignalComparison ProbePrincipalResidueActual ProbeRaySlots
 local notation "Id" => Ideal HeckeFamily.O
 
 lemma normalized_error (A R F N : ℂ) (c d v : ℝ)

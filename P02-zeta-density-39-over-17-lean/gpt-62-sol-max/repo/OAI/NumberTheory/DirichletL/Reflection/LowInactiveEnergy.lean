@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Reflection.SectorData
 public import OAI.NumberTheory.DirichletL.Reflection.LowChoiceEnergy
 public import OAI.NumberTheory.DirichletL.Reflection.InactiveSource
 
@@ -44,11 +45,7 @@ theorem low_original_inactive_energy
       (_hprime : ∀ i,∀ P∈lists i,Prime P)
       (hrows : ∀ K∈rows,Admissible K),
       (∀ i,1≤H i) → (∀ i,∀ P∈lists i,(Ideal.absNorm P:ℝ)≤H i) → (∏ i,H i)≤Z^ell0 →
-      (∀ f,IsCoprime (Ideal.span {Nlevel}) (G.ideal f)) →
-      (∀ f,ringChar (Eis⧸G.ideal f)≠2) →
-      (∀ K∈rows,(∀ f,IsCoprime (G.ideal f) K) ∧ IsCoprime (Ideal.span {Nlevel}) K) →
-      (∀ i,∀ P∈lists i,IsCoprime (Ideal.span {Nlevel}) P) →
-      (∀ i,∀ P∈lists i,ringChar (Eis⧸P)≠2) →
+      WithListPrimes Nlevel G rows lists (
     ∀ T : Finset σ,
     ∃ D : ∀ K : rows,
       ∀ _b : supportedSlotChoices (fun i : {i // i∉T} => lists i.val) (poolPrimeFamily J Q Q₀).ideal K.val,
@@ -69,7 +66,7 @@ theorem low_original_inactive_energy
           (reflectedExponent jF) (slotIndices A (PrimeIndex K.val) T)
           (CompletedHeight.normTwistedSource W θ) (Z^(1+ell0+shift))‖^2)≤
         (∏ i : {i // i∉T},256*(columnDyadicLength (H i.val)+1:ℝ))^2*
-          (C*(1+‖θ‖)^degree*Z^((5/6-2*d)+505*η-O₀/2)) := by
+          (C*(1+‖θ‖)^degree*Z^((5/6-2*d)+505*η-O₀/2))) := by
   obtain ⟨degree,C,Z₀,hC,hZ₀,he⟩ := low_original_choice_energy a c₀ mode lo hi hlo W hWs hW
     s hc₀ hNlevel hbase hac Q hQ Ck η hCk hη hη1
   refine ⟨degree,C,Z₀,hC,hZ₀,?_⟩

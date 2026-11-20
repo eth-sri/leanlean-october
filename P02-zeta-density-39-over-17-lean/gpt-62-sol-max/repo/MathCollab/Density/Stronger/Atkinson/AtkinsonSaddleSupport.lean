@@ -56,8 +56,11 @@ theorem abs_le_three_mul_of_arsinh_bound {x a : ℝ} (ha : a ≤ 1 / 8)
   rw [arsinh_abs] at hl
   linarith
 
-theorem abs_frequency_le_of_saddle_log_bound {T G L b : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
+section
+variable {T G L b : ℝ} (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
+include T G L b hT hG hL hwidth
+
+theorem abs_frequency_le_of_saddle_log_bound
     (hlog : |Real.log (zetaAtkinsonSaddle T b) - Real.log (T / (2 * Real.pi))| ≤ 2 * L / G) :
     |b| ≤ 3 * Real.sqrt T * (L / G) := by
   rw [zetaAtkinsonSaddle_log_argument hT, abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)] at hlog
@@ -79,15 +82,13 @@ theorem abs_frequency_le_of_saddle_log_bound {T G L b : ℝ}
   have hmul := mul_le_mul_of_nonneg_right hsqrt (by positivity : 0 ≤ 3 * (L / G))
   nlinarith
 
-theorem abs_frequency_le_of_saddle_cutoff {T G L b : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
+theorem abs_frequency_le_of_saddle_cutoff
     (hb : zetaDivisorBandCutoff T G L (zetaAtkinsonSaddle T b) ≠ 0) :
     |b| ≤ 3 * Real.sqrt T * (L / G) :=
   abs_frequency_le_of_saddle_log_bound hT hG hL hwidth
     (zetaDivisorBandCutoff_log_bound hT hG hL hb)
 
-theorem atkinsonStationaryMain_eq_zero_of_frequency {T G L b : ℝ}
-    (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)
+theorem atkinsonStationaryMain_eq_zero_of_frequency
     (hb : 3 * Real.sqrt T * (L / G) < |b|) (α : ℝ) :
     atkinsonStationaryMain T G L α b = 0 := by
   have hc : zetaDivisorBandCutoff T G L (zetaAtkinsonSaddle T b) = 0 := by
@@ -95,6 +96,8 @@ theorem atkinsonStationaryMain_eq_zero_of_frequency {T G L b : ℝ}
     exact (not_lt_of_ge (abs_frequency_le_of_saddle_cutoff hT hG hL hwidth h)) hb
   change zetaDivisorBandCutoff T G L ((atkinsonSaddleRoot (T / (2 * Real.pi)) b) ^ 2) = 0 at hc
   simp only [atkinsonStationaryMain, atkinsonPowerWeight, hc, Complex.ofReal_zero, mul_zero, zero_mul]
+
+end
 
 theorem atkinsonStationaryMain_pair_eq_zero_of_index {T G L : ℝ}
     (hT : 0 < T) (hG : 0 < G) (hL : 0 < L) (hwidth : 8 * L ≤ G)

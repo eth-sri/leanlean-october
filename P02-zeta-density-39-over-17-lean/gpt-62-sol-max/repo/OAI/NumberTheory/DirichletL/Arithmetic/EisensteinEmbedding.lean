@@ -10,14 +10,11 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
-open scoped Classical
 open scoped Classical
 
 namespace EisensteinEmbedding
@@ -347,7 +344,6 @@ theorem cubicGauss_normalized_cube_eis (P : Ideal O) [P.IsMaximal]
 
 open AddChar MulChar
 
-open AddChar MulChar
 
 noncomputable def canonicalSextic (P : Ideal O) [P.IsMaximal]
     (hgood : lambda ∉ P) : MulChar (O ⧸ P) ℂ :=
@@ -370,10 +366,11 @@ theorem canonicalSextic_pow_ne_one (P : Ideal O) [P.IsMaximal]
   apply pow_ne_one_of_lt_orderOf hj0
   rwa [sexticChar_order P hgood hchar]
 
-theorem canonical_A5_jfour (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
-    (ψ : AddChar (O ⧸ P) ℂ) (hψ : ψ ≠ 1)
-    (σ : (O ⧸ P)ˣ) (ε x : O ⧸ P) :
+section
+variable (P : Ideal O) [instShared1 : P.IsMaximal] (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2) (ψ : AddChar (O ⧸ P) ℂ) (hψ : ψ ≠ 1) (σ : (O ⧸ P)ˣ) (ε x : O ⧸ P)
+include P instShared1 hgood hchar ψ hψ σ ε x
+
+theorem canonical_A5_jfour :
     let χ := canonicalSextic P hgood
     (Nat.card (O ⧸ P) : ℂ)⁻¹ *
       (∑ h : (O ⧸ P)ˣ,
@@ -410,10 +407,7 @@ theorem canonical_A5_jfour (P : Ideal O) [P.IsMaximal]
   rw [hsum, ShortDraftLocal.sextic_fourth_mask χ ψ hχ6 hψ (ε * x)]
   ring
 
-theorem canonical_A5_jzero_active (P : Ideal O) [P.IsMaximal]
-    (hgood : lambda ∉ P) (hchar : ringChar (O ⧸ P) ≠ 2)
-    (ψ : AddChar (O ⧸ P) ℂ) (hψ : ψ ≠ 1)
-    (σ : (O ⧸ P)ˣ) (ε x : O ⧸ P) :
+theorem canonical_A5_jzero_active :
     let χ := canonicalSextic P hgood
     (Nat.card (O ⧸ P) : ℂ)⁻¹ *
       (∑ h : (O ⧸ P)ˣ,
@@ -448,21 +442,22 @@ theorem canonical_A5_jzero_active (P : Ideal O) [P.IsMaximal]
   rw [hsum, ShortDraftLocal.active_zero_local_row χ ψ hχ2 ε x]
   ring
 
+end
+
 end ActualEisensteinCubic
 
-namespace PrimitiveTrace
-
-open Complex
+namespace GeneralPrimitiveTrace
+open Complex EisensteinEmbedding ConcreteTraceCRT
 open scoped ComplexConjugate
-open EisensteinEmbedding ConcreteTraceCRT
 
-private theorem complex_exp_trace_integer {t : ℂ}
+theorem complex_exp_trace_integer {t : ℂ}
     (ht : Complex.exp (2 * Real.pi * Complex.I * t) = 1) :
     ∃ n : ℤ, t = n := by
   obtain ⟨n, hn⟩ := Complex.exp_eq_one_iff.mp ht
   refine ⟨n, ?_⟩
   have hnonzero : (2 * Real.pi * Complex.I : ℂ) ≠ 0 := by
-    exact mul_ne_zero (by exact_mod_cast mul_ne_zero (by norm_num : (2 : ℝ) ≠ 0) Real.pi_ne_zero) Complex.I_ne_zero
+    exact mul_ne_zero (by exact_mod_cast (mul_ne_zero
+      (by norm_num : (2 : ℝ) ≠ 0) Real.pi_ne_zero)) Complex.I_ne_zero
   apply mul_left_cancel₀ hnonzero
   calc
     (2 * Real.pi * Complex.I : ℂ) * t = n * (2 * Real.pi * Complex.I) := by
@@ -471,9 +466,8 @@ private theorem complex_exp_trace_integer {t : ℂ}
 
 private theorem phase_integer {z : ℂ}
     (hz : ShortDraftTrace.breveE (z / eisLam) = 1) :
-    ∃ n : ℤ, z / eisLam + conj (z / eisLam) = n := by
-  apply complex_exp_trace_integer
-  exact hz
+    ∃ n : ℤ, z / eisLam + conj (z / eisLam) = n :=
+  complex_exp_trace_integer hz
 
 private theorem omega_conj : conj omega3 = omega3 ^ 2 := by
   have hs : omega3 ^ 2 = -omega3 - 1 := by
@@ -515,55 +509,43 @@ private theorem in_coordinate_lattice_of_two_phases (z : ℂ)
       push_cast
       ring
 
-theorem eisTraceModChar_breveE_ne_one
-    (P : Ideal O) [P.IsMaximal] (p : O)
-    (hP : P = Ideal.span {p}) (hp : p ≠ 0) :
-    eisTraceModChar ShortDraftTrace.breveE
-      ConcreteBreveE.breveE_period_coordinates p hp ≠ 1 := by
-  intro hψ
-  let ι := eisEmbedding
-  let z : ℂ := (ι p)⁻¹
-  have hpι : ι p ≠ 0 := eisEmbedding_ne_zero hp
-  have hbase1 : ∀ x : O,
-      ShortDraftTrace.breveE (ι x / (ι p * eisLam)) = 1 := by
-    intro x
-    have hpoint := congrArg
-      (fun f : AddChar (O ⧸ Ideal.span {p}) ℂ =>
-        f (Ideal.Quotient.mk (Ideal.span {p}) x)) hψ
-    simpa only [eisTraceModChar, IdealGaussCRT.traceModChar_mk,
-      AddChar.one_apply] using hpoint
+theorem eisTraceModChar_breveE_primitive (c : ActualEisensteinCubic.O) (hc : c ≠ 0) :
+    (eisTraceModChar ShortDraftTrace.breveE
+      ConcreteBreveE.breveE_period_coordinates c hc).IsPrimitive := by
+  intro a ha hshift
+  obtain ⟨x, rfl⟩ := Ideal.Quotient.mk_surjective a
+  let z : ℂ := eisEmbedding x / eisEmbedding c
+  have hci : eisEmbedding c ≠ 0 := eisEmbedding_ne_zero hc
+  have hbase : ∀ y : ActualEisensteinCubic.O,
+      ShortDraftTrace.breveE (eisEmbedding (x * y) / (eisEmbedding c * eisLam)) = 1 := by
+    intro y
+    have hp := congrArg (fun f : AddChar (ActualEisensteinCubic.O ⧸ Ideal.span {c}) ℂ =>
+      f (Ideal.Quotient.mk (Ideal.span {c}) y)) hshift
+    simpa only [AddChar.mulShift_apply, ← map_mul, eisTraceModChar,
+      IdealGaussCRT.traceModChar_mk, AddChar.one_apply] using hp
   have h1 : ShortDraftTrace.breveE (z / eisLam) = 1 := by
-    convert hbase1 1 using 1 ; dsimp [z, ι] ; simp ; field_simp
+    convert hbase 1 using 1
+    simp only [mul_one]
+    dsimp [z]
+    ring_nf
   have hw : ShortDraftTrace.breveE (omega3 * z / eisLam) = 1 := by
-    convert hbase1 pb.gen using 1
-    · rw [show ι pb.gen = omega3 from embedding_gen omega3 omega3_sq]
-      dsimp [z]
-      field_simp
+    convert hbase pb.gen using 1
+    rw [map_mul, show eisEmbedding pb.gen = omega3 from embedding_gen omega3 omega3_sq]
+    dsimp [z]
+    ring_nf
   have hz := in_coordinate_lattice_of_two_phases z h1 hw
   obtain ⟨q, hq⟩ := toCoordinateSubring_surjective ⟨z, hz⟩
-  have hιq : ι q = z := congrArg Subtype.val hq
-  have hpq : p * q = 1 := by
+  have hiq : eisEmbedding q = z := congrArg Subtype.val hq
+  have hcq : c * q = x := by
     apply eisEmbedding_injective
-    rw [map_mul, map_one, hιq]
+    rw [map_mul, hiq]
     dsimp [z]
-    exact mul_inv_cancel₀ hpι
-  have hunit : IsUnit p := isUnit_iff_dvd_one.mpr ⟨q, hpq.symm⟩
-  have htop : P = ⊤ := by
-    rw [hP]
-    exact Ideal.span_singleton_eq_top.mpr hunit
-  exact (inferInstance : P.IsMaximal).ne_top htop
+    field_simp
+  apply ha
+  apply Ideal.Quotient.eq_zero_iff_mem.mpr
+  exact Ideal.mem_span_singleton.mpr ⟨q, hcq.symm⟩
 
-theorem eisTraceModChar_breveE_primitive
-    (P : Ideal O) [P.IsMaximal] (p : O)
-    (hP : P = Ideal.span {p}) (hp : p ≠ 0) :
-    (eisTraceModChar ShortDraftTrace.breveE
-      ConcreteBreveE.breveE_period_coordinates p hp).IsPrimitive := by
-  have : (Ideal.span {p}).IsMaximal := hP ▸ inferInstance
-  let : Field (O ⧸ Ideal.span {p}) := Ideal.Quotient.field _
-  exact AddChar.IsPrimitive.of_ne_one
-    (eisTraceModChar_breveE_ne_one P p hP hp)
-
-end PrimitiveTrace
+end GeneralPrimitiveTrace
 
 end
 

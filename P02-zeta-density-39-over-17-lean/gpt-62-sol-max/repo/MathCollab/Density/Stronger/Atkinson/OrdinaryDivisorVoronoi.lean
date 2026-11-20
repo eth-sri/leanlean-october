@@ -12,17 +12,19 @@ public import MathCollab.Density.Stronger.Atkinson.VoronoiMultiplierBounds
 
 @[expose] public section
 
-open Complex Set MeasureTheory Filter Topology
-open MathCollab.Density.Stronger.Fourth
+open Complex Set MeasureTheory Filter Topology MathCollab.Density.Stronger.Fourth
 set_option autoImplicit false
 set_option maxHeartbeats 1000000
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
 
+section
+variable {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g)
+include g hg
+
 /-- Explicit domination helper. Its continuity and growth premises are discharged
 for both literal Voronoi multipliers below. -/
-theorem DFIVoronoiTestFunction.integrable_dualMultiplier_of_quadratic_bound
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) {K : ℂ → ℂ} {C : ℝ}
+theorem DFIVoronoiTestFunction.integrable_dualMultiplier_of_quadratic_bound {K : ℂ → ℂ} {C : ℝ}
     (hcont : Continuous (fun u : ℝ => K ((-1/2 : ℂ)+(u : ℂ)*I)))
     (hb : ∀ u : ℝ, ‖K ((-1/2 : ℂ)+(u : ℂ)*I)‖ ≤ C*(1+|u|)^2) :
     Integrable (fun u : ℝ => K ((-1/2 : ℂ)+(u : ℂ)*I)*
@@ -40,8 +42,7 @@ theorem DFIVoronoiTestFunction.integrable_dualMultiplier_of_quadratic_bound
       mul_le_mul_of_nonneg_right (hb u) (norm_nonneg _)
     _ = _ := by simp only [neg_div]; ring
 
-theorem DFIVoronoiTestFunction.integrable_voronoiMinusMultiplier
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.integrable_voronoiMinusMultiplier :
     Integrable (fun u : ℝ => dfiVoronoiMinusMultiplier 1 ((-1/2 : ℂ)+(u : ℂ)*I)*
       mellin g ((-1/2 : ℂ)+(u : ℂ)*I)) := by
   apply hg.integrable_dualMultiplier_of_quadratic_bound (C := 10368)
@@ -53,8 +54,7 @@ theorem DFIVoronoiTestFunction.integrable_voronoiMinusMultiplier
     simpa using norm_dfiVoronoiMinusMultiplier_strip_le 1
       (z := (-1/2 : ℂ)+(u : ℂ)*I) (by norm_num) (by norm_num)
 
-theorem DFIVoronoiTestFunction.integrable_voronoiPlusMultiplier
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.integrable_voronoiPlusMultiplier :
     Integrable (fun u : ℝ => dfiVoronoiPlusMultiplier 1 ((-1/2 : ℂ)+(u : ℂ)*I)*
       mellin g ((-1/2 : ℂ)+(u : ℂ)*I)) := by
   apply hg.integrable_dualMultiplier_of_quadratic_bound (C := 10368)
@@ -67,15 +67,14 @@ theorem DFIVoronoiTestFunction.integrable_voronoiPlusMultiplier
       (z := (-1/2 : ℂ)+(u : ℂ)*I) (by norm_num) (by norm_num)
 
 /-- Absolute convergence of the complete native minus series, including n=0. -/
-theorem DFIVoronoiTestFunction.summable_divisorWeight_voronoiMinus
-    {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem DFIVoronoiTestFunction.summable_divisorWeight_voronoiMinus :
     Summable (fun n : ℕ => divisorWeight n * dfiVoronoiMinusTransform 1 (mellin g) n) := by
   simpa only [dfiVoronoiMinusTransform, neg_div] using
     summable_divisorWeight_dualTransform hg.integrable_voronoiMinusMultiplier
 
 /-- Genuine q=1 Voronoi identity, with the exact logarithmic main term and
 both original Mellin transforms; all contour and exchange conditions proved. -/
-theorem ordinaryDivisorVoronoi_native {g : ℝ → ℂ} (hg : DFIVoronoiTestFunction g) :
+theorem ordinaryDivisorVoronoi_native :
     (∑' n : ℕ, divisorWeight n*g n) = ordinaryDivisorVoronoiMain g +
       (∑' n : ℕ, divisorWeight n*dfiVoronoiMinusTransform 1 (mellin g) n) +
       (∑' n : ℕ, divisorWeight n*dfiVoronoiPlusTransform 1 (mellin g) n) := by
@@ -84,7 +83,7 @@ theorem ordinaryDivisorVoronoi_native {g : ℝ → ℂ} (hg : DFIVoronoiTestFunc
   simp only [← neg_div]
   rw [tsum_divisorWeight_dualTransform hg.integrable_voronoiMinusMultiplier,
     tsum_divisorWeight_dualTransform hg.integrable_voronoiPlusMultiplier]
-  simp only [verticalIntegral'_eq_realIntegral]
+  simp only [PointMean.verticalIntegral'_eq_realIntegral]
   norm_num only [ofReal_div, ofReal_neg, ofReal_one, ofReal_ofNat]
   simp only [← neg_div]
   have hfun : (fun u : ℝ =>
@@ -101,5 +100,7 @@ theorem ordinaryDivisorVoronoi_native {g : ℝ → ℂ} (hg : DFIVoronoiTestFunc
     (integrable_zetaSquare_dualMultiplier hg.integrable_voronoiMinusMultiplier)
     (integrable_zetaSquare_dualMultiplier hg.integrable_voronoiPlusMultiplier)]
   ring
+
+end
 
 end MathCollab.Density.Stronger.Atkinson

@@ -9,8 +9,7 @@ namespace OAI
 noncomputable section
 open scoped Classical BigOperators
 namespace SevenEighths.ProbeHighRowFamily
-open HeckeFamily HeckeInverseAmplification ProbePhysical
-open CanonicalQuadraticSieve
+open HeckeFamily HeckeInverseAmplification ProbePhysical CanonicalQuadraticSieve
 local notation "O" => HeckeFamily.O
 
 theorem continued_selected_tuple_with_correction (K : ℕ) (δ a b r B : ℝ)

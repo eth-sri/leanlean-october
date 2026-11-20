@@ -1,3 +1,0 @@
-module
-public import GuthMaynard.Improvement.FullCurveLeftUniform
-public import MathCollab.Density.Stronger.NativeDensity

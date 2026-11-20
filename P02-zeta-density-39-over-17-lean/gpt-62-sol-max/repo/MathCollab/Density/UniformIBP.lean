@@ -207,9 +207,12 @@ theorem offBandParameters_ne {p : ℝ × ℝ} (hp : p ∈ offBandParameters)
 def ibpIntegral (w : ℝ → ℂ) (R : ℝ) (p : ℝ × ℝ) (n : ℕ) : ℂ :=
   ∫ x in (1 / 3 : ℝ)..6, ibpAmplitude w n p x * logOscillation R p x
 
+section
+variable {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w) (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
+include w hw hws
+
 /-- Exact one-step integration by parts, with vanishing endpoint amplitudes. -/
-theorem ibpIntegral_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
+theorem ibpIntegral_recurrence
     {p : ℝ × ℝ} (hp : p ∈ offBandParameters) (R : ℝ) (n : ℕ) :
     ((R : ℂ) * Complex.I) * ibpIntegral w R p n = -ibpIntegral w R p (n + 1) := by
   let g : ℝ → ℂ := fun x => ibpAmplitude w n p x * phaseQuotient p x
@@ -268,8 +271,7 @@ theorem ibpIntegral_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
       field_simp [hx0, hd, hd']
     _ = -ibpIntegral w R p (n + 1) := hparts
 
-theorem ibpIntegral_norm_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5)
+theorem ibpIntegral_norm_recurrence
     {p : ℝ × ℝ} (hp : p ∈ offBandParameters) {R : ℝ} (hR : 0 < R) (n : ℕ) :
     R * ‖ibpIntegral w R p n‖ = ‖ibpIntegral w R p (n+1)‖ := by
   have hh := congrArg norm (ibpIntegral_recurrence hw hws hp R n)
@@ -277,8 +279,7 @@ theorem ibpIntegral_norm_recurrence {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     Complex.norm_I, mul_one, norm_neg] using hh
 
 /-- Arbitrary-order uniform decay on the fixed compact parameter set. -/
-theorem uniform_normalized_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) (A : ℕ) :
+theorem uniform_normalized_decay (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ p ∈ offBandParameters, ∀ R : ℝ, 0 < R →
       ‖ibpIntegral w R p 0‖ ≤ C / R ^ A := by
   obtain ⟨C, hC, hbound⟩ := ibpAmplitude_uniform_bound hw A
@@ -304,8 +305,7 @@ theorem uniform_normalized_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
   nlinarith
 
 /-- The off-band estimate with the constant chosen before H, v, and k. -/
-theorem uniform_offBand_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
-    (hws : tsupport w ⊆ Icc (1 / 2 : ℝ) 5) (A : ℕ) :
+theorem uniform_offBand_decay (A : ℕ) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ H v k : ℝ, 0 < H → H ≤ v → v ≤ 2 * H →
       (k < H / (20 * Real.pi) ∨ 4 * H / Real.pi < k) →
       ‖∫ x in (1 / 3 : ℝ)..6, w x *
@@ -327,5 +327,7 @@ theorem uniform_offBand_decay {w : ℝ → ℂ} (hw : ContDiff ℝ ∞ w)
     congr 1
     field_simp [hR.ne']
   rwa [heq] at hh
+
+end
 
 end MathCollab.Density

@@ -8,53 +8,15 @@ namespace OAI
 noncomputable section
 
 open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
+open MulChar AddChar Filter Asymptotics MeasureTheory
 open scoped Topology
-open MeasureTheory Real
+open Real
 open scoped FourierTransform SchwartzMap
 open Finset Complex
 open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
 open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic
-open ActualEisensteinCubic
-open Filter
-open scoped Topology
-open ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
 open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
 open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-
-namespace TwoPassProfiles
-
-end TwoPassProfiles
 
 namespace ActualEisensteinCubic
 
@@ -82,16 +44,6 @@ theorem A3_primary_unit_eq_one (x : O) (hx : IsUnit x)
       ((dvd_pow_self lambda (by decide)).trans htwo))
 
 end ActualEisensteinCubic
-
-namespace FourierBridge
-
-open scoped ContDiff FourierTransform SchwartzMap
-
-end FourierBridge
-
-namespace InitialMeanSquareProfile
-
-end InitialMeanSquareProfile
 
 open MeasureTheory Real
 open scoped ContDiff FourierTransform SchwartzMap
@@ -133,26 +85,22 @@ noncomputable def positiveLogProfile
   have hc : HasCompactSupport (fun s => V s * F (arg s)) := hVc.mul_right
   exact hc.toSchwartzMap hH
 
-@[simp] theorem positiveLogProfile_apply
-    (V F : ℝ → ℂ) (R s : ℝ)
-    (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V)
-    (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0))
-    (hR : 0 < R) :
+section
+variable (V F : ℝ → ℂ) (R s : ℝ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0)) (hR : 0 < R)
+include V F R s hVc hVs hFpos hR
+
+@[simp] theorem positiveLogProfile_apply :
     positiveLogProfile V F R hVc hVs hFpos hR s =
       V s * F (R * Real.exp s) := rfl
 
-theorem positive_log_separation
-    (V F : ℝ → ℂ) (R s : ℝ)
-    (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V)
-    (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0))
-    (hR : 0 < R) :
+theorem positive_log_separation :
     V s * F (R * Real.exp s) =
       ∫ t : ℝ, Complex.exp (↑(2 * Real.pi * inner ℝ t s) * Complex.I) *
         (𝓕 (positiveLogProfile V F R hVc hVs hFpos hR)) t := by
   rw [← positiveLogProfile_apply V F R s hVc hVs hFpos hR]
   exact FourierBridge.schwartz_log_inversion _ _
+
+end
 
 theorem euler_derivative_scale
     (F : ℝ → ℂ) (R s m CF : ℝ) (A i : ℕ)
@@ -415,22 +363,17 @@ theorem positive_log_source_pair
     _ = (1 + Lwin ^ p) * D := by ring
     _ ≤ C := by simpa [D, p] using hCbound n hn
 
-theorem positive_log_fourier_moment
-    (V F : ℝ → ℂ) (R m Lwin CW CF : ℝ) (A J : ℕ)
-    (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V)
-    (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0))
-    (hR : 0 < R) (hm : 0 < m) (hm1 : m ≤ 1)
-    (hL : 0 ≤ Lwin) (hCW : 0 ≤ CW) (hCF : 0 ≤ CF)
-    (hVderiv : ∀ i ≤ J + (volume : Measure ℝ).integrablePower, ∀ s,
-      ‖iteratedFDeriv ℝ i V s‖ ≤ CW)
-    (hwindow : ∀ s,
+section
+variable (V F : ℝ → ℂ) (R m Lwin CW CF : ℝ) (A J : ℕ) (hVc : HasCompactSupport V) (hVs : ContDiff ℝ ∞ V) (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0)) (hR : 0 < R) (hm : 0 < m) (hm1 : m ≤ 1) (hL : 0 ≤ Lwin) (hCW : 0 ≤ CW) (hCF : 0 ≤ CF) (hVderiv : ∀ i ≤ J + (volume : Measure ℝ).integrablePower, ∀ s,
+      ‖iteratedFDeriv ℝ i V s‖ ≤ CW) (hwindow : ∀ s,
       (∃ i ≤ J + (volume : Measure ℝ).integrablePower,
         ‖iteratedFDeriv ℝ i V s‖ ≠ 0) →
-        m ≤ Real.exp s ∧ |s| ≤ Lwin)
-    (hEuler : ∀ i ≤ J + (volume : Measure ℝ).integrablePower,
+        m ≤ Real.exp s ∧ |s| ≤ Lwin) (hEuler : ∀ i ≤ J + (volume : Measure ℝ).integrablePower,
       ∀ x : ℝ, 0 < x →
-        (1 + x) ^ A * ‖eulerDeriv F i x‖ ≤ CF) :
+        (1 + x) ^ A * ‖eulerDeriv F i x‖ ≤ CF)
+include V F R m Lwin CW CF A J hVc hVs hFpos hR hm hm1 hL hCW hCF hVderiv hwindow hEuler
+
+theorem positive_log_fourier_moment :
     (m ^ A * (1 + R) ^ A) *
       (∫ t : ℝ, (1 + ‖t‖) ^ J *
         ‖(𝓕 (positiveLogProfile V F R hVc hVs hFpos hR)) t‖) ≤
@@ -456,22 +399,7 @@ theorem positive_log_fourier_moment
       intro j hj
       simpa [C] using momentConstant_dominates K j Lwin CW CF hL hCW hCF hj)
 
-theorem positive_log_fourier_bound
-    (V F : ℝ → ℂ) (R m Lwin CW CF : ℝ) (A J : ℕ)
-    (hVc : HasCompactSupport V)
-    (hVs : ContDiff ℝ ∞ V)
-    (hFpos : ContDiffOn ℝ ∞ F (Set.Ioi 0))
-    (hR : 0 < R) (hm : 0 < m) (hm1 : m ≤ 1)
-    (hL : 0 ≤ Lwin) (hCW : 0 ≤ CW) (hCF : 0 ≤ CF)
-    (hVderiv : ∀ i ≤ J + (volume : Measure ℝ).integrablePower, ∀ s,
-      ‖iteratedFDeriv ℝ i V s‖ ≤ CW)
-    (hwindow : ∀ s,
-      (∃ i ≤ J + (volume : Measure ℝ).integrablePower,
-        ‖iteratedFDeriv ℝ i V s‖ ≠ 0) →
-        m ≤ Real.exp s ∧ |s| ≤ Lwin)
-    (hEuler : ∀ i ≤ J + (volume : Measure ℝ).integrablePower,
-      ∀ x : ℝ, 0 < x →
-        (1 + x) ^ A * ‖eulerDeriv F i x‖ ≤ CF) :
+theorem positive_log_fourier_bound :
     (1 + R) ^ A *
       (∫ t : ℝ, (1 + ‖t‖) ^ J *
         ‖(𝓕 (positiveLogProfile V F R hVc hVs hFpos hR)) t‖) ≤
@@ -487,6 +415,8 @@ theorem positive_log_fourier_bound
   have hbase := positive_log_fourier_moment V F R m Lwin CW CF A J
     hVc hVs hFpos hR hm hm1 hL hCW hCF hVderiv hwindow hEuler
   simpa [mul_assoc, mul_left_comm, mul_comm] using hbase
+
+end
 
 theorem coupled_positive_log_separation
     {ι : Type*} [Fintype ι]

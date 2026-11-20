@@ -13,19 +13,7 @@ open scoped Classical BigOperators SchwartzMap
 open Filter
 
 namespace SevenEighths.CenteredMomentAmplifiedChildWidth
-open ActualEisensteinCubic
-open HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion
-open CenteredMomentCanonicalFirst CenteredMomentCompleteCommon
-open CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale
-open CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius
-open CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor
-open CenteredMomentChildRows CenteredMomentSecondRadicalBudget
-open CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth
-open CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock
-open CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop
-open CenteredMomentSecondCanonical CenteredMomentSecondHeightFamily
-open CenteredMomentHeckeColumnWindow CenteredMomentSourceRow
-open CenteredMomentSectorLocalization
+open ActualEisensteinCubic HeckeFamily CanonicalQuadraticSieve CompletedGauss RayFourExpansion CenteredMomentCanonicalFirst CenteredMomentCompleteCommon CenteredMomentFirstCanonicalFamily CenteredMomentFirstScale CenteredMomentFirstAmplificationChoice CenteredMomentAmplifiedRetainedRadius CenteredMomentAmplificationRadicalFamily CenteredMomentAmplificationActiveFactor CenteredMomentChildRows CenteredMomentSecondRadicalBudget CenteredMomentSecondExceptionalFamily CenteredMomentSecondChildRadialWidth CenteredMomentSecondPhysicalBlock CenteredMomentSecondLiveBlock CenteredMomentSecondActualWidth CenteredMomentSecondWidthDrop CenteredMomentSecondCanonical CenteredMomentSecondHeightFamily CenteredMomentHeckeColumnWindow CenteredMomentSourceRow CenteredMomentSectorLocalization
 local notation "O" => HeckeFamily.O
 
 theorem modulus_pos (η:Character) : 0<(η.modulus.absNorm:ℝ) :=
@@ -144,14 +132,11 @@ theorem error_nominal_bound (η ρ θ:Character)(χ:RayCharacter)(m₀ m₁ p:O)
   linarith [le_max_left (Real.logb Z (Ideal.absNorm (commonPart J I):ℝ)-
     Real.logb Z (Ideal.absNorm (commonPart I J):ℝ)-2*errorRemoval p Z (n+1)+errorMoving p Z (n+1)) (0:ℝ)]
 
-theorem physical_radial_budget {η:Character}{C D:Ideal O}
-    {hC:Supported C}{hD:Supported D}{U:Finset (CommonIndex C D)}
-    {τ:RayCharacter→Character}(h:Family η C D hC hD U τ)
-    (t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(rows:Finset O)(W:𝓢(ℝ,ℂ))
-    (Z H L Tsec Csec ξ:ℝ)(hZ:1<Z)(hH:0<H)(hL:0<L)(hT:0<Tsec)(hCs:0<Csec)
-    (hscale:Tsec≤Csec*(H^2/L))(n:Fin 4→ℤ)
-    (hne:physicalBlock η t S β C D hC hD U (frequencyRadius Tsec Z ξ) rows W L n≠0)
-    (χ:RayCharacter)(b:ℝ)(hb:0<b) :
+section
+variable {η:Character} {C D:Ideal O} {hC:Supported C} {hD:Supported D} {U:Finset (CommonIndex C D)} {τ:RayCharacter→Character} (h:Family η C D hC hD U τ) (t:ℝ) (S:Finset (Ideal O)) (β:Ideal O→ℂ) (rows:Finset O) (W:𝓢(ℝ,ℂ)) (Z H L Tsec Csec ξ:ℝ) (hZ:1<Z) (hH:0<H) (hL:0<L) (hT:0<Tsec) (hCs:0<Csec) (hscale:Tsec≤Csec*(H^2/L)) (n:Fin 4→ℤ) (hne:physicalBlock η t S β C D hC hD U (frequencyRadius Tsec Z ξ) rows W L n≠0) (χ:RayCharacter)
+include η C D hC hD U τ h t S β rows W Z H L Tsec Csec ξ hZ hH hL hT hCs hscale n hne χ
+
+theorem physical_radial_budget(b:ℝ)(hb:0<b) :
     Real.logb Z (b*dyadicScale (n 1))+Real.logb Z ((τ χ).modulus.absNorm:ℝ)≤
       2*Real.logb Z H-Real.logb Z L+Real.logb Z (η.modulus.absNorm:ℝ)-
       Real.logb Z (normValue (commonFrequencyGenerator C D))+
@@ -177,14 +162,7 @@ theorem physical_radial_budget {η:Character}{C D:Ideal O}
   rw [hf]
   linarith
 
-theorem physical_declared_budget {η:Character}{C D:Ideal O}
-    {hC:Supported C}{hD:Supported D}{U:Finset (CommonIndex C D)}
-    {τ:RayCharacter→Character}(h:Family η C D hC hD U τ)
-    (t:ℝ)(S:Finset (Ideal O))(β:Ideal O→ℂ)(rows:Finset O)(W:𝓢(ℝ,ℂ))
-    (Z H L Tsec Csec ξ:ℝ)(hZ:1<Z)(hH:0<H)(hL:0<L)(hT:0<Tsec)(hCs:0<Csec)
-    (hscale:Tsec≤Csec*(H^2/L))(n:Fin 4→ℤ)
-    (hne:physicalBlock η t S β C D hC hD U (frequencyRadius Tsec Z ξ) rows W L n≠0)
-    (χ:RayCharacter)(Φ:ℝ→ℂ)(b:ℝ)(hb:0<b)(hs:Function.support Φ⊆Set.Iic b)
+theorem physical_declared_budget(Φ:ℝ→ℂ)(b:ℝ)(hb:0<b)(hs:Function.support Φ⊆Set.Iic b)
     (y:O)(hy0:y≠0)(hy:Φ (normValue y/dyadicScale (n 1))≠0) :
     Real.logb Z (max 1 (b*dyadicScale (n 1)))+Real.logb Z ((τ χ).modulus.absNorm:ℝ)≤
       2*Real.logb Z H-Real.logb Z L+Real.logb Z (η.modulus.absNorm:ℝ)+ξ/2+
@@ -195,6 +173,8 @@ theorem physical_declared_budget {η:Character}{C D:Ideal O}
     (radial_support_bound n Φ b hs y hy)
   rw [max_eq_right hbH]
   linarith
+
+end
 
 def presentationFactor : ℝ :=
   ((Ideal.span {(72:O)}).absNorm:ℝ)*(fixedFactor:ℝ)

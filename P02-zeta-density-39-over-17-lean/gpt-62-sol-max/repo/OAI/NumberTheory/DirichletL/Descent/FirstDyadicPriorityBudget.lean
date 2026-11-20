@@ -1,4 +1,5 @@
 module
+public import OAI.NumberTheory.DirichletL.Arithmetic.PrincipalIdealFamily
 public import OAI.NumberTheory.DirichletL.Descent.FirstDyadicRetainedBudget
 public import OAI.NumberTheory.DirichletL.Descent.FirstOriginalProfileLiveParents
 public import OAI.NumberTheory.DirichletL.Descent.FirstLiveCountBudget
@@ -13,10 +14,7 @@ noncomputable section
 open scoped Classical BigOperators SchwartzMap
 
 namespace SevenEighths.InverseMoment
-open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic
-open InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows
-open InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform
-open InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
+open ActualEisensteinCubic FirstPassCubeLabels SecondPassArithmetic InverseFirstGlobalCaps InverseSecondSourceBlocks InverseMomentFirstChildWindows InverseMomentFirstOriginalProfile InverseMomentFirstProfileUniform InverseAmbientProfileTower JointLogSeparation FourierBridge CompletedHeight
 open ConcreteTraceCRT (eisEmbedding)
 local notation "O"=>ActualEisensteinCubic.O
 
@@ -26,12 +24,12 @@ theorem original_dyadic_priority_budget
       HasCompactSupport (omega₁:ℝ→ℂ) ∧ HasCompactSupport (omega₂:ℝ→ℂ) ∧
       tsupport (omega₁:ℝ→ℂ)⊆Set.Icc lo hi ∧ tsupport (omega₂:ℝ→ℂ)⊆Set.Icc lo hi ∧
     ∀eps:ℝ,0<eps→∀J:ℕ,∃C:ℝ,0≤C ∧
-    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι→O)(hp:∀i,p i≠0)[∀i,(Ideal.span {p i}).IsMaximal]
-      (hg:∀i,ConcretePrimeRowBridge.goodLambda∉Ideal.span {p i})
-      (hinj:Function.Injective (fun i=>Ideal.span {p i}))
-      (hcop:Pairwise (Function.onFun IsCoprime (fun i=>Ideal.span {p i})))
-      (_hc:∀i,ringChar (O⧸Ideal.span {p i})≠2)
-      (_hpr:∀i,ConcretePrimeRowBridge.goodLambda^2∣p i-1)
+    ∀{ι σ:Type}[DecidableEq ι][DecidableEq σ](p:ι→O)(hp:∀i,p i≠0)[OAI.PrincipalIdealFamily.Maximal p]
+      (hg:OAI.PrincipalIdealFamily.Avoids p ConcretePrimeRowBridge.goodLambda)
+      (hinj:OAI.PrincipalIdealFamily.Distinct p)
+      (hcop:OAI.PrincipalIdealFamily.PairwiseCoprime p)
+      (_hc:OAI.PrincipalIdealFamily.CharacteristicNe p 2)
+      (_hpr:OAI.PrincipalIdealFamily.PrimaryAt p ConcretePrimeRowBridge.goodLambda)
       (pool:Finset ι)(Q:Finset (ι→₀ℕ))(labels:Finset (Ideal O))
       (β:Ideal O→(ι→₀ℕ)→ℂ)(Ψ:O→*ℂ)(m:O)
       (slots:Finset σ)(lists:σ→Finset ι)(weights:σ→ι→ℂ)
