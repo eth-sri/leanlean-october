@@ -4,93 +4,63 @@ public import NormalizerLean.Defs
 
 @[expose] public section
 
-/-!
-# Basic API for Γ₀(N) ≤ SL₂(ℝ), its normalizer, B(N), S_k and h(N)
--/
+/-! Basic arithmetic and matrix identities. In particular, the defining minimum of valuations
+gives `nDelta N Δ * hDelta N Δ ^ 2 = N`. -/
 
-open Matrix MatrixGroups
+open Matrix CongruenceSubgroup
 
 namespace NormalizerLean
 
-noncomputable section
+/-- Integral special linear matrix with specified entries. -/
+def mkSL (a b c d : ℤ) (h : a * d - b * c = 1) : SL₂ℤ := ⟨!![a, b; c, d], by simpa [det_fin_two_of]⟩
 
-/-! ### Membership in Γ₀(N) -/
+macro "entries" : tactic => `(tactic| (ext i j; fin_cases i <;> fin_cases j))
 
-/-- The real matrix of an integer matrix. -/
-abbrev castM (M : Matrix (Fin 2) (Fin 2) ℤ) : Matrix (Fin 2) (Fin 2) ℝ := M.map (Int.cast)
+@[simp] lemma ofZ_mkSL (a b c d) (det) : (ofZ (mkSL a b c d det) : Mat₂ ℝ) = !![(a : ℝ), b; c, d] := by entries <;> rfl
 
-theorem mem_Gamma0R_iff {N : ℕ} {g : SL(2, ℝ)} :
-    g ∈ Gamma0R N ↔ ∃ M : Matrix (Fin 2) (Fin 2) ℤ,
-      (N : ℤ) ∣ M 1 0 ∧ (g : Matrix (Fin 2) (Fin 2) ℝ) = castM M := by
-  constructor
-  · rintro ⟨A, hA, rfl⟩
-    refine ⟨A, ?_, ?_⟩
-    · exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).1 (CongruenceSubgroup.Gamma0_mem.1 hA)
-    · ext i j
-      simp [Matrix.SpecialLinearGroup.map_apply_coe, RingHom.mapMatrix_apply]
-  · rintro ⟨M, hM, hg⟩
-    have hdet : M.det = 1 := by
-      have h1 := g.2
-      rw [hg, det_fin_two] at h1
-      rw [det_fin_two]
-      simp only [castM, map_apply] at h1
-      exact_mod_cast h1
-    let A : SL(2, ℤ) := ⟨M, hdet⟩
-    refine ⟨A, CongruenceSubgroup.Gamma0_mem.2 ((ZMod.intCast_zmod_eq_zero_iff_dvd _ _).2 hM), ?_⟩
-    refine Matrix.SpecialLinearGroup.ext _ _ (fun i j => ?_)
-    rw [Matrix.SpecialLinearGroup.map_apply_coe, hg]
-    rfl
+theorem coe_projSL {A : Mat₂ ℝ} (h : 0 < A.det) : (projSL A : Mat₂ ℝ) = (Real.sqrt A.det)⁻¹ • A := by simp [projSL, h]
 
-/-- Membership in Γ₀(N) from explicit integer entries. -/
-theorem mem_Gamma0R_of_entries {N : ℕ} {g : SL(2, ℝ)} (a b c d : ℤ)
-    (hg : (g : Matrix (Fin 2) (Fin 2) ℝ) = !![(a : ℝ), b; c, d]) (hc : (N : ℤ) ∣ c) :
-    g ∈ Gamma0R N := by
-  refine mem_Gamma0R_iff.2 ⟨!![a, b; c, d], by simpa using hc, ?_⟩
-  rw [hg]
-  ext i j
-  fin_cases i <;> fin_cases j <;> simp
+variable {N : ℕ} {Δ : Subgroup (ZMod N)ˣ}
 
-/-- Elements of Γ₀(N) have integer entries, lower-left divisible by N, determinant 1. -/
-theorem exists_entries_of_mem_Gamma0R {N : ℕ} {g : SL(2, ℝ)} (hg : g ∈ Gamma0R N) :
-    ∃ a b c d : ℤ, a * d - b * c = 1 ∧ (N : ℤ) ∣ c ∧
-      (g : Matrix (Fin 2) (Fin 2) ℝ) = !![(a : ℝ), b; c, d] := by
-  obtain ⟨M, hM, hgM⟩ := mem_Gamma0R_iff.1 hg
-  refine ⟨M 0 0, M 0 1, M 1 0, M 1 1, ?_, hM, ?_⟩
-  · have h1 := g.2
-    rw [hgM, det_fin_two] at h1
-    simp only [castM, map_apply] at h1
-    exact_mod_cast h1
-  · rw [hgM]
-    ext i j
-    fin_cases i <;> fin_cases j <;> simp
+lemma gamma0_dvd {g : SL₂ℤ} : g ∈ Gamma0 N ↔ (N : ℤ) ∣ g 1 0 := ZMod.intCast_zmod_eq_zero_iff_dvd ..
 
-/-! ### The normalizer -/
+lemma lift_unit (u : (ZMod N)ˣ) : ∃ x y : ℤ, x * (u : ZMod N).val - y * N = 1 := by
+  obtain ⟨x, y, h⟩ : IsCoprime ((u : ZMod N).val : ℤ) N := by
+    simpa [Int.isCoprime_iff_gcd_eq_one] using ZMod.val_coe_unit_coprime u
+  exact ⟨x, -y, by linear_combination h⟩
 
-/-! ### B(N) -/
+variable [NeZero N]
 
-/-! ### Translations S_k -/
+lemma dvd_epsDelta_iff {m : ℕ} : m ∣ epsDelta N Δ ↔ m ∣ N ∧ ∀ u ∈ Δ, m ∣ (u : ZMod N).val ^ 2 - 1 := by
+  classical simp [epsDelta, Nat.dvd_gcd_iff, Finset.dvd_gcd_iff]
 
-theorem coe_S (k : ℕ) : ((S k : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) = !![1, (k : ℝ)⁻¹; 0, 1] :=
-  rfl
+instance : NeZero (epsDelta N Δ) := ⟨(Nat.gcd_pos_of_pos_left _ (NeZero.pos N)).ne'⟩
 
-/-! ### h(N) -/
+lemma factorization_hDelta (p : ℕ) : (hDelta N Δ).factorization p = min ((epsDelta N Δ).factorization p) (N.factorization p / 2) := by
+  simp only [hDelta, Nat.factorization_prod_apply (fun q hq => pow_ne_zero _ (Nat.prime_of_mem_primeFactors hq).ne_zero)]
+  rw [Finset.sum_congr rfl (fun q hq => by rw [(Nat.prime_of_mem_primeFactors hq).factorization_pow, Finsupp.single_apply]), Finset.sum_ite_eq']
+  split_ifs with h
+  · rfl
+  · simp [N.factorization.notMem_support_iff.mp h]
 
-theorem hPart_pos (N : ℕ) : 0 < hPart N := by
-  unfold hPart
-  positivity
+variable (N Δ)
 
-/-! ### Units modulo divisors of 24 square to 1 -/
+instance : NeZero (hDelta N Δ) :=
+  ⟨(Finset.prod_pos fun _ h => pow_pos (Nat.pos_of_mem_primeFactors h) _).ne'⟩
 
-theorem modEq_of_mul_modEq_one {k : ℕ} (hk : k ∣ 24) {a d : ℤ} (h : a * d ≡ 1 [ZMOD k]) :
-    a ≡ d [ZMOD k] := by
-  have hk24 : k ≤ 24 := Nat.le_of_dvd (by norm_num) hk
-  rw [← ZMod.intCast_eq_intCast_iff] at h ⊢
-  push_cast at h
-  generalize (a : ZMod k) = x at h ⊢
-  generalize (d : ZMod k) = y at h ⊢
-  revert x y
-  interval_cases k <;> norm_num at hk <;> decide
+/-- The square divisor used to define the reduced level is exact. -/
+lemma nDelta_mul : nDelta N Δ * hDelta N Δ ^ 2 = N := by
+  apply Nat.div_mul_cancel
+  apply (Nat.factorization_le_iff_dvd (pow_ne_zero _ (NeZero.ne _)) (NeZero.ne N)).mp
+  intro p
+  simp [Nat.factorization_pow, factorization_hDelta]
+  omega
 
-end
+instance : NeZero (nDelta N Δ) :=
+  ⟨left_ne_zero_of_mul ((nDelta_mul N Δ).trans_ne (NeZero.ne N))⟩
+
+variable {N} in
+lemma cast_level {R : Type*} [Semiring R] : (N : R) = (nDelta N Δ : R) * (hDelta N Δ : R) ^ 2 := by
+  rw [← Nat.cast_pow, ← Nat.cast_mul, nDelta_mul]
 
 end NormalizerLean

@@ -1,146 +1,81 @@
 module
 
-public import NormalizerDelta.Proofs
-public import NormalizerDelta.DefsExtra
+public import NormalizerDelta.NewmanDelta
+public import NormalizerDelta.IndexDelta
 
 @[expose] public section
 
-/-!
-# §M: M_Δ = D⁻¹ Γ₀(n_Δ)⁺ D is the set of matrices of the generalized Newman bound
+/-! Atkin–Lehner products at reduced level, their diagonal conjugates, and the normalizer bound. -/
 
-* The Atkin–Lehner elements of level n (Q ∣ n) form a subgroup (`alSub`): products by the general
-  product law `isAtkinLehner_mul_gen`, inverses by the adjugate.  So Γ₀(n)⁺ = `alSub n`.
-* D⁻¹ w D, for w = (1/√Q)[[Qx, y], [nz, Qw]], is (1/√Q)[[Qx, y/h], [Nz/h, Qw]] (N = n h²): the form of
-  `IsNewmanFormH N h_Δ` with e = Q.  Conversely D g D⁻¹ of such a g is ±w_e.
--/
-
-open Matrix MatrixGroups
+open Matrix
 
 namespace NormalizerLean
 
-noncomputable section
+/-- In SL₂ the shape of the matrix already forces the Atkin–Lehner determinant equation. -/
+private lemma al_of_matrix {n q : ℕ} {g : SL₂ℝ} (a b c d : ℤ)
+    (m : (g : Mat₂ ℝ) = (Real.sqrt q)⁻¹ • !![(q : ℝ) * a, b; n * c, q * d]) : IsAtkinLehner n q g := by
+  refine ⟨a, b, c, d, ?_, m⟩
+  have H := g.2
+  rw [m, det_smul, det_fin_two_of, Fintype.card_fin, inv_pow, Real.sq_sqrt (by positivity)] at H
+  rify; linear_combination inv_injective (inv_eq_of_mul_eq_one_left H)
 
-/-! ### Γ₀(n)⁺ -/
+abbrev AL (n : ℕ) (g : SL₂ℝ) := ∃ q : ℕ, q ∣ n ∧ IsAtkinLehner n q g
 
-theorem isAtkinLehner_inv {n Q : ℕ} {g : SL(2, ℝ)} (hg : IsAtkinLehner n Q g) :
-    IsAtkinLehner n Q g⁻¹ := by
-  obtain ⟨x, y, z, w, hdet, hgm⟩ := hg
-  refine ⟨w, -y, -z, x, by linear_combination hdet, ?_⟩
-  rw [coe_inv_of_coe_eq_smul hgm]
-  congr 1
-  ext i j; fin_cases i <;> fin_cases j <;> simp
+/-- Write the two parameters as `u*G`, `v*G` with coprime `u`, `v`. Their product
+has parameter `u*v`; its coefficients use the complementary factor of their lcm. -/
+private lemma al_mul {n : ℕ} [NeZero n] {g g' : SL₂ℝ} : AL n g → AL n g' → AL n (g * g') := by
+  rintro ⟨q, hq, a, b, c, d, -, M⟩ ⟨q', hq', x, y, z, w, -, M'⟩
+  obtain ⟨G, u, v, hG, co, rfl, rfl⟩ := Nat.exists_coprime' (Nat.gcd_pos_of_pos_left q' (Nat.pos_of_dvd_of_pos hq (NeZero.pos n)))
+  obtain ⟨L, rfl⟩ : u * v * G ∣ n := by simpa only [Nat.lcm_mul_right, co.lcm_eq_mul] using Nat.lcm_dvd hq hq'
+  refine ⟨u * v, ⟨_, mul_assoc ..⟩, al_of_matrix
+    (G * a * x + L * b * z) (u * a * y + v * b * w) (v * c * x + u * d * z) (L * c * y + G * d * w) ?_⟩
+  change (g : Mat₂ ℝ) * (g' : Mat₂ ℝ) = _
+  rw [M, M', Matrix.smul_mul, Matrix.mul_smul, smul_smul]
+  entries <;> simp [Real.sqrt_mul (Nat.cast_nonneg _)] <;>
+    field_simp <;> simp [Real.sq_sqrt, mul_assoc, mul_left_comm, mul_comm]
 
-/-- The Atkin–Lehner elements of level n (Q ∣ n) form a subgroup. -/
-def alSub (n : ℕ) [NeZero n] : Subgroup SL(2, ℝ) where
-  carrier := {g | ∃ Q : ℕ, Q ∣ n ∧ IsAtkinLehner n Q g}
-  one_mem' := ⟨1, one_dvd n, (isAtkinLehner_one_iff' n 1).2 (Subgroup.one_mem _)⟩
-  mul_mem' := by
-    rintro g g' ⟨Q, hQ, hg⟩ ⟨Q', hQ', hg'⟩
-    exact ⟨_, mul_div_gcd_dvd hQ hQ', isAtkinLehner_mul_gen hQ hQ' hg hg'⟩
-  inv_mem' := by
-    rintro g ⟨Q, hQ, hg⟩
-    exact ⟨Q, hQ, isAtkinLehner_inv hg⟩
+private lemma mem_plus {n : ℕ} [NeZero n] {g : SL₂ℝ} : g ∈ Gamma0Plus n ↔ AL n g := by
+  refine ⟨fun h => ?_, fun h => Subgroup.subset_closure h⟩
+  induction h using Subgroup.closure_induction with
+  | mem x hx => exact hx
+  | one => exact ⟨1, one_dvd _, 1, 0, 0, 1, by simp, by entries <;> simp⟩
+  | mul _ _ _ _ h k => exact al_mul h k
+  | inv g _ ih =>
+    obtain ⟨q, hq, a, b, c, d, H, M⟩ := ih
+    exact ⟨q, hq, d, -b, -c, a, by linear_combination H, by rw [coe_inv_scaled M]; entries <;> simp⟩
 
-theorem Gamma0Plus_eq (n : ℕ) [NeZero n] : Gamma0Plus n = alSub n :=
-  Subgroup.closure_eq (alSub n)
+variable (N : ℕ) [NeZero N] (Δ : Subgroup (ZMod N)ˣ)
 
-theorem mem_Gamma0Plus {n : ℕ} [NeZero n] {g : SL(2, ℝ)} :
-    g ∈ Gamma0Plus n ↔ ∃ Q : ℕ, Q ∣ n ∧ IsAtkinLehner n Q g := by
-  rw [Gamma0Plus_eq]; rfl
+local notation "h" => hDelta N Δ
+local notation "n" => nDelta N Δ
 
-/-! ### n_Δ -/
+/-- Undo the diagonal conjugation, cancelling the scalar factors from `projSL`. -/
+lemma diagonal_conj (g : SL₂ℝ) (s q a b c d : ℝ) :
+    ((MulAut.conj (projSL !![(h : ℝ), 0; 0, 1]) g : SL₂ℝ) : Mat₂ ℝ) = s • !![q * a, b; n * c, q * d] ↔
+    (g : Mat₂ ℝ) = s • !![a * q, b / h; N * c / h, d * q] := by
+  have S := coe_projSL (show 0 < (!![(h : ℝ), 0; 0, 1] : Mat₂ ℝ).det by simpa [det_fin_two_of] using NeZero.pos h)
+  simp only [MulAut.conj_apply, ← Matrix.ext_iff, Fin.forall_fin_two]
+  simp [S, coe_inv_scaled S, det_fin_two_of, Matrix.mul_apply, Matrix.vecMul, dotProduct, Fin.sum_univ_two, cast_level Δ]
+  have := NeZero.ne (h : ℝ)
+  field_simp; simp [sq]; grind
 
-theorem nDelta_mul (N : ℕ) [NeZero N] (Δ : Subgroup (ZMod N)ˣ) :
-    nDelta N Δ * hDelta N Δ ^ 2 = N :=
-  Nat.div_mul_cancel (hDelta_sq_dvd' N Δ)
+lemma mem_MDelta {g : SL₂ℝ} : g ∈ MDelta N Δ ↔ AL n (MulAut.conj (projSL !![(h : ℝ), 0; 0, 1]) g) := by
+  rw [MDelta, Subgroup.mem_map_equiv, MulAut.conj_symm_apply, inv_inv]; exact mem_plus
 
-instance nDelta_neZero (N : ℕ) [NeZero N] (Δ : Subgroup (ZMod N)ˣ) : NeZero (nDelta N Δ) :=
-  ⟨fun h => NeZero.ne N (by rw [← nDelta_mul N Δ, h, zero_mul])⟩
-
-theorem hDelta_pos (N : ℕ) [NeZero N] (Δ : Subgroup (ZMod N)ˣ) : 0 < hDelta N Δ :=
-  Nat.pos_of_ne_zero (hDelta_ne_zero Δ)
-
-/-! ### Conjugation by D⁻¹ -/
-
-/-- Conjugation by D⁻¹: [[a, b], [c, d]] ↦ [[a, b/M], [Mc, d]]. -/
-theorem coe_conj_Dm_inv {M : ℕ} (hM : 0 < M) {Y : SL(2, ℝ)} {a b c d : ℝ}
-    (hY : (Y : Matrix (Fin 2) (Fin 2) ℝ) = !![a, b; c, d]) :
-    ((MulAut.conj (Dm M)⁻¹ Y : SL(2, ℝ)) : Matrix (Fin 2) (Fin 2) ℝ) =
-      !![a, b / M; M * c, d] := by
-  have hs : Real.sqrt M ≠ 0 := (Real.sqrt_pos.2 (by exact_mod_cast hM)).ne'
-  have hss : Real.sqrt M * Real.sqrt M = M := Real.mul_self_sqrt (Nat.cast_nonneg _)
-  have hM' : (M : ℝ) ≠ 0 := by exact_mod_cast hM.ne'
-  rw [MulAut.conj_apply, inv_inv, Matrix.SpecialLinearGroup.coe_mul,
-    Matrix.SpecialLinearGroup.coe_mul, Matrix.SpecialLinearGroup.coe_inv, coe_Dm hM, hY,
-    adjugate_fin_two_of]
-  ext i j; fin_cases i <;> fin_cases j <;> simp [Matrix.mul_apply, Fin.sum_univ_two] <;>
-    field_simp <;> (try rw [Real.sq_sqrt (Nat.cast_nonneg _)]) <;> ring
-
-theorem conj_Dm_inv_conj_Dm (M : ℕ) (g : SL(2, ℝ)) :
-    MulAut.conj (Dm M)⁻¹ (MulAut.conj (Dm M) g) = g := by
-  simp [MulAut.conj_apply, mul_assoc]
-
-/-! ### M_Δ -/
-
-theorem mem_MDelta_iff {N : ℕ} [NeZero N] {Δ : Subgroup (ZMod N)ˣ} {g : SL(2, ℝ)} :
-    g ∈ MDelta N Δ ↔ IsNewmanFormH N (hDelta N Δ) g := by
-  have hh := hDelta_pos N Δ
-  have hhr : (hDelta N Δ : ℝ) ≠ 0 := by exact_mod_cast hh.ne'
-  have hNr : (N : ℝ) = nDelta N Δ * (hDelta N Δ : ℝ) ^ 2 := by
-    exact_mod_cast (nDelta_mul N Δ).symm
+theorem coe_MDelta : (MDelta N Δ : Set SL₂ℝ) = {g | IsNewmanFormH N h g} := by
+  ext g; change g ∈ MDelta N Δ ↔ _; rw [mem_MDelta]
   constructor
-  · rintro ⟨w, hw, rfl⟩
-    obtain ⟨Q, hQ, x, y, z, w', hdet, hwm⟩ := mem_Gamma0Plus.1 hw
-    have hQ0 : 0 < Q := Nat.pos_of_dvd_of_pos hQ (Nat.pos_of_ne_zero (NeZero.ne _))
-    refine ⟨x, y, z, w', Q, hQ0, hQ, by
-      rw [show N / hDelta N Δ ^ 2 = nDelta N Δ from rfl]; linear_combination hdet, 1, Or.inl rfl, ?_⟩
-    have hwm' : (w : Matrix (Fin 2) (Fin 2) ℝ) =
-        !![(Real.sqrt Q)⁻¹ * (Q * x), (Real.sqrt Q)⁻¹ * y;
-          (Real.sqrt Q)⁻¹ * (nDelta N Δ * z), (Real.sqrt Q)⁻¹ * (Q * w')] := by
-      rw [hwm]; ext i j; fin_cases i <;> fin_cases j <;> simp
-    simp only [MulEquiv.toMonoidHom_eq_coe, MonoidHom.coe_coe]
-    rw [coe_conj_Dm_inv hh hwm']
-    ext i j; fin_cases i <;> fin_cases j <;> simp [hNr] <;> field_simp <;> (try ring) <;> simp
-  · rintro ⟨a, b, c, d, e, he0, he, hdet, ε, hε, hgm⟩
-    refine ⟨MulAut.conj (Dm (hDelta N Δ)) g, ?_, conj_Dm_inv_conj_Dm _ g⟩
-    have hgm' : (g : Matrix (Fin 2) (Fin 2) ℝ) =
-        !![ε / Real.sqrt e * (a * e), ε / Real.sqrt e * (b / hDelta N Δ);
-          ε / Real.sqrt e * (N * c / hDelta N Δ), ε / Real.sqrt e * (d * e)] := by
-      rw [hgm]; ext i j; fin_cases i <;> fin_cases j <;> simp
-    have hc := coe_conj_Dm hh hgm'
-    have hn : N / hDelta N Δ ^ 2 = nDelta N Δ := rfl
-    rw [hn] at hdet he
-    refine mem_Gamma0Plus.2 ⟨e, he, ?_⟩
-    rcases hε with rfl | rfl
-    · refine ⟨a, b, c, d, by linear_combination hdet, ?_⟩
-      rw [hc]
-      ext i j; fin_cases i <;> fin_cases j <;> simp [hNr] <;> field_simp <;> (try ring) <;> simp
-    · refine ⟨-a, -b, -c, -d, by linear_combination hdet, ?_⟩
-      rw [hc]
-      ext i j; fin_cases i <;> fin_cases j <;> simp [hNr] <;> field_simp <;> (try ring) <;> simp
+  · rintro ⟨q, hq, a, b, c, d, H, M⟩
+    refine ⟨a, b, c, d, q, Nat.pos_of_dvd_of_pos hq (NeZero.pos _), hq, by simpa [nDelta, mul_assoc, mul_left_comm, mul_comm] using H, 1, Or.inl rfl, ?_⟩
+    simpa only [one_div] using (diagonal_conj N Δ ..).mp M
+  · rintro ⟨a, b, c, d, q, _, hd, _, s, hs, M⟩
+    refine ⟨q, hd, ?_⟩
+    rcases hs with rfl | rfl <;> [apply al_of_matrix a b c d; apply al_of_matrix (-a) (-b) (-c) (-d)] <;>
+      rw [diagonal_conj N Δ, M] <;> entries <;> simp <;> ring
 
-theorem coe_MDelta' (N : ℕ) [NeZero N] (Δ : Subgroup (ZMod N)ˣ) :
-    (MDelta N Δ : Set SL(2, ℝ)) = {g | IsNewmanFormH N (hDelta N Δ) g} :=
-  Set.ext fun _ => mem_MDelta_iff
+theorem normG_GammaDeltaR_le_MDelta : NormG (GammaDeltaR N Δ) ≤ MDelta N Δ :=
+  fun _ hg => (Set.ext_iff.mp (coe_MDelta N Δ) _).mpr (newman_delta hg)
 
-theorem Gamma0R_le_MDelta' (N : ℕ) [NeZero N] (Δ : Subgroup (ZMod N)ˣ) : Gamma0R N ≤ MDelta N Δ := by
-  intro γ hγ
-  obtain ⟨a, b, c', d, hdet, ⟨z, rfl⟩, hγm⟩ := exists_entries_of_mem_Gamma0R hγ
-  have hh := hDelta_pos N Δ
-  have hhr : (hDelta N Δ : ℝ) ≠ 0 := by exact_mod_cast hh.ne'
-  have hNz : (N : ℤ) = nDelta N Δ * (hDelta N Δ : ℤ) ^ 2 := by
-    exact_mod_cast (nDelta_mul N Δ).symm
-  refine mem_MDelta_iff.2 ⟨a, b * hDelta N Δ, z * hDelta N Δ, d, 1, one_pos, one_dvd _, ?_, 1,
-    Or.inl rfl, ?_⟩
-  · have hn : N / hDelta N Δ ^ 2 = nDelta N Δ := rfl
-    rw [hn]; push_cast; rw [hNz] at hdet; linear_combination hdet
-  · rw [hγm]
-    ext i j; fin_cases i <;> fin_cases j <;> simp <;> field_simp
-
-theorem normG_GammaDeltaR_le_MDelta' (N : ℕ) [NeZero N] (Δ : Subgroup (ZMod N)ˣ) :
-    NormG (GammaDeltaR N Δ) ≤ MDelta N Δ :=
-  fun _ hg => mem_MDelta_iff.2 (newman_delta' Δ hg)
-
-end
+theorem Gamma0R_le_MDelta : Gamma0R N ≤ MDelta N Δ := gamma0_normalizes.trans (normG_GammaDeltaR_le_MDelta N Δ)
 
 end NormalizerLean
