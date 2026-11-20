@@ -12,42 +12,47 @@ open PottsDiscontinuity.FK
 
 noncomputable section
 
+variable (ω : LatticeConfiguration) (u v : LatticeVertex) (b : LatticeBond) (d : LatticeBond)
+
+include b in
 /-- The normalized dual bond crossing a primal bond, with lower/left endpoint
 as its base. -/
-def dualBondOfPrimal (b : LatticeBond) : LatticeBond :=
+def dualBondOfPrimal : LatticeBond :=
   match b.axis with
   | .horizontal => ⟨(b.base.1, b.base.2 - 1), .vertical⟩
   | .vertical => ⟨(b.base.1 - 1, b.base.2), .horizontal⟩
 
+include d in
 /-- The primal bond crossing a normalized dual bond. This is the shifted
 inverse of `dualBondOfPrimal`. -/
-def primalBondOfDual (d : LatticeBond) : LatticeBond :=
+def primalBondOfDual : LatticeBond :=
   match d.axis with
   | .horizontal => ⟨(d.base.1 + 1, d.base.2), .vertical⟩
   | .vertical => ⟨(d.base.1, d.base.2 + 1), .horizontal⟩
 
-@[simp] theorem primalBondOfDual_dualBondOfPrimal (b : LatticeBond) :
+@[simp] theorem primalBondOfDual_dualBondOfPrimal :
     primalBondOfDual (dualBondOfPrimal b) = b := by
   rcases b with ⟨⟨x,y⟩, ax⟩
   cases ax <;> simp [dualBondOfPrimal, primalBondOfDual]
 
-@[simp] theorem dualBondOfPrimal_primalBondOfDual (d : LatticeBond) :
+@[simp] theorem dualBondOfPrimal_primalBondOfDual :
     dualBondOfPrimal (primalBondOfDual d) = d := by
   rcases d with ⟨⟨x,y⟩, ax⟩
   cases ax <;> simp [dualBondOfPrimal, primalBondOfDual]
 
-@[simp] theorem dualBondOfPrimal_source (b : LatticeBond) :
+@[simp] theorem dualBondOfPrimal_source :
     (dualBondOfPrimal b).source = b.faceBase false := by
   rcases b with ⟨⟨x,y⟩, ax⟩
   cases ax <;> rfl
 
-@[simp] theorem dualBondOfPrimal_target (b : LatticeBond) :
+@[simp] theorem dualBondOfPrimal_target :
     (dualBondOfPrimal b).target = b.faceBase true := by
   rcases b with ⟨⟨x,y⟩, ax⟩
   cases ax <;> simp [dualBondOfPrimal, LatticeBond.target, LatticeBond.faceBase]
 
+include ω in
 /-- The literal whole-plane closed-dual graph on face bases. -/
-def wholePlaneClosedDualGraph (ω : LatticeConfiguration) : SimpleGraph LatticeVertex where
+def wholePlaneClosedDualGraph : SimpleGraph LatticeVertex where
   Adj u v := ∃ b : LatticeBond,
     latticeConfigurationBondState ω b = false ∧
       (u = b.faceBase false ∧ v = b.faceBase true ∨
@@ -65,12 +70,7 @@ def wholePlaneClosedDualGraph (ω : LatticeConfiguration) : SimpleGraph LatticeV
     · have hne := LatticePort.closedPair_faceBase_ne (⟨b, false, false⟩ : LatticePort)
       exact hne (by simpa [LatticePort.closedPair, LatticePort.faceBase] using (huv.2.symm.trans huv.1).symm)⟩
 
-def wholePlaneClosedDualCluster (ω : LatticeConfiguration) (u : LatticeVertex) :
-    Set LatticeVertex :=
-  {v | Relation.EqvGen (wholePlaneClosedDualGraph ω).Adj u v}
-
-theorem wholePlaneClosedDualGraph_adj_iff (ω : LatticeConfiguration)
-    (u v : LatticeVertex) :
+theorem wholePlaneClosedDualGraph_adj_iff :
     (wholePlaneClosedDualGraph ω).Adj u v ↔
       ∃ b : LatticeBond, latticeConfigurationBondState ω b = false ∧
         (u = b.faceBase false ∧ v = b.faceBase true ∨
@@ -78,8 +78,7 @@ theorem wholePlaneClosedDualGraph_adj_iff (ω : LatticeConfiguration)
 
 /-- Dual graph steps are exactly the normalized nearest-neighbor edges whose
 crossing primal bond is closed. -/
-theorem wholePlaneClosedDualGraph_adj_iff_dualBond (ω : LatticeConfiguration)
-    (u v : LatticeVertex) :
+theorem wholePlaneClosedDualGraph_adj_iff_dualBond :
     (wholePlaneClosedDualGraph ω).Adj u v ↔
       ∃ d : LatticeBond,
         latticeConfigurationBondState ω (primalBondOfDual d) = false ∧
@@ -99,14 +98,14 @@ theorem wholePlaneClosedDualGraph_adj_iff_dualBond (ω : LatticeConfiguration)
           rw [← dualBondOfPrimal_source, dualBondOfPrimal_primalBondOfDual]
         have ht : (primalBondOfDual d).faceBase true = d.target := by
           rw [← dualBondOfPrimal_target, dualBondOfPrimal_primalBondOfDual]
-        exact Or.inl ⟨huv.1.trans hs.symm, huv.2.trans ht.symm⟩
+        grind
     · refine ⟨primalBondOfDual d, ?_, ?_⟩
       · simpa using hclosed
       · have hs : (primalBondOfDual d).faceBase false = d.source := by
           rw [← dualBondOfPrimal_source, dualBondOfPrimal_primalBondOfDual]
         have ht : (primalBondOfDual d).faceBase true = d.target := by
           rw [← dualBondOfPrimal_target, dualBondOfPrimal_primalBondOfDual]
-        exact Or.inr ⟨huv.1.trans ht.symm, huv.2.trans hs.symm⟩
+        grind
 
 end
 end PottsDiscontinuity.FK.Medial

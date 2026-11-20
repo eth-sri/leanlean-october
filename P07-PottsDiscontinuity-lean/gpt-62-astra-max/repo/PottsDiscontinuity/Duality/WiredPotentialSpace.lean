@@ -15,7 +15,7 @@ variable {V : Type*} [Fintype V] (G : SimpleGraph V)
 
 /-- Potentials constant on each genuine wired FK component. -/
 def componentConstantFunctions : Submodule ℝ (V → ℝ) where
-  carrier := {f | ∀ ⦃u v⦄, (componentSetoid G ξ A).r u v → f u = f v}
+  carrier := {f | ∀ ⦃u v⦄, (componentSetoid ξ A).r u v → f u = f v}
   zero_mem' := by intro u v h; rfl
   add_mem' := by
     intro f g hf hg u v h
@@ -27,7 +27,7 @@ def componentConstantFunctions : Submodule ℝ (V → ℝ) where
 /-- The equivalent local conditions: equality across each actual open edge and
 across each pair identified by the chosen boundary partition. -/
 def componentPotentialLocalPredicate (f : V → ℝ) : Prop :=
-  (∀ ⦃u v⦄, (openGraph G A).Adj u v → f u = f v) ∧
+  (∀ ⦃u v⦄, (openGraph A).Adj u v → f u = f v) ∧
   (∀ ⦃u v⦄, ξ.partition.r u v → f u = f v)
 
 omit [Fintype V] in
@@ -38,7 +38,7 @@ theorem componentConstant_iff_local (f : V → ℝ) :
     constructor
     · intro u v hadj
       apply hf
-      exact actualConnected_component G ξ A (actualConnected_of_adj G A hadj)
+      exact actualConnected_component ξ (actualConnected_of_adj G A hadj)
     · intro u v hboundary
       apply hf
       exact boundary_component G ξ A hboundary
@@ -46,37 +46,34 @@ theorem componentConstant_iff_local (f : V → ℝ) :
     let eqS : Setoid V :=
       { r := fun u v => f u = f v
         iseqv := {
-          refl := by intro u; rfl
-          symm := by intro u v h; exact h.symm
-          trans := by intro u v w h₁ h₂; exact h₁.trans h₂ } }
-    have hreach : (openGraph G A).reachableSetoid ≤ eqS :=
-      reachableSetoid_le_of_adj (openGraph G A) eqS (by
-        intro u v hadj
-        exact hopen hadj)
+          refl := by grind
+          symm := by grind
+          trans := by grind } }
+    have hreach :=
+      reachableSetoid_le_of_adj eqS (by
+        assumption)
     have hb : ξ.partition ≤ eqS := by
-      intro u v h
-      exact hboundary h
-    have hcomp : componentSetoid G ξ A ≤ eqS := by
-      exact sup_le hreach hb
+      assumption
+    have hcomp : componentSetoid ξ A ≤ eqS := sup_le hreach hb
     exact hcomp
 
  def componentQuotientPullback :
-    (Quotient (componentSetoid G ξ A) → ℝ) →ₗ[ℝ] (V → ℝ) where
-  toFun f v := f (Quotient.mk (componentSetoid G ξ A) v)
+    (Quotient (componentSetoid ξ A) → ℝ) →ₗ[ℝ] (V → ℝ) where
+  toFun f v := f (Quotient.mk (componentSetoid ξ A) v)
   map_add' f g := by funext v; rfl
   map_smul' c f := by funext v; rfl
 
 /-- Componentwise potentials are precisely real-valued functions on the
 actual quotient by open connectivity and the boundary partition. -/
 noncomputable def componentConstantQuotientEquiv :
-    (Quotient (componentSetoid G ξ A) → ℝ) ≃ₗ[ℝ]
+    (Quotient (componentSetoid ξ A) → ℝ) ≃ₗ[ℝ]
       componentConstantFunctions G ξ A := by
   classical
   let e := (componentQuotientPullback G ξ A).codRestrict
     (componentConstantFunctions G ξ A) (by
       intro f u v h
-      change f (Quotient.mk (componentSetoid G ξ A) u) =
-        f (Quotient.mk (componentSetoid G ξ A) v)
+      change f (Quotient.mk (componentSetoid ξ A) u) =
+        f (Quotient.mk (componentSetoid ξ A) v)
       exact congrArg f (Quotient.sound h))
   refine LinearEquiv.ofBijective e ⟨?_, ?_⟩
   · intro f g hfg
@@ -86,11 +83,11 @@ noncomputable def componentConstantQuotientEquiv :
     refine Quotient.inductionOn q ?_
     intro v
     have hv := congrFun hfun v
-    change f (Quotient.mk (componentSetoid G ξ A) v) =
-      g (Quotient.mk (componentSetoid G ξ A) v) at hv
+    change f (Quotient.mk (componentSetoid ξ A) v) =
+      g (Quotient.mk (componentSetoid ξ A) v) at hv
     exact hv
   · intro g
-    let back : Quotient (componentSetoid G ξ A) → ℝ :=
+    let back : Quotient (componentSetoid ξ A) → ℝ :=
       Quotient.lift g.1 (by
         intro u v h
         exact g.2 h)
@@ -102,12 +99,10 @@ noncomputable def componentConstantQuotientEquiv :
 omit [Fintype V] in
 theorem componentConstantFunctions_finrank [Finite V] :
     Module.finrank ℝ (componentConstantFunctions G ξ A) =
-      componentCount G ξ A := by
+      componentCount ξ A := by
   classical
   let : Fintype V := Fintype.ofFinite V
-  let : Fintype (Quotient (componentSetoid G ξ A)) := Fintype.ofFinite _
   rw [← LinearEquiv.finrank_eq (componentConstantQuotientEquiv G ξ A)]
-  rw [Module.finrank_fintype_fun_eq_card]
   simp [componentCount, Nat.card_eq_fintype_card]
 
 end PottsDiscontinuity.FK

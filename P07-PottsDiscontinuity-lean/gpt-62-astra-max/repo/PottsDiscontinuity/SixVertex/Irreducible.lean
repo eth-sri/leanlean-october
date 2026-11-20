@@ -30,13 +30,15 @@ section Generic
 
 variable {S : Type*} [Fintype S] [DecidableEq S] {A : Matrix S S ℝ}
 
-theorem pow_succ_apply_pos (hA : ∀ i j, 0 ≤ A i j) {k : ℕ} {a b c : S}
-    (h1 : 0 < (A ^ k) a b) (h2 : 0 < A b c) : 0 < (A ^ (k + 1)) a c := by
-  rw [pow_succ, Matrix.mul_apply]
-  refine Finset.sum_pos' (fun d _ => mul_nonneg (Matrix.pow_apply_nonneg hA k a d) (hA d c))
-    ⟨b, mem_univ b, mul_pos h1 h2⟩
+variable (hA : ∀ i j, 0 ≤ A i j)
 
-theorem exists_pow_pos_of_reflTransGen (hA : ∀ i j, 0 ≤ A i j) {a b : S}
+include hA in
+theorem pow_succ_apply_pos {k : ℕ} {a b c : S}
+    (h1 : 0 < (A ^ k) a b) (h2 : 0 < A b c) : 0 < (A ^ (k + 1)) a c := by
+  refine Finset.sum_pos' (fun d _ => mul_nonneg (Matrix.pow_apply_nonneg hA k a d) (hA d c)) ⟨b, mem_univ b, mul_pos h1 h2⟩
+
+include hA in
+theorem exists_pow_pos_of_reflTransGen {a b : S}
     (h : Relation.ReflTransGen (fun i j => 0 < A i j) a b) : ∃ k, 0 < (A ^ k) a b := by
   induction h with
   | refl => exact ⟨0, by simp⟩
@@ -50,23 +52,24 @@ theorem reflTransGen_symm_of_symm {α : Type*} {R : α → α → Prop} (hR : �
   | refl => exact .refl
   | tail _ hbc ih => exact .head (hR _ _ hbc) ih
 
+include hA in
 /-- A nonnegative matrix with positive diagonal in which every entry is positive in some power
 is primitive. -/
-theorem isPrimitive_of_pos_diag (hA : ∀ i j, 0 ≤ A i j) (hd : ∀ i, 0 < A i i)
+theorem isPrimitive_of_pos_diag (hd : ∀ i, 0 < A i i)
     (hpow : ∀ i j, ∃ k, 0 < (A ^ k) i j) : A.IsPrimitive := by
   choose k hk using hpow
-  have hpad : ∀ i j (K : ℕ), k i j ≤ K → 0 < (A ^ K) i j := by
+  have hpad : ∀ i j K, k i j ≤ K → 0 < (A ^ K) i j := by
     intro i j K hK
     obtain ⟨d, rfl⟩ := Nat.exists_eq_add_of_le hK
     induction d with
-    | zero => exact hk i j
+    | zero => grind
     | succ d ih =>
-      rw [← add_assoc]
-      exact pow_succ_apply_pos hA (ih (Nat.le_add_right _ _)) (hd j)
-  refine ⟨hA, (Finset.univ.sup fun p : S × S => k p.1 p.2) + 1, Nat.succ_pos _, fun i j => ?_⟩
+      grind [pow_succ_apply_pos]
+  let f' := fun p : S × S => k p.1 p.2
+  refine ⟨hA, (Finset.univ.sup f') + 1, Nat.succ_pos _, fun i j => ?_⟩
   refine hpad i j _ ?_
-  have : k i j ≤ Finset.univ.sup fun p : S × S => k p.1 p.2 :=
-    Finset.le_sup (f := fun p : S × S => k p.1 p.2) (mem_univ (i, j))
+  have : k i j ≤ Finset.univ.sup f' :=
+    Finset.le_sup (f := f') (mem_univ (i, j))
   omega
 
 end Generic
@@ -76,62 +79,62 @@ end Generic
 /-- The state obtained from `p` by moving the entry `i` to the vacant position `j`. -/
 def jump (p : Finset (Fin N)) (i j : Fin N) : Finset (Fin N) := insert j (p.erase i)
 
-theorem cnt_jump {p : Finset (Fin N)} {i j : Fin N} (hi : i ∈ p) (hj : j ∉ p) (hji : j < i)
+section
+variable {p : Finset (Fin N)} {i j : Fin N} (hi : i ∈ p) (hj : j ∉ p) (hji : j < i)
+include hi hj
+
+include hji in
+theorem cnt_jump
     (t : Fin N) :
     cnt (jump p i j) t = cnt p t + if j ≤ t ∧ t < i then 1 else 0 := by
   unfold cnt jump
-  have hjF : j ∉ p.filter (· ≤ t) := fun h => hj (mem_filter.1 h).1
+  have hjF : j ∉ p.filter (· ≤ t) := by grind
   rw [Finset.filter_insert, Finset.filter_erase]
   by_cases hjt : j ≤ t
   · by_cases hit : i ≤ t
-    · have hiF : i ∈ p.filter (· ≤ t) := mem_filter.2 ⟨hi, hit⟩
-      have : ¬ (t < i) := not_lt.2 hit
-      simp only [hjt, ↓reduceIte, this, and_false]
-      rw [card_insert_of_notMem (fun h => hjF (mem_of_mem_erase h)), card_erase_of_mem hiF]
-      have := card_pos.2 ⟨i, hiF⟩
-      omega
-    · have hiF : i ∉ p.filter (· ≤ t) := fun h => hit (mem_filter.1 h).2
-      have : t < i := not_le.1 hit
-      simp only [hjt, ↓reduceIte, this, and_self]
-      rw [erase_eq_of_notMem hiF, card_insert_of_notMem hjF]
-  · have hit : ¬ i ≤ t := fun h => hjt (le_trans hji.le h)
-    have hiF : i ∉ p.filter (· ≤ t) := fun h => hit (mem_filter.1 h).2
-    simp only [hjt, ↓reduceIte, false_and, add_zero]
-    rw [erase_eq_of_notMem hiF]
+    · grind
+    · simp [*]
+  · have hit := fun h => hjt (le_trans hji.le h)
+    have hiF : i ∉ p.filter (· ≤ t) := by grind
+    simp [*]
 
-theorem card_jump {p : Finset (Fin N)} {i j : Fin N} (hi : i ∈ p) (hj : j ∉ p) :
+theorem card_jump :
     (jump p i j).card = p.card := by
   unfold jump
-  have : j ∉ p.erase i := fun h => hj (mem_of_mem_erase h)
-  rw [card_insert_of_notMem this, card_erase_of_mem hi]
-  have := card_pos.2 ⟨i, hi⟩
-  omega
+  grind
 
-theorem interlaced_jump {p : Finset (Fin N)} {i j : Fin N} (hi : i ∈ p) (hj : j ∉ p)
-    (hji : j < i) : Interlaced p (jump p i j) := by
+include hji in
+theorem interlaced_jump : Interlaced p (jump p i j) := by
   rw [interlaced_iff]
   refine ⟨(card_jump hi hj).symm, Or.inr fun t => ?_⟩
-  rw [cnt_jump hi hj hji]
-  constructor <;> split_ifs <;> omega
+  grind [cnt_jump hi hj hji]
+
+end
 
 /-! ### Reaching the packed state -/
 
 /-- The packed state `{0, …, n - 1}`. -/
 def packedSet (N n : ℕ) : Finset (Fin N) := univ.filter fun a => a.val < n
 
-theorem card_packedSet {n : ℕ} (hn : n ≤ N) : (packedSet N n).card = n := by
+section
+variable {n : ℕ} (hn : n ≤ N)
+include hn
+
+theorem card_packedSet : (packedSet N n).card = n := by
   unfold packedSet
   rw [← card_image_of_injective _ Fin.val_injective]
   have : (univ.filter fun a : Fin N => a.val < n).image Fin.val = range n := by
     ext k
     simp only [mem_image, mem_filter, mem_univ, true_and, mem_range]
     constructor
-    · rintro ⟨a, ha, rfl⟩; exact ha
+    · grind
     · intro hk; exact ⟨⟨k, lt_of_lt_of_le hk hn⟩, hk, rfl⟩
-  rw [this, card_range]
+  grind
 
 /-- The packed state as an element of `State N n`. -/
-def packed (hn : n ≤ N) : State N n := ⟨packedSet N n, card_packedSet hn⟩
+def packed : State N n := ⟨packedSet N n, card_packedSet hn⟩
+
+end
 
 /-- The relation "`V^{[n]}` has a positive entry" generates a connected graph. -/
 theorem reach_packed (hc : 0 < c) (hn : n ≤ N) :
@@ -149,12 +152,11 @@ theorem reach_packed (hc : 0 < c) (hn : n ≤ N) :
         refine ⟨ha, ?_⟩
         have : ¬ a.val < n := fun h => hna (by simp [packedSet, h])
         omega
-      rw [card_eq_zero] at hx
-      simp [hx] at this
-    have : x.1 = packedSet N n :=
+      grind
+    have  :=
       Finset.eq_of_subset_of_card_le hsub (by rw [card_packedSet hn, x.2])
     have hxp : x = packed hn := Subtype.ext this
-    rw [hxp]
+    grind
   | succ m ih =>
     intro x hx
     have hne : (x.1.filter fun a => n ≤ a.val).Nonempty := by
@@ -162,49 +164,35 @@ theorem reach_packed (hc : 0 < c) (hn : n ≤ N) :
     obtain ⟨i, hi⟩ := hne
     rw [mem_filter] at hi
     -- a vacant position below `n`
-    have hj : ∃ j : Fin N, j.val < n ∧ j ∉ x.1 := by
+    have hj : ∃ j, j.val < n ∧ j ∉ x.1 := by
       by_contra hcon
       push Not at hcon
       have hsub : packedSet N n ⊆ x.1 := fun a ha => hcon a (by simpa [packedSet] using ha)
-      have : packedSet N n = x.1 :=
+      have  :=
         Finset.eq_of_subset_of_card_le hsub (by rw [card_packedSet hn, x.2])
-      have hi' : i ∈ packedSet N n := this ▸ hi.1
-      simp [packedSet] at hi'
-      omega
+      grind [packedSet]
     obtain ⟨j, hjn, hjx⟩ := hj
     have hji : j < i := by
-      rw [Fin.lt_def]; omega
+      omega
     let q : State N n := ⟨jump x.1 i j, by rw [card_jump hi.1 hjx, x.2]⟩
-    have hq : (q.1.filter fun a => n ≤ a.val).card = m := by
+    exact Relation.ReflTransGen.head (by
+      rw [transferBlock_pos_iff hc]
+      exact Or.inr (interlaced_jump hi.1 hjx hji)) (ih q (by
       have : q.1.filter (fun a => n ≤ a.val) = (x.1.filter fun a => n ≤ a.val).erase i := by
         show (jump x.1 i j).filter _ = _
         unfold jump
-        rw [Finset.filter_insert, Finset.filter_erase]
-        have : ¬ n ≤ j.val := by omega
-        simp [this]
-      rw [this, card_erase_of_mem (mem_filter.2 hi), hx]
-      rfl
-    have hstep : 0 < transferBlock N c n x q := by
-      rw [transferBlock_pos_iff hc]
-      exact Or.inr (interlaced_jump hi.1 hjx hji)
-    exact Relation.ReflTransGen.head hstep (ih q hq)
+        grind
+      grind))
 
 theorem exists_pow_pos_block (hc : 0 < c) (hn : n ≤ N) (x y : State N n) :
     ∃ k, 0 < (transferBlock N c n ^ k) x y := by
-  have hA := transferBlock_nonneg (N := N) hc.le n
-  have hxp := reach_packed hc hn _ x rfl
-  have hyp := reach_packed hc hn _ y rfl
-  have hsymm : ∀ a b : State N n, 0 < transferBlock N c n a b → 0 < transferBlock N c n b a := by
-    intro a b h
-    rw [transferBlock_apply, transferMatrix_symm] at h
-    exact h
-  exact exists_pow_pos_of_reflTransGen hA
-    (hxp.trans (reflTransGen_symm_of_symm hsymm hyp))
+  exact exists_pow_pos_of_reflTransGen (transferBlock_nonneg (N := N) hc.le n)
+    ((reach_packed hc hn _ x rfl).trans (reflTransGen_symm_of_symm (by simp [transferBlock_apply, transferMatrix_symm]) (reach_packed hc hn _ y rfl)))
 
 /-- For `c > 0` and `0 ≤ n ≤ N` the block `V^{[n]}` is primitive. -/
 theorem transferBlock_isPrimitive (hc : 0 < c) (hn : n ≤ N) :
     (transferBlock N c n).IsPrimitive :=
-  isPrimitive_of_pos_diag (transferBlock_nonneg (N := N) hc.le n)
-    (fun x => by rw [transferBlock_apply_self]; norm_num) (exists_pow_pos_block hc hn)
+  isPrimitive_of_pos_diag (transferBlock_nonneg hc.le n)
+    (fun x => by norm_num) (exists_pow_pos_block hc hn)
 
 end PottsDiscontinuity.SixVertex

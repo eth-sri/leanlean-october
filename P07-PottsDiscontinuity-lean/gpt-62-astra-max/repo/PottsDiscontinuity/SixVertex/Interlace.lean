@@ -18,8 +18,12 @@ namespace PottsDiscontinuity.SixVertex
 
 variable {N : ℕ}
 
+section
+variable (x : Finset (Fin N)) (t : Fin N)
+
+include x t in
 /-- `cnt x t = |{a ∈ x : a ≤ t}|`: the number of entries of `x` that are `≤ t`. -/
-def cnt (x : Finset (Fin N)) (t : Fin N) : ℕ := (x.filter (· ≤ t)).card
+def cnt : ℕ := (x.filter (· ≤ t)).card
 
 /-- The `k`-th smallest entry of `x` is `≤ t` iff `x` has more than `k` entries `≤ t`. -/
 theorem orderEmbOfFin_le_iff {x : Finset (Fin N)} {n : ℕ} (h : x.card = n) (k : Fin n)
@@ -42,74 +46,65 @@ theorem orderEmbOfFin_le_iff {x : Finset (Fin N)} {n : ℕ} (h : x.card = n) (k 
       intro a ha
       rw [mem_filter] at ha
       have : a ∈ Set.range (x.orderEmbOfFin h) := by
-        rw [Finset.range_orderEmbOfFin]; exact ha.1
+        grind [Finset.range_orderEmbOfFin]
       obtain ⟨m, rfl⟩ := this
       refine mem_image.2 ⟨m, mem_Iio.2 ?_, rfl⟩
       exact (x.orderEmbOfFin h).lt_iff_lt.1 (lt_of_le_of_lt ha.2 hlt)
     have := card_le_card hsub
-    have h2 : ((Finset.Iio k).image (x.orderEmbOfFin h)).card ≤ (Finset.Iio k).card :=
-      card_image_le
-    rw [Fin.card_Iio] at h2
-    unfold cnt at hk
-    omega
+    grind [Fin.card_Iio, cnt]
 
-theorem cnt_le_card (x : Finset (Fin N)) (t : Fin N) : cnt x t ≤ x.card :=
+theorem cnt_le_card : cnt x t ≤ x.card :=
   card_le_card (filter_subset _ _)
 
+end
+
+variable (x y : Finset (Fin N))
+
 /-- Counting-function characterisation of `x_1 ≤ y_1 ≤ x_2 ≤ ⋯ ≤ x_n ≤ y_n`. -/
-theorem interlacedLE_iff (x y : Finset (Fin N)) :
+theorem interlacedLE_iff :
     InterlacedLE x y ↔ x.card = y.card ∧ ∀ t, cnt y t ≤ cnt x t ∧ cnt x t ≤ cnt y t + 1 := by
   constructor
   · rintro ⟨h, h1, h2⟩
     refine ⟨h, fun t => ⟨?_, ?_⟩⟩
     · by_contra hlt
       replace hlt := not_le.1 hlt
-      have hm : cnt x t < x.card := lt_of_lt_of_le hlt (h ▸ cnt_le_card y t)
+      have hm := lt_of_lt_of_le hlt (h ▸ cnt_le_card y t)
       have hy : y.orderEmbOfFin h.symm ⟨cnt x t, hm⟩ ≤ t :=
         (orderEmbOfFin_le_iff h.symm _ t).2 hlt
-      have hx : x.orderEmbOfFin rfl ⟨cnt x t, hm⟩ ≤ t := le_trans (h1 _) hy
+      have hx := le_trans (h1 _) hy
       have := (orderEmbOfFin_le_iff rfl _ t).1 hx
       simp at this
     · by_contra hlt
       replace hlt := not_le.1 hlt
-      have hm : cnt y t + 1 < x.card := lt_of_lt_of_le hlt (cnt_le_card x t)
+      have hm := lt_of_lt_of_le hlt (cnt_le_card x t)
       have hk : cnt y t < x.card := by omega
       have hx : x.orderEmbOfFin rfl ⟨cnt y t + 1, hm⟩ ≤ t :=
         (orderEmbOfFin_le_iff rfl _ t).2 hlt
-      have hy : y.orderEmbOfFin h.symm ⟨cnt y t, hk⟩ ≤ t :=
+      have hy :=
         le_trans (h2 ⟨cnt y t, hk⟩ ⟨cnt y t + 1, hm⟩ rfl) hx
       have := (orderEmbOfFin_le_iff h.symm _ t).1 hy
       simp at this
   · rintro ⟨h, hc⟩
     refine ⟨h, fun k => ?_, fun k l hkl => ?_⟩
     · set t := y.orderEmbOfFin h.symm k with ht
-      have h1 : k.val < cnt y t := (orderEmbOfFin_le_iff h.symm k t).1 le_rfl
+      have h1 := (orderEmbOfFin_le_iff h.symm k t).1 le_rfl
       exact (orderEmbOfFin_le_iff rfl k t).2 (lt_of_lt_of_le h1 (hc t).1)
     · set t := x.orderEmbOfFin rfl l with ht
-      have h1 : l.val < cnt x t := (orderEmbOfFin_le_iff rfl l t).1 le_rfl
+      have h1 := (orderEmbOfFin_le_iff rfl l t).1 le_rfl
       refine (orderEmbOfFin_le_iff h.symm k t).2 ?_
-      have := (hc t).2
-      omega
+      grind
 
 /-- Counting-function characterisation of the interlacing relation of (1.5). -/
-theorem interlaced_iff (x y : Finset (Fin N)) :
+theorem interlaced_iff :
     Interlaced x y ↔ x.card = y.card ∧
       ((∀ t, cnt y t ≤ cnt x t ∧ cnt x t ≤ cnt y t + 1) ∨
         ∀ t, cnt x t ≤ cnt y t ∧ cnt y t ≤ cnt x t + 1) := by
-  unfold Interlaced
-  rw [interlacedLE_iff, interlacedLE_iff]
-  constructor
-  · rintro (⟨h, h'⟩ | ⟨h, h'⟩)
-    · exact ⟨h, Or.inl h'⟩
-    · exact ⟨h.symm, Or.inr h'⟩
-  · rintro ⟨h, h' | h'⟩
-    · exact Or.inl ⟨h, h'⟩
-    · exact Or.inr ⟨h.symm, h'⟩
+  grind [interlacedLE_iff, Interlaced]
 
 theorem Interlaced.symm {x y : Finset (Fin N)} (h : Interlaced x y) : Interlaced y x :=
   Or.symm h
 
-theorem interlaced_comm (x y : Finset (Fin N)) : Interlaced x y ↔ Interlaced y x :=
+theorem interlaced_comm : Interlaced x y ↔ Interlaced y x :=
   ⟨Interlaced.symm, Interlaced.symm⟩
 
 theorem Interlaced.card_eq {x y : Finset (Fin N)} (h : Interlaced x y) : x.card = y.card :=

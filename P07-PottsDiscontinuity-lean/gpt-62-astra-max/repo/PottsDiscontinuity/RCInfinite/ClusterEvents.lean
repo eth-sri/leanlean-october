@@ -20,12 +20,11 @@ def infiniteAt (x : LatticeVertex) : Set LatticeConfiguration :=
   {ω | (cluster ω x).Infinite}
 
 def infiniteClusterEvent : Set LatticeConfiguration :=
-  {ω | ∃ x : LatticeVertex, ω ∈ infiniteAt x}
+  {ω | ∃ x, ω ∈ infiniteAt x}
 
 theorem rcInfiniteOpenGraph_adj (ω : LatticeConfiguration) (x y : LatticeVertex) :
     (rcInfiniteOpenGraph ω).Adj x y ↔
-      ∃ h : s(x, y) ∈ squareLattice.edgeSet, ω ⟨s(x, y), h⟩ = true := by
-  rw [rcInfiniteOpenGraph, SimpleGraph.fromEdgeSet_adj]
+      ∃ h, ω ⟨s(x, y), h⟩ = true := by
   constructor
   · exact And.left
   · rintro ⟨h, hh⟩
@@ -34,21 +33,12 @@ theorem rcInfiniteOpenGraph_adj (ω : LatticeConfiguration) (x y : LatticeVertex
 theorem measurableSet_open_adj (x y : LatticeVertex) :
     MeasurableSet {ω : LatticeConfiguration | (rcInfiniteOpenGraph ω).Adj x y} := by
   by_cases h : squareLattice.Adj x y
-  · have he : s(x, y) ∈ squareLattice.edgeSet := squareLattice.mem_edgeSet.mpr h
-    have heq : {ω : LatticeConfiguration | (rcInfiniteOpenGraph ω).Adj x y} =
-        {ω | ω ⟨s(x, y), he⟩ = true} := by
-      ext ω
-      simp only [mem_ofPred_eq, rcInfiniteOpenGraph_adj]
-      exact ⟨fun ⟨_, hh⟩ => hh, fun hh => ⟨he, hh⟩⟩
+  · have heq : {ω : LatticeConfiguration | (rcInfiniteOpenGraph ω).Adj x y} =
+        {ω | ω ⟨s(x, y), (squareLattice.mem_edgeSet.mpr h)⟩ = true} := by
+      grind [mem_ofPred_eq, rcInfiniteOpenGraph_adj]
     rw [heq]
     exact (isCylinder_coordinate _ true).measurableSet
-  · have heq : {ω : LatticeConfiguration | (rcInfiniteOpenGraph ω).Adj x y} = ∅ := by
-      ext ω
-      simp only [mem_ofPred_eq, mem_empty_iff_false, iff_false, rcInfiniteOpenGraph_adj]
-      rintro ⟨he, _⟩
-      exact h (squareLattice.mem_edgeSet.mp he)
-    rw [heq]
-    exact MeasurableSet.empty
+  · simp_all [mem_ofPred_eq, mem_empty_iff_false, iff_false, rcInfiniteOpenGraph_adj]
 
 def openChain : ℕ → LatticeConfiguration → LatticeVertex → LatticeVertex → Prop
   | 0, _, x, y => x = y
@@ -71,8 +61,7 @@ theorem reachable_iff_openChain (ω : LatticeConfiguration) (x y : LatticeVertex
     | cons h w ih =>
       obtain ⟨n, hn⟩ := ih
       exact ⟨n + 1, _, h, hn⟩
-  · rintro ⟨n, hn⟩
-    exact openChain_reachable hn
+  · grind [openChain_reachable]
 
 theorem measurableSet_openChain (n : ℕ) (x y : LatticeVertex) :
     MeasurableSet {ω : LatticeConfiguration | openChain n ω x y} := by
@@ -80,18 +69,15 @@ theorem measurableSet_openChain (n : ℕ) (x y : LatticeVertex) :
   | zero =>
     by_cases h : x = y <;> simp [openChain, h]
   | succ n ih =>
-    have h := MeasurableSet.iUnion (fun z : LatticeVertex =>
-      (measurableSet_open_adj x z).inter (ih z))
-    convert h using 1
+    convert (MeasurableSet.iUnion (fun z : LatticeVertex => (measurableSet_open_adj x z).inter (ih z))) using 1
     ext ω
     simp [openChain]
 
 theorem measurableSet_open_reachable (x y : LatticeVertex) :
     MeasurableSet {ω : LatticeConfiguration | (rcInfiniteOpenGraph ω).Reachable x y} := by
-  have h := MeasurableSet.iUnion (fun n : ℕ => measurableSet_openChain n x y)
-  convert h using 1
+  convert (MeasurableSet.iUnion (fun n : ℕ => measurableSet_openChain n x y)) using 1
   ext ω
-  simp only [mem_ofPred_eq, reachable_iff_openChain, mem_iUnion]
+  simp [reachable_iff_openChain]
 
 theorem infinite_cluster_iff (ω : LatticeConfiguration) (x : LatticeVertex) :
     (cluster ω x).Infinite ↔ ∀ F : Finset LatticeVertex,
@@ -109,15 +95,13 @@ theorem measurableSet_infiniteAt (x : LatticeVertex) : MeasurableSet (infiniteAt
       (⋃ y : {y : LatticeVertex // y ∉ F},
         {ω : LatticeConfiguration | (rcInfiniteOpenGraph ω).Reachable x y.val}) :=
     MeasurableSet.iUnion fun y => measurableSet_open_reachable x y.val
-  have h := MeasurableSet.iInter hinner
-  convert h using 1
+  convert (MeasurableSet.iInter hinner) using 1
   ext ω
   simp only [infiniteAt, mem_ofPred_eq, infinite_cluster_iff, mem_iInter, mem_iUnion,
     Subtype.exists, exists_prop]
 
 theorem measurableSet_infiniteClusterEvent : MeasurableSet infiniteClusterEvent := by
-  have h := MeasurableSet.iUnion measurableSet_infiniteAt
-  convert h using 1
+  convert (MeasurableSet.iUnion measurableSet_infiniteAt) using 1
   ext ω
   simp [infiniteClusterEvent]
 
@@ -163,26 +147,16 @@ theorem cluster_translation (a : LatticeVertex) (ω : LatticeConfiguration) (x :
   · intro hz
     exact ⟨z, (openGraphTranslationIso a ω).reachable_iff.mp hz, rfl⟩
   · rintro ⟨w, hw, hwz⟩
-    have hwz' : w = z := (latticeTranslationIso a).injective hwz
+    have hwz' := (latticeTranslationIso a).injective hwz
     subst w
     exact (openGraphTranslationIso a ω).reachable_iff.mpr hw
 
 theorem infiniteAt_translation (a : LatticeVertex) (ω : LatticeConfiguration) (x : LatticeVertex) :
     edgeTranslate a ω ∈ infiniteAt (latticeTranslate a x) ↔ ω ∈ infiniteAt x := by
-  change (cluster (edgeTranslate a ω) (latticeTranslate a x)).Infinite ↔ (cluster ω x).Infinite
+  change (cluster (edgeTranslate a ω) (latticeTranslate a x)).Infinite ↔ _
   rw [cluster_translation]
   exact Set.infinite_image_iff (show Set.InjOn (latticeTranslate a) (cluster ω x) from
     (latticeTranslationIso a).injective.injOn)
-
-theorem infiniteClusterEvent_invariant (a : LatticeVertex) :
-    (edgeTranslate a) ⁻¹' infiniteClusterEvent = infiniteClusterEvent := by
-  ext ω
-  constructor
-  · rintro ⟨x, hx⟩
-    obtain ⟨z, rfl⟩ := (latticeTranslationIso a).surjective x
-    exact ⟨z, (infiniteAt_translation a ω z).mp hx⟩
-  · rintro ⟨x, hx⟩
-    exact ⟨latticeTranslate a x, (infiniteAt_translation a ω x).mpr hx⟩
 
 theorem infiniteClusterEvent_eq_iUnion : infiniteClusterEvent = ⋃ x, infiniteAt x := by
   ext ω

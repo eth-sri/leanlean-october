@@ -38,20 +38,19 @@ def ribbonAdjacent (hN : Even N) (hM : Even M) (A : RCConfig N M)
 def RibbonConnected (hN : Even N) (hM : Even M) (A : RCConfig N M) :=
   Relation.EqvGen (ribbonAdjacent hN hM A)
 
-theorem ribbonConnected_of_face_eq (hN : Even N) (hM : Even M) (A : RCConfig N M)
+theorem ribbonConnected_of_face_eq {hN : Even N} {hM : Even M} (A : RCConfig N M)
     {d e : DirectedDart (checkerArrows N M)}
     (h : ribbonFace hN hM d = ribbonFace hN hM e) : RibbonConnected hN hM A d e := by
   apply Relation.EqvGen.rel
   exact Or.inl ((sameCycle_faceRotation hN hM d e).mpr (congrArg Subtype.val h))
 
 theorem diamond_endpoints_reachable (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = true) :
+    {A : RCConfig N M} {v : Fin N × Fin M} (hv : A v = true) :
     (diamondOpenGraph hN hM true A).Reachable
       (faceEndpoint hN hM true v false) (faceEndpoint hN hM true v true) := by
   by_cases he : faceEndpoint hN hM true v false = faceEndpoint hN hM true v true
-  · rw [he]
+  · simp_all
   · apply SimpleGraph.Adj.reachable
-    rw [diamondOpenGraph, SimpleGraph.fromEdgeSet_adj]
     exact ⟨⟨v, hv, rfl⟩, he⟩
 
 theorem ribbonEdgePairing_reachable (hN : Even N) (hM : Even M)
@@ -61,11 +60,10 @@ theorem ribbonEdgePairing_reachable (hN : Even N) (hM : Even M)
   obtain ⟨⟨v, b⟩, rfl⟩ := (ribbonEndEquiv hN hM).surjective d
   rw [ribbonEdgePairing_end, ribbonFace_end, ribbonFace_end]
   cases ha : A v
-  · simp only [Bool.false_xor]
-    exact SimpleGraph.Reachable.refl _
+  · simp
   · cases b
-    · exact diamond_endpoints_reachable hN hM A v ha
-    · exact (diamond_endpoints_reachable hN hM A v ha).symm
+    · exact diamond_endpoints_reachable hN hM ha
+    · exact (diamond_endpoints_reachable hN hM ha).symm
 
 theorem ribbonConnected_reachable (hN : Even N) (hM : Even M) (A : RCConfig N M)
     {d e : DirectedDart (checkerArrows N M)} (h : RibbonConnected hN hM A d e) :
@@ -76,7 +74,7 @@ theorem ribbonConnected_reachable (hN : Even N) (hM : Even M) (A : RCConfig N M)
     rcases h with h | rfl
     · have he : ribbonFace hN hM d = ribbonFace hN hM e :=
         Subtype.ext ((sameCycle_faceRotation hN hM d e).mp h)
-      rw [he]
+      simp_all
     · exact ribbonEdgePairing_reachable hN hM A d
   | refl d => exact SimpleGraph.Reachable.refl _
   | symm d e _ ih => exact ih.symm
@@ -99,17 +97,15 @@ theorem ribbonConnected_endpoints (hN : Even N) (hM : Even M)
       (ribbonEndEquiv hN hM (v, false)) (ribbonEndEquiv hN hM (v, true)) := by
     apply Relation.EqvGen.rel
     right
-    rw [ribbonEdgePairing_end, hv]
-    rfl
+    simp [ribbonEdgePairing_end, hv]
   exact Relation.EqvGen.trans _ _ _
-    (ribbonConnected_of_face_eq hN hM A (by simp))
-    (Relation.EqvGen.trans _ _ _ he (ribbonConnected_of_face_eq hN hM A (by simp)))
+    (ribbonConnected_of_face_eq A (by simp))
+    (Relation.EqvGen.trans _ _ _ he (ribbonConnected_of_face_eq A (by simp)))
 
 theorem ribbonConnected_vertices_of_adj (hN : Even N) (hM : Even M)
     (A : RCConfig N M) {u v : FaceVertex N M true}
     (h : (diamondOpenGraph hN hM true A).Adj u v) :
     RibbonConnected hN hM A (ribbonVertexDart hN hM u) (ribbonVertexDart hN hM v) := by
-  rw [diamondOpenGraph, SimpleGraph.fromEdgeSet_adj] at h
   obtain ⟨⟨w, hw, he⟩, _⟩ := h
   rcases Sym2.eq_iff.mp he with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
   · exact ribbonConnected_endpoints hN hM A w hw
@@ -135,9 +131,9 @@ theorem ribbonConnected_iff_reachable (hN : Even N) (hM : Even M) (A : RCConfig 
   · exact ribbonConnected_reachable hN hM A
   · intro h
     exact Relation.EqvGen.trans _ _ _
-      (ribbonConnected_of_face_eq hN hM A (by simp))
+      (ribbonConnected_of_face_eq A (by simp))
       (Relation.EqvGen.trans _ _ _ (ribbonConnected_vertices_of_reachable hN hM A h)
-        (ribbonConnected_of_face_eq hN hM A (by simp)))
+        (ribbonConnected_of_face_eq A (by simp)))
 
 /-- Components of the primal ribbon subgraph, defined from its generating permutations. -/
 abbrev RibbonComponent (hN : Even N) (hM : Even M) (A : RCConfig N M) :=
@@ -155,7 +151,7 @@ def ribbonComponentEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
     intro x
     refine Quotient.inductionOn x ?_
     intro d
-    exact Quotient.sound (ribbonConnected_of_face_eq hN hM A (by simp))
+    exact Quotient.sound (ribbonConnected_of_face_eq A (by simp))
   right_inv := by
     intro x
     refine Quot.inductionOn x ?_

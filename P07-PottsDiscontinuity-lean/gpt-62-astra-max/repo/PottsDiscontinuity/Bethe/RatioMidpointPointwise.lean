@@ -17,7 +17,7 @@ open BetheAnsatz
 
 theorem ratio_half_integer_midpoint_log_tendsto {ι : Type*} {l : Filter ι}
     {c ρ : ℝ} (hc : 2 < c) (hρ : 0 < ρ) (k : ℕ)
-    (N : ι → ℝ) (hN : ∀ i, N i ≠ 0) (hNlim : Tendsto N l atTop)
+    {N : ι → ℝ} (hN : ∀ i, N i ≠ 0) (hNlim : Tendsto N l atTop)
     (x y : ι → ℝ) (hx : ∀ i, x i ∈ Ioo (-Real.pi) Real.pi)
     (hy : ∀ i, y i ∈ Ioo (-Real.pi) Real.pi) (hxpos : ∀ i, 0 < x i) (hypos : ∀ i, 0 < y i)
     (hscaleX : Tendsto (fun i => N i * x i) l (𝓝 (((k : ℝ) + 1 / 2) / ρ)))
@@ -27,13 +27,11 @@ theorem ratio_half_integer_midpoint_log_tendsto {ι : Type*} {l : Filter ι}
   have hxlim : Tendsto x l (𝓝 0) := by
     have ht := hscaleX.div_atTop hNlim
     apply ht.congr
-    intro i
-    field_simp [hN i]
+    grind
   have hylim : Tendsto y l (𝓝 0) := by
     have ht := hscaleY.div_atTop hNlim
     apply ht.congr
-    intro i
-    field_simp [hN i]
+    grind
   have ha : 0 < ((k : ℝ) + 1 / 2) / ρ := by positivity
   have hb : 0 < ((k : ℝ) + 3 / 2) / ρ := by positivity
   have ht := ratio_midpoint_factor_tendsto hc ha hb N hN x y hx hy hxpos hypos hxlim hylim hscaleX hscaleY
@@ -41,10 +39,7 @@ theorem ratio_half_integer_midpoint_log_tendsto {ι : Type*} {l : Filter ι}
       ((((k : ℝ) + 1 / 2) / ρ + ((k : ℝ) + 3 / 2) / ρ) ^ 2) = ratioWallisFactor k := by
     unfold ratioWallisFactor
     have hk : (k : ℝ) + 1 ≠ 0 := by positivity
-    have hsum : ((k : ℝ) + 1 / 2) / ρ + ((k : ℝ) + 3 / 2) / ρ = 2 * ((k : ℝ) + 1) / ρ := by ring
-    rw [hsum]
-    field_simp [hρ.ne', hk]
-    ring
+    grind
   rw [hvalue] at ht
   have hlog := (Real.continuousAt_log (ratio_wallisFactor_pos k).ne').tendsto.comp ht
   apply hlog.congr

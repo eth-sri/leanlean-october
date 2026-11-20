@@ -19,31 +19,32 @@ lemma squareLattice_adj_portVector (z : ℤ × ℤ) (p : Port) :
 
 lemma loopMidpointPosition_adj (ω : ArrowConfig N M) (s : Smoothing N M)
     (h : CompatibleConfig ω s) (d : DirectedDart ω) (n : ℕ) :
-    squareLattice.Adj (loopMidpointPosition ω s h d n)
-      (loopMidpointPosition ω s h d (n+1)) := by
+    squareLattice.Adj (loopMidpointPosition h d n)
+      (loopMidpointPosition h d (n+1)) := by
   obtain ⟨p,hp⟩ := loopMidpointPosition_step ω s h d n
   rw [hp]
   exact squareLattice_adj_portVector _ _
 
 /-- Traverse the first n edges of the actual midpoint polygon. -/
-noncomputable def loopMidpointWalk (ω : ArrowConfig N M) (s : Smoothing N M)
+noncomputable def loopMidpointWalk {ω : ArrowConfig N M} {s : Smoothing N M}
     (h : CompatibleConfig ω s) (d : DirectedDart ω) :
-    (n : ℕ) → squareLattice.Walk (loopMidpointPosition ω s h d 0)
-      (loopMidpointPosition ω s h d n)
+    (n : ℕ) → squareLattice.Walk (loopMidpointPosition h d 0)
+      (loopMidpointPosition h d n)
   | 0 => .nil
-  | n+1 => (loopMidpointWalk ω s h d n).concat (loopMidpointPosition_adj ω s h d n)
+  | n+1 => (loopMidpointWalk h d n).concat (loopMidpointPosition_adj ω s h d n)
 
-lemma loopMidpointWalk_length (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) (n : ℕ) :
-    (loopMidpointWalk ω s h d n).length = n := by
+variable (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s) (d : DirectedDart ω)
+    (n : ℕ)
+
+lemma loopMidpointWalk_length :
+    (loopMidpointWalk h d n).length = n := by
   induction n with
   | zero => rfl
   | succ n ih => simp [loopMidpointWalk,ih]
 
-lemma loopMidpointWalk_support (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) (n : ℕ) :
-    (loopMidpointWalk ω s h d n).support =
-      (List.range (n+1)).map (loopMidpointPosition ω s h d) := by
+lemma loopMidpointWalk_support :
+    (loopMidpointWalk h d n).support =
+      (List.range (n+1)).map (loopMidpointPosition h d) := by
   induction n with
   | zero => rfl
   | succ n ih =>

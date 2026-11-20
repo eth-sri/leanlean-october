@@ -18,30 +18,26 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (v : Fin N × Fin M)
+
+include A v in
 /-- Toggle one indexed primal edge. -/
-def toggleEdge (A : RCConfig N M) (v : Fin N × Fin M) : RCConfig N M :=
+def toggleEdge : RCConfig N M :=
   Function.update A v (!A v)
 
-@[simp] theorem toggleEdge_at (A : RCConfig N M) (v : Fin N × Fin M) :
+@[simp] theorem toggleEdge_at :
     toggleEdge A v v = !A v := by simp only [toggleEdge, Function.update_self]
 
-theorem toggleEdge_away (A : RCConfig N M) {v w : Fin N × Fin M} (h : w ≠ v) :
+theorem toggleEdge_away {v w : Fin N × Fin M} (h : w ≠ v) :
     toggleEdge A v w = A w := Function.update_of_ne h _ _
 
-@[simp] theorem toggleEdge_toggleEdge (A : RCConfig N M) (v : Fin N × Fin M) :
-    toggleEdge (toggleEdge A v) v = A := by
-  funext w
-  by_cases hw : w = v
-  · subst w
-    simp only [toggleEdge_at, Bool.not_not]
-  · rw [toggleEdge_away _ hw, toggleEdge_away _ hw]
-
+include hN hM v in
 /-- The transposition of the two distinct slots of one indexed ribbon. -/
-def ribbonEndSwap (hN : Even N) (hM : Even M) (v : Fin N × Fin M) :
+def ribbonEndSwap :
     Equiv.Perm (DirectedDart (checkerArrows N M)) :=
   Equiv.swap (ribbonEndEquiv hN hM (v, false)) (ribbonEndEquiv hN hM (v, true))
 
-theorem ribbonEndSwap_end (hN : Even N) (hM : Even M)
+theorem ribbonEndSwap_end
     (v w : Fin N × Fin M) (b : Bool) :
     ribbonEndSwap hN hM v (ribbonEndEquiv hN hM (w, b)) =
       ribbonEndEquiv hN hM (w, if w = v then !b else b) := by
@@ -50,15 +46,12 @@ theorem ribbonEndSwap_end (hN : Even N) (hM : Even M)
     cases b <;> simp only [ribbonEndSwap, Equiv.swap_apply_left,
       Equiv.swap_apply_right, ite_true, Bool.not_false, Bool.not_true]
   · have h₀ : ribbonEndEquiv hN hM (w, b) ≠ ribbonEndEquiv hN hM (v, false) := by
-      intro he
-      exact hw (congrArg Prod.fst ((ribbonEndEquiv hN hM).injective he))
+      simp_all
     have h₁ : ribbonEndEquiv hN hM (w, b) ≠ ribbonEndEquiv hN hM (v, true) := by
-      intro he
-      exact hw (congrArg Prod.fst ((ribbonEndEquiv hN hM).injective he))
-    simp only [ribbonEndSwap, Equiv.swap_apply_of_ne_of_ne h₀ h₁, hw, ite_false]
+      simp_all
+    simp [ribbonEndSwap, Equiv.swap_apply_of_ne_of_ne h₀ h₁, hw, ite_false]
 
-theorem ribbonEdgePairing_toggle (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) :
+theorem ribbonEdgePairing_toggle :
     ribbonEdgePairing hN hM (toggleEdge A v) =
       ribbonEndSwap hN hM v * ribbonEdgePairing hN hM A := by
   apply Equiv.ext
@@ -68,15 +61,11 @@ theorem ribbonEdgePairing_toggle (hN : Even N) (hM : Even M)
     ribbonEndSwap_end]
   by_cases hw : w = v
   · subst w
-    simp only [toggleEdge_at, ite_true]
-    have ht : ∀ a b : Bool, Bool.xor (!a) b = !(Bool.xor a b) := by decide
-    rw [ht]
-  · rw [toggleEdge_away _ hw]
-    simp only [hw, ite_false]
+    simp
+  · simp [toggleEdge_away _ hw, hw, ite_false]
 
 /-- Toggling an indexed primal edge cuts or joins its two boundary strands. -/
-theorem ribbonBoundary_toggle (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) :
+theorem ribbonBoundary_toggle :
     ribbonBoundary hN hM (toggleEdge A v) =
       ribbonEndSwap hN hM v * ribbonBoundary hN hM A := by
   apply Equiv.ext

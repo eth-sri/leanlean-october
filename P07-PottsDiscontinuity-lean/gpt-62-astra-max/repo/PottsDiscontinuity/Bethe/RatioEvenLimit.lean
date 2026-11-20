@@ -25,23 +25,24 @@ variable {Δ : ℝ} (hΔ : Δ < -1) (r : ℕ) (N : ℕ → ℕ) (h4 : ∀ i, 4 �
     (hNlim : Tendsto (fun i => (N i : ℝ)) atTop atTop)
     (hbp : ∀ i, BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
       |Xi (lamOf Δ) α *
-        (rootStepDensity (N i) (N i / 2) (p i) (hp i) (half_pos_of_half_sub_pos N r hn i) (two_mul_half_le N i)
+        (rootStepDensity (N i) (p i) (half_pos_of_half_sub_pos hn i)
           (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|))
     (hbq : ∀ i, BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
       |Xi (lamOf Δ) α *
-        (rootStepDensity (N i) (N i / 2 - r) (q i) (hq i) (hn i) (two_mul_half_sub_le N r i)
+        (rootStepDensity (N i) (q i) (hn i)
           (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|))
     {K : ℝ} (hK : 0 ≤ K)
     (hrate : ∀ᶠ i in atTop,
-      densityNorm Δ hΔ (fun x => rootStepDensity (N i) (N i / 2) (p i) (hp i)
-        (half_pos_of_half_sub_pos N r hn i) (two_mul_half_le N i) x - rho Δ x) (hbp i) ≤ K / N i ∧
-      densityNorm Δ hΔ (fun x => rootStepDensity (N i) (N i / 2 - r) (q i) (hq i)
-        (hn i) (two_mul_half_sub_le N r i) x - rho Δ x) (hbq i) ≤ K / N i)
+      densityNorm Δ (fun x => rootStepDensity (N i) (p i)
+        (half_pos_of_half_sub_pos hn i) x - rho Δ x) ≤ K / N i ∧
+      densityNorm Δ (fun x => rootStepDensity (N i) (q i)
+        (hn i) x - rho Δ x) ≤ K / N i)
 
 
 
 include hΔ h4 hr hN hp hq hpBE hqBE hNlim hbp hbq hK hrate
 
+include h4 hN hbp hbq hn hp hpBE hq hqBE hr hΔ in
 /-- The requested integral-exponent ratio limit for every even deficit r.
 The ratios are the actual regular-branch expressions, not newly defined scalars. -/
 theorem ratio_even_eigenvalue_limit (heven : r % 2 = 0) {c : ℝ} (hc : 2 < c)
@@ -51,29 +52,24 @@ theorem ratio_even_eigenvalue_limit (heven : r % 2 = 0) {c : ℝ} (hc : 2 < c)
         (r : ℝ) * ∫ x in (-Real.pi)..Real.pi, ratioEllPrime c x * tauCont Δ x) : ℝ) : ℂ)) := by
   let s := r / 2
   have hcount (i : ℕ) : s + (N i / 2 - r) + s = N i / 2 := by
-    dsimp [s]
-    have := hr i
-    omega
+    grind
   have hbulk := ratio_bulk_product_limit hΔ r N h4 hr hN hn p q hp hq hpBE hqBE hNlim hbp hbq hK hrate hc
   have halign (i : ℕ) (j : Fin (N i / 2 - r)) :
-      alignedRoot (N i) r (hr i) (p i) j = p i ⟨j.val + s, by have := hcount i; omega⟩ := by
-    simp only [alignedRoot, heven, ite_eq_left, s]
+      alignedRoot (N := (N i)) (r := r) (hr i) (p i) j = p i ⟨j.val + s, by omega⟩ := by
+    simp [alignedRoot, heven, ite_eq_left, s]
   simp_rw [halign] at hbulk
-  have hnormP : Tendsto (fun i => densityNorm Δ hΔ
-      (fun x => rootStepDensity (N i) (N i / 2) (p i) (hp i)
-        (half_pos_of_half_sub_pos N r hn i) (two_mul_half_le N i) x - rho Δ x) (hbp i)) atTop (𝓝 0) :=
-    ratio_densityNorm_tendsto_of_rate hΔ N hNlim _ hbp (hrate.mono (fun i hi => hi.1))
-  have hnP (i : ℕ) : 0 < N i / 2 := by have := hn i; omega
+  have hnormP :=
+    ratio_densityNorm_tendsto_of_rate (hΔ := hΔ) (N := N) hNlim (f := _) (hb := hbp) (hrate.mono (fun i hi => hi.1))
+  have hnP (i : ℕ) : 0 < N i / 2 := by grind
   have hcountP (i : ℕ) : N i = 2 * (N i / 2 + 0) := by
-    obtain ⟨z, hz⟩ := h4 i
-    omega
+    grind
   let x : ℕ → Fin s → ℝ := fun i j => p i ⟨j.val, by have := hcount i; omega⟩
-  have hx (j : Fin s) : Tendsto (fun i => x i j) atTop (𝓝 (-Real.pi)) :=
-    ratio_tendsto_root_left hΔ 0 N (fun i => N i / 2) p hp hnP (fun i => by omega)
-      hcountP hNlim hbp hnormP (fun i => ⟨j.val, by have := hcount i; omega⟩) s
-      (fun i => by change j.val ≤ s; omega)
+  have hx (j : Fin s) :=
+    ratio_tendsto_root_left hΔ 0 N (fun i => N i / 2) p hp hnP (hs := (fun i => by omega))
+      hcountP hNlim hbp hnormP (j := (fun i => ⟨j.val, by have := hcount i; omega⟩)) s
+      (fun i => by grind)
   have hboundary := ratio_even_boundary_tendsto hc s x hx
-  have hs2 : s * 2 = r := by dsimp [s]; omega
+  have hs2 : s * 2 = r := by omega
   have habs : 0 < |Δ| := abs_pos.mpr (by linarith)
   have hpow : Real.exp ((r : ℝ) * Real.log |Δ|) = |Δ| ^ r := by
     rw [Real.exp_nat_mul, Real.exp_log habs]
@@ -94,7 +90,6 @@ theorem ratio_even_eigenvalue_limit (heven : r % 2 = 0) {c : ℝ} (hc : 2 < c)
   have hcomplex := Complex.continuous_ofReal.continuousAt.tendsto.comp hreal
   apply hcomplex.congr
   intro i
-  dsimp only [Function.comp_def]
   exact (ratio_even_quotient_split (hcount i) hc (hp i) (hq i)).symm
 
 end

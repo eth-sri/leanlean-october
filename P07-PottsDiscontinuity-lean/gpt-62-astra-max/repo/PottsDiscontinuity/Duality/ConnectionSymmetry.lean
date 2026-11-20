@@ -52,12 +52,12 @@ lemma connectionEvent_preimage_iso (e : squareLattice ≃g squareLattice) (u v :
 /-- Actual free connectivity probabilities respect every box-preserving lattice symmetry. -/
 theorem free_connection_symmetry (θ : Parameters) (μ : Measure LatticeConfiguration)
     (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
-    (e : squareLattice ≃g squareLattice)
+    {e : squareLattice ≃g squareLattice}
     (hbox : ∀ c v r, e v ∈ latticeBox (e c) r ↔ v ∈ latticeBox c r)
     (u v : LatticeVertex) :
     μ (connectionEvent (e u) (e v)) = μ (connectionEvent u v) := by
   have h := congrArg (fun ν : Measure LatticeConfiguration => ν (connectionEvent (e u) (e v)))
-    (free_limit_map_latticeIso θ μ hμ e hbox)
+    (free_limit_map_latticeIso θ μ hμ hbox)
   rw [Measure.map_apply (latticeConfigurationIsoHomeomorph_measurable e)
     (connectionEvent_measurableSet _ _), connectionEvent_preimage_iso] at h
   exact h.symm
@@ -70,10 +70,9 @@ lemma connectionEvent_symm (u v : LatticeVertex) : connectionEvent u v = connect
   ext ω
   exact ⟨fun h => h.symm, fun h => h.symm⟩
 
-lemma free_connection_translate (θ : Parameters) (μ : Measure LatticeConfiguration)
+lemma free_connection_translate {θ : Parameters} {μ : Measure LatticeConfiguration}
     (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (a u v : LatticeVertex) :
-    μ (connectionEvent (u + a) (v + a)) = μ (connectionEvent u v) := by
-  exact free_connection_symmetry θ μ hμ (latticeTranslationIso a)
+    μ (connectionEvent (u + a) (v + a)) = μ (connectionEvent u v) := free_connection_symmetry θ μ hμ (e := (latticeTranslationIso a))
       (fun c v r => mem_latticeBox_translate_iff a c v r) u v
 
 /-- Infinite-volume FKG and translation invariance yield supermultiplicativity. -/
@@ -82,16 +81,15 @@ theorem twoPoint_mul_le (θ : Parameters) (μ : Measure LatticeConfiguration)
     twoPoint μ x * twoPoint μ y ≤ twoPoint μ (x + y) := by
   have := hμ.1
   have h := free_connection_mul_le θ μ hμ 0 x (x + y)
-  have ht := free_connection_translate θ μ hμ x 0 y
+  have ht := free_connection_translate hμ x 0 y
   simp only [zero_add, add_comm y x] at ht
   rw [ht] at h
-  have hr := ENNReal.toReal_mono (measure_ne_top μ (connectionEvent 0 (x + y))) h
-  simpa only [twoPoint, Measure.real_def, ENNReal.toReal_mul] using hr
+  simpa only [twoPoint, Measure.real_def, ENNReal.toReal_mul] using (ENNReal.toReal_mono (measure_ne_top μ (connectionEvent 0 (x + y))) h)
 
 lemma twoPoint_neg (θ : Parameters) (μ : Measure LatticeConfiguration)
     (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex) :
     twoPoint μ (-x) = twoPoint μ x := by
-  have ht := free_connection_translate θ μ hμ x 0 (-x)
+  have ht := free_connection_translate (μ := μ) hμ x 0 (-x)
   rw [zero_add, neg_add_cancel, connectionEvent_symm x 0] at ht
   exact congrArg ENNReal.toReal ht.symm
 
@@ -109,22 +107,17 @@ def latticeFlipYIso : squareLattice ≃g squareLattice where
 
 lemma mem_latticeBox_flipY_iff (c v : LatticeVertex) (r : ℕ) :
     latticeFlipYIso v ∈ latticeBox (latticeFlipYIso c) r ↔ v ∈ latticeBox c r := by
-  change (v.1, -v.2) ∈ latticeBox (c.1, -c.2) r ↔ v ∈ latticeBox c r
-  simp only [mem_latticeBox]
-  omega
+  change (v.1, -v.2) ∈ latticeBox (c.1, -c.2) r ↔ _
+  grind [mem_latticeBox]
 
 lemma twoPoint_flipY (θ : Parameters) (μ : Measure LatticeConfiguration)
     (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex) :
-    twoPoint μ (x.1, -x.2) = twoPoint μ x := by
-  have h := free_connection_symmetry θ μ hμ latticeFlipYIso mem_latticeBox_flipY_iff 0 x
-  exact congrArg ENNReal.toReal h
+    twoPoint μ (x.1, -x.2) = twoPoint μ x := congrArg ENNReal.toReal (free_connection_symmetry θ μ hμ mem_latticeBox_flipY_iff 0 x)
 
 lemma twoPoint_quarterTurn (θ : Parameters) (μ : Measure LatticeConfiguration)
     (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex) :
     twoPoint μ (-x.2, x.1) = twoPoint μ x := by
-  have h := free_connection_symmetry θ μ hμ latticeQuarterTurnIso
-    (fun c v r => mem_latticeBox_quarterTurn_iff c v r) 0 x
-  exact congrArg ENNReal.toReal h
+  exact congrArg ENNReal.toReal (free_connection_symmetry θ μ hμ (e := latticeQuarterTurnIso) (fun c v r => mem_latticeBox_quarterTurn_iff c v r) 0 x)
 
 end
 end PottsDiscontinuity.Duality

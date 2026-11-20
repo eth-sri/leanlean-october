@@ -20,11 +20,13 @@ namespace PottsDiscontinuity.FK
 
 variable {V : Type*} [Finite V] {G : SimpleGraph V} [DecidableEq G.edgeSet]
 
+variable (q : Parameters) (ξ : BoundaryCondition V) (A : Configuration G) {u v : V}
+    (huv : G.Adj u v) (he : (⟨s(u,v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∉ A)
+    (hne : ¬ (componentSetoid ξ A).r u v)
+
+include he hne in
 /-- The extra factor q records the single component lost upon opening. -/
-theorem weight_insert_balance_of_not_related (q : Parameters) (ξ : BoundaryCondition V)
-    (A : Configuration G) {u v : V} (huv : G.Adj u v)
-    (he : (⟨s(u,v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∉ A)
-    (hne : ¬ (componentSetoid G ξ A).r u v) :
+theorem weight_insert_balance_of_not_related :
     (1-edgeParameter q) * q.val * weight G q ξ (insert ⟨s(u,v),G.mem_edgeSet.mpr huv⟩ A) =
       edgeParameter q * weight G q ξ A := by
   have hc : A.card + 1 ≤ Nat.card G.edgeSet := by
@@ -32,22 +34,20 @@ theorem weight_insert_balance_of_not_related (q : Parameters) (ξ : BoundaryCond
     rw [Nat.card_eq_fintype_card, ← Finset.card_insert_of_notMem he]
     exact Finset.card_le_univ _
   have hec : Nat.card G.edgeSet - A.card = Nat.card G.edgeSet - (A.card+1) + 1 := by omega
-  have hcomp := componentCount_insert_of_not_related ξ A huv hne
+  have hcomp := componentCount_insert_of_not_related huv hne
   rw [weight, weight, Finset.card_insert_of_notMem he, ← hcomp, hec,
     pow_succ, pow_succ, pow_succ]
   ring
 
 /-- The denominator in the distinct-component conditional probability is positive. -/
-theorem edge_conditional_denominator_pos (q : Parameters) :
+theorem edge_conditional_denominator_pos :
     0 < edgeParameter q + (1 - edgeParameter q) * q.val :=
   add_pos (edgeParameter_pos q)
     (mul_pos (one_sub_edgeParameter_pos q) (clusterWeight_pos q))
 
+include he hne in
 /-- The exact open probability for two distinct endpoint components. -/
-theorem configurationProbability_pair_ratio_of_not_related (q : Parameters)
-    (ξ : BoundaryCondition V) (A : Configuration G) {u v : V} (huv : G.Adj u v)
-    (he : (⟨s(u,v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∉ A)
-    (hne : ¬ (componentSetoid G ξ A).r u v) :
+theorem configurationProbability_pair_ratio_of_not_related :
     configurationProbability G q ξ (insert ⟨s(u,v),G.mem_edgeSet.mpr huv⟩ A) /
       (configurationProbability G q ξ A +
         configurationProbability G q ξ (insert ⟨s(u,v),G.mem_edgeSet.mpr huv⟩ A)) =
@@ -62,20 +62,19 @@ theorem configurationProbability_pair_ratio_of_not_related (q : Parameters)
     (configurationProbability_pos G q ξ _)).ne').mpr
   rw [div_mul_eq_mul_div]
   apply (eq_div_iff (edge_conditional_denominator_pos q).ne').mpr
-  nlinarith only [h]
+  linarith
 
 /-- The two possible conditional values are ordered for the full source range q>=1. -/
-theorem lower_edge_conditional_le_parameter (q : Parameters) :
+theorem lower_edge_conditional_le_parameter :
     (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)) ≤ edgeParameter q := by
   apply (div_le_iff₀ (edge_conditional_denominator_pos q)).mpr
   have hq := mul_le_mul_of_nonneg_left q.property (one_sub_edgeParameter_pos q).le
   have hp := edgeParameter_pos q
   nlinarith
 
+include he in
 /-- Uniform nontrivial lower and upper bounds on the actual two-state conditional. -/
-theorem configurationProbability_pair_ratio_bounds (q : Parameters)
-    (ξ : BoundaryCondition V) (A : Configuration G) {u v : V} (huv : G.Adj u v)
-    (he : (⟨s(u,v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∉ A) :
+theorem configurationProbability_pair_ratio_bounds :
     (edgeParameter q / (edgeParameter q + (1 - edgeParameter q) * q.val)) ≤
       configurationProbability G q ξ (insert ⟨s(u,v),G.mem_edgeSet.mpr huv⟩ A) /
         (configurationProbability G q ξ A +
@@ -84,7 +83,7 @@ theorem configurationProbability_pair_ratio_bounds (q : Parameters)
         (configurationProbability G q ξ A +
           configurationProbability G q ξ (insert ⟨s(u,v),G.mem_edgeSet.mpr huv⟩ A)) ≤
       edgeParameter q := by
-  by_cases h : (componentSetoid G ξ A).r u v
+  by_cases h : (componentSetoid ξ A).r u v
   · rw [configurationProbability_pair_ratio_of_related q ξ A huv he h]
     exact ⟨lower_edge_conditional_le_parameter q, le_rfl⟩
   · rw [configurationProbability_pair_ratio_of_not_related q ξ A huv he h]

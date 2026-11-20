@@ -12,16 +12,18 @@ namespace PottsDiscontinuity.TorusTopology
 open Torus TorusLoops FK
 variable {N M : ℕ}
 
-private lemma lift_ne_start_one (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) :
-    loopLiftPosition ω s h d 1 ≠ loopLiftPosition ω s h d 0 := by
+variable (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s) (d : DirectedDart ω)
+    (i : Fin N) (j : Fin M) (hv : loopVertical j (directedLoopOf h d) = 0)
+    (hh : loopSum (horizontalCross i) (directedLoopOf h d) = 0)
+
+private lemma lift_ne_start_one :
+    loopLiftPosition h d 1 ≠ loopLiftPosition h d 0 := by
   rw [show 1 = 0+1 from rfl,loopLiftPosition_succ]
   rcases d with ⟨⟨⟨i,j⟩,p⟩,hd⟩
   cases p <;> simp [horizontalIncrement,verticalIncrement,Prod.ext_iff]
 
-private lemma lift_ne_start_two (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) :
-    loopLiftPosition ω s h d 2 ≠ loopLiftPosition ω s h d 0 := by
+private lemma lift_ne_start_two :
+    loopLiftPosition h d 2 ≠ loopLiftPosition h d 0 := by
   rw [show 2 = (0+1)+1 from rfl,loopLiftPosition_succ,loopLiftPosition_succ]
   simp only [Function.iterate_zero_apply,Function.iterate_one,directedStep_val]
   rcases d with ⟨⟨⟨i,j⟩,p⟩,hd⟩
@@ -31,49 +33,37 @@ private lemma lift_ne_start_two (ω : ArrowConfig N M) (s : Smoothing N M)
     cases hb : s _ <;>
       simp [pairedPort,Prod.ext_iff]
 
-lemma three_le_loopPeriod_of_zero_winding
-    (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s)
-    (d : DirectedDart ω) (i : Fin N) (j : Fin M)
-    (hv : loopVertical ω s h j (directedLoopOf ω s h d) = 0)
-    (hh : loopSum ω s h (horizontalCross i) (directedLoopOf ω s h d) = 0) :
-    3 ≤ loopPeriod ω s h d := by
-  have hp := loopPeriod_pos ω s h d
+include hv hh in
+lemma three_le_loopPeriod_of_zero_winding :
+    3 ≤ loopPeriod h d := by
+  have hp := loopPeriod_pos h d
   have hz := (loopLiftPosition_period_eq_start_iff ω s h d i j).mpr ⟨hv,hh⟩
   have h1 := lift_ne_start_one ω s h d
   have h2 := lift_ne_start_two ω s h d
-  by_contra hn
-  have he : loopPeriod ω s h d = 1 ∨ loopPeriod ω s h d = 2 := by omega
-  rcases he with he | he <;> rw [he] at hz
-  · exact h1 hz
-  · exact h2 hz
+  grind
 
 /-- The closed lattice polygon is obtained from the actual orbit, with its
 original starting dart retained. No cycle is selected from mere existence. -/
 noncomputable def closedLoopMidpointWalk
-    (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s)
-    (d : DirectedDart ω) (i : Fin N) (j : Fin M)
-    (hv : loopVertical ω s h j (directedLoopOf ω s h d) = 0)
-    (hh : loopSum ω s h (horizontalCross i) (directedLoopOf ω s h d) = 0) :
-    squareLattice.Walk (loopMidpointPosition ω s h d 0) (loopMidpointPosition ω s h d 0) :=
-  (loopMidpointWalk ω s h d (loopPeriod ω s h d)).copy rfl
+    {ω : ArrowConfig N M} {s : Smoothing N M} {h : CompatibleConfig ω s}
+    {d : DirectedDart ω} {i : Fin N} {j : Fin M}
+    (hv : loopVertical j (directedLoopOf h d) = 0)
+    (hh : loopSum (horizontalCross i) (directedLoopOf h d) = 0) :
+    squareLattice.Walk (loopMidpointPosition h d 0) (loopMidpointPosition h d 0) :=
+  (loopMidpointWalk h d (loopPeriod h d)).copy rfl
     (loopMidpointPosition_closed_of_zero_winding ω s h d i j hv hh)
 
 /-- The closed lifted polygon is simple in the genuine plane lattice. -/
-theorem closedLoopMidpointWalk_isCycle
-    (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s)
-    (d : DirectedDart ω) (i : Fin N) (j : Fin M)
-    (hv : loopVertical ω s h j (directedLoopOf ω s h d) = 0)
-    (hh : loopSum ω s h (horizontalCross i) (directedLoopOf ω s h d) = 0) :
-    (closedLoopMidpointWalk ω s h d i j hv hh).IsCycle := by
-  let p := closedLoopMidpointWalk ω s h d i j hv hh
-  have hlen : p.length = loopPeriod ω s h d := by
+theorem closedLoopMidpointWalk_isCycle :
+    (closedLoopMidpointWalk hv hh).IsCycle := by
+  let p := closedLoopMidpointWalk hv hh
+  have hlen : p.length = loopPeriod h d := by
     simp [p,closedLoopMidpointWalk,loopMidpointWalk_length]
   have h3 := three_le_loopPeriod_of_zero_winding ω s h d i j hv hh
   have hnot : ¬ p.Nil := by
-    rw [SimpleGraph.Walk.not_nil_iff_lt_length,hlen]
-    omega
+    grind
   have hsupport : p.support.dropLast =
-      (List.range (loopPeriod ω s h d)).map (loopMidpointPosition ω s h d) := by
+      (List.range (loopPeriod h d)).map (loopMidpointPosition h d) := by
     simp [p,closedLoopMidpointWalk,loopMidpointWalk_support,List.range_succ]
   have hnodup : p.support.dropLast.Nodup := by
     rw [hsupport]
@@ -82,7 +72,7 @@ theorem closedLoopMidpointWalk_isCycle
     rw [List.mem_range] at ha hb
     have he := loopMidpointPosition_injective ω s h d
       (a₁ := ⟨a,ha⟩) (a₂ := ⟨b,hb⟩) hab
-    exact congrArg Fin.val he
+    grind
   have htail : p.tail.IsPath := by
     rw [SimpleGraph.Walk.isPath_def,SimpleGraph.Walk.support_tail_of_not_nil p hnot]
     exact p.tail_support_perm_dropLast_support.nodup_iff.mpr hnodup

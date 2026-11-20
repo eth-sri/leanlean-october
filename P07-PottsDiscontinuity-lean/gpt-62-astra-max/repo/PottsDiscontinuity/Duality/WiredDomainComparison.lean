@@ -18,54 +18,59 @@ noncomputable section
 abbrev domainGraph (S : Finset LatticeVertex) :=
   squareLattice.induce (S : Set LatticeVertex)
 
+section
+variable {S T : Finset LatticeVertex} (hST : S ⊆ T)
+include hST
+
 /-- Inclusion preserving the original vertices of finite lattice domains. -/
-def domainVertexEmbedding {S T : Finset LatticeVertex} (hST : S ⊆ T) :
+def domainVertexEmbedding :
     (S : Set LatticeVertex) ↪ (T : Set LatticeVertex) where
   toFun x := ⟨x.1, hST x.2⟩
   inj' := fun _ _ h => Subtype.ext (congrArg (fun z : (T : Set LatticeVertex) => z.val) h)
 
-lemma domainGraph_map {S T : Finset LatticeVertex} (hST : S ⊆ T) :
+lemma domainGraph_map :
     (domainGraph S).map (domainVertexEmbedding hST) ≤ domainGraph T := by
   intro x y h
   obtain ⟨u, v, huv, rfl, rfl⟩ := (SimpleGraph.map_adj _ _ _ _).1 h
   exact huv
 
+end
+
+section
+variable (θ : Parameters) (S : Finset LatticeVertex) (F : Finset squareLattice.edgeSet)
+
 /-- The whole-lattice extension of a finite sample with every exterior edge open. -/
-def wiredDomainConfiguration (S : Finset LatticeVertex) (A : Configuration (domainGraph S)) :
+def wiredDomainConfiguration (A : Configuration (domainGraph S)) :
     LatticeConfiguration := fun e => decide (∀ f, frozenEdgeEmbedding S f = e → f ∈ A)
 
-@[simp] lemma wiredDomainConfiguration_at (S : Finset LatticeVertex)
-    (A : Configuration (domainGraph S)) (f : (domainGraph S).edgeSet) :
-    wiredDomainConfiguration S A (frozenEdgeEmbedding S f) = decide (f ∈ A) := by
-  simp only [wiredDomainConfiguration]
-  congr 1
-  exact propext ⟨fun h => h f rfl,
-    fun hf g hg => (frozenEdgeEmbedding S).injective hg ▸ hf⟩
-
+include θ S in
 /-- The genuine wired FK law on a finite domain on the common configuration carrier. -/
-def wiredDomainProbabilityMeasure (θ : Parameters) (S : Finset LatticeVertex) :
+def wiredDomainProbabilityMeasure :
     ProbabilityMeasure LatticeConfiguration :=
   ⟨((law (domainGraph S) θ (BoundaryCondition.wired (frozenVertexBoundary S))).map
     (wiredDomainConfiguration S)).toMeasure, PMF.toMeasure.isProbabilityMeasure _⟩
 
-lemma wiredDomainProbabilityMeasure_box (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
+lemma wiredDomainProbabilityMeasure_box (c : LatticeVertex) (r : ℕ) :
     wiredDomainProbabilityMeasure θ (latticeBox c r) = wiredBoxProbabilityMeasure θ c r := by
-  unfold wiredDomainProbabilityMeasure wiredBoxProbabilityMeasure wiredBoxLaw
   rfl
 
+include F in
 /-- The finite increasing cylinder event read under open exterior extension. -/
-def wiredDomainCylinderEvent (S : Finset LatticeVertex) (F : Finset squareLattice.edgeSet) :
+def wiredDomainCylinderEvent :
     Set (Configuration (domainGraph S)) :=
   {A | ∀ e ∈ F, ∀ f, frozenEdgeEmbedding S f = e → f ∈ A}
 
-lemma wiredDomainCylinderEvent_upper (S : Finset LatticeVertex)
-    (F : Finset squareLattice.edgeSet) : IsUpperSet (wiredDomainCylinderEvent S F) := by
+lemma wiredDomainCylinderEvent_upper : IsUpperSet (wiredDomainCylinderEvent S F) := by
   intro A B hAB hA e he f hf
   exact hAB (hA e he f hf)
 
+end
+
 attribute [local instance] configurationMeasurableSpace
 
-lemma wiredDomainProbabilityMeasure_allOpen (θ : Parameters) (S : Finset LatticeVertex)
+variable (θ : Parameters)
+
+lemma wiredDomainProbabilityMeasure_allOpen (S : Finset LatticeVertex)
     (F : Finset squareLattice.edgeSet) :
     (wiredDomainProbabilityMeasure θ S : Measure LatticeConfiguration)
       (LatticeConfiguration.allOpen F) =
@@ -80,8 +85,8 @@ lemma wiredDomainProbabilityMeasure_allOpen (θ : Parameters) (S : Finset Lattic
     LatticeConfiguration.allOpen, Set.mem_preimage, Set.mem_ofPred_eq, decide_eq_true_eq]
 
 /-- Wired all-open probabilities decrease under arbitrary finite-domain inclusion. -/
-theorem wiredDomainProbabilityMeasure_allOpen_antitone (θ : Parameters)
-    (S T : Finset LatticeVertex) (hST : S ⊆ T) (F : Finset squareLattice.edgeSet) :
+theorem wiredDomainProbabilityMeasure_allOpen_antitone
+    {S T : Finset LatticeVertex} (hST : S ⊆ T) (F : Finset squareLattice.edgeSet) :
     (wiredDomainProbabilityMeasure θ T : Measure LatticeConfiguration)
       (LatticeConfiguration.allOpen F) ≤
     (wiredDomainProbabilityMeasure θ S : Measure LatticeConfiguration)
@@ -101,10 +106,7 @@ theorem wiredDomainProbabilityMeasure_allOpen_antitone (θ : Parameters)
       f x ∉ (BoundaryCondition.wired (frozenVertexBoundary T)).boundary := by
     intro x hx ⟨_, y, hxy, hy⟩
     exact hx ⟨x.2, y, hxy, fun hyS => hy (hST hyS)⟩
-  have hcmp := embeddedConfigurationRestriction_preimage_measure_le_wired_of_closedInterior
-    f hGH θ (BoundaryCondition.wired (frozenVertexBoundary T))
-    (frozenVertexBoundary S) hclosed havoid
-    (wiredDomainCylinderEvent S F) (wiredDomainCylinderEvent_upper S F)
+  have hcmp := embeddedConfigurationRestriction_preimage_measure_le_wired_of_closedInterior hGH θ hclosed havoid (wiredDomainCylinderEvent_upper S F)
   have hcompat (e : (domainGraph S).edgeSet) :
       frozenEdgeEmbedding T (embeddedEdgeEmbedding (domainGraph S) (domainGraph T) f hGH e) =
         frozenEdgeEmbedding S e := by

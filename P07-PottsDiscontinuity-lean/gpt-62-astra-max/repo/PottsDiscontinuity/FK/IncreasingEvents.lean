@@ -22,7 +22,6 @@ noncomputable section
 
 variable {V : Type*} [Finite V] {G : SimpleGraph V}
 local instance increasingEventsEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance increasingEventsEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 theorem measure_toReal_eq_indicator_sum (q : Parameters) (ξ : BoundaryCondition V)
     (s : Set (Configuration G)) :
@@ -59,14 +58,15 @@ private theorem event_indicator_monotone (s : Set (Configuration G)) (hs : IsUpp
   · simp only [Set.indicator_of_notMem hA]
     exact event_indicator_nonneg s B
 
+variable (q : Parameters)
+
 /-- Any two increasing events are positively correlated under the actual FK measure. -/
-theorem measure_positive_association (q : Parameters) (ξ : BoundaryCondition V)
+theorem measure_positive_association (ξ : BoundaryCondition V)
     (s t : Set (Configuration G)) (hs : IsUpperSet s) (ht : IsUpperSet t) :
     (measure G q ξ s).toReal * (measure G q ξ t).toReal ≤
       (measure G q ξ (s ∩ t)).toReal := by
   classical
   have h := configurationProbability_positive_association q ξ
-    (s.indicator fun _ => (1 : ℝ)) (t.indicator fun _ => (1 : ℝ))
     (event_indicator_nonneg s) (event_indicator_nonneg t)
     (event_indicator_monotone s hs) (event_indicator_monotone t ht)
   have hi (A : Configuration G) :
@@ -78,11 +78,10 @@ theorem measure_positive_association (q : Parameters) (ξ : BoundaryCondition V)
   simpa only [measure_toReal_eq_indicator_sum] using h
 
 /-- Increasing event probabilities increase when boundary identifications are added. -/
-theorem measure_boundary_comparison (q : Parameters) (ξ η : BoundaryCondition V)
+theorem measure_boundary_comparison (ξ η : BoundaryCondition V)
     (hξη : ξ.partition ≤ η.partition) (s : Set (Configuration G)) (hs : IsUpperSet s) :
     (measure G q ξ s).toReal ≤ (measure G q η s).toReal := by
-  have h := configurationProbability_boundary_comparison q ξ η hξη
-    (s.indicator fun _ => (1 : ℝ)) (event_indicator_nonneg s) (event_indicator_monotone s hs)
+  have h := configurationProbability_boundary_comparison q ξ η hξη (event_indicator_nonneg s) (event_indicator_monotone s hs)
   simpa only [measure_toReal_eq_indicator_sum, mul_comm] using h
 
 end

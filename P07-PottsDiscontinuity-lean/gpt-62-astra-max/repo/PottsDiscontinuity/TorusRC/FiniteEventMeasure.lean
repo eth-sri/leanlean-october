@@ -36,13 +36,12 @@ local instance eventMeasureBoxEdges (c : LatticeVertex) (r : ℕ) :
 
 /-- The finite induced-box connection event has the exact probability of the
 finite-witness event under the closed-extended finite-box law. -/
-theorem boxProbabilityMeasure_connection_eq (θ : Parameters) (c : LatticeVertex)
+theorem boxProbabilityMeasure_connection_eq (θ : Parameters) {c : LatticeVertex}
     (r : ℕ) (u v : BoxVertex c r) :
     (boxProbabilityMeasure θ c r).toMeasure.real (connectionEvent u.val v.val) =
       torusRCFiberEventProbability (law (boxGraph c r) θ (BoundaryCondition.free ∅))
-        {A | ActualConnected (boxGraph c r) A u v} := by
+        {A | ActualConnected A u v} := by
   rw [torusRCFiberEventProbability_eq_measureReal]
-  unfold Measure.real
   change (((law (boxGraph c r) θ (BoundaryCondition.free ∅)).map
     (boxConfiguration c r)).toMeasure (connectionEvent u.val v.val)).toReal = _
   rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top (connectionEvent_isMeasurableSet _ _)]
@@ -61,10 +60,10 @@ probability hold eventually for the finite measures. -/
 theorem open_probability_eventually_gt {Ω : Type*} [MeasurableSpace Ω]
     [TopologicalSpace Ω] [OpensMeasurableSpace Ω] [HasOuterApproxClosed Ω]
     (μs : ℕ → ProbabilityMeasure Ω) (μ : ProbabilityMeasure Ω)
-    (hweak : Tendsto μs atTop (𝓝 μ)) (E : Set Ω) (hE : IsOpen E)
+    (hweak : Tendsto μs atTop (𝓝 μ)) {E : Set Ω} (hE : IsOpen E)
     (t : ℝ) (ht : 0 ≤ t) (htμ : t < μ.toMeasure.real E) :
     ∀ᶠ k in atTop, t < (μs k).toMeasure.real E := by
-  have hlt : ENNReal.ofReal t < μ.toMeasure E :=
+  have hlt :=
     (ENNReal.ofReal_lt_iff_lt_toReal ht (measure_ne_top _ _)).mpr htμ
   have hlower := ProbabilityMeasure.le_liminf_measure_open_of_tendsto hweak hE
   have h := eventually_lt_of_lt_liminf (hlt.trans_le hlower)

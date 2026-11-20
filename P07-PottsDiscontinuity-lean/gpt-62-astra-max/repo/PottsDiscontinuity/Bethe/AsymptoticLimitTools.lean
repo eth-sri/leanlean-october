@@ -11,7 +11,11 @@ open scoped Topology BigOperators
 
 namespace PottsDiscontinuity.Bethe
 
-theorem continuous_d1Theta_pair {Δ : ℝ} (hΔ : Δ < -1) :
+section
+variable {Δ : ℝ} (hΔ : Δ < -1)
+include hΔ
+
+theorem continuous_d1Theta_pair :
     Continuous (fun z : ℝ × ℝ => d1Theta Δ z.1 z.2) := by
   have h : ContDiff ℝ 1 (fun z : ℝ × ℝ => theta Δ z.1 z.2) :=
     contDiff_iff_contDiffAt.mpr (fun z => (analyticAt_theta_xy hΔ z.1 z.2).contDiffAt)
@@ -20,9 +24,9 @@ theorem continuous_d1Theta_pair {Δ : ℝ} (hΔ : Δ < -1) :
     funext z
     simpa only [mul_one, mul_zero, add_zero] using (fderiv_theta_apply hΔ z.1 z.2 1 0).symm
   rw [he]
-  exact (h.continuous_fderiv one_ne_zero).clm_apply continuous_const
+  fun_prop
 
-theorem continuous_d2Theta_pair {Δ : ℝ} (hΔ : Δ < -1) :
+theorem continuous_d2Theta_pair :
     Continuous (fun z : ℝ × ℝ => d2Theta Δ z.1 z.2) := by
   have h : ContDiff ℝ 1 (fun z : ℝ × ℝ => theta Δ z.1 z.2) :=
     contDiff_iff_contDiffAt.mpr (fun z => (analyticAt_theta_xy hΔ z.1 z.2).contDiffAt)
@@ -31,10 +35,14 @@ theorem continuous_d2Theta_pair {Δ : ℝ} (hΔ : Δ < -1) :
     funext z
     simpa only [mul_one, mul_zero, zero_add] using (fderiv_theta_apply hΔ z.1 z.2 0 1).symm
   rw [he]
-  exact (h.continuous_fderiv one_ne_zero).clm_apply continuous_const
+  fun_prop
 
-theorem tendstoUniformlyOn_continuous_slice {ι : Type*} {l : Filter ι}
-    (F : ℝ → ℝ → ℝ) (hF : Continuous (fun z : ℝ × ℝ => F z.1 z.2))
+end
+
+variable {ι : Type*} {l : Filter ι}
+
+theorem tendstoUniformlyOn_continuous_slice
+    {F : ℝ → ℝ → ℝ} (hF : Continuous (fun z : ℝ × ℝ => F z.1 z.2))
     {a : ι → ℝ} {x : ℝ} (ha : Tendsto a l (𝓝 x))
     (hai : ∀ᶠ i in l, a i ∈ Icc (-Real.pi) Real.pi) (hx : x ∈ Icc (-Real.pi) Real.pi) :
     TendstoUniformlyOn (fun i y => F (a i) y) (F x) l (Icc (-Real.pi) Real.pi) := by
@@ -50,7 +58,7 @@ theorem tendstoUniformlyOn_continuous_slice {ι : Type*} {l : Filter ι}
 
 /-- Weak convergence remains valid for tests converging uniformly on the
 support, even when the test functions themselves depend on the root count. -/
-theorem empirical_sum_tendsto_of_uniformlyOn {ι : Type*} {l : Filter ι}
+theorem empirical_sum_tendsto_of_uniformlyOn
     (N n : ι → ℕ) (hN : ∀ i, 0 < N i) (hn : ∀ i, n i ≤ N i)
     (p : ∀ i, Fin (n i) → ℝ) (hp : ∀ i j, p i j ∈ Icc (-Real.pi) Real.pi)
     (g : ℝ → ℝ) (G : ι → ℝ → ℝ) {I : ℝ}
@@ -76,7 +84,7 @@ theorem empirical_sum_tendsto_of_uniformlyOn {ι : Type*} {l : Filter ι}
         mul_le_mul_of_nonneg_right (Nat.cast_le.mpr (hn i)) (by positivity)
   have hd : dist ((∑ j, G i (p i j)) / (N i : ℝ)) ((∑ j, g (p i j)) / (N i : ℝ)) ≤ ε / 2 := by
     rw [Real.dist_eq, ← sub_div, abs_div, abs_of_pos hNp]
-    exact (div_le_iff₀ hNp).mpr (by simpa only [mul_comm] using hs)
+    exact (div_le_iff₀ hNp).mpr (by grind)
   exact (dist_triangle _ ((∑ j, g (p i j)) / (N i : ℝ)) I).trans_lt (by linarith)
 
 end PottsDiscontinuity.Bethe

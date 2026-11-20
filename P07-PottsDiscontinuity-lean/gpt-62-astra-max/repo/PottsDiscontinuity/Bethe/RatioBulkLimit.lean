@@ -25,14 +25,14 @@ theorem ratio_logsum_tendsto_of_geometry {ι : Type*} {l : Filter ι} [l.IsCount
     (hNlim : Tendsto (fun i => (N i : ℝ)) l atTop)
     (d : ι → ℝ) (hd : Tendsto d l (𝓝 0)) (hdnonneg : ∀ i, 0 ≤ d i)
     (hmesh : ∀ᶠ i in l, ∀ j : Fin (k i + 1 + 1),
-      rootPartitionPoint (k i + 1) (q i) (by omega) j.succ -
-        rootPartitionPoint (k i + 1) (q i) (by omega) j.castSucc ≤ d i)
+      rootPartitionPoint (q i) (by omega) j.succ -
+        rootPartitionPoint (q i) (by omega) j.castSucc ≤ d i)
     (hshift : ∀ᶠ i in l, ∀ j, |(N i : ℝ) * (q i j - a i j)| ≤ C * |q i j|)
     (hupper : ∀ᶠ i in l, ∀ x ∈ Icc (-Real.pi) Real.pi,
-      rootStepDensity (N i) (k i + 1) (q i) (hq i) (by omega) (hs i) x ≤ M)
-    (w E : ℝ → ℝ)
+      rootStepDensity (N i) (q i) (by omega) x ≤ M)
+    {w E : ℝ → ℝ}
     (hρ : ∀ x ∈ Ioo (-Real.pi) Real.pi,
-      Tendsto (fun i => rootStepDensity (N i) (k i + 1) (q i) (hq i) (by omega) (hs i) x) l (𝓝 (w x)))
+      Tendsto (fun i => rootStepDensity (N i) (q i) (by omega) x) l (𝓝 (w x)))
     (he : ∀ x ∈ Ioo (-Real.pi) Real.pi, x ≠ 0 →
       Tendsto (fun i => (N i : ℝ) *
         (q i (ratioRootIndex (by omega) (q i) x) - a i (ratioRootIndex (by omega) (q i) x)))
@@ -40,13 +40,12 @@ theorem ratio_logsum_tendsto_of_geometry {ι : Type*} {l : Filter ι} [l.IsCount
     Tendsto (fun i => ∑ j, (ratioEll c (q i j) - ratioEll c (a i j))) l
       (𝓝 (∫ x in Icc (-Real.pi) Real.pi, ratioEllPrime c x * E x * w x)) := by
   let B := Real.pi * (c ^ 2 - 1) / (c ^ 2 - 2) ^ 2 + Real.pi ^ 2 / 4
-  have hB : 0 ≤ B := ratio_profile_bound_nonneg hc
   let L := 2 * B * C
-  let F : ι → ℝ → ℝ := fun i => ratioInteriorTest (N i) (q i) (hq i)
+  let F := fun i => ratioInteriorTest (N i) (q i)
     (fun j => (N i : ℝ) * (ratioEll c (q i j) - ratioEll c (a i j)))
-  let g : ℝ → ℝ := (Icc (-Real.pi) Real.pi).indicator
+  let g := (Icc (-Real.pi) Real.pi).indicator
     (fun x => ratioEllPrime c x * E x * w x)
-  let bound : ℝ → ℝ := (Icc (-Real.pi) Real.pi).indicator (fun _ => L * M)
+  let bound := (Icc (-Real.pi) Real.pi).indicator (fun _ => L * M)
   have hmeas : ∀ᶠ i in l, AEStronglyMeasurable (F i) := Eventually.of_forall (fun i =>
     (ratio_interiorTest_integrable (hq i) _).aestronglyMeasurable)
   have hbound : ∀ᶠ i in l, ∀ᵐ x, ‖F i x‖ ≤ bound x := by
@@ -54,8 +53,7 @@ theorem ratio_logsum_tendsto_of_geometry {ι : Type*} {l : Filter ι} [l.IsCount
       with i hi hu hiN
     apply Eventually.of_forall
     intro x
-    rw [Real.norm_eq_abs]
-    exact ratio_log_step_bound hc (hN i) hC hM hiN (hq i) (ha i) (hs i) hi hu x
+    exact ratio_log_step_bound (hq := hq i) (hs := hs i) hc (hN i) hC hM hiN (ha i) hi hu x
   have hboundInt : Integrable bound := by
     apply (integrable_indicator_iff measurableSet_Icc).mpr
     exact integrableOn_const (by simp)
@@ -90,9 +88,8 @@ theorem ratio_logsum_tendsto_of_geometry {ι : Type*} {l : Filter ι} [l.IsCount
     change (N i : ℝ) * |ratioEll c (q i (Fin.last (k i))) - ratioEll c (a i (Fin.last (k i)))| ≤ L at hb
     have hb' : |ratioEll c (q i (Fin.last (k i))) - ratioEll c (a i (Fin.last (k i)))| ≤ L / N i := by
       apply (le_div_iff₀ hNp).mpr
-      nlinarith only [hb]
-    rw [Real.dist_eq, sub_zero]
-    exact hb'.trans_lt hLi
+      linarith
+    grind [Real.dist_eq, sub_zero]
   have hi (i : ι) : (∫ x, F i x) =
       ∑ j : Fin (k i), (ratioEll c (q i j.castSucc) - ratioEll c (a i j.castSucc)) := by
     rw [ratio_integral_interiorTest (hN i) (hq i)]

@@ -25,8 +25,9 @@ variable {E D : Type*} [Fintype E] [Fintype D]
 local instance finiteConditioningMeasurable : MeasurableSpace E := ⊤
 local instance finiteConditioningDiscrete : DiscreteMeasurableSpace E := ⟨fun _ => trivial⟩
 
-theorem finite_filter_measure (p : PMF E) (B S : Set E)
-    (h : ∃ a ∈ B, a ∈ p.support) :
+variable (p : PMF E) (B S : Set E) (h : ∃ a ∈ B, a ∈ p.support)
+
+theorem finite_filter_measure :
     (p.filter B h).toMeasure S = p.toMeasure (S ∩ B) / p.toMeasure B := by
   classical
   have ht (a : E) : S.indicator (p.filter B h) a =
@@ -38,14 +39,12 @@ theorem finite_filter_measure (p : PMF E) (B S : Set E)
   rw [← Finset.sum_mul, PMF.toMeasure_apply_fintype, PMF.toMeasure_apply_fintype,
     tsum_fintype, div_eq_mul_inv]
 
-theorem finite_filter_measureReal (p : PMF E) (B S : Set E)
-    (h : ∃ a ∈ B, a ∈ p.support) :
+theorem finite_filter_measureReal :
     (p.filter B h).toMeasure.real S = p.toMeasure.real (S ∩ B) / p.toMeasure.real B := by
-  rw [Measure.real, finite_filter_measure, ENNReal.toReal_div]
-  rfl
+  grind [Measure.real, finite_filter_measure, ENNReal.toReal_div]
 
 /-- Partitioning a finite probability by the value of a random variable. -/
-theorem finite_measure_fibers (p : PMF E) (r : E → D) (S : Set E) (T : Set D) :
+theorem finite_measure_fibers (r : E → D) (S : Set E) (T : Set D) :
     p.toMeasure.real {e | e ∈ S ∧ r e ∈ T} =
       ∑ d : D, if d ∈ T then p.toMeasure.real (S ∩ {e | r e = d}) else 0 := by
   classical
@@ -65,13 +64,10 @@ theorem finite_measure_fibers (p : PMF E) (r : E → D) (S : Set E) (T : Set D) 
     intro e _
     symm
     rw [Finset.sum_eq_single (r e)]
-    · by_cases he : e ∈ S <;> by_cases ht : r e ∈ T <;> simp [he, ht]
-    · intro d _ hd
-      simp [Ne.symm hd]
+    · grind
+    · grind
     · simp
-  · apply Finset.sum_congr rfl
-    intro d _
-    by_cases hd : d ∈ T <;> simp [hd]
+  · simp
 
 end
 end PottsDiscontinuity.Potts

@@ -1,60 +1,53 @@
 module
+public import PottsDiscontinuity.TorusTopology.SquareSecants
 
-public import PottsDiscontinuity.TorusTopology.RightwardPeriodicTurning
-public import PottsDiscontinuity.TorusTopology.LatticeQuarterRotation
+/-! # Secants of a periodic simple lattice path
 
-/-! Every actual simple periodic lattice curve has zero turn over a period. -/
-
+Move the forward end of every secant out one edge at a time. Summed over a
+period the variation is independent of this separation: the mixed cells are
+disjoint, and the two ends of the strip agree by translation. At separation
+one it reads the tangent turn. At a full period every secant is the same deck
+vector, and the variation is zero.
+-/
 @[expose] public section
-
 namespace PottsDiscontinuity.TorusTopology
-open Finset Planar.Medial
+open FK Secant Planar.Medial Finset
 
-/-- The periodic discrete turning theorem, with an arbitrary nonzero deck vector. -/
-theorem periodic_lattice_turn_eq_zero
-    (f : ℕ → ℤ × ℤ) (hadj : ∀ n, FK.squareLattice.Adj (f n) (f (n+1)))
-    (hf : Function.Injective f) (L : ℕ) (D : ℤ × ℤ) (hL : 0 < L)
-    (hD : D ≠ (0,0)) (hper : ∀ n, f (n+L)=f n+D) :
-    (∑ n ∈ range L, primalCompassQuarterTurn (sequenceCompass f hadj n)
-      (sequenceCompass f hadj (n+1))) = 0 := by
-  let f₁ := fun n => latticeQuarterRotation (f n)
-  let f₂ := fun n => latticeQuarterRotation (f₁ n)
-  let f₃ := fun n => latticeQuarterRotation (f₂ n)
-  let D₁ := latticeQuarterRotation D
-  let D₂ := latticeQuarterRotation D₁
-  let D₃ := latticeQuarterRotation D₂
-  have ha₁ : ∀ n, FK.squareLattice.Adj (f₁ n) (f₁ (n+1)) :=
-    fun n => (latticeQuarterRotation_adj _ _).mpr (hadj n)
-  have ha₂ : ∀ n, FK.squareLattice.Adj (f₂ n) (f₂ (n+1)) :=
-    fun n => (latticeQuarterRotation_adj _ _).mpr (ha₁ n)
-  have ha₃ : ∀ n, FK.squareLattice.Adj (f₃ n) (f₃ (n+1)) :=
-    fun n => (latticeQuarterRotation_adj _ _).mpr (ha₂ n)
-  have hi₁ : Function.Injective f₁ := latticeQuarterRotation_injective.comp hf
-  have hi₂ : Function.Injective f₂ := latticeQuarterRotation_injective.comp hi₁
-  have hi₃ : Function.Injective f₃ := latticeQuarterRotation_injective.comp hi₂
-  have hp₁ : ∀ n, f₁ (n+L)=f₁ n+D₁ := by
-    intro n; dsimp [f₁,D₁]; rw [hper,latticeQuarterRotation_add]
-  have hp₂ : ∀ n, f₂ (n+L)=f₂ n+D₂ := by
-    intro n; change latticeQuarterRotation (f₁ (n+L)) = _
-    rw [hp₁,latticeQuarterRotation_add]
-  have hp₃ : ∀ n, f₃ (n+L)=f₃ n+D₃ := by
-    intro n; change latticeQuarterRotation (f₂ (n+L)) = _
-    rw [hp₂,latticeQuarterRotation_add]
-  have he₁ := sum_sequenceTurn_quarterRotation f hadj L
-  have he₂ := sum_sequenceTurn_quarterRotation f₁ ha₁ L
-  have he₃ := sum_sequenceTurn_quarterRotation f₂ ha₂ L
-  have hpos : 0 < D.1 ∨ 0 < D₁.1 ∨ 0 < D₂.1 ∨ 0 < D₃.1 := by
-    dsimp [D₁,D₂,D₃,latticeQuarterRotation]
-    by_contra hn
-    simp only [not_or,not_lt] at hn
-    exact hD (Prod.ext (by omega) (by omega))
-  rcases hpos with h0 | h1 | h2 | h3
-  · exact periodic_lattice_turn_eq_zero_of_pos_horizontal f hadj hf L D hL h0 hper
-  · have hz := periodic_lattice_turn_eq_zero_of_pos_horizontal f₁ ha₁ hi₁ L D₁ hL h1 hp₁
-    exact he₁ ▸ hz
-  · have hz := periodic_lattice_turn_eq_zero_of_pos_horizontal f₂ ha₂ hi₂ L D₂ hL h2 hp₂
-    exact he₁ ▸ (he₂ ▸ hz)
-  · have hz := periodic_lattice_turn_eq_zero_of_pos_horizontal f₃ ha₃ hi₃ L D₃ hL h3 hp₃
-    exact he₁ ▸ (he₂ ▸ (he₃ ▸ hz))
+theorem periodic_lattice_turn_eq_zero (f : ℕ → V) (hadj : ∀ n, G.Adj (f n) (f (n+1)))
+    (hf : Function.Injective f) (L : ℕ) (D : V) (hL : 0 < L) (hper : ∀ n, f (n+L) = f n+D) :
+    (∑ n ∈ range L, primalCompassQuarterTurn (lab (f n) (f (n+1))) (lab (f (n+1)) (f (n+2)))) = 0 := by
+  let s := fun i k => f (i+k) - f i
+  let H := fun i k => cut (s i k) (s i (k+1))
+  let W := fun i k => cut (s i (k+1)) (s (i+1) k)
+  let T := fun k => ∑ i ∈ range L, (H i k + W i k)
+  have shift (g : ℕ → ℤ) (h : g L = g 0) : ∑ i ∈ range L, g (i+1) = ∑ i ∈ range L, g i := by
+    have hh := sum_range_succ' g L; rw [sum_range_succ] at hh; omega
+  have per i k : s (i+L) k = s i k := by
+    simp only [s, show i+L+k=i+k+L by omega, hper]; abel
+  have step (k) (hk : 1 ≤ k) : T (k+1) = T k := by
+    have hc i : H i (k+1) + W i (k+1) = W i k + H (i+1) k := by
+      have h := cell (hadj i) (hadj (i+(k+1))) (hf.ne (by omega)) (hf.ne (by omega)) (hf.ne (by omega)) (hf.ne (by omega))
+      simpa only [s,H,W,Nat.add_assoc,Nat.add_comm 1 k,Nat.add_left_comm k 1] using h
+    change ∑ i ∈ range L, _ = _; simp_rw [hc]; simp only [T,sum_add_distrib]
+    rw [shift (fun i => H i k) (by have h := per 0; simpa [H] using congrArg₂ cut (h k) (h (k+1)))]; ring
+  have ht : ∀ k, 1 ≤ k → T k = T 1 := fun _ h => Nat.le_induction rfl (fun k hk ih => (step k hk).trans ih) _ h
+  have htop : T L = 0 := by
+    apply sum_eq_zero; intro i _
+    have h (j) : s j L = D := by simp [s,hper]
+    simp only [H,W,h]
+    have hxy := (squareLattice_adj_iff _ _).mp (hadj (i+L))
+    rw [hper] at hxy
+    have hv : (s i (L+1)).1 = D.1 ∨ (s i (L+1)).2 = D.2 := by
+      dsimp [s]; rw [← Nat.add_assoc]; simp only [Prod.fst_add,Prod.snd_add] at hxy; omega
+    rcases hv with h | h <;> simp only [cut,up,h,sub_self,ite_self,add_zero] <;> split_ifs <;> omega
+  let A := fun i => idx (lab (f i) (f (i+1)))
+  have hA : A L = A 0 := by
+    have hp i : lab (f (i+L)) (f ((i+1)+L)) = lab (f i) (f (i+1)) := by simp [hper,lab]
+    simpa [A,Nat.add_comm L 1] using congrArg idx (hp 0)
+  have hturn i := local_turn (hadj i) (hadj (i+1)) (hf.ne (by omega))
+  change ∑ i ∈ range L, _ = _
+  calc
+    _ = ∑ i ∈ range L, (A (i+1)-A i + 4*(H i 1+W i 1)) := sum_congr rfl fun i _ => hturn i
+    _ = 0 := by rw [sum_add_distrib,sum_sub_distrib,shift A hA,sub_self,zero_add,← mul_sum]; change 4*T 1 = 0; rw [← ht L hL,htop,mul_zero]
 
 end PottsDiscontinuity.TorusTopology

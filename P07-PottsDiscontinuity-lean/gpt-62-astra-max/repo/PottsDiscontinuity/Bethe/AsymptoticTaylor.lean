@@ -11,11 +11,14 @@ open scoped BigOperators
 
 namespace PottsDiscontinuity.Bethe
 
-theorem fderiv_theta_apply {Δ : ℝ} (hΔ : Δ < -1) (x y a b : ℝ) :
+variable {Δ : ℝ} (hΔ : Δ < -1)
+include hΔ
+
+theorem fderiv_theta_apply (x y a b : ℝ) :
     fderiv ℝ (fun z : ℝ × ℝ => theta Δ z.1 z.2) (x, y) (a, b) =
       d1Theta Δ x y * a + d2Theta Δ x y * b := by
   let F : ℝ × ℝ → ℝ := fun z => theta Δ z.1 z.2
-  have hf : DifferentiableAt ℝ F (x, y) := (analyticAt_theta_xy hΔ x y).differentiableAt
+  have hf := (analyticAt_theta_xy hΔ x y).differentiableAt
   have h₁ : fderiv ℝ F (x, y) (1, 0) = d1Theta Δ x y := by
     have h := (hf.hasFDerivAt.comp x (hasFDerivAt_prodMk_left x y)).hasDerivAt.deriv
     simpa only [d1Theta, F, ContinuousLinearMap.comp_apply,
@@ -24,13 +27,11 @@ theorem fderiv_theta_apply {Δ : ℝ} (hΔ : Δ < -1) (x y a b : ℝ) :
     have h := (hf.hasFDerivAt.comp y (hasFDerivAt_prodMk_right x y)).hasDerivAt.deriv
     simpa only [d2Theta, F, ContinuousLinearMap.comp_apply,
       ContinuousLinearMap.inr_apply, Function.comp_def] using h.symm
-  have he : (a, b) = a • ((1, 0) : ℝ × ℝ) + b • ((0, 1) : ℝ × ℝ) := by ext <;> simp
-  change fderiv ℝ F (x, y) (a, b) = _
+  have he : (a, b) = a • ((1, 0) : ℝ × ℝ) + b • ((0, 1) : ℝ × ℝ) := by simp
   rw [he, map_add, map_smul, map_smul, h₁, h₂]
-  simp only [smul_eq_mul]
   ring
 
-theorem theta_linearized_remainder {Δ : ℝ} (hΔ : Δ < -1) :
+theorem theta_linearized_remainder :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ x ∈ Icc (-Real.pi) Real.pi,
       ∀ y ∈ Icc (-Real.pi) Real.pi, ∀ u ∈ Icc (-Real.pi) Real.pi,
       ∀ v ∈ Icc (-Real.pi) Real.pi,
@@ -46,7 +47,7 @@ theorem theta_linearized_remainder {Δ : ℝ} (hΔ : Δ < -1) :
 
 /-- Summing the uniform second-order errors over at most `N` roots gives
 the `O(1/N)` remainder required in the source's offset expansion. -/
-theorem theta_sum_linearized_remainder {Δ : ℝ} (hΔ : Δ < -1) :
+theorem theta_sum_linearized_remainder :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ (N n : ℕ), 0 < N → n ≤ N →
       ∀ (x u : ℝ) (y v : Fin n → ℝ), x ∈ Icc (-Real.pi) Real.pi →
       u ∈ Icc (-Real.pi) Real.pi →
@@ -58,13 +59,12 @@ theorem theta_sum_linearized_remainder {Δ : ℝ} (hΔ : Δ < -1) :
   obtain ⟨K, hK, hb⟩ := theta_linearized_remainder hΔ
   refine ⟨K, hK, ?_⟩
   intro N n hN hn x u y v hx hu hy hv B hB hux hvy
-  have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
   have heq : (∑ j, (theta Δ u (v j) - theta Δ x (y j))) -
       (∑ j, d1Theta Δ x (y j)) * (u - x) -
       ∑ j, d2Theta Δ x (y j) * (v j - y j) =
       ∑ j, (theta Δ u (v j) - theta Δ x (y j) - d1Theta Δ x (y j) * (u - x) -
         d2Theta Δ x (y j) * (v j - y j)) := by
-    simp only [Finset.sum_sub_distrib, Finset.sum_mul]
+    simp [Finset.sum_sub_distrib, Finset.sum_mul]
   rw [heq]
   calc
     _ ≤ ∑ j : Fin n, |theta Δ u (v j) - theta Δ x (y j) - d1Theta Δ x (y j) * (u - x) -

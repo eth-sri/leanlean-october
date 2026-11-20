@@ -17,7 +17,7 @@ variable {X I : Type*} [MeasurableSpace X]
 def booleanEventPattern (E : I → Set X) (T C : Finset I) : Set X :=
   {x | (∀ i ∈ T, x ∈ E i) ∧ ∀ i ∈ C, x ∉ E i}
 
-theorem booleanEventPattern_measurable (E : I → Set X) (hE : ∀ i, MeasurableSet (E i))
+theorem booleanEventPattern_measurable {E : I → Set X} (hE : ∀ i, MeasurableSet (E i))
     (T C : Finset I) : MeasurableSet (booleanEventPattern E T C) := by
   have hT : {x | ∀ i ∈ T, x ∈ E i} = ⋂ i ∈ T, E i := by ext x; simp
   have hC : {x | ∀ i ∈ C, x ∉ E i} = ⋂ i ∈ C, (E i)ᶜ := by ext x; simp
@@ -39,7 +39,7 @@ theorem booleanEventPattern_insert (E : I → Set X) (T C : Finset I) (i : I) :
 connection partition: all its positive moments suffice. -/
 theorem boolean_pattern_probability_tendsto
     (μs : ℕ → ProbabilityMeasure X) (μ : ProbabilityMeasure X)
-    (E : ℕ → I → Set X) (Einf : I → Set X)
+    {E : ℕ → I → Set X} {Einf : I → Set X}
     (hE : ∀ n i, MeasurableSet (E n i)) (hEinf : ∀ i, MeasurableSet (Einf i))
     (hmom : ∀ T : Finset I,
       Tendsto (fun n => (μs n).toMeasure.real {x | ∀ i ∈ T, x ∈ E n i}) atTop
@@ -59,14 +59,13 @@ theorem boolean_pattern_probability_tendsto
           (μs n).toMeasure.real (booleanEventPattern (E n) T C) -
             (μs n).toMeasure.real (booleanEventPattern (E n) (insert i T) C) := by
         rw [booleanEventPattern_insert, measureReal_sdiff (μ := (μs n).toMeasure)
-          (hsub (E n)) (booleanEventPattern_measurable (E n) (hE n) _ _)]
+          (hsub (E n)) (booleanEventPattern_measurable (hE n) _ _)]
       have hi' : μ.toMeasure.real (booleanEventPattern Einf T (insert i C)) =
           μ.toMeasure.real (booleanEventPattern Einf T C) -
             μ.toMeasure.real (booleanEventPattern Einf (insert i T) C) := by
         rw [booleanEventPattern_insert, measureReal_sdiff (μ := μ.toMeasure)
-          (hsub Einf) (booleanEventPattern_measurable Einf hEinf _ _)]
-      simp_rw [hn, hi']
-      exact ht
+          (hsub Einf) (booleanEventPattern_measurable hEinf _ _)]
+      grind
 
 end
 end PottsDiscontinuity.Potts

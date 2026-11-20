@@ -16,14 +16,7 @@ variable {V W : Type*} [Finite V] [Finite W]
   (G : SimpleGraph V) (H : SimpleGraph W) (f : V ↪ W)
   (hGH : G.map f ≤ H)
 
-local instance conditionalEmbeddedLawSmallEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance conditionalEmbeddedLawMappedEdgeFintype : Fintype (G.map f).edgeSet := Fintype.ofFinite _
-local instance conditionalEmbeddedLawLargeEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
 local instance conditionalEmbeddedLawLargeEdgeDecidableEq : DecidableEq H.edgeSet := Classical.decEq _
-local instance conditionalEmbeddedLawRemainingFintype
-    (R : Configuration H) : Fintype (RemainingConfiguration H R) := Fintype.ofFinite _
-local instance conditionalEmbeddedLawRemovedFintype
-    (R : Configuration H) : Fintype (RemovedConfiguration H R) := Fintype.ofFinite _
 
 /-- Conditioning on an exact state of all non-inner edges and restricting to
 an embedded inner graph gives its FK law with every exterior induced
@@ -32,19 +25,19 @@ theorem law_filter_frozen_map_embeddedRestriction
     (q : Parameters) (ξ : BoundaryCondition W)
     (K : RemovedConfiguration H (subgraphRemovedEdges (G.map f) H)) :
     ((law H q ξ).filter
-      (frozenStateEvent (subgraphRemovedEdges (G.map f) H) K)
+      (frozenStateEvent K)
       (frozenStateEvent_support q ξ (subgraphRemovedEdges (G.map f) H) K)).map
         (embeddedConfigurationRestriction G H f hGH) =
       law G q
         (isolatedExtensionPullbackBoundary f (frozenBoundary ξ K.val)) := by
-  let R : Configuration H := subgraphRemovedEdges (G.map f) H
-  let B : BoundaryCondition W := frozenBoundary ξ K.val
-  let E : Configuration (G.map f) ≃ RemainingConfiguration H R :=
+  let R := subgraphRemovedEdges (G.map f) H
+  let B := frozenBoundary ξ K.val
+  let E :=
     subgraphRemainingConfigurationEquiv hGH
-  let split : Configuration H → RemainingConfiguration H R :=
+  let split :=
     fun C => (configurationSplitEquiv H R C).1
-  let Q : PMF (Configuration H) :=
-    (law H q ξ).filter (frozenStateEvent R K) (frozenStateEvent_support q ξ R K)
+  let Q :=
+    (law H q ξ).filter (frozenStateEvent K) (frozenStateEvent_support q ξ R K)
   have hfrozen := law_filter_frozen_map_remaining q ξ R K
   have hsub := law_subgraphRemaining_map hGH q B
   have hconditional : Q.map split =
@@ -86,11 +79,9 @@ theorem law_filter_frozen_map_embeddedRestriction
       (isolatedExtensionConfigurationEquiv G f).symm (E.symm (split C))) =
       embeddedConfigurationRestriction G H f hGH := by
     funext C
-    dsimp [E, split, R]
     rw [subgraphRemainingConfigurationEquiv_symm_split]
     rfl
-  rw [← hfun]
-  simpa [Q, B] using hinner
+  grind
 
 end
 end PottsDiscontinuity.FK

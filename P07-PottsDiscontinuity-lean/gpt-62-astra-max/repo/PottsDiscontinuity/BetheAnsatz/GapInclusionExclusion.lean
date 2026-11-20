@@ -25,11 +25,10 @@ theorem no_events_indicator_eq_powerset {ι : Type*} [Fintype ι] (C : ι → Pr
       if ∀ i, ¬ C i then (1 : ℂ) else 0 := by
     have hlocal : ∀ i, (1 - (if C i then (1 : ℂ) else 0)) =
         if ¬ C i then (1 : ℂ) else 0 := by
-      intro i
-      by_cases hi : C i <;> simp [hi]
+      grind
     simp_rw [hlocal]
     rw [Finset.prod_ite_zero]
-    simp only [mem_univ, forall_const, Finset.prod_const_one]
+    simp
   rw [he] at hp
   simpa only [Finset.prod_const_one, mul_one, Finset.prod_ite_zero] using hp
 
@@ -42,55 +41,50 @@ theorem sum_no_events_eq_powerset {ι α : Type*} [Fintype ι] (s : Finset α)
   rw [Finset.sum_filter]
   have hi : ∀ a, (if ∀ i, ¬ C i a then F a else 0) =
       (if ∀ i, ¬ C i a then (1 : ℂ) else 0) * F a := by
-    intro a
-    by_cases ha : ∀ i, ¬ C i a <;> simp [ha]
+    simp
   simp_rw [hi, no_events_indicator_eq_powerset, Finset.sum_mul]
   rw [Finset.sum_comm]
   apply Finset.sum_congr rfl
   intro S _
   rw [Finset.sum_filter, Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro a _
-  by_cases ha : ∀ i ∈ S, C i a <;> simp [ha]
+  simp
 
-/-- The source's `R_σ(S)`, with every collision in S imposed. -/
-noncomputable def restrictedGapSum {N n : ℕ} (c : ℝ) (x : Fin (n + 1) → ℤ)
-    (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1))) (S : Finset (Fin (n + 1))) : ℂ :=
-  ∑ y ∈ (gapTuples N x).filter (fun y => ∀ k ∈ S, gapCollision N x y k),
-    gapWeight c N x y * planeWave p σ y
+variable {N n : ℕ}
 
-/-- Equation `eq:RS`, retaining exactly the modulo-N exclusion of the source gap sum. -/
-theorem cyclicGapSum_inclusion_exclusion {N n : ℕ} (c : ℝ) (x : Fin (n + 2) → ℤ)
-    (p : Fin (n + 2) → ℝ) (σ : Equiv.Perm (Fin (n + 2)))
-    (hx : StrictMono x) (hspan : x (Fin.last (n + 1)) - x 0 < (N : ℤ)) :
-    cyclicGapSum c N x p σ =
-      ∑ S ∈ (univ : Finset (Fin (n + 2))).powerset,
-        (-1 : ℂ) ^ S.card * restrictedGapSum (N := N) c x p σ S := by
-  have he : distinctGapTuples N x =
-      (gapTuples N x).filter (fun y => ∀ k, ¬ gapCollision N x y k) := by
-    ext y
-    simp only [distinctGapTuples, mem_filter]
-    constructor
-    · rintro ⟨hy, hi⟩
-      exact ⟨hy, (distinct_residues_iff_no_gapCollision hx hspan hy).mp hi⟩
-    · rintro ⟨hy, hi⟩
-      exact ⟨hy, (distinct_residues_iff_no_gapCollision hx hspan hy).mpr hi⟩
-  unfold cyclicGapSum restrictedGapSum
-  rw [he]
-  convert sum_no_events_eq_powerset (gapTuples N x) (fun k y => gapCollision N x y k)
-    (fun y => gapWeight c N x y * planeWave p σ y) using 1
-  · apply Finset.sum_congr
-    · ext y
-      simp only [mem_filter]
-    · intro y _
-      rfl
-  · apply Finset.sum_congr rfl
-    intro S _
-    congr 1
-    apply Finset.sum_congr
-    · ext y
-      simp only [mem_filter]
-    · intro y _
-      rfl
+/-- Collision constraints expressed at each individual coordinate. -/
+theorem gapCollision_constraints_iff (x y : Fin (n + 1) → ℤ)
+    (S : Finset (Fin (n + 1))) :
+    (∀ k ∈ S, gapCollision N x y k) ↔
+      ∀ k, (k ∈ S → y k = x k) ∧
+        ((finRotate (n + 1)).symm k ∈ S → y k = cyclicPredecessorPositions N x k) := by
+  constructor
+  · intro h k
+    refine ⟨fun hk => (h k hk).1, ?_⟩
+    intro hk
+    simpa only [gapCollision, Equiv.apply_symm_apply] using (h _ hk).2
+  · intro h k hk
+    exact ⟨(h k).1 hk, (h _).2 (by grind)⟩
+
+/-- Product domain for a collision set, including the empty domain when constraints conflict. -/
+theorem restricted_gapTuples_eq_pi (x : Fin (n + 1) → ℤ)
+    (S : Finset (Fin (n + 1))) :
+    (gapTuples N x).filter (fun y => ∀ k ∈ S, gapCollision N x y k) =
+      Fintype.piFinset (fun k => (Icc (cyclicPredecessorPositions N x k) (x k)).filter
+        (fun u => (k ∈ S → u = x k) ∧
+          ((finRotate (n + 1)).symm k ∈ S → u = cyclicPredecessorPositions N x k))) := by
+  ext y
+  simp only [mem_filter, mem_gapTuples, gapCollision_constraints_iff,
+    Fintype.mem_piFinset, mem_Icc]
+  grind
+
+/-- Strictly positive lengths of the predecessor gaps. -/
+theorem cyclicPredecessorPositions_lt {x : Fin (n + 1) → ℤ}
+    (hx : StrictMono x) (hspan : x (Fin.last n) - x 0 < (N : ℤ)) (k : Fin (n + 1)) :
+    cyclicPredecessorPositions N x k < x k := by
+  induction k using Fin.cases with
+  | zero => rw [cyclicPredecessorPositions_zero]; omega
+  | succ k =>
+    rw [cyclicPredecessorPositions_succ]
+    exact hx (by change k.val < k.val + 1; omega)
 
 end PottsDiscontinuity.BetheAnsatz

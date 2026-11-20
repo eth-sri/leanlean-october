@@ -1,6 +1,6 @@
 module
 
-public import FixedPointTheorems.brouwer
+public import Mathlib
 public import PottsDiscontinuity.Bethe.RatioAnySign
 public import PottsDiscontinuity.SixVertex.Cor34FinalExistence
 
@@ -27,17 +27,16 @@ structure EndpointBetheState (N n r : ℕ) (Δ c : ℝ)
   roots : Fin n → ℝ
   roots_mem : roots ∈ Bethe.S_n n
   roots_bethe : Bethe.DiscreteBetheEquation Δ N n roots
-  density_bound : Bethe.densityNorm Δ hΔ
-      (fun x => Bethe.rootStepDensity N n roots roots_mem hn hsize x -
-        Bethe.rho Δ x)
-      (Bethe.rootStepDensity_error_bddAbove hΔ roots roots_mem hn hsize) ≤ K / N
+  density_bound : Bethe.densityNorm Δ
+      (fun x => Bethe.rootStepDensity N roots hn x -
+        Bethe.rho Δ x) ≤ K / N
   lambda_eq : SixVertex.cor34BetheLambda N n c roots = Lambda c N r
 
 /-- Theorem 1.3, equation (1.7), along the tail of the subsequence `N ∈ 4ℕ`.
 The finite-size Bethe/Perron-root identification uses the proved Corollary 3.4
 endpoint-family theorem. -/
 theorem apply_17_at_critical_c
-    (q : ℝ) (hq : 4 < q) (r : ℕ) (hr : 1 ≤ r) :
+    {q : ℝ} (hq : 4 < q) {r : ℕ} (hr : 1 ≤ r) :
     ∃ B : ℕ, ∃ S : ℝ,
       Tendsto (PottsDiscontinuity.altTanhPartial
         (Real.arcosh (Real.sqrt q / 2))) atTop
@@ -75,9 +74,7 @@ theorem apply_17_at_critical_c
     dsimp [BetheAnsatz.anisotropy, c, Δcrit]
     nlinarith
   have hcPhysical : Real.sqrt (2 - 2 * Δcrit) = c := by
-    dsimp [Δcrit, c]
-    have heq : 2 - 2 * (-Real.sqrt q / 2) = 2 + Real.sqrt q := by ring
-    rw [heq]
+    grind
 
   obtain ⟨Kq, hKq, Nq, hNq, hEndpointQ⟩ :=
     SixVertex.cor34_final_exists_family_at_endpoint r hΔcrit
@@ -90,23 +87,16 @@ theorem apply_17_at_critical_c
   have hBp : Np ≤ B := by dsimp [B]; omega
   have hBr : r + 2 ≤ B := by dsimp [B]; omega
   have hhalf (i : ℕ) : N i / 2 = 2 * (i + B) := by
-    dsimp [N]
-    rw [show 4 * (i + B) = 2 * (2 * (i + B)) by omega]
-    exact Nat.mul_div_right _ (by norm_num)
+    grind
   have hNpos (i : ℕ) : 0 < N i := by
     dsimp [N]
     omega
   have hNeven (i : ℕ) : Even (N i) := by
-    refine ⟨N i / 2, ?_⟩
-    rw [hhalf]
-    dsimp [N]
-    omega
+    grind
   have hNlargeQ (i : ℕ) : Nq ≤ N i := by
-    have hle : B ≤ N i := by dsimp [N]; omega
-    exact hBq.trans hle
+    grind
   have hNlargeP (i : ℕ) : Np ≤ N i := by
-    have hle : B ≤ N i := by dsimp [N]; omega
-    exact hBp.trans hle
+    grind
   have h4 (i : ℕ) : 4 ∣ N i := by
     refine ⟨i + B, ?_⟩
     simp [N]
@@ -126,9 +116,6 @@ theorem apply_17_at_critical_c
     rw [hhalf]
     omega
   have hsizeQ (i : ℕ) : 2 * (N i / 2 - r) ≤ N i := by
-    rw [hhalf]
-    have hN4 : N i = 4 * (i + B) := by rfl
-    rw [hN4]
     omega
   have hnQ (i : ℕ) : 0 < N i / 2 - r := by
     rw [hhalf]
@@ -139,17 +126,6 @@ theorem apply_17_at_critical_c
     rw [hhalf]
     dsimp [N]
     omega
-  have hcountQ (i : ℕ) : N i = 2 * (N i / 2 - r + r) := by
-    rw [hNdouble]
-    rw [hhalf]
-    congr 1
-    omega
-  have hcountP (i : ℕ) : N i = 2 * (N i / 2 + 0) := by
-    rw [hNdouble]
-    rw [hhalf]
-    congr 1
-    omega
-
   have hdataQ : ∀ i : ℕ,
       Nonempty (EndpointBetheState (N i) (N i / 2 - r) r Δcrit c hΔcrit Kq) := by
     intro i
@@ -178,9 +154,9 @@ theorem apply_17_at_critical_c
         density_bound := hDensity
         lambda_eq := by simpa [hcPhysical] using hLambda }
     exact ⟨data⟩
-  let Dq : ∀ i : ℕ, EndpointBetheState (N i) (N i / 2 - r) r Δcrit c hΔcrit Kq :=
+  let Dq :=
     fun i => Classical.choice (hdataQ i)
-  let Dp : ∀ i : ℕ, EndpointBetheState (N i) (N i / 2) 0 Δcrit c hΔcrit Kp :=
+  let Dp :=
     fun i => Classical.choice (hdataP i)
   let rootsQ : ∀ i : ℕ, Fin (N i / 2 - r) → ℝ := fun i => (Dq i).roots
   let rootsP : ∀ i : ℕ, Fin (N i / 2) → ℝ := fun i => (Dp i).roots
@@ -192,37 +168,25 @@ theorem apply_17_at_critical_c
       (N i / 2 - r) (rootsQ i) := (Dq i).roots_bethe
   have hrootsPBE (i : ℕ) : Bethe.DiscreteBetheEquation Δcrit (N i)
       (N i / 2) (rootsP i) := (Dp i).roots_bethe
-  have hbp (i : ℕ) : BddAbove (Set.range fun α : Set.Icc (-Real.pi) Real.pi =>
-      |Bethe.Xi (Bethe.lamOf Δcrit) α *
-        (Bethe.rootStepDensity (N i) (N i / 2) (rootsP i) (hrootsPmem i)
-          (hnP i) (hsizeP i) (Bethe.kMap (Bethe.lamOf Δcrit) α) -
-          Bethe.rho Δcrit (Bethe.kMap (Bethe.lamOf Δcrit) α))|) :=
-    Bethe.rootStepDensity_error_bddAbove hΔcrit (rootsP i) (hrootsPmem i)
+  have hbp (i : ℕ) :=
+    Bethe.rootStepDensity_error_bddAbove hΔcrit (hrootsPmem i)
       (hnP i) (hsizeP i)
-  have hbq (i : ℕ) : BddAbove (Set.range fun α : Set.Icc (-Real.pi) Real.pi =>
-      |Bethe.Xi (Bethe.lamOf Δcrit) α *
-        (Bethe.rootStepDensity (N i) (N i / 2 - r) (rootsQ i) (hrootsQmem i)
-          (hnQ i) (hsizeQ i) (Bethe.kMap (Bethe.lamOf Δcrit) α) -
-          Bethe.rho Δcrit (Bethe.kMap (Bethe.lamOf Δcrit) α))|) :=
-    Bethe.rootStepDensity_error_bddAbove hΔcrit (rootsQ i) (hrootsQmem i)
+  have hbq (i : ℕ) :=
+    Bethe.rootStepDensity_error_bddAbove hΔcrit (hrootsQmem i)
       (hnQ i) (hsizeQ i)
-  have hnormP (i : ℕ) : Bethe.densityNorm Δcrit hΔcrit
-      (fun x => Bethe.rootStepDensity (N i) (N i / 2) (rootsP i) (hrootsPmem i)
-        (hnP i) (hsizeP i) x - Bethe.rho Δcrit x) (hbp i) ≤ Kp / N i :=
+  have hnormP (i : ℕ) :=
     (Dp i).density_bound
-  have hnormQ (i : ℕ) : Bethe.densityNorm Δcrit hΔcrit
-      (fun x => Bethe.rootStepDensity (N i) (N i / 2 - r) (rootsQ i) (hrootsQmem i)
-        (hnQ i) (hsizeQ i) x - Bethe.rho Δcrit x) (hbq i) ≤ Kq / N i :=
+  have hnormQ (i : ℕ) :=
     (Dq i).density_bound
   let K : ℝ := max Kp Kq
   have hK : 0 ≤ K := by dsimp [K]; positivity
   have hrate : ∀ᶠ i : ℕ in atTop,
-      Bethe.densityNorm Δcrit hΔcrit
-        (fun x => Bethe.rootStepDensity (N i) (N i / 2) (rootsP i) (hrootsPmem i)
-          (hnP i) (hsizeP i) x - Bethe.rho Δcrit x) (hbp i) ≤ K / N i ∧
-      Bethe.densityNorm Δcrit hΔcrit
-        (fun x => Bethe.rootStepDensity (N i) (N i / 2 - r) (rootsQ i) (hrootsQmem i)
-          (hnQ i) (hsizeQ i) x - Bethe.rho Δcrit x) (hbq i) ≤ K / N i := by
+      Bethe.densityNorm Δcrit
+        (fun x => Bethe.rootStepDensity (N i) (rootsP i)
+          (hnP i) x - Bethe.rho Δcrit x) ≤ K / N i ∧
+      Bethe.densityNorm Δcrit
+        (fun x => Bethe.rootStepDensity (N i) (rootsQ i)
+          (hnQ i) x - Bethe.rho Δcrit x) ≤ K / N i := by
     filter_upwards with i
     constructor
     · exact hnormP i |>.trans (div_le_div_of_nonneg_right
@@ -254,15 +218,11 @@ theorem apply_17_at_critical_c
       refine ⟨S, hS, ?_⟩
       simpa [hrEven] using hratio
   obtain ⟨S, hS, hratio⟩ := hSdata
-  have hIdentity := PottsDiscontinuity.identity44
-    (Real.arcosh (Real.sqrt q / 2)) hlam
+  have hIdentity := PottsDiscontinuity.identity44 hlam
   obtain ⟨S₀, T₀, hS₀, hT₀, hpositive, hvalue⟩ := hIdentity
   have hS₀' : Tendsto (PottsDiscontinuity.altTanhPartial
       (Real.arcosh (Real.sqrt q / 2)))
       atTop (𝓝 S₀) := by
-    change Tendsto (fun N : ℕ => ∑ k ∈ Finset.Icc 1 N,
-      (-1 : ℝ) ^ k / k * Real.tanh (k * Real.arcosh (Real.sqrt q / 2)))
-      atTop (𝓝 S₀)
     exact hS₀
   have hS' : Tendsto (PottsDiscontinuity.altTanhPartial
       (Real.arcosh (Real.sqrt q / 2)))
@@ -298,9 +258,7 @@ theorem apply_17_at_critical_c
         ((PerronFrobenius.pfRoot (SixVertex.transferBlock (N i) c
           (N i / 2 - r)) : ℝ) : ℂ) := by
     have hparity : Even (N i / 2 - r) := by
-      refine ⟨(N i / 2 - r) / 2, ?_⟩
-      rw [hhalf]
-      omega
+      grind
     have hc : 2 < c := by
       change 2 < Real.sqrt (2 + Real.sqrt q)
       rw [Real.lt_sqrt (by norm_num : (0 : ℝ) ≤ 2)]
@@ -325,11 +283,7 @@ theorem apply_17_at_critical_c
         ((PerronFrobenius.pfRoot (SixVertex.transferBlock (N i) c
           (N i / 2 - r)) : ℝ) : ℂ) := by
     have hparity : ¬ Even (N i / 2 - r) := by
-      intro heven
-      rcases heven with ⟨k, hk⟩
-      have hpar : (N i / 2 - r) % 2 = r % 2 := by rw [hhalf]; omega
-      have hzero : (N i / 2 - r) % 2 = 0 := by omega
-      exact hrOdd (hpar.symm.trans hzero)
+      grind
     let qcenter : ℕ := (N i / 2 - r) / 2 + 1
     have hnq : N i / 2 - r + 1 = 2 * qcenter := by
       dsimp [qcenter]
@@ -366,11 +320,7 @@ theorem apply_17_at_critical_c
          ⟨(N i / 2 - r) / 2, Nat.div_lt_self (hnQ i) (by omega)⟩) =
         ((PerronFrobenius.pfRoot (SixVertex.transferBlock (N i) c
           (N i / 2 - r)) : ℝ) : ℂ) := by
-    by_cases hrEven : r % 2 = 0
-    · simp only [hrEven, ite_eq_left]
-      exact hPFbottomEven i hrEven
-    · simp only [hrEven]
-      exact hPFbottomOdd i hrEven
+    grind
   have hquot (i : ℕ) :
       (if r % 2 = 0 then BetheAnsatz.eigenvalueRegular c (rootsQ i)
        else BetheAnsatz.eigenvalueZero (N i) c (rootsQ i)
@@ -385,14 +335,7 @@ theorem apply_17_at_critical_c
       ((Lambda c (N i) r / Lambda c (N i) 0 : ℝ) : ℂ)) atTop
       (𝓝 ((Real.exp (-(r : ℝ) *
         (Bethe.lamOf Δcrit + 2 * S₀)) : ℝ) : ℂ)) := by
-    have htarget : Tendsto (fun i : ℕ =>
-        ((Lambda c (N i) r / Lambda c (N i) 0 : ℝ) : ℂ)) atTop
-        (𝓝 ((Real.exp (-(r : ℝ) *
-          (Bethe.lamOf Δcrit + 2 * S)) : ℝ) : ℂ)) := by
-      apply hratio.congr
-      intro i
-      exact hquot i
-    simpa [hSS] using htarget
+    grind
   have hcomplexExp : Tendsto (fun i : ℕ =>
       ((Lambda c (N i) r / Lambda c (N i) 0 : ℝ) : ℂ)) atTop
       (𝓝 (Complex.exp (-(r : ℂ) *
@@ -403,10 +346,6 @@ theorem apply_17_at_critical_c
       Complex.re (↑(Lambda c (N i) r / Lambda c (N i) 0 : ℝ) : ℂ)) atTop
       (𝓝 (Real.exp (-(r : ℝ) * (Bethe.lamOf Δcrit + 2 * S₀)))) := by
     have ht := Complex.continuous_re.continuousAt.tendsto.comp hcomplexExp
-    change Tendsto (fun i : ℕ =>
-      Complex.re (↑(Lambda c (N i) r / Lambda c (N i) 0 : ℝ) : ℂ)) atTop
-      (𝓝 ((Complex.exp (-(r : ℂ) *
-        ((Bethe.lamOf Δcrit : ℂ) + 2 * (S₀ : ℂ)))).re)) at ht
     have hexp : (Complex.exp (-(r : ℂ) *
         ((Bethe.lamOf Δcrit : ℂ) + 2 * (S₀ : ℂ)))).re =
         Real.exp (-(r : ℝ) * (Bethe.lamOf Δcrit + 2 * S₀)) := by
@@ -419,15 +358,10 @@ theorem apply_17_at_critical_c
     funext i
     simp
   rw [hRe] at hrealComplex
-  have hreal : Tendsto (fun i : ℕ => Lambda c (N i) r / Lambda c (N i) 0)
-      atTop (𝓝 (Real.exp (-(r : ℝ) *
-        (Bethe.lamOf Δcrit + 2 * S₀)))) := hrealComplex
+  have hreal := hrealComplex
   have hlamValue : Bethe.lamOf Δcrit = Real.arcosh (Real.sqrt q / 2) := hlamEq
   refine ⟨B, S₀, ?_, ?_⟩
-  · change Tendsto (fun N : ℕ => ∑ k ∈ Finset.Icc 1 N,
-      (-1 : ℝ) ^ k / k * Real.tanh (k * Real.arcosh (Real.sqrt q / 2)))
-      atTop (𝓝 S₀)
-    exact hS₀
+  · exact hS₀
   · simpa [N, c, hlamValue] using hreal
 
 end PottsDiscontinuity.RCMProof

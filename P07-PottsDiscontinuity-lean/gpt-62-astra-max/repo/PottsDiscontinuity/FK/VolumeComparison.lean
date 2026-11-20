@@ -45,13 +45,13 @@ theorem remainingLaw_le_original_marginal (q : Parameters) (ξ : BoundaryConditi
   rw [law_map_remaining_eq_bind_frozen]
   apply le_expectation_bind
   intro H
-  exact remainingLaw_boundary_comparison G q ξ (frozenBoundary ξ H.val)
+  exact remainingLaw_boundary_comparison G q
     (boundary_le_frozenBoundary ξ H.val) R f hf0 hf
 
 /-- The comparison expressed directly as an observable of the full original
 configuration, without replacing the genuine marginal by a new model. -/
 theorem remainingLaw_le_original_expectation (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) (f : RemainingConfiguration G R → ℝ)
+    {R : Configuration G} {f : RemainingConfiguration G R → ℝ}
     (hf0 : ∀ A, 0 ≤ f A) (hf : Monotone f) :
     expectation (remainingLaw G q ξ R) f ≤
       expectation (law G q ξ) (fun C => f (configurationSplitEquiv G R C).1) := by

@@ -1,7 +1,9 @@
 module
 
 public import PottsDiscontinuity.FK.ProbabilityProduct
-public import PottsDiscontinuity.TorusLoops.RectangleLaw
+public import PottsDiscontinuity.FK.PositiveAssociation
+public import PottsDiscontinuity.SixVertex.InfinityMoves
+public import PottsDiscontinuity.TorusLoops.FiniteEnergy
 public import PottsDiscontinuity.TorusRC.IndexedGraphBridge
 
 /-! # The large-period torus law as an ordinary finite FK law -/
@@ -18,17 +20,19 @@ variable {N M : ℕ}
 
 noncomputable section
 
-local instance torusBridgeEdgeFintype (hN : Even N) (hM : Even M) :
+variable (hN : Even N) (hM : Even M) (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (q : Set.Ici (1 : ℝ))
+
+local instance torusBridgeEdgeFintype :
     Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
 
+include q in
 /-- The free FK parameters corresponding to the critical torus parameter. -/
-def torusRCBridgeParameters (q : Set.Ici (1 : ℝ)) : FK.Parameters :=
+def torusRCBridgeParameters : FK.Parameters :=
   torusRCFKParameters q
 
 /-- Reindexing the torus PMF by the unique indexed-edge/simple-edge
 equivalence gives the free finite FK PMF on the diamond torus. -/
-theorem torusRCPMF_map_edgeEquiv (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (q : Set.Ici (1 : ℝ)) :
+theorem torusRCPMF_map_edgeEquiv :
     (torusRCPMF hN hM q).map (torusRCConfigurationEquiv hN hM hN4 hM4) =
       FK.law (fullDiamondGraph hN hM) (torusRCBridgeParameters q)
         (FK.BoundaryCondition.free ∅) := by
@@ -43,15 +47,14 @@ theorem torusRCPMF_map_edgeEquiv (hN : Even N) (hM : Even M)
       (FK.BoundaryCondition.free ∅))
     (h := fun A => torusRCWeight_eq_fk_weight hN hM hN4 hM4 q A)
 
+include hN4 hM4 in
 /-- The indexed and graph partition functions agree under the edge bijection. -/
-theorem torusRCPartition_eq_fk (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (q : Set.Ici (1 : ℝ)) :
+theorem torusRCPartition_eq_fk :
     torusRCPartition hN hM q =
       FK.partitionFunction (fullDiamondGraph hN hM) (torusRCBridgeParameters q)
         (FK.BoundaryCondition.free ∅) := by
   classical
   let e := torusRCConfigurationEquiv hN hM hN4 hM4
-  unfold torusRCPartition FK.partitionFunction FK.FiniteProbability.partition
   calc
     (∑ A, torusRCWeight hN hM q A) =
         ∑ A, FK.weight (fullDiamondGraph hN hM) (torusRCBridgeParameters q)
@@ -64,8 +67,7 @@ theorem torusRCPartition_eq_fk (hN : Even N) (hM : Even M)
 
 /-- Every indexed configuration mass is the free FK configuration mass after
 the unique edge reindexing. -/
-theorem torusRCMass_eq_fk_configurationProbability (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (q : Set.Ici (1 : ℝ))
+theorem torusRCMass_eq_fk_configurationProbability
     (A : RCConfig N M) :
     torusRCMass hN hM q A =
       FK.configurationProbability (fullDiamondGraph hN hM) (torusRCBridgeParameters q)
@@ -78,8 +80,7 @@ theorem torusRCMass_eq_fk_configurationProbability (hN : Even N) (hM : Even M)
 
 /-- The torus probability measure is the image of the periodic free-boundary
 FK measure under the edge-indexing equivalence. -/
-theorem torusRCMeasure_map_edgeEquiv (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (q : Set.Ici (1 : ℝ)) :
+theorem torusRCMeasure_map_edgeEquiv :
     Measure.map (torusRCConfigurationEquiv hN hM hN4 hM4)
         (torusRCMeasure hN hM q) =
       FK.measure (fullDiamondGraph hN hM) (torusRCBridgeParameters q)
@@ -92,8 +93,7 @@ theorem torusRCMeasure_map_edgeEquiv (hN : Even N) (hM : Even M)
   simpa [torusRCMeasure, FK.measure] using hmeasure
 
 /-- Event probabilities transport exactly through the indexed-edge equivalence. -/
-theorem torusRCProbability_eq_fk_image (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (q : Set.Ici (1 : ℝ))
+theorem torusRCProbability_eq_fk_image
     (E : Set (RCConfig N M)) :
     torusRCProbability hN hM q E =
       (FK.measure (fullDiamondGraph hN hM) (torusRCBridgeParameters q)
@@ -102,7 +102,7 @@ theorem torusRCProbability_eq_fk_image (hN : Even N) (hM : Even M)
   rw [← torusRCMeasure_map_edgeEquiv hN hM hN4 hM4 q]
   unfold torusRCProbability Measure.real
   rw [Measure.map_apply (Measurable.of_discrete) MeasurableSpace.measurableSet_top]
-  simp only [Set.preimage_image_eq _ (torusRCConfigurationEquiv hN hM hN4 hM4).injective]
+  simp
 
 end
 

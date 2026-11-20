@@ -13,49 +13,54 @@ namespace PottsDiscontinuity.Bethe
 
 open BetheAnsatz
 
+section
+variable {n : ℕ} (N : ℕ) (c : ℝ) (p : Fin n → ℝ) (w : ℂ)
+
 /-- The Bethe factors depend on `c` only through `c²`. -/
-theorem ratio_L_abs (c : ℝ) (w : ℂ) : L (|c|) w = L c w := by
+theorem ratio_L_abs : L (|c|) w = L c w := by
   have hsquare : (((|c| : ℝ) : ℂ) ^ 2) = (c : ℂ) ^ 2 := by
     exact_mod_cast (sq_abs c)
   unfold L
-  rw [hsquare]
+  grind
 
-theorem ratio_M_abs (c : ℝ) (w : ℂ) : M (|c|) w = M c w := by
+theorem ratio_M_abs : M (|c|) w = M c w := by
   have hsquare : (((|c| : ℝ) : ℂ) ^ 2) = (c : ℂ) ^ 2 := by
     exact_mod_cast (sq_abs c)
   unfold M
-  rw [hsquare]
+  grind
 
-theorem ratio_eigenvalueRegular_abs {n : ℕ} (c : ℝ) (p : Fin n → ℝ) :
+theorem ratio_eigenvalueRegular_abs :
     eigenvalueRegular (|c|) p = eigenvalueRegular c p := by
-  simp only [eigenvalueRegular, ratio_L_abs, ratio_M_abs]
+  simp [eigenvalueRegular, ratio_L_abs, ratio_M_abs]
 
-theorem ratio_eigenvalueZero_abs {n : ℕ} (N : ℕ) (c : ℝ)
-    (p : Fin n → ℝ) (l : Fin n) :
+theorem ratio_eigenvalueZero_abs (l : Fin n) :
     eigenvalueZero N (|c|) p l = eigenvalueZero N c p l := by
   have hani : anisotropy (|c|) = anisotropy c := by
     unfold anisotropy
-    rw [sq_abs]
+    simp
   have hsquare : (((|c| : ℝ) : ℂ) ^ 2) = (c : ℂ) ^ 2 := by
     exact_mod_cast (sq_abs c)
-  unfold eigenvalueZero
-  rw [hsquare, hani]
-  simp only [ratio_M_abs]
+  simp [hsquare, hani, ratio_M_abs, eigenvalueZero]
 
+end
+
+section
+variable {Δ c : ℝ} (hΔ : Δ < -1) (hcΔ : anisotropy c = Δ)
+include hcΔ
+
+include hΔ in
 /-- The relation `anisotropy c = Δ < -1` forces `|c| > 2`. -/
-theorem ratio_abs_gt_two {Δ c : ℝ} (hΔ : Δ < -1) (hcΔ : anisotropy c = Δ) :
+theorem ratio_abs_gt_two :
     2 < |c| := by
   have hc2 : 4 < c ^ 2 := by
-    unfold anisotropy at hcΔ
-    nlinarith
+    grind [anisotropy]
   nlinarith [sq_abs c, abs_nonneg c]
 
-theorem ratio_anisotropy_abs {Δ c : ℝ} (hcΔ : anisotropy c = Δ) :
+theorem ratio_anisotropy_abs :
     anisotropy (|c|) = Δ := by
-  have h := hcΔ
-  unfold anisotropy at h ⊢
-  rw [sq_abs]
-  exact h
+  grind [sq_abs, anisotropy]
+
+end
 
 section
 
@@ -68,24 +73,28 @@ variable {Δ : ℝ} (hΔ : Δ < -1) (r : ℕ) (N : ℕ → ℕ) (h4 : ∀ i, 4 �
     (hNlim : Tendsto (fun i => (N i : ℝ)) atTop atTop)
     (hbp : ∀ i, BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
       |Xi (lamOf Δ) α *
-        (rootStepDensity (N i) (N i / 2) (p i) (hp i) (half_pos_of_half_sub_pos N r hn i) (two_mul_half_le N i)
+        (rootStepDensity (N i) (p i) (half_pos_of_half_sub_pos hn i)
           (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|))
     (hbq : ∀ i, BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
       |Xi (lamOf Δ) α *
-        (rootStepDensity (N i) (N i / 2 - r) (q i) (hq i) (hn i) (two_mul_half_sub_le N r i)
+        (rootStepDensity (N i) (q i) (hn i)
           (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|))
     {K : ℝ} (hK : 0 ≤ K)
     (hrate : ∀ᶠ i in atTop,
-      densityNorm Δ hΔ (fun x => rootStepDensity (N i) (N i / 2) (p i) (hp i)
-        (half_pos_of_half_sub_pos N r hn i) (two_mul_half_le N i) x - rho Δ x) (hbp i) ≤ K / N i ∧
-      densityNorm Δ hΔ (fun x => rootStepDensity (N i) (N i / 2 - r) (q i) (hq i)
-        (hn i) (two_mul_half_sub_le N r i) x - rho Δ x) (hbq i) ≤ K / N i)
+      densityNorm Δ (fun x => rootStepDensity (N i) (p i)
+        (half_pos_of_half_sub_pos hn i) x - rho Δ x) ≤ K / N i ∧
+      densityNorm Δ (fun x => rootStepDensity (N i) (q i)
+        (hn i) x - rho Δ x) ≤ K / N i)
 
 include hΔ h4 hr hN hp hq hpBE hqBE hNlim hbp hbq hK hrate
 
+variable (heven : r % 2 = 0) (hodd : r % 2 ≠ 0) (hrpos : 1 ≤ r) {c : ℝ} (hcΔ : anisotropy c = Δ)
+include hrpos hcΔ
+
+include h4 hN hbp hbq hn hp hpBE hq hqBE hr hΔ in
+include heven in
 /-- Both Fourier-composed parity limits for either sign of `c`. -/
-theorem ratio_even_eigenvalue_limit_fourier_any_sign (heven : r % 2 = 0)
-    (hrpos : 1 ≤ r) {c : ℝ} (hcΔ : anisotropy c = Δ) :
+theorem ratio_even_eigenvalue_limit_fourier_any_sign :
     ∃ S : ℝ,
       Tendsto (PottsDiscontinuity.altTanhPartial (lamOf Δ)) atTop (𝓝 S) ∧
       Tendsto (fun i => eigenvalueRegular c (q i) / eigenvalueRegular c (p i)) atTop
@@ -98,8 +107,9 @@ theorem ratio_even_eigenvalue_limit_fourier_any_sign (heven : r % 2 = 0)
   intro i
   rw [ratio_eigenvalueRegular_abs c (q i), ratio_eigenvalueRegular_abs c (p i)]
 
-theorem ratio_odd_eigenvalue_limit_fourier_any_sign (hodd : r % 2 ≠ 0)
-    (hrpos : 1 ≤ r) {c : ℝ} (hcΔ : anisotropy c = Δ) :
+include h4 hN hbp hbq hn hp hpBE hq hqBE hr hΔ in
+include hodd in
+theorem ratio_odd_eigenvalue_limit_fourier_any_sign :
     ∃ S : ℝ,
       Tendsto (PottsDiscontinuity.altTanhPartial (lamOf Δ)) atTop (𝓝 S) ∧
       Tendsto (fun i => eigenvalueZero (N i) c (q i)
@@ -107,7 +117,7 @@ theorem ratio_odd_eigenvalue_limit_fourier_any_sign (hodd : r % 2 ≠ 0)
           eigenvalueRegular c (p i)) atTop
         (𝓝 ((Real.exp (-(r : ℝ) * (lamOf Δ + 2 * S)) : ℝ) : ℂ)) := by
   obtain ⟨S, hS, hlimit⟩ := ratio_odd_eigenvalue_limit_fourier hΔ r N h4 hr hN hn p q
-    hp hq hpBE hqBE hNlim hbp hbq hK hrate hodd hrpos (ratio_abs_gt_two hΔ hcΔ)
+    hp hq hpBE hqBE hNlim hbp hbq hK hrate hodd (ratio_abs_gt_two hΔ hcΔ)
     (ratio_anisotropy_abs hcΔ)
   refine ⟨S, hS, ?_⟩
   apply hlimit.congr

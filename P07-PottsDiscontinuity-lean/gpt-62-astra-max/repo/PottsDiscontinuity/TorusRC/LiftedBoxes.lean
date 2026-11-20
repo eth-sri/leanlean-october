@@ -48,7 +48,7 @@ native box. If an endpoint is outside the box, the event is empty. -/
 def liftedBoxFreeConnectionEvent (c : RotatedVertex) (R : ℕ)
     (u v : RotatedVertex) : Set (FK.Configuration (liftedBoxGraph c R)) :=
   {A | ∃ hu : inLiftedBox R c u, ∃ hv : inLiftedBox R c v,
-    FK.ActualConnected (liftedBoxGraph c R) A ⟨u, hu⟩ ⟨v, hv⟩}
+    FK.ActualConnected A ⟨u, hu⟩ ⟨v, hv⟩}
 
 def liftedBoxFreeConnectionProbability (θ : FK.Parameters) (c : RotatedVertex)
     (R : ℕ) (u v : RotatedVertex) : ℝ :=
@@ -76,7 +76,7 @@ theorem periodicCoordinate_eq_of_interval (hp : 0 < N) (L a b : ℤ)
 /-- An injective vertex projection of a box whose diameter is smaller than
 both periods. -/
 def liftedBoxProjection (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    (c : RotatedVertex) (R : ℕ) (hRN : 2 * R < N) (hRM : 2 * R < M) :
+    (c : RotatedVertex) {R : ℕ} (hRN : 2 * R < N) (hRM : 2 * R < M) :
     LiftedBoxVertex c R ↪ FaceVertex N M true where
   toFun z := liftedFaceVertex hN hM hNp hMp z.val
   inj' := by
@@ -99,17 +99,14 @@ def liftedBoxProjection (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
 theorem liftedBoxGraph_map_projection_le (hN : Even N) (hM : Even M)
     (hNp : 0 < N) (hMp : 0 < M) (c : RotatedVertex) (R : ℕ)
     (hRN : 2 * R < N) (hRM : 2 * R < M) :
-    (liftedBoxGraph c R).map (liftedBoxProjection hN hM hNp hMp c R hRN hRM) ≤
+    (liftedBoxGraph c R).map (liftedBoxProjection hN hM hNp hMp c hRN hRM) ≤
       fullDiamondGraph hN hM := by
   intro x y hxy
   rw [SimpleGraph.map_adj] at hxy
   rcases hxy with ⟨u, v, huv, rfl, rfl⟩
-  have hlat : rotatedLattice.Adj u.val v.val := huv
-  have hne := (liftedBoxProjection hN hM hNp hMp c R hRN hRM).injective.ne huv.ne
-  change (diamondOpenGraph hN hM true (fun _ => true)).Adj _ _
-  rw [diamondOpenGraph, SimpleGraph.fromEdgeSet_adj]
-  exact ⟨⟨liftedEdgeIndex hNp hMp u.val v.val, rfl,
-    liftedFaceEndpoints_eq hN hM hNp hMp u.val v.val hlat⟩, hne⟩
+  have hlat := huv
+  have hne := (liftedBoxProjection hN hM hNp hMp c hRN hRM).injective.ne huv.ne
+  exact ⟨⟨liftedEdgeIndex hNp hMp u.val v.val, rfl, liftedFaceEndpoints_eq hN hM hNp hMp hlat⟩, hne⟩
 
 end
 

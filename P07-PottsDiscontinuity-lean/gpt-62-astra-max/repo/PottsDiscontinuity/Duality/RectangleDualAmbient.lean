@@ -18,13 +18,14 @@ def rectangleDualAmbientGraph (a : LatticeVertex) (w h : ℕ) :
     SimpleGraph (RectangleDualVertex a w h) :=
   squareLattice.induce (rectangleDualExpanded a w h : Set LatticeVertex)
 
-theorem rectangleDualAmbientGraph_adj_iff (a : LatticeVertex) (w h : ℕ)
-    (u v : RectangleDualVertex a w h) :
-    (rectangleDualAmbientGraph a w h).Adj u v ↔ squareLattice.Adj u.1 v.1 := by
-  simp [rectangleDualAmbientGraph]
+variable (a : LatticeVertex) (w h : ℕ) (u v : RectangleDualVertex a w h)
+    (hu : u.1 ∈ rectangleDualInterior a w h) (hadj : (rectangleDualAmbientGraph a w h).Adj u v)
 
-private theorem primalBondOfDual_endpoints_mem_of_interior_endpoint
-    (a : LatticeVertex) (w h : ℕ) (d : LatticeBond) (z : LatticeVertex)
+theorem rectangleDualAmbientGraph_adj_iff :
+    (rectangleDualAmbientGraph a w h).Adj u v ↔ squareLattice.Adj u.1 v.1 := by
+  rfl
+
+private theorem primalBondOfDual_endpoints_mem_of_interior_endpoint (d : LatticeBond) (z : LatticeVertex)
     (hz : z ∈ rectangleDualInterior a w h)
     (hzd : z = d.source ∨ z = d.target) :
     (primalBondOfDual d).source ∈ latticeRectangle a w h ∧
@@ -46,57 +47,47 @@ private theorem primalBondOfDual_endpoints_mem_of_interior_endpoint
       simp only [mem_latticeRectangle] at hcoord ⊢ <;>
       omega
 
-theorem rectangleDualAmbient_adj_actual_of_left_interior
-    (a : LatticeVertex) (w h : ℕ) (u v : RectangleDualVertex a w h)
-    (hu : u.1 ∈ rectangleDualInterior a w h)
-    (hadj : (rectangleDualAmbientGraph a w h).Adj u v) :
+include hu hadj in
+theorem rectangleDualAmbient_adj_actual_of_left_interior :
     (rectangleDualGraph a w h).Adj u v := by
-  have hsq : squareLattice.Adj u.1 v.1 :=
+  have hsq :=
     (rectangleDualAmbientGraph_adj_iff a w h u v).mp hadj
   obtain ⟨d, hd⟩ := LatticeBond.exists_of_adj hsq
   have hpairSource : s(d.source, d.target) = s(u.1, v.1) := by
-    simpa [LatticeBond.toSym2] using hd
+    assumption
   have hzu : u.1 = d.source ∨ u.1 = d.target := by
-    rcases Sym2.eq_iff.mp hpairSource with ⟨hs, ht⟩ | ⟨hs, ht⟩
-    · exact Or.inl hs.symm
-    · exact Or.inr ht.symm
+    grind
   have hp := primalBondOfDual_endpoints_mem_of_interior_endpoint a w h d u.1 hu hzu
   let b : RectanglePrimalBond a w h := ⟨primalBondOfDual d, hp⟩
-  let pe : rectanglePrimalEdgeCarrier a w h := rectanglePrimalBondToEdge a w h b
-  let de : RectangleDualEdgeCarrier a w h := rectanglePrimalDualEdgeEquiv a w h pe
-  have hpe : rectanglePrimalEdgeBond a w h pe = primalBondOfDual d := by
+  let pe := rectanglePrimalBondToEdge b
+  let de := rectanglePrimalDualEdgeEquiv a w h pe
+  have hpe : rectanglePrimalEdgeBond pe = primalBondOfDual d := by
     have h := (rectanglePrimalEdgeBondEquiv a w h).right_inv b
     exact congrArg Subtype.val h
   have hcross : de.crossingBond = d := by
-    change rectangleCrossingDualBond a w h pe = d
-    rw [rectangleCrossingDualBond, hpe]
-    exact dualBondOfPrimal_primalBondOfDual d
+    change rectangleCrossingDualBond pe = d
+    simp [rectangleCrossingDualBond, hpe]
   have hpairCarrier : rectangleDualCarrierPair a w h de = s(u, v) := by
     apply Sym2.map.injective Subtype.val_injective
-    calc
-      Sym2.map Subtype.val (rectangleDualCarrierPair a w h de) = de.crossingBond.toSym2 := by
-        simp [rectangleDualCarrierPair, LatticeBond.toSym2]
-      _ = d.toSym2 := congrArg LatticeBond.toSym2 hcross
-      _ = s(u.1, v.1) := hd
+    simp_all [rectangleDualCarrierPair, LatticeBond.toSym2]
   exact (rectangleDualGraph_adj_iff a w h u v).2 ⟨de, hpairCarrier.symm⟩
 
-theorem rectangleDualGraph_le_ambient (a : LatticeVertex) (w h : ℕ) :
+theorem rectangleDualGraph_le_ambient :
     rectangleDualGraph a w h ≤ rectangleDualAmbientGraph a w h := by
   intro u v hadj
   rw [rectangleDualAmbientGraph_adj_iff]
   obtain ⟨e, he⟩ := (rectangleDualGraph_adj_iff a w h u v).mp hadj
   have hpair := congrArg (Sym2.map (fun z : RectangleDualVertex a w h => z.1)) he
   have hpair' : s(u.1, v.1) = s(e.crossingBond.source, e.crossingBond.target) := by
-    simpa [rectangleDualCarrierPair, LatticeBond.toSym2] using hpair
+    assumption
   rcases Sym2.eq_iff.mp hpair' with ⟨hs, ht⟩ | ⟨hs, ht⟩
   · rw [hs, ht]
     exact e.crossingBond.adjacent
   · rw [hs, ht]
     exact e.crossingBond.adjacent.symm
 
+include hadj in
 theorem rectangleDualAmbient_extraEdge_endpoints_boundary
-    (a : LatticeVertex) (w h : ℕ) (u v : RectangleDualVertex a w h)
-    (hadj : (rectangleDualAmbientGraph a w h).Adj u v)
     (hnot : ¬ (rectangleDualGraph a w h).Adj u v) :
     u.1 ∈ rectangleDualBoundary a w h ∧ v.1 ∈ rectangleDualBoundary a w h := by
   have hu : u.1 ∈ rectangleDualBoundary a w h := by
@@ -112,7 +103,7 @@ theorem rectangleDualAmbient_extraEdge_endpoints_boundary
       exact hV (Finset.mem_filter.mpr ⟨v.2, hInterior⟩)
     have hrev := rectangleDualAmbient_adj_actual_of_left_interior a w h v u hvi hadj.symm
     exact hnot hrev.symm
-  exact ⟨hu, hv⟩
+  grind
 
 end
 

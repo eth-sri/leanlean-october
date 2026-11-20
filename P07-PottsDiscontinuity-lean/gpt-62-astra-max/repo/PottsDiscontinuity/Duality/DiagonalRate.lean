@@ -19,7 +19,7 @@ namespace PottsDiscontinuity.Duality
 /-- Every smaller positive rate admits a uniform exponential bound, absorbing
 the finite initial segment into the prefactor. No positivity of `f` is needed. -/
 theorem exponential_bound_of_pos_logarithmic_rate
-    (f : ℕ → ℝ) (hf : ∀ n, f n ≤ 1) (L c : ℝ) (hc : 0 < c) (hcL : c < L)
+    {f : ℕ → ℝ} (hf : ∀ n, f n ≤ 1) (L c : ℝ) (hc : 0 < c) (hcL : c < L)
     (hrate : Tendsto (fun n : ℕ => -(1 / (n : ℝ)) * Real.log (f n)) atTop (𝓝 L)) :
     ∃ C : ℝ, 0 < C ∧ ∀ n : ℕ, f n ≤ C * Real.exp (-c * (n : ℝ)) := by
   have hevent := hrate.eventually (eventually_gt_nhds hcL)
@@ -29,22 +29,21 @@ theorem exponential_bound_of_pos_logarithmic_rate
   by_cases hn : N ≤ n
   · have hnpos : 0 < (n : ℝ) := by exact_mod_cast (hN n hn).2
     have hdiv : c < -Real.log (f n) / (n : ℝ) := by
-      convert (hN n hn).1 using 1; ring
+      grind
     have hlog : Real.log (f n) ≤ -c * (n : ℝ) := by
       have hmul := (lt_div_iff₀ hnpos).1 hdiv
-      linarith only [hmul]
+      linarith
     have hC : 1 ≤ Real.exp (c * (N : ℝ)) :=
       Real.one_le_exp_iff.2 (mul_nonneg hc.le (Nat.cast_nonneg _))
     calc
       f n ≤ Real.exp (-c * (n : ℝ)) := Real.le_exp_of_log_le hlog
-      _ ≤ Real.exp (c * (N : ℝ)) * Real.exp (-c * (n : ℝ)) := by
-        exact le_mul_of_one_le_left (Real.exp_nonneg _) hC
+      _ ≤ Real.exp (c * (N : ℝ)) * Real.exp (-c * (n : ℝ)) := le_mul_of_one_le_left (Real.exp_nonneg _) hC
   · have hnN : (n : ℝ) ≤ (N : ℝ) := by exact_mod_cast (Nat.le_of_lt (lt_of_not_ge hn))
     calc
       f n ≤ 1 := hf n
       _ ≤ Real.exp (c * (N : ℝ)) * Real.exp (-c * (n : ℝ)) := by
         rw [← Real.exp_add, Real.one_le_exp_iff]
-        nlinarith only [mul_nonneg hc.le (sub_nonneg.2 hnN)]
+        nlinarith
 
 /-- Apply the quantitative rate lemma to the exact frozen diagonal two-point
 probabilities of any probability measure on lattice configurations. -/
@@ -56,8 +55,7 @@ theorem diagonal_exponential_bound_of_pos_rate
     ∃ C c : ℝ, 0 < C ∧ 0 < c ∧ ∀ n : ℕ,
       μ.real (connectionEvent 0 (diagonalSite n)) ≤ C * Real.exp (-c * (n : ℝ)) := by
   obtain ⟨C, hC, hbound⟩ := exponential_bound_of_pos_logarithmic_rate
-    (fun n => μ.real (connectionEvent 0 (diagonalSite n)))
-    (fun _ => measureReal_le_one) L (L / 2) (by positivity) (by linarith only [hL]) hrate
+    (fun _ => measureReal_le_one) L (L / 2) (by positivity) (by linarith) hrate
   exact ⟨C, L / 2, hC, by positivity, hbound⟩
 
 end PottsDiscontinuity.Duality

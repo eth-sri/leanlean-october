@@ -24,10 +24,10 @@ variable {V : Type*} (G : SimpleGraph V)
 
 /-- Remove the specified original unordered edges, retaining every original vertex. -/
 def edgeRestriction (R : Configuration G) : SimpleGraph V :=
-  G.deleteEdges (openEdges G R)
+  G.deleteEdges (openEdges R)
 
 theorem edgeRestriction_edgeSet (R : Configuration G) :
-    (edgeRestriction G R).edgeSet = G.edgeSet \ openEdges G R :=
+    (edgeRestriction G R).edgeSet = G.edgeSet \ openEdges R :=
   G.edgeSet_deleteEdges _
 
 theorem edgeRestriction_le (R : Configuration G) : edgeRestriction G R ≤ G :=
@@ -35,14 +35,14 @@ theorem edgeRestriction_le (R : Configuration G) : edgeRestriction G R ≤ G :=
 
 /-- Membership is unchanged when an original edge is viewed as an unordered pair. -/
 theorem coe_mem_openEdges_iff (R : Configuration G) (e : G.edgeSet) :
-    e.val ∈ openEdges G R ↔ e ∈ R :=
+    e.val ∈ openEdges R ↔ e ∈ R :=
   Subtype.val_injective.mem_set_image
 
 /-- The edges of the deleted graph are exactly the original edges outside R. -/
 def edgeRestrictionEdgeEquiv (R : Configuration G) :
     (edgeRestriction G R).edgeSet ≃ {e : G.edgeSet // e ∉ R} where
   toFun e := by
-    have h : e.val ∈ G.edgeSet ∧ e.val ∉ openEdges G R := by
+    have h : e.val ∈ G.edgeSet ∧ e.val ∉ openEdges R := by
       simpa only [edgeRestriction_edgeSet, Set.mem_sdiff] using e.property
     exact ⟨⟨e.val, h.1⟩, fun he => h.2 ((coe_mem_openEdges_iff G R _).mpr he)⟩
   invFun e := ⟨e.val.val, by
@@ -64,7 +64,7 @@ def edgeRestrictionEdgeEmbedding (R : Configuration G) :
 def edgeRestrictionConfigurationEquiv (R : Configuration G) :
     Configuration (edgeRestriction G R) ≃ RemainingConfiguration G R :=
   (edgeRestrictionEdgeEquiv G R).finsetCongr |>.trans
-    ((Equiv.finsetSubtypeComm (fun e : G.edgeSet => e ∉ R)).trans
+    ((Equiv.finsetSubtypeComm _).trans
       (Equiv.subtypeEquivRight (fun A => by
         constructor
         · intro h
@@ -74,18 +74,14 @@ def edgeRestrictionConfigurationEquiv (R : Configuration G) :
 
 @[simp] theorem edgeRestrictionConfigurationEquiv_val (R : Configuration G)
     (A : Configuration (edgeRestriction G R)) :
-    (edgeRestrictionConfigurationEquiv G R A).val = A.map (edgeRestrictionEdgeEmbedding G R) := by
-  change (A.map (edgeRestrictionEdgeEquiv G R).toEmbedding).map
-    (Function.Embedding.subtype _) = _
-  exact Finset.map_map _ _ _
+    (edgeRestrictionConfigurationEquiv G R A).val = A.map (edgeRestrictionEdgeEmbedding G R) := Finset.map_map _ _ _
 
 /-- The actual sampled-edge order is preserved in both directions. -/
 theorem edgeRestrictionConfigurationEquiv_le_iff (R : Configuration G)
     (A B : Configuration (edgeRestriction G R)) :
     (edgeRestrictionConfigurationEquiv G R A).val ⊆
       (edgeRestrictionConfigurationEquiv G R B).val ↔ A ⊆ B := by
-  rw [edgeRestrictionConfigurationEquiv_val, edgeRestrictionConfigurationEquiv_val]
-  exact Finset.map_subset_map
+  simp
 
 /-- The configuration bijection is an order isomorphism for open-edge inclusion. -/
 def edgeRestrictionConfigurationOrderIso (R : Configuration G) :
@@ -96,34 +92,33 @@ def edgeRestrictionConfigurationOrderIso (R : Configuration G) :
 /-- No open edge is added, contracted, or relabeled geometrically. -/
 theorem openEdges_edgeRestriction (R : Configuration G)
     (A : Configuration (edgeRestriction G R)) :
-    openEdges (edgeRestriction G R) A =
-      openEdges G (edgeRestrictionConfigurationEquiv G R A).val := by
-  simp only [openEdges, edgeRestrictionConfigurationEquiv_val, Finset.coe_map, Set.image_image]
-  rfl
+    openEdges A =
+      openEdges (edgeRestrictionConfigurationEquiv G R A).val := by
+  simp [openEdges, edgeRestrictionConfigurationEquiv_val, Finset.coe_map, Set.image_image]
 
 /-- The two configurations have literally the same open graph on all original vertices. -/
 theorem openGraph_edgeRestriction (R : Configuration G)
     (A : Configuration (edgeRestriction G R)) :
-    openGraph (edgeRestriction G R) A =
-      openGraph G (edgeRestrictionConfigurationEquiv G R A).val := by
-  rw [openGraph, openGraph, openEdges_edgeRestriction]
+    openGraph A =
+      openGraph (edgeRestrictionConfigurationEquiv G R A).val := by
+  simp [openGraph, openEdges_edgeRestriction]
 
 theorem componentSetoid_edgeRestriction (ξ : BoundaryCondition V) (R : Configuration G)
     (A : Configuration (edgeRestriction G R)) :
-    componentSetoid (edgeRestriction G R) ξ A =
-      componentSetoid G ξ (edgeRestrictionConfigurationEquiv G R A).val := by
-  rw [componentSetoid, componentSetoid, openGraph_edgeRestriction]
+    componentSetoid ξ A =
+      componentSetoid ξ (edgeRestrictionConfigurationEquiv G R A).val := by
+  simp [componentSetoid, openGraph_edgeRestriction]
 
 theorem componentCount_edgeRestriction [Finite V] (ξ : BoundaryCondition V)
     (R : Configuration G) (A : Configuration (edgeRestriction G R)) :
-    componentCount (edgeRestriction G R) ξ A =
-      componentCount G ξ (edgeRestrictionConfigurationEquiv G R A).val := by
-  rw [componentCount, componentCount, componentSetoid_edgeRestriction]
+    componentCount ξ A =
+      componentCount ξ (edgeRestrictionConfigurationEquiv G R A).val := by
+  simp [componentCount, componentSetoid_edgeRestriction]
 
 @[simp] theorem card_edgeRestrictionConfigurationEquiv (R : Configuration G)
     (A : Configuration (edgeRestriction G R)) :
     (edgeRestrictionConfigurationEquiv G R A).val.card = A.card := by
-  rw [edgeRestrictionConfigurationEquiv_val, Finset.card_map]
+  simp
 
 /-- The exact number of genuinely sampled edges, on the same original vertex type. -/
 theorem edgeRestriction_card [Finite V] (R : Configuration G) :
@@ -145,7 +140,7 @@ theorem weight_edgeRestriction [Finite V] (q : Parameters) (ξ : BoundaryConditi
 section Finite
 
 variable [Finite V]
-local instance edgeRestrictionOriginalEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
+
 local instance edgeRestrictionRemainingEdgeFintype (R : Configuration G) :
     Fintype (edgeRestriction G R).edgeSet := Fintype.ofFinite _
 local instance edgeRestrictionConfigurationFintype (R : Configuration G) :
@@ -156,10 +151,7 @@ remaining-edge law, permitting proved finite-graph inequalities to be reused. -/
 theorem law_edgeRestriction_map (q : Parameters) (ξ : BoundaryCondition V)
     (R : Configuration G) :
     (law (edgeRestriction G R) q ξ).map (edgeRestrictionConfigurationEquiv G R) =
-      remainingLaw G q ξ R := by
-  unfold law remainingLaw
-  exact FiniteProbability.pmf_map_equiv_of_weight_eq (edgeRestrictionConfigurationEquiv G R)
-    _ _ _ _ (weight_edgeRestriction G q ξ R)
+      remainingLaw G q ξ R := FiniteProbability.pmf_map_equiv_of_weight_eq _ _ (weight_edgeRestriction G q ξ R)
 
 end Finite
 end

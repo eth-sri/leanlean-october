@@ -1,6 +1,5 @@
 module
 
-public import FixedPointTheorems.brouwer
 public import Mathlib
 public import PottsDiscontinuity.TorusRC.LiftedInterpolation
 
@@ -14,21 +13,19 @@ open Set
 
 noncomputable section
 
-private theorem unit_affine_between (a b : ℤ) (hab : |a-b| = 1)
-    (t : ℝ) (ht0 : 0 < t) (ht1 : t < 1) :
+private theorem unit_affine_between {a b : ℤ} (hab : |a-b| = 1)
+    {t : ℝ} (ht0 : 0 < t) (ht1 : t < 1) :
     ((max a b : ℤ):ℝ)-1 < (1-t)*(a:ℝ)+t*(b:ℝ) ∧
       (1-t)*(a:ℝ)+t*(b:ℝ) < (max a b : ℤ) := by
-  have hne : a ≠ b := by intro h; simp [h] at hab
+  have hne : a ≠ b := by grind
   have hd := abs_le.mp (le_of_eq hab)
   by_cases h : a < b
   · have hb : b = a+1 := by omega
     rw [max_eq_right h.le,hb]
-    push_cast
-    constructor <;> nlinarith
+    grind
   · have ha : a = b+1 := by omega
     rw [max_eq_left (by omega),ha]
-    push_cast
-    constructor <;> nlinarith
+    grind
 
 private theorem unit_intervals_unique (a b : ℤ) (z : ℝ)
     (ha : (a:ℝ)-1 < z ∧ z < a) (hb : (b:ℝ)-1 < z ∧ z < b) : a = b := by
@@ -52,14 +49,14 @@ theorem diagonal_segments_intersection_index {p p' q q' : ℤ × ℤ} {z : ℝ �
     (max p.1 p'.1,max p.2 p'.2) = (max q.1 q'.1,max q.2 q'.2) := by
   have hnotP (a : ℤ × ℤ) (ha0 : a ≠ q) (ha1 : a ≠ q') : z ≠ cellEmbed a := by
     intro heq
-    have ha : cellEmbed a ∈ segment ℝ (cellEmbed q) (cellEmbed q') := by rwa [heq] at hzQ
-    rcases integer_mem_diagonal_segment hqX hqY ha with h | h
+    have ha : cellEmbed a ∈ segment ℝ (cellEmbed q) (cellEmbed q') := by grind
+    rcases integer_mem_diagonal_segment hqX ha with h | h
     · exact ha0 h
     · exact ha1 h
   have hnotQ (a : ℤ × ℤ) (ha0 : a ≠ p) (ha1 : a ≠ p') : z ≠ cellEmbed a := by
     intro heq
-    have ha : cellEmbed a ∈ segment ℝ (cellEmbed p) (cellEmbed p') := by rwa [heq] at hzP
-    rcases integer_mem_diagonal_segment hpX hpY ha with h | h
+    have ha : cellEmbed a ∈ segment ℝ (cellEmbed p) (cellEmbed p') := by grind
+    rcases integer_mem_diagonal_segment hpX ha with h | h
     · exact ha0 h
     · exact ha1 h
   rw [segment_eq_image] at hzP hzQ
@@ -85,10 +82,10 @@ theorem diagonal_segments_intersection_index {p p' q q' : ℤ × ℤ} {z : ℝ �
       intro heq
       exact hnotQ q' h01.symm h11.symm (by simpa [heq] using htz.symm)
     exact lt_of_le_of_ne ht1 hne
-  have hpx := unit_affine_between p.1 p'.1 hpX s hs0' hs1'
-  have hpy := unit_affine_between p.2 p'.2 hpY s hs0' hs1'
-  have hqx := unit_affine_between q.1 q'.1 hqX t ht0' ht1'
-  have hqy := unit_affine_between q.2 q'.2 hqY t ht0' ht1'
+  have hpx := unit_affine_between hpX hs0' hs1'
+  have hpy := unit_affine_between hpY hs0' hs1'
+  have hqx := unit_affine_between hqX ht0' ht1'
+  have hqy := unit_affine_between hqY ht0' ht1'
   have hpxz := congrArg Prod.fst hsz
   have hpyz := congrArg Prod.snd hsz
   have hqxz := congrArg Prod.fst htz

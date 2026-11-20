@@ -26,7 +26,7 @@ lemma pmf_le_filter_of_mem (p : PMF α) (T : Set α)
   simpa only [mul_one] using mul_le_mul' (le_refl (p a)) hinv
 
 /-- No independence is asserted: conditioning divides by a probability ≤1. -/
-theorem joint_expectation_le_filter (p : PMF α) (T E : Set α)
+theorem joint_expectation_le_filter {p : PMF α} (T E : Set α)
     (hT : ∃ a ∈ T, a ∈ p.support) :
     expectation p ((T ∩ E).indicator fun _ => (1 : ℝ)) ≤
       expectation (p.filter T hT) (E.indicator fun _ => (1 : ℝ)) := by
@@ -41,7 +41,7 @@ theorem joint_expectation_le_filter (p : PMF α) (T E : Set α)
     by_cases he : a ∈ E
     · rw [Set.indicator_of_mem he,mul_one]
       exact ENNReal.toReal_nonneg
-    · simp only [Set.indicator_of_notMem he,mul_zero,le_refl]
+    · simp [Set.indicator_of_notMem he, mul_zero, le_refl]
 
 end
 end PottsDiscontinuity.TorusExploration

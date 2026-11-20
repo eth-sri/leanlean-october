@@ -1,158 +1,83 @@
 module
 
-public import FixedPointTheorems.brouwer
-public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
-public import Mathlib.Topology.Homotopy.Lifting
-public import Mathlib.Topology.Homotopy.Path
-public import PottsDiscontinuity.Duality.Decay
-public import PottsDiscontinuity.Potts.ESCylinderLaw
+public import PottsDiscontinuity.Potts.FreeCylinderPartition
+public import PottsDiscontinuity.Potts.GhostCylinderPartition
+public import PottsDiscontinuity.FK.BoxCoverage
+public import PottsDiscontinuity.Frozen.Defs.IsPottsInfiniteVolumeLimit
 public import PottsDiscontinuity.Potts.InfinitePartitionMeasurability
-public import PottsDiscontinuity.PottsThm.ColoringCylinderLaw
+public import PottsDiscontinuity.PottsThm.SamplerObservations
 
 @[expose] public section
-
 namespace PottsDiscontinuity.PottsThm
+open MeasureTheory Filter Topology FK Potts RCInfinite
+open scoped ENNReal Classical
 
-open MeasureTheory
-open PottsDiscontinuity
-open PottsDiscontinuity.FK
-open PottsDiscontinuity.Potts
-open PottsDiscontinuity.RCInfinite
-open PottsDiscontinuity.Duality
-open scoped ENNReal
+variable {q : ℕ} {φ : Measure LatticeConfiguration} [IsProbabilityMeasure φ]
 
-noncomputable section
+private theorem colorLaw_partition (pin : Set.Icc 1 q) (A : Finset Vertex) (ξ : SpinSpace q)
+    {I : Type*} [Finite I] {r : LatticeConfiguration → Setoid I} (K : Setoid I → ℝ)
+    (hK : ∀ R, 0 ≤ K R) (hm : ∀ R, MeasurableSet {ω | r ω = R})
+    (hf : ∀ᵐ ω ∂φ, colorNoise _ {u | ∀ a : A, clusterColoring pin (ω,u) a.val = ξ a.val} =
+      ENNReal.ofReal (K (r ω))) :
+    (colorLaw φ pin).real (spinCylinder A ξ) = partitionExpectation φ r K := by
+  rw [Measure.real_def, colorLaw_apply pin (spinCylinder_isClopen q A ξ).isOpen.measurableSet]
+  convert! toReal_lintegral_finitePartitionKernel φ r K hK hm using 1
+  congr 1; apply lintegral_congr_ae
+  filter_upwards [hf] with ω h; simpa [Set.preimage, spinCylinder] using h
 
-/-- The canonical free cluster coloring has the Edwards--Sokal cylinder law
-whenever the bond measure almost surely has only finite clusters. -/
-theorem freeColoringMap_isFreeESC (q : ℕ) (hq : 4 < q)
-    (φ : ProbabilityMeasure LatticeConfiguration)
-    (hno : φ.toMeasure Duality.existsInfiniteCluster = 0) :
-    IsFreeEdwardsSokalColouring q φ.toMeasure
-      ((φ.toMeasure.prod (iidFieldMeasure
-        (ProbabilityTheory.uniformOn (Set.univ : Set (Set.Icc 1 q))))).map
-          (clusterColoring (⟨1, le_rfl, by omega⟩ : Set.Icc 1 q))) := by
-  classical
-  let ν : Measure (Set.Icc 1 q) :=
-    ProbabilityTheory.uniformOn (Set.univ : Set (Set.Icc 1 q))
-  let c₀ : Set.Icc 1 q := ⟨1, le_rfl, by omega⟩
-  have : Nonempty (Set.Icc 1 q) := ⟨c₀⟩
-  have : IsProbabilityMeasure ν := by
-    dsimp [ν]
-    infer_instance
-  have : IsProbabilityMeasure (iidFieldMeasure (I := Vertex) ν) := by
-    change IsProbabilityMeasure (Measure.infinitePi (fun _ : Vertex => ν))
-    infer_instance
-  have : IsProbabilityMeasure φ.toMeasure := φ.property
-  let F : LatticeConfiguration × (Vertex → Set.Icc 1 q) → SpinSpace q :=
-    clusterColoring c₀
-  have hF : Measurable F := measurable_clusterColoring c₀
-  refine ⟨inferInstance, ?_⟩
-  intro A ξ
-  let E : Set (LatticeConfiguration × (Vertex → Set.Icc 1 q)) :=
-    {z | ∀ a : ↥A, clusterColoring c₀ z a.val = ξ a.val}
-  have hEq : E = F ⁻¹' spinCylinder q A ξ := by
-    ext z
-    simp [E, F, spinCylinder]
-  have hCyl : MeasurableSet (spinCylinder q A ξ) :=
-    (spinCylinder_isClopen q A ξ).isOpen.measurableSet
-  have hE : MeasurableSet E := by
-    rw [hEq]
-    exact hF hCyl
-  have hfinite_ae : ∀ᵐ ω ∂φ.toMeasure, ∀ x, (RCInfinite.cluster ω x).Finite := by
-    have hnot : ∀ᵐ ω ∂φ.toMeasure, ω ∉ Duality.existsInfiniteCluster := by
-      exact ae_iff.mpr (by simpa using hno)
-    filter_upwards [hnot] with ω hω x
-    simp only [Duality.existsInfiniteCluster, Set.mem_ofPred_eq, not_exists] at hω
-    by_contra hfinite
-    exact hω x (by simpa [RCInfinite.cluster, Duality.cluster] using hfinite)
-  let r : LatticeConfiguration → Setoid (↥A) :=
-    fun ω => infiniteFreePartition (fun a : ↥A => a.val) ω
-  let K : Setoid (↥A) → ℝ :=
-    fun R => clusterCylinderProbability R id (fun a : ↥A => ξ a.val)
-  have hRmeas (R : Setoid (↥A)) : MeasurableSet {ω | r ω = R} := by
-    exact infiniteFreePartition_measurableSet (fun a : ↥A => a.val) R
-  have hKnonneg (R : Setoid (↥A)) : 0 ≤ K R := by
-    dsimp [K, clusterCylinderProbability]
-    split_ifs <;> positivity
-  have hfiber_ae : ∀ᵐ ω ∂φ.toMeasure,
-      iidFieldMeasure ν (Prod.mk ω ⁻¹' E) = ENNReal.ofReal (K (r ω)) := by
-    filter_upwards [hfinite_ae] with ω hfinite
-    let : Fintype (Quotient (r ω)) := Fintype.ofFinite _
-    change iidFieldMeasure ν
-        {u : Vertex → Set.Icc 1 q | ∀ a : ↥A,
-          clusterColoring c₀ (ω, u) a.val = ξ a.val} = _
-    exact freeClusterColoring_fiber_cylinder_uniform q (by omega) ω A ξ hfinite
-  calc
-    ((φ.toMeasure.prod (iidFieldMeasure ν)).map F).real (spinCylinder q A ξ) =
-        (∫⁻ ω, ENNReal.ofReal (K (r ω)) ∂φ.toMeasure).toReal := by
-      rw [Measure.real_def, Measure.map_apply hF hCyl, ← hEq, Measure.prod_apply hE]
-      rw [lintegral_congr_ae hfiber_ae]
-    _ = freeESCylinder q φ.toMeasure A ξ := by
-      rw [toReal_lintegral_finitePartitionKernel φ.toMeasure r K hKnonneg hRmeas]
-      rfl
+/-- On a box containing the observation set, the finite-volume cylinder in the
+statement is precisely the one read on the subtype of observed sites. -/
+private theorem box_pattern_sum (q : ℕ) (β : ℝ) (i : Fin (q+1)) {A : Finset Vertex} (ξ : SpinSpace q)
+    {n} (hA : A ⊆ box n) {D : Finset (SpinConfiguration q (box n))} (hD : ∀ σ, σ ∈ D) :
+    (∑ σ ∈ D, if ∀ a : A, σ ⟨a.val, hA a.prop⟩ = ξ a.val
+        then pottsProb q (box n) β i σ else 0) =
+      ∑ σ : SpinConfiguration q (box n), if ∀ x ∈ A, ∃ h : x ∈ box n, σ ⟨x,h⟩ = ξ x
+        then pottsProb q (box n) β i σ else 0 := by
+  apply Finset.sum_congr (Finset.ext fun σ => by grind); intro σ _
+  congr 1; apply propext; constructor
+  · exact fun h x hx => ⟨hA hx, h ⟨x,hx⟩⟩
+  · grind
 
-/-- The canonical wired cluster coloring has the wired Edwards--Sokal cylinder
-law for every bond measure. Infinite clusters are assigned the fixed boundary
-color. -/
-theorem wiredColoringMap_isWiredESC (q : ℕ) (hq : 4 < q)
-    (φ : ProbabilityMeasure LatticeConfiguration) (i : Fin (q + 1))
-    (hi : 1 ≤ (i : ℕ)) :
-    IsWiredEdwardsSokalColouring q φ.toMeasure i hi
-      ((φ.toMeasure.prod (iidFieldMeasure
-        (ProbabilityTheory.uniformOn (Set.univ : Set (Set.Icc 1 q))))).map
-          (clusterColoring (boundaryColor q i hi))) := by
-  classical
-  let ν : Measure (Set.Icc 1 q) :=
-    ProbabilityTheory.uniformOn (Set.univ : Set (Set.Icc 1 q))
-  let c₀ : Set.Icc 1 q := boundaryColor q i hi
-  have : Nonempty (Set.Icc 1 q) := ⟨⟨1, le_rfl, by omega⟩⟩
-  have : IsProbabilityMeasure ν := by
-    dsimp [ν]
-    infer_instance
-  have : IsProbabilityMeasure (iidFieldMeasure (I := Vertex) ν) := by
-    change IsProbabilityMeasure (Measure.infinitePi (fun _ : Vertex => ν))
-    infer_instance
-  have : IsProbabilityMeasure φ.toMeasure := φ.property
-  let F : LatticeConfiguration × (Vertex → Set.Icc 1 q) → SpinSpace q :=
-    clusterColoring c₀
-  have hF : Measurable F := measurable_clusterColoring c₀
-  refine ⟨inferInstance, ?_⟩
-  intro A ξ
-  let E : Set (LatticeConfiguration × (Vertex → Set.Icc 1 q)) :=
-    {z | ∀ a : ↥A, clusterColoring c₀ z a.val = ξ a.val}
-  have hEq : E = F ⁻¹' spinCylinder q A ξ := by
-    ext z
-    simp [E, F, spinCylinder]
-  have hCyl : MeasurableSet (spinCylinder q A ξ) :=
-    (spinCylinder_isClopen q A ξ).isOpen.measurableSet
-  have hE : MeasurableSet E := by
-    rw [hEq]
-    exact hF hCyl
-  let r : LatticeConfiguration → Setoid (Option ↥A) :=
-    fun ω => infiniteWiredPartition (Option.map (fun a : ↥A => a.val)) ω
-  let K : Setoid (Option ↥A) → ℝ := fun R =>
-    pinnedClusterCylinderProbability R some (fun a : ↥A => ξ a.val) none c₀
-  have hRmeas (R : Setoid (Option ↥A)) : MeasurableSet {ω | r ω = R} := by
-    exact infiniteWiredPartition_measurableSet
-      (Option.map (fun a : ↥A => a.val)) R
-  have hKnonneg (R : Setoid (Option ↥A)) : 0 ≤ K R := by
-    dsimp [K, pinnedClusterCylinderProbability]
-    split_ifs <;> positivity
-  have hfiber (ω : LatticeConfiguration) :
-      iidFieldMeasure ν (Prod.mk ω ⁻¹' E) = ENNReal.ofReal (K (r ω)) := by
-    change iidFieldMeasure ν
-        {u : Vertex → Set.Icc 1 q | ∀ a : ↥A,
-          clusterColoring c₀ (ω, u) a.val = ξ a.val} = _
-    exact wiredClusterColoring_fiber_cylinder_uniform q (by omega) ω A ξ i hi
-  calc
-    ((φ.toMeasure.prod (iidFieldMeasure ν)).map F).real (spinCylinder q A ξ) =
-        (∫⁻ ω, ENNReal.ofReal (K (r ω)) ∂φ.toMeasure).toReal := by
-      rw [Measure.real_def, Measure.map_apply hF hCyl, ← hEq, Measure.prod_apply hE]
-      rw [lintegral_congr_ae (Filter.Eventually.of_forall hfiber)]
-    _ = wiredESCylinder q φ.toMeasure i hi A ξ := by
-      rw [toReal_lintegral_finitePartitionKernel φ.toMeasure r K hKnonneg hRmeas]
-      rfl
+variable (hq : 2 ≤ q) {β : ℝ} (hβ : 0 < β) (φP : ProbabilityMeasure LatticeConfiguration)
 
-end
+theorem free_colorLaw_limit
+    (hw : Tendsto (fun n => boxProbabilityMeasure (fkParameters hq hβ) (0,0) n) atTop (𝓝 φP))
+    (hfin : ∀ᵐ ω ∂φP.toMeasure, ∀ x, (cluster ω x).Finite) :
+    IsPottsInfiniteVolumeLimit q β 0 (colorLaw φP.toMeasure ⟨1, le_rfl, by omega⟩) := by
+  refine ⟨inferInstance, fun A ξ => ?_⟩
+  have hs : ∀ᶠ n in atTop, A ⊆ box n := (eventually_all_finset A).mpr (fun x _ => FK.eventually_mem_box x)
+  let K := fun R => clusterCylinderProbability R id (fun a : A => ξ a.val)
+  have ht := free_partitionExpectation_tendsto _ φP hw (fun a : A => a.val) K
+  have hk : (colorLaw φP.toMeasure ⟨1, le_rfl, by omega⟩).real (spinCylinder A ξ) = partitionExpectation φP.toMeasure (infiniteFreePartition (fun a : A => a.val)) K := by
+    apply colorLaw_partition _ A ξ _
+      (fun R => by dsimp [K, clusterCylinderProbability]; split_ifs <;> positivity)
+      (infiniteFreePartition_measurableSet _)
+    filter_upwards [hfin] with ω hω
+    exact freeClusterColoring_fiber_cylinder_uniform q (by omega) ω A ξ hω
+  rw [← hk] at ht
+  apply ht.congr'
+  filter_upwards [hs] with n hn
+  exact (potts_free_cylinder_eq_partitionExpectation q hq β hβ n _ (fun a : A => hn a.prop) _).symm.trans
+      (box_pattern_sum q β 0 ξ hn (by simp))
+
+
+theorem wired_colorLaw_limit (i : Fin (q+1)) (hi : 1 ≤ (i:ℕ))
+    (hw : Tendsto (fun n => wiredBoxProbabilityMeasure (fkParameters hq hβ) (0,0) n) atTop (𝓝 φP)) :
+    IsPottsInfiniteVolumeLimit q β i (colorLaw φP.toMeasure (boundaryColor hi)) := by
+  refine ⟨inferInstance, fun A ξ => ?_⟩
+  have hs : ∀ᶠ n in atTop, A ⊆ box n := (eventually_all_finset A).mpr (fun x _ => FK.eventually_mem_box x)
+  let K := fun R => pinnedClusterCylinderProbability R some (fun a : A => ξ a.val) none (boundaryColor hi)
+  have ht := wired_partitionExpectation_tendsto q hq β hβ φP hw (Option.map (fun a : A => a.val)) K
+  have hk : (colorLaw φP.toMeasure (boundaryColor hi)).real (spinCylinder A ξ) = partitionExpectation φP.toMeasure (infiniteWiredPartition (Option.map (fun a : A => a.val))) K := by
+    apply colorLaw_partition _ A ξ _
+      (fun R => by dsimp [K, pinnedClusterCylinderProbability]; split_ifs <;> positivity)
+      (infiniteWiredPartition_measurableSet _)
+    exact .of_forall fun ω => wiredClusterColoring_fiber_cylinder_uniform q (by omega) ω A ξ i hi
+  rw [← hk] at ht
+  apply ht.congr'
+  filter_upwards [hs, eventually_gt_atTop 0] with n hn hn0
+  exact (potts_ghost_cylinder_eq_partitionExpectation q hq β hβ i hi n hn0 _ (fun a : A => hn a.prop) _).symm.trans
+      (box_pattern_sum q β i ξ hn (by simp))
+
+
 end PottsDiscontinuity.PottsThm

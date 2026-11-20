@@ -1,7 +1,7 @@
 module
 
 public import Mathlib
-public import PottsDiscontinuity.BetheAnsatz.ZeroRootTheorem
+public import PottsDiscontinuity.BetheAnsatz.Theorem
 public import PottsDiscontinuity.SixVertex.Cor34FinalEquations
 
 /-! # Corollary 3.4: apply the coordinate Bethe Ansatz on the block -/
@@ -12,9 +12,11 @@ open Matrix
 
 namespace PottsDiscontinuity.SixVertex
 
+variable {N n : ℕ} {c Δ : ℝ}
+
 /-- Restrict a full transfer-matrix eigenvector supported on particle number `n` to the
 `n`-particle block. -/
-theorem cor34_final_restrict_full_eigen {N n : ℕ} {c Δ : ℝ}
+theorem cor34_final_restrict_full_eigen
     {p : Fin n → ℝ} {μ : ℂ}
     (hfull : (transferMatrix N c).map (algebraMap ℝ ℂ) *ᵥ
         BetheAnsatz.betheVector Δ p =
@@ -44,8 +46,6 @@ theorem cor34_final_restrict_full_eigen {N n : ℕ} {c Δ : ℝ}
       ∑ y : State N n,
         ((transferBlock N c n).map (algebraMap ℝ ℂ)) x y *
           BetheAnsatz.blockWave Δ p y := by
-    apply Finset.sum_congr rfl
-    intro y hy
     simp [transferBlock, BetheAnsatz.betheVector]
   rw [← hsplit, hcompl, add_zero] at hx
   rw [hrestr] at hx
@@ -55,7 +55,7 @@ theorem cor34_final_restrict_full_eigen {N n : ℕ} {c Δ : ℝ}
 
 /-- On the even branch, a Theorem 2.3 root tuple gives the regular Theorem 3.1
 eigenvector equation on the transfer block. -/
-theorem cor34_final_even_block_eigen {N n : ℕ} {c Δ : ℝ}
+theorem cor34_final_even_block_eigen
     (hc : 2 < c) (hΔ : BetheAnsatz.anisotropy c = Δ)
     (p : Fin n → ℝ) (hp : p ∈ Bethe.S_n n) (hn : Even n)
     (hBE : Bethe.DiscreteBetheEquation Δ N n p) :
@@ -71,7 +71,7 @@ theorem cor34_final_even_block_eigen {N n : ℕ} {c Δ : ℝ}
   · have hfull' : (transferMatrix N c).map (algebraMap ℝ ℂ) *ᵥ
         BetheAnsatz.betheVector Δ p =
       BetheAnsatz.eigenvalueRegular c p • BetheAnsatz.betheVector Δ p := by
-        simpa only [hΔ] using hfull
+        grind
     exact cor34_final_restrict_full_eigen hfull'
   · exact (cor34_even_S_n_roots_nonzero hp hn l hl).elim
 
@@ -85,7 +85,7 @@ theorem cor34_final_odd_block_eigen {N n q : ℕ} {c Δ : ℝ}
         BetheAnsatz.blockWave Δ p =
       BetheAnsatz.eigenvalueZero N c p (⟨q - 1, by omega⟩ : Fin n) •
         BetheAnsatz.blockWave Δ p := by
-  have hcenter : p (⟨q - 1, by omega⟩ : Fin n) = 0 :=
+  have hcenter :=
     cor34_odd_S_n_center_zero hp hnq
   have hBA : BetheAnsatz.BetheEquations N (BetheAnsatz.anisotropy c) p := by
     rw [hΔ]
@@ -93,15 +93,15 @@ theorem cor34_final_odd_block_eigen {N n q : ℕ} {c Δ : ℝ}
   have hbranches := BetheAnsatz.betheAnsatz_all hc p (fun j => hp.1 j)
     (cor34_S_n_injective hp) hBA
   rcases hbranches with ⟨hnonzero, hfull⟩ | ⟨l, hl, hfull⟩
-  · exact (hnonzero ⟨q - 1, by omega⟩ hcenter).elim
-  · have hl' : l = (⟨q - 1, by omega⟩ : Fin n) :=
+  · simp_all
+  · have hl' :=
       (cor34_S_n_injective hp) (hl.trans hcenter.symm)
     subst l
     have hfull' : (transferMatrix N c).map (algebraMap ℝ ℂ) *ᵥ
         BetheAnsatz.betheVector Δ p =
       BetheAnsatz.eigenvalueZero N c p (⟨q - 1, by omega⟩ : Fin n) •
         BetheAnsatz.betheVector Δ p := by
-        simpa only [hΔ] using hfull
+        grind
     exact cor34_final_restrict_full_eigen hfull'
 
 end PottsDiscontinuity.SixVertex

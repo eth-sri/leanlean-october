@@ -18,7 +18,7 @@ def boxGhostProjection (n : ℕ) : Option (ℤ × ℤ) → Option ↥(box n : Se
   | none => none
   | some x => if hx : x ∈ box n then some ⟨x, hx⟩ else none
 
-def boxGhostLift (n : ℕ) : Option ↥(box n : Set (ℤ × ℤ)) → Option (ℤ × ℤ) :=
+def boxGhostLift (n : ℕ) : Option ↥(box n) → Option (ℤ × ℤ) :=
   Option.map Subtype.val
 
 /-- The actual induced open graph, with every boundary vertex joined to one ghost. -/
@@ -62,25 +62,20 @@ private theorem localWiredSetoid_adj (H : SimpleGraph (ℤ × ℤ)) (hH : H ≤ 
   · simp only [boxGhostProjection, hx, hy, dite_true, dite_false]
     exact (show (finiteWiredConnectionGraph H n).Adj none (some ⟨y, hy⟩) from
       ⟨hy, x, (hH hxy).symm, hx⟩).reachable
-  · simp only [boxGhostProjection, hx, hy, dite_false]
-    exact SimpleGraph.Reachable.refl _
+  · simp [boxGhostProjection, *]
 
 theorem localWiredSetoid_of_reachable (H : SimpleGraph (ℤ × ℤ)) (hH : H ≤ squareLattice)
     (n : ℕ) {x y : ℤ × ℤ} (hxy : H.Reachable x y) :
-    localWiredSetoid H n (some x) (some y) := by
-  have hle : H.reachableSetoid ≤ (localWiredSetoid H n).comap some :=
-    FK.reachableSetoid_le_of_adj H _ (fun h => localWiredSetoid_adj H hH n h)
-  exact hle hxy
+    localWiredSetoid H n (some x) (some y) := FK.reachableSetoid_le_of_adj (Setoid.comap some (localWiredSetoid H n)) (fun {u v} h => localWiredSetoid_adj H hH n h) hxy
 
 private theorem localWiredSetoid_of_outside (H : SimpleGraph (ℤ × ℤ)) (n : ℕ)
     {x : ℤ × ℤ} (hx : x ∉ box n) : localWiredSetoid H n (some x) none := by
   change (finiteWiredConnectionGraph H n).Reachable
     (boxGhostProjection n (some x)) (boxGhostProjection n none)
-  simp only [boxGhostProjection, hx, dite_false]
-  exact SimpleGraph.Reachable.refl _
+  simp [boxGhostProjection, hx]
 
-private theorem localWiredSetoid_of_escape (H : SimpleGraph (ℤ × ℤ)) (hH : H ≤ squareLattice)
-    (n : ℕ) {x : ℤ × ℤ} (hx : clusterEscapesBox H n x) :
+private theorem localWiredSetoid_of_escape {H : SimpleGraph (ℤ × ℤ)} (hH : H ≤ squareLattice)
+    {n : ℕ} {x : ℤ × ℤ} (hx : clusterEscapesBox H n x) :
     localWiredSetoid H n (some x) none := by
   obtain ⟨y, hy, hxy⟩ := hx
   exact (localWiredSetoid H n).trans (localWiredSetoid_of_reachable H hH n hxy)
@@ -94,20 +89,18 @@ theorem exteriorMergedSetoid_le_localWired (H : SimpleGraph (ℤ × ℤ)) (hH : 
   cases a with
   | none =>
     cases b with
-    | none => exact (localWiredSetoid H n).refl none
+    | none => rfl
     | some y =>
-      have hy : clusterEscapesBox H n y := markedClusterSetoid_some_none _ _ y |>.mp
-        ((exteriorMergedSetoid H n).symm hab)
-      exact (localWiredSetoid H n).symm (localWiredSetoid_of_escape H hH n hy)
+      exact (localWiredSetoid H n).symm (localWiredSetoid_of_escape hH (markedClusterSetoid_some_none _ _ y |>.mp ((exteriorMergedSetoid H n).symm hab)))
   | some x =>
     cases b with
     | none =>
-      exact localWiredSetoid_of_escape H hH n ((markedClusterSetoid_some_none _ _ x).mp hab)
+      exact localWiredSetoid_of_escape hH ((markedClusterSetoid_some_none _ _ x).mp hab)
     | some y =>
       rcases (exteriorMergedSetoid_some_some H n x y).mp hab with hxy | ⟨hx, hy⟩
       · exact localWiredSetoid_of_reachable H hH n hxy
-      · exact (localWiredSetoid H n).trans (localWiredSetoid_of_escape H hH n hx)
-          ((localWiredSetoid H n).symm (localWiredSetoid_of_escape H hH n hy))
+      · exact (localWiredSetoid H n).trans (localWiredSetoid_of_escape hH hx)
+          ((localWiredSetoid H n).symm (localWiredSetoid_of_escape hH hy))
 
 private theorem finiteWired_reachable_le_exterior (H : SimpleGraph (ℤ × ℤ)) (n : ℕ) :
     (finiteWiredConnectionGraph H (n + 1)).reachableSetoid ≤
@@ -119,29 +112,25 @@ private theorem finiteWired_reachable_le_exterior (H : SimpleGraph (ℤ × ℤ))
     cases b with
     | none => exact hab.elim
     | some y =>
-      have hy : y.val ∉ box n := (outer_shell_iff_boundary n y.val y.property).mpr hab
       apply (exteriorMergedSetoid H n).symm
-      exact (markedClusterSetoid_some_none _ _ _).mpr ⟨y.val, hy, .refl _⟩
+      exact (markedClusterSetoid_some_none _ _ _).mpr ⟨y.val, ((outer_shell_iff_boundary y.property).mpr hab), .refl _⟩
   | some x =>
     cases b with
     | none =>
-      have hx : x.val ∉ box n := (outer_shell_iff_boundary n x.val x.property).mpr hab
-      exact (markedClusterSetoid_some_none _ _ _).mpr ⟨x.val, hx, .refl _⟩
+      exact (markedClusterSetoid_some_none _ _ _).mpr ⟨x.val, ((outer_shell_iff_boundary x.property).mpr hab), .refl _⟩
     | some y => exact (exteriorMergedSetoid_some_some H n x.val y.val).mpr (Or.inl (show H.Adj x.val y.val from hab).reachable)
 
 private theorem exterior_related_projection (H : SimpleGraph (ℤ × ℤ)) (n : ℕ)
     (a : Option (ℤ × ℤ)) :
     exteriorMergedSetoid H n a (boxGhostLift (n + 1) (boxGhostProjection (n + 1) a)) := by
   cases a with
-  | none => exact (exteriorMergedSetoid H n).refl none
+  | none => rfl
   | some x =>
     by_cases hx : x ∈ box (n + 1)
     · simpa only [boxGhostProjection, hx, dite_true, boxGhostLift, Option.map_some] using
-        (exteriorMergedSetoid H n).refl (some x)
-    · have hxn : x ∉ box n := fun h => hx (box_subset_box_succ n h)
-      change exteriorMergedSetoid H n (some x) _
-      simp only [boxGhostProjection, hx, dite_false, boxGhostLift, Option.map_none]
-      exact (markedClusterSetoid_some_none _ _ _).mpr ⟨x, hxn, .refl _⟩
+        by rfl
+    · simp only [boxGhostProjection, hx, dite_false, boxGhostLift, Option.map_none]
+      exact (markedClusterSetoid_some_none _ _ _).mpr ⟨x, (fun h => hx (box_subset_box_succ n h)), .refl _⟩
 
 /-- Wiring the larger box adds no connections beyond merging all components
 which reach the exterior of the smaller box. -/
@@ -159,28 +148,12 @@ theorem localWiredSetoid_limit (H : SimpleGraph (ℤ × ℤ)) (hH : H ≤ square
   constructor
   · intro h
     apply (exteriorMergedSetoid_limit H a b).mp
-    intro n
-    exact localWiredSetoid_succ_le_exterior H n (h (n + 1))
+    solve_by_elim [localWiredSetoid_succ_le_exterior]
   · intro h n
     exact exteriorMergedSetoid_le_localWired H hH n ((exteriorMergedSetoid_limit H a b).mpr h n)
 
 theorem localWiredSetoid_antitone (H : SimpleGraph (ℤ × ℤ)) (hH : H ≤ squareLattice) :
-    Antitone (localWiredSetoid H) := by
-  apply antitone_nat_of_succ_le
-  intro n
-  exact (localWiredSetoid_succ_le_exterior H n).trans (exteriorMergedSetoid_le_localWired H hH n)
-
-theorem localWiredSetoid_mono {H K : SimpleGraph (ℤ × ℤ)} (h : H ≤ K) (n : ℕ) :
-    localWiredSetoid H n ≤ localWiredSetoid K n := by
-  have hg : finiteWiredConnectionGraph H n ≤ finiteWiredConnectionGraph K n := by
-    intro a b hab
-    cases a <;> cases b
-    · exact hab.elim
-    · exact hab
-    · exact hab
-    · exact h hab
-  intro a b hab
-  exact hab.mono hg
+    Antitone (localWiredSetoid H) := antitone_nat_of_succ_le fun n => LE.le.trans (localWiredSetoid_succ_le_exterior H n) (exteriorMergedSetoid_le_localWired H hH n)
 
 end
 end PottsDiscontinuity.Potts

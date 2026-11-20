@@ -13,16 +13,21 @@ open Set
 
 namespace PottsDiscontinuity.Bethe
 
-theorem abs_compact_inverse_parameter_lt_one {Δ₀ ε : ℝ} (hΔ₀ : Δ₀ < -1)
-    (hε : ε ∈ Icc (1 / Δ₀) 0) : |ε| < 1 := by
-  have h0 := abs_lt.mp (abs_inverse_parameter_lt_one hΔ₀)
-  exact abs_lt.mpr ⟨by linarith [hε.1], by linarith [hε.2]⟩
+section
+variable {Δ₀ ε : ℝ} (hΔ₀ : Δ₀ < -1) (hε : ε ∈ Icc (1 / Δ₀) 0)
+include hε
 
-theorem inverse_parameter_le_cutoff {Δ₀ ε : ℝ} (_hΔ₀ : Δ₀ < -1)
-    (hε : ε ∈ Icc (1 / Δ₀) 0) (hne : ε ≠ 0) : 1 / ε ≤ Δ₀ := by
-  have hneg : ε < 0 := lt_of_le_of_ne hε.2 hne
+include hΔ₀ in
+theorem abs_compact_inverse_parameter_lt_one : |ε| < 1 := by
+  have h0 := abs_lt.mp (abs_inverse_parameter_lt_one hΔ₀)
+  grind
+
+theorem inverse_parameter_le_cutoff (hne : ε ≠ 0) : 1 / ε ≤ Δ₀ := by
+  have hneg := lt_of_le_of_ne hε.2 hne
   have h := one_div_le_one_div_of_neg_of_le hneg hε.1
-  simpa only [one_div_one_div] using h
+  grind
+
+end
 
 /-- Uniform compact-region data for the continuation theorem. Every zero in
 the region is strictly interior and has invertible state derivative, including
@@ -45,35 +50,34 @@ theorem exists_uniform_regular_Bethe_region (r : ℕ) {Δ₀ : ℝ} (hΔ₀ : Δ
         (_hq : q ∈ betheGapRegion k (c / N) (D / N)),
         DiscreteBetheEquation Δ N (k + 1) (discreteSymLift (k + 1) q) →
         ∀ hp : discreteSymLift (k + 1) q ∈ S_n (k + 1),
-        densityNorm Δ (lt_of_le_of_lt hΔ hΔ₀)
-          (fun x => rootStepDensity N (k + 1) (discreteSymLift (k + 1) q) hp (by omega) hs x - rho Δ x)
-          (rootStepDensity_error_bddAbove (lt_of_le_of_lt hΔ hΔ₀) _ hp (by omega) hs) ≤ K / N) := by
+        densityNorm Δ
+          (fun x => rootStepDensity N (discreteSymLift (k + 1) q) (by omega) x - rho Δ x) ≤ K / N) := by
   obtain ⟨c, D, K, hc, hcpi, hDlarge, hK, M₀, hM₀, hbootstrap⟩ :=
     exists_uniform_strict_gap_bootstrap r hΔ₀
-  have hD : 0 < D := lt_trans (by positivity) hDlarge
+  have hD := lt_trans (by positivity) hDlarge
   obtain ⟨L₀, hL₀, hmatrix⟩ := exists_uniform_Bethe_matrix_nonsingular hΔ₀ D hD.le
   refine ⟨c, D, K, hc, hcpi, hDlarge, hK, max M₀ L₀,
     lt_of_lt_of_le hM₀ (le_max_left _ _), fun N k hlarge hcount hs => ?_⟩
-  have hMlarge : M₀ ≤ N := (le_max_left _ _).trans hlarge
-  have hLlarge : L₀ ≤ N := (le_max_right _ _).trans hlarge
-  have hN : 0 < N := lt_of_lt_of_le hM₀ hMlarge
+  have hMlarge := (le_max_left _ _).trans hlarge
+  have hLlarge := (le_max_right _ _).trans hlarge
+  have hN := lt_of_lt_of_le hM₀ hMlarge
   have hNc : (0 : ℝ) < N := by exact_mod_cast hN
-  have hbase : discreteBaseCoordinates N (k + 1) ∈ interior (betheGapRegion k (c / N) (D / N)) :=
+  have hbase :=
     mem_interior_betheGapRegion (discreteBaseCoordinates_strict_gaps hN hs hcount hcpi hDlarge)
   refine ⟨hbase, ?_, ?_⟩
   · intro ε hε q hq hzero
     by_cases hεzero : ε = 0
     · subst ε
-      have hqbase : q = discreteBaseCoordinates N (k + 1) :=
+      have hqbase :=
         (discreteCoordinateResidualInv_base_unique hN hs).unique hzero
           (discreteCoordinateResidualInv_base_zero hN hs)
       refine ⟨hqbase ▸ hbase, ?_⟩
       exact exists_discreteCoordinateResidualInv_stateEquiv_zero hN hs q
     · let Δ := 1 / ε
-      have hΔ : Δ ≤ Δ₀ := inverse_parameter_le_cutoff hΔ₀ hε hεzero
-      have hvalid : Δ < -1 := lt_of_le_of_lt hΔ hΔ₀
-      have hInv : 1 / Δ = ε := one_div_one_div ε
-      have hp : discreteSymLift (k + 1) q ∈ S_n (k + 1) :=
+      have hΔ := inverse_parameter_le_cutoff hε hεzero
+      have hvalid := lt_of_le_of_lt hΔ hΔ₀
+      have hInv := one_div_one_div ε
+      have hp :=
         betheGapRegion_mem_S_n (div_pos hc hNc) hq
       have hfinite : discreteCoordinateResidual Δ N (k + 1) q = 0 := by
         rw [← discreteCoordinateResidualInv_eq hvalid, hInv]

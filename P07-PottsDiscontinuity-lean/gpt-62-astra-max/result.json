@@ -1,0 +1,17 @@
+{
+  "problem_idx": 7,
+  "key": "PALOMAR-2026-10-21-000001-v1",
+  "model_name": "GPT-6.2 Astra (max)",
+  "model_id": "gpt-62-astra-max",
+  "harness": "Codex 0.169.0",
+  "status": "verified",
+  "verified": true,
+  "failure_label": null,
+  "verification_note": "Final verification passed.",
+  "baseline_tokens": 1054327,
+  "final_tokens": 563533,
+  "compression_percent": 46.550453512050815,
+  "credited_compression_percent": 46.550453512050815,
+  "cost": 102.5362384,
+  "elapsed_seconds": 21438.592586814426
+}

@@ -19,12 +19,14 @@ open Torus CorrLength
 
 variable {N M : ℕ}
 
+variable (hN : Even N) (hM : Even M) (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (hNp : 0 < N) (hMp : 0 < M)
+    (hNdiv : 8 ∣ N) (q : Set.Ici (1 : ℝ))
+
+include hN4 hM4 hNdiv in
 /-- The proved implication B ∩ C′ ⇒ `U = 1` (`TorusTopology.hBCU_proved`) turns the full
 corrected chain bound into an actual U=1 probability bound. No topological premise remains in
 this finite-volume result. -/
-theorem torusRCU_one_probability_ge_chain (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (hNp : 0 < N) (hMp : 0 < M)
-    (hNdiv : 8 ∣ N) (q : Set.Ici (1 : ℝ)) (n : ℕ)
+theorem torusRCU_one_probability_ge_chain (n : ℕ)
     (hn : 0 < n) (h8n : 8 * n ≤ N) (hNM : N / 2 < M) :
     (fkOpenEnergy (torusRCBridgeParameters q) ^ (2 * (N / 4 + 2 * n)) *
       liftedBoxFreeConnectionProbability (torusRCBridgeParameters q) rotatedLatticeOrigin
@@ -41,9 +43,7 @@ theorem torusRCU_one_probability_ge_chain (hN : Even N) (hM : Even M)
 seam row is closed (`TorusTopology.hUr_proved`) discharges the premise in the finite-energy
 seam cut.
 The remaining step for (3.16) is the cylinder exploration estimate. -/
-theorem torusRCVerticalTail_close_seam_le_unconditional
-    (hN : Even N) (hM : Even M) (hMp : 0 < M)
-    (q : Set.Ici (1 : ℝ)) (r : ℕ) :
+theorem torusRCVerticalTail_close_seam_le_unconditional (r : ℕ) :
     (1 - (rcCriticalParameter q).val) ^ N *
         torusRCProbability hN hM q
           (torusRCVerticalTail hN hM ⟨0,hMp⟩ r) ≤

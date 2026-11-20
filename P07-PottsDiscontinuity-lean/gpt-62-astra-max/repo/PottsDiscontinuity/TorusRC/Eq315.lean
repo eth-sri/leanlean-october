@@ -34,6 +34,6 @@ theorem eq315 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
     simpa only [zero_add] using (tendsto_block_log_rate_zero c hc).add hrate
   apply le_of_tendsto hlim
   filter_upwards [eventually_ge_atTop 2] with n hn
-  exact hbound n hn
+  grind
 
 end PottsDiscontinuity.TorusRC

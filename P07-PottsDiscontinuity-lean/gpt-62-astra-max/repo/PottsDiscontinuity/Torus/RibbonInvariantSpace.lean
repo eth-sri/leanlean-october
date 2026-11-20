@@ -20,25 +20,28 @@ open Module
 
 variable {N M : ℕ}
 
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (v : Fin N × Fin M)
+include hN hM A
+
 /-- Rational functions on corners, invariant under both generating permutations. -/
-def ribbonFunctions (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def ribbonFunctions :
     Submodule ℚ (DirectedDart (checkerArrows N M) → ℚ) :=
   cycleFunctions (faceRotation hN hM) ⊓ cycleFunctions (ribbonEdgePairing hN hM A)
 
-theorem ribbonFunctions_invariant (hN : Even N) (hM : Even M) (A : RCConfig N M)
+theorem ribbonFunctions_invariant
     (f : ribbonFunctions hN hM A) {d e : DirectedDart (checkerArrows N M)}
     (h : RibbonConnected hN hM A d e) : f.val d = f.val e := by
   induction h with
   | rel d e h =>
     rcases h with h | rfl
-    · exact sameCycle_invariant _ f.val f.property.1 h
+    · exact sameCycle_invariant f.property.1 h
     · exact (f.property.2 d).symm
   | refl => rfl
   | symm _ _ _ ih => exact ih.symm
   | trans _ _ _ _ _ ih₁ ih₂ => exact ih₁.trans ih₂
 
 /-- Invariant corner functions descend to components and pull back uniquely. -/
-def ribbonFunctionEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def ribbonFunctionEquiv :
     (RibbonComponent hN hM A → ℚ) ≃ₗ[ℚ] ribbonFunctions hN hM A where
   toFun f := ⟨fun d => f (Quotient.mk _ d), by
     constructor
@@ -57,36 +60,28 @@ def ribbonFunctionEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
   map_smul' _ _ := Subtype.ext rfl
 
 /-- The invariant-function dimension is the actual primal cluster count. -/
-theorem finrank_ribbonFunctions (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+theorem finrank_ribbonFunctions :
     finrank ℚ (ribbonFunctions hN hM A) = clusterCount hN hM true A := by
   let : Fintype (RibbonComponent hN hM A) := Fintype.ofFinite _
   rw [← (ribbonFunctionEquiv hN hM A).finrank_eq, Module.finrank_pi,
     ← Nat.card_eq_fintype_card, card_ribbonComponent]
 
+include v in
 /-- Evaluation difference of the two ends of an indexed ribbon on component functions. -/
-def ribbonDifference (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (v : Fin N × Fin M) : ribbonFunctions hN hM A →ₗ[ℚ] ℚ :=
+def ribbonDifference : ribbonFunctions hN hM A →ₗ[ℚ] ℚ :=
   ((LinearMap.proj (ribbonEndEquiv hN hM (v, false)) :
       (DirectedDart (checkerArrows N M) → ℚ) →ₗ[ℚ] ℚ) -
     LinearMap.proj (ribbonEndEquiv hN hM (v, true))).comp
       (ribbonFunctions hN hM A).subtype
 
-@[simp] theorem ribbonDifference_apply (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (v : Fin N × Fin M) (f : ribbonFunctions hN hM A) :
-    ribbonDifference hN hM A v f =
-      f.val (ribbonEndEquiv hN hM (v, false)) -
-        f.val (ribbonEndEquiv hN hM (v, true)) := rfl
-
-theorem ribbonDifference_eq_zero_of_connected (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M)
+theorem ribbonDifference_eq_zero_of_connected
     (h : RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
       (ribbonEndEquiv hN hM (v, true))) : ribbonDifference hN hM A v = 0 := by
   apply LinearMap.ext
   intro f
   exact sub_eq_zero.mpr (ribbonFunctions_invariant hN hM A f h)
 
-theorem ribbonDifference_ne_zero_of_not_connected (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M)
+theorem ribbonDifference_ne_zero_of_not_connected
     (h : ¬RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
       (ribbonEndEquiv hN hM (v, true))) : ribbonDifference hN hM A v ≠ 0 := by
   classical
@@ -98,6 +93,6 @@ theorem ribbonDifference_ne_zero_of_not_connected (hN : Even N) (hM : Even M)
     (if q = Quotient.mk _ (ribbonEndEquiv hN hM (v, true)) then 1 else 0) = 0 at he
   have hq : q ≠ Quotient.mk _ (ribbonEndEquiv hN hM (v, true)) :=
     fun he => h (Quotient.exact he)
-  simp only [hq, ite_true, ite_false, sub_zero, one_ne_zero] at he
+  simp_all [hq, ite_true, ite_false, sub_zero, one_ne_zero]
 
 end PottsDiscontinuity.Torus

@@ -23,6 +23,7 @@ noncomputable section
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 
 local instance marginalEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite G.edgeSet
+
 local instance remainingFintype (R : Configuration G) :
     Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
 local instance removedFintype (R : Configuration G) :
@@ -31,12 +32,12 @@ local instance removedFintype (R : Configuration G) :
 /-- The normalized FK law when only the edges outside `R` are sampled. -/
 def remainingLaw (q : Parameters) (ξ : BoundaryCondition V) (R : Configuration G) :
     PMF (RemainingConfiguration G R) :=
-  FiniteProbability.pmf (remainingWeight G q ξ R) (remainingWeight_pos G q ξ R)
+  FiniteProbability.pmf (remainingWeight_pos G q ξ R)
 
 /-- The Bernoulli weight on the removed edge carrier, normalized as a PMF. -/
 def removedLaw (q : Parameters) (R : Configuration G) :
     PMF (RemovedConfiguration G R) :=
-  FiniteProbability.pmf (removedWeight G q R) (removedWeight_pos G q R)
+  FiniteProbability.pmf (removedWeight_pos G q R)
 
 /-- The partition function with the preselected edges removed from sampling. -/
 def remainingPartitionFunction (q : Parameters) (ξ : BoundaryCondition V)
@@ -45,7 +46,7 @@ def remainingPartitionFunction (q : Parameters) (ξ : BoundaryCondition V)
 
 theorem remainingPartitionFunction_pos (q : Parameters) (ξ : BoundaryCondition V)
     (R : Configuration G) : 0 < remainingPartitionFunction G q ξ R :=
-  FiniteProbability.partition_pos _ (remainingWeight_pos G q ξ R)
+  FiniteProbability.partition_pos (remainingWeight_pos G q ξ R)
 
 variable [DecidableEq G.edgeSet]
 
@@ -61,12 +62,12 @@ theorem law_map_split (q : Parameters) (ξ : BoundaryCondition V)
   apply FiniteProbability.pmf_map_equiv_of_weight_eq
   intro C
   let P := configurationSplitEquiv G R C
-  have hC : P.1.val ∪ P.2.val = C := (configurationSplitEquiv G R).symm_apply_apply C
+  have hC := (configurationSplitEquiv G R).symm_apply_apply C
   exact (congrArg (weight G q ξ) hC).symm.trans
     (weight_union_factorization G q ξ R hR P.1 P.2)
 
 /-- Forgetting all prewired edges gives exactly the FK law on the remaining edges. -/
-theorem law_map_remove (q : Parameters) (ξ : BoundaryCondition V)
+theorem law_map_remove (q : Parameters) {ξ : BoundaryCondition V}
     (R : Configuration G)
     (hR : ∀ (u v : V) (huv : G.Adj u v),
       (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∈ R → ξ.partition.r u v) :

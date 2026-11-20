@@ -23,16 +23,19 @@ noncomputable section
 variable {V : Type*} [Finite V] {G : SimpleGraph V}
 local instance disintegrationEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance disintegrationEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
-local instance disintegrationRemainingFintype (R : Configuration G) : Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
-local instance disintegrationRemovedFintype (R : Configuration G) : Fintype (RemovedConfiguration G R) := Fintype.ofFinite _
+variable (q : Parameters) (ξ : BoundaryCondition V) (R : Configuration G)
+    (H : RemovedConfiguration G R)
 
+local instance disintegrationRemainingFintype : Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
+local instance disintegrationRemovedFintype : Fintype (RemovedConfiguration G R) := Fintype.ofFinite _
+
+include q ξ in
 /-- The actual marginal of all original edges in the frozen set. -/
-def frozenMarginalLaw (q : Parameters) (ξ : BoundaryCondition V) (R : Configuration G) :
+def frozenMarginalLaw :
     PMF (RemovedConfiguration G R) :=
   (law G q ξ).map (fun C => (configurationSplitEquiv G R C).2)
 
-theorem frozenMarginalLaw_apply (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) (H : RemovedConfiguration G R) :
+theorem frozenMarginalLaw_apply :
     frozenMarginalLaw q ξ R H =
       ∑ A : RemainingConfiguration G R, law G q ξ (A.val ∪ H.val) := by
   classical
@@ -46,9 +49,7 @@ theorem frozenMarginalLaw_apply (q : Parameters) (ξ : BoundaryCondition V)
 
 /-- The probability of the full configuration is its frozen-state marginal
 times the exact induced conditional probability of all remaining edges. -/
-theorem law_restore_eq_conditional_mul_marginal (q : Parameters)
-    (ξ : BoundaryCondition V) (R : Configuration G)
-    (H : RemovedConfiguration G R) (A : RemainingConfiguration G R) :
+theorem law_restore_eq_conditional_mul_marginal (A : RemainingConfiguration G R) :
     law G q ξ (A.val ∪ H.val) =
       remainingLaw G q (frozenBoundary ξ H.val) R A * frozenMarginalLaw q ξ R H := by
   rw [frozenMarginalLaw_apply]
@@ -64,12 +65,11 @@ theorem law_restore_eq_conditional_mul_marginal (q : Parameters)
     remainingPartitionFunction G q (frozenBoundary ξ H.val) R) * _
   rw [← ENNReal.ofReal_mul (div_pos (remainingWeight_pos G q (frozenBoundary ξ H.val) R A)
     (remainingPartitionFunction_pos G q (frozenBoundary ξ H.val) R)).le]
-  exact congrArg ENNReal.ofReal hr
+  grind
 
 /-- The entire remaining-edge marginal is a mixture of the actual induced FK
 laws, weighted by the true joint marginal of all frozen edges. -/
-theorem law_map_remaining_eq_bind_frozen (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) :
+theorem law_map_remaining_eq_bind_frozen :
     (law G q ξ).map (fun C => (configurationSplitEquiv G R C).1) =
       (frozenMarginalLaw q ξ R).bind (fun H =>
         remainingLaw G q (frozenBoundary ξ H.val) R) := by

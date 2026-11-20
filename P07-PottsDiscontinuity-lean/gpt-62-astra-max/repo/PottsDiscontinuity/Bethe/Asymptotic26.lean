@@ -18,9 +18,9 @@ open scoped Topology BigOperators
 
 namespace PottsDiscontinuity.Bethe
 
-theorem integral_empiricalMeasure (N : ℕ) (hN : 0 < N) (n : ℕ)
+theorem integral_empiricalMeasure (N : ℕ) {n : ℕ}
     (p : Fin n → ℝ) (g : ℝ → ℝ) :
-    (∫ x, g x ∂empiricalMeasure N hN n p) = (∑ j, g (p j)) / (N : ℝ) := by
+    (∫ x, g x ∂empiricalMeasure N p) = (∑ j, g (p j)) / (N : ℝ) := by
   unfold empiricalMeasure
   rw [integral_smul_measure, integral_finsetSum_measure]
   · simp only [integral_dirac, ENNReal.toReal_inv, ENNReal.toReal_natCast, smul_eq_mul,
@@ -37,39 +37,33 @@ theorem theorem26_integrals {ι : Type*} {l : Filter ι} {Δ : ℝ} (hΔ : Δ < 
     (hNlim : Tendsto (fun i => (N i : ℝ)) l atTop)
     (hb : ∀ i, BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
       |Xi (lamOf Δ) α *
-        (rootStepDensity (N i) (k i + 1) (p i) (hp i) (by omega) (hs i)
+        (rootStepDensity (N i) (p i) (by omega)
           (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|))
-    (hlim : Tendsto (fun i => densityNorm Δ hΔ
-      (fun x => rootStepDensity (N i) (k i + 1) (p i) (hp i) (by omega) (hs i) x - rho Δ x)
-      (hb i)) l (𝓝 0))
+    (hlim : Tendsto (fun i => densityNorm Δ
+      (fun x => rootStepDensity (N i) (p i) (by omega) x - rho Δ x)) l (𝓝 0))
     (g : ℝ → ℝ) (hg : Continuous g) :
-    Tendsto (fun i => ∫ x, g x ∂empiricalMeasure (N i)
-      (by have := hs i; omega) (k i + 1) (p i)) l
+    Tendsto (fun i => ∫ x, g x ∂empiricalMeasure (N i) (p i)) l
       (𝓝 (∫ x in (-Real.pi)..Real.pi, g x * rho Δ x)) := by
-  have hNpos (i : ι) : 0 < N i := by have := hs i; omega
-  have hNreal (i : ι) : (0 : ℝ) < N i := by exact_mod_cast hNpos i
-  let E : ι → ℝ := fun i => densityNorm Δ hΔ
-    (fun x => rootStepDensity (N i) (k i + 1) (p i) (hp i) (by omega) (hs i) x - rho Δ x)
-    (hb i) / (Real.sinh (lamOf Δ) / (Real.cosh (lamOf Δ) + 1))
-  have hE : Tendsto E l (𝓝 0) :=
-    tendsto_densityNorm_div hΔ
-      (fun i x => rootStepDensity (N i) (k i + 1) (p i) (hp i) (by omega) (hs i) x - rho Δ x)
-      hb hlim
+  have hNpos (i : ι) : 0 < N i := by grind
+  let E := fun i => densityNorm Δ
+    (fun x => rootStepDensity (N i) (p i) (by omega) x - rho Δ x) / (Real.sinh (lamOf Δ) / (Real.cosh (lamOf Δ) + 1))
+  have hE :=
+    tendsto_densityNorm_div (hΔ := hΔ)
+      (f := (fun i x => rootStepDensity (N i) (p i) (by omega) x - rho Δ x))
+      (hb := hb) hlim
   have hEnonneg (i : ι) : 0 ≤ E i :=
     div_nonneg (densityNorm_nonneg hΔ _ (hb i)) (density_weight_lower_pos hΔ).le
-  have herror (i : ι) (x : ℝ) (hx : x ∈ Icc (-Real.pi) Real.pi) :
-      |rootStepDensity (N i) (k i + 1) (p i) (hp i) (by omega) (hs i) x - rho Δ x| ≤ E i :=
+  have herror (i : ι) (x : ℝ) (hx : x ∈ Icc (-Real.pi) Real.pi) :=
     abs_le_densityNorm_div hΔ
-      (fun x => rootStepDensity (N i) (k i + 1) (p i) (hp i) (by omega) (hs i) x - rho Δ x)
+      (f := (fun x => rootStepDensity (N i) (p i) (by omega) x - rho Δ x))
       (hb i) hx
-  obtain ⟨m, hm, hmesh⟩ := eventually_rootPartition_gap_le hΔ r N (fun i => k i + 1) p hp
-    (fun i => by omega) hs hcount hb hlim
-  let d : ι → ℝ := fun i => 2 * (2 * r + 1 : ℝ) / (m * (N i : ℝ))
+  obtain ⟨m, hm, hmesh⟩ := eventually_rootPartition_gap_le (hΔ := hΔ) (r := r) (N := N) (n := (fun i => k i + 1)) (p := p) (hp := hp)
+    (hn := (fun i => by omega)) (hs := hs) hcount (hb := hb) hlim
+  let d := fun i => 2 * (2 * r + 1 : ℝ) / (m * (N i : ℝ))
   have hinv : Tendsto (fun i => (N i : ℝ)⁻¹) l (𝓝 0) := tendsto_inv_atTop_zero.comp hNlim
   have hd : Tendsto d l (𝓝 0) := by
     have ht := hinv.const_mul (2 * (2 * r + 1 : ℝ) / m)
     simpa only [mul_zero, d, div_mul_eq_div_mul_one_div, one_div] using ht
-  have hdnonneg (i : ι) : 0 ≤ d i := by dsimp [d]; positivity
   obtain ⟨G₀, hG₀⟩ := isCompact_Icc.exists_bound_of_continuousOn hg.continuousOn
   obtain ⟨M₀, hM₀⟩ := isCompact_Icc.exists_bound_of_continuousOn (continuous_rho hΔ).continuousOn
   let G := max G₀ 1
@@ -82,15 +76,15 @@ theorem theorem26_integrals {ι : Type*} {l : Filter ι} {Δ : ℝ} (hΔ : Δ < 
   have hρBound : ∀ x ∈ Icc (-Real.pi) Real.pi, |rho Δ x| ≤ M := by
     intro x hx
     exact (show |rho Δ x| ≤ M₀ by simpa only [Real.norm_eq_abs] using hM₀ x hx).trans (le_max_left _ _)
-  let B : ι → ℝ := fun i => 2 * Real.pi * G * E i + 2 * G * M * d i + G * (N i : ℝ)⁻¹
+  let B := fun i => 2 * Real.pi * G * E i + 2 * G * M * d i + G * (N i : ℝ)⁻¹
   have hB : Tendsto B l (𝓝 0) := by
     have ht := ((hE.const_mul (2 * Real.pi * G)).add (hd.const_mul (2 * G * M))).add
       (hinv.const_mul G)
-    simpa only [mul_zero, add_zero] using ht
+    grind
   apply Metric.tendsto_nhds.mpr
   intro ε hε
-  let w : ℝ := ε / (4 * Real.pi * M)
-  have hwpos : 0 < w := by dsimp [w]; positivity
+  let w := ε / (4 * Real.pi * M)
+  have hwpos : 0 < w := by positivity
   have hwid : 2 * Real.pi * (w * M) = ε / 2 := by
     dsimp [w]
     field_simp [hMpos.ne', Real.pi_ne_zero]
@@ -100,20 +94,11 @@ theorem theorem26_integrals {ι : Type*} {l : Filter ι} {Δ : ℝ} (hΔ : Δ < 
   filter_upwards [hmesh, hd.eventually (gt_mem_nhds hδ),
     hB.eventually (gt_mem_nhds (show (0 : ℝ) < ε / 2 by positivity))] with i hmi hdi hBi
   rw [Real.dist_eq, integral_empiricalMeasure, abs_sub_comm]
-  have hquad := root_quadrature_error (hp i) (hs i) hΔ hg hGpos.le hMpos.le (hEnonneg i)
+  have hquad := root_quadrature_error (hp := hp i) (hs := hs i) hΔ hg hGpos.le hMpos.le (hEnonneg i)
     hwpos.le hgBound hρBound (herror i) hmi
     (fun x hx y hy hxy => by
       apply hmod x hx y hy
-      rw [Real.dist_eq]
       exact hxy.trans hdi.le)
-  apply hquad.trans_lt
-  have hidentity : 2 * Real.pi * (w * M + G * E i) + 2 * G * M * d i + G / (N i : ℝ) =
-      ε / 2 + B i := by
-    rw [mul_add, hwid]
-    dsimp [B]
-    rw [div_eq_mul_inv]
-    ring
-  rw [hidentity]
-  linarith
+  grind
 
 end PottsDiscontinuity.Bethe

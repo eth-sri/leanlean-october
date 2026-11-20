@@ -20,41 +20,38 @@ open Torus
 
 variable {N M : ℕ}
 
+variable (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ)) (j : Fin M) (r : ℕ) (n : ℕ)
+
+include hN hM j r in
 /-- Configurations with at least `r` units of vertical loop winding. -/
-def torusRCVerticalTail (hN : Even N) (hM : Even M) (j : Fin M) (r : ℕ) :
+def torusRCVerticalTail :
     Set (RCConfig N M) :=
   {A | r ≤ rcVerticalWinding hN hM j A}
 
-/-- Every torus vertical-winding tail has probability at most one, so its
-logarithm is nonpositive. -/
-theorem torusRCVerticalTail_log_nonpos (hN : Even N) (hM : Even M)
-    (q : Set.Ici (1 : ℝ)) (j : Fin M) (r : ℕ) :
-    Real.log (torusRCProbability hN hM q (torusRCVerticalTail hN hM j r)) ≤ 0 := by
-  exact Real.log_nonpos
-    (torusRCProbability_nonneg hN hM q (torusRCVerticalTail hN hM j r))
-    (torusRCProbability_le_one hN hM q (torusRCVerticalTail hN hM j r))
-
+include n in
 /-- A positive even period parametrized without the empty period. -/
-def positiveEvenPeriod (n : ℕ) : ℕ := 2 * (n + 1)
+def positiveEvenPeriod : ℕ := 2 * (n + 1)
 
-theorem positiveEvenPeriod_even (n : ℕ) : Even (positiveEvenPeriod n) := by
-  exact ⟨n + 1, by simp [positiveEvenPeriod]; ring⟩
-
-theorem positiveEvenPeriod_pos (n : ℕ) : 0 < positiveEvenPeriod n := by
+theorem positiveEvenPeriod_even : Even (positiveEvenPeriod n) := by
   simp [positiveEvenPeriod]
 
+theorem positiveEvenPeriod_pos : 0 < positiveEvenPeriod n := by
+  simp [positiveEvenPeriod]
+
+include q in
 /-- Logarithmic vertical-tail probability per vertical period, restricted to
 positive even torus periods. -/
-noncomputable def positiveEvenVerticalTailRate (q : Set.Ici (1 : ℝ))
+noncomputable def positiveEvenVerticalTailRate
     (r n m : ℕ) : ℝ :=
   let M := positiveEvenPeriod m
   Real.log (torusRCProbability (positiveEvenPeriod_even n) (positiveEvenPeriod_even m) q
     (torusRCVerticalTail (positiveEvenPeriod_even n) (positiveEvenPeriod_even m)
       ⟨0, positiveEvenPeriod_pos m⟩ r)) / (M : ℝ)
 
+include q in
 /-- Extended-real logarithmic rate, so a limit of `-∞` is represented without
 requiring a separate uniform lower bound. -/
-noncomputable def positiveEvenVerticalTailRateE (q : Set.Ici (1 : ℝ))
+noncomputable def positiveEvenVerticalTailRateE
     (r n m : ℕ) : EReal :=
   (positiveEvenVerticalTailRate q r n m : EReal)
 

@@ -14,26 +14,13 @@ namespace PottsDiscontinuity.Bethe
 theorem ratio_segment_distance {x y t : ℝ} (ht : t ∈ uIcc x y) :
     |t - x| ≤ |y - x| := by
   rcases le_total x y with hxy | hyx
-  · rw [uIcc_of_le hxy] at ht
-    rw [abs_of_nonneg (sub_nonneg.mpr ht.1), abs_of_nonneg (sub_nonneg.mpr hxy)]
-    linarith [ht.2]
-  · rw [uIcc_of_ge hyx] at ht
-    rw [abs_of_nonpos (sub_nonpos.mpr ht.2), abs_of_nonpos (sub_nonpos.mpr hyx)]
-    linarith [ht.1]
+  · grind [uIcc_of_le hxy]
+  · grind [uIcc_of_ge hyx]
 
 theorem ratio_segment_away_zero {x y : ℝ} (hx : x ≠ 0) (hclose : |y - x| ≤ |x| / 2)
     {t : ℝ} (ht : t ∈ uIcc x y) : |x| / 2 ≤ |t| ∧ t ≠ 0 := by
   have hd := (ratio_segment_distance ht).trans hclose
-  have htri : |x| ≤ |t| + |t - x| := by
-    have h := abs_add_le t (x - t)
-    rw [add_sub_cancel, abs_sub_comm x t] at h
-    exact h
-  have hxpos := abs_pos.mpr hx
-  constructor
-  · linarith
-  · intro hz
-    rw [hz, zero_sub, abs_neg] at hd
-    linarith
+  grind
 
 /-- A mean-value bound on a segment that stays a fixed relative distance
 from the singularity. This needs only a bound for `|t f'(t)|`. -/
@@ -49,12 +36,11 @@ theorem ratio_singular_difference_bound (f f' : ℝ → ℝ) {x y B : ℝ}
     rw [abs_mul] at hb
     rw [Real.norm_eq_abs]
     apply (le_div_iff₀ hxpos).mpr
-    have hm := mul_le_mul_of_nonneg_right htaway (abs_nonneg (f' t))
-    nlinarith only [hm, hb]
+    nlinarith
   have hm := Convex.norm_image_sub_le_of_norm_hasDerivWithin_le
     (fun t ht => (hder t ht).hasDerivWithinAt) hderbound (convex_uIcc x y)
     (left_mem_uIcc : x ∈ uIcc x y) (right_mem_uIcc : y ∈ uIcc x y)
-  simpa only [Real.norm_eq_abs] using hm
+  assumption
 
 /-- The actual spectral profile satisfies the relative-segment bound. -/
 theorem ratio_ell_difference_bound {c x y : ℝ} (hc : 2 < c)
@@ -69,10 +55,8 @@ theorem ratio_ell_difference_bound {c x y : ℝ} (hc : 2 < c)
   have hseg : uIcc x y ⊆ Ioo (-Real.pi) Real.pi := by
     intro t ht
     rcases le_total x y with hxy | hyx
-    · rw [uIcc_of_le hxy] at ht
-      exact ⟨hx.1.trans_le ht.1, ht.2.trans_lt hy.2⟩
-    · rw [uIcc_of_ge hyx] at ht
-      exact ⟨hy.1.trans_le ht.1, ht.2.trans_lt hx.2⟩
+    · grind [uIcc_of_le hxy]
+    · grind [uIcc_of_ge hyx]
   apply ratio_singular_difference_bound (ratioEll c) (ratioEllPrime c) hx0 hB hclose
   · intro t ht
     exact ratio_hasDerivAt_ell hc (hseg ht) (ratio_segment_away_zero hx0 hclose ht).2
@@ -91,19 +75,19 @@ theorem ratio_scaled_ell_difference_bound {c x y C : ℝ} {N : ℕ}
   have hclose : |y - x| ≤ |x| / 2 := by
     apply hshift.trans
     apply (div_le_iff₀ hNp).mpr
-    nlinarith only [mul_le_mul_of_nonneg_right hlarge hxpos.le]
+    nlinarith
   have hh := ratio_ell_difference_bound hc hx hy hx0 hclose
   let B := Real.pi * (c ^ 2 - 1) / (c ^ 2 - 2) ^ 2 + Real.pi ^ 2 / 4
   have hB : 0 ≤ B := by
     have hc2 : 4 < c ^ 2 := by nlinarith
     exact add_nonneg (div_nonneg (mul_nonneg Real.pi_pos.le (by linarith)) (sq_nonneg _))
       (by positivity)
-  have hfac : 0 ≤ 2 * B / |x| :=
+  have hfac :=
     div_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hB) hxpos.le
   have hs := mul_le_mul_of_nonneg_left hshift hfac
   have he : (2 * B / |x|) * (C * |x| / (N : ℝ)) = (2 * B * C) / N := by
     field_simp
-  have hb : |ratioEll c y - ratioEll c x| ≤ (2 * B * C) / N := hh.trans (hs.trans_eq he)
+  have hb := hh.trans (hs.trans_eq he)
   rw [abs_mul, abs_of_pos hNp]
   calc
     _ = |ratioEll c y - ratioEll c x| * (N : ℝ) := mul_comm _ _

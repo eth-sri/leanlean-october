@@ -19,27 +19,26 @@ lemma periodic_translation_decompose (f : ℕ → ℤ × ℤ) (L : ℕ) (D : ℤ
     | zero => simp
     | succ k ih =>
       rw [Nat.succ_mul,← Nat.add_assoc,h,ih,add_nsmul]
-      simp only [one_nsmul]
       abel
   conv_lhs => rw [← Nat.mod_add_div n L]
   rw [Nat.mul_comm L,hh]
 
+variable (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s) (d : DirectedDart ω)
+
 /-- Equality of geometric midpoints identifies both the original lifted vertex
 and its oriented port. The reverse-oriented edge is excluded by the arrow field. -/
-lemma loopMidpointPosition_eq_implies_lift_port_eq
-    (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s)
-    (d : DirectedDart ω) (a b : ℕ)
-    (he : loopMidpointPosition ω s h d a = loopMidpointPosition ω s h d b) :
-    loopLiftPosition ω s h d a = loopLiftPosition ω s h d b ∧
-      ((directedStep ω s h)^[a] d).val.2 = ((directedStep ω s h)^[b] d).val.2 := by
+lemma loopMidpointPosition_eq_implies_lift_port_eq (a b : ℕ)
+    (he : loopMidpointPosition h d a = loopMidpointPosition h d b) :
+    loopLiftPosition h d a = loopLiftPosition h d b ∧
+      ((directedStep h)^[a] d).val.2 = ((directedStep h)^[b] d).val.2 := by
   rcases (rotatedMidpoint_eq_iff _ _ _ _).mp he with hh | ⟨hz,hp⟩
   · exact hh
-  · let e := (directedStep ω s h)^[a] d
-    let f := (directedStep ω s h)^[b] d
-    have hpz := loopLiftPosition_projection ω s h d a
-    have hpf := loopLiftPosition_projection ω s h d b
-    have hstep := loopLiftPosition_step_projection (Fin.pos d.val.1.1) (Fin.pos d.val.1.2)
-      s e.val (loopLiftPosition ω s h d a) (congrArg Prod.fst hpz) (congrArg Prod.snd hpz)
+  · let e := (directedStep h)^[a] d
+    let f := (directedStep h)^[b] d
+    have hpz := loopLiftPosition_projection (ω := ω) (s := s) h d a
+    have hpf := loopLiftPosition_projection (ω := ω) (s := s) h d b
+    have hstep := loopLiftPosition_step_projection (hNp := (Fin.pos d.val.1.1)) (hMp := (Fin.pos d.val.1.2))
+      s (d := e.val) (z := (loopLiftPosition h d a)) (congrArg Prod.fst hpz) (congrArg Prod.snd hpz)
     have hinc : (horizontalIncrement e.val,verticalIncrement e.val) = portVector e.val.2 := by
       rcases e with ⟨⟨v,p⟩,he⟩
       cases p <;> rfl
@@ -53,26 +52,22 @@ lemma loopMidpointPosition_eq_implies_lift_port_eq
       rcases e with ⟨⟨v,p⟩,he⟩
       cases p <;> rfl
     have hout := f.property
-    rw [heq,dartOut_edgeReverse,e.property] at hout
-    cases hout
+    simp_all [heq, dartOut_edgeReverse, e.property]
 
 /-- Nonzero winding makes the entire infinite midpoint lift injective. -/
-theorem loopMidpointPosition_injective_of_nonzero_winding
-    (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s)
-    (d : DirectedDart ω) (i : Fin N) (j : Fin M)
-    (hw : loopVertical ω s h j (directedLoopOf ω s h d) ≠ 0 ∨
-      loopSum ω s h (horizontalCross i) (directedLoopOf ω s h d) ≠ 0) :
-    Function.Injective (loopMidpointPosition ω s h d) := by
-  let L := loopPeriod ω s h d
-  let D := ((loopDeckDisplacement ω s h d i j).1+(loopDeckDisplacement ω s h d i j).2,
-    (loopDeckDisplacement ω s h d i j).2-(loopDeckDisplacement ω s h d i j).1)
-  have hD : D ≠ (0,0) := (rotated_loopDeckDisplacement_ne_zero_iff ω s h d i j).mpr hw
-  have hL : 0 < L := loopPeriod_pos ω s h d
-  have hper : ∀ n, loopMidpointPosition ω s h d (n+L) =
-      loopMidpointPosition ω s h d n+D := loopMidpointPosition_add_period ω s h d i j
+theorem loopMidpointPosition_injective_of_nonzero_winding (i : Fin N) (j : Fin M)
+    (hw : loopVertical j (directedLoopOf h d) ≠ 0 ∨
+      loopSum (horizontalCross i) (directedLoopOf h d) ≠ 0) :
+    Function.Injective (loopMidpointPosition h d) := by
+  let L := loopPeriod h d
+  let D := ((loopDeckDisplacement h d i j).1+(loopDeckDisplacement h d i j).2,
+    (loopDeckDisplacement h d i j).2-(loopDeckDisplacement h d i j).1)
+  have hD := (rotated_loopDeckDisplacement_ne_zero_iff ω s h d i j).mpr hw
+  have hL := loopPeriod_pos h d
+  have hper := loopMidpointPosition_add_period ω s h d i j
   intro a b he
   obtain ⟨hz,hp⟩ := loopMidpointPosition_eq_implies_lift_port_eq ω s h d a b he
-  have horbit : (directedStep ω s h)^[a] d = (directedStep ω s h)^[b] d := by
+  have horbit : (directedStep h)^[a] d = (directedStep h)^[b] d := by
     apply Subtype.ext
     apply Prod.ext
     · rw [← loopLiftPosition_projection,← loopLiftPosition_projection,hz]
@@ -83,7 +78,7 @@ theorem loopMidpointPosition_injective_of_nonzero_winding
     simpa only [L,Function.iterate_mod_minimalPeriod_eq] using horbit
   rw [periodic_translation_decompose _ L D hper a,
     periodic_translation_decompose _ L D hper b,hmod] at he
-  have hsmul : (a/L) • D = (b/L) • D := add_left_cancel he
+  have hsmul := add_left_cancel he
   have hdiv : a/L = b/L := by
     have hx := congrArg Prod.fst hsmul
     have hy := congrArg Prod.snd hsmul
@@ -99,7 +94,6 @@ theorem loopMidpointPosition_injective_of_nonzero_winding
     · exact_mod_cast (mul_right_cancel₀ hy0 hy)
   have ha := Nat.mod_add_div a L
   have hb := Nat.mod_add_div b L
-  rw [hmod,hdiv] at ha
-  exact ha.symm.trans hb
+  simp_all [hmod, hdiv]
 
 end PottsDiscontinuity.TorusTopology

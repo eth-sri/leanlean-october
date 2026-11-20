@@ -22,20 +22,24 @@ open scoped Classical
 
 variable {N M : ℕ}
 
+variable (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (n : ℕ) (A : RCConfig N M) (a b : ℤ)
+    (hcol : a ≤ Q.x0 ∧ Q.x0 + Q.w ≤ b) {S : Finset Cell}
+
+include hNp hMp n a b in
 /-- Vertical lifted crossing of the rows `[b, b + n]` inside the columns `[a, a + 3n]`. -/
-def vCross (hNp : 0 < N) (hMp : 0 < M) (n : ℕ) (a b : ℤ) (A : RCConfig N M) : Prop :=
-  ∃ u v : RotatedVertex, u.val.2 = b ∧ v.val.2 = b + n ∧
-    ∃ w : (liftedStripGraph hNp hMp A a (a + 3 * (n : ℤ))).Walk u v,
+def vCross (A : RCConfig N M) : Prop :=
+  ∃ u v, u.val.2 = b ∧ v.val.2 = b + n ∧
+    ∃ w : (liftedStripGraph hNp hMp A a (a + 3 * n)).Walk u v,
       ∀ z ∈ w.support, b ≤ z.val.2 ∧ z.val.2 ≤ b + n
 
-theorem vCross_zero_iff (hNp : 0 < N) (hMp : 0 < M) (n : ℕ) (A : RCConfig N M) :
+theorem vCross_zero_iff :
     vCross hNp hMp n 0 0 A ↔ torusRCVerticalRectangleCrossing hNp hMp n A := by
-  have h3 : (0 : ℤ) + 3 * (n : ℤ) = 3 * (n : ℤ) := zero_add _
+  have h3 : 0 + 3 * n = 3 * (n : ℤ) := zero_add _
   unfold vCross torusRCVerticalRectangleCrossing
   rw [h3]
   simp only [zero_add]
 
-theorem rtg_to_walk {α : Type*} (G : SimpleGraph α) (P : α → Prop) (S : α → α → Prop)
+theorem rtg_to_walk {α : Type*} {G : SimpleGraph α} {P : α → Prop} {S : α → α → Prop}
     (hS : ∀ p q, S p q → G.Adj p q ∧ P p ∧ P q) {x y : α}
     (h : Relation.ReflTransGen S x y) (hx : P x) :
     ∃ w : G.Walk x y, ∀ z ∈ w.support, P z := by
@@ -47,31 +51,25 @@ theorem rtg_to_walk {α : Type*} (G : SimpleGraph α) (P : α → Prop) (S : α 
     refine ⟨w.concat hadj, ?_⟩
     intro z hz
     rw [SimpleGraph.Walk.support_concat] at hz
-    rcases List.mem_append.1 hz with h | h
-    · exact hw z h
-    · rw [List.mem_singleton.1 h]; exact hPc
+    grind
 
-theorem rtg_lift_primal {S : Finset Cell} (Φ : Cell → Prop) {x y : Cell}
+theorem rtg_lift_primal {Φ : Cell → Prop} {x y : Cell}
     (h : Relation.ReflTransGen (fun p q => StepRel primalEnds S p q ∧ Φ p ∧ Φ q) x y)
     (hx : IsPrimal x) :
     ∃ hy : IsPrimal y, Relation.ReflTransGen
       (fun u v : RotatedVertex => StepRel primalEnds S u.1 v.1 ∧ Φ u.1 ∧ Φ v.1)
-      (toRV x hx) (toRV y hy) := by
+      (toRV hx) (toRV hy) := by
   induction h with
-  | refl => exact ⟨hx, Relation.ReflTransGen.refl⟩
+  | refl => grind
   | @tail b c _ hbc ih =>
     obtain ⟨hb, hr⟩ := ih
     obtain ⟨hstep, hΦb, hΦc⟩ := hbc
     obtain ⟨m, hm, hmeq⟩ := hstep
     have hc : IsPrimal c := by
-      rcases hmeq with h | h
-      · have h2 : c = (primalEnds m).2 := (congrArg Prod.snd h).symm
-        rw [h2]; exact primalEnds_snd_primal m
-      · have h2 : c = (primalEnds m).1 := (congrArg Prod.fst h).symm
-        rw [h2]; exact primalEnds_fst_primal m
+      grind [primalEnds_snd_primal, primalEnds_fst_primal]
     exact ⟨hc, hr.tail ⟨⟨m, hm, hmeq⟩, hΦb, hΦc⟩⟩
 
-theorem primal_step_row {S : Finset Cell} {p q : Cell} (h : StepRel primalEnds S p q) :
+theorem primal_step_row {p q : Cell} (h : StepRel primalEnds S p q) :
     q.2 ≤ p.2 + 1 ∧ p.2 ≤ q.2 + 1 := by
   obtain ⟨m, _, h⟩ := h
   rcases h with h | h
@@ -84,80 +82,63 @@ theorem primal_step_row {S : Finset Cell} {p q : Cell} (h : StepRel primalEnds S
     simp only [Rect.primalEnds_fst_row, Rect.primalEnds_snd_row] at h1 h2
     omega
 
-theorem adj_oriented (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig N M) (a b : ℤ)
-    (hcol : a ≤ Q.x0 ∧ Q.x0 + Q.w ≤ b) {m : Cell} (hm : m ∈ boardOf Q hNp hMp A) :
-    (liftedStripGraph hNp hMp A a b).Adj (toRV (primalEnds m).1 (primalEnds_fst_primal m))
-      (toRV (primalEnds m).2 (primalEnds_snd_primal m)) := by
+include hcol in
+theorem adj_oriented {m : Cell} (hm : m ∈ boardOf Q hNp hMp A) :
+    (liftedStripGraph hNp hMp A a b).Adj (toRV (primalEnds_fst_primal m))
+      (toRV (primalEnds_snd_primal m)) := by
   obtain ⟨hmin, hmA⟩ := Finset.mem_filter.1 hm
   have hd := Q.pData.mem m hmin
   have h1 := Rect.mem_cells.1 (Rect.mem_pcells.1 hd.1).1
   have h2 := Rect.mem_cells.1 (Rect.mem_pcells.1 hd.2).1
   refine ⟨rotAdj_primalEnds m, ?_, ⟨?_, ?_⟩, ⟨?_, ?_⟩⟩
-  · rw [liftedEdgeIndex_primalEnds]; exact hmA
+  · grind [liftedEdgeIndex_primalEnds]
   · change a ≤ (primalEnds m).1.1; omega
   · change (primalEnds m).1.1 ≤ b; omega
   · change a ≤ (primalEnds m).2.1; omega
   · change (primalEnds m).2.1 ≤ b; omega
 
-theorem lifted_adj_of_step (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig N M) (a b : ℤ)
-    (hcol : a ≤ Q.x0 ∧ Q.x0 + Q.w ≤ b) {S : Finset Cell} (hS : S ⊆ boardOf Q hNp hMp A)
+include hcol in
+theorem lifted_adj_of_step (hS : S ⊆ boardOf Q hNp hMp A)
     {u v : RotatedVertex} (h : StepRel primalEnds S u.1 v.1) :
     (liftedStripGraph hNp hMp A a b).Adj u v := by
   obtain ⟨m, hm, hmeq⟩ := h
-  have hu1 : u.1 = (primalEnds m).1 ∨ u.1 = (primalEnds m).2 := by
-    rcases hmeq with h | h
-    · exact Or.inl (congrArg Prod.fst h).symm
-    · exact Or.inr (congrArg Prod.snd h).symm
   rcases hmeq with h | h
-  · have hu : u = toRV (primalEnds m).1 (primalEnds_fst_primal m) :=
+  · have hu : u = toRV (primalEnds_fst_primal m) :=
       Subtype.ext (congrArg Prod.fst h).symm
-    have hv : v = toRV (primalEnds m).2 (primalEnds_snd_primal m) :=
+    have hv : v = toRV (primalEnds_snd_primal m) :=
       Subtype.ext (congrArg Prod.snd h).symm
-    rw [hu, hv]
-    exact adj_oriented hNp hMp Q A a b hcol (hS hm)
-  · have hu : u = toRV (primalEnds m).2 (primalEnds_snd_primal m) :=
+    grind [adj_oriented]
+  · have hu : u = toRV (primalEnds_snd_primal m) :=
       Subtype.ext (congrArg Prod.snd h).symm
-    have hv : v = toRV (primalEnds m).1 (primalEnds_fst_primal m) :=
+    have hv : v = toRV (primalEnds_fst_primal m) :=
       Subtype.ext (congrArg Prod.fst h).symm
     rw [hu, hv]
     exact (adj_oriented hNp hMp Q A a b hcol (hS hm)).symm
 
-theorem isPrimal_of_step {S : Finset Cell} {x c : Cell} (h : StepRel primalEnds S x c) :
+theorem isPrimal_of_step {x c : Cell} (h : StepRel primalEnds S x c) :
     IsPrimal x := by
   obtain ⟨m, _, h⟩ := h
-  rcases h with h | h
-  · have h2 : x = (primalEnds m).1 := (congrArg Prod.fst h).symm
-    rw [h2]; exact primalEnds_fst_primal m
-  · have h2 : x = (primalEnds m).2 := (congrArg Prod.snd h).symm
-    rw [h2]; exact primalEnds_snd_primal m
+  grind [primalEnds_fst_primal, primalEnds_snd_primal]
 
 /-- A crossing of the board between the two exploration zones gives a lifted vertical crossing of
 rows `[ρ, ρ + n]` in the columns `[a, a + 3n]` containing the board. -/
-theorem cross_to_vCross (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig N M) {bB bT : ℕ}
-    (n : ℕ) (hn : 0 < n) (a ρ : ℤ) (hcol : a ≤ Q.x0 ∧ Q.x0 + Q.w ≤ a + 3 * (n : ℤ))
+theorem cross_to_vCross {bB bT : ℕ}
+    (n : ℕ) (hn : 0 < n) (a ρ : ℤ) (hcol : a ≤ Q.x0 ∧ Q.x0 + Q.w ≤ a + 3 * n)
     (hρ1 : Q.y0 + bB - 1 ≤ ρ) (hρ2 : ρ + n ≤ Q.y0 + Q.h - bT + 1)
     (hc : Q.crossEv bB bT (boardOf Q hNp hMp A)) : vCross hNp hMp n a ρ A := by
   obtain ⟨u, v, hu, hv, hpath⟩ := hc
-  obtain ⟨x, y, hx, hy, hxy⟩ := ivt_path (StepRel primalEnds (boardOf Q hNp hMp A))
+  obtain ⟨x, y, hx, hy, hxy⟩ := ivt_path _
     (fun c : Cell => c.2) (fun p q h => primal_step_row h) ρ n hpath (by omega) (by omega)
   have hxy' : Relation.ReflTransGen
       (fun p q => StepRel primalEnds (boardOf Q hNp hMp A) p q ∧
         (ρ ≤ p.2 ∧ p.2 ≤ ρ + n) ∧ (ρ ≤ q.2 ∧ q.2 ≤ ρ + n)) x y :=
-    Relation.ReflTransGen.mono (fun p q h => ⟨h.1, ⟨h.2.1, h.2.2.1⟩, ⟨h.2.2.2.1, h.2.2.2.2⟩⟩) x y hxy
+    by grind
   have hxp : IsPrimal x := by
-    rcases Relation.ReflTransGen.cases_head hxy' with h | ⟨c, hc, _⟩
-    · exfalso
-      subst h
-      omega
-    · exact isPrimal_of_step hc.1
-  obtain ⟨hyp, hlift⟩ := rtg_lift_primal (S := boardOf Q hNp hMp A)
-    (fun c : Cell => ρ ≤ c.2 ∧ c.2 ≤ ρ + n) hxy' hxp
-  obtain ⟨w, hw⟩ := rtg_to_walk (liftedStripGraph hNp hMp A a (a + 3 * (n : ℤ)))
-    (fun z : RotatedVertex => ρ ≤ z.val.2 ∧ z.val.2 ≤ ρ + n)
-    (fun u v : RotatedVertex => StepRel primalEnds (boardOf Q hNp hMp A) u.1 v.1 ∧
-      (ρ ≤ u.1.2 ∧ u.1.2 ≤ ρ + n) ∧ (ρ ≤ v.1.2 ∧ v.1.2 ≤ ρ + n))
-    (fun p q h => ⟨lifted_adj_of_step hNp hMp Q A a (a + 3 * (n : ℤ)) hcol (subset_refl _) h.1,
-      h.2.1, h.2.2⟩) hlift ⟨by simp only [toRV]; omega, by simp only [toRV]; omega⟩
-  exact ⟨toRV x hxp, toRV y hyp, by simpa [toRV] using hx, by simpa [toRV] using hy, w, hw⟩
+    grind [isPrimal_of_step]
+  obtain ⟨hyp, hlift⟩ := rtg_lift_primal hxy' hxp
+  obtain ⟨w, hw⟩ := rtg_to_walk
+    (fun p q h => ⟨lifted_adj_of_step hNp hMp Q A a _ hcol (subset_refl _) h.1,
+      h.2.1, h.2.2⟩) hlift ⟨by grind [toRV], by grind [toRV]⟩
+  exact ⟨toRV hxp, toRV hyp, by assumption, by assumption, w, hw⟩
 
 end PottsDiscontinuity.TorusCrossing

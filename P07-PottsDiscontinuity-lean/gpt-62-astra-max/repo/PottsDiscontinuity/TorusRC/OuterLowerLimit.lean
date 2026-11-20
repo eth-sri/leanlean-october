@@ -14,27 +14,30 @@ namespace PottsDiscontinuity.TorusRC
 
 open Torus CorrLength
 
+variable (k : ℕ) (q : Set.Ici (1 : ℝ))
+
+include k in
 /-- Source-compatible widths, divisible by eight. -/
-def eightfoldPeriod (k : ℕ) : ℕ := 8*(k+1)
+def eightfoldPeriod : ℕ := 8*(k+1)
 
-theorem eightfoldPeriod_even (k : ℕ) : Even (eightfoldPeriod k) :=
-  ⟨4*(k+1),by dsimp [eightfoldPeriod]; omega⟩
+theorem eightfoldPeriod_even : Even (eightfoldPeriod k) :=
+  ⟨4*(k+1),by grind [eightfoldPeriod]⟩
 
-theorem eightfoldPeriod_four_le (k : ℕ) : 4 ≤ eightfoldPeriod k := by
-  dsimp [eightfoldPeriod]
-  omega
+theorem eightfoldPeriod_four_le : 4 ≤ eightfoldPeriod k := by
+  grind [eightfoldPeriod]
 
-theorem eightfoldPeriod_dvd (k : ℕ) : 8 ∣ eightfoldPeriod k := ⟨k+1,rfl⟩
+theorem eightfoldPeriod_dvd : 8 ∣ eightfoldPeriod k := ⟨k+1,rfl⟩
 
+include q in
 /-- The two iterated lower limits in (3.15), with the explicit parity
 restriction N∈8ℕ and all positive even heights. -/
-noncomputable def torusRCUOneIteratedLiminf (q : Set.Ici (1 : ℝ)) : EReal :=
+noncomputable def torusRCUOneIteratedLiminf : EReal :=
   liminf (fun k => liminf (torusRCUOneRateE (eightfoldPeriod_even k) q) atTop) atTop
 
 /-- The outer N→∞ passage uses the exact rotated free law and connection event of
 `CorrLength/`;
 no new infinite-volume law is introduced. -/
-theorem torusRCU_one_outer_liminf_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
+theorem torusRCU_one_outer_liminf_of_h319 (hh319 : h319 q) :
     ∃ c : ℝ, 0 < c ∧ c ≤ 1 ∧ ∀ n : ℕ, 2 ≤ n →
       ((Real.log (c/(9*(n:ℝ)^2))/(n:ℝ) +
         Real.log ((rotatedDiagonalConnectionProbability (torusRCBridgeParameters q) n : NNReal):ℝ) /
@@ -45,19 +48,17 @@ theorem torusRCU_one_outer_liminf_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 
   apply log_probability_lower_closed _ (rotatedDiagonalProbability_pos _ n)
     _ _
   intro t ht htp
-  have hnative := liftedBoxFreeDiagonalProbability_eventually_gt
-    (torusRCBridgeParameters q) n t ht.le htp
+  have hnative := liftedBoxFreeDiagonalProbability_eventually_gt n t ht.le htp
   have hR : Tendsto (fun k => eightfoldPeriod k/4) atTop atTop := by
     apply tendsto_atTop.2
     intro r
     filter_upwards [eventually_ge_atTop r] with k hk
-    dsimp [eightfoldPeriod]
-    omega
+    grind [eightfoldPeriod]
   have hbound : ∀ᶠ k in atTop,
       ((Real.log (c/(9*(n:ℝ)^2))/(n:ℝ) + Real.log t/((2*n:ℕ):ℝ):ℝ):EReal) ≤
         liminf (torusRCUOneRateE (eightfoldPeriod_even k) q) atTop := by
     filter_upwards [hR.eventually hnative,eventually_ge_atTop n] with k hkt hkn
-    have h8n : 8*n ≤ eightfoldPeriod k := by dsimp [eightfoldPeriod]; omega
+    have h8n : 8*n ≤ eightfoldPeriod k := by grind [eightfoldPeriod]
     have h := hinner (eightfoldPeriod k) n (eightfoldPeriod_even k)
       (eightfoldPeriod_four_le k) (eightfoldPeriod_dvd k) hn h8n
     apply le_trans _ h

@@ -18,20 +18,32 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
+section
+variable (v : Fin N × Fin M)
+include v
+
 /-- Signed primal-edge crossing of the fixed vertical reference cut. -/
-def diamondSeamCrossX (v : Fin N × Fin M) : ℚ :=
+def diamondSeamCrossX : ℚ :=
   if v.1.val = 0 then (if checker v then -1 else 1) else 0
 
 /-- Signed primal-edge crossing of the fixed horizontal reference cut. -/
-def diamondSeamCrossY (v : Fin N × Fin M) : ℚ := if v.2.val = 0 then -1 else 0
+def diamondSeamCrossY : ℚ := if v.2.val = 0 then -1 else 0
+
+end
+
+section
+variable {A : RCConfig N M} (f : OpenDiamondEdge A → ℚ)
+include f
 
 /-- Algebraic intersection of an indexed primal chain with the vertical cut. -/
-def diamondWindingX (A : RCConfig N M) (f : OpenDiamondEdge A → ℚ) : ℚ :=
+def diamondWindingX : ℚ :=
   ∑ e, diamondSeamCrossX e.val * f e
 
 /-- Algebraic intersection of an indexed primal chain with the horizontal cut. -/
-def diamondWindingY (A : RCConfig N M) (f : OpenDiamondEdge A → ℚ) : ℚ :=
+def diamondWindingY : ℚ :=
   ∑ e, diamondSeamCrossY e.val * f e
+
+end
 
 theorem prv_coordinate_step (i : Fin N) :
     (i.val : ℚ) - (prv i).val = 1 - (N : ℚ) * (if i.val = 0 then 1 else 0) := by
@@ -42,14 +54,14 @@ theorem prv_coordinate_step (i : Fin N) :
     rw [prv_zero]
     simp only [Fin.val_zero, Fin.val_last, ite_true, mul_one, Nat.cast_succ]
     ring
-  · have hp := prv_val_of_pos i (by omega)
+  · have hp := prv_val_of_pos (i := i) (by omega)
     have hn : (prv i).val + 1 = i.val := by omega
     have hq : ((prv i).val : ℚ) + 1 = i.val := by exact_mod_cast hn
-    simp only [hi, ite_false, mul_zero, sub_zero]
-    linarith
+    grind
 
-theorem diamondCoordinateX_coboundary (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (e : OpenDiamondEdge A) :
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (e : OpenDiamondEdge A)
+
+theorem diamondCoordinateX_coboundary :
     diamondCoboundary hN hM A (fun u => (u.val.1.val : ℚ)) e =
       (if checker e.val then -1 else 1) - (N : ℚ) * diamondSeamCrossX e.val := by
   have he := prv_coordinate_step e.val.1
@@ -57,8 +69,7 @@ theorem diamondCoordinateX_coboundary (hN : Even N) (hM : Even M) (A : RCConfig 
     simp only [diamondCoboundary_apply, faceEndpoint, faceEndpointRaw, hc,
       Bool.false_eq_true, ite_true, ite_false, diamondSeamCrossX, hx] at * <;> linarith
 
-theorem diamondCoordinateY_coboundary (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (e : OpenDiamondEdge A) :
+theorem diamondCoordinateY_coboundary :
     diamondCoboundary hN hM A (fun u => (u.val.2.val : ℚ)) e =
       -1 - (M : ℚ) * diamondSeamCrossY e.val := by
   have he := prv_coordinate_step e.val.2
@@ -66,10 +77,10 @@ theorem diamondCoordinateY_coboundary (hN : Even N) (hM : Even M) (A : RCConfig 
     simp only [diamondCoboundary_apply, faceEndpoint, faceEndpointRaw, hc,
       Bool.false_eq_true, ite_true, ite_false, diamondSeamCrossY, hy] at * <;> linarith
 
-theorem diamondWindingX_mul_period (hN : Even N) (hM : Even M) (A : RCConfig N M)
+theorem diamondWindingX_mul_period {hN : Even N} {hM : Even M} {A : RCConfig N M}
     (f : diamondCycleSpace hN hM A) :
-    (N : ℚ) * diamondWindingX A f.val = diamondHorizontalDisplacement A f.val := by
-  have he := diamondBoundary_pairing hN hM A (fun u => (u.val.1.val : ℚ)) f.val
+    (N : ℚ) * diamondWindingX f.val = diamondHorizontalDisplacement f.val := by
+  have he := diamondBoundary_pairing hN hM (fun u => (u.val.1.val : ℚ)) f.val
   have hf : diamondBoundary hN hM A f.val = 0 := f.property
   rw [hf] at he
   simp only [Pi.zero_apply, mul_zero, Finset.sum_const_zero] at he
@@ -77,10 +88,10 @@ theorem diamondWindingX_mul_period (hN : Even N) (hM : Even M) (A : RCConfig N M
   rw [Finset.sum_sub_distrib, ← Finset.mul_sum] at he
   exact (sub_eq_zero.mp he.symm).symm
 
-theorem diamondWindingY_mul_period (hN : Even N) (hM : Even M) (A : RCConfig N M)
+theorem diamondWindingY_mul_period
     (f : diamondCycleSpace hN hM A) :
-    (M : ℚ) * diamondWindingY A f.val = diamondVerticalDisplacement A f.val := by
-  have he := diamondBoundary_pairing hN hM A (fun u => (u.val.2.val : ℚ)) f.val
+    (M : ℚ) * diamondWindingY f.val = diamondVerticalDisplacement f.val := by
+  have he := diamondBoundary_pairing hN hM (fun u => (u.val.2.val : ℚ)) f.val
   have hf : diamondBoundary hN hM A f.val = 0 := f.property
   rw [hf] at he
   simp only [Pi.zero_apply, mul_zero, Finset.sum_const_zero] at he

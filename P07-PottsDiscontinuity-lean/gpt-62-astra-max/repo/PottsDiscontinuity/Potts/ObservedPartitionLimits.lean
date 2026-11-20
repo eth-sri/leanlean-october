@@ -15,24 +15,37 @@ noncomputable section
 
 variable {A : Type*} [Fintype A]
 
-def observedFreePartition (v : A → ℤ × ℤ) (n : ℕ) (ω : FK.LatticeConfiguration) : Setoid A :=
+section
+variable (v : A → ℤ × ℤ) (n : ℕ) (ω : FK.LatticeConfiguration)
+include v ω
+
+include n in
+def observedFreePartition : Setoid A :=
   (localFreeGraph (rcInfiniteOpenGraph ω) n).reachableSetoid.comap v
 
-def infiniteFreePartition (v : A → ℤ × ℤ) (ω : FK.LatticeConfiguration) : Setoid A :=
+def infiniteFreePartition : Setoid A :=
   (rcInfiniteOpenGraph ω).reachableSetoid.comap v
 
-def observedWiredPartition (v : A → Option (ℤ × ℤ)) (n : ℕ) (ω : FK.LatticeConfiguration) : Setoid A :=
+end
+
+section
+variable (v : A → Option (ℤ × ℤ)) (n : ℕ) (ω : FK.LatticeConfiguration)
+include v ω
+
+include n in
+def observedWiredPartition : Setoid A :=
   (localWiredSetoid (rcInfiniteOpenGraph ω) (n + 1)).comap v
 
-def infiniteWiredPartition (v : A → Option (ℤ × ℤ)) (ω : FK.LatticeConfiguration) : Setoid A :=
+def infiniteWiredPartition : Setoid A :=
   (infiniteMergedSetoid (rcInfiniteOpenGraph ω)).comap v
+
+end
 
 omit [Fintype A] in
 private theorem observedFree_moment_event (v : A → ℤ × ℤ) (n : ℕ) (F : Finset (A × A)) :
     {ω | ∀ z ∈ F, observedFreePartition v n ω z.1 z.2} =
       freeDataEvent n (F.image (fun z => (v z.1, v z.2))) := by
   ext ω
-  change (∀ z ∈ F, (localFreeGraph (rcInfiniteOpenGraph ω) n).Reachable (v z.1) (v z.2)) ↔ _
   constructor
   · intro h z hz
     obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hz
@@ -45,7 +58,6 @@ private theorem infiniteFree_moment_event (v : A → ℤ × ℤ) (F : Finset (A 
     {ω | ∀ z ∈ F, infiniteFreePartition v ω z.1 z.2} =
       infiniteFreeDataEvent (F.image (fun z => (v z.1, v z.2))) := by
   ext ω
-  change (∀ z ∈ F, (rcInfiniteOpenGraph ω).Reachable (v z.1) (v z.2)) ↔ _
   constructor
   · intro h z hz
     obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hz
@@ -58,7 +70,6 @@ private theorem observedWired_moment_event (v : A → Option (ℤ × ℤ)) (n : 
     {ω | ∀ z ∈ F, observedWiredPartition v n ω z.1 z.2} =
       wiredDataEvent (n + 1) (F.image (fun z => (v z.1, v z.2))) := by
   ext ω
-  change (∀ z ∈ F, localWiredSetoid (rcInfiniteOpenGraph ω) (n + 1) (v z.1) (v z.2)) ↔ _
   constructor
   · intro h z hz
     obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hz
@@ -71,7 +82,6 @@ private theorem infiniteWired_moment_event (v : A → Option (ℤ × ℤ)) (F : 
     {ω | ∀ z ∈ F, infiniteWiredPartition v ω z.1 z.2} =
       infiniteMergedDataEvent (F.image (fun z => (v z.1, v z.2))) := by
   ext ω
-  change (∀ z ∈ F, infiniteMergedSetoid (rcInfiniteOpenGraph ω) (v z.1) (v z.2)) ↔ _
   constructor
   · intro h z hz
     obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hz
@@ -79,8 +89,12 @@ private theorem infiniteWired_moment_event (v : A → Option (ℤ × ℤ)) (F : 
   · intro h z hz
     exact h _ (Finset.mem_image.mpr ⟨z, hz, rfl⟩)
 
-theorem free_observed_partition_tendsto (θ : FK.Parameters)
+variable (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) (θ : FK.Parameters)
     (μ : ProbabilityMeasure FK.LatticeConfiguration)
+    (hμ : Tendsto (fun n => FK.wiredBoxProbabilityMeasure (fkParameters hq hβ) (0, 0) n)
+      atTop (𝓝 μ)) (v : A → Option (ℤ × ℤ))
+
+theorem free_observed_partition_tendsto
     (hμ : Tendsto (fun n => FK.boxProbabilityMeasure θ (0, 0) n) atTop (𝓝 μ))
     (v : A → ℤ × ℤ) (R : Setoid A) :
     Tendsto (fun n => (closedBoxProbabilityMeasure θ n).toMeasure.real
@@ -101,11 +115,9 @@ theorem free_observed_partition_tendsto (θ : FK.Parameters)
     simp_rw [observedFree_moment_event, infiniteFree_moment_event]
     exact free_connection_moments_tendsto θ μ hμ _
 
-theorem wired_observed_partition_tendsto (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
-    (μ : ProbabilityMeasure FK.LatticeConfiguration)
-    (hμ : Tendsto (fun n => FK.wiredBoxProbabilityMeasure (fkParameters q hq β hβ) (0, 0) n)
-      atTop (𝓝 μ)) (v : A → Option (ℤ × ℤ)) (R : Setoid A) :
-    Tendsto (fun n => (conditionedOuterBoxProbabilityMeasure (fkParameters q hq β hβ) n).toMeasure.real
+include hμ in
+theorem wired_observed_partition_tendsto (R : Setoid A) :
+    Tendsto (fun n => (conditionedOuterBoxProbabilityMeasure (fkParameters hq hβ) n).toMeasure.real
       {ω | observedWiredPartition v n ω = R}) atTop
       (𝓝 (μ.toMeasure.real {ω | infiniteWiredPartition v ω = R})) := by
   apply partition_probability_tendsto
@@ -121,12 +133,11 @@ theorem wired_observed_partition_tendsto (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (h�
     exact MeasurableSet.iInter (fun n => (wiredDataEvent_isClopen n _).isOpen.measurableSet)
   · intro F
     simp_rw [observedWired_moment_event, infiniteWired_moment_event]
-    exact conditioned_connection_moments_tendsto q hq β hβ μ hμ _
+    solve_by_elim [conditioned_connection_moments_tendsto]
 
 /-- Every function of the free observed partition, including its colouring
 kernel, has convergent expectation. -/
-theorem free_partitionExpectation_tendsto (θ : FK.Parameters)
-    (μ : ProbabilityMeasure FK.LatticeConfiguration)
+theorem free_partitionExpectation_tendsto
     (hμ : Tendsto (fun n => FK.boxProbabilityMeasure θ (0, 0) n) atTop (𝓝 μ))
     (v : A → ℤ × ℤ) (K : Setoid A → ℝ) :
     Tendsto (fun n => partitionExpectation (closedBoxProbabilityMeasure θ n).toMeasure
@@ -134,13 +145,11 @@ theorem free_partitionExpectation_tendsto (θ : FK.Parameters)
       (𝓝 (partitionExpectation μ.toMeasure (infiniteFreePartition v) K)) :=
   partitionExpectation_tendsto _ μ _ _ K (free_observed_partition_tendsto θ μ hμ v)
 
+include hμ in
 /-- Every function of the merged wired observed partition has convergent expectation. -/
-theorem wired_partitionExpectation_tendsto (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
-    (μ : ProbabilityMeasure FK.LatticeConfiguration)
-    (hμ : Tendsto (fun n => FK.wiredBoxProbabilityMeasure (fkParameters q hq β hβ) (0, 0) n)
-      atTop (𝓝 μ)) (v : A → Option (ℤ × ℤ)) (K : Setoid A → ℝ) :
+theorem wired_partitionExpectation_tendsto (K : Setoid A → ℝ) :
     Tendsto (fun n => partitionExpectation
-      (conditionedOuterBoxProbabilityMeasure (fkParameters q hq β hβ) n).toMeasure
+      (conditionedOuterBoxProbabilityMeasure (fkParameters hq hβ) n).toMeasure
       (observedWiredPartition v n) K) atTop
       (𝓝 (partitionExpectation μ.toMeasure (infiniteWiredPartition v) K)) :=
   partitionExpectation_tendsto _ μ _ _ K (wired_observed_partition_tendsto q hq β hβ μ hμ v)

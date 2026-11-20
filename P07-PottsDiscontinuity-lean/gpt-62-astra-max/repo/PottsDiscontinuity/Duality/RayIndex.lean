@@ -28,19 +28,20 @@ def rayIndex (v : LatticeVertex) : {u w : LatticeVertex} → squareLattice.Walk 
  def rowMarker (x y : ℤ) (z : LatticeVertex) : ℤ :=
   if z.2 = y ∧ x ≤ z.1 then 1 else 0
 
-lemma rayStep_horizontal_invariant (x y : ℤ) (u w : LatticeVertex)
-    (h : squareLattice.Adj u w)
+section
+variable (x y : ℤ) (u w : LatticeVertex) (h : squareLattice.Adj u w)
+include h
+
+lemma rayStep_horizontal_invariant
     (hne : s(u,w) ≠ s((x,y-1),(x,y))) :
     rayStep (x,y) u w = rayStep (x+1,y) u w := by
   rcases u with ⟨a,b⟩
   rcases w with ⟨c,d⟩
   simp only [squareLattice_adj_iff] at h
   simp only [ne_eq, Sym2.eq_iff, Prod.mk.injEq, not_or, not_and] at hne
-  rcases h with ⟨h | h, hy⟩ | ⟨hx, h | h⟩ <;>
-    dsimp [rayStep] <;> split_ifs <;> omega
+  grind [rayStep]
 
-lemma rayStep_vertical_difference (x y : ℤ) (u w : LatticeVertex)
-    (h : squareLattice.Adj u w)
+lemma rayStep_vertical_difference
     (hne : s(u,w) ≠ s((x-1,y),(x,y))) :
     rayStep (x,y+1) u w - rayStep (x,y) u w =
       rowMarker x y u - rowMarker x y w := by
@@ -51,7 +52,11 @@ lemma rayStep_vertical_difference (x y : ℤ) (u w : LatticeVertex)
   rcases h with ⟨h | h, hy⟩ | ⟨hx, h | h⟩ <;>
     dsimp [rayStep, rowMarker] <;> split_ifs <;> omega
 
-lemma rayIndex_horizontal_invariant (x y : ℤ) {u w : LatticeVertex}
+end
+
+variable {z : LatticeVertex} (p : squareLattice.Walk z z) (x y : ℤ) {u w : LatticeVertex}
+
+lemma rayIndex_horizontal_invariant
     (p : squareLattice.Walk u w)
     (hne : s((x,y-1),(x,y)) ∉ p.edges) :
     rayIndex (x,y) p = rayIndex (x+1,y) p := by
@@ -60,13 +65,13 @@ lemma rayIndex_horizontal_invariant (x y : ℤ) {u w : LatticeVertex}
   | @cons u z w h p ih =>
     have hhead : s(u,z) ≠ s((x,y-1),(x,y)) := by
       intro he
-      exact hne (by simp [SimpleGraph.Walk.edges_cons, he])
+      simp_all [SimpleGraph.Walk.edges_cons, he]
     have htail : s((x,y-1),(x,y)) ∉ p.edges := by
       intro he
-      exact hne (by simp [SimpleGraph.Walk.edges_cons, he])
-    simp only [rayIndex, rayStep_horizontal_invariant x y u z h hhead, ih htail]
+      simp_all [SimpleGraph.Walk.edges_cons, he]
+    simp [rayIndex, rayStep_horizontal_invariant x y u z h hhead, ih htail]
 
-lemma rayIndex_vertical_difference (x y : ℤ) {u w : LatticeVertex}
+lemma rayIndex_vertical_difference
     (p : squareLattice.Walk u w)
     (hne : s((x-1,y),(x,y)) ∉ p.edges) :
     rayIndex (x,y+1) p - rayIndex (x,y) p = rowMarker x y u - rowMarker x y w := by
@@ -75,17 +80,16 @@ lemma rayIndex_vertical_difference (x y : ℤ) {u w : LatticeVertex}
   | @cons u z w h p ih =>
     have hhead : s(u,z) ≠ s((x-1,y),(x,y)) := by
       intro he
-      exact hne (by simp [SimpleGraph.Walk.edges_cons, he])
+      simp_all [SimpleGraph.Walk.edges_cons, he]
     have htail : s((x-1,y),(x,y)) ∉ p.edges := by
       intro he
-      exact hne (by simp [SimpleGraph.Walk.edges_cons, he])
+      simp_all [SimpleGraph.Walk.edges_cons, he]
     have hl := rayStep_vertical_difference x y u z h hhead
-    have ht := ih htail
-    simp only [rayIndex]
-    omega
+    grind [rayIndex]
 
+include p in
 /-- Removing precisely the primal edges crossing the given dual walk. -/
-def circuitAvoidanceGraph {z : LatticeVertex} (p : squareLattice.Walk z z) :
+def circuitAvoidanceGraph :
     SimpleGraph LatticeVertex where
   Adj u w := squareLattice.Adj u w ∧ ∀ b : LatticeBond, b.toSym2 = s(u,w) →
     (dualBondOfPrimal b).toSym2 ∉ p.edges
@@ -98,8 +102,7 @@ def circuitAvoidanceGraph {z : LatticeVertex} (p : squareLattice.Walk z z) :
   loopless := ⟨fun _ h => h.1.ne rfl⟩
 
 /-- The intersection number is constant along every primal edge avoiding the circuit. -/
-theorem rayIndex_eq_of_avoidance_adj {z : LatticeVertex} (p : squareLattice.Walk z z)
-    {u w : LatticeVertex} (h : (circuitAvoidanceGraph p).Adj u w) :
+theorem rayIndex_eq_of_avoidance_adj (h : (circuitAvoidanceGraph p).Adj u w) :
     rayIndex u p = rayIndex w p := by
   rcases u with ⟨a,b⟩
   rcases w with ⟨c,d⟩
@@ -125,8 +128,7 @@ theorem rayIndex_eq_of_avoidance_adj {z : LatticeVertex} (p : squareLattice.Walk
         LatticeBond.target] using h.2 ⟨(a,d), .vertical⟩ Sym2.eq_swap)
     omega
 
-theorem rayIndex_eq_of_avoidance_reachable {z : LatticeVertex}
-    (p : squareLattice.Walk z z) {u w : LatticeVertex}
+theorem rayIndex_eq_of_avoidance_reachable
     (h : (circuitAvoidanceGraph p).Reachable u w) : rayIndex u p = rayIndex w p := by
   obtain ⟨q⟩ := h
   induction q with

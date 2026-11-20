@@ -2,7 +2,9 @@
 Namespaces/imports adapted to the shared FK library. -/
 module
 
-public import FixedPointTheorems.brouwer
+public import Mathlib.Analysis.Complex.BranchLogRoot
+public import Mathlib.Analysis.Convex.Contractible
+public import Mathlib.Tactic
 
 @[expose] public section
 
@@ -12,82 +14,74 @@ namespace PottsDiscontinuity.FK.Curves
 
 noncomputable section
 
-def unitClamp (x : ℝ) : ℝ := max 0 (min 1 x)
+/-- The sign of a nonvanishing continuous real function is constant along a path. -/
+private theorem same_sign {f : I → ℝ} (hf : Continuous f) (hn : ∀ t, f t ≠ 0) :
+    0 < f 0 ↔ 0 < f 1 := by
+  have step (a b : I) (ha : 0 < f a) : 0 < f b := by
+    by_contra! hb
+    obtain ⟨t, ht⟩ := intermediate_value_univ b a hf (show 0 ∈ Icc (f b) (f a) from ⟨hb, ha.le⟩)
+    grind
+  grind
 
-lemma unitClamp_mem (x : ℝ) : unitClamp x ∈ Set.Icc (0 : ℝ) 1 := by
-  constructor
-  · exact le_max_left _ _
-  · apply max_le
-    · norm_num
-    · exact min_le_left _ _
+/-- Two-dimensional intermediate value theorem. A nonvanishing map on the
+square has a continuous square root. Following that root around the four
+sides would reverse its sign, by the indicated half-plane conditions. -/
+private theorem rectangle_zero (f : I × I → ℂ) (hf : Continuous f)
+    (left : ∀ t, (f (0,t)).re ≤ 0) (right : ∀ t, 0 ≤ (f (1,t)).re)
+    (bottom : ∀ t, (f (t,0)).im ≤ 0) (top : ∀ t, 0 ≤ (f (t,1)).im) : ∃ z, f z = 0 := by
+  by_contra! h
+  let c (x : ℝ × ℝ) : I × I := (projIcc 0 1 zero_le_one x.1, projIcc 0 1 zero_le_one x.2)
+  have hc : Continuous c := (continuous_projIcc.comp continuous_fst).prodMk
+    (continuous_projIcc.comp continuous_snd)
+  have hsc : IsSimplyConnected (univ : Set (ℝ × ℝ)) := by
+    let := (convex_univ : Convex ℝ (univ : Set (ℝ × ℝ))).contractibleSpace univ_nonempty
+    unfold IsSimplyConnected
+    infer_instance
+  obtain ⟨s, hs, hs2⟩ := Complex.exists_continuousOn_pow_eq hsc isOpen_univ (hf.comp hc).continuousOn
+    (by rintro ⟨x, _, hx⟩; exact h (c x) hx) (by decide : (2:ℕ) ≠ 0)
+  let g (z : I × I) := s (z.1, z.2)
+  have hg : Continuous g := (continuousOn_univ.mp hs).comp
+    ((continuous_subtype_val.comp continuous_fst).prodMk (continuous_subtype_val.comp continuous_snd))
+  have heq (z : I × I) : g z ^ 2 = f z := by simpa [g, c] using hs2 ((z.1:ℝ), (z.2:ℝ))
+  let u z := (g z).re
+  let v z := (g z).im
+  have hu : Continuous u := Complex.continuous_re.comp hg
+  have hv : Continuous v := Complex.continuous_im.comp hg
+  have nz (z) : u z ≠ 0 ∨ v z ≠ 0 := by
+    by_contra! hz
+    apply h z
+    rw [← heq, show g z = 0 from Complex.ext hz.1 hz.2, zero_pow (by decide : (2:ℕ) ≠ 0)]
+  have re (z) : u z ^ 2 - v z ^ 2 = (f z).re := by
+    simpa [u, v, sq, Complex.mul_re] using congrArg Complex.re (heq z)
+  have im (z) : 2 * (u z * v z) = (f z).im := by
+    rw [← heq]; simp [sq, Complex.mul_im, u, v]; ring
+  have L (t:I) : v (0,t) ≠ 0 := by
+    intro hz
+    have hn := (nz (0,t)).resolve_right (not_not_intro hz)
+    nlinarith [left t, re (0,t), sq_pos_of_ne_zero hn]
+  have R (t:I) : u (1,t) ≠ 0 := by
+    intro hz
+    have hn := (nz (1,t)).resolve_left (not_not_intro hz)
+    nlinarith [right t, re (1,t), sq_pos_of_ne_zero hn]
+  have B (t:I) : u (t,0) * v (t,0) ≤ 0 := by linarith [im (t,0), bottom t]
+  have T (t:I) : 0 ≤ u (t,1) * v (t,1) := by linarith [im (t,1), top t]
+  have hL := same_sign (f := (fun t => v (0,t))) (hv.comp (continuous_const.prodMk continuous_id)) L
+  have hR := same_sign (f := (fun t => u (1,t))) (hu.comp (continuous_const.prodMk continuous_id)) R
+  have hB := same_sign (f := (fun t => u (t,0) - v (t,0)))
+    ((hu.sub hv).comp (continuous_id.prodMk continuous_const)) (fun t he => by
+      have hn := nz (t,0)
+      have he' := sub_eq_zero.mp he
+      rcases mul_nonpos_iff.mp (B t) with h | h <;> grind)
+  have hT := same_sign (f := (fun t => u (t,1) + v (t,1)))
+    ((hu.add hv).comp (continuous_id.prodMk continuous_const)) (fun t he => by
+      rcases mul_nonneg_iff.mp (T t) with h | h <;> grind [nz (t,1)])
+  have b₀ := mul_nonpos_iff.mp (B 0)
+  have b₁ := mul_nonpos_iff.mp (B 1)
+  have t₀ := mul_nonneg_iff.mp (T 0)
+  have t₁ := mul_nonneg_iff.mp (T 1)
+  grind [L 0, L 1, R 0, R 1]
 
-lemma unitClamp_eq_zero_iff (x : ℝ) : unitClamp x = 0 ↔ x ≤ 0 := by
-  simp [unitClamp, min_le_iff]
-
-lemma unitClamp_eq_one_iff (x : ℝ) : unitClamp x = 1 ↔ 1 ≤ x := by
-  constructor
-  · intro h
-    by_cases hx0 : x ≤ 0
-    · have hz := (unitClamp_eq_zero_iff x).2 hx0
-      rw [hz] at h
-      norm_num at h
-    · by_cases hx1 : x < 1
-      · have hx0' : 0 < x := lt_of_not_ge hx0
-        have hc : unitClamp x = x := by
-          simp [unitClamp, max_eq_right (le_of_lt hx0'), min_eq_right (le_of_lt hx1)]
-        rw [hc] at h
-        linarith
-      · exact le_of_not_gt hx1
-  · intro hx
-    simp [unitClamp, min_eq_left hx]
-
-lemma unitClamp_eq_self_of_mem (x y : ℝ) (hx : x ∈ Set.Ioo (0 : ℝ) 1)
-    (h : unitClamp y = x) : y = x := by
-  rcases hx with ⟨hx0, hx1⟩
-  by_cases hy0 : y ≤ 0
-  · have : unitClamp y = 0 := (unitClamp_eq_zero_iff y).2 hy0
-    rw [this] at h
-    linarith
-  by_cases hy1 : 1 ≤ y
-  · have : unitClamp y = 1 := (unitClamp_eq_one_iff y).2 hy1
-    rw [this] at h
-    linarith
-  · have hy0' : 0 < y := lt_of_not_ge hy0
-    have hy1' : y < 1 := lt_of_not_ge hy1
-    have hc : unitClamp y = y := by
-      simp [unitClamp, max_eq_right (le_of_lt hy0'), min_eq_right (le_of_lt hy1')]
-    rw [hc] at h
-    exact h
-
-
-lemma continuous_unitClamp : Continuous unitClamp := by
-  unfold unitClamp
-  fun_prop
-
-lemma unitClamp_fixed_zero_of_signs (x y : ℝ) (hx : x ∈ Set.Icc (0 : ℝ) 1)
-    (h : unitClamp (x - y) = x)
-    (hzero : x = 0 → y ≤ 0) (hone : x = 1 → 0 ≤ y) : y = 0 := by
-  rcases hx with ⟨hx0, hx1⟩
-  by_cases hxz : x = 0
-  · subst x
-    have hy : unitClamp (0 - y) = 0 := h
-    have hneg : 0 - y ≤ 0 := (unitClamp_eq_zero_iff _).mp hy
-    have hsign := hzero rfl
-    linarith
-  by_cases hxo : x = 1
-  · subst x
-    have hy : unitClamp (1 - y) = 1 := h
-    have hone' := hone rfl
-    have hpos : 1 ≤ 1 - y := (unitClamp_eq_one_iff _).mp hy
-    linarith
-  · have hxIoo : x ∈ Set.Ioo (0 : ℝ) 1 := by
-      exact ⟨lt_of_le_of_ne hx0 (Ne.symm hxz),
-        lt_of_le_of_ne hx1 hxo⟩
-    have heq := unitClamp_eq_self_of_mem x (x - y) hxIoo h
-    linarith
-
-/-- Two continuous paths joining opposite sides of a closed rectangle intersect.
-No simplicity, genericity, or nondegeneracy of the rectangle is required. -/
+/-- Opposite-side crossings of a closed rectangle intersect. -/
 theorem pathRectangle_crossing_intersection
     {a b : ℝ × ℝ} {p₀ p₁ q₀ q₁ : ℝ × ℝ}
     (P : Path p₀ p₁) (Q : Path q₀ q₁)
@@ -98,95 +92,17 @@ theorem pathRectangle_crossing_intersection
     (hPleft : (P 0).1 = a.1) (hPright : (P 1).1 = b.1)
     (hQbottom : (Q 0).2 = a.2) (hQtop : (Q 1).2 = b.2) :
     ∃ s t : I, P s = Q t := by
-  let K : Set (ℝ × ℝ) := Set.Icc (0, 0) (1, 1)
-  let fstI : C(K, I) := ⟨fun z => ⟨z.1.1, by
-      have hz := z.property
-      change (0, 0) ≤ (z : ℝ × ℝ) ∧ (z : ℝ × ℝ) ≤ (1, 1) at hz
-      exact ⟨hz.1.1, hz.2.1⟩⟩,
-    Continuous.subtype_mk (continuous_fst.comp continuous_subtype_val) (by
-      intro z
-      have hz := z.property
-      change (0, 0) ≤ (z : ℝ × ℝ) ∧ (z : ℝ × ℝ) ≤ (1, 1) at hz
-      exact ⟨hz.1.1, hz.2.1⟩)⟩
-  let sndI : C(K, I) := ⟨fun z => ⟨z.1.2, by
-      have hz := z.property
-      change (0, 0) ≤ (z : ℝ × ℝ) ∧ (z : ℝ × ℝ) ≤ (1, 1) at hz
-      exact ⟨hz.1.2, hz.2.2⟩⟩,
-    Continuous.subtype_mk (continuous_snd.comp continuous_subtype_val) (by
-      intro z
-      have hz := z.property
-      change (0, 0) ≤ (z : ℝ × ℝ) ∧ (z : ℝ × ℝ) ≤ (1, 1) at hz
-      exact ⟨hz.1.2, hz.2.2⟩)⟩
-  let ι : C(K, I × I) := fstI.prodMk sndI
-  let f₁ : C(K, ℝ) := ⟨fun z => (P (ι z).1).1 - (Q (ι z).2).1, by fun_prop⟩
-  let f₂ : C(K, ℝ) := ⟨fun z => (Q (ι z).2).2 - (P (ι z).1).2, by fun_prop⟩
-  have hclamp : Continuous unitClamp := continuous_unitClamp
-  let T : C(K, K) :=
-    ⟨fun z => ⟨(unitClamp (z.1.1 - f₁ z), unitClamp (z.1.2 - f₂ z)), by
-      change (0, 0) ≤ (unitClamp (z.1.1 - f₁ z), unitClamp (z.1.2 - f₂ z)) ∧
-        (unitClamp (z.1.1 - f₁ z), unitClamp (z.1.2 - f₂ z)) ≤ (1, 1)
-      exact ⟨⟨(unitClamp_mem _).1, (unitClamp_mem _).1⟩,
-        ⟨(unitClamp_mem _).2, (unitClamp_mem _).2⟩⟩⟩,
-      by fun_prop⟩
-  obtain ⟨z, hzfix⟩ := brouwer_fixed_point K (convex_Icc (0, 0) (1, 1))
-    isCompact_Icc ⟨(0, 0), by norm_num [K]⟩ T
-  have hzcoord : (unitClamp (z.1.1 - f₁ z), unitClamp (z.1.2 - f₂ z)) = z.1 := by
-    exact congrArg Subtype.val hzfix
-  have hf₁ : f₁ z = 0 := by
-    apply unitClamp_fixed_zero_of_signs z.1.1 (f₁ z) (ι z).1.property
-      (congrArg Prod.fst hzcoord)
-    · intro hs
-      have hs' : (ι z).1 = 0 := Subtype.ext hs
-      change (P (ι z).1).1 - (Q (ι z).2).1 ≤ 0
-      have hp0 : P (ι z).1 = p₀ := by simp [hs']
-      rw [hp0]
-      have hq := (hQbox (ι z).2).1
-      have hsrc : p₀.1 = a.1 := by
-        have hpath : (P 0).1 = p₀.1 := congrArg Prod.fst P.source'
-        linarith
-      linarith
-    · intro hs
-      have hs' : (ι z).1 = 1 := Subtype.ext hs
-      change 0 ≤ (P (ι z).1).1 - (Q (ι z).2).1
-      have hp1 : P (ι z).1 = p₁ := by simp [hs']
-      rw [hp1]
-      have hq := (hQbox (ι z).2).2.1
-      have htarget : p₁.1 = b.1 := by
-        have hpath : (P 1).1 = p₁.1 := congrArg Prod.fst P.target'
-        linarith
-      linarith
-  have hf₂ : f₂ z = 0 := by
-    apply unitClamp_fixed_zero_of_signs z.1.2 (f₂ z) (ι z).2.property
-      (congrArg Prod.snd hzcoord)
-    · intro ht
-      have ht' : (ι z).2 = 0 := Subtype.ext ht
-      change (Q (ι z).2).2 - (P (ι z).1).2 ≤ 0
-      have hq0 : Q (ι z).2 = q₀ := by simp [ht']
-      rw [hq0]
-      have hp := (hPbox (ι z).1).2.2.1
-      have hsrc : q₀.2 = a.2 := by
-        have hpath : (Q 0).2 = q₀.2 := congrArg Prod.snd Q.source'
-        linarith
-      linarith
-    · intro ht
-      have ht' : (ι z).2 = 1 := Subtype.ext ht
-      change 0 ≤ (Q (ι z).2).2 - (P (ι z).1).2
-      have hq1 : Q (ι z).2 = q₁ := by simp [ht']
-      rw [hq1]
-      have hp := (hPbox (ι z).1).2.2.2
-      have htarget : q₁.2 = b.2 := by
-        have hpath : (Q 1).2 = q₁.2 := congrArg Prod.snd Q.target'
-        linarith
-      linarith
-  refine ⟨(ι z).1, (ι z).2, ?_⟩
-  apply Prod.ext
-  · have := congrArg (fun x : ℝ => x) hf₁
-    dsimp [f₁] at this
-    exact sub_eq_zero.mp this
-  · have := congrArg (fun x : ℝ => x) hf₂
-    dsimp [f₂] at this
-    exact (sub_eq_zero.mp this).symm
+  let f (z : I × I) : ℂ := ⟨(P z.1).1 - (Q z.2).1, (Q z.2).2 - (P z.1).2⟩
+  have hf := Complex.equivRealProdCLM.symm.continuous.comp
+    (show Continuous (fun z : I × I => ((P z.1).1 - (Q z.2).1, (Q z.2).2 - (P z.1).2)) by fun_prop)
+  have := rectangle_zero f hf
+    (fun t => sub_nonpos.mpr (hPleft.trans_le (hQbox t).1))
+    (fun t => sub_nonneg.mpr ((hQbox t).2.1.trans_eq hPright.symm))
+    (fun t => sub_nonpos.mpr (hQbottom.trans_le (hPbox t).2.2.1))
+    (fun t => sub_nonneg.mpr ((hPbox t).2.2.2.trans_eq hQtop.symm))
+  obtain ⟨⟨s,t⟩, h⟩ := this
+  exact ⟨s,t,Prod.ext (sub_eq_zero.mp (congrArg Complex.re h))
+    (sub_eq_zero.mp (congrArg Complex.im h)).symm⟩
 
 end
-
 end PottsDiscontinuity.FK.Curves

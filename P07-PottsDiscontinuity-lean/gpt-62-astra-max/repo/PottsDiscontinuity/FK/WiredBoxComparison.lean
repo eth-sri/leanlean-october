@@ -16,9 +16,12 @@ namespace PottsDiscontinuity.FK
 open MeasureTheory
 noncomputable section
 
-private theorem boxInterior_neighbor_closed {c d : LatticeVertex} {r s : ℕ}
-    (hbox : latticeBox c r ⊆ latticeBox d s)
-    {x : BoxVertex c r} (hx : x ∉ boxVertexBoundary c r)
+variable {c d : LatticeVertex} {r s : ℕ} (hbox : latticeBox c r ⊆ latticeBox d s)
+    (hGH : (boxGraph c r).map (boxVertexEmbedding hbox) ≤ boxGraph d s) {x : BoxVertex c r}
+    (hx : x ∉ boxVertexBoundary c r)
+
+include hx in
+private theorem boxInterior_neighbor_closed
     {y : BoxVertex d s} (hxy : (boxGraph d s).Adj (boxVertexEmbedding hbox x) y) :
     ∃ z : BoxVertex c r, boxVertexEmbedding hbox z = y ∧ (boxGraph c r).Adj x z := by
   have hy : y.val ∈ latticeBox c r := by
@@ -27,18 +30,15 @@ private theorem boxInterior_neighbor_closed {c d : LatticeVertex} {r s : ℕ}
     exact ⟨x.property, y.val, hxy, hn⟩
   exact ⟨⟨y.val, hy⟩, Subtype.ext rfl, hxy⟩
 
-private theorem boxInterior_avoids_outerBoundary {c d : LatticeVertex} {r s : ℕ}
-    (hbox : latticeBox c r ⊆ latticeBox d s)
-    {x : BoxVertex c r} (hx : x ∉ boxVertexBoundary c r) :
+include hx in
+private theorem boxInterior_avoids_outerBoundary :
     boxVertexEmbedding hbox x ∉
       (BoundaryCondition.wired (boxVertexBoundary d s)).boundary := by
   rintro ⟨_, y, hxy, hy⟩
   apply hx
   exact ⟨x.property, y, hxy, fun hys => hy (hbox hys)⟩
 
-private theorem wiredBoxEdgeEmbedding_compatible {c d : LatticeVertex} {r s : ℕ}
-    (hbox : latticeBox c r ⊆ latticeBox d s)
-    (hGH : (boxGraph c r).map (boxVertexEmbedding hbox) ≤ boxGraph d s)
+private theorem wiredBoxEdgeEmbedding_compatible
     (e : (boxGraph c r).edgeSet) :
     boxEdgeEmbedding d s (embeddedEdgeEmbedding (boxGraph c r) (boxGraph d s)
       (boxVertexEmbedding hbox) hGH e) = boxEdgeEmbedding c r e := by
@@ -50,9 +50,6 @@ private theorem wiredBoxEdgeEmbedding_compatible {c d : LatticeVertex} {r s : �
   congr 1
 
 private theorem wiredBoxCylinderEvent_restrict_of_large
-    {c d : LatticeVertex} {r s : ℕ}
-    (hbox : latticeBox c r ⊆ latticeBox d s)
-    (hGH : (boxGraph c r).map (boxVertexEmbedding hbox) ≤ boxGraph d s)
     (F : Finset squareLattice.edgeSet) (A : Configuration (boxGraph d s))
     (hA : A ∈ wiredBoxCylinderEvent d s F) :
     embeddedConfigurationRestriction (boxGraph c r) (boxGraph d s)
@@ -75,15 +72,11 @@ theorem wiredBoxProbabilityMeasure_allOpen_antitone (θ : Parameters)
         (LatticeConfiguration.allOpen F) := by
   classical
   let f := boxVertexEmbedding hbox
-  have hGH : (boxGraph c r).map f ≤ boxGraph d s := boxGraph_map_boxVertexEmbedding hbox
-  have hcmp := embeddedConfigurationRestriction_preimage_measure_le_wired_of_closedInterior
-    f hGH θ (BoundaryCondition.wired (boxVertexBoundary d s)) (boxVertexBoundary c r)
+  have hGH := boxGraph_map_boxVertexEmbedding hbox
+  have hcmp := embeddedConfigurationRestriction_preimage_measure_le_wired_of_closedInterior hGH θ
     (fun _ hx _ hxy => boxInterior_neighbor_closed hbox hx hxy)
-    (fun _ hx => boxInterior_avoids_outerBoundary hbox hx)
-    (wiredBoxCylinderEvent c r F) (wiredBoxCylinderEvent_upper c r F)
-  have hsub : wiredBoxCylinderEvent d s F ⊆
-      {A | embeddedConfigurationRestriction (boxGraph c r) (boxGraph d s)
-        f hGH A ∈ wiredBoxCylinderEvent c r F} :=
+    (fun _ hx => boxInterior_avoids_outerBoundary hbox hx) (wiredBoxCylinderEvent_upper c r F)
+  have hsub :=
     fun A hA => wiredBoxCylinderEvent_restrict_of_large hbox hGH F A hA
   rw [wiredBoxProbabilityMeasure_allOpen, wiredBoxProbabilityMeasure_allOpen]
   apply (ENNReal.toReal_le_toReal (measure_ne_top _ _) (measure_ne_top _ _)).mp

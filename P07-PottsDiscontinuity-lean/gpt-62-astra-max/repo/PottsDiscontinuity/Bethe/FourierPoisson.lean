@@ -32,183 +32,168 @@ namespace PottsDiscontinuity.Bethe
 
 /-! ### The Poisson kernel series -/
 
-theorem Xi_sub_one_eq {μ : ℝ} (hμ : 0 < μ) (α : ℝ) :
+section
+variable {μ : ℝ} (hμ : 0 < μ) (α : ℝ)
+
+include hμ in
+theorem Xi_sub_one_eq :
     Xi μ α - 1 = 2 * (Real.exp (-μ) * Real.cos α - Real.exp (-μ) ^ 2) /
       (1 - 2 * Real.exp (-μ) * Real.cos α + Real.exp (-μ) ^ 2) := by
   have hr : 0 < Real.exp (-μ) := Real.exp_pos _
-  have hr1 : Real.exp (-μ) < 1 := by rw [Real.exp_lt_one_iff]; linarith
+  have hr1 : Real.exp (-μ) < 1 := by grind [Real.exp_lt_one_iff]
   have hc := Real.cos_le_one α
   set r := Real.exp (-μ) with hrdef
-  have hden : 0 < 1 - 2 * r * Real.cos α + r ^ 2 := by nlinarith [sq_nonneg (1 - r), mul_pos hr hr]
+  have hden : 0 < 1 - 2 * r * Real.cos α + r ^ 2 := by nlinarith
   have hsinh : Real.sinh μ = (r⁻¹ - r) / 2 := by
     rw [Real.sinh_eq, hrdef, Real.exp_neg, inv_inv]
   have hcosh : Real.cosh μ = (r⁻¹ + r) / 2 := by
     rw [Real.cosh_eq, hrdef, Real.exp_neg, inv_inv]
   unfold Xi
-  rw [hsinh, hcosh]
-  have e : (r⁻¹ + r) / 2 - Real.cos α = (1 - 2 * r * Real.cos α + r ^ 2) / (2 * r) := by
-    field_simp
-    ring
-  rw [e]
-  have h2 : 1 - 2 * r * Real.cos α + r ^ 2 ≠ 0 := hden.ne'
-  have h3 : (r⁻¹ - r) / 2 / ((1 - 2 * r * Real.cos α + r ^ 2) / (2 * r)) =
-      (1 - r ^ 2) / (1 - 2 * r * Real.cos α + r ^ 2) := by
-    field_simp
-  rw [h3, div_sub_one h2]
-  congr 1
-  ring
+  grind
 
-theorem re_geom_Xi (r α : ℝ) (hr : 0 < r) (hr1 : r < 1) (z : ℂ)
-    (hz : z = (r : ℂ) * Complex.exp (α * Complex.I)) :
+theorem re_geom_Xi (r α : ℝ) (z : ℂ)
+    (hz : z = r * Complex.exp (α * Complex.I)) :
     (z * (1 - z)⁻¹).re = (r * Real.cos α - r ^ 2) / (1 - 2 * r * Real.cos α + r ^ 2) := by
   have hzre : z.re = r * Real.cos α := by
-    rw [hz, Complex.re_ofReal_mul, Complex.exp_ofReal_mul_I_re]
+    simp [*]
   have hzim : z.im = r * Real.sin α := by
-    rw [hz, Complex.im_ofReal_mul, Complex.exp_ofReal_mul_I_im]
+    simp [*]
   have hs := Real.sin_sq_add_cos_sq α
-  have hc := Real.cos_le_one α
-  have hden : 0 < 1 - 2 * r * Real.cos α + r ^ 2 := by nlinarith [sq_nonneg (1 - r), mul_pos hr hr]
   have hns : Complex.normSq (1 - z) = 1 - 2 * r * Real.cos α + r ^ 2 := by
     rw [Complex.normSq_apply, Complex.sub_re, Complex.sub_im, hzre, hzim]
     simp
-    nlinarith [hs]
+    nlinarith
   rw [Complex.mul_re, Complex.inv_re, Complex.inv_im, hns]
   simp only [Complex.sub_re, Complex.sub_im, Complex.one_re, Complex.one_im, hzre, hzim]
-  have hD : (1 - r * Real.cos α * 2 + r ^ 2) ≠ 0 := by nlinarith
-  rw [← sub_eq_zero]
-  field_simp
-  linear_combination (-(r^2)) * hs
+  grind
 
+include hμ in
 /-- Poisson kernel series: `Ξ_μ(α) = 1 + 2 ∑_{m ≥ 1} e^{-μ m} cos(m α)` for `μ > 0`. -/
-theorem hasSum_Xi_cos {μ : ℝ} (hμ : 0 < μ) (α : ℝ) :
-    HasSum (fun n : ℕ => 2 * Real.exp (-μ) ^ (n + 1) * Real.cos (((n + 1 : ℕ) : ℝ) * α))
+theorem hasSum_Xi_cos :
+    HasSum (fun n : ℕ => 2 * Real.exp (-μ) ^ (n + 1) * Real.cos ((n + 1 : ℕ) * α))
       (Xi μ α - 1) := by
   have hr : 0 < Real.exp (-μ) := Real.exp_pos _
-  have hr1 : Real.exp (-μ) < 1 := by rw [Real.exp_lt_one_iff]; linarith
+  have hr1 : Real.exp (-μ) < 1 := by grind [Real.exp_lt_one_iff]
   set r := Real.exp (-μ) with hrdef
-  set z : ℂ := (r : ℂ) * Complex.exp (α * Complex.I) with hz
+  set z : ℂ := r * Complex.exp (α * Complex.I) with hz
   have hznorm : ‖z‖ = r := by
     rw [hz, norm_mul, Complex.norm_real, Complex.norm_exp_ofReal_mul_I, mul_one,
       Real.norm_eq_abs, abs_of_pos hr]
-  have hz1 : ‖z‖ < 1 := by rw [hznorm]; exact hr1
-  have hg := (hasSum_geometric_of_norm_lt_one hz1).mul_left z
-  have hre := ((Complex.hasSum_iff _ _).1 hg).1
-  have hterm : ∀ n : ℕ, (z * z ^ n).re = r ^ (n + 1) * Real.cos (((n + 1 : ℕ) : ℝ) * α) := by
+  have hz1 : ‖z‖ < 1 := by grind
+  have hre := ((Complex.hasSum_iff _ _).1 ((hasSum_geometric_of_norm_lt_one hz1).mul_left z)).1
+  have hterm : ∀ n : ℕ, (z * z ^ n).re = r ^ (n + 1) * Real.cos ((n + 1 : ℕ) * α) := by
     intro n
     rw [← pow_succ', hz, mul_pow, ← Complex.ofReal_pow, ← Complex.exp_nat_mul]
-    rw [show ((n + 1 : ℕ) : ℂ) * (α * Complex.I) = (((n + 1 : ℕ) : ℝ) * α : ℝ) * Complex.I by
+    rw [show (n + 1 : ℕ) * (α * Complex.I) = ((n + 1 : ℕ) * α : ℝ) * Complex.I by
       push_cast; ring]
     rw [Complex.re_ofReal_mul, Complex.exp_ofReal_mul_I_re]
-  simp only [hterm] at hre
-  rw [re_geom_Xi r α hr hr1 z hz] at hre
+  rw [re_geom_Xi r α z hz] at hre
   have := hre.mul_left 2
-  convert this using 1
-  · funext n; ring
-  · rw [Xi_sub_one_eq hμ α]; ring
+  grind [Xi_sub_one_eq hμ α]
 
-theorem continuous_Xi {μ : ℝ} (hμ : 0 < μ) : Continuous (Xi μ) := by
-  unfold Xi
+include hμ in
+theorem continuous_Xi : Continuous (Xi μ) := by
   refine continuous_const.div (continuous_const.sub Real.continuous_cos) fun α => ?_
-  have h2 : 1 < Real.cosh μ := Real.one_lt_cosh.mpr hμ.ne'
+  have h2 := Real.one_lt_cosh.mpr hμ.ne'
   have := Real.cos_le_one α
   linarith
+
+end
 
 /-! ### Orthogonality on `[-π, π]` -/
 
 theorem integral_cos_int_mul {k : ℤ} (hk : k ≠ 0) : ∫ x in (-π)..π, Real.cos (k * x) = 0 := by
-  have hk' : (k : ℝ) ≠ 0 := by exact_mod_cast hk
-  rw [intervalIntegral.integral_comp_mul_left (fun x => Real.cos x) hk', integral_cos]
-  have h1 : Real.sin (k * π) = 0 := by exact_mod_cast Real.sin_int_mul_pi k
-  have h2 : Real.sin (k * -π) = 0 := by
-    rw [mul_neg, Real.sin_neg, h1, neg_zero]
-  rw [h1, h2]; simp
+  simp [*]
 
 theorem integral_sin_int_mul (k : ℤ) : ∫ x in (-π)..π, Real.sin (k * x) = 0 := by
   by_cases hk : k = 0
-  · simp [hk]
-  have hk' : (k : ℝ) ≠ 0 := by exact_mod_cast hk
-  rw [intervalIntegral.integral_comp_mul_left (fun x => Real.sin x) hk', integral_sin]
-  have h1 : Real.cos (k * -π) = Real.cos (k * π) := by rw [mul_neg, Real.cos_neg]
-  rw [h1]; simp
+  · simp_all
+  simp [*]
 
-theorem cos_mul_cos_nat (m n : ℕ) (x : ℝ) : Real.cos (m * x) * Real.cos (n * x) =
-      (Real.cos (((m : ℤ) - n : ℤ) * x) + Real.cos (((m : ℤ) + n : ℤ) * x)) / 2 := by
+section
+variable (m n : ℕ) (x : ℝ) (k : ℝ)
+
+theorem cos_mul_cos_nat : Real.cos (m * x) * Real.cos (n * x) =
+      (Real.cos ((m - n : ℤ) * x) + Real.cos ((m + n : ℤ) * x)) / 2 := by
   push_cast
   have := two_mul_cos_mul_cos (m * x) (n * x)
-  rw [show ((m:ℝ) - n) * x = m * x - n * x by ring, show ((m:ℝ) + n) * x = m * x + n * x by ring]
-  linarith
+  grind
 
-theorem sin_mul_sin_nat (m n : ℕ) (x : ℝ) : Real.sin (m * x) * Real.sin (n * x) =
-      (Real.cos (((m : ℤ) - n : ℤ) * x) - Real.cos (((m : ℤ) + n : ℤ) * x)) / 2 := by
+theorem sin_mul_sin_nat : Real.sin (m * x) * Real.sin (n * x) =
+      (Real.cos ((m - n : ℤ) * x) - Real.cos ((m + n : ℤ) * x)) / 2 := by
   push_cast
-  rw [show ((m:ℝ) - n) * x = m * x - n * x by ring, show ((m:ℝ) + n) * x = m * x + n * x by ring,
+  rw [show (m - n) * x = m * x - n * x by ring, show (m + n) * x = m * x + n * x by ring,
     Real.cos_sub, Real.cos_add]
   ring
 
-theorem sin_mul_cos_nat (m n : ℕ) (x : ℝ) : Real.sin (m * x) * Real.cos (n * x) =
-      (Real.sin (((m : ℤ) + n : ℤ) * x) + Real.sin (((m : ℤ) - n : ℤ) * x)) / 2 := by
+theorem sin_mul_cos_nat : Real.sin (m * x) * Real.cos (n * x) =
+      (Real.sin ((m + n : ℤ) * x) + Real.sin ((m - n : ℤ) * x)) / 2 := by
   push_cast
-  rw [show ((m:ℝ) - n) * x = m * x - n * x by ring, show ((m:ℝ) + n) * x = m * x + n * x by ring,
+  rw [show (m - n) * x = m * x - n * x by ring, show (m + n) * x = m * x + n * x by ring,
     Real.sin_sub, Real.sin_add]
   ring
 
-theorem intervalIntegrable_cos_mul (k : ℝ) :
+theorem intervalIntegrable_cos_mul :
     IntervalIntegrable (fun x : ℝ => Real.cos (k * x)) volume (-π) π :=
-  (Real.continuous_cos.comp (continuous_const.mul continuous_id)).intervalIntegrable _ _
+  by apply Continuous.intervalIntegrable <;> fun_prop
 
-theorem intervalIntegrable_sin_mul (k : ℝ) :
+theorem intervalIntegrable_sin_mul :
     IntervalIntegrable (fun x : ℝ => Real.sin (k * x)) volume (-π) π :=
-  (Real.continuous_sin.comp (continuous_const.mul continuous_id)).intervalIntegrable _ _
+  by apply Continuous.intervalIntegrable <;> fun_prop
+
+end
+
+section
+variable {m n : ℕ} (hn : n ≠ 0)
+include hn
 
 /-- Orthogonality: `∫_{-π}^{π} cos(m x) cos(n x) dx = π δ_{mn}` for `m, n ≥ 1`. -/
-theorem integral_cos_mul_cos_pos {m n : ℕ} (_hm : m ≠ 0) (hn : n ≠ 0) :
+theorem integral_cos_mul_cos_pos :
     ∫ x in (-π)..π, Real.cos (m * x) * Real.cos (n * x) = if m = n then π else 0 := by
   simp_rw [cos_mul_cos_nat]
   rw [intervalIntegral.integral_div, intervalIntegral.integral_add
-    (by simpa using intervalIntegrable_cos_mul (((m : ℤ) - n : ℤ) : ℝ))
-    (by simpa using intervalIntegrable_cos_mul (((m : ℤ) + n : ℤ) : ℝ))]
-  have h2 : ∫ x in (-π)..π, Real.cos ((((m : ℤ) + n : ℤ) : ℝ) * x) = 0 :=
+    (by simpa using intervalIntegrable_cos_mul _)
+    (by simpa using intervalIntegrable_cos_mul _)]
+  have h2 : ∫ x in (-π)..π, Real.cos (((m : ℤ) + n : ℤ) * x) = 0 :=
     integral_cos_int_mul (by omega)
   rw [h2]
   by_cases h : m = n
-  · subst h
-    simp only [ite_true, sub_self, Int.cast_zero, zero_mul, Real.cos_zero]
-    simp
-  · have h1 : ∫ x in (-π)..π, Real.cos ((((m : ℤ) - n : ℤ) : ℝ) * x) = 0 :=
+  · simp [*]
+  · have h1 : ∫ x in (-π)..π, Real.cos (((m : ℤ) - n : ℤ) * x) = 0 :=
       integral_cos_int_mul (by omega)
-    rw [h1]; simp [h]
+    grind
 
-theorem integral_sin_mul_sin_pos {m n : ℕ} (_hm : m ≠ 0) (hn : n ≠ 0) :
+theorem integral_sin_mul_sin_pos :
     ∫ x in (-π)..π, Real.sin (m * x) * Real.sin (n * x) = if m = n then π else 0 := by
   simp_rw [sin_mul_sin_nat]
   rw [intervalIntegral.integral_div, intervalIntegral.integral_sub
-    (by simpa using intervalIntegrable_cos_mul (((m : ℤ) - n : ℤ) : ℝ))
-    (by simpa using intervalIntegrable_cos_mul (((m : ℤ) + n : ℤ) : ℝ))]
-  have h2 : ∫ x in (-π)..π, Real.cos ((((m : ℤ) + n : ℤ) : ℝ) * x) = 0 :=
+    (by simpa using intervalIntegrable_cos_mul _)
+    (by simpa using intervalIntegrable_cos_mul _)]
+  have h2 : ∫ x in (-π)..π, Real.cos (((m : ℤ) + n : ℤ) * x) = 0 :=
     integral_cos_int_mul (by omega)
   rw [h2]
   by_cases h : m = n
-  · subst h
-    simp only [ite_true, sub_self, Int.cast_zero, zero_mul, Real.cos_zero]
-    simp
-  · have h1 : ∫ x in (-π)..π, Real.cos ((((m : ℤ) - n : ℤ) : ℝ) * x) = 0 :=
+  · simp [*]
+  · have h1 : ∫ x in (-π)..π, Real.cos (((m : ℤ) - n : ℤ) * x) = 0 :=
       integral_cos_int_mul (by omega)
-    rw [h1]; simp [h]
+    grind
+
+end
 
 theorem integral_sin_mul_cos_nat (m n : ℕ) :
     ∫ x in (-π)..π, Real.sin (m * x) * Real.cos (n * x) = 0 := by
   simp_rw [sin_mul_cos_nat]
   rw [intervalIntegral.integral_div, intervalIntegral.integral_add
-    (by simpa using intervalIntegrable_sin_mul (((m : ℤ) + n : ℤ) : ℝ))
-    (by simpa using intervalIntegrable_sin_mul (((m : ℤ) - n : ℤ) : ℝ)),
+    (by simpa using intervalIntegrable_sin_mul _)
+    (by simpa using intervalIntegrable_sin_mul _),
     integral_sin_int_mul, integral_sin_int_mul]
   simp
 
 theorem integral_cos_nat_mul {m : ℕ} (hm : m ≠ 0) : ∫ x in (-π)..π, Real.cos (m * x) = 0 := by
-  simpa using integral_cos_int_mul (k := (m : ℤ)) (by exact_mod_cast hm)
+  simp_all
 
 theorem integral_sin_nat_mul (m : ℕ) : ∫ x in (-π)..π, Real.sin (m * x) = 0 := by
-  simpa using integral_sin_int_mul (m : ℤ)
+  simpa using integral_sin_int_mul m
 
 /-! ### The convolution operator `g ↦ Ξ_μ * g / 2π` and its coefficient expansion -/
 
@@ -216,25 +201,34 @@ theorem integral_sin_nat_mul (m : ℕ) : ∫ x in (-π)..π, Real.sin (m * x) = 
 noncomputable def xiConv (μ : ℝ) (g : ℝ → ℝ) (α : ℝ) : ℝ :=
   (2 * π)⁻¹ * ∫ β in (-π)..π, Xi μ (α - β) * g β
 
+section
+variable (g : ℝ → ℝ) (m : ℕ)
+include g m
+
 /-- Cosine coefficient `∫_{-π}^{π} g(β) cos(m β) dβ` (unnormalised). -/
-noncomputable def cosCoeff (g : ℝ → ℝ) (m : ℕ) : ℝ := ∫ β in (-π)..π, g β * Real.cos (m * β)
+noncomputable def cosCoeff : ℝ := ∫ β in (-π)..π, g β * Real.cos (m * β)
 
 /-- Sine coefficient `∫_{-π}^{π} g(β) sin(m β) dβ` (unnormalised). -/
-noncomputable def sinCoeff (g : ℝ → ℝ) (m : ℕ) : ℝ := ∫ β in (-π)..π, g β * Real.sin (m * β)
+noncomputable def sinCoeff : ℝ := ∫ β in (-π)..π, g β * Real.sin (m * β)
 
-theorem hasSum_xiConv {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
-    (hg : IntervalIntegrable g volume (-π) π) (α : ℝ) :
+end
+
+variable {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ} (hg : IntervalIntegrable g volume (-π) π) (n : ℕ)
+    (α : ℝ) (m : ℕ) {D : ℝ → ℝ} (hD : IntervalIntegrable D volume (-π) π)
+
+include hμ hg in
+theorem hasSum_xiConv :
     HasSum (fun n : ℕ => π⁻¹ * Real.exp (-μ) ^ (n + 1) *
         (Real.cos (((n + 1 : ℕ) : ℝ) * α) * cosCoeff g (n + 1) +
           Real.sin (((n + 1 : ℕ) : ℝ) * α) * sinCoeff g (n + 1)))
       (xiConv μ g α - (2 * π)⁻¹ * cosCoeff g 0) := by
   have hpi := Real.pi_pos
   have hr : 0 < Real.exp (-μ) := Real.exp_pos _
-  have hr1 : Real.exp (-μ) < 1 := by rw [Real.exp_lt_one_iff]; linarith
+  have hr1 : Real.exp (-μ) < 1 := by grind [Real.exp_lt_one_iff]
   set r := Real.exp (-μ) with hrdef
   -- termwise functions
-  let F : ℕ → ℝ → ℝ := fun n β => 2 * r ^ (n + 1) * Real.cos (((n + 1 : ℕ) : ℝ) * (α - β)) * g β
-  have hgi : IntegrableOn g (Ioc (-π) π) volume :=
+  let F := fun n β => 2 * r ^ (n + 1) * Real.cos (((n + 1 : ℕ) : ℝ) * (α - β)) * g β
+  have hgi :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le (by linarith)).1 hg
   have hmeas : ∀ n, AEStronglyMeasurable (F n) (volume.restrict (uIoc (-π) π)) := by
     intro n
@@ -244,8 +238,7 @@ theorem hasSum_xiConv {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
     exact (hc.aestronglyMeasurable).mul hgi.aestronglyMeasurable
   have hgeo : Summable (fun n : ℕ => 2 * r ^ (n + 1)) := by
     have := (summable_geometric_of_lt_one hr.le hr1).mul_left (2 * r)
-    refine this.congr fun n => ?_
-    ring
+    grind
   have hsum := intervalIntegral.hasSum_integral_of_dominated_convergence
     (μ := volume) (a := -π) (b := π) (F := F) (f := fun β => (Xi μ (α - β) - 1) * g β)
     (fun n β => 2 * r ^ (n + 1) * ‖g β‖) hmeas ?_ ?_ ?_ ?_
@@ -259,8 +252,7 @@ theorem hasSum_xiConv {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
             Real.sin (((n + 1 : ℕ) : ℝ) * α) * (g β * Real.sin (((n + 1 : ℕ) : ℝ) * β))) := by
         intro β
         simp only [F]
-        rw [mul_sub, Real.cos_sub]
-        ring
+        grind [mul_sub, Real.cos_sub]
       simp_rw [h1]
       have hi1 : IntervalIntegrable (fun β => g β * Real.cos (((n + 1 : ℕ) : ℝ) * β)) volume (-π) π :=
         hg.mul_continuousOn (by fun_prop)
@@ -282,37 +274,32 @@ theorem hasSum_xiConv {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
       rfl
     rw [hsplit] at hsum
     have := hsum.mul_left (2 * π)⁻¹
-    convert this using 1
-    · funext n
-      field_simp
-    · unfold xiConv
-      ring
+    grind [xiConv]
   · intro n
     refine Filter.Eventually.of_forall fun β _ => ?_
     have hF : F n β = (2 * r ^ (n + 1)) * (Real.cos (((n + 1 : ℕ) : ℝ) * (α - β)) * g β) := by
-      simp only [F]; ring
+      ring
     rw [hF, norm_mul (2 * r ^ (n + 1)) _, norm_mul (Real.cos _) _, Real.norm_of_nonneg (by positivity : (0:ℝ) ≤ 2 * r ^ (n + 1)),
       Real.norm_eq_abs (Real.cos _)]
     have h3 : |Real.cos (((n + 1 : ℕ) : ℝ) * (α - β))| ≤ 1 := Real.abs_cos_le_one _
-    have h4 : 0 ≤ 2 * r ^ (n + 1) := by positivity
     calc 2 * r ^ (n + 1) * (|Real.cos (((n + 1 : ℕ) : ℝ) * (α - β))| * ‖g β‖)
         ≤ 2 * r ^ (n + 1) * (1 * ‖g β‖) := by gcongr
-      _ = 2 * r ^ (n + 1) * ‖g β‖ := by rw [one_mul]
+      _ = 2 * r ^ (n + 1) * ‖g β‖ := by simp
   · refine Filter.Eventually.of_forall fun β _ => ?_
     exact hgeo.mul_right _
   · have : (fun β : ℝ => ∑' n : ℕ, 2 * r ^ (n + 1) * ‖g β‖) =
         fun β => (∑' n : ℕ, 2 * r ^ (n + 1)) * ‖g β‖ := by
-      funext β; rw [tsum_mul_right]
+      simp [tsum_mul_right]
     rw [this]
     exact hg.norm.const_mul _
   · refine Filter.Eventually.of_forall fun β _ => ?_
     exact (hasSum_Xi_cos hμ (α - β)).mul_right (g β)
 
 
-theorem abs_cosCoeff_le {g : ℝ → ℝ} (hg : IntervalIntegrable g volume (-π) π) (m : ℕ) :
+include hg in
+theorem abs_cosCoeff_le :
     |cosCoeff g m| ≤ ∫ β in (-π)..π, |g β| := by
   have hpi := Real.pi_pos
-  unfold cosCoeff
   have h1 := intervalIntegral.abs_integral_le_integral_abs (f := fun β => g β * Real.cos (m * β))
     (a := -π) (b := π) (μ := volume) (by linarith)
   refine le_trans h1 ?_
@@ -325,10 +312,10 @@ theorem abs_cosCoeff_le {g : ℝ → ℝ} (hg : IntervalIntegrable g volume (-π
           gcongr; exact Real.abs_cos_le_one _
       _ = |g β| := mul_one _
 
-theorem abs_sinCoeff_le {g : ℝ → ℝ} (hg : IntervalIntegrable g volume (-π) π) (m : ℕ) :
+include hg in
+theorem abs_sinCoeff_le :
     |sinCoeff g m| ≤ ∫ β in (-π)..π, |g β| := by
   have hpi := Real.pi_pos
-  unfold sinCoeff
   have h1 := intervalIntegral.abs_integral_le_integral_abs (f := fun β => g β * Real.sin (m * β))
     (a := -π) (b := π) (μ := volume) (by linarith)
   refine le_trans h1 ?_
@@ -347,12 +334,10 @@ noncomputable def xiConvTerm (μ : ℝ) (g : ℝ → ℝ) (n : ℕ) (α : ℝ) :
     (Real.cos (((n + 1 : ℕ) : ℝ) * α) * cosCoeff g (n + 1) +
       Real.sin (((n + 1 : ℕ) : ℝ) * α) * sinCoeff g (n + 1))
 
-theorem abs_xiConvTerm_le {μ : ℝ} {g : ℝ → ℝ} (hg : IntervalIntegrable g volume (-π) π)
-    (n : ℕ) (α : ℝ) :
+include hg in
+theorem abs_xiConvTerm_le :
     |xiConvTerm μ g n α| ≤ π⁻¹ * Real.exp (-μ) ^ (n + 1) * (2 * ∫ β in (-π)..π, |g β|) := by
   unfold xiConvTerm
-  have hpi := Real.pi_pos
-  have hr := Real.exp_pos (-μ)
   set L := ∫ β in (-π)..π, |g β|
   have h1 := abs_cosCoeff_le hg (n + 1)
   have h2 := abs_sinCoeff_le hg (n + 1)
@@ -366,38 +351,36 @@ theorem abs_xiConvTerm_le {μ : ℝ} {g : ℝ → ℝ} (hg : IntervalIntegrable 
         |Real.sin (((n + 1 : ℕ) : ℝ) * α) * sinCoeff g (n + 1)| := abs_add_le _ _
     _ ≤ L + L := by
         rw [abs_mul, abs_mul]
-        have := abs_nonneg (cosCoeff g (n + 1))
-        have := abs_nonneg (sinCoeff g (n + 1))
         gcongr
         · calc |Real.cos (((n + 1 : ℕ) : ℝ) * α)| * |cosCoeff g (n + 1)|
               ≤ 1 * |cosCoeff g (n + 1)| := by gcongr
-            _ ≤ L := by rw [one_mul]; exact h1
+            _ ≤ L := by grind
         · calc |Real.sin (((n + 1 : ℕ) : ℝ) * α)| * |sinCoeff g (n + 1)|
               ≤ 1 * |sinCoeff g (n + 1)| := by gcongr
-            _ ≤ L := by rw [one_mul]; exact h2
+            _ ≤ L := by grind
     _ = 2 * L := by ring
 
 theorem continuous_xiConvTerm (μ : ℝ) (g : ℝ → ℝ) (n : ℕ) : Continuous (xiConvTerm μ g n) := by
   unfold xiConvTerm; fun_prop
 
-theorem xiConv_eq_const_add_tsum {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
-    (hg : IntervalIntegrable g volume (-π) π) (α : ℝ) :
+include hμ hg in
+theorem xiConv_eq_const_add_tsum :
     xiConv μ g α = (2 * π)⁻¹ * cosCoeff g 0 + ∑' n : ℕ, xiConvTerm μ g n α := by
   have := (hasSum_xiConv hμ hg α).tsum_eq
   unfold xiConvTerm
   linarith
 
-theorem summable_xiConvTerm_bound {μ : ℝ} (hμ : 0 < μ) (C : ℝ) :
+include hμ in
+theorem summable_xiConvTerm_bound (C : ℝ) :
     Summable (fun n : ℕ => π⁻¹ * Real.exp (-μ) ^ (n + 1) * C) := by
   have hr : 0 < Real.exp (-μ) := Real.exp_pos _
-  have hr1 : Real.exp (-μ) < 1 := by rw [Real.exp_lt_one_iff]; linarith
+  have hr1 : Real.exp (-μ) < 1 := by grind [Real.exp_lt_one_iff]
   have := (summable_geometric_of_lt_one hr.le hr1).mul_left (π⁻¹ * Real.exp (-μ) * C)
-  refine this.congr fun n => ?_
-  ring
+  grind
 
-theorem continuous_xiConv {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
-    (hg : IntervalIntegrable g volume (-π) π) : Continuous (xiConv μ g) := by
-  have hc : Continuous (fun α => ∑' n : ℕ, xiConvTerm μ g n α) :=
+include hμ hg in
+theorem continuous_xiConv : Continuous (xiConv μ g) := by
+  have hc :=
     continuous_tsum (continuous_xiConvTerm μ g)
       (summable_xiConvTerm_bound hμ (2 * ∫ β in (-π)..π, |g β|))
       (fun n α => abs_xiConvTerm_le hg n α)
@@ -410,15 +393,14 @@ theorem continuous_xiConv {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
 theorem cosCoeff_zero (g : ℝ → ℝ) : cosCoeff g 0 = ∫ β in (-π)..π, g β := by
   simp [cosCoeff]
 
+include hμ hg in
 /-- Positive definiteness of the Poisson kernel: `∫ g · (Ξ_μ * g) ≥ 0`. -/
-theorem integral_mul_xiConv_nonneg {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
-    (hg : IntervalIntegrable g volume (-π) π) :
+theorem integral_mul_xiConv_nonneg :
     0 ≤ ∫ α in (-π)..π, g α * xiConv μ g α := by
   have hpi := Real.pi_pos
-  have hr : 0 < Real.exp (-μ) := Real.exp_pos _
   set L := ∫ β in (-π)..π, |g β| with hL
   set A := (2 * π)⁻¹ * cosCoeff g 0 with hA
-  have hgi : IntegrableOn g (Ioc (-π) π) volume :=
+  have hgi :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le (by linarith)).1 hg
   have hcont := continuous_xiConv hμ hg
   have hsum := intervalIntegral.hasSum_integral_of_dominated_convergence
@@ -433,7 +415,7 @@ theorem integral_mul_xiConv_nonneg {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
       have h1 : ∀ α : ℝ, g α * xiConvTerm μ g n α = π⁻¹ * Real.exp (-μ) ^ (n + 1) *
           (cosCoeff g (n + 1) * (g α * Real.cos (((n + 1 : ℕ) : ℝ) * α)) +
             sinCoeff g (n + 1) * (g α * Real.sin (((n + 1 : ℕ) : ℝ) * α))) := by
-        intro α; unfold xiConvTerm; ring
+        grind [xiConvTerm]
       simp_rw [h1]
       have hi1 : IntervalIntegrable (fun β => g β * Real.cos (((n + 1 : ℕ) : ℝ) * β)) volume (-π) π :=
         hg.mul_continuousOn (by fun_prop)
@@ -445,7 +427,7 @@ theorem integral_mul_xiConv_nonneg {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
         sinCoeff g (n + 1) * sinCoeff g (n + 1)) = _
       ring
     simp_rw [hterm] at hsum
-    have hnn : 0 ≤ ∫ α in (-π)..π, g α * (xiConv μ g α - A) :=
+    have hnn :=
       hsum.nonneg fun n => by positivity
     have hgA : IntervalIntegrable (fun α => g α * A) volume (-π) π := hg.mul_const _
     have hgx : IntervalIntegrable (fun α => g α * (xiConv μ g α - A)) volume (-π) π :=
@@ -453,14 +435,14 @@ theorem integral_mul_xiConv_nonneg {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
     have hsplit : ∫ α in (-π)..π, g α * xiConv μ g α =
         (∫ α in (-π)..π, g α * A) + ∫ α in (-π)..π, g α * (xiConv μ g α - A) := by
       rw [← intervalIntegral.integral_add hgA hgx]
-      congr 1; funext α; ring
+      ring
     rw [hsplit]
     have : 0 ≤ ∫ α in (-π)..π, g α * A := by
       rw [intervalIntegral.integral_mul_const, hA, ← cosCoeff_zero g]
       have : 0 ≤ (2 * π)⁻¹ * (cosCoeff g 0 * cosCoeff g 0) := by
         have := mul_self_nonneg (cosCoeff g 0)
         positivity
-      linarith [this]
+      linarith
     linarith
   · -- measurability
     intro n
@@ -475,35 +457,31 @@ theorem integral_mul_xiConv_nonneg {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
     exact (summable_xiConvTerm_bound hμ (2 * L)).mul_left _
   · have : (fun α : ℝ => ∑' n : ℕ, |g α| * (π⁻¹ * Real.exp (-μ) ^ (n + 1) * (2 * L))) =
         fun α => |g α| * ∑' n : ℕ, (π⁻¹ * Real.exp (-μ) ^ (n + 1) * (2 * L)) := by
-      funext α; rw [tsum_mul_left]
+      simp [tsum_mul_left]
     rw [this]
     exact hg.abs.mul_const _
   · refine Filter.Eventually.of_forall fun α _ => ?_
     have := (hasSum_xiConv hμ hg α).mul_left (g α)
-    convert this using 1
-    funext n
-    rfl
+    assumption
 
 
+include hμ hD in
 /-- Uniqueness mechanism (almost-everywhere form): if `D` is integrable and
 `D = -(Ξ_μ * D)` almost everywhere on `(-π, π]`, then `D = 0` almost everywhere on `(-π, π]`. -/
-theorem eq_zero_of_ae_eq_neg_xiConv {μ : ℝ} (hμ : 0 < μ) {D : ℝ → ℝ}
-    (hD : IntervalIntegrable D volume (-π) π)
+theorem eq_zero_of_ae_eq_neg_xiConv
     (h : ∀ᵐ α ∂(volume.restrict (Ioc (-π) π)), D α = -xiConv μ D α) :
     D =ᵐ[volume.restrict (Ioc (-π) π)] 0 := by
   have hpi := Real.pi_pos
   have hcont := continuous_xiConv hμ hD
-  have hE : IntervalIntegrable (fun α => D α * xiConv μ D α) volume (-π) π :=
+  have hE :=
     hD.mul_continuousOn hcont.continuousOn
-  have hEi : IntegrableOn (fun α => D α * xiConv μ D α) (Ioc (-π) π) volume :=
+  have hEi :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le (by linarith)).1 hE
   have hsq : ∀ᵐ α ∂(volume.restrict (Ioc (-π) π)),
       D α ^ 2 = -(D α * xiConv μ D α) := by
     filter_upwards [h] with α hα
-    calc D α ^ 2 = D α * D α := sq _
-      _ = D α * (-xiConv μ D α) := by rw [← hα]
-      _ = -(D α * xiConv μ D α) := by ring
-  have hsqi : IntegrableOn (fun α => D α ^ 2) (Ioc (-π) π) volume :=
+    grind
+  have hsqi :=
     Integrable.congr hEi.neg (by filter_upwards [hsq] with α hα; exact hα.symm)
   have hint : ∫ α in Ioc (-π) π, D α ^ 2 = -∫ α in Ioc (-π) π, D α * xiConv μ D α := by
     rw [← MeasureTheory.integral_neg]
@@ -518,10 +496,10 @@ theorem eq_zero_of_ae_eq_neg_xiConv {μ : ℝ} (hμ : 0 < μ) {D : ℝ → ℝ}
   filter_upwards [this] with α hα
   simpa using hα
 
+include hμ hD in
 /-- Uniqueness mechanism: if `D` is integrable and `D = -(Ξ_μ * D)` on `(-π, π]`, then `D = 0`
 almost everywhere on `(-π, π]`. -/
-theorem eq_zero_of_eq_neg_xiConv {μ : ℝ} (hμ : 0 < μ) {D : ℝ → ℝ}
-    (hD : IntervalIntegrable D volume (-π) π)
+theorem eq_zero_of_eq_neg_xiConv
     (h : ∀ α ∈ Ioc (-π) π, D α = -xiConv μ D α) :
     D =ᵐ[volume.restrict (Ioc (-π) π)] 0 :=
   eq_zero_of_ae_eq_neg_xiConv hμ hD ((ae_restrict_iff' measurableSet_Ioc).2

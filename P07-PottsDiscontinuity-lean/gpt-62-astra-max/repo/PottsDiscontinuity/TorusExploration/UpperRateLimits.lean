@@ -16,16 +16,14 @@ lemma positiveEvenPeriod_tendsto : Tendsto positiveEvenPeriod atTop atTop := by
   apply tendsto_atTop.2
   intro k
   filter_upwards [eventually_ge_atTop k] with m hm
-  dsimp [positiveEvenPeriod]
-  omega
+  grind [positiveEvenPeriod]
 
 lemma shiftedDiagonalIndex_tendsto :
     Tendsto (fun m => 2*(positiveEvenPeriod m-1)) atTop atTop := by
   apply tendsto_atTop.2
   intro k
   filter_upwards [eventually_ge_atTop k] with m hm
-  dsimp [positiveEvenPeriod]
-  omega
+  grind [positiveEvenPeriod]
 
 /-- The factor two in diagonalSite's frozen indexing is exactly canceled by
 reflection's square root. -/
@@ -41,8 +39,7 @@ theorem log_sqrt_diagonal_rate (D : ℕ → ℝ) (hD : ∀ n, 0 ≤ D n) (ξ : �
     simp only [sub_zero] at h
     apply h.congr'
     filter_upwards [] with m
-    have hm : 1 ≤ positiveEvenPeriod m := by dsimp [positiveEvenPeriod]; omega
-    have hmn : (positiveEvenPeriod m : ℝ) ≠ 0 := by exact_mod_cast (by omega : positiveEvenPeriod m ≠ 0)
+    have hm : 1 ≤ positiveEvenPeriod m := by grind [positiveEvenPeriod]
     rw [Nat.cast_mul,Nat.cast_ofNat,Nat.cast_sub hm,Nat.cast_one]
     field_simp
   have h := (hRate.comp shiftedDiagonalIndex_tendsto).neg.mul hratio
@@ -51,10 +48,7 @@ theorem log_sqrt_diagonal_rate (D : ℕ → ℝ) (hD : ∀ n, 0 ≤ D n) (ξ : �
   filter_upwards [] with m
   simp only [Function.comp_apply]
   rw [Real.log_sqrt (hD _)]
-  have hm : 0 < positiveEvenPeriod m := positiveEvenPeriod_pos m
-  have hi : 0 < 2*(positiveEvenPeriod m-1) := by dsimp [positiveEvenPeriod]; omega
-  have hmn : (positiveEvenPeriod m : ℝ) ≠ 0 := by positivity
-  have hin : ((2*(positiveEvenPeriod m-1) : ℕ) : ℝ) ≠ 0 := by positivity
+  have hi : 0 < 2*(positiveEvenPeriod m-1) := by grind [positiveEvenPeriod]
   field_simp
 
 /-- A width-dependent finite prefactor has no effect on the height-normalized
@@ -66,14 +60,14 @@ theorem log_tail_limsup_le (D p : ℕ → ℝ) (hD : ∀ n, 0 < D n)
       K*(Real.sqrt (D (2*(positiveEvenPeriod m-1))))^s) :
     limsup (fun m => ((Real.log (p m)/(positiveEvenPeriod m : ℝ) : ℝ) : EReal)) atTop ≤
       (-((s : ℝ))*ξ : ℝ) := by
-  let F : ℕ → ℝ := fun m => Real.log K/(positiveEvenPeriod m : ℝ) +
+  let F := fun m => Real.log K/(positiveEvenPeriod m : ℝ) +
     (s : ℝ)*(Real.log (Real.sqrt (D (2*(positiveEvenPeriod m-1)))) /
       (positiveEvenPeriod m : ℝ))
-  have hconst : Tendsto (fun m => Real.log K/(positiveEvenPeriod m : ℝ)) atTop (𝓝 (0 : ℝ)) :=
+  have hconst :=
     (tendsto_const_div_atTop_nhds_zero_nat (Real.log K)).comp positiveEvenPeriod_tendsto
   have hF : Tendsto F atTop (𝓝 (-((s : ℝ))*ξ)) := by
     have h := hconst.add ((log_sqrt_diagonal_rate D (fun n => (hD n).le) ξ hRate).const_mul (s : ℝ))
-    simpa only [zero_add,mul_neg,neg_mul] using h
+    grind
   have hle : ∀ᶠ m in atTop,
       ((Real.log (p m)/(positiveEvenPeriod m : ℝ) : ℝ) : EReal) ≤ (F m : EReal) := by
     filter_upwards [hp] with m hm
@@ -82,8 +76,8 @@ theorem log_tail_limsup_le (D p : ℕ → ℝ) (hD : ∀ n, 0 < D n)
     have hlog := Real.log_le_log hm.1 hm.2
     rw [Real.log_mul hK.ne' (pow_pos hsqrt s).ne',Real.log_pow] at hlog
     have hdiv := div_le_div_of_nonneg_right hlog (Nat.cast_nonneg (positiveEvenPeriod m))
-    simpa only [F,add_div,mul_div_assoc] using hdiv
-  have hFE : Tendsto (fun m => (F m : EReal)) atTop (𝓝 ((-((s : ℝ))*ξ : ℝ) : EReal)) :=
+    grind
+  have hFE :=
     EReal.tendsto_coe.mpr hF
   rw [← hFE.limsup_eq]
   exact limsup_le_limsup hle

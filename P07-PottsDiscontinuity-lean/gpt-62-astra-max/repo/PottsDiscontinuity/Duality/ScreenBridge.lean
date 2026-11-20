@@ -22,8 +22,7 @@ theorem wholePlaneOpenPrimalGraph_eq_rcInfiniteOpenGraph (ω : LatticeConfigurat
   ext u v
   rw [rcInfiniteOpenGraph, SimpleGraph.fromEdgeSet_adj]
   constructor
-  · rintro ⟨hadj, hopen⟩
-    exact ⟨⟨squareLattice.mem_edgeSet.mpr hadj, hopen⟩, hadj.ne⟩
+  · aesop
   · rintro ⟨⟨he, hopen⟩, _⟩
     exact ⟨squareLattice.mem_edgeSet.mp he, hopen⟩
 

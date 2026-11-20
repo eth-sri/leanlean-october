@@ -17,8 +17,9 @@ open scoped Topology
 
 namespace PottsDiscontinuity.AnalyticTools
 
-noncomputable def parameterShear
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+variable {E : Type*}
+
+noncomputable def parameterShear [NormedAddCommGroup E] [NormedSpace ℝ E]
     (A : ℝ →L[ℝ] E) : (ℝ × E) ≃L[ℝ] (ℝ × E) where
   toFun p := (p.1, A p.1 + p.2)
   invFun p := (p.1, p.2 - A p.1)
@@ -40,13 +41,12 @@ noncomputable def parameterShear
 /-- A finite-dimensional real analytic implicit function theorem with a one-dimensional
 parameter.  The branch is defined on all of `ℝ` by the local inverse's totalized inverse map;
 the equation is asserted on a neighborhood of the base parameter. -/
-theorem exists_analytic_implicitFunction_with_local_uniqueness
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+theorem exists_analytic_implicitFunction_with_local_uniqueness [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     {F : ℝ × E → E}
     {t₀ : ℝ} {x₀ : E}
     (hF : AnalyticAt ℝ F (t₀, x₀))
     (hzero : F (t₀, x₀) = 0)
-    (e : E ≃L[ℝ] E)
+    {e : E ≃L[ℝ] E}
     (hDx : (fderiv ℝ F (t₀, x₀)).comp (ContinuousLinearMap.inr ℝ ℝ E) =
       (e : E →L[ℝ] E)) :
     ∃ ψ : ℝ → E,
@@ -56,27 +56,19 @@ theorem exists_analytic_implicitFunction_with_local_uniqueness
         (∀ t ∈ V, (t, ψ t) ∈ W ∧ F (t, ψ t) = 0) ∧
         (∀ t y, (t, y) ∈ W → F (t, y) = 0 → y = ψ t) := by
   let z₀ : ℝ × E := (t₀, x₀)
-  let D : (ℝ × E) →L[ℝ] E := fderiv ℝ F z₀
-  let A : ℝ →L[ℝ] E := D.comp (ContinuousLinearMap.inl ℝ ℝ E)
+  let D := fderiv ℝ F z₀
+  let A := D.comp (ContinuousLinearMap.inl ℝ ℝ E)
   let J : (ℝ × E) ≃L[ℝ] (ℝ × E) :=
     (ContinuousLinearEquiv.prodCongr (ContinuousLinearEquiv.refl ℝ ℝ) e).trans
       (parameterShear A)
-  let g : ℝ × E → ℝ × E := fun z => (z.1, F z)
+  let g := fun z => (z.1, F z)
   let Dg : (ℝ × E) →L[ℝ] (ℝ × E) :=
     (ContinuousLinearMap.fst ℝ ℝ E).prod D
   have hsplit (z : ℝ × E) : D z = A z.1 + (e : E →L[ℝ] E) z.2 := by
     have hz : z = ContinuousLinearMap.inl ℝ ℝ E z.1 +
         ContinuousLinearMap.inr ℝ ℝ E z.2 := by
-      ext <;> simp [ContinuousLinearMap.inl_apply, ContinuousLinearMap.inr_apply]
-    rw [hz, map_add]
-    simp only [ContinuousLinearMap.inl_apply, ContinuousLinearMap.inr_apply,
-      Prod.fst_add, Prod.snd_add, zero_add, add_zero]
-    change D (z.1, 0) + D (0, z.2) = D (z.1, 0) + e z.2
-    congr 1
-    have hb := congrArg (fun L : E →L[ℝ] E => L z.2) hDx
-    have harg : (ContinuousLinearMap.inr ℝ ℝ E) z.2 = (0, z.2) := rfl
-    rw [← harg]
-    exact hb
+      simp
+    grind
   have hJ (z : ℝ × E) : J z = (z.1, A z.1 + e z.2) := by
     simp [J, parameterShear]
   have hDg (z : ℝ × E) : Dg z = (z.1, D z) := by
@@ -84,17 +76,14 @@ theorem exists_analytic_implicitFunction_with_local_uniqueness
   have hlin : Dg = (J : (ℝ × E) →L[ℝ] (ℝ × E)) := by
     apply DFunLike.ext
     intro z
-    change Dg z = J z
-    rw [hDg z, hJ z, hsplit z]
-    rfl
+    simp [hDg z, hJ z, hsplit z]
   have hGanalytic : AnalyticAt ℝ g z₀ := by
     exact analyticAt_fst.prod hF
   have hGstrict : HasStrictFDerivAt g (J : (ℝ × E) →L[ℝ] (ℝ × E)) z₀ := by
     have h : HasStrictFDerivAt g Dg z₀ := by
       change HasStrictFDerivAt (fun z => (z.1, F z)) Dg z₀
       exact (hasStrictFDerivAt_fst (𝕜 := ℝ) (p := z₀)).prodMk hF.hasStrictFDerivAt
-    rw [hlin] at h
-    exact h
+    grind
   have hzero' : g z₀ = (t₀, 0) := by simp [g, z₀, hzero]
   have hinverse := analyticAt_localInverse hGanalytic hGstrict
   let R := hGstrict.toOpenPartialHomeomorph g
@@ -103,17 +92,16 @@ theorem exists_analytic_implicitFunction_with_local_uniqueness
   let ψ : ℝ → E := fun t => (pairBranch t).2
   have hsource : z₀ ∈ R.source := hGstrict.mem_toOpenPartialHomeomorph_source
   have hψ₀ : ψ t₀ = x₀ := by
-    have hqbase : q t₀ = g z₀ := by simp [q, g, z₀, hzero]
+    have hqbase : q t₀ = g z₀ := by grind
     have hleft : R.symm (q t₀) = z₀ := by
       simpa [R, hqbase] using R.left_inv hsource
-    simp [ψ, pairBranch, z₀, hleft]
+    grind
   have hq : AnalyticAt ℝ q t₀ := by fun_prop
   have hinverse' : AnalyticAt ℝ R.symm (t₀, (0 : E)) := by
     simpa [R, g, z₀, hzero] using hinverse
   have hpair : AnalyticAt ℝ pairBranch t₀ := by
     exact hinverse'.comp_of_eq hq (by simp [q])
   have hψanalytic : AnalyticAt ℝ ψ t₀ := by
-    change AnalyticAt ℝ (fun t => (pairBranch t).2) t₀
     exact (analyticAt_snd (𝕜 := ℝ) (p := pairBranch t₀)).comp hpair
   have himage : g z₀ ∈ R.target := hGstrict.image_mem_toOpenPartialHomeomorph_target
   have hqtarget : (t₀, (0 : E)) ∈ R.target := by simpa [← hzero'] using himage
@@ -128,18 +116,7 @@ theorem exists_analytic_implicitFunction_with_local_uniqueness
       exact R.map_target htarg
     have heq : g (pairBranch t) = q t := by
       simpa [pairBranch, R] using R.right_inv htarg
-    have hfst : (pairBranch t).1 = t := by
-      simpa [g, q] using congrArg Prod.fst heq
-    have hpairEq : pairBranch t = (t, ψ t) := by
-      apply Prod.ext
-      · exact hfst
-      · rfl
-    have hsecond : F (pairBranch t) = 0 := by
-      simpa [g, q] using congrArg Prod.snd heq
-    constructor
-    · rw [← hpairEq]
-      exact hbranchsource
-    · simpa [hpairEq] using hsecond
+    grind
   · intro t y hyW hyzero
     have hgy : g (t, y) = q t := by simp [g, q, hyzero]
     have hleft := R.left_inv hyW
@@ -151,8 +128,7 @@ theorem exists_analytic_implicitFunction_with_local_uniqueness
 
 /-- The usual local analytic implicit function theorem, with the equation asserted on a
 neighborhood of the base parameter. -/
-theorem exists_analytic_implicitFunction
-    {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
+theorem exists_analytic_implicitFunction [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     {F : ℝ × E → E}
     {t₀ : ℝ} {x₀ : E}
     (hF : AnalyticAt ℝ F (t₀, x₀))
@@ -164,9 +140,9 @@ theorem exists_analytic_implicitFunction
       ψ t₀ = x₀ ∧ AnalyticAt ℝ ψ t₀ ∧
       ∀ᶠ t in 𝓝 t₀, F (t, ψ t) = 0 := by
   obtain ⟨ψ, hψ₀, hψanalytic, W, V, hWopen, hVopen, hWbase, hVbase, hbranch, hunique⟩ :=
-    exists_analytic_implicitFunction_with_local_uniqueness hF hzero e hDx
+    exists_analytic_implicitFunction_with_local_uniqueness hF hzero hDx
   refine ⟨ψ, hψ₀, hψanalytic, ?_⟩
   filter_upwards [hVopen.mem_nhds hVbase] with t ht
-  exact (hbranch t ht).2
+  grind
 
 end PottsDiscontinuity.AnalyticTools

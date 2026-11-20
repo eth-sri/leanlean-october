@@ -14,9 +14,6 @@ open Torus FK CorrLength MeasureTheory
 variable {N M : ℕ}
 noncomputable section
 open scoped Classical
-local instance cylinderUnionEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (fullCylinderGraph hN hM).edgeSet := Classical.decEq _
-local instance cylinderUnionVertexDecidableEq : DecidableEq (FaceVertex N M true) := Classical.decEq _
 
 abbrev BottomVertex (N M : ℕ) := {v : FaceVertex N M true // v.val.2.val=0}
 abbrev TopVertex (N M : ℕ) := {v : FaceVertex N M true // v.val.2.val+1=M}
@@ -25,41 +22,35 @@ lemma card_bottomVertex_le : Fintype.card (BottomVertex N M) ≤ N := by
   suffices h : Fintype.card (BottomVertex N M) ≤ Fintype.card (Fin N) by simpa using h
   apply Fintype.card_le_of_injective (fun v : BottomVertex N M => v.val.val.1)
   intro u v h
-  apply Subtype.ext
-  apply Subtype.ext
-  apply Prod.ext h
-  apply Fin.ext
-  exact u.property.trans v.property.symm
+  grind
 
 lemma card_topVertex_le : Fintype.card (TopVertex N M) ≤ N := by
   suffices h : Fintype.card (TopVertex N M) ≤ Fintype.card (Fin N) by simpa using h
   apply Fintype.card_le_of_injective (fun v : TopVertex N M => v.val.val.1)
   intro u v h
-  apply Subtype.ext
-  apply Subtype.ext
-  apply Prod.ext h
-  apply Fin.ext
-  have hu := u.property
-  have hv := v.property
-  omega
+  grind
 
 /-- Periodic continuation of a finite list, with no distinguished default vertex. -/
 def periodicEndpoints {V : Type*} {r : ℕ} (hr : 0 < r) (x : Fin r → V) : ℕ → V :=
   fun n => x ⟨n%r,Nat.mod_lt n hr⟩
 
+variable (hN : Even N) (hM : Even M) (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) {θ : Parameters}
+    (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (r : ℕ)
+    (hr : 0 < r)
+
+include hr in
 /-- The choices include both endpoints; allowing all top endpoints gives a
 rigorous upper union bound without the informal fixed-endpoint equality in (af). -/
-def cylinderEndpointEvent (hN : Even N) (hM : Even M) (r : ℕ) (hr : 0 < r)
+def cylinderEndpointEvent
     (z : (Fin r → BottomVertex N M) × (Fin r → TopVertex N M)) :
     Set (Configuration (fullCylinderGraph hN hM)) :=
   distinctConnections (fullCylinderGraph hN hM)
     (fun n => (periodicEndpoints hr z.1 n).val)
     (fun n => (periodicEndpoints hr z.2 n).val) r
 
-lemma cylinderCrossings_subset_endpoint_union (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (r : ℕ) (hr : 0 < r) :
+lemma cylinderCrossings_subset_endpoint_union :
     {C | TorusRC.torusRCSeamClosedCylinderCrossings hN hM r
-      (cylinderIndexedConfiguration hN hM hN4 hM4 C)} ⊆
+      (cylinderIndexedConfiguration hN4 hM4 C)} ⊆
       ⋃ z, cylinderEndpointEvent hN hM r hr z := by
   intro C hC
   obtain ⟨x,hx,hy,hd⟩ := hC
@@ -79,18 +70,15 @@ lemma cylinderCrossings_subset_endpoint_union (hN : Even N) (hM : Even M)
     rw [← hg]
     simpa only [FK.ActualConnected,z,periodicEndpoints,Nat.mod_eq_of_lt hi,Nat.mod_eq_of_lt hk,Subtype.coe_mk] using hc
 
+include hμ in
 /-- Union bound over at most N^(2r) bottom/top endpoint choices. -/
-theorem cylinderCrossings_probability_le (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (θ : Parameters)
-    (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
-    (r : ℕ) (hr : 1 ≤ r) :
+theorem cylinderCrossings_probability_le (hr : 1 ≤ r) :
     (measure (fullCylinderGraph hN hM) θ (BoundaryCondition.free ∅)
       {C | TorusRC.torusRCSeamClosedCylinderCrossings hN hM r
-        (cylinderIndexedConfiguration hN hM hN4 hM4 C)}).toReal ≤
+        (cylinderIndexedConfiguration hN4 hM4 C)}).toReal ≤
       (N : ℝ)^(2*r) *
         (Real.sqrt (μ.real (CorrLength.connectionEvent (0,0) (diagonalSite (2*(M-1))))))^(r-1) := by
   let G := fullCylinderGraph hN hM
-  let : Fintype G.edgeSet := Fintype.ofFinite _
   let ν := measure G θ (BoundaryCondition.free ∅)
   let Z := (Fin r → BottomVertex N M) × (Fin r → TopVertex N M)
   let c := Real.sqrt (μ.real (CorrLength.connectionEvent (0,0) (diagonalSite (2*(M-1)))))
@@ -99,7 +87,7 @@ theorem cylinderCrossings_probability_le (hN : Even N) (hM : Even M)
     calc
       _ ≤ N^r*N^r := Nat.mul_le_mul
         (Nat.pow_le_pow_left card_bottomVertex_le r) (Nat.pow_le_pow_left card_topVertex_le r)
-      _ = _ := by rw [← pow_add]; congr 1; omega
+      _ = _ := by rw [← pow_add]; grind
   calc
     _ ≤ ν.real (⋃ z : Z, cylinderEndpointEvent hN hM r (by omega) z) :=
       measureReal_mono (cylinderCrossings_subset_endpoint_union hN hM hN4 hM4 r (by omega))
@@ -109,8 +97,6 @@ theorem cylinderCrossings_probability_le (hN : Even N) (hM : Even M)
       apply Finset.sum_le_sum
       intro z _
       exact cylinder_distinctConnections_le hN hM hN4 hM4 θ μ hμ
-        (fun n => (periodicEndpoints (by omega) z.1 n).val)
-        (fun n => (periodicEndpoints (by omega) z.2 n).val)
         (fun n => (periodicEndpoints (by omega) z.1 n).property)
         (fun n => (periodicEndpoints (by omega) z.2 n).property) r hr
     _ = (Fintype.card Z : ℝ)*c^(r-1) := by simp

@@ -19,41 +19,40 @@ namespace PottsDiscontinuity.FK
 
 variable {V : Type*} {G : SimpleGraph V}
 
- noncomputable def collapseComponent (s : Setoid V) (u v : V)
+ noncomputable def collapseComponent {s : Setoid V} {u v : V}
     (hne : ¬ s.r u v) (x : V) : {q : Quotient s // q ≠ Quotient.mk s v} := by
   classical
   exact if h : Quotient.mk s x = Quotient.mk s v then
     ⟨Quotient.mk s u, fun h => hne (Quotient.exact h)⟩ else ⟨Quotient.mk s x, h⟩
 
- theorem collapseComponent_respects (s : Setoid V) (u v : V)
-    (hne : ¬ s.r u v) {x y : V} (hxy : s.r x y) :
-    collapseComponent s u v hne x = collapseComponent s u v hne y := by
-  classical
-  apply Subtype.ext
-  simp only [collapseComponent]
-  simp only [Quotient.sound hxy]
+ section
+variable (s : Setoid V) (u v : V) (hne : ¬ s.r u v)
 
- theorem collapseComponent_surjective (s : Setoid V) (u v : V)
-    (hne : ¬ s.r u v) : Function.Surjective (collapseComponent s u v hne) := by
+theorem collapseComponent_respects {x y : V} (hxy : s.r x y) :
+    collapseComponent hne x = collapseComponent hne y := by
+  grind [collapseComponent, Quotient.sound hxy]
+
+ theorem collapseComponent_surjective : Function.Surjective (collapseComponent hne) := by
   classical
   rintro ⟨q, hq⟩
   obtain ⟨x, rfl⟩ := Quotient.mk_surjective q
   refine ⟨x, ?_⟩
-  apply Subtype.ext
   simp [collapseComponent, hq]
+
+end
 
 /-- The quotient after adding an edge between distinct components is the old
 quotient with the second endpoint's class removed. This is a real equivalence. -/
 noncomputable def componentQuotientInsertEquiv [DecidableEq G.edgeSet]
     (ξ : BoundaryCondition V) (A : Configuration G) {u v : V} (huv : G.Adj u v)
-    (hne : ¬ (componentSetoid G ξ A).r u v) :
-    Quotient (componentSetoid G ξ (insert ⟨s(u,v), G.mem_edgeSet.mpr huv⟩ A)) ≃
-      {q : Quotient (componentSetoid G ξ A) //
-        q ≠ Quotient.mk (componentSetoid G ξ A) v} := by
+    (hne : ¬ (componentSetoid (G := G) ξ A).r u v) :
+    Quotient (componentSetoid (G := G) ξ (insert ⟨s(u,v), G.mem_edgeSet.mpr huv⟩ A)) ≃
+      {q : Quotient (componentSetoid (G := G) ξ A) //
+        q ≠ Quotient.mk (componentSetoid (G := G) ξ A) v} := by
   classical
-  let s := componentSetoid G ξ A
-  let t := componentSetoid G ξ (insert ⟨s(u,v), G.mem_edgeSet.mpr huv⟩ A)
-  let f := collapseComponent s u v hne
+  let s := componentSetoid (G := G) ξ A
+  let t := componentSetoid (G := G) ξ (insert ⟨s(u,v), G.mem_edgeSet.mpr huv⟩ A)
+  let f := collapseComponent (s := s) (u := u) (v := v) hne
   have hst : s ≤ t := componentSetoid_mono ξ (Finset.subset_insert _ _)
   have htuv : t.r u v := by
     apply actualConnected_component
@@ -108,12 +107,12 @@ noncomputable def componentQuotientInsertEquiv [DecidableEq G.edgeSet]
 by exactly one. The edge need not be separately assumed absent: distinctness
 already implies that fact. -/
 theorem componentCount_insert_of_not_related [Finite V] [DecidableEq G.edgeSet]
-    (ξ : BoundaryCondition V) (A : Configuration G) {u v : V} (huv : G.Adj u v)
-    (hne : ¬ (componentSetoid G ξ A).r u v) :
-    componentCount G ξ (insert ⟨s(u,v), G.mem_edgeSet.mpr huv⟩ A) + 1 =
-      componentCount G ξ A := by
+    {ξ : BoundaryCondition V} {A : Configuration G} {u v : V} (huv : G.Adj u v)
+    (hne : ¬ (componentSetoid ξ A).r u v) :
+    componentCount ξ (insert ⟨s(u,v), G.mem_edgeSet.mpr huv⟩ A) + 1 =
+      componentCount ξ A := by
   classical
-  let s := componentSetoid G ξ A
+  let s := componentSetoid ξ A
   let : Fintype (Quotient s) := Fintype.ofFinite _
   have hcard := Nat.card_congr (componentQuotientInsertEquiv ξ A huv hne)
   have hpos : 0 < Nat.card (Quotient s) := by
@@ -123,7 +122,6 @@ theorem componentCount_insert_of_not_related [Finite V] [DecidableEq G.edgeSet]
   rw [hcard, Nat.card_eq_fintype_card, Fintype.card_subtype_compl]
   simp only [Fintype.card_unique]
   rw [← Nat.card_eq_fintype_card]
-  change Nat.card (Quotient s) - 1 + 1 = Nat.card (Quotient s)
-  omega
+  grind
 
 end PottsDiscontinuity.FK

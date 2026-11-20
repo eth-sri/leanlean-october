@@ -21,10 +21,9 @@ theorem rectangleDualAmbient_law_restrict_to_dual
   classical
   have hfiniteSet : (rectangleDualExpanded a w h : Set LatticeVertex).Finite :=
     Finset.finite_toSet _
-  let rectangleDualAmbientVertexFinite : Finite (RectangleDualVertex a w h) := hfiniteSet
   let H := rectangleDualAmbientGraph a w h
   let G := rectangleDualGraph a w h
-  let hGH : G ≤ H := rectangleDualGraph_le_ambient a w h
+  let hGH := rectangleDualGraph_le_ambient a w h
   let rectangleDualAmbientEdgeDecidableEq : DecidableEq H.edgeSet := Classical.decEq _
   let R := subgraphRemovedEdges G H
   have hR : ∀ (u v : RectangleDualVertex a w h) (huv : H.Adj u v),
@@ -35,11 +34,11 @@ theorem rectangleDualAmbient_law_restrict_to_dual
     right
     have hnot : ¬ G.Adj u v := by
       intro hadj
-      have hedge : s(u, v) ∈ G.edgeSet := G.mem_edgeSet.mpr hadj
+      have hedge := G.mem_edgeSet.mpr hadj
       have hremoved := (mem_subgraphRemovedEdges (G := G) (H := H) _).mp he
-      exact hremoved (by simpa using hedge)
+      grind
     exact rectangleDualAmbient_extraEdge_endpoints_boundary a w h u v huv hnot
-  have hremove := law_map_remove H q (rectangleDualBoundaryCondition a w h) R hR
+  have hremove := law_map_remove H q R hR
   have hsubgraph := law_subgraphRemaining_map hGH q (rectangleDualBoundaryCondition a w h)
   calc
     (law H q (rectangleDualBoundaryCondition a w h)).map
@@ -55,7 +54,7 @@ theorem rectangleDualAmbient_law_restrict_to_dual
     _ = ((law G q (rectangleDualBoundaryCondition a w h)).map
         (subgraphRemainingConfigurationEquiv hGH)).map
           (subgraphRemainingConfigurationEquiv hGH).symm := by
-        rw [hremove, hsubgraph]
+        grind
     _ = law G q (rectangleDualBoundaryCondition a w h) := by
         rw [PMF.map_comp]
         have heq : ((subgraphRemainingConfigurationEquiv hGH).symm ∘

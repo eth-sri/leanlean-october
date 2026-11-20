@@ -44,26 +44,31 @@ def dcells : Finset Cell := R.cells.filter (fun c => ¬ IsPrimal c)
 
 variable {R}
 
-theorem mem_cells {c : Cell} :
+section
+variable {c : Cell}
+
+theorem mem_cells :
     c ∈ R.cells ↔ R.x0 ≤ c.1 ∧ c.1 ≤ R.x0 + R.w ∧ R.y0 ≤ c.2 ∧ c.2 ≤ R.y0 + R.h := by
-  unfold cells; simp only [Finset.mem_product, Finset.mem_Icc]; tauto
+  grind [Finset.mem_product, Finset.mem_Icc, cells]
 
 theorem mem_inner {m : Cell} :
     m ∈ R.inner ↔ R.x0 + 1 ≤ m.1 ∧ m.1 ≤ R.x0 + R.w ∧ R.y0 + 1 ≤ m.2 ∧ m.2 ≤ R.y0 + R.h := by
-  unfold inner; simp only [Finset.mem_product, Finset.mem_Icc]; tauto
+  grind [Finset.mem_product, Finset.mem_Icc, inner]
 
-theorem mem_pcells {c : Cell} : c ∈ R.pcells ↔ c ∈ R.cells ∧ IsPrimal c := by
-  unfold pcells; simp [Finset.mem_filter]
+theorem mem_pcells : c ∈ R.pcells ↔ c ∈ R.cells ∧ IsPrimal c := by
+  simp [Finset.mem_filter, pcells]
 
-theorem mem_dcells {c : Cell} : c ∈ R.dcells ↔ c ∈ R.cells ∧ ¬ IsPrimal c := by
-  unfold dcells; simp [Finset.mem_filter]
+theorem mem_dcells : c ∈ R.dcells ↔ c ∈ R.cells ∧ ¬ IsPrimal c := by
+  simp [Finset.mem_filter, dcells]
+
+end
 
 theorem pData (R : Rect) : EndData primalEnds R.pcells R.inner where
   mem m hm := by
     rw [mem_inner] at hm
     refine ⟨mem_pcells.2 ⟨mem_cells.2 ?_, primalEnds_fst_primal m⟩,
       mem_pcells.2 ⟨mem_cells.2 ?_, primalEnds_snd_primal m⟩⟩ <;>
-    · unfold primalEnds; split_ifs <;> dsimp only <;> omega
+    · grind [primalEnds]
   ne := primalEnds_ne
   inj _ _ h := primalEnds_inj h
 
@@ -72,7 +77,7 @@ theorem dData (R : Rect) : EndData dualEnds R.dcells R.inner where
     rw [mem_inner] at hm
     refine ⟨mem_dcells.2 ⟨mem_cells.2 ?_, dualEnds_fst_not_primal m⟩,
       mem_dcells.2 ⟨mem_cells.2 ?_, dualEnds_snd_not_primal m⟩⟩ <;>
-    · unfold dualEnds; split_ifs <;> dsimp only <;> omega
+    · grind [dualEnds]
   ne := dualEnds_ne
   inj _ _ h := dualEnds_inj h
 

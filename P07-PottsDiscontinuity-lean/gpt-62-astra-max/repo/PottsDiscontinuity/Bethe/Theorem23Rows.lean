@@ -14,30 +14,33 @@ open scoped BigOperators
 
 namespace PottsDiscontinuity.Bethe
 
+variable {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1)
+include hΔ₀
+
 /-- The row Riemann approximation, with the mesh and left endpoint distance
 made explicit. The right endpoint is controlled by symmetry in both parities. -/
-theorem exists_uniform_rescaled_row_estimate {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) :
+theorem exists_uniform_rescaled_row_estimate :
     ∃ C : ℝ, 0 < C ∧ ∀ Δ ≤ Δ₀, ∀ (N n : ℕ) (hn : 2 ≤ n), 0 < N →
       ∀ (p : Fin n → ℝ), p ∈ S_n n → ∀ d : ℝ, 0 ≤ d →
-      (∀ j : Fin (n / 2), p (discreteHalfNextIndex n j) -
-        p (discreteHalfIndex n j) ≤ d) →
-      p (discreteHalfPartitionIndex n hn 0) + Real.pi ≤ d →
+      (∀ j : Fin (n / 2), p (discreteHalfNextIndex j) -
+        p (discreteHalfIndex j) ≤ d) →
+      p (discreteHalfPartitionIndex hn 0) + Real.pi ≤ d →
       ∀ i : Fin (n / 2),
         |(∑ j ∈ Finset.univ.erase i, |discreteBetheMatrixATilde Δ N n p i j|) -
-          (discreteBetheG Δ (p (discreteHalfIndex n i)) 0 -
-            discreteBetheG Δ (p (discreteHalfIndex n i)) (-Real.pi))| ≤ C * d := by
+          (discreteBetheG Δ (p (discreteHalfIndex i)) 0 -
+            discreteBetheG Δ (p (discreteHalfIndex i)) (-Real.pi))| ≤ C * d := by
   obtain ⟨B, hB, hbounds⟩ := exists_uniform_discreteBetheG_deriv_bounds hΔ₀
   refine ⟨B * (2 * Real.pi + 3), by positivity,
     fun Δ hΔ N n hn hN p hp d hd hmesh hleft i => ?_⟩
   classical
   have hvalid := lt_of_le_of_lt hΔ hΔ₀
-  let q : Fin (n / 2 + 1) → ℝ := fun j => p (discreteHalfPartitionIndex n hn j)
-  let f : ℝ → ℝ := discreteBetheG Δ (p (discreteHalfIndex n i))
+  let q : Fin (n / 2 + 1) → ℝ := fun j => p (discreteHalfPartitionIndex hn j)
+  let f : ℝ → ℝ := discreteBetheG Δ (p (discreteHalfIndex i))
   let g : ℝ → ℝ := deriv f
   have hq : StrictMono q := fun j k hjk => hp.2.1 (by exact hjk)
   have hbox (j) : q j ∈ Icc (-Real.pi) Real.pi :=
     ⟨(hp.1 _).1.le, (hp.1 _).2.le⟩
-  have hx : p (discreteHalfIndex n i) ∈ Icc (-Real.pi) Real.pi :=
+  have hx : p (discreteHalfIndex i) ∈ Icc (-Real.pi) Real.pi :=
     ⟨(hp.1 _).1.le, (hp.1 _).2.le⟩
   have hdiff (y : ℝ) : DifferentiableAt ℝ f y :=
     (analyticAt_theta_right hvalid _ y).differentiableAt.sub
@@ -63,7 +66,7 @@ theorem exists_uniform_rescaled_row_estimate {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1)
     ⟨le_rfl, by linarith [Real.pi_pos]⟩
   have hend := discreteHalfPartition_endpoint hn p hp hmesh
   have hend' : |q (Fin.last (n / 2)) - 0| ≤ d := by
-    change |p (discreteHalfPartitionIndex n hn (Fin.last (n / 2))) - 0| ≤ d
+    change |p (discreteHalfPartitionIndex hn (Fin.last (n / 2))) - 0| ≤ d
     simpa only [sub_zero, abs_of_nonneg hend.1] using hend.2
   have hstart : |q 0 - (-Real.pi)| ≤ d := by
     rw [sub_neg_eq_add, abs_of_nonneg (by linarith [(hbox 0).1])]
@@ -101,34 +104,25 @@ theorem exists_uniform_rescaled_row_estimate {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1)
     ((f (q (Fin.last (n / 2))) - f 0) - (f (q 0) - f (-Real.pi)))
     (-((q i.succ - q i.castSucc) * g (q i.castSucc)))
   simp only [abs_neg] at htail₁ htail₂
-  have hid : (∑ j : Fin (n / 2), (q j.succ - q j.castSucc) * g (q j.castSucc)) -
-      (q i.succ - q i.castSucc) * g (q i.castSucc) - (f 0 - f (-Real.pi)) =
-      ((∑ j : Fin (n / 2), (q j.succ - q j.castSucc) * g (q j.castSucc)) -
-        (f (q (Fin.last (n / 2))) - f (q 0))) +
-      ((f (q (Fin.last (n / 2))) - f 0) - (f (q 0) - f (-Real.pi)) -
-        (q i.succ - q i.castSucc) * g (q i.castSucc)) := by ring
-  change |_ - (f 0 - f (-Real.pi))| ≤ _
-  rw [hid]
-  simp only [sub_eq_add_neg, add_assoc] at htotal htail₁ htail₂ hquad' hrightErr hleftErr hdiagErr ⊢
-  nlinarith only [htotal, htail₁, htail₂, hquad', hrightErr, hleftErr, hdiagErr]
+  grind
 
 /-- The source's off-diagonal row estimate with only the cyclic mesh premise. -/
-theorem exists_uniform_rescaled_row_cyclic_estimate {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) :
+theorem exists_uniform_rescaled_row_cyclic_estimate :
     ∃ C : ℝ, 0 < C ∧ ∀ Δ ≤ Δ₀, ∀ (N k : ℕ), 0 < N →
       ∀ (p : Fin (k + 1) → ℝ), p ∈ S_n (k + 1) → ∀ d : ℝ, 0 ≤ d →
-      (∀ j : Fin (k + 2), rootPartitionPoint (k + 1) p (by omega) j.succ -
-        rootPartitionPoint (k + 1) p (by omega) j.castSucc ≤ d) →
+      (∀ j : Fin (k + 2), rootPartitionPoint p (by omega) j.succ -
+        rootPartitionPoint p (by omega) j.castSucc ≤ d) →
       ∀ i : Fin ((k + 1) / 2),
         |(∑ j ∈ Finset.univ.erase i, |discreteBetheMatrixATilde Δ N (k + 1) p i j|) -
-          (discreteBetheG Δ (p (discreteHalfIndex (k + 1) i)) 0 -
-            discreteBetheG Δ (p (discreteHalfIndex (k + 1) i)) (-Real.pi))| ≤ C * d := by
+          (discreteBetheG Δ (p (discreteHalfIndex i)) 0 -
+            discreteBetheG Δ (p (discreteHalfIndex i)) (-Real.pi))| ≤ C * d := by
   obtain ⟨C, hC, hrow⟩ := exists_uniform_rescaled_row_estimate hΔ₀
   refine ⟨C, hC, fun Δ hΔ N k hN p hp d hd hmesh i => ?_⟩
   have hn : 2 ≤ k + 1 := by have := i.isLt; omega
   have hfirst := (root_mesh_consequences hp hmesh).1
-  have hzero : discreteHalfPartitionIndex (k + 1) hn 0 = 0 := rfl
+  have hzero : discreteHalfPartitionIndex hn 0 = 0 := rfl
   exact hrow Δ hΔ N (k + 1) hn hN p hp d hd
-    (discreteHalf_gap_le_of_cyclic_mesh (by omega) p hmesh)
-    (by simpa only [hzero] using hfirst) i
+    (discreteHalf_gap_le_of_cyclic_mesh p hmesh)
+    (by assumption) i
 
 end PottsDiscontinuity.Bethe

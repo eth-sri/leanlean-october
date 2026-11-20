@@ -14,11 +14,7 @@ namespace PottsDiscontinuity.Bethe
 theorem abs_average_four_le {a b c d R : ℝ}
     (ha : |a| ≤ R) (hb : |b| ≤ R) (hc : |c| ≤ R) (hd : |d| ≤ R) :
     |(a + b + c + d) / 4| ≤ R := by
-  rcases abs_le.mp ha with ⟨ha₁, ha₂⟩
-  rcases abs_le.mp hb with ⟨hb₁, hb₂⟩
-  rcases abs_le.mp hc with ⟨hc₁, hc₂⟩
-  rcases abs_le.mp hd with ⟨hd₁, hd₂⟩
-  exact abs_le.mpr ⟨by linarith, by linarith⟩
+  grind
 
 theorem theta_sum_mean_remainder {Δ : ℝ} (hΔ : Δ < -1) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ (N n : ℕ), 0 < N → n ≤ N →
@@ -45,10 +41,9 @@ theorem theta_sum_mean_remainder {Δ : ℝ} (hΔ : Δ < -1) :
         ∑ j, d2Theta Δ x (y j) * (y₁ j - y j)) / 2 := by
     rw [← Finset.sum_add_distrib, Finset.sum_div]
     apply Finset.sum_congr rfl
-    intro j _
-    ring
+    grind
   rw [hmean]
   simp only [Finset.sum_sub_distrib, ← Finset.sum_div, Finset.sum_add_distrib] at hb ⊢
-  convert hb using 1; ring
+  grind
 
 end PottsDiscontinuity.Bethe

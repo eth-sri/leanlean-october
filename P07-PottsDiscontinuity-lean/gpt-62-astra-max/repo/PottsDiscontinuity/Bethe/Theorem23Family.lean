@@ -26,22 +26,21 @@ theorem theorem23_analytic_family (r : ℕ) {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) 
         (∃ P : ℝ → (Fin (k + 1) → ℝ), AnalyticAt ℝ P 0 ∧
           P 0 = discreteBaseSolution N (k + 1) ∧ ∀ Δ ≤ Δ₀, p Δ = P (1 / Δ)) ∧
         ∀ (Δ : ℝ) (hΔ : Δ ≤ Δ₀),
-          densityNorm Δ (lt_of_le_of_lt hΔ hΔ₀)
-            (fun x => rootStepDensity N (k + 1) (p Δ) (hp Δ hΔ) (by omega) hs x - rho Δ x)
-            (rootStepDensity_error_bddAbove (lt_of_le_of_lt hΔ hΔ₀) _ (hp Δ hΔ) (by omega) hs) ≤ K / N := by
+          densityNorm Δ
+            (fun x => rootStepDensity N (p Δ) (by omega) x - rho Δ x) ≤ K / N := by
   let Δ₁ := (Δ₀ - 1) / 2
-  have hΔ₁ : Δ₁ < -1 := by dsimp [Δ₁]; linarith
-  have hΔ₀₁ : Δ₀ < Δ₁ := by dsimp [Δ₁]; linarith
+  have hΔ₁ : Δ₁ < -1 := by grind
+  have hΔ₀₁ : Δ₀ < Δ₁ := by grind
   obtain ⟨c, D, K, hc, _, _, hK, N₀, hN₀, hregion⟩ :=
     exists_uniform_regular_Bethe_region r hΔ₁
   refine ⟨K, hK, N₀, hN₀, Δ₁, hΔ₀₁, hΔ₁, fun N k hlarge hcount hs => ?_⟩
-  have hN : 0 < N := lt_of_lt_of_le hN₀ hlarge
+  have hN := lt_of_lt_of_le hN₀ hlarge
   have hNc : (0 : ℝ) < N := by exact_mod_cast hN
   let C := betheGapRegion k (c / N) (D / N)
   let F := fun z : ℝ × (Fin ((k + 1) / 2) → ℝ) => discreteCoordinateResidualInv z.1 N (k + 1) z.2
   obtain ⟨hbaseInterior, hregular, hnorm⟩ := hregion N k hlarge hcount hs
   have hcompact : IsCompact C := isCompact_betheGapRegion k (div_pos hc hNc)
-  have hbaseC : discreteBaseCoordinates N (k + 1) ∈ C := interior_subset hbaseInterior
+  have hbaseC := interior_subset hbaseInterior
   have hbase : ∃! q : C, F (0, q.val) = 0 := by
     refine ⟨⟨discreteBaseCoordinates N (k + 1), hbaseC⟩,
       discreteCoordinateResidualInv_base_zero hN hs, fun q hq => ?_⟩
@@ -54,21 +53,21 @@ theorem theorem23_analytic_family (r : ℕ) {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) 
       (fun ε hε q _ => analyticAt_discreteCoordinateResidualInv
         (abs_compact_inverse_parameter_lt_one hΔ₁ hε) N (k + 1) q)
       hregular hbase
-  let P : ℝ → (Fin (k + 1) → ℝ) := fun ε => discreteSymLift (k + 1) (ψ ε)
-  let p : ℝ → (Fin (k + 1) → ℝ) := fun Δ => P (1 / Δ)
-  have hparameter (Δ : ℝ) (hΔ : Δ ≤ Δ₀) : 1 / Δ ∈ Icc (1 / Δ₁) 0 :=
+  let P := fun ε => discreteSymLift (k + 1) (ψ ε)
+  let p := fun Δ => P (1 / Δ)
+  have hparameter (Δ : ℝ) (hΔ : Δ ≤ Δ₀) :=
     inverse_parameter_mem hΔ₁ (hΔ.trans hΔ₀₁.le)
-  have hp (Δ : ℝ) (hΔ : Δ ≤ Δ₀) : p Δ ∈ S_n (k + 1) :=
+  have hp (Δ : ℝ) (hΔ : Δ ≤ Δ₀) :=
     betheGapRegion_mem_S_n (div_pos hc hNc) (hψC _ (hparameter Δ hΔ)).1
   have hBE (Δ : ℝ) (hΔ : Δ ≤ Δ₀) : DiscreteBetheEquation Δ N (k + 1) (p Δ) := by
     apply (discreteCoordinateResidual_zero_iff hN (ψ (1 / Δ))).1
     rw [← discreteCoordinateResidualInv_eq (lt_of_le_of_lt hΔ hΔ₀)]
     exact (hψC _ (hparameter Δ hΔ)).2
-  have hPanalytic (ε : ℝ) (hε : ε ∈ Ioo (1 / Δ₁) b) : AnalyticAt ℝ P ε :=
+  have hPanalytic (ε : ℝ) (hε : ε ∈ Ioo (1 / Δ₁) b) :=
     (discreteSymLift (k + 1)).toContinuousLinearMap.analyticAt _ |>.comp (hψanalytic ε hε)
   have hpAnalytic : AnalyticOnNhd ℝ p (Iio Δ₁) := by
     intro Δ hΔ
-    have hvalid : Δ < -1 := lt_trans hΔ hΔ₁
+    have hvalid := lt_trans hΔ hΔ₁
     have hε : 1 / Δ ∈ Ioo (1 / Δ₁) b := by
       have hΔneg : Δ < 0 := by linarith
       have hΔ₁neg : Δ₁ < 0 := by linarith

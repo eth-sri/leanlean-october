@@ -19,79 +19,69 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
-theorem loopSum_sub (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (f g : Dart N M → ℤ) (q : DirectedLoop ω s h) :
-    loopSum ω s h (fun d => f d - g d) q = loopSum ω s h f q - loopSum ω s h g q := by
-  classical
-  unfold loopSum
-  rw [Finset.sum_sub_distrib]
+section
+variable (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s) (j : Fin M)
+    (f g : Dart N M → ℤ) (q : DirectedLoop h) (d : Dart N M)
+
+theorem loopSum_sub :
+    loopSum (fun d => f d - g d) q = loopSum f q - loopSum g q := by
+  simp [Finset.sum_sub_distrib, loopSum]
 
 /-- Reindexing a cyclic orbit by its path step does not change its sum. -/
-theorem loopSum_step (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (f : Dart N M → ℤ) (q : DirectedLoop ω s h) :
-    loopSum ω s h (fun d => f (stepPerm s d)) q = loopSum ω s h f q := by
+theorem loopSum_step {ω : ArrowConfig N M} {s : Smoothing N M}
+    {h : CompatibleConfig ω s} (f : Dart N M → ℤ) (q : DirectedLoop h) :
+    loopSum (fun d => f (stepPerm s d)) q = loopSum f q := by
   classical
   unfold loopSum
   simp only [Finset.sum_filter]
-  refine Fintype.sum_equiv (directedStep ω s h) _ _ ?_
-  intro d
-  rw [directedLoopOf_step]
-  rfl
+  refine Fintype.sum_equiv (directedStep h) _ _ ?_
+  simp [directedLoopOf_step]
 
+include j d in
 /-- A row-indicator potential on the initial vertex of a dart. -/
-def rowPotential (j : Fin M) (d : Dart N M) : ℤ := if d.1.2 = j then 1 else 0
+def rowPotential : ℤ := if d.1.2 = j then 1 else 0
 
 /-- Adjacent reference-row cocycles differ by a vertex coboundary. -/
-theorem verticalCross_sub_prv (s : Smoothing N M) (j : Fin M) (d : Dart N M) :
+theorem verticalCross_sub_prv :
     verticalCross j d - verticalCross (prv j) d =
       rowPotential j d - rowPotential j (stepPerm s d) := by
   rcases d with ⟨⟨i, k⟩, p⟩
   have hn : nxt k = j ↔ k = prv j := by
-    constructor
-    · intro h
-      rw [← h]
-      simp only [nxt, prv, Equiv.symm_apply_apply]
-    · intro h
-      rw [h]
-      simp only [nxt, prv, Equiv.apply_symm_apply]
+    grind
   have hp : prv k = prv j ↔ k = j := (finRotate M).symm.injective.eq_iff
   have hh (a b : Prop) [Decidable a] [Decidable b] :
       ((if a then (-1 : ℤ) else 0) - if b then -1 else 0) =
         (if b then 1 else 0) - if a then 1 else 0 := by
-    by_cases ha : a <;> by_cases hb : b <;>
-      simp only [ha, hb, ite_true, ite_false] <;> norm_num
+    grind
   cases p <;>
     simp only [verticalCross, rowPotential, stepPerm_apply, strandReverse,
       edgeReverse, hn, hp, sub_self]
   all_goals
-    first
-    | exact (sub_self (if k = j then (1 : ℤ) else 0)).symm
-    | exact hh (prv k = j) (k = j)
+    grind
 
 /-- A closed loop has equal intersection with two adjacent horizontal reference rows. -/
-theorem loopVertical_prv (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (j : Fin M) (q : DirectedLoop ω s h) :
-    loopVertical ω s h j q = loopVertical ω s h (prv j) q := by
-  have hb : loopSum ω s h (fun d => verticalCross j d - verticalCross (prv j) d) q = 0 := by
+theorem loopVertical_prv :
+    loopVertical j q = loopVertical (prv j) q := by
+  have hb : loopSum (fun d => verticalCross j d - verticalCross (prv j) d) q = 0 := by
     simp_rw [verticalCross_sub_prv s j]
     rw [loopSum_sub, loopSum_step, sub_self]
   rw [loopSum_sub] at hb
   exact sub_eq_zero.mp hb
 
 /-- The intersection number is independent of the chosen horizontal reference row. -/
-theorem loopVertical_eq (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (j k : Fin M) (q : DirectedLoop ω s h) :
-    loopVertical ω s h j q = loopVertical ω s h k q := by
-  have hM : 0 < M := Fin.pos j
-  have hz : ∀ l : Fin M, loopVertical ω s h l q = loopVertical ω s h ⟨0, hM⟩ q := by
+theorem loopVertical_eq (j k : Fin M) (q : DirectedLoop h) :
+    loopVertical j q = loopVertical k q := by
+  have hM := Fin.pos j
+  have hz : ∀ l : Fin M, loopVertical l q = loopVertical ⟨0, hM⟩ q := by
     obtain ⟨m, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hM.ne'
     intro l
     induction l using Fin.induction with
     | zero => rfl
     | succ l ih =>
-      rw [loopVertical_prv, prv_succ]
-      exact ih
-  exact (hz j).trans (hz k).symm
+      grind [loopVertical_prv, prv_succ]
+  grind
+
+end
 
 /-- Vertical displacement in the integer lift of one directed torus edge. -/
 def verticalIncrement : Dart N M → ℤ
@@ -107,18 +97,18 @@ theorem sum_verticalCross_rows (d : Dart N M) :
 
 /-- The winding is exactly the lifted vertical displacement divided by the vertical period:
 this integral identity avoids division and has no zero-period fallback. -/
-theorem loop_vertical_displacement (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (j : Fin M) (q : DirectedLoop ω s h) :
-    loopSum ω s h verticalIncrement q = (M : ℤ) * loopVertical ω s h j q := by
+theorem loop_vertical_displacement {ω : ArrowConfig N M} {s : Smoothing N M}
+    (h : CompatibleConfig ω s) (j : Fin M) (q : DirectedLoop h) :
+    loopSum verticalIncrement q = (M : ℤ) * loopVertical j q := by
   classical
   calc
-    loopSum ω s h verticalIncrement q =
-        ∑ k : Fin M, loopVertical ω s h k q := by
+    loopSum verticalIncrement q =
+        ∑ k : Fin M, loopVertical k q := by
       unfold loopVertical loopSum
       rw [Finset.sum_comm]
       exact Finset.sum_congr rfl fun d _ => (sum_verticalCross_rows d.val).symm
-    _ = ∑ _k : Fin M, loopVertical ω s h j q :=
+    _ = ∑ _k : Fin M, loopVertical j q :=
       Finset.sum_congr rfl fun k _ => loopVertical_eq ω s h k j q
-    _ = (M : ℤ) * loopVertical ω s h j q := by simp
+    _ = (M : ℤ) * loopVertical j q := by simp
 
 end PottsDiscontinuity.Torus

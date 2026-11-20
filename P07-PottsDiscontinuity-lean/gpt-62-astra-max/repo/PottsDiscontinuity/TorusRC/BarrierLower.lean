@@ -19,7 +19,7 @@ variable {N M : ℕ}
 B, with exactly the q-squared loss of the source. -/
 theorem barrier_probability_ge_winding (hN : Even N) (hM : Even M)
     (hNp : 0 < N) (hMp : 0 < M) (q : Set.Ici (1 : ℝ))
-    (K n : ℕ) (hmargin : K+1 ≤ 3*n) :
+    {K n : ℕ} (hmargin : K+1 ≤ 3*n) :
     torusRCProbability hN hM q (primalWindingSingleSeam hNp hMp hM K) / q.val^2 ≤
       torusRCProbability hN hM q (torusRCBarrier hNp hMp n) := by
   have hsub : primalWindingSingleSeam hNp hMp hM K ⊆
@@ -48,8 +48,7 @@ theorem barrier_lower_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
   intro N M n hN hM hN4 hM4 hn h3nN h4nM
   exact (div_le_div_of_nonneg_right
     (h N M n hN hM hN4 hM4 hn h3nN h4nM) (sq_nonneg q.val)).trans
-    (barrier_probability_ge_winding hN hM (by omega) (by omega) q
-      (3*n+1) (n+1) (by omega))
+    (barrier_probability_ge_winding hN hM (by omega) (by omega) q (by omega))
 
 /-- The source B(n) lower bound, with the terminal margin absorbed into c.
 The restriction n≥2 is harmless in the final n→∞ passage. -/
@@ -64,10 +63,9 @@ theorem barrier_source_lower_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
         torusRCProbability hN hM q (torusRCBarrier hNp hMp n) := by
   obtain ⟨c,hc,hc1,h⟩ := barrier_lower_of_h319 q hh319
   let d := c^2/(9*Real.exp 2)
-  have hd : 0 < d := by dsimp [d]; positivity
+  have hd : 0 < d := by positivity
   have hd1 : d ≤ 1 := by
     have he : 1 ≤ Real.exp (2:ℝ) := Real.one_le_exp (by norm_num)
-    have hc2 : c^2 ≤ 1 := pow_le_one₀ hc.le hc1
     apply (div_le_one (by positivity)).mpr
     nlinarith
   refine ⟨d,hd,hd1,?_⟩
@@ -75,7 +73,7 @@ theorem barrier_source_lower_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
   let m := n-1
   have hm : 0 < m := by omega
   have hmn : m+1 = n := by omega
-  have hbase := block_rate_rescaling c hc hc1 m hm (M:ℝ) (Nat.cast_nonneg M)
+  have hbase := block_rate_rescaling c hc hc1 m hm (Nat.cast_nonneg M)
   rw [hmn] at hbase
   have henergy := pow_le_pow_of_le_one (torusRCSurgeryEnergy_pos q).le
     (torusRCSurgeryEnergy_le_one q) (show 2*m+N ≤ 2*n+N by omega)

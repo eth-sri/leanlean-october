@@ -28,7 +28,7 @@ local instance conditionalLawRemovedFintype (R : Configuration G) : Fintype (Rem
 omit [Finite V] in
 private theorem restored_mem_frozen_iff (R : Configuration G)
     (H B : RemovedConfiguration G R) (A : RemainingConfiguration G R) :
-    (A.val ∪ B.val) ∈ frozenStateEvent R H ↔ B = H := by
+    (A.val ∪ B.val) ∈ frozenStateEvent H ↔ B = H := by
   change (A.val ∪ B.val) ∩ R = H.val ↔ B = H
   rw [Finset.union_inter_distrib_right, Finset.disjoint_iff_inter_eq_empty.mp A.property,
     Finset.empty_union, Finset.inter_eq_left.mpr B.property]
@@ -38,15 +38,14 @@ private theorem restored_mem_frozen_iff (R : Configuration G)
 corresponding original configuration with no remaining open edges has positive mass. -/
 theorem frozenStateEvent_support (q : Parameters) (ξ : BoundaryCondition V)
     (R : Configuration G) (H : RemovedConfiguration G R) :
-    ∃ C ∈ frozenStateEvent R H, C ∈ (law G q ξ).support := by
+    ∃ C ∈ frozenStateEvent H, C ∈ (law G q ξ).support := by
   refine ⟨H.val, ?_, ?_⟩
   · exact Finset.inter_eq_left.mpr H.property
-  · change law G q ξ H.val ≠ 0
-    exact (law_pos G q ξ H.val).ne'
+  · exact (law_pos G q ξ H.val).ne'
 
 private theorem frozen_event_mass_sum (q : Parameters) (ξ : BoundaryCondition V)
     (R : Configuration G) (H : RemovedConfiguration G R) :
-    (∑' C, (frozenStateEvent R H).indicator (law G q ξ) C) =
+    (∑' C, (frozenStateEvent H).indicator (law G q ξ) C) =
       ∑ A : RemainingConfiguration G R, law G q ξ (A.val ∪ H.val) := by
   classical
   rw [tsum_fintype, ← (configurationSplitEquiv G R).symm.sum_comp]
@@ -61,7 +60,7 @@ private theorem frozen_event_mass_sum (q : Parameters) (ξ : BoundaryCondition V
 the exact joint distribution, not just single-edge conditional marginals. -/
 theorem law_filter_frozen_map_remaining (q : Parameters) (ξ : BoundaryCondition V)
     (R : Configuration G) (H : RemovedConfiguration G R) :
-    ((law G q ξ).filter (frozenStateEvent R H) (frozenStateEvent_support q ξ R H)).map
+    ((law G q ξ).filter (frozenStateEvent H) (frozenStateEvent_support q ξ R H)).map
         (fun C => (configurationSplitEquiv G R C).1) =
       remainingLaw G q (frozenBoundary ξ H.val) R := by
   classical

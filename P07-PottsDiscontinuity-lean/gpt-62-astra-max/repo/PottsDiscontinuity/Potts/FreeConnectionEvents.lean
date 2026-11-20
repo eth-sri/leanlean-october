@@ -12,21 +12,26 @@ namespace PottsDiscontinuity.Potts
 open Classical MeasureTheory Filter Topology
 noncomputable section
 
+variable (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) (ω : FK.LatticeConfiguration)
+
+include F in
 /-- The finite free partition, with isolated exterior vertices retained. -/
-def freeDataFiniteEvent (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
+def freeDataFiniteEvent :
     Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))) :=
   {C | ∀ z ∈ F, z.1 = z.2 ∨ ∃ (hx : z.1 ∈ box n) (hy : z.2 ∈ box n),
-      (FK.openGraph _ C).Reachable ⟨z.1, hx⟩ ⟨z.2, hy⟩}
+      (FK.openGraph C).Reachable ⟨z.1, hx⟩ ⟨z.2, hy⟩}
 
-def freeDataEvent (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) : Set FK.LatticeConfiguration :=
+include n F in
+def freeDataEvent : Set FK.LatticeConfiguration :=
   {ω | ∀ z ∈ F, (localFreeGraph (rcInfiniteOpenGraph ω) n).Reachable z.1 z.2}
 
-def infiniteFreeDataEvent (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) : Set FK.LatticeConfiguration :=
+include F in
+def infiniteFreeDataEvent : Set FK.LatticeConfiguration :=
   {ω | ∀ z ∈ F, (rcInfiniteOpenGraph ω).Reachable z.1 z.2}
 
-private theorem localFreeGraph_eq_map (n : ℕ) (ω : FK.LatticeConfiguration) :
+private theorem localFreeGraph_eq_map :
     localFreeGraph (rcInfiniteOpenGraph ω) n =
-      (FK.openGraph _ (boxObservation n ω)).map (show ↥(box n : Set (ℤ × ℤ)) ↪ (ℤ × ℤ) from
+      (FK.openGraph (boxObservation n ω)).map (show ↥(box n : Set (ℤ × ℤ)) ↪ (ℤ × ℤ) from
         ⟨Subtype.val, Subtype.val_injective⟩) := by
   ext x y
   rw [SimpleGraph.map_adj]
@@ -44,8 +49,8 @@ private theorem localFreeGraph_eq_map (n : ℕ) (ω : FK.LatticeConfiguration) :
     obtain ⟨h, he⟩ := hab
     exact (infiniteOpenGraph_adj_iff ω a.val b.val).mpr ⟨h, he⟩
 
-theorem freeDataEvent_eq_observation (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
-    freeDataEvent n F = boxObservationEvent n (freeDataFiniteEvent n F) := by
+theorem freeDataEvent_eq_observation :
+    freeDataEvent n F = boxObservationEvent (freeDataFiniteEvent n F) := by
   ext ω
   change (∀ z ∈ F, (localFreeGraph (rcInfiniteOpenGraph ω) n).Reachable z.1 z.2) ↔ _
   rw [localFreeGraph_eq_map]
@@ -64,17 +69,17 @@ theorem freeDataEvent_eq_observation (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ
     · exact Or.inl heq
     · exact Or.inr ⟨⟨z.1, hx⟩, ⟨z.2, hy⟩, hxy, rfl, rfl⟩
 
-theorem freeDataEvent_isClopen (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
+theorem freeDataEvent_isClopen :
     IsClopen (freeDataEvent n F) := by
   rw [freeDataEvent_eq_observation]
-  exact boxObservationEvent_isClopen _ _
+  exact boxObservationEvent_isClopen _
 
-theorem freeDataEvent_monotone (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
+theorem freeDataEvent_monotone :
     Monotone (fun n => freeDataEvent n F) := by
   intro m n hmn ω hω z hz
   exact localFreeGraph_reachable_mono _ _ _ hmn (hω z hz)
 
-theorem iUnion_freeDataEvent (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
+theorem iUnion_freeDataEvent :
     (⋃ n, freeDataEvent n F) = infiniteFreeDataEvent F := by
   ext ω
   constructor
@@ -86,17 +91,17 @@ theorem iUnion_freeDataEvent (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
     obtain ⟨n, hn⟩ := (finite_free_connections_eventually (rcInfiniteOpenGraph ω) F).exists
     exact Set.mem_iUnion.mpr ⟨n, fun z hz => (hn z hz).mpr (h z hz)⟩
 
-theorem freeDataFiniteEvent_upper (n : ℕ) (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
+theorem freeDataFiniteEvent_upper :
     IsUpperSet (freeDataFiniteEvent n F) := by
   intro C D hCD hC z hz
   rcases hC z hz with heq | ⟨hx, hy, hxy⟩
   · exact Or.inl heq
   · exact Or.inr ⟨hx, hy, FK.actualConnected_mono hCD hxy⟩
 
-theorem localFreeGraph_reachable_inside (n : ℕ) (ω : FK.LatticeConfiguration)
+theorem localFreeGraph_reachable_inside
     (x y : ↥(box n : Set (ℤ × ℤ))) :
     (localFreeGraph (rcInfiniteOpenGraph ω) n).Reachable x.val y.val ↔
-      (FK.openGraph _ (boxObservation n ω)).Reachable x y := by
+      (FK.openGraph (boxObservation n ω)).Reachable x y := by
   rw [localFreeGraph_eq_map]
   exact FK.reachable_isolatedExtension_apply _ ⟨Subtype.val, Subtype.val_injective⟩ x y
 

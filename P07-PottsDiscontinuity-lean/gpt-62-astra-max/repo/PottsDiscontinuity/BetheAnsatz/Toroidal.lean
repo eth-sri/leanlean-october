@@ -17,14 +17,19 @@ open Finset Complex
 
 namespace PottsDiscontinuity.BetheAnsatz
 
+section
+variable {n : ℕ} (N : ℕ) (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1)))
+    (x : Fin (n + 1) → ℤ)
+include x
+
+include N in
 /-- The predecessor coordinates on the universal cover of the periodic row. -/
-def cyclicPredecessorPositions {n : ℕ} (N : ℕ) (x : Fin (n + 1) → ℤ) :
+def cyclicPredecessorPositions :
     Fin (n + 1) → ℤ :=
   fun k => x ((finRotate (n + 1)).symm k) - if k = 0 then (N : ℤ) else 0
 
 /-- Permuting momenta cyclically is the inverse permutation of the coordinates. -/
-theorem planeWave_rotate {n : ℕ} (p : Fin (n + 1) → ℝ)
-    (σ : Equiv.Perm (Fin (n + 1))) (x : Fin (n + 1) → ℤ) :
+theorem planeWave_rotate :
     planeWave p (σ * finRotate (n + 1)) x =
       planeWave p σ (fun k => x ((finRotate (n + 1)).symm k)) := by
   unfold planeWave
@@ -33,8 +38,7 @@ theorem planeWave_rotate {n : ℕ} (p : Fin (n + 1) → ℝ)
       Complex.exp (I * (p (σ k) : ℂ) * (x ((finRotate (n + 1)).symm k) : ℂ))))
 
 /-- The wraparound coordinate contributes precisely the inverse Bethe boundary phase. -/
-theorem planeWave_cyclicPredecessorPositions {n : ℕ} (N : ℕ) (p : Fin (n + 1) → ℝ)
-    (σ : Equiv.Perm (Fin (n + 1))) (x : Fin (n + 1) → ℤ) :
+theorem planeWave_cyclicPredecessorPositions :
     planeWave p σ (cyclicPredecessorPositions N x) =
       planeWave p (σ * finRotate (n + 1)) x * (z (p (σ 0)) ^ N)⁻¹ := by
   classical
@@ -53,26 +57,28 @@ theorem planeWave_cyclicPredecessorPositions {n : ℕ} (N : ℕ) (p : Fin (n + 1
       congr 1
       push_cast
       ring
-    · simp only [cyclicPredecessorPositions, hk, ↓reduceIte, sub_zero, mul_one]
+    · simp [cyclicPredecessorPositions, hk, sub_zero, mul_one]
   rw [planeWave, planeWave_rotate]
   simp_rw [h]
   rw [Finset.prod_mul_distrib]
   simp only [Finset.prod_ite_eq', mem_univ, ↓reduceIte]
   rfl
 
+end
+
+variable {N n : ℕ} {Δ : ℝ} (hΔ : Δ < -1) (p : Fin (n + 1) → ℝ) (hBE : BetheEquations N Δ p)
+    (σ : Equiv.Perm (Fin (n + 1))) (x : Fin (n + 1) → ℤ)
+include hΔ hBE
+
 /-- The amplitude and plane-wave boundary phases cancel exactly. -/
-theorem amplitude_planeWave_rotate {N n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
-    (p : Fin (n + 1) → ℝ) (hBE : BetheEquations N Δ p)
-    (σ : Equiv.Perm (Fin (n + 1))) (x : Fin (n + 1) → ℤ) :
+theorem amplitude_planeWave_rotate :
     amplitude Δ p (σ * finRotate (n + 1)) * planeWave p (σ * finRotate (n + 1)) x =
       amplitude Δ p σ * planeWave p σ (cyclicPredecessorPositions N x) := by
   rw [amplitude_rotate hΔ p hBE σ, planeWave_cyclicPredecessorPositions]
   ring
 
 /-- Proposition `prop:changeOfVariables`, with the complex codomain used in Lemma T₀. -/
-theorem toroidal_change_of_variables {N n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
-    (p : Fin (n + 1) → ℝ) (hBE : BetheEquations N Δ p)
-    (x : Fin (n + 1) → ℤ) (f : Equiv.Perm (Fin (n + 1)) → ℂ) :
+theorem toroidal_change_of_variables (f : Equiv.Perm (Fin (n + 1)) → ℂ) :
     (∑ σ, amplitude Δ p σ * f σ * planeWave p σ x) =
       ∑ σ, amplitude Δ p σ * f (σ * finRotate (n + 1)) *
         planeWave p σ (cyclicPredecessorPositions N x) := by
@@ -84,11 +90,6 @@ theorem toroidal_change_of_variables {N n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
       apply Finset.sum_congr rfl
       intro σ _
       have h := amplitude_planeWave_rotate hΔ p hBE σ x
-      calc
-        _ = f (σ * finRotate (n + 1)) *
-            (amplitude Δ p (σ * finRotate (n + 1)) * planeWave p (σ * finRotate (n + 1)) x) := by ring
-        _ = f (σ * finRotate (n + 1)) *
-            (amplitude Δ p σ * planeWave p σ (cyclicPredecessorPositions N x)) := by rw [h]
-        _ = _ := by ring
+      grind
 
 end PottsDiscontinuity.BetheAnsatz

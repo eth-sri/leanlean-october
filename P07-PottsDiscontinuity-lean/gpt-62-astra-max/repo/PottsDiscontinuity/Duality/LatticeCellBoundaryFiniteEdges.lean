@@ -11,9 +11,11 @@ namespace PottsDiscontinuity.FK
 
 open Medial
 
+variable (S : Finset LatticeVertex)
+
 /-- The graph edge set is exactly the image of the finite set of normalized
 boundary bonds under their primal Sym2 representation. -/
-theorem latticeCellBoundaryGraph_edgeSet_eq_image (S : Finset LatticeVertex) :
+theorem latticeCellBoundaryGraph_edgeSet_eq_image :
     (latticeCellBoundaryGraph S).edgeSet =
       LatticeBond.toSym2 '' (↑(latticeCellBoundaryBonds S) : Set LatticeBond) := by
   classical
@@ -34,7 +36,7 @@ theorem latticeCellBoundaryGraph_edgeSet_eq_image (S : Finset LatticeVertex) :
       exact squareLattice.mem_edgeSet.mp hedge
     exact ⟨hsq, e, hEq, (mem_latticeCellBoundaryBonds S e).mp he⟩
 
-theorem latticeCellBoundaryGraph_edgeSet_finite (S : Finset LatticeVertex) :
+theorem latticeCellBoundaryGraph_edgeSet_finite :
     ((latticeCellBoundaryGraph S).edgeSet : Set (Sym2 LatticeVertex)).Finite := by
   rw [latticeCellBoundaryGraph_edgeSet_eq_image]
   exact (latticeCellBoundaryBonds_finite S).image LatticeBond.toSym2

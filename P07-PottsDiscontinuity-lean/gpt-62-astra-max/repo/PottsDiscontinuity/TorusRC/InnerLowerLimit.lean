@@ -14,17 +14,20 @@ namespace PottsDiscontinuity.TorusRC
 
 open Torus CorrLength
 
+variable {N : ℕ} (hN : Even N) (q : Set.Ici (1 : ℝ))
+include q
+
+include hN in
 /-- Height-normalized log probability of U=1 along positive even heights.
 The extended-real carrier permits an unbounded negative rate. -/
-noncomputable def torusRCUOneRateE {N : ℕ} (hN : Even N)
-    (q : Set.Ici (1 : ℝ)) (m : ℕ) : EReal :=
+noncomputable def torusRCUOneRateE (m : ℕ) : EReal :=
   ((Real.log (torusRCProbability hN (positiveEvenPeriod_even m) q
     {A | rcVerticalWinding hN (positiveEvenPeriod_even m)
       ⟨0,positiveEvenPeriod_pos m⟩ A = 1}) / (positiveEvenPeriod m:ℝ):ℝ):EReal)
 
 /-- The inner M→∞ passage of (3.15), with actual native free-box
 probabilities. All finite-energy losses are independent of M. -/
-theorem torusRCU_one_inner_liminf_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
+theorem torusRCU_one_inner_liminf_of_h319 (hh319 : h319 q) :
     ∃ c : ℝ, 0 < c ∧ c ≤ 1 ∧ ∀ (N n : ℕ) (hN : Even N)
       (_hN4 : 4 ≤ N) (_hNdiv : 8 ∣ N) (_hn : 2 ≤ n) (_h8nN : 8*n ≤ N),
       ((Real.log (c/(9*(n:ℝ)^2))/(n:ℝ) +
@@ -41,7 +44,7 @@ theorem torusRCU_one_inner_liminf_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 
     filter_upwards [eventually_ge_atTop k] with m hm
     dsimp [height,positiveEvenPeriod]
     omega
-  let p : ℕ → ℝ := fun m => torusRCProbability hN (positiveEvenPeriod_even m) q
+  let p := fun m => torusRCProbability hN (positiveEvenPeriod_even m) q
     {A | rcVerticalWinding hN (positiveEvenPeriod_even m)
       ⟨0,positiveEvenPeriod_pos m⟩ A = 1}
   let b := liftedBoxFreeConnectionProbability (torusRCBridgeParameters q)
@@ -57,14 +60,12 @@ theorem torusRCU_one_inner_liminf_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 
       C * (c/(9*(n:ℝ)^2))^((height m:ℝ)/(n:ℝ)) * b^(height m/(2*n)) ≤ p m := by
     filter_upwards [hheight.eventually (eventually_ge_atTop (max 4 (max (4*n) (N/2+1))))]
       with m hm
-    have hM4 : 4 ≤ height m := (le_max_left _ _).trans hm
-    have h4nM : 4*n ≤ height m := (le_max_left _ _).trans ((le_max_right _ _).trans hm)
+    have hM4 := (le_max_left _ _).trans hm
+    have h4nM := (le_max_left _ _).trans ((le_max_right _ _).trans hm)
     have hNM : N/2 < height m := by
-      have h := (le_max_right (4*n) (N/2+1)).trans ((le_max_right _ _).trans hm)
       omega
     have h := hfinite N (height m) n hN (positiveEvenPeriod_even m) hN4 hM4 hNdiv hn h8nN h4nM hNM
-    change _ ≤ p m at h
-    convert h using 1; dsimp [C,b]; ring
+    grind
   exact log_block_product_liminf height hheight p C (c/(9*(n:ℝ)^2)) b hC
     (by positivity) hb n (2*n) (by omega) (by omega) hp
 

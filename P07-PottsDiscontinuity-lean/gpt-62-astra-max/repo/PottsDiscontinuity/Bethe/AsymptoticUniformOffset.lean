@@ -14,33 +14,28 @@ namespace PottsDiscontinuity.Bethe
 
 theorem fin_centered_discrete_gronwall {n N : ℕ} (hn : 0 < n)
     (hN : 0 < N) (hnN : n ≤ N) {C : ℝ} (hC : 0 ≤ C) (hsmall : C ≤ N)
-    (u : Fin n → ℝ) (hsym : ∀ j, u (Fin.rev j) = -u j)
+    {u : Fin n → ℝ} (hsym : ∀ j, u (Fin.rev j) = -u j)
     (hstep : ∀ j (hj : j + 1 < n),
       |u ⟨j + 1, hj⟩ - u ⟨j, by omega⟩| ≤ C / N * (|u ⟨j, by omega⟩| + 1)) :
     (∀ j, |u j| ≤ 2 * Real.exp C) ∧
       (∀ j (hj : j + 1 < n),
         |u ⟨j + 1, hj⟩ - u ⟨j, by omega⟩| ≤ C * (2 * Real.exp C + 1) / N) := by
-  let v : ℕ → ℝ := fun j => u ⟨min j (n - 1), by omega⟩
+  let v := fun j => u ⟨min j (n - 1), by omega⟩
   have hv (j : ℕ) (hj : j < n) : v j = u ⟨j, hj⟩ := by
-    dsimp [v]
-    congr 1
-    exact Fin.ext (min_eq_left (by omega))
+    grind
   have hs (j : ℕ) (hj : j ≤ n - 1) : v (n - 1 - j) = -v j := by
     rw [hv _ (by omega), hv _ (by omega)]
     convert hsym ⟨j, by omega⟩ using 1
     congr 1
-    apply Fin.ext
-    simp only [Fin.val_rev]
-    omega
+    grind
   have hd (j : ℕ) (hj : j < n - 1) :
       |v (j + 1) - v j| ≤ C / N * (|v j| + 1) := by
-    simpa only [hv _ (by omega : j + 1 < n), hv _ (by omega : j < n)] using hstep j (by omega)
+    grind
   obtain ⟨hb, hi⟩ := centered_discrete_gronwall hN (show n - 1 ≤ N by omega) hC hsmall hs hd
   constructor
   · intro j
     simpa only [hv j.val j.isLt] using hb j.val (by omega)
-  · intro j hj
-    simpa only [hv _ hj, hv _ (by omega : j < n)] using hi j (by omega)
+  · grind
 
 /-- Finite uniform alignment and increment bounds for both parity clauses of
 (2.13). The premises here are spacing estimates, and are proved from the
@@ -61,26 +56,24 @@ theorem offset_alignment_of_spacing {N r : ℕ} (h4 : 4 ∣ N)
     (hpGap : ∀ j (hj : j + 1 < N / 2),
       p ⟨j + 1, hj⟩ - p ⟨j, by omega⟩ ≤ D / N) :
     let C := A + (L : ℝ) * D + B + L
-    (∀ j, |offsetDisplacement N r h4 hr p q j| ≤ 2 * Real.exp C) ∧
+    (∀ j, |offsetDisplacement h4 hr p q j| ≤ 2 * Real.exp C) ∧
       (∀ j (hj : j + 1 < N / 2 - r),
-        |offsetDisplacement N r h4 hr p q ⟨j + 1, hj⟩ -
-          offsetDisplacement N r h4 hr p q ⟨j, by omega⟩| ≤
+        |offsetDisplacement h4 hr p q ⟨j + 1, hj⟩ -
+          offsetDisplacement h4 hr p q ⟨j, by omega⟩| ≤
           C * (2 * Real.exp C + 1) / N) := by
   let C := A + (L : ℝ) * D + B + L
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  have hC : 0 ≤ C := by positivity
   have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
-  apply fin_centered_discrete_gronwall hn hN (by omega) hC hsmall
-    (offsetDisplacement N r h4 hr p q) (offsetDisplacement_rev h4 hr hp hq)
+  apply fin_centered_discrete_gronwall hn hN (by omega) hC hsmall (offsetDisplacement_rev h4 hr hp hq)
   intro j hj
   have hi := offsetDisplacement_increment h4 hr hN hp hq hD hL hpSpacing hqSpacing hpGap j hj
   apply hi.trans
-  have h₁ : A + (L : ℝ) * D + B ≤ C := by dsimp [C]; linarith [L.coe_nonneg]
-  have h₂ : (L : ℝ) ≤ C := by dsimp [C]; linarith [mul_nonneg L.coe_nonneg hD]
+  have h₁ : A + (L : ℝ) * D + B ≤ C := by linarith [L.coe_nonneg]
+  have h₂ : (L : ℝ) ≤ C := by linarith [mul_nonneg L.coe_nonneg hD]
   have he := mul_le_mul_of_nonneg_right
     ((div_le_div_iff_of_pos_right hNp).mpr h₂)
-    (abs_nonneg (offsetDisplacement N r h4 hr p q ⟨j, by omega⟩))
+    (abs_nonneg (offsetDisplacement h4 hr p q ⟨j, by omega⟩))
   have hd := (div_le_div_iff_of_pos_right hNp).mpr h₁
-  dsimp [C] at *
   nlinarith only [he, hd]
 
 /-- The missing alignment estimate in the printed proof, derived from the
@@ -96,21 +89,21 @@ theorem offset_alignment_of_density_error {Δ m K : ℝ} (hΔ : Δ < -1)
       (hp : p ∈ S_n (N / 2)) (hq : q ∈ S_n (N / 2 - r)),
       C ≤ N → K / N ≤ m / 2 →
       (∀ x ∈ Icc (-Real.pi) Real.pi,
-        |rootStepDensity N (N / 2) p hp (by omega) (by omega) x - rho Δ x| ≤ K / N) →
+        |rootStepDensity N p (by omega) x - rho Δ x| ≤ K / N) →
       (∀ x ∈ Icc (-Real.pi) Real.pi,
-        |rootStepDensity N (N / 2 - r) q hq hn (by omega) x - rho Δ x| ≤ K / N) →
-      (∀ j, |offsetDisplacement N r h4 hr p q j| ≤ 2 * Real.exp C) ∧
+        |rootStepDensity N q hn x - rho Δ x| ≤ K / N) →
+      (∀ j, |offsetDisplacement h4 hr p q j| ≤ 2 * Real.exp C) ∧
       (∀ j (hj : j + 1 < N / 2 - r),
-        |offsetDisplacement N r h4 hr p q ⟨j + 1, hj⟩ -
-          offsetDisplacement N r h4 hr p q ⟨j, by omega⟩| ≤
+        |offsetDisplacement h4 hr p q ⟨j + 1, hj⟩ -
+          offsetDisplacement h4 hr p q ⟨j, by omega⟩| ≤
           C * (2 * Real.exp C + 1) / N) := by
   obtain ⟨L, hL⟩ := exists_lipschitzOnWith_inv_rho hΔ
   let A := 2 * K / m ^ 2
   let D := 1 / m + A
   let C := A + (L : ℝ) * D + A + L
-  have hA : 0 ≤ A := by dsimp [A]; positivity
-  have hD : 0 ≤ D := by dsimp [D]; positivity
-  have hC : 0 ≤ C := by dsimp [C]; positivity
+  have hA : 0 ≤ A := by positivity
+  have hD : 0 ≤ D := by positivity
+  have hC : 0 ≤ C := by positivity
   refine ⟨C, hC, ?_⟩
   intro N r h4 hr hN hn p q hp hq hlarge hsmall hpError hqError
   have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
@@ -119,13 +112,13 @@ theorem offset_alignment_of_density_error {Δ m K : ℝ} (hΔ : Δ < -1)
   have hpSpacing (j : ℕ) (hj : j + 1 < N / 2) :
       |(N : ℝ) * (p ⟨j + 1, hj⟩ - p ⟨j, by omega⟩) -
         (rho Δ (p ⟨j, by omega⟩))⁻¹| ≤ A / N := by
-    have hi := root_spacing_error_at hp (by omega) (by omega) hm hsmall hlower hpError j hj
-    convert hi using 1; dsimp [A]; ring
+    have hi := root_spacing_error_at (hs := by omega) hp hm hsmall hlower hpError j hj
+    grind
   have hqSpacing (j : ℕ) (hj : j + 1 < N / 2 - r) :
       |(N : ℝ) * (q ⟨j + 1, hj⟩ - q ⟨j, by omega⟩) -
         (rho Δ (q ⟨j, by omega⟩))⁻¹| ≤ A / N := by
-    have hi := root_spacing_error_at hq hn (by omega) hm hsmall hlower hqError j hj
-    convert hi using 1; dsimp [A]; ring
+    have hi := root_spacing_error_at (hs := by omega) hq hm hsmall hlower hqError j hj
+    grind
   have hpGap (j : ℕ) (hj : j + 1 < N / 2) :
       p ⟨j + 1, hj⟩ - p ⟨j, by omega⟩ ≤ D / N := by
     have he := (abs_le.mp (hpSpacing j hj)).2
@@ -133,7 +126,6 @@ theorem offset_alignment_of_density_error {Δ m K : ℝ} (hΔ : Δ < -1)
     have hi : (rho Δ (p ⟨j, by omega⟩))⁻¹ ≤ 1 / m := by
       simpa only [one_div] using one_div_le_one_div_of_le hm hρ
     apply (le_div_iff₀ hNp).mpr
-    dsimp [D]
     nlinarith only [he, hi, hAdiv]
   exact offset_alignment_of_spacing h4 hr hN hn hp hq hA hA hD hL hlarge
     hpSpacing hqSpacing hpGap

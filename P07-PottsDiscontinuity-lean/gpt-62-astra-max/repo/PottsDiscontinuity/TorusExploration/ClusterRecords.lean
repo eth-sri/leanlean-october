@@ -12,26 +12,24 @@ open FK
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
-local instance clusterRecordEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
+
 local instance clusterRecordEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
+variable (x y : ℕ → V) (j : ℕ) (S : Finset V) (A B : Configuration G)
+
+include S in
 /-- The revealed edge set together with all its recorded open edges. -/
-def clusterRecord (S : Finset V) (A : Configuration G) : Configuration G × Configuration G :=
+def clusterRecord (A : Configuration G) : Configuration G × Configuration G :=
   (actualMultiClusterReveal G S A,A ∩ actualMultiClusterReveal G S A)
 
-lemma clusterRecord_eq_iff (S : Finset V) (A B : Configuration G) :
+lemma clusterRecord_eq_iff :
     clusterRecord G S B=clusterRecord G S A ↔
       B ∈ revealRecordEvent G (actualMultiClusterReveal G S) A := by
-  simp only [clusterRecord,Prod.mk.injEq,revealRecordEvent,Set.mem_ofPred_eq]
-  constructor
-  · rintro ⟨hR,hA⟩
-    exact ⟨hR,by simpa only [hR] using hA⟩
-  · rintro ⟨hR,hA⟩
-    exact ⟨hR,by simpa only [hR] using hA⟩
+  grind [clusterRecord, Prod.mk.injEq, revealRecordEvent, Set.mem_ofPred_eq]
 
-lemma seed_connection_iff_of_record (S : Finset V) (A B : Configuration G)
+lemma seed_connection_iff_of_record
     (h : clusterRecord G S B=clusterRecord G S A) {s : V} (hs : s ∈ S) (v : V) :
-    ActualConnected G B s v ↔ ActualConnected G A s v := by
+    ActualConnected B s v ↔ ActualConnected A s v := by
   have hA := ((clusterRecord_eq_iff G S A B).1 h).2
   have hsub := actualClusterReveal_subset_multi S A hs
   have hag : B ∩ actualClusterReveal G s A = A ∩ actualClusterReveal G s A := by
@@ -43,23 +41,23 @@ lemma seed_connection_iff_of_record (S : Finset V) (A B : Configuration G)
       exact ⟨(he.1 ⟨hB,hsub hR⟩).1,hR⟩
     · rintro ⟨hB,hR⟩
       exact ⟨(he.2 ⟨hB,hsub hR⟩).1,hR⟩
-  exact actualConnected_iff_of_reveal_agreement G s A B hag v
+  exact actualConnected_iff_of_reveal_agreement G hag v
 
+include x y j in
 /-- The first j seeds connect to their targets in pairwise distinct actual
 open clusters. The endpoints themselves are fixed original graph vertices. -/
-def distinctConnections (x y : ℕ → V) (j : ℕ) : Set (Configuration G) :=
-  {A | (∀ i, i < j → ActualConnected G A (x i) (y i)) ∧
-    ∀ i, i < j → ∀ k, k < j → i ≠ k → ¬ ActualConnected G A (x i) (x k)}
+def distinctConnections : Set (Configuration G) :=
+  {A | (∀ i, i < j → ActualConnected A (x i) (y i)) ∧
+    ∀ i, i < j → ∀ k, k < j → i ≠ k → ¬ ActualConnected A (x i) (x k)}
 
 /-- Seeds exposed before the next exploration step. -/
 def prefixSeeds (x : ℕ → V) (j : ℕ) : Finset V := (Finset.range j).image x
 
-lemma distinctConnections_record_measurable (x y : ℕ → V) (j : ℕ)
-    (A B : Configuration G)
+lemma distinctConnections_record_measurable
     (h : clusterRecord G (prefixSeeds x j) B=clusterRecord G (prefixSeeds x j) A) :
     B ∈ distinctConnections G x y j ↔ A ∈ distinctConnections G x y j := by
   have hc (i : ℕ) (hi : i < j) (v : V) :
-      ActualConnected G B (x i) v ↔ ActualConnected G A (x i) v :=
+      ActualConnected B (x i) v ↔ ActualConnected A (x i) v :=
     seed_connection_iff_of_record G _ A B h (Finset.mem_image.2 ⟨i,Finset.mem_range.2 hi,rfl⟩) v
   constructor
   · rintro ⟨h₁,h₂⟩

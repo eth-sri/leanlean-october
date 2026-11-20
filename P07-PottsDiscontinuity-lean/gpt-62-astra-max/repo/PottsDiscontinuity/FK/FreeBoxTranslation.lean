@@ -20,10 +20,10 @@ theorem freeBoxLimit_translation_invariant (q : Parameters) (a : LatticeVertex) 
         (Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q))
         (latticeConfigurationTranslate a) =
       Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q) := by
-  let μ : ProbabilityMeasure LatticeConfiguration :=
+  let μ :=
     Classical.choose (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q)
   have hproperty := (Classical.choose_spec (PottsDiscontinuity.FK.freeBoxLimit_existsUnique q)).1
-  have horigin : Tendsto (fun n => boxProbabilityMeasure q (0, 0) n) atTop (𝓝 μ) :=
+  have horigin :=
     hproperty (fun _ => (0, 0)) (fun n => n) origin_latticeBox_nested origin_latticeBox_exhaustive
   have hshift : Tendsto (fun n => boxProbabilityMeasure q a n) atTop (𝓝 μ) := by
     apply hproperty (fun _ => a) (fun n => n)
@@ -49,7 +49,7 @@ theorem freeBoxLimit_translation_invariant (q : Parameters) (a : LatticeVertex) 
     simpa [latticeTranslate] using boxProbabilityMeasure_translation_map q a (0, 0) n
   rw [hterms] at hmap
   have hEq := tendsto_nhds_unique hmap hshift
-  simpa [μ] using hEq
+  assumption
 
 end
 end PottsDiscontinuity.FK.Internal

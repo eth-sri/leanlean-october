@@ -24,8 +24,12 @@ def openRCConfig (N M : ℕ) : RCConfig N M := fun _ => true
 @[simp] theorem edgeReverse_twice (d : Dart N M) : edgeReverse (edgeReverse d) = d :=
   edgeReverse_involutive d
 
+section
+variable (hN : Even N) (hM : Even M) (v : FaceVertex N M false) (p : Port)
+include hN hM
+
 /-- White-face boundary corners oriented with the white face on the right. -/
-def whiteCornerEquiv (hN : Even N) (hM : Even M) :
+def whiteCornerEquiv :
     FaceVertex N M false × Port ≃ DirectedDart (checkerArrows N M) where
   toFun x := ⟨edgeReverse (faceCorner x.1.val x.2), by
     rw [dartOut_edgeReverse, dartOut_checker_eq_leftFace hN hM,
@@ -46,26 +50,22 @@ def whiteCornerEquiv (hN : Even N) (hM : Even M) :
     change edgeReverse (faceCorner (leftFace (edgeReverse d.val)) (edgeReverse d.val).2) = d.val
     rw [faceCorner_leftFace, edgeReverse_twice])
 
-@[simp] theorem whiteCornerEquiv_val (hN : Even N) (hM : Even M)
-    (v : FaceVertex N M false) (p : Port) :
+@[simp] theorem whiteCornerEquiv_val :
     (whiteCornerEquiv hN hM (v, p)).val = edgeReverse (faceCorner v.val p) := rfl
 
-theorem ribbonBoundary_open_corner (hN : Even N) (hM : Even M)
-    (v : FaceVertex N M false) (p : Port) :
+theorem ribbonBoundary_open_corner :
     ribbonBoundary hN hM (openRCConfig N M) (whiteCornerEquiv hN hM (v, p)) =
       whiteCornerEquiv hN hM (v, cwPort p) := by
   rw [ribbonBoundary_eq_directedStep]
   apply Subtype.ext
   change strandReverse (rcSmoothing (openRCConfig N M))
     (edgeReverse (edgeReverse (faceCorner v.val p))) = edgeReverse (faceCorner v.val (cwPort p))
-  rw [edgeReverse_involutive]
   rcases v with ⟨⟨i, j⟩, hv⟩
   cases p <;> simp only [faceCorner, strandReverse, rcSmoothing, openRCConfig,
     Bool.xor_true, checker_nxt_x hN, checker_nxt_y hM, hv, Bool.not_false,
     Bool.not_true, pairedPort, edgeReverse, cwPort, nxt, prv, Equiv.symm_apply_apply]
 
-theorem ribbonBoundary_open_pow_corner (hN : Even N) (hM : Even M)
-    (v : FaceVertex N M false) (p : Port) (n : ℕ) :
+theorem ribbonBoundary_open_pow_corner (n : ℕ) :
     (ribbonBoundary hN hM (openRCConfig N M) ^ n) (whiteCornerEquiv hN hM (v, p)) =
       whiteCornerEquiv hN hM (v, (ccwPortPerm.symm ^ n) p) := by
   induction n with
@@ -75,30 +75,29 @@ theorem ribbonBoundary_open_pow_corner (hN : Even N) (hM : Even M)
       pow_succ', Equiv.Perm.mul_apply]
     rfl
 
-theorem sameCycle_ribbonBoundary_open (hN : Even N) (hM : Even M)
+theorem sameCycle_ribbonBoundary_open
     (d e : DirectedDart (checkerArrows N M)) :
     (ribbonBoundary hN hM (openRCConfig N M)).SameCycle d e ↔
       leftFace (edgeReverse d.val) = leftFace (edgeReverse e.val) := by
   constructor
-  · apply sameCycle_invariant (ribbonBoundary hN hM (openRCConfig N M))
-      (fun d : DirectedDart (checkerArrows N M) => leftFace (edgeReverse d.val))
+  · apply sameCycle_invariant
+      (f := (fun d : DirectedDart (checkerArrows N M) => leftFace (edgeReverse d.val)))
     intro x
     obtain ⟨⟨v, p⟩, rfl⟩ := (whiteCornerEquiv hN hM).surjective x
-    rw [ribbonBoundary_open_corner]
-    simp only [whiteCornerEquiv_val, edgeReverse_twice, leftFace_faceCorner]
+    simp [ribbonBoundary_open_corner]
   · intro hde
     obtain ⟨⟨v, p⟩, rfl⟩ := (whiteCornerEquiv hN hM).surjective d
     obtain ⟨⟨w, q⟩, rfl⟩ := (whiteCornerEquiv hN hM).surjective e
     have hvw : v = w := Subtype.ext (by
-      simpa only [whiteCornerEquiv_val, edgeReverse_twice, leftFace_faceCorner] using hde)
+      simp_all)
     subst w
     have hc : ∀ p q : Port, ∃ n : Fin 4, (ccwPortPerm.symm ^ n.val) p = q := by decide
     obtain ⟨n, hn⟩ := hc p q
-    refine ⟨(n.val : ℤ), ?_⟩
+    refine ⟨n.val, ?_⟩
     rw [zpow_natCast, ribbonBoundary_open_pow_corner, hn]
 
 /-- Each full-primal boundary component is a specific white face. -/
-def openBoundaryFaceEquiv (hN : Even N) (hM : Even M) :
+def openBoundaryFaceEquiv :
     RibbonBoundaryComponent hN hM (openRCConfig N M) ≃ FaceVertex N M false where
   toFun := Quotient.lift (fun d => ⟨leftFace (edgeReverse d.val), by
     rw [← dartOut_checker_eq_leftFace hN hM, dartOut_edgeReverse, d.property]
@@ -116,10 +115,12 @@ def openBoundaryFaceEquiv (hN : Even N) (hM : Even M) :
     change leftFace (edgeReverse (edgeReverse (faceCorner v.val .east))) = v.val
     rw [edgeReverse_twice, leftFace_faceCorner])
 
-theorem rcLoopCount_open (hN : Even N) (hM : Even M) :
+theorem rcLoopCount_open :
     rcLoopCount hN hM (openRCConfig N M) = N * M / 2 := by
   rw [← card_ribbonBoundaryComponent,
     Nat.card_congr (openBoundaryFaceEquiv hN hM), Nat.card_eq_fintype_card, card_faceVertex hN]
+
+end
 
 @[simp] theorem openCount_open : openCount (openRCConfig N M) = N * M := by
   simp only [openCount, openRCConfig, Finset.filter_true, Finset.card_univ,

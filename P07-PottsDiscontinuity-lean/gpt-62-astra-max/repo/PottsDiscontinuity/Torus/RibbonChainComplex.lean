@@ -17,7 +17,10 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
-theorem diamondBoundary_pairing (hN : Even N) (hM : Even M) (A : RCConfig N M)
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (g : FaceVertex N M true → ℚ)
+    (f : RibbonBoundaryComponent hN hM A → ℚ)
+
+theorem diamondBoundary_pairing {A : RCConfig N M}
     (g : FaceVertex N M true → ℚ) (f : OpenDiamondEdge A → ℚ) :
     ∑ u, g u * diamondBoundary hN hM A f u =
       ∑ e, diamondCoboundary hN hM A g e * f e := by
@@ -29,14 +32,12 @@ theorem diamondBoundary_pairing (hN : Even N) (hM : Even M) (A : RCConfig N M)
   calc
     (∑ u, g u * (diamondIncidence hN hM A u e * f e)) =
         (∑ u, diamondIncidence hN hM A u e * g u) * f e := by
-      rw [Finset.sum_mul]
-      exact Finset.sum_congr rfl (fun _ _ => by ring)
+      grind [Finset.sum_mul]
     _ = diamondCoboundary hN hM A g e * f e := by
       simp only [diamondIncidence, sub_mul, Finset.sum_sub_distrib, ite_mul, one_mul,
         zero_mul, Finset.sum_ite_eq, Finset.mem_univ, ite_true, diamondCoboundary_apply]
 
-theorem ribbon_corner_pairing (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (g : FaceVertex N M true → ℚ) (f : RibbonBoundaryComponent hN hM A → ℚ) :
+theorem ribbon_corner_pairing :
     (∑ e : OpenDiamondEdge A,
       diamondCoboundary hN hM A g e * ribbonFaceBoundary hN hM A f e) =
       ∑ d : DirectedDart (checkerArrows N M),
@@ -49,7 +50,7 @@ theorem ribbon_corner_pairing (hN : Even N) (hM : Even M) (A : RCConfig N M)
       (f (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (e.val, true))) -
         f (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (e.val, false))))) = _
   rw [← Finset.sum_subtype (univ.filter fun v => A v = true)
-    (by intro v; simp) (fun v =>
+    (by grind) (fun v =>
       (g (faceEndpoint hN hM true v true) - g (faceEndpoint hN hM true v false)) *
         (f (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (v, true))) -
           f (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (v, false))))),
@@ -58,12 +59,9 @@ theorem ribbon_corner_pairing (hN : Even N) (hM : Even M) (A : RCConfig N M)
   apply Finset.sum_congr rfl
   intro v _
   simp only [Fintype.sum_bool, ribbonEdgePairing_end, ribbonFace_end]
-  cases A v <;> simp only [Bool.false_xor, Bool.true_xor, Bool.not_true,
-    Bool.not_false, Bool.false_eq_true, ite_true, ite_false]
-  all_goals ring
+  grind
 
-theorem sum_ribbon_corner_pairing_eq_zero (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (g : FaceVertex N M true → ℚ) (f : RibbonBoundaryComponent hN hM A → ℚ) :
+theorem sum_ribbon_corner_pairing_eq_zero :
     (∑ d : DirectedDart (checkerArrows N M),
       (g (ribbonFace hN hM d) -
         g (ribbonFace hN hM (ribbonEdgePairing hN hM A d))) *
@@ -82,14 +80,12 @@ theorem sum_ribbon_corner_pairing_eq_zero (hN : Even N) (hM : Even M) (A : RCCon
   rw [hr]
 
 /-- A capped ribbon face boundary is a conserved chain on the actual open graph. -/
-theorem ribbonFaceBoundary_mem_cycleSpace (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f : RibbonBoundaryComponent hN hM A → ℚ) :
+theorem ribbonFaceBoundary_mem_cycleSpace :
     ribbonFaceBoundary hN hM A f ∈ diamondCycleSpace hN hM A := by
   classical
-  change diamondBoundary hN hM A (ribbonFaceBoundary hN hM A f) = 0
   funext u
   simp only [Pi.zero_apply]
-  have he := diamondBoundary_pairing hN hM A (fun v => if u = v then 1 else 0)
+  have he := diamondBoundary_pairing hN hM (fun v => if u = v then 1 else 0)
     (ribbonFaceBoundary hN hM A f)
   rw [ribbon_corner_pairing] at he
   have hz := sum_ribbon_corner_pairing_eq_zero hN hM A (fun v => if u = v then 1 else 0) f

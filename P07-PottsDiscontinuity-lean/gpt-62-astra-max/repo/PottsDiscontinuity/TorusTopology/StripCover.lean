@@ -36,12 +36,14 @@ def finiteStripGraph (hN : Even N) (hM : Even M) (A : RCConfig N M) (K : ℕ) :
     (faceEndpoint hN hM true e true).val.1.val ≤ K ∧
     p = s(faceEndpoint hN hM true e false,faceEndpoint hN hM true e true)}
 
+variable (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M) (A : RCConfig N M) (K : ℕ)
+    {u v : FaceVertex N M true} (huv : (finiteStripGraph hN hM A K).Adj u v)
+    (p : (finiteStripGraph hN hM A K).Walk u v) (u' : RotatedVertex)
+    (hproj : liftedFaceVertex hN hM hNp hMp u' = u) (hux : u'.val.1 = (u.val.1.val : ℤ))
+
+include huv hproj hux in
 /-- Lift one indexed strip edge from any prescribed lift of its initial vertex. -/
-theorem finiteStrip_adj_lifts (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    (A : RCConfig N M) (K : ℕ) {u v : FaceVertex N M true}
-    (huv : (finiteStripGraph hN hM A K).Adj u v)
-    (u' : RotatedVertex) (hproj : liftedFaceVertex hN hM hNp hMp u' = u)
-    (hux : u'.val.1 = (u.val.1.val : ℤ)) :
+theorem finiteStrip_adj_lifts :
     ∃ v' : RotatedVertex, (liftedStripGraph hNp hMp A 0 (K : ℤ)).Adj u' v' ∧
       liftedFaceVertex hN hM hNp hMp v' = v ∧ v'.val.1 = (v.val.1.val : ℤ) := by
   rw [finiteStripGraph,SimpleGraph.fromEdgeSet_adj] at huv
@@ -52,16 +54,12 @@ theorem finiteStrip_adj_lifts (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0
     refine ⟨verticalDeck hM k (edgeLift e true),?_,?_,?_⟩
     · rw [← hk]
       refine ⟨verticalDeck_adj hM k (edgeLift_adj e),?_,?_,?_⟩
-      · rw [verticalDeck_index,edgeLift_index]
-        exact he
-      · change 0 ≤ (edgeLift e false).val.1 ∧ (edgeLift e false).val.1 ≤ (K : ℤ)
-        rw [edgeLift_x e hx false hN hM]
-        exact ⟨by positivity,by exact_mod_cast hf⟩
+      · grind [verticalDeck_index, edgeLift_index]
+      · grind
       · change 0 ≤ (edgeLift e true).val.1 ∧ (edgeLift e true).val.1 ≤ (K : ℤ)
-        rw [edgeLift_x e hx true hN hM]
-        exact ⟨by positivity,by exact_mod_cast ht⟩
+        grind [edgeLift_x hx true hN hM]
     · rw [verticalDeck_projects,edgeLift_projects]
-    · exact edgeLift_x e hx true hN hM
+    · exact edgeLift_x hx true hN hM
   · rcases h with ⟨rfl,rfl⟩
     obtain ⟨k,hk⟩ := exists_deck_edgeLift_of_projection hN hM hNp hMp e hx true u' hproj hux
     refine ⟨verticalDeck hM k (edgeLift e false),?_,?_,?_⟩
@@ -69,21 +67,15 @@ theorem finiteStrip_adj_lifts (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0
       refine ⟨verticalDeck_adj hM k (edgeLift_adj e).symm,?_,?_,?_⟩
       · rw [verticalDeck_index,liftedEdgeIndex_comm,edgeLift_index]
         exact he
-      · change 0 ≤ (edgeLift e true).val.1 ∧ (edgeLift e true).val.1 ≤ (K : ℤ)
-        rw [edgeLift_x e hx true hN hM]
-        exact ⟨by positivity,by exact_mod_cast ht⟩
+      · grind
       · change 0 ≤ (edgeLift e false).val.1 ∧ (edgeLift e false).val.1 ≤ (K : ℤ)
-        rw [edgeLift_x e hx false hN hM]
-        exact ⟨by positivity,by exact_mod_cast hf⟩
+        grind [edgeLift_x hx false hN hM]
     · rw [verticalDeck_projects,edgeLift_projects]
-    · exact edgeLift_x e hx false hN hM
+    · exact edgeLift_x hx false hN hM
 
+include p hproj hux in
 /-- A finite annular walk lifts from any specified initial lift. -/
-theorem finiteStrip_walk_lifts (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    (A : RCConfig N M) (K : ℕ) {u v : FaceVertex N M true}
-    (p : (finiteStripGraph hN hM A K).Walk u v)
-    (u' : RotatedVertex) (hproj : liftedFaceVertex hN hM hNp hMp u' = u)
-    (hux : u'.val.1 = (u.val.1.val : ℤ)) :
+theorem finiteStrip_walk_lifts :
     ∃ v' : RotatedVertex, (liftedStripGraph hNp hMp A 0 (K : ℤ)).Reachable u' v' ∧
       liftedFaceVertex hN hM hNp hMp v' = v ∧ v'.val.1 = (v.val.1.val : ℤ) := by
   induction p generalizing u' with
@@ -95,8 +87,7 @@ theorem finiteStrip_walk_lifts (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 
 
 /-- The finite-strip crossing is an actual crossing in the integer cover (the rotated
 lattice) used in `TorusRC`. -/
-theorem finiteStrip_crossing_implies_lifted (hN : Even N) (hM : Even M)
-    (hNp : 0 < N) (hMp : 0 < M) (A : RCConfig N M) (n : ℕ)
+theorem finiteStrip_crossing_implies_lifted (n : ℕ)
     (u v : FaceVertex N M true) (hu : u.val.1.val = 0) (hv : v.val.1.val = 3*n)
     (hreach : (finiteStripGraph hN hM A (3*n)).Reachable u v) :
     torusRCLeftStripCrossing hNp hMp A n := by
@@ -104,6 +95,6 @@ theorem finiteStrip_crossing_implies_lifted (hN : Even N) (hM : Even M)
   obtain ⟨v',hr,_,hvx⟩ := finiteStrip_walk_lifts hN hM hNp hMp A (3*n) p (faceLift u)
     (faceLift_projects hN hM hNp hMp u) rfl
   exact ⟨faceLift u,v',by change (u.val.1.val : ℤ) = 0; exact_mod_cast hu,
-    by rw [hvx,hv],hr⟩
+    by grind,hr⟩
 
 end PottsDiscontinuity.TorusTopology

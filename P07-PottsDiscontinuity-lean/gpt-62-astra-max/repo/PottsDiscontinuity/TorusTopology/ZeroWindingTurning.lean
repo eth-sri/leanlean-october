@@ -15,15 +15,11 @@ variable {N M : ℕ}
 theorem loopRotationNumber_eq_pm_one_of_zero_winding
     (hN : Even N) (hM : Even M) (i : Fin N) (j : Fin M) (A : RCConfig N M)
     (q : Loop hN hM (rcSmoothing A))
-    (hv : loopVertical (checkerArrows N M) (rcSmoothing A)
-      (checkerArrows_compatible hN hM (rcSmoothing A)) j q = 0)
-    (hh : loopSum (checkerArrows N M) (rcSmoothing A)
-      (checkerArrows_compatible hN hM (rcSmoothing A))
+    (hv : loopVertical j q = 0)
+    (hh : loopSum
       (PottsDiscontinuity.TorusLoops.horizontalCross i) q = 0) :
-    loopRotationNumber (checkerArrows N M) (rcSmoothing A)
-      (checkerArrows_compatible hN hM (rcSmoothing A)) q = 1 ∨
-    loopRotationNumber (checkerArrows N M) (rcSmoothing A)
-      (checkerArrows_compatible hN hM (rcSmoothing A)) q = -1 := by
+    loopRotationNumber q = 1 ∨
+    loopRotationNumber q = -1 := by
   obtain ⟨d,rfl⟩ := Quotient.exists_rep q
   let ω := checkerArrows N M
   let s := rcSmoothing A
@@ -32,8 +28,6 @@ theorem loopRotationNumber_eq_pm_one_of_zero_winding
   have ht := squareWalkCyclicTurn_eq_four_or_neg_four _ hp
   rw [closedLoopMidpointWalk_cyclicTurn ω s h d i j hv hh] at ht
   dsimp [ω,s,h,directedLoopOf] at ht
-  rcases ht with ht | ht
-  · left; omega
-  · right; omega
+  omega
 
 end PottsDiscontinuity.TorusTopology

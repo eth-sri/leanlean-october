@@ -3,7 +3,7 @@ The graph-edge embedding follows the same source. -/
 module
 
 public import PottsDiscontinuity.FK.BoxLaw
-public import PottsDiscontinuity.FK.EndpointLimits
+public import PottsDiscontinuity.FK.BoxCoverage
 public import PottsDiscontinuity.FK.IncreasingEvents
 
 @[expose] public section
@@ -16,32 +16,35 @@ noncomputable section
 
 /-- The original whole-lattice edge represented by an edge of a finite induced domain. -/
 def frozenEdgeEmbedding (S : Finset (ℤ × ℤ)) :
-    (squareLattice.induce (S : Set (ℤ × ℤ))).edgeSet ↪ squareLattice.edgeSet :=
-  (show squareLattice.induce (S : Set (ℤ × ℤ)) ↪g squareLattice from
+    (squareLattice.induce S).edgeSet ↪ squareLattice.edgeSet :=
+  (show squareLattice.induce _ ↪g squareLattice from
     { toFun := Subtype.val, inj' := Subtype.val_injective, map_rel_iff' := Iff.rfl }).mapEdgeSet
 
+section
+variable (A : Finset squareLattice.edgeSet) (ξ : squareLattice.edgeSet → Bool)
+include A ξ
+
 /-- A finite prescribed pattern on the original lattice edges. -/
-def patternCylinder (A : Finset squareLattice.edgeSet)
-    (ξ : squareLattice.edgeSet → Bool) : Set LatticeConfiguration :=
+def patternCylinder : Set LatticeConfiguration :=
   {ω | ∀ e ∈ A, ω e = ξ e}
 
 /-- Every finite edge pattern is clopen in the product topology. -/
-theorem patternCylinder_isClopen (A : Finset squareLattice.edgeSet)
-    (ξ : squareLattice.edgeSet → Bool) : IsClopen (patternCylinder A ξ) := by
+theorem patternCylinder_isClopen : IsClopen (patternCylinder A ξ) := by
   classical
   induction A using Finset.induction_on with
-  | empty => simpa [patternCylinder] using isClopen_univ (X := LatticeConfiguration)
+  | empty => simpa [patternCylinder] using isClopen_univ
   | insert e A he ih =>
       have h : patternCylinder (insert e A) ξ =
           {ω : LatticeConfiguration | ω e = ξ e} ∩ patternCylinder A ξ := by
-        ext ω
-        simp [patternCylinder]
+        grind [patternCylinder]
       rw [h]
-      exact ((isClopen_discrete ({ξ e} : Set Bool)).preimage (continuous_apply e)).inter ih
+      exact ((isClopen_discrete ({ξ e})).preimage (continuous_apply e)).inter ih
+
+end
 
 /-- The exact frozen finite law, mapped by any chosen whole-lattice extension. -/
-def frozenExtendedProbabilityMeasure (θ : Parameters) (S : Finset (ℤ × ℤ)) (i : Fin 2)
-    (ext : Configuration (squareLattice.induce (S : Set (ℤ × ℤ))) → LatticeConfiguration) :
+def frozenExtendedProbabilityMeasure (θ : Parameters) {S : Finset (ℤ × ℤ)} (i : Fin 2)
+    (ext : Configuration (squareLattice.induce S) → LatticeConfiguration) :
     ProbabilityMeasure LatticeConfiguration :=
   ⟨((law _ θ (frozenBoundaryCondition S i)).map ext).toMeasure,
     PMF.toMeasure.isProbabilityMeasure _⟩
@@ -51,26 +54,24 @@ attribute [local instance] configurationMeasurableSpace
 open Classical in
 /-- Once the pattern lies in the domain, extension gives exactly the frozen finite cylinder sum. -/
 theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
-    (S : Finset (ℤ × ℤ)) (i : Fin 2)
-    (ext : Configuration (squareLattice.induce (S : Set (ℤ × ℤ))) → LatticeConfiguration)
+    {S : Finset (ℤ × ℤ)} (i : Fin 2)
+    {ext : Configuration (squareLattice.induce S) → LatticeConfiguration}
     (hExt : ∀ C f, ext C (frozenEdgeEmbedding S f) = decide (f ∈ C))
     (A : Finset squareLattice.edgeSet) (ξ : squareLattice.edgeSet → Bool)
     (hA : ∀ e ∈ A, ∃ f, frozenEdgeEmbedding S f = e) :
-    (frozenExtendedProbabilityMeasure θ S i ext).toMeasure.real (patternCylinder A ξ) =
-      ∑ ω : (squareLattice.induce (S : Set (ℤ × ℤ))).edgeSet → Bool,
-        if ∀ e ∈ A, ∃ f : (squareLattice.induce (S : Set (ℤ × ℤ))).edgeSet,
+    (frozenExtendedProbabilityMeasure θ i ext).toMeasure.real (patternCylinder A ξ) =
+      ∑ ω,
+        if ∀ e ∈ A, ∃ f,
             Sym2.map Subtype.val f.1 = e.1 ∧ ω f = ξ e
         then rcProb S θ.toP θ.toQ i ω else 0 := by
   classical
-  have hpoint (ω : (squareLattice.induce (S : Set (ℤ × ℤ))).edgeSet → Bool) :
+  have hpoint (ω : (squareLattice.induce _).edgeSet → Bool) :
       ext (boolConfigurationEquiv _ ω) ∈ patternCylinder A ξ ↔
-        ∀ e ∈ A, ∃ f : (squareLattice.induce (S : Set (ℤ × ℤ))).edgeSet,
+        ∀ e ∈ A, ∃ f,
           Sym2.map Subtype.val f.1 = e.1 ∧ ω f = ξ e := by
-    have hvalue (f : (squareLattice.induce (S : Set (ℤ × ℤ))).edgeSet) :
+    have hvalue (f : (squareLattice.induce _).edgeSet) :
         ext (boolConfigurationEquiv _ ω) (frozenEdgeEmbedding S f) = ω f := by
-      rw [hExt]
-      simp only [mem_boolConfigurationEquiv]
-      cases ω f <;> rfl
+      simp [*]
     constructor
     · intro h e he
       obtain ⟨f, hf⟩ := hA e he
@@ -80,8 +81,7 @@ theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
     · intro h e he
       obtain ⟨f, hf, hω⟩ := h e he
       have hf' : frozenEdgeEmbedding S f = e := Subtype.ext hf
-      rw [← hf', hvalue]
-      simpa only [hf'] using hω
+      grind
   change (((law _ θ (frozenBoundaryCondition S i)).map ext).toMeasure
     (patternCylinder A ξ)).toReal = _
   rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top
@@ -90,8 +90,7 @@ theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
   rw [measure_toReal_eq_indicator_sum]
   symm
   refine Finset.sum_bij (fun ω _ => boolConfigurationEquiv _ ω) ?_ ?_ ?_ ?_
-  · intro ω _
-    simp only [Finset.mem_univ]
+  · grind
   · intro ω _ η _ h
     exact (boolConfigurationEquiv _).injective h
   · intro C _
@@ -100,18 +99,18 @@ theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
   · intro ω _
     rw [configurationProbability_eq_rcProb]
     simp only [Set.indicator, Set.mem_preimage, hpoint]
-    split <;> simp
+    grind
 
 open Classical in
 /-- Weak convergence of extensions preserving sampled edges implies the exact frozen cylinder limit. -/
 theorem isRCInfiniteVolumeLimit_of_extended_tendsto (θ : Parameters) (i : Fin 2)
-    (S : ℕ → Finset (ℤ × ℤ)) (hS : ∀ n, S n = box n)
-    (ext : ∀ n, Configuration (squareLattice.induce (S n : Set (ℤ × ℤ))) → LatticeConfiguration)
+    {S : ℕ → Finset (ℤ × ℤ)} (hS : ∀ n, S n = box n)
+    {ext : ∀ n, Configuration (squareLattice.induce (S n : Set (ℤ × ℤ))) → LatticeConfiguration}
     (hExt : ∀ n C f, ext n C (frozenEdgeEmbedding (S n) f) = decide (f ∈ C))
     (μ : ProbabilityMeasure LatticeConfiguration)
-    (hμ : Tendsto (fun n => frozenExtendedProbabilityMeasure θ (S n) i (ext n))
+    (hμ : Tendsto (fun n => frozenExtendedProbabilityMeasure θ i (ext n))
       atTop (𝓝 μ)) : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ.toMeasure := by
-  have hS' : S = box := funext hS
+  have hS' := funext hS
   subst S
   constructor
   · exact μ.prop
@@ -119,26 +118,20 @@ theorem isRCInfiniteVolumeLimit_of_extended_tendsto (θ : Parameters) (i : Fin 2
     have hconv := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hμ
       (patternCylinder_isClopen A ξ)
     have hreal : Tendsto
-        (fun n => (frozenExtendedProbabilityMeasure θ (box n) i (ext n)).toMeasure.real
+        (fun n => (frozenExtendedProbabilityMeasure θ i (ext n)).toMeasure.real
           (patternCylinder A ξ)) atTop (𝓝 (μ.toMeasure.real (patternCylinder A ξ))) := by
-      simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn, Function.comp_def] using
-        NNReal.continuous_coe.continuousAt.tendsto.comp hconv
+      exact NNReal.continuous_coe.continuousAt.tendsto.comp hconv
     refine hreal.congr' ?_
-    have hsupp : ∀ᶠ n : ℕ in atTop, ∀ e ∈ A,
-        ∃ f : (squareLattice.induce (box n : Set (ℤ × ℤ))).edgeSet,
-          Sym2.map Subtype.val f.1 = e.1 :=
-      (eventually_all_finset A).2 fun e _ => eventually_edge_lift_box e
-    filter_upwards [hsupp] with n hn
-    have hA : ∀ e ∈ A, ∃ f, frozenEdgeEmbedding (box n) f = e := by
-      intro e he
-      obtain ⟨f, hf⟩ := hn e he
-      exact ⟨f, Subtype.ext hf⟩
-    have h := frozenExtendedProbabilityMeasure_pattern θ (box n) i (ext n)
-      (hExt n) A ξ hA
+    filter_upwards [((eventually_all_finset A).2 fun e _ => eventually_edge_lift_box e)] with n hn
+    have h := frozenExtendedProbabilityMeasure_pattern θ i
+      (hExt n) A ξ (by
+        intro e he
+        obtain ⟨f, hf⟩ := hn e he
+        exact ⟨f, Subtype.ext hf⟩)
     rw [h]
     refine Finset.sum_congr ?_ ?_
     · ext ω
-      simp only [Finset.mem_univ]
+      simp
     · intro ω _
       split_ifs <;> rfl
 

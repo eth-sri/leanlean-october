@@ -22,65 +22,32 @@ variable {N M : ℕ}
 
 /-- Reduction of an integer coordinate modulo a positive period. -/
 def periodicCoordinate (h : 0 < N) (z : ℤ) : Fin N :=
-  ⟨(z % (N : ℤ)).toNat, by
+  ⟨(z % N).toNat, by
     have hnonneg := Int.emod_nonneg z (by omega : (N : ℤ) ≠ 0)
     have hlt := Int.emod_lt_of_pos z (by omega : (0 : ℤ) < N)
     omega⟩
 
 theorem periodicCoordinate_val (h : 0 < N) (z : ℤ) :
-    ((periodicCoordinate h z).val : ℤ) = z % (N : ℤ) := by
-  exact Int.toNat_of_nonneg (Int.emod_nonneg z (by omega))
+    (periodicCoordinate h z).val = z % N := Int.toNat_of_nonneg (Int.emod_nonneg z (by omega))
 
 private theorem periodicCoordinate_parity (h : Even N) (hp : 0 < N) (z : ℤ) :
-    ((periodicCoordinate hp z).val : ℤ) % 2 = z % 2 := by
-  rw [periodicCoordinate_val]
-  exact Int.emod_emod_of_dvd z (Int.natCast_dvd_natCast.mpr h.two_dvd)
+    (periodicCoordinate hp z).val % 2 = z % 2 := by
+  grind [periodicCoordinate_val, Int.emod_emod_of_dvd]
 
 private theorem checker_periodicCoordinate (hNeven : Even N) (hMeven : Even M)
     (hN : 0 < N) (hM : 0 < M) (x y : ℤ) :
     checker (periodicCoordinate hN x, periodicCoordinate hM y) =
       decide ((x + y) % 2 = 0) := by
-  unfold checker
-  have hx := periodicCoordinate_parity hNeven hN x
-  have hy := periodicCoordinate_parity hMeven hM y
-  have hsum :
-      (((periodicCoordinate hN x).val + (periodicCoordinate hM y).val : ℕ) : ℤ) % 2 =
-        (x + y) % 2 := by
-    rw [Nat.cast_add, Int.add_emod, hx, hy]
-    omega
-  by_cases hp :
-      ((periodicCoordinate hN x).val + (periodicCoordinate hM y).val) % 2 = 0
-  · have hq : (x + y) % 2 = 0 := by omega
-    simp [hp, hq]
-  · have hq : (x + y) % 2 ≠ 0 := by omega
-    simp [hp, hq]
+  grind [checker, periodicCoordinate_parity]
 
 private theorem int_abs_eq_one_iff (z : ℤ) : |z| = 1 ↔ z = 1 ∨ z = -1 := by
-  by_cases hz : 0 ≤ z
-  · rw [abs_of_nonneg hz]
-    omega
-  · have hz' : z < 0 := lt_of_not_ge hz
-    rw [abs_of_neg hz']
-    omega
+  grind
 
 private theorem periodicCoordinate_prev (hp : 0 < N) (z : ℤ) :
     periodicCoordinate hp (z - 1) = prv (periodicCoordinate hp z) := by
-  have : NeZero N := ⟨Nat.ne_of_gt hp⟩
   apply Fin.ext
   apply Int.ofNat.inj
-  change ((periodicCoordinate hp (z - 1)).val : ℤ) =
-    ((prv (periodicCoordinate hp z)).val : ℤ)
-  rw [periodicCoordinate_val]
-  have hmod : (z - 1) % (N : ℤ) = (z % (N : ℤ) - 1) % (N : ℤ) := by
-    have h := (Int.mod_modEq z (N : ℤ)).sub_right 1
-    exact h.eq.symm
-  rw [hmod]
-  have hprv : prv (periodicCoordinate hp z) = periodicCoordinate hp z - 1 := by
-    change (finRotate N).symm (periodicCoordinate hp z) = _
-    exact finRotate_symm_apply _
-  rw [hprv, Fin.coe_int_sub_eq_mod]
-  rw [periodicCoordinate_val]
-  norm_num
+  simp [(finRotate_symm_apply _), Fin.coe_int_sub_eq_mod, periodicCoordinate_val]
 
 private theorem periodicCoordinate_add_one_prev (hp : 0 < N) (z : ℤ) :
     periodicCoordinate hp z = prv (periodicCoordinate hp (z + 1)) := by
@@ -95,30 +62,24 @@ def liftedFaceVertex (hNeven : Even N) (hMeven : Even M)
     let j := periodicCoordinate hM u.val.2
     unfold checker
     simp only [decide_eq_true_eq]
-    have hx := periodicCoordinate_parity hNeven hN u.val.1
-    have hy := periodicCoordinate_parity hMeven hM u.val.2
-    have hxZ : (i.val : ZMod 2) = (u.val.1 : ZMod 2) := by
-      have hz := congrArg (fun z : ℤ => (z : ZMod 2)) hx
+    have hxZ : i.val = (u.val.1 : ZMod 2) := by
       calc
-        (i.val : ZMod 2) = (((i.val : ℤ) % 2 : ℤ) : ZMod 2) := by
-          simpa using (ZMod.intCast_mod (i.val : ℤ) 2).symm
-        _ = ((u.val.1 % 2 : ℤ) : ZMod 2) := hz
-        _ = (u.val.1 : ZMod 2) := ZMod.intCast_mod _ _
-    have hyZ : (j.val : ZMod 2) = (u.val.2 : ZMod 2) := by
-      have hz := congrArg (fun z : ℤ => (z : ZMod 2)) hy
+        _ = (↑(i.val % 2) : ZMod 2) := by
+          exact (ZMod.intCast_mod i.val 2).symm
+        _ = ↑(u.val.1 % 2) := (congrArg (fun z : ℤ => (z : ZMod 2)) (periodicCoordinate_parity hNeven hN u.val.1))
+        _ = _ := ZMod.intCast_mod _ _
+    have hyZ : j.val = (u.val.2 : ZMod 2) := by
       calc
-        (j.val : ZMod 2) = (((j.val : ℤ) % 2 : ℤ) : ZMod 2) := by
-          simpa using (ZMod.intCast_mod (j.val : ℤ) 2).symm
-        _ = ((u.val.2 % 2 : ℤ) : ZMod 2) := hz
-        _ = (u.val.2 : ZMod 2) := ZMod.intCast_mod _ _
+        _ = (↑(j.val % 2) : ZMod 2) := by
+          exact (ZMod.intCast_mod j.val 2).symm
+        _ = ↑(u.val.2 % 2) := (congrArg (fun z : ℤ => (z : ZMod 2)) (periodicCoordinate_parity hMeven hM u.val.2))
+        _ = _ := ZMod.intCast_mod _ _
     rcases u.property with ⟨k, hk⟩
-    have hsumZ : (u.val.1 : ZMod 2) + (u.val.2 : ZMod 2) = 0 := by
-      rw [← Int.cast_add, hk]
-      exact (ZMod.intCast_zmod_eq_zero_iff_dvd (k + k) 2).2 ⟨k, by ring⟩
-    have hcast : ((i.val + j.val : ℕ) : ZMod 2) = 0 := by
+    exact Nat.mod_eq_zero_of_dvd (ZMod.natCast_eq_zero_iff_even.mp (by
       rw [Nat.cast_add, hxZ, hyZ]
-      exact hsumZ
-    exact Nat.mod_eq_zero_of_dvd (ZMod.natCast_eq_zero_iff_even.mp hcast).two_dvd⟩
+      exact (by
+        rw [← Int.cast_add, hk]
+        exact (ZMod.intCast_zmod_eq_zero_iff_dvd (k + k) 2).2 ⟨k, by ring⟩))).two_dvd⟩
 
 /-- The indexed edge at the midpoint of a lifted diamond edge. -/
 def liftedEdgeIndex (hN : 0 < N) (hM : 0 < M) (u v : RotatedVertex) : Fin N × Fin M :=
@@ -127,12 +88,12 @@ def liftedEdgeIndex (hN : 0 < N) (hM : 0 < M) (u v : RotatedVertex) : Fin N × F
 
 theorem liftedEdgeIndex_comm (hN : 0 < N) (hM : 0 < M) (u v : RotatedVertex) :
     liftedEdgeIndex hN hM u v = liftedEdgeIndex hN hM v u := by
-  simp only [liftedEdgeIndex, max_comm]
+  simp [liftedEdgeIndex, max_comm]
 
 /-- Every lifted diagonal edge projects to the corresponding indexed primal
 edge of the diamond torus (`Torus/DiamondGraph.lean`). -/
 theorem liftedFaceEndpoints_eq (hNeven : Even N) (hMeven : Even M)
-    (hN : 0 < N) (hM : 0 < M) (u v : RotatedVertex)
+    (hN : 0 < N) (hM : 0 < M) {u v : RotatedVertex}
     (huv : rotatedLattice.Adj u v) :
     s(liftedFaceVertex hNeven hMeven hN hM u,
         liftedFaceVertex hNeven hMeven hN hM v) =
@@ -150,11 +111,9 @@ theorem liftedFaceEndpoints_eq (hNeven : Even N) (hMeven : Even M)
           periodicCoordinate hM (max u.val.2 v.val.2)) = true := by
       rw [max_eq_right_of_lt hx, max_eq_right_of_lt hy,
         checker_periodicCoordinate hNeven hMeven hN hM]
-      rcases v.property with ⟨k, hk⟩
-      simp
-      omega
+      grind
     have hcheckerIdx : checker (liftedEdgeIndex hN hM u v) = true := by
-      simpa only [liftedEdgeIndex] using hchecker
+      assumption
     rw [Sym2.eq_iff]
     right
     constructor
@@ -171,9 +130,7 @@ theorem liftedFaceEndpoints_eq (hNeven : Even N) (hMeven : Even M)
     · apply Subtype.ext
       change (periodicCoordinate hN v.val.1, periodicCoordinate hM v.val.2) =
         faceEndpointRaw true (liftedEdgeIndex hN hM u v) false
-      simp only [faceEndpointRaw, hcheckerIdx]
-      simp only [liftedEdgeIndex, max_eq_right_of_lt hx, max_eq_right_of_lt hy]
-      rfl
+      simp_all [faceEndpointRaw, hcheckerIdx, liftedEdgeIndex, max_eq_right_of_lt hx, max_eq_right_of_lt hy]
   · have hux : v.val.1 = u.val.1 + 1 := by omega
     have huy : u.val.2 = v.val.2 + 1 := by omega
     have hchecker :
@@ -181,11 +138,9 @@ theorem liftedFaceEndpoints_eq (hNeven : Even N) (hMeven : Even M)
           periodicCoordinate hM (max u.val.2 v.val.2)) = false := by
       rw [max_eq_right_of_lt hx, max_eq_left_of_lt hy,
         checker_periodicCoordinate hNeven hMeven hN hM]
-      rcases u.property with ⟨k, hk⟩
-      simp
-      omega
+      grind
     have hcheckerIdx : checker (liftedEdgeIndex hN hM u v) = false := by
-      simpa only [liftedEdgeIndex] using hchecker
+      assumption
     rw [Sym2.eq_iff]
     left
     constructor
@@ -214,11 +169,9 @@ theorem liftedFaceEndpoints_eq (hNeven : Even N) (hMeven : Even M)
           periodicCoordinate hM (max u.val.2 v.val.2)) = false := by
       rw [max_eq_left_of_lt hx, max_eq_right_of_lt hy,
         checker_periodicCoordinate hNeven hMeven hN hM]
-      rcases v.property with ⟨k, hk⟩
-      simp
-      omega
+      grind
     have hcheckerIdx : checker (liftedEdgeIndex hN hM u v) = false := by
-      simpa only [liftedEdgeIndex] using hchecker
+      assumption
     rw [Sym2.eq_iff]
     right
     constructor
@@ -247,19 +200,16 @@ theorem liftedFaceEndpoints_eq (hNeven : Even N) (hMeven : Even M)
           periodicCoordinate hM (max u.val.2 v.val.2)) = true := by
       rw [max_eq_left_of_lt hx, max_eq_left_of_lt hy,
         checker_periodicCoordinate hNeven hMeven hN hM]
-      rcases u.property with ⟨k, hk⟩
-      simp
-      omega
+      grind
     have hcheckerIdx : checker (liftedEdgeIndex hN hM u v) = true := by
-      simpa only [liftedEdgeIndex] using hchecker
+      assumption
     rw [Sym2.eq_iff]
     left
     constructor
     · apply Subtype.ext
       change (periodicCoordinate hN u.val.1, periodicCoordinate hM u.val.2) =
         faceEndpointRaw true (liftedEdgeIndex hN hM u v) false
-      simp [faceEndpointRaw, hcheckerIdx]
-      simp only [liftedEdgeIndex, max_eq_left_of_lt hx, max_eq_left_of_lt hy]
+      simp_all [faceEndpointRaw, hcheckerIdx, liftedEdgeIndex, max_eq_left_of_lt hx, max_eq_left_of_lt hy]
     · apply Subtype.ext
       change (periodicCoordinate hN v.val.1, periodicCoordinate hM v.val.2) =
         faceEndpointRaw true (liftedEdgeIndex hN hM u v) true
@@ -291,7 +241,7 @@ theorem liftedStripGraph_mono (hN : 0 < N) (hM : 0 < M)
   rw [huv.2.1] at hval
   have hout : B (liftedEdgeIndex hN hM u v) = true := by
     cases hb : B (liftedEdgeIndex hN hM u v)
-    · exact False.elim ((by decide : ¬ (true ≤ false)) (by simpa [hb] using hval))
+    · exact False.elim ((by decide : ¬ (true ≤ false)) (by grind))
     · rfl
   exact ⟨huv.1, hout, huv.2.2⟩
 
@@ -303,7 +253,7 @@ private theorem walk_mono_support {V : Type*} {G H : SimpleGraph V}
   | @cons u v w hadj p ih =>
     obtain ⟨p', hp⟩ := ih
     refine ⟨.cons (hGH hadj) p', ?_⟩
-    simp [hp]
+    grind
 
 /-- Membership of a lifted vertex in a square centred at a specified lift. -/
 def inLiftedBox (R : ℕ) (c z : RotatedVertex) : Prop :=
@@ -316,13 +266,13 @@ def liftedBoxConnection (hN : 0 < N) (hM : 0 < M) (A : RCConfig N M)
     ∀ z ∈ w.support, inLiftedBox R u z
 
 theorem liftedBoxConnection_mono (hN : 0 < N) (hM : 0 < M)
-    {A B : RCConfig N M} (a b : ℤ) (R : ℕ) (u v : RotatedVertex)
+    {A B : RCConfig N M} (a b : ℤ) (R : ℕ) {u v : RotatedVertex}
     (hAB : A ≤ B) (hconn : liftedBoxConnection hN hM A a b R u v) :
     liftedBoxConnection hN hM B a b R u v := by
   obtain ⟨w, hw⟩ := hconn
   have hmono := liftedStripGraph_mono hN hM a b hAB
   obtain ⟨w', hsupport⟩ := walk_mono_support hmono w
-  exact ⟨w', by rw [hsupport]; exact hw⟩
+  exact ⟨w', by grind⟩
 
 /-- Corrected proof-internal chain event: every adjacent pair uses its prescribed lifts. -/
 def liftedChainEvent (hN : 0 < N) (hM : 0 < M) (a b : ℤ)
@@ -337,30 +287,26 @@ theorem liftedChainEvent_reachable (hN : 0 < N) (hM : 0 < M) (a b : ℤ)
   induction k with
   | zero => exact SimpleGraph.Reachable.refl _
   | succ k ih =>
-    have hprev : A ∈ liftedChainEvent hN hM a b R y k :=
+    have hprev :=
       fun j hj => hA j (Nat.lt_succ_of_lt hj)
     obtain ⟨w, _⟩ := hA k (Nat.lt_succ_self k)
     exact (ih hprev).trans ⟨w⟩
 
 /-- The even-column lifted point `(x,t)`. -/
-def liftedColumnSite (x t : ℤ) (hx : Even x) (ht : Even t) : RotatedVertex :=
+def liftedColumnSite {x t : ℤ} (hx : Even x) (ht : Even t) : RotatedVertex :=
   ⟨(x, t), hx.add ht⟩
 
 /-- A lifted vertical period closes at the same finite primal face vertex. -/
 theorem liftedFaceVertex_vertical_period (hNeven : Even N) (hMeven : Even M)
     (hN : 0 < N) (hM : 0 < M) (x : ℤ) (hx : Even x) :
-    liftedFaceVertex hNeven hMeven hN hM (liftedColumnSite x 0 hx ⟨0, rfl⟩) =
+    liftedFaceVertex hNeven hMeven hN hM (liftedColumnSite (x := x) (t := 0) hx ⟨0, rfl⟩) =
       liftedFaceVertex hNeven hMeven hN hM
-        (liftedColumnSite x (M : ℤ) hx (by exact_mod_cast hMeven)) := by
-  apply Subtype.ext
-  apply Prod.ext
-  · rfl
-  · apply Fin.ext
-    simp [liftedFaceVertex, liftedColumnSite, periodicCoordinate]
+        (liftedColumnSite (x := x) (t := (M : ℤ)) hx (by exact_mod_cast hMeven)) := by
+  simp [liftedFaceVertex, liftedColumnSite, periodicCoordinate]
 
 /-- The actual sites y_j=(x,2nj), before projection to the torus. -/
-def liftedChainSite (x : ℤ) (hx : Even x) (n j : ℕ) : RotatedVertex :=
-  liftedColumnSite x (2 * (n : ℤ) * j) hx (by
+def liftedChainSite {x : ℤ} (hx : Even x) (n j : ℕ) : RotatedVertex :=
+  liftedColumnSite (x := x) (t := (2 * (n : ℤ) * j)) hx (by
     use (n : ℤ) * j
     ring)
 

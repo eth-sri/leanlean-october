@@ -11,16 +11,18 @@ open scoped BigOperators
 
 namespace PottsDiscontinuity.Bethe
 
-theorem fin_sum_consecutive_sub {k : ℕ} (f : Fin (k + 1) → ℝ) :
+variable {k : ℕ}
+
+theorem fin_sum_consecutive_sub (f : Fin (k + 1) → ℝ) :
     (∑ j : Fin k, (f j.succ - f j.castSucc)) = f (Fin.last k) - f 0 := by
   have h₁ := Fin.sum_univ_succ f
   have h₂ := Fin.sum_univ_castSucc f
   rw [Finset.sum_sub_distrib]
-  linarith only [h₁, h₂]
+  linarith
 
 /-- A mesh bound and a Lipschitz derivative give a quantitative left Riemann
 estimate, without asymptotic notation. -/
-theorem finite_left_riemann_error {k : ℕ} (q : Fin (k + 1) → ℝ)
+theorem finite_left_riemann_error (q : Fin (k + 1) → ℝ)
     (hq : StrictMono q) (f g : ℝ → ℝ) {a b L d : ℝ}
     (hbox : ∀ j, q j ∈ Icc a b) (hL : 0 ≤ L)
     (hmesh : ∀ j : Fin k, q j.succ - q j.castSucc ≤ d)
@@ -32,7 +34,7 @@ theorem finite_left_riemann_error {k : ℕ} (q : Fin (k + 1) → ℝ)
       |(q j.succ - q j.castSucc) * g (q j.castSucc) -
         (f (q j.succ) - f (q j.castSucc))| ≤
           L * d * (q j.succ - q j.castSucc) := by
-    have hlt : q j.castSucc < q j.succ := hq (by change j.val < j.val + 1; omega)
+    have hlt : q j.castSucc < q j.succ := hq (by grind)
     have hsub : Icc (q j.castSucc) (q j.succ) ⊆ Icc a b :=
       fun x hx => ⟨(hbox _).1.trans hx.1, hx.2.trans (hbox _).2⟩
     obtain ⟨ξ, hξ, hm⟩ := exists_hasDerivAt_eq_slope f g hlt
@@ -42,8 +44,8 @@ theorem finite_left_riemann_error {k : ℕ} (q : Fin (k + 1) → ℝ)
     have hl := hLip (q j.castSucc) (hbox _) ξ hξbox
     have hdist : |q j.castSucc - ξ| ≤ q j.succ - q j.castSucc := by
       rw [abs_of_neg (sub_neg.mpr hξ.1)]
-      linarith [hξ.2]
-    have hl' : |g (q j.castSucc) - g ξ| ≤ L * d :=
+      grind
+    have hl' :=
       hl.trans ((mul_le_mul_of_nonneg_left hdist hL).trans
         (mul_le_mul_of_nonneg_left (hmesh j) hL))
     have hm' : (q j.succ - q j.castSucc) * g ξ =

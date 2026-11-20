@@ -38,15 +38,13 @@ theorem partition_eq_event [Fintype A] (r : X → Setoid A) (R : Setoid A) :
   ext x
   constructor
   · intro h
-    change r x = R at h
-    subst h
-    simp [booleanEventPattern]
+    grind [booleanEventPattern]
   · rintro ⟨hp, hn⟩
     apply Setoid.ext
     intro a b
     by_cases h : R a b
-    · exact ⟨fun _ => h, fun _ => hp (a, b) (by simp [h])⟩
-    · exact ⟨fun hr => (hn (a, b) (by simp [h]) hr).elim, fun hr => (h hr).elim⟩
+    · exact ⟨fun _ => h, fun _ => hp (a, b) (by grind)⟩
+    · exact ⟨fun hr => (hn (a, b) (by grind) hr).elim, fun hr => (h hr).elim⟩
 
 /-- Convergence of all positive relation moments gives the entire partition law. -/
 theorem partition_probability_tendsto [Fintype A] [MeasurableSpace X]
@@ -60,8 +58,7 @@ theorem partition_probability_tendsto [Fintype A] [MeasurableSpace X]
     Tendsto (fun n => (μs n).toMeasure.real {x | r n x = R}) atTop
       (𝓝 (μ.toMeasure.real {x | rinf x = R})) := by
   simp_rw [partition_eq_event]
-  exact boolean_pattern_probability_tendsto μs μ (fun n (z : A × A) => {x | r n x z.1 z.2})
-    (fun (z : A × A) => {x | rinf x z.1 z.2}) (fun n (z : A × A) => hr n z.1 z.2)
+  exact boolean_pattern_probability_tendsto μs μ (fun n (z : A × A) => hr n z.1 z.2)
     (fun (z : A × A) => hri z.1 z.2) hmom _ _
 
 theorem partitionExpectation_tendsto [Fintype A] [MeasurableSpace X]
@@ -70,8 +67,7 @@ theorem partitionExpectation_tendsto [Fintype A] [MeasurableSpace X]
     (h : ∀ R : Setoid A, Tendsto (fun n => (μs n).toMeasure.real {x | r n x = R}) atTop
       (𝓝 (μ.toMeasure.real {x | rinf x = R}))) :
     Tendsto (fun n => partitionExpectation (μs n).toMeasure (r n) K) atTop
-      (𝓝 (partitionExpectation μ.toMeasure rinf K)) := by
-  exact tendsto_finsetSum _ (fun R _ => (h R).mul_const (K R))
+      (𝓝 (partitionExpectation μ.toMeasure rinf K)) := tendsto_finsetSum _ (fun R _ => (h R).mul_const (K R))
 
 /-- On a finite sample space, partition expectation is the ordinary weighted sum. -/
 theorem partitionExpectation_pmf [Finite A] [Fintype X] [MeasurableSpace X]
@@ -80,26 +76,19 @@ theorem partitionExpectation_pmf [Finite A] [Fintype X] [MeasurableSpace X]
   unfold partitionExpectation
   simp_rw [finite_pmf_measureReal_sum, Finset.sum_mul]
   rw [Finset.sum_comm]
-  apply Finset.sum_congr rfl
-  intro x _
-  rw [Finset.sum_eq_single (r x)]
-  · simp
-  · intro R _ hR
-    simp [Ne.symm hR]
-  · simp
+  simp
 
 theorem partition_event_measurable [Fintype A] [MeasurableSpace X]
     (r : X → Setoid A) (hr : ∀ a b, MeasurableSet {x | r x a b}) (R : Setoid A) :
     MeasurableSet {x | r x = R} := by
   rw [partition_eq_event]
-  exact booleanEventPattern_measurable _ (fun (z : A × A) => hr z.1 z.2) _ _
+  exact booleanEventPattern_measurable (fun (z : A × A) => hr z.1 z.2) _ _
 
 /-- Partition expectation commutes with the actual pushforward law. -/
 theorem partitionExpectation_map {Y : Type*} [Fintype A] [MeasurableSpace X] [MeasurableSpace Y]
     (p : PMF X) (f : X → Y) (hf : Measurable f) (r : Y → Setoid A) (K : Setoid A → ℝ)
     (hr : ∀ a b, MeasurableSet {y | r y a b}) :
     partitionExpectation (p.map f).toMeasure r K = partitionExpectation p.toMeasure (r ∘ f) K := by
-  unfold partitionExpectation
   apply Finset.sum_congr rfl
   intro R _
   congr 1

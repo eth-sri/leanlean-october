@@ -1,6 +1,8 @@
 module
 
 public import PottsDiscontinuity.TorusTopology.PeriodicLatticeTurning
+public import PottsDiscontinuity.TorusTopology.MidpointCyclicTurning
+public import PottsDiscontinuity.TorusTopology.PeriodicCurveBasics
 
 /-! The essential-loop turning classification, on the exact torus loop carrier
 `Torus.Loop` used in Corollary 3.13. -/
@@ -15,33 +17,29 @@ variable {N M : ℕ}
 theorem loopRotationNumber_eq_zero_of_nonzero_winding
     (hN : Even N) (hM : Even M) (i : Fin N) (j : Fin M) (A : RCConfig N M)
     (q : Loop hN hM (rcSmoothing A))
-    (hw : loopVertical (checkerArrows N M) (rcSmoothing A)
-      (checkerArrows_compatible hN hM (rcSmoothing A)) j q ≠ 0 ∨
-      loopSum (checkerArrows N M) (rcSmoothing A)
-        (checkerArrows_compatible hN hM (rcSmoothing A))
+    (hw : loopVertical j q ≠ 0 ∨
+      loopSum
         (PottsDiscontinuity.TorusLoops.horizontalCross i) q ≠ 0) :
-    loopRotationNumber (checkerArrows N M) (rcSmoothing A)
-      (checkerArrows_compatible hN hM (rcSmoothing A)) q = 0 := by
+    loopRotationNumber q = 0 := by
   obtain ⟨d,rfl⟩ := Quotient.exists_rep q
   let ω := checkerArrows N M
   let s := rcSmoothing A
   let h := checkerArrows_compatible hN hM s
-  let f := loopMidpointPosition ω s h d
-  let D := ((loopDeckDisplacement ω s h d i j).1+(loopDeckDisplacement ω s h d i j).2,
-    (loopDeckDisplacement ω s h d i j).2-(loopDeckDisplacement ω s h d i j).1)
+  let f := loopMidpointPosition h d
+  let D := ((loopDeckDisplacement h d i j).1+(loopDeckDisplacement h d i j).2,
+    (loopDeckDisplacement h d i j).2-(loopDeckDisplacement h d i j).1)
   have hadj : ∀ n, FK.squareLattice.Adj (f n) (f (n+1)) := loopMidpointPosition_adj ω s h d
   have hinj : Function.Injective f := loopMidpointPosition_injective_of_nonzero_winding ω s h d i j hw
-  have hper : ∀ n, f (n+loopPeriod ω s h d)=f n+D :=
+  have hper : ∀ n, f (n+loopPeriod h d)=f n+D :=
     loopMidpointPosition_add_period ω s h d i j
-  have hD : D ≠ (0,0) := (rotated_loopDeckDisplacement_ne_zero_iff ω s h d i j).mpr hw
-  have hz := periodic_lattice_turn_eq_zero f hadj hinj (loopPeriod ω s h d) D
-    (loopPeriod_pos ω s h d) hD hper
-  have hdir (n : ℕ) : sequenceCompass f hadj n =
-      portCompass (midpointDirection s ((directedStep ω s h)^[n] d).val) := by
-    exact squareDartCompass_eq_portCompass _ _
+  have hz := periodic_lattice_turn_eq_zero f hadj hinj (loopPeriod h d) D
+    (loopPeriod_pos h d) hper
+  have hdir (n : ℕ) : Secant.lab (f n) (f (n+1)) =
+      portCompass (midpointDirection s ((directedStep h)^[n] d).val) := by
+    exact squareDartCompass_eq_portCompass (hadj n) _
       (loopMidpointPosition_succ_direction ω s h d n)
-  have hturn : (∑ n ∈ range (loopPeriod ω s h d),
-      midpointQuarterTurn s ((directedStep ω s h)^[n] d).val) = 0 := by
+  have hturn : (∑ n ∈ range (loopPeriod h d),
+      midpointQuarterTurn s ((directedStep h)^[n] d).val) = 0 := by
     convert hz using 1
     apply Finset.sum_congr rfl
     intro n hn

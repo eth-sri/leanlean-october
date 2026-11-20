@@ -11,19 +11,24 @@ namespace PottsDiscontinuity.TorusRC
 
 open CorrLength
 
+section
+variable (c d z : RotatedVertex)
+include c d z
+
 /-- Recenter a lifted lattice point by the displacement d-c. -/
-def liftedRecenter (c d z : RotatedVertex) : RotatedVertex :=
+def liftedRecenter : RotatedVertex :=
   ⟨(z.val.1 - c.val.1 + d.val.1, z.val.2 - c.val.2 + d.val.2), by
     convert (z.property.sub c.property).add d.property using 1; ring⟩
 
-theorem inLiftedBox_recenter_iff (c d z : RotatedVertex) (R : ℕ) :
+theorem inLiftedBox_recenter_iff (R : ℕ) :
     inLiftedBox R d (liftedRecenter c d z) ↔ inLiftedBox R c z := by
   simp [inLiftedBox, liftedRecenter]
 
-theorem liftedRecenter_inverse (c d z : RotatedVertex) :
+theorem liftedRecenter_inverse :
     liftedRecenter d c (liftedRecenter c d z) = z := by
-  apply Subtype.ext
   ext <;> dsimp [liftedRecenter] <;> ring
+
+end
 
 def liftedBoxRecenterIso (c d : RotatedVertex) (R : ℕ) :
     liftedBoxGraph c R ≃g liftedBoxGraph d R where
@@ -48,13 +53,13 @@ def liftedBoxRecenterIso (c d : RotatedVertex) (R : ℕ) :
 
 noncomputable local instance recenterBoxEdges (c : RotatedVertex) (R : ℕ) :
     Fintype (liftedBoxGraph c R).edgeSet := Fintype.ofFinite _
-noncomputable local instance recenterBoxEdgeDecidableEq (c : RotatedVertex) (R : ℕ) :
-    DecidableEq (liftedBoxGraph c R).edgeSet := Classical.decEq _
 
 noncomputable section
 
+variable (θ : FK.Parameters)
+
 /-- Recentring transports the exact free law and the sampled connection event. -/
-theorem liftedBoxFreeConnectionProbability_recenter (θ : FK.Parameters)
+theorem liftedBoxFreeConnectionProbability_recenter
     (c d u v : RotatedVertex) (R : ℕ) :
     liftedBoxFreeConnectionProbability θ d R (liftedRecenter c d u) (liftedRecenter c d v) =
       liftedBoxFreeConnectionProbability θ c R u v := by
@@ -83,26 +88,22 @@ theorem liftedBoxFreeConnectionProbability_recenter (θ : FK.Parameters)
 
 /-- All complete 2n blocks in the source chain have the same native free-box
 connection probability, centered at the origin. -/
-theorem liftedBoxFreeConnectionProbability_chain (θ : FK.Parameters)
+theorem liftedBoxFreeConnectionProbability_chain
     (x : ℤ) (hx : Even x) (n j R : ℕ) :
-    liftedBoxFreeConnectionProbability θ (liftedChainSite x hx n j) R
-      (liftedChainSite x hx n j) (liftedChainSite x hx n (j + 1)) =
+    liftedBoxFreeConnectionProbability θ (liftedChainSite hx n j) R
+      (liftedChainSite hx n j) (liftedChainSite hx n (j + 1)) =
       liftedBoxFreeConnectionProbability θ rotatedLatticeOrigin R
         rotatedLatticeOrigin (rotatedDiagonalSite n) := by
   have h := liftedBoxFreeConnectionProbability_recenter θ
-    (liftedChainSite x hx n j) rotatedLatticeOrigin
-    (liftedChainSite x hx n j) (liftedChainSite x hx n (j + 1)) R
-  have hc : liftedRecenter (liftedChainSite x hx n j) rotatedLatticeOrigin
-      (liftedChainSite x hx n j) = rotatedLatticeOrigin := by
-    apply Subtype.ext
+    (liftedChainSite hx n j) rotatedLatticeOrigin
+    (liftedChainSite hx n j) (liftedChainSite hx n (j + 1)) R
+  have hc : liftedRecenter (liftedChainSite hx n j) rotatedLatticeOrigin
+      (liftedChainSite hx n j) = rotatedLatticeOrigin := by
     simp [liftedRecenter]
-  have hv : liftedRecenter (liftedChainSite x hx n j) rotatedLatticeOrigin
-      (liftedChainSite x hx n (j + 1)) = rotatedDiagonalSite n := by
-    apply Subtype.ext
-    ext <;> dsimp [liftedRecenter, liftedChainSite, liftedColumnSite,
-      rotatedLatticeOrigin, rotatedDiagonalSite] <;> ring
-  rw [hc,hv] at h
-  exact h.symm
+  have hv : liftedRecenter (liftedChainSite hx n j) rotatedLatticeOrigin
+      (liftedChainSite hx n (j + 1)) = rotatedDiagonalSite n := by
+    ext <;> dsimp [liftedRecenter, liftedChainSite, liftedColumnSite, rotatedLatticeOrigin, rotatedDiagonalSite] <;> ring
+  grind
 
 end
 

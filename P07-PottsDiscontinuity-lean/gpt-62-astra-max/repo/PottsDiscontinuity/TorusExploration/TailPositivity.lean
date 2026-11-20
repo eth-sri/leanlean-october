@@ -20,25 +20,25 @@ lemma negativeArrows_ice : (negativeArrows N M).IceRule := by
   rfl
 
 lemma negativeArrows_absUp : (negativeArrows N M).absUp=0 := by
-  unfold ArrowConfig.absUp
-  split_ifs <;> simp [ArrowConfig.rowUp,negativeArrows]
+  simp [ArrowConfig.rowUp, negativeArrows, ArrowConfig.absUp]
+
+variable (hN : Even N) (hM : Even M) (j : Fin M) (q : Set.Ici (1 : ℝ)) (r : ℕ) (hr : r ≤ N/2)
+include hr
 
 /-- Every winding tail below half the width has an actual indexed configuration. -/
-theorem windingTail_nonempty (hN : Even N) (hM : Even M) (j : Fin M)
-    (r : ℕ) (hr : r ≤ N/2) :
+theorem windingTail_nonempty :
     (torusRCVerticalTail hN hM j r).Nonempty := by
   obtain ⟨s,hs⟩ := (exists_compatibleConfig_iff (negativeArrows N M)).2 negativeArrows_ice
   let A := smoothingRC s
   have hA : CompatibleConfig (negativeArrows N M) (rcSmoothing A) := by
     simpa only [A,rcSmoothing_smoothingRC] using hs
-  have hU := sector_le_rcVerticalWinding hN hM j A (negativeArrows N M) hA
+  have hU := sector_le_rcVerticalWinding hN hM j hA
     (r := N/2) (by rw [negativeArrows_absUp,zero_add])
   exact ⟨A,hr.trans hU⟩
 
 /-- The real logarithm in the winding-tail rate is taken at a positive number
 once the width is at least twice the requested winding. -/
-theorem windingTail_probability_pos (hN : Even N) (hM : Even M) (j : Fin M)
-    (q : Set.Ici (1 : ℝ)) (r : ℕ) (hr : r ≤ N/2) :
+theorem windingTail_probability_pos :
     0 < torusRCProbability hN hM q (torusRCVerticalTail hN hM j r) := by
   obtain ⟨A,hA⟩ := windingTail_nonempty hN hM j r hr
   have hm := torusRCProbability_mono hN hM q

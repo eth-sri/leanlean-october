@@ -19,18 +19,20 @@ namespace PottsDiscontinuity.Duality
 
 open FK
 
+variable (θ : Parameters) (μ : Measure LatticeConfiguration)
+    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
+include hμ
+
 /-- Any frozen free box limit is the existing unique free weak limit. -/
-lemma free_limit_eq_selected (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) :
+lemma free_limit_eq_selected :
     μ = (Classical.choose (freeBoxLimit_existsUnique θ)).toMeasure := by
   let ν := Classical.choose (freeBoxLimit_existsUnique θ)
   have hν := (Classical.choose_spec (freeBoxLimit_existsUnique θ)).1
     (fun _ => (0, 0)) (fun n => n) origin_latticeBox_nested origin_latticeBox_exhaustive
-  exact rc_limit_unique θ.toP θ.toQ 0 μ ν.toMeasure hμ
-    (isRCInfiniteVolumeLimit_of_freeBox_tendsto θ ν hν)
+  exact rc_limit_unique hμ
+    (isRCInfiniteVolumeLimit_of_freeBox_tendsto hν)
 
-lemma free_clopen_positive_association (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
+lemma free_clopen_positive_association
     (s t : Set LatticeConfiguration) (hs : IsClopen s) (ht : IsClopen t)
     (hsu : IsUpperSet s) (htu : IsUpperSet t) :
     μ s * μ t ≤ μ (s ∩ t) := by
@@ -40,13 +42,11 @@ lemma free_clopen_positive_association (θ : Parameters) (μ : Measure LatticeCo
     (measure_ne_top μ (s ∩ t))).1
   rw [ENNReal.toReal_mul, free_limit_eq_selected θ μ hμ]
   simpa only [← ProbabilityMeasure.measureReal_eq_coe_coeFn, Measure.real_def] using
-    Internal.freeBoxLimit_clopen_positive_association θ s t hs ht hsu htu
+    Internal.freeBoxLimit_clopen_positive_association θ hs ht hsu htu
 
 /-- FKG for whole-plane actual connection events, obtained by finite-path
 approximation from the proved clopen FKG inequality. -/
-theorem free_connection_positive_association
-    (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (u v x y : LatticeVertex) :
+theorem free_connection_positive_association (u v x y : LatticeVertex) :
     μ (connectionEvent u v) * μ (connectionEvent x y) ≤
       μ (connectionEvent u v ∩ connectionEvent x y) := by
   rw [measure_connectionEvent_eq_iSup μ u v, measure_connectionEvent_eq_iSup μ x y,
@@ -69,8 +69,7 @@ theorem free_connection_positive_association
 
 /-- Positive association and actual path concatenation give the two-point
 supermultiplicativity inequality. -/
-theorem free_connection_mul_le (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (u v w : LatticeVertex) :
+theorem free_connection_mul_le (u v w : LatticeVertex) :
     μ (connectionEvent u v) * μ (connectionEvent v w) ≤ μ (connectionEvent u w) := by
   refine (free_connection_positive_association θ μ hμ u v v w).trans (measure_mono ?_)
   intro ω hω
@@ -79,9 +78,7 @@ theorem free_connection_mul_le (θ : Parameters) (μ : Measure LatticeConfigurat
 /-- Every lattice graph symmetry preserving all centered boxes preserves the
 actual free infinite-volume measure. -/
 theorem free_limit_map_latticeIso
-    (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
-    (e : squareLattice ≃g squareLattice)
+    {e : squareLattice ≃g squareLattice}
     (hbox : ∀ c v r, e v ∈ latticeBox (e c) r ↔ v ∈ latticeBox c r) :
     μ.map (latticeConfigurationIsoHomeomorph e) = μ := by
   rw [free_limit_eq_selected θ μ hμ]

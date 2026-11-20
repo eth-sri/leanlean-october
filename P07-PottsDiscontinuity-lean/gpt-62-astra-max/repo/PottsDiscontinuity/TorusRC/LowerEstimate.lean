@@ -10,9 +10,7 @@ public import PottsDiscontinuity.TorusRC.TopologyBounds
 namespace PottsDiscontinuity.TorusRC
 
 open Torus CorrLength
-
-noncomputable local instance lowerEstimateBoxEdgeFintype (c : RotatedVertex) (R : ℕ) :
-    Fintype (liftedBoxGraph c R).edgeSet := Fintype.ofFinite _
+attribute [local instance] liftedBoxEdgeFintype
 
 /-- All finite-volume ingredients of (3.15), with the topological premise that B ∩ C′
 forces `U = 1` discharged (`TorusTopology.hBCU_proved`, via `TorusRC/TopologyBounds.lean`).

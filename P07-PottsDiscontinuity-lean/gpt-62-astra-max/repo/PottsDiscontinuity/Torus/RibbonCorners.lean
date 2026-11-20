@@ -27,33 +27,39 @@ def leftFace : Dart N M → Fin N × Fin M
   | ((i, j), .west) => (prv i, prv j)
   | ((i, j), .south) => (i, prv j)
 
+section
+variable (hN : Even N) (hM : Even M) (d : Dart N M) (v : Fin N × Fin M)
+
+include v in
 /-- The counterclockwise boundary dart of a face with the specified direction. -/
-def faceCorner (v : Fin N × Fin M) : Port → Dart N M
+def faceCorner : Port → Dart N M
   | .east => (v, .east)
   | .north => ((nxt v.1, v.2), .north)
   | .west => ((nxt v.1, nxt v.2), .west)
   | .south => ((v.1, nxt v.2), .south)
 
-@[simp] theorem leftFace_faceCorner (v : Fin N × Fin M) (p : Port) :
+@[simp] theorem leftFace_faceCorner (p : Port) :
     leftFace (faceCorner v p) = v := by
   rcases v with ⟨i, j⟩
   cases p <;> simp only [faceCorner, leftFace, nxt, prv, Equiv.symm_apply_apply]
 
-@[simp] theorem faceCorner_leftFace (d : Dart N M) :
+@[simp] theorem faceCorner_leftFace :
     faceCorner (leftFace d) d.2 = d := by
   rcases d with ⟨⟨i, j⟩, p⟩
   cases p <;> simp only [faceCorner, leftFace, nxt, prv, Equiv.apply_symm_apply]
 
+include hN hM in
 /-- The reference arrows are precisely those with a black face on the left. -/
-theorem dartOut_checker_eq_leftFace (hN : Even N) (hM : Even M) (d : Dart N M) :
+theorem dartOut_checker_eq_leftFace :
     dartOut (checkerArrows N M) d = checker (leftFace d) := by
   rcases d with ⟨⟨i, j⟩, p⟩
   cases p <;> simp only [dartOut, localOut, checkerArrows, ArrowConfig.left,
     ArrowConfig.right, ArrowConfig.below, ArrowConfig.above, leftFace,
     checker_prv_x hN, checker_prv_y hM, Bool.not_not]
 
+include hN hM in
 /-- The actual ribbon-corner parametrization of canonical directed medial edges. -/
-def ribbonCornerEquiv (hN : Even N) (hM : Even M) :
+def ribbonCornerEquiv :
     FaceVertex N M true × Port ≃ DirectedDart (checkerArrows N M) where
   toFun x := ⟨faceCorner x.1.val x.2, by
     rw [dartOut_checker_eq_leftFace hN hM, leftFace_faceCorner, x.1.property]⟩
@@ -67,9 +73,11 @@ def ribbonCornerEquiv (hN : Even N) (hM : Even M) :
     · cases p <;> rfl
   right_inv d := Subtype.ext (faceCorner_leftFace d.val)
 
-@[simp] theorem ribbonCornerEquiv_val (hN : Even N) (hM : Even M)
+@[simp] theorem ribbonCornerEquiv_val
     (v : FaceVertex N M true) (p : Port) :
     (ribbonCornerEquiv hN hM (v, p)).val = faceCorner v.val p := rfl
+
+end
 
 /-- Counterclockwise rotation of boundary directions around a black face. -/
 def ccwPort : Port → Port
@@ -88,14 +96,16 @@ def cwPort : Port → Port
 def ccwPortPerm : Equiv.Perm Port :=
   ⟨ccwPort, cwPort, by intro p; cases p <;> rfl, by intro p; cases p <;> rfl⟩
 
+variable (hN : Even N) (hM : Even M) (v : FaceVertex N M true) (p : Port)
+include hN hM
+
 /-- The boundary of the disjoint primal vertex discs, before any open ribbon is attached. -/
-def faceRotation (hN : Even N) (hM : Even M) :
+def faceRotation :
     Equiv.Perm (DirectedDart (checkerArrows N M)) :=
-  directedStep (checkerArrows N M) (fun v => checker v)
+  directedStep (s := (fun v => checker v))
     (checkerArrows_compatible hN hM _)
 
-theorem faceRotation_corner (hN : Even N) (hM : Even M)
-    (v : FaceVertex N M true) (p : Port) :
+theorem faceRotation_corner :
     faceRotation hN hM (ribbonCornerEquiv hN hM (v, p)) =
       ribbonCornerEquiv hN hM (v, ccwPort p) := by
   apply Subtype.ext
@@ -106,36 +116,33 @@ theorem faceRotation_corner (hN : Even N) (hM : Even M)
     nxt, prv, Equiv.symm_apply_apply, checker_nxt_x hN, checker_nxt_y hM,
     hv, Bool.not_true, Bool.not_false, ccwPort, pairedPort]
 
-theorem faceRotation_pow_corner (hN : Even N) (hM : Even M)
-    (v : FaceVertex N M true) (p : Port) (n : ℕ) :
+theorem faceRotation_pow_corner (n : ℕ) :
     (faceRotation hN hM ^ n) (ribbonCornerEquiv hN hM (v, p)) =
       ribbonCornerEquiv hN hM (v, (ccwPortPerm ^ n) p) := by
   induction n with
   | zero => rfl
   | succ n ih =>
-    rw [pow_succ', Equiv.Perm.mul_apply, ih, faceRotation_corner]
-    rw [pow_succ', Equiv.Perm.mul_apply]
+    rw [pow_succ', Equiv.Perm.mul_apply, ih, faceRotation_corner, pow_succ', Equiv.Perm.mul_apply]
     rfl
 
 /-- The vertex cycles of the ribbon rotation are exactly the primal face vertices. -/
-theorem sameCycle_faceRotation (hN : Even N) (hM : Even M)
+theorem sameCycle_faceRotation
     (d e : DirectedDart (checkerArrows N M)) :
     (faceRotation hN hM).SameCycle d e ↔ leftFace d.val = leftFace e.val := by
   constructor
-  · apply sameCycle_invariant (faceRotation hN hM) (fun d => leftFace d.val)
+  · apply sameCycle_invariant (P := (faceRotation hN hM)) (f := (fun d => leftFace d.val))
     intro x
     obtain ⟨⟨v, p⟩, rfl⟩ := (ribbonCornerEquiv hN hM).surjective x
-    rw [faceRotation_corner]
-    simp only [ribbonCornerEquiv_val, leftFace_faceCorner]
+    simp [faceRotation_corner]
   · intro hde
     obtain ⟨⟨v, p⟩, rfl⟩ := (ribbonCornerEquiv hN hM).surjective d
     obtain ⟨⟨w, q⟩, rfl⟩ := (ribbonCornerEquiv hN hM).surjective e
-    have hvw : v = w := Subtype.ext (by
-      simpa only [ribbonCornerEquiv_val, leftFace_faceCorner] using hde)
+    have hvw := Subtype.ext (by
+      simpa using hde)
     subst w
     have hc : ∀ p q : Port, ∃ n : Fin 4, (ccwPortPerm ^ n.val) p = q := by decide
     obtain ⟨n, hn⟩ := hc p q
-    refine ⟨(n.val : ℤ), ?_⟩
+    refine ⟨n.val, ?_⟩
     rw [zpow_natCast, faceRotation_pow_corner, hn]
 
 end PottsDiscontinuity.Torus

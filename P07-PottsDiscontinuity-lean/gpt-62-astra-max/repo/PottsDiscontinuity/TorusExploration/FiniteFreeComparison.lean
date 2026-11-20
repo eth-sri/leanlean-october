@@ -16,14 +16,16 @@ open FK MeasureTheory Filter Topology
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
-local instance finiteFreeComparisonEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
+
+variable (θ : Parameters) (μ : Measure LatticeConfiguration)
+    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (f : V ↪ LatticeVertex)
+    (hG : G.map f ≤ squareLattice)
+include hμ hG
 
 /-- The free law on any finite embedded graph is dominated by the actual free
 limit on the increasing cylinder events of its original edges. -/
-theorem finiteFree_event_le_freeLimit (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
-    (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice)
-    (E : Set (Configuration G)) (hE : IsUpperSet E) :
+theorem finiteFree_event_le_freeLimit
+    {E : Set (Configuration G)} (hE : IsUpperSet E) :
     (measure G θ (BoundaryCondition.free ∅) E).toReal ≤
       μ.real (embeddedCylinderEvent G f hG E) := by
   let : Fintype V := Fintype.ofFinite _
@@ -40,23 +42,19 @@ theorem finiteFree_event_le_freeLimit (θ : Parameters) (μ : Measure LatticeCon
     (embeddedCylinderEvent_isClopen G f hG E)
   have htr := (NNReal.continuous_coe.continuousAt.tendsto).comp ht
   rw [Duality.free_limit_eq_selected θ μ hμ]
-  change (measure G θ (BoundaryCondition.free ∅) E).toReal ≤
-    ((ν (embeddedCylinderEvent G f hG E) : NNReal) : ℝ)
   apply ge_of_tendsto htr
   filter_upwards [eventually_ge_atTop R] with n hn
   have hc := finiteFree_event_le_box G θ f hG n
     (fun v => latticeBox_mono (0,0) hn (hR v)) E hE
-  simpa only [Function.comp_apply,ProbabilityMeasure.measureReal_eq_coe_coeFn] using hc
+  assumption
 
 /-- Actual connectivity in an arbitrary finite planar subgraph under free FK
 is bounded by the actual infinite-volume free two-point probability. -/
-theorem finiteFree_connectivity_le_freeLimit (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
-    (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice) (u v : V) :
+theorem finiteFree_connectivity_le_freeLimit (u v : V) :
     (measure G θ (BoundaryCondition.free ∅) (connectivityEvent G u v)).toReal ≤
       μ.real (CorrLength.connectionEvent (f u) (f v)) := by
   have := hμ.1
-  have hc := finiteFree_event_le_freeLimit G θ μ hμ f hG (connectivityEvent G u v)
+  have hc := finiteFree_event_le_freeLimit G θ μ hμ f hG (E := (connectivityEvent G u v))
     (fun _ _ hAB hA => actualConnected_mono hAB hA)
   refine hc.trans ?_
   rw [corrLength_connectionEvent_eq]

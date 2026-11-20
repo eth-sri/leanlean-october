@@ -11,13 +11,16 @@ namespace PottsDiscontinuity.TorusExploration
 open Torus CorrLength
 variable {N M : ℕ}
 
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (F : FaceVertex N M true → ℤ)
+include hN
+
+include F in
 /-- The lift as an injective map of the entire finite vertex carrier. -/
-def potentialLiftEmbedding (hN : Even N) (F : FaceVertex N M true → ℤ) :
+def potentialLiftEmbedding :
     FaceVertex N M true ↪ RotatedVertex :=
   ⟨potentialLift hN F,potentialLift_injective hN F⟩
 
-theorem potentialLift_adj (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (F : FaceVertex N M true → ℤ)
+theorem potentialLift_adj
     (hF : ∀ e : OpenDiamondEdge A,
       F (faceEndpoint hN hM true e.val true) - F (faceEndpoint hN hM true e.val false) =
         integerSeamCrossX e.val)
@@ -26,14 +29,14 @@ theorem potentialLift_adj (hN : Even N) (hM : Even M) (A : RCConfig N M)
     rotatedLattice.Adj (potentialLift hN F u) (potentialLift hN F v) := by
   rw [diamondOpenGraph,SimpleGraph.fromEdgeSet_adj] at huv
   obtain ⟨⟨e,he,hep⟩,_⟩ := huv
-  have h := potentialLift_edge_adj hN hM A F hF ⟨e,he⟩ (hseam ⟨e,he⟩)
+  have h := potentialLift_edge_adj hN hM A F hF (hseam ⟨e,he⟩)
   rcases Sym2.eq_iff.1 hep with ⟨rfl,rfl⟩ | ⟨rfl,rfl⟩
   · exact h
   · exact h.symm
 
 /-- No extra topology hypothesis: the entire remaining cylinder graph embeds
 in the plane after the first bottom-to-top cluster has been exposed. -/
-theorem exists_unexploredCylinder_embedding (hN : Even N) (hM : Even M)
+theorem exists_unexploredCylinder_embedding
     (hNp : 0 < N) (hMlarge : 1 < M) {A : RCConfig N M}
     {u v : FaceVertex N M true} (hu : u.val.2.val=0) (hv : v.val.2.val+1=M)
     (hp : (diamondOpenGraph hN hM true (TorusRC.torusRCSeamClosed A)).Reachable u v) :

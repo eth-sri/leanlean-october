@@ -21,9 +21,7 @@ theorem ratio_hasDerivAt_numerator (c x : ℝ) :
   have hraw := (((Real.hasDerivAt_cos x).const_add 1).const_mul
     (2 * (c ^ 2 - 1))).const_add ((c ^ 2 - 2) ^ 2)
   convert hraw using 1
-  · funext y
-    unfold ratioNumerator
-    ring
+  · rfl
   · ring
 
 theorem ratio_hasDerivAt_ellPrime {c x : ℝ} (hc : 2 < c)
@@ -52,7 +50,6 @@ theorem ratio_hasDerivAt_ellPrime {c x : ℝ} (hc : 2 < c)
     nlinarith only [Real.sin_sq_add_cos_sq x]
   have h := hfirst.sub hlast
   apply h.congr_deriv
-  change _ - _ = ratioEllSecond c x
   rw [hfirstValue, hlastValue]
   unfold ratioEllSecond
   ring
@@ -60,7 +57,7 @@ theorem ratio_hasDerivAt_ellPrime {c x : ℝ} (hc : 2 < c)
 /-- Removing the quadratic pole gives a uniform bound on the physical interval. -/
 theorem ratio_ellSecond_weighted_bound {c : ℝ} (hc : 2 < c) :
     ∃ B ≥ 0, ∀ x ∈ Icc (-Real.pi) Real.pi, |x ^ 2 * ratioEllSecond c x| ≤ B := by
-  let R : ℝ → ℝ := fun x => -(c ^ 2 - 1) * Real.cos x / ratioNumerator c x -
+  let R := fun x => -(c ^ 2 - 1) * Real.cos x / ratioNumerator c x -
     2 * (c ^ 2 - 1) ^ 2 * Real.sin x ^ 2 / ratioNumerator c x ^ 2
   have hR : Continuous R := by
     have hA : Continuous (ratioNumerator c) := by unfold ratioNumerator; fun_prop
@@ -70,7 +67,6 @@ theorem ratio_ellSecond_weighted_bound {c : ℝ} (hc : 2 < c) :
         (fun x => pow_ne_zero 2 (ratio_numerator_pos hc x).ne'))
   obtain ⟨B₀, hB₀⟩ := (isCompact_Icc : IsCompact (Icc (-Real.pi) Real.pi)).exists_bound_of_continuousOn hR.continuousOn
   let B := max B₀ 0
-  have hB : 0 ≤ B := le_max_right _ _
   refine ⟨Real.pi ^ 2 / 4 + Real.pi ^ 2 * B, by positivity, ?_⟩
   intro x hx
   by_cases hx0 : x = 0
@@ -78,14 +74,14 @@ theorem ratio_ellSecond_weighted_bound {c : ℝ} (hc : 2 < c) :
     simp only [zero_pow (by norm_num : 2 ≠ 0), zero_mul, abs_zero]
     positivity
   have hd := ratio_one_sub_cos_pos hx hx0
-  have hxabs : |x| ≤ Real.pi := abs_le.mpr ⟨by linarith [hx.1], hx.2⟩
+  have hxabs := abs_le.mpr ⟨by grind, hx.2⟩
   have hx2 : x ^ 2 ≤ Real.pi ^ 2 := by
     simpa only [sq_abs] using (sq_le_sq₀ (abs_nonneg x) Real.pi_pos.le).mpr hxabs
   have hsing : |x ^ 2 * (1 / (2 * (1 - Real.cos x)))| ≤ Real.pi ^ 2 / 4 := by
     rw [mul_one_div, abs_div, abs_of_nonneg (sq_nonneg x), abs_of_pos (mul_pos (by norm_num) hd)]
     apply (div_le_iff₀ (mul_pos (by norm_num) hd)).mpr
     have hcos := (div_le_iff₀ (sq_pos_of_pos Real.pi_pos)).mp (ratio_one_sub_cos_lower hx)
-    nlinarith only [hcos]
+    linarith
   have hreg : |x ^ 2 * R x| ≤ Real.pi ^ 2 * B := by
     rw [abs_mul, abs_of_nonneg (sq_nonneg x)]
     have hrx0 : |R x| ≤ B₀ := by simpa only [Real.norm_eq_abs] using hB₀ x hx

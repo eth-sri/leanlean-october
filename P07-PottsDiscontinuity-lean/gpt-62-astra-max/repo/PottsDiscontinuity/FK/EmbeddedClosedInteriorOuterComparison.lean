@@ -18,21 +18,19 @@ closure and boundary-avoidance premises are explicit; this statement does not
 discharge them for any particular corridor. -/
 theorem embeddedConfigurationRestriction_preimage_measure_le_wired_of_closedInterior
     {V W : Type*} [Finite V] [Finite W]
-    {G : SimpleGraph V} {H : SimpleGraph W} (f : V ↪ W)
-    (hGH : G.map f ≤ H) (q : Parameters) (ξ : BoundaryCondition W)
-    (B : Set V)
+    {G : SimpleGraph V} {H : SimpleGraph W} {f : V ↪ W}
+    (hGH : G.map f ≤ H) (q : Parameters) {ξ : BoundaryCondition W}
+    {B : Set V}
     (hclosed : ∀ ⦃x : V⦄, x ∉ B → ∀ ⦃y : W⦄, H.Adj (f x) y →
       ∃ z : V, f z = y ∧ G.Adj x z)
     (hξavoid : ∀ ⦃x : V⦄, x ∉ B → f x ∉ ξ.boundary)
-    (S : Set (Configuration G)) (hS : IsUpperSet S) :
+    {S : Set (Configuration G)} (hS : IsUpperSet S) :
     (measure H q ξ
       {A | embeddedConfigurationRestriction G H f hGH A ∈ S}).toReal ≤
-      (measure G q (BoundaryCondition.wired B) S).toReal := by
-  exact embeddedConfigurationRestriction_preimage_measure_le_of_frozen_partition
-    G H f hGH q ξ (BoundaryCondition.wired B) S hS (by
+      (measure G q (BoundaryCondition.wired B) S).toReal := embeddedConfigurationRestriction_preimage_measure_le_of_frozen_partition
+    G H f hGH q ξ S hS (by
       intro K
-      exact isolatedExtensionPullback_frozenBoundary_partition_le_wired_of_closedInterior
-        f hGH B hclosed ξ hξavoid K)
+      exact isolatedExtensionPullback_frozenBoundary_partition_le_wired_of_closedInterior hGH hclosed hξavoid K)
 
 end
 end PottsDiscontinuity.FK

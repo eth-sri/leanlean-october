@@ -15,14 +15,14 @@ open Finset Complex
 
 namespace PottsDiscontinuity.BetheAnsatz
 
-private theorem pair_product_succ (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) → ℂ) :
+variable (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) → ℂ)
+
+private theorem pair_product_succ :
     (∏ i, ∏ j ∈ Ioi i, f i j) =
       (∏ j : Fin n, f 0 j.succ) * (∏ i : Fin n, ∏ j ∈ Ioi i, f i.succ j.succ) := by
-  rw [Fin.prod_univ_succ, Fin.prod_Ioi_zero]
-  congr 1
-  exact Finset.prod_congr rfl fun i _ => Fin.prod_Ioi_succ (f i.succ) i
+  simp [Fin.prod_univ_succ, Fin.prod_Ioi_zero]
 
-private theorem pair_product_last (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) → ℂ) :
+private theorem pair_product_last :
     (∏ i, ∏ j ∈ Ioi i, f i j) =
       (∏ i : Fin n, ∏ j ∈ Ioi i, f i.castSucc j.castSucc) *
         (∏ i : Fin n, f i.castSucc (Fin.last n)) := by
@@ -33,16 +33,11 @@ private theorem pair_product_last (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) →
     simp only [Fin.castSucc_lt_last, ↓reduceIte, Fin.castSucc_lt_castSucc_iff]
     rw [← Finset.prod_filter, Finset.filter_lt_eq_Ioi]
   have hl : Ioi (Fin.last n) = ∅ := by
-    ext j
-    simp only [mem_Ioi, notMem_empty, iff_false]
-    exact not_lt_of_ge (Fin.le_last j)
-  rw [Fin.prod_univ_castSucc]
-  simp only [hl, Finset.prod_empty, mul_one]
-  simp_rw [hi]
-  rw [Finset.prod_mul_distrib]
+    grind
+  simp [Fin.prod_univ_castSucc, hl, Finset.prod_empty, mul_one, hi, Finset.prod_mul_distrib]
 
 /-- Moving the first index to the end reverses exactly its pair factors. -/
-theorem pair_product_rotate (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) → ℂ) :
+theorem pair_product_rotate :
     (∏ i, ∏ j ∈ Ioi i, f (finRotate (n + 1) i) (finRotate (n + 1) j)) *
       (∏ j : Fin n, f 0 j.succ) =
       (∏ i, ∏ j ∈ Ioi i, f i j) * (∏ j : Fin n, f j.succ 0) := by
@@ -58,7 +53,7 @@ theorem amplitude_rotate_phase {n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
     amplitude Δ p (σ * finRotate (n + 1)) =
       (-1 : ℂ) ^ n * Complex.exp (I * ((∑ k, Bethe.theta Δ (p (σ 0)) (p k) : ℝ) : ℂ)) *
         amplitude Δ p σ := by
-  let f : Fin (n + 1) → Fin (n + 1) → ℂ := fun i j =>
+  let f := fun i j =>
     z (p (σ i)) * scattering Δ (p (σ i)) (p (σ j))
   let U := ∏ j : Fin n, f 0 j.succ
   let V := ∏ j : Fin n, f j.succ 0
@@ -78,22 +73,15 @@ theorem amplitude_rotate_phase {n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
     rw [Finset.prod_div_distrib]
   have hsign : (((Equiv.Perm.sign (σ * finRotate (n + 1)) : ℤ) : ℂ)) =
       (((Equiv.Perm.sign σ : ℤ) : ℂ)) * (-1 : ℂ) ^ n := by
-    simp [Equiv.Perm.sign_mul]
+    simp
   have hcross : amplitude Δ p (σ * finRotate (n + 1)) * U =
       (-1 : ℂ) ^ n * amplitude Δ p σ * V := by
     have hp := pair_product_rotate n f
     unfold amplitude
     rw [hsign]
-    change (((((Equiv.Perm.sign σ : ℤ) : ℂ)) * (-1 : ℂ) ^ n) *
-      (∏ i, ∏ j ∈ Ioi i, f (finRotate (n + 1) i) (finRotate (n + 1) j))) * U =
-      (-1 : ℂ) ^ n * ((((Equiv.Perm.sign σ : ℤ) : ℂ)) * (∏ i, ∏ j ∈ Ioi i, f i j)) * V
     dsimp [U, V]
     linear_combination ((((Equiv.Perm.sign σ : ℤ) : ℂ)) * (-1 : ℂ) ^ n) * hp
-  apply mul_right_cancel₀ hU
-  rw [he]
-  calc
-    amplitude Δ p (σ * finRotate (n + 1)) * U = (-1 : ℂ) ^ n * amplitude Δ p σ * V := hcross
-    _ = ((-1 : ℂ) ^ n * (V / U) * amplitude Δ p σ) * U := by field_simp
+  grind
 
 /-- The cyclic amplitude relation from BE, valid also for one particle. -/
 theorem amplitude_rotate {N n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
@@ -117,7 +105,7 @@ theorem amplitude_rotate {N n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
   rw [hsign_inv] at hi
   have he : (-1 : ℂ) ^ n *
       Complex.exp (I * ((∑ k, Bethe.theta Δ (p (σ 0)) (p k) : ℝ) : ℂ)) =
-      (z (p (σ 0)) ^ N)⁻¹ := by simpa only [mul_comm] using hi.symm
+      (z (p (σ 0)) ^ N)⁻¹ := by grind
   rw [amplitude_rotate_phase hΔ p σ, he]
 
 end PottsDiscontinuity.BetheAnsatz

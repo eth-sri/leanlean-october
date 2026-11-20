@@ -21,76 +21,75 @@ namespace Rect
 
 variable (R : Rect)
 
+section
+variable (c : Cell) (m : Cell)
+
+include c in
 /-- Quarter turn of cells. -/
-def rot (c : Cell) : Cell := (R.x0 + (c.2 - R.y0), R.y0 + R.w - (c.1 - R.x0))
+def rot : Cell := (R.x0 + (c.2 - R.y0), R.y0 + R.w - (c.1 - R.x0))
 
+include c in
 /-- Inverse quarter turn of cells. -/
-def rotInv (c : Cell) : Cell := (R.x0 + R.w - (c.2 - R.y0), R.y0 + (c.1 - R.x0))
+def rotInv : Cell := (R.x0 + R.w - (c.2 - R.y0), R.y0 + (c.1 - R.x0))
 
+include m in
 /-- Quarter turn of medial vertices. -/
-def rotMed (m : Cell) : Cell := (R.x0 + (m.2 - R.y0), R.y0 + R.w + 1 - (m.1 - R.x0))
+def rotMed : Cell := (R.x0 + (m.2 - R.y0), R.y0 + R.w + 1 - (m.1 - R.x0))
 
+include m in
 /-- Inverse quarter turn of medial vertices. -/
-def rotMedInv (m : Cell) : Cell := (R.x0 + R.w + 1 - (m.2 - R.y0), R.y0 + (m.1 - R.x0))
+def rotMedInv : Cell := (R.x0 + R.w + 1 - (m.2 - R.y0), R.y0 + (m.1 - R.x0))
 
-theorem rot_rotInv (c : Cell) : R.rot (R.rotInv c) = c := by
-  unfold rot rotInv; ext <;> simp; ring
+theorem rot_rotInv : R.rot (R.rotInv c) = c := by
+  grind [rot, rotInv]
 
-theorem rotInv_rot (c : Cell) : R.rotInv (R.rot c) = c := by
-  unfold rot rotInv; ext <;> simp; ring
+theorem rotInv_rot : R.rotInv (R.rot c) = c := by
+  grind [rot, rotInv]
 
-theorem rotMed_rotMedInv (m : Cell) : R.rotMed (R.rotMedInv m) = m := by
-  unfold rotMed rotMedInv; ext <;> simp; ring
+theorem rotMed_rotMedInv : R.rotMed (R.rotMedInv m) = m := by
+  grind [rotMed, rotMedInv]
+
+end
 
 theorem rot_injective : Function.Injective R.rot := fun a b h => by
   rw [← R.rotInv_rot a, ← R.rotInv_rot b, h]
 
+variable (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c d : Cell} {m : Cell} (hm : m ∈ R.inner)
+
+include hodd in
 /-- Local identity: the quarter turn carries the ends of the dual edge at `m` to the ends of the
 primal edge at the turned vertex. -/
-theorem rot_dualEnds (hodd : R.w % 2 = 1) (m : Cell) :
+theorem rot_dualEnds (m : Cell) :
     (R.rot (dualEnds m).1 = (primalEnds (R.rotMed m)).1 ∧
         R.rot (dualEnds m).2 = (primalEnds (R.rotMed m)).2) ∨
       (R.rot (dualEnds m).1 = (primalEnds (R.rotMed m)).2 ∧
         R.rot (dualEnds m).2 = (primalEnds (R.rotMed m)).1) := by
   unfold rot rotMed dualEnds primalEnds
-  split_ifs <;> simp only [Prod.ext_iff, true_and] at * <;> omega
+  grind
 
-theorem rotMed_mem_inner (hsq : R.w = R.h) {m : Cell} (hm : m ∈ R.inner) :
+include hsq hm in
+theorem rotMed_mem_inner :
     R.rotMed m ∈ R.inner := by
-  rw [mem_inner] at hm ⊢
-  unfold rotMed
-  dsimp only
-  have : (R.w : ℤ) = R.h := by exact_mod_cast hsq
-  omega
+  grind [mem_inner, rotMed]
 
-theorem rotMedInv_mem_inner (hsq : R.w = R.h) {m : Cell} (hm : m ∈ R.inner) :
+include hsq hm in
+theorem rotMedInv_mem_inner :
     R.rotMedInv m ∈ R.inner := by
-  rw [mem_inner] at hm ⊢
-  unfold rotMedInv
-  dsimp only
-  have : (R.w : ℤ) = R.h := by exact_mod_cast hsq
-  omega
+  grind [mem_inner, rotMedInv]
 
-theorem rot_mem_pcells (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c : Cell} (hc : c ∈ R.dcells) :
+include hsq hodd in
+theorem rot_mem_pcells {c : Cell} (hc : c ∈ R.dcells) :
     R.rot c ∈ R.pcells := by
-  rw [mem_dcells, mem_cells] at hc
-  rw [mem_pcells, mem_cells]
-  unfold rot IsPrimal at *
-  dsimp only
-  have : (R.w : ℤ) = R.h := by exact_mod_cast hsq
-  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩ <;> omega
+  grind [mem_dcells, mem_cells, mem_pcells, rot, IsPrimal]
 
-theorem rotInv_mem_dcells (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c : Cell} (hc : c ∈ R.pcells) :
+include hsq hodd in
+theorem rotInv_mem_dcells {c : Cell} (hc : c ∈ R.pcells) :
     R.rotInv c ∈ R.dcells := by
-  rw [mem_pcells, mem_cells] at hc
-  rw [mem_dcells, mem_cells]
-  unfold rotInv IsPrimal at *
-  dsimp only
-  have : (R.w : ℤ) = R.h := by exact_mod_cast hsq
-  refine ⟨⟨?_, ?_, ?_, ?_⟩, ?_⟩ <;> omega
+  grind [mem_pcells, mem_cells, mem_dcells, rotInv, IsPrimal]
 
+include hsq hodd in
 /-- The quarter-turn bijection from odd cells to primal cells. -/
-def rotEquiv (hsq : R.w = R.h) (hodd : R.w % 2 = 1) : R.dcells ≃ R.pcells where
+def rotEquiv : R.dcells ≃ R.pcells where
   toFun z := ⟨R.rot z.1, R.rot_mem_pcells hsq hodd z.2⟩
   invFun c := ⟨R.rotInv c.1, R.rotInv_mem_dcells hsq hodd c.2⟩
   left_inv z := Subtype.ext (R.rotInv_rot z.1)
@@ -102,7 +101,8 @@ def DE (c d : Cell) : Prop := ∃ m ∈ R.inner, dualEnds m = (c, d)
 /-- Primal edge between two cells. -/
 def PE (c d : Cell) : Prop := ∃ m ∈ R.inner, primalEnds m = (c, d)
 
-theorem DE_push (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c d : Cell} (h : R.DE c d) :
+include hsq hodd in
+theorem DE_push (h : R.DE c d) :
     R.PE (R.rot c) (R.rot d) ∨ R.PE (R.rot d) (R.rot c) := by
   obtain ⟨m, hm, hend⟩ := h
   have := R.rot_dualEnds hodd m
@@ -113,7 +113,8 @@ theorem DE_push (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c d : Cell} (h : R.DE c 
   · right
     exact ⟨R.rotMed m, R.rotMed_mem_inner hsq hm, Prod.ext h2.symm h1.symm⟩
 
-theorem PE_pull (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c d : Cell}
+include hsq hodd in
+theorem PE_pull
     (h : R.PE (R.rot c) (R.rot d)) : R.DE c d ∨ R.DE d c := by
   obtain ⟨m', hm', hend⟩ := h
   have := R.rot_dualEnds hodd (R.rotMedInv m')
@@ -126,8 +127,9 @@ theorem PE_pull (hsq : R.w = R.h) (hodd : R.w % 2 = 1) {c d : Cell}
     exact ⟨R.rotMedInv m', R.rotMedInv_mem_inner hsq hm',
       Prod.ext (R.rot_injective h1) (R.rot_injective h2)⟩
 
+include hsq hodd in
 /-- The quarter turn carries the dual graph isomorphically onto the primal graph. -/
-def rotIso (hsq : R.w = R.h) (hodd : R.w % 2 = 1) : R.dG ≃g R.pG where
+def rotIso : R.dG ≃g R.pG where
   toEquiv := R.rotEquiv hsq hodd
   map_rel_iff' := by
     intro a b

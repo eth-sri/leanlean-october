@@ -24,7 +24,7 @@ variable {V : Type*} {G : SimpleGraph V}
 /-- Identifications induced by the original boundary and the frozen open edges. -/
 def frozenBoundary (ξ : BoundaryCondition V) (H : Configuration G) : BoundaryCondition V where
   boundary := Set.univ
-  partition := componentSetoid G ξ H
+  partition := componentSetoid ξ H
   supported := fun _ => Or.inr ⟨Set.mem_univ _, Set.mem_univ _⟩
 
 section
@@ -33,7 +33,7 @@ variable [DecidableEq G.edgeSet]
 /-- Exactly the same components result from retaining the frozen edges or
 incorporating their actual connections into the partition. -/
 theorem componentSetoid_union_frozen (ξ : BoundaryCondition V) (A H : Configuration G) :
-    componentSetoid G ξ (A ∪ H) = componentSetoid G (frozenBoundary ξ H) A := by
+    componentSetoid ξ (A ∪ H) = componentSetoid (frozenBoundary ξ H) A := by
   apply le_antisymm
   · apply componentSetoid_le
     · apply reachableSetoid_le_of_adj
@@ -51,17 +51,17 @@ theorem componentSetoid_union_frozen (ξ : BoundaryCondition V) (A H : Configura
         rw [openGraph_adj]
         exact ⟨e,he,hexy⟩
     · intro x y hxy
-      exact boundary_component G (frozenBoundary ξ H) A (boundary_component G ξ H hxy)
+      solve_by_elim [boundary_component]
   · apply componentSetoid_le
     · intro x y hxy
-      exact actualConnected_component G ξ (A ∪ H)
+      exact actualConnected_component ξ
         (actualConnected_mono Finset.subset_union_left hxy)
     · exact componentSetoid_mono ξ Finset.subset_union_right
 
 theorem componentCount_union_frozen [Finite V] (ξ : BoundaryCondition V)
     (A H : Configuration G) :
-    componentCount G ξ (A ∪ H) = componentCount G (frozenBoundary ξ H) A := by
-  rw [componentCount, componentCount, componentSetoid_union_frozen]
+    componentCount ξ (A ∪ H) = componentCount (frozenBoundary ξ H) A := by
+  simp [componentCount, componentSetoid_union_frozen]
 
 /-- No prewiring assumption on R is needed: freezing its state induces the
 correct actual partition. Every original vertex remains in the component count. -/
@@ -83,16 +83,17 @@ noncomputable section
 open scoped BigOperators
 
 variable [Finite V]
-local instance domainMarkovEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
+
 local instance domainMarkovEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
-local instance domainMarkovRemainingFintype (R : Configuration G) : Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
+variable (q : Parameters) (ξ : BoundaryCondition V) (R : Configuration G)
+    (H : RemovedConfiguration G R)
+
+local instance domainMarkovRemainingFintype : Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
 
 /-- The exact normalized probability of a remaining configuration in the fiber
 where every edge of R has the specified state H. The denominator sums every
 configuration in that fiber, not only single-edge marginals. -/
-theorem configurationProbability_frozen_fiber_ratio (q : Parameters)
-    (ξ : BoundaryCondition V) (R : Configuration G)
-    (H : RemovedConfiguration G R) (A : RemainingConfiguration G R) :
+theorem configurationProbability_frozen_fiber_ratio (A : RemainingConfiguration G R) :
     configurationProbability G q ξ (A.val ∪ H.val) /
       (∑ B : RemainingConfiguration G R, configurationProbability G q ξ (B.val ∪ H.val)) =
     remainingWeight G q (frozenBoundary ξ H.val) R A /
@@ -106,28 +107,26 @@ theorem configurationProbability_frozen_fiber_ratio (q : Parameters)
     (remainingPartitionFunction_pos G q (frozenBoundary ξ H.val) R).ne',
     (removedWeight_pos G q R H).ne']
 
+include q ξ H in
 /-- A PMF obtained by normalizing the original probabilities on the exact frozen
 configuration fiber. No Markov property is placed in this definition. -/
-def frozenFiberLaw (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) (H : RemovedConfiguration G R) :
+def frozenFiberLaw :
     PMF (RemainingConfiguration G R) :=
-  FiniteProbability.pmf (fun A => configurationProbability G q ξ (A.val ∪ H.val))
+  FiniteProbability.pmf
     (fun A => configurationProbability_pos G q ξ (A.val ∪ H.val))
 
 /-- The entire normalized fiber law is the remaining-edge FK law with the
 partition induced by the actual frozen open paths and original boundary wiring. -/
-theorem frozenFiberLaw_eq_remainingLaw (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) (H : RemovedConfiguration G R) :
+theorem frozenFiberLaw_eq_remainingLaw :
     frozenFiberLaw q ξ R H = remainingLaw G q (frozenBoundary ξ H.val) R := by
   ext A
-  rw [frozenFiberLaw, FiniteProbability.pmf_apply]
   change ENNReal.ofReal (_ / ∑ B : RemainingConfiguration G R,
     configurationProbability G q ξ (B.val ∪ H.val)) = _
   rw [configurationProbability_frozen_fiber_ratio]
   rfl
 
 /-- The actual event fixing every sampled edge of R, both its open and closed states. -/
-def frozenStateEvent (R : Configuration G) (H : RemovedConfiguration G R) :
+def frozenStateEvent {R : Configuration G} (H : RemovedConfiguration G R) :
     Set (Configuration G) := {C | C ∩ R = H.val}
 
 end

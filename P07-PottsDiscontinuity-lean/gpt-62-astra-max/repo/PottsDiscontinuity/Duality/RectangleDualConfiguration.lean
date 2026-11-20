@@ -10,27 +10,25 @@ namespace PottsDiscontinuity.FK
 
 open PottsDiscontinuity.FK PottsDiscontinuity.FK.Medial
 
+variable (a : LatticeVertex) (w h : ℕ) (A : Finset (rectanglePrimalEdgeCarrier a w h))
+
 /-- The actual finite dual configuration is the open complement of the primal
 configuration, transported across the true labelled-edge/graph-edge bijection. -/
-noncomputable def rectangleDualConfigurationEquiv (a : LatticeVertex) (w h : ℕ) :
+noncomputable def rectangleDualConfigurationEquiv :
     Finset (rectanglePrimalEdgeCarrier a w h) ≃ Configuration (rectangleDualGraph a w h) := by
   exact (rectangleDualComplementEquiv a w h).trans
     (Equiv.finsetCongr (rectangleDualGraphEdgeEquiv a w h))
 
-@[simp] theorem rectangleDualConfigurationEquiv_apply (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    rectangleDualConfigurationEquiv a w h A = rectangleDualConfiguration a w h A := by
-  simp [rectangleDualConfigurationEquiv, rectangleDualConfiguration,
-    Equiv.finsetCongr_apply]
+@[simp] theorem rectangleDualConfigurationEquiv_apply :
+    rectangleDualConfigurationEquiv a w h A = rectangleDualConfiguration A := by
+  rfl
 
-@[simp] theorem rectangleDualConfigurationEquiv_card (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
+@[simp] theorem rectangleDualConfigurationEquiv_card :
     (rectangleDualConfigurationEquiv a w h A).card =
       (rectangleDualComplementEquiv a w h A).card := by
   simp [rectangleDualConfigurationEquiv, Equiv.finsetCongr_apply, Finset.card_map]
 
-theorem rectangleDualConfiguration_card_add (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
+theorem rectangleDualConfiguration_card_add :
     A.card + (rectangleDualConfigurationEquiv a w h A).card =
       Nat.card (rectangleDualGraph a w h).edgeSet := by
   classical
@@ -48,17 +46,13 @@ theorem rectangleDualConfiguration_card_add (a : LatticeVertex) (w h : ℕ)
             (rectanglePrimalDualEdgeEquiv a w h).symm)).symm
   
 
-theorem rectangleDualGraph_edgeSet_card_eq_primal_edgeSet (a : LatticeVertex)
-    (w h : ℕ) :
+theorem rectangleDualGraph_edgeSet_card_eq_primal_edgeSet :
     Nat.card (rectangleDualGraph a w h).edgeSet =
-      Nat.card (rectangleGraph a w h).edgeSet := by
-  exact Nat.card_congr ((rectangleDualGraphEdgeEquiv a w h).symm.trans
+      Nat.card (rectangleGraph a w h).edgeSet := Nat.card_congr ((rectangleDualGraphEdgeEquiv a w h).symm.trans
     (rectanglePrimalDualEdgeEquiv a w h).symm)
 
-theorem rectangleDualConfiguration_card_add_eq_primal_edgeSet
-    (a : LatticeVertex) (w h : ℕ)
-    (A : Finset (rectanglePrimalEdgeCarrier a w h)) :
-    A.card + (rectangleDualConfiguration a w h A).card =
+theorem rectangleDualConfiguration_card_add_eq_primal_edgeSet :
+    A.card + (rectangleDualConfiguration A).card =
       Nat.card (rectangleGraph a w h).edgeSet := by
   rw [← rectangleDualConfigurationEquiv_apply]
   rw [rectangleDualConfiguration_card_add]

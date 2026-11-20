@@ -41,14 +41,14 @@ theorem wired_map_dual_eq_free (θ : Parameters)
     (hμ₀ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ₀)
     (hμ₁ : IsRCInfiniteVolumeLimit (dualParameters θ).toP (dualParameters θ).toQ 1 μ₁) :
     μ₁.map wholePlaneDualConfigurationHomeomorph = μ₀ := by
-  rw [← free_map_dual_eq_wired θ μ₀ μ₁ hμ₀ hμ₁,
+  rw [← free_map_dual_eq_wired μ₀ μ₁ hμ₀ hμ₁,
     Measure.map_map wholePlaneDualConfigurationHomeomorph_measurable
       wholePlaneDualConfigurationHomeomorph_measurable]
   have heq : (wholePlaneDualConfigurationHomeomorph ∘ wholePlaneDualConfigurationHomeomorph) =
       latticeConfigurationIsoHomeomorph (latticeTranslationIso (-1,-1)) :=
     funext dualConfiguration_twice
   rw [heq]
-  exact free_limit_map_latticeIso θ μ₀ hμ₀ (latticeTranslationIso (-1,-1))
+  exact free_limit_map_latticeIso θ μ₀ hμ₀
     (fun c v r => mem_latticeBox_translate_iff (-1,-1) c v r)
 
 end

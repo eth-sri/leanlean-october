@@ -45,13 +45,7 @@ theorem checker_faceEndpointRaw (hN : Even N) (hM : Even M) (c : Bool)
     · change checker (prv i, prv j) = c
       rw [checker_prv_x hN, checker_prv_y hM, Bool.not_not, hc]
   · simp only [hc, ite_false]
-    cases b
-    · change checker (prv i, j) = c
-      rw [checker_prv_x hN]
-      cases ha : checker (i, j) <;> cases c <;> simp_all
-    · change checker (i, prv j) = c
-      rw [checker_prv_y hM]
-      cases ha : checker (i, j) <;> cases c <;> simp_all
+    grind [checker_prv_x hN, checker_prv_y hM]
 
 /-- The two endpoints with their actual face-colour membership proved. -/
 def faceEndpoint (hN : Even N) (hM : Even M) (c : Bool)
@@ -69,11 +63,17 @@ noncomputable def clusterCount (hN : Even N) (hM : Even M) (c : Bool)
     (A : RCConfig N M) : ℕ :=
   Nat.card (diamondOpenGraph hN hM c A).ConnectedComponent
 
+section
+variable (A : RCConfig N M)
+include A
+
 /-- Number of open indexed edges. -/
-def openCount (A : RCConfig N M) : ℕ := (univ.filter fun v => A v = true).card
+def openCount : ℕ := (univ.filter fun v => A v = true).card
 
 /-- Number of closed indexed edges. -/
-def closedCount (A : RCConfig N M) : ℕ := (univ.filter fun v => A v = false).card
+def closedCount : ℕ := (univ.filter fun v => A v = false).card
+
+end
 
 theorem openCount_add_closedCount (A : RCConfig N M) :
     openCount A + closedCount A = N * M := by
@@ -82,15 +82,17 @@ theorem openCount_add_closedCount (A : RCConfig N M) :
   simpa only [openCount, closedCount, Bool.not_eq_true, card_univ,
     Fintype.card_prod, Fintype.card_fin] using hc
 
-/-- The closed dual edge is open exactly when the primal edge is closed. -/
-def dualConfig (A : RCConfig N M) : RCConfig N M := fun v => !A v
+section
+variable (A : RCConfig N M)
+include A
 
-@[simp] theorem dualConfig_dualConfig (A : RCConfig N M) : dualConfig (dualConfig A) = A := by
-  funext v
-  exact Bool.not_not _
+/-- The closed dual edge is open exactly when the primal edge is closed. -/
+def dualConfig : RCConfig N M := fun v => !A v
 
 /-- The open/closed-to-pairing dictionary at a primal/dual crossing. -/
-def rcSmoothing (A : RCConfig N M) : Smoothing N M := fun v => Bool.xor (checker v) (A v)
+def rcSmoothing : Smoothing N M := fun v => Bool.xor (checker v) (A v)
+
+end
 
 /-- Recover the primal edge states from the pairing field. -/
 def smoothingRC (s : Smoothing N M) : RCConfig N M := fun v => Bool.xor (checker v) (s v)

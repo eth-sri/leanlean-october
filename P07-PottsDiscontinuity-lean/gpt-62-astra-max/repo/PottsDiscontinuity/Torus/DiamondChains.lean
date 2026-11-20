@@ -19,38 +19,46 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
-/-- The full indexed open-edge carrier; no quotient by endpoint pairs is taken. -/
-abbrev OpenDiamondEdge (A : RCConfig N M) := {v : Fin N × Fin M // A v = true}
+section
+variable (A : RCConfig N M)
+include A
 
-theorem card_openDiamondEdge (A : RCConfig N M) :
-    Fintype.card (OpenDiamondEdge A) = openCount A := by
-  exact Fintype.card_subtype _
+/-- The full indexed open-edge carrier; no quotient by endpoint pairs is taken. -/
+abbrev OpenDiamondEdge := {v : Fin N × Fin M // A v = true}
+
+theorem card_openDiamondEdge :
+    Fintype.card (OpenDiamondEdge A) = openCount A := Fintype.card_subtype _
+
+end
+
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
+include hN hM
 
 /-- Signed incidence: each indexed edge points from endpoint false to endpoint true. -/
-def diamondIncidence (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def diamondIncidence :
     Matrix (FaceVertex N M true) (OpenDiamondEdge A) ℚ :=
   fun u e => (if faceEndpoint hN hM true e.val true = u then 1 else 0) -
     if faceEndpoint hN hM true e.val false = u then 1 else 0
 
 /-- Boundary of an indexed rational one-chain. -/
-def diamondBoundary (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def diamondBoundary :
     (OpenDiamondEdge A → ℚ) →ₗ[ℚ] (FaceVertex N M true → ℚ) :=
   Matrix.toLin' (diamondIncidence hN hM A)
 
 /-- The potential difference across each open indexed edge. -/
-def diamondCoboundary (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def diamondCoboundary :
     (FaceVertex N M true → ℚ) →ₗ[ℚ] (OpenDiamondEdge A → ℚ) where
   toFun f e := f (faceEndpoint hN hM true e.val true) - f (faceEndpoint hN hM true e.val false)
   map_add' f g := by ext e; simp only [Pi.add_apply]; ring
   map_smul' c f := by ext e; simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply]; ring
 
-@[simp] theorem diamondCoboundary_apply (hN : Even N) (hM : Even M) (A : RCConfig N M)
+@[simp] theorem diamondCoboundary_apply
     (f : FaceVertex N M true → ℚ) (e : OpenDiamondEdge A) :
     diamondCoboundary hN hM A f e =
       f (faceEndpoint hN hM true e.val true) - f (faceEndpoint hN hM true e.val false) := rfl
 
 /-- Conserved indexed flows on the actual open primal subgraph. -/
-def diamondCycleSpace (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def diamondCycleSpace :
     Submodule ℚ (OpenDiamondEdge A → ℚ) := LinearMap.ker (diamondBoundary hN hM A)
 
 end PottsDiscontinuity.Torus

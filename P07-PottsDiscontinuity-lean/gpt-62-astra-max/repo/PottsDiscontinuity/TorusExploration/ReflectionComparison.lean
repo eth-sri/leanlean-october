@@ -20,8 +20,11 @@ lemma corrLength_connectionEvent_eq (u v : LatticeVertex) :
   ext ω
   exact CorrLength.connectionEvent_iff_rcInfiniteReachable u v ω
 
-lemma twoPoint_swap (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex) :
+variable (θ : Parameters) (μ : Measure LatticeConfiguration)
+    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex)
+include hμ
+
+lemma twoPoint_swap :
     Duality.twoPoint μ (x.2,x.1) = Duality.twoPoint μ x := by
   have h := Duality.twoPoint_quarterTurn θ μ hμ (x.1,-x.2)
   simp only [neg_neg] at h
@@ -29,8 +32,7 @@ lemma twoPoint_swap (θ : Parameters) (μ : Measure LatticeConfiguration)
 
 /-- Reflection across the rotated vertical axis and FKG glue two equal
 connections into a connection along the vertical diagonal. -/
-theorem connection_sq_le_diagonal_sum (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex) :
+theorem connection_sq_le_diagonal_sum :
     μ.real (CorrLength.connectionEvent (0,0) x) ^ 2 ≤
       μ.real (CorrLength.connectionEvent (0,0) (x.1+x.2,x.1+x.2)) := by
   have h := Duality.twoPoint_mul_le θ μ hμ x (x.2,x.1)
@@ -42,8 +44,7 @@ theorem connection_sq_le_diagonal_sum (θ : Parameters) (μ : Measure LatticeCon
 
 /-- Uniform in the horizontal lifted displacement: height k costs at most
 one half of the logarithmic probability at diagonalSite(2k). -/
-theorem connection_sq_le_diagonalSite_of_sum (θ : Parameters) (μ : Measure LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ) (x : LatticeVertex) (k : ℕ)
+theorem connection_sq_le_diagonalSite_of_sum (k : ℕ)
     (hk : x.1+x.2=(k : ℤ)) :
     μ.real (CorrLength.connectionEvent (0,0) x) ^ 2 ≤
       μ.real (CorrLength.connectionEvent (0,0) (diagonalSite (2*k))) := by

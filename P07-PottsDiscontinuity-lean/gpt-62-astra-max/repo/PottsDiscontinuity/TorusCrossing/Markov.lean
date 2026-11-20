@@ -34,42 +34,38 @@ theorem pmf_filter_toMeasure {X : Type*} [Fintype X] [MeasurableSpace X]
   by_cases hxT : x ∈ T
   · rw [Set.indicator_of_mem hxT, PMF.filter_apply, hc]
     by_cases hxF : x ∈ F
-    · rw [Set.indicator_of_mem (show x ∈ T ∩ F from ⟨hxT, hxF⟩)]
-      simp only [Set.indicator_of_mem hxF, mul_comm]
-    · rw [Set.indicator_of_notMem (show x ∉ T ∩ F from fun h => hxF h.2)]
-      simp [Set.indicator_of_notMem hxF]
-  · rw [Set.indicator_of_notMem hxT, Set.indicator_of_notMem (show x ∉ T ∩ F from fun h => hxT h.1)]
-    simp
+    · simp_all [Set.indicator_of_mem hxF, mul_comm]
+    · simp_all [Set.indicator_of_notMem hxF]
+  · simp_all [Set.indicator_of_notMem hxT]
 
 attribute [local instance] FK.configurationMeasurableSpace
 
 /-- **Domain Markov for an embedded subgraph**, as an identity of probabilities. -/
-theorem embedded_frozen_measure_eq {V W : Type*} [Finite V] [Finite W] (G : SimpleGraph V)
-    (H : SimpleGraph W) (f : V ↪ W) (hGH : G.map f ≤ H) (q : FK.Parameters)
+theorem embedded_frozen_measure_eq {V W : Type*} [Finite V] [Finite W] {G : SimpleGraph V}
+    (H : SimpleGraph W) {f : V ↪ W} (hGH : G.map f ≤ H) (q : FK.Parameters)
     (ξ : FK.BoundaryCondition W)
     (K : FK.RemovedConfiguration H (FK.subgraphRemovedEdges (G.map f) H))
     (S : Set (FK.Configuration G)) :
     FK.measure H q ξ ({C | FK.embeddedConfigurationRestriction G H f hGH C ∈ S} ∩
-        FK.frozenStateEvent (FK.subgraphRemovedEdges (G.map f) H) K) =
+        FK.frozenStateEvent K) =
       FK.measure G q (FK.isolatedExtensionPullbackBoundary f (FK.frozenBoundary ξ K.val)) S *
-        FK.measure H q ξ (FK.frozenStateEvent (FK.subgraphRemovedEdges (G.map f) H) K) := by
+        FK.measure H q ξ (FK.frozenStateEvent K) := by
   let : Fintype H.edgeSet := Fintype.ofFinite _
-  let : Fintype G.edgeSet := Fintype.ofFinite _
   have hmain := FK.law_filter_frozen_map_embeddedRestriction G H f hGH q ξ K
   have hF := FK.frozenStateEvent_support q ξ (FK.subgraphRemovedEdges (G.map f) H) K
   have h1 : (FK.law G q (FK.isolatedExtensionPullbackBoundary f
       (FK.frozenBoundary ξ K.val))).toMeasure S =
-      ((FK.law H q ξ).filter (FK.frozenStateEvent (FK.subgraphRemovedEdges (G.map f) H) K)
+      ((FK.law H q ξ).filter (FK.frozenStateEvent K)
         hF).toMeasure
         ((FK.embeddedConfigurationRestriction G H f hGH) ⁻¹' S) := by
-    rw [← hmain, PMF.toMeasure_map_apply _ _ _ measurable_from_top MeasurableSpace.measurableSet_top]
+    grind [PMF.toMeasure_map_apply _ _ _ measurable_from_top MeasurableSpace.measurableSet_top]
   rw [pmf_filter_toMeasure] at h1
   have hpos : 0 < FK.measure H q ξ
-      (FK.frozenStateEvent (FK.subgraphRemovedEdges (G.map f) H) K) := by
+      (FK.frozenStateEvent K) := by
     rw [FK.measure_pos_iff]
     obtain ⟨C, hC, _⟩ := hF
     exact ⟨C, hC⟩
-  have hfin : FK.measure H q ξ (FK.frozenStateEvent (FK.subgraphRemovedEdges (G.map f) H) K) ≠ ⊤ :=
+  have hfin : FK.measure H q ξ (FK.frozenStateEvent K) ≠ ⊤ :=
     MeasureTheory.measure_ne_top _ _
   change FK.measure H q ξ _ = (FK.law G q _).toMeasure S * FK.measure H q ξ _
   rw [h1]

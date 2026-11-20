@@ -17,7 +17,10 @@ namespace PottsDiscontinuity.BetheAnsatz
 
 open SixVertex
 
-theorem interlacedLE_positions_iff {N n : ℕ} (x y : State N n) :
+variable {N n : ℕ} {x y : Fin (n + 1) → ℤ} (hx : x ∈ orderedTuples N (n + 1))
+    (hy : y ∈ orderedTuples N (n + 1))
+
+theorem interlacedLE_positions_iff (x y : State N n) :
     InterlacedLE x.1 y.1 ↔
       (∀ k, positions x k ≤ positions y k) ∧
       ∀ k l : Fin n, k.val + 1 = l.val → positions y k ≤ positions x l := by
@@ -29,36 +32,26 @@ theorem interlacedLE_positions_iff {N n : ℕ} (x y : State N n) :
     ∀ k l : Fin s.card, k.val + 1 = l.val → t.orderEmbOfFin h.symm k ≤ s.orderEmbOfFin rfl l) ↔ _
   simp only [positions]
   constructor
-  · rintro ⟨h, h1, h2⟩
-    refine ⟨fun k => ?_, fun k l hkl => ?_⟩
-    · exact_mod_cast (show (s.orderEmbOfFin rfl k).val ≤ (t.orderEmbOfFin ht k).val from h1 k)
-    · exact_mod_cast (show (t.orderEmbOfFin ht k).val ≤ (s.orderEmbOfFin rfl l).val from h2 k l hkl)
-  · rintro ⟨h1, h2⟩
-    refine ⟨ht.symm, fun k => ?_, fun k l hkl => ?_⟩
-    · change (s.orderEmbOfFin rfl k).val ≤ (t.orderEmbOfFin ht k).val
-      exact_mod_cast h1 k
-    · change (t.orderEmbOfFin ht k).val ≤ (s.orderEmbOfFin rfl l).val
-      exact_mod_cast h2 k l hkl
+  · grind
+  · simp_all
 
-theorem interlacedLE_positions_succ_iff {N n : ℕ} (x y : State N (n + 1)) :
+theorem interlacedLE_positions_succ_iff (x y : State N (n + 1)) :
     InterlacedLE x.1 y.1 ↔
       (∀ k, positions x k ≤ positions y k) ∧
       ∀ k : Fin n, positions y k.castSucc ≤ positions x k.succ := by
   rw [interlacedLE_positions_iff]
   constructor
-  · rintro ⟨h1, h2⟩
-    exact ⟨h1, fun k => h2 k.castSucc k.succ rfl⟩
+  · simp_all
   · rintro ⟨h1, h2⟩
     refine ⟨h1, fun i j hij => ?_⟩
-    have hi : i.val < n := by have hj := j.isLt; omega
+    have hi : i.val < n := by omega
     let k : Fin n := ⟨i.val, hi⟩
     have hik : k.castSucc = i := Fin.ext rfl
-    have hjk : k.succ = j := Fin.ext hij
-    simpa only [hik, hjk] using h2 k
+    grind
 
+include hx hy in
 /-- In the ordinary row, the lower interlacing orientation is exactly the gap inequalities. -/
-theorem ordered_mem_gapTuples_iff {N n : ℕ} {x y : Fin (n + 1) → ℤ}
-    (hx : x ∈ orderedTuples N (n + 1)) (hy : y ∈ orderedTuples N (n + 1)) :
+theorem ordered_mem_gapTuples_iff :
     y ∈ gapTuples N x ↔ (∀ k, y k ≤ x k) ∧ ∀ k : Fin n, x k.castSucc ≤ y k.succ := by
   constructor
   · intro hg
@@ -76,30 +69,26 @@ theorem ordered_mem_gapTuples_iff {N n : ℕ} {x y : Fin (n + 1) → ℤ}
       have hyzero := ((mem_orderedTuples.mp hy).1 0).1
       omega
     | succ k =>
-      rw [cyclicPredecessorPositions_succ]
-      exact hl k
+      grind [cyclicPredecessorPositions_succ]
 
-theorem interlacedLE_iff_positions_mem_gapTuples {N n : ℕ} (x y : State N (n + 1)) :
+theorem interlacedLE_iff_positions_mem_gapTuples (x y : State N (n + 1)) :
     InterlacedLE y.1 x.1 ↔ positions y ∈ gapTuples N (positions x) := by
   rw [interlacedLE_positions_succ_iff,
     ordered_mem_gapTuples_iff (positions_mem_orderedTuples x) (positions_mem_orderedTuples y)]
 
 /-- Applying the same predecessor shift to both tuples preserves pointwise order. -/
-theorem cyclicPredecessorPositions_le_iff {N n : ℕ} (x y : Fin (n + 1) → ℤ) :
+theorem cyclicPredecessorPositions_le_iff (x y : Fin (n + 1) → ℤ) :
     (∀ k, cyclicPredecessorPositions N x k ≤ cyclicPredecessorPositions N y k) ↔
       ∀ k, x k ≤ y k := by
   constructor
   · intro h k
     have h' := h (finRotate (n + 1) k)
-    simp only [cyclicPredecessorPositions, Equiv.symm_apply_apply] at h'
-    omega
-  · intro h k
-    unfold cyclicPredecessorPositions
-    exact sub_le_sub_right (h _) _
+    simp_all [cyclicPredecessorPositions, Equiv.symm_apply_apply]
+  · simp_all [cyclicPredecessorPositions]
 
+include hx hy in
 /-- The upper interlacing orientation becomes a gap tuple after moving the last point back N. -/
-theorem ordered_shift_mem_gapTuples_iff {N n : ℕ} {x y : Fin (n + 1) → ℤ}
-    (hx : x ∈ orderedTuples N (n + 1)) (hy : y ∈ orderedTuples N (n + 1)) :
+theorem ordered_shift_mem_gapTuples_iff :
     cyclicPredecessorPositions N y ∈ gapTuples N x ↔
       (∀ k, x k ≤ y k) ∧ ∀ k : Fin n, y k.castSucc ≤ x k.succ := by
   rw [mem_gapTuples]
@@ -119,10 +108,9 @@ theorem ordered_shift_mem_gapTuples_iff {N n : ℕ} {x y : Fin (n + 1) → ℤ}
       have hxzero := ((mem_orderedTuples.mp hx).1 0).1
       omega
     | succ k =>
-      rw [cyclicPredecessorPositions_succ]
-      exact hu k
+      grind [cyclicPredecessorPositions_succ]
 
-theorem interlacedLE_iff_shift_positions_mem_gapTuples {N n : ℕ} (x y : State N (n + 1)) :
+theorem interlacedLE_iff_shift_positions_mem_gapTuples (x y : State N (n + 1)) :
     InterlacedLE x.1 y.1 ↔
       cyclicPredecessorPositions N (positions y) ∈ gapTuples N (positions x) := by
   rw [interlacedLE_positions_succ_iff,

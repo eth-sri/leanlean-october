@@ -28,8 +28,7 @@ theorem ratio_eigenvalueZero_eq_coefficient {N n : ℕ} {q : Fin n → ℝ}
     {c : ℝ} (hc : 2 < c) (hq : q ∈ S_n n) (l : Fin n) (hl : q l = 0) :
     BetheAnsatz.eigenvalueZero N c q l =
       ((ratioZeroCoefficient (BetheAnsatz.anisotropy c) c N q l *
-        ∏ j ∈ univ.erase l, ‖BetheAnsatz.M c (BetheAnsatz.z (q j))‖ : ℝ) : ℂ) := by
-  exact ratio_eigenvalueZero hc hq l hl
+        ∏ j ∈ univ.erase l, ‖BetheAnsatz.M c (BetheAnsatz.z (q j))‖ : ℝ) : ℂ) := ratio_eigenvalueZero hc hq l hl
 
 /-- Exact source `(A)(B)` factorization, before any asymptotics. -/
 theorem ratio_odd_eigenvalue_quotient {N m n : ℕ}
@@ -47,22 +46,21 @@ theorem ratio_odd_eigenvalue_quotient {N m n : ℕ}
 The erased root is exactly zero, so its single derivative term is `O(1/N)`.
 -/
 theorem ratio_odd_A_tendsto {ι : Type*} {f : Filter ι} {Δ : ℝ} (hΔ : Δ < -1)
-    (c : ℝ) (r : ℕ) (N n : ι → ℕ) (q : ∀ i, Fin (n i) → ℝ)
+    (c : ℝ) {r : ℕ} (N n : ι → ℕ) (q : ∀ i, Fin (n i) → ℝ)
     (hq : ∀ i, q i ∈ S_n (n i)) (hn : ∀ i, 0 < n i) (hs : ∀ i, 2 * n i ≤ N i)
     (hcount : ∀ i, N i = 2 * (n i + r))
     (hNlim : Tendsto (fun i => (N i : ℝ)) f atTop)
-    (hb : ∀ i, BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
-      |Xi (lamOf Δ) α * (rootStepDensity (N i) (n i) (q i) (hq i) (hn i) (hs i)
-        (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|))
-    (hlim : Tendsto (fun i => densityNorm Δ hΔ
-      (fun x => rootStepDensity (N i) (n i) (q i) (hq i) (hn i) (hs i) x - rho Δ x) (hb i)) f (𝓝 0))
+    {hb : ∀ i, BddAbove (range fun α : Icc (-Real.pi) Real.pi =>
+      |Xi (lamOf Δ) α * (rootStepDensity (N i) (q i) (hn i)
+        (kMap (lamOf Δ) α) - rho Δ (kMap (lamOf Δ) α))|)}
+    (hlim : Tendsto (fun i => densityNorm Δ
+      (fun x => rootStepDensity (N i) (q i) (hn i) x - rho Δ x)) f (𝓝 0))
     (l : ∀ i, Fin (n i)) (hl : ∀ i, q i (l i) = 0) :
     Tendsto (fun i => ratioZeroCoefficient Δ c (N i) (q i) (l i) / (2 * N i)) f
       (𝓝 (c ^ 2 * Real.pi * rho Δ 0)) := by
   have hg : Continuous (d1Theta Δ 0) :=
     (continuous_d1Theta_pair hΔ).comp (continuous_const.prodMk continuous_id)
-  have hweak := theorem26_sums_of_pos hΔ r N n q hq hn hs hcount hNlim (hb) hlim
-    (d1Theta Δ 0) hg
+  have hweak := theorem26_sums_of_pos (hs := hs) (hb := hb) hΔ r N n q hq hn hcount hNlim hlim hg
   have hinv : Tendsto (fun i => (N i : ℝ)⁻¹) f (𝓝 0) :=
     tendsto_inv_atTop_zero.comp hNlim
   have hcb := rho_isCBESolution hΔ 0
@@ -75,17 +73,13 @@ theorem ratio_odd_A_tendsto {ι : Type*} {f : Filter ι} {Δ : ℝ} (hΔ : Δ < 
   have htarget : c ^ 2 / 2 * (1 +
       ∫ x in (-Real.pi)..Real.pi, d1Theta Δ 0 x * rho Δ x) +
       ((2 - c ^ 2 - c ^ 2 * d1Theta Δ 0 0) / 2) * 0 = c ^ 2 * Real.pi * rho Δ 0 := by
-    rw [← hcb]
-    ring
+    grind
   rw [htarget] at ht
   apply ht.congr'
   exact Eventually.of_forall (fun i => by
-    have hN : (N i : ℝ) ≠ 0 := by exact_mod_cast (show N i ≠ 0 by have := hn i; have := hs i; omega)
+    have hN : (N i : ℝ) ≠ 0 := by exact_mod_cast (show N i ≠ 0 by grind)
     have he := sum_erase_add (s := (univ : Finset (Fin (n i))))
       (fun j => d1Theta Δ 0 (q i j)) (mem_univ (l i))
-    rw [hl i] at he
-    unfold ratioZeroCoefficient
-    field_simp
-    nlinarith only [he])
+    grind [hl i, ratioZeroCoefficient])
 
 end PottsDiscontinuity.Bethe

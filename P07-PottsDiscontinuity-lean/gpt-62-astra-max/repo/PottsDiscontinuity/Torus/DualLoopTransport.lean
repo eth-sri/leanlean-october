@@ -49,7 +49,7 @@ theorem rcSmoothing_translatedDual_shift (hN : Even N) (A : RCConfig N M) (v : F
   unfold rcSmoothing translatedDualConfig
   rw [checker_nxt_x hN, shiftRCConfig_nxt]
   change Bool.xor (!checker v) (!A v) = Bool.xor (checker v) (A v)
-  cases checker v <;> cases A v <;> rfl
+  grind
 
 theorem shiftDart_strandReverse_dual (hN : Even N) (A : RCConfig N M) (d : Dart N M) :
     shiftDart (strandReverse (rcSmoothing A) d) =
@@ -73,10 +73,6 @@ def dualDirectedEquiv (hN : Even N) (hM : Even M) :
     Equiv.Perm (DirectedDart (checkerArrows N M)) :=
   (dualDartTransport N M).subtypeEquiv (fun d => by rw [dartOut_dualDartTransport hN hM])
 
-@[simp] theorem dualDirectedEquiv_val (hN : Even N) (hM : Even M)
-    (d : DirectedDart (checkerArrows N M)) :
-    (dualDirectedEquiv hN hM d).val = shiftDart (edgeReverse d.val) := rfl
-
 theorem dualDartTransport_step (hN : Even N) (A : RCConfig N M) (d : Dart N M) :
     dualDartTransport N M (stepPerm (rcSmoothing A) d) =
       (stepPerm (rcSmoothing (translatedDualConfig A))).symm (dualDartTransport N M d) := by
@@ -96,7 +92,7 @@ theorem dualDirectedEquiv_boundary (hN : Even N) (hM : Even M) (A : RCConfig N M
 /-- Individual primal boundary loops are the reversed translated dual boundary loops. -/
 def dualBoundaryLoopEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
     RibbonBoundaryComponent hN hM A ≃ RibbonBoundaryComponent hN hM (translatedDualConfig A) :=
-  permutationCycleEquivOfInverseIntertwining _ _ (dualDirectedEquiv hN hM)
+  permutationCycleEquivOfInverseIntertwining _ _
     (dualDirectedEquiv_boundary hN hM A)
 
 theorem rcLoopCount_translatedDual (hN : Even N) (hM : Even M) (A : RCConfig N M) :

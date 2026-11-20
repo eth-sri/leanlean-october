@@ -15,36 +15,34 @@ attribute [local instance] configurationMeasurableSpace
 local instance edgeDecidableEq {V : Type*} (G : SimpleGraph V) : DecidableEq G.edgeSet :=
   Classical.decEq _
 
-def boxExtension (i : Fin 2) (c : LatticeVertex) (r : ℕ)
-    (C : Configuration (boxGraph c r)) : LatticeConfiguration :=
+section
+variable (θ : Parameters) (i : Fin 2) (c : LatticeVertex) (r : ℕ)
+    (C : Configuration (boxGraph c r))
+include i
+
+include C in
+def boxExtension : LatticeConfiguration :=
   if i = 0 then boxConfiguration c r C else wiredBoxConfiguration c r C
 
-def boxBoundary (i : Fin 2) (c : LatticeVertex) (r : ℕ) : BoundaryCondition (BoxVertex c r) :=
+def boxBoundary : BoundaryCondition (BoxVertex c r) :=
   if i = 0 then BoundaryCondition.free ∅ else BoundaryCondition.wired (boxVertexBoundary c r)
 
-@[simp] theorem boxExtension_at (i : Fin 2) (c : LatticeVertex) (r : ℕ)
-    (C : Configuration (boxGraph c r)) (e : (boxGraph c r).edgeSet) :
+@[simp] theorem boxExtension_at (e : (boxGraph c r).edgeSet) :
     boxExtension i c r C (boxEdgeEmbedding c r e) = decide (e ∈ C) := by
   classical
   fin_cases i <;> simp [boxExtension]
 
-theorem boxMeasure_apply (θ : Parameters) (i : Fin 2) (c : LatticeVertex) (r : ℕ)
+theorem boxMeasure_apply
     {A : Set LatticeConfiguration} (hA : MeasurableSet A) :
     (boxMeasure θ i c r : Measure LatticeConfiguration) A =
       measure (boxGraph c r) θ (boxBoundary i c r) ((boxExtension i c r) ⁻¹' A) := by
   classical
   unfold boxMeasure boxBoundary boxExtension
   split_ifs
-  · change ((law (boxGraph c r) θ (BoundaryCondition.free ∅)).map
-      (boxConfiguration c r)).toMeasure A =
-        (law (boxGraph c r) θ (BoundaryCondition.free ∅)).toMeasure
-          ((boxConfiguration c r) ⁻¹' A)
-    exact PMF.toMeasure_map_apply _ _ _ measurable_from_top hA
-  · change ((law (boxGraph c r) θ (BoundaryCondition.wired (boxVertexBoundary c r))).map
-      (wiredBoxConfiguration c r)).toMeasure A =
-        (law (boxGraph c r) θ (BoundaryCondition.wired (boxVertexBoundary c r))).toMeasure
-          ((wiredBoxConfiguration c r) ⁻¹' A)
-    exact PMF.toMeasure_map_apply _ _ _ measurable_from_top hA
+  · exact PMF.toMeasure_map_apply _ _ _ measurable_from_top hA
+  · exact PMF.toMeasure_map_apply _ _ _ measurable_from_top hA
+
+end
 
 theorem eventually_edge_in_box (e : Edge) :
     ∀ᶠ n : ℕ in atTop, ∃ f : (boxGraph (0, 0) n).edgeSet,

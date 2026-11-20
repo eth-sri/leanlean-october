@@ -35,7 +35,7 @@ def loopChoiceMergeMap {α : Type*} [DecidableEq α] (a b : α)
     else p.2.2 ⟨x, hx, hy⟩
 
 noncomputable def loopChoiceSplitEquiv {α : Type*} [Fintype α] [DecidableEq α]
-    (a b : α) (hab : a ≠ b) :
+    {a b : α} (hab : a ≠ b) :
     (α → Bool) ≃ Bool × (Bool × (LoopChoiceRest α a b → Bool)) where
   toFun := loopChoiceSplitMap a b
   invFun := loopChoiceMergeMap a b
@@ -62,58 +62,53 @@ noncomputable def loopChoiceSplitEquiv {α : Type*} [Fintype α] [DecidableEq α
 @[simp] private theorem loopChoiceSplitEquiv_symm_apply {α : Type*} [Fintype α]
     [DecidableEq α] (a b : α) (hab : a ≠ b)
     (p : Bool × (Bool × (LoopChoiceRest α a b → Bool))) :
-    (loopChoiceSplitEquiv a b hab).symm p = loopChoiceMergeMap a b p := rfl
+    (loopChoiceSplitEquiv hab).symm p = loopChoiceMergeMap a b p := rfl
 
 private theorem sum_boolFunctionWeight_eq_four_mul_fixed
     {α : Type*} [Fintype α] [DecidableEq α]
     (a b : α) (hab : a ≠ b) (f : α → Bool → ℝ)
     (ha : ∀ z, f a z = 1) (hb : ∀ z, f b z = 1) (ba bb : Bool) :
-    (∑ F : α → Bool, ∏ x : α, f x (F x)) =
-      4 * (∑ G : LoopChoiceRest α a b → Bool,
-        ∏ x : α, f x ((loopChoiceSplitEquiv a b hab).symm (ba, bb, G) x)) := by
+    (∑ F : α → Bool, ∏ x, f x (F x)) =
+      4 * (∑ G,
+        ∏ x, f x ((loopChoiceSplitEquiv hab).symm (ba, bb, G) x)) := by
   classical
-  let e := loopChoiceSplitEquiv a b hab
+  let e := loopChoiceSplitEquiv hab
   have hweight (u v : Bool) (G : LoopChoiceRest α a b → Bool) :
-      (∏ x : α, f x (e.symm (u, v, G) x)) =
-        ∏ x : α, f x (e.symm (ba, bb, G) x) := by
+      (∏ x, f x (e.symm (u, v, G) x)) =
+        ∏ x, f x (e.symm (ba, bb, G) x) := by
     apply Finset.prod_congr rfl
     intro x _
     by_cases hxa : x = a
-    · subst x
-      simp [e, loopChoiceMergeMap, ha]
+    · grind
     · by_cases hxb : x = b
-      · subst x
-        simp [e, loopChoiceMergeMap, hb]
-      · simp [e, loopChoiceSplitEquiv, loopChoiceMergeMap, hxa, hxb]
+      · grind
+      · simp_all [e, loopChoiceSplitEquiv, loopChoiceMergeMap]
   calc
-    _ = ∑ p : Bool × (Bool × (LoopChoiceRest α a b → Bool)),
-          ∏ x : α, f x (e.symm p x) := by
+    _ = ∑ p,
+          ∏ x, f x (e.symm p x) := by
       refine Fintype.sum_equiv e _ _ ?_
-      intro F
-      simp [e]
-    _ = ∑ u : Bool, ∑ v : Bool,
-          ∑ G : LoopChoiceRest α a b → Bool,
-            ∏ x : α, f x (e.symm (u, v, G) x) := by
+      simp
+    _ = ∑ u, ∑ v,
+          ∑ G,
+            ∏ x, f x (e.symm (u, v, G) x) := by
       simp_rw [Fintype.sum_prod_type]
-    _ = ∑ u : Bool, ∑ v : Bool,
-          ∑ G : LoopChoiceRest α a b → Bool,
-            ∏ x : α, f x (e.symm (ba, bb, G) x) := by
+    _ = ∑ u, ∑ v,
+          ∑ G,
+            ∏ x, f x (e.symm (ba, bb, G) x) := by
       apply Finset.sum_congr rfl
       intro u _
       apply Finset.sum_congr rfl
       intro v _
       apply Finset.sum_congr rfl
-      intro G _
-      exact hweight u v G
+      solve_by_elim [hweight]
     _ = _ := by
-      rw [Fintype.sum_bool, Fintype.sum_bool]
-      ring
+      grind [Fintype.sum_bool]
 
 def downwardChoice (z : ℤ) : Bool := if z = 1 then false else true
 
 private theorem downwardChoice_turn {z : ℤ} (hz : z = 1 ∨ z = -1) :
     (if downwardChoice z then z else -z) = -1 := by
-  rcases hz with hz | hz <;> simp [downwardChoice, hz]
+  aesop
 
 /-- For a configuration with `U = 1`, fixing the two vertical loop directions to
 downward leaves exactly one quarter of its equal-weight orientation assignments.
@@ -124,7 +119,7 @@ private theorem uOne_orientedLoopSum_le_four_mul_sectorSum
     (hnonzero : NonzeroWindingTurnPremise hN hM i j A)
     (hU : rcVerticalWinding hN hM j A = 1) :
     (∑ x : {ω : ArrowConfig N M // CompatibleConfig ω (rcSmoothing A)},
-      orientedLoopWeight lam x.val (rcSmoothing A) x.property) ≤
+      orientedLoopWeight lam x.property) ≤
       4 * (∑ ω : ArrowConfig N M with ω.absUp + 1 = N / 2,
         smoothingWeight lam ω (rcSmoothing A)) := by
   classical
@@ -133,27 +128,19 @@ private theorem uOne_orientedLoopSum_le_four_mul_sectorSum
   let h₀ := checkerArrows_compatible hN hM s
   obtain ⟨q₁, q₂, hqne, hchar, hv₁eq, hv₂eq⟩ :=
     PottsDiscontinuity.TorusTopology.U_one_vertical_loop_structure hN hM j A hU
-  let v₁ := loopVertical ω₀ s h₀ j q₁
-  let v₂ := loopVertical ω₀ s h₀ j q₂
-  have hv₁ : v₁ = 1 ∨ v₁ = -1 := Or.inl (by simpa [v₁, s, ω₀, h₀] using hv₁eq)
-  have hv₂ : v₂ = 1 ∨ v₂ = -1 := Or.inr (by simpa [v₂, s, ω₀, h₀] using hv₂eq)
+  let v₁ := loopVertical j q₁
+  let v₂ := loopVertical j q₂
+  have hv₁ : v₁ = 1 ∨ v₁ = -1 := Or.inl (by assumption)
+  have hv₂ : v₂ = 1 ∨ v₂ = -1 := Or.inr (by assumption)
   have hv₁ne : v₁ ≠ 0 := by
-    rcases hv₁ with h | h
-    · rw [h]
-      norm_num
-    · rw [h]
-      norm_num
+    grind
   have hv₂ne : v₂ ≠ 0 := by
-    rcases hv₂ with h | h
-    · rw [h]
-      norm_num
-    · rw [h]
-      norm_num
-  have hrot₁ : loopRotationNumber ω₀ s h₀ q₁ = 0 := hnonzero q₁ (Or.inl hv₁ne)
-  have hrot₂ : loopRotationNumber ω₀ s h₀ q₂ = 0 := hnonzero q₂ (Or.inl hv₂ne)
+    grind
+  have hrot₁ : loopRotationNumber q₁ = 0 := hnonzero q₁ (Or.inl hv₁ne)
+  have hrot₂ : loopRotationNumber q₂ = 0 := hnonzero q₂ (Or.inl hv₂ne)
   let b₁ := downwardChoice v₁
   let b₂ := downwardChoice v₂
-  let split := loopChoiceSplitEquiv q₁ q₂ hqne
+  let split := loopChoiceSplitEquiv hqne
   let choices (G : LoopChoiceRest (Loop hN hM s) q₁ q₂ → Bool) :=
     split.symm (b₁, b₂, G)
   let arrow (G : LoopChoiceRest (Loop hN hM s) q₁ q₂ → Bool) :=
@@ -167,13 +154,13 @@ private theorem uOne_orientedLoopSum_le_four_mul_sectorSum
     simp [choices, split, b₂, loopChoiceSplitEquiv_symm_apply,
       loopChoiceMergeMap, hqne.symm]
   have hdown₁ (G : LoopChoiceRest (Loop hN hM s) q₁ q₂ → Bool) :
-      loopVertical (arrow G) s (orientArrows_compatible ω₀ s h₀ (choices G)) j
+      loopVertical j
         (loopReorientEquiv ω₀ (arrow G) s h₀
           (orientArrows_compatible ω₀ s h₀ (choices G)) q₁) = -1 := by
     rw [loopVertical_reorient, loopOrientation_orientArrows, hchoice₁]
     exact downwardChoice_turn hv₁
   have hdown₂ (G : LoopChoiceRest (Loop hN hM s) q₁ q₂ → Bool) :
-      loopVertical (arrow G) s (orientArrows_compatible ω₀ s h₀ (choices G)) j
+      loopVertical j
         (loopReorientEquiv ω₀ (arrow G) s h₀
           (orientArrows_compatible ω₀ s h₀ (choices G)) q₂) = -1 := by
     rw [loopVertical_reorient, loopOrientation_orientArrows, hchoice₂]
@@ -182,7 +169,7 @@ private theorem uOne_orientedLoopSum_le_four_mul_sectorSum
       (arrow G).absUp + 1 = N / 2 := by
     let hG := orientArrows_compatible ω₀ s h₀ (choices G)
     have hterm (q : Loop hN hM s) :
-        loopVertical (arrow G) s hG j (loopReorientEquiv ω₀ (arrow G) s h₀ hG q) =
+        loopVertical j (loopReorientEquiv ω₀ (arrow G) s h₀ hG q) =
           if q = q₁ then -1 else if q = q₂ then -1 else 0 := by
       by_cases hq₁' : q = q₁
       · subst q
@@ -190,67 +177,45 @@ private theorem uOne_orientedLoopSum_le_four_mul_sectorSum
       · by_cases hq₂' : q = q₂
         · subst q
           simp [hq₁', hdown₂ G]
-        · have hvzero : loopVertical ω₀ s h₀ j q = 0 := by
-            by_contra hnz
-            have hmem := (hchar q).mp hnz
-            rcases hmem with heq | heq
-            · exact hq₁' heq
-            · exact hq₂' heq
-          rw [loopVertical_reorient]
-          simp [hq₁', hq₂', hvzero]
+        · have hvzero : loopVertical j q = 0 := by
+            grind
+          simp [loopVertical_reorient, hq₁', hq₂', hvzero]
     have hcanonical :
         (∑ q : Loop hN hM s,
-          loopVertical (arrow G) s hG j
+          loopVertical j
             (loopReorientEquiv ω₀ (arrow G) s h₀ hG q)) = -2 := by
       calc
         _ = ∑ q : Loop hN hM s,
               if q = q₁ then (-1 : ℤ) else if q = q₂ then -1 else 0 := by
-          apply Finset.sum_congr rfl
-          intro q _
-          exact hterm q
+          grind
         _ = (∑ q : Loop hN hM s, if q = q₁ then (-1 : ℤ) else 0) +
               ∑ q : Loop hN hM s, if q = q₂ then (-1 : ℤ) else 0 := by
           rw [← Finset.sum_add_distrib]
-          apply Finset.sum_congr rfl
-          intro q _
-          by_cases hq₁' : q = q₁
-          · subst q
-            simp [hqne]
-          · by_cases hq₂' : q = q₂
-            · subst q
-              simp [hqne.symm]
-            · simp [hq₁', hq₂']
+          grind
         _ = -2 := by
-          rw [Finset.sum_ite_eq' univ q₁ (fun _ => (-1 : ℤ))]
-          rw [Finset.sum_ite_eq' univ q₂ (fun _ => (-1 : ℤ))]
           simp
     have htransport :
         (∑ q : Loop hN hM s,
-          loopVertical (arrow G) s hG j
+          loopVertical j
             (loopReorientEquiv ω₀ (arrow G) s h₀ hG q)) =
-          ∑ q : DirectedLoop (arrow G) s hG, loopVertical (arrow G) s hG j q := by
+          ∑ q : DirectedLoop hG, loopVertical j q := by
       rw [← (loopReorientEquiv ω₀ (arrow G) s h₀ hG).sum_comp]
-    have hflux := sum_loopVertical (arrow G) s hG j
-    rw [← htransport, hcanonical] at hflux
-    have hNmod : N % 2 = 0 := by rcases hN with ⟨k, hk⟩; omega
+    have hflux := sum_loopVertical (ω := (arrow G)) s hG j
     omega
-  let f (q : Loop hN hM s) (b : Bool) : ℝ :=
-    Real.exp (lam * (if b then loopRotationNumber ω₀ s h₀ q
-      else -loopRotationNumber ω₀ s h₀ q : ℤ))
+  let f (q : Loop hN hM s) (b : Bool) :=
+    Real.exp (lam * (if b then loopRotationNumber (ω := ω₀) (s := s) (h := h₀) q
+      else -loopRotationNumber q : ℤ))
   have hf₁ (b : Bool) : f q₁ b = 1 := by simp [f, hrot₁]
   have hf₂ (b : Bool) : f q₂ b = 1 := by simp [f, hrot₂]
   have hsplitSum :
-      (∑ F : Loop hN hM s → Bool, chosenLoopWeight lam hN hM A F) =
+      (∑ F : Loop hN hM s → Bool, chosenLoopWeight lam F) =
         4 * (∑ G : LoopChoiceRest (Loop hN hM s) q₁ q₂ → Bool,
-          chosenLoopWeight lam hN hM A (choices G)) := by
-    change (∑ F : Loop hN hM s → Bool, ∏ q, f q (F q)) =
-      4 * (∑ G : LoopChoiceRest (Loop hN hM s) q₁ q₂ → Bool,
-        ∏ q, f q ((loopChoiceSplitEquiv q₁ q₂ hqne).symm (b₁, b₂, G) q))
+          chosenLoopWeight lam (choices G)) := by
     exact sum_boolFunctionWeight_eq_four_mul_fixed q₁ q₂ hqne f hf₁ hf₂ b₁ b₂
   have horientation :
       (∑ x : {ω : ArrowConfig N M // CompatibleConfig ω s},
-        orientedLoopWeight lam x.val s x.property) =
-        ∑ F : Loop hN hM s → Bool, chosenLoopWeight lam hN hM A F := by
+        orientedLoopWeight lam x.property) =
+        ∑ F : Loop hN hM s → Bool, chosenLoopWeight lam F := by
     refine Fintype.sum_equiv (orientationEquiv ω₀ s h₀) _ _ ?_
     intro x
     exact orientedLoopWeight_eq_chosenLoopWeight lam hN hM A x.val x.property
@@ -263,18 +228,17 @@ private theorem uOne_orientedLoopSum_le_four_mul_sectorSum
     have hchoiceEq : choices G = choices H := by
       simpa [orientationEquiv, choices, arrow, loopOrientation_orientArrows] using hF
     have hsplitEq := (Equiv.injective split.symm) hchoiceEq
-    exact congrArg (fun p : Bool × (Bool × _) => p.2.2) hsplitEq
+    grind
   let arrowEmb : (LoopChoiceRest (Loop hN hM s) q₁ q₂ → Bool) ↪ ArrowConfig N M :=
     ⟨arrow, hmapinj⟩
-  let selected : Finset (ArrowConfig N M) := Finset.univ.map arrowEmb
+  let selected := Finset.univ.map arrowEmb
   have hselected_sector : selected ⊆
       (Finset.univ.filter fun ω : ArrowConfig N M => ω.absUp + 1 = N / 2) := by
     intro ω hω
-    rcases Finset.mem_map.mp hω with ⟨G, _, rfl⟩
-    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hsector G⟩
+    aesop
   have hselected_sum :
       (∑ G : LoopChoiceRest (Loop hN hM s) q₁ q₂ → Bool,
-        chosenLoopWeight lam hN hM A (choices G)) =
+        chosenLoopWeight lam (choices G)) =
       ∑ ω ∈ selected, smoothingWeight lam ω s := by
     calc
       _ = ∑ G : LoopChoiceRest (Loop hN hM s) q₁ q₂ → Bool,
@@ -282,16 +246,13 @@ private theorem uOne_orientedLoopSum_le_four_mul_sectorSum
         apply Finset.sum_congr rfl
         intro G _
         calc
-          chosenLoopWeight lam hN hM A (choices G) =
-              orientedLoopWeight lam (arrow G) s
+          chosenLoopWeight lam (choices G) =
+              orientedLoopWeight lam
                 (orientArrows_compatible ω₀ s h₀ (choices G)) := by
-            symm
-            rw [orientedLoopWeight_eq_chosenLoopWeight,
-              loopOrientation_orientArrows]
+            rw [orientedLoopWeight_eq_chosenLoopWeight, loopOrientation_orientArrows]
           _ = smoothingWeight lam (arrow G) s :=
-            orientedLoopWeight_eq_smoothingWeight lam (arrow G) s _
+            orientedLoopWeight_eq_smoothingWeight lam s _
       _ = _ := by
-        symm
         simp [selected, arrowEmb]
   have hselected_le :
       (∑ ω ∈ selected, smoothingWeight lam ω s) ≤
@@ -300,13 +261,12 @@ private theorem uOne_orientedLoopSum_le_four_mul_sectorSum
     intro ω _ _
     exact smoothingWeight_nonneg lam ω s
   calc
-    _ = ∑ F : Loop hN hM s → Bool, chosenLoopWeight lam hN hM A F := horientation
+    _ = ∑ F : Loop hN hM s → Bool, chosenLoopWeight lam F := horientation
     _ = 4 * (∑ G : LoopChoiceRest (Loop hN hM s) q₁ q₂ → Bool,
-          chosenLoopWeight lam hN hM A (choices G)) := hsplitSum
+          chosenLoopWeight lam (choices G)) := hsplitSum
     _ ≤ 4 * (∑ ω : ArrowConfig N M with ω.absUp + 1 = N / 2,
           smoothingWeight lam ω s) := by
-      rw [hselected_sum]
-      exact mul_le_mul_of_nonneg_left hselected_le (by norm_num)
+      grind
 
 private theorem smoothingWeight_nonneg_of_compatible (lam : ℝ) (ω : ArrowConfig N M)
     (s : Smoothing N M) : 0 ≤ smoothingWeight lam ω s :=
@@ -328,22 +288,20 @@ theorem sixVertexSector_le_verticalUSmoothingSum (hN : Even N) (hM : Even M)
     ∑ s : Smoothing N M, if U s then smoothingWeight lam ω s else 0
   have hsectorEq (ω : ArrowConfig N M) (hω : ω.absUp + r = N / 2) :
       (∑ s : Smoothing N M, smoothingWeight lam ω s) = g ω := by
-    unfold g
     apply Finset.sum_congr rfl
     intro s _
     by_cases hU : U s
-    · simp [U, hU]
+    · grind
     · have hzero : smoothingWeight lam ω s = 0 := by
         by_contra hne
         have hcompat : CompatibleConfig ω s := by
           by_contra hn
           exact hne (smoothingWeight_eq_zero_of_not_compatible lam ω s hn)
-        have hbound := sector_le_rcVerticalWinding hN hM j (smoothingRC s) ω
+        have hbound := sector_le_rcVerticalWinding hN hM j (A := (smoothingRC s)) (ω := ω)
           (by simpa using hcompat) hω
-        exact hU (by simpa [U] using hbound)
-      simp [U, hU, hzero]
+        grind
+      grind
   have hge (ω : ArrowConfig N M) : 0 ≤ g ω := by
-    unfold g
     apply Finset.sum_nonneg
     intro s _
     split_ifs
@@ -355,7 +313,7 @@ theorem sixVertexSector_le_verticalUSmoothingSum (hN : Even N) (hM : Even M)
       ∑ ω : ArrowConfig N M, g ω := by
     rw [← Finset.sum_subtype
       (Finset.univ.filter fun s : Smoothing N M => U s)
-      (by intro s; simp) (fun s => ∑ ω : ArrowConfig N M, smoothingWeight lam ω s)]
+      (by simp) (fun s => ∑ ω : ArrowConfig N M, smoothingWeight lam ω s)]
     rw [Finset.sum_filter]
     have hswap :
         (∑ s : Smoothing N M,
@@ -364,29 +322,26 @@ theorem sixVertexSector_le_verticalUSmoothingSum (hN : Even N) (hM : Even M)
       calc
         _ = ∑ s : Smoothing N M, ∑ ω : ArrowConfig N M,
               if U s then smoothingWeight lam ω s else 0 := by
-          apply Finset.sum_congr rfl
-          intro s _
-          by_cases hU : U s <;> simp [hU]
+          simp
         _ = ∑ ω : ArrowConfig N M, ∑ s : Smoothing N M,
               if U s then smoothingWeight lam ω s else 0 := by rw [Finset.sum_comm]
-        _ = _ := by rfl
+        _ = _ := rfl
     exact hswap
   have hZ := sum_smoothingWeight_eq_Z6Vr_sqrt (N := N) (M := M) qval hq r
   calc
     Z6Vr (Real.sqrt (2 + Real.sqrt qval)) N M r =
         ∑ ω : ArrowConfig N M with ω.absUp + r = N / 2,
           ∑ s : Smoothing N M, smoothingWeight lam ω s := by
-      simpa [lam] using hZ.symm
+      grind
     _ = ∑ ω : ArrowConfig N M with ω.absUp + r = N / 2, g ω := by
       apply Finset.sum_congr rfl
-      intro ω hω
-      exact hsectorEq ω (Finset.mem_filter.mp hω).2
+      grind
     _ ≤ ∑ ω : ArrowConfig N M, g ω := by
       rw [Finset.sum_filter]
       apply Finset.sum_le_sum
       intro ω _
       by_cases hω : ω.absUp + r = N / 2
-      · simp [hω]
+      · grind
       · simp [hω, hge ω]
     _ = _ := htotal.symm
 
@@ -412,22 +367,21 @@ theorem corollary_313_ii (hN : Even N) (hM : Even M)
       torusNormalization q N M *
         (∑ A : {A : RCConfig N M // rcVerticalWinding hN hM j A = 1},
           ∑ x : {ω : ArrowConfig N M // CompatibleConfig ω (rcSmoothing A.val)},
-            orientedLoopWeight lam x.val (rcSmoothing A.val) x.property) := by
+            orientedLoopWeight lam x.property) := by
     calc
       _ = ∑ A : {A : RCConfig N M // rcVerticalWinding hN hM j A = 1},
             torusNormalization q N M *
               (∑ x : {ω : ArrowConfig N M // CompatibleConfig ω (rcSmoothing A.val)},
-                orientedLoopWeight lam x.val (rcSmoothing A.val) x.property) := by
+                orientedLoopWeight lam x.property) := by
         apply Finset.sum_congr rfl
         intro A _
         simpa [lam] using
-          (torusCorrectedRCWeight_eq_normalization_mul_orientedSum hN hM i j q hq
-            A.val (hturn A.val).1 (hturn A.val).2)
+          (torusCorrectedRCWeight_eq_normalization_mul_orientedSum hN hM i j q hq (hturn A.val).1 (hturn A.val).2)
       _ = _ := by rw [Finset.mul_sum]
   have hloopBound :
       (∑ A : {A : RCConfig N M // P A},
         ∑ x : {ω : ArrowConfig N M // CompatibleConfig ω (rcSmoothing A.val)},
-          orientedLoopWeight lam x.val (rcSmoothing A.val) x.property) ≤
+          orientedLoopWeight lam x.property) ≤
       4 * (∑ A : {A : RCConfig N M // P A}, sectorSum (rcSmoothing A.val)) := by
     calc
       _ ≤ ∑ A : {A : RCConfig N M // P A},
@@ -447,11 +401,10 @@ theorem corollary_313_ii (hN : Even N) (hM : Even M)
             if P A then sectorSum (rcSmoothing A) else 0 := by
       rw [← Finset.sum_subtype
         (Finset.univ.filter fun A : RCConfig N M => P A)
-        (by intro A; simp)
+        (by simp)
         (fun A => sectorSum (rcSmoothing A))]
       rw [Finset.sum_filter]
     have hnonneg (A : RCConfig N M) : 0 ≤ sectorSum (rcSmoothing A) := by
-      unfold sectorSum
       apply Finset.sum_nonneg
       intro ω _
       exact smoothingWeight_nonneg lam ω (rcSmoothing A)
@@ -461,10 +414,9 @@ theorem corollary_313_ii (hN : Even N) (hM : Even M)
         apply Finset.sum_le_sum
         intro A _
         by_cases hP : P A
-        · simp [hP]
+        · grind
         · simpa [hP] using hnonneg A
-      _ = ∑ s : Smoothing N M, sectorSum s := by
-        exact Fintype.sum_equiv (rcSmoothingEquiv N M) _ _ (by intro A; rfl)
+      _ = ∑ s : Smoothing N M, sectorSum s := Fintype.sum_equiv (rcSmoothingEquiv N M) _ _ (by intro A; rfl)
       _ = ∑ ω : ArrowConfig N M with ω.absUp + 1 = N / 2,
             ∑ s : Smoothing N M, smoothingWeight lam ω s := by
         rw [Finset.sum_comm]
@@ -478,7 +430,7 @@ theorem corollary_313_ii (hN : Even N) (hM : Even M)
     _ = torusNormalization q N M *
           (∑ A : {A : RCConfig N M // P A},
             ∑ x : {ω : ArrowConfig N M // CompatibleConfig ω (rcSmoothing A.val)},
-              orientedLoopWeight lam x.val (rcSmoothing A.val) x.property) := hsum
+              orientedLoopWeight lam x.property) := hsum
     _ ≤ torusNormalization q N M *
           (4 * (∑ A : {A : RCConfig N M // P A},
             sectorSum (rcSmoothing A.val))) := hscaled
@@ -505,8 +457,8 @@ theorem corollary_313_iii (hN : Even N) (hM : Even M)
           r ≤ rcVerticalWinding hN hM j (smoothingRC s)} := {
     toFun := fun x => ⟨rcSmoothing x.val, by simpa using x.property⟩
     invFun := fun x => ⟨smoothingRC x.val, by simpa using x.property⟩
-    left_inv := by intro x; apply Subtype.ext; simp
-    right_inv := by intro x; apply Subtype.ext; simp
+    left_inv := by intro x; simp
+    right_inv := by intro x; simp
   }
   have hsum :
       (∑ A : {A : RCConfig N M // r ≤ rcVerticalWinding hN hM j A},
@@ -520,19 +472,17 @@ theorem corollary_313_iii (hN : Even N) (hM : Even M)
             r ≤ rcVerticalWinding hN hM j (smoothingRC s)},
             torusCorrectedRCWeight hN hM i j q (smoothingRC s.val) := by
         refine Fintype.sum_equiv e _ _ ?_
-        intro x
         simp [e]
       _ = ∑ s : {s : Smoothing N M //
             r ≤ rcVerticalWinding hN hM j (smoothingRC s)},
             torusNormalization q N M *
               (∑ x : {ω : ArrowConfig N M //
                   CompatibleConfig ω (rcSmoothing (smoothingRC s.val))},
-                orientedLoopWeight lam x.val (rcSmoothing (smoothingRC s.val)) x.property) := by
+                orientedLoopWeight lam x.property) := by
         apply Finset.sum_congr rfl
         intro s _
         simpa [lam] using
-          (torusCorrectedRCWeight_eq_normalization_mul_orientedSum hN hM i j q hq
-            (smoothingRC s.val) (hturn (smoothingRC s.val)).1 (hturn (smoothingRC s.val)).2)
+          (torusCorrectedRCWeight_eq_normalization_mul_orientedSum hN hM i j q hq (hturn (smoothingRC s.val)).1 (hturn (smoothingRC s.val)).2)
       _ = torusNormalization q N M *
             (∑ s : {s : Smoothing N M //
                 r ≤ rcVerticalWinding hN hM j (smoothingRC s)},

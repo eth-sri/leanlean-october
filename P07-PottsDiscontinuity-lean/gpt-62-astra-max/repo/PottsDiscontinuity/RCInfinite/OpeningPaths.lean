@@ -15,30 +15,26 @@ open scoped Classical
 theorem lattice_horizontal_reachable (a b y : ℤ) : squareLattice.Reachable (a, y) (b, y) := by
   have haux (z : ℤ) : squareLattice.Reachable (a, y) (a + z, y) := by
     induction z using Int.induction_on with
-    | zero => simpa only [add_zero] using (SimpleGraph.Reachable.refl (a, y) : squareLattice.Reachable _ _)
+    | zero => simp
     | succ n ih =>
       exact ih.trans (show squareLattice.Adj (a + n, y) (a + (n + 1), y) from by
-        rw [squareLattice_adj_iff]
-        omega).reachable
+        grind [squareLattice_adj_iff]).reachable
     | pred n ih =>
       exact ih.trans (show squareLattice.Adj (a + -n, y) (a + (-n - 1), y) from by
-        rw [squareLattice_adj_iff]
-        omega).reachable
+        grind [squareLattice_adj_iff]).reachable
   have hab : a + (b - a) = b := by ring
   simpa only [hab] using haux (b - a)
 
 theorem lattice_vertical_reachable (x a b : ℤ) : squareLattice.Reachable (x, a) (x, b) := by
   have haux (z : ℤ) : squareLattice.Reachable (x, a) (x, a + z) := by
     induction z using Int.induction_on with
-    | zero => simpa only [add_zero] using (SimpleGraph.Reachable.refl (x, a) : squareLattice.Reachable _ _)
+    | zero => simp
     | succ n ih =>
       exact ih.trans (show squareLattice.Adj (x, a + n) (x, a + (n + 1)) from by
-        rw [squareLattice_adj_iff]
-        omega).reachable
+        grind [squareLattice_adj_iff]).reachable
     | pred n ih =>
       exact ih.trans (show squareLattice.Adj (x, a + -n) (x, a + (-n - 1)) from by
-        rw [squareLattice_adj_iff]
-        omega).reachable
+        grind [squareLattice_adj_iff]).reachable
   have hab : a + (b - a) = b := by ring
   simpa only [hab] using haux (b - a)
 
@@ -61,7 +57,10 @@ def latticeWalkEdges {x y : LatticeVertex} (w : squareLattice.Walk x y) : Finset
         (List.mem_toFinset.mp e.property)⟩ : Edge)
       inj' := fun _e _f h => Subtype.ext (congrArg (fun z : Edge => z.val) h) }
 
-theorem mem_latticeWalkEdges {x y : LatticeVertex} (w : squareLattice.Walk x y) (e : Edge) :
+variable {x y : LatticeVertex} {w : squareLattice.Walk x y} (F : Finset Edge)
+    (hF : latticeWalkEdges w ⊆ F) (ω : LatticeConfiguration)
+
+theorem mem_latticeWalkEdges (w : squareLattice.Walk x y) (e : Edge) :
     e ∈ latticeWalkEdges w ↔ e.val ∈ w.edges := by
   rw [latticeWalkEdges, Finset.mem_map]
   constructor
@@ -72,8 +71,8 @@ theorem mem_latticeWalkEdges {x y : LatticeVertex} (w : squareLattice.Walk x y) 
     refine ⟨⟨e.val, by simpa only [List.mem_toFinset] using he⟩, Finset.mem_attach _ _, ?_⟩
     exact Subtype.ext rfl
 
-theorem opening_walk_reachable {x y : LatticeVertex} (w : squareLattice.Walk x y)
-    (F : Finset Edge) (hF : latticeWalkEdges w ⊆ F) (ω : LatticeConfiguration) :
+include hF in
+theorem opening_walk_reachable :
     (rcInfiniteOpenGraph (setEdges F (fun _ => true) ω)).Reachable x y := by
   apply (w.transfer (rcInfiniteOpenGraph (setEdges F (fun _ => true) ω)) _).reachable
   intro e he
@@ -81,9 +80,9 @@ theorem opening_walk_reachable {x y : LatticeVertex} (w : squareLattice.Walk x y
   have hG := w.edges_subset_edgeSet he
   refine ⟨hG, ?_⟩
   have heF : (⟨e, hG⟩ : Edge) ∈ F := hF ((mem_latticeWalkEdges w _).mpr he)
-  simp only [setEdges, heF, ite_true]
+  simp [setEdges, heF, ite_true]
 
-theorem opening_graph_mono (F : Finset Edge) (ω : LatticeConfiguration) :
+theorem opening_graph_mono :
     rcInfiniteOpenGraph ω ≤ rcInfiniteOpenGraph (setEdges F (fun _ => true) ω) := by
   intro x y hxy
   obtain ⟨he, hω⟩ := (rcInfiniteOpenGraph_adj ω x y).mp hxy
@@ -103,13 +102,13 @@ theorem exists_finite_opening_connects (n : ℕ) (xs : Fin n → LatticeVertex) 
       obtain ⟨w⟩ := squareLattice_reachable (xs 0) (xs j)
       exact ⟨w, trivial⟩
     choose w _ using hwalk
-    let F : Finset Edge := Finset.univ.biUnion fun j => latticeWalkEdges (w j)
+    let F := Finset.univ.biUnion fun j => latticeWalkEdges (w j)
     have hsubset (j : Fin (n + 1)) : latticeWalkEdges (w j) ⊆ F := by
       intro e he
       exact Finset.mem_biUnion.mpr ⟨j, Finset.mem_univ j, he⟩
     refine ⟨F, fun ω j k => ?_⟩
-    exact (opening_walk_reachable (w j) F (hsubset j) ω).symm.trans
-      (opening_walk_reachable (w k) F (hsubset k) ω)
+    exact (opening_walk_reachable F (hsubset j) ω).symm.trans
+      (opening_walk_reachable F (hsubset k) ω)
 
 end
 end PottsDiscontinuity.RCInfinite

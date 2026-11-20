@@ -1,6 +1,6 @@
 module
 
-public import PottsDiscontinuity.FK.EndpointLimits
+public import PottsDiscontinuity.FK.BoxCoverage
 public import PottsDiscontinuity.Potts.NestedBoxComparison
 
 /-! Actual free connection data is the increasing limit of finite open paths. -/
@@ -12,9 +12,13 @@ namespace PottsDiscontinuity.Potts
 open Classical Filter
 noncomputable section
 
+variable (H : SimpleGraph (ℤ × ℤ)) (x y : ℤ × ℤ) (n : ℕ)
+include H
+
+include n in
 /-- Retain precisely the open edges whose endpoints belong to the box.
 Exterior vertices remain isolated vertices of the common carrier. -/
-def localFreeGraph (H : SimpleGraph (ℤ × ℤ)) (n : ℕ) : SimpleGraph (ℤ × ℤ) where
+def localFreeGraph : SimpleGraph (ℤ × ℤ) where
   Adj x y := H.Adj x y ∧ x ∈ box n ∧ y ∈ box n
   symm := by
     constructor
@@ -25,20 +29,20 @@ def localFreeGraph (H : SimpleGraph (ℤ × ℤ)) (n : ℕ) : SimpleGraph (ℤ �
     intro x h
     exact H.irrefl h.1
 
-theorem localFreeGraph_le (H : SimpleGraph (ℤ × ℤ)) (n : ℕ) : localFreeGraph H n ≤ H :=
+theorem localFreeGraph_le : localFreeGraph H n ≤ H :=
   fun _ _ h => h.1
 
-theorem localFreeGraph_mono (H : SimpleGraph (ℤ × ℤ)) : Monotone (localFreeGraph H) := by
+theorem localFreeGraph_mono : Monotone (localFreeGraph H) := by
   intro m n hmn x y hxy
   exact ⟨hxy.1, box_mono hmn hxy.2.1, box_mono hmn hxy.2.2⟩
 
-theorem localFreeGraph_reachable_mono (H : SimpleGraph (ℤ × ℤ)) (x y : ℤ × ℤ) :
+theorem localFreeGraph_reachable_mono :
     Monotone (fun n => (localFreeGraph H n).Reachable x y) := by
   intro m n hmn hxy
   exact hxy.mono (localFreeGraph_mono H hmn)
 
 /-- Every actual open path is contained in a finite box. -/
-theorem reachable_iff_exists_localFree (H : SimpleGraph (ℤ × ℤ)) (x y : ℤ × ℤ) :
+theorem reachable_iff_exists_localFree :
     H.Reachable x y ↔ ∃ n, (localFreeGraph H n).Reachable x y := by
   constructor
   · rintro ⟨w⟩
@@ -55,7 +59,7 @@ theorem reachable_iff_exists_localFree (H : SimpleGraph (ℤ × ℤ)) (x y : ℤ
 
 /-- On finitely many observed pairs, all actual connections eventually appear
 simultaneously in the finite-box graph. -/
-theorem finite_free_connections_eventually (H : SimpleGraph (ℤ × ℤ))
+theorem finite_free_connections_eventually
     (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
     ∀ᶠ n : ℕ in atTop, ∀ z ∈ F,
       ((localFreeGraph H n).Reachable z.1 z.2 ↔ H.Reachable z.1 z.2) := by

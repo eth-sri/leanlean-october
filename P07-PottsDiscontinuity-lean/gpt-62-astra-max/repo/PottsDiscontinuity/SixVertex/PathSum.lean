@@ -15,8 +15,10 @@ open Finset Matrix
 
 namespace PottsDiscontinuity.SixVertex
 
+variable {S R : Type*}
+
 /-- Matrix power entries as sums over chains `x₀ = a, x₁, …, x_m` ending in `b`. -/
-theorem pow_succ_apply_chain {S R : Type*} [Fintype S] [DecidableEq S] [CommSemiring R]
+theorem pow_succ_apply_chain [Fintype S] [DecidableEq S] [CommSemiring R]
     (A : Matrix S S R) (m : ℕ) (a b : S) :
     (A ^ (m + 1)) a b = ∑ x : Fin (m + 1) → S,
       if x 0 = a then (∏ j : Fin m, A (x j.castSucc) (x j.succ)) * A (x (Fin.last m)) b else 0 := by
@@ -32,30 +34,19 @@ theorem pow_succ_apply_chain {S R : Type*} [Fintype S] [DecidableEq S] [CommSemi
     rw [← Equiv.sum_comp (M := R) (Fin.snocEquiv fun _ : Fin (m + 2) => S), Fintype.sum_prod_type]
     refine Finset.sum_congr rfl fun c _ => Finset.sum_congr rfl fun x _ => ?_
     have hx : ∀ i : Fin m, (Fin.snoc x c : Fin (m + 2) → S) i.castSucc.succ = x i.succ := by
-      intro i
-      rw [Fin.succ_castSucc, Fin.snoc_castSucc]
-    have h0 : (Fin.snoc x c : Fin (m + 2) → S) 0 = x 0 :=
+      grind [Fin.succ_castSucc, Fin.snoc_castSucc]
+    have h0 :=
       Fin.snoc_castSucc (α := fun _ => S) c x 0
     simp only [Fin.snocEquiv, Equiv.coe_fn_mk, Fin.prod_univ_castSucc, Fin.snoc_castSucc,
       Fin.snoc_last, hx, h0]
-    split_ifs with h
-    · simp [mul_assoc]
-    · simp
+    simp
 
 /-- `tr (A ^ (m + 1))` as a sum over closed chains of length `m + 1`. -/
-theorem trace_pow_succ_eq_sum_chain {S R : Type*} [Fintype S] [DecidableEq S] [CommSemiring R]
+theorem trace_pow_succ_eq_sum_chain [Fintype S] [DecidableEq S] [CommSemiring R]
     (A : Matrix S S R) (m : ℕ) :
     Matrix.trace (A ^ (m + 1)) = ∑ x : Fin (m + 1) → S,
       ∏ j : Fin (m + 1), A (x j) (x (finRotate (m + 1) j)) := by
   unfold Matrix.trace
-  simp only [Matrix.diag_apply, pow_succ_apply_chain]
-  rw [Finset.sum_comm]
-  refine Finset.sum_congr rfl fun x _ => ?_
-  simp only [Finset.sum_ite_eq, mem_univ, ↓reduceIte]
-  rw [Fin.prod_univ_castSucc]
-  congr 1
-  · refine Finset.prod_congr rfl fun j _ => ?_
-    simp [Fin.coeSucc_eq_succ]
-  · simp only [finRotate_last]
+  simp [Matrix.diag_apply, pow_succ_apply_chain, Finset.sum_comm, Finset.sum_ite_eq, mem_univ, Fin.prod_univ_castSucc, Fin.coeSucc_eq_succ, finRotate_last]
 
 end PottsDiscontinuity.SixVertex

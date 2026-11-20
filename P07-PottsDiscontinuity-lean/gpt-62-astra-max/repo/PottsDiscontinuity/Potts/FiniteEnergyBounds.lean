@@ -20,14 +20,16 @@ noncomputable section
 
 variable {V : Type*} [Finite V] {G : SimpleGraph V}
 
+variable (q : FK.Parameters) (ξ : FK.BoundaryCondition V) (F : Finset G.edgeSet)
+include F
+
 /-- Configurations in which every edge in `F` is closed. -/
-def allClosedEdges (F : Finset G.edgeSet) : Set (FK.Configuration G) :=
+def allClosedEdges : Set (FK.Configuration G) :=
   {A | Disjoint F A}
 
 /-- In any finite FK measure, each prescribed finite set of edges is closed
 with probability at least `(1-p)` to the power of its cardinality. -/
-theorem measure_allClosedEdges_lower_bound (q : FK.Parameters)
-    (ξ : FK.BoundaryCondition V) (F : Finset G.edgeSet) :
+theorem measure_allClosedEdges_lower_bound :
     (1 - FK.edgeParameter q) ^ F.card ≤
       (FK.measure G q ξ (allClosedEdges F)).toReal := by
   classical
@@ -43,14 +45,12 @@ theorem measure_allClosedEdges_lower_bound (q : FK.Parameters)
         exact ⟨u, v, G.mem_edgeSet.mp hz, rfl⟩
       obtain ⟨u, v, huv, hev⟩ := hrepr e.1 e.2
       have heq : e = ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ := by
-        apply Subtype.ext
-        exact hev
+        grind
       subst e
       have hstable : ∀ A : FK.Configuration G,
           A ∈ allClosedEdges F ↔
             A.erase ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ ∈ allClosedEdges F := by
         intro A
-        change Disjoint F A ↔ Disjoint F (A.erase ⟨s(u, v), G.mem_edgeSet.mpr huv⟩)
         constructor
         · intro h
           apply Finset.disjoint_left.mpr
@@ -60,12 +60,9 @@ theorem measure_allClosedEdges_lower_bound (q : FK.Parameters)
           apply Finset.disjoint_left.mpr
           intro a haF haA
           have hne : a ≠ (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) := by
-            intro hEq
-            subst a
-            exact he haF
+            grind
           exact (Finset.disjoint_left.mp h) haF (Finset.mem_erase.mpr ⟨hne, haA⟩)
-      have hFE := FK.configurationProbability_edge_finite_energy_closed q ξ
-        (allClosedEdges F) huv hstable
+      have hFE := FK.configurationProbability_edge_finite_energy_closed q ξ huv hstable
       have hEvent : allClosedEdges F ∩
           {A | (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∉ A} =
             allClosedEdges (insert ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ F) := by
@@ -73,28 +70,14 @@ theorem measure_allClosedEdges_lower_bound (q : FK.Parameters)
         change (Disjoint F A ∧
           (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∉ A) ↔
             Disjoint (insert ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ F) A
-        constructor
-        · rintro ⟨hFA, heA⟩
-          apply Finset.disjoint_left.mpr
-          intro a ha aA
-          rcases Finset.mem_insert.mp ha with hae | haF
-          · exact heA (hae ▸ aA)
-          · exact (Finset.disjoint_left.mp hFA) haF aA
-        · intro h
-          constructor
-          · apply Finset.disjoint_left.mpr
-            intro a haF aA
-            exact (Finset.disjoint_left.mp h) (Finset.mem_insert_of_mem haF) aA
-          · intro heA
-            exact (Finset.disjoint_left.mp h) (Finset.mem_insert_self _ _) heA
+        grind
       rw [hEvent] at hFE
-      have hp : 0 ≤ 1 - FK.edgeParameter q :=
+      have hp :=
         (FK.one_sub_edgeParameter_pos q).le
       have hpow : (1 - FK.edgeParameter q) ^ (insert ⟨s(u, v),
           G.mem_edgeSet.mpr huv⟩ F).card =
             (1 - FK.edgeParameter q) * (1 - FK.edgeParameter q) ^ F.card := by
-        rw [Finset.card_insert_of_notMem he, pow_succ]
-        ring
+        grind
       rw [hpow]
       exact (mul_le_mul_of_nonneg_left ih hp).trans hFE.1
 

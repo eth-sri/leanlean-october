@@ -2,7 +2,7 @@ module
 
 public import Mathlib
 public import PottsDiscontinuity.Duality.FiniteDuality
-public import PottsDiscontinuity.TorusLoops.LoopDensityLogBounds
+public import PottsDiscontinuity.TorusLoops.WindingLoopCount
 public import PottsDiscontinuity.TorusRC.CorrelationRate
 public import PottsDiscontinuity.TorusRC.OuterLowerLimit
 
@@ -29,24 +29,28 @@ namespace PottsDiscontinuity.RCMProof
 open PottsDiscontinuity
 open Torus
 
-noncomputable def torusLoopWeightFactor {N M : ℕ} (hN : Even N) (hM : Even M)
-    (q : Set.Ici (1 : ℝ)) (hNpos : 0 < N) (hMpos : 0 < M)
-    (A : Torus.RCConfig N M) : ℝ :=
-  Real.rpow (2 / Real.sqrt q.val)
-      (TorusLoops.windingLoopCount hN hM ⟨0, hNpos⟩ ⟨0, hMpos⟩ A : ℝ) *
-    Real.rpow q.val (-(Torus.rcNetIndicator hN hM A : ℝ))
+section
+variable {N M : ℕ} (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ)) (hNpos : 0 < N)
+    (hMpos : 0 < M) (A : Torus.RCConfig N M)
+include q
 
-noncomputable def torusWeightedRCMass {N M : ℕ} (hN : Even N) (hM : Even M)
-    (q : Set.Ici (1 : ℝ)) (hNpos : 0 < N) (hMpos : 0 < M)
-    (A : Torus.RCConfig N M) : ℝ :=
+include hN hM hNpos hMpos A in
+noncomputable def torusLoopWeightFactor : ℝ :=
+  (2 / Real.sqrt q.val) ^ TorusLoops.windingLoopCount hN hM ⟨0, hNpos⟩ ⟨0, hMpos⟩ A /
+    q.val ^ rcNetIndicator hN hM A
+
+include hN hM hNpos hMpos A in
+noncomputable def torusWeightedRCMass : ℝ :=
   Torus.torusRCWeight hN hM q A * torusLoopWeightFactor hN hM q hNpos hMpos A
 
-noncomputable def torusCorrespondenceScale (q : Set.Ici (1 : ℝ)) (N M : ℕ) : ℝ :=
+noncomputable def torusCorrespondenceScale (N M : ℕ) : ℝ :=
   Real.rpow q.val ((N * M : ℝ) / 4) *
     Real.rpow (1 + Real.sqrt q.val) (-(N * M : ℝ))
 
-noncomputable def criticalSixVertexParameter (q : Set.Ici (1 : ℝ)) : ℝ :=
+noncomputable def criticalSixVertexParameter : ℝ :=
   Real.sqrt (2 + Real.sqrt q.val)
+
+end
 
 /- Provider statement for Corollary 3.13(i) of the torus correspondence (`Torus/`), with the
 project's fixed homological ell₀ and net indicator. Proved as `contract_cor313_i_proved`. -/
@@ -94,8 +98,6 @@ def contract_eq315 : Prop :=
 (3.19) in `TorusRC/CrossingContracts.lean`. It is proved by `TorusCrossing.h319_proved`
 (`TorusCrossing/Final.lean`); it is kept separate from the implication-shaped exact eq315
 statement above. -/
-def contract_h319 : Prop :=
-  ∀ (q : Set.Ici (1 : ℝ)), TorusRC.h319 q
 
 /- Provider statement for (3.16), proved as `TorusExploration.contract_eq316` in
 `TorusExploration/Contract.lean`, with the same free-limit rate convention as (3.15). -/
@@ -114,31 +116,5 @@ def contract_eq316 : Prop :=
         (fun n : ℕ => Filter.limsup
           (fun m : ℕ => TorusRC.positiveEvenVerticalTailRateE q r n m) Filter.atTop)
         Filter.atTop ≤ (-((r - 1 : ℕ) : ℝ) * ξinv : ℝ)
-
-/- Corrected provider statement for Lemma 3.14, copied from
-`TorusLoops.Lemma314Corrected.lemma_3_14_corrected_limsup`. The input and
-conclusion are kept in the provider's square-lattice free-box and limsup forms. -/
-def corrected_lemma314 : Prop :=
-  ∀ (q : Set.Ici (1 : ℝ)),
-    Filter.Tendsto
-      (fun n => (((Classical.choose (FK.freeBoxLimit_existsUnique
-        (TorusLoops.rectangleFKParameters q)))
-          (Zhang.boundaryConnectionEvent n) : NNReal) : ℝ))
-      Filter.atTop (nhds 0) →
-    ∀ ε : ℝ, 0 < ε → ∃ N₀ : {k : ℕ // 2 ≤ k}, ∀ (N : ℕ)
-      (hN : Even N) (hN₀ : N₀.val ≤ N),
-      Filter.limsup
-        (fun n => abs (TorusLoops.windingLoopDensityLogRate hN (by omega) q n))
-        Filter.atTop ≤ ε
-
-/- The vertical loop structure when `U = 1` (exactly two loops with nonzero vertical
-winding, with opposite unit windings) is not restated here: it is proved as
-`TorusTopology.verticalWindingLoops_card_le_two_of_U_eq_one` and
-`TorusTopology.U_one_vertical_loop_structure` and used by `Torus/Corollary313.lean`. It is a
-loop-structure input, not any of the rate or theorem conclusions of the Theorem 1.2 assembly. -/
-
-/- Theorem 3.1's general zero-root branch from BetheAnsatz/ZeroRootTheorem.lean
-(the Bethe ansatz), in the source's full transfer-matrix coordinates. The provider theorem
-also requires the explicit anisotropy condition `2 < c`. -/
 
 end PottsDiscontinuity.RCMProof

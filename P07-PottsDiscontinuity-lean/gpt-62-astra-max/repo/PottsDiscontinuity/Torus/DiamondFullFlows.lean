@@ -20,13 +20,13 @@ variable {N M : ℕ}
 
 theorem ribbonHalfFlow_raw (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (f : OpenDiamondEdge A → ℚ) (d : DirectedDart (checkerArrows N M)) :
-    ribbonHalfFlow hN hM A f d =
-      if ribbonEndSide d.val.2 then -extendDiamondChain A f d.val.1
-        else extendDiamondChain A f d.val.1 := rfl
+    ribbonHalfFlow hN hM f d =
+      if ribbonEndSide d.val.2 then -extendDiamondChain f d.val.1
+        else extendDiamondChain f d.val.1 := rfl
 
 theorem sum_ribbonHalfFlow_corners_eq_neg_boundary (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (f : OpenDiamondEdge A → ℚ) (v : FaceVertex N M true) :
-    (∑ p : Port, ribbonHalfFlow hN hM A f (ribbonCornerEquiv hN hM (v, p))) =
+    {A : RCConfig N M} (f : OpenDiamondEdge A → ℚ) (v : FaceVertex N M true) :
+    (∑ p : Port, ribbonHalfFlow hN hM f (ribbonCornerEquiv hN hM (v, p))) =
       -diamondBoundary hN hM A f v := by
   classical
   have he := sum_ribbonHalfFlow_pairing hN hM A f (fun w => if v = w then 1 else 0)
@@ -41,24 +41,28 @@ theorem diamondCycleSpace_mem_iff_corners (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (f : OpenDiamondEdge A → ℚ) :
     f ∈ diamondCycleSpace hN hM A ↔
       ∀ v : FaceVertex N M true,
-        (∑ p : Port, ribbonHalfFlow hN hM A f (ribbonCornerEquiv hN hM (v, p))) = 0 := by
+        (∑ p : Port, ribbonHalfFlow hN hM f (ribbonCornerEquiv hN hM (v, p))) = 0 := by
   constructor
   · intro hf v
-    exact sum_ribbonHalfFlow_corners hN hM A ⟨f, hf⟩ v
+    exact sum_ribbonHalfFlow_corners ⟨f, hf⟩ v
   · intro h
-    change diamondBoundary hN hM A f = 0
     funext v
-    have he := sum_ribbonHalfFlow_corners_eq_neg_boundary hN hM A f v
+    have he := sum_ribbonHalfFlow_corners_eq_neg_boundary hN hM f v
     rw [h v] at he
     simp only [Pi.zero_apply]
     linarith
 
+section
+variable (N M : ℕ)
+
 /-- The indexed flow pointing downward on every oriented primal edge. -/
-def verticalDiamondFlow (N M : ℕ) : OpenDiamondEdge (openRCConfig N M) → ℚ := fun _ => 1
+def verticalDiamondFlow : OpenDiamondEdge (openRCConfig N M) → ℚ := fun _ => 1
 
 /-- The checker-sign indexed flow, with pure horizontal total displacement. -/
-def horizontalDiamondFlow (N M : ℕ) : OpenDiamondEdge (openRCConfig N M) → ℚ :=
+def horizontalDiamondFlow : OpenDiamondEdge (openRCConfig N M) → ℚ :=
   fun e => if checker e.val then 1 else -1
+
+end
 
 def verticalCornerFlow : Port → ℚ
   | .west | .south => -1
@@ -70,7 +74,7 @@ def horizontalCornerFlow : Port → ℚ
 
 theorem verticalDiamondFlow_corner (hN : Even N) (hM : Even M)
     (v : FaceVertex N M true) (p : Port) :
-    ribbonHalfFlow hN hM (openRCConfig N M) (verticalDiamondFlow N M)
+    ribbonHalfFlow hN hM (verticalDiamondFlow N M)
       (ribbonCornerEquiv hN hM (v, p)) = verticalCornerFlow p := by
   cases p <;> simp only [ribbonHalfFlow_raw, ribbonCornerEquiv_val, faceCorner,
     ribbonEndSide, extendDiamondChain, openRCConfig, verticalDiamondFlow,
@@ -79,7 +83,7 @@ theorem verticalDiamondFlow_corner (hN : Even N) (hM : Even M)
 
 theorem horizontalDiamondFlow_corner (hN : Even N) (hM : Even M)
     (v : FaceVertex N M true) (p : Port) :
-    ribbonHalfFlow hN hM (openRCConfig N M) (horizontalDiamondFlow N M)
+    ribbonHalfFlow hN hM (horizontalDiamondFlow N M)
       (ribbonCornerEquiv hN hM (v, p)) = horizontalCornerFlow p := by
   rcases v with ⟨⟨i, j⟩, hv⟩
   cases p <;> simp only [ribbonHalfFlow_raw, ribbonCornerEquiv_val, faceCorner,
@@ -89,23 +93,19 @@ theorem horizontalDiamondFlow_corner (hN : Even N) (hM : Even M)
 
 theorem verticalDiamondFlow_mem (hN : Even N) (hM : Even M) :
     verticalDiamondFlow N M ∈ diamondCycleSpace hN hM (openRCConfig N M) := by
-  rw [diamondCycleSpace_mem_iff_corners]
-  intro v
-  simp only [verticalDiamondFlow_corner, sum_port, verticalCornerFlow]
-  norm_num
+  simp [diamondCycleSpace_mem_iff_corners, verticalDiamondFlow_corner, sum_port, verticalCornerFlow]
 
 theorem horizontalDiamondFlow_mem (hN : Even N) (hM : Even M) :
     horizontalDiamondFlow N M ∈ diamondCycleSpace hN hM (openRCConfig N M) := by
-  rw [diamondCycleSpace_mem_iff_corners]
-  intro v
-  simp only [horizontalDiamondFlow_corner, sum_port, horizontalCornerFlow]
-  norm_num
+  simp [diamondCycleSpace_mem_iff_corners, horizontalDiamondFlow_corner, sum_port, horizontalCornerFlow]
 
-def verticalDiamondCycle (hN : Even N) (hM : Even M) :
+variable (hN : Even N) (hM : Even M)
+
+def verticalDiamondCycle :
     diamondCycleSpace hN hM (openRCConfig N M) :=
   ⟨verticalDiamondFlow N M, verticalDiamondFlow_mem hN hM⟩
 
-def horizontalDiamondCycle (hN : Even N) (hM : Even M) :
+def horizontalDiamondCycle :
     diamondCycleSpace hN hM (openRCConfig N M) :=
   ⟨horizontalDiamondFlow N M, horizontalDiamondFlow_mem hN hM⟩
 

@@ -1,7 +1,6 @@
 module
 
 public import Mathlib.Analysis.Convex.Segment
-public import FixedPointTheorems.brouwer
 public import Mathlib
 
 /-! # Straight-segment interpolation of lifted walks -/
@@ -63,7 +62,7 @@ theorem polygonWalkPath_mem_Icc {V : Type*} {G : SimpleGraph V}
 
 /-- An integer point on a unit diagonal segment must be an endpoint. -/
 theorem integer_mem_diagonal_segment {p q z : ℤ × ℤ}
-    (hx : |p.1-q.1| = 1) (_hy : |p.2-q.2| = 1)
+    (hx : |p.1-q.1| = 1)
     (hz : cellEmbed z ∈ segment ℝ (cellEmbed p) (cellEmbed q)) : z = p ∨ z = q := by
   rw [segment_eq_image] at hz
   obtain ⟨t,⟨ht0,ht1⟩,htz⟩ := hz
@@ -77,11 +76,11 @@ theorem integer_mem_diagonal_segment {p q z : ℤ × ℤ}
   have hqmax : (0:ℝ) ≤ (max p.1 q.1:ℤ)-(q.1:ℝ) := by exact_mod_cast sub_nonneg.mpr (le_max_right _ _)
   have hzlo : (min p.1 q.1:ℤ) ≤ z.1 := by
     have h : ((min p.1 q.1:ℤ):ℝ) ≤ z.1 := by
-      nlinarith [mul_nonneg (sub_nonneg.mpr ht1) hpmin,mul_nonneg ht0 hqmin]
+      nlinarith
     exact_mod_cast h
   have hzhi : z.1 ≤ (max p.1 q.1:ℤ) := by
     have h : (z.1:ℝ) ≤ (max p.1 q.1:ℤ) := by
-      nlinarith [mul_nonneg (sub_nonneg.mpr ht1) hpmax,mul_nonneg ht0 hqmax]
+      nlinarith
     exact_mod_cast h
   have hcoord : z.1 = p.1 ∨ z.1 = q.1 := by
     have h := abs_le.mp (le_of_eq hx)
@@ -89,7 +88,7 @@ theorem integer_mem_diagonal_segment {p q z : ℤ × ℤ}
   rcases hcoord with heq | heq
   · have heqR : (z.1:ℝ) = p.1 := by exact_mod_cast heq
     have hprod : t*((q.1:ℝ)-p.1) = 0 := by nlinarith
-    have ht : t = 0 := (mul_eq_zero.mp hprod).resolve_right hdx
+    have ht := (mul_eq_zero.mp hprod).resolve_right hdx
     left
     apply cellEmbed_injective
     simpa [ht] using htz.symm

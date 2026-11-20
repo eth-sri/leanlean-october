@@ -17,8 +17,8 @@ variable {X : Type*} [MeasurableSpace X]
  event limit. This applies to the four-corner conditioning with `δ = (1-p)^4`. -/
 theorem decreasing_event_limit_of_density
     (μs νs : ℕ → ProbabilityMeasure X) (μ : ProbabilityMeasure X)
-    (E : ℕ → Set X) (hE : Antitone E) (hmeas : ∀ n, MeasurableSet (E n))
-    (δ : ℝ) (hδ : 0 < δ)
+    {E : ℕ → Set X} (hE : Antitone E) (hmeas : ∀ n, MeasurableSet (E n))
+    {δ : ℝ} (hδ : 0 < δ)
     (hdensity : ∀ᶠ n : ℕ in atTop, ∀ S : Set X, MeasurableSet S →
       δ * (νs n).toMeasure.real S ≤ (μs n).toMeasure.real S)
     (hμlocal : ∀ m, Tendsto (fun n => (μs n).toMeasure.real (E m)) atTop (𝓝 (μ.toMeasure.real (E m))))
@@ -37,14 +37,13 @@ theorem decreasing_event_limit_of_density
     have hd := hn (E m \ E n) ((hmeas m).diff (hmeas n))
     rw [measureReal_sdiff (hE hmn) (hmeas n),
       measureReal_sdiff (hE hmn) (hmeas n)] at hd
-    have hle : (νs n).toMeasure.real (E m) - (νs n).toMeasure.real (E n) ≤
-        ((μs n).toMeasure.real (E m) - (μs n).toMeasure.real (E n)) / δ :=
+    have hle :=
       (le_div_iff₀ hδ).mpr (by simpa only [mul_comm] using hd)
     linarith
   have halimit : Tendsto (fun m => μ.toMeasure.real (E m) - (μ.toMeasure.real (E m) - L) / δ)
       atTop (𝓝 L) := by
     have ht := hcont.sub ((hcont.sub (tendsto_const_nhds (x := L))).div_const δ)
-    simpa only [sub_self, zero_div, sub_zero] using ht
+    grind
   apply tendsto_order.mpr
   constructor
   · intro a ha

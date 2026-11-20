@@ -40,7 +40,7 @@ theorem componentPotentialEvaluation_range_eq_top :
 omit [Fintype V] in
 theorem normalizedComponentPotentials_finrank_add_one [Finite V] :
     Module.finrank ℝ (normalizedComponentPotentials G ξ A v₀) + 1 =
-      componentCount G ξ A := by
+      componentCount ξ A := by
   classical
   have hrank := LinearMap.finrank_range_add_finrank_ker
     (componentPotentialEvaluation G ξ A v₀)
@@ -48,11 +48,7 @@ theorem normalizedComponentPotentials_finrank_add_one [Finite V] :
   rw [finrank_top, Module.finrank_self ℝ] at hrank
   rw [componentConstantFunctions_finrank] at hrank
   change Module.finrank ℝ (LinearMap.ker (componentPotentialEvaluation G ξ A v₀)) + 1 =
-    componentCount G ξ A
-  calc
-    Module.finrank ℝ (LinearMap.ker (componentPotentialEvaluation G ξ A v₀)) + 1 =
-        1 + Module.finrank ℝ (LinearMap.ker (componentPotentialEvaluation G ξ A v₀)) :=
-      Nat.add_comm _ _
-    _ = componentCount G ξ A := hrank
+    componentCount ξ A
+  grind
 
 end PottsDiscontinuity.FK

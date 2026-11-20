@@ -22,7 +22,6 @@ lemma fk_measureReal_eq_expectation (θ : Parameters) (ξ : BoundaryCondition V)
     (E : Set (Configuration G)) :
     (measure G θ ξ E).toReal = expectation (law G θ ξ) (E.indicator fun _ => (1 : ℝ)) := by
   rw [measure_toReal_eq_indicator_sum]
-  unfold expectation
   apply Finset.sum_congr rfl
   intro A _
   rw [law_apply,ENNReal.toReal_ofReal (configurationProbability_pos G θ ξ A).le]
@@ -34,8 +33,8 @@ def embeddedBoxVertex (f : V ↪ LatticeVertex) (n : ℕ)
   inj' := fun _ _ hv => f.injective (congrArg Subtype.val hv)
 
 omit [Finite V] in
-lemma embeddedBox_graph_le (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice)
-    (n : ℕ) (h : ∀ v, f v ∈ latticeBox (0,0) n) :
+lemma embeddedBox_graph_le {f : V ↪ LatticeVertex} (hG : G.map f ≤ squareLattice)
+    {n : ℕ} (h : ∀ v, f v ∈ latticeBox (0,0) n) :
     G.map (embeddedBoxVertex f n h) ≤ boxGraph (0,0) n := by
   intro a b hab
   obtain ⟨u,v,huv,rfl,rfl⟩ := (SimpleGraph.map_adj _ _ _ _).1 hab
@@ -46,32 +45,33 @@ lemma embeddedBox_edge_commute (f : V ↪ LatticeVertex) (hG : G.map f ≤ squar
     (n : ℕ) (h : ∀ v, f v ∈ latticeBox (0,0) n) (e : G.edgeSet) :
     boxEdgeEmbedding (0,0) n
       (embeddedEdgeEmbedding G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
-        (embeddedBox_graph_le G f hG n h) e) = embeddedEdgeEmbedding G squareLattice f hG e := by
+        (embeddedBox_graph_le G hG h) e) = embeddedEdgeEmbedding G squareLattice f hG e := by
   apply Subtype.ext
   change Sym2.map Subtype.val (Sym2.map (embeddedBoxVertex f n h) e.val) = Sym2.map f e.val
   rw [Sym2.map_map]
   rfl
 
+variable (θ : Parameters) (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice) (n : ℕ)
+    (h : ∀ v, f v ∈ latticeBox (0,0) n) (E : Set (Configuration G))
+include h
+
 /-- Reading a configuration from a containing box supplies a witness of the
 actual increasing cylinder event in its literal closed lattice extension. -/
-lemma embeddedBox_mem_cylinder (f : V ↪ LatticeVertex) (hG : G.map f ≤ squareLattice)
-    (n : ℕ) (h : ∀ v, f v ∈ latticeBox (0,0) n) (E : Set (Configuration G))
+lemma embeddedBox_mem_cylinder
     (A : Configuration (boxGraph (0,0) n))
     (hA : embeddedConfigurationRestriction G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
-      (embeddedBox_graph_le G f hG n h) A ∈ E) :
+      (embeddedBox_graph_le G hG h) A ∈ E) :
     boxConfiguration (0,0) n A ∈ embeddedCylinderEvent G f hG E := by
   apply (mem_embeddedCylinderEvent G f hG E _).2
   refine ⟨_,hA,?_⟩
   intro e he
   obtain ⟨d,hd,rfl⟩ := Finset.mem_map.1 he
   rw [← embeddedBox_edge_commute G f hG n h d,boxConfiguration_at]
-  exact decide_eq_true ((mem_embeddedConfigurationRestriction _ _ _ _ _ _).1 hd)
+  simp_all
 
 /-- A finite embedded free law is dominated by the free containing box on its
 original increasing events. -/
-theorem finiteFree_event_le_box (θ : Parameters) (f : V ↪ LatticeVertex)
-    (hG : G.map f ≤ squareLattice) (n : ℕ) (h : ∀ v, f v ∈ latticeBox (0,0) n)
-    (E : Set (Configuration G)) (hE : IsUpperSet E) :
+theorem finiteFree_event_le_box (hE : IsUpperSet E) :
     (measure G θ (BoundaryCondition.free ∅) E).toReal ≤
       (boxProbabilityMeasure θ (0,0) n : Measure LatticeConfiguration).real
         (embeddedCylinderEvent G f hG E) := by
@@ -84,17 +84,17 @@ theorem finiteFree_event_le_box (θ : Parameters) (f : V ↪ LatticeVertex)
       simp [I,ha,hb]
     · simpa [I,ha] using hI0 B
   have hc := embedded_free_expectation_le G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
-    (embeddedBox_graph_le G f hG n h) θ ∅ ∅ I hI0 hI
+    (embeddedBox_graph_le G (f := f) hG (n := n) h) θ ∅ ∅ (F := I) hI0 hI
   rw [fk_measureReal_eq_expectation] 
   refine hc.trans ?_
   have hm := expectation_mono (law (boxGraph (0,0) n) θ (BoundaryCondition.free ∅))
-    (fun A => I (embeddedConfigurationRestriction G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
-      (embeddedBox_graph_le G f hG n h) A))
-    (fun A => (embeddedCylinderEvent G f hG E).indicator (fun _ => (1 : ℝ))
-      (boxConfiguration (0,0) n A)) (by
+    (f := (fun A => I (embeddedConfigurationRestriction G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
+      (embeddedBox_graph_le G hG h) A)))
+    (g := (fun A => (embeddedCylinderEvent G f hG E).indicator (fun _ => (1 : ℝ))
+      (boxConfiguration (0,0) n A))) (by
         intro A
         by_cases ha : embeddedConfigurationRestriction G (boxGraph (0,0) n) (embeddedBoxVertex f n h)
-          (embeddedBox_graph_le G f hG n h) A ∈ E
+          (embeddedBox_graph_le G (f := f) hG (n := n) h) A ∈ E
         · have hb := embeddedBox_mem_cylinder G f hG n h E A ha
           simp [I,ha,hb]
         · simp only [I,Set.indicator_of_notMem ha]

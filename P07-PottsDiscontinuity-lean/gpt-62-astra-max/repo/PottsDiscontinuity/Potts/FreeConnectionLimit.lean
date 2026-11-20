@@ -31,7 +31,7 @@ theorem free_connection_moments_tendsto (θ : FK.Parameters)
     rw [freeDataEvent_eq_observation]
     simp only [Measure.real]
     rw [closedBoxProbabilityMeasure_observation θ (Nat.le_refl n), nestedBoxEvent_refl]
-    exact free_observation_le_limit θ μ hμ n (freeDataFiniteEvent n F) (freeDataFiniteEvent_upper n F)
+    exact free_observation_le_limit θ μ hμ n (freeDataFiniteEvent_upper n F)
 
 end
 end PottsDiscontinuity.Potts

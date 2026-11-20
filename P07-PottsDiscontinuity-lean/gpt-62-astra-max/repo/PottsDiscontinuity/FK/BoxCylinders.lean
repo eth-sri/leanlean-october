@@ -28,17 +28,21 @@ def allOpen (F : Finset squareLattice.edgeSet) : Set LatticeConfiguration :=
   {ω | ∀ e ∈ F, ω e = true}
 
 @[simp] theorem allOpen_empty : allOpen ∅ = Set.univ := by
-  ext ω
   simp [allOpen]
 
-@[simp] theorem allOpen_insert (e : squareLattice.edgeSet) (F : Finset squareLattice.edgeSet) :
+variable (e : squareLattice.edgeSet) {ι : Type*} {l : Filter ι}
+    {μs : ι → ProbabilityMeasure LatticeConfiguration}
+    {μ : ProbabilityMeasure LatticeConfiguration} (hμ : Tendsto μs l (𝓝 μ))
+    (F : Finset squareLattice.edgeSet)
+
+@[simp] theorem allOpen_insert :
     allOpen (insert e F) = {ω | ω e = true} ∩ allOpen F := by
   classical
   ext ω
   simp [allOpen]
 
 /-- These actual finite-edge events are simultaneously open and closed. -/
-theorem allOpen_isClopen (F : Finset squareLattice.edgeSet) : IsClopen (allOpen F) := by
+theorem allOpen_isClopen : IsClopen (allOpen F) := by
   classical
   induction F using Finset.induction_on with
   | empty => rw [allOpen_empty]; exact isClopen_univ
@@ -46,12 +50,10 @@ theorem allOpen_isClopen (F : Finset squareLattice.edgeSet) : IsClopen (allOpen 
     rw [allOpen_insert]
     exact ((isClopen_discrete ({true} : Set Bool)).preimage (continuous_apply e)).inter ih
 
+include hμ in
 /-- A weakly convergent family has convergent probabilities for each genuine
 finite all-open cylinder, since its boundary is empty. -/
-theorem tendsto_allOpen_of_weak {ι : Type*} {l : Filter ι}
-    {μs : ι → ProbabilityMeasure LatticeConfiguration}
-    {μ : ProbabilityMeasure LatticeConfiguration} (hμ : Tendsto μs l (𝓝 μ))
-    (F : Finset squareLattice.edgeSet) :
+theorem tendsto_allOpen_of_weak :
     Tendsto (fun i => μs i (allOpen F)) l (𝓝 (μ (allOpen F))) :=
   ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hμ (allOpen_isClopen F)
 
@@ -60,10 +62,12 @@ end LatticeConfiguration
 
 attribute [local instance] configurationMeasurableSpace
 
+variable (q : Parameters) (c : LatticeVertex) (r : ℕ) (A : Configuration (boxGraph c r))
+    (F : Finset squareLattice.edgeSet)
+
 /-- Restricting a finite all-open cylinder to a box configuration tests literal
 inclusion of the selected original edges in its embedded open-edge set. -/
-theorem boxConfiguration_mem_allOpen (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (F : Finset squareLattice.edgeSet) :
+theorem boxConfiguration_mem_allOpen :
     boxConfiguration c r A ∈ LatticeConfiguration.allOpen F ↔
       F ⊆ A.map (boxEdgeEmbedding c r) := by
   simp only [LatticeConfiguration.allOpen, Set.mem_ofPred_eq,
@@ -71,8 +75,7 @@ theorem boxConfiguration_mem_allOpen (c : LatticeVertex) (r : ℕ)
 
 /-- The probability on the common carrier equals the original normalized
 finite FK measure of the exact all-open event. -/
-theorem boxProbabilityMeasure_allOpen (q : Parameters) (c : LatticeVertex) (r : ℕ)
-    (F : Finset squareLattice.edgeSet) :
+theorem boxProbabilityMeasure_allOpen :
     (boxProbabilityMeasure q c r : Measure LatticeConfiguration) (LatticeConfiguration.allOpen F) =
       measure (boxGraph c r) q (BoundaryCondition.free ∅)
         {A | F ⊆ A.map (boxEdgeEmbedding c r)} := by

@@ -16,16 +16,16 @@ open Torus CorrLength TorusTopology SixVertex
 
 variable {N M : ℕ}
 
-private theorem stripWalk_horizontal (hNp : 0 < N) (hMp : 0 < M)
-    (A : RCConfig N M) (a b : ℤ) {u v : RotatedVertex}
+variable (hM : Even M) (hNp : 0 < N) (hMp : 0 < M) (A : RCConfig N M) (K n : ℕ)
+    (hmargin : K+1 ≤ 3*n)
+
+private theorem stripWalk_horizontal
+    {A : RCConfig N M} (a b : ℤ) {u v : RotatedVertex}
     (p : (liftedStripGraph hNp hMp A a b).Walk u v) :
     (a ≤ u.val.1 ∧ u.val.1 ≤ b) → ∀ z ∈ p.support, a ≤ z.val.1 ∧ z.val.1 ≤ b := by
   induction p with
   | nil =>
-    intro hu z hz
-    simp only [SimpleGraph.Walk.support_nil,List.mem_singleton] at hz
-    subst z
-    exact hu
+    simp
   | @cons u v z hadj p ih =>
     intro hu w hw
     simp only [SimpleGraph.Walk.support_cons,List.mem_cons] at hw
@@ -33,16 +33,15 @@ private theorem stripWalk_horizontal (hNp : 0 < N) (hMp : 0 < M)
     · exact hu
     · exact ih hadj.2.2.2 w hw
 
+include hmargin in
 /-- A vertical primal period in A, shifted into the odd cells of its
 complementary translated dual, blocks every left-to-right crossing. The
 one-unit horizontal margin accounts for the exact dual translation. -/
-theorem winding_blocks_dual_strip_crossing (hM : Even M)
-    (hNp : 0 < N) (hMp : 0 < M) (A : RCConfig N M)
-    (K n : ℕ) (hmargin : K+1 ≤ 3*n) (x : ℤ) (hx : Even x)
+theorem winding_blocks_dual_strip_crossing (x : ℤ) (hx : Even x)
     (hx0 : 0 ≤ x) (hxK : x ≤ K)
     (hpath : liftedBoundedConnection hNp hMp A 0 K 0 M
-      (liftedColumnSite x 0 hx ⟨0,rfl⟩)
-      (liftedColumnSite x M hx (by exact_mod_cast hM))) :
+      (liftedColumnSite (x := x) (t := 0) hx ⟨0,rfl⟩)
+      (liftedColumnSite (x := x) (t := M) hx (by exact_mod_cast hM))) :
     ¬ torusRCLeftStripCrossing hNp hMp (translatedDualConfig A) n := by
   rintro ⟨u,v,hu,hv,⟨p⟩⟩
   obtain ⟨L,hL⟩ := walk_between_periods hMp p
@@ -52,14 +51,14 @@ theorem winding_blocks_dual_strip_crossing (hM : Even M)
   rw [hupper,hlower] at hrepeat
   obtain ⟨q,hq⟩ := hrepeat
   let f : RotatedVertex → ℝ × ℝ := fun z => cellEmbed z.val
-  let g : RotatedVertex → ℝ × ℝ := fun z => cellEmbed (dualShiftCell z)
+  let g := fun z => cellEmbed (dualShiftCell z)
   let P := polygonWalkPath f p
   let Q := polygonWalkPath g q
   let a : ℝ × ℝ := (0,(-(M:ℤ)*L:ℤ))
   let b : ℝ × ℝ := (((3*n:ℕ):ℝ), (((M:ℤ)*(L:ℤ):ℤ):ℝ))
-  have hpX := stripWalk_horizontal hNp hMp (translatedDualConfig A) 0 ((3*n:ℕ):ℤ) p
+  have hpX := stripWalk_horizontal hNp hMp 0 ((3*n:ℕ):ℤ) p
     ⟨by omega,by omega⟩
-  have hqX := stripWalk_horizontal hNp hMp A 0 K q ⟨hx0,hxK⟩
+  have hqX := stripWalk_horizontal hNp hMp 0 K q ⟨hx0,hxK⟩
   have hPbox : ∀ t, a.1 ≤ (P t).1 ∧ (P t).1 ≤ b.1 ∧
       a.2 ≤ (P t).2 ∧ (P t).2 ≤ b.2 := by
     intro t
@@ -100,29 +99,23 @@ theorem winding_blocks_dual_strip_crossing (hM : Even M)
     exact_mod_cast hv
   have hQbottom : (Q 0).2 = a.2 := by
     calc
-      (Q 0).2 = (g (periodColumnSite hM x hx (-(L:ℤ)))).2 := congrArg Prod.snd Q.source'
+      (Q 0).2 = (g (periodColumnSite hM hx (-(L:ℤ)))).2 := congrArg Prod.snd Q.source'
       _ = a.2 := ?_
     change (((M:ℤ)*(-(L:ℤ)):ℤ):ℝ) = ((-(M:ℤ)*L:ℤ):ℝ)
     congr 1
   have hQtop : (Q 1).2 = b.2 := by
     calc
-      (Q 1).2 = (g (periodColumnSite hM x hx (L:ℤ))).2 := congrArg Prod.snd Q.target'
+      (Q 1).2 = (g (periodColumnSite hM hx (L:ℤ))).2 := congrArg Prod.snd Q.target'
       _ = b.2 := rfl
-  have hheight : a.2 ≤ b.2 := by
-    change ((-(M:ℤ)*L:ℤ):ℝ) ≤ (((M:ℤ)*L:ℤ):ℝ)
-    have h : (0:ℤ) ≤ (M:ℤ)*L := by positivity
-    have hh : -((M:ℤ)*L) ≤ (M:ℤ)*L := neg_le_self h
-    rw [← neg_mul] at hh
-    exact_mod_cast hh
   obtain ⟨s,t,hst⟩ := FK.Curves.pathRectangle_crossing_intersection P Q hPbox hQbox
     hPleft hPright hQbottom hQtop
   exact Set.disjoint_left.mp (opposite_open_walks_disjoint hNp hMp A 0 ((3*n:ℕ):ℤ) 0 K p q)
     ⟨s,rfl⟩ ⟨t,hst.symm⟩
 
+include hmargin in
 /-- The actual winding-and-single-open-seam event transfers into the source
 barrier B under translated complementary duality. -/
-theorem primalWinding_translatedDual_mem_barrier (hM : Even M)
-    (hNp : 0 < N) (hMp : 0 < M) (K n : ℕ) (hmargin : K+1 ≤ 3*n)
+theorem primalWinding_translatedDual_mem_barrier
     (A : RCConfig N M) (hA : A ∈ primalWindingSingleSeam hNp hMp hM K) :
     translatedDualConfig A ∈ torusRCBarrier hNp hMp n := by
   obtain ⟨x,hx,hx0,hxK,hpath,i₀,hopen,hclosed⟩ := hA
@@ -131,16 +124,11 @@ theorem primalWinding_translatedDual_mem_barrier (hM : Even M)
   · change shiftRCConfig (dualConfig A) (nxt i₀,⟨0,hMp⟩) = false
     rw [shiftRCConfig_nxt (dualConfig A) (i₀,(⟨0,hMp⟩ : Fin M))]
     change Bool.not (A (i₀,⟨0,hMp⟩)) = false
-    rw [hopen]
-    rfl
+    simp [hopen]
   · intro i hi
     have hprv : prv i ≠ i₀ := by
-      intro heq
-      apply hi
-      have hh := congrArg nxt heq
-      simpa only [nxt,prv,Equiv.apply_symm_apply] using hh
+      grind
     change Bool.not (A (prv i,⟨0,hMp⟩)) = true
-    rw [hclosed (prv i) hprv]
-    rfl
+    grind
 
 end PottsDiscontinuity.TorusRC

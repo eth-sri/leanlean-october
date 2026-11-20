@@ -15,8 +15,6 @@ variable {V W : Type*} [Finite V] [Finite W]
   (G : SimpleGraph V) (H : SimpleGraph W) (f : V ↪ W)
   (hGH : G.map f ≤ H)
 
-local instance innerConfigurationMeasurableSpace :
-    MeasurableSpace (Configuration G) := ⊤
 local instance outerConfigurationMeasurableSpace :
     MeasurableSpace (Configuration H) := ⊤
 
@@ -24,15 +22,15 @@ local instance outerConfigurationMeasurableSpace :
 to the embedded inner graph is bounded above by any boundary law that dominates
 the induced frozen boundary. -/
 theorem filteredConditionalEmbeddedEvent_measure_le_boundary
-    (q : Parameters) (ξ : BoundaryCondition W)
+    (q : Parameters) {ξ : BoundaryCondition W}
     (K : RemovedConfiguration H (subgraphRemovedEdges (G.map f) H))
-    (η : BoundaryCondition V)
+    {η : BoundaryCondition V}
     (hpart :
       (isolatedExtensionPullbackBoundary f (frozenBoundary ξ K.val)).partition ≤
         η.partition)
     (S : Set (Configuration G)) (hS : IsUpperSet S) :
     (PMF.toMeasure (((law H q ξ).filter
-      (frozenStateEvent (subgraphRemovedEdges (G.map f) H) K)
+      (frozenStateEvent K)
       (frozenStateEvent_support q ξ (subgraphRemovedEdges (G.map f) H) K)).map
         (embeddedConfigurationRestriction G H f hGH)) S).toReal ≤
       (measure G q η S).toReal := by
@@ -40,7 +38,7 @@ theorem filteredConditionalEmbeddedEvent_measure_le_boundary
     G H f hGH q ξ K
   have hmeasure :
       (PMF.toMeasure (((law H q ξ).filter
-        (frozenStateEvent (subgraphRemovedEdges (G.map f) H) K)
+        (frozenStateEvent K)
         (frozenStateEvent_support q ξ (subgraphRemovedEdges (G.map f) H) K)).map
           (embeddedConfigurationRestriction G H f hGH)) S).toReal =
         (measure G q

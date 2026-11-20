@@ -34,7 +34,7 @@ def cycleFunctionEquiv (p : Perm α) :
   toFun f := ⟨fun x => f (Quotient.mk _ x), by
     intro x
     exact congrArg f (Quotient.sound ((SameCycle.refl p x).apply_left))⟩
-  invFun f := Quotient.lift f.val (fun _ _ h => sameCycle_invariant p f.val f.property h)
+  invFun f := Quotient.lift f.val (fun _ _ h => sameCycle_invariant f.property h)
   left_inv f := by
     funext q
     exact Quotient.inductionOn q (fun _ => rfl)
@@ -53,32 +53,24 @@ theorem finrank_cycleFunctions (p : Perm α) :
 def cycleDifference (p : Perm α) (a b : α) : cycleFunctions p →ₗ[ℚ] ℚ :=
   ((LinearMap.proj a : (α → ℚ) →ₗ[ℚ] ℚ) - LinearMap.proj b).comp (cycleFunctions p).subtype
 
-omit [Fintype α] [DecidableEq α] in
-@[simp] theorem cycleDifference_apply (p : Perm α) (a b : α) (f : cycleFunctions p) :
-    cycleDifference p a b f = f.val a - f.val b := rfl
-
 omit [Fintype α] in
 theorem function_swap_eq_of_eq (f : α → ℚ) {a b : α} (hab : f a = f b) (x : α) :
     f (swap a b x) = f x := by
-  by_cases ha : x = a
-  · subst x; rw [swap_apply_left, hab]
-  · by_cases hb : x = b
-    · subst x; rw [swap_apply_right, hab]
-    · rw [swap_apply_of_ne_of_ne ha hb]
+  grind
 
 omit [Fintype α] in
-theorem cycleFunctions_swap_mul_iff (p : Perm α) (a b : α) (f : α → ℚ)
+theorem cycleFunctions_swap_mul_iff (p : Perm α) {a b : α} {f : α → ℚ}
     (hab : f a = f b) : f ∈ cycleFunctions (swap a b * p) ↔ f ∈ cycleFunctions p := by
   change (∀ x, f (swap a b (p x)) = f x) ↔ ∀ x, f (p x) = f x
-  simp only [function_swap_eq_of_eq f hab]
+  simp [function_swap_eq_of_eq f hab]
 
 /-- The common equal-value invariant space on the two sides of a transposition surgery. -/
 def cycleDifferenceKernelEquiv (p : Perm α) (a b : α) :
     LinearMap.ker (cycleDifference p a b) ≃ₗ[ℚ]
       LinearMap.ker (cycleDifference (swap a b * p) a b) where
-  toFun f := ⟨⟨f.val.val, (cycleFunctions_swap_mul_iff p a b f.val.val
+  toFun f := ⟨⟨f.val.val, (cycleFunctions_swap_mul_iff p
     (sub_eq_zero.mp f.property)).mpr f.val.property⟩, f.property⟩
-  invFun f := ⟨⟨f.val.val, (cycleFunctions_swap_mul_iff p a b f.val.val
+  invFun f := ⟨⟨f.val.val, (cycleFunctions_swap_mul_iff p
     (sub_eq_zero.mp f.property)).mp f.val.property⟩, f.property⟩
   left_inv _ := Subtype.ext (Subtype.ext rfl)
   right_inv _ := Subtype.ext (Subtype.ext rfl)
@@ -100,7 +92,6 @@ theorem permutationCycleCount_swap_bounds (p : Perm α) (a b : α) :
   have he := (cycleDifferenceKernelEquiv p a b).finrank_eq
   have hpr := finrank_cycleDifference_range_le p a b
   have hqr := finrank_cycleDifference_range_le (swap a b * p) a b
-  rw [finrank_cycleFunctions] at hp hq
-  omega
+  grind [finrank_cycleFunctions]
 
 end PottsDiscontinuity.Torus

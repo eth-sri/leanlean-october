@@ -15,16 +15,15 @@ variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
 local instance distinctProductEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance distinctProductEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- The exact finite exploration product: each successive distinct connection
 costs at most c, starting after the first explored cluster. -/
 theorem distinctConnections_probability_le_pow (θ : Parameters) (x y : ℕ → V)
     (c : ℝ) (hc0 : 0 ≤ c)
     (hcomp : ∀ j : ℕ, 1 ≤ j → ∀ A ∈ distinctConnections G x y j,
-      ∀ (hx : x j ∈ actualMultiClusterComplementSet G (prefixSeeds x j) A)
-        (hy : y j ∈ actualMultiClusterComplementSet G (prefixSeeds x j) A),
-      (measure (G.induce (actualMultiClusterComplementSet G (prefixSeeds x j) A)) θ
+      ∀ (hx : x j ∈ actualMultiClusterComplementSet (prefixSeeds x j) A)
+        (hy : y j ∈ actualMultiClusterComplementSet (prefixSeeds x j) A),
+      (measure (G.induce (actualMultiClusterComplementSet (prefixSeeds x j) A)) θ
         (BoundaryCondition.free ∅) (connectivityEvent _ ⟨x j,hx⟩ ⟨y j,hy⟩)).toReal ≤ c)
     (r : ℕ) (hr : 1 ≤ r) :
     (measure G θ (BoundaryCondition.free ∅) (distinctConnections G x y r)).toReal ≤ c^(r-1) := by
@@ -40,9 +39,7 @@ theorem distinctConnections_probability_le_pow (θ : Parameters) (x y : ℕ → 
       _ = 1 := expectation_const _ _
   | succ r hr ih =>
     rw [distinctConnections_succ]
-    have hs := record_step_le (law G θ (BoundaryCondition.free ∅))
-      (fkLaw_full_support G θ _) (clusterRecord G (prefixSeeds x r))
-      (distinctConnections G x y r) (nextDistinctConnection G x y r)
+    have hs := record_step_le
       (fun A B h => distinctConnections_record_measurable G x y r A B h) c
       (fun A hA => nextDistinct_conditional_le G θ x y r A c hc0 (hcomp r hr A hA))
     refine hs.trans ?_

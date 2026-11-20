@@ -25,31 +25,34 @@ variable {V : Type*}
 /-- A configuration chooses a finite subset of the graph's unordered edges. -/
 abbrev Configuration (G : SimpleGraph V) := Finset G.edgeSet
 
+section
+variable {G : SimpleGraph V} (A : Configuration G) (u v : V)
+
+include A in
 /-- The selected edges, viewed as unordered pairs of vertices. -/
-def openEdges (G : SimpleGraph V) (A : Configuration G) : Set (Sym2 V) :=
+def openEdges : Set (Sym2 V) :=
   Subtype.val '' (↑A : Set G.edgeSet)
 
 theorem openEdges_subset (G : SimpleGraph V) (A : Configuration G) :
-    openEdges G A ⊆ G.edgeSet := by
+    openEdges A ⊆ G.edgeSet := by
   rintro _ ⟨e, _, rfl⟩
   exact e.property
 
+include A in
 /-- The graph of the actual open edges, on the entire original vertex type. -/
-def openGraph (G : SimpleGraph V) (A : Configuration G) : SimpleGraph V :=
-  SimpleGraph.fromEdgeSet (openEdges G A)
+def openGraph : SimpleGraph V :=
+  SimpleGraph.fromEdgeSet (openEdges A)
 
-theorem openGraph_adj (G : SimpleGraph V) (A : Configuration G) (u v : V) :
-    (openGraph G A).Adj u v ↔ s(u, v) ∈ openEdges G A := by
-  rw [openGraph, SimpleGraph.fromEdgeSet_adj]
-  exact ⟨And.left, fun h => ⟨h, (G.mem_edgeSet.mp (openEdges_subset G A h)).ne⟩⟩
+theorem openGraph_adj :
+    (openGraph A).Adj u v ↔ s(u, v) ∈ openEdges A := ⟨And.left, fun h => ⟨h, (G.mem_edgeSet.mp (openEdges_subset G A h)).ne⟩⟩
 
-theorem openGraph_le (G : SimpleGraph V) (A : Configuration G) :
-    openGraph G A ≤ G := by
+theorem openGraph_le :
+    openGraph A ≤ G := by
   intro u v huv
-  exact G.mem_edgeSet.mp (openEdges_subset G A ((openGraph_adj G A u v).mp huv))
+  exact G.mem_edgeSet.mp (openEdges_subset G A ((openGraph_adj A u v).mp huv))
 
 theorem openGraph_edgeSet (G : SimpleGraph V) (A : Configuration G) :
-    (openGraph G A).edgeSet = openEdges G A := by
+    (openGraph A).edgeSet = openEdges A := by
   rw [openGraph, SimpleGraph.edgeSet_fromEdgeSet]
   ext e
   constructor
@@ -57,23 +60,28 @@ theorem openGraph_edgeSet (G : SimpleGraph V) (A : Configuration G) :
   · intro h
     exact ⟨h, G.not_isDiag_of_mem_edgeSet (openEdges_subset G A h)⟩
 
-@[simp] theorem openGraph_empty (G : SimpleGraph V) : openGraph G ∅ = ⊥ := by
+@[simp] theorem openGraph_empty (G : SimpleGraph V) : openGraph (G := G) ∅ = ⊥ := by
   simp only [openGraph, openEdges, Finset.coe_empty, Set.image_empty,
     SimpleGraph.fromEdgeSet_empty]
 
+include A u v in
 /-- Connectivity by actual open edges. Boundary identifications add no paths. -/
-def ActualConnected (G : SimpleGraph V) (A : Configuration G) (u v : V) : Prop :=
-  (openGraph G A).Reachable u v
+def ActualConnected : Prop :=
+  (openGraph A).Reachable u v
 
-theorem actualConnected_iff_walk (G : SimpleGraph V) (A : Configuration G) (u v : V) :
-    ActualConnected G A u v ↔ Nonempty ((openGraph G A).Walk u v) := Iff.rfl
+end
 
-@[simp] theorem actualConnected_empty (G : SimpleGraph V) (u v : V) :
-    ActualConnected G ∅ u v ↔ u = v := by
+section
+variable (G : SimpleGraph V)
+
+@[simp] theorem actualConnected_empty (u v : V) :
+    ActualConnected (G := G) ∅ u v ↔ u = v := by
   rw [ActualConnected, openGraph_empty, SimpleGraph.reachable_bot]
 
-theorem actualConnected_of_adj (G : SimpleGraph V) (A : Configuration G) {u v : V}
-    (h : (openGraph G A).Adj u v) : ActualConnected G A u v := h.reachable
+theorem actualConnected_of_adj (A : Configuration G) {u v : V}
+    (h : (openGraph A).Adj u v) : ActualConnected A u v := h.reachable
+
+end
 
 /-- A partition of designated boundary vertices, extended by singleton interior blocks. -/
 structure BoundaryCondition (V : Type*) where
@@ -83,17 +91,21 @@ structure BoundaryCondition (V : Type*) where
 
 namespace BoundaryCondition
 
+variable (W : Set V) (B : Set V) (u v : V)
+
+include B in
 /-- Free boundary conditions identify no distinct vertices. -/
-def free (B : Set V) : BoundaryCondition V where
+def free : BoundaryCondition V where
   boundary := B
   partition := ⊥
   supported := fun h => Or.inl h
 
-@[simp] theorem free_rel (B : Set V) (u v : V) :
+@[simp] theorem free_rel :
     (free B).partition.r u v ↔ u = v := Iff.rfl
 
+include W in
 /-- Wire all vertices of `W` together; every vertex outside `W` remains a singleton. -/
-def wired (W : Set V) : BoundaryCondition V where
+def wired : BoundaryCondition V where
   boundary := W
   partition :=
     { r := fun u v => u = v ∨ u ∈ W ∧ v ∈ W
@@ -111,66 +123,63 @@ def wired (W : Set V) : BoundaryCondition V where
               · exact Or.inr ⟨hu, hw⟩ } }
   supported := fun h => h
 
-@[simp] theorem wired_rel (W : Set V) (u v : V) :
+@[simp] theorem wired_rel :
     (wired W).partition.r u v ↔ u = v ∨ u ∈ W ∧ v ∈ W := Iff.rfl
 
 end BoundaryCondition
 
+section
+variable {G : SimpleGraph V} (ξ : BoundaryCondition V)
+include ξ
+
 /-- Components after wiring: the least equivalence relation containing actual
 open connectivity and all identifications in the boundary partition. -/
-def componentSetoid (G : SimpleGraph V) (ξ : BoundaryCondition V)
+def componentSetoid
     (A : Configuration G) : Setoid V :=
-  (openGraph G A).reachableSetoid ⊔ ξ.partition
+  (openGraph A).reachableSetoid ⊔ ξ.partition
 
-theorem actualConnected_component (G : SimpleGraph V) (ξ : BoundaryCondition V)
-    (A : Configuration G) {u v : V} (h : ActualConnected G A u v) :
-    (componentSetoid G ξ A).r u v :=
-  (le_sup_left : (openGraph G A).reachableSetoid ≤ componentSetoid G ξ A) h
+theorem actualConnected_component
+    {A : Configuration G} {u v : V} (h : ActualConnected A u v) :
+    (componentSetoid ξ A).r u v :=
+  (le_sup_left : (openGraph A).reachableSetoid ≤ componentSetoid ξ A) h
 
-theorem boundary_component (G : SimpleGraph V) (ξ : BoundaryCondition V)
-    (A : Configuration G) {u v : V} (h : ξ.partition.r u v) :
-    (componentSetoid G ξ A).r u v :=
-  (le_sup_right : ξ.partition ≤ componentSetoid G ξ A) h
+end
 
-theorem componentSetoid_le (G : SimpleGraph V) (ξ : BoundaryCondition V)
-    (A : Configuration G) (s : Setoid V)
-    (hopen : ∀ {u v}, ActualConnected G A u v → s.r u v)
-    (hboundary : ξ.partition ≤ s) : componentSetoid G ξ A ≤ s :=
+section
+variable (G : SimpleGraph V) (ξ : BoundaryCondition V) (B : Set V) (A : Configuration G)
+
+theorem boundary_component {u v : V} (h : ξ.partition.r u v) :
+    (componentSetoid ξ A).r u v :=
+  (le_sup_right : ξ.partition ≤ componentSetoid ξ A) h
+
+theorem componentSetoid_le (s : Setoid V)
+    (hopen : ∀ {u v}, ActualConnected A u v → s.r u v)
+    (hboundary : ξ.partition ≤ s) : componentSetoid ξ A ≤ s :=
   sup_le (fun _ _ h => hopen h) hboundary
 
-theorem componentSetoid_rel_iff (G : SimpleGraph V) (ξ : BoundaryCondition V)
-    (A : Configuration G) (u v : V) :
-    (componentSetoid G ξ A).r u v ↔
-      Relation.EqvGen (fun x y => ActualConnected G A x y ∨ ξ.partition.r x y) u v := by
+theorem componentSetoid_rel_iff (u v : V) :
+    (componentSetoid ξ A).r u v ↔
+      Relation.EqvGen (fun x y => ActualConnected A x y ∨ ξ.partition.r x y) u v := by
   rw [componentSetoid, Setoid.sup_eq_eqvGen]
   rfl
 
-@[simp] theorem componentSetoid_free (G : SimpleGraph V) (B : Set V)
-    (A : Configuration G) :
-    componentSetoid G (BoundaryCondition.free B) A = (openGraph G A).reachableSetoid :=
+@[simp] theorem componentSetoid_free :
+    componentSetoid (BoundaryCondition.free B) A = (openGraph A).reachableSetoid :=
   sup_bot_eq _
 
-@[simp] theorem componentSetoid_empty (G : SimpleGraph V) (ξ : BoundaryCondition V) :
-    componentSetoid G ξ ∅ = ξ.partition := by
-  have hbot : (⊥ : SimpleGraph V).reachableSetoid = (⊥ : Setoid V) := by
+@[simp] theorem componentSetoid_empty :
+    componentSetoid (G := G) ξ ∅ = ξ.partition := by
+  have hbot : (⊥ : SimpleGraph V).reachableSetoid = (⊥) := by
     ext u v
     exact SimpleGraph.reachable_bot
   rw [componentSetoid, openGraph_empty, hbot, bot_sup_eq]
 
+end
+
 /-- The number `k_ξ(A)` in equation (1.2). The finite vertex carrier includes
 isolated vertices. Finiteness prevents `Nat.card`'s infinite-type convention. -/
-noncomputable def componentCount [Finite V] (G : SimpleGraph V)
+noncomputable def componentCount [Finite V] {G : SimpleGraph V}
     (ξ : BoundaryCondition V) (A : Configuration G) : ℕ :=
-  Nat.card (Quotient (componentSetoid G ξ A))
-
-@[simp] theorem componentCount_empty [Finite V] (G : SimpleGraph V)
-    (ξ : BoundaryCondition V) : componentCount G ξ ∅ = Nat.card (Quotient ξ.partition) := by
-  rw [componentCount, componentSetoid_empty]
-
-/-- With no open edges and no wiring, each vertex is its own component. -/
-@[simp] theorem componentCount_free_empty [Finite V] (G : SimpleGraph V) (B : Set V) :
-    componentCount G (BoundaryCondition.free B) ∅ = Nat.card V := by
-  rw [componentCount_empty]
-  exact Nat.card_congr Setoid.quotientBotEquiv
+  Nat.card (Quotient (componentSetoid ξ A))
 
 end PottsDiscontinuity.FK

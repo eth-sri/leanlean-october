@@ -1,120 +1,118 @@
 module
+public import PottsDiscontinuity.TorusTopology.SquareSecants
 
-public import PottsDiscontinuity.FK.Lattice
-public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverCycleCompassTurn
-
-/-! The discrete Umlaufsatz on the project's literal square lattice.
-A finite polygon is translated above the cover seam and embedded in sheet zero.
-Its ordered edge directions, including the closing turn, are preserved. -/
-
+/-! # Turning number of a simple lattice polygon -/
 @[expose] public section
-
 namespace PottsDiscontinuity.TorusTopology
-open SimpleGraph
-open Planar.Medial
+open SimpleGraph Planar.Medial Secant
+def squareDartCompass (d : FK.squareLattice.Dart) : Fin 4 := lab d.fst d.snd
 
-/-- Compass label of an actual directed square-lattice edge: east, north,
-west, south in positive cyclic order. Adjacency exhausts these four cases. -/
-def squareDartCompass (d : FK.squareLattice.Dart) : Fin 4 :=
-  if d.fst.1 < d.snd.1 then 0 else if d.fst.2 < d.snd.2 then 1
-  else if d.snd.1 < d.fst.1 then 2 else 3
+def squareWalkCompassDirections {u v : ℤ × ℤ} (p : FK.squareLattice.Walk u v) := p.darts.map squareDartCompass
 
-/-- The ordered geometric directions of every edge of a lattice walk. -/
-def squareWalkCompassDirections {u v : ℤ × ℤ} (p : FK.squareLattice.Walk u v) :
-    List (Fin 4) := p.darts.map squareDartCompass
+def squareWalkCyclicTurn {u : ℤ × ℤ} (p : FK.squareLattice.Walk u u) := compassWordCyclicTurn (squareWalkCompassDirections p)
 
-/-- The signed quarter-turn sum, including the last-to-first edge pair. -/
-def squareWalkCyclicTurn {u : ℤ × ℤ} (p : FK.squareLattice.Walk u u) : ℤ :=
-  ((squareWalkCompassDirections p).zipWith primalCompassQuarterTurn
-    ((squareWalkCompassDirections p).rotate 1)).sum
+variable {a b c d : V}
 
-def upperCoverHom (k : ℤ) :
-    FK.squareLattice.induce {v | 0 ≤ v.2 + k} →g Planar.parafermionicCoverGraph where
-  toFun v := ((v.val.1, v.val.2+k),0)
-  map_rel' := by
-    intro u v h
-    refine ⟨?_,?_⟩
-    · rw [Planar.squareLattice_adj_iff]
-      have hh := (FK.squareLattice_adj_iff _ _).mp h
-      dsimp at hh ⊢
-      omega
-    · change (0 : ℤ) = 0 + Planar.parafermionicCoverSheetShift _ _
-      simp only [Planar.parafermionicCoverSheetShift]
-      have hu := u.property
-      dsimp at hu ⊢
-      simp [show ¬ u.val.2+k < 0 by omega]
+section
+variable (f : V → V)
+include f
 
-private lemma upperCoverHom_injective (k : ℤ) : Function.Injective (upperCoverHom k) := by
-  intro u v h
-  apply Subtype.ext
-  have hh := congrArg Prod.fst h
-  change (u.val.1,u.val.2+k) = (v.val.1,v.val.2+k) at hh
-  have hx := congrArg Prod.fst hh
-  have hy := congrArg Prod.snd hh
-  exact Prod.ext hx (by dsimp at hy; omega)
+private def along (q : G.Walk b c) : ℤ := (q.darts.map fun e => cut (f e.fst) (f e.snd)).sum
 
-private lemma upperCoverHom_direction (k : ℤ)
-    (u v : {v : ℤ × ℤ | 0 ≤ v.2+k}) (h : FK.squareLattice.Adj u.val v.val) :
-    parafermionicCoverCompassDirection
-      (upperCoverHom k u) (upperCoverHom k v)
-      ((upperCoverHom k).map_rel h) = squareDartCompass ⟨⟨u.val,v.val⟩,h⟩ := by
-  apply parafermionicCoverCompassDirection_eq_of_neighbor
-  change parafermionicCoverCompassNeighbor ((u.val.1,u.val.2+k),0)
-    (if u.val.1 < v.val.1 then 0 else if u.val.2 < v.val.2 then 1
-     else if v.val.1 < u.val.1 then 2 else 3) = ((v.val.1,v.val.2+k),0)
-  unfold parafermionicCoverCompassNeighbor Planar.parafermionicCoverNeighborLift
-  apply Prod.ext
-  · have hh := (FK.squareLattice_adj_iff u.val v.val).mp h
-    rcases hh with ⟨hx|hx,hy⟩ | ⟨hx,hy|hy⟩
-    all_goals
-      simp only [parafermionicCoverCompassBaseNeighbor]
-      split_ifs <;> apply Prod.ext <;> dsimp only at * <;> omega
-  · have hu : 0 ≤ u.val.2+k := u.property
-    change 0 + Planar.parafermionicCoverSheetShift (u.val.1,u.val.2+k) _ = 0
-    simp [Planar.parafermionicCoverSheetShift,show ¬u.val.2+k < 0 by omega]
+@[simp] private lemma along_nil : along f (Walk.nil : G.Walk a a) = 0 := rfl
 
-private lemma upperCoverHom_walkDirections (k : ℤ)
-    {u v : {v : ℤ × ℤ | 0 ≤ v.2+k}}
-    (p : (FK.squareLattice.induce {v | 0 ≤ v.2+k}).Walk u v) :
-    parafermionicCoverWalkCompassDirections (p.map (upperCoverHom k)) =
-      squareWalkCompassDirections
-        (p.map (Embedding.induce {v : ℤ × ℤ | 0 ≤ v.2+k}).toHom) := by
-  simp only [parafermionicCoverWalkCompassDirections, squareWalkCompassDirections,
-    Walk.darts_map,List.map_map]
-  apply List.map_congr_left
-  intro d hd
-  exact upperCoverHom_direction k d.fst d.snd d.adj
+end
+@[simp] private lemma along_cons (f : V → V) (h : G.Adj a b) (q : G.Walk b c) :
+    along f (.cons h q) = cut (f a) (f b) + along f q := rfl
+@[simp] private lemma dirs_cons (h : G.Adj a b) (q : G.Walk b c) :
+    squareWalkCompassDirections (.cons h q) = lab a b :: squareWalkCompassDirections q := rfl
 
-private lemma exists_upper_height (l : List (ℤ × ℤ)) :
-    ∃ k : ℤ, ∀ v ∈ l, 0 ≤ v.2+k := by
-  induction l with
-  | nil => exact ⟨0, by simp⟩
-  | cons a l ih =>
-    obtain ⟨k,hk⟩ := ih
-    refine ⟨max k (-a.2),?_⟩
-    intro v hv
-    rcases List.mem_cons.mp hv with rfl | hv
-    · have := le_max_right k (-v.2); omega
-    · have := hk v hv; have := le_max_left k (-a.2); omega
+/-- Glue a strip of disjoint cells by telescoping their common sides. -/
+private lemma strip {x y : V} (h : G.Adj a b) (q : G.Walk x y) (ha : a ∉ q.support) (hb : b ∉ q.support) :
+    along (·-a) q + cut (y-a) (y-b) = cut (x-a) (x-b) + along (·-b) q := by
+  induction q with
+  | nil => simp
+  | @cons x y z g q ih =>
+    simp only [Walk.support_cons,List.mem_cons,not_or] at ha hb
+    have := cell h g ha.1 (fun e => ha.2 (e ▸ q.start_mem_support)) hb.1 (fun e => hb.2 (e ▸ q.start_mem_support))
+    simp only [along_cons]; linarith [ih ha.2 hb.2]
 
-/-- Every simple square-lattice cycle has total signed turn +4 or -4. -/
+/-- Sweep the secant across the path between the first and last edges. This
+variation compares all the interior turns to secants based at the two ends.
+The ends `a,d` may coincide, but neither may lie on the middle path. -/
+private lemma fan (q : G.Walk b c) (h : G.Adj a b) (k : G.Adj c d) (hq : q.IsPath) (hn : ¬q.Nil)
+    (ha : a ∉ q.support) (hd : d ∉ q.support) :
+    compassWordTurn (lab a b :: squareWalkCompassDirections q ++ [lab c d]) = idx (lab c d) - idx (lab a b) +
+      4*(along (·-a) q + cut (c-a) (c-b) + cut (c-b) (d-b) + along (d-·) q) := by
+  induction q generalizing a d with
+  | nil => exact (hn .nil).elim
+  | @cons b u c g r ih =>
+    obtain ⟨hr,hbr⟩ := (Walk.cons_isPath_iff _ _).mp hq
+    simp only [Walk.support_cons,List.mem_cons,not_or] at ha hd
+    have ht := local_turn h g (fun e => ha.2 (e ▸ r.start_mem_support))
+    simp only [dirs_cons, List.cons_append, along_cons, compassWordTurn]
+    cases hnil : r with
+    | nil =>
+      have ht' := local_turn g k (Ne.symm hd.1)
+      simp only [along_nil, squareWalkCompassDirections, Walk.darts_nil, List.map_nil, List.nil_append, compassWordTurn]
+      linarith
+    | cons g' r' =>
+      have hrn : ¬r.Nil := by simp [hnil]
+      have h₃ := ih g k hr hrn hbr hd.2
+      rw [← hnil]; simp only [List.cons_append] at h₃; linear_combination ht + h₃ - 4*(strip h r ha.2 hbr) - 4*(cell g k (fun e => hbr (e ▸ r.end_mem_support)) (Ne.symm hd.1) (mt hr.nil_iff_eq.mpr hrn) (fun e => hd.2 (e ▸ r.start_mem_support)))
+
+/-- Along a path to the right of the cut vertex, the outgoing secants read
+just the difference of the endpoint heights, and the incoming ones read zero. -/
+private lemma right_half (a : V) (q : G.Walk b c) (ha : a ∉ q.support) (hmin : ∀ x ∈ q.support, a.1 ≤ x.1) :
+    along (·-a) q = up (c-a) - up (b-a) ∧ along (a-·) q = 0 := by
+  induction q with
+  | nil => simp
+  | @cons x y z g r ih =>
+    simp only [Walk.support_cons, List.mem_cons, not_or] at ha hmin
+    obtain ⟨h₁,h₂⟩ := ih ha.2 (by grind)
+    have hx := hmin x (.inl rfl); have hay : a ≠ y := fun e => ha.2 (e ▸ r.start_mem_support)
+    have hax := ha.1; have hadj := (FK.squareLattice_adj_iff _ _).mp g
+    simp only [ne_eq,Prod.ext_iff] at hay hax
+    simp only [along_cons,h₁,h₂,cut,up,Prod.fst_sub,Prod.snd_sub,sub_pos]; split_ifs <;> omega
+
+private lemma uncons {p : G.Walk a b} (hn : ¬p.Nil) : ∃ (x : V) (h : G.Adj a x) (r : G.Walk x b), p = .cons h r := by
+  cases p with
+  | nil => exact (hn .nil).elim
+  | cons h r => exact ⟨_, h, r, rfl⟩
+
+private lemma at_min (p : G.Walk a a) (hp : p.IsCycle) (hmin : ∀ x ∈ p.support, a.1 ≤ x.1) :
+    squareWalkCyclicTurn p = 4 ∨ squareWalkCyclicTurn p = -4 := by
+  obtain ⟨b,h,r,rfl⟩ := uncons hp.not_nil
+  obtain ⟨u,g,s,e⟩ := uncons (Walk.not_nil_of_isCycle_cons hp)
+  obtain ⟨c,q,k,eq⟩ := Walk.exists_cons_eq_concat g s
+  have er := e.trans eq
+  clear e eq; subst r
+  have ⟨hq,ha⟩ := (Walk.isPath_concat _).mp ((Walk.cons_isCycle_iff _ _).mp hp).1
+  have hn : ¬q.Nil := by have hlen := hp.three_le_length; simp [Walk.not_nil_iff_lt_length] at hlen ⊢; omega
+  have hm (x) (hx : x ∈ q.support) : a.1 ≤ x.1 := hmin _ (by simp [*])
+  obtain ⟨h₁,h₂⟩ := right_half a q ha hm
+  have hf := fan q h k hq hn ha ha
+  rw [h₁,h₂,add_zero] at hf
+  have hdir : squareWalkCompassDirections (.cons h (q.concat k)) = lab a b :: squareWalkCompassDirections q ++ [lab c a] := by
+    simp [squareWalkCompassDirections, squareDartCompass]
+  have hl : (lab a b :: squareWalkCompassDirections q ++ [lab c a]).getLast (by simp) = lab c a := List.getLast_append_singleton _
+  simp only [List.cons_append] at hf hl
+  simp only [squareWalkCyclicTurn,hdir,List.cons_append,compassWordCyclicTurn_cons,hl,hf]
+  exact corner h k (hm _ q.start_mem_support) (hm _ q.end_mem_support) (mt hq.nil_iff_eq.mpr hn)
+
 theorem squareWalkCyclicTurn_eq_four_or_neg_four {u : ℤ × ℤ}
     (p : FK.squareLattice.Walk u u) (hp : p.IsCycle) :
     squareWalkCyclicTurn p = 4 ∨ squareWalkCyclicTurn p = -4 := by
-  obtain ⟨k,hk⟩ := exists_upper_height p.support
-  let q := p.induce {v : ℤ × ℤ | 0 ≤ v.2+k} hk
-  have hq : q.IsCycle := by
-    apply (Walk.isCycle_map_iff_of_injective
-      (f := (Embedding.induce (G := FK.squareLattice) {v : ℤ × ℤ | 0 ≤ v.2+k}).toHom)
-      (Embedding.induce (G := FK.squareLattice) {v : ℤ × ℤ | 0 ≤ v.2+k}).injective).mp
-    simpa [q] using hp
-  have hr := (Walk.isCycle_map_iff_of_injective (upperCoverHom_injective k)).mpr hq
-  have ht := parafermionicCoverWalkCyclicCompassTurn_eq_four_or_neg_four
-    (q.map (upperCoverHom k)) hr
-  have hd := upperCoverHom_walkDirections k q
-  simp only [q,Walk.map_induce] at hd
-  unfold parafermionicCoverWalkCyclicCompassTurn at ht
-  rw [hd] at ht
-  exact ht
+  classical
+  obtain ⟨a,ha,hmin⟩ := p.support.toFinset.exists_min_image Prod.fst ⟨u, List.mem_toFinset.mpr p.start_mem_support⟩
+  have ha' := List.mem_toFinset.mp ha
+  have ht := at_min _ (hp.rotate ha') (fun x hx => hmin x <| List.mem_toFinset.mpr <| (p.mem_support_rotate_iff ..).mp hx)
+  have h : squareWalkCyclicTurn p = squareWalkCyclicTurn (p.rotate a ha') := by
+    obtain ⟨n,hn⟩ := ((p.rotate_darts a ha').symm.map squareDartCompass)
+    change _ = squareWalkCompassDirections (p.rotate a ha') at hn
+    simp only [squareWalkCyclicTurn, ← hn, compassWordCyclicTurn]
+    rw [List.rotate_rotate, Nat.add_comm n 1, ← List.rotate_rotate, ← List.zipWith_rotate_distrib _ _ _ _ (by simp)]
+    exact (List.rotate_perm ..).sum_eq.symm
+  simp_all
 
 end PottsDiscontinuity.TorusTopology

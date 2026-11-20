@@ -11,15 +11,15 @@ namespace PottsDiscontinuity.TorusRC
 
 /-- Uniform rescaling for the source's polynomial block prefactor. -/
 theorem block_rate_rescaling (c : ℝ) (hc : 0 < c) (hc1 : c ≤ 1)
-    (m : ℕ) (hm : 0 < m) (M : ℝ) (hM : 0 ≤ M) :
+    (m : ℕ) (hm : 0 < m) {M : ℝ} (hM : 0 ≤ M) :
     ((c^2/(9*Real.exp 2))/(9*((m+1:ℕ):ℝ)^2)) ^ (M/((m+1:ℕ):ℝ)) ≤
       (c/(9*(m:ℝ)^2)) ^ (M/(m:ℝ)) := by
   have hmR : (0:ℝ) < m := by exact_mod_cast hm
   have hm1 : (1:ℝ) ≤ m := by exact_mod_cast hm
   have hnR : (0:ℝ) < ((m+1:ℕ):ℝ) := by positivity
-  have hlc : Real.log c ≤ 0 := Real.log_nonpos hc.le hc1
+  have hlc := Real.log_nonpos hc.le hc1
   have hl9 : 0 ≤ Real.log (9:ℝ) := Real.log_nonneg (by norm_num)
-  have hlm : Real.log (m:ℝ) ≤ (m:ℝ)-1 := Real.log_le_sub_one_of_pos hmR
+  have hlm := Real.log_le_sub_one_of_pos hmR
   have hlogs : Real.log (m:ℝ) ≤ Real.log ((m+1:ℕ):ℝ) :=
     Real.log_le_log hmR (by exact_mod_cast Nat.le_succ m)
   have ha : 0 < (c^2/(9*Real.exp 2))/(9*((m+1:ℕ):ℝ)^2) := by positivity
@@ -40,8 +40,6 @@ theorem block_rate_rescaling (c : ℝ) (hc : 0 < c) (hc1 : c ≤ 1)
       Real.log ((c^2/(9*Real.exp 2))/(9*((m+1:ℕ):ℝ)^2)) * (m:ℝ) ≤
       Real.log (c/(9*(m:ℝ)^2)) * ((m+1:ℕ):ℝ) := by
     rw [hla,hlb,Nat.cast_add,Nat.cast_one]
-    have h₁ := mul_nonpos_of_nonneg_of_nonpos (sub_nonneg.mpr hm1) hlc
-    have h₂ := mul_nonneg (sub_nonneg.mpr hm1) hl9
     have h₃ := mul_nonneg hmR.le (sub_nonneg.mpr hlogs)
     simp only [Nat.cast_add,Nat.cast_one] at h₃
     nlinarith

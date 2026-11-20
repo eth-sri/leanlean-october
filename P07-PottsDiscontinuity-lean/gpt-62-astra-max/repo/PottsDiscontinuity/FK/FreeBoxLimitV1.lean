@@ -15,6 +15,6 @@ theorem freeBoxLimit_existsUnique (q : Parameters) :
         (∀ n, latticeBox (c n) (r n) ⊆ latticeBox (c (n + 1)) (r (n + 1))) →
         (∀ v : LatticeVertex, ∃ n, v ∈ latticeBox (c n) (r n)) →
         Tendsto (fun n => boxProbabilityMeasure q (c n) (r n)) atTop (𝓝 μ) :=
-by exact PottsDiscontinuity.FK.Internal.freeBoxLimit_existsUnique
+PottsDiscontinuity.FK.Internal.freeBoxLimit_existsUnique
 
 end PottsDiscontinuity.FK

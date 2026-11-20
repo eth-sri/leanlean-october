@@ -22,8 +22,6 @@ theorem tendsto_completeBlocks_div (d : ℕ) (hd : 0 < d) :
   filter_upwards [eventually_ge_atTop 1] with M hM
   have hsplit : ((M%d:ℕ):ℝ)+(d:ℝ)*((M/d:ℕ):ℝ) = (M:ℝ) := by
     exact_mod_cast Nat.mod_add_div M d
-  have hdR : (d:ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hd)
-  have hMR : (M:ℝ) ≠ 0 := by exact_mod_cast (show M ≠ 0 by omega)
   field_simp
   nlinarith
 
@@ -43,7 +41,7 @@ theorem log_block_product_liminf (height : ℕ → ℕ)
   have hf : Tendsto f atTop (𝓝 (Real.log a/(d:ℝ)+Real.log b/(e:ℝ))) := by
     have h := ((tendsto_const_div_atTop_nhds_zero_nat (Real.log C)).add_const
       (Real.log a/(d:ℝ))).add ((tendsto_completeBlocks_div e he).mul_const (Real.log b))
-    simpa only [zero_add,one_div_mul_eq_div] using h
+    grind
   have hle : ∀ᶠ k in atTop, ((f (height k):ℝ):EReal) ≤
       ((Real.log (p k)/(height k:ℝ):ℝ):EReal) := by
     filter_upwards [hp,hheight.eventually (eventually_ge_atTop 1)] with k hk hH
@@ -57,8 +55,7 @@ theorem log_block_product_liminf (height : ℕ → ℕ)
     have hdiv := div_le_div_of_nonneg_right hlog hHpos.le
     dsimp [f]
     convert hdiv using 1; field_simp
-  have hlim : Tendsto (fun k => ((f (height k):ℝ):EReal)) atTop
-      (𝓝 ((Real.log a/(d:ℝ)+Real.log b/(e:ℝ):ℝ):EReal)) :=
+  have hlim :=
     EReal.tendsto_coe.mpr (hf.comp hheight)
   rw [← hlim.liminf_eq]
   exact liminf_le_liminf hle
