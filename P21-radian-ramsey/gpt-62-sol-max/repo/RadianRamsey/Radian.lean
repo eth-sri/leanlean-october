@@ -1,409 +1,132 @@
 module
 
-public import RadianRamsey.RadianAlgebra
 public import RadianRamsey.AlgebraicRamsey
-public import OAI.Combinatorics.EuclideanRamsey.NineLinearObstruction
-public import OAI.Combinatorics.EuclideanRamsey.NineGeometry
-public import OAI.Combinatorics.EuclideanRamsey.IndependentTensor
+public import OAI.Combinatorics.EuclideanRamsey.TensorNecessity
 
 @[expose] public section
 
-/-!
-# Theorem D: the radian 9-gon is non-Ramsey when `tan (θ/2)` is transcendental
+namespace OAI.EuclideanRamsey.Radian
 
-Theorem D of the spherical-ramsey note (`note/spherical-ramsey.tex`,
-doi:10.5281/zenodo.23396387). The nine points `(cos kθ, sin kθ)`, `k = 0, …, 8`.
+open Real Algebra.TensorProduct
+open scoped TensorProduct nonZeroDivisors Polynomial
 
-This mirrors OpenAI's `EuclideanRamseyNine` (openai/math @ fd4aeeb2, Apache-2.0, included under
-`OAI/` with header-only changes for the module system, and imported): `NineLinearObstruction.not_ramsey_of_det_ne_zero` (necessity direction
-through `ramsey_fieldCriterion`), `IndependentTensor.tensorEmbedding_injective`
-(`ℚ(t) ⊗ ℚ(t) ↪ ℚ(T, U)`), and `CircleConsequence.circle_five_affineSpan`. The local
-`Algebra ℚ` instances and the proof of `coefficientEquiv_tau` follow `NineField.lean`.
-The determinant is in `RadianRamsey.RadianAlgebra`. OAI's definitions (`Ramsey`, `FieldCriterion`,
-`augmented`, `coordinateField`) are used directly.
--/
-
-namespace OAI
 noncomputable section
-open scoped TensorProduct
-namespace EuclideanRamsey
-namespace Radian
 
-/-- The nine points at angles `0, θ, 2θ, …, 8θ` on the unit circle. -/
 def radianConfig (θ : ℝ) (k : Fin 9) : Space 2 :=
   WithLp.toLp 2 ![Real.cos ((k : ℕ) * θ), Real.sin ((k : ℕ) * θ)]
-
-@[simp] theorem radianConfig_zero (θ : ℝ) (k : Fin 9) :
-    radianConfig θ k 0 = Real.cos ((k : ℕ) * θ) := by simp [radianConfig]
-
-@[simp] theorem radianConfig_one (θ : ℝ) (k : Fin 9) :
-    radianConfig θ k 1 = Real.sin ((k : ℕ) * θ) := by simp [radianConfig]
-
-theorem radianConfig_on_circle (θ : ℝ) (k : Fin 9) : dist (radianConfig θ k) 0 = 1 := by
+lemma radianConfig_on_circle (θ : ℝ) (k : Fin 9) : dist (radianConfig θ k) 0 = 1 := by
   rw [EuclideanSpace.dist_eq]
-  simp [Fin.sum_univ_two, sq_abs]
+  simp [radianConfig,Fin.sum_univ_two]
 
-/-! ## Half-angle trigonometry -/
+private lemma algebraic_sin {θ : ℝ} (h : IsAlgebraic ℚ (cos θ)) : IsAlgebraic ℚ (sin θ) := by
+  apply IsAlgebraic.of_pow (n := 2) (by decide)
+  simpa [Real.sin_sq] using isAlgebraic_one.sub (h.pow 2)
 
-section Trig
+private lemma algebraic_tan_iff_cos (θ : ℝ) :
+    IsAlgebraic ℚ (tan (θ / 2)) ↔ IsAlgebraic ℚ (cos θ) := by
+  refine ⟨fun h => ?_, fun h => ?_⟩
+  · by_cases hc : cos θ = -1
+    · rw [hc]; exact isAlgebraic_one.neg
+    rw [cos_eq_two_mul_tan_half_div_one_sub_tan_half_sq θ hc,div_eq_mul_inv]
+    exact (isAlgebraic_one.sub (h.pow 2)).mul ((isAlgebraic_one.add (h.pow 2)).inv)
+  · have ch : IsAlgebraic ℚ (cos (θ/2)) := by
+      apply IsAlgebraic.of_pow (n := 2) (by decide)
+      rw [Real.cos_sq,mul_div_cancel₀ _ two_ne_zero,← add_div,div_eq_mul_inv]
+      exact (isAlgebraic_one.add h).mul ((isAlgebraic_natCast 2).inv)
+    rw [tan_eq_sin_div_cos, div_eq_mul_inv]
+    exact (algebraic_sin ch).mul ch.inv
 
-theorem half_angle {θ : ℝ} (hc : Real.cos (θ / 2) ≠ 0) :
-    (1 + Real.tan (θ / 2) ^ 2) * Real.cos θ = 1 - Real.tan (θ / 2) ^ 2 ∧
-      (1 + Real.tan (θ / 2) ^ 2) * Real.sin θ = 2 * Real.tan (θ / 2) := by
-  obtain ⟨x, rfl⟩ : ∃ x, θ = 2 * x := ⟨θ / 2, by ring⟩
-  have hx : 2 * x / 2 = x := by ring
-  rw [hx] at hc ⊢
-  have h1 := Real.sin_sq_add_cos_sq x
-  rw [Real.cos_two_mul', Real.sin_two_mul, Real.tan_eq_sin_div_cos]
-  constructor
-  · field_simp
-    linear_combination (Real.cos x ^ 2 - Real.sin x ^ 2) * h1
-  · field_simp
-    linear_combination Real.sin x * h1
+open Matrix
 
-theorem trig_rot {θ : ℝ} (hc : Real.cos (θ / 2) ≠ 0) (n : ℕ) :
-    (1 + Real.tan (θ / 2) ^ 2) ^ n * Real.cos (n * θ) = (rot (Real.tan (θ / 2)) n).1 ∧
-      (1 + Real.tan (θ / 2) ^ 2) ^ n * Real.sin (n * θ) = (rot (Real.tan (θ / 2)) n).2 := by
-  obtain ⟨h1, h2⟩ := half_angle hc
-  induction n with
-  | zero => simp [rot]
-  | succ n ih =>
-    obtain ⟨i1, i2⟩ := ih
-    have hca : Real.cos (((n + 1 : ℕ) : ℝ) * θ) =
-        Real.cos (n * θ) * Real.cos θ - Real.sin (n * θ) * Real.sin θ := by
-      rw [Nat.cast_succ, add_mul, one_mul, Real.cos_add]
-    have hsa : Real.sin (((n + 1 : ℕ) : ℝ) * θ) =
-        Real.sin (n * θ) * Real.cos θ + Real.cos (n * θ) * Real.sin θ := by
-      rw [Nat.cast_succ, add_mul, one_mul, Real.sin_add]
-    rw [hca, hsa]
-    simp only [rot]
-    constructor
-    · linear_combination ((1 + Real.tan (θ / 2) ^ 2) * Real.cos θ) * i1 +
-        (rot (Real.tan (θ / 2)) n).1 * h1 - ((1 + Real.tan (θ / 2) ^ 2) * Real.sin θ) * i2 -
-        (rot (Real.tan (θ / 2)) n).2 * h2
-    · linear_combination ((1 + Real.tan (θ / 2) ^ 2) * Real.cos θ) * i2 +
-        (rot (Real.tan (θ / 2)) n).2 * h1 + ((1 + Real.tan (θ / 2) ^ 2) * Real.sin θ) * i1 +
-        (rot (Real.tan (θ / 2)) n).1 * h2
+private lemma powers_injective {z : ℂ} (hz : Transcendental ℚ z) :
+    Function.Injective (fun n : ℕ => z^n) := by
+  intro a b h
+  have h' : (Polynomial.X:ℚ[X])^a = Polynomial.X^b :=
+    (transcendental_iff_injective.mp hz) (by simpa using h)
+  simpa using congrArg Polynomial.natDegree h'
 
-theorem one_add_tan_sq_ne (θ : ℝ) : 1 + Real.tan (θ / 2) ^ 2 ≠ 0 := by positivity
+private def powLabel : Fin 9 ≃ Fin 3 × Fin 3 := (finProdFinEquiv (m:=3) (n:=3)).symm
+private abbrev expRow (z : ℂ) (i : Fin 9) (j : Fin 3) := (z^(j:ℕ))^(i:ℕ)
+private lemma exp_det_regular {z : ℂ} (hz : Transcendental ℚ z) :
+    (Matrix.of (fun i => complexSqRow powLabel (expRow z i))).det ∈ ComplexTensor⁰ := by
+  let g : ℚ[X] →ₐ[ℚ] ℂ := Polynomial.aeval z
+  have hg : g.Flat := by
+    let : Algebra ℚ[X] ℂ := g.toRingHom.toAlgebra
+    let : Module.IsTorsionFree ℚ[X] ℂ := Module.isTorsionFree_iff_algebraMap_injective.mpr
+      (transcendental_iff_injective.mp hz)
+    exact (inferInstance : Module.Flat ℚ[X] ℂ)
+  let e := polyEquivTensor ℚ ℂ
+  let f := (lTensor ℂ g).comp e.toAlgHom
+  let x (j : Fin 9) := Polynomial.monomial (powLabel j).2.val (z^(powLabel j).1.val)
+  have hz₀ : z ≠ 0 := fun h => hz (h.symm ▸ isAlgebraic_zero)
+  have hx : Function.Injective x := by
+    intro i j h
+    have H := (Polynomial.monomial_eq_monomial_iff.mp h).resolve_right (by simp [hz₀])
+    exact powLabel.injective (Prod.ext (Fin.ext (powers_injective hz H.2)) (Fin.ext H.1))
+  have hr : f ((vandermonde x).transpose.det) ∈ ComplexTensor⁰ := by
+    let : Algebra ℂ[X] ComplexTensor := f.toRingHom.toAlgebra
+    let : Module.Flat ℂ[X] ComplexTensor := (RingHom.Flat.of_bijective (f:=e.toRingHom) e.bijective).comp (hg.lTensor ℂ)
+    apply isRegular_iff_mem_nonZeroDivisors.mp (isLeftRegular_iff_isRegular.mp (Module.Flat.isSMulRegular_of_nonZeroDivisors (R:=ℂ[X]) (M:=ComplexTensor) (r:=((vandermonde x).transpose.det)) ?_))
+    rwa [mem_nonZeroDivisors_iff_ne_zero,det_transpose,det_vandermonde_ne_zero_iff]
+  rw [f.map_det] at hr
+  convert hr using 2
+  ext i j
+  simp [f,e,g,x,Matrix.vandermonde,tmul_pow,complexSqRow,← pow_mul]
 
-theorem cos_eq {θ : ℝ} (hc : Real.cos (θ / 2) ≠ 0) (n : ℕ) :
-    Real.cos (n * θ) = (rot (Real.tan (θ / 2)) n).1 / (1 + Real.tan (θ / 2) ^ 2) ^ n := by
-  rw [eq_div_iff (pow_ne_zero n (one_add_tan_sq_ne θ)), mul_comm]
-  exact (trig_rot hc n).1
+private def turn (θ : ℝ) := Complex.exp ((θ:ℂ)*Complex.I)
+private lemma turn_pow (θ : ℝ) (n : ℕ) : turn θ ^ n = turn (n*θ) := by
+  simp [turn,Complex.exp_nat_mul,mul_assoc]
+private lemma turn_transcendental (θ : ℝ) (h : Transcendental ℚ (cos θ)) : Transcendental ℚ (turn θ) := by
+  intro hc
+  apply h
+  apply (isAlgebraic_algebraMap_iff (A := ℂ) Complex.ofReal_injective).mp
+  change IsAlgebraic ℚ ((cos θ:ℝ):ℂ)
+  rw [Complex.ofReal_cos,Complex.cos,neg_mul,Complex.exp_neg,div_eq_mul_inv]
+  exact (hc.add (hc.inv)).mul ((isAlgebraic_natCast 2).inv)
 
-theorem sin_eq {θ : ℝ} (hc : Real.cos (θ / 2) ≠ 0) (n : ℕ) :
-    Real.sin (n * θ) = (rot (Real.tan (θ / 2)) n).2 / (1 + Real.tan (θ / 2) ^ 2) ^ n := by
-  rw [eq_div_iff (pow_ne_zero n (one_add_tan_sq_ne θ)), mul_comm]
-  exact (trig_rot hc n).2
+private lemma span_expRow (θ : ℝ) (w : AffineRow 2) :
+    ∃ v, ∀ i, expRow (turn θ) i ⬝ᵥ v = turn θ^(i:ℕ) * (evalRow (radianConfig θ) i w : ℝ) := by
+  refine ⟨![(w (some 0):ℂ)/2+(w (some 1):ℂ)*Complex.I/2,
+    (w none:ℂ),(w (some 0):ℂ)/2-(w (some 1):ℂ)*Complex.I/2],fun i => ?_⟩
+  simp only [dotProduct,Fin.sum_univ_three,expRow]
+  simp only [pow_right_comm (turn θ) _ (i:ℕ),turn_pow θ (i:ℕ)]
+  simp [evalRow,Fin.sum_univ_two,radianConfig,
+    turn,Complex.cos,Complex.sin,Complex.exp_neg]
+  field_simp
+  ring
 
-theorem tan_recover {θ : ℝ} (hc : Real.cos (θ / 2) ≠ 0) :
-    Real.tan (θ / 2) = Real.sin θ / (1 + Real.cos θ) := by
-  obtain ⟨h1, h2⟩ := half_angle hc
-  have hne : 1 + Real.cos θ ≠ 0 := by
-    intro h
-    have : (1 + Real.tan (θ / 2) ^ 2) * (1 + Real.cos θ) = 2 := by linear_combination h1
-    rw [h, mul_zero] at this
-    norm_num at this
-  rw [eq_div_iff hne]
-  apply mul_left_cancel₀ (one_add_tan_sq_ne θ)
-  linear_combination Real.tan (θ / 2) * h1 - h2
-
-theorem cos_half_ne {θ : ℝ} (ht : Transcendental ℚ (Real.tan (θ / 2))) :
-    Real.cos (θ / 2) ≠ 0 := by
-  intro h
-  apply ht
-  rw [Real.tan_eq_sin_div_cos, h, div_zero]
-  exact isAlgebraic_zero
-
-end Trig
-
-/-! ## The coordinate field is `ℚ(tan (θ/2))` -/
-
-section CoordField
-
-variable (θ : ℝ) (ht : Transcendental ℚ (Real.tan (θ / 2)))
-include ht
-
-theorem tan_mem : Real.tan (θ / 2) ∈ coordinateField (radianConfig θ) := by
-  rw [tan_recover (cos_half_ne ht)]
-  let F := coordinateField (radianConfig θ)
-  have hc (j : Fin 2) : radianConfig θ 1 j ∈ F :=
-    IntermediateField.subset_adjoin ℚ _ (Set.mem_range_self ((1 : Fin 9), j))
-  have h0 := hc 0
-  have h1 := hc 1
-  simp only [radianConfig_zero, radianConfig_one, Fin.val_one, Nat.cast_one, one_mul] at h0 h1
-  exact F.div_mem h1 (F.add_mem F.one_mem h0)
-
-/-- The parameter `t = tan (θ/2)` as an element of the coordinate field. -/
-def tau : Coeff (radianConfig θ) := ⟨Real.tan (θ / 2), tan_mem θ ht⟩
-
-theorem coordinate_eq (k : Fin 9) :
-    coordinate (radianConfig θ) k 0 = (rot (tau θ ht) k).1 / (1 + tau θ ht ^ 2) ^ (k : ℕ) ∧
-      coordinate (radianConfig θ) k 1 = (rot (tau θ ht) k).2 / (1 + tau θ ht ^ 2) ^ (k : ℕ) := by
-  have hm := map_rot (algebraMap (Coeff (radianConfig θ)) ℝ) (tau θ ht) k
-  have hτ : algebraMap (Coeff (radianConfig θ)) ℝ (tau θ ht) = Real.tan (θ / 2) := rfl
-  rw [hτ] at hm
-  constructor
-  · apply (algebraMap (Coeff (radianConfig θ)) ℝ).injective
-    rw [map_div₀, map_pow, map_add, map_one, map_pow, hm.1, hτ]
-    change radianConfig θ k 0 = _
-    rw [radianConfig_zero, cos_eq (cos_half_ne ht)]
-  · apply (algebraMap (Coeff (radianConfig θ)) ℝ).injective
-    rw [map_div₀, map_pow, map_add, map_one, map_pow, hm.2, hτ]
-    change radianConfig θ k 1 = _
-    rw [radianConfig_one, sin_eq (cos_half_ne ht)]
-
-theorem coordinateField_eq :
-    coordinateField (radianConfig θ) =
-      IntermediateField.adjoin ℚ (Set.range (fun _ : Unit => Real.tan (θ / 2))) := by
-  let E : IntermediateField ℚ ℝ :=
-    IntermediateField.adjoin ℚ (Set.range (fun _ : Unit => Real.tan (θ / 2)))
-  let σ : E := ⟨Real.tan (θ / 2), IntermediateField.subset_adjoin ℚ _ ⟨(), rfl⟩⟩
-  have hm (k : ℕ) := map_rot (algebraMap E ℝ) σ k
-  have hσ : algebraMap E ℝ σ = Real.tan (θ / 2) := rfl
-  rw [hσ] at hm
-  apply le_antisymm
-  · apply IntermediateField.adjoin_le_iff.mpr
-    rintro x ⟨⟨k, j⟩, rfl⟩
-    fin_cases j
-    · have hx : radianConfig θ k 0 =
-          algebraMap E ℝ ((rot σ k).1 / (1 + σ ^ 2) ^ (k : ℕ)) := by
-        rw [map_div₀, map_pow, map_add, map_one, map_pow, (hm k).1, hσ, radianConfig_zero,
-          cos_eq (cos_half_ne ht)]
-      change radianConfig θ k 0 ∈ E
-      rw [hx]
-      exact Subtype.property ((rot σ k).1 / (1 + σ ^ 2) ^ (k : ℕ))
-    · have hx : radianConfig θ k 1 =
-          algebraMap E ℝ ((rot σ k).2 / (1 + σ ^ 2) ^ (k : ℕ)) := by
-        rw [map_div₀, map_pow, map_add, map_one, map_pow, (hm k).2, hσ, radianConfig_one,
-          sin_eq (cos_half_ne ht)]
-      change radianConfig θ k 1 ∈ E
-      rw [hx]
-      exact Subtype.property ((rot σ k).2 / (1 + σ ^ 2) ^ (k : ℕ))
-  · apply IntermediateField.adjoin_le_iff.mpr
-    rintro x ⟨_, rfl⟩
-    exact tan_mem θ ht
-
-/-! ## Embedding `B = F ⊗ F` into `ℚ(T, U)` (as in OAI `NineField`) -/
-
-local instance ratAlgebra : Algebra ℚ (IndependentTensor.Rat Unit) :=
-  OreLocalization.instAlgebra (R₀ := ℚ) (R := IndependentTensor.Poly Unit)
-    (S := nonZeroDivisors (IndependentTensor.Poly Unit))
-
-local instance jointAlgebra : Algebra ℚ (IndependentTensor.JointField Unit) :=
-  OreLocalization.instAlgebra (R₀ := ℚ) (R := IndependentTensor.JointPoly Unit)
-    (S := nonZeroDivisors (IndependentTensor.JointPoly Unit))
-
-theorem tan_indep : AlgebraicIndependent ℚ (fun _ : Unit => Real.tan (θ / 2)) :=
-  algebraicIndependent_unique_type_iff.mpr ht
-
-def coefficientEquiv : Coeff (radianConfig θ) ≃ₐ[ℚ] IndependentTensor.Rat Unit :=
-  (IntermediateField.equivOfEq (coordinateField_eq θ ht)).trans
-    (tan_indep θ ht).aevalEquivField.symm
-
-theorem coefficientEquiv_tau :
-    coefficientEquiv θ ht (tau θ ht) =
-      algebraMap (IndependentTensor.Poly Unit) (IndependentTensor.Rat Unit)
-        (MvPolynomial.X ()) := by
-  apply (tan_indep θ ht).aevalEquivField.injective
-  change (tan_indep θ ht).aevalEquivField
-      ((tan_indep θ ht).aevalEquivField.symm
-        ((IntermediateField.equivOfEq (coordinateField_eq θ ht)) (tau θ ht))) = _
-  rw [AlgEquiv.apply_symm_apply]
-  apply Subtype.ext
-  change Real.tan (θ / 2) =
-    ((tan_indep θ ht).aevalEquivField
-      (algebraMap (IndependentTensor.Poly Unit) (IndependentTensor.Rat Unit)
-        (MvPolynomial.X ())) : ℝ)
-  rw [AlgebraicIndependent.aevalEquivField_algebraMap_apply_coe]
-  simp
-
-def leftCoeff : Coeff (radianConfig θ) →ₐ[ℚ] IndependentTensor.JointField Unit :=
-  (IndependentTensor.leftMap Unit).comp (coefficientEquiv θ ht).toAlgHom
-
-def rightCoeff : Coeff (radianConfig θ) →ₐ[ℚ] IndependentTensor.JointField Unit :=
-  (IndependentTensor.rightMap Unit).comp (coefficientEquiv θ ht).toAlgHom
-
-/-- The polynomial inclusion `ℚ[T, U] → ℚ(T, U)`. -/
-abbrev incl : Poly →+* IndependentTensor.JointField Unit :=
-  algebraMap (IndependentTensor.JointPoly Unit) (IndependentTensor.JointField Unit)
-
-theorem leftCoeff_tau : leftCoeff θ ht (tau θ ht) = incl T := by
-  simp [leftCoeff, coefficientEquiv_tau, T]
-
-theorem rightCoeff_tau : rightCoeff θ ht (tau θ ht) = incl U := by
-  simp [rightCoeff, coefficientEquiv_tau, U]
-
-/-- Any algebra map sending `τ` to `z` sends the augmented coordinates to `rv z`. -/
-theorem map_augmented {K : Type*} [Field K] [Algebra ℚ K]
-    (g : Coeff (radianConfig θ) →ₐ[ℚ] K) (z : K) (hz : g (tau θ ht) = z) (k : Fin 9)
-    (m : Fin 3) : g (augmented (radianConfig θ) k (finSuccEquiv 2 m)) = rv z k m := by
-  have hm : g (rot (tau θ ht) k).1 = (rot z k).1 ∧ g (rot (tau θ ht) k).2 = (rot z k).2 := by
-    rw [← hz]
-    exact map_rot (g : Coeff (radianConfig θ) →+* K) (tau θ ht) k
-  obtain ⟨hx, hy⟩ := coordinate_eq θ ht k
-  fin_cases m
-  · simp [augmented, rv]
-  · change g (coordinate (radianConfig θ) k 0) = _
-    rw [hx, map_div₀, map_pow, map_add, map_one, map_pow, hm.1, hz]
-    simp [rv]
-  · change g (coordinate (radianConfig θ) k 1) = _
-    rw [hy, map_div₀, map_pow, map_add, map_one, map_pow, hm.2, hz]
-    simp [rv]
-
-/-- The tensor square of the coordinate field embeds in `ℚ(T, U)`. -/
-def tensorMap : TensorRing (radianConfig θ) →ₐ[ℚ] IndependentTensor.JointField Unit :=
-  (IndependentTensor.tensorEmbedding Unit).comp
-    (Algebra.TensorProduct.congr (coefficientEquiv θ ht) (coefficientEquiv θ ht)).toAlgHom
-
-theorem tensorMap_injective : Function.Injective (tensorMap θ ht) :=
-  (IndependentTensor.tensorEmbedding_injective Unit).comp
-    (Algebra.TensorProduct.congr (coefficientEquiv θ ht) (coefficientEquiv θ ht)).injective
-
-@[simp] theorem tensorMap_tmul (x y : Coeff (radianConfig θ)) :
-    tensorMap θ ht (x ⊗ₜ[ℚ] y) = leftCoeff θ ht x * rightCoeff θ ht y := by
-  simp [tensorMap, leftCoeff, rightCoeff]
-
-/-- Rows and columns: `Option (Fin 2) × Option (Fin 2) ≃ Fin 3 × Fin 3 ≃ Fin 9`. -/
-def e : NineLinearObstruction.Column 2 ≃ Fin 9 :=
-  (Equiv.prodCongr (finSuccEquiv 2).symm (finSuccEquiv 2).symm).trans
-    (finProdFinEquiv : Fin 3 × Fin 3 ≃ Fin (3 * 3))
-
-theorem reindex_evaluationMatrix :
-    Matrix.reindex e e
-        (NineLinearObstruction.evaluationMatrix (radianConfig θ) (tensorMap θ ht) e) =
-      G (incl T) (incl U) := by
-  ext k j
-  simp only [Matrix.reindex_apply, Matrix.submatrix_apply,
-    NineLinearObstruction.evaluationMatrix, Equiv.apply_symm_apply, tensorMap_tmul, map_one,
-    mul_one, one_mul, G]
-  obtain ⟨h1, h2⟩ : (e.symm j).1 = finSuccEquiv 2 (col j).1 ∧
-      (e.symm j).2 = finSuccEquiv 2 (col j).2 := ⟨rfl, rfl⟩
-  rw [h1, h2, map_augmented θ ht _ _ (leftCoeff_tau θ ht),
-    map_augmented θ ht _ _ (rightCoeff_tau θ ht)]
-
-theorem evaluationMatrix_det_ne_zero :
-    (NineLinearObstruction.evaluationMatrix (radianConfig θ) (tensorMap θ ht) e).det ≠ 0 := by
-  rw [← Matrix.det_reindex_self e, reindex_evaluationMatrix]
-  exact det_G_ne_zero incl
-    (IsFractionRing.injective (IndependentTensor.JointPoly Unit)
-      (IndependentTensor.JointField Unit))
-
-/-- Distinctness is a consequence: two equal points give two equal rows. -/
-theorem radianConfig_injective : Function.Injective (radianConfig θ) := by
-  intro i j hij
-  by_contra hne
-  apply evaluationMatrix_det_ne_zero θ ht
-  apply Matrix.det_zero_of_row_eq (e.symm.injective.ne hne)
-  funext q
-  have haug : augmented (radianConfig θ) i = augmented (radianConfig θ) j := by
-    funext α
-    cases α with
-    | none => rfl
-    | some m => exact Subtype.ext (congrArg (fun p : Space 2 => p m) hij)
-  simp only [NineLinearObstruction.evaluationMatrix, Equiv.apply_symm_apply, haug]
-
-theorem radianConfig_affineSpan : affineSpan ℝ (Set.range (radianConfig θ)) = ⊤ := by
-  have hfive : affineSpan ℝ (Set.range (radianConfig θ ∘ NineGeometry.firstFive)) = ⊤ :=
-    CircleConsequence.circle_five_affineSpan (radianConfig θ ∘ NineGeometry.firstFive)
-      ((radianConfig_injective θ ht).comp NineGeometry.firstFive_injective) 0 1
-      (fun i => radianConfig_on_circle θ (NineGeometry.firstFive i))
-  apply top_unique
-  rw [← hfive]
-  apply affineSpan_mono
-  rintro p ⟨i, rfl⟩
-  exact Set.mem_range_self (NineGeometry.firstFive i)
-
-/-- The main theorem inside the section, where the local `Algebra ℚ` instance on `ℚ(T, U)`
-matches the one `tensorMap` was built with. -/
-theorem radian_configuration_aux :
+/-- Transcendence of the half-angle tangent implies distinctness and obstructs Ramsey. -/
+theorem radian_configuration (θ : ℝ) (ht : Transcendental ℚ (tan (θ / 2))) :
     Function.Injective (radianConfig θ) ∧ (∀ k, dist (radianConfig θ k) 0 = 1) ∧
-      ¬ Ramsey (radianConfig θ) :=
-  ⟨radianConfig_injective θ ht, radianConfig_on_circle θ,
-    NineLinearObstruction.not_ramsey_of_det_ne_zero (radianConfig θ) (by decide) (by decide)
-      (radianConfig_affineSpan θ ht) (tensorMap θ ht) (tensorMap_injective θ ht) e
-      (evaluationMatrix_det_ne_zero θ ht)⟩
+      ¬ Ramsey (radianConfig θ) := by
+  have hz := turn_transcendental θ ((algebraic_tan_iff_cos θ).not.mp ht)
+  have hi : Function.Injective (radianConfig θ) := by
+    intro i j hij
+    refine Fin.ext (powers_injective hz (show turn θ ^ i.val = turn θ ^ j.val from ?_))
+    rw [turn_pow,turn_pow]
+    simp only [turn,Complex.exp_mul_I,← Complex.ofReal_cos,← Complex.ofReal_sin]
+    simp_all [radianConfig]
+  exact ⟨hi,radianConfig_on_circle θ,nonramsey_of_complex_matrix _ powLabel (expRow (turn θ)) _ (fun _ => pow_ne_zero _ (Complex.exp_ne_zero _))
+    (hi.ne (by decide : (0 : Fin 9) ≠ 1)) (exp_det_regular hz) (span_expRow θ)⟩
 
-end CoordField
+theorem radian_not_ramsey (θ : ℝ) (ht : Transcendental ℚ (tan (θ / 2))) :
+    ¬ Ramsey (radianConfig θ) := (radian_configuration θ ht).2.2
 
-/-! ## Main theorems -/
-
-/-- **Theorem D, ⇒.** If `tan (θ/2)` is transcendental, the nine points at angles
-`0, θ, …, 8θ` are distinct, lie on the unit circle, and are not Euclidean Ramsey. -/
-theorem radian_configuration (θ : ℝ) (ht : Transcendental ℚ (Real.tan (θ / 2))) :
-    Function.Injective (radianConfig θ) ∧ (∀ k, dist (radianConfig θ k) 0 = 1) ∧
-      ¬ Ramsey (radianConfig θ) :=
-  radian_configuration_aux θ ht
-
-theorem radian_not_ramsey (θ : ℝ) (ht : Transcendental ℚ (Real.tan (θ / 2))) :
-    ¬ Ramsey (radianConfig θ) :=
-  (radian_configuration θ ht).2.2
-
-/-! ## The converse (`ramsey_of_algebraic`) and the iff -/
-
-theorem algebraic_of_tan {θ : ℝ} (h : IsAlgebraic ℚ (Real.tan (θ / 2))) :
-    IsAlgebraic ℚ (Real.cos θ) ∧ IsAlgebraic ℚ (Real.sin θ) := by
-  let A := algebraicClosure ℚ ℝ
-  by_cases hc : Real.cos (θ / 2) = 0
-  · have h2 : θ = 2 * (θ / 2) := by ring
-    rw [h2, Real.cos_two_mul, Real.sin_two_mul, hc]
-    refine ⟨?_, by simpa using isAlgebraic_zero⟩
-    rw [← mem_algebraicClosure_iff]
-    norm_num
-  · have hA : Real.tan (θ / 2) ∈ A := mem_algebraicClosure_iff.mpr h
-    obtain ⟨h1, h2⟩ := half_angle hc
-    have hd : 1 + Real.tan (θ / 2) ^ 2 ∈ A := A.add_mem A.one_mem (A.pow_mem hA 2)
-    have hcos : Real.cos θ = (1 - Real.tan (θ / 2) ^ 2) / (1 + Real.tan (θ / 2) ^ 2) := by
-      rw [eq_div_iff (one_add_tan_sq_ne θ), mul_comm, h1]
-    have hsin : Real.sin θ = (2 * Real.tan (θ / 2)) / (1 + Real.tan (θ / 2) ^ 2) := by
-      rw [eq_div_iff (one_add_tan_sq_ne θ), mul_comm, h2]
-    rw [← mem_algebraicClosure_iff, ← mem_algebraicClosure_iff, hcos, hsin]
-    exact ⟨A.div_mem (A.sub_mem A.one_mem (A.pow_mem hA 2)) hd,
-      A.div_mem (A.mul_mem (A.natCast_mem 2) hA) hd⟩
-
-theorem algebraic_multiples {θ : ℝ} (hc : IsAlgebraic ℚ (Real.cos θ))
-    (hs : IsAlgebraic ℚ (Real.sin θ)) (n : ℕ) :
-    IsAlgebraic ℚ (Real.cos (n * θ)) ∧ IsAlgebraic ℚ (Real.sin (n * θ)) := by
-  let A := algebraicClosure ℚ ℝ
-  rw [← mem_algebraicClosure_iff] at hc hs ⊢
-  rw [← mem_algebraicClosure_iff]
-  induction n with
-  | zero => simp
-  | succ n ih =>
-    rw [Nat.cast_succ, add_mul, one_mul, Real.cos_add, Real.sin_add]
-    exact ⟨A.sub_mem (A.mul_mem ih.1 hc) (A.mul_mem ih.2 hs),
-      A.add_mem (A.mul_mem ih.2 hc) (A.mul_mem ih.1 hs)⟩
-
-/-- **Theorem D.** For distinct radian points: Ramsey iff `cos θ` and `sin θ` are algebraic
-(that is, iff `e^{iθ}` is algebraic). -/
-theorem radian_ramsey_iff (θ : ℝ) (hinj : Function.Injective (radianConfig θ)) :
-    Ramsey (radianConfig θ) ↔ IsAlgebraic ℚ (Real.cos θ) ∧ IsAlgebraic ℚ (Real.sin θ) := by
-  constructor
-  · intro hR
-    by_contra hna
-    exact radian_not_ramsey θ (fun htan => hna (algebraic_of_tan htan)) hR
-  · rintro ⟨hc, hs⟩
-    refine ramsey_of_algebraic (radianConfig θ) (by norm_num) (by norm_num) hinj ?_
-      ⟨0, 1, radianConfig_on_circle θ⟩
-    intro k j
-    fin_cases j
-    · simpa using (algebraic_multiples hc hs k).1
-    · simpa using (algebraic_multiples hc hs k).2
-
-/-- The same, phrased with the half-angle tangent (Mathlib's junk value `tan (π/2) = 0` is
-algebraic, and at `θ ≡ π` the points are `±1` with algebraic coordinates, so no case split
-is needed in the statement). -/
 theorem radian_ramsey_iff_tan (θ : ℝ) (hinj : Function.Injective (radianConfig θ)) :
-    Ramsey (radianConfig θ) ↔ IsAlgebraic ℚ (Real.tan (θ / 2)) := by
-  constructor
-  · intro hR
-    by_contra hna
-    exact radian_not_ramsey θ hna hR
-  · intro h
-    exact (radian_ramsey_iff θ hinj).2 (algebraic_of_tan h)
+    Ramsey (radianConfig θ) ↔ IsAlgebraic ℚ (tan (θ / 2)) := by
+  refine ⟨fun h => by_contradiction fun hn => radian_not_ramsey θ hn h, fun h => ?_⟩
+  have hc := (algebraic_tan_iff_cos θ).mp h
+  refine ramsey_of_algebraic _ (by decide) hinj ?_ (fun k => by simp [radianConfig,Fin.sum_univ_two])
+  intro k j
+  have h : IsAlgebraic ℚ (cos ((k:ℕ)*θ)) := by
+    simpa [Polynomial.Chebyshev.T_real_cos] using
+      (by_contradiction fun ht => (transcendental_aeval_iff.mp ht).1 hc : IsAlgebraic ℚ (Polynomial.aeval (cos θ) (Polynomial.Chebyshev.T ℚ k.val)))
+  fin_cases j <;> first | exact h | exact algebraic_sin h
 
-end Radian
-end EuclideanRamsey
+theorem radian_ramsey_iff (θ : ℝ) (hinj : Function.Injective (radianConfig θ)) :
+    Ramsey (radianConfig θ) ↔ IsAlgebraic ℚ (cos θ) ∧ IsAlgebraic ℚ (sin θ) :=
+  (radian_ramsey_iff_tan θ hinj).trans ((algebraic_tan_iff_cos θ).trans
+    ⟨fun h => ⟨h, algebraic_sin h⟩, And.left⟩)
+
 end
-end OAI
+end OAI.EuclideanRamsey.Radian

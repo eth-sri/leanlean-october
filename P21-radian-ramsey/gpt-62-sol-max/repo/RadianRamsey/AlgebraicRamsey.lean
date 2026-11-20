@@ -1,158 +1,119 @@
 module
 
-public import OAI.Combinatorics.EuclideanRamsey.Main
+public import OAI.Combinatorics.EuclideanRamsey.GramCompletion
+public import OAI.Combinatorics.EuclideanRamsey.CorrectionPaths
+public import OAI.Combinatorics.EuclideanRamsey.ColoringCompactness
 
 @[expose] public section
 
-/-!
-# Spherical configurations with algebraic coordinates are Euclidean Ramsey (checked)
-
-Builds on OpenAI's own Lean proof (openai/math @ fd4aeeb2, `lean/OAI/Combinatorics/EuclideanRamsey`,
-result 172), using its definitions directly; those definitions are identical to the Comparator
-challenge `lean/ComparatorChallenges/EuclideanRamsey.lean`.
-No `sorry`; `#print axioms ramsey_of_algebraic` = [propext, Classical.choice, Quot.sound].
-
-Statement: a finite spherical configuration (≥ 2 distinct points, dimension ≥ 1) all of whose
-coordinates are real algebraic numbers is Euclidean Ramsey. So Graham's spherical conjecture holds
-over the algebraic numbers, and every non-Ramsey spherical set (Pálvölgyi's heptagon with
-transcendental r, OpenAI's 9- and 12-point examples) needs a transcendental coordinate.
-In Pálvölgyi's family {(0,0)} ∪ {(j, ±√(j(2r−j))) : j = 1,3,4}, r > 2: Ramsey iff r is algebraic.
--/
-
-namespace OAI
-noncomputable section
 open scoped TensorProduct
-namespace EuclideanRamsey
+open Algebra.TensorProduct (tmul_mul_tmul)
+open Algebra.FormallyUnramified (elem one_tmul_mul_elem lmul_elem)
+open Finset
+namespace OAI.EuclideanRamsey
 
-/-! ## Beyond OpenAI's development
+/-- Change a diagonal tensor presentation so that its negative coefficients
+have arbitrarily small quadratic cost under a distinguished real functional. -/
+private lemma rebalance {W ι : Type} [AddCommGroup W] [Module ℚ W] [Fintype ι]
+    (b : ι → W) (c : ι → ℚ) (f : W →ₗ[ℚ] ℝ)
+    (hf : ∑ j, (c j : ℝ) * f (b j)^2 = 1) (D : ℝ) {η : ℝ} (hη : 0 < η) :
+    ∃ (B : Option ι → W) (C : Option ι → ℚ),
+      (∑ j, C j • (B j ⊗ₜ[ℚ] B j)) = ∑ j, c j • (b j ⊗ₜ[ℚ] b j) ∧
+      D * (∑ j, max (-(C j : ℝ)) 0 * f (B j)^2) < η := by
+  let t : ι → ℝ := f ∘ b
+  let A (x : ι → ℝ) := ∑ j, (c j : ℝ) * x j ^ 2
+  let V (x : ι → ℝ) := ∑ j, (c j : ℝ) * x j * t j
+  let E (x : ι → ℝ) := D * (max (A x-2) 0 * (V x)^2 +
+    ∑ j, max (-(c j : ℝ)) 0 * (t j - x j * V x)^2)
+  have hV : V t = 1 := by grind
+  have hE : E t = 0 := by aesop
+  have he : Continuous E := by unfold E A V; fun_prop
+  have hd : DenseRange (fun x : ι → ℚ => fun j => (x j : ℝ)) := DenseRange.piMap fun _ => Rat.denseRange_cast
+  obtain ⟨r,hr⟩ := hd.exists_mem_open (isOpen_lt he continuous_const) ⟨t,by simpa [hE] using hη⟩
+  let a := ∑ j, c j * r j^2
+  let z := ∑ j, (c j * r j) • b j
+  have hzf : f z = V (fun j => (r j : ℝ)) := by simp [z,V,t,Rat.smul_def]
+  refine ⟨Option.elim' z (fun j => b j - r j • z), Option.elim' (2-a) c, ?_, ?_⟩
+  · simp only [Fintype.sum_option, Option.elim'_none, Option.elim'_some]
+    simp only [TensorProduct.sub_tmul,TensorProduct.tmul_sub,TensorProduct.smul_tmul',
+      TensorProduct.tmul_smul,smul_sub,smul_smul,Finset.sum_sub_distrib,← pow_two]
+    simp_rw [TensorProduct.smul_tmul _ z, ← TensorProduct.tmul_sum,
+      ← TensorProduct.sum_tmul, ← Finset.sum_smul]
+    simp only [TensorProduct.tmul_smul]; module
+  · simpa [E,A,t,a,hzf,Rat.smul_def] using hr
 
-Theorem A is prior work, not new here: JD-Jones-ASES/six-concyclic-lean (Lean, criterion
-level), Rogerhu12/openai-math-extensions (TeX) and atimics/math2 (Lean, end to end for
-configurations with full affine span). This file is a further Lean proof on OpenAI's
-development. -/
+lemma diagonalCertificate_of_algebraic {s d : ℕ} (a : Fin s → Space d)
+    (hA : ∀ i j, IsAlgebraic ℚ (a i j)) (hS : ∀ i, ∑ j, (a i j)^2 = 1)
+    (η : ℝ) (hη : 0 < η) : DiagonalCertificate a η := by
+  classical
+  let S := Set.range (fun ij : Fin s × Fin d => a ij.1 ij.2)
+  let F := IntermediateField.adjoin ℚ S
+  let x (i : Fin s) (j : Fin d) : F :=
+    ⟨a i j, IntermediateField.subset_adjoin ℚ S (Set.mem_range_self (i,j))⟩
+  have : FiniteDimensional ℚ F := IntermediateField.finiteDimensional_adjoin (S:=S)
+    (by rintro _ ⟨⟨i,j⟩,rfl⟩; exact (hA i j).isIntegral)
+  have := Algebra.FormallyUnramified.of_isSeparable ℚ F
+  let t := elem ℚ F
+  let σ := Algebra.TensorProduct.comm ℚ F F
+  let E := t * σ t
+  have hσ : σ E = E := by
+    change σ (t * σ t) = _
+    rw [map_mul,show σ (σ t) = t from TensorProduct.comm_comm ℚ F F t,mul_comm]
+  obtain ⟨n,u,v,h⟩ := TensorProduct.exists_sum_tmul_eq E
+  let ι := Fin n × Bool
+  let b₀ (p : ι) := if p.2 then u p.1+v p.1 else u p.1-v p.1
+  let c₀ (p : ι) : ℚ := if p.2 then 1/4 else -1/4
+  have he₀ : ∑ j, c₀ j • (b₀ j ⊗ₜ[ℚ] b₀ j) = E := by
+    conv_rhs => rw [show E = (1/2:ℚ) • (E+σ E) by rw [hσ]; module]
+    rw [Fintype.sum_prod_type,h,map_sum,← sum_add_distrib,smul_sum]
+    apply Finset.sum_congr rfl
+    intro j _
+    simp [b₀,c₀,σ,TensorProduct.add_tmul,TensorProduct.tmul_add,TensorProduct.sub_tmul,TensorProduct.tmul_sub]
+    module
+  have ht : Algebra.TensorProduct.lmul' ℚ t = 1 := lmul_elem
+  have hc : (Algebra.TensorProduct.lmul' ℚ).comp σ.toAlgHom = Algebra.TensorProduct.lmul' ℚ :=
+    Algebra.TensorProduct.ext' (fun x y => mul_comm y x)
+  let φ := F.val.comp (Algebra.TensorProduct.lmul' ℚ)
+  have hh : Algebra.TensorProduct.lmul' ℚ (σ t) = 1 := (congrArg (fun f => f t) hc).trans ht
+  have hval {τ : Type} [Fintype τ] {u : τ → F} {g : τ → ℚ}
+      (hu : ∑ j, g j • (u j ⊗ₜ[ℚ] u j) = E) : ∑ j, (g j:ℝ) * F.val (u j)^2 = 1 := by
+    simpa [φ,E,ht,hh,Rat.smul_def,pow_two] using congrArg φ hu
+  obtain ⟨b,c,hbc,hneg⟩ := rebalance b₀ c₀ F.val.toLinearMap (hval he₀) d hη
+  have h' : (∑ j, c j • (b j ⊗ₜ[ℚ] b j)) = E := hbc.trans he₀
+  have hb := hval h'
+  have hE (x : F) : (x ⊗ₜ[ℚ] x) * E = ((x^2) ⊗ₜ[ℚ] (1:F)) * E := by
+    dsimp only [E]
+    rw [show x ⊗ₜ[ℚ] x = (x ⊗ₜ[ℚ] (1:F)) * ((1:F) ⊗ₜ[ℚ] x) by simp [tmul_mul_tmul],
+      mul_assoc _ _ (t*σ t),← mul_assoc _ t,one_tmul_mul_elem]
+    simp [t,tmul_mul_tmul,← mul_assoc,pow_two]
+  refine ⟨_,inferInstance,F.val ∘ b,c,fun i => ?_,hb,hneg⟩
+  · let f := Algebra.TensorProduct.map F.val F.val
+    have hl (j : Fin d) : (∑ l, c l • ((a i j * F.val (b l)) ⊗ₜ[ℚ] (a i j * F.val (b l)))) =
+        f (((x i j ^ 2) ⊗ₜ[ℚ] (1:F))*E) := by
+      rw [← hE, ← h', mul_sum, map_sum]
+      simp [x,f,map_smul,mul_smul_comm,tmul_mul_tmul]
+    have h : (∑ j, (x i j)^2) = 1 := F.val.injective (by simpa [x] using hS i)
+    simp only [Function.comp_apply,hl]
+    rw [← map_sum,← sum_mul,← TensorProduct.sum_tmul,h,← Algebra.TensorProduct.one_def,one_mul,← h',map_sum]
+    simp [f,map_smul]
 
-section Algebraic
+theorem ramsey_of_algebraic {s d : ℕ} (a : Fin s → Space d) (hs : 2 ≤ s)
+    (ha : Function.Injective a) (hA : ∀ i j, IsAlgebraic ℚ (a i j))
+    (hS : ∀ i, ∑ j, (a i j)^2 = 1) : Ramsey a := by
+  apply paths_ramsey a
+  dsimp only
+  intro ε hε
+  have hs' : (0:ℝ)<s := Nat.cast_pos.mpr (by omega)
+  let η := ε/3
+  have hη : 0<η := by dsimp [η]; positivity
+  obtain ⟨τ,hτ,M,hM,f,g,hf,hg,hperm⟩ := diagonal_two_scale a (by omega) η (diagonalCertificate_of_algebraic a hA hS η hη)
+  let := hτ
+  let δ := M*η/s
+  obtain ⟨w,lmb,μ,hp,hm,hlmb,hr⟩ := permutation_equal_endpoints a ha f g
+    (M*(1+η)) (M*η) δ (by positivity) (by positivity) (by dsimp [δ]; positivity) hf hg hperm
+  refine ⟨w,lmb,μ,hp,hm,hlmb,hr.trans_lt ?_⟩
+  dsimp [δ,η]
+  field_simp
+  nlinarith [sq_nonneg ε]
 
-variable {s d : ℕ} (a : Fin s → Space d)
-
-/-- Descent of the sphere equation to the coordinate field: a real solution `(ℓ, k)` of
-`∑ⱼ aᵢⱼ² + ∑ⱼ ℓⱼ aᵢⱼ + k = 0` yields one with entries in `F`, via an `F`-linear
-retraction `ℝ → F`. -/
-lemma sphere_equation_descends
-    (hsph : ∃ c : Space d, ∃ ρ : ℝ, ∀ i, dist (a i) c = ρ) :
-    ∃ ℓ : Fin d → Coeff a, ∃ k : Coeff a, ∀ i : Fin s,
-      ∑ j, coordinate a i j * coordinate a i j + ∑ j, ℓ j * coordinate a i j + k = 0 := by
-  obtain ⟨c, ρ, hρ⟩ := hsph
-  -- the real sphere equation
-  have hreal : ∀ i, ∑ j, a i j * a i j + ∑ j, (-2 * c j) * a i j
-      + (∑ j, c j * c j - ρ ^ 2) = 0 := by
-    intro i
-    have h1 := hρ i
-    rw [EuclideanSpace.dist_eq] at h1
-    have hnn : 0 ≤ ∑ j, dist (a i j) (c j) ^ 2 := Finset.sum_nonneg (fun _ _ => sq_nonneg _)
-    have h2 : ∑ j, dist (a i j) (c j) ^ 2 = ρ ^ 2 := by
-      rw [← h1, Real.sq_sqrt hnn]
-    simp only [Real.dist_eq, sq_abs] at h2
-    have : ∑ j, (a i j - c j) ^ 2
-        = ∑ j, a i j * a i j + ∑ j, (-2 * c j) * a i j + ∑ j, c j * c j := by
-      rw [← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
-      refine Finset.sum_congr rfl (fun j _ => ?_)
-      ring
-    linarith
-  -- an F-linear retraction ℝ → F
-  let ι : Coeff a →ₗ[Coeff a] ℝ := Algebra.linearMap (Coeff a) ℝ
-  have hι : Function.Injective ι := (algebraMap (Coeff a) ℝ).injective
-  obtain ⟨π, hπ⟩ := LinearMap.exists_leftInverse_of_injective ι
-    (LinearMap.ker_eq_bot.mpr hι)
-  have hπx : ∀ x : Coeff a, π (x : ℝ) = x := fun x => by
-    have := LinearMap.congr_fun hπ x
-    simpa [ι] using this
-  refine ⟨fun j => π (-2 * c j), π (∑ j, c j * c j - ρ ^ 2), fun i => ?_⟩
-  have key := congrArg π (hreal i)
-  rw [map_zero, map_add, map_add, map_sum, map_sum] at key
-  have e1 : ∀ j, π (a i j * a i j) = coordinate a i j * coordinate a i j := by
-    intro j
-    have : (a i j * a i j : ℝ) = ((coordinate a i j * coordinate a i j : Coeff a) : ℝ) := rfl
-    rw [this, hπx]
-  have e2 : ∀ j, π ((-2 * c j) * a i j) = π (-2 * c j) * coordinate a i j := by
-    intro j
-    have : ((-2 * c j) * a i j : ℝ) = (coordinate a i j) • (-2 * c j) := by
-      rw [Algebra.smul_def]
-      simp [coordinate, mul_comm]
-    rw [this, map_smul, smul_eq_mul, mul_comm]
-  simp only [e1, e2] at key
-  exact key
-
-theorem fieldCriterion_of_algebraic
-    (halg : ∀ i j, IsAlgebraic ℚ (a i j))
-    (hsph : ∃ c : Space d, ∃ ρ : ℝ, ∀ i, dist (a i) c = ρ) :
-    FieldCriterion a := by
-  -- `F` is a number field, hence unramified over `ℚ`
-  have : FiniteDimensional ℚ (Coeff a) := by
-    unfold Coeff coordinateField
-    have : Finite (Set.range (fun ij : Fin s × Fin d => a ij.1 ij.2)) := Set.finite_range _
-    refine IntermediateField.finiteDimensional_adjoin (fun x hx => ?_)
-    obtain ⟨ij, rfl⟩ := hx
-    exact (halg ij.1 ij.2).isIntegral
-  have : Algebra.FormallyUnramified ℚ (Coeff a) :=
-    Algebra.FormallyUnramified.of_isSeparable ℚ (Coeff a)
-  obtain ⟨t, ht, ht1⟩ :=
-    (Algebra.FormallyUnramified.iff_exists_tensorProduct (R := ℚ) (S := Coeff a)).mp
-      inferInstance
-  have hswap : ∀ x : Coeff a, t * ((1 : Coeff a) ⊗ₜ[ℚ] x) = t * (x ⊗ₜ[ℚ] (1 : Coeff a)) := by
-    intro x
-    have := ht x
-    rw [sub_mul] at this
-    rw [mul_comm t, mul_comm t]
-    exact sub_eq_zero.mp this
-  -- the sphere equation over `F`, as a quadratic-form matrix `h`
-  obtain ⟨ℓ, k, hk⟩ := sphere_equation_descends a hsph
-  let h : Matrix (Option (Fin d)) (Option (Fin d)) (Coeff a) := fun α β =>
-    match α, β with
-    | none, none => k
-    | none, some j => ℓ j
-    | some _, none => 0
-    | some j, some j' => if j = j' then 1 else 0
-  have hquad : ∀ i, ∑ α, ∑ β, augmented a i α * h α β * augmented a i β = 0 := by
-    intro i
-    simp only [Fintype.sum_option, h, augmented]
-    simp only [mul_one, one_mul, zero_mul, mul_ite, ite_mul, mul_zero,
-      Finset.sum_ite_eq, Finset.mem_univ, ite_true, add_zero, zero_add, Finset.sum_const_zero]
-    linear_combination hk i
-  refine ⟨fun α β => t * (h α β ⊗ₜ[ℚ] (1 : Coeff a)), fun i => ?_, fun α β => ?_⟩
-  · have term : ∀ α β,
-        (augmented a i α ⊗ₜ[ℚ] (1 : Coeff a)) * (t * (h α β ⊗ₜ[ℚ] (1 : Coeff a))) *
-          ((1 : Coeff a) ⊗ₜ[ℚ] augmented a i β)
-        = t * ((augmented a i α * h α β * augmented a i β) ⊗ₜ[ℚ] (1 : Coeff a)) := by
-      intro α β
-      calc (augmented a i α ⊗ₜ[ℚ] (1 : Coeff a)) * (t * (h α β ⊗ₜ[ℚ] (1 : Coeff a))) *
-            ((1 : Coeff a) ⊗ₜ[ℚ] augmented a i β)
-          = (t * ((1 : Coeff a) ⊗ₜ[ℚ] augmented a i β)) *
-              ((augmented a i α * h α β) ⊗ₜ[ℚ] (1 : Coeff a)) := by
-            rw [show (augmented a i α * h α β) ⊗ₜ[ℚ] (1 : Coeff a)
-                = (augmented a i α ⊗ₜ[ℚ] (1 : Coeff a)) * (h α β ⊗ₜ[ℚ] (1 : Coeff a)) by
-                  rw [Algebra.TensorProduct.tmul_mul_tmul, mul_one]]
-            ring
-        _ = (t * (augmented a i β ⊗ₜ[ℚ] (1 : Coeff a))) *
-              ((augmented a i α * h α β) ⊗ₜ[ℚ] (1 : Coeff a)) := by rw [hswap]
-        _ = t * ((augmented a i α * h α β * augmented a i β) ⊗ₜ[ℚ] (1 : Coeff a)) := by
-            rw [mul_assoc, Algebra.TensorProduct.tmul_mul_tmul, mul_one, mul_comm _ (augmented a i β),
-              ← mul_assoc, mul_comm (augmented a i β)]
-    simp only [term, ← Finset.mul_sum, ← TensorProduct.sum_tmul, hquad, TensorProduct.zero_tmul,
-      mul_zero]
-  · simp only [multiply, map_mul, ht1, Algebra.TensorProduct.lmul'_apply_tmul, mul_one, one_mul, h]
-
-/-- **Graham's spherical conjecture holds for algebraic configurations.** Fully checked: uses OpenAI's
-proved sufficiency direction `fieldCriterion_ramsey` of the classification. -/
-theorem ramsey_of_algebraic
-    (hs : 2 ≤ s) (hd : 1 ≤ d) (ha : Function.Injective a)
-    (halg : ∀ i j, IsAlgebraic ℚ (a i j))
-    (hsph : ∃ c : Space d, ∃ ρ : ℝ, ∀ i, dist (a i) c = ρ) :
-    Ramsey a :=
-  fieldCriterion_ramsey a hs hd ha (fieldCriterion_of_algebraic a halg hsph)
-
-end Algebraic
-
-end EuclideanRamsey
-end
-end OAI
+end OAI.EuclideanRamsey
