@@ -1,11 +1,22 @@
 module
 
-public import GS.GlobalGeometry.FrobeniusProjection
-public import GS.Continuation.AmbientProjection
-public import GS.Extensions.ProjectionSmooth
+public import GS.Core
+public import Mathlib.Analysis.InnerProductSpace.Projection.FiniteDimensional
+public import Mathlib.Analysis.InnerProductSpace.PiL2
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Analysis.Matrix.Normed
 public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
 
 @[expose] public section
+
+noncomputable section
+
+section
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.defeqAttrib.useBackward true
@@ -23,9 +34,8 @@ These are exact generator-image results and smooth formulas in the factors.
 No smooth quotient, tangent-bundle identification, efficient pseudoinverse
 algorithm, or minimal-norm factor lift is claimed by this module.
 -/
-noncomputable section
 attribute [local instance] Matrix.normedAddCommGroup Matrix.normedSpace
-open Matrix GS GS.Extensions GS.Continuation
+open Matrix GS
 namespace GS.GlobalGeometry
 variable {n : ℕ}
 
@@ -37,47 +47,24 @@ def TiedEntries (b : ℕ) (τ : ℕ → ℕ) (A : Mat n) : Prop :=
     τ (i.val / b) = τ (i'.val / b) →
     i.val % b = i'.val % b → j.val % b = j'.val % b → A i j = A i' j'
 
-def sharedSkewSpace (b : ℕ) (τ : ℕ → ℕ) : Submodule ℝ (Mat n) where
-  carrier := {A | BlockDiagonal b A ∧ IsSkew A ∧ TiedEntries b τ A}
-  zero_mem' := by
-    refine ⟨Supported.zero, ?_, ?_⟩
-    · simp [IsSkew]
-    · intro i j i' j' _ _ _ _ _; rfl
-  add_mem' := by
-    rintro A B ⟨hsA,hkA,htA⟩ ⟨hsB,hkB,htB⟩
-    refine ⟨hsA.add hsB, ?_, ?_⟩
-    · change Aᵀ = -A at hkA
-      change Bᵀ = -B at hkB
-      simp only [IsSkew, Matrix.transpose_add, hkA, hkB, neg_add]
-    · intro i j i' j' h h' hτ hi hj
-      simp only [Matrix.add_apply, htA i j i' j' h h' hτ hi hj,
-        htB i j i' j' h h' hτ hi hj]
-  smul_mem' := by
-    rintro a A ⟨hs,hk,ht⟩
-    refine ⟨Supported.smul a hs, ?_, ?_⟩
-    · change Aᵀ = -A at hk
-      simp only [IsSkew, Matrix.transpose_smul, hk, smul_neg]
-    · intro i j i' j' h h' hτ hi hj
-      simp only [Matrix.smul_apply, ht i j i' j' h h' hτ hi hj]
+end GS.GlobalGeometry
 
-/-- Two actual shared generator spaces, not free parameters for a projector. -/
-def sharedCoreMap (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P : Mat n) :
-    (sharedSkewSpace (n := n) b₂ τ₂ × sharedSkewSpace (n := n) b₁ τ₁) →ₗ[ℝ] Mat n where
-  toFun v := v.1.val + P * v.2.val * Pᵀ
-  map_add' v w := by
-    simp only [Prod.fst_add, Prod.snd_add, Submodule.coe_add,
-      Matrix.mul_add, Matrix.add_mul]
-    abel
-  map_smul' a v := by
-    change (a • v.1.val) + P * (a • v.2.val) * Pᵀ =
-      a • (v.1.val + P * v.2.val * Pᵀ)
-    simp only [Matrix.mul_smul, Matrix.smul_mul, smul_add]
+end
 
-def sharedCore (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P : Mat n) : Submodule ℝ (Mat n) :=
-  LinearMap.range (sharedCoreMap b₁ b₂ τ₁ τ₂ P)
+section
 
-def SharedDirection (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P L R Y : Mat n) : Prop :=
-  ∃ C ∈ sharedSkewSpace b₂ τ₂, ∃ Ω ∈ sharedSkewSpace b₁ τ₁,
-    Y = L*C*P*R + L*P*Ω*R
+namespace GS.GlobalGeometry
+variable {n : ℕ}
+
+/-- An actual finite matrix factor with the specified physical block ties. -/
+def SharedOrthogonalFactor (b : ℕ) (τ : ℕ → ℕ) (A : Mat n) : Prop :=
+  BlockDiagonal b A ∧ Orthogonal A ∧ TiedEntries b τ A
+
+/-- The image of the actual tied orthogonal factors. -/
+def InSharedA2Orth (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P X : Mat n) : Prop :=
+  ∃ L R, SharedOrthogonalFactor b₂ τ₂ L ∧ SharedOrthogonalFactor b₁ τ₁ R ∧
+    X = product2 L P R
 
 end GS.GlobalGeometry
+
+end

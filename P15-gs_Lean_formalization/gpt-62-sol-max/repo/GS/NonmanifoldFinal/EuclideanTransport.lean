@@ -1,115 +1,160 @@
 module
 
-public import GS.NonmanifoldObstruction.OpenGerms
+public import GS.OriginalLocalModel
+public import GS.Core
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.Analysis.SpecialFunctions.Exponential
+public import Mathlib.Analysis.SpecialFunctions.Sqrt
+public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.FDeriv
+public import Mathlib.Analysis.SpecialFunctions.Trigonometric.Inverse
+public import GS.Topology.RankOne
+public import Mathlib.Topology.OpenPartialHomeomorph.Constructions
+public import Mathlib.Analysis.InnerProductSpace.PiL2
 
 @[expose] public section
+
+noncomputable section
+
+section
 
 set_option backward.isDefEq.respectTransparency false
 set_option backward.defeqAttrib.useBackward true
 
-set_option autoImplicit false
-
 /-!
-# Exact transport of the original local Euclidean property
+# A pointed homeomorphism of neighbourhoods of the FULL GS family
 
-The auxiliary intrinsic definition is proved equivalent to EuclideanAtSubset,
-not silently substituted for it. All transfer lemmas are elementary topology;
-none assert invariance of dimension or a homological computation.
+The source contains a neighbourhood in localFamily itself. The target contains a neighbourhood in
+the independent skew-coordinate cone model. Both neighbourhood claims are
+proved using full-fibre coverage and estimates for the g map.
+
+Neighbourhoods are not asserted to be open: the source and target may be the
+compact images. A homeomorphism of these neighbourhoods is an equivalence of
+the pointed local topological spaces. A final EuclideanAtSubset contradiction
+still needs the topological cone obstruction and a restriction/transport lemma.
+
 -/
-noncomputable section
-open GS GS.NonmanifoldObstruction
+open Matrix Filter GS
+open scoped Topology
+namespace GS.NonmanifoldCompletion
+
+/-- Explicit pointed homeomorphism between neighbourhood subsets. -/
+structure PointedNeighbourhoodModel (X Y : Type*) [TopologicalSpace X]
+    [TopologicalSpace Y] (x : X) (y : Y) where
+  source : Set X
+  target : Set Y
+  source_nhds : source ∈ 𝓝 x
+  target_nhds : target ∈ 𝓝 y
+  chart : ↥source ≃ₜ ↥target
+  map_point : ∀ hx : x∈source, (chart ⟨x,hx⟩).val = y
+
+end GS.NonmanifoldCompletion
+
+end
+
+section
+
+set_option autoImplicit false
+open Set Topology
+open scoped Topology
 namespace GS.NonmanifoldFinal
 
 variable {X Y : Type*} [TopologicalSpace X] [TopologicalSpace Y]
 
-/-- Local Euclidean charts stated directly on a topological space. -/
-def EuclideanAt (x : X) : Prop :=
-  ∃ (U : Set X), IsOpen U ∧ x ∈ U ∧
-    ∃ (n : ℕ) (V : Set (EuclideanSpace ℝ (Fin n))), IsOpen V ∧
-      Nonempty (U ≃ₜ V)
 
-/-- Flatten an ambient-open restriction of a subtype. -/
-def subtypeOpenIntersection (S U : Set X) :
-    ↥(Subtype.val ⁻¹' U : Set S) ≃ₜ ↥(S ∩ U) where
-  toFun a := ⟨a.val.val,a.val.property,a.property⟩
-  invFun a := ⟨⟨a.val,a.property.1⟩,a.property.2⟩
-  left_inv a := rfl
-  right_inv a := rfl
+variable {ι κ : Type*}
+
+/-- Relate the product of a cone subtype to the ambient subset in the ORIGINAL
+ConeProductNonManifoldGoal, not to a replacement definition of the cone. -/
+def flattenConeProduct [Fintype ι] [Fintype κ] :
+    ((ι → ℝ) × RankOne 1 κ) ≃ₜ
+      {p : (ι → ℝ) × Matrix (Fin 2) κ ℝ // p.2.rank ≤ 1} where
+  toFun p := ⟨(p.1,p.2.val),p.2.property⟩
+  invFun p := (p.val.1,⟨p.val.2,p.property⟩)
+  left_inv p := rfl
+  right_inv p := rfl
+  continuous_toFun := by fun_prop
+  continuous_invFun := by
+    fun_prop
+
+
+abbrev Eucl (n : ℕ) := EuclideanSpace ℝ (Fin n)
+
+def EuclideanAt (x : X) : Prop :=
+  ∃ n, ∃ e : OpenPartialHomeomorph X (Eucl n), x ∈ e.source
+
+/-- Extend a homeomorphism between nonempty open subspaces to a chart. -/
+def openBetween {s : Set X} {t : Set Y} (hs : IsOpen s) (ht : IsOpen t)
+    (e : s ≃ₜ t) (x : s) : OpenPartialHomeomorph X Y :=
+  (((⟨s,hs⟩ : TopologicalSpace.Opens X).openPartialHomeomorphSubtypeCoe ⟨x⟩).symm.transHomeomorph e).trans
+    ((⟨t,ht⟩ : TopologicalSpace.Opens Y).openPartialHomeomorphSubtypeCoe ⟨e x⟩)
+
+@[simp] theorem openBetween_source {s : Set X} {t : Set Y} (hs : IsOpen s) (ht : IsOpen t)
+    (e : s ≃ₜ t) (x : s) : (openBetween hs ht e x).source = s := by
+  simp [openBetween]
+
+/-- Flatten an ambient restriction of a subtype. -/
+def subtypeOpenIntersection (S U : Set X) : ↥(Subtype.val ⁻¹' U : Set S) ≃ₜ ↥(S ∩ U) where
+  toEquiv := Equiv.subtypeSubtypeEquivSubtypeInter _ _
   continuous_toFun := (continuous_subtype_val.comp continuous_subtype_val).subtype_mk _
   continuous_invFun := (continuous_subtype_val.subtype_mk _).subtype_mk _
 
-/-- The old ambient-subset definition and intrinsic subtype charts agree. -/
 theorem euclideanAtSubset_iff (S : Set X) (x : X) (hx : x ∈ S) :
-    EuclideanAtSubset S x ↔ EuclideanAt (⟨x,hx⟩ : S) := by
+    GS.EuclideanAtSubset S x ↔ EuclideanAt (⟨x,hx⟩ : S) := by
   constructor
   · rintro ⟨_,U,hU,hxU,n,V,hV,⟨h⟩⟩
-    exact ⟨Subtype.val ⁻¹' U, hU.preimage continuous_subtype_val, hxU,
-      n,V,hV,⟨(subtypeOpenIntersection S U).trans h⟩⟩
-  · rintro ⟨A,hA,hxA,n,V,hV,⟨h⟩⟩
-    obtain ⟨U,hU,hUA⟩ := isOpen_induced_iff.mp hA
-    have hxU : x ∈ U := by
-      change (⟨x,hx⟩ : S) ∈ Subtype.val ⁻¹' U
-      rw [hUA]
-      exact hxA
-    have he : (Subtype.val ⁻¹' U : Set S) ≃ₜ A :=
-      Homeomorph.setCongr hUA
-    exact ⟨hx,U,hU,hxU,n,V,hV,
-      ⟨(subtypeOpenIntersection S U).symm.trans (he.trans h)⟩⟩
+    refine ⟨n, openBetween (hU.preimage continuous_subtype_val) hV
+      ((subtypeOpenIntersection S U).trans h) ⟨⟨x,hx⟩,hxU⟩, ?_⟩
+    rw [openBetween_source]
+    exact hxU
+  · rintro ⟨n,c,hc⟩
+    obtain ⟨U,hU,hUA⟩ := isOpen_induced_iff.mp c.open_source
+    refine ⟨hx,U,hU,?_,n,c.target,c.open_target,⟨?_⟩⟩
+    · grind
+    · exact (subtypeOpenIntersection S U).symm.trans
+        ((Homeomorph.setCongr hUA).trans c.toHomeomorphSourceTarget)
 
-/-- Transfer a chart along a global homeomorphism. -/
-theorem euclideanAt_of_homeomorph (h : X ≃ₜ Y) (x : X)
-    (hx : EuclideanAt x) : EuclideanAt (h x) := by
-  rcases hx with ⟨U,hU,ha,n,V,hV,⟨c⟩⟩
-  exact ⟨h '' U,h.isOpenMap U hU,⟨x,ha,rfl⟩,n,V,hV,
-    ⟨(restrictImage h U).symm.trans c⟩⟩
+theorem euclideanAt_partial (e : OpenPartialHomeomorph X Y) {x : X} (hx : x ∈ e.source) :
+    EuclideanAt x ↔ EuclideanAt (e x) := by
+  constructor
+  · rintro ⟨n,c,hc⟩
+    refine ⟨n,e.symm.trans c,⟨e.map_source hx,?_⟩⟩
+    aesop
+  · rintro ⟨n,c,hc⟩
+    exact ⟨n,e.trans c,⟨hx,hc⟩⟩
 
-/-- Apply the preceding universe-polymorphic lemma in both directions. -/
 theorem euclideanAt_homeomorph (h : X ≃ₜ Y) (x : X) :
-    EuclideanAt x ↔ EuclideanAt (h x) := by
-  constructor
-  · exact euclideanAt_of_homeomorph h x
-  · intro hx
-    simpa only [h.symm_apply_apply] using
-      euclideanAt_of_homeomorph h.symm (h x) hx
+    EuclideanAt x ↔ EuclideanAt (h x) :=
+  euclideanAt_partial h.toOpenPartialHomeomorph (Set.mem_univ x)
 
-/-- Passing to an open subspace neither creates nor destroys a chart at a point. -/
-theorem euclideanAt_open_iff (S : Set X) (hS : IsOpen S) (x : S) :
-    EuclideanAt x ↔ EuclideanAt x.val := by
-  constructor
-  · rintro ⟨A,hA,hx,n,V,hV,⟨c⟩⟩
-    exact ⟨Subtype.val '' A,hS.isOpenMap_subtype_val A hA,
-      ⟨x,hx,rfl⟩,n,V,hV,⟨(flattenImage S A).symm.trans c⟩⟩
-  · rintro ⟨U,hU,hxU,n,V,hV,⟨c⟩⟩
-    let A : Set U := Subtype.val ⁻¹' S
-    have hA : IsOpen A := hS.preimage continuous_subtype_val
-    let B : Set V := c '' A
-    have hB : IsOpen B := c.isOpenMap A hA
-    let C : Set (EuclideanSpace ℝ (Fin n)) := Subtype.val '' B
-    have hC : IsOpen C := hV.isOpenMap_subtype_val B hB
-    let D : Set S := Subtype.val ⁻¹' U
-    have hD : IsOpen D := hU.preimage continuous_subtype_val
-    let swap : ↥(S ∩ U) ≃ₜ ↥(U ∩ S) := Homeomorph.setCongr (Set.inter_comm S U)
-    let cD : D ≃ₜ A := ((subtypeOpenIntersection S U).trans swap).trans
-      (subtypeOpenIntersection U S).symm
-    exact ⟨D,hD,hxU,n,C,hC,
-      ⟨(cD.trans (restrictImage c A)).trans (flattenImage V B)⟩⟩
+theorem euclideanAt_of_homeomorph (h : X ≃ₜ Y) (x : X) : EuclideanAt x → EuclideanAt (h x) :=
+  (euclideanAt_homeomorph h x).mp
 
-/-- The pointed OPEN local model transports the exact chart property. -/
-theorem euclideanAt_pointedOpenModel {x : X} {y : Y}
-    (g : PointedOpenModel X Y x y) : EuclideanAt x ↔ EuclideanAt y := by
-  let a : g.source := ⟨x,g.source_point⟩
-  calc
-    EuclideanAt x ↔ EuclideanAt a :=
-      (euclideanAt_open_iff g.source g.source_open a).symm
-    _ ↔ EuclideanAt (g.chart a) := euclideanAt_homeomorph g.chart a
-    _ ↔ EuclideanAt (g.chart a).val :=
-      euclideanAt_open_iff g.target g.target_open (g.chart a)
-    _ ↔ EuclideanAt y := by rw [g.map_point g.source_point]
+theorem euclideanAt_openEmbedding {f : X → Y} (hf : Topology.IsOpenEmbedding f) (x : X) :
+    EuclideanAt x ↔ EuclideanAt (f x) := by
+  let : Nonempty X := ⟨x⟩
+  simpa only [Topology.IsOpenEmbedding.toOpenPartialHomeomorph_apply] using
+    euclideanAt_partial (hf.toOpenPartialHomeomorph f) (Set.mem_univ x)
 
-/-- The negative form used at the end of a genuine nonmanifold proof. -/
-theorem not_euclideanAt_of_pointedOpenModel {x : X} {y : Y}
-    (g : PointedOpenModel X Y x y) (hy : ¬ EuclideanAt y) : ¬ EuclideanAt x := by
-  intro hx
-  exact hy ((euclideanAt_pointedOpenModel g).mp hx)
+theorem euclideanAt_nhds {s : Set X} {x : X} (h : s ∈ 𝓝 x) :
+    EuclideanAt (⟨x,mem_of_mem_nhds h⟩ : s) ↔ EuclideanAt x := by
+  let a : interior s := ⟨x,mem_interior_iff_mem_nhds.mpr h⟩
+  exact (euclideanAt_openEmbedding (Topology.IsOpenEmbedding.inclusion interior_subset
+    (isOpen_interior.preimage continuous_subtype_val)) a).symm.trans
+    (euclideanAt_openEmbedding isOpen_interior.isOpenEmbedding_subtypeVal a)
+
+theorem euclideanAt_neighbourhoodModel {x : X} {y : Y}
+    (g : GS.NonmanifoldCompletion.PointedNeighbourhoodModel X Y x y) : EuclideanAt x ↔ EuclideanAt y := by
+  let a : g.source := ⟨x,mem_of_mem_nhds g.source_nhds⟩
+  rw [← euclideanAt_nhds g.source_nhds, euclideanAt_homeomorph g.chart a]
+  have h : g.chart a = ⟨y,mem_of_mem_nhds g.target_nhds⟩ := Subtype.ext (g.map_point a.property)
+  rw [h, euclideanAt_nhds g.target_nhds]
 
 end GS.NonmanifoldFinal
+
+end

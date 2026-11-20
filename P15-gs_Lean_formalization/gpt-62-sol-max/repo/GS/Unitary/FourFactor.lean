@@ -1,12 +1,16 @@
 module
 
-public import GS.M4Necessary
+public import GS.M4Certificate
 public import GS.Unitary.RealEmbedding
+public import Mathlib.Analysis.InnerProductSpace.NormDet
 
 @[expose] public section
 
+noncomputable section
 set_option backward.isDefEq.respectTransparency false
 set_option backward.defeqAttrib.useBackward true
+
+section
 
 /-!
 # Unitary four-factor insufficiency
@@ -17,7 +21,6 @@ nonfactorization: we prove the determinant-modulus obstruction for all complex
 unitary factors, then transfer the exact real certificate through ℝ → ℂ.
 -/
 
-noncomputable section
 open Matrix
 open scoped BigOperators
 
@@ -45,213 +48,147 @@ set_option maxRecDepth 4096
 set_option maxHeartbeats 500000
 
 def P : CMat 6 := ofRealMatrix GS.M4.P
-def cell (i : Fin 3) (a : Fin 2) : Fin 6 := ⟨2*i.val+a.val, by omega⟩
+open GS.M4 (index minorIndex minors assemble shuffle6 core_apply coreDet core_det)
+open GS.Shared (blockView blockView_apply packBlocks_apply blockView_sandwich standard_block_label
+  blockView_unitary supported_blocks_iff)
 
-def detBlock (M : CMat 6) (i j : Fin 3) : ℂ :=
-  M (cell i 0) (cell j 0) * M (cell i 1) (cell j 1) -
-  M (cell i 0) (cell j 1) * M (cell i 1) (cell j 0)
+theorem P_eq_perm : P = GS.Shared.permMatrix shuffle6 := by
+  ext i j
+  simp [P, GS.M4.P_eq_perm, ofRealMatrix, GS.Shared.permMatrix, apply_ite Complex.ofRealHom]
 
-theorem detBlock_eq_det (M : CMat 6) (i j : Fin 3) :
-    detBlock M i j = Matrix.det (M.submatrix (cell i) (cell j)) := by
-  rw [Matrix.det_fin_two]
-  rfl
+def DetBound (d : Fin 4 → ℝ) : Prop := d 0 * d 3 ≤ d 2 * (1 - d 1)^2
 
-def normDetBlock (A : CMat 6) (i j : Fin 3) : ℝ := ‖detBlock A i j‖
+theorem norm_det_unitary {n : ℕ} (U : CMat n) (hU : Unitary U) : ‖U.det‖ = 1 :=
+  CStarRing.norm_of_mem_unitary (Matrix.det_of_mem_unitary
+    (Matrix.mem_unitaryGroup_iff'.mpr hU.1))
 
-def determinantObstruction (A : CMat 6) : Prop :=
-  let d := normDetBlock A
-  (1-d 0 2*d 1 0/d 2 1)*(1-d 0 2*d 2 1/d 1 0) ≥ d 0 0*d 2 2/d 1 1
-
-def block2 (A : CMat 6) (i j : Fin 3) : CMat 2 := A.submatrix (cell i) (cell j)
-
-def assemble (A : Fin 3 → CMat 2) : CMat 6 :=
-  !![A 0 0 0,A 0 0 1,0,0,0,0;
-     A 0 1 0,A 0 1 1,0,0,0,0;
-     0,0,A 1 0 0,A 1 0 1,0,0;
-     0,0,A 1 1 0,A 1 1 1,0,0;
-     0,0,0,0,A 2 0 0,A 2 0 1;
-     0,0,0,0,A 2 1 0,A 2 1 1]
-
-theorem block_diagonal_decompose (A : CMat 6) (hA : CBlockDiagonal 2 A) :
-    A = assemble (fun i => block2 A i i) := by
-  apply Matrix.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    simp [assemble,block2,cell] <;> apply hA <;> decide
-
-theorem block2_left_assembled (A : Fin 3 → CMat 2) (C : CMat 6) (i j : Fin 3) :
-    block2 (assemble A*C) i j = A i * block2 C i j := by
-  apply Matrix.ext
-  intro a b
-  fin_cases i <;> fin_cases j <;> fin_cases a <;> fin_cases b <;>
-    simp [block2,cell,assemble,Matrix.mul_apply,Matrix.vecMul,dotProduct,Fin.sum_univ_succ]
-
-theorem block2_right_assembled (C : CMat 6) (B : Fin 3 → CMat 2) (i j : Fin 3) :
-    block2 (C*assemble B) i j = block2 C i j * B j := by
-  apply Matrix.ext
-  intro a b
-  fin_cases i <;> fin_cases j <;> fin_cases a <;> fin_cases b <;>
-    simp [block2,cell,assemble,Matrix.mul_apply,Matrix.vecMul,dotProduct,Fin.sum_univ_succ]
-
-theorem block2_outer_assembled (A B : Fin 3 → CMat 2) (C : CMat 6) (i j : Fin 3) :
-    block2 (assemble A*C*assemble B) i j = A i * block2 C i j * B j := by
-  rw [block2_right_assembled, block2_left_assembled]
-
-theorem block2_outer (A C B : CMat 6) (hA : CBlockDiagonal 2 A)
-    (hB : CBlockDiagonal 2 B) (i j : Fin 3) :
-    block2 (A*C*B) i j = block2 A i i * block2 C i j * block2 B j j := by
-  have ha := block_diagonal_decompose A hA
-  have hb := block_diagonal_decompose B hB
-  conv_lhs => rw [ha,hb]
-  exact block2_outer_assembled _ _ _ _ _
-
-theorem block2_unitary (A : CMat 6) (hA : CBlockDiagonal 2 A)
-    (ho : Unitary A) (r : Fin 3) : Unitary (block2 A r r) := by
-  have ha := block_diagonal_decompose A hA
-  constructor
-  · apply Matrix.ext
-    intro i j
-    have h := congrFun (congrFun ho.1 (cell r i)) (cell r j)
-    rw [ha] at h
-    fin_cases r <;> fin_cases i <;> fin_cases j <;>
-      simpa [block2,cell,assemble,Matrix.mul_apply,Matrix.conjTranspose_apply,
-        Matrix.one_apply,Fin.sum_univ_succ] using h
-  · apply Matrix.ext
-    intro i j
-    have h := congrFun (congrFun ho.2 (cell r i)) (cell r j)
-    rw [ha] at h
-    fin_cases r <;> fin_cases i <;> fin_cases j <;>
-      simpa [block2,cell,assemble,Matrix.mul_apply,Matrix.conjTranspose_apply,
-        Matrix.one_apply,Fin.sum_univ_succ] using h
-
-theorem norm_det_unitary {n : ℕ} (U : CMat n) (hU : Unitary U) : ‖U.det‖=1 := by
-  have h := congrArg (fun A : CMat n => ‖A.det‖) hU.1
-  have hs : ‖U.det‖^2 = (1 : ℝ) := by
-    simpa [Matrix.det_mul, Matrix.det_conjTranspose, norm_mul, pow_two] using h
-  nlinarith [norm_nonneg U.det]
-
-theorem normDetBlock_outer (A C B : CMat 6)
+theorem minors_outer (A C B : CMat 6)
     (hA : CBlockDiagonal 2 A) (hB : CBlockDiagonal 2 B)
-    (hoA : Unitary A) (hoB : Unitary B) (i j : Fin 3) :
-    normDetBlock (A*C*B) i j = normDetBlock C i j := by
-  unfold normDetBlock
-  rw [detBlock_eq_det (A*C*B) i j, detBlock_eq_det C i j]
-  change ‖Matrix.det (block2 (A*C*B) i j)‖ = ‖Matrix.det (block2 C i j)‖
-  rw [block2_outer A C B hA hB i j]
-  simp only [Matrix.det_mul,norm_mul]
-  rw [norm_det_unitary _ (block2_unitary A hA hoA i),
-    norm_det_unitary _ (block2_unitary B hB hoB j)]
-  simp
+    (hoA : Unitary A) (hoB : Unitary B) :
+    (fun i => ‖minors (A*C*B) i‖) = fun i => ‖minors C i‖ := by
+  funext i
+  rw [minors, blockView_sandwich index standard_block_label (A := A) (B := B) hA hB]
+  simp [Matrix.det_mul, norm_det_unitary _ (blockView_unitary index standard_block_label hA hoA _),
+    norm_det_unitary _ (blockView_unitary index standard_block_label hB hoB _), minors]
 
 /-- The entry-modulus identities hold for all complex unitary 2×2 blocks. -/
 theorem unitary2_norm (W : CMat 2) (hW : Unitary W) :
-    ‖W 1 0‖=‖W 0 1‖ ∧ ‖W 1 1‖=‖W 0 0‖ ∧ ‖W 0 0‖^2+‖W 0 1‖^2=1 := by
-  have hc0 : ‖W 0 0‖^2 + ‖W 1 0‖^2 = 1 := by
-    simp only [Complex.sq_norm]
-    simpa [Matrix.mul_apply, Matrix.conjTranspose_apply, Matrix.one_apply,
-      Fin.sum_univ_succ, Complex.mul_re, Complex.normSq_apply] using congrArg Complex.re (congrFun (congrFun hW.1 0) 0)
-  have hc1 : ‖W 0 1‖^2 + ‖W 1 1‖^2 = 1 := by
-    simp only [Complex.sq_norm]
-    simpa [Matrix.mul_apply, Matrix.conjTranspose_apply, Matrix.one_apply,
-      Fin.sum_univ_succ, Complex.mul_re, Complex.normSq_apply] using congrArg Complex.re (congrFun (congrFun hW.1 1) 1)
-  have hr0 : ‖W 0 0‖^2 + ‖W 0 1‖^2 = 1 := by
-    simp only [Complex.sq_norm]
-    simpa [Matrix.mul_apply, Matrix.conjTranspose_apply, Matrix.one_apply,
-      Fin.sum_univ_succ, Complex.mul_re, Complex.normSq_apply] using congrArg Complex.re (congrFun (congrFun hW.2 0) 0)
-  refine ⟨?_, ?_, hr0⟩
-  · apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
-    linarith only [hc0, hr0]
-  · apply (sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp
-    linarith only [hc1, hr0]
+    ‖W 1 0‖ = ‖W 0 1‖ ∧ ‖W 0 0‖^2 + ‖W 0 1‖^2 = 1 := by
+  have hu : GS.Shared.Unitary W := hW
+  have hc := hu.column_norm_sq 0
+  have hr : ‖W 0 0‖^2 + ‖W 0 1‖^2 = 1 := by simpa [Fin.sum_univ_two] using hu.conjTranspose.column_norm_sq 0
+  rw [Fin.sum_univ_two] at hc
+  exact ⟨(sq_eq_sq₀ (norm_nonneg _) (norm_nonneg _)).mp (by linarith), hr⟩
 
-def coreDetTable (W Y : Fin 3 → CMat 2) : CMat 3 :=
-  !![-W 0 0 1*W 1 0 1*Y 1 0 1*Y 0 1 0,
-      W 0 0 0*W 1 0 0*Y 2 0 0*Y 0 0 1,
-      W 1 0 0*W 0 0 1*Y 1 0 0*Y 2 0 1;
-     -W 2 0 0*W 0 1 0*Y 0 0 0*Y 1 1 1,
-     -W 2 0 1*W 0 1 0*Y 0 0 1*Y 2 1 0,
-     -W 2 0 1*W 0 1 1*Y 1 0 0*Y 2 1 1;
-      W 2 1 0*W 1 1 1*Y 0 1 0*Y 1 1 1,
-      W 1 1 1*W 2 1 1*Y 2 1 0*Y 0 1 1,
-     -W 1 1 0*W 2 1 0*Y 2 0 1*Y 1 1 0]
+theorem core_bound (W Y : Fin 3 → CMat 2) (hW : ∀ i, Unitary (W i)) (hY : ∀ i, Unitary (Y i)) :
+    DetBound (fun i => ‖coreDet W Y i‖) := by
+  let a i := ‖W i 0 0‖
+  let b i := ‖W i 0 1‖
+  let e i := ‖Y i 0 0‖
+  let f i := ‖Y i 0 1‖
+  have h (V : CMat 2) (hv : Unitary V) : ‖V 0 1‖ ≤ 1 :=
+    entry_norm_bound_of_unitary (Matrix.mem_unitaryGroup_iff'.mpr hv.1) 0 1
+  have hb : b 0 ≤ 1 := h _ (hW 0)
+  have hmul : a 1*b 0*e 1*f 2 ≤ a 1*e 1 := by
+    calc
+      _ = (a 1*e 1)*(b 0*f 2) := by ring
+      _ ≤ (a 1*e 1)*(1*1) := by gcongr; exact h _ (hY 2)
+      _ = _ := by simp
+  have hh : a 1 * e 1 + b 1 * f 1 ≤ 1 := by
+    nlinarith [(unitary2_norm _ (hW 1)).2, (unitary2_norm _ (hY 1)).2,
+      sq_nonneg (a 1 - e 1), sq_nonneg (b 1 - f 1)]
+  have hsq : (b 1*f 1)^2 ≤ (1-a 1*b 0*e 1*f 2)^2 := by
+    gcongr
+    linarith
+  have hw (i : Fin 3) := (unitary2_norm _ (hW i)).1
+  have hy (i : Fin 3) := (unitary2_norm _ (hY i)).1
+  simp [DetBound, coreDet, hw, hy]
+  change (b 0*b 1*f 1*f 0) * (b 1*b 2*f 2*f 1) ≤ (b 2*b 0*f 0*f 2) * (1-a 1*b 0*e 1*f 2)^2
+  calc
+    _ = (b 2*b 0*f 0*f 2) * (b 1*f 1)^2 := by ring
+    _ ≤ _ := mul_le_mul_of_nonneg_left hsq (by positivity)
 
-theorem core_detTable (W Y : Fin 3 → CMat 2) :
-    (fun i j => detBlock (P*assemble W*P*assemble Y*P) i j) = coreDetTable W Y := by
-  apply Matrix.ext
-  intro i j
-  fin_cases i <;> fin_cases j <;>
-    norm_num [detBlock,cell,P,GS.M4.P,ofRealMatrix,assemble,coreDetTable,Matrix.mul_apply,
-      Fin.sum_univ_succ] <;> ring
-
-def canonicalDetTable (a b e f : Fin 3 → ℝ) : Mat 3 :=
-  !![b 0*b 1*f 1*f 0, a 0*a 1*e 2*f 0, a 1*b 0*e 1*f 2;
-     a 2*b 0*e 0*e 1, b 2*b 0*f 0*f 2, b 2*a 0*e 1*e 2;
-     b 2*a 1*f 0*e 1, a 1*a 2*f 2*e 0, b 1*b 2*f 2*f 1]
-
-theorem core_normDetTable (W Y : Fin 3 → CMat 2)
-    (hW : ∀ i, Unitary (W i)) (hY : ∀ i, Unitary (Y i)) :
-    normDetBlock (P*assemble W*P*assemble Y*P) =
-      canonicalDetTable (fun i => ‖W i 0 0‖) (fun i => ‖W i 0 1‖)
-        (fun i => ‖Y i 0 0‖) (fun i => ‖Y i 0 1‖) := by
-  apply Matrix.ext
-  intro i j
-  have hw0 := unitary2_norm (W 0) (hW 0)
-  have hw1 := unitary2_norm (W 1) (hW 1)
-  have hw2 := unitary2_norm (W 2) (hW 2)
-  have hy0 := unitary2_norm (Y 0) (hY 0)
-  have hy1 := unitary2_norm (Y 1) (hY 1)
-  have hy2 := unitary2_norm (Y 2) (hY 2)
-  have hd := congrFun (congrFun (core_detTable W Y) i) j
-  unfold normDetBlock
-  rw [hd]
-  fin_cases i <;> fin_cases j <;>
-    simp [coreDetTable,canonicalDetTable,norm_mul,
-      hw0.1,hw0.2.1,hw1.1,hw1.2.1,hw2.1,hw2.2.1,
-      hy0.1,hy0.2.1,hy1.1,hy1.2.1,hy2.1,hy2.2.1]
-
-theorem canonical_obstruction (a b e f : Fin 3 → ℝ)
-    (hW : ∀ i, (a i)^2+(b i)^2=1) (hY : ∀ i, (e i)^2+(f i)^2=1)
-    (hden : canonicalDetTable a b e f 2 1 * canonicalDetTable a b e f 1 0 *
-      canonicalDetTable a b e f 1 1 ≠ 0) :
-    let d := canonicalDetTable a b e f
-    (1-d 0 2*d 1 0/d 2 1)*(1-d 0 2*d 2 1/d 1 0) ≥ d 0 0*d 2 2/d 1 1 :=
-  GS.M4.canonical_obstruction a b e f hW hY hden
-
-theorem core_necessary (W Y : Fin 3 → CMat 2)
-    (hW : ∀ i, Unitary (W i)) (hY : ∀ i, Unitary (Y i))
-    (hden : normDetBlock (P*assemble W*P*assemble Y*P) 2 1 *
-      normDetBlock (P*assemble W*P*assemble Y*P) 1 0 *
-      normDetBlock (P*assemble W*P*assemble Y*P) 1 1 ≠ 0) :
-    determinantObstruction (P*assemble W*P*assemble Y*P) := by
-  unfold determinantObstruction
-  rw [core_normDetTable W Y hW hY] at hden ⊢
-  apply canonical_obstruction _ _ _ _ _ _ hden
-  · intro i; exact (unitary2_norm (W i) (hW i)).2.2
-  · intro i; exact (unitary2_norm (Y i) (hY i)).2.2
-
-/-- Universal necessity for the precise m=4 class in the manuscript. -/
-theorem necessaryCondition (A : CMat 6) (h : CInA4Unitary 2 2 2 2 P P P A)
-    (hden : normDetBlock A 2 1 * normDetBlock A 1 0 * normDetBlock A 1 1 ≠ 0) :
-    determinantObstruction A := by
-  rcases h with ⟨B₁,B₂,B₃,B₄,hb₁,hb₂,hb₃,hb₄,ho₁,ho₂,ho₃,ho₄,he⟩
-  let C₀ := P*B₃*P*B₂*P
-  have he' : A=B₄*C₀*B₁ := by
-    rw [he]
-    simp only [GS.UnitaryGeometry.product4,C₀,Matrix.mul_assoc]
-  have hd : normDetBlock A=normDetBlock C₀ := by
-    funext i j
-    rw [he']
-    exact normDetBlock_outer B₄ C₀ B₁ hb₄ hb₁ ho₄ ho₁ i j
-  unfold determinantObstruction
-  rw [hd] at hden ⊢
-  have hb₂' := block_diagonal_decompose B₂ hb₂
-  have hb₃' := block_diagonal_decompose B₃ hb₃
-  have hcore : C₀ = P*assemble (fun i => block2 B₃ i i)*P*
-      assemble (fun i => block2 B₂ i i)*P := by
-    dsimp [C₀]
-    conv_lhs => rw [hb₂',hb₃']
-  rw [hcore] at hden ⊢
-  exact core_necessary _ _ (block2_unitary B₃ hb₃ ho₃)
-    (block2_unitary B₂ hb₂ ho₂) hden
+theorem necessaryCondition (A : CMat 6) (h : CInA4Unitary 2 2 2 2 P P P A) :
+    DetBound (fun i => ‖minors A i‖) := by
+  obtain ⟨B₁,B₂,B₃,B₄,h₁,h₂,h₃,h₄,u₁,u₂,u₃,u₄,rfl⟩ := h
+  rw [UnitaryGeometry.product4, show B₄ * P * B₃ * P * B₂ * P * B₁ =
+      B₄ * (P * B₃ * P * B₂ * P) * B₁ by grind]
+  rw [minors_outer _ _ _ h₄ h₁ u₄ u₁]
+  obtain ⟨W,huW,rfl⟩ := (supported_blocks_iff index standard_block_label B₃).mp ⟨h₃,u₃⟩
+  obtain ⟨Y,huY,rfl⟩ := (supported_blocks_iff index standard_block_label B₂).mp ⟨h₂,u₂⟩
+  change DetBound (fun i => ‖minors (P * assemble W * P * assemble Y * P) i‖)
+  rw [P_eq_perm, core_det]
+  exact core_bound _ _ huW huY
 
 end GS.UnitaryFour
+
+end
+
+section
+
+/-!
+# Exact complex four-factor counterexample
+
+The certified real matrix is embedded entrywise into the complex matrices.
+Its determinant-modulus table is unchanged, so the universal unitary
+obstruction rules out complex factors as well as real factors.
+-/
+
+open Matrix
+namespace GS.UnitaryFour
+open GS.UnitaryGeometry
+
+theorem norm_minors_ofRealMatrix (A : Mat 6) (i : Fin 4) :
+    ‖GS.M4.minors (ofRealMatrix A) i‖ = |GS.M4.minors A i| := by
+  simp [ofRealMatrix, GS.M4.minors, Matrix.det_fin_two,
+    ← Complex.ofReal_mul, ← Complex.ofReal_sub, Real.norm_eq_abs]
+
+/-- The explicit algebraic matrix, now considered over ℂ. -/
+def Q : CMat 6 := ofRealMatrix GS.M4.Q
+
+theorem Q_unitary : Unitary Q := ofRealMatrix_unitary GS.M4.Q_orthogonal
+
+theorem Q_mem_A4 : CInA4 2 2 2 2 P P P Q := by
+  obtain ⟨B₁,B₂,B₃,B₄,h₁,h₂,h₃,h₄,he⟩ := GS.M4.Q_mem_A4
+  refine ⟨_,_,_,_,ofRealMatrix_blockDiagonal h₁,ofRealMatrix_blockDiagonal h₂,
+    ofRealMatrix_blockDiagonal h₃,ofRealMatrix_blockDiagonal h₄,?_⟩
+  simpa [Q,P,GS.product4,GS.UnitaryGeometry.product4] using congrArg ofRealMatrix he
+
+theorem Q_not_mem_A4Unitary : ¬ CInA4Unitary 2 2 2 2 P P P Q := by
+  intro h
+  have hn := necessaryCondition Q h
+  simp [DetBound, Q, norm_minors_ofRealMatrix, GS.M4.minors_Q, abs_mul,
+    abs_of_nonneg (Real.sqrt_nonneg 2), abs_of_nonneg (Real.sqrt_nonneg 3)] at hn
+  nlinarith [mul_pow (Real.sqrt 2) (Real.sqrt 3) 2, Real.sq_sqrt (show 0 ≤ (2 : ℝ) by norm_num),
+    Real.sq_sqrt (show 0 ≤ (3 : ℝ) by norm_num)]
+
+/-- Unconditional insufficiency of four unitary block factors in the fixed GS family. -/
+theorem _root_.GSPalomar.unitary_four_factor_counterexample :
+    ∃ A : CMat 6, let P : CMat 6 := fun i j => (GS.M4.P i j : ℂ)
+      CInA4 2 2 2 2 P P P A ∧ Unitary A ∧ ¬CInA4Unitary 2 2 2 2 P P P A := ⟨Q, Q_mem_A4, Q_unitary, Q_not_mem_A4Unitary⟩
+
+end GS.UnitaryFour
+
+namespace GS.M4
+
+open GS.UnitaryGeometry
+
+/-- Complex nonfactorization rules out real orthogonal factors by scalar extension. -/
+theorem _root_.GSPalomar.four_factor_counterexample :
+    ∃ A : GS.Mat 6,
+      GS.InA4 2 2 2 2 GS.M4.P GS.M4.P GS.M4.P A ∧ GS.Orthogonal A ∧
+      ¬ GS.InA4Orth 2 2 2 2 GS.M4.P GS.M4.P GS.M4.P A := by
+  refine ⟨Q, Q_mem_A4, Q_orthogonal, ?_⟩
+  rintro ⟨B₁, B₂, B₃, B₄, h₁, h₂, h₃, h₄, u₁, u₂, u₃, u₄, h⟩
+  apply GS.UnitaryFour.Q_not_mem_A4Unitary
+  refine ⟨_,_,_,_,ofRealMatrix_blockDiagonal h₁, ofRealMatrix_blockDiagonal h₂,
+    ofRealMatrix_blockDiagonal h₃, ofRealMatrix_blockDiagonal h₄,
+    ofRealMatrix_unitary u₁, ofRealMatrix_unitary u₂, ofRealMatrix_unitary u₃,
+    ofRealMatrix_unitary u₄, ?_⟩
+  simpa only [GS.product4, GS.UnitaryGeometry.product4, ofRealMatrix_mul,
+    GS.UnitaryFour.Q, GS.UnitaryFour.P] using
+    congrArg ofRealMatrix h
+
+end GS.M4
+
+end

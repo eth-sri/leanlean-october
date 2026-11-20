@@ -1,14 +1,89 @@
 module
 
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import GS.Core
+public import Mathlib.Tactic.NoncommRing
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Order.Compact
+public import Mathlib.Topology.Instances.Matrix
 public import Mathlib.Geometry.Manifold.IsManifold.Basic
-public import Mathlib.Analysis.Calculus.ContDiff.Basic
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Topology.Algebra.MulAction
+public import Mathlib.GroupTheory.GroupAction.Quotient
+public import GS.CompactFibres
+public import Mathlib.Topology.Algebra.Group.Quotient
 public import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+public import Mathlib.Analysis.Calculus.Deriv.Prod
+public import Mathlib.LinearAlgebra.Projection
+public import Mathlib.Analysis.Calculus.ContDiff.Basic
 public import Mathlib.Geometry.Manifold.MFDeriv.Basic
 
 @[expose] public section
 
+noncomputable section
 set_option backward.isDefEq.respectTransparency false
 set_option backward.defeqAttrib.useBackward true
+
+section
+
+/-!
+# A horizontal complement for the orbit differential
+
+All finite-dimensional choices in this file are constructed from complements
+of submodules. The horizontal restriction is injective and has a continuous
+linear left inverse defined on the full ambient matrix space. No hypothesis
+excluding overlap is used.
+-/
+
+attribute [local instance] Matrix.normedAddCommGroup Matrix.normedSpace
+
+namespace GS.OverlapGeometry
+
+section Linear
+variable {E F : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
+  [NormedAddCommGroup F] [NormedSpace ℝ F]
+  [FiniteDimensional ℝ E] [FiniteDimensional ℝ F]
+
+def horizontalComplement (D : E →L[ℝ] F) : Submodule ℝ E :=
+  Classical.choose (LinearMap.ker D.toLinearMap).exists_isCompl
+
+omit [FiniteDimensional ℝ E] [FiniteDimensional ℝ F] in
+theorem horizontalComplement_isCompl (D : E →L[ℝ] F) :
+    IsCompl (horizontalComplement D) (LinearMap.ker D.toLinearMap) :=
+  (Classical.choose_spec (LinearMap.ker D.toLinearMap).exists_isCompl).symm
+
+def complementKernelEquiv (D : E →L[ℝ] F) :
+    (horizontalComplement D × (LinearMap.ker D.toLinearMap)) ≃L[ℝ] E :=
+  (Submodule.prodEquivOfIsCompl _ _ (horizontalComplement_isCompl D)).toContinuousLinearEquiv
+
+def horizontalRestriction (D : E →L[ℝ] F) : horizontalComplement D →L[ℝ] F :=
+  D.comp (horizontalComplement D).subtypeL
+
+theorem horizontalRestriction_injective (D : E →L[ℝ] F) :
+    Function.Injective (horizontalRestriction D) := by
+  intro x y h
+  exact (D.toLinearMap.kerComplementEquivRange (horizontalComplement_isCompl D)).injective (Subtype.ext h)
+
+theorem horizontalRestriction_range (D : E →L[ℝ] F) : (horizontalRestriction D).range = D.range := by
+  change LinearMap.range (D.toLinearMap.comp (horizontalComplement D).subtype) = _
+  rw [LinearMap.range_comp, Submodule.range_subtype, LinearMap.range_eq_map]
+  exact le_antisymm (Submodule.map_mono le_top)
+    (D.toLinearMap.map_le_map_iff.mpr (by rw [(horizontalComplement_isCompl D).sup_eq_top]))
+
+end Linear
+
+end GS.OverlapGeometry
+
+end
+
+section
 
 /-!
 # An atlas from ambient smooth slices
@@ -22,7 +97,6 @@ The application to a matrix orbit must independently construct the slice data,
 including the relative openness of each slice image.
 -/
 
-noncomputable section
 open Set Filter
 open scoped Topology Manifold
 
@@ -32,26 +106,31 @@ variable {E F : Type*}
 variable [NormedAddCommGroup E] [NormedSpace ℝ E]
 variable [NormedAddCommGroup F] [NormedSpace ℝ F]
 
-/-- A smooth slice of an actual subset, with ambient coordinates and an
-explicit parametrization. The source is relatively open in the subset's
-original topology. -/
+/-- A slice is a parametrized patch with a smooth ambient left inverse.
+Its source is the image of its parameter domain in the inherited topology. -/
 structure SmoothSlice (S : Set F) where
-  source : Set S
   target : Set E
   coordinates : F → E
   parametrization : E → S
-  open_source : IsOpen source
   open_target : IsOpen target
-  coordinates_smooth : ∀ y ∈ source, ContDiffAt ℝ ⊤ coordinates y.val
+  open_source : IsOpen (parametrization '' target)
   parametrization_smooth : ContDiff ℝ ⊤ (fun x => (parametrization x).val)
-  maps_source : ∀ y ∈ source, coordinates y.val ∈ target
-  maps_target : ∀ x ∈ target, parametrization x ∈ source
-  left_inverse : ∀ y ∈ source, parametrization (coordinates y.val) = y
+  coordinates_smooth_at : ∀ x ∈ target, ContDiffAt ℝ ⊤ coordinates (parametrization x).val
   right_inverse : ∀ x ∈ target, coordinates (parametrization x).val = x
 
 namespace SmoothSlice
 
 variable {S : Set F} (s : SmoothSlice (E := E) S)
+
+abbrev source := s.parametrization '' s.target
+
+theorem coordinates_smooth (y : S) (hy : y ∈ s.source) : ContDiffAt ℝ ⊤ s.coordinates y.val := by
+  obtain ⟨x,hx,rfl⟩ := hy
+  exact s.coordinates_smooth_at x hx
+
+theorem left_inverse (y : S) (hy : y ∈ s.source) : s.parametrization (s.coordinates y.val) = y := by
+  obtain ⟨x,hx,rfl⟩ := hy
+  rw [s.right_inverse x hx]
 
 /-- The local homeomorphism associated with a slice. -/
 def chart : OpenPartialHomeomorph S E where
@@ -59,8 +138,8 @@ def chart : OpenPartialHomeomorph S E where
   invFun := s.parametrization
   source := s.source
   target := s.target
-  map_source' := s.maps_source
-  map_target' := s.maps_target
+  map_source' _ := by rintro ⟨x,hx,rfl⟩; rwa [s.right_inverse x hx]
+  map_target' x hx := ⟨x,hx,rfl⟩
   left_inv' := s.left_inverse
   right_inv' := s.right_inverse
   open_source := s.open_source
@@ -73,12 +152,6 @@ def chart : OpenPartialHomeomorph S E where
     exact s.parametrization_smooth.continuous.subtype_mk
       (fun x => (s.parametrization x).property) |>.continuousOn
 
-@[simp] theorem chart_apply (y : S) :
-    s.chart y = s.coordinates y.val := rfl
-
-@[simp] theorem chart_symm_apply (x : E) :
-    s.chart.symm x = s.parametrization x := rfl
-
 /-- The transition is the composition of the ambient coordinate map of the
 second slice with the smooth parametrization of the first slice. -/
 theorem transition_smooth (s t : SmoothSlice (E := E) S) :
@@ -88,26 +161,6 @@ theorem transition_smooth (s t : SmoothSlice (E := E) S) :
   change x ∈ s.target ∧ s.parametrization x ∈ t.source at hx
   exact ((t.coordinates_smooth (s.parametrization x) hx.2).comp x
     s.parametrization_smooth.contDiffAt).contDiffWithinAt
-
-/-- Differentiating the local right inverse proves that every slice is
-immersive throughout its target. -/
-theorem parametrization_fderiv_injective (x : E) (hx : x ∈ s.target) :
-    Function.Injective (fderiv ℝ (fun y => (s.parametrization y).val) x) := by
-  have hp := (s.parametrization_smooth.differentiable (by simp) x).hasFDerivAt
-  have hc := ((s.coordinates_smooth _ (s.maps_target x hx)).differentiableAt
-    (by simp)).hasFDerivAt
-  have he : (fun y => s.coordinates (s.parametrization y).val) =ᶠ[𝓝 x]
-      (id : E → E) := by
-    filter_upwards [s.open_target.mem_nhds hx] with y hy
-    exact s.right_inverse y hy
-  have hd := ((hc.comp x hp).congr_of_eventuallyEq he.symm).unique (hasFDerivAt_id x)
-  intro v w hvw
-  have hvw' := congrArg (fderiv ℝ s.coordinates (s.parametrization x).val) hvw
-  change ((fderiv ℝ s.coordinates (s.parametrization x).val).comp
-    (fderiv ℝ (fun y => (s.parametrization y).val) x)) v =
-    ((fderiv ℝ s.coordinates (s.parametrization x).val).comp
-      (fderiv ℝ (fun y => (s.parametrization y).val) x)) w at hvw'
-  simpa only [hd, ContinuousLinearMap.id_apply] using hvw'
 
 end SmoothSlice
 
@@ -127,11 +180,7 @@ theorem slice_isManifold {S : Set F} (s : S → SmoothSlice (E := E) S)
     IsManifold (𝓘(ℝ, E)) ⊤ S := by
   letI := sliceChartedSpace s covers
   apply isManifold_of_contDiffOn
-  intro e e' he he'
-  change e ∈ Set.range (fun x => (s x).chart) at he
-  change e' ∈ Set.range (fun x => (s x).chart) at he'
-  obtain ⟨x, rfl⟩ := he
-  obtain ⟨y, rfl⟩ := he'
+  rintro _ _ ⟨x,rfl⟩ ⟨y,rfl⟩
   simpa only [modelWithCornersSelf_coe, modelWithCornersSelf_coe_symm,
     Function.comp_id, Function.id_comp, Set.preimage_id, Set.range_id,
     Set.inter_univ] using (s x).transition_smooth (s y)
@@ -161,19 +210,49 @@ theorem slice_val_mfderiv_eq {S : Set F} (s : S → SmoothSlice (E := E) S)
   have hd : MDifferentiableAt (𝓘(ℝ, E)) (𝓘(ℝ, F)) (fun y : S => y.val) x :=
     (slice_val_contMDiff s covers x).mdifferentiableAt (by simp)
   unfold mfderiv
-  rw [if_pos hd]
-  change fderivWithin ℝ (fun y => ((s x).parametrization y).val)
-    (Set.range (id : E → E)) ((s x).coordinates x.val) = _
-  simp only [Set.range_id, fderivWithin_univ]
-
-/-- Every inclusion derivative is injective, with respect to mathlib's actual
-manifold tangent space. -/
-theorem slice_val_mfderiv_injective {S : Set F} (s : S → SmoothSlice (E := E) S)
-    (covers : ∀ x : S, x ∈ (s x).source) (x : S) :
-    letI := sliceChartedSpace s covers
-    Function.Injective (mfderiv (𝓘(ℝ, E)) (𝓘(ℝ, F)) (fun y : S => y.val) x) := by
-  letI := sliceChartedSpace s covers
-  rw [slice_val_mfderiv_eq s covers x]
-  exact (s x).parametrization_fderiv_injective _ ((s x).maps_source x (covers x))
+  aesop
 
 end GS.OverlapGeometry
+
+end
+
+section
+
+/-!
+# Manifold-valued sources for the ambient slice criterion
+
+The source may be any charted manifold, in particular an actual tangent
+bundle. Smoothness into the slice manifold is equivalent to smoothness of
+the ambient realization. The subset keeps its inherited topology.
+-/
+
+open scoped Topology Manifold
+
+namespace GS.OverlapGeometry
+
+variable {E F G H M : Type*}
+  [NormedAddCommGroup E] [NormedSpace ℝ E]
+  [NormedAddCommGroup F] [NormedSpace ℝ F]
+  [NormedAddCommGroup G] [NormedSpace ℝ G]
+  [TopologicalSpace H] [TopologicalSpace M] [ChartedSpace H M]
+
+theorem slice_contMDiff_of_ambient {S : Set F}
+    (s : S → SmoothSlice (E := E) S) (covers : ∀ x : S, x ∈ (s x).source)
+    (I : ModelWithCorners ℝ G H) (f : M → S)
+    (hf : ContMDiff I (𝓘(ℝ, F)) ⊤ (fun x => (f x).val)) :
+    letI := sliceChartedSpace s covers
+    ContMDiff I (𝓘(ℝ, E)) ⊤ f := by
+  letI := sliceChartedSpace s covers
+  have hc : Continuous f := hf.continuous.subtype_mk (fun x => (f x).property)
+  intro x
+  rw [contMDiffAt_iff_target]
+  refine ⟨hc.continuousAt, ?_⟩
+  change ContMDiffAt I (𝓘(ℝ, E)) ⊤
+    (fun y => (s (f x)).coordinates (f y).val) x
+  exact ContDiffAt.comp_contMDiffAt
+    (I := I) (f := fun y : M => (f y).val) (g := (s (f x)).coordinates)
+    ((s (f x)).coordinates_smooth (f x) (covers (f x))) (hf x)
+
+end GS.OverlapGeometry
+
+end

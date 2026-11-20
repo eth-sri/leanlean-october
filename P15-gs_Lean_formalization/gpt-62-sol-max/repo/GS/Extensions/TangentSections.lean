@@ -2,6 +2,8 @@ module
 
 public import Mathlib.Geometry.Manifold.ContMDiffMFDeriv
 
+public import Mathlib.Geometry.Manifold.MFDeriv.FDeriv
+
 @[expose] public section
 
 set_option backward.isDefEq.respectTransparency false
@@ -25,24 +27,16 @@ variable {E H M V : Type*}
   [NormedAddCommGroup V] [NormedSpace ℝ V]
   (I : ModelWithCorners ℝ E H)
 
-theorem mfderiv_retraction_precompose_linear
-    (R : E → M) (L : V →L[ℝ] E)
-    (hR : MDifferentiableAt (𝓘(ℝ, E)) I R 0)
-    (hD : mfderiv (𝓘(ℝ, E)) I R 0 = ContinuousLinearMap.id ℝ E)
-    (v : V) :
-    mfderiv (𝓘(ℝ, V)) I (R ∘ L) 0 v = L v := by
-  have h := mfderiv_comp_apply_of_eq (0 : V) hR L.mdifferentiableAt (map_zero L) v
-  simpa only [TangentSpace, ContinuousLinearMap.mfderiv_eq, hD, ContinuousLinearMap.id_apply] using h
-
-theorem mfderiv_partial_right (F : M × V → M) (x : M)
-    (hF : MDifferentiableAt (I.prod (𝓘(ℝ, V))) I F (x, 0)) (v : V) :
-    mfderiv (𝓘(ℝ, V)) I (fun w : V => F (x, w)) 0 v =
-      mfderiv (I.prod (𝓘(ℝ, V))) I F (x, 0) (0, v) := by
-  have he : MDifferentiableAt (𝓘(ℝ, V)) (I.prod (𝓘(ℝ, V)))
-      (fun w : V => (x, w)) 0 :=
+theorem mfderiv_fibre {E' H' N : Type*}
+    [NormedAddCommGroup E'] [NormedSpace ℝ E']
+    [TopologicalSpace H'] [TopologicalSpace N] [ChartedSpace H' N] {J : ModelWithCorners ℝ E' H'}
+    (F : M × V → N) (x : M) (hF : MDifferentiableAt (I.prod 𝓘(ℝ,V)) J F (x,0)) (v : V) :
+    mfderiv 𝓘(ℝ,V) J (fun z : V => F (x,z)) 0 v = mfderiv (I.prod 𝓘(ℝ,V)) J F (x,0) (0,v) := by
+  have hc : MDifferentiableAt 𝓘(ℝ,V) (I.prod 𝓘(ℝ,V)) (fun z : V => (x,z)) (0 : V) :=
     mdifferentiableAt_const.prodMk mdifferentiableAt_id
-  have h := mfderiv_comp_apply_of_eq (0 : V) hF he rfl v
-  simpa only [TangentSpace, mfderiv_prod_right, ContinuousLinearMap.inr_apply, Function.comp_def] using h
+  have h := mfderiv_comp_apply (0 : V) hF hc v
+  erw [mfderiv_prod_right] at h
+  exact h
 
 theorem contMDiff_vertical_input [IsManifold I ⊤ M] :
     ContMDiff (I.prod (𝓘(ℝ, V))) (I.prod (𝓘(ℝ, V))).tangent ⊤
