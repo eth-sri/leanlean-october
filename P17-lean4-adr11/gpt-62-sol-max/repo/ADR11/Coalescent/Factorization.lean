@@ -1,307 +1,84 @@
 module
 
-public import ADR11.Basic
 public import ADR11.Coalescent.Forest
 
-/-!
-# The jump chain, the number of lineages, and the factorization of Kingman's coalescent
-
-Kingman's coalescent on forests splits into two independent parts: the number of roots, a pure
-death process with rate `k.choose 2` from `k` roots, and the sequence of merges, its jump chain,
-which merges a uniformly chosen pair of roots at each step.
-
-* `jumpMatrix`: the jump chain on forests (it stays put at forests with at most one root).
-* `deathPow m k j`: the entry `(k, j)` of the `m`-th power of the generator of the pure death
-  process, defined by the recursion `D^{m+1} = D · D^m`.
-* `deathProb k j t`: the transition probability `exp(t D)(k, j)` of the pure death process, the
-  paper's `g_kj(t)`.
-
-## Main results
-
-* `kingmanGenerator_pow_apply`, `kingmanTransition_apply`: for a forest `F` with `k` roots and any
-  `G` with `j` roots, `exp(tQ)(F, G) = g_kj(t) · J^{k-j}(F, G)`.
-* `coalescenceProb_eq_deathProb`: the paper's `g_ij`, defined from the coalescent on singletons,
-  is `deathProb i j`.
-* `jumpMatrix_pow_succ_apply`: first-step analysis of the jump chain.
-* `deathProb_small`: the closed forms of `g_kj(t)` for `k ≤ 4`.
-* `kingmanTransition_nonneg`, `kingmanTransition_sum`, `kingmanTransition_support`: the rows of
-  `exp(tQ)` at forests are probability distributions on forests reachable by merges
-  (nonnegativity holds at every `F`, by uniformization).
-* `hasSum_deathProb`, `deathProb_sum_range`, `deathProb_sum_Icc`, `deathProb_le_one`: the series
-  defining `g_kj(t)` converges, and the `g_kj(t)` form a probability distribution in `j`.
-* `isForest_singletonForest`, `card_roots_singletonForest`: the starting point of `g_ij`.
-
-## Implementation notes
-
-Matrices carry no canonical norm, so the entries of `exp(tQ)` are computed from the exponential
-series with the `L∞` operator norm (`Matrix.Norms.Operator`) opened locally, as in
-`Mathlib/Analysis/Normed/Algebra/MatrixExponential.lean`. Nonnegativity of `exp(tQ)` for `t ≥ 0`
-uses uniformization: `tQ = tP - tc · 1` with `P = Q + c · 1` entrywise nonnegative.
--/
+/-! Factor Kingman's transition into path counts and a scalar weight for each number of mergers. Counting paths cancels the products of rates in Tavaré’s
+partial-fraction formula. -/
 
 @[expose] public section
 
 namespace ADR11
 
 open Finset Real
+open scoped Matrix
 
-variable {L : Type*} [Fintype L] [DecidableEq L]
+variable {L : Type*} [DecidableEq L]
 
-/-- The jump chain of Kingman's coalescent on forests: from a forest with `k ≥ 2` roots, each of
-its `k.choose 2` merges has probability `1 / (k choose 2)`; a forest with at most one root stays
-put. -/
-noncomputable def jumpMatrix : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ :=
-  fun F G =>
-    if #(roots F) ≤ 1 then (if G = F then 1 else 0)
-    else if G ∈ merges F then (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ else 0
+/-- Find maximal clusters by scanning the given family, not all possible subsets. -/
+def maximalClusters (F : ClusterFamily L) : ClusterFamily L :=
+  F.filter fun A => ∀ B ∈ F, A ⊆ B → B = A
 
-/-- `deathPow m k j` is the entry `(k, j)` of `D^m`, where `D` is the generator of the pure death
-process on `ℕ` with rate `k.choose 2` from `k` to `k - 1`. -/
-def deathPow : ℕ → ℕ → ℕ → ℝ
-  | 0, k, j => if k = j then 1 else 0
-  | m + 1, k, j => ((k.choose 2 : ℕ) : ℝ) * (deathPow m (k - 1) j - deathPow m k j)
 
-/-- The transition probabilities `exp(tD)(k, j)` of the pure death process: the probability that
-`k` lineages coalesce into `j` lineages within time `t`. -/
-noncomputable def deathProb (k j : ℕ) (t : ℝ) : ℝ :=
-  ∑' m : ℕ, t ^ m / (m.factorial : ℝ) * deathPow m k j
+/-- Enumerate the endpoints of all histories of `n` mergers, with multiplicity. -/
+def mergeHistories : ℕ → ClusterFamily L → Multiset (ClusterFamily L)
+  | 0, F => {F}
+  | n + 1, F => ((maximalClusters F).powersetCard 2).val.bind fun P => mergeHistories n (mergeAt F P)
 
-theorem jumpMatrix_apply_of_isForest {F : Finset (Finset L)}
-    (hk : 2 ≤ #(roots F)) (G : Finset (Finset L)) :
-    jumpMatrix F G = if G ∈ merges F then (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ else 0 := by
-  have hk' : ¬ #(roots F) ≤ 1 := by omega
-  simp only [jumpMatrix, ite_eq_right hk']
+noncomputable def mergeCount (n : ℕ) (F G : ClusterFamily L) : ℝ :=
+  (mergeHistories n F).count G
+
+@[simp] theorem mergeCount_zero (F G : ClusterFamily L) :
+    mergeCount 0 F G = if G = F then 1 else 0 := by
+  simp [mergeCount, mergeHistories, Multiset.count_singleton, apply_ite]
+
+variable [Fintype L]
+
+@[simp] theorem maximalClusters_eq (F : ClusterFamily L) : maximalClusters F = roots F := by
+  ext A
+  simp [maximalClusters, roots]
 
 /-! ### The jump chain -/
 
-private theorem fact_jumpMatrix_apply_of_le_one {F : Finset (Finset L)} (hk : #(roots F) ≤ 1)
-    (G : Finset (Finset L)) : jumpMatrix F G = if G = F then 1 else 0 := by
-  simp only [jumpMatrix, ite_eq_left hk]
-
-private theorem fact_jumpMatrix_nonneg (F G : Finset (Finset L)) : 0 ≤ jumpMatrix F G := by
-  simp only [jumpMatrix]
-  split_ifs <;> positivity
-
-omit [Fintype L] in
-private theorem fact_one_apply (F G : Finset (Finset L)) :
-    (1 : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ) F G = if G = F then 1 else 0 := by
-  by_cases h : G = F
-  · subst h; simp
-  · rw [Matrix.one_apply_ne (Ne.symm h), ite_eq_right h]
-
-/-- First-step analysis of the jump chain. -/
-theorem jumpMatrix_pow_succ_apply {F : Finset (Finset L)} (hk : 2 ≤ #(roots F))
-    (n : ℕ) (G : Finset (Finset L)) :
-    (jumpMatrix ^ (n + 1)) F G =
-      (((#(roots F)).choose 2 : ℕ) : ℝ)⁻¹ * ∑ F' ∈ merges F, (jumpMatrix ^ n) F' G := by
-  rw [pow_succ', Matrix.mul_apply]
-  simp_rw [jumpMatrix_apply_of_isForest hk, ite_mul, zero_mul]
-  rw [Finset.sum_ite_mem, Finset.univ_inter, Finset.mul_sum]
-
-theorem jumpMatrix_pow_of_card_roots_le_one {F : Finset (Finset L)} (hk : #(roots F) ≤ 1)
-    (n : ℕ) (G : Finset (Finset L)) :
-    (jumpMatrix ^ n) F G = if G = F then 1 else 0 := by
-  induction n with
-  | zero => rw [pow_zero, fact_one_apply]
-  | succ n ih =>
-    rw [pow_succ', Matrix.mul_apply]
-    simp_rw [fact_jumpMatrix_apply_of_le_one hk, ite_mul, one_mul, zero_mul]
-    rw [Finset.sum_ite_eq', ite_eq_left (Finset.mem_univ F), ih]
-
-theorem jumpMatrix_pow_nonneg (n : ℕ) (F G : Finset (Finset L)) : 0 ≤ (jumpMatrix ^ n) F G := by
-  induction n generalizing F with
-  | zero => rw [pow_zero, fact_one_apply]; split_ifs <;> norm_num
-  | succ n ih =>
-    rw [pow_succ', Matrix.mul_apply]
-    exact Finset.sum_nonneg fun F' _ => mul_nonneg (fact_jumpMatrix_nonneg F F') (ih F')
+/-- First-step analysis, summing over unordered pairs of roots. -/
+theorem mergeCount_succ (F G : ClusterFamily L) (n : ℕ) :
+    mergeCount (n + 1) F G =
+      ∑ P ∈ mergePairs F, mergeCount n (mergeAt F P) G := by
+  simp only [mergeCount, mergeHistories, maximalClusters_eq, Multiset.count_bind, Nat.cast_multiset_sum,
+    sum_eq_multiset_sum, Multiset.map_map, Function.comp_def]
 
 /-- The jump chain only adds clusters, keeps the lineages, and removes one root per step until
 one root is left. -/
-theorem jumpMatrix_pow_support {F G : Finset (Finset L)} (hF : IsForest F) {n : ℕ}
-    (h : (jumpMatrix ^ n) F G ≠ 0) :
-    IsForest G ∧ F ⊆ G ∧ lineages G = lineages F ∧
-      #(roots G) = if n < #(roots F) then #(roots F) - n else min (#(roots F)) 1 := by
+theorem mergeCount_support {F G : ClusterFamily L} (hF : IsForest F) {n : ℕ}
+    (h : mergeCount n F G ≠ 0) :
+    IsForest G ∧ F ⊆ G ∧ lineages G = lineages F := by
   induction n generalizing F with
   | zero =>
-    rw [pow_zero, fact_one_apply] at h
-    split_ifs at h with hGF
-    · subst hGF
-      refine ⟨hF, subset_rfl, rfl, ?_⟩
-      split_ifs <;> omega
-    · exact absurd rfl h
+    obtain rfl : G = F := by simpa using h
+    exact ⟨hF, Subset.rfl, rfl⟩
   | succ n ih =>
-    rw [pow_succ', Matrix.mul_apply] at h
-    obtain ⟨F', -, hF'⟩ := Finset.exists_ne_zero_of_sum_ne_zero h
-    have hJ : jumpMatrix F F' ≠ 0 := left_ne_zero_of_mul hF'
-    have hJn : (jumpMatrix ^ n) F' G ≠ 0 := right_ne_zero_of_mul hF'
-    by_cases hk : #(roots F) ≤ 1
-    · have hF'F : F' = F := by
-        by_contra hne
-        exact hJ (by rw [fact_jumpMatrix_apply_of_le_one hk, ite_eq_right hne])
-      subst hF'F
-      obtain ⟨h1, h2, h3, h4⟩ := ih hF hJn
-      refine ⟨h1, h2, h3, ?_⟩
-      rw [h4]
-      split_ifs <;> omega
-    · replace hk : 2 ≤ #(roots F) := by omega
-      have hmem : F' ∈ merges F := by
-        by_contra hne
-        exact hJ (by rw [jumpMatrix_apply_of_isForest hk, ite_eq_right hne])
-      obtain ⟨hF'f, hcard, hsub, -, hlin⟩ := hF.of_mem_merges hmem
-      obtain ⟨h1, h2, h3, h4⟩ := ih hF'f hJn
-      refine ⟨h1, hsub.trans h2, h3.trans hlin, ?_⟩
-      rw [h4]
-      split_ifs <;> omega
-
-/-! ### The pure death process -/
-
-theorem deathPow_succ (m k j : ℕ) :
-    deathPow (m + 1) k j = ((k.choose 2 : ℕ) : ℝ) * (deathPow m (k - 1) j - deathPow m k j) :=
-  rfl
-
-/-- The pure death process never increases. -/
-theorem deathPow_eq_zero_of_lt {k j : ℕ} (h : k < j) (m : ℕ) : deathPow m k j = 0 := by
-  induction m generalizing k with
-  | zero => simp [deathPow, h.ne]
-  | succ m ih =>
-    rw [deathPow_succ, ih (lt_of_le_of_lt (Nat.sub_le k 1) h), ih h]
-    ring
-
-theorem deathPow_self (m k : ℕ) : deathPow m k k = (-((k.choose 2 : ℕ) : ℝ)) ^ m := by
-  induction m with
-  | zero => simp [deathPow]
-  | succ m ih =>
-    rw [deathPow_succ, ih]
-    rcases Nat.eq_zero_or_pos k with rfl | hk
-    · simp
-    · rw [deathPow_eq_zero_of_lt (Nat.sub_lt hk one_pos)]
-      ring
-
-private theorem fact_abs_deathPow_le (m k j : ℕ) :
-    |deathPow m k j| ≤ (2 * ((k.choose 2 : ℕ) : ℝ)) ^ m := by
-  induction m generalizing k with
-  | zero => simp only [deathPow, pow_zero]; split_ifs <;> simp
-  | succ m ih =>
-    rw [deathPow_succ, abs_mul, pow_succ, abs_of_nonneg (by positivity)]
-    have hc : (((k - 1).choose 2 : ℕ) : ℝ) ≤ ((k.choose 2 : ℕ) : ℝ) := by
-      exact_mod_cast Nat.choose_le_choose 2 (Nat.sub_le k 1)
-    have h1 : |deathPow m (k - 1) j| ≤ (2 * ((k.choose 2 : ℕ) : ℝ)) ^ m :=
-      (ih (k - 1)).trans (pow_le_pow_left₀ (by positivity) (by linarith) m)
-    have h2 := ih k
-    calc ((k.choose 2 : ℕ) : ℝ) * |deathPow m (k - 1) j - deathPow m k j|
-        ≤ ((k.choose 2 : ℕ) : ℝ) * (|deathPow m (k - 1) j| + |deathPow m k j|) :=
-          mul_le_mul_of_nonneg_left (abs_sub _ _) (by positivity)
-      _ ≤ ((k.choose 2 : ℕ) : ℝ) *
-            ((2 * ((k.choose 2 : ℕ) : ℝ)) ^ m + (2 * ((k.choose 2 : ℕ) : ℝ)) ^ m) := by
-          gcongr
-      _ = (2 * ((k.choose 2 : ℕ) : ℝ)) ^ m * (2 * ((k.choose 2 : ℕ) : ℝ)) := by ring
-
-/-- The series defining `deathProb k j t` converges (absolutely). -/
-theorem summable_deathProb (k j : ℕ) (t : ℝ) :
-    Summable fun m : ℕ => t ^ m / (m.factorial : ℝ) * deathPow m k j := by
-  refine Summable.of_norm_bounded
-    (Real.summable_pow_div_factorial (|t| * (2 * ((k.choose 2 : ℕ) : ℝ)))) fun m => ?_
-  rw [Real.norm_eq_abs, abs_mul, abs_div, abs_pow, Nat.abs_cast]
-  calc |t| ^ m / (m.factorial : ℝ) * |deathPow m k j|
-      ≤ |t| ^ m / (m.factorial : ℝ) * (2 * ((k.choose 2 : ℕ) : ℝ)) ^ m := by
-        gcongr
-        exact fact_abs_deathPow_le m k j
-    _ = (|t| * (2 * ((k.choose 2 : ℕ) : ℝ))) ^ m / (m.factorial : ℝ) := by ring
-
-theorem hasSum_deathProb (k j : ℕ) (t : ℝ) :
-    HasSum (fun m : ℕ => t ^ m / (m.factorial : ℝ) * deathPow m k j) (deathProb k j t) :=
-  (summable_deathProb k j t).hasSum
-
-private theorem fact_hasSum_exp_mul (x t : ℝ) :
-    HasSum (fun m : ℕ => t ^ m / (m.factorial : ℝ) * x ^ m) (Real.exp (x * t)) := by
-  have h := NormedSpace.expSeries_div_hasSum_exp (x * t)
-  rw [← Real.exp_eq_exp_ℝ] at h
-  convert h using 1
-  funext m
-  rw [mul_pow]
-  ring
-
-theorem deathProb_self (k : ℕ) (t : ℝ) :
-    deathProb k k t = exp (-(((k.choose 2 : ℕ) : ℝ) * t)) := by
-  rw [← neg_mul]
-  refine HasSum.tsum_eq ?_
-  simp_rw [deathPow_self]
-  exact fact_hasSum_exp_mul _ t
+    rw [mergeCount_succ] at h
+    obtain ⟨P, hP, hne⟩ := exists_ne_zero_of_sum_ne_zero h
+    obtain ⟨hf, -, hsub, -, hlin⟩ := hF.merge_pair hP
+    obtain ⟨a, b, c⟩ := ih hf hne
+    exact ⟨a, hsub.trans b, c.trans hlin⟩
 
 /-! ### The matrix exponential, entrywise -/
 
 set_option backward.isDefEq.respectTransparency false in
 /-- The entries of the exponential of a real matrix are given by the exponential series. -/
-private theorem fact_hasSum_exp_apply {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem hasSum_matrix_exp {ι : Type*} [Fintype ι] [DecidableEq ι]
     (A : Matrix ι ι ℝ) (i j : ι) :
     HasSum (fun n : ℕ => ((n.factorial : ℝ))⁻¹ * (A ^ n) i j) (NormedSpace.exp A i j) := by
   open scoped Matrix.Norms.Operator in
-  have h := NormedSpace.exp_series_hasSum_exp' (𝕂 := ℝ) A
-  have h2 := Pi.hasSum.mp (Pi.hasSum.mp h i) j
-  simpa using h2
+  simpa using Pi.hasSum.mp (Pi.hasSum.mp (NormedSpace.exp_series_hasSum_exp' (𝕂 := ℝ) A) i) j
 
-/-- The powers of the generator at a forest factor through the number of roots and the jump
-chain. -/
-theorem kingmanGenerator_pow_apply {F : Finset (Finset L)} (hF : IsForest F) (m : ℕ)
-    (G : Finset (Finset L)) :
-    (kingmanGenerator ^ m) F G =
-      deathPow m (#(roots F)) (#(roots G)) * (jumpMatrix ^ (#(roots F) - #(roots G))) F G := by
-  induction m generalizing F with
-  | zero =>
-    rw [pow_zero, fact_one_apply]
-    simp only [deathPow]
-    by_cases h : G = F
-    · subst h
-      simp
-    · rw [ite_eq_right h]
-      split_ifs with hk
-      · rw [hk, Nat.sub_self, pow_zero, fact_one_apply, ite_eq_right h, mul_zero]
-      · rw [zero_mul]
-  | succ m ih =>
-    rw [pow_succ', hF.kingmanGenerator_mul_apply, ih hF]
-    have hmerge : ∀ F' ∈ merges F, (kingmanGenerator ^ m) F' G =
-        deathPow m (#(roots F) - 1) (#(roots G)) *
-          (jumpMatrix ^ (#(roots F) - 1 - #(roots G))) F' G := by
-      intro F' hF'
-      obtain ⟨hF'f, hcard, -⟩ := hF.of_mem_merges hF'
-      rw [ih hF'f, show #(roots F') = #(roots F) - 1 by omega]
-    rw [Finset.sum_congr rfl hmerge, ← Finset.mul_sum, deathPow_succ]
-    by_cases hk : #(roots F) ≤ 1
-    · have hC : (((#(roots F)).choose 2 : ℕ) : ℝ) = 0 := by
-        rw [Nat.choose_eq_zero_of_lt (by omega)]
-        simp
-      rw [hC, merges_eq_empty_of_card_roots_le_one hk]
-      simp
-    · replace hk : 2 ≤ #(roots F) := by omega
-      by_cases hjk : #(roots G) < #(roots F)
-      · have hstep := jumpMatrix_pow_succ_apply hk (#(roots F) - 1 - #(roots G)) G
-        rw [show #(roots F) - 1 - #(roots G) + 1 = #(roots F) - #(roots G) by omega] at hstep
-        have hC : (((#(roots F)).choose 2 : ℕ) : ℝ) ≠ 0 := by
-          exact_mod_cast (Nat.choose_pos hk).ne'
-        rw [hstep]
-        field_simp
-        ring
-      · rw [deathPow_eq_zero_of_lt (show #(roots F) - 1 < #(roots G) by omega)]
-        ring
-
-/-- **Factorization.** For a forest `F` with `k` roots and `G` with `j` roots,
-`exp(tQ)(F, G) = g_kj(t) · J^{k-j}(F, G)`. -/
-theorem kingmanTransition_apply {F : Finset (Finset L)} (hF : IsForest F) (t : ℝ)
-    (G : Finset (Finset L)) :
-    kingmanTransition t F G =
-      deathProb (#(roots F)) (#(roots G)) t * (jumpMatrix ^ (#(roots F) - #(roots G))) F G := by
-  have h1 := fact_hasSum_exp_apply (t • kingmanGenerator (L := L)) F G
-  have h2 := (hasSum_deathProb (#(roots F)) (#(roots G)) t).mul_right
-    ((jumpMatrix ^ (#(roots F) - #(roots G))) F G)
-  refine h1.unique ?_
-  convert h2 using 1
-  funext n
-  rw [smul_pow, Matrix.smul_apply, kingmanGenerator_pow_apply hF, smul_eq_mul]
-  ring
-
-theorem kingmanTransition_zero :
-    kingmanTransition (L := L) 0 = 1 := by
-  simp [kingmanTransition]
+private theorem hasSum_exp_mulVec {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (Q : Matrix ι ι ℝ) (t : ℝ) (i : ι) (v : ι → ℝ) :
+    HasSum (fun m : ℕ => (m.factorial : ℝ)⁻¹ * (t ^ m * ((Q ^ m) *ᵥ v) i))
+      ((NormedSpace.exp (t • Q) *ᵥ v) i) := by
+  simpa only [Matrix.mulVec, dotProduct, smul_pow, Matrix.smul_apply, smul_eq_mul,
+    mul_assoc, mul_sum] using hasSum_sum (s := univ) fun j _ =>
+      (hasSum_matrix_exp (t • Q) i j).mul_right (v j)
 
 theorem kingmanTransition_add (s t : ℝ) :
     kingmanTransition (L := L) (s + t) = kingmanTransition s * kingmanTransition t := by
@@ -309,227 +86,190 @@ theorem kingmanTransition_add (s t : ℝ) :
   rw [add_smul]
   exact Matrix.exp_add_of_commute _ _ (((Commute.refl _).smul_left s).smul_right t)
 
-/-- A forest with at most one root does not change. -/
-theorem kingmanTransition_of_card_roots_le_one {F : Finset (Finset L)} (hF : IsForest F)
-    (hk : #(roots F) ≤ 1) (t : ℝ) (G : Finset (Finset L)) :
-    kingmanTransition t F G = if G = F then 1 else 0 := by
-  rw [kingmanTransition_apply hF]
-  by_cases hG : G = F
-  · subst hG
-    rw [Nat.sub_self, pow_zero, Matrix.one_apply_eq, mul_one, ite_eq_left rfl, deathProb_self,
-      Nat.choose_eq_zero_of_lt (by omega : #(roots G) < 2)]
-    simp
-  · rw [jumpMatrix_pow_of_card_roots_le_one hk, ite_eq_right hG, mul_zero]
-
-theorem kingmanTransition_nonneg {t : ℝ} (ht : 0 ≤ t) (F G : Finset (Finset L)) :
+theorem kingmanTransition_nonneg {t : ℝ} (ht : 0 ≤ t) (F G : ClusterFamily L) :
     0 ≤ kingmanTransition t F G := by
-  -- uniformization: `tQ = tP - tc · 1` with `P = Q + c · 1` entrywise nonnegative
-  set Q := kingmanGenerator (L := L) with hQ
-  set c : ℝ := ∑ F : Finset (Finset L), (((#(roots F)).choose 2 : ℕ) : ℝ)
-  set P : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ := Q + c • 1 with hPdef
-  have hP : ∀ F G, 0 ≤ P F G := by
-    intro F G
-    rw [hPdef, Matrix.add_apply, Matrix.smul_apply, fact_one_apply, smul_eq_mul, hQ]
-    unfold kingmanGenerator
-    by_cases h : G = F
-    · subst h
-      simp only [ite_true, mul_one]
-      have : (((#(roots G)).choose 2 : ℕ) : ℝ) ≤ c :=
-        Finset.single_le_sum
-          (f := fun F : Finset (Finset L) => (((#(roots F)).choose 2 : ℕ) : ℝ))
-          (fun F _ => by positivity) (Finset.mem_univ G)
-      linarith
-    · simp only [ite_eq_right h, mul_zero, add_zero]
-      split_ifs <;> norm_num
-  have hPn : ∀ n F G, 0 ≤ (P ^ n) F G := by
-    intro n
-    induction n with
-    | zero => intro F G; rw [pow_zero, fact_one_apply]; split_ifs <;> norm_num
-    | succ n ih =>
-      intro F G
-      rw [pow_succ', Matrix.mul_apply]
-      exact Finset.sum_nonneg fun F' _ => mul_nonneg (hP F F') (ih F' G)
-  have hexpP : ∀ F G, 0 ≤ NormedSpace.exp (t • P) F G := by
-    intro F G
-    refine (fact_hasSum_exp_apply (t • P) F G).nonneg fun n => ?_
-    rw [smul_pow, Matrix.smul_apply, smul_eq_mul]
-    exact mul_nonneg (by positivity) (mul_nonneg (pow_nonneg ht n) (hPn n F G))
-  have hscal : ∀ (r : ℝ) (F G : Finset (Finset L)), 0 ≤
-      NormedSpace.exp (r • (1 : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ)) F G := by
-    intro r F G
-    have h := fact_hasSum_exp_apply
-      (r • (1 : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ)) F G
-    simp_rw [smul_pow, one_pow, Matrix.smul_apply, fact_one_apply, smul_eq_mul] at h
-    by_cases hGF : G = F
-    · simp only [ite_eq_left hGF, mul_one] at h
-      have h' : HasSum (fun n : ℕ => r ^ n / (n.factorial : ℝ)) (Real.exp r) := by
-        rw [Real.exp_eq_exp_ℝ]
-        exact NormedSpace.expSeries_div_hasSum_exp r
-      rw [h.unique (by convert h' using 1; funext n; ring)]
-      exact (Real.exp_pos r).le
-    · simp only [ite_eq_right hGF, mul_zero] at h
-      rw [h.unique hasSum_zero]
-  have hsplit : t • Q =
-      t • P + (-(t * c)) • (1 : Matrix (Finset (Finset L)) (Finset (Finset L)) ℝ) := by
-    rw [hPdef, smul_add, smul_smul, add_assoc, ← add_smul]
-    simp
-  show 0 ≤ NormedSpace.exp (t • Q) F G
-  rw [hsplit, Matrix.exp_add_of_commute _ _ ((Commute.one_right _).smul_right _), Matrix.mul_apply]
-  exact Finset.sum_nonneg fun F' _ => mul_nonneg (hexpP F F') (hscal _ F' G)
+  -- Shift the generator by a scalar matrix to make it entrywise nonnegative.
+  let Q := kingmanGenerator (L := L)
+  let c := rate (Fintype.card (Finset L))
+  let P := Q + c • 1
+  have hP (i j : ClusterFamily L) : 0 ≤ (t • P) i j := by
+    refine mul_nonneg ht ?_
+    have h : ((#(roots i)).choose 2 : ℝ) ≤ c := by
+      dsimp [c, rate]
+      exact_mod_cast Nat.choose_le_choose 2 (card_le_univ (roots i))
+    simp only [P, Matrix.add_apply, Matrix.smul_apply, smul_eq_mul, Matrix.one_apply, eq_comm (a := i) (b := j), Q, kingmanGenerator]
+    split_ifs <;> simp_all
+  have hp := (hasSum_matrix_exp (t • P) F G).nonneg fun m => mul_nonneg (by positivity)
+    (Matrix.pow_apply_nonneg hP m F G)
+  have he (r : ℝ) :
+      NormedSpace.exp (r • (1 : Matrix (ClusterFamily L) (ClusterFamily L) ℝ)) = exp r • 1 := by
+    simp only [Matrix.smul_one_eq_diagonal, Matrix.exp_diagonal, Pi.exp_def, ← Real.exp_eq_exp_ℝ]
+  simp only [P, smul_add, smul_smul] at hp
+  rw [Matrix.exp_add_of_commute _ _ ((Commute.one_right _).smul_right _), he, Matrix.mul_smul, mul_one] at hp
+  exact nonneg_of_mul_nonneg_right hp (exp_pos _)
 
-/-- The rows of the powers of the generator at a forest sum to `0` (except for the identity). -/
-private theorem fact_sum_kingmanGenerator_pow {F : Finset (Finset L)} (hF : IsForest F) (n : ℕ) :
-    ∑ G, (kingmanGenerator ^ n) F G = if n = 0 then 1 else 0 := by
-  induction n generalizing F with
-  | zero => simp [fact_one_apply]
-  | succ n ih =>
-    simp_rw [pow_succ', Matrix.mul_apply]
-    rw [Finset.sum_comm]
-    simp_rw [← Finset.mul_sum]
-    rw [hF.sum_kingmanGenerator_mul, ih hF,
-      Finset.sum_congr rfl (fun F' hF' => ih (hF.of_mem_merges hF').1),
-      Finset.sum_const, hF.card_merges, nsmul_eq_mul, ite_eq_right (Nat.succ_ne_zero n)]
-    ring
+/-- Tavaré's coefficient divided by the number of ordered jump histories. -/
+def spectralCoeff (R : Type*) [Field R] (i j k : ℕ) : R :=
+  (∏ l ∈ (Icc j i).erase k, ((l.choose 2 : R) - k.choose 2))⁻¹
 
-theorem kingmanTransition_sum {F : Finset (Finset L)} (hF : IsForest F) (t : ℝ) :
+noncomputable abbrev tavareCoeff := spectralCoeff ℝ
+abbrev tavareRat := spectralCoeff ℚ
+
+private theorem rate_strict : StrictMonoOn rate (Set.Ici 1) := by
+  refine strictMonoOn_of_lt_succ Set.ordConnected_Ici fun a _ ha _ => ?_
+  simpa [rate, Nat.choose_succ_succ', Nat.choose_one_right] using (show 0 < a from ha)
+
+private theorem tavare_sum {i j : ℕ} (hj : 1 ≤ j) (hji : j ≤ i) :
+    ∑ k ∈ Icc j i, tavareCoeff i j k = if i = j then 1 else 0 := by
+  have hm k (hk : k ∈ Icc j i) : k ∈ Set.Ici 1 := hj.trans (mem_Icc.1 hk).1
+  have hp : 0 < #(Icc j i) := card_pos.2 ⟨j, mem_Icc.2 ⟨le_rfl, hji⟩⟩
+  have h := Lagrange.coeff_eq_sum (s := Icc j i) (v := fun k => -rate k)
+    (fun a ha b hb e => rate_strict.injOn (hm a ha) (hm b hb) (neg_injective e))
+    (P := (1 : Polynomial ℝ)) (by simpa using (show (0 : WithBot ℕ) < #(Icc j i) from by exact_mod_cast hp))
+  have hc : #(Icc j i) - 1 = 0 ↔ i = j := by rw [Nat.card_Icc]; omega
+  simpa only [Polynomial.coeff_one, hc, Polynomial.eval_one, neg_sub_neg, rate, one_div, spectralCoeff] using h.symm
+
+/-- Apply the spectral weights to an arbitrary function of the rates. -/
+noncomputable def spectralMix (i j : ℕ) (f : ℕ → ℝ) : ℝ :=
+  ∑ k ∈ Icc j i, f k * tavareCoeff i j k
+
+private theorem erase_rank {j i : ℕ} (hj : 1 ≤ j) : (Icc j i).erase i = Icc j (i - 1) := by
+  ext k
+  simp only [mem_erase, mem_Icc]
+  omega
+
+private theorem spectralMix_step (i j : ℕ) (hj : 1 ≤ j) (hji : j ≤ i) (f : ℕ → ℝ) :
+    spectralMix i j (fun k => -rate k * f k) = spectralMix (i - 1) j f - rate i * spectralMix i j f := by
+  have he := erase_rank (i := i) hj
+  rw [eq_sub_iff_add_eq, spectralMix, spectralMix, spectralMix, mul_sum, ← sum_add_distrib,
+    ← sum_erase _ (a := i) (by ring)]
+  refine sum_congr he fun k hk => ?_
+  obtain ⟨hki, hk⟩ := mem_erase.1 (he.symm ▸ hk)
+  have hd : (↑(i.choose 2) - ↑(k.choose 2) : ℝ) ≠ 0 :=
+    (sub_pos.2 (rate_strict (hj.trans (mem_Icc.1 hk).1) (hj.trans hji) (by grind))).ne'
+  have hc : tavareCoeff (i - 1) j k = (rate i - rate k) * tavareCoeff i j k := by
+    unfold tavareCoeff spectralCoeff
+    rw [← he, erase_right_comm, ← mul_prod_erase _ _ (mem_erase.2 ⟨hki.symm, mem_Icc.2 ⟨hji, le_rfl⟩⟩),
+      mul_inv]
+    simp [rate, hd]
+  rw [hc]
+  ring
+
+noncomputable def pathWeight (i j : ℕ) (t : ℝ) : ℝ := spectralMix i j fun k => exp (-(rate k * t))
+
+@[simp] theorem tavareRat_cast (i j k : ℕ) : (tavareRat i j k : ℝ) = tavareCoeff i j k := by
+  simp [spectralCoeff, Rat.cast_prod]
+
+omit [Fintype L] in
+/-- Count the empty forest as one lineage in the scalar process: either population is stationary. -/
+def deathRank (F : ClusterFamily L) := max #(maximalClusters F) 1
+
+@[simp] theorem deathRank_eq (F : ClusterFamily L) : deathRank F = max #(roots F) 1 := by
+  simp [deathRank]
+
+private theorem rate_deathRank (F : ClusterFamily L) : rate (deathRank F) = rate #(roots F) := by
+  rw [deathRank_eq, max_def]
+  split_ifs with h <;> first | rfl | simp [rate_eq_zero.2 h]
+
+private theorem rank_merge {F P : ClusterFamily L} (hF : IsForest F) (hp : P ∈ mergePairs F) :
+    deathRank (mergeAt F P) = deathRank F - 1 := by
+  have := (hF.merge_pair hp).2.1
+  have := card_le_card (mem_powersetCard.1 hp).1
+  grind [deathRank_eq]
+
+set_option maxHeartbeats 1000000 in
+private theorem kingmanGenerator_pow_mix {F : ClusterFamily L} (hF : IsForest F) (G : ClusterFamily L) (m : ℕ) :
+    (kingmanGenerator ^ m) F G = ∑ j ∈ Icc 1 (deathRank F),
+      spectralMix (deathRank F) j (fun k => (-rate k)^m) * mergeCount (deathRank F - j) F G := by
+  induction m generalizing F with
+  | zero =>
+    let k := deathRank F
+    have hk : 1 ≤ k := le_max_right ..
+    change _ = ∑ j ∈ Icc 1 k, spectralMix k j (fun q => (-rate q)^0) * mergeCount (k-j) F G
+    simp only [pow_zero, spectralMix, one_mul]
+    rw [sum_congr rfl fun j hj => congrArg (· * mergeCount (k-j) F G)
+      (tavare_sum (mem_Icc.1 hj).1 (mem_Icc.1 hj).2)]
+    simp [-deathRank_eq, Matrix.one_apply, ite_mul, eq_comm (a := k), eq_comm (a := F), hk]
+  | succ m ih =>
+    let k := deathRank F
+    have hk : 1 ≤ k := le_max_right ..
+    let s i j := spectralMix i j fun q => (-rate q)^m
+    rw [pow_succ', Matrix.mul_apply, hF.sum_generator_pairs, sum_sub_distrib, sum_const,
+      nsmul_eq_mul, card_powersetCard, ← rate, ← rate_deathRank F, ih hF,
+      sum_congr rfl (fun P hp => by rw [ih (hF.merge_pair hp).1, rank_merge hF hp]), sum_comm]
+    simp_rw [← mul_sum, ← mergeCount_succ]
+    change (∑ j ∈ Icc 1 (k - 1), s (k - 1) j * mergeCount (k - 1 - j + 1) F G) -
+      rate k * (∑ j ∈ Icc 1 k, s k j * mergeCount (k-j) F G) = _
+    rw [sum_congr rfl (fun j hj => by rw [show k - 1 - j + 1 = k - j by grind]),
+      ← erase_rank le_rfl, sum_erase_eq_sub (mem_Icc.2 ⟨hk, le_rfl⟩)]
+    simp only [s, spectralMix, Icc_eq_empty (by omega : ¬ k ≤ k - 1), sum_empty, zero_mul, sub_zero]
+    rw [mul_sum, ← sum_sub_distrib]
+    refine sum_congr rfl fun j hj => ?_
+    change s (k-1) j * _ - rate k * (s k j * _) = spectralMix k j _ * _
+    rw [← mul_assoc, ← sub_mul]
+    congr 1
+    simpa only [s, pow_succ'] using (spectralMix_step k j (mem_Icc.1 hj).1 (mem_Icc.1 hj).2
+      (fun q => (-rate q)^m)).symm
+
+/-- Kingman's kernel is the mixture over the possible numbers of remaining lineages. -/
+theorem kingmanTransition_eq_sum_Icc {F : ClusterFamily L} (hF : IsForest F) (t : ℝ) (G : ClusterFamily L) :
+    kingmanTransition t F G = ∑ j ∈ Icc 1 (deathRank F), pathWeight (deathRank F) j t * mergeCount (deathRank F - j) F G := by
+  let k := deathRank F
+  refine (hasSum_matrix_exp (t • kingmanGenerator) F G).unique ?_
+  simp_rw [pathWeight, spectralMix, ← neg_mul]
+  simpa only [spectralMix, smul_pow, Matrix.smul_apply, smul_eq_mul, kingmanGenerator_pow_mix hF,
+    k, mul_sum, sum_mul, mul_assoc, mul_left_comm, mul_comm, mul_pow, div_eq_mul_inv,
+    ← Real.exp_eq_exp_ℝ] using
+    hasSum_sum (s := Icc 1 k) (fun j _ => (hasSum_sum (s := Icc j k) (fun i _ =>
+      (NormedSpace.expSeries_div_hasSum_exp (-rate i * t)).mul_right (tavareCoeff k j i))).mul_right (mergeCount (k-j) F G))
+
+theorem kingmanTransition_support {F G : ClusterFamily L} (hF : IsForest F)
+    {t : ℝ} (h : kingmanTransition t F G ≠ 0) : IsForest G ∧ F ⊆ G ∧ lineages G = lineages F := by
+  rw [kingmanTransition_eq_sum_Icc hF] at h
+  obtain ⟨j, -, h⟩ := exists_ne_zero_of_sum_ne_zero h
+  exact mergeCount_support hF (right_ne_zero_of_mul h)
+
+/-- Push a finite distribution through a deterministic map. -/
+noncomputable def pushD {α β : Type*} [Fintype α] [DecidableEq β]
+    (f : α → β) (p : α → ℝ) (b : β) : ℝ := ∑ a, if f a = b then p a else 0
+
+theorem pushD_test {α β : Type*} [Fintype α] [Fintype β] [DecidableEq β]
+    (f : α → β) (p : α → ℝ) (w : β → ℝ) : ∑ b, pushD f p b * w b = ∑ a, p a * w (f a) := by
+  simp_rw [pushD, sum_mul, ite_mul, zero_mul]
+  rw [sum_comm]
+  simp_rw [sum_ite_eq, mem_univ, ite_true]
+
+section Lumping
+
+variable {M : Type*} [Fintype M] [DecidableEq M]
+variable (Q : Matrix M M ℝ) (r : ClusterFamily L → M)
+variable (hQ : ∀ {F}, IsForest F → ∀ u : M → ℝ,
+  ∑ G, kingmanGenerator F G * u (r G) = (Q *ᵥ u) (r F))
+include hQ
+
+private theorem push_pow (m : ℕ) {F : ClusterFamily L} (hF : IsForest F) (u : M → ℝ) :
+    ((kingmanGenerator ^ m) *ᵥ (u ∘ r)) F = ((Q ^ m) *ᵥ u) (r F) := by
+  induction m generalizing F with
+  | zero => simp [Matrix.one_mulVec]
+  | succ m ih =>
+    rw [pow_succ', pow_succ', ← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec, ← hQ hF]
+    exact sum_mul_congr fun G _ h => ih (hF.generator_preserves h)
+
+/-- Intertwining the generators also intertwines the finite-time transitions. -/
+theorem transition_push {F : ClusterFamily L} (hF : IsForest F) (t : ℝ) (G : M) :
+    pushD r (kingmanTransition t F) G = NormedSpace.exp (t • Q) (r F) G := by
+  let v := fun H => if H = G then (1 : ℝ) else 0
+  have h := hasSum_exp_mulVec kingmanGenerator t F (v ∘ r)
+  simp_rw [push_pow Q r hQ _ hF] at h
+  simpa only [v, Matrix.mulVec, dotProduct, Function.comp_apply, mul_ite, mul_one, mul_zero,
+    pushD, kingmanTransition, sum_ite_eq', mem_univ, ite_true] using h.unique (hasSum_exp_mulVec Q t (r F) v)
+
+end Lumping
+
+theorem kingmanTransition_sum {F : ClusterFamily L} (hF : IsForest F) (t : ℝ) :
     ∑ G, kingmanTransition t F G = 1 := by
-  have h := hasSum_sum (s := univ) fun G _ =>
-    fact_hasSum_exp_apply (t • kingmanGenerator (L := L)) F G
-  refine h.unique ?_
-  convert hasSum_ite_eq 0 (1 : ℝ) using 1
-  funext n
-  simp_rw [smul_pow, Matrix.smul_apply, smul_eq_mul]
-  simp_rw [← mul_assoc, ← Finset.mul_sum]
-  rw [fact_sum_kingmanGenerator_pow hF]
-  split_ifs with hn
-  · subst hn; simp
-  · simp
-
-/-! ### Forests of singletons -/
-
-/-! ### The pure death process: transition probabilities -/
-
-theorem deathProb_eq_zero_of_lt {k j : ℕ} (h : k < j) (t : ℝ) : deathProb k j t = 0 := by
-  simp [deathProb, deathPow_eq_zero_of_lt h]
-
-/-! ### Small cases -/
-
-private theorem fact_deathProb_of_closed {k j : ℕ} (a b c d : ℝ)
-    (h : ∀ m, deathPow m k j = a * 0 ^ m + b * (-1) ^ m + c * (-3) ^ m + d * (-6) ^ m) (t : ℝ) :
-    deathProb k j t = a + b * exp (-t) + c * exp (-t) ^ 3 + d * exp (-t) ^ 6 := by
-  have hs := (((fact_hasSum_exp_mul 0 t).mul_left a).add
-    ((fact_hasSum_exp_mul (-1) t).mul_left b)).add ((fact_hasSum_exp_mul (-3) t).mul_left c)
-      |>.add ((fact_hasSum_exp_mul (-6) t).mul_left d)
-  have e : deathProb k j t =
-      a * exp (0 * t) + b * exp (-1 * t) + c * exp (-3 * t) + d * exp (-6 * t) := by
-    refine HasSum.tsum_eq ?_
-    convert hs using 1
-    funext m
-    rw [h m]
-    ring
-  rw [e, ← Real.exp_nat_mul, ← Real.exp_nat_mul]
-  congr 1
-  · congr 1
-    · congr 1
-      · simp
-      · ring_nf
-    · congr 2
-      push_cast
-      ring
-  · congr 2
-    push_cast
-    ring
-
-private theorem fact_deathPow_two_one (m : ℕ) :
-    deathPow m 2 1 = 1 * 0 ^ m + (-1) * (-1) ^ m + 0 * (-3) ^ m + 0 * (-6) ^ m := by
-  induction m with
-  | zero => simp [deathPow]
-  | succ m ih =>
-    rw [deathPow_succ, ih, show (2 : ℕ) - 1 = 1 from rfl, deathPow_self,
-      show Nat.choose 2 2 = 1 from rfl, show Nat.choose 1 2 = 0 from rfl]
-    push_cast
-    ring
-
-private theorem fact_deathPow_three_two (m : ℕ) :
-    deathPow m 3 2 = 0 * 0 ^ m + 3 / 2 * (-1) ^ m + (-3 / 2) * (-3) ^ m + 0 * (-6) ^ m := by
-  induction m with
-  | zero => simp [deathPow]; norm_num
-  | succ m ih =>
-    rw [deathPow_succ, ih, show (3 : ℕ) - 1 = 2 from rfl, deathPow_self,
-      show Nat.choose 3 2 = 3 from rfl, show Nat.choose 2 2 = 1 from rfl]
-    push_cast
-    ring
-
-private theorem fact_deathPow_three_one (m : ℕ) :
-    deathPow m 3 1 = 1 * 0 ^ m + (-3 / 2) * (-1) ^ m + 1 / 2 * (-3) ^ m + 0 * (-6) ^ m := by
-  induction m with
-  | zero => simp [deathPow]; norm_num
-  | succ m ih =>
-    rw [deathPow_succ, ih, show (3 : ℕ) - 1 = 2 from rfl, fact_deathPow_two_one,
-      show Nat.choose 3 2 = 3 from rfl]
-    push_cast
-    ring
-
-private theorem fact_deathPow_four_three (m : ℕ) :
-    deathPow m 4 3 = 0 * 0 ^ m + 0 * (-1) ^ m + 2 * (-3) ^ m + (-2) * (-6) ^ m := by
-  induction m with
-  | zero => simp [deathPow]
-  | succ m ih =>
-    rw [deathPow_succ, ih, show (4 : ℕ) - 1 = 3 from rfl, deathPow_self,
-      show Nat.choose 4 2 = 6 from rfl, show Nat.choose 3 2 = 3 from rfl]
-    push_cast
-    ring
-
-private theorem fact_deathPow_four_two (m : ℕ) :
-    deathPow m 4 2 = 0 * 0 ^ m + 9 / 5 * (-1) ^ m + (-3) * (-3) ^ m + 6 / 5 * (-6) ^ m := by
-  induction m with
-  | zero => simp [deathPow]; norm_num
-  | succ m ih =>
-    rw [deathPow_succ, ih, show (4 : ℕ) - 1 = 3 from rfl, fact_deathPow_three_two,
-      show Nat.choose 4 2 = 6 from rfl]
-    push_cast
-    ring
-
-private theorem fact_deathPow_four_one (m : ℕ) :
-    deathPow m 4 1 = 1 * 0 ^ m + (-9 / 5) * (-1) ^ m + 1 * (-3) ^ m + (-1 / 5) * (-6) ^ m := by
-  induction m with
-  | zero => simp [deathPow]; norm_num
-  | succ m ih =>
-    rw [deathPow_succ, ih, show (4 : ℕ) - 1 = 3 from rfl, fact_deathPow_three_one,
-      show Nat.choose 4 2 = 6 from rfl]
-    push_cast
-    ring
-
-/-- The closed forms of `g_kj(t)` for `k ≤ 4`, in terms of `T = e^{-t}`. -/
-theorem deathProb_small (t : ℝ) :
-    let T := exp (-t)
-    deathProb 0 0 t = 1 ∧ deathProb 1 1 t = 1 ∧
-    deathProb 2 1 t = 1 - T ∧ deathProb 2 2 t = T ∧
-    deathProb 3 1 t = 1 - 3 / 2 * T + 1 / 2 * T ^ 3 ∧ deathProb 3 2 t = 3 / 2 * T - 3 / 2 * T ^ 3 ∧
-      deathProb 3 3 t = T ^ 3 ∧
-    deathProb 4 1 t = 1 - 9 / 5 * T + T ^ 3 - 1 / 5 * T ^ 6 ∧
-      deathProb 4 2 t = 9 / 5 * T - 3 * T ^ 3 + 6 / 5 * T ^ 6 ∧
-      deathProb 4 3 t = 2 * T ^ 3 - 2 * T ^ 6 ∧ deathProb 4 4 t = T ^ 6 := by
-  intro T
-  have hT3 : exp (-(((Nat.choose 3 2 : ℕ) : ℝ) * t)) = T ^ 3 := by
-    rw [← Real.exp_nat_mul, show Nat.choose 3 2 = 3 from rfl]
-    push_cast
-    ring_nf
-  have hT6 : exp (-(((Nat.choose 4 2 : ℕ) : ℝ) * t)) = T ^ 6 := by
-    rw [← Real.exp_nat_mul, show Nat.choose 4 2 = 6 from rfl]
-    push_cast
-    ring_nf
-  refine ⟨?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · rw [deathProb_self]; simp
-  · rw [deathProb_self]; simp
-  · rw [fact_deathProb_of_closed _ _ _ _ fact_deathPow_two_one]; ring
-  · rw [deathProb_self, show Nat.choose 2 2 = 1 from rfl]; simp [T]
-  · rw [fact_deathProb_of_closed _ _ _ _ fact_deathPow_three_one]; ring
-  · rw [fact_deathProb_of_closed _ _ _ _ fact_deathPow_three_two]; ring
-  · rw [deathProb_self, hT3]
-  · rw [fact_deathProb_of_closed _ _ _ _ fact_deathPow_four_one]; ring
-  · rw [fact_deathProb_of_closed _ _ _ _ fact_deathPow_four_two]; ring
-  · rw [fact_deathProb_of_closed _ _ _ _ fact_deathPow_four_three]; ring
-  · rw [deathProb_self, hT6]
+  simpa [pushD, Matrix.one_apply] using
+    transition_push (0 : Matrix Unit Unit ℝ) (fun _ : ClusterFamily L => ())
+      (fun h _ => by simp [h.sum_generator_pairs, Matrix.zero_mulVec]) hF t ()
 
 end ADR11
