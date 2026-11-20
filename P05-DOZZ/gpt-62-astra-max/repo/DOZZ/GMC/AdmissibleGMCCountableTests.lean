@@ -53,8 +53,7 @@ theorem exists_countable_dense_admissible_tests
     constructor
     · intro hx
       rcases mem_iUnion.mp hx with ⟨n, hx⟩
-      rcases hx with ⟨y, hy, rfl⟩
-      exact y.property
+      grind
     · intro hx
       obtain ⟨n, hn⟩ := E.exists_mem ⟨x, hx⟩
       apply mem_iUnion.mpr
@@ -69,10 +68,8 @@ theorem exists_countable_dense_admissible_tests
       ext y
       constructor
       · rintro ⟨x, rfl⟩
-        exact x.2
-      · intro hy
-        refine ⟨⟨y.1, hy⟩, ?_⟩
-        exact Subtype.ext rfl
+        exact x.property
+      · aesop
     have hSc : IsCompact S := by
       rw [← hS]
       let : CompactSpace L := isCompact_iff_compactSpace.mp hL
@@ -83,8 +80,8 @@ theorem exists_countable_dense_admissible_tests
     refine ⟨⟨x, hLU hx⟩, hn (show (⟨x, hLU hx⟩ : ↥U) ∈ S from hx), rfl⟩
   let S : ℕ → Set C(ℂ, ℝ) := fun n =>
     {g | HasCompactSupport g ∧ tsupport g ⊆ K n}
-  let R : (n : ℕ) → Set C(↑(K n), ℝ) := fun n =>
-    Set.range fun g : ↥(S n) => g.1.restrict (K n)
+  let R := fun n =>
+  Set.range fun g : ↥(S n) => g.1.restrict (K n)
   have hRsep (n : ℕ) : SeparableSpace (↥(R n)) := by
     have : CompactSpace (↑(K n)) := isCompact_iff_compactSpace.mp (hKcompact n)
     have : SecondCountableTopology (↑(K n)) := inferInstance
@@ -99,18 +96,11 @@ theorem exists_countable_dense_admissible_tests
       simp [HasCompactSupport]
     · rfl
   let seq : (n : ℕ) → ℕ → ↥(R n) := fun n => by
-    letI : SeparableSpace (↥(R n)) := hRsep n
-    letI : Nonempty (↥(R n)) := hRnonempty n
-    exact TopologicalSpace.denseSeq (↥(R n))
-  have hseq (n : ℕ) : DenseRange (seq n) := by
-    let : SeparableSpace (↥(R n)) := hRsep n
-    let : Nonempty (↥(R n)) := hRnonempty n
-    exact TopologicalSpace.denseRange_denseSeq (↥(R n))
+    apply TopologicalSpace.denseSeq
+  have hseq (n : ℕ)  := TopologicalSpace.denseRange_denseSeq (↥(R n))
   let source : (n m : ℕ) → ↥(S n) :=
     fun n m => Classical.choose (Set.mem_range.mp (seq n m).property)
-  have hsource (n m : ℕ) :
-      source n m |>.1.restrict (K n) = (seq n m).1 := by
-    exact Classical.choose_spec (Set.mem_range.mp (seq n m).property)
+  have hsource (n m : ℕ)  := Classical.choose_spec (Set.mem_range.mp (seq n m).property)
   let test : ℕ × ℕ → BoundedContinuousFunction ℂ ℝ := fun nm =>
     ((⟨(source nm.1 nm.2).1, (source nm.1 nm.2).property.1⟩ :
       C_c(ℂ, ℝ)).toBoundedContinuousFunction)
@@ -119,7 +109,7 @@ theorem exists_countable_dense_admissible_tests
         tsupport (test (n, m) : ℂ → ℝ) ⊆ K n ∧
         tsupport (test (n, m) : ℂ → ℝ) ⊆ U := by
     refine ⟨(source n m).property.1, ?_, ?_⟩
-    · exact (source n m).property.2
+    · exact (source n m).property.right
     · exact (source n m).property.2.trans (hKU n)
   have hdense (n : ℕ) (g : C(ℂ, ℝ))
       (hg : HasCompactSupport g) (hgs : tsupport g ⊆ K n)
@@ -135,32 +125,25 @@ theorem exists_countable_dense_admissible_tests
     let target : C(↑(K n), ℝ) := g.restrict (K n)
     have htarget : target ∈ R n := ⟨gS, rfl⟩
     let targetR : ↥(R n) := ⟨target, htarget⟩
-    have hclosure : targetR ∈ closure (Set.range (seq n)) := hseq n targetR
-    obtain ⟨q, hq, hdist⟩ := (Metric.mem_closure_iff.mp hclosure) δ hδ
+    obtain ⟨q, hq, hdist⟩ := (Metric.mem_closure_iff.mp (hseq n targetR)) δ hδ
     obtain ⟨m, rfl⟩ := hq
     refine ⟨m, ?_⟩
     intro x
     by_cases hx : x ∈ K n
     · have hpoint := ContinuousMap.dist_apply_le_dist
         (f := target) (g := (seq n m).1) ⟨x, hx⟩
-      have hdistAmbient : dist target (seq n m).1 < δ := by
-        change dist target (↑(seq n m)) < δ at hdist
-        exact hdist
-      have hdistx : dist (g x) ((seq n m).1 ⟨x, hx⟩) < δ :=
-        lt_of_le_of_lt hpoint hdistAmbient
+      have hdistAmbient  := hdist
       have hsourceeq : (source n m).1.restrict (K n) = (seq n m).1 := hsource n m
       let xK : ↑(K n) := ⟨x, hx⟩
-      have hsourceval : ((source n m).1.restrict (K n)) xK = (seq n m).1 xK :=
-        congrArg (fun F : C(↑(K n), ℝ) => F xK) hsourceeq
       have htesteq : test (n, m) x = (seq n m).1 ⟨x, hx⟩ := by
         simpa [test, CompactlySupportedContinuousMap.toBoundedContinuousFunction]
-          using hsourceval
+          using (congrArg (fun F : C(↑(K n), ℝ) => F xK) hsourceeq)
       rw [htesteq]
       calc
         ‖(seq n m).1 ⟨x, hx⟩ - g x‖ =
             dist ((seq n m).1 ⟨x, hx⟩) (g x) := (dist_eq_norm _ _).symm
         _ = dist (g x) ((seq n m).1 ⟨x, hx⟩) := dist_comm _ _
-        _ < δ := hdistx
+        _ < δ := lt_of_le_of_lt hpoint hdistAmbient
     · have hgzero : g x = 0 := image_eq_zero_of_notMem_tsupport
         (fun hx' => hx (hgs hx'))
       have hsourcezero : (test (n, m) : ℂ → ℝ) x = 0 :=
@@ -168,9 +151,7 @@ theorem exists_countable_dense_admissible_tests
           (fun hx' => hx ((source n m).property.2 hx'))
       simpa [hgzero, hsourcezero] using hδ
   refine ⟨K, hKcompact, hKU, hKmono, hKcover, hKcofinal, test, ?_, ?_⟩
-  · intro n m
-    exact htestSupport n m
-  · intro n g hg hgs δ hδ
-    exact hdense n g hg hgs δ hδ
+  · assumption
+  · assumption
 
 end DOZZ.Proofs

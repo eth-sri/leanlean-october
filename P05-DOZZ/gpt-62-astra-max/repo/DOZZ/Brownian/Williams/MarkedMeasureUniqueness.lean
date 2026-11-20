@@ -28,27 +28,22 @@ theorem measure_eq_of_Ioc_above (μ η : Measure ℝ) [IsFiniteMeasure μ] [IsFi
   have hsub : μ.comap e = η.comap e := by
     apply Measure.ext_of_Ioc' _ _ (fun _ _ _ => measure_ne_top _ _)
     intro a b hab
-    rw [Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ measurableSet_Ioc,
-      Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ measurableSet_Ioc]
+    simp only [Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ measurableSet_Ioc]
     have himage : e '' Ioc a b = Ioc (a : ℝ) (b : ℝ) := by
       ext t
       constructor
       · rintro ⟨u, hu, rfl⟩
         exact hu
-      · intro ht
-        exact ⟨⟨t, a.property.trans ht.1⟩, ht, rfl⟩
+      · aesop
     rw [himage]
     exact h a b a.property hab
   have hrμ : μ.restrict (Ioi s) = μ := Measure.restrict_eq_self_of_ae_mem hμ
   have hrη : η.restrict (Ioi s) = η := Measure.restrict_eq_self_of_ae_mem hη
   ext A hA
-  have hpre : MeasurableSet (e ⁻¹' A) := hA.preimage he.measurable
-  have heq := congrArg (fun M : Measure (Ioi s) => M (e ⁻¹' A)) hsub
-  rw [Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ hpre,
-    Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ hpre,
-    image_preimage_eq_inter_range] at heq
-  have hrange : range e = Ioi s := Subtype.range_coe
-  rw [hrange] at heq
+  have hpre := hA.preimage he.measurable
+  have heq := congrArg (fun M => M (e ⁻¹' A)) hsub
+  simp only [Measure.comap_apply e he.injective (fun _ => he.measurableSet_image.mpr) _ hpre, image_preimage_eq_inter_range] at heq
+  rw [Subtype.range_coe] at heq
   rw [← hrμ, ← hrη, Measure.restrict_apply hA, Measure.restrict_apply hA]
   exact heq
 
@@ -83,9 +78,7 @@ theorem measure_eq_of_prod_Ioc_above {α : Type*} [MeasurableSpace α]
     intro a b ha hab
     rw [hslice _ measurableSet_Ioc, hslice _ measurableSet_Ioc]
     exact h A hA a b ha hab
-  have hh := congrArg (fun M : Measure ℝ => M B) heq
-  rw [hslice B hB, hslice B hB] at hh
-  exact hh
+  grind
 
 end DOZZ.Proofs
 end

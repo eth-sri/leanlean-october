@@ -45,7 +45,6 @@ theorem gaussNegativeCrossingDisk_real_bounds {z : ℂ}
 theorem gaussNegativeCrossingDisk_subset_gaussSlitPlane :
     gaussNegativeCrossingDisk ⊆ gaussSlitPlane := by
   intro z hz
-  change z.im ≠ 0 ∨ z.re < 1
   exact Or.inr ((gaussNegativeCrossingDisk_real_bounds hz).2.trans (by norm_num))
 
 theorem neg_gaussNegativeCrossingDisk_subset_slitPlane :
@@ -54,11 +53,10 @@ theorem neg_gaussNegativeCrossingDisk_subset_slitPlane :
   rw [Complex.mem_slitPlane_iff]
   left
   have h := (gaussNegativeCrossingDisk_real_bounds hz).2
-  simp only [Complex.neg_re]
+  simp
   linarith
 
 private theorem gaussSlitPlane_isOpen_cut_crossing : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z | z.re < 1})
   exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
     (isOpen_Iio.preimage Complex.continuous_re)
 
@@ -82,39 +80,20 @@ theorem gaussNegativeCrossingSecond_analyticOnNhd
     (a b c : ℂ) (hc : ∀ n : ℤ, c ≠ (n : ℂ)) :
     AnalyticOnNhd ℂ (gaussNegativeCrossingSecond H a b c)
       gaussNegativeCrossingDisk := by
-  have hcNat : ∀ n : ℕ, c ≠ -(n : ℂ) := by
-    intro n heq
-    apply hc (-(n : ℤ))
-    exact heq.trans (by simp)
-  have hCNat : ∀ n : ℕ, (2 - c) ≠ -(n : ℂ) :=
-    two_sub_parameter_ne_nat_neg hc
+  have hCNat := two_sub_parameter_ne_nat_neg hc
   have hchar := hH (a - c + 1) (b - c + 1) (2 - c) hCNat
-  have hq : AnalyticOnNhd ℂ
-      (H (a - c + 1) (b - c + 1) (2 - c)) gaussSlitPlane :=
-    hchar.1.analyticOnNhd gaussSlitPlane_isOpen_cut_crossing
-  have hqD := hq.mono gaussNegativeCrossingDisk_subset_gaussSlitPlane
+  have hqD := (hchar.1.analyticOnNhd gaussSlitPlane_isOpen_cut_crossing).mono gaussNegativeCrossingDisk_subset_gaussSlitPlane
   have hNeg : AnalyticOnNhd ℂ (fun z : ℂ => -z) gaussNegativeCrossingDisk := by
     fun_prop
-  have hlog : AnalyticOnNhd ℂ (fun z : ℂ => Complex.log (-z))
-      gaussNegativeCrossingDisk :=
-    hNeg.clog (neg_gaussNegativeCrossingDisk_subset_slitPlane)
+  have hlog := hNeg.clog (neg_gaussNegativeCrossingDisk_subset_slitPlane)
   have hexponent : AnalyticOnNhd ℂ
       (fun z : ℂ => Complex.log (-z) * (1 - c)) gaussNegativeCrossingDisk :=
     hlog.mul analyticOnNhd_const
-  have hexp : AnalyticOnNhd ℂ
-      (fun z : ℂ => Complex.exp (Complex.log (-z) * (1 - c)))
-      gaussNegativeCrossingDisk := hexponent.cexp
-  have hphase : AnalyticOnNhd ℂ
-      (fun _ : ℂ => Complex.exp ((Real.pi : ℂ) * Complex.I * (1 - c)))
-      gaussNegativeCrossingDisk := analyticOnNhd_const
+  have hexp := hexponent.cexp
   have hfactor : AnalyticOnNhd ℂ
-      (fun z : ℂ => Complex.exp (Complex.log (-z) * (1 - c)) *
-        Complex.exp ((Real.pi : ℂ) * Complex.I * (1 - c)))
-      gaussNegativeCrossingDisk := hexp.mul hphase
-  change AnalyticOnNhd ℂ
-    (fun z => Complex.exp (Complex.log (-z) * (1 - c)) *
-      Complex.exp ((Real.pi : ℂ) * Complex.I * (1 - c)) *
-        H (a - c + 1) (b - c + 1) (2 - c) z) gaussNegativeCrossingDisk
+        (fun z : ℂ => Complex.exp (Complex.log (-z) * (1 - c)) *
+          Complex.exp ((Real.pi : ℂ) * Complex.I * (1 - c)))
+        gaussNegativeCrossingDisk := hexp.mul analyticOnNhd_const
   exact hfactor.mul hqD
 
 private def gaussNegativeCrossingUpper : Set ℂ :=
@@ -131,7 +110,7 @@ private theorem one_sub_gaussNegativeCrossingDisk_subset_slitPlane :
   rw [Complex.mem_slitPlane_iff]
   left
   have hzre := (gaussNegativeCrossingDisk_real_bounds hz).2
-  simp only [Complex.sub_re, Complex.one_re]
+  simp
   linarith
 
 /-- The analytic continuation of the canonical zero-basis Wronskian is explicit and nowhere
@@ -279,18 +258,6 @@ theorem gaussNegativeCrossingSecond_eq_phase_mul_gaussFPlus_of_im_neg
     rw [← Complex.exp_add]
     congr 1
     ring
-  calc
-    Complex.exp (Complex.log (-z) * (1 - c)) *
-          Complex.exp ((Real.pi : ℂ) * Complex.I * (1 - c)) *
-          H (a - c + 1) (b - c + 1) (2 - c) z =
-        Complex.exp (Complex.log (-z) * (1 - c)) *
-          (Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - c)) *
-            Complex.exp (-(Real.pi : ℂ) * Complex.I * (1 - c))) *
-          H (a - c + 1) (b - c + 1) (2 - c) z := by rw [hphase]
-    _ = Complex.exp ((2 * (Real.pi : ℂ) * Complex.I) * (1 - c)) *
-        (Complex.exp (Complex.log (-z) * (1 - c)) *
-          Complex.exp (-(Real.pi : ℂ) * Complex.I * (1 - c)) *
-          H (a - c + 1) (b - c + 1) (2 - c) z) := by ring
-    _ = _ := rfl
+  grind
 
 end DOZZ.Proofs

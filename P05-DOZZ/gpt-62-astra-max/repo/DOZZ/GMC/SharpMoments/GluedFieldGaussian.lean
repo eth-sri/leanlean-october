@@ -49,23 +49,20 @@ theorem gluedField_gaussianReal_second_moment (C : ℝ≥0) :
     ∫ z, z * z ∂(gaussianReal 0 C) = C := by
   have h := variance_of_integral_eq_zero (X := fun z : ℝ => z) (μ := gaussianReal 0 C)
     measurable_id.aemeasurable (by simp)
-  rw [variance_fun_id_gaussianReal] at h
-  rw [h]
-  exact integral_congr_ae (Filter.Eventually.of_forall fun z => by ring)
+  rw [variance_fun_id_gaussianReal] at h <;> grind
 
 /-- Every coordinate of a centered Gaussian field is square-integrable. -/
 theorem gluedField_memLp {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
     {P : Measure Ω} {Φ : Ω → S → ℝ} (hΦ : IsCenteredGaussianField P Φ) (x : S) :
     MemLp (fun ω => Φ ω x) 2 P := by
-  have h := ((hΦ.2 1 (fun _ => x)).2.2 (fun _ => 1)).1
-  simpa using h
+  simpa using (((hΦ.2 1 (fun _ => x)).2.2 (fun _ => 1)).1)
 
 /-- Every coordinate of a centered Gaussian field has mean zero. -/
 theorem gluedField_integral_eq_zero {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
     {P : Measure Ω} {Φ : Ω → S → ℝ} (hΦ : IsCenteredGaussianField P Φ) (x : S) :
     ∫ ω, Φ ω x ∂P = 0 := by
   obtain ⟨_, _, hmean, _⟩ :=
-    coordinate_mean_variance P (fun ω (_ : Fin 1) => Φ ω x) (hΦ.2 1 (fun _ => x)) 0
+    coordinate_mean_variance P (fun ω (_) => Φ ω x) (hΦ.2 1 (fun _ => x)) 0
   exact hmean
 
 /-- A coordinate of the field restricted to the set `B` is square-integrable. -/
@@ -74,7 +71,7 @@ theorem gluedField_memLp_indicator {Ω S : Type*} [MeasurableSpace Ω] [Measurab
     MemLp (fun ω => B.indicator (Φ ω) x) 2 P := by
   by_cases hx : x ∈ B
   · simpa only [Set.indicator_of_mem hx] using gluedField_memLp hΦ x
-  · simpa only [Set.indicator_of_notMem hx] using (MemLp.zero' : MemLp (fun _ : Ω => (0 : ℝ)) 2 P)
+  simp_all
 
 /-- A coordinate of the field restricted to the set `B` has mean zero. -/
 theorem gluedField_integral_indicator {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
@@ -82,7 +79,7 @@ theorem gluedField_integral_indicator {Ω S : Type*} [MeasurableSpace Ω] [Measu
     ∫ ω, B.indicator (Φ ω) x ∂P = 0 := by
   by_cases hx : x ∈ B
   · simpa only [Set.indicator_of_mem hx] using gluedField_integral_eq_zero hΦ x
-  · simp only [Set.indicator_of_notMem hx, integral_zero]
+  simp_all
 
 /-- A set indicator is multiplication by the indicator of the constant `1`. -/
 theorem gluedField_indicator_eq_mul {S : Type*} (B : Set S) (f : S → ℝ) (x : S) :
@@ -131,8 +128,7 @@ theorem gluedField_covariance_of_mem_of_mem {Ω S : Type*} [MeasurableSpace Ω]
       (∫ ω, Φ ω x * Φ ω y ∂P) + C := by
   have hx' : x ∉ Aᶜ := fun h => h hx
   rw [gluedField_covariance_eq P Φ hΦ A C x y]
-  simp only [Set.indicator_of_mem hx, Set.indicator_of_mem hy, Set.indicator_of_notMem hx',
-    zero_mul, integral_zero, zero_add]
+  simp_all
 
 /-- Outside `A`, the glued covariance is the original covariance plus the scalar variance. -/
 theorem gluedField_covariance_of_notMem_of_notMem {Ω S : Type*} [MeasurableSpace Ω]
@@ -140,11 +136,10 @@ theorem gluedField_covariance_of_notMem_of_notMem {Ω S : Type*} [MeasurableSpac
     (A : Set S) (C : ℝ≥0) {x y : S} (hx : x ∉ A) (hy : y ∉ A) :
     ∫ q, gluedField Φ A q x * gluedField Φ A q y ∂(P.prod (P.prod (gaussianReal 0 C))) =
       (∫ ω, Φ ω x * Φ ω y ∂P) + C := by
-  have hx' : x ∈ Aᶜ := hx
-  have hy' : y ∈ Aᶜ := hy
+  have hx' := hx
+  have hy' := hy
   rw [gluedField_covariance_eq P Φ hΦ A C x y]
-  simp only [Set.indicator_of_mem hx', Set.indicator_of_mem hy', Set.indicator_of_notMem hx,
-    zero_mul, integral_zero, zero_add]
+  simp_all
 
 /-- Across the two pieces, the glued covariance is exactly the scalar variance. -/
 theorem gluedField_covariance_of_mem_of_notMem {Ω S : Type*} [MeasurableSpace Ω]
@@ -153,8 +148,7 @@ theorem gluedField_covariance_of_mem_of_notMem {Ω S : Type*} [MeasurableSpace �
     ∫ q, gluedField Φ A q x * gluedField Φ A q y ∂(P.prod (P.prod (gaussianReal 0 C))) = C := by
   have hx' : x ∉ Aᶜ := fun h => h hx
   rw [gluedField_covariance_eq P Φ hΦ A C x y]
-  simp only [Set.indicator_of_notMem hy, Set.indicator_of_notMem hx', mul_zero, zero_mul,
-    integral_zero, zero_add]
+  simp_all
 
 /-- The pointwise variance of the glued field is the original variance plus the scalar variance. -/
 theorem gluedField_variance {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpace S]
@@ -171,14 +165,11 @@ theorem gluedField_measurable {Ω S : Type*} [MeasurableSpace Ω] [MeasurableSpa
     {P : Measure Ω} {Φ : Ω → S → ℝ} (hΦ : IsCenteredGaussianField P Φ)
     {A : Set S} (hA : MeasurableSet A) :
     Measurable (fun p : (Ω × Ω × ℝ) × S => gluedField Φ A p.1 p.2) := by
-  have h1 : Measurable (fun p : (Ω × Ω × ℝ) × S => Φ p.1.1 p.2) :=
-    hΦ.1.comp (by fun_prop : Measurable fun p : (Ω × Ω × ℝ) × S => (p.1.1, p.2))
-  have h2 : Measurable (fun p : (Ω × Ω × ℝ) × S => Φ p.1.2.1 p.2) :=
-    hΦ.1.comp (by fun_prop : Measurable fun p : (Ω × Ω × ℝ) × S => (p.1.2.1, p.2))
+  have h1 := hΦ.1.comp (by fun_prop : Measurable fun p : (Ω × Ω × ℝ) × S => (p.1.1, p.2))
+  have h2 := hΦ.1.comp (by fun_prop : Measurable fun p : (Ω × Ω × ℝ) × S => (p.1.2.1, p.2))
   have h3 : Measurable (fun p : (Ω × Ω × ℝ) × S => p.1.2.2) := by fun_prop
   have hA1 : MeasurableSet {p : (Ω × Ω × ℝ) × S | p.2 ∈ A} := measurable_snd hA
-  have hA2 : MeasurableSet {p : (Ω × Ω × ℝ) × S | p.2 ∈ Aᶜ} := measurable_snd hA.compl
-  exact ((h1.indicator hA1).add (h2.indicator hA2)).add h3
+  exact ((h1.indicator hA1).add (h2.indicator (measurable_snd hA.compl))).add h3
 
 /-- The glued field is a centered Gaussian field on the product of two independent copies of the
 sample space and an independent Gaussian scalar. -/
@@ -191,9 +182,8 @@ theorem gluedField_isCenteredGaussianField {Ω S : Type*} [MeasurableSpace Ω] [
     (fun i => A.indicator (fun _ => (1 : ℝ)) (x i))
   have h₂ := isCenteredJointlyGaussian_coord_mul P _ (hΦ.2 n x)
     (fun i => Aᶜ.indicator (fun _ => (1 : ℝ)) (x i))
-  have h₃ := gluedField_scalar_mul (ι := Fin n) C (fun _ => 1)
   have h := isCenteredJointlyGaussian_prod_add P (P.prod (gaussianReal 0 C)) _ _ h₁
-    (isCenteredJointlyGaussian_prod_add P (gaussianReal 0 C) _ _ h₂ h₃)
+      (isCenteredJointlyGaussian_prod_add P (gaussianReal 0 C) _ _ h₂ (gluedField_scalar_mul (ι := Fin n) C (fun _ => 1)))
   have heq : (fun (q : Ω × Ω × ℝ) (i : Fin n) => gluedField Φ A q (x i)) =
       fun q i => A.indicator (fun _ => (1 : ℝ)) (x i) * Φ q.1 (x i) +
         (Aᶜ.indicator (fun _ => (1 : ℝ)) (x i) * Φ q.2.1 (x i) + 1 * q.2.2) := by

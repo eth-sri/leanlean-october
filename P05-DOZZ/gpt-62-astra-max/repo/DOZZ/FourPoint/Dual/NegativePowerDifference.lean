@@ -33,9 +33,11 @@ theorem dual_negative_power_lipschitz (p l a b : ℝ) (hp : 0 < p) (hl : 0 < l)
       abs_of_nonneg (Real.rpow_nonneg (hl.trans_le hx).le _)]
     exact mul_le_mul_of_nonneg_left
       (Real.rpow_le_rpow_of_nonpos hl hx (by linarith only [hp])) hp.le
-  have hm := Convex.norm_image_sub_le_of_norm_deriv_le
-    (fun x hx => (hd x hx).differentiableAt) hbound (convex_Ici l)
-    (show b ∈ Ici l from hb) (show a ∈ Ici l from ha)
-  simpa only [Real.norm_eq_abs] using hm
+  exact Convex.norm_image_sub_le_of_norm_deriv_le (fun x hx => HasDerivAt.differentiableAt (hd x hx)) hbound
+    (convex_Ici l)
+    (have this := hb;
+    this)
+    (have this := ha;
+    this)
 
 end DOZZ.Proofs

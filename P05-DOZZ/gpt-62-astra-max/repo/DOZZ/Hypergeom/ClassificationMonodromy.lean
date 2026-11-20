@@ -22,14 +22,11 @@ theorem realMonodromyPhase_ne_one_of_not_int (t : ℝ)
   have hbase : (2 * (Real.pi : ℂ) * Complex.I) ≠ 0 := by
     exact mul_ne_zero (mul_ne_zero (by norm_num) (by exact_mod_cast Real.pi_ne_zero))
       Complex.I_ne_zero
-  have harg :
-      (2 * (Real.pi : ℂ) * Complex.I) * (t : ℂ) =
-        (2 * (Real.pi : ℂ) * Complex.I) * (n : ℂ) := by
+  have htn  := mul_left_cancel₀ hbase (by
     calc
       (2 * (Real.pi : ℂ) * Complex.I) * (t : ℂ) =
           (n : ℂ) * (2 * (Real.pi : ℂ) * Complex.I) := hn
-      _ = (2 * (Real.pi : ℂ) * Complex.I) * (n : ℂ) := by ring
-  have htn : (t : ℂ) = (n : ℂ) := mul_left_cancel₀ hbase harg
+      _ = (2 * (Real.pi : ℂ) * Complex.I) * (n : ℂ) := by ring)
   exact ht n (by exact_mod_cast htn)
 
 /-- The local power `z^(1-c)` has nontrivial monodromy whenever `c` is nonintegral. -/

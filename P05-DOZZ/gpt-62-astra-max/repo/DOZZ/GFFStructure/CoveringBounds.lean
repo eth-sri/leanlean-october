@@ -336,17 +336,16 @@ theorem hasCoveringExponent_closedBall {E : Type*} [NormedAddCommGroup E]
     [MeasurableSpace E] [BorelSpace E] (x : E) (r : ℝ≥0) (hr : 0 < r) :
     Metric.HasCoveringExponent (Metric.closedEBall x r)
       ((4*r : ℝ≥0∞) ^ (Module.finrank ℝ E)) (Module.finrank ℝ E) := by
-  have hdim : Module.finrank ℝ E ≠ 0 := (Module.finrank_pos (R := ℝ) (M := E)).ne'
+  have hdim := (Module.finrank_pos (R := ℝ) (M := E)).ne'
   constructor
   · exact lt_of_le_of_lt Metric.ediam_closedEBall_le (by finiteness)
   · intro ε hε
     obtain rfl | hεpos := eq_zero_or_pos ε
     · simp [hdim, hr.ne']
-    have hdiam : Metric.ediam (Metric.closedEBall x r) ≤ 2*r := Metric.ediam_closedEBall_le
-    have hεle : (ε : ℝ≥0∞) ≤ 2*r := hε.trans hdiam
+    have hεle : (ε : ℝ≥0∞) ≤ 2*r := hε.trans Metric.ediam_closedEBall_le
     have hrat : (1 : ℝ≥0∞) ≤ 2*r/ε := by
       rw [ENNReal.le_div_iff_mul_le]
-      · simpa using hεle
+      · simpa
       · simp [hεpos.ne']
       · simp
     calc
@@ -368,12 +367,10 @@ theorem isCoverWithBoundedCoveringNumber_balls (E : Type*) [NormedAddCommGroup E
       Set.univ (fun n => (2 : ℝ≥0∞)^(Module.finrank ℝ E) *
         (4*((n : ℝ≥0∞)+1))^(Module.finrank ℝ E)) (fun _ => (Module.finrank ℝ E : ℝ)) := by
   constructor
-  · intro n
-    finiteness
+  · finiteness
   · intro n
     exact_mod_cast Module.finrank_pos (R := ℝ) (M := E)
-  · intro n
-    exact Metric.isOpen_ball
+  · simp
   · intro n
     exact (isCompact_closedBall (0 : E) ((n : ℝ)+1)).totallyBounded.subset
       Metric.ball_subset_closedBall
@@ -386,9 +383,6 @@ theorem isCoverWithBoundedCoveringNumber_balls (E : Type*) [NormedAddCommGroup E
       ENNReal.rpow_natCast, ENNReal.coe_add, ENNReal.coe_natCast, ENNReal.coe_one] using hs
   · intro n m hnm
     exact Metric.ball_subset_ball (add_le_add_left (Nat.cast_le.mpr hnm) 1)
-  · intro x _
-    obtain ⟨n, hn⟩ := exists_nat_gt ‖x‖
-    refine Set.mem_iUnion.mpr ⟨n, ?_⟩
-    simpa only [Metric.mem_ball, dist_zero_right] using hn.trans (lt_add_one _)
+  simp
 
 end DOZZ.Proofs

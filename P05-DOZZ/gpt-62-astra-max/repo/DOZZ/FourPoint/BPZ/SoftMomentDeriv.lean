@@ -96,13 +96,13 @@ theorem hasFDerivAt_bpzMomentField {J : ℂ → ℝ} {DJ : ℂ → ℂ →L[ℝ]
 theorem norm_bpzMomentField_le {s J Y A : ℝ} {D : ℂ →L[ℝ] ℝ} (hs : 0 ≤ s) (hY : 0 < Y)
     (hYJ : Y ≤ J) (hA : 0 ≤ A) (hD : ‖D‖ ≤ A * J) :
     ‖(-s * J ^ (-s - 1)) • D‖ ≤ s * A * Y ^ (-s) := by
-  have hJ : 0 < J := hY.trans_le hYJ
+  have hJ  := hY.trans_le hYJ
   have h1 : 0 ≤ J ^ (-s - 1) := Real.rpow_nonneg hJ.le _
   rw [norm_smul, Real.norm_eq_abs, abs_mul, abs_neg, abs_of_nonneg hs, abs_of_nonneg h1]
-  calc s * J ^ (-s - 1) * ‖D‖ ≤ s * J ^ (-s - 1) * (A * J) :=
+  calc _ ≤ s * J ^ (-s - 1) * (A * J) :=
         mul_le_mul_of_nonneg_left hD (mul_nonneg hs h1)
     _ = s * A * J ^ (-s) := by rw [← bpzRpow_pred_mul hJ (-s)]; ring
-    _ ≤ s * A * Y ^ (-s) :=
+    _ ≤ _ :=
         mul_le_mul_of_nonneg_left (bpzRpow_neg_le hs hY hYJ) (mul_nonneg hs hA)
 
 /-- Norm bound for the derivative of the first-moment vector field: if `‖D‖ ≤ A J`, `‖DD‖ ≤ B J`
@@ -112,23 +112,10 @@ theorem norm_bpzMomentField2_le {s J Y A B : ℝ} {D : ℂ →L[ℝ] ℝ} {DD : 
     (hD : ‖D‖ ≤ A * J) (hDD : ‖DD‖ ≤ B * J) :
     ‖(s * (s + 1) * J ^ (-s - 2)) • D.smulRight D + (-s * J ^ (-s - 1)) • DD‖ ≤
       (s * (s + 1) * A ^ 2 + s * B) * Y ^ (-s) := by
-  have hJ : 0 < J := hY.trans_le hYJ
+  have hJ  := hY.trans_le hYJ
   have h1 : 0 ≤ J ^ (-s - 1) := Real.rpow_nonneg hJ.le _
   have h2 : 0 ≤ J ^ (-s - 2) := Real.rpow_nonneg hJ.le _
   have hk : 0 ≤ s * (s + 1) * J ^ (-s - 2) := mul_nonneg (mul_nonneg hs (by linarith)) h2
-  have hT1 : ‖(s * (s + 1) * J ^ (-s - 2)) • D.smulRight D‖ ≤ s * (s + 1) * A ^ 2 * J ^ (-s) := by
-    rw [norm_smul, Real.norm_of_nonneg hk, ContinuousLinearMap.norm_smulRight_apply]
-    have hDD2 : ‖D‖ * ‖D‖ ≤ (A * J) * (A * J) :=
-      mul_le_mul hD hD (norm_nonneg _) (mul_nonneg hA hJ.le)
-    calc s * (s + 1) * J ^ (-s - 2) * (‖D‖ * ‖D‖)
-        ≤ s * (s + 1) * J ^ (-s - 2) * ((A * J) * (A * J)) := mul_le_mul_of_nonneg_left hDD2 hk
-      _ = s * (s + 1) * A ^ 2 * (J ^ (-s - 2) * (J * J)) := by ring
-      _ = s * (s + 1) * A ^ 2 * J ^ (-s) := by rw [bpzRpow_sub_two_mul_mul hJ]
-  have hT2 : ‖(-s * J ^ (-s - 1)) • DD‖ ≤ s * B * J ^ (-s) := by
-    rw [norm_smul, Real.norm_eq_abs, abs_mul, abs_neg, abs_of_nonneg hs, abs_of_nonneg h1]
-    calc s * J ^ (-s - 1) * ‖DD‖ ≤ s * J ^ (-s - 1) * (B * J) :=
-          mul_le_mul_of_nonneg_left hDD (mul_nonneg hs h1)
-      _ = s * B * J ^ (-s) := by rw [← bpzRpow_pred_mul hJ (-s)]; ring
   have hsum : (s * (s + 1) * A ^ 2 + s * B) * J ^ (-s) ≤
       (s * (s + 1) * A ^ 2 + s * B) * Y ^ (-s) := by
     refine mul_le_mul_of_nonneg_left (bpzRpow_neg_le hs hY hYJ) ?_
@@ -136,12 +123,21 @@ theorem norm_bpzMomentField2_le {s J Y A B : ℝ} {D : ℂ →L[ℝ] ℝ} {DD : 
       have := (norm_nonneg DD).trans hDD
       exact nonneg_of_mul_nonneg_left this hJ
     exact add_nonneg (mul_nonneg (mul_nonneg hs (by linarith)) (sq_nonneg A)) (mul_nonneg hs hB)
-  calc ‖(s * (s + 1) * J ^ (-s - 2)) • D.smulRight D + (-s * J ^ (-s - 1)) • DD‖
+  calc _
       ≤ ‖(s * (s + 1) * J ^ (-s - 2)) • D.smulRight D‖ + ‖(-s * J ^ (-s - 1)) • DD‖ :=
         norm_add_le _ _
-    _ ≤ s * (s + 1) * A ^ 2 * J ^ (-s) + s * B * J ^ (-s) := add_le_add hT1 hT2
+    _ ≤ s * (s + 1) * A ^ 2 * J ^ (-s) + s * B * J ^ (-s) := add_le_add (by
+      rw [norm_smul, Real.norm_of_nonneg hk, ContinuousLinearMap.norm_smulRight_apply]
+      calc _
+          ≤ s * (s + 1) * J ^ (-s - 2) * ((A * J) * (A * J)) := mul_le_mul_of_nonneg_left (mul_le_mul hD hD (norm_nonneg _) (mul_nonneg hA hJ.le)) hk
+        _ = s * (s + 1) * A ^ 2 * (J ^ (-s - 2) * (J * J)) := by ring
+        _ = _ := by rw [bpzRpow_sub_two_mul_mul hJ]) (by
+      rw [norm_smul, Real.norm_eq_abs, abs_mul, abs_neg, abs_of_nonneg hs, abs_of_nonneg h1]
+      calc _ ≤ s * J ^ (-s - 1) * (B * J) :=
+            mul_le_mul_of_nonneg_left hDD (mul_nonneg hs h1)
+        _ = _ := by rw [← bpzRpow_pred_mul hJ (-s)]; ring)
     _ = (s * (s + 1) * A ^ 2 + s * B) * J ^ (-s) := by ring
-    _ ≤ (s * (s + 1) * A ^ 2 + s * B) * Y ^ (-s) := hsum
+    _ ≤ _ := hsum
 
 /-! ### Fixed measure
 

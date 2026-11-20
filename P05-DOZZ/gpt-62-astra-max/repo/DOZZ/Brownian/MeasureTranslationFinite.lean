@@ -118,16 +118,7 @@ theorem measurable_translateFiniteMeasure :
             ∫⁻ s, ((fun s : ℝ => s + t) ⁻¹' A).indicator (fun _ => 1) s ∂(μ : Measure ℝ) :=
           (lintegral_indicator_one hs).symm
         _ = ∫⁻ s, A.indicator (fun _ => 1) (s + t) ∂(μ : Measure ℝ) := by
-          apply lintegral_congr
-          intro s
-          have hcomp : (fun x : ℝ => (1 : ℝ≥0∞)) ∘ (fun u : ℝ => u + t) =
-              fun _ => 1 := by
-            funext x
-            rfl
-          have hind := Set.indicator_comp_right (s := A) (fun u : ℝ => u + t)
-            (g := fun _ : ℝ => (1 : ℝ≥0∞)) (x := s)
-          rw [hcomp] at hind
-          exact hind
+          rfl
     convert hint using 1
     funext z
     exact hEq z.1 z.2
@@ -148,10 +139,8 @@ theorem measurableSet_locallyFiniteOnTranslationWindows :
         simp [LocallyFiniteOnTranslationWindows]]
   apply MeasurableSet.iInter
   intro n
-  have hwindow : MeasurableSet (translationWindow n) := by
-    exact measurableSet_Icc
   exact (measurableSet_Iio : MeasurableSet (Set.Iio (⊤ : ℝ≥0∞))).preimage
-    (Measure.measurable_coe hwindow)
+      (Measure.measurable_coe measurableSet_Icc)
 
 /-- A countable measurable partition of the line obtained by disjointizing the compact windows. -/
 def translationShell (n : ℕ) : Set ℝ := disjointed translationWindow n
@@ -182,7 +171,7 @@ theorem measurableSet_translationShell (n : ℕ) : MeasurableSet (translationShe
   intro i
   apply MeasurableSet.iInter
   intro hi
-  exact (measurableSet_Icc : MeasurableSet (translationWindow i)).compl
+  exact (measurableSet_Icc).compl
 
 /-- Restrict a measure to a measurable set, retaining it as a finite measure when the mass is
 finite and using zero as a measurable fallback otherwise. -/
@@ -193,17 +182,8 @@ noncomputable def finiteRestrictionOnSet (A : Set ℝ) (μ : Measure ℝ) : Fini
 
 theorem measurable_finiteRestrictionOnSet (A : Set ℝ) (hA : MeasurableSet A) :
     Measurable (finiteRestrictionOnSet A) := by
-  have hgood : MeasurableSet {μ : Measure ℝ | μ A < ⊤} :=
-    (measurableSet_Iio : MeasurableSet (Set.Iio (⊤ : ℝ≥0∞))).preimage
-      (Measure.measurable_coe hA)
-  have hrestricted : Measurable (fun μ : Measure ℝ => μ.restrict A) := by
-    apply Measure.measurable_of_measurable_coe
-    intro s hs
-    have heq : (fun μ : Measure ℝ => μ.restrict A s) = fun μ => μ (s ∩ A) := by
-      funext μ
-      exact Measure.restrict_apply hs
-    rw [heq]
-    exact Measure.measurable_coe (hs.inter hA)
+  have hgood := (measurableSet_Iio : MeasurableSet (Set.Iio (⊤ : ℝ≥0∞))).preimage
+    (Measure.measurable_coe hA)
   have hbase : Measurable (fun μ : Measure ℝ => (finiteRestrictionOnSet A μ : Measure ℝ)) := by
     apply Measure.measurable_of_measurable_coe
     intro s hs
@@ -227,22 +207,17 @@ noncomputable def locallyFiniteTranslation (z : ℝ × Measure ℝ) : Measure �
 
 theorem measurable_locallyFiniteTranslation : Measurable locallyFiniteTranslation := by
   let terms : (ℝ × Measure ℝ) → ℕ → Measure ℝ := fun z n =>
-    ((finiteRestrictionOnSet (translationShell n) z.2).map (fun s => s + z.1) : Measure ℝ)
-  change Measurable (fun z : ℝ × Measure ℝ => Measure.sum (terms z))
+    ((finiteRestrictionOnSet (translationShell n) z.2).map (fun s => s + z.1))
   apply Measure.measurable_of_measurable_coe
   intro A hA
   have hterm (n : ℕ) : Measurable (fun z : ℝ × Measure ℝ => terms z n A) := by
-    dsimp [terms]
     have hres : Measurable (fun z : ℝ × Measure ℝ =>
         finiteRestrictionOnSet (translationShell n) z.2) :=
       (measurable_finiteRestrictionOnSet _ (measurableSet_translationShell n)).comp
         measurable_snd
-    have hpair : Measurable (fun z : ℝ × Measure ℝ =>
-        (z.1, finiteRestrictionOnSet (translationShell n) z.2)) :=
-      measurable_fst.prodMk hres
-    have hmap := measurable_translateFiniteMeasure.comp hpair
+    have hmap := measurable_translateFiniteMeasure.comp (measurable_fst.prodMk hres)
     exact (Measure.measurable_coe hA).comp (measurable_subtype_coe.comp hmap)
-  have hsum (z : ℝ × Measure ℝ) : (Measure.sum (terms z)) A = ∑' n, terms z n A :=
+  have hsum (z : ℝ × Measure ℝ)  :=
     Measure.sum_apply (terms z) hA
   convert Measurable.tsum (L := SummationFilter.unconditional ℕ) hterm using 1
   funext z

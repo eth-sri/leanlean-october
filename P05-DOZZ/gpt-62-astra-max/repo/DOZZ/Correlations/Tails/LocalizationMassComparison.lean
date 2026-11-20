@@ -31,24 +31,18 @@ theorem localized_mass_comparison
   · rw [← lintegral_indicator hball]
     apply lintegral_mono
     intro x
-    dsimp only
     by_cases hx : x ∈ Metric.ball z 1
     · rw [indicator_of_mem hx]
       exact mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)
-    · rw [indicator_of_notMem hx,hχzero x hx,ENNReal.ofReal_zero,zero_mul]
-  · rw [← lintegral_indicator hball,← lintegral_indicator hdiff]
-    rw [← lintegral_add_right _ (hw.indicator hdiff)]
+    simp_all
+  · rw [← lintegral_indicator hball,← lintegral_indicator hdiff, ← lintegral_add_right _ (hw.indicator hdiff)]
     apply lintegral_mono
     intro x
-    dsimp only
     by_cases hx : x ∈ Metric.ball z 1
-    · rw [indicator_of_mem hx]
-      by_cases hxδ : x ∈ Metric.ball z δ
-      · rw [hχone x hxδ,ENNReal.ofReal_one,one_mul]
-        exact le_self_add
-      · exact le_add_of_le_right (by rw [indicator_of_mem (show x ∈ Metric.ball z 1 \ Metric.ball z δ from ⟨hx,hxδ⟩)])
-    · rw [indicator_of_notMem hx]
-      exact zero_le
+    · by_cases hxδ : x ∈ Metric.ball z δ
+      · simp_all
+      simp_all
+    simp_all
 
 theorem copied_mass_comparison
     (μ : Measure ℂ) (δ ρ : ℝ) (hδρ : δ ≤ ρ) (hρ1 : ρ ≤ 1)
@@ -66,31 +60,25 @@ theorem copied_mass_comparison
   have hb := (Metric.isOpen_ball (x := (0 : ℂ)) (ε := (1 : ℝ))).measurableSet
   have hρm := (Metric.isOpen_ball (x := (0 : ℂ)) (ε := ρ)).measurableSet
   have hd := hb.diff ((Metric.isOpen_ball (x := (0 : ℂ)) (ε := δ)).measurableSet)
-  have hsub : Metric.ball (0 : ℂ) ρ ⊆ Metric.ball 0 1 := Metric.ball_subset_ball hρ1
   constructor
   · rw [← lintegral_indicator hb,← lintegral_indicator hρm,← lintegral_add_left (hv.indicator hb)]
     apply lintegral_mono
     intro x
     dsimp only
-    by_cases hx : x ∈ Metric.ball (0 : ℂ) ρ
-    · rw [indicator_of_mem hx,indicator_of_mem (hsub hx)]
-      exact (mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).2)).trans (huv x hx).1
-    · rw [hχzero x hx,ENNReal.ofReal_zero,zero_mul]
-      exact zero_le
+    by_cases hx : x ∈ Metric.ball 0 ρ
+    · rw [indicator_of_mem hx,indicator_of_mem ((Metric.ball_subset_ball hρ1) hx)]
+      exact LE.le.trans (mul_le_of_le_one_left' (ENNReal.ofReal_le_one.mpr (hχ x).right)) (huv x hx).left
+    · simp [*]
   · rw [← lintegral_indicator hb,← lintegral_indicator hρm,← lintegral_indicator hd,
       ← lintegral_add_right _ (he.indicator hρm),← lintegral_add_right _ (hv.indicator hd)]
     apply lintegral_mono
     intro x
-    dsimp only
-    by_cases hx : x ∈ Metric.ball (0 : ℂ) 1
-    · rw [indicator_of_mem hx]
-      by_cases hxδ : x ∈ Metric.ball (0 : ℂ) δ
+    by_cases hx : x ∈ Metric.ball 0 1
+    · by_cases hxδ : x ∈ Metric.ball 0 δ
       · have hxρ := Metric.ball_subset_ball hδρ hxδ
-        rw [hχone x hxδ,ENNReal.ofReal_one,one_mul,indicator_of_mem hxρ]
-        exact (huv x hxρ).2.trans le_self_add
-      · exact le_add_of_le_right (by rw [indicator_of_mem (show x ∈ Metric.ball (0 : ℂ) 1 \ Metric.ball 0 δ from ⟨hx,hxδ⟩)])
-    · rw [indicator_of_notMem hx]
-      exact zero_le
+        simp_all
+      simp_all
+    simp_all
 
 
 end DOZZ.Proofs

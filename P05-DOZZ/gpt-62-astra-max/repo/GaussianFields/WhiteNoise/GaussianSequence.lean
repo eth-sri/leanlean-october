@@ -249,7 +249,6 @@ theorem map_gaussianLinearCombination_eq_gaussianReal {ι : Type*} [DecidableEq 
   | empty =>
       change Measure.map (fun _ : GaussianSequenceSpace ι => 0) (gaussianSequenceMeasure ι) =
         ProbabilityTheory.gaussianReal 0 0
-      rw [ProbabilityTheory.gaussianReal_zero_var, Measure.map_const]
       simp
   | insert i s his ih =>
       have hsum_fun :
@@ -257,31 +256,13 @@ theorem map_gaussianLinearCombination_eq_gaussianReal {ι : Type*} [DecidableEq 
             (fun ω => a i * gaussianCoordinate i ω) + gaussianLinearCombination s a := by
         funext ω
         simp [gaussianLinearCombination, Finset.sum_insert, his]
-      have hindep :
-          (fun ω => a i * gaussianCoordinate i ω)
-            ⟂ᵢ[gaussianSequenceMeasure ι]
-          gaussianLinearCombination s a := by
-        have h := (indepFun_gaussianCoordinate_gaussianLinearCombination his a).comp
-          (by fun_prop : Measurable (fun x : ℝ => a i * x)) measurable_id
-        simpa [Function.comp_def] using h
-      have hscaled :
-          Measure.map (fun ω => a i * gaussianCoordinate i ω)
-              (gaussianSequenceMeasure ι) =
-            ProbabilityTheory.gaussianReal 0 (Real.toNNReal ((a i) ^ (2 : Nat))) :=
-        map_const_mul_gaussianCoordinate i (a i)
-      have hscaledLaw :
-          HasLaw (fun ω => a i * gaussianCoordinate i ω)
-            (ProbabilityTheory.gaussianReal 0 (Real.toNNReal ((a i) ^ (2 : Nat))))
-            (gaussianSequenceMeasure ι) := by
-        exact ⟨by fun_prop, hscaled⟩
-      have htailLaw :
-          HasLaw (gaussianLinearCombination s a)
-            (ProbabilityTheory.gaussianReal 0 (gaussianLinearCombinationVariance s a))
-            (gaussianSequenceMeasure ι) := by
-        exact ⟨aemeasurable_gaussianLinearCombination s a, ih⟩
+      have hscaled := map_const_mul_gaussianCoordinate i (a i)
       have hsum :=
         ProbabilityTheory.gaussianReal_add_gaussianReal_of_indepFun
-          hindep hscaledLaw htailLaw
+          (by
+            have h := (indepFun_gaussianCoordinate_gaussianLinearCombination his a).comp
+              (by fun_prop : Measurable (fun x : ℝ => a i * x)) measurable_id
+            simpa [Function.comp_def] using h) (⟨by fun_prop, hscaled⟩) (⟨aemeasurable_gaussianLinearCombination s a, ih⟩)
       rw [hsum_fun]
       simpa [gaussianLinearCombinationVariance_insert his a] using hsum
 

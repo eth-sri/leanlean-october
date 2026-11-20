@@ -45,15 +45,13 @@ theorem log_add_posLog_eq {b t : ℝ} (hb : 0 < b) (ht : 0 ≤ t) :
 theorem abs_log_sub_log_le {p q b : ℝ} (hb : 0 < b) (hp : b ≤ p) (hq : b ≤ q) :
     |Real.log p - Real.log q| ≤ |p - q| / b := by
   wlog hpq : q ≤ p generalizing p q
-  · rw [abs_sub_comm, abs_sub_comm p q]
-    exact this hq hp (le_of_not_ge hpq)
-  have hq0 : 0 < q := lt_of_lt_of_le hb hq
-  have hp0 : 0 < p := lt_of_lt_of_le hb hp
-  have h1 : 0 ≤ Real.log p - Real.log q := sub_nonneg.2 (Real.log_le_log hq0 hpq)
-  rw [abs_of_nonneg h1, abs_of_nonneg (sub_nonneg.2 hpq), ← Real.log_div hp0.ne' hq0.ne']
-  calc Real.log (p / q) ≤ p / q - 1 := Real.log_le_sub_one_of_pos (div_pos hp0 hq0)
+  · grind
+  have hq0 := lt_of_lt_of_le hb hq
+  have hp0 := lt_of_lt_of_le hb hp
+  rw [abs_of_nonneg (sub_nonneg.2 (Real.log_le_log hq0 hpq)), abs_of_nonneg (sub_nonneg.2 hpq), ← Real.log_div hp0.ne' hq0.ne']
+  calc _ ≤ p / q - 1 := Real.log_le_sub_one_of_pos (div_pos hp0 hq0)
     _ = (p - q) / q := by field_simp
-    _ ≤ (p - q) / b := div_le_div_of_nonneg_left (sub_nonneg.2 hpq) hb hq
+    _ ≤ _ := div_le_div_of_nonneg_left (sub_nonneg.2 hpq) hb hq
 
 /-! ### The regular part `h(u) = log |u|_+` -/
 
@@ -191,10 +189,10 @@ theorem abs_circleAverage_sub_le {g : ℂ → ℝ} {c : ℂ} {R K : ℝ} (hg : C
   rw [abs_sub_le_iff]
   constructor
   · have := circleAverage_mono_on_of_le_circle (a := g c + K) hg
-      (fun u hu => by linarith [(abs_le.1 (hK u hu)).2])
+      (fun u hu => by grind)
     linarith
   · have := circleAverage_mono (circleIntegrable_const (g c - K) c R) hg
-      (fun u hu => by linarith [(abs_le.1 (hK u hu)).1])
+      (fun u hu => by grind)
     rw [circleAverage_const] at this
     linarith
 
@@ -211,13 +209,13 @@ theorem circleAverage_log_normPlus_bounds {c : ℂ} {R ρ : ℝ} (hR : 0 ≤ R) 
     0 ≤ circleAverage (fun u => Real.log (normPlus u)) c ρ ∧
       circleAverage (fun u => Real.log (normPlus u)) c ρ ≤ Real.log (1 + R) := by
   constructor
-  · exact circleAverage_nonneg_of_nonneg (fun u _ => log_normPlus_nonneg u)
+  · exact circleAverage_nonneg_of_nonneg fun u x => log_normPlus_nonneg u
   · apply circleAverage_mono_on_of_le_circle continuous_log_normPlus.continuousOn.circleIntegrable'
     intro u hu
     rw [mem_sphere_iff_norm, abs_of_pos hρ0] at hu
     apply Real.log_le_log (lt_of_lt_of_le one_pos (le_max_left _ _))
     have := norm_sub_norm_le u c
-    exact max_le (by linarith) (by linarith)
+    grind
 
 end CirclePotential
 
@@ -230,14 +228,12 @@ theorem abs_circleKernel_sub_log_le : ∀ R : ℝ, 0 ≤ R → ∀ x y : ℂ, �
   intro R hR x y hx hy r s hr hs
   have ha : 0 < Real.exp (-r) := Real.exp_pos _
   have hb : 0 < Real.exp (-s) := Real.exp_pos _
-  have ha1 : Real.exp (-r) ≤ 1 := Real.exp_le_one_iff.2 (by linarith)
-  have hb1 : Real.exp (-s) ≤ 1 := Real.exp_le_one_iff.2 (by linarith)
   have hMa : Real.exp (-r) ≤ max ‖x - y‖ (max (Real.exp (-r)) (Real.exp (-s))) :=
     le_trans (le_max_left _ _) (le_max_right _ _)
   have hMb : Real.exp (-s) ≤ max ‖x - y‖ (max (Real.exp (-r)) (Real.exp (-s))) :=
     le_trans (le_max_right _ _) (le_max_right _ _)
   have hMxy : ‖x - y‖ ≤ max ‖x - y‖ (max (Real.exp (-r)) (Real.exp (-s))) := le_max_left _ _
-  have hMpos : 0 < max ‖x - y‖ (max (Real.exp (-r)) (Real.exp (-s))) := lt_of_lt_of_le ha hMa
+  have hMpos  := lt_of_lt_of_le ha hMa
   have hgI : CircleIntegrable (fun u => Real.log (max ‖u - y‖ (Real.exp (-s)))) x
       (Real.exp (-r)) := (continuous_log_max hb).continuousOn.circleIntegrable'
   -- upper bound on the average of the truncated logarithm
@@ -268,13 +264,10 @@ theorem abs_circleKernel_sub_log_le : ∀ R : ℝ, 0 ≤ R → ∀ x y : ℂ, �
     rcases le_total (max ‖x - y‖ (Real.exp (-r))) (Real.exp (-s)) with h | h
     · rw [max_eq_right h]
       exact hb_le
-    · rw [max_eq_left h]
-      exact hxy_le
+    · simp [*]
   -- the regular parts
-  have hhx := circleAverage_log_normPlus_bounds hR hx ha ha1
-  have hhy := circleAverage_log_normPlus_bounds hR hy hb hb1
-  have hlog3 : 0 ≤ Real.log 3 := Real.log_nonneg (by norm_num)
-  have hlogR : 0 ≤ Real.log (1 + R) := Real.log_nonneg (by linarith)
+  have hhx := circleAverage_log_normPlus_bounds hR hx ha (Real.exp_le_one_iff.2 (by linarith))
+  have hhy := circleAverage_log_normPlus_bounds hR hy hb (Real.exp_le_one_iff.2 (by linarith))
   rw [circleKernel_eq, circleAverage_innerPot, one_div, Real.log_inv]
   unfold regAvg
   rw [abs_le]
@@ -299,30 +292,17 @@ theorem abs_circleKernel_sub_gffKernel_le : ∀ x y : ℂ, ∀ r s : ℝ, Real.e
   have hX := abs_circleAverage_log_normPlus_sub_le x ha
   have hY := abs_circleAverage_log_normPlus_sub_le y hb
   rw [circleKernel_eq, circleAverage_innerPot, hlog]
-  unfold gffKernel regAvg
-  calc |-Real.log ‖x - y‖ + circleAverage (fun u => Real.log (normPlus u)) x (Real.exp (-r)) +
-          circleAverage (fun v => Real.log (normPlus v)) y (Real.exp (-s)) -
-        (-Real.log ‖x - y‖ + Real.log (normPlus x) + Real.log (normPlus y))|
-      = |(circleAverage (fun u => Real.log (normPlus u)) x (Real.exp (-r)) -
-            Real.log (normPlus x)) +
-          (circleAverage (fun v => Real.log (normPlus v)) y (Real.exp (-s)) -
-            Real.log (normPlus y))| := by ring_nf
-    _ ≤ |circleAverage (fun u => Real.log (normPlus u)) x (Real.exp (-r)) -
-            Real.log (normPlus x)| +
-          |circleAverage (fun v => Real.log (normPlus v)) y (Real.exp (-s)) -
-            Real.log (normPlus y)| := abs_add_le _ _
-    _ ≤ Real.exp (-r) + Real.exp (-s) := add_le_add hX hY
+  unfold gffKernel regAvg <;> grind
 
 theorem abs_circleKernel_sub_integral_gffKernel_le : ∀ x y : ℂ, ∀ r s : ℝ,
     |circleKernel x r y s - ∫ v, gffKernel x v ∂circleMeasure y s| ≤
       (Real.exp s + 1) * Real.exp (-r) := by
   intro x y r s
   rw [circleKernel_eq, integral_gffKernel_circleMeasure]
-  have ha : 0 < Real.exp (-r) := Real.exp_pos _
   have hb : 0 < Real.exp (-s) := Real.exp_pos _
   refine abs_circleAverage_sub_le (continuous_innerPot y s).continuousOn.circleIntegrable'
     (fun u hu => ?_)
-  rw [mem_sphere_iff_norm, abs_of_pos ha] at hu
+  rw [mem_sphere_iff_norm, abs_of_pos (Real.exp_pos _)] at hu
   have h1 := abs_log_max_sub_le u x y hb
   have h2 := abs_log_normPlus_sub_le u x
   have heq : innerPot y s u - innerPot y s x =
@@ -332,14 +312,6 @@ theorem abs_circleKernel_sub_integral_gffKernel_le : ∀ x y : ℂ, ∀ r s : �
     ring
   have h3 : ‖u - x‖ / Real.exp (-s) = Real.exp s * Real.exp (-r) := by
     rw [hu, Real.exp_neg s, div_inv_eq_mul, mul_comm]
-  rw [heq]
-  calc |-(Real.log (max ‖u - y‖ (Real.exp (-s))) - Real.log (max ‖x - y‖ (Real.exp (-s)))) +
-        (Real.log (normPlus u) - Real.log (normPlus x))|
-      ≤ |-(Real.log (max ‖u - y‖ (Real.exp (-s))) - Real.log (max ‖x - y‖ (Real.exp (-s))))| +
-        |Real.log (normPlus u) - Real.log (normPlus x)| := abs_add_le _ _
-    _ = |Real.log (max ‖u - y‖ (Real.exp (-s))) - Real.log (max ‖x - y‖ (Real.exp (-s)))| +
-        |Real.log (normPlus u) - Real.log (normPlus x)| := by rw [abs_neg]
-    _ ≤ ‖u - x‖ / Real.exp (-s) + ‖u - x‖ := add_le_add h1 h2
-    _ = (Real.exp s + 1) * Real.exp (-r) := by rw [h3, hu]; ring
+  grind
 
 end DOZZ.Proofs

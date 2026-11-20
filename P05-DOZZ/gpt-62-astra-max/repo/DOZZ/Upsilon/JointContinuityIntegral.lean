@@ -54,23 +54,14 @@ private theorem jointCanceledNumerator_contDiffOn :
   have hγproj : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => x.1.1) p := by fun_prop
   have hzproj : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => x.1.2) p := by fun_prop
   have htproj : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => x.2) p := by fun_prop
-  have hγcast : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => (x.1.1 : ℂ)) p := by
-    exact ContDiffAt.comp p Complex.ofRealCLM.contDiff.contDiffAt hγproj
-  have htcast : ContDiffAt ℝ 3 (fun x : (ℝ × ℂ) × ℝ => (x.2 : ℂ)) p := by
-    exact ContDiffAt.comp p Complex.ofRealCLM.contDiff.contDiffAt htproj
-  have hmap : ContDiffAt ℝ 3 jointToComplex p := by
-    change ContDiffAt ℝ 3
-      (fun x : (ℝ × ℂ) × ℝ => (((x.1.1 : ℂ), x.1.2), (x.2 : ℂ))) p
-    exact (hγcast.prodMk hzproj).prodMk htcast
+  have hγcast := ContDiffAt.comp p Complex.ofRealCLM.contDiff.contDiffAt hγproj
+  have htcast := ContDiffAt.comp p Complex.ofRealCLM.contDiff.contDiffAt htproj
+  have hmap  := (hγcast.prodMk hzproj).prodMk htcast
   have hq0 : (jointToComplex p).1.1 ≠ 0 := by
     apply Complex.ofReal_ne_zero.mpr
     exact hp0
-  have hnumAt : ContDiffAt ℝ 3 jointComplexNumerator (jointToComplex p) :=
-    (jointComplexNumerator_contDiffAt hq0).restrict_scalars ℝ
-  have hAt : ContDiffAt ℝ 3 jointCanceledNumerator p := by
-    change ContDiffAt ℝ 3 (jointComplexNumerator ∘ jointToComplex) p
-    exact ContDiffAt.comp p hnumAt hmap
-  change ContDiffWithinAt ℝ 3 jointCanceledNumerator {p | 0 < p.1.1} p
+  have hnumAt := (jointComplexNumerator_contDiffAt hq0).restrict_scalars ℝ
+  have hAt  := ContDiffAt.comp p hnumAt hmap
   exact hAt.contDiffWithinAt
 
 private noncomputable def jointThirdDerivative (q : (ℝ × ℂ) × ℝ) : ℂ :=
@@ -78,9 +69,8 @@ private noncomputable def jointThirdDerivative (q : (ℝ × ℂ) × ℝ) : ℂ :
 
 private theorem jointCanceledNumerator_contDiffAt {q : (ℝ × ℂ) × ℝ}
     (hq : 0 < q.1.1) : ContDiffAt ℝ 3 jointCanceledNumerator q := by
-  have hproj : Continuous (fun p : (ℝ × ℂ) × ℝ => p.1.1) := by fun_prop
   have hopen : IsOpen {p : (ℝ × ℂ) × ℝ | 0 < p.1.1} :=
-    isOpen_lt continuous_const hproj
+      isOpen_lt continuous_const (by fun_prop)
   exact jointCanceledNumerator_contDiffOn.contDiffAt (hopen.mem_nhds hq)
 
 private theorem jointThirdDerivative_eq_iteratedDeriv
@@ -88,9 +78,7 @@ private theorem jointThirdDerivative_eq_iteratedDeriv
     jointThirdDerivative q =
       iteratedDeriv 3 (fun t : ℝ => jointCanceledNumerator (q.1, t)) q.2 := by
   let line : ℝ → (ℝ × ℂ) × ℝ := fun t => (q.1, t)
-  let v : (ℝ × ℂ) × ℝ := ((0 : ℝ × ℂ), (1 : ℝ))
-  have hline : HasDerivAt line v q.2 := by
-    simpa [line, v] using (hasDerivAt_const q.2 q.1).prodMk (hasDerivAt_id q.2)
+  let v := ((0 : ℝ × ℂ), (1 : ℝ))
   have hlineD : deriv line = fun _ => v := by
     funext t
     exact ((hasDerivAt_const t q.1).prodMk (hasDerivAt_id t)).deriv
@@ -106,10 +94,9 @@ private theorem jointThirdDerivative_eq_iteratedDeriv
       rw [show iteratedDeriv 1 line = deriv line by simp, hlineD]
       simp]
     simp
-  have hH : ContDiffAt ℝ 3 jointCanceledNumerator (line q.2) := by
-    simpa [line] using jointCanceledNumerator_contDiffAt hq
   have hcomp := iteratedDeriv_vcomp_three
-    (hg := hH)
+    (hg := (by
+      simpa [line] using jointCanceledNumerator_contDiffAt hq))
     (hf := (by fun_prop : ContDiffAt ℝ 3 line q.2))
   rw [hline2, hline3] at hcomp
   simp only [line, hlineD] at hcomp
@@ -127,21 +114,16 @@ private theorem jointThirdDerivative_eq_iteratedDeriv
 
 private theorem jointThirdDerivative_continuousOn :
     ContinuousOn jointThirdDerivative {p : (ℝ × ℂ) × ℝ | 0 < p.1.1} := by
-  have hproj : Continuous (fun p : (ℝ × ℂ) × ℝ => p.1.1) := by fun_prop
   have hopen : IsOpen {p : (ℝ × ℂ) × ℝ | 0 < p.1.1} :=
-    isOpen_lt continuous_const hproj
+      isOpen_lt continuous_const (by fun_prop)
   have hfd : ContinuousOn (iteratedFDeriv ℝ 3 jointCanceledNumerator)
       {p : (ℝ × ℂ) × ℝ | 0 < p.1.1} :=
     ContinuousOn.continuousOn_iteratedFDeriv jointCanceledNumerator_contDiffOn
       hopen (by norm_num)
   have heval : Continuous (fun f : ContinuousMultilinearMap ℝ
       (fun _ : Fin 3 => (ℝ × ℂ) × ℝ) ℂ =>
-      f (fun _ : Fin 3 => ((0 : ℝ × ℂ), (1 : ℝ)))) := by
+      f (fun _ : Fin 3 => ((0), (1 : ℝ)))) := by
     fun_prop
-  change ContinuousOn
-    (fun q => iteratedFDeriv ℝ 3 jointCanceledNumerator q
-      (fun _ : Fin 3 => ((0 : ℝ × ℂ), (1 : ℝ))))
-    {p : (ℝ × ℂ) × ℝ | 0 < p.1.1}
   exact heval.comp_continuousOn hfd
 
 private theorem exists_jointThirdDerivative_bound {γ₀ : ℝ} {z₀ : ℂ}
@@ -178,9 +160,7 @@ private noncomputable def jointNumeratorComplexAt (γ : ℝ) (z : ℂ) : ℂ →
 
 private theorem jointNumeratorAt_eq_complex_restrict (γ : ℝ) (z : ℂ) :
     jointNumeratorAt γ z = fun t : ℝ => jointNumeratorComplexAt γ z t := by
-  funext t
-  simp [jointNumeratorAt, jointNumeratorComplexAt, jointCanceledNumerator,
-    jointToComplex, jointComplexNumerator]
+  rfl
 
 private theorem deriv_real_restrict (F : ℂ → ℂ) (hF : Differentiable ℂ F) :
     deriv (fun t : ℝ => F (t : ℂ)) = fun t : ℝ => deriv F (t : ℂ) := by
@@ -239,9 +219,8 @@ private theorem jointNumeratorComplexAt_iteratedDeriv_two_zero {γ : ℝ}
       ((γ : ℂ) / 4 + (γ : ℂ)⁻¹ - z) *
         Complex.sinh (((γ : ℂ) / 4 + (γ : ℂ)⁻¹ - z) * (t / 2)) *
         Complex.cosh (((γ : ℂ) / 4 + (γ : ℂ)⁻¹ - z) * (t / 2))) 0 = 0
-  simp (disch := fun_prop) [deriv_csinh, deriv_ccosh, deriv_cexp]
-  have hγC : (γ : ℂ) ≠ 0 := Complex.ofReal_ne_zero.mpr hγ
-  field_simp [hγC]
+  simp (disch := fun_prop)
+  field_simp [(Complex.ofReal_ne_zero.mpr hγ)]
   ring
 
 private theorem jointNumerator_taylorWithinEval_zero (γ : ℝ) (z : ℂ)
@@ -311,22 +290,16 @@ private theorem exists_jointNumerator_taylor_bound {γ₀ : ℝ} {z₀ : ℂ}
     exact (norm_nonneg _).trans h
   refine ⟨M, hMnonneg, ?_⟩
   intro γ z t hγ hz ht
-  have hγpos : 0 < γ := lt_of_lt_of_le (by positivity) hγ.1
+  have hγpos  := lt_of_lt_of_le (by positivity) hγ.1
   let f := jointNumeratorAt γ z
   have hfCont : ContDiffOn ℝ 3 f (Set.Icc 0 1) := by
     intro y hy
-    have hAt := jointCanceledNumerator_contDiffAt (q := ((γ, z), y)) hγpos
-    have hline : ContDiffAt ℝ 3 (fun s : ℝ => ((γ, z), s)) y := by fun_prop
-    have hcomp := ContDiffAt.comp y hAt hline
-    change ContDiffAt ℝ 3 f y at hcomp
+    have hcomp := ContDiffAt.comp y (jointCanceledNumerator_contDiffAt (q := ((γ, z), y)) hγpos) (by fun_prop)
     exact hcomp.contDiffWithinAt
   have hderiv : ∀ y ∈ Set.Icc 0 1,
       ‖iteratedDerivWithin 3 f (Set.Icc 0 1) y‖ ≤ M := by
     intro y hy
-    have hAt := jointCanceledNumerator_contDiffAt (q := ((γ, z), y)) hγpos
-    have hline : ContDiffAt ℝ 3 (fun s : ℝ => ((γ, z), s)) y := by fun_prop
-    have hcomp := ContDiffAt.comp y hAt hline
-    change ContDiffAt ℝ 3 f y at hcomp
+    have hcomp := ContDiffAt.comp y (jointCanceledNumerator_contDiffAt (q := ((γ, z), y)) hγpos) (by fun_prop)
     have hEq : iteratedDerivWithin 3 f (Set.Icc 0 1) y = iteratedDeriv 3 f y :=
       iteratedDerivWithin_eq_iteratedDeriv
       (uniqueDiffOn_Icc (by norm_num : (0 : ℝ) < 1))

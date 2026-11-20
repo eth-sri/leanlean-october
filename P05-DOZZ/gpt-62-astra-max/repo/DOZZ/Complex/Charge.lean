@@ -38,9 +38,8 @@ theorem integrable_mass_power {Ω : Type*} [MeasurableSpace Ω] (P : Measure Ω)
 /-- The strict threshold leaves room for a Hölder exponent larger than one. -/
 theorem exists_holder_mass_exponent (t pstar : ℝ) (ht : t < pstar) :
     ∃ p : ℝ, 1 < p ∧ p * t < pstar := by
-  have hn : {p : ℝ | p * t < pstar} ∈ 𝓝 1 :=
-    (continuous_id.mul continuous_const).continuousAt.preimage_mem_nhds
-      (isOpen_Iio.mem_nhds (show (1 : ℝ) * t ∈ Iio pstar by simpa only [Set.mem_Iio, one_mul] using ht))
+  have hn := (continuous_id.mul continuous_const).continuousAt.preimage_mem_nhds
+    (isOpen_Iio.mem_nhds (show (1 : ℝ) * t ∈ Iio pstar by simpa only [Set.mem_Iio, one_mul] using ht))
   obtain ⟨ε, hε, hb⟩ := Metric.mem_nhds_iff.mp hn
   refine ⟨1 + ε / 2, by linarith, hb ?_⟩
   rw [Metric.mem_ball, Real.dist_eq, add_sub_cancel_left, abs_of_pos (half_pos hε)]
@@ -89,12 +88,11 @@ theorem integrable_gaussian_exp_coordinate_sum {Ω : Type*} [MeasurableSpace Ω]
   exact Eventually.of_forall fun ω => by
     rw [Real.norm_eq_abs, abs_of_pos (Real.exp_pos _)]
     apply Real.exp_le_exp.mpr
-    have hs : ∑ i, |L ω i| ≤ (N : ℝ) * ‖L ω‖ := by
+    simpa only [mul_assoc] using mul_le_mul_of_nonneg_left (by
       calc
         _ ≤ ∑ i : Fin N, ‖L ω‖ := Finset.sum_le_sum fun i _ => by
           simpa only [Real.norm_eq_abs] using norm_le_pi_norm (L ω) i
-        _ = _ := by simp
-    simpa only [mul_assoc] using mul_le_mul_of_nonneg_left hs hK
+        _ = _ := by simp) hK
 
 /-- Young's inequality proves correlated Gaussian/mass integrability below the threshold. -/
 theorem integrable_gaussian_exp_mass_power {Ω : Type*} [MeasurableSpace Ω]

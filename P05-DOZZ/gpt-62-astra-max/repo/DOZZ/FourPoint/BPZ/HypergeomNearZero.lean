@@ -33,12 +33,10 @@ namespace DOZZ.Proofs
 /-- The hypergeometric function is `1` at the origin. -/
 theorem bpzHG_eq_one_at_zero {H : ℂ → ℂ → ℂ → ℂ → ℂ} (hH : IsGaussHypergeometricFamily H)
     {a b c : ℂ} (hc : ∀ n : ℕ, c ≠ -(n : ℂ)) : H a b c 0 = 1 := by
-  rw [(hH a b c hc).2 0 (by simp)]
-  exact ordinaryHypergeometric_zero a b c
+  rw [(hH a b c hc).2 0 (by simp)] <;> simp
 
 /-- The slit plane `ℂ \ [1, ∞)` is open. -/
 theorem bpzHG_isOpen_gaussSlitPlane : IsOpen gaussSlitPlane := by
-  change IsOpen ({z : ℂ | z.im ≠ 0} ∪ {z : ℂ | z.re < 1})
   exact (isOpen_compl_singleton.preimage Complex.continuous_im).union
     (isOpen_Iio.preimage Complex.continuous_re)
 

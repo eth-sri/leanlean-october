@@ -36,16 +36,9 @@ theorem map_eq_of_seq_map_eq_of_tendstoInMeasure
       (∫ ω, φ (fLimit ω) ∂P) = ∫ ω, φ (gLimit ω) ∂P' := by
     intro φ
     obtain ⟨ns, hns, hfae⟩ := hfconv.exists_seq_tendsto_ae
-    have hgsub : TendstoInMeasure P' (fun n => g (ns n)) atTop gLimit :=
-      hgconv.comp hns.tendsto_atTop
-    obtain ⟨ms, hms, hgae⟩ := hgsub.exists_seq_tendsto_ae
-    let fs : ℕ → Ω → E := fun n => f (ns (ms n))
-    let gs : ℕ → Ω' → E := fun n => g (ns (ms n))
-    have hfs : ∀ n, AEMeasurable (fs n) P := fun n => hf _
-    have hgs : ∀ n, AEMeasurable (gs n) P' := fun n => hg _
-    have hmaps : ∀ n, Measure.map (fs n) P = Measure.map (gs n) P' := by
-      intro n
-      exact hmap (ns (ms n))
+    obtain ⟨ms, hms, hgae⟩ := (hgconv.comp hns.tendsto_atTop).exists_seq_tendsto_ae
+    let fs  := fun n => f (ns (ms n))
+    let gs  := fun n => g (ns (ms n))
     have hfseq : ∀ᵐ ω ∂P, Tendsto (fun n => fs n ω) atTop (𝓝 (fLimit ω)) := by
       filter_upwards [hfae] with ω hω
       have hcomp := hω.comp hms.tendsto_atTop
@@ -55,16 +48,13 @@ theorem map_eq_of_seq_map_eq_of_tendstoInMeasure
       filter_upwards [hgae] with ω hω
       change Tendsto (fun n => g (ns (ms n)) ω) atTop (𝓝 (gLimit ω)) at hω
       exact hω
-    exact integral_bcf_eq_of_map_eq_of_ae_tendsto fs gs fLimit gLimit
-      hfs hgs hmaps hfseq hgseq φ
+    refine integral_bcf_eq_of_map_eq_of_ae_tendsto fs gs fLimit gLimit
+      (fun n => hf _) (fun n => hg _) ?_ hfseq hgseq φ
+    intro n
+    exact hmap (ns (ms n))
   apply ext_of_forall_integral_eq_of_IsFiniteMeasure
   intro φ
-  calc
-    (∫ x, φ x ∂Measure.map fLimit P) = ∫ ω, φ (fLimit ω) ∂P :=
-      integral_map hflimit φ.continuous.measurable.aestronglyMeasurable
-    _ = ∫ ω, φ (gLimit ω) ∂P' := htest φ
-    _ = ∫ x, φ x ∂Measure.map gLimit P' :=
-      (integral_map hglimit φ.continuous.measurable.aestronglyMeasurable).symm
+  exact (((integral_map hflimit φ.continuous.measurable.aestronglyMeasurable).trans (htest φ)).trans (integral_map hglimit φ.continuous.measurable.aestronglyMeasurable).symm)
 
 /-- Coordinatewise convergence in measure implies convergence in measure for a finite real vector.
 The sup norm event is contained in the finite union of its coordinate events. -/
@@ -78,28 +68,20 @@ theorem tendstoInMeasure_pi_finite
   have hsubset (n : ℕ) : {ω | ε ≤ ‖f n ω - g ω‖} ⊆
       ⋃ i, {ω | ε ≤ ‖f n ω i - g ω i‖} := by
     intro ω hω
-    change ε ≤ ‖f n ω - g ω‖ at hω
     by_contra hnot
     have hcoord : ∀ i, ‖(f n ω - g ω) i‖ < ε := by
       intro i
       apply lt_of_not_ge
       intro h
       exact hnot (Set.mem_iUnion.2 ⟨i, by simpa using h⟩)
-    have hnorm : ‖f n ω - g ω‖ < ε :=
-      (pi_norm_lt_iff hε).2 (by simpa only [Pi.sub_apply] using hcoord)
-    exact (not_le_of_gt hnorm) hω
+    exact (not_le_of_gt ((pi_norm_lt_iff hε).2 (by exact id hcoord))) hω
   have hsum : Tendsto (fun n => ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖})
       atTop (𝓝 0) := by
-    have hsum' : Tendsto (fun n => ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖})
-        atTop (𝓝 (∑ i : ι, (0 : ℝ≥0∞))) := by
-      exact tendsto_finsetSum
-        (f := fun i n => μ {ω | ε ≤ ‖f n ω i - g ω i‖}) (x := atTop)
-        (a := fun _ => (0 : ℝ≥0∞)) Finset.univ
-        (by intro i hi; exact (tendstoInMeasure_iff_norm.mp (hcoord i)) ε hε)
-    simpa using hsum'
-  have hle (n : ℕ) : μ {ω | ε ≤ ‖f n ω - g ω‖} ≤
-      ∑ i : ι, μ {ω | ε ≤ ‖f n ω i - g ω i‖} := by
-    exact (measure_mono (hsubset n)).trans (measure_iUnion_fintype_le μ _)
+    simpa using (tendsto_finsetSum
+      (f := fun i n => μ {ω | ε ≤ ‖f n ω i - g ω i‖}) (x := atTop)
+      (a := fun _ => (0 : ℝ≥0∞)) Finset.univ
+      (by intro i hi; exact (tendstoInMeasure_iff_norm.mp (hcoord i)) ε hε))
+  have hle (n : ℕ)  := (measure_mono (hsubset n)).trans (measure_iUnion_fintype_le μ _)
   exact tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hsum
     (fun _ => zero_le) hle
 

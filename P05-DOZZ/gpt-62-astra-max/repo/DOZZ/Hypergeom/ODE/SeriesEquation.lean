@@ -173,10 +173,7 @@ theorem ordinaryHypergeometric_analyticOnNhd_unitDisk (a b c : ℂ)
 
 private theorem fderiv_apply_eq_mul_deriv (f : ℂ → ℂ) (z : ℂ) :
     (fderiv ℂ f z) z = z * deriv f z := by
-  calc
-    (fderiv ℂ f z) z = (fderiv ℂ f z) (z • (1 : ℂ)) := by simp
-    _ = z • (fderiv ℂ f z) 1 := by rw [ContinuousLinearMap.map_smul]
-    _ = z * deriv f z := by rw [fderiv_apply_one_eq_deriv]; simp [smul_eq_mul]
+  simp
 
 /-- On the open unit disk, the ordinary series solves the scalar Gauss equation. This is
 the origin seed for the first-order continuation system; it includes terminating numerator cases. -/

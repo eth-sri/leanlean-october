@@ -68,8 +68,7 @@ private theorem wirtingerBar_const_mul_star_term (k : ℂ) {f g : ℂ → ℂ} {
 private theorem hermitianTensorTermDiffAt {k : ℂ} {f g : ℂ → ℂ} {z : ℂ}
     (hf : DifferentiableAt ℂ f z) (hg : DifferentiableAt ℂ g z) :
     DifferentiableAt ℝ (fun w => k * f w * star (g w)) z := by
-  exact (((differentiableAt_const k).mul hf).restrictScalars ℝ).mul
-    ((hg.restrictScalars ℝ).star)
+  fun_prop
 
 /-- First `∂z` derivative of the constant Hermitian tensor. -/
 theorem hermitianQuadraticTensor_wirtingerZ

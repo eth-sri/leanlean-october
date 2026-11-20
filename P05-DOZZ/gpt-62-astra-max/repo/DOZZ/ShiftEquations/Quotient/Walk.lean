@@ -185,7 +185,7 @@ infinite. -/
 theorem infinite_closure_pair_pos_lt {a a' ε : ℝ} (hirr : Irrational (a / a')) (hε : 0 < ε) :
     {g : ℝ | g ∈ AddSubgroup.closure ({a, a'} : Set ℝ) ∧ 0 < g ∧ g < ε}.Infinite := by
   intro hfin
-  have hd : Dense (AddSubgroup.closure ({a, a'} : Set ℝ) : Set ℝ) :=
+  have hd  :=
     dense_addSubgroupClosure_pair_iff.2 hirr
   obtain ⟨x, hx, hx0, hxε⟩ := hd.exists_between hε
   obtain ⟨m, hmT, hmin⟩ := Set.exists_min_image _ id hfin ⟨x, hx, hx0, hxε⟩

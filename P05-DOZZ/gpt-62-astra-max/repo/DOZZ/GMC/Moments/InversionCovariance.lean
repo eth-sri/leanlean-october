@@ -83,7 +83,7 @@ theorem gffCov_inversionTest (f g : TestFn)
     (hg : tsupport (g : ℂ → ℝ) ⊆ inversionChart) :
     gffCov (inversionTest f hf) (inversionTest g hg) = gffCov f g := by
   unfold gffCov
-  rw [volume_gffKernel_pairing_eq_reference, volume_gffKernel_pairing_eq_reference]
+  simp only [volume_gffKernel_pairing_eq_reference]
   calc
     _ = ∫ x, ∫ y, (f x⁻¹ * (normPlus x⁻¹ ^ (-4 : ℝ))⁻¹) * gffKernel x y *
         (g y⁻¹ * (normPlus y⁻¹ ^ (-4 : ℝ))⁻¹) ∂gmcReferenceMeasure
@@ -92,8 +92,8 @@ theorem gffCov_inversionTest (f g : TestFn)
       filter_upwards [gmcReferenceMeasure_ae_ne 0] with x hx
       apply integral_congr_ae
       filter_upwards [gmcReferenceMeasure_ae_ne 0] with y hy
-      rw [show (inversionTest f hf : ℂ → ℝ) x = inversionTestFunction f x by rfl,
-        show (inversionTest g hg : ℂ → ℝ) y = inversionTestFunction g y by rfl,
+      rw [show (inversionTest f hf) x = inversionTestFunction f x by rfl,
+        show (inversionTest g hg) y = inversionTestFunction g y by rfl,
         inversionTestFunction_reference_weight f hx,
         inversionTestFunction_reference_weight g hy]
     _ = _ := integral_integral_gffKernel_inversion

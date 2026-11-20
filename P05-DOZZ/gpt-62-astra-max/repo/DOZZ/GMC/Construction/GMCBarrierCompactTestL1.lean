@@ -39,20 +39,13 @@ private theorem gaussianRectangleIndicator_aestronglyMeasurable
     rw [← hEq]
     apply MeasurableSet.iInter
     intro i
-    have hcoord : Measurable (fun z : ι → ℝ => z i + c i) := by fun_prop
-    exact measurableSet_le hcoord measurable_const
+    refine measurableSet_le ?_ measurable_const
+    fun_prop
   have hZae : AEMeasurable Z P := by
     apply AEMeasurable.of_eval
     intro i
     exact hZ.2.1 i
-  have hF : Measurable (fun z : ι → ℝ => if z ∈ S then (1 : ℝ) else 0) :=
-    Measurable.ite hS measurable_const measurable_const
-  have hEq : gaussianRectangleIndicator Z b c =
-      (fun z : ι → ℝ => if z ∈ S then (1 : ℝ) else 0) ∘ Z := by
-    funext ω
-    rfl
-  rw [hEq]
-  exact hF.comp_aemeasurable hZae |>.aestronglyMeasurable
+  exact (Measurable.ite hS measurable_const measurable_const).comp_aemeasurable hZae |>.aestronglyMeasurable
 
 private noncomputable def gaussianRectangleShiftBandIndicator
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
@@ -69,13 +62,8 @@ private theorem gaussianRectangleShiftBandIndicator_nonneg
     (fun _ => (1 : ℝ)) ω
   by_cases hi : Z ω i ∈ Set.Icc (min (b i - c i) (b i - d i))
       (max (b i - c i) (b i - d i))
-  · have hi' : ω ∈ {ω' | Z ω' i ∈ Set.Icc (min (b i - c i) (b i - d i))
-        (max (b i - c i) (b i - d i))} := hi
-    rw [Set.indicator_of_mem hi']
-    norm_num
-  · have hi' : ω ∉ {ω' | Z ω' i ∈ Set.Icc (min (b i - c i) (b i - d i))
-        (max (b i - c i) (b i - d i))} := hi
-    rw [Set.indicator_of_notMem hi']
+  · simp_all
+  simp_all
 
 private theorem gaussianRectangleShiftBandIndicator_aestronglyMeasurable
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
@@ -92,14 +80,12 @@ private theorem gaussianRectangleShiftBandIndicator_aestronglyMeasurable
     apply AEMeasurable.of_eval
     intro j
     exact hZ.2.1 j
-  have hF : Measurable (fun z : ι → ℝ => if z ∈ S then (1 : ℝ) else 0) :=
-    Measurable.ite hS measurable_const measurable_const
   have hEq : gaussianRectangleShiftBandIndicator Z b c d i =
       (fun z : ι → ℝ => if z ∈ S then (1 : ℝ) else 0) ∘ Z := by
     funext ω
     simp [S, gaussianRectangleShiftBandIndicator, Set.indicator]
   rw [hEq]
-  exact hF.comp_aemeasurable hZae |>.aestronglyMeasurable
+  exact (Measurable.ite hS measurable_const measurable_const).comp_aemeasurable hZae |>.aestronglyMeasurable
 
 private theorem gaussianRectangleShiftBandIndicator_pointwise
     {Ω ι : Type*} [MeasurableSpace Ω] [Fintype ι]
@@ -169,47 +155,36 @@ rectangle probabilities. -/
 theorem gaussianReal_interval_le_length_of_variance_ge_one
     (μ : ℝ) (v : ℝ≥0) (hv : 1 ≤ (v : ℝ)) (a b : ℝ) (hab : a ≤ b) :
     gaussianReal μ v (Set.Icc a b) ≤ ENNReal.ofReal (b - a) := by
-  have hvne : v ≠ 0 := by
-    intro hz
-    rw [hz] at hv
-    norm_num at hv
   have hpdf (x : ℝ) : gaussianPDFReal μ v x ≤ 1 := by
     rw [gaussianPDFReal_def]
     have harg : (1 : ℝ) ≤ 2 * Real.pi * (v : ℝ) := by
       nlinarith [Real.pi_gt_three]
-    have hden : (1 : ℝ) ≤ Real.sqrt (2 * Real.pi * (v : ℝ)) := by
+    have hinv : (Real.sqrt (2 * Real.pi * v))⁻¹ ≤ 1 := by
+      rw [inv_le_one₀ (by positivity)]
       have h := Real.sqrt_le_sqrt harg
       simpa using h
-    have hdenpos : 0 < Real.sqrt (2 * Real.pi * (v : ℝ)) := by positivity
-    have hinv : (Real.sqrt (2 * Real.pi * (v : ℝ)))⁻¹ ≤ 1 := by
-      rw [inv_le_one₀ hdenpos]
-      exact hden
     have hargExp : -(x - μ) ^ 2 / (2 * (v : ℝ)) ≤ 0 := by
       have hnum : -(x - μ) ^ 2 ≤ 0 := neg_nonpos.mpr (sq_nonneg (x - μ))
       have hdenExp : 0 < 2 * (v : ℝ) := by positivity
       exact div_nonpos_of_nonpos_of_nonneg hnum hdenExp.le
-    have hexp : Real.exp (-(x - μ) ^ 2 / (2 * (v : ℝ))) ≤ 1 := by
-      exact (Real.exp_le_one_iff.mpr hargExp)
     calc
-      (Real.sqrt (2 * Real.pi * (v : ℝ)))⁻¹ *
-          Real.exp (-(x - μ) ^ 2 / (2 * (v : ℝ))) ≤
-        (Real.sqrt (2 * Real.pi * (v : ℝ)))⁻¹ * 1 :=
-          mul_le_mul_of_nonneg_left hexp (by positivity)
+      _ ≤
+        (Real.sqrt (2 * Real.pi * v))⁻¹ * 1 :=
+          mul_le_mul_of_nonneg_left (Real.exp_le_one_iff.mpr hargExp) (by positivity)
       _ ≤ 1 := by simpa using hinv
   have hpdfInt : IntegrableOn (gaussianPDFReal μ v) (Set.Icc a b) :=
     (integrable_gaussianPDFReal μ v).integrableOn
-  have hconstInt : IntegrableOn (fun _ : ℝ => (1 : ℝ)) (Set.Icc a b) :=
-    integrableOn_const (by simp)
-  have hInt : (∫ x in Set.Icc a b, gaussianPDFReal μ v x) ≤ b - a := by
-    calc
-      (∫ x in Set.Icc a b, gaussianPDFReal μ v x) ≤
-          ∫ x in Set.Icc a b, (1 : ℝ) :=
-        setIntegral_mono_on hpdfInt hconstInt isClosed_Icc.measurableSet fun x _ => hpdf x
-      _ = b - a := by
-        rw [setIntegral_const, Real.volume_real_Icc_of_le hab]
-        simp
-  rw [gaussianReal_apply_eq_integral μ hvne (Set.Icc a b)]
-  exact ENNReal.ofReal_le_ofReal hInt
+  rw [gaussianReal_apply_eq_integral μ (by
+    intro hz
+    rw [hz] at hv
+    norm_num at hv) (Set.Icc a b)]
+  refine ENNReal.ofReal_le_ofReal ?_
+  calc
+    (∫ x in Set.Icc a b, gaussianPDFReal μ v x) ≤
+        ∫ x in Set.Icc a b, (1 : ℝ) :=
+      setIntegral_mono_on hpdfInt (integrableOn_const (by simp)) isClosed_Icc.measurableSet fun x _ => hpdf x
+    _ = b - a := by
+      simp [*]
 
 /-- A coordinate of a centered jointly Gaussian vector with variance at least one has a
 covariance-independent interval probability bound. -/
@@ -220,7 +195,6 @@ theorem gaussian_coordinate_interval_probability_le_length_of_variance_ge_one
     (a b : ℝ) (hab : a ≤ b) :
     P {ω | Z ω i ∈ Set.Icc a b} ≤ ENNReal.ofReal (b - a) := by
   obtain ⟨v, hmap, _, hvar⟩ := coordinate_mean_variance P Z hZ i
-  have hv' : 1 ≤ (v : ℝ) := by simpa [hvar] using hv
   have hprob : P {ω | Z ω i ∈ Set.Icc a b} =
       gaussianReal 0 v (Set.Icc a b) := by
     let Zi : Ω → ℝ := fun ω => Z ω i
@@ -228,11 +202,11 @@ theorem gaussian_coordinate_interval_probability_le_length_of_variance_ge_one
     calc
       P {ω | Z ω i ∈ Set.Icc a b} = P (Zi ⁻¹' Set.Icc a b) := by rfl
       _ = P.map Zi (Set.Icc a b) := by
-        symm
-        exact Measure.map_apply_of_aemeasurable hZi isClosed_Icc.measurableSet
+        simp [*]
       _ = gaussianReal 0 v (Set.Icc a b) := by rw [hmap]
   rw [hprob]
-  exact gaussianReal_interval_le_length_of_variance_ge_one 0 v hv' a b hab
+  refine gaussianReal_interval_le_length_of_variance_ge_one 0 v ?_ a b hab
+  simpa [hvar] using hv
 
 /-- The finite Gaussian rectangle probability is Lipschitz in its deterministic shift, with a
 modulus independent of all correlations, as soon as every marginal variance is at least one. -/
@@ -387,29 +361,24 @@ theorem finite_gaussian_rectangle_probability_two_shift_tendsto_uniformly
           |(∫ ω, gaussianRectangleIndicator (Z a) b (c ε ε' γ a) ω ∂P) -
             (∫ ω, gaussianRectangleIndicator (Z a) b (d γ a) ω ∂P)| < η := by
   intro η hη
-  let η' : ℝ := η / ((Fintype.card ι : ℝ) + 1)
+  let η'  := η / ((Fintype.card ι : ℝ) + 1)
   have hη' : 0 < η' := by
-    dsimp [η']
     positivity
   obtain ⟨δ, hδ, hcoord⟩ := hshift η' hη'
   refine ⟨δ, hδ, ?_⟩
   intro ε ε' hε hεcut hε' hε'cut γ hγ a ha
-  have hnorm : ‖c ε ε' γ a - d γ a‖ ≤ η' := by
-    rw [pi_norm_le_iff_of_nonneg (le_of_lt hη')]
-    intro i
-    simpa only [Pi.sub_apply, Real.norm_eq_abs] using
-      (hcoord ε ε' hε hεcut hε' hε'cut γ hγ a ha i).le
-  have hprob := finite_gaussian_rectangle_probability_shift_lipschitz
-    P (Z a) (hZ a ha) b (hv a ha) (c ε ε' γ a) (d γ a)
-  have hcard : 0 ≤ (Fintype.card ι : ℝ) := by positivity
-  have hcardη : (Fintype.card ι : ℝ) * η' < η := by
-    dsimp [η']
-    field_simp
-    nlinarith
   calc
-    _ ≤ (Fintype.card ι : ℝ) * ‖c ε ε' γ a - d γ a‖ := hprob
+    _ ≤ (Fintype.card ι : ℝ) * ‖c ε ε' γ a - d γ a‖ := (finite_gaussian_rectangle_probability_shift_lipschitz
+      P (Z a) (hZ a ha) b (hv a ha) (c ε ε' γ a) (d γ a))
     _ ≤ (Fintype.card ι : ℝ) * η' :=
-      mul_le_mul_of_nonneg_left hnorm hcard
-    _ < η := hcardη
+      mul_le_mul_of_nonneg_left (by
+        rw [pi_norm_le_iff_of_nonneg (le_of_lt hη')]
+        intro i
+        simpa only [Pi.sub_apply, Real.norm_eq_abs] using
+          (hcoord ε ε' hε hεcut hε' hε'cut γ hγ a ha i).le) (by positivity)
+    _ < η := by
+      dsimp [η']
+      field_simp
+      nlinarith
 
 end DOZZ.Proofs

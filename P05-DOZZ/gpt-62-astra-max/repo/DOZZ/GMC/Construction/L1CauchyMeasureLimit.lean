@@ -28,10 +28,9 @@ theorem lintegral_abs_sub_limit_le_of_uniform_l1_cauchy
     ∫⁻ ω, ENNReal.ofReal |F r ω - G ω| ∂P ≤ ENNReal.ofReal C := by
   obtain ⟨ns, hnsTop, hseqMeasure⟩ := hFG.exists_seq_tendstoInMeasure_atTop
   obtain ⟨nsub, hnsub, hae⟩ := hseqMeasure.exists_seq_tendsto_ae
-  let ms : ℕ → ℝ := ns ∘ nsub
-  have hmsTop : Tendsto ms atTop atTop := hnsTop.comp hnsub.tendsto_atTop
-  let Q : ℕ → Ω → ℝ≥0∞ := fun n ω =>
-    ENNReal.ofReal |F r ω - F (ms n) ω|
+  let ms := ns ∘ nsub
+  let Q := fun n ω =>
+  ENNReal.ofReal |F r ω - F (ms n) ω|
   have hQmeas : ∀ n, Measurable (Q n) := by
     intro n
     exact ENNReal.measurable_ofReal.comp
@@ -48,12 +47,10 @@ theorem lintegral_abs_sub_limit_le_of_uniform_l1_cauchy
       fun ω => ENNReal.ofReal |F r ω - G ω| := by
     filter_upwards [hQlim] with ω hω
     exact hω.liminf_eq
-  have hEventual : ∀ᶠ n : ℕ in atTop, R ≤ ms n :=
-    hmsTop.eventually (eventually_ge_atTop R)
   have hIntegralBound : ∀ᶠ n : ℕ in atTop,
       ∫⁻ ω, Q n ω ∂P ≤ ENNReal.ofReal C := by
-    filter_upwards [hEventual] with n hn
-    simpa [Q, ms] using hbound (ns (nsub n)) hn
+    filter_upwards [((hnsTop.comp hnsub.tendsto_atTop).eventually (eventually_ge_atTop R))] with n hn
+    simpa [Q, ms] using hbound _ hn
   calc
     ∫⁻ ω, ENNReal.ofReal |F r ω - G ω| ∂P =
         ∫⁻ ω, liminf (fun n => Q n ω) atTop ∂P := by

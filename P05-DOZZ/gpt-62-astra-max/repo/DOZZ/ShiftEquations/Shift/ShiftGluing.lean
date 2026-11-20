@@ -50,13 +50,12 @@ theorem meromorphicOn_eventuallyEq_of_frequently {f g : ℂ → ℂ} {U : Set �
     (hf : MeromorphicOn f U) (hg : MeromorphicOn g U) (hU : IsPreconnected U)
     {x₀ y : ℂ} (hx₀ : x₀ ∈ U) (hy : y ∈ U) (hfreq : ∃ᶠ z in 𝓝[≠] x₀, f z = g z) :
     f =ᶠ[𝓝[≠] y] g := by
-  have hsub : MeromorphicOn (f - g) U := hf.sub hg
+  have hsub := hf.sub hg
   have h0 : (f - g) =ᶠ[𝓝[≠] x₀] 0 := by
     refine ((hsub x₀ hx₀).frequently_zero_iff_eventuallyEq_zero).mp ?_
     exact hfreq.mono fun z hz => by simp [hz]
-  have htop : meromorphicOrderAt (f - g) x₀ = ⊤ := meromorphicOrderAt_eq_top_iff.mpr h0
-  have htop' := hsub.meromorphicOrderAt_eq_top_of_isPreconnected hU hx₀ hy htop
-  have := meromorphicOrderAt_eq_top_iff.mp htop'
+  have htop := meromorphicOrderAt_eq_top_iff.mpr h0
+  have := meromorphicOrderAt_eq_top_iff.mp (hsub.meromorphicOrderAt_eq_top_of_isPreconnected hU hx₀ hy htop)
   exact this.mono fun z hz => sub_eq_zero.mp hz
 
 /-- A function meromorphic on the whole plane, analytic and nonzero at one point, is nonzero on
@@ -68,9 +67,8 @@ theorem eventually_ne_zero_nhdsNE_of_meromorphicOn_univ {m : ℂ → ℂ}
   have h0 : meromorphicOrderAt m z₀ ≠ ⊤ := by
     rw [meromorphicOrderAt_ne_top_iff_eventually_ne_zero (hm z₀ (mem_univ z₀))]
     exact eventually_nhdsWithin_of_eventually_nhds (han.continuousAt.eventually_ne hne)
-  have hz : meromorphicOrderAt m z ≠ ⊤ :=
-    hm.meromorphicOrderAt_ne_top_of_isPreconnected isPreconnected_univ (mem_univ z₀)
-      (mem_univ z) h0
+  have hz := hm.meromorphicOrderAt_ne_top_of_isPreconnected isPreconnected_univ (mem_univ z₀)
+    (mem_univ z) h0
   exact (meromorphicOrderAt_ne_top_iff_eventually_ne_zero (hm z (mem_univ z))).mp hz
 
 /-- The shift relation, known on a real subinterval, propagates along preconnected subsets of
@@ -83,7 +81,7 @@ theorem shift_relation_eventually {c a b d₁ d₂ : ℝ} (hc : 0 < c)
     {P : Set ℂ} (hP : IsPreconnected P) (hPO : P ⊆ W ∩ (fun z : ℂ => z - c) ⁻¹' W)
     {x₁ : ℝ} (hx₁a : a + c < x₁) (hx₁b : x₁ < b) (hx₁P : (x₁ : ℂ) ∈ P) :
     ∀ y ∈ P, (fun z : ℂ => g (z - c)) =ᶠ[𝓝[≠] y] (fun z : ℂ => m z * g z) := by
-  have hgan : AnalyticOnNhd ℂ g W := hg.analyticOnNhd hW
+  have hgan := hg.analyticOnNhd hW
   have hL : MeromorphicOn (fun z : ℂ => g (z - c)) (W ∩ (fun z : ℂ => z - c) ⁻¹' W) := by
     intro z hz
     have hzc : z - (c : ℂ) ∈ W := hz.2
@@ -100,14 +98,9 @@ theorem shift_relation_eventually {c a b d₁ d₂ : ℝ} (hc : 0 < c)
     show ((t : ℂ) - (c : ℂ)) ∈ W
     rw [hcast]
     exact hWab _ (by linarith) (by linarith)
-  have hP'pre : IsPreconnected (P ∪ (fun t : ℝ => (t : ℂ)) '' Ioo (a + c) b) :=
-    hP.union (x₁ : ℂ) hx₁P ⟨x₁, ⟨hx₁a, hx₁b⟩, rfl⟩ hSpre
-  have hP'O : P ∪ (fun t : ℝ => (t : ℂ)) '' Ioo (a + c) b ⊆
-      W ∩ (fun z : ℂ => z - c) ⁻¹' W := union_subset hPO hSO
+  have hP'O := union_subset hPO hSO
   obtain ⟨x₀, hx₀1, hx₀2⟩ : ∃ x₀ : ℝ, d₁ < x₀ ∧ x₀ < d₂ :=
     ⟨(d₁ + d₂) / 2, by linarith, by linarith⟩
-  have hx₀S : (x₀ : ℂ) ∈ (fun t : ℝ => (t : ℂ)) '' Ioo (a + c) b :=
-    ⟨x₀, ⟨by linarith, by linarith⟩, rfl⟩
   have htend : Tendsto (fun t : ℝ => (t : ℂ)) (𝓝[≠] x₀) (𝓝[≠] (x₀ : ℂ)) :=
     tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _
       (Complex.continuous_ofReal.continuousAt.tendsto.mono_left nhdsWithin_le_nhds)
@@ -115,11 +108,11 @@ theorem shift_relation_eventually {c a b d₁ d₂ : ℝ} (hc : 0 < c)
   have hev : ∀ᶠ t : ℝ in 𝓝[≠] x₀, g ((t : ℂ) - c) = m (t : ℂ) * g (t : ℂ) :=
     eventually_nhdsWithin_of_eventually_nhds
       (Filter.mem_of_superset (Ioo_mem_nhds hx₀1 hx₀2) fun t ht => hrel t ht.1 ht.2)
-  have hfreq : ∃ᶠ z in 𝓝[≠] (x₀ : ℂ), g (z - c) = m z * g z :=
+  have hfreq  :=
     htend.frequently (p := fun z : ℂ => g (z - c) = m z * g z) hev.frequently
   intro y hy
-  exact meromorphicOn_eventuallyEq_of_frequently (hL.mono_set hP'O) (hR.mono_set hP'O) hP'pre
-    (Or.inr hx₀S) (Or.inl hy) hfreq
+  exact meromorphicOn_eventuallyEq_of_frequently (hL.mono_set hP'O) (hR.mono_set hP'O) (hP.union (x₁ : ℂ) hx₁P ⟨x₁, ⟨hx₁a, hx₁b⟩, rfl⟩ hSpre)
+    (Or.inr (⟨x₀, ⟨by linarith, by linarith⟩, rfl⟩)) (Or.inl hy) hfreq
 
 /-! ### Translated rectangles and transport of punctured germs -/
 
@@ -154,8 +147,7 @@ theorem sub_mem_shiftRect {a b h t t' c : ℝ} {z : ℂ} (hz : z ∈ shiftRect a
   have e1 : (z - (c : ℂ)).re = z.re - c := by simp
   have e2 : (z - (c : ℂ)).im = z.im := by simp
   show a + t' < (z - (c : ℂ)).re ∧ (z - (c : ℂ)).re < b + t' ∧ |(z - (c : ℂ)).im| < h
-  rw [e1, e2]
-  exact ⟨by linarith, by linarith, h3⟩
+  grind
 
 /-- Adding a real step moves a point of the rectangle to the translated rectangle. -/
 theorem add_mem_shiftRect {a b h t t' c : ℝ} {z : ℂ} (hz : z ∈ shiftRect a b h t)
@@ -164,8 +156,7 @@ theorem add_mem_shiftRect {a b h t t' c : ℝ} {z : ℂ} (hz : z ∈ shiftRect a
   have e1 : (z + (c : ℂ)).re = z.re + c := by simp
   have e2 : (z + (c : ℂ)).im = z.im := by simp
   show a + t' < (z + (c : ℂ)).re ∧ (z + (c : ℂ)).re < b + t' ∧ |(z + (c : ℂ)).im| < h
-  rw [e1, e2]
-  exact ⟨by linarith, by linarith, h3⟩
+  grind
 
 /-- Punctured germs are transported by the translation `w ↦ w - c`. -/
 theorem eventually_comp_sub {p : ℂ → Prop} {z : ℂ} (c : ℂ)
@@ -438,12 +429,10 @@ theorem exists_meromorphicOn_strip_of_base_relation {c a b h : ℝ} (hc : 0 < c)
 theorem exists_shiftRect_subset {a b : ℝ} {W : Set ℂ} (hW : IsOpen W)
     (hab : ∀ x : ℝ, a ≤ x → x ≤ b → (x : ℂ) ∈ W) :
     ∃ h : ℝ, 0 < h ∧ shiftRect a b h 0 ⊆ W := by
-  have hK : IsCompact ((fun t : ℝ => (t : ℂ)) '' Icc a b) :=
-    isCompact_Icc.image Complex.continuous_ofReal
   have hKW : (fun t : ℝ => (t : ℂ)) '' Icc a b ⊆ W := by
     rintro _ ⟨t, ⟨ht1, ht2⟩, rfl⟩
     exact hab t ht1 ht2
-  obtain ⟨δ, hδ, hthick⟩ := hK.exists_thickening_subset_open hW hKW
+  obtain ⟨δ, hδ, hthick⟩ := (isCompact_Icc.image Complex.continuous_ofReal).exists_thickening_subset_open hW hKW
   refine ⟨δ, hδ, fun z hz => hthick ?_⟩
   obtain ⟨h1, h2, h3⟩ := hz
   rw [Metric.mem_thickening_iff]

@@ -74,7 +74,7 @@ theorem bpz_tendstoInMeasure_finset_sum {ι : Type*} (s : Finset ι) {f : ι →
   classical
   induction s using Finset.induction_on with
   | empty =>
-    simp only [Finset.sum_empty]
+    simp
     exact tendstoInMeasure_of_tendsto_ae (fun _ => aestronglyMeasurable_const)
       (Eventually.of_forall fun _ => tendsto_const_nhds)
   | insert a s ha ih =>
@@ -145,20 +145,18 @@ theorem bpz_eventually_measure_le_of_le_tendstoInMeasure {E B : ℕ → Ω → �
     (hB : TendstoInMeasure P B atTop B₀) (hEB : ∀ n, ∀ᵐ ω ∂P, |E n ω| ≤ B n ω) {ε : ℝ}
     (hε : 0 < ε) (hB₀ : P {ω | ε / 2 ≤ B₀ ω} < ENNReal.ofReal ε) :
     ∀ᶠ n in atTop, P {ω | ε ≤ |E n ω|} ≤ ENNReal.ofReal ε := by
-  have hg : 0 < ENNReal.ofReal ε - P {ω | ε / 2 ≤ B₀ ω} := tsub_pos_of_lt hB₀
+  have hg := tsub_pos_of_lt hB₀
   have hBc := ENNReal.tendsto_nhds_zero.1 ((tendstoInMeasure_iff_norm.1 hB) (ε / 2) (half_pos hε))
     _ hg
   filter_upwards [hBc] with n hn
-  have hsub : {ω | ε ≤ |E n ω|} ≤ᵐ[P]
-      ({ω | ε / 2 ≤ B₀ ω} ∪ {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖} : Set Ω) := by
-    filter_upwards [hEB n] with ω hω hεω
-    by_contra hcon
-    simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le, Real.norm_eq_abs] at hcon
-    obtain ⟨h1, h2⟩ := hcon
-    have h3 : B n ω - B₀ ω ≤ |B n ω - B₀ ω| := le_abs_self _
-    linarith
-  calc P {ω | ε ≤ |E n ω|}
-      ≤ P ({ω | ε / 2 ≤ B₀ ω} ∪ {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖}) := measure_mono_ae hsub
+  calc _
+      ≤ P ({ω | ε / 2 ≤ B₀ ω} ∪ {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖}) := measure_mono_ae (by
+        filter_upwards [hEB n] with ω hω hεω
+        by_contra hcon
+        simp only [Set.mem_union, Set.mem_ofPred_eq, not_or, not_le, Real.norm_eq_abs] at hcon
+        obtain ⟨h1, h2⟩ := hcon
+        have h3 : B n ω - B₀ ω ≤ |B n ω - B₀ ω| := le_abs_self _
+        linarith)
     _ ≤ P {ω | ε / 2 ≤ B₀ ω} + P {ω | ε / 2 ≤ ‖B n ω - B₀ ω‖} := measure_union_le _ _
     _ ≤ P {ω | ε / 2 ≤ B₀ ω} + (ENNReal.ofReal ε - P {ω | ε / 2 ≤ B₀ ω}) := by gcongr
     _ = ENNReal.ofReal ε := add_tsub_cancel_of_le hB₀.le

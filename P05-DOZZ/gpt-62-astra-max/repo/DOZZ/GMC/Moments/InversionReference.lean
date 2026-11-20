@@ -28,7 +28,6 @@ noncomputable def euclideanInv : ℂ → ℂ := EuclideanGeometry.inversion 0 1
 theorem euclideanInv_eq_star_inv (z : ℂ) : euclideanInv z = star (z⁻¹) := by
   by_cases hz : z = 0
   · simp [euclideanInv, hz, EuclideanGeometry.inversion]
-  have hn : ‖z‖ ≠ 0 := (norm_pos_iff.mpr hz).ne'
   rw [euclideanInv, EuclideanGeometry.inversion, dist_eq_norm]
   simp only [sub_zero, vadd_eq_add, add_zero]
   rw [Complex.inv_def, Complex.normSq_eq_norm_sq]
@@ -47,7 +46,7 @@ theorem euclideanInv_involutive : Function.Involutive euclideanInv := by
 
 theorem euclideanInv_abs_det (x : ℂ) (hx : x ≠ 0) :
     |(fderiv ℝ euclideanInv x).det| = ‖x‖ ^ (-4 : ℝ) := by
-  let K : Submodule ℝ ℂ := ℝ ∙ x
+  let K := ℝ ∙ x
   let R : ℂ →L[ℝ] ℂ := Kᗮ.reflection
   have hdim : Module.finrank ℝ Kᗮ = 1 := by
     dsimp [K]
@@ -72,13 +71,12 @@ theorem euclideanInv_abs_det (x : ℂ) (hx : x ≠ 0) :
   rw [LinearMap.det_smul]
   have hdetR' : LinearMap.det R.toLinearMap = -1 := hdetR
   rw [hdetR', Complex.finrank_real_complex]
-  have hnorm : 0 < ‖x‖ := norm_pos_iff.mpr hx
   rw [abs_mul, abs_neg, abs_one, mul_one, abs_of_nonneg (by positivity)]
   calc
-    ((‖x‖⁻¹) ^ 2) ^ 2 = (‖x‖⁻¹) ^ 4 := by rw [← pow_mul]
+    _ = (‖x‖⁻¹) ^ 4 := by rw [← pow_mul]
     _ = (‖x‖ ^ 4)⁻¹ := by simp
-    _ = ‖x‖ ^ (-4 : ℝ) := by
-      rw [Real.rpow_neg hnorm.le]
+    _ = _ := by
+      rw [Real.rpow_neg (norm_pos_iff.mpr hx).le]
       norm_num [Real.rpow_natCast]
 
 noncomputable def refWeight (x : ℂ) : ℝ≥0∞ :=
@@ -86,8 +84,7 @@ noncomputable def refWeight (x : ℂ) : ℝ≥0∞ :=
 
 theorem normPlus_euclideanInv (x : ℂ) : normPlus (euclideanInv x) = normPlus x⁻¹ := by
   have hnorm : ‖euclideanInv x‖ = ‖x‖⁻¹ := by
-    have h := EuclideanGeometry.dist_inversion_center (0 : ℂ) x (1 : ℝ)
-    simpa [euclideanInv, dist_eq_norm, norm_inv] using h
+    simpa [euclideanInv, dist_eq_norm, norm_inv] using (EuclideanGeometry.dist_inversion_center (0 : ℂ) x (1 : ℝ))
   have hcomplex : ‖euclideanInv x‖ = ‖x⁻¹‖ := by
     simpa [norm_inv, one_div] using hnorm
   unfold normPlus
@@ -98,7 +95,7 @@ theorem refWeight_jac (x : ℂ) (hx : x ≠ 0) :
       refWeight x := by
   rw [euclideanInv_abs_det x hx, refWeight, refWeight]
   rw [normPlus_euclideanInv x]
-  rw [← ENNReal.ofReal_mul (by positivity : 0 ≤ ‖x‖ ^ (-4 : ℝ))]
+  rw [← ENNReal.ofReal_mul (by positivity)]
   rw [mul_comm, normPlus_inv_mul_jacobian hx]
 
 theorem refWeight_measurable : Measurable refWeight := by
@@ -219,16 +216,11 @@ theorem gmcReferenceMeasure_map_conj :
   change (volume.withDensity refWeight) (star ⁻¹' A) =
     (volume.withDensity refWeight) A
   rw [withDensity_apply _ (hA.preimage hstar.measurable), withDensity_apply _ hA]
-  have hrestrict : MeasurePreserving star
-      (volume.restrict (star ⁻¹' A)) (volume.restrict A) :=
-    hstar.restrict_preimage hA
   calc
-    ∫⁻ x in star ⁻¹' A, refWeight x ∂volume =
+    _ =
         ∫⁻ x, refWeight (star x) ∂volume.restrict (star ⁻¹' A) := by
-          apply setLIntegral_congr_fun (hA.preimage hstar.measurable)
-          intro x hx
           simp [refWeight, normPlus]
-    _ = ∫⁻ x in A, refWeight x ∂volume := hrestrict.lintegral_comp refWeight_measurable
+    _ = _ := (hstar.restrict_preimage hA).lintegral_comp refWeight_measurable
 
 theorem gmcReferenceMeasure_map_complexInv :
     gmcReferenceMeasure.map (fun x : ℂ => x⁻¹) = gmcReferenceMeasure := by

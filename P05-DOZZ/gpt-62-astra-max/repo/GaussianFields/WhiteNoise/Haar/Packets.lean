@@ -483,19 +483,15 @@ theorem inner_haarWaveletPacketLp_finer_nat_succ_symm {d : Nat}
 
 theorem exists_nat_succ_scale_gap {j₁ j₂ : ℤ} (h : j₁ < j₂) :
     ∃ n : ℕ, j₂ = j₁ + ((n + 1 : ℕ) : ℤ) := by
-  let m : ℕ := (j₂ - j₁).toNat
+  let m := (j₂ - j₁).toNat
   have hm_cast : (m : ℤ) = j₂ - j₁ := by
     exact Int.toNat_sub_of_le (show j₁ ≤ j₂ from le_of_lt h)
   have hm_pos : 0 < m := by
-    have hdiff_pos : 0 < j₂ - j₁ := sub_pos.mpr h
     have hdiff_cast_pos : 0 < (m : ℤ) := by
-      simpa [hm_cast] using hdiff_pos
+      simpa [hm_cast] using (sub_pos.mpr h)
     exact_mod_cast hdiff_cast_pos
   obtain ⟨n, hn⟩ := Nat.exists_eq_succ_of_ne_zero (ne_of_gt hm_pos)
   refine ⟨n, ?_⟩
-  have hm_eq : m = n + 1 := by omega
-  have hgap : (j₂ - j₁ : ℤ) = ((n + 1 : ℕ) : ℤ) := by
-    rw [← hm_cast, hm_eq]
   omega
 
 theorem inner_haarWaveletPacketLp_of_scale_lt {d : Nat}
@@ -514,15 +510,8 @@ theorem inner_haarWaveletPacketLp (d : Nat) (idx₁ idx₂ : HaarWaveletIndex d)
     ⟪haarWaveletPacketLp idx₁, haarWaveletPacketLp idx₂⟫_ℝ =
       if idx₁ = idx₂ then 1 else 0 := by
   by_cases hscale_eq : idx₁.scale = idx₂.scale
-  · rw [inner_haarWaveletPacketLp_same_scale idx₁ idx₂ hscale_eq]
-  · have hlt_or_gt : idx₁.scale < idx₂.scale ∨ idx₂.scale < idx₁.scale :=
-      lt_or_gt_of_ne hscale_eq
-    rw [ite_eq_right]
-    · rcases hlt_or_gt with hlt | hgt
-      · exact inner_haarWaveletPacketLp_of_scale_lt idx₁ idx₂ hlt
-      · exact inner_haarWaveletPacketLp_of_scale_gt idx₁ idx₂ hgt
-    · intro hidx
-      exact hscale_eq (by rw [hidx])
+  · simp_all [inner_haarWaveletPacketLp_same_scale]
+  grind [inner_haarWaveletPacketLp_of_scale_lt, inner_haarWaveletPacketLp_of_scale_gt]
 
 end GaussianFields
 

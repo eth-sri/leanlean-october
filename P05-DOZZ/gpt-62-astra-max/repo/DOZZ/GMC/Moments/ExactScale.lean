@@ -24,8 +24,7 @@ theorem gaussian_exponential_moment_of_hasLaw
     {v : ℝ≥0} (hW : HasLaw W (gaussianReal 0 v) P) (t : ℝ) :
     (∫ ω, Real.exp (t * W ω) ∂P) =
       Real.exp ((v : ℝ) * t ^ 2 / 2) := by
-  have h := mgf_gaussianReal hW t
-  simpa only [mgf, NNReal.coe_zero, zero_mul, zero_add] using h
+  simpa only [mgf, NNReal.coe_zero, zero_mul, zero_add] using (mgf_gaussianReal hW t)
 
 
 end DOZZ.Proofs

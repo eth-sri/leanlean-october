@@ -30,34 +30,22 @@ theorem realGaussCramer_reconstruct
     dsimp [A, B, W, gaussCramerNumerator₁, gaussCramerNumerator₂,
       gaussCramerWronskian]
     ring
+  let F := wirtingerZ (fun w => (T w : ℂ)) z
   have hB : A * deriv f z + B * deriv g z =
-      wirtingerZ (fun w => (T w : ℂ)) z * W := by
+      F * W := by
     dsimp [A, B, W, gaussCramerNumerator₁, gaussCramerNumerator₂,
       gaussCramerWronskian]
     ring
-  have hW' : W ≠ 0 := hW
   constructor
-  · change (T z : ℂ) = (A * W⁻¹) * f z + (B * W⁻¹) * g z
-    calc
-      (T z : ℂ) = ((T z : ℂ) * W) * W⁻¹ := by
-        calc
-          (T z : ℂ) = (T z : ℂ) * (W * W⁻¹) := by
-            rw [mul_inv_cancel₀ hW']
-            simp
-          _ = ((T z : ℂ) * W) * W⁻¹ := by ring
+  · calc
+      _ = ((T z : ℂ) * W) * W⁻¹ := by
+        grind
       _ = (A * f z + B * g z) * W⁻¹ := by rw [hA]
       _ = (A * W⁻¹) * f z + (B * W⁻¹) * g z := by ring
-  · change wirtingerZ (fun w => (T w : ℂ)) z =
-      (A * W⁻¹) * deriv f z + (B * W⁻¹) * deriv g z
-    calc
-      wirtingerZ (fun w => (T w : ℂ)) z =
-          (wirtingerZ (fun w => (T w : ℂ)) z * W) * W⁻¹ := by
-        calc
-          wirtingerZ (fun w => (T w : ℂ)) z =
-              wirtingerZ (fun w => (T w : ℂ)) z * (W * W⁻¹) := by
-            rw [mul_inv_cancel₀ hW']
-            simp
-          _ = (wirtingerZ (fun w => (T w : ℂ)) z * W) * W⁻¹ := by ring
+  · calc
+      F =
+          (F * W) * W⁻¹ := by
+        grind
       _ = (A * deriv f z + B * deriv g z) * W⁻¹ := by rw [hB]
       _ = (A * W⁻¹) * deriv f z + (B * W⁻¹) * deriv g z := by ring
 

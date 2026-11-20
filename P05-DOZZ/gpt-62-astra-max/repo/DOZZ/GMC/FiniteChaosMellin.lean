@@ -22,11 +22,10 @@ theorem ofReal_rpow_neg_eq_mellin_lintegral
     ENNReal.ofReal (m ^ (-q)) = ENNReal.ofReal (1 / Real.Gamma q) *
       ∫⁻ t in Ioi (0 : ℝ),
         ENNReal.ofReal (t ^ (q - 1) * Real.exp (-(m * t))) ∂volume := by
-  let F : ℝ → ℝ := fun t => Real.exp (-t) * t ^ (q - 1)
-  let G : ℝ → ℝ := fun t => t ^ (q - 1) * Real.exp (-(m * t))
-  have hbase : IntegrableOn F (Ioi (0 : ℝ)) volume := Real.GammaIntegral_convergent hq
-  have hscaled : IntegrableOn (fun t => F (m * t)) (Ioi (0 : ℝ)) volume := by
-    exact (integrableOn_Ioi_comp_mul_left_iff F 0 hm).2 (by simpa using hbase)
+  let F := fun t => Real.exp (-t) * t ^ (q - 1)
+  let G := fun t => t ^ (q - 1) * Real.exp (-(m * t))
+  have hbase := Real.GammaIntegral_convergent hq
+  have hscaled := (integrableOn_Ioi_comp_mul_left_iff F 0 hm).2 (by simpa using hbase)
   have hEq (t : ℝ) (ht : t ∈ Ioi (0 : ℝ)) :
       F (m * t) = m ^ (q - 1) * G t := by
     have ht0 : 0 < t := ht
@@ -57,9 +56,8 @@ theorem ofReal_rpow_neg_eq_mellin_lintegral
       Real.log_inv]
     congr 1
     ring
-  have hgamma : 0 < Real.Gamma q := Real.Gamma_pos_of_pos hq
   calc
-    ENNReal.ofReal (m ^ (-q)) =
+    _ =
         ENNReal.ofReal ((1 / Real.Gamma q) * ((1 / m) ^ q * Real.Gamma q)) := by
           congr 1
           rw [hpow]
@@ -67,8 +65,7 @@ theorem ofReal_rpow_neg_eq_mellin_lintegral
     _ = ENNReal.ofReal (1 / Real.Gamma q) *
         ENNReal.ofReal ((1 / m) ^ q * Real.Gamma q) := by
           rw [ENNReal.ofReal_mul (by positivity)]
-    _ = ENNReal.ofReal (1 / Real.Gamma q) *
-        ∫⁻ t in Ioi (0 : ℝ), ENNReal.ofReal (G t) ∂volume := by rw [← hlin]
+    _ = _ := by rw [← hlin]
 
 
 end DOZZ.Proofs

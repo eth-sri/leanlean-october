@@ -78,18 +78,9 @@ theorem continuous_path_solution_lifts_unique
     (hGchart : ∀ t ∈ Icc (0 : ℝ) 1, Nonempty (PathSolutionChart γ H G t))
     (hstart : F 0 = G 0) : ∀ t ∈ Icc (0 : ℝ) 1, F t = G t := by
   let I : Type := Icc (0 : ℝ) 1
-  let u : I → E := fun t => F t
-  let v : I → E := fun t => G t
-  have hu : Continuous u := by
-    change Continuous (fun t : I => F t.1)
-    exact hFcont.domRestrict
-  have hv : Continuous v := by
-    change Continuous (fun t : I => G t.1)
-    exact hGcont.domRestrict
-  let S : Set I := {t | u t = v t}
-  have hclosed : IsClosed S := by
-    change IsClosed {t : I | u t = v t}
-    exact isClosed_eq hu hv
+  have hu  := hFcont.domRestrict
+  have hv  := hGcont.domRestrict
+  let S : Set I := {t | (fun t => F t) t = (fun t => G t) t}
   have hopen : IsOpen S := by
     apply Metric.isOpen_iff.mpr
     intro t ht
@@ -98,34 +89,21 @@ theorem continuous_path_solution_lifts_unique
     obtain ⟨δA, hδA, hAagree⟩ := A.local_agrees
     obtain ⟨δB, hδB, hBagree⟩ := B.local_agrees
     let ρ := min A.radius B.radius
-    have hρ : 0 < ρ := lt_min A.radius_pos B.radius_pos
+    have hρ  := lt_min A.radius_pos B.radius_pos
     have hAat : A.solution (γ t) = F t := by
       symm
       exact hAagree t t.2 (by simpa using hδA)
     have hBat : B.solution (γ t) = G t := by
       symm
       exact hBagree t t.2 (by simpa using hδB)
-    have htval : F t = G t := by
-      change u t = v t at ht
-      exact ht
-    have hsameAt : A.solution (γ t) = B.solution (γ t) := by
-      calc
-        A.solution (γ t) = F t := hAat
-        _ = G t := htval
-        _ = B.solution (γ t) := hBat.symm
+    have htval  := ht
     obtain ⟨δγ, hδγ, hγclose⟩ :=
       (Metric.continuousWithinAt_iff.mp (hγ.continuousWithinAt t.2)) ρ hρ
-    let δ := min δγ (min δA δB)
-    refine ⟨δ, lt_min hδγ (lt_min hδA hδB), ?_⟩
+    refine ⟨(min δγ (min δA δB)), lt_min hδγ (lt_min hδA hδB), ?_⟩
     intro s hs
-    have hst : dist (s : ℝ) t < δ := Metric.mem_ball.mp hs
+    have hst  := Metric.mem_ball.mp hs
     have hstγ : dist (γ s) (γ t) < ρ := hγclose s.2
       (lt_of_lt_of_le hst (min_le_left _ _))
-    have hAagreeS : F s = A.solution (γ s) :=
-      hAagree s s.2 (lt_of_lt_of_le hst (le_trans (min_le_right _ _) (min_le_left _ _)))
-    have hBagreeS : G s = B.solution (γ s) :=
-      hBagree s s.2 (lt_of_lt_of_le hst
-        (le_trans (min_le_right _ _) (min_le_right _ _)))
     have hAderiv : ∀ z ∈ Metric.ball (γ t) ρ,
         HasDerivAt A.solution (H z (A.solution z)) z := by
       intro z hz
@@ -141,25 +119,23 @@ theorem continuous_path_solution_lifts_unique
     have hlocalEq := holomorphic_linear_system_solution_unique_of_eq_at
       (γ t) ρ (max A.bound B.bound) H (le_trans A.bound_nonneg (le_max_left _ _))
       hbound hAderiv hBderiv (Metric.mem_ball_self hρ)
-      (Metric.mem_ball.mpr hstγ) hsameAt
-    change F s = G s
+      (Metric.mem_ball.mpr hstγ) (by
+        calc
+          A.solution (γ t) = F t := hAat
+          _ = G t := htval
+          _ = B.solution (γ t) := hBat.symm)
     calc
-      F s = A.solution (γ s) := hAagreeS
+      F s = A.solution (γ s) := (hAagree s s.2 (lt_of_lt_of_le hst (le_trans (min_le_right _ _) (min_le_left _ _))))
       _ = B.solution (γ s) := hlocalEq
-      _ = G s := hBagreeS.symm
-  have hconn : ConnectedSpace I :=
-    Subtype.connectedSpace ⟨⟨0, by simp⟩, isPreconnected_Icc⟩
+      _ = G s := (hBagree s s.2 (lt_of_lt_of_le hst
+          (le_trans (min_le_right _ _) (min_le_right _ _)))).symm
   have hnonempty : S.Nonempty := by
     refine ⟨⟨0, by simp⟩, ?_⟩
     change F 0 = G 0
     exact hstart
   have huniv : S = Set.univ := by
-    rcases (@isClopen_iff I _ hconn.toPreconnectedSpace S).mp ⟨hclosed, hopen⟩ with hempty | huniv
-    · have hfalse : False := by
-        rcases hnonempty with ⟨t, ht⟩
-        rw [hempty] at ht
-        simp at ht
-      exact hfalse.elim
+    rcases (@isClopen_iff I _ (Subtype.connectedSpace ⟨⟨0, by simp⟩, isPreconnected_Icc⟩).toPreconnectedSpace S).mp ⟨(isClosed_eq hu hv), hopen⟩ with hempty | huniv
+    · simp_all
     · exact huniv
   intro t ht
   have hmem : (⟨t, ht⟩ : I) ∈ S := by rw [huniv]; trivial

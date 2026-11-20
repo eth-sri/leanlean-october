@@ -37,13 +37,13 @@ private lemma closedEmbedding_affine_nat {c d : ℂ} (hc : c ≠ 0) :
     ‖c‖ = ‖c‖ * 1 := by ring
     _ ≤ ‖c‖ * |(m : ℝ) - n| := mul_le_mul_of_nonneg_left hnat' (norm_nonneg _)
     _ = ‖c * ((m : ℂ) - n)‖ := by rw [norm_mul, hnorm]
-    _ = ‖c * (m : ℂ) + d - (c * n + d)‖ := by congr 1; ring
+    _ = ‖c * (m : ℂ) + d - (c * n + d)‖ := by ring
 
 /- An affine function with nonzero slope avoids all nonpositive integer poles
 outside a codiscrete set. -/
 theorem eventually_affine_ne_neg_nat {c d : ℂ} (hc : c ≠ 0) :
     ∀ᶠ α : ℂ in codiscrete ℂ, ∀ n : ℕ, c * α + d ≠ -(n : ℂ) := by
-  let f : ℕ → ℂ := fun n => -(c⁻¹) * (n : ℂ) - d / c
+  let f : ℕ → ℂ := fun n => -(c⁻¹) * n - d / c
   have hf : IsClosedEmbedding f := by
     simpa [f, sub_eq_add_neg, neg_div] using
       closedEmbedding_affine_nat (c := -(c⁻¹)) (d := -d / c)
@@ -52,59 +52,41 @@ theorem eventually_affine_ne_neg_nat {c d : ℂ} (hc : c ≠ 0) :
     apply compl_mem_codiscrete_iff.mpr
     exact ⟨hf.isClosed_range, hf.isEmbedding.isInducing.isDiscrete_range⟩
   filter_upwards [hbad] with α hα n
-  intro heq
-  apply hα
-  refine ⟨n, ?_⟩
-  have hsolve : α = f n := by
-    calc
-      α = (-(n : ℂ) - d) / c := by
-        apply (eq_div_iff hc).2
-        calc
-          α * c = c * α := mul_comm _ _
-          _ = -(n : ℂ) - d := by linear_combination heq
-      _ = f n := by
-        dsimp [f]
-        field_simp [hc]
-  exact hsolve.symm
+  grind
 
 /-- `lFun` is finite and nonzero on an affine argument off a codiscrete set. -/
 theorem eventually_affine_lFun_ne_zero {c d : ℂ} (hc : c ≠ 0) :
     ∀ᶠ α : ℂ in codiscrete ℂ, lFun (c * α + d) ≠ 0 := by
-  have hnum := eventually_affine_ne_neg_nat (c := c) (d := d) hc
-  have hden := eventually_affine_ne_neg_nat (c := -c) (d := 1 - d)
+  have hnum := eventually_affine_ne_neg_nat (d := d) hc
+  have hden := eventually_affine_ne_neg_nat (d := 1 - d)
     (neg_ne_zero.mpr hc)
   filter_upwards [hnum, hden] with α hnum hden
-  have hden' : ∀ n : ℕ, 1 - (c * α + d) ≠ -(n : ℂ) := by
-    intro n hn
-    apply hden n
-    convert hn using 1
-    ring
-  unfold lFun
-  exact div_ne_zero (Complex.Gamma_ne_zero hnum) (Complex.Gamma_ne_zero hden')
+  refine div_ne_zero (Complex.Gamma_ne_zero hnum) (Complex.Gamma_ne_zero ?_)
+  intro n hn
+  apply hden n
+  convert hn using 1
+  ring
 
 /- Every affine pullback of a nontrivial entire Upsilon is nonzero off a
 codiscrete set. -/
 theorem eventually_upsilon_affine_ne_zero {γ : ℝ} {U : ℂ → ℂ}
     (hγ : 0 < γ) (hU : IsUpsilon γ U) {c d : ℂ} (hc : c ≠ 0) :
     ∀ᶠ α : ℂ in codiscrete ℂ, U (c * α + d) ≠ 0 := by
-  let f : ℂ → ℂ := fun α => U (c * α + d)
+  let f := fun α => U (c * α + d)
   have hf : AnalyticOnNhd ℂ f Set.univ := by
     intro α hα
     change AnalyticAt ℂ (fun x : ℂ => U (c * x + d)) α
     exact AnalyticAt.comp (f := fun x : ℂ => c * x + d) (g := U) (x := α)
       (hU.1.analyticAt (c * α + d)) (by fun_prop)
-  let α₀ : ℂ := ((Q γ : ℂ) / 2 - d) / c
+  let α₀ := ((Q γ : ℂ) / 2 - d) / c
   have harg : c * α₀ + d = (Q γ : ℂ) / 2 := by
     dsimp [α₀]
-    field_simp [hc]
+    field_simp 
     ring
-  have hcenter := IsUpsilon.center hγ hU
   have hf₀ : f α₀ ≠ 0 := by
-    rw [show f α₀ = U (c * α₀ + d) by rfl, harg, hcenter]
+    rw [show f α₀ = U (c * α₀ + d) by rfl, harg, (IsUpsilon.center hγ hU)]
     norm_num
-  have hcodiscrete := hf.preimage_zero_mem_codiscrete hf₀
-  filter_upwards [hcodiscrete] with α hα
-  exact hα
+  exact AnalyticOnNhd.preimage_zero_mem_codiscrete hf hf₀
 
 /-- The special value `l(γ²/4)` is the corresponding real Gamma ratio. -/
 theorem lFun_gammaSq_real (γ : ℝ) :
@@ -125,12 +107,9 @@ theorem lFun_gammaSq_real (γ : ℝ) :
 /-- The DOZZ base `dozzBase γ μ` is positive on the physical parameter range. -/
 theorem dozzBase_pos {γ μ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2) (hμ : 0 < μ) :
     0 < dozzBase γ μ := by
-  have hq : 0 < γ ^ 2 / 4 := by positivity
   have hq1 : 0 < 1 - γ ^ 2 / 4 := by nlinarith
   rw [dozzBase, lFun_gammaSq_real]
-  simp only [Complex.ofReal_re]
-  exact mul_pos (mul_pos Real.pi_pos hμ)
-    (div_pos (Real.Gamma_pos_of_pos hq) (Real.Gamma_pos_of_pos hq1))
+  simp only [Complex.ofReal_re] <;> positivity
 
 /-- The reflected `lFun` factors multiply to the reciprocal square. -/
 theorem lFun_mul_neg {q : ℂ} (hq : q ≠ 0)
@@ -141,9 +120,7 @@ theorem lFun_mul_neg {q : ℂ} (hq : q ≠ 0)
       Complex.Gamma_add_one (-q) (neg_ne_zero.mpr hq)
   have hrec₂ : Complex.Gamma (1 + q) = q * Complex.Gamma q := by
     simpa [add_comm] using Complex.Gamma_add_one q hq
-  unfold lFun
-  rw [hrec₁, show 1 - -q = 1 + q by ring, hrec₂]
-  field_simp [hq, hΓq, hΓnegq]
+  unfold lFun <;> grind
 
 end DOZZ.Proofs
 

@@ -23,7 +23,7 @@ noncomputable def parameterGrid (k : ℕ) (t : ℝ) : ℝ :=
 theorem parameter_grid_error (k : ℕ) (t : ℝ) :
     |t - parameterGrid k t| ≤ 1 / ((k : ℝ) + 1) := by
   have hd : 0 < (k : ℝ) + 1 := by positivity
-  have hlo := Int.floor_le (((k : ℝ) + 1) * t)
+  have hlo := Int.floor_le ((k + 1) * t)
   have hhi := Int.lt_floor_add_one (((k : ℝ) + 1) * t)
   have hle : parameterGrid k t ≤ t := by
     dsimp [parameterGrid]

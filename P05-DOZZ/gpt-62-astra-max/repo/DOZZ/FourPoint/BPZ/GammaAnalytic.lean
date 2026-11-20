@@ -30,10 +30,8 @@ namespace DOZZ.Proofs
 /-- The complex Gamma function is analytic away from the poles `-m`, `m : ℕ`. -/
 theorem bpz_analyticAt_complex_Gamma {s : ℂ} (hs : ∀ m : ℕ, s ≠ -(m : ℂ)) :
     AnalyticAt ℂ Complex.Gamma s := by
-  have h1 : AnalyticAt ℂ (fun z : ℂ => (Complex.Gamma z)⁻¹) s :=
-    Complex.differentiable_one_div_Gamma.analyticAt s
-  have h2 : (Complex.Gamma s)⁻¹ ≠ 0 := inv_ne_zero (Complex.Gamma_ne_zero hs)
-  simpa only [inv_inv] using h1.fun_inv h2
+  have h1 := Complex.differentiable_one_div_Gamma.analyticAt s
+  simpa only [inv_inv] using h1.fun_inv (inv_ne_zero (Complex.Gamma_ne_zero hs))
 
 /-- The real Gamma function is real analytic away from the poles `-m`, `m : ℕ`. -/
 theorem bpz_analyticAt_real_Gamma {x : ℝ} (hx : ∀ m : ℕ, x ≠ -(m : ℝ)) :
@@ -41,13 +39,7 @@ theorem bpz_analyticAt_real_Gamma {x : ℝ} (hx : ∀ m : ℕ, x ≠ -(m : ℝ))
   have hc : ∀ m : ℕ, (x : ℂ) ≠ -(m : ℂ) := fun m h => hx m (by exact_mod_cast h)
   have h1 : AnalyticAt ℝ Complex.Gamma (Complex.ofRealCLM x) :=
     (bpz_analyticAt_complex_Gamma hc).restrictScalars
-  have h2 : AnalyticAt ℝ (fun y : ℝ => (Complex.Gamma (y : ℂ)).re) x :=
-    (Complex.reCLM.analyticAt _).comp (h1.comp (Complex.ofRealCLM.analyticAt x))
-  have e : Real.Gamma = fun y : ℝ => (Complex.Gamma (y : ℂ)).re := by
-    funext y
-    simp only [Complex.Gamma_ofReal, Complex.ofReal_re]
-  rw [e]
-  exact h2
+  exact (Complex.reCLM.analyticAt _).comp (h1.comp (Complex.ofRealCLM.analyticAt x))
 
 /-- `Real.Gamma ∘ f` is real analytic at a point where `f` is analytic with positive value. -/
 theorem bpzGA_analyticAt_real_Gamma_comp {f : ℝ → ℝ} {x₀ : ℝ} (hf : AnalyticAt ℝ f x₀)
@@ -124,18 +116,8 @@ theorem bpz_analyticAt_re_planarGaussConstant {k β : ℝ → ℝ} {x₀ : ℝ}
     (h1 : ∀ n : ℤ, β x₀ / 2 ≠ n) (h2 : ∀ n : ℤ, -k x₀ / 2 ≠ n)
     (h3 : ∀ n : ℤ, 2 - β x₀ / 2 + k x₀ / 2 ≠ n) :
     AnalyticAt ℝ (fun x => (planarGaussConstant (k x) (β x)).re) x₀ := by
-  have a1 : AnalyticAt ℝ (fun x => lFun ((β x / 2 : ℝ) : ℂ)) x₀ :=
-    bpzGA_analyticAt_lFun (by fun_prop (disch := norm_num)) h1
-  have a2 : AnalyticAt ℝ (fun x => lFun ((-k x / 2 : ℝ) : ℂ)) x₀ :=
-    bpzGA_analyticAt_lFun (by fun_prop (disch := norm_num)) h2
-  have a3 : AnalyticAt ℝ (fun x => lFun ((2 - β x / 2 + k x / 2 : ℝ) : ℂ)) x₀ :=
-    bpzGA_analyticAt_lFun (by fun_prop (disch := norm_num)) h3
-  have hne : lFun ((β x₀ / 2 : ℝ) : ℂ) * lFun ((-k x₀ / 2 : ℝ) : ℂ) *
-      lFun ((2 - β x₀ / 2 + k x₀ / 2 : ℝ) : ℂ) ≠ 0 :=
-    mul_ne_zero (mul_ne_zero (bpzGA_lFun_ne_zero h1) (bpzGA_lFun_ne_zero h2))
-      (bpzGA_lFun_ne_zero h3)
-  have hP : AnalyticAt ℝ (fun x => planarGaussConstant (k x) (β x)) x₀ :=
-    analyticAt_const.fun_div ((a1.fun_mul a2).fun_mul a3) hne
-  exact (Complex.reCLM.analyticAt _).comp hP
+  exact AnalyticAt.comp (ContinuousLinearMap.analyticAt Complex.reCLM (planarGaussConstant (k x₀) (β x₀)))
+    (AnalyticAt.fun_div analyticAt_const (AnalyticAt.fun_mul (AnalyticAt.fun_mul (bpzGA_analyticAt_lFun (by exact AnalyticAt.div_const hβ) h1) (bpzGA_analyticAt_lFun (by fun_prop (disch := norm_num)) h2)) (bpzGA_analyticAt_lFun (by fun_prop (disch := norm_num)) h3))
+      (mul_ne_zero (mul_ne_zero (bpzGA_lFun_ne_zero h1) (bpzGA_lFun_ne_zero h2)) (bpzGA_lFun_ne_zero h3)))
 
 end DOZZ.Proofs

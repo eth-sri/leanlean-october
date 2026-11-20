@@ -136,32 +136,23 @@ noncomputable def openBallAffineApprox (a : ℂ) (c R : ℝ) (n : ℕ) :
 theorem openBallAffineApprox_tsupport_subset {a : ℂ} {c R : ℝ} (hc : 0 < c)
     (n : ℕ) :
     tsupport (openBallAffineApprox a c R n : ℂ → ℝ) ⊆ Metric.closedBall a (c * R) := by
-  have hsupp : Function.support (openBallAffineApprox a c R n : ℂ → ℝ) ⊆
-      Metric.closedBall a (c * R) := by
-    intro y hy
-    by_contra hball
-    have hy' : c * R < dist y a := lt_of_not_ge hball
-    have hnorm : R < ‖y - a‖ / c := by
-      rw [lt_div_iff₀ hc]
-      simpa [dist_eq_norm, mul_comm] using hy'
-    have hlarge : R < |c|⁻¹ * ‖y - a‖ := by
-      simpa [abs_of_pos hc, div_eq_mul_inv, mul_comm] using hnorm
-    have hlarge' : R < c⁻¹ * ‖y - a‖ := by simpa [abs_of_pos hc] using hlarge
-    have harg' : (n : ℝ) * (R - c⁻¹ * ‖y - a‖) ≤ 0 :=
-      mul_nonpos_of_nonneg_of_nonpos (Nat.cast_nonneg n)
-        (sub_nonpos.mpr hlarge'.le)
-    have hmin' : min 1 ((n : ℝ) * (R - c⁻¹ * ‖y - a‖)) ≤ 0 :=
-      (min_le_right _ _).trans harg'
-    have hzero : (openBallAffineApprox a c R n : ℂ → ℝ) y = 0 := by
-      change (openBallApprox 0 R n : ℂ → ℝ) ((c : ℂ)⁻¹ • (y - a)) = 0
-      have hbase : openBallApproxFun 0 R n ((c : ℂ)⁻¹ • (y - a)) = 0 := by
-        simp [openBallApproxFun, abs_of_pos hc, max_eq_left hmin']
-      simpa [openBallApprox] using hbase
-    change (openBallAffineApprox a c R n : ℂ → ℝ) y ≠ 0 at hy
-    exact hy hzero
-  change closure (Function.support (openBallAffineApprox a c R n : ℂ → ℝ)) ⊆
-    Metric.closedBall a (c * R)
-  exact closure_minimal hsupp Metric.isClosed_closedBall
+  refine closure_minimal ?_ Metric.isClosed_closedBall
+  intro y hy
+  by_contra hball
+  have hy' : c * R < dist y a := lt_of_not_ge hball
+  have hnorm : R < ‖y - a‖ / c := by
+    rw [lt_div_iff₀ hc]
+    simpa [dist_eq_norm, mul_comm] using hy'
+  have hlarge : R < |c|⁻¹ * ‖y - a‖ := by
+    simpa [abs_of_pos hc, div_eq_mul_inv, mul_comm] using hnorm
+  have hlarge' : R < c⁻¹ * ‖y - a‖ := by simpa [abs_of_pos hc] using hlarge
+  have hmin' : min 1 ((n : ℝ) * (R - c⁻¹ * ‖y - a‖)) ≤ 0 :=
+    (min_le_right _ _).trans (mul_nonpos_of_nonneg_of_nonpos (Nat.cast_nonneg n)
+        (sub_nonpos.mpr hlarge'.le))
+  refine hy ?_
+  change (openBallApprox 0 R n : ℂ → ℝ) ((c : ℂ)⁻¹ • (y - a)) = 0
+  simpa [openBallApprox] using (by
+    simp [openBallApproxFun, abs_of_pos hc, max_eq_left hmin'])
 
 /-- Applying the affine map to the pulled-back cutoff recovers the source cutoff. -/
 theorem openBallAffineApprox_comp_affine (a : ℂ) (c R : ℝ) (hc : c ≠ 0)
@@ -182,8 +173,7 @@ theorem openBallAffineApprox_integral_tendsto {a : ℂ} {c R : ℝ} (hc : 0 < c)
     (μ : Measure ℂ) [IsFiniteMeasure μ] :
     Tendsto (fun n : ℕ => ∫ y, openBallAffineApprox a c R n y ∂μ) atTop
       (𝓝 (μ.real (Metric.ball a (c * R)))) := by
-  have hbound : Integrable (fun _ : ℂ => (1 : ℝ)) μ := integrable_const 1
-  have hdom : ∀ n, ∀ᵐ y ∂μ, ‖openBallAffineApprox a c R n y‖ ≤ (1 : ℝ) := by
+  have hdom : ∀ n, ∀ᵐ y ∂μ, ‖openBallAffineApprox a c R n y‖ ≤ 1 := by
     intro n
     have hEq : (openBallAffineApprox a c R n : ℂ → ℝ) =ᵐ[μ]
         fun y => openBallApprox 0 R n ((c : ℂ)⁻¹ • (y - a)) :=
@@ -226,8 +216,7 @@ theorem openBallAffineApprox_integral_tendsto {a : ℂ} {c R : ℝ} (hc : 0 < c)
   have hdomconv := tendsto_integral_of_dominated_convergence
     (fun _ : ℂ => (1 : ℝ))
     (fun n => (openBallAffineApprox a c R n).continuous.measurable.aestronglyMeasurable)
-    hbound hdom hlim
-  rw [← integral_indicator_one hs]
-  exact hdomconv
+    (integrable_const 1) hdom hlim
+  simp_all
 
 end DOZZ.Proofs

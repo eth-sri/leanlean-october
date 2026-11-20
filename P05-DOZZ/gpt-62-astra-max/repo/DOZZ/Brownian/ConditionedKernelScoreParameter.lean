@@ -163,24 +163,19 @@ theorem conditionedKernelScore_increment_bounds
   by_cases hEq : a = b
   · subst b
     simp
-  have hablt : a < b := lt_of_le_of_ne hab hEq
-  let f : ℝ → ℝ := fun x => conditionedKernelScore x y
-  let f' : ℝ → ℝ := fun x => conditionedKernelScoreParameterSlope x y
+  have hablt := lt_of_le_of_ne hab hEq
+  let f := fun x => conditionedKernelScore x y
   have hfc : ContinuousOn f (Set.Icc a b) := by
     intro x hx
-    have hxpos : 0 < x := lt_of_lt_of_le ha hx.1
+    have hxpos  := lt_of_lt_of_le ha hx.1
     have hsne : Real.sinh (x * y) ≠ 0 :=
       Real.sinh_ne_zero.mpr (mul_ne_zero hxpos.ne' hy.ne')
-    have hnum : ContinuousAt (fun z : ℝ => z * Real.cosh (z * y)) x := by fun_prop
+    have hnum : ContinuousAt (fun z => z * Real.cosh (z * y)) x := by fun_prop
     have hden : ContinuousAt (fun z : ℝ => Real.sinh (z * y)) x := by fun_prop
     have hcont := hnum.div hden hsne
     simpa [f, conditionedKernelScore, Pi.div_def] using hcont.continuousWithinAt
-  have hderiv : ∀ x ∈ Set.Ioo a b, HasDerivAt f (f' x) x := by
-    intro x hx
-    have hxpos : 0 < x := lt_trans ha hx.1
-    simpa [f, f'] using hasDerivAt_conditionedKernelScore_parameter hxpos hy
   obtain ⟨x, hx, hmean⟩ :=
-    exists_hasDerivAt_eq_slope f f' hablt hfc hderiv
+    exists_hasDerivAt_eq_slope f (fun x => conditionedKernelScoreParameterSlope x y) hablt hfc (fun x hx => id (hasDerivAt_conditionedKernelScore_parameter (lt_trans ha hx.left) hy))
   have hbounds := conditionedKernelScoreParameterSlope_bounds
     (lt_trans ha hx.1) hy
   have hquotLo : 0 ≤ (conditionedKernelScore b y - conditionedKernelScore a y) / (b - a) := by
@@ -189,12 +184,11 @@ theorem conditionedKernelScore_increment_bounds
   have hquotHi : (conditionedKernelScore b y - conditionedKernelScore a y) / (b - a) ≤ 1 := by
     rw [← hmean]
     exact hbounds.2
-  have hba : 0 < b - a := sub_pos.mpr hablt
+  have hba := sub_pos.mpr hablt
   have hdiffLo : 0 ≤ conditionedKernelScore b y - conditionedKernelScore a y := by
     rcases (div_nonneg_iff.mp hquotLo) with ⟨hn, _⟩ | ⟨_, hd⟩
     · exact hn
-    · have : 0 ≤ b - a := le_of_lt hba
-      linarith
+    · linarith
   have hdiffHi : conditionedKernelScore b y - conditionedKernelScore a y ≤ b - a :=
     by simpa only [one_mul] using (div_le_iff₀ hba).mp hquotHi
   exact ⟨hdiffLo, by simpa using hdiffHi⟩

@@ -95,13 +95,6 @@ noncomputable def haarBasisLp {d : Nat} :
   | HaarBasisIndex.father cell => haarFatherPacketLp cell
   | HaarBasisIndex.wavelet idx => haarWaveletPacketLp idx.1
 
-theorem inner_haarFatherPacketLp {d : Nat} (cell₁ cell₂ : Fin d → ℤ) :
-    ⟪haarFatherPacketLp cell₁, haarFatherPacketLp cell₂⟫_ℝ =
-      if cell₁ = cell₂ then 1 else 0 := by
-  have h := inner_haarPacketLp_same_scale
-    (haarFatherPacketIndex cell₁) (haarFatherPacketIndex cell₂) rfl
-  simpa [haarFatherPacketLp, haarFatherPacketIndex] using h
-
 theorem haarFatherPacketIndex_ne_wavelet_toHaarIndex {d : Nat}
     (cell : Fin d → ℤ) (idx : HaarWaveletIndex d) :
     haarFatherPacketIndex cell ≠ idx.toHaarIndex := by
@@ -146,30 +139,23 @@ theorem inner_haarBasisLp (d : Nat) (idx₁ idx₂ : HaarBasisIndex d) :
   | father cell₁ =>
       cases idx₂ with
       | father cell₂ =>
-          simpa [haarBasisLp] using inner_haarFatherPacketLp cell₁ cell₂
+          simpa [haarBasisLp] using (show ⟪haarFatherPacketLp cell₁, haarFatherPacketLp cell₂⟫_ℝ =
+                if cell₁ = cell₂ then 1 else 0 from by
+            simpa [haarFatherPacketLp, haarFatherPacketIndex] using (inner_haarPacketLp_same_scale
+              (haarFatherPacketIndex cell₁) (haarFatherPacketIndex cell₂) rfl))
       | wavelet idx₂ =>
           rw [ite_eq_right]
           · exact inner_haarFatherPacketLp_haarWaveletPacketLp cell₁ idx₂
-          · intro h
-            cases h
+          simp
   | wavelet idx₁ =>
       cases idx₂ with
       | father cell₂ =>
           rw [ite_eq_right]
           · exact inner_haarWaveletPacketLp_haarFatherPacketLp idx₁ cell₂
-          · intro h
-            cases h
+          simp
       | wavelet idx₂ =>
-          rw [haarBasisLp]
           have h := inner_haarWaveletPacketLp d idx₁.1 idx₂.1
-          by_cases hidx : idx₁ = idx₂
-          · subst idx₂
-            simpa [haarBasisLp] using h
-          · have hval : idx₁.1 ≠ idx₂.1 := by
-              intro hval
-              exact hidx (Subtype.ext hval)
-            simp [hidx, hval] at h ⊢
-            exact h
+          aesop
 
 /-- The inhomogeneous Haar system is orthonormal in `L²(R^d)`. -/
 theorem orthonormal_haarBasisLp (d : Nat) :

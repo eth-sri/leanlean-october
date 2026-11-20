@@ -54,9 +54,6 @@ theorem gaussNegativeCutPlane_subset_regularPlane :
 theorem gaussNegativeCutPlane_starConvex :
     StarConvex ℝ (-1 / 2 : ℂ) gaussNegativeCutPlane := by
   intro z hz s t hs ht hst
-  change z.im ≠ 0 ∨ z.re < 0 at hz
-  change (s • (-1 / 2 : ℂ) + t • z).im ≠ 0 ∨
-    (s • (-1 / 2 : ℂ) + t • z).re < 0
   rcases hz with him | hreal
   · by_cases ht0 : t = 0
     · right
@@ -64,14 +61,7 @@ theorem gaussNegativeCutPlane_starConvex :
       rw [ht0, hs1]
       norm_num
     · left
-      have himag : (s • (-1 / 2 : ℂ) + t • z).im = t * z.im := by
-        simp [Complex.add_im]
-      rw [himag]
-      have htpos : 0 < t := by
-        by_contra hnot
-        have htneg : t ≤ 0 := le_of_not_gt hnot
-        exact ht0 (le_antisymm htneg ht)
-      exact mul_ne_zero htpos.ne' him
+      simp_all
   · right
     have hrealpart : (s • (-1 / 2 : ℂ) + t • z).re = -(s / 2) + t * z.re := by
       simp [Complex.add_re]
@@ -79,14 +69,12 @@ theorem gaussNegativeCutPlane_starConvex :
     rw [hrealpart]
     by_cases ht0 : t = 0
     · have hs1 : s = 1 := by linarith
-      rw [ht0, hs1]
-      norm_num
+      simp [*]
     · have htpos : 0 < t := by
         by_contra hnot
         have htneg : t ≤ 0 := le_of_not_gt hnot
         exact ht0 (le_antisymm htneg ht)
       have hsecond : t * z.re < 0 := mul_neg_of_pos_of_neg htpos hreal
-      have hfirst : -(s / 2) ≤ 0 := neg_nonpos.mpr (div_nonneg hs (by norm_num))
       linarith
 
 /-- Contractibility of the negative cut plane. -/

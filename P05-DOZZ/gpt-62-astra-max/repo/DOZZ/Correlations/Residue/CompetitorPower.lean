@@ -32,8 +32,7 @@ theorem residue_add_rpow_le (a b q δ : ℝ) (ha : 0 ≤ a) (hb : 0 ≤ b)
       _ ≤ _ := le_add_of_nonneg_right (mul_nonneg (by positivity) (Real.rpow_nonneg hb _))
   · have hba : a ≤ b / δ := (le_div_iff₀ hδ).mpr (by simpa only [mul_comm] using hh)
     calc (a + b) ^ q ≤ ((1 + 1 / δ) * b) ^ q :=
-        Real.rpow_le_rpow (add_nonneg ha hb) (by calc a + b ≤ b / δ + b := by linarith only [hba]
-                 _ = (1 + 1 / δ) * b := by ring) hq
+        Real.rpow_le_rpow (add_nonneg ha hb) (by grind) hq
       _ = (1 + 1 / δ) ^ q * b ^ q := Real.mul_rpow (by positivity) hb
       _ ≤ _ := le_add_of_nonneg_left (mul_nonneg (by positivity) (Real.rpow_nonneg ha _))
 
@@ -43,7 +42,7 @@ theorem residue_add_rpow_le_fixed (a b q β δ : ℝ) (ha : 0 ≤ a) (hb : 0 ≤
     (a + b) ^ q ≤ (1 + δ) ^ β * a ^ q + (1 + 1 / δ) ^ β * b ^ q := by
   apply (residue_add_rpow_le a b q δ ha hb hq hδ).trans
   apply add_le_add
-  · exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow_of_exponent_le (by linarith only [hδ]) hqβ)
+  · exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow_of_exponent_le (by linarith) hqβ)
       (Real.rpow_nonneg ha _)
   · exact mul_le_mul_of_nonneg_right (Real.rpow_le_rpow_of_exponent_le (by have := one_div_pos.mpr hδ; linarith only [this]) hqβ)
       (Real.rpow_nonneg hb _)

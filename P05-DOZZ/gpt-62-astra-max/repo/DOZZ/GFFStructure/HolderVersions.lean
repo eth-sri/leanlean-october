@@ -203,8 +203,7 @@ lemma exists_modification_holder''' {C : ℕ → Set T} {c : ℕ → ℝ≥0∞}
     exact hC' s hs s' hs'
   · refine ⟨A ∩ ⋂ n, A' n, ?_, ?_, ?_, ?_, ?_⟩
     · exact hA.inter (MeasurableSet.iInter hA'_meas)
-    · simp only [Set.mem_inter_iff, Set.mem_iInter, eventually_and, ae_all_iff]
-      exact ⟨hA_ae, hA'_ae⟩
+    · assumption
     · rintro t - ω hω
       simp only [Set.mem_inter_iff, Set.mem_iInter] at hω
       exact hZ_tendsto (nt t) t (hnt t) ω (hω.2 (nt t))
@@ -265,7 +264,7 @@ theorem exists_continuous_modification_of_open_cover {T Ω I : Type*}
       Measurable (fun p : Ω × T => Y p.2 p.1) := by
   classical
   choose index hindex using hcover
-  let A : Set Ω := {ω | ∀ i j t, t ∈ U i ∩ U j → Z i t ω = Z j t ω}
+  let A := {ω | ∀ i j t, t ∈ U i ∩ U j → Z i t ω = Z j t ω}
   have hAmeas : MeasurableSet A := by
     have hpair i j : MeasurableSet {ω | ∀ t ∈ U i ∩ U j,
         edist (Z i t ω) (Z j t ω) = 0} := by
@@ -283,9 +282,9 @@ theorem exists_continuous_modification_of_open_cover {T Ω I : Type*}
       have h := indistinguishable_of_edist_modification_on ((hU i).inter (hU j))
         (ae_of_all P (fun ω => (hZcont i ω).continuousOn))
         (ae_of_all P (fun ω => (hZcont j ω).continuousOn)) (fun t ht => ?_)
-      · simpa only [edist_eq_zero] using h
+      · simp_all
       · filter_upwards [hZeq i t ht.1, hZeq j t ht.2] with ω hi hj
-        simp only [hi, hj, edist_self]
+        simp_all
     simpa only [A, mem_ofPred_eq, ae_all_iff] using hpair
   let Y (t : T) (ω : Ω) := if ω ∈ A then Z (index t) t ω else 0
   have hYmeas t : Measurable (Y t) := Measurable.ite hAmeas (hZmeas (index t) t) measurable_const
@@ -297,14 +296,12 @@ theorem exists_continuous_modification_of_open_cover {T Ω I : Type*}
     by_cases hω : ω ∈ A
     · apply continuous_iff_continuousAt.mpr
       intro t
-      have heq : (fun s => Y s ω) =ᶠ[𝓝 t] (fun s => Z (index t) s ω) :=
-        Filter.eventually_of_mem ((hU (index t)).mem_nhds (hindex t)) (hYeq (index t) hω)
-      exact (hZcont (index t) ω).continuousAt.congr_of_eventuallyEq heq
-    · simpa only [Y, hω, ↓reduceIte] using (continuous_const : Continuous (fun _ : T => (0 : ℝ)))
+      exact (hZcont (index t) ω).continuousAt.congr_of_eventuallyEq (Filter.eventually_of_mem ((hU (index t)).mem_nhds (hindex t)) (hYeq (index t) hω))
+    · simpa only [Y, hω, ↓reduceIte] using continuous_const
   refine ⟨Y, hYmeas, hYcont, ?_, ?_⟩
   · intro t
     filter_upwards [hAae, hZeq (index t) t (hindex t)] with ω hω ht
-    simpa only [Y, hω, ↓reduceIte] using ht
+    grind
   · exact (measurable_uncurry_of_continuous_of_measurable hYcont hYmeas).comp measurable_swap
 
 end DOZZ.Proofs

@@ -534,12 +534,11 @@ theorem tendstoUniformlyOn_of_norm_bound {X Z E : Type*} [NormedAddCommGroup E]
   filter_upwards [hlim (ε / (C + 1)) (div_pos hε hden)] with n hn
   intro z hz
   rw [dist_eq_norm, norm_sub_rev]
-  refine (hbound n (ε / (C + 1)) (div_nonneg hε.le hden.le)
+  refine (hbound n _ (div_nonneg hε.le hden.le)
     (fun x hx => ?_) z hz).trans_lt ?_
   · simpa only [dist_eq_norm, norm_sub_rev] using (hn x hx).le
   · calc
-      C * (ε / (C + 1)) < (C + 1) * (ε / (C + 1)) := by
-        apply mul_lt_mul_of_pos_right (lt_add_one C) (div_pos hε hden)
+      _ < (C + 1) * (ε / (C + 1)) := mul_lt_mul_of_pos_right (lt_add_one C) (div_pos hε hden)
       _ = ε := by field_simp
 
 /-- Uniform boundary convergence passes through the Cauchy transform. -/

@@ -53,22 +53,19 @@ theorem isCenteredJointlyGaussian_prod_add {Ω₁ Ω₂ ι : Type*} [MeasurableS
       ((h₂.2.1 i).comp_quasiMeasurePreserving Measure.quasiMeasurePreserving_snd)
   · obtain ⟨hm₁, v₁, hv₁⟩ := h₁.2.2 a
     obtain ⟨hm₂, v₂, hv₂⟩ := h₂.2.2 a
-    let U : Ω₁ → ℝ := fun ω => ∑ i, a i * Z₁ ω i
-    let V : Ω₂ → ℝ := fun ω => ∑ i, a i * Z₂ ω i
+    let U := fun ω => ∑ i, a i * Z₁ ω i
+    let V := fun ω => ∑ i, a i * Z₂ ω i
     have heq : (fun q : Ω₁ × Ω₂ => ∑ i, a i * (Z₁ q.1 i + Z₂ q.2 i)) =
         fun q => U q.1 + V q.2 := by
       funext q
       simp only [U, V, mul_add, Finset.sum_add_distrib]
     rw [heq]
     refine ⟨(hm₁.comp_fst P₂).add (hm₂.comp_snd P₁), ⟨v₁ + v₂, ?_⟩⟩
-    have hind : IndepFun (fun q : Ω₁ × Ω₂ => U q.1) (fun q => V q.2) (P₁.prod P₂) :=
-      indepFun_prod₀ hm₁.aemeasurable hm₂.aemeasurable
-    have hU : HasLaw (fun q : Ω₁ × Ω₂ => U q.1) (gaussianReal 0 v₁) (P₁.prod P₂) :=
-      (⟨hm₁.aemeasurable, hv₁⟩ : HasLaw U (gaussianReal 0 v₁) P₁).comp
-        (measurePreserving_fst (μ := P₁) (ν := P₂)).hasLaw
-    have hV : HasLaw (fun q : Ω₁ × Ω₂ => V q.2) (gaussianReal 0 v₂) (P₁.prod P₂) :=
-      (⟨hm₂.aemeasurable, hv₂⟩ : HasLaw V (gaussianReal 0 v₂) P₂).comp
-        (measurePreserving_snd (μ := P₁) (ν := P₂)).hasLaw
+    have hind := indepFun_prod₀ hm₁.aemeasurable hm₂.aemeasurable
+    have hU := (⟨hm₁.aemeasurable, hv₁⟩ : HasLaw U (gaussianReal 0 v₁) P₁).comp
+      (measurePreserving_fst (μ := P₁) (ν := P₂)).hasLaw
+    have hV := (⟨hm₂.aemeasurable, hv₂⟩ : HasLaw V (gaussianReal 0 v₂) P₂).comp
+      (measurePreserving_snd (μ := P₁) (ν := P₂)).hasLaw
     have h := gaussianReal_add_gaussianReal_of_indepFun hind hU hV
     rw [zero_add] at h
     exact h
@@ -83,12 +80,9 @@ theorem gaussianCovariance_prod_add {Ω₁ Ω₂ : Type*} [MeasurableSpace Ω₁
     gaussianCovariance (P₁.prod P₂) (fun q => U₁ q.1 + U₂ q.2) (fun q => V₁ q.1 + V₂ q.2) =
       gaussianCovariance P₁ U₁ V₁ + gaussianCovariance P₂ U₂ V₂ := by
   unfold gaussianCovariance
-  have i11 : Integrable (fun q : Ω₁ × Ω₂ => U₁ q.1 * V₁ q.1) (P₁.prod P₂) :=
-    ((hU₁.integrable_mul hV₁).comp_fst P₂)
-  have i22 : Integrable (fun q : Ω₁ × Ω₂ => U₂ q.2 * V₂ q.2) (P₁.prod P₂) :=
-    ((hU₂.integrable_mul hV₂).comp_snd P₁)
-  have i12 : Integrable (fun q : Ω₁ × Ω₂ => U₁ q.1 * V₂ q.2) (P₁.prod P₂) :=
-    (hU₁.integrable one_le_two).mul_prod (hV₂.integrable one_le_two)
+  have i11 := ((hU₁.integrable_mul hV₁).comp_fst P₂)
+  have i22 := ((hU₂.integrable_mul hV₂).comp_snd P₁)
+  have i12 := (hU₁.integrable one_le_two).mul_prod (hV₂.integrable one_le_two)
   have i21 : Integrable (fun q : Ω₁ × Ω₂ => U₂ q.2 * V₁ q.1) (P₁.prod P₂) := by
     have h := (hV₁.integrable one_le_two).mul_prod (hU₂.integrable one_le_two)
     refine h.congr (Filter.Eventually.of_forall fun q => ?_)

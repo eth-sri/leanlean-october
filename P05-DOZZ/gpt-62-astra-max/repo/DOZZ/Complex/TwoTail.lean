@@ -252,15 +252,14 @@ theorem mellin_full_tail (T : ℝ → ℝ) (hT : Measurable T)
 /-- The leading upper power has its elementary rational Mellin transform. -/
 theorem hasMellin_upperTailPowerKernel (c β : ℝ) (s : ℂ) (hs : s.re < β) :
     HasMellin (upperTailPowerKernel c β) s ((c : ℂ) / ((β : ℂ) - s)) := by
-  let a : ℂ := s - 1 - (β : ℂ)
+  let a := s - 1 - β
   have ha : a.re < -1 := by dsimp [a]; linarith
   have heq : (fun t : ℝ => (t : ℂ) ^ (s - 1) • upperTailPowerKernel c β t) =
-      (Ioi (1 : ℝ)).indicator (fun t => (c : ℂ) * (t : ℂ) ^ a) := by
+      (Ioi (1 : ℝ)).indicator (fun t => c * (t : ℂ) ^ a) := by
     funext t
-    by_cases ht : t ∈ Ioi (1 : ℝ)
-    · have htpos : 0 < t := lt_trans zero_lt_one ht
-      rw [upperTailPowerKernel, indicator_of_mem ht, indicator_of_mem ht,
-        ofReal_mul, ofReal_cpow htpos.le, ofReal_neg, smul_eq_mul]
+    by_cases ht : t ∈ Ioi 1
+    · have htpos := lt_trans zero_lt_one ht
+      simp only [upperTailPowerKernel, indicator_of_mem ht, ofReal_mul, ofReal_cpow htpos.le, ofReal_neg, smul_eq_mul]
       rw [mul_left_comm, ← cpow_add _ _ (ofReal_ne_zero.mpr htpos.ne')]
       rfl
     · rw [upperTailPowerKernel, indicator_of_notMem ht, indicator_of_notMem ht, smul_zero]
@@ -272,10 +271,7 @@ theorem hasMellin_upperTailPowerKernel (c β : ℝ) (s : ℂ) (hs : s.re < β) :
     exact hint.integrable_indicator measurableSet_Ioi |>.integrableOn
   · rw [mellin, heq, integral_indicator measurableSet_Ioi,
       Measure.restrict_restrict_of_subset hsub, integral_const_mul,
-      integral_Ioi_cpow_of_lt ha zero_lt_one, ofReal_one, one_cpow]
-    have he : a + 1 = -((β : ℂ) - s) := by dsimp [a]; ring
-    rw [he, div_neg, neg_div, neg_neg]
-    ring
+      integral_Ioi_cpow_of_lt ha zero_lt_one, ofReal_one, one_cpow] <;> grind
 
 /-- A tail is the sum of its lower part, upper error, and leading powers on the integration domain. -/
 theorem tail_kernel_decomposition (T : ℝ → ℝ) (c₁ c₂ β₁ β₂ : ℝ) :
@@ -338,14 +334,11 @@ theorem complexMoment_real_eq_mellin_tail {Ω : Type*} [MeasurableSpace Ω]
     Integrable (fun ω => Y ω ^ p) P ∧
       (∫ ω, (Y ω : ℂ) ^ (p : ℂ) ∂P) = (p : ℂ) *
         mellin (fun t => (realUpperTail P Y hY t : ℂ)) (p : ℂ) := by
-  let T := realUpperTail P Y hY
-  have ht := integrable_real_tail_of_mellin T (measurable_realUpperTail P Y hY)
+  have ht := integrable_real_tail_of_mellin _ (measurable_realUpperTail P Y hY)
     (fun t => (realUpperTail_bounds P Y hY t).1) p hm
   have hreal := integral_rpow_eq_tail_of_integrable P Y hY hpos p hp ht
   refine ⟨hreal.1, ?_⟩
-  have hcpow : (fun ω => (Y ω : ℂ) ^ (p : ℂ)) =ᵐ[P] (fun ω => ((Y ω ^ p : ℝ) : ℂ)) :=
-    hpos.mono fun ω hω => (ofReal_cpow hω p).symm
-  rw [integral_congr_ae hcpow, integral_complex_ofReal, hreal.2, ofReal_mul]
+  rw [integral_congr_ae (hpos.mono fun ω hω => (ofReal_cpow hω p).symm), integral_complex_ofReal, hreal.2, ofReal_mul]
   congr 1
   rw [mellin, ← integral_complex_ofReal]
   apply setIntegral_congr_fun measurableSet_Ioi

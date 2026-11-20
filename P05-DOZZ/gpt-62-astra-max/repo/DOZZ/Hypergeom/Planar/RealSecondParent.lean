@@ -26,56 +26,45 @@ theorem realSecondDifferenceLimit_integral_eq (k β α A : ℝ)
       planarRealSecondDifferenceQuotient k β t u =
         (F (1 + (t : ℂ)) u + F (1 - (t : ℂ)) u - 2 * F 1 u) / t ^ 2) :
     (∫ u : ℂ, planarRealSecondDifferenceLimit k β u) = α * (α - 1) * A := by
-  let l : Filter ℝ := 𝓝[≠] (0 : ℝ)
+  let l := 𝓝[≠] (0 : ℝ)
+  let a₁ t := (∫ u : ℂ, F (1 + t) u) + (∫ u : ℂ, F (1 - t) u) -
+      2 * (∫ u : ℂ, F 1 u)
   let P : ℝ → ℝ := fun t =>
-    ((∫ u : ℂ, F (1 + (t : ℂ)) u) + (∫ u : ℂ, F (1 - (t : ℂ)) u) -
-      2 * (∫ u : ℂ, F 1 u)) / t ^ 2
-  let A₀ : ℝ := ∫ u : ℂ, F 1 u
+    (a₁ t) / t ^ 2
+  let A₀ := ∫ u : ℂ, F 1 u
   have hA₀ : A₀ = A := by
     simpa [A₀, norm_one, Real.one_rpow] using hFscale (1 : ℂ)
   have hParentEq : P =ᶠ[l]
       fun t => A₀ * normPowerRealSecondDifference α t 1 := by
     filter_upwards [] with t
-    have h₁ := hFscale (1 + (t : ℂ))
-    have h₂ := hFscale (1 - (t : ℂ))
-    have h₀ := hFscale (1 : ℂ)
     change ((∫ u : ℂ, F (1 + (t : ℂ)) u) +
       (∫ u : ℂ, F (1 - (t : ℂ)) u) - 2 * (∫ u : ℂ, F 1 u)) / t ^ 2 = _
-    rw [h₁, h₂, h₀, hA₀]
+    rw [(hFscale (1 + t)), (hFscale (1 - t)), (hFscale 1), hA₀]
     simp only [normPowerRealSecondDifference, norm_one, Real.one_rpow]
     ring
-  have hRad := norm_rpow_real_centered_difference_tendsto α (1 : ℂ) (by norm_num)
   have hRad' : Tendsto (fun t : ℝ => normPowerRealSecondDifference α t 1) l
       (𝓝 (α * (α - 1))) := by
-    convert hRad using 1
-    · simp [normPowerRealSecondDifference, norm_one, Real.one_rpow]
-    · simp [norm_one, Real.one_rpow]
+    convert (norm_rpow_real_centered_difference_tendsto α (1 : ℂ) (by norm_num)) using 1
+    · rfl
+    · simp
       ring
-  have hScaled : Tendsto (fun t : ℝ => A₀ * normPowerRealSecondDifference α t 1) l
-      (𝓝 (A₀ * (α * (α - 1)))) := tendsto_const_nhds.mul hRad'
   have hParentLimit : Tendsto P l (𝓝 (α * (α - 1) * A₀)) := by
-    have h := hScaled.congr' hParentEq.symm
+    have h := (tendsto_const_nhds.mul hRad').congr' hParentEq.symm
     simpa [mul_assoc, mul_left_comm, mul_comm] using h
-  have hDct := planarRealSecondDifferenceQuotient_integral_tendsto k β
-    hk hβ hβ₂
   have hQEq :
-      (fun t : ℝ => ∫ u : ℂ, planarRealSecondDifferenceQuotient k β t u) =ᶠ[l] P := by
+      (fun t => ∫ u : ℂ, planarRealSecondDifferenceQuotient k β t u) =ᶠ[l] P := by
     filter_upwards [self_mem_nhdsWithin] with t ht
-    have ht0 : t ≠ 0 := by simpa using ht
-    let N : ℂ → ℝ := fun u => F (1 + (t : ℂ)) u + F (1 - (t : ℂ)) u - 2 * F 1 u
-    have hplus := hFint (1 + (t : ℂ))
-    have hminus := hFint (1 - (t : ℂ))
+    have ht0  := ht
+    let N  := fun u => F (1 + t) u + F (1 - t) u - 2 * F 1 u
+    have hplus := hFint (1 + t)
+    have hminus := hFint (1 - t)
     have hzero := hFint 1
-    have hN : Integrable N volume := by
-      dsimp [N]
-      exact (hplus.add hminus).sub (hzero.const_mul 2)
     have hpointAE : planarRealSecondDifferenceQuotient k β t =ᵐ[volume]
         fun u => (N u) / t ^ 2 := by
       filter_upwards [Measure.ae_ne volume (0 : ℂ)] with u hu
       exact hpoint t ht0 u hu
     have hsum : (∫ u : ℂ, N u) =
-        (∫ u : ℂ, F (1 + (t : ℂ)) u) +
-          (∫ u : ℂ, F (1 - (t : ℂ)) u) - 2 * (∫ u : ℂ, F 1 u) := by
+        a₁ t := by
       dsimp [N]
       calc
         (∫ u : ℂ, F (1 + (t : ℂ)) u + F (1 - (t : ℂ)) u -
@@ -93,18 +82,14 @@ theorem realSecondDifferenceLimit_integral_eq (k β α A : ℝ)
         _ = ∫ u : ℂ, N u / t ^ 2 := integral_congr_ae hpointAE
         _ = (t ^ 2)⁻¹ * (∫ u : ℂ, N u) := by
           rw [show (fun u : ℂ => N u / t ^ 2) =
-            fun u => (t ^ 2)⁻¹ * N u by funext u; simp [div_eq_mul_inv, mul_comm],
+            fun u => (t ^ 2)⁻¹ * N u by simp [div_eq_mul_inv, mul_comm],
             integral_const_mul]
         _ = _ := by simp [div_eq_mul_inv, mul_comm]
-    change (∫ u : ℂ, planarRealSecondDifferenceQuotient k β t u) =
-      ((∫ u : ℂ, F (1 + (t : ℂ)) u) +
-        (∫ u : ℂ, F (1 - (t : ℂ)) u) -
-        2 * (∫ u : ℂ, F 1 u)) / t ^ 2
     rw [hIntEq, hsum]
-  have hDctP := hDct.congr' hQEq
-  have hlim := tendsto_nhds_unique hDctP hParentLimit
+  have hlim := tendsto_nhds_unique ((planarRealSecondDifferenceQuotient_integral_tendsto k β
+    hk hβ hβ₂).congr' hQEq) hParentLimit
   rw [hA₀] at hlim
-  simpa [mul_assoc, mul_left_comm, mul_comm] using hlim
+  simp_all [mul_assoc, mul_left_comm, mul_comm]
 
 private noncomputable def planarTaylorLinearCounterterm (u z : ℂ) : ℝ :=
   (z / u + star z / star u).re

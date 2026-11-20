@@ -37,16 +37,16 @@ theorem two_space_localization_tail_sandwich
     exact h
   constructor
   · have hb := ennreal_tail_domination P' B L' E'
-      (hCopy.mono fun _ h => h.2) (x+h) h hh (by linarith only [hh,hhx])
+      (hCopy.mono fun _ h => h.2) (x+h) h hh (by linarith)
     rw [add_sub_cancel_right,← hT x] at hb
     have hm : P {ω | ENNReal.ofReal x < L ω} ≤ P {ω | ENNReal.ofReal x < A ω} :=
       measure_mono_ae (hSource.mono fun ω hω hlt => hlt.trans_le hω.1)
     have ht := ENNReal.toReal_mono (by finiteness) hm
     linarith only [hb,ht]
   · have ha := ennreal_tail_domination P A L E
-      (hSource.mono fun _ h => h.2) x h hh (by linarith only [hh,hhx])
+      (hSource.mono fun _ h => h.2) x h hh (by linarith)
     have hb := ennreal_tail_domination P' L' B E'
-      (hCopy.mono fun _ h => h.1) (x-h) h hh (by linarith only [hhx])
+      (hCopy.mono fun _ h => h.1) (x-h) h hh (by linarith)
     rw [hT (x-h)] at ha
     have heq : x-h-h = x-2*h := by ring
     rw [heq] at hb

@@ -95,20 +95,18 @@ end Parameters
 /-- Unfolding `l (a - c + 1)`. -/
 theorem gaussRatio_l_sub_add_one (a c : ℝ) :
     gaussRatio_l (a - c + 1) = Real.Gamma (a - c + 1) / Real.Gamma (c - a) := by
-  unfold gaussRatio_l
-  rw [show 1 - (a - c + 1) = c - a by ring]
+  unfold gaussRatio_l <;> ring
 
 /-- Unfolding `l (c - b)`. -/
 theorem gaussRatio_l_sub (b c : ℝ) :
     gaussRatio_l (c - b) = Real.Gamma (c - b) / Real.Gamma (b - c + 1) := by
-  unfold gaussRatio_l
-  rw [show 1 - (c - b) = b - c + 1 by ring]
+  unfold gaussRatio_l <;> ring
 
 /-- The key scalar identity `-(Γ(c) / Γ(2-c))² · l(2-c) = l(c)` for `c ≠ 1`. -/
 theorem gaussRatio_key {c : ℝ} (hc : c ≠ 1) :
     -(Real.Gamma c / Real.Gamma (2 - c)) ^ 2 * gaussRatio_l (2 - c) = gaussRatio_l c := by
-  have hc1 : c - 1 ≠ 0 := sub_ne_zero.mpr hc
-  have hc2 : 1 - c ≠ 0 := sub_ne_zero.mpr hc.symm
+  have hc1 := sub_ne_zero.mpr hc
+  have hc2 := sub_ne_zero.mpr hc.symm
   have h1 : Real.Gamma c = (c - 1) * Real.Gamma (c - 1) := by
     have := Real.Gamma_add_one hc1
     rwa [sub_add_cancel] at this
@@ -119,16 +117,7 @@ theorem gaussRatio_key {c : ℝ} (hc : c ≠ 1) :
     unfold gaussRatio_l
     rw [show 1 - (2 - c) = c - 1 by ring]
   rw [h3]
-  unfold gaussRatio_l
-  rw [h1, h2]
-  generalize Real.Gamma (c - 1) = g
-  generalize Real.Gamma (1 - c) = h
-  by_cases hg : g = 0
-  · simp [hg]
-  by_cases hh : h = 0
-  · simp [hh]
-  field_simp
-  ring
+  unfold gaussRatio_l <;> grind
 
 /-- The real form of the identity: for `c ≠ 1` and arbitrary real factors `L₁, L₂`. -/
 theorem gaussRatio_real_identity {a b c : ℝ} (hc : c ≠ 1) (L₁ L₂ : ℝ) :
@@ -201,7 +190,6 @@ theorem gaussCoefficientRatio_mul_eq_shiftCoeffA_half {γ z α₂ α₃ : ℝ} (
       (lFun (-((γ / 2 : ℝ) : ℂ) ^ 2) * lFun (((γ / 2 : ℝ) : ℂ) * z) *
         lFun (2 + ((γ / 2 : ℝ) : ℂ) ^ 2 - ((γ / 2 : ℝ) : ℂ) * z)) =
       shiftCoeffA γ ((γ / 2 : ℝ) : ℂ) z α₂ α₃ := by
-  have hγ0 : γ ≠ 0 := hγ.ne'
   refine gaussCoefficientRatio_mul_eq_shiftCoeffA (by positivity) ?_ hc
   unfold Q
   field_simp

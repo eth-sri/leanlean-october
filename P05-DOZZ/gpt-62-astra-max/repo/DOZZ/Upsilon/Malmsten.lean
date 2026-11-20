@@ -188,11 +188,11 @@ private lemma malmstenRealIntegrand_norm_le_tail {x u : ℝ} (_hx : 0 < x)
       |(x - 1) * Real.exp (-u) * (1 - Real.exp (-u)) +
           Real.exp (-x * u) - Real.exp (-u)| =
           |(x - 1) * Real.exp (-u) * (1 - Real.exp (-u)) +
-            (Real.exp (-x * u) - Real.exp (-u))| := by congr 1; ring_nf
+            (Real.exp (-x * u) - Real.exp (-u))| := by ring_nf
       _ ≤ |(x - 1) * Real.exp (-u) * (1 - Real.exp (-u))| +
             |Real.exp (-x * u) - Real.exp (-u)| := abs_add_le _ _
       _ ≤ |x - 1| * Real.exp (-u) * (1 - Real.exp (-u)) +
-            Real.exp (-x * u) + Real.exp (-u) := by rw [ha]; linarith [hb]
+            Real.exp (-x * u) + Real.exp (-u) := by linarith [hb]
       _ ≤ (|x - 1| + 1) * Real.exp (-u) + Real.exp (-x * u) := by
         have hp : 0 ≤ |x - 1| * Real.exp (-u) :=
           mul_nonneg (abs_nonneg _) (le_of_lt (Real.exp_pos _))
@@ -216,12 +216,8 @@ private lemma malmstenRealIntegrand_norm_le_tail {x u : ℝ} (_hx : 0 < x)
 
 private lemma malmstenRealIntegrand_integrableOn_Ioi_one {x : ℝ} (hx : 0 < x) :
     IntegrableOn (malmstenRealIntegrand x) (Ioi 1) := by
-  have hc : 0 < 1 - Real.exp (-1) := by
-    exact sub_pos.mpr (Real.exp_lt_one_iff.mpr (by norm_num))
   let A : ℝ := (|x - 1| + 1) / (1 - Real.exp (-1))
   let B : ℝ := 1 / (1 - Real.exp (-1))
-  have hA : 0 ≤ A := by dsimp [A]; positivity
-  have hB : 0 ≤ B := by dsimp [B]; positivity
   have hmajor1 : IntegrableOn (fun u : ℝ => A * Real.exp (-u)) (Ioi 1) := by
     change Integrable (fun u : ℝ => A * Real.exp (-u)) (volume.restrict (Ioi 1))
     simpa [mul_comm] using (exp_neg_integrableOn_Ioi 1 (b := 1) (by norm_num)).const_mul A
@@ -241,13 +237,8 @@ theorem malmstenRealIntegrand_integrableOn {x : ℝ} (hx : 0 < x) :
     ext u
     simp only [mem_Ioi, mem_union, mem_Ioc]
     constructor
-    · intro hu
-      by_cases hle : u ≤ 1
-      · exact Or.inl ⟨hu, hle⟩
-      · exact Or.inr (lt_of_not_ge hle)
-    · rintro (⟨hu, _⟩ | hu)
-      · exact hu
-      · linarith
+    · grind
+    · grind
   rw [hsplit, integrableOn_union]
   exact ⟨malmstenRealIntegrand_integrableOn_Ioc hx,
     malmstenRealIntegrand_integrableOn_Ioi_one hx⟩
@@ -289,13 +280,7 @@ private lemma malmstenRealIntegrand_convex_inequality {x y a b u : ℝ}
           ((a * x + b * y - 1) * Real.exp (-u) * (1 - Real.exp (-u)) - Real.exp (-u)) := by ring
       _ ≤ (a * Real.exp (-x * u) + b * Real.exp (-y * u)) +
           ((a * x + b * y - 1) * Real.exp (-u) * (1 - Real.exp (-u)) - Real.exp (-u)) := by
-            let A := (a * x + b * y - 1) * Real.exp (-u) * (1 - Real.exp (-u)) -
-              Real.exp (-u)
-            have h := add_le_add_right hexp A
-            calc
-              _ = A + Real.exp (-(a * x + b * y) * u) := by dsimp [A]; ring
-              _ ≤ A + (a * Real.exp (-x * u) + b * Real.exp (-y * u)) := h
-              _ = _ := by dsimp [A]; ring
+            simp_all
       _ = a * malmstenRealNumerator x u + b * malmstenRealNumerator y u := by
             unfold malmstenRealNumerator
             linear_combination hlinear
@@ -317,14 +302,14 @@ private lemma malmstenRealH_convexOn : ConvexOn ℝ (Ioi 0) malmstenRealH := by
     · have hmul := mul_le_mul_of_nonneg_left hxy hb
       have hle : x ≤ a * x + b * y := by
         calc
-          x = (a + b) * x := by rw [hab]; ring
+          x = (a + b) * x := by simp [*]
           _ = a * x + b * x := by ring
           _ ≤ a * x + b * y := by nlinarith [hmul]
       exact lt_of_lt_of_le hx hle
     · have hmul : a * y ≤ a * x := mul_le_mul_of_nonneg_left hyx ha
       have hle : y ≤ a * x + b * y := by
         calc
-          y = (a + b) * y := by rw [hab]; ring
+          y = (a + b) * y := by simp [*]
           _ = a * y + b * y := by ring
           _ ≤ a * x + b * y := by nlinarith [hmul]
       exact lt_of_lt_of_le hy hle
@@ -348,7 +333,6 @@ private lemma malmstenRealH_convexOn : ConvexOn ℝ (Ioi 0) malmstenRealH := by
     filter_upwards [ae_restrict_mem measurableSet_Ioi] with u hu
     exact malmstenRealIntegrand_convex_inequality hu ha hb hab
   have hle := integral_mono_ae (μ := volume.restrict (Ioi 0)) hiz hiR hpoint
-  change (∫ u in Ioi (0 : ℝ), malmstenRealIntegrand (a * x + b * y) u) ≤ _ at hle
   rw [integral_add (hix.const_mul a) (hiy.const_mul b), integral_const_mul,
     integral_const_mul] at hle
   simpa [malmstenRealH, smul_eq_mul] using hle
@@ -356,7 +340,7 @@ private lemma malmstenRealH_convexOn : ConvexOn ℝ (Ioi 0) malmstenRealH := by
 theorem malmstenRealIntegrand_add_one_sub {x u : ℝ} (hu : 0 < u) :
     malmstenRealIntegrand (x + 1) u - malmstenRealIntegrand x u =
       u⁻¹ * (Real.exp (-u) - Real.exp (-x * u)) := by
-  rw [malmstenRealIntegrand_eq_num hu, malmstenRealIntegrand_eq_num hu]
+  simp only [malmstenRealIntegrand_eq_num hu]
   unfold malmstenRealNumerator
   have hden : 1 - Real.exp (-u) ≠ 0 :=
     (sub_pos.mpr (Real.exp_lt_one_iff.mpr (by linarith))).ne'
@@ -421,7 +405,6 @@ private noncomputable def malmstenRealExp (x : ℝ) : ℝ := Real.exp (malmstenR
 
 theorem malmstenRealH_exp_eq_Gamma {x : ℝ} (hx : 0 < x) :
     Real.exp (malmstenRealH x) = Real.Gamma x := by
-  change malmstenRealExp x = Real.Gamma x
   have hconv : ConvexOn ℝ (Ioi 0) (Real.log ∘ malmstenRealExp) := by
     have heq : (Real.log ∘ malmstenRealExp) = malmstenRealH := by
       funext y

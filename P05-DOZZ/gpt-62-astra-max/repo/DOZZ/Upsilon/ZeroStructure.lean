@@ -54,12 +54,11 @@ private theorem reciprocalGamma_hasDerivAt_zero :
   have hGamma := Complex.tendsto_self_mul_Gamma_nhds_zero
   have hInv : Tendsto (fun z : ℂ => (z * Complex.Gamma z)⁻¹)
       (𝓝[≠] (0 : ℂ)) (𝓝 (1 : ℂ)) := by
-    simpa using hGamma.inv₀ (by norm_num : (1 : ℂ) ≠ 0)
-  have hprod_ne : ∀ᶠ z : ℂ in 𝓝[≠] (0 : ℂ), z * Complex.Gamma z ≠ 0 :=
-    hGamma.eventually (isOpen_ne.mem_nhds (by norm_num : (1 : ℂ) ≠ 0))
-  have hRatio :
-      (fun z : ℂ => (z * Complex.Gamma z)⁻¹) =ᶠ[𝓝[≠] (0 : ℂ)]
-        (fun z => z⁻¹ * (Complex.Gamma z)⁻¹) := by
+    simpa using hGamma.inv₀ (by norm_num)
+  have hprod_ne := hGamma.eventually (isOpen_ne.mem_nhds (by norm_num : (1 : ℂ) ≠ 0))
+  have hSlope : Tendsto (fun z : ℂ => z⁻¹ * (Complex.Gamma z)⁻¹)
+      (𝓝[≠] (0 : ℂ)) (𝓝 (1 : ℂ)) := by
+    refine (tendsto_congr' ?_).mp hInv
     filter_upwards [hprod_ne] with z hz
     have hz0 : z ≠ 0 := by
       intro h
@@ -67,14 +66,7 @@ private theorem reciprocalGamma_hasDerivAt_zero :
       simp at hz
     have hΓ : Complex.Gamma z ≠ 0 := (mul_ne_zero_iff.mp hz).2
     field_simp [hz0, hΓ]
-  have hSlope : Tendsto (fun z : ℂ => z⁻¹ * (Complex.Gamma z)⁻¹)
-      (𝓝[≠] (0 : ℂ)) (𝓝 (1 : ℂ)) := by
-    exact (tendsto_congr' hRatio).mp hInv
-  have hDiffSlope : Tendsto
-      (fun z : ℂ => z⁻¹ • ((Complex.Gamma z)⁻¹ - (Complex.Gamma 0)⁻¹))
-      (𝓝[≠] (0 : ℂ)) (𝓝 (1 : ℂ)) := by
-    simpa [Complex.Gamma_zero] using hSlope
-  exact (hasDerivAt_iff_tendsto_slope_zero).mpr (by simpa using hDiffSlope)
+  exact hasDerivAt_iff_tendsto_slope_zero.mpr (by simpa using (hSlope))
 
 private theorem differentiableAt_upsilonLeftUnitFactor
     (hγ : 0 < γ) :
@@ -85,13 +77,12 @@ private theorem differentiableAt_upsilonLeftUnitFactor
     apply Complex.ofReal_ne_zero.mpr
     exact div_ne_zero hγ.ne' (by norm_num)
   have hpow : DifferentiableAt ℂ
-      (fun z : ℂ => upsilonB γ ^ ((γ : ℂ) * z - 1)) 0 := by
+      (fun z : ℂ => upsilonB γ ^ (γ * z - 1)) 0 := by
     apply DifferentiableAt.const_cpow
     · fun_prop
     · exact Or.inl hb
-  have hGammaOne : DifferentiableAt ℂ Complex.Gamma (1 : ℂ) := by
-    exact Complex.differentiableAt_Gamma_one
-  have harg : DifferentiableAt ℂ (fun z : ℂ => 1 - upsilonB γ * z) 0 := by
+  have hGammaOne := Complex.differentiableAt_Gamma_one
+  have harg : DifferentiableAt ℂ (fun z => 1 - upsilonB γ * z) 0 := by
     fun_prop
   have hGammaComp : DifferentiableAt ℂ
       (fun z : ℂ => Complex.Gamma (1 - upsilonB γ * z)) 0 := by
@@ -107,20 +98,15 @@ private theorem upsilonLeftFactor_hasDerivAt_zero
   have hb : upsilonB γ ≠ 0 := by
     apply Complex.ofReal_ne_zero.mpr
     exact div_ne_zero hγ.ne' (by norm_num)
-  have hlin : HasDerivAt (fun z : ℂ => upsilonB γ * z) (upsilonB γ) 0 := by
-    simpa using (hasDerivAt_const_mul (upsilonB γ) :
-      HasDerivAt (fun z : ℂ => upsilonB γ * z) (upsilonB γ) 0)
   have hrecip : HasDerivAt
-      (fun z : ℂ => (Complex.Gamma (upsilonB γ * z))⁻¹) (upsilonB γ) 0 := by
+      (fun z => (Complex.Gamma (upsilonB γ * z))⁻¹) (upsilonB γ) 0 := by
     have hRecipAt : HasDerivAt (fun z : ℂ => (Complex.Gamma z)⁻¹) 1
         (upsilonB γ * (0 : ℂ)) := by
       simpa using reciprocalGamma_hasDerivAt_zero
     simpa only [Function.comp_def, one_mul] using
-      HasDerivAt.comp (0 : ℂ) hRecipAt hlin
-  have hOuterDiff := differentiableAt_upsilonLeftUnitFactor hγ
-  have hA := hOuterDiff.hasDerivAt.mul hrecip
+      HasDerivAt.comp 0 hRecipAt (hasDerivAt_const_mul (upsilonB γ))
   simpa [upsilonLeftFactor, Complex.Gamma_zero, Complex.Gamma_one,
-    Complex.cpow_neg, hb] using hA
+      Complex.cpow_neg, hb] using ((differentiableAt_upsilonLeftUnitFactor hγ).hasDerivAt.mul hrecip)
 
 /-- The derivative at zero is the value one half-period to the right. -/
 theorem IsUpsilon.deriv_zero {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)

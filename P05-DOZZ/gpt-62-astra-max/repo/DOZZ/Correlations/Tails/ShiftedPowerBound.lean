@@ -30,7 +30,6 @@ theorem shifted_negative_power_bound (p P y : ℝ)
             (by norm_num) ht.1 (by linarith only [hp])
         _ = (2 : ℝ)^(p+1) := by
             rw [one_div,Real.inv_rpow zero_le_two,← Real.rpow_neg zero_le_two]
-            congr 1
             ring
         _ ≤ 2^(P+1) := Real.rpow_le_rpow_of_exponent_le (by norm_num) (add_le_add hpP le_rfl)
     rw [norm_mul,Real.norm_eq_abs,abs_neg,abs_of_nonneg hp,Real.norm_eq_abs,

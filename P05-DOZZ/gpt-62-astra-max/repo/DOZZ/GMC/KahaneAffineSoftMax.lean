@@ -81,23 +81,16 @@ theorem affineSoftMaxSlopeSum_hasDerivAt {ι : Type*} [Fintype ι]
 theorem affineSoftMax_hasDerivAt {ι : Type*} [Fintype ι] [Nonempty ι]
     (a b : ι → ℝ) (β x : ℝ) (hβ : β ≠ 0) :
     HasDerivAt (affineSoftMax a b β) (affineSoftMaxDeriv a b β x) x := by
-  have hS := affineSoftMaxSum_hasDerivAt a b β x
-  have hpos := affineSoftMaxSum_pos a b β x
-  convert (hS.log hpos.ne').div_const β using 1
-  · funext y
-    rfl
+  convert ((affineSoftMaxSum_hasDerivAt a b β x).log (affineSoftMaxSum_pos a b β x).ne').div_const β using 1
+  · rfl
   · dsimp [affineSoftMaxDeriv]
     field_simp
 
 theorem affineSoftMaxDeriv_hasDerivAt {ι : Type*} [Fintype ι] [Nonempty ι]
     (a b : ι → ℝ) (β x : ℝ) :
     HasDerivAt (affineSoftMaxDeriv a b β) (affineSoftMaxSecondDeriv a b β x) x := by
-  have hS := affineSoftMaxSum_hasDerivAt a b β x
-  have hSlope := affineSoftMaxSlopeSum_hasDerivAt a b β x
-  have hpos := affineSoftMaxSum_pos a b β x
-  convert hSlope.div hS hpos.ne' using 1
-  · funext y
-    rfl
+  convert (affineSoftMaxSlopeSum_hasDerivAt a b β x).div (affineSoftMaxSum_hasDerivAt a b β x) (affineSoftMaxSum_pos a b β x).ne' using 1
+  · rfl
   · dsimp [affineSoftMaxSecondDeriv]
     ring
 

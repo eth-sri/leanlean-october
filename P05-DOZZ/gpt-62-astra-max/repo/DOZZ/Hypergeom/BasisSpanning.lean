@@ -26,13 +26,9 @@ theorem gauss_pair_wronskian_abel
       z * (1 - z) * deriv (fun w => f w * deriv g w - deriv f w * g w) z +
         (c - (a + b + 1) * z) *
           (f z * deriv g z - deriv f z * g z) = 0 := by
-  let W : ℂ → ℂ := fun z => f z * deriv g z - deriv f z * g z
-  have hf₁ : AnalyticOnNhd ℂ (deriv f) gaussCutPlane := hf.deriv
-  have hg₁ : AnalyticOnNhd ℂ (deriv g) gaussCutPlane := hg.deriv
-  have hWanalytic : AnalyticOnNhd ℂ W gaussCutPlane := by
-    change AnalyticOnNhd ℂ (fun z => f z * deriv g z - deriv f z * g z)
-      gaussCutPlane
-    exact (hf.mul hg₁).sub (hf₁.mul hg)
+  let W := fun z => f z * deriv g z - deriv f z * g z
+  have hf₁ := hf.deriv
+  have hg₁ := hg.deriv
   have hWderiv : ∀ z ∈ gaussCutPlane,
       deriv W z = f z * deriv (deriv g) z - deriv (deriv f) z * g z := by
     intro z hz
@@ -52,8 +48,7 @@ theorem gauss_pair_wronskian_abel
   rw [hWderiv z hz]
   have hfeq := hfeq z hz
   have hgeq := hgeq z hz
-  dsimp [gaussHolomorphicOperator] at hfeq hgeq
-  linear_combination (f z) * hgeq - (g z) * hfeq
+  grind [gaussHolomorphicOperator]
 
 /-- On the principal cut plane, any solution is the unique constant linear combination of two
 holomorphic solutions whose Wronskian never vanishes. -/

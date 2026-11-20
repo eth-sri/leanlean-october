@@ -32,8 +32,7 @@ theorem ordinaryHypergeometricCoefficient_gauss_recurrence (a b c : ℂ) (n : �
     intro h
     have h' : c = -(n : ℂ) := by linear_combination h
     exact hc n h'
-  have hcpn : Polynomial.eval c (ascPochhammer ℂ n) ≠ 0 :=
-    ordinaryHypergeometric_pochhammer_denominator_ne_zero n hc
+  have hcpn := ordinaryHypergeometric_pochhammer_denominator_ne_zero n hc
   have hfact : ((n + 1).factorial : ℂ) = (n + 1 : ℂ) * (n.factorial : ℂ) := by
     exact_mod_cast Nat.factorial_succ n
   have hfact0 : (n.factorial : ℂ) ≠ 0 := by exact_mod_cast Nat.factorial_ne_zero n

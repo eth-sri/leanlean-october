@@ -25,18 +25,13 @@ theorem centeredJointlyGaussian_linear_exp_integrable
     (hZ : DOZZ.IsCenteredJointlyGaussian P Z) (a : ι → ℝ) (t : ℝ) :
     Integrable (fun ω => Real.exp (t * ∑ i, a i * Z ω i)) P := by
   obtain ⟨hLmem, ⟨v, hLmap⟩⟩ := hZ.2.2 a
-  let L : Ω → ℝ := fun ω => ∑ i, a i * Z ω i
-  have hLmap' : P.map L = gaussianReal 0 v := by
-    simpa [L] using hLmap
-  have hLmeas : AEMeasurable L P := by
-    simpa [L] using hLmem.aemeasurable
+  let L := fun ω => ∑ i, a i * Z ω i
+  have hLmap'  := hLmap
+  have hLmeas  := hLmem.aemeasurable
   have hExpMap : Integrable (fun x : ℝ => Real.exp (t * x)) (P.map L) := by
     rw [hLmap']
     exact integrable_exp_mul_gaussianReal t
-  have hExp : Integrable (fun ω => Real.exp (t * L ω)) P := by
-    simpa only [Function.comp_def] using
-      (integrable_map_measure hExpMap.aestronglyMeasurable hLmeas).mp hExpMap
-  simpa [L] using hExp
+  exact (integrable_map_measure (Integrable.aestronglyMeasurable hExpMap) hLmeas).mp hExpMap
 
 /-- The exponential of a weighted sum of absolute Gaussian coordinates is integrable.
 The proof dominates it by the finite sum over all sign choices of Gaussian linear exponentials. -/
@@ -95,17 +90,11 @@ theorem centeredJointlyGaussian_coordinate_mul_abs_linear_exp_integrable
     (P : Measure Ω) (Z : Ω → ι → ℝ)
     (hZ : DOZZ.IsCenteredJointlyGaussian P Z) (c : ι → ℝ) (i : ι) :
     Integrable (fun ω => Z ω i * Real.exp (∑ j, c j * |Z ω j|)) P := by
-  have hArg : AEStronglyMeasurable
-      (fun ω => ∑ j, c j * |Z ω j|) P := by
-    have hterm (j : ι) : AEStronglyMeasurable
-        (fun ω => c j * |Z ω j|) P := by
-      exact (continuous_abs.comp_aestronglyMeasurable
-        (hZ.2.1 j).aestronglyMeasurable).const_mul (c j)
+  have hExpMeas := Real.continuous_exp.comp_aestronglyMeasurable (by
+    have hterm (j : ι)  := (continuous_abs.comp_aestronglyMeasurable
+      (hZ.2.1 j).aestronglyMeasurable).const_mul (c j)
     simpa only [Finset.sum_apply] using
-      (Finset.univ.aestronglyMeasurable_fun_sum (fun j hj => hterm j))
-  have hExpMeas : AEStronglyMeasurable
-      (fun ω => Real.exp (∑ j, c j * |Z ω j|)) P :=
-    Real.continuous_exp.comp_aestronglyMeasurable hArg
+      (Finset.univ.aestronglyMeasurable_fun_sum (fun j hj => hterm j)))
   have hExpSq : Integrable
       (fun ω => Real.exp (2 * ∑ j, c j * |Z ω j|)) P := by
     have hdouble := centeredJointlyGaussian_abs_linear_exp_integrable P Z hZ

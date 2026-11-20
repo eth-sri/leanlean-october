@@ -23,10 +23,10 @@ theorem dual_cut_squeeze_tendsto {A : Type*} (l : Filter A)
   constructor
   · intro a ha
     filter_upwards [hLower.eventually (lt_mem_nhds ha), hBound 0] with x hx hb
-    exact hx.trans_le hb.1
+    linarith
   · intro b hb
     obtain ⟨c, hc⟩ := (hC.eventually (gt_mem_nhds hb)).exists
     filter_upwards [(hUpper c).eventually (gt_mem_nhds hc), hBound c] with x hx hb
-    exact hb.2.trans_lt hx
+    linarith
 
 end DOZZ.Proofs

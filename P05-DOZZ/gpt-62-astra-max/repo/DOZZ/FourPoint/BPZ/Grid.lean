@@ -110,10 +110,10 @@ theorem norm_le_of_bpzGridIdx_mem_box {h : ℝ} (hh : 0 < h) {N : ℕ} {x : ℂ}
     (hx : bpzGridIdx h x ∈ bpzGridBox N) : ‖x‖ ≤ 2 * ((N + 1) * h) := by
   unfold bpzGridIdx bpzGridBox at hx
   rw [Finset.mem_product] at hx
-  calc ‖x‖ ≤ |x.re| + |x.im| := Complex.norm_le_abs_re_add_abs_im x
+  calc _ ≤ |x.re| + |x.im| := Complex.norm_le_abs_re_add_abs_im x
     _ ≤ (N + 1) * h + (N + 1) * h :=
         add_le_add (bpzGrid_abs_le_of_floor_mem hh hx.1) (bpzGrid_abs_le_of_floor_mem hh hx.2)
-    _ = 2 * ((N + 1) * h) := by ring
+    _ = _ := by ring
 
 /-- A step function of the grid index on a finite set of squares is a finite sum of
 indicators. -/

@@ -124,11 +124,10 @@ theorem gaussianSplit_sq_pointwise (ψ : ℝ → ℝ) (hψa : Antitone ψ) (hψ0
     linarith
   · have hnot : ξ ∉ {ξ : ℝ | γ * ξ < -u} := hξ
     rw [Set.indicator_of_notMem hnot, zero_add]
-    have hle : c - u ≤ c + γ * ξ := by linarith [not_lt.1 hξ]
-    calc ψ (c + γ * ξ) ^ 2 ≤ (P + F) ^ 2 :=
-          pow_le_pow_left₀ (hψ0 _) ((hψa hle).trans hψ) 2
+    calc _ ≤ (P + F) ^ 2 :=
+          pow_le_pow_left₀ (hψ0 _) ((hψa (by linarith [not_lt.1 hξ])).trans hψ) 2
       _ ≤ (1 + 1 / ε) * P ^ 2 + (1 + ε) * F ^ 2 := gaussianSplit_sq_add_le P F ε hε
-      _ = (1 + ε) * F ^ 2 + (1 + 1 / ε) * P ^ 2 := by ring
+      _ = _ := by ring
 
 /-- Pointwise bound for the squared inner average at the base point `x + a + γ ξ`. -/
 theorem gaussianSplit_outer_pointwise (f : ℝ → ℝ) (hf : Antitone f) (hf0 : ∀ y, 0 ≤ f y)

@@ -37,8 +37,8 @@ theorem bpz_segment_mem_ball {z h : ℂ} {r t : ℝ} (hh : ‖h‖ < r) (ht : t 
   rw [Set.uIcc_of_le zero_le_one] at ht
   rw [Metric.mem_ball, dist_eq_norm, add_sub_cancel_left, norm_smul, Real.norm_eq_abs,
     abs_of_nonneg ht.1]
-  calc t * ‖h‖ ≤ 1 * ‖h‖ := mul_le_mul_of_nonneg_right ht.2 (norm_nonneg h)
-    _ < r := by rwa [one_mul]
+  calc _ ≤ 1 * ‖h‖ := mul_le_mul_of_nonneg_right ht.2 (norm_nonneg h)
+    _ < r := by linarith
 
 /-- The derivative of `t ↦ f (z + t h)` along a segment inside a ball of differentiability. -/
 theorem bpz_hasDerivAt_segment {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
@@ -46,9 +46,8 @@ theorem bpz_hasDerivAt_segment {F : Type*} [NormedAddCommGroup F] [NormedSpace �
     (hf : ∀ w ∈ Metric.ball z r, HasFDerivAt f (f' w) w) (hh : ‖h‖ < r) {t : ℝ}
     (ht : t ∈ Set.uIcc (0 : ℝ) 1) :
     HasDerivAt (fun s : ℝ => f (z + s • h)) (f' (z + t • h) h) t := by
-  have hγ : HasDerivAt (fun s : ℝ => z + s • h) h t := by
-    simpa using ((hasDerivAt_id t).smul_const h).const_add z
-  exact (hf _ (bpz_segment_mem_ball hh ht)).comp_hasDerivAt t hγ
+  refine (hf _ (bpz_segment_mem_ball hh ht)).comp_hasDerivAt t ?_
+  simpa using ((hasDerivAt_id t).smul_const h).const_add z
 
 /-- Along a segment the derivative of a differentiable function is a.e. strongly measurable. -/
 theorem bpz_aestronglyMeasurable_segment {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
@@ -56,10 +55,10 @@ theorem bpz_aestronglyMeasurable_segment {F : Type*} [NormedAddCommGroup F] [Nor
     (hf : ∀ w ∈ Metric.ball z r, HasFDerivAt f (f' w) w) (hh : ‖h‖ < r) :
     AEStronglyMeasurable (fun t : ℝ => f' (z + t • h) h)
       (volume.restrict (Set.uIoc (0 : ℝ) 1)) := by
-  refine ((stronglyMeasurable_deriv (fun s : ℝ => f (z + s • h))).aestronglyMeasurable).congr ?_
+  refine (stronglyMeasurable_deriv (fun s => f (z + s • h))).aestronglyMeasurable.congr ?_
   rw [Filter.EventuallyEq, ae_restrict_iff' measurableSet_uIoc]
-  refine Eventually.of_forall fun t ht => ?_
-  exact (bpz_hasDerivAt_segment hf hh (Set.uIoc_subset_uIcc ht)).deriv
+  exact Eventually.of_forall fun t ht =>
+    HasDerivAt.deriv (bpz_hasDerivAt_segment hf hh (Set.uIoc_subset_uIcc ht))
 
 /-- A bounded derivative along a segment is interval integrable. -/
 theorem bpz_intervalIntegrable_segment {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F]
@@ -71,10 +70,10 @@ theorem bpz_intervalIntegrable_segment {F : Type*} [NormedAddCommGroup F] [Norme
   refine Integrable.mono' (g := fun _ => C * ‖h‖) ?_ (bpz_aestronglyMeasurable_segment hf hh) ?_
   · exact integrableOn_const (by simp)
   · rw [ae_restrict_iff' measurableSet_uIoc]
-    refine Eventually.of_forall fun t ht => ?_
-    have hmem := bpz_segment_mem_ball (z := z) hh (Set.uIoc_subset_uIcc ht)
-    calc ‖f' (z + t • h) h‖ ≤ ‖f' (z + t • h)‖ * ‖h‖ := (f' (z + t • h)).le_opNorm h
-      _ ≤ C * ‖h‖ := mul_le_mul_of_nonneg_right (hC _ hmem) (norm_nonneg h)
+    exact Eventually.of_forall fun t ht =>
+      have hmem := bpz_segment_mem_ball hh (Set.uIoc_subset_uIcc ht);
+      LE.le.trans (ContinuousLinearMap.le_opNorm (f' (z + t • h)) h)
+        (mul_le_mul_of_nonneg_right (hC _ hmem) (norm_nonneg h))
 
 /-- The fundamental theorem of calculus along a segment, for a function that is differentiable
 with bounded (not necessarily continuous) derivative on a ball. -/
@@ -200,15 +199,13 @@ theorem bpz_wirtingerZ_wirtingerZ_ofReal {T : ℂ → ℝ} {DT : ℂ → ℂ →
       fun w => ((DT w 1 : ℂ) - Complex.I * (DT w Complex.I : ℂ)) / 2 := by
     filter_upwards [hU.mem_nhds hz] with w hw
     exact bpz_wirtingerZ_ofReal (h1 w hw)
-  have hA : ∀ v : ℂ, HasFDerivAt (fun w => ((DT w v : ℝ) : ℂ))
-      (Complex.ofRealCLM.comp ((ContinuousLinearMap.apply ℝ ℝ v).comp D2T)) z := fun v =>
-    Complex.ofRealCLM.hasFDerivAt.comp z ((ContinuousLinearMap.apply ℝ ℝ v).hasFDerivAt.comp z h2)
-  have hG := ((hA 1).sub ((hA Complex.I).const_mul Complex.I)).const_mul (2⁻¹ : ℂ)
+  have hA := fun v =>
+  Complex.ofRealCLM.hasFDerivAt.comp z ((ContinuousLinearMap.apply ℝ ℝ v).hasFDerivAt.comp z h2)
   have hG' : HasFDerivAt (fun w => ((DT w 1 : ℂ) - Complex.I * (DT w Complex.I : ℂ)) / 2)
       ((2⁻¹ : ℂ) • (Complex.ofRealCLM.comp ((ContinuousLinearMap.apply ℝ ℝ (1 : ℂ)).comp D2T) -
         Complex.I • Complex.ofRealCLM.comp
           ((ContinuousLinearMap.apply ℝ ℝ Complex.I).comp D2T))) z := by
-    convert hG using 2 with w
+    convert (((hA 1).sub ((hA Complex.I).const_mul Complex.I)).const_mul (2⁻¹ : ℂ)) using 2 with w
     simp [div_eq_inv_mul]
   rw [wirtingerZ, hev.fderiv_eq, hG'.fderiv]
   simp
@@ -223,8 +220,8 @@ theorem bpz_contDiffOn_two_of {T : ℂ → ℝ} {DT : ℂ → ℂ →L[ℝ] ℝ}
     (h3 : ContinuousOn D2T U) : ContDiffOn ℝ 2 T U := by
   have hev : ∀ w ∈ U, fderiv ℝ T =ᶠ[𝓝 w] DT := fun w hw => by
     filter_upwards [hU.mem_nhds hw] with y hy using (h1 y hy).fderiv
-  have hd2 : ∀ w ∈ U, HasFDerivAt (fderiv ℝ T) (D2T w) w := fun w hw =>
-    (h2 w hw).congr_of_eventuallyEq (hev w hw)
+  have hd2 := fun w hw =>
+  (h2 w hw).congr_of_eventuallyEq (hev w hw)
   have hC1 : ContDiffOn ℝ 1 (fderiv ℝ T) U := by
     have h0 : ContDiffOn ℝ ((0 : WithTop ℕ∞) + 1) (fderiv ℝ T) U := by
       rw [contDiffOn_succ_iff_fderiv_of_isOpen hU]
@@ -237,6 +234,6 @@ theorem bpz_contDiffOn_two_of {T : ℂ → ℝ} {DT : ℂ → ℂ →L[ℝ] ℝ}
     rw [contDiffOn_succ_iff_fderiv_of_isOpen hU]
     exact ⟨fun w hw => (h1 w hw).differentiableAt.differentiableWithinAt,
       fun h => absurd h (by simp), hC1⟩
-  simpa [one_add_one_eq_two] using h2'
+  assumption
 
 end DOZZ.Proofs

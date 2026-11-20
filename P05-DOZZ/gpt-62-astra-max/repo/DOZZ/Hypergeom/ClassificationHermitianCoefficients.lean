@@ -56,9 +56,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
     exact mul_ne_zero hzReg.1 (sub_ne_zero.mpr (Ne.symm hzReg.2))
   have hTAtReal : ContDiffAt ℝ 2 T z :=
     (hT.1 z hzReg).contDiffAt (gaussRegularPlane_isOpen.mem_nhds hzReg)
-  have hTAt : ContDiffAt ℝ 2 (fun w => (T w : ℂ)) z := by
-    change ContDiffAt ℝ 2 (fun w => Complex.ofRealCLM (T w)) z
-    exact Complex.ofRealCLM.contDiff.contDiffAt.comp z hTAtReal
+  have hTAt  := Complex.ofRealCLM.contDiff.contDiffAt.comp z hTAtReal
   let t₀ : ℂ → ℂ := fun w => (T w : ℂ)
   let t₁ : ℂ → ℂ := fun w => wirtingerZ t₀ w
   let t₂ : ℂ → ℂ := fun w => wirtingerZ t₁ w
@@ -69,14 +67,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
   have hPDE := hT.2 z hzReg
   let pz : ℂ := (z * ((a : ℂ) + b + 1) - c) / den
   let qz : ℂ := (a * b) / den
-  have hPDE' :
-      t₂ z + ((c : ℂ) - z * ((a : ℂ) + b + 1)) / den * t₁ z -
-        (a * b) / den * t₀ z = 0 := by
-    change wirtingerZ (wirtingerZ (fun w => (T w : ℂ))) z +
-        ((c : ℂ) - z * ((a : ℂ) + b + 1)) / (z * (1 - z)) *
-          wirtingerZ (fun w => (T w : ℂ)) z -
-        (a : ℂ) * b / (z * (1 - z)) * (T z : ℂ) = 0
-    exact hPDE
+  have hPDE'  := hPDE
   have ht₂ : t₂ z = pz * t₁ z + qz * t₀ z := by
     have hpz : pz = -(((c : ℂ) - z * ((a : ℂ) + b + 1)) / den) := by
       dsimp [pz]
@@ -107,10 +98,6 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
   have hODEg' : deriv (deriv g) z = pz * deriv g z + qz * g z := by
     have h := hODEg z hz
     dsimp [gaussHolomorphicOperator] at h
-    have hmul : den * deriv (deriv g) z =
-        (z * ((a : ℂ) + b + 1) - c) * deriv g z + (a * b) * g z := by
-      dsimp [den]
-      linear_combination h
     have hscaled : den * (pz * deriv g z + qz * g z) =
         (z * ((a : ℂ) + b + 1) - c) * deriv g z + (a * b) * g z := by
       simp only [pz, qz]
@@ -118,7 +105,9 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
     apply mul_left_cancel₀ hden
     calc
       den * deriv (deriv g) z =
-          (z * ((a : ℂ) + b + 1) - c) * deriv g z + (a * b) * g z := hmul
+          (z * ((a : ℂ) + b + 1) - c) * deriv g z + (a * b) * g z := (by
+            dsimp [den]
+            linear_combination h)
       _ = den * (pz * deriv g z + qz * g z) := hscaled.symm
   let A : ℂ → ℂ := gaussCramerNumerator₁ T g
   let B : ℂ → ℂ := gaussCramerNumerator₂ T f
@@ -148,10 +137,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
       wirtingerZ A z =
           wirtingerZ (fun w => t₀ w * deriv g w) z -
             wirtingerZ (fun w => t₁ w * g w) z := by
-        change wirtingerZ (fun w => t₀ w * deriv g w - t₁ w * g w) z = _
-        rw [hA_mul₁, hA_mul₂]
-        rw [← hA_mul₁, ← hA_mul₂] at hA_sub
-        exact hA_sub
+        assumption
       _ = (t₀ z * deriv (deriv g) z + deriv g z * t₁ z) -
             (t₁ z * deriv g z + g z * t₂ z) := by
         rw [wirtingerZ_mul ht₀ (hg₁At.restrictScalars ℝ),
@@ -176,10 +162,7 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
       wirtingerZ B z =
           wirtingerZ (fun w => f w * t₁ w) z -
             wirtingerZ (fun w => deriv f w * t₀ w) z := by
-        change wirtingerZ (fun w => f w * t₁ w - deriv f w * t₀ w) z = _
-        rw [hB_mul₁, hB_mul₂]
-        rw [← hB_mul₁, ← hB_mul₂] at hB_sub
-        exact hB_sub
+        assumption
       _ = (f z * t₂ z + t₁ z * deriv f z) -
             (deriv f z * t₁ z + t₀ z * deriv (deriv f) z) := by
         rw [wirtingerZ_mul (hfAt.restrictScalars ℝ) ht₁,
@@ -212,12 +195,8 @@ theorem realGaussCramerCoefficients_wirtingerZ_eq_zero
       _ = den * (pz * W z) := hscaled.symm
   have hWne := hW z hz
   have hInvAt : DifferentiableAt ℂ (fun w => (W w)⁻¹) z := hWAt.inv hWne
-  have hαAt : DifferentiableAt ℝ (gaussCramerCoefficient₁ T f g) z := by
-    change DifferentiableAt ℝ (fun w => A w * (W w)⁻¹) z
-    exact hAAt.mul (hInvAt.restrictScalars ℝ)
-  have hβAt : DifferentiableAt ℝ (gaussCramerCoefficient₂ T f g) z := by
-    change DifferentiableAt ℝ (fun w => B w * (W w)⁻¹) z
-    exact hBAt.mul (hInvAt.restrictScalars ℝ)
+  have hαAt  := hAAt.mul (hInvAt.restrictScalars ℝ)
+  have hβAt  := hBAt.mul (hInvAt.restrictScalars ℝ)
   have hαz : wirtingerZ (gaussCramerCoefficient₁ T f g) z = 0 := by
     have hcancel (x : ℂ) :
         A z * (-(W z)⁻¹ ^ 2 * (x * W z)) + (W z)⁻¹ * (x * A z) = 0 := by

@@ -26,16 +26,14 @@ theorem crossing_negative_factor_le (γ : ℝ) (z x : ℂ)
     ENNReal.rpow (ENNReal.ofReal (normPlus x / ‖x - z‖)) (γ * (-γ / 2)) ≤
       ENNReal.ofReal ((1 / 2 : ℝ) ^ (γ * (-γ / 2))) := by
   have hn : 0 < normPlus x := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
-  have hd : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
-  have hb : 1 / 2 ≤ normPlus x / ‖x - z‖ := by
-    rw [le_div_iff₀ hd]
-    have hh := norm_sub_le x z
-    have h1 : 1 ≤ normPlus x := le_max_left _ _
-    have h2 : ‖x‖ ≤ normPlus x := le_max_right _ _
-    linarith only [hh, h1, h2, hz]
+  have hd := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
   rw [coulombWeight_rpow_ofReal (div_pos hn hd)]
   apply ENNReal.ofReal_le_ofReal
-  exact Real.rpow_le_rpow_of_nonpos (by norm_num) hb (by nlinarith only [sq_nonneg γ])
+  refine Real.rpow_le_rpow_of_nonpos (by norm_num) ?_ (by nlinarith only [sq_nonneg γ])
+  rw [le_div_iff₀ hd]
+  have h1 : 1 ≤ normPlus x := le_max_left _ _
+  have h2 : ‖x‖ ≤ normPlus x := le_max_right _ _
+  linarith only [(norm_sub_le x z), h1, h2, hz]
 
 /-- Removing the bounded negative-charge factor yields a fixed three-point majorant. -/
 theorem crossing_coulombWeight_le (γ a b c : ℝ) (z x : ℂ)

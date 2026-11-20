@@ -23,7 +23,7 @@ theorem planarDifferenceKernel_rotate (k β : ℝ) (ξ z v : ℂ) (hξ : ‖ξ�
       DOZZ.planarDifferenceKernel k β z v := by
   have hshift : ξ * v - ξ * z = ξ * (v - z) := by ring
   rw [DOZZ.planarDifferenceKernel, DOZZ.planarDifferenceKernel, hshift]
-  simp only [norm_mul, hξ, one_mul]
+  simp_all
 
 theorem planarDifferenceKernel_real_scale (k β : ℝ) (hk : 0 < k) (hβ : k < β)
     (r : ℝ) (hr : 0 < r) (v : ℂ) :

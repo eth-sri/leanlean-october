@@ -49,15 +49,12 @@ theorem brownianHeatDensity_sub_factor_probability
     field_simp [ht.ne']
     ring
   have he₂ : -((y + x) ^ 2) / (2 * t) =
-      -(x ^ 2 + y ^ 2) / (2 * t) - x * y / t := by
+      -(x ^ 2 + y ^ 2) / (2 * t) + -(x * y / t) := by
     field_simp [ht.ne']
     ring
   have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
   simp only [brownianHeatDensity, ht, ite_true]
-  rw [he₁, he₂]
-  rw [show -(x ^ 2 + y ^ 2) / (2 * t) - x * y / t =
-      -(x ^ 2 + y ^ 2) / (2 * t) + -(x * y / t) by ring]
-  rw [Real.exp_add, Real.exp_add, Real.sinh_eq]
+  rw [he₁, he₂, Real.exp_add, Real.exp_add, Real.sinh_eq]
   field_simp [hden]
 
 private theorem conditionedH_pos_of_pos_drift

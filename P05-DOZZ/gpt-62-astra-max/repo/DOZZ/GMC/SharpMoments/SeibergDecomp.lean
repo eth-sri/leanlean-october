@@ -25,19 +25,18 @@ namespace DOZZ.Proofs
 distance between distinct roots. -/
 theorem exists_root_separation {N : ℕ} (z : Fin N → ℂ) (hz : Function.Injective z) :
     ∃ δ : ℝ, 0 < δ ∧ δ ≤ 1 / 8 ∧ ∀ j k, j ≠ k → 2 * δ ≤ ‖z j - z k‖ := by
-  have h : ∀ j k : Fin N, ∀ᶠ δ in 𝓝[>] (0 : ℝ), j ≠ k → 2 * δ ≤ ‖z j - z k‖ := by
+  have h : ∀ j k : Fin N, ∀ᶠ δ in 𝓝[>] 0, j ≠ k → 2 * δ ≤ ‖z j - z k‖ := by
     intro j k
     by_cases hjk : j = k
-    · exact Eventually.of_forall fun _ h => absurd hjk h
-    · have hpos : 0 < ‖z j - z k‖ := norm_pos_iff.mpr (sub_ne_zero.mpr (hz.ne hjk))
-      filter_upwards [Ioo_mem_nhdsGT (half_pos hpos)] with δ hδ _
+    · simp_all
+    · filter_upwards [Ioo_mem_nhdsGT (half_pos (norm_pos_iff.mpr (sub_ne_zero.mpr (hz.ne hjk))))] with δ hδ _
       linarith [hδ.2]
   have hall : ∀ᶠ δ in 𝓝[>] (0 : ℝ), ∀ j k, j ≠ k → 2 * δ ≤ ‖z j - z k‖ := by
     rw [eventually_all]
     intro j
     rw [eventually_all]
     exact h j
-  obtain ⟨δ, hδ1, hδ2⟩ := (hall.and (Ioo_mem_nhdsGT (show (0 : ℝ) < 1 / 8 by norm_num))).exists
+  obtain ⟨δ, hδ1, hδ2⟩ := (hall.and (Ioo_mem_nhdsGT (show 0 < 1 / 8 by norm_num))).exists
   exact ⟨δ, hδ2.1, hδ2.2.le, hδ1⟩
 
 /-- With no atom at the root, the Coulomb mass of a small root disk is at most a constant times

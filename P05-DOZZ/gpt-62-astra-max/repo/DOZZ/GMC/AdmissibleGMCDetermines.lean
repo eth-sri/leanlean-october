@@ -57,39 +57,35 @@ theorem admissible_countable_tests_determine_chart_measures
     exact y.property
   have : IsFiniteMeasureOnCompacts μU := hμUfinite
   have : IsFiniteMeasureOnCompacts νU := hνUfinite
-  have hμUreg : μU.Regular := inferInstance
-  have hνUreg : νU.Regular := inferInstance
-  have : μU.Regular := hμUreg
-  have : νU.Regular := hνUreg
+  have : μU.Regular := inferInstance
+  have : νU.Regular := inferInstance
   have hUintegrals : ∀ g : C_c(↥U, ℝ), ∫ x, g x ∂μU = ∫ x, g x ∂νU := by
     intro g
-    let gext : ℂ → ℝ := Subtype.val.extend (fun x : ↥U => g x) 0
+    let gext  := Subtype.val.extend (g) 0
     have hgextval (x : ↥U) : gext x = g x := by
       simp [gext]
-    have hgextCont : Continuous gext :=
-      HasCompactSupport.continuous_extend_zero hU g.continuous g.hasCompactSupport'
-    have hgextCompact : HasCompactSupport gext :=
+    have hgextCompact  :=
       g.hasCompactSupport'.extend_zero continuous_subtype_val
     have hgextSupport : tsupport gext ⊆ U := by
       exact (g.hasCompactSupport'.tsupport_extend_zero_subset continuous_subtype_val).trans
         (by simp)
-    let gC : C(ℂ, ℝ) := ⟨gext, hgextCont⟩
+    let gC : C(ℂ, ℝ) := ⟨gext, (HasCompactSupport.continuous_extend_zero hU g.continuous g.hasCompactSupport')⟩
     obtain ⟨n, hgnK⟩ := hKcofinal (tsupport gext) hgextCompact.isCompact hgextSupport
     let W : Set (↥U) := Subtype.val ⁻¹' K n
     have hWcompact : IsCompact W := by
       have : CompactSpace (↥(K n)) := isCompact_iff_compactSpace.mp (hKcompact n)
       let j : ↥(K n) → ↥U := fun x => ⟨x.1, hKU n x.2⟩
-      have hj : Continuous j := by fun_prop
       have hrange : Set.range j = W := by
         ext x
         constructor
         · rintro ⟨y, rfl⟩
-          exact y.2
+          exact y.property
         · intro hx
           refine ⟨⟨x.1, hx⟩, ?_⟩
           exact Subtype.ext rfl
       rw [← hrange]
-      exact isCompact_range hj
+      refine isCompact_range ?_
+      fun_prop
     have hWμ : μU W < ∞ := by
       rw [e.comap_apply]
       have himage : Subtype.val '' W = K n := by
@@ -116,46 +112,23 @@ theorem admissible_countable_tests_determine_chart_measures
       change MeasurableSet (Subtype.val ⁻¹' K n)
       exact (hKcompact n).isClosed.measurableSet.preimage continuous_subtype_val.measurable
     let gCc : C_c(ℂ, ℝ) := ⟨gC, hgextCompact⟩
-    let qg : BoundedContinuousFunction ℂ ℝ := gCc.toBoundedContinuousFunction
-    have hqgSupport : tsupport (qg : ℂ → ℝ) ⊆ U := by
-      change tsupport gext ⊆ U
-      exact hgextSupport
-    have hqgK : tsupport (qg : ℂ → ℝ) ⊆ K n := by
-      change tsupport gext ⊆ K n
-      exact hgnK
-    have hqgOnU (x : ↥U) : qg x = g x := by
-      change gC x.1 = g x
-      simpa [gC] using hgextval x
+    let qg  := gCc.toBoundedContinuousFunction
     have hlift (lam : Measure ℂ) (lamU : Measure (↥U))
         (hlam : lamU = lam.comap Subtype.val) (q : BoundedContinuousFunction ℂ ℝ)
-        (hq : tsupport (q : ℂ → ℝ) ⊆ U) :
+        (hq : tsupport (q) ⊆ U) :
         ∫ x : ↥U, q x ∂lamU = ∫ x, q x ∂lam := by
       rw [hlam, integral_subtype_comap hU.measurableSet]
       exact integral_restrict_eq_integral_of_zero_on_compl lam U hU.measurableSet q
         (boundedContinuousFunction_eq_zero_off_tsupport_subset q U hq)
-    have hqgμ : ∫ x : ↥U, qg x ∂μU = ∫ x, qg x ∂μ :=
-      hlift μ μU rfl qg hqgSupport
-    have hqgν : ∫ x : ↥U, qg x ∂νU = ∫ x, qg x ∂ν :=
-      hlift ν νU rfl qg hqgSupport
-    have hgμ : ∫ x : ↥U, g x ∂μU = ∫ x, qg x ∂μU := by
-      apply integral_congr_ae
-      exact ae_of_all _ fun x => (hqgOnU x).symm
-    have hgν : ∫ x : ↥U, g x ∂νU = ∫ x, qg x ∂νU := by
-      apply integral_congr_ae
-      exact ae_of_all _ fun x => (hqgOnU x).symm
     have hfamilyU (m : ℕ) :
         ∫ x : ↥U, f (n, m) x ∂μU = ∫ x : ↥U, f (n, m) x ∂νU := by
-      have hμ := hlift μ μU rfl (f (n, m)) ((hfK n m).2.trans (hKU n))
-      have hν := hlift ν νU rfl (f (n, m)) ((hfK n m).2.trans (hKU n))
       calc
-        ∫ x : ↥U, f (n, m) x ∂μU = ∫ x, f (n, m) x ∂μ := hμ
+        _ = ∫ x, f (n, m) x ∂μ := (hlift μ μU rfl (f (n, m)) ((hfK n m).2.trans (hKU n)))
         _ = ∫ x, f (n, m) x ∂ν := hfamily n m
-        _ = ∫ x : ↥U, f (n, m) x ∂νU := hν.symm
-    have hgμInt : Integrable g μU := g.continuous.integrable_of_hasCompactSupport g.hasCompactSupport'
-    have hgνInt : Integrable g νU := g.continuous.integrable_of_hasCompactSupport g.hasCompactSupport'
+        _ = _ := (hlift ν νU rfl (f (n, m)) ((hfK n m).2.trans (hKU n))).symm
     have hclose (lamU : Measure (↥U)) (hlamfin : IsFiniteMeasureOnCompacts lamU)
         (hlamW : lamU W < ∞) (q : BoundedContinuousFunction ℂ ℝ)
-        (hqK : tsupport (q : ℂ → ℝ) ⊆ K n) (δ : ℝ) (hδ : 0 < δ)
+        (hqK : tsupport (q) ⊆ K n) (δ : ℝ) (hδ : 0 < δ)
         (happrox : ∀ x, ‖q x - gC x‖ < δ) :
         ‖∫ x : ↥U, g x ∂lamU - ∫ x : ↥U, q x ∂lamU‖ ≤ δ * lamU.real W := by
       have : IsFiniteMeasureOnCompacts lamU := hlamfin
@@ -165,32 +138,20 @@ theorem admissible_countable_tests_determine_chart_measures
         intro x hx
         have hxK : (x : ℂ) ∉ K n := hx
         exact image_eq_zero_of_notMem_tsupport (fun hs => hxK (hqK hs))
-      have hqsupp : HasCompactSupport (fun x : ↥U => q x) :=
-        HasCompactSupport.of_support_subset_isCompact hWcompact
-          (Function.support_subset_iff'.mpr fun x hx => hqUzero x hx)
       have hqint : Integrable (fun x : ↥U => q x) lamU :=
-        (q.continuous.comp continuous_subtype_val).integrable_of_hasCompactSupport hqsupp
-      let d : ↥U → ℝ := fun x => g x - q x
+        (q.continuous.comp continuous_subtype_val).integrable_of_hasCompactSupport (HasCompactSupport.of_support_subset_isCompact hWcompact
+            (Function.support_subset_iff'.mpr fun x hx => hqUzero x hx))
+      let d  := fun x => g x - q x
       have hdcont : Continuous d := by fun_prop
       have hdzero : ∀ x, x ∉ W → d x = 0 := by
         intro x hxW
-        have hxK : (x : ℂ) ∉ K n := hxW
+        have hxK  := hxW
         have hgzero : g x = 0 := by
           rw [← hgextval x]
           exact image_eq_zero_of_notMem_tsupport (fun hs => hxK (hgnK hs))
-        have hqzero : q x = 0 :=
-          image_eq_zero_of_notMem_tsupport (fun hs => hxK (hqK hs))
-        simp [d, hgzero, hqzero]
-      have hdsupp : HasCompactSupport d :=
-        HasCompactSupport.of_support_subset_isCompact hWcompact
-          (Function.support_subset_iff'.mpr hdzero)
-      have hdint : Integrable d lamU := hdcont.integrable_of_hasCompactSupport hdsupp
-      have hdnorm : Integrable (fun x => ‖d x‖) lamU := hdint.norm
-      have hconstOn : IntegrableOn (fun _ : ↥U => δ) W lamU :=
-        integrableOn_const hlamW.ne
-      have hindicator : Integrable (W.indicator (fun _ : ↥U => δ)) lamU :=
-        hconstOn.integrable_indicator hWcompact.measurableSet
-      have hbound : ∀ x, ‖d x‖ ≤ W.indicator (fun _ : ↥U => δ) x := by
+        simp [d, hgzero, (image_eq_zero_of_notMem_tsupport (fun hs => hxK (hqK hs)))]
+      have hmono := integral_mono (hdcont.integrable_of_hasCompactSupport (HasCompactSupport.of_support_subset_isCompact hWcompact
+        (Function.support_subset_iff'.mpr hdzero))).norm ((integrableOn_const hlamW.ne).integrable_indicator hWcompact.measurableSet) (by
         intro x
         by_cases hx : x ∈ W
         · simp [Set.indicator, hx, d]
@@ -200,14 +161,13 @@ theorem admissible_countable_tests_determine_chart_measures
           rw [abs_sub_comm]
           exact h.le
         · have hzero := hdzero x hx
-          simp [Set.indicator, hx, hzero]
-      have hmono := integral_mono hdnorm hindicator hbound
+          simp [Set.indicator, hx, hzero])
       calc
-        ‖∫ x : ↥U, g x ∂lamU - ∫ x : ↥U, q x ∂lamU‖ = ‖∫ x : ↥U, d x ∂lamU‖ := by
+        _ = ‖∫ x : ↥U, d x ∂lamU‖ := by
           rw [integral_sub hgint hqint]
         _ ≤ ∫ x : ↥U, ‖d x‖ ∂lamU := norm_integral_le_integral_norm _
         _ ≤ ∫ x : ↥U, W.indicator (fun _ : ↥U => δ) x ∂lamU := hmono
-        _ = δ * lamU.real W := by
+        _ = _ := by
           rw [integral_indicator_const δ hWmeas]
           simp [smul_eq_mul, mul_comm]
     have hpoint (lamU : Measure (↥U)) (hlamfin : IsFiniteMeasureOnCompacts lamU)
@@ -218,14 +178,12 @@ theorem admissible_countable_tests_determine_chart_measures
       exact hclose lamU hlamfin hlamW (f (n, m)) (hfK n m).2 δ hδ happrox
     let Mμ : ℝ := μU.real W
     let Mν : ℝ := νU.real W
-    have hMμ : 0 ≤ Mμ := by simp [Mμ]
-    have hMν : 0 ≤ Mν := by simp [Mν]
     by_contra hne
-    have hD : 0 < ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ := by
-      exact norm_pos_iff.mpr (sub_ne_zero.mpr hne)
-    let δ : ℝ := ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ /
+    have hD  := norm_pos_iff.mpr (sub_ne_zero.mpr hne)
+    let a := (∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU
+    let δ : ℝ := ‖a‖ /
       (2 * (Mμ + Mν + 1))
-    have hδ : 0 < δ := by dsimp [δ]; positivity
+    have hδ : 0 < δ := by positivity
     obtain ⟨m, happrox⟩ := hdense n gC hgextCompact hgnK δ hδ
     have hμclose :
         ‖∫ x : ↥U, g x ∂μU - ∫ x : ↥U, f (n, m) x ∂μU‖ ≤ δ * Mμ := by
@@ -234,65 +192,46 @@ theorem admissible_countable_tests_determine_chart_measures
         ‖∫ x : ↥U, g x ∂νU - ∫ x : ↥U, f (n, m) x ∂νU‖ ≤ δ * Mν := by
       simpa [Mν] using hpoint νU hνUfinite hWν δ hδ m happrox
     have hdecomp :
-        (∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU =
+        a =
           ((∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, f (n, m) x ∂μU) +
             ((∫ x : ↥U, f (n, m) x ∂νU) - ∫ x : ↥U, g x ∂νU) := by
       rw [hfamilyU m]
       ring
     have hDle :
-        ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ ≤ δ * Mμ + δ * Mν := by
+        ‖a‖ ≤ δ * Mμ + δ * Mν := by
       rw [hdecomp]
       calc
-        ‖_ + _‖ ≤
+        _ ≤
             ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, f (n, m) x ∂μU‖ +
               ‖(∫ x : ↥U, f (n, m) x ∂νU) - ∫ x : ↥U, g x ∂νU‖ := norm_add_le _ _
-        _ ≤ δ * Mμ + δ * Mν := by
+        _ ≤ _ := by
           apply add_le_add hμclose
           simpa [norm_sub_rev] using hνclose
-    have hfactor : (Mμ + Mν) / (2 * (Mμ + Mν + 1)) < 1 := by
-      apply (div_lt_one (by positivity : 0 < 2 * (Mμ + Mν + 1))).2
-      nlinarith
-    have hsmall : δ * Mμ + δ * Mν <
-        ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ := by
-      calc
-        δ * Mμ + δ * Mν =
-            ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ *
-              ((Mμ + Mν) / (2 * (Mμ + Mν + 1))) := by
-          dsimp [δ]
-          ring
-        _ <
-          ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ * 1 :=
-          mul_lt_mul_of_pos_left hfactor hD
-        _ = ‖(∫ x : ↥U, g x ∂μU) - ∫ x : ↥U, g x ∂νU‖ := by ring
-    exact (not_lt_of_ge hDle) hsmall
-  have hμae : ∀ᵐ x ∂μ, x ∈ U := by
-    rw [ae_iff]
-    exact hμsupp
-  have hνae : ∀ᵐ x ∂ν, x ∈ U := by
-    rw [ae_iff]
-    exact hνsupp
-  have hμrestrict : μ.restrict U = μ := Measure.restrict_eq_self_of_ae_mem hμae
-  have hνrestrict : ν.restrict U = ν := Measure.restrict_eq_self_of_ae_mem hνae
+    refine (not_lt_of_ge hDle) ?_
+    calc
+      δ * Mμ + δ * Mν =
+          ‖a‖ *
+            ((Mμ + Mν) / (2 * (Mμ + Mν + 1))) := by
+        ring
+      _ <
+        ‖a‖ * 1 :=
+        mul_lt_mul_of_pos_left (by
+          apply (div_lt_one (by positivity)).2
+          nlinarith) hD
+      _ = ‖a‖ := by ring
+  have hμae  := hμsupp
+  have hνae  := hνsupp
   have hrange : Set.range (Subtype.val : ↥U → ℂ) = U := by
     ext x
     constructor
-    · rintro ⟨y, rfl⟩
-      exact y.property
-    · intro hx
-      exact ⟨⟨x, hx⟩, rfl⟩
+    · simp
+    · simp
   have hmapμ : μU.map Subtype.val = μ.restrict U := by
-    change (μ.comap Subtype.val).map Subtype.val = μ.restrict U
     rw [e.map_comap μ, hrange]
   have hmapν : νU.map Subtype.val = ν.restrict U := by
-    change (ν.comap Subtype.val).map Subtype.val = ν.restrict U
     rw [e.map_comap ν, hrange]
-  calc
-    μ = μ.restrict U := hμrestrict.symm
-    _ = μU.map Subtype.val := hmapμ.symm
-    _ = νU.map Subtype.val := congrArg (fun lam : Measure (↥U) => lam.map Subtype.val) <|
-      Measure.ext_of_integral_eq_on_compactlySupported hUintegrals
-    _ = ν.restrict U := hmapν
-    _ = ν := hνrestrict
+  rw [(Measure.restrict_eq_self_of_ae_mem hμae).symm, hmapμ.symm, congrArg (fun lam : Measure (↥U) => lam.map Subtype.val) <|
+      Measure.ext_of_integral_eq_on_compactlySupported hUintegrals, hmapν, Measure.restrict_eq_self_of_ae_mem hνae]
 
 
 end DOZZ.Proofs

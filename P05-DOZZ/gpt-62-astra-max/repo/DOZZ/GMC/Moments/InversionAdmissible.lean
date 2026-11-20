@@ -57,25 +57,23 @@ theorem inversion_logmax_div_scale_bound {q t c : ℝ} (hq : 0 ≤ q) (ht : 0 < 
   let A := max (q / c) t
   let B := max q t
   let C := max q (t * c)
-  have hB : 0 < B := lt_of_lt_of_le ht (le_max_right q t)
-  have hC : 0 < C := lt_of_lt_of_le (mul_pos ht hc) (le_max_right q (t * c))
+  have hB := lt_of_lt_of_le ht (le_max_right q t)
+  have hC := lt_of_lt_of_le (mul_pos ht hc) (le_max_right q (t * c))
   have hAeq : A = C / c := by
     dsimp [A, B, C]
     by_cases h : q / c ≤ t
     · rw [max_eq_right h, max_eq_right ((div_le_iff₀ hc).mp h)]
       field_simp [hc.ne']
-    · have h' : t ≤ q / c := le_of_not_ge h
+    · have h' := le_of_not_ge h
       rw [max_eq_left h', max_eq_left ((le_div_iff₀ hc).mp h')]
   by_cases h1 : 1 ≤ c
-  · have htc : t ≤ t * c := by nlinarith [mul_le_mul_of_nonneg_left h1 ht.le]
-    have hBC : B ≤ C := max_le_max le_rfl htc
-    have hBscale : B ≤ c * B := by nlinarith [mul_le_mul_of_nonneg_right h1 hB.le]
+  · have hBC : B ≤ C := max_le_max le_rfl (by nlinarith )
     have hCB : C ≤ c * B := by
-      apply max_le
-      · exact le_trans (le_max_left q t) hBscale
-      · calc
-          t * c = c * t := by ring
-          _ ≤ c * B := mul_le_mul_of_nonneg_left (le_max_right q t) hc.le
+          apply max_le
+          · exact le_trans (le_max_left q t) (by nlinarith )
+          · calc
+              t * c = c * t := by ring
+              _ ≤ c * B := mul_le_mul_of_nonneg_left (le_max_right q t) hc.le
     have hlogc : 0 ≤ Real.log c := by
       rw [← Real.log_one]
       exact Real.log_le_log (by norm_num) h1
@@ -83,10 +81,6 @@ theorem inversion_logmax_div_scale_bound {q t c : ℝ} (hq : 0 ≤ q) (ht : 0 < 
     have hlogC_cB : Real.log C ≤ Real.log c + Real.log B := by
       rw [← Real.log_mul hc.ne' hB.ne']
       exact Real.log_le_log hC hCB
-    have hdiff : 0 ≤ Real.log C - Real.log B ∧ Real.log C - Real.log B ≤ Real.log c := by
-      constructor
-      · linarith
-      · linarith
     change |Real.log A - Real.log B| ≤ |Real.log c|
     rw [hAeq, Real.log_div hC.ne' hc.ne']
     have hfinal : |(Real.log C - Real.log B) - Real.log c| ≤ |Real.log c| := by
@@ -98,21 +92,16 @@ theorem inversion_logmax_div_scale_bound {q t c : ℝ} (hq : 0 ≤ q) (ht : 0 < 
         (Real.log C - Real.log B) - Real.log c := by ring
     rw [harg]
     exact hfinal
-  · have hc1 : c ≤ 1 := le_of_not_ge h1
-    have hCB : C ≤ B := max_le (le_max_left q t)
+  · have hc1 := le_of_not_ge h1
+    have hCB  := max_le (le_max_left q t)
       (le_trans (mul_le_of_le_one_right ht.le hc1) (le_max_right q t))
     have hcB_C : c * B ≤ C := by
       change c * max q t ≤ max q (t * c)
       by_cases hqt : q ≤ t
       · rw [max_eq_right hqt]
-        calc
-          c * t = t * c := by ring
-          _ ≤ max q (t * c) := le_max_right _ _
-      · have htq : t ≤ q := le_of_not_ge hqt
-        rw [max_eq_left htq]
-        calc
-          c * q ≤ q := by nlinarith [mul_le_mul_of_nonneg_right hc1 hq]
-          _ ≤ max q (t * c) := le_max_left _ _
+        grind
+      · have htq := le_of_not_ge hqt
+        simp_all
     have hlogc : Real.log c ≤ 0 := by
       rw [← Real.log_one]
       exact Real.log_le_log hc hc1
@@ -120,10 +109,6 @@ theorem inversion_logmax_div_scale_bound {q t c : ℝ} (hq : 0 ≤ q) (ht : 0 < 
     have hlogcB_C : Real.log c + Real.log B ≤ Real.log C := by
       rw [← Real.log_mul hc.ne' hB.ne']
       exact Real.log_le_log (mul_pos hc hB) hcB_C
-    have hdiff : Real.log c ≤ Real.log C - Real.log B ∧ Real.log C - Real.log B ≤ 0 := by
-      constructor
-      · linarith
-      · linarith
     change |Real.log A - Real.log B| ≤ |Real.log c|
     rw [hAeq, Real.log_div hC.ne' hc.ne']
     have hfinal : |(Real.log C - Real.log B) - Real.log c| ≤ |Real.log c| := by
@@ -155,9 +140,7 @@ private theorem exists_abs_log_norm_bound {K : Set ℂ} (hK : IsCompact K)
       intro x hx
       exact norm_ne_zero_iff.mpr (hKsub hx)
     obtain ⟨x, hx, hmax⟩ := hK.exists_isMaxOn hne hf
-    refine ⟨f x, abs_nonneg _, ?_⟩
-    intro y hy
-    exact hmax hy
+    refine ⟨f x, abs_nonneg _, ?_⟩ <;> assumption
   · refine ⟨0, le_rfl, ?_⟩
     intro x hx
     exact (hne ⟨x, hx⟩).elim

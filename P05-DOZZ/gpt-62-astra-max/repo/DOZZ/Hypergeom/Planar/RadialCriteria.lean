@@ -15,43 +15,28 @@ namespace DOZZ.Proofs
 
 private theorem measurable_norm_rpow (s : ℝ) :
     Measurable (fun w : ℂ => ‖w‖ ^ s) := by
-  have hrepr : (fun w : ℂ => ‖w‖ ^ s) =
-    fun w => if ‖w‖ = 0 then 0 ^ s else Real.exp (s * Real.log ‖w‖) := by
-    funext w
-    by_cases hw : ‖w‖ = 0
-    · simp [hw]
-    · rw [ite_eq_right hw,
-        Real.rpow_def_of_pos (lt_of_le_of_ne (norm_nonneg w) (Ne.symm hw))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) (by fun_prop)
-  · exact measurable_const
-  · fun_prop
+  fun_prop
 
 private theorem integrableOn_nonneg_iff_lintegral_lt_top {α : Type*} [MeasurableSpace α]
     {μ : Measure α} {s : Set α} {f : α → ℝ}
     (hf : Measurable f) (hnonneg : 0 ≤ᵐ[μ.restrict s] f) :
     IntegrableOn f s μ ↔ (∫⁻ x in s, ENNReal.ofReal (f x) ∂μ) < ∞ := by
   change Integrable f (μ.restrict s) ↔ _
-  rw [Integrable, hasFiniteIntegral_iff_ofReal (μ := μ.restrict s)
+  rw [Integrable, hasFiniteIntegral_iff_ofReal
     hnonneg]
   simp only [hf.aestronglyMeasurable, true_and]
 
 private theorem ofReal_mul_rpow (r s : ℝ) (hr : 0 < r) :
     ENNReal.ofReal r * ENNReal.ofReal (r ^ s) = ENNReal.ofReal (r ^ (s + 1)) := by
   calc
-    ENNReal.ofReal r * ENNReal.ofReal (r ^ s) = ENNReal.ofReal (r * r ^ s) := by
+    _ = ENNReal.ofReal (r * r ^ s) := by
       rw [← ENNReal.ofReal_mul (le_of_lt hr)]
     _ = ENNReal.ofReal (r ^ (1 + s)) := by
       congr 1
       calc
-        r * r ^ s = r ^ 1 * r ^ s := by simp
-        _ = r ^ (1 + s) := (Real.rpow_add hr 1 s).symm
-    _ = ENNReal.ofReal (r ^ (s + 1)) := by
-      congr 1
-      congr 1
+        _ = r ^ 1 * r ^ s := by simp
+        _ = _ := (Real.rpow_add hr 1 s).symm
+    _ = _ := by
       ring
 
 private def angularInterval : Set ℝ := Ioo (-Real.pi) Real.pi

@@ -27,14 +27,13 @@ theorem normalizedDiskPrimitive_sub_center_eq_segmentIntegral
       ∫ t in (0 : ℝ)..1, (z - c) • f (AffineMap.lineMap c z t) := by
   let : NormedSpace ℝ E := NormedSpace.restrictScalars ℝ ℂ E
   let g : ℝ → ℂ := AffineMap.lineMap c z
-  let F : ℝ → E := fun t => normalizedDiskPrimitive c r f y hf (g t)
-  let f' : ℝ → E := fun t => (z - c) • f (g t)
+  let F := fun t => normalizedDiskPrimitive c r f y hf (g t)
+  let f' := fun t => (z - c) • f (g t)
   have hr : 0 < r := by
     have hdist := Metric.mem_ball.mp hz
     exact lt_of_le_of_lt (dist_nonneg) hdist
-  have hc : c ∈ Metric.ball c r := Metric.mem_ball_self hr
-  have hseg : MapsTo g (Icc (0 : ℝ) 1) (Metric.ball c r) :=
-    (convex_ball c r).mapsTo_lineMap hc hz
+  have hseg  :=
+      (convex_ball c r).mapsTo_lineMap (Metric.mem_ball_self hr) hz
   have hderiv : ∀ t ∈ uIcc (0 : ℝ) 1, HasDerivAt F (f' t) t := by
     intro t ht
     have ht' : t ∈ Icc (0 : ℝ) 1 := by simpa [uIcc_of_le zero_le_one] using ht
@@ -50,15 +49,14 @@ theorem normalizedDiskPrimitive_sub_center_eq_segmentIntegral
         simpa [uIcc_of_le zero_le_one] using ht)
     change ContinuousOn (fun t => (z - c) • f (g t)) (uIcc (0 : ℝ) 1)
     exact continuousOn_const.smul hfcomp
-  have hint : IntervalIntegrable f' volume 0 1 := hfg.intervalIntegrable
-  have heq := intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hint
+  have heq := intervalIntegral.integral_eq_sub_of_hasDerivAt hderiv hfg.intervalIntegrable
   have hF0 : F 0 = y := by
     simp [F, g, normalizedDiskPrimitive_apply_center]
   have hF1 : F 1 = normalizedDiskPrimitive c r f y hf z := by
     simp [F, g]
   calc
-    normalizedDiskPrimitive c r f y hf z - y = F 1 - F 0 := by rw [hF1, hF0]
+    _ = F 1 - F 0 := by rw [hF1, hF0]
     _ = ∫ t in (0 : ℝ)..1, f' t := heq.symm
-    _ = ∫ t in (0 : ℝ)..1, (z - c) • f (AffineMap.lineMap c z t) := rfl
+    _ = _ := rfl
 
 end DOZZ.Proofs

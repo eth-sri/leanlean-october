@@ -492,8 +492,7 @@ theorem finite_set_bound_of_edist_le (hJ : HasBoundedCoveringNumber J c d)
   · exact finite_set_bound_of_edist_le_of_le_diam' hJ hJ_finite hX hc hd_pos hdq_lt hδ hδ_le
   refine (finite_set_bound_of_edist_le_of_diam_le hJ hJ_finite hX hd_pos hdq_lt ?_).trans ?_
   · exact (not_le.mp hδ_le).le
-  have hX.q_pos_pos : 0 < q := hd_pos.trans hdq_lt
-  calc 4 ^ p * 2 ^ q * ↑M * c * δ ^ (q - d) * Cp d p q
+  calc _ * Cp d p q
   _ ≤ 2 ^ (2 * p + 4 * q + 1) * ↑M * c * δ ^ (q - d) * Cp d p q := by
     gcongr
     rw [ENNReal.rpow_add _ _ (by positivity) (by simp),
@@ -506,11 +505,9 @@ theorem finite_set_bound_of_edist_le (hJ : HasBoundedCoveringNumber J c d)
       gcongr
       · norm_cast
       · linarith
-    _ = 2 ^ (4 * q) * 2 := by
+    _ = _ := by
       rw [ENNReal.rpow_add _ _ (by positivity) (by simp), ENNReal.rpow_one]
-  _ ≤ 2 ^ (2 * p + 4 * q + 1) * ↑M * c * δ ^ (q - d) *
-      (4 ^ d * (ENNReal.ofReal (Real.logb 2 (c.toReal * 4 ^ d * δ.toReal⁻¹ ^ d))) ^ q
-      + Cp d p q) := by
+  _ ≤ _ := by
     rw [mul_add]
     exact le_add_self
 

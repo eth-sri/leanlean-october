@@ -30,7 +30,7 @@ theorem tendstoInMeasure_L1_approximation
     TendstoInMeasure P f atTop g := by
   apply tendstoInMeasure_uniform_approximation P f g a b hconv
   intro ε hε
-  have hε0 : ENNReal.ofReal ε ≠ 0 := (ENNReal.ofReal_pos.mpr hε).ne'
+  have hε0  := (ENNReal.ofReal_pos.mpr hε).ne'
   refine ⟨fun k => c k / ENNReal.ofReal ε, ?_, ?_, ?_⟩
   · simpa only [ENNReal.zero_div] using ENNReal.Tendsto.div_const hc (Or.inr hε0)
   · intro k n

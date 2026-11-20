@@ -17,64 +17,43 @@ namespace DOZZ.Proofs
 theorem gaussCutPlane_subset_gaussSlitPlane :
     gaussCutPlane ⊆ gaussSlitPlane := by
   intro z hz
-  change z.im ≠ 0 ∨ z.re < 1
-  change z.im ≠ 0 ∨ (0 < z.re ∧ z.re < 1) at hz
   rcases hz with him | ⟨_, hlt⟩
   · exact Or.inl him
-  · exact Or.inr hlt
+  exact Or.inr hlt
 
 theorem gaussCutPlane_subset_Complex_slitPlane :
     gaussCutPlane ⊆ Complex.slitPlane := by
   intro z hz
-  rw [Complex.mem_slitPlane_iff]
-  change z.im ≠ 0 ∨ (0 < z.re ∧ z.re < 1) at hz
   rcases hz with him | ⟨hpos, _⟩
   · exact Or.inr him
-  · exact Or.inl hpos
+  exact Or.inl hpos
 
 private theorem one_sub_gaussCutPlane_subset_gaussSlitPlane :
     (fun z : ℂ => 1 - z) ⁻¹' gaussSlitPlane ⊇ gaussCutPlane := by
   intro z hz
-  change (1 - z).im ≠ 0 ∨ (1 - z).re < 1
-  change z.im ≠ 0 ∨ (0 < z.re ∧ z.re < 1) at hz
   rcases hz with him | ⟨_, hlt⟩
   · left
-    have him' : (1 - z).im = -z.im := by simp
-    rw [him']
-    exact neg_ne_zero.mpr him
+    simp [*]
   · right
-    have hre : (1 - z).re = 1 - z.re := by simp
-    rw [hre]
-    linarith
+    simp_all
 
 private theorem one_sub_gaussCutPlane_subset_Complex_slitPlane :
     (fun z : ℂ => 1 - z) ⁻¹' Complex.slitPlane ⊇ gaussCutPlane := by
   intro z hz
-  change 1 - z ∈ Complex.slitPlane
-  rw [Complex.mem_slitPlane_iff]
-  change z.im ≠ 0 ∨ (0 < z.re ∧ z.re < 1) at hz
   rcases hz with him | ⟨hpos, hlt⟩
   · exact Or.inr (by simpa using neg_ne_zero.mpr him)
   · left
-    have hre : (1 - z).re = 1 - z.re := by simp
-    rw [hre]
-    linarith
+    simp_all
 
 /-- Reflection across `1/2` preserves the common Gauss cut plane. -/
 theorem one_sub_gaussCutPlane_subset_gaussCutPlane :
     (fun z : ℂ => 1 - z) ⁻¹' gaussCutPlane ⊇ gaussCutPlane := by
   intro z hz
-  change 1 - z ∈ gaussCutPlane
-  change z.im ≠ 0 ∨ (0 < z.re ∧ z.re < 1) at hz
   rcases hz with him | ⟨hpos, hlt⟩
   · left
-    have him' : (1 - z).im = -z.im := by simp
-    rw [him']
-    exact neg_ne_zero.mpr him
+    simp [*]
   · right
-    have hre : (1 - z).re = 1 - z.re := by simp
-    rw [hre]
-    constructor <;> linarith
+    simp_all
 
 private theorem parameter_ne_nat_neg_of_ne_int {c : ℂ}
     (hc : ∀ n : ℤ, c ≠ (n : ℂ)) : ∀ n : ℕ, c ≠ -(n : ℂ) := by

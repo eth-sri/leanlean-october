@@ -30,60 +30,48 @@ theorem exists_partialHomeomorph_pullback_test
       HasCompactSupport (g : ℂ → ℝ) ∧ tsupport (g : ℂ → ℝ) ⊆ U ∧
         (∀ x ∈ U, g x = f (φ x)) ∧ (∀ x ∉ U, g x = 0) := by
   classical
-  let K : Set ℂ := φ.symm '' tsupport (f : ℂ → ℝ)
-  have hKcompact : IsCompact K := by
-    exact hfCompact.image_of_continuousOn (φ.symm.continuousOn.mono (by
-      intro y hy
-      simpa [hφV] using hfV hy))
+  let K := φ.symm '' tsupport f
+  have hKcompact := hfCompact.image_of_continuousOn (φ.symm.continuousOn.mono (by
+  simp [*]))
   have hKU : K ⊆ U := by
     rintro x ⟨y, hy, rfl⟩
-    have hyV : y ∈ φ.target := by simpa [hφV] using hfV hy
-    have hySource := φ.map_target hyV
-    simpa [hφU] using hySource
-  have hKclosed : IsClosed K := hKcompact.isClosed
-  let g : ℂ → ℝ := fun x => if x ∈ U then f (φ x) else 0
+    simpa [hφU] using (φ.map_target (by simpa [hφV] using hfV hy))
+  have hKclosed := hKcompact.isClosed
+  let g  := fun x => if x ∈ U then f (φ x) else 0
   have hsupport : Function.support g ⊆ K := by
     intro x hx
     by_cases hxU : x ∈ U
     · have hfx : f (φ x) ≠ 0 := by
         simpa [g, hxU, Function.mem_support] using hx
-      have hφx : φ x ∈ tsupport (f : ℂ → ℝ) :=
-        subset_tsupport (f : ℂ → ℝ) (Function.mem_support.mpr hfx)
-      exact ⟨φ x, hφx, by
-        have hxSource : x ∈ φ.source := by simpa [hφU] using hxU
-        exact φ.left_inv hxSource⟩
+      exact ⟨φ x, (subset_tsupport f (Function.mem_support.mpr hfx)), by
+              simp_all⟩
     · simp [g, hxU] at hx
-  have htsupport : tsupport g ⊆ K := closure_minimal hsupport hKclosed
+  have htsupport := closure_minimal hsupport hKclosed
   have hgcont : Continuous g := by
     refine continuous_iff_continuousAt.mpr fun x => ?_
     by_cases hxU : x ∈ U
-    · have hcomp : ContinuousOn (fun y => f (φ y)) U :=
-        f.continuous.continuousOn.comp (by
-          simpa [hφU] using φ.continuousOn) (by
-          intro y hy
-          have hySource : y ∈ φ.source := by simpa [hφU] using hy
-          have hφy := φ.map_source hySource
-          simpa [hφV] using hφy)
+    · have hcomp := f.continuous.continuousOn.comp (by
+        simpa [hφU] using φ.continuousOn) (by
+        intro y hy
+        have hφy := φ.map_source (by simpa [hφU] using hy)
+        simpa [hφV] using hφy)
       have hUopen : IsOpen U := by simpa [hφU] using φ.open_source
-      have hnear : U ∈ 𝓝 x := hUopen.mem_nhds hxU
-      have hct := hcomp.continuousAt hnear
-      have heq : (fun y => g y) =ᶠ[𝓝 x] fun y => f (φ y) := by
+      have hnear := hUopen.mem_nhds hxU
+      have heq : g =ᶠ[𝓝 x] fun y => f (φ y) := by
         filter_upwards [hnear] with y hy
         simp [g, hy]
-      exact hct.congr heq.symm
-    · have hxK : x ∉ K := fun hxK => hxU (hKU hxK)
-      have hnear : Kᶜ ∈ 𝓝 x := hKclosed.isOpen_compl.mem_nhds hxK
-      have hzero : (fun y => g y) =ᶠ[𝓝 x] fun _ => (0 : ℝ) := by
-        filter_upwards [hnear] with y hy
-        have hgy : g y = 0 := by
-          by_contra hne
-          have hyK : y ∈ K := hsupport (Function.mem_support.mpr hne)
-          exact hy hyK
-        exact hgy
-      exact continuousAt_const.congr hzero.symm
-  let gc : C_c(ℂ, ℝ) := ⟨⟨g, hgcont⟩, by
-    change IsCompact (tsupport g)
-    exact hKcompact.of_isClosed_subset (isClosed_tsupport g) htsupport⟩
+      exact (hcomp.continuousAt hnear).congr heq.symm
+    · exact ContinuousAt.congr continuousAt_const
+        (EventuallyEq.symm
+          (mp_mem (IsOpen.mem_nhds IsClosed.isOpen_compl fun hxK => hxU (hKU hxK))
+            (univ_mem'
+              (id fun y hy =>
+                have hgy :=
+                  Decidable.byContradiction fun hne =>
+                    have hyK := hsupport (Function.mem_support.mpr hne);
+                    hy hyK;
+                hgy))))
+  let gc : C_c(ℂ, ℝ) := ⟨⟨g, hgcont⟩, hKcompact.of_isClosed_subset (isClosed_tsupport g) htsupport⟩
   refine ⟨gc.toBoundedContinuousFunction, ?_, ?_, ?_⟩
   · exact gc.hasCompactSupport
   · exact htsupport.trans hKU

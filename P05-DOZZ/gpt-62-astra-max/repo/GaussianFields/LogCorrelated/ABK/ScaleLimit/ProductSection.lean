@@ -30,7 +30,7 @@ theorem abs_mul_le_half_sq_add_sq (a b : ℝ) :
   by_cases h : 0 ≤ a * b
   · rw [abs_of_nonneg h, le_div_iff₀ htwo_pos]
     nlinarith [two_mul_le_add_sq a b]
-  · have hneg : a * b < 0 := lt_of_not_ge h
+  · have hneg := lt_of_not_ge h
     rw [abs_of_neg hneg, le_div_iff₀ htwo_pos]
     nlinarith [two_mul_le_add_sq a (-b)]
 

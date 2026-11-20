@@ -62,16 +62,15 @@ theorem compatible_two_root_wick_pair_good_barrier_power_bound_BarrierCauchyLoca
   obtain ⟨Cyy, hCyy, hcovYY⟩ := hY.covarianceBound K hK hKU
   obtain ⟨Czz, hCzz, hcovZZ⟩ := hZ.covarianceBound K hK hKU
   obtain ⟨Cyz, hCyz, hcovYZ⟩ := hCov K hK hKU
-  let C₀ : ℝ := Cv + CmY + CmZ + Cyy + Czz + Cyz
+  let C₀  := Cv + CmY + CmZ + Cyy + Czz + Cyz
   have hC₀nonneg : 0 ≤ C₀ := by
-    dsimp [C₀]
     positivity
-  have hCvC : Cv ≤ C₀ := by dsimp [C₀]; linarith [hCmY, hCmZ, hCyy, hCzz, hCyz]
-  have hCmYC : CmY ≤ C₀ := by dsimp [C₀]; linarith [hCv, hCmZ, hCyy, hCzz, hCyz]
-  have hCmZC : CmZ ≤ C₀ := by dsimp [C₀]; linarith [hCv, hCmY, hCyy, hCzz, hCyz]
-  have hCyyC : Cyy ≤ C₀ := by dsimp [C₀]; linarith [hCv, hCmY, hCmZ, hCzz, hCyz]
-  have hCzzC : Czz ≤ C₀ := by dsimp [C₀]; linarith [hCv, hCmY, hCmZ, hCyy, hCyz]
-  have hCyzC : Cyz ≤ C₀ := by dsimp [C₀]; linarith [hCv, hCmY, hCmZ, hCyy, hCzz]
+  have hCvC : Cv ≤ C₀ := by linarith
+  have hCmYC : CmY ≤ C₀ := by linarith
+  have hCmZC : CmZ ≤ C₀ := by linarith
+  have hCyyC : Cyy ≤ C₀ := by linarith
+  have hCzzC : Czz ≤ C₀ := by linarith
+  have hCyzC : Cyz ≤ C₀ := by linarith
   refine ⟨C₀, hC₀nonneg, ?_⟩
   intro k hkcut ε δ hε hεcut₀ hεcut hδ hδcut₁ hδcut κ
     x y hx hy hxy hxypos ρ hρdef hfloor
@@ -87,10 +86,10 @@ theorem compatible_two_root_wick_pair_good_barrier_power_bound_BarrierCauchyLoca
   have hdistLeRho : ‖x - y‖ ≤ ρ := by
     rw [hρdef]
     exact le_max_left _ _
-  let r : ℝ := Real.exp (-(k : ℝ))
+  let r  := Real.exp (-(k : ℝ))
   let q : Fin 3 → Bool × ℝ × ℂ := fun i =>
     if i = 0 then (true, r, x) else if i = 1 then (b₁, ε, x) else (b₂, δ, y)
-  let V : Ω → Fin 3 → ℝ := fun ω i =>
+  let V  := fun ω i =>
     if (q i).1 then Y ω (q i).2.1 (q i).2.2 else Z ω (q i).2.1 (q i).2.2
   have hV : IsCenteredJointlyGaussian P V := by
     apply hJoint 3 q
@@ -104,23 +103,6 @@ theorem compatible_two_root_wick_pair_good_barrier_power_bound_BarrierCauchyLoca
     have h' : |gaussianVariance P (fun ω => V ω 0) - (k : ℝ)| ≤ Cv := by
       simpa [V, q, r] using h
     exact h'.trans hCvC
-  have hcovV₁ : |gaussianCovariance P (fun ω => V ω 0)
-      (fun ω => V ω 1) - (k : ℝ)| ≤ C₀ := by
-    cases b₁ with
-    | false =>
-        have hεcutZ : ε ≤ min ε₁ r := le_min
-          (le_trans hεcut₀ (min_le_right _ _)) hεcut
-        have h := hmixZ k (le_trans hkcut (min_le_left _ _)) ε hε hεcutZ x hx
-        have h' : |gaussianCovariance P (fun ω => V ω 0)
-            (fun ω => V ω 1) - (k : ℝ)| ≤ CmZ := by
-          simpa [V, q, r] using h
-        exact h'.trans hCmZC
-    | true =>
-        have h := hmixY k (le_trans hkcut (min_le_left _ _)) ε hε hεcut x hx
-        have h' : |gaussianCovariance P (fun ω => V ω 0)
-            (fun ω => V ω 1) - (k : ℝ)| ≤ CmY := by
-          simpa [V, q, r] using h
-        exact h'.trans hCmYC
   have hgeom : max ‖x - y‖ (max r δ) = r := by
     rw [max_eq_left hδcut, max_eq_right hxy]
   have hlog : Real.log (1 / max ‖x - y‖ (max r δ)) = (k : ℝ) := by
@@ -196,10 +178,19 @@ theorem compatible_two_root_wick_pair_good_barrier_power_bound_BarrierCauchyLoca
     have hupper := (abs_le.mp h').2
     linarith
   intro η g a hη hη1 hg hag hCk hCeta hgap hκ hκexp
-  have hkpos : 0 < (k : ℝ) := lt_of_le_of_lt hC₀nonneg hCk
   have hpair := finite_gaussian_wick_pair_good_barrier_power_bound P V hV
-    1 2 0 (by decide) g a C₀ η (k : ℝ) ‖x - y‖ ρ κ hg hag hkpos hη hη1
-    hCeta hgap hvarV hcovV₁ hcovV₂ hrhoPos hrhoLeOne hxypos hdistLeRho hcovRoot hfloor
+    1 2 0 (by decide) g a C₀ η (k : ℝ) ‖x - y‖ ρ κ hg hag (lt_of_le_of_lt hC₀nonneg hCk) hη hη1
+    hCeta hgap hvarV (by
+      cases b₁ with
+      | false =>
+          have h := hmixZ k (le_trans hkcut (min_le_left _ _)) ε hε (le_min
+            (le_trans hεcut₀ (min_le_right _ _)) hεcut) x hx
+          have h'  := h
+          exact h'.trans hCmZC
+      | true =>
+          have h := hmixY k (le_trans hkcut (min_le_left _ _)) ε hε hεcut x hx
+          have h'  := h
+          exact h'.trans hCmYC) hcovV₂ hrhoPos hrhoLeOne hxypos hdistLeRho hcovRoot hfloor
     hκ hκexp
   cases b₁ <;> cases b₂ <;> simpa [V, q, r] using hpair
 

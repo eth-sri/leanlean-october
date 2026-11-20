@@ -47,9 +47,6 @@ noncomputable def gaussNegativeCutPlaneCanonicalPath (z : gaussNegativeCutPlane)
 theorem gaussNegativeCutPlaneCanonicalPath_continuousOn (z : gaussNegativeCutPlane) :
     ContinuousOn (subtypePathFunction (gaussNegativeCutPlaneCanonicalPath z))
       (Icc (0 : ℝ) 1) := by
-  change ContinuousOn
-    (fun t => ((gaussNegativeCutPlaneCanonicalPath z)
-      (Set.projIcc 0 1 zero_le_one t) : ℂ)) _
   exact (continuous_subtype_val.comp
     ((gaussNegativeCutPlaneCanonicalPath z).continuous.comp continuous_projIcc)).continuousOn
 
@@ -98,10 +95,6 @@ theorem gauss_negative_cut_plane_continuation_path_endpoint_eq
       (gaussSystemOperator a b c)
       (ordinaryHypergeometricState a b c (-1 / 2 : ℂ))) :
     L.value 1 = gaussNegativeCutPlaneContinuationState a b c z := by
-  exact subtype_path_lifts_endpoint_eq_of_simplyConnected
-    gaussNegativeCutPlane_subset_regularPlane a b c p
-    (gaussNegativeCutPlaneCanonicalPath z)
-    (ordinaryHypergeometricState a b c (-1 / 2 : ℂ)) L
-    (gaussNegativeCutPlaneCanonicalContinuationLift a b c z)
+  apply subtype_path_lifts_endpoint_eq_of_simplyConnected gaussNegativeCutPlane_subset_regularPlane <;> assumption
 
 end DOZZ.Proofs

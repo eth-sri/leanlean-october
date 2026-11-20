@@ -36,7 +36,7 @@ private lemma closedEmbedding_affine_nat {c d : ℂ} (hc : c ≠ 0) :
     ‖c‖ = ‖c‖ * 1 := by ring
     _ ≤ ‖c‖ * |(m : ℝ) - n| := mul_le_mul_of_nonneg_left hnat' (norm_nonneg _)
     _ = ‖c * ((m : ℂ) - n)‖ := by rw [norm_mul, hnorm]
-    _ = ‖c * (m : ℂ) + d - (c * n + d)‖ := by congr 1; ring
+    _ = ‖c * (m : ℂ) + d - (c * n + d)‖ := by ring
 
 private lemma eventually_affine_ne_neg_nat {c d : ℂ} (hc : c ≠ 0) :
     ∀ᶠ α : ℂ in codiscrete ℂ, ∀ n : ℕ, c * α + d ≠ -(n : ℂ) := by
@@ -48,61 +48,42 @@ private lemma eventually_affine_ne_neg_nat {c d : ℂ} (hc : c ≠ 0) :
     apply compl_mem_codiscrete_iff.mpr
     exact ⟨hf.isClosed_range, hf.isEmbedding.isInducing.isDiscrete_range⟩
   filter_upwards [hbad] with α hα n
-  intro heq
-  apply hα
-  refine ⟨n, ?_⟩
-  have hsolve : α = f n := by
-    calc
-      α = (-(n : ℂ) - d) / c := by
-        apply (eq_div_iff hc).2
-        calc
-          α * c = c * α := mul_comm _ _
-          _ = -(n : ℂ) - d := by linear_combination heq
-      _ = f n := by
-        dsimp [f]
-        field_simp [hc]
-  exact hsolve.symm
+  grind
 
 private lemma eventually_affine_Gamma_ne_zero {c d : ℂ} (hc : c ≠ 0) :
     ∀ᶠ α : ℂ in codiscrete ℂ, Complex.Gamma (c * α + d) ≠ 0 := by
   filter_upwards [eventually_affine_ne_neg_nat hc] with α hα
   apply Complex.Gamma_ne_zero
-  intro n hn
-  exact hα n hn
+  assumption
 
 private lemma lFun_one_sub {z : ℂ} (hz : z ≠ 0) :
     lFun (1 - z) = -z * (Complex.Gamma (-z) / Complex.Gamma z) := by
   have hnum : Complex.Gamma (1 - z) = -z * Complex.Gamma (-z) := by
     calc
-      Complex.Gamma (1 - z) = Complex.Gamma (-z + 1) := by congr 1; ring
+      Complex.Gamma (1 - z) = Complex.Gamma (-z + 1) := by ring
       _ = -z * Complex.Gamma (-z) :=
         Complex.Gamma_add_one (-z) (neg_ne_zero.mpr hz)
   have hden : 1 - (1 - z) = z := by ring
   unfold lFun
   rw [hnum, hden]
-  simp only [div_eq_mul_inv]
   ring
 
 private lemma lFun_one_add {z : ℂ} (hz : z ≠ 0) :
     lFun (1 + z) = z * (Complex.Gamma z / Complex.Gamma (-z)) := by
   have hnum : Complex.Gamma (1 + z) = z * Complex.Gamma z := by
     calc
-      Complex.Gamma (1 + z) = Complex.Gamma (z + 1) := by congr 1; ring
+      Complex.Gamma (1 + z) = Complex.Gamma (z + 1) := by ring
       _ = z * Complex.Gamma z := Complex.Gamma_add_one z hz
   have hden : 1 - (1 + z) = -z := by ring
   unfold lFun
   rw [hnum, hden]
-  simp only [div_eq_mul_inv]
   ring
 
 private lemma eventually_Gamma_Qsub_affine {Q c d : ℂ} (hc : c ≠ 0) :
     ∀ᶠ α : ℂ in codiscrete ℂ, Complex.Gamma (c * (Q - α) + d) ≠ 0 := by
   have h := eventually_affine_Gamma_ne_zero (c := -c) (d := c * Q + d)
     (neg_ne_zero.mpr hc)
-  filter_upwards [h] with α hα
-  have heq : c * (Q - α) + d = -c * α + (c * Q + d) := by ring
-  rw [heq]
-  exact hα
+  grind
 
 private lemma lFun_mul_neg {q : ℂ} (hq : q ≠ 0)
     (hΓq : Complex.Gamma q ≠ 0) (hΓnegq : Complex.Gamma (-q) ≠ 0) :
@@ -113,8 +94,7 @@ private lemma lFun_mul_neg {q : ℂ} (hq : q ≠ 0)
   have hrec₂ : Complex.Gamma (1 + q) = q * Complex.Gamma q := by
     simpa [add_comm] using Complex.Gamma_add_one q hq
   unfold lFun
-  rw [hrec₁, show 1 - -q = 1 + q by simp, hrec₂]
-  field_simp [hq, hΓq, hΓnegq]
+  grind
 
 private lemma gamma_ratio_shift_b {t p q : ℂ} (htq : t = q * p)
     (hΓt : Complex.Gamma t ≠ 0) (hΓnegT : Complex.Gamma (-t) ≠ 0)
@@ -172,8 +152,6 @@ private lemma gamma_ratio_shift_b {t p q : ℂ} (htq : t = q * p)
   rw [lFun_one_sub ht, harg, lFun_one_add htq', hrecN, hrecP, htq]
   field_simp [hΓt', hΓnegT', hΓtq', hΓnegTq', hΓp, hΓp1, hΓnegP1,
     hΓqp1, hΓnegqp1, hp, hp1, ht, htq']
-  rw [show q * (-p - 1) = -(q * (p + 1)) by ring]
-  field_simp [hΓqp1, hΓnegqp1]
   ring
 
 private lemma lFun_gammaSq_real (γ : ℝ) :
@@ -198,14 +176,8 @@ private lemma complexGamma_neg_sq_ne_zero {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ <
   have hq : γ ^ 2 / 4 = (n : ℝ) := by
     have hreal : - (γ ^ 2 / 4) = -(n : ℝ) := by exact_mod_cast hn
     exact neg_inj.mp hreal
-  have hγsq_pos : 0 < γ ^ 2 / 4 := by positivity
   have hγsq_lt : γ ^ 2 / 4 < 1 := by linarith only [pow_lt_pow_left₀ hγ2 hγ.le two_ne_zero]
-  rcases Nat.eq_zero_or_pos n with hn0 | hnpos
-  · subst n
-    norm_num at hq
-    linarith
-  · have hnle : (1 : ℝ) ≤ (n : ℝ) := by exact_mod_cast hnpos
-    linarith
+  simp_all
 
 variable {γ : ℝ}
 
@@ -327,9 +299,6 @@ theorem reflectionDOZZ_shift_b (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ : 
   have htne : t ≠ 0 := by
     intro h
     simp [h] at hΓt
-  have htqne : t + q ≠ 0 := by
-    intro h
-    simp [h] at hΓtq
   have hL1 : lFun (1 - t) ≠ 0 := by
     unfold lFun
     have hden : 1 - (1 - t) = t := by ring
@@ -388,8 +357,7 @@ theorem reflectionDOZZ_shift_b (hγ : 0 < γ) (hγ2 : γ < 2) {μ : ℝ} (hμ : 
   let Gold : ℂ := Complex.Gamma (-t) / Complex.Gamma t *
     (Complex.Gamma (-p) / Complex.Gamma p)
   have hratio := gamma_ratio_shift_b htq hΓt hΓnegT hΓtq hΓnegTq hΓp hΓp1 hΓnegP1
-  have hratio' : Gshift * (lFun (1 - t) * lFun (1 + t + q)) = q ^ 2 * Gold := by
-    simpa [Gshift, Gold] using hratio
+  have hratio'  := hratio
   have hscaled : (B * Gshift) * (lFun (-q) * lFun (1 - t) * lFun (1 + t + q)) =
       -C * Gold := by
     calc
@@ -455,14 +423,7 @@ private lemma gamma_ratio_shift_binv {t p N : ℂ} (htN : t * N = p)
       _ = (t - 1) * Complex.Gamma (t - 1) := Complex.Gamma_add_one (t - 1) htm1
   have harg : 1 + N - p = 1 + (N - p) := by ring
   rw [harg, lFun_one_add hNmp, lFun_one_add hp, hrecTm, hrecT]
-  have halg : p * (N - p) = N ^ 2 * (-t) * (t - 1) := by
-    calc
-      p * (N - p) = (t * N) * (N - t * N) := by rw [htN]
-      _ = N ^ 2 * (-t) * (t - 1) := by ring
-  field_simp [hΓt, hΓnegT, hΓtm1, hΓp, hΓnegP, hΓpmN, hΓNmp,
-    ht, htm1, hp, hNmp]
-  rw [halg]
-  ring_nf
+  grind
 
 theorem reflectionDOZZ_shift_binv (hγ : 0 < γ) (hγ2 : γ < 2)
     (hγk : ∀ k : ℕ, 4 / γ ^ 2 ≠ (k : ℝ)) {μ : ℝ} (hμ : 0 < μ) :
@@ -569,8 +530,6 @@ theorem reflectionDOZZ_shift_binv (hγ : 0 < γ) (hγ2 : γ < 2)
     simpa [p, A, sub_eq_add_neg, add_comm] using hPmN
   have hΓNmp : Complex.Gamma (N - p) ≠ 0 := by
     simpa [p, A, sub_eq_add_neg, add_comm] using hNmp
-  have hΓ1subT : Complex.Gamma (1 - t) ≠ 0 := by
-    simpa [t, A, sub_eq_add_neg, add_comm] using hOneSubT
   have hΓ1plusNmp : Complex.Gamma (1 + N - p) ≠ 0 := by
     simpa [p, A, sub_eq_add_neg, add_assoc, add_comm, add_left_comm] using hOnePlusNmp
   have hΓ1plusP : Complex.Gamma (1 + p) ≠ 0 := by
@@ -624,15 +583,10 @@ theorem reflectionDOZZ_shift_binv (hγ : 0 < γ) (hγ2 : γ < 2)
     field_simp [hγc]
     ring
   have hLarg1 : 2 * α / (γ : ℂ) = 1 + N - p := by rw [hpFormula]; ring
-  have hLarg2 : 2 + N - 2 * α / (γ : ℂ) = 1 + p := by rw [hpFormula]; ring
   have hExp' : 2 * ((Q γ : ℂ) - α) / (γ : ℂ) = p := by
     simpa [A, Qc] using hExp
   have hTarg' : (γ : ℂ) * ((Q γ : ℂ) - α) / 2 = t := by
     simpa [A, Qc] using hTarg
-  have hcCast : ((2 / γ : ℝ) : ℂ) = c := by
-    dsimp [c]
-    push_cast
-    field_simp [hγc]
   have hExpShift' :
       2 * ((Q γ : ℂ) - (α + (2 : ℂ) / (γ : ℂ))) / (γ : ℂ) = p - N := by
     simpa [Qc, c] using hExpShift
@@ -644,16 +598,16 @@ theorem reflectionDOZZ_shift_binv (hγ : 0 < γ) (hγ2 : γ < 2)
     exact_mod_cast hbase.ne'
   have hpow : B ^ p = B ^ N * B ^ (p - N) := by
     calc
-      B ^ p = B ^ (N + (p - N)) := by congr 1; ring
+      B ^ p = B ^ (N + (p - N)) := by ring
       _ = B ^ N * B ^ (p - N) := Complex.cpow_add N (p - N) hBne
   let Gorig : ℂ := Complex.Gamma (-t) / Complex.Gamma t *
     (Complex.Gamma (-p) / Complex.Gamma p)
   let Gshift : ℂ := Complex.Gamma (1 - t) / Complex.Gamma (t - 1) *
     (Complex.Gamma (N - p) / Complex.Gamma (p - N))
   have hratio := gamma_ratio_shift_binv htN hΓt hΓnegT hΓtm1 hΓp hΓnegP hΓpmN hΓNmp
-  have hratio' : Gorig * (lFun (1 + N - p) * lFun (1 + p)) = N ^ 2 * Gshift := by
-    simpa [Gorig, Gshift] using hratio
-  have hden : lFun (-N) * lFun (1 + N - p) * lFun (1 + p) ≠ 0 :=
+  have hratio'  := hratio
+  let a := lFun (-N) * lFun (1 + N - p) * lFun (1 + p)
+  have hden : a ≠ 0 :=
     mul_ne_zero (mul_ne_zero hLnegN hL1) hL2
   have hscaled : Gorig * (lFun N * lFun (-N) *
       lFun (1 + N - p) * lFun (1 + p)) = -Gshift := by
@@ -663,10 +617,10 @@ theorem reflectionDOZZ_shift_binv (hγ : 0 < γ) (hγ2 : γ < 2)
       _ = (N ^ 2 * Gshift) * (lFun N * lFun (-N)) := by rw [hratio']
       _ = -Gshift := by rw [hLprodN]; field_simp [hNne]
   have hGammaCoeff :
-      -Gorig * (lFun (-N) * lFun (1 + N - p) * lFun (1 + p)) = Gshift / lFun N := by
+      -Gorig * (a) = Gshift / lFun N := by
     apply (eq_div_iff hLN).2
     calc
-      (-Gorig * (lFun (-N) * lFun (1 + N - p) * lFun (1 + p))) * lFun N =
+      (-Gorig * (a)) * lFun N =
           -(Gorig * (lFun N * lFun (-N) * lFun (1 + N - p) * lFun (1 + p))) := by ring
       _ = Gshift := by rw [hscaled]; ring
   have hnegTm1 : -(t - 1) = 1 - t := by ring
@@ -680,12 +634,12 @@ theorem reflectionDOZZ_shift_binv (hγ : 0 < γ) (hγ2 : γ < 2)
   have hfinal :
       reflectionDOZZ γ μ α =
         -(B ^ N / lFun N) * reflectionDOZZ γ μ (α + 2 / γ) /
-          (lFun (-N) * lFun (1 + N - p) * lFun (1 + p)) := by
+          (a) := by
     apply (eq_div_iff hden).2
     rw [hright, hleft]
     calc
-      (-B ^ p * Gorig) * (lFun (-N) * lFun (1 + N - p) * lFun (1 + p)) =
-          B ^ p * (-Gorig * (lFun (-N) * lFun (1 + N - p) * lFun (1 + p))) := by ring
+      (-B ^ p * Gorig) * (a) =
+          B ^ p * (-Gorig * (a)) := by ring
       _ = B ^ p * (Gshift / lFun N) := by rw [hGammaCoeff]
       _ = -(B ^ N / lFun N) * (-B ^ (p - N) * Gshift) := by
         rw [hpow]

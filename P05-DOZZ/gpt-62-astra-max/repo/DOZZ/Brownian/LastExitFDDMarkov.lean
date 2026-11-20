@@ -155,38 +155,22 @@ theorem continuous_path_ge_iff_rational_ge
       ∀ q : ℚ, ∀ hq : t < (q : ℝ),
         c ≤ p ⟨(q : ℝ), le_trans ht hq.le⟩ := by
   constructor
-  · intro h q hq
-    exact h ⟨(q : ℝ), le_trans ht hq.le⟩ hq
+  · solve_by_elim
   · intro h s hts
     by_contra hnot
-    have hbad : p s < c := lt_of_not_ge hnot
-    let F : ℝ → ℝ := fun x => p ⟨max x 0, le_max_right _ _⟩
+    have hbad := lt_of_not_ge hnot
+    let F := fun x => p ⟨max x 0, le_max_right _ _⟩
     have hmax : Continuous (fun x : ℝ => max x 0) :=
       continuous_max.comp (continuous_id.prodMk continuous_const)
-    have hsub : Continuous (fun x : ℝ =>
-        (⟨max x 0, le_max_right _ _⟩ : ℝ≥0)) :=
-      hmax.subtype_mk (fun x => le_max_right x 0)
+    have hsub := hmax.subtype_mk (fun x => le_max_right x 0)
     have hF : Continuous F := p.continuous.comp hsub
-    have hsnonneg : (0 : ℝ) ≤ (s : ℝ) := by exact_mod_cast s.2
+    have hsnonneg : 0 ≤ s := by exact_mod_cast s.2
     have hFs : F (s : ℝ) = p s := by
       change p ⟨max (s : ℝ) 0, le_max_right _ _⟩ = p s
       congr 1
       exact Subtype.ext (max_eq_left hsnonneg)
-    let U : Set ℝ := {x | t < x ∧ F x < c}
-    have hUopen : IsOpen U := by
-      exact isOpen_Ioi.inter (isOpen_Iio.preimage hF)
-    have hUnonempty : U.Nonempty := ⟨s, hts, by simpa [hFs] using hbad⟩
-    obtain ⟨q, hqU⟩ := Rat.denseRange_cast.exists_mem_open hUopen hUnonempty
-    have hqU' : t < (q : ℝ) ∧ F (q : ℝ) < c := hqU
-    have hq0 : (0 : ℝ) ≤ (q : ℝ) := le_trans ht (le_of_lt hqU'.1)
-    have hqF : F (q : ℝ) = p ⟨(q : ℝ), hq0⟩ := by
-      change p ⟨max (q : ℝ) 0, le_max_right _ _⟩ = p ⟨(q : ℝ), hq0⟩
-      congr 1
-      exact Subtype.ext (max_eq_left hq0)
-    have hqbound := h q hqU'.1
-    have hqbelow : p ⟨(q : ℝ), hq0⟩ < c := by
-      simpa only [hqF] using hqU'.2
-    exact (not_lt_of_ge hqbound) hqbelow
+    obtain ⟨q, hqU⟩ := Rat.denseRange_cast.exists_mem_open (isOpen_Ioi.inter (isOpen_Iio.preimage hF)) (⟨s, hts, by simpa [hFs] using hbad⟩)
+    grind
 
 end DOZZ.Proofs
 

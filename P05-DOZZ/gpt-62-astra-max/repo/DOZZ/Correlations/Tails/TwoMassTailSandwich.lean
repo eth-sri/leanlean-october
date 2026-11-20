@@ -47,7 +47,6 @@ theorem two_mass_tail_sandwich
     have hm := measureReal_mono hi (μ := P)
     have h1 := measureReal_union_le (μ := P)
       ({ω | x-h < A ω} ∪ {ω | x-h < B ω}) {ω | h < A ω ∧ h < B ω}
-    have h2 := measureReal_union_le (μ := P) {ω | x-h < A ω} {ω | x-h < B ω}
-    linarith only [hm,h1,h2]
+    linarith only [hm,h1,(measureReal_union_le (μ := P) {ω | x-h < A ω} {ω | x-h < B ω})]
 
 end DOZZ.Proofs

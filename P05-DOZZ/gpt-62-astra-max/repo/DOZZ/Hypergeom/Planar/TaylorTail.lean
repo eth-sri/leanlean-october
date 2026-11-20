@@ -30,17 +30,10 @@ private theorem rpow_lipschitz_on {p : ℝ} (hp : p < 0) :
     exact (Real.hasDerivAt_rpow_const
       (Or.inl (ne_of_gt (lt_of_lt_of_le (by norm_num) hx.1)))).differentiableAt
   · intro x hx
-    have hxpos : 0 < x := lt_of_lt_of_le (by norm_num) hx.1
-    have hpow : x ^ (p - 1) ≤ (1/4 : ℝ) ^ (p - 1) :=
-      Real.rpow_le_rpow_of_nonpos (by norm_num) hx.1 (by linarith only [hp])
-    have hB : 0 ≤ (-p) * (1/4 : ℝ) ^ (p - 1) :=
-      mul_nonneg (le_of_lt (neg_pos.mpr hp)) (Real.rpow_nonneg (by norm_num) _)
     apply NNReal.coe_le_coe.mp
-    rw [coe_nnnorm, Real.coe_toNNReal _ hB]
-    change ‖deriv (fun y : ℝ => y ^ p) x‖ ≤ _
-    rw [Real.deriv_rpow_const, Real.norm_eq_abs, abs_mul, abs_of_neg hp,
-      abs_of_nonneg (Real.rpow_nonneg (le_of_lt hxpos) _)]
-    exact mul_le_mul_of_nonneg_left hpow (by linarith only [hp])
+    rw [coe_nnnorm, Real.coe_toNNReal _ (mul_nonneg (le_of_lt (neg_pos.mpr hp)) (Real.rpow_nonneg (by norm_num) _)), Real.deriv_rpow_const, Real.norm_eq_abs, abs_mul, abs_of_neg hp,
+      abs_of_nonneg (Real.rpow_nonneg (le_of_lt (lt_of_lt_of_le (by norm_num) hx.1)) _)]
+    exact mul_le_mul_of_nonneg_left (Real.rpow_le_rpow_of_nonpos (by norm_num) hx.1 (by linarith only [hp])) (by linarith)
 
 private def segmentNormSq (u z : ℂ) (t : ℝ) : ℝ :=
   Complex.normSq (u - (t : ℂ) * z)
@@ -50,10 +43,7 @@ private theorem segmentNormSq_formula (u z : ℂ) (t : ℝ) :
   dsimp [segmentNormSq]
   rw [Complex.normSq_sub, Complex.normSq_mul, Complex.normSq_ofReal,
     Complex.normSq_eq_norm_sq, Complex.normSq_eq_norm_sq]
-  have hstar : star ((t : ℂ) * z) = (t : ℂ) * star z := by simp
-  simp only [starRingEnd_apply, hstar]
-  simp only [Complex.ofReal_re, Complex.ofReal_im, Complex.mul_re, Complex.mul_im,
-    Complex.star_def, Complex.conj_re, Complex.conj_im]
+  simp
   ring_nf
 
 private theorem segmentNormSq_hasDerivAt (u z : ℂ) (t : ℝ) :
@@ -81,20 +71,18 @@ private theorem segmentRpow_hasDerivAt (k : ℝ) (u z : ℂ) (t : ℝ)
     HasDerivAt (segmentRpow k u z)
       (k * segmentNormSq u z t ^ (k / 2 - 1) *
         (t * ‖z‖ ^ 2 - (z * star u).re)) t := by
-  unfold segmentRpow
   change HasDerivAt ((fun x : ℝ => x ^ (k / 2)) ∘ segmentNormSq u z) _ _
-  have hqderiv := segmentNormSq_hasDerivAt u z t
-  have hpow := (Real.hasDerivAt_rpow_const (x := segmentNormSq u z t)
-    (p := k / 2) (Or.inl hq.ne')).comp t hqderiv
+  have hpow := (Real.hasDerivAt_rpow_const
+    (p := k / 2) (Or.inl hq.ne')).comp t (segmentNormSq_hasDerivAt u z t)
   convert hpow using 1
   all_goals ring_nf
 
 private theorem unitSegment_normSq_bounds (w : ℂ) (hw : ‖w‖ ≤ 1 / 2)
     {t : ℝ} (ht : t ∈ Icc (0 : ℝ) 1) :
     1 / 4 ≤ segmentNormSq 1 w t ∧ segmentNormSq 1 w t ≤ 9 / 4 := by
-  have ht₀ : 0 ≤ t := ht.1
-  have ht₁ : t ≤ 1 := ht.2
-  have hs : 0 ≤ ‖w‖ := norm_nonneg w
+  have ht₀ := ht.1
+  have ht₁ := ht.2
+  have hs := norm_nonneg w
   have hv : ‖(t : ℂ) * w‖ ≤ 1 / 2 := by
     rw [norm_mul, Complex.norm_real, Real.norm_eq_abs, abs_of_nonneg ht₀]
     exact (mul_le_of_le_one_left hs ht₁).trans hw
@@ -111,9 +99,8 @@ private theorem unitSegment_normSq_bounds (w : ℂ) (hw : ‖w‖ ≤ 1 / 2)
     dsimp [segmentNormSq]
     rw [Complex.normSq_eq_norm_sq]
   rw [hqnorm]
-  have hlo2 := pow_le_pow_left₀ (by norm_num) hlow 2
   have hup2 := pow_le_pow_left₀ (norm_nonneg _) hupp 2
-  exact ⟨by linarith only [hlo2], by linarith only [hup2]⟩
+  exact ⟨by nlinarith, by linarith only [hup2]⟩
 
 private noncomputable def unitTaylorPath (k : ℝ) (w : ℂ) (t : ℝ) : ℝ :=
   segmentRpow k 1 w t - 1 + k * t * w.re
@@ -317,12 +304,8 @@ private theorem rpow_tail_normalize (r s k β : ℝ) (hr : 0 < r) :
     r ^ k * (s / r) ^ 2 / r ^ β = s ^ 2 * r ^ (k - 2 - β) := by
   have hpow1 : r ^ k / r ^ 2 = r ^ (k - 2) := by
     simpa using (Real.rpow_sub hr k (2 : ℝ)).symm
-  have hpow2 : r ^ (k - 2) / r ^ β = r ^ (k - 2 - β) :=
-    (Real.rpow_sub hr (k - 2) β).symm
-  calc
-    _ = r ^ k * (s ^ 2 / r ^ 2) / r ^ β := by rw [div_pow]
-    _ = s ^ 2 * ((r ^ k / r ^ 2) / r ^ β) := by ring
-    _ = _ := by rw [hpow1, hpow2]
+  have hpow2 := (Real.rpow_sub hr (k - 2) β).symm
+  grind
 
 /-- The full Taylor kernel inherits the same pointwise tail comparison. -/
 theorem abs_planarTaylorRemainder_le (k β : ℝ) (hk : 0 < k) (hk₂ : k < 2)
@@ -352,20 +335,7 @@ theorem abs_planarTaylorRemainder_le (k β : ℝ) (hk : 0 < k) (hk₂ : k < 2)
 
 private theorem measurable_nonneg_rpow {f : ℂ → ℝ} (hf : Measurable f)
     (hfn : ∀ u, 0 ≤ f u) (p : ℝ) : Measurable (fun u => f u ^ p) := by
-  have hrepr : (fun u => f u ^ p) =
-      fun u => if f u = 0 then 0 ^ p else Real.exp (p * Real.log (f u)) := by
-    funext u
-    by_cases hu : f u = 0
-    · simp [hu]
-    · rw [ite_eq_right hu,
-        Real.rpow_def_of_pos (lt_of_le_of_ne (hfn u) (Ne.symm hu))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) hf
-  · exact measurable_const
-  · fun_prop
+  fun_prop
 
 private theorem measurable_complex_norm_rpow (p : ℝ) :
     Measurable (fun u : ℂ => ‖u‖ ^ p) :=

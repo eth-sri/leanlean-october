@@ -129,13 +129,9 @@ theorem abkNormalizationRadicand_nonneg {d : Nat} (ζ : ABKCutoff d) :
   have hvol : 0 ≤ abkUnitBallVolume d := by
     unfold abkUnitBallVolume
     exact ENNReal.toReal_nonneg
-  have hnum : 0 ≤ (d : ℝ) * abkUnitBallVolume d :=
-    mul_nonneg (Nat.cast_nonneg d) hvol
-  have hden : 0 ≤ abkM0 ζ * (2 * Real.pi) ^ d :=
-    mul_nonneg (le_of_lt (abkM0_pos ζ))
-      (le_of_lt (pow_pos (mul_pos (by norm_num : (0 : ℝ) < 2) Real.pi_pos) d))
-  unfold abkNormalizationRadicand
-  exact div_nonneg hnum hden
+  have hden := mul_nonneg (le_of_lt (abkM0_pos ζ))
+    (le_of_lt (pow_pos (mul_pos (by norm_num : (0 : ℝ) < 2) Real.pi_pos) d))
+  exact div_nonneg (mul_nonneg (Nat.cast_nonneg d) hvol) hden
 
 end GaussianFields
 

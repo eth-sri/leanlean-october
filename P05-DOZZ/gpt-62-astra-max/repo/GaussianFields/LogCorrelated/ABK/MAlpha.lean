@@ -24,7 +24,7 @@ namespace GaussianFields
 theorem integral_interval_rpow_sub_one {α a b : ℝ} (hα : 0 < α) :
     (∫ t in a..b, t ^ (α - 1) ∂(volume : Measure ℝ)) =
       (b ^ α - a ^ α) / α := by
-  rw [integral_rpow (Or.inl (by linarith : -1 < α - 1))]
+  rw [integral_rpow (Or.inl (by linarith))]
   ring_nf
 
 /-- Uniform bound for an Abel-density interval integral. -/
@@ -42,18 +42,11 @@ theorem abs_alpha_mul_integral_interval_rpow_mul_le {α a b C : ℝ}
     have hpow_nonneg : 0 ≤ t ^ (α - 1) := Real.rpow_nonneg ht_nonneg (α - 1)
     calc
       ‖t ^ (α - 1) * F t‖ = t ^ (α - 1) * |F t| := by
-        rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg hpow_nonneg]
+        simp_all
       _ ≤ t ^ (α - 1) * C := mul_le_mul_of_nonneg_left (hbound t ht) hpow_nonneg
       _ = C * t ^ (α - 1) := by ring
-  have hg_int :
-      IntervalIntegrable (fun t : ℝ => C * t ^ (α - 1))
-        (volume : Measure ℝ) a b :=
-    (intervalIntegral.intervalIntegrable_rpow' (by linarith : -1 < α - 1)).const_mul C
   have hnorm :=
-    intervalIntegral.norm_integral_le_of_norm_le (μ := volume) hab hbound_ae hg_int
-  have hnonneg_mass : 0 ≤ b ^ α - a ^ α := by
-    have hmono := Real.rpow_le_rpow ha hab hα.le
-    exact sub_nonneg.mpr hmono
+      intervalIntegral.norm_integral_le_of_norm_le (μ := volume) hab hbound_ae ((intervalIntegral.intervalIntegrable_rpow' (by linarith : -1 < α - 1)).const_mul C)
   have hmass :
       ∫ t in a..b, C * t ^ (α - 1) ∂(volume : Measure ℝ) =
         C * ((b ^ α - a ^ α) / α) := by
@@ -369,23 +362,17 @@ theorem tendsto_alpha_mul_abkMAlphaInv {d : Nat} (hd : 0 < d)
 theorem tendsto_rpow_neg_sub_one_div_nhdsGT_zero {ρ : ℝ} (hρ : 0 < ρ) :
     Tendsto (fun α : ℝ => (ρ ^ (-α) - 1) / α)
       (𝓝[>] (0 : ℝ)) (𝓝 (-Real.log ρ)) := by
-  have hneg : HasDerivAt (fun α : ℝ => -α) (-1) 0 :=
-    hasDerivAt_neg' (0 : ℝ)
+  have hneg := hasDerivAt_neg' (0 : ℝ)
   have hderiv : HasDerivAt (fun α : ℝ => ρ ^ (-α)) (-Real.log ρ) 0 := by
     have h := hneg.const_rpow hρ
     simpa [Real.rpow_zero] using h
-  have hslope := hderiv.tendsto_slope_zero
-  have hmono : 𝓝[>] (0 : ℝ) ≤ nhdsWithin (0 : ℝ) ({0}ᶜ : Set ℝ) := by
+  refine (hderiv.tendsto_slope_zero.mono_left (by
     refine nhdsWithin_mono _ ?_
     intro x hx
     have hx_pos : 0 < x := hx
-    simp [hx_pos.ne']
-  refine (hslope.mono_left hmono).congr' ?_
+    simp [hx_pos.ne'])).congr' ?_
   filter_upwards [self_mem_nhdsWithin] with α hα
-  rw [zero_add, neg_zero, Real.rpow_zero]
-  change α⁻¹ * (ρ ^ (-α) - 1) = (ρ ^ (-α) - 1) / α
-  rw [div_eq_mul_inv]
-  ring
+  rw [zero_add, neg_zero, Real.rpow_zero] <;> ring
 
 end GaussianFields
 

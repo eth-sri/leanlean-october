@@ -27,15 +27,11 @@ theorem measurePreserving_involutive_map_withDensity
   intro s hs
   rw [Measure.map_apply hφ.measurable hs, withDensity_apply _ (hs.preimage hφ.measurable),
     withDensity_apply _ hs]
-  let hrestrict := hφ.restrict_preimage hs
-  calc
-    (∫⁻ x in φ ⁻¹' s, g x ∂μ) =
-        ∫⁻ x in φ ⁻¹' s, g (φ (φ x)) ∂μ := by
-          apply setLIntegral_congr_fun (hs.preimage hφ.measurable)
-          intro x hx
-          exact (congrArg g (hinv x)).symm
-    _ = ∫⁻ x in s, g (φ x) ∂μ := by
-          exact hrestrict.lintegral_comp (hg.comp hφ.measurable)
+  exact Trans.trans
+    (setLIntegral_congr_fun (MeasurableSet.preimage hs hφ.measurable) fun ⦃x⦄ hx =>
+      Eq.symm (congrArg g (hinv x)))
+    (MeasurePreserving.lintegral_comp (MeasurePreserving.restrict_preimage hφ hs)
+      (Measurable.comp hg hφ.measurable))
 
 /-- The regularized equator chaos is the compactifying reference measure multiplied by its Wick
 factor. -/

@@ -45,13 +45,10 @@ private lemma zDerivNumJoint_contDiff (γ : ℝ) :
     ContDiff ℝ 3 (zDerivNumJoint γ) := by
   have hF : ContDiff ℂ 3 (fun q : ℂ × ℂ => zDerivNumComplex γ q.1 q.2) := by
     fun_prop [zDerivNumComplex, complexDenom]
-  have hF' : ContDiff ℝ 3 (fun q : ℂ × ℂ => zDerivNumComplex γ q.1 q.2) :=
-    hF.restrict_scalars ℝ
-  have hPair : ContDiff ℝ 3 (fun p : ℂ × ℝ => (p.1, (p.2 : ℂ))) := by
-    exact contDiff_fst.prodMk (Complex.ofRealCLM.contDiff.comp contDiff_snd)
-  change ContDiff ℝ 3 ((fun q : ℂ × ℂ => zDerivNumComplex γ q.1 q.2) ∘
-    fun p : ℂ × ℝ => (p.1, (p.2 : ℂ)))
-  exact hF'.comp hPair
+  exact id
+    (ContDiff.comp (ContDiff.restrict_scalars ℝ hF)
+      (ContDiff.prodMk contDiff_fst
+        (ContDiff.comp (ContinuousLinearMap.contDiff Complex.ofRealCLM) contDiff_snd)))
 
 private lemma zDerivNum_third_continuous (γ : ℝ) :
     Continuous (fun p : ℂ × ℝ =>
@@ -80,10 +77,8 @@ private lemma zDerivNum_third_continuous (γ : ℝ) :
     have hline3 : iteratedDeriv 3 line p.2 = 0 := by
       rw [iteratedDeriv_succ]
       rw [show iteratedDeriv 2 line = fun _ => 0 by
-        funext t
         rw [iteratedDeriv_succ]
-        rw [show iteratedDeriv 1 line = deriv line by simp, hlineD]
-        simp]
+        simp_all]
       simp
     have hcomp := iteratedDeriv_vcomp_three
       (hg := hJ.contDiffAt)
@@ -138,7 +133,6 @@ private lemma zDerivNumContDiff (γ : ℝ) (w : ℂ) :
     ContDiff ℝ 3 (zDerivNum γ w) := by
   have hC : ContDiff ℂ 3 (zDerivNumComplex γ w) := by
     fun_prop [zDerivNumComplex, complexDenom]
-  change ContDiff ℝ 3 (fun t : ℝ => zDerivNumComplex γ w (t : ℂ))
   exact hC.restrict_scalars ℝ |>.comp Complex.ofRealCLM.contDiff
 
 private lemma zDerivNum_zero (γ : ℝ) (w : ℂ) : zDerivNum γ w 0 = 0 := by
@@ -287,11 +281,7 @@ private lemma upsilonLogIntegrandDeriv_norm_le_of_taylor {γ : ℝ}
       Complex.norm_real, Real.norm_eq_abs, abs_of_pos ht]
   rw [upsilonLogIntegrandDeriv, norm_div, hnormDen]
   rw [div_le_iff₀ hdenT]
-  have h4C : 0 ≤ 4 * C := mul_nonneg (by norm_num) hC
-  have hprod := mul_le_mul_of_nonneg_left hdenTLower h4C
-  have hprod' : C * t ^ 3 ≤ 4 * C * (realDenom γ t * t) := by
-    linarith only [hprod]
-  exact le_trans hTaylor hprod'
+  nlinarith
 
 private lemma upsilonLogIntegrandDeriv_norm_le_tail {γ : ℝ} (hγ : 0 < γ)
     (z : ℂ) (hz0 : 0 < z.re) (hzQ : z.re < Q γ) {t : ℝ} (ht : 1 ≤ t) :
@@ -376,7 +366,7 @@ private lemma upsilonLogIntegrandDeriv_norm_le_tail {γ : ℝ} (hγ : 0 < γ)
               (Real.exp (-δ * t) * Real.exp (Q γ / 2 * t)) := by ring
           _ = Real.exp (|w.re| * t) := by
             rw [inv_mul_cancel₀ hK.ne', ← Real.exp_add]
-            rw [show -δ * t + Q γ / 2 * t = |w.re| * t by dsimp [δ]; ring]
+            rw [show -δ * t + Q γ / 2 * t = |w.re| * t by ring]
             simp
       calc
         _ ≥ (tailConst γ)⁻¹ * Real.exp (-δ * t) *
@@ -473,10 +463,8 @@ private lemma upsilonLog_hasDerivAt {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     have hmright : margin ≤ Q γ - z₀.re := min_le_right _ _
     constructor
     · dsimp [r] at hc' ⊢
-      dsimp [margin] at hmleft
       linarith
     · dsimp [r] at hc' ⊢
-      dsimp [margin] at hmright
       linarith
   have hw_re_margin (z : ℂ) (hz : z ∈ Metric.ball z₀ r) :
       |Q γ / 2 - z.re| ≤ Q γ / 2 - r := by
@@ -495,7 +483,6 @@ private lemma upsilonLog_hasDerivAt {γ : ℝ} (hγ : 0 < γ) (hγ2 : γ < 2)
     calc
       ‖(Q γ / 2 : ℂ) - z‖ = ‖w₀ + (z₀ - z)‖ := by
         congr 1
-        dsimp [w₀]
         ring
       _ ≤ ‖w₀‖ + ‖z₀ - z‖ := norm_add_le _ _
       _ = ‖w₀‖ + dist z z₀ := by rw [dist_eq_norm]; simp [norm_sub_rev]

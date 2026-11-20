@@ -149,7 +149,7 @@ theorem abkSpatialConvolution_smul {d : Nat} (ζ : ABKCutoff d) (c : ℝ)
   rw [← integral_const_mul]
   refine integral_congr_ae ?_
   filter_upwards with x
-  simp only [MeanZeroTestFunction.smul_apply, smul_eq_mul]
+  simp
   ring
 
 /-! ## Linearity of the deterministic ABK kernels -/

@@ -65,11 +65,8 @@ theorem measurable_bpzBaseWeight : Measurable (bpzBaseWeight γ χ α₁ α₂ �
 
 theorem measurable_bpzSoftWeight (ε : ℝ) (z : ℂ) :
     Measurable (bpzSoftWeight γ χ α₁ α₂ α₃ ε z) := by
-  unfold bpzSoftWeight
   refine Measurable.mul ?_ measurable_bpzBaseWeight
-  refine Measurable.pow_const ?_ _
-  exact (Complex.continuous_normSq.measurable.comp (measurable_id.sub_const z)).add
-    measurable_const
+  fun_prop (disch := positivity)
 
 /-- At `ε = 0` the softened factor is the power of the distance to the degenerate root. -/
 theorem bpzSoftWeight_zero (z x : ℂ) :
@@ -107,10 +104,10 @@ theorem coulombWeight_eq_ofReal_bpzSoftWeight {z x : ℂ} (hxz : x ≠ z) (hx0 :
     (hx1 : x ≠ 1) :
     coulombWeight γ ![-χ, α₁, α₂] ![z, 0, 1] α₃ x =
       ENNReal.ofReal (bpzSoftWeight γ χ α₁ α₂ α₃ 0 z x) := by
-  have hn : 0 < normPlus x := bpz_normPlus_pos x
-  have h₀ : 0 < ‖x - z‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
-  have h₁ : 0 < ‖x‖ := norm_pos_iff.mpr hx0
-  have h₂ : 0 < ‖x - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
+  have hn  := bpz_normPlus_pos x
+  have h₀  := norm_pos_iff.mpr (sub_ne_zero.mpr hxz)
+  have h₁  := norm_pos_iff.mpr hx0
+  have h₂  := norm_pos_iff.mpr (sub_ne_zero.mpr hx1)
   unfold coulombWeight
   simp only [Fin.prod_univ_succ, Matrix.cons_val_zero, Matrix.cons_val_succ,
     Fin.prod_univ_zero, mul_one, sub_zero]
@@ -124,8 +121,7 @@ theorem coulombWeight_eq_ofReal_bpzSoftWeight {z x : ℂ} (hxz : x ≠ z) (hx0 :
     ← ENNReal.ofReal_mul (Real.rpow_nonneg (div_pos hn h₀).le _),
     ← ENNReal.ofReal_mul (mul_nonneg (Real.rpow_nonneg (div_pos hn h₀).le _)
       (mul_nonneg (Real.rpow_nonneg (div_pos hn h₁).le _)
-        (Real.rpow_nonneg (div_pos hn h₂).le _)))]
-  rw [bpzSoftWeight_zero, bpz_coulomb_real_identity _ _ _ _ hn h₀ h₁ h₂]
+        (Real.rpow_nonneg (div_pos hn h₂).le _))), bpzSoftWeight_zero, bpz_coulomb_real_identity _ _ _ _ hn h₀ h₁ h₂]
   rfl
 
 /-- For a measure without atoms at the three finite roots, the Coulomb mass is the

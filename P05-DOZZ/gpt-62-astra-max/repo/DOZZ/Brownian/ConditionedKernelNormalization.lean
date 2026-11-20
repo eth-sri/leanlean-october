@@ -24,15 +24,11 @@ namespace DOZZ.Proofs
 theorem brownianHeatDensity_tilt {t ν z : ℝ} (ht : 0 < t) :
     Real.exp (ν * z - ν ^ 2 * t / 2) * brownianHeatDensity t z =
       brownianHeatDensity t (z - ν * t) := by
-  have he : ν * z - ν ^ 2 * t / 2 - z ^ 2 / (2 * t) =
-      -(z - ν * t) ^ 2 / (2 * t) := by
-    field_simp [ht.ne']
-    ring
   have hden : Real.sqrt (2 * Real.pi * t) ≠ 0 := by positivity
   simp only [brownianHeatDensity, ht, ite_true]
   field_simp [hden]
   rw [← Real.exp_add, Real.exp_injective.eq_iff]
-  field_simp [ht.ne']
+  field_simp 
   ring_nf
 
 private theorem brownianHeatDensity_shift_exp {t ν z : ℝ} (ht : 0 < t) :

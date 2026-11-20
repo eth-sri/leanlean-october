@@ -52,9 +52,7 @@ private lemma canceledNumerator_eq_source (γ : ℝ) (z : ℂ) (t : ℝ) :
       (Q γ / 2 - z) ^ 2 * Real.exp (-t) *
           (Real.sinh (t * γ / 4) * Real.sinh (t / γ) : ℂ) -
         Complex.sinh ((Q γ / 2 - z) * (t / 2)) ^ 2 := by
-  simp only [canceledNumerator, complexNumerator, complexDenom,
-    Complex.ofReal_sinh, Complex.ofReal_exp, Complex.ofReal_mul,
-    Complex.ofReal_div, Complex.ofReal_neg, Complex.ofReal_ofNat]
+  aesop
 
 private lemma complexNumerator_contDiff (γ : ℝ) (z : ℂ) :
     ContDiff ℂ 3 (complexNumerator γ z) := by
@@ -115,7 +113,6 @@ private lemma complexNumerator_iteratedDeriv_two_zero (γ : ℝ) (z : ℂ)
 
 private lemma canceledNumerator_contDiff (γ : ℝ) (z : ℂ) :
     ContDiff ℝ 3 (canceledNumerator γ z) := by
-  change ContDiff ℝ 3 (fun t : ℝ => complexNumerator γ z (t : ℂ))
   exact ((complexNumerator_contDiff γ z).restrict_scalars ℝ).comp
     Complex.ofRealCLM.contDiff
 
@@ -231,8 +228,7 @@ lemma realDenom_ge_quadratic {γ t : ℝ} (hγ : 0 < γ) (ht : 0 < t) :
 lemma realDenom_pos {γ t : ℝ} (hγ : 0 < γ) (ht : 0 < t) :
     0 < realDenom γ t := by
   unfold realDenom
-  exact mul_pos (Real.sinh_pos_iff.2 (by positivity))
-    (Real.sinh_pos_iff.2 (div_pos ht hγ))
+  positivity
 
 private lemma upsilonLogIntegrand_eq_canceled_div {γ : ℝ} (hγ : 0 < γ)
     (z : ℂ) {t : ℝ} (ht : 0 < t) :
@@ -274,10 +270,7 @@ private lemma upsilonLogIntegrand_norm_le_of_taylor {γ : ℝ} (hγ : 0 < γ)
         (C * t ^ 3) / (realDenom γ t * t) :=
           div_le_div_of_nonneg_right hG' (le_of_lt hDtPos)
     _ ≤ 4 * C := (div_le_iff₀ hDtPos).2 <| by
-      calc
-        C * t ^ 3 = 4 * C * (t ^ 3 / 4) := by ring
-        _ ≤ 4 * C * (realDenom γ t * t) :=
-          mul_le_mul_of_nonneg_left hDt (by positivity)
+      nlinarith
 
 private lemma upsilonLogIntegrand_integrableOn_Ioc {γ : ℝ} (hγ : 0 < γ)
     (z : ℂ) : IntegrableOn (fun t : ℝ => upsilonLogIntegrand γ z t) (Ioc 0 1) := by
@@ -307,16 +300,8 @@ def tailConst (γ : ℝ) : ℝ :=
     ((1 - Real.exp (-2 * (1 / γ))) / 2)
 
 lemma tailConst_pos {γ : ℝ} (hγ : 0 < γ) : 0 < tailConst γ := by
-  have hγ4 : 0 < γ / 4 := by positivity
-  have hγinv : 0 < 1 / γ := by positivity
-  have h₁ : -2 * (γ / 4) < 0 := by linarith only [hγ4]
-  have h₂ : -2 * (1 / γ) < 0 := by linarith only [hγinv]
-  have h₁' : 0 < 1 - Real.exp (-2 * (γ / 4)) :=
-    sub_pos.mpr (Real.exp_lt_one_iff.mpr h₁)
-  have h₂' : 0 < 1 - Real.exp (-2 * (1 / γ)) :=
-    sub_pos.mpr (Real.exp_lt_one_iff.mpr h₂)
   unfold tailConst
-  exact mul_pos (div_pos h₁' (by norm_num)) (div_pos h₂' (by norm_num))
+  simp_all
 
 private lemma real_sinh_ge_exp {a x : ℝ} (hax : a ≤ x) :
     ((1 - Real.exp (-2 * a)) / 2) * Real.exp x ≤ Real.sinh x := by
@@ -335,10 +320,7 @@ private lemma real_sinh_ge_exp {a x : ℝ} (hax : a ≤ x) :
           linarith only [hmul]
     _ = Real.sinh x := by
       rw [Real.sinh_eq]
-      calc
-        ((1 - Real.exp (-2 * x)) / 2) * Real.exp x =
-            (Real.exp x - Real.exp x * Real.exp (-2 * x)) / 2 := by ring
-        _ = (Real.exp x - Real.exp (-x)) / 2 := by rw [hexp]
+      linarith
 
 lemma realDenom_ge_tail_exp {γ t : ℝ} (hγ : 0 < γ) (ht : 1 ≤ t) :
     tailConst γ * Real.exp (Q γ / 2 * t) ≤ realDenom γ t := by
@@ -354,9 +336,7 @@ lemma realDenom_ge_tail_exp {γ t : ℝ} (hγ : 0 < γ) (ht : 1 ≤ t) :
     ring
   have hc₂ : 0 < (1 - Real.exp (-2 * (1 / γ))) / 2 := by
     apply div_pos
-    · apply sub_pos.mpr
-      have hγinv : 0 < 1 / γ := by positivity
-      exact Real.exp_lt_one_iff.mpr (by linarith only [hγinv])
+    · simp_all
     · norm_num
   have hsecond : 0 ≤ ((1 - Real.exp (-2 * (1 / γ))) / 2) * Real.exp (t / γ) :=
     le_of_lt (mul_pos hc₂ (Real.exp_pos _))
@@ -379,7 +359,6 @@ lemma realDenom_ge_tail_exp {γ t : ℝ} (hγ : 0 < γ) (ht : 1 ≤ t) :
 
 lemma complex_sinh_norm_le_exp_abs_re (w : ℂ) :
     ‖Complex.sinh w‖ ≤ Real.exp |w.re| := by
-  rw [Complex.sinh]
   calc
     ‖(Complex.exp w - Complex.exp (-w)) / 2‖ =
         ‖Complex.exp w - Complex.exp (-w)‖ / 2 := by simp
@@ -396,7 +375,6 @@ lemma complex_sinh_norm_le_exp_abs_re (w : ℂ) :
 
 lemma complex_cosh_norm_le_exp_abs_re (w : ℂ) :
     ‖Complex.cosh w‖ ≤ Real.exp |w.re| := by
-  rw [Complex.cosh]
   calc
     ‖(Complex.exp w + Complex.exp (-w)) / 2‖ =
         ‖Complex.exp w + Complex.exp (-w)‖ / 2 := by simp
@@ -446,10 +424,7 @@ lemma upsilonLogIntegrand_norm_le_tail {γ : ℝ} (hγ : 0 < γ)
               (Real.exp (-δ * t) * Real.exp (Q γ / 2 * t)) := by ring
         _ = Real.exp (|w.re| * t) := by
           rw [inv_mul_cancel₀ hK.ne', ← Real.exp_add]
-          rw [show -δ * t + Q γ / 2 * t = |w.re| * t by
-            dsimp [δ]
-            ring_nf]
-          ring
+          grind
     calc
       Real.exp (|w.re| * t) =
           (tailConst γ)⁻¹ * Real.exp (-δ * t) *
@@ -537,15 +512,10 @@ private lemma upsilonLogIntegrand_integrableOn_Ioi_one {γ : ℝ} (hγ : 0 < γ)
   let δ : ℝ := Q γ / 2 - |w.re|
   let A : ℝ := ‖(Q γ / 2 : ℂ) - z‖ ^ 2
   let B : ℝ := (tailConst γ)⁻¹
-  have hQpos : 0 < Q γ := by unfold Q; positivity
   have hstrip : |w.re| < Q γ / 2 := by
     apply (abs_lt).2
     constructor <;> dsimp [w] <;> simp <;> linarith
   have hδ : 0 < δ := by dsimp [δ]; linarith
-  have hB : 0 ≤ B := by
-    dsimp [B]
-    exact le_of_lt (inv_pos.mpr (tailConst_pos hγ))
-  have hA : 0 ≤ A := by dsimp [A]; positivity
   have hmajor1 : IntegrableOn (fun t : ℝ => A * Real.exp (-t)) (Ioi 1) := by
     change Integrable (fun t : ℝ => A * Real.exp (-t)) (volume.restrict (Ioi 1))
     simpa [mul_comm] using (exp_neg_integrableOn_Ioi 1 (b := 1) (by norm_num)).const_mul A
@@ -559,7 +529,7 @@ private lemma upsilonLogIntegrand_integrableOn_Ioi_one {γ : ℝ} (hγ : 0 < γ)
     (upsilonLogIntegrand_aestronglyMeasurable γ z).restrict
   filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
   have htail := upsilonLogIntegrand_norm_le_tail hγ z hz0 hzQ ht.le
-  simpa [w, δ, A, B, tailConst, mul_comm] using htail
+  aesop
 
 theorem upsilonLogIntegrand_integrableOn {γ : ℝ} (hγ : 0 < γ)
     (_hγ2 : γ < 2) (z : ℂ) (hz0 : 0 < z.re) (hzQ : z.re < Q γ) :
@@ -568,13 +538,8 @@ theorem upsilonLogIntegrand_integrableOn {γ : ℝ} (hγ : 0 < γ)
     ext t
     simp only [mem_Ioi, mem_union, mem_Ioc]
     constructor
-    · intro ht
-      by_cases hle : t ≤ 1
-      · exact Or.inl ⟨ht, hle⟩
-      · exact Or.inr (lt_of_not_ge hle)
-    · rintro (⟨ht, _⟩ | ht)
-      · exact ht
-      · linarith
+    · grind
+    · grind
   rw [hsplit, integrableOn_union]
   exact ⟨upsilonLogIntegrand_integrableOn_Ioc hγ z,
     upsilonLogIntegrand_integrableOn_Ioi_one hγ z hz0 hzQ⟩

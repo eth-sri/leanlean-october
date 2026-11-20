@@ -36,13 +36,10 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
   let A := gaussParameterA γ χ α₁ α₂ α₃
   let B := gaussParameterB γ χ α₁ α₂ α₃
   let C := gaussParameterC γ χ α₁
-  have hhalf_lt_one : γ / 2 < 1 := by linarith
   have hχpos : 0 < χ := by
     rcases hχ with hχ | hχ
-    · rw [hχ]
-      linarith only [hγ]
-    · rw [hχ]
-      positivity
+    · linarith
+    · simp [*]
   have hχQ : χ * Q γ = χ ^ 2 + 1 := by
     rcases hχ with hχ | hχ
     · rw [hχ]
@@ -52,10 +49,6 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
     · rw [hχ]
       unfold Q
       field_simp
-  have hχQsub : χ * (Q γ - χ) = 1 := by linear_combination hχQ
-  have hα₁χ : χ < α₁ := by linarith
-  have hα₂χ : χ < α₂ := by linarith
-  have hα₃χ : χ < α₃ := by linarith
   have hAform : A = χ / 2 * (α₁ + α₂ + α₃ - Q γ - 2 * χ) - 1 / 2 := by
     dsimp [A, gaussParameterA]
     ring
@@ -64,9 +57,8 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
     rw [hAform]
     calc
       0 = χ / 2 * (Q γ - χ) - 1 / 2 := hAbase.symm
-      _ < χ / 2 * (α₁ + α₂ + α₃ - Q γ - 2 * χ) - 1 / 2 := by
-        apply sub_lt_sub_right
-        exact mul_lt_mul_of_pos_left (by linarith) (by positivity)
+      _ < _ := by
+        nlinarith
   have hBA : B - A = χ * (Q γ - α₃) := by
     dsimp [A, B, gaussParameterA, gaussParameterB]
     linear_combination (-1 : ℝ) * hχQ
@@ -79,31 +71,19 @@ theorem gauss_physical_parameter_range (γ χ α₁ α₂ α₃ : ℝ)
   have hδpos : 0 < C - A - B := by
     rw [hδeq]
     exact mul_pos hχpos (sub_pos.mpr hα₂)
-  have hδlt : C - A - B < 1 := by
-    rw [hδeq]
-    calc
-      χ * (Q γ - α₂) < χ * (Q γ - χ) := by
-        apply mul_lt_mul_of_pos_left _ hχpos
-        linarith
-      _ = 1 := hχQsub
   have hC1 : C < 1 := by
     dsimp [C, gaussParameterC]
-    have hQ₁ : 0 < Q γ - α₁ := sub_pos.mpr hα₁
-    linarith only [mul_pos hχpos hQ₁]
+    linarith only [mul_pos hχpos (sub_pos.mpr hα₁)]
   have hBC : B < C := by linarith
   have hCpos : 0 < C := by linarith
   have hCApos : 0 < C - A := by linarith
-  have hCBpos : 0 < C - B := by linarith
-  have hCA1 : C - A < 1 := by linarith
-  have hCB1 : C - B < 1 := by linarith
-  change 0 < A ∧ A < B ∧ B < C ∧ C < 1 ∧ 0 < C - A - B ∧
-    C - A - B < 1 ∧ 0 < gaussK₁ A B C ∧ 0 < gaussK₂ A B C
-  refine ⟨hA, hAB, hBC, hC1, hδpos, hδlt, ?_, ?_⟩
+  refine ⟨hA, hAB, hBC, hC1, hδpos, (by
+    rw [hδeq]
+    calc
+      χ * (Q γ - α₂) < χ * (Q γ - χ) := by
+        gcongr <;> linarith
+      _ = 1 := by linear_combination hχQ), ?_, ?_⟩
   · unfold gaussK₁
-    have hgC := Real.Gamma_pos_of_pos hCpos
-    have hgCA := Real.Gamma_pos_of_pos hCApos
-    have hgCB := Real.Gamma_pos_of_pos hCBpos
-    have hgA := Real.Gamma_pos_of_pos hA
     have hgB := Real.Gamma_pos_of_pos (lt_trans hA hAB)
     positivity
   · unfold gaussK₂

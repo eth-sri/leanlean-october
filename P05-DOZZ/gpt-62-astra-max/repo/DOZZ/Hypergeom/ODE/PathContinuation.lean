@@ -87,10 +87,9 @@ def constant_path_continuation_lift
 /-- Every mesh point of a positive equal subdivision belongs to `[0,1]`. -/
 theorem pathContinuationMeshPoint_mem_unitInterval {N i : ℕ} (hN : 0 < N)
     (hi : i ≤ N) : (i : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 := by
-  have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
   constructor
   · positivity
-  · apply (div_le_one hNreal).2
+  · apply (div_le_one (by exact_mod_cast hN)).2
     exact_mod_cast hi
 
 /-- Every segment of a positive equal subdivision lies in `[0,1]`. -/
@@ -98,12 +97,9 @@ theorem pathContinuationSegment_mem_unitInterval {N i : ℕ} (hN : 0 < N)
     (hi : i < N) {t : ℝ}
     (ht : t ∈ Icc ((i : ℝ) / (N : ℝ)) (((i + 1 : ℕ) : ℝ) / (N : ℝ))) :
     t ∈ Icc (0 : ℝ) 1 := by
-  have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
-  have hi1 : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-  have hupper : ((i + 1 : ℕ) : ℝ) / (N : ℝ) ≤ 1 := by
-    apply (div_le_one hNreal).2
-    exact_mod_cast hi1
-  exact ⟨le_trans (by positivity) ht.1, le_trans ht.2 hupper⟩
+  refine ⟨le_trans (by positivity) ht.1, le_trans ht.2 ?_⟩
+  apply (div_le_one (by exact_mod_cast hN)).2
+  exact_mod_cast (Nat.succ_le_iff.mpr hi)
 
 /-- A packaged finite-chain lift inherits local holomorphic charts along its path. -/
 theorem path_continuation_lift_has_solution_charts

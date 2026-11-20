@@ -43,9 +43,6 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
   let enlargedExp : Ω → ℝ := fun ω => Real.exp (∑ j, c' j * |Z ω j|)
   have hbaseExp : Integrable baseExp P := by
     simpa [baseExp] using centeredJointlyGaussian_abs_linear_exp_integrable P Z hZ c
-  have hcoordBaseExp : Integrable (fun ω => Z ω i * baseExp ω) P := by
-    simpa [baseExp] using
-      centeredJointlyGaussian_coordinate_mul_abs_linear_exp_integrable P Z hZ c i
   have hlargeExp : Integrable enlargedExp P := by
     simpa [enlargedExp, c'] using
       centeredJointlyGaussian_abs_linear_exp_integrable P Z hZ c'
@@ -94,41 +91,33 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
         (by
           apply AEMeasurable.of_eval
           intro j
-          exact hZ.2.1 j)
+          exact hZ.right.left j)
     · filter_upwards [] with ω
-      simpa [Real.norm_eq_abs, abs_of_nonneg
-        (mul_nonneg hM (Real.exp_nonneg _)), baseExp] using hGbound (Z ω)
+      solve_by_elim
   have hDint (j : ι) : Integrable (fun ω => D (Z ω) j) P := by
     apply (hbaseExp.const_mul M).mono'
     · exact (hDmeas j).aestronglyMeasurable.comp_aemeasurable (by
         apply AEMeasurable.of_eval
         intro k
-        exact hZ.2.1 k)
+        exact hZ.right.left k)
     · filter_upwards [] with ω
-      simpa [Real.norm_eq_abs, abs_of_nonneg
-        (mul_nonneg hM (Real.exp_nonneg _)), baseExp] using hDbound (Z ω) j
+      solve_by_elim
   have hShiftInt : ∀ t, Integrable
       (fun ω => G (fun j => Z ω j + t * shift j)) P := by
     intro t
     let sf : ℝ := Real.exp (|t| * ∑ j, c j * |shift j|)
-    have hmeas : AEStronglyMeasurable
-        (fun ω => G (fun j => Z ω j + t * shift j)) P := by
-      exact hGmeas.aestronglyMeasurable.comp_aemeasurable (by
-        apply AEMeasurable.of_eval
-        intro j
-        exact (hZ.2.1 j).add (aemeasurable_const.mul (aemeasurable_const)) )
     have hdom : Integrable (fun ω => (M * sf) * baseExp ω) P :=
       (hbaseExp.const_mul (M * sf))
-    apply hdom.mono' hmeas
+    apply hdom.mono' (hGmeas.aestronglyMeasurable.comp_aemeasurable (by
+      apply AEMeasurable.of_eval
+      intro j
+      exact (hZ.2.1 j).add (aemeasurable_const.mul (aemeasurable_const)) ))
     filter_upwards [] with ω
-    have hbound : ‖G (fun j => Z ω j + t * shift j)‖ ≤ M * sf * baseExp ω := by
-      calc
-        _ ≤ M * Real.exp (∑ j, c j * |Z ω j + t * shift j|) := hGbound _
-        _ ≤ M * (baseExp ω * sf) := by
-          dsimp [sf]
-          exact mul_le_mul_of_nonneg_left (hshiftExpBound ω t) hM
-        _ = M * sf * baseExp ω := by ring
-    exact hbound
+    calc
+      _ ≤ M * Real.exp (∑ j, c j * |Z ω j + t * shift j|) := hGbound _
+      _ ≤ M * (baseExp ω * sf) := by
+        exact mul_le_mul_of_nonneg_left (hshiftExpBound ω t) hM
+      _ = M * sf * baseExp ω := by ring
   have hLmeas : ∀ᶠ t in 𝓝 0, AEStronglyMeasurable
       (fun ω => Real.exp (t * Z ω i - t ^ 2 / 2 * var) * G (Z ω)) P := by
     filter_upwards [] with t
@@ -197,7 +186,6 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
         rw [Finset.sum_eq_single i]
         · simp
         · intro j hj hne
-          have hij : i ≠ j := fun h => hne h.symm
           simp [hne]
         · simp
       rw [hdelta]
@@ -214,8 +202,7 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
     calc
       _ = |Z ω i - t * var| *
           Real.exp (t * Z ω i - t ^ 2 / 2 * var) * ‖G (Z ω)‖ := by
-            simp [norm_mul, Real.norm_eq_abs,
-              abs_of_nonneg (Real.exp_nonneg _), mul_assoc]
+            simp_all
       _ ≤ (|Z ω i| + |var|) *
           (tiltConst * Real.exp (|Z ω i|)) * (M * baseExp ω) := by
             gcongr
@@ -273,8 +260,7 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
           (fun ω' => Z ω' i)) j‖ ≤ bR ω := by
     filter_upwards [] with ω t ht
     calc
-      ‖∑ j, gaussianCovariance P (fun ω' => Z ω' i) (fun ω' => Z ω' j) *
-          D (fun j => Z ω j + t * shift j) j‖ ≤
+      _ ≤
           ∑ j, ‖gaussianCovariance P (fun ω' => Z ω' i) (fun ω' => Z ω' j) *
             D (fun j => Z ω j + t * shift j) j‖ := norm_sum_le _ _
       _ ≤ ∑ j, |gaussianCovariance P (fun ω' => Z ω' i) (fun ω' => Z ω' j)| *
@@ -309,28 +295,19 @@ theorem finite_gaussian_integration_by_parts_of_absExp_bound
           _ ≤ |gaussianCovariance P (fun ω' => Z ω' i) (fun ω' => Z ω' j)| *
                 (M * (baseExp ω * Real.exp shiftMass)) :=
               mul_le_mul_of_nonneg_left hterm (abs_nonneg _)
-          _ = |gaussianCovariance P (fun ω' => Z ω' i) (fun ω' => Z ω' j)| *
-                (M * (baseExp ω * Real.exp shiftMass)) := by ring
+          _ = _ := by ring
       _ = (∑ j, |gaussianCovariance P (fun ω' => Z ω' i)
             (fun ω' => Z ω' j)|) * (M * (baseExp ω * Real.exp shiftMass)) := by
         rw [← Finset.sum_mul]
       _ = bR ω := by
-        dsimp [bR]
         ring
-  have hRdiff : ∀ᵐ ω ∂P, ∀ t ∈ Metric.ball 0 (1 : ℝ),
-      HasDerivAt
-        (fun s => G (fun j => Z ω j + s *
-          gaussianCovariance P (fun ω' => Z ω' j) (fun ω' => Z ω' i)))
-        (∑ j, gaussianCovariance P (fun ω' => Z ω' i) (fun ω' => Z ω' j) *
-          D (fun j => Z ω j + t *
-            gaussianCovariance P (fun ω' => Z ω' j) (fun ω' => Z ω' i)) j) t := by
-    filter_upwards [] with ω t ht
-    have h := hGdir (fun j => Z ω j) shift t
-    simpa [shift, hcov_symm] using h
-  exact finite_gaussian_integration_by_parts P Z hZ i G hGmeas D
+  refine finite_gaussian_integration_by_parts P Z hZ i G hGmeas D
     (fun j => hDint j) hShiftInt 1 (by norm_num)
     hLmeas hLint hLDmeas bL hbL hLbound hLdiff
-    hRmeas hRderivMeas bR hbR hRbound hRdiff
+    hRmeas hRderivMeas bR hbR hRbound ?_
+  filter_upwards [] with ω t ht
+  have h := hGdir (fun j => Z ω j) shift t
+  simpa [shift, hcov_symm] using h
 
 
 end DOZZ.Proofs

@@ -51,11 +51,7 @@ theorem brownianHistorySigma_eq
     MeasurableSpace.comap (fun ω (u : Set.Iic s) => B u ω) inferInstance =
       ⨆ u : ℝ≥0, ⨆ (_ : u ≤ s), MeasurableSpace.comap (B u) inferInstance := by
   rw [MeasurableSpace.comap_process_pi]
-  apply le_antisymm
-  · refine iSup_le fun u => ?_
-    exact le_iSup_of_le u.1 (le_iSup_of_le u.2 le_rfl)
-  · refine iSup_le fun u => iSup_le fun hus => ?_
-    exact le_iSup_of_le (⟨u, hus⟩ : Set.Iic s) le_rfl
+  exact le_antisymm (iSup_le fun u => le_iSup_of_le (↑u) (le_iSup_of_le u.property le_rfl)) (iSup_le fun u => iSup_le fun hus => le_iSup_of_le ⟨u, hus⟩ le_rfl)
 
 /-- The Gaussian moment-generating function computes the exponential moment of a Brownian
 increment. This is the deterministic-time input for the exponential martingale. -/
@@ -65,8 +61,7 @@ theorem brownian_exp_increment_integral
     (s t : ℝ≥0) (θ : ℝ) :
     ∫ ω, Real.exp (θ * (B t ω - B s ω)) ∂P =
       Real.exp ((nndist (t : ℝ) (s : ℝ) : ℝ) * θ ^ 2 / 2) := by
-  have hmgf := mgf_gaussianReal (hB.hasLaw_sub t s) θ
-  simpa [ProbabilityTheory.mgf, mul_comm] using hmgf
+  simpa [ProbabilityTheory.mgf, mul_comm] using (mgf_gaussianReal (hB.hasLaw_sub t s) θ)
 
 /-- Each fixed-time exponential of a Brownian motion is integrable. -/
 theorem brownian_exp_integrable
@@ -74,8 +69,7 @@ theorem brownian_exp_integrable
     {B : ℝ≥0 → Ω → ℝ} (hB : IsPreBrownianReal B P)
     (t : ℝ≥0) (θ c : ℝ) :
     Integrable (fun ω => Real.exp (θ * B t ω + c)) P := by
-  have hlaw := hB.hasLaw_eval t
-  have h := hlaw.integrable_comp (integrable_exp_mul_gaussianReal (μ := 0) (v := t) θ)
+  have h := (hB.hasLaw_eval t).integrable_comp (integrable_exp_mul_gaussianReal (μ := 0) (v := t) θ)
   have heq : (fun ω => Real.exp (θ * B t ω + c)) =
       fun ω => Real.exp c * Real.exp (θ * B t ω) := by
     funext ω
@@ -123,23 +117,19 @@ theorem brownian_exponential_martingale
       change MeasurableSpace.comap (B t) inferInstance ≤
         ⨆ u : ℝ≥0, ⨆ (_ : u ≤ t), MeasurableSpace.comap (B u) inferInstance
       exact le_iSup_of_le t (le_iSup_of_le le_rfl le_rfl)
-    have harg : Measurable[𝓕 t] (fun ω => θ * B t ω - θ ^ 2 * (t : ℝ) / 2) := by
-      fun_prop
-    exact harg.exp.stronglyMeasurable
+    exact Measurable.stronglyMeasurable
+      (Measurable.exp (Measurable.sub_const (Measurable.const_mul hBt θ) (θ ^ 2 * ↑t / 2)))
   · intro s t hst
-    let d : ℝ≥0 := t - s
-    let Xf : Ω → ℝ≥0 → ℝ := fun ω u => B (s + u) ω - B s ω
+    let d := t - s
+    let Xf  := fun ω u => B (s + u) ω - B s ω
     let Xh : Ω → Set.Iic s → ℝ := fun ω u => B u ω
-    let mF : MeasurableSpace Ω := MeasurableSpace.comap Xf inferInstance
-    let mH : MeasurableSpace Ω := MeasurableSpace.comap Xh inferInstance
+    let mH  := MeasurableSpace.comap Xh inferInstance
     let : MeasurableSpace Ω := mΩ
-    let G : (ℝ≥0 → ℝ) → ℝ := fun f => Real.exp (θ * f d - θ ^ 2 * (d : ℝ) / 2)
-    let g : Ω → ℝ := G ∘ Xf
-    let M : ℝ≥0 → Ω → ℝ := fun u ω =>
-      Real.exp (θ * B u ω - θ ^ 2 * (u : ℝ) / 2)
-    have hsd : s + d = t := by
-      dsimp [d]
-      exact add_tsub_cancel_of_le hst
+    let G : (ℝ≥0 → ℝ) → ℝ := fun f => Real.exp (θ * f d - θ ^ 2 * d / 2)
+    let g := G ∘ Xf
+    let M := fun u ω =>
+    Real.exp (θ * B u ω - θ ^ 2 * u / 2)
+    have hsd  := add_tsub_cancel_of_le hst
     have hdist : (nndist (t : ℝ) (s : ℝ) : ℝ) = (d : ℝ) := by
       rw [coe_nndist_real_of_le hst]
       dsimp [d]
@@ -147,27 +137,16 @@ theorem brownian_exponential_martingale
     have hpast : mH = 𝓕 s := by
       dsimp [mH, Xh, 𝓕, brownianRawFiltration]
       exact brownianHistorySigma_eq B s
-    have hXfMeas : Measurable[mΩ] Xf := by
-      exact measurable_pi_iff.mpr fun u => (hmeas (s + u)).sub (hmeas s)
     have hXhMeas : Measurable[mΩ] Xh := by
       exact measurable_pi_iff.mpr fun u => hmeas u
-    have hshift := hB.toIsPreBrownianReal.indepFun_shift s
-    change IndepFun Xf Xh P at hshift
-    have hInd : Indep mF mH P := hshift
+    have hInd  := hB.toIsPreBrownianReal.indepFun_shift s
     have hGMeas : Measurable G := by
-      dsimp [G]
       fun_prop
-    have hgMeas : Measurable[mF] g := by
-      exact hGMeas.comp (comap_measurable Xf)
-    have hgStrong : StronglyMeasurable[mF] g := hgMeas.stronglyMeasurable
-    have hfutureLe : mF ≤ mΩ := hXfMeas.comap_le
-    have hpastLe : mH ≤ mΩ := hXhMeas.comap_le
-    have hgCond : P[g | mH] =ᵐ[P] fun _ => P[g] :=
-      condExp_indep_eq hfutureLe hpastLe hgStrong hInd
-    have hgIntExp : Integrable (fun ω => Real.exp (θ * (B t ω - B s ω))) P := by
-      exact (hB.toIsPreBrownianReal.hasLaw_sub t s).integrable_comp
-        (integrable_exp_mul_gaussianReal (μ := 0)
-          (v := nndist (t : ℝ) (s : ℝ)) θ)
+    have hgStrong  := (hGMeas.comp (comap_measurable Xf)).stronglyMeasurable
+    have hfutureLe  := (measurable_pi_iff.mpr fun u => (hmeas (s + u)).sub (hmeas s)).comap_le
+    have hpastLe  := hXhMeas.comap_le
+    have hgIntExp  := (hB.toIsPreBrownianReal.hasLaw_sub t s).integrable_comp
+      (integrable_exp_mul_gaussianReal θ)
     have hgInt : Integrable g P := by
       have heq : g = fun ω => Real.exp (-(θ ^ 2 * (d : ℝ) / 2)) *
           Real.exp (θ * (B t ω - B s ω)) := by
@@ -187,8 +166,7 @@ theorem brownian_exponential_martingale
         congr 1
         ring
       rw [heq, integral_const_mul, brownian_exp_increment_integral
-        hB.toIsPreBrownianReal s t θ, hdist]
-      rw [← Real.exp_add]
+        hB.toIsPreBrownianReal s t θ, hdist, ← Real.exp_add]
       simp; ring
     have hMsStrong : StronglyMeasurable[mH] (M s) := by
       rw [hpast]
@@ -201,24 +179,20 @@ theorem brownian_exponential_martingale
           (fun ω => θ * B s ω - θ ^ 2 * (s : ℝ) / 2) := by
         fun_prop
       exact harg.exp.stronglyMeasurable
-    have hMtInt : Integrable (M t) P := by
-      simpa [M, sub_eq_add_neg] using
-        brownian_exp_integrable hB.toIsPreBrownianReal t θ
-          (-(θ ^ 2 * (t : ℝ) / 2))
+    have hMtInt  := brownian_exp_integrable hB.toIsPreBrownianReal t θ
+        (-(θ ^ 2 * (t : ℝ) / 2))
     have hfactor : (fun ω => M s ω * g ω) = M t := by
       funext ω
       dsimp [M, g, G, Xf]
       rw [hsd, ← Real.exp_add]
       congr 1
-      dsimp [d]
       rw [NNReal.coe_sub hst]
       ring
     have hprodInt : Integrable (fun ω => M s ω * g ω) P := by
       rw [hfactor]
       exact hMtInt
-    have hpull := condExp_mul_of_stronglyMeasurable_left hMsStrong hprodInt hgInt
     have hcondProd : P[fun ω => M s ω * g ω | mH] =ᵐ[P] M s := by
-      filter_upwards [hpull, hgCond] with ω hpullω hcondω
+      filter_upwards [(condExp_mul_of_stronglyMeasurable_left hMsStrong hprodInt hgInt), (condExp_indep_eq hfutureLe hpastLe hgStrong hInd)] with ω hpullω hcondω
       change P[M s * g | mH] ω = M s ω
       rw [hpullω]
       change M s ω * P[g | mH] ω = M s ω
@@ -245,17 +219,13 @@ theorem brownian_exponential_countable_range_optional_stopping
         (fun t ω => Real.exp (θ * B t ω - θ ^ 2 * (t : ℝ) / 2)) τ ω ∂P = 1 := by
   have hP : IsProbabilityMeasure P :=
     (hB.toIsPreBrownianReal.hasLaw_eval 0).isProbabilityMeasure
-  let M : ℝ≥0 → Ω → ℝ := fun t ω =>
-    Real.exp (θ * B t ω - θ ^ 2 * (t : ℝ) / 2)
   have hM := brownian_exponential_martingale hB hmeas θ
   have hstop := hM.stoppedValue_ae_eq_condExp_of_le_const_of_countable_range
     hτ hτT hτrange
-  calc
-    ∫ ω, MeasureTheory.stoppedValue M τ ω ∂P =
-        ∫ ω, P[M T | hτ.measurableSpace] ω ∂P := integral_congr_ae hstop
-    _ = ∫ ω, M T ω ∂P :=
-      integral_condExp (hτ.measurableSpace_le_of_le hτT)
-    _ = 1 := brownian_exponential_expectation_one hB.toIsPreBrownianReal T θ
+  exact Trans.trans
+    (Trans.trans (integral_congr_ae hstop)
+      (integral_condExp (IsStoppingTime.measurableSpace_le_of_le hτ hτT)))
+    (brownian_exponential_expectation_one hB.toIsPreBrownianReal T θ)
 
 /-- Continuous-time optional stopping follows from a bounded approximation by countable-range
 stopping times. This is the Vitali-convergence step: all approximating stopped values are
@@ -272,26 +242,23 @@ theorem brownian_exponential_bounded_optional_stopping_of_approx
     (hτnRange : ∀ n, (Set.range (fun ω => (τn n ω : WithTop ℝ≥0))).Countable)
     (hτnTendsto : ∀ᵐ ω ∂P, Tendsto (fun n => τn n ω) atTop (𝓝 (τ ω))) :
     ∫ ω, Real.exp (θ * B (τ ω) ω - θ ^ 2 * ((τ ω : ℝ)) / 2) ∂P = 1 := by
-  let M : ℝ≥0 → Ω → ℝ := fun t ω =>
-    Real.exp (θ * B t ω - θ ^ 2 * (t : ℝ) / 2)
-  let F : ℕ → Ω → ℝ := fun n ω => M (τn n ω) ω
-  let Fτ : Ω → ℝ := fun ω => M (τ ω) ω
-  let 𝓕 := brownianRawFiltration B hmeas
+  let M := fun t ω =>
+  Real.exp (θ * B t ω - θ ^ 2 * t / 2)
+  let F := fun n ω => M (τn n ω) ω
+  let Fτ := fun ω => M (τ ω) ω
   have hP : IsProbabilityMeasure P :=
     (hB.toIsPreBrownianReal.hasLaw_eval 0).isProbabilityMeasure
   have hM := brownian_exponential_martingale hB hmeas θ
-  have hMTInt : Integrable (M T) P := by
-    simpa [M, sub_eq_add_neg] using
-      brownian_exp_integrable hB.toIsPreBrownianReal T θ
-        (-(θ ^ 2 * (T : ℝ) / 2))
-  let G : ℕ → Ω → ℝ := fun n ω => P[M T | (hτnStop n).measurableSpace] ω
+  have hMTInt  := brownian_exp_integrable hB.toIsPreBrownianReal T θ
+      (-(θ ^ 2 * (T : ℝ) / 2))
+  let G := fun n ω => P[M T | (hτnStop n).measurableSpace] ω
   have hτnEval (n : ℕ) (ω : Ω) :
       ((τn n ω : WithTop ℝ≥0).untopA) = τn n ω := by
     rw [WithTop.untopA_eq_untop WithTop.coe_ne_top]
     apply WithTop.coe_inj.mp
     exact WithTop.coe_untop _ WithTop.coe_ne_top
   have hStopped (n : ℕ) (ω : Ω) :
-      MeasureTheory.stoppedValue M (fun ω => (τn n ω : WithTop ℝ≥0)) ω = F n ω := by
+      MeasureTheory.stoppedValue M (fun ω => (τn n ω)) ω = F n ω := by
     change M ((τn n ω : WithTop ℝ≥0).untopA) ω = M (τn n ω) ω
     rw [hτnEval]
   have hStopCE (n : ℕ) :
@@ -307,7 +274,7 @@ theorem brownian_exponential_bounded_optional_stopping_of_approx
     intro n
     filter_upwards [hStopCE n] with ω hω
     exact hω.symm.trans (hStopped n ω)
-  have hUI : UniformIntegrable F 1 P := hUI_G.ae_eq hFG
+  have hUI := hUI_G.ae_eq hFG
   have hMcont : ∀ᵐ ω ∂P, Continuous (fun t => M t ω) := by
     filter_upwards [hB.cont] with ω hω
     have harg : Continuous (fun t => θ * B t ω - θ ^ 2 * (t : ℝ) / 2) := by
@@ -319,26 +286,21 @@ theorem brownian_exponential_bounded_optional_stopping_of_approx
   have hFInt : ∀ n, Integrable (F n) P := by
     intro n
     exact (integrable_condExp.congr (hFG n))
-  have hFτInt : Integrable Fτ P := hUI.integrable_of_ae_tendsto hF_tendsto
-  have hInMeasure : TendstoInMeasure P F atTop Fτ :=
-    tendstoInMeasure_of_tendsto_ae (fun n => hUI.aestronglyMeasurable n) hF_tendsto
+  have hFτInt := hUI.integrable_of_ae_tendsto hF_tendsto
+  have hInMeasure  :=
+    tendstoInMeasure_of_tendsto_ae (hUI.aestronglyMeasurable) hF_tendsto
   have hLp : Tendsto (fun n => eLpNorm (F n - Fτ) 1 P) atTop (𝓝 0) := by
     apply (tendstoInMeasure_iff_tendsto_Lp_finite
       (p := (1 : ℝ≥0∞)) (by norm_num) (by simp)
       (fun n => memLp_one_iff_integrable.mpr (hFInt n))
       (memLp_one_iff_integrable.mpr hFτInt)).mp
     exact ⟨hInMeasure, hUI.1⟩
-  have hIntegralTendsto :
-      Tendsto (fun n => ∫ ω, F n ω ∂P) atTop (𝓝 (∫ ω, Fτ ω ∂P)) :=
-    tendsto_integral_of_L1' Fτ (Filter.Eventually.of_forall hFInt) hLp
   have hStopOne (n : ℕ) : ∫ ω, F n ω ∂P = 1 := by
     calc
-      ∫ ω, F n ω ∂P = ∫ ω, MeasureTheory.stoppedValue M
-          (fun ω => (τn n ω : WithTop ℝ≥0)) ω ∂P := by
-        apply integral_congr_ae
-        exact ae_of_all P fun ω => (hStopped n ω).symm
+      _ = ∫ ω, MeasureTheory.stoppedValue M
+          (fun ω => (τn n ω)) ω ∂P := rfl
       _ = 1 := brownian_exponential_countable_range_optional_stopping hB hmeas θ T
-        (fun ω => (τn n ω : WithTop ℝ≥0)) (hτnStop n)
+        (fun ω => (τn n ω)) (hτnStop n)
         (fun ω => by exact_mod_cast hτnT n ω) (hτnRange n)
   have hIntegralOne :
       Tendsto (fun n => ∫ ω, F n ω ∂P) atTop (𝓝 (1 : ℝ)) := by
@@ -346,7 +308,7 @@ theorem brownian_exponential_bounded_optional_stopping_of_approx
       funext hStopOne
     rw [hEq]
     exact tendsto_const_nhds
-  have hFτMean : ∫ ω, Fτ ω ∂P = 1 := tendsto_nhds_unique hIntegralTendsto hIntegralOne
+  have hFτMean  := tendsto_nhds_unique (tendsto_integral_of_L1' Fτ (Filter.Eventually.of_forall hFInt) hLp) hIntegralOne
   simpa [Fτ, M] using hFτMean
 
 /-- The dyadic mesh used to approximate bounded stopping times from above. -/

@@ -192,12 +192,12 @@ theorem stretchedTail_term_le (C d β q : ℝ) (n : ℕ) {p : ℝ≥0∞}
     (hp : p ≤ ENNReal.ofReal (C * Real.exp (-d * (n : ℝ) ^ β))) :
     ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) * p ≤
       ENNReal.ofReal (stretchedTail_term C d β q n) := by
-  calc ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) * p
+  calc _
       ≤ ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1))) *
           ENNReal.ofReal (C * Real.exp (-d * (n : ℝ) ^ β)) := mul_le_mul_right hp _
     _ = ENNReal.ofReal (Real.exp (q * ((n : ℝ) + 1)) * (C * Real.exp (-d * (n : ℝ) ^ β))) :=
         (ENNReal.ofReal_mul (Real.exp_pos _).le).symm
-    _ ≤ ENNReal.ofReal (stretchedTail_term C d β q n) := by
+    _ ≤ _ := by
         refine ENNReal.ofReal_le_ofReal (mul_le_mul_of_nonneg_left ?_ (Real.exp_pos _).le)
         exact mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.exp_pos _).le
 

@@ -51,20 +51,18 @@ theorem dual_seed_parameter_intervals (γ α ε α' : ℝ)
       1 < C₁ - A - B + 1 ∧ C₁ - A - B + 1 < 2 ∧
       0 < C₁ - A ∧ C₁ - A < 1 ∧ 0 < C₁ - B ∧ C₁ - B < 1 ∧
       0 < gaussK₂ A B C₀ := by
-  dsimp only
   obtain ⟨hA, hAB, hBC, hC, hδ, hδ₁, _, hK₂⟩ :=
     DOZZ.gauss_physical_parameter_range γ (2 / γ) α ε α'
       hγ hγ₂ (Or.inr rfl) hs hα hε hα'
-  have hC₁ := dual_seed_channel_parameter γ α ε α' hγ.ne'
   have hAhalf : gaussParameterA γ (2 / γ) α ε α' < 1 / 2 := by
     rw [dual_seed_parameterA_deficits γ α ε α' hγ.ne']
-    have ht : 0 < ((Q γ - α) + (Q γ - ε) + (Q γ - α')) / γ :=
+    have ht  :=
       div_pos (add_pos (add_pos (sub_pos.mpr hα) (sub_pos.mpr hε))
         (sub_pos.mpr hα')) hγ
     linarith only [ht]
   refine ⟨hA, hAhalf, ?_, ?_, ?_, hC, ?_, ?_, ?_, ?_, ?_, ?_, ?_, ?_,
     ?_, ?_, ?_, ?_, hK₂⟩ <;>
-    linarith only [hA, hAB, hBC, hC, hδ, hδ₁, hC₁]
+    linarith only [hA, hAB, hBC, hC, hδ, hδ₁, (dual_seed_channel_parameter γ α ε α' hγ.ne')]
 
 
 end DOZZ.Proofs

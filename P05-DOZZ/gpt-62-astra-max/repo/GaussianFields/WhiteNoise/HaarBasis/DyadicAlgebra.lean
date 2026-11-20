@@ -99,22 +99,18 @@ theorem exists_nat_inv_dyadicPower_lt {ε : ℝ} (hε : 0 < ε) :
   have hlim :
       Tendsto (fun n : ℕ => ((1 / 2 : ℝ) ^ n)) atTop (𝓝 (0 : ℝ)) := by
     exact tendsto_pow_atTop_nhds_zero_of_lt_one (by norm_num) (by norm_num)
-  have hev : ∀ᶠ n in atTop, ((1 / 2 : ℝ) ^ n) ∈ Set.Iio ε :=
+  have hev  :=
     hlim.eventually (Iio_mem_nhds hε)
   rcases eventually_atTop.1 hev with ⟨N, hN⟩
   refine ⟨N, ?_⟩
-  have h := hN N le_rfl
-  simpa [dyadicPower, zpow_natCast, one_div, inv_pow] using h
+  simpa [dyadicPower, zpow_natCast, one_div, inv_pow] using (hN N le_rfl)
 
 /-- The integer floor cell contains the point at any nonnegative dyadic scale. -/
 theorem mem_dyadicInterval_floor (n : ℕ) (x : ℝ) :
     x ∈ dyadicInterval (n : ℤ) ⌊dyadicPower (n : ℤ) * x⌋ := by
   rw [mem_dyadicInterval_iff]
   constructor
-  · have hfloor : ((⌊dyadicPower (n : ℤ) * x⌋ : ℤ) : ℝ) ≤
-        dyadicPower (n : ℤ) * x :=
-      Int.floor_le _
-    linarith
+  · simp
   · have hfloor : dyadicPower (n : ℤ) * x <
         ((⌊dyadicPower (n : ℤ) * x⌋ : ℤ) : ℝ) + 1 :=
       Int.lt_floor_add_one _
@@ -125,16 +121,15 @@ theorem disjoint_dyadicInterval_same_scale {j k₁ k₂ : ℤ} (hk : k₁ ≠ k�
     Disjoint (dyadicInterval j k₁) (dyadicInterval j k₂) := by
   rw [Set.disjoint_left]
   intro x hx₁ hx₂
-  exact not_both_mem_Ico_sub_int (z := dyadicPower j * x) hk
-    ⟨(mem_dyadicInterval_iff j k₁ x).1 hx₁,
-      (mem_dyadicInterval_iff j k₂ x).1 hx₂⟩
+  exact not_both_mem_Ico_sub_int hk
+    ⟨(mem_dyadicInterval_iff j k₁ x).mp hx₁, (mem_dyadicInterval_iff j k₂ x).mp hx₂⟩
 
 /-- A dyadic interval is the union of its two children at the next scale. -/
 theorem dyadicInterval_eq_union_children (j k : ℤ) :
     dyadicInterval j k =
       dyadicInterval (j + 1) (2 * k) ∪ dyadicInterval (j + 1) (2 * k + 1) := by
   ext x
-  let y : ℝ := dyadicPower j * x - (k : ℝ)
+  let y := dyadicPower j * x - k
   have hleft :
       dyadicPower (j + 1) * x - ((2 * k : ℤ) : ℝ) = 2 * y := by
     simp [y, dyadicPower_add_one]
@@ -145,27 +140,13 @@ theorem dyadicInterval_eq_union_children (j k : ℤ) :
     ring
   constructor
   · intro hx
-    have hy : y ∈ Set.Ico (0 : ℝ) 1 := (mem_dyadicInterval_iff j k x).1 hx
+    have hy := (mem_dyadicInterval_iff j k x).1 hx
     by_cases hyhalf : y < 1 / 2
     · left
-      rw [mem_dyadicInterval_iff, hleft]
-      constructor <;> nlinarith [hy.1, hyhalf]
+      rw [mem_dyadicInterval_iff, hleft] <;> grind
     · right
-      rw [mem_dyadicInterval_iff, hright]
-      constructor <;> nlinarith [hy.2, le_of_not_gt hyhalf]
-  · intro hx
-    rw [mem_dyadicInterval_iff]
-    rcases hx with hx | hx
-    · have hchild : 2 * y ∈ Set.Ico (0 : ℝ) 1 := by
-        have hraw := (mem_dyadicInterval_iff (j + 1) (2 * k) x).1 hx
-        rw [hleft] at hraw
-        exact hraw
-      constructor <;> nlinarith [hchild.1, hchild.2]
-    · have hchild : 2 * y - 1 ∈ Set.Ico (0 : ℝ) 1 := by
-        have hraw := (mem_dyadicInterval_iff (j + 1) (2 * k + 1) x).1 hx
-        rw [hright] at hraw
-        exact hraw
-      constructor <;> nlinarith [hchild.1, hchild.2]
+      rw [mem_dyadicInterval_iff, hright] <;> grind
+  · grind [mem_dyadicInterval_iff]
 
 /-- Distinct dyadic boxes at the same scale are disjoint. -/
 theorem disjoint_dyadicBox_same_scale {d : Nat} {j : ℤ}
@@ -193,7 +174,7 @@ theorem dyadicBox_eq_iUnion_children {d : Nat} (j : ℤ) (cell : Fin d → ℤ) 
   ext x
   constructor
   · intro hx
-    let side : Fin d → Bool := fun r =>
+    let side  := fun r =>
       if x r ∈ dyadicInterval (j + 1) (2 * cell r) then false else true
     refine Set.mem_iUnion.2 ⟨side, ?_⟩
     intro r _hr
@@ -204,14 +185,11 @@ theorem dyadicBox_eq_iUnion_children {d : Nat} (j : ℤ) (cell : Fin d → ℤ) 
       rwa [← dyadicInterval_eq_union_children j (cell r)]
     by_cases hleft : x r ∈ dyadicInterval (j + 1) (2 * cell r)
     · simp [side, haarChildCell, hleft]
-    · have hright : x r ∈ dyadicInterval (j + 1) (2 * cell r + 1) :=
-        hxsplit.resolve_left hleft
-      simpa [side, haarChildCell, hleft] using hright
+    · simpa [side, haarChildCell, hleft] using (hxsplit.resolve_left hleft)
   · intro hx
     rcases Set.mem_iUnion.1 hx with ⟨side, hxside⟩
     intro r _hr
-    have hchild : x r ∈ dyadicInterval (j + 1) (haarChildCell cell side r) :=
-      hxside r trivial
+    have hchild := hxside r trivial
     change x r ∈ dyadicInterval j (cell r)
     rw [dyadicInterval_eq_union_children j (cell r)]
     by_cases hside : side r
@@ -242,7 +220,6 @@ theorem dyadicBox_eq_dyadicBoxFinsetUnion_children {d : Nat}
     dyadicBox j cell =
       dyadicBoxFinsetUnion (d := d) (j + 1) (dyadicChildCellFinset cell) := by
   rw [dyadicBox_eq_iUnion_children]
-  ext x
   simp [dyadicBoxFinsetUnion, mem_dyadicChildCellFinset]
 
 /-- A coordinate half-line is the union of dyadic boxes whose coordinate upper edge lies below
@@ -256,11 +233,10 @@ theorem preimage_eval_Iio_eq_iUnion_dyadicBox {d : Nat} (r : Fin d) (a : ℝ) :
   constructor
   · intro hx
     obtain ⟨n, hn⟩ := exists_nat_inv_dyadicPower_lt (sub_pos.2 hx)
-    let cell : Fin d → ℤ := fun r => ⌊dyadicPower (n : ℤ) * x r⌋
-    refine Set.mem_iUnion.2 ⟨(n, cell), ?_⟩
+    refine Set.mem_iUnion.2 ⟨(n, (fun r => ⌊dyadicPower (n : ℤ) * x r⌋)), ?_⟩
     refine Set.mem_iUnion.2 ⟨?_, ?_⟩
-    · let p : ℝ := dyadicPower (n : ℤ)
-      have hp : 0 < p := dyadicPower_pos (n : ℤ)
+    · let p := dyadicPower n
+      have hp : 0 < p := dyadicPower_pos n
       have hfloor : ((⌊p * x r⌋ : ℤ) : ℝ) ≤ p * x r :=
         Int.floor_le _
       have hupper_le : (((⌊p * x r⌋ : ℤ) : ℝ) + 1) / p ≤ x r + p⁻¹ := by
@@ -269,19 +245,13 @@ theorem preimage_eval_Iio_eq_iUnion_dyadicBox {d : Nat} (r : Fin d) (a : ℝ) :
             exact div_le_div_of_nonneg_right (by linarith) hp.le
           _ = x r + p⁻¹ := by
             field_simp [ne_of_gt hp]
-      have hlt : x r + p⁻¹ < a := by
-        have hn' : p⁻¹ < a - x r := by
-          simpa [p] using hn
-        linarith
-      simpa [cell, p] using lt_of_le_of_lt hupper_le hlt
-    · intro s _hs
-      exact mem_dyadicInterval_floor n (x s)
-  · intro hx
-    rcases Set.mem_iUnion.1 hx with ⟨p, hp⟩
-    rcases Set.mem_iUnion.1 hp with ⟨hupper, hbox⟩
-    have hr : x r ∈ dyadicInterval (p.1 : ℤ) (p.2 r) := hbox r trivial
-    unfold dyadicInterval at hr
-    exact hr.2.trans hupper
+      grind
+    · solve_by_elim [mem_dyadicInterval_floor]
+  exact fun hx =>
+    Exists.casesOn (Set.mem_iUnion.mp hx) fun p hp =>
+      Exists.casesOn (Set.mem_iUnion.mp hp) fun hupper hbox =>
+        have hr := hbox r trivial;
+        LT.lt.trans hr.right hupper
 
 /-- Coordinate half-lines are measurable for the sigma-algebra generated by nonnegative dyadic
 boxes. -/
@@ -481,7 +451,7 @@ theorem dyadicBoxFinsetUnion_refine_nat {d : Nat} {n N : ℕ} (hnN : n ≤ N)
   have hscale : (n : ℤ) + ((N - n : ℕ) : ℤ) = (N : ℤ) := by
     omega
   simpa [hscale] using
-    dyadicBoxFinsetUnion_refine_steps (d := d) (j := (n : ℤ)) (n := N - n) s
+    dyadicBoxFinsetUnion_refine_steps (j := (n : ℤ)) (n := N - n) s
 
 theorem measurableSet_dyadicBoxFinsetUnion {d : Nat} (j : ℤ)
     (s : Finset (Fin d → ℤ)) :

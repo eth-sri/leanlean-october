@@ -45,9 +45,6 @@ theorem upsilonLog_reflect (γ : ℝ) (z : ℂ)
   have hcenter :
       (Q γ / 2 : ℂ) - ((Q γ : ℂ) - z) = -((Q γ / 2 : ℂ) - z) := by
     ring
-  change
-    (∫ t in Ioi (0 : ℝ), upsilonLogIntegrand γ ((Q γ : ℂ) - z) t ∂volume) =
-      ∫ t in Ioi (0 : ℝ), upsilonLogIntegrand γ z t ∂volume
   apply setIntegral_congr_fun measurableSet_Ioi
   intro t ht
   rw [upsilonLogIntegrand, upsilonLogIntegrand, hcenter]

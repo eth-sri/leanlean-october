@@ -30,7 +30,7 @@ noncomputable def lastExitGaussianKernelCDF (ν c x t : ℝ) : ℝ :=
 private theorem harmonic_pos {ν x : ℝ} (hν : 0 < ν) (hx : 0 < x) :
     0 < conditionedH ν x := by
   rw [conditionedH, ite_eq_right hν.ne']
-  exact sub_pos.mpr (Real.exp_lt_one_iff.2 (by nlinarith))
+  simp_all
 
 /-- The two drift directions differ by the exact Gaussian exponential factor. -/
 theorem brownianHeatDensity_opposite_drift (ν z t : ℝ) (ht : 0 < t) :

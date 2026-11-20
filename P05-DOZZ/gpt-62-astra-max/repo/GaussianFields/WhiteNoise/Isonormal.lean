@@ -39,7 +39,6 @@ instance instFact_two_ne_top : Fact ((2 : ℝ≥0∞) ≠ ∞) :=
 theorem inner_toLp_real {Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω}
     {f g : Ω → ℝ} (hf : MemLp f 2 μ) (hg : MemLp g 2 μ) :
     ⟪hf.toLp f, hg.toLp g⟫_ℝ = ∫ ω, f ω * g ω ∂μ := by
-  rw [MeasureTheory.L2.inner_def]
   refine integral_congr_ae ?_
   filter_upwards [hf.coeFn_toLp, hg.coeFn_toLp] with ω hfω hgω
   simp [hfω, hgω, mul_comm]
@@ -443,8 +442,7 @@ theorem covariance_scalarWhiteNoiseL2 {d : Nat}
       (∫ x, scalarWhiteNoiseL2 d f x ∂scalarWhiteNoiseMeasure d) *
         (∫ x, scalarWhiteNoiseL2 d g x ∂scalarWhiteNoiseMeasure d) =
     ⟪f, g⟫_ℝ
-  rw [integral_mul_scalarWhiteNoiseL2, integral_scalarWhiteNoiseL2,
-    integral_scalarWhiteNoiseL2]
+  simp only [integral_mul_scalarWhiteNoiseL2, integral_scalarWhiteNoiseL2]
   ring
 
 @[simp]

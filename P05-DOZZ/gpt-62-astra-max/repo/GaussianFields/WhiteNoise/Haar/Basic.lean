@@ -111,12 +111,7 @@ theorem HaarWaveletIndex.toHaarIndex_injective {d : Nat} :
   | mk scale' cell' signature' =>
   cases signature with
   | mk sig hsig =>
-  cases signature' with
-  | mk sig' hsig' =>
-  simp [HaarWaveletIndex.toHaarIndex] at hidx
-  rcases hidx with ⟨rfl, rfl, hsigEq⟩
-  cases hsigEq
-  rfl
+  simp_all [HaarWaveletIndex.toHaarIndex, hidx]
 
 /-- The dyadic dilation `2^j`. -/
 @[expose]
@@ -329,9 +324,7 @@ theorem haarMother1D_mul_haarFather1D (x : ℝ) :
 
 theorem integral_haarFather1D :
     ∫ x : ℝ, haarFather1D x ∂volume = 1 := by
-  rw [haarFather1D, integral_indicator_const]
-  · simp [MeasureTheory.measureReal_def, Real.volume_Ico]
-  · exact measurableSet_Ico
+  simp_all [haarFather1D, integral_indicator_const]
 
 theorem integral_haarMother1D :
     ∫ x : ℝ, haarMother1D x ∂volume = 0 := by
@@ -340,18 +333,11 @@ theorem integral_haarMother1D :
       (Set.Ico (0 : ℝ) (1 / 2)).indicator (fun _ => (1 : ℝ)) x -
         (Set.Ico (1 / 2 : ℝ) 1).indicator (fun _ => (1 : ℝ)) x ∂volume = 0
   rw [integral_sub]
-  · rw [integral_indicator_const, integral_indicator_const]
-    · norm_num [MeasureTheory.measureReal_def, Real.volume_Ico]
-    · exact measurableSet_Ico
-    · exact measurableSet_Ico
-  · exact (integrableOn_const (C := (1 : ℝ))
-      (s := Set.Ico (0 : ℝ) (1 / 2)) (μ := volume) (by
-        rw [Real.volume_Ico]
-        exact ENNReal.ofReal_ne_top)).integrable_indicator measurableSet_Ico
-  · exact (integrableOn_const (C := (1 : ℝ))
-      (s := Set.Ico (1 / 2 : ℝ) 1) (μ := volume) (by
-        rw [Real.volume_Ico]
-        exact ENNReal.ofReal_ne_top)).integrable_indicator measurableSet_Ico
+  · bound
+  · exact (integrableOn_const (by
+        simp )).integrable_indicator measurableSet_Ico
+  · exact (integrableOn_const (by
+        simp )).integrable_indicator measurableSet_Ico
 
 /-- Change variables in the full-line Lebesgue integral under an affine map. -/
 theorem integral_comp_mul_add_volume {a b : ℝ} (ha : a ≠ 0) (f : ℝ → ℝ)
@@ -360,9 +346,9 @@ theorem integral_comp_mul_add_volume {a b : ℝ} (ha : a ≠ 0) (f : ℝ → ℝ
       |a⁻¹| * ∫ y : ℝ, f y ∂volume := by
   have hmap :
       Measure.map (fun x : ℝ => a * x + b) volume =
-        ENNReal.ofReal |a⁻¹| • (volume : Measure ℝ) := by
+        ENNReal.ofReal |a⁻¹| • volume := by
     calc
-      Measure.map (fun x : ℝ => a * x + b) volume =
+      _ =
           Measure.map (fun y : ℝ => y + b)
             (Measure.map (fun x : ℝ => a * x) volume) := by
             rw [Measure.map_map]
@@ -370,40 +356,30 @@ theorem integral_comp_mul_add_volume {a b : ℝ} (ha : a ≠ 0) (f : ℝ → ℝ
             · fun_prop
             · fun_prop
       _ = Measure.map (fun y : ℝ => y + b)
-            (ENNReal.ofReal |a⁻¹| • (volume : Measure ℝ)) := by
+            (ENNReal.ofReal |a⁻¹| • volume) := by
             rw [Real.map_volume_mul_left ha]
-      _ = ENNReal.ofReal |a⁻¹| • (volume : Measure ℝ) := by
-            rw [Measure.map_smul (ENNReal.ofReal |a⁻¹|)
-              (by fun_prop : AEMeasurable (fun y : ℝ => y + b) volume),
-              map_add_right_eq_self]
-  rw [← integral_map (by fun_prop : AEMeasurable (fun x : ℝ => a * x + b) volume)
+      _ = _ := by
+            simp_all [Measure.map_smul, map_add_right_eq_self]
+  rw [← integral_map (by fun_prop)
     ?_]
-  · rw [hmap, integral_smul_measure]
-    rw [ENNReal.toReal_ofReal (abs_nonneg _)]
-    simp [smul_eq_mul]
+  · simp_all
   · rw [hmap]
     exact (hf.smul_measure ENNReal.ofReal_ne_top).aestronglyMeasurable
 
 theorem integral_haarFather1D_mul_self :
     ∫ x : ℝ, haarFather1D x * haarFather1D x ∂volume = 1 := by
   calc
-    ∫ x : ℝ, haarFather1D x * haarFather1D x ∂volume =
+    _ =
         ∫ x : ℝ, haarFather1D x ∂volume := by
-      refine integral_congr_ae (ae_of_all _ ?_)
-      intro x
-      show haarFather1D x * haarFather1D x = haarFather1D x
-      rw [← pow_two, haarFather1D_sq]
+      grind [pow_two, haarFather1D_sq]
     _ = 1 := integral_haarFather1D
 
 theorem integral_haarMother1D_mul_self :
     ∫ x : ℝ, haarMother1D x * haarMother1D x ∂volume = 1 := by
   calc
-    ∫ x : ℝ, haarMother1D x * haarMother1D x ∂volume =
+    _ =
         ∫ x : ℝ, haarFather1D x ∂volume := by
-      refine integral_congr_ae (ae_of_all _ ?_)
-      intro x
-      show haarMother1D x * haarMother1D x = haarFather1D x
-      rw [← pow_two, haarMother1D_sq]
+      grind [pow_two, haarMother1D_sq]
     _ = 1 := integral_haarFather1D
 
 theorem integral_haarFather1D_mul_haarMother1D :
@@ -560,23 +536,19 @@ theorem integrable_haarMother1D_mul_left_child :
 theorem integrable_haarMother1D_mul_right_child :
     Integrable (fun y : ℝ => haarMother1D y * haarMother1D (2 * y - 1))
       (volume : Measure ℝ) := by
-  have hshift : Integrable (fun y : ℝ => haarMother1D (y - 1)) (volume : Measure ℝ) := by
-    simpa [sub_eq_add_neg] using integrable_haarMother1D.comp_add_right (-1)
-  have hscaled : Integrable (fun y : ℝ => haarMother1D (2 * y - 1)) (volume : Measure ℝ) := by
-    simpa [sub_eq_add_neg] using hshift.comp_mul_left' (by norm_num : (2 : ℝ) ≠ 0)
+  have hshift  := integrable_haarMother1D.comp_add_right (-1)
+  have hscaled : Integrable (fun y : ℝ => haarMother1D (2 * y - 1)) (volume) := by
+    simpa [sub_eq_add_neg] using hshift.comp_mul_left' (by norm_num)
   refine hscaled.neg.congr (ae_of_all _ ?_)
   intro y
-  exact (haarMother1D_mul_right_child y).symm
+  exact Eq.symm (haarMother1D_mul_right_child y)
 
 theorem integral_haarMother1D_mul_left_child :
     ∫ y : ℝ, haarMother1D y * haarMother1D (2 * y) ∂volume = 0 := by
   calc
-    ∫ y : ℝ, haarMother1D y * haarMother1D (2 * y) ∂volume =
-        ∫ y : ℝ, haarMother1D (2 * y) ∂volume := by
-          refine integral_congr_ae (ae_of_all _ ?_)
-          intro y
-          exact haarMother1D_mul_left_child y
-    _ = |(2 : ℝ)⁻¹| * ∫ y : ℝ, haarMother1D y ∂volume := by
+    _ =
+        ∫ y : ℝ, haarMother1D (2 * y) ∂volume := integral_congr_ae (ae_of_all volume haarMother1D_mul_left_child)
+    _ = |2⁻¹| * ∫ y : ℝ, haarMother1D y ∂volume := by
           simpa using integral_comp_mul_add_volume (a := (2 : ℝ)) (b := 0)
             (by norm_num) haarMother1D integrable_haarMother1D
     _ = 0 := by rw [integral_haarMother1D, mul_zero]
@@ -667,23 +639,17 @@ theorem integrable_haarFather1D_mul_left_child_mother :
 theorem integrable_haarFather1D_mul_right_child_mother :
     Integrable (fun y : ℝ => haarFather1D y * haarMother1D (2 * y - 1))
       (volume : Measure ℝ) := by
-  have hshift : Integrable (fun y : ℝ => haarMother1D (y - 1)) (volume : Measure ℝ) := by
-    simpa [sub_eq_add_neg] using integrable_haarMother1D.comp_add_right (-1)
-  have hscaled : Integrable (fun y : ℝ => haarMother1D (2 * y - 1)) (volume : Measure ℝ) := by
-    simpa [sub_eq_add_neg] using hshift.comp_mul_left' (by norm_num : (2 : ℝ) ≠ 0)
-  refine hscaled.congr (ae_of_all _ ?_)
-  intro y
-  exact (haarFather1D_mul_right_child_mother y).symm
+  have hshift  := integrable_haarMother1D.comp_add_right (-1)
+  have hscaled : Integrable (fun y : ℝ => haarMother1D (2 * y - 1)) (volume) := by
+    simpa [sub_eq_add_neg] using hshift.comp_mul_left' (by norm_num)
+  exact Integrable.congr hscaled (ae_of_all volume fun y => Eq.symm (haarFather1D_mul_right_child_mother y))
 
 theorem integral_haarFather1D_mul_left_child_mother :
     ∫ y : ℝ, haarFather1D y * haarMother1D (2 * y) ∂volume = 0 := by
   calc
-    ∫ y : ℝ, haarFather1D y * haarMother1D (2 * y) ∂volume =
-        ∫ y : ℝ, haarMother1D (2 * y) ∂volume := by
-          refine integral_congr_ae (ae_of_all _ ?_)
-          intro y
-          exact haarFather1D_mul_left_child_mother y
-    _ = |(2 : ℝ)⁻¹| * ∫ y : ℝ, haarMother1D y ∂volume := by
+    _ =
+        ∫ y : ℝ, haarMother1D (2 * y) ∂volume := integral_congr_ae (ae_of_all volume haarFather1D_mul_left_child_mother)
+    _ = |2⁻¹| * ∫ y : ℝ, haarMother1D y ∂volume := by
           simpa using integral_comp_mul_add_volume (a := (2 : ℝ)) (b := 0)
             (by norm_num) haarMother1D integrable_haarMother1D
     _ = 0 := by rw [integral_haarMother1D, mul_zero]

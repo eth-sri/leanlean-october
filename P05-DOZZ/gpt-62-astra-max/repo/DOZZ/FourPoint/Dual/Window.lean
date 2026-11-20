@@ -29,38 +29,26 @@ theorem dual_window_margins (γ α η ξ : ℝ)
       2 < γ * α ∧ γ * α < 2 + γ ^ 2 / 2 ∧
       0 < 4 - γ * α ∧ γ * (Q γ - α) < 2 ∧
       (4 / γ) * (Q γ - α) < 2 - γ ^ 2 / 2 + γ * (Q γ - α) := by
-  have hν : 0 < Q γ - α := sub_pos.mpr hαhi
+  have hν := sub_pos.mpr hαhi
   have hνη : Q γ - α < η := by linarith only [hαlo]
-  have hνb : Q γ - α < γ / 2 := hνη.trans hη₂
-  have hκ : 0 < (4 / γ) * (Q γ - α) :=
-    mul_pos (div_pos (by norm_num) hγ) hν
+  have hνb := hνη.trans hη₂
   have hQ : γ * Q γ = 2 + γ ^ 2 / 2 := by
     unfold Q
     field_simp
   have hγsq : γ ^ 2 < 4 := by nlinarith only [hγ, hγ₂]
   have hνmul : γ * (Q γ - α) < γ ^ 2 / 2 := by
-    have hm := mul_lt_mul_of_pos_left hνb hγ
-    nlinarith only [hm]
-  have hαmul : 2 < γ * α := by
-    nlinarith only [hQ, hνmul]
+    nlinarith only [(mul_lt_mul_of_pos_left hνb hγ)]
   have hαmul₂ : γ * α < 2 + γ ^ 2 / 2 := by
-    have hm := mul_pos hγ hν
-    nlinarith only [hQ, hm]
-  have houter : (4 / γ) * (Q γ - α) < (1 - ξ) * (4 - γ * α) := by
+    nlinarith only [hQ, (mul_pos hγ hν)]
+  refine ⟨hν, hνb, (mul_pos (div_pos (by norm_num) hγ) hν), hslack₁.trans hξ₂, (by
     have hbuffer : 0 < (1 - ξ) * (2 * γ * η) :=
       mul_pos (sub_pos.mpr hξ₂) (mul_pos (mul_pos (by norm_num) hγ) hη)
-    nlinarith only [hslack₂, hbuffer]
-  have hfirst : (4 / γ) * (Q γ - α) <
-      2 - γ ^ 2 / 2 + γ * (Q γ - α) := by
-    by_contra hn
-    have hm := mul_le_mul_of_nonneg_right (le_of_not_gt hn) hγ.le
-    have hp : 0 < (4 - γ ^ 2) * (γ / 2 - (Q γ - α)) :=
-      mul_pos (sub_pos.mpr hγsq) (sub_pos.mpr hνb)
-    have hd : (4 / γ) * γ = 4 := div_mul_cancel₀ 4 hγ.ne'
-    rw [mul_right_comm (4 / γ) (Q γ - α) γ, hd] at hm
-    nlinarith only [hp, hm]
-  exact ⟨hν, hνb, hκ, hslack₁.trans hξ₂, houter, hαmul, hαmul₂,
-    by linarith only [hαmul₂, hγsq], by linarith only [hνmul, hγsq], hfirst⟩
+    nlinarith only [hslack₂, hbuffer]), (by nlinarith only [hQ, hνmul]), hαmul₂,
+    by linarith only [hαmul₂, hγsq], by linarith only [hνmul, hγsq], ?_⟩
+  by_contra hn
+  have hm := mul_le_mul_of_nonneg_right (le_of_not_gt hn) hγ.le
+  rw [mul_right_comm (4 / γ) (Q γ - α) γ, (div_mul_cancel₀ 4 hγ.ne')] at hm
+  nlinarith only [(mul_pos (sub_pos.mpr hγsq) (sub_pos.mpr hνb)), hm]
 
 /-- The dual reflected triple is ordinary Seiberg on the explicit near-Q window. -/
 theorem dual_window_reflected_triple (γ α₁ α₂ α₃ η : ℝ)
@@ -74,9 +62,7 @@ theorem dual_window_reflected_triple (γ α₁ α₂ α₃ η : ℝ)
   have hd : γ / 2 < 2 / γ := by
     apply (lt_div_iff₀ hγ).2
     nlinarith only [hγ, hγ₂]
-  refine ⟨?_, hα₂, hα₃, ?_⟩
-  · linarith only [hαlo, hη₂, hd]
-  · linarith only [hs, hαhi]
+  grind
 
 /-- The dual reflection exponent is twice the maximum-tail exponent. -/
 theorem dual_window_zero_mode_order (γ α₁ α₂ α₃ : ℝ) :

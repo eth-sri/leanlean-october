@@ -55,34 +55,16 @@ theorem realEulerBetaMoment_scaled (b c : ℝ) (n : ℕ)
   have hc : 0 < c := by linarith
   have hbn : 0 < b + (n : ℝ) := by positivity
   have hcn : 0 < c + (n : ℝ) := by positivity
-  have hbeta := realEulerBetaIntegral_eq_gamma_ratio (b + n) (c - b) hbn hcb
   have hbeta' :
-      (∫ t : ℝ in Ioc 0 1,
-        t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)) =
-        Real.Gamma (b + n) * Real.Gamma (c - b) / Real.Gamma (c + n) := by
-    simpa only [show b + (n : ℝ) + (c - b) = c + n by ring] using hbeta
+        (∫ t : ℝ in Ioc 0 1,
+          t ^ (b + n - 1) * (1 - t) ^ (c - b - 1)) =
+          Real.Gamma (b + n) * Real.Gamma (c - b) / Real.Gamma (c + n) := by
+      simpa only [show b + (n : ℝ) + (c - b) = c + n by ring] using (realEulerBetaIntegral_eq_gamma_ratio (b + n) (c - b) hbn hcb)
   have hshiftB := realGamma_add_nat_div_Gamma_eq b n hb
   have hshiftC := realGamma_add_nat_div_Gamma_eq c n hc
-  have hΓb : 0 < Real.Gamma b := Real.Gamma_pos_of_pos hb
-  have hΓq : 0 < Real.Gamma (c - b) := Real.Gamma_pos_of_pos hcb
-  have hΓc : 0 < Real.Gamma c := Real.Gamma_pos_of_pos hc
-  have hΓbn : 0 < Real.Gamma (b + n) := Real.Gamma_pos_of_pos hbn
-  have hΓcn : 0 < Real.Gamma (c + n) := Real.Gamma_pos_of_pos hcn
-  have hPochC : 0 < (ascPochhammer ℝ n).eval c := by
-    rw [← hshiftC]
-    exact div_pos hΓcn hΓc
-  have hGammaB : Real.Gamma (b + n) =
-      (ascPochhammer ℝ n).eval b * Real.Gamma b := by
-    have h := hshiftB
-    field_simp [hΓb.ne'] at h
-    nlinarith
-  have hGammaC : Real.Gamma (c + n) =
-      (ascPochhammer ℝ n).eval c * Real.Gamma c := by
-    have h := hshiftC
-    field_simp [hΓc.ne'] at h
-    nlinarith
-  rw [hbeta', hGammaB, hGammaC]
-  field_simp [hΓb.ne', hΓq.ne', hΓc.ne', hPochC.ne']
+  have hΓb := Real.Gamma_pos_of_pos hb
+  have hΓq := Real.Gamma_pos_of_pos hcb
+  grind
 
 /-- A positive argument gives positive rising factorials. -/
 theorem realAscPochhammer_eval_pos {x : ℝ} (hx : 0 < x) (n : ℕ) :
@@ -90,8 +72,7 @@ theorem realAscPochhammer_eval_pos {x : ℝ} (hx : 0 < x) (n : ℕ) :
   induction n with
   | zero => simp
   | succ n ih =>
-      rw [ascPochhammer_succ_eval]
-      exact mul_pos ih (by positivity)
+      rw [ascPochhammer_succ_eval] <;> positivity
 
 /-- The real form of Mathlib's ordinary Gauss-series coefficient. -/
 noncomputable def realOrdinaryHypergeometricCoefficient (a b c : ℝ) (n : ℕ) : ℝ :=
@@ -103,10 +84,7 @@ theorem realBinomialCoefficient_eq_ascPochhammer (a : ℝ) (n : ℕ) :
     Ring.choose (a + n - 1) n =
       (ascPochhammer ℝ n).eval a / (n.factorial : ℝ) := by
   rw [Ring.choose_eq_smul, Polynomial.descPochhammer_smeval_eq_ascPochhammer,
-    Polynomial.ascPochhammer_smeval_eq_eval]
-  have harg : a + (n : ℝ) - 1 - (n : ℝ) + 1 = a := by ring
-  rw [harg]
-  simp [div_eq_mul_inv, mul_comm]
+    Polynomial.ascPochhammer_smeval_eq_eval] <;> ring
 
 /-- The real binomial terms after multiplication by the Euler beta weight. -/
 noncomputable def realGaussEulerBinomialTerm (a b c x : ℝ) (n : ℕ) (t : ℝ) : ℝ :=
@@ -386,19 +364,8 @@ theorem realGaussEulerIntegral_eq_family
         (∫ t : ℝ in Ioc 0 1,
           t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) =
       H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) := by
-  let N : ℝ := Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))
-  have hc : 0 < c := by linarith
-  have hcC : ∀ n : ℕ, (c : ℂ) ≠ -(n : ℂ) := by
-    intro n hn
-    have hreal : c = -(n : ℝ) := by exact_mod_cast hn
-    linarith
-  have hxnorm : ‖(x : ℂ)‖ < 1 := by
-    calc
-      ‖(x : ℂ)‖ = |x| := Complex.norm_real x
-      _ = x := abs_of_pos hx
-      _ < 1 := hx1
-  have hEuler := realGaussEulerIntegral_eq_tsum a b c x ha hb hcb hx hx1
-  have hcast := congrArg (fun y : ℝ => (y : ℂ)) hEuler
+  let N := Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b))
+  have hcast := congrArg (fun y : ℝ => (y : ℂ)) (realGaussEulerIntegral_eq_tsum a b c x ha hb hcb hx hx1)
   have hsum :
       (∑' n : ℕ,
         ((realOrdinaryHypergeometricCoefficient a b c n * x ^ n : ℝ) : ℂ)) =
@@ -408,8 +375,15 @@ theorem realGaussEulerIntegral_eq_family
     intro n
     simp only [Complex.ofReal_mul, Complex.ofReal_pow,
       ofReal_realOrdinaryHypergeometricCoefficient, smul_eq_mul]
-  have hchar := hH (a : ℂ) (b : ℂ) (c : ℂ) hcC
-  have hseriesValue := hchar.2 (x : ℂ) hxnorm
+  have hchar := hH (a : ℂ) (b : ℂ) (c : ℂ) (by
+    intro n hn
+    have hreal : c = -(n : ℝ) := by exact_mod_cast hn
+    linarith)
+  have hseriesValue := hchar.2 (x : ℂ) (by
+    calc
+      ‖(x : ℂ)‖ = |x| := Complex.norm_real x
+      _ = x := abs_of_pos hx
+      _ < 1 := hx1)
   have hcast' :
       (N : ℂ) *
           (∫ t : ℝ in Ioc 0 1,
@@ -423,17 +397,8 @@ theorem realGaussEulerIntegral_eq_family
             t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) =
         ∑' n : ℕ,
           ((realOrdinaryHypergeometricCoefficient a b c n * x ^ n : ℝ) : ℂ) := by
-            simpa [N] using h
+            assumption
       _ = ordinaryHypergeometric (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) := hsum
-  calc
-    ((Real.Gamma c / (Real.Gamma b * Real.Gamma (c - b)) : ℝ) : ℂ) *
-          (∫ t : ℝ in Ioc 0 1,
-            t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) =
-      (N : ℂ) *
-          (∫ t : ℝ in Ioc 0 1,
-            t ^ (b - 1) * (1 - t) ^ (c - b - 1) * (1 - x * t) ^ (-a)) := by
-              rfl
-    _ = ordinaryHypergeometric (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) := hcast'
-    _ = H (a : ℂ) (b : ℂ) (c : ℂ) (x : ℂ) := hseriesValue.symm
+  grind
 
 end DOZZ.Proofs

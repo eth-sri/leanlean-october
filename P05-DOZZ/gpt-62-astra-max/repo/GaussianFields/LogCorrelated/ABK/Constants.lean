@@ -28,9 +28,8 @@ theorem abkEuclideanNorm_pos_of_ne_zero {d : Nat} {x : Vec d} (hx : x ≠ 0) :
   intro hzero
   apply hx
   ext i
-  have hcoord_abs : |x i| ≤ 0 := by
-    simpa [hzero] using abs_apply_le_euclideanNorm x i
-  exact abs_eq_zero.mp (le_antisymm hcoord_abs (abs_nonneg (x i)))
+  refine abs_eq_zero.mp (le_antisymm ?_ (abs_nonneg (x i)))
+  simpa [hzero] using abs_apply_le_euclideanNorm x i
 
 /-- A canonical radial representative: first coordinate `s`, all other coordinates zero. -/
 @[expose]
@@ -116,7 +115,6 @@ theorem abkNormalization_sq {d : Nat} (ζ : ABKCutoff d)
 /-- At the origin, the cutoff self-convolution is `M_0`. -/
 theorem abkCutoffSelfConvolution_zero {d : Nat} (ζ : ABKCutoff d) :
     abkCutoffSelfConvolution ζ 0 = abkM0 ζ := by
-  unfold abkCutoffSelfConvolution abkM0
   refine integral_congr_ae ?_
   filter_upwards with y
   have hneg : ζ (-y) = ζ y := ζ.radial _ _ (euclideanNorm_neg y)
@@ -126,21 +124,18 @@ theorem abkCutoffSelfConvolution_zero {d : Nat} (ζ : ABKCutoff d) :
 
 /-- The cutoff square mass `M_0` is strictly positive. -/
 theorem abkM0_pos {d : Nat} (ζ : ABKCutoff d) : 0 < abkM0 ζ := by
-  unfold abkM0
-  let f : Vec d → ℝ := fun x => (ζ x) ^ (2 : Nat)
-  have hf_cont : Continuous f := ζ.continuous.pow 2
-  have hf_int : Integrable f (volume : Measure (Vec d)) := by
-    simpa [f] using ζ.memLp_two.integrable_sq
+  let f := fun x => (ζ x) ^ (2 : Nat)
+  have hf_cont := ζ.continuous.pow 2
   have hf_nonneg : 0 ≤ f := by
     intro x
     exact sq_nonneg (ζ x)
-  have hzero_norm : euclideanNorm (0 : Vec d) ≤ (1 / 2 : ℝ) := by
-    simp [euclideanNorm, euclideanNormSq, euclideanDot]
   have hf_zero : f 0 ≠ 0 := by
     dsimp [f]
-    rw [ζ.eq_one_of_norm_le_half 0 hzero_norm]
+    rw [ζ.eq_one_of_norm_le_half 0 (by
+      simp [euclideanNorm, euclideanNormSq, euclideanDot])]
     norm_num
-  exact integral_pos_of_integrable_nonneg_nonzero hf_cont hf_int hf_nonneg hf_zero
+  refine integral_pos_of_integrable_nonneg_nonzero hf_cont ?_ hf_nonneg hf_zero
+  simpa [f] using ζ.memLp_two.integrable_sq
 
 /-- The cutoff square mass `M_0` is nonzero. -/
 theorem abkM0_ne_zero {d : Nat} (ζ : ABKCutoff d) : abkM0 ζ ≠ 0 :=

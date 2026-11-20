@@ -169,15 +169,12 @@ private theorem ae_empirical_average_tendsto
     ∀ᵐ p ∂P.prod (Measure.infinitePi (fun _ : ℕ => ν)),
       Tendsto (fun n : ℕ => (n : ℝ)⁻¹ * ∑ i : Fin n, f p.1 (p.2 i.val))
         atTop (𝓝 (∫ x, f p.1 x ∂ν)) := by
-  let Q : Measure (ℕ → S) := Measure.infinitePi (fun _ : ℕ => ν)
-  have hQ : IsProbabilityMeasure Q := by infer_instance
+  let Q := Measure.infinitePi (fun _ : ℕ => ν)
   have hEvalIdent (i : ℕ) : IdentDistrib (fun q : ℕ → S => q i) id Q ν := by
     refine ⟨(measurable_pi_apply i).aemeasurable, aemeasurable_id, ?_⟩
     simpa [Q] using (Measure.infinitePi_map_eval (fun _ : ℕ => ν) i)
-  have hCoordIdent (i : ℕ) :
-      IdentDistrib (fun q : ℕ → S => q i) (fun q => q 0) Q Q := by
-    exact (hEvalIdent i).trans (hEvalIdent 0).symm
-  have hindepCoord : iIndepFun (fun i (q : ℕ → S) => q i) Q := by
+  have hCoordIdent (i : ℕ)  := (hEvalIdent i).trans (hEvalIdent 0).symm
+  have hindepCoord : iIndepFun (fun i (q) => q i) Q := by
     simpa [Q] using
       (iIndepFun_infinitePi (P := fun _ : ℕ => ν) (X := fun _ : ℕ => id)
         (by fun_prop))
@@ -185,8 +182,7 @@ private theorem ae_empirical_average_tendsto
       ∀ᵐ q ∂Q,
         Tendsto (fun n : ℕ => (n : ℝ)⁻¹ * ∑ i : Fin n, f ω (q i.val))
           atTop (𝓝 (∫ x, f ω x ∂ν)) := by
-    have hfmeas : Measurable (f ω) := by
-      exact hjoint.comp (by fun_prop : Measurable fun x : S => (ω, x))
+    have hfmeas  := hjoint.comp (by fun_prop : Measurable fun x : S => (ω, x))
     have hindep := hindepCoord.comp (fun _ => f ω) (fun _ => hfmeas)
     have hindep' : Pairwise (fun i j =>
         (fun q => f ω (q i)) ⟂ᵢ[Q] (fun q => f ω (q j))) := by
@@ -197,14 +193,10 @@ private theorem ae_empirical_average_tendsto
       exact (hCoordIdent i).comp hfmeas
     have hsampleIdent : IdentDistrib (fun q => f ω (q 0)) (f ω) Q ν :=
       (hEvalIdent 0).comp hfmeas
-    have hsampleInt : Integrable (fun q => f ω (q 0)) Q :=
-      hsampleIdent.integrable_iff.mpr hω
-    have hmean : (∫ q, f ω (q 0) ∂Q) = ∫ x, f ω x ∂ν :=
-      hsampleIdent.integral_eq
     have hlln := ProbabilityTheory.strong_law_ae (μ := Q)
-      (fun i (q : ℕ → S) => f ω (q i)) hsampleInt hindep' hident
+      (fun i (q) => f ω (q i)) (hsampleIdent.integrable_iff.mpr hω) hindep' hident
     filter_upwards [hlln] with q hq
-    simpa only [smul_eq_mul, ← Fin.sum_univ_eq_sum_range, hmean] using hq
+    simpa only [smul_eq_mul, ← Fin.sum_univ_eq_sum_range, hsampleIdent.integral_eq] using hq
   have hIter : ∀ᵐ ω ∂P, ∀ᵐ q ∂Q,
       Tendsto (fun n : ℕ => (n : ℝ)⁻¹ * ∑ i : Fin n, f ω (q i.val))
         atTop (𝓝 (∫ x, f ω x ∂ν)) := by
@@ -216,12 +208,7 @@ private theorem ae_empirical_average_tendsto
     fun_prop
   have hlimit : Measurable (fun p : Ω × (ℕ → S) => ∫ x, f p.1 x ∂ν) := by
     exact (hjoint.stronglyMeasurable.integral_prod_right').measurable.comp measurable_fst
-  have hset : MeasurableSet {p : Ω × (ℕ → S) |
-      Tendsto (fun n : ℕ => (n : ℝ)⁻¹ *
-        ∑ i : Fin n, f p.1 (p.2 i.val)) atTop
-          (𝓝 (∫ x, f p.1 x ∂ν))} :=
-    measurableSet_tendsto_fun (l := atTop) hsequence hlimit
-  exact Measure.ae_prod_iff_ae_ae hset |>.2 hIter
+  exact Measure.ae_prod_iff_ae_ae (measurableSet_tendsto_fun (l := atTop) hsequence hlimit) |>.2 hIter
 
 /-- The vector of empirical weighted Wick sums associated with a finite list of sample points. -/
 noncomputable def empiricalWickVector {S : Type*} [MeasurableSpace S] {k m n : ℕ}
@@ -366,25 +353,17 @@ theorem integral_bcf_eq_of_map_eq_of_ae_tendsto
       Tendsto (fun n => φ (g n ω)) atTop (𝓝 (φ (gLimit ω))) := by
     filter_upwards [hg_tendsto] with ω hω
     exact φ.continuous.continuousAt.tendsto.comp hω
-  have hP : Tendsto (fun n => ∫ ω, φ (f n ω) ∂P) atTop
-      (𝓝 (∫ ω, φ (fLimit ω) ∂P)) :=
-    tendsto_integral_of_dominated_convergence (fun _ => ‖φ‖)
-      hf_meas hboundP hf_bound hf_limit
-  have hP' : Tendsto (fun n => ∫ ω, φ (g n ω) ∂P') atTop
-      (𝓝 (∫ ω, φ (gLimit ω) ∂P')) :=
-    tendsto_integral_of_dominated_convergence (fun _ => ‖φ‖)
-      hg_meas hboundP' hg_bound hg_limit
+  have hP := tendsto_integral_of_dominated_convergence (fun _ => ‖φ‖)
+    hf_meas hboundP hf_bound hf_limit
+  have hP' := tendsto_integral_of_dominated_convergence (fun _ => ‖φ‖)
+    hg_meas hboundP' hg_bound hg_limit
   have hterms : ∀ n, (∫ ω, φ (f n ω) ∂P) = ∫ ω, φ (g n ω) ∂P' := by
     intro n
-    have hφP : AEStronglyMeasurable (fun x : E => φ x) (Measure.map (f n) P) :=
-      φ.continuous.measurable.aestronglyMeasurable
-    have hφP' : AEStronglyMeasurable (fun x : E => φ x) (Measure.map (g n) P') :=
-      φ.continuous.measurable.aestronglyMeasurable
     calc
-      (∫ ω, φ (f n ω) ∂P) = ∫ x, φ x ∂Measure.map (f n) P :=
-        (integral_map (hf n) hφP).symm
+      _ = ∫ x, φ x ∂Measure.map (f n) P :=
+        (integral_map (hf n) φ.continuous.measurable.aestronglyMeasurable).symm
       _ = ∫ x, φ x ∂Measure.map (g n) P' := by rw [hmap n]
-      _ = ∫ ω, φ (g n ω) ∂P' := integral_map (hg n) hφP'
+      _ = _ := integral_map (hg n) φ.continuous.measurable.aestronglyMeasurable
   apply tendsto_nhds_unique hP
   exact hP'.congr' (Filter.Eventually.of_forall fun n => (hterms n).symm)
 

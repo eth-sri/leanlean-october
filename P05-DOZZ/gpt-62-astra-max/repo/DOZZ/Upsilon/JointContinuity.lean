@@ -54,32 +54,29 @@ private theorem exists_shift_into_strip {γ : ℝ} (hγ : 0 < γ)
     have hpos : 0 < 2 / γ := by positivity
     linarith
   by_cases hx : 0 < x
-  · exact ⟨0, by simpa, by simpa using hxQ⟩
-  · have hx0 : x ≤ 0 := le_of_not_gt hx
+  · exact ⟨0, by simpa, by simpa⟩
+  · have hx0 := le_of_not_gt hx
     let y := -x / (γ / 2)
     have hy0 : 0 ≤ y := by dsimp [y]; exact div_nonneg (neg_nonneg.mpr hx0) hb.le
     let N := Nat.floor y
     let n := N + 1
-    have hfloor : (N : ℝ) ≤ y := Nat.floor_le hy0
-    have hfloorlt : y < (N : ℝ) + 1 := Nat.lt_floor_add_one y
-    have hnlt : y < (n : ℝ) := by simpa [n] using hfloorlt
+    have hnlt : y < (n : ℝ) := by simpa [n] using (Nat.lt_floor_add_one y)
     have hne : y * (γ / 2) = -x := by
       dsimp [y]
-      field_simp [ne_of_gt hb]
+      field_simp
     have hlow : 0 < x + (n : ℝ) * (γ / 2) := by
       have hmul := mul_lt_mul_of_pos_right hnlt hb
       rw [hne] at hmul
       nlinarith
     have hnle : (n : ℝ) ≤ y + 1 := by
       calc
-        (n : ℝ) = (N : ℝ) + 1 := by simp [n]
-        _ ≤ y + 1 := by linarith [hfloor]
-    have hupp : x + (n : ℝ) * (γ / 2) ≤ γ / 2 := by
-      have hmul := mul_le_mul_of_nonneg_right hnle hb.le
-      calc
-        x + (n : ℝ) * (γ / 2) ≤ x + (y + 1) * (γ / 2) := by linarith
-        _ = γ / 2 := by rw [add_mul, hne]; ring
-    exact ⟨n, hlow, lt_of_le_of_lt hupp hbQ⟩
+        _ = (N : ℝ) + 1 := by simp [n]
+        _ ≤ _ := by linarith [(Nat.floor_le hy0)]
+    refine ⟨n, hlow, lt_of_le_of_lt ?_ hbQ⟩
+    have hmul := mul_le_mul_of_nonneg_right hnle hb.le
+    calc
+      x + (n : ℝ) * (γ / 2) ≤ x + (y + 1) * (γ / 2) := by linarith
+      _ = γ / 2 := by linarith
 
 private theorem IsUpsilon.eq_shiftChain {γ : ℝ} {U : ℂ → ℂ}
     (hγ : 0 < γ) (hγ2 : γ < 2) (hU : IsUpsilon γ U)
@@ -103,16 +100,15 @@ private theorem IsUpsilon.eq_shiftChain {γ : ℝ} {U : ℂ → ℂ}
       have hstepLen : γ / 2 ≤ (n + 1 : ℝ) * (γ / 2) := by
         have hn : (1 : ℝ) ≤ (n + 1 : ℝ) := by exact_mod_cast Nat.succ_le_succ (Nat.zero_le n)
         simpa using mul_le_mul_of_nonneg_right hn (show 0 ≤ γ / 2 by positivity)
-      have hQb : Q γ - γ / 2 = 2 / γ := by unfold Q; ring
       have hw : w.re < 2 / γ := by
         have hlast := hfinal.2
         rw [hfinalRe] at hlast
         calc
           w.re < Q γ - (n + 1 : ℝ) * (γ / 2) := by linarith
           _ ≤ Q γ - γ / 2 := by linarith
-          _ = 2 / γ := hQb
+          _ = _ := by unfold Q; ring
       have hrec := IsUpsilon.shift_b_reciprocal hγ hγ2 hU w hw
-      have hrest := ih (w + (γ / 2 : ℝ)) hfinal'
+      have hrest := ih _ hfinal'
       have hShiftArg : w + (γ / 2 : ℝ) = w + (γ / 2 : ℂ) := by
         push_cast
         ring
@@ -332,27 +328,19 @@ private theorem IsUpsilon.eq_jointShiftChart {γ : ℝ} {U : ℂ → ℂ}
     U z = jointShiftChart reflect n (γ, z) := by
   cases reflect with
   | false =>
-      have hchain := IsUpsilon.eq_shiftChain hγ hγ2 hU z n (by simpa [jointChartArg] using hfinal)
-      have hstrip := hU.2 (z + jointShiftN γ n) hfinal.1 hfinal.2
       calc
-        U z = jointShiftChain γ n z * U (z + jointShiftN γ n) := hchain
+        U z = jointShiftChain γ n z * U (z + jointShiftN γ n) := (IsUpsilon.eq_shiftChain hγ hγ2 hU z n (by assumption))
         _ = jointShiftChain γ n z * Complex.exp
-            (upsilonLog γ (z + jointShiftN γ n)) := by rw [hstrip]
-        _ = jointShiftChart false n (γ, z) := by
-          simp [jointShiftChart, jointChartArg]
+            (upsilonLog γ (z + jointShiftN γ n)) := by rw [(hU.2 (z + jointShiftN γ n) hfinal.1 hfinal.2)]
+        _ = _ := rfl
   | true =>
       let w := (Q γ : ℂ) - z
-      have hreflect : U z = U w := by
-        simpa [w] using (_root_.DOZZ.Proofs.IsUpsilon.reflect hγ hγ2 hU z).symm
-      have hchain := IsUpsilon.eq_shiftChain hγ hγ2 hU w n (by
-        simpa [jointChartArg, w] using hfinal)
-      have hstrip := hU.2 (w + jointShiftN γ n) hfinal.1 hfinal.2
       calc
-        U z = U w := hreflect
+        U z = U w := ((_root_.DOZZ.Proofs.IsUpsilon.reflect hγ hγ2 hU z).symm)
         _ = jointShiftChain γ n w * Complex.exp (upsilonLog γ (w + jointShiftN γ n)) := by
-          rw [hchain, hstrip]
-        _ = jointShiftChart true n (γ, z) := by
-          simp [jointShiftChart, jointChartArg, w]
+          rw [(IsUpsilon.eq_shiftChain hγ hγ2 hU w n (by
+            assumption)), (hU.2 (w + jointShiftN γ n) hfinal.1 hfinal.2)]
+        _ = _ := rfl
 
 /-- Joint continuity of `Υ_{γ/2}(z)` in `(γ, z)` (see the continuity arguments in [KRV, §10.6] and
 [KRV, §11]). -/
@@ -364,23 +352,21 @@ theorem IsUpsilon.continuousOn_uncurry {U : ℝ → ℂ → ℂ}
   rcases hγp with ⟨hγlo, hγhi⟩
   let γ₀ := p.1
   let z₀ := p.2
-  have hγ₀ : 0 < γ₀ := hγlo
-  have hγ₀2 : γ₀ < 2 := hγhi
-  have hγ₀ne : γ₀ ≠ 0 := hγ₀.ne'
-  have hU₀ : IsUpsilon γ₀ (U γ₀) := hU γ₀ ⟨hγ₀, hγ₀2⟩
+  have hγ₀ := hγlo
+  have hγ₀2 := hγhi
+  have hγ₀ne := hγ₀.ne'
   let reflect := if z₀.re < Q γ₀ then false else true
   have hxQ : (jointChartArg reflect p).re < Q γ₀ := by
     by_cases h : z₀.re < Q γ₀
     · simp [reflect, h, jointChartArg, γ₀, z₀]
-    · have hzQ : z₀.re ≥ Q γ₀ := le_of_not_gt h
-      have hQpos : 0 < Q γ₀ := by
+    · have hQpos : 0 < Q γ₀ := by
         unfold Q
         positivity
       simp only [reflect, h, jointChartArg, γ₀, z₀, ite_false, ite_true,
         Complex.sub_re, Complex.ofReal_re]
       linarith
   obtain ⟨n, hfinal0, hfinalQ⟩ := exists_shift_into_strip hγ₀ hxQ
-  let W : ℝ × ℂ → ℂ := fun q => jointChartArg reflect q + jointShiftN q.1 n
+  let W := fun q => jointChartArg reflect q + jointShiftN q.1 n
   have hWcont : ContinuousAt W p := by
     have hA := jointChartArg_continuousAt (γ₀ := γ₀) (z₀ := z₀) reflect hγ₀ne
     have hN : ContinuousAt (fun q : ℝ × ℂ => jointShiftN q.1 n) p := by
@@ -392,24 +378,15 @@ theorem IsUpsilon.continuousOn_uncurry {U : ℝ → ℂ → ℂ}
       fun_prop (disch := assumption) [Q]
     exact ContinuousAt.comp (f := fun q : ℝ × ℂ => q.1) (g := Q)
       (x := p) hQγ continuousAt_fst
-  have hWre : ContinuousAt (fun q : ℝ × ℂ => (W q).re) p :=
-    ContinuousAt.comp (f := W) (g := Complex.re) (x := p)
-      Complex.continuous_re.continuousAt hWcont
-  have hGapcont : ContinuousAt (fun q : ℝ × ℂ => Q q.1 - (W q).re) p :=
-    hQcont.sub hWre
+  have hWre := ContinuousAt.comp
+    Complex.continuous_re.continuousAt hWcont
   have hnear : ∀ᶠ q : ℝ × ℂ in 𝓝 p,
       0 < q.1 ∧ q.1 < 2 ∧ 0 < (W q).re ∧ (W q).re < Q q.1 := by
-    have hlo : ∀ᶠ q : ℝ × ℂ in 𝓝 p, 0 < q.1 :=
-      continuousAt_fst.eventually (isOpen_Ioi.mem_nhds hγ₀)
-    have hhi : ∀ᶠ q : ℝ × ℂ in 𝓝 p, q.1 < 2 :=
-      continuousAt_fst.eventually (isOpen_Iio.mem_nhds (show γ₀ ∈ Iio 2 from hγ₀2))
-    have hWlo : ∀ᶠ q : ℝ × ℂ in 𝓝 p, 0 < (W q).re :=
-      hWre.eventually (isOpen_Ioi.mem_nhds (by simpa [W, γ₀, z₀, jointShiftN_re,
-        Complex.add_re] using hfinal0))
     have hWhi : ∀ᶠ q : ℝ × ℂ in 𝓝 p, 0 < Q q.1 - (W q).re :=
-      hGapcont.eventually (isOpen_Ioi.mem_nhds (sub_pos.mpr (by
+      (hQcont.sub hWre).eventually (isOpen_Ioi.mem_nhds (sub_pos.mpr (by
         simpa [W, γ₀, z₀, jointShiftN_re, Complex.add_re] using hfinalQ)))
-    filter_upwards [hlo, hhi, hWlo, hWhi] with q hqlo hqhi hqWlo hqWhi
+    filter_upwards [(continuousAt_fst.eventually (isOpen_Ioi.mem_nhds hγ₀)), (continuousAt_fst.eventually (isOpen_Iio.mem_nhds (show γ₀ ∈ Iio 2 from hγ₀2))), (hWre.eventually (isOpen_Ioi.mem_nhds (by simpa [W, γ₀, z₀, jointShiftN_re,
+        Complex.add_re] using hfinal0))), hWhi] with q hqlo hqhi hqWlo hqWhi
     exact ⟨hqlo, hqhi, hqWlo, by linarith⟩
   have hchart0 := jointShiftChart_continuousAt reflect n hγ₀ (by
     simpa [γ₀, z₀, jointShiftN_re, Complex.add_re] using And.intro hfinal0 hfinalQ)
@@ -417,8 +394,7 @@ theorem IsUpsilon.continuousOn_uncurry {U : ℝ → ℂ → ℂ}
     filter_upwards [hnear] with q hq
     have hUq : IsUpsilon q.1 (U q.1) := hU q.1 ⟨hq.1, hq.2.1⟩
     exact IsUpsilon.eq_jointShiftChart hq.1 hq.2.1 hUq reflect n q.2 ⟨hq.2.2.1, hq.2.2.2⟩
-  have hAt : ContinuousAt (Function.uncurry U) p := hchart0.congr_of_eventuallyEq heq
-  exact hAt.continuousWithinAt
+  exact (hchart0.congr_of_eventuallyEq heq).continuousWithinAt
 
 end DOZZ.Proofs
 

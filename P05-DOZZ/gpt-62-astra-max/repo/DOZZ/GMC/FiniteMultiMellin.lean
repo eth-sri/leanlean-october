@@ -28,20 +28,21 @@ private theorem lintegral_fin_pi_prod
       let μTail : Fin n → Measure α := fun i => μ i.succ
       let fTail : Fin n → α → ℝ≥0∞ := fun i => f i.succ
       let e := MeasurableEquiv.piFinSuccAbove (fun _ : Fin (n + 1) => α) 0
-      have hμTail (i : Fin n) : SigmaFinite (μTail i) := hμ i.succ
-      have hfTail (i : Fin n) : Measurable (fTail i) := hf i.succ
+      have hμTail (i : Fin n)  := hμ i.succ
+      have hfTail (i : Fin n)  := hf i.succ
       have htarget : Measurable (fun x : Fin (n + 1) → α => ∏ i, f i (x i)) := by
         fun_prop
       have hpair : Measurable (fun z : α × (Fin n → α) =>
           f 0 z.1 * ∏ i, f i.succ (z.2 i)) := by
         fun_prop
+      let a (z : α × (Fin n → α)) := f 0 z.1 * ∏ i : Fin n, f i.succ (z.2 i)
       have hform (z : α × (Fin n → α)) :
           (∏ i : Fin (n + 1), f i (e.symm z i)) =
-            f 0 z.1 * ∏ i : Fin n, f i.succ (z.2 i) := by
+            a z := by
         rw [Fin.prod_univ_succ]
         congr 1
       calc
-        ∫⁻ x : Fin (n + 1) → α, ∏ i, f i (x i) ∂Measure.pi μ =
+        _ =
             ∫⁻ z : α × (Fin n → α),
               (∏ i : Fin (n + 1), f i (e.symm z i))
                 ∂((μ 0).prod (Measure.pi μTail)) := by
@@ -49,14 +50,13 @@ private theorem lintegral_fin_pi_prod
               exact (measurePreserving_piFinSuccAbove μ 0).symm.lintegral_comp
                 htarget
         _ = ∫⁻ z : α × (Fin n → α),
-              f 0 z.1 * ∏ i : Fin n, f i.succ (z.2 i)
+              a z
                 ∂((μ 0).prod (Measure.pi μTail)) := by
               apply lintegral_congr_ae
               exact ae_of_all _ hform
         _ = ∫⁻ x, ∫⁻ y,
-              f 0 x * ∏ i : Fin n, f i.succ (y i) ∂Measure.pi μTail ∂μ 0 := by
-              exact lintegral_prod
-                (fun z : α × (Fin n → α) => f 0 z.1 * ∏ i : Fin n, f i.succ (z.2 i))
+              f 0 x * ∏ i : Fin n, f i.succ (y i) ∂Measure.pi μTail ∂μ 0 := lintegral_prod
+                (fun z : α × (Fin n → α) => a z)
                 hpair.aemeasurable
         _ = ∫⁻ x, f 0 x * (∏ i : Fin n, ∫⁻ y, f i.succ y ∂μ i.succ) ∂μ 0 := by
               apply lintegral_congr_ae
@@ -69,7 +69,7 @@ private theorem lintegral_fin_pi_prod
         _ = (∫⁻ x, f 0 x ∂μ 0) *
               ∏ i : Fin n, ∫⁻ y, f i.succ y ∂μ i.succ := by
               rw [lintegral_mul_const _ (hf 0)]
-        _ = ∏ i : Fin (n + 1), ∫⁻ y, f i y ∂μ i := by
+        _ = _ := by
               rw [Fin.prod_univ_succ]
 
 /-- The integral of a product of coordinatewise nonnegative functions over a finite product

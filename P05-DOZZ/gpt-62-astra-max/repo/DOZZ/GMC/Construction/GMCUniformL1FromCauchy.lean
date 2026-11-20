@@ -27,17 +27,16 @@ theorem tendsto_iSup_lintegral_abs_sub_of_uniform_l1_cauchy
       ∫⁻ ω, ENNReal.ofReal |F r i ω - G i ω| ∂P) atTop (𝓝 0) := by
   refine ENNReal.tendsto_nhds_zero.2 ?_
   intro δ hδ
-  let η : ℝ≥0∞ := min δ 1
-  have hηpos : 0 < η := lt_min hδ one_pos
+  let η := min δ 1
+  have hηpos := lt_min hδ one_pos
   have hηtop : η ≠ ∞ := ne_of_lt (lt_of_le_of_lt (min_le_right _ _) ENNReal.one_lt_top)
-  have hηeq : ENNReal.ofReal η.toReal = η := ENNReal.ofReal_toReal hηtop
   have hηrealpos : 0 < η.toReal := ENNReal.toReal_pos hηpos.ne' hηtop
   obtain ⟨R, hR⟩ := hCauchy (η.toReal / 2) (by positivity)
   have hsmall : ENNReal.ofReal (η.toReal / 2) < η := by
     calc
-      ENNReal.ofReal (η.toReal / 2) < ENNReal.ofReal η.toReal :=
+      _ < ENNReal.ofReal η.toReal :=
         (ENNReal.ofReal_lt_ofReal_iff hηrealpos).2 (by linarith)
-      _ = η := hηeq
+      _ = η := ENNReal.ofReal_toReal hηtop
   have hEventually : ∀ᶠ r : ℝ in atTop,
       (⨆ i, ∫⁻ ω, ENNReal.ofReal |F r i ω - G i ω| ∂P) < δ := by
     filter_upwards [eventually_ge_atTop R] with r hr

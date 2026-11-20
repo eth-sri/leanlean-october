@@ -22,11 +22,11 @@ noncomputable def subtypeLocalSegmentValue (z w : ℂ) (t : unitInterval) : ℂ 
 theorem subtypeLocalSegmentValue_dist (z w : ℂ) (t : unitInterval) :
     dist (subtypeLocalSegmentValue z w t) z = (t : ℝ) * dist w z := by
   calc
-    dist (subtypeLocalSegmentValue z w t) z =
+    _ =
         ‖subtypeLocalSegmentValue z w t - z‖ := by rw [dist_eq_norm]
     _ = ‖(t : ℝ) • (w - z)‖ := by simp [subtypeLocalSegmentValue]
     _ = ‖(t : ℝ)‖ * ‖w - z‖ := norm_smul _ _
-    _ = (t : ℝ) * dist w z := by
+    _ = _ := by
       rw [Real.norm_eq_abs, abs_of_nonneg t.property.1, dist_eq_norm]
 
 /-- A short segment lies inside the supplied open subtype disk. -/

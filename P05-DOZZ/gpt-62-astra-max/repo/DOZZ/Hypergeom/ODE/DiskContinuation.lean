@@ -54,7 +54,6 @@ theorem extendHolomorphicDiskSolution_agrees
     (hbound : ∀ z ∈ Metric.ball d r, ‖H z‖ ≤ M) :
     ∀ z ∈ Metric.ball d (r / 2),
       D.solution z = (extendHolomorphicDiskSolution r M H hM D d hH hbound).solution z := by
-  let D' := extendHolomorphicDiskSolution r M H hM D d hH hbound
   have hr : 0 < r := by
     have hdist : 0 ≤ dist d D.center := dist_nonneg
     linarith
@@ -71,7 +70,7 @@ theorem extendHolomorphicDiskSolution_agrees
   have hEq := holomorphic_linear_system_solution_unique_of_eq_at
     d (r / 2) M H hM hboundHalf
     (fun w hw => D.derivative w (hsub hw))
-    (fun w hw => D'.derivative w (Metric.ball_subset_ball (by linarith) hw))
+    (fun w hw => (extendHolomorphicDiskSolution r M H hM D d hH hbound).derivative w (Metric.ball_subset_ball (by linarith) hw))
     (Metric.mem_ball_self (by linarith)) hz
     (by
       change D.solution d = holomorphicPicardSolution d r H hH (D.solution d) d

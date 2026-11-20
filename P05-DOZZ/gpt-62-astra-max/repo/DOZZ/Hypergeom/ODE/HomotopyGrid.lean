@@ -62,13 +62,13 @@ theorem exists_homotopy_picard_grid
     (hleft : ∀ s ∈ Icc (0 : ℝ) 1, Γ (0, s) = z₀)
     (hright : ∀ s ∈ Icc (0 : ℝ) 1, Γ (1, s) = z₁)
     (y : E) : Nonempty (HomotopyPicardGrid Γ U H y) := by
-  let K : Set (ℝ × ℝ) := Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1
+  let K := Icc (0 : ℝ) 1 ×ˢ Icc (0 : ℝ) 1
   have hK : IsCompact K := by dsimp [K]; exact isCompact_Icc.prod isCompact_Icc
   obtain ⟨r, M, hr, hM, hlocal⟩ :=
     exists_uniform_holomorphic_disks_on_compact hK Γ hΓ U hU H hH
-      (by simpa [K] using himage)
+      (by assumption)
   obtain ⟨N, hN, hgrid⟩ := exists_square_grid_subdivision hΓ (by linarith : 0 < r / 4)
-  let node : ℕ → ℕ → ℂ := fun i j => Γ ((i : ℝ) / (N : ℝ), (j : ℝ) / (N : ℝ))
+  let node : ℕ → ℕ → ℂ := fun i j => Γ (i / N, (j : ℝ) / (N : ℝ))
   have hNreal : (0 : ℝ) < (N : ℝ) := by exact_mod_cast hN
   have hcoord (i : ℕ) (hi : i ≤ N) : (i : ℝ) / (N : ℝ) ∈ Icc (0 : ℝ) 1 := by
     constructor
@@ -87,49 +87,39 @@ theorem exists_homotopy_picard_grid
       dist (node i (j + 1)) (node i j) < r / 4 ∧
       dist (node (i + 1) (j + 1)) (node i j) < r / 4 := by
     intro i hi j hj
-    have hiNext : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-    have hjNext : j + 1 ≤ N := Nat.succ_le_iff.mpr hj
     have hxi : (i : ℝ) < ((i + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.lt_succ_self i
     have hyj : (j : ℝ) < ((j + 1 : ℕ) : ℝ) := by exact_mod_cast Nat.lt_succ_self j
-    have hxi' : (i : ℝ) / (N : ℝ) < ((i + 1 : ℕ) : ℝ) / (N : ℝ) :=
+    have hxi'  :=
       (div_lt_div_iff_of_pos_right hNreal).2 hxi
-    have hyj' : (j : ℝ) / (N : ℝ) < ((j + 1 : ℕ) : ℝ) / (N : ℝ) :=
+    have hyj'  :=
       (div_lt_div_iff_of_pos_right hNreal).2 hyj
-    have hR := hgrid i hi j hj (((i + 1 : ℕ) : ℝ) / (N : ℝ))
-      ⟨hxi'.le, le_rfl⟩
-      ((j : ℝ) / (N : ℝ)) ⟨le_rfl, hyj'.le⟩
-    have hU := hgrid i hi j hj ((i : ℝ) / (N : ℝ))
-      ⟨le_rfl, hxi'.le⟩
-      (((j + 1 : ℕ) : ℝ) / (N : ℝ)) ⟨hyj'.le, le_rfl⟩
-    have hD := hgrid i hi j hj (((i + 1 : ℕ) : ℝ) / (N : ℝ))
-      ⟨hxi'.le, le_rfl⟩
-      (((j + 1 : ℕ) : ℝ) / (N : ℝ)) ⟨hyj'.le, le_rfl⟩
     refine ⟨?_, ?_, ?_⟩
-    · simpa [node] using hR
-    · simpa [node] using hU
-    · simpa [node] using hD
+    · simpa [node] using (hgrid i hi j hj _
+      ⟨hxi'.le, le_rfl⟩
+      _ ⟨le_rfl, hyj'.le⟩)
+    · simpa [node] using (hgrid i hi j hj _
+      ⟨le_rfl, hxi'.le⟩
+      _ ⟨hyj'.le, le_rfl⟩)
+    · simpa [node] using (hgrid i hi j hj _
+      ⟨hxi'.le, le_rfl⟩
+      _ ⟨hyj'.le, le_rfl⟩)
   have hleftNode : ∀ j ≤ N, node 0 j = node 0 0 := by
     intro j hj
-    have h := hleft ((j : ℝ) / (N : ℝ)) (hcoord j hj)
-    have hz₀ : Γ (0, 0) = z₀ := hleft 0 (by norm_num)
     have hzero : (0 : ℝ) / (N : ℝ) = 0 := by simp
-    simpa [node, hzero] using h.trans hz₀.symm
+    simpa [node, hzero] using (hleft _ (hcoord j hj)).trans (hleft 0 (by norm_num)).symm
   have hrightNode : ∀ j ≤ N, node N j = node N 0 := by
     intro j hj
-    have h := hright ((j : ℝ) / (N : ℝ)) (hcoord j hj)
     have hz₁ : Γ (1, 0) = z₁ := hright 0 (by norm_num)
     have hNN : (N : ℝ) / (N : ℝ) = 1 := div_self (by exact_mod_cast hN.ne')
-    simpa [node, hNN] using h.trans hz₁.symm
+    simpa [node, hNN] using (hright _ (hcoord j hj)).trans hz₁.symm
   refine ⟨⟨N, hN, r, M, hr, hM, node, ?_, ?_, hdata, hcells, ?_,
     hleftNode, hrightNode, ?_⟩⟩
-  · intro i hi j hj
-    rfl
+  · solve_by_elim
   · intro i hi j hj
     apply himage
     simp only [mem_prod]
     exact ⟨hcoord i hi, hcoord j hj⟩
-  · intro i hi j hj s hs t ht
-    exact hgrid i hi j hj s hs t ht
+  · assumption
   · exact localPicard_homotopy_grid_endpoint_eq N r M hr hM H node hdata
       hcells hleftNode hrightNode y
 

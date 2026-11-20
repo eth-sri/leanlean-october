@@ -97,7 +97,6 @@ theorem gauss_cut_plane_path_lifts_endpoint_eq
     (B : PathContinuationLift (gaussCutPlanePathFunction q)
       (gaussSystemOperator a b c) initial) :
     A.value 1 = B.value 1 := by
-  exact subtype_path_lifts_endpoint_eq_of_simplyConnected gaussCutPlane_subset_regularPlane
-    a b c p q initial A B
+  apply subtype_path_lifts_endpoint_eq_of_simplyConnected gaussCutPlane_subset_regularPlane <;> assumption
 
 end DOZZ.Proofs

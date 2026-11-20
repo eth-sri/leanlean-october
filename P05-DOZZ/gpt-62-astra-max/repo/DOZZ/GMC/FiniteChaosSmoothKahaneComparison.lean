@@ -34,18 +34,17 @@ theorem gaussianCovariance_product_fst
   classical
   let : IsProbabilityMeasure PX := hX.1
   let : IsProbabilityMeasure PY := hPY
-  let μ : Measure (ΩX × ΩY) := PX.prod PY
+  let μ := PX.prod PY
   let hfst : MeasurePreserving Prod.fst μ PX := measurePreserving_fst
   have hiMem : MemLp (fun ω => X ω i) 2 PX := by
     obtain ⟨hm, _⟩ := hX.2.2 (Pi.single i 1)
     simpa [Pi.single_apply] using hm
-  have hjMem : MemLp (fun ω => X ω j) 2 PX := by
-    obtain ⟨hm, _⟩ := hX.2.2 (Pi.single j 1)
-    simpa [Pi.single_apply] using hm
   have hHolder : ENNReal.HolderTriple 2 2 1 := ⟨by
     simpa using ENNReal.inv_two_add_inv_two⟩
-  have hprodMem := hiMem.mul hjMem (hpqr := hHolder)
-  have hprodInt : Integrable (fun ω => X ω i * X ω j) PX :=
+  have hprodMem := hiMem.mul (by
+    obtain ⟨hm, _⟩ := hX.2.2 (Pi.single j 1)
+    simpa [Pi.single_apply] using hm) (hpqr := hHolder)
+  have hprodInt  :=
     memLp_one_iff_integrable.mp (by convert hprodMem using 1)
   have hprodMap : Integrable (fun x => X x i * X x j) (μ.map Prod.fst) := by
     rw [hfst.map_eq]
@@ -66,18 +65,17 @@ theorem gaussianCovariance_product_snd
   classical
   let : IsProbabilityMeasure PX := hPX
   let : IsProbabilityMeasure PY := hY.1
-  let μ : Measure (ΩX × ΩY) := PX.prod PY
+  let μ := PX.prod PY
   let hsnd : MeasurePreserving Prod.snd μ PY := measurePreserving_snd
   have hiMem : MemLp (fun ω => Y ω i) 2 PY := by
     obtain ⟨hm, _⟩ := hY.2.2 (Pi.single i 1)
     simpa [Pi.single_apply] using hm
-  have hjMem : MemLp (fun ω => Y ω j) 2 PY := by
-    obtain ⟨hm, _⟩ := hY.2.2 (Pi.single j 1)
-    simpa [Pi.single_apply] using hm
   have hHolder : ENNReal.HolderTriple 2 2 1 := ⟨by
     simpa using ENNReal.inv_two_add_inv_two⟩
-  have hprodMem := hiMem.mul hjMem (hpqr := hHolder)
-  have hprodInt : Integrable (fun ω => Y ω i * Y ω j) PY :=
+  have hprodMem := hiMem.mul (by
+    obtain ⟨hm, _⟩ := hY.2.2 (Pi.single j 1)
+    simpa [Pi.single_apply] using hm) (hpqr := hHolder)
+  have hprodInt  :=
     memLp_one_iff_integrable.mp (by convert hprodMem using 1)
   have hprodMap : Integrable (fun y => Y y i * Y y j) (μ.map Prod.snd) := by
     rw [hsnd.map_eq]
@@ -100,10 +98,7 @@ theorem gaussianCovariance_product_cross_eq_zero
   let : IsProbabilityMeasure PX := hX.1
   let : IsProbabilityMeasure PY := hY.1
   rw [DOZZ.gaussianCovariance]
-  have hprod : (∫ ω : ΩX × ΩY, X ω.1 i * Y ω.2 j ∂PX.prod PY) =
-      (∫ x, X x i ∂PX) * ∫ y, Y y j ∂PY := by
-    exact integral_prod_mul (fun x => X x i) (fun y => Y y j)
-  rw [hprod, coord_mean PX X hX i, coord_mean PY Y hY j]
+  rw [(integral_prod_mul (fun x => X x i) (fun y => Y y j)), coord_mean PX X hX i, coord_mean PY Y hY j]
   simp
 
 /-- The covariance of the concatenation of independent centered Gaussian vectors on a product
@@ -130,7 +125,7 @@ theorem gaussianCovariance_product_concat
       | inl j =>
           exact gaussianCovariance_product_fst PX PY X hX hY.1 i j
       | inr j =>
-          exact gaussianCovariance_product_cross_eq_zero PX PY X Y hX hY i j
+          apply gaussianCovariance_product_cross_eq_zero <;> assumption
   | inr i =>
       cases j with
       | inl j =>
@@ -296,11 +291,10 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
   classical
   let : IsProbabilityMeasure PX := hX.1
   let : IsProbabilityMeasure PY := hY.1
-  let μ : Measure (ΩX × ΩY) := PX.prod PY
+  let μ  := PX.prod PY
   let : IsProbabilityMeasure μ := by
-    dsimp [μ]
     infer_instance
-  let v : ι → ℝ := fun i => t * vX i + (1 - t) * vY i
+  let v  := fun i => t * vX i + (1 - t) * vY i
   let Z : ΩX × ΩY → Sum ι ι → ℝ := fun ω k => match k with
     | Sum.inl i => X ω.1 i
     | Sum.inr i => Y ω.2 i
@@ -312,16 +306,14 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
     finiteChaosVectorWeight a v γ (kahaneSumVectorField t (Z ω)) i *
       finiteChaosVectorWeight a v γ (kahaneSumVectorField t (Z ω)) j *
         F'' (finiteChaosVectorMass a v γ (kahaneSumVectorField t (Z ω)))
-  let Hbar : ι → ι → ℝ := fun i j => γ * ∫ ω, fieldD ω i j ∂μ
-  let Kbar : ι → ι → ℝ := fun i j => ∫ ω, K ω i j ∂μ
-  let Dbar : ι → ℝ := fun i => ∫ ω, score ω i ∂μ
-  let A : ι → ℝ := fun i => γ * ∫ ω, X ω.1 i * score ω i ∂μ
-  let B : ι → ℝ := fun i => γ * ∫ ω, Y ω.2 i * score ω i ∂μ
+  let Hbar  := fun i j => γ * ∫ ω, fieldD ω i j ∂μ
+  let Kbar  := fun i j => ∫ ω, K ω i j ∂μ
+  let Dbar  := fun i => ∫ ω, score ω i ∂μ
+  let A  := fun i => γ * ∫ ω, X ω.1 i * score ω i ∂μ
+  let B  := fun i => γ * ∫ ω, Y ω.2 i * score ω i ∂μ
   have hXibp : ∀ i, A i = Real.sqrt t * ∑ j,
       DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) * Hbar i j := by
     intro i
-    have hIBP := kahaneSumVectorScore_gaussian_integration_by_parts PX PY X Y hX hY
-      a v γ t F' F'' hF'meas hF''meas hF' c hc M hM hGbound hDbound i (Sum.inl i)
     have hsum : (∑ k, DOZZ.gaussianCovariance μ
         (fun ω => Z ω (Sum.inl i)) (fun ω => Z ω k) *
           ∫ ω, kahaneSumVectorScoreDerivative a v γ t F' F'' (Z ω) i k ∂μ) =
@@ -366,22 +358,18 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
       _ = γ * (∑ k, DOZZ.gaussianCovariance μ
           (fun ω => Z ω (Sum.inl i)) (fun ω => Z ω k) *
           ∫ ω, kahaneSumVectorScoreDerivative a v γ t F' F'' (Z ω) i k ∂μ) := by
-            rw [← hIBP]
-      _ = Real.sqrt t * ∑ j,
-          DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) * Hbar i j := by
+            rw [← (kahaneSumVectorScore_gaussian_integration_by_parts PX PY X Y hX hY
+              a v γ t F' F'' hF'meas hF''meas hF' c hc M hM hGbound hDbound i (Sum.inl i))]
+      _ = _ := by
             rw [hsum]
             simp only [Hbar]
             calc
-              γ * (Real.sqrt t * ∑ j,
-                  DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) *
-                    ∫ ω, fieldD ω i j ∂μ) =
+              _ =
                   ∑ j, (γ * Real.sqrt t) *
                     (DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) *
                       ∫ ω, fieldD ω i j ∂μ) := by
                         rw [← mul_assoc, Finset.mul_sum]
-              _ = Real.sqrt t * ∑ j,
-                  DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j) *
-                    (γ * ∫ ω, fieldD ω i j ∂μ) := by
+              _ = _ := by
                         rw [Finset.mul_sum]
                         apply Finset.sum_congr rfl
                         intro j hj
@@ -389,8 +377,6 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
   have hYibp : ∀ i, B i = Real.sqrt (1 - t) * ∑ j,
       DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j) * Hbar i j := by
     intro i
-    have hIBP := kahaneSumVectorScore_gaussian_integration_by_parts PX PY X Y hX hY
-      a v γ t F' F'' hF'meas hF''meas hF' c hc M hM hGbound hDbound i (Sum.inr i)
     have hsum : (∑ k, DOZZ.gaussianCovariance μ
         (fun ω => Z ω (Sum.inr i)) (fun ω => Z ω k) *
           ∫ ω, kahaneSumVectorScoreDerivative a v γ t F' F'' (Z ω) i k ∂μ) =
@@ -435,22 +421,18 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
       _ = γ * (∑ k, DOZZ.gaussianCovariance μ
           (fun ω => Z ω (Sum.inr i)) (fun ω => Z ω k) *
           ∫ ω, kahaneSumVectorScoreDerivative a v γ t F' F'' (Z ω) i k ∂μ) := by
-            rw [← hIBP]
-      _ = Real.sqrt (1 - t) * ∑ j,
-          DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j) * Hbar i j := by
+            rw [← (kahaneSumVectorScore_gaussian_integration_by_parts PX PY X Y hX hY
+              a v γ t F' F'' hF'meas hF''meas hF' c hc M hM hGbound hDbound i (Sum.inr i))]
+      _ = _ := by
             rw [hsum]
             simp only [Hbar]
             calc
-              γ * (Real.sqrt (1 - t) * ∑ j,
-                  DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j) *
-                    ∫ ω, fieldD ω i j ∂μ) =
+              _ =
                   ∑ j, (γ * Real.sqrt (1 - t)) *
                     (DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j) *
                       ∫ ω, fieldD ω i j ∂μ) := by
                         rw [← mul_assoc, Finset.mul_sum]
-              _ = Real.sqrt (1 - t) * ∑ j,
-                  DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j) *
-                    (γ * ∫ ω, fieldD ω i j ∂μ) := by
+              _ = _ := by
                         rw [Finset.mul_sum]
                         apply Finset.sum_congr rfl
                         intro j hj
@@ -460,7 +442,6 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
     intro i j
     have hintD := hScoreInt i
     have hintK := hKInt i j
-    have hintField := hFieldDInt i j
     have hpoint (ω : ΩX × ΩY) : γ * fieldD ω i j =
         γ ^ 2 * K ω i j + if i = j then γ ^ 2 * score ω i else 0 := by
       simp only [fieldD, kahaneSumVectorFieldScoreDerivative,
@@ -471,28 +452,14 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
         simp_all
         ring_nf
       · simp only [ite_eq_right hij]
-        dsimp [score, K, kahaneSumVectorScore, finiteChaosVectorTestScore]
         ring
-    have hintRhs : Integrable (fun ω => γ ^ 2 * K ω i j +
-        if i = j then γ ^ 2 * score ω i else 0) μ := by
-      by_cases hij : i = j
-      · subst j
-        have hfun : (fun ω : ΩX × ΩY => γ ^ 2 * K ω i i +
-            if i = i then γ ^ 2 * score ω i else 0) =
-            fun ω => γ ^ 2 * K ω i i + γ ^ 2 * score ω i := by
-          funext ω
-          simp
-        rw [hfun]
-        exact (hintK.const_mul (γ ^ 2)).add (hintD.const_mul (γ ^ 2))
-      · simpa [hij] using hintK.const_mul (γ ^ 2)
     calc
       Hbar i j = ∫ ω, γ * fieldD ω i j ∂μ := by
-        dsimp [Hbar]
         exact (integral_const_mul γ (fun ω => fieldD ω i j)).symm
       _ = ∫ ω, γ ^ 2 * K ω i j + if i = j then γ ^ 2 * score ω i else 0 ∂μ := by
         apply integral_congr_ae
         exact ae_of_all μ hpoint
-      _ = γ ^ 2 * Kbar i j + if i = j then γ ^ 2 * Dbar i else 0 := by
+      _ = _ := by
         by_cases hij : i = j
         · subst j
           have hfun : (fun ω : ΩX × ΩY => γ ^ 2 * K ω i i +
@@ -503,7 +470,7 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
           rw [hfun]
           rw [integral_add (hintK.const_mul _) (hintD.const_mul _), integral_const_mul,
             integral_const_mul]
-          simp [Kbar, Dbar, K, score, v, Z]
+          simp
           dsimp [μ]
         · have hfun : (fun ω : ΩX × ΩY => γ ^ 2 * K ω i j +
               if i = j then γ ^ 2 * score ω i else 0) =
@@ -512,21 +479,12 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
             simp [hij]
           rw [hfun]
           rw [integral_const_mul]
-          change γ ^ 2 * (∫ ω, K ω i j ∂μ) =
-            γ ^ 2 * Kbar i j + if i = j then γ ^ 2 * Dbar i else 0
           simp [hij, Kbar]
   have hKnonneg : ∀ i j, 0 ≤ Kbar i j := by
     intro i j
     apply integral_nonneg
     intro ω
-    have hwi : 0 ≤ finiteChaosVectorWeight a v γ (kahaneSumVectorField t (Z ω)) i :=
-      mul_nonneg (ha i) (Real.exp_nonneg _)
-    have hwj : 0 ≤ finiteChaosVectorWeight a v γ (kahaneSumVectorField t (Z ω)) j :=
-      mul_nonneg (ha j) (Real.exp_nonneg _)
-    change 0 ≤ finiteChaosVectorWeight a v γ (kahaneSumVectorField t (Z ω)) i *
-      finiteChaosVectorWeight a v γ (kahaneSumVectorField t (Z ω)) j *
-        F'' (finiteChaosVectorMass a v γ (kahaneSumVectorField t (Z ω)))
-    exact mul_nonneg (mul_nonneg hwi hwj)
+    exact mul_nonneg (mul_nonneg (mul_nonneg (ha i) (Real.exp_nonneg _)) (mul_nonneg (ha j) (Real.exp_nonneg _)))
       (hF''nonneg _ (finiteChaosVectorMass_nonneg a v γ ha
         (kahaneSumVectorField t (Z ω))) )
   have hderivIdentity :
@@ -638,16 +596,15 @@ theorem kahaneSmoothInterpolation_integrand_nonpos_of_gaussian_ibp
                         ring
                   _ = _ := rfl
   rw [hderivIdentity]
-  have hsign := kahaneInterpolation_derivative_nonpos_of_covariance_order γ t
-    (fun i j => DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j))
-    (fun i j => DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j))
-    A B Hbar Kbar Dbar ht ht1 hcov hKnonneg hXibp hYibp hHessian
   have hdiag : (∑ i, (vX i - vY i) * Dbar i) =
       ∑ i, (DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω i) -
         DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω i)) * Dbar i := by
     apply Finset.sum_congr rfl
     intro i hi
     rw [hvX i, hvY i]
-  simpa only [hdiag] using hsign
+  simpa only [hdiag] using (kahaneInterpolation_derivative_nonpos_of_covariance_order γ t
+    (fun i j => DOZZ.gaussianCovariance PX (fun ω => X ω i) (fun ω => X ω j))
+    (fun i j => DOZZ.gaussianCovariance PY (fun ω => Y ω i) (fun ω => Y ω j))
+    A B Hbar Kbar Dbar ht ht1 hcov hKnonneg hXibp hYibp hHessian)
 
 end DOZZ.Proofs

@@ -43,17 +43,14 @@ theorem disk_chain_lift_has_path_solution_charts
   let up : ℝ := τ (i + 1)
   let gap : ℝ := 1 / (N : ℝ)
   have hNreal : 0 < (N : ℝ) := by exact_mod_cast hN
-  have hgap : 0 < gap := by dsimp [gap]; positivity
-  have hleft' : lo ≤ t := by simpa [lo, τ] using hleft
+  have hleft'  := hleft
   have hright'' : t ≤ up := by simpa [up, τ] using hright
-  have hrightStrict : t < up ∨ t = 1 := by
-    simpa [up, τ] using hright'
+  have hrightStrict  := hright'
   have hstep (j : ℕ) : τ (j + 1) = τ j + gap := by
     dsimp [τ, gap]
     rw [Nat.cast_add]
     ring
-  have hiCenter : (D i).center = γ lo := by simpa [lo, τ] using hcenters i (Nat.le_of_lt hi)
-  have hpointCover : γ t ∈ Metric.ball (D i).center (r / 2) :=
+  have hpointCover  :=
     hcover i hi t ⟨hleft', hright''⟩
   obtain ⟨δγ, hδγ, hγclose⟩ :=
     (Metric.continuousWithinAt_iff.mp (hγ.continuousWithinAt ht)) (r / 2) (by linarith)
@@ -65,29 +62,26 @@ theorem disk_chain_lift_has_path_solution_charts
     solution := (D i).solution
     coefficient_bound := by
       intro z hz
-      have hzCenter : z ∈ Metric.ball (D i).center r := by
-        rw [Metric.mem_ball] at hz ⊢
-        calc
-          dist z (D i).center ≤ dist z (γ t) + dist (γ t) (D i).center := dist_triangle _ _ _
-          _ < r / 2 + r / 2 := add_lt_add hz (Metric.mem_ball.mp hpointCover)
-          _ = r := by ring
-      exact hbound i (Nat.le_of_lt hi) z hzCenter
+      refine hbound i (Nat.le_of_lt hi) z ?_
+      rw [Metric.mem_ball] at hz ⊢
+      calc
+        dist z (D i).center ≤ dist z (γ t) + dist (γ t) (D i).center := dist_triangle _ _ _
+        _ < r / 2 + r / 2 := add_lt_add hz (Metric.mem_ball.mp hpointCover)
+        _ = r := by ring
     derivative := by
       intro z hz
-      have hzCenter : z ∈ Metric.ball (D i).center r := by
-        rw [Metric.mem_ball] at hz ⊢
-        calc
-          dist z (D i).center ≤ dist z (γ t) + dist (γ t) (D i).center := dist_triangle _ _ _
-          _ < r / 2 + r / 2 := add_lt_add hz (Metric.mem_ball.mp hpointCover)
-          _ = r := by ring
-      exact (D i).derivative z hzCenter
+      refine (D i).derivative z ?_
+      rw [Metric.mem_ball] at hz ⊢
+      calc
+        dist z (D i).center ≤ dist z (γ t) + dist (γ t) (D i).center := dist_triangle _ _ _
+        _ < r / 2 + r / 2 := add_lt_add hz (Metric.mem_ball.mp hpointCover)
+        _ = r := by ring
     local_agrees := by
       by_cases htl : t = lo
       · subst t
-        refine ⟨min δγ gap, lt_min hδγ hgap, ?_⟩
+        refine ⟨min δγ gap, lt_min hδγ (by dsimp [gap]; positivity), ?_⟩
         intro s hs hst
-        have hstγ : dist s lo < δγ := lt_of_lt_of_le hst (min_le_left _ _)
-        have hγs : dist (γ s) (γ lo) < r / 2 := hγclose hs hstγ
+        have hγs  := hγclose hs (lt_of_lt_of_le hst (min_le_left _ _))
         have hstGap : dist s lo < gap := lt_of_lt_of_le hst (min_le_right _ _)
         have hnear : lo - gap < s ∧ s < lo + gap := by
           rw [Real.dist_eq] at hstGap
@@ -103,49 +97,40 @@ theorem disk_chain_lift_has_path_solution_charts
             have hseg : s ∈ Icc lo up := by
               rw [hup_eq]
               exact ⟨hslo, le_of_lt hnear.2⟩
-            exact hformula i hi s (by simpa [lo, up, τ] using hseg)
+            exact hformula i hi s (hseg)
           · let j := i - 1
             have hjSucc : j + 1 = i := by dsimp [j]; omega
             have hjlt : j < N := by omega
-            have hjstep : τ (j + 1) = τ j + gap := hstep j
             have hjlo : τ j = lo - gap := by
               dsimp [lo]
               rw [← hjSucc]
-              linarith [hjstep]
-            have hprevSeg : s ∈ Icc (τ j) lo := by
-              rw [hjlo]
-              exact ⟨le_of_lt hnear.1, hsle⟩
+              linarith [(hstep j)]
             have hprevSeg' : s ∈ Icc (τ j) (τ (j + 1)) := by
               rw [hjSucc]
-              exact hprevSeg
-            have hprev := hformula j hjlt s (by simpa [τ] using hprevSeg')
+              rw [hjlo]
+              exact ⟨le_of_lt hnear.1, hsle⟩
             have hnextCenter : (D (j + 1)).center = γ lo := by
               rw [hjSucc]
               simpa [lo] using hcenters i (Nat.le_of_lt hi)
             have hγball : γ s ∈ Metric.ball (D (j + 1)).center (r / 2) := by
               rw [Metric.mem_ball, hnextCenter]
               exact hγs
-            have hover := hoverlap j hjlt (γ s) hγball
             calc
-              F s = (D j).solution (γ s) := hprev
-              _ = (D i).solution (γ s) := by simpa [hjSucc] using hover
+              F s = (D j).solution (γ s) := (hformula j hjlt s (by simpa [τ] using hprevSeg'))
+              _ = (D i).solution (γ s) := by simpa [hjSucc] using (hoverlap j hjlt (γ s) hγball)
         · have hslo : lo ≤ s := le_of_not_ge hsle
           have hseg : s ∈ Icc lo up := by
             rw [hup_eq]
             exact ⟨hslo, le_of_lt hnear.2⟩
-          exact hformula i hi s (by simpa [lo, up, τ] using hseg)
+          exact hformula i hi s (hseg)
       · have hlo : lo < t := lt_of_le_of_ne hleft' (fun h => htl h.symm)
         by_cases hEnd : t = 1
-        · have hsuccN : i + 1 ≤ N := Nat.succ_le_iff.mpr hi
-          have hupLe : up ≤ 1 := by
+        · have hupEq : up = 1 := le_antisymm (by
             dsimp [up, τ]
             apply (div_le_one hNreal).2
-            exact_mod_cast hsuccN
-          have hupEq : up = 1 := le_antisymm hupLe (by simpa [hEnd] using hright'')
+            exact_mod_cast (Nat.succ_le_iff.mpr hi)) (by simpa [hEnd] using hright'')
           refine ⟨min δγ (t - lo), lt_min hδγ (by linarith), ?_⟩
           intro s hs hst
-          have hstγ : dist s t < δγ := lt_of_lt_of_le hst (min_le_left _ _)
-          have hγs : dist (γ s) (γ t) < r / 2 := hγclose hs hstγ
           have hstTime : dist s t < t - lo := lt_of_lt_of_le hst (min_le_right _ _)
           have hnear : lo < s := by
             rw [Real.dist_eq] at hstTime
@@ -153,15 +138,13 @@ theorem disk_chain_lift_has_path_solution_charts
             linarith
           have hseg : s ∈ Icc lo up := by
             rw [hupEq]
-            exact ⟨hnear.le, by simpa [hEnd] using hs.2⟩
-          exact hformula i hi s (by simpa [lo, up, τ] using hseg)
+            exact ⟨hnear.le, by exact hs.right⟩
+          exact hformula i hi s (hseg)
         · have hup : t < up := hrightStrict.resolve_right hEnd
           let δtime := min (t - lo) (up - t)
           have hδtime : 0 < δtime := lt_min (by linarith) (by linarith)
           refine ⟨min δγ δtime, lt_min hδγ hδtime, ?_⟩
           intro s hs hst
-          have hstγ : dist s t < δγ := lt_of_lt_of_le hst (min_le_left _ _)
-          have hγs : dist (γ s) (γ t) < r / 2 := hγclose hs hstγ
           have hstTime : dist s t < δtime := lt_of_lt_of_le hst (min_le_right _ _)
           have hnear : lo < s ∧ s < up := by
             rw [Real.dist_eq] at hstTime

@@ -36,10 +36,7 @@ private theorem differentiableOn_upsilonBase_of_log
     {γ : ℝ}
     (hLog : DifferentiableOn ℂ (fun z => upsilonLog γ z) (upsilonStrip γ)) :
     DifferentiableOn ℂ (upsilonBase γ) (upsilonStrip γ) := by
-  intro z hz
-  change DifferentiableWithinAt ℂ (fun w => Complex.exp (upsilonLog γ w))
-    (upsilonStrip γ) z
-  exact differentiable_exp.differentiableAt.comp_differentiableWithinAt z (hLog z hz)
+  solve_by_elim [differentiable_exp.differentiableAt.comp_differentiableWithinAt]
 
 private theorem upsilonStrip_isOpen (γ : ℝ) : IsOpen (upsilonStrip γ) := by
   change IsOpen ((Complex.re ⁻¹' Set.Ioi (0 : ℝ)) ∩
@@ -105,8 +102,8 @@ private theorem upsilonLeftArg_re (γ : ℝ) (n : ℕ) (z : ℂ) :
 
 private theorem upsilonShiftN_mono {γ : ℝ} (hγ : 0 < γ) {m n : ℕ} (hmn : m ≤ n) :
     (upsilonShiftN γ m).re ≤ (upsilonShiftN γ n).re := by
-  rw [upsilonShiftN_re, upsilonShiftN_re]
-  exact mul_le_mul_of_nonneg_right (Nat.cast_le.mpr hmn) (by positivity)
+  simp only [upsilonShiftN_re]
+  simp_all
 
 private theorem upsilon_Q_sub_B (γ : ℝ) : Q γ - γ / 2 = 2 / γ := by
   unfold Q
@@ -362,10 +359,8 @@ private theorem upsilonChartDomain_isOpen (γ : ℝ) (i : UpsilonChartIndex) :
     IsOpen (upsilonChartDomain γ i) := by
   cases i with
   | left n =>
-    change IsOpen ((fun z : ℂ => (z + upsilonShiftN γ n).re) ⁻¹' Set.Ioo 0 (Q γ))
     exact isOpen_Ioo.preimage (by fun_prop)
   | right n =>
-    change IsOpen ((fun z : ℂ => (z - upsilonShiftN γ n).re) ⁻¹' Set.Ioo 0 (Q γ))
     exact isOpen_Ioo.preimage (by fun_prop)
 
 private theorem upsilonLeftChart_succ_eq
@@ -376,34 +371,23 @@ private theorem upsilonLeftChart_succ_eq
     (hzₙ : z ∈ upsilonLeftDomain γ n)
     (hzₙ₁ : z ∈ upsilonLeftDomain γ (n + 1)) :
     upsilonLeftChart γ (n + 1) z = upsilonLeftChart γ n z := by
-  let v : ℂ := z + upsilonShiftN γ n
-  have hv0 : 0 < v.re := by
-    simpa [v, upsilonLeftArg_re] using hzₙ.1
+  let v := z + upsilonShiftN γ n
+  have hv0  := hzₙ.1
   have htranslate : z + upsilonShiftN γ (n + 1) = v + upsilonB γ := by
-    dsimp [v]
     rw [upsilonShiftN_succ]
     ring
   have hvQ : v.re < 2 / γ := by
     have hupper := hzₙ₁.2
-    rw [htranslate] at hupper
-    rw [Complex.add_re, show (upsilonB γ).re = γ / 2 by simp [upsilonB]] at hupper
+    rw [htranslate, Complex.add_re, show (upsilonB γ).re = γ / 2 by rfl] at hupper
     have hQ := upsilon_Q_sub_B γ
     linarith
-  have hstripShift := hshift v hv0 hvQ
-  have hrec := upsilonLeftRecurrence hγ hv0 hvQ hstripShift
   unfold upsilonLeftChart
   rw [Finset.prod_range_succ, htranslate]
-  change upsilonBase γ (v + upsilonB γ) *
-      ((∏ j ∈ Finset.range n, upsilonLeftFactor γ (z + upsilonShiftN γ j)) *
-        upsilonLeftFactor γ v) =
-    upsilonBase γ v * ∏ j ∈ Finset.range n,
-      upsilonLeftFactor γ (z + upsilonShiftN γ j)
   calc
     _ = (upsilonLeftFactor γ v * upsilonBase γ (v + upsilonB γ)) *
         ∏ j ∈ Finset.range n, upsilonLeftFactor γ (z + upsilonShiftN γ j) := by ring
-    _ = upsilonBase γ v *
-        ∏ j ∈ Finset.range n, upsilonLeftFactor γ (z + upsilonShiftN γ j) := by
-      rw [hrec]
+    _ = _ := by
+      rw [(upsilonLeftRecurrence hγ hv0 hvQ (hshift v hv0 hvQ))]
 
 private theorem upsilonRightChart_succ_eq
     {n : ℕ} {z : ℂ}
@@ -413,37 +397,25 @@ private theorem upsilonRightChart_succ_eq
     (hzₙ : z ∈ upsilonRightDomain γ n)
     (hzₙ₁ : z ∈ upsilonRightDomain γ (n + 1)) :
     upsilonRightChart γ (n + 1) z = upsilonRightChart γ n z := by
-  let v : ℂ := z - upsilonShiftN γ (n + 1)
-  have hv0 : 0 < v.re := by
-    simpa [v, upsilonRightArg_re] using hzₙ₁.1
+  let v := z - upsilonShiftN γ (n + 1)
+  have hv0  := hzₙ₁.1
   have htranslate : z - upsilonShiftN γ n = v + upsilonB γ := by
     dsimp [v]
     rw [upsilonShiftN_succ]
     ring
   have hvQ : v.re < 2 / γ := by
     have hupper := hzₙ.2
-    rw [htranslate] at hupper
-    rw [Complex.add_re, show (upsilonB γ).re = γ / 2 by simp [upsilonB]] at hupper
+    rw [htranslate, Complex.add_re, show (upsilonB γ).re = γ / 2 by rfl] at hupper
     have hQ := upsilon_Q_sub_B γ
     linarith
-  have hstripShift := hshift v hv0 hvQ
   unfold upsilonRightChart
-  rw [Finset.prod_range_succ]
-  rw [htranslate]
-  change upsilonBase γ v *
-      ((∏ j ∈ Finset.range n,
-        upsilonRightFactor γ (z - upsilonShiftN γ (j + 1))) *
-        upsilonRightFactor γ v) =
-    upsilonBase γ (v + upsilonB γ) * ∏ j ∈ Finset.range n,
-      upsilonRightFactor γ (z - upsilonShiftN γ (j + 1))
+  rw [Finset.prod_range_succ, htranslate]
   calc
     _ = (upsilonRightFactor γ v * upsilonBase γ v) *
         ∏ j ∈ Finset.range n,
           upsilonRightFactor γ (z - upsilonShiftN γ (j + 1)) := by ring
-    _ = upsilonBase γ (v + upsilonB γ) *
-        ∏ j ∈ Finset.range n,
-          upsilonRightFactor γ (z - upsilonShiftN γ (j + 1)) := by
-      rw [← hstripShift]
+    _ = _ := by
+      rw [← (hshift v hv0 hvQ)]
 
 private theorem upsilonLeftDomain_intermediate
     (hγ : 0 < γ) {m k n : ℕ} {z : ℂ}
@@ -529,7 +501,7 @@ private theorem upsilonLeftChart_eq_of_overlap
     (hm : z ∈ upsilonLeftDomain γ m) (hn : z ∈ upsilonLeftDomain γ n) :
     upsilonLeftChart γ m z = upsilonLeftChart γ n z := by
   rcases le_total m n with hmn | hnm
-  · exact upsilonLeftChart_eq_of_overlap_of_le hγ hmn hshift hm hn
+  · apply upsilonLeftChart_eq_of_overlap_of_le <;> assumption
   · exact (upsilonLeftChart_eq_of_overlap_of_le hγ hnm hshift hn hm).symm
 
 private theorem upsilonRightChart_eq_of_overlap_of_le
@@ -572,7 +544,7 @@ private theorem upsilonRightChart_eq_of_overlap
     (hm : z ∈ upsilonRightDomain γ m) (hn : z ∈ upsilonRightDomain γ n) :
     upsilonRightChart γ m z = upsilonRightChart γ n z := by
   rcases le_total m n with hmn | hnm
-  · exact upsilonRightChart_eq_of_overlap_of_le hγ hmn hshift hm hn
+  · apply upsilonRightChart_eq_of_overlap_of_le <;> assumption
   · exact (upsilonRightChart_eq_of_overlap_of_le hγ hnm hshift hn hm).symm
 
 private theorem upsilonLeftRightChart_eq_of_mem
@@ -601,10 +573,10 @@ private theorem upsilonLeftRightChart_eq_of_mem
   have hleft := upsilonLeftChart_eq_of_overlap hγ hshift hi hleft0
   have hright := upsilonRightChart_eq_of_overlap hγ hshift hright0 hj
   calc
-    upsilonLeftChart γ m z = upsilonLeftChart γ 0 z := hleft
+    _ = upsilonLeftChart γ 0 z := hleft
     _ = upsilonBase γ z := by simp [upsilonLeftChart, upsilonShiftN, upsilonBase]
     _ = upsilonRightChart γ 0 z := by simp [upsilonRightChart, upsilonShiftN, upsilonBase]
-    _ = upsilonRightChart γ n z := hright
+    _ = _ := hright
 
 private theorem upsilonChart_eq_of_mem
     (hγ : 0 < γ) {z : ℂ} {i j : UpsilonChartIndex}
@@ -623,8 +595,6 @@ private theorem upsilonChart_eq_of_mem
   | right m =>
     cases j with
     | left n =>
-      change z ∈ upsilonRightDomain γ m at hi
-      change z ∈ upsilonLeftDomain γ n at hj
       exact (upsilonLeftRightChart_eq_of_mem hγ hshift hj hi).symm
     | right n =>
       exact upsilonRightChart_eq_of_overlap hγ hshift hi hj
@@ -636,38 +606,35 @@ private theorem exists_upsilonChartDomain
   have hb : 0 < γ / 2 := by positivity
   have hQb := upsilon_Q_gt_B hγ
   by_cases hzpos : 0 < z.re
-  · let y : ℝ := z.re / (γ / 2)
-    have hy0 : 0 ≤ y := by dsimp [y]; positivity
+  · let y := z.re / (γ / 2)
+    have hy0 : 0 ≤ y := by positivity
     by_cases hylt : y < 1
     · refine ⟨.right 0, ?_⟩
       change 0 < (z - upsilonShiftN γ 0).re ∧
         (z - upsilonShiftN γ 0).re < Q γ
       rw [upsilonRightArg_re]
       constructor
-      · simpa using hzpos
-      · have hylt' : z.re / (γ / 2) < 1 := by simpa only [y] using hylt
+      · simpa
+      · have hylt'  := hylt
         have hzlt : z.re < γ / 2 := by
           simpa using (div_lt_iff₀ hb).mp hylt'
         simpa using hzlt.trans hQb
-    · let N : ℕ := Nat.floor y
+    · let N := Nat.floor y
       have hNpos : 1 ≤ N := by
         by_contra hnot
-        have hNlt : N < 1 := Nat.lt_of_not_ge hnot
-        have hNlt' : Nat.floor y < 1 := by simpa only [N] using hNlt
-        have hylt' : y < 1 := by
-          simpa using (Nat.floor_lt hy0).mp hNlt'
-        exact (not_lt_of_ge (le_of_not_gt hylt)) hylt'
-      let n : ℕ := N - 1
+        have hNlt'  := (Nat.lt_of_not_ge hnot)
+        refine (not_lt_of_ge (le_of_not_gt hylt)) ?_
+        simpa using (Nat.floor_lt hy0).mp hNlt'
+      let n := N - 1
       have hfloor : (N : ℝ) ≤ y := by
         exact Nat.floor_le hy0
-      have hfloorlt : y < (N : ℝ) + 1 := by
-        exact Nat.lt_floor_add_one y
+      have hfloorlt := Nat.lt_floor_add_one y
       have hncast : (n : ℝ) = (N : ℝ) - 1 := by
         simp [n, Nat.cast_sub hNpos]
       have hxy : z.re = y * (γ / 2) := by
         dsimp [y]
-        field_simp [ne_of_gt hb]
-      have hlow : (N : ℝ) - 1 < y := by linarith
+        field_simp 
+      have hlow : N - 1 < y := by linarith
       have hscaledLow : ((N : ℝ) - 1) * (γ / 2) < z.re := by
         have h := mul_lt_mul_of_pos_right hlow hb
         simpa [hxy] using h
@@ -683,39 +650,31 @@ private theorem exists_upsilonChartDomain
       · have hQ2 : 2 * (γ / 2) < Q γ := by
           linarith only [upsilon_Q_gt_twoB hγ hγ2]
         linarith only [hscaledHigh, hQ2]
-  · have hzle : z.re ≤ 0 := le_of_not_gt hzpos
-    let y : ℝ := -z.re / (γ / 2)
-    have hy0 : 0 ≤ y := by
-      dsimp [y]
-      exact div_nonneg (neg_nonneg.mpr hzle) hb.le
-    let N : ℕ := Nat.floor y
-    let n : ℕ := N + 1
+  · let y := -z.re / (γ / 2)
+    have hy0  := div_nonneg (neg_nonneg.mpr (le_of_not_gt hzpos)) hb.le
+    let N := Nat.floor y
+    let n := N + 1
     have hfloor : (N : ℝ) ≤ y := Nat.floor_le hy0
-    have hfloorlt : y < (N : ℝ) + 1 := Nat.lt_floor_add_one y
     have hncast : (n : ℝ) = (N : ℝ) + 1 := by simp [n]
     have hxy : z.re = -(y * (γ / 2)) := by
       dsimp [y]
-      field_simp [ne_of_gt hb]
+      field_simp 
     have hscaledLow : -z.re < (n : ℝ) * (γ / 2) := by
-      have h := mul_lt_mul_of_pos_right hfloorlt hb
+      have h := mul_lt_mul_of_pos_right (Nat.lt_floor_add_one y) hb
       rw [hxy, hncast]
       linarith only [h]
-    have hscaledLow' : -z.re < ((N : ℝ) + 1) * (γ / 2) := by
-      simpa [hncast] using hscaledLow
     have hscaledHigh : (n : ℝ) * (γ / 2) ≤ y * (γ / 2) + γ / 2 := by
       have hle : (N : ℝ) + 1 ≤ y + 1 := by linarith
       have h := mul_le_mul_of_nonneg_right hle (le_of_lt hb)
       rw [hncast]
       linarith only [h]
-    have hscaledHigh' : ((N : ℝ) + 1) * (γ / 2) ≤
-        y * (γ / 2) + γ / 2 := by simpa [hncast] using hscaledHigh
     refine ⟨.left n, ?_⟩
     change 0 < (z + upsilonShiftN γ n).re ∧
       (z + upsilonShiftN γ n).re < Q γ
     rw [upsilonLeftArg_re, hncast]
     constructor
-    · linarith [hscaledLow']
-    · linarith only [hscaledHigh', hxy, hQb]
+    · linarith [(by simpa [hncast] using hscaledLow)]
+    · grind
 
 private noncomputable def upsilonIndexAt
     {γ : ℝ}
@@ -794,9 +753,8 @@ theorem exists_IsUpsilon (hγ : 0 < γ) (hγ2 : γ < 2) :
   apply exists_IsUpsilon_of_strip_data hγ hγ2
   · exact differentiableOn_upsilonBase_of_log (upsilonLog_differentiableOn hγ hγ2)
   · intro z hz0 hzQ
-    have hshift := exp_upsilonLog_shift_b hγ hγ2 hz0 hzQ
     simpa [upsilonBase, upsilonB, upsilonRightFactor, lFun,
-      div_eq_mul_inv, mul_assoc] using hshift
+          div_eq_mul_inv, mul_assoc] using (exp_upsilonLog_shift_b hγ hγ2 hz0 hzQ)
 
 end DOZZ.Proofs
 

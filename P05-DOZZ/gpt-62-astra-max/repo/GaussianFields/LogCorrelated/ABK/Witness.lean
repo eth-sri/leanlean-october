@@ -32,8 +32,7 @@ noncomputable def abkStandardProfile (r : ℝ) : ℝ :=
 theorem abkStandardProfile_of_le_half {r : ℝ} (hr : r ≤ 1 / 2) :
     abkStandardProfile r = 1 := by
   have h1 : (1 : ℝ) ≤ 2 * (1 - r) := by linarith
-  have h2 : (1 : ℝ) ≤ max (2 * (1 - r)) 0 := h1.trans (le_max_left _ _)
-  simpa [abkStandardProfile] using min_eq_right h2
+  simpa [abkStandardProfile] using min_eq_right (h1.trans (le_max_left _ _))
 
 theorem abkStandardProfile_of_one_le {r : ℝ} (hr : 1 ≤ r) :
     abkStandardProfile r = 0 := by

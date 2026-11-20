@@ -54,17 +54,15 @@ theorem exists_physical_inversion_representative
         fun z hz => (show |z.im| < h from hz).le) hc
     exact fun z hz => (hcl hz).trans_lt hhH
   let R₀ : ℂ → ℂ := fun z => if z ∈ horizontalStrip h then F z else 1
-  let R : ℂ → ℂ := fun z =>
-    if z.im = 0 ∧ lo < z.re ∧ z.re < hi then v z.re else R₀ z
+  let R := fun z =>
+  if z.im = 0 ∧ lo < z.re ∧ z.re < hi then v z.re else R₀ z
   have hreal (z : ℂ) (hz : z.im = 0) : z ∈ horizontalStrip h := by
     simpa only [horizontalStrip, mem_ofPred_eq, hz, abs_zero] using hh
-  have hp := codiscreteWithin_restrict_closure
-    (isOpen_horizontalStrip H) hclosure hphysical
   have heq : R₀ =ᶠ[codiscrete ℂ] R := by
-    filter_upwards [hp] with z hz
+    filter_upwards [(codiscreteWithin_restrict_closure
+      (isOpen_horizontalStrip H) hclosure hphysical)] with z hz
     by_cases hi' : z.im = 0 ∧ lo < z.re ∧ z.re < hi
-    · simp only [R, ite_eq_left hi', R₀, ite_eq_left (hreal z hi'.1)]
-      exact hz (hreal z hi'.1) hi'.1 hi'.2.1 hi'.2.2
+    · grind
     · simp only [R, ite_eq_right hi']
   have hm : MeromorphicOn R₀ (horizontalStrip h) := by
     apply (show MeromorphicOn F (horizontalStrip h) from
@@ -77,16 +75,12 @@ theorem exists_physical_inversion_representative
   · intro α hlo hhi
     simp only [R, Complex.ofReal_im, Complex.ofReal_re, hlo, hhi,
       and_self, ite_true]
-  · have hg := codiscreteWithin_restrict_closure
-      (isOpen_horizontalStrip H) hclosure hinv
-    filter_upwards [hg, heq, codiscrete_reflect heq q] with z hz he he'
+  · filter_upwards [(codiscreteWithin_restrict_closure
+      (isOpen_horizontalStrip H) hclosure hinv), heq, codiscrete_reflect heq q] with z hz he he'
     rw [← he, ← he']
     have href : (q : ℂ) - z ∈ horizontalStrip h ↔ z ∈ horizontalStrip h := by
       simp only [horizontalStrip, mem_ofPred_eq, Complex.sub_im, Complex.ofReal_im,
         zero_sub, abs_neg]
-    by_cases hzin : z ∈ horizontalStrip h
-    · simp only [R₀, ite_eq_left hzin, ite_eq_left (href.mpr hzin)]
-      exact hz hzin
-    · simp only [R₀, ite_eq_right hzin, ite_eq_right (href.not.mpr hzin), mul_one]
+    grind
 
 end DOZZ.Proofs

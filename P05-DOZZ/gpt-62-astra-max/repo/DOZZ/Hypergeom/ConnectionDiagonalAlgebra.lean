@@ -22,38 +22,8 @@ theorem real_diagonal_normSq_connection_change
         δ * Complex.normSq ((w : ℂ) * f + (x : ℂ) * g) =
       (α * u ^ 2 + δ * w ^ 2) * Complex.normSq f +
         (α * v ^ 2 + δ * x ^ 2) * Complex.normSq g := by
-  have hcrossUV :
-      ((u : ℂ) * f * star ((v : ℂ) * g)).re =
-        (u * v) * (f * (starRingEnd ℂ) g).re := by
-    have hv : star ((v : ℂ) * g) = (v : ℂ) * star g := by
-      simp [mul_comm]
-    calc
-      ((u : ℂ) * f * star ((v : ℂ) * g)).re =
-          (((u * v : ℝ) : ℂ) * (f * star g)).re := by
-            rw [hv]
-            apply congrArg Complex.re
-            push_cast
-            ring
-      _ = (u * v) * (f * star g).re := Complex.re_ofReal_mul _ _
-  have hcrossWX :
-      ((w : ℂ) * f * star ((x : ℂ) * g)).re =
-        (w * x) * (f * (starRingEnd ℂ) g).re := by
-    have hx : star ((x : ℂ) * g) = (x : ℂ) * star g := by
-      simp [mul_comm]
-    calc
-      ((w : ℂ) * f * star ((x : ℂ) * g)).re =
-          (((w * x : ℝ) : ℂ) * (f * star g)).re := by
-            rw [hx]
-            apply congrArg Complex.re
-            push_cast
-            ring
-      _ = (w * x) * (f * star g).re := Complex.re_ofReal_mul _ _
-  rw [Complex.normSq_add, Complex.normSq_add]
-  rw [Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul, Complex.normSq_mul]
-  rw [Complex.normSq_ofReal, Complex.normSq_ofReal,
-    Complex.normSq_ofReal, Complex.normSq_ofReal]
-  simp only [Complex.star_def] at hcrossUV hcrossWX
-  rw [hcrossUV, hcrossWX]
-  linear_combination 2 * (f * (starRingEnd ℂ) g).re * hcross
+  simp only [Complex.normSq_apply,Complex.add_re,Complex.add_im,Complex.mul_re,Complex.mul_im,
+    Complex.ofReal_re,Complex.ofReal_im,zero_mul,sub_zero]
+  linear_combination (2*f.re*g.re + 2*f.im*g.im)*hcross
 
 end DOZZ.Proofs

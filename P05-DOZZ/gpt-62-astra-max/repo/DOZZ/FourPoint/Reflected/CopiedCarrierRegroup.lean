@@ -57,8 +57,6 @@ theorem reflected_copied_carrier_regroup
   have hF : Measurable F := hG.comp (measurable_fst.prodMk
     ((measurable_snd.comp measurable_snd).prodMk (measurable_fst.comp measurable_snd)))
   rw [← hbase F hF]
-  change (∫⁻ p, G (H p) ∂(P.map A).prod (P.prod P)) =
-    ∫⁻ p : α × (Ω × Ω), G (p.1,(N p.2.2,N p.2.1)) ∂(P.map A).prod (P.prod P)
   change (∫⁻ p, (G ∘ H) p ∂(P.map A).prod (P.prod P)) =
     ∫⁻ p, (F ∘ H) p ∂(P.map A).prod (P.prod P)
   rw [lintegral_prod _ (hG.comp hH).aemeasurable,

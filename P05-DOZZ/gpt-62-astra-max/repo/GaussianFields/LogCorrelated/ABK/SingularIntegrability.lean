@@ -31,12 +31,7 @@ theorem real_exp_sub_one_le_mul_exp_of_nonneg {t : ℝ} (_ht : 0 ≤ t) :
   have hneg := Real.add_one_le_exp (-t)
   have hunit : 1 - Real.exp (-t) ≤ t := by linarith
   have hmul := mul_le_mul_of_nonneg_right hunit (le_of_lt (Real.exp_pos t))
-  calc
-    Real.exp t - 1 = Real.exp t * (1 - Real.exp (-t)) := by
-      rw [mul_sub, mul_one, ← Real.exp_add, add_neg_cancel, Real.exp_zero]
-    _ ≤ Real.exp t * t := by
-      simpa [mul_comm, mul_left_comm, mul_assoc] using hmul
-    _ = t * Real.exp t := by ring_nf
+  grind [mul_sub, mul_one, Real.exp_add, add_neg_cancel, Real.exp_zero]
 
 /-- On a bounded interval away from infinity, the centered Riesz slope is dominated by the
 integrable singular power `ρ^{-3/4}`. -/
@@ -51,60 +46,50 @@ theorem abs_rpow_neg_sub_one_div_le_abkSingularMajorant {α ρ R : ℝ}
   have hsing_nonneg : 0 ≤ ρ ^ abkSingularMajorantExponent :=
     Real.rpow_nonneg hρ_pos.le _
   by_cases hρ_le_one : ρ ≤ 1
-  · let u : ℝ := ρ⁻¹
+  · let u := ρ⁻¹
     have hu_pos : 0 < u := inv_pos.mpr hρ_pos
-    have hu_one : 1 ≤ u := by
-      dsimp [u]
-      exact (one_le_inv₀ hρ_pos).mpr hρ_le_one
-    have hu_pow_ge : 1 ≤ u ^ α :=
-      Real.one_le_rpow hu_one hα_pos.le
+    have hu_one  := (one_le_inv₀ hρ_pos).mpr hρ_le_one
+    have hu_pow_ge := Real.one_le_rpow hu_one hα_pos.le
     have hslope_nonneg : 0 ≤ (ρ ^ (-α) - 1) / α := by
       rw [Real.rpow_neg_eq_inv_rpow]
       exact div_nonneg (sub_nonneg.mpr hu_pow_ge) hα_pos.le
     have hslope_eq :
         |(ρ ^ (-α) - 1) / α| = (u ^ α - 1) / α := by
       rw [abs_of_nonneg hslope_nonneg, Real.rpow_neg_eq_inv_rpow]
-    have hlogu_nonneg : 0 ≤ Real.log u :=
-      Real.log_nonneg hu_one
     have hv_nonneg : 0 ≤ α * Real.log u :=
-      mul_nonneg hα_pos.le hlogu_nonneg
-    have hpow_sub :
-        u ^ α - 1 ≤ (α * Real.log u) * u ^ α := by
-      rw [Real.rpow_def_of_pos hu_pos]
-      simpa [mul_comm, mul_left_comm, mul_assoc] using
-        real_exp_sub_one_le_mul_exp_of_nonneg hv_nonneg
+      mul_nonneg hα_pos.le (Real.log_nonneg hu_one)
     have hdiv :
         (u ^ α - 1) / α ≤ Real.log u * u ^ α := by
       rw [div_le_iff₀ hα_pos]
       calc
-        u ^ α - 1 ≤ (α * Real.log u) * u ^ α := hpow_sub
+        _ ≤ (α * Real.log u) * u ^ α := (by
+          rw [Real.rpow_def_of_pos hu_pos]
+          simpa [mul_comm, mul_left_comm, mul_assoc] using
+            real_exp_sub_one_le_mul_exp_of_nonneg hv_nonneg)
         _ = α * (Real.log u * u ^ α) := by ring_nf
-        _ = Real.log u * u ^ α * α := by ring_nf
-    have hlog_bound : Real.log u ≤ 4 * u ^ (1 / 4 : ℝ) := by
-      have h := Real.log_le_rpow_div hu_pos.le (by norm_num : (0 : ℝ) < 1 / 4)
-      calc
-        Real.log u ≤ u ^ (1 / 4 : ℝ) / (1 / 4 : ℝ) := h
-        _ = 4 * u ^ (1 / 4 : ℝ) := by ring_nf
-    have hpow_le : u ^ α ≤ u ^ (1 / 2 : ℝ) :=
-      Real.rpow_le_rpow_of_exponent_le hu_one hα_le
+        _ = _ := by ring_nf
     have hmain :
         |(ρ ^ (-α) - 1) / α| ≤ 4 * ρ ^ abkSingularMajorantExponent := by
       rw [hslope_eq]
+      let w := u ^ (1 / 4 : ℝ)
       calc
-        (u ^ α - 1) / α ≤ Real.log u * u ^ α := hdiv
-        _ ≤ (4 * u ^ (1 / 4 : ℝ)) * u ^ (1 / 2 : ℝ) := by
-          exact mul_le_mul hlog_bound hpow_le
+        _ ≤ Real.log u * u ^ α := hdiv
+        _ ≤ (4 * w) * u ^ (1 / 2 : ℝ) := by
+          refine mul_le_mul ?_ (Real.rpow_le_rpow_of_exponent_le hu_one hα_le)
             (Real.rpow_nonneg hu_pos.le _)
-            (mul_nonneg (by norm_num : (0 : ℝ) ≤ 4)
+            (mul_nonneg (by norm_num)
               (Real.rpow_nonneg hu_pos.le _))
+          calc
+            Real.log u ≤ w / (1 / 4 : ℝ) := (Real.log_le_rpow_div hu_pos.le (by norm_num : (0 : ℝ) < 1 / 4))
+            _ = 4 * w := by ring_nf
         _ = 4 * u ^ (3 / 4 : ℝ) := by
           calc
-            (4 * u ^ (1 / 4 : ℝ)) * u ^ (1 / 2 : ℝ)
-                = 4 * (u ^ (1 / 4 : ℝ) * u ^ (1 / 2 : ℝ)) := by ring_nf
+            _
+                = 4 * (w * u ^ (1 / 2 : ℝ)) := by ring_nf
             _ = 4 * u ^ ((1 / 4 : ℝ) + (1 / 2 : ℝ)) := by
               rw [Real.rpow_add hu_pos]
-            _ = 4 * u ^ (3 / 4 : ℝ) := by ring_nf
-        _ = 4 * ρ ^ abkSingularMajorantExponent := by
+            _ = _ := by ring_nf
+        _ = _ := by
           have hpow_eq : u ^ (3 / 4 : ℝ) = ρ ^ abkSingularMajorantExponent := by
             dsimp [u, abkSingularMajorantExponent]
             rw [← Real.rpow_neg_eq_inv_rpow]
@@ -115,17 +100,7 @@ theorem abs_rpow_neg_sub_one_div_le_abkSingularMajorant {α ρ R : ℝ}
         exact mul_le_mul_of_nonneg_right (by linarith) hsing_nonneg
       _ ≤ (4 + Real.log R) * (1 + ρ ^ abkSingularMajorantExponent) := by
         exact mul_le_mul_of_nonneg_left (by linarith) hcoef_nonneg
-  · have hρ_ge_one : 1 ≤ ρ := le_of_not_ge hρ_le_one
-    have hpow_le_one : ρ ^ (-α) ≤ 1 :=
-      Real.rpow_le_one_of_one_le_of_nonpos hρ_ge_one (neg_nonpos.mpr hα_pos.le)
-    have hslope_nonpos : (ρ ^ (-α) - 1) / α ≤ 0 := by
-      exact div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hpow_le_one) hα_pos.le
-    have hslope_eq :
-        |(ρ ^ (-α) - 1) / α| = (1 - ρ ^ (-α)) / α := by
-      rw [abs_of_nonpos hslope_nonpos]
-      ring_nf
-    have hlogρ_nonneg : 0 ≤ Real.log ρ :=
-      Real.log_nonneg hρ_ge_one
+  · have hpow_le_one := Real.rpow_le_one_of_one_le_of_nonpos (le_of_not_ge hρ_le_one) (neg_nonpos.mpr hα_pos.le)
     have hsub_le :
         1 - ρ ^ (-α) ≤ α * Real.log ρ := by
       have h :=
@@ -135,24 +110,17 @@ theorem abs_rpow_neg_sub_one_div_le_abkSingularMajorant {α ρ R : ℝ}
         congr 1
         ring_nf
       linarith
-    have hdiv :
-        (1 - ρ ^ (-α)) / α ≤ Real.log ρ := by
-      rw [div_le_iff₀ hα_pos]
-      calc
-        1 - ρ ^ (-α) ≤ α * Real.log ρ := hsub_le
-        _ = Real.log ρ * α := by ring_nf
-    have hlog_le : Real.log ρ ≤ Real.log R :=
-      Real.log_le_log hρ_pos hρR
     calc
-      |(ρ ^ (-α) - 1) / α| = (1 - ρ ^ (-α)) / α := hslope_eq
-      _ ≤ Real.log ρ := hdiv
-      _ ≤ Real.log R := hlog_le
+      _ = (1 - ρ ^ (-α)) / α := (by
+        rw [abs_of_nonpos (div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hpow_le_one) hα_pos.le)]
+        ring_nf)
+      _ ≤ Real.log ρ := by
+        rw [div_le_iff₀ hα_pos]
+        linarith
+      _ ≤ Real.log R := Real.log_le_log hρ_pos hρR
       _ ≤ 4 + Real.log R := by linarith
-      _ ≤ (4 + Real.log R) * (1 + ρ ^ abkSingularMajorantExponent) := by
-        calc
-          4 + Real.log R = (4 + Real.log R) * 1 := by ring_nf
-          _ ≤ (4 + Real.log R) * (1 + ρ ^ abkSingularMajorantExponent) := by
-            exact mul_le_mul_of_nonneg_left (by linarith) hcoef_nonneg
+      _ ≤ _ := by
+        nlinarith
 
 /-- The one-dimensional function `|x|^{-3/4}`, restricted to a symmetric interval. -/
 @[expose]

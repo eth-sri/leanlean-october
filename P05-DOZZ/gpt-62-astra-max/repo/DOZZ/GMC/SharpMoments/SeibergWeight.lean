@@ -142,12 +142,12 @@ theorem coulombWeight_prod_ge {ι : Type*} (s : Finset ι) (a e : ι → ℝ) {L
 /-- Bounds `1 ≤ a ≤ A ≤ L δ` with `δ ≤ 1` put `a` in `[L⁻¹, L]`. -/
 theorem coulombWeight_base_bounds {a A L δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (ha1 : 1 ≤ a)
     (haA : a ≤ A) (hAL : A ≤ L * δ) : 1 ≤ L ∧ L⁻¹ ≤ a ∧ a ≤ L := by
-  have h1 : 1 ≤ L * δ := ha1.trans (haA.trans hAL)
+  have h1 := ha1.trans (haA.trans hAL)
   have hL0 : 0 < L := by
     by_contra hneg
-    nlinarith [mul_nonneg (neg_nonneg.mpr (not_lt.mp hneg)) hδ.le]
-  have hLδ : L * δ ≤ L := mul_le_of_le_one_right hL0.le hδ1
-  have hL1 : 1 ≤ L := h1.trans hLδ
+    nlinarith
+  have hLδ := mul_le_of_le_one_right hL0.le hδ1
+  have hL1 := h1.trans hLδ
   exact ⟨hL1, (inv_le_one_of_one_le₀ hL1).trans ha1, haA.trans (hAL.trans hLδ)⟩
 
 /-- Quotient `a / b` with `1 ≤ a ≤ A ≤ L δ` and `δ ≤ b ≤ B ≤ L` lies in `[L⁻¹, L]`. -/
@@ -155,17 +155,15 @@ theorem coulombWeight_quot_bounds {a b A B L δ : ℝ} (hδ : 0 < δ) (hδ1 : δ
     (haA : a ≤ A) (hδb : δ ≤ b) (hbB : b ≤ B) (hAL : A ≤ L * δ) (hBL : B ≤ L) :
     L⁻¹ ≤ a / b ∧ a / b ≤ L := by
   obtain ⟨hL1, -, -⟩ := coulombWeight_base_bounds hδ hδ1 ha1 haA hAL
-  have hL0 : 0 < L := lt_of_lt_of_le one_pos hL1
-  have hb : 0 < b := lt_of_lt_of_le hδ hδb
+  have hL0 := lt_of_lt_of_le one_pos hL1
+  have hb := lt_of_lt_of_le hδ hδb
   constructor
   · rw [le_div_iff₀ hb]
-    calc L⁻¹ * b ≤ L⁻¹ * L := mul_le_mul_of_nonneg_left (hbB.trans hBL) (inv_nonneg.mpr hL0.le)
+    calc _ ≤ L⁻¹ * L := mul_le_mul_of_nonneg_left (hbB.trans hBL) (inv_nonneg.mpr hL0.le)
       _ = 1 := inv_mul_cancel₀ hL0.ne'
       _ ≤ a := ha1
   · rw [div_le_iff₀ hb]
-    calc a ≤ A := haA
-      _ ≤ L * δ := hAL
-      _ ≤ L * b := mul_le_mul_of_nonneg_left hδb hL0.le
+    nlinarith
 
 /-- Quotient bounds far from the origin: `v` is within `w` of `u` and `2 w < u`. -/
 theorem coulombWeight_exterior_quot_bounds {u v w : ℝ} (hw0 : 0 ≤ w) (hwu : 2 * w < u)

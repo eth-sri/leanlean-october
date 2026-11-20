@@ -20,7 +20,7 @@ namespace DOZZ.Proofs
 theorem gmcReferenceMeasure_univ_ne_top :
     gmcReferenceMeasure Set.univ ≠ ∞ := by
   let B : Set ℂ := Metric.ball 0 1
-  let f : ℂ → ℝ≥0∞ := fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))
+  let f := fun x => ENNReal.ofReal (normPlus x ^ (-4 : ℝ))
   have hB : MeasurableSet B := Metric.isOpen_ball.measurableSet
   have hBallVolume : volume B ≠ ∞ := by
     have hclosed : volume (Metric.closedBall (0 : ℂ) 1) ≠ ∞ :=
@@ -29,7 +29,7 @@ theorem gmcReferenceMeasure_univ_ne_top :
     exact (measure_mono (show B ⊆ Metric.closedBall (0 : ℂ) 1 from
       Metric.ball_subset_closedBall)).trans_lt
       (lt_top_iff_ne_top.mpr hclosed)
-  have htailReal : IntegrableOn (fun x : ℂ => ‖x‖ ^ (-4 : ℝ)) Bᶜ volume := by
+  have htailReal : IntegrableOn (fun x => ‖x‖ ^ (-4 : ℝ)) Bᶜ volume := by
     apply (DOZZ.Proofs.integrableOn_norm_rpow_ball_compl_iff (-4) 1 (by norm_num)).2
     norm_num
   have htailNonneg : 0 ≤ᵐ[volume.restrict Bᶜ]
@@ -42,19 +42,13 @@ theorem gmcReferenceMeasure_univ_ne_top :
     exact ENNReal.ofReal_ne_top
   have hballBound : (∫⁻ x in B, f x ∂volume) ≤ volume B := by
     calc
-      (∫⁻ x in B, f x ∂volume) ≤ ∫⁻ x in B, (1 : ℝ≥0∞) ∂volume :=
-        setLIntegral_mono (s := B) (f := f) (g := fun _ : ℂ => (1 : ℝ≥0∞))
+      _ ≤ ∫⁻ x in B, 1 ∂volume :=
+        setLIntegral_mono
           measurable_const (fun x hx => by
-        have hnorm : 1 ≤ normPlus x := le_max_left _ _
-        have hp : normPlus x ^ (-4 : ℝ) ≤ 1 :=
-          Real.rpow_le_one_of_one_le_of_nonpos hnorm (by norm_num)
-        simp only [f]
-        exact ENNReal.ofReal_le_one.mpr hp)
+        exact ENNReal.ofReal_le_one.mpr (Real.rpow_le_one_of_one_le_of_nonpos (le_max_left _ _) (by norm_num)))
       _ = volume B := by simp
   have htailBound : (∫⁻ x in Bᶜ, f x ∂volume) ≤
-      ∫⁻ x in Bᶜ, ENNReal.ofReal (‖x‖ ^ (-4 : ℝ)) ∂volume := by
-    exact setLIntegral_mono (s := Bᶜ) (f := f)
-      (g := fun x : ℂ => ENNReal.ofReal (‖x‖ ^ (-4 : ℝ))) (by fun_prop)
+      ∫⁻ x in Bᶜ, ENNReal.ofReal (‖x‖ ^ (-4 : ℝ)) ∂volume := setLIntegral_mono (by fun_prop)
       (fun x hx => by
         have hxnorm : 1 ≤ ‖x‖ := by
           change ¬ x ∈ Metric.ball (0 : ℂ) 1 at hx
@@ -65,7 +59,7 @@ theorem gmcReferenceMeasure_univ_ne_top :
         have hmax : normPlus x = ‖x‖ := by
           simp [normPlus, max_eq_right hxnorm]
         simp [f, hmax])
-  have htailFinite' : (∫⁻ x in Bᶜ, f x ∂volume) ≠ ∞ :=
+  have htailFinite'  :=
     ne_of_lt (lt_of_le_of_lt htailBound (lt_top_iff_ne_top.mpr htailFinite))
   have htotal : (∫⁻ x, f x ∂volume) ≠ ∞ := by
     rw [← lintegral_add_compl f hB]

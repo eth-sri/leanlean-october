@@ -25,15 +25,13 @@ theorem crossing_connection_det_real (a b c : ℝ)
       (Real.Gamma (2 - c) * Real.Gamma (c - a - b) *
         (Real.Gamma (1 - a))⁻¹ * (Real.Gamma (1 - b))⁻¹) =
     (c - 1) / (c - a - b) := by
-  have hcC : ∀ n : ℤ, (c : ℂ) ≠ (n : ℂ) := by
+  have hd := gauss_connection_det a b c (by
     intro n hn
     apply hc n
-    exact_mod_cast hn
-  have hδC : ∀ n : ℤ, (c : ℂ) - (a : ℂ) - (b : ℂ) ≠ (n : ℂ) := by
+    exact_mod_cast hn) (by
     intro n hn
     apply hδ n
-    exact_mod_cast hn
-  have hd := gauss_connection_det (a : ℂ) (b : ℂ) (c : ℂ) hcC hδC
+    exact_mod_cast hn)
   have hca : (c : ℂ) - (a : ℂ) = ((c - a : ℝ) : ℂ) := by push_cast; rfl
   have hcb : (c : ℂ) - (b : ℂ) = ((c - b : ℝ) : ℂ) := by push_cast; rfl
   have hδcast : (c : ℂ) - (a : ℂ) - (b : ℂ) = ((c - a - b : ℝ) : ℂ) := by push_cast; rfl

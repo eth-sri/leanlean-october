@@ -37,19 +37,13 @@ theorem finite_gaussian_wick_pair_tilt
         DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω p) + γ *
         DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω q)) ∂P) := by
   classical
-  let a : ι → ℝ := fun i => (if i = p then γ else 0) + (if i = q then γ else 0)
-  have hselect (g : ι → ℝ) (r : ι) :
-      (∑ i, (if i = r then γ else 0) * g i) = γ * g r := by
-    classical
-    simp
+  let a  := fun i => (if i = p then γ else 0) + (if i = q then γ else 0)
   have hsum (g : ι → ℝ) : (∑ i, a i * g i) = γ * g p + γ * g q := by
     calc
       _ = (∑ i, (if i = p then γ else 0) * g i) +
           ∑ i, (if i = q then γ else 0) * g i := by
             simp only [a, add_mul, Finset.sum_add_distrib]
-      _ = _ := by rw [hselect g p, hselect g q]
-  have hlinear (ω : Ω) :
-      (∑ i, a i * Z ω i) = γ * Z ω p + γ * Z ω q := hsum (fun i => Z ω i)
+      _ = _ := by simp
   have hrow (i : ι) :
       (∑ j, DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j) =
         γ * DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω p) +
@@ -59,18 +53,15 @@ theorem finite_gaussian_wick_pair_tilt
             DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j)) +
           ∑ j, (if j = q then γ else 0) *
             DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) := by
-              rw [← Finset.sum_add_distrib]
-              apply Finset.sum_congr rfl
-              intro j hj
-              simp only [a]
-              ring
+              rw [← Finset.sum_add_distrib] <;> grind
       _ = _ := by
-        rw [hselect, hselect]
+        simp
+  let F₅ := DOZZ.gaussianCovariance P (fun ω => Z ω p) (fun ω => Z ω q)
   have hdouble : (∑ i, ∑ j, a i *
       DOZZ.gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) * a j) =
       γ ^ 2 * DOZZ.gaussianVariance P (fun ω => Z ω p) +
       γ ^ 2 * DOZZ.gaussianVariance P (fun ω => Z ω q) +
-      γ ^ 2 * DOZZ.gaussianCovariance P (fun ω => Z ω p) (fun ω => Z ω q) +
+      γ ^ 2 * F₅ +
       γ ^ 2 * DOZZ.gaussianCovariance P (fun ω => Z ω q) (fun ω => Z ω p) := by
     calc
       _ = ∑ i, a i * (γ * DOZZ.gaussianCovariance P
@@ -81,9 +72,7 @@ theorem finite_gaussian_wick_pair_tilt
             calc
               _ = ∑ j, a i * (DOZZ.gaussianCovariance P
                     (fun ω => Z ω i) (fun ω => Z ω j) * a j) := by
-                    apply Finset.sum_congr rfl
-                    intro j hj
-                    ring
+                    ring_nf
               _ = a i * ∑ j, DOZZ.gaussianCovariance P
                     (fun ω => Z ω i) (fun ω => Z ω j) * a j := by
                     rw [Finset.mul_sum]
@@ -103,12 +92,10 @@ theorem finite_gaussian_wick_pair_tilt
       _ = γ * (γ * DOZZ.gaussianCovariance P
             (fun ω => Z ω p) (fun ω => Z ω p) +
           γ * DOZZ.gaussianCovariance P (fun ω => Z ω q) (fun ω => Z ω p)) +
-          γ * (γ * DOZZ.gaussianCovariance P
-            (fun ω => Z ω p) (fun ω => Z ω q) +
+          γ * (γ * F₅ +
           γ * DOZZ.gaussianCovariance P (fun ω => Z ω q) (fun ω => Z ω q)) := by
             rw [hsum (fun i => γ * DOZZ.gaussianCovariance P
-              (fun ω => Z ω i) (fun ω => Z ω p))]
-            rw [hsum (fun i => γ * DOZZ.gaussianCovariance P
+              (fun ω => Z ω i) (fun ω => Z ω p)), hsum (fun i => γ * DOZZ.gaussianCovariance P
               (fun ω => Z ω i) (fun ω => Z ω q))]
             ring
       _ = _ := by
@@ -120,18 +107,17 @@ theorem finite_gaussian_wick_pair_tilt
         Real.exp (γ * Z ω q - γ ^ 2 / 2 *
           DOZZ.gaussianVariance P (fun ω => Z ω q)) =
       Real.exp (γ ^ 2 / 2 *
-          (DOZZ.gaussianCovariance P (fun ω => Z ω p) (fun ω => Z ω q) +
+          (F₅ +
             DOZZ.gaussianCovariance P (fun ω => Z ω q) (fun ω => Z ω p))) *
         Real.exp ((∑ i, a i * Z ω i) -
           (∑ i, ∑ j, a i * DOZZ.gaussianCovariance P
             (fun ω => Z ω i) (fun ω => Z ω j) * a j) / 2) := by
-    rw [← Real.exp_add, ← Real.exp_add, hlinear ω, hdouble]
+    rw [← Real.exp_add, ← Real.exp_add, (hsum (Z ω)), hdouble]
     congr 1
     ring
-  have htilt := DOZZ.Proofs.finite_gaussian_tilt P Z hZ a F hF
-  let c : ℝ≥0∞ := ENNReal.ofReal (Real.exp (γ ^ 2 / 2 *
-    (DOZZ.gaussianCovariance P (fun ω => Z ω p) (fun ω => Z ω q) +
-      DOZZ.gaussianCovariance P (fun ω => Z ω q) (fun ω => Z ω p))))
+  let c := ENNReal.ofReal (Real.exp (γ ^ 2 / 2 *
+  (F₅ +
+    DOZZ.gaussianCovariance P (fun ω => Z ω q) (fun ω => Z ω p))))
   calc
     _ = ∫⁻ ω, c * ENNReal.ofReal (Real.exp ((∑ i, a i * Z ω i) -
           (∑ i, ∑ j, a i * DOZZ.gaussianCovariance P
@@ -153,7 +139,7 @@ theorem finite_gaussian_wick_pair_tilt
           F (Z ω) ∂P) := by
         rw [lintegral_const_mul' c _ (by simp [c])]
     _ = _ := by
-      rw [htilt]
+      rw [(DOZZ.Proofs.finite_gaussian_tilt P Z hZ a F hF)]
       congr 1
       apply lintegral_congr_ae
       filter_upwards [] with ω

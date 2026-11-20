@@ -29,7 +29,6 @@ theorem ennreal_lintegral_rpow_finset_sum_root_le
   revert hf
   induction s using Finset.induction_on with
   | empty =>
-      intro hf
       have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
       simp_all [lintegral_const, ENNReal.zero_rpow_of_pos]
   | @insert i s his ih =>
@@ -39,13 +38,8 @@ theorem ennreal_lintegral_rpow_finset_sum_root_le
       have hadd := ENNReal.lintegral_Lp_add_le
         (hf i (Finset.mem_insert_self i s)) hsum hp
       simp_rw [Finset.sum_insert his]
-      calc
-        _ ≤ (∫⁻ ω, f i ω ^ p ∂μ) ^ (1 / p) +
-            (∫⁻ ω, (∑ j ∈ s, f j ω) ^ p ∂μ) ^ (1 / p) := hadd
-        _ ≤ (∫⁻ ω, f i ω ^ p ∂μ) ^ (1 / p) +
-            ∑ j ∈ s, (∫⁻ ω, f j ω ^ p ∂μ) ^ (1 / p) := by
-          exact add_le_add le_rfl
-            (ih (fun j hj => hf j (Finset.mem_insert_of_mem hj)))
+      exact (hadd.trans (add_le_add le_rfl
+          (ih (fun j hj => hf j (Finset.mem_insert_of_mem hj)))))
 
 /-- The finite-sum Minkowski bound extends to a countable nonnegative sum whenever the series of
 the individual `Lᵖ` roots is finite. -/

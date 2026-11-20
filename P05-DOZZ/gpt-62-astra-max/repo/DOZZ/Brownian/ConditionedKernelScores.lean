@@ -30,27 +30,18 @@ theorem hasDerivAt_conditionedKernelScore_state
       (-a ^ 2 / Real.sinh (a * y) ^ 2) y := by
   have harg : HasDerivAt (fun z : ℝ => a * z) a y :=
     by simpa only [id_eq, mul_one] using (hasDerivAt_id y).const_mul a
-  have hcosh := (Real.hasDerivAt_cosh (a * y)).comp y harg
-  have hsinh := (Real.hasDerivAt_sinh (a * y)).comp y harg
-  have hcosh' : HasDerivAt (fun z : ℝ => Real.cosh (a * z))
+  have hcosh' : HasDerivAt (fun z => Real.cosh (a * z))
       (Real.sinh (a * y) * a) y := by
-    convert hcosh using 1
-    · funext z
-      rfl
-  have hnum : HasDerivAt (fun z : ℝ => a * Real.cosh (a * z))
-      (a * (Real.sinh (a * y) * a)) y := by
-    exact hcosh'.const_mul a
-  have hsinh_pos : 0 < Real.sinh (a * y) :=
-    Real.sinh_pos_iff.mpr (mul_pos ha hy)
-  have hquot := hnum.div hsinh hsinh_pos.ne'
+    convert ((Real.hasDerivAt_cosh (a * y)).comp y harg) using 1
+    · rfl
+  have hquot := (hcosh'.const_mul a).div ((Real.hasDerivAt_sinh (a * y)).comp y harg) (Real.sinh_pos_iff.mpr (mul_pos ha hy)).ne'
   have hquot' : HasDerivAt (fun z : ℝ =>
       a * Real.cosh (a * z) / Real.sinh (a * z))
       ((a * (Real.sinh (a * y) * a) * Real.sinh (a * y) -
           a * Real.cosh (a * y) * (Real.cosh (a * y) * a)) /
         Real.sinh (a * y) ^ 2) y := by
     convert hquot using 1
-    · funext z
-      rfl
+    · rfl
     · rfl
   have htrig : Real.sinh (a * y) ^ 2 - Real.cosh (a * y) ^ 2 = -1 := by
     nlinarith [Real.cosh_sq_sub_sinh_sq (a * y)]
@@ -60,12 +51,10 @@ theorem hasDerivAt_conditionedKernelScore_state
         Real.sinh (a * y) ^ 2 =
       -a ^ 2 / Real.sinh (a * y) ^ 2 := by
     calc
-      (a * (Real.sinh (a * y) * a) * Real.sinh (a * y) -
-          a * Real.cosh (a * y) * (Real.cosh (a * y) * a)) /
-        Real.sinh (a * y) ^ 2 =
+      _ =
           a ^ 2 * (Real.sinh (a * y) ^ 2 - Real.cosh (a * y) ^ 2) /
             Real.sinh (a * y) ^ 2 := by ring
-      _ = -a ^ 2 / Real.sinh (a * y) ^ 2 := by rw [htrig]; ring
+      _ = _ := by simp [*]
   change HasDerivAt (fun z : ℝ =>
     a * Real.cosh (a * z) / Real.sinh (a * z))
       (-a ^ 2 / Real.sinh (a * y) ^ 2) y
@@ -76,20 +65,17 @@ theorem hasDerivAt_conditionedKernelScore_state
 theorem conditionedKernelScore_strictAntiOn_state {a : ℝ} (ha : 0 < a) :
     StrictAntiOn (conditionedKernelScore a) (Set.Ioi 0) := by
   apply strictAntiOn_of_deriv_neg (convex_Ioi 0)
-  · have hnum : Continuous (fun y : ℝ => a * Real.cosh (a * y)) := by
+  · have hnum : Continuous (fun y => a * Real.cosh (a * y)) := by
       fun_prop
-    have hden : Continuous (fun y : ℝ => Real.sinh (a * y)) := by
+    have hden : Continuous (fun y => Real.sinh (a * y)) := by
       fun_prop
     apply hnum.continuousOn.div hden.continuousOn
-    intro y hy
-    exact (Real.sinh_pos_iff.mpr (mul_pos ha hy)).ne'
+    aesop
   · intro y hy
     have hy' : 0 < y := by simpa using hy
     rw [(hasDerivAt_conditionedKernelScore_state ha hy').deriv]
-    have hden : 0 < Real.sinh (a * y) :=
-      Real.sinh_pos_iff.mpr (mul_pos ha hy')
     exact div_neg_of_neg_of_pos (neg_neg_of_pos (sq_pos_of_pos ha))
-      (sq_pos_of_pos hden)
+          (sq_pos_of_pos (Real.sinh_pos_iff.mpr (mul_pos ha hy')))
 
 end DOZZ.Proofs
 

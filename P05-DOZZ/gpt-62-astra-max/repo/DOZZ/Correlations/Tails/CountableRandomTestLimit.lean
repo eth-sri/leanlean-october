@@ -26,13 +26,11 @@ theorem tendstoInMeasure_countable_selection
     TendstoInMeasure P (fun n ω => f n ω (choice ω)) atTop (fun ω => g ω (choice ω)) := by
   let select : (k : ℕ) → Ω → Fin (k+1) :=
     fun k ω => ⟨min (choice ω) k, Nat.lt_succ_of_le (min_le_right _ _)⟩
-  let a : ℕ → ℕ → Ω → ℝ := fun k n ω => f n ω (select k ω)
-  let b : ℕ → Ω → ℝ := fun k ω => g ω (select k ω)
-  have hab (k : ℕ) : TendstoInMeasure P (a k) atTop (b k) :=
+  have hab (k : ℕ)  :=
     tendstoInMeasure_finite_selection P
-      (fun n ω (i : Fin (k+1)) => f n ω i) (fun ω (i : Fin (k+1)) => g ω i)
+      (fun n ω (i : Fin (k+1)) => f n ω i) (fun ω i => g ω i)
       (select k) (fun i => hcoord i)
-  let S : ℕ → Set Ω := fun k => {ω | k < choice ω}
+  let S := fun k => {ω | k < choice ω}
   have hS (k : ℕ) : MeasurableSet (S k) := measurableSet_lt measurable_const hc
   have hanti : Antitone S := by
     intro i j hij ω hω
@@ -41,13 +39,12 @@ theorem tendstoInMeasure_countable_selection
     apply eq_empty_iff_forall_notMem.mpr
     intro ω hω
     exact (lt_irrefl (choice ω)) ((mem_iInter.mp hω) (choice ω))
-  have he : Tendsto (fun k => P (S k)) atTop (𝓝 0) := by
+  apply tendstoInMeasure_uniform_approximation P _ _ (fun k n ω => f n ω (select k ω)) (fun k ω => g ω (select k ω)) hab
+  intro ε hε
+  refine ⟨fun k => P (S k), (by
     have h := tendsto_measure_iInter_atTop (fun k => (hS k).nullMeasurableSet)
       hanti ⟨0, measure_ne_top P _⟩
-    simpa only [Function.comp_def, hempty, measure_empty] using h
-  apply tendstoInMeasure_uniform_approximation P _ _ a b hab
-  intro ε hε
-  refine ⟨fun k => P (S k), he, ?_, ?_⟩
+    simpa only [Function.comp_def, hempty, measure_empty] using h), ?_, ?_⟩
   · intro k n
     apply measure_mono
     intro ω hω

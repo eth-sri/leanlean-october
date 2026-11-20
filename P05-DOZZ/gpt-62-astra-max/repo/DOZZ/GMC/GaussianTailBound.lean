@@ -417,9 +417,9 @@ theorem finite_gaussian_tilt_double_root_good_barrier_rate_of_small_error
         (fun _ => (1 : ℝ≥0∞)) ω) ∂P ≤
       ENNReal.ofReal (Real.exp
         (-((1 - η) ^ 2 * (2 * g - a) ^ 2 * k / (2 * (1 + η))))) := by
-  classical
-  let tilt : ι → ℝ := twoRootTilt root₁ root₂ g
-  let m : ℝ := ∑ i, gaussianCovariance P (fun ω => Z ω coarse)
+  
+  let tilt := twoRootTilt root₁ root₂ g
+  let m  := ∑ i, gaussianCovariance P (fun ω => Z ω coarse)
     (fun ω => Z ω i) * tilt i
   have hm : m = g * gaussianCovariance P (fun ω => Z ω coarse)
         (fun ω => Z ω root₁) +
@@ -462,11 +462,8 @@ theorem finite_gaussian_tilt_double_root_good_barrier_rate_of_small_error
           (fun ω => Z ω i) * g else 0) +
           (if i = root₂ then gaussianCovariance P (fun ω => Z ω coarse)
             (fun ω => Z ω i) * g else 0)) by
-          apply Finset.sum_congr rfl
-          intro i hi
-          exact hpoint i]
-    rw [Finset.sum_add_distrib]
-    rw [Finset.sum_ite_eq', Finset.sum_ite_eq']
+          simp_all, Finset.sum_add_distrib]
+    simp only [Finset.sum_ite_eq']
     simp
     ring
   have hcov₁lower : k - C ≤ gaussianCovariance P (fun ω => Z ω coarse)
@@ -478,20 +475,17 @@ theorem finite_gaussian_tilt_double_root_good_barrier_rate_of_small_error
     have h₁ := mul_le_mul_of_nonneg_left hcov₁lower hg.le
     have h₂ := mul_le_mul_of_nonneg_left hcov₂lower hg.le
     linarith only [h₁, h₂]
-  have hbpos : 0 < 2 * g - a := sub_pos.mpr hga
   have hvarLower : k - C ≤ gaussianVariance P (fun ω => Z ω coarse) := by
     linarith [(abs_le.mp hvar).1]
   have hvarUpper : gaussianVariance P (fun ω => Z ω coarse) ≤ (1 + η) * k := by
     have h := (abs_le.mp hvar).2
     linarith only [h, hCsmall]
   have hv : 0 < gaussianVariance P (fun ω => Z ω coarse) := by
-    have hηk : η * k < 1 * k := mul_lt_mul_of_pos_right hη1 hk
-    have hCk : C < k := by linarith only [hCsmall, hηk]
+    have hCk : C < k := by linarith only [hCsmall, (mul_lt_mul_of_pos_right hη1 hk)]
     linarith only [hvarLower, hCk]
   have hbarrierGap : (1 - η) * (2 * g - a) * k ≤ m - (a * k + 1) := by
     rw [show (1 - η) * (2 * g - a) * k =
-      (2 * g - a) * k - η * (2 * g - a) * k by ring]
-    rw [show (a * k + 1) = a * k + 1 by rfl]
+      (2 * g - a) * k - η * (2 * g - a) * k by ring, show (a * k + 1) = a * k + 1 by rfl]
     linarith only [hmLower, hoffset]
   have hrate : Real.exp (-(m - (a * k + 1)) ^ 2 /
       (2 * gaussianVariance P (fun ω => Z ω coarse))) ≤
@@ -509,9 +503,7 @@ theorem finite_gaussian_tilt_double_root_good_barrier_rate_of_small_error
             (2 * gaussianVariance P (fun ω => Z ω coarse) : ℝ) ≤
           ((1 - η) ^ 2 * (2 * g - a) ^ 2 * k /
             (2 * (1 + η))) * (2 * ((1 + η) * k)) := by
-              apply mul_le_mul_of_nonneg_left
-              · linarith only [hvarUpper]
-              · positivity
+              gcongr
         _ = ((1 - η) * (2 * g - a) * k) ^ 2 := by field_simp
         _ ≤ (m - (a * k + 1)) ^ 2 := by
               exact pow_le_pow_left₀ hdist0 hbarrierGap 2
@@ -520,15 +512,13 @@ theorem finite_gaussian_tilt_double_root_good_barrier_rate_of_small_error
       exact neg_le_neg hquad)
   have hgapTail : a * k + 1 < m := by
     have hpositive : 0 < (1 - η) * (2 * g - a) * k := by positivity
-    linarith [hbarrierGap]
+    linarith 
   have htilt := finite_gaussian_tilt_barrier_lower_tail_bound P Z hZ tilt coarse
     (a * k + 1) hgapTail hv
   have hclosed (ω : Ω) :
-      (Set.indicator {ω | Z ω coarse ≤ a * k} (fun _ => (1 : ℝ≥0∞)) ω) ≤
+      (Set.indicator {ω | Z ω coarse ≤ a * k} (fun _ => 1) ω) ≤
         (Set.indicator {ω | Z ω coarse < a * k + 1}
           (fun _ => (1 : ℝ≥0∞)) ω) := by
-    change (if Z ω coarse ≤ a * k then (1 : ℝ≥0∞) else 0) ≤
-      if Z ω coarse < a * k + 1 then 1 else 0
     by_cases h : Z ω coarse ≤ a * k
     · have h' : Z ω coarse < a * k + 1 := by linarith
       simp [h, h']
@@ -541,22 +531,12 @@ theorem finite_gaussian_tilt_double_root_good_barrier_rate_of_small_error
           (Set.indicator {ω | Z ω coarse < a * k + 1}
             (fun _ => (1 : ℝ≥0∞)) ω) ∂P := by
           apply lintegral_mono_ae
-          exact ae_of_all _ (fun ω => by
-            have hweight : 0 ≤ ENNReal.ofReal (Real.exp
-                ((∑ i, tilt i * Z ω i) -
-                  (∑ i, ∑ j, tilt i * gaussianCovariance P
-                    (fun ω => Z ω i) (fun ω => Z ω j) * tilt j) / 2)) := by
-              positivity
-            exact mul_le_mul_of_nonneg_left (hclosed ω) hweight)
+          exact ae_of_all _ (fun ω => mul_le_mul_of_nonneg_left (hclosed ω) (by positivity))
     _ ≤ ENNReal.ofReal (Real.exp
           (-((m - (a * k + 1)) ^ 2 /
             (2 * gaussianVariance P (fun ω => Z ω coarse))))) := by
-          have hmean : (∑ i, gaussianCovariance P (fun ω => Z ω coarse)
-              (fun ω => Z ω i) * tilt i) = m := rfl
-          rw [← hmean]
           simpa [neg_div] using htilt
-    _ ≤ ENNReal.ofReal (Real.exp
-          (-((1 - η) ^ 2 * (2 * g - a) ^ 2 * k / (2 * (1 + η))))) := by
+    _ ≤ _ := by
           simpa [neg_div] using ENNReal.ofReal_le_ofReal hrate
 
 /-- A one-coordinate specialization of the finite tilted barrier estimate. -/
@@ -574,10 +554,7 @@ theorem finite_gaussian_tilt_coordinate_tail_bound
           (-(b - γ * gaussianCovariance P (fun ω => Z ω j) (fun ω => Z ω i)) ^ 2 /
             (2 * gaussianVariance P (fun ω => Z ω j)))) := by
   classical
-  let tilt : ι → ℝ := fun k => if k = i then γ else 0
-  have hgap' : ∑ k, gaussianCovariance P (fun ω => Z ω j)
-      (fun ω => Z ω k) * tilt k < b := by
-    simpa [tilt, mul_comm] using hgap
+  let tilt  := fun k => if k = i then γ else 0
   have hlin (ω : Ω) : ∑ k, tilt k * Z ω k = γ * Z ω i := by
     simp [tilt]
   have hquad : (∑ k, ∑ l, tilt k * gaussianCovariance P
@@ -590,41 +567,8 @@ theorem finite_gaussian_tilt_coordinate_tail_bound
         γ * gaussianCovariance P (fun ω => Z ω j) (fun ω => Z ω i) := by
     simp [tilt]
     ring
-  have hgen := finite_gaussian_tilt_barrier_tail_bound P Z hZ tilt j b hgap' hv
-  have hweight (ω : Ω) : Real.exp
-      (γ * Z ω i - γ ^ 2 / 2 * gaussianVariance P (fun ω => Z ω i)) =
-      Real.exp ((∑ k, tilt k * Z ω k) -
-        (∑ k, ∑ l, tilt k * gaussianCovariance P
-          (fun ω => Z ω k) (fun ω => Z ω l) * tilt l) / 2) := by
-    congr 1
-    rw [← hlin ω]
-    rw [hquad]
-    ring
-  calc
-    _ = ∫⁻ ω, ENNReal.ofReal (Real.exp
-        ((∑ k, tilt k * Z ω k) -
-          (∑ k, ∑ l, tilt k * gaussianCovariance P
-            (fun ω => Z ω k) (fun ω => Z ω l) * tilt l) / 2)) *
-          (Set.indicator {ω | b < Z ω j} (fun _ => (1 : ℝ≥0∞)) ω) ∂P := by
-            apply lintegral_congr_ae
-            exact ae_of_all _ (fun ω => by
-              change ENNReal.ofReal (Real.exp
-                  (γ * Z ω i - γ ^ 2 / 2 * gaussianVariance P
-                    (fun ω' => Z ω' i))) *
-                (Set.indicator {ω' | b < Z ω' j}
-                  (fun _ => (1 : ℝ≥0∞)) ω) =
-                ENNReal.ofReal (Real.exp
-                  ((∑ k, tilt k * Z ω k) -
-                    (∑ k, ∑ l, tilt k * gaussianCovariance P
-                      (fun ω' => Z ω' k) (fun ω' => Z ω' l) * tilt l) / 2)) *
-                  (Set.indicator {ω' | b < Z ω' j}
-                    (fun _ => (1 : ℝ≥0∞)) ω)
-              rw [hweight ω])
-    _ ≤ ENNReal.ofReal (Real.exp
-        (-(b - ∑ k, gaussianCovariance P (fun ω => Z ω j)
-          (fun ω => Z ω k) * tilt k) ^ 2 /
-          (2 * gaussianVariance P (fun ω => Z ω j)))) := hgen
-    _ = _ := by rw [hshift]
+  have hgen := finite_gaussian_tilt_barrier_tail_bound P Z hZ tilt j b (by simpa [tilt, mul_comm] using hgap) hv
+  grind
 
 
 /-- Once the barrier slope exceeds the tilted mean slope, Gaussian tails decay exponentially
@@ -637,25 +581,18 @@ theorem gaussian_barrier_tail_rate
     (hv : 0 < v) (hvUpper : v ≤ 2 * k) :
     Real.exp (-((a * k - m) ^ 2) / (2 * v)) ≤
       Real.exp (-((a - g) ^ 2 * k / 16)) := by
-  have hdist : (a - g) * k / 2 ≤ a * k - m := by
-    linarith only [hC, hmean]
-  have hdist0 : 0 ≤ (a - g) * k / 2 := by positivity
-  have hden : 0 < 2 * v := by positivity
   have hquad : (a - g) ^ 2 * k / 16 ≤ (a * k - m) ^ 2 / (2 * v) := by
-    apply (le_div_iff₀ hden).2
+    apply (le_div_iff₀ (by positivity)).2
     calc
-      ((a - g) ^ 2 * k / 16) * (2 * v) ≤
+      _ ≤
           ((a - g) ^ 2 * k / 16) * (4 * k) := by
             apply mul_le_mul_of_nonneg_left
             · linarith only [hvUpper]
             · positivity
       _ = ((a - g) * k / 2) ^ 2 := by ring
-      _ ≤ (a * k - m) ^ 2 := pow_le_pow_left₀ hdist0 hdist 2
+      _ ≤ _ := pow_le_pow_left₀ (by positivity) (by linarith only [hC, hmean]) 2
   apply Real.exp_le_exp.mpr
-  calc
-    -((a * k - m) ^ 2) / (2 * v) =
-        -((a * k - m) ^ 2 / (2 * v)) := by rw [neg_div]
-    _ ≤ -((a - g) ^ 2 * k / 16) := neg_le_neg hquad
+  grind
 
 /-- A one-root Wick tilt has an exponentially small coarse-scale barrier tail when the tilted
 mean and variance differ from their linear scale asymptotics by a bounded amount. This is the
@@ -675,66 +612,50 @@ theorem finite_gaussian_tilt_coarse_barrier_tail_rate
       (Set.indicator {ω | a * k < Z ω coarse}
         (fun _ => (1 : ℝ≥0∞)) ω) ∂P ≤
       ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * k / 16))) := by
-  have hcovUpper : gaussianCovariance P (fun ω => Z ω coarse)
-      (fun ω => Z ω fine) ≤ k + C := by
-    have := (abs_le.mp hcov).2
-    linarith only [this]
   have hmean : g * gaussianCovariance P (fun ω => Z ω coarse)
       (fun ω => Z ω fine) ≤ g * k + g * C := by
     calc
-      _ ≤ g * (k + C) := mul_le_mul_of_nonneg_left hcovUpper hg.le
-      _ = g * k + g * C := by ring
-  have hbarrierGap : g * gaussianCovariance P (fun ω => Z ω coarse)
-      (fun ω => Z ω fine) < a * k := by
-    have hstrict : g * k + g * C < a * k := by
-      calc
-        g * k + g * C ≤ g * k + (a - g) * k / 2 := by linarith only [hgapScale]
-        _ < a * k := by linarith only [mul_pos (sub_pos.mpr hga) hk]
-    linarith only [hmean, hstrict]
-  have hvarLower : k - C ≤ gaussianVariance P (fun ω => Z ω coarse) := by
+      _ ≤ g * (k + C) := mul_le_mul_of_nonneg_left (by
+        grind) hg.le
+      _ = _ := by ring
+  let F := gaussianVariance P (fun ω => Z ω coarse)
+  have hvarLower : k - C ≤ F := by
     have := (abs_le.mp hvar).1
     linarith only [this]
-  have hvarUpper : gaussianVariance P (fun ω => Z ω coarse) ≤ k + C := by
+  have hvarUpper : F ≤ k + C := by
     have := (abs_le.mp hvar).2
     linarith only [this]
-  have hvariancePos : 0 < gaussianVariance P (fun ω => Z ω coarse) := by
+  have hvariancePos : 0 < F := by
     linarith only [hvarLower, hCk]
-  have hvarianceUpper : gaussianVariance P (fun ω => Z ω coarse) ≤ 2 * k := by
-    linarith only [hvarUpper, hCk]
-  have hgapRate : g * C ≤ (a - g) * k / 2 := hgapScale
-  have hmeanRate : g * gaussianCovariance P (fun ω => Z ω coarse)
-      (fun ω => Z ω fine) ≤ g * k + g * C := hmean
   have hrate := gaussian_barrier_tail_rate a g (g * C)
-    (g * gaussianCovariance P (fun ω => Z ω coarse) (fun ω => Z ω fine))
-    (gaussianVariance P (fun ω => Z ω coarse)) k hga hk hgapRate hmeanRate
-    hvariancePos hvarianceUpper
+    _
+    _ k hga hk hgapScale hmean
+    hvariancePos (by linarith only [hvarUpper, hCk])
   calc
     _ ≤ ENNReal.ofReal (Real.exp
         (-(a * k - g * gaussianCovariance P (fun ω => Z ω coarse)
           (fun ω => Z ω fine)) ^ 2 /
-          (2 * gaussianVariance P (fun ω => Z ω coarse)))) := by
+          (2 * F))) := by
             have htail := finite_gaussian_tilt_coordinate_tail_bound P Z hZ fine coarse
-              g (a * k) hbarrierGap hvariancePos
+              g (a * k) (by
+                nlinarith) hvariancePos
             simpa only [mul_comm] using htail
-    _ ≤ ENNReal.ofReal (Real.exp (-((a - g) ^ 2 * k / 16))) := by
-          exact ENNReal.ofReal_le_ofReal
+    _ ≤ _ := ENNReal.ofReal_le_ofReal
             (Real.exp_le_exp.mpr (by simpa [mul_comm] using hrate))
 
 /-- The exponential barrier tail appearing in the good/bad construction is summable in the
 integer scale whenever its rate is positive. -/
 theorem summable_gaussian_barrier_tail (c : ℝ) (hc : 0 < c) :
     Summable (fun k : ℕ => Real.exp (-c * (k : ℝ))) := by
-  have hratio0 : 0 ≤ Real.exp (-c) := Real.exp_nonneg _
   have hratio1 : Real.exp (-c) < 1 := by
     rw [← Real.exp_zero]
     exact Real.exp_lt_exp.mpr (by linarith only [hc])
-  have hgeom := summable_geometric_of_lt_one hratio0 hratio1
   have hfun : (fun k : ℕ => Real.exp (-c * (k : ℝ))) =
       fun k => Real.exp (-c) ^ k := by
     funext k
     rw [show -c * (k : ℝ) = (k : ℝ) * (-c) by ring, Real.exp_nat_mul]
   rw [hfun]
-  exact hgeom
+  exact summable_geometric_of_lt_one (Real.exp_nonneg _) hratio1
 
 
 
@@ -824,37 +745,9 @@ theorem finite_gaussian_wick_pair_good_barrier_power_bound
       Set.indicator {ω | Z ω coarse ≤ a * k} (fun _ => (1 : ℝ≥0∞)) ω ∂P ≤
       ENNReal.ofReal ((Real.exp (g ^ 2 * C +
         ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η)))) * d ^ (-κ))) := by
-  let θ : ℝ := (1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))
-  let good : Ω → ℝ≥0∞ := Set.indicator {ω | Z ω coarse ≤ a * k}
+  let θ  := (1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η))
+  let good  := Set.indicator {ω | Z ω coarse ≤ a * k}
     (fun _ => (1 : ℝ≥0∞))
-  have hθ : 0 ≤ θ := by dsimp [θ]; positivity
-  have htail := finite_gaussian_tilt_double_root_good_barrier_rate_of_small_error
-    P Z hZ coarse root₁ root₂ k g a C η hg hga hk hη hη1 hCsmall hoffset
-    hvar hcov₁ hcov₂ h₁₂
-  have hpair := finite_gaussian_two_root_wick_tilt_integral_identity
-    P Z root₁ root₂ h₁₂ g good
-  have hkernel := good_barrier_kernel_power_bound_of_rate
-    g θ κ C (gaussianCovariance P (fun ω => Z ω root₁)
-      (fun ω => Z ω root₂)) k d ρ hθ hρ hρ1 hd hdρ hcov hfloor hκ (by
-        dsimp [θ]
-        exact hκrate)
-  have htail' : ∫⁻ ω, ENNReal.ofReal (Real.exp
-      ((∑ i, twoRootTilt root₁ root₂ g i * Z ω i) -
-        (∑ i, ∑ j, twoRootTilt root₁ root₂ g i *
-          gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) *
-          twoRootTilt root₁ root₂ g j) / 2)) * good ω ∂P ≤
-      ENNReal.ofReal (Real.exp (-θ * k)) := by
-    simpa [good, θ, div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc] using htail
-  have hfactor : ENNReal.ofReal
-        (Real.exp (g ^ 2 * gaussianCovariance P (fun ω => Z ω root₁)
-          (fun ω => Z ω root₂))) * ENNReal.ofReal (Real.exp (-θ * k)) ≤
-      ENNReal.ofReal (Real.exp (g ^ 2 * C + θ) * d ^ (-κ)) := by
-    have hreal := hkernel
-    have hprod : Real.exp (g ^ 2 * gaussianCovariance P
-        (fun ω => Z ω root₁) (fun ω => Z ω root₂)) * Real.exp (-θ * k) ≤
-        Real.exp (g ^ 2 * C + θ) * d ^ (-κ) := hreal
-    simpa only [← ENNReal.ofReal_mul (Real.exp_nonneg _)] using
-      ENNReal.ofReal_le_ofReal hprod
   calc
     _ = ENNReal.ofReal (Real.exp (g ^ 2 * gaussianCovariance P
           (fun ω => Z ω root₁) (fun ω => Z ω root₂))) *
@@ -863,52 +756,51 @@ theorem finite_gaussian_wick_pair_good_barrier_power_bound
             (∑ i, ∑ j, twoRootTilt root₁ root₂ g i *
               gaussianCovariance P (fun ω => Z ω i) (fun ω => Z ω j) *
               twoRootTilt root₁ root₂ g j) / 2)) * good ω ∂P := by
-          simpa [good, mul_assoc] using hpair
+          simpa [good, mul_assoc] using (finite_gaussian_two_root_wick_tilt_integral_identity
+            P Z root₁ root₂ h₁₂ g good)
     _ ≤ ENNReal.ofReal (Real.exp (g ^ 2 * gaussianCovariance P
           (fun ω => Z ω root₁) (fun ω => Z ω root₂))) *
         ENNReal.ofReal (Real.exp (-θ * k)) := by
-          exact mul_le_mul_of_nonneg_left htail' bot_le
-    _ ≤ ENNReal.ofReal (Real.exp (g ^ 2 * C + θ) * d ^ (-κ)) := hfactor
-    _ = ENNReal.ofReal (Real.exp (g ^ 2 * C +
-          ((1 - η) ^ 2 * (2 * g - a) ^ 2 / (2 * (1 + η)))) * d ^ (-κ)) := by
-          rfl
+          refine mul_le_mul_of_nonneg_left ?_ bot_le
+          simpa [good, θ, div_eq_mul_inv, mul_comm, mul_left_comm, mul_assoc] using (finite_gaussian_tilt_double_root_good_barrier_rate_of_small_error
+            P Z hZ coarse root₁ root₂ k g a C η hg hga hk hη hη1 hCsmall hoffset
+            hvar hcov₁ hcov₂ h₁₂)
+    _ ≤ ENNReal.ofReal (Real.exp (g ^ 2 * C + θ) * d ^ (-κ)) := by
+      have hreal := good_barrier_kernel_power_bound_of_rate
+        g θ κ C _ k d ρ (by positivity) hρ hρ1 hd hdρ hcov hfloor hκ (by
+            exact hκrate)
+      simpa only [← ENNReal.ofReal_mul (Real.exp_nonneg _)] using
+        ENNReal.ofReal_le_ofReal hreal
+    _ = _ := rfl
 
 /-- A fixed subcritical charge admits a barrier slope whose two-root power is locally integrable.
 This is the scalar parameter choice underlying the good-mass construction. -/
 theorem exists_fixed_charge_barrier_parameters (γ : ℝ) (hγ : 0 < γ) (hγ2 : γ < 2) :
     ∃ a κ : ℝ, γ < a ∧ a < 2 * γ ∧
       κ = γ ^ 2 - (2 * γ - a) ^ 2 / 2 ∧ 0 < κ ∧ κ < 2 := by
-  let gap : ℝ := 2 - γ ^ 2 / 2
-  let δ : ℝ := min (γ / 2) (gap / (2 * γ + 1))
-  have hgap : 0 < gap := by
+  let gap := 2 - γ ^ 2 / 2
+  let δ := min (γ / 2) (gap / (2 * γ + 1))
+  have hden : 0 < 2 * γ + 1 := by positivity
+  have hδpos : 0 < δ := by
+    refine lt_min (by linarith only [hγ]) (div_pos ?_ hden)
     have hγsq : γ ^ 2 < 2 ^ 2 := pow_lt_pow_left₀ hγ2 hγ.le two_ne_zero
     dsimp [gap]
     linarith only [hγsq]
-  have hden : 0 < 2 * γ + 1 := by positivity
-  have hδpos : 0 < δ := by
-    dsimp [δ]
-    exact lt_min (by linarith only [hγ]) (div_pos hgap hden)
   have hδγ : δ ≤ γ / 2 := min_le_left _ _
-  have hδgap : δ ≤ gap / (2 * γ + 1) := min_le_right _ _
   have hδgap' : (2 * γ + 1) * δ ≤ gap := by
-    calc
-      (2 * γ + 1) * δ = δ * (2 * γ + 1) := mul_comm _ _
-      _ ≤ gap := (le_div_iff₀ hden).mp hδgap
+      calc
+        (2 * γ + 1) * δ = δ * (2 * γ + 1) := mul_comm _ _
+        _ ≤ gap := (le_div_iff₀ hden).mp (min_le_right _ _)
   have hγδ : γ * δ < gap := by
     calc
-      γ * δ < (2 * γ + 1) * δ :=
-        mul_lt_mul_of_pos_right (by linarith only [hγ]) hδpos
+      _ < (2 * γ + 1) * δ :=
+        mul_lt_mul_of_pos_right (by linarith) hδpos
       _ ≤ gap := hδgap'
   refine ⟨γ + δ, γ ^ 2 - (2 * γ - (γ + δ)) ^ 2 / 2, ?_, ?_, rfl, ?_, ?_⟩
-  · exact lt_add_of_pos_right _ hδpos
-  · linarith only [hδγ, hγ]
-  · have hδlt : δ < γ := by linarith only [hδγ, hγ]
-    have hsq : (γ - δ) ^ 2 ≤ γ ^ 2 := by
-      linarith only [mul_nonneg hδpos.le (show (0 : ℝ) ≤ 2 * γ - δ by linarith only [hδlt, hγ])]
-    rw [show 2 * γ - (γ + δ) = γ - δ by ring]
-    linarith only [hsq, sq_pos_of_pos hγ]
-  · rw [show 2 * γ - (γ + δ) = γ - δ by ring]
-    dsimp [gap] at hγδ
+  · linarith
+  · linarith
+  · nlinarith
+  · dsimp [gap] at hγδ
     linarith only [hγδ, sq_nonneg δ]
 
 end DOZZ.Proofs

@@ -19,36 +19,11 @@ namespace DOZZ.Proofs
 
 private theorem measurable_norm_rpow (s : ℝ) :
     Measurable (fun w : ℂ => ‖w‖ ^ s) := by
-  have hrepr : (fun w : ℂ => ‖w‖ ^ s) =
-      fun w => if ‖w‖ = 0 then 0 ^ s else Real.exp (s * Real.log ‖w‖) := by
-    funext w
-    by_cases hw : ‖w‖ = 0
-    · simp [hw]
-    · rw [ite_eq_right hw,
-        Real.rpow_def_of_pos (lt_of_le_of_ne (norm_nonneg w) (Ne.symm hw))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) (by fun_prop)
-  · exact measurable_const
-  · fun_prop
+  fun_prop
 
 private theorem measurable_rpow_of_nonneg {f : ℂ → ℝ} (hf : Measurable f)
     (hfn : ∀ u, 0 ≤ f u) (s : ℝ) : Measurable (fun u => f u ^ s) := by
-  have hrepr : (fun u => f u ^ s) =
-      fun u => if f u = 0 then 0 ^ s else Real.exp (s * Real.log (f u)) := by
-    funext u
-    by_cases hu : f u = 0
-    · simp [hu]
-    · rw [ite_eq_right hu, Real.rpow_def_of_pos (lt_of_le_of_ne (hfn u) (Ne.symm hu))]
-      congr 1
-      ring
-  rw [hrepr]
-  apply Measurable.ite
-  · exact MeasurableSet.preimage (measurableSet_singleton (0 : ℝ)) hf
-  · exact measurable_const
-  · fun_prop
+  fun_prop
 
 private theorem continuousOn_norm_comp_rpow {s : Set ℂ} (f : ℂ → ℂ)
     (hf : Continuous f) (hs : ∀ u ∈ s, f u ≠ 0) (p : ℝ) :
@@ -89,7 +64,7 @@ private theorem exists_rpow_interval_bounds {A B s : ℝ} (hA : 0 < A) (hAB : A 
     intro x hxA hxB
     exact ⟨Real.rpow_le_rpow hA.le hxA hs,
       Real.rpow_le_rpow (le_trans hA.le hxA) hxB hs⟩
-  · have hs' : s ≤ 0 := le_of_lt (lt_of_not_ge hs)
+  · have hs' := le_of_lt (lt_of_not_ge hs)
     refine ⟨B ^ s, A ^ s, Real.rpow_pos_of_pos (lt_of_lt_of_le hA hAB) s,
       Real.rpow_pos_of_pos hA s, ?_⟩
     intro x hxA hxB
@@ -161,8 +136,7 @@ private theorem norm_sub_ratio_bounds_on_tail {z : ℂ} {R : ℝ}
     intro h
     apply hu
     simpa [Metric.mem_ball, dist_zero_right] using h
-  have hnormz : ‖z‖ ≤ ‖u‖ := by nlinarith
-  have huPos : 0 < ‖u‖ := lt_of_lt_of_le hz hnormz
+  have huPos  := lt_of_lt_of_le hz (by nlinarith)
   have hsub : ‖u‖ - ‖z‖ ≤ ‖u - z‖ := by
     have hsum : (u - z) + z = u := by abel
     have htriangle := norm_add_le (u - z) z
@@ -174,10 +148,8 @@ private theorem norm_sub_ratio_bounds_on_tail {z : ℂ} {R : ℝ}
       _ ≤ ‖u‖ + ‖z‖ := by simpa only [norm_neg] using norm_add_le u (-z)
   constructor
   · apply (le_div_iff₀ huPos).2
-    have hzHalf : ‖z‖ ≤ ‖u‖ / 2 := by nlinarith
     nlinarith
   · apply (div_le_iff₀ huPos).2
-    have hzHalf : ‖z‖ ≤ ‖u‖ / 2 := by nlinarith
     nlinarith
 
 private theorem integrableOn_two_point_rpow_tail_iff (a b : ℝ) (z : ℂ)

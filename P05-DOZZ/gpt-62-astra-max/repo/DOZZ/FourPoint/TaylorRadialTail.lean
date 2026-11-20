@@ -30,16 +30,14 @@ theorem planar_radial_tail_scale (a ρ : ℝ) (hρ : 0 < ρ) :
       simp only [mem_compl_iff, Metric.mem_ball, dist_zero_right, hn]
       apply not_congr
       constructor
-      · intro hh
-        nlinarith only [hh, hρ]
-      · intro hh
-        nlinarith only [hh, hρ]
+      · simp [*]
+      · simp [*]
     by_cases hx : x ∈ (Metric.ball (0 : ℂ) 1)ᶜ
     · simp only [F, Set.indicator_of_mem (hm.mpr hx), Set.indicator_of_mem hx, hn]
       rw [Real.mul_rpow hρ.le (norm_nonneg _), ENNReal.ofReal_mul (Real.rpow_nonneg hρ.le _)]
-    · simp only [F, Set.indicator_of_notMem (hm.not.mpr hx), Set.indicator_of_notMem hx, mul_zero]
+    · aesop
   have hmap := Measure.map_addHaar_smul (volume : Measure ℂ) hρ.ne'
-  have hchange := lintegral_map (μ := (volume : Measure ℂ)) hf (measurable_const_smul ρ)
+  have hchange := lintegral_map (μ := (volume)) hf (measurable_const_smul ρ)
   rw [hmap, lintegral_smul_measure, Complex.finrank_real_complex, abs_of_pos (inv_pos.mpr (sq_pos_of_pos hρ))] at hchange
   change ENNReal.ofReal ((ρ ^ 2)⁻¹) * (∫⁻ x, F x) = _ at hchange
   rw [hcomp, lintegral_const_mul' _ _ ENNReal.ofReal_ne_top,
@@ -53,7 +51,6 @@ theorem planar_radial_tail_scale (a ρ : ℝ) (hρ : 0 < ρ) :
   calc
     _ = ENNReal.ofReal (ρ ^ 2) * (ENNReal.ofReal ((ρ ^ 2)⁻¹) * ∫⁻ x, F x) := by rw [← mul_assoc, he, one_mul, lintegral_indicator measurableSet_ball.compl]
     _ = ENNReal.ofReal (ρ ^ 2) * (ENNReal.ofReal (ρ ^ a) * ∫⁻ x in (Metric.ball (0 : ℂ) 1)ᶜ, ENNReal.ofReal (‖x‖ ^ a)) := by
-      dsimp only [F]
       rw [lintegral_indicator measurableSet_ball.compl, hchange, lintegral_indicator measurableSet_ball.compl]
     _ = _ := by rw [← mul_assoc, he₂]
 
@@ -61,20 +58,18 @@ theorem planar_radial_tail_scale (a ρ : ℝ) (hρ : 0 < ρ) :
 theorem planar_radial_tail_bound (a : ℝ) (ha : a < -2) :
     ∃ C : ℝ, 0 < C ∧ ∀ ρ : ℝ, 0 < ρ →
       (∫⁻ x : ℂ in (Metric.ball 0 ρ)ᶜ, ENNReal.ofReal (‖x‖ ^ a)) ≤ ENNReal.ofReal (C * ρ ^ (a + 2)) := by
-  let J : ℝ≥0∞ := ∫⁻ x : ℂ in (Metric.ball 0 1)ᶜ, ENNReal.ofReal (‖x‖ ^ a)
+  let J := ∫⁻ x : ℂ in (Metric.ball 0 1)ᶜ, ENNReal.ofReal (‖x‖ ^ a)
   have hJ : J < ⊤ := by
-    have h := (integrableOn_norm_rpow_ball_compl_iff a 1 zero_lt_one).mpr ha
     simpa only [Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)] using
-      (hasFiniteIntegral_iff_norm _).mp h.hasFiniteIntegral
+      (hasFiniteIntegral_iff_norm _).mp ((integrableOn_norm_rpow_ball_compl_iff a 1 zero_lt_one).mpr ha).hasFiniteIntegral
   refine ⟨J.toReal + 1, by positivity, ?_⟩
   intro ρ hρ
   rw [planar_radial_tail_scale a ρ hρ]
-  have hj : J ≤ ENNReal.ofReal (J.toReal + 1) := by
-    calc
-      J = ENNReal.ofReal J.toReal := (ENNReal.ofReal_toReal hJ.ne).symm
-      _ ≤ _ := ENNReal.ofReal_le_ofReal (by linarith)
   calc
-    _ ≤ ENNReal.ofReal (ρ ^ (a + 2)) * ENNReal.ofReal (J.toReal + 1) := mul_le_mul' le_rfl hj
+    _ ≤ ENNReal.ofReal (ρ ^ (a + 2)) * ENNReal.ofReal (J.toReal + 1) := mul_le_mul' le_rfl (by
+      calc
+        J = ENNReal.ofReal J.toReal := (ENNReal.ofReal_toReal hJ.ne).symm
+        _ ≤ _ := ENNReal.ofReal_le_ofReal (by linarith))
     _ = _ := by rw [← ENNReal.ofReal_mul (Real.rpow_nonneg hρ.le _), mul_comm]
 
 end DOZZ.Proofs

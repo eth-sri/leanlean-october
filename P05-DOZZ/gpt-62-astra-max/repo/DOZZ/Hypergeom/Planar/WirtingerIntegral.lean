@@ -25,21 +25,13 @@ namespace DOZZ.Proofs
 
 private theorem continuousAt_realGamma_of_pos (x : ℝ) (hx : 0 < x) :
     ContinuousAt Real.Gamma x := by
-  have hnoPole : ∀ m : ℕ, (x : ℂ) ≠ -(m : ℂ) := by
+  have hGamma := (Complex.continuousAt_Gamma x (by
     intro m hm
     have hxEq : x = -(m : ℝ) := by exact_mod_cast hm
-    have hm0 : 0 ≤ (m : ℝ) := Nat.cast_nonneg m
-    linarith
-  have hGamma : ContinuousAt (fun y : ℝ => Complex.Gamma (y : ℂ)) x :=
-    (Complex.continuousAt_Gamma (x : ℂ) hnoPole).comp
-      Complex.continuous_ofReal.continuousAt
+    linarith)).comp
+    Complex.continuous_ofReal.continuousAt
   have hReal := Complex.continuous_re.continuousAt.comp hGamma
-  have hEq : (fun y : ℝ => Complex.re (Complex.Gamma (y : ℂ))) = Real.Gamma := by
-    funext y
-    rw [Complex.Gamma_ofReal]
-    simp
-  rw [← hEq]
-  exact hReal
+  assumption
 
 private noncomputable def planarRieszCoefficientReal (k β : ℝ) : ℝ :=
   ((k / 2) ^ 2 / ((2 + k - β) / 2) ^ 2) * Real.pi *

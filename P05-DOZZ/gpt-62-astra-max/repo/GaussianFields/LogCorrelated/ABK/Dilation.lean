@@ -33,7 +33,7 @@ theorem integral_comp_inv_smul_vec {d : Nat} (f : Vec d → ℝ) {r : ℝ} (hr :
   have hraw :=
     MeasureTheory.Measure.integral_comp_inv_smul_of_nonneg
       (μ := (volume : Measure (Vec d))) f (R := r) hr
-  simpa [finrank_real_vec, smul_eq_mul] using hraw
+  simp_all
 
 /-- The scaled self-convolution `(ζ_r * ζ_r)(x)`. -/
 @[expose]

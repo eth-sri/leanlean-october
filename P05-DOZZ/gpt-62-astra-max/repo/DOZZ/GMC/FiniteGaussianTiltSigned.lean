@@ -18,12 +18,7 @@ namespace DOZZ.Proofs
 
 private lemma ennreal_ofReal_max_zero (x : ℝ) :
     ENNReal.ofReal (max x 0) = ENNReal.ofReal x := by
-  by_cases hx : 0 ≤ x
-  · simp [max_eq_left hx]
-  · have hx' : x ≤ 0 := le_of_not_ge hx
-    simp only [ENNReal.ofReal, max_eq_right hx']
-    rw [Real.toNNReal_of_nonpos hx']
-    simp
+  simp [*]
 
 /-- Signed finite-dimensional Cameron--Martin tilt, derived by applying the nonnegative identity
 to the positive and negative parts. -/

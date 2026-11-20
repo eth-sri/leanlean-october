@@ -59,42 +59,30 @@ theorem goodPart_ofReal_abs_le (μr μ : Measure ℂ) [IsFiniteMeasure μr] [IsF
       ENNReal.ofReal e * μr Good +
         ENNReal.ofReal |∫ x, Good.indicator (fun x => (F x).toReal) x ∂μr -
           ∫ x, Good.indicator (fun x => (F x).toReal) x ∂μ| := by
-  have hGr := goodPart_lintegral_toReal_eq μr Good hGood G hG L (fun x hx hx0 =>
-    (hbound x hx hx0).1) h0r
-  have hFr := goodPart_lintegral_toReal_eq μr Good hGood F hF L (fun x hx hx0 =>
-    (hbound x hx hx0).2.1) h0r
-  have hF0 := goodPart_lintegral_toReal_eq μ Good hGood F hF L (fun x hx hx0 =>
-    (hbound x hx hx0).2.1) h0
-  have hGi := goodPart_integrableOn μr Good hGood G hG L (fun x hx hx0 => (hbound x hx hx0).1) h0r
-  have hFi := goodPart_integrableOn μr Good hGood F hF L (fun x hx hx0 => (hbound x hx hx0).2.1)
-    h0r
   have hind : ∀ ν : Measure ℂ, ∫ x, Good.indicator (fun x => (F x).toReal) x ∂ν =
       ∫ x in Good, (F x).toReal ∂ν := fun ν => integral_indicator hGood
-  rw [hGr, hF0, hind, hind]
-  have hne : ∀ᵐ x ∂μr.restrict Good, x ≠ 0 :=
-    ae_restrict_of_ae (measure_eq_zero_iff_ae_notMem.mp h0r)
-  have hdiff : |∫ x in Good, (G x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μr| ≤
-      e * (μr Good).toReal := by
-    rw [← integral_sub hGi hFi, ← Real.norm_eq_abs]
-    refine norm_setIntegral_le_of_norm_le_const_ae (measure_lt_top _ _) ?_
-    filter_upwards [hne, ae_restrict_mem hGood] with x hx0 hx
-    rw [Real.norm_eq_abs]
-    exact (hbound x hx hx0).2.2
+  rw [(goodPart_lintegral_toReal_eq μr Good hGood G hG L (fun x hx hx0 =>
+    (hbound x hx hx0).1) h0r), (goodPart_lintegral_toReal_eq μ Good hGood F hF L (fun x hx hx0 =>
+    (hbound x hx hx0).2.1) h0), hind, hind]
   have htri : |∫ x in Good, (G x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μ| ≤
       |∫ x in Good, (G x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μr| +
         |∫ x in Good, (F x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μ| := by
     have := abs_add_le (∫ x in Good, (G x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μr)
       (∫ x in Good, (F x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μ)
     rwa [sub_add_sub_cancel] at this
-  calc ENNReal.ofReal |∫ x in Good, (G x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μ|
+  calc _
       ≤ ENNReal.ofReal (e * (μr Good).toReal +
           |∫ x in Good, (F x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μ|) :=
-        ENNReal.ofReal_le_ofReal (htri.trans (add_le_add_left hdiff _))
+        ENNReal.ofReal_le_ofReal (htri.trans (add_le_add_left (by
+          rw [← integral_sub (goodPart_integrableOn μr Good hGood G hG L (fun x hx hx0 => (hbound x hx hx0).1) h0r) (goodPart_integrableOn μr Good hGood F hF L (fun x hx hx0 => (hbound x hx hx0).2.1)
+            h0r), ← Real.norm_eq_abs]
+          refine norm_setIntegral_le_of_norm_le_const_ae (measure_lt_top _ _) ?_
+          filter_upwards [(ae_restrict_of_ae (measure_eq_zero_iff_ae_notMem.mp h0r)), ae_restrict_mem hGood] with x hx0 hx
+          exact (hbound x hx hx0).right.right) _))
     _ ≤ ENNReal.ofReal (e * (μr Good).toReal) +
           ENNReal.ofReal |∫ x in Good, (F x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μ| :=
         ENNReal.ofReal_add_le
-    _ = ENNReal.ofReal e * μr Good +
-          ENNReal.ofReal |∫ x in Good, (F x).toReal ∂μr - ∫ x in Good, (F x).toReal ∂μ| := by
-        rw [ENNReal.ofReal_mul he, ENNReal.ofReal_toReal (measure_ne_top _ _)]
+    _ = _ := by
+        simp_all
 
 end DOZZ.Proofs

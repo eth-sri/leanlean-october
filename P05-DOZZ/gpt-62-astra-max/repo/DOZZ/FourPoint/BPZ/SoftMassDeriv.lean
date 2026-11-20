@@ -101,15 +101,13 @@ theorem bpzSoft_rpow_le_aux {P Q C : ℝ} (hP : 0 < P) (hQ : 0 < Q) (hC : 0 < C)
     (h1 : P ≤ C * Q) (h2 : Q ≤ C * P) (a : ℝ) : P ^ a ≤ C ^ |a| * Q ^ a := by
   rcases le_total 0 a with ha | ha
   · rw [abs_of_nonneg ha]
-    calc P ^ a ≤ (C * Q) ^ a := Real.rpow_le_rpow hP.le h1 ha
-      _ = C ^ a * Q ^ a := Real.mul_rpow hC.le hQ.le
+    exact Trans.trans (Real.rpow_le_rpow (LT.lt.le hP) h1 ha) (Real.mul_rpow (LT.lt.le hC) (LT.lt.le hQ))
   · rw [abs_of_nonpos ha]
-    have h3 : Q / C ≤ P := by
+    calc _ ≤ (Q / C) ^ a := Real.rpow_le_rpow_of_nonpos (div_pos hQ hC) (by
       rw [div_le_iff₀ hC]
-      linarith [mul_comm C P]
-    calc P ^ a ≤ (Q / C) ^ a := Real.rpow_le_rpow_of_nonpos (div_pos hQ hC) h3 ha
+      linarith ) ha
       _ = Q ^ a / C ^ a := Real.div_rpow hQ.le hC.le a
-      _ = C ^ (-a) * Q ^ a := by rw [Real.rpow_neg hC.le]; ring
+      _ = _ := by rw [Real.rpow_neg hC.le]; ring
 
 /-- Comparison of the `a`-th powers of the softened bases at two parameters `z, z'`. -/
 theorem bpzSoft_rpow_le {ε : ℝ} (hε : 0 < ε) (a : ℝ) (z z' x : ℂ) :
@@ -181,8 +179,7 @@ theorem bpzSoftDeriv2_norm_le_rpow (a : ℝ) {ε : ℝ} (hε : 0 < ε) (x z : �
 /-- Measurability of the softened power in `x`. -/
 theorem bpzSoft_measurable_rpow (a ε : ℝ) (z : ℂ) :
     Measurable (fun x : ℂ => (Complex.normSq (x - z) + ε ^ 2) ^ a) := by
-  have h : Measurable (fun x : ℂ => Complex.normSq (x - z) + ε ^ 2) := by fun_prop
-  exact h.pow_const a
+  fun_prop
 
 /-- Continuity of the first derivative in the integration variable `x`. -/
 theorem bpzSoftDeriv_continuous_left (a : ℝ) {ε : ℝ} (hε : 0 < ε) (z : ℂ) :

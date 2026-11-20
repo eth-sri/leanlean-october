@@ -25,14 +25,13 @@ namespace DOZZ
 /-- The probability measure on the unit circle centered at the origin. -/
 theorem circleMeasure_zero_isProbability : IsProbabilityMeasure (circleMeasure 0 0) := by
   refine ⟨?_⟩
-  rw [circleMeasure, neg_zero, Real.exp_zero, Measure.smul_apply]
-  rw [Measure.map_apply (measurable_circleMap 0 1) MeasurableSet.univ]
+  rw [circleMeasure, neg_zero, Real.exp_zero, Measure.smul_apply, Measure.map_apply (measurable_circleMap 0 1) MeasurableSet.univ]
   simp only [preimage_univ, Measure.restrict_apply_univ]
   rw [Real.volume_Ioc]
   simp only [sub_zero]
   simp only [smul_eq_mul]
   calc
-    ENNReal.ofReal ((2 * Real.pi)⁻¹) * ENNReal.ofReal (2 * Real.pi) =
+    _ =
         ENNReal.ofReal ((2 * Real.pi)⁻¹ * (2 * Real.pi)) := by
       rw [← ENNReal.ofReal_mul (by positivity)]
     _ = 1 := by rw [inv_mul_cancel₀ (by positivity)]; norm_num
@@ -44,11 +43,7 @@ theorem integral_circleMeasure_zero_eq_circleAverage (f : ℂ → ℝ) (hf : Mea
     ∫ z, f z ∂circleMeasure 0 0 = Real.circleAverage f 0 1 := by
   rw [circleMeasure, integral_smul_measure]
   simp only [neg_zero, Real.exp_zero]
-  rw [integral_map (measurable_circleMap 0 1).aemeasurable hf.aestronglyMeasurable]
-  rw [← intervalIntegral.integral_of_le Real.two_pi_pos.le]
-  have hcoeff : ENNReal.toReal (ENNReal.ofReal ((2 * Real.pi)⁻¹)) = (2 * Real.pi)⁻¹ := by
-    exact ENNReal.toReal_ofReal (by positivity)
-  rw [hcoeff, Real.circleAverage_def]
+  rw [integral_map (measurable_circleMap 0 1).aemeasurable hf.aestronglyMeasurable, ← intervalIntegral.integral_of_le Real.two_pi_pos.le, (ENNReal.toReal_ofReal (by positivity)), Real.circleAverage_def]
 
 /-- A circle-integrable measurable function is integrable against `circleMeasure 0 0`. -/
 theorem integrable_circleMeasure_of_circleIntegrable {f : ℂ → ℝ}
@@ -66,41 +61,34 @@ theorem integrable_circleMeasure_of_circleIntegrable {f : ℂ → ℝ}
 fixed pole, including poles on the circle. -/
 theorem integrable_log_norm_sub_circleMeasure (x : ℂ) :
     Integrable (fun y : ℂ => Real.log ‖x - y‖) (circleMeasure 0 0) := by
-  have hcircle : CircleIntegrable (fun y : ℂ => Real.log ‖x - y‖) 0 1 := by
-    simpa [norm_sub_rev] using
-      (circleIntegrable_log_norm_sub_const (a := x) (c := 0) (r := 1))
-  have hmeas : Measurable (fun y : ℂ => Real.log ‖x - y‖) := by fun_prop
-  exact integrable_circleMeasure_of_circleIntegrable hmeas hcircle
+  refine integrable_circleMeasure_of_circleIntegrable (by fun_prop) ?_
+  simpa [norm_sub_rev] using
+    (circleIntegrable_log_norm_sub_const (a := x) (r := 1))
 
 /-- The unit-circle logarithmic potential is `log |x|_+`. -/
 theorem integral_log_norm_sub_circleMeasure (x : ℂ) :
     Integrable (fun y : ℂ => Real.log ‖x - y‖) (circleMeasure 0 0) ∧
       ∫ y, Real.log ‖x - y‖ ∂circleMeasure 0 0 = Real.log (normPlus x) := by
-  have hmeas : Measurable (fun y : ℂ => Real.log ‖x - y‖) := by fun_prop
   refine ⟨integrable_log_norm_sub_circleMeasure x, ?_⟩
   calc
-    ∫ y, Real.log ‖x - y‖ ∂circleMeasure 0 0 =
+    _ =
         Real.circleAverage (fun y => Real.log ‖x - y‖) 0 1 :=
-      integral_circleMeasure_zero_eq_circleAverage _ hmeas
+      integral_circleMeasure_zero_eq_circleAverage _ (by fun_prop)
     _ = Real.circleAverage (fun y => Real.log ‖y - x‖) 0 1 := by
-      apply congrArg (fun f : ℂ → ℝ => Real.circleAverage f 0 1)
+      apply congrArg (fun f => Real.circleAverage f 0 1)
       funext y
       rw [norm_sub_rev]
     _ = Real.posLog ‖x‖ := circleAverage_log_norm_sub_const_eq_posLog
-    _ = Real.log (normPlus x) := by
-      rw [normPlus]
-      exact (Real.posLog_eq_log_max_one (norm_nonneg x))
+    _ = _ := Real.posLog_eq_log_max_one (norm_nonneg x)
 
 /-- The logarithm of `normPlus` is circle-integrable on the unit circle. -/
 theorem circleIntegrable_log_normPlus :
     CircleIntegrable (fun z : ℂ => Real.log (normPlus z)) 0 1 := by
-  refine (circleIntegrable_congr (c := (0 : ℂ)) (R := (1 : ℝ))
-    (f₁ := fun z : ℂ => Real.log (normPlus z)) (f₂ := fun _ : ℂ => 0) ?_).2 ?_
+  refine (circleIntegrable_congr (f₂ := fun _ : ℂ => 0) ?_).2 ?_
   · intro z hz
-    have hz_norm : ‖z‖ = 1 := by
-      simpa only [abs_one, mem_sphere_iff_norm, sub_zero] using hz
-    simp [normPlus, hz_norm]
-  · exact circleIntegrable_const 0 0 1
+    simp [normPlus, (by
+      simpa only [abs_one, mem_sphere_iff_norm, sub_zero] using hz)]
+  fun_prop
 
 /-- The pinning potential is integrable on the unit circle. -/
 theorem integrable_log_normPlus_circleMeasure :

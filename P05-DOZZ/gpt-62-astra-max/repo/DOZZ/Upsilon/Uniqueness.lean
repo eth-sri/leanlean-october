@@ -24,33 +24,26 @@ variable {γ : ℝ}
 private theorem openStrip_mem_nhds (q : ℝ) (hq : 0 < q) :
     {z : ℂ | 0 < z.re ∧ z.re < q} ∈ 𝓝 ((q : ℂ) / 2) := by
   let S : Set ℂ := {z | 0 < z.re ∧ z.re < q}
-  let c : ℂ := (q : ℂ) / 2
+  let c := (q : ℂ) / 2
   have hc : c ∈ S := by
     dsimp [c, S]
     simp only [Complex.div_ofNat_re, Complex.ofReal_re]
     constructor <;> linarith
-  have hOpen : IsOpen S := by
-    change IsOpen (Complex.re ⁻¹' Set.Ioo 0 q)
-    exact isOpen_Ioo.preimage Complex.continuous_re
-  simpa [S] using hOpen.mem_nhds hc
+  exact IsOpen.mem_nhds (id (IsOpen.preimage Complex.continuous_re isOpen_Ioo)) hc
 
 /-- Uniqueness of `Υ_{γ/2}` (identity theorem on the strip). -/
 theorem IsUpsilon.unique {U V : ℂ → ℂ} (hγ : 0 < γ) (hU : IsUpsilon γ U)
     (hV : IsUpsilon γ V) : U = V := by
-  have hQ : 0 < Q γ := by
-    unfold Q
-    positivity
-  let c : ℂ := (Q γ : ℂ) / 2
+  let c := (Q γ : ℂ) / 2
   let S : Set ℂ := {z | 0 < z.re ∧ z.re < Q γ}
-  have hS : S ∈ 𝓝 c := by
-    simpa [c] using openStrip_mem_nhds (Q γ) hQ
-  have hEq : U =ᶠ[𝓝 c] V := by
-    filter_upwards [hS] with z hz
-    dsimp [S] at hz
-    exact (hU.2 z hz.1 hz.2).trans (hV.2 z hz.1 hz.2).symm
-  have hUA : AnalyticOnNhd ℂ U Set.univ := fun z _ => hU.1.analyticAt z
-  have hVA : AnalyticOnNhd ℂ V Set.univ := fun z _ => hV.1.analyticAt z
-  exact AnalyticOnNhd.eq_of_eventuallyEq hUA hVA hEq
+  have hS  := openStrip_mem_nhds (Q γ) (by
+    unfold Q
+    positivity)
+  exact AnalyticOnNhd.eq_of_eventuallyEq (fun z x => Differentiable.analyticAt hU.left z)
+    (fun z x => Differentiable.analyticAt hV.left z)
+    (mp_mem hS
+      (univ_mem'
+        (id fun z hz => Eq.trans (hU.right z hz.left hz.right) (Eq.symm (hV.right z hz.left hz.right)))))
 
 /-- Reflection symmetry `Υ(Q - z) = Υ(z)`. -/
 theorem IsUpsilon.reflect {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
@@ -67,29 +60,22 @@ theorem IsUpsilon.reflect {U : ℂ → ℂ} (hγ : 0 < γ) (hγ2 : γ < 2)
   have hγQ : γ < Q γ := by
     unfold Q
     linarith
-  have hQ : 0 < Q γ := by linarith
   let S : Set ℂ := {w | 0 < w.re ∧ w.re < Q γ}
   have hS : S ∈ 𝓝 ((Q γ : ℂ) / 2) := by
-    simpa [S] using openStrip_mem_nhds (Q γ) hQ
+    simpa [S] using openStrip_mem_nhds (Q γ) (by linarith)
   have hEq : (fun w : ℂ => U ((Q γ : ℂ) - w)) =ᶠ[𝓝 ((Q γ : ℂ) / 2)] U := by
     filter_upwards [hS] with w hw
     dsimp [S] at hw
     have hw' : 0 < ((Q γ : ℂ) - w).re ∧ ((Q γ : ℂ) - w).re < Q γ := by
-      simp only [Complex.sub_re, Complex.ofReal_re]
+      simp 
       constructor <;> linarith
-    calc
-      U ((Q γ : ℂ) - w) = Complex.exp (upsilonLog γ ((Q γ : ℂ) - w)) :=
-        hU.2 ((Q γ : ℂ) - w) hw'.1 hw'.2
-      _ = Complex.exp (upsilonLog γ w) := by
-        rw [upsilonLog_reflect γ w hw.1 hw.2]
-      _ = U w := (hU.2 w hw.1 hw.2).symm
-  have hUanalytic : AnalyticOnNhd ℂ U Set.univ := fun w _ => hU.1.analyticAt w
-  have hVdiff : Differentiable ℂ (fun w : ℂ => U ((Q γ : ℂ) - w)) := by
-    apply hU.1.comp
-    fun_prop
-  have hVanalytic : AnalyticOnNhd ℂ (fun w : ℂ => U ((Q γ : ℂ) - w)) Set.univ :=
-    fun w _ => hVdiff.analyticAt w
-  have hFunext := AnalyticOnNhd.eq_of_eventuallyEq hVanalytic hUanalytic hEq
-  exact congrFun hFunext z
+    rw [hU.2 ((Q γ : ℂ) - w) hw'.1 hw'.2, upsilonLog_reflect γ w hw.1 hw.2, (hU.2 w hw.1 hw.2).symm]
+  exact congrFun
+    (AnalyticOnNhd.eq_of_eventuallyEq
+      (fun w x =>
+        Differentiable.analyticAt
+          (Differentiable.comp hU.left (Differentiable.const_sub differentiable_id ↑(Q γ))) w)
+      (fun w x => Differentiable.analyticAt hU.left w) hEq)
+    z
 
 end DOZZ.Proofs

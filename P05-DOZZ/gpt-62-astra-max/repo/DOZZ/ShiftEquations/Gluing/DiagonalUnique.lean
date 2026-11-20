@@ -48,10 +48,10 @@ private theorem diagUnique_tensor_eq_ofReal (f g : ℂ → ℂ) (A D : ℝ) (z :
       ((A * ‖f z‖ ^ 2 + D * ‖g z‖ ^ 2 : ℝ) : ℂ) := by
   simp only [hermitianQuadraticTensor, zero_mul, add_zero]
   calc
-    (A : ℂ) * f z * star (f z) + (D : ℂ) * g z * star (g z)
-        = (A : ℂ) * (f z * star (f z)) + (D : ℂ) * (g z * star (g z)) := by ring
+    _
+        = A * (f z * star (f z)) + D * (g z * star (g z)) := by ring
     _ = _ := by
-      rw [diagUnique_mul_star_eq_norm_sq, diagUnique_mul_star_eq_norm_sq]
+      simp only [diagUnique_mul_star_eq_norm_sq]
       push_cast
       ring
 

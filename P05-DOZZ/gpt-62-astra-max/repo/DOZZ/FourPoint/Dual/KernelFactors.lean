@@ -19,10 +19,8 @@ theorem dual_inner_kernel_factor_spatial_tendsto (R a h : ℝ) :
     simpa only [norm_zero] using (continuous_norm.tendsto (0 : ℂ)).mono_left nhdsWithin_le_nhds
   have hbase := (tendsto_const_nhds.sub (hn.const_mul (Real.exp (-h)))).inv₀
     (by norm_num : (1 : ℝ)-Real.exp (-h)*0 ≠ 0)
-  have hp := (Real.continuousAt_rpow_const 1 a (Or.inl one_ne_zero)).tendsto
-  have hb : Tendsto (fun z : ℂ => (1-Real.exp (-h)*‖z‖)⁻¹) (𝓝[≠] (0 : ℂ)) (𝓝 (1 : ℝ)) := by
-    simpa only [mul_zero, sub_zero, inv_one] using hbase
-  simpa only [Real.one_rpow, mul_one, Function.comp_def] using (hp.comp hb).const_mul ((1+R)^(2 : ℝ))
+  simpa only [Real.one_rpow, mul_one, Function.comp_def] using ((Real.continuousAt_rpow_const 1 a (Or.inl one_ne_zero)).tendsto.comp (by
+    simpa only [mul_zero, sub_zero, inv_one] using hbase)).const_mul ((1+R)^(2 : ℝ))
 
 /-- After the spatial limit, both relative kernel factors approach one as the buffer grows. -/
 theorem dual_inner_kernel_factor_buffer_tendsto (s : ℝ) :
@@ -30,10 +28,9 @@ theorem dual_inner_kernel_factor_buffer_tendsto (s : ℝ) :
   have he : Tendsto (fun h : ℝ => Real.exp (-h)) atTop (𝓝 (0 : ℝ)) :=
     Real.tendsto_exp_atBot.comp tendsto_neg_atTop_atBot
   have hb := (tendsto_const_nhds (x := (1 : ℝ))).add (he.const_mul s)
-  have hp := (Real.continuousAt_rpow_const 1 2 (Or.inl one_ne_zero)).tendsto
   have hb' : Tendsto (fun h : ℝ => 1+s*Real.exp (-h)) atTop (𝓝 (1 : ℝ)) := by
     simpa only [mul_zero, add_zero] using hb
-  simpa only [Real.one_rpow, Function.comp_def] using hp.comp hb'
+  simpa only [Real.one_rpow, Function.comp_def] using (Real.continuousAt_rpow_const 1 2 (Or.inl one_ne_zero)).tendsto.comp hb'
 
 /-- The integrated relative-error constant has its literal fixed-buffer spatial limit. -/
 theorem dual_inner_kernel_relative_error_spatial_tendsto (γ α h : ℝ) :

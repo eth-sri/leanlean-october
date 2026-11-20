@@ -40,8 +40,7 @@ theorem measurable_brownian_random_increment {Ω : Type*} [mΩ : MeasurableSpace
     (B : ℝ≥0 → Ω → ℝ) (hBm : Measurable (fun p : ℝ≥0 × Ω => B p.1 p.2))
     (τ : Ω → ℝ≥0) (hτm : Measurable τ) (t : ℝ≥0) :
     Measurable (fun ω => B (τ ω+t) ω-B (τ ω) ω) := by
-  exact (hBm.comp ((hτm.add_const t).prodMk measurable_id)).sub
-    (hBm.comp (hτm.prodMk measurable_id))
+  fun_prop
 
 /-- Every finite raw stopping time is a measurable real-time random variable. -/
 theorem measurable_finite_brownian_stoppingTime {Ω : Type*} [mΩ : MeasurableSpace Ω]
@@ -49,22 +48,7 @@ theorem measurable_finite_brownian_stoppingTime {Ω : Type*} [mΩ : MeasurableSp
     (hτ : IsStoppingTime 𝓕 (fun ω => (τ ω : WithTop ℝ≥0))) : Measurable τ := by
   apply measurable_of_Iic
   intro s
-  have h := 𝓕.le s _ (hτ.measurableSet_le s)
-  simpa only [Set.preimage,mem_Iic,WithTop.coe_le_coe] using h
-
-/-- Every dyadic ceiling lies above the original finite time. -/
-theorem brownianDyadicCeiling_ge {Ω : Type*} (τ : Ω → ℝ≥0) (n : ℕ) (ω : Ω) :
-    τ ω ≤ brownianDyadicCeiling τ n ω := by
-  unfold brownianDyadicCeiling
-  apply (le_div_iff₀ (show 0 < brownianDyadicMesh n from pow_pos (by norm_num) n)).mpr
-  exact Nat.le_ceil _
-
-/-- The dyadic ceilings have a countable range as finite nonnegative times. -/
-theorem brownianDyadicCeiling_countable_range {Ω : Type*} (τ : Ω → ℝ≥0) (n : ℕ) :
-    (range (brownianDyadicCeiling τ n)).Countable := by
-  apply Set.Countable.mono ?_ (Set.countable_range fun k : ℕ => (k : ℝ≥0)/brownianDyadicMesh n)
-  rintro s ⟨ω,rfl⟩
-  exact ⟨Nat.ceil (τ ω*brownianDyadicMesh n),rfl⟩
+  simpa only [Set.preimage,mem_Iic,WithTop.coe_le_coe] using (𝓕.le s _ (hτ.measurableSet_le s))
 
 /-- Deterministic Brownian restart preserves the full evaluation-generated process law. -/
 theorem brownian_shift_process_map_eq {Ω : Type*} [MeasurableSpace Ω]
@@ -166,20 +150,24 @@ theorem brownian_bounded_stopped_finite_setIntegral {Ω : Type*} [mΩ : Measurab
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
   obtain ⟨hτn,_hτnT,hτnlim,_hτnrange⟩ := brownian_dyadicCeiling_properties
     (brownianRawFiltration B hm) τ hτ T hτT
-  have hAn n : MeasurableSet[(hτn n).measurableSpace] A :=
+  have hAn n  :=
     hτ.measurableSpace_mono (hτn n)
-      (fun ω => WithTop.coe_le_coe.mpr (brownianDyadicCeiling_ge τ n ω)) _ hA
+      (fun ω => WithTop.coe_le_coe.mpr (by
+        apply (le_div_iff₀ (show 0 < brownianDyadicMesh n from pow_pos (by norm_num) n)).mpr
+        exact Nat.le_ceil _)) _ hA
   have hmean n := brownian_countable_stopped_finite_setIntegral hB.toIsPreBrownianReal hm hBm
-    (brownianDyadicCeiling τ n) (hτn n) (brownianDyadicCeiling_countable_range τ n) A (hAn n) times F hF.measurable C hbound
-  have hgm n : Measurable (fun ω => F (fun i => B (brownianDyadicCeiling τ n ω+times i) ω-B (brownianDyadicCeiling τ n ω) ω)) :=
+    (brownianDyadicCeiling τ n) (hτn n) (by
+      apply Set.Countable.mono ?_ (Set.countable_range fun k : ℕ => k/brownianDyadicMesh n)
+      rintro s ⟨ω,rfl⟩
+      aesop) A (hAn n) times F hF.measurable C hbound
+  have hgm n  :=
     hF.measurable.comp (Measurable.of_eval (fun i => measurable_brownian_random_increment B hBm _
       (measurable_finite_brownian_stoppingTime _ _ (hτn n)) (times i)))
   have ht := tendsto_integral_of_dominated_convergence (μ := P.restrict A)
     (f := fun ω => F (fun i => B (τ ω+times i) ω-B (τ ω) ω))
     (fun _ => C) (fun n => (hgm n).aestronglyMeasurable) (integrable_const C)
     (fun n => ae_of_all _ (fun ω => hbound _)) ?_
-  · simp_rw [hmean] at ht
-    exact tendsto_nhds_unique ht tendsto_const_nhds
+  · simp_all
   · filter_upwards [ae_restrict_of_ae hB.cont] with ω hω
     exact (hF.tendsto _).comp
       (tendsto_pi_nhds.mpr (fun i =>
@@ -196,17 +184,12 @@ theorem brownian_bounded_stopped_finite_restrict_map {Ω : Type*} [mΩ : Measura
     (P.restrict A).map (fun ω i => B (τ ω+times i) ω-B (τ ω) ω) =
       P A • P.map (fun ω i => B (times i) ω) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
-  let V : Ω → I → ℝ := fun ω i => B (τ ω+times i) ω-B (τ ω) ω
-  let U : Ω → I → ℝ := fun ω i => B (times i) ω
-  have hV : Measurable V := Measurable.of_eval (fun i => measurable_brownian_random_increment B hBm τ
-    (measurable_finite_brownian_stoppingTime _ τ hτ) (times i))
-  have hU : Measurable U := Measurable.of_eval (fun i => hm (times i))
-  let _ := Measure.smul_finite (P.map U) (measure_ne_top P A)
+  let _ := Measure.smul_finite (P.map (fun ω i => B (times i) ω)) (measure_ne_top P A)
   apply ext_of_forall_integral_eq_of_IsFiniteMeasure
   intro F
-  rw [integral_map hV.aemeasurable F.continuous.measurable.aestronglyMeasurable,
-    integral_smul_measure,integral_map hU.aemeasurable F.continuous.measurable.aestronglyMeasurable]
-  simp only [smul_eq_mul]
+  rw [integral_map (Measurable.of_eval (fun i => measurable_brownian_random_increment B hBm τ
+    (measurable_finite_brownian_stoppingTime _ τ hτ) (times i))).aemeasurable F.continuous.measurable.aestronglyMeasurable,
+    integral_smul_measure,integral_map (Measurable.of_eval (fun i => hm (times i))).aemeasurable F.continuous.measurable.aestronglyMeasurable]
   exact brownian_bounded_stopped_finite_setIntegral hB hm hBm τ hτ T hτT A hA times
     F F.continuous ‖F‖ F.norm_coe_le_norm
 
@@ -219,15 +202,12 @@ theorem brownian_bounded_stopped_process_restrict_map {Ω : Type*} [mΩ : Measur
     (P.restrict A).map (fun ω t => B (τ ω+t) ω-B (τ ω) ω) =
       P A • P.map (fun ω t => B t ω) := by
   let _ := (hB.hasLaw_eval 0).isProbabilityMeasure
-  have hV : Measurable (fun ω t => B (τ ω+t) ω-B (τ ω) ω) :=
-    Measurable.of_eval (fun t => measurable_brownian_random_increment B hBm τ
-      (measurable_finite_brownian_stoppingTime _ τ hτ) t)
-  let K (I : Finset ℝ≥0) : Measure (I → ℝ) := P A • P.map (fun ω (i : I) => B i ω)
+  let K (I : Finset ℝ≥0)  := P A • P.map (fun ω (i : I) => B i ω)
   have hK I : IsFiniteMeasure (K I) := Measure.smul_finite _ (measure_ne_top P A)
-  let _ := hK
   apply IsProjectiveLimit.unique (P := K)
   · intro I
-    rw [Measure.map_map (Finset.measurable_restrict I) hV]
+    rw [Measure.map_map (Finset.measurable_restrict I) (Measurable.of_eval (fun t => measurable_brownian_random_increment B hBm τ
+      (measurable_finite_brownian_stoppingTime _ τ hτ) t))]
     exact brownian_bounded_stopped_finite_restrict_map hB hm hBm τ hτ T hτT A hA
       (fun i : I => i.1)
   · intro I
@@ -253,17 +233,13 @@ theorem brownian_bounded_stopped_process_indep {Ω : Type*} [mΩ : MeasurableSpa
     (T : ℝ≥0) (hτT : ∀ ω, τ ω ≤ T) :
     Indep hτ.measurableSpace
       (MeasurableSpace.comap (fun ω t => B (τ ω+t) ω-B (τ ω) ω) MeasurableSpace.pi) P := by
-  let V : Ω → ℝ≥0 → ℝ := fun ω t => B (τ ω+t) ω-B (τ ω) ω
-  have hV : Measurable V := Measurable.of_eval (fun t => measurable_brownian_random_increment B hBm τ
-    (measurable_finite_brownian_stoppingTime _ τ hτ) t)
+  have hV := Measurable.of_eval (measurable_brownian_random_increment B hBm τ
+  (measurable_finite_brownian_stoppingTime _ τ hτ))
   apply (Indep_iff _ _ P).mpr
   intro A E hA hE
   obtain ⟨S,hS,rfl⟩ := hE
-  have hlaw := brownian_bounded_stopped_process_restrict_map hB hm hBm τ hτ T hτT A hA
-  have he := congrArg (fun μ : Measure (ℝ≥0 → ℝ) => μ S) hlaw
-  rw [Measure.map_apply hV hS,Measure.restrict_apply (hS.preimage hV),Measure.smul_apply] at he
-  rw [inter_comm] at he
-  change P (A ∩ V ⁻¹' S) = P A*P (V ⁻¹' S)
+  have he := congrArg (fun μ => μ S) (brownian_bounded_stopped_process_restrict_map hB hm hBm τ hτ T hτT A hA)
+  rw [Measure.map_apply hV hS,Measure.restrict_apply (hS.preimage hV),Measure.smul_apply, inter_comm] at he
   rw [← Measure.map_apply hV hS,brownian_bounded_stopped_process_map_eq hB hm hBm τ hτ T hτT]
   exact he
 
@@ -280,9 +256,8 @@ theorem brownianPath_measure_eq_of_process_map_eq (P Q : Measure BrownianPath)
     Measurable.of_eval (fun t => ContinuousMap.measurable_eval t)
   apply Measure.ext
   intro S hS
-  have hS' := brownianPath_measurableSpace_eq_comap.le S hS
-  obtain ⟨A,hA,rfl⟩ := hS'
-  rw [← Measure.map_apply hm hA,← Measure.map_apply hm hA,h]
+  obtain ⟨A,hA,rfl⟩ := (brownianPath_measurableSpace_eq_comap.le S hS)
+  simp only [← Measure.map_apply hm hA, h]
 
 /-- The literal future increment path on the continuous-path carrier. -/
 noncomputable def brownianShiftPath (s : ℝ≥0) (p : BrownianPath) : BrownianPath :=
@@ -291,7 +266,6 @@ noncomputable def brownianShiftPath (s : ℝ≥0) (p : BrownianPath) : BrownianP
 /-- Joint shift evaluation is continuous, including variation of the initial path. -/
 theorem continuous_brownianShiftPath : Continuous (fun z : ℝ≥0 × BrownianPath => brownianShiftPath z.1 z.2) := by
   apply ContinuousMap.continuous_of_continuous_uncurry
-  change Continuous (fun z : (ℝ≥0 × BrownianPath) × ℝ≥0 => z.1.2 (z.1.1+z.2)-z.1.2 z.1.1)
   exact (continuous_eval.comp (continuous_fst.snd.prodMk (continuous_fst.fst.add continuous_snd))).sub
     (continuous_eval.comp (continuous_fst.snd.prodMk continuous_fst.fst))
 

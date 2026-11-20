@@ -40,7 +40,7 @@ theorem hasDerivAt_radialShiftSq (x : ℂ) (t : ℝ) :
     · norm_num
   convert (hasDerivAt_const t (‖x‖ ^ 2)).add (hlin.add hsq) using 1
   · ext s
-    simp only [Pi.add_apply]
+    simp
     ring
   · ring
 
@@ -417,11 +417,9 @@ theorem taylorWithinEval_two_eq (f : ℝ → ℝ) (s : Set ℝ) (hs : IsOpen s)
     taylorWithinEval f 2 s 0 t =
       f 0 + t * deriv f 0 + (t ^ 2 / 2) * deriv (deriv f) 0 := by
   have h1 : iteratedDerivWithin 1 f s 0 = deriv f 0 := by
-    have h := iteratedDerivWithin_of_isOpen_eq_iterate (n := 1) (f := f) hs h0
-    simpa [iteratedDeriv_eq_iterate] using h
+    simpa [iteratedDeriv_eq_iterate] using (iteratedDerivWithin_of_isOpen_eq_iterate (n := 1) (f := f) hs h0)
   have h2 : iteratedDerivWithin 2 f s 0 = deriv (deriv f) 0 := by
-    have h := iteratedDerivWithin_of_isOpen_eq_iterate (n := 2) (f := f) hs h0
-    simpa [iteratedDeriv_eq_iterate] using h
+    simpa [iteratedDeriv_eq_iterate] using (iteratedDerivWithin_of_isOpen_eq_iterate (n := 2) (f := f) hs h0)
   simp only [taylorWithinEval_succ, taylor_within_zero_eval, h1, h2,
     Nat.factorial_zero, Nat.factorial_one, Nat.cast_zero, Nat.cast_one,
     zero_add, one_mul, inv_one, sub_zero, pow_one]
@@ -434,8 +432,8 @@ theorem central_second_difference_tendsto {f : ℝ → ℝ} {s : Set ℝ}
     (hf : ContDiffOn ℝ 2 f s) :
     Tendsto (fun t : ℝ => (f t + f (-t) - 2 * f 0) / t ^ 2)
       (𝓝[≠] (0 : ℝ)) (𝓝 (deriv (deriv f) 0)) := by
-  let P : ℝ → ℝ := fun t => taylorWithinEval f 2 s 0 t
-  have hsNhds : s ∈ 𝓝 (0 : ℝ) := hso.mem_nhds h0
+  let P := fun t => taylorWithinEval f 2 s 0 t
+  have hsNhds := hso.mem_nhds h0
   have hTaylor : Tendsto (fun t : ℝ => (f t - P t) / t ^ 2)
       (𝓝 (0 : ℝ)) (𝓝 0) := by
     have h := Real.taylor_tendsto (f := f) (x₀ := (0 : ℝ)) (s := s) hs h0 hf
@@ -445,8 +443,6 @@ theorem central_second_difference_tendsto {f : ℝ → ℝ} {s : Set ℝ}
     tendsto_id.mono_right nhdsWithin_le_nhds
   have hneg : Tendsto (fun t : ℝ => -t) (𝓝[≠] (0 : ℝ)) (𝓝 (0 : ℝ)) := by
     simpa using hid.neg
-  have hposErr : Tendsto (fun t : ℝ => (f t - P t) / t ^ 2)
-      (𝓝[≠] (0 : ℝ)) (𝓝 0) := hTaylor.comp hid
   have hnegErr : Tendsto (fun t : ℝ => (f (-t) - P (-t)) / t ^ 2)
       (𝓝[≠] (0 : ℝ)) (𝓝 0) := by
     convert hTaylor.comp hneg using 1
@@ -456,7 +452,7 @@ theorem central_second_difference_tendsto {f : ℝ → ℝ} {s : Set ℝ}
       (fun t : ℝ => (deriv (deriv f) 0) +
         ((f t - P t) / t ^ 2 + (f (-t) - P (-t)) / t ^ 2))
       (𝓝[≠] (0 : ℝ)) (𝓝 (deriv (deriv f) 0)) := by
-    have hsumErr := hposErr.add hnegErr
+    have hsumErr := (hTaylor.comp hid).add hnegErr
     simpa [add_assoc] using tendsto_const_nhds.add hsumErr
   have hne : ∀ᶠ t : ℝ in 𝓝[≠] (0 : ℝ), t ≠ 0 := by
     filter_upwards [self_mem_nhdsWithin] with t ht
@@ -472,10 +468,9 @@ theorem central_second_difference_tendsto {f : ℝ → ℝ} {s : Set ℝ}
     filter_upwards [hne, hmem] with t ht hmem
     obtain ⟨hts, hnts⟩ := hmem
     have hPt := taylorWithinEval_two_eq f s hso h0 t hts
-    have hPnt := taylorWithinEval_two_eq f s hso h0 (-t) hnts
     dsimp [P]
-    rw [hPt, hPnt]
-    field_simp [ht]
+    rw [hPt, (taylorWithinEval_two_eq f s hso h0 (-t) hnts)]
+    field_simp
     ring
   exact hsum.congr' heq.symm
 
