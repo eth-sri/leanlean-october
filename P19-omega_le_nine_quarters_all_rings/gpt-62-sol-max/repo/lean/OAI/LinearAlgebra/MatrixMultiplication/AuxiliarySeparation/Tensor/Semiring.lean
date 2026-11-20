@@ -1,553 +1,412 @@
 module
 
-/-
-Upstream source and modification notice
-Modified from OpenAI's matrix-multiplication sources and the all-fields extension
-to support the integral/ring proof. Field-only claims remain explicitly scoped.
-See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICENSE.
--/
-
-public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.ComplexTensorRestrictionComposition
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.DirectSum
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Arithmetic.RankExponent
+public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.Basic
+public import Mathlib.Logic.Equiv.Fin.Basic
 public import Mathlib.Order.Antisymmetrization
-public import Mathlib.Algebra.Order.Ring.Defs
+public import Mathlib.Algebra.Order.Hom.Ring
+public import Mathlib.Algebra.Order.IsBotOne
+public import Mathlib.Algebra.Ring.Subsemiring.Order
+public import Mathlib.Logic.Equiv.Sum
+public import Mathlib.Logic.Equiv.Prod
+public import Mathlib.Data.Fintype.Option
 
 public section
 
 @[expose] section
 
-namespace OAI
-
-/-!
-# Finite tensors modulo mutual restriction
-
-Representatives have three natural-number dimensions and coefficients in `K`.
-The order is actual linear restriction, and equality in the quotient is mutual
-restriction. In particular, changing coordinates does not change the class.
--/
+namespace OAI.MatrixMultiplication.AuxiliarySeparation
 
 noncomputable section
+open Foundation
 
-open MatrixMultiplication.Foundation
-open scoped BigOperators
+section Sums
 
-namespace MatrixMultiplication.AuxiliarySeparation.TensorSemiring
+variable {X Y Z U V W : Type*}
 
-section General
+/-- The binary direct sum, with each of its three block labels retained. -/
+def sumTensor (T : IntTensor X Y Z) (S : IntTensor U V W) :
+    IntTensor (X ⊕ U) (Y ⊕ V) (Z ⊕ W)
+  | .inl x, .inl y, .inl z => T x y z
+  | .inr u, .inr v, .inr w => S u v w
+  | _, _, _ => 0
 
-variable {K : Type*} [CommSemiring K] [Nontrivial K]
+/-- Independent restrictions of both summands give a restriction of the sum. -/
+theorem sumTensor_restrict
+    {X' Y' Z' U' V' W' : Type*}
+    [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W]
+    (M : Tensor.Maps ℤ X' Y' Z' X Y Z) (L : Tensor.Maps ℤ U' V' W' U V W)
+    (T : IntTensor X Y Z) (S : IntTensor U V W) :
+    Tensor.restrict ⟨Matrix.fromBlocks M.left 0 0 L.left, Matrix.fromBlocks M.middle 0 0 L.middle,
+      Matrix.fromBlocks M.right 0 0 L.right⟩ (sumTensor T S) =
+      sumTensor (Tensor.restrict M T) (Tensor.restrict L S) := by
+  funext x y z
+  cases x <;> cases y <;> cases z <;>
+    simp [Tensor.restrict, sumTensor, Fintype.sum_sum_type]
+
+/-- Branches share their first coordinate; the other legs carry their labels. -/
+def sharedFirstTensor {M : ℕ} {Y Z : Fin M → Type} (B : ∀ b, IntTensor X (Y b) (Z b)) :
+    IntTensor X (Σ b, Y b) (Σ b, Z b) := by
+  classical
+  exact fun x y z => if h : z.1 = y.1 then B y.1 x y.2 (h ▸ z.2) else 0
+
+
+end Sums
+
+def unitTensor : IntTensor PUnit PUnit PUnit := 1
+
+abbrev scalarTensor (r : ℕ) := Tensor.diagonal (Fin r)
+
+namespace TensorSemiring
 
 section Restriction
 
-variable {X Y Z U V W P Q R : Type*}
-variable [Fintype X] [Fintype Y] [Fintype Z]
+variable {X Y Z U V W : Type*}
 variable [Fintype U] [Fintype V] [Fintype W]
-variable [Fintype P] [Fintype Q] [Fintype R]
 
-/-- `T` is obtained from `S` by three linear maps on its coordinate spaces. -/
-def IsRestriction (T : Tensor K X Y Z) (S : Tensor K U V W) : Prop :=
-  ∃ (A : X → U → K) (B : Y → V → K) (C : Z → W → K),
-    T = Tensor.restrict A B C S
+/-- A coefficient tensor is obtained by three local linear maps. -/
+def IsRestriction (T : IntTensor X Y Z) (S : IntTensor U V W) : Prop :=
+  ∃ M : Tensor.Maps ℤ X Y Z U V W, T = Tensor.restrict M S
 
-theorem IsRestriction.refl (T : Tensor K X Y Z) : IsRestriction T T := by
-  classical
-  exact ⟨_, _, _, (Tensor.restrict_identity T).symm⟩
+namespace IsRestriction
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
-theorem IsRestriction.trans {T : Tensor K X Y Z} {S : Tensor K U V W}
-    {L : Tensor K P Q R} (hTS : IsRestriction T S) (hSL : IsRestriction S L) :
-    IsRestriction T L := by
-  rcases hTS with ⟨A, B, C, rfl⟩
-  rcases hSL with ⟨D, E, F, rfl⟩
-  exact ⟨Tensor.composeRestrictionMatrix A D, Tensor.composeRestrictionMatrix B E,
-    Tensor.composeRestrictionMatrix C F, Tensor.restrict_restrict D E F A B C L⟩
+theorem pullback (T : IntTensor U V W) (f : X → U) (g : Y → V) (h : Z → W) :
+    IsRestriction (Tensor.pullback f g h T) T := by
+  classical exact ⟨_, Tensor.pullback_eq_restrict f g h T⟩
 
-omit [Fintype U] [Fintype V] [Fintype W] in
-theorem IsRestriction.pullback (T : Tensor K X Y Z)
-    (fx : U → X) (fy : V → Y) (fz : W → Z) :
-    IsRestriction (Tensor.pullback fx fy fz T) T := by
-  classical
-  exact ⟨_, _, _, Tensor.pullback_eq_restrict fx fy fz T⟩
+theorem refl (T : IntTensor U V W) : IsRestriction T T := pullback T id id id
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
-theorem IsRestriction.of_reindex (T : Tensor K X Y Z)
-    (ex : U ≃ X) (ey : V ≃ Y) (ez : W ≃ Z) :
-    IsRestriction T (Tensor.pullback ex ey ez T) := by
-  have h := IsRestriction.pullback (Tensor.pullback ex ey ez T) ex.symm ey.symm ez.symm
-  have heq : Tensor.pullback ex.symm ey.symm ez.symm (Tensor.pullback ex ey ez T) = T := by
-    funext x y z
-    simp [Tensor.pullback]
-  rwa [heq] at h
+theorem trans {P Q R : Type*} [Fintype P] [Fintype Q] [Fintype R]
+    {T : IntTensor X Y Z} {S : IntTensor U V W} {L : IntTensor P Q R}
+    (hTS : IsRestriction T S) (hSL : IsRestriction S L) : IsRestriction T L := by
+  obtain ⟨M, rfl⟩ := hTS
+  obtain ⟨L', rfl⟩ := hSL
+  exact ⟨_, Tensor.restrict_restrict L' M L⟩
 
-theorem IsRestriction.reindex_iff
-    (T : Tensor K X Y Z) (S : Tensor K U V W)
-    {X' Y' Z' U' V' W' : Type*}
-    [Fintype X'] [Fintype Y'] [Fintype Z']
-    [Fintype U'] [Fintype V'] [Fintype W']
-    (ex : X' ≃ X) (ey : Y' ≃ Y) (ez : Z' ≃ Z)
-    (eu : U' ≃ U) (ev : V' ≃ V) (ew : W' ≃ W) :
-    IsRestriction (Tensor.pullback ex ey ez T) (Tensor.pullback eu ev ew S) ↔
-      IsRestriction T S := by
-  constructor
-  · intro h
-    exact (IsRestriction.of_reindex T ex ey ez).trans
-      (h.trans (IsRestriction.pullback S eu ev ew))
-  · intro h
-    exact (IsRestriction.pullback T ex ey ez).trans
-      (h.trans (IsRestriction.of_reindex S eu ev ew))
+theorem zero (S : IntTensor U V W) : IsRestriction (0 : IntTensor X Y Z) S := by
+  exact ⟨⟨0, 0, 0⟩, by ext; simp [Tensor.restrict]⟩
 
-omit [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W] in
-theorem IsRestriction.product {T : Tensor K X Y Z} {S : Tensor K U V W}
-    {T' : Tensor K P Q R} {U' V' W' : Type*}
-    [Fintype U'] [Fintype V'] [Fintype W'] {S' : Tensor K U' V' W'}
-    (hT : IsRestriction T T') (hS : IsRestriction S S') :
-    IsRestriction (Tensor.product T S) (Tensor.product T' S') := by
-  rcases hT with ⟨A, B, C, rfl⟩
-  rcases hS with ⟨D, E, F, rfl⟩
-  exact ⟨_, _, _, (Tensor.restrict_product A B C D E F T' S').symm⟩
+variable {X' Y' Z' U' V' W' : Type*} [Fintype U'] [Fintype V'] [Fintype W']
+variable {T : IntTensor X Y Z} {S : IntTensor U V W}
+variable {T' : IntTensor X' Y' Z'} {S' : IntTensor U' V' W'}
 
-omit [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W] in
-theorem IsRestriction.sum {T : Tensor K X Y Z} {S : Tensor K U V W}
-    {T' : Tensor K P Q R} {U' V' W' : Type*}
-    [Fintype U'] [Fintype V'] [Fintype W'] {S' : Tensor K U' V' W'}
-    (hT : IsRestriction T T') (hS : IsRestriction S S') :
-    IsRestriction (sumTensor T S) (sumTensor T' S') := by
-  rcases hT with ⟨A, B, C, rfl⟩
-  rcases hS with ⟨D, E, F, rfl⟩
-  exact ⟨_, _, _, (sumTensor_restrict A B C D E F T' S').symm⟩
+theorem product (h : IsRestriction T S) (h' : IsRestriction T' S') :
+    IsRestriction (Tensor.product T T') (Tensor.product S S') := by
+  obtain ⟨M, rfl⟩ := h
+  obtain ⟨L', rfl⟩ := h'
+  exact ⟨_, (Tensor.restrict_product M L' S S').symm⟩
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
-theorem IsRestriction.zero (S : Tensor K U V W) :
-    IsRestriction (0 : Tensor K X Y Z) S := by
-  refine ⟨0, 0, 0, ?_⟩
-  funext x y z
-  simp [Tensor.restrict]
+theorem sum (h : IsRestriction T S) (h' : IsRestriction T' S') :
+    IsRestriction (sumTensor T T') (sumTensor S S') := by
+  obtain ⟨M, rfl⟩ := h
+  obtain ⟨L', rfl⟩ := h'
+  exact ⟨_, (sumTensor_restrict M L' S S').symm⟩
 
-theorem IsRestriction.rank_le {T : Tensor K X Y Z} {S : Tensor K U V W}
-    (h : IsRestriction T S) : exactRank T ≤ exactRank S := by
-  rcases h with ⟨A, B, C, rfl⟩
-  exact exactRank_restrict_le S A B C
-
-omit [Fintype X] [Fintype Y] [Fintype Z] in
-theorem IsRestriction.eq_zero_of_zero {T : Tensor K X Y Z}
-    (h : IsRestriction T (0 : Tensor K U V W)) : T = 0 := by
-  rcases h with ⟨A, B, C, h⟩
-  funext x y z
-  rw [h]
-  simp [Tensor.restrict]
-
+end IsRestriction
 end Restriction
 
-/-- A set-sized presentation of any finite coefficient tensor over `K`. -/
-structure FiniteTensor (K : Type*) [CommSemiring K] [Nontrivial K] where
-  nx : ℕ
-  ny : ℕ
-  nz : ℕ
-  coeff : Tensor K (Fin nx) (Fin ny) (Fin nz)
+/-- Finite presentations, with arbitrary coordinate types rather than a choice
+of enumerations. This makes the quotient operations compute on representatives. -/
+structure FiniteTensor where
+  X : Type
+  Y : Type
+  Z : Type
+  [fx : Fintype X]
+  [fy : Fintype Y]
+  [fz : Fintype Z]
+  coeff : IntTensor X Y Z
 
-namespace FiniteTensor
+attribute [instance] FiniteTensor.fx FiniteTensor.fy FiniteTensor.fz
 
-/-- Replace arbitrary finite coordinate sets by standard finite sets. -/
-def ofTensor {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
-    (T : Tensor K X Y Z) : (FiniteTensor K) where
-  nx := Fintype.card X
-  ny := Fintype.card Y
-  nz := Fintype.card Z
-  coeff := Tensor.pullback (Fintype.equivFin X).symm
-    (Fintype.equivFin Y).symm (Fintype.equivFin Z).symm T
-
-instance : LE (FiniteTensor K) := ⟨fun T S => IsRestriction T.coeff S.coeff⟩
-
-instance : Preorder (FiniteTensor K) where
+instance : Preorder FiniteTensor where
+  le T S := IsRestriction T.coeff S.coeff
   le_refl T := IsRestriction.refl T.coeff
   le_trans _ _ _ := IsRestriction.trans
 
-theorem ofTensor_le_iff {X Y Z U V W : Type*}
-    [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype U] [Fintype V] [Fintype W]
-    (T : Tensor K X Y Z) (S : Tensor K U V W) :
-    ofTensor T ≤ ofTensor S ↔ IsRestriction T S :=
-  IsRestriction.reindex_iff T S _ _ _ _ _ _
+abbrev TensorClass := Antisymmetrization FiniteTensor (· ≤ ·)
 
-def product (T S : (FiniteTensor K)) : (FiniteTensor K) :=
-  ofTensor (Tensor.product T.coeff S.coeff)
+variable {X Y Z U V W : Type} [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W]
 
-def sum (T S : (FiniteTensor K)) : (FiniteTensor K) :=
-  ofTensor (sumTensor T.coeff S.coeff)
+def classOf (T : IntTensor X Y Z) : TensorClass := toAntisymmetrization (· ≤ ·) ⟨X, Y, Z, T⟩
 
-theorem product_mono {T T' S S' : (FiniteTensor K)} (hT : T ≤ T') (hS : S ≤ S') :
-    product T S ≤ product T' S' :=
-  (ofTensor_le_iff _ _).mpr (IsRestriction.product hT hS)
-
-theorem sum_mono {T T' S S' : (FiniteTensor K)} (hT : T ≤ T') (hS : S ≤ S') :
-    sum T S ≤ sum T' S' :=
-  (ofTensor_le_iff _ _).mpr (IsRestriction.sum hT hS)
-
-end FiniteTensor
-
-/-- Finite tensors over `K`, with two presentations identified exactly when
-each is a linear restriction of the other. -/
-abbrev TensorClass (K : Type*) [CommSemiring K] [Nontrivial K] := Antisymmetrization (FiniteTensor K) (· ≤ ·)
-
-/-- The class of a finite tensor presentation. -/
-def tensorClass (T : (FiniteTensor K)) : (TensorClass K) := toAntisymmetrization (· ≤ ·) T
-
-@[simp] theorem tensorClass_eq_iff (T S : (FiniteTensor K)) :
-    tensorClass T = tensorClass S ↔ T ≤ S ∧ S ≤ T :=
-  toAntisymmetrization_eq (· ≤ ·) T S
-
-@[simp] theorem tensorClass_le_iff (T S : (FiniteTensor K)) :
-    tensorClass T ≤ tensorClass S ↔ T ≤ S := Iff.rfl
-
-/-- The quotient class of a tensor on any three finite coordinate sets. -/
-def classOf {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
-    (T : Tensor K X Y Z) : (TensorClass K) := tensorClass (FiniteTensor.ofTensor T)
-
-theorem classOf_le_iff {X Y Z U V W : Type*}
-    [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype U] [Fintype V] [Fintype W]
-    (T : Tensor K X Y Z) (S : Tensor K U V W) :
-    classOf T ≤ classOf S ↔ IsRestriction T S := FiniteTensor.ofTensor_le_iff T S
-
-theorem classOf_eq_iff {X Y Z U V W : Type*}
-    [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype U] [Fintype V] [Fintype W]
-    (T : Tensor K X Y Z) (S : Tensor K U V W) :
-    classOf T = classOf S ↔ IsRestriction T S ∧ IsRestriction S T := by
-  rw [le_antisymm_iff, classOf_le_iff, classOf_le_iff]
-
-theorem classOf_reindex {X Y Z U V W : Type*}
-    [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype U] [Fintype V] [Fintype W]
-    (T : Tensor K X Y Z) (ex : U ≃ X) (ey : V ≃ Y) (ez : W ≃ Z) :
-    classOf (Tensor.pullback ex ey ez T) = classOf T :=
-  (classOf_eq_iff _ _).mpr ⟨IsRestriction.pullback T ex ey ez,
-    IsRestriction.of_reindex T ex ey ez⟩
-
-theorem classOf_eq_of_reindex {X Y Z U V W : Type*}
-    [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype U] [Fintype V] [Fintype W]
-    {T : Tensor K X Y Z} {S : Tensor K U V W}
-    (ex : X ≃ U) (ey : Y ≃ V) (ez : Z ≃ W)
-    (h : Tensor.pullback ex ey ez S = T) : classOf T = classOf S :=
-  (congrArg classOf h).symm.trans (classOf_reindex S ex ey ez)
-
-@[simp] theorem classOf_coeff (T : (FiniteTensor K)) : classOf T.coeff = tensorClass T := by
-  apply (tensorClass_eq_iff _ _).mpr
-  exact ⟨IsRestriction.pullback T.coeff _ _ _, IsRestriction.of_reindex T.coeff _ _ _⟩
-
-instance : Mul (TensorClass K) where
-  mul := Quotient.map₂ FiniteTensor.product (by
-    intro T T' hT S S' hS
-    exact ⟨FiniteTensor.product_mono hT.1 hS.1,
-      FiniteTensor.product_mono hT.2 hS.2⟩)
-
-instance : Add (TensorClass K) where
-  add := Quotient.map₂ FiniteTensor.sum (by
-    intro T T' hT S S' hS
-    exact ⟨FiniteTensor.sum_mono hT.1 hS.1, FiniteTensor.sum_mono hT.2 hS.2⟩)
-
-@[simp] theorem tensorClass_product (T S : (FiniteTensor K)) :
-    tensorClass T * tensorClass S = tensorClass (FiniteTensor.product T S) := rfl
-
-@[simp] theorem tensorClass_sum (T S : (FiniteTensor K)) :
-    tensorClass T + tensorClass S = tensorClass (FiniteTensor.sum T S) := rfl
-
-theorem classOf_product {X Y Z U V W : Type*}
-    [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype U] [Fintype V] [Fintype W]
-    (T : Tensor K X Y Z) (S : Tensor K U V W) :
-    classOf (Tensor.product T S) = classOf T * classOf S := by
-  symm
-  exact classOf_reindex (Tensor.product T S)
-    (Equiv.prodCongr (Fintype.equivFin X).symm (Fintype.equivFin U).symm)
-    (Equiv.prodCongr (Fintype.equivFin Y).symm (Fintype.equivFin V).symm)
-    (Equiv.prodCongr (Fintype.equivFin Z).symm (Fintype.equivFin W).symm)
-
-theorem classOf_sum {X Y Z U V W : Type*}
-    [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype U] [Fintype V] [Fintype W]
-    (T : Tensor K X Y Z) (S : Tensor K U V W) :
-    classOf (sumTensor T S) = classOf T + classOf S := by
-  symm
-  have h := classOf_reindex (sumTensor T S)
-    (Equiv.sumCongr (Fintype.equivFin X).symm (Fintype.equivFin U).symm)
-    (Equiv.sumCongr (Fintype.equivFin Y).symm (Fintype.equivFin V).symm)
-    (Equiv.sumCongr (Fintype.equivFin Z).symm (Fintype.equivFin W).symm)
-  change classOf (sumTensor (FiniteTensor.ofTensor T).coeff
-    (FiniteTensor.ofTensor S).coeff) = _
-  have heq : sumTensor (FiniteTensor.ofTensor T).coeff (FiniteTensor.ofTensor S).coeff =
-      Tensor.pullback
-        (Equiv.sumCongr (Fintype.equivFin X).symm (Fintype.equivFin U).symm)
-        (Equiv.sumCongr (Fintype.equivFin Y).symm (Fintype.equivFin V).symm)
-        (Equiv.sumCongr (Fintype.equivFin Z).symm (Fintype.equivFin W).symm)
-        (sumTensor T S) := by
+theorem classOf_reindex (T : IntTensor X Y Z) (e : U ≃ X) (f : V ≃ Y) (g : W ≃ Z) :
+    classOf (Tensor.pullback e f g T) = classOf T :=
+  le_antisymm (IsRestriction.pullback T e f g) (by
+    change IsRestriction T _
+    convert IsRestriction.pullback (Tensor.pullback e f g T) e.symm f.symm g.symm using 1
     funext x y z
-    cases x <;> cases y <;> cases z <;> rfl
-  rw [heq]
-  exact h
+    simp [Tensor.pullback])
 
-instance : Zero (TensorClass K) := ⟨classOf (0 : Tensor K Empty Empty Empty)⟩
-instance : One (TensorClass K) := ⟨classOf (fun (_ _ _ : PUnit.{1}) => (1 : K))⟩
+theorem classOf_eq_of_reindex {T : IntTensor X Y Z} {S : IntTensor U V W}
+    (e : X ≃ U) (f : Y ≃ V) (g : Z ≃ W) (h : Tensor.pullback e f g S = T) :
+    classOf T = classOf S := h ▸ classOf_reindex S e f g
 
-theorem classOf_zero {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z] :
-    classOf (0 : Tensor K X Y Z) = 0 :=
-  (classOf_eq_iff _ _).mpr ⟨IsRestriction.zero _, IsRestriction.zero _⟩
+theorem class_ind {P : TensorClass → Prop} (h : ∀ T : FiniteTensor, P (classOf T.coeff)) : ∀ T, P T :=
+  fun T => Quotient.inductionOn T h
 
-theorem class_add_assoc (a b c : (TensorClass K)) : (a + b) + c = a + (b + c) := by
-  induction a using Quotient.inductionOn with | h a =>
-  induction b using Quotient.inductionOn with | h b =>
-  induction c using Quotient.inductionOn with | h c =>
-  change (tensorClass a + tensorClass b) + tensorClass c =
-    tensorClass a + (tensorClass b + tensorClass c)
-  rw [← classOf_coeff a, ← classOf_coeff b, ← classOf_coeff c]
-  simp only [← classOf_sum]
-  exact classOf_eq_of_reindex _ _ _ (sumTensor_assoc a.coeff b.coeff c.coeff)
+/-- A monotone operation lifts through the product of quotient orders. -/
+def lift₂ (f : FiniteTensor × FiniteTensor →o FiniteTensor) :
+    TensorClass × TensorClass →o TensorClass :=
+  f.antisymmetrization.comp (OrderHom.ofClass (Antisymmetrization.prodEquiv FiniteTensor FiniteTensor).symm)
 
-theorem class_add_comm (a b : (TensorClass K)) : a + b = b + a := by
-  induction a using Quotient.inductionOn with | h a =>
-  induction b using Quotient.inductionOn with | h b =>
-  change tensorClass a + tensorClass b = tensorClass b + tensorClass a
-  rw [← classOf_coeff a, ← classOf_coeff b]
-  simp only [← classOf_sum]
-  exact classOf_eq_of_reindex _ _ _ (sumTensor_comm a.coeff b.coeff)
+instance : Mul FiniteTensor := ⟨fun T S => ⟨_, _, _, Tensor.product T.coeff S.coeff⟩⟩
+instance : Add FiniteTensor := ⟨fun T S => ⟨_, _, _, sumTensor T.coeff S.coeff⟩⟩
 
-theorem class_add_zero (a : (TensorClass K)) : a + 0 = a := by
-  induction a using Quotient.inductionOn with | h a =>
-  change tensorClass a + 0 = tensorClass a
-  rw [← classOf_coeff a]
-  change classOf a.coeff + classOf (0 : Tensor K Empty Empty Empty) = classOf a.coeff
-  rw [← classOf_sum]
-  exact (classOf_eq_of_reindex _ _ _ (sumTensor_empty_right a.coeff
-    (0 : Tensor K Empty Empty Empty))).symm
+def mulOp : TensorClass × TensorClass →o TensorClass :=
+  lift₂ ⟨fun p => p.1 * p.2, fun _ _ h => IsRestriction.product h.1 h.2⟩
 
-theorem class_zero_add (a : (TensorClass K)) : 0 + a = a :=
-  (class_add_comm 0 a).trans (class_add_zero a)
+def addOp : TensorClass × TensorClass →o TensorClass :=
+  lift₂ ⟨fun p => p.1 + p.2, fun _ _ h => IsRestriction.sum h.1 h.2⟩
 
-theorem class_mul_assoc (a b c : (TensorClass K)) : (a * b) * c = a * (b * c) := by
-  induction a using Quotient.inductionOn with | h a =>
-  induction b using Quotient.inductionOn with | h b =>
-  induction c using Quotient.inductionOn with | h c =>
-  change (tensorClass a * tensorClass b) * tensorClass c =
-    tensorClass a * (tensorClass b * tensorClass c)
-  rw [← classOf_coeff a, ← classOf_coeff b, ← classOf_coeff c]
-  simp only [← classOf_product]
-  exact classOf_eq_of_reindex _ _ _ (tensorProduct_assoc a.coeff b.coeff c.coeff)
+instance : Mul TensorClass := ⟨Function.curry mulOp⟩
+instance : Add TensorClass := ⟨Function.curry addOp⟩
 
-theorem class_mul_comm (a b : (TensorClass K)) : a * b = b * a := by
-  induction a using Quotient.inductionOn with | h a =>
-  induction b using Quotient.inductionOn with | h b =>
-  change tensorClass a * tensorClass b = tensorClass b * tensorClass a
-  rw [← classOf_coeff a, ← classOf_coeff b]
-  simp only [← classOf_product]
-  exact classOf_eq_of_reindex _ _ _ (tensorProduct_comm a.coeff b.coeff)
+theorem classOf_product (T : IntTensor X Y Z) (S : IntTensor U V W) :
+    classOf (Tensor.product T S) = classOf T * classOf S := rfl
 
-theorem class_mul_one (a : (TensorClass K)) : a * 1 = a := by
-  induction a using Quotient.inductionOn with | h a =>
-  change tensorClass a * 1 = tensorClass a
-  rw [← classOf_coeff a]
-  change classOf a.coeff * classOf (fun (_ _ _ : PUnit.{1}) => (1 : K)) = classOf a.coeff
-  rw [← classOf_product]
-  exact (classOf_eq_of_reindex _ _ _ (tensorProduct_one_right a.coeff)).symm
+theorem classOf_sum (T : IntTensor X Y Z) (S : IntTensor U V W) :
+    classOf (sumTensor T S) = classOf T + classOf S := rfl
 
-theorem class_one_mul (a : (TensorClass K)) : 1 * a = a :=
-  (class_mul_comm 1 a).trans (class_mul_one a)
+instance : Zero TensorClass := ⟨classOf (0 : IntTensor Empty Empty Empty)⟩
+instance : One TensorClass := ⟨classOf unitTensor⟩
 
-theorem class_mul_zero (a : (TensorClass K)) : a * 0 = 0 := by
-  induction a using Quotient.inductionOn with | h a =>
-  change tensorClass a * 0 = 0
-  rw [← classOf_coeff a]
-  change classOf a.coeff * classOf (0 : Tensor K Empty Empty Empty) = 0
-  rw [← classOf_product]
-  have heq : Tensor.product a.coeff (0 : Tensor K Empty Empty Empty) = 0 := by
+theorem classOf_const_one
+    [Unique X] [Unique Y] [Unique Z] : classOf (1 : IntTensor X Y Z) = 1 :=
+  classOf_eq_of_reindex (Equiv.equivPUnit X) (Equiv.equivPUnit Y) (Equiv.equivPUnit Z) rfl
+
+theorem classOf_eq_zero
+    {T : IntTensor X Y Z} (h : T = 0) : classOf T = 0 :=
+  h ▸ le_antisymm (IsRestriction.zero _) (IsRestriction.zero _)
+
+-- The class laws are the usual coordinate permutations of sums and products.
+local macro "reindex_by " e:term : tactic =>
+  `(tactic| ((try simp only [← classOf_sum, ← classOf_product]); refine classOf_eq_of_reindex $e $e $e ?_))
+
+private theorem class_add_comm : ∀ a b : TensorClass, a + b = b + a :=
+  class_ind fun a => class_ind fun b => by
+    reindex_by (Equiv.sumComm _ _)
+    aesop
+
+private theorem class_mul_comm : ∀ a b : TensorClass, a * b = b * a :=
+  class_ind fun a => class_ind fun b => by
+    reindex_by (Equiv.prodComm _ _)
+    grind [Tensor.pullback, Tensor.product, mul_comm]
+
+private theorem class_add_zero : ∀ a : TensorClass, a + 0 = a :=
+  class_ind fun _ => by
+    symm
+    reindex_by (Equiv.sumEmpty _ Empty).symm
+    rfl
+
+private theorem class_mul_one : ∀ a : TensorClass, a * 1 = a :=
+  class_ind fun _ => by
+    symm
+    reindex_by (Equiv.prodPUnit _).symm
+    ext; simp [Tensor.pullback, Tensor.product, unitTensor]
+
+private theorem class_mul_zero : ∀ a : TensorClass, a * 0 = 0 :=
+  class_ind fun _ => classOf_eq_zero (funext fun x => x.2.elim)
+
+private theorem class_left_distrib : ∀ a b c : TensorClass, a * (b + c) = a * b + a * c :=
+  class_ind fun a => class_ind fun b => class_ind fun c => by
+    symm
+    reindex_by (Equiv.prodSumDistrib _ _ _).symm
     funext x y z
-    simp [Tensor.product]
-  rw [heq, classOf_zero]
+    cases x <;> cases y <;> cases z <;> simp [Tensor.pullback, Tensor.product, sumTensor]
 
-theorem class_zero_mul (a : (TensorClass K)) : 0 * a = 0 :=
-  (class_mul_comm 0 a).trans (class_mul_zero a)
-
-theorem class_left_distrib (a b c : (TensorClass K)) : a * (b + c) = a * b + a * c := by
-  induction a using Quotient.inductionOn with | h a =>
-  induction b using Quotient.inductionOn with | h b =>
-  induction c using Quotient.inductionOn with | h c =>
-  change tensorClass a * (tensorClass b + tensorClass c) =
-    tensorClass a * tensorClass b + tensorClass a * tensorClass c
-  rw [← classOf_coeff a, ← classOf_coeff b, ← classOf_coeff c]
-  simp only [← classOf_product, ← classOf_sum]
-  exact (classOf_eq_of_reindex _ _ _ (product_sumTensor a.coeff b.coeff c.coeff)).symm
-
-theorem class_right_distrib (a b c : (TensorClass K)) : (a + b) * c = a * c + b * c := by
-  rw [class_mul_comm, class_left_distrib, class_mul_comm c a, class_mul_comm c b]
-
-instance : CommSemiring (TensorClass K) where
-  add_assoc := class_add_assoc
-  add_comm := class_add_comm
-  zero_add := class_zero_add
-  add_zero := class_add_zero
+instance : CommSemiring TensorClass where
+  add_assoc := class_ind fun a => class_ind fun b => class_ind fun c => by
+    reindex_by (Equiv.sumAssoc _ _ _)
+    aesop
+  add_comm := by exact class_add_comm
+  zero_add a := by exact (class_add_comm 0 a).trans (class_add_zero a)
+  add_zero := by exact class_add_zero
   nsmul := nsmulRec
-  mul_assoc := class_mul_assoc
-  mul_comm := class_mul_comm
-  one_mul := class_one_mul
-  mul_one := class_mul_one
-  zero_mul := class_zero_mul
-  mul_zero := class_mul_zero
-  left_distrib := class_left_distrib
-  right_distrib := class_right_distrib
+  mul_assoc := class_ind fun a => class_ind fun b => class_ind fun c => by
+    reindex_by (Equiv.prodAssoc _ _ _)
+    grind [Tensor.pullback, Tensor.product, mul_assoc]
+  mul_comm := by exact class_mul_comm
+  one_mul a := by exact (class_mul_comm 1 a).trans (class_mul_one a)
+  mul_one := by exact class_mul_one
+  mul_zero := by exact class_mul_zero
+  zero_mul a := by exact (class_mul_comm 0 a).trans (class_mul_zero a)
+  left_distrib := by exact class_left_distrib
+  right_distrib a b c := by
+    rw [class_mul_comm (a+b) c, class_left_distrib, class_mul_comm c a, class_mul_comm c b]
 
-theorem mul_mono {T T' S S' : (TensorClass K)} (hT : T ≤ T') (hS : S ≤ S') :
-    T * S ≤ T' * S' := by
-  induction T using Quotient.inductionOn with | h T =>
-  induction T' using Quotient.inductionOn with | h T' =>
-  induction S using Quotient.inductionOn with | h S =>
-  induction S' using Quotient.inductionOn with | h S' =>
-  exact FiniteTensor.product_mono hT hS
+theorem mul_mono {a b c d : TensorClass} (ha : a ≤ b) (hb : c ≤ d) : a * c ≤ b * d :=
+  mulOp.monotone ⟨ha, hb⟩
 
-theorem add_mono {T T' S S' : (TensorClass K)} (hT : T ≤ T') (hS : S ≤ S') :
-    T + S ≤ T' + S' := by
-  induction T using Quotient.inductionOn with | h T =>
-  induction T' using Quotient.inductionOn with | h T' =>
-  induction S using Quotient.inductionOn with | h S =>
-  induction S' using Quotient.inductionOn with | h S' =>
-  exact FiniteTensor.sum_mono hT hS
+theorem add_mono {a b c d : TensorClass} (ha : a ≤ b) (hb : c ≤ d) : a + c ≤ b + d :=
+  addOp.monotone ⟨ha, hb⟩
 
-/-- Every tensor class is nonnegative in the restriction order. -/
-theorem zero_le (T : (TensorClass K)) : 0 ≤ T := by
-  induction T using Quotient.inductionOn with | h T =>
-  change (0 : (TensorClass K)) ≤ tensorClass T
-  rw [← classOf_coeff T]
-  exact (classOf_le_iff _ _).mpr (IsRestriction.zero T.coeff)
+instance : IsBotZeroClass TensorClass where
+  isBot_zero := class_ind fun T => IsRestriction.zero T.coeff
 
-instance : OrderBot (TensorClass K) where
-  bot := 0
-  bot_le := zero_le
+instance : IsOrderedRing TensorClass where
+  add_le_add_left _ _ h _ := add_mono h le_rfl
+  add_le_add_right _ _ h _ := add_mono le_rfl h
+  zero_le_one := zero_le
+  mul_le_mul_of_nonneg_left _ _ _ _ h := mul_mono le_rfl h
+  mul_le_mul_of_nonneg_right _ _ _ _ h := mul_mono h le_rfl
 
-instance : IsOrderedAddMonoid (TensorClass K) where
-  add_le_add_left _ _ h _c := add_mono h le_rfl
+/-- The two generators of the three-leg permutations. -/
+def permuteRep (rotate : Bool) (T : FiniteTensor) : FiniteTensor :=
+  match rotate with
+  | false => ⟨T.X, T.Z, T.Y, fun x z y => T.coeff x y z⟩
+  | true => ⟨T.Y, T.Z, T.X, Tensor.cyclic T.coeff⟩
 
-instance : IsOrderedMonoid (TensorClass K) where
-  mul_le_mul_left _ _ h _c := mul_mono h le_rfl
+def permuteClass (rotate : Bool) : TensorClass →+*o TensorClass :=
+  let p : FiniteTensor →o FiniteTensor := ⟨permuteRep rotate, by
+    rintro T S ⟨M,h⟩
+    cases rotate <;>
+      first | refine ⟨⟨M.left, M.right, M.middle⟩, ?_⟩ | refine ⟨⟨M.middle, M.right, M.left⟩, ?_⟩
+    all_goals
+      funext x y z
+      simp only [permuteRep, Tensor.cyclic, h, Tensor.restrict]
+    case' true => rw [Finset.sum_comm]
+    all_goals
+      refine Finset.sum_congr rfl fun _ _ => ?_
+      rw [Finset.sum_comm]
+      simp [mul_comm, mul_left_comm, mul_assoc]
+      rfl⟩
+  { p.antisymmetrization with
+    map_zero' := by cases rotate <;> rfl
+    map_one' := by cases rotate <;> rfl
+    map_add' := class_ind fun T => class_ind fun S => by
+      cases rotate <;> apply congrArg (fun U => classOf U) <;>
+        funext x y z <;> cases x <;> cases y <;> cases z <;> rfl
+    map_mul' := class_ind fun T => class_ind fun S => by cases rotate <;> rfl }
 
-instance : IsOrderedRing (TensorClass K) where
-  zero_le_one := zero_le 1
-  mul_le_mul_of_nonneg_left := by
-    intro a ha b c hbc
-    exact mul_mono le_rfl hbc
-  mul_le_mul_of_nonneg_right := by
-    intro a ha b c hbc
-    exact mul_mono hbc le_rfl
+def dot (n : ℕ) : IntTensor Unit (Fin n) (Fin n) :=
+  fun _ i j => if i = j then 1 else 0
 
-/-- Exact rank descends to mutual-restriction classes. -/
-def rank : (TensorClass K) → ℕ := Quotient.lift (fun T : (FiniteTensor K) => exactRank T.coeff)
-  (by
-    intro T S h
-    exact le_antisymm (IsRestriction.rank_le h.1) (IsRestriction.rank_le h.2))
+/-- Dot product classes form a monotone multiplicative family. -/
+def dotClass : ℕ →* TensorClass where
+  toFun n := classOf (dot n)
+  map_one' := by
+    rw [show dot 1 = 1 by trivial]
+    exact classOf_const_one
+  map_mul' m n := by
+    rw [← classOf_product]
+    refine classOf_eq_of_reindex (Equiv.prodUnique Unit Unit).symm
+      finProdFinEquiv.symm finProdFinEquiv.symm ?_
+    ext x y z
+    simp only [Tensor.pullback, Tensor.product, dot,
+      ite_zero_mul_ite_zero, one_mul, ← Prod.ext_iff, Equiv.apply_eq_iff_eq]
 
-@[simp] theorem rank_tensorClass (T : (FiniteTensor K)) :
-    rank (tensorClass T) = exactRank T.coeff := rfl
+theorem dotClass_mono : Monotone dotClass := by
+  intro m n h
+  change IsRestriction (dot m) (dot n)
+  convert IsRestriction.pullback (dot n) id (Fin.castLE h) (Fin.castLE h) using 1
+  ext; simp [dot, Tensor.pullback]
 
-@[simp] theorem rank_classOf {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
-    (T : Tensor K X Y Z) : rank (classOf T) = exactRank T :=
-  exactRank_reindex T _ _ _
+/-- Matrix multiplication is the product of the three oriented dot products. -/
+def matrixClass : ℕ →* TensorClass :=
+  let p := (permuteClass true).toMonoidHom
+  dotClass * p.comp dotClass * p.comp (p.comp dotClass)
 
-theorem rank_mono {T S : (TensorClass K)} (h : T ≤ S) : rank T ≤ rank S := by
-  induction T using Quotient.inductionOn with | h T =>
-  induction S using Quotient.inductionOn with | h S =>
-  exact IsRestriction.rank_le h
+theorem matrixClass_mono : Monotone matrixClass := by
+  intro m n h
+  have H := dotClass_mono h
+  have P := (permuteClass true).monotone'
+  exact mul_mono (mul_mono H (P H)) (P (P H))
 
-theorem rank_mul_le (T S : (TensorClass K)) : rank (T * S) ≤ rank T * rank S := by
-  induction T using Quotient.inductionOn with | h T =>
-  induction S using Quotient.inductionOn with | h S =>
-  change rank (tensorClass T * tensorClass S) ≤ rank (tensorClass T) * rank (tensorClass S)
-  rw [← classOf_coeff T, ← classOf_coeff S, ← classOf_product]
-  simp only [rank_classOf]
-  exact exactRank_product_le _ _
+theorem squareCoefficients_class (n : ℕ) :
+    classOf (Tensor.squareCoefficients n) = matrixClass n := by
+  change classOf (Tensor.squareCoefficients n) =
+    classOf (Tensor.product (Tensor.product (dot n) (Tensor.cyclic (dot n))) (Tensor.cyclic (Tensor.cyclic (dot n))))
+  refine classOf_eq_of_reindex
+    ((Equiv.prodComm _ _).trans ((Equiv.uniqueProd _ Unit).symm.prodCongr (Equiv.refl _)))
+    ((Equiv.prodComm _ _).trans (Equiv.prodUnique _ Unit).symm)
+    ((Equiv.prodUnique _ Unit).symm.prodCongr (Equiv.refl _)) ?_
+  ext x y z
+  simp [dot, Tensor.squareCoefficients, Tensor.pullback, Tensor.product, Tensor.cyclic,
+    ← ite_and, and_assoc, and_comm]
 
-/-- Square matrix multiplication as an element of the tensor semiring. -/
-def matrixClass (n : ℕ) : (TensorClass K) := classOf ((matrixMultiplicationTensor (K := K)) n n n)
 
-@[simp] theorem rank_matrixClass (n : ℕ) : rank ((matrixClass (K := K)) n) = (exactMatrixRank K) n :=
-  rank_classOf _
-
-private theorem classOf_matrixCoefficients_equiv {A B : Type*}
-    [Fintype A] [Fintype B] [DecidableEq A] [DecidableEq B] (e : A ≃ B) :
-    classOf (Tensor.matrixCoefficients (K := K) A A A) =
-      classOf (Tensor.matrixCoefficients (K := K) B B B) := by
-  apply classOf_eq_of_reindex (Equiv.prodCongr e e) (Equiv.prodCongr e e)
-    (Equiv.prodCongr e e)
-  funext x y z
-  simp [Tensor.pullback, Tensor.matrixCoefficients, e.injective.eq_iff]
-
-theorem matrixClass_mul (m n : ℕ) : (matrixClass (K := K)) (m * n) = (matrixClass (K := K)) m * (matrixClass (K := K)) n := by
-  let e : Fin (m * n) ≃ Fin m × Fin n := Fintype.equivOfCardEq (by simp)
-  have h := classOf_matrixCoefficients_equiv (K := K) e
-  change (matrixClass (K := K)) (m * n) = classOf (Tensor.matrixCoefficients (K := K)
-    (Fin m × Fin n) (Fin m × Fin n) (Fin m × Fin n)) at h
-  rw [h]
-  change _ = classOf (Tensor.matrixCoefficients (K := K) (Fin m) (Fin m) (Fin m)) *
-    classOf (Tensor.matrixCoefficients (K := K) (Fin n) (Fin n) (Fin n))
-  rw [← classOf_product]
-  apply classOf_eq_of_reindex (Equiv.prodProdProdComm _ _ _ _)
-    (Equiv.prodProdProdComm _ _ _ _) (Equiv.prodProdProdComm _ _ _ _)
-  funext x y z
-  exact Tensor.matrixCoefficients_product x y z
-
-@[simp] theorem matrixClass_one : (matrixClass (K := K)) 1 = 1 := by
-  let e : Fin 1 × Fin 1 ≃ PUnit.{1} := Fintype.equivOfCardEq (by simp)
-  apply classOf_eq_of_reindex e e e
-  funext x y z
-  have hxy : x.2 = y.1 := Subsingleton.elim _ _
-  have hyz : y.2 = z.1 := Subsingleton.elim _ _
-  have hzx : z.2 = x.1 := Subsingleton.elim _ _
-  simp [Tensor.pullback, matrixMultiplicationTensor, hxy, hyz, hzx]
-
-theorem matrixClass_pow (m j : ℕ) : (matrixClass (K := K)) (m ^ j) = (matrixClass (K := K)) m ^ j := by
-  induction j with
-  | zero => simp
-  | succ j ih => rw [pow_succ, matrixClass_mul, ih, pow_succ]
-
-theorem classOf_eq_zero_iff {X Y Z : Type*} [Fintype X] [Fintype Y] [Fintype Z]
-    (T : Tensor K X Y Z) : classOf T = 0 ↔ T = 0 := by
-  constructor
-  · intro h
-    have hr : IsRestriction T (0 : Tensor K Empty Empty Empty) :=
-      ((classOf_eq_iff _ _).mp h).1
-    exact hr.eq_zero_of_zero
-  · rintro rfl
-    exact classOf_zero
-
-instance : Nontrivial (TensorClass K) := by
-  refine ⟨⟨1, 0, ?_⟩⟩
-  intro h
-  have heq : (fun (_ _ _ : PUnit.{1}) => (1 : K)) = 0 :=
-    (classOf_eq_zero_iff _).mp h
-  have := congrFun (congrFun (congrFun heq PUnit.unit) PUnit.unit) PUnit.unit
-  exact one_ne_zero this
-
-/-- Selecting a coefficient one gives a unit restriction without division. -/
-theorem one_le_classOf_of_coefficient_one {X Y Z : Type*}
-    [Fintype X] [Fintype Y] [Fintype Z] {T : Tensor K X Y Z}
-    (hT : ∃ x y z, T x y z = 1) : 1 ≤ classOf T := by
+/-- A block sum in which the coordinate spaces can vary from block to block. -/
+def blockSum {n : ℕ} {X Y Z : Fin n → Type}
+    (B : ∀ b, IntTensor (X b) (Y b) (Z b)) : IntTensor (Σ b, X b) (Σ b, Y b) (Σ b, Z b) := by
   classical
-  obtain ⟨x, y, z, hxyz⟩ := hT
-  apply (classOf_le_iff _ _).mpr
-  refine ⟨(fun _ u => if u = x then 1 else 0),
-    (fun _ v => if v = y then 1 else 0),
-    (fun _ w => if w = z then 1 else 0), ?_⟩
-  funext a b c
-  simp [Tensor.restrict, ite_mul, mul_ite, hxyz]
+  exact fun x y z => if h : y.1 = x.1 then if e : z.1 = x.1 then B x.1 x.2 (h ▸ y.2) (e ▸ z.2) else 0 else 0
 
-end General
 
-section Field
+/-- Split off the first block of a dependent family. -/
+private def blockSplit {n : ℕ} (A : Fin (n+1) → Type) :
+    (A 0 ⊕ (Σ i : Fin n, A i.succ)) ≃ (Σ i, A i) where
+  toFun
+    | .inl x => ⟨0, x⟩
+    | .inr ⟨i,x⟩ => ⟨i.succ, x⟩
+  invFun := fun ⟨i, x⟩ => Fin.cases (motive := fun i => A i → _) Sum.inl
+    (fun j x => .inr ⟨j,x⟩) i x
+  left_inv := by rintro (x | ⟨i,x⟩) <;> simp
+  right_inv := by
+    rintro ⟨i, x⟩
+    induction i using Fin.cases <;> simp
 
-variable {K : Type*} [Field K]
+/-- Passing to tensor classes converts a block sum into a sum. -/
+theorem classOf_blockSum {n : ℕ} {X Y Z : Fin n → Type}
+    [∀ i, Fintype (X i)] [∀ i, Fintype (Y i)] [∀ i, Fintype (Z i)]
+    (B : ∀ b, IntTensor (X b) (Y b) (Z b)) :
+    classOf (blockSum B) = ∑ i, classOf (B i) := by
+  induction n with
+  | zero =>
+    simp only [Finset.univ_eq_empty, Finset.sum_empty]
+    exact classOf_eq_zero (funext fun x => x.1.elim0)
+  | succ n ih =>
+    rw [Fin.sum_univ_succ, ← ih (fun i => B i.succ), ← classOf_sum]
+    symm
+    reindex_by (blockSplit _)
+    funext x y z
+    rcases x with x | ⟨i,x⟩ <;> rcases y with y | ⟨j,y⟩ <;> rcases z with z | ⟨k,z⟩
+    all_goals simp [blockSplit, Tensor.pullback, blockSum, sumTensor,
+      show ∀ j : Fin n, 0 ≠ j.succ from fun j => j.succ_ne_zero.symm]
+    case inr.inr.inr =>
+      by_cases h : j = i <;> by_cases e : k = i
+      · subst j k; simp
+      all_goals simp [h, e]
 
-end Field
+/-- Tensor products with varying factors descend to products of classes. -/
+@[simp] theorem classOf_wordProduct {n : ℕ} {X Y Z : Fin n → Type}
+    [∀ i, Fintype (X i)] [∀ i, Fintype (Y i)] [∀ i, Fintype (Z i)]
+    (B : ∀ i, IntTensor (X i) (Y i) (Z i)) :
+    classOf (Tensor.wordProduct B) = ∏ i, classOf (B i) := by
+  induction n with
+  | zero =>
+      rw [Fin.prod_univ_zero, show Tensor.wordProduct B = 1 by ext; simp [Tensor.wordProduct], classOf_const_one]
+  | succ n ih =>
+      rw [Fin.prod_univ_succ, ← ih (fun i => B i.succ), ← classOf_product]
+      reindex_by (Fin.consEquiv _).symm
+      ext x y z
+      simp [Tensor.wordProduct, Tensor.pullback, Tensor.product, Fin.consEquiv, Fin.prod_univ_succ, Fin.tail]
 
-end MatrixMultiplication.AuxiliarySeparation.TensorSemiring
+@[simp] theorem classOf_diagonal (I : Type) [Fintype I] [DecidableEq I] :
+    classOf (Tensor.diagonal I) = (Fintype.card I : TensorClass) := by
+  let e := (Fintype.equivFin I).trans (Equiv.sigmaPUnit _).symm
+  have h : Tensor.diagonal I =
+      Tensor.pullback e e e (blockSum (fun _ : Fin (Fintype.card I) => unitTensor)) := by
+    ext x y z
+    simp [e, Equiv.sigmaPUnit, Tensor.diagonal, Tensor.pullback, blockSum, unitTensor]
+    split_ifs <;> grind [Equiv.apply_eq_iff_eq]
+  rw [h, classOf_reindex, classOf_blockSum]
+  change (∑ _ : Fin (Fintype.card I), (1 : TensorClass)) = _
+  simp
 
+theorem classOf_le_nat_iff_rankAtMost
+    (T : IntTensor X Y Z) (r : ℕ) : classOf T ≤ (r : TensorClass) ↔ Tensor.RankAtMost T r := by
+  rw [← show classOf (scalarTensor r) = (r : TensorClass) by simp]
+  rfl
+
+theorem exists_scalar_dominator : ∀ T : TensorClass, ∃ r : ℕ, T ≤ (r : TensorClass) :=
+  class_ind fun t => by
+  classical
+  refine ⟨Fintype.card (t.X × t.Y), ?_⟩
+  rw [← classOf_diagonal (t.X × t.Y)]
+  refine ⟨⟨fun x q => if x = q.1 then 1 else 0, fun y q => if y = q.2 then 1 else 0,
+    fun z q => t.coeff q.1 q.2 z⟩, ?_⟩
+  ext x y z
+  simp [Tensor.restrict_diagonal, Fintype.sum_prod_type, ite_mul, mul_ite]
+
+end TensorSemiring
 end
-
-end OAI
+end OAI.MatrixMultiplication.AuxiliarySeparation

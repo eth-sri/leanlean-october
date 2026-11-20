@@ -1,178 +1,179 @@
 module
 
-/-
-Upstream source and modification notice
-Modified from OpenAI's matrix-multiplication sources to support arbitrary fields.
-See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICENSE.
--/
-
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Convolution.Symmetry
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Character.Permutation
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Polynomial.Laws
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Determinant.Character
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Sector.Character
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Polynomial.ProductBounds
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Growth.Profile
+public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Convolution.Basic
+public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.TagInequality
+public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Growth
 
 public section
 
 @[expose] section
 
-namespace OAI
+open scoped NNReal
 
-/-!
-# The inequalities for the polynomial profile
+namespace OAI.MatrixMultiplication.AuxiliarySeparation
 
-The six character values are combined before the common probability law is
-optimized. Each first-leg exponent occurs twice, so the total entropy exponent
-is exactly six times the mean exponent used to normalize the profile.
--/
+open Foundation TensorSemiring
 
 noncomputable section
 
-open scoped BigOperators
-open MatrixMultiplication.Foundation
+namespace DeterminantFiltration
 
-namespace MatrixMultiplication.AuxiliarySeparation.Character
+abbrev width (e : ℕ) (b : Fin 2) := if b = 0 then e+2 else e
+abbrev Index (e : ℕ) := Σ b : Fin 2, Fin (width e b)
 
-variable {K : Type*} [CommRing K] [Nontrivial K]
+/-- The two graded branches, without padding or changing the first leg. -/
+def branch (d e : ℕ) (b : Fin 2) : IntTensor (Fin (d+1)) (Fin (width e b)) (Fin (width (d+e) b)) :=
+  fun i j k => if i.val + j.val = k.val then 1 else 0
 
-variable (χ : (Character K))
+def select {I : Type*} [DecidableEq I] (i j : I) : ℤ := if j = i then 1 else 0
 
-/-- The exponents of the six permuted characters have the normalization total. -/
-theorem sum_permutedCharacter_pX_mean :
-    (∑ i : Fin 6, (χ.permutedCharacter i).pX) = 6 * χ.meanExponent := by
-  rw [χ.sum_permutedCharacter_pX]
-  unfold meanExponent
-  ring
+def inputChange (e : ℕ) (j : Index e) (y : Fin (e+1) × Fin 2) : ℤ :=
+  if hb : j.1 = 0 then
+    if hj : j.2.val < e+1 then select (⟨j.2.val, hj⟩, 0) y else select (⟨e, by omega⟩, 1) y
+  else
+    have hj : j.2.val < e := by lia
+    select (⟨j.2.val, by omega⟩, 1) y - select (⟨j.2.val+1, by omega⟩, 0) y
 
-/-- All six factors associated to a positive-size polynomial tensor are positive. -/
-theorem permutedCharacter_convolution_pos {a b : ℕ} (ha : 0 < a) (hb : 0 < b)
-    (i : Fin 6) : 0 < (χ.permutedCharacter i).value ((convolution (K := K)) a b) :=
-  (χ.permutedCharacter i).value_convolution_pos ha hb
+def outputDualChange (d e : ℕ) (k : Index (d+e)) (z : Fin (d+1+(e+1)-1) × Fin 2) : ℤ :=
+  if hb : k.1 = 0 then
+    have hk : k.2.val < d+e+2 := by lia
+    (if h : k.2.val < d+e+1 then select (⟨k.2.val, by omega⟩, 0) z else 0) +
+      (if h : 0 < k.2.val then select (⟨k.2.val-1, by omega⟩, 1) z else 0)
+  else
+    have hk : k.2.val < d+e := by lia
+    select (⟨k.2.val, by omega⟩, 1) z
 
-/-- Exchanging the two output-side positions reorders the six convolution factors. -/
-theorem prod_permutedCharacter_swapped_convolution (a b : ℕ) :
-    (∏ i : Fin 6, (χ.permutedCharacter i).value
-      (fun x z y => (convolution (K := K)) a b x y z)) =
-    ∏ i : Fin 6, (χ.permutedCharacter i).value ((convolution (K := K)) a b) := by
-  rw [χ.prod_permutedCharacter_value, χ.prod_permutedCharacter_value]
-  exact χ.sixfoldProduct_swap23 _
+def changeOfBasis (d e : ℕ) :=
+  Tensor.restrict ⟨fun i => select (i, ()), inputChange e, outputDualChange d e⟩
+    (Tensor.product (convolution (d+1) (e+1)) (dot 2))
 
-/-- The actual polynomial profile is concave in its second positive index. -/
-theorem convolutionProfile_concave_of_separation
-    (hsep : ∀ ψ : Character K,
-      ∀ {M : ℕ} {X' Y' Z' : Type} [Fintype X'] [Fintype Y'] [Fintype Z'],
-        0 < M → ∀ B' : Fin M → Tensor K X' Y' Z',
-          (∑ i, ψ.value (B' i)) * (M : ℝ) ^ ψ.pX ≤
-            6 * (M : ℝ) * ψ.value (sharedFirstTensor B'))
-    {a b : ℕ} (ht : 0 < χ.meanExponent)
-    (ha : 0 < a) (hb : 2 ≤ b) :
-    χ.convolutionProfile a (b - 1) + χ.convolutionProfile a (b + 1) ≤
-      2 * χ.convolutionProfile a b := by
-  have h := finite_product_concavity
-    (fun i : Fin 6 => (χ.permutedCharacter i).value ((convolution (K := K)) a b))
-    (fun i : Fin 6 => (χ.permutedCharacter i).value ((convolution (K := K)) a (b + 1)))
-    (fun i : Fin 6 => (χ.permutedCharacter i).value ((convolution (K := K)) a (b - 1)))
-    (fun i : Fin 6 => (χ.permutedCharacter i).pX)
-    (mul_pos (by norm_num : (0 : ℝ) < 6) ht) χ.sum_permutedCharacter_pX_mean
-    (fun i => χ.permutedCharacter_convolution_pos ha (by omega) i)
-    (fun i => χ.permutedCharacter_convolution_pos ha (by omega) i)
-    (fun i => χ.permutedCharacter_convolution_pos ha (by omega) i)
-    (fun i q hq₀ hq₁ =>
-      (χ.permutedCharacter i).convolution_concavity_tag_of_separation
-        (hsep (χ.permutedCharacter i)) a b ha hb q hq₀ hq₁)
-  simp only [χ.prod_permutedCharacter_value] at h
-  change χ.convolutionProfile a (b + 1) + χ.convolutionProfile a (b - 1) ≤
-    2 * χ.convolutionProfile a b at h
-  simpa only [add_comm] using h
+/-- Only coefficients in the two diagonal sectors and the lower cross term
+are at or below the extraction degree. -/
+def degeneration (d e : ℕ) :
+    Tensor.PolynomialRestrictionDegeneration (changeOfBasis d e) (sharedFirstTensor (branch d e)) 1 := by
+  classical
+  refine Tensor.weightedDegeneration _ _ 1 id id id (fun _ => 0)
+    (fun j => if j.1 = 0 then 1 else 0) (fun k => if k.1 = 0 then 0 else 1) ?_
+  rintro i ⟨b,j⟩ ⟨c,k⟩ l hl
+  have hi := i.isLt
+  fin_cases b <;> fin_cases c <;> interval_cases l <;>
+    simp [sharedFirstTensor, branch] <;> try rfl
+  all_goals
+    have hj := j.isLt
+    have hk := k.isLt
+    simp only [width, Fin.ext_iff, Fin.val_zero, Nat.one_ne_zero, ↓reduceIte] at hj hk
+    simp [changeOfBasis, Tensor.restrict, inputChange, outputDualChange]
+    split_ifs <;> try omega
+  all_goals
+    simp only [select, add_mul, sub_mul, mul_sub, mul_add, Finset.sum_add_distrib,
+      Finset.sum_sub_distrib, ite_mul, mul_ite, zero_mul, mul_zero, one_mul, mul_one,
+      Fintype.sum_ite_eq', add_zero, zero_add]
+    simp [Tensor.product, convolution, dot]
+  all_goals (try split_ifs) <;> omega
 
-/-- The actual three-sector degeneration triples the normalized profile. -/
-theorem convolutionProfile_tripling_of_separation
-    (hsep : ∀ ψ : Character K,
-      ∀ {M : ℕ} {X' Y' Z' : Type} [Fintype X'] [Fintype Y'] [Fintype Z'],
-        0 < M → ∀ B' : Fin M → Tensor K X' Y' Z',
-          (∑ i, ψ.value (B' i)) * (M : ℝ) ^ ψ.pX ≤
-            6 * (M : ℝ) * ψ.value (sharedFirstTensor B'))
-    {a h : ℕ} (ht : 0 < χ.meanExponent)
-    (ha : 0 < a) (hh : 0 < h) :
-    3 * χ.convolutionProfile a h ≤ χ.convolutionProfile a (3 * h + a - 1) := by
-  have hsw : ∃ x z y, (fun i s r => convolution (K := K) a h i r s) x z y = 1 :=
-    ⟨⟨0, ha⟩, convolutionOutput ⟨0, ha⟩ ⟨0, hh⟩, ⟨0, hh⟩, convolution_at_output _ _⟩
-  have h := finite_product_tripling
-    (fun i : Fin 6 => (χ.permutedCharacter i).value ((convolution (K := K)) a (3 * h + a - 1)))
-    (fun i : Fin 6 => (χ.permutedCharacter i).value ((convolution (K := K)) a h))
-    (fun i : Fin 6 => (χ.permutedCharacter i).value (fun x z y => (convolution (K := K)) a h x y z))
-    (fun i : Fin 6 => (χ.permutedCharacter i).pX)
-    (mul_pos (by norm_num : (0 : ℝ) < 6) ht) χ.sum_permutedCharacter_pX_mean
-    (fun i => χ.permutedCharacter_convolution_pos ha (by omega) i)
-    (fun i => χ.permutedCharacter_convolution_pos ha hh i)
-    (fun i => zero_lt_one.trans_le
-      ((χ.permutedCharacter i).one_le_value_of_coefficient_one hsw))
-    (fun i => Sector.convolution_tripling_tag_of_separation (χ.permutedCharacter i)
-      (hsep (χ.permutedCharacter i)) a h ha hh)
-    (χ.prod_permutedCharacter_swapped_convolution a h)
-  simpa only [χ.prod_permutedCharacter_value, convolutionProfile, symmetrizedProfile] using h
+end DeterminantFiltration
 
-/-- The polynomial profile satisfies every hypothesis of the scalar growth theorem. -/
-def toScalarProfile_of_separation_and_convolution
-    (hsep : ∀ ψ : Character K,
-      ∀ {M : ℕ} {X' Y' Z' : Type} [Fintype X'] [Fintype Y'] [Fintype Z'],
-        0 < M → ∀ B' : Fin M → Tensor K X' Y' Z',
-          (∑ i, ψ.value (B' i)) * (M : ℝ) ^ ψ.pX ≤
-            6 * (M : ℝ) * ψ.value (sharedFirstTensor B'))
-    (hconv : ∀ ψ : Character K, ∀ a b : ℕ,
-      ψ.value (convolution (K := K) a b) ≤ (a + b - 1 : ℕ))
-    (ht : 0 < χ.meanExponent) : ScalarProfile χ.meanExponent where
-  value := χ.convolutionProfile
-  positive a b ha hb := χ.convolutionProfile_pos (by omega) (by omega)
-  symmetric a b _ _ := χ.convolutionProfile_comm a b
-  boundary b hb := χ.convolutionProfile_one_left ht (by omega)
-  concave a b ha hb := χ.convolutionProfile_concave_of_separation hsep ht (by omega) hb
-  tripling a h ha hh := χ.convolutionProfile_tripling_of_separation hsep ht (by omega) (by omega)
-  rank_bound a b ha hb := by
-    have h := χ.convolutionProfile_le_of_character_value_bounds (a := a) (b := b) ht
-      (fun ψ => hconv ψ a b)
-    have hab : 1 ≤ a + b := by omega
-    simpa only [Nat.cast_sub hab, Nat.cast_add, Nat.cast_one] using h
+namespace Sector
 
-/-- Every actual tensor character has mean singleton-leg exponent at most `3/4`. -/
-theorem meanExponent_le_three_quarters_of_separation_and_convolution
-    (hsep : ∀ ψ : Character K,
-      ∀ {M : ℕ} {X' Y' Z' : Type} [Fintype X'] [Fintype Y'] [Fintype Z'],
-        0 < M → ∀ B' : Fin M → Tensor K X' Y' Z',
-          (∑ i, ψ.value (B' i)) * (M : ℝ) ^ ψ.pX ≤
-            6 * (M : ℝ) * ψ.value (sharedFirstTensor B'))
-    (hconv : ∀ ψ : Character K, ∀ a b : ℕ,
-      ψ.value (convolution (K := K) a b) ≤ (a + b - 1 : ℕ))
-    : χ.meanExponent ≤ 3 / 4 := by
-  by_cases ht : 0 < χ.meanExponent
-  · exact (χ.toScalarProfile_of_separation_and_convolution hsep hconv ht).exponent_le_three_quarters ht
-  · have hle : χ.meanExponent ≤ 0 := le_of_not_gt ht
-    linarith
+abbrev sourceWidth (a h : ℕ) := 3 * h + a - 1
+abbrev rightStart (a h : ℕ) := 2 * h + a - 1
+abbrev yWidth (a h : ℕ) (b : Fin 3) := if b = 1 then a+h-1 else h
+abbrev zWidth (a h : ℕ) (b : Fin 3) := if b = 1 then h else a+h-1
+
+private def embed (out : Bool) (a h : ℕ) (b : Fin 3)
+    (j : Fin (if out then zWidth a h b else yWidth a h b)) :
+    Fin (if out then a + sourceWidth a h - 1 else sourceWidth a h) :=
+  let j' := if b = 1 then j.rev else j
+  ⟨(if b = 0 then 0 else if b = 1 then (if out then h+a-1 else h) else rightStart a h) + j'.val, by
+    have hj := j'.isLt
+    cases out <;> fin_cases b <;> simp [yWidth, zWidth, rightStart, sourceWidth] at * <;> omega⟩
+
+/-- Reversing both middle intervals gives a transpose of convolution. -/
+def branch (a h : ℕ) (b : Fin 3) : IntTensor (Fin a) (Fin (yWidth a h b)) (Fin (zWidth a h b)) :=
+  fun i j k => if (if b = 1 then i.val + k.val = j.val else i.val + j.val = k.val) then 1 else 0
+
+/-- The interval offsets give positive degree on the support; degree one
+keeps just the three matching intervals. -/
+private noncomputable def restriction (a h : ℕ) :
+    Tensor.PolynomialRestrictionDegeneration (convolution a (sourceWidth a h))
+      (sharedFirstTensor (branch a h)) 1 := by
+  classical
+  refine Tensor.weightedDegeneration _ _ 1 id (fun y => embed false a h y.1 y.2) (fun z => embed true a h z.1 z.2)
+    (fun _ => 0) (fun y => if y.1 = 1 then 1 else 0) (fun z => if z.1 = 1 then 0 else 1) ?_
+  rintro i ⟨b,j⟩ ⟨c,k⟩ l hl
+  have hi := i.isLt
+  have hj := j.isLt
+  have hk := k.isLt
+  fin_cases b <;> fin_cases c <;> interval_cases l <;>
+    simp [sharedFirstTensor, branch, convolution, embed,
+      rightStart, yWidth, zWidth, Fin.val_rev] at * <;> try omega
+
+
+end Sector
+
+namespace Character
+
+variable (χ : Character)
+
+open DeterminantFiltration
+
+/-- Apply the type-counting inequality to all six permutations at once. -/
+private theorem symmetrizedProfile_sum_le
+    (ht : 0 < χ.exponent)
+    {m : ℕ} {X U V W : Type} {Y Z : Fin m → Type}
+    [Fintype X] [∀ i, Fintype (Y i)] [∀ i, Fintype (Z i)]
+    [Fintype U] [Fintype V] [Fintype W]
+    (B : ∀ i, IntTensor X (Y i) (Z i)) (T : IntTensor U V W)
+    {c : ℕ} (hc : 0 < c)
+    (hB : ∀ ψ : Character, ψ.value (sharedFirstTensor B) ≤ ψ.value (dot c) * ψ.value T) :
+    (∑ i, χ.symmetrizedProfile (B i)) ≤ c * χ.symmetrizedProfile T := by
+  have H : χ.values (sharedFirstTensor B) ≤
+      χ.values (dot c) * χ.values T := fun i => hB _
+  have h := χ.normalize_mono ht H
+  rw [map_mul, χ.normalize_dot ht hc] at h
+  exact (sharedFirst_sum_value_le B χ ht).trans h
 
 /-- The three dot-product exponents of an actual character sum to at most `9/4`. -/
-theorem exponent_sum_le_nine_quarters_of_separation_and_convolution
-    (hsep : ∀ ψ : Character K,
-      ∀ {M : ℕ} {X' Y' Z' : Type} [Fintype X'] [Fintype Y'] [Fintype Z'],
-        0 < M → ∀ B' : Fin M → Tensor K X' Y' Z',
-          (∑ i, ψ.value (B' i)) * (M : ℝ) ^ ψ.pX ≤
-            6 * (M : ℝ) * ψ.value (sharedFirstTensor B'))
-    (hconv : ∀ ψ : Character K, ∀ a b : ℕ,
-      ψ.value (convolution (K := K) a b) ≤ (a + b - 1 : ℕ))
-    : χ.pX + χ.pY + χ.pZ ≤ 9 / 4 := by
-  have h := χ.meanExponent_le_three_quarters_of_separation_and_convolution hsep hconv
-  unfold meanExponent at h
-  linarith
+theorem exponent_le_nine_quarters : χ.exponent ≤ 9 / 4 := by
+  by_cases ht : 0 < χ.exponent
+  swap
+  · linarith
+  refine ScalarProfile.exponent_le_nine_quarters ?_ ht
+  exact {
+    value a b := χ.convolutionProfile a b
+    nonneg a b := NNReal.coe_nonneg _
+    symmetric a b := congrArg NNReal.toReal (χ.convolutionProfile_comm a b)
+    unit := by simp
+    concave a b ha := by
+      obtain ⟨d, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (by omega : a ≠ 0)
+      have H := χ.symmetrizedProfile_sum_le ht (branch d b) (convolution (d+1) (b+1)) (by decide : 0 < 2)
+        (fun ψ => by
+          refine (ψ.value_polynomialRestrictionDegeneration_le_ring (degeneration d b)).trans ?_
+          rw [mul_comm, ← ψ.map_product]
+          exact ψ.value_le_of_restriction ⟨_,rfl⟩)
+      have hb (i : Fin 2) : χ.symmetrizedProfile (branch d b i) = χ.convolutionProfile (d+1) (width b i) :=
+        congrArg χ.classProfile (classOf_eq_of_reindex (Equiv.refl _) (Equiv.refl _)
+          (finCongr (by unfold width; split_ifs <;> omega)) rfl)
+      exact_mod_cast (by simpa [Fin.sum_univ_two, hb, width, convolutionProfile, add_comm] using H :
+        χ.convolutionProfile (d+1) b + χ.convolutionProfile (d+1) (b+2) ≤
+          2 * χ.convolutionProfile (d+1) (b+1))
+    tripling a h := by
+      have H := χ.symmetrizedProfile_sum_le ht (Sector.branch a h) (convolution a (Sector.sourceWidth a h)) Nat.zero_lt_one
+        (fun ψ => by simpa [Character.value, show classOf (dot 1) = 1 from dotClass.map_one] using ψ.value_polynomialRestrictionDegeneration_le_ring (Sector.restriction a h))
+      have hs (i : Fin 3) : χ.symmetrizedProfile (Sector.branch a h i) = χ.convolutionProfile a h := by
+        fin_cases i
+        · rfl
+        · exact χ.symmetrizedProfile_swap23 (convolution a h)
+        · rfl
+      exact_mod_cast (by simpa [hs, convolutionProfile] using H :
+        (3 : ℝ≥0) * χ.convolutionProfile a h ≤ χ.convolutionProfile a (3*h+a-1))
+    rank_bound n := by
+      have H : χ.values (convolution n n) ≤ fun _ => ((2*n : ℕ) : ℝ≥0) := fun i => by
+        exact ((χ.permutedCharacter i).value_convolution_le n n).trans
+          (Nat.cast_le.mpr (by omega : n+n-1 ≤ 2*n))
+      exact_mod_cast (χ.normalize_mono ht H).trans_eq (χ.normalize_const _)
+  }
 
-section Field
-
-variable {K : Type*} [Field K] [IsAlgClosed K] (χ : Character K)
-
-end Field
-
-end MatrixMultiplication.AuxiliarySeparation.Character
-
+end Character
 end
-
-end OAI
+end OAI.MatrixMultiplication.AuxiliarySeparation

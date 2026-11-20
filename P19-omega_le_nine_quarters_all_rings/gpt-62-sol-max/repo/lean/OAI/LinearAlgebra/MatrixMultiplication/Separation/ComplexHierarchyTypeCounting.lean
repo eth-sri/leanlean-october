@@ -1,3 +1,0 @@
-module
-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ComplexHierarchyEntropy
-public import OAI.LinearAlgebra.MatrixMultiplication.Entropy.ComplexConditionalTypeCounting

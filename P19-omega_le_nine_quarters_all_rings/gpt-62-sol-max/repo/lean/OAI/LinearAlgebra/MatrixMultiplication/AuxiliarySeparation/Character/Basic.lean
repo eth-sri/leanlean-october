@@ -2,188 +2,131 @@ module
 
 /-
 Upstream source and modification notice
+Modified from OpenAI's matrix-multiplication sources to support arbitrary fields.
+See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICENSE.
+-/
+
+/-
+Upstream source and modification notice
 Modified from OpenAI's matrix-multiplication sources and the all-fields extension
 to support the integral/ring proof. Field-only claims remain explicitly scoped.
 See UPSTREAM.md for provenance and changes; Apache-2.0 license retained in LICENSE.
 -/
 
-public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.MatrixMultiplication
-public import Mathlib.Logic.Equiv.Prod
+public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Tensor.Semiring
+public import OAI.LinearAlgebra.MatrixMultiplication.AuxiliarySeparation.Growth
+public import OAI.LinearAlgebra.MatrixMultiplication.Tensor.Basic
+public import Mathlib.Analysis.SpecialFunctions.Pow.NNReal
 
 public section
 
 @[expose] section
 
-namespace OAI
+namespace OAI.MatrixMultiplication.AuxiliarySeparation
 
-/-!
-# Characters of finite tensors over a commutative coefficient semiring
+open Foundation TensorSemiring
+open scoped NNReal
 
-The tensor operations in this file are the coefficient operations from
-`MatrixMultiplication.Foundation.Tensor`. A character is an assumption on those
-operations, not an assertion that a character exists. Restriction monotonicity
-forces invariance under independent invertible changes of coordinates, so this
-interface descends to the mutual-restriction classes of Section 3 of the paper.
--/
+/-- Characters are ordered semiring homomorphisms out of the restriction classes. -/
+abbrev Character := TensorClass →+*o ℝ≥0
+
+namespace Character
 
 noncomputable section
 
-open MatrixMultiplication.Foundation
-open scoped BigOperators
+variable (χ : Character)
+variable {X Y Z U V W : Type} [Fintype X] [Fintype Y] [Fintype Z] [Fintype U] [Fintype V] [Fintype W]
 
-namespace MatrixMultiplication.AuxiliarySeparation
+def value (T : IntTensor X Y Z) : ℝ≥0 := χ (classOf T)
 
-section General
+theorem value_le_of_restriction {T : IntTensor X Y Z} {S : IntTensor U V W}
+    (h : IsRestriction S T) : χ.value S ≤ χ.value T :=
+  χ.monotone' h
 
-variable {K : Type*} [CommSemiring K]
+theorem map_product (T : IntTensor X Y Z) (S : IntTensor U V W) :
+    χ.value (Tensor.product T S) = χ.value T * χ.value S := by simp [value, classOf_product, _root_.map_mul]
 
-/-- The scalar multiplication tensor, the multiplicative unit. -/
-def unitTensor : Tensor K PUnit PUnit PUnit := fun _ _ _ => 1
+@[simp] theorem value_scalarTensor (r : ℕ) : χ.value (scalarTensor r) = r := by simp [value]
 
-/-- The direct sum of `r` scalar multiplication tensors, in diagonal coordinates. -/
-def scalarTensor (r : ℕ) : Tensor K (Fin r) (Fin r) (Fin r) :=
-  fun i j k => if i = j ∧ i = k then 1 else 0
+@[simp] theorem value_power (T : IntTensor X Y Z) (n : ℕ) :
+    χ.value (Tensor.power T n) = χ.value T ^ n := by
+  simp [value, Tensor.power]
 
-/-- A normalized, additive, multiplicative, restriction-monotone tensor valuation.
+def cyclicCharacter : Character := χ.comp (permuteClass true)
+def swap23Character : Character := χ.comp (permuteClass false)
 
-Index types vary over all finite types in `Type`. No character-existence result is
-included among the fields or claimed by this definition.
--/
-structure Character (K : Type*) [CommSemiring K] where
-  value : {X Y Z : Type} → [Fintype X] → [Fintype Y] → [Fintype Z] →
-    Tensor K X Y Z → ℝ
-  nonneg : ∀ {X Y Z : Type} [Fintype X] [Fintype Y] [Fintype Z]
-    (T : Tensor K X Y Z), 0 ≤ value T
-  map_zero : ∀ {X Y Z : Type} [Fintype X] [Fintype Y] [Fintype Z],
-    value (0 : Tensor K X Y Z) = 0
-  map_one : value (unitTensor (K := K)) = 1
-  map_directSum : ∀ {ι X Y Z : Type} [Fintype ι] [DecidableEq ι]
-    [Fintype X] [Fintype Y] [Fintype Z] (T : ι → Tensor K X Y Z),
-    value (Tensor.directSum T) = ∑ i, value (T i)
-  map_product : ∀ {X Y Z U V W : Type} [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype U] [Fintype V] [Fintype W]
-    (T : Tensor K X Y Z) (S : Tensor K U V W),
-    value (Tensor.product T S) = value T * value S
-  monotone : ∀ {X Y Z X' Y' Z' : Type}
-    [Fintype X] [Fintype Y] [Fintype Z]
-    [Fintype X'] [Fintype Y'] [Fintype Z']
-    (T : Tensor K X Y Z) (A : X' → X → K)
-    (B : Y' → Y → K) (C : Z' → Z → K),
-    value (Tensor.restrict A B C T) ≤ value T
+/-- The character's growth exponent on matrix multiplication. -/
+def exponent : ℝ := Real.logb 2 (χ (matrixClass 2))
 
-namespace Character
+theorem value_matrixMultiplication {n : ℕ} (hn : 0 < n) :
+    χ (matrixClass n) = (n : ℝ≥0) ^ χ.exponent :=
+  monotoneMonoidHom_eq_rpow (χ.toMonoidHom.comp matrixClass) (χ.monotone'.comp matrixClass_mono) hn
 
-variable (χ : (Character K))
-variable {X Y Z X' Y' Z' : Type}
-variable [Fintype X] [Fintype Y] [Fintype Z]
-variable [Fintype X'] [Fintype Y'] [Fintype Z']
+/-- The three cyclic orders followed by their reflected orders. -/
+def permutedCharacter (i : Fin 6) : Character :=
+  ![χ, χ.cyclicCharacter, χ.cyclicCharacter.cyclicCharacter,
+    χ.swap23Character, χ.cyclicCharacter.swap23Character,
+    χ.cyclicCharacter.cyclicCharacter.swap23Character] i
 
-/-- Coordinate pullbacks are restrictions. -/
-theorem value_pullback_le (T : Tensor K X Y Z)
-    (fx : X' → X) (fy : Y' → Y) (fz : Z' → Z) :
-    χ.value (Tensor.pullback fx fy fz T) ≤ χ.value T := by
-  classical
-  rw [Tensor.pullback_eq_restrict]
-  exact χ.monotone T _ _ _
+@[simp] private theorem swap23_dot (m : ℕ) : χ.swap23Character (dotClass m) = χ (dotClass m) := by
+  apply congrArg χ
+  apply congrArg (fun t => classOf t)
+  ext; simp [dot, eq_comm]
 
-/-- Independent coordinate bijections preserve a character. -/
-theorem value_reindex (T : Tensor K X Y Z)
-    (ex : X' ≃ X) (ey : Y' ≃ Y) (ez : Z' ≃ Z) :
-    χ.value (Tensor.pullback ex ey ez T) = χ.value T := by
-  apply le_antisymm (χ.value_pullback_le T ex ey ez)
-  have h := χ.value_pullback_le (Tensor.pullback ex ey ez T) ex.symm ey.symm ez.symm
-  have heq : Tensor.pullback ex.symm ey.symm ez.symm
-      (Tensor.pullback ex ey ez T) = T := by
-    funext x y z
-    simp [Tensor.pullback]
-  simpa only [heq] using h
+/-- Record the six nonnegative values as a multiplicative vector. -/
+def classValues : TensorClass →* (Fin 6 → ℝ≥0) :=
+  MonoidHom.pi fun i => (χ.permutedCharacter i).toMonoidHom
 
-/-- An integer scalar tensor has its expected character value. -/
-@[simp] theorem value_scalarTensor (r : ℕ) : χ.value ((scalarTensor (K := K)) r) = r := by
-  let T : Fin r → Tensor K PUnit PUnit PUnit := fun _ => (unitTensor (K := K))
-  have heq : Tensor.pullback (Equiv.prodPUnit (Fin r)).symm
-      (Equiv.prodPUnit (Fin r)).symm (Equiv.prodPUnit (Fin r)).symm
-      (Tensor.directSum T) = (scalarTensor (K := K)) r := by
-    rfl
-  rw [← heq, χ.value_reindex, χ.map_directSum]
-  simp [T, χ.map_one]
+abbrev values (T : IntTensor X Y Z) := χ.classValues (classOf T)
 
-omit [Fintype X] [Fintype Y] [Fintype Z] in
-/-- Restricting a diagonal scalar tensor realizes a rank decomposition. -/
-theorem restrict_scalarTensor (r : ℕ) (a : Fin r → X → K)
-    (b : Fin r → Y → K) (c : Fin r → Z → K) :
-    Tensor.restrict (fun x i => a i x) (fun y i => b i y) (fun z i => c i z)
-      ((scalarTensor (K := K)) r) =
-      fun x y z => ∑ i, Tensor.rankOne (a i) (b i) (c i) x y z := by
-  classical
-  funext x y z
-  simp [Tensor.restrict, scalarTensor, Tensor.rankOne, mul_ite, ite_and]
+/-- Geometric normalization is multiplicative on value vectors. -/
+def normalize : (Fin 6 → ℝ≥0) →* ℝ≥0 where
+  toFun v := (∏ i, v i) ^ (1 / (2 * χ.exponent))
+  map_one' := by simp
+  map_mul' v w := by simp [Finset.prod_mul_distrib, NNReal.mul_rpow]
 
-/-- Character values are bounded by every exact rank decomposition size. -/
-theorem value_le_rank {T : Tensor K X Y Z} {r : ℕ} (h : Tensor.RankAtMost T r) :
-    χ.value T ≤ r := by
-  rcases h with ⟨a, b, c, rfl⟩
-  rw [← restrict_scalarTensor r a b c]
-  exact (χ.monotone ((scalarTensor (K := K)) r) _ _ _).trans_eq (χ.value_scalarTensor r)
+theorem normalize_mono (ht : 0 < χ.exponent) : Monotone χ.normalize :=
+  fun _ _ h => NNReal.rpow_le_rpow (Finset.prod_le_prod fun i _ => h i) (by positivity)
 
-/-- A unit coefficient gives a scalar restriction over every commutative semiring. -/
-theorem one_le_value_of_coefficient_one {T : Tensor K X Y Z}
-    (hT : ∃ x y z, T x y z = 1) : 1 ≤ χ.value T := by
-  classical
-  obtain ⟨x, y, z, hxyz⟩ := hT
-  let A : PUnit → X → K := fun _ x' => if x' = x then 1 else 0
-  let B : PUnit → Y → K := fun _ y' => if y' = y then 1 else 0
-  let C : PUnit → Z → K := fun _ z' => if z' = z then 1 else 0
-  have heq : Tensor.restrict A B C T = (unitTensor (K := K)) := by
-    funext i j k
-    simp [Tensor.restrict, A, B, C, unitTensor, ite_mul, mul_ite, hxyz]
-  simpa only [heq, χ.map_one] using χ.monotone T A B C
+theorem normalize_const (c : ℝ≥0) :
+    χ.normalize (fun _ => c) = c ^ (3 / χ.exponent) := by
+  simp [normalize, ← NNReal.rpow_natCast_mul]
+  congr 1
+  ring
 
-end Character
+/-- A singleton-leg dot product has normalized value equal to its dimension. -/
+theorem normalize_dot (ht : 0 < χ.exponent) {m : ℕ} (hm : 0 < m) :
+    χ.normalize (χ.values (dot m)) = m := by
+  change (∏ i, χ.permutedCharacter i (dotClass m)) ^ (1 / (2 * χ.exponent)) = _
+  have H : (∏ i, χ.permutedCharacter i (dotClass m)) = χ (matrixClass m)^2 := by
+    simp [Fin.prod_univ_succ, permutedCharacter, matrixClass, cyclicCharacter, pow_two]
+    ring
+  rw [H, χ.value_matrixMultiplication hm, ← NNReal.rpow_natCast_mul, ← NNReal.rpow_mul]
+  grind [NNReal.rpow_one]
 
-end General
+/-- Geometric normalization by the sum of the singleton-leg exponents. -/
+def classProfile : TensorClass →* ℝ≥0 := χ.normalize.comp χ.classValues
 
-namespace Character
+abbrev symmetrizedProfile (T : IntTensor X Y Z) := χ.classProfile (classOf T)
 
-section Field
+local macro "symmetrize_swap " e:term : tactic => `(tactic|
+  (unfold symmetrizedProfile classProfile normalize
+   simp only [MonoidHom.comp_apply, MonoidHom.coe_mk, OneHom.coe_mk]
+   congr 1
+   rw [← Equiv.prod_comp ($e : Equiv.Perm (Fin 6))]
+   apply Finset.prod_congr rfl
+   intro i _
+   fin_cases i <;> rfl))
 
-variable {K : Type*} [Field K]
-variable (χ : Character K)
-variable {X Y Z : Type}
-variable [Fintype X] [Fintype Y] [Fintype Z]
+theorem symmetrizedProfile_swap12 (T : IntTensor X Y Z) :
+    χ.symmetrizedProfile (fun y x z => T x y z) = χ.symmetrizedProfile T := by
+  symmetrize_swap (Equiv.swap 0 5 * Equiv.swap 1 3 * Equiv.swap 2 4)
 
-/-- Every nonzero tensor restricts to the scalar multiplication tensor. -/
-theorem one_le_value {T : Tensor K X Y Z} (hT : T ≠ 0) : 1 ≤ χ.value T := by
-  classical
-  obtain ⟨x, hx⟩ := Function.ne_iff.mp hT
-  obtain ⟨y, hy⟩ := Function.ne_iff.mp hx
-  obtain ⟨z, hz⟩ := Function.ne_iff.mp hy
-  change T x y z ≠ 0 at hz
-  let A : PUnit → X → K := fun _ x' => if x' = x then (T x y z)⁻¹ else 0
-  let B : PUnit → Y → K := fun _ y' => if y' = y then 1 else 0
-  let C : PUnit → Z → K := fun _ z' => if z' = z then 1 else 0
-  have heq : Tensor.restrict A B C T = (unitTensor (K := K)) := by
-    funext i j k
-    simp [Tensor.restrict, A, B, C, unitTensor, ite_mul, mul_ite, hz]
-  simpa only [heq, χ.map_one] using χ.monotone T A B C
+theorem symmetrizedProfile_swap23 (T : IntTensor X Y Z) :
+    χ.symmetrizedProfile (fun x z y => T x y z) = χ.symmetrizedProfile T := by
+  symmetrize_swap (Equiv.swap 0 3 * Equiv.swap 1 4 * Equiv.swap 2 5)
 
-/-- Normalization and restriction monotonicity make the character faithful. -/
-@[simp] theorem value_eq_zero_iff (T : Tensor K X Y Z) : χ.value T = 0 ↔ T = 0 := by
-  constructor
-  · intro h
-    by_contra hT
-    have hle := χ.one_le_value hT
-    rw [h] at hle
-    exact (not_le_of_gt zero_lt_one) hle
-  · rintro rfl
-    exact χ.map_zero
-
-end Field
-
-end Character
-
-end MatrixMultiplication.AuxiliarySeparation
 
 end
-
-end OAI
+end Character
+end OAI.MatrixMultiplication.AuxiliarySeparation
