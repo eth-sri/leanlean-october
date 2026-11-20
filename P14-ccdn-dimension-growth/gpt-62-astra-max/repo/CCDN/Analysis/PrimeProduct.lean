@@ -19,32 +19,27 @@ for curve reductions is a separate part of CCDN Proposition 3.2.6.
 
 namespace CCDN
 
-private theorem prime_power_product_dvd (P : Finset ℕ) (e : ℕ → ℕ) (D : ℤ)
+variable (P : Finset ℕ) (e : ℕ → ℕ)
+
+private theorem prime_power_product_dvd (D : ℤ)
     (hP : ∀ p ∈ P, Nat.Prime p) (hdiv : ∀ p ∈ P, (p : ℤ) ^ e p ∣ D) :
     (∏ p ∈ P, (p : ℤ) ^ e p) ∣ D := by
   apply Finset.prod_dvd_of_coprime ?_ hdiv
   intro p hp q hq hpq
-  have hcop : IsCoprime (p : ℤ) (q : ℤ) :=
+  have hcop :=
     Nat.isCoprime_iff_coprime.mpr ((Nat.coprime_primes (hP p hp) (hP q hq)).mpr hpq)
   exact hcop.pow
 
 /-- If each prime `p` in the finite set `P` has `p ^ e p` dividing the positive integer `D`,
 then `∑ p ∈ P, e p * log p ≤ log D`. -/
-theorem sum_log_prime_powers_le_log (P : Finset ℕ) (e : ℕ → ℕ) {D : ℤ}
+theorem sum_log_prime_powers_le_log {D : ℤ}
     (hD : 0 < D) (hP : ∀ p ∈ P, Nat.Prime p)
     (hdiv : ∀ p ∈ P, (p : ℤ) ^ e p ∣ D) :
     (∑ p ∈ P, (e p : ℝ) * Real.log p) ≤ Real.log D := by
-  have hle := Int.le_of_dvd hD (prime_power_product_dvd P e D hP hdiv)
-  have hleR : (∏ p ∈ P, (p : ℝ) ^ e p) ≤ (D : ℝ) := by exact_mod_cast hle
+  have hleR : (∏ p ∈ P, (p : ℝ) ^ e p) ≤ (D : ℝ) := by exact_mod_cast (Int.le_of_dvd hD (prime_power_product_dvd P e D hP hdiv))
   have hpR : ∀ p ∈ P, 0 < (p : ℝ) := by
     intro p hp
     exact_mod_cast (hP p hp).pos
-  have hpos : 0 < ∏ p ∈ P, (p : ℝ) ^ e p := by
-    apply Finset.prod_pos
-    intro p hp
-    exact pow_pos (hpR p hp) _
-  have hlog := Real.log_le_log hpos hleR
-  rw [Real.log_prod (fun p hp => (pow_pos (hpR p hp) (e p)).ne')] at hlog
-  simpa only [Real.log_pow] using hlog
+  grind [Finset.prod_pos, pow_pos, Real.log_le_log, Real.log_prod, Real.log_pow]
 
 end CCDN

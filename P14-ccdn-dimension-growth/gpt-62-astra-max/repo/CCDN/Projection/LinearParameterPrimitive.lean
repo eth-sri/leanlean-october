@@ -42,28 +42,25 @@ theorem exists_bounded_linear_parameter_primitive
         (Set.range (fun i : Fin (m + 2) =>
           algebraMap (MvPolynomial (Fin n) K ⧸ I) F
             ((Ideal.Quotient.mk I) (Fin.cases (momentCoordinate K n k) l i)))) = ⊤ := by
-  let A := MvPolynomial (Fin n) K ⧸ I
+  let A := MvPolynomial _ K ⧸ I
   let φ := IsScalarTower.toAlgHom K A F
-  let u : Fin (m + 1) → F := fun i => φ ((Ideal.Quotient.mk I) (l i))
+  let u := fun i => φ ((Ideal.Quotient.mk I) (l i))
   let R := IntermediateField.adjoin K (Set.range u)
-  let uR : Fin (m + 1) → R := fun i =>
+  let uR : Fin _ → R := fun i =>
     ⟨u i, IntermediateField.subset_adjoin K _ ⟨i, rfl⟩⟩
-  have hiA : AlgebraicIndependent K (fun i => (Ideal.Quotient.mk I) (l i)) :=
+  have hiA :=
     injective_projectionCoordinateMap_iff.mp hi
-  have hiF : AlgebraicIndependent K u := hiA.map' (IsFractionRing.injective A F)
-  have hiR : AlgebraicIndependent K uR := AlgebraicIndependent.of_comp R.val hiF
   obtain ⟨hfinite, hrank⟩ := hilbert_functionField_finite_rank_le (R := R) (F := F) I d
-    (by simpa only [Fintype.card_fin] using hdimdeg) l hl uR hiR (fun _ => rfl)
-  let : Module.Finite R F := hfinite
+    (by simpa) l hl uR (AlgebraicIndependent.of_comp R.val (hiA.map' (IsFractionRing.injective A F))) (fun _ => rfl)
   obtain ⟨k, hk, hprim⟩ := exists_bounded_curve_primitive_element (R := R) (F := F) I
-  refine ⟨k, hk.trans (Nat.mul_le_mul_left n (Nat.pow_le_pow_left hrank 2)), ?_⟩
+  refine ⟨k, hk.trans (by gcongr), ?_⟩
   have hprim' : IntermediateField.adjoin R
       {φ ((Ideal.Quotient.mk I) (momentCoordinate K n k))} = ⊤ := by
     change IntermediateField.adjoin R
-      {algebraMap A F ((Ideal.Quotient.mk I) (momentCoordinate K n k))} = ⊤
+      {algebraMap A F _} = ⊤
     rwa [momentCoordinate_fraction]
   have hh := primitive_parameter_tuple_adjoin_top u
-    (φ ((Ideal.Quotient.mk I) (momentCoordinate K n k))) hprim'
+    _ hprim'
   convert hh using 2
   congr 1
   funext i

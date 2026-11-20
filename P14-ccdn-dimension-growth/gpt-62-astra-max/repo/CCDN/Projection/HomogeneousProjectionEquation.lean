@@ -19,52 +19,44 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ τ : Type*} [Field K] (I : Ideal (MvPolynomial τ K)) (hI : IsHomogeneousIdeal I)
+    (a : σ → MvPolynomial τ K) (ha : ∀ i, (a i).IsHomogeneous 1)
+
+include hI ha in
 /-- For a homogeneous ideal `I` and homogeneous linear forms `a`, the kernel of the projection by
 `a` is closed under taking homogeneous components. -/
 theorem projection_kernel_homogeneousComponent_mem
-    {K σ τ : Type*} [Field K]
-    (I : Ideal (MvPolynomial τ K))
-    (hI : IsHomogeneousIdeal I)
-    (a : σ → MvPolynomial τ K) (ha : ∀ i, (a i).IsHomogeneous 1)
     (p : MvPolynomial σ K) (hp : p ∈ RingHom.ker (projectionCoordinateMap I a)) (N : ℕ) :
     homogeneousComponent N p ∈ RingHom.ker (projectionCoordinateMap I a) := by
-  change (Ideal.Quotient.mk I) (aeval a (homogeneousComponent N p)) = 0
+  change (Ideal.Quotient.mk I) (aeval a _) = 0
   apply Ideal.Quotient.eq_zero_iff_mem.mpr
   rw [← homogeneousComponent_aeval_linear a ha]
-  apply hI
-  apply Ideal.Quotient.eq_zero_iff_mem.mp
-  exact hp
+  solve_by_elim [Ideal.Quotient.eq_zero_iff_mem.mp]
 
 /-- A nonzero generator of a principal ideal that is closed under homogeneous components is
 homogeneous of its total degree. -/
 theorem principal_generator_isHomogeneous
-    {K σ : Type*} [Field K]
     (I : Ideal (MvPolynomial σ K))
     (hI : IsHomogeneousIdeal I)
     (f : MvPolynomial σ K) (hf : f ≠ 0) (hgen : I = Ideal.span {f}) :
     f.IsHomogeneous f.totalDegree := by
-  have hmem : f ∈ I := by rw [hgen]; exact Ideal.subset_span (Set.mem_singleton f)
+  have hmem : f ∈ I := by aesop
   have ht := hI f hmem f.totalDegree
   rw [hgen, Ideal.mem_span_singleton] at ht
   obtain ⟨c, hc⟩ := eq_scalar_mul_of_dvd_of_totalDegree_le f
     (homogeneousComponent f.totalDegree f) hf ht
     (homogeneousComponent_isHomogeneous f.totalDegree f).totalDegree_le
   have hcne : c ≠ 0 := by
-    intro hz
-    apply homogeneousComponent_totalDegree_ne_zero hf
-    rw [hc, hz, zero_smul]
+    grind [homogeneousComponent_totalDegree_ne_zero, zero_smul]
   have hh := (homogeneousComponent_isHomogeneous f.totalDegree f).C_mul c⁻¹
   rw [hc] at hh
   rw [← smul_eq_C_mul] at hh
   simpa only [smul_smul, inv_mul_cancel₀ hcne, one_smul] using hh
 
+include hI ha in
 /-- If the kernel of the projection of a homogeneous ideal by homogeneous linear forms is generated
 by a nonzero polynomial `f`, then `f` is homogeneous of its total degree. -/
 theorem homogeneous_projection_equation
-    {K σ τ : Type*} [Field K]
-    (I : Ideal (MvPolynomial τ K))
-    (hI : IsHomogeneousIdeal I)
-    (a : σ → MvPolynomial τ K) (ha : ∀ i, (a i).IsHomogeneous 1)
     (f : MvPolynomial σ K) (hf : f ≠ 0)
     (hgen : RingHom.ker (projectionCoordinateMap I a) = Ideal.span {f}) :
     f.IsHomogeneous f.totalDegree :=

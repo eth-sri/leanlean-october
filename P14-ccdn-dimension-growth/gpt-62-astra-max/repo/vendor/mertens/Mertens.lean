@@ -31,12 +31,12 @@ theorem sum_log_le {x : ℝ} (hx : 1 ≤ x) :
   _ ≤ ∑ n ∈ Ioc 0 ⌊ x ⌋₊, log x := by
     refine sum_le_sum fun n hn ↦ ?_
     simp only [mem_Ioc] at hn
-    exact log_le_log (by exact_mod_cast hn.1) (Nat.le_floor_iff (by linarith)|>.mp hn.2)
+    exact log_le_log (by exact_mod_cast hn.1) (by grind [Nat.le_floor_iff])
   _ = ⌊x⌋₊ * log x := by simp
   _ ≤ _ := by
     gcongr
     · exact log_nonneg hx
-    · exact Nat.floor_le (by linarith)
+    grind [Nat.floor_le]
 
 lemma integral_log_le {a b : ℝ} (ha : 1 ≤ a) (hab : a ≤ b) :
     ∫ t in a..b, log t ≤ log b * (b - a) := by
@@ -53,17 +53,17 @@ theorem sum_log_ge {x : ℝ} (hx : 1 ≤ x) :
     ∑ n ∈ Ioc 0 ⌊ x ⌋₊, log n ≥ x * log x - 2 * x := by
   have one_le_floor : 1 ≤ ⌊x⌋₊ := by simpa
   calc
-  _ = ∑ n ∈ Icc 1 ⌊ x ⌋₊, log n := by rfl
+  _ = ∑ n ∈ Icc 1 ⌊ x ⌋₊, log n := rfl
   _ = ∑ n ∈ Ico (1 + 1) (⌊ x ⌋₊ + 1), log n := by
     rw [← add_sum_Ioc_eq_sum_Icc one_le_floor]
     simp
     rfl
-  _ = ∑ n ∈ Ico 1 ⌊ x ⌋₊, log ((n + 1 : ℕ)) := by
+  _ = ∑ n ∈ Ico 1 ⌊ x ⌋₊, log (n + 1 : ℕ) := by
     rw [← Finset.sum_Ico_add']
   _ ≥ ∫ t in 1..⌊x⌋₊, log t := by
     convert MonotoneOn.integral_le_sum_Ico one_le_floor ?_|>.ge
     · norm_cast
-    · exact StrictMonoOn.monotoneOn (strictMonoOn_log.mono fun y hy ↦ (by simp_all; linarith))
+    grind [StrictMonoOn.monotoneOn, strictMonoOn_log.mono]
   _ = (∫ t in 1..x, log t) - ∫ t in ⌊x⌋₊..x, log t := by
     nth_rw 3 [intervalIntegral.integral_symm]
     rw [sub_neg_eq_add, intervalIntegral.integral_add_adjacent_intervals] <;> exact intervalIntegral.intervalIntegrable_log'
@@ -74,9 +74,8 @@ theorem sum_log_ge {x : ℝ} (hx : 1 ≤ x) :
     gcongr
     · exact log_nonneg hx
     · linarith [Nat.lt_floor_add_one x]
-  _ ≥ x * log x - x - log x := by simp only [integral_log, log_one, mul_zero, sub_zero, ge_iff_le,
-    tsub_le_iff_right, sub_add_cancel, le_add_iff_nonneg_right, zero_le_one]
-  _ ≥ _ := by linarith [log_le_self (by linarith : 0 ≤ x)]
+  _ ≥ x * log x - x - log x := by simp
+  _ ≥ _ := by grind [log_le_self]
 
 theorem sum_log_eq_sum_mangoldt {x : ℝ} :
     ∑ n ∈ Ioc 0 ⌊x⌋₊, log n = ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * ⌊x / d⌋₊ := by
@@ -87,9 +86,8 @@ noncomputable abbrev E₁Λ (x : ℝ) : ℝ := ∑ d ∈ Ioc 0 ⌊ x ⌋₊, (Λ
 
 theorem E₁Λ.ge {x : ℝ} (hx : 1 ≤ x) :
     E₁Λ x  ≥ -2 := by
-  unfold E₁Λ
   suffices x * ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d / d  ≥ x * (log x - 2) by
-    linarith [le_of_mul_le_mul_left this (by linarith)]
+    nlinarith
   calc
   _ = ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * (x / d) := by
     rw [Finset.mul_sum]
@@ -103,9 +101,8 @@ theorem E₁Λ.ge {x : ℝ} (hx : 1 ≤ x) :
 
 theorem E₁Λ.le {x : ℝ} (hx : 1 ≤ x) :
     E₁Λ x ≤ log 4 + 4 := by
-  unfold E₁Λ
   suffices x * ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d / d ≤ x * (log x + log 4 + 4) by
-    linarith [le_of_mul_le_mul_left this (by linarith)]
+    nlinarith
   calc
   _ = ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d * (x / d) := by
     rw [Finset.mul_sum]
@@ -114,12 +111,11 @@ theorem E₁Λ.le {x : ℝ} (hx : 1 ≤ x) :
     gcongr
     exact Nat.lt_floor_add_one _|>.le
   _ = (∑ d ∈ Ioc 0 ⌊x⌋₊, log d) + ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d := by
-    simp_rw [mul_add, mul_one]
-    rw [Finset.sum_add_distrib, sum_log_eq_sum_mangoldt]
+    simp [mul_add, mul_one, Finset.sum_add_distrib, sum_log_eq_sum_mangoldt]
   _ ≤ x * log x + (log 4 + 4) * x := by
     gcongr
     · exact sum_log_le hx
-    · exact Chebyshev.psi_le_const_mul_self (by linarith)
+    exact Chebyshev.psi_le_const_mul_self (by linarith)
   _ = _ := by ring
 
 noncomputable abbrev E₁p (x : ℝ) : ℝ := ∑ p ∈ Ioc 0 ⌊ x ⌋₊ with p.Prime, (log p) / p - log x
@@ -130,7 +126,6 @@ theorem E₁p.le_E₁Λ (x : ℝ) :
     gcongr with p _
     split_ifs with hp
     · simp [vonMangoldt_apply_prime hp]
-    have : 0 ≤ Λ p := vonMangoldt_nonneg
     positivity
 
 theorem E₁p.le {x : ℝ} (hx : 1 ≤ x) :
@@ -142,8 +137,7 @@ noncomputable abbrev E₁ : ℝ := ∑' p : ℕ, if p.Prime then (log p) / (p*(p
 lemma E₁.summand_nonneg (p : ℕ) : 0 ≤ if p.Prime then (log p) / (p*(p-1)) else 0 := by
   split_ifs with h
   · refine div_nonneg (log_natCast_nonneg _) (mul_nonneg (Nat.cast_nonneg _) ?_)
-    suffices 1 ≤ (p : ℝ) by linarith
-    exact_mod_cast h.one_le
+    simpa using h.one_le
   · rfl
 
 theorem E₁.summable : Summable (fun p : ℕ ↦ if p.Prime then (log p) / (p*(p-1)) else 0) := by
@@ -162,36 +156,32 @@ theorem E₁.summable : Summable (fun p : ℕ ↦ if p.Prime then (log p) / (p*(
         field_simp
         rw [mul_div_assoc, ← Real.rpow_sub (mod_cast h.pos)]
         norm_num
-        rw [Real.rpow_neg (Nat.cast_nonneg _)]
-        field
-      · exact div_pos (pow_pos (mod_cast h.pos) _) (by norm_num)
+        grind [Real.rpow_neg, Nat.cast_nonneg]
+      exact div_pos (pow_pos (mod_cast h.pos) _) (by norm_num)
     · apply mul_nonneg (Nat.cast_nonneg _)
-      suffices 1 ≤ (n : ℝ) by linarith
-      exact_mod_cast h.one_le
+      simpa using h.one_le
   · positivity
 
 theorem E₁Λ.le_E₁p_add_E₁ {x : ℝ} (hx : 1 ≤ x) :
     E₁Λ x ≤ E₁p x + E₁ := by
-  unfold E₁Λ E₁p
   suffices ∑ d ∈ Ioc 0 ⌊x⌋₊, Λ d / d ≤ ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / p + E₁ by linarith
   simp_rw [vonMangoldt_apply, ite_div, zero_div, ← sum_filter, Chebyshev.sum_PrimePow_eq_sum_sum _ (by linarith)]
   calc
   _ = ∑ k ∈ Icc 1 ⌊log x / log 2⌋₊, ∑ p ∈ Ioc 0 ⌊x ^ (1 / (k : ℝ))⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
     refine sum_congr rfl fun k hk ↦ sum_congr rfl fun p hp ↦ ?_
-    rw [Nat.Prime.pow_minFac (by simp_all) (by simp_all; linarith)]
+    grind [Nat.Prime.pow_minFac]
   _ ≤ ∑ k ∈ Icc 1 ⌊log x / log 2⌋₊, ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
     gcongr with k hk
     apply rpow_le_self_of_one_le hx
     simp only [mem_Icc] at hk
-    exact div_le_one₀ (by norm_cast; linarith)|>.mpr (mod_cast hk.1)
+    bound
   _ ≤ ∑ k ∈ Icc 1 (max 1 ⌊log x / log 2⌋₊), ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
     apply sum_le_sum_of_subset_of_nonneg
     · gcongr
       exact le_max_right ..
     · exact fun _ _ _ ↦ sum_nonneg fun _ _ ↦ (by positivity)
   _ = ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, (log p / p) + ∑ k ∈ Ioc 1 (max 1 ⌊log x / log 2⌋₊), ∑ p ∈ Ioc 0 ⌊x⌋₊ with Nat.Prime p, log p / (p ^ k : ℕ) := by
-    rw [← add_sum_Ioc_eq_sum_Icc (le_max_left ..)]
-    simp
+    grind [add_sum_Ioc_eq_sum_Icc, le_max_left]
   _ ≤ _ := by
     gcongr
     rw [sum_comm]
@@ -205,13 +195,11 @@ theorem E₁Λ.le_E₁p_add_E₁ {x : ℝ} (hx : 1 ≤ x) :
       gcongr
       rw [(by rfl : Ioc 1 (max 1 ⌊log x / log 2⌋₊) = Ico 2 (max 1 ⌊log x / log 2⌋₊  + 1))]
       grw [geom_sum_Ico_le_of_lt_one (by simp)]
-      · apply le_of_eq
-        have : (p : ℝ) ≠ 0 := by exact_mod_cast hp.1.1.ne.symm
-        field
-      · simpa using inv_lt_one_of_one_lt₀ (mod_cast hp.2.one_lt)
+      grind [le_of_eq]
+      simpa using inv_lt_one_of_one_lt₀ (mod_cast hp.2.one_lt)
     _ ≤ _ := by
       rw [sum_filter]
-      exact E₁.summable.sum_le_tsum _ fun p hp ↦ E₁.summand_nonneg p
+      grind [E₁.summable.sum_le_tsum, E₁.summand_nonneg]
 
 theorem E₁p.ge {x : ℝ} (hx : 1 ≤ x) :
     E₁p x ≥ -2 - E₁ := by

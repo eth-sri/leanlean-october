@@ -19,21 +19,18 @@ private lemma classGroup_balanced_radius_power_identity {D : ℝ} (hD : 0 < D)
         Real.sqrt (9 * D ^ (1 / (n : ℝ))) =
       (3 * (9 : ℝ) ^ (n - 1)) *
         D ^ (1 / 2 - 1 / (2 * (n : ℝ))) * Real.sqrt D := by
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
   have hpred : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by
-    rw [Nat.cast_sub (by omega : 1 ≤ n), Nat.cast_one]
+    simp_all
   have hsqrt : Real.sqrt (9 * D ^ (1 / (n : ℝ))) =
       3 * D ^ (1 / (2 * (n : ℝ))) := by
     have h9 : Real.sqrt (9 : ℝ) = 3 :=
       (Real.sqrt_eq_iff_eq_sq (by norm_num) (by norm_num)).mpr (by norm_num)
-    rw [Real.sqrt_mul (by norm_num : (0 : ℝ) ≤ 9), h9,
+    rw [Real.sqrt_mul (by norm_num), h9,
       Real.sqrt_eq_rpow, ← Real.rpow_mul hD.le]
-    congr 2
     field_simp
   have hp : (D ^ (1 / (n : ℝ))) ^ (n - 1) =
       D ^ (((n - 1 : ℕ) : ℝ) / n) := by
     rw [← Real.rpow_mul_natCast hD.le]
-    congr 1
     ring
   have hexp : ((n - 1 : ℕ) : ℝ) / n + 1 / (2 * (n : ℝ)) =
       (1 / 2 - 1 / (2 * (n : ℝ))) + 1 / 2 := by
@@ -42,9 +39,9 @@ private lemma classGroup_balanced_radius_power_identity {D : ℝ} (hD : 0 < D)
     ring
   rw [mul_pow, hp, hsqrt, Real.sqrt_eq_rpow]
   calc
-    _ = (3 * (9 : ℝ) ^ (n - 1)) *
+    _ = (3 * 9 ^ (n - 1)) *
         (D ^ (((n - 1 : ℕ) : ℝ) / n) * D ^ (1 / (2 * (n : ℝ)))) := by ring
-    _ = (3 * (9 : ℝ) ^ (n - 1)) *
+    _ = (3 * 9 ^ (n - 1)) *
         (D ^ (1 / 2 - 1 / (2 * (n : ℝ))) * D ^ (1 / 2 : ℝ)) := by
       rw [← Real.rpow_add hD, hexp, Real.rpow_add hD]
     _ = _ := by ring
@@ -61,6 +58,6 @@ theorem classGroup_discriminant_bound_of_balanced_radius
       D ^ (1 / 2 - 1 / (2 * (n : ℝ))) := by
   rw [classGroup_balanced_radius_power_identity hD hn] at h
   apply (mul_le_mul_iff_left₀ (Real.sqrt_pos.mpr hD)).mp
-  nlinarith only [h]
+  linarith
 
 end CCDN

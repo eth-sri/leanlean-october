@@ -37,29 +37,31 @@ namespace CharZeroOrGT
 
 variable {R S : Type*}
 
+section
+
+variable [AddMonoidWithOne R] {m p n : ℕ} (h : CharZeroOrGT R n)
+
 /-- Characteristic zero exceeds every bound. -/
-theorem of_charZero [AddMonoidWithOne R] [CharZero R] (n : ℕ) : CharZeroOrGT R n :=
+theorem of_charZero [CharZero R] (n : ℕ) : CharZeroOrGT R n :=
   fun _ hm _ ↦ Nat.cast_ne_zero.mpr hm.ne'
 
 /-- Characteristic `p` exceeds every bound below `p`. -/
-theorem of_charP [AddMonoidWithOne R] {p n : ℕ} [CharP R p] (h : n < p) : CharZeroOrGT R n :=
+theorem of_charP [CharP R p] (h : n < p) : CharZeroOrGT R n :=
   fun _ hm hmn ↦ CharP.natCast_ne_zero_of_lt R hm.ne' (hmn.trans_lt h)
 
+include h in
 /-- The hypothesis weakens to any smaller bound. -/
-theorem mono [AddMonoidWithOne R] {m n : ℕ} (h : CharZeroOrGT R n) (hmn : m ≤ n) :
+theorem mono (hmn : m ≤ n) :
     CharZeroOrGT R m :=
   fun k hk hkm ↦ h k hk (hkm.trans hmn)
 
-/-- A positive natural number up to the bound is nonzero. -/
-theorem natCast_ne_zero [AddMonoidWithOne R] {m n : ℕ} (h : CharZeroOrGT R n) (hm : m ≠ 0)
-    (hmn : m ≤ n) : (m : R) ≠ 0 :=
-  h m (Nat.pos_of_ne_zero hm) hmn
+end
 
 /-- The hypothesis passes along a ring homomorphism out of a division ring, such as the
 algebra map of a field extension. -/
 theorem map [DivisionRing R] [Semiring S] [Nontrivial S] {n : ℕ} (h : CharZeroOrGT R n)
     (φ : R →+* S) : CharZeroOrGT S n :=
-  fun m hm hmn ↦ by simpa only [map_natCast] using (map_ne_zero φ).mpr (h m hm hmn)
+  fun m hm hmn ↦ by simpa using (map_ne_zero φ).mpr (h m hm hmn)
 
 end CharZeroOrGT
 

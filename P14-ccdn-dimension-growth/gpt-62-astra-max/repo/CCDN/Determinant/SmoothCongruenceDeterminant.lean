@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Determinant.HypersurfaceDeterminantRank
 public import CCDN.Height.CountingHypotheses
 import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeCoordinates
@@ -23,69 +24,31 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Finset
 
-/-- The higher-dimensional rank-cutoff form of Proposition 3.2.6 for
-maximal minors and common-degree homogeneous evaluation columns. -/
-private theorem hypersurface_determinant_log_lower_at_rank_congruence {n s N d M : ℕ} (hs : 0 < s)
-    (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d) (hd : 0 < d)
-    {F : Fin N → MvPolynomial (Fin (n + 3)) ℤ} {z : Fin s → IntPoint (n + 3)}
-    (hev : IsIndependentEvaluation f M F z)
-    (bad : Finset ℕ)
-    (P : Finset ℕ) (hPbad : P ⊆ bad) (hP : ∀ p ∈ P, p.Prime)
-    (v : ℕ → ℕ)
-    (hcong : ∀ p ∈ P, (p : ℤ) ^ v p ∣
-      Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j)))
-    (hred : ∀ (p : ℕ) [Fact p.Prime],
-      p ∈ ((Ioc 0 ⌊(s : ℝ) ^ (1 / (n + 1 : ℝ))⌋₊).filter Nat.Prime) \ bad →
-      stepanovThreshold (d : ℝ) < p →
-      HasGoodReduction f p) :
-    hypersurfaceRankLowerBound n s d (∑ p ∈ bad, Real.log p / p) +
-      (∑ p ∈ P, (v p : ℝ) * Real.log p) ≤
-      Real.log (Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j))) := by
-  refine hypersurface_log_lower_at_rank_of_local_divisors_congruence hs hd bad P hPbad hP v
-    (one_pos.trans_le (Int.Matrix.one_le_minorGcd hev.rows_linearIndependent))
-    (fun p hp hcut => ?_) hcong
-  have : Fact p.Prime := ⟨(mem_filter.mp (mem_sdiff.mp hp).1).2⟩
-  obtain ⟨hf0, hir⟩ := hred p hp hcut
-  simpa only [hypersurfaceDeterminantMain_div] using
-    projective_hypersurface_minorGcd_dvd f hf hd hf0 hir hcut F hev.isHomogeneous z hev.primitive
-      hev.eval_eq_zero
-
-end
-end CCDN
-
-namespace CCDN
-noncomputable section
-open MvPolynomial Finset
-
 /-- The global determinant contribution and all prescribed smooth-prime
 contributions hold simultaneously. -/
-theorem exists_smooth_congruence_determinant_log_lower
-    {K : Type*} [Field K] [CharZero K] [IsAlgClosed K]
+theorem smooth_congruence_determinant_log_lower
     {n s N d M : ℕ} (hs : 0 < s)
-    (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d) (hd : 0 < d)
-    (hir : Irreducible (map (Int.castRingHom K) f))
-    {F : Fin N → MvPolynomial (Fin (n + 3)) ℤ} {z : Fin s → IntPoint (n + 3)}
+    (f : IntegerPolynomial (n + 3)) (hf : f.IsHomogeneous d) (hd : 0 < d)
+    (bad : Finset ℕ) (hbad : ∀ p, stepanovThreshold d < p → HypersurfaceBadReduction f p → p ∈ bad)
+    {F : Fin N → IntegerPolynomial (n + 3)} {z : Fin s → IntPoint (n + 3)}
     (hev : IsIndependentEvaluation f M F z)
     (P : Finset ℕ) (hP : ∀ p ∈ P, p.Prime)
     (k : ℕ → Fin (n + 3)) (a : ℕ → Fin (n + 2) → ℤ)
     (ha : ∀ p ∈ P, eval₂ (Int.castRingHom (ZMod p)) (fun j => (a p j : ZMod p))
       (projectiveHypersurfaceChart (k p) f) = 0)
     (hsmooth : ∀ p ∈ P, ∃ j, eval (fun i => (a p i : ZMod p)) (pderiv j
-      (map (Int.castRingHom (ZMod p)) (projectiveHypersurfaceChart (k p) f))) ≠ 0)
+      (residueEquation p (projectiveHypersurfaceChart (k p) f))) ≠ 0)
     (hunit : ∀ p ∈ P, ∀ i, IsCoprime (p : ℤ) (z i (k p)))
     (hres : ∀ p ∈ P, ∀ i j, (p : ℤ) ∣
       z i (Equiv.swap 0 (k p) j.succ) - a p j * z i (k p)) :
-    ∃ bad : Finset ℕ,
-      (∀ p, p ∈ bad ↔ stepanovThreshold d < p ∧ HypersurfaceBadReduction f p) ∧
-      hypersurfaceRankLowerBound n s d (∑ p ∈ bad ∪ P, Real.log p / p) +
+    hypersurfaceRankLowerBound n s d (∑ p ∈ bad ∪ P, Real.log p / p) +
         (hypersurfaceDeterminantMain n s - (n + 2 : ℝ) * s) *
           (∑ p ∈ P, Real.log p) ≤
-        Real.log (Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j))) := by
+        Real.log (Int.Matrix.minorGcd (valueMatrix z F)) := by
   classical
-  obtain ⟨bad, hmem⟩ := exists_hypersurface_bad_prime_finset f hf hd hir
   have hcong (p : ℕ) (hp : p ∈ P) :
       (p : ℤ) ^ hypersurfaceMultiplicityExponent (n + 1) 1 s ∣
-        Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j)) := by
+        Int.Matrix.minorGcd (valueMatrix z F) := by
     let : Fact p.Prime := ⟨hP p hp⟩
     exact smooth_projective_hypersurface_congruence_minorGcd f hf F hev.isHomogeneous z
       (k p) (a p) (ha p hp) (hsmooth p hp) (hunit p hp) (hres p hp) hev.eval_eq_zero
@@ -102,11 +65,11 @@ theorem exists_smooth_congruence_determinant_log_lower
       sum_nonneg fun p _ => Real.log_natCast_nonneg p
     have hmul := mul_le_mul_of_nonneg_right he hsum
     rw [← mul_sum] at hh
-    exact ⟨bad, hmem, (add_le_add le_rfl hmul).trans hh⟩
+    exact (add_le_add le_rfl hmul).trans hh
   · intro p hpprime hp hcut
     apply hypersurface_good_reduction f p
     intro hb
-    exact (mem_sdiff.mp hp).2 (mem_union_left P ((hmem p).mpr ⟨by exact_mod_cast hcut, hb⟩))
+    exact (mem_sdiff.mp hp).2 (mem_union_left P (hbad p (by exact_mod_cast hcut) hb))
 
 end
 end CCDN

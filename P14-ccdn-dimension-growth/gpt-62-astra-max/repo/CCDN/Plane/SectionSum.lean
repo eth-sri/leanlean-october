@@ -32,22 +32,21 @@ theorem plane_sections_incidence_bound {σ : Type*} [Fintype σ]
       (Nat.card (ZeroPlaneParameters f) : ℝ) * (p : ℝ) ^ 2 := by
   classical
   let V := PlaneParameters σ → ZMod p
-  let B : V → Prop := fun v =>
+  let B := fun v =>
     bivariateTotalDegree (universalPlaneSection f v) ≠ f.totalDegree ∨
       ¬Irreducible (bivariateMap (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))
         (universalPlaneSection f v))
-  let Z : V → Prop := fun v => universalPlaneSection f v = 0
-  let A : ℝ := p + planeResidueConstant * (f.totalDegree : ℝ) ^ 2 * Real.sqrt p
+  let Z := fun v => universalPlaneSection f v = 0
+  let A := p + planeResidueConstant * f.totalDegree ^ 2 * Real.sqrt p
   have hA : 0 ≤ A := by
     have := planeResidueConstant_pos
-    dsimp [A]
     positivity
   have hpoint (v : V) : (Nat.card (PlaneSectionPoints f v) : ℝ) ≤
       A + (if B v then (f.totalDegree : ℝ) * p else 0) +
         (if Z v then (p : ℝ) ^ 2 else 0) := by
     by_cases hz : Z v
     · have hh : (Nat.card (PlaneSectionPoints f v) : ℝ) ≤ (p : ℝ) ^ 2 := by
-        exact_mod_cast (by simpa only [ZMod.card] using planeSectionPoints_card_le_square f v)
+        exact_mod_cast (by simpa using planeSectionPoints_card_le_square f v)
       rw [ite_eq_left hz]
       have hb : (0 : ℝ) ≤ if B v then (f.totalDegree : ℝ) * p else 0 := by split_ifs <;> positivity
       linarith
@@ -55,12 +54,11 @@ theorem plane_sections_incidence_bound {σ : Type*} [Fintype σ]
       by_cases hb : B v
       · rw [ite_eq_left hb]
         have hh : (Nat.card (PlaneSectionPoints f v) : ℝ) ≤ (f.totalDegree : ℝ) * p := by
-          exact_mod_cast (by simpa only [ZMod.card] using
-            planeSectionPoints_card_le_degree_mul_card f v hz)
+          exact_mod_cast (by simpa using planeSectionPoints_card_le_degree_mul_card f v hz)
         linarith
       · rw [ite_eq_right hb, add_zero]
         apply planeSectionPoints_card_le_add_mul_sqrt p f v _ hsize
-        exact not_not.mp (fun hh => hb (Or.inr hh))
+        grind
   have hsum := Finset.sum_le_sum (fun v (_ : v ∈ (Finset.univ : Finset V)) => hpoint v)
   have hi : (Nat.card {z : σ → ZMod p // eval z f = 0} : ℝ) *
       (p : ℝ) ^ (2 * Fintype.card σ + 2) =
@@ -70,15 +68,12 @@ theorem plane_sections_incidence_bound {σ : Type*} [Fintype σ]
     exact_mod_cast hh.symm
   have hB : (∑ v : V, if B v then (f.totalDegree : ℝ) * p else 0) =
       (Nat.card (BadPlaneParameters f) : ℝ) * ((f.totalDegree : ℝ) * p) := by
-    rw [← Finset.sum_filter B (fun _ : V => (f.totalDegree : ℝ) * p)]
-    simp [V, B, BadPlaneParameters, Nat.card_eq_fintype_card, Fintype.card_subtype]
+    simp [← Finset.sum_filter B (fun _ : V => (f.totalDegree : ℝ) * p), V, B, BadPlaneParameters, Nat.card_eq_fintype_card, Fintype.card_subtype]
   have hZ : (∑ v : V, if Z v then (p : ℝ) ^ 2 else 0) =
       (Nat.card (ZeroPlaneParameters f) : ℝ) * (p : ℝ) ^ 2 := by
-    rw [← Finset.sum_filter Z (fun _ : V => (p : ℝ) ^ 2)]
-    simp [V, Z, ZeroPlaneParameters, Nat.card_eq_fintype_card, Fintype.card_subtype]
+    simp [← Finset.sum_filter Z (fun _ : V => (p : ℝ) ^ 2), V, Z, ZeroPlaneParameters, Nat.card_eq_fintype_card, Fintype.card_subtype]
   simp only [Finset.sum_add_distrib, hB, hZ, Finset.sum_const, Finset.card_univ,
     nsmul_eq_mul] at hsum
-  rw [hi]
   convert hsum using 1
   simp [A, V, PlaneParameters, Nat.mul_comm]
 

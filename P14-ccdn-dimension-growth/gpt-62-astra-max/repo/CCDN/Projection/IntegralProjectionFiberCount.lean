@@ -30,26 +30,19 @@ theorem exists_projection_fiber_specialization {K σ τ : Type*} [Field K]
       ∀ i, ψ (Ideal.Quotient.mk I (X i)) = x i := by
   let : Algebra (MvPolynomial τ K) K := (aeval z).toRingHom.toAlgebra
   let R := MvPolynomial τ K
-  let A := MvPolynomial σ K ⧸ I
-  let φ : A →ₐ[K] K := Ideal.Quotient.liftₐ I (aeval x) (fun f hf => hzero f hf)
+  let φ := Ideal.Quotient.liftₐ I (aeval x) (by assumption)
   have hφ (f : MvPolynomial σ K) :
-      φ (Ideal.Quotient.mk I f) = eval x f := by
-    exact congrArg (fun g : MvPolynomial σ K →ₐ[K] K => g f)
-      (Ideal.Quotient.liftₐ_comp I (aeval x) (fun f hf => hzero f hf))
+      φ (Ideal.Quotient.mk I f) = eval x f := rfl
   have hcomp : φ.comp (projectionCoordinateMap I l) = aeval z := by
     ext i
-    simpa only [projectionCoordinateMap, AlgHom.comp_apply, aeval_X,
-      Ideal.Quotient.mkₐ_eq_mk] using (hφ (l i)).trans (hproj i)
-  let ψ : A →ₐ[R] K :=
+    simp_all [projectionCoordinateMap]
+  let ψ : (MvPolynomial σ K ⧸ I) →ₐ[R] K :=
     { φ.toRingHom with
       commutes' := fun r => by
-        change φ (algebraMap R A r) = (aeval z) r
+        change φ _ = (aeval z) r
         rw [hmap]
         exact congrArg (fun f : R →ₐ[K] K => f r) hcomp }
-  refine ⟨ψ, ?_⟩
-  intro i
-  change φ (Ideal.Quotient.mk I (X i)) = x i
-  simpa only [eval_X] using hφ (X i)
+  solve_by_elim [eval_X]
 
 end
 end CCDN

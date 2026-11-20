@@ -15,15 +15,16 @@ maximum absolute coordinate. -/
 namespace CCDN
 noncomputable section
 
+variable {n : ℕ}
+
 /-- If the chosen representative of `x` has nonzero first coordinate, then so does its primitive
 integer representative, and the affine chart coordinates of `x` are the ratios of the
 remaining primitive coordinates to the first one. -/
-theorem primitiveProjectiveRep_chart {n : ℕ} (x : ProjectivePoint n) (hx : x.rep 0 ≠ 0) :
+theorem primitiveProjectiveRep_chart (x : ProjectivePoint n) (hx : x.rep 0 ≠ 0) :
     primitiveProjectiveRep x 0 ≠ 0 ∧
       projectiveAffineCoordinates x =
         fun j => (primitiveProjectiveRep x j.succ : ℚ) / (primitiveProjectiveRep x 0 : ℚ) := by
-  have he := (primitiveProjectiveRep_mk x).trans x.mk_rep.symm
-  obtain ⟨c, hc⟩ := (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mp he
+  obtain ⟨c, hc⟩ := (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mp ((primitiveProjectiveRep_mk x).trans x.mk_rep.symm)
   have hcoord (j : Fin (n + 1)) :
       (c : ℚ) * x.rep j = (primitiveProjectiveRep x j : ℚ) := congrFun hc j
   have h0 : (primitiveProjectiveRep x 0 : ℚ) ≠ 0 := by
@@ -36,25 +37,23 @@ theorem primitiveProjectiveRep_chart {n : ℕ} (x : ProjectivePoint n) (hx : x.r
 
 /-- A nonzero integer vector with all coordinates of absolute value at most `B` spans a projective
 point of height at most `B`, whether or not its coordinates are coprime. -/
-theorem projective_integer_height_le {n : ℕ} (z : IntPoint (n + 1)) (hz : z ≠ 0)
+theorem projective_integer_height_le (z : IntPoint (n + 1)) (hz : z ≠ 0)
     {B : ℝ} (hbox : InBox z B) :
     (Projectivization.mk ℚ (rationalPoint z) (rationalPoint_ne_zero hz)).mulHeight ≤ B := by
   classical
   obtain ⟨v, hv, hprim⟩ := Finset.extract_gcd z
-    (show (Finset.univ : Finset (Fin (n + 1))).Nonempty from Finset.univ_nonempty)
-  have he (j : Fin (n + 1)) : z j = Finset.univ.gcd z * v j := hv j (Finset.mem_univ j)
+    Finset.univ_nonempty
+  have he (j : Fin (n + 1))  := hv j (Finset.mem_univ j)
   have hg0 : Finset.univ.gcd z ≠ 0 := by
     intro h
     apply hz
     funext j
-    simp [h] at he
-    exact he j
+    aesop
   have hv0 : v ≠ 0 := by
     intro h
     apply hz
     funext j
-    simp [h] at he
-    exact he j
+    aesop
   have hg1 : (1 : ℝ) ≤ |((Finset.univ.gcd z : ℤ) : ℝ)| := by
     exact_mod_cast Int.one_le_abs hg0
   have hvbox : InBox v B := by
@@ -67,16 +66,15 @@ theorem projective_integer_height_le {n : ℕ} (z : IntPoint (n + 1)) (hz : z �
     apply (Projectivization.mk_eq_mk_iff' ℚ _ _ _ _).mpr
     refine ⟨((Finset.univ.gcd z : ℤ) : ℚ), ?_⟩
     funext j
-    change ((Finset.univ.gcd z : ℤ) : ℚ) * (v j : ℚ) = (z j : ℚ)
-    rw [he j, Int.cast_mul]
+    change ((Finset.univ.gcd z : ℤ) : ℚ) * (v j) = (z j)
+    aesop
   rw [hproj, projective_height_primitive v hv0 hprim]
   obtain ⟨j, hj⟩ := Finite.exists_max (fun j => |v j|)
   have hmax : (⨆ j, |v j| : ℤ) = |v j| := by
     apply le_antisymm
     · exact ciSup_le hj
-    · exact le_ciSup (Finite.bddAbove_range (fun k => |v k|)) j
-  rw [hmax, Int.cast_abs]
-  exact hvbox j
+    exact le_ciSup (Finite.bddAbove_range (fun k => |v k|)) j
+  aesop
 
 end
 end CCDN

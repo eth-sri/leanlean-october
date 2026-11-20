@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Algebra.ScaledHomogenization
 public import CCDN.Height.IntegerCoefficientHeight
 import CCDN.ForMathlib.MvPolynomial
@@ -17,10 +18,11 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n : ℕ} (f : IntegerPolynomial n)
+
 /-- For `h ≥ 1`, the scaled homogenization of `f` in degree `d = f.totalDegree` has coefficient
 height at least `h ^ d` times the coefficient height of the top homogeneous component of `f`. -/
-theorem scaledHomogenize_leading_height_lower {n : ℕ}
-    (f : MvPolynomial (Fin n) ℤ) {h : ℤ} (hh : 1 ≤ h) :
+theorem scaledHomogenize_leading_height_lower {h : ℤ} (hh : 1 ≤ h) :
     (h : ℝ) ^ f.totalDegree *
         (integerCoefficientHeight (homogeneousComponent f.totalDegree f) : ℝ) ≤
       (integerCoefficientHeight (scaledHomogenize f.totalDegree h f) : ℝ) := by
@@ -37,16 +39,16 @@ theorem scaledHomogenize_leading_height_lower {n : ℕ}
       have he := coefficient_abs_le_integerCoefficientHeight (scaledHomogenize f.totalDegree h f)
         (homogenizedExponent f.totalDegree m)
       rw [scaledHomogenize_coefficient, hm', Int.cast_mul, Int.cast_pow, abs_mul,
-        abs_pow, abs_of_nonneg (by linarith : (0 : ℝ) ≤ h)] at he
-      exact (le_div_iff₀ hpow).mpr (by simpa only [mul_comm] using he)
+        abs_pow, abs_of_nonneg (by linarith)] at he
+      exact (le_div_iff₀ hpow).mpr (by grind)
     · simp only [Int.cast_zero, abs_zero]
       positivity
   have he := (le_div_iff₀ hpow).mp hc
-  simpa only [mul_comm] using he
+  grind
 
 /-- The top homogeneous component of a nonzero integer polynomial has coefficient height at
 least `1`. -/
-lemma leading_height_one_le {n : ℕ} (f : MvPolynomial (Fin n) ℤ) (hf : f ≠ 0) :
+lemma leading_height_one_le (hf : f ≠ 0) :
     (1 : ℝ) ≤ integerCoefficientHeight (homogeneousComponent f.totalDegree f) := by
   exact_mod_cast integerCoefficientHeight_pos _ (homogeneousComponent_totalDegree_ne_zero hf)
 

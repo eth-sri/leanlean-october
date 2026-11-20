@@ -28,19 +28,5 @@ theorem closedForm_minor_map {R S : Type*} [CommRing R] [CommRing S]
   change (((closedFormCoefficientMatrix d f).map φ).submatrix a c).det = _
   rw [closedFormCoefficientMatrix_map]
 
-/-- Any characteristic-p rank drop below the chosen minor order makes p
- divide its integer determinant. The field may be an algebraic closure. -/
-theorem characteristic_dvd_closedForm_minor_of_rank_lt
-    {K : Type*} [Field K] (p : ℕ) [CharP K p]
-    (d r : ℕ) (f : ℤ[X][X]) (a : Fin r → ℕ × ℕ)
-    (c : Fin r → ClosedFormColumns d)
-    (hr : (closedFormCoefficientMatrix d (bivariateMap (Int.castRingHom K) f)).rank < r) :
-    (p : ℤ) ∣ ((closedFormCoefficientMatrix d f).submatrix a c).det := by
-  apply (CharP.intCast_eq_zero_iff K p _).mp
-  change (Int.castRingHom K) _ = 0
-  rw [closedForm_minor_map]
-  by_contra hn
-  exact hr.not_ge (Matrix.le_rank_of_det_submatrix_ne_zero _ a c hn)
-
 end
 end CCDN

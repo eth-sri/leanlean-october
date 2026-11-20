@@ -23,31 +23,27 @@ noncomputable section
 open MvPolynomial
 attribute [local instance] MvPolynomial.algebraMvPolynomial
 
+variable {R S K F σ : Type*} [CommRing R] [IsDomain R]
+
 /-- A nonconstant polynomial over a domain cannot divide a nonzero constant. -/
 private theorem mvPolynomial_not_dvd_nonzero_constant
-    {R σ : Type*} [CommRing R] [IsDomain R]
     (f : MvPolynomial σ R) (hf : f ≠ 0) (hd : 0 < f.totalDegree)
     (a : R) (ha : a ≠ 0) : ¬ f ∣ C a := by
   rintro ⟨g, hg⟩
   have hg0 : g ≠ 0 := by
-    intro h
-    rw [h, mul_zero] at hg
-    exact ha ((C_injective σ R) (by simpa using hg))
-  have hdeg := totalDegree_mul_of_isDomain hf hg0
-  rw [← hg, totalDegree_C] at hdeg
-  omega
+    aesop
+  grind [totalDegree_mul_of_isDomain, totalDegree_C]
 
 /-- Prime polynomials of positive variable degree survive coefficient
 localization at nonzero elements. -/
-theorem prime_mvPolynomial_map_localization
-    {R S σ : Type*} [CommRing R] [IsDomain R] [CommRing S] [IsDomain S]
+theorem prime_mvPolynomial_map_localization [CommRing S] [IsDomain S]
     [Algebra R S] (M : Submonoid R) [IsLocalization M S]
     (hM : M ≤ nonZeroDivisors R)
     (f : MvPolynomial σ R) (hf : Prime f) (hd : 0 < f.totalDegree) :
     Prime (MvPolynomial.map (algebraMap R S) f) := by
   let N : Submonoid (MvPolynomial σ R) := M.map C
-  let I : Ideal (MvPolynomial σ R) := Ideal.span {f}
-  have hI : I.IsPrime := Ideal.isPrime_span_singleton_of_prime hf
+  let I := Ideal.span {f}
+  have hI := Ideal.isPrime_span_singleton_of_prime hf
   have hdis : Disjoint (N : Set (MvPolynomial σ R)) (I : Set (MvPolynomial σ R)) := by
     rw [Set.disjoint_left]
     intro q hq hqi
@@ -55,29 +51,25 @@ theorem prime_mvPolynomial_map_localization
     exact mvPolynomial_not_dvd_nonzero_constant f hf.ne_zero hd a
       (mem_nonZeroDivisors_iff_ne_zero.mp (hM ha)) (Ideal.mem_span_singleton.mp hqi)
   have hp := IsLocalization.isPrime_of_isPrime_disjoint N (MvPolynomial σ S) I hI hdis
-  have hinj : Function.Injective (algebraMap R S) := IsLocalization.injective S hM
-  have hne : MvPolynomial.map (algebraMap R S) f ≠ 0 :=
+  have hinj := IsLocalization.injective S hM
+  have hne :=
     (map_ne_zero_iff _ (MvPolynomial.map_injective _ hinj)).mpr hf.ne_zero
-  apply (Ideal.span_singleton_prime hne).mp
-  simpa only [I, Ideal.map_span, Set.image_singleton, MvPolynomial.algebraMap_def] using hp
+  grind [Ideal.span_singleton_prime, Ideal.map_span, Set.image_singleton, MvPolynomial.algebraMap_def]
 
 /-- Irreducibility survives adjoining algebraically independent parameters
 and then passing to their rational function field. -/
-theorem irreducible_mvPolynomial_map_fraction_parameters
-    {K F σ τ : Type*} [Field K] [Field F]
+theorem irreducible_mvPolynomial_map_fraction_parameters {τ : Type*} [Field K] [Field F]
     [Algebra (MvPolynomial τ K) F] [IsFractionRing (MvPolynomial τ K) F]
     (f : MvPolynomial σ K) (hf : Irreducible f) (hd : 0 < f.totalDegree) :
     Irreducible (MvPolynomial.map ((algebraMap (MvPolynomial τ K) F).comp C) f) := by
   let g : MvPolynomial σ (MvPolynomial τ K) := MvPolynomial.map C f
-  have hg : Prime g := by
-    have hC : Prime (C f : MvPolynomial τ (MvPolynomial σ K)) :=
+  have hg := by
+    have hC :=
       (MvPolynomial.prime_C_iff τ).mpr hf.prime
     have h := (MulEquiv.prime_iff (MvPolynomial.commAlgEquiv K τ σ)).mpr hC
     simpa only [MvPolynomial.commAlgEquiv_C, g] using h
   have hdeg : 0 < g.totalDegree := by
-    have he : g.totalDegree = f.totalDegree := totalDegree_map_of_injective (C_injective τ K) _
-    rw [he]
-    exact hd
+    grind [totalDegree_map_of_injective, C_injective]
   have h := prime_mvPolynomial_map_localization (S := F)
     (nonZeroDivisors (MvPolynomial τ K)) le_rfl g hg hdeg
   simpa only [g, MvPolynomial.map_map] using h.irreducible

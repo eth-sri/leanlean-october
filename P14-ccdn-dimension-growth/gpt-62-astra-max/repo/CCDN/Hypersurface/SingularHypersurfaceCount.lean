@@ -5,10 +5,14 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
+import Mathlib.RingTheory.Polynomial.UniqueFactorization
 public import CCDN.Height.Box
 public import Mathlib.Algebra.MvPolynomial.PDeriv
 import CCDN.Determinant.PlaneSingularities
-import CCDN.Determinant.SingularDeterminant
+import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import CCDN.Determinant.PlaneMultiplicity
+import CCDN.Plane.FiniteFieldConstants
 import CCDN.ForMathlib.MvPolynomial
 import CCDN.ForMathlib.MvPolynomialDerivative
 import CCDN.Hypersurface.NonabsoluteHypersurfaceCount
@@ -22,9 +26,11 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n : ℕ} (f : CoordinatePolynomial (n + 2)) (hir : Irreducible f) {B : ℝ}
+
 /-- The rational points of the singular locus of the hypersurface `f = 0`: the common zeros of
 `f` and all its partial derivatives. -/
-def singularHypersurfaceLocus {n : ℕ} (f : MvPolynomial (Fin n) ℚ) :
+def singularHypersurfaceLocus (f : CoordinatePolynomial n) :
     Set (RatPoint n) :=
   {x | eval x f = 0 ∧ ∀ j, eval x (pderiv j f) = 0}
 
@@ -35,14 +41,10 @@ private theorem exists_proper_partial_derivative {K σ : Type*}
       (pderiv j f).totalDegree < f.totalDegree := by
   have hd := MvPolynomial.totalDegree_pos_of_irreducible hir
   obtain ⟨j, hj⟩ := exists_pderiv_ne_zero hd fun n hn _ ↦ Nat.cast_ne_zero.mpr hn.ne'
-  have hdeg : (pderiv j f).totalDegree < f.totalDegree := by
-    have := pderiv_totalDegree_le f j
-    omega
-  exact ⟨j, hj, not_dvd_pderiv_of_pderiv_ne_zero hir.ne_zero hj, hdeg⟩
+  grind [pderiv_totalDegree_le, not_dvd_pderiv_of_pderiv_ne_zero, hir.ne_zero]
 
-private theorem singular_hypersurface_count_le {n : ℕ}
-    (f : MvPolynomial (Fin (n + 2)) ℚ) (hir : Irreducible f)
-    {B : ℝ} (hB : 0 ≤ B) :
+include hir in
+private theorem singular_hypersurface_count_le (hB : 0 ≤ B) :
     (count (singularHypersurfaceLocus f) B : ℝ) ≤
       (n + 2 : ℝ) ^ n * (f.totalDegree : ℝ) ^ 2 * (2 * B + 1) ^ n := by
   obtain ⟨j, _, hproper, hdeg⟩ := exists_proper_partial_derivative f hir
@@ -51,21 +53,20 @@ private theorem singular_hypersurface_count_le {n : ℕ}
   exact (Nat.cast_le.mpr (count_mono hsub le_rfl)).trans
     (proper_intersection_count_le_box f (pderiv j f) hir.prime hproper le_rfl hdeg.le hB)
 
+include hir in
 /-- The singular locus of an irreducible rational hypersurface in `n + 2` variables has at most
 `(3 * (n + 2)) ^ n * deg f ^ 2 * B ^ n` integral points of height at most `B`, for every
 `B ≥ 1`. -/
-theorem singular_hypersurface_dimension_growth {n : ℕ}
-    (f : MvPolynomial (Fin (n + 2)) ℚ) (hir : Irreducible f)
-    {B : ℝ} (hB : 1 ≤ B) :
+theorem singular_hypersurface_dimension_growth (hB : 1 ≤ B) :
     (count (singularHypersurfaceLocus f) B : ℝ) ≤
       (3 * (n + 2) : ℝ) ^ n * (f.totalDegree : ℝ) ^ 2 * B ^ n := by
   calc
-    _ ≤ (n + 2 : ℝ) ^ n * (f.totalDegree : ℝ) ^ 2 * (2 * B + 1) ^ n :=
+    _ ≤ (n + 2) ^ n * f.totalDegree ^ 2 * (2 * B + 1) ^ n :=
       singular_hypersurface_count_le f hir (by linarith)
-    _ ≤ (n + 2 : ℝ) ^ n * (f.totalDegree : ℝ) ^ 2 * (3 * B) ^ n := by
+    _ ≤ (n + 2) ^ n * f.totalDegree ^ 2 * (3 * B) ^ n := by
       gcongr
       linarith
-    _ = _ := by simp only [mul_pow]; ring
+    _ = _ := by grind [mul_pow]
 
 end
 end CCDN

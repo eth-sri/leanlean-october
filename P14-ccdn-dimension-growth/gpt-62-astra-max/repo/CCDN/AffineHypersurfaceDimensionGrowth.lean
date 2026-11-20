@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Statements
 import CCDN.Hypersurface.AffineHypersurfaceCount
 
@@ -18,23 +19,25 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable (n : ℕ)
+
 /-- CCDN Theorem 4 for integer equations in all affine ambient dimensions
 at least three. The constant depends only on dimension, and the explicit
 degree exponent is 18 + 3n in n+3 variables. -/
-theorem affine_hypersurface_dimension_growth (n : ℕ) :
+theorem affine_hypersurface_dimension_growth :
     ∃ C : ℝ, 0 < C ∧
-      ∀ f : MvPolynomial (Fin (n + 3)) ℤ,
+      ∀ f : IntegerPolynomial (n + 3),
       HasAbsIrreducibleTopForm f →
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
-      (count (zeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤
+      (count (zeroLocus (rationalEquation f)) B : ℝ) ≤
         C * (f.totalDegree : ℝ) ^ (18 + 3 * n) * B ^ (n + 1) :=
   affineHypersurfaceGrowth n
 
 /-- CCDN Theorem 4 for rational equations, with the degree exponent 18 + 3n in
 n+3 variables. -/
-theorem affine_hypersurface_dimension_growth_rat (n : ℕ) :
+theorem affine_hypersurface_dimension_growth_rat :
     ∃ C : ℝ, 0 < C ∧
-      ∀ f : MvPolynomial (Fin (n + 3)) ℚ,
+      ∀ f : CoordinatePolynomial (n + 3),
       HasAbsIrreducibleTopFormRat f →
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
       (count (zeroLocus f) B : ℝ) ≤

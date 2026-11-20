@@ -17,9 +17,13 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+section
+
+variable {K σ : Type*} [Field K]
+
 /-- A common linear upper bound bounds the sum of the eventual linear
 slopes of the minimal-prime components. -/
-private theorem minimalPrimeComponents_slope_sum_le {K σ : Type*} [Field K] [Finite σ]
+private theorem minimalPrimeComponents_slope_sum_le [Finite σ]
     (I : Ideal (MvPolynomial σ K)) (C N₀ : ℕ)
     (hupper : ∀ N ≥ N₀, Module.finrank K (filteredCoordinateSpace I N) ≤ C * (N + 1))
     (d : minimalPrimeComponents I → ℕ)
@@ -37,47 +41,43 @@ private theorem minimalPrimeComponents_slope_sum_le {K σ : Type*} [Field K] [Fi
         (E : ℤ) * N + c := by
     push_cast
     calc
-      _ = ∑ P, ((d P : ℤ) * N + cᵢ P) := by
+      _ = ∑ P, ((d P) * N + cᵢ P) := by
         apply Finset.sum_congr rfl
         intro P _
         exact hNᵢ P N ((Finset.le_sup (Finset.mem_univ P)).trans hN)
       _ = _ := by
-        simp only [Finset.sum_add_distrib, ← Finset.sum_mul, E, c, Nat.cast_sum]
+        simp [Finset.sum_add_distrib, ← Finset.sum_mul, E, c, Nat.cast_sum]
   by_contra h
-  have hbig : C + 1 ≤ E := by dsimp only [E]; omega
+  have hbig : C + 1 ≤ E := by omega
   let N := C * (D + 1) + c.natAbs + Nmax + N₀ + 1
-  have hNmax : Nmax ≤ N := by dsimp only [N]; omega
-  have hNN₀ : N₀ ≤ D + N := by dsimp only [N]; omega
-  have hbound := (hD N).trans (hupper (D + N) hNN₀)
+  have hNmax : Nmax ≤ N := by omega
+  have hNN₀ : N₀ ≤ D + N := by omega
   have hboundZ : (E : ℤ) * N + c ≤ (C : ℤ) * (D + N + 1) := by
     rw [← hsum N hNmax]
-    exact_mod_cast hbound
-  have hmul : ((C : ℤ) + 1) * N ≤ (E : ℤ) * N := by
-    exact_mod_cast Nat.mul_le_mul_right N hbig
-  have hc : -(c.natAbs : ℤ) ≤ c := by
+    exact_mod_cast (hD N).trans (by solve_by_elim)
+  have hc := by
     have hh : -c ≤ ((-c).natAbs : ℤ) := Int.le_natAbs
     rw [Int.natAbs_neg] at hh
     omega
-  have hNeq : (N : ℤ) = C * (D + 1) + c.natAbs + Nmax + N₀ + 1 := by
-    dsimp only [N]
-    push_cast
-    rfl
+  have hNeq : (N : ℤ) = C * (D + 1) + c.natAbs + Nmax + N₀ + 1 := rfl
   nlinarith
 
 /-- The product-of-degrees budget holds for the prime components.
 Only their eventual Hilbert formulas are inputs to this intermediate lemma. -/
-private theorem polynomialSection_minimalPrime_slope_sum_le {K : Type*} [Field K]
+private theorem polynomialSection_minimalPrime_slope_sum_le
     (f g : MvPolynomial (Fin 3) K) (hf : Prime f) (hfg : ¬ f ∣ g)
     (d : minimalPrimeComponents (polynomialSectionIdeal f g) → ℕ)
     (hdegree : ∀ P, HasFilteredCurveDegree P.val (d P)) :
     ∑ P, d P ≤ f.totalDegree * g.totalDegree := by
   apply minimalPrimeComponents_slope_sum_le (polynomialSectionIdeal f g)
-    (f.totalDegree * g.totalDegree) (f.totalDegree + g.totalDegree) _ d hdegree
+    _ (f.totalDegree + g.totalDegree) _ d hdegree
   intro N hN
   have hh := filteredCoordinateSpace_codim_two_bound (n := 1) hf hfg
-    (polynomialSectionIdeal f g) (polynomialSectionIdeal_first_mem f g)
+    _ (polynomialSectionIdeal_first_mem f g)
     (polynomialSectionIdeal_second_mem f g) hN
-  simpa only [Nat.choose_one_right, Nat.add_comm 1] using hh
+  simp_all [Nat.choose_one_right, Nat.add_comm 1]
+
+end
 
 /-- The additive degree inequality in the rational curve-degree interface. -/
 theorem polynomialSection_minimalPrime_curveDegree_sum_le

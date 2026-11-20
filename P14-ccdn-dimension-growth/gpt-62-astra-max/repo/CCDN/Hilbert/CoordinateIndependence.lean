@@ -18,8 +18,9 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ ι : Type*} [Field K]
+
 private lemma algebraicIndependent_coordinates_of_standard
-    {K σ ι : Type*} [Field K]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ)
     (j : ι → σ) (hj : Function.Injective j)
     (hstd : ∀ a : ι →₀ ℕ, a.mapDomain j ∈ Ideal.standardExponents I m) :
@@ -32,17 +33,18 @@ private lemma algebraicIndependent_coordinates_of_standard
     ext i
     simp
   rw [he] at hp
-  have hmem : rename j p ∈ I := Ideal.Quotient.eq_zero_iff_mem.mp hp
   have hs : rename j p ∈ restrictSupport K (Ideal.standardExponents I m) := by
     intro a ha
     change a ∈ (rename j p).support at ha
     rw [support_rename_of_injective hj] at ha
     obtain ⟨b, _, rfl⟩ := Finset.mem_image.mp ha
     exact hstd b
-  have hz := Ideal.eq_zero_of_mem_restrictSupport_standardExponents I m hs hmem
-  exact (rename_injective j hj) (by simpa only [map_zero] using hz)
+  have hz := Ideal.eq_zero_of_mem_restrictSupport_standardExponents I m hs (Ideal.Quotient.eq_zero_iff_mem.mp hp)
+  aesop
 
-private lemma orthant_free_monomials_standard {K σ : Type*} [Field K] [Fintype σ]
+variable [Fintype σ]
+
+private lemma orthant_free_monomials_standard
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (B : ℕ)
     (hstable : ∀ a, a ∈ standardExponentVectors I m ↔
       clampExponent B a ∈ standardExponentVectors I m)
@@ -71,8 +73,7 @@ private lemma orthant_free_monomials_standard {K σ : Type*} [Field K] [Fintype 
 
 /-- The independent coordinates are constructed from a maximal
 standard orthant, with exactly the degree of the Hilbert polynomial. -/
-theorem exists_hilbert_dimension_independent_coordinates
-    {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
+theorem exists_hilbert_dimension_independent_coordinates [LinearOrder σ]
     (I : Ideal (MvPolynomial σ K)) (hI : I ≠ ⊤) :
     ∃ U : Set σ, Nat.card U = (filteredHilbertPolynomial I).natDegree ∧
       AlgebraicIndependent K (fun i : U => (Ideal.Quotient.mk I) (X i.val)) := by

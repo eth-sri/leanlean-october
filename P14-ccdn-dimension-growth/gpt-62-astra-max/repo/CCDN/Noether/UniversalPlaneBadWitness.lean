@@ -26,14 +26,12 @@ open MvPolynomial
 two plane coordinates. -/
 lemma universalPlaneMap_planeDegree_le {K σ : Type*} [CommRing K]
     (f : MvPolynomial σ K) : (universalPlaneMap K σ f).totalDegree ≤ f.totalDegree := by
-  change (eval₂Hom (C.comp (C : K →+* MvPolynomial (PlaneParameters σ) K))
-    (fun i => C (X (i,0)) + C (X (i,1)) * X 0 + C (X (i,2)) * X 1) f).totalDegree ≤ _
   apply linear_eval₂_totalDegree_le
   intro i
   have hx (j : Fin 2) :
-      (X j : MvPolynomial (Fin 2) (MvPolynomial (PlaneParameters σ) K)).totalDegree ≤ 1 := by
+      (X j : MvPolynomial _ (MvPolynomial (PlaneParameters σ) K)).totalDegree ≤ 1 := by
     simpa [X] using
-      totalDegree_monomial_le (Finsupp.single j 1) (1 : MvPolynomial (PlaneParameters σ) K)
+      totalDegree_monomial_le (Finsupp.single j 1) 1
   apply (totalDegree_add _ _).trans
   apply max_le
   · apply (totalDegree_add _ _).trans
@@ -49,8 +47,7 @@ lemma universalPlanePolynomial_specialization_totalDegree {K L σ : Type*}
     (φ : MvPolynomial (PlaneParameters σ) K →+* L) :
     bivariateTotalDegree (bivariateMap φ (universalPlanePolynomial f)) ≤ f.totalDegree := by
   apply (bivariateTotalDegree_map_le φ _).trans
-  simpa only [universalPlanePolynomial, bivariateTotalDegree, AlgEquiv.symm_apply_apply]
-    using universalPlaneMap_planeDegree_le f
+  simp_all [universalPlaneMap_planeDegree_le, universalPlanePolynomial, bivariateTotalDegree]
 
 /-- The bad-plane witness: the universal outer leading coefficient of the plane restriction of
 `f` times the closed-form minor with rows `rows` and columns `cols`. The leading-coefficient
@@ -68,19 +65,16 @@ private lemma universalPlaneBadWitness_degree {K σ : Type*} [CommRing K] (f : M
     (cols : Fin (2 * f.totalDegree ^ 2 - 1) → ClosedFormColumns f.totalDegree) :
     (universalPlaneBadWitness f rows cols).totalDegree ≤ 2 * f.totalDegree ^ 3 := by
   apply (totalDegree_mul _ _).trans
-  have hl := universalPlanePolynomial_coefficient_degree f f.totalDegree 0
   have hm := closedForm_minor_parameterDegree _ _ _ _
     (universalPlanePolynomial_coefficient_degree f) rows cols
-  change (universalPlaneLeading f).totalDegree ≤ f.totalDegree at hl
   calc
-    _ ≤ f.totalDegree + (2 * f.totalDegree ^ 2 - 1) * f.totalDegree := Nat.add_le_add hl hm
+    _ ≤ f.totalDegree + (2 * f.totalDegree ^ 2 - 1) * f.totalDegree := Nat.add_le_add (universalPlanePolynomial_coefficient_degree f f.totalDegree 0) hm
     _ ≤ 2 * f.totalDegree ^ 3 := by
       by_cases h : f.totalDegree = 0
       · simp [h]
       · have h1 : 1 ≤ 2 * f.totalDegree ^ 2 := by
-          have : 0 < f.totalDegree := Nat.pos_of_ne_zero h; nlinarith
-        have he := Nat.sub_add_cancel h1
-        nlinarith
+          have := Nat.pos_of_ne_zero h; nlinarith
+        nlinarith [Nat.sub_add_cancel h1]
 
 /-- Nonvanishing certifies full degree and irreducibility over ANY target
 field of characteristic zero or greater than d. In particular it applies in the
@@ -96,22 +90,19 @@ theorem universalPlaneBadWitness_good_specialization
       bivariateTotalDegree (bivariateMap φ (universalPlanePolynomial f)) = f.totalDegree ∧
       Irreducible (bivariateMap φ (universalPlanePolynomial f)) := by
   let g := bivariateMap φ (universalPlanePolynomial f)
-  have hh := mul_ne_zero_iff.mp (show φ (universalPlaneLeading f) *
-      φ (((closedFormCoefficientMatrix f.totalDegree (universalPlanePolynomial f)).submatrix
-        rows cols).det) ≠ 0
-      by simpa only [universalPlaneBadWitness, map_mul] using hw)
+  have hh := mul_ne_zero_iff.mp (show φ _ *
+      φ _ ≠ 0
+      by simpa [universalPlaneBadWitness] using hw)
   have ht : bivariateTotalDegree g ≤ f.totalDegree :=
     universalPlanePolynomial_specialization_totalDegree f φ
   have hc : ((g.coeff f.totalDegree).coeff 0) ≠ 0 := by
-    simpa only [g, bivariateMap_coeff, universalPlaneLeading] using hh.1
-  have hd : g.natDegree = f.totalDegree := by
+    simpa [g, universalPlaneLeading] using hh.1
+  have hd := by
     apply le_antisymm ((bivariate_natDegree_le_totalDegree g).trans ht)
     apply Polynomial.le_natDegree_of_ne_zero
     intro hz
     exact hc (by rw [hz, Polynomial.coeff_zero])
-  have he : bivariateTotalDegree g = f.totalDegree :=
-    le_antisymm ht (hd ▸ bivariate_natDegree_le_totalDegree g)
-  refine ⟨hd, he, ?_⟩
+  refine ⟨hd, (le_antisymm ht (hd ▸ bivariate_natDegree_le_totalDegree g)), ?_⟩
   by_contra hred
   have hl : g.leadingCoeff = Polynomial.C (φ (universalPlaneLeading f)) := by
     rw [bivariate_leadingCoeff_eq_constant g (by omega)]
@@ -154,10 +145,10 @@ theorem exists_integer_universalPlane_badWitness
       (cols : Fin (2 * f.totalDegree ^ 2 - 1) → ClosedFormColumns f.totalDegree),
       universalPlaneBadWitness f rows cols ≠ 0 ∧
       (universalPlaneBadWitness f rows cols).totalDegree ≤ 2 * f.totalDegree ^ 3 := by
-  let φ : ℤ →+* L := Int.castRingHom L
+  let φ := Int.castRingHom L
   have ht : (MvPolynomial.map φ f).totalDegree = f.totalDegree :=
     totalDegree_map_of_injective (RingHom.injective_int _) f
-  have hex := exists_universalPlane_minor (MvPolynomial.map φ f) hf (ht ▸ hpos)
+  have hex := exists_universalPlane_minor _ hf (ht ▸ hpos)
     (.of_charZero _)
   rw [ht] at hex
   obtain ⟨rows, cols, hdet⟩ := hex
@@ -167,11 +158,11 @@ theorem exists_integer_universalPlane_badWitness
     rw [universalPlanePolynomial_map, ← closedForm_minor_map, he, map_zero] at hdet
     exact hdet rfl
   have hl : universalPlaneLeading f ≠ 0 := by
-    have hn := universalPlaneLeading_ne_zero_of_irreducible (MvPolynomial.map φ f) hf
+    have hn := universalPlaneLeading_ne_zero_of_irreducible _ hf
       (ht ▸ hpos) (.of_charZero _)
     have he : universalPlaneLeading (MvPolynomial.map φ f) =
         MvPolynomial.map φ (universalPlaneLeading f) := by
-      simp only [universalPlaneLeading, ht, universalPlanePolynomial_map, bivariateMap_coeff]
+      simp_rw [universalPlaneLeading, ht, universalPlanePolynomial_map, bivariateMap_coeff]
     rw [he] at hn
     intro hz
     exact hn (by rw [hz, map_zero])

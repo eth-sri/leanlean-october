@@ -32,7 +32,7 @@ theorem integral_minpoly_natDegree_le_fraction_finrank
     (minpoly R a).natDegree ≤ Module.finrank F E := by
   rw [← (minpoly.monic ha).natDegree_map (algebraMap R F),
     ← minpoly.isIntegrallyClosed_eq_field_fractions F E ha]
-  exact minpoly.natDegree_le (algebraMap A E a)
+  solve_by_elim [minpoly.natDegree_le]
 
 end
 end CCDN

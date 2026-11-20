@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import Mathlib.LinearAlgebra.Dimension.Finrank
 public import Mathlib.RingTheory.MvPolynomial.Homogeneous
 import Mathlib.Data.Sym.Card
@@ -99,19 +100,25 @@ theorem totalDegree_map_le (f : R →+* S) (p : MvPolynomial σ R) :
 /-- Mapping coefficients along an injective ring homomorphism preserves the total degree. -/
 theorem totalDegree_map_of_injective {f : R →+* S} (hf : Function.Injective f)
     (p : MvPolynomial σ R) : (map f p).totalDegree = p.totalDegree := by
-  simp only [totalDegree, support_map_of_injective p hf]
+  grind [support_map_of_injective, totalDegree]
+
+section
+
+variable [Field K] {f : MvPolynomial σ K}
 
 /-- Over a field, a nonzero polynomial which is not a unit has positive total degree. -/
-theorem totalDegree_pos_of_ne_zero_of_not_isUnit [Field K] {f : MvPolynomial σ K} (hf : f ≠ 0)
+theorem totalDegree_pos_of_ne_zero_of_not_isUnit (hf : f ≠ 0)
     (hu : ¬IsUnit f) : 0 < f.totalDegree := by
   refine Nat.pos_of_ne_zero fun hd ↦ hu ?_
   rw [totalDegree_eq_zero_iff_eq_C.mp hd] at hf ⊢
-  exact (isUnit_iff_ne_zero.mpr fun h ↦ hf (by rw [h, map_zero])).map C
+  aesop
 
 /-- Over a field, an irreducible polynomial has positive total degree. -/
-theorem totalDegree_pos_of_irreducible [Field K] {f : MvPolynomial σ K} (hf : Irreducible f) :
+theorem totalDegree_pos_of_irreducible (hf : Irreducible f) :
     0 < f.totalDegree :=
   totalDegree_pos_of_ne_zero_of_not_isUnit hf.ne_zero hf.not_isUnit
+
+end
 
 /-- The homogeneous component of top degree of a nonzero polynomial is nonzero. -/
 theorem homogeneousComponent_totalDegree_ne_zero {p : MvPolynomial σ R} (hp : p ≠ 0) :
@@ -138,14 +145,20 @@ theorem homogeneousComponent_mul_of_isHomogeneous_left [CommRing K]
   simpa only [← DirectSum.Decomposition.decompose'_eq,
     MvPolynomial.decomposition.decompose'_apply] using ht
 
+variable [Field K]
+
+section
+
+variable [Fintype σ]
+
 /-- The homogeneous polynomials of degree `n` in finitely many variables `σ` form a space of
 dimension `(Fintype.card σ + n - 1).choose n`, the number of monomials of degree `n`. -/
-theorem finrank_homogeneousSubmodule [Field K] [Fintype σ] (n : ℕ) :
+theorem finrank_homogeneousSubmodule (n : ℕ) :
     Module.finrank K (homogeneousSubmodule σ K n) = (Fintype.card σ + n - 1).choose n := by
   classical
   let e : {p : σ →₀ ℕ // p.degree = n} ≃ Sym σ n :=
     ((Sym.equivNatSum σ n).trans
-      (Equiv.subtypeEquivRight fun p => by simp [Finsupp.degree_apply, Finsupp.sum])).symm
+      (Equiv.subtypeEquivRight fun p => by rfl)).symm
   have he : homogeneousSubmodule σ K n = restrictSupport K {p | p.degree = n} := by
     rw [homogeneousSubmodule_eq_finsupp_supported]
     rfl
@@ -155,23 +168,30 @@ theorem finrank_homogeneousSubmodule [Field K] [Fintype σ] (n : ℕ) :
 
 /-- The polynomials of total degree at most `N` in finitely many variables `σ` form a space of
 dimension `(Fintype.card σ + N).choose N`, the number of monomials of degree at most `N`. -/
-theorem finrank_restrictTotalDegree [Field K] [Fintype σ] (N : ℕ) :
+theorem finrank_restrictTotalDegree (N : ℕ) :
     Module.finrank K (restrictTotalDegree σ K N) = (Fintype.card σ + N).choose N := by
   classical
-  have he : restrictTotalDegree σ K N = restrictSupport K {p | p.degree ≤ N} := rfl
+  have he : restrictTotalDegree σ K N = restrictSupport K _ := rfl
   rw [he, Module.finrank_eq_nat_card_basis (basisRestrictSupport K _)]
   change Nat.card {p : σ →₀ ℕ // p.degree ≤ N} = _
-  rw [Nat.card_congr (Finsupp.degreeLeEquivSym σ N), Nat.card_eq_fintype_card,
-    Sym.card_sym_eq_choose, Fintype.card_option]
-  congr 1
-  omega
+  simp [Nat.card_congr (Finsupp.degreeLeEquivSym σ N), Nat.card_eq_fintype_card, Sym.card_sym_eq_choose, Fintype.card_option]
+
+end
 
 /-- The homogeneous polynomials of degree `M` in `n + 1` variables form a space of dimension
 `(n + M).choose M`. -/
-theorem finrank_homogeneousSubmodule_fin [Field K] (n M : ℕ) :
+theorem finrank_homogeneousSubmodule_fin (n M : ℕ) :
     Module.finrank K (homogeneousSubmodule (Fin (n + 1)) K M) = (n + M).choose M := by
-  rw [finrank_homogeneousSubmodule, Fintype.card_fin]
-  congr 1
-  omega
+  simp [finrank_homogeneousSubmodule]
 
 end MvPolynomial
+
+namespace CCDN
+open MvPolynomial
+
+/-- Mapping an integer polynomial to `ℚ` preserves its total degree. -/
+lemma rational_map_totalDegree {σ : Type*} (f : MvPolynomial σ ℤ) :
+    (rationalEquation f).totalDegree = f.totalDegree :=
+    totalDegree_map_of_injective Int.cast_injective _
+
+end CCDN

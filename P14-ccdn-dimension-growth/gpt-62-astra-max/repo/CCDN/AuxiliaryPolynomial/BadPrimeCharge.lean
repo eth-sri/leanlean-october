@@ -17,30 +17,33 @@ namespace CCDN
 noncomputable section
 open Finset Real
 
+variable (P : Finset ℕ) {D : ℤ} (hD : 0 < D) (hP : ∀ p ∈ P, p.Prime)
+    (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D) {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
+
+include hD hP hdiv in
 /-- Distinct prime divisors of a positive integer have total logarithmic
 weight at most the logarithm of that integer. -/
-lemma prime_divisor_log_sum_le (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
-    (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D) :
+lemma prime_divisor_log_sum_le :
     (∑ p ∈ P, Real.log p) ≤ Real.log D := by
-  simpa only [Nat.cast_one, one_mul] using sum_log_prime_powers_le_log P (fun _ => 1)
-    hD hP (fun p hp => by simpa only [pow_one] using hdiv p hp)
+  simpa using sum_log_prime_powers_le_log P (fun _ => 1)
+    hD hP (by grind)
 
+include hD hP hdiv in
 /-- Above a cutoff T, the reciprocal-weighted charge costs at most log(D)/T. -/
-lemma prime_divisor_charge_le (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
-    (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D)
-    {T : ℝ} (hT : 0 < T) (hlo : ∀ p ∈ P, T ≤ (p : ℝ)) :
+lemma prime_divisor_charge_le (hT : 0 < T) (hlo : ∀ p ∈ P, T ≤ (p : ℝ)) :
     (∑ p ∈ P, Real.log p / p) ≤ Real.log D / T := by
   calc
     _ ≤ ∑ p ∈ P, Real.log p / T := by
       apply sum_le_sum
       intro p hp
       exact div_le_div_of_nonneg_left (by positivity) hT (hlo p hp)
-    _ = (∑ p ∈ P, Real.log p) / T := (sum_div _ _ _).symm
+    _ = _ := (sum_div _ _ _).symm
     _ ≤ _ := div_le_div_of_nonneg_right (prime_divisor_log_sum_le P hD hP hdiv) hT.le
 
+include hL hLT in
 /-- Mertens bounds an arbitrary prime interval, with its logarithmic width
 and two absolute error terms. -/
-private lemma prime_interval_weight_le {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
+private lemma prime_interval_weight_le
     (P : Finset ℕ) (hP : ∀ p ∈ P, p.Prime)
     (hlo : ∀ p ∈ P, L < (p : ℝ)) (hhi : ∀ p ∈ P, (p : ℝ) ≤ T) :
     (∑ p ∈ P, Real.log p / p) ≤ Real.log T - Real.log L + 2 * mertensError := by
@@ -65,44 +68,36 @@ private lemma prime_interval_weight_le {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T
   change (∑ p ∈ V, Real.log p / p) - Real.log T ≤ mertensError at ht
   linarith
 
+include hD hP hdiv hL hLT in
 /-- Split the bad primes at T. The low part costs log(T/L), while the high
 part is bounded using the integer witness. -/
-private theorem bad_prime_charge_split (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
-    (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D)
-    {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T) (hlo : ∀ p ∈ P, L < (p : ℝ)) :
+private theorem bad_prime_charge_split (hlo : ∀ p ∈ P, L < (p : ℝ)) :
     (∑ p ∈ P, Real.log p / p) ≤
       Real.log T - Real.log L + 2 * mertensError + Real.log D / T := by
   classical
-  let U := P.filter (fun p : ℕ => (p : ℝ) ≤ T)
-  let V := P.filter (fun p : ℕ => ¬ (p : ℝ) ≤ T)
-  have hlow := prime_interval_weight_le hL hLT U
-    (fun p hp => hP p (mem_filter.mp hp).1)
-    (fun p hp => hlo p (mem_filter.mp hp).1)
-    (fun _ hp => (mem_filter.mp hp).2)
-  have hhigh := prime_divisor_charge_le V hD
-    (fun p hp => hP p (mem_filter.mp hp).1)
-    (fun p hp => hdiv p (mem_filter.mp hp).1)
-    (by linarith : 0 < T)
+  have hlow := prime_interval_weight_le hL hLT (P.filter (fun p : ℕ => p ≤ T))
+    (by grind)
+    (by grind)
+    (by simp)
+  have hhigh := prime_divisor_charge_le (P.filter (fun p : ℕ => ¬ p ≤ T)) hD
+    (by grind)
+    (by grind)
+    (by linarith)
     (fun _ hp => (lt_of_not_ge (mem_filter.mp hp).2).le)
-  have hsplit := sum_filter_add_sum_filter_not P (fun p : ℕ => (p : ℝ) ≤ T)
-    (fun p : ℕ => Real.log p / p)
-  change (∑ p ∈ U, Real.log p / p) + (∑ p ∈ V, Real.log p / p) = _ at hsplit
-  linarith
+  grind [sum_filter_add_sum_filter_not, Real.log]
 
+include hD hP hdiv in
 /-- A logarithmic-height bound for an integer witness controls the bad-prime
 charge at the scale of the cutoff. Constructing such a witness is algebraic. -/
-theorem bad_prime_charge_of_height (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
-    (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D)
-    {L H : ℝ} (hL : 1 ≤ L) (hH : 1 ≤ H) (hlo : ∀ p ∈ P, L < (p : ℝ))
+theorem bad_prime_charge_of_height {H : ℝ} (hL : 1 ≤ L) (hH : 1 ≤ H) (hlo : ∀ p ∈ P, L < (p : ℝ))
     (hheight : Real.log D ≤ L * H) :
     (∑ p ∈ P, Real.log p / p) ≤ Real.log H + 2 * mertensError + 1 := by
   have hL0 : 0 < L := by linarith
   have hH0 : 0 < H := by linarith
-  have hLT : L ≤ L * H := le_mul_of_one_le_right hL0.le hH
+  have hLT := le_mul_of_one_le_right hL0.le hH
   have h := bad_prime_charge_split P hD hP hdiv hL hLT hlo
-  have ht : Real.log D / (L * H) ≤ 1 := (div_le_one (mul_pos hL0 hH0)).mpr hheight
-  rw [Real.log_mul hL0.ne' hH0.ne'] at h
-  linarith
+  have ht := (div_le_one (mul_pos hL0 hH0)).mpr hheight
+  grind [Real.log_mul]
 
 end
 end CCDN

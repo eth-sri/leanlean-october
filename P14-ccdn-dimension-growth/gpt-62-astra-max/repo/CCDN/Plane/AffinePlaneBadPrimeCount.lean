@@ -5,10 +5,12 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.AuxiliaryPolynomial.AffineHypersurfaceAuxiliary
-import CCDN.AuxiliaryPolynomial.PlaneAuxiliaryCount
+import CCDN.ForMathlib.MvPolynomial
 import CCDN.Height.ScaledHypersurfaceHeight
 import CCDN.Plane.Bezout
+import CCDN.Hypersurface.NonabsoluteHypersurfaceCount
 
 /-! A logarithm-free plane-curve estimate in terms of the
 geometric bad-prime factor. Uniformly bounded bad-prime factors therefore
@@ -19,81 +21,66 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private theorem affine_plane_expression_le_bad_prime {d : ℕ} (hd : 0 < d)
-    {B L b : ℝ} (hB : 1 ≤ B) (hL : 1 ≤ L) (hb : 0 ≤ b) :
-    affineAuxiliaryDegreeExpression 0 d B L b ≤
-      (d : ℝ) ^ 3 * (b + 2) * B ^ (1 / (d : ℝ)) := by
-  have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hd0 : (0 : ℝ) < d := zero_lt_one.trans_le hdR
-  have hB0 : 0 < B := zero_lt_one.trans_le hB
-  have hlogB := Real.log_nonneg hB
-  have hlogL := Real.log_nonneg hL
-  have hpow : 1 ≤ B ^ (1 / (d : ℝ)) := Real.one_le_rpow hB (by positivity)
-  have hden : 1 ≤ L ^ (1 / ((d : ℝ) * d)) := Real.one_le_rpow hL (by positivity)
-  have hmin : 0 ≤ min (Real.log L + d * Real.log B + (d : ℝ) ^ 2) ((d : ℝ) ^ 2 * b) :=
-    le_min (by positivity) (by positivity)
-  have hfrac :
-      (d : ℝ) * min (Real.log L + d * Real.log B + (d : ℝ) ^ 2) ((d : ℝ) ^ 2 * b) *
-        B ^ (1 / (d : ℝ)) / L ^ (1 / ((d : ℝ) * d)) ≤
-      (d : ℝ) ^ 3 * b * B ^ (1 / (d : ℝ)) := by
-    calc
-      _ ≤ (d : ℝ) *
-          min (Real.log L + d * Real.log B + (d : ℝ) ^ 2) ((d : ℝ) ^ 2 * b) *
-          B ^ (1 / (d : ℝ)) := div_le_self (by positivity) hden
-      _ ≤ (d : ℝ) * ((d : ℝ) ^ 2 * b) * B ^ (1 / (d : ℝ)) := by
-        gcongr
-        exact min_le_right _ _
-      _ = _ := by ring
-  have hlog : Real.log B ≤ (d : ℝ) * B ^ (1 / (d : ℝ)) :=
-    log_le_dimension_root hd hB0
-  have hdcube : (d : ℝ) ≤ (d : ℝ) ^ 3 := by
-    simpa only [pow_one] using pow_le_pow_right₀ hdR (by omega : 1 ≤ 3)
-  have hlog' := hlog.trans (mul_le_mul_of_nonneg_right hdcube (by positivity))
-  have hcube := mul_le_mul_of_nonneg_left hpow (show 0 ≤ (d : ℝ) ^ 3 by positivity)
-  unfold affineAuxiliaryDegreeExpression
-  norm_num only [Nat.cast_zero, zero_add, div_one, Real.rpow_one, Real.rpow_zero,
-    one_mul, sub_self, mul_one, show (2 - 1 : ℝ) = 1 by norm_num,
-    show (4 - 1 : ℝ) = 3 by norm_num, Real.rpow_natCast, Real.rpow_ofNat]
-  nlinarith
+/-- Apply Bézout to a plane curve and its general affine auxiliary. -/
+lemma primitive_eqn_count_le_aux {f : IntegerPolynomial 2}
+    (hprim : PrimitiveIntegerPolynomial f) (hir : Irreducible (rationalEquation f))
+    {B A : ℝ} (hB : 1 ≤ B) (hA : affineAuxiliaryCharge 0 f.totalDegree B
+      (integerCoefficientHeight (homogeneousComponent f.totalDegree f)) (hypersurfaceBadPrimeFactor f) ≤ A) :
+    (count (zeroLocus (rationalEquation f)) B : ℝ) ≤
+      affineHypersurfaceAuxiliaryConstant 0 * (f.totalDegree : ℝ)^4 * B^(1 / (f.totalDegree : ℝ)) * (A + 1) := by
+  have hd := MvPolynomial.totalDegree_pos_of_irreducible hir
+  rw [rational_map_totalDegree] at hd
+  by_cases habs : AbsolutelyIrreducible f
+  case neg =>
+    have hc := nonabsolute_hypersurface_dimension_growth (rationalEquation f) hir
+      (fun h => habs ((absolutelyIrreducibleRat_map_iff f).mp h)) hB
+    simp only [pow_zero,one_mul,mul_one,rational_map_totalDegree] at hc
+    have hA0 : 0 ≤ A := le_trans (le_min (by have := hypersurfaceBadPrimeFactor_nonneg f; positivity)
+      (by have := Real.log_nonneg hB; positivity)) hA
+    have hC : 1 ≤ affineHypersurfaceAuxiliaryConstant 0 := by
+      unfold affineHypersurfaceAuxiliaryConstant scalingCost
+      have := hypersurfaceAbsoluteAuxiliaryConstant_one_le 0
+      have := scalingHeightCost_one_le 0
+      have := Real.one_le_exp (by positivity : (0:ℝ) ≤ 0+1)
+      apply one_le_mul_of_one_le_of_one_le (one_le_mul_of_one_le_of_one_le (by assumption) (by linarith))
+      apply one_le_mul_of_one_le_of_one_le (by norm_num); exact Real.one_le_exp (by positivity)
+    have hd1 : (1:ℝ) ≤ f.totalDegree := by exact_mod_cast hd
+    apply hc.trans
+    calc (f.totalDegree:ℝ)^2 = 1*(f.totalDegree:ℝ)^2*1*1 := by ring
+         _ ≤ _ := by gcongr <;> first | apply Real.one_le_rpow hB (by positivity) | omega | linarith
+  obtain ⟨g, ⟨_, hnd, hz⟩, hdeg⟩ :=
+    affine_hypersurface_auxiliary f hprim habs hd hB hA
+  classical
+  let S := integralPoints (zeroLocus (rationalEquation f)) B
+  have hs (x : S) := mem_integralPoints.mp x.property
+  have hcount := plane_common_zeros_card_le _ (rationalEquation g) hir (fun h => hnd (hprim.rational_map_dvd_iff.mp h))
+    (fun x : S => rationalPoint x.val) ((rationalPoint_injective 2).comp Subtype.val_injective)
+    (fun x => (hs x).2) (fun x => by
+      rw [eval_rationalPoint_map, Int.cast_eq_zero]
+      apply hz x.val (hs x).1
+      have h : eval (rationalPoint x.val) (rationalEquation f) = 0 := (hs x).2
+      simpa only [eval_rationalPoint_map, Int.cast_eq_zero] using h)
+  rw [Fintype.card_coe, rational_map_totalDegree, rational_map_totalDegree] at hcount
+  apply (Nat.cast_le.mpr hcount).trans
+  push_cast
+  have h := mul_le_mul_of_nonneg_left hdeg (Nat.cast_nonneg (α := ℝ) f.totalDegree)
+  norm_num [auxDegreeScale, affineBoxPower, degreeRoot] at h
+  convert h using 1; ring
 
 /-- The plane auxiliary and Bezout prove the bad-prime bound for
 integer zeros. -/
 theorem affine_plane_count_bad_prime
-    (f : MvPolynomial (Fin 2) ℤ) (hprim : PrimitiveIntegerPolynomial f)
-    (hir : Irreducible (map (Int.castRingHom ℚ) f))
-    (hd : 0 < f.totalDegree) {B : ℝ} (hB : 1 ≤ B) :
-    (count (zeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤
+    (f : IntegerPolynomial 2) (hprim : PrimitiveIntegerPolynomial f)
+    (hir : Irreducible (rationalEquation f))
+    (_hd : 0 < f.totalDegree) {B : ℝ} (hB : 1 ≤ B) :
+    (count (zeroLocus (rationalEquation f)) B : ℝ) ≤
       affineHypersurfaceAuxiliaryConstant 0 * (f.totalDegree : ℝ) ^ 4 *
         (hypersurfaceBadPrimeFactor f + 2) * B ^ (1 / (f.totalDegree : ℝ)) := by
-  obtain ⟨g, ⟨_, hfg, hgz⟩, hgdeg⟩ :=
-    affine_hypersurface_auxiliary f hprim (hprim.irreducible_of_rational_map hir) hd hB
-  have hf0 : f ≠ 0 := ne_zero_of_irreducible_map hir
-  have hdegree := hgdeg.trans (mul_le_mul_of_nonneg_left
-    (affine_plane_expression_le_bad_prime hd hB (leading_height_one_le f hf0)
-      (hypersurfaceBadPrimeFactor_nonneg f)) (affineHypersurfaceAuxiliaryConstant_pos 0).le)
-  have hfgQ : ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g :=
-    fun h => hfg (hprim.rational_map_dvd_iff.mp h)
-  apply integer_zero_count_le_of_family_bound
-  intro t z hinj hzf hbox
-  have hzQ : Function.Injective (fun i => rationalPoint (z i)) := by
-    intro i j h
-    apply hinj
-    funext k
-    exact Int.cast_injective (congrFun h k)
-  have hmapzero (p : MvPolynomial (Fin 2) ℤ) (i : Fin t) (hp : eval (z i) p = 0) :
-      eval (rationalPoint (z i)) (map (Int.castRingHom ℚ) p) = 0 := by
-    have hh := congrArg (Int.castRingHom ℚ) hp
-    rw [map_eval, map_zero] at hh
-    exact hh
-  have hbezout := plane_common_zeros_card_le (map (Int.castRingHom ℚ) f)
-    (map (Int.castRingHom ℚ) g) hir hfgQ (fun i => rationalPoint (z i)) hzQ
-    (fun i => hmapzero f i (hzf i)) (fun i => hmapzero g i (hgz (z i) (hbox i) (hzf i)))
-  rw [Fintype.card_fin, rational_map_totalDegree, rational_map_totalDegree] at hbezout
-  have hcount : (t : ℝ) ≤ (f.totalDegree : ℝ) * g.totalDegree := by exact_mod_cast hbezout
-  have hm := mul_le_mul_of_nonneg_left hdegree (Nat.cast_nonneg (α := ℝ) f.totalDegree)
-  apply hcount.trans
-  convert hm using 1
-  ring
+  have hL := leading_height_one_le f (ne_zero_of_irreducible_map hir)
+  have hcharge : affineAuxiliaryCharge 0 f.totalDegree B _ (hypersurfaceBadPrimeFactor f) ≤ hypersurfaceBadPrimeFactor f :=
+    (min_le_left _ _).trans (div_le_self (hypersurfaceBadPrimeFactor_nonneg _) (Real.one_le_rpow hL (by positivity)))
+  have h := primitive_eqn_count_le_aux hprim hir hB (hcharge.trans (le_add_of_nonneg_right zero_le_one))
+  convert h using 1; ring
 
 end
 end CCDN

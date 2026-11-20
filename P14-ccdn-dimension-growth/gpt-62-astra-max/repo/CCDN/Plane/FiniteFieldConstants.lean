@@ -21,40 +21,40 @@ the numerals are definitionally equal to statements using the names. -/
 namespace CCDN
 noncomputable section
 
+section
+
+variable {R : Type*} [Semiring R]
+
 /-- The prime cutoff `27 d⁴` of the Stepanov method. For `p > 27 d⁴` the integer Stepanov
 parameters `A = ⌊√p / d⌋`, `D = ⌊(p - 1) / d⌋`, `N = d A - 4 d²` exist with `N > 0`
 (`exists_stepanov_integer_parameters`), the Hilbert-dimension inequality holds
 (`stepanov_numeric_dimension`), and `√p < 32 N` (`stepanov_real_bound`), since
 `31² · 27 > 160²`. Bad primes are only counted above this cutoff; below it the trivial
 bounds are used. The definition is polymorphic so that it reads the same over `ℕ` and `ℝ`. -/
-def stepanovThreshold {R : Type*} [Semiring R] (d : R) : R := 27 * d ^ 4
+def stepanovThreshold (d : R) : R := 27 * d ^ 4
 
 /-- The cast of the natural-number cutoff `stepanovThreshold d` is the cutoff of the cast of `d`. -/
 @[simp, norm_cast]
-lemma Nat.cast_stepanovThreshold {R : Type*} [Semiring R] (d : ℕ) :
+lemma Nat.cast_stepanovThreshold (d : ℕ) :
     ((stepanovThreshold d : ℕ) : R) = stepanovThreshold (d : R) := by
   simp [stepanovThreshold]
 
 /-- The cutoff `stepanovThreshold` is monotone on nonnegative arguments. -/
 @[gcongr]
-lemma stepanovThreshold_le_stepanovThreshold {R : Type*} [Semiring R] [PartialOrder R]
+lemma stepanovThreshold_le_stepanovThreshold [PartialOrder R]
     [IsOrderedRing R] {a b : R} (ha : 0 ≤ a) (hab : a ≤ b) :
     stepanovThreshold a ≤ stepanovThreshold b := by
   unfold stepanovThreshold
   have : (0 : R) ≤ 27 := Nat.ofNat_nonneg 27
   gcongr
 
+end
+
 /-- The constant `161` of the affine plane-curve count `#C(𝔽_p) ≤ p + 161 d² √p`
 (`plane_finite_field_card_bound`). In `stepanov_real_bound` the Stepanov count
 `t N ≤ d D + p (N + 4 d²) + d² N` is bounded using `d D < p`, `(4 d² + 1) p ≤ 5 d² p`,
 `p ≤ 32 N √p` and `1 ≤ √p`, giving `t ≤ p + (5 · 32 + 1) d² √p`. -/
 def planeResidueConstant : ℝ := 161
-
-/-- The constant `162 = 161 + 1` of the projective plane-curve count
-(`projective_plane_finite_field_card_bound`): the affine chart contributes
-`p + 161 d² √p` and the line at infinity at most `d ≤ d² √p` further points
-(`projectivePlaneResidueConstant_eq_add`). -/
-def projectivePlaneResidueConstant : ℝ := 162
 
 /-- The constant `C = 164 = 162 + 2` for which the projective plane total multiplicity is
 at most `p + (C + 1) d² √p` (`projectivePlaneTotalMultiplicity_le`). The singular
@@ -75,15 +75,6 @@ def hypersurfaceResidueConstant : ℝ := 164
 `2 (H + 1) p^(m-2)`, and `1 ≤ d² √p` (`projectiveHypersurfaceResidueConstant_eq_add`). -/
 def projectiveHypersurfaceResidueConstant : ℝ := 330
 
-/-- The value of `planeResidueConstant` is `161`. -/
-lemma planeResidueConstant_eq : planeResidueConstant = 161 := rfl
-
-/-- The value of `projectivePlaneResidueConstant` is `162`. -/
-lemma projectivePlaneResidueConstant_eq : projectivePlaneResidueConstant = 162 := rfl
-
-/-- The value of `projectivePlaneDeterminantConstant` is `164`. -/
-lemma projectivePlaneDeterminantConstant_eq : projectivePlaneDeterminantConstant = 164 := rfl
-
 /-- The value of `hypersurfaceResidueConstant` is `164`. -/
 lemma hypersurfaceResidueConstant_eq : hypersurfaceResidueConstant = 164 := rfl
 
@@ -94,10 +85,6 @@ lemma projectiveHypersurfaceResidueConstant_eq : projectiveHypersurfaceResidueCo
 /-- The plane constant `planeResidueConstant` is positive. -/
 lemma planeResidueConstant_pos : 0 < planeResidueConstant := by
   norm_num [planeResidueConstant]
-
-/-- The constant `projectivePlaneDeterminantConstant` is positive. -/
-lemma projectivePlaneDeterminantConstant_pos : 0 < projectivePlaneDeterminantConstant := by
-  norm_num [projectivePlaneDeterminantConstant]
 
 /-- The constant `projectiveHypersurfaceResidueConstant` is positive. -/
 lemma projectiveHypersurfaceResidueConstant_pos : 0 < projectiveHypersurfaceResidueConstant := by

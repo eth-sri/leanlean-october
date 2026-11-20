@@ -18,20 +18,23 @@ namespace CCDN
 noncomputable section
 open PowerSeries
 
-private lemma powerSeries_frobenius_constant_congruence {K : Type*} [Field K]
+section
+
+variable {K ι : Type*} [Field K]
+
+private lemma powerSeries_frobenius_constant_congruence
     (p r : ℕ) [Fact p.Prime] [CharP K p] (g : PowerSeries K) :
     PowerSeries.X ^ (p ^ r) ∣ g ^ (p ^ r) - PowerSeries.C (g.constantCoeff ^ (p ^ r)) := by
-  let : CharP (PowerSeries K) p :=
+  let :=
     charP_of_injective_algebraMap (algebraMap K (PowerSeries K)).injective p
   have hh : (PowerSeries.X : PowerSeries K) ∣ g - PowerSeries.C g.constantCoeff :=
     PowerSeries.X_dvd_iff.mpr (by simp)
   have ht := pow_dvd_pow_of_dvd hh (p ^ r)
-  rw [sub_pow_char_pow, ← map_pow] at ht
-  exact ht
+  simp_all [sub_pow_char_pow, ← map_pow]
 
 /-- A relation with Frobenius-powered series coefficients forces all their
 constant terms to vanish if the low coefficient jets of f are independent. -/
-private lemma powerSeries_frobenius_relation_constants {K ι : Type*} [Field K]
+private lemma powerSeries_frobenius_relation_constants
     [Fintype ι] [DecidableEq ι] (p r : ℕ) [Fact p.Prime] [CharP K p]
     (f g : ι → PowerSeries K)
     (hjet : ∀ a : ι → K, (∀ n < p ^ r, PowerSeries.coeff n (∑ i, a i • f i) = 0) → ∀ i, a i = 0)
@@ -41,15 +44,15 @@ private lemma powerSeries_frobenius_relation_constants {K ι : Type*} [Field K]
     rw [← Finset.sum_sub_distrib]
     apply Finset.dvd_sum
     intro i _
-    have hh := dvd_mul_of_dvd_right (powerSeries_frobenius_constant_congruence p r (g i)) (f i)
-    convert hh using 1
-    rw [Algebra.smul_def, PowerSeries.algebraMap_eq]
-    ring
+    convert (dvd_mul_of_dvd_right (powerSeries_frobenius_constant_congruence p r (g i)) (f i)) using 1
+    grind [Algebra.smul_def, PowerSeries.algebraMap_eq]
   rw [hrel, zero_sub] at hdiff
   have hzero := hjet (fun i => (g i).constantCoeff ^ (p ^ r))
     (PowerSeries.X_pow_dvd_iff.mp (dvd_neg.mp hdiff))
   intro i
-  exact (eq_zero_of_pow_eq_zero (hzero i))
+  solve_by_elim [eq_zero_of_pow_eq_zero]
+
+end
 
 /-- A finite family of series has a common lowest power of X; after dividing
 it out, at least one remaining series has nonzero constant coefficient. -/
@@ -61,20 +64,17 @@ private lemma powerSeries_common_order_factor {K ι : Type*} [Field K] [Fintype 
   let S := Finset.univ.filter (fun i => g i ≠ 0)
   have hS : S.Nonempty := by obtain ⟨i, hi⟩ := hg; exact ⟨i, by simp [S, hi]⟩
   obtain ⟨j, hj, hmin⟩ := S.exists_min_image (fun i => (g i).order.toNat) hS
-  have hj0 : g j ≠ 0 := (Finset.mem_filter.mp hj).2
   let m := (g j).order.toNat
   have hdiv (i : ι) : PowerSeries.X ^ m ∣ g i := by
     by_cases hi : g i = 0
     · simp [hi]
-    · have hle := hmin i (by simp [S, hi])
-      exact (pow_dvd_pow PowerSeries.X hle).trans (PowerSeries.X_pow_order_dvd (φ := g i))
+    · exact (pow_dvd_pow PowerSeries.X (by grind)).trans (PowerSeries.X_pow_order_dvd (φ := g i))
   choose h hh using hdiv
   refine ⟨m, h, hh, j, ?_⟩
-  have hc := PowerSeries.coeff_order hj0
+  have hc := PowerSeries.coeff_order ((Finset.mem_filter.mp hj).2)
   change PowerSeries.coeff m (g j) ≠ 0 at hc
   rw [hh j] at hc
-  simpa only [PowerSeries.coeff_X_pow_mul',
-    le_refl, ite_true, Nat.sub_self, PowerSeries.coeff_zero_eq_constantCoeff_apply] using hc
+  simpa [PowerSeries.coeff_X_pow_mul'] using hc
 
 /-- Independent jets of length p^r prevent any nontrivial relation with
 p^r-th-power power-series coefficients. -/
@@ -87,16 +87,10 @@ theorem powerSeries_frobenius_relation_trivial {K ι : Type*} [Field K]
   obtain ⟨m, h, hh, j, hj⟩ := powerSeries_common_order_factor g hn
   have hfactor : (∑ i, f i * (g i) ^ (p ^ r)) =
       (PowerSeries.X : PowerSeries K) ^ (m * (p ^ r)) * ∑ i, f i * (h i) ^ (p ^ r) := by
-    rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro i _
-    rw [hh i, mul_pow, ← pow_mul]
-    ring
-  have hX : (PowerSeries.X : PowerSeries K) ^ (m * (p ^ r)) ≠ 0 :=
-    pow_ne_zero _ PowerSeries.X_ne_zero
+    grind [Finset.mul_sum, Finset.sum_congr, mul_pow, pow_mul]
   rw [hfactor] at hrel
-  have hz := (mul_eq_zero.mp hrel).resolve_left hX
-  exact hj (powerSeries_frobenius_relation_constants p r f h hjet hz j)
+  have hz := (mul_eq_zero.mp hrel).resolve_left (pow_ne_zero _ PowerSeries.X_ne_zero)
+  solve_by_elim [powerSeries_frobenius_relation_constants]
 
 end
 end CCDN

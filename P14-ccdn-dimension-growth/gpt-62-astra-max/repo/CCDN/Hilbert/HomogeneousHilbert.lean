@@ -31,27 +31,27 @@ lemma homogeneous_multiplier {K σ : Type*} [CommRing K] [IsDomain K]
   rw [mul_left_cancel₀ hf0 he]
   exact homogeneousComponent_isHomogeneous _ _
 
+variable {K σ : Type*} [Field K] (f : MvPolynomial σ K)
+
 /-- The degree-`M` part of the graded coordinate ring: the image of the homogeneous polynomials of
 degree `M` in `K[X] ⧸ I`. -/
-def homogeneousCoordinateSpace {K σ : Type*} [Field K]
+def homogeneousCoordinateSpace
     (I : Ideal (MvPolynomial σ K)) (M : ℕ) : Submodule K (MvPolynomial σ K ⧸ I) :=
   (homogeneousSubmodule σ K M).map (Ideal.Quotient.mkₐ K I).toLinearMap
 
 /-- The multiples `f * u` of `f` by homogeneous polynomials `u` of degree `M - d`. -/
-def homogeneousMultiples {K σ : Type*} [Field K]
-    (f : MvPolynomial σ K) (d M : ℕ) : Submodule K (MvPolynomial σ K) :=
+def homogeneousMultiples (d M : ℕ) : Submodule K (MvPolynomial σ K) :=
   (homogeneousSubmodule σ K (M - d)).map (LinearMap.mulLeft K f)
 
 /-- For `f ≠ 0`, the space of homogeneous multiples `homogeneousMultiples f d M` has the dimension
 of the space of homogeneous polynomials of degree `M - d`. -/
-theorem homogeneousMultiples_finrank {K σ : Type*} [Field K]
-    (f : MvPolynomial σ K) (hf : f ≠ 0) (d M : ℕ) :
+theorem homogeneousMultiples_finrank (hf : f ≠ 0) (d M : ℕ) :
     Module.finrank K (homogeneousMultiples f d M) =
       Module.finrank K (homogeneousSubmodule σ K (M - d)) :=
   (Submodule.equivMapOfInjective (LinearMap.mulLeft K f)
     (fun _ _ h => mul_left_cancel₀ hf h) _).finrank_eq.symm
 
-private theorem principal_homogeneous_finrank {K σ : Type*} [Field K] [Finite σ]
+private theorem principal_homogeneous_finrank [Finite σ]
     (f : MvPolynomial σ K) {d M : ℕ} (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hM : d ≤ M) :
     Module.finrank K (homogeneousCoordinateSpace (Ideal.span {f}) M) +
       Module.finrank K (homogeneousSubmodule σ K (M - d)) =
@@ -67,21 +67,21 @@ private theorem principal_homogeneous_finrank {K σ : Type*} [Field K] [Finite �
     · intro hx
       obtain ⟨u, hu, rfl⟩ := Submodule.mem_map.mp hx
       refine ⟨?_, Ideal.Quotient.eq_zero_iff_mem.mpr
-        (Ideal.mem_span_singleton.mpr (dvd_mul_right f u))⟩
+        (by solve_by_elim [Ideal.mem_span_singleton.mpr])⟩
       change (f * u).IsHomogeneous M
-      simpa only [Nat.add_sub_of_le hM] using hf.mul hu
-  let _ : Module.Finite K V := Module.Finite.of_fg (homogeneousSubmodule_fg σ K M)
+      simpa [*] using hf.mul hu
+  let _ := Module.Finite.of_fg (homogeneousSubmodule_fg σ K M)
   have h := φ.finrank_map_add_finrank_inf_ker V
   rw [hk, homogeneousMultiples_finrank f hf0] at h
   exact h
 
 /-- Exact projective hypersurface Hilbert count, with no geometric hypothesis. -/
-theorem principal_homogeneous_hilbert_count {K : Type*} [Field K]
+theorem principal_homogeneous_hilbert_count
     {n d M : ℕ} (f : MvPolynomial (Fin (n + 1)) K)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hM : d ≤ M) :
     Module.finrank K (homogeneousCoordinateSpace (Ideal.span {f}) M) +
       (n + (M - d)).choose (M - d) = (n + M).choose M := by
-  simpa only [finrank_homogeneousSubmodule_fin] using principal_homogeneous_finrank f hf hf0 hM
+  simpa [finrank_homogeneousSubmodule_fin] using principal_homogeneous_finrank f hf hf0 hM
 
 end
 end CCDN

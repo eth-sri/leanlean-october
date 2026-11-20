@@ -18,17 +18,18 @@ for the constructed integer parameters. -/
 namespace CCDN
 noncomputable section
 
-private lemma principal_plane_hilbert_balance {K : Type*} [Field K]
-    (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) {M : ℕ} (hM : f.totalDegree ≤ M) :
+variable {K : Type*} [Field K] (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) {M : ℕ}
+    (hM : f.totalDegree ≤ M)
+
+include hf hM in
+private lemma principal_plane_hilbert_balance :
     Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) + f.totalDegree.choose 2 =
       f.totalDegree * M + f.totalDegree := by
   have hh := principal_plane_hilbert_function f hf hM
-  have he : (Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) : ℤ) +
-      f.totalDegree.choose 2 = (f.totalDegree : ℤ) * M + f.totalDegree := by omega
-  exact_mod_cast he
+  grind
 
-private lemma principal_plane_hilbert_bounds {K : Type*} [Field K]
-    (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) {M : ℕ} (hM : f.totalDegree ≤ M) :
+include hf hM in
+private lemma principal_plane_hilbert_bounds :
     f.totalDegree * M - f.totalDegree ^ 2 ≤
       Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) ∧
     Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) ≤ f.totalDegree * (M + 1) := by
@@ -38,9 +39,9 @@ private lemma principal_plane_hilbert_bounds {K : Type*} [Field K]
   · omega
   · nlinarith
 
+include hf in
 /-- The numerical inequality suffices for the exact filtered dimensions. -/
-theorem stepanov_hilbert_dimension_inequality {K : Type*} [Field K]
-    (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) (p A D N : ℕ)
+theorem stepanov_hilbert_dimension_inequality (p A D N : ℕ)
     (hd : 0 < f.totalDegree) (hp : stepanovThreshold f.totalDegree < p)
     (hA : f.totalDegree ≤ A) (hD : f.totalDegree ≤ D)
     (hx : (f.totalDegree * A) ^ 2 ≤ p) (hy : p ≤ f.totalDegree * D + f.totalDegree)
@@ -57,17 +58,15 @@ theorem stepanov_hilbert_dimension_inequality {K : Type*} [Field K]
         apply Finset.sum_le_sum
         intro r _
         apply (principal_plane_hilbert_bounds f hf
-          (by omega : f.totalDegree ≤ D + A + r.val * f.totalDegree)).2.trans
-        apply Nat.mul_le_mul_left
-        have hh := Nat.mul_le_mul_right f.totalDegree (Nat.le_of_lt r.isLt)
-        omega
+          (by omega)).2.trans
+        aesop
       _ = _ := by
         simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, smul_eq_mul]; ring
-  have hn := stepanov_numeric_dimension f.totalDegree p (f.totalDegree * A)
-    (f.totalDegree * D) N hd hp hx hy hN hNpos
+  have hn := stepanov_numeric_dimension f.totalDegree p _
+    _ N hd hp hx hy hN hNpos
   have hprod := Nat.mul_le_mul (principal_plane_hilbert_bounds f hf hA).1
     (principal_plane_hilbert_bounds f hf hD).1
-  exact hsum.trans_lt (hn.trans_le (by nlinarith only [hprod]))
+  grind
 
 end
 end CCDN

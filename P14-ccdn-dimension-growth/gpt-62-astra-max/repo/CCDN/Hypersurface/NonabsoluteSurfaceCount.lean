@@ -12,7 +12,6 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 public import Mathlib.RingTheory.Ideal.Height
 import CCDN.Algebra.PolynomialLinearDescent
 import CCDN.ForMathlib.MvPolynomial
-import CCDN.Hypersurface.CurveBoxDegreeBound
 import Mathlib.Algebra.MvPolynomial.Nilpotent
 
 /-! CCDN Corollary 4.1.4 for irreducible affine hypersurfaces in three
@@ -46,23 +45,19 @@ theorem nonabsolute_affine_auxiliary {k K : Type*}
   have hmapu : ¬ IsUnit (map (algebraMap k K) f) := by
     intro hu
     have he := (isUnit_iff_totalDegree_of_isReduced.mp hu).2
-    rw [hmapd] at he
     omega
   have hfac : ∃ g h : MvPolynomial (Fin n) K,
       map (algebraMap k K) f = g * h ∧ ¬ IsUnit g ∧ ¬ IsUnit h := by
     by_contra! hn
     apply hred
     refine ⟨hmapu, ?_⟩
-    intro g h he
-    by_cases hu : IsUnit g
-    · exact Or.inl hu
-    · exact Or.inr (hn g h he hu)
+    grind
   obtain ⟨g, h, hfac, hgu, hhu⟩ := hfac
-  have hg0 : g ≠ 0 := fun he => hmap0 (by simp [hfac, he])
-  have hh0 : h ≠ 0 := fun he => hmap0 (by simp [hfac, he])
+  have hg0 : g ≠ 0 := by grind
+  have hh0 : h ≠ 0 := by grind
   have hgd := totalDegree_pos_of_ne_zero_of_not_isUnit hg0 hgu
   have hhd := totalDegree_pos_of_ne_zero_of_not_isUnit hh0 hhu
-  have hdegrees : g.totalDegree + h.totalDegree = f.totalDegree := by
+  have hdegrees := by
     rw [hfac, totalDegree_mul_of_isDomain hg0 hh0] at hmapd
     exact hmapd
   obtain ⟨g₀, hg₀, hgd₀, hgz⟩ := exists_nonzero_polynomial_linear_descent (k := k) g hg0
@@ -79,32 +74,9 @@ theorem nonabsolute_affine_auxiliary {k K : Type*}
   · intro x hx
     have he := congrArg (algebraMap k K) hx
     rw [map_eval, hfac, eval_mul, map_zero] at he
-    rw [eval_mul]
     rcases mul_eq_zero.mp he with hgzero | hhzero
-    · rw [hgz x hgzero, zero_mul]
-    · rw [hhz x hhzero, mul_zero]
-
-/-- A finite union of affine curves in three-space, given by height-two primes `P` of degree
-`d P`, has at most `(∑ P, d P) * (2 * B + 1)` integral points of height at most `B`. -/
-theorem finite_curve_union_count_le_box_side
-    (S : Finset (Ideal (CoordinatePolynomial 3)))
-    (d : Ideal (CoordinatePolynomial 3) → ℕ)
-    (hcurve : ∀ P ∈ S, P.IsPrime ∧ P.height = 2 ∧ HasAffineCurveDegree P (d P))
-    {B : ℝ} (hB : 0 ≤ B) :
-    (count (⋃ P ∈ S, idealZeroLocus P) B : ℝ) ≤
-      (∑ P ∈ S, (d P : ℝ)) * (2 * B + 1) := by
-  classical
-  induction S using Finset.induction_on with
-  | empty => simp [count, integralPoints]
-  | @insert P S hPS ih =>
-    have hP := hcurve P (Finset.mem_insert_self _ _)
-    have : P.IsPrime := hP.1
-    have hS := ih (fun Q hQ => hcurve Q (Finset.mem_insert_of_mem hQ))
-    rw [Finset.set_biUnion_insert, Finset.sum_insert hPS, add_mul]
-    have hcount : (count (idealZeroLocus P ∪ ⋃ Q ∈ S, idealZeroLocus Q) B : ℝ) ≤
-        count (idealZeroLocus P) B + count (⋃ Q ∈ S, idealZeroLocus Q) B := by
-      exact_mod_cast count_union_le (idealZeroLocus P) (⋃ Q ∈ S, idealZeroLocus Q) B
-    exact hcount.trans (add_le_add (curve_count_le_degree_mul_box_side P hP.2.1 hP.2.2 hB) hS)
+    aesop
+    aesop
 
 end
 end CCDN

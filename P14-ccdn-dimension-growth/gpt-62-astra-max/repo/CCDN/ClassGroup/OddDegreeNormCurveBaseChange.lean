@@ -21,7 +21,9 @@ open Polynomial NumberField
 
 variable (K E : Type*) [Field K] [NumberField K] [Field E]
 
-private lemma signedNormCurvePolynomial_bivariate_map (β : 𝓞 K) (ε : ℤ) :
+variable (β : 𝓞 K) {ε : ℤ} (hε : (ε : E) ≠ 0)
+
+private lemma signedNormCurvePolynomial_bivariate_map (ε : ℤ) :
     bivariatePolynomialEquiv E
       (MvPolynomial.map (Int.castRingHom E) (signedNormCurvePolynomial K β ε)) =
       X ^ 2 - C (C (ε : E) *
@@ -32,10 +34,10 @@ private lemma signedNormCurvePolynomial_bivariate_map (β : 𝓞 K) (ε : ℤ) :
     (X ^ 2 - C (C ε * integerNormPolynomial K β)) = _
   simp
 
+include hε in
 /-- If `[K : ℚ]` is odd and the sign `ε` is nonzero in the field `E`, then the signed norm-curve
 polynomial of `β` remains irreducible over `E`, in any characteristic. -/
-theorem signedNormCurvePolynomial_map_irreducible_in_every_characteristic
-    (β : 𝓞 K) {ε : ℤ} (hε : (ε : E) ≠ 0) (hn : Odd (Module.finrank ℚ K)) :
+theorem signedNormCurvePolynomial_map_irreducible_in_every_characteristic (hn : Odd (Module.finrank ℚ K)) :
     Irreducible (MvPolynomial.map (Int.castRingHom E)
       (signedNormCurvePolynomial K β ε)) := by
   apply (MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv E)).mp
@@ -45,10 +47,10 @@ theorem signedNormCurvePolynomial_map_irreducible_in_every_characteristic
     integerNormPolynomial_natDegree]
   exact hn
 
+include hε in
 /-- If `[K : ℚ] ≥ 2` and the sign `ε` is nonzero in the field `E`, then the signed norm-curve
 polynomial of `β` has total degree `[K : ℚ]` over `E`. -/
-theorem signedNormCurvePolynomial_map_totalDegree
-    (β : 𝓞 K) {ε : ℤ} (hε : (ε : E) ≠ 0) (hn : 2 ≤ Module.finrank ℚ K) :
+theorem signedNormCurvePolynomial_map_totalDegree (hn : 2 ≤ Module.finrank ℚ K) :
     (MvPolynomial.map (Int.castRingHom E)
       (signedNormCurvePolynomial K β ε)).totalDegree = Module.finrank ℚ K := by
   have hd : (C (ε : E) * (integerNormPolynomial K β).map (Int.castRingHom E)).natDegree =
@@ -60,7 +62,7 @@ theorem signedNormCurvePolynomial_map_totalDegree
       Module.finrank ℚ K := by
     rw [signedNormCurvePolynomial_bivariate_map,
       double_cover_bivariateTotalDegree _ (by omega), hd]
-  simpa only [bivariateTotalDegree, AlgEquiv.symm_apply_apply] using hh
+  simp_all [bivariateTotalDegree]
 
 end
 end CCDN

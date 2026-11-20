@@ -4,7 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
 module
-
+public import CCDN.Algebra.Equations
+public import Mathlib.FieldTheory.IsAlgClosed.AlgebraicClosure
 public import CCDN.AuxiliaryPolynomial.DegreeBound
 public import CCDN.Determinant.ProjectiveHypersurfaceResidueDeterminant
 public import CCDN.Plane.FiniteFieldConstants
@@ -28,9 +29,7 @@ def hypersurfaceCountConstant (n : ℕ) : ℝ :=
   projectiveHypersurfaceResidueConstant + ((n + 3) * (n + 4) ^ n : ℕ)
 
 /-- The constant `hypersurfaceCountConstant n` is nonnegative. -/
-lemma hypersurfaceCountConstant_nonneg (n : ℕ) : 0 ≤ hypersurfaceCountConstant n := by
-  unfold hypersurfaceCountConstant
-  exact add_nonneg projectiveHypersurfaceResidueConstant_pos.le (Nat.cast_nonneg _)
+lemma hypersurfaceCountConstant_nonneg (n : ℕ) : 0 ≤ hypersurfaceCountConstant n := add_nonneg projectiveHypersurfaceResidueConstant_pos.le (Nat.cast_nonneg _)
 
 /-- The main local coefficient for projective hypersurfaces of dimension n+1. -/
 def hypersurfaceDeterminantMain (n s : ℕ) : ℝ :=
@@ -54,12 +53,12 @@ lemma hypersurfaceDeterminantMain_div (n s : ℕ) (m : ℝ) :
 of a common-degree homogeneous evaluation matrix. The residue count, local
 multiplicities and projective reduction are constructed from f and z. -/
 theorem projective_hypersurface_minorGcd_dvd {n s N p d M : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d) (hd : 0 < d)
-    (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0)
+    (f : IntegerPolynomial (n + 3)) (hf : f.IsHomogeneous d) (hd : 0 < d)
+    (hf0 : residueEquation p f ≠ 0)
     (hir : Irreducible (map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))
-      (map (Int.castRingHom (ZMod p)) f)))
+      (residueEquation p f)))
     (hsize : stepanovThreshold (d : ℝ) < p)
-    (F : Fin N → MvPolynomial (Fin (n + 3)) ℤ) (hF : ∀ j, (F j).IsHomogeneous M)
+    (F : Fin N → IntegerPolynomial (n + 3)) (hF : ∀ j, (F j).IsHomogeneous M)
     (z : Fin s → IntPoint (n + 3)) (hprim : ∀ i, Finset.univ.gcd (z i) = 1)
     (hz : ∀ i, MvPolynomial.eval (z i) f = 0) :
     ∃ e : ℕ,
@@ -68,10 +67,9 @@ theorem projective_hypersurface_minorGcd_dvd {n s N p d M : ℕ} [Fact p.Prime]
         (n + 1 : ℝ) / (n + 2 : ℝ) * (s : ℝ) ^ (1 + 1 / (n + 1 : ℝ)) -
         (n + 2 : ℝ) * s ≤ e ∧
       (p : ℤ) ^ e ∣ Int.Matrix.minorGcd
-        (Matrix.of fun i j => MvPolynomial.eval (z i) (F j)) := by
+        (valueMatrix z F) := by
   apply projective_hypersurface_minorGcd_of_count_bound f hf hf0 F hF z hprim hz
-  · exact mul_nonneg (mul_nonneg (hypersurfaceCountConstant_nonneg n) (sq_nonneg _))
-      (Real.sqrt_nonneg _)
+  · solve_by_elim [mul_nonneg, hypersurfaceCountConstant_nonneg, sq_nonneg, Real.sqrt_nonneg]
   · simpa only [hypersurfaceCountConstant, mul_assoc, mul_left_comm, mul_comm] using
       projective_hypersurface_totalMultiplicity_bound f hf hd hf0 hir hsize
 

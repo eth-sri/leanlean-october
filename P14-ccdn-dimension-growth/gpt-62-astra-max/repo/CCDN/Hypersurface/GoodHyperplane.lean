@@ -4,111 +4,115 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
 module
-
+public import CCDN.Algebra.Equations
 public import CCDN.Hypersurface.GraphHyperplaneRestriction
+public import CCDN.Algebra.PolynomialPredicates
+import CCDN.Algebra.LinearForm
 import CCDN.Algebra.IntegerPolynomialAvoidance
-import CCDN.Hypersurface.EffectiveHyperplaneAvoidance
-import CCDN.Hypersurface.GoodHyperplaneReindex
+import CCDN.Algebra.OriginShift
+import CCDN.Plane.IntegerPlaneHeight
+import CCDN.ForMathlib.MvPolynomial
+import Mathlib.Algebra.MvPolynomial.Funext
+import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
 
-/-! A good integer hyperplane normal of height at most d³, obtained from
-the universal Noether detector and integer-grid avoidance. -/
+/-! A good hyperplane of cubic height, found by interpolating the plane witness directly in graph coordinates. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma exists_good_hyperplane_double_option {n : ℕ}
-    (f : MvPolynomial (Option (Option (Fin (2 + n)))) ℤ)
-    (d : ℕ) (hd : 2 ≤ d) (hf : f.IsHomogeneous d)
-    (hir : AbsolutelyIrreducible f) :
-    ∃ (D : ℤ) (a : Option (Fin (2 + n)) → ℤ),
-      D ≠ 0 ∧ |D| ≤ (d ^ 3 : ℕ) ∧ (∀ i, |a i| ≤ (d ^ 3 : ℕ)) ∧
-      (graphHyperplaneRestriction (fun i => (a i : ℚ) / D)
-        (map (Int.castRingHom ℚ) f)).totalDegree = d ∧
-      AbsolutelyIrreducibleRat (graphHyperplaneRestriction (fun i => (a i : ℚ) / D)
-        (map (Int.castRingHom ℚ) f)) := by
-  obtain ⟨G, hG, hhom, _, hbad⟩ := exists_effective_hyperplane_avoidance f d hd hf hir
-  have hd2 : 1 ≤ d ^ 2 := by nlinarith
-  have hdeg : G.totalDegree ≤ d ^ 3 := by
-    rw [hhom.totalDegree hG]
-    have he : d * (d ^ 2 - 1) + d = d ^ 3 := by
-      calc
-        _ = d * ((d ^ 2 - 1) + 1) := by ring
-        _ = d * d ^ 2 := by rw [Nat.sub_add_cancel hd2]
-        _ = _ := by ring
-    omega
-  obtain ⟨v, hv, hvalue⟩ := exists_integer_grid_eval_ne_zero G hG (d ^ 3) hdeg
-  let A : Option (Option (Fin (2 + n))) → ℚ := fun i => v i
-  have hvalueQ : eval₂ (Int.castRingHom ℚ) A G ≠ 0 := by
-    have he : eval₂ (Int.castRingHom ℚ) A G = (eval v G : ℚ) := by
-      rw [eval₂_eq_eval_map]
-      exact (map_eval (Int.castRingHom ℚ) v G).symm
-    rw [he]
-    exact_mod_cast hvalue
-  have hD : v none ≠ 0 := by
-    intro hz
-    apply hvalueQ
-    exact hbad ℚ A (fun h => (h (by simp [A, hz])).elim)
-  have hirA : AbsolutelyIrreducibleRat (graphHyperplaneRestriction
-      (fun i => -A (some i) / A none) (map (Int.castRingHom ℚ) f)) := by
-    by_contra hn
-    exact hvalueQ (hbad ℚ A (fun _ => hn))
-  let a := fun i => -v (some i)
-  have hα : (fun i => (a i : ℚ) / (v none : ℚ)) =
-      (fun i => -A (some i) / A none) := by
-    funext i
-    simp [a, A]
-  refine ⟨v none, a, hD, ?_, ?_, ?_, ?_⟩
-  · rw [abs_of_nonneg (hv none).1]
-    exact (hv none).2
-  · intro i
-    simpa only [a, abs_neg, abs_of_nonneg (hv (some i)).1] using (hv (some i)).2
-  · rw [hα]
-    apply (graphHyperplaneRestriction_homogeneous _ (hf.map (Int.castRingHom ℚ))).totalDegree
-    intro hz
-    exact hirA.ne_zero (by rw [hz, map_zero])
-  · rwa [hα]
+/-- Center the interpolation grid, halving the bound on its absolute radius. -/
+private lemma centered_grid {σ : Type*} [Finite σ] {f : MvPolynomial σ ℚ} (hf : f ≠ 0)
+    {D : ℕ} (hd : f.totalDegree ≤ 2 * D) :
+    ∃ a : σ → ℤ, (∀ i, |a i| ≤ D) ∧ eval (fun i => (a i : ℚ)) f ≠ 0 := by
+  let u := fun _ : σ => -(D : ℚ)
+  obtain ⟨v, hv, h⟩ := exists_integer_grid_eval_ne_zero_of_totalDegree _ (originShift_ne_zero u hf)
+    _ ((originShift_totalDegree_le u f).trans hd)
+  refine ⟨fun i => v i - D, fun i => by grind, ?_⟩
+  simpa [originShift, ← eval_assoc, Function.comp_def, u, sub_eq_add_neg] using h
 
-/-- Full-degree geometrically integral hyperplane restriction, with a cubic
-integer normal bound independent of the coefficients and ambient dimension. -/
-theorem exists_geometrically_good_hyperplane {n : ℕ}
-    (f : MvPolynomial (Option (Fin (3 + n))) ℤ)
-    (d : ℕ) (hd : 2 ≤ d) (hf : f.IsHomogeneous d)
-    (hir : AbsolutelyIrreducible f) :
-    ∃ (D : ℤ) (a : Fin (3 + n) → ℤ),
-      D ≠ 0 ∧ |D| ≤ (d ^ 3 : ℕ) ∧ (∀ i, |a i| ≤ (d ^ 3 : ℕ)) ∧
-      (graphHyperplaneRestriction (fun i => (a i : ℚ) / D)
-        (map (Int.castRingHom ℚ) f)).totalDegree = d ∧
-      AbsolutelyIrreducibleRat (graphHyperplaneRestriction (fun i => (a i : ℚ) / D)
-        (map (Int.castRingHom ℚ) f)) := by
-  let e : Fin (3 + n) ≃ Option (Fin (2 + n)) :=
-    (finCongr (by omega)).trans (_root_.finSuccEquiv (2 + n))
-  let F := rename (Equiv.optionCongr e) f
-  have hFir : AbsolutelyIrreducible F := by
-    rw [AbsolutelyIrreducible, map_rename]
-    exact (MulEquiv.irreducible_iff
-      (f := (renameEquiv (AlgebraicClosure ℚ) (Equiv.optionCongr e)).toMulEquiv)).mpr hir
-  obtain ⟨D, a, hD, hDb, hab, _, hirA⟩ :=
-    exists_good_hyperplane_double_option F d hd hf.rename_isHomogeneous hFir
-  have hgood : AbsolutelyIrreducibleRat (graphHyperplaneRestriction
-      (fun i => ((a ∘ e) i : ℚ) / D) (map (Int.castRingHom ℚ) f)) := by
-    have he := congrArg (map (algebraMap ℚ (AlgebraicClosure ℚ)))
-      (graphHyperplaneRestriction_rename e (fun i => (a i : ℚ) / D)
-        (map (Int.castRingHom ℚ) f))
-    rw [map_rename] at he
-    apply (MulEquiv.irreducible_iff
-      (f := (renameEquiv (AlgebraicClosure ℚ) e).toMulEquiv)).mp
-    change Irreducible (rename e (map (algebraMap ℚ (AlgebraicClosure ℚ))
-      (graphHyperplaneRestriction ((fun i => (a i : ℚ) / D) ∘ e)
-        (map (Int.castRingHom ℚ) f))))
-    rw [he]
-    simpa only [AbsolutelyIrreducibleRat, F, map_rename] using hirA
-  refine ⟨D, a ∘ e, hD, hDb, fun i => hab (e i), ?_, ?_⟩
-  · apply (graphHyperplaneRestriction_homogeneous _ (hf.map (Int.castRingHom ℚ))).totalDegree
-    intro hz
-    exact hgood.ne_zero (by rw [hz, map_zero])
-  · exact hgood
+section
+
+variable (n : ℕ)
+
+private abbrev Coordinates := Fin (3 + n)
+private abbrev Parameters := PlaneParameters (Option (Coordinates n))
+
+end
+
+/-- Any nonvanishing plane-parameter condition of degree at most `2*D`
+can be achieved on a plane contained in a graph with integral slopes of size `D`.
+Fix a good plane with the first three remaining rows independent, and vary its
+first row as a linear combination of those rows. The condition stays nonzero and
+its degree in the combination coefficients has not increased. -/
+private lemma exists_plane_on_small_graph {n D : ℕ} (W : MvPolynomial (Parameters n) ℚ)
+    (hW : W ≠ 0) (hdeg : W.totalDegree ≤ 2 * D) :
+    ∃ (a : Coordinates n → ℤ) (v : Parameters n → ℚ),
+      (∀ i, |a i| ≤ D) ∧ eval v W ≠ 0 ∧ ∀ j, v (none, j) = ∑ i, (a i : ℚ) * v (some i, j) := by
+  classical
+  let A : MvPolynomial (Parameters n) ℚ :=
+    (Matrix.of fun i j : Fin 3 => X (some (i.castAdd n), j)).det
+  have hA : A ≠ 0 := by
+    intro h
+    let u (p : Parameters n) : ℚ := Option.elim p.1 0 fun i => if i.val = p.2.val then 1 else 0
+    have := congrArg (eval u) h
+    norm_num [A, u, Matrix.det_fin_three] at this
+    exact this rfl
+  obtain ⟨w, hw⟩ : ∃ w, eval w (W * A) ≠ 0 := by
+    by_contra! hn
+    exact mul_ne_zero hW hA (MvPolynomial.funext (by simpa using hn))
+  rw [map_mul, mul_ne_zero_iff] at hw
+  let M := Matrix.of fun i j : Fin 3 => w (some (i.castAdd n), j)
+  have hm := M.isUnit_iff_isUnit_det.mpr (isUnit_iff_ne_zero.mpr (by
+    simpa [A, M, Matrix.det_fin_three] using hw.2))
+  obtain ⟨b, hb⟩ := (Matrix.vecMul_surjective_iff_isUnit.mpr hm) (fun j => w (none, j))
+  let u : Parameters n → CoordinatePolynomial 3 := fun (i, j) =>
+    i.elim (linearForm fun k : Fin 3 => w (some (k.castAdd n), j)) (fun l => C (w (some l, j)))
+  have hub : eval b ∘ u = w := by
+    funext ⟨i, j⟩
+    cases i with
+    | none => simpa [u, M, Matrix.vecMul, dotProduct, mul_comm] using congrFun hb j
+    | some i => simp [u]
+  have hP : (eval₂Hom C u W) ≠ 0 := by
+    intro h
+    apply hw.1
+    rw [← hub, eval_assoc]; simp_all
+  have hPd := by
+    apply linear_eval₂_totalDegree_le (RingHom.id ℚ) u _ W
+    rintro ⟨_ | i, j⟩
+    · exact linearForm_totalDegree_le _
+    · simp [u]
+  obtain ⟨a, ha, haW⟩ := centered_grid hP (hPd.trans hdeg)
+  let z : Coordinates n → ℤ := Fin.addCases a (fun _ => 0)
+  refine ⟨z, eval (fun i => (a i : ℚ)) ∘ u, Fin.addCases (by simpa [z] using ha) (by simp [z]), ?_, ?_⟩
+  · rwa [eval_assoc]
+  simp [u, z, Fin.sum_univ_add, mul_comm]
+
+/-- A graph with bounded integral slopes whose restriction is geometrically irreducible. -/
+theorem exists_geometrically_good_hyperplane {n : ℕ} (f : MvPolynomial (Option (Fin (3 + n))) ℤ)
+    (hd : 0 < f.totalDegree) (hir : AbsolutelyIrreducible f) :
+    ∃ a : Fin (3 + n) → ℤ, (∀ i, |a i| ≤ (f.totalDegree ^ 3 : ℕ)) ∧
+      AbsolutelyIrreducible (graphHyperplaneRestriction a f) := by
+  let q := rationalEquation f
+  let φ := algebraMap ℚ (AlgebraicClosure ℚ)
+  have hqd : q.totalDegree = f.totalDegree := rational_map_totalDegree _
+  have hdpos := hqd ▸ hd
+  obtain ⟨rows, cols, hw, hdeg⟩ := exists_universalPlane_badWitness q ((absolutelyIrreducibleRat_map_iff _).mpr hir) hdpos (.of_charZero _)
+  obtain ⟨a, v, ha, hwv, hrel⟩ := exists_plane_on_small_graph _ hw hdeg
+  have hh := universalPlaneBadWitness_good_specialization q hdpos (.of_charZero _) rows cols
+    (φ.comp (eval v)) (by aesop)
+  let α := fun i => (a i : ℚ)
+  have hg := graphHyperplaneRestriction_irreducible_of_plane (map φ q) (φ ∘ α) (φ ∘ v)
+    (by simp_all [α])
+    (by rw [universalPlaneSection_map, universalPlaneSection, ← bivariateMap_comp_apply]; exact hh.2.2)
+    (by rw [universalPlaneSection_map, universalPlaneSection, ← bivariateMap_comp_apply,
+      totalDegree_map_of_injective φ.injective]; exact hh.2.1)
+  refine ⟨a, hqd ▸ ha, ?_⟩
+  rw [AbsolutelyIrreducible, graphHyperplaneRestriction_map]
+  have he : map φ q = map (Int.castRingHom _) f := by
+    rw [show q = q from rfl, map_map, RingHom.ext_int (φ.comp _)]
+  simpa [he, α, Function.comp_def] using hg.2
 
 end
 end CCDN

@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
 module
-
+public import Mathlib.FieldTheory.IsAlgClosed.Basic
 public import CCDN.Algebra.CharZeroOrGT
 public import CCDN.AuxiliaryPolynomial.HypersurfaceAffineCoordinates
 public import CCDN.ForMathlib.Matrix
@@ -23,17 +23,19 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [Field K] (a b : Option σ → K) (hb : b none ≠ 0)
+    (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
+    (hdir : eval b (homogeneousComponent f.totalDegree f) ≠ 0)
+
 /-- Normalize the leading scalar of the explicit affine coordinate change. -/
-def normalizedHypersurfaceCoordinates {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
+def normalizedHypersurfaceCoordinates :
     MvPolynomial (Option σ) K :=
   C (eval b (homogeneousComponent f.totalDegree f))⁻¹ * hypersurfaceAffineCoordinates a b hb f
 
+include hdir in
 /-- If the leading form of `f` does not vanish at the direction `b`, then the normalized affine
 coordinate change of `f` is monic as a polynomial in the distinguished variable `none`. -/
-lemma normalizedHypersurfaceCoordinates_monic {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K)
-    (hdir : eval b (homogeneousComponent f.totalDegree f) ≠ 0) :
+lemma normalizedHypersurfaceCoordinates_monic :
     (optionEquivLeft K σ (normalizedHypersurfaceCoordinates a b hb f)).Monic := by
   unfold normalizedHypersurfaceCoordinates
   rw [map_mul, optionEquivLeft_C]
@@ -41,50 +43,44 @@ lemma normalizedHypersurfaceCoordinates_monic {K σ : Type*} [Field K]
   rw [Polynomial.leadingCoeff, hypersurfaceAffineCoordinates_full_outer_degree a b hb f hdir,
     hypersurfaceAffineCoordinates_top_coefficient, ← map_mul, inv_mul_cancel₀ hdir, map_one]
 
-private lemma normalizedHypersurfaceCoordinates_natDegree {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K)
-    (hdir : eval b (homogeneousComponent f.totalDegree f) ≠ 0) :
+include hdir in
+private lemma normalizedHypersurfaceCoordinates_natDegree :
     (optionEquivLeft K σ (normalizedHypersurfaceCoordinates a b hb f)).natDegree =
       f.totalDegree := by
   unfold normalizedHypersurfaceCoordinates
   rw [map_mul, optionEquivLeft_C,
-    Polynomial.natDegree_C_mul_of_isUnit ((isUnit_iff_ne_zero.mpr (inv_ne_zero hdir)).map C)]
-  exact hypersurfaceAffineCoordinates_full_outer_degree a b hb f hdir
+    Polynomial.natDegree_C_mul_of_isUnit (by aesop)]
+  solve_by_elim [hypersurfaceAffineCoordinates_full_outer_degree]
 
-private lemma normalizedHypersurfaceCoordinates_totalDegree_le {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
+private lemma normalizedHypersurfaceCoordinates_totalDegree_le :
     (normalizedHypersurfaceCoordinates a b hb f).totalDegree ≤ f.totalDegree := by
-  exact (totalDegree_mul _ _).trans (by
-    rw [totalDegree_C, zero_add]
-    exact hypersurfaceAffineCoordinates_totalDegree_le a b hb f)
+  exact (totalDegree_mul _ _).trans (by grind [totalDegree_C, zero_add, hypersurfaceAffineCoordinates_totalDegree_le])
 
-private lemma normalizedHypersurfaceCoordinates_irreducible {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K)
-    (hf : Irreducible f) (hdir : eval b (homogeneousComponent f.totalDegree f) ≠ 0) :
+include hf hdir in
+private lemma normalizedHypersurfaceCoordinates_irreducible :
     Irreducible (normalizedHypersurfaceCoordinates a b hb f) := by
-  apply (irreducible_isUnit_mul ((isUnit_iff_ne_zero.mpr (inv_ne_zero hdir)).map C)).mpr
-  exact (MulEquiv.irreducible_iff (f := hypersurfaceAffineCoordinates a b hb)).mpr hf
+  apply (irreducible_isUnit_mul (by aesop)).mpr
+  grind [MulEquiv.irreducible_iff]
 
-private lemma normalizedHypersurfaceCoordinates_eval_zero {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K)
+private lemma normalizedHypersurfaceCoordinates_eval_zero
     (hz : eval a f = 0) :
     eval (0 : Option σ → K) (normalizedHypersurfaceCoordinates a b hb f) = 0 := by
   rw [normalizedHypersurfaceCoordinates, map_mul, hypersurfaceAffineCoordinates_eval_zero, hz,
     mul_zero]
 
-private lemma normalizedHypersurfaceCoordinates_partial_ne_zero {K σ : Type*} [Field K] [Fintype σ]
+private lemma normalizedHypersurfaceCoordinates_partial_ne_zero [Fintype σ]
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K)
     (hdir : eval b (homogeneousComponent f.totalDegree f) ≠ 0)
     (ht : (∑ i, eval a (pderiv i f) * b i) ≠ 0) :
     eval (0 : Option σ → K) (pderiv none (normalizedHypersurfaceCoordinates a b hb f)) ≠ 0 := by
   rw [normalizedHypersurfaceCoordinates, pderiv_C_mul, map_mul, eval_C,
     hypersurfaceAffineCoordinates_partial_zero]
-  exact mul_ne_zero (inv_ne_zero hdir) ht
+  grind
 
 /-- The equation `g` is in position for the generic-plane minor: it is irreducible, monic of
 degree `d` in the distinguished variable `none`, of total degree at most `d`, and passes through
 the origin, where its derivative in the distinguished variable does not vanish. -/
-structure IsMonicSmoothAtOrigin {K σ : Type*} [Field K] (g : MvPolynomial (Option σ) K)
+structure IsMonicSmoothAtOrigin (g : MvPolynomial (Option σ) K)
     (d : ℕ) : Prop where
   /-- The equation is irreducible. -/
   irreducible : Irreducible g
@@ -100,11 +96,11 @@ structure IsMonicSmoothAtOrigin {K σ : Type*} [Field K] (g : MvPolynomial (Opti
   origin. -/
   pderiv_ne_zero : eval (0 : Option σ → K) (pderiv none g) ≠ 0
 
+variable [IsAlgClosed K] [Fintype σ] (f : MvPolynomial (Option σ) K)
+
 /-- Smooth-point existence and direction avoidance discharge all positioning
 hypotheses: the coordinates and the nonzero scalar are actually constructed. -/
-theorem exists_monic_smooth_hypersurface_coordinates
-    {K σ : Type*} [Field K] [IsAlgClosed K] [Fintype σ]
-    (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
+theorem exists_monic_smooth_hypersurface_coordinates (hf : Irreducible f)
     (hpos : 0 < f.totalDegree) (hchar : CharZeroOrGT K f.totalDegree) :
     ∃ (a b : Option σ → K) (hb : b none ≠ 0),
       eval b (homogeneousComponent f.totalDegree f) ≠ 0 ∧
@@ -121,9 +117,7 @@ theorem exists_monic_smooth_hypersurface_coordinates
 
 /-- Every irreducible positive-degree hypersurface in characteristic zero or larger
 than 2*d^2 has an explicitly positioned generic-plane family with a nonzero slope minor. -/
-theorem exists_positioned_genericPlane_minor
-    {K σ : Type*} [Field K] [IsAlgClosed K] [Fintype σ]
-    (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
+theorem exists_positioned_genericPlane_minor (hf : Irreducible f)
     (hpos : 0 < f.totalDegree) (hchar : CharZeroOrGT K (2 * f.totalDegree ^ 2)) :
     ∃ (a b : Option σ → K) (hb : b none ≠ 0),
       eval b (homogeneousComponent f.totalDegree f) ≠ 0 ∧
@@ -131,7 +125,7 @@ theorem exists_positioned_genericPlane_minor
         (genericPlanePolynomial (normalizedHypersurfaceCoordinates a b hb f))).HasNonzeroMinor
           (2 * f.totalDegree ^ 2 - 1) := by
   obtain ⟨a, b, hb, hdir, hg⟩ := exists_monic_smooth_hypersurface_coordinates f hf hpos
-    (hchar.mono (by nlinarith [Nat.le_mul_self f.totalDegree]))
+    (hchar.mono (by nlinarith))
   exact ⟨a, b, hb, hdir, exists_genericPlane_minor f.totalDegree hpos _ hg.irreducible hg.monic
     hg.natDegree_eq hg.totalDegree_le hchar hg.eval_zero hg.pderiv_ne_zero⟩
 

@@ -32,7 +32,6 @@ theorem hilbert_scaled_block_count_le_multiplicity
   let Q := (filteredHilbertPolynomial I).comp
     (Polynomial.C (q : ℚ) * Polynomial.X + Polynomial.C (D : ℚ))
   have hPdeg : P.natDegree = m := by
-    dsimp only [P]
     rw [Polynomial.natDegree_C_mul (by exact_mod_cast hr),
       Polynomial.natDegree_preHilbertPoly]
   have hlinearDegree :
@@ -41,17 +40,14 @@ theorem hilbert_scaled_block_count_le_multiplicity
       Polynomial.natDegree_X]
   have hlinearLC :
       (Polynomial.C (q : ℚ) * Polynomial.X + Polynomial.C (D : ℚ)).leadingCoeff = (q : ℚ) := by
-    rw [Polynomial.leadingCoeff, hlinearDegree]
-    simp
+    simp_all [Polynomial.leadingCoeff]
   have hQdeg : Q.natDegree = m := by
-    simp only [Q, Polynomial.natDegree_comp, hlinearDegree, mul_one, hdim]
+    simp_rw [Q, Polynomial.natDegree_comp, hlinearDegree, mul_one, hdim]
   have hPlc : P.leadingCoeff = (r : ℚ) / m.factorial := by
-    dsimp only [P]
     rw [Polynomial.leadingCoeff_mul, Polynomial.leadingCoeff_C,
       Polynomial.leadingCoeff_preHilbertPoly, div_eq_mul_inv]
   have hQlc : Q.leadingCoeff = (filteredHilbertPolynomial I).leadingCoeff * (q : ℚ) ^ m := by
-    dsimp only [Q]
-    rw [Polynomial.leadingCoeff_comp (by rw [hlinearDegree]; exact one_ne_zero), hlinearLC, hdim]
+    rw [Polynomial.leadingCoeff_comp (by grind), hlinearLC, hdim]
   have hPpos : 0 < P.leadingCoeff := by rw [hPlc]; positivity
   have hQpos : 0 < Q.leadingCoeff := by
     rw [hQlc]
@@ -62,16 +58,14 @@ theorem hilbert_scaled_block_count_le_multiplicity
       refine ⟨M, fun N hN => ?_⟩
       simp only [P, Q, Polynomial.eval_mul, Polynomial.eval_C, Polynomial.eval_comp,
         Polynomial.eval_add, Polynomial.eval_X]
-      rw [Polynomial.preHilbertPoly_eq_choose_add_sub ℚ m (by omega : 0 ≤ N + m),
-        show (q : ℚ) * N + D = ((D + q * N : ℕ) : ℚ) by push_cast; ring,
-        hM (D + q * N) (by nlinarith)]
+      rw [Polynomial.preHilbertPoly_eq_choose_add_sub ℚ m (by omega),
+        show q * N + D = ((D + q * N : ℕ) : ℚ) by push_cast; ring,
+        hM _ (by nlinarith)]
       simp only [Nat.sub_zero, Nat.add_comm N m]
       exact_mod_cast hlow N)
-  rw [hPlc, hQlc, hdegree] at hh
   have hqbound : (r : ℚ) ≤ (d : ℚ) * q ^ m := by
     apply (div_le_div_iff_of_pos_right (by positivity : (0 : ℚ) < m.factorial)).mp
-    convert hh using 1
-    ring
+    grind
   exact_mod_cast hqbound
 
 end

@@ -39,7 +39,7 @@ private theorem integral_coordinate_tuple_count_le_finrank
     s.card ≤ Module.finrank F E := by
   classical
   let e := (Fintype.equivFin ι).symm
-  let v : s → Fin (Fintype.card ι) → k := fun x j => x.val (e j)
+  let v : s → Fin _ → k := fun x j => x.val (e j)
   have hv : Function.Injective v := by
     intro x y h
     apply Subtype.ext
@@ -47,37 +47,34 @@ private theorem integral_coordinate_tuple_count_le_finrank
     obtain ⟨j, rfl⟩ := e.surjective i
     exact congrFun h j
   obtain ⟨t, _, ht⟩ := exists_bounded_moment_separation v hv
-  let b : A := ∑ j : Fin (Fintype.card ι), a (e j) * (t : A) ^ j.val
+  let b := ∑ j : Fin _, a (e j) * t ^ j.val
   let L : (ι → k) → k := fun x =>
-    ∑ j : Fin (Fintype.card ι), x (e j) * (t : k) ^ j.val
+    ∑ j : Fin _, x (e j) * t ^ j.val
   have hb : IsIntegral R b :=
-    IsIntegral.sum _ (fun j _ => (ha (e j)).mul ((isIntegral_natCast t).pow j.val))
+    IsIntegral.sum _ (fun j _ => (ha _).mul ((isIntegral_natCast t).pow j.val))
   have hL : Set.InjOn L s := by
     intro x hx y hy hxy
     exact congrArg Subtype.val (ht (a₁ := ⟨x, hx⟩) (a₂ := ⟨y, hy⟩) hxy)
   let P := (minpoly R b).map (algebraMap R k)
-  have hP : P.Monic := (minpoly.monic hb).map _
   have hroot : ∀ x ∈ s, L x ∈ P.roots := by
     intro x hx
     obtain ⟨φ, hφ⟩ := hs x hx
     have hφb : φ b = L x := by
-      simp only [b, L, map_sum, map_mul, map_pow, map_natCast, hφ]
-    apply Polynomial.mem_roots hP.ne_zero |>.mpr
-    change P.eval (L x) = 0
+      simp_rw [b, L, map_sum, map_mul, map_pow, map_natCast, hφ]
+    apply Polynomial.mem_roots ((minpoly.monic hb).map _).ne_zero |>.mpr
+    change P.eval _ = 0
     rw [← hφb]
     dsimp only [P]
     rw [Polynomial.eval_map_algebraMap, Polynomial.aeval_algHom_apply,
       minpoly.aeval, map_zero]
   have hsub : s.image L ⊆ P.roots.toFinset := by
-    intro y hy
-    obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hy
-    exact Multiset.mem_toFinset.mpr (hroot x hx)
+    grind
   calc
     s.card = (s.image L).card := (Finset.card_image_of_injOn hL).symm
     _ ≤ P.roots.toFinset.card := Finset.card_le_card hsub
     _ ≤ P.roots.card := Multiset.toFinset_card_le _
     _ ≤ P.natDegree := Polynomial.card_roots' _
-    _ ≤ (minpoly R b).natDegree := Polynomial.natDegree_map_le
+    _ ≤ _ := Polynomial.natDegree_map_le
     _ ≤ Module.finrank F E :=
       integral_minpoly_natDegree_le_fraction_finrank R A F E b hb
 
@@ -107,12 +104,11 @@ theorem integral_projection_fiber_card_le_finrank
   classical
   let R := MvPolynomial τ K
   let A := MvPolynomial σ K ⧸ I
-  let b : σ → A := fun i => Ideal.Quotient.mk I (X i)
+  let b := fun i => Ideal.Quotient.mk I (X i)
   let : Algebra R K := (aeval z).toRingHom.toAlgebra
   have hb (i) : IsIntegral R (b i) := by
-    change (algebraMap R A).IsIntegralElem (b i)
-    rw [hmap]
-    exact hint (b i)
+    change (algebraMap R A).IsIntegralElem _
+    aesop
   apply integral_coordinate_tuple_count_le_finrank R A F E b hb s
   intro x hx
   exact exists_projection_fiber_specialization I l hmap z x (hzero x hx) (hproj x hx)

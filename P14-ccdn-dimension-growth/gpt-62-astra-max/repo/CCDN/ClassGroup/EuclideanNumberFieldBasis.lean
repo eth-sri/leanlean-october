@@ -35,14 +35,13 @@ theorem exists_field_basis_of_euclidean_lattice_basis
   choose v hv using hv
   have hi : LinearIndependent ℚ (fun i => (v i : K)) := by
     apply LinearIndependent.of_comp (euclideanNumberFieldLinearMap K)
-    simpa only [Function.comp_def, euclideanNumberFieldLinearMap_apply, hv] using
+    simpa [Function.comp_def, hv] using
       b.linearIndependent.restrict_scalars' ℚ
-  have hcard : Fintype.card ι = Module.finrank ℚ K :=
+  have hcard :=
     (Module.finrank_eq_card_basis b).symm.trans (mixedEmbedding.euclidean.finrank K)
-  let q := basisOfLinearIndependentOfCardEqFinrank' (fun i => (v i : K)) hi hcard
-  have hq (i) : q i = (v i : K) :=
+  have hq (i)  :=
     congrFun (coe_basisOfLinearIndependentOfCardEqFinrank' _ hi hcard) i
-  exact ⟨v, q, hq, fun i => (congrArg (euclideanNumberFieldEmbedding K) (hq i)).trans (hv i)⟩
+  exact ⟨v, (basisOfLinearIndependentOfCardEqFinrank' (fun i => (v i : K)) hi hcard), hq, fun i => (by simp_all)⟩
 
 private theorem euclidean_field_basis_repr
     {ι : Type*} [Fintype ι]
@@ -54,11 +53,7 @@ private theorem euclidean_field_basis_repr
       ((b.coord i).restrictScalars ℚ).comp (euclideanNumberFieldLinearMap K) =
         (Algebra.linearMap ℚ ℝ).comp (q.coord i) := by
     apply q.ext
-    intro j
-    simp only [LinearMap.comp_apply, LinearMap.restrictScalars_apply,
-      euclideanNumberFieldLinearMap_apply, hmap, Basis.coord_apply, Basis.repr_self]
-    simp only [Finsupp.single_apply]
-    split_ifs <;> norm_num
+    simp [LinearMap.comp_apply, LinearMap.restrictScalars_apply, euclideanNumberFieldLinearMap_apply, hmap, Basis.coord_apply, Basis.repr_self, Finsupp.single_apply]
   exact congrArg (fun f => f x) hmaps
 
 /-- If the real basis `b` is the image of the rational basis `q` and the `i`-th `q`-coordinate of
@@ -72,12 +67,9 @@ theorem euclidean_notMem_basis_span_of_coordinate_ne_zero
     {S : Set ι} (hiS : i ∉ S) :
     euclideanNumberFieldEmbedding K x ∉ Submodule.span ℝ (b '' S) := by
   intro h
-  have hs := b.repr_support_subset_of_mem_span S h
   apply hiS
-  apply hs
-  apply Finsupp.mem_support_iff.mpr
-  rw [euclidean_field_basis_repr K b q hmap]
-  exact_mod_cast hi
+  apply b.repr_support_subset_of_mem_span S h
+  simp_all [euclidean_field_basis_repr K b q hmap]
 
 end
 end CCDN

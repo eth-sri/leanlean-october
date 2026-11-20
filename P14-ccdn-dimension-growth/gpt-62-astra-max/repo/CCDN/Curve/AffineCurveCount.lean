@@ -32,11 +32,9 @@ theorem affine_curve_count : AffineCurveBound := by
     positivity
   refine ⟨C * K + 1, by positivity, ?_⟩
   intro I hI d hd hdegree B hB
-  have : I.IsPrime := hI
+  have := hI
   obtain ⟨f, hf, hfd, hred⟩ := exists_plane_count_reduction I d hd hdegree
-  have hbox : 1 ≤ projectionBoxFactor n d * B :=
-    one_le_mul_of_one_le_of_one_le (projectionBoxFactor_one_le n d) hB
-  have hp := hplane f hf (hfd.symm ▸ hd) _ hbox
+  have hp := hplane f hf (hfd.symm ▸ hd) _ (one_le_mul_of_one_le_of_one_le (projectionBoxFactor_one_le n d) hB)
   rw [hfd] at hp
   have hredR : (count (idealZeroLocus I) B : ℝ) ≤
       count (zeroLocus f) (projectionBoxFactor n d * B) + (d * (d - 1) : ℕ) := by
@@ -46,15 +44,18 @@ theorem affine_curve_count : AffineCurveBound := by
     calc
       _ ≤ (d : ℝ) ^ 2 := by
         exact_mod_cast (show d * (d - 1) ≤ d ^ 2 by
-          simpa only [pow_two] using Nat.mul_le_mul_left d (Nat.sub_le d 1))
-      _ ≤ (d : ℝ) ^ 4 := by nlinarith [one_le_pow₀ hd1 (n := 2), sq_nonneg ((d : ℝ) ^ 2 - 1)]
-      _ ≤ _ := degree_four_le_curveBound hd hB
+          simpa [pow_two] using Nat.mul_le_mul_left d (Nat.sub_le d 1))
+      _ ≤ d ^ 3 := pow_le_pow_right₀ hd1 (by decide)
+      _ ≤ _ := by
+        unfold curveBound
+        rw [mul_assoc]
+        apply le_mul_of_one_le_right (by positivity)
+        exact one_le_mul_of_one_le_of_one_le (Real.one_le_rpow hB (by positivity))
+          (by linarith [Real.log_nonneg hB])
   calc
-    _ ≤ (count (zeroLocus f) (projectionBoxFactor n d * B) : ℝ) + (d * (d - 1) : ℕ) := hredR
-    _ ≤ C * curveBound d (projectionBoxFactor n d * B) + curveBound d B := add_le_add hp herr
-    _ ≤ C * (K * curveBound d B) + curveBound d B := by
-      exact add_le_add (mul_le_mul_of_nonneg_left (projection_curveBound_scale n hd hB) hC.le)
-        le_rfl
+    _ ≤ (count _ _ : ℝ) + (d * (d - 1) : ℕ) := hredR
+    _ ≤ _ := add_le_add hp herr
+    _ ≤ _ := add_le_add (mul_le_mul_of_nonneg_left (projection_curveBound_scale n hd hB) hC.le) le_rfl
     _ = _ := by ring
 
 

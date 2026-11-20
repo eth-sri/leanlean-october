@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Algebra.PolynomialPredicates
 public import CCDN.Algebra.ScaledHomogenization
 public import CCDN.Determinant.HypersurfaceDeterminantRank
@@ -29,57 +30,49 @@ lemma primitive_affine_integer_coordinates {n : ℕ} (x : Fin n → ℤ) :
 
 /-- Homogenization transfers the proved global-plus-congruence estimate
 without changing a single affine evaluation. -/
-theorem exists_affine_congruence_determinant_log_lower {n s N M : ℕ} (hs : 0 < s)
-    (f : MvPolynomial (Fin (n + 2)) ℤ)
-    (hir : AbsolutelyIrreducible f)
+theorem affine_congruence_determinant_log_lower {n s N M : ℕ} (hs : 0 < s)
+    (f : IntegerPolynomial (n + 2))
+    (hf0 : f ≠ 0) (bad : Finset ℕ)
+    (hbad : ∀ p, stepanovThreshold f.totalDegree < p → HypersurfaceBadReduction f p → p ∈ bad)
     (hd : 0 < f.totalDegree)
-    (G : Fin N → MvPolynomial (Fin (n + 2)) ℤ) (hG : ∀ j, (G j).totalDegree ≤ M)
+    (G : Fin N → IntegerPolynomial (n + 2)) (hG : ∀ j, (G j).totalDegree ≤ M)
     (x : Fin s → IntPoint (n + 2)) (hx : ∀ i, eval (x i) f = 0)
     (hrows : LinearIndependent ℚ
-      ((Matrix.of fun i j => eval (x i) (G j)).map ((↑) : ℤ → ℚ)).row)
+      ((valueMatrix x G).map ((↑) : ℤ → ℚ)).row)
     (P : Finset ℕ) (a : ℕ → IntPoint (n + 2)) (hres : IsSmoothResidueFamily f P a x) :
-    ∃ bad : Finset ℕ,
-      (∀ p, p ∈ bad ↔ stepanovThreshold f.totalDegree < p ∧
-        HypersurfaceBadReduction (scaledHomogenize f.totalDegree 1 f) p) ∧
-      hypersurfaceRankLowerBound n s f.totalDegree (∑ p ∈ bad ∪ P, Real.log p / p) +
+    hypersurfaceRankLowerBound n s f.totalDegree (∑ p ∈ bad ∪ P, Real.log p / p) +
         (hypersurfaceDeterminantMain n s - (n + 2 : ℝ) * s) *
           (∑ p ∈ P, Real.log p) ≤
-        Real.log (Int.Matrix.minorGcd (Matrix.of fun i j => eval (x i) (G j))) := by
+        Real.log (Int.Matrix.minorGcd (valueMatrix x G)) := by
   classical
   let F := scaledHomogenize f.totalDegree 1 f
-  have hf0 : f ≠ 0 := ne_zero_of_irreducible_map hir
-  have hF : F.IsHomogeneous f.totalDegree := scaledHomogenize_homogeneous 1 f le_rfl
-  have hFir : AbsolutelyIrreducible F :=
-    (unscaledHomogenize_absolute_irreducible_iff f hf0).mpr hir
+  have hF := scaledHomogenize_homogeneous 1 f le_rfl
   let H := fun j => scaledHomogenize M 1 (G j)
-  have hH : ∀ j, (H j).IsHomogeneous M := fun j => scaledHomogenize_homogeneous 1 _ (hG j)
+  have hH := fun j => scaledHomogenize_homogeneous 1 _ (hG j)
   let z : Fin s → IntPoint (n + 3) := fun i => Fin.cons 1 (x i)
   have hz : ∀ i, eval (z i) F = 0 := by
     intro i
     rw [← affineChart_eval, affineChart_scaledHomogenize_one]
     exact hx i
-  have he : (Matrix.of fun i j => eval (z i) (H j)) =
-      Matrix.of fun i j => eval (x i) (G j) := by
+  have he : (valueMatrix z H) =
+      valueMatrix x G := by
     ext i j
     change eval (Fin.cons 1 (x i)) (scaledHomogenize M 1 (G j)) = _
-    rw [← affineChart_eval, affineChart_scaledHomogenize_one]
-    rfl
+    simp [← affineChart_eval, affineChart_scaledHomogenize_one]
   have hrows' : LinearIndependent ℚ
-      ((Matrix.of fun i j => eval (z i) (H j)).map ((↑) : ℤ → ℚ)).row := by
+      ((valueMatrix z H).map ((↑) : ℤ → ℚ)).row := by
     rw [he]
     exact hrows
   have hchart : projectiveHypersurfaceChart (0 : Fin (n + 3)) F = f := by
     simp only [projectiveHypersurfaceChart, Equiv.swap_self, Equiv.coe_refl, rename_id_apply, F,
       affineChart_scaledHomogenize_one]
-  obtain ⟨bad, hbad, hbound⟩ := exists_smooth_congruence_determinant_log_lower hs F hF hd hFir
+  apply he ▸ smooth_congruence_determinant_log_lower hs F hF hd bad
+    (fun p hc hb => hbad p hc (hypersurfaceBadReduction_unscaledHomogenize_imp f hf0 p hb))
     ⟨hH, fun i => primitive_affine_integer_coordinates (x i), hz, hrows'⟩ P hres.prime
-    (fun _ => 0) a (by simpa only [hchart] using hres.eval_eq_zero)
+    (fun _ => 0) a (by simpa [hchart] using hres.eval_eq_zero)
     (by simpa only [hchart] using hres.smooth)
-    (by intro p hp i; exact isCoprime_one_right)
-    (by intro p hp i j; simpa only [Equiv.swap_self, Equiv.refl_apply,
-        z, Fin.cons_succ, Fin.cons_zero, mul_one] using hres.dvd_sub p hp i j)
-  rw [he] at hbound
-  exact ⟨bad, hbad, hbound⟩
+    (by solve_by_elim [isCoprime_one_right])
+    (by intro p hp i j; simpa using hres.dvd_sub p hp i j)
 
 end
 end CCDN

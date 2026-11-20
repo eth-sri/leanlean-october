@@ -17,8 +17,10 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma optionEquivLeft_top_coefficient_constant {K σ : Type*} [Field K]
-    (f : MvPolynomial (Option σ) K) (d : ℕ) (hd : f.totalDegree ≤ d) :
+variable {K σ : Type*} [Field K] (a b : Option σ → K) (hb : b none ≠ 0)
+    (f : MvPolynomial (Option σ) K)
+
+private lemma optionEquivLeft_top_coefficient_constant (d : ℕ) (hd : f.totalDegree ≤ d) :
     (optionEquivLeft K σ f).coeff d = C (eval (0 : σ → K) ((optionEquivLeft K σ f).coeff d)) := by
   by_cases h : d ≤ f.totalDegree
   · have ht := totalDegree_coeff_optionEquivLeft_add_le K σ f d h
@@ -29,23 +31,22 @@ private lemma optionEquivLeft_top_coefficient_constant {K σ : Type*} [Field K]
       exact (degreeOf_le_totalDegree f none).trans_lt (by omega)
     rw [Polynomial.coeff_eq_zero_of_natDegree_lt hn, map_zero, map_zero]
 
-private lemma hypersurfaceAffineCoordinates_axis {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
+private lemma hypersurfaceAffineCoordinates_axis :
     Polynomial.map (eval (0 : σ → K))
       (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)) =
       affineLinePolynomial a b f := by
-  let φ := (Polynomial.mapRingHom (eval (0 : σ → K))).comp
+  let φ := (Polynomial.mapRingHom (eval 0)).comp
     ((optionEquivLeft K σ).toRingHom.comp (hypersurfaceAffineCoordinates a b hb).toRingHom)
   have he : φ = affineLinePolynomial a b := by
     apply MvPolynomial.ringHom_ext
     · intro r
-      change Polynomial.map (eval (0 : σ → K))
+      change Polynomial.map (eval 0)
         (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb (C r))) = _
       rw [show hypersurfaceAffineCoordinates a b hb (C r) = C r from
         (hypersurfaceAffineCoordinates a b hb).commutes r]
       simp [affineLinePolynomial]
     · intro i
-      change Polynomial.map (eval (0 : σ → K))
+      change Polynomial.map (eval 0)
         (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb (X i))) = _
       rw [hypersurfaceAffineCoordinates_X]
       cases i <;> simp [affineLinePolynomial]
@@ -53,33 +54,24 @@ private lemma hypersurfaceAffineCoordinates_axis {K σ : Type*} [Field K]
 
 /-- The top outer coefficient is a constant polynomial, and its scalar is
 exactly the leading homogeneous form evaluated on the chosen direction. -/
-theorem hypersurfaceAffineCoordinates_top_coefficient {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
+theorem hypersurfaceAffineCoordinates_top_coefficient :
     (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)).coeff f.totalDegree =
       C (eval b (homogeneousComponent f.totalDegree f)) := by
   rw [optionEquivLeft_top_coefficient_constant _ _
     (hypersurfaceAffineCoordinates_totalDegree_le a b hb f)]
-  congr 1
   have h := congrArg (fun q : Polynomial K => q.coeff f.totalDegree)
     (hypersurfaceAffineCoordinates_axis a b hb f)
-  rw [Polynomial.coeff_map, affineLinePolynomial_top_coefficient a b f _ le_rfl] at h
-  exact h
+  grind [Polynomial.coeff_map, affineLinePolynomial_top_coefficient, le_rfl]
 
 /-- Nonvanishing in the direction forces the outer degree to be the original
 total degree, even after moving an arbitrary base point to the origin. -/
-theorem hypersurfaceAffineCoordinates_full_outer_degree {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K)
+theorem hypersurfaceAffineCoordinates_full_outer_degree
     (hdir : eval b (homogeneousComponent f.totalDegree f) ≠ 0) :
     (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)).natDegree = f.totalDegree := by
   have hc :
       (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)).coeff f.totalDegree ≠ 0 := by
-    rw [hypersurfaceAffineCoordinates_top_coefficient]
-    exact (map_ne_zero_iff _ (C_injective σ K)).mpr hdir
-  apply le_antisymm
-  · rw [natDegree_optionEquivLeft]
-    exact (degreeOf_le_totalDegree _ none).trans
-      (hypersurfaceAffineCoordinates_totalDegree_le a b hb f)
-  · exact Polynomial.le_natDegree_of_ne_zero hc
+    simp_all [hypersurfaceAffineCoordinates_top_coefficient]
+  grind [le_antisymm, natDegree_optionEquivLeft, degreeOf_le_totalDegree, hypersurfaceAffineCoordinates_totalDegree_le, Polynomial.le_natDegree_of_ne_zero]
 
 end
 end CCDN

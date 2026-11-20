@@ -23,42 +23,47 @@ noncomputable section
 open MvPolynomial
 variable {K : Type*} [Field K]
 
-instance homogeneousCoordinateSpace_finite {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (M : ℕ) :
-    Module.Finite K (homogeneousCoordinateSpace I M) := by
-  exact Module.Finite.of_fg
-    ((homogeneousSubmodule_fg _ _ _).map (Ideal.Quotient.mkₐ K I).toLinearMap)
+variable {n d m M : ℕ} {ι : Type*} [Fintype ι] [DecidableEq ι]
+    (I : Ideal (MvPolynomial (Fin (n + 1)) K))
+
+section
+
+variable (M : ℕ)
+
+instance homogeneousCoordinateSpace_finite :
+    Module.Finite K (homogeneousCoordinateSpace I M) := Module.Finite.of_fg ((homogeneousSubmodule_fg _ _ _).map (Ideal.Quotient.mkₐ K I).toLinearMap)
 
 /-- The graded Hilbert function of `I`: the dimension of the degree-`M` part of the coordinate
 ring `MvPolynomial (Fin (n + 1)) K ⧸ I`, that is, of the image of the homogeneous polynomials
 of degree `M`. -/
-def projectiveHilbertFunction {n : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K))
-    (M : ℕ) : ℕ := Module.finrank K (homogeneousCoordinateSpace I M)
+def projectiveHilbertFunction : ℕ := Module.finrank K (homogeneousCoordinateSpace I M)
+
+end
 
 /-- The ideal `I` has projective curve degree `d`: the graded Hilbert function of
 `MvPolynomial (Fin (n + 1)) K ⧸ I` eventually equals `d * M + c` for some constant `c`. For a
 homogeneous prime ideal of a projective curve, `d` is the usual degree. -/
-def HasProjectiveCurveDegree {n : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K))
+def HasProjectiveCurveDegree
     (d : ℕ) : Prop :=
   ∃ N : ℕ, ∃ c : ℤ, ∀ M : ℕ, N ≤ M →
-    (projectiveHilbertFunction I M : ℤ) = (d : ℤ) * M + c
+    (projectiveHilbertFunction I M) = d * M + c
 
 /-- A projective point belongs to the zero locus when every representative
 annihilates the ideal. For homogeneous ideals this is the usual projective zero locus. -/
-def projectiveIdealZeroLocus {n : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K)) :
+def projectiveIdealZeroLocus :
     Set (Projectivization K (Fin (n + 1) → K)) :=
   {x | ∀ (v : Fin (n + 1) → K) (hv : v ≠ 0),
     Projectivization.mk K v hv = x → v ∈ idealZeroLocus I}
 
 /-- The chosen representative of a point of the projective zero locus of `I` lies in the affine
 zero locus of `I`. -/
-lemma projectiveIdealZeroLocus_rep {n : ℕ}
+lemma projectiveIdealZeroLocus_rep
     {I : Ideal (MvPolynomial (Fin (n + 1)) K)} {x : Projectivization K (Fin (n + 1) → K)}
     (hx : x ∈ projectiveIdealZeroLocus I) :
     x.rep ∈ idealZeroLocus I :=
   hx x.rep x.rep_nonzero x.mk_rep
 
-private lemma homogeneousCoordinateSpace_mul_mem {n M m : ℕ}
+private lemma homogeneousCoordinateSpace_mul_mem {m : ℕ}
     (I : Ideal (MvPolynomial (Fin (n + 1)) K))
     {f : MvPolynomial (Fin (n + 1)) K} (hf : f.IsHomogeneous m)
     {a : MvPolynomial (Fin (n + 1)) K ⧸ I}
@@ -67,27 +72,23 @@ private lemma homogeneousCoordinateSpace_mul_mem {n M m : ℕ}
   obtain ⟨g, hg, rfl⟩ := Submodule.mem_map.mp ha
   exact Submodule.mem_map.mpr ⟨f * g, hf.mul hg, by simp⟩
 
+variable [I.IsPrime]
+
 /-- Distinct points on a proper homogeneous section force a drop in the graded
 Hilbert function at least as large as their number. -/
-private theorem projective_section_hilbert_drop {n m M : ℕ} {ι : Type*}
-    [Fintype ι] [DecidableEq ι]
-    (I : Ideal (MvPolynomial (Fin (n + 1)) K)) [I.IsPrime]
+private theorem projective_section_hilbert_drop
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous m) (hfI : f ∉ I)
     (z : ι → Projectivization K (Fin (n + 1) → K)) (hz : Function.Injective z)
     (hzI : ∀ i, z i ∈ projectiveIdealZeroLocus I)
     (hzf : ∀ i, eval (z i).rep f = 0) (hM : Fintype.card ι - 1 ≤ m + M) :
     Fintype.card ι + projectiveHilbertFunction I M ≤ projectiveHilbertFunction I (m + M) := by
   classical
-  let A := MvPolynomial (Fin (n + 1)) K ⧸ I
   let q := Ideal.Quotient.mkₐ K I
-  let ψ : ι → A →ₐ[K] K := fun i =>
-    Ideal.Quotient.liftₐ I (aeval (z i).rep) (by
-      intro g hg
-      simpa only [aeval_eq_eval] using projectiveIdealZeroLocus_rep (hzI i) g hg)
+  let ψ := fun i =>
+    Ideal.Quotient.liftₐ I (aeval (z i).rep) (by solve_by_elim [projectiveIdealZeroLocus_rep])
   have hψ (i : ι) (g : MvPolynomial (Fin (n + 1)) K) :
-      ψ i (q g) = eval (z i).rep g := by
-    rfl
-  let φ : A →ₗ[K] (ι → K) := LinearMap.pi fun i => (ψ i).toLinearMap
+      ψ i (q g) = eval (z i).rep g := rfl
+  let φ := LinearMap.pi fun i => (ψ i).toLinearMap
   let V := homogeneousCoordinateSpace I (m + M)
   let W := homogeneousCoordinateSpace I M
   let U := W.map (LinearMap.mulLeft K (q f))
@@ -101,12 +102,11 @@ private theorem projective_section_hilbert_drop {n m M : ℕ} {ι : Type*}
     apply LinearMap.mem_ker.mpr
     ext i
     change ψ i (q f * b) = 0
-    rw [map_mul, hψ, hzf, zero_mul]
-  have hf0 : q f ≠ 0 := by
-    exact fun he => hfI (Ideal.Quotient.eq_zero_iff_mem.mp he)
-  have hUdim : Module.finrank K U = projectiveHilbertFunction I M :=
+    simp_all
+  have hf0 := fun he => hfI (Ideal.Quotient.eq_zero_iff_mem.mp he)
+  have hUdim :=
     (Submodule.equivMapOfInjective (LinearMap.mulLeft K (q f))
-      (fun a b h => mul_left_cancel₀ hf0 h) W).finrank_eq.symm
+      (by solve_by_elim [mul_left_cancel₀]) W).finrank_eq.symm
   obtain ⟨h, hhom, heval⟩ := exists_projective_point_separators_degree z hz hM
   have htop : V.map φ = ⊤ := by
     apply top_unique
@@ -126,9 +126,7 @@ private theorem projective_section_hilbert_drop {n m M : ℕ} {ι : Type*}
 
 /-- A proper section of degree `m` meets a degree-`d` projective prime curve
 in at most `dm` distinct points over the base field. -/
-theorem projective_section_card_le_degree {n d m : ℕ} {ι : Type*}
-    [Fintype ι] [DecidableEq ι]
-    (I : Ideal (MvPolynomial (Fin (n + 1)) K)) [I.IsPrime]
+theorem projective_section_card_le_degree
     (hdegree : HasProjectiveCurveDegree I d)
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous m) (hfI : f ∉ I)
     (z : ι → Projectivization K (Fin (n + 1) → K)) (hz : Function.Injective z)
@@ -139,14 +137,7 @@ theorem projective_section_card_le_degree {n d m : ℕ} {ι : Type*}
   let M := max N (Fintype.card ι)
   have hlow := projective_section_hilbert_drop I f hf hfI z hz hzI hzf
     (show Fintype.card ι - 1 ≤ m + M by dsimp [M]; omega)
-  have h0 := hN M (le_max_left _ _)
-  have h1 := hN (m + M) (by dsimp [M]; omega)
-  have hlowZ : (Fintype.card ι : ℤ) + projectiveHilbertFunction I M ≤
-      projectiveHilbertFunction I (m + M) := by exact_mod_cast hlow
-  rw [h0, h1] at hlowZ
-  push_cast at hlowZ
-  have hcard : (Fintype.card ι : ℤ) ≤ (d : ℤ) * m := by linarith
-  exact_mod_cast hcard
+  grind
 
 end
 end CCDN

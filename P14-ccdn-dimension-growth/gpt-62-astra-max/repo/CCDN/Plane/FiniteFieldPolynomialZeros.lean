@@ -24,8 +24,7 @@ theorem finite_field_polynomial_zeros_mul_card {K τ : Type*} [Field K] [Fintype
     Nat.card {x : τ → K // eval x f = 0} * Fintype.card K ≤
       f.totalDegree * Fintype.card K ^ Fintype.card τ := by
   classical
-  simpa [Nat.card_eq_fintype_card, Fintype.card_subtype] using
-    schwartz_zippel_totalDegree_card hf (Finset.univ : Finset K)
+  simpa [Fintype.card_subtype] using schwartz_zippel_totalDegree_card hf Finset.univ
 
 end
 end CCDN

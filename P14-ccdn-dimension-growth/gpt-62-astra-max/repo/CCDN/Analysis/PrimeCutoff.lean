@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Jason Davies
 -/
 module
-
+import CCDN.Analysis.GeometricShells
 public import Mertens
 
 /-!
@@ -39,8 +39,7 @@ theorem prime_sum_lower_sdiff {x : ℝ} (hx : 1 ≤ x) (B : Finset ℕ) :
   have hB : (∑ p ∈ S ∩ B, Real.log p / p) ≤ ∑ p ∈ B, Real.log p / p := by
     apply sum_le_sum_of_subset_of_nonneg inter_subset_right
     intro p _ _
-    exact div_nonneg (Real.log_natCast_nonneg p) (Nat.cast_nonneg p)
-  change Real.log x - mertensError - _ ≤ ∑ p ∈ S \ B, Real.log p / p
+    positivity
   change -mertensError ≤ (∑ p ∈ S, Real.log p / p) - Real.log x at hm
   linarith
 
@@ -68,11 +67,15 @@ lemma primeBlockMass_pos : 0 < primeBlockMass := by
   dsimp [primeBlockMass]
   linarith
 
+section
+
+variable (n : ℕ) {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ) (hprime : ∀ p ∈ S, p.Prime)
+    (hlo : ∀ p ∈ S, L < (p : ℝ)) (hhi : ∀ p ∈ S, (p : ℝ) ≤ 4 * L)
+
+include hL hprime hlo hhi in
 /-- The Mertens bounded error bounds every factor-four prime interval by a
 constant independent of its location. -/
-private lemma prime_block_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
-    (hprime : ∀ p ∈ S, p.Prime) (hlo : ∀ p ∈ S, L < (p : ℝ))
-    (hhi : ∀ p ∈ S, (p : ℝ) ≤ 4 * L) :
+private lemma prime_block_weight_le :
     ∑ p ∈ S, Real.log p / p ≤ primeBlockMass := by
   let T := (Ioc 0 ⌊4 * L⌋₊).filter Nat.Prime
   let U := (Ioc 0 ⌊L⌋₊).filter Nat.Prime
@@ -80,8 +83,7 @@ private lemma prime_block_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
     intro p hp
     have hp' := (mem_filter.mp hp).2
     apply (prime_mem_upto_iff (by linarith) hp').mpr
-    have hu := (prime_mem_upto_iff (by linarith) hp').mp hp
-    linarith
+    linarith [(prime_mem_upto_iff (by linarith) hp').mp hp]
   have hST : S ⊆ T \ U := by
     intro p hp
     apply mem_sdiff.mpr
@@ -89,21 +91,20 @@ private lemma prime_block_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
     intro hu
     exact (not_le_of_gt (hlo p hp)) ((prime_mem_upto_iff (by linarith) (hprime p hp)).mp hu)
   have hs : (∑ p ∈ S, Real.log p / p) ≤ ∑ p ∈ T \ U, Real.log p / p :=
-    sum_le_sum_of_subset_of_nonneg hST (fun p _ _ => by positivity)
+    by gcongr
   have hsplit := sum_sdiff hUT (f := fun p : ℕ => Real.log p / p)
   have hlo' := (abs_le.mp (Mertens.prime_sum_bounded_error hL)).1
   have hhi' := (abs_le.mp (Mertens.prime_sum_bounded_error (by linarith : 1 ≤ 4 * L))).2
   change -mertensError ≤ (∑ p ∈ U, Real.log p / p) - Real.log L at hlo'
   change (∑ p ∈ T, Real.log p / p) - Real.log (4 * L) ≤ mertensError at hhi'
-  rw [Real.log_mul (by norm_num) (by linarith : L ≠ 0)] at hhi'
+  rw [Real.log_mul (by norm_num) (by linarith)] at hhi'
   dsimp only [primeBlockMass]
   linarith
 
+include hL hprime hlo hhi in
 /-- A prime interval above L has weighted reciprocal-square-root mass
 bounded by its Mertens weight divided by sqrt(L). -/
-private lemma prime_block_sqrt_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
-    (hprime : ∀ p ∈ S, p.Prime) (hlo : ∀ p ∈ S, L < (p : ℝ))
-    (hhi : ∀ p ∈ S, (p : ℝ) ≤ 4 * L) :
+private lemma prime_block_sqrt_weight_le :
     ∑ p ∈ S, Real.log p / p / Real.sqrt p ≤ primeBlockMass / Real.sqrt L := by
   have hs : (∑ p ∈ S, Real.log p / p / Real.sqrt p) ≤
       (∑ p ∈ S, Real.log p / p) / Real.sqrt L := by
@@ -115,66 +116,19 @@ private lemma prime_block_sqrt_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset �
   exact hs.trans (div_le_div_of_nonneg_right (prime_block_weight_le hL S hprime hlo hhi)
     (Real.sqrt_nonneg L))
 
-/-- Finite dyadic assembly retains a constant times L^(-1/2), rather than
-summing over every integer and losing a logarithm. -/
-private lemma prime_sqrt_tail_le_of_pow_bound (n : ℕ) {L : ℝ} (hL : 1 ≤ L)
-    (S : Finset ℕ) (hprime : ∀ p ∈ S, p.Prime) (hlo : ∀ p ∈ S, L < (p : ℝ))
-    (hhi : ∀ p ∈ S, (p : ℝ) ≤ 4 ^ n * L) :
-    ∑ p ∈ S, Real.log p / p / Real.sqrt p ≤ 2 * primeBlockMass / Real.sqrt L := by
-  induction n generalizing L S with
-  | zero =>
-    have hS : S = ∅ := by
-      apply eq_empty_iff_forall_notMem.mpr
-      intro p hp
-      have h1 := hlo p hp
-      have h2 := hhi p hp
-      simp only [pow_zero, one_mul] at h2
-      linarith
-    rw [hS, sum_empty]
-    exact div_nonneg (mul_nonneg (by norm_num) primeBlockMass_pos.le) (Real.sqrt_nonneg _)
-  | succ n ih =>
-    let A := S.filter (fun p : ℕ => (p : ℝ) ≤ 4 * L)
-    let B := S \ A
-    have hA := prime_block_sqrt_weight_le hL A
-      (fun p hp => hprime p (mem_filter.mp hp).1)
-      (fun p hp => hlo p (mem_filter.mp hp).1) (fun _ hp => (mem_filter.mp hp).2)
-    have hB := ih (L := 4 * L) (by linarith) B
-      (fun p hp => hprime p (mem_sdiff.mp hp).1)
-      (fun p hp => by
-        have hm := mem_sdiff.mp hp
-        have hn : ¬(p : ℝ) ≤ 4 * L := by simpa only [A, mem_filter, hm.1, true_and] using hm.2
-        exact lt_of_not_ge hn)
-      (fun p hp => by
-        have h := hhi p (mem_sdiff.mp hp).1
-        simpa only [pow_succ, mul_assoc] using h)
-    have he : ∑ p ∈ S, Real.log p / p / Real.sqrt p =
-        (∑ p ∈ A, Real.log p / p / Real.sqrt p) +
-        ∑ p ∈ B, Real.log p / p / Real.sqrt p := by
-      simpa only [add_comm] using
-        (sum_sdiff (filter_subset (fun p : ℕ => (p : ℝ) ≤ 4 * L) S)
-          (f := fun p : ℕ => Real.log p / p / Real.sqrt p)).symm
-    have hsqrt : Real.sqrt (4 * L) = 2 * Real.sqrt L := by
-      rw [Real.sqrt_mul (by norm_num)]
-      norm_num
-    rw [he]
-    rw [hsqrt] at hB
-    have hL0 : Real.sqrt L ≠ 0 := ne_of_gt (Real.sqrt_pos.mpr (by linarith))
-    calc _ ≤ primeBlockMass / Real.sqrt L + 2 * primeBlockMass / (2 * Real.sqrt L) :=
-          add_le_add hA hB
-         _ = _ := by field_simp; ring
+include hL hprime hlo in
+theorem prime_sqrt_tail_le : ∑ p ∈ S, Real.log p / p / Real.sqrt p ≤ 2 * primeBlockMass / Real.sqrt L := by
+  have hpos : 0 < L := by linarith
+  apply (geometric_shell_sum S (fun p => p/L) _ (r:=4) (M:=primeBlockMass/Real.sqrt L) (by norm_num)
+    (div_nonneg primeBlockMass_pos.le (sqrt_nonneg _)) (fun p h => (one_lt_div hpos).mpr (hlo p h)) ?_).trans_eq (by ring)
+  intro k T hT band
+  have h4 : (1:ℝ) ≤ 4^k := one_le_pow₀ (by norm_num)
+  have hh := prime_block_sqrt_weight_le (one_le_mul_of_one_le_of_one_le h4 hL) T (fun i h => hprime i (hT h))
+    (fun i h => (lt_div_iff₀ hpos).mp (band i h).1) (fun i h => by have := (div_le_iff₀ hpos).mp (band i h).2; rw [pow_succ] at this; linarith)
+  apply hh.trans_eq
+  rw [sqrt_mul (by positivity),show (4:ℝ)^k = (2^k)^2 by rw [← pow_mul, mul_comm k, pow_mul]; norm_num,sqrt_sq (by positivity),one_div,inv_pow]; ring
 
-/-- The reciprocal-square-root tail over any finite set of primes is uniform
-in its upper endpoint. -/
-theorem prime_sqrt_tail_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
-    (hprime : ∀ p ∈ S, p.Prime) (hlo : ∀ p ∈ S, L < (p : ℝ)) :
-    ∑ p ∈ S, Real.log p / p / Real.sqrt p ≤ 2 * primeBlockMass / Real.sqrt L := by
-  obtain ⟨n, hn⟩ := pow_unbounded_of_one_lt (((S.sup id : ℕ) : ℝ) / L)
-    (by norm_num : (1 : ℝ) < 4)
-  apply prime_sqrt_tail_le_of_pow_bound n hL S hprime hlo
-  intro p hp
-  have hsup : (p : ℝ) ≤ ((S.sup id : ℕ) : ℝ) := by
-    exact_mod_cast (le_sup (f := id) hp : p ≤ S.sup id)
-  exact hsup.trans ((div_lt_iff₀ (by linarith : 0 < L)).mp hn).le
+end
 
 /-- The exact reciprocal perturbation error, retaining the prime weight
 needed for the sharp tail estimate. -/
@@ -182,18 +136,17 @@ private lemma log_div_sqrt_perturbation_exact {p C N : ℝ} (hp : 1 ≤ p) (hC :
     (hN : 0 < N) (hupper : N ≤ p + C * Real.sqrt p) :
     Real.log p / p - C * (Real.log p / p / Real.sqrt p) ≤ Real.log p / N := by
   have hp0 : 0 < p := by linarith
-  have hs0 : 0 < Real.sqrt p := Real.sqrt_pos.mpr hp0
-  have hs : Real.sqrt p ^ 2 = p := Real.sq_sqrt hp0.le
+  have hs0 := Real.sqrt_pos.mpr hp0
+  have hs := Real.sq_sqrt hp0.le
   have hrec : 1 / p - C / (p * Real.sqrt p) ≤ 1 / (p + C * Real.sqrt p) := by
-    apply (le_div_iff₀ (by positivity : 0 < p + C * Real.sqrt p)).mpr
+    apply (le_div_iff₀ (by positivity)).mpr
     field_simp
     nlinarith [sq_nonneg C]
-  have hlog := mul_le_mul_of_nonneg_left hrec (Real.log_nonneg hp)
   calc _ = Real.log p * (1 / p - C / (p * Real.sqrt p)) := by ring
-       _ ≤ Real.log p * (1 / (p + C * Real.sqrt p)) := hlog
+       _ ≤ Real.log p * (1 / (p + C * Real.sqrt p)) := (mul_le_mul_of_nonneg_left hrec (Real.log_nonneg hp))
        _ ≤ _ := by
          rw [mul_one_div]
-         exact div_le_div_of_nonneg_left (Real.log_nonneg hp) hN hupper
+         bound
 
 /-- Good-prime reciprocal sum with an explicit lower cutoff. Its error is
 O(C/sqrt(L)), with absolute constants, and its small-prime cost is log(L). -/
@@ -209,39 +162,30 @@ theorem weighted_prime_sum_lower_cutoff {x L C : ℝ} (hx : 1 ≤ x) (hL : 1 ≤
   classical
   let T := (Ioc 0 ⌊x⌋₊).filter Nat.Prime
   let U := (Ioc 0 ⌊L⌋₊).filter Nat.Prime
-  let S := (T \ B).filter (fun p : ℕ => L < (p : ℝ))
+  let S := (T \ B).filter (fun p : ℕ => L < p)
   have hS : S = T \ (B ∪ U) := by
     ext p
     by_cases hp : p ∈ T
-    · have hprime := (mem_filter.mp hp).2
-      have hU : p ∈ U ↔ (p : ℝ) ≤ L := prime_mem_upto_iff (by linarith) hprime
-      simp only [S, mem_filter, mem_sdiff, mem_union, hp, true_and,
-        hU, not_or, not_le]
-    · simp only [S, mem_filter, mem_sdiff, hp, false_and]
+    · have hU : p ∈ U ↔ (p : ℝ) ≤ L := prime_mem_upto_iff (by linarith) ((mem_filter.mp hp).2)
+      grind
+    grind
   have hcharge : (∑ p ∈ B ∪ U, Real.log p / p) ≤
       (∑ p ∈ B, Real.log p / p) + (∑ p ∈ U, Real.log p / p) := by
     have he := sum_union_inter (s₁ := B) (s₂ := U) (f := fun p : ℕ => Real.log p / p)
-    have hn : 0 ≤ ∑ p ∈ B ∩ U, Real.log p / p := sum_nonneg (fun _ _ => by positivity)
+    have hn : 0 ≤ ∑ p ∈ B ∩ U, Real.log p / p := by positivity
     linarith
   have hu := (abs_le.mp (Mertens.prime_sum_bounded_error hL)).2
   change (∑ p ∈ U, Real.log p / p) - Real.log L ≤ mertensError at hu
   have hm := prime_sum_lower_sdiff hx (B ∪ U)
-  change Real.log x - mertensError - _ ≤ ∑ p ∈ T \ (B ∪ U), Real.log p / p at hm
   rw [← hS] at hm
-  have hbase : Real.log x - Real.log L - 2 * mertensError -
-      (∑ p ∈ B, Real.log p / p) ≤ ∑ p ∈ S, Real.log p / p := by linarith
-  have hprime (p : ℕ) (hp : p ∈ S) : p.Prime :=
+  have hprime (p : ℕ) (hp : p ∈ S)  :=
     (mem_filter.mp (mem_sdiff.mp (mem_filter.mp hp).1).1).2
-  have htail := prime_sqrt_tail_le hL S hprime (fun _ hp => (mem_filter.mp hp).2)
+  have htail := prime_sqrt_tail_le hL S hprime (by grind)
   have hpoint : ∀ p ∈ S, Real.log p / p - C * (Real.log p / p / Real.sqrt p) ≤
       Real.log p / N p := by
-    intro p hp
-    have hmem := mem_filter.mp hp
-    exact log_div_sqrt_perturbation_exact (by exact_mod_cast (hprime p hp).one_le) hC
-      (hN p hmem.1 hmem.2) (hupper p hmem.1 hmem.2)
+    grind [mem_filter.mp, log_div_sqrt_perturbation_exact, one_le]
   have hs := sum_le_sum hpoint
   rw [sum_sub_distrib, ← mul_sum] at hs
-  change _ ≤ ∑ p ∈ S, Real.log p / N p
   nlinarith
 
 end

@@ -23,19 +23,13 @@ theorem ideal_eq_bot_of_full_hilbert_dimension
     (hdim : (filteredHilbertPolynomial I).natDegree = Fintype.card σ) : I = ⊥ := by
   classical
   obtain ⟨U, hU, hAI⟩ := exists_hilbert_dimension_independent_coordinates I hI
-  have hcard : Fintype.card U = Fintype.card σ := by
+  have hcard := by
     simpa only [Nat.card_eq_fintype_card, hdim] using hU
   have hmem : ∀ i : σ, i ∈ U := by
     intro i
     by_contra hn
-    have hh := Fintype.card_subtype_lt hn
-    have hc : Fintype.card U = Fintype.card {x // x ∈ U} :=
-      Fintype.card_congr (Equiv.refl _)
-    omega
-  let j : σ → U := fun i => ⟨i, hmem i⟩
-  have hj : Function.Injective j := fun _ _ h => congrArg Subtype.val h
-  have hi : AlgebraicIndependent K (fun i : σ => (Ideal.Quotient.mk I) (X i)) := by
-    exact hAI.comp j hj
+    linarith [Fintype.card_subtype_lt hn]
+  have hi := hAI.comp (fun i => ⟨i, hmem i⟩) (fun _ _ h => congrArg Subtype.val h)
   have he : aeval (fun i : σ => (Ideal.Quotient.mk I) (X i)) = Ideal.Quotient.mkₐ K I := by
     ext i
     simp
@@ -44,7 +38,7 @@ theorem ideal_eq_bot_of_full_hilbert_dimension
     exact hi
   have hk := (RingHom.injective_iff_ker_eq_bot
     (Ideal.Quotient.mkₐ K I).toRingHom).mp hinj
-  simpa only [Ideal.Quotient.mkₐ_toRingHom, Ideal.mk_ker] using hk
+  aesop
 
 end
 end CCDN

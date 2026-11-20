@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Algebra.IntegerLinearForms
 public import CCDN.Hilbert.FilteredHilbertPolynomial
 public import CCDN.Projection.ProjectiveClosureProjection
@@ -28,7 +29,7 @@ coefficients of absolute value at most `d + 1` whose projection is integral, wit
 projective dimension `m` and some degree `e` with `0 < e ≤ d`, and such that the associated
 projection of the projective closure of `I` is integral as well. -/
 theorem exists_fin_integer_closure_elimination_step {n m : ℕ}
-    (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ)) [I.IsPrime] (d : ℕ)
+    (I : Ideal (CoordinatePolynomial (n + 1))) [I.IsPrime] (d : ℕ)
     (hdimdeg : HasProjectiveDimensionDegree I m d) (hcodim : m < n) :
     ∃ (c : Fin n → Fin (n + 1) → ℤ) (e : ℕ),
       (∀ i j, |c i j| ≤ d + 1) ∧ 0 < e ∧ e ≤ d ∧
@@ -39,13 +40,13 @@ theorem exists_fin_integer_closure_elimination_step {n m : ℕ}
       (projectionCoordinateMap (projectiveClosureIdeal I)
         (closureProjectionCoordinates a)).IsIntegral := by
   obtain ⟨f, hf, hfi, hfd⟩ := exists_mem_ideal_degree_le_multiplicity I d hdimdeg
-    (by simpa only [Fintype.card_fin] using Nat.add_lt_add_right hcodim 1)
+    (by simpa)
   let F := renameEquiv ℚ (finSuccEquiv n) f
   have hF : F ≠ 0 := by
     intro h
     apply hf
-    exact (renameEquiv ℚ (finSuccEquiv n)).injective (h.trans (map_zero _).symm)
-  have hFdeg : F.totalDegree = f.totalDegree := totalDegree_renameEquiv (finSuccEquiv n) f
+    exact (renameEquiv ℚ (finSuccEquiv n)).injective (by assumption)
+  have hFdeg := totalDegree_renameEquiv (finSuccEquiv n) f
   obtain ⟨b, hbound, hb, hdir⟩ := exists_bounded_full_degree_direction F hF
   have hbQ : (b none : ℚ) ≠ 0 := by exact_mod_cast hb
   have hdir' : eval (Fin.cons (b none : ℚ) (fun i => (b (some i) : ℚ)))
@@ -63,10 +64,7 @@ theorem exists_fin_integer_closure_elimination_step {n m : ℕ}
   let c := finEliminationMatrix b
   have hc : ∀ i j, |c i j| ≤ d + 1 := by
     apply finEliminationMatrix_height
-    intro i
-    refine ⟨(hbound i).1, ?_⟩
-    rw [hFdeg] at hbound
-    exact (hbound i).2.trans (by exact_mod_cast Nat.add_le_add_right hfd 1)
+    grind
   have hint := affine_projection_integral_of_closure_integral I
     (fun i => integerLinearForm (c i)) hcone
   obtain ⟨e, he, hed, hker⟩ := integral_linear_projection_dimension_degree I

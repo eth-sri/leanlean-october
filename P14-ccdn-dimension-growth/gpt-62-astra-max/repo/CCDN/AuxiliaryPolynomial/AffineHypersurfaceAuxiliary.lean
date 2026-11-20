@@ -5,131 +5,59 @@ Authors: Jason Davies
 -/
 module
 
-public import CCDN.AuxiliaryPolynomial.AffineAuxiliaryCases
-import CCDN.AuxiliaryPolynomial.AffineAuxiliaryTranslationBound
-import CCDN.AuxiliaryPolynomial.AffineBadPrimeTranslation
-import CCDN.AuxiliaryPolynomial.AffineLeadingTranslation
-import CCDN.AuxiliaryPolynomial.AffineTranslationCount
+public import CCDN.Algebra.Equations
+public import CCDN.AuxiliaryPolynomial.AffineScaledEstimate
+public import CCDN.AuxiliaryPolynomial.SmoothBoxAuxiliary
 import CCDN.Height.ScaledHypersurfaceHeight
 
-/-! The affine auxiliary theorem in every positive dimension and degree,
-with the degree-loss-inclusive geometric bad-prime factor. This distinction
-from the literal affine wording of CCDN Definition 3.2.1 is intentional. -/
+/-! The affine determinant bound. The coefficient-sensitive alternative and the logarithmic
+alternative both come from the same projective model. -/
 
 @[expose] public section
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- The shape of the affine auxiliary degree bound in degree `d` and box radius `B`, with
-`L` the coefficient height of the leading form and `b` the bad-prime factor: writing
-`r = n + 1`, it is
-$d^{2 - 1/r} \min(\log L + d \log B + d^2, d^2 b) B^{1/d^{1/r}} / L^{1/(r d^{1 + 1/r})}
-+ d^{1 - 1/r} \log B + d^{4 - 1/r}$. -/
-def affineAuxiliaryDegreeExpression (n d : ℕ) (B L b : ℝ) : ℝ :=
-  (d : ℝ) ^ (2 - 1 / (n + 1 : ℝ)) *
-      min (Real.log L + d * Real.log B + (d : ℝ) ^ 2) ((d : ℝ) ^ 2 * b) *
-      B ^ (1 / (d : ℝ) ^ (1 / (n + 1 : ℝ))) /
-        L ^ (1 / ((n + 1 : ℝ) * d * (d : ℝ) ^ (1 / (n + 1 : ℝ)))) +
-    (d : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B +
-      (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ))
-
-/-- The dimension constant in the affine auxiliary theorem for equations in `n + 2`
-variables, multiplying `affineAuxiliaryDegreeExpression`. -/
-def affineHypersurfaceAuxiliaryConstant (n : ℕ) : ℝ :=
-  (2 * Real.exp ((n : ℝ) + 2)) * hypersurfaceAbsoluteAuxiliaryConstant n *
-    (max (affineHeightTransferConstant n) (Real.exp 1) *
-      affineAuxiliaryComparisonConstant n + 1)
-
-/-- The constant `affineHypersurfaceAuxiliaryConstant n` is positive. -/
-lemma affineHypersurfaceAuxiliaryConstant_pos (n : ℕ) :
-    0 < affineHypersurfaceAuxiliaryConstant n := by
-  have hK : 0 ≤ max (affineHeightTransferConstant n) (Real.exp 1) :=
-    (Real.exp_pos 1).le.trans (le_max_right _ _)
-  have hA := zero_le_one.trans (affineAuxiliaryComparisonConstant_one_le n)
-  have hC := hypersurfaceAbsoluteAuxiliaryConstant_pos n
-  unfold affineHypersurfaceAuxiliaryConstant
-  positivity
-
-/-- The affine auxiliary degree bound with comparison constant `A ≥ 0` is at most a constant
-depending on `n` and `A` times `affineAuxiliaryDegreeExpression`, for `1 ≤ B`, `1 ≤ L` and
-`0 ≤ b`. -/
-lemma affineMinimumAuxiliaryBound_le_expression (n d : ℕ) {A B L b : ℝ}
-    (hA : 0 ≤ A) (hB : 1 ≤ B) (hL : 1 ≤ L) (hb : 0 ≤ b) :
-    affineMinimumAuxiliaryBound n d A B L b ≤
-      (hypersurfaceAbsoluteAuxiliaryConstant n *
-        (max (affineHeightTransferConstant n) (Real.exp 1) * A + 1)) *
-          affineAuxiliaryDegreeExpression n d B L b := by
-  let K := max (affineHeightTransferConstant n) (Real.exp 1) * A
-  let M := (d : ℝ) ^ (2 - 1 / (n + 1 : ℝ)) *
-      min (Real.log L + d * Real.log B + (d : ℝ) ^ 2) ((d : ℝ) ^ 2 * b) *
-      B ^ (1 / (d : ℝ) ^ (1 / (n + 1 : ℝ))) /
-        L ^ (1 / ((n + 1 : ℝ) * d * (d : ℝ) ^ (1 / (n + 1 : ℝ))))
-  let E := (d : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B +
-      (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ))
-  have hK : 0 ≤ K := mul_nonneg ((Real.exp_pos 1).le.trans (le_max_right _ _)) hA
-  have hmin : 0 ≤ min (Real.log L + d * Real.log B + (d : ℝ) ^ 2) ((d : ℝ) ^ 2 * b) :=
-    le_min (add_nonneg (add_nonneg (Real.log_nonneg hL)
-      (mul_nonneg (Nat.cast_nonneg d) (Real.log_nonneg hB))) (sq_nonneg _))
-      (mul_nonneg (sq_nonneg _) hb)
-  have hM : 0 ≤ M := by dsimp only [M]; positivity
-  have hE : 0 ≤ E := by
-    have := Real.log_nonneg hB
-    dsimp only [E]
-    positivity
-  have hh : K * M + E ≤ (K + 1) * (M + E) := by nlinarith [mul_nonneg hK hE]
-  have hh' := mul_le_mul_of_nonneg_left hh (hypersurfaceAbsoluteAuxiliaryConstant_pos n).le
-  unfold affineMinimumAuxiliaryBound affineAuxiliaryDegreeExpression
-  dsimp only [K, M, E] at hh'
-  convert hh' using 1 <;> ring
-
-/-- Every primitive irreducible integer affine hypersurface admits the
-coefficient-sensitive auxiliary in the complete minimum form, using the
-defined geometric bad-prime factor (which includes degree-dropping primes).
-The constant depends only on the dimension. -/
-theorem affine_hypersurface_auxiliary {n : ℕ}
-    (f : MvPolynomial (Fin (n + 2)) ℤ) (hprim : PrimitiveIntegerPolynomial f)
-    (hir : Irreducible f) (hd : 0 < f.totalDegree) {B : ℝ} (hB : 1 ≤ B) :
-    ∃ g, IsBoxAuxiliary f g B ∧
-      (g.totalDegree : ℝ) ≤ affineHypersurfaceAuxiliaryConstant n *
-        affineAuxiliaryDegreeExpression n f.totalDegree B
-          (integerCoefficientHeight (homogeneousComponent f.totalDegree f) : ℝ)
-          (hypersurfaceBadPrimeFactor f) := by
+/-- Any upper bound `A` for the affine height charge yields a box auxiliary, with a constant
+independent of the equation and of the box radius. -/
+theorem affine_hypersurface_auxiliary {n : ℕ} (f : IntegerPolynomial (n + 2))
+    (hprim : PrimitiveIntegerPolynomial f) (hir : AbsolutelyIrreducible f) (hd : 0 < f.totalDegree)
+    {B A : ℝ} (hB : 1 ≤ B) (hA : affineAuxiliaryCharge n f.totalDegree B
+      (integerCoefficientHeight (homogeneousComponent f.totalDegree f)) (hypersurfaceBadPrimeFactor f) ≤ A) :
+    ∃ g, IsBoxAuxiliary f g B ∧ (g.totalDegree : ℝ) ≤ affineHypersurfaceAuxiliaryConstant n *
+      (A + 1) * auxDegreeScale n f.totalDegree * affineBoxPower n f.totalDegree B := by
+  classical
   let d := f.totalDegree
-  let L := (integerCoefficientHeight (homogeneousComponent d f) : ℝ)
-  let b := hypersurfaceBadPrimeFactor f
-  let A := affineAuxiliaryComparisonConstant n
-  have hA : 0 ≤ A := zero_le_one.trans (affineAuxiliaryComparisonConstant_one_le n)
-  have hL : 1 ≤ L := leading_height_one_le f hir.ne_zero
-  have hb : 0 ≤ b := hypersurfaceBadPrimeFactor_nonneg f
-  obtain ⟨a, ha, hc⟩ := exists_bounded_affine_translation_nonzero_constant f hir.ne_zero
-  let t := affineTranslation ℤ a f
-  have htprim : PrimitiveIntegerPolynomial t := hprim.translate_affine a
-  have htir : Irreducible t := (affineTranslation_irreducible_iff a f).mpr hir
-  have htd : t.totalDegree = d := affineTranslation_totalDegree a f
-  have htdpos : 0 < t.totalDegree := htd ▸ hd
-  have hB' : 1 ≤ B + d := by have := Nat.cast_nonneg (α := ℝ) d; linarith
-  obtain ⟨g, hg, hgdeg⟩ :=
-    affine_auxiliary_minimum_nonzero_constant t htprim htir htdpos hc hB'
-  have habox (j) : |(a j : ℝ)| ≤ d := by
-    have h0 : (0 : ℝ) ≤ a j := by exact_mod_cast (ha j).1
-    rw [abs_of_nonneg h0]
-    exact_mod_cast (ha j).2
-  obtain ⟨G, hG, hGdeg⟩ := affine_auxiliary_translation_transport f g a hg habox
-  refine ⟨G, hG, ?_⟩
-  have htle : (g.totalDegree : ℝ) ≤ affineMinimumAuxiliaryBound n d A (B + d) L b := by
-    have htop : homogeneousComponent t.totalDegree t = homogeneousComponent d f :=
-      affineTranslation_leading_homogeneousComponent a f
-    rw [htop, htd] at hgdeg
-    simpa only [t, hypersurfaceBadPrimeFactor_affineTranslation] using hgdeg
-  rw [hGdeg]
-  apply (htle.trans (affineMinimumAuxiliaryBound_translation hd hA hB hL hb)).trans
-  have hh := mul_le_mul_of_nonneg_left
-    (affineMinimumAuxiliaryBound_le_expression n d hA hB hL hb)
-    (show 0 ≤ 2 * Real.exp ((n : ℝ) + 2) by positivity)
-  dsimp only [affineHypersurfaceAuxiliaryConstant, A]
-  convert hh using 1
-  ring
+  have hf := ne_zero_of_irreducible_map hir
+  obtain ⟨S⟩ := exists_boxScaling f hprim hd hB
+  let X := (integerBox (n+2) B).filter (fun x => eval x f = 0)
+  obtain ⟨g,hnd,hz,hg⟩ := S.auxiliary hprim hir hd X
+    (fun _ h => mem_integerBox.mp (Finset.mem_filter.mp h).1) (fun _ h => (Finset.mem_filter.mp h).2)
+    ∅ 0 ⟨by simp,by simp,by simp,by simp⟩
+  have hh : (g.totalDegree : ℝ) ≤ hypersurfaceAuxiliaryDegreeBound n d S.p (hypersurfaceBadPrimeFactor f) (integerCoefficientHeight S.equation) := by
+    simpa only [hypersurfaceBadPrimeFactor,dite_eq_left hir,Finset.union_empty,Finset.sum_empty,Real.exp_zero,div_one,mul_zero,add_zero] using hg
+  let H : ℝ := integerCoefficientHeight S.equation
+  have hH : 1 ≤ H := by dsimp [H]; exact_mod_cast integerCoefficientHeight_pos _ (S.ne_zero hf)
+  have hL := leading_height_one_le f hf
+  have hc := badHeightCost_nonneg (n+2)
+  have hd0 : (0:ℝ) < d := by exact_mod_cast hd
+  have hb : hypersurfaceBadPrimeFactor f ≤ scaleBadCost n * (1 + Real.log H / (d:ℝ)^2) := by
+    apply (hypersurfaceBadPrimeFactor_le_height f _ (by exact_mod_cast integerCoefficientHeight_pos f hf) (coefficient_abs_le_integerCoefficientHeight f)).trans
+    change badHeightCost (n+2)*(1+_/_) ≤ _
+    rw [scaleBadCost,mul_comm _ (badHeightCost (n+2)),mul_assoc (badHeightCost (n+2))]
+    apply mul_le_mul_of_nonneg_left _ hc
+    have hh := S.height_control hd hf
+    push_cast at hh
+    have hl := Real.log_nonneg hH
+    field_simp
+    nlinarith only [hh,hl,mul_nonneg (Nat.cast_nonneg (α := ℝ) n) hl]
+  refine ⟨g,⟨fun h => hnd (h ▸ dvd_zero _),hnd,fun x hx hxz => hz x (Finset.mem_filter.mpr ⟨mem_integerBox.mpr hx,hxz⟩)⟩,
+    (hh.trans (scaled_auxiliary_estimate hd hB (by exact_mod_cast S.prime.one_le) S.small hL
+      (hypersurfaceBadPrimeFactor_nonneg _) S.leading_height hb)).trans ?_⟩
+  have := affineHypersurfaceAuxiliaryConstant_pos n
+  calc
+    _ ≤ affineHypersurfaceAuxiliaryConstant n * auxDegreeScale n f.totalDegree * affineBoxPower n f.totalDegree B * (A + 1) := by gcongr
+    _ = _ := by ring
 
 end
 end CCDN

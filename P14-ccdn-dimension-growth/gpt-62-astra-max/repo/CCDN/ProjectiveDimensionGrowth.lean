@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Projection.ProjectiveProjectionGrowth
 public import CCDN.Statements
 import CCDN.Curve.ProjectiveHilbertCurveGrowth
@@ -40,92 +41,87 @@ theorem projectiveGrowth_of_le {n E : ℕ} (hpoint : 1 ≤ n → n + 1 ≤ E)
       projectionDegreeExponent m k ≤ E) :
     ProjectiveGrowth n E := by
   classical
-  have hlt (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ)) (hI : I.IsPrime) (d : ℕ) (hd : 5 ≤ d)
+  have hlt (I : Ideal (CoordinatePolynomial (n + 1))) (hI : I.IsPrime) (d : ℕ) (hd : 5 ≤ d)
       (hdegree : (filteredHilbertPolynomial I).leadingCoeff =
-        (d : ℚ) / (filteredHilbertPolynomial I).natDegree.factorial) :
-      (filteredHilbertPolynomial I).natDegree < n + 1 := by
-    simpa only [Fintype.card_fin] using
+        d / (filteredHilbertPolynomial I).natDegree.factorial)  := by
+    simpa using
       hilbert_dimension_lt_ambient_of_degree_gt_one I hI.ne_top d (by omega) hdegree
-  have hempty (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ))
+  have hempty (I : Ideal (CoordinatePolynomial (n + 1)))
       (h : (filteredHilbertPolynomial I).natDegree = 0) (B : ℝ) :
       projectiveCount (projectiveIdealZeroLocus I) B = 0 := by
-    rw [projectiveIdealZeroLocus_eq_empty_of_hilbert_dimension_zero I h]
-    simp [projectiveCount, projectivePoints]
+    simp [projectiveIdealZeroLocus_eq_empty_of_hilbert_dimension_zero I h, projectiveCount, projectivePoints]
   rcases Nat.eq_zero_or_pos n with rfl | hn
   · refine ⟨1, one_pos, fun I hprime _ d hd hdegree B _ => ?_⟩
-    rw [hempty I (by have := hlt I hprime d hd hdegree; omega), Nat.cast_zero]
+    rw [hempty I (by grind), Nat.cast_zero]
     positivity
   choose Cp _ hp using projective_variety_dimension_growth
   obtain ⟨T, hT⟩ := (((Set.finite_Iic n).prod (Set.finite_Iic n)).image
     fun p : ℕ × ℕ => Cp p.1 p.2).bddAbove
   obtain ⟨Cc, hCc, hc⟩ := projective_hilbert_curve_dimension_growth n hn
   choose Ch hCh hh using fun n => (projective_hypersurface_dimension_growth n).ideal
-  let K : ℝ := max T 0 + Cc + Ch (n - 2) + 1
-  have hTK : T ≤ K := by dsimp only [K]; linarith [le_max_left T 0, hCh (n - 2)]
-  have h1K : 1 ≤ K := by dsimp only [K]; linarith [le_max_right T 0, hCh (n - 2)]
-  have hCK : Cc ≤ K := by dsimp only [K]; linarith [le_max_right T 0, hCh (n - 2)]
-  have hhK : Ch (n - 2) ≤ K := by dsimp only [K]; linarith [le_max_right T 0]
+  let K := max T 0 + Cc + Ch (n - 2) + 1
+  have hTK : T ≤ K := by linarith [le_max_left T 0, hCh (n - 2)]
+  have h1K : 1 ≤ K := by linarith [le_max_right T 0, hCh (n - 2)]
+  have hCK : Cc ≤ K := by linarith [le_max_right T 0, hCh (n - 2)]
+  have hhK : Ch (n - 2) ≤ K := by linarith [le_max_right T 0]
   refine ⟨K, by linarith, ?_⟩
   intro I hprime hI d hd hdegree B hB
-  have : I.IsPrime := hprime
   -- Each dimension gives a bound with a constant at most `K` and an exponent at most `E`.
   suffices h : ∃ C : ℝ, C ≤ K ∧ ∃ e ≤ E,
-      (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
-        C * (d : ℝ) ^ e * B ^ ((filteredHilbertPolynomial I).natDegree - 1) by
+      (projectiveCount (projectiveIdealZeroLocus I) B) ≤
+        C * d ^ e * B ^ ((filteredHilbertPolynomial I).natDegree - 1) by
     obtain ⟨C, hC, e, he, h⟩ := h
-    have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast (show 1 ≤ d by omega)
+    have hd1 : (1 : ℝ) ≤ d := by bound
     refine h.trans (mul_le_mul_of_nonneg_right ?_ (by positivity))
-    exact (mul_le_mul_of_nonneg_right hC (by positivity)).trans
-      (mul_le_mul_of_nonneg_left (pow_le_pow_right₀ hd1 he) (by linarith))
+    gcongr
   have hdim := hlt I hprime d hd hdegree
   obtain h0 | h1 | h2 | h3 : (filteredHilbertPolynomial I).natDegree = 0 ∨
       (filteredHilbertPolynomial I).natDegree = 1 ∨
       (filteredHilbertPolynomial I).natDegree = 2 ∨
       3 ≤ (filteredHilbertPolynomial I).natDegree := by omega
   · refine ⟨0, by linarith, 0, Nat.zero_le _, ?_⟩
-    rw [hempty I h0, Nat.cast_zero, zero_mul, zero_mul]
+    simp [hempty I h0]
   · refine ⟨1, h1K, n + 1, hpoint hn, ?_⟩
     have hbound := zero_dimensional_projective_count_le I d h1 (by
-      simpa only [h1, Nat.factorial_one, Nat.cast_one, div_one] using hdegree) B
+      simpa [h1] using hdegree) B
     rw [h1, Nat.sub_self, pow_zero, mul_one, one_mul]
     exact_mod_cast hbound
   · refine ⟨Cc, hCK, 3 * (n + 1) + 4, hcurve (by omega), ?_⟩
-    rw [h2, show 2 - 1 = 1 from rfl, pow_one]
-    exact hc I hprime hI d hd ⟨h2, by simpa only [h2] using hdegree⟩ B hB
+    simpa [*] using hc I hprime hI d hd ⟨h2, by simpa [h2] using hdegree⟩ B hB
   obtain ⟨m, hm⟩ := Nat.exists_eq_add_of_le' h3
   obtain ⟨k, rfl⟩ : ∃ k, n = m + 1 + k + 1 := ⟨n - m - 2, by omega⟩
   rcases Nat.lt_or_ge k 2 with hk | hk
   · -- A hypersurface.
     obtain rfl : k = 1 := by omega
-    refine ⟨Ch (m + 1), by simpa using hhK, _, hhyper (by omega), ?_⟩
-    rw [hm, show m + 1 + 1 + 1 - 2 = m + 1 by omega]
-    exact hh (m + 1) I hprime hI d hd ⟨hm, by simpa only [hm] using hdegree⟩ B hB
+    refine ⟨Ch _, by simpa using hhK, _, hhyper (by omega), ?_⟩
+    simpa [*] using hh _ I hprime hI d hd ⟨hm, by simpa [hm] using hdegree⟩ B hB
   · -- Codimension at least two: the projection bound.
-    have hmk : Cp (m + 1) k ≤ T := hT (Set.mem_image_of_mem (fun p : ℕ × ℕ => Cp p.1 p.2)
+    have hmk := hT (Set.mem_image_of_mem (fun p : ℕ × ℕ => Cp p.1 p.2)
       (show (m + 1, k) ∈ Set.Iic _ ×ˢ Set.Iic _ from
         ⟨Set.mem_Iic.mpr (by omega), Set.mem_Iic.mpr (by omega)⟩))
-    refine ⟨Cp (m + 1) k, hmk.trans hTK, _,
-      hproj (m + 1) k rfl (by omega) hk, ?_⟩
+    refine ⟨Cp _ k, hmk.trans hTK, _,
+      hproj _ k rfl (by omega) hk, ?_⟩
     rw [hm]
-    exact hp (m + 1) k I hprime hI d hd ⟨hm, by simpa only [hm] using hdegree⟩ B hB
+    exact hp _ k I hprime hI d hd ⟨hm, by simpa [hm] using hdegree⟩ B hB
 
 /-- In `ℙⁿ` with `n = m + k + 1`, the projection exponent has the closed form
 `2mn + 5m + 3n + 21`. For codimension `k ≥ 2` it is at most its value `2n² + 2n + 6` at
 `k = 2`. -/
 lemma projectiveProjectionDegreeExponent_le {m k n : ℕ} (h : m + k + 1 = n) (hk : 2 ≤ k) :
     projectionDegreeExponent m k ≤ 2 * n ^ 2 + 2 * n + 6 := by
-  subst h
   unfold projectionDegreeExponent
   nlinarith
+
+variable (n : ℕ)
 
 /-- The degree exponent `2n² + 5n - 5` of Theorem 1 in `ℙⁿ`. Its values `2` and `13` for
 `n = 1, 2` are the exponents of the zero-dimensional count and of the curve bound. For
 `n ≥ 4` it exceeds the projection exponent `2n² + 2n + 6` by `3n - 11`. -/
-def projectiveGrowthExponent (n : ℕ) : ℕ := 2 * n ^ 2 + 5 * n - 5
+def projectiveGrowthExponent : ℕ := 2 * n ^ 2 + 5 * n - 5
 
 /-- CCDN Theorem 1 with the degree exponent `2n² + 5n - 5` in every ambient projective
 dimension `n`. -/
-theorem projective_dimension_growth (n : ℕ) :
+theorem projective_dimension_growth :
     ProjectiveGrowth n (projectiveGrowthExponent n) := by
   unfold projectiveGrowthExponent
   refine projectiveGrowth_of_le (fun hn => ?_) (fun hn => ?_) (fun hn => ?_)

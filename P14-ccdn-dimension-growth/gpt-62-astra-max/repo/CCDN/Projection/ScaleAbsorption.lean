@@ -16,34 +16,34 @@ only on ambient dimension, retaining the exact exponent 1/d and d³ factor. -/
 namespace CCDN
 noncomputable section
 
-/-- The constant `c = 2 * n ^ 2 + 3 * n`, for which `log (projectionBoxFactor n d) ≤ c * d`. -/
-def projectionLogConstant (n : ℕ) : ℝ := 2 * (n : ℝ) ^ 2 + 3 * n
+variable (n : ℕ) {d : ℕ} (hd : 0 < d)
+
+/-- The constant `c = (n+1 : ℝ) * birationalProjectionHeightConstant n + 2*n`, for which `log (projectionBoxFactor n d) ≤ c * d`. -/
+def projectionLogConstant : ℝ := (n+1 : ℝ) * birationalProjectionHeightConstant n + 2*n
 
 /-- The projection log constant is nonnegative. -/
-lemma projectionLogConstant_nonneg (n : ℕ) : 0 ≤ projectionLogConstant n := by
+lemma projectionLogConstant_nonneg : 0 ≤ projectionLogConstant n := by
   unfold projectionLogConstant
   positivity
 
+include hd in
 /-- For `d > 0`, the logarithm of the projection box factor is at most
 `projectionLogConstant n * d`. -/
-lemma projectionBoxFactor_log_le (n : ℕ) {d : ℕ} (hd : 0 < d) :
+lemma projectionBoxFactor_log_le :
     Real.log (projectionBoxFactor n d) ≤ projectionLogConstant n * d := by
-  have hn : (0 : ℝ) ≤ n := by positivity
+  have hC : (0 : ℝ) < (n+1 : ℝ) * birationalProjectionHeightConstant n := by
+    have := birationalProjectionHeightConstant_pos n
+    positivity
   have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hn0 : (0 : ℝ) < n + 1 := by positivity
-  have hd0 : (0 : ℝ) < d + 1 := by positivity
-  have hln : Real.log ((n : ℝ) + 1) ≤ n := Real.log_add_one_le_self hn
-  have hld : Real.log ((d : ℝ) + 1) ≤ d := Real.log_add_one_le_self d.cast_nonneg
-  unfold projectionBoxFactor
-  rw [Real.log_mul hn0.ne' (pow_pos (pow_pos (mul_pos hn0 hd0) _) _).ne',
-    Real.log_pow, Real.log_pow, Real.log_mul hn0.ne' hd0.ne']
-  unfold projectionLogConstant
-  have hh := mul_le_mul_of_nonneg_left (add_le_add hln hld) (show 0 ≤ 2 * (n : ℝ) by positivity)
-  have hh₂ := mul_le_mul_of_nonneg_left hd1 (show 0 ≤ 2 * (n : ℝ) ^ 2 + n by positivity)
-  norm_num only [Nat.cast_ofNat]
-  nlinarith
+  unfold projectionBoxFactor projectionLogConstant
+  rw [Real.log_mul hC.ne' (by positivity), Real.log_pow]
+  push_cast
+  have := Real.log_le_self hC.le
+  have := Real.log_add_one_le_self (Nat.cast_nonneg (α := ℝ) d)
+  nlinarith [mul_nonneg (Nat.cast_nonneg (α := ℝ) n) (sub_nonneg.mpr (Real.log_add_one_le_self (Nat.cast_nonneg (α := ℝ) d))), mul_nonneg hC.le (sub_nonneg.mpr hd1)]
 
-private lemma curveBound_scale_of_log_le {d : ℕ} (hd : 0 < d) {A B C : ℝ}
+include hd in
+private lemma curveBound_scale_of_log_le {A B C : ℝ}
     (hA : 1 ≤ A) (hB : 1 ≤ B) (hC : 0 ≤ C) (hlog : Real.log A ≤ C * d) :
     curveBound d (A * B) ≤ Real.exp C * (C + 1) * curveBound d B := by
   have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
@@ -63,15 +63,15 @@ private lemma curveBound_scale_of_log_le {d : ℕ} (hd : 0 < d) {A B C : ℝ}
         ((C + 1) * (Real.log B + d)) := by gcongr
     _ = _ := by ring
 
+include hd in
 /-- Scaling the radius by the projection box factor multiplies the curve bound by at most a
 constant depending only on `n`: with `c = projectionLogConstant n`, for `d > 0` and `B ≥ 1`,
 `curveBound d (projectionBoxFactor n d * B) ≤ exp c * (c + 1) * curveBound d B`. -/
-theorem projection_curveBound_scale (n : ℕ) {d : ℕ} (hd : 0 < d)
+theorem projection_curveBound_scale
     {B : ℝ} (hB : 1 ≤ B) :
     curveBound d (projectionBoxFactor n d * B) ≤
       (Real.exp (projectionLogConstant n) * (projectionLogConstant n + 1)) * curveBound d B :=
-  curveBound_scale_of_log_le hd (projectionBoxFactor_one_le n d) hB
-    (projectionLogConstant_nonneg n) (projectionBoxFactor_log_le n hd)
+  by grind [curveBound_scale_of_log_le, projectionBoxFactor_one_le, projectionLogConstant_nonneg, projectionBoxFactor_log_le]
 
 end
 end CCDN

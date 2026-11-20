@@ -18,33 +18,23 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma planeTangent_totalDegree_le {K : Type*} [Field K]
-    (f h : MvPolynomial (Fin 2) K) (j : Fin 2) :
+variable {K ι κ : Type*} [Field K] (f h : MvPolynomial (Fin 2) K) (j : Fin 2)
+
+private lemma planeTangent_totalDegree_le :
     (planeTangent f j h).totalDegree ≤ h.totalDegree + f.totalDegree := by
   rw [planeTangent_apply]
-  apply (totalDegree_sub _ _).trans
-  apply max_le
-  · exact (totalDegree_mul _ _).trans (by
-      have h1 := pderiv_totalDegree_le f j.rev
-      have h2 := pderiv_totalDegree_le h j
-      omega)
-  · exact (totalDegree_mul _ _).trans (by
-      have h1 := pderiv_totalDegree_le f j
-      have h2 := pderiv_totalDegree_le h j.rev
-      omega)
+  grind [totalDegree_sub, max_le, totalDegree_mul, pderiv_totalDegree_le]
 
-private lemma planeTangent_iterate_totalDegree_le {K : Type*} [Field K]
-    (f h : MvPolynomial (Fin 2) K) (j : Fin 2) (r : ℕ) :
+private lemma planeTangent_iterate_totalDegree_le (r : ℕ) :
     ((planeTangent f j)^[r] h).totalDegree ≤ h.totalDegree + r * f.totalDegree := by
   induction r with
   | zero => simp
   | succ r hr =>
-    rw [Function.iterate_succ_apply']
-    exact (planeTangent_totalDegree_le f _ j).trans (by nlinarith)
+    grind [Function.iterate_succ_apply', planeTangent_totalDegree_le]
 
 /-- Independent bounded-degree coefficient classes and more unknowns than
 constraints yield bounded-degree auxiliary coefficients. -/
-theorem exists_planeFrobenius_coefficients {K ι κ : Type*} [Field K]
+theorem exists_planeFrobenius_coefficients
     [Fintype ι] [DecidableEq ι] [Fintype κ] [DecidableEq κ]
     (f : MvPolynomial (Fin 2) K) (j : Fin 2)
     (h : ι → MvPolynomial (Fin 2) K) (b : κ → MvPolynomial (Fin 2) K)
@@ -57,7 +47,7 @@ theorem exists_planeFrobenius_coefficients {K ι κ : Type*} [Field K]
       (∀ i, (a i).totalDegree ≤ A) ∧ (∃ i, ¬ f ∣ a i) ∧
       ∀ r < N, f ∣ ∑ i, (planeTangent f j)^[r] (h i) * a i := by
   classical
-  let I : Ideal (MvPolynomial (Fin 2) K) := Ideal.span {f}
+  let I := Ideal.span {f}
   let π := Ideal.Quotient.mkₐ K I
   let V (r : Fin N) := filteredCoordinateSpace I (D + A + r.val * f.totalDegree)
   let v (r : Fin N) (t : ι × κ) : V r :=
@@ -72,7 +62,7 @@ theorem exists_planeFrobenius_coefficients {K ι κ : Type*} [Field K]
         omega)⟩
   let F : (ι × κ → K) →ₗ[K] (∀ r, V r) :=
     { toFun := fun c r => ∑ t, c t • v r t
-      map_add' := by intros; funext r; simp only [Pi.add_apply, add_smul, Finset.sum_add_distrib]
+      map_add' := by intros; funext r; simp [Pi.add_apply, add_smul, Finset.sum_add_distrib]
       map_smul' := by
         intros
         funext r
@@ -82,8 +72,7 @@ theorem exists_planeFrobenius_coefficients {K ι κ : Type*} [Field K]
     exact hdim
   obtain ⟨c, hFc, hc⟩ :=
     Submodule.exists_mem_ne_zero_of_ne_bot (LinearMap.ker_ne_bot_of_finrank_lt (f := F) hdim')
-  rw [LinearMap.mem_ker] at hFc
-  let a : ι → MvPolynomial (Fin 2) K := fun i => ∑ k, c (i, k) • b k
+  let a := fun i => ∑ k, c (i, k) • b k
   refine ⟨a, ?_, ?_, ?_⟩
   · intro i
     apply totalDegree_finsetSum_le
@@ -92,13 +81,13 @@ theorem exists_planeFrobenius_coefficients {K ι κ : Type*} [Field K]
   · by_contra! hn
     apply hc
     funext t
-    have he : π (a t.1) = 0 :=
+    have he :=
       Ideal.Quotient.eq_zero_iff_mem.mpr (Ideal.mem_span_singleton.mpr (hn t.1))
-    have hs : ∑ k, c (t.1, k) • π (b k) = 0 := by
+    have hs := by
       simpa only [a, map_sum, map_smul] using he
     exact Fintype.linearIndependent_iff.mp hbi (fun k => c (t.1, k)) hs t.2
   · intro r hr
-    have he := congrArg Subtype.val (congrFun hFc (⟨r, hr⟩ : Fin N))
+    have he := congrArg Subtype.val (congrFun hFc (⟨r, hr⟩))
     apply Ideal.mem_span_singleton.mp
     apply Ideal.Quotient.eq_zero_iff_mem.mp
     change π (∑ i, (planeTangent f j)^[r] (h i) * a i) = 0

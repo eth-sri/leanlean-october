@@ -24,40 +24,29 @@ lemma sum_preHilbertPoly_leading {ι : Type*} (s : Finset ι) (hs : s.Nonempty)
     let d := (s.filter (fun i => dim i = m)).card
     let P := ∑ i ∈ s, Polynomial.preHilbertPoly ℚ (dim i) (shift i)
     0 < d ∧ P.natDegree = m ∧ P.leadingCoeff = (d : ℚ) / m.factorial := by
-  dsimp only
   let m := s.sup dim
   let d := (s.filter (fun i => dim i = m)).card
   let P := ∑ i ∈ s, Polynomial.preHilbertPoly ℚ (dim i) (shift i)
-  have hd : 0 < d := by
+  have hd := by
     apply Finset.card_pos.mpr
     obtain ⟨i, hi, he⟩ := Finset.exists_mem_eq_sup s hs dim
     exact ⟨i, Finset.mem_filter.mpr ⟨hi, he.symm⟩⟩
   have hle : P.natDegree ≤ m := by
     apply Polynomial.natDegree_sum_le_of_forall_le
-    intro i hi
-    rw [Polynomial.natDegree_preHilbertPoly]
-    exact Finset.le_sup hi
+    grind [Polynomial.natDegree_preHilbertPoly, Finset.le_sup]
   have hc : P.coeff m = (d : ℚ) * (m.factorial : ℚ)⁻¹ := by
     simp only [P, Polynomial.finsetSum_coeff]
     calc
       _ = ∑ i ∈ s, if dim i = m then (m.factorial : ℚ)⁻¹ else 0 := by
         apply Finset.sum_congr rfl
-        intro i hi
-        by_cases he : dim i = m
-        · rw [he, Polynomial.coeff_preHilbertPoly_self, ite_eq_left rfl]
-        · rw [ite_eq_right he]
-          apply Polynomial.coeff_eq_zero_of_natDegree_lt
-          rw [Polynomial.natDegree_preHilbertPoly]
-          exact lt_of_le_of_ne (Finset.le_sup hi) he
-      _ = _ := by rw [← Finset.sum_filter]; simp [d]
+        grind [Polynomial.coeff_preHilbertPoly_self, Polynomial.coeff_eq_zero_of_natDegree_lt, Polynomial.natDegree_preHilbertPoly, lt_of_le_of_ne, Finset.le_sup]
+      _ = _ := by simp [← Finset.sum_filter, d]
   have hc0 : P.coeff m ≠ 0 := by
     rw [hc]
     apply mul_ne_zero
     · exact_mod_cast Nat.ne_of_gt hd
-    · exact inv_ne_zero (by exact_mod_cast Nat.factorial_ne_zero m)
-  have he : P.natDegree = m := le_antisymm hle (Polynomial.le_natDegree_of_ne_zero hc0)
-  refine ⟨hd, he, ?_⟩
-  rw [Polynomial.leadingCoeff, he, hc, div_eq_mul_inv]
+    exact inv_ne_zero (by exact_mod_cast Nat.factorial_ne_zero m)
+  grind [le_antisymm, Polynomial.le_natDegree_of_ne_zero, Polynomial.leadingCoeff, div_eq_mul_inv]
 
 open Classical in
 /-- The cells `b ∈ {0, …, B}^σ` of the clamped orthant partition that lie in `S`. -/
@@ -73,7 +62,7 @@ lemma lowerSetOrthantPolynomial_eq_sum {σ : Type*} [Fintype σ]
     lowerSetOrthantPolynomial S B =
       ∑ b ∈ lowerSetOrthantPatterns S B,
         Polynomial.preHilbertPoly ℚ (Fintype.card (orthantFree b)) (orthantBaseDegree b) := by
-  simp only [lowerSetOrthantPolynomial, lowerSetOrthantPatterns, Finset.sum_filter]
+  simp [lowerSetOrthantPolynomial, lowerSetOrthantPatterns, Finset.sum_filter]
 
 /-- A nonempty lower set has a positive integer multiplicity and an eventual
 polynomial of degree at most the number of exponent coordinates. -/
@@ -95,16 +84,13 @@ theorem lowerSet_eventually_polynomial_positive {σ : Type*} [Fintype σ]
     (fun b => Fintype.card (orthantFree b)) orthantBaseDegree
   let P := lowerSetOrthantPolynomial S B
   have hPe : P = ∑ b ∈ s,
-      Polynomial.preHilbertPoly ℚ (Fintype.card (orthantFree b)) (orthantBaseDegree b) :=
+      Polynomial.preHilbertPoly ℚ _ (orthantBaseDegree b) :=
     lowerSetOrthantPolynomial_eq_sum S B
   refine ⟨P, _, hd, ?_, ?_, Fintype.card σ * B,
-    fun n hn => lowerSetOrthantPolynomial_eval S B hB n hn⟩
+    lowerSetOrthantPolynomial_eval S B hB⟩
   · rw [hPe, hdeg]
-    apply Finset.sup_le
-    intro b _
-    exact Fintype.card_subtype_le _
-  · rw [hPe, hdeg]
-    exact hlc
+    solve_by_elim [Finset.sup_le, Fintype.card_subtype_le]
+  grind
 
 end
 end CCDN

@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Algebra.IntegerLinearForms
 public import CCDN.Algebra.ProjectiveSection
 public import CCDN.Height.ProjectiveZeroLocus
@@ -20,7 +21,9 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Matrix
 
-private def integerProjectiveLinearImage {m n : ℕ}
+variable {m n : ℕ}
+
+private def integerProjectiveLinearImage
     (P : Matrix (Fin (m + 1)) (Fin (n + 1)) ℤ) (x : ProjectivePoint n) :
     ProjectivePoint m :=
   if h : (P.map (Int.castRingHom ℚ)) *ᵥ x.rep ≠ 0 then
@@ -36,10 +39,9 @@ satisfy the homogeneous relation `f` modulo `I`. If every affine fiber of the in
 zero locus of `I` has at most `M` points, then the projective rational points of height at most `B`
 on the zero locus of `I` number at most `M` times those of height at most `(n + 1) * H * B` on the
 projective hypersurface `f = 0`. -/
-theorem projective_integer_linear_count_transfer
-    {m n : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ))
+theorem projective_integer_linear_count_transfer (I : Ideal (CoordinatePolynomial (n + 1)))
     (P : Matrix (Fin (m + 1)) (Fin (n + 1)) ℤ)
-    (f : MvPolynomial (Fin (m + 1)) ℚ) (hf : f.IsHomogeneous f.totalDegree)
+    (f : CoordinatePolynomial (m + 1)) (hf : f.IsHomogeneous f.totalDegree)
     (hrelation : aeval (fun i => integerLinearForm (P i)) f ∈ I)
     (M : ℕ)
     (hfinite : ∀ z : Fin (m + 1) → ℚ, ∀ s : Finset (Fin (n + 1) → ℚ),
@@ -54,22 +56,18 @@ theorem projective_integer_linear_count_transfer
   let π := integerProjectiveLinearImage P
   let s := projectivePoints (projectiveIdealZeroLocus I) B
   let t := projectivePoints (projectiveZeroLocus f) ((n + 1 : ℕ) * H * B)
-  have hLapply (x : Fin (n + 1) → ℚ) (i) :
+  have hLapply (x : Fin _ → ℚ) (i) :
       L x i = eval x (integerLinearForm (P i)) := by
-    simp only [L, Matrix.mulVecLin_apply, Matrix.mulVec, dotProduct, Matrix.map_apply,
-      Int.coe_castRingHom, eval_linearForm]
-  have hfiniteL (z : Fin (m + 1) → ℚ) (u : Finset (Fin (n + 1) → ℚ))
-      (hu : ∀ x ∈ u, x ∈ idealZeroLocus I) (huz : ∀ x ∈ u, L x = z) :
-      u.card ≤ M := by
+    simp [L, Matrix.mulVec, dotProduct]
+  have hfiniteL (z : Fin _ → ℚ) (u : Finset _)
+      (hu : ∀ x ∈ u, x ∈ idealZeroLocus I) (huz : ∀ x ∈ u, L x = z)  := by
     apply hfinite z u hu
     intro x hx i
     rw [← hLapply, huz x hx]
-  have hnon (x : ProjectivePoint n) (hx : x ∈ projectiveIdealZeroLocus I) :
-      L x.rep ≠ 0 :=
+  have hnon (x : ProjectivePoint n) (hx : x ∈ projectiveIdealZeroLocus I)  :=
     projective_linear_image_ne_zero_of_finite_zero_fiber I L M (hfiniteL 0) x hx
   have hπ (x : ProjectivePoint n) (hx : x ∈ projectiveIdealZeroLocus I) :
-      π x = Projectivization.mk ℚ (L x.rep) (hnon x hx) := by
-    exact dite_eq_left (hnon x hx)
+      π x = Projectivization.mk ℚ (L x.rep) (hnon x hx) := dite_eq_left _
   have himage : s.image π ⊆ t := by
     intro y hy
     obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hy
@@ -78,17 +76,14 @@ theorem projective_integer_linear_count_transfer
     apply mem_projectivePoints.mpr
     constructor
     · exact (projective_linear_map_height P hH hP x (hnon x hxI)).trans
-        (mul_le_mul_of_nonneg_left hxB (by positivity))
+        (by gcongr)
     · rw [mem_projectiveZeroLocus_mk hf]
       have hz := projectiveIdealZeroLocus_rep hxI _ hrelation
       rw [eval_polynomial_coordinate_map] at hz
-      have hev : L x.rep = fun i => eval x.rep (integerLinearForm (P i)) :=
-        funext (hLapply x.rep)
-      rwa [hev]
-  have hfib (y : ProjectivePoint m) :
-      (s.filter (fun x => π x = y)).card ≤ M := by
+      rwa [(funext (hLapply x.rep))]
+  have hfib (y : ProjectivePoint m)  := by
     let u := s.filter (fun x => π x = y)
-    have hu (x) (hx : x ∈ u) : x ∈ projectiveIdealZeroLocus I :=
+    have hu (x) (hx : x ∈ u)  :=
       (mem_projectivePoints.mp (Finset.mem_filter.mp hx).1).2
     apply projective_linear_fiber_card_le I L u hu (fun x hx => hnon x (hu x hx))
       y _ M (hfiniteL y.rep)
@@ -98,7 +93,7 @@ theorem projective_integer_linear_count_transfer
   change s.card ≤ M * t.card
   rw [Finset.card_eq_sum_card_image π s]
   calc
-    _ ≤ ∑ _y ∈ s.image π, M := Finset.sum_le_sum (fun y _ => hfib y)
+    _ ≤ ∑ _y ∈ s.image π, M := Finset.sum_le_sum (by solve_by_elim)
     _ = M * (s.image π).card := by simp [Nat.mul_comm]
     _ ≤ M * t.card := Nat.mul_le_mul_left M (Finset.card_le_card himage)
 

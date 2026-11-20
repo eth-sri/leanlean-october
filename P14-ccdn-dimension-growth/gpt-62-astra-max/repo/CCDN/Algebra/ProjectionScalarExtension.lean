@@ -7,7 +7,6 @@ module
 
 public import CCDN.Algebra.PolynomialLinearDescent
 public import CCDN.Hilbert.LinearProjectionFiltration
-import CCDN.Algebra.IdealScalarDescent
 
 /-! Scalar extension commutes with a polynomial image ideal.
 Consequently a polynomial projection of a geometrically integral source
@@ -24,8 +23,7 @@ lemma mem_projectionCoordinateMap_ker
     {K : Type*} [Field K] {m n : ℕ}
     (I : Ideal (MvPolynomial (Fin n) K))
     (a : Fin m → MvPolynomial (Fin n) K) (f : MvPolynomial (Fin m) K) :
-    f ∈ RingHom.ker (projectionCoordinateMap I a) ↔ aeval a f ∈ I := by
-  exact Ideal.Quotient.eq_zero_iff_mem
+    f ∈ RingHom.ker (projectionCoordinateMap I a) ↔ aeval a f ∈ I := Ideal.Quotient.eq_zero_iff_mem
 
 end
 end CCDN

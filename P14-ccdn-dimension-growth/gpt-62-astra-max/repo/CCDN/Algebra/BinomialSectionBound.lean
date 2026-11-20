@@ -15,19 +15,19 @@ coefficient-uniform codimension-two bound for filtered coordinate spaces. -/
 namespace CCDN
 noncomputable section
 
-private lemma choose_shift_sum (n k d : ℕ) :
+section
+
+variable (n k d : ℕ)
+
+private lemma choose_shift_sum :
     (n + 1 + (k + d)).choose (n + 1) = (n + 1 + k).choose (n + 1) +
       ∑ i ∈ Finset.range d, (n + (k + i + 1)).choose n := by
   induction d with
   | zero => simp
   | succ d ih =>
-    rw [Finset.sum_range_succ]
-    rw [show n + 1 + (k + (d + 1)) = (n + 1 + (k + d)) + 1 by omega,
-      Nat.choose_succ_succ', ih]
-    rw [show n + 1 + (k + d) = n + (k + d + 1) by omega]
-    omega
+    grind [Finset.sum_range_succ, Nat.choose_succ_succ']
 
-private lemma choose_shift_bound (n k d : ℕ) :
+private lemma choose_shift_bound :
     (n + 1 + (k + d)).choose (n + 1) ≤ (n + 1 + k).choose (n + 1) +
       d * (n + (k + d)).choose n := by
   rw [choose_shift_sum]
@@ -35,13 +35,12 @@ private lemma choose_shift_bound (n k d : ℕ) :
   calc
     _ ≤ ∑ _i ∈ Finset.range d, (n + (k + d)).choose n := by
       apply Finset.sum_le_sum
-      intro i hi
-      exact Nat.choose_le_choose n (by have := Finset.mem_range.mp hi; omega)
+      simp_all [Nat.choose_le_choose]
     _ = _ := by simp
 
 /-- The second finite difference has the product-of-degrees factor and loses
 two powers of the cutoff, in every ambient dimension. -/
-private theorem choose_double_difference_bound (n k d e : ℕ) :
+private theorem choose_double_difference_bound (e : ℕ) :
     (n + 2 + (k + d + e)).choose (n + 2) + (n + 2 + k).choose (n + 2) ≤
       (n + 2 + (k + d)).choose (n + 2) + (n + 2 + (k + e)).choose (n + 2) +
         d * e * (n + (k + d + e)).choose n := by
@@ -61,12 +60,11 @@ private theorem choose_double_difference_bound (n k d e : ℕ) :
           (show n + (k + i + 1 + e) ≤ n + (k + d + e) by
             have := Finset.mem_range.mp hi; omega)
         have hm := Nat.mul_le_mul_left e hmono
-        rw [show k + i + 1 + e = k + e + i + 1 by omega] at h hm
-        omega
-      _ = _ := by rw [Finset.sum_add_distrib]; simp [Nat.mul_assoc]
-  rw [show k + e + d = k + d + e by omega] at h1
-  rw [show n + 1 + 1 = n + 2 by omega] at h1 h2
-  omega
+        grind
+      _ = _ := by simp [Finset.sum_add_distrib, Nat.mul_assoc]
+  grind
+
+end
 
 /-- The filtered Koszul bound reduces to a codimension-two binomial count. -/
 theorem filteredCoordinateSpace_codim_two_bound {K : Type*} [Field K] {n N : ℕ}

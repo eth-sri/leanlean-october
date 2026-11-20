@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Algebra.ProjectiveSection
 public import CCDN.Height.ProjectiveBox
 
@@ -17,11 +18,12 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n r m : ℕ} (I : Ideal (CoordinatePolynomial (n + 1)))
+
 /-- If the zeros of `I` in `ℚ^(n+1)` killed by the linear map `L` form a set of at most `M`
 elements, then `L` does not vanish on the representative of any point of the projective zero
 locus of `I`. -/
 theorem projective_linear_image_ne_zero_of_finite_zero_fiber
-    {n r : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ))
     (L : (Fin (n + 1) → ℚ) →ₗ[ℚ] (Fin r → ℚ)) (M : ℕ)
     (hfinite : ∀ s : Finset (Fin (n + 1) → ℚ),
       (∀ z ∈ s, z ∈ idealZeroLocus I) →
@@ -36,19 +38,18 @@ theorem projective_linear_image_ne_zero_of_finite_zero_fiber
     positivity
   have hmk (j : Fin (M + 1)) : Projectivization.mk ℚ (z j) (hz j) = x := by
     rw [← x.mk_rep, Projectivization.mk_eq_mk_iff']
-    exact ⟨(j.val + 1 : ℚ), rfl⟩
+    bound
   have hinj : Function.Injective z := by
     intro i j hij
-    have hh := smul_left_injective ℚ x.rep_nonzero hij
     apply Fin.ext
-    exact_mod_cast (add_right_cancel hh)
+    exact_mod_cast (add_right_cancel (smul_left_injective ℚ x.rep_nonzero hij))
   have hh := hfinite (Finset.univ.image z) (by
     intro w hw f hf
     obtain ⟨j, _, rfl⟩ := Finset.mem_image.mp hw
-    exact hx (z j) (hz j) (hmk j) f hf) (by
+    solve_by_elim) (by
     intro w hw
     obtain ⟨j, _, rfl⟩ := Finset.mem_image.mp hw
-    simp only [z, map_smul, hzero, smul_zero])
+    simp [z, hzero])
   rw [Finset.card_image_of_injective _ hinj, Finset.card_univ, Fintype.card_fin] at hh
   omega
 
@@ -57,7 +58,6 @@ map `L` is nonzero and which `L` sends to the single projective point `y`. If at
 of `I` in `ℚ^(n+1)` are sent by `L` to the representative of `y`, then `s` has at most `M`
 elements. -/
 theorem projective_linear_fiber_card_le
-    {n m : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ))
     (L : (Fin (n + 1) → ℚ) →ₗ[ℚ] (Fin (m + 1) → ℚ))
     (s : Finset (ProjectivePoint n))
     (hs : ∀ x ∈ s, x ∈ projectiveIdealZeroLocus I)
@@ -70,25 +70,22 @@ theorem projective_linear_fiber_card_le
       (∀ z ∈ t, L z = y.rep) → t.card ≤ M) :
     s.card ≤ M := by
   classical
-  have hscale (x : s) : ∃ c : ℚˣ, c • y.rep = L x.val.rep := by
-    exact (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mp
-      ((he x.val x.property).trans y.mk_rep.symm)
+  have hscale (x : s)  := (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mp ((he x.val x.property).trans y.mk_rep.symm)
   choose c hc using hscale
-  let z : s → (Fin (n + 1) → ℚ) := fun x => (c x : ℚ)⁻¹ • x.val.rep
-  have hz (x : s) : z x ≠ 0 := smul_ne_zero (inv_ne_zero (c x).ne_zero) x.val.rep_nonzero
+  let z := fun x => (c x : ℚ)⁻¹ • x.val.rep
+  have hz (x : s)  := smul_ne_zero (inv_ne_zero (c x).ne_zero) x.val.rep_nonzero
   have hmk (x : s) : Projectivization.mk ℚ (z x) (hz x) = x.val := by
     rw [← x.val.mk_rep, Projectivization.mk_eq_mk_iff']
-    exact ⟨(c x : ℚ)⁻¹, rfl⟩
+    exact ⟨(c x)⁻¹, rfl⟩
   have himage (x : s) : L (z x) = y.rep := by
-    dsimp only [z]
     rw [map_smul, ← hc x]
     change (c x : ℚ)⁻¹ • ((c x : ℚ) • y.rep) = y.rep
-    rw [smul_smul, inv_mul_cancel₀ (c x).ne_zero, one_smul]
+    simp
   have hinj : Function.Injective z := by
     intro x x' heq
     apply Subtype.ext
     rw [← hmk x, ← hmk x']
-    exact (Projectivization.mk_eq_mk_iff' ℚ _ _ _ _).mpr ⟨1, by simpa using heq.symm⟩
+    congr 1
   have hh := hfinite (Finset.univ.image z) (by
     intro w hw f hf
     obtain ⟨x, _, rfl⟩ := Finset.mem_image.mp hw
@@ -96,7 +93,7 @@ theorem projective_linear_fiber_card_le
     intro w hw
     obtain ⟨x, _, rfl⟩ := Finset.mem_image.mp hw
     exact himage x)
-  simpa only [Finset.card_image_of_injective _ hinj, Finset.card_univ, Fintype.card_coe] using hh
+  simpa [Finset.card_image_of_injective _ hinj] using hh
 
 end
 end CCDN

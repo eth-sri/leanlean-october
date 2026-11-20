@@ -26,8 +26,9 @@ def genericTransverseDirection (K F σ : Type*) [Field K] [Field F]
     [Algebra (MvPolynomial σ K) F] : Option σ → F :=
   fun i => Option.elim i 0 (fun j => algebraMap (MvPolynomial σ K) F (X j))
 
-private lemma genericPlaneMap_affineCoordinates {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
+variable {K F σ : Type*} [Field K] [Field F] [Algebra K F] [Algebra (MvPolynomial σ K) F]
+
+private lemma genericPlaneMap_affineCoordinates
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
     genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb f) =
       MvPolynomial.map (planeParameterEval (algebraMap K F)
@@ -41,7 +42,7 @@ private lemma genericPlaneMap_affineCoordinates {K F σ : Type*} [Field K] [Fiel
           C (genericTransverseDirection K F σ i) * X 1) := by
     apply MvPolynomial.ringHom_ext
     · intro r
-      change genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb (C r)) = _
+      change genericPlaneMap K F σ (hypersurfaceAffineCoordinates a b hb _) = _
       rw [show hypersurfaceAffineCoordinates a b hb (C r) = C r from
         (hypersurfaceAffineCoordinates a b hb).commutes r]
       simp [genericPlaneMap]
@@ -53,8 +54,6 @@ private lemma genericPlaneMap_affineCoordinates {K F σ : Type*} [Field K] [Fiel
 
 /-- Monic normalization changes the specialized equation only by a scalar. -/
 lemma normalized_genericPlane_universal_specialization
-    {K F σ : Type*} [Field K] [Field F]
-    [Algebra K F] [Algebra (MvPolynomial σ K) F]
     [IsScalarTower K (MvPolynomial σ K) F]
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
     bivariateMap (algebraMap (MvPolynomial σ K) F)
@@ -66,14 +65,12 @@ lemma normalized_genericPlane_universal_specialization
   rw [← genericPlaneMap_bivariate, normalizedHypersurfaceCoordinates, map_mul,
     genericPlaneMap_affineCoordinates, map_mul]
   rw [bivariate_smul_eq_constant_mul, universalPlanePolynomial, bivariatePolynomialEquiv_map]
-  congr 1
   simp [genericPlaneMap, bivariatePolynomialEquiv_C]
 
 /-- Every irreducible positive-degree hypersurface over an algebraically closed
 field of characteristic zero or >2*d^2 has a nonzero minor in the UNIVERSAL affine-plane
 parameter ring, not merely in a family through a fixed line. -/
-theorem exists_universalPlane_minor
-    {K σ : Type*} [Field K] [IsAlgClosed K] [Fintype σ]
+theorem exists_universalPlane_minor [IsAlgClosed K] [Fintype σ]
     (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
     (hpos : 0 < f.totalDegree) (hchar : CharZeroOrGT K (2 * f.totalDegree ^ 2)) :
     (closedFormCoefficientMatrix f.totalDegree (universalPlanePolynomial f)).HasNonzeroMinor
@@ -81,17 +78,13 @@ theorem exists_universalPlane_minor
   obtain ⟨a, b, hb, _, rows, cols, hdet⟩ :=
     exists_positioned_genericPlane_minor f hf hpos hchar
   let R := MvPolynomial σ K
-  let F := FractionRing R
-  let φ : R →+* F := algebraMap R F
-  have hne : φ (((closedFormCoefficientMatrix f.totalDegree
-      (genericPlanePolynomial (normalizedHypersurfaceCoordinates a b hb f))).submatrix
-        rows cols).det) ≠ 0 :=
-    (map_ne_zero_iff _ (IsFractionRing.injective R F)).mpr hdet
+  have hne :=
+    (map_ne_zero_iff _ (IsFractionRing.injective R (FractionRing R))).mpr hdet
   rw [closedForm_minor_map, normalized_genericPlane_universal_specialization,
     closedForm_minor_smul, ← closedForm_minor_map] at hne
   refine ⟨rows, cols, ?_⟩
   intro he
-  exact hne (by rw [he, map_zero, mul_zero])
+  simp_all
 
 end
 end CCDN

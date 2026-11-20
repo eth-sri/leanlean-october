@@ -20,58 +20,53 @@ open MvPolynomial
 /-- Exponents of total degree exactly `M` are multisets of cardinality `M`. -/
 def degreeEqEquivSym (σ : Type*) [Fintype σ] [DecidableEq σ] (M : ℕ) :
     {p : σ →₀ ℕ // p.degree = M} ≃ Sym σ M :=
-  (Finsupp.equivFunOnFinite.subtypeEquiv (fun p => by simp [Finsupp.degree_eq_sum])).trans
+  (Finsupp.equivFunOnFinite.subtypeEquiv (by simp [Finsupp.degree_eq_sum])).trans
     (Sym.equivNatSumOfFintype σ M).symm
+
+variable (n M : ℕ)
 
 /-- There are exactly `(n + M).choose M` exponent vectors of total degree `M` in `n + 1`
 variables. -/
-theorem card_degree_eq (n M : ℕ) :
+theorem card_degree_eq :
     Nat.card {p : Fin (n + 1) →₀ ℕ // p.degree = M} = (n + M).choose M := by
-  rw [Nat.card_congr (degreeEqEquivSym (Fin (n + 1)) M), Nat.card_eq_fintype_card,
-    Sym.card_sym_eq_choose]
-  simp only [Fintype.card_fin]
-  congr 1
-  omega
+  simp [Nat.card_congr (degreeEqEquivSym _ M), Nat.card_eq_fintype_card, Sym.card_sym_eq_choose, Fintype.card_fin]
 
 /-- A canonical finite indexing of all degree-`M` monomials in `n+1` variables. -/
-def homogeneousExponentEquiv (n M : ℕ) :
+def homogeneousExponentEquiv :
     Fin ((n + M).choose M) ≃ {p : Fin (n + 1) →₀ ℕ // p.degree = M} := by
   let e := degreeEqEquivSym (Fin (n + 1)) M
   let _ := Fintype.ofEquiv (Sym (Fin (n + 1)) M) e.symm
   have hc : Fintype.card {p : Fin (n + 1) →₀ ℕ // p.degree = M} =
-      (n + M).choose M := by rw [← Nat.card_eq_fintype_card, card_degree_eq]
+      (n + M).choose M := by grind [Nat.card_eq_fintype_card, card_degree_eq]
   exact (finCongr hc.symm).trans (Fintype.equivFin _).symm
 
 /-- The list of all exponent vectors of total degree `M` in `n + 1` variables, indexed by
 `Fin ((n + M).choose M)` via `homogeneousExponentEquiv`. -/
-def homogeneousMonomials (n M : ℕ) : Fin ((n + M).choose M) → (Fin (n + 1) →₀ ℕ) :=
+def homogeneousMonomials : Fin ((n + M).choose M) → (Fin (n + 1) →₀ ℕ) :=
   fun j => (homogeneousExponentEquiv n M j).val
 
 /-- Distinct indices give distinct monomials in `homogeneousMonomials n M`. -/
-lemma homogeneousMonomials_injective (n M : ℕ) : Function.Injective (homogeneousMonomials n M) :=
+lemma homogeneousMonomials_injective : Function.Injective (homogeneousMonomials n M) :=
   Subtype.val_injective.comp (homogeneousExponentEquiv n M).injective
 
 /-- Every monomial in `homogeneousMonomials n M` has total degree `M`. -/
-lemma homogeneousMonomials_degree (n M : ℕ) (j : Fin ((n + M).choose M)) :
+lemma homogeneousMonomials_degree (j : Fin ((n + M).choose M)) :
     (homogeneousMonomials n M j).degree = M :=
   (homogeneousExponentEquiv n M j).property
 
 /-- Every exponent vector of total degree `M` in `n + 1` variables occurs in
 `homogeneousMonomials n M`. -/
-lemma homogeneousMonomials_surjective (n M : ℕ) (p : Fin (n + 1) →₀ ℕ)
+lemma homogeneousMonomials_surjective (p : Fin (n + 1) →₀ ℕ)
     (hp : p.degree = M) : ∃ j, homogeneousMonomials n M j = p := by
   obtain ⟨j, hj⟩ := (homogeneousExponentEquiv n M).surjective ⟨p, hp⟩
   exact ⟨j, congrArg Subtype.val hj⟩
 
 /-- An integer combination of the degree-`M` monomials `homogeneousMonomials n M` is a
 homogeneous polynomial of degree `M`. -/
-theorem polynomialOfCoefficients_homogeneous (n M : ℕ)
+theorem polynomialOfCoefficients_homogeneous
     (v : Fin ((n + M).choose M) → ℤ) :
     (polynomialOfCoefficients (homogeneousMonomials n M) v).IsHomogeneous M := by
-  apply IsHomogeneous.sum
-  intro j _
-  apply isHomogeneous_monomial
-  exact homogeneousMonomials_degree n M j
+  solve_by_elim [IsHomogeneous.sum, isHomogeneous_monomial, homogeneousMonomials_degree]
 
 end
 end CCDN

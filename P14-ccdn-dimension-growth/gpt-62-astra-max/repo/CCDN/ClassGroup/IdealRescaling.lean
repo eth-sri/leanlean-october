@@ -32,7 +32,7 @@ theorem rescale_integral_ideal_square (I : (Ideal R)⁰) {α : R} (hα : α ≠ 
       algebraMap R K β = algebraMap R K α * κ ^ 2 ∧
       (J : Ideal R) ^ 2 = Ideal.span {β} ∧
       (J : FractionalIdeal R⁰ K) = spanSingleton R⁰ κ * (I : FractionalIdeal R⁰ K) := by
-  let F : FractionalIdeal R⁰ K := spanSingleton R⁰ κ * (I : FractionalIdeal R⁰ K)
+  let F := spanSingleton R⁰ κ * I
   have hI0 : (I : FractionalIdeal R⁰ K) ≠ 0 :=
     coeIdeal_ne_zero.mpr (nonZeroDivisors.coe_ne_zero I)
   have hF0 : F ≠ 0 := mul_ne_zero (spanSingleton_ne_zero_iff.mpr hκ) hI0
@@ -46,14 +46,12 @@ theorem rescale_integral_ideal_square (I : (Ideal R)⁰) {α : R} (hα : α ≠ 
     apply hF0
     simp [← hJ₀, h]
   let J : (Ideal R)⁰ := ⟨J₀, mem_nonZeroDivisors_of_ne_zero hJ0⟩
-  have hJ : (J : FractionalIdeal R⁰ K) = F := hJ₀
+  have hJ := hJ₀
   have hsq : (J : FractionalIdeal R⁰ K) ^ 2 =
       spanSingleton R⁰ (algebraMap R K α * κ ^ 2) := by
     rw [hJ]
-    dsimp only [F]
-    rw [mul_pow, ← coeIdeal_pow, hIα, coeIdeal_span_singleton,
-      ← map_pow, ← map_mul, mul_comm]
-  have hβmem : algebraMap R K α * κ ^ 2 ∈ (1 : FractionalIdeal R⁰ K) := by
+    simp [F, mul_pow, ← coeIdeal_pow, hIα, coeIdeal_span_singleton, ← map_pow, ← map_mul, mul_comm]
+  have hβmem := by
     have hsle : (J : FractionalIdeal R⁰ K) ^ 2 ≤ 1 := by
       rw [← coeIdeal_pow]
       exact coeIdeal_le_one
@@ -62,20 +60,14 @@ theorem rescale_integral_ideal_square (I : (Ideal R)⁰) {α : R} (hα : α ≠ 
   obtain ⟨β, hβ⟩ := (mem_one_iff R⁰).mp hβmem
   have hβ0 : β ≠ 0 := by
     intro hb
-    have hαK : algebraMap R K α ≠ 0 := by
-      intro hz
-      apply hα
-      apply IsFractionRing.injective R K
-      simpa using hz
-    have hn := mul_ne_zero hαK (pow_ne_zero 2 hκ)
-    exact hn (by rw [← hβ, hb, map_zero])
+    simp_all
   refine ⟨J, β, ?_, hβ0, hβ, ?_, hJ⟩
   · apply Eq.symm
     apply (ClassGroup.mk0_eq_mk0_iff_exists_fraction_ring K).mpr
-    exact ⟨κ, hκ, hJ.symm⟩
+    solve_by_elim
   · apply coeIdeal_injective (K := K)
-    change (((J : Ideal R) ^ 2 : Ideal R) : FractionalIdeal R⁰ K) =
-      ((Ideal.span {β} : Ideal R) : FractionalIdeal R⁰ K)
+    change ((J ^ 2 : Ideal R) : FractionalIdeal R⁰ K) =
+      (Ideal.span {β})
     rw [coeIdeal_pow, coeIdeal_span_singleton, hβ]
     exact hsq
 

@@ -24,38 +24,6 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-/-- Construct an integer plane specialization which is geometrically
- irreducible of full degree and avoids an additional algebraic condition.
- The parameter bound is independent of the equation's coefficient height. -/
-theorem exists_integer_geometrically_good_plane_avoiding {σ : Type*} [Fintype σ]
-    (f : MvPolynomial (Option σ) ℤ)
-    (hir : AbsolutelyIrreducible f)
-    (hd : 0 < f.totalDegree)
-    (P : MvPolynomial (PlaneParameters (Option σ)) ℤ) (hP : P ≠ 0) :
-    ∃ v : PlaneParameters (Option σ) → ℤ,
-      (∀ i, 0 ≤ v i ∧ v i ≤ 2 * f.totalDegree ^ 3 + P.totalDegree) ∧
-      eval v P ≠ 0 ∧
-      (bivariateMap (Int.castRingHom (AlgebraicClosure ℚ)) (universalPlaneSection f v)).natDegree =
-        f.totalDegree ∧
-      bivariateTotalDegree
-          (bivariateMap (Int.castRingHom (AlgebraicClosure ℚ)) (universalPlaneSection f v)) =
-        f.totalDegree ∧
-      Irreducible (bivariateMap (Int.castRingHom (AlgebraicClosure ℚ))
-        (universalPlaneSection f v)) := by
-  obtain ⟨rows, cols, hW, hdegree⟩ := exists_integer_universalPlane_badWitness f hir hd
-  let W := universalPlaneBadWitness f rows cols
-  obtain ⟨v, hv, hvalue⟩ := exists_integer_grid_eval_ne_zero (W * P) (mul_ne_zero hW hP)
-    (2 * f.totalDegree ^ 3 + P.totalDegree)
-    ((totalDegree_mul W P).trans (Nat.add_le_add_right hdegree _))
-  rw [eval_mul] at hvalue
-  obtain ⟨hvW, hvP⟩ := mul_ne_zero_iff.mp hvalue
-  let φ := (Int.castRingHom (AlgebraicClosure ℚ)).comp (eval v)
-  have hwφ : φ W ≠ 0 := by
-    simpa only [φ, RingHom.comp_apply, Int.coe_castRingHom, ne_eq, Int.cast_eq_zero] using hvW
-  have hgood := universalPlaneBadWitness_good_specialization f hd (.of_charZero _) rows cols φ hwφ
-  refine ⟨v, hv, hvP, ?_⟩
-  simpa only [φ, bivariateMap_comp_apply, universalPlaneSection] using hgood
-
 end
 end CCDN
 
@@ -63,14 +31,15 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) (v : PlaneParameters σ → K) (x y : K)
+
 /-- Evaluate the outer coordinate at x and the inner coordinate at y. -/
-def bivariateEval {K : Type*} [CommRing K] (x y : K) : Polynomial (Polynomial K) →+* K :=
+def bivariateEval : Polynomial (Polynomial K) →+* K :=
   (Polynomial.evalRingHom x).comp (Polynomial.mapRingHom (Polynomial.evalRingHom y))
 
 /-- Evaluating the universal plane section of `f` with parameters `v` at `(x, y)` gives `f` at the
 point `a + x • b + y • c` of the plane with base point `a` and directions `b`, `c` given by `v`. -/
-lemma universalPlaneSection_eval {K σ : Type*} [CommRing K]
-    (f : MvPolynomial σ K) (v : PlaneParameters σ → K) (x y : K) :
+lemma universalPlaneSection_eval :
     bivariateEval x y (universalPlaneSection f v) =
       eval (fun i => v (i,0) + v (i,1) * x + v (i,2) * y) f := by
   have he : (bivariateEval x y).comp
@@ -78,16 +47,14 @@ lemma universalPlaneSection_eval {K σ : Type*} [CommRing K]
         ((bivariatePolynomialEquiv _).toRingHom.comp (universalPlaneMap K σ).toRingHom)) =
       eval (fun i => v (i,0) + v (i,1) * x + v (i,2) * y) := by
     apply MvPolynomial.ringHom_ext
-    · intro r
-      simp [bivariateEval, universalPlaneMap, bivariatePolynomialEquiv_C, bivariateMap]
-    · intro i
-      simp [bivariateEval, universalPlaneMap, bivariatePolynomialEquiv_C,
+    simp [bivariateEval, universalPlaneMap, bivariatePolynomialEquiv_C, bivariateMap]
+    · simp [bivariateEval, universalPlaneMap, bivariatePolynomialEquiv_C,
         bivariatePolynomialEquiv_X_zero, bivariatePolynomialEquiv_X_one, bivariateMap]
   exact RingHom.congr_fun he f
 
 /-- The equivalence between plane parameters, a base point `a` with directions `b` and `c`, and
 the three defining points `a`, `a + b` and `a + c` of the plane. -/
-def planeTriplePointsEquiv {K σ : Type*} [CommRing K] :
+def planeTriplePointsEquiv :
     (PlaneParameters σ → K) ≃ (Fin 3 → σ → K) where
   toFun v := ![fun i => v (i,0), fun i => v (i,0) + v (i,1), fun i => v (i,0) + v (i,2)]
   invFun w := fun i => ![w 0 i.1, w 1 i.1 - w 0 i.1, w 2 i.1 - w 0 i.1] i.2
@@ -101,8 +68,7 @@ def planeTriplePointsEquiv {K σ : Type*} [CommRing K] :
 
 /-- A zero section contains all three defining points, including coincident
 ones. This does not require the parameterization to be injective. -/
-lemma zero_universalPlaneSection_three_points {K σ : Type*} [CommRing K]
-    (f : MvPolynomial σ K) (v : PlaneParameters σ → K)
+lemma zero_universalPlaneSection_three_points
     (hv : universalPlaneSection f v = 0) (j : Fin 3) :
     eval (planeTriplePointsEquiv v j) f = 0 := by
   have h0 := universalPlaneSection_eval f v 0 0

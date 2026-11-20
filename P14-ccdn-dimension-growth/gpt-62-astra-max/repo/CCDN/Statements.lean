@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Algebra.ProjectiveSection
 public import CCDN.Height.ProjectiveZeroLocus
 public import CCDN.Hilbert.AffineCurveDegree
@@ -51,7 +52,7 @@ polynomials. The proof (`planeCurveBound`, in
 Irreducibility is over `ℚ`, not absolute irreducibility. The one constant is uniform in the
 polynomial, its degree, its coefficients, and the real radius. -/
 def PlaneCurveBound : Prop :=
-  ∃ C : ℝ, 0 < C ∧ ∀ f : MvPolynomial (Fin 2) ℚ, Irreducible f →
+  ∃ C : ℝ, 0 < C ∧ ∀ f : CoordinatePolynomial 2, Irreducible f →
     0 < f.totalDegree → ∀ B : ℝ, 1 ≤ B →
       (count (zeroLocus f) B : ℝ) ≤ C * curveBound f.totalDegree B
 
@@ -80,22 +81,28 @@ def ProjectiveCurveBound : Prop :=
 
 /-! ### Theorem 4: affine hypersurfaces -/
 
+section
+
+variable (n e : ℕ)
+
 /-- Affine dimension growth with degree exponent `e` for integer equations in `n + 3`
 variables of degree at least five whose top-degree form is absolutely irreducible. The
 constant depends only on `n` and `e`. -/
-def AffineHypersurfaceGrowth (n e : ℕ) : Prop :=
+def AffineHypersurfaceGrowth : Prop :=
   ∃ C : ℝ, 0 < C ∧
-    ∀ f : MvPolynomial (Fin (n + 3)) ℤ, HasAbsIrreducibleTopForm f →
+    ∀ f : IntegerPolynomial (n + 3), HasAbsIrreducibleTopForm f →
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
-        (count (zeroLocus (MvPolynomial.map (Int.castRingHom ℚ) f)) B : ℝ) ≤
+        (count (zeroLocus (rationalEquation f)) B : ℝ) ≤
           C * (f.totalDegree : ℝ) ^ e * B ^ (n + 1)
 
 /-- The rational-equation form of `AffineHypersurfaceGrowth`. -/
-def RationalAffineHypersurfaceGrowth (n e : ℕ) : Prop :=
+def RationalAffineHypersurfaceGrowth : Prop :=
   ∃ C : ℝ, 0 < C ∧
-    ∀ f : MvPolynomial (Fin (n + 3)) ℚ, HasAbsIrreducibleTopFormRat f →
+    ∀ f : CoordinatePolynomial (n + 3), HasAbsIrreducibleTopFormRat f →
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
         (count (zeroLocus f) B : ℝ) ≤ C * (f.totalDegree : ℝ) ^ e * B ^ (n + 1)
+
+end
 
 /-! ### Theorem 1: projective varieties -/
 
@@ -104,7 +111,7 @@ hypersurfaces of degree at least five in `ℙ^(n+2)`. The height exponent is the
 hypersurface dimension `n + 1`. -/
 def ProjectiveHypersurfaceGrowth (n e : ℕ) : Prop :=
   ∃ C : ℝ, 0 < C ∧
-    ∀ f : MvPolynomial (Fin (n + 3)) ℚ, f.IsHomogeneous f.totalDegree → Irreducible f →
+    ∀ f : CoordinatePolynomial (n + 3), f.IsHomogeneous f.totalDegree → Irreducible f →
       5 ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
         (projectiveCount (projectiveZeroLocus f) B : ℝ) ≤
           C * (f.totalDegree : ℝ) ^ e * B ^ (n + 1)
@@ -115,7 +122,7 @@ most `C d^E B^(r-1)` rational points of height at most `B`. The constant depends
 `n` and `E`. -/
 def ProjectiveGrowth (n E : ℕ) : Prop :=
   ∃ C : ℝ, 0 < C ∧
-    ∀ I : Ideal (MvPolynomial (Fin (n + 1)) ℚ), I.IsPrime → IsHomogeneousIdeal I →
+    ∀ I : Ideal (CoordinatePolynomial (n + 1)), I.IsPrime → IsHomogeneousIdeal I →
       ∀ d : ℕ, 5 ≤ d →
       (filteredHilbertPolynomial I).leadingCoeff =
         (d : ℚ) / (filteredHilbertPolynomial I).natDegree.factorial →

@@ -27,7 +27,9 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private def coordinateParameterField {K F σ : Type*} [Field K] [Field F] [Algebra K F]
+variable {K F σ : Type*} [Field K] [Field F]
+
+private def coordinateParameterField [Algebra K F]
     (I : Ideal (MvPolynomial σ K)) [Algebra (MvPolynomial σ K ⧸ I) F]
     (U : Set σ) : IntermediateField K F :=
   IntermediateField.adjoin K (Set.range (fun i : U =>
@@ -35,8 +37,7 @@ private def coordinateParameterField {K F σ : Type*} [Field K] [Field F] [Algeb
 
 /-- There is a subset of coordinate functions whose generated field
 has finite extension degree at most the Hilbert multiplicity. -/
-private theorem exists_finite_coordinate_parameter_field
-    {K F σ : Type*} [Field K] [Field F] [Fintype σ] [LinearOrder σ] [Algebra K F]
+private theorem exists_finite_coordinate_parameter_field [Fintype σ] [LinearOrder σ] [Algebra K F]
     (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
     [Algebra (MvPolynomial σ K ⧸ I) F] [IsScalarTower K (MvPolynomial σ K ⧸ I) F]
     [IsFractionRing (MvPolynomial σ K ⧸ I) F]
@@ -61,9 +62,9 @@ private theorem exists_finite_coordinate_parameter_field
   have hu : AlgebraicIndependent K u := by
     apply AlgebraicIndependent.of_comp R.val
     exact huF
-  have hdim : (filteredHilbertPolynomial I).natDegree = Fintype.card U := by
+  have hdim := by
     simpa only [Nat.card_eq_fintype_card] using hU.symm
-  exact hilbert_functionField_finite_rank_le I d ⟨hdim, by simpa only [← hdim] using hdegree⟩
+  exact hilbert_functionField_finite_rank_le I d ⟨hdim, by simpa [← hdim] using hdegree⟩
     (fun i : U => X i.val) (fun _ => by simp) u hu (fun _ => rfl)
 
 end
@@ -73,10 +74,13 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+section
+
+variable {K σ ι : Type*} [Field K] [Fintype σ] [LinearOrder σ]
+
 /-- For a prime ideal `I`, some set of coordinate functions, of size the Hilbert dimension of `I`,
 is a transcendence basis of `K[X] ⧸ I` over `K`. -/
 theorem exists_hilbert_coordinate_transcendence_basis
-    {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
     (I : Ideal (MvPolynomial σ K)) [I.IsPrime] :
     ∃ U : Set σ, Nat.card U = (filteredHilbertPolynomial I).natDegree ∧
       IsTranscendenceBasis K (fun i : U => (Ideal.Quotient.mk I) (X i.val)) := by
@@ -88,33 +92,27 @@ theorem exists_hilbert_coordinate_transcendence_basis
     (Ideal.IsPrime.ne_top ‹I.IsPrime›)
   obtain ⟨U, hU, hAI, hfinite, _⟩ :=
     exists_finite_coordinate_parameter_field (F := F) I d hd
-  let R := coordinateParameterField (F := F) I U
-  let : Module.Finite R F := hfinite
-  have hfieldalg : Algebra.IsAlgebraic R F :=
-    ⟨fun x => (IsIntegral.of_finite R x).isAlgebraic⟩
   have huF : AlgebraicIndependent K
       (fun i : U => φ ((Ideal.Quotient.mk I) (X i.val))) :=
     hAI.map' (IsFractionRing.injective _ _)
-  have hBF : IsTranscendenceBasis K
-      (fun i : U => φ ((Ideal.Quotient.mk I) (X i.val))) := by
+  have hBF := by
     apply huF.isTranscendenceBasis_iff_isAlgebraic.mpr
-    exact IntermediateField.isAlgebraic_adjoin_iff_top.mp hfieldalg
+    exact IntermediateField.isAlgebraic_adjoin_iff_top.mp ⟨fun x => (IsIntegral.of_finite (coordinateParameterField (F := F) I U) x).isAlgebraic⟩
   exact ⟨U, hU, IsTranscendenceBasis.of_comp φ (IsFractionRing.injective _ _) hBF⟩
 
 /-- For a prime ideal `I`, the Hilbert dimension of `I` equals the cardinality of any transcendence
 basis of `K[X] ⧸ I` over `K`. -/
-theorem hilbert_dimension_eq_transcendence_basis_card
-    {K σ ι : Type*} [Field K] [Fintype σ] [LinearOrder σ] [Fintype ι]
+theorem hilbert_dimension_eq_transcendence_basis_card [Fintype ι]
     (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
     (x : ι → MvPolynomial σ K ⧸ I) (hx : IsTranscendenceBasis K x) :
     (filteredHilbertPolynomial I).natDegree = Fintype.card ι := by
   classical
   obtain ⟨U, hU, hBU⟩ := exists_hilbert_coordinate_transcendence_basis I
-  have hc := hBU.lift_cardinalMk_eq hx
-  have hcard : Fintype.card U = Fintype.card ι := by
-    simpa only [Cardinal.mk_fintype, Cardinal.lift_natCast, Nat.cast_inj] using hc
-  rw [Nat.card_eq_fintype_card] at hU
-  omega
+  have hcard := by
+    simpa only [Cardinal.mk_fintype, Cardinal.lift_natCast, Nat.cast_inj] using (hBU.lift_cardinalMk_eq hx)
+  grind [Nat.card_eq_fintype_card]
+
+end
 
 /-- Integral embeddings preserve the filtered Hilbert dimension,
 without assuming a normalization or a Hilbert polynomial. -/
@@ -129,17 +127,12 @@ theorem integral_embedding_hilbert_dimension_eq
   classical
   let A := MvPolynomial σ K ⧸ I
   let B := MvPolynomial τ K ⧸ J
-  let : Algebra A B := ψ.toRingHom.toAlgebra
-  let : IsScalarTower K A B := IsScalarTower.of_algHom ψ
-  let : FaithfulSMul A B := (faithfulSMul_iff_algebraMap_injective A B).mpr hψ
+  let := ψ.toRingHom.toAlgebra
+  let := (faithfulSMul_iff_algebraMap_injective A B).mpr hψ
   let : Algebra.IsIntegral A B := ⟨hint⟩
-  let : Algebra.IsAlgebraic A B :=
-    ⟨fun x => (show IsIntegral A x from hint x).isAlgebraic⟩
   obtain ⟨U, hU, hBU⟩ := exists_hilbert_coordinate_transcendence_basis I
-  have hb := hBU.algebraMap_comp (A := B)
-  have hJ := hilbert_dimension_eq_transcendence_basis_card J _ hb
-  rw [Nat.card_eq_fintype_card] at hU
-  exact hU.symm.trans hJ.symm
+  have hJ := hilbert_dimension_eq_transcendence_basis_card J _ (hBU.algebraMap_comp (A := B))
+  aesop
 
 end
 end CCDN

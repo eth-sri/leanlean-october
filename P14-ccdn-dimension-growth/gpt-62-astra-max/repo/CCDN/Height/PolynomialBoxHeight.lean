@@ -18,11 +18,13 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma polynomial_support_card_le {R σ : Type*} [CommSemiring R] [Fintype σ]
+variable {R σ : Type*}
+
+private lemma polynomial_support_card_le [CommSemiring R] [Fintype σ]
     (f : MvPolynomial σ R) :
     f.support.card ≤ (f.totalDegree + 1) ^ Fintype.card σ := by
   classical
-  have hb (e : σ →₀ ℕ) (he : e ∈ f.support) (i : σ) : e i ≤ f.totalDegree := by
+  have hb (e : σ →₀ ℕ) (he : e ∈ f.support) (i : σ)  := by
     have hh := (degreeOf_le_iff.mp (le_refl (f.degreeOf i))) e he
     exact hh.trans (degreeOf_le_totalDegree f i)
   let ψ : {e // e ∈ f.support} → σ → Fin (f.totalDegree + 1) :=
@@ -36,7 +38,7 @@ private lemma polynomial_support_card_le {R σ : Type*} [CommSemiring R] [Fintyp
   simpa using Fintype.card_le_of_injective ψ hi
 
 /-- An evaluation estimate with no coefficient-dependent constants. -/
-theorem polynomial_eval₂_box_bound {σ : Type*} [Fintype σ]
+theorem polynomial_eval₂_box_bound [Fintype σ]
     (f : MvPolynomial σ ℤ) (H A : ℝ) (hH : 0 ≤ H) (hA : 1 ≤ A)
     (hf : CoefficientHeightLE f H)
     (v : σ → ℝ) (hv : ∀ i, |v i| ≤ A) :
@@ -51,28 +53,24 @@ theorem polynomial_eval₂_box_bound {σ : Type*} [Fintype σ]
     _ ≤ ∑ _e ∈ f.support, H * A ^ f.totalDegree := by
       apply Finset.sum_le_sum
       intro e he
-      have hd : ∑ i, e i ≤ f.totalDegree := by
-        simpa only [Finsupp.sum_fintype e (fun _ k => k) (fun _ => rfl)] using (le_totalDegree he)
+      have hd := by
+        simpa [Finsupp.sum_fintype e (fun _ k => k) (fun _ => rfl)] using (le_totalDegree he)
       have hp : |∏ i, v i ^ e i| ≤ A ^ f.totalDegree := by
         rw [Finset.abs_prod]
         calc
           ∏ i, |v i ^ e i| ≤ ∏ i, A ^ e i := by
             apply Finset.prod_le_prod₀
-            · intro i _
-              exact abs_nonneg _
-            · intro i _
-              rw [abs_pow]
-              exact pow_le_pow_left₀ (abs_nonneg _) (hv i) _
+            simp
+            grind [abs_pow, pow_le_pow_left₀, abs_nonneg]
           _ = A ^ (∑ i, e i) := Finset.prod_pow_eq_pow_sum _ _ _
           _ ≤ A ^ f.totalDegree := pow_le_pow_right₀ hA hd
       rw [abs_mul]
-      exact mul_le_mul (hf e) hp (abs_nonneg _) hH
-    _ = (f.support.card : ℝ) * H * A ^ f.totalDegree := by simp; ring
-    _ ≤ ((f.totalDegree : ℝ) + 1) ^ Fintype.card σ * H * A ^ f.totalDegree := by
+      solve_by_elim [mul_le_mul, abs_nonneg]
+    _ = f.support.card * H * A ^ f.totalDegree := by simp; ring
+    _ ≤ (f.totalDegree + 1) ^ Fintype.card σ * H * A ^ f.totalDegree := by
       have hc : (f.support.card : ℝ) ≤ ((f.totalDegree : ℝ) + 1) ^ Fintype.card σ := by
         exact_mod_cast polynomial_support_card_le f
-      exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hc hH)
-        (pow_nonneg (by linarith) _)
+      gcongr
 
 end
 end CCDN

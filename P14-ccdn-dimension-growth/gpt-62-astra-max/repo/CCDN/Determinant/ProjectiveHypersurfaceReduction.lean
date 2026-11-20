@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Determinant.ProjectiveHypersurfaceLocal
 public import CCDN.Determinant.ProjectiveReduction
 import CCDN.Height.ProjectiveZeroLocus
@@ -17,26 +18,26 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {n p d : ℕ} [Fact p.Prime] (r : ProjectiveResidueSpace (n + 2) p)
+
 /-- A coordinate index at which the chosen representative of a point of `ℙⁿ⁺²(𝔽_p)` is nonzero. -/
-def hypersurfaceResiduePivot {n p : ℕ} [Fact p.Prime] (r : ProjectiveResidueSpace (n + 2) p) :
+def hypersurfaceResiduePivot :
     Fin (n + 3) := Classical.choose (Function.ne_iff.mp r.rep_nonzero)
 
 /-- The representative of `r` is nonzero at the coordinate `hypersurfaceResiduePivot r`. -/
-lemma hypersurfaceResiduePivot_ne_zero {n p : ℕ} [Fact p.Prime]
-    (r : ProjectiveResidueSpace (n + 2) p) : r.rep (hypersurfaceResiduePivot r) ≠ 0 :=
+lemma hypersurfaceResiduePivot_ne_zero : r.rep (hypersurfaceResiduePivot r) ≠ 0 :=
   Classical.choose_spec (Function.ne_iff.mp r.rep_nonzero)
 
 /-- Integer lifts of the affine coordinates of a point `r` of `ℙⁿ⁺²(𝔽_p)` in the chart where its
 pivot coordinate `hypersurfaceResiduePivot r` is moved to the front and set to `1`. -/
-def hypersurfaceResidueChartLift {n p : ℕ} [Fact p.Prime] (r : ProjectiveResidueSpace (n + 2) p) :
+def hypersurfaceResidueChartLift :
     Fin (n + 2) → ℤ := fun j =>
   (r.rep (Equiv.swap 0 (hypersurfaceResiduePivot r) j.succ) /
     r.rep (hypersurfaceResiduePivot r)).val
 
 /-- Modulo `p`, `hypersurfaceResidueChartLift r` gives the coordinates of `r` divided by its pivot
 coordinate, with the pivot coordinate swapped to the front. -/
-lemma cast_hypersurfaceResidueChartLift {n p : ℕ} [Fact p.Prime]
-    (r : ProjectiveResidueSpace (n + 2) p) (j : Fin (n + 2)) :
+lemma cast_hypersurfaceResidueChartLift (j : Fin (n + 2)) :
     (hypersurfaceResidueChartLift r j : ZMod p) =
       r.rep (Equiv.swap 0 (hypersurfaceResiduePivot r) j.succ) /
         r.rep (hypersurfaceResiduePivot r) := by
@@ -44,20 +45,19 @@ lemma cast_hypersurfaceResidueChartLift {n p : ℕ} [Fact p.Prime]
 
 /-- Reduction determines both a unit coordinate and all affine congruences;
 these are derived from equality of projective residue points. -/
-theorem primitiveProjectiveReduction_hypersurface_chart {n p : ℕ} [Fact p.Prime]
+theorem primitiveProjectiveReduction_hypersurface_chart
     (z : IntPoint (n + 3)) (hz : Finset.univ.gcd z = 1)
     (r : ProjectiveResidueSpace (n + 2) p) (he : primitiveProjectiveReduction z hz = r) :
     IsCoprime (p : ℤ) (z (hypersurfaceResiduePivot r)) ∧
       ∀ j : Fin (n + 2), (p : ℤ) ∣ z (Equiv.swap 0 (hypersurfaceResiduePivot r) j.succ) -
         hypersurfaceResidueChartLift r j * z (hypersurfaceResiduePivot r) := by
-  have he' : Projectivization.mk (ZMod p) (fun i => (z i : ZMod p))
-      (primitive_mod_ne_zero z hz) = Projectivization.mk (ZMod p) r.rep r.rep_nonzero :=
+  have he'  :=
     he.trans r.mk_rep.symm
   obtain ⟨u, hu⟩ := (Projectivization.mk_eq_mk_iff _ _ _ _ _).mp he'
   have hcoord (j : Fin (n + 3)) : (z j : ZMod p) = (u : ZMod p) * r.rep j :=
     (congrFun hu j).symm
   constructor
-  · apply (Nat.prime_iff_prime_int.mp (Fact.out : p.Prime)).irreducible.coprime_iff_not_dvd.mpr
+  · apply (Nat.prime_iff_prime_int.mp Fact.out).irreducible.coprime_iff_not_dvd.mpr
     intro hd
     have hh := (ZMod.intCast_zmod_eq_zero_iff_dvd _ p).mpr hd
     rw [hcoord] at hh
@@ -70,7 +70,7 @@ theorem primitiveProjectiveReduction_hypersurface_chart {n p : ℕ} [Fact p.Prim
 
 /-- Evaluating the affine chart of a form `f` at `a` is evaluating `f` at `(1, a)`. -/
 lemma eval₂_hypersurfaceAffineChart {R : Type*} [CommRing R] {n : ℕ} (φ : ℤ →+* R)
-    (a : Fin (n + 2) → R) (f : MvPolynomial (Fin (n + 3)) ℤ) :
+    (a : Fin (n + 2) → R) (f : IntegerPolynomial (n + 3)) :
     eval₂ φ a (affineChart (n + 2) f) = eval₂ φ (Fin.cons 1 a) f := by
   induction f using MvPolynomial.induction_on with
   | C c => simp only [affineChart, eval₂Hom_C, eval₂_C]
@@ -82,19 +82,19 @@ lemma eval₂_hypersurfaceAffineChart {R : Type*} [CommRing R] {n : ℕ} (φ : �
 
 /-- The integer chart representative of a projective residue zero satisfies
 the reduced affine equation. -/
-theorem hypersurfaceResidueChartLift_zero {n p d : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d)
+theorem hypersurfaceResidueChartLift_zero
+    (f : IntegerPolynomial (n + 3)) (hf : f.IsHomogeneous d)
     (r : ProjectiveResidueSpace (n + 2) p)
-    (hr : eval r.rep (map (Int.castRingHom (ZMod p)) f) = 0) :
+    (hr : eval r.rep (residueEquation p f) = 0) :
     eval₂ (Int.castRingHom (ZMod p))
       (fun j => (hypersurfaceResidueChartLift r j : ZMod p))
       (projectiveHypersurfaceChart (hypersurfaceResiduePivot r) f) = 0 := by
   let k := hypersurfaceResiduePivot r
-  let a : Fin (n + 2) → ZMod p := fun j => (hypersurfaceResidueChartLift r j : ZMod p)
+  let a : Fin (n + 2) → ZMod p := fun j => (hypersurfaceResidueChartLift r j)
   have hv : Fin.cons 1 a = (r.rep k)⁻¹ • (r.rep ∘ Equiv.swap 0 k) := by
     funext j
     refine Fin.cases ?_ (fun l => ?_) j
-    · simp [hypersurfaceResiduePivot_ne_zero, k]
+    simp [hypersurfaceResiduePivot_ne_zero, k]
     · simp [a, cast_hypersurfaceResidueChartLift, div_eq_mul_inv, mul_comm, k]
   have hv' : (Fin.cons 1 a) ∘ Equiv.swap 0 k = (r.rep k)⁻¹ • r.rep := by
     rw [hv]

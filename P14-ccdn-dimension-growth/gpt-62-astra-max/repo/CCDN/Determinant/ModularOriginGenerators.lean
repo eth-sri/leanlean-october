@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Determinant.SingularTangent
 public import Mathlib.Algebra.Field.ZMod
 public import Mathlib.RingTheory.MvPolynomial
@@ -20,15 +21,17 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {σ : Type*} {p n : ℕ} [Fact p.Prime]
+
 /-- Lift a whole homogeneous generating family without changing its size at
 any weight. The error separates the equation, the origin power and a multiple of p. -/
-private theorem lift_origin_truncation_generators {σ : Type*} {p : ℕ} [Fact p.Prime]
+private theorem lift_origin_truncation_generators
     (f : MvPolynomial σ ℤ) (r : ℕ → ℕ)
     (g : (k : ℕ) → Fin (r k) → MvPolynomial σ (ZMod p))
     (hg : ∀ k j, (g k j).IsHomogeneous k)
     (hspan : ∀ N u, ∃ c : (k : Fin N) → Fin (r k.val) → ZMod p,
       u - ∑ k : Fin N, ∑ j, c k j • g k.val j ∈
-        Ideal.span {map (Int.castRingHom (ZMod p)) f} ⊔ idealOfVars σ (ZMod p) ^ N) :
+        Ideal.span {residueEquation p f} ⊔ idealOfVars σ (ZMod p) ^ N) :
     ∃ G : (k : ℕ) → Fin (r k) → MvPolynomial σ ℤ,
       (∀ k j, (G k j).IsHomogeneous k) ∧
       ∀ N u, ∃ (c : (k : Fin N) → Fin (r k.val) → ℤ) (h v w : MvPolynomial σ ℤ),
@@ -37,7 +40,7 @@ private theorem lift_origin_truncation_generators {σ : Type*} {p : ℕ} [Fact p
   classical
   let π := Int.castRingHom (ZMod p)
   refine ⟨(fun k j => modularPolynomialLift (g k j)),
-    (fun k j => modularPolynomialLift_homogeneous _ (hg k j)), ?_⟩
+    (by solve_by_elim [modularPolynomialLift_homogeneous]), ?_⟩
   intro N u
   obtain ⟨c, hc⟩ := hspan N (map π u)
   obtain ⟨h', hh', v, hv, he⟩ := Submodule.mem_sup.mp hc
@@ -56,42 +59,23 @@ private theorem lift_origin_truncation_generators {σ : Type*} {p : ℕ} [Fact p
   obtain ⟨w, hw⟩ := (C_dvd_iff_zmod p D).mpr hD
   refine ⟨cZ, modularPolynomialLift h, modularPolynomialLift v, w,
     modularPolynomialLift_mem_origin_power v hv, ?_⟩
-  change u - S = _
-  dsimp only [D] at hw
   linear_combination hw
 
 
 /-- Integer generators in arbitrary dimension, with the residue-layer
 Hilbert function as their weight profile. -/
-theorem exists_integer_hypersurface_generators {p n : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin (n + 1)) ℤ) :
-    ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → MvPolynomial (Fin (n + 1)) ℤ),
+theorem exists_integer_hypersurface_generators
+    (f : IntegerPolynomial (n + 1)) :
+    ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → IntegerPolynomial (n + 1)),
       (∀ k, r k = Module.finrank (ZMod p)
-        (originLayer (map (Int.castRingHom (ZMod p)) f) k)) ∧
+        (originLayer (residueEquation p f) k)) ∧
       (∀ k j, (g k j).IsHomogeneous k) ∧
       ∀ N u, ∃ (c : (k : Fin N) → Fin (r k.val) → ℤ)
-        (h v w : MvPolynomial (Fin (n + 1)) ℤ),
+        (h v w : IntegerPolynomial (n + 1)),
         v ∈ idealOfVars (Fin (n + 1)) ℤ ^ N ∧
         u - ∑ k : Fin N, ∑ j, c k j • g k.val j = f * h + v + C (p : ℤ) * w := by
   obtain ⟨r, g, hr, hg, hs⟩ :=
-    exists_origin_truncation_generators (map (Int.castRingHom (ZMod p)) f)
-  obtain ⟨G, hG, hrep⟩ := lift_origin_truncation_generators f r g hg hs
-  exact ⟨r, G, hr, hG, hrep⟩
-
-/-- The local generators are homogeneous integer polynomials. Their
-uniform reduction formula separates the defining equation, the origin-adic
-error, and the p-divisible error. -/
-theorem exists_integer_origin_generators {p μ : ℕ} [Fact p.Prime]
-    (f : MvPolynomial (Fin 2) ℤ)
-    (hf : map (Int.castRingHom (ZMod p)) f ∈ idealOfVars (Fin 2) (ZMod p) ^ μ)
-    (hμ : homogeneousComponent μ (map (Int.castRingHom (ZMod p)) f) ≠ 0) :
-    ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → MvPolynomial (Fin 2) ℤ),
-      (∀ k, r k ≤ μ) ∧ (∀ k j, (g k j).IsHomogeneous k) ∧
-      ∀ N u, ∃ (c : (k : Fin N) → Fin (r k.val) → ℤ) (h v w : MvPolynomial (Fin 2) ℤ),
-        v ∈ idealOfVars (Fin 2) ℤ ^ N ∧
-        u - ∑ k : Fin N, ∑ j, c k j • g k.val j = f * h + v + C (p : ℤ) * w := by
-  obtain ⟨r, g, hr, hg, hs⟩ :=
-    exists_plane_truncation_generators (map (Int.castRingHom (ZMod p)) f) hf hμ
+    exists_origin_truncation_generators (residueEquation p f)
   obtain ⟨G, hG, hrep⟩ := lift_origin_truncation_generators f r g hg hs
   exact ⟨r, G, hr, hG, hrep⟩
 

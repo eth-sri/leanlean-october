@@ -5,6 +5,7 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Algebra.ProjectiveSection
 public import CCDN.Height.ProjectiveBox
 public import CCDN.Projection.BoundedBirationalHypersurfaceProjection
@@ -19,10 +20,12 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable (m k : ℕ)
+
 /-- The exponent `18 + 3 * m + N + 2 * N * (m + 1)`, with `N = m + k + 2`, of the degree in the
 point-count bound obtained by projecting an `(m + 1)`-dimensional variety in `ℙ^(m + k + 1)` to a
 hypersurface in `ℙ^(m + 2)`. -/
-def projectionDegreeExponent (m k : ℕ) : ℕ :=
+def projectionDegreeExponent : ℕ :=
   18 + 3 * m + (m + k + 2) + 2 * (m + k + 2) * (m + 1)
 
 /-- There is a constant `C` depending only on `m` and `k` with the following property. Let integer
@@ -31,12 +34,12 @@ homogeneous relation `f` of degree `d ≥ 5` modulo `I`, and let every affine fi
 of the zero locus of `I` have at most `d ^ (m + k + 2)` points. Then the zero locus of `I` in
 `ℙ^(m + k + 1)` has at most `C * d ^ projectionDegreeExponent m k * B ^ (m + 1)` rational points of
 height at most `B`. -/
-theorem projective_projection_dimension_growth (m k : ℕ) :
+theorem projective_projection_dimension_growth :
     ∃ C : ℝ, 0 < C ∧
-      ∀ (I : Ideal (MvPolynomial (Fin (m + k + 2)) ℚ)) (d : ℕ), 5 ≤ d →
+      ∀ (I : Ideal (CoordinatePolynomial (m + k + 2))) (d : ℕ), 5 ≤ d →
       ∀ b : Fin (m + 3) → Fin (m + k + 2) → ℤ,
       (∀ i j, |b i j| ≤ integerBirationalProjectionHeight (m + k + 2) d) →
-      ∀ f : MvPolynomial (Fin (m + 3)) ℚ,
+      ∀ f : CoordinatePolynomial (m + 3),
       Irreducible f → f.IsHomogeneous d → f.totalDegree = d →
       aeval (fun i => integerLinearForm (b i)) f ∈ I →
       (∀ z : Fin (m + 3) → ℚ, ∀ s : Finset (Fin (m + k + 2) → ℚ),
@@ -49,21 +52,16 @@ theorem projective_projection_dimension_growth (m k : ℕ) :
   obtain ⟨C, hC, hcount⟩ := projective_hypersurface_dimension_growth m
   let N := m + k + 2
   let T : ℝ := N * birationalProjectionHeightConstant N
-  have hN : 1 ≤ N := by dsimp [N]; omega
   have hT : 1 ≤ T := by
     have hpos := birationalProjectionHeightConstant_pos N
-    have hh : 1 ≤ N * birationalProjectionHeightConstant N := by
-      exact Nat.succ_le_of_lt (Nat.mul_pos (by omega) hpos)
-    dsimp only [T]
-    exact_mod_cast hh
+    bound
   refine ⟨C * T ^ (m + 1), by positivity, ?_⟩
   intro I d hd b hb f hf hfhom hfdeg hrel hfiber B hB
-  let H : ℝ := birationalProjectionHeightConstant N * (d : ℝ) ^ (2 * N)
-  have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast (show 1 ≤ d by omega)
+  let H : ℝ := birationalProjectionHeightConstant N * d ^ (2 * N)
   have hH : 1 ≤ H := by
     have hconst : (1 : ℝ) ≤ birationalProjectionHeightConstant N := by
       exact_mod_cast Nat.succ_le_of_lt (birationalProjectionHeightConstant_pos N)
-    exact one_le_mul_of_one_le_of_one_le hconst (one_le_pow₀ hd1)
+    bound
   have hbH (i j) : |(b i j : ℝ)| ≤ H := by
     have hh : |(b i j : ℝ)| ≤ integerBirationalProjectionHeight N d := by
       exact_mod_cast hb i j
@@ -71,24 +69,20 @@ theorem projective_projection_dimension_growth (m k : ℕ) :
     dsimp only [H]
     exact_mod_cast integerBirationalProjectionHeight_le N d (by omega)
   have hbound := projective_integer_linear_count_transfer
-    (n := m + k + 1) (m := m + 2) I b f (by rwa [hfdeg])
+    (n := m + k + 1) (m := m + 2) I b f (by grind)
     hrel (d ^ N) hfiber H B (by linarith) hbH
   have hheight : 1 ≤ (N : ℝ) * H * B := by
-    exact one_le_mul_of_one_le_of_one_le
-      (one_le_mul_of_one_le_of_one_le (by exact_mod_cast hN) hH) hB
-  have htarget := hcount f (by rwa [hfdeg]) hf (by omega) ((N : ℝ) * H * B) hheight
+    bound
+  have htarget := hcount f (by rwa [hfdeg]) hf (by omega) (N * H * B) hheight
   rw [hfdeg] at htarget
   have hnon : (0 : ℝ) ≤ (d : ℝ) ^ N := by positivity
-  have hh : (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
-      (d : ℝ) ^ N * (C * (d : ℝ) ^ (18 + 3 * m) *
-        ((N : ℝ) * H * B) ^ (m + 1)) := by
+  have hh := by
     apply (show (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
-      (d : ℝ) ^ N * projectiveCount (projectiveZeroLocus f) ((N : ℝ) * H * B) by
+      d ^ N * projectiveCount (projectiveZeroLocus f) (N * H * B) by
         exact_mod_cast hbound).trans
     exact mul_le_mul_of_nonneg_left htarget hnon
   convert hh using 1
   dsimp only [projectionDegreeExponent, H, T, N]
-  simp only [pow_add, pow_mul, mul_pow]
   ring
 
 end

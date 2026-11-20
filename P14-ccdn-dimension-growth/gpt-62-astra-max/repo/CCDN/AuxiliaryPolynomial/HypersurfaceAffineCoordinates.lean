@@ -20,21 +20,24 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
+variable {K σ : Type*} [Field K] (a b : Option σ → K) (hb : b none ≠ 0)
+    (f : MvPolynomial (Option σ) K)
+
 /-- The linear coordinates x_i = b_i*x_0 + z_i, with no z_0. -/
-def directionCoordinatesHom {K σ : Type*} [Field K] (b : Option σ → K) :
+def directionCoordinatesHom :
     MvPolynomial (Option σ) K →ₐ[K] MvPolynomial (Option σ) K :=
   aeval (fun i => C (b i) * X none + Option.elim i 0 (fun j => X (some j)))
 
 /-- The inverse of the linear coordinates `directionCoordinatesHom b` when `b none ≠ 0`: the
 substitution sending $x_0$ to $b_0^{-1} x_0$ and every other $x_i$ to $x_i - b_i b_0^{-1} x_0$. -/
-def directionCoordinatesInv {K σ : Type*} [Field K] (b : Option σ → K) :
+def directionCoordinatesInv :
     MvPolynomial (Option σ) K →ₐ[K] MvPolynomial (Option σ) K :=
   aeval (fun i => Option.elim i (C (b none)⁻¹ * X none)
     (fun j => X (some j) - C (b (some j)) * C (b none)⁻¹ * X none))
 
 /-- The linear coordinates $x_i = b_i x_0 + z_i$ (with no $z_0$) as an algebra automorphism,
 for a direction `b` with nonzero first component. -/
-def directionCoordinates {K σ : Type*} [Field K] (b : Option σ → K) (hb : b none ≠ 0) :
+def directionCoordinates :
     MvPolynomial (Option σ) K ≃ₐ[K] MvPolynomial (Option σ) K := by
   have hu : (C (b none)⁻¹ : MvPolynomial (Option σ) K) * C (b none) = 1 := by
     rw [← map_mul, inv_mul_cancel₀ hb, map_one]
@@ -66,15 +69,13 @@ def directionCoordinates {K σ : Type*} [Field K] (b : Option σ → K) (hb : b 
       ring
 
 /-- Substitute a_i+b_i*x_0+z_i, so the new origin is the old point a. -/
-def hypersurfaceAffineCoordinates {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) :
+def hypersurfaceAffineCoordinates :
     MvPolynomial (Option σ) K ≃ₐ[K] MvPolynomial (Option σ) K :=
   (originShiftEquiv a).trans (directionCoordinates b hb)
 
 /-- The affine coordinates substitute $a_i + b_i x_0 + z_i$ for the variable $x_i$, with no
 $z_0$ term for the distinguished variable. -/
-lemma hypersurfaceAffineCoordinates_X {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (i : Option σ) :
+lemma hypersurfaceAffineCoordinates_X (i : Option σ) :
     hypersurfaceAffineCoordinates a b hb (X i) =
       C (a i) + C (b i) * X none + Option.elim i 0 (fun j => X (some j)) := by
   simp [hypersurfaceAffineCoordinates, directionCoordinates, directionCoordinatesHom]
@@ -82,15 +83,13 @@ lemma hypersurfaceAffineCoordinates_X {K σ : Type*} [Field K]
 
 /-- The affine change of coordinates `hypersurfaceAffineCoordinates a b hb` does not increase
 the total degree. -/
-lemma hypersurfaceAffineCoordinates_totalDegree_le {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
+lemma hypersurfaceAffineCoordinates_totalDegree_le :
     (hypersurfaceAffineCoordinates a b hb f).totalDegree ≤ f.totalDegree := by
   have he : (hypersurfaceAffineCoordinates a b hb).toAlgHom =
       aeval (fun i => C (a i) + C (b i) * X none + Option.elim i 0 (fun j => X (some j))) := by
     apply MvPolynomial.algHom_ext
     intro i
-    simp only [AlgEquiv.coe_toAlgHom, aeval_X]
-    exact hypersurfaceAffineCoordinates_X a b hb i
+    simpa using hypersurfaceAffineCoordinates_X a b hb i
   change ((hypersurfaceAffineCoordinates a b hb).toAlgHom f).totalDegree ≤ _
   rw [he]
   apply linear_eval₂_totalDegree_le _ _ _ f
@@ -103,27 +102,26 @@ lemma hypersurfaceAffineCoordinates_totalDegree_le {K σ : Type*} [Field K]
 
 /-- The affine coordinates carry the base point `a` to the origin: the transformed polynomial
 takes at `0` the value of `f` at `a`. -/
-lemma hypersurfaceAffineCoordinates_eval_zero {K σ : Type*} [Field K]
-    (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
+lemma hypersurfaceAffineCoordinates_eval_zero :
     eval (0 : Option σ → K) (hypersurfaceAffineCoordinates a b hb f) = eval a f := by
   have he :
       (eval (0 : Option σ → K)).comp (hypersurfaceAffineCoordinates a b hb).toRingHom =
         eval a := by
     apply MvPolynomial.ringHom_ext
     · intro r
-      change eval (0 : Option σ → K) (hypersurfaceAffineCoordinates a b hb (C r)) = eval a (C r)
+      change eval 0 (hypersurfaceAffineCoordinates a b hb (C r)) = eval a (C r)
       rw [show hypersurfaceAffineCoordinates a b hb (C r) = C r from
         (hypersurfaceAffineCoordinates a b hb).commutes r]
       simp
     · intro i
-      change eval (0 : Option σ → K) (hypersurfaceAffineCoordinates a b hb (X i)) = eval a (X i)
+      change eval 0 (hypersurfaceAffineCoordinates a b hb (X i)) = eval a (X i)
       rw [hypersurfaceAffineCoordinates_X]
       cases i <;> simp
   exact RingHom.congr_fun he f
 
 /-- In the affine coordinates, the first partial derivative at the origin is the derivative of
 `f` at `a` in the direction `b`. -/
-lemma hypersurfaceAffineCoordinates_partial_zero {K σ : Type*} [Field K] [Fintype σ]
+lemma hypersurfaceAffineCoordinates_partial_zero [Fintype σ]
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
     eval (0 : Option σ → K) (pderiv none (hypersurfaceAffineCoordinates a b hb f)) =
       ∑ i, eval a (pderiv i f) * b i := by

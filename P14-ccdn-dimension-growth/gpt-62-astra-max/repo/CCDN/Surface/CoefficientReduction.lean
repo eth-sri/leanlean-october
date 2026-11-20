@@ -5,16 +5,16 @@ Authors: Jason Davies
 -/
 module
 
+public import CCDN.Algebra.Equations
 public import CCDN.Algebra.IdealZeroLocus
 public import CCDN.Height.Box
 public import CCDN.Height.IntegerCoefficientHeight
 public import CCDN.Height.PrimitiveIntegerPolynomial
 public import CCDN.Hilbert.AffineCurveDegree
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
-import CCDN.AuxiliaryPolynomial.PlaneAuxiliaryCount
+import CCDN.Algebra.FieldMapIrreducible
 import CCDN.AuxiliaryPolynomial.UnscaledHypersurfaceAuxiliary
-import CCDN.Hypersurface.NonabsoluteSurfaceCount
-import CCDN.Surface.CompleteIntersectionDegreeBudget
+import CCDN.Hypersurface.NonabsoluteHypersurfaceCount
 
 /-! Coefficients of a primitive surface equation can be restricted to
 polynomial height in the box radius. The complementary case already has
@@ -25,96 +25,47 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private theorem surface_section_count_le
-    (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
-    {B : ℝ} (hB : 0 ≤ B) :
-    (count (zeroLocus f ∩ zeroLocus g) B : ℝ) ≤
-      (f.totalDegree : ℝ) * g.totalDegree * (2 * B + 1) := by
-  obtain ⟨S, δ, hcurve, hcover, hbudget, _⟩ :=
-    exists_completeIntersection_curve_components f g hf hfg
-  rw [hcover]
-  have hsum : (∑ P ∈ S, (δ P : ℝ)) ≤
-      (f.totalDegree : ℝ) * g.totalDegree := by exact_mod_cast hbudget
-  exact (finite_curve_union_count_le_box_side S δ (fun P hP =>
-    ⟨(hcurve P hP).isPrime, (hcurve P hP).height_eq, (hcurve P hP).degree⟩) hB).trans
-      (mul_le_mul_of_nonneg_right hsum (by linarith))
-
-private theorem integer_surface_count_le_of_auxiliary
-    (f g : MvPolynomial (Fin 3) ℤ)
-    (hf : Irreducible (map (Int.castRingHom ℚ) f))
-    (hfg : ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g)
-    {B : ℝ} (hB : 0 ≤ B)
-    (hzero : ∀ x : IntPoint 3, InBox x B →
-      eval x f = 0 → eval x g = 0) :
-    (count (zeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤
-      (f.totalDegree : ℝ) * g.totalDegree * (2 * B + 1) := by
-  have hcount : count (zeroLocus (map (Int.castRingHom ℚ) f)) B ≤
-      count (zeroLocus (map (Int.castRingHom ℚ) f) ∩
-        zeroLocus (map (Int.castRingHom ℚ) g)) B := by
-    apply Finset.card_le_card
-    intro x hx
-    obtain ⟨hxB, hxf⟩ := mem_integralPoints.mp hx
-    have hf0 : eval x f = 0 := by
-      apply (show Function.Injective (Int.castRingHom ℚ) from Int.cast_injective)
-      rw [map_zero, map_eval]
-      exact hxf
-    have hg0 : eval (rationalPoint x) (map (Int.castRingHom ℚ) g) = 0 := by
-      have hh := congrArg (Int.castRingHom ℚ) (hzero x hxB hf0)
-      rw [map_eval, map_zero] at hh
-      exact hh
-    exact mem_integralPoints.mpr ⟨hxB, hxf, hg0⟩
-  have hbound := surface_section_count_le (map (Int.castRingHom ℚ) f)
-    (map (Int.castRingHom ℚ) g) hf hfg hB
-  rw [rational_map_totalDegree, rational_map_totalDegree] at hbound
-  exact le_trans (by exact_mod_cast hcount) hbound
+variable (f : IntegerPolynomial 3) (d : ℕ)
 
 /-- The constant `N (log N + d) + 1`, where `N = binom(d + 3, d)` is the number of monomials of
 degree at most `d` in three variables, in the logarithmic coefficient-height bound for primitive
 surface equations of degree `d`. -/
-def surfaceCoefficientLogConstant (d : ℕ) : ℝ :=
+def surfaceCoefficientLogConstant : ℝ :=
   ((3 + d).choose d : ℝ) * (Real.log ((3 + d).choose d) + d) + 1
 
 /-- The coefficient-height constant `surfaceCoefficientLogConstant d` is positive. -/
-theorem surfaceCoefficientLogConstant_pos (d : ℕ) :
+theorem surfaceCoefficientLogConstant_pos :
     0 < surfaceCoefficientLogConstant d := by
-  have hh := Real.log_natCast_nonneg ((3 + d).choose d)
   unfold surfaceCoefficientLogConstant
   positivity
 
 /-- The alternative to controlled coefficient height is already O(d²B).
 The height constant depends on the degree alone. -/
-theorem primitive_surface_coefficient_reduction
-    (f : MvPolynomial (Fin 3) ℤ) (hprim : PrimitiveIntegerPolynomial f)
-    (hf : Irreducible (map (Int.castRingHom ℚ) f))
+theorem primitive_surface_coefficient_reduction (hprim : PrimitiveIntegerPolynomial f)
+    (hf : Irreducible (rationalEquation f))
     {B : ℝ} (hB : 1 ≤ B) :
     Real.log (integerCoefficientHeight f : ℝ) ≤
       surfaceCoefficientLogConstant f.totalDegree * (Real.log B + 1) ∨
-    (count (zeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤
-      3 * (f.totalDegree : ℝ) ^ 2 * B := by
+    (count (zeroLocus (rationalEquation f)) B : ℝ) ≤
+      9 * (f.totalDegree : ℝ) ^ 2 * B := by
   have hf0 : f ≠ 0 := by intro h; exact hf.ne_zero (by rw [h, map_zero])
   rcases affine_coefficient_height_dichotomy f hf0 hprim hB with
     hheight | ⟨g, ⟨_, hproper, hzero⟩, hdeg⟩
   · left
     have hlog := Real.log_nonneg hB
     have hNlog := Real.log_natCast_nonneg ((3 + f.totalDegree).choose f.totalDegree)
-    have hNd : (0 : ℝ) ≤ ((3 + f.totalDegree).choose f.totalDegree : ℝ) * f.totalDegree := by
-      positivity
     have hNlog' : (0 : ℝ) ≤ ((3 + f.totalDegree).choose f.totalDegree : ℝ) *
         Real.log ((3 + f.totalDegree).choose f.totalDegree) := by positivity
     unfold surfaceCoefficientLogConstant
     nlinarith
   · right
-    have hproperQ : ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g :=
-      fun h => hproper (hprim.rational_map_dvd_iff.mp h)
-    have hcount := integer_surface_count_le_of_auxiliary f g hf hproperQ
-      (show 0 ≤ B by linarith) hzero
-    have hdegR : (g.totalDegree : ℝ) ≤ f.totalDegree := by exact_mod_cast hdeg
-    calc
-      _ ≤ (f.totalDegree : ℝ) * g.totalDegree * (2 * B + 1) := hcount
-      _ ≤ (f.totalDegree : ℝ) * f.totalDegree * (3 * B) := by
-        gcongr
-        linarith
-      _ = _ := by ring
+    have hc := proper_intersection_count_le_box (n:=1) (rationalEquation f) (rationalEquation g) hf.prime
+      (fun h => hproper (hprim.rational_map_dvd_iff.mp h)) (rational_map_totalDegree f).le ((rational_map_totalDegree g).le.trans hdeg) (show 0 ≤ B by linarith)
+    have hs : count (zeroLocus (rationalEquation f)) B ≤ count (zeroLocus (rationalEquation f) ∩ zeroLocus (rationalEquation g)) B :=
+      count_le_of_box_imp fun x hx ht => ⟨ht,mem_integer_zeroLocus.mpr (hzero x hx (mem_integer_zeroLocus.mp ht))⟩
+    norm_num at hc
+    apply (Nat.cast_le (α:=ℝ)).mpr hs |>.trans (hc.trans ?_)
+    nlinarith [mul_le_mul_of_nonneg_right hB (sq_nonneg (f.totalDegree:ℝ))]
 
 end
 end CCDN
